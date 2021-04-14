@@ -1,0 +1,1280 @@
+// Defines sound environments.
+// These are pointed to by name in the "environment" key on soundscape_triggerable entities.
+// (Those entities may also have a 'listener_play_event' key which will play particular events when listener enters/leaves.
+//  besides playing an ambient track, this may be useful for setting controllers or mix snapshots.)
+
+// You must have a default named "default". It must be first.
+// It must list default values for all controllers used by any sound environment.
+{
+	name: "default"
+	allow_roof: true
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		// Controllers set on individual sounds played in area.
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 100
+		3PTailSwitch: 7
+	}
+	listener_controllers:
+	{
+		// Controllers to use when listener steps into area.
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0.0
+		Interiorness: 0
+		1PTailSwitch: 10
+		1PTailFilter: 0
+		listener_some_other_thing: 0.5
+	}
+}
+
+////////////////////////////////////
+////////////////////////////////////
+// BEGIN EXAMPLES
+////////////////////////////////////
+////////////////////////////////////
+
+{
+	name: "example_exterior"			// Inherit everything else from default.
+}
+
+{
+	name: "example_small_interior"			// Name, as used in 'environment' key in leveled.
+	emitter_suffixes: [ "_intsm" "_int" ]	// List to search (in order) when playing sounds in area
+	emitter_controllers:
+	{
+		// Controllers set on individual sounds played in area.
+		ReverbSmall: 1.0
+		ReverbLarge: 0.5
+	}
+	listener_controllers:
+	{
+		// Controllers to use when listener steps into area.
+		ConvolutionPreset1P: 0
+	}
+
+	// Played when listener is in area, in addition to 'play_event' set in LevelEd.
+	listener_play_event: "do_the_thing_for_small_interior"
+}
+
+{
+	name: "example_large_interior"
+	emitter_suffixes: [ "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		// ReverbSmall: 0.2    // Commented-out, we will just inherit value 0 from default.
+		ReverbLarge: 1.0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 100.0
+	}
+	listener_play_event: "do_the_thing_for_large_interior"
+}
+
+
+// This example inherits settings from "large_interior", but modifies/augments them.
+{
+	name: "example_large_interior_special"
+	inherit: "example_large_interior"		// If you don't specify it, you inherit from 'default'.
+						// this starts out as a copy of the 'inherit' environment.
+						// (you can alter the fields)
+
+	emitter_suffixes: [ "_special" ]	// can be [] for empty list, too.
+						// If this is specified, it replaces the list you inherited.
+						// When omitted, will inherit.
+	listener_controllers:
+	{
+		listener_some_other_thing: 0.1
+	}
+	listener_play_event: "set_special_mixer_snapshot"
+}
+
+////////////////////////////////////
+////////////////////////////////////
+// END EXAMPLES (BEGIN REAL)
+////////////////////////////////////
+////////////////////////////////////
+
+////////////////////////////////////
+// SOME BASIC ENVIRONMENTS TO GET YOU STARTED.
+////////////////////////////////////
+
+{
+	name: "Base_Exterior"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 100
+		3PTailSwitch: 7
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0
+		1PTailSwitch: 10
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Exterior_UnderBuilding_Open"
+	emitter_suffixes: [  "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 100.0
+		1PTailVolume: 30
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 7
+		ConvolutionSend1P: 25
+		1PTailSwitch: 2
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Exterior_Open_Smooth"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 30
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0
+		1PTailSwitch: 0
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Exterior_Open_Rolling"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 1
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0
+		1PTailSwitch: 1
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Outdoor_Alley"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 100.0
+		1PTailVolume: 50
+		3PTailSwitch: 3
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 7
+		ConvolutionSend1P: 25
+		1PTailSwitch: 3
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Exterior_Alley_Small"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 100.0
+		1PTailVolume: 30
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 7
+		ConvolutionSend1P: 25
+		1PTailSwitch: 2
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Exterior_Alley_Large"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 100.0
+		1PTailVolume: 30
+		3PTailSwitch: 3
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 7
+		ConvolutionSend1P: 25
+		1PTailSwitch: 3
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Exterior_Canyon_Small"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 30
+		3PTailSwitch: 4
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0
+		1PTailSwitch: 4
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Exterior_Canyon_Large"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 50
+		3PTailSwitch: 5
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0
+		1PTailSwitch: 5
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Exterior_Canyon_Complex"
+	allow_roof: false
+	emitter_suffixes: [ "_extbase" "_allexts" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 30
+		3PTailSwitch: 6
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0
+		1PTailSwitch: 6
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Small_Room"
+	emitter_suffixes: [ "_intbase" "_allints" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 0
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 2
+		ConvolutionSend1P: 40
+		1PTailSwitch: 0
+		1PTailFilter: 0
+	}
+}
+
+
+{
+	name: "Base_SmallHalfOpen_Room"
+	emitter_suffixes: [ "_intbase" "_allints" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 50.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 1
+		ConvolutionSend1P: 30
+		1PTailSwitch: 0
+		1PTailFilter: 60
+	}
+}
+
+
+{
+	name: "Base_Medium_Room"
+	emitter_suffixes: [ "_intbase" "_allints" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 95
+		ReverbOutdoor: 0.0
+		1PTailVolume: 0
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 4
+		ConvolutionSend1P: 40
+		1PTailSwitch: 2
+		1PTailFilter: 0
+	}
+}
+
+
+{
+	name: "Base_MediumHalfOpen_Room"
+	emitter_suffixes: [ "_intbase" "_allints" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 95
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 3
+		ConvolutionSend1P: 30
+		1PTailSwitch: 2
+		1PTailFilter: 60
+	}
+}
+
+
+{
+	name: "Base_Large_Room"
+	emitter_suffixes: [ "_intbase" "_allints" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 100.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 0
+		3PTailSwitch: 4
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 6
+		ConvolutionSend1P: 40
+		1PTailSwitch: 4
+		1PTailFilter: 0
+	}
+}
+
+
+{
+	name: "Base_LargeHalfOpen_Room"
+	emitter_suffixes: [ "_intbase" "_allints" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 50.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 4
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 5
+		ConvolutionSend1P: 30
+		1PTailSwitch: 4
+		1PTailFilter: 60
+	}
+}
+
+
+{
+	name: "Base_Open_Room"
+	emitter_suffixes: [ "_intbase" "_allints" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 80
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0
+		1PTailFilter: 80
+	}
+}
+
+{
+	name: "Base_Outdoor_Open"
+	allow_roof: false
+	emitter_suffixes: [ "_extop" "_ext" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		3PTailSwitch: 8
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 0
+		ConvolutionSend1P: 0
+		1PTailSwitch: 8
+		1PTailFilter: 100
+	}
+}
+
+{
+	name: "Base_Small_Room_Bright_Closed"
+	emitter_suffixes: [ "_intbase" "_allints" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 20
+		3PTailSwitch: 1
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 2
+		ConvolutionSend1P: 40
+		Interiorness: 100
+		1PTailSwitch: 1
+		1PTailFilter: 20
+	}
+}
+
+{
+	name: "Base_Small_Room_Bright_QuarterOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_intquartsm" "_intquart" "_inthalfsm" "_inthalf" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 1
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 2
+		ConvolutionSend1P: 35
+		Interiorness: 80
+		1PTailSwitch: 1
+		1PTailFilter: 40
+	}
+}
+
+{
+	name: "Base_Small_Room_Bright_HalfOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_inthalfsm" "_inthalf" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 75.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 1
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 2
+		ConvolutionSend1P: 30
+		Interiorness: 60
+		1PTailSwitch: 1
+		1PTailFilter: 60
+	}
+}
+
+{
+	name: "Base_Small_Room_Bright_ThreeQuartersOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_int3quartsm" "_int3quart" "_inthalfsm" "_inthalf" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 50.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 70
+		3PTailSwitch: 1
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 2
+		ConvolutionSend1P: 25
+		Interiorness: 40
+		1PTailSwitch: 1
+		1PTailFilter: 70
+	}
+}
+
+{
+	name: "Base_Small_Room_Bright_Open"
+	emitter_suffixes: [ "_intbase" "_allints" "_inthalfsm" "_inthalf" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 50.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 80
+		3PTailSwitch: 1
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 2
+		ConvolutionSend1P: 20
+		Interiorness: 20
+		1PTailSwitch: 1
+		1PTailFilter: 80
+	}
+}
+
+{
+	name: "Base_Medium_Room_Bright_Closed"
+	emitter_suffixes: [ "_intbase" "_allints" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 95
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 3
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 2
+		ConvolutionSend1P: 40
+		Interiorness: 100
+		1PTailSwitch: 3
+		1PTailFilter: 20
+	}
+}
+
+{
+	name: "Base_Medium_Room_Bright_QuarterOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_intquartmed" "_intquart" "_inthalfmed" "_inthalf" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 95
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 3
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 4
+		ConvolutionSend1P: 35
+		Interiorness: 80
+		1PTailSwitch: 3
+		1PTailFilter: 40
+	}
+}
+
+{
+	name: "Base_Medium_Room_Bright_HalfOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_inthalfmed" "_inthalf" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 75.0
+		ReverbLarge: 75.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 3
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 4
+		ConvolutionSend1P: 30
+		Interiorness: 60
+		1PTailSwitch: 3
+		1PTailFilter: 60
+	}
+}
+
+{
+	name: "Base_Medium_Room_Bright_ThreeQuartersOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_int3quartmed" "_int3quart" "_inthalfmed" "_inthalf" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 50.0
+		ReverbLarge: 50.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 70
+		3PTailSwitch: 3
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 4
+		ConvolutionSend1P: 25
+		Interiorness: 40
+		1PTailSwitch: 3
+		1PTailFilter: 70
+	}
+}
+
+{
+	name: "Base_Medium_Room_Bright_Open"
+	emitter_suffixes: [ "_intbase" "_allints" "_intopenmed" "_intopen" "_inthalfmed" "_inthalf" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 50.0
+		ReverbLarge: 50.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 80
+		3PTailSwitch: 3
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 4
+		ConvolutionSend1P: 20
+		Interiorness: 20
+		1PTailSwitch: 3
+		1PTailFilter: 80
+	}
+}
+
+{
+	name: "Base_Large_Room_Bright_Closed"
+	emitter_suffixes: [ "_intbase" "_allints" "_intquartlg" "_intquart" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 100.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 5
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 6
+		ConvolutionSend1P: 40
+		Interiorness: 100
+		1PTailSwitch: 5
+		1PTailFilter: 20
+	}
+}
+
+{
+	name: "Base_Large_Room_Bright_QuarterOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_intquartlg" "_intquart" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 100.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 5
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 6
+		ConvolutionSend1P: 35
+		Interiorness: 80
+		1PTailSwitch: 5
+		1PTailFilter: 40
+	}
+}
+
+{
+	name: "Base_Large_Room_Bright_HalfOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 75.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 5
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 6
+		ConvolutionSend1P: 30
+		Interiorness: 60
+		1PTailSwitch: 5
+		1PTailFilter: 60
+	}
+}
+
+{
+	name: "Base_Large_Room_Bright_ThreeQuartersOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_int3quartlg" "_int3quart" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 75.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 70
+		3PTailSwitch: 5
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 6
+		ConvolutionSend1P: 25
+		Interiorness: 40
+		1PTailSwitch: 5
+		1PTailFilter: 70
+	}
+}
+
+{
+	name: "Base_Large_Room_Bright_Open"
+	emitter_suffixes: [ "_intbase" "_allints" "_intopenlg" "_intopen" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 50.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 80
+		3PTailSwitch: 5
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 6
+		ConvolutionSend1P: 20
+		Interiorness: 20
+		1PTailSwitch: 5
+		1PTailFilter: 80
+	}
+}
+
+{
+	name: "Base_Small_Room_Dull_Closed"
+	emitter_suffixes: [ "_intbase" "_allints" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 1
+		ConvolutionSend1P: 40
+		Interiorness: 100
+		1PTailSwitch: 0
+		1PTailFilter: 20
+	}
+}
+
+{
+	name: "Base_Small_Room_Dull_QuarterOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_intquartsm" "_intquart" "_inthalfsm" "_inthalf" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 1
+		ConvolutionSend1P: 35
+		Interiorness: 80
+		1PTailSwitch: 0
+		1PTailFilter: 40
+	}
+}
+
+{
+	name: "Base_Small_Room_Dull_HalfOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_inthalfsm" "_inthalf" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 75.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0
+		1PTailVolume: 60
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 1
+		ConvolutionSend1P: 30
+		Interiorness: 60
+		1PTailSwitch: 0
+		1PTailFilter: 60
+	}
+}
+
+{
+	name: "Base_Small_Room_Dull_ThreeQuartersOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_int3quartsm" "_int3quart" "_inthalfsm" "_inthalf" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 75.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 70
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 1
+		ConvolutionSend1P: 25
+		Interiorness: 40
+		1PTailSwitch: 0
+		1PTailFilter: 70
+	}
+}
+
+{
+	name: "Base_Small_Room_Dull_Open"
+	emitter_suffixes: [ "_intbase" "_allints" "_intopensm" "_intopen" "_inthalfsm" "_inthalf" "_intsm" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 50.0
+		ReverbLarge: 0.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 80
+		3PTailSwitch: 0
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 1
+		ConvolutionSend1P: 20
+		Interiorness: 20
+		1PTailSwitch: 0
+		1PTailFilter: 80
+	}
+}
+
+{
+	name: "Base_Medium_Room_Dull_Closed"
+	emitter_suffixes: [ "_intbase" "_allints" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 95
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 3
+		ConvolutionSend1P: 40
+		Interiorness: 100
+		1PTailSwitch: 2
+		1PTailFilter: 20
+	}
+}
+
+{
+	name: "Base_Medium_Room_Dull_QuarterOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_intquartmed" "_intquart" "_inthalfmed" "_inthalf" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 100.0
+		ReverbLarge: 95
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 3
+		ConvolutionSend1P: 35
+		Interiorness: 80
+		1PTailSwitch: 2
+		1PTailFilter: 40
+	}
+}
+
+{
+	name: "Base_Medium_Room_Dull_HalfOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_inthalfmed" "_inthalf" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 75.0
+		ReverbLarge: 75.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 3
+		ConvolutionSend1P: 30
+		Interiorness: 60
+		1PTailSwitch: 2
+		1PTailFilter: 60
+	}
+}
+
+{
+	name: "Base_Medium_Room_Dull_ThreeQuartersOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_int3quartmed" "_int3quart" "_inthalfmed" "_inthalf" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 75.0
+		ReverbLarge: 75.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 70
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 3
+		ConvolutionSend1P: 25
+		Interiorness: 40
+		1PTailSwitch: 2
+		1PTailFilter: 70
+	}
+}
+
+{
+	name: "Base_Medium_Room_Dull_Open"
+	emitter_suffixes: [ "_intbase" "_allints" "_intopenmed" "_intopen" "_inthalfmed" "_inthalf" "_intmed" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 50.0
+		ReverbLarge: 50.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 80
+		3PTailSwitch: 2
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 3
+		ConvolutionSend1P: 0
+		Interiorness: 20
+		1PTailSwitch: 2
+		1PTailFilter: 80
+	}
+}
+
+{
+	name: "Base_Large_Room_Dull_Closed"
+	emitter_suffixes: [ "_intbase" "_allints" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 100.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 4
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 5
+		ConvolutionSend1P: 40
+		Interiorness: 100
+		1PTailSwitch: 4
+		1PTailFilter: 20
+	}
+}
+
+{
+	name: "Base_Large_Room_Dull_QuarterOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_intquartlg" "_intquart" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 100.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 40
+		3PTailSwitch: 4
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 5
+		ConvolutionSend1P: 35
+		Interiorness: 80
+		1PTailSwitch: 4
+		1PTailFilter: 40
+	}
+}
+
+{
+	name: "Base_Large_Room_Dull_HalfOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 75.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 60
+		3PTailSwitch: 4
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 5
+		ConvolutionSend1P: 30
+		Interiorness: 60
+		1PTailSwitch: 4
+		1PTailFilter: 60
+	}
+}
+
+{
+	name: "Base_Large_Room_Dull_ThreeQuartersOpen"
+	emitter_suffixes: [ "_intbase" "_allints" "_int3quartlg" "_int3quart" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 75.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 70
+		3PTailSwitch: 4
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 5
+		ConvolutionSend1P: 25
+		Interiorness: 40
+		1PTailSwitch: 4
+		1PTailFilter: 70
+	}
+}
+
+{
+	name: "Base_Large_Room_Dull_Open"
+	emitter_suffixes: [  "_intbase" "_allints" "_intopenlg" "_intopen" "_inthalflg" "_inthalf" "_intlg" "_int" ]
+	emitter_controllers:
+	{
+		ReverbSmall: 0.0
+		ReverbLarge: 50.0
+		ReverbOutdoor: 0.0
+		1PTailVolume: 80
+		3PTailSwitch: 4
+	}
+	listener_controllers:
+	{
+		ConvolutionPreset1P: 5
+		ConvolutionSend1P: 20
+		Interiorness: 20
+		1PTailSwitch: 4
+		1PTailFilter: 80
+	}
+}
+
+////////////////////////////////////
+// Here's a list of the environments which our game seems to expect.
+// Just passing them through to the basic types above for now, but they can have specialized settings.
+////////////////////////////////////
+
+{
+	name: "EXT_Global"
+	inherit: "Base_Exterior"
+}
+
+{
+	name: "EXT_Base2"
+	inherit: "Base_Exterior"
+}
+
+{
+	name: "INT_Global"
+	inherit: "Base_Small_Room"
+}
+
+{
+	name: "INT_HalfOpen"
+	inherit: "Base_Open_Room"
+}
+
+{
+	name: "INT_LargeRoom"
+	inherit: "Base_Large_Room"
+}
+
+{
+	name: "INT_SmallRoom"
+	inherit: "Base_Small_Room"
+}
+
+{
+	name: "INT_OpenRoom"
+	inherit: "Base_Open_Room"
+}
+
+{
+	name: "INT_ClosedRoom"
+	inherit: "Base_Small_Room"
+}
+
+{
+	name: "INT_Room"
+	inherit: "Base_Small_Room"
+}
+
+{
+	name: "INT_Building"
+	inherit: "Base_Small_Room"
+}
+
+{
+	name: "INT_Tunnel"
+	inherit: "Base_Small_Room"
+}
+
+{
+	name: "INT_Temple"
+	inherit: "Base_Large_Room"
+}
+
+{
+	name: "INT_Skybridge"
+	inherit: "Base_Small_Room"
+}
+
+{
+	name: "NPE_Holodeck"
+	inherit: "Base_Large_Room"
+}
+
+{
+	name: "NPE_Industrial"
+	inherit: "Base_Large_Room"
+}
+
+////////////////////////////////////
+// Here are the legacy environments from the old game.
+// The map sound entities should just point to "INT_HalfOpen" etc., directly with the 'environment' key.
+// (They should use the play_event key to point directly to sound events for ambient sounds.)
+// These go away eventually!
+////////////////////////////////////
+/*
+{ name: "env_soundscape_triggerable_INT_RoomLarge" 	inherit: "INT_LargeRoom" }
+{ name: "env_soundscape_triggerable_INT_HalfOpen" 	inherit: "INT_HalfOpen"  }
+{ name: "env_soundscape_triggerable_SkyBridge" 		inherit: "INT_Skybridge" }
+{ name: "env_soundscape_triggerable_globalAMB" 		inherit: "EXT_Global" }
+{ name: "env_soundscape_triggerable_1" 			inherit: "EXT_Global" }
+{ name: "env_soundscape_triggerable_2" 			inherit: "EXT_Global" }
+{ name: "env_soundscape_triggerable_3" 			inherit: "EXT_Global" }
+
+{ name: "Amb_Airbase_EXT_Global"		inherit: "EXT_Global"		listener_play_event: "Amb_Airbase_EXT_Global"		}
+{ name: "Amb_Airbase_INT_HalfOpen"		inherit: "INT_HalfOpen"		listener_play_event: "Amb_Airbase_INT_HalfOpen"		}
+{ name: "Amb_Airbase_INT_LargeRoom"		inherit: "INT_LargeRoom"	listener_play_event: "Amb_Airbase_INT_LargeRoom"	}
+{ name: "Amb_Airbase_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "Amb_Airbase_INT_SmallRoom"	}
+{ name: "AMB_AngelCity_EXT_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_AngelCity_EXT_Global"		}
+{ name: "AMB_AngelCity_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "AMB_AngelCity_INT_SmallRoom"	}
+{ name: "AMB_AngelCity_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "AMB_AngelCity_INT_ClosedRoom"	}
+{ name: "AMB_Backwater_Ext_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Backwater_Ext_Global"		}
+{ name: "AMB_Backwater_INT_Global"		inherit: "INT_Global"		listener_play_event: "AMB_Backwater_INT_Global"		}
+{ name: "AMB_Boneyard_Ext_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Boneyard_Ext_Global"		}
+{ name: "AMB_Boneyard_INT_HalfOpen"		inherit: "INT_HalfOpen"		listener_play_event: "AMB_Boneyard_INT_HalfOpen"	}
+{ name: "AMB_Boneyard_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "AMB_Boneyard_INT_ClosedRoom"	}
+{ name: "AMB_Colony_EXT_Global"			inherit: "EXT_Global"		listener_play_event: "AMB_Colony_EXT_Global"		}
+{ name: "AMB_Colony_INT_Default"		inherit: "INT_Global"		listener_play_event: "AMB_Colony_INT_Default"		}
+{ name: "AMB_Colony_INT_HalfOpen"		inherit: "INT_HalfOpen"		listener_play_event: "AMB_Colony_INT_HalfOpen"		}
+{ name: "AMB_Colony_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "AMB_Colony_INT_SmallRoom"		}
+{ name: "AMB_Colony_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "AMB_Corporate_EXT_Global"		}
+{ name: "AMB_Corporate_EXT_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Corporate_INT_SkyBridge"	}
+{ name: "AMB_Corporate_INT_SkyBridge"		inherit: "INT_Skybridge"	listener_play_event: "AMB_Corporate_INT_RoomLarge"	}
+{ name: "AMB_Corporate_INT_RoomLarge"		inherit: "INT_LargeRoom"	listener_play_event: "AMB_Corporate_INT_HalfOpen"	}
+{ name: "AMB_Corporate_INT_HalfOpen"		inherit: "INT_HalfOpen"		listener_play_event: "AMB_Corporate_INT_ClosedRoom"	}
+{ name: "AMB_Corporate_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "Amb_DigSite_EXT_Global"		}
+{ name: "Amb_DigSite_EXT_Global"		inherit: "EXT_Global"		listener_play_event: "Amb_DigSite_EXT_Global"		}
+{ name: "Amb_DigSite_INT_HalfOpen"		inherit: "INT_HalfOpen"		listener_play_event: "Amb_DigSite_INT_HalfOpen"		}
+{ name: "Amb_DigSite_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "Amb_DigSite_INT_ClosedRoom"	}
+{ name: "amb_fracture_exterior_base2"		inherit: "EXT_Base2"		listener_play_event: "amb_fracture_exterior_base2"	}
+{ name: "AMB_Fracture_INT_Room"			inherit: "INT_Room"		listener_play_event: "AMB_Fracture_INT_Room"		}
+{ name: "AMB_Fracture_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "AMB_Fracture_INT_ClosedRoom"	}
+{ name: "Amb_Haven_EXT_Global"			inherit: "EXT_Global"		listener_play_event: "Amb_Haven_EXT_Global"		}
+{ name: "Amb_Haven_INT_Building"		inherit: "INT_Building"		listener_play_event: "Amb_Haven_INT_Building"		}
+{ name: "Amb_Lagoon_EXT_Global"			inherit: "EXT_Global"		listener_play_event: "Amb_Lagoon_EXT_Global"		}
+{ name: "Amb_Lagoon_INT_Temple"			inherit: "INT_Temple"		listener_play_event: "Amb_Lagoon_INT_Temple"		}
+{ name: "Amb_Lagoon_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "Amb_Lagoon_INT_SmallRoom"		}
+{ name: "Amb_Lagoon_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "Amb_Lagoon_INT_ClosedRoom"	}
+{ name: "Amb_Nexus_EXT_Global"			inherit: "EXT_Global"		listener_play_event: "Amb_Nexus_EXT_Global"		}
+{ name: "Amb_Nexus_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "Amb_Nexus_INT_SmallRoom"		}
+{ name: "Amb_Nexus_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "Amb_Nexus_INT_ClosedRoom"		}
+{ name: "Amb_NPE_Holodeck"			inherit: "NPE_Holodeck"		listener_play_event: "Amb_NPE_Holodeck"			}
+{ name: "Amb_NPE_Industrial"			inherit: "NPE_Industrial"	listener_play_event: "Amb_NPE_Industrial"		}
+{ name: "AMB_O2_EXT_Global"			inherit: "EXT_Global"		listener_play_event: "AMB_O2_EXT_Global"		}
+{ name: "AMB_O2_INT_SmallRoom"			inherit: "INT_SmallRoom"	listener_play_event: "AMB_O2_INT_SmallRoom"		}
+{ name: "AMB_O2_INT_ClosedRoom"			inherit: "INT_ClosedRoom"	listener_play_event: "AMB_O2_INT_ClosedRoom"		}
+{ name: "AMB_Outpost_EXT_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Outpost_EXT_Global"		}
+{ name: "AMB_Outpost_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "AMB_Outpost_INT_SmallRoom"	}
+{ name: "AMB_Outpost_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "AMB_Outpost_INT_ClosedRoom"	}
+{ name: "AMB_Overlook_EXT_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Overlook_EXT_Global"		}
+{ name: "AMB_Overlook_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "AMB_Overlook_INT_SmallRoom"	}
+{ name: "AMB_Overlook_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "AMB_Overlook_INT_ClosedRoom"	}
+{ name: "AMB_Relic_EXT_Global"			inherit: "EXT_Global"		listener_play_event: "AMB_Relic_EXT_Global"		}
+{ name: "AMB_Relic_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "AMB_Relic_INT_SmallRoom"		}
+{ name: "AMB_Relic_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "AMB_Relic_INT_ClosedRoom"		}
+{ name: "AMB_Rise_EXT_Global"			inherit: "EXT_Global"		listener_play_event: "AMB_Rise_EXT_Global"		}
+{ name: "AMB_Rise_INT_SmallRoom"		inherit: "INT_SmallRoom"	listener_play_event: "AMB_Rise_INT_SmallRoom"		}
+{ name: "AMB_Rise_INT_ClosedRoom"		inherit: "INT_ClosedRoom"	listener_play_event: "AMB_Rise_INT_ClosedRoom"		}
+{ name: "AMB_Runoff_Ext_Global"			inherit: "EXT_Global"		listener_play_event: "AMB_Runoff_Ext_Global"		}
+{ name: "AMB_Runoff_Int_Building"		inherit: "INT_Building"		listener_play_event: "AMB_Runoff_Int_Building"		}
+{ name: "AMB_Runoff_Int_Tunnel"			inherit: "INT_Tunnel"		listener_play_event: "AMB_Runoff_Int_Tunnel"		}
+{ name: "AMB_Sandtrap_Ext_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Sandtrap_Ext_Global"		}
+{ name: "AMB_Sandtrap_Int_Global"		inherit: "INT_Global"		listener_play_event: "AMB_Sandtrap_Int_Global"		}
+{ name: "Amb_SmugglersCove_EXT_Global"		inherit: "EXT_Global"		listener_play_event: "Amb_SmugglersCove_EXT_Global"	}
+{ name: "Amb_SmugglersCove_INT_HalfOpen"	inherit: "INT_HalfOpen"		listener_play_event: "Amb_SmugglersCove_INT_HalfOpen"	}
+{ name: "Amb_SmugglersCove_INT_SmallRoom"	inherit: "INT_SmallRoom"	listener_play_event: "Amb_SmugglersCove_INT_SmallRoom"	}
+{ name: "Amb_SmugglersCove_INT_ClosedRoom"	inherit: "INT_ClosedRoom"	listener_play_event: "Amb_SmugglersCove_INT_ClosedRoom"	}
+{ name: "AMB_Swampland_Ext_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Swampland_Ext_Global"		}
+{ name: "AMB_Swampland_Int_Temple"		inherit: "INT_Temple"		listener_play_event: "AMB_Swampland_Int_Temple"		}
+{ name: "AMB_Switchback_Ext_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Switchback_Ext_Global"	}
+{ name: "AMB_Switchback_Int_Building"		inherit: "INT_Building"		listener_play_event: "AMB_Switchback_Int_Building"	}
+{ name: "Amb_TrainingGround_EXT_Global"		inherit: "EXT_Global"		listener_play_event: "Amb_TrainingGround_EXT_Global"	}
+{ name: "Amb_TrainingGround_INT_HalfOpen"	inherit: "INT_HalfOpen"		listener_play_event: "Amb_TrainingGround_INT_HalfOpen"	}
+{ name: "Amb_TrainingGround_INT_SmallRoom"	inherit: "INT_SmallRoom"	listener_play_event: "Amb_TrainingGround_INT_SmallRoom"	}
+{ name: "Amb_TrainingGround_INT_ClosedRoom"	inherit: "INT_ClosedRoom"	listener_play_event: "Amb_TrainingGround_INT_ClosedRoom"}
+{ name: "AMB_Wargames_Ext_Global"		inherit: "EXT_Global"		listener_play_event: "AMB_Wargames_Ext_Global"		}
+{ name: "AMB_Wargames_Int_Building"		inherit: "INT_Building"		listener_play_event: "AMB_Wargames_Int_Building"	}
+{ name: "AMB_Zone18_EXT_Global"			inherit: "EXT_Global"		listener_play_event: "AMB_Zone18_EXT_Global"		}
+{ name: "AMB_Zone18_INT_Room"			inherit: "INT_Room"		listener_play_event: "AMB_Zone18_INT_Room"		}
+{ name: "AMB_Zone18_INT_OpenRoom"		inherit: "INT_OpenRoom"		listener_play_event: "AMB_Zone18_INT_OpenRoom"		}
+*/

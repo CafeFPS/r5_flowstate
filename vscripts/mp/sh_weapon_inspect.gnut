@@ -1,0 +1,129 @@
+global function ShWeaponInspect_Init
+#if CLIENT
+global function SCB_WeaponInspectHint
+#endif
+
+const float GLADIATOR_CARD_INSPECT_SHOW_TIME = 5.0
+
+struct
+{
+	#if CLIENT
+		var gladiatorCardRui
+		int weaponInspectHideHudCount
+	#endif
+} file
+
+void function ShWeaponInspect_Init()
+{
+	#if CLIENT
+		RegisterConCommandTriggeredCallback( "weapon_inspect", OnInspectKeyPressed )
+
+		RegisterConCommandTriggeredCallback( "scoreboard_profile", function( entity ply ) {
+			// todo(dw): Remove temporary weapon_inspect/scoreboard_profile/END-key bind
+			GetLocalClientPlayer().ClientCommand( "weapon_inspect" )
+		} )
+	#endif
+}
+
+#if CLIENT
+void function SCB_WeaponInspectHint()
+{
+	if ( GetLocalViewPlayer() != GetLocalClientPlayer() )
+		return
+
+	AddPlayerHint( 4.0, 0.25, $"", "#HINT_WEAPON_INSPECT" )
+}
+
+
+void function OnInspectKeyPressed( entity localPlayer )
+{
+	entity weapon = localPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	if ( !IsValid( weapon ) )
+		return
+
+	if ( !weapon.Anim_HasActivity( "ACT_VM_WEAPON_INSPECT" ) )
+		return
+
+	/*
+		// TODO: replace "localPlayer" with weapon.GetProScreenOwner()... which currently doesn't exist on the client
+		string weaponClassName = weapon.GetWeaponClassName()
+		if ( !SURVIVAL_Loot_IsRefValid( weaponClassName ) )
+			return
+
+		LootData lootData = SURVIVAL_Loot_GetLootDataByRef( weaponClassName )
+		if ( lootData.lootType == eLootType.MAINWEAPON )
+			thread ShowGladiatorCard( weapon, localPlayer )
+	*/
+
+	thread WatchWeaponInspectState( GetLocalViewPlayer(), weapon )
+}
+
+
+void function ShowGladiatorCard( entity weapon, entity owner )
+{
+	thread DisplayGladiatorCardSidePane( eGladCardDisplaySituation.WEAPON_INSPECT_OVERLAY_ANIMATED,
+		ToEHI( owner ), $"rui/gladiator_cards/header/icon_inspect_temp", "WEAPON OWNED BY", "[INSERT SKIN NAME HERE]" )
+}
+
+
+void function WatchWeaponInspectState( entity player, entity weapon )
+{
+	// TODO: need a better way to hide the "HUD"
+	// TODO: also need this to be properly stateful/context aware; e.g. we wouldn't want to show the minimap after the match ended because this thread ended later in the frame.
+	Minimap_DisableDraw()
+	Crosshair_SetState( CROSSHAIR_STATE_HIDE_ALL )
+	WeaponInspectHideHudElements( true )
+
+	OnThreadEnd(
+		function() : ()
+		{
+			Minimap_EnableDraw()
+			Crosshair_SetState( CROSSHAIR_STATE_SHOW_ALL )
+			WeaponInspectHideHudElements( false )
+
+			HideGladiatorCardSidePane()
+		}
+	)
+
+	while( true )
+	{
+		entity viewPlayer = GetLocalViewPlayer()
+		if ( viewPlayer != player )
+			break
+
+		entity viewWeapon = viewPlayer.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if ( viewWeapon != weapon )
+			break
+
+		if ( weapon.GetWeaponActivity() != ACT_VM_WEAPON_INSPECT )
+			break
+
+		WaitFrame()
+	}
+}
+
+void function WeaponInspectHideHudElements( bool hide )
+{
+	if ( hide )
+		file.weaponInspectHideHudCount++
+	else
+		file.weaponInspectHideHudCount--
+
+	Assert( file.weaponInspectHideHudCount >= 0, "Tried to unhide the equipment slots when they were already visible" )
+
+	var gamestateRui = ClGameState_GetRui()
+
+	if ( file.weaponInspectHideHudCount == 0 && !hide )
+	{
+		RuiSetBool( gamestateRui, "weaponInspect", false )
+		PlayerHudSetWeaponInspect( false )
+		WeaponStatusSetWeaponInspect( false )
+	}
+	else if ( hide )
+	{
+		RuiSetBool( gamestateRui, "weaponInspect", true )
+		PlayerHudSetWeaponInspect( true )
+		WeaponStatusSetWeaponInspect( true )
+	}
+}
+#endif

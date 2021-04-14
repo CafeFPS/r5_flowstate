@@ -1,0 +1,587 @@
+global function ShLootBin_Init
+
+#if SERVER
+global function SURVIVAL_DebugLootBins
+global function GetAllLootBins
+global function AddLootToLootBin
+global function AddMultipleLootItemsToLootBin
+global function GetLootBinContents
+global function GetLootBinSpawnLocation
+global function CreateLootBin
+global function CreateCustomLootBin
+global function InitLootBin
+global function SpawnLootInLootBin
+global function HandleLootbinUse
+global function RemoveLootBinReferences_Preprocess
+global function DestroyLootBin
+global function DestroyMovableLootBin
+global function DissolveLootBin
+global function Thread_DissolveMovableLootBin
+global function RefreshLootBin
+#endif
+
+global function GetLootBinForHitEnt
+
+global function LootBin_IsOpen
+
+global const string LOOT_BIN_MARKER_SCRIPTNAME = "survival_lootbin"
+global const string LOOT_BIN_SCRIPTNAME = "survival_lootbin_spawned"
+
+global const asset LOOT_BIN_MODEL = $"mdl/props/loot_bin/loot_bin_01_animated.rmdl"
+global const bool LOOT_BIN_CLOSABLE = false // note that they will always be closable if playlist var lootbins_infinite is set to 1
+
+global const string SOUND_LOOT_BIN_OPEN = "Door_Lootbin_Open"
+global const string SOUND_LOOT_BIN_IDLE = "Door_Lootbin_Presence_Loop"
+const float NUM_LOOT_BIN_SOUND_INITS_PER_SEC = 50.0        // If not a float, script lang converts result to an int
+const float LOOT_BIN_SOUND_INIT_MIN_WAIT = 5.0
+
+const bool SURVIVAL_DEBUG_LOOT_BINS = false
+
+struct
+{
+	bool                          lootBinsInfinite = false
+	table<entity, array<entity> > lootBinsSpawnedLootMap
+	table<entity, array<string> > lootBinsLootInside
+	array<entity>                 lootBinList
+	int                           numLootBins
+} file
+
+void function ShLootBin_Init()
+{
+	PrecacheModel( LOOT_BIN_MODEL )
+
+	#if SERVER
+		AddSpawnCallback_ScriptName( LOOT_BIN_MARKER_SCRIPTNAME, InitLootBinFromMap )
+
+		AddClientCommandCallback( "dev_spawn_lootbin", ClientCommand_spawn_lootbin )
+
+		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+	#endif
+	#if CLIENT
+		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
+	#endif
+}
+
+
+#if SERVER
+void function EntitiesDidLoad()
+{
+	// make sure all the bins that were spawned since the preprocess step seems to happen before ShLootBin_Init() is called
+	array<entity> bins = GetEntArrayByScriptName( LOOT_BIN_SCRIPTNAME )
+	foreach ( bin in bins )
+	{
+		InitLootBin( bin )
+	}
+
+	AddSpawnCallback_ScriptName( LOOT_BIN_SCRIPTNAME, InitLootBin )
+}
+
+void function InitLootBinFromMap( entity lootbin )
+{
+	SURVIVAL_AddLootBin( lootbin )
+
+	if ( IsValid( lootbin ) )
+	{
+		lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+		InitLootBin( lootbin )
+	}
+}
+#endif
+
+#if SERVER
+bool function ClientCommand_spawn_lootbin( entity player, array<string> args )
+{
+	TraceResults tr = TraceLine( player.EyePosition(), player.EyePosition() + 900.0 * player.GetViewVector(), player, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	entity lootbin  = CreateLootBin( tr.endPos, VectorToAngles( FlattenNormalizeVec( player.EyePosition() - tr.endPos ) ) )
+
+	//if ( !tr.hitEnt.IsWorld() )
+	//	lootbin.SetParent( tr.hitEnt )
+
+	return true
+}
+#endif
+
+#if SERVER
+entity function CreateLootBin( vector origin, vector angles, bool onMovingGeo = false )
+{
+	entity lootbin = CreateEntity( "prop_dynamic" )
+	lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+	lootbin.SetValueForModelKey( LOOT_BIN_MODEL )
+	lootbin.SetOrigin( origin )
+	lootbin.SetAngles( angles )
+	lootbin.kv.solid = SOLID_VPHYSICS
+
+	DispatchSpawn( lootbin )
+
+	if ( onMovingGeo )
+		thread Thread_AttachMovingLootBinToGeo( lootbin )
+
+	return lootbin
+}
+
+entity function CreateCustomLootBin( vector origin, vector angles, array<string> lootRefs = [], bool onMovingGeo = false )
+{
+	entity lootbin = CreateEntity( "prop_dynamic" )
+	lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+	lootbin.SetValueForModelKey( LOOT_BIN_MODEL )
+	lootbin.SetOrigin( origin )
+	lootbin.SetAngles( angles )
+	lootbin.kv.solid = SOLID_VPHYSICS
+
+	DispatchSpawn( lootbin )
+
+	if ( onMovingGeo )
+		thread Thread_AttachMovingLootBinToGeo( lootbin )
+
+	AddMultipleLootItemsToLootBin( lootbin, lootRefs )
+
+	return lootbin
+}
+
+// Close bin, refresh contents
+void function RefreshLootBin( entity lootBin, string lootGroup, int numLootItems )
+{
+	// Check if loot bin is open
+	if ( LootBin_IsOpen( lootBin ) )
+		waitthread LootBin_PlayCloseSequence( lootBin )
+
+	// New refs
+	file.lootBinsLootInside[ lootBin ] = []
+	array<string> newRefs = SURVIVAL_GetMultipleWeightedItemsFromGroup( lootGroup, numLootItems )
+	AddMultipleLootItemsToLootBin( lootBin, newRefs )
+	lootBin.e.hasBeenOpened = false
+}
+
+void function Thread_AttachMovingLootBinToGeo( entity lootbin )
+{
+	bool entitiesLoaded = Flag( "EntitiesDidLoad" )
+	if ( !entitiesLoaded )
+	{
+		FlagWait( "EntitiesDidLoad" )
+		//
+		WaitFrame()
+	}
+
+	TraceResults trace = TraceLineHighDetail( lootbin.GetOrigin() + < 0, 0, 32 >, lootbin.GetOrigin() - <0, 0, 88>, lootbin, LOOT_TRACE, LOOT_COLLISION_GROUP )
+
+	if ( IsValid( trace.hitEnt ) && trace.hitEnt.HasPusherAncestor() )
+	{
+		entity mover = CreateScriptMover( lootbin.GetOrigin(), lootbin.GetAngles() )
+		lootbin.SetParent( mover )
+		mover.SetParent( trace.hitEnt )
+	}
+}
+
+void function InitLootBin( entity lootbin )
+{
+	if ( file.lootBinList.contains( lootbin ) )
+		return
+
+	lootbin.e.isOpen = false
+	lootbin.e.isBusy = false
+	lootbin.e.hasBeenOpened = false
+	lootbin.AllowMantle()
+	lootbin.SetForceVisibleInPhaseShift( true )
+	lootbin.SetUsable()
+	lootbin.SetFadeDistance( 100000 )
+	lootbin.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	//lootbin.AddUsableValue( USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	lootbin.SetUsablePriority( USABLE_PRIORITY_LOW )
+	AddCallback_OnUseEntity( lootbin, OnLootBinUse )
+	file.lootBinsSpawnedLootMap[lootbin] <- []
+	file.lootBinsLootInside[lootbin] <- []
+	file.numLootBins++
+	float waitTime = file.numLootBins / NUM_LOOT_BIN_SOUND_INITS_PER_SEC
+	file.lootBinList.append( lootbin )
+
+	//thread DelayedLootBinLoop( lootbin, waitTime )
+
+	SetCallback_CanUseEntityCallback( lootbin, LootBin_CanUse )
+
+	if ( SURVIVAL_DEBUG_LOOT_BINS )
+	{
+		DebugDrawLine( lootbin.GetOrigin(), lootbin.GetOrigin() + <0, 0, 1000>, 255, 255, 255, true, 100.0 )
+	}
+}
+
+// the loop doesn't play without a delay involved for some reason
+void function DelayedLootBinLoop( entity lootbin, float waitTime )
+{
+	if ( !IsValid( lootbin ) )
+	{
+		printt( "!!! WARNING !!! Tried to play delayed loot bin loop on a bin marked for delete!" )
+		return
+	}
+
+	lootbin.EndSignal( "OnDestroy" )
+
+	float totalWaitTime = LOOT_BIN_SOUND_INIT_MIN_WAIT + waitTime
+
+	// Only wait if the loot bin is spawning in early (at map spawn)
+	if ( Time() < totalWaitTime )
+	{
+		wait totalWaitTime
+	}
+
+
+	EmitSoundOnEntity( lootbin, SOUND_LOOT_BIN_IDLE )
+}
+
+#endif
+
+#if SERVER
+array<entity> function GetAllLootBins()
+{
+	return file.lootBinList
+}
+
+array<string> function GetLootBinContents( entity bin )
+{
+	for ( int i = file.lootBinsLootInside[ bin ].len() - 1; i >= 0; i-- )
+	{
+		if ( file.lootBinsLootInside[ bin ][i] == "blank" )
+			file.lootBinsLootInside[ bin ].remove( i )
+	}
+
+	return file.lootBinsLootInside[ bin ]
+}
+#endif
+
+#if SERVER
+void function RemoveLootBinReferences_Preprocess( entity lootBin )
+{
+	if ( IsValid( lootBin ) )
+		lootBin.UnsetUsable()
+
+	delete file.lootBinsSpawnedLootMap[lootBin]
+
+	delete file.lootBinsLootInside[lootBin]
+
+	file.lootBinList.removebyvalue( lootBin )
+	file.numLootBins--
+}
+#endif
+
+#if SERVER
+void function DestroyMovableLootBin( entity mover )
+{
+	entity lootBin = mover.FirstMoveChild()
+	DestroyLootBin( lootBin )
+
+	mover.Destroy()
+}
+
+void function DestroyLootBin( entity lootBin )
+{
+	if ( !IsValid( lootBin ) )
+	{
+		printt( "!!! WARNING !!! Attempting to destroy lootbin:", lootBin, "that doesn't exist!" )
+		return
+	}
+
+	array<entity> loot = file.lootBinsSpawnedLootMap[ lootBin ]
+
+	foreach( ent in loot)
+	{
+		if ( IsValid( ent ) )
+			ent.Destroy()
+	}
+
+	RemoveLootBinReferences_Preprocess( lootBin )
+	lootBin.Destroy()
+}
+
+void function Thread_DissolveMovableLootBin( entity mover )
+{
+	entity lootBin = mover.FirstMoveChild()
+	DissolveLootBin( lootBin )
+
+	wait 0.6
+	mover.Destroy()
+}
+
+void function DissolveLootBin( entity lootBin )
+{
+	if ( !IsValid( lootBin ) )
+	{
+		printt( "!!! WARNING !!! Attempting to dissolve lootbin:", lootBin, "that doesn't exist!" )
+		return
+	}
+
+	array<entity> loot = file.lootBinsSpawnedLootMap[ lootBin ]
+	foreach( ent in loot)
+	{
+		if ( IsValid( ent ) )
+		{
+			ent.UnsetUsable()
+			ent.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+		}
+	}
+
+	RemoveLootBinReferences_Preprocess( lootBin )
+	lootBin.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+}
+#endif
+
+#if SERVER
+void function AddMultipleLootItemsToLootBin( entity lootBin, array<string> refs )
+{
+	int numRefs = refs.len()
+	for ( int i; i < numRefs; i++ )
+		AddLootToLootBin( lootBin, refs[ i ] )
+}
+
+void function AddLootToLootBin( entity lootBin, string ref )
+{
+	file.lootBinsLootInside[ lootBin ].append( ref )
+}
+#endif
+
+#if SERVER
+Point function GetLootBinSpawnLocation( entity lootbin, int lootI, int lootCount )
+{
+	float y    = Graph( lootI + 1, 0, lootCount + 1, -51, 51 )
+	vector pos = lootbin.GetOrigin() + RotateVector( <14, y, 33>, lootbin.GetAngles() )
+	vector ang = AnglesCompose( lootbin.GetAngles(), <10, 0, 0> )
+
+	Point p
+	p.origin = pos
+	p.angles = ang
+	return p
+}
+
+void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int lootCount )
+{
+	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+	entity loot   = SpawnGenericLoot( ref, p.origin, p.angles, data.countPerDrop )
+	loot.RemoveFromAllRealms()
+	loot.AddToOtherEntitysRealms( lootbin )
+	SetItemSpawnSource( loot, eSpawnSource.DROPPOD, lootbin )
+	loot.SetParent( lootbin )
+	file.lootBinsSpawnedLootMap[lootbin].append( loot )
+
+	if ( data.lootType == eLootType.MAINWEAPON )
+	{
+		string ammoRef = data.ammoType
+		if ( SURVIVAL_Loot_IsRefValid( ammoRef ) )
+		{
+			LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( ammoRef )
+			vector rgt        = AnglesToRight( p.angles )
+			vector dwn        = AnglesToUp( p.angles ) * -1
+			entity ammo       = SpawnGenericLoot( ammoRef, p.origin + rgt * 8 + dwn * 5, AnglesCompose( p.angles, <0, 90, 0> ), ammoData.countPerDrop * 2 )
+			ammo.RemoveFromAllRealms()
+			ammo.AddToOtherEntitysRealms( lootbin )
+			ammo.SetParent( lootbin )
+		}
+	}
+}
+
+void function SURVIVAL_DebugLootBins()
+{
+	foreach ( bin in file.lootBinList )
+	{
+		DebugLootInLootBin( bin )
+	}
+}
+
+void function DebugLootInLootBin( entity lootBin )
+{
+	for ( int i = 0; i < file.lootBinsLootInside[ lootBin ].len(); i++ )
+	{
+		Point p = GetLootBinSpawnLocation( lootBin, i, file.lootBinsLootInside[ lootBin ].len() )
+		SURVIVAL_DebugLoot( file.lootBinsLootInside[ lootBin ][i], p.origin + <0, 0, i * 10> )
+	}
+}
+#endif
+
+
+#if SERVER
+void function OnLootBinUse( entity lootbin, entity player, int useInputFlags )
+{
+	if ( (useInputFlags & USE_INPUT_DEFAULT) == 0 )
+		return
+
+	thread HandleLootbinUse( lootbin, player )
+}
+void function HandleLootbinUse( entity lootbin, entity player )
+{
+	lootbin.EndSignal( "OnDestroy" )
+
+	if ( lootbin.Anim_IsActive() )
+		return
+
+	EmitSoundOnEntity( lootbin, SOUND_LOOT_BIN_OPEN )
+
+	if ( LOOT_BIN_CLOSABLE && LootBin_IsOpen( lootbin ) )
+		thread LootBin_PlayCloseSequence( lootbin )
+	else
+		thread LootBin_PlayOpenSequence( lootbin, player )
+	if ( IsValid( player ) )
+		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOTBIN_USED, lootbin, lootbin.GetWorldSpaceCenter(), player.GetTeam(), player )
+}
+
+void function LootBin_PlayOpenSequence( entity lootbin, entity player )
+{
+	lootbin.EndSignal( "OnDestroy" )
+
+	CleanUpPermanentsParentedToLootbin( lootbin )
+
+	GradeFlagsSet( lootbin, eGradeFlags.IS_BUSY )
+
+	if ( !lootbin.e.hasBeenOpened )
+	{
+		lootbin.e.hasBeenOpened = true
+
+		StopSoundOnEntity( lootbin, SOUND_LOOT_BIN_IDLE )
+
+		int lootIndex             = 0
+		array<string> lootToSpawn = GetLootBinContents( lootbin )
+
+		foreach ( ref in lootToSpawn )
+		{
+			SpawnLootInLootBin( lootbin, ref, lootIndex, lootToSpawn.len() )
+			lootIndex++
+		}
+
+		lootToSpawn.clear()
+	}
+
+	GradeFlagsSet( lootbin, eGradeFlags.IS_OPEN )
+
+	entity lootbinParent = lootbin.GetParent()
+	if ( IsValid( lootbinParent ) )
+		waitthread PlayAnim( lootbin, "loot_bin_01_open", lootbinParent, "ref" )
+	else
+		waitthread PlayAnim( lootbin, "loot_bin_01_open" )
+
+	GradeFlagsClear( lootbin, eGradeFlags.IS_BUSY )
+}
+
+void function LootBin_PlayCloseSequence( entity lootbin )
+{
+	lootbin.EndSignal( "OnDestroy" )
+
+	CleanUpPermanentsParentedToLootbin( lootbin )
+
+	GradeFlagsSet( lootbin, eGradeFlags.IS_BUSY )
+
+	GradeFlagsClear( lootbin, eGradeFlags.IS_OPEN )
+
+	entity lootbinParent = lootbin.GetParent()
+	if ( IsValid( lootbinParent ) )
+		waitthread PlayAnim( lootbin, "loot_bin_01_close", lootbinParent, "ref" )
+	else
+		waitthread PlayAnim( lootbin, "loot_bin_01_close" )
+
+	GradeFlagsClear( lootbin, eGradeFlags.IS_BUSY )
+
+	// This loot will be re-created based on lootbins loot refs when bin is re-opened
+	if ( GetCurrentPlaylistVarBool( "lootbins_infinite", false ) )
+	{
+		foreach( entity existingLoot in file.lootBinsSpawnedLootMap[lootbin] )
+		{
+			if ( IsValid( existingLoot ) )
+				existingLoot.Destroy()
+		}
+		file.lootBinsSpawnedLootMap[lootbin].clear()
+	}
+}
+
+void function CleanUpPermanentsParentedToLootbin( entity lootBin )
+{
+	entity curChild = lootBin.FirstMoveChild()
+
+	while ( IsValid( curChild ) )
+	{
+		entity entToCheck = curChild
+		while( IsValid( entToCheck ) )
+		{
+			if ( entToCheck.GetTargetName() == DIRTY_BOMB_TARGETNAME )
+			{
+				RemoveCausticDirtyBomb( entToCheck, entToCheck.GetParent() )
+				break
+			}
+
+			entToCheck = entToCheck.FirstMoveChild()
+		}
+
+		curChild = curChild.NextMovePeer()
+	}
+}
+
+
+#endif
+
+bool function LootBin_IsOpen( entity lootbin )
+{
+	if ( GradeFlagsHas( lootbin, eGradeFlags.IS_OPEN ) )
+		return true
+	return false
+}
+
+
+bool function LootBin_IsBusy( entity lootbin )
+{
+	if ( GradeFlagsHas( lootbin, eGradeFlags.IS_BUSY ) )
+		return true
+	return false
+}
+
+#if CLIENT
+void function OnPropDynamicCreated( entity lootbin )
+{
+	if ( lootbin.GetScriptName() != LOOT_BIN_SCRIPTNAME )
+		return
+
+	AddEntityCallback_GetUseEntOverrideText( lootbin, GetLootBinUseTextOverride )
+
+	SetCallback_CanUseEntityCallback( lootbin, LootBin_CanUse )
+}
+#endif // CLIENT
+
+entity function GetLootBinForHitEnt( entity hitEnt )
+{
+	if ( hitEnt.GetScriptName() == LOOT_BIN_SCRIPTNAME )
+		return hitEnt
+
+	entity parentEnt = hitEnt.GetParent()
+	if ( IsValid( parentEnt ) && (parentEnt.GetScriptName() == LOOT_BIN_SCRIPTNAME) )
+		return parentEnt
+
+	return null
+}
+
+
+bool function LootBin_CanUse( entity player, entity lootBin )
+{
+	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
+		return false
+
+	if ( Bleedout_IsBleedingOut( player ) )
+		return false
+
+	if ( LootBin_IsBusy( lootBin ) )
+		return false
+
+	if ( LootBin_IsOpen( lootBin ) )
+		return false
+
+	return true
+}
+
+#if CLIENT
+string function GetLootBinUseTextOverride( entity lootbin )
+{
+	if ( !LootBin_IsOpen( lootbin ) )
+		return "#SURVIVAL_LOOTBIN_OPEN"
+	else if ( LOOT_BIN_CLOSABLE )
+		return "#SURVIVAL_LOOTBIN_CLOSE"
+	else
+		return ""
+
+	unreachable
+}
+#endif
+
+

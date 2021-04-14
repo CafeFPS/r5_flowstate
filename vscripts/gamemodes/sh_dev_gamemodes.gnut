@@ -1,0 +1,14 @@
+
+global function DevGameModes_Init
+
+#if DEVSCRIPTS
+global const table<string, int> devGameModesStringToIdMap = {
+
+}
+#endif
+
+void function DevGameModes_Init()
+{
+#if DEVSCRIPTS
+#endif
+}

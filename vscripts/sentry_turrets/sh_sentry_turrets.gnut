@@ -1,0 +1,85 @@
+global function CalculateViewBasedTurretLocation_Shared
+global function SentryTurretsExplodeOnDeath
+
+global const SENTRY_TURRET_PLACEMENT_RANGE = 75
+
+global struct SentryTurretPlacementInfo
+{
+	vector origin
+	vector angles
+	bool success = false
+	float[4] poseParamOffsets
+}
+
+bool function SentryTurretsExplodeOnDeath()
+{
+	return true
+}
+
+/*function Sh_Sentry_Turrets_Init() //No init func needed yet
+{
+}
+*/
+SentryTurretPlacementInfo function CalculateViewBasedTurretLocation_Shared( entity player, TraceResults hullResult, TraceResults lineResult )
+{
+	vector viewVec = player.GetViewVector()
+	vector origin = <0,0,0>
+	vector angles = <0, VectorToAngles( viewVec ).y, 0>
+	TraceResults hResult = hullResult
+	TraceResults lResult = lineResult
+
+	SentryTurretPlacementInfo info
+
+	if ( lResult.fraction == 1.0 )
+	{
+		lResult = TraceLine( lResult.endPos, lResult.endPos - <0,0,96>, player, TRACE_MASK_SOLID | TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+		if ( lResult.fraction == 1.0 )
+		{
+			info.success = false
+			info.origin = origin
+			info.angles = angles
+			return info
+		}
+
+		hResult = TraceHull( hResult.endPos, hResult.endPos - <0,0,96>, <-30,-30,0>, <30,30,60>, player, TRACE_MASK_SOLID | TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
+
+		if ( hResult.fraction == 1.0 )
+		{
+			info.success = false
+			info.origin = origin
+			info.angles = angles
+			return info
+		}
+	}
+
+	float diff = Length( hResult.endPos - lResult.endPos )
+	if ( diff > 6 )
+	{
+		info.success = false
+		info.origin = origin
+		info.angles = angles
+		return info
+	}
+
+	float slope = fabs( hResult.surfaceNormal.x ) + fabs( hResult.surfaceNormal.y )
+	if ( slope > 0.6 )
+	{
+		info.success = false
+		info.origin = origin
+		info.angles = angles
+		return info
+	}
+
+	origin = hResult.endPos
+	vector viewdir = player.GetViewVector()
+	viewdir.z = 0 // flatten the vector
+	viewdir.Norm()
+
+	angles = AnglesOnSurface( hResult.surfaceNormal, viewdir )
+
+	info.success = true
+	info.origin = origin
+	info.angles = angles
+	return info
+}
+

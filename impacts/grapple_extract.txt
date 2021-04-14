@@ -1,0 +1,218 @@
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"DefaultNearmiss"
+		"whizby_sound_from_AI"		"DefaultNearmiss"
+		"whizby_maxDistancePilot"	"150"
+		"whizby_maxDistanceTitan"	"400"
+	}
+
+	FX
+	{
+		"C" "tracer_sparks_large"	//Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "tracer_sparks_large"			//Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		//"E" "impact_metal_titan"		// metal_titan
+
+		//"F" "impact_flesh"					//flesh
+		"G" "tracer_sparks_large"		//metalgrate, chainlink, chain
+		//"H" "impact_alienflesh"			//alienflesh
+
+		"J" "tracer_sparks_large"			//grass
+		"K" "tracer_sparks_large" 	//Mud
+		"L" "tracer_sparks_large"	//plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "tracer_sparks_large"		//Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		//"N" "tracer_sparks_large" //Slime
+		"O" "tracer_sparks_large"			//Foliage
+		"P" "tracer_sparks_large"		//Computer
+
+		"R" "tracer_sparks_large"	//metalpanel, grenade, canister
+		//"S" "P_impact_water_LG"						//water, slime
+		"T" "tracer_sparks_large"	//tile
+		//"U" "impact_glass"					//glass_breakble
+
+		"V" "tracer_sparks_large"		//Metal Vent
+		"W" "tracer_sparks_large"			//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		//"Y" "impact_glass"					//glass, brokenglass, glassbottle, pottery
+	    "Z" "tracer_sparks_large"						//Sand
+
+		"0" "tracer_sparks_large"
+		"1" "tracer_sparks_large"
+		"2" "tracer_sparks_large"
+		"3" "tracer_sparks_large"
+		"4" "tracer_sparks_large"
+		"5" "tracer_sparks_large"
+		"6" "tracer_sparks_large"
+		"7" "tracer_sparks_large"
+		"8" "tracer_sparks_large"
+		//"9" "impact_puddle"					//puddle
+
+		//"splash" "P_impact_water_LG" //brush water
+		//"slime_splash" "P_impact_water_LG"
+		//"shieldhit" "P_armor_impact"
+		//"critical_hit" "impact_metal_titan"
+	}
+
+	FX
+	{
+		"C" "impact_concrete_large"	//Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "impact_dirt_large"			//Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "impact_metal_titan"		// metal_titan
+
+		"F" "impact_flesh"					//flesh
+		"G" "impact_metal_large"		//metalgrate, chainlink, chain
+		"H" "impact_alienflesh"			//alienflesh
+
+		"J" "impact_dirt_large"			//grass
+		"K" "impact_mud_large" 	//Mud
+		"L" "impact_plastic_large"	//plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "impact_metal_large"		//Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_slime_large" //Slime
+		"O" "impact_dirt_large"			//Foliage
+		"P" "impact_metal_large"		//Computer
+
+		"R" "impact_concrete_large"	//metalpanel, grenade, canister
+		"S" "P_impact_water_LG"						//water, slime
+		"T" "impact_concrete_large"	//tile
+		"U" "impact_glass"					//glass_breakble
+
+		"V" "impact_metal_large"		//Metal Vent
+		"W" "impact_wood_large"			//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "impact_glass"					//glass, brokenglass, glassbottle, pottery
+	    "Z" "impact_sand_LG"						//Sand
+
+		"0" "impact_dirt_large"
+		"1" "impact_concrete_large"
+		"2" "impact_dirt_large"
+		"3" "impact_concrete_large"
+		"4" "impact_concrete_large"
+		"5" "impact_concrete_large"
+		"6" "impact_concrete_large"
+		"7" "impact_concrete_large"
+		"8" "impact_concrete_large"
+		"9" "impact_puddle"					//puddle
+
+		"splash" "P_impact_water_LG" //brush water
+		"slime_splash" "P_impact_water_LG"
+		"shieldhit" "P_armor_impact"
+		"critical_hit" "impact_metal_titan"
+	}
+
+	FX_victim
+	{
+		"F" "impact_flesh_victim"
+		"shieldhit" "impact_metal_large"
+
+	}
+
+
+	Sound
+	{
+		"C" "Concrete.Grapple.Extract_3P_vs_3P"
+		"D" "Dirt.Grapple.Extract_3P_vs_3P"
+		"E" "Android.Grapple.Extract_3P_vs_3P"
+
+		"F" "Flesh.Grapple.Extract_3P_vs_3P"
+		"G" "Default.Grapple.Extract_3P_vs_3P"
+		"H" "Flesh.Grapple.Extract_3P_vs_3P"
+
+		"J" "Dirt.Grapple.Extract_3P_vs_3P"
+		"K" "Mud.Grapple.Extract_3P_vs_3P"  // mud?
+		"L" "Default.Grapple.Extract_3P_vs_3P"
+		"M" "SolidMetal.Grapple.Extract_3P_vs_3P"
+		"N" "Default.Grapple.Extract_3P_vs_3P"	// sand?
+		"O" "Default.Grapple.Extract_3P_vs_3P"
+		"P" "Android.Grapple.Extract_3P_vs_3P"
+
+		"R" "SolidMetal.Grapple.Extract_3P_vs_3P"
+		"S" "Default.Grapple.Extract_3P_vs_3P"
+		"T" "Default.Grapple.Extract_3P_vs_3P"
+		"U" "Default.Grapple.Extract_3P_vs_3P"
+
+		"V" "SolidMetal.Grapple.Extract_3P_vs_3P"
+		"W" "Wood.Grapple.Extract_3P_vs_3P"
+		"X" "TitanBubbleShield.Grapple.Extract_3P_vs_3P"
+		"Y" "Glass.Grapple.Extract_3P_vs_3P"
+		"Z" "Sand.Grapple.Extract_3P_vs_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "Default.Grapple.Extract_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "Concrete.Grapple.Extract_1P_vs_3P"
+		"D" "Dirt.Grapple.Extract_1P_vs_3P"
+		"E" "Android.Grapple.Extract_1P_vs_3P"
+
+		"F" "Flesh.Grapple.Extract_1P_vs_3P"
+		"G" "Default.Grapple.Extract_1P_vs_3P"
+		"H" "Flesh.Grapple.Extract_1P_vs_3P"
+
+		"J" "Dirt.Grapple.Extract_1P_vs_3P"
+		"K" "Mud.Grapple.Extract_1P_vs_3P"  // mud?
+		"L" "Default.Grapple.Extract_1P_vs_3P"
+		"M" "SolidMetal.Grapple.Extract_1P_vs_3P"
+		"N" "Default.Grapple.Extract_1P_vs_3P"	// sand?
+		"O" "Default.Grapple.Extract_1P_vs_3P"
+		"P" "Android.Grapple.Extract_1P_vs_3P"
+
+		"R" "SolidMetal.Grapple.Extract_1P_vs_3P"
+		"S" "Default.Grapple.Extract_1P_vs_3P"
+		"T" "Default.Grapple.Extract_1P_vs_3P"
+		"U" "Default.Grapple.Extract_1P_vs_3P"
+
+		"V" "SolidMetal.Grapple.Extract_1P_vs_3P"
+		"W" "Wood.Grapple.Extract_1P_vs_3P"
+		"X" "TitanBubbleShield.Grapple.Extract_1P_vs_3P"
+		"Y" "Glass.Grapple.Extract_1P_vs_3P"
+		"Z" "Sand.Grapple.Extract_1P_vs_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "TitanShield.Heavy.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "Default.Grapple.Extract_3P_vs_3P"
+		"D" "Default.Grapple.Extract_3P_vs_3P"
+		"E" "Android.Grapple.Extract_3P_vs_3P"
+
+		"F" "Flesh.Grapple.Extract_3P_vs_1P"
+		"G" "Default.Grapple.Extract_3P_vs_3P"
+		"H" "Flesh.Grapple.Extract_3P_vs_1P"
+
+		"J" "Default.Grapple.Extract_3P_vs_3P"
+		"K" "Mud.Grapple.Extract_3P_vs_3P"  // mud?
+		"L" "Default.Grapple.Extract_3P_vs_3P"
+		"M" "SolidMetal.Grapple.Extract_3P_vs_3P"
+		"N" "Default.Grapple.Extract_3P_vs_3P"	// sand?
+		"O" "Default.Grapple.Extract_3P_vs_3P"
+		"P" "Android.Grapple.Extract_3P_vs_3P"
+
+		"R" "SolidMetal.Grapple.Extract_3P_vs_3P"
+		"S" "Default.Grapple.Extract_3P_vs_3P"
+		"T" "Default.Grapple.Extract_3P_vs_3P"
+		"U" "Default.Grapple.Extract_3P_vs_3P"
+
+		"V" "SolidMetal.Grapple.Extract_3P_vs_3P"
+		"W" "Default.Grapple.Extract_3P_vs_3P"
+		"X" "TitanBubbleShield.Grapple.Extract_3P_vs_3P"
+		"Y" "Default.Grapple.Extract_3P_vs_3P"
+		"Z" "Sand.Grapple.Extract_3P_vs_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "Default.Grapple.Extract_3P_vs_3P"
+	}
+}

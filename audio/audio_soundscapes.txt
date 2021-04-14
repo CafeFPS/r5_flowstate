@@ -1,0 +1,821 @@
+
+
+// This soundscape enables automatic dsp
+
+"automatic"
+{
+	//"mixgroup"	"ambient"
+	"dsp"	"1"
+	"dsp_volume" "1.0"
+}
+// This soundscape enables automatic dsp at 50% mix - good if you have
+// a lot of dialog that must be understood at any distance
+
+"automatic_dialog"
+{
+		//"mixgroup"		"ambient"
+	"dsp"			"1"
+	"dsp_volume" "0.5"
+}
+
+// "playlooping"		"shader name here"
+
+
+
+/////////////////
+// Beacon     //
+///////////////
+
+"Beacon_AMB_EXT_StartingCliffs"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_EXT_StartingCliffs"
+}
+
+"Beacon_AMB_EXT_ToxicFogArea"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_EXT_ToxicFogArea"
+}
+
+"Beacon_AMB_INT_DeepCorridors"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_INT_DeepCorridors"
+}
+
+"Beacon_AMB_INT_ServerRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_INT_ServerRoom"
+}
+
+"Beacon_AMB_EXT_BeaconPlatform" 
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_EXT_BeaconPlatform" 
+}
+
+"Beacon_AMB_EXT_BeaconPlatform_MidHigh" 
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_EXT_BeaconPlatform_MidHigh" 
+}
+
+"Beacon_AMB_INT_BeaconPlatform_MidHigh" 
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_INT_BeaconPlatform_MidHigh" 
+}
+
+"Beacon_AMB_EXT_BeaconPlatform_High" 
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_EXT_BeaconPlatform_High" 
+}
+
+"Beacon_AMB_EXT_BeaconPlatform_DishTop" 
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_EXT_BeaconPlatform_DishTop" 
+}
+
+"Beacon_AMB_EXT_SkyPlatforms"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_EXT_SkyPlatforms"
+}
+
+"Beacon_AMB_INT_SkyPlatforms"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_INT_SkyPlatforms"
+}
+
+"Beacon_AMB_INT_ControlRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_INT_ControlRoom"
+}
+
+"Beacon_AMB_INT_PowerRelayRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_INT_PowerRelayRoom"
+}
+
+"Beacon_AMB_INT_PowerRelayCorridor"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Beacon_AMB_INT_PowerRelayCorridor"
+}
+
+
+
+
+
+
+
+
+
+
+
+// LEGACY R1 SOUNDSCAPES
+
+/////////////////
+// Airbase    //
+///////////////
+
+"Amb_Airbase_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Airbase_EXT_global"
+}
+
+"Amb_Airbase_INT_HalfOpen"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Airbase_INT_HalfOpen"
+}
+
+"Amb_Airbase_INT_LargeRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Airbase_INT_LargeRoom"
+}
+
+"Amb_Airbase_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Airbase_INT_SmallRoom"
+}
+
+
+/////////////////
+// Angel City //
+///////////////
+
+"AMB_AngelCity_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_angelcity_EXT_global"
+}
+
+"AMB_AngelCity_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_angelcity_INT_SmallRoom"
+}
+
+
+"AMB_AngelCity_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_angelcity_INT_ClosedRoom"
+}
+
+
+/////////////////
+// Backwater  //
+///////////////
+
+"AMB_Backwater_Ext_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Backwater_EXT_Global"
+}
+
+"AMB_Backwater_INT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Backwater_INT_Global"
+}
+
+
+
+
+/////////////////
+// Boneyard	  //
+///////////////
+
+"AMB_Boneyard_Ext_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_boneyard_EXT_global"
+}
+
+"AMB_Boneyard_INT_HalfOpen"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_boneyard_INT_HalfOpen"
+}
+
+"AMB_Boneyard_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_boneyard_INT_ClosedRoom"
+}
+
+/////////////////
+// Colony     //
+///////////////
+
+"AMB_Colony_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_colony_EXT_global"
+}
+
+"AMB_Colony_INT_Default"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Colony_INT_Default"
+}
+
+
+"AMB_Colony_INT_HalfOpen"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Colony_INT_HalfOpen"
+}
+
+"AMB_Colony_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Colony_INT_SmallRoom"
+}
+
+"AMB_Colony_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Colony_INT_ClosedRoom"
+}
+
+
+
+/////////////////
+// Corporate  //
+///////////////
+
+"AMB_Corporate_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_corporate_EXT_global"
+}
+
+"AMB_Corporate_INT_SkyBridge"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_corporate_INT_SkyBridge"
+}
+
+"AMB_Corporate_INT_RoomLarge"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_corporate_INT_RoomLarge"
+}
+
+"AMB_Corporate_INT_HalfOpen"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_corporate_INT_HalfOpen"
+}
+
+"AMB_Corporate_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_corporate_INT_ClosedRoom"
+}
+
+
+/////////////////
+// DigSite  //
+///////////////
+
+"Amb_DigSite_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_DigSite_EXT_Global"
+}
+
+"Amb_DigSite_INT_HalfOpen"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_DigSite_INT_Room_HalfOpen"
+}
+
+"Amb_DigSite_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_DigSite_INT_ClosedRoom"
+}
+
+/////////////
+//Fracture
+/////////////
+
+"amb_fracture_exterior_base2"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"ss_amb_fracture_exterior_base2"
+}
+
+"AMB_Fracture_INT_Room"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Fracture_INT_Room"
+}
+
+"AMB_Fracture_INT_ClosedRoom"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Fracture_INT_ClosedRoom"
+}
+
+
+
+/////////////
+//Haven
+/////////////
+
+"Amb_Haven_EXT_Global"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Haven_EXT_Global"
+}
+
+"Amb_Haven_INT_Building"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Haven_INT_Building"
+}
+
+/////////////
+//Lagoon
+/////////////
+
+"Amb_Lagoon_EXT_Global"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Lagoon_EXT_Global"
+}
+
+"Amb_Lagoon_INT_Temple"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Lagoon_INT_Temple"
+}
+
+"Amb_Lagoon_INT_SmallRoom"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Lagoon_INT_SmallRoom"
+}
+
+"Amb_Lagoon_INT_ClosedRoom"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Lagoon_INT_ClosedRoom"
+}
+
+
+/////////////
+//Nexus
+/////////////
+
+"Amb_Nexus_EXT_Global"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Nexus_EXT_Global"
+}
+
+"Amb_Nexus_INT_SmallRoom"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Nexus_INT_SmallRoom"
+}
+
+"Amb_Nexus_INT_ClosedRoom"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Nexus_INT_ClosedRoom"
+}
+
+
+/////////////
+//NPE
+/////////////
+
+"Amb_NPE_Holodeck"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_NPE_INT_Holodeck"
+}
+
+"Amb_NPE_Industrial"
+
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_NPE_INT_Industrial"
+}
+
+/////////////////
+// O2         //
+///////////////
+
+"AMB_O2_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_O2_EXT_global"
+}
+
+"AMB_O2_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_O2_INT_SmallRoom"
+}
+
+"AMB_O2_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_O2_INT_ClosedRoom"
+}
+
+
+/////////////////
+// Outpost    //
+///////////////
+
+"AMB_Outpost_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Outpost_EXT_Global"
+}
+
+"AMB_Outpost_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Outpost_INT_SmallRoom"
+}
+
+"AMB_Outpost_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_Outpost_INT_ClosedRoom"
+}
+
+
+/////////////////
+// Overlook    //
+///////////////
+
+"AMB_Overlook_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Overlook_EXT_Global"
+}
+
+"AMB_Overlook_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Overlook_INT_SmallRoom"
+}
+
+"AMB_Overlook_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Overlook_INT_ClosedRoom"
+}
+
+
+/////////////////
+// Relic      //
+///////////////
+
+"AMB_Relic_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Relic_EXT_Global"
+}
+
+"AMB_Relic_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Relic_INT_SmallRoom"
+}
+
+"AMB_Relic_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Relic_INT_ClosedRoom"
+}
+
+
+/////////////////
+// Rise       //
+///////////////
+
+"AMB_Rise_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Rise_EXT_Global"
+}
+
+"AMB_Rise_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Rise_INT_SmallRoom"
+}
+
+"AMB_Rise_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Rise_INT_ClosedRoom"
+}
+
+/////////////////
+// Runoff //
+///////////////
+
+"AMB_Runoff_Ext_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Runoff_EXT_Global"
+}
+
+"AMB_Runoff_Int_Building"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Runoff_INT_Building"
+}
+
+"AMB_Runoff_Int_Tunnel"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Runoff_INT_Tunnel"
+}
+
+
+/////////////////
+// Sandtrap  //
+///////////////
+
+"AMB_Sandtrap_Ext_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_Sandtrap_EXT_global"
+}
+
+"AMB_Sandtrap_Int_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_Sandtrap_INT_Global"
+}
+
+/////////////////
+// Smugglers Cove
+///////////////
+
+"Amb_SmugglersCove_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_SmugglersCove_EXT_Global"
+}
+
+"Amb_SmugglersCove_INT_HalfOpen"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_SmugglersCove_INT_HalfOpen"
+}
+
+"Amb_SmugglersCove_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_SmugglersCove_INT_SmallRoom"
+}
+
+"Amb_SmugglersCove_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_SmugglersCove_INT_ClosedRoom"
+}
+
+
+/////////////////
+// Swampland  //
+///////////////
+
+"AMB_Swampland_Ext_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_swampland_EXT_global"
+}
+
+"AMB_Swampland_Int_Temple"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"amb_swampland_INT_temple"
+}
+
+/////////////////
+// Switchback //
+///////////////
+
+"AMB_Switchback_Ext_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Switchback_EXT_Global"
+}
+
+"AMB_Switchback_Int_Building"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Switchback_INT_Building"
+}
+
+
+/////////////////
+// Training Ground
+///////////////
+
+"Amb_TrainingGround_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"AMB_TrainingGround_EXT_Global"
+}
+
+"Amb_TrainingGround_INT_HalfOpen"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_TrainingGround_INT_HalfOpen"
+}
+
+"Amb_TrainingGround_INT_SmallRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_TrainingGround_INT_SmallRoom"
+}
+
+"Amb_TrainingGround_INT_ClosedRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_TrainingGround_INT_ClosedRoom"
+}
+
+
+/////////////////
+// Wargames	  //
+///////////////
+
+"AMB_Wargames_Ext_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Wargames_EXT_Global"
+}
+
+"AMB_Wargames_Int_Building"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Wargames_INT_Building"
+}
+
+
+/////////////////
+// Zone 18    //
+///////////////
+
+"AMB_Zone18_EXT_Global"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Zone18_EXT_Global"
+}
+
+"AMB_Zone18_INT_Room"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Zone18_INT_Room"
+}
+
+"AMB_Zone18_INT_OpenRoom"
+{
+	"dsp"			"1"
+	"dsp_volume" ".15"
+	"playlooping"	"Amb_Zone18_INT_OpenRoom"
+}
+
+
+
+
+
+
+//////////////
+//MYSTERY SOUNDSCAPES
+//////////////
+
+//causes errors on load if it doesn't exist....super not cool
+"Nothing"
+{
+"dsp"	"0"
+}

@@ -1,0 +1,131 @@
+global function CL_ToneHUD_Init
+global function Tone_ShouldCreateTrackerHud
+global function Tone_HudThink
+
+struct TrackerInfo
+{
+	entity trackedEnt
+	var rui
+}
+
+void function CL_ToneHUD_Init()
+{
+	RegisterSignal( "StopToneHud" )
+}
+
+bool function Tone_ShouldCreateTrackerHud( entity player )
+{
+	if ( !IsAlive( player ) )
+		return false
+
+	entity ordnance = player.GetOffhandWeapon( OFFHAND_ORDNANCE )
+	if ( !IsValid( ordnance ) )
+		return false
+
+	if ( ordnance.GetWeaponClassName() != "mp_titanweapon_tracker_rockets" )
+		return false
+
+	return true
+}
+
+void function Tone_HudThink( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "StopToneHud" )
+	entity cockpit = player.GetCockpit()
+	if ( IsValid( cockpit ) )
+		cockpit.EndSignal( "OnDestroy" )
+
+	array<TrackerInfo> trackerInfoArray
+
+	OnThreadEnd(
+	function() : ( trackerInfoArray )
+		{
+			for ( int i = trackerInfoArray.len() - 1; i >= 0; i-- )
+			{
+				RuiDestroyIfAlive( trackerInfoArray[i].rui )
+				trackerInfoArray.remove( i )
+			}
+		}
+	)
+
+	while ( true )
+	{
+		entity trackerRockets = player.GetOffhandWeapon( OFFHAND_ORDNANCE )
+		if ( !IsValid( trackerRockets ) /* || !trackerRockets.SmartAmmo_IsEnabled() */ )
+		{
+			WaitFrame()
+			continue
+		}
+
+		array<entity> allTargets = trackerRockets.SmartAmmo_GetTrackedEntities()
+
+		for ( int i = trackerInfoArray.len() - 1; i >= 0; i-- )
+		{
+			if ( !IsAlive( trackerInfoArray[ i ].trackedEnt ) )
+			{
+				RuiDestroyIfAlive( trackerInfoArray[i].rui )
+				trackerInfoArray.remove( i )
+				continue
+			}
+
+			int count = trackerRockets.SmartAmmo_GetNumTrackersOnEntity( trackerInfoArray[ i ].trackedEnt )
+			if ( count == 0 )
+			{
+				RuiDestroyIfAlive( trackerInfoArray[i].rui )
+				allTargets.fastremovebyvalue( trackerInfoArray[ i ].trackedEnt )
+				trackerInfoArray.remove( i )
+				continue
+			}
+
+			allTargets.fastremovebyvalue( trackerInfoArray[ i ].trackedEnt )
+			if ( player.ContextAction_IsMeleeExecution() ||
+						( StatusEffect_GetSeverity( trackerInfoArray[ i ].trackedEnt, eStatusEffect.sonar_detected ) == 0
+						&& !trackerRockets.SmartAmmo_IsVisibleTarget( trackerInfoArray[ i ].trackedEnt ) )
+				)
+			{
+				allTargets.fastremovebyvalue( trackerInfoArray[ i ].trackedEnt )
+				RuiSetBool( trackerInfoArray[ i ].rui, "isVisible", false )
+			}
+			else
+			{
+				allTargets.fastremovebyvalue( trackerInfoArray[ i ].trackedEnt )
+				vector offset
+				if ( IsDropship( trackerInfoArray[ i ].trackedEnt ) )
+					offset = <0,0,-80>
+				else if ( IsSuperSpectre( trackerInfoArray[ i ].trackedEnt ) )
+					offset = <0,0,0>
+				else
+					offset = <0,0,42>
+				RuiSetFloat3( trackerInfoArray[ i ].rui, "offset", trackerInfoArray[ i ].trackedEnt.GetWorldSpaceCenter() - trackerInfoArray[ i ].trackedEnt.GetOrigin() + offset )
+				RuiSetInt( trackerInfoArray[ i ].rui, "count", count )
+				RuiSetBool( trackerInfoArray[ i ].rui, "isVisible", true )
+			}
+		}
+
+		foreach ( target in allTargets )
+		{
+			if ( target.IsTitan() && GetMaxTrackerCountForTitan( target ) == 4 )
+			{
+				TrackerInfo info
+				info.trackedEnt = target
+				info.rui = CreateFullscreenRui( $"ui/tone_tracker_stealth_hud.rpak" )
+				RuiTrackFloat3( info.rui, "pos", target, RUI_TRACK_ABSORIGIN_FOLLOW )
+				RuiSetGameTime( info.rui, "startTime", Time() )
+				trackerInfoArray.append( info )
+				continue
+			}
+			else
+			{
+				TrackerInfo info
+				info.trackedEnt = target
+				info.rui = CreateFullscreenRui( $"ui/tone_tracker_hud.rpak" )
+				RuiTrackFloat3( info.rui, "pos", target, RUI_TRACK_ABSORIGIN_FOLLOW )
+				RuiSetGameTime( info.rui, "startTime", Time() )
+				trackerInfoArray.append( info )
+			}
+		}
+
+		WaitFrame()
+	}
+}

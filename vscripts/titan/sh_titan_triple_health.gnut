@@ -1,0 +1,68 @@
+
+global function GetSegmentHealthForTitan
+global function GetDefaultTitanSegmentHealth
+global function GetHealthSegmentFrac
+global function GetCurrentTitanSegmentHealth
+global function GetTitanCurrentRegenTab
+
+int function GetDefaultTitanSegmentHealth()
+{
+	return 2500
+}
+
+int function GetSegmentHealthForTitan( entity titan )
+{
+	Assert( titan.IsTitan() )
+
+	entity soul = titan.GetTitanSoul()
+	asset settings = GetSoulPlayerSettings( soul )
+
+	return int( GetGlobalSettingsFloat( settings, "healthPerSegment" ) )
+}
+
+int function GetCurrentTitanSegmentHealth( entity titan )
+{
+	int health = titan.GetHealth()
+	int segmentHealth = GetSegmentHealthForTitan( titan )
+
+	while ( health > segmentHealth )
+	{
+		health -= segmentHealth
+	}
+
+	return health
+}
+
+float function GetHealthSegmentFrac( entity titan )
+{
+	float health = float( GetCurrentTitanSegmentHealth( titan ) )
+	float segmentHealth = float( GetSegmentHealthForTitan( titan ) )
+
+	return ( health / segmentHealth )
+}
+
+int function GetTitanCurrentRegenTab( entity titan )
+{
+	if ( !IsAlive( titan ) )
+		return 0
+
+	if ( GetDoomedState( titan ) )
+		return 0
+
+	int maxHealth = titan.GetMaxHealth()
+	entity soul = titan.GetTitanSoul()
+	float healthRatio = float( titan.GetHealth() ) / maxHealth
+
+	// titan health can be negative sometimes
+	if ( healthRatio < 0 )
+		healthRatio = 0
+
+	int totalTabs = maxHealth / GetSegmentHealthForTitan( titan )
+	float tabsRemaining = healthRatio * totalTabs
+
+	// if we have part of a tab, count it as one tab
+	if ( tabsRemaining % 1.0 > 0.0 )
+		return int( tabsRemaining ) + 1
+
+	return int( tabsRemaining )
+}

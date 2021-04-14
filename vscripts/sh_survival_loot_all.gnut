@@ -1,0 +1,531 @@
+global function SURVIVAL_Loot_All_InitShared
+
+global function SURVIVAL_Loot_GetLootDataTable
+global function SURVIVAL_Loot_GetLootDataByIndex
+global function SURVIVAL_Loot_IsLootIndexValid
+global function SURVIVAL_Loot_GetLootDataByRef
+global function SURVIVAL_Loot_IsRefValid
+global function SURVIVAL_Loot_IsRefDisabled
+global function SURVIVAL_Loot_GetByType
+global function SURVIVAL_Loot_GetLootTypeFromString
+
+global function SURVIVAL_Loot_IsUniqueAmmoWeapon
+
+#if CLIENT
+global function GetRarityColor
+#endif
+
+#if CLIENT && DEV
+global function DumpModdedKeyColors
+global function DiffKeyColors
+#endif
+
+global function GetFXRarityColorForTier // use this for in game loot
+global function GetFXRarityColorForUnlockable
+
+global enum eLootTier
+{
+	NONE
+	COMMON
+	RARE
+	EPIC
+	LEGENDARY
+	HEIRLOOM
+
+	_count
+}
+
+global struct LootData
+{
+	string ref
+	int tier
+	int index = -1
+	int inventorySlotCount
+	int pingCommsAction
+	asset model
+	int skinOverride
+	asset hudIcon
+	asset emptyImage
+	string attachSound
+	string pickupSound_1p
+	string pickupSound_3p
+	string carrySound
+	string pickupString
+	string desc
+	string specialCaseInvalidReason
+	int countPerDrop
+	int lootType
+	string netInt
+	array<string> supportedAttachments
+	array<string> lootTags
+	string ammoType
+	float minInWorld
+	bool isActive = false
+	int passive = -1
+	string attachmentStyle = ""
+	int scrapValue
+	bool droppodRotate = false
+	bool isDynamic = false
+
+	string baseWeapon
+	array<string> baseMods
+
+	asset fakeAmmoIcon
+	array<string> fakeMods
+}
+
+global enum eLootType
+{
+	MAINWEAPON
+	AMMO
+	HEALTH
+	ARMOR
+	INCAPSHIELD
+	JUMPKIT
+	ORDNANCE
+	ATTACHMENT
+	CUSTOMPICKUP
+	BACKPACK
+	HELMET
+	BLANK
+	RESOURCE
+
+	_count
+}
+
+struct
+{
+	table< string, LootData > lootData
+	array<string> lootIndexToString
+	bool initialized
+	array<string> disabledRefs
+	array<string> uniqueAmmoWeaponRefs
+} file
+
+array<string> attachmentSortOrder = ["barrel", "mag", "sight", "grip", "hopup"]
+
+void function SURVIVAL_Loot_All_InitShared()
+{
+	#if !UI
+
+	// Need these here so they get included in bulids
+
+	#endif
+
+	var dataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+	file.lootIndexToString.clear()
+	file.lootData.clear()
+
+	var attachmentTable = GetDataTable( $"datatable/survival_weapon_mods.rpak" )
+
+	int col_pingCommsActionName =		GetDataTableColumnByName( dataTable, "pingCommsAction" )
+
+	file.disabledRefs.clear()
+	string disabledRefs = GetCurrentPlaylistVar( "survival_disabled_loot", " " )
+	file.disabledRefs = split( disabledRefs, " " )
+
+	for ( int i=0; i<numRows; i++ )
+	{
+		LootData data
+		data.ref = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "ref" ) )
+
+		string pingCommsActionName = GetDataTableString( dataTable, i, col_pingCommsActionName )
+
+		#if (SERVER || CLIENT)
+		data.pingCommsAction = GetCommsActionForName( pingCommsActionName )
+		#endif
+
+		string lootType = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "type" ) )
+
+		data.baseWeapon = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "baseWeapon" ) )
+
+		if ( data.baseWeapon == "" )
+		{
+			data.baseWeapon = data.ref
+		}
+
+		data.fakeAmmoIcon = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "fakeAmmoIcon" ) )
+
+		data.baseMods = split( GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "baseMods" ) ), " " )
+
+		data.model = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "pickupModel" ) )
+		data.skinOverride = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "skinOverride" ) )
+		data.hudIcon = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "icon" ) )
+		data.attachSound = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "attachSound" ) )
+		data.pickupSound_3p = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "pickupSound_3p" ) )
+		data.pickupSound_1p = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "pickupSound_1p" ) )
+		data.carrySound = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "carrySound" ) )
+		data.scrapValue = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "scrapValue" ) )
+		data.droppodRotate = GetDataTableBool( dataTable, i, GetDataTableColumnByName( dataTable, "droppodRotate" ) )
+		data.isDynamic = GetDataTableBool( dataTable, i, GetDataTableColumnByName( dataTable, "isDynamic" ) )
+
+		data.pickupString = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "pickupString" ) )
+		data.desc = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "desc" ) )
+
+		data.countPerDrop = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "countPerDrop" ) )
+		data.tier = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "tier" ) )
+		#if SERVER
+			Assert( data.tier >= MIN_LOOT_TIER && data.tier <= MAX_LOOT_TIER )
+		#endif
+
+		string supportedAttachmentsString = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "supportedAttachments" ) )
+		array<string> supportedAttachments = split( supportedAttachmentsString, " " )
+		supportedAttachments.sort(
+			int function( string attachmentA, string attachmentB ) : ()
+			{
+				int aIndex = attachmentSortOrder.find( attachmentA )
+				int bIndex = attachmentSortOrder.find( attachmentB )
+				if ( aIndex > bIndex )
+					return 1
+				else if ( aIndex < bIndex )
+					return -1
+
+				return 0
+			}
+		)
+		data.supportedAttachments = supportedAttachments
+
+		data.lootTags = split( GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "lootTags" ) ), " " )
+
+		data.lootType = SURVIVAL_Loot_GetLootTypeFromString( lootType )
+		data.netInt = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "netInt" ) )
+		data.inventorySlotCount = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "inventorySlotCount" ) )
+
+		#if (SERVER || CLIENT)
+			data.minInWorld = GetDataTableFloat( dataTable, i, GetDataTableColumnByName( dataTable, "minInWorld" ) )
+			if ( IsTestMap() )
+				data.minInWorld = max( -1, data.minInWorld )
+			//Not ideal - The minInWorld concept is unlikely the right way to do ( now ) map specific items.
+
+		#endif
+
+		string passiveRef = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "passive" ) )
+		if ( passiveRef == "" )
+		{
+			data.passive = ePassives.INVALID
+		}
+		else
+		{
+			Assert( passiveRef in ePassives )
+			data.passive = ePassives[passiveRef]
+			#if CLIENT || UI
+				Assert( data.passive in PASSIVE_NAME_MAP )
+				Assert( data.passive in PASSIVE_DESCRIPTION_SHORT_MAP )
+			#endif
+		}
+
+		switch ( data.lootType )
+		{
+			case eLootType.MAINWEAPON:
+				RegisterWeaponForUse( data.baseWeapon )
+				data.model = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "playermodel" )
+				if ( GetWeaponInfoFileKeyField_Global( data.baseWeapon, "ammo_pool_type" ) != null )
+					data.ammoType = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "ammo_pool_type" )
+				else
+					data.ammoType = ""
+
+				if ( data.fakeAmmoIcon != "" )
+				{
+					file.uniqueAmmoWeaponRefs.append( data.ref )
+				}
+
+				ItemFlavor ornull weaponFlavor = GetWeaponItemFlavorByClass( data.baseWeapon )
+				if ( weaponFlavor != null )
+				{
+					expect ItemFlavor( weaponFlavor )
+
+					int availableState = ItemFlavor_GetPlaylistOpinion( weaponFlavor )
+					bool shouldBeEnabled
+					if ( availableState == eItemFlavorPlaylistOpinion.FORCE_UNLOCK_FOR_SPECIAL_EVENT )
+						shouldBeEnabled = true
+					else if ( availableState == eItemFlavorPlaylistOpinion.HIDDEN )
+						shouldBeEnabled = false
+					else if ( availableState == eItemFlavorPlaylistOpinion.DISABLED )
+						shouldBeEnabled = false
+					else
+						shouldBeEnabled = ItemFlavor_IsActiveForEdition( weaponFlavor, GetConVarInt( "mtx_svEdition" ) )
+
+					if ( !shouldBeEnabled )
+						file.disabledRefs.append( data.ref )
+				}
+
+			case eLootType.ORDNANCE:
+				RegisterWeaponForUse( data.baseWeapon )
+				data.pickupString = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "printName" )
+				data.desc = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "description" )
+				data.hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "hud_icon" )
+				break
+
+			case eLootType.ATTACHMENT:
+				int row = GetDataTableRowMatchingStringValue( attachmentTable, PILOT_WEAPON_MOD_COMMON_COLUMN, data.ref )
+				data.pickupString = GetDataTableString( attachmentTable, row, PILOT_WEAPON_MOD_COMMON_NAME_COLUMN )
+				data.desc = GetDataTableString( attachmentTable, row, PILOT_WEAPON_MOD_COMMON_DESCRIPTION_COLUMN )
+
+				data.ammoType = GetDataTableString( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "ammoType" ) )
+				data.hudIcon = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "icon" ) )
+				data.specialCaseInvalidReason = ""//GetDataTableString( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "specialCaseInvalidReason" ) )
+				if ( data.hudIcon == $"" )
+					data.hudIcon = GetDataTableAsset( attachmentTable, row, PILOT_WEAPON_MOD_COMMON_IMAGE_COLUMN )
+
+				string attachmentPoint = GetDataTableString( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "attachmentPoint" ) )
+				data.attachmentStyle = GetDataTableString( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "type" ) )
+				data.emptyImage = GetDataTableAsset( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "emptyImage" ) )
+
+				#if (SERVER || CLIENT)
+				RegisterAttachmentPoint( attachmentPoint )
+				#endif
+
+				break
+
+			case eLootType.AMMO:
+				// data.ammoType = data.ref
+				break
+		}
+
+		{
+			data.index = file.lootIndexToString.len()
+			file.lootIndexToString.append( data.ref )
+			file.lootData[ data.ref ] <- data
+
+			#if SERVER
+				SURVIVAL_AddSpawnPointGroup( data.ref )
+			#endif
+		}
+
+		#if !UI
+			if ( data.model != $"" )
+				PrecacheModel( data.model )
+		#endif
+	}
+
+	file.initialized = true
+}
+
+table< string, LootData > function SURVIVAL_Loot_GetLootDataTable()
+{
+	return file.lootData
+}
+
+array<LootData> function SURVIVAL_Loot_GetByType( int lootType )
+{
+	array<LootData> lootOfType = []
+	foreach ( string lootRef, LootData lootData in file.lootData )
+	{
+		if ( lootData.lootType != lootType )
+			continue
+
+		lootOfType.append( lootData )
+	}
+
+	return lootOfType
+}
+
+int function SURVIVAL_Loot_GetLootTypeFromString( string lootTypeString )
+{
+	Assert( lootTypeString != "", "Loot Type has null type defined in survival_loot.csv" )
+
+	switch( lootTypeString )
+	{
+		case "main_weapon":
+			return eLootType.MAINWEAPON
+		case "ammo":
+			return eLootType.AMMO
+		case "health":
+			return eLootType.HEALTH
+		case "armor":
+			return eLootType.ARMOR
+		case "incapshield":
+			return eLootType.INCAPSHIELD
+		case "jumpkit":
+			return eLootType.JUMPKIT
+		case "ordnance":
+			return eLootType.ORDNANCE
+		case "attachment":
+			return eLootType.ATTACHMENT
+		case "backpack":
+			return eLootType.BACKPACK
+		case "custom_pickup":
+			return eLootType.CUSTOMPICKUP
+		case "helmet":
+			return eLootType.HELMET
+		case "blank":
+			return eLootType.BLANK
+		case "resource":
+			return eLootType.RESOURCE
+
+		default:
+			Assert( false, "Error Building LootData Struct: Unknown loot type string: " + lootTypeString )
+			break
+	}
+
+	unreachable
+}
+
+LootData function SURVIVAL_Loot_GetLootDataByIndex( int index )
+{
+	return file.lootData[ file.lootIndexToString[ index ] ]
+}
+bool function SURVIVAL_Loot_IsLootIndexValid( int index )
+{
+	return ( index in file.lootIndexToString )
+}
+LootData function SURVIVAL_Loot_GetLootDataByRef( string ref )
+{
+	return file.lootData[ ref ]
+}
+bool function SURVIVAL_Loot_IsRefValid( string ref )
+{
+	return (ref in file.lootData)
+}
+
+bool function SURVIVAL_Loot_IsRefDisabled( string ref )
+{
+	return file.disabledRefs.contains(ref)
+}
+
+#if CLIENT
+vector function GetRarityColor( entity ent )
+{
+	int lootIndex = ent.GetSurvivalInt()
+	Assert( lootIndex >= 0 )
+	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootIndex )
+
+	return GetKeyColor( COLORID_TEXT_LOOT_TIER0, lootData.tier )
+}
+#endif
+
+#if SERVER
+//HACK: Resurrection of loot color consts for when the server picks a color
+const int RARE_R = 58
+const int RARE_G = 133
+const int RARE_B = 176
+
+const int EPIC_R = 136
+const int EPIC_G = 63
+const int EPIC_B = 162
+
+const int LEGENDARY_R = 220
+const int LEGENDARY_G = 185
+const int LEGENDARY_B = 39
+
+const vector LOOT_COLOR_NONE = <0, 0, 0>
+const vector LOOT_COLOR_COMMON = <192, 192, 192>
+const vector LOOT_COLOR_RARE = <RARE_R, RARE_G, RARE_B>
+const vector LOOT_COLOR_EPIC = <EPIC_R, EPIC_G, EPIC_B>
+const vector LOOT_COLOR_LEGENDARY = <LEGENDARY_R, LEGENDARY_G, LEGENDARY_B>
+const vector LOOT_COLOR_HEIRLOOM = <255, 0, 0>
+#endif
+
+// use this for in game loot
+vector function GetFXRarityColorForTier( int tier )
+{
+#if SERVER
+	Warning( "Server is attempting to get a loot rarity color. This does not support accessibility features such as color blind mode." )
+	switch ( tier )
+	{
+		case eLootTier.NONE:
+			return LOOT_COLOR_NONE
+
+		case eLootTier.COMMON:
+			return LOOT_COLOR_COMMON
+
+		case eLootTier.RARE:
+			return LOOT_COLOR_RARE
+
+		case eLootTier.EPIC:
+			return LOOT_COLOR_EPIC
+
+		case eLootTier.LEGENDARY:
+			return LOOT_COLOR_LEGENDARY
+
+		default:
+			return <255, 255, 255>
+	}
+#endif
+
+#if !SERVER
+	return GetKeyColor( COLORID_FX_LOOT_TIER0, tier )
+#endif
+
+	unreachable
+}
+
+// use this for lootbox loot
+vector function GetFXRarityColorForUnlockable( int tier )
+{
+#if SERVER
+		Warning( "Server is attempting to get a loot rarity color. This does not support accessibility features such as color blind mode." )
+		switch ( tier )
+		{
+			case eLootTier.NONE:
+				return LOOT_COLOR_NONE
+
+			case eLootTier.COMMON:
+				return LOOT_COLOR_COMMON
+
+			case eLootTier.RARE:
+				return LOOT_COLOR_RARE
+
+			case eLootTier.EPIC:
+				return LOOT_COLOR_EPIC
+
+			case eLootTier.LEGENDARY:
+				return LOOT_COLOR_LEGENDARY
+
+			case eLootTier.HEIRLOOM:
+				return LOOT_COLOR_HEIRLOOM
+
+			default:
+				return <255, 255, 255>
+		}
+#endif
+
+#if !SERVER
+	return GetKeyColor( COLORID_FX_LOOT_TIER0, tier + 1 )
+#endif
+
+	unreachable
+}
+
+#if CLIENT && DEV
+void function DumpModdedKeyColors( int colorID, float modVal )
+{
+	for ( int index = 0; index < 6; index++ )
+	{
+		vector color = ColorPalette_GetColorFromID( colorID + index ) / 255.0
+		color = SrgbToLinear( color )
+		color *= modVal
+		color = LinearToSrgb( color ) * 255.0
+
+		printt( index + ", ", int( color.x ) + " ", int( color.y ) + " ", int( color.z ) )
+	}
+}
+#endif
+
+#if CLIENT && DEV
+void function DiffKeyColors( int baseColorID, int colorID )
+{
+	var datatable = GetDataTable( $"datatable/colorpalette_table.rpak" )
+	for ( int index = 0; index < 6; index++ )
+	{
+		vector baseColor = ColorPalette_GetColorFromID( baseColorID + index )
+		vector otherColor = ColorPalette_GetColorFromID( colorID + index )
+
+		float deltaX = (baseColor.x - otherColor.x) / 255.0
+		float deltaY = (baseColor.y - otherColor.y) / 255.0
+		float deltaZ = (baseColor.z - otherColor.z) / 255.0
+
+		vector protanColor = GetDataTableVector( datatable, baseColorID + index, 2 )
+		vector deuterColor = GetDataTableVector( datatable, baseColorID + index, 3 )
+		vector tritanColor = GetDataTableVector( datatable, baseColorID + index, 4 )
+
+		printt( index + ", ", deltaX + " ", deltaY + " ", deltaZ )
+	}
+}
+#endif
+
+bool function SURVIVAL_Loot_IsUniqueAmmoWeapon( string ref )
+{
+	return file.uniqueAmmoWeaponRefs.contains( ref )
+}

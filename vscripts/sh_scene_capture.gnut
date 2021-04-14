@@ -1,0 +1,193 @@
+global function ShSceneCapture_LevelInit
+#if CLIENT
+global function ClSceneCapture_PROTO_AddCaptureRoom
+global function IsCaptureRoomAvailable
+global function ReserveCaptureRoom
+global function WaitForReserveCaptureRoom
+global function ReleaseCaptureRoom
+#endif
+
+global const asset SCENE_CAPTURE_LIGHTING_RIG_MODEL = $"mdl/empty/lights/empty_lights.rmdl"
+const int SCENE_CAPTURE_EXPECTED_TWEAK_LIGHT_COUNT = 4
+
+#if CLIENT
+global struct CaptureRoom
+{
+	vector        center
+	vector        ang
+	bool          inUse
+	array<entity> tweakLights
+}
+#endif
+
+struct
+{
+	#if CLIENT
+		array<CaptureRoom> roomList
+		table              signalDummy
+	#endif
+} file
+
+void function ShSceneCapture_LevelInit()
+{
+	#if SERVER || CLIENT
+		PrecacheModel( SCENE_CAPTURE_LIGHTING_RIG_MODEL )
+	#endif
+
+	#if CLIENT
+		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+
+		RegisterSignal( "CaptureRoomAvailable" )
+	#endif
+}
+
+#if CLIENT
+void function EntitiesDidLoad()
+{
+	bool didHaveRooms = false
+	foreach( entity target in GetEntArrayByScriptName( "scene_capture_room" ) )
+	{
+		// todo(dw): remove this loop
+		CaptureRoom room
+		room.center = target.GetOrigin()
+		room.ang = target.GetAngles()
+		room.inUse = false
+		file.roomList.append( room )
+		target.Destroy()
+
+		didHaveRooms = true
+	}
+	for ( int refIndex = 0; true; refIndex++ )
+	{
+		array<entity> targets = GetEntArrayByScriptName( "scene_capture_room_" + refIndex + "_ref" )
+		Assert( targets.len() < 2, "Multiple entities in level with script name: scene_capture_room_" + refIndex + "_ref" )
+		if ( targets.len() == 0 )
+			break
+		entity target = targets[0]
+
+		CaptureRoom room
+		room.center = target.GetOrigin()
+		room.ang = target.GetAngles()
+		room.inUse = false
+		file.roomList.append( room )
+		target.Destroy()
+		didHaveRooms = true
+
+		for ( int lightIndex = 0; true; lightIndex++ )
+		{
+			array<entity> lights = GetEntArrayByScriptName( "scene_capture_room_" + refIndex + "_light_" + lightIndex )
+			Assert( lights.len() < 2, "Multiple entities in level with script name: scene_capture_room_" + refIndex + "_light_" + lightIndex )
+			if ( lights.len() == 0 )
+				break
+			entity light = lights[0]
+			room.tweakLights.append( light )
+		}
+
+		Assert( room.tweakLights.len() == SCENE_CAPTURE_EXPECTED_TWEAK_LIGHT_COUNT, "Scene capture room does not have the expected four tweak lights" )
+	}
+
+	#if DEV
+		if ( !didHaveRooms )
+			DEV_AddDevCaptureRooms()
+	#endif
+}
+#endif
+
+
+#if CLIENT
+void function ClSceneCapture_PROTO_AddCaptureRoom( vector center )
+{
+	CaptureRoom room
+	room.center = center
+	room.ang = <0, 0, 0>
+	room.inUse = false
+	file.roomList.append( room )
+}
+#endif
+
+#if CLIENT && DEV
+void function DEV_AddDevCaptureRooms()
+{
+	ClSceneCapture_PROTO_AddCaptureRoom( <0, 0, 10000> )
+	ClSceneCapture_PROTO_AddCaptureRoom( <1000, 0, 10000> )
+	ClSceneCapture_PROTO_AddCaptureRoom( <0, 1000, 10000> )
+}
+#endif
+
+
+#if CLIENT
+bool function IsCaptureRoomAvailable()
+{
+	foreach( CaptureRoom room in file.roomList )
+	{
+		if ( !room.inUse )
+			return true
+	}
+	return false
+}
+#endif
+
+
+#if CLIENT
+CaptureRoom function ReserveCaptureRoom()
+{
+	//#if DEV
+	//	DEV_AddDevCaptureRooms()
+	//#endif
+	foreach( int roomIndex, CaptureRoom room in file.roomList )
+	{
+		if ( room.inUse )
+			continue
+
+		room.inUse = true
+
+		return room
+	}
+
+	Assert( false, "No free Scene capture rooms." )
+	unreachable
+}
+#endif
+
+
+#if CLIENT
+CaptureRoom function WaitForReserveCaptureRoom()
+{
+	//#if DEV
+	//	DEV_AddDevCaptureRooms()
+	//#endif
+	while( true )
+	{
+		foreach( int roomIndex, CaptureRoom room in file.roomList )
+		{
+			if ( room.inUse )
+				continue
+
+			room.inUse = true
+
+			return room
+		}
+		WaitSignal( file.signalDummy, "CaptureRoomAvailable" )
+	}
+
+	unreachable
+}
+#endif
+
+
+#if CLIENT
+void function ReleaseCaptureRoom( CaptureRoom room )
+{
+	Assert( room.inUse, "Attempted to end release a Scene capture room that was not in use." )
+
+	#if DEV
+		foreach( entity light in room.tweakLights )
+			Assert( IsValid( light ), "Something deleted a scene capture tweak light!" )
+	#endif
+
+	room.inUse = false
+	Signal( file.signalDummy, "CaptureRoomAvailable" )
+}
+#endif
+
+

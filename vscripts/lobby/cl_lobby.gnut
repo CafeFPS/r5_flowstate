@@ -1,0 +1,14 @@
+
+global function Lobby_AddLocalPlayer
+
+void function Lobby_AddLocalPlayer()
+{
+	entity player = GetLocalClientPlayer()
+	Assert( IsValid( player ) )
+
+	player.FreezeControlsOnClient()
+	player.HideCrosshairNames()
+
+	SetStandardAbilityBindingsForPilot( player )
+	RefreshPresentationType()
+}

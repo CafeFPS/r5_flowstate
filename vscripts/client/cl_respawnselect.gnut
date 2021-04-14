@@ -1,0 +1,300 @@
+global function ClRespawnselect_MP_Init
+
+
+//const IMAGE_SELECT_TITAN		= $"ui/menu/death_screen/ds_icon_titan"
+//const IMAGE_SELECT_PILOT		= $"ui/menu/death_screen/ds_icon_pilot"
+//const IMAGE_SELECT_FEMALE		= $"ui/menu/death_screen/ds_icon_pilot_female"
+
+//const IMAGE_SELECT_TITAN_HOVER	= $"ui/menu/death_screen/ds_icon_titan_hover"
+//const IMAGE_SELECT_PILOT_HOVER	= $"ui/menu/death_screen/ds_icon_pilot_hover"
+//const IMAGE_SELECT_FEMALE_HOVER	= $"ui/menu/death_screen/ds_icon_pilot_female_hover"
+
+const RESPAWN_SELECTIONS = 2
+const PRE_SHOW_WAIT = 1.5
+const RESPAWN_BUILTINS = 2
+const TITLE2_ENABLED = 0
+
+const SELECT_NONE 			= 0
+const SELECT_DEAD			= 1
+const SELECT_TITAN_PILOT 	= 2
+const SELECT_PREMATCH		= 4
+
+const SELECT_HUD_TITAN = 0
+const SELECT_HUD_PILOT = 1
+
+enum eTitanBindStyle
+{
+	ENTER,
+	RSHIFT,
+	LSHIFT
+}
+
+struct
+{
+	var respawnHintRui
+
+	bool commandsRegistered = false
+	int spawnAsTitanBindStyleUsed = eTitanBindStyle.ENTER
+} file
+
+
+void function ClRespawnselect_MP_Init()
+{
+    //PrecacheHUDMaterial( IMAGE_SELECT_TITAN )
+    //PrecacheHUDMaterial( IMAGE_SELECT_PILOT )
+    //PrecacheHUDMaterial( IMAGE_SELECT_FEMALE )
+    //PrecacheHUDMaterial( IMAGE_SELECT_TITAN_HOVER )
+    //PrecacheHUDMaterial( IMAGE_SELECT_PILOT_HOVER )
+    //PrecacheHUDMaterial( IMAGE_SELECT_FEMALE_HOVER )
+
+	RegisterSignal( "TitanReadyPulse" )
+	RegisterSignal( "RefreshDelayed" )
+
+	file.respawnHintRui = CreatePermanentCockpitRui( $"ui/respawn_hint.rpak", HUD_Z_BASE )
+
+	RegisterServerVarChangeCallback( "gameState", RespawnSelect_GameStateChanged )
+	RegisterServerVarChangeCallback( "titanAvailableBits0", RespawnSelect_OnTitanAvailableChanged )
+	RegisterServerVarChangeCallback( "titanAvailableBits1", RespawnSelect_OnTitanAvailableChanged )
+	RegisterServerVarChangeCallback( "titanAvailableBits2", RespawnSelect_OnTitanAvailableChanged )
+	RegisterServerVarChangeCallback( "titanAvailableBits3", RespawnSelect_OnTitanAvailableChanged )
+	RegisterServerVarChangeCallback( "respawnAvailableBits0", RespawnSelect_OnRespawnAvailableChanged )
+	RegisterServerVarChangeCallback( "respawnAvailableBits1", RespawnSelect_OnRespawnAvailableChanged )
+	RegisterServerVarChangeCallback( "respawnAvailableBits2", RespawnSelect_OnRespawnAvailableChanged )
+	RegisterServerVarChangeCallback( "respawnAvailableBits3", RespawnSelect_OnRespawnAvailableChanged )
+	RegisterServerVarChangeCallback( "gameEndTime", RespawnSelection_GameEndTimeChanged )
+
+	AddCallback_OnPlayerLifeStateChanged( RespawnSelect_LifeStateChanged )
+}
+
+void function RespawnSelect_GameStateChanged()
+{
+	UpdateRespawnSelectHud()
+}
+
+void function RespawnSelect_OnTitanAvailableChanged()
+{
+	UpdateRespawnSelectHud()
+}
+
+void function RespawnSelect_OnRespawnAvailableChanged()
+{
+	UpdateRespawnSelectHud()
+}
+
+void function RespawnSelection_GameEndTimeChanged()
+{
+	UpdateRespawnSelectHud()
+}
+
+void function RespawnSelect_LifeStateChanged( entity player, int oldLifeState, int newLifeState )
+{
+	UpdateRespawnSelectHud()
+}
+
+void function UpdateRespawnSelectHud()
+{
+	entity player = GetLocalClientPlayer()
+
+	if ( RespawnSelect_ShouldShowRespawnAsPilot( player ) )
+	{
+		RegisterRespawnCommands()
+		RuiSetBool( file.respawnHintRui, "isVisible", true )
+		RuiSetBool( file.respawnHintRui, "isTitanAvailable", RespawnSelect_ShouldShowResapwnAsTitan( player ) )
+		RuiSetBool( file.respawnHintRui, "isTitanAlive", RespawnSelect_CanPlayerSpawnIntoTitan( player ) )
+		RuiSetGameTime( file.respawnHintRui, "nextSpawnTime", GetNextRespawnTime( player ) )
+		RuiSetString( file.respawnHintRui, "titanSpawnAsText", GetTitanSpawnAsText() )
+		RuiSetBool( file.respawnHintRui, "shouldShowSkipReplay", false )
+	}
+	else if ( RespawnSelect_ShouldShowSkipReplay( player ) )
+	{
+		RegisterRespawnCommands()
+		RuiSetBool( file.respawnHintRui, "isVisible", true )
+		RuiSetBool( file.respawnHintRui, "shouldShowSkipReplay", true )
+		RuiSetBool( file.respawnHintRui, "isTitanAvailable", false )
+	}
+	else
+	{
+		DeregisterRespawnCommands()
+		RuiSetBool( file.respawnHintRui, "isVisible", false )
+	}
+}
+
+void function RegisterRespawnCommands()
+{
+	if ( file.commandsRegistered )
+		return
+
+	// save this off so it's consistent when we unbind
+	file.spawnAsTitanBindStyleUsed = GetSpawnAsTitanBindStyle()
+
+	// RegisterConCommandTriggeredCallback( "spawn_as_pilot", 	PlayerPressed_RespawnPilot )
+	RegisterButtonPressedCallback( KEY_SPACE,				PlayerPressed_RespawnPilot )
+	RegisterButtonPressedCallback( BUTTON_X,				PlayerPressed_RespawnPilot )
+
+	// RegisterConCommandTriggeredCallback( "spawn_as_titan", 	PlayerPressed_RespawnTitan )
+	RegisterButtonPressedCallback( BUTTON_Y,				PlayerPressed_RespawnTitan )
+
+	switch ( file.spawnAsTitanBindStyleUsed )
+	{
+		case eTitanBindStyle.RSHIFT:
+			RegisterButtonPressedCallback( KEY_RSHIFT,				PlayerPressed_RespawnTitan)
+			break
+		case eTitanBindStyle.LSHIFT:
+			RegisterButtonPressedCallback( KEY_LSHIFT,				PlayerPressed_RespawnTitan)
+			break
+		case eTitanBindStyle.ENTER:
+		default:
+			RegisterButtonPressedCallback( KEY_ENTER,				PlayerPressed_RespawnTitan)
+			break
+	}
+
+	file.commandsRegistered = true
+}
+
+void function DeregisterRespawnCommands()
+{
+	if ( !file.commandsRegistered )
+		return
+
+	// DeregisterConCommandTriggeredCallback( "spawn_as_pilot", PlayerPressed_RespawnPilot )
+	DeregisterButtonPressedCallback( KEY_SPACE,				PlayerPressed_RespawnPilot )
+	DeregisterButtonPressedCallback( BUTTON_X,				PlayerPressed_RespawnPilot )
+
+	// DeregisterConCommandTriggeredCallback( "spawn_as_titan", PlayerPressed_RespawnTitan )
+	DeregisterButtonPressedCallback( BUTTON_Y,				PlayerPressed_RespawnTitan )
+
+	switch ( file.spawnAsTitanBindStyleUsed )
+	{
+		case eTitanBindStyle.RSHIFT:
+			DeregisterButtonPressedCallback( KEY_RSHIFT,				PlayerPressed_RespawnTitan)
+			break
+		case eTitanBindStyle.LSHIFT:
+			DeregisterButtonPressedCallback( KEY_LSHIFT,				PlayerPressed_RespawnTitan)
+			break
+		case eTitanBindStyle.ENTER:
+		default:
+			DeregisterButtonPressedCallback( KEY_ENTER,				PlayerPressed_RespawnTitan)
+			break
+	}
+	file.commandsRegistered = false
+}
+
+int function GetSpawnAsTitanBindStyle()
+{
+	string bind = GetKeyTappedBinding( KEY_ENTER ).tolower()
+	if ( bind == "say" || bind == "say_team" )
+	{
+		bind = GetKeyTappedBinding( KEY_RSHIFT ).tolower()
+		if ( bind == "say" || bind == "say_team" )
+		{
+			return eTitanBindStyle.LSHIFT
+		}
+		else
+		{
+			return eTitanBindStyle.RSHIFT
+		}
+	}
+	return eTitanBindStyle.ENTER
+}
+
+string function GetTitanSpawnAsText()
+{
+	switch ( file.spawnAsTitanBindStyleUsed )
+	{
+		case eTitanBindStyle.RSHIFT:
+			return "#RESPAWNSELECT_TITAN_RSHIFT"
+
+		case eTitanBindStyle.LSHIFT:
+			return "#RESPAWNSELECT_TITAN_LSHIFT"
+
+		case eTitanBindStyle.ENTER:
+		default:
+			return "#RESPAWNSELECT_TITAN"
+	}
+
+	return "#RESPAWNSELECT_TITAN"
+}
+
+void function PlayerPressed_RespawnPilot( entity player )
+{
+	player.ClientCommand( "CC_RespawnPlayer Pilot" )
+}
+
+void function PlayerPressed_RespawnTitan( entity player )
+{
+	if ( HudChat_HasAnyMessageModeStoppedRecently() )
+		return
+
+	player.ClientCommand( "CC_RespawnPlayer Titan" )
+}
+
+bool function RespawnSelect_ShouldShowRespawnAsPilot( entity player )
+{
+	if ( IsAlive( player ) && !IsWatchingKillReplay() )
+	{
+		//printt( "IsAlive( player )" )
+		return false
+	}
+
+	if ( IsPlayerEliminated( player ) )
+	{
+		//printt( "IsPlayerEliminated( player )" )
+		return false
+	}
+
+	if ( !IsRespawnAvailable( player ) )
+	{
+		//printt( "!IsRespawnAvailable( player )" )
+		return false
+	}
+
+	if ( GetGameState() != eGameState.Playing && GetGameState() != eGameState.Epilogue && GetGameState() != eGameState.WinnerDetermined )
+	{
+		//printt( " GetGameState() != ...", GetGameState() )
+		return false
+	}
+
+	return true
+}
+
+bool function RespawnSelect_ShouldShowSkipReplay( entity player )
+{
+	if ( !IsWatchingKillReplay() )
+	{
+		//printt( "IsWatchingKillReplay()"  )
+		return false
+	}
+
+	if ( !IsPlayerEliminated( player ) )
+	{
+		//printt( "PlayerEliminated( player )" )
+		return false
+	}
+
+	int gameState = GetGameState()
+
+	if ( gameState != eGameState.Playing && gameState != eGameState.Epilogue )
+	{
+		//printt( "Fail gamestate check" )
+		return false
+	}
+
+	return true
+}
+
+// TODO: kill replay state messes up validity of pet titan state
+bool function RespawnSelect_CanPlayerSpawnIntoTitan( entity player )
+{
+	return PlayerCanSpawnIntoTitan( player )
+}
+
+bool function RespawnSelect_ShouldShowResapwnAsTitan( entity player )
+{
+	entity titan = player.GetPetTitan()
+	if ( RespawnSelect_CanPlayerSpawnIntoTitan( player ) )
+		return true
+	else
+		return IsTitanAvailable( player )
+
+	unreachable
+}

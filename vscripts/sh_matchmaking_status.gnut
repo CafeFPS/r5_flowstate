@@ -1,0 +1,159 @@
+globalize_all_functions
+
+void function MMStatusRui_HideIcons( var rui )
+{
+	RuiSetBool( rui, "iconVisible", false )
+}
+
+void function MMStatusRui_ShowIcons( var rui )
+{
+	RuiSetBool( rui, "iconVisible", true )
+}
+
+void function MMStatusRui_SetSearchVisible( var rui, bool state )
+{
+	RuiSetBool( rui, "statusVisible", state )
+}
+
+void function MMStatusRui_SetSearchText( var rui, string searchText, var param1, var param2, var param3, var param4 )
+{
+	string statusText = Localize( searchText, param1, param2, param3, param4 )
+	if ( searchText == "#MATCHMAKING_PARTYNOTREADY" )
+	{
+		// show checkbox instead of spinner
+		RuiSetBool( rui, "statusHasText", false )
+		RuiSetString( rui, "statusText", "" )
+	}
+	else
+	{
+		RuiSetBool( rui, "statusHasText", (searchText != "") )
+		RuiSetString( rui, "statusText", statusText )
+	}
+	RuiSetString( rui, "waitingText", statusText )
+}
+
+void function MMStatusRui_SetCountdownVisible( var rui, bool state )
+{
+	RuiSetBool( rui, "timerVisible", state )
+}
+
+void function MMStatusRui_SetCountdownTimer( var rui, float time, bool useServerTime )
+{
+	RuiSetBool( rui, "timerHasText", (time != 0.0) )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetBool( rui, "useServerTime", useServerTime )
+	RuiSetGameTime( rui, "timerEndTime", time )
+}
+
+
+//////////////////
+
+#if CLIENT
+var s_mmStatusRui = null
+var s_mmRui = null
+void function MatchmakingStatus_AddOverlayToHUD()
+{
+	s_mmStatusRui = CreatePermanentCockpitRui( $"ui/matchmaking_status_hud_wrapper.rpak", 200 )
+	s_mmRui = RuiCreateNested( s_mmStatusRui, "innerElem", $"ui/matchmaking_status.rpak" )
+}
+#endif // #if CLIENT
+
+
+void function MMStatusOnHUD_HideIcons()
+{
+#if CLIENT
+	if ( s_mmRui == null )
+		return
+	MMStatusRui_HideIcons( s_mmRui )
+#else
+	if ( uiGlobal.loadedLevel != "" )
+		RunClientScript( FUNC_NAME() )
+#endif // #else // #if CLIENT
+}
+
+void function MMStatusOnHUD_ShowIcons()
+{
+#if CLIENT
+	if ( s_mmRui == null )
+		return
+	MMStatusRui_ShowIcons( s_mmRui )
+#else
+	if ( uiGlobal.loadedLevel != "" )
+		RunClientScript( FUNC_NAME() )
+#endif // #else // #if CLIENT
+}
+
+void function MMStatusOnHUD_SetSearchVisible( bool state )
+{
+#if CLIENT
+	if ( s_mmRui == null )
+		return
+	MMStatusRui_SetSearchVisible( s_mmRui, state )
+#else
+	if ( uiGlobal.loadedLevel != "" )
+		RunClientScript( FUNC_NAME(), state )
+#endif // #else // #if CLIENT
+}
+
+void function MMStatusOnHUD_SetSearchText( string searchText, var param1, var param2, var param3, var param4 )
+{
+#if CLIENT
+	if ( s_mmRui == null )
+		return
+	MMStatusRui_SetSearchText( s_mmRui, searchText, param1, param2, param3, param4 )
+#else
+	if ( uiGlobal.loadedLevel != "" )
+		RunClientScript( FUNC_NAME(), searchText, param1, param2, param3, param4 )
+#endif // #else // #if CLIENT
+}
+
+void function MMStatusOnHUD_SetCountdownVisible( bool state )
+{
+#if CLIENT
+	if ( s_mmRui == null )
+		return
+	MMStatusRui_SetCountdownVisible( s_mmRui, state )
+#else
+	if ( uiGlobal.loadedLevel != "" )
+		RunClientScript( FUNC_NAME(), state )
+#endif // #else // #if CLIENT
+}
+
+void function MMStatusOnHUD_SetCountdownTimer( float time, bool useServerTime )
+{
+#if CLIENT
+	if ( s_mmRui == null )
+		return
+	MMStatusRui_SetCountdownTimer( s_mmRui, time, useServerTime )
+#else
+	if ( uiGlobal.loadedLevel != "" )
+		RunClientScript( FUNC_NAME(), time, useServerTime )
+#endif // #else // #if CLIENT
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

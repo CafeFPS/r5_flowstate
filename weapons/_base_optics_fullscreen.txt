@@ -1,0 +1,198 @@
+WeaponData
+{
+	Mods
+	{
+		optic_sniper
+		{
+			//scope_dcom
+
+			"zoom_fov" 			"13.3128" // 6x @ 70
+
+			"bodygroup1_set" 	"0"
+			"bodygroup21_set" 	"1"
+
+			"ui1_enable" 		"0"
+			"ui30_enable" 		"1"
+
+			"mod_activity_modifier"	"optic"
+			"anim_alt_idleAttack"	"1"
+
+			"bodygroup_ads_scope_set"	"2"
+
+			"viewmodel_offset_ads"		"0 0 0.005"  // HACK not sure if the fullscreen geo should need an offset
+
+			"dof_zoom_nearDepthStart"	"0"
+			"dof_zoom_nearDepthEnd"		"0"
+
+            "zoom_angle_shift_pitch"    "0.0"
+			"zoom_angle_shift_yaw"      "0.0"
+
+            // Behavior- Aim Assist
+            "aimassist_disable_hipfire"                "1"
+			"aimassist_disable_ads"                    "1"
+			"aimassist_disable_hipfire_titansonly"     "1"
+			"aimassist_disable_ads_titansonly"         "1"
+			"aimassist_adspull_weaponclass"            "none"
+			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
+		}
+
+		optic_sniper_variable
+		{
+			// scope_talon
+
+			"zoom_fov" 					"19.8583" // 4x @ 70
+			"zoom_toggle_fov"			"10.0042" // 8x @ 70
+			"zoom_toggle_lerp_time"		"0.2"
+
+			"bodygroup1_set" 	"0"
+			"bodygroup22_set" 	"1"
+
+			"ui1_enable" 		"0"
+			"ui31_enable" 		"1"
+
+			"mod_activity_modifier"	"optic"
+			"anim_alt_idleAttack"	"1"
+
+			"bodygroup_ads_scope_set"	"3"
+
+			"viewmodel_offset_ads"		"0 0 0.005"  // HACK not sure if the fullscreen geo should need an offset
+
+			"dof_zoom_nearDepthStart"	"0"
+			"dof_zoom_nearDepthEnd"		"0"
+
+			"zoom_angle_shift_pitch"    "0.0"
+			"zoom_angle_shift_yaw"      "0.0"
+
+            "aimassist_disable_hipfire"                "1"
+			"aimassist_disable_ads"                    "1"
+			"aimassist_disable_hipfire_titansonly"     "1"
+			"aimassist_disable_ads_titansonly"         "1"
+			"aimassist_adspull_weaponclass"            "none"
+			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
+		}
+
+		optic_sniper_threat
+		{
+			// scope_zoom
+
+            "zoom_fov"				    "19.8583" // 4x @ 70
+			"zoom_toggle_fov"           "8.01071" // 10x @ 70
+	        "zoom_toggle_lerp_time"     "0.04"  // super fast lerp to simulate digital zoom snappiness
+
+			"bodygroup1_set" 	"0"
+			"bodygroup23_set" 	"1"
+
+			"ui1_enable" 		"0"
+			"ui32_enable" 		"1"
+
+			"mod_activity_modifier"	"optic"
+			"anim_alt_idleAttack"	"2"
+
+			"bodygroup_ads_scope_set"	"1"
+
+			"threat_scope_enabled"				"1"
+			"threat_scope_fadedist_start"       "5905.51" // 150m
+			"threat_scope_fadedist_end"         "11811.0" // 300m
+			"threat_scope_bounds_tagname1"		"SCR_TR_SCOPEADS" //"SCR_TR_SCOPE_WONYEON"
+			"threat_scope_bounds_tagname2"		"SCR_BL_SCOPEADS" //"SCR_BL_SCOPE_WONYEON"
+
+			"viewmodel_offset_ads"		"-0.004 0.1 0.0085"  // HACK not sure if the fullscreen geo should need an offset
+
+			"dof_zoom_nearDepthStart"	"0"
+			"dof_zoom_nearDepthEnd"		"0"
+
+			"zoom_angle_shift_pitch"    "0.0"
+			"zoom_angle_shift_yaw"      "0.0"
+
+            "aimassist_disable_hipfire"                "1"
+			"aimassist_disable_ads"                    "1"
+			"aimassist_disable_hipfire_titansonly"     "1"
+			"aimassist_disable_ads_titansonly"         "1"
+			"aimassist_adspull_weaponclass"            "none"
+			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
+		}
+	}
+
+
+	// --- BODYGROUPS AND UIDATA ---
+	// NOTE starts at 21 to give Ranged optics room for future expansion
+
+
+	// optic_sniper
+	"bodygroup21_name"	"scope_dcom"
+	"bodygroup21_set"	"0"
+
+	"ui30_enable" 		"0"
+	"ui30_draw_cloaked" "1"
+	UiData30
+	{
+		"ui"			"ui/sniper_optic_sights"
+		"mesh"			"models/weapons/attachments/sniper_optic_sights"
+
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+			crossDist			distance_to_crosshair_target
+            zoomFOV         	weapon_zoom_fov
+			varSightOffsets		variable_sights_offsets
+			eyeAngles			player_eye_angles
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+			clipCount			weapon_ammoClipCount
+		}
+	}
+
+	// optic_sniper_variable
+	"bodygroup22_name"	"scope_talon"
+	"bodygroup22_set"	"0"
+
+	"ui31_enable" 		"0"
+	"ui31_draw_cloaked" "1"
+	UiData31
+	{
+		"ui"			"ui/sniper_optic_variable_sights"
+		"mesh"			"models/weapons/attachments/sniper_optic_sights"
+
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+			crossDist			distance_to_crosshair_target
+            zoomFOV         	weapon_zoom_fov
+			varSightOffsets		variable_sights_offsets
+			eyeAngles			player_eye_angles
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+			clipCount			weapon_ammoClipCount
+		}
+	}
+
+	// optic_sniper_threat
+	"bodygroup23_name"	"scope_zoom"
+	"bodygroup23_set"	"0"
+
+	"ui32_enable" 		"0"
+	"ui32_draw_cloaked" "1"
+	UiData32
+	{
+		"ui" 		"ui/sniper_threat_optic_sights"
+		"mesh" 		"models/weapons/attachments/sniper_threat_optic_sights"
+
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+			crossDist			distance_to_crosshair_target
+			zoomFOV         	weapon_zoom_fov
+			varSightOffsets		variable_sights_offsets
+			eyeAngles			player_eye_angles
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+			clipCount			weapon_ammoClipCount
+		}
+	}
+}

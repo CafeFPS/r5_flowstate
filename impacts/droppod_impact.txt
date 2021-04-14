@@ -1,0 +1,177 @@
+// "Gamematerial" "effect_name"
+
+// "B" bloodyflesh
+// "X" plastic box, wade, ladder, woodladdder,
+// "I" player_control_clip
+
+ImpactTable
+{
+	FX
+	{
+		"C" "P_impact_dpod_rock" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_dpod_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "droppod_impact" // metal_titan
+
+		"F" "droppod_impact" //flesh
+		"G" "droppod_impact" //metalgrate, chainlink, chain
+		"H" "droppod_impact" //alienflesh
+
+		"J" "P_impact_dpod_dirt" //grass
+		"K" "P_impact_dpod_mud" //Mud
+		"L" "droppod_impact" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "droppod_impact" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "droppod_impact"
+		"O" "P_impact_dpod_dirt" //Foliage
+		"P" "droppod_impact" //Computer
+
+		"R" "droppod_impact" //metalpanel, grenade, canister
+		"S" "P_impact_dpod_water" //water, slime
+		"T" "droppod_impact" //tile
+		"U" "droppod_impact" //glass_breakble
+
+		"V" "droppod_impact" //Metal Vent
+		"W" "P_impact_dpod_wood" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "droppod_impact" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_dpod_sand"  //sand
+
+		"0" "P_impact_dpod_dirt"
+		"1" "P_impact_dpod_dirt"
+		"2" "P_impact_dpod_dirt"
+		"3" "P_impact_dpod_dirt"
+		"4" "P_impact_dpod_dirt"
+		"5" "P_impact_dpod_dirt"
+		"6" "P_impact_dpod_dirt"
+		"7" "P_impact_dpod_dirt"
+		"8" "P_impact_dpod_dirt"
+		"9" "P_impact_dpod_water" //puddle
+
+		"splash" "P_impact_dpod_water"
+		"slime_splash" "P_impact_dpod_water"
+
+		"airburst" ""
+		"critical_hit" "droppod_impact"
+	}
+
+	Sound
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+		"F" "none"
+		"G" "none"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"
+		"L" "none"
+		"M" "none"
+		"N" "none"
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+		"X"	"none"
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+		"headshot_flesh" "none"
+		"headshot_mechanical" "none"
+	}
+
+	Sound_attacker
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// Slime
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+		"X"	"none" // Titan bubble shield
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+		"headshot_flesh" "none"
+		"headshot_mechanical" "none"
+	}
+
+	Sound_victim
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// Slime
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+	}
+
+	Sound_victim_from_AI
+	{
+		"F" "none"
+		"P" "none"
+
+	}
+}
+

@@ -1,0 +1,305 @@
+WeaponData
+{
+	// General
+	"printname"   									""
+	"shortprintname"   								""
+	"description" 									""
+	"longdesc"										""
+	"weaponClass" 									"human"
+	"weaponType" 									"shoulder"
+	"fire_mode"   									"offhand"
+	"offhand_active_slot"                           "altHand"
+	"offhand_activates_on_zoom"						"1"
+	"offhand_deploy_requires_input"					"1"
+
+	"menu_icon"										"rui/titan_loadout/defensive/titan_defensive_sword_block_menu"
+	"hud_icon"										"rui/titan_loadout/defensive/titan_defensive_sword_block"
+
+	"OnWeaponActivate"								"OnWeaponActivate_ability_gibraltar_shield"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_ability_gibraltar_shield"
+	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_ability_gibraltar_shield"
+	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_ability_gibraltar_shield"
+	"OnWeaponOwnerChanged"					        "OnWeaponOwnerChanged_ability_gibraltar_shield"
+	"OnWeaponChargeBegin"							"OnWeaponChargeBegin_ability_gibraltar_shield"
+	"OnWeaponChargeEnd"							    "OnWeaponChargeEnd_ability_gibraltar_shield"
+
+	"clear_fx_on_new_view_model"					"0"
+	"fire_duration"                                 "10.0"
+
+	// Menu Stats
+
+	MP_BASE
+	{
+		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+	}
+	SP_BASE
+	{
+		"enable_highlight_networking_on_creation"		"1"
+	}
+
+	// Models
+	"viewmodel"										"mdl/weapons/empty_handed/ptpov_gibraltar_shield.rmdl"
+	"playermodel"									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+
+	// Effects
+	"impact_effect_table" 							"titan_bullet"
+	"vortex_absorb_effect"							"wpn_vortex_projectile_20mm_FP"
+	"vortex_absorb_effect_third_person"				"wpn_vortex_projectile_20mm"
+	"vortex_absorb_sound"							"Vortex_Shield_AbsorbBulletLarge"
+	"vortex_absorb_sound_1p_vs_3p"					"Vortex_Shield_AbsorbBulletLarge_1P_VS_3P"
+	"sound_weapon_ready"							"survival_ui_tactical_ready"
+	"vortex_drain"									"0.0"
+	"projectile_adjust_to_gun_barrel"				"1"
+	"charge_sound_1p"								""
+	"charge_sound_3p"								""
+
+	"shared_energy_cost"							"0"
+	"shared_energy_charge_cost"						"0"
+
+    "charge_effect_attachment"						"muzzle_flash"
+	"charge_effect_1p"								"P_gun_shield_gibraltar_FP"
+
+	// Ammo
+	"ammo_stockpile_max"							"4500"
+	"ammo_clip_size"   								"-1"
+	"ammo_default_total"							"4500"
+
+	// Charge settings
+    "cooldown_type"                                 "vortex_drain"
+	"charge_time" 									"-1.0"
+	"charge_cooldown_time"							"0.0"
+	"charge_cooldown_delay"   						"0.0"
+	"charge_end_forces_fire"  						"0"
+	"charge_allow_melee"							"1"		// re-enable for DLC4, fix anim bugs
+
+	// Behavior
+	"fire_rate"   									"20.0"
+	"holster_time"									".9"
+	"deploy_time" 									".6"
+	"lower_time"  									".9"
+	"raise_time"  									".6"
+	"vortex_refire_behavior"  						"absorb"
+	"play_offhand_charging_anim"  					"0"
+	"offhand_blocks_sprint"							"1"
+	"allow_empty_fire"								"1"
+	"reload_enabled"  								"1"
+	"allow_empty_click"   							"1"
+	"empty_reload_only"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"enable_hud_alert"								"0"
+
+	// Spread
+	"ammo_suck_behavior"							"offhand_weapons"
+
+    "spread_stand_hip"								"8"
+    "spread_stand_hip_run"							"8"
+    "spread_stand_hip_sprint"                       "8"
+    "spread_crouch_hip"   							"8"
+    "spread_air_hip"  								"8"
+
+    "spread_moving_increase_rate" 					"3"
+    "spread_moving_decay_rate" 						"10.5"
+
+    "spread_kick_on_fire_stand_hip"   				"0.4"
+    "spread_kick_on_fire_crouch_hip"  				"0.4"
+    "spread_kick_on_fire_air_hip" 					"0.4"
+
+    "spread_max_kick_stand_hip"   					"9"
+    "spread_max_kick_crouch_hip"  					"9"
+    "spread_max_kick_air_hip" 						"9"
+
+    "spread_decay_delay"  							"0.25"
+    "spread_decay_rate"   							"10"
+
+    "spread_stand_ads"								"8"
+    "spread_crouch_ads"   							"8"
+    "spread_air_ads"  								"8"
+
+    "spread_kick_on_fire_stand_ads"   				"0.4"
+    "spread_kick_on_fire_crouch_ads"  				"0.4"
+    "spread_kick_on_fire_air_ads" 					"0.4"
+
+    "spread_max_kick_stand_ads"   					"9"
+    "spread_max_kick_crouch_ads"  					"9"
+    "spread_max_kick_air_ads" 						"9"
+
+    "spread_wallhanging"  							"0.0"
+
+
+	// View Kick
+	"viewkick_spring" 								"pistol"
+
+	// Bob
+	"bob_cycle_time"  								"0.7"
+	"bob_vert_dist"   								"3"
+	"bob_horz_dist"   								"2.5"
+	"bob_max_speed"   								"150"
+	"bob_pitch"   									"1"
+	"bob_yaw" 										"0.80"
+	"bob_roll"										"-2.25"
+
+	// Bob - ADS
+	"bob_cycle_time_zoomed"  						"0.4"
+	"bob_vert_dist_zoomed"   						"0.045"
+	"bob_horz_dist_zoomed"   						"0.07"
+	"bob_max_speed_zoomed"   						"155"
+	//"bob_pitch_zoomed"   							"0.0"
+	"bob_yaw_zoomed" 								"-0.01"
+	"bob_roll_zoomed"								"0.25"
+
+	// Viewdrift - ADS
+	"viewdrift_ads_delay"                      "1.2"
+	"viewdrift_ads_delay_debounce_time"        "0.6"
+
+	"viewdrift_ads_speed_pitch"   				"0.5"
+	"viewdrift_ads_speed_yaw" 					"0.5"
+
+	"viewdrift_ads_stand_scale_pitch" 			"0.5"
+	"viewdrift_ads_stand_scale_yaw"   			"0.4"
+	"viewdrift_ads_crouch_scale_pitch"  		"0.3"
+	"viewdrift_ads_crouch_scale_yaw"			"0.25"
+	"viewdrift_ads_air_scale_pitch"   			"0.6"
+	"viewdrift_ads_air_scale_yaw" 				"0.8"
+
+	// Viewdrift - Hipfire
+	"viewdrift_hipfire_stand_scale_pitch"	        "0.0"
+	"viewdrift_hipfire_crouch_scale_pitch"	        "0.0"
+	"viewdrift_hipfire_air_scale_pitch"	            "0.0"
+	"viewdrift_hipfire_speed_pitch"	                "0.0"
+
+	"viewdrift_hipfire_stand_scale_yaw"	            "0.0"
+	"viewdrift_hipfire_crouch_scale_yaw"	        "0.0"
+	"viewdrift_hipfire_air_scale_yaw"               "0.0"
+	"viewdrift_hipfire_speed_yaw"                   "0.0"
+
+	// Viewmodel - Sway
+	"sway_rotate_attach"  							"SWAY_ROTATE"
+	"sway_min_x"  									"-0.5"
+	"sway_min_y"  									"-0.5"
+	"sway_min_z"  									"-0.6"
+	"sway_max_x"  									"0.5"
+	"sway_max_y"  									"0.5"
+	"sway_max_z"  									"0.6"
+	"sway_min_pitch"  								"-3"
+	"sway_min_yaw"									"-2.5"
+	"sway_min_roll"   								"-4"
+	"sway_max_pitch"  								"3"
+	"sway_max_yaw"									"2.5"
+	"sway_max_roll"   								"4"
+	"sway_translate_gain" 							"2.5"
+	"sway_rotate_gain"								"7"
+	"sway_move_forward_translate_x"   				"-0.1"
+	"sway_move_forward_translate_z"   				"-0.5"
+	"sway_move_back_translate_x"  					"0.2"
+	"sway_move_back_translate_z"  					"-0.2"
+	"sway_move_left_translate_y"  					"-1"
+	"sway_move_left_translate_z"  					"-0.5"
+	"sway_move_left_rotate_roll"  					"-4"
+	"sway_move_right_translate_y" 					"1"
+	"sway_move_right_translate_z" 					"-0.5"
+	"sway_move_right_rotate_roll" 					"4"
+	"sway_move_up_translate_z"						"-1"
+	"sway_move_down_translate_z"  					"1"
+	"sway_turn_left_rotate_yaw"   					"-2.5"
+	"sway_turn_right_rotate_yaw"  					"2.5"
+
+	"sway_turn_left_translate_y"  					".5"
+	"sway_turn_right_translate_y"  					"-.5"
+	"sway_turn_up_translate_z"  					".2"
+	"sway_turn_down_translate_z"  					"-.2"
+	"sway_turn_up_translate_x"  					".1"
+	"sway_turn_down_translate_x"  					"-.1"
+
+	"sway_turn_left_rotate_roll"   					"4"
+	"sway_turn_right_rotate_roll"  					"-4"
+	"sway_turn_up_rotate_pitch"   					"3"
+	"sway_turn_down_rotate_pitch" 					"-3"
+	"sway_turn_up_rotate_roll"   					"-0.8"
+	"sway_turn_down_rotate_roll" 					"0.8"
+
+	// Zoomed Sway
+	"sway_rotate_attach_zoomed"						"SWAY_ROTATE_ZOOMED"
+	"sway_rotate_attach_blend_time_zoomed"			"0.2"
+	"sway_rotate_gain_zoomed"						"5"
+
+	"sway_min_yaw_zoomed"							"-0.04"
+	"sway_max_yaw_zoomed"							"0.04"
+	"sway_turn_left_rotate_yaw_zoomed"				"-0.085"
+	"sway_turn_right_rotate_yaw_zoomed"				"0.085"
+
+	"sway_min_roll_zoomed"   						"-1"
+	"sway_max_roll_zoomed"   						"1"
+	"sway_turn_left_rotate_roll_zoomed"   			"-1"
+	"sway_turn_right_rotate_roll_zoomed"  			"1"
+
+	"sway_move_right_rotate_roll_zoomed" 			"0.2"
+	"sway_move_left_rotate_roll_zoomed"  			"-0.2"
+
+	"sway_min_pitch_zoomed"  						"-0.02"
+	"sway_max_pitch_zoomed"  						"0.03"
+	"sway_turn_up_rotate_pitch_zoomed"				"0.07"
+	"sway_turn_down_rotate_pitch_zoomed"			"-0.07"
+
+	// Rumble
+	"rumble"  										"0"
+
+	// NPC
+	"npc_min_range"   								"0"
+	"npc_max_range"   								"8000"
+
+	"npc_min_range_secondary" 						"0"
+	"npc_max_range_secondary" 						"2500"
+	"npc_min_burst"   								"0"		// this must be 0 so AI don't shoot vortex automatically
+	"npc_max_burst"   								"0"		// this must be 0 so AI don't shoot vortex automatically
+	"npc_rest_time_between_bursts_min"				"4"
+	"npc_rest_time_between_bursts_max"				"8"
+
+	"npc_use_short_duration"						"1"
+	"npc_use_normal_duration"						"1.5"
+	"npc_use_min_damage"							"500"
+	"npc_use_max_damage"							"1000"
+	"npc_use_min_projectile_damage"					"10000"	// prefer to dodge over blocking projectiles
+
+	"proficiency_poor_additional_rest"				"20"
+	"proficiency_average_additional_rest"			"16"
+	"proficiency_good_additional_rest"				"6"
+	"proficiency_very_good_additional_rest"			"3"
+
+	"npc_titan_ability"								"WTA_VORTEX"
+
+	// WeaponED Unhandled Key/Values and custom script Key/Values
+	"sway_turn_angle_factor"  						"-0.5"
+	"sway_turn_origin_factor" 						"0"
+	"sway_turn_angle_factor_zoomed"   				"0"
+	"sway_turn_origin_factor_zoomed"  				"0.05"
+	"sway_move_angle_factor"  						"0.5"
+	"sway_move_origin_factor" 						"0.5"
+	"sway_move_angle_factor_zoomed"   				"0"
+	"sway_move_origin_factor_zoomed"  				"0.03"
+	"sway_gain"   									"15.0"
+
+	// Crosshair
+	"red_crosshair_range" 							"1200"
+
+	Mods
+	{
+	    disabled
+	    {
+	        "offhand_activates_on_zoom"						"0"
+	    }
+	}
+
+	"ui1_enable"		"1"
+	UiData1
+	{
+		"ui"							"ui/gibraltar_shield_rui"
+		"mesh"							"models/weapons/attachments/gibraltar_shield_rui"
+		Args
+		{
+			charge						shared_energy_frac
+			shieldRegenTime             weapon_script_time_0
+			regenDuration               eWeaponVar.fire_duration
+		}
+	}
+}

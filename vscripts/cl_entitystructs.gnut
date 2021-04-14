@@ -1,0 +1,205 @@
+global struct TitanBindings
+{
+	void functionref( entity ) PlayerPressed_Eject
+	void functionref( entity ) PlayerPressed_EjectEnable
+}
+
+global struct SegmentedHealthBar
+{
+	var healthBarAnchor
+	var healthBarParent
+	var healthBar
+	var healthBarBack
+	var healthBarDoomed
+}
+
+global struct BurnMeterHudStruct //Have to put this struct def here so I can put an array on the player
+{
+	var burnMeterProgressBar
+	var burnMeterRewardTypeIcon
+	var burnMeterLabel
+	int burnMeterRewardID
+	float burnMeterRewardProgress
+}
+
+
+// This struct is hooked up to entity.e in code
+global struct ClientEntityStruct
+{
+	EHIScriptStruct& ehiss
+
+	// for cockpit
+	entity mainVGUI
+	entity body
+
+	// for mainVGUI
+	var rodeoAlertIcon
+	var rodeoAlertLabel
+	var safeArea
+	var safeAreaCenter
+	var screen
+
+	var missileImpactLabel
+	var rodeoLabel
+	var rebootTimer
+
+	var overheadRui
+
+	table<string,AnimEventData> animEventDataForEntity
+	array emergencyIcons
+	array emergencyRings
+
+	//Legion Variables
+	bool ammoSwapPlaying = false
+	bool gunShieldActive = false
+
+	float localPingBeginTime = -999.0
+	int predictedUseCount = 0
+	bool predictedUseSuccess = true
+
+	float lastVocalizedCommsTime = -999.0
+
+	array<DamageHistoryStruct> recentDamageHistory
+	string functionref( entity ent ) entTextOverrideCallback
+
+	bool functionref( entity player, entity ent ) canUseEntityCallback = null
+
+	array<void functionref( entity ent, entity player, int useInputType )> onUseEntityCallbacks
+	array<void functionref( entity vehicle )> onVehicleLaunchCallbacks
+	array<void functionref( entity vehicle )> onVehicleCollideCallbacks
+	array<void functionref( entity vehicle )> onPlayerUseButtonPressed
+	array<void functionref( entity vehicle )> onPlayerUseButtonReleased
+	array<void functionref( entity )> onEntityDestroyedCallbacks
+
+	string enemyHighlight = ""
+
+	float lastUseTime
+	bool isBusy
+
+	int __itemFlavorNetworkId
+
+	bool canBeMeleed = true
+}
+
+
+global struct TitanCockpitRUI
+{
+	var rui
+	int drawGroup = RUI_DRAW_COCKPIT
+}
+
+
+// This struct is hooked up to entity.p in code
+global struct ClientPlayerStruct
+{
+	entity rodeoBatteryCrosshairEntity
+	BurnMeterHudStruct[ 1 ] burnMeterHudStructs
+
+	float grenadePulloutTime
+
+	// ToDo: Only needed because of shared callbacks. This never actually get set on client so the function will always return false!!
+	bool isDisembarking = false
+
+	float disembarkPressTime
+	float ejectEnableTime
+	float ejectPressTime
+	int ejectPressCount
+	bool playerScriptsInitialized
+
+	int smartCoreKills = 0
+
+	entity previousWeapon
+
+	entity knife = null
+
+	bool pilotEjecting = false
+
+	float nextAllowWarningTime = 0.0
+
+	entity previousRiderEnt = null
+	bool allowCoreMessages = true
+
+	string sayLineLatestSound
+	float sayLineLatestTime = -99.0
+	int lastSaidCommsAction
+	int lastCanceledCommsAction
+	table<int,float> commActionFlavorDebounceTimes
+
+	array<TitanCockpitRUI> titanCockpitRUIs
+	bool isInExtendedUse = false
+	table<string,int> requiredLootTypes = {}
+
+	string lastEventNotificationText
+
+	entity TEMP_lastMeleeInputWeapon = null
+
+	int mapPingTicketID = -1
+}
+
+
+
+// This struct is hooked up to entity.ai in code
+global struct ClientAIStruct
+{
+	int gruntVoiceIndex = 0
+}
+
+
+
+// hooked up to entity.w in code
+global struct ClientWeaponStruct
+{
+	float startChargeTime = 0.0
+	bool wasCharged = false
+	bool initialized = false
+	entity guidedMissileTarget = null
+
+	entity weaponOwner
+	array<int> statusEffects
+	float lastFireTime
+}
+
+
+// hooked up to entity.proj in code
+global struct ClientProjectileStruct
+{
+	vector savedDir
+	float savedShotTime
+	int projectileBounceCount = 0
+}
+
+
+// hooked up to entity.soul in code
+global struct ClientTitanSoulStruct
+{
+	bool titanUpgradesAnnounced = false
+	entity lastOwner
+	int upgradeCount = 0
+}
+
+
+// hooked up to entity.decoy in code
+global struct ClientPlayerDecoyStruct
+{
+	array<int> particleIndexes
+	bool decoyHasStealthPassive = false
+}
+
+// entity.wp
+global struct ClientPlayerWaypoint
+{
+	var ruiMinimap
+	var ruiFullmap
+	var ruiHud
+
+	array<int> fxHandles
+
+	bool haveConfirmed
+
+	entity highlightEnt
+}
+
+global struct ClientFirstPersonProxyStruct
+{
+	entity battery
+}

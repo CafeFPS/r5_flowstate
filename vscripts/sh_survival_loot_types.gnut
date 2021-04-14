@@ -1,0 +1,385 @@
+global function SURVIVAL_LootTypes_InitShared
+
+global function GetLootTypeData
+
+global const bool AUTOEQUIP_ATTACHMENTS = true
+
+global struct LootTypeData
+{
+	int equipmentAction = eLootAction.NONE
+	int equipmentAltAction = eLootAction.DROP
+
+	int backpackAction = eLootAction.NONE
+	int backpackAltAction = eLootAction.DROP
+
+	#if SERVER
+		entity functionref(string, vector) specialCaseSpawnFunction
+	#endif
+
+	LootActionStruct functionref( entity player, LootRef lootRef ) groundActionFunc
+	LootActionStruct functionref( entity player, LootRef lootRef ) groundUseLongActionFunc
+	LootActionStruct functionref( entity player, LootRef lootRef ) groundAltActionFunc
+
+	int priority
+
+	string equipmentSlot
+}
+
+struct
+{
+	table<int, LootTypeData> lootTypeData
+} file
+
+// TODO: these should be turned into Bakery assets
+void function SURVIVAL_LootTypes_InitShared()
+{
+	LootTypeData lt
+
+	lt = RegisterLootType( eLootType.MAINWEAPON )
+	lt.equipmentAction = eLootAction.EQUIP
+	lt.equipmentSlot = ""
+	lt.groundActionFunc = GroundAction_ForWeapons
+	lt.groundUseLongActionFunc = GroundLongAction_ForWeapons
+	lt.groundAltActionFunc = GroundAltAction_None// GroundAltAction_ForWeapons
+	#if SERVER
+		lt.specialCaseSpawnFunction = SpawnWeaponAndAmmo
+	#endif
+
+	lt = RegisterLootType( eLootType.AMMO )
+	lt.equipmentSlot = ""
+	lt.backpackAction = eLootAction.DROP
+	lt.backpackAltAction = eLootAction.DROP_ALL
+	lt.groundActionFunc = GroundAction_ForBackpackItem
+	lt.groundUseLongActionFunc = GroundLongAction_ForBackpackItem
+	lt.groundAltActionFunc = GroundAltAction_ForAmmo
+
+	lt = RegisterLootType( eLootType.ARMOR )
+	lt.equipmentSlot = "armor"
+	lt.groundActionFunc = GroundAction_ForEquipment
+	lt.groundAltActionFunc = GroundAltAction_ForEquipment
+	#if SERVER
+		lt.specialCaseSpawnFunction = SpawnArmor
+	#endif
+
+	lt = RegisterLootType( eLootType.INCAPSHIELD )
+	lt.equipmentSlot = "incapshield"
+	lt.groundActionFunc = GroundAction_ForEquipment
+	lt.groundAltActionFunc = GroundAltAction_ForEquipment
+
+	lt = RegisterLootType( eLootType.JUMPKIT )
+	lt.equipmentSlot = "jumpkit"
+	lt.groundActionFunc = GroundAction_ForEquipment
+	lt.groundAltActionFunc = GroundAltAction_ForEquipment
+
+	lt = RegisterLootType( eLootType.BACKPACK )
+	lt.equipmentSlot = "backpack"
+	lt.groundActionFunc = GroundAction_ForEquipment
+	lt.groundAltActionFunc = GroundAltAction_ForEquipment
+
+	lt = RegisterLootType( eLootType.HELMET )
+	lt.equipmentSlot = "helmet"
+	lt.groundActionFunc = GroundAction_ForEquipment
+	lt.groundAltActionFunc = GroundAltAction_ForEquipment
+
+	lt = RegisterLootType( eLootType.ATTACHMENT )
+	lt.equipmentSlot = ""
+	lt.equipmentAction = eLootAction.REMOVE
+	lt.equipmentAltAction = eLootAction.WEAPON_TRANSFER
+	lt.backpackAction = eLootAction.ATTACH_TO_ACTIVE
+	lt.groundActionFunc = GroundAction_ForAttachments
+	lt.groundUseLongActionFunc = GroundLongAction_ForAttachments
+	lt.groundAltActionFunc = GroundAltAction_ForAttachments
+
+	lt = RegisterLootType( eLootType.ORDNANCE )
+	lt.equipmentSlot = ""
+	lt.backpackAction = eLootAction.EQUIP
+	lt.groundActionFunc = GroundAction_ForBackpackItem
+	lt.groundUseLongActionFunc = GroundLongAction_ForBackpackItem
+	lt.groundAltActionFunc = GroundAltAction_None
+
+	lt = RegisterLootType( eLootType.HEALTH )
+	lt.equipmentSlot = ""
+	lt.equipmentAction = eLootAction.EQUIP
+	lt.backpackAction = eLootAction.USE
+	lt.groundActionFunc = GroundAction_ForBackpackItem
+	lt.groundUseLongActionFunc = GroundLongAction_ForBackpackItem
+	lt.groundAltActionFunc = GroundAltAction_None
+
+
+	lt = RegisterLootType( eLootType.BLANK )
+	lt.equipmentSlot = ""
+	lt.groundActionFunc = GroundAltAction_None
+	lt.groundAltActionFunc = GroundAltAction_None
+	#if SERVER
+		lt.specialCaseSpawnFunction = SpawnNothing
+	#endif
+
+	lt = RegisterLootType( eLootType.CUSTOMPICKUP )
+	lt.equipmentSlot = ""
+	lt.groundActionFunc = GroundAction_ForBackpackItem
+	lt.groundUseLongActionFunc = GroundLongAction_ForBackpackItem
+	lt.groundAltActionFunc = GroundAltAction_None
+
+
+	lt = RegisterLootType( eLootType.RESOURCE )
+	lt.equipmentSlot = ""
+	lt.equipmentAction = eLootAction.EQUIP
+	lt.backpackAction = eLootAction.NONE
+	lt.groundActionFunc = GroundAction_ForResource
+	lt.groundAltActionFunc = GroundAltAction_None
+}
+
+LootTypeData function RegisterLootType( int lootType )
+{
+	LootTypeData lt
+
+	file.lootTypeData[ lootType ] <- lt
+
+	return lt
+}
+
+LootTypeData function GetLootTypeData( int lootType )
+{
+	return file.lootTypeData[ lootType ]
+}
+
+LootActionStruct function GroundAction_ForBackpackItem( entity player, LootRef lootRef )
+{
+	LootData lootData = lootRef.lootData
+	LootActionStruct as
+
+	as.action = eLootAction.PICKUP
+
+	return as
+}
+
+LootActionStruct function GroundLongAction_ForBackpackItem( entity player, LootRef lootRef )
+{
+	LootData lootData = lootRef.lootData
+	LootActionStruct as
+
+	if ( SURVIVAL_AddToPlayerInventory( player, lootRef.lootData.ref, 1, false ) == 0 )
+		as.action = eLootAction.PICKUP
+
+	return as
+}
+
+LootActionStruct function GroundAction_ForResource( entity player, LootRef lootRef )
+{
+	LootActionStruct as
+
+	if ( player.GetShieldHealthMax() == 0 )
+	{
+		as.action = eLootAction.NONE
+		as.displayString = "#REASON_NO_SHIELDS"
+	}
+	else if ( GetShieldHealthFrac( player ) == 1.0 )
+	{
+		as.action = eLootAction.NONE
+		as.displayString = "#REASON_FULL_SHIELDS"
+	}
+	else
+	{
+		as.action = eLootAction.USE
+	}
+
+	return as
+}
+
+LootActionStruct function GroundAction_ForEquipment( entity player, LootRef lootRef )
+{
+	LootActionStruct as
+
+	LootData lootData = lootRef.lootData
+	LootTypeData lt = GetLootTypeData( lootData.lootType )
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( lt.equipmentSlot )
+	LootData equippedData = EquipmentSlot_GetEquippedLootDataForSlot( player, lt.equipmentSlot )
+	int tier = equippedData.tier
+
+	bool isDifferent = equippedData.ref != lootData.ref
+	bool hasPerk = (lootData.passive != ePassives.INVALID)
+
+	if( tier == 0 )
+	{
+		as.action = eLootAction.EQUIP
+	}
+	else if ( lootData.tier > tier || (lootData.ref != equippedData.ref && lootData.tier == tier && hasPerk) )
+	{
+		as.action = eLootAction.EQUIP
+	}
+	else
+	{
+		if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) && lootData.lootType == eLootType.ARMOR )
+		{
+			int currentShields = player.GetShieldHealth()
+			int lootShields = lootRef.lootProperty
+
+			if ( currentShields < lootShields )
+			{
+				as.action = eLootAction.EQUIP
+				return as
+			}
+		}
+
+		as.action = eLootAction.NONE
+		if ( lootData.ref == equippedData.ref )
+			as.displayString = "#REASON_YOU_HAVE_THIS"
+		else if ( es.ref == "armor" )
+			as.displayString = "#REASON_YOU_HAVE_BETTER"
+		else
+			as.displayString = "#REASON_YOU_HAVE_A_BETTER"
+		#if CLIENT
+			as.displayString = Localize( as.displayString, Localize( es.title ) )
+		#endif
+	}
+
+
+	return as
+}
+
+LootActionStruct function GroundAction_ForWeapons( entity player, LootRef lootRef )
+{
+	LootActionStruct as
+	as.displayString = ""
+
+	int action
+	if ( SURVIVAL_AltUseSwapsWeapon() && SURVIVAL_CountPrimaryWeapons( player ) > 1 )
+	{
+		action = eLootAction.SWAP
+
+		array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
+		if ( SURVIVAL_Loot_IsRefValid( weapons[0].GetWeaponClassName() ) )
+		{
+			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weapons[0].GetWeaponClassName() )
+			as.additionalData = weaponData
+		}
+	}
+	else
+	{
+		action = eLootAction.EQUIP
+	}
+
+	as.action = action
+	return as
+}
+
+LootActionStruct function GroundLongAction_ForWeapons( entity player, LootRef lootRef )
+{
+	LootActionStruct as
+	as.displayString = ""
+
+	int action
+	if ( SURVIVAL_AltUseSwapsWeapon() && SURVIVAL_CountPrimaryWeapons( player ) > 1 )
+	{
+		action = eLootAction.SWAP
+
+		array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
+		if ( SURVIVAL_Loot_IsRefValid( weapons[0].GetWeaponClassName() ) )
+		{
+			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weapons[0].GetWeaponClassName() )
+			as.additionalData = weaponData
+		}
+	}
+
+	as.action = action
+	return as
+}
+
+LootActionStruct function GroundAction_ForAttachments( entity player, LootRef lootRef )
+{
+	LootData lootData = lootRef.lootData
+
+	LootTypeData lt = GetLootTypeData( lootData.lootType )
+
+	LootActionStruct as = SURVIVAL_GetActionForAttachment( player, lootData, false, true, true )
+
+	// regular pick up
+	if ( as.action == eLootAction.NONE )
+		return GroundAction_ForBackpackItem( player, lootRef )
+
+	return as
+}
+
+LootActionStruct function GroundLongAction_ForAttachments( entity player, LootRef lootRef )
+{
+	LootData lootData = lootRef.lootData
+
+	LootTypeData lt = GetLootTypeData( lootData.lootType )
+
+	LootActionStruct as = SURVIVAL_GetActionForAttachment( player, lootData, false, true, true )
+
+	// regular pick up
+	if ( as.action == eLootAction.NONE )
+		return GroundLongAction_ForBackpackItem( player, lootRef )
+
+	LootActionStruct asNone
+	asNone.action = eLootAction.NONE
+	return asNone
+}
+
+LootActionStruct function GroundAltAction_ForAttachments( entity player, LootRef lootRef )
+{
+	if ( GroundAction_ForAttachments( player, lootRef ).action != eLootAction.PICKUP )
+		return GroundAction_ForBackpackItem( player, lootRef )
+
+	return GroundAltAction_None( player, lootRef )
+}
+
+LootActionStruct function GroundAltAction_ForEquipment( entity player, LootRef lootRef )
+{
+	LootActionStruct as
+	as.action = eLootAction.NONE
+	as.displayString = ""
+	return as
+}
+
+LootActionStruct function GroundAltAction_None( entity player, LootRef lootRef )
+{
+	LootActionStruct as
+	as.displayString = ""
+	as.action = eLootAction.NONE
+	return as
+}
+
+LootActionStruct function GroundAltAction_ForWeapons( entity player, LootRef lootRef )
+{
+	LootActionStruct as
+	as.displayString = ""
+
+	int action
+	if ( SURVIVAL_AltUseSwapsWeapon() && SURVIVAL_CountPrimaryWeapons( player ) == 0 )
+	{
+		action = eLootAction.NONE
+	}
+	else
+	{
+		action = eLootAction.DISMANTLE
+	}
+
+	as.action = action
+	return as
+}
+
+LootActionStruct function GroundAltAction_ForAmmo( entity player, LootRef lootRef )
+{
+	LootActionStruct as
+	as.displayString = ""
+	as.action = eLootAction.NONE
+	return as
+}
+
+bool function AlwaysTrue( entity player, entity prop )
+{
+	return true
+}
+
+bool function MainActionIsNotPickup( entity player, entity ent )
+{
+	int lootIndex = ent.GetSurvivalInt()
+	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootIndex )
+	LootRef lootRef = SURVIVAL_CreateLootRef( lootData, ent )
+
+	LootActionStruct asMain = SURVIVAL_GetActionForGroundItem( player, lootRef, false )
+
+	return asMain.action != eLootAction.PICKUP
+}

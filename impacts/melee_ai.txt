@@ -1,0 +1,192 @@
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	""
+		"whizby_sound_from_AI"		""
+		"whizby_maxDistancePilot"	"100"
+		"whizby_maxDistanceTitan"	"300"
+	}
+
+	FX
+	{
+		"C" "" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "" // metal_titan
+
+		"F" "" //flesh
+		"G" "" //metalgrate, chainlink, chain
+		"H" "" //alienflesh
+
+		"J" "" //grass
+		"K" "" //Mud
+		"L" "" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+//		"N" "openslot"
+		"O" ""  //Foliage
+		"P" "" //Computer
+
+		"R" "" //metalpanel, grenade, canister
+		"S" "" //water, slime
+		"T" "" //tile
+		"U" "" // glass_breakable
+		"V" "" //Metal Vent
+		"W" "" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "" //xo_shield
+
+		"Y" "" //glass, brokenglass, glassbottle, pottery
+		"Z" "" //sand
+
+//		"0" "openslot"
+//		"1" "openslot"
+//		"2" "openslot"
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "" //brush water
+		"slime_splash" ""
+		"airburst" ""  //No Surface
+		"shieldhit" ""
+		"critical_hit" ""
+	}
+
+	Sound
+	{
+		"C" "AI.Melee_Impact"
+		"D" "AI.Melee_Impact"
+		"E" "AI.Melee_Impact"
+
+		"F" "player_melee_impact_flesh_3P_vs_3P"
+		"G" "AI.Melee_Impact"
+		"H" "player_melee_impact_flesh_3P_vs_3P"
+
+		"J" "AI.Melee_Impact"
+		"K" "AI.Melee_Impact"
+		"L" "AI.Melee_Impact"
+		"M" "AI.Melee_Impact"
+		"N" "AI.Melee_Impact"
+		"O" "AI.Melee_Impact"
+		"P" "Pilot_Melee_Kick_Impact_Android_3P_vs_3P"
+
+		"R" "AI.Melee_Impact"
+		"S" "AI.Melee_Impact"
+		"T" "AI.Melee_Impact"
+
+		"V" "AI.Melee_Impact"
+		"W" "AI.Melee_Impact"
+
+		"Y" "AI.Melee_Impact"
+		"Z" "AI.Melee_Impact"
+
+		"splash" "Water.BulletImpact"
+		"slime_splash" "Water.BulletImpact"
+
+		"airburst" ""
+		"shieldhit" "TitanShield.Light.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "AI.Melee_Impact"
+		"D" "AI.Melee_Impact"
+		"E" "AI.Melee_Impact"
+
+		"F" "AI.Melee_Impact"
+		"G" "AI.Melee_Impact"
+		"H" "AI.Melee_Impact"
+
+		"J" "AI.Melee_Impact"
+		"K" "AI.Melee_Impact"
+		"L" "AI.Melee_Impact"
+		"M" "AI.Melee_Impact"
+		"N" "AI.Melee_Impact"
+		"O" "AI.Melee_Impact"
+		"P" "AI.Melee_Impact"
+
+		"R" "AI.Melee_Impact"
+		"S" "AI.Melee_Impact"
+		"T" "AI.Melee_Impact"
+
+		"V" "AI.Melee_Impact"
+		"W" "AI.Melee_Impact"
+
+		"Y" "AI.Melee_Impact"
+		"Z" "AI.Melee_Impact"
+
+		"splash" "Water.BulletImpact"
+		"slime_splash" "Water.BulletImpact"
+
+		"airburst" ""
+		"shieldhit" "TitanShield.Light.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "AI.Melee_Impact"
+		"D" "AI.Melee_Impact"
+		"E" "AI.Melee_Impact"
+
+		"F" "player_melee_impact_flesh_3P_vs_1P_AIGruntGenerated"
+		"G" "AI.Melee_Impact"
+		"H" "player_melee_impact_flesh_3P_vs_1P_AIGruntGenerated"
+
+		"J" "AI.Melee_Impact"
+		"K" "AI.Melee_Impact"
+		"L" "AI.Melee_Impact"
+		"M" "AI.Melee_Impact"
+		"N" "AI.Melee_Impact"
+		"O" "AI.Melee_Impact"
+		"P" "Pilot_Melee_Kick_Impact_Android_3P_vs_1P"
+
+		"R" "AI.Melee_Impact"
+		"S" "AI.Melee_Impact"
+		"T" "AI.Melee_Impact"
+
+		"V" "AI.Melee_Impact"
+		"W" "AI.Melee_Impact"
+
+		"Y" "AI.Melee_Impact"
+		"Z" "AI.Melee_Impact"
+
+		"splash" "Water.BulletImpact"
+		"slime_splash" "Water.BulletImpact"
+
+		"airburst" ""
+		"shieldhit" "TitanShield.Light.BulletImpact_3P_vs_1P"
+	}
+
+	Sound_victim_from_AI
+	{
+		"C" "AI.Melee_Impact"
+		"D" "AI.Melee_Impact"
+		"E" "AI.Melee_Impact"
+
+		"F" "player_melee_impact_flesh_3P_vs_1P_AIGruntGenerated"
+		"G" "AI.Melee_Impact"
+		"H" "player_melee_impact_flesh_3P_vs_1P_AIGruntGenerated"
+
+		"J" "AI.Melee_Impact"
+		"K" "AI.Melee_Impact"
+		"L" "AI.Melee_Impact"
+		"M" "AI.Melee_Impact"
+		"N" "AI.Melee_Impact"
+		"O" "AI.Melee_Impact"
+		"P" "Pilot_Melee_Kick_Impact_Android_3P_vs_1P"
+
+		"R" "AI.Melee_Impact"
+		"S" "AI.Melee_Impact"
+		"T" "AI.Melee_Impact"
+
+		"V" "AI.Melee_Impact"
+		"W" "AI.Melee_Impact"
+
+		"Y" "AI.Melee_Impact"
+		"Z" "AI.Melee_Impact"
+	}
+}

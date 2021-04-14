@@ -1,0 +1,375 @@
+global function Sh_PassiveVoices_Init
+
+#if CLIENT
+global function ServerCallback_PlayPassiveVoice
+#endif
+
+const asset WRAITH_SENSE_FX = $"loot_tick_exp_sparkhigh_1"
+const float WARN_COOLDOWN = 60.0
+
+struct VoiceData
+{
+	array<string> voiceDescriptors
+	int responseId
+}
+
+struct
+{
+	//EVENT DESCRIPTORS
+	table< string, VoiceData > voiceData
+
+	#if CLIENT
+	float allowWarnTeammatesTime
+	int warnTeammatesCatId
+	var warnRui
+	#else
+		table< entity, table<int,float> > nextAllowSayTimes
+		table< entity, float > nextAllowWarnTimes
+	#endif
+} file
+
+const float WARN_TEAMMATES_DELAY = 6.0
+const string AUDIO_WARN_TEAMMATES_BEEP = "diag_mp_wraithvoid_comms_in"
+
+enum ePassiveVoiceCategories
+{
+	NEAR,
+	MID,
+	FAR,
+	SURROUND,
+	ADVANCING,
+	WITHDRAWING,
+	CHASING,
+	STATIC,
+	MULTIPLE,
+	WATCHING,
+	AIMING,
+	SNIPING,
+	PING,
+	TRAP,
+	BOMBARDMENT,
+	KILLZONE,
+	GRENADE,
+	ABOVE,
+	BELOW,
+	BEHIND,
+	AHEAD,
+	FLANKING
+}
+
+const table<int,string> passiveEnumToStringMap = {
+	[ ePassiveVoiceCategories.NEAR ] = "hostile_near",
+	[ ePassiveVoiceCategories.MID ] = "hostile_mid",
+	[ ePassiveVoiceCategories.FAR ] = "hostile_far",
+	[ ePassiveVoiceCategories.SURROUND ] = "hostile_surround",
+	[ ePassiveVoiceCategories.ADVANCING ] = "advancing",
+	[ ePassiveVoiceCategories.WITHDRAWING ] = "withdrawing",
+	[ ePassiveVoiceCategories.CHASING ] = "chasing",
+	[ ePassiveVoiceCategories.STATIC ] = "static",
+	[ ePassiveVoiceCategories.MULTIPLE ] = "multiple",
+	[ ePassiveVoiceCategories.WATCHING ] = "watching",
+	[ ePassiveVoiceCategories.AIMING ] = "aiming",
+	[ ePassiveVoiceCategories.SNIPING ] = "sniping",
+	[ ePassiveVoiceCategories.PING ] = "ping",
+	[ ePassiveVoiceCategories.TRAP ] = "trap",
+	[ ePassiveVoiceCategories.BOMBARDMENT ] = "bombardment",
+	[ ePassiveVoiceCategories.KILLZONE ] = "killzone",
+	[ ePassiveVoiceCategories.GRENADE ] = "grenade",
+	[ ePassiveVoiceCategories.ABOVE ] = "above",
+	[ ePassiveVoiceCategories.BELOW ] = "below",
+	[ ePassiveVoiceCategories.BEHIND ] = "behind",
+	[ ePassiveVoiceCategories.AHEAD ] = "ahead",
+	[ ePassiveVoiceCategories.FLANKING ] = "flanking",
+}
+
+
+//Taking a fairness pass at the passive. The Near/Mid/Far descriptions are being normalized to say the same thing.
+//The Above/Below/Flanking/Ahead/Behind should no longer get triggered.
+//A few lines are being updated for clarity/less spooky ghost voice.
+//Common Events have a shared CD ( so the VO can play ) ~ 10 seconds icd
+//Uncommon Events have a shared CD but will interrupt and player over common events. ~ 10 second icd
+
+void function Sh_PassiveVoices_Init()
+{
+	RegisterSignal( "passive_voices_stop_plane_wait" )
+
+	PrecacheParticleSystem( WRAITH_SENSE_FX )
+
+	var dataTable = GetDataTable( $"datatable/wraith_voices.rpak" )
+	int rows = GetDatatableRowCount( dataTable )
+
+	string currentCategory = ""
+
+	for ( int i = 0; i < rows; i++ )
+	{
+		string category = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "category" ) )
+
+		if ( category == "" )
+			category = currentCategory
+		else
+			currentCategory = category
+
+		if (!( currentCategory in file.voiceData ))
+		{
+			VoiceData data
+
+			string responseActionString = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "responseId" ) )
+			int responseAction = eCommsAction[responseActionString]
+			data.responseId = responseAction
+
+			file.voiceData[ currentCategory ] <- data
+		}
+
+		string alias = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "alias" ) )
+		file.voiceData[ currentCategory ].voiceDescriptors.append( alias )
+	}
+
+	foreach ( key,data in file.voiceData )
+		data.voiceDescriptors.randomize()
+
+	#if SERVER
+	AddCallback_OnPassiveChanged( ePassives.PAS_VOICES, PassiveVoices_OnPassiveChanged )
+	#endif
+}
+
+bool function IsViewTypeCategory( int catId )
+{
+	switch ( catId )
+	{
+		case ePassiveVoiceCategories.AIMING:
+		case ePassiveVoiceCategories.WATCHING:
+		case ePassiveVoiceCategories.SNIPING:
+			return true
+	}
+
+	return false
+}
+
+#if SERVER
+void function PassiveVoices_OnPassiveChanged( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( didHave )
+	{
+		player.Signal( "passive_voices_stop_plane_wait" )
+		SurvivalCommentary_InitThreatChatterForPlayer( player )
+	}
+
+	if ( nowHas )
+		thread PassiveVoices_WaitForPlaneJump( player )
+}
+
+void function PassiveVoices_WaitForPlaneJump( entity player )
+{
+	Assert ( IsNewThread(), "Must be threaded off" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "passive_voices_stop_plane_wait" )
+
+	while ( !Survival_HasPlayerJumpedOutOfPlane( player ) )
+	{
+		if ( !player.HasPassive( ePassives.PAS_VOICES ) )
+			return
+
+		WaitFrame()
+	}
+
+	ThreatDetection_StartForPlayer( player )
+
+	//HOSTILE PLAYER VIEW
+	AddCallback_OnThreatEventActivation( player, TDT_HOSTILE_ENTITY_VIEW, PassiveVoices_OnThreatActivationHostileView )
+	AddCallback_OnThreatEventStateChange( player, TDT_HOSTILE_ENTITY_VIEW, TDS_VIEW_WATCH, TDS_VIEW_AIM, PassiveVoices_OnThreatStateChangeFromHostileWatchingToAiming )
+	AddCallback_OnThreatEventStateChange( player, TDT_HOSTILE_ENTITY_VIEW, TDS_VIEW_WATCH, TDS_VIEW_SNIPE, PassiveVoices_OnThreatStateChangeFromHostileWatchingToSniping )
+
+	//HOSTILE PLAYER PROXIMITY
+	//AddCallback_OnThreatEventActivation( player,TDT_HOSTILE_ENTITY_PROXIMITY, PassiveVoices_OnThreatActivationHostileProximity )
+	//AddCallback_OnThreatEventStateChange( player, TDT_HOSTILE_ENTITY_PROXIMITY, TDS_PROXIMITY_FAR, TDS_PROXIMITY_MED, PassiveVoices_OnThreatStateChangeFromHostileFarToMid )
+	//AddCallback_OnThreatEventStateChange( player, TDT_HOSTILE_ENTITY_PROXIMITY, TDS_PROXIMITY_MED, TDS_PROXIMITY_NEAR, PassiveVoices_OnThreatStateChangeFromHostileMidToNear )
+
+	//TRAPS
+	AddCallback_OnThreatEventActivation( player, eThreatDetectionZoneType.TRAP, PassiveVoices_OnThreatActivationForTrap )
+
+	//AMBUSHES
+	AddCallback_OnThreatEventActivation( player, eThreatDetectionZoneType.AMBUSH, PassiveVoices_OnThreatActivationForAmbush )
+
+	//PINGS
+	//AddCallback_OnThreatEventActivation( player, eThreatDetectionZoneType.PING, PassiveVoices_OnThreatActivationPing )
+
+	//KILLZONE
+	AddCallback_OnThreatEventActivation( player, eThreatDetectionZoneType.KILLZONE, PassiveVoices_OnThreatActivationKillzone )
+
+	//BASIC GRENADES/BOMBARDMENT
+	AddCallback_OnThreatEventActivation( player, eThreatDetectionZoneType.BOMBARDMENT, SurvivalCommentary_OnThreatActivationBombardment )
+	AddCallback_OnThreatEventActivation( player, eThreatDetectionZoneType.GRENADE, SurvivalCommentary_OnThreatActivationGrenade )
+
+	if ( player in file.nextAllowSayTimes )
+		return
+
+	file.nextAllowWarnTimes[ player ] <- 0.0
+	file.nextAllowSayTimes[ player ] <- {}
+	foreach ( cat in ePassiveVoiceCategories )
+	{
+		file.nextAllowSayTimes[ player ][ cat ] <- 0.0
+	}
+}
+
+void function PassiveVoices_PlayEventFlagDescriptors( entity player, ThreatEventCallbackData data )
+{
+	//if ( ThreatDetection_IsThreatSurround( data ) )
+	//	PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.SURROUND )
+}
+
+//HOSTILE PLAYER VIEW CALLBACKS
+void function PassiveVoices_OnThreatActivationHostileView( entity player, ThreatEventCallbackData data )
+{
+	switch ( data.typeState )
+	{
+		case TDS_VIEW_WATCH:
+			//printt( "PASSIVE VOICES: THREAT ACTIVATION CALLBACK FOR HOSTILE PLAYER WATCHING." )
+			PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.WATCHING )
+			break
+		case TDS_VIEW_AIM:
+			//printt( "PASSIVE VOICES: THREAT ACTIVATION CALLBACK FOR HOSTILE PLAYER AIMING." )
+			PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.AIMING )
+			break
+		case TDS_VIEW_SNIPE:
+			//printt( "PASSIVE VOICES: THREAT ACTIVATION CALLBACK FOR HOSTILE PLAYER SNIPING." )
+			PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.SNIPING )
+			break
+	}
+}
+
+void function PassiveVoices_OnThreatStateChangeFromHostileWatchingToAiming( entity player, ThreatEventCallbackData data )
+{
+	//printt( "PASSIVE VOICES: THREAT STATE CHANGE CALLBACK FROM HOSTILE PLAYER WATCHING TO HOSTILE PLAYER AIMING." )
+
+	PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.AIMING )
+
+}
+
+void function PassiveVoices_OnThreatStateChangeFromHostileWatchingToSniping( entity player, ThreatEventCallbackData data )
+{
+	//printt( "PASSIVE VOICES: THREAT STATE CHANGE CALLBACK FROM HOSTILE PLAYER WATCHING TO HOSTILE PLAYER SNIPING." )
+	PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.SNIPING )
+}
+
+//HOSTILE PLAYER PROXIMITY CALLBACKS
+void function PassiveVoices_OnThreatActivationHostileProximity( entity player, ThreatEventCallbackData data )
+{
+	PassiveVoices_PlayEventFlagDescriptors( player, data )
+}
+
+void function PassiveVoices_OnThreatStateChangeFromHostileFarToMid( entity player, ThreatEventCallbackData data )
+{
+	PassiveVoices_PlayEventFlagDescriptors( player, data )
+}
+
+void function PassiveVoices_OnThreatStateChangeFromHostileMidToNear( entity player, ThreatEventCallbackData data )
+{
+	PassiveVoices_PlayEventFlagDescriptors( player, data )
+}
+
+//TRAP CALLBACKS
+void function PassiveVoices_OnThreatActivationForTrap( entity player, ThreatEventCallbackData data )
+{
+	//printt( "PASSIVE VOICES: THREAT ACTIVATION CALLBACK FOR TRAP." )
+	PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.TRAP )
+}
+
+//AMBUSH CALLBACKS
+void function PassiveVoices_OnThreatActivationForAmbush( entity player, ThreatEventCallbackData data )
+{
+	//printt( "PASSIVE VOICES: THREAT ACTIVATION CALLBACK FOR AMBUSH." )
+	//string "IT'S AN AMBUSH"
+}
+
+//AMBUSH CALLBACKS
+void function PassiveVoices_OnThreatActivationPing( entity player, ThreatEventCallbackData data )
+{
+	//printt( "PASSIVE VOICES: THREAT ACTIVATION CALLBACK FOR PING." )
+
+	PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.PING )
+}
+
+//KILLZONE CALLBACKS
+void function PassiveVoices_OnThreatActivationKillzone( entity player, ThreatEventCallbackData data )
+{
+	//printt( "PASSIVE VOICES: THREAT ACTIVATION CALLBACK FOR KILLZONE." )
+
+	PassiveVoices_PlayRandomDescriptorFromCategory( player, ePassiveVoiceCategories.KILLZONE )
+}
+
+#endif
+
+void function PassiveVoices_PlayRandomDescriptorFromCategory( entity player, int catId )
+{
+	#if SERVER
+
+		bool isViewType = IsViewTypeCategory( catId )
+
+		if ( isViewType )
+		{
+			if ( file.nextAllowWarnTimes[ player ] > Time() )
+				return
+		}
+
+		if ( file.nextAllowSayTimes[ player ][ catId ] > Time() )
+			return
+
+		if ( isViewType )
+			file.nextAllowWarnTimes[ player ] = Time() + WARN_COOLDOWN
+
+		file.nextAllowSayTimes[ player ][ catId ] = Time() + 3.0
+
+		if ( GetCurrentPlaylistVarBool( "enable_wraith_alert_effect", false ) )
+		{
+			int fxid = GetParticleSystemIndex( WRAITH_SENSE_FX )
+			int attachId = player.LookupAttachment( "HEADSHOT" )
+			entity fx = StartParticleEffectOnEntity_ReturnEntity( player, fxid, FX_PATTACH_POINT_FOLLOW, attachId )
+			fx.SetOwner( player )
+			fx.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY)	// everyone but owner
+			EffectSetControlPointVector( fx, 1, <255,255,255> )
+		}
+
+
+		Remote_CallFunction_Replay( player, "ServerCallback_PlayPassiveVoice", catId )
+		StatsHook_PassiveVoices_VoiceHeard( player )
+	#else
+		string category = passiveEnumToStringMap[ catId ]
+		array<string> descriptors = file.voiceData[ category ].voiceDescriptors
+		string descriptor = descriptors.remove( 0 )
+		descriptors.append( descriptor )
+
+		EmitSoundOnEntity( player, descriptor )
+	#endif
+}
+
+#if CLIENT
+void function ServerCallback_PlayPassiveVoice( int catId )
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( !IsAlive( player ) )
+		return
+
+	PassiveVoices_PlayRandomDescriptorFromCategory( GetLocalViewPlayer(), catId )
+
+	// no warning hint if you have no teammates
+	if ( GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() <= 1 )
+		return
+
+	if ( IsSpectating() )
+		return
+
+	file.warnTeammatesCatId = catId
+	AddPingBlockingFunction( "quickchat", TryWraithWarnTeammates, WARN_TEAMMATES_DELAY,"#WRAITH_WARN_TEAMMATES", 100 )
+}
+
+void function TryWraithWarnTeammates( entity player )
+{
+	string category = passiveEnumToStringMap[ file.warnTeammatesCatId ]
+	VoiceData data = file.voiceData[ category ]
+	int quickChatId = data.responseId
+	Quickchat( player, quickChatId )
+	EmitSoundOnEntity( player, AUDIO_WARN_TEAMMATES_BEEP )
+}
+#endif

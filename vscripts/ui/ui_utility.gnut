@@ -1,0 +1,772 @@
+untyped
+
+globalize_all_functions
+
+global const NUM_EOG_CHALLENGE_BOXES = 6
+
+//global const WEBBROWSER_FLAG_NONE = 0
+//global const WEBBROWSER_FLAG_MUTEGAME = 0x0001
+
+global enum eVideoPanelContext
+{
+	ALL,
+	CLIENT, // in-game HUD videos
+	UI // menus/fullscreen videos
+}
+
+global enum eVideoPanelPinPositions
+{
+	TOP_LEFT,
+	TOP_RIGHT,
+	BOTTOM_LEFT,
+	BOTTOM_RIGHT,
+	TOP,
+	RIGHT,
+	BOTTOM,
+	LEFT,
+	CENTER
+}
+
+global enum eRuiArgType
+{
+	INT
+	FLOAT
+	GAMETIME
+	WALLTIME
+	STRING
+	ASSET
+	IMAGE
+	VECTOR
+	BOOL
+}
+
+void function UtilityUI_Init()
+{
+	RegisterSignal( "forever" )
+
+	level.getPersistentVarWrapper <- class
+	{
+		function GetPersistentVar( variable )
+		{
+			// This looks up the code function GetPersistentVar
+			return GetPersistentVar( variable )
+		}
+
+
+		function GetPersistentVarAsInt( string variable )
+		{
+			return GetPersistentVarAsInt( variable )
+		}
+	}
+}
+
+
+float function ContentScaledX( int val )
+{
+	return (val * GetContentScaleFactor( GetMenu( "MainMenu" ) ).x)
+}
+
+
+float function ContentScaledY( int val )
+{
+	return (val * GetContentScaleFactor( GetMenu( "MainMenu" ) ).y)
+}
+
+
+int function ContentScaledXAsInt( int val )
+{
+	float fVal = val * GetContentScaleFactor( GetMenu( "MainMenu" ) ).x
+	return int( fVal + 0.5 )
+}
+
+
+int function ContentScaledYAsInt( int val )
+{
+	float fVal = val * GetContentScaleFactor( GetMenu( "MainMenu" ) ).y
+	return int( fVal + 0.5 )
+}
+
+
+string function GetActiveLevel()
+{
+	// The level load callbacks overlap with the level init/shutdown callbacks, so we track each one separately.
+	if ( uiGlobal.loadedLevel != "" )
+		return uiGlobal.loadedLevel
+	return uiGlobal.loadingLevel
+}
+
+
+bool function HandleLockedMenuItem( var menu, var button, bool hideTip = false )
+{
+	/*array<var> elements = GetElementsByClassname( menu, "HideWhenLocked" )
+	var buttonTooltip = Hud_GetChild( menu, "ButtonTooltip" )
+	//var buttonTooltip = GetElementsByClassname( menu, "ButtonTooltip" )[0]
+	var toolTipLabel = Hud_GetChild( buttonTooltip, "Label" )
+
+	entity player = GetUIPlayer()
+	if ( player == null )
+		return
+
+	if ( "ref" in button.s && button.s.ref != null && IsItemLocked( player, expect string( button.s.ref ) ) && !hideTip )
+	{
+		foreach ( elem in elements )
+			Hud_Hide( elem )
+
+		Hud_SetText( toolTipLabel, "#UNLOCKED_AT_LEVEL", g_unlocks[ expect string( button.s.ref ) ].unlockLevel, "" )
+
+		UIPos buttonPos = Hud_GetAbsPosREPLACE( button )
+		local buttonHeight = Hud_GetHeight( button )
+		local tooltipHeight = Hud_GetHeight( buttonTooltip )
+		local yOffset = ( tooltipHeight - buttonHeight ) / 2.0
+
+		Hud_SetPos( buttonTooltip, buttonPos.x + Hud_GetWidth( button ) * 0.9, buttonPos.y - yOffset )
+		Hud_Show( buttonTooltip )
+
+		return true
+	}
+	else
+	{
+		foreach ( elem in elements )
+			Hud_Show( elem )
+		Hud_Hide( buttonTooltip )
+	}*/
+
+	return false
+}
+
+// No way to test a named element exists so this is a workaround
+var function GetSingleElementByClassname( var menu, string classname )
+{
+	array<var> elems = GetElementsByClassname( menu, classname )
+
+	if ( elems.len() )
+	{
+		Assert( elems.len() == 1 )
+		return elems[0]
+	}
+
+	return null
+}
+
+
+array<var> function GetElementsByClassnameForMenus( string classname, array menus )
+{
+	array<var> elements
+
+	foreach ( menu in menus )
+		elements.extend( GetElementsByClassname( menu, classname ) )
+
+	return elements
+}
+
+
+void function WaitFrameOrUntilLevelLoaded()
+{
+	WaitFrame()
+
+	while ( uiGlobal.loadedLevel == "" )
+		WaitFrame()
+}
+
+
+bool function IsPlayerAlone()
+{
+	int myTeam = GetTeam()
+	if ( GetTeamSize( myTeam ) <= 1 )
+		return true
+
+	return false
+}
+
+
+bool function PartyHasMembers()
+{
+	if ( GetPartySize() > 1 )
+		return true
+
+	return false
+}
+
+
+bool function AmIPartyMember()
+{
+	return (PartyHasMembers() && !AmIPartyLeader())
+}
+
+
+string function GetGameModeDisplayName( string mode )
+{
+	string displayName = GetGamemodeVarOrUseValue( mode, "name", (mode in GAMETYPE_TEXT) ? GAMETYPE_TEXT[mode] : "" )
+	return displayName
+}
+
+
+string function GetGameModeDisplayDesc( string mode )
+//TODO: Make this support attack/defend descriptions
+{
+	string displayDesc = GetGamemodeVarOrUseValue( mode, "description", (mode in GAMETYPE_DESC) ? GAMETYPE_DESC[mode] : "" )
+	return displayDesc
+}
+
+
+string function GetGameModeDisplayHint( string mode )
+//TODO: Make this support attack/defend descriptions
+{
+	string displayDesc = GetGamemodeVarOrUseValue( mode, "hint", GetGameModeDisplayDesc( mode ) )
+	return displayDesc
+}
+
+//asset function GetGameModeDisplayImage( string mode )
+//{
+//	return GAMETYPE_ICON[ mode ]
+//}
+
+array<int> function ColorStringToArray( string colorString )
+{
+	array<string> tokens = split( colorString, " " )
+
+	Assert( tokens.len() >= 3 && tokens.len() <= 4 )
+
+	array<int> colorArray
+	foreach ( token in tokens )
+		colorArray.append( int( token ) )
+
+	return colorArray
+}
+
+
+array<int> function GetGameModeDisplayColor( string mode )
+{
+	array<int> displayColor = ColorStringToArray( GetGamemodeVarOrUseValue( mode, "color", "" ) )
+	if ( displayColor.len() == 0 )
+		displayColor = GameMode_GetColor( mode )
+
+	return displayColor
+}
+
+
+entity function GetUIPlayer()
+{
+	if ( !IsFullyConnected() )
+		return null
+
+	return GetLocalClientPlayer()
+}
+
+
+int function GetLobbyTypeScript()
+{
+	if ( GetLobbyType() == "game" )
+	{
+		return eLobbyType.MATCH
+	}
+	else
+	{
+		if ( AmIPartyLeader() )
+		{
+			if ( IsPlayerAlone() ) // TODO: This function was changed to only check your team size, not the true player count, so you'll probably now have access to some menus you shouldn't be able to.
+				return eLobbyType.SOLO
+			else
+				return eLobbyType.PARTY_LEADER
+		}
+		else
+		{
+			return eLobbyType.PARTY_MEMBER
+		}
+	}
+
+	unreachable
+}
+
+
+var function AddMenu( string blockName, asset resourceFile, void functionref() initFunc = null, string displayName = "" )
+{
+	var menu = CreateMenu( "menu_" + blockName, resourceFile )
+	uiGlobal.menus[blockName] <- menu
+	menu.SetHudName( blockName )
+
+	if ( displayName != "" )
+		menu.SetDisplayName( displayName )
+	else
+		menu.SetDisplayName( blockName )
+
+	uiGlobal.allMenus.append( menu )
+
+	MenuDef defaultMenuData
+	defaultMenuData.menu = menu
+	uiGlobal.menuData[ menu ] <- defaultMenuData
+
+	if ( initFunc != null )
+		uiGlobal.menuData[ menu ].initFunc = initFunc
+
+	#if HAS_TOOLTIPS
+		ToolTips_AddMenu( menu )
+		ButtonClass_AddMenu( menu )
+	#endif
+
+	return menu
+}
+
+
+var function AddPanel( var menu, string panelName, void functionref( var ) initFunc = null )
+{
+	//printt( "AddPanel called, panelName:", panelName )
+
+	var panel = Hud_GetChild( menu, panelName )
+	uiGlobal.panels[ panelName ] <- panel
+	uiGlobal.allPanels.append( panel )
+
+	Hud_Hide( panel )
+
+	PanelDef defaultPanelData
+	uiGlobal.panelData[ panel ] <- defaultPanelData
+
+	if ( initFunc != null )
+		uiGlobal.panelData[ panel ].initFunc = initFunc
+
+	return panel
+}
+
+
+void function HudElem_SetText( var hudelem, string text )
+{
+	hudelem.SetText( text )
+}
+
+
+void function SetButtonRuiText( var elem, string text )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetString( rui, "buttonText", text )
+}
+
+
+void function SetLabelRuiText( var elem, string text )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetString( rui, "labelText", text )
+}
+
+
+void function SetNamedRuiText( var elem, string name, string text )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetString( rui, name, text )
+}
+
+
+void function SetNamedRuiBool( var elem, string name, bool state )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetBool( rui, name, state )
+}
+
+
+void function SetNamedRuiImage( var elem, string name, asset assetName )
+{
+	var rui = Hud_GetRui( elem )
+	RuiSetImage( rui, name, assetName )
+}
+
+
+void function HudElem_SetChildRuiArg( var elem, var childName, string argName, var argVal, int ruiArgType = -1 )
+{
+	var childElem = Hud_GetChild( elem, childName )
+	HudElem_SetRuiArg( childElem, argName, argVal, ruiArgType )
+}
+
+
+void function HudElem_SetRuiArg( var elem, string argName, var argVal, int ruiArgType = -1 )
+{
+	if ( ruiArgType < 0 )
+	{
+		switch ( type( argVal ) )
+		{
+			case "string":
+				ruiArgType = eRuiArgType.STRING
+				break
+
+			case "float":
+				ruiArgType = eRuiArgType.FLOAT
+				break
+
+			case "int":
+				ruiArgType = eRuiArgType.INT
+				break
+
+			case "bool":
+				ruiArgType = eRuiArgType.BOOL
+				break
+
+			case "vector":
+				ruiArgType = eRuiArgType.VECTOR
+				break
+
+			case "asset":
+				ruiArgType = eRuiArgType.ASSET
+				break
+
+			default:
+				Assert( false, "unexpected argument type: " + type( argVal ) )
+		}
+	}
+
+	var rui = Hud_GetRui( elem )
+	RuiSetArgByType( rui, argName, argVal, ruiArgType )
+}
+
+
+void function RuiSetArgByType( var rui, string argName, var argVal, int ruiArgType )
+{
+	switch ( ruiArgType )
+	{
+		case eRuiArgType.STRING:
+			expect string( argVal )
+			RuiSetString( rui, argName, argVal )
+			break
+
+		case eRuiArgType.FLOAT:
+			expect float( argVal )
+			RuiSetFloat( rui, argName, argVal )
+			break
+
+		case eRuiArgType.INT:
+			expect int( argVal )
+			RuiSetInt( rui, argName, argVal )
+			break
+
+		case eRuiArgType.BOOL:
+			expect bool( argVal )
+			RuiSetBool( rui, argName, argVal )
+			break
+
+		case eRuiArgType.VECTOR:
+			expect vector( argVal )
+			RuiSetFloat3( rui, argName, argVal )
+			break
+
+		case eRuiArgType.ASSET:
+			expect asset( argVal )
+			RuiSetAsset( rui, argName, argVal )
+			break
+
+		case eRuiArgType.IMAGE:
+			expect asset( argVal )
+			RuiSetImage( rui, argName, argVal )
+			break
+
+		case eRuiArgType.WALLTIME:
+		case eRuiArgType.GAMETIME:
+			expect float( argVal )
+			RuiSetGameTime( rui, argName, argVal )
+			break
+
+		default:
+			Assert( false, "unexpected argument type: " + type( argVal ) )
+	}
+}
+
+
+void function RuiSetArg( var rui, string argName, var argVal )
+{
+	switch ( type( argVal ) )
+	{
+		case "string":
+			expect string( argVal )
+			RuiSetString( rui, argName, argVal )
+			break
+
+		case "float":
+			expect float( argVal )
+			RuiSetFloat( rui, argName, argVal )
+			break
+
+		case "int":
+			expect int( argVal )
+			RuiSetInt( rui, argName, argVal )
+			break
+
+		case "bool":
+			expect bool( argVal )
+			RuiSetBool( rui, argName, argVal )
+			break
+
+		case "vector":
+			expect vector( argVal )
+			RuiSetFloat3( rui, argName, argVal )
+			break
+
+		case "asset":
+			expect asset( argVal )
+			RuiSetAsset( rui, argName, argVal )
+			break
+
+		default:
+			Assert( false, "unexpected argument type: " + type( argVal ) )
+	}
+}
+
+
+void function SetPanelTabTitle( var panel, string title )
+{
+	uiGlobal.panelData[ panel ].tabTitle = title
+}
+
+
+string function GetPanelTabTitle( var panel )
+{
+	return uiGlobal.panelData[ panel ].tabTitle
+}
+
+
+void function ScriptCallback_UnlockAchievement( int achievementID )
+{
+	Assert( achievementID >= 0 && achievementID < achievements.MAX_ACHIVEMENTS, "Tried to unlock achievement with invalid enum value" )
+
+	#if DEV
+		string ref
+		foreach ( string _ref, int val in achievements )
+		{
+			if ( val != achievementID )
+				continue
+			ref = _ref
+			break
+		}
+		printt( "#############################################" )
+		printt( "UNLOCKED ACHIEVEMENT:", ref, "(" + achievementID + ")" )
+		printt( "#############################################" )
+	#endif //DEV
+
+	Plat_UnlockAchievementByID( achievementID )
+}
+
+
+void function PrintPartyData()
+{
+	Party partyData = GetParty()
+
+	printt( "PARTY DATA:" )
+
+	if ( partyData.numSlots == 0 )
+	{
+		printt( "    INVALID, numSlots: 0" )
+		return
+	}
+
+	printt( "    partyType:      ", partyData.partyType )
+	printt( "    playlistName:   ", partyData.playlistName )
+	printt( "    originatorName: ", partyData.originatorName )
+	printt( "    originatorUID:  ", partyData.originatorUID )
+	printt( "    numSlots:       ", partyData.numSlots )
+	printt( "    numClaimedSlots:", partyData.numClaimedSlots )
+	printt( "    numFreeSlots:   ", partyData.numFreeSlots )
+	printt( "    timeLeft:       ", partyData.timeLeft )
+	printt( "    amIInThis:      ", partyData.amIInThis )
+	printt( "    amILeader:      ", partyData.amILeader )
+	printt( "    searching:      ", partyData.searching )
+	print( "    members:         " )
+
+	foreach ( index, member in partyData.members )
+	{
+		if ( index != 0 )
+			print( "                     " )
+
+		printt( member.name, "uid:", member.uid, "ready:", member.ready );
+	}
+}
+
+
+void function PlayVideoFullScreen( string video, string externalAudioFilename = "", bool showCaptions = false )
+{
+	PlayVideo( video, 0, 0, 0, 0, externalAudioFilename, eVideoPanelContext.UI, showCaptions, false, false )
+}
+
+
+void function PlayVideoUsingPanelRect( string video, var panel, int videoPanelContext = eVideoPanelContext.UI, bool showCaptions = false, bool loopEnabled = false, bool canBePaused = false )
+{
+	int xPos   = Hud_GetAbsX( panel )
+	int yPos   = Hud_GetAbsY( panel )
+	int width  = Hud_GetWidth( panel )
+	int height = Hud_GetHeight( panel )
+
+	PlayVideo( video, xPos, yPos, width, height, "", videoPanelContext, showCaptions, loopEnabled, canBePaused )
+}
+
+
+void function PauseAndHideVideos( int videoPanelContext )
+{
+	HideVideos( videoPanelContext )
+	PauseVideos( videoPanelContext )
+}
+
+
+void function ResumeAndShowVideos( int videoPanelContext )
+{
+	UnpauseVideos( videoPanelContext )
+	ShowVideos( videoPanelContext )
+}
+
+
+int function GetGameState()
+{
+	return expect int( level.ui.gameState )
+}
+
+
+array<var> function GetPanelElementsByClassname( var panel, string className )
+{
+	array<var> allElements = GetElementsByClassname( GetParentMenu( panel ), className )
+	foreach ( element in clone allElements )
+	{
+		if ( Hud_GetParent( element ) != panel )
+			allElements.removebyvalue( element )
+	}
+
+	return allElements
+}
+
+
+string function GetFormattedIntByType( int value, int numericType )
+{
+	string displayValue
+	switch ( numericType )
+	{
+		case eNumericDisplayType.INT:
+			displayValue = format( "%d", value )
+			break
+
+		case eNumericDisplayType.FLOAT2F:
+			displayValue = format( "%.2f", value )
+			break
+
+		case eNumericDisplayType.TIME_SECONDS_SHORT:
+			DisplayTime dt = SecondsToDHMS( value )
+			if ( dt.hours )
+				displayValue = format( "%d:%.2d:%.2d", dt.hours, dt.minutes, dt.seconds )
+			else
+				displayValue = format( "%.2d:%.2d", dt.minutes, dt.seconds )
+			break
+
+		case eNumericDisplayType.TIME_SECONDS_LONG:
+			DisplayTime dt = SecondsToDHMS( value )
+			if ( dt.hours )
+				displayValue = format( Localize( "#TIME_FORMAT_HMS" ), dt.hours, dt.minutes, dt.seconds )
+			else
+				displayValue = format( Localize( "#TIME_FORMAT_MS" ), dt.minutes, dt.seconds )
+			break
+
+		case eNumericDisplayType.TIME_MINUTES_LONG:
+			DisplayTime dt = SecondsToDHMS( value )
+			if ( dt.hours )
+				displayValue = format( Localize( "#TIME_FORMAT_HM" ), dt.hours, dt.minutes )
+			else
+				displayValue = format( Localize( "#TIME_FORMAT_M" ), dt.minutes )
+			break
+
+		case eNumericDisplayType.SHORT_INT:
+			displayValue = ShortenNumber( string( value ) )
+			break
+
+		default:
+			displayValue = string( value )
+	}
+
+	return displayValue
+}
+
+
+
+string function GetFormattedFloatByType( float value, int numericType )
+{
+	string displayValue
+	switch ( numericType )
+	{
+		case eNumericDisplayType.INT:
+			displayValue = format( "%d", value )
+			break
+
+		case eNumericDisplayType.FLOAT2F:
+			displayValue = format( "%.2f", value )
+			break
+
+		case eNumericDisplayType.TIME_SECONDS_SHORT:
+			DisplayTime dt = SecondsToDHMS( int (value / 1000 ) )
+			if ( dt.hours )
+				displayValue = format( "%d:%.2d:%.2d", dt.hours, dt.minutes, dt.seconds )
+			else
+				displayValue = format( "%.2d:%.2d", dt.minutes, dt.seconds )
+			break
+
+		case eNumericDisplayType.TIME_SECONDS_LONG:
+			DisplayTime dt = SecondsToDHMS( int( value / 1000 ) )
+			if ( dt.hours )
+				displayValue = format( "%dh %.2dm %.2ds", dt.hours, dt.minutes, dt.seconds )
+			else
+				displayValue = format( "%.2dm %.2ds", dt.minutes, dt.seconds )
+			break
+
+		case eNumericDisplayType.SHORT_INT:
+			displayValue = ShortenNumber( string( value ) )
+			break
+
+		default:
+			displayValue = string( value )
+	}
+
+	return displayValue
+}
+
+
+MenuDef function GetMenuDef( var menu )
+{
+	if ( menu == null )
+	{
+		MenuDef nullMenuDef
+		return nullMenuDef
+	}
+
+	return uiGlobal.menuData[menu]
+}
+
+
+bool function IsElementInside( var element, UIPos pos, UISize size )
+{
+	UISize focuSize = REPLACEHud_GetSize( element )
+	UIPos focusPos  = REPLACEHud_GetAbsPos( element )
+
+	if ( focusPos.x < (pos.x + size.width) &&
+							(focusPos.x + focuSize.width) > pos.x &&
+					focusPos.y < (pos.y + size.height) &&
+							focusPos.y + focuSize.height > pos.y )
+		return true
+	else
+		return false
+
+	unreachable
+}
+
+
+bool function IsElementFullyInside( var element, UIPos pos, UISize size )
+{
+	UISize focuSize = REPLACEHud_GetSize( element )
+	UIPos focusPos  = REPLACEHud_GetAbsPos( element )
+
+	if ( focusPos.x < pos.x )
+		return false
+
+	if ( focusPos.x + focuSize.width > pos.x + size.width )
+		return false
+
+	if ( focusPos.y < pos.y )
+		return false
+
+	if ( focusPos.y + focuSize.height > pos.y + size.height )
+		return false
+
+	return true
+}
+
+bool function MeetsAgeRequirements()
+{
+	return !GetConVarBool( "cl_isUnderAge" )
+}

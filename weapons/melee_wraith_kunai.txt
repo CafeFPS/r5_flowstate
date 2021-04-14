@@ -1,0 +1,28 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   									"Melee"
+	"shortprintname"								"Melee"
+	"description" 									"Description needed"
+	"longdesc"										"Description needed"
+
+	"menu_icon"										"rui/hud/common/melee_icon"
+	"hud_icon"										"rui/hud/common/melee_icon"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/kunai/ptpov_kunai_wraith.rmdl"
+	"playermodel" 									"mdl/weapons/kunai/w_kunai_wraith.rmdl"
+
+	"OnWeaponActivate"								"OnWeaponActivate_melee_wraith_kunai"
+    "OnWeaponDeactivate"							"OnWeaponDeactivate_melee_wraith_kunai"
+
+    // FX - Impacts
+	"impact_effect_table" 							"melee_kunai"
+
+	// Audio
+	//"idle_sound_player_1p"							"Wraith_Kunai_IdleSparks_1P"
+}
+

@@ -1,0 +1,20 @@
+WeaponData
+{
+	Mods
+	{
+		shotgun_bolt_l1
+		{
+			"fire_rate" 	"*1.15"
+		}
+
+		shotgun_bolt_l2
+		{
+			"fire_rate" 	"*1.25"
+		}
+
+		shotgun_bolt_l3
+		{
+			"fire_rate" 	"*1.35"
+		}
+	}
+}

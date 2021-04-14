@@ -1,0 +1,170 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"none"
+		"whizby_sound_from_AI"		"none"
+	}
+
+	FX
+	{
+		"A" "none" //default silent (clip)
+		"B" "none" //Bloodyflesh?
+
+		"C" "none" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "none" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "none" // metal_titan
+		"F" "none" //flesh
+		"G" "none" //metalgrate, chainlink, chain
+		"H" "none" //alienflesh
+
+		"I" "none" //player_control_clip
+
+		"J" "P_hmn_footstep_dust" //grass
+		"K" "impact_mud" //Mud
+		"L" "none" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "none" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_slime" //Slime
+		"O" "P_hmn_footstep_dust" //Foliage
+		"P" "none" //Computer
+
+		"Q" "none" //Not listed
+
+		"R" "none" //metalpanel, grenade, canister
+		"S" "P_impact_water" //water, slime
+		"T" "none" //tile
+		"U" "none" //glass_breakable
+		"V" "none" //Metal Vent
+		"W" "none" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+		"X" "none" //xo_shield
+		"Y" "none" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_hmn_footstep_dust" //sand
+
+
+		//Hardcocded Surfacprops
+		"splash" "P_impact_water" //brush water
+		"slime_splash" "P_impact_slime"
+		"airburst" "none"  //No Surface
+		"shieldhit" "none" //Invisible armor
+		"holohit" "none" //Holopilot entity
+		"critical_hit" "none" //titan weekspots
+
+		"headshot_flesh" "none" //Human headshot
+		"headshot_mechanical" "none" //Robotic Headshot
+	}
+
+
+	Sound
+	{
+		"C" "GasTrap_Land_Default"
+		"D" "GasTrap_Land_Default"
+		"E" "GasTrap_Land_Default"
+
+		"F" "GasTrap_Land_Default"
+		"G" "GasTrap_Land_Default"
+		"H" "GasTrap_Land_Default"
+
+		"J" "GasTrap_Land_Default"
+		"K" "GasTrap_Land_Default"
+		"L" "GasTrap_Land_Default"
+		"M" "GasTrap_Land_Default"
+		"N" "GasTrap_Land_Default"
+		"O" "GasTrap_Land_Default"
+		"P" "GasTrap_Land_Default"
+
+		"R" "GasTrap_Land_Default"
+		"S" "GasTrap_Land_Water"
+		"T" "GasTrap_Land_Default"
+		"U" "GasTrap_Land_Default"
+
+		"V" "GasTrap_Land_Default"
+		"W" "GasTrap_Land_Default"
+		"X"	"GasTrap_Land_Default"
+		"Y" "GasTrap_Land_Default"
+		"Z" "GasTrap_Land_Default"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "GasTrap_Land_Default"
+		"shieldhit" "GasTrap_Land_Default"
+	}
+
+	Sound_attacker
+	{
+		"C" "GasTrap_Land_Default"
+		"D" "GasTrap_Land_Default"
+		"E" "GasTrap_Land_Default"
+
+		"F" "GasTrap_Land_Default"
+		"G" "GasTrap_Land_Default"
+		"H" "GasTrap_Land_Default"
+
+		"J" "GasTrap_Land_Default"
+		"K" "GasTrap_Land_Default"
+		"L" "GasTrap_Land_Default"
+		"M" "GasTrap_Land_Default"
+		"N" "GasTrap_Land_Default"
+		"O" "GasTrap_Land_Default"
+		"P" "GasTrap_Land_Default"
+
+		"R" "GasTrap_Land_Default"
+		"S" "GasTrap_Land_Water"
+		"T" "GasTrap_Land_Default"
+		"U" "GasTrap_Land_Default"
+
+		"V" "GasTrap_Land_Default"
+		"W" "GasTrap_Land_Default"
+		"X"	"GasTrap_Land_Default"
+		"Y" "GasTrap_Land_Default"
+		"Z" "GasTrap_Land_Default"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" "GasTrap_Land_Default"
+		"shieldhit" "GasTrap_Land_Default"
+	}
+
+	Sound_victim
+	{
+		"C" "GasTrap_Land_Default"
+		"D" "GasTrap_Land_Default"
+		"E" "GasTrap_Land_Default"
+
+		"F" "GasTrap_Land_Default"
+		"G" "GasTrap_Land_Default"
+		"H" "GasTrap_Land_Default"
+
+		"J" "GasTrap_Land_Default"
+		"K" "GasTrap_Land_Default"
+		"L" "GasTrap_Land_Default"
+		"M" "GasTrap_Land_Default"
+		"N" "GasTrap_Land_Default"
+		"O" "GasTrap_Land_Default"
+		"P" "GasTrap_Land_Default"
+
+		"R" "GasTrap_Land_Default"
+		"S" "GasTrap_Land_Water"
+		"T" "GasTrap_Land_Default"
+		"U" "GasTrap_Land_Default"
+
+		"V" "GasTrap_Land_Default"
+		"W" "GasTrap_Land_Default"
+		"X"	"GasTrap_Land_Default"
+		"Y" "GasTrap_Land_Default"
+		"Z" "GasTrap_Land_Default"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" "GasTrap_Land_Default"
+		"shieldhit" "GasTrap_Land_Default"
+	}
+
+
+}
+

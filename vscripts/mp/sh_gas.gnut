@@ -1,0 +1,1147 @@
+global function ShGas_Init
+
+#if SERVER
+	global function IsEntInGas
+	global function IsGasCausingDamage
+	global function CreateGasCloudLarge
+	global function CreateGasCloudMediumAtOrigin
+	global function MakeEntityAsGasEmitter
+#endif //SERVER
+
+#if CLIENT
+	global function UpdatePlayerScreenColorCorrection
+#endif //CLIENT
+
+global function PlayerHasGasProtection
+
+const float GAS_TEAMMATE_PROTECTION_RADIUS = 200.0
+const bool GAS_CLOUD_DEBUG_DRAW = false
+
+const asset FX_GAS_SMOKE_LARGE = $"P_smokescreen_poison"
+const asset FX_GAS_SMOKE = $"P_gastrap_fill"
+const vector FX_GAS_SMOKE_OFFSET = <0,0,-24>
+
+global float GAS_CLOUD_RADIUS_LARGE		= 375.0
+global float GAS_CLOUD_RADIUS_MEDIUM 	= 256.0
+global float GAS_CLOUD_RADIUS_SMALL 	= 128.0
+
+global const string POISON_SMOKESCREEN_SCRIPTNAME = "poison_smokescreen"
+
+const float GAS_CLOUD_DOF_FAR_INNER = 32.0
+const float GAS_CLOUD_DOF_FAR_OUTER = 128.0
+
+const float GAS_CLOUD_DOF_NEAR_INNER = 16.0
+const float GAS_CLOUD_DOF_NEAR_OUTER = 32.0
+
+const float GAS_CLOUD_EFFECT_DIST_SQR_INNER = 256.0 * 256.0
+const float GAS_CLOUD_EFFECT_DIST_SQR_OUTER = 400.0 * 400.0
+
+const float GAS_CLOUD_MOVE_SLOW_EFFECT_WEIGHT = 0.25
+const float GAS_CLOUD_TURN_SLOW_EFFECT_WEIGHT = 0.15
+
+const float GAS_CLOUD_EFFECT_BUILD_TIME = 2.0
+const float GAS_CLOUD_WEAR_OFF_GAS_GEAR = 0.5
+const float GAS_CLOUD_WEAR_OFF_NORMAL 	= 2.0
+
+
+const float GAS_CLOUD_DMG_TICK_RATE = 1.0
+const float GAS_CLOUD_DMG_DELAY = 1.0
+const float GAS_CLOUD_DMG_EXPOSURE_INTERVAL = 1.0
+const float GAS_CLOUD_DMG_MAX = 10.0
+const int 	GAS_CLOUD_DAMAGE_FLAGS = DF_NO_HITBEEP | DF_BYPASS_SHIELD | DF_NO_SELF_DAMAGE
+
+const float GAS_CLOUD_EXPOSURE_TICK_RATE = 0.1
+const float GAS_CLOUD_EXPOSURE_DBOUNCE = 0.2
+
+const float GAS_CLOUD_FADE_TIME = 3.5
+
+const string GAS_CLOUD_VENTILATOR_SOUND = "Caustic_Gas_Breath_Loop_1p"
+const string GAS_CLOUD_BREATHING_SOUND 	= "gruntcooper_wounded_loop_1p"
+const string GAS_CLOUD_EMITTER_SOUND 	= "GasGrenade_GasCloud"
+
+const asset GAS_PROTECTION_RING_FX = $"P_ar_edge_ring_gen"
+const asset GAS_SCREEN_FX = $"P_caustic_gas_FP"
+global int COCKPIT_GAS_SCREEN_FX
+
+struct
+{
+	#if CLIENT
+	int colorCorrectionGas
+	float lastDOFLerpTime
+	#endif //CLIENT
+
+	#if SERVER
+	table<entity, array<entity> > gasProtectTriggers
+	int gasEmitterEntArrayID
+	#endif
+
+} file
+
+void function ShGas_Init()
+{
+	PrecacheParticleSystem( FX_GAS_SMOKE )
+	PrecacheParticleSystem( FX_GAS_SMOKE_LARGE )
+
+	COCKPIT_GAS_SCREEN_FX = PrecacheParticleSystem( GAS_SCREEN_FX )
+	PrecacheParticleSystem( GAS_PROTECTION_RING_FX )
+
+	#if SERVER
+	file.gasEmitterEntArrayID = CreateScriptManagedEntArray()
+
+	AddDamageCallbackSourceID( eDamageSourceId.damagedef_grenade_gas, GasCloud_RampDamageBasedOnExposureTime )
+	AddDamageCallbackSourceID( eDamageSourceId.damagedef_gas_exposure, GasCloud_HandleGasExposure )
+	AddSpawnCallback( "player", OnEntSpawned )
+	AddSpawnCallback( "npc_soldier", OnEntSpawned )
+	AddSpawnCallback( "npc_spectre", OnEntSpawned )
+	AddSpawnCallback( "npc_stalker", OnEntSpawned )
+	AddSpawnCallback( "npc_prowler", OnEntSpawned )
+	AddSpawnCallback( "npc_drone", OnEntSpawned )
+	AddSpawnCallback( "npc_super_spectre", OnEntSpawned )
+	AddSpawnCallback( "npc_frag_drone", OnEntSpawned )
+
+	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, GasGear_OnPassiveChanged )
+	#endif
+
+	#if CLIENT
+	RegisterSignal( "StopPassiveProtectionOnHUD" )
+
+	file.lastDOFLerpTime = Time()
+	RegisterSignal( "GasCloud_StopColorCorrection" )
+	RegisterSignal( "GasCloud_StopDOF" )
+	RegisterSignal( "GasCloud_StopScreenEffect" )
+	file.colorCorrectionGas = ColorCorrection_Register( "materials/correction/gas_cloud.raw_hdr" )
+	StatusEffect_RegisterEnabledCallback( eStatusEffect.gas_cloud, GasCloud_StartVisualEffect )
+	StatusEffect_RegisterDisabledCallback( eStatusEffect.gas_cloud, GasCloud_StopVisualEffect )
+	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, ShowPassiveProtectionOnHUD )
+	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_PROTECTION, ShowPassiveProtectionOnHUD )
+	#endif //CLIENT
+}
+
+#if SERVER
+void function GasGear_OnPassiveChanged( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( player in file.gasProtectTriggers )
+	{
+		file.gasProtectTriggers[ player ][ 0 ].Destroy() // only need to destroy one since DestroyOnDeath will handle the rest
+	}
+
+	if ( !nowHas || !GetCurrentPlaylistVarBool( "caustic_teammate_protection", false ) )
+		return
+
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( GAS_TEAMMATE_PROTECTION_RADIUS - 32.0 )
+	trigger.SetAboveHeight( 200 )
+	trigger.SetBelowHeight( 100 )
+	trigger.SetOrigin( player.GetOrigin() )
+	trigger.SetParent( player )
+	trigger.kv.triggerFilterNpc = "none"
+	trigger.kv.triggerFilterPlayer = "pilot"
+	trigger.kv.triggerFilterNonCharacter = 0
+	trigger.kv.triggerFilterTeamIMC = 1
+	trigger.kv.triggerFilterTeamMilitia = 1
+	trigger.kv.triggerFilterTeamOther = 1 // this is key for survival
+	trigger.SetOwner( player )
+	trigger.SetEnterCallback( OnGasProtectTriggerEnter )
+
+	entity trigger2 = CreateEntity( "trigger_cylinder" )
+	trigger2.SetRadius( GAS_TEAMMATE_PROTECTION_RADIUS )
+	trigger2.SetAboveHeight( 200 )
+	trigger2.SetBelowHeight( 100 )
+	trigger2.SetOrigin( player.GetOrigin() )
+	trigger2.SetParent( player )
+	trigger2.kv.triggerFilterNpc = "none"
+	trigger2.kv.triggerFilterPlayer = "pilot"
+	trigger2.kv.triggerFilterNonCharacter = 0
+	trigger2.kv.triggerFilterTeamIMC = 1
+	trigger2.kv.triggerFilterTeamMilitia = 1
+	trigger2.kv.triggerFilterTeamOther = 1 // this is key for survival
+	trigger2.SetOwner( player )
+	trigger2.SetLeaveCallback( OnGasProtectTriggerLeave )
+
+	DispatchSpawn( trigger )
+	DispatchSpawn( trigger2 )
+
+	trigger.SearchForNewTouchingEntity()
+	thread DestroyOnDeath( [ trigger, trigger2 ], player )
+
+	file.gasProtectTriggers[ player ] <- [ trigger, trigger2 ]
+}
+
+void function DestroyOnDeath( array<entity> triggers, entity player )
+{
+	foreach ( trigger in triggers )
+		trigger.EndSignal( "OnDestroy" )
+
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function():( triggers, player )
+		{
+			foreach ( trigger in triggers )
+			{
+				if ( IsValid( trigger ) )
+					trigger.Destroy()
+			}
+
+			if ( IsValid( player ) )
+				delete file.gasProtectTriggers[ player ]
+		}
+	)
+
+	WaitForever()
+}
+
+void function OnGasProtectTriggerEnter( entity trigger, entity player )
+{
+	if ( player.GetTeam() == trigger.GetOwner().GetTeam() && player.IsPlayer() )
+	{
+		GivePassive( player, ePassives.PAS_GAS_PROTECTION )
+	}
+}
+void function OnGasProtectTriggerLeave( entity trigger, entity player )
+{
+	if ( player.GetTeam() == trigger.GetOwner().GetTeam() && player.IsPlayer() )
+	{
+		TakePassive( player, ePassives.PAS_GAS_PROTECTION )
+	}
+}
+
+void function OnEntSpawned( entity ent )
+{
+	Highlight_SetCausticThreatHighlight( ent, "caustic_gas_threat" )
+}
+
+bool function IsEntInGas( entity ent )
+{
+	return ent.e.gasEnterTime != -1.0
+}
+
+bool function IsGasCausingDamage( entity ent )
+{
+	return ent.e.gasLastDamageTime != -1.0
+}
+
+void function GasCloud_HandleGasExposure( entity target, var damageInfo )
+{
+	//The Gas Exposure Damage Type is only used to detect gas exposure and to ensure that damage radius blockers stop gas exposure.
+	//It should never do real damage, that's damagedef_grenade_gas's job.
+	DamageInfo_SetDamage( damageInfo, 0.0 )
+
+	//Handle the case where a projectile entering gas is marked for deletion.
+	if ( !IsValid( target ) )
+		return
+
+	//Gas does not affect titans
+	if ( target.IsTitan() )
+		return
+
+	if ( !target.IsPlayer() && !target.IsNPC() )
+		return
+
+	//If gas exposure has already been handled for this target don't handle it again this frame.
+	if ( target.e.gasLastExpoTime == Time() )
+		return
+
+	//If the target was not previously touching gas. Note the time at which they entered the gas.
+	bool newGasExposure = false
+	if ( target.e.gasEnterTime == -1 )
+	{
+		newGasExposure = true
+		target.e.gasEnterTime = Time()
+
+		if ( GetCurrentPlaylistVarBool( "caustic_teammate_forgiveness", true ) )
+		{
+			entity inflictor = DamageInfo_GetInflictor( damageInfo )
+			if ( IsFriendlyTeam( inflictor.GetTeam(), target.GetTeam() ) && Time() - inflictor.e.spawnTime < 1.0 )
+			{
+				if ( StatusEffect_GetSeverity( target, eStatusEffect.gas_slow_protection ) == 0 )
+					StatusEffect_AddTimed( target, eStatusEffect.gas_slow_protection, 1.0, 2.0, 1.0 )
+			}
+		}
+	}
+
+	//Update the last time player was exposed to gas to be now.
+	target.e.gasLastExpoTime = Time()
+
+	//If the target was not already exposed to gas, start gas exposure update.
+	if ( newGasExposure )
+		thread GasExposureUpdate( target )
+}
+
+void function GasExposureUpdate( entity target )
+{
+	Assert( IsNewThread(), "Must be threaded off." )
+	target.EndSignal( "OnDestroy" )
+	target.EndSignal( "OnDeath" )
+
+	table<int, int> statusEffectHandles
+	statusEffectHandles[eStatusEffect.gas_cloud] <- -1
+	statusEffectHandles[eStatusEffect.move_slow] <- -1
+	statusEffectHandles[eStatusEffect.turn_slow] <- -1
+
+	//Play breathing sounds if player
+	if ( target.IsPlayer() )
+	{
+		if ( PlayerHasGasProtection( target ) )
+		{
+			//Play ventilator sound
+			EmitSoundOnEntityOnlyToPlayer( target, target, GAS_CLOUD_VENTILATOR_SOUND )
+
+			if ( PlayerHasPassive( target, ePassives.PAS_GAS_GEAR ) )
+				thread PlayBattleChatterLineDelayedToSpeakerAndTeam( target, "bc_caustic_passive", 0.3 )
+		}
+		else
+		{
+			//Play breathing sound
+			EmitSoundOnEntityOnlyToPlayer( target, target, GAS_CLOUD_BREATHING_SOUND )
+		}
+	}
+
+	OnThreadEnd(
+	function() : ( target, statusEffectHandles )
+	{
+		if ( IsValid( target ) )
+		{
+			target.e.gasEnterTime = -1.0
+			target.e.gasLastExpoTime = -1.0
+			target.e.gasLastDamageTime = -1.0
+
+			FadeOutSoundOnEntity( target, GAS_CLOUD_VENTILATOR_SOUND, 3.0 )
+			FadeOutSoundOnEntity( target, GAS_CLOUD_BREATHING_SOUND, 3.0 )
+
+			if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
+				StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
+			if ( statusEffectHandles[eStatusEffect.move_slow] != -1 )
+				StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.move_slow] )
+			//if ( statusEffectHandles[eStatusEffect.turn_slow] != -1 )
+			//	StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.turn_slow] )
+
+		}
+	} )
+
+	//Update gas exposure until we are no longer exposed to gas.
+	while ( true )
+	{
+		//Determine the time the entity has been in gas.
+		float tFirstExpo 	= target.e.gasEnterTime
+		float tLastExpo 	= target.e.gasLastExpoTime
+		float tInGas 		= tLastExpo - tFirstExpo
+		float tSinceExpo 	= Time() - tLastExpo
+
+		Assert ( tFirstExpo != -1 )
+		Assert ( tLastExpo != -1 )
+
+		//printt( "FIRST EXPO: " + tFirstExpo )
+		//printt( "LAST EXPO: " + tLastExpo )
+		//printt( "In GAS FOR: " + tInGas )
+		//printt( "TIME SINCE: " + tSinceExpo )
+
+		//If the entity hasn't taken damage in slightly more than a gas damage tick interval, they are not in gas.
+		bool inGas = true
+		if ( tSinceExpo > GAS_CLOUD_EXPOSURE_TICK_RATE * 2 )
+			inGas = false
+
+		if ( inGas )
+		{
+			//Increase Gas Exposure FX
+			float effectScalar = GraphCapped( tInGas, 0.0, GAS_CLOUD_EFFECT_BUILD_TIME, 0.0, 1.0 )
+			GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar )
+		}
+		else
+		{
+			//Decrease Gas Exposure FX and stop update if it has been long enough.
+			float wearOffTimeGasGear_No 	= tInGas > GAS_CLOUD_WEAR_OFF_NORMAL ? GAS_CLOUD_WEAR_OFF_NORMAL : max( tInGas, 0.1 )
+			float wearOffTimeGasGear_Yes 	= tInGas > GAS_CLOUD_WEAR_OFF_GAS_GEAR ? GAS_CLOUD_WEAR_OFF_GAS_GEAR : max( tInGas, 0.1 )
+			float wearOffTime = wearOffTimeGasGear_No
+			if ( target.IsPlayer() )
+				wearOffTime = PlayerHasGasProtection( target ) ? wearOffTimeGasGear_Yes : wearOffTimeGasGear_No
+
+			float effectScalar = GraphCapped( tSinceExpo, wearOffTime, 0.0, 0.0, 1.0 )
+			GasExposure_ReapplyEffect( target, statusEffectHandles, effectScalar )
+
+			if ( effectScalar == 0.0 )
+				return
+		}
+
+		WaitFrame()
+	}
+}
+
+void function GasExposure_ReapplyEffect( entity target, table<int, int> statusEffectHandles, float effectScalar )
+{
+	if ( statusEffectHandles[eStatusEffect.gas_cloud] != -1 )
+	{
+		StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.gas_cloud] )
+		statusEffectHandles[eStatusEffect.gas_cloud] = -1
+	}
+	if ( statusEffectHandles[eStatusEffect.move_slow] != -1 )
+	{
+		StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.move_slow] )
+		statusEffectHandles[eStatusEffect.move_slow] = -1
+	}
+	//if ( statusEffectHandles[eStatusEffect.turn_slow] != -1 )
+	//{
+	//	StatusEffect_Stop( target, statusEffectHandles[eStatusEffect.turn_slow] )
+	//	statusEffectHandles[eStatusEffect.turn_slow] = -1
+	//}
+
+	if ( effectScalar > 0.0 )
+	{
+		statusEffectHandles[eStatusEffect.gas_cloud] = StatusEffect_AddEndless( target, eStatusEffect.gas_cloud, effectScalar )
+
+		float slowProtection = StatusEffect_GetSeverity( target, eStatusEffect.gas_slow_protection )
+		float slowScalar = clamp( effectScalar - slowProtection, 0.0, 1.0 )
+		if ( slowScalar > 0.0 )
+		{
+			if ( target.IsPlayer() )
+			{
+				if ( !PlayerHasGasProtection( target ) )
+				{
+					statusEffectHandles[eStatusEffect.move_slow] = StatusEffect_AddEndless( target, eStatusEffect.move_slow, GAS_CLOUD_MOVE_SLOW_EFFECT_WEIGHT * slowScalar )
+					//statusEffectHandles[eStatusEffect.turn_slow] = StatusEffect_AddEndless( target, eStatusEffect.turn_slow, GAS_CLOUD_TURN_SLOW_EFFECT_WEIGHT * effectScalar )
+				}
+			}
+			else
+			{
+				statusEffectHandles[eStatusEffect.move_slow] = StatusEffect_AddEndless( target, eStatusEffect.move_slow, GAS_CLOUD_MOVE_SLOW_EFFECT_WEIGHT * slowScalar )
+				//statusEffectHandles[eStatusEffect.turn_slow] = StatusEffect_AddEndless( target, eStatusEffect.turn_slow, GAS_CLOUD_TURN_SLOW_EFFECT_WEIGHT * effectScalar )
+			}
+		}
+	}
+}
+
+void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageInfo )
+{
+	//Players with gas gear aren't effected
+	if ( target.IsPlayer() )
+	{
+		//If the player has gas gear passive they take no damage from gas.
+		if ( PlayerHasGasProtection( target ) )
+			return
+	}
+
+	//Titans are not effected.
+	if ( target.IsTitan() )
+		return
+
+	//if the target is not in gas return.
+	if ( !IsEntInGas( target ) )
+		return
+
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !( target in attacker.e.sharedGasDamageHelper ) )
+	{
+		attacker.e.sharedGasDamageHelper[ target ] <- Time()
+	}
+	else
+	{
+		if ( Time() - attacker.e.sharedGasDamageHelper[ target ] < GAS_CLOUD_DMG_TICK_RATE )
+			return
+	}
+
+	//Scale Damage
+	float timeInGas = target.e.gasLastExpoTime - target.e.gasEnterTime
+	float dmgMult = 1.0 + floor( timeInGas / GAS_CLOUD_DMG_EXPOSURE_INTERVAL )
+	dmgMult = min( GAS_CLOUD_DMG_MAX, dmgMult )
+
+	Assert ( dmgMult >= 1.0 )
+
+	target.e.gasLastDamageTime = Time()
+
+	if ( target.IsPlayer() )
+	{
+		EmitSoundOnEntityExceptToPlayer( target, target, "flesh_causticgas_damage_3p" )
+		EmitSoundOnEntityOnlyToPlayer( target, target, "flesh_causticgas_damage_1p" )
+	}
+
+	DamageInfo_ScaleDamage( damageInfo, dmgMult )
+	attacker.e.sharedGasDamageHelper[ target ] = Time()
+}
+
+void function CreateGasCloudLarge( entity projectile, float duration, vector offset = <0,0,0> )
+{
+	entity owner = projectile.GetOwner()
+
+	if ( !IsValid( owner ) )
+		return
+
+	float radius = GAS_CLOUD_RADIUS_LARGE
+
+	SmokescreenStruct smokescreen
+	smokescreen.isElectric 		= false //Note: Gas has an independent damage update from the electric smoke logic.
+	smokescreen.shouldHibernate = false
+	smokescreen.smokescreenFX	= FX_GAS_SMOKE_LARGE
+	smokescreen.lifetime 		= duration
+	smokescreen.ownerTeam 		= TEAM_UNASSIGNED
+	smokescreen.attacker 		= owner
+	smokescreen.inflictor 		= projectile //Note: this is not our real inflictor, gas creates a dummy inflictor with special settings.
+	smokescreen.blockLOS 		= true
+	smokescreen.weaponOrProjectile 	= projectile
+	smokescreen.damageSource 		= eDamageSourceId.damagedef_grenade_gas
+	smokescreen.damageFlags			= GAS_CLOUD_DAMAGE_FLAGS
+	smokescreen.damageInnerRadius 	= radius
+	smokescreen.damageOuterRadius 	= radius
+	smokescreen.dangerousAreaRadius = smokescreen.damageOuterRadius * 1.5
+	smokescreen.damageDelay 	= GAS_CLOUD_DMG_DELAY
+	smokescreen.damageTickRate 	= GAS_CLOUD_DMG_TICK_RATE
+	smokescreen.dpsPilot 		= 1
+	smokescreen.dpsTitan 		= 0
+	smokescreen.deploySound1p 	= "SmokeWall_Activate"
+	smokescreen.deploySound3p 	= "SmokeWall_Activate"
+	smokescreen.stopSound1p 	= "SmokeWall_Stop"
+	smokescreen.stopSound3p 	= "SmokeWall_Stop"
+
+	smokescreen.traceBlockerTeam = owner.GetTeam()
+	smokescreen.traceBlockerScriptName = POISON_SMOKESCREEN_SCRIPTNAME
+
+	float fxOffset = 275.0
+
+	smokescreen.fxOffsets = [ <0.0, fxOffset, 40.0>,
+							  <fxOffset, 0.0, 40.0>,
+							  <0.0, -fxOffset, 40.0>,
+							  <-fxOffset, 0.0, 40.0> ]
+
+	smokescreen.origin = projectile.GetOrigin() + offset
+	smokescreen.angles = <0,0,0>
+	smokescreen.fxUseWeaponOrProjectileAngles = false
+	smokescreen.fxPointCP1toCenter = true
+	smokescreen.smokeSource = projectile
+
+	CreateGasSmokeScreen( smokescreen )
+
+}
+
+void function CreateGasCloudMediumAtOrigin( entity source, entity player, vector origin, float duration )
+{
+	float radius = GAS_CLOUD_RADIUS_MEDIUM
+	SmokescreenStruct smokescreen
+	smokescreen.isElectric 		= false //Note: Gas has an independent damage update from the electric smoke logic.
+	smokescreen.shouldHibernate = false
+	smokescreen.smokescreenFX	= FX_GAS_SMOKE
+	smokescreen.lifetime 		= duration
+	smokescreen.ownerTeam 		= TEAM_UNASSIGNED
+	smokescreen.attacker 		= player
+	smokescreen.inflictor 		= player //Note: this is not our real inflictor, gas creates a dummy inflictor with special settings.
+	smokescreen.blockLOS 		= true
+	//smokescreen.weaponOrProjectile
+	smokescreen.damageSource 		= eDamageSourceId.damagedef_grenade_gas
+	smokescreen.damageFlags			= GAS_CLOUD_DAMAGE_FLAGS
+	smokescreen.damageInnerRadius 	= radius
+	smokescreen.damageOuterRadius 	= radius
+	smokescreen.dangerousAreaRadius = smokescreen.damageOuterRadius * 1.5
+	smokescreen.damageDelay 	= GAS_CLOUD_DMG_DELAY
+	smokescreen.damageTickRate 	= GAS_CLOUD_DMG_TICK_RATE
+	smokescreen.dpsPilot 		= 1
+	smokescreen.dpsTitan 		= 0
+	smokescreen.deploySound1p 	= "SmokeWall_Activate"
+	smokescreen.deploySound3p 	= "SmokeWall_Activate"
+	smokescreen.stopSound1p 	= "SmokeWall_Stop"
+	smokescreen.stopSound3p 	= "SmokeWall_Stop"
+
+	smokescreen.traceBlockerTeam = player.GetTeam()
+	smokescreen.traceBlockerScriptName = POISON_SMOKESCREEN_SCRIPTNAME
+
+	float fxOffset = 200.0
+	smokescreen.fxOffsets = [ <0.0, 0.0, 40.0> ]
+
+	smokescreen.origin = origin
+	smokescreen.angles = <0,0,0>
+	smokescreen.fxUseWeaponOrProjectileAngles = false
+	smokescreen.smokeSource = source
+
+	CreateGasSmokeScreen( smokescreen )
+
+}
+
+void function CreateGasSmokeScreen( SmokescreenStruct smokescreen )
+{
+	//Create a radius that deals gas exposure damage for duration of smoke screen.
+	//This damage type is intercepted and set to 0 so it doesn't do real damage, but ensures that things like radius damage blockers stop the gas effects.
+	thread CreateGasExposureRadius( smokescreen )
+}
+
+//This creates a series of damage radii that are updated in real time.
+//This allows the gas to turn corners in indoor spaces and respond to things like opening and closing doors in real time.
+void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
+{
+	Assert ( IsNewThread(), "Must be threaded off." )
+
+	if ( IsValid( smokescreen.smokeSource ) )
+	smokescreen.smokeSource.EndSignal( "OnDestroy" )
+
+	float damageTickRate = smokescreen.damageTickRate
+
+	vector center = GetFXCenterFromSmokescreen( smokescreen )
+	float radius = smokescreen.damageOuterRadius
+	float endTime = Time() + smokescreen.lifetime
+
+	float offset = radius / 2
+	array<vector> offsetVectors = [
+	MapAngleToRadius( 0, offset ),
+	MapAngleToRadius( 45, offset ),
+	MapAngleToRadius( 90, offset ),
+	MapAngleToRadius( 135, offset ),
+	MapAngleToRadius( 180, offset ),
+	MapAngleToRadius( 225, offset ),
+	MapAngleToRadius( 270, offset ),
+	MapAngleToRadius( 315, offset )
+	]
+
+	table<int ,array<entity> > smokeFXs
+	for ( int i=1; i<offsetVectors.len(); i++ )
+	{
+		vector offsetVector = offsetVectors[i]
+		vector offsetCenter = center + offsetVector
+		//entity fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( FX_GAS_SMOKE ), offsetCenter + <0,0,-42>, <0,0,0> )
+		//EffectSetControlPointVector( fx, 1, <DIRTY_BOMB_GAS_DURATION,0,0> )
+		smokeFXs[i] <- [null,null]
+	}
+
+	float dpsPilot = smokescreen.dpsPilot * damageTickRate
+	float dpsTitan = smokescreen.dpsTitan * damageTickRate
+	Assert( dpsPilot || dpsTitan > 0, "Electric smokescreen with 0 damage created" )
+
+	//Create a dummy inflictor ent that will be our gas inflictor
+	entity gasExpoInflictor = CreateScriptRef( center, <0,0,0> )
+	gasExpoInflictor.e.onlyDamageEntitiesOncePerTick = true
+	gasExpoInflictor.e.spawnTime = Time()
+	SetTeam( gasExpoInflictor, smokescreen.attacker.GetTeam() )
+
+	entity gasDmgInflictor = CreateScriptRef( center, <0,0,0> )
+	gasDmgInflictor.e.onlyDamageEntitiesOncePerTick = true
+
+	if ( IsValid( smokescreen.smokeSource ) )
+	{
+		gasExpoInflictor.SetParent( smokescreen.smokeSource )
+		gasDmgInflictor.SetParent( smokescreen.smokeSource )
+	}
+
+	if ( IsValid( smokescreen.inflictor ) )
+	{
+		gasExpoInflictor.RemoveFromAllRealms()
+		gasExpoInflictor.AddToOtherEntitysRealms( smokescreen.inflictor )
+		gasDmgInflictor.RemoveFromAllRealms()
+		gasDmgInflictor.AddToOtherEntitysRealms( smokescreen.inflictor )
+	}
+
+	OnThreadEnd(
+	function() : ( smokescreen, gasExpoInflictor, gasDmgInflictor, smokeFXs )
+		{
+			if ( IsValid( gasExpoInflictor ) )
+				gasExpoInflictor.Destroy()
+
+			if ( IsValid( gasDmgInflictor ) )
+				gasDmgInflictor.Destroy()
+
+			if ( IsValid( smokescreen.smokeSource ) )
+			{
+				StopSoundOnEntity( smokescreen.smokeSource, GAS_CLOUD_EMITTER_SOUND )
+			}
+
+			foreach ( entArray in smokeFXs )
+			{
+				if ( IsValid( entArray[0] ) )
+					entArray[0].Destroy()
+				if ( IsValid( entArray[1] ) )
+					entArray[1].Destroy()
+			}
+		}
+	)
+
+	float lastDamageTime = Time()
+	bool fxDestroyed = false
+
+	if ( IsValid( smokescreen.smokeSource ) )
+	{
+		EmitSoundOnEntity( smokescreen.smokeSource, GAS_CLOUD_EMITTER_SOUND )
+	}
+
+	while ( Time() <= endTime )
+	{
+		center = GetFXCenterFromSmokescreen( smokescreen )
+
+		bool doDamage = Time() - lastDamageTime >= damageTickRate
+		for ( int i=0; i<offsetVectors.len(); i++ )
+		{
+			vector offsetVector = offsetVectors[i]
+			vector offsetCenter = center + offsetVector
+			vector radiusOrigin = offsetCenter
+
+			if ( !fxDestroyed )
+			{
+				TraceResults trace
+
+				array<entity> ignoreEnts = GetGasEmitters()
+				if ( IsValid( smokescreen.smokeSource ) )
+					ignoreEnts.append( smokescreen.smokeSource )
+
+				trace = TraceLine( center, offsetCenter, ignoreEnts, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_BLOCK_WEAPONS, smokescreen.smokeSource )
+				if ( trace.hitEnt != null && !trace.hitSky )
+				{
+					vector dif = ( offsetCenter - center ) * trace.fraction
+					radiusOrigin = center + dif
+
+					if ( GAS_CLOUD_DEBUG_DRAW )
+						DebugDrawLine( center, radiusOrigin, 255, 0, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
+
+					if ( trace.fraction < 0.5 )
+					{
+						if ( offsetVector != offsetVectors[0] && IsValid( smokeFXs[i][0] ) )
+							smokeFXs[i][0].Destroy()
+
+						continue
+					}
+					else
+					{
+						if ( i != 0 )
+						{
+							if ( !IsValid( smokeFXs[i][0] ) )
+							{
+								entity fx
+								if ( smokescreen.smokeSource == null )
+									fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( smokescreen.smokescreenFX ), offsetCenter + FX_GAS_SMOKE_OFFSET, <0,0,0> )
+								else
+									fx = StartParticleEffectOnEntityWithPos_ReturnEntity( smokescreen.smokeSource, GetParticleSystemIndex( smokescreen.smokescreenFX ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, offsetVector - FX_GAS_SMOKE_OFFSET, <0,0,0> )
+
+								if ( smokescreen.fxPointCP1toCenter )
+									EffectSetControlPointVector( fx, 1, center )
+
+								smokeFXs[i][0] = fx
+								smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
+
+								if ( smokescreen.smokeSource != null )
+									smokeFXs[i][1].SetParent( smokescreen.smokeSource )
+
+								if ( IsValid( smokescreen.inflictor ) )
+								{
+									foreach ( ent in smokeFXs[ i ] )
+									{
+										ent.RemoveFromAllRealms()
+										ent.AddToOtherEntitysRealms( smokescreen.inflictor )
+									}
+								}
+							}
+							else
+							{
+								vector org = radiusOrigin + FX_GAS_SMOKE_OFFSET
+								if ( smokescreen.smokeSource == null )
+								{
+									smokeFXs[i][0].SetOrigin( org )
+									smokeFXs[i][1].SetOrigin( org )
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					if ( i != 0 )
+					{
+						if ( !IsValid( smokeFXs[i][0] ) )
+						{
+							entity fx
+
+							if ( smokescreen.smokeSource == null )
+								fx = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( smokescreen.smokescreenFX ), offsetCenter + FX_GAS_SMOKE_OFFSET, <0,0,0> )
+							else
+								fx = StartParticleEffectOnEntityWithPos_ReturnEntity( smokescreen.smokeSource, GetParticleSystemIndex( smokescreen.smokescreenFX ), FX_PATTACH_ABSORIGIN_FOLLOW_NOROTATE, -1, offsetVector - FX_GAS_SMOKE_OFFSET, <0,0,0> )
+
+							if ( smokescreen.fxPointCP1toCenter )
+								EffectSetControlPointVector( fx, 1, center )
+
+							smokeFXs[i][0] = fx
+							smokeFXs[i][1] = CreateTraceBlockerVolume( (offsetCenter + FX_GAS_SMOKE_OFFSET), (radius * 0.45), true, CONTENTS_BLOCKLOS, smokescreen.traceBlockerTeam, smokescreen.traceBlockerScriptName )
+
+							if ( smokescreen.smokeSource != null )
+								smokeFXs[i][1].SetParent( smokescreen.smokeSource )
+
+							if ( IsValid( smokescreen.inflictor ) )
+							{
+								foreach ( ent in smokeFXs[ i ] )
+								{
+									ent.RemoveFromAllRealms()
+									ent.AddToOtherEntitysRealms( smokescreen.inflictor )
+								}
+							}
+						}
+						else
+						{
+							vector org = offsetCenter + FX_GAS_SMOKE_OFFSET
+							if ( smokescreen.smokeSource == null )
+							{
+								smokeFXs[i][0].SetOrigin( org )
+								smokeFXs[i][1].SetOrigin( org )
+							}
+						}
+					}
+					if ( GAS_CLOUD_DEBUG_DRAW )
+						DebugDrawLine( offsetCenter, center, 0, 255, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
+				}
+
+				if ( GAS_CLOUD_DEBUG_DRAW )
+				{
+					DebugDrawCircle( radiusOrigin, <0,0,0>, radius / 2, 255, 0, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
+					DebugDrawCircle( radiusOrigin, <0,0,0>, radius / 2, 255, 0, 0, true, GAS_CLOUD_EXPOSURE_TICK_RATE )
+				}
+			}
+
+			if ( Time() > endTime - GAS_CLOUD_FADE_TIME && !fxDestroyed )
+			{
+				fxDestroyed = true
+
+				foreach ( entArray in smokeFXs )
+				{
+					if ( IsValid( entArray[0] ) )
+						entArray[0].Destroy()
+					if ( IsValid( entArray[1] ) )
+						entArray[1].Destroy()
+				}
+
+				smokeFXs.clear()
+			}
+
+			RadiusDamage(
+			radiusOrigin,										// center
+			svGlobal.worldspawn,								// attacker
+			gasExpoInflictor,										// inflictor
+			1.0,												// damage
+			1.0,												// damageHeavyArmor
+			offset,												// innerRadius
+			offset,												// outerRadius
+			SF_ENVEXPLOSION_MASK_BRUSHONLY,	// flags
+			0.0,												// distanceFromAttacker
+			0.0,												// explosionForce
+			smokescreen.damageFlags,							// scriptDamageFlags
+			eDamageSourceId.damagedef_gas_exposure )			// scriptDamageSourceIdentifier
+
+			//DO GAS RADIUS DAMAGE HERE EVERY TICK TIME.
+			if ( doDamage )
+			{
+				//Deal gas grenade damage
+				RadiusDamage(
+				radiusOrigin,										// center
+				smokescreen.attacker,								// attacker
+				gasDmgInflictor,									// inflictor
+				dpsPilot,											// damage
+				dpsTitan,											// damageHeavyArmor
+				offset,												// innerRadius
+				offset,												// outerRadius
+				SF_ENVEXPLOSION_MASK_BRUSHONLY,	// flags
+				0.0,												// distanceFromAttacker
+				0.0,												// explosionForce
+				smokescreen.damageFlags,							// scriptDamageFlags
+				smokescreen.damageSource )							// scriptDamageSourceIdentifier
+			}
+		}
+
+		//If we dealt damage this frame update last damage time.
+		if ( doDamage )
+			lastDamageTime = Time()
+
+		wait GAS_CLOUD_EXPOSURE_TICK_RATE
+	}
+}
+
+vector function MapAngleToRadius( float angle, float radius )
+{
+	float offsetX = radius * cos( angle * ( PI / 180 ) )
+	float offsetY = radius * sin( angle * ( PI / 180 ) )
+	vector offset = ( < offsetX, offsetY, 0 > )
+	return offset
+}
+
+void function MakeEntityAsGasEmitter( entity ent )
+{
+	AddToScriptManagedEntArray( file.gasEmitterEntArrayID, ent )
+}
+
+array<entity> function GetGasEmitters()
+{
+	return GetScriptManagedEntArray( file.gasEmitterEntArrayID )
+}
+#endif
+
+#if CLIENT
+void function UpdatePlayerScreenColorCorrection( entity player, int statusEffect, int ccID )
+{
+	Assert ( IsNewThread(), "Must be threaded off." )
+	Assert ( player == GetLocalViewPlayer() )
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "GasCloud_StopColorCorrection" )
+
+	OnThreadEnd(
+	function() : ( ccID )
+		{
+			ColorCorrection_SetWeight( ccID, 0.0 )
+			ColorCorrection_SetExclusive( ccID, false )
+		}
+	)
+
+	ColorCorrection_SetExclusive( ccID, true )
+	const LERP_IN_TIME = 0.25	// hack! because statusEffect doesn't seem to have a lerp in feature?
+	float startTime = Time()
+
+	while ( true )
+	{
+		float weight = StatusEffect_GetSeverity( player, statusEffect )
+		weight = GraphCapped( Time() - startTime, 0, LERP_IN_TIME, 0, weight )
+		//printt( "ColorCorrection Weight:   " +  weight )
+		ColorCorrection_SetWeight( ccID, weight )
+		WaitFrame()
+	}
+}
+
+void function UpdatePlayerGasCloudDOF( entity player, int statusEffect )
+{
+	Assert ( IsNewThread(), "Must be threaded off." )
+	Assert ( player == GetLocalViewPlayer() )
+
+	player.Signal( "GasCloud_StopDOF" )
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "GasCloud_StopDOF" )
+
+	OnThreadEnd(
+	function() : ()
+		{
+			DoF_LerpFarDepthToDefault( 1.0 )
+			DoF_SetNearDepthToDefault()
+			file.lastDOFLerpTime = Time()
+		}
+	)
+
+	if ( Time() - file.lastDOFLerpTime < 1.0 )
+	{
+		Wait( 1.0 - ( Time() - file.lastDOFLerpTime ) )
+		//wait 0.25
+	}
+
+	while ( true )
+	{
+		float weight = StatusEffect_GetSeverity( player, statusEffect )
+		float sinVal = sin( Time() * 4 )
+		float sinClamp = GraphCapped( sinVal, -1, 1, weight * 0.5, weight )
+
+		float innerFarDOF = GAS_CLOUD_DOF_FAR_INNER / ( sinClamp ) //oscillate dof based on sin wave.
+		float outerFarDOF = GAS_CLOUD_DOF_FAR_OUTER / ( sinClamp )
+
+		float innerNearDOF = GAS_CLOUD_DOF_NEAR_INNER / ( weight )
+		float outerNearDOF = GAS_CLOUD_DOF_NEAR_OUTER / ( weight )
+
+		DoF_SetFarDepth( innerFarDOF, outerFarDOF )
+		DoF_SetNearDepth( innerNearDOF, outerNearDOF )
+
+		//printt( "DOF", innerFarDOF, outerFarDOF, innerNearDOF, outerNearDOF )
+		WaitFrame()
+	}
+}
+
+void function GasCloud_StartVisualEffect( entity ent, int statusEffect, bool actuallyChanged )
+{
+	ManageHighlightEntity( ent )
+
+	if ( !actuallyChanged && GetLocalViewPlayer() == GetLocalClientPlayer() )
+		return
+
+	if ( ent != GetLocalViewPlayer() )
+		return
+
+	ent.Signal( "GasCloud_StopColorCorrection" )
+	thread UpdatePlayerScreenColorCorrection( ent, statusEffect, file.colorCorrectionGas )
+
+	//Gas does not blur titan view.
+	entity viewPlayer = GetLocalViewPlayer()
+	if ( !viewPlayer.IsTitan() )
+	{
+		if ( !PlayerHasGasProtection( viewPlayer ) )
+		{
+			int fxHandle = StartParticleEffectOnEntityWithPos( viewPlayer, COCKPIT_GAS_SCREEN_FX, FX_PATTACH_ABSORIGIN_FOLLOW, -1, viewPlayer.EyePosition(), <0,0,0> )
+			EffectSetIsWithCockpit( fxHandle, true )
+
+			thread GasScreenFXThink( viewPlayer, fxHandle )
+			thread UpdatePlayerGasCloudDOF( viewPlayer, statusEffect )
+		}
+	}
+}
+
+void function GasCloud_StopVisualEffect( entity ent, int statusEffect, bool actuallyChanged )
+{
+	ManageHighlightEntity( ent )
+
+	if ( !actuallyChanged && GetLocalViewPlayer() == GetLocalClientPlayer() )
+		return
+
+	if ( ent != GetLocalViewPlayer() )
+		return
+
+	ent.Signal( "GasCloud_StopColorCorrection" )
+	ent.Signal( "GasCloud_StopDOF" )
+	ent.Signal( "GasCloud_StopScreenEffect" )
+
+	foreach ( player in GetPlayerArray() )
+	{
+		ManageHighlightEntity( player )
+	}
+}
+
+void function GasScreenFXThink( entity player, int fxHandle )
+{
+	player.EndSignal( "GasCloud_StopScreenEffect" )
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( fxHandle )
+		{
+			if ( !EffectDoesExist( fxHandle ) )
+				return
+
+			EffectStop( fxHandle, false, true )
+		}
+	)
+
+	for ( ;; )
+	{
+		float weight = StatusEffect_GetSeverity( player, eStatusEffect.gas_cloud )
+		//printt( "Severity CP1: " +  weight )
+
+		if ( !EffectDoesExist( fxHandle ) )
+			break
+
+		EffectSetControlPointVector( fxHandle, 1, <weight,999,0> )
+
+		WaitFrame()
+	}
+}
+
+void function ShowPassiveProtectionOnHUD( entity player, int passive, bool didHave, bool nowHas )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	if ( PlayerHasPassive( player, ePassives.PAS_GAS_PROTECTION ) && !PlayerHasPassive( player, ePassives.PAS_GAS_GEAR ) )
+	{
+		thread ShowPassiveProtectionOnHUD_Internal( player )
+	}
+	else
+	{
+		player.Signal( "StopPassiveProtectionOnHUD" )
+
+		if ( !PlayerHasGasProtection( player ) )
+		{
+			float weight = StatusEffect_GetSeverity( player, eStatusEffect.gas_cloud )
+
+			if ( weight > 0 )
+				GasCloud_StartVisualEffect( player, eStatusEffect.gas_cloud, false )
+		}
+
+	}
+}
+
+void function ShowPassiveProtectionOnHUD_Internal( entity player )
+{
+	player.Signal( "StopPassiveProtectionOnHUD" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "StopPassiveProtectionOnHUD" )
+
+	var rui = CreateCockpitRui( $"ui/gas_protection_icon.rpak" )
+	RuiSetImage( rui, "icon", $"rui/hud/passive_icons/passive_caustic" )
+	RuiTrackBool( rui, "playerInPlane", player, RUI_TRACK_SCRIPT_NETWORK_VAR_BOOL, GetNetworkedVariableIndex( "playerInPlane" ) )
+	RuiTrackBool( rui, "freefallActive", player, RUI_TRACK_SCRIPT_NETWORK_VAR_BOOL, GetNetworkedVariableIndex( "freefallActive" ) )
+
+	OnThreadEnd(
+		function () : ( rui )
+		{
+			RuiDestroy( rui )
+		}
+	)
+
+	string name = ""
+	entity caustic
+
+	bool shouldHaveEffect = GetCurrentPlaylistVarBool( "enable_caustic_protection_effect", false )
+
+	while ( name == "" )
+	{
+		WaitFrame()
+		caustic = FindTeamCaustic( player )
+		if ( IsValid( caustic ) )
+		{
+			name = caustic.GetPlayerName()
+			break
+		}
+	}
+
+	RuiSetString( rui, "playerName", name )
+
+	vector color = TEAM_COLOR_FRIENDLY
+	float drawTick = 0.01
+
+	int fxId = GetParticleSystemIndex( GAS_PROTECTION_RING_FX )
+
+	table<string, int> e
+	e[ "fxHandle" ] <- -1
+
+	OnThreadEnd(
+		function () : ( e )
+		{
+			if ( e[ "fxHandle" ] != -1 )
+			{
+				EffectStop( e[ "fxHandle" ], true, true )
+			}
+		}
+	)
+
+	float AR_EFFECT_SIZE 		= 768.0 // coresponds with the size of the sphere model used for the AR effect
+
+	while ( IsAlive( caustic ) )
+	{
+		int ms = PlayerMatchState_GetFor( player )
+		bool draw = !( (ms == ePlayerMatchState.SKYDIVE_PRELAUNCH) || (ms == ePlayerMatchState.SKYDIVE_FALLING) )
+		if ( draw )
+		{
+			if ( e[ "fxHandle" ] == -1 && shouldHaveEffect )
+			{
+				int attachId = caustic.LookupAttachment( "ORIGIN" )
+				e[ "fxHandle" ] = StartParticleEffectOnEntity( caustic, fxId, FX_PATTACH_POINT_FOLLOW, attachId )
+				EffectSetControlPointVector( e[ "fxHandle" ], 1, <10.0, GAS_TEAMMATE_PROTECTION_RADIUS / AR_EFFECT_SIZE,0> )
+				EffectSetControlPointVector( e[ "fxHandle" ], 2, TEAM_COLOR_FRIENDLY )
+			}
+
+			//DebugDrawCircle( caustic.GetOrigin() + <0,0,32>, <0,0,1>, GAS_TEAMMATE_PROTECTION_RADIUS, int( color.x ), int( color.y ), int( color.z ), false, drawTick + 0.01 )
+			//DebugDrawCircle( caustic.GetOrigin() + <0,0,30>, <0,0,1>, GAS_TEAMMATE_PROTECTION_RADIUS, int( color.x ), int( color.y ), int( color.z ), false, drawTick + 0.01 )
+
+		}
+		else
+		{
+			if ( e[ "fxHandle" ] != -1 )
+			{
+				EffectStop( e[ "fxHandle" ], true, true )
+				e[ "fxHandle" ] = -1
+			}
+		}
+		wait drawTick
+	}
+
+	WaitForever()
+}
+
+entity function FindTeamCaustic( entity player )
+{
+	array<entity> team = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	foreach ( p in team )
+	{
+		if ( player != p && PlayerHasPassive( p, ePassives.PAS_GAS_GEAR ) )
+			return p
+	}
+
+	return null
+}
+#endif //CLIENT
+
+bool function PlayerHasGasProtection( entity player )
+{
+	return ( PlayerHasPassive( player, ePassives.PAS_GAS_GEAR ) || PlayerHasPassive( player, ePassives.PAS_GAS_PROTECTION ) )
+}

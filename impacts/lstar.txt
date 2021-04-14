@@ -1,0 +1,202 @@
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"Bullets.AmpedXO16NearMiss"
+		"whizby_sound_from_AI"		"Bullets.AmpedXO16NearMiss_AIGenerated"
+		"whizby_maxDistancePilot"	"100"
+		"whizby_maxDistanceTitan"	"400"
+	}
+
+	FX
+	{
+		"C" "P_impact_lstar_default" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_lstar_default" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_lstar_default" // metal_titan
+
+		"F" "P_impact_lstar_flesh" //flesh
+		"G" "P_impact_lstar_default" //metalgrate, chainlink, chain
+		"H" "P_impact_lstar_flesh" //alienflesh
+
+		"J" "P_impact_lstar_default" //grass
+		"K" "P_impact_lstar_default" //Mud
+		"L" "P_impact_lstar_default" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_lstar_default" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+//		"N" "openslot"
+		"O" "P_impact_lstar_default"  //Foliage
+		"P" "P_impact_lstar_flesh" //metal_spectre
+
+		"R" "P_impact_lstar_default" //metalpanel, grenade, canister
+		"S" "P_impact_water" //water, slime
+		"T" "P_impact_lstar_default" //tile
+		"U" "P_impact_lstar_default" // glass_breakable
+		"V" "P_impact_lstar_default" //Metal Vent
+		"W" "P_impact_lstar_default"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_xo_shield_cp" //xo_shield
+
+		"Y" "P_impact_lstar_default" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_lstar_default"  //sand
+
+//		"0" "openslot"
+//		"1" "openslot"
+//		"2" "openslot"
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "P_impact_water" //brush water
+		"slime_splash" "P_impact_water"
+		"airburst" "P_impact_lstar_default"  //No Surface
+		"shieldhit" "P_armor_impact"
+		"critical_hit" "P_impact_lstar_default"
+
+		"headshot_flesh" "P_impact_lstar_flesh"
+		"headshot_mechanical" "P_impact_lstar_default"
+
+	}
+
+
+	FX_victim
+	{
+		"F" "P_impact_lstar_victim"
+		"shieldhit" "P_impact_lstar_default"
+		"E" "P_impact_lstar_victim"		// metal_titan
+		"P" "P_impact_lstar_victim"
+		"headshot_flesh" "P_impact_lstar_victim"
+		"headshot_mechanical" "P_impact_lstar_victim"
+
+	}
+
+	Sound
+	{
+		"C" "Concrete.Heavy.BulletImpact_3P_vs_3P"
+		"D" "Dirt.Heavy.BulletImpact_3P_vs_3P"
+		"E" "Titan.AmpedXO16.BulletImpact_3P_vs_3P"
+
+		"F" "Flesh.LSTAR.BulletImpact_3P_vs_3P"
+		"G" "MetalGrate.Heavy.BulletImpact_3P_vs_3P"
+		"H" "Flesh.LSTAR.BulletImpact_3P_vs_3P"
+
+		"J" "Grass.Heavy.BulletImpact_3P_vs_3P"
+		"K" "Mud.Heavy.BulletImpact_3P_vs_3P"  // mud?
+		"L" "Default.Heavy.BulletImpact_3P_vs_3P"
+		"M" "SolidMetal.Heavy.BulletImpact_3P_vs_3P"
+		"N" "Sand.Heavy.BulletImpact_3P_vs_3P"	// sand?
+		"O" "Grass.Heavy.BulletImpact_3P_vs_3P"
+		"P" "Android.LSTAR.BulletImpact_3P_vs_3P"
+
+		"R" "Concrete.Heavy.BulletImpact_3P_vs_3P"
+		"S" "Water.Heavy.BulletImpact_3P_vs_3P"
+		"T" "Tile.Heavy.BulletImpact_3P_vs_3P"
+		"U" "Glass.Heavy.BulletImpact_3P_vs_3P"
+
+		"V" "SolidMetal.Heavy.BulletImpact_3P_vs_3P"
+		"W" "Wood.Heavy.BulletImpact_3P_vs_3P"
+		"X" "TitanBubbleShield.AmpedXO16.BulletImpact_3P_vs_3P"
+		"Y" "Glass.Heavy.BulletImpact_3P_vs_3P"
+		"Z" "Sand.Heavy.BulletImpact_3P_vs_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "humanshield_light_bulletimpact_3p_vs_3p"
+
+		"headshot_flesh" "Flesh.LSTAR.BulletImpact_3P_vs_3P"
+		"headshot_mechanical" "Android.LSTAR.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "Concrete.Heavy.BulletImpact_1P_vs_3P"
+		"D" "Dirt.Heavy.BulletImpact_1P_vs_3P"
+		"E" "Titan.LSTAR.BulletImpact_1P_vs_3P"
+
+		"F" "Flesh.LSTAR.BulletImpact_1P_vs_3P"
+		"G" "MetalGrate.Heavy.BulletImpact_1P_vs_3P"
+		"H" "Flesh.LSTAR.BulletImpact_1P_vs_3P"
+
+		"J" "Grass.Heavy.BulletImpact_1P_vs_3P"
+		"K" "Mud.Heavy.BulletImpact_1P_vs_3P"  // mud?
+		"L" "Default.Heavy.BulletImpact_1P_vs_3P"
+		"M" "SolidMetal.Heavy.BulletImpact_1P_vs_3P"
+		"N" "Sand.Heavy.BulletImpact_1P_vs_3P"	// sand?
+		"O" "Grass.Heavy.BulletImpact_1P_vs_3P"
+		"P" "Android.LSTAR.BulletImpact_1P_vs_3P"
+
+		"R" "Concrete.Heavy.BulletImpact_1P_vs_3P"
+		"S" "Water.Heavy.BulletImpact_1P_vs_3P"
+		"T" "Tile.Heavy.BulletImpact_1P_vs_3P"
+		"U" "Glass.Heavy.BulletImpact_1P_vs_3P"
+
+		"V" "SolidMetal.Heavy.BulletImpact_1P_vs_3P"
+		"W" "Wood.Heavy.BulletImpact_1P_vs_3P"
+		"X" "TitanBubbleShield.LSTAR.BulletImpact_1P_vs_3P"
+		"Y" "Glass.Heavy.BulletImpact_1P_vs_3P"
+		"Z" "Sand.Heavy.BulletImpact_1P_vs_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "humanshield_light_bulletimpact_1p_vs_3p"
+
+		"headshot_flesh" "Flesh.LSTAR.BulletImpact_1P_vs_3P"
+		"headshot_mechanical" "Android.LSTAR.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "Concrete.Heavy.BulletImpact_3P_vs_1P"
+		"D" "Dirt.Heavy.BulletImpact_3P_vs_1P"
+		"E" "Titan.AmpedXO16.BulletImpact_3P_vs_1P"
+
+		"F" "Flesh.LSTAR.BulletImpact_3P_vs_1P"
+		"G" "MetalGrate.Heavy.BulletImpact_3P_vs_1P"
+		"H" "Flesh.LSTAR.BulletImpact_3P_vs_1P"
+
+		"J" "Grass.Heavy.BulletImpact_3P_vs_1P"
+		"K" "Mud.Heavy.BulletImpact_3P_vs_1P"  // mud?
+		"L" "Default.Heavy.BulletImpact_3P_vs_1P"
+		"M" "SolidMetal.Heavy.BulletImpact_3P_vs_1P"
+		"N" "Sand.Heavy.BulletImpact_3P_vs_1P"	// sand?
+		"O" "Grass.Heavy.BulletImpact_3P_vs_1P"
+		"P" "Android.LSTAR.BulletImpact_3P_vs_1P"
+
+		"R" "Concrete.Heavy.BulletImpact_3P_vs_1P"
+		"S" "Water.Heavy.BulletImpact_3P_vs_1P"
+		"T" "Tile.Heavy.BulletImpact_3P_vs_1P"
+		"U" "Glass.Heavy.BulletImpact_3P_vs_1P"
+
+		"V" "SolidMetal.Heavy.BulletImpact_3P_vs_1P"
+		"W" "Wood.Heavy.BulletImpact_3P_vs_1P"
+
+		"Y" "Glass.Heavy.BulletImpact_3P_vs_1P"
+		"Z" "Sand.Heavy.BulletImpact_3P_vs_1P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "humanshield_light_bulletimpact_3p_vs_1p"
+
+		"headshot_flesh" "Flesh.LSTAR.BulletImpact_3P_vs_1P"
+		"headshot_mechanical" "Android.LSTAR.BulletImpact_3P_vs_1P"
+	}
+
+	Sound_victim_from_AI
+	{
+		"F" "Flesh.LSTAR.BulletImpact_3P_vs_1P"
+		"P" "Android.LSTAR.BulletImpact_3P_vs_1P"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "Flesh.BulletImpact_3P_vs_1P"
+		//"headshot_mechanical" "Android.Light.BulletImpact_3P_vs_1P"
+	}
+
+}

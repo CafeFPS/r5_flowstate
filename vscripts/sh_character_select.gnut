@@ -1,0 +1,86 @@
+
+#if SERVER || CLIENT || UI
+global function Survival_DoesTeamHaveCharacter
+global function Survival_HasPlayerLockedInCharacter
+#endif
+
+#if UI
+global function ServerToUI_CharacterLockRejected
+#endif
+
+#if UI
+table<int, bool> PROTO_playerCharacterLockStateMap = {}
+void function ClientToUI_OnPlayerUpdatedCharacterLock( bool clearAllHack, EHI playerEHI, bool locked )
+{
+	if ( clearAllHack )
+		PROTO_playerCharacterLockStateMap = {}
+
+	PROTO_playerCharacterLockStateMap[playerEHI] <- locked
+
+	//if ( EHI_GetTeam( playerEHI ) == EHI_GetTeam( LocalClientEHI() ) )
+	//UpdateCharacterSelectDisplay_UI()
+}
+#endif
+
+#if SERVER || CLIENT || UI
+bool function Survival_HasPlayerLockedInCharacter( EHI playerEHI )
+{
+	#if SERVER || CLIENT
+		entity player = FromEHI( playerEHI )
+		if ( player == null || !IsValid( player ) )
+			return false
+
+		return player.GetPlayerNetBool( "hasLockedInCharacter" )
+	#elseif UI
+		// R5DEV-24530
+		if ( playerEHI in PROTO_playerCharacterLockStateMap )
+			return PROTO_playerCharacterLockStateMap[playerEHI]
+		return false
+	#endif
+}
+#endif
+
+#if SERVER || CLIENT || UI
+bool function Survival_DoesTeamHaveCharacter( int team, ItemFlavor checkCharacter, EHI ignorePlayerEHI = EHI_null )
+{
+	foreach ( EHI teammateEHI in GetPlayerEHIArrayOfTeam( team ) )
+	{
+		if ( ignorePlayerEHI != EHI_null && teammateEHI == ignorePlayerEHI )
+			continue
+
+		if ( !Survival_HasPlayerLockedInCharacter( teammateEHI ) )
+			continue
+
+		if ( LoadoutSlot_IsReady( teammateEHI, Loadout_CharacterClass() ) )
+		{
+			if ( LoadoutSlot_GetItemFlavor( teammateEHI, Loadout_CharacterClass() ) == checkCharacter )
+				return true
+		}
+	}
+
+	return false
+}
+#endif
+
+#if UI
+void function DisableReadyMode()
+{
+	//ClientCommand( "Sur_UpdateCharacterLock 0" )
+	//
+	//StopUISound( "UI_InGame_FD_TitanSelected" )
+	//
+	//Hud_Hide( fileForever.readyUpPanel )
+	//var rui = Hud_GetRui( fileForever.readyUpPanel )
+	//RuiSetBool( rui, "isReady", false )
+	//
+	//Hud_SetVisible( fileForever.portraitsPanel, true )
+}
+#endif
+
+#if UI
+void function ServerToUI_CharacterLockRejected()
+{
+	//DisableReadyMode()
+	//EmitUISound( "ui_ingame_fd_armoryclose" )
+}
+#endif

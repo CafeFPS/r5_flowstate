@@ -1,0 +1,393 @@
+global function ClSurvivalShip_Init
+global function IsPlayerInPlane
+global function GetPlayersInPlaneCount
+global function PlayerPlaneStatusChanged
+global function JumpmasterStatusChanged
+
+const string SQUAD_LEADER_SOUND = "UI_InGame_SquadLeader_Announce"
+
+struct
+{
+	var sqadLeaderBoxRui
+	bool adsPressed
+	bool registeredConCommandCallbacks
+} file
+
+void function ClSurvivalShip_Init()
+{
+	RegisterSignal( "PlayerPlaneStatusChanged" )
+	RegisterSignal( "CancelTryRelinquishSquadLeaderOrBreakFromSquad" )
+	RegisterSignal( "CreateSquadLeaderBox" )
+
+	AddEventNotificationCallback( eEventNotifications.SURVIVAL_DroppingSolo, SURVIVAL_DroppingSolo )
+	AddEventNotificationCallback( eEventNotifications.SURVIVAL_RelinquishedJumpmaster, SURVIVAL_RelinquishedJumpmaster )
+	AddEventNotificationCallback( eEventNotifications.SURVIVAL_NewJumpmaster, SURVIVAL_NewJumpmaster )
+	AddEventNotificationCallback( eEventNotifications.SURVIVAL_RejoinedSquad, SURVIVAL_RejoinedSquad )
+}
+
+bool function IsPlayerInPlane( entity player )
+{
+	return player.GetPlayerNetBool( "playerInPlane" )
+}
+
+int function GetPlayersInPlaneCount()
+{
+	int count = 0
+	foreach( entity player in GetPlayerArray() )
+	{
+		if ( player.GetPlayerNetBool( "playerInPlane" ) )
+			count++
+	}
+	return count
+}
+
+void function JumpmasterStatusChanged( entity statusChangePlayer, bool oldValue, bool newValue, bool actuallyChanged )
+{
+	PlayerPlaneStatusChanged( statusChangePlayer, oldValue, newValue, actuallyChanged )
+
+	if ( !actuallyChanged )
+		return
+
+	if ( newValue == false )
+		return
+
+	if ( statusChangePlayer != GetLocalClientPlayer() )
+		return
+
+	PlayBattleChatterToSelfOnClient( statusChangePlayer, "bc_imJumpmaster" )
+}
+
+void function PlayerPlaneStatusChanged( entity statusChangePlayer, bool oldValue, bool newValue, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	if ( !IsValid( statusChangePlayer ) )
+		return
+
+	entity player = GetLocalClientPlayer()
+	var gamestateRui = ClGameState_GetRui()
+	Assert( gamestateRui != null )
+	RuiSetInt( gamestateRui, "playersInPlane", IsPlayerInPlane( player ) ? GetPlayersInPlaneCount() : 0 )
+	RuiSetInt( GetFullmapGamestateRui(), "playersInPlane", IsPlayerInPlane( player ) ? GetPlayersInPlaneCount() : 0 )
+
+	if ( statusChangePlayer.GetTeam() != player.GetTeam() )
+		return
+
+	bool playerInPlane = player.GetPlayerNetBool( "playerInPlane" )
+
+	if ( statusChangePlayer == player )
+		Signal( player, "PlayerPlaneStatusChanged" )
+
+	if ( playerInPlane )
+	{
+		// Player in plane
+		NotifyDropSequence( true )
+		SetSkydiveStartingConvars()
+		CreateSquadLeaderBox( player )
+		if ( statusChangePlayer == player )
+		{
+			thread UpdateDOFForPlayerView()
+			thread ADSZoomWhileInPlane()
+
+			if ( !file.registeredConCommandCallbacks )
+			{
+				file.registeredConCommandCallbacks = true
+				RegisterConCommandTriggeredCallback( "+duck", PlayerTryRelinquishSquadLeaderOrBreakFromSquad )
+				RegisterConCommandTriggeredCallback( "+toggle_duck", PlayerTryRelinquishSquadLeaderOrBreakFromSquad )
+				RegisterConCommandTriggeredCallback( "-duck", SignalReleasedTryRelinquishSquadLeaderOrBreakFromSquad )
+				RegisterConCommandTriggeredCallback( "-toggle_duck", SignalReleasedTryRelinquishSquadLeaderOrBreakFromSquad )
+			}
+		}
+	}
+	else
+	{
+		// Player not in plane
+		DestroySquadLeaderBox( player )
+
+		if ( statusChangePlayer == player && file.registeredConCommandCallbacks )
+		{
+			DeregisterConCommandTriggeredCallback( "+duck", PlayerTryRelinquishSquadLeaderOrBreakFromSquad )
+			DeregisterConCommandTriggeredCallback( "+toggle_duck", PlayerTryRelinquishSquadLeaderOrBreakFromSquad )
+			DeregisterConCommandTriggeredCallback( "-duck", SignalReleasedTryRelinquishSquadLeaderOrBreakFromSquad )
+			DeregisterConCommandTriggeredCallback( "-toggle_duck", SignalReleasedTryRelinquishSquadLeaderOrBreakFromSquad )
+			file.registeredConCommandCallbacks = false
+		}
+	}
+}
+
+void function PlayDoorsOpenTimerSounds( entity player )
+{
+	Signal( player, "CreateSquadLeaderBox" )
+	EndSignal( player, "CreateSquadLeaderBox" )
+	EndSignal( player, "OnDestroy" )
+
+	float doorsOpenTime = GetGlobalNetTime( "PlaneDoorsOpenTime" )
+	float threeSecondWarningTime = doorsOpenTime - 3.0
+
+	while( GetGlobalNetTime( "PlaneDoorsOpenTime" ) < 0 )
+		WaitFrame()
+
+	if ( Time() > GetGlobalNetTime( "PlaneDoorsOpenTime" ) )
+		return
+
+	while( Time() < ( GetGlobalNetTime( "PlaneDoorsOpenTime" ) - 3.0 ) )
+	{
+		EmitSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_10Seconds" )
+		wait 1.0
+	}
+
+	while( Time() < GetGlobalNetTime( "PlaneDoorsOpenTime" ) - 0.5 )
+	{
+		EmitSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_3Seconds" )
+		wait 1.0
+	}
+
+	while( Time() < GetGlobalNetTime( "PlaneDoorsOpenTime" ) )
+		WaitFrame()
+
+	EmitSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_Finish" )
+}
+
+void function CreateSquadLeaderBox( entity player )
+{
+	if ( file.sqadLeaderBoxRui == null )
+	{
+		file.sqadLeaderBoxRui = CreatePermanentCockpitPostFXRui(  $"ui/squad_leader_box.rpak", 0 )
+		RuiSetGameTime( file.sqadLeaderBoxRui, "squadLeaderStartShowTime", Time() + 1.25 )
+	}
+
+	entity jumpMasterPlayer = GetJumpmasterForTeam( player.GetTeam() )
+	if ( jumpMasterPlayer == player )
+		EmitSoundOnEntity( player, SQUAD_LEADER_SOUND )
+	RuiSetBool( file.sqadLeaderBoxRui, "isJumpMaster", jumpMasterPlayer == player )
+	RuiTrackFloat( file.sqadLeaderBoxRui, "doorsOpenTime", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL, GetNetworkedVariableIndex( "PlaneDoorsOpenTime" ) )
+
+	thread PlayDoorsOpenTimerSounds( player )
+	EmitSoundOnEntity( player, "UI_InGame_SquadLeader_Announce" )
+
+	if ( IsValid( jumpMasterPlayer ) )
+	{
+		RuiSetString( file.sqadLeaderBoxRui, "squadLeaderName", jumpMasterPlayer.GetPlayerName() )
+		vector squadLeaderColor = GetKeyColor( COLORID_MEMBER_COLOR0, jumpMasterPlayer.GetTeamMemberIndex() )
+		RuiSetFloat3( file.sqadLeaderBoxRui, "squadLeaderColor", SrgbToLinear( squadLeaderColor / 255.0 ) )
+	}
+
+	if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) )
+	{
+		RuiSetBool( file.sqadLeaderBoxRui, "isSoloJump", false )
+		if ( !IsValid( jumpMasterPlayer ) )
+			RuiSetBool( file.sqadLeaderBoxRui, "showJumpMaster", false )
+		else
+			RuiSetBool( file.sqadLeaderBoxRui, "showJumpMaster", true )
+	}
+	else
+	{
+		RuiSetBool( file.sqadLeaderBoxRui, "showJumpMaster", true )
+		RuiSetBool( file.sqadLeaderBoxRui, "isSoloJump", true )
+		vector squadLeaderColor = GetKeyColor( COLORID_MEMBER_COLOR0, player.GetTeamMemberIndex() )
+		if ( IsValid( jumpMasterPlayer ) )
+			squadLeaderColor = GetKeyColor( COLORID_MEMBER_COLOR0, jumpMasterPlayer.GetTeamMemberIndex() )
+		RuiSetFloat3( file.sqadLeaderBoxRui, "squadLeaderColor", SrgbToLinear( squadLeaderColor / 255.0 ) )
+	}
+
+	if ( MAX_TEAM_PLAYERS == 1 ) //if ( GetTeamPlayerCount( player.GetTeam() ) == 1 )
+		RuiSetBool( file.sqadLeaderBoxRui, "isSoloJump", true )
+
+	RuiSetBool( file.sqadLeaderBoxRui, "hasHoldButtonAction", HasHoldButtonAction() )
+}
+
+void function DestroySquadLeaderBox( entity vehicle )
+{
+	if ( file.sqadLeaderBoxRui != null )
+	{
+		ReleaseHUDRui( file.sqadLeaderBoxRui )
+		RuiDestroyIfAlive( file.sqadLeaderBoxRui )
+		file.sqadLeaderBoxRui = null
+		entity player = GetLocalClientPlayer()
+
+		StopSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_10Seconds" )
+		StopSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_3Seconds" )
+		StopSoundOnEntity( player, "UI_Survival_Intro_LaunchCountDown_Finish" )
+	}
+}
+
+void function UpdateDOFForPlayerView()
+{
+	entity player = GetLocalClientPlayer()
+
+	EndSignal( player, "PlayerPlaneStatusChanged" )
+	EndSignal( player, "FreefallEnded" )
+	EndSignal( player, "OnDeath" )
+	EndSignal( player, "OnDestroy" )
+
+	player.ClientCommand( "dof_variable_blur 3" )
+	DoF_SetFarDepth( 10000, 150000 )
+
+	float traceDist = 100000.0
+
+	while( PlayerMatchState_GetFor( player ) < ePlayerMatchState.NORMAL )
+	{
+		vector start = player.CameraPosition()
+		vector end = start + ( AnglesToForward( player.CameraAngles() ) * traceDist )
+		TraceResults results = TraceLine( start, end, [ player ], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+		float dist = traceDist * results.fraction
+
+		DoF_SetFarDepth( dist + 3000, 900000 )
+		//DoF_SetNearDepth( 0, dist - (dofDist / 2.0) )
+
+		WaitFrame()
+	}
+}
+
+void function ADSZoomWhileInPlane()
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	RegisterConCommandTriggeredCallback( "+zoom", PlayerADSPressed )
+	RegisterConCommandTriggeredCallback( "-zoom", PlayerADSReleased )
+	RegisterConCommandTriggeredCallback( "+toggle_zoom", PlayerADSPressed )
+	RegisterConCommandTriggeredCallback( "-toggle_zoom", PlayerADSReleased )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			DeregisterConCommandTriggeredCallback( "+zoom", PlayerADSPressed )
+			DeregisterConCommandTriggeredCallback( "-zoom", PlayerADSReleased )
+			DeregisterConCommandTriggeredCallback( "+toggle_zoom", PlayerADSPressed )
+			DeregisterConCommandTriggeredCallback( "-toggle_zoom", PlayerADSReleased )
+
+			if ( IsValid( player ) )
+				player.SetFOVScale( 1.0, 0.25 )
+		}
+	)
+
+	EndSignal( player, "PlayerPlaneStatusChanged" )
+	EndSignal( player, "FreefallStarted" )
+	EndSignal( player, "FreefallEnded" )
+	EndSignal( player, "OnDeath" )
+	EndSignal( player, "OnDestroy" )
+
+	while( PlayerMatchState_GetFor( player ) < ePlayerMatchState.SKYDIVE_FALLING )
+	{
+		player.SetFOVScale( file.adsPressed ? 0.5 : 1.0, file.adsPressed ? 0.25 : 0.5 )
+		WaitFrame()
+	}
+}
+
+void function PlayerADSPressed( entity player )
+{
+	file.adsPressed = true
+}
+
+void function PlayerADSReleased( entity player )
+{
+	file.adsPressed = false
+}
+
+void function PlayerTryRelinquishSquadLeaderOrBreakFromSquad( entity player )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return
+
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) && player.GetPlayerNetBool( "isJumpingWithSquad" ) )
+	{
+		// Player is jumpmaster - relinquish leadership
+		thread HoldTryRelinquishSquadLeaderOrBreakFromSquadTimer( player, 1.0, "#SURVIVAL_INTRO_PROMPT_RELINQUISH", "Sur_RelinquishJumpMaster" )
+	}
+	else if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) )
+	{
+		// Player is not jumpmaster - solo jump
+		thread HoldTryRelinquishSquadLeaderOrBreakFromSquadTimer( player, 1.0, "#SURVIVAL_INTRO_PROMPT_LEAVE","Sur_RemoveFromSquad" )
+	}
+	else if ( IsValid( GetJumpmasterForTeam( player.GetTeam() ) ) )
+	{
+		// Player is in solo jump mode, and squad leader for team is still in the plane - rejoin the jumpmaster
+		thread HoldTryRelinquishSquadLeaderOrBreakFromSquadTimer( player, 0.5, "#SURVIVAL_INTRO_PROMPT_JOIN","Sur_ReturnToSquad" )
+	}
+}
+
+void function SignalReleasedTryRelinquishSquadLeaderOrBreakFromSquad( entity player )
+{
+	player.Signal( "CancelTryRelinquishSquadLeaderOrBreakFromSquad" )
+}
+
+void function HoldTryRelinquishSquadLeaderOrBreakFromSquadTimer( entity player, float holdTime, string hint, string command )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "CancelTryRelinquishSquadLeaderOrBreakFromSquad" )
+
+	if ( !HasHoldButtonAction() )
+		return
+
+	float margin = 0.2
+
+	RuiSetString( file.sqadLeaderBoxRui, "holdButtonHint", hint )
+	RuiSetBool( file.sqadLeaderBoxRui, "holdingButton", true )
+	RuiSetGameTime( file.sqadLeaderBoxRui, "holdButtonStartTime", Time() )
+	RuiSetGameTime( file.sqadLeaderBoxRui, "holdButtonEndTime", Time() + holdTime + margin )
+
+	OnThreadEnd(
+		function() : ()
+		{
+			if ( IsValid( file.sqadLeaderBoxRui ) )
+			{
+				RuiSetBool( file.sqadLeaderBoxRui, "holdingButton", false )
+			}
+		}
+	)
+
+	wait holdTime
+
+	if ( !HasHoldButtonAction() )
+		return
+
+	player.ClientCommand( command )
+
+	wait margin
+}
+
+bool function HasHoldButtonAction()
+{
+	entity player = GetLocalClientPlayer()
+	int team = player.GetTeam()
+
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return false
+
+	// if jumpmaster, has other squad members that could become jumpmaster
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		return GetNumPlayersJumpingWithSquad( team ) > 1
+
+	// if solo jumping, there is a squad to rejoin
+	if ( !player.GetPlayerNetBool( "isJumpingWithSquad" ) )
+		return GetNumPlayersJumpingWithSquad( team ) > 0 && IsValid( GetJumpmasterForTeam( team ) )
+
+	// if not jumpmaster, you can always change to solo jump
+	return true
+}
+
+void function SURVIVAL_DroppingSolo( entity ent, var eventVal )
+{
+	Obituary_Print_Localized( Localize( "#SURVIVAL_HUD_DROPPING_SOLO", ent.GetPlayerName() ), GetChatTitleColorForPlayer( ent ) )
+}
+
+void function SURVIVAL_RelinquishedJumpmaster( entity ent, var eventVal )
+{
+	entity otherPlayer = GetEntityFromEncodedEHandle( expect int( eventVal ) )
+	Obituary_Print_Localized( Localize( "#SURVIVAL_HUD_RELINQUISHED_LEADERSHIP", ent.GetPlayerName(), otherPlayer.GetPlayerName() ), GetChatTitleColorForPlayer( ent ) )
+}
+
+void function SURVIVAL_NewJumpmaster( entity ent, var eventVal )
+{
+	if ( IsValid( ent ) )
+		Obituary_Print_Localized( Localize( "#SURVIVAL_HUD_NEW_LEADERSHIP", ent.GetPlayerName() ), GetChatTitleColorForPlayer( ent ) )
+}
+
+void function SURVIVAL_RejoinedSquad( entity ent, var eventVal )
+{
+	Obituary_Print_Localized( Localize( "#SURVIVAL_HUD_REJOINED_SQUAD", ent.GetPlayerName() ), GetChatTitleColorForPlayer( ent ) )
+}
+

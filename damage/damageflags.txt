@@ -1,0 +1,35 @@
+// These ared turned into script consts used by script and also used in weapon files and damageDefs.txt
+// CODE_DF_* flags are used by code, the order doesn't matter
+
+DF_GIB											// 1
+DF_DISSOLVE										// 2
+DF_INSTANT										// 3
+DF_NO_SELF_DAMAGE								// 4
+DF_IMPACT										// 5
+DF_BYPASS_SHIELD								// 6
+DF_RAGDOLL										// 7
+DF_SHIELD_BREAK 								// 8
+DF_RADIUS_DAMAGE 		CODE_DF_RADIUS_DAMAGE	// 9
+DF_ELECTRICAL 									// 10
+DF_BULLET 										// 11
+DF_EXPLOSION			CODE_DF_EXPLOSION		// 12
+DF_MELEE				CODE_DF_MELEE			// 13
+DF_NO_INDICATOR									// 14
+DF_KNOCK_BACK			CODE_DF_KNOCK_BACK		// 15
+DF_STOPS_TITAN_REGEN							// 16
+DF_DISMEMBERMENT								// 17
+DF_MAX_RANGE									// 18
+DF_SHIELD_DAMAGE								// 19
+DF_CRITICAL										// 20
+DF_SKIP_DAMAGE_PROT								// 21
+DF_HEADSHOT										// 22
+DF_VORTEX_REFIRE								// 23
+DF_RODEO										// 24
+DF_KNOCKDOWN								    // 25
+DF_KILLSHOT										// 26
+DF_SHOTGUN										// 27
+DF_SKIPS_DOOMED_STATE							// 28
+DF_DOOMED_HEALTH_LOSS							// 29
+DF_DOOM_PROTECTED								// 30
+DF_DOOM_FATALITY								// 31
+DF_NO_HITBEEP									// 32 max

@@ -1,0 +1,732 @@
+global function ClDataKnife_Init
+
+global function ServerCallback_DataKnifeStartLeech
+global function ServerCallback_DataKnifeCancelLeech
+
+global function CreateFirstPersonDataKnife
+global function CreateThirdPersonDataKnife
+global function DataKnifePopsOpen
+
+const DATA_KNIFE_TOPO_TAG_HIDE 	= "tag_origin0"
+const DATA_KNIFE_TOPO_TAG_0 	= "tag_origin1"
+const DATA_KNIFE_TOPO_TAG_1 	= "tag_origin2"
+const DATA_KNIFE_TOPO_TAG_2 	= "tag_origin3"
+
+const asset DATA_KNIFE_RUI_0 = $"ui/dataknife_lower_panel.rpak"
+const asset DATA_KNIFE_RUI_1 = $"ui/dataknife_middle_panel.rpak"
+const asset DATA_KNIFE_RUI_2 = $"ui/dataknife_upper_panel.rpak"
+
+// displays scale as they move, this defines the sizes that are used
+// - size is in world units, aka inches
+const float DATA_KNIFE_TOPO_SIZE_TOP 		= 1.75
+const float DATA_KNIFE_TOPO_SIZE_MIDDLE 	= 1.55
+const float DATA_KNIFE_TOPO_SIZE_BOTTOM 	= 1.35
+const float DATA_KNIFE_TOPO_SIZE_HIDE 		= 1.15
+
+// these values are a fraction of the total hack time
+const float TOPO_SLIDE_OUT_TIME_FRAC 	= 0.09  	// time for panels to slide out when hack starts
+const float TOPO_LOCK_IN_TIME_FRAC 		= 0.037  	// time for each slide move as hack completes and knife panels slide back together
+const float TOPO_PRE_SLIDE_IN_TIME_FRAC = 0.02   	// wait time after done hacking, before panels slide back into the handle
+const float TOPO_SLIDE_IN_TIME_FRAC 	= 0.035 	// time for panels to slide in when done hacking
+
+const string SIGNAL_DATAKNIFECANCEL = "DataKnifeCancel"
+
+struct DataKnifeTopoInfo
+{
+	bool 	isInited = false
+
+	var 	topo
+	var 	rui
+
+	string 	attachName
+	int 	attachID
+	string 	targetAttachName = ""
+	int 	targetAttachID = -1
+	float 	targetMoveEndTime = -1
+}
+
+struct {
+	DataKnifeTopoInfo& knifeTopo0
+	DataKnifeTopoInfo& knifeTopo1
+	DataKnifeTopoInfo& knifeTopo2
+	array<DataKnifeTopoInfo> dataKnifeTopologies = []
+
+	table<string,float> dataKnifeTopoSizes = {}
+} file
+
+void function ClDataKnife_Init()
+{
+	RegisterSignal( "DataKnifeCancel" )
+	RegisterSignal( "PlayerGetsKnifeUntilLosesParent" )
+
+	AddCreateCallback( "first_person_proxy", DataKnife_SetupFirstPersonProxyEvents )
+	AddCreateCallback( "predicted_first_person_proxy", DataKnife_SetupFirstPersonProxyEvents )
+
+	file.dataKnifeTopoSizes[ DATA_KNIFE_TOPO_TAG_HIDE ] <- DATA_KNIFE_TOPO_SIZE_HIDE
+	file.dataKnifeTopoSizes[ DATA_KNIFE_TOPO_TAG_0 ] 	<- DATA_KNIFE_TOPO_SIZE_BOTTOM
+	file.dataKnifeTopoSizes[ DATA_KNIFE_TOPO_TAG_1 ] 	<- DATA_KNIFE_TOPO_SIZE_MIDDLE
+	file.dataKnifeTopoSizes[ DATA_KNIFE_TOPO_TAG_2 ] 	<- DATA_KNIFE_TOPO_SIZE_TOP
+}
+
+void function DataKnife_SetupFirstPersonProxyEvents( entity firstPersonProxy )
+{
+	AddAnimEvent( firstPersonProxy, "create_dataknife", CreateThirdPersonDataKnife ) //callback for leeching entities that don't have their own leeching anims, like drones and air ships
+	AddAnimEvent( firstPersonProxy, "knife_popout", DataKnifePopsOpen )
+}
+
+void function ServerCallback_DataKnifeStartLeech( float time = -1 )
+{
+	thread LeechStart( time )
+}
+
+void function ServerCallback_DataKnifeCancelLeech()
+{
+	entity player = GetLocalViewPlayer()
+	Signal( player, "DataKnifeCancel" )
+}
+
+void function LeechStart( float time = -1 )
+{
+	entity player = GetLocalViewPlayer()
+
+	array<float> stageDurations
+
+	// DEPRECATED
+	//stageDurations = LeechStart_GetSemiRandomStageDurations( time )
+
+	// trying consistent stage durations - maybe keep?
+	stageDurations.append( time * 0.5 )
+	stageDurations.append( time * 0.3 )
+	stageDurations.append( time * 0.2 )
+
+	entity knife = player.p.knife
+	if ( !IsValid( knife ) )
+	{
+		printt( "WARNING: can't start leech- can't find player.p.knife" )
+		return
+	}
+
+	thread DataKnife_HackRUIs_Start( knife, time, stageDurations )
+	thread DataKnifeHackProgressSounds( stageDurations )
+}
+
+void function DataKnife_HackRUIs_Start( entity knife, float hackDuration, array<float> stageDurations )
+{
+	foreach ( topoInfo in file.dataKnifeTopologies )
+	{
+		Assert( topoInfo.isInited )
+		Assert( topoInfo.rui == null )
+	}
+
+	thread DataKnife_HackRUIs_Main( knife, hackDuration, stageDurations )
+
+	// slides topos down as hack completes
+	thread DataKnife_HackRUIs_LockInOverTime( knife, hackDuration, stageDurations )
+}
+
+void function DataKnife_HackRUIs_Main( entity knife, float hackDuration, array<float> stageDurations )
+{
+	entity player = GetLocalViewPlayer()
+
+	EndSignal( player, "DataKnifeCancel" )
+	EndSignal( player, "OnDestroy" )
+	EndSignal( knife, "OnDestroy" )
+
+	float hackStartTime = Time()
+	float totalSlideTime = hackDuration * TOPO_SLIDE_OUT_TIME_FRAC
+
+	// each slide move duration is related to its stage duration
+	array<float> slideDurations = []
+	foreach ( dur in stageDurations )
+	{
+		float stagePercentOfTotalHack = dur / hackDuration
+		float slideDuration = (totalSlideTime * stagePercentOfTotalHack)
+		slideDurations.append( slideDuration )
+	}
+
+	//printt( "----- slide durations: -----" )
+	//printt( "( total slide time:", totalSlideTime, ")" )
+	//foreach ( dur in slideDurations )
+	//	printt( dur )
+
+	table<string,bool> e = {}
+	e.success <- false
+
+	//printt( "HACK START!" )
+
+	EmitSoundOnEntity( player, "dataknife_hologram_appear" )
+
+	OnThreadEnd(
+	function() : ( player, knife, hackDuration, e )
+		{
+			if ( !IsValid( player ) )
+				return
+
+			StopSoundOnEntity( player, "dataknife_hologram_appear" )
+
+			if ( e.success )
+			{
+				//printt( "HACK COMPLETE" )
+			}
+			else
+			{
+				//printt( "HACK CANCELED" )
+
+				// tell RUIs that we canceled the hack
+				foreach ( topo in file.dataKnifeTopologies )
+					RuiSetGameTime( topo.rui, "hackEndTime", -1 )
+			}
+
+			if ( IsValid( knife ) )
+			{
+				thread DataKnife_HackRUIs_SlideBackIntoHandle( knife, hackDuration )
+			}
+		}
+	)
+
+	// create screens
+	var knifeRui0 = DataKnife_Topology_CreateRUI( file.knifeTopo0, DATA_KNIFE_RUI_0, 0, hackDuration )
+	var knifeRui1 = DataKnife_Topology_CreateRUI( file.knifeTopo1, DATA_KNIFE_RUI_1, 1, hackDuration )
+	var knifeRui2 = DataKnife_Topology_CreateRUI( file.knifeTopo2, DATA_KNIFE_RUI_2, 2, hackDuration )
+
+	// slide topos up
+	DataKnife_SetTopoTargetAttach( file.knifeTopo0, DATA_KNIFE_TOPO_TAG_0, slideDurations[2] )
+	DataKnife_SetTopoTargetAttach( file.knifeTopo1, DATA_KNIFE_TOPO_TAG_1, slideDurations[1] )
+	DataKnife_SetTopoTargetAttach( file.knifeTopo2, DATA_KNIFE_TOPO_TAG_2, slideDurations[0] )
+
+	foreach ( dur in stageDurations )
+	{
+		float stageTime = 0
+
+		foreach ( topo in file.dataKnifeTopologies )
+		{
+			stageTime = dur
+			RuiSetFloat( topo.rui, "stageDuration", stageTime )
+		}
+
+		//printt( "STAGE START! waiting:", stageTime )
+		wait stageTime
+		//printt( "STAGE DONE! waited:", stageTime )
+	}
+
+	e.success = true
+}
+
+void function DataKnife_HackRUIs_LockInOverTime( entity knife, float hackDuration, array<float> stageDurations )
+{
+	entity player = GetLocalViewPlayer()
+
+	EndSignal( player, "DataKnifeCancel" )
+	EndSignal( player, "OnDestroy" )
+	EndSignal( knife, "OnDestroy" )
+
+	float topoLockInTime = hackDuration * TOPO_LOCK_IN_TIME_FRAC
+
+	// wait until first stage is ready to start moving down
+	wait( stageDurations[0] )
+
+	// slide top topo down to middle
+	DataKnife_SetTopoTargetAttach( file.knifeTopo2, DATA_KNIFE_TOPO_TAG_1, topoLockInTime )
+
+	// wait until second stage is ready to start moving down
+	wait( stageDurations[1] )
+
+	// slide top and middle topos down to bottom
+	DataKnife_SetTopoTargetAttach( file.knifeTopo2, DATA_KNIFE_TOPO_TAG_0, topoLockInTime )
+	DataKnife_SetTopoTargetAttach( file.knifeTopo1, DATA_KNIFE_TOPO_TAG_0, topoLockInTime )
+}
+
+void function DataKnife_HackRUIs_SlideBackIntoHandle( entity knife, float hackDuration )
+{
+	EndSignal( knife, "OnDestroy" )
+
+	float waitTime = hackDuration * TOPO_PRE_SLIDE_IN_TIME_FRAC
+	float slideTime = hackDuration * TOPO_SLIDE_IN_TIME_FRAC
+
+	wait waitTime
+
+	DataKnife_SetTopoTargetAttach( file.knifeTopo0, DATA_KNIFE_TOPO_TAG_HIDE, slideTime )
+	DataKnife_SetTopoTargetAttach( file.knifeTopo1, DATA_KNIFE_TOPO_TAG_HIDE, slideTime )
+	DataKnife_SetTopoTargetAttach( file.knifeTopo2, DATA_KNIFE_TOPO_TAG_HIDE, slideTime )
+}
+
+void function DataKnifeHackProgressSounds( array<float> stageDurations )
+{
+	entity player = GetLocalViewPlayer()
+
+	EndSignal( player, "DataKnifeCancel" )
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "OnDeath" )
+
+	string beepLoop = "dataknife_loopable_beep"
+
+	OnThreadEnd(
+		function() : ( player, beepLoop )
+		{
+			if ( IsValid( player ) )
+			{
+				StopSoundOnEntity( player, beepLoop )
+			}
+		}
+	)
+
+	EmitSoundOnEntity( player, beepLoop )
+
+	wait stageDurations[0]
+	EmitSoundOnEntity( player, "dataknife_ring1" )
+
+	wait stageDurations[1]
+	EmitSoundOnEntity( player, "dataknife_ring2" )
+
+	wait stageDurations[2]
+}
+
+void function CreateFirstPersonDataKnife( entity panel )
+{
+	entity player = GetLocalViewPlayer()
+	entity parentEnt = player.GetParent()
+
+	// are we parented to this panel?
+	if ( panel != parentEnt )
+		return
+
+	thread PlayerGetsKnifeUntilLosesParent( player, panel )
+}
+
+void function CreateThirdPersonDataKnife( entity ent )
+{
+	//------------------------------------------------------------
+	// Spawning the knife for a hacked NPC or the player's viewmodel
+	//------------------------------------------------------------
+	bool entityIsPlayerProxy = false
+	if ( ent.GetNetworkedClassName() == "first_person_proxy" || ent.GetNetworkedClassName() == "predicted_person_proxy" )
+		entityIsPlayerProxy = true
+
+	entity entityParent = ent.GetParent()
+
+	if ( entityParent == null && !entityIsPlayerProxy )
+		return
+
+	entity player = GetLocalViewPlayer()
+	entity parentEnt = player.GetParent()
+
+	if ( ( entityParent != parentEnt ) && entityParent != player && ( !entityIsPlayerProxy ) )
+		return
+
+	if ( entityParent == player )
+		parentEnt = player
+
+	thread PlayerGetsKnifeUntilLosesParent( player, parentEnt )
+}
+
+void function PlayerGetsKnifeUntilLosesParent( entity player, entity parentEnt )
+{
+	entity viewModel = player.GetFirstPersonProxy()  //JFS: Defensive fix for player not having view models sometimes
+	if ( !IsValid( viewModel ) )
+		return
+
+	if ( !EntHasModelSet( viewModel ) )
+		return
+
+
+	Signal( player, "PlayerGetsKnifeUntilLosesParent" )
+	EndSignal( player, "PlayerGetsKnifeUntilLosesParent" )
+
+	entity leechedEntity = parentEnt
+	if ( parentEnt.GetNetworkedClassName() == "script_mover" )
+		leechedEntity = parentEnt.GetParent()
+	else if ( parentEnt == player )
+		leechedEntity = null
+
+	string knifeTag = "PROPGUN"  // control panels still use PROPGUN, all others are using KNIFE
+	if ( IsValid( leechedEntity ) && leechedEntity.IsNPC() )
+		knifeTag = GetTagForDataknife( leechedEntity )
+
+	//-----------------------------
+	// Spawn dataknife
+	//-----------------------------
+	asset model = DATA_KNIFE_MODEL
+	entity knife = CreatePropDynamic( model, <0,0,0>, <0,0,0> )
+	knife.SetParent( player.GetFirstPersonProxy(), knifeTag, false, 0.0 )
+
+	player.p.knife = knife
+
+	DataKnife_CreateRUITopologies( knife )
+
+	OnThreadEnd(
+		function () : ( player, knife )
+		{
+			if ( IsValid( knife ) )
+			{
+				DataKnife_CleanupRUITopologies( knife )
+				knife.Destroy()
+			}
+		}
+	)
+
+	EndSignal( player, "OnDeath" )
+	EndSignal( player, "OnDestroy" )
+
+	// HACK- this causes the knife data port sheath to close, so later in the animation it can be opened
+	knife.Anim_Play( "data_knife_console_leech_end" )
+
+	if ( parentEnt == player )
+	{
+		for ( ;; )
+		{
+			if ( !player.Anim_IsActive() )
+				break
+			WaitFrame()
+		}
+	}
+	else
+	{
+		for ( ;; )
+		{
+			if ( player.GetParent() != parentEnt )
+				break
+			WaitFrame()
+		}
+	}
+}
+
+void function DataKnifePopsOpen( entity ent )
+{
+	entity player = GetLocalViewPlayer()
+	entity parentEnt = player.GetParent()
+
+	//------------------------------------------------------------
+	// Spawning the knife for a hacked NPC or the player's viewmodel
+	//------------------------------------------------------------
+	bool entityIsPlayerProxy = false
+	if ( ent.GetNetworkedClassName() == "first_person_proxy" || ent.GetNetworkedClassName() == "predicted_person_proxy" )
+		entityIsPlayerProxy = true
+
+	//-----------------------------------------------------------------
+	// Make sure we are parented, unless the entity is the player viewmodel
+	//-----------------------------------------------------------------
+	if ( ent != parentEnt && !entityIsPlayerProxy )
+		return
+
+	//-----------------------
+	// Data knife pops open
+	//-----------------------
+	if ( IsValid( player.p.knife ) )
+	{
+		player.p.knife.Anim_Play( "data_knife_console_leech_start" )
+	}
+}
+
+void function DataKnife_CreateRUITopologies( entity knife )
+{
+	Assert( !file.knifeTopo0.isInited )
+	Assert( !file.knifeTopo1.isInited )
+	Assert( !file.knifeTopo2.isInited )
+
+	file.knifeTopo0 = DataKnife_CreateRUITopology( knife, DATA_KNIFE_TOPO_TAG_HIDE )
+	file.knifeTopo1 = DataKnife_CreateRUITopology( knife, DATA_KNIFE_TOPO_TAG_HIDE )
+	file.knifeTopo2 = DataKnife_CreateRUITopology( knife, DATA_KNIFE_TOPO_TAG_HIDE )
+	//RuiTopology_SetParent( topo, knife, attachName )  // does not work
+
+	foreach ( topoInfo in file.dataKnifeTopologies )
+		thread DataKnife_TopoPositionThink( knife, topoInfo )
+}
+
+DataKnifeTopoInfo function DataKnife_CreateRUITopology( entity knife, string attachName )
+{
+	int attachID 	= knife.LookupAttachment( attachName )
+	vector org 		= knife.GetAttachmentOrigin( attachID )
+	vector ang 		= knife.GetAttachmentAngles( attachID )
+
+	float topoSize = DataKnife_GetTopoSizeForAttachName( attachName )
+	org = DataKnife_GetAdjustedTopoOriginForSize( org, ang, topoSize )
+
+	// right and down vectors that get added to base org to create the display size
+	vector right = DataKnife_GetTopoRightVectorForSize( ang, topoSize )
+	vector down = DataKnife_GetTopoDownVectorForSize( ang, topoSize )
+
+	//DebugDrawAngles( org, ang, 10 )
+	//DebugDrawAngles( org + right, ang, 10 )
+	//DebugDrawAngles( org + down, ang, 10 )
+
+	bool doClipping = false
+	var topo = RuiTopology_CreatePlane( org, right, down, doClipping )
+
+	DataKnifeTopoInfo topoInfo
+	topoInfo.topo = topo
+	topoInfo.attachName = attachName
+	topoInfo.attachID = attachID
+	topoInfo.isInited = true
+
+	file.dataKnifeTopologies.append( topoInfo )
+
+	return topoInfo
+}
+
+void function DataKnife_SetTopoTargetAttach( DataKnifeTopoInfo topoInfo, string newTargetAttachName, float moveTime = 0.0 )
+{
+	entity player = GetLocalViewPlayer()
+	entity knife = player.p.knife
+	if ( !IsValid( player.p.knife ) )
+	{
+		printt( "WARNING: no data knife found for player, can't set new target attachment ID" )
+		return
+	}
+
+	Assert( moveTime >= 0 )
+
+	topoInfo.targetAttachName = newTargetAttachName
+	topoInfo.targetAttachID = knife.LookupAttachment( newTargetAttachName )
+	topoInfo.targetMoveEndTime = Time() + moveTime
+}
+
+// Keeps the RUI topology on the correct knife tag
+// - Slides the topology from tag to tag when necessary
+void function DataKnife_TopoPositionThink( entity knife, DataKnifeTopoInfo topoInfo )
+{
+	entity player = GetLocalViewPlayer()
+	EndSignal( player, "OnDestroy" )
+
+	EndSignal( knife, "OnDestroy" )
+
+	vector currRawOrg
+	vector updateOrg
+	vector updateAng
+	bool firstRun = true
+	float lastFrameTime = -1
+	float targetMoveDuration = -1
+
+	while ( 1 )
+	{
+		// current knife tag location
+		vector attachOrg = knife.GetAttachmentOrigin( topoInfo.attachID )
+		vector attachAng = knife.GetAttachmentAngles( topoInfo.attachID )
+
+		//DebugDrawAngles( attachOrg, attachAng, 0.019 )  // for debugging topo position vs actual tag position
+
+		// raw attach point is the default
+		updateOrg = attachOrg
+		updateAng = attachAng
+
+		// current attachment topo size is the default
+		float attachTopoSize = DataKnife_GetTopoSizeForAttachName( topoInfo.attachName )
+		float topoSize = attachTopoSize
+
+		if ( firstRun )
+			currRawOrg = attachOrg
+
+		if ( topoInfo.targetAttachName != "" && topoInfo.targetAttachName != topoInfo.attachName )
+		{
+			if ( targetMoveDuration == -1 )
+				targetMoveDuration = topoInfo.targetMoveEndTime - Time()
+
+			vector targetOrg = knife.GetAttachmentOrigin( topoInfo.targetAttachID )
+			vector targetAng = knife.GetAttachmentAngles( topoInfo.targetAttachID )
+
+			float timeLeft = topoInfo.targetMoveEndTime - Time()
+
+			// Add some flavor to the motion so it's not linear
+			float normalizedTimeLeft = timeLeft / targetMoveDuration
+			// visually desired curve: (1 - x)^[pow] 	// (display moves fast at first, then slows)
+			// - curve is "reversed" (x^[pow]) because timeLeft starts at 1 and goes to 0
+			// - multiplying by targetMoveDuration turns it back into seconds for the vector graphing function
+			float timeLeft_adjustedForCurve = pow( normalizedTimeLeft, 3 ) * targetMoveDuration
+
+			// Map a value V from Vector C to Vector D. If V <= A, result = C. If V >= B, result = D. Otherwise linearly interpolate between A and B mapped to C and D
+			updateOrg = GraphCappedVector( timeLeft_adjustedForCurve, targetMoveDuration, 0.0, attachOrg, targetOrg )
+			updateAng = GraphCappedVector( timeLeft_adjustedForCurve, targetMoveDuration, 0.0, attachAng, targetAng )
+
+			float moveFrac = GraphCapped( timeLeft_adjustedForCurve, targetMoveDuration, 0.0, 0.0, 1.0 )
+			float targetAttachTopoSize = DataKnife_GetTopoSizeForAttachName( topoInfo.targetAttachName )
+			topoSize = GraphCapped( timeLeft_adjustedForCurve, targetMoveDuration, 0.0, attachTopoSize, targetAttachTopoSize )
+
+			/*
+			if ( topoInfo.targetAttachName == DATA_KNIFE_TOPO_TAG_2 )
+			{
+				printt( "===========================" )
+				printt( "targetMoveDuration:", targetMoveDuration )
+				printt( "timeLeft:", timeLeft )
+				printt( "moveFrac:", moveFrac )
+				printt( "attachOrg:", attachOrg )
+				printt( "targetOrg:", targetOrg )
+			}
+			*/
+
+			if ( timeLeft <= 0.0 )
+			{
+				updateOrg = targetOrg
+				updateAng = targetAng
+
+				targetMoveDuration = -1
+
+				// reset attach info
+				topoInfo.attachName = topoInfo.targetAttachName
+				topoInfo.attachID = topoInfo.targetAttachID
+				topoInfo.targetAttachName = ""
+				topoInfo.targetAttachID = -1
+				topoInfo.targetMoveEndTime = -1
+			}
+		}
+
+		// save "raw" origin and angles for next time calculating distance to attachments
+		currRawOrg = updateOrg
+
+		// translate origin so RUI center is on the updateOrg
+		updateOrg = DataKnife_GetAdjustedTopoOriginForSize( updateOrg, updateAng, topoSize )
+
+		// right and down vectors that get added to base org to create the display size
+		vector right = DataKnife_GetTopoRightVectorForSize( updateAng, topoSize )
+		vector down = DataKnife_GetTopoDownVectorForSize( updateAng, topoSize )
+
+		// do the position/size update
+		if ( topoInfo.rui != null )
+			RuiTopology_UpdatePos( topoInfo.topo, updateOrg, right, down )
+
+		// hide/show for cloak
+		if ( topoInfo.rui != null )
+		{
+			RuiSetVisible( topoInfo.rui, !IsCloaked( player ) )
+		}
+
+		if ( firstRun )
+			firstRun = false
+
+		WaitFrame()
+	}
+}
+
+
+float function DataKnife_GetTopoSizeForAttachName( string attachName )
+{
+	return file.dataKnifeTopoSizes[ attachName ]
+}
+
+vector function DataKnife_GetAdjustedTopoOriginForSize( vector centerOrigin, vector attachAngles, float topoSize )
+{
+	vector newOrg = centerOrigin
+
+	// adjust so the RUI is drawn with centerOrigin as its center point
+	newOrg += AnglesToRight( attachAngles ) * (topoSize * 0.5)
+	newOrg += AnglesToUp( attachAngles ) * (topoSize * 0.5)
+
+	return newOrg
+}
+
+vector function DataKnife_GetTopoRightVectorForSize( vector attachAngles, float topoSize )
+{
+	vector right = (AnglesToRight( attachAngles ) * -1) * topoSize
+	return right
+}
+
+vector function DataKnife_GetTopoDownVectorForSize( vector attachAngles, float topoSize )
+{
+	vector down = (AnglesToUp( attachAngles ) * -1) * topoSize
+	return down
+}
+
+void function DataKnife_CleanupRUITopologies( entity knife )
+{
+	foreach ( topoInfo in file.dataKnifeTopologies )
+	{
+		DataKnife_Topology_DestroyRUI( topoInfo )
+	}
+
+	file.dataKnifeTopologies = []
+
+	DataKnifeTopoInfo newInfo
+	file.knifeTopo0 = newInfo
+	file.knifeTopo1 = newInfo
+	file.knifeTopo2 = newInfo
+}
+
+var function DataKnife_Topology_CreateRUI( DataKnifeTopoInfo topoInfo, asset ruiAsset, int sortIdx, float hackDuration )
+{
+	Assert( topoInfo.rui == null )
+
+	var rui = RuiCreate( ruiAsset, topoInfo.topo, RUI_DRAW_WORLD, sortIdx )
+
+	float hackStartTime = Time()
+	float hackEndTime = hackStartTime + hackDuration
+	RuiSetGameTime( rui, "hackStartTime", hackStartTime )
+	RuiSetGameTime( rui, "hackEndTime", hackEndTime )
+
+	topoInfo.rui = rui
+	return rui
+}
+
+void function DataKnife_Topology_DestroyRUI( DataKnifeTopoInfo topoInfo )
+{
+	if ( topoInfo.rui != null )
+	{
+		RuiDestroyIfAlive( topoInfo.rui )
+		topoInfo.rui = null
+	}
+
+	if ( topoInfo.topo != null )
+	{
+		RuiTopology_Destroy( topoInfo.topo )
+		topoInfo.topo = null
+	}
+}
+
+
+/* DEPRECATED
+array<float> function LeechStart_GetSemiRandomStageDurations( float time = -1 )
+{
+	int KNIFE_STAGES = 3
+
+	array<float> stageDurations = []
+
+	if ( time == -1 )
+	{
+		for ( int i = 0; i < KNIFE_STAGES; i++ )
+		{
+			stageDurations.append( RandomFloatRange( 0.8, 1.4 ) )
+		}
+	}
+	else
+	{
+		//time -= RING_FADE_TIME
+
+		// each gets a random amount of randomSpread, but the total take from
+		// random spread is equal to the total of randomSpread
+		float randomSpread = 0.4
+
+		// each gets an even share of baseSpread
+		float baseSpread = 1.0 - randomSpread
+
+		randomSpread *= KNIFE_STAGES
+
+		array<float> remainders
+		remainders.append( 0.0 )
+		for ( int i = 0; i < KNIFE_STAGES - 1; i++ )
+		{
+			remainders.append( RandomFloat( 1.0 ) )
+		}
+		remainders.append( 1.0 )
+		remainders.sort( SortFunc_LessThan )
+
+		for ( int i = 0; i < KNIFE_STAGES; i++ )
+		{
+			float val = baseSpread
+			float remainder = remainders[i+1] - remainders[i]
+			val += remainder * randomSpread
+
+			val /= KNIFE_STAGES
+			val *= time
+
+			stageDurations.append( val )
+		}
+	}
+
+	return stageDurations
+}
+*/
+
+int function SortFunc_LessThan( float a, float b )
+{
+	if ( a > b )
+		return 1
+
+	return -1
+}

@@ -1,0 +1,187 @@
+#if CLIENT
+global function ClScoreboard_Init
+#endif
+
+#if CLIENT
+global function IsScoreboardShown
+global function UpdateScoreboardVisibility
+global function ShowScoreboard
+global function HideScoreboard
+global function ToggleScoreboard
+global function AddScoreboardShowCallback
+global function AddScoreboardHideCallback
+
+global function ClientCodeCallback_ToggleScoreboard
+global function ClientToUI_ToggleScoreboard
+global function ClientToUI_HideScoreboard
+#endif
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+struct
+{
+	#if CLIENT
+		array<void functionref()> scoreboardShowCallbacks
+		array<void functionref()> scoreboardHideCallbacks
+
+		bool wantsToShowScoreboard = false
+	#endif
+} file
+
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+#if CLIENT
+void function ClScoreboard_Init()
+{
+	RegisterConCommandTriggeredCallback( "+showscores", OnScoreboardButtonPressed )
+	RegisterMenuButtonPressedCallback( BUTTON_BACK, OnScoreboardButtonPressed )
+
+	RegisterSignal( "OnHideScoreboard" )
+
+	AddCallback_GameStateEnter( eGameState.WinnerDetermined, UpdateScoreboardVisibility )
+
+	clGlobal.isScoreboardShown = false
+}
+#endif
+
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+/////////////
+#if CLIENT/////////////
+bool function IsScoreboardShown()
+{
+	return clGlobal.isScoreboardShown
+}
+#endif
+
+
+#if CLIENT
+void function ShowScoreboard()
+{
+	file.wantsToShowScoreboard = true
+	UpdateScoreboardVisibility()
+}
+#endif
+
+
+#if CLIENT
+void function HideScoreboard()
+{
+	file.wantsToShowScoreboard = false
+	UpdateScoreboardVisibility()
+}
+#endif
+
+
+#if CLIENT
+void function ToggleScoreboard()
+{
+	file.wantsToShowScoreboard = !IsScoreboardShown()
+	UpdateScoreboardVisibility()
+}
+#endif
+
+
+#if CLIENT
+void function ClientCodeCallback_ToggleScoreboard()
+{
+	ToggleScoreboard()
+}
+#endif
+
+
+#if CLIENT
+void function OnScoreboardButtonPressed( entity localPlayer )
+{
+	ToggleScoreboard()
+}
+#endif
+
+
+#if CLIENT
+void function ClientToUI_ToggleScoreboard()
+{
+	ToggleScoreboard()
+}
+#endif
+
+
+#if CLIENT
+void function ClientToUI_HideScoreboard()
+{
+	HideScoreboard()
+}
+#endif
+
+
+#if CLIENT
+void function UpdateScoreboardVisibility()
+{
+	bool shouldShow = file.wantsToShowScoreboard
+
+	if ( GetGameState() >= eGameState.WinnerDetermined )
+		shouldShow = false
+	else if ( IsViewingSquadSummary() )
+		shouldShow = false
+	else if ( GetGameState() < eGameState.Playing && !GetCurrentPlaylistVarBool( "survival_staging_area_enabled", false ) )
+		shouldShow = false
+
+	file.wantsToShowScoreboard = shouldShow // Don't treat "wants to show" as a queue. It's more like an argument to this function.
+
+	if ( shouldShow == IsScoreboardShown() )
+		return // If we're already in the correct state, do nothing.
+
+	clGlobal.isScoreboardShown = shouldShow
+
+	if ( shouldShow )
+	{
+		RunUIScript( "TryCloseSurvivalInventory", null )
+		RunUIScript( "SetShowingMap", true )
+
+		foreach ( func in file.scoreboardShowCallbacks )
+			func()
+
+		thread clGlobal.showScoreboardFunc()
+	}
+	else
+	{
+		thread clGlobal.hideScoreboardFunc()
+
+		RunUIScript( "SetShowingMap", false )
+
+		foreach ( func in file.scoreboardHideCallbacks )
+			func()
+	}
+}
+#endif
+
+
+#if CLIENT
+void function AddScoreboardShowCallback( void functionref() func )
+{
+	file.scoreboardShowCallbacks.append( func )
+}
+#endif
+
+
+#if CLIENT
+void function AddScoreboardHideCallback( void functionref() func )
+{
+	file.scoreboardHideCallbacks.append( func )
+}
+#endif
+
+

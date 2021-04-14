@@ -1,0 +1,723 @@
+//
+
+global function CustomizeCommon_Init
+
+global function CustomizeButton_UpdateAndMarkForUpdating
+global function CustomizeButton_UnmarkForUpdating
+global function CustomizeButton_GetItemFlavor
+
+global function CustomizeMenus_GetCollectedString
+//global function CustomizeMenus_IsSelectedItemOwned
+global function CustomizeMenus_IsFocusedItem
+global function CustomizeMenus_IsFocusedItemParentItemLocked
+global function CustomizeMenus_IsFocusedItemEquippable
+global function CustomizeMenus_IsFocusedItemLocked
+global function CustomizeMenus_UpdateActionContext
+global function CustomizeMenus_SetActionButton
+global function ActionButton_OnClick
+
+
+global function CanEquipCanBuyCharacterItemCheck
+
+global enum eItemCanEquipCanBuyStatus
+{
+	CAN_EQUIP_CAN_BUY,
+	CAN_EQUIP_CANNOT_BUY,
+	CANNOT_EQUIP_CAN_BUY,
+	CANNOT_EQUIP_CANNOT_BUY,
+}
+
+struct CustomizeButtonContext
+{
+	int           index
+	var           button
+	LoadoutEntry& loadoutEntry
+	ItemFlavor&   itemFlavor
+	bool          useShortName
+	//bool          showTooltip
+
+	void functionref( ItemFlavor ) previewItemCb = null
+	int functionref( ItemFlavor )  getItemCanEquipCanBuyStatusFunc = null
+}
+
+struct FileStruct_LifetimeLevel
+{
+	table<var, CustomizeButtonContext> activeCustomizeButtons = {}
+	var                                actionButton = null
+	CustomizeButtonContext ornull      actionContext
+
+	bool isUnlockOperationActive = false
+}
+FileStruct_LifetimeLevel& fileLevel
+
+table< int, string > previewSoundMap = {
+	[eItemType.character_skin] = "UI_Menu_LegendSkin_Preview",
+	[eItemType.character_execution] = "UI_Menu_Finisher_Preview",
+	[eItemType.gladiator_card_frame] = "UI_Menu_Banner_Preview",
+	[eItemType.gladiator_card_stance] = "UI_Menu_Banner_Preview",
+	[eItemType.gladiator_card_badge] = "UI_Menu_Banner_Preview",
+	[eItemType.gladiator_card_stat_tracker] = "UI_Menu_Banner_Preview",
+	[eItemType.gladiator_card_intro_quip] = "UI_Menu_Quip_Preview",
+	[eItemType.gladiator_card_kill_quip] = "UI_Menu_Quip_Preview",
+	[eItemType.weapon_skin] = "UI_Menu_WeaponSkin_Preview"
+}
+
+table< int, table< int, string > > equipSoundMap = {
+	[eItemType.character_skin] = {
+		[eQuality.COMMON] = "UI_Menu_LegenedSkin_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_LegendSkin_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_LegendSkin_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_LegendSkin_Equip_Legendary"
+	},
+	[eItemType.character_execution] = {
+		[eQuality.COMMON] = "UI_Menu_Finisher_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_Finisher_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_Finisher_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_Finisher_Equip_Legendary"
+	},
+	[eItemType.gladiator_card_frame] = {
+		[eQuality.COMMON] = "UI_Menu_Banner_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_Banner_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_Banner_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_Banner_Equip_Legendary"
+	},
+	[eItemType.gladiator_card_stance] = {
+		[eQuality.COMMON] = "UI_Menu_Banner_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_Banner_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_Banner_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_Banner_Equip_Legendary"
+	},
+	[eItemType.gladiator_card_badge] = {
+		[eQuality.COMMON] = "UI_Menu_Banner_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_Banner_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_Banner_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_Banner_Equip_Legendary"
+	},
+	[eItemType.gladiator_card_stat_tracker] = {
+		[eQuality.COMMON] = "UI_Menu_Banner_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_Banner_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_Banner_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_Banner_Equip_Legendary"
+	},
+	[eItemType.gladiator_card_intro_quip] = {
+		[eQuality.COMMON] = "UI_Menu_Quip_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_Quip_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_Quip_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_Quip_Equip_Legendary"
+	},
+	[eItemType.gladiator_card_kill_quip] = {
+		[eQuality.COMMON] = "UI_Menu_Quip_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_Quip_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_Quip_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_Quip_Equip_Legendary"
+	},
+	[eItemType.weapon_skin] = {
+		[eQuality.COMMON] = "UI_Menu_WeaponSkin_Equip_Common",
+		[eQuality.RARE] = "UI_Menu_WeaponSkin_Equip_Rare",
+		[eQuality.EPIC] = "UI_Menu_WeaponSkin_Equip_Epic",
+		[eQuality.LEGENDARY] = "UI_Menu_WeaponSkin_Equip_Legendary"
+	}
+}
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+void function CustomizeCommon_Init()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	AddCallbackAndCallNow_OnGRXInventoryStateChanged( UpdateAllCurrentCustomizeItemButtons )
+	AddCallbackAndCallNow_OnGRXOffersRefreshed( UpdateAllCurrentCustomizeItemButtons )
+	AddUICallback_InputModeChanged( OnInputModeChanged )
+}
+
+
+void function OnInputModeChanged( bool controllerModeActive )
+{
+	UpdateActionButton()
+}
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+void function CustomizeButton_UpdateAndMarkForUpdating( var button, LoadoutEntry loadoutEntry, ItemFlavor itemFlavor, void functionref( ItemFlavor ) previewItemCb, int functionref( ItemFlavor ) getItemCanEquipCanBuyStatusFunc, bool useShortName = false )
+{
+	Assert( !(button in fileLevel.activeCustomizeButtons) )
+	#if DEV
+		foreach ( var buttonIter, CustomizeButtonContext cbcIter in fileLevel.activeCustomizeButtons )
+		{
+			Assert( Hud_GetParent( button ) == Hud_GetParent( buttonIter ), "Customize buttons from different parents were active at the same time!" )
+			Assert( loadoutEntry == cbcIter.loadoutEntry, "Customize buttons for different loadout entries were active at the same time!" )
+			break
+		}
+	#endif
+
+	CustomizeButtonContext cbc
+	cbc.index = fileLevel.activeCustomizeButtons.len()
+	cbc.button = button
+	cbc.loadoutEntry = loadoutEntry
+	cbc.itemFlavor = itemFlavor
+	cbc.useShortName = useShortName
+	//cbc.showTooltip = showTooltip
+	cbc.previewItemCb = previewItemCb
+	cbc.getItemCanEquipCanBuyStatusFunc = getItemCanEquipCanBuyStatusFunc
+	fileLevel.activeCustomizeButtons[button] <- cbc
+
+	if ( fileLevel.activeCustomizeButtons.len() == 1 )
+		AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), loadoutEntry, OnLoadoutSlotContentsChanged )
+
+	Hud_AddEventHandler( button, UIE_CLICK, CustomizeButton_OnClick )
+	Hud_AddEventHandler( button, UIE_CLICKRIGHT, CustomizeButton_OnRightOrDoubleClick )
+	Hud_AddEventHandler( button, UIE_DOUBLECLICK, CustomizeButton_OnRightOrDoubleClick )
+
+	UpdateCustomizeItemButton( cbc, true )
+}
+
+
+void function CustomizeButton_UnmarkForUpdating( var button )
+{
+	Assert( button in fileLevel.activeCustomizeButtons )
+	CustomizeButtonContext cbc = fileLevel.activeCustomizeButtons[button]
+
+	delete fileLevel.activeCustomizeButtons[button]
+
+	if ( fileLevel.activeCustomizeButtons.len() == 0 )
+		RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), cbc.loadoutEntry, OnLoadoutSlotContentsChanged )
+
+	Hud_RemoveEventHandler( button, UIE_CLICK, CustomizeButton_OnClick )
+	Hud_RemoveEventHandler( button, UIE_CLICKRIGHT, CustomizeButton_OnRightOrDoubleClick )
+	Hud_RemoveEventHandler( button, UIE_DOUBLECLICK, CustomizeButton_OnRightOrDoubleClick )
+}
+
+
+ItemFlavor function CustomizeButton_GetItemFlavor( var button )
+{
+	CustomizeButtonContext cbc = fileLevel.activeCustomizeButtons[button]
+	return cbc.itemFlavor
+}
+
+
+string function CustomizeMenus_GetCollectedString( LoadoutEntry entry, array<ItemFlavor> itemList )
+{
+	int owned = GetUnlockedItemFlavorsForLoadoutSlot( LocalClientEHI(), entry ).len()
+	int total = itemList.len()
+	return Localize( "#COLLECTED_ITEMS", owned, total )
+}
+
+
+//bool function CustomizeMenus_IsSelectedItemOwned()
+//{
+//	if ( !GRX_IsInventoryReady() )
+//		return false
+//
+//	foreach( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
+//	{
+//		if ( Hud_IsSelected( button ) )
+//			return GRX_IsItemOwnedByPlayer( cbc.itemFlavor )
+//	}
+//
+//	return false
+//}
+
+
+bool function CustomizeMenus_IsFocusedItem()
+{
+	foreach( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
+	{
+		if ( Hud_IsFocused( button ) )
+			return true
+	}
+
+	return false
+}
+
+
+bool function CustomizeMenus_IsFocusedItemEquippable()
+{
+	if ( !GRX_IsInventoryReady() )
+		return false
+
+	foreach( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
+	{
+		if ( Hud_IsFocused( button ) )
+		{
+			//bool isOwned = GRX_IsItemOwnedByPlayer( cbc.itemFlavor )
+			bool isEquippable = IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), cbc.loadoutEntry, cbc.itemFlavor )
+
+			return isEquippable && (cbc.itemFlavor != LoadoutSlot_GetItemFlavor( LocalClientEHI(), cbc.loadoutEntry ))
+		}
+	}
+
+	return false
+}
+
+
+bool function CustomizeMenus_IsFocusedItemLocked()
+{
+	if ( !GRX_IsInventoryReady() )
+		return false
+
+	foreach( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
+	{
+		if ( Hud_IsFocused( button ) )
+			return !GRX_IsItemOwnedByPlayer( cbc.itemFlavor )
+	}
+
+	return false
+}
+
+
+bool function CustomizeMenus_IsFocusedItemParentItemLocked()
+{
+	foreach ( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
+	{
+		if ( Hud_IsFocused( button ) )
+			return !IsParentItemOwned( cbc )
+	}
+
+	return false
+}
+
+
+bool function IsParentItemOwned( CustomizeButtonContext cbc )
+{
+	if ( !GRX_IsInventoryReady() )
+		return false
+
+	int canEquipCanBuyStatus = eItemCanEquipCanBuyStatus.CAN_EQUIP_CAN_BUY
+	if ( cbc.getItemCanEquipCanBuyStatusFunc != null )
+		canEquipCanBuyStatus = cbc.getItemCanEquipCanBuyStatusFunc( cbc.itemFlavor )
+
+	if ( canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CANNOT_BUY )
+		return false
+
+	return true
+}
+
+
+void function CustomizeMenus_SetActionButton( var button )
+{
+	if ( button != null )
+		Assert( fileLevel.actionButton == null, "CustomizeMenus_SetActionButton() passed a non-null value when fileLevel.actionButton wasn't null. This likely means some script isn't clearing it when it should." )
+
+	if ( fileLevel.actionButton != null )
+		Hud_RemoveEventHandler( fileLevel.actionButton, UIE_CLICK, ActionButton_OnClick )
+
+	fileLevel.actionButton = button
+
+	if ( fileLevel.actionButton != null )
+		Hud_AddEventHandler( fileLevel.actionButton, UIE_CLICK, ActionButton_OnClick )
+
+	UpdateActionButton()
+}
+
+
+int function CanEquipCanBuyCharacterItemCheck( ItemFlavor unused )
+{
+	Assert( IsTopLevelCustomizeContextValid() )
+	ItemFlavor character = GetTopLevelCustomizeContext()
+	Assert( ItemFlavor_GetType( character ) == eItemType.character )
+
+	if ( !GRX_IsItemOwnedByPlayer_AllowOutOfDateData( character, null ) )
+		return eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CANNOT_BUY
+
+	return eItemCanEquipCanBuyStatus.CAN_EQUIP_CAN_BUY
+}
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+void function CustomizeButton_OnClick( var button )
+{
+	CustomizeButtonContext cbc = fileLevel.activeCustomizeButtons[button]
+	CustomizeMenus_UpdateActionContext( button )
+	PlayPreviewSound( cbc.itemFlavor )
+	PreviewCustomizeButtonItem( cbc )
+
+	if ( ItemFlavor_GetType( cbc.itemFlavor ) == eItemType.gladiator_card_badge || ItemFlavor_GetType( cbc.itemFlavor ) == eItemType.gladiator_card_stat_tracker )
+	{
+		// (dw): special case for badges because you can already see the content, no need to have a preview-mode
+		if ( !Hud_IsLocked( button ) )
+		{
+			CustomizeButton_OnRightOrDoubleClick( cbc.button )
+		}
+	}
+}
+
+
+void function CustomizeButton_OnRightOrDoubleClick( var button )
+{
+	CustomizeButtonContext cbc = fileLevel.activeCustomizeButtons[button]
+	CustomizeMenus_UpdateActionContext( button )
+
+	if ( cbc.getItemCanEquipCanBuyStatusFunc != null && cbc.getItemCanEquipCanBuyStatusFunc( cbc.itemFlavor ) == eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CANNOT_BUY )
+	{
+		JumpToStoreCharacter( GetTopLevelCustomizeContext() )
+		return
+	}
+
+	PreviewCustomizeButtonItem( cbc )
+	EquipCustomizeButtonItemOrShowUnlockDialog( cbc )
+}
+
+
+void function PreviewCustomizeButtonItem( CustomizeButtonContext cbc )
+{
+	Newness_IfNecessaryMarkItemFlavorAsNoLongerNewAndInformServer( cbc.itemFlavor )
+	Hud_SetNew( cbc.button, false )
+
+	if ( ItemFlavor_GetType( cbc.itemFlavor ) == eItemType.gladiator_card_badge || ItemFlavor_GetType( cbc.itemFlavor ) == eItemType.gladiator_card_stat_tracker )
+	{
+		// (dw): special case for badges because you can already see the content, no need to have a preview-mode
+		return
+	}
+
+	foreach( var b, CustomizeButtonContext cbcIter in fileLevel.activeCustomizeButtons )
+		Hud_SetSelected( b, cbc == cbcIter )
+
+	if ( cbc.previewItemCb != null )
+		cbc.previewItemCb( cbc.itemFlavor )
+
+	UpdateFooterOptions()
+	CustomizeMenus_UpdateActionContext( cbc.button )
+}
+
+
+void function EquipCustomizeButtonItemOrShowUnlockDialog( CustomizeButtonContext cbc )
+{
+	// these are closures because we need to know which button to mark when passing it to PurchaseDialog
+	void functionref() purchaseStartFunc      = (void function() : ( cbc ) {
+		fileLevel.isUnlockOperationActive = true
+		RuiSetBool( Hud_GetRui( cbc.button ), "isLoading", true )
+	})
+	void functionref( bool ) tryEquipItemFunc = (void function( bool wasCraftingSuccessful ) : ( cbc )
+	{
+		fileLevel.isUnlockOperationActive = false
+		RuiSetBool( Hud_GetRui( cbc.button ), "isLoading", false )
+
+		if ( !wasCraftingSuccessful )
+			return //
+
+		ItemFlavor context = GetTopLevelCustomizeContext()
+		PIN_Customization( context, cbc.loadoutEntry, cbc.itemFlavor )
+
+		RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), cbc.loadoutEntry, cbc.itemFlavor )
+		PlayEquipSound( cbc.itemFlavor )
+	});
+
+	int canEquipCanBuyStatus = eItemCanEquipCanBuyStatus.CAN_EQUIP_CAN_BUY
+	if ( cbc.getItemCanEquipCanBuyStatusFunc != null )
+		canEquipCanBuyStatus = cbc.getItemCanEquipCanBuyStatusFunc( cbc.itemFlavor )
+
+	if ( !IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), cbc.loadoutEntry, cbc.itemFlavor ) )
+	{
+		if ( canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CAN_EQUIP_CAN_BUY )
+			canEquipCanBuyStatus = eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CAN_BUY
+		else if ( canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CAN_EQUIP_CANNOT_BUY )
+			canEquipCanBuyStatus = eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CANNOT_BUY
+	}
+
+	if ( canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CAN_EQUIP_CAN_BUY
+			|| canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CAN_EQUIP_CANNOT_BUY )
+	{
+		tryEquipItemFunc( true )
+		return
+	}
+
+	if ( canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CAN_BUY
+			&& ItemFlavor_GetGRXMode( cbc.itemFlavor ) != eItemFlavorGRXMode.NONE
+			&& !GRX_IsItemOwnedByPlayer( cbc.itemFlavor ) )
+	{
+		//ItemFlavorPurchasabilityInfo ifpi = GRX_GetItemPurchasabilityInfo( cbc.itemFlavor )
+		//
+		//Assert( ifpi.craftingOfferOrNull != null )
+		//if ( ifpi.craftingOfferOrNull == null )
+		//{
+		//	EmitUISound( "UI_Menu_Deny" )
+		//	return
+		//}
+		//
+		//GRXScriptOffer craftingOffer = expect GRXScriptOffer(ifpi.craftingOfferOrNull)
+		//Assert( craftingOffer.prices.len() == 1 )
+		//Assert( craftingOffer.prices[0].flavors.len() == 1 )
+		//Assert( craftingOffer.prices[0].flavors[0] == GRX_CURRENCIES[GRX_CURRENCY_CRAFTING] )
+		//Assert( craftingOffer.prices[0].quantities[0] > 0 )
+		//
+		//if ( !GRX_CanAfford( craftingOffer.prices[0], 1 ) )
+		//{
+		//	// can't afford to craft, so don't show dialog
+		//	return
+		//}
+
+		PurchaseDialog( cbc.itemFlavor, 1, false, purchaseStartFunc, tryEquipItemFunc )
+		return
+	}
+
+	//Assert( canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CANNOT_BUY )
+
+	//foreach ( int unused, string previewSound in previewSoundMap )
+	//	StopUISoundByName( previewSound )
+	EmitUISound( "UI_Menu_Deny" )
+
+	return
+}
+
+
+void function PlayPreviewSound( ItemFlavor item )
+{
+	string sound = "UI_Menu_Banner_Preview"
+
+	int itemType = ItemFlavor_GetType( item )
+
+	if ( itemType in previewSoundMap )
+		sound = previewSoundMap[itemType]
+
+	EmitUISound( sound )
+}
+
+
+void function PlayEquipSound( ItemFlavor item )
+{
+	string sound = "UI_Menu_LegenedSkin_Equip_Common"
+
+	if ( ItemFlavor_HasQuality( item ) )
+	{
+		int itemType = ItemFlavor_GetType( item )
+		int tier     = ItemFlavor_GetQuality( item )
+
+		if ( itemType in equipSoundMap && tier in equipSoundMap[ itemType ] )
+			sound = equipSoundMap[ itemType ][ tier ]
+	}
+
+	EmitUISound( sound )
+}
+
+
+void function UpdateCustomizeItemButton( CustomizeButtonContext cbc, bool justAdded )
+{
+	var rui = Hud_GetRui( cbc.button )
+
+	// Name, icon and quality
+	string name       = Localize( "#EMPTY" )
+	asset buttonImage = $""
+	int quality       = -1
+	if ( cbc.useShortName )
+		name = Localize( ItemFlavor_GetShortName( cbc.itemFlavor ) )
+	else
+		name = Localize( ItemFlavor_GetLongName( cbc.itemFlavor ) )
+
+	buttonImage = ItemFlavor_GetIcon( cbc.itemFlavor )
+	quality = ItemFlavor_HasQuality( cbc.itemFlavor ) ? ItemFlavor_GetQuality( cbc.itemFlavor ) : 0
+	RuiSetString( rui, "buttonText", name )
+	RuiSetImage( rui, "buttonImage", buttonImage )
+	RuiSetInt( rui, "quality", quality )
+
+	// Tooltip
+	//if ( cbc.showTooltip )
+	//{
+	//	ToolTipData toolTipData
+	//	toolTipData.titleText = Localize( ItemFlavor_GetName( cbc.itemFlavor ) )
+	//	//toolTipData.descText = ""
+	//	Hud_SetToolTipData( cbc.button, toolTipData )
+	//}
+
+	// Newness
+	// todo(dw): make new and locked mutually exclusive
+	bool isNew = Newness_IsItemFlavorNew( cbc.itemFlavor )
+	Hud_SetNew( cbc.button, isNew )
+
+	// Seleted/equipped
+	bool isEquipped = (LoadoutSlot_GetItemFlavor( LocalClientEHI(), cbc.loadoutEntry ) == cbc.itemFlavor)
+
+	if ( justAdded )
+		Hud_SetSelected( cbc.button, false )
+
+	if ( isEquipped && justAdded )
+	{
+		PreviewCustomizeButtonItem( cbc )
+		Hud_ScrollToItemIndex( Hud_GetParent( Hud_GetParent( cbc.button ) ), cbc.index )
+	}
+
+	if ( isEquipped && cbc.getItemCanEquipCanBuyStatusFunc != null )
+	{
+		int canEquipCanBuyStatus = cbc.getItemCanEquipCanBuyStatusFunc( cbc.itemFlavor )
+		if ( canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CANNOT_BUY )
+			isEquipped = false
+	}
+
+	RuiSetBool( rui, "isEquipped", isEquipped )
+
+	// Purchase info
+	bool isOwned = false
+	if ( ItemFlavor_GetGRXMode( cbc.itemFlavor ) == GRX_ITEMFLAVORMODE_NONE )
+	{
+		isOwned = IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), cbc.loadoutEntry, cbc.itemFlavor )
+	}
+	else // GRX item
+	{
+		if ( !GRX_AreOffersReady() || !GRX_IsInventoryReady() )
+		{
+			// GRX is loading
+			Hud_SetEnabled( cbc.button, false )
+			RuiSetBool( rui, "isLoading", true )
+			return // don't update until loading is done
+		}
+
+		// GRX has loaded
+		Hud_SetEnabled( cbc.button, true )
+		RuiSetBool( rui, "isLoading", false )
+
+		// Do we own it?
+		isOwned = GRX_IsItemOwnedByPlayer( cbc.itemFlavor )
+
+		if ( !isOwned )
+		{
+			ItemFlavorPurchasabilityInfo ifpi = GRX_GetItemPurchasabilityInfo( cbc.itemFlavor )
+			//Assert( ifpi.craftingOfferOrNull != null )
+			if ( ifpi.craftingOfferOrNull != null )
+			{
+				GRXScriptOffer offer = expect GRXScriptOffer(ifpi.craftingOfferOrNull)
+				Assert( offer.prices.len() == 1 )
+				Assert( offer.prices[0].flavors[0] == GRX_CURRENCIES[GRX_CURRENCY_CRAFTING] )
+
+				// How much does it cost?
+				int craftingPrice = offer.prices[0].quantities[0]
+				RuiSetInt( rui, "craftingPrice", craftingPrice )
+
+				// Can we afford it?
+				RuiSetBool( rui, "canAfford", GRX_CanAfford( offer.prices[0], 1 ) )
+			}
+			else
+			{
+				RuiSetInt( rui, "craftingPrice", -1 )
+				RuiSetBool( rui, "canAfford", false )
+			}
+		}
+	}
+
+	Hud_SetLocked( cbc.button, !isOwned )
+	//RuiSetBool( rui, "isOwned", isOwned )
+}
+
+
+void function UpdateAllCurrentCustomizeItemButtons()
+{
+	if ( fileLevel.isUnlockOperationActive )
+		return
+
+	foreach ( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
+	{
+		UpdateCustomizeItemButton( cbc, false )
+	}
+
+	UpdateFooterOptions()
+}
+
+
+void function OnLoadoutSlotContentsChanged( EHI playerEHI, ItemFlavor contents )
+{
+	UpdateAllCurrentCustomizeItemButtons()
+	UpdateActionButton()
+}
+
+
+void function CustomizeMenus_UpdateActionContext( var button )
+{
+	if ( button in fileLevel.activeCustomizeButtons )
+	{
+		fileLevel.actionContext = fileLevel.activeCustomizeButtons[button]
+	}
+	else
+	{
+		if ( IsControllerModeActive() )
+		{
+			foreach ( var b, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
+			{
+				if ( Hud_IsSelected( b ) )
+				{
+					fileLevel.actionContext = fileLevel.activeCustomizeButtons[b]
+					break
+				}
+			}
+		}
+
+		fileLevel.actionContext = null
+	}
+
+	//printt( "Set context:", ItemFlavor_GetHumanReadableRef( expect CustomizeButtonContext( fileLevel.actionContext ).itemFlavor ) )
+	UpdateActionButton()
+}
+
+
+CustomizeButtonContext ornull function GetActionContext()
+{
+	return fileLevel.actionContext
+}
+
+
+void function ActionButton_OnClick( var button )
+{
+	CustomizeButtonContext ornull cbc = GetActionContext()
+	if ( cbc == null )
+		return
+
+	expect CustomizeButtonContext( cbc )
+
+	if ( cbc.getItemCanEquipCanBuyStatusFunc != null && cbc.getItemCanEquipCanBuyStatusFunc( cbc.itemFlavor ) == eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CANNOT_BUY )
+	{
+		JumpToStoreCharacter( GetTopLevelCustomizeContext() )
+		return
+	}
+
+	EquipCustomizeButtonItemOrShowUnlockDialog( cbc )
+}
+
+
+void function UpdateActionButton()
+{
+	if ( fileLevel.actionButton == null )
+		return
+
+	CustomizeButtonContext ornull cbc = GetActionContext()
+	if ( cbc == null )
+	{
+		Hud_SetVisible( fileLevel.actionButton, false )
+		return
+	}
+
+	expect CustomizeButtonContext( cbc )
+	ItemFlavor item = cbc.itemFlavor
+
+	bool isParentItemOwned = IsParentItemOwned( cbc )
+	bool isOwned = GRX_IsItemOwnedByPlayer( item )
+	bool isEquipped = (LoadoutSlot_GetItemFlavor( LocalClientEHI(), cbc.loadoutEntry ) == item)
+	bool isVisible = !isParentItemOwned || !isOwned || (isOwned && !isEquipped)
+
+	Hud_SetVisible( fileLevel.actionButton, isVisible )
+
+	if ( !isVisible )
+		return
+
+	string buttonText
+	bool controllerActive = IsControllerModeActive()
+
+	if ( !isParentItemOwned )
+		buttonText = controllerActive ? "#X_BUTTON_UNLOCK_LEGEND" : "#UNLOCK_LEGEND"
+	else if ( !isOwned )
+		buttonText = controllerActive ? "#X_BUTTON_UNLOCK" : "#UNLOCK"
+	else
+		buttonText = controllerActive ? "#X_BUTTON_EQUIP" : "#EQUIP"
+
+	HudElem_SetRuiArg( fileLevel.actionButton, "centerText", buttonText )
+}

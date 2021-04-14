@@ -1,0 +1,23 @@
+
+/*
+global function CodeCallback_ZiplineMount
+global function CodeCallback_ZiplineStart
+global function CodeCallback_ZiplineMove
+global function CodeCallback_ZiplineStop
+
+void function CodeCallback_ZiplineMount( entity player, entity zipline )
+{
+}
+
+void function CodeCallback_ZiplineStart( entity player, entity zipline )
+{
+}
+
+void function CodeCallback_ZiplineMove( entity player, entity zipline )
+{
+}
+
+void function CodeCallback_ZiplineStop( entity player )
+{
+}
+*/

@@ -1,0 +1,181 @@
+ImpactTable
+{
+	FX
+	{
+		"C" "impact_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "impact_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "impact_metal" // metal_titan
+
+		"F" "impact_flesh" //flesh
+		"G" "impact_metal" //metalgrate, chainlink, chain
+		"H" "impact_alienflesh" //alienflesh
+
+		"J" "impact_grass" //grass
+		"K" "impact_mud" //Mud
+		"L" "impact_plastic" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "impact_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_slime" //Slime
+		"O" "impact_leaves"  //Foliage
+		"P" "P_impact_metal_spectre" //metal_spectre
+
+		"R" "impact_brick" //metalpanel, grenade, canister
+		"S" "P_impact_water" //water
+		"T" "impact_tile" //tile
+		"U" "impact_glass" // glass_breakable
+		"V" "impact_metal" //Metal Vent
+		"W" "impact_wood"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_xo_shield_cp" //xo_shield
+
+		"Y" "impact_glass" //glass, brokenglass, glassbottle, pottery
+		"Z" "impact_sand"  //sand
+
+//		"0" "openslot"
+//		"1" "openslot"
+//		"2" "openslot"
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "P_impact_water" //brush water
+		"slime_splash" "P_impact_slime"
+		"airburst" "P_impact_exp_smll_air"  //No Surface
+		"shieldhit" "P_armor_impact"
+		"holohit" "P_holohit_impact"
+		"critical_hit" "impact_metal"
+
+		"headshot_flesh" "impact_metal"
+		"headshot_mechanical" "P_armor_impact"
+
+		"pass_through"	"P_impact_amped_shield"
+	}
+
+	Sound
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// sand?
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+		"X"	"none" // Titan bubble shield
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+		"headshot_flesh" "none"
+		"headshot_mechanical" "none"
+	}
+
+	Sound_attacker
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// sand?
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+		"X"	"none" // Titan bubble shield
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+		"headshot_flesh" "none"
+		"headshot_mechanical" "none"
+	}
+	Sound_victim
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// sand?
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+		"X"	"none" // Titan bubble shield
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+		"headshot_flesh" "none"
+		"headshot_mechanical" "none"
+	}
+	Sound_victim_from_AI
+	{
+		"F" "none"
+		"P" "none"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "Flesh.BulletImpact_3P_vs_1P"
+		//"headshot_mechanical" "Android.Light.BulletImpact_3P_vs_1P"
+	}
+}

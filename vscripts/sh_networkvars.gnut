@@ -1,0 +1,314 @@
+untyped
+
+global bool _RegisteringFunctions
+
+global function RegisterString
+global function GetStringID
+global function GetNetworkableStringID
+global function GetStringFromID
+global function GetStringFromNetworkableID
+
+global function RegisterEntityVar_AllSynced
+global function RegisterEntityVar_AllSyncedEntity
+global function RegisterEntityVar_Entity
+
+global function InitEntityVars
+global function RegisterEntityVar
+global function RegisterServerVar
+global function RegisterServerEntityVar
+global function GetEntityVar
+global function GetHasEntityVar
+global function GetServerVar
+global function GetNetworkVar
+
+global function RegisterServerVarChangeCallback
+global function RegisterEntityVarChangeCallback
+
+#if SERVER
+global function ServerVarChangedCallbacks
+#endif
+
+#if CLIENT
+global function CodeCallback_ServerVarChanged
+#endif
+
+
+global table _serverVars = {}
+global table _serverEntityVars = {}
+global table _serverVarHandles = {}
+global int _nextServerVarIndex = 0
+
+global table _entityClassVars = {}
+global table _entityClassVarsIsEnts = {}
+global table _entityClassVarsSyncToAllClients = {}
+global table _entityClassVarHandles = {}
+global table _entityClassVarChangeCallbacks = {}
+global int _nextEntVarIndex = 0
+global table _entityVarsByEHandle = {}
+
+table<string,int> _stringToIndex = {}
+table<int,string> _indexToString = {}
+
+struct
+{
+	table<string, array<void functionref()> > _serverVarChangeCallbacks
+} file
+
+// start at a high index to easily detect inval indices being use as registered strings
+// could also do this by settings a significant bit in the index
+const MIN_REGISTERED_STRING_INDEX = 32768
+int _currentStringIndex = MIN_REGISTERED_STRING_INDEX
+
+void function RegisterString( string thestring )
+{
+	Assert( _RegisteringFunctions, "Cannot register string outside of _remote_functions.nut" )
+	Assert( thestring.find( "#" ) == 0, "Cannot register unlocalized string \"" + thestring + "\"" )
+
+	int index = _currentStringIndex
+
+	_stringToIndex[thestring] <- index
+	_indexToString[index] <- thestring
+
+	_currentStringIndex++
+}
+
+int function GetStringID( string thestring )
+{
+	Assert( thestring in _stringToIndex, "String \"" + thestring + "\" has not been registered" )
+
+	return _stringToIndex[thestring]
+}
+
+int function GetNetworkableStringID( string thestring )
+{
+	int index = GetStringID( thestring ) - MIN_REGISTERED_STRING_INDEX
+
+	Assert( index >= 0 && index < 256 )
+	return index
+}
+
+string function GetStringFromID( int index )
+{
+	Assert( index >= MIN_REGISTERED_STRING_INDEX, "Index \"" + index + "\" is not a valid registered string index" )
+	Assert( index in _indexToString )
+
+	return _indexToString[index]
+}
+
+string function GetStringFromNetworkableID( int index )
+{
+	Assert( index >= 0 && index < 256 )
+	return GetStringFromID( index + MIN_REGISTERED_STRING_INDEX )
+}
+
+void function RegisterEntityVar_AllSynced( string className, string varName, value, bool bIsEntities = false )
+{
+	RegisterEntityVar( className, varName, value, true, bIsEntities )
+}
+
+void function RegisterEntityVar_AllSyncedEntity( string className, string varName, value = null )
+{
+	RegisterEntityVar( className, varName, value, true, true )
+}
+
+void function RegisterEntityVar_Entity( string className, string varName, value, bSyncToAllClients = null )
+{
+	RegisterEntityVar( className, varName, value, bSyncToAllClients, true )
+}
+
+void function RegisterEntityVar( string className, string varName, value, bSyncToAllClients = null, bool bIsEntities = false )
+{
+	bool isPlayer = className == "player"
+
+	if ( !isPlayer )
+		Assert( className.find( "npc" ) == 0 || className.find( "titan_soul" ) == 0, "only player and NPC's and Titan souls are supported for networked entity vars" )
+
+	if ( bSyncToAllClients == null )
+	{
+		if ( isPlayer )
+			bSyncToAllClients = false
+		else
+			bSyncToAllClients = true
+	}
+
+	if ( !(className in _entityVarsByEHandle ) )
+		_entityVarsByEHandle[className] <- {}
+
+	if ( !(className in _entityClassVars ) )
+		_entityClassVars[className] <- {}
+
+	if ( !(className in _entityClassVarsIsEnts ) )
+		_entityClassVarsIsEnts[className] <- {}
+
+	if ( !(className in _entityClassVarsSyncToAllClients ) )
+		_entityClassVarsSyncToAllClients[className] <- {}
+
+	Assert( !( varName in _entityClassVars[className] ) )
+	Assert( !( varName in _entityClassVarsIsEnts[className] ) )
+	Assert( !( varName in _entityClassVarsSyncToAllClients[className] ) )
+
+	if ( IsServer() )
+		_entityClassVarHandles[varName] <- _nextEntVarIndex
+	else
+		_entityClassVarHandles[_nextEntVarIndex] <- varName
+
+	_nextEntVarIndex++
+
+	_entityClassVars[className][varName] <- value
+	_entityClassVarsIsEnts[className][varName] <- bIsEntities					// means that this variable hold an entity and we should automatically convert eHandles
+
+	Assert( bSyncToAllClients || className == "player", "Non-player vars must sync to all clients" )
+	_entityClassVarsSyncToAllClients[className][varName] <- bSyncToAllClients	// only used for vars set on CPlayers
+}
+
+void function RegisterServerVar( string varName, value )
+{
+	Assert( !(varName in _serverVars ) )
+
+	if ( IsServer() )
+		_serverVarHandles[varName] <- _nextServerVarIndex
+	else
+		_serverVarHandles[_nextServerVarIndex] <- varName
+
+	_nextServerVarIndex++
+
+	_serverVars[varName] <- value
+}
+
+void function RegisterServerEntityVar( string varName )
+{
+	Assert( !(varName in _serverVars ) )
+
+	if ( IsServer() )
+		_serverVarHandles[varName] <- _nextServerVarIndex
+	else
+		_serverVarHandles[_nextServerVarIndex] <- varName
+
+	_nextServerVarIndex++
+
+	_serverVars[varName] <- null
+	_serverEntityVars[ varName ] <- true
+}
+
+function GetEntityVar( ent, varName )
+{
+	Assert( varName in _entityClassVars[ ent.GetNetworkedClassName() ] )
+
+	return ent._entityVars[varName]
+}
+
+bool function GetHasEntityVar( ent, varName )
+{
+	local className = ent.GetNetworkedClassName()
+
+	if ( !(className in _entityClassVars) )
+		return false
+
+	return ( varName in _entityClassVars[className] )
+}
+
+function GetServerVar( varName )
+{
+	Assert( varName in _serverVars )
+
+	return _serverVars[varName]
+}
+
+function GetNetworkVar( obj, varName )
+{
+	if ( obj == level )
+		return GetServerVar( varName )
+	else
+		return GetEntityVar( obj, varName )
+}
+
+#if SERVER
+void function ServerVarChangedCallbacks( string varName )
+{
+	// Run server script change callback if one exists
+	if ( !( varName in file._serverVarChangeCallbacks ) )
+		return
+
+	foreach ( callbackFunc in file._serverVarChangeCallbacks[varName] )
+	{
+		callbackFunc()
+	}
+}
+#endif
+
+
+#if CLIENT
+void function CodeCallback_ServerVarChanged( string varName )
+{
+	if ( !(varName in file._serverVarChangeCallbacks) )
+		return
+
+	foreach ( callbackFunc in file._serverVarChangeCallbacks[varName] )
+	{
+		thread callbackFunc()
+	}
+}
+#endif
+
+void function RegisterServerVarChangeCallback( string varName, void functionref() callbackFunc )
+{
+	if ( !(varName in file._serverVarChangeCallbacks) )
+		file._serverVarChangeCallbacks[varName] <- []
+
+	file._serverVarChangeCallbacks[varName].append( callbackFunc )
+}
+
+void function RegisterEntityVarChangeCallback( string className, string varName, callbackFunc )
+{
+	if ( !(className in _entityClassVarChangeCallbacks) )
+		_entityClassVarChangeCallbacks[className] <- {}
+
+	if ( !(varName in _entityClassVarChangeCallbacks[className]) )
+		_entityClassVarChangeCallbacks[className][varName] <- []
+
+	Assert( className in _entityClassVars, className + " is not a registered netvar classname." )
+	Assert( varName in _entityClassVars[ className ], varName + " is not a registered netvar for classname " + className )
+	_entityClassVarChangeCallbacks[className][varName].append( callbackFunc.bindenv( this ) )
+}
+
+void function InitEntityVars( entity ent )
+{
+	Assert( "_entityVars" in ent )
+
+	#if CLIENT
+		local className = ent.GetNetworkedClassName()
+		bool foundSelf = false
+
+		if ( className in _entityVarsByEHandle )
+		{
+			foreach ( eHandle, eHandleVars in _entityVarsByEHandle[ className ] )
+			{
+				entity checkEnt = GetEntityFromEncodedEHandle( eHandle )
+				if ( ent != checkEnt )
+					continue
+
+				ent._entityVars = _entityVarsByEHandle[ className ][ eHandle ]
+				foundSelf = true
+			}
+		}
+
+		if ( !foundSelf )
+		{
+			ent._entityVars = {}
+
+			foreach ( varName, value in _entityClassVars[className] )
+			{
+				ent._entityVars[varName] <- value
+			}
+		}
+
+	#elseif SERVER
+
+		ent._entityVars = {}
+
+		string className = ent.GetClassName()
+
+		foreach ( varName, value in _entityClassVars[className] )
+			ent._entityVars[varName] <- value
+	#endif
+}

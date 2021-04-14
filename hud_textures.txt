@@ -1,0 +1,123 @@
+"sprites/640_hud"
+{
+	TextureData
+	{
+		// PC input /////////////////////////////////////////////////////////////
+		// Row 1
+		"icon_blank"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"0"
+			"y"			"0"
+			"width"		"64"
+			"height"	"64"
+			"text_color"	"255 255 255 255"
+		}
+		"icon_mouseLeft"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"64"
+			"y"			"0"
+			"width"		"64"
+			"height"	"64"
+			"text_color"	"255 255 255 255"
+		}
+		"icon_mouseRight"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"128"
+			"y"			"0"
+			"width"		"64"
+			"height"	"64"
+			"text_color"	"255 255 255 255"
+		}
+		"icon_mouseThree"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"195"
+			"y"			"2"
+			"width"		"57"
+			"height"	"57"
+			"text_color"	"255 255 255 255"
+		}
+
+		// Row 2
+		"icon_mouseWheel_up"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"0"
+			"y"			"64"
+			"width"		"64"
+			"height"	"64"
+			"text_color"	"255 255 255 255"
+		}
+		"icon_mouseWheel_down"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"64"
+			"y"			"64"
+			"width"		"64"
+			"height"	"64"
+			"text_color"	"255 255 255 255"
+		}
+		"icon_key_up"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"141"
+			"y"			"75"
+			"width"		"38"
+			"height"	"38"
+			"text_color"	"255 255 255 255"
+		}
+		"icon_key_down"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"205"
+			"y"			"75"
+			"width"		"38"
+			"height"	"38"
+			"text_color"	"255 255 255 255"
+		}
+
+		// Row 3
+		"icon_key_wide"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"15"
+			"y"			"132"
+			"width"		"98"
+			"height"	"52"
+			"text_color"	"255 255 255 255"
+		}
+		"icon_key_left"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"141"
+			"y"			"139"
+			"width"		"38"
+			"height"	"38"
+			"text_color"	"255 255 255 255"
+		}
+		"icon_key_right"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"205"
+			"y"			"139"
+			"width"		"38"
+			"height"	"38"
+			"text_color"	"255 255 255 255"
+		}
+
+		// Row 4
+		"icon_key_generic"
+		{
+			"file"		"vgui/hud/pc_input_icons"
+			"x"			"7"
+			"y"			"197"
+			"width"		"50"
+			"height"	"50"
+			"text_color"	"255 255 255 255"
+		}
+
+	}
+}

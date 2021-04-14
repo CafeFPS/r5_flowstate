@@ -1,0 +1,89 @@
+global const bool EARNMETER_ENABLED = false
+global const bool GRUNTCHATTER_ENABLED = false
+global const bool BATTLECHATTER_ENABLED = true
+global const bool FACTION_DIALOGUE_ENABLED = false
+global const bool SPECTRE_CHATTER_MP_ENABLED = true
+global const bool ANTI_RODEO_SMOKE_ENABLED = true
+global const bool HOLD_BUTTON_FOR_TITAN_EXECUTION = false
+global const bool TITAN_EXECUTION_ATTACKER_IS_INVULNERABLE = true
+global const bool TITAN_EXECUTION_GIVES_BATTERY = false
+
+global const bool HAS_GAMEMODES = true // don't use this too much! I only added this to handle cl_main_hud, which is planned for a bigger refactor in the future
+global const bool HAS_AI_SQUAD_LIMITS = true
+global const bool HAS_EVAC = false
+global const bool HAS_STATS = true
+global const bool HAS_BOSS_AI = false
+
+global const bool HAS_TITAN_EARNING = true
+global const bool HAS_TITAN_TELEMETRY = false
+
+//global const asset EARN_METER_DATATABLE = $"datatable/earn_meter_mp.rpak"
+global const bool ANTI_RODEO_MINIGAME_ENABLED = false
+global const bool HAS_RODEO_HOLD_OPTION = false
+
+global const bool HAS_WEAPON_PICKUP_HIGHLIGHT = true
+global const bool HAS_AMMO_FULL_FLYOUT = false
+
+global const bool HAS_THREAT_SCOPE_SLOT_LOCK = true
+
+global const bool HAS_ARMOR_MITIGATION = true
+
+global const bool HAS_HIT_INDICATOR = false
+
+global const bool HAS_CAPITAL_SHIP_SKYSHOW = false
+
+global const bool HAS_PANEL_HIGHLIGHT = false //TODO: Make conditional for Pathfinder
+global const bool GRUNT_CHATTER_MP_ENABLED = false
+
+
+global enum ePlayerStatType
+{
+	INT
+	FLOAT
+}
+
+global struct PlayerStatData
+{
+	string statVar
+	int statType
+	string localizedUnlock
+}
+
+global struct ShGlobalsMP
+{
+}
+
+global ShGlobalsMP shGlobalMP
+
+global const bool THIRD_PERSON_KILL_REPLAY_ALWAYS = false
+global const bool THIRD_PERSON_KILL_REPLAY_PROJECTILES = true
+global const float THIRD_PERSON_KILL_REPLAY_PROJECTILES_MINTIME = 0.3
+
+//------------------------------------------------------
+// CTF
+//------------------------------------------------------
+
+//global const CTF_FLAG_MODEL = $"mdl/signs/flag_base_pole_ctf.rmdl"
+//global const CTF_FLAG_BASE_MODEL = $"mdl/communication/flag_base.rmdl"
+
+//------------------------------------------------------
+// Survivor
+//------------------------------------------------------
+global const asset FFA_MODE_ICON = $"vgui/burncards/burncard_group_icon_weapons"
+
+//------------------------------------------------------
+// Bomb
+//------------------------------------------------------
+//global const asset BOMB_MODEL = $"mdl/weapons/bullets/temp_triple_threat_projectile_large.rmdl"
+
+//------------------------------------------------------
+// AT COOP
+//------------------------------------------------------
+//Weapon lockers
+//global const ATCOOP_WEAPON_LOCKER = $"mdl/containers/pelican_case_large_IMC.rmdl"
+//global const ATCOOP_WEAPON_LOCKER_OPEN = $"mdl/containers/pelican_case_IMC_open.rmdl"
+//global const ATCOOP_GRENADE_LOCKER = $"mdl/containers/pelican_case_large.rmdl"
+//global const ATCOOP_GRENADE_LOCKER_OPEN = $"mdl/containers/pelican_case_large_open.rmdl"
+
+
+global const DEFAULT_PILOT_SETTINGS = $"settings/player/mp/pilot_survival_gunner.rpak"

@@ -1,0 +1,19 @@
+// List of Miles banks to load.
+
+// FOR NOW all banks are loaded at game startup.
+// Eventual plan is to add keys here that can cause banks to load/unload based on dev-mode, mp/sp, and which map you are in.
+
+{
+	name: "general",
+}
+
+//{
+//	name: "weapons"
+//}
+//
+//{
+//	name: "dialog"
+//}
+//
+//// Etc...
+//

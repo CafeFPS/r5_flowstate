@@ -1,0 +1,172 @@
+untyped
+
+globalize_all_functions
+
+struct
+{
+	table<string,table<string,int> > mapModeScoreLimits
+} file
+
+int function GetRoundScoreLimit_FromPlaylist()
+{
+	if ( !GameMode_IsDefined( GAMETYPE ) )
+		return GetCurrentPlaylistVarInt( "roundscorelimit", 10 )
+
+	return GameMode_GetRoundScoreLimit( GAMETYPE )
+}
+
+int function GetScoreLimit_FromPlaylist()
+{
+	if ( GameMode_HasMapSpecificScoreLimits( GAMETYPE ) )
+		return GameMode_GetMapSpecificScoreLimit( GAMETYPE )
+
+	if ( !GameMode_IsDefined( GAMETYPE ) )
+		return GetCurrentPlaylistVarInt( "scorelimit", 10 )
+
+	return GameMode_GetScoreLimit( GAMETYPE )
+}
+
+bool function GameMode_HasMapSpecificScoreLimits( string gameType )
+{
+	if ( gameType in file.mapModeScoreLimits )
+	{
+		if ( GetMapName() in file.mapModeScoreLimits[gameType] )
+			return true
+	}
+	return false
+}
+
+int function GameMode_GetMapSpecificScoreLimit( string gameType )
+{
+	return file.mapModeScoreLimits[gameType][GetMapName()]
+}
+
+void function GameMode_SetMapSpecificScoreLimit( table<string,int> mapModeScoreTable, string gameType )
+{
+	Assert( !( gameType in file.mapModeScoreLimits ), "GAMETYPE has already been added to mapModeScoreLimits" )
+	file.mapModeScoreLimits[gameType] <- mapModeScoreTable
+}
+
+bool function IsSuddenDeathGameMode()
+{
+	return GameMode_GetSuddenDeathEnabled( GameRules_GetGameMode() )
+}
+
+IntFromEntityCompare function GetScoreboardCompareFunc()
+{
+	return ScoreboardCompareFuncForGamemode( GameRules_GetGameMode() )
+}
+
+IntFromEntityCompare function ScoreboardCompareFuncForGamemode( string gamemode )
+{
+	IntFromEntityCompare func = GameMode_GetScoreCompareFunc( gamemode )
+	if ( func != null )
+		return func
+
+	return CompareScore
+}
+
+bool function IsRoundWinningKillReplayEnabled()
+{
+	return expect bool( level.nv.roundWinningKillReplayEnabled )
+}
+
+bool function IsRoundWinningKillReplayPlaying()
+{
+	return expect bool( level.nv.roundWinningKillReplayPlaying )
+}
+
+bool function HasRoundScoreLimitBeenReached() //Different from RoundScoreLimit_Complete in that it only checks to see if the score required has been reached. Allows us to use it on the client to cover 90% of the cases we want
+{
+	if ( !IsRoundBased() )
+		return false
+
+	int roundLimit = GetRoundScoreLimit_FromPlaylist()
+
+	if ( !roundLimit )
+		return false
+
+	int militiaScore = GameRules_GetTeamScore2( TEAM_MILITIA )
+	int imcScore = GameRules_GetTeamScore2( TEAM_IMC )
+
+	if ( ( militiaScore >= roundLimit ) || ( imcScore >= roundLimit ) )
+		return true
+
+	return false
+}
+
+bool function IsTitanAvailable( entity player )
+{
+	var varIndex = ( player.GetEntIndex() - 1 ) / 32
+	var shiftIndex = player.GetEntIndex() - 1 - (varIndex*32)
+	var elimMask = (1 << shiftIndex)
+
+	switch( varIndex )
+	{
+		case 0:
+			return ( level.nv.titanAvailableBits0 & elimMask) != 0
+		case 1:
+			return ( level.nv.titanAvailableBits1 & elimMask) != 0
+		case 2:
+			return ( level.nv.titanAvailableBits2 & elimMask) != 0
+		case 3:
+			return ( level.nv.titanAvailableBits3 & elimMask) != 0
+		default:
+			unreachable
+	}
+	return false
+}
+
+bool function IsRespawnAvailable( entity player )
+{
+	var varIndex = ( player.GetEntIndex() - 1 ) / 32
+	var shiftIndex = player.GetEntIndex() - 1 - (varIndex*32)
+	var elimMask = (1 << shiftIndex)
+
+	switch( varIndex )
+	{
+		case 0:
+			return ( level.nv.respawnAvailableBits0 & elimMask) != 0
+		case 1:
+			return ( level.nv.respawnAvailableBits1 & elimMask) != 0
+		case 2:
+			return ( level.nv.respawnAvailableBits2 & elimMask) != 0
+		case 3:
+			return ( level.nv.respawnAvailableBits3 & elimMask) != 0
+		default:
+			unreachable
+	}
+	return false
+}
+
+bool function IsPrivateMatchSpectator( entity player )
+{
+	// JFS
+	#if SERVER
+	if ( !player.p.clientScriptInitialized )
+		return false
+	#endif
+
+	if ( IsPrivateMatch() && player.GetPersistentVarAsInt( "privateMatchState" ) == 1 )
+		return true
+
+	return false
+}
+
+#if CLIENT
+void function SendFPSToServer()
+{
+	//printt( "######################" )
+	//printt( "ReportFPS ON CLIENT!!!" )
+	//printt( "Direction:", direction )
+	int frameRate = int( GetClientFPS() + 0.5 )
+	//int frameRate = RandomInt(60)
+	//printt( "FrameRate:", frameRate )
+	//printt( "######################" )
+
+	entity player = GetLocalClientPlayer()
+	player.ClientCommand( "CurrentFPS " + frameRate )
+}
+#endif
+
+

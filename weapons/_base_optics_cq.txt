@@ -1,0 +1,208 @@
+WeaponData
+{
+	Mods
+   	{
+   		// 1x
+   		optic_cq_hcog_classic
+   		{
+   			// sight_hcog_og
+   			"zoom_fov"				"60"
+
+   			"bodygroup1_set"		"0"
+			"bodygroup6_set"		"1"
+
+			"ui1_enable"			"0"
+			"ui6_enable"			"1"
+
+			"mod_activity_modifier"	"optic"
+
+			"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_HCOG_OG"
+			"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_HCOG_OG"
+			"viewmodel_offset_ads_by_centerpoint" 		"1"
+
+			"viewmodel_offset_ads" 				    "0 13 0"
+
+            "dof_zoom_nearDepthStart"				"1.0"
+            "dof_zoom_nearDepthEnd"					"8.5"
+   		}
+
+	   	// 2x
+   		optic_cq_hcog_bruiser
+   		{
+   			// sight_hcog
+   			"zoom_fov"				"38.5907" // 2x @ 70
+
+   			"bodygroup1_set"		"0"
+		    "bodygroup7_set"		"1"
+
+			"ui1_enable"			"0"
+			"ui7_enable"			"1"
+			"ui11_enable"			"1"  // TEMP will be combined with ui7
+
+			"mod_activity_modifier"	"optic"
+
+			"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_HCOG"
+            "viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_HCOG"
+            "viewmodel_offset_ads_by_centerpoint" 		"1"
+
+            "viewmodel_offset_ads" 				    "0 15.5 0"
+
+            "dof_zoom_nearDepthStart"				"1.0"
+            "dof_zoom_nearDepthEnd"					"10.8"
+   		}
+
+   		// 1x
+   		optic_cq_holosight
+   		{
+   			// sight_holo
+   			"zoom_fov"				"60"
+
+   			"bodygroup1_set"		"0"
+		    "bodygroup8_set"		"1"
+
+			"ui1_enable"			"0"
+			"ui8_enable"			"1"
+
+			"mod_activity_modifier"	"optic"
+
+			"viewmodel_ads_rui_bottomleft_attachment"		"RUI_BL_CROSSHAIR_HOLO"
+			"viewmodel_ads_centerpoint_attachment"       	"ADS_CENTER_SIGHT_HOLO"
+			"viewmodel_offset_ads_by_centerpoint" 			"1"
+
+			"zoom_fov_viewmodel" 	"20.0"
+			"viewmodel_offset_ads" 				    "0 27.5 0"
+
+            "dof_zoom_nearDepthStart"				"1.0"
+            "dof_zoom_nearDepthEnd"					"23.0"
+   		}
+
+   		// 1x-2x
+   		optic_cq_holosight_variable
+   		{
+   			// sight_holo_mag
+   			"zoom_fov" 				"60"
+   			"zoom_toggle_fov" 		"38.5907" // 2x @ 70
+   			"zoom_toggle_lerp_time"	"0.1"
+
+   			// keeps the scope the same apparent size on the screen when zoom_fov is toggled
+   			// NOTE: requires viewmodel_offset_ads Y to be pushed farther AWAY from the camera (usually we bring it closer)
+   			"zoom_fov_viewmodel" 	"35"
+
+   			"bodygroup1_set"		"0"
+		    "bodygroup9_set"		"1"
+
+			"ui1_enable"			"0"
+			"ui9_enable" 			"1"
+
+			"mod_activity_modifier"	"optic"
+
+			"viewmodel_ads_rui_bottomleft_attachment"		"RUI_BL_CROSSHAIR_HOLOMAG"
+			"viewmodel_ads_centerpoint_attachment"			"ADS_CENTER_SIGHT_HOLOMAG"
+			"viewmodel_offset_ads_by_centerpoint" 			"1"
+
+            "viewmodel_offset_ads" 				    "0 14.5 0"
+
+            "dof_zoom_nearDepthStart"				"1.0"
+            "dof_zoom_nearDepthEnd"					"7.0"
+   		}
+   	}
+
+   	// --- BODYGROUPS AND UIDATA ---
+
+
+	// optic_cq_hcog_classic
+	"bodygroup6_name"	"sight_hcog_og"
+	"bodygroup6_set"	"0"
+
+	"ui6_enable"		"0"
+	"ui6_draw_cloaked"	"1"
+	UiData6
+	{
+		"ui"	"ui/hcog_classic_sights"
+		"mesh" 	"models/weapons/attachments/hcog_classic_sights"
+		Args
+		{
+			vis							player_zoomfrac
+			ammo						weapon_ammo
+			clipSize					weapon_clipSize
+			centerOffset		weapon_ads_center_offset
+		}
+	}
+
+
+	// optic_cq_hcog_bruiser
+	"bodygroup7_name"	"sight_hcog"
+	"bodygroup7_set"	"0"
+
+	"ui7_enable"		"0"
+	"ui7_draw_cloaked"	"1"
+	UiData7
+	{
+		"ui"						"ui/hcog_upper"
+		"mesh"						"models/weapons/attachments/hcog2_rui_upper"
+		Args
+		{
+			vis							player_zoomfrac
+			ammo						weapon_ammo
+			clipSize					weapon_clipSize
+			centerOffset		weapon_ads_center_offset
+		}
+	}
+	// TEMP, the plan is to combine hcog_upper and hcog_lower and only use UI7 for this
+	"ui11_enable"		"0"
+	"ui11_draw_cloaked"	"1"
+	UiData11
+	{
+		"ui"						"ui/hcog_lower"
+		"mesh"						"models/weapons/attachments/hcog2_rui_lower"
+		Args
+		{
+			vis							player_zoomfrac
+			ammo						weapon_ammo
+			clipSize					weapon_clipSize
+			centerOffset		weapon_ads_center_offset
+		}
+	}
+
+
+	// optic_cq_holosight
+	"bodygroup8_name"	"sight_holo"
+	"bodygroup8_set"	"0"
+
+	"ui8_enable"		"0"
+	"ui8_draw_cloaked"	"1"
+	UiData8
+	{
+		"ui"					"ui/holo_sights"
+		"mesh"					"models/weapons/attachments/holo_rui_upper"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+			clipCount			weapon_ammoClipCount
+			centerOffset		weapon_ads_center_offset
+		}
+	}
+
+
+	// optic_cq_holosight_variable
+	"bodygroup9_name"	"sight_holo_mag"
+	"bodygroup9_set"	"0"
+
+	"ui9_enable"		"0"
+	"ui9_draw_cloaked"	"1"
+	UiData9
+	{
+		"ui"						"ui/holo_variable_sights"
+		"mesh"						"models/weapons/attachments/holo_variable_sights"
+		Args
+		{
+			vis						player_zoomfrac
+			ammo					weapon_ammo
+			clipSize				weapon_clipSize
+			zoomFOV                 weapon_zoom_fov
+			centerOffset			weapon_ads_center_offset
+		}
+	}
+}

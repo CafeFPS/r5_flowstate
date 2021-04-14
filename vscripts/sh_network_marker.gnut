@@ -1,0 +1,240 @@
+untyped
+
+global function NetworkMarkerShared_Init
+global function RegisterMarker
+
+#if SERVER
+	global function SetMarker
+	global function ClearMarker
+#else
+	global function AddMarkerChangeCallback
+	global function ServerCallback_UpdateMarker
+#endif
+global function NetworkMarkerIsValid
+
+//list of specific markers for gamemodes or levels
+global const MARKER_TOWERDEFENSEGENERATOR = "TowerDefenseGeneratorEnt"
+
+
+
+/************************************************************************************\
+							DO NOT EDIT BELOW THIS LINE
+\************************************************************************************/
+global const MARKER_ENT_CLASSNAME = "script_ref"
+global const MARKET_ENT_MARKED_NAME = "mfd_marked"
+global const MARKET_ENT_PENDING_MARKED_NAME = "mfd_pending_marked"
+
+
+void function RegisterNetworkMarkers()
+{
+	RegisterMarker( MARKER_TOWERDEFENSEGENERATOR )
+
+	RegisterMarker( "LoadoutCrateMarker0" )
+	RegisterMarker( "LoadoutCrateMarker1" )
+	RegisterMarker( "LoadoutCrateMarker2" )
+	RegisterMarker( "LoadoutCrateMarker3" )
+	RegisterMarker( "LoadoutCrateMarker4" )
+	RegisterMarker( "LoadoutCrateMarker5" )
+	RegisterMarker( "LoadoutCrateMarker6" )
+	RegisterMarker( "LoadoutCrateMarker7" )
+	RegisterMarker( "LoadoutCrateMarker8" )
+	RegisterMarker( "LoadoutCrateMarker9" )
+}
+
+
+void function NetworkMarkerShared_Init()
+{
+	level.NetworkMarkedEnts <- {}
+	level.MarkerRegistryIndex <- 0
+
+	#if SERVER
+		level.RegisteredServerMarkers <- {}
+	#else
+		AddCreateCallback( MARKER_ENT_CLASSNAME, __OnMarkerCreated )
+
+		level.RegisteredClientMarkers <- {}
+		level.ClientFuncsForMarkedEnts <- {}
+	#endif
+
+	RegisterNetworkMarkers()
+}
+
+#if SERVER
+	void function SetMarker( string name, entity ent )
+	{
+		if ( !__MarkerExists( name ) )
+		{
+			__CreateMarker( name, ent )
+			return
+		}
+
+		__UpdateMarker( name, ent )
+	}
+
+	void function ClearMarker( string name )
+	{
+		if ( !__MarkerExists( name ) )
+			return
+
+		__UpdateMarker( name, null )
+	}
+
+	void function __UpdateMarker( string name, entity ent )
+	{
+		entity marker = __GetMarker( name )
+		marker.SetOwner( ent )
+		__UpdateMarkerForClients( name )
+	}
+
+	entity function __CreateMarker( string name, entity ent )
+	{
+		Assert( name != "" )
+		entity marker = CreateEntity( MARKER_ENT_CLASSNAME )
+		marker.SetOrigin( <0,0,0> )
+		SetTargetName( marker, name )
+		marker.kv.spawnflags = SF_INFOTARGET_ALWAYS_TRANSMIT_TO_CLIENT
+		marker.s.IsSCMarker <- true
+
+		marker.SetOwner( ent )
+
+		__AddMarkerToList( marker )
+		DispatchSpawn( marker )
+
+		return marker
+	}
+
+	void function __UpdateMarkerForClients( string name )
+	{
+		array<entity> players = GetPlayerArray()
+		int index = GetRegisteredIndexFromMarkerName( name )
+
+		foreach ( player in players )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_UpdateMarker", index )
+	}
+
+	int function GetRegisteredIndexFromMarkerName( string name )
+	{
+		Assert( name in level.RegisteredServerMarkers )
+		return expect int( level.RegisteredServerMarkers[ name ] )
+	}
+
+#else /* CLIENT */
+
+	string function GetRegisteredNameFromMarkerIndex( int index )
+	{
+		Assert( index in level.RegisteredClientMarkers )
+		return expect string( level.RegisteredClientMarkers[ index ] )
+	}
+
+	void function AddMarkerChangeCallback( string name, func )
+	{
+		Assert( !( name in level.ClientFuncsForMarkedEnts ) )
+		level.ClientFuncsForMarkedEnts[ name ] <- func
+	}
+
+	void function __OnMarkerCreated( entity marker )
+	{
+		if ( !__IsMarker( marker ) )
+			return
+
+		string name = marker.GetTargetName()
+		if ( name == "" )
+			return
+
+		__AddMarkerToList( marker )	//this will be bloated for now - but when __IsMarker() is a real function instead of just checking for "script_ref", this will be streamlined
+		__UpdateMarkerOnClient( name )
+	}
+
+	void function ServerCallback_UpdateMarker( int index )
+	{
+		string name = GetRegisteredNameFromMarkerIndex( index )
+		__UpdateMarkerOnClient( name )
+	}
+
+	void function __UpdateMarkerOnClient( string name )
+	{
+		if ( !( name in level.ClientFuncsForMarkedEnts ) )
+			return
+
+		local func = level.ClientFuncsForMarkedEnts[ name ]
+		entity markedEntity = GetMarkedEntity( name )
+		thread func( markedEntity, name )
+	}
+#endif
+
+/* SHARED */
+bool function __IsMarker( entity marker )
+{
+	#if SERVER
+		return marker.GetClassName() == MARKER_ENT_CLASSNAME
+	#elseif CLIENT
+		return marker.GetNetworkedClassName() == MARKER_ENT_CLASSNAME
+	#endif
+}
+
+void function RegisterMarker( string name )
+{
+	#if SERVER
+		level.RegisteredServerMarkers[ name ] <- level.MarkerRegistryIndex
+		level.MarkerRegistryIndex++
+	#elseif CLIENT
+		level.RegisteredClientMarkers[ level.MarkerRegistryIndex ] <- name
+		level.MarkerRegistryIndex++
+	#endif
+}
+
+bool function NetworkMarkerIsValid( string name )
+{
+	if ( !__MarkerExists( name ) )
+		return false
+
+	entity markerEnt = __GetMarker( name )
+	if ( !IsValid( markerEnt ) )
+		return false
+
+	return true
+}
+
+bool function __MarkerExists( string name )
+{
+	return ( name in level.NetworkMarkedEnts && IsValid( level.NetworkMarkedEnts[ name ] ) )
+}
+
+entity function GetMarkedEntity( string name )
+{
+	entity maker = __GetMarker( name )
+	if ( maker )
+		return maker.GetOwner()
+
+	return null
+}
+
+entity function __GetMarker( string name )
+{
+	if ( __MarkerExists( name ) )
+	{
+		entity ent = expect entity( level.NetworkMarkedEnts[ name ] )
+		if ( IsValid( ent ) )
+			return ent
+	}
+
+	return null
+}
+
+void function __AddMarkerToList( entity marker )
+{
+	string name = marker.GetTargetName()
+	Assert( name != "" )
+
+	//this allows overwrites of the same intended marked ent
+	if ( !__MarkerExists( name ) )
+		level.NetworkMarkedEnts[ name ] <- null
+
+	level.NetworkMarkedEnts[ name ] = marker
+}
+
+
+
+
+
+

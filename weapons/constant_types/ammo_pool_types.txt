@@ -1,0 +1,14 @@
+// Read by code, which generates the enum for script.
+// Weapons that do not specify an ammo pool type will be assigned the first type.
+//enum eAmmoPoolType
+//{
+/////////////////////////////
+
+	bullet
+	special
+	highcal
+	shotgun
+
+	_count
+/////////////////////////////
+//}

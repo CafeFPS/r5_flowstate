@@ -1,0 +1,214 @@
+untyped
+
+global function Tracker_GetNumTitans
+
+//#if TITANS_CLASSIC_GAMEPLAY
+//global function Tracker_PlayerAttackedTarget
+//global function Tracker_PlayerAttackedByTarget
+//#endif // #if TITANS_CLASSIC_GAMEPLAY
+
+const TRACK_ENEMY_TIME = 7.0
+
+bool function PlayerShouldTrackTarget( entity player, entity attacker )
+{
+	if ( !player.IsTitan() )
+		return false
+
+	if ( attacker == player )
+		return false
+
+	if ( !IsAlive( attacker ) )
+		return false
+
+	if ( attacker.IsTitan() )
+		return true
+
+	if ( !attacker.IsPlayer() )
+		return false
+
+	return true
+}
+
+table function Tracker_CleanupAttackers( entity player )
+{
+	table Table
+	Table.numTitans <- 0
+	Table.numPilots <- 0
+
+	foreach ( entity attacker, attackerInfo in clone player.s.trackedAttackers )
+	{
+		if ( !IsAlive( attacker ) || ( Time() > attackerInfo.lastAttackTime + TRACK_ENEMY_TIME ) )
+		{
+			delete player.s.trackedAttackers[ attacker ]
+			continue
+		}
+
+		if ( attacker.IsTitan() )
+			Table.numTitans++
+		else if ( attacker.IsHuman() )
+			Table.numPilots++
+	}
+
+	return Table
+}
+
+bool function Tracker_AddTarget( entity player, entity attacker )
+{
+	bool newlyAdded = false
+
+	if ( !( attacker in player.s.trackedAttackers ) )
+	{
+		//printt( "Added attacker " + attacker + " " + attacker.GetClassName() + " " + attacker.GetEntIndex() )
+		newlyAdded = true
+
+		table attackerInfo
+		attackerInfo.lastAttackTime <- null
+
+		player.s.trackedAttackers[ attacker ] <- attackerInfo
+	}
+
+	player.s.trackedAttackers[ attacker ].lastAttackTime = Time()
+
+	return newlyAdded
+}
+
+void function Tracker_PlayerAttackedTarget( entity player, entity victim )
+{
+	if ( !PlayerShouldTrackTarget( player, victim ) )
+		return
+
+	table previous = Tracker_CleanupAttackers( player )
+	int curTitans = expect int( previous.numTitans )
+
+	if ( Tracker_AddTarget( player, victim ) )
+	{
+		if ( victim.IsTitan() )
+			curTitans++
+	}
+
+	if ( PlayTitanAddVO( player, curTitans, expect int( previous.numTitans ), true ) )
+		return
+}
+
+void function Tracker_PlayerAttackedByTarget( entity player, entity attacker )
+{
+	if ( !PlayerShouldTrackTarget( player, attacker ) )
+		return
+
+	table previous = Tracker_CleanupAttackers( player )
+	int curTitans = expect int( previous.numTitans )
+	int curPilots = expect int( previous.numPilots )
+
+	if ( Tracker_AddTarget( player, attacker ) )
+	{
+		if ( attacker.IsTitan() )
+			curTitans++
+		else if ( attacker.IsHuman() )
+			curPilots++
+	}
+
+	if ( PlayTitanAddVO( player, curTitans, expect int( previous.numTitans ), false ) )
+		return
+
+	if ( curPilots > previous.numPilots )
+	{
+		if ( curPilots == 1 )
+			TitanCockpit_PlayDialog( player, "warningEnemyPilot" )
+		else
+			TitanCockpit_PlayDialog( player, "warningEnemyPilotMulti" )
+	}
+}
+
+bool function PlayTitanAddVO( entity player, int curTitans, int prevTitans, bool playerIsAttacker )
+{
+	float currentTime = Time()
+	float sharedDebounceTime = 5.0
+	if ( currentTime - GetConversationLastPlayedTime( "multiTitanEngage" ) <= sharedDebounceTime )
+		return false
+
+	if ( currentTime - GetConversationLastPlayedTime( "outnumbered2to1" ) <= sharedDebounceTime )
+		return false
+
+	if ( currentTime - GetConversationLastPlayedTime( "outnumbered3to1" ) <= sharedDebounceTime )
+		return false
+
+	if ( currentTime - GetConversationLastPlayedTime( "outnumbered4to1" ) <= sharedDebounceTime )
+		return false
+
+	if ( curTitans == 2 && curTitans > prevTitans )
+	{
+		TitanCockpit_PlayDialog( player, "multiTitanEngage" )
+		return true
+	}
+	else if ( curTitans >= 2 )
+	{
+		if ( playerIsAttacker || HasFriendlyTitansNearby( player ) )
+		{
+			TitanCockpit_PlayDialog( player, "multiTitanEngage" )
+		}
+		else
+		{
+			string outnumberedConversationName
+			int numTitans = Tracker_GetNumTitans( player )
+			switch ( numTitans )
+			{
+				case 2:
+					outnumberedConversationName = "outnumbered2to1"
+					break
+				case 3:
+					outnumberedConversationName = "outnumbered3to1"
+					break
+				case 4:
+					outnumberedConversationName = "outnumbered4to1"
+					break
+				default:
+					outnumberedConversationName = "multiTitanEngage"
+			}
+
+			TitanCockpit_PlayDialog( player, outnumberedConversationName )
+		}
+		return true
+	}
+	return false
+}
+
+bool function HasFriendlyTitansNearby( entity player )
+{
+	int playerTeam = player.GetTeam()
+	float maxDistance = 2000.0
+	float maxDistanceSqr = maxDistance * maxDistance
+	vector playerOrigin = player.GetOrigin()
+	int titanCount = GetNPCArrayEx( "npc_titan", playerTeam, TEAM_ANY, playerOrigin, maxDistance ).len()
+	array<entity> playerArray = GetPlayerArray()
+
+	foreach ( person in playerArray )
+		{
+		if ( !IsValid( person ) )
+			continue
+
+		if ( person == player )
+			continue
+
+		if ( person.GetTeam() != playerTeam )
+			continue
+
+		if ( person.IsTitan() && DistanceSqr( person.GetOrigin(), playerOrigin ) < maxDistanceSqr )
+			return true
+		}
+
+	return false
+}
+
+int function Tracker_GetNumTitans( entity player )
+{
+	Tracker_CleanupAttackers( player )
+
+	int curTitans = 0
+	foreach ( entity attacker, attackerInfo in player.s.trackedAttackers )
+	{
+		if ( IsAlive( attacker ) && attacker.IsTitan() )
+			curTitans++
+	}
+
+	return curTitans
+}

@@ -1,0 +1,49 @@
+global function ClPilotSpeedometer_Init
+
+struct
+{
+	var rui = null
+	bool useMetric
+} file
+
+void function ClPilotSpeedometer_Init()
+{
+	file.useMetric = true
+	if ( GetConVarString( "cl_language" ) == "english" )
+		file.useMetric = false
+
+	AddCreatePilotCockpitCallback( CreatePilotSpeedometer )
+}
+
+void function CreatePilotSpeedometer( entity cockpit, entity player )
+{
+	if ( file.rui != null || IsWatchingReplay() )
+		return
+
+	file.rui = CreateCockpitRui( $"ui/pilot_speedometer.rpak" )
+
+	RuiSetBool( file.rui, "useMetric", file.useMetric )
+	RuiSetGameTime( file.rui, "startTime", Time() )
+	RuiTrackFloat3( file.rui, "playerPos", player, RUI_TRACK_ABSORIGIN_FOLLOW )
+
+	player.EndSignal( "OnDeath" )
+	cockpit.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ()
+		{
+			DestroyPilotSpeedometer()
+		}
+	)
+
+	WaitForever()
+}
+
+void function DestroyPilotSpeedometer()
+{
+	if ( file.rui == null )
+		return
+
+	RuiDestroyIfAlive( file.rui )
+	file.rui = null
+}

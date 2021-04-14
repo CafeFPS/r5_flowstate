@@ -1,0 +1,206 @@
+untyped
+
+global function ClTitanHud_Init
+
+global function TitanCockpit_WarningAudio
+
+void function ClTitanHud_Init()
+{
+	level.EMP_vguis <- []
+	level.lastHudEMPStateAlpha <- 255
+
+	if ( !IsMenuLevel() )
+		AddCreateCallback( "titan_cockpit", TitanCockpitHudInit )
+}
+
+void function TitanCockpitHudInit( entity cockpit )
+{
+	if ( IsWatchingThirdPersonKillReplay() )
+		return
+
+	thread TitanCockpitHudInit_Internal( cockpit )
+}
+
+void function TitanCockpitHudInit_Internal( entity cockpit )
+{
+	OnThreadEnd(
+		function () : ()
+		{
+			ClearCrosshairPriority( crosshairPriorityLevel.TITANHUD )
+		}
+	)
+	EndSignal( cockpit, "OnDestroy" )
+	entity player = GetLocalViewPlayer()
+
+	// for now, delay hud element creation to sync with cockpit monitors turning on.  Ideally these would fade in,
+	// but there is no good way to fade an entire vgui at once.
+	SetCrosshairPriorityState( crosshairPriorityLevel.TITANHUD, CROSSHAIR_STATE_HIT_INDICATORS_ONLY )
+	while ( IsValid( cockpit ) && TitanCockpit_IsBooting( cockpit ) )
+	{
+		WaitFrame()
+	}
+
+	if ( !player.IsTitan() )
+		return
+
+	ClearCrosshairPriority( crosshairPriorityLevel.TITANHUD )
+
+	// todo(dw): re-add this
+	//if ( ShouldDrawRodeoVGUI( player ) )
+	//{
+	//	TitanCockpitDialog_RodeoAnnounce( player )
+	//
+	//	thread DrawRodeoAlertIcons( player.GetTitanSoul() )
+	//}
+
+	thread TitanCockpitThink( cockpit )
+}
+
+//bool function ShouldDrawRodeoVGUI( entity player )
+//{
+//	if ( !IsAlive( player ) )
+//		return false
+//
+//	if ( !player.IsTitan() )
+//		return false
+//
+//	entity soul = player.GetTitanSoul()
+//	entity titan = soul.GetTitan()
+//	if ( IsValid( GetFriendlyRodeoPilot( titan ) ) )
+//		return true
+//
+//	return soul.GetLastRodeoHitTime() > 0
+//}
+
+void function TitanCockpitThink( entity cockpit )
+{
+	entity player = GetLocalViewPlayer()
+
+	Assert( player.IsTitan(), player + " is not a titan" )
+
+	waitthread TitanHudUpdate( cockpit, player )
+
+	foreach ( attacker, attackerInfo in clone player.s.trackedAttackers )
+	{
+		delete player.s.trackedAttackers[ attacker ]
+	}
+
+	if ( "vduVGUI" in cockpit.s )
+		cockpit.s.vduVGUI.Destroy()
+
+	// Clear these since next time we get into the titan they get recreated
+	level.EMP_vguis = []
+}
+
+void function TitanHudUpdate( entity cockpit, entity player )
+{
+	if ( !IsAlive( player ) )
+		return
+
+	player.EndSignal( "OnDeath" )
+	cockpit.EndSignal( "OnDestroy" )
+
+	thread TitanCockpit_WarningAudio( cockpit, player )
+
+	while ( true )
+	{
+		UpdateHudEMPState( player, cockpit )
+
+		WaitFrame()
+	}
+}
+
+void function TitanCockpit_WarningAudio( entity cockpit, entity player )
+{
+	player.EndSignal( "TitanUnDoomed" )
+
+	float duration = 1.0
+	float healthFrac = GetHealthFrac( player )
+
+	float damageBeepDuration = GetSoundDuration( "titan_damage_beep" ) + 0.25
+
+	bool isDoomed = GetDoomedState( player )
+	bool wasDoomed = isDoomed
+
+	bool playOutOfShieldsBeep = GetGlobalSettingsFloat( player.GetPlayerSettings(), "healthShield" ) > 0
+
+	while ( IsValid( cockpit ) )
+	{
+		duration = 1.0
+		healthFrac = GetHealthFrac( player )
+		isDoomed = GetDoomedState( player )
+
+		if ( !isDoomed )
+		{
+			if ( playOutOfShieldsBeep )
+			{
+				if ( TitanShouldNotifyLowHealth( player, cockpit ) )
+				{
+					duration = damageBeepDuration
+					EmitSoundOnEntity( player, "titan_damage_beep" )
+				}
+			}
+		}
+		else
+		{
+			if ( !wasDoomed )
+			{
+				TitanCockpit_PlayDialog( player, "doomState" )
+				wasDoomed = true
+			}
+
+			if ( healthFrac <= 0.5 )
+			{
+				bool ejectIsDisabled = TitanEjectIsDisabled()
+				if ( ejectIsDisabled )
+					TitanCockpit_PlayDialog( player, "doomState" )
+				else
+					TitanCockpit_PlayDialog( player, "halfDoomState" )
+
+				if ( PROTO_AlternateDoomedState() )
+					break // so it doesn't spam you
+			}
+		}
+
+		wait duration
+	}
+}
+
+void function UpdateHudEMPState( entity player, entity cockpit )
+{
+	// Get Alpha
+	int alpha = 255
+	if ( cockpit.s.empInfo.startTime != 0 )
+		alpha = int( ( 1.0 - TitanCockpit_EMPFadeScale( cockpit ) ) * 255 )
+
+	if ( alpha == expect int( level.lastHudEMPStateAlpha ) )
+		return
+
+	level.lastHudEMPStateAlpha = alpha
+
+	// Update Alpha
+	for ( int i = 0; i < level.EMP_vguis.len(); i++ )
+	{
+		entity vgui = expect entity( level.EMP_vguis[i] )
+		if ( !IsValid( vgui ) )
+		{
+			level.EMP_vguis.remove( i )
+			i--
+		}
+		else
+		{
+			vgui.SetAlpha( alpha )
+		}
+	}
+}
+
+
+bool function TitanShouldNotifyLowHealth( entity player, entity cockpit )
+{
+	if ( TitanShieldDecayEnabled() )
+	{
+		return GetHealthFrac( player ) < 0.5
+	}
+
+	return GetShieldHealthFrac( player ) <= 0
+}

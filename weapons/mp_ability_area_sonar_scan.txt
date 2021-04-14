@@ -1,0 +1,190 @@
+#base "_base_ability_tactical.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_AREA_SONAR_SCAN"
+	"shortprintname"								"#WPN_AREA_SONAR_SCAN_SHORT"
+	"description" 									"#WPN_AREA_SONAR_SCAN_DESC"
+	"longdesc" 										"#WPN_AREA_SONAR_SCAN_LONGDESC"
+
+	"menu_icon"										"rui/pilot_loadout/ordnance/electric_smoke_menu"
+	"hud_icon"										"rui/hud/tactical_icons/tactical_bloodhound"
+
+	"readymessage"              					"#HUD_BURNMETER_READY_DEFENSIVE_BOMBARDMENT"
+	"readyhint"                 					"#HUD_BURNMETER_READY_DEFENSIVE_BOMBARDMENT_HINT"
+
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhand"
+	"minimap_reveal_distance"						"32000"
+	"leveled_pickup"								"1"
+	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
+	"offhand_default_inventory_slot"				"1"
+	"offhand_keep_primary_in_hand"					"1"
+
+    "does_not_interrupt_cloak"						"1"
+    "instant_swap_to"								"0"
+
+   	"play_offhand_charging_anim"  					"0"
+	"play_offhand_start_end_anim"					"0"
+
+   	"charge_time" 									"0.01"
+	"charge_cooldown_time"							"0.0"
+	"charge_cooldown_delay"   						"0.0"
+	"charge_end_forces_fire"  						"1"
+	"charge_require_input"							"0"
+
+	"OnWeaponActivate"						        "OnWeaponActivate_ability_area_sonar_scan"
+    "OnWeaponPrimaryAttackAnimEvent"				"OnWeaponPrimaryAttackAnimEvent_ability_area_sonar_scan"
+    "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+
+	// Menu Stats
+
+	// Models
+	//"viewmodel"										"mdl/weapons/burn_card/ptpov_burn_card.rmdl"
+
+	"viewmodel"										"mdl/weapons/empty_handed/ptpov_bloodhound_huntmode.rmdl"
+	"playermodel"									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+	"projectilemodel"								"mdl/dev/empty_model.rmdl"
+
+    "zoom_effects"									"0"
+
+	"critical_hit"									"0"
+
+	// Sounds
+	"sound_throw_1p"								"weapon_electric_smoke_throw_1p"
+	"sound_deploy_1p"								"weapon_electric_smoke_pinpull_1p"
+	"sound_throw_3p"								"weapon_electric_smoke_throw_3p"
+	"sound_deploy_3p"								"weapon_electric_smoke_pinpull_3p"
+	"sound_dryfire"									"Survival_UI_Ability_NotReady"
+	"sound_cook_warning"							"Weapon_Vortex_Gun.ExplosiveWarningBeep"
+
+	// Damage - When Used by Players
+	"damage_type" 									"none"
+	"explosion_damage_heavy_armor"					"0"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+
+	MP_BASE
+	{
+		"ammo_display"									"bar"
+        "ammo_stockpile_max"							"250"
+        "ammo_clip_size"   								"250"
+        "ammo_default_total"							"250"
+        "ammo_per_shot"									"250"
+        "ammo_min_to_fire"								"250"
+
+        // Regen Ammo
+        "regen_ammo_refill_rate"						"7"
+        "regen_ammo_refill_start_delay"					"0.0"
+
+        "enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+
+	//Mods
+		"sound_weapon_ready"							"survival_ui_tactical_ready"
+	}
+
+	SP_BASE
+	{
+		"ammo_clip_size"   								"4"
+		"ammo_default_total"							"1"
+		"ammo_display"									"count"
+		"ammo_min_to_fire"								"1"
+		"ammo_per_shot"									"1"
+		"ammo_stockpile_max"							"6"
+		"regen_ammo_refill_rate"						"0"
+		"regen_ammo_refill_start_delay"					"0.0"
+
+		"enable_highlight_networking_on_creation"		"1"
+
+	//Mods
+		"sound_weapon_ready"							"survival_ui_tactical_ready"
+	}
+
+	// Behavior
+	"fire_rate"   									"1.25"
+	"fire_anim_rate"								"1.0"
+	"holster_time"									"0"
+	"deploy_time" 									"0.6"
+	"lower_time"  									"0"
+	"raise_time"  									"0"
+	"allow_empty_fire"								"0"
+	"reload_enabled"								"0"
+	"empty_reload_only"   							"0"
+	"allow_empty_click"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"breaks_cloak"									"0"
+	"primary_fire_does_not_block_sprint"			"1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	"cooldown_type"									"ammo_instant"
+
+	"red_crosshair_range" 							"0"
+
+	"ammo_suck_behavior"							"offhand_weapons"
+
+	// Rumble
+	"rumble"  										"-1"
+
+	Mods
+	{
+	    survival_armor_cooldown_mod
+        {
+            "regen_ammo_refill_rate"    "*1.25"
+        }
+
+		burn_card_weapon_mod
+		{
+
+		}
+
+        survival_finite_ammo
+        {
+
+        }
+	}
+
+	active_crosshair_count				"2"
+	rui_crosshair_index					"0"
+
+	"ordnance_crosshair_always_on_start_index"	"1"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_esmoke"
+			"base_spread"				"0.0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+
+		Crosshair_2
+		{
+			"ui"						"ui/crosshair_ordnance"
+			Args
+			{
+			    regenRate               "eWeaponVar.regen_ammo_refill_rate"
+			    ammoFrac                "progress_weapon_clip_ammo_frac"
+			    dryfireTime             "weapon_latest_dryfire_time"
+			}
+		}
+	}
+}

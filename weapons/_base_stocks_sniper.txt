@@ -1,0 +1,65 @@
+WeaponData
+{
+	Mods
+	{
+		"stock_sniper_l1"
+		{
+			"zoom_time_in"					    "*0.9"
+            "zoom_time_out"   				    "*0.9"
+
+            "deploy_time" 						"*0.85"
+			"holster_time"						"*0.85"
+			"raise_time" 						"*0.9"
+			"lower_time"						"*0.9"
+
+			"viewdrift_ads_stand_scale_pitch" 	"*0.7"
+	        "viewdrift_ads_stand_scale_yaw"   	"*0.7"
+	        "viewdrift_ads_crouch_scale_pitch"  "*0.7"
+	        "viewdrift_ads_crouch_scale_yaw"	"*0.7"
+	        "viewdrift_ads_air_scale_pitch"   	"*0.7"
+	        "viewdrift_ads_air_scale_yaw" 		"*0.7"
+	        "viewdrift_ads_speed_pitch"   	    "*0.9"
+	        "viewdrift_ads_speed_yaw" 		    "*0.9"
+		}
+
+		"stock_sniper_l2"
+		{
+			"zoom_time_in"					    "*0.85"
+            "zoom_time_out"   				    "*0.85"
+
+            "deploy_time" 						"*0.8"
+			"holster_time"						"*0.8"
+			"raise_time" 						"*0.85"
+			"lower_time"						"*0.85"
+
+			"viewdrift_ads_stand_scale_pitch" 	"*0.5"
+	        "viewdrift_ads_stand_scale_yaw"   	"*0.5"
+	        "viewdrift_ads_crouch_scale_pitch"  "*0.5"
+	        "viewdrift_ads_crouch_scale_yaw"	"*0.5"
+	        "viewdrift_ads_air_scale_pitch"   	"*0.5"
+	        "viewdrift_ads_air_scale_yaw" 		"*0.5"
+	        "viewdrift_ads_speed_pitch"   	    "*0.85"
+	        "viewdrift_ads_speed_yaw" 		    "*0.85"
+		}
+
+		"stock_sniper_l3"
+		{
+			"zoom_time_in"					    "*0.8"
+            "zoom_time_out"   				    "*0.8"
+
+            "deploy_time" 						"*0.75"
+			"holster_time"						"*0.75"
+			"raise_time" 						"*0.8"
+			"lower_time"						"*0.8"
+
+			"viewdrift_ads_stand_scale_pitch" 	"*0.2"
+	        "viewdrift_ads_stand_scale_yaw"   	"*0.2"
+	        "viewdrift_ads_crouch_scale_pitch"  "*0.2"
+	        "viewdrift_ads_crouch_scale_yaw"	"*0.2"
+	        "viewdrift_ads_air_scale_pitch"   	"*0.2"
+	        "viewdrift_ads_air_scale_yaw" 		"*0.2"
+	        "viewdrift_ads_speed_pitch"   	    "*0.8"
+	        "viewdrift_ads_speed_yaw" 		    "*0.8"
+		}
+	}
+}

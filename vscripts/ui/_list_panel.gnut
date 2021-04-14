@@ -1,0 +1,841 @@
+global function ListPanelInit
+
+global function ListPanel_InitPanel
+global function ListPanel_SetActive
+global function ListPanel_InitScrollBar
+global function ListPanel_SetButtonHandler
+global function ListPanel_SetKeyPressHandler
+global function ListPanel_SetExclusiveSelection
+global function ListPanel_ClearSelection
+global function ListPanel_Refresh
+global function ListPanel_GetButtonAtIndex
+global function ListPanel_OnListButtonClick
+global function ListPanel_OnListButtonClickRight
+global function ListPanel_ScrollListPaneltoIndex
+global function ListPanel_UpdateSelectedState
+global function ListPanel_SetScrollCallback
+
+global function ListPanel_SetCommandHandler
+
+struct ListElementData
+{
+	int assignedIndex
+	var button
+}
+
+struct ListPanelData
+{
+	bool isInitialized = false
+	var  panel = null
+
+	bool isActive = false
+	bool isScrollActive = false
+	UIPos scrollStartPos
+	float scrollListOffset
+
+	bool exclusiveSelection = false
+
+	int paddingVert = 8
+
+	array<var> listButtonElements = []
+
+	array<ListElementData> availableElements = []
+	array<ListElementData> usedElements = []
+
+	int   lastItemCount = -1
+	float totalListSize
+	float listOffset
+	float scrollValue
+
+	int buttonHeight = 0
+	int panelHeight = 0
+
+	void functionref( var panel, var button, int index ) bindCallback
+	void functionref( var panel, var button, int index ) clickCallback
+	void functionref( var panel, var button, int index ) clickRightCallback
+	void functionref( var panel, var button, int index ) getFocusCallback
+	void functionref( var panel, var button, int index ) loseFocusCallback
+	int  functionref( var panel )                        itemCountCallback
+	void functionref( var panel, float scrollValue )	 scrollCallback
+
+	bool functionref( var panel, var button, int position, int keyId, bool isDown ) keyPressHandler
+	void functionref( var panel, var button, int index, string command ) commandHandler
+
+	var scrollBarElement
+	var navUpElement
+	var navDownElement
+}
+
+struct
+{
+	table< string, ListPanelData > listPanels
+} file
+
+
+const float SCROLL_SPEED = 15.0
+
+void function ListPanelInit()
+{
+	thread ListPanelScrollUpdate()
+}
+
+
+void function ListPanelScrollUpdate()
+{
+	RegisterStickMovedCallback( ANALOG_RIGHT_Y, ScrollVertical )
+	RegisterButtonPressedCallback( MOUSE_WHEEL_UP, MouseWheelUp )
+	RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, MouseWheelDown )
+
+	RegisterButtonPressedCallback( MOUSE_LEFT, List_ScrollHandlePress )
+	RegisterButtonReleasedCallback( MOUSE_LEFT, List_ScrollHandleRelease )
+
+	RegisterButtonPressedCallback( BUTTON_A, List_ScrollHandlePress )
+	RegisterButtonReleasedCallback( BUTTON_A, List_ScrollHandleRelease )
+
+	while ( true )
+	{
+		foreach ( ListPanelData data in file.listPanels )
+		{
+			if ( !data.isActive )
+				continue
+
+			if ( data.scrollValue != 0.0 )
+			{
+				RunScrollCallback( data )
+				UpdateButtonElements( data )
+			}
+
+			if ( data.isScrollActive )
+			{
+				UIPos cursorPos
+				cursorPos.x = int( GetCursorPosition().x )
+				cursorPos.y = int( GetCursorPosition().y )
+
+				data.listOffset = data.scrollListOffset
+
+				float cursorOffset = float( cursorPos.y - data.scrollStartPos.y )
+				float scrollOffsetFrac = cursorOffset / Hud_GetHeight( data.scrollBarElement )
+				data.scrollValue = (scrollOffsetFrac * data.totalListSize) / SCROLL_SPEED
+				UpdateButtonElements( data )
+				data.scrollValue = 0.0
+			}
+		}
+
+		WaitFrame()
+	}
+
+	DeregisterStickMovedCallback( ANALOG_RIGHT_Y, ScrollVertical )
+	DeregisterButtonPressedCallback( MOUSE_WHEEL_UP, MouseWheelUp )
+	DeregisterButtonPressedCallback( MOUSE_WHEEL_DOWN, MouseWheelDown )
+
+	DeregisterButtonPressedCallback( MOUSE_LEFT, List_ScrollHandlePress )
+	DeregisterButtonReleasedCallback( MOUSE_LEFT, List_ScrollHandleRelease )
+
+	DeregisterButtonPressedCallback( BUTTON_A, List_ScrollHandlePress )
+	DeregisterButtonReleasedCallback( BUTTON_A, List_ScrollHandleRelease )
+}
+
+void function ListPanel_InitPanel( var panel, void functionref( var panel, var button, int index ) bindCallback, int functionref( var panel ) itemCountCallback, void functionref( var button ) buttonInitCallback )
+{
+	ListPanelData data
+
+	data.panel = panel
+	data.bindCallback = bindCallback
+	data.itemCountCallback = itemCountCallback
+
+	if ( !(string(panel) in file.listPanels) )
+		file.listPanels[string(panel)] <- data
+
+	file.listPanels[string(panel)] = data
+
+	array<var> listButtonElements = []
+
+	int index = 0
+	while ( Hud_HasChild( panel, "ListButton" + index ) )
+	{
+		listButtonElements.append( Hud_GetChild( panel, "ListButton" + index ) )
+		index++
+	}
+
+	foreach ( button in listButtonElements )
+	{
+		Hud_SetKeyValue( button, "parentPanel", panel )
+		Hud_SetEnabled( button, true )
+		Hud_Hide( button )
+		Hud_AddEventHandler( button, UIE_GET_FOCUS, OnListButtonGetFocus )
+		Hud_AddEventHandler( button, UIE_LOSE_FOCUS, OnListButtonLoseFocus )
+		Hud_AddEventHandler( button, UIE_CLICK, ListPanel_OnListButtonClick )
+		Hud_AddEventHandler( button, UIE_CLICKRIGHT, ListPanel_OnListButtonClickRight )
+		Hud_AddKeyPressHandler( button, OnListButtonKeyPress )
+		Hud_SetCommandHandler( button, OnCommandEvent )
+
+		ListElementData buttonData
+		buttonData.assignedIndex = -1
+		buttonData.button = button
+
+		data.availableElements.append( buttonData )
+
+		if ( buttonInitCallback != null )
+			buttonInitCallback( button )
+	}
+
+	UISize screenSize = GetScreenSize()
+
+	data.paddingVert = ContentScaledYAsInt( data.paddingVert )
+
+	int buttonWidth  = Hud_GetWidth( listButtonElements[0] )
+	int buttonHeight = Hud_GetHeight( listButtonElements[0] )
+
+	data.buttonHeight = buttonHeight
+	data.listButtonElements = listButtonElements
+
+	int panelWidth  = Hud_GetWidth( panel )
+	int panelHeight = Hud_GetHeight( panel )
+
+	data.panelHeight = panelHeight
+
+	for ( int buttonIndex = 0; buttonIndex < data.listButtonElements.len(); buttonIndex++ )
+	{
+		var buttonElement = data.listButtonElements[buttonIndex]
+
+		Hud_SetY( buttonElement, (buttonHeight + data.paddingVert) * buttonIndex )
+	}
+
+	int listItemCount = data.itemCountCallback( panel )
+	data.totalListSize = float( (listItemCount * buttonHeight) + ((listItemCount - 1) * data.paddingVert ) )
+	data.listOffset = 0
+	data.lastItemCount = listItemCount
+
+	data.navUpElement = Hud_GetChild( panel, "NavUpHidden" )
+	Hud_SetKeyValue( data.navUpElement, "parentPanel", panel )
+	Hud_AddEventHandler( data.navUpElement, UIE_GET_FOCUS, OnNavUpHidden )
+	Hud_Hide( data.navUpElement )
+
+	data.navDownElement = Hud_GetChild( panel, "NavDownHidden" )
+	Hud_SetKeyValue( data.navDownElement, "parentPanel", panel )
+	Hud_AddEventHandler( data.navDownElement, UIE_GET_FOCUS, OnNavDownHidden )
+	Hud_Hide( data.navDownElement )
+
+	UpdateButtonElements( data )
+
+	if ( !data.isInitialized )
+	{
+
+	}
+}
+
+void function ListPanel_SetScrollCallback( var panel, void functionref( var panel, float scrollValue ) scrollCallback )
+{
+	ListPanelData data = GetDataForPanel( panel )
+	data.scrollCallback = scrollCallback
+}
+
+void function ListPanel_SetCommandHandler( var panel, void functionref( var panel, var button, int index, string command ) commandHandler )
+{
+	ListPanelData data = GetDataForPanel( panel )
+	data.commandHandler = commandHandler
+}
+
+void function ListPanel_SetButtonHandler( var panel, int eventType, void functionref( var panel, var button, int index ) eventCallback )
+{
+	ListPanelData data = GetDataForPanel( panel )
+	switch( eventType )
+	{
+		case UIE_CLICK:
+			data.clickCallback = eventCallback
+			break
+
+		case UIE_CLICKRIGHT:
+			data.clickRightCallback = eventCallback
+			break
+
+		case UIE_GET_FOCUS:
+			data.getFocusCallback = eventCallback
+			break
+
+		case UIE_LOSE_FOCUS:
+			data.loseFocusCallback = eventCallback
+			break
+
+		default:
+			Assert( 0, "Unhandled eventType." )
+	}
+}
+
+void function ListPanel_SetKeyPressHandler( var panel, bool functionref( var panel, var button, int position, int keyId, bool isDown ) keyPressHandler )
+{
+	ListPanelData data = GetDataForPanel( panel )
+	data.keyPressHandler = keyPressHandler
+}
+
+void function ListPanel_InitScrollBar( var panel, var scrollBarElement )
+{
+	ListPanelData data = GetDataForPanel( panel )
+
+	data.scrollBarElement = scrollBarElement
+	Hud_SetKeyValue( data.scrollBarElement, "parentPanel", panel )
+	Hud_AddEventHandler( data.scrollBarElement, UIE_CLICK, OnScrollBarClick )
+
+	UpdateButtonElements( data )
+}
+
+
+void function OnListButtonGetFocus( var button )
+{
+	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	ListElementData ornull buttonData = GetElementDataForButton( data, button )
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
+	if ( buttonData == null )
+		return
+
+	expect ListElementData( buttonData )
+
+	if ( IsControllerModeActive() && !GetConVarBool( "gameCursor_ModeActive" ) )
+	{
+		int focusOffset = Hud_GetY( button )
+
+		array<int> visibleIndices = GetVisibleListItemsIndices( data, data.listOffset )
+
+		if ( focusOffset < 0 )
+		{
+			data.scrollValue = (float( data.buttonHeight + data.paddingVert ) / SCROLL_SPEED) * -1
+			UpdateButtonElements( data )
+			data.scrollValue = 0.0
+		}
+		else if ( focusOffset < 0 && buttonData.assignedIndex == visibleIndices[0] && buttonData.assignedIndex != 0 )
+		{
+			data.scrollValue = (float( data.buttonHeight + data.paddingVert ) / SCROLL_SPEED) * -1
+			UpdateButtonElements( data )
+			data.scrollValue = 0.0
+		}
+		else if ( focusOffset + float( data.buttonHeight + data.paddingVert ) > data.panelHeight )
+		{
+			data.scrollValue = float( data.buttonHeight + data.paddingVert ) / SCROLL_SPEED
+			UpdateButtonElements( data )
+			data.scrollValue = 0.0
+		}
+	}
+
+	if ( data.getFocusCallback != null )
+		data.getFocusCallback( data.panel, buttonData.button, buttonData.assignedIndex )
+}
+
+
+void function OnListButtonLoseFocus( var button )
+{
+	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	ListElementData ornull buttonData = GetElementDataForButton( data, button )
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
+	if ( buttonData == null )
+		return
+
+	expect ListElementData( buttonData )
+
+	if ( data.loseFocusCallback != null )
+		data.loseFocusCallback( data.panel, buttonData.button, buttonData.assignedIndex )
+}
+
+void function ListPanel_OnListButtonClick( var button )
+{
+	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	ListElementData ornull buttonData = GetElementDataForButton( data, button )
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
+	if ( buttonData == null )
+		return
+
+	expect ListElementData( buttonData )
+
+	bool wasSelected = Hud_IsSelected( button )
+
+	if ( data.clickCallback != null )
+		data.clickCallback( data.panel, buttonData.button, buttonData.assignedIndex )
+
+	if ( data.exclusiveSelection && Hud_IsSelected( button ) != wasSelected )
+		UpdateSelectedState( data )
+}
+
+bool function OnListButtonKeyPress( var button, int keyId, bool isDown )
+{
+	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	if ( data.keyPressHandler == null )
+		return false
+
+	ListElementData ornull buttonData = GetElementDataForButton( data, button )
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
+	if ( buttonData == null )
+		return false
+
+	expect ListElementData( buttonData )
+
+	bool wasHandled = data.keyPressHandler( data.panel, buttonData.button, buttonData.assignedIndex, keyId, isDown )
+	return wasHandled
+}
+
+void function OnCommandEvent( var button, string binding )
+{
+	ListPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	if ( data.commandHandler == null )
+		return
+
+	ListElementData ornull buttonData = GetElementDataForButton( data, button )
+	if ( buttonData == null )
+		return
+
+	expect ListElementData( buttonData )
+
+	data.commandHandler( data.panel, buttonData.button, buttonData.assignedIndex, binding )
+}
+
+void function ListPanel_OnListButtonClickRight( var button )
+{
+	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	ListElementData ornull buttonData = GetElementDataForButton( data, button )
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
+	if ( buttonData == null )
+		return
+
+	expect ListElementData( buttonData )
+
+	bool wasSelected = Hud_IsSelected( button )
+
+	if ( data.clickRightCallback != null )
+		data.clickRightCallback( data.panel, buttonData.button, buttonData.assignedIndex )
+
+	if ( data.exclusiveSelection && Hud_IsSelected( button ) != wasSelected )
+		UpdateSelectedState( data )
+}
+
+void function UpdateSelectedState( ListPanelData data )
+{
+	bool hasSelection = ListPanel_HasSelection( data.panel )
+
+	foreach ( ListElementData buttonData in data.usedElements )
+	{
+		if ( !hasSelection || Hud_IsSelected( buttonData.button ) )
+			Hud_SetEnabled( buttonData.button, true )
+		else
+			Hud_SetEnabled( buttonData.button, false )
+	}
+
+	if ( data.scrollBarElement != null )
+		Hud_SetEnabled( data.scrollBarElement, !hasSelection )
+}
+
+
+bool function ListPanel_HasSelection( var panel )
+{
+	ListPanelData data = GetDataForPanel( panel )
+
+	foreach ( ListElementData buttonData in data.usedElements )
+	{
+		if ( Hud_IsSelected( buttonData.button ) )
+			return true
+	}
+
+	return false
+}
+
+
+void function OnNavUpHidden( var button )
+{
+
+}
+
+
+void function OnNavDownHidden( var button )
+{
+
+}
+
+
+void function OnScrollBarClick( var button )
+{
+	ListPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+}
+
+
+void function UpdateScrollBar( ListPanelData data )
+{
+	var scrollBarRui = Hud_GetRui( data.scrollBarElement )
+	if ( ListPanel_HasSelection( data.panel ) || data.totalListSize <= 0 || data.panelHeight / data.totalListSize >= 1 )
+	{
+		Hud_Hide( data.scrollBarElement )
+	}
+	else
+	{
+		Hud_Show( data.scrollBarElement )
+		RuiSetFloat( scrollBarRui, "handleOffset", data.listOffset / data.totalListSize )
+		RuiSetFloat( scrollBarRui, "handleFrac", data.panelHeight / data.totalListSize )
+	}
+}
+
+
+int function GetIndexAtOffset( ListPanelData data, float offset )
+{
+	int elementHeight = data.buttonHeight + data.paddingVert
+	int itemIndex     = int( floor( offset / elementHeight ) )
+
+	return itemIndex
+}
+
+float function GetOffsetForIndex( ListPanelData data, int index )
+{
+	int elementHeight = data.buttonHeight + data.paddingVert
+	int listMid = 1 // int( floor( float( data.usedElements.len() ) / 2.0 ) )
+
+	float offset = float( index - listMid ) * elementHeight
+
+	return offset
+}
+
+void function ListPanel_ScrollListPaneltoIndex( var panel, int index )
+{
+	ListPanelData data = GetDataForPanel( panel )
+
+	float offset = GetOffsetForIndex( data, index )
+	float oldOffset = data.listOffset
+
+	float elementHeight = float( data.buttonHeight + data.paddingVert )
+	data.scrollValue = (( offset - oldOffset )) / SCROLL_SPEED
+
+	UpdateButtonElements( data )
+	data.scrollValue = 0.0
+}
+
+array<int> function GetVisibleListItemsIndices( ListPanelData data, float offset )
+{
+	int firstIndex      = GetIndexAtOffset( data, offset )
+	int maxVisibleItems = int( ceil( float( data.panelHeight ) / (data.buttonHeight + data.paddingVert) ) ) + 1
+
+	array<int> visibleIndices
+	for ( int index = 0; index < maxVisibleItems; index++ )
+	{
+		visibleIndices.append( index + firstIndex )
+	}
+
+
+	return visibleIndices
+}
+
+
+void function UpdateButtonElements( ListPanelData data, bool forceRefresh = false )
+{
+	// TODO: find a more appropriate place/way to do this
+	int itemCount = data.itemCountCallback( data.panel )
+	if ( data.lastItemCount != itemCount )
+	{
+		data.totalListSize = float( (itemCount * data.buttonHeight) + ((itemCount - 1) * data.paddingVert) )
+		data.lastItemCount = itemCount
+		forceRefresh = true
+	}
+
+	float lastOffset              = data.listOffset
+	array<int> lastVisibleIndices = GetVisibleListItemsIndices( data, lastOffset )
+
+	if ( data.exclusiveSelection && ListPanel_HasSelection( data.panel ) )
+	{
+		if ( data.scrollBarElement != null )
+			UpdateScrollBar( data )
+
+		return // don't allow scrolling when an element is selected
+	}
+
+	data.listOffset = clamp( lastOffset + (data.scrollValue * SCROLL_SPEED), 0, (data.totalListSize - (data.panelHeight / data.totalListSize) * data.totalListSize) )
+	data.listOffset = max( data.listOffset, 0 )
+
+	array<int> visibleIndices = GetVisibleListItemsIndices( data, data.listOffset )
+
+	foreach ( itemIndex in lastVisibleIndices )
+	{
+		if ( visibleIndices.contains( itemIndex ) )
+		{
+			continue
+		}
+
+		foreach ( ListElementData buttonData in data.usedElements )
+		{
+			if ( buttonData.assignedIndex == itemIndex )
+			{
+				data.availableElements.append( buttonData )
+				data.usedElements.removebyvalue( buttonData )
+				Hud_Hide( buttonData.button )
+			}
+		}
+	}
+
+	foreach ( visIndex, itemIndex in visibleIndices )
+	{
+		if ( itemIndex >= data.itemCountCallback( data.panel ) )
+		{
+			if ( HasElementDataForItemIndex( data, itemIndex ) )
+			{
+				ListElementData buttonData = GetElementDataForItemIndex( data, itemIndex )
+				Hud_Hide( buttonData.button )
+			}
+			continue
+		}
+
+		ListElementData buttonData = GetElementDataForItemIndex( data, itemIndex )
+
+		if ( forceRefresh )
+			data.bindCallback( data.panel, buttonData.button, buttonData.assignedIndex )
+
+		var listButton = buttonData.button
+		float newY     = ((data.buttonHeight + data.paddingVert) * visIndex) - data.listOffset % (data.buttonHeight + data.paddingVert)
+		//if ( IsControllerModeActive() && false )
+		//{
+		//	if ( lastOffset > data.listOffset )
+		//	{
+		//		Hud_SetY( listButton, newY - (data.buttonHeight + data.paddingVert) )
+		//	}
+		//	else
+		//	{
+		//		Hud_SetY( listButton, newY + (data.buttonHeight + data.paddingVert) )
+		//	}
+		//
+		//	Hud_SetYOverTime( listButton, newY, 0.15, INTERPOLATOR_DEACCEL )
+		//}
+		//else
+		{
+			Hud_SetY( listButton, newY )
+		}
+
+
+		if ( visIndex == 0 )
+		{
+			Hud_SetNavUp( listButton, data.navUpElement )
+		}
+		else
+		{
+			int lastItemIndex              = visibleIndices[visIndex - 1]
+			ListElementData lastButtonData = GetElementDataForItemIndex( data, lastItemIndex )
+			Hud_SetNavUp( listButton, lastButtonData.button )
+			Hud_SetNavDown( lastButtonData.button, listButton )
+		}
+
+		if ( visIndex == visibleIndices.len() - 1 )
+		{
+			Hud_SetNavDown( listButton, data.navDownElement )
+		}
+
+		Hud_Show( listButton )
+	}
+
+	if ( data.scrollBarElement != null )
+		UpdateScrollBar( data )
+
+	//ForceVGUIFocusUpdate()
+}
+
+
+ListElementData function GetElementDataForItemIndex( ListPanelData data, int itemIndex )
+{
+	foreach ( ListElementData buttonData in data.usedElements )
+	{
+		if ( buttonData.assignedIndex != itemIndex )
+			continue
+
+		return buttonData
+	}
+
+	ListElementData newButtonData = data.availableElements.pop()
+	newButtonData.assignedIndex = itemIndex
+	data.usedElements.append( newButtonData )
+	data.bindCallback( data.panel, newButtonData.button, itemIndex )
+	Hud_Show( newButtonData.button )
+
+	return newButtonData
+}
+
+
+bool function HasElementDataForItemIndex( ListPanelData data, int itemIndex )
+{
+	foreach ( ListElementData buttonData in data.usedElements )
+	{
+		if ( buttonData.assignedIndex != itemIndex )
+			continue
+
+		return true
+	}
+
+	return false
+}
+
+
+ListElementData ornull function GetElementDataForButton( ListPanelData data, var button )
+{
+	foreach ( ListElementData buttonData in data.usedElements )
+	{
+		if ( buttonData.button != button )
+			continue
+
+		return buttonData
+	}
+
+	return null
+}
+
+
+void function ScrollVertical( entity player, float val )
+{
+	const float STICK_DEADZONE = 0.15
+	foreach ( ListPanelData data in file.listPanels )
+	{
+		if ( data.isActive )
+		{
+			if ( fabs( val ) < STICK_DEADZONE )
+				data.scrollValue = 0.0
+			else
+			{
+				if ( (data.scrollValue <= 0 && val < 0) || (data.scrollValue >= 0 && val > 0) )
+				{
+					data.scrollValue = val
+				}
+			}
+
+
+			UpdateButtonElements( data )
+		}
+	}
+}
+
+
+void function MouseWheelUp( var button )
+{
+	foreach ( ListPanelData data in file.listPanels )
+	{
+		if ( !data.isActive )
+			continue
+
+		data.scrollValue = (float( data.buttonHeight + data.paddingVert ) / SCROLL_SPEED) * -1
+		RunScrollCallback( data )
+		UpdateButtonElements( data )
+		data.scrollValue = 0.0
+	}
+}
+
+
+void function MouseWheelDown( var button )
+{
+	foreach ( ListPanelData data in file.listPanels )
+	{
+		if ( !data.isActive )
+			continue
+
+		data.scrollValue = float( data.buttonHeight + data.paddingVert ) / SCROLL_SPEED
+		RunScrollCallback( data )
+		UpdateButtonElements( data )
+		data.scrollValue = 0.0
+	}
+}
+
+void function RunScrollCallback( ListPanelData data )
+{
+	if ( data.scrollCallback != null )
+		data.scrollCallback( data.panel, data.scrollValue )
+}
+
+ListPanelData function GetDataForPanel( var panel )
+{
+	Assert( string( panel ) in file.listPanels )
+	return file.listPanels[string(panel)]
+}
+
+
+void function ListPanel_SetActive( var panel, bool state )
+{
+	Assert( string( panel ) in file.listPanels )
+	file.listPanels[string(panel)].isActive = state
+}
+
+
+void function ListPanel_SetExclusiveSelection( var panel, bool state )
+{
+	Assert( string( panel ) in file.listPanels )
+	file.listPanels[string(panel)].exclusiveSelection = state
+}
+
+void function ListPanel_UpdateSelectedState( var panel )
+{
+	ListPanelData data = GetDataForPanel( panel )
+	UpdateSelectedState( data )
+}
+
+void function ListPanel_ClearSelection( var panel )
+{
+	ListPanelData data = GetDataForPanel( panel )
+
+	foreach ( ListElementData buttonData in data.usedElements )
+	{
+		if ( Hud_IsSelected( buttonData.button ) )
+			Hud_SetSelected( buttonData.button, false )
+	}
+
+	UpdateSelectedState( data )
+}
+
+
+void function ListPanel_Refresh( var panel )
+{
+	ListPanelData data = GetDataForPanel( panel )
+
+	UpdateButtonElements( data, true )
+}
+
+var function ListPanel_GetButtonAtIndex( var panel, int index )
+{
+	ListPanelData data = GetDataForPanel( panel )
+	foreach ( item in data.usedElements )
+	{
+		if ( item.assignedIndex == index )
+			return item.button
+	}
+
+	return null
+}
+
+
+void function List_ScrollHandlePress( var button )
+{
+	foreach ( ListPanelData data in file.listPanels )
+	{
+		if ( !data.isActive )
+			continue
+
+		if ( data.isScrollActive )
+			continue
+
+		if ( data.scrollBarElement == null )
+			continue
+
+		UIPos scrollBarPos = REPLACEHud_GetAbsPos( data.scrollBarElement )
+		UISize scrollBarSize = REPLACEHud_GetSize( data.scrollBarElement )
+
+		vector cursorPos = GetCursorPosition()
+
+		if ( !PointInBounds( cursorPos, scrollBarPos, scrollBarSize ) )
+			continue
+
+		data.scrollListOffset = data.listOffset
+		data.scrollStartPos.x = int( cursorPos.x )
+		data.scrollStartPos.y = int( cursorPos.y )
+
+		data.isScrollActive = true
+	}
+}
+
+
+void function List_ScrollHandleRelease( var button )
+{
+	foreach ( ListPanelData data in file.listPanels )
+	{
+		data.isScrollActive = false
+		data.scrollStartPos.x = 0
+		data.scrollStartPos.y = 0
+	}
+}

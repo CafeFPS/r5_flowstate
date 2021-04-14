@@ -1,0 +1,14 @@
+global function Cl_Passives_Init
+
+struct
+{
+} file
+
+void function Cl_Passives_Init()
+{
+}
+
+
+
+
+

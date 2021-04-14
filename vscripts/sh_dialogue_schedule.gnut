@@ -1,0 +1,81 @@
+global function DialogueScheduleShared_Init
+
+
+void function DialogueScheduleShared_Init()
+{
+	array<string> priorityLowest =
+	[
+		"aichat_hotspot_window"
+		"aichat_hotspot_door"
+		"aichat_hotspot_balcony"
+		"aichat_hotspot_second_floor_window"
+		"aichat_hotspot_corner"
+		"aichat_reload"
+		"aichat_move_out"
+		"aichat_fan_out"
+	]
+
+	foreach ( string conversation in priorityLowest )
+	{
+		RegisterConversation( conversation, VO_PRIORITY_AI_CHATTER_LOWEST, VO_DEBOUNCE_TIME_AI_CHATTER_LOWEST )
+	}
+
+	array<string> priorityLow =
+	[
+		"killed_enemy_grunt"
+		"aichat_death_friendly_grunt"
+		"aichat_move_squadlead"
+		"aichat_rumor_pilot"
+	]
+
+	foreach ( string conversation in priorityLow )
+	{
+		RegisterConversation( conversation, VO_PRIORITY_AI_CHATTER_LOW, VO_DEBOUNCE_TIME_AI_CHATTER_LOW )
+	}
+
+	array<string> priorityNormal =
+	[
+		"aichat_global_chatter"
+		"aichat_squad_deplete"
+		"aichat_callout_titan"
+		"aichat_callout_pilot"
+		"aichat_callout_pilot_dev"
+		"aichat_callout_pilot_call_response"
+		"aichat_engage_pilot"
+		"aichat_address_pilot"
+		"aichat_capturing_hardpoint"
+		"aichat_captured_hardpoint"
+	]
+
+	foreach ( string conversation in priorityNormal )
+	{
+		RegisterConversation( conversation, VO_PRIORITY_AI_CHATTER, VO_DEBOUNCE_TIME_AI_CHATTER )
+	}
+
+	// higher priority
+	array<string> priorityHigh =
+	[
+		"grunt_flees_titan_building"
+		"grunt_group_flees_titan"
+		"grunt_flees_titan"
+		"ally_pilot_down"
+		"aichat_death_enemy_titan"
+		"ally_titan_down"
+		"ally_eject_fail"
+		"aichat_titan_cheer"
+		"aichat_rodeo_cheer"
+		"aichat_death_enemy_titan"
+		"aichat_killed_pilot"
+		"aichat_spot_titan_close"
+		"aichat_killed_enemy_titan"
+		"aichat_grenade_incoming"
+		"aichat_male_pilot_cloaked"
+		"aichat_female_pilot_cloaked"
+		"aichat_generic_pilot_cloaked"
+	]
+
+	foreach ( string conversation in priorityHigh )
+	{
+		RegisterConversation( conversation, VO_PRIORITY_AI_CHATTER_HIGH, VO_DEBOUNCE_TIME_AI_CHATTER_HIGH )
+	}
+}

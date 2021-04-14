@@ -1,0 +1,381 @@
+global function PlayerLeechingShared_Init
+
+global function CodeCallback_IsLeechable
+global function FindLeechAction
+global function IsLeechable
+global function GetTagForDataknife
+
+global function Leech_CanLeech
+
+#if SERVER
+	global function OnNPCLeeched
+	global function Leech_Disallow
+	global function Leech_Allow
+#endif
+
+const PLAYER_LEECH_PROMPT_ACTIVE_DIST = 96  // distance at which player can leech
+const PLAYER_LEECH_PROMPT_REQ_DOT = 0.85  // vectordot to target required for player to leech
+
+global struct LeechActionInfo
+{
+	string playerAnimation1pStart
+	string playerAnimation1pIdle
+	string playerAnimation1pEnd
+
+	string playerAnimation3pStart
+	string playerAnimation3pIdle
+	string playerAnimation3pEnd
+
+	string targetAnimation3pStart
+	string targetAnimation3pIdle
+	string targetAnimation3pEnd
+
+	vector direction
+	string leechAnimSet
+
+	bool isValid = false
+}
+
+global struct LeechData
+{
+	entity ref
+	vector playerStartOrg
+	bool success = false
+	array<entity> knives = []
+	vector targetStartPos
+	float leechTime
+	float leechStartTime
+}
+
+struct
+{
+	array<LeechActionInfo> allLeechActions
+} file
+
+void function PlayerLeechingShared_Init()
+{
+	//----------------------------------
+	// Marvin leech anims
+	//----------------------------------
+	LeechActionInfo marvin
+
+	marvin.playerAnimation1pStart = "ptpov_marvin_leech_start"
+	marvin.playerAnimation1pIdle = "ptpov_marvin_leech_idle"
+	marvin.playerAnimation1pEnd = "ptpov_marvin_leech_end"
+
+	marvin.playerAnimation3pStart = "pt_marvin_leech_start"
+	marvin.playerAnimation3pIdle = "pt_marvin_leech_idle"
+	marvin.playerAnimation3pEnd = "pt_marvin_leech_end"
+
+	marvin.targetAnimation3pStart = "mv_leech_start"
+	marvin.targetAnimation3pIdle = "mv_leech_idle"
+	marvin.targetAnimation3pEnd = "mv_leech_end"
+
+	marvin.direction = <-1,0,0>
+	marvin.leechAnimSet = "marvin"
+	marvin.isValid = true
+
+	file.allLeechActions.append( marvin )
+
+	//----------------------------------
+	// Spectre leech anims
+	//----------------------------------
+	LeechActionInfo spectre
+
+	//New anims, need to flip script to make it player relative, not target relative
+	spectre.playerAnimation1pStart = "ptpov_data_knife_spectre_leech_start"
+	spectre.playerAnimation1pIdle = "ptpov_data_knife_spectre_leech_idle"
+	spectre.playerAnimation1pEnd = "ptpov_data_knife_spectre_leech_end"
+
+	spectre.playerAnimation3pStart = "pt_data_knife_spectre_leech_start"
+	spectre.playerAnimation3pIdle = "pt_data_knife_spectre_leech_idle"
+	spectre.playerAnimation3pEnd = "pt_data_knife_spectre_leech_end"
+
+	spectre.targetAnimation3pStart = "sp_data_knife_spectre_leech_start"
+	spectre.targetAnimation3pIdle = "sp_data_knife_spectre_leech_idle"
+	spectre.targetAnimation3pEnd = "sp_data_knife_spectre_leech_end"
+
+	spectre.direction = <-1,0,0>
+	spectre.leechAnimSet = "spectre"
+	spectre.isValid = true
+	// playerRelative = true
+
+	file.allLeechActions.append( spectre )
+
+
+	//----------------------------------
+	// Reaper leech anims
+	//----------------------------------
+	LeechActionInfo reaper
+
+	reaper.playerAnimation1pStart = "ptpov_sspec_attack_powerdown_hack"
+	reaper.playerAnimation1pIdle = "ptpov_sspec_attack_powerdown_hack" 	// TODO: Put in the real one when it is in - ptpov_sspec_attack_hack_idle
+	reaper.playerAnimation1pEnd = "ptpov_sspec_attack_powerdown_hack"		// TODO: Put in the real one when it is in - ptpov_sspec_attack_hack_cancel
+
+	reaper.playerAnimation3pStart = "pt_sspec_attack_powerdown_hack"
+	reaper.playerAnimation3pIdle = "pt_sspec_attack_powerdown_hack"		// TODO: Put in the real one when it is in - pt_sspec_attack_hack_idle
+	reaper.playerAnimation3pEnd = "pt_sspec_attack_powerdown_hack"			// TODO: Put in the real one when it is in - pt_sspec_attack_hack_cancel
+
+	reaper.targetAnimation3pStart = ""
+	reaper.targetAnimation3pIdle = ""
+	reaper.targetAnimation3pEnd = ""
+
+	reaper.direction = <-1,0,0>
+	reaper.leechAnimSet = "super_spectre"
+	reaper.isValid = true
+
+	file.allLeechActions.append( reaper )
+
+
+	//----------------------------------
+	// Drone leech anims
+	//----------------------------------
+	LeechActionInfo drone
+
+	drone.playerAnimation1pStart = "ptpov_data_knife_drone_start"
+	drone.playerAnimation1pIdle = "ptpov_data_knife_drone_idle"
+	drone.playerAnimation1pEnd = "ptpov_data_knife_drone_end"
+
+	drone.playerAnimation3pStart = "pt_data_knife_drone_start"
+	drone.playerAnimation3pIdle = "pt_data_knife_drone_idle"
+	drone.playerAnimation3pEnd = "pt_data_knife_drone_end"
+
+	drone.targetAnimation3pStart = ""
+	drone.targetAnimation3pIdle = ""
+	drone.targetAnimation3pEnd = ""
+
+	//drone.targetAnimation3pStart = "dk_data_knife_drone_start"
+	//drone.targetAnimation3pIdle = "dk_data_knife_drone_idle"
+	//drone.targetAnimation3pEnd = "dk_data_knife_drone_end"
+
+	drone.direction = <-1,0,0>
+	drone.leechAnimSet = "flyingdrone"
+	drone.isValid = true
+
+	file.allLeechActions.append( drone )
+
+
+	//----------------------------------
+	// Gunship leech anims
+	//----------------------------------
+	LeechActionInfo gunship
+
+	gunship.playerAnimation1pStart = "ptpov_data_knife_drone_start"
+	gunship.playerAnimation1pIdle = "ptpov_data_knife_drone_idle"
+	gunship.playerAnimation1pEnd = "ptpov_data_knife_drone_end"
+
+	gunship.playerAnimation3pStart = "pt_data_knife_drone_start"
+	gunship.playerAnimation3pIdle = "pt_data_knife_drone_idle"
+	gunship.playerAnimation3pEnd = "pt_data_knife_drone_end"
+
+	gunship.targetAnimation3pStart = ""
+	gunship.targetAnimation3pIdle = ""
+	gunship.targetAnimation3pEnd = ""
+
+	//gunship.targetAnimation3pStart = "dk_data_knife_drone_start"
+	//gunship.targetAnimation3pIdle = "dk_data_knife_drone_idle"
+	//gunship.targetAnimation3pEnd = "dk_data_knife_drone_end"
+
+	gunship.direction = <-1,0,0>
+	gunship.leechAnimSet = "vehicle"		// TODO: Change to "gunship" when we have gunship type
+	gunship.isValid = true
+
+	file.allLeechActions.append( gunship )
+}
+
+
+bool function CodeCallback_IsLeechable( entity player, entity target )
+{
+	PerfStart( PerfIndexShared.CB_IsLeechable )
+
+	bool rv = true
+
+	LeechActionInfo action = FindLeechAction( player, target )
+
+	if ( rv && !action.isValid )
+	{
+		rv = false
+	}
+
+	if ( rv && !PlayerCanLeechTarget( player, target ) )
+	{
+		rv = false
+	}
+
+	PerfEnd( PerfIndexShared.CB_IsLeechable )
+
+	return rv
+}
+
+
+bool function TargetHasLeechAction( entity target )
+{
+	if ( target.IsNPC() )
+		return target.AISetting_LeechAnimSet() != ""
+
+	return false
+}
+
+
+LeechActionInfo function FindLeechAction( entity player, entity target )
+{
+	Assert( IsValid( player ) )
+
+	LeechActionInfo invalidAction
+
+	if ( !IsValid( target ) )
+		return invalidAction
+
+	if ( !TargetHasLeechAction( target ) )
+		return invalidAction
+
+	vector attackerPos = player.GetOrigin()
+	vector targetPos = target.GetOrigin()
+
+	vector absTargetToPlayerDir
+	if ( attackerPos == targetPos )
+		absTargetToPlayerDir = <1,0,0>
+	else
+		absTargetToPlayerDir = Normalize( attackerPos - targetPos )
+
+	vector relTargetToPlayerDir = CalcRelativeVector( <0, target.GetAngles().y, 0>, absTargetToPlayerDir )
+
+	LeechActionInfo bestAction = invalidAction
+	float bestDot = -2 // 0.25 Leech from either side
+
+	foreach ( action in file.allLeechActions )
+	{
+		if ( action.leechAnimSet != target.AISetting_LeechAnimSet() )
+			continue
+
+		float dot = relTargetToPlayerDir.Dot( action.direction )
+		if ( dot > bestDot )
+		{
+			bestAction = action
+			bestDot = dot
+		}
+	}
+
+	return bestAction
+}
+//////////////////////////////////////////////////////////////////////////////////
+bool function PlayerCanLeechTarget( entity player, entity target )
+{
+	if ( !Leech_CanLeech( player ) )
+		return false
+
+	if ( !IsLeechable( target ) )
+	{
+//		printt( "target " + target + " is unleechable" )
+		return false
+	}
+
+	if ( !IsAlive( target ) )
+		return false
+
+	//Disable leeching if either entity is not on ground (unless it's an air drone )
+	if ( !player.IsOnGround() && !LeechTargetIsAirborne( target ) ) //TODO: Long run probably want to do something more sophisticated like if player is in air, play animation relative to spectre.
+		return false
+
+	if ( !target.Anim_IsActive() && !target.IsOnGround() && !LeechTargetIsAirborne( target ) )
+		return false
+
+	if ( !CheckVerticallyCloseEnough( player, target ) )
+		return false
+
+	return true
+}
+
+bool function Leech_CanLeech( entity player )
+{
+	// This is an ugly hack since we are still using network vars.
+	// Should be fixed when we get a code flag
+	#if CLIENT
+	if ( !level.clientScriptInitialized )
+		return false
+	#endif
+
+	return player.GetPlayerNetBool( "playerAllowedToLeech" )
+}
+
+#if SERVER
+void function Leech_Disallow( entity player )
+{
+	player.SetPlayerNetBool( "playerAllowedToLeech", false )
+}
+
+void function Leech_Allow( entity player )
+{
+	player.SetPlayerNetBool( "playerAllowedToLeech", true )
+}
+#endif
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//Also copy pasted from melee scripts
+bool function CheckVerticallyCloseEnough( entity attacker, entity target )
+{
+	//Currently we don't care about air drones because hacking is only available when rodeoing
+	if ( LeechTargetIsAirborne( target ) )
+		return true
+
+	vector attackerOrigin = attacker.GetOrigin()
+	vector targetOrigin = target.GetOrigin()
+
+	float verticalDistance = fabs( attackerOrigin.z - targetOrigin.z )
+
+	Assert( attacker.IsHuman() )
+	float halfHeight = 30.0
+
+	//printt( "vertical distance: " + verticalDistance )
+	return verticalDistance < halfHeight
+}
+//////////////////////////////////////////////////////////////////////////////////
+bool function LeechTargetIsAirborne( entity npc )
+{
+	return npc.AISetting_MaxFlyingSpeed() > 0
+}
+//////////////////////////////////////////////////////////////////////////////////
+bool function IsLeechable( entity ent )
+{
+	if ( !IsValid_ThisFrame( ent ) )
+		return false
+
+	if ( ent.ContextAction_IsActive() )
+		return false
+
+	return Leech_IsLeechable( ent )
+}
+///////////////////////////////////////////////////////////////////////////////
+string function GetTagForDataknife( entity target )
+{
+	string tag = target.AISetting_LeechDataKnifeTag()
+
+	if ( tag == "" )
+	{
+		// move these to base_animsets
+		tag = "PROPGUN"
+	}
+
+	return tag
+}
+///////////////////////////////////////////////////////////////////////////////////
+// Run after successful leech
+#if SERVER
+void function OnNPCLeeched( entity npc, entity player )
+{
+	if ( !IsServer() )
+		return
+
+	if ( !IsValid( npc ) )
+		return
+
+	// DEPRECATED- there aren't any enemy types that are using the "onLeechFuncName" setting -slayback
+	/*
+	void functionref(entity, entity) onLeechFunc = npc.AISetting_OnLeechFunc()
+
+	if ( onLeechFunc )
+		onLeechFunc( npc, player )
+	*/
+}
+#endif //SERVER

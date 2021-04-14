@@ -1,0 +1,2269 @@
+
+#if SERVER
+global function DropshipBringDummyBack
+
+const asset CHARACTER_BLOODHOUND 	= $"settings/player/mp/pilot_survival_tracker.rpak"
+const asset CHARACTER_PATHFINDER 	= $"settings/player/mp/pilot_survival_grapple.rpak"
+const asset TRAINING_DUMMY_MODEL 	= $"mdl/humans/class/medium/pilot_medium_generic.rmdl"
+const asset REVIVE_CHAMBER_MODEL 	= $"mdl/Robots/mobile_hardpoint/mobile_hardpoint_static.rmdl"
+const asset RESPAWN_DROPSHIP_MODEL 	= $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
+
+const string LOOT_NAME_FRAG = "mp_weapon_frag_grenade"
+const string LOOT_NAME_THERMITE = "mp_weapon_thermite_grenade"
+const string LOOT_NAME_HEALTH_KIT = "health_pickup_health_small"
+const string LOOT_NAME_WEAPON = "mp_weapon_rspn101"
+
+const asset CHARACTER_ASSET_LIFELINE = $"settings/itemflav/character/lifeline.rpak"
+
+const float TRAINING_RETURN_TO_MENU_DURATION = 20.0
+#endif
+
+#if CLIENT
+global function ServerCallback_MonitorCommsMenuUsage
+global function ServerCallback_SetCommsDialogueEnabled
+#endif
+
+const string RESPAWN_CHAMBER_TARGET_NAME = "TrainingRespawnChamber"
+global const string DEATH_BOX_TARGETNAME_TRAINING = "player_death_box_training"
+
+global function Tutorial_TryAction_OpenLootBin1
+global function Tutorial_TryAction_OpenLootBin2
+global function Tutorial_TryAction_TakeFrag
+global function Tutorial_TryAction_TakeThermite
+global function Tutorial_TryAction_TakeHealth
+global function Tutorial_TryAction_SwapGrenade
+global function Tutorial_TryAction_ThrewGrenade
+global function Tutorial_TryAction_UseHealth
+global function Tutorial_TryAction_PickedUpWeapon
+global function Tutorial_TryAction_PickedUpAmmo
+global function Tutorial_TryAction_ShotTrainingTargets
+global function Tutorial_TryAction_SecondWeapon
+global function Tutorial_TryAction_ThirdWeapon
+global function Tutorial_TryAction_PingEnemyLocation
+global function Tutorial_TryAction_PingWeapon
+global function Tutorial_TryAction_PingAmmo
+global function Tutorial_TryAction_PingMenu
+global function Tutorial_TryAction_OrdnanceMenu
+global function Tutorial_TryAction_Pathfinder
+global function Tutorial_TryAction_ReviveDummy
+global function Tutorial_TryAction_HealDummy
+global function Tutorial_TryAction_PickUpDNA
+global function Tutorial_TryAction_UsedRespawnChamber
+global function Tutorial_TryAction_UsedUltimate
+
+global function ShSurvivalTraining_Init
+
+struct PlayerTrainingData
+{
+	entity trainingNPC
+	entity trainingDummy
+	entity trainingDummyNode
+	entity npcNodeBloodhound1
+	entity npcNodeBloodhound2
+	entity npcNodePathfinder1
+	entity lootBin1
+	entity lootBin2
+	bool openedLootBin1
+	bool openedLootBin2
+	bool pickedUpFrag
+	bool pickedUpThermite
+	bool pickedUpHealth
+	bool swappedGrenade
+	bool usedHealth
+	bool usedHealthDialoguePlayed
+	bool threwGrenade
+	bool threwGrenadeDialoguePlayed
+	bool shotTrainingTargets
+	string firstPrimary1
+	string firstPrimary2
+	bool pingedEnemyTarget
+	bool openedOrdnanceMenu
+	bool openedPingMenu
+	bool pingedWeapon
+	bool pingedAmmo
+	bool foundPathfinder
+	bool revivedDummy
+	bool healedDummy
+	bool healDroneTooFarDialoguePlayed
+	entity deathBox
+	bool pickedUpDNA
+	bool usedRespawnChamber
+	entity respawnChamber
+	entity respawnChamberRadar
+	bool respawnChamberFirstUseDialoguePlayed
+	entity dropship
+	bool usedUltimate
+
+	bool gun_range_enabled
+
+	bool completed_movement
+	bool completed_ordnance
+	bool completed_weapons
+	bool completed_ping
+	bool completed_pathfinder
+}
+
+struct
+{
+	table<entity,PlayerTrainingData> playerTrainingData
+	table<entity,entity> playerUltimateDropPods
+} file
+
+void function ShSurvivalTraining_Init()
+{
+	if ( !IsSurvivalTraining() )
+		return
+
+	RegisterCSVDialogue( $"datatable/dialogue/survival_training.rpak" )
+
+	AddCallback_EntitiesDidLoad( Training_EntitiesDidLoad )
+
+	#if SERVER
+		RegisterSignal( "StopReplenishGrenadesAndHealth" )
+		RegisterSignal( "StopReplenishLightAmmo" )
+		RegisterSignal( "TrainingNPCAnim" )
+
+		PrecacheModel( TRAINING_DUMMY_MODEL )
+		PrecacheModel( REVIVE_CHAMBER_MODEL )
+		PrecacheModel( RESPAWN_DROPSHIP_MODEL )
+
+		PrecacheParticleSystem( $"P_pilot_slide_dust" )
+
+		AddCallback_OnClientConnected( OnPlayerConnected )
+		AddCallback_OnClientDisconnected( OnPlayerDisconnected )
+		Survival_AddCallback_OnAirdropLaunched( OnAirdropLaunched )
+		AddCallback_OnPlayerRespawned( Training_OnPlayerRespawned )
+		AddPingCallbackForType( ePingType.ENEMY_GENERAL, OnEnemyLocationPinged )
+		AddPingCallbackForType( ePingType.LOOT, OnLootPinged )
+
+		AddClientCommandCallback( "TrainingUsedCommsMenu", ClientCommand_UsedCommsMenu )
+
+		SurvivalCommentary_SetBattleChatterEnabled( false )
+
+		FlagInit( "DisableLootDrops", true )
+	#endif
+
+	#if CLIENT
+		AddLocalPlayerFunc( Training_AddPlayer )
+		AddCallback_OnClientScriptInit( OnLocalClientConnected )
+		AddTargetNameCreateCallback( RESPAWN_CHAMBER_TARGET_NAME, RespawnChamberCreated )
+		RegisterNetworkedVariableChangeCallback_time( "TrainingEndTime", TrainingEndTimeChanged )
+		SetCommsDialogueEnabled( false )
+
+		AddCreateCallback( "prop_dynamic", TrainingDeathBoxCreated )
+	#endif
+}
+
+#if CLIENT
+void function RespawnChamberCreated( entity ent )
+{
+	printt( "Training: RespawnChamberCreated", ent )
+	AddCallback_OnUseEntity( ent, RespawnChamberOnUse )
+}
+#endif
+
+void function Training_EntitiesDidLoad()
+{
+	printt( "Training: EntitiesDidLoad" )
+}
+
+#if SERVER
+void function OnPlayerConnected( entity player )
+{
+	printt( "Training: OnPlayerConnected", player, player.GetTeam() )
+
+	// Init player training data
+	Assert( !( player in file.playerTrainingData ) )
+	PlayerTrainingData data
+	Assert( !( player in file.playerTrainingData ) )
+	file.playerTrainingData[ player ] <- data
+}
+
+void function OnPlayerDisconnected( entity player )
+{
+	printt( "Training: OnPlayerDisconnected" )
+
+	// Clean up their entities
+	if ( !( player in file.playerTrainingData ) )
+		return
+
+	PlayerTrainingData data = file.playerTrainingData[ player ]
+
+	if ( IsValid( data.trainingNPC ) )
+		data.trainingNPC.Destroy()
+	if ( IsValid( data.trainingDummy ) )
+		data.trainingDummy.Destroy()
+	if ( IsValid( data.trainingDummyNode ) )
+		data.trainingDummyNode.Destroy()
+	if ( IsValid( data.npcNodeBloodhound1 ) )
+		data.npcNodeBloodhound1.Destroy()
+	if ( IsValid( data.npcNodeBloodhound2 ) )
+		data.npcNodeBloodhound2.Destroy()
+	if ( IsValid( data.npcNodePathfinder1 ) )
+		data.npcNodePathfinder1.Destroy()
+	if ( IsValid( data.lootBin1 ) )
+		data.lootBin1.Destroy()
+	if ( IsValid( data.lootBin2 ) )
+		data.lootBin2.Destroy()
+	if ( IsValid( data.deathBox ) )
+		data.deathBox.Destroy()
+	if ( IsValid( data.respawnChamber ) )
+		data.respawnChamber.Destroy()
+	if ( IsValid( data.respawnChamberRadar ) )
+		data.respawnChamberRadar.Destroy()
+	if ( IsValid( data.dropship ) )
+		data.dropship.Destroy()
+
+	if ( ( player in file.playerUltimateDropPods ) && IsValid( file.playerUltimateDropPods[ player ] ) )
+	{
+		file.playerUltimateDropPods[ player ].Destroy()
+		delete file.playerUltimateDropPods[ player ]
+	}
+
+	delete file.playerTrainingData[ player ]
+}
+
+void function Training_OnPlayerRespawned( entity player )
+{
+	Assert( IsSurvivalTraining(), "Training_OnPlayerRespawned should only be running in training!" )
+
+	if ( player.IsBot() )
+		return
+
+	printt( "Training: Training_OnPlayerRespawned", player )
+
+	RemoveStagingAreaEntsForRealm( GetPlayerStagingSquadRealm( player ) )
+	PlayerTrainingData data = file.playerTrainingData[ player ]
+	data.gun_range_enabled = false
+
+	thread PlayerStartsTraining( player )
+}
+
+void function PlayerStartsTraining( entity player )
+{
+	// Training player always spawns at the back of the center tunnel
+	player.SetOrigin( < 26328, -6235, -27540 > )
+	player.SetAngles( < 0, 0, 0 > )
+
+	bool skipToPing = GetBugReproNum() == 123
+
+	bool skipToPathfinder = GetBugReproNum() == 12345
+	if ( skipToPathfinder )
+	{
+		player.SetOrigin( < 33215, -7036, -28916 > )
+		player.SetAngles( < 0, -90, 0 > )
+		player.SetPlayerNetBool( "pingEnabled", true )
+	}
+
+	PlayerMatchState_Set( player, ePlayerMatchState.TRAINING )
+	player.SetPersistentVar( "trainingCompleted", 1 )
+	PIN_Training( player, "start", "training_start" )
+
+	player.SetPlayerNetBool( "pingEnabled", false )
+
+	// Force player to be Lifeline for training
+	ItemFlavor lifeLineCharacter = GetItemFlavorByAsset( CHARACTER_ASSET_LIFELINE )
+	SetItemFlavorLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), lifeLineCharacter )
+
+	PlayerTrainingData data = file.playerTrainingData[ player ]
+
+	// Disable inventory for now (gets enabled later)
+	//Survival_SetInventoryEnabled( player, false )
+
+	EndSignal( player, "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( player, data )
+		{
+			if ( IsValid( data.deathBox ) )
+				data.deathBox.Destroy()
+
+			if ( IsValid( data.lootBin1 ) )
+				data.lootBin1.Destroy()
+
+			if ( IsValid( data.lootBin2 ) )
+				data.lootBin2.Destroy()
+
+			if ( IsValid( data.trainingDummy ) )
+				data.trainingDummy.Destroy()
+
+			if ( IsValid( data.trainingDummyNode ) )
+				data.trainingDummyNode.Destroy()
+
+			if ( IsValid( data.npcNodeBloodhound1 ) )
+				data.npcNodeBloodhound1.Destroy()
+
+			if ( IsValid( data.npcNodeBloodhound2 ) )
+				data.npcNodeBloodhound2.Destroy()
+
+			if ( IsValid( data.npcNodePathfinder1 ) )
+				data.npcNodePathfinder1.Destroy()
+
+			if ( IsValid( data.trainingNPC ) )
+				data.trainingNPC.Destroy()
+
+			if ( IsValid( data.respawnChamberRadar ) )
+				data.respawnChamberRadar.Destroy()
+
+			if ( IsValid( data.respawnChamber ) )
+				data.respawnChamber.Destroy()
+
+			if ( IsValid( player ) )
+			{
+				PlayerTrainingData newData
+				newData.completed_movement = data.completed_movement
+				newData.completed_ordnance = data.completed_ordnance
+				newData.completed_weapons = data.completed_weapons
+				newData.completed_ping = data.completed_ping
+				newData.completed_pathfinder = data.completed_pathfinder
+
+				file.playerTrainingData[ player ] <- newData
+			}
+		}
+	)
+
+	WaitFrame()
+
+	ResetPlayerInventory( player )
+	data.openedLootBin1 = false
+	data.openedLootBin2 = false
+	data.pickedUpFrag = false
+	data.pickedUpThermite = false
+	data.pickedUpHealth = false
+	data.swappedGrenade = false
+	data.usedHealth = false
+	data.usedHealthDialoguePlayed = false
+	data.threwGrenade = false
+	data.threwGrenadeDialoguePlayed = false
+	data.shotTrainingTargets = false
+	data.pingedEnemyTarget = false
+	data.openedOrdnanceMenu = false
+	data.openedPingMenu = false
+	data.pingedWeapon = false
+	data.pingedAmmo = false
+
+	// Spawn Loot Bin ( Ordnance )
+	data.lootBin1 = SpawnTrainingLootBin( player, < 30739, -6937, -29162 >, < 0, 90, 0 >, [ LOOT_NAME_HEALTH_KIT, LOOT_NAME_THERMITE, LOOT_NAME_FRAG ] )
+
+	// Spawn Loot Bin ( Weapon & Ammo )
+	LootData ammoLootData = SURVIVAL_Loot_GetLootDataByRef( LOOT_NAME_WEAPON )
+	data.lootBin2 = SpawnTrainingLootBin( player, < 30952, -6937,-29162 >, < 0, 90, 0 >, [ LOOT_NAME_WEAPON, ammoLootData.ammoType, ammoLootData.ammoType ] ) //< 30954, -6242, -29164 >, < 0, 90, 0 >
+
+	player.SetHealth( 75 )
+	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+
+	#if DEV
+	if ( GetBugReproNum() == 2020 )
+	{
+		thread SlideDownHillAnimRecord( player )
+		return
+	}
+	#endif
+
+	if ( !data.completed_movement && !skipToPathfinder && !skipToPing )
+	{
+		waitthread StartTraining_Movement( player )
+		data.completed_movement = true
+		PIN_Training( player, "complete", "training_movement" )
+	}
+
+	if ( !data.completed_ordnance && !skipToPathfinder && !skipToPing )
+	{
+		waitthread StartTraining_Loot( player )
+		data.completed_ordnance = true
+		PIN_Training( player, "complete", "training_loot" )
+	}
+
+	if ( !data.completed_weapons && !skipToPathfinder && !skipToPing )
+	{
+		waitthread StartTraining_Weapons( player )
+		PIN_Training( player, "complete", "training_weapons" )
+		data.completed_weapons = true
+	}
+
+	if ( !data.gun_range_enabled )
+	{
+		data.lootBin1.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+		data.lootBin2.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+		CreateWeaponRacksForRealm( GetPlayerStagingSquadRealm( player ) )
+		CreateGunRangeTargetsForRealm( GetPlayerStagingSquadRealm( player ) )
+	}
+
+	if ( !data.completed_ping && !skipToPathfinder )
+	{
+		waitthread StartTraining_Ping( player )
+		PIN_Training( player, "complete", "training_ping" )
+		data.completed_ping = true
+	}
+
+	if ( !data.completed_pathfinder )
+	{
+		waitthread StartTraining_Revive( player )
+		PIN_Training( player, "complete", "training_revive" )
+
+		waitthread StartTraining_Respawn( player )
+		PIN_Training( player, "complete", "training_respawn" )
+
+		waitthread StartTraining_Ultimate( player )
+		PIN_Training( player, "complete", "training_ultimate" )
+
+		data.completed_pathfinder = true
+	}
+
+	PIN_Training( player, "complete", "training_complete" )
+	player.SetPlayerNetTime( "TrainingEndTime", Time() + TRAINING_RETURN_TO_MENU_DURATION )
+}
+
+entity function SpawnTrainingLootBin( entity player, vector origin, vector angles, array<string> lootRefs )
+{
+	entity lootBin = CreateCustomLootBin( origin, angles, lootRefs )
+	lootBin.RemoveFromAllRealms()
+	lootBin.AddToRealm( GetPlayerStagingSquadRealm( player ) )
+	lootBin.UnsetUsable()
+	Highlight_SetFriendlyHighlight( lootBin, "sp_objective_entity" )
+	Highlight_SetNeutralHighlight( lootBin, "sp_objective_entity" )
+	Highlight_ClearFriendlyHighlight( lootBin )
+	Highlight_ClearNeutralHighlight( lootBin )
+	return lootBin
+}
+
+#endif
+
+#if CLIENT
+void function Training_AddPlayer( entity player )
+{
+	printt( "Training: OnLocalPlayerSpawned", player )
+}
+
+void function OnLocalClientConnected( entity player )
+{
+	printt( "Training: OnLocalClientConnected", player )
+}
+
+void function TrainingEndTimeChanged( entity player, float old, float new, bool actuallyChanged )
+{
+	if ( actuallyChanged && new > 0 )
+	{
+		var rui = CreateFullscreenRui( $"ui/training_end_countdown.rpak" )
+		RuiSetGameTime( rui, "quitTime", new )
+		thread QuitToLobbyDelayed( player, new )
+	}
+}
+
+void function QuitToLobbyDelayed( entity player, float time )
+{
+	EndSignal( player, "OnDestroy" )
+	wait max( 0, time - Time() )
+	ScreenFade( player, 0, 0, 0, 255, 1.5, 5.0, FFADE_OUT )
+	wait 2.0
+	player.ClientCommand( "LeaveMatch" )
+}
+#endif
+
+
+#if SERVER
+
+entity function GetTrainingNPCForPlayer( entity player, asset characterSettingsAsset )
+{
+	Assert( player in file.playerTrainingData )
+
+	asset modelName = GetGlobalSettingsAsset( characterSettingsAsset, "bodyModel" )
+	entity npc = file.playerTrainingData[ player ].trainingNPC
+
+	if ( IsValid( npc ) && npc.GetModelName() == modelName )
+		return npc
+
+	if ( IsValid( npc ) )
+	{
+		npc.SetModel( modelName )
+		return npc
+	}
+
+	npc = CreatePropScript( modelName, < 0, 0, 0 >, < 0, 0, 0 >, SOLID_BBOX, 99999 )
+	npc.Solid()
+
+	if ( characterSettingsAsset == CHARACTER_BLOODHOUND )
+		npc.SetFootstepType( "bloodhound" )
+	else if ( characterSettingsAsset == CHARACTER_PATHFINDER )
+		npc.SetFootstepType( "pathfinder" )
+
+	int squadRealm = GetPlayerStagingSquadRealm( player )
+	npc.RemoveFromAllRealms()
+	npc.AddToRealm( squadRealm )
+
+	SetTeam( npc, player.GetTeam() )
+	Highlight_SetFriendlyHighlight( npc, "sp_friendly_hero" )
+
+	file.playerTrainingData[ player ].trainingNPC = npc
+
+	return npc
+}
+
+entity function GetTrainingDummyForPlayer( entity player )
+{
+	Assert( player in file.playerTrainingData )
+
+	entity dummy = file.playerTrainingData[ player ].trainingDummy
+
+	if ( IsValid( dummy ) )
+		return dummy
+
+	dummy = CreatePropScript( TRAINING_DUMMY_MODEL, < 0, 0, 0 >, < 0, 0, 0 >, SOLID_BBOX, 99999 )
+	//dummy = CreatePropDynamic( TRAINING_DUMMY_MODEL, < 0, 0, 0 >, < 0, 0, 0 >, SOLID_BBOX, 99999 )
+	dummy.Solid()
+	dummy.SetSkin(1) //red
+	dummy.SetScriptName( "survival_training_target_dummy" )
+	dummy.SetFootstepType( "bloodhound" )
+
+	int squadRealm = GetPlayerStagingSquadRealm( player )
+	dummy.RemoveFromAllRealms()
+	dummy.AddToRealm( squadRealm )
+
+	SetTeam( dummy, player.GetTeam() )
+	Highlight_SetFriendlyHighlight( dummy, "sp_friendly_hero" )
+
+	file.playerTrainingData[ player ].trainingDummy = dummy
+
+	return dummy
+}
+
+entity function GetTrainingNPCNode( entity player, string nodeName )
+{
+	switch( nodeName )
+	{
+		case "trainingDummyNode":
+			if ( IsValid( file.playerTrainingData[ player ].trainingDummyNode ) )
+				return file.playerTrainingData[ player ].trainingDummyNode
+			entity node = CreateScriptMover( < 33262, -7828, -28916 >, < 0, 115, 0 > )
+			file.playerTrainingData[ player ].trainingDummyNode = node
+			return node
+
+		case "npcNodeBloodhound1":
+			if ( IsValid( file.playerTrainingData[ player ].npcNodeBloodhound1 ) )
+				return file.playerTrainingData[ player ].npcNodeBloodhound1
+			entity node = CreateScriptMover( < 27260, -6238, -27548 >, < 0, -90, 0 > )
+			file.playerTrainingData[ player ].npcNodeBloodhound1 = node
+			return node
+
+		case "npcNodeBloodhound2":
+			if ( IsValid( file.playerTrainingData[ player ].npcNodeBloodhound2 ) )
+				return file.playerTrainingData[ player ].npcNodeBloodhound2
+			entity node = CreateScriptMover( < 30944, -6910, -29164 >, < 0, 90, 0 > )
+			file.playerTrainingData[ player ].npcNodeBloodhound2 = node
+			return node
+
+		case "npcNodePathfinder1":
+			if ( IsValid( file.playerTrainingData[ player ].npcNodePathfinder1 ) )
+				return file.playerTrainingData[ player ].npcNodePathfinder1
+			entity node = CreateScriptMover( < 33119, -7765, -28916 >, < 0, 0, 0 > )
+			file.playerTrainingData[ player ].npcNodePathfinder1 = node
+			return node
+
+		default:
+			Assert(0, "Invalid value for nodeName " + nodeName )
+	}
+
+	return null
+}
+
+void function TrainingNPCAnim( entity npc, entity node, string anim, string animNext = "" )
+{
+	Signal( npc, "TrainingNPCAnim" )
+	EndSignal( npc, "TrainingNPCAnim" )
+	EndSignal( npc, "OnDeath" )
+	EndSignal( npc, "OnDestroy" )
+
+	waitthread PlayAnim( npc, anim, node, null, 0.5 )
+
+	if ( animNext != "" )
+		thread PlayAnim( npc, animNext, node, null, 0.5 )
+}
+
+void function TrainingNPCRecordedAnim( entity npc, asset animAsset, asset animAssetNext = $"" )
+{
+	Signal( npc, "TrainingNPCAnim" )
+	EndSignal( npc, "TrainingNPCAnim" )
+	EndSignal( npc, "OnDeath" )
+	EndSignal( npc, "OnDestroy" )
+
+	var anim = LoadRecordedAnimation( animAsset )
+	npc.PlayRecordedAnimation( anim, <0,0,0>, <0,0,0>, 0.5 )
+	wait GetRecordedAnimationDuration( anim )
+
+	if ( animAssetNext == $"" )
+		return
+
+	anim = LoadRecordedAnimation( animAssetNext )
+	npc.PlayRecordedAnimation( anim, <0,0,0>, <0,0,0>, 0.5 )
+	//wait GetRecordedAnimationDuration( anim )
+}
+
+#if DEV
+void function SlideDownHillAnimRecord( entity player )
+{
+	wait 1.0
+
+	entity npc_top = GetTrainingNPCForPlayer( player, CHARACTER_BLOODHOUND )
+	npc_top.NotSolid()
+	entity node_top = GetTrainingNPCNode( player, "npcNodeBloodhound1" )
+	thread PlayAnim( npc_top, "mp_pt_medium_training_blood_intro_end", node_top, null, 0.5 )
+	//npc_top.Anim_SetPlaybackRate( 0.0 )
+	//npc_top.Anim_SetInitialTime( 0.0 )
+	//npc_top.SetCycle( 0.0 )
+	file.playerTrainingData[ player ].trainingNPC = null
+
+	entity npc_bottom = GetTrainingNPCForPlayer( player, CHARACTER_BLOODHOUND )
+	npc_bottom.NotSolid()
+	entity node_bottom = GetTrainingNPCNode( player, "npcNodeBloodhound2" )
+	thread PlayAnim( npc_bottom, "mp_pt_medium_training_blood_transA", node_bottom, null, 0.5 )
+	npc_bottom.Anim_SetPlaybackRate( 0.0 )
+	npc_bottom.Anim_SetInitialTime( 0.0 )
+	npc_bottom.SetCycle( 0.0 )
+}
+#endif
+
+/*
+███╗   ███╗ ██████╗ ██╗   ██╗███████╗███╗   ███╗███████╗███╗   ██╗████████╗
+████╗ ████║██╔═══██╗██║   ██║██╔════╝████╗ ████║██╔════╝████╗  ██║╚══██╔══╝
+██╔████╔██║██║   ██║██║   ██║█████╗  ██╔████╔██║█████╗  ██╔██╗ ██║   ██║
+██║╚██╔╝██║██║   ██║╚██╗ ██╔╝██╔══╝  ██║╚██╔╝██║██╔══╝  ██║╚██╗██║   ██║
+██║ ╚═╝ ██║╚██████╔╝ ╚████╔╝ ███████╗██║ ╚═╝ ██║███████╗██║ ╚████║   ██║
+╚═╝     ╚═╝ ╚═════╝   ╚═══╝  ╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝
+*/
+
+void function StartTraining_Movement( entity player )
+{
+	EndSignal( player, "OnDeath" )
+
+	entity npc = GetTrainingNPCForPlayer( player, CHARACTER_BLOODHOUND )
+	entity node = GetTrainingNPCNode( player, "npcNodeBloodhound1" )
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_intro_start_idle", "mp_pt_medium_training_blood_intro_start_idle" )
+
+	float startTime = Time() + 3.0
+	while( true )
+	{
+		if ( Time() >= startTime )
+			break
+		if ( Distance( npc.GetOrigin(), player.GetOrigin() ) <= 700 )
+			break
+		WaitFrame()
+	}
+
+	// Welcome to Apex Legends
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_intro", "mp_pt_medium_training_blood_intro_idle" )
+	wait 2.5
+	waitthread PlayDialogueForPlayer( "Training_Welcome", player, npc )
+
+	// I am Bloth Hoondr... you can call me bloodhound.
+	waitthread PlayDialogueForPlayer( "Training_Welcome2", player, npc )
+
+	// Basic Movement Checklist
+	SetTurorialContext( player, eTutorialContext.MOVEMENT )
+
+	// Let's start with basic movement. Complete the checklist on your HUD and then we'll get to the real stuff.
+	waitthread PlayDialogueForPlayer( "Training_Movement", player, npc )
+
+	while( !IsTutorialContextCompleted( player, eTutorialContext.MOVEMENT ) )
+		wait 1.0
+
+	SetTurorialContext( player, eTutorialContext.NONE )
+
+	// Follow me. Sliding down hills will let you travel faster. Speed's important inside the Ring.
+	StopDialogueForPlayer( player )
+	thread PlayDialogueForPlayer( "Training_GoToLoot", player, npc )
+	waitthread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_intro_end" )
+
+	thread SlideDownHillEffects( npc, player )
+	waitthread TrainingNPCRecordedAnim( npc, $"anim_recording/survival_training_cave_to_platform.rpak" )
+}
+
+void function SlideDownHillEffects( entity npc, entity player )
+{
+	EndSignal( npc, "OnDestroy" )
+
+	wait 1.5
+
+	EmitSoundOnEntityOnlyToPlayer( npc, player, "bloodhound_slide_start_sand_3p" )
+	entity dust = PlayFXOnEntity( $"P_pilot_slide_dust", npc )
+
+	wait 5.0
+
+	if ( IsValid( dust ) )
+		dust.Destroy()
+
+	StopSoundOnEntity( npc, "bloodhound_slide_start_sand_3p" )
+	EmitSoundOnEntityOnlyToPlayer( npc, player, "bloodhound_slide_stop_sand_3p" )
+}
+
+/*
+ ██████╗ ██████╗ ██████╗ ███╗   ██╗ █████╗ ███╗   ██╗ ██████╗███████╗        ██╗    ██╗  ██╗███████╗ █████╗ ██╗  ████████╗██╗  ██╗    ██╗  ██╗██╗████████╗
+██╔═══██╗██╔══██╗██╔══██╗████╗  ██║██╔══██╗████╗  ██║██╔════╝██╔════╝       ██╔╝    ██║  ██║██╔════╝██╔══██╗██║  ╚══██╔══╝██║  ██║    ██║ ██╔╝██║╚══██╔══╝
+██║   ██║██████╔╝██║  ██║██╔██╗ ██║███████║██╔██╗ ██║██║     █████╗        ██╔╝     ███████║█████╗  ███████║██║     ██║   ███████║    █████╔╝ ██║   ██║
+██║   ██║██╔══██╗██║  ██║██║╚██╗██║██╔══██║██║╚██╗██║██║     ██╔══╝       ██╔╝      ██╔══██║██╔══╝  ██╔══██║██║     ██║   ██╔══██║    ██╔═██╗ ██║   ██║
+╚██████╔╝██║  ██║██████╔╝██║ ╚████║██║  ██║██║ ╚████║╚██████╗███████╗    ██╔╝       ██║  ██║███████╗██║  ██║███████╗██║   ██║  ██║    ██║  ██╗██║   ██║
+ ╚═════╝ ╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝╚══════╝    ╚═╝        ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚══════╝╚═╝   ╚═╝  ╚═╝    ╚═╝  ╚═╝╚═╝   ╚═╝
+*/
+
+void function StartTraining_Loot( entity player )
+{
+	EndSignal( player, "OnDeath" )
+
+	entity npc = GetTrainingNPCForPlayer( player, CHARACTER_BLOODHOUND )
+	entity node = GetTrainingNPCNode( player, "npcNodeBloodhound2" )
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_transA", "mp_pt_medium_training_blood_idle_A" )
+
+	// Wait for player to get close
+	entity wp = CreateWaypoint_Ping_Location( player, ePingType.LOCATION_TRAINING, null, npc.GetOrigin(), -1, true )
+
+	// Remember you start with nothing and must seek out supplies on your own.
+	thread PlayDialogueForPlayer( "Training_Loot_LootIntro", player, npc )
+
+	while( Distance( player.GetOrigin(), npc.GetOrigin() ) > 1024 )
+		wait 0.1
+	if ( IsValid( wp ) )
+		wp.Destroy()
+
+	// Inside the territories, you can find Supply Bins that carry weapons and resources you will need to survive. Open one.
+	StopDialogueForPlayer( player )
+	waitthread PlayDialogueForPlayer( "Training_Loot_LootBin", player, npc )
+
+	SetTurorialContext( player, eTutorialContext.LOOT_BIN )
+
+	entity lootBin = file.playerTrainingData[ player ].lootBin1
+
+	lootBin.SetUsableValue( USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	lootBin.SetUsablePriority( USABLE_PRIORITY_LOW )
+	lootBin.SetUsePrompts( "#SURVIVAL_LOOTBIN_OPEN", "#SURVIVAL_LOOTBIN_OPEN" )
+	lootBin.SetUsable()
+	//lootBin.AddUsableValue( USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	//lootBin.SetUsablePriority( USABLE_PRIORITY_LOW )
+	Highlight_SetNeutralHighlight( lootBin, "sp_objective_entity" )
+
+	entity wp2 = CreateWaypoint_Ping_Location( player, ePingType.LOCATION_TRAINING, null, lootBin.GetOrigin(), -1, true )
+
+	while( !lootBin.e.hasBeenOpened )
+		WaitFrame()
+
+	if ( IsValid( wp2 ) )
+		wp2.Destroy()
+
+	file.playerTrainingData[ player ].openedLootBin1 = true
+	Highlight_ClearNeutralHighlight( lootBin )
+
+	wait 1.0
+
+	// Strong work. Grab your supplies.
+	StopDialogueForPlayer( player )
+	thread PlayDialogueForPlayer( "Training_Loot_LootBinOpened", player, npc )
+
+	SetTurorialContext( player, eTutorialContext.LOOT_BIN_ITEMS )
+
+	thread ReplenishGrenadesAndHealth( player )
+	while( !PlayerPickedUpGrenadesAndHealth( player ) )
+		WaitFrame()
+
+	file.playerTrainingData[ player ].openedOrdnanceMenu = false
+	Remote_CallFunction_NonReplay( player, "ServerCallback_MonitorCommsMenuUsage", 0 )
+
+	SetTurorialContext( player, eTutorialContext.ORDNANCE )
+
+	thread MonitorPlayerSwappedGrenades( player )
+	thread MonitorPlayerThrewGrenade( player )
+
+	// Your HUD will show what you have equipped. Follow the checklist to access and cycle through your inventory.
+	StopDialogueForPlayer( player )
+	thread PlayDialogueForPlayer( "Training_Loot_NextGrenade", player, npc )
+
+	while( !IsTutorialContextCompleted( player, eTutorialContext.ORDNANCE ) )
+		wait 1.0
+
+	Signal( player, "StopReplenishGrenadesAndHealth" )
+
+	SetTurorialContext( player, eTutorialContext.NONE )
+}
+
+void function MonitorPlayerSwappedGrenades( entity player )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "SwitchToOrdnance" )
+	EndSignal( player, "SwapToNextOrdnance" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) && player in file.playerTrainingData )
+			{
+				file.playerTrainingData[ player ].swappedGrenade = true
+			}
+		}
+	)
+
+	WaitForever()
+}
+
+void function MonitorPlayerThrewGrenade( entity player )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "ThrowGrenade" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) && player in file.playerTrainingData )
+			{
+				file.playerTrainingData[ player ].threwGrenade = true
+			}
+		}
+	)
+
+	WaitForever()
+}
+
+bool function PlayerPickedUpGrenadesAndHealth( entity player )
+{
+	if ( SURVIVAL_CountItemsInInventory( player, LOOT_NAME_HEALTH_KIT ) > 0 )
+		file.playerTrainingData[ player ].pickedUpHealth = true
+
+	if ( SURVIVAL_CountItemsInInventory( player, LOOT_NAME_THERMITE ) > 0 )
+		file.playerTrainingData[ player ].pickedUpThermite = true
+
+	if ( SURVIVAL_CountItemsInInventory( player, LOOT_NAME_FRAG ) > 0 )
+		file.playerTrainingData[ player ].pickedUpFrag = true
+
+	if ( !file.playerTrainingData[ player ].pickedUpHealth )
+		return false
+
+	if ( !file.playerTrainingData[ player ].pickedUpThermite )
+		return false
+
+	if ( !file.playerTrainingData[ player ].pickedUpFrag )
+		return false
+
+	return true
+}
+
+void function ReplenishGrenadesAndHealth( entity player )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "StopReplenishGrenadesAndHealth" )
+
+	while( true )
+	{
+		if ( file.playerTrainingData[ player ].pickedUpThermite && SURVIVAL_CountItemsInInventory( player, LOOT_NAME_THERMITE ) == 0 )
+		{
+			entity lootEnt = SpawnGenericLoot( LOOT_NAME_THERMITE, player.GetOrigin(), player.GetAngles(), 1 )
+			Survival_PickupItem( lootEnt, player )
+		}
+
+		if ( file.playerTrainingData[ player ].pickedUpFrag && SURVIVAL_CountItemsInInventory( player, LOOT_NAME_FRAG ) == 0 )
+		{
+			entity lootEnt = SpawnGenericLoot( LOOT_NAME_FRAG, player.GetOrigin(), player.GetAngles(), 1 )
+			Survival_PickupItem( lootEnt, player )
+		}
+
+		if ( file.playerTrainingData[ player ].pickedUpHealth && SURVIVAL_CountItemsInInventory( player, LOOT_NAME_HEALTH_KIT ) == 0 )
+		{
+			entity lootEnt = SpawnGenericLoot( LOOT_NAME_HEALTH_KIT, player.GetOrigin(), player.GetAngles(), 1 )
+			Survival_PickupItem( lootEnt, player )
+		}
+
+		WaitFrame()
+	}
+}
+
+/*
+██╗    ██╗███████╗ █████╗ ██████╗  ██████╗ ███╗   ██╗
+██║    ██║██╔════╝██╔══██╗██╔══██╗██╔═══██╗████╗  ██║
+██║ █╗ ██║█████╗  ███████║██████╔╝██║   ██║██╔██╗ ██║
+██║███╗██║██╔══╝  ██╔══██║██╔═══╝ ██║   ██║██║╚██╗██║
+╚███╔███╔╝███████╗██║  ██║██║     ╚██████╔╝██║ ╚████║
+ ╚══╝╚══╝ ╚══════╝╚═╝  ╚═╝╚═╝      ╚═════╝ ╚═╝  ╚═══╝
+*/
+
+void function StartTraining_Weapons( entity player )
+{
+	EndSignal( player, "OnDeath" )
+
+	entity npc = GetTrainingNPCForPlayer( player, CHARACTER_BLOODHOUND )
+	entity node = GetTrainingNPCNode( player, "npcNodeBloodhound2" )
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_transB", "mp_pt_medium_training_blood_idle_B" )
+
+	wait 1.0
+
+	// Inside this Supply Bin you will find a weapon and ammo. Arm yourself.
+	StopDialogueForPlayer( player )
+	thread PlayDialogueForPlayer( "Training_Weapons_LootBin", player, npc )
+
+	SetTurorialContext( player, eTutorialContext.WEAPON_LOOT_BIN )
+
+	entity lootBin = file.playerTrainingData[ player ].lootBin2
+	lootBin.SetUsePrompts( "#SURVIVAL_LOOTBIN_OPEN", "#SURVIVAL_LOOTBIN_OPEN" )
+	lootBin.SetUsable()
+	SetTeam( lootBin, player.GetTeam() )
+	Highlight_SetFriendlyHighlight( lootBin, "sp_objective_entity" )
+	Highlight_SetNeutralHighlight( lootBin, "sp_objective_entity" )
+
+	entity wp = CreateWaypoint_Ping_Location( player, ePingType.LOCATION_TRAINING, null, lootBin.GetOrigin(), -1, true )
+
+	while( !lootBin.e.hasBeenOpened )
+		WaitFrame()
+
+	if ( IsValid( wp ) )
+		wp.Destroy()
+
+	file.playerTrainingData[ player ].openedLootBin2 = true
+	Highlight_ClearFriendlyHighlight( lootBin )
+	Highlight_ClearNeutralHighlight( lootBin )
+
+	SetTurorialContext( player, eTutorialContext.WEAPON_PICKUP )
+
+	while( !IsTutorialContextCompleted( player, eTutorialContext.WEAPON_PICKUP ) )
+		wait 1.0
+
+	// Enable whole range
+	file.playerTrainingData[ player ].lootBin1.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+	file.playerTrainingData[ player ].lootBin2.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+	RemoveStagingAreaEntsForRealm( GetPlayerStagingSquadRealm( player ) )
+	CreateWeaponRacksForRealm( GetPlayerStagingSquadRealm( player ) )
+	CreateGunRangeTargetsForRealm( GetPlayerStagingSquadRealm( player ) )
+	PlayerTrainingData data = file.playerTrainingData[ player ]
+	data.gun_range_enabled = true
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_trans_C", "mp_pt_medium_training_blood_idle_C" )
+
+	// The battle calls upon you. Slatra as many targets as you wish.
+	waitthread PlayDialogueForPlayer( "Training_Weapons_EnableRange", player, npc )
+
+	wait 6.0
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_talk_C", "mp_pt_medium_training_blood_idle_C" )
+
+	SetTurorialContext( player, eTutorialContext.WEAPON_SWAP )
+
+	// Each shot is important - as well as the weapon you hold. Grab a second. The field is full of choices.
+	waitthread PlayDialogueForPlayer( "Training_Weapons_SecondWeapon", player, npc )
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_idle_C" )
+
+	if ( !IsTutorialContextCompleted( player, eTutorialContext.WEAPON_SWAP ) )
+	{
+		// Keep in mind, you can carry two weapons. If you try to equip a third, you're gonna have to swap it out with the one you're holding.
+		thread PlayDialogueForPlayer( "Training_Weapons_SecondWeapon2", player, npc )
+	}
+
+	while( !IsTutorialContextCompleted( player, eTutorialContext.WEAPON_SWAP ) )
+		wait 1.0
+
+	StopDialogueForPlayer( player )
+	SetTurorialContext( player, eTutorialContext.NONE )
+}
+
+void function ReplenishLightAmmo( entity player )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( player, "StopReplenishLightAmmo" )
+
+	string ammo = SURVIVAL_Loot_GetLootDataByRef( LOOT_NAME_WEAPON ).ammoType
+	int amount = SURVIVAL_Loot_GetLootDataByRef( ammo ).countPerDrop
+
+	while( true )
+	{
+		if ( SURVIVAL_CountItemsInInventory( player, ammo ) == 0 )
+		{
+			entity lootEnt = SpawnGenericLoot( ammo, player.GetOrigin(), player.GetAngles(), amount )
+			Survival_PickupItem( lootEnt, player )
+		}
+
+		WaitFrame()
+	}
+}
+
+/*
+██████╗ ██╗███╗   ██╗ ██████╗
+██╔══██╗██║████╗  ██║██╔════╝
+██████╔╝██║██╔██╗ ██║██║  ███╗
+██╔═══╝ ██║██║╚██╗██║██║   ██║
+██║     ██║██║ ╚████║╚██████╔╝
+╚═╝     ╚═╝╚═╝  ╚═══╝ ╚═════╝
+*/
+
+void function StartTraining_Ping( entity player )
+{
+	EndSignal( player, "OnDeath" )
+
+	entity npc = GetTrainingNPCForPlayer( player, CHARACTER_BLOODHOUND )
+	entity node = GetTrainingNPCNode( player, "npcNodeBloodhound2" )
+
+	// A powerful key to becoming an Apex Legend is communication with your brethren.
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_talk_C", "mp_pt_medium_training_blood_idle_C" )
+	waitthread PlayDialogueForPlayer( "Training_Ping1", player, npc )
+
+	// You can Ping different locations, objects, and enemies depending on where you are looking.
+	waitthread PlayDialogueForPlayer( "Training_Ping2", player, npc )
+
+	file.playerTrainingData[ player ].pingedEnemyTarget = false
+	file.playerTrainingData[ player ].openedPingMenu = false
+	file.playerTrainingData[ player ].pingedWeapon = false
+	file.playerTrainingData[ player ].pingedAmmo = false
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_MonitorCommsMenuUsage", 1 )
+
+	player.SetPlayerNetBool( "pingEnabled", true )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SetCommsDialogueEnabled", 1 )
+	SetTurorialContext( player, eTutorialContext.PING )
+
+	// Follow the checklist to cycle through your Pings.
+	waitthread PlayDialogueForPlayer( "Training_Ping3", player, npc )
+
+	while( !IsTutorialContextCompleted( player, eTutorialContext.PING ) )
+		wait 1.0
+
+	// The Allfather blesses you. Pathfinder will continue your training. I will see you again my felagi fighter - we may even shed bloth together.
+	StopDialogueForPlayer( player )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SetCommsDialogueEnabled", 0 )
+	thread TrainingNPCAnim( npc, node, "mp_pt_medium_training_blood_twitch_C", "mp_pt_medium_training_blood_idle_C" )
+	waitthread PlayDialogueForPlayer( "Training_Ping_Complete", player, npc )
+	npc.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+	wait 2.0
+	if ( IsValid( npc ) )
+		npc.Destroy()
+}
+
+const float ENEMY_TARGET_PING_DIST_SQR = 200 * 200
+void function OnEnemyLocationPinged( entity player, entity wp, entity pingEnt, int pingType )
+{
+	if ( !IsValid( wp ) )
+		return
+
+	if ( !( player in file.playerTrainingData ) )
+		return
+
+	if ( file.playerTrainingData[ player ].pingedEnemyTarget )
+		return
+
+	file.playerTrainingData[ player ].pingedEnemyTarget = true
+}
+
+void function OnLootPinged( entity player, entity wp, entity pingEnt, int pingType )
+{
+	if ( !( player in file.playerTrainingData ) )
+		return
+
+	if ( !IsValid( pingEnt ) )
+		return
+
+	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( pingEnt.GetSurvivalInt() )
+
+	if ( lootData.lootType == eLootType.MAINWEAPON )
+		file.playerTrainingData[ player ].pingedWeapon = true
+
+	if ( lootData.lootType == eLootType.AMMO )
+		file.playerTrainingData[ player ].pingedAmmo = true
+}
+
+
+/*
+██████╗ ███████╗██╗   ██╗██╗██╗   ██╗███████╗
+██╔══██╗██╔════╝██║   ██║██║██║   ██║██╔════╝
+██████╔╝█████╗  ██║   ██║██║██║   ██║█████╗
+██╔══██╗██╔══╝  ╚██╗ ██╔╝██║╚██╗ ██╔╝██╔══╝
+██║  ██║███████╗ ╚████╔╝ ██║ ╚████╔╝ ███████╗
+╚═╝  ╚═╝╚══════╝  ╚═══╝  ╚═╝  ╚═══╝  ╚══════╝
+*/
+
+void function StartTraining_Revive( entity player )
+{
+	EndSignal( player, "OnDeath" )
+
+	entity npc = GetTrainingNPCForPlayer( player, CHARACTER_PATHFINDER )
+	entity node = GetTrainingNPCNode( player, "npcNodePathfinder1" )
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_welcome_idle", "mp_pt_heavy_training_path_welcome_idle" )
+
+	SetTurorialContext( player, eTutorialContext.PATHFINDER )
+
+	wait 0.75
+
+	Highlight_SetFriendlyHighlight( npc, "sp_objective_entity" )
+
+	// Wait for player to get close
+
+	entity wp = CreateWaypoint_Ping_Location( player, ePingType.LOCATION_TRAINING, null, npc.GetOrigin(), -1, true )
+
+	while( Distance( player.GetOrigin(), npc.GetOrigin() ) > 600 )
+		wait 0.1
+
+	if ( IsValid( wp ) )
+		wp.Destroy()
+
+	SetTurorialContext( player, eTutorialContext.NONE )
+
+	file.playerTrainingData[ player ].foundPathfinder = true
+	entity dummyReviveNode = GetTrainingNPCNode( player, "trainingDummyNode" )
+
+	Highlight_ClearFriendlyHighlight( npc )
+	Highlight_SetFriendlyHighlight( npc, "sp_friendly_hero" )
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_welcome", "mp_pt_heavy_grapple_idle" )
+	wait 2.0
+
+	// Hi Friend! I'm Pathfinder. I'm excited to fight you in the Arena, but first let me teach you some things I learned.
+	waitthread PlayDialogueForPlayer( "Training_Revive_Intro", player, npc )
+
+	// Working together in a team is very important and very fun.
+	waitthread PlayDialogueForPlayer( "Training_Revive_Intro_1", player, npc )
+
+	entity dummy = GetTrainingDummyForPlayer( player )
+	dummy.Hide()
+	thread PlayAnimTeleport( dummy, "mp_pt_medium_doomed_idle", dummyReviveNode )
+	thread ShowDummyDelayed( dummy )
+
+	// Here is your teammate - a Digital Utility Mock Man Intelligent Example. Or DUMMIE for short.
+	waitthread PlayDialogueForPlayer( "Training_Revive_Intro_2", player, npc )
+
+	// During a battle, you or your teammates can get knocked down. But don't worry, with skill, everyone can be revived.
+	waitthread PlayDialogueForPlayer( "Training_Revive_Intro_3", player, npc )
+
+	// Just approach your DUMMIE and press the prompt button on your HUD to revive them.
+	thread PlayDialogueForPlayer( "Training_Revive_Intro_4", player, npc )
+
+	Highlight_SetFriendlyHighlight( dummy, "sp_objective_entity" )
+	SetTurorialContext( player, eTutorialContext.REVIVE )
+
+	waitthread ReviveDummyThink( player, dummy, dummyReviveNode )
+
+	Highlight_ClearFriendlyHighlight( dummy )
+
+	dummy.SetMaxHealth( 100 )
+	dummy.SetHealth( 20 )
+
+	// Great! Welcome back, Dummie!
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_thinking", "mp_pt_heavy_grapple_idle" )
+	waitthread PlayDialogueForPlayer( "Training_Revive_Intro_Complete", player, npc )
+
+	// Give player tactical
+	ItemFlavor lifeLineCharacter = GetItemFlavorByAsset( CHARACTER_ASSET_LIFELINE )
+	ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( lifeLineCharacter )
+	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tacticalAbility ), OFFHAND_TACTICAL, [] )
+	entity tacticalWeapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+	tacticalWeapon.SetWeaponPrimaryClipCount( tacticalWeapon.GetWeaponPrimaryClipCountMax() ) // give tactical straight away
+
+	SetTurorialContext( player, eTutorialContext.HEALING_DRONE )
+
+	thread DummyWaitForFakeHeal( player, dummy )
+
+	thread PathfinderDialogueForHealDrone( player, npc, node )
+
+	// Wait for a good heal drone placement
+	while( true )
+	{
+		wait 1.0
+
+		if ( tacticalWeapon.GetWeaponPrimaryClipCount() == tacticalWeapon.GetWeaponPrimaryClipCountMax() )
+			continue
+
+		wait 2.0
+
+		if ( file.playerTrainingData[ player ].healedDummy )
+			break
+
+		// Looks like you're a little far away. Try it again a bit closer to your friend.
+		if ( !file.playerTrainingData[ player ].healDroneTooFarDialoguePlayed )
+		{
+			StopDialogueForPlayer( player )
+			thread PlayDialogueForPlayer( "Training_Tactical_MoveCloser", player, npc )
+			thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_talk", "mp_pt_heavy_grapple_idle" )
+			file.playerTrainingData[ player ].healDroneTooFarDialoguePlayed = true
+		}
+
+		// Give them ammo to do the drone again
+		Signal( player, "CleanupAllDroneMedics" )
+		tacticalWeapon = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+		tacticalWeapon.SetWeaponPrimaryClipCount( tacticalWeapon.GetWeaponPrimaryClipCountMax() )
+	}
+
+	wait 6.0
+}
+
+void function PathfinderDialogueForHealDrone( entity player, entity npc, entity node )
+{
+	EndSignal( player, "OnDeath" )
+
+	// Now here's a good thing to know. Each one of us has a unique special Tactical Ability that do different things. You are Lifeline and you have a special Health Drone that distributes health to anyone next to it.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_talk", "mp_pt_heavy_grapple_idle" )
+	waitthread PlayDialogueForPlayer( "Training_Tactical_1", player, npc )
+
+	if ( IsTutorialContextCompleted( player, eTutorialContext.HEALING_DRONE ) )
+		return
+
+	// Give it a try and heal up your friend. Just hit the tactical button on your HUD.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_talk_alt", "mp_pt_heavy_grapple_idle" )
+	waitthread PlayDialogueForPlayer( "Training_Tactical_2", player, npc )
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_grapple_idle", "mp_pt_heavy_grapple_idle" )
+}
+
+void function ShowDummyDelayed( entity dummy )
+{
+	EndSignal( dummy, "OnDestroy" )
+	wait 2.0
+	dummy.Show()
+	Highlight_SetFriendlyHighlight( dummy, "staging_gun_range_target_appear" )
+	wait 0.75
+	Highlight_SetFriendlyHighlight( dummy, "sp_friendly_hero" )
+}
+
+void function ReviveDummyThink( entity player, entity dummy, entity node )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( dummy, "OnDestroy" )
+	EndSignal( node, "OnDestroy" )
+
+	entity wp
+
+	while ( true )
+	{
+		if ( IsValid( wp ) )
+			wp.Destroy()
+		wp = CreateWaypoint_Ping_Location( player, ePingType.LOCATION_TRAINING, null, dummy.GetOrigin(), -1, true )
+		dummy.SetUsableByGroup( "pilot" )
+		dummy.SetUsePrompts( "#BLEEDOUT_USE_TEAMMATE_RES_DYNAMIC", "#BLEEDOUT_USE_TEAMMATE_RES_PC" )
+		dummy.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_NO_FOV_REQUIREMENTS | USABLE_SHRINK_USEABLE_BOX | USABLE_BLOCK_CONTINUOUS_USE )
+
+		entity playerUser = expect entity( dummy.WaitSignal( "OnPlayerUseLong" ).player )
+		if ( playerUser != player )
+			continue
+
+		dummy.SetUsePrompts( "", "" )
+		if ( IsValid( wp ) )
+			wp.Destroy()
+
+		waitthread DoReviveSequence( player, dummy, node )
+
+		if ( file.playerTrainingData[ player ].revivedDummy )
+			break
+	}
+
+	thread TrainingNPCAnim( dummy, null, "mp_pt_dummy_training_idle" )
+}
+
+void function DoReviveSequence( entity player, entity dummy, entity node )
+{
+	EndSignal( player, "OnDeath" )
+	EndSignal( dummy, "OnDestroy" )
+	EndSignal( node, "OnDestroy" )
+	EndSignal( player, "OnContinousUseStopped" )
+
+	vector reviverStartPos = player.GetOrigin()
+
+	Remote_CallFunction_NonReplay( player, "Bleedout_DisplayTrainingFirstAidProgressBar", dummy, Time() + 6.0, 6.0 )
+
+	OnThreadEnd(
+		function() : ( player, dummy, node, reviverStartPos )
+		{
+			if ( IsValid( player ) )
+			{
+				Remote_CallFunction_NonReplay( player, "Bleedout_StopTrainingFirstAidProgressBar" )
+				DestroyPlayAnimationEntityBlocker( player )
+				player.Anim_Stop()
+				player.ClearParent()
+				player.SnapEyesToFeet()
+				ClearPlayerAnimViewEntity( player )
+				bool foundSafeSpot = PutEntityInSafeSpot( player, dummy, null, reviverStartPos, player.GetOrigin() )
+				if ( !foundSafeSpot )
+					player.SetOrigin( reviverStartPos )
+				thread SetPlayerStanding( player )
+				DeployAndEnableWeapons( player )
+			}
+
+			if ( IsValid( dummy ) )
+			{
+				dummy.Anim_Stop()
+				dummy.ClearParent()
+
+				if ( player in file.playerTrainingData && file.playerTrainingData[ player ].revivedDummy )
+				{
+					dummy.SetOrigin( node.GetOrigin() )
+					dummy.SetAngles( node.GetAngles() )
+					Highlight_ClearFriendlyHighlight( dummy )
+				}
+				else
+				{
+					thread PlayAnimTeleport( dummy, "mp_pt_medium_doomed_idle", node )
+					Highlight_SetFriendlyHighlight( dummy, "sp_objective_entity" )
+				}
+			}
+		}
+	)
+
+	HolsterAndDisableWeapons( player )
+
+	Highlight_ClearFriendlyHighlight( dummy )
+
+	// Player anim
+	CreatePlayAnimationEntityBlocker( player, false )
+	FirstPersonSequenceStruct reviverSequence
+	reviverSequence.blendTime = 0.25
+	reviverSequence.attachment = "ref"
+	reviverSequence.thirdPersonAnim = "Pilot_doomed_revive_healthy"
+	reviverSequence.firstPersonAnim = ""
+	reviverSequence.useAnimatedRefAttachment = true
+	reviverSequence.thirdPersonCameraAttachments = ["VDU"]
+	reviverSequence.thirdPersonCameraVisibilityChecks = true
+	thread FirstPersonSequence( reviverSequence, player, node )
+
+	// Dummy anim
+	thread PlayAnim( dummy, "Pilot_doomed_revive_injured", node )
+
+	//thread PlayBattleChatterLineToPlayer( "bc_revivingPlayer", player, player )
+
+	float duration = max( player.GetSequenceDuration( "Pilot_doomed_revive_healthy" ), dummy.GetSequenceDuration( "Pilot_doomed_revive_injured" ) )
+	float endTime = Time() + duration
+	while( Time() <= endTime )
+	{
+		WaitFrame()
+		if ( !Bleedout_IsReviveButtonDown( player ) )
+			return
+	}
+
+	file.playerTrainingData[ player ].revivedDummy = true
+}
+
+void function SetPlayerStanding( entity player )
+{
+	player.ForceStand()
+
+	WaitFrame()
+
+	if ( IsValid( player ) && IsAlive( player ) )
+		player.UnforceStand()
+}
+
+void function DummyWaitForFakeHeal( entity player, entity dummy )
+{
+	EndSignal( dummy, "OnDestroy" )
+	EndSignal( player, "OnDestroy" )
+	WaitSignal( dummy, "DeployableMedic_Attached" )
+	file.playerTrainingData[ player ].healedDummy = true
+}
+
+
+/*
+██████╗ ███████╗███████╗██████╗  █████╗ ██╗    ██╗███╗   ██╗
+██╔══██╗██╔════╝██╔════╝██╔══██╗██╔══██╗██║    ██║████╗  ██║
+██████╔╝█████╗  ███████╗██████╔╝███████║██║ █╗ ██║██╔██╗ ██║
+██╔══██╗██╔══╝  ╚════██║██╔═══╝ ██╔══██║██║███╗██║██║╚██╗██║
+██║  ██║███████╗███████║██║     ██║  ██║╚███╔███╔╝██║ ╚████║
+╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═══╝
+*/
+
+void function StartTraining_Respawn( entity player )
+{
+	EndSignal( player, "OnDeath" )
+
+	entity npc = GetTrainingNPCForPlayer( player, CHARACTER_PATHFINDER )
+	entity node = GetTrainingNPCNode( player, "npcNodePathfinder1" )
+
+	WaitFrame()
+
+	entity dummy = GetTrainingDummyForPlayer( player )
+	thread TrainingNPCAnim( dummy, null, "mp_pt_dummy_training_idle" )
+
+	entity dummyReviveNode = GetTrainingNPCNode( player, "trainingDummyNode" )
+
+	SetTurorialContext( player, eTutorialContext.NONE )
+
+	// Great job! Helping out your team is the best, but sometimes they die.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_point", "mp_pt_heavy_grapple_idle" )
+	StopDialogueForPlayer( player )
+	waitthread PlayDialogueForPlayer( "Training_Tactical_Complete", player, npc )
+
+	thread Survival_CleanupPlayerPermanents( player )
+
+	EmitSoundOnEntityOnlyToPlayer( dummy, player, "Survival_Training_Dummy_Bodyfall" )
+	thread PlayAnimTeleport( dummy, "mp_pt_dummy_training_death", dummyReviveNode )
+	wait 1.5
+	entity deathBox = CreateDeathBox( player, dummyReviveNode, true )
+	dummy.NotSolid()
+	Highlight_ClearFriendlyHighlight( dummy )
+	Highlight_ClearNeutralHighlight( dummy )
+	wait 1.5
+	dummy.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+
+	// Don't worry too much. You still have a chance to bring your friend back.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_talk_alt", "mp_pt_heavy_grapple_idle" )
+	waitthread PlayDialogueForPlayer( "Training_Respawn_1", player, npc )
+
+	// Approach Dummie's kill box and grab their card.
+	waitthread PlayDialogueForPlayer( "Training_Respawn_2", player, npc )
+
+	SetTurorialContext( player, eTutorialContext.PICK_UP_DNA )
+	Highlight_SetNeutralHighlight( deathBox, "sp_objective_entity" )
+
+	entity wp = CreateWaypoint_Ping_Location( player, ePingType.LOCATION_TRAINING, null, deathBox.GetOrigin(), -1, true )
+
+	deathBox.SetUsableByGroup( "pilot" )
+	deathBox.SetUsePrompts( "#HINT_PICKUP_DNA_USE_TRAINING", "#HINT_PICKUP_DNA_USE_TRAINING" )
+	deathBox.SetUsable()
+	deathBox.AddUsableValue( USABLE_CUSTOM_HINTS )
+
+	while ( true )
+	{
+		entity playerUser = expect entity( deathBox.WaitSignal( "OnPlayerUse" ).player )
+		if ( playerUser == player )
+			break
+	}
+
+	if ( IsValid( wp ) )
+		wp.Destroy()
+	deathBox.SetUsePrompts( "", "" )
+	deathBox.UnsetUsable()
+
+	entity dissolveDeathBox = CreateDeathBox( player, dummyReviveNode, false )
+	deathBox.Destroy()
+	PlayFirstPersonAnimation( player, "ptpov_burn_card_activate_seq_gladcard" )
+	wait 1.0
+	dissolveDeathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+
+	file.playerTrainingData[ player ].pickedUpDNA = true
+	EmitSoundOnEntityOnlyToPlayer( player, player, "jackhammer_pickup" )
+
+	// Great. You can use that card to bring back your friend back through any active Respawn Beacon Chamber.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_thinking", "mp_pt_heavy_grapple_idle" )
+
+	waitthread PlayDialogueForPlayer( "Training_Respawn_3", player, npc )
+
+	// Create respawn chamber
+	vector spawnPos = <33894, -7936, -28916>
+	if ( Distance( player.GetOrigin(), spawnPos ) < 80 )
+		spawnPos = <33724, -7937, -28916>
+
+	entity respawnChamber = CreatePropDynamic_NoDispatchSpawn( REVIVE_CHAMBER_MODEL, spawnPos, < 0, 0, 0 >, 6 )
+	respawnChamber.kv.fadedist = 100000
+	respawnChamber.kv.targetname = RESPAWN_CHAMBER_TARGET_NAME
+	DispatchSpawn( respawnChamber )
+	respawnChamber.EnableRenderAlways()
+	SetTargetName( respawnChamber, RESPAWN_CHAMBER_TARGET_NAME )
+	respawnChamber.RemoveFromAllRealms()
+	respawnChamber.AddToRealm( GetPlayerStagingSquadRealm( player ) )
+	respawnChamber.Solid()
+	AddCallback_OnUseEntity( respawnChamber, RespawnChamberOnUse )
+	file.playerTrainingData[ player ].respawnChamber = respawnChamber
+
+	entity respawnChamberRadar = StartParticleEffectOnEntityWithPos_ReturnEntity( respawnChamber, GetParticleSystemIndex( RESPAWN_BEACON_EMITTER_FX ), FX_PATTACH_POINT_FOLLOW_NOROTATE, respawnChamber.LookupAttachment( "FX_EMITTER" ), <0,0,0>, <-90,0,0> )
+	respawnChamberRadar.RemoveFromAllRealms()
+	respawnChamberRadar.AddToRealm( GetPlayerStagingSquadRealm( player ) )
+	file.playerTrainingData[ player ].respawnChamberRadar = respawnChamberRadar
+
+	Highlight_SetNeutralHighlight( respawnChamber, "staging_gun_range_target_appear" )
+	wait 0.75
+	Highlight_ClearNeutralHighlight( respawnChamber )
+
+	// Approach the Respawn Beacon Chamber and, when prompted, hold for activation.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_point", "mp_pt_heavy_grapple_idle" )
+	thread PlayDialogueForPlayer( "Training_Respawn_4", player, npc )
+
+	respawnChamber.SetUsableByGroup( "pilot" )
+	respawnChamber.SetUsePrompts( "#HINT_RESPAWN_USE", "#HINT_RESPAWN_USE" )
+	respawnChamber.SetUsable()
+	respawnChamber.AddUsableValue( USABLE_CUSTOM_HINTS )
+	Highlight_SetNeutralHighlight( respawnChamber, "sp_objective_entity" )
+	entity wp2 = CreateWaypoint_Ping_Location( player, ePingType.LOCATION_TRAINING, null, respawnChamber.GetOrigin(), -1, true )
+
+	SetTurorialContext( player, eTutorialContext.RESPAWN_CHAMBER )
+
+	// Wait for player to use the chamber
+	while( !file.playerTrainingData[ player ].usedRespawnChamber )
+		wait 0.1
+
+	if ( IsValid( wp2 ) )
+		wp2.Destroy()
+	Highlight_ClearNeutralHighlight( respawnChamber )
+	respawnChamber.SetUsePrompts( "", "" )
+	respawnChamber.UnsetUsable()
+
+	entity beaconFX = StartParticleEffectOnEntityWithPos_ReturnEntity( respawnChamber, GetParticleSystemIndex( RESPAWN_BEACON_SCAN_FX ), FX_PATTACH_POINT_FOLLOW_NOROTATE, respawnChamber.LookupAttachment( "FX_EMITTER" ), <0,0,0>, <0,0,0> )
+	beaconFX.RemoveFromAllRealms()
+	beaconFX.AddToOtherEntitysRealms( respawnChamber )
+
+	respawnChamber.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+	respawnChamberRadar.Destroy()
+
+	// You did it. Here they come.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_thinking", "mp_pt_heavy_grapple_idle" )
+	StopDialogueForPlayer( player )
+	waitthread PlayDialogueForPlayer( "Training_Respawn_6", player, npc )
+
+	thread DropshipBringDummyBack( player )
+
+	WaitFrame()
+	entity dropship = file.playerTrainingData[ player ].dropship
+	WaitSignal( dropship, "deploy" )
+
+	dummy = GetTrainingDummyForPlayer( player )
+	waitthread TrainingNPCRecordedAnim( dummy, $"anim_recording/survival_training_dummie_dropship.rpak" )
+	thread TrainingNPCAnim( dummy, null, "mp_pt_dummy_training_drop" )
+
+	SetTurorialContext( player, eTutorialContext.NONE )
+
+	// Welcome back, Dummie.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_thinking", "mp_pt_heavy_grapple_idle" )
+	waitthread PlayDialogueForPlayer( "Training_Respawn_Complete", player, npc )
+}
+
+void function DropshipBringDummyBack( entity player )
+{
+	vector origin = < 33741, -7948, -28916 >
+	vector angles = < 0, 90, 0 >
+
+	entity dropship = CreateEntity( "npc_dropship" )
+	SetSpawnOption_AISettings( dropship, "npc_dropship_respawn" )
+	DispatchSpawn( dropship )
+	dropship.SetInvulnerable()
+	dropship.DisableHibernation()
+	dropship.RemoveFromAllRealms()
+	dropship.AddToRealm( GetPlayerStagingSquadRealm( player ) )
+	EmitSoundOnEntity( dropship, "goblin_imc_evac_hover" )
+	dropship.DisableGrappleAttachment()
+	file.playerTrainingData[ player ].dropship = dropship
+
+	//thread JetwashFX( dropship )
+
+	dropship.SetOrigin( origin )
+	dropship.SetAngles( angles )
+	Attachment attachResult = dropship.Anim_GetAttachmentAtTime( "dropship_classic_mp_flyin", "ORIGIN", 0.0 )
+
+	//thread RespawnBeacon_PutPlayerInDropship( player, dropship, 0, attachResult.position )
+
+	EndSignal( dropship, "OnDestroy" )
+
+	thread PlayAnim( dropship, "dropship_classic_mp_flyin_idle", origin, angles )
+	dropship.MakeInvisible()
+	waitthread __WarpInEffectShared( attachResult.position, attachResult.angle, "dropship_warpin", 0.0 )
+	dropship.MakeVisible()
+	waitthread PlayAnim( dropship, "dropship_classic_mp_flyin", origin, angles )
+	dropship.Destroy()
+}
+
+entity function CreateDeathBox( entity player, entity dummy, bool hasCard )
+{
+	entity box = CreatePropDynamic_NoDispatchSpawn( DEATH_BOX, dummy.GetOrigin(), <0, 45, 0>, 6 )
+	box.kv.fadedist = 100000
+	if ( hasCard )
+		box.kv.targetname = DEATH_BOX_TARGETNAME_TRAINING
+
+	DispatchSpawn( box )
+
+	box.RemoveFromAllRealms()
+	box.AddToRealm( GetPlayerStagingSquadRealm( player ) )
+
+	box.Solid()
+	box.EnableRenderAlways()
+	//box.AllowMantle()
+	box.SetOwner( player )
+
+	if ( hasCard )
+	{
+		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
+		Highlight_ClearNeutralHighlight( box )
+		file.playerTrainingData[ player ].deathBox = box
+		thread DeathBoxFakePhysics( box )
+	}
+
+	return box
+}
+
+void function DeathBoxFakePhysics( entity box )
+{
+	vector restPos = box.GetOrigin()
+	vector fallPos = restPos + < 0, 0, 54 >
+
+	entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
+	box.SetParent( mover, "", true )
+
+	mover.NonPhysicsMoveTo( fallPos, 0.5, 0.0, 0.5 )
+	wait 0.5
+	mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
+	wait 0.5
+	if ( IsValid( box ) )
+		box.ClearParent()
+	mover.Destroy()
+}
+#endif
+
+#if CLIENT
+void function TrainingDeathBoxCreated( entity ent )
+{
+	if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME_TRAINING )
+	{
+		TEMP_SaveEHI( ent )
+
+		entity localViewPlayer = GetLocalViewPlayer()
+		if( !IsValid( localViewPlayer ) || ent.DoesShareRealms( localViewPlayer ) )
+			thread CreateDeathBoxRui( ent )
+	}
+}
+#endif
+
+void function RespawnChamberOnUse( entity respawnChamber, entity player, int pickupFlags )
+{
+	#if SERVER
+	if ( !( player in file.playerTrainingData ) )
+		return
+
+	if ( respawnChamber != file.playerTrainingData[ player ].respawnChamber )
+		return
+	#endif
+
+	if ( !(pickupFlags & USE_INPUT_LONG ) )
+		return
+
+	printt( "RespawnChamberOnUse" )
+
+	#if SERVER
+		if ( !file.playerTrainingData[ player ].respawnChamberFirstUseDialoguePlayed )
+		{
+			// Be careful, it takes some time to contact the dropship, so you could get shot. That wouldn't be good.
+			entity npc = GetTrainingNPCForPlayer( player, CHARACTER_PATHFINDER )
+			thread PlayDialogueForPlayer( "Training_Respawn_5", player, npc )
+			file.playerTrainingData[ player ].respawnChamberFirstUseDialoguePlayed = true
+		}
+	#endif
+
+	ExtendedUseSettings settings
+	settings.successSound = RESPAWN_BEACON_SUCCESS_SOUND
+	#if CLIENT
+		settings.loopSound = RESPAWN_BEACON_LOOP_SOUND
+		settings.displayRui = $"ui/health_use_progress.rpak"
+		settings.displayRuiFunc = DisplayRuiForRespawnChamber
+		settings.icon = $""
+		settings.hint = "#HINT_RESPAWNING"
+		settings.icon = RESPAWN_BEACON_ICON
+	#elseif SERVER
+		settings.successFunc = RespawnChamberUseComplete
+		settings.exclusiveUse = true
+		settings.movementDisable = true
+		settings.holsterWeapon = true
+	#endif
+	settings.duration = RESPAWN_BEACON_RESPAWN_TIME + 2.0
+	settings.useInputFlag = IN_USE_LONG
+
+	thread ExtendedUse( respawnChamber, player, settings )
+}
+
+#if CLIENT
+void function DisplayRuiForRespawnChamber( entity ent, entity player, var rui, ExtendedUseSettings settings )
+{
+	RuiSetBool( rui, "isVisible", true )
+	RuiSetImage( rui, "icon", settings.icon )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetGameTime( rui, "endTime", Time() + settings.duration )
+	RuiSetString( rui, "hintKeyboardMouse", settings.hint )
+	RuiSetString( rui, "hintController", settings.hint )
+}
+#endif
+
+#if SERVER
+void function RespawnChamberUseComplete( entity ent, entity playerUser, ExtendedUseSettings settings )
+{
+	printt( "RespawnChamberUseComplete" )
+
+	if ( !( playerUser in file.playerTrainingData ) )
+		return
+
+	file.playerTrainingData[ playerUser ].usedRespawnChamber = true
+
+}
+#endif
+
+/*
+██╗   ██╗██╗  ████████╗██╗███╗   ███╗ █████╗ ████████╗███████╗
+██║   ██║██║  ╚══██╔══╝██║████╗ ████║██╔══██╗╚══██╔══╝██╔════╝
+██║   ██║██║     ██║   ██║██╔████╔██║███████║   ██║   █████╗
+██║   ██║██║     ██║   ██║██║╚██╔╝██║██╔══██║   ██║   ██╔══╝
+╚██████╔╝███████╗██║   ██║██║ ╚═╝ ██║██║  ██║   ██║   ███████╗
+ ╚═════╝ ╚══════╝╚═╝   ╚═╝╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝   ╚══════╝
+*/
+
+#if SERVER
+void function StartTraining_Ultimate( entity player )
+{
+	EndSignal( player, "OnDeath" )
+
+	entity npc = GetTrainingNPCForPlayer( player, CHARACTER_PATHFINDER )
+	entity node = GetTrainingNPCNode( player, "npcNodePathfinder1" )
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_talk", "mp_pt_heavy_grapple_idle" )
+
+	SetTurorialContext( player, eTutorialContext.NONE )
+
+	// Here's one final item for your training. Like our Tactical Abilities tacticals, each one of us has an Ultimate Ability that you can use when it's ready.
+	waitthread PlayDialogueForPlayer( "Training_Ultimate_1", player, npc )
+
+	thread PathfinderUltimateIntroDialogue( player, npc, node )
+
+	// Give player tactical
+	ItemFlavor lifeLineCharacter = GetItemFlavorByAsset( CHARACTER_ASSET_LIFELINE )
+	ItemFlavor ultiamteAbility = CharacterClass_GetUltimateAbility( lifeLineCharacter )
+	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultiamteAbility ), OFFHAND_ULTIMATE, [] )
+	entity ultimateWeapon = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+	ultimateWeapon.SetWeaponPrimaryClipCount( ultimateWeapon.GetWeaponPrimaryClipCountMax() ) // give ultimate straight away
+
+	entity dummy = GetTrainingDummyForPlayer( player )
+	CreateAirdropBadPlace( dummy, dummy.GetOrigin(), AIR_DROP_BAD_PLACE_RADIUS )
+	CreateAirdropBadPlace( npc, npc.GetOrigin(), AIR_DROP_BAD_PLACE_RADIUS )
+
+	SetTurorialContext( player, eTutorialContext.ULTIMATE )
+
+	// Wait for a good ultimate placement
+	while( true )
+	{
+		wait 1.0
+
+		if ( ultimateWeapon.GetWeaponPrimaryClipCount() < ultimateWeapon.GetWeaponPrimaryClipCountMax() )
+			break
+	}
+	file.playerTrainingData[ player ].usedUltimate = true
+
+	// Here it comes.
+	StopDialogueForPlayer( player )
+	waitthread PlayDialogueForPlayer( "Training_Ultimate_4", player, npc )
+
+	SetTurorialContext( player, eTutorialContext.NONE )
+
+	wait 12.0
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_point", "mp_pt_heavy_grapple_idle" )
+
+	// Approach it and open it up. See the loot. Grab what you need or and you can also Ping what your friends need.
+	waitthread PlayDialogueForPlayer( "Training_Ultimate_5", player, npc )
+
+	// That's all for me. Great work! Remember, each one of us has different Tactical and Ultimate abilities, so give us all a try. I get to use ziplines to reach high places and move quick.
+	waitthread PlayDialogueForPlayer( "Training_Ultimate_Complete", player, npc )
+
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_farewell", "mp_pt_heavy_grapple_idle" )
+
+	wait 2.0
+
+	// See you in the Arena! Bye!
+	waitthread PlayDialogueForPlayer( "Training_Complete", player, npc )
+
+	npc.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+
+	wait 2.0
+
+	dummy = GetTrainingDummyForPlayer( player )
+	dummy.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+}
+
+void function PathfinderUltimateIntroDialogue( entity player, entity npc, entity node )
+{
+	EndSignal( player, "OnDeath" )
+
+	// As Lifeline, your Ultimate calls in a Lifeline Package that delivers all types of defensive Loot from Large Health Kits to High Tier Body Armor.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_talk", "mp_pt_heavy_grapple_idle" )
+	waitthread PlayDialogueForPlayer( "Training_Ultimate_2", player, npc )
+
+	if ( IsTutorialContextCompleted( player, eTutorialContext.ULTIMATE ) )
+		return
+
+	// Looks like Dummie needs some stuff - call in your Lifeline Package to help them out.
+	thread TrainingNPCAnim( npc, node, "mp_pt_heavy_training_path_talk", "mp_pt_heavy_grapple_idle" )
+	thread PlayDialogueForPlayer( "Training_Ultimate_3", player, npc )
+}
+
+void function OnAirdropLaunched( entity dropPod, vector origin )
+{
+	if ( !IsValid( dropPod ) )
+		return
+	entity owner = dropPod.GetOwner()
+
+	if ( !IsValid( owner ) || !owner.IsPlayer() )
+	{
+		dropPod.Destroy()
+		return
+	}
+
+	file.playerUltimateDropPods[ owner ] <- dropPod
+}
+#endif
+
+/*
+ ██████╗██╗  ██╗███████╗ ██████╗██╗  ██╗██╗     ██╗███████╗████████╗     ██████╗ █████╗ ██╗     ██╗     ██████╗  █████╗  ██████╗██╗  ██╗███████╗
+██╔════╝██║  ██║██╔════╝██╔════╝██║ ██╔╝██║     ██║██╔════╝╚══██╔══╝    ██╔════╝██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝
+██║     ███████║█████╗  ██║     █████╔╝ ██║     ██║███████╗   ██║       ██║     ███████║██║     ██║     ██████╔╝███████║██║     █████╔╝ ███████╗
+██║     ██╔══██║██╔══╝  ██║     ██╔═██╗ ██║     ██║╚════██║   ██║       ██║     ██╔══██║██║     ██║     ██╔══██╗██╔══██║██║     ██╔═██╗ ╚════██║
+╚██████╗██║  ██║███████╗╚██████╗██║  ██╗███████╗██║███████║   ██║       ╚██████╗██║  ██║███████╗███████╗██████╔╝██║  ██║╚██████╗██║  ██╗███████║
+ ╚═════╝╚═╝  ╚═╝╚══════╝ ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝╚══════╝   ╚═╝        ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝
+*/
+
+bool function Tutorial_TryAction_OpenLootBin1( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].openedLootBin1 )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_OpenLootBin2( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].openedLootBin2 )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_TakeFrag( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].pickedUpFrag )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_TakeThermite( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].pickedUpThermite )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_TakeHealth( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].pickedUpHealth )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_SwapGrenade( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].swappedGrenade )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_ThrewGrenade( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].threwGrenade )
+			return false
+
+		entity npc = GetTrainingNPCForPlayer( player, CHARACTER_BLOODHOUND )
+
+		if ( !file.playerTrainingData[ player ].threwGrenadeDialoguePlayed )
+			file.playerTrainingData[ player ].threwGrenadeDialoguePlayed = true
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_UseHealth( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( player.GetHealth() < 100 )
+			return false
+
+		entity npc = GetTrainingNPCForPlayer( player, CHARACTER_BLOODHOUND )
+
+		if ( !file.playerTrainingData[ player ].usedHealthDialoguePlayed )
+			file.playerTrainingData[ player ].usedHealthDialoguePlayed = true
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_PickedUpWeapon( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !PlayerHasWeapon( player, "mp_weapon_rspn101" ) )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_PickedUpAmmo( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( SURVIVAL_CountItemsInInventory( player, SURVIVAL_Loot_GetLootDataByRef( LOOT_NAME_WEAPON ).ammoType ) == 0 )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_ShotTrainingTargets( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].shotTrainingTargets )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_SecondWeapon( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( SURVIVAL_GetPrimaryWeapons( player ).len() < 2 )
+			return false
+
+		if ( file.playerTrainingData[ player ].firstPrimary1 == "" && file.playerTrainingData[ player ].firstPrimary2 == "" )
+		{
+			file.playerTrainingData[ player ].firstPrimary1 = SURVIVAL_GetPrimaryWeapons( player )[0].GetWeaponClassName()
+			file.playerTrainingData[ player ].firstPrimary2 = SURVIVAL_GetPrimaryWeapons( player )[1].GetWeaponClassName()
+		}
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_ThirdWeapon( entity player, InputHint inputHint )
+{
+	if ( SURVIVAL_GetPrimaryWeapons( player ).len() < 2 )
+		return false
+
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( file.playerTrainingData[ player ].firstPrimary1 == "" || file.playerTrainingData[ player ].firstPrimary2 == "" )
+			return false
+
+		if ( file.playerTrainingData[ player ].firstPrimary1 == SURVIVAL_GetPrimaryWeapons( player )[0].GetWeaponClassName()
+				&& file.playerTrainingData[ player ].firstPrimary2 == SURVIVAL_GetPrimaryWeapons( player )[1].GetWeaponClassName() )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_PingEnemyLocation( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].pingedEnemyTarget )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_PingWeapon( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].pingedWeapon )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_PingAmmo( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].pingedAmmo )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_OrdnanceMenu( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].openedOrdnanceMenu )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_PingMenu( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].openedPingMenu )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_Pathfinder( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].foundPathfinder )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_ReviveDummy( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].revivedDummy )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_HealDummy( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].healedDummy )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_PickUpDNA( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].pickedUpDNA )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_UsedRespawnChamber( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].usedRespawnChamber )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+bool function Tutorial_TryAction_UsedUltimate( entity player, InputHint inputHint )
+{
+	#if SERVER
+		if ( !( player in file.playerTrainingData ) )
+			return false
+
+		if ( !file.playerTrainingData[ player ].usedUltimate )
+			return false
+
+		UpdateActionCount( player, inputHint )
+	#endif
+
+	return true
+}
+
+#if CLIENT
+void function ServerCallback_MonitorCommsMenuUsage( int type )
+{
+	thread ServerCallback_MonitorCommsMenuUsage_thread( type )
+}
+
+void function ServerCallback_MonitorCommsMenuUsage_thread( int type )
+{
+	entity player = GetLocalViewPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	EndSignal( player, "OnDeath" )
+	EndSignal( player, "OnDestroy" )
+
+	float openMenuDuration = 0.0
+	int menuStyle = type == 0 ? eCommsMenuStyle.ORDNANCE_MENU : eCommsMenuStyle.PING_MENU
+
+	while( IsValid( player ) )
+	{
+		if ( IsCommsMenuActive() && CommsMenu_GetCurrentCommsMenu() == menuStyle )
+			openMenuDuration += 0.1
+		else
+			openMenuDuration = 0.0
+
+		if ( openMenuDuration >= 0.4 )
+		{
+			player.ClientCommand( "TrainingUsedCommsMenu " + type )
+			return
+		}
+
+		wait 0.1
+	}
+}
+
+void function ServerCallback_SetCommsDialogueEnabled( int enabled )
+{
+	if ( enabled == 1 )
+		SetCommsDialogueEnabled( true )
+	else
+		SetCommsDialogueEnabled( false )
+}
+
+#endif
+
+#if SERVER
+bool function ClientCommand_UsedCommsMenu( entity player, array<string> args )
+{
+	if ( !( player in file.playerTrainingData ) )
+		return false
+
+	if ( args.len() != 1 )
+		return false
+
+	int type = int( args[0] )
+
+	if ( type == 0 )
+	{
+		file.playerTrainingData[ player ].openedOrdnanceMenu = true
+	}
+	else if ( type == 1 )
+	{
+		file.playerTrainingData[ player ].openedPingMenu = true
+	}
+
+	return true
+}
+#endif
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

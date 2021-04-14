@@ -1,0 +1,43 @@
+global function DoesPlaylistSupportNoFillTeams
+global function GetMaxTeamSizeForPlaylist
+
+
+#if (CLIENT || UI)
+global function StartMatchmakingStandard
+global function StartMatchmakingWithNoFillTeams
+#endif // #if (CLIENT || UI)
+
+
+bool function DoesPlaylistSupportNoFillTeams( string playlist )
+{
+	int allowNoFillTeams = int( GetPlaylistVarOrUseValue( playlist, "allow_no_fill_teams", "0" ) )
+	return (allowNoFillTeams != 0)
+}
+
+int function GetMaxTeamSizeForPlaylist( string playlist )
+{
+	int maxPlayers = int( GetPlaylistVarOrUseValue( playlist, "max_players", "0" ) )
+	int maxTeams = int( GetPlaylistVarOrUseValue( playlist, "max_teams", "0" ) )
+	return ((maxTeams != 0) ? (maxPlayers / maxTeams) : (maxPlayers))
+}
+
+#if (CLIENT || UI)
+void function StartMatchmaking_( string playlist, bool requestNoFillTeam )
+{
+	SetConVarInt( "match_teamNoFill", (requestNoFillTeam ? 1 : 0) )
+	StartMatchmaking( playlist )
+}
+
+void function StartMatchmakingStandard( string playlist )
+{
+	StartMatchmaking_( playlist, false )
+}
+
+void function StartMatchmakingWithNoFillTeams( string playlist )
+{
+	Assert( DoesPlaylistSupportNoFillTeams( playlist ) )
+	StartMatchmaking_( playlist, true )
+}
+#endif // #if (CLIENT || UI)
+
+

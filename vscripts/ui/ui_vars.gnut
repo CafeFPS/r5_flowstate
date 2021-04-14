@@ -1,0 +1,133 @@
+untyped
+
+global function UIVars_Init
+
+global function GetUIVar
+#if SERVER
+	global function SetUIVar
+#endif
+
+global function ServerCallback_SetUIVar
+global function RegisterUIVarChangeCallback
+
+#if SERVER
+	global function SyncUIVars
+#endif
+
+table _uiVars = {}
+table _uiEntityVars = {}
+table _uiVarHandles = {}
+int _nextUIVarIndex = 0
+table _uiVarChangeCallbacks = {}
+
+void function UIVars_Init()
+{
+	RegisterUIVar( "gameStartTime", null )
+	RegisterUIVar( "gameStartTimerComplete", false )
+	RegisterUIVar( "nextMapModeSet", false )
+	RegisterUIVar( "nextMapIdx", -1 )
+	RegisterUIVar( "nextModeIdx", -1 )
+	RegisterUIVar( "disableDev", null )
+	RegisterUIVar( "badRepPresent", false )
+	RegisterUIVar( "privatematch_map", 0 )
+	RegisterUIVar( "privatematch_mode", 0 )
+	RegisterUIVar( "privatematch_starting", 0 )
+	RegisterUIVar( "coopLobbyMap", null ) // ePrivateMatchMaps.mp_fracture
+	RegisterUIVar( "createamatch_isPrivate", false )
+	RegisterUIVar( "penalizeDisconnect", true )
+	RegisterUIVar( "rankedPenalizeDisconnect", false )
+	RegisterUIVar( "gameState", -1 )
+	RegisterUIVar( "forceLoadoutEnabled", false )
+	RegisterUIVar( "survivorTitanfallTime", 0 )
+	RegisterUIVar( "putPlayerInMatchmakingAfterDelay", false )
+}
+
+void function RegisterUIVar( string varName, value )
+{
+	Assert( !(varName in _uiVars ) )
+
+	if ( IsServer() )
+		_uiVarHandles[varName] <- _nextUIVarIndex
+	else
+		_uiVarHandles[_nextUIVarIndex] <- varName
+
+	_nextUIVarIndex++
+
+	_uiVars[varName] <- value
+}
+
+// Hooked up in code to .ui
+function GetUIVar( obj, string varName )
+{
+	Assert( varName in _uiVars )
+
+	return _uiVars[varName]
+}
+
+#if SERVER
+// Hooked up in code to .ui
+void function SetUIVar( table<string,var> obj, string varName, value )
+{
+	Assert( varName in _uiVars )
+	Assert( typeof value != "string" )
+
+	if ( _uiVars[varName] == value )
+		return
+
+	_uiVars[varName] = value
+
+	// Run change callback if one exists
+	thread UIVarChangedCallbacks( varName )
+
+	// Update the var on all clients
+	array<entity> players = GetPlayerArray()
+	foreach ( player in players )
+	{
+		if ( !player.p.clientScriptInitialized )
+			continue
+
+		Remote_CallFunction_UI( player, "ServerCallback_SetUIVar", _uiVarHandles[varName], value )
+	}
+}
+#endif // SERVER
+
+function ServerCallback_SetUIVar( varHandle, value )
+{
+	local varName = _uiVarHandles[varHandle]
+
+	_uiVars[varName] = value
+
+	if ( !(varName in _uiVarChangeCallbacks) )
+		return
+
+	foreach ( callbackFunc in _uiVarChangeCallbacks[varName] )
+		callbackFunc()
+}
+
+void function RegisterUIVarChangeCallback( string varName, callbackFunc )
+{
+	if ( !(varName in _uiVarChangeCallbacks) )
+		_uiVarChangeCallbacks[varName] <- []
+
+	_uiVarChangeCallbacks[varName].append( callbackFunc.bindenv( this ) )
+}
+
+void function UIVarChangedCallbacks( string varName )
+{
+	// Run change callback if one exists
+	if ( !( varName in _uiVarChangeCallbacks ) )
+		return
+
+	foreach ( callbackFunc in _uiVarChangeCallbacks[varName] )
+		callbackFunc()
+}
+
+#if SERVER
+void function SyncUIVars( entity player )
+{
+	foreach ( varName, value in _uiVars )
+	{
+		Remote_CallFunction_UI( player, "ServerCallback_SetUIVar", _uiVarHandles[varName], value )
+	}
+}
+#endif

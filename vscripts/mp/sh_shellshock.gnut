@@ -1,0 +1,235 @@
+global function ShShellShock_Init
+
+#if SERVER
+global function ShellShock_ApplyForDuration
+#endif //SERVER
+
+const float SHELLSHOCK_DOF_FAR_INNER = 32.0
+const float SHELLSHOCK_DOF_FAR_OUTER = 1024.0
+
+const float SHELLSHOCK_DOF_NEAR_INNER = 8.0
+const float SHELLSHOCK_DOF_NEAR_OUTER = 64.0
+
+const float SHELLSHOCK_MOVE_SLOW_EFFECT_WEIGHT = 0.25
+const float SHELLSHOCK_TURN_SLOW_EFFECT_WEIGHT = 0.25
+
+const float SHELLSHOCK_DURATION		= 12.0
+const float SHELLSHOCK_FADE_TIME 	= 0.5
+
+const asset SHELLSHOCK_SCREEN_FX = $"P_shell_shock_FP"
+global int COCKPIT_SHELLSHOCK_SCREEN_FX
+
+struct
+{
+	#if CLIENT
+	int colorCorrection
+	float lastDOFLerpTime
+	#endif //CLIENT
+} file
+
+void function ShShellShock_Init()
+{
+	COCKPIT_SHELLSHOCK_SCREEN_FX = PrecacheParticleSystem( SHELLSHOCK_SCREEN_FX )
+
+	#if CLIENT
+		file.colorCorrection = ColorCorrection_Register( "materials/correction/shell_shock.raw_hdr" )
+		file.lastDOFLerpTime = Time()
+		RegisterSignal( "ShellShock_StopColorCorrection" )
+		RegisterSignal( "ShellShock_StopDOF" )
+		RegisterSignal( "ShellShock_StopScreenEffect" )
+		StatusEffect_RegisterEnabledCallback( eStatusEffect.shellshock, ShellShock_StartVisualEffect )
+		StatusEffect_RegisterDisabledCallback( eStatusEffect.shellshock, ShellShock_StopVisualEffect )
+	#endif //CLIENT
+}
+
+#if SERVER
+void function ShellShock_ApplyForDuration( entity player, float duration )
+{
+	StatusEffect_AddTimed( player, eStatusEffect.shellshock, 1.0, duration, 0.5 )
+	StatusEffect_AddTimed( player, eStatusEffect.move_slow, SHELLSHOCK_MOVE_SLOW_EFFECT_WEIGHT, duration, SHELLSHOCK_FADE_TIME )
+	//StatusEffect_AddTimed( player, eStatusEffect.turn_slow, SHELLSHOCK_TURN_SLOW_EFFECT_WEIGHT, duration, SHELLSHOCK_FADE_TIME )
+}
+#endif
+
+#if CLIENT
+/*
+void function UpdatePlayerScreenColorCorrection( entity player, int statusEffect, int ccID )
+{
+	Assert ( IsNewThread(), "Must be threaded off." )
+	Assert ( player == GetLocalViewPlayer() )
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "GasCloud_StopColorCorrection" )
+
+	OnThreadEnd(
+	function() : ( ccID )
+		{
+			ColorCorrection_SetWeight( ccID, 0.0 )
+			ColorCorrection_SetExclusive( ccID, false )
+		}
+	)
+
+	ColorCorrection_SetExclusive( ccID, true )
+	const LERP_IN_TIME = 0.25	// hack! because statusEffect doesn't seem to have a lerp in feature?
+	float startTime = Time()
+
+	while ( true )
+	{
+		float weight = StatusEffect_GetSeverity( player, statusEffect )
+		weight = GraphCapped( Time() - startTime, 0, LERP_IN_TIME, 0, weight )
+		ColorCorrection_SetWeight( ccID, weight )
+		WaitFrame()
+	}
+}
+*/
+
+void function ShellShock_UpdatePlayerDOF( entity player, int statusEffect )
+{
+	Assert ( IsNewThread(), "Must be threaded off." )
+	Assert ( player == GetLocalViewPlayer() )
+
+	player.Signal( "ShellShock_StopDOF" )
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "ShellShock_StopDOF" )
+
+	OnThreadEnd(
+	function() : ()
+		{
+			DoF_LerpFarDepthToDefault( 1.0 )
+			DoF_SetNearDepthToDefault()
+			file.lastDOFLerpTime = Time()
+		}
+	)
+
+	if ( Time() - file.lastDOFLerpTime < 1.0 )
+	{
+		Wait( 1.0 - ( Time() - file.lastDOFLerpTime ) )
+		//wait 0.25
+	}
+
+	while ( true )
+	{
+		float weight = StatusEffect_GetSeverity( player, statusEffect )
+		float sinVal = sin( Time() * 6 )
+		float sinClamp = GraphCapped( sinVal, -1, 1, weight * 0.25, weight )
+
+		float innerFarDOF = SHELLSHOCK_DOF_FAR_INNER / ( sinClamp ) //oscillate dof based on sin wave.
+		float outerFarDOF = SHELLSHOCK_DOF_FAR_OUTER / ( sinClamp )
+
+		float innerNearDOF = SHELLSHOCK_DOF_NEAR_INNER / ( weight )
+		float outerNearDOF = SHELLSHOCK_DOF_NEAR_OUTER / ( weight )
+
+		DoF_SetFarDepth( innerFarDOF, outerFarDOF )
+		DoF_SetNearDepth( innerNearDOF, outerNearDOF )
+
+		//printt( "DOF", innerFarDOF, outerFarDOF, innerNearDOF, outerNearDOF )
+		WaitFrame()
+	}
+}
+
+void function ShellShock_StartVisualEffect( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( !actuallyChanged && GetLocalViewPlayer() == GetLocalClientPlayer() )
+		return
+
+	if ( ent != GetLocalViewPlayer() )
+		return
+
+	ent.Signal( "ShellShock_StopColorCorrection" )
+	thread ShellShock_ColorCorrection( ent )
+
+	//Gas does not blur titan view.
+	entity viewPlayer = GetLocalViewPlayer()
+	if ( !viewPlayer.IsTitan() )
+	{
+		int fxHandle = StartParticleEffectOnEntityWithPos( viewPlayer, COCKPIT_SHELLSHOCK_SCREEN_FX, FX_PATTACH_ABSORIGIN_FOLLOW, -1, viewPlayer.EyePosition(), <0,0,0> )
+		EffectSetIsWithCockpit( fxHandle, true )
+
+		EmitSoundOnEntity( ent, "gruntcooper_wounded_loop_1p" )
+
+		thread ShellShock_ScreenFXThink( viewPlayer, fxHandle )
+		thread ShellShock_UpdatePlayerDOF( viewPlayer, statusEffect )
+	}
+}
+
+void function ShellShock_StopVisualEffect( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( !actuallyChanged && GetLocalViewPlayer() == GetLocalClientPlayer() )
+		return
+
+	if ( ent != GetLocalViewPlayer() )
+		return
+
+	StopSoundOnEntity( ent, "gruntcooper_wounded_loop_1p" )
+	EmitSoundOnEntity( ent, "gruntcooper_woundedloop_end_1p" )
+
+	ent.Signal( "ShellShock_StopColorCorrection" )
+	ent.Signal( "ShellShock_StopDOF" )
+	ent.Signal( "ShellShock_StopScreenEffect" )
+}
+
+void function ShellShock_ScreenFXThink( entity player, int fxHandle )
+{
+	player.EndSignal( "ShellShock_StopScreenEffect" )
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( fxHandle )
+		{
+			if ( !EffectDoesExist( fxHandle ) )
+				return
+
+			EffectStop( fxHandle, false, true )
+		}
+	)
+
+	for ( ;; )
+	{
+		float weight = StatusEffect_GetSeverity( player, eStatusEffect.gas_cloud )
+
+		if ( !EffectDoesExist( fxHandle ) )
+			break
+
+		weight = GraphCapped( weight, 0.0, 1.0, 5, 200 )
+		EffectSetControlPointVector( fxHandle, 1, <weight,999,0> )
+		WaitFrame()
+	}
+}
+
+void function ShellShock_ColorCorrection( entity player )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "ShellShock_StopColorCorrection" )
+
+	OnThreadEnd(
+		function() : ()
+		{
+			thread ColorCorrection_LerpWeight( file.colorCorrection, 1, 0, 1 )
+		}
+	)
+
+	thread ColorCorrection_LerpWeight( file.colorCorrection, 0, 1, 0.25 )
+
+	WaitForever()
+}
+
+void function ColorCorrection_LerpWeight( int colorCorrection, float startWeight, float endWeight, float lerpTime = 0 )
+{
+	float startTime = Time()
+	float endTime = startTime + lerpTime
+	ColorCorrection_SetExclusive( colorCorrection, true )
+
+	while ( Time() <= endTime )
+	{
+		WaitFrame()
+		float weight = GraphCapped( Time(), startTime, endTime, startWeight, endWeight )
+		ColorCorrection_SetWeight( colorCorrection, weight )
+	}
+
+	ColorCorrection_SetWeight( colorCorrection, endWeight )
+}
+#endif //CLIENT

@@ -1,0 +1,432 @@
+untyped
+
+
+global function ServerCallback_PointSplashMultiplied
+global function ServerCallback_PointSplash
+global function ScoreSplashThink
+
+/*
+	ToDo:
+		-make first item in list pulse or flash
+		-make headshots smaller, need to be able to set font or font scale
+*/
+
+const NUM_SPLASH_LINES				= 5		// Max number of splash messages that will stack up. If more splash messages are created than allowed, the oldest get truncated off the list
+
+table SPLASH_TEXT_COLOR_CONVERTED // Splash text color
+
+//--------------------------------------------------
+//--------------------------------------------------
+
+table splashLines
+var splashTotalHudGroup
+int splashIconSize = 24
+int nextSplashIndexToUse = 0
+int multiScoreTotal = 0
+float lastMultiScoreShowTime = ( 0 - SPLASH_DURATION )
+bool multiScoreTotalIsShowing = false
+bool multiScoreTotalIsFading = false
+bool finishedSplashInit = false
+array lastSplashVisibleTimes = []
+float splashFadeDelay = SPLASH_DURATION - SPLASH_FADE_OUT_DURATION
+
+Assert( SPLASH_FADE_OUT_DURATION <= SPLASH_DURATION )
+
+void function InitSplash()
+{
+	if ( finishedSplashInit )
+		return
+
+	SPLASH_TEXT_COLOR_CONVERTED = StringToColors( SPLASH_TEXT_COLOR )
+
+	AddCallback_KillReplayStarted( ClearScoreSplashArea )
+
+	UISize screenSize = GetScreenSize()
+	int screenCenterX = screenSize.width / 2
+	int screenCenterY = screenSize.height / 2
+	int defaultSplashPosX = screenCenterX + int( SPLASH_X * GetContentScaleFactor( Hud ).x )
+	int defaultSplashPosY = screenCenterY + int( SPLASH_Y * GetContentScaleFactor( Hud ).y )
+	int splashValueOffsetX = int( SPLASH_VALUE_OFFSET_X * GetContentScaleFactor( Hud ).x )
+	int splashValueOffsetY = int( SPLASH_VALUE_OFFSET_Y * GetContentScaleFactor( Hud ).y )
+	int textBoxWidth = 1000
+	int textBoxHeight = 64
+	int flareWidth = 128
+	int flareHeight = 64
+	local elem
+
+	// Scrolling/Stacking point splashes use the class HUDSplashLine
+	for ( int i = 0; i < NUM_SPLASH_LINES; i++ )
+	{
+		// Master group containing all elements
+		local masterGroup = HudElementGroup( "HUDSplashLine" + i )
+
+		// Description hud element group
+		local descGroup = HudElementGroup( "HUDSplashLineDesc" + i )
+		elem = descGroup.CreateElement( "SplashLineDesc_" + i )
+
+		descGroup.SetBaseSize( textBoxWidth, textBoxHeight )
+		descGroup.SetBasePos( defaultSplashPosX - textBoxWidth, defaultSplashPosY )
+
+		masterGroup.AddGroup( descGroup )
+
+		local descGlowGroup = HudElementGroup( "HUDSplashLineDesc" + i )
+		elem = descGlowGroup.CreateElement( "SplashLineDescGlow_" + i )
+
+		descGlowGroup.SetBaseSize( textBoxWidth, textBoxHeight )
+		descGlowGroup.SetBasePos( defaultSplashPosX - textBoxWidth, defaultSplashPosY )
+
+		masterGroup.AddGroup( descGlowGroup )
+
+		// Flare effect element
+		local flareElem = HudElement( "SplashLineDescFlare_" + i )
+		flareElem.SetBaseSize( flareWidth, flareHeight )
+		//flareElem.SetBasePos( defaultSplashPosX - ( flareWidth / 2.0 ), defaultSplashPosY + ( textBoxHeight / 2.0 ) - ( flareHeight / 2.0 ) )
+		masterGroup.AddElement( flareElem )
+
+		// Value hud element group
+		local valueGroup = HudElementGroup( "HUDSplashLineValue" + i )
+
+		elem = valueGroup.CreateElement( "SplashLineValue_" + i )
+
+		valueGroup.SetBaseSize( textBoxWidth, textBoxHeight )
+		valueGroup.SetBasePos( defaultSplashPosX + SPLASH_X_GAP + splashValueOffsetX, defaultSplashPosY + splashValueOffsetY )
+
+		masterGroup.AddGroup( valueGroup )
+
+		// Value icon element
+		local valueIcon = masterGroup.CreateElement( "SplashLineValueIcon_" + i )
+		int iconOffsetY = ( ( textBoxHeight - splashIconSize ) / 2 )
+		valueIcon.SetBaseSize( splashIconSize, splashIconSize )
+		valueIcon.SetBasePos( defaultSplashPosX + SPLASH_X_GAP + splashValueOffsetX, defaultSplashPosY + iconOffsetY + splashValueOffsetY )
+
+		// Create class instance for this SplashLineValueIcon_
+		splashLines[ i ] <- HUDSplashLine( "HUDSplashLine" + i )
+		splashLines[ i ].SetDuration( SPLASH_DURATION, SPLASH_FADE_OUT_DURATION )
+		splashLines[ i ].SetScroll( SPLASH_SPACING, SPLASH_SCROLL_TIME )
+		splashLines[ i ].SetTypeDuration( SPLASH_TYPEWRITER_TIME )
+		splashLines[ i ].SetMasterGroup( masterGroup )
+		splashLines[ i ].AddSplashGroup( "baseDesc", descGroup )
+		splashLines[ i ].AddSplashGroup( "desc", descGroup )
+		splashLines[ i ].AddSplashGroup( "descGlow", descGlowGroup )
+		splashLines[ i ].AddSplashGroup( "value", valueGroup )
+		splashLines[ i ].AddIconElem( "value", valueIcon )
+		splashLines[ i ].SetFlareEffectElem( "desc", flareElem )
+	}
+
+	// Multi score total just uses hud element class and a group since it's just one set of text that doesn't do anything fancy
+	if ( SPLASH_SHOW_MULTI_SCORE_TOTAL )
+	{
+		splashTotalHudGroup = HudElementGroup( "SplashTotalValueGroup" )
+
+		elem = splashTotalHudGroup.CreateElement( "SplashTotalValue" )
+
+		splashTotalHudGroup.SetBaseColor( SPLASH_TEXT_COLOR_CONVERTED.r, SPLASH_TEXT_COLOR_CONVERTED.g, SPLASH_TEXT_COLOR_CONVERTED.b, SPLASH_TEXT_COLOR_CONVERTED.a )
+		splashTotalHudGroup.SetText( "" )
+		splashTotalHudGroup.SetSize( textBoxWidth, textBoxHeight )
+		splashTotalHudGroup.SetPos( screenCenterX + ( SPLASH_TOTAL_POS_X * GetContentScaleFactor( Hud ).x ), screenCenterY + ( SPLASH_TOTAL_POS_Y * GetContentScaleFactor( Hud ).x ) )
+	}
+
+	finishedSplashInit = true
+}
+
+void function ServerCallback_PointSplashMultiplied( int scoreEventInt, int associatedEntityHandle = 0, pointValueOverride = null )
+{
+	ServerCallback_PointSplash( scoreEventInt, associatedEntityHandle, pointValueOverride, true )
+}
+
+void function ServerCallback_PointSplash( int scoreEventInt, int associatedEntityHandle = 0, pointValueOverride = null, bool multiplied = false )
+{
+	entity player = GetLocalClientPlayer()
+	if ( IsWatchingReplay() )
+		return
+
+	ScoreEvent event = ScoreEvent_FromId( scoreEventInt )
+
+	entity associatedEntity = null
+	if ( associatedEntityHandle != 0 )
+		associatedEntity = GetEntityFromEncodedEHandle( associatedEntityHandle )
+
+	// if ( event.GetShouldStackDisplay() )
+	// 	UpdateStackingSplash( event, associatedEntity, pointValueOverride, multiplied )
+	// else
+	//	_CreateNewSplash( event, associatedEntity, pointValueOverride, multiplied )
+}
+
+void function _CreateNewSplash( ScoreEvent event, entity associatedEntity, pointValueOverride, bool multiplied = false, extraText = "", overrideValue = null, stackCount = null )
+{
+// 	expect entity( associatedEntity )
+// 	expect string( extraText )
+
+// 	InitSplash()
+
+// 	// Determine how many points to display on the screen
+// 	int pointValue = ScoreEvent_GetPointValue( event )
+
+// 	if ( pointValueOverride != null )
+// 		pointValue = expect int( pointValueOverride )
+
+// 	if ( ( pointValue == null ) || ( pointValue <= 0 ) )
+// 		return
+
+// 	local splashText = ScoreEvent_GetSplashText( event )
+// 	if ( splashText == null )
+// 		return
+
+// 	// if ( level.rankedPlayEnabled )
+// 	// {
+// 	// 	if ( EventRewardsRankedPoints( event ) )
+// 	// 	{
+// 	// 		if ( PlayerPlayingRanked( GetLocalClientPlayer() ) )
+// 	// 			RankedScoreSplash()
+// 	// 	}
+// 	// }
+
+// 	// Keep a running total of how many points are given out. This gets reset back to 0 when all splashes have faded
+// 	multiScoreTotal += pointValue
+// 	UpdateMultiScoreText()
+
+// 	local next = nextSplashIndexToUse
+// 	BumpDownExistingSplashes()
+
+// 	local hasIcon = false
+// 	local splashes = splashLines[ next ]
+
+// 	//local usePlayerColor = associatedEntity && associatedEntity.IsPlayer()
+
+// 	local preValueString = "+"
+// 	if ( hasIcon )
+// 		preValueString = ""
+// 	pointValue = preValueString + string( pointValue )
+
+// 	if ( overrideValue != null )
+// 		pointValue = overrideValue
+
+// //	splashes.SetIconMaterial( "value", event.GetPointValueIcon(), splashIconSize, hasIcon )
+// 	splashes.SetTextForGroup( "baseDesc", splashText )
+
+// 	if ( extraText == "" )
+// 	{
+// 		if ( IsValid( associatedEntity ) )
+// 			extraText = ( ( associatedEntity.IsPlayer() ) ? associatedEntity.GetPlayerNameWithClanTag() : associatedEntity.GetTargetName() )
+// 	}
+
+// 	if ( stackCount == null )
+// 	{
+// 		splashes.SetStackCount( 1 )
+// 	}
+// 	else
+// 	{
+// 		splashes.SetStackCount( stackCount + 1 )
+// 	}
+// 		splashes.SetTextForGroup( "desc", splashText, extraText )
+// 		splashes.SetTextForGroup( "descGlow", splashText, extraText )
+// 	splashes.SetTextForGroup( "value", pointValue )
+
+// 	//printt( "adding " + event.name + " line " + next )
+// 	local customColors
+// 	if ( event in level.scoreCustomColors )
+// 	{
+// 		customColors = level.scoreCustomColors[ event ]
+// 		splashes.SetColorForGroup( "desc", customColors.main )
+// 		splashes.SetColorForGroup( "descGlow", customColors.glow )
+// 		splashes.SetColorForGroup( "value", customColors.main )
+// 	}
+// 	else if ( multiplied )
+// 	{
+// 		splashes.SetColorForGroup( "desc", SCORE_SPLASH_COLORS_BURNCARDS.main )
+// 		splashes.SetColorForGroup( "descGlow", SCORE_SPLASH_COLORS_BURNCARDS.glow )
+// 		splashes.SetColorForGroup( "value", SCORE_SPLASH_COLORS_BURNCARDS.main )
+// 	}
+// 	else
+// 	{
+// 		splashes.SetColorForGroup( "desc", SPLASH_TEXT_COLOR )
+// 		splashes.SetColorForGroup( "descGlow", "0 0 0 0" )
+// 		splashes.SetColorForGroup( "value", SPLASH_TEXT_COLOR )
+// 	}
+
+// 	local time = Time()
+
+// 	splashes.Display()
+// 	splashes.SetStartTime( time )
+
+// 	//EmitSoundOnEntity( GetLocalViewPlayer(), "PlayerUI.SplashTextDisplay" )
+
+// 	lastSplashVisibleTimes.append( time )
+// 	while ( lastSplashVisibleTimes.len() > SPLASH_MULTI_SCORE_REQUIREMENT )
+// 		lastSplashVisibleTimes.remove( 0 )
+
+// 	// increment which hud elems to use next time
+// 	nextSplashIndexToUse++
+// 	if ( nextSplashIndexToUse >= NUM_SPLASH_LINES )
+// 		nextSplashIndexToUse = 0
+
+// 	//ShouldShowMultiScoreTotal()
+}
+
+void function UpdateStackingSplash( ScoreEvent event, entity associatedEntity, pointValueOverride, bool multiplied = false )
+{
+	// for ( int i = 0; i < splashLines.len(); i++ )
+	// {
+	// 	if ( splashLines[ i ].textGroupStrings[ "baseDesc" ] == event.GetSplashText() && splashLines[ i ].startTime > Time() - SPLASH_DURATION )
+	// 	{
+	// 		local pointValue = event.GetPointValue()
+	// 		if ( pointValueOverride != null )
+	// 			pointValue = pointValueOverride
+	// 		local pointSum = splashLines[ i ].textGroupStrings[ "value" ].tointeger() + pointValue
+	// 		local pointString = "+" + string( pointSum )
+	// 		local stackCount = splashLines[ i ].GetStackCount()
+	// 		local overrideText = " (x" + ( stackCount + 1 )  + ")"
+	// 		RemoveLineAndShiftUpSplashes( i )
+
+	// 		_CreateNewSplash( event, associatedEntity, pointValueOverride, multiplied, overrideText, pointString, stackCount )
+	// 		return
+	// 	}
+	// }
+	// _CreateNewSplash( event, associatedEntity, pointValueOverride, multiplied )
+}
+
+void function RemoveLineAndShiftUpSplashes( int index )
+{
+	//printt( "Distance From Top ", GetDistanceFromTop( index ) )
+	for ( int j = 0; j < ( NUM_SPLASH_LINES - ( GetDistanceFromTop( index ) ) ); j++ )
+	{
+		for ( int i = 0; i < splashLines.len(); i++ )
+		{
+			//printt( splashLines[ i ].textGroupStrings[ "baseDesc" ], " baseDesc", splashLines[ i ].textGroupStrings[ "desc" ], "desc", " index ", i )
+		}
+		//printt( "Next Splash Index = ", nextSplashIndexToUse )
+		//printt( "==============================" )
+		int currentIndex = index - j
+		if ( currentIndex < 0 )
+			currentIndex = NUM_SPLASH_LINES + currentIndex
+
+		int nextIndex = currentIndex - 1
+		if ( nextIndex < 0 )
+			nextIndex = NUM_SPLASH_LINES + nextIndex
+
+		if ( Time() - splashLines[ nextIndex ].startTime < SPLASH_DURATION )
+		{
+			splashLines[ currentIndex ].SetTextForGroup( "desc", splashLines[ nextIndex ].textGroupStrings[ "desc" ], splashLines[ nextIndex ].textGroupStringsVar1[ "desc" ] )
+			splashLines[ currentIndex ].SetTextForGroup( "descGlow", splashLines[ nextIndex ].textGroupStrings[ "desc" ], splashLines[ nextIndex ].textGroupStringsVar1[ "desc" ] )
+			splashLines[ currentIndex ].SetTextForGroup( "value", splashLines[ nextIndex ].textGroupStrings[ "value" ] )
+			splashLines[ currentIndex ].SetTextForGroup( "baseDesc", splashLines[ nextIndex ].textGroupStrings[ "baseDesc" ] )
+			splashLines[ currentIndex ].SetStartTime( splashLines[ nextIndex ].startTime )
+			splashLines[ currentIndex ].SetColorForGroup( "desc", splashLines[ nextIndex ].textGroupColors[ "desc" ] )
+			splashLines[ currentIndex ].SetColorForGroup( "descGlow", splashLines[ nextIndex ].textGroupColors[ "descGlow" ] )
+			splashLines[ currentIndex ].SetColorForGroup( "value", splashLines[ nextIndex ].textGroupColors[ "value" ] )
+			splashLines[ currentIndex ].SetStackCount( splashLines[ nextIndex ].GetStackCount() )
+
+			splashLines[ nextIndex ].SetTextForGroup( "desc", "" )
+			splashLines[ nextIndex ].SetTextForGroup( "descGlow", "" )
+			splashLines[ nextIndex ].SetTextForGroup( "value", "" )
+			splashLines[ nextIndex ].SetTextForGroup( "baseDesc", "" )
+			splashLines[ nextIndex ].SetColorForGroup( "desc", SPLASH_TEXT_COLOR )
+			splashLines[ nextIndex ].SetColorForGroup( "descGlow", "0 0 0 0" )
+			splashLines[ nextIndex ].SetColorForGroup( "value", SPLASH_TEXT_COLOR )
+			splashLines[ nextIndex ].SetStackCount( 1 )
+
+			splashLines[ nextIndex ].UpdateTextDisplay()
+		}
+		else
+		{
+			splashLines[ currentIndex ].SetTextForGroup( "desc", "", "" )
+			splashLines[ currentIndex ].SetTextForGroup( "descGlow", "" )
+			splashLines[ currentIndex ].SetTextForGroup( "value", "" )
+			splashLines[ currentIndex ].SetTextForGroup( "baseDesc", "" )
+			splashLines[ currentIndex ].SetColorForGroup( "desc", SPLASH_TEXT_COLOR )
+			splashLines[ currentIndex ].SetColorForGroup( "descGlow", "0 0 0 0" )
+			splashLines[ currentIndex ].SetColorForGroup( "value", SPLASH_TEXT_COLOR )
+			splashLines[ currentIndex ].SetStackCount( 1 )
+		}
+		splashLines[ currentIndex ].UpdateTextDisplay()
+	}
+}
+
+void function BumpDownExistingSplashes()
+{
+	foreach ( index, splash in splashLines )
+	{
+		int numLinesAway = GetDistanceFromTop( expect int( index ) )
+		splash.Scroll( numLinesAway )
+	}
+}
+
+void function UpdateMultiScoreText()
+{
+	if ( !SPLASH_SHOW_MULTI_SCORE_TOTAL )
+		return
+
+	if ( multiScoreTotalIsFading )
+		return
+
+	splashTotalHudGroup.SetTextTypeWriter( "+" + string( multiScoreTotal ), SPLASH_TYPEWRITER_TIME )
+}
+
+void function ShouldShowMultiScoreTotal()
+{
+	// local time = Time()
+	// bool bShowTotal = true
+
+	// if ( !SPLASH_SHOW_MULTI_SCORE_TOTAL )
+	// 	bShowTotal = false
+
+	// if ( lastSplashVisibleTimes.len() < SPLASH_MULTI_SCORE_REQUIREMENT )
+	// 	bShowTotal = false
+
+	// if ( ( lastSplashVisibleTimes[ 0 ] + SPLASH_DURATION ) < time )
+	// 	bShowTotal = false
+
+	// if ( bShowTotal )
+	// {
+	// 	multiScoreTotalIsShowing = true
+	// 	multiScoreTotalIsFading = false
+
+	// 	UpdateMultiScoreText()
+	// 	splashTotalHudGroup.ReturnToBaseColor()
+	// 	splashTotalHudGroup.Show()
+	// 	splashTotalHudGroup.FadeOverTimeDelayed( 0, SPLASH_FADE_OUT_DURATION, splashFadeDelay )
+	// 	lastMultiScoreShowTime = time
+	// }
+}
+
+void function ScoreSplashThink()
+{
+	float time = Time()
+	float fadeoutStartTime = lastMultiScoreShowTime + splashFadeDelay
+	float fadeoutEndTime = lastMultiScoreShowTime + SPLASH_DURATION
+
+	if ( fadeoutEndTime <= time )
+	{
+		// Total is completely hidden
+
+		if ( multiScoreTotalIsShowing )
+		{
+			multiScoreTotal = 0
+			UpdateMultiScoreText()
+		}
+
+		multiScoreTotalIsShowing = false
+		multiScoreTotalIsFading = false
+	}
+	else if ( fadeoutStartTime <= time )
+	{
+		// Total is in process of fading out
+		multiScoreTotalIsFading = true
+	}
+}
+
+int function GetDistanceFromTop( int index )
+{
+	if ( index <= nextSplashIndexToUse )
+		return nextSplashIndexToUse - index
+
+	return NUM_SPLASH_LINES - ( index - nextSplashIndexToUse )
+}
+
+void function ClearScoreSplashArea()
+{
+	for ( int i = 0; i < splashLines.len(); i++ )
+	{
+		splashLines[ i ].masterGroup.FadeOverTime( 0, 0.15 )
+	}
+}

@@ -1,0 +1,80 @@
+// Read by code, which generates the enum for script.
+//
+//enum eStatusEffect
+//{
+/////////////////////////////
+
+	move_slow
+	turn_slow
+	dodge_speed_slow
+	dodge_regen_slow
+	grapple_slow
+	speed_boost
+	stim_visual_effect
+	timeshift_visual_effect
+	threat_vision
+	gravity_grenade_visual
+    //slowmo_visual_effect //removed to make room for sonar_pulse_visuals
+	sonar_pulse_visuals
+    tracking_vision
+    hunt_mode
+    hunt_mode_visuals
+    adrenaline_visuals
+    gas_cloud
+    gas_slow_protection
+    shellshock
+    burning
+    phase_dash
+    passive_cloak
+	smokescreen
+
+	laser_mesh
+	destroyed_by_emp
+	titan_damage_amp
+
+    sonar_blocked
+	sonar_detected
+	maphack_detected
+	lockon_detected
+    device_detected
+    device_blocked
+	doublexp
+
+	emp
+	flamethrower
+	frozencontrols
+
+	smart_ammo_tracker_militia
+	smart_ammo_tracker_imc
+	smart_ammo_tracker_neutral
+	smart_ammo_tracker_all
+
+	placing_phase_gate
+	placing_phase_tunnel
+	placing_caustic_barrel
+
+	pass_through_amps_weapon
+
+	simple_timer
+
+	minimap_jammed
+	tethered
+	battery_carried
+	cockpitColor
+	damageAmpFXOnly
+	disable_wall_run_and_double_jump
+
+	lockon_detected_titan
+	damage_received_multiplier
+
+	drone_healing
+
+	// TEMP DEV
+	phase_tunnel_visual
+	pinged
+	placing_care_package
+	target_shields
+	target_health
+
+/////////////////////////////
+//}

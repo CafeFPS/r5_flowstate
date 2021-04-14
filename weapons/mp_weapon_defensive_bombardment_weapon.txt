@@ -1,0 +1,78 @@
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_DEFENSIVE_BOMBARDMENT"
+	"description" 									"#WPN_DEFENSIVE_BOMBARDMENT"
+	"shortprintname"								"#WPN_DEFENSIVE_BOMBARDMENT"
+	"longdesc"										"#WPN_DEFENSIVE_BOMBARDMENT"
+
+	"menu_icon"										""
+	"hud_icon"										""
+
+	"weaponClass" 									"human"
+	"weaponType"									"shoulder"
+	"fire_mode"   									"offhand"
+	"minimap_reveal_distance"						"32000"
+	"offhand_keep_primary_in_hand" 					"1"
+	"projectile_launch_speed"						"4500"
+	"uses_indirect_fire"							"1"
+
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+
+	"fire_in_real_world_while_phased"				"1"
+
+    "OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_Never"
+	"OnProjectileCollision"							"OnProjectileCollision_WeaponDefensiveBombardmentExplosion"
+
+
+	SP_BASE
+	{
+		"enable_highlight_networking_on_creation"		"1"
+	}
+
+	MP_BASE
+	{
+        "enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+	}
+
+	// Models
+	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
+
+	// Effects
+	"marker_effect"                                 "P_ar_artillery_marker"
+	"projectile_trail_effect_0" 					"P_projectile_artillery_plasma"
+	"vortex_absorb_effect"							"wpn_vortex_projectile_rocket_FP"
+	"vortex_absorb_effect_third_person"				"wpn_vortex_projectile_rocket"
+	"vortex_absorb_sound"							"Vortex_Shield_AbsorbRocket"
+	"vortex_absorb_sound_1p_vs_3p"					"Vortex_Shield_AbsorbRocket_1P_VS_3P"
+	"vortex_drain"									"0.0"
+	"projectile_adjust_to_gun_barrel"				"0"
+
+	"critical_hit"									"0"
+
+	// Sound
+	"fire_sound_1_player_3p"						"Gibraltar_DefensiveBombardment_Launch"
+	"sound_incoming_first"                          "Gibraltar_DefensiveBombardment_Activate"
+	"sound_incoming"                                "Gibraltar_DefensiveBombardment_Projectile"
+
+	// Damage - When Used by Players
+	"damage_type" 									"burn"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+	"explosion_damage"								"0"
+	"explosion_damage_heavy_armor"					"0"
+
+	"explosion_inner_radius"  						"0"
+	"explosionradius" 								"0"
+	"impulse_force"   								"0"
+
+	// Behavior
+	"vortex_refire_behavior"  						"rocket"
+
+	Mods
+	{
+	}
+}

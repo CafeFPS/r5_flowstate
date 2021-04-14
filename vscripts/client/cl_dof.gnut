@@ -1,0 +1,413 @@
+global function PlayerADSDof
+global function ClPlayerADSDofInit
+global function ToggleDofDebug
+global function Cl_ADSDoF_Update
+const DOF_FAST_ADJUST = 0.85
+const ALWAYS_FAST_DOF = false
+
+struct WeaponDofDots
+{
+	float peripheralDot_right
+	float peripheralDot_upBottom
+	float peripheralDot_upTop
+
+	float focusAreaDot_horizontal	= 0.09
+	float focusAreaDot_top			= 0.18
+	float focusAreaDot_bottom		= -0.06
+}
+
+struct AdsVars
+{
+	bool isAds
+	float desiredDist_min
+	float desiredDist_max
+	float currentDist_min
+	float currentDist_max
+	float dofTransitionMultiplier
+	float farthestTargetVanishedTime
+	float noTargetsTime
+	vector noTargetsForward
+	bool wasAimingAtTargets
+	bool everAimingAtTargets
+	WeaponDofDots &dofDots
+	bool weaponCanNotDof
+}
+
+struct
+{
+	float defaultFar_minDist
+	float defaultFar_maxDist
+	float transitionToDefaultMultiplier
+	bool debugMode = false
+	bool adsDoFThreadShouldBeRunning = true
+} file
+
+void function ClPlayerADSDofInit()
+{
+	RegisterSignal( "CycleDofThread" )
+
+	// these parameters controls the default zoomed blur settings, when you have no targets
+	file.defaultFar_minDist = 16000 // as big as line of sights get
+	file.defaultFar_maxDist = 128000 // then blur out
+	file.transitionToDefaultMultiplier = 0.990 // lower is faster
+}
+
+void function PlayerADSDof( entity player, int oldState, int newState )
+{
+	file.adsDoFThreadShouldBeRunning = true
+	//thread PlayerADSDof_Thread( player )
+}
+
+void function ToggleDofDebug()
+{
+	file.debugMode = !file.debugMode
+}
+
+void function Cl_ADSDoF_Update( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	bool shouldRun = file.adsDoFThreadShouldBeRunning
+	player.Signal( "CycleDofThread" )
+	if ( shouldRun )
+		thread PlayerADSDof( player, 0, 0 )
+}
+
+void function PlayerADSDof_Thread( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	if ( GetConVarInt( "hud_setting_adsDof" ) == 0 )
+		return
+
+	player.Signal( "CycleDofThread" )
+
+	player.EndSignal( "CycleDofThread" )
+
+	player.EndSignal( "OnDestroy" )
+
+	if ( !IsAlive( player ) )
+		clGlobal.levelEnt.WaitSignal( "LocalClientPlayerRespawned" )
+
+	player.EndSignal( "OnDeath" )
+
+	file.adsDoFThreadShouldBeRunning = true
+
+	OnThreadEnd(
+	function() : ()
+		{
+			file.adsDoFThreadShouldBeRunning = false
+			entity player = GetLocalClientPlayer()
+			if ( !IsValid( player ) || !player.IsScriptMenuOn() )
+				DoF_SetFarDepthToDefault()
+		}
+	)
+
+	AdsVars vars
+
+	for ( ;; )
+	{
+		PlayerADSDofThink( player, vars )
+		WaitFrame()
+	}
+}
+
+// only used internally to this function
+struct AdsInternalVars
+{
+	bool targetCloaked
+	float farDist_focusTarget
+	float farDist_peripheralOnly
+}
+
+void function PlayerADSDofThink( entity player, AdsVars vars )
+{
+	if ( GetLocalClientPlayer().IsScriptMenuOn() )
+		return
+
+	bool wasAds = vars.isAds
+	vars.isAds = player.GetAdsFraction() > 0.5
+	int team = player.GetTeam()
+
+	if ( !vars.isAds || IsWatchingThirdPersonKillReplay() )
+	{
+		if ( wasAds )
+		{
+			DoF_SetFarDepthToDefault()
+			vars.everAimingAtTargets = false
+			vars.weaponCanNotDof = false
+		}
+		return
+	}
+
+	if ( vars.weaponCanNotDof )
+		return
+
+	if ( !wasAds )
+	{
+		entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if ( !IsValid( weapon ) )
+		{
+			vars.isAds = false // force this to run again next time
+			return
+		}
+
+		string weaponName = weapon.GetWeaponClassName()
+		if ( weapon.GetWeaponInfoFileKeyField( "ads_dof_disable" ) )
+		{
+			vars.weaponCanNotDof = true
+			return
+		}
+
+		// fov can be a float or an int, so cast to string and then float
+		float fov = weapon.GetWeaponSettingFloat( eWeaponVar.zoom_fov )
+
+		WeaponDofDots dofDots
+		// define the screen bounds based on your fov
+		dofDots.peripheralDot_right 	= Graph( fov, 35, 55, 0.44, 0.72 )
+		dofDots.peripheralDot_upBottom 	= Graph( fov, 35, 55, -0.25, -0.37 )
+		dofDots.peripheralDot_upTop 	= Graph( fov, 35, 55, 0.30, 0.46 )
+
+		// define the bounds of the scope area
+		float dof_zoom_focusArea_Horizontal = weapon.GetWeaponSettingFloat( eWeaponVar.dof_zoom_focusArea_Horizontal )
+		if ( dof_zoom_focusArea_Horizontal != 0 )
+			dofDots.focusAreaDot_horizontal = dof_zoom_focusArea_Horizontal
+
+		float dof_zoom_focusArea_Top = weapon.GetWeaponSettingFloat( eWeaponVar.dof_zoom_focusArea_Top )
+		if ( dof_zoom_focusArea_Top != 0 )
+			dofDots.focusAreaDot_top = dof_zoom_focusArea_Top
+
+		float dof_zoom_focusArea_Bottom = weapon.GetWeaponSettingFloat( eWeaponVar.dof_zoom_focusArea_Bottom )
+		if ( dof_zoom_focusArea_Bottom != 0 )
+			dofDots.focusAreaDot_bottom = dof_zoom_focusArea_Bottom
+
+		vars.dofDots = dofDots
+	}
+
+	vector playerViewOrigin = player.EyePosition()
+	vector playerViewForward = player.GetViewForward()
+	vector playerViewUp = player.GetViewUp()
+	vector playerViewRight = player.GetViewRight()
+
+	/*
+	// range finding in game
+	TraceResults result = TraceLine( playerViewOrigin, playerViewOrigin + playerViewForward * 80000, null, TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_NONE )
+	printt( "dist " + Distance( playerViewOrigin, result.endPos ) )
+	DebugDrawLine( playerViewOrigin, result.endPos, 255, 0, 0, true, 0.1 )
+	*/
+
+	AdsInternalVars adsInternalVars
+	//DebugDrawLine( playerViewOrigin, playerViewOrigin + playerViewForward * 8000, 0, 255, 0, true, 0.1 )
+	array<entity> npcEnemies
+	array<entity> playerEnemies
+
+	vars.everAimingAtTargets = true
+
+	GetDesiredFarDistFromEnemies( vars, adsInternalVars, playerViewOrigin, playerViewForward, playerViewUp, playerViewRight, npcEnemies, GetNPCTrace )
+	GetDesiredFarDistFromEnemies( vars, adsInternalVars, playerViewOrigin, playerViewForward, playerViewUp, playerViewRight, playerEnemies, GetPlayerTrace )
+
+	if ( adsInternalVars.targetCloaked )
+	{
+		// clear dof if we have a cloaked target
+		adsInternalVars.farDist_focusTarget = 0
+		adsInternalVars.farDist_peripheralOnly = 0
+	}
+
+	SetDofTransitionParameters( vars, adsInternalVars.farDist_focusTarget, adsInternalVars.farDist_peripheralOnly, playerViewForward )
+
+	if ( wasAds )
+	{
+		// blend the current dof to the desired dof, using a transition multiplier to modify rate of blend
+		vars.currentDist_min = vars.currentDist_min * vars.dofTransitionMultiplier + vars.desiredDist_min * ( 1.0 - vars.dofTransitionMultiplier )
+		vars.currentDist_max = vars.currentDist_max * vars.dofTransitionMultiplier + vars.desiredDist_max * ( 1.0 - vars.dofTransitionMultiplier )
+	}
+	else
+	{
+		// if we just entered ads then snap the blur to the desired distance
+		vars.currentDist_min = vars.desiredDist_min
+		vars.currentDist_max = vars.desiredDist_max
+	}
+
+	// if we have never been aiming at targets then leave it sharp, maybe just scoping out geo
+	if ( !vars.everAimingAtTargets )
+		return
+
+	//printt( "vars.dofTransitionMultiplier " + vars.dofTransitionMultiplier + ", CB " + vars.currentDist_min + " CE " + vars.currentDist_max + ", DB " + vars.desiredDist_min + " DE " + vars.desiredDist_max )
+	DoF_SetFarDepth( vars.currentDist_min, vars.currentDist_max )
+}
+
+void function SetDofTransitionParameters( AdsVars vars, float farDist_focusTarget, float farDist_peripheralOnly, vector playerViewForward )
+{
+	// this is where the polishy tweaking and edge casing happens
+	if ( farDist_focusTarget == 0 )
+	{
+		// doesnt have targets
+		if ( vars.wasAimingAtTargets )
+		{
+			vars.noTargetsTime = Time()
+			vars.noTargetsForward = playerViewForward
+		}
+
+		vars.desiredDist_min = file.defaultFar_minDist
+		vars.desiredDist_max = file.defaultFar_maxDist
+		if ( DotProduct( vars.noTargetsForward, playerViewForward ) > 0.99 )
+		{
+			vars.dofTransitionMultiplier = GraphCapped( Time(), vars.noTargetsTime + 1.0, vars.noTargetsTime + 3.0, 1.0, file.transitionToDefaultMultiplier )
+		}
+		else
+		{
+			vars.dofTransitionMultiplier = file.transitionToDefaultMultiplier
+		}
+
+		#if ALWAYS_FAST_DOF
+		vars.dofTransitionMultiplier = file.transitionToDefaultMultiplier
+		#endif
+
+		vars.wasAimingAtTargets = false
+		return
+	}
+
+	// has targets
+
+	// push the far dist out to accommodate enemies in the peripheral
+	if ( farDist_peripheralOnly > farDist_focusTarget )
+		farDist_focusTarget = farDist_peripheralOnly
+
+	// define where the blur begins
+	float newMinDist = farDist_focusTarget * 1.2 // start the min plane a bit pushed out
+	if ( newMinDist < 400 )
+		newMinDist = 400
+	vars.desiredDist_min = newMinDist
+
+
+	// define where the blur ends
+	float newFarDist = farDist_focusTarget * 1.75 // blend to this far out
+	if ( newFarDist < 800 )
+		newFarDist = 800
+	if ( vars.wasAimingAtTargets && newFarDist < vars.desiredDist_max - 150 )
+	{
+		// if we were aiming at targets but our desired max dist has dropped substantially, then our most distant target either died or hid.
+		// Delay bringing the max dist in closer in case we need to watch a death anim or wait for the guy to step back out.
+		vars.farthestTargetVanishedTime = Time()
+	}
+	vars.desiredDist_max = newFarDist
+
+
+	if ( vars.currentDist_min < vars.desiredDist_min )
+	{
+		// when we push the blur dist away, we move it at high speed, so we're not looking at enemies waiting for them to come into focus
+		vars.dofTransitionMultiplier = DOF_FAST_ADJUST
+	}
+	else
+	{
+		// if we're bringing the blur plane closer, we delay if the farthest away enemy recently died or fled
+		// The transition multiplier might want to be file.transitionToDefaultMultiplier
+		vars.dofTransitionMultiplier = GraphCapped( Time(), vars.farthestTargetVanishedTime + 1.6, vars.farthestTargetVanishedTime + 2.0, 0.995, DOF_FAST_ADJUST )
+	}
+
+	#if ALWAYS_FAST_DOF
+	vars.dofTransitionMultiplier = DOF_FAST_ADJUST
+	#endif
+
+	vars.wasAimingAtTargets = true
+	vars.everAimingAtTargets = true
+}
+
+bool function GetNPCTrace( entity enemy, vector playerViewOrigin, vector enemyEyePosition )
+{
+	float result = enemy.TraceToLocalPlayerSimple()
+	return result >= 1.0
+}
+
+bool function GetPlayerTrace( entity enemy, vector playerViewOrigin, vector enemyEyePosition )
+{
+	TraceResults ornull trace = enemy.TraceToLocalPlayer()
+
+	if ( trace == null )
+		return false
+
+	expect TraceResults( trace )
+
+	#if DEV
+	if ( file.debugMode )
+	{
+		DebugDrawLine( playerViewOrigin, trace.endPos, 0, 255, 0, false, 0.1 )
+		DebugDrawLine( trace.endPos, enemyEyePosition, 255, 0, 0, false, 0.1 )
+	}
+	#endif
+	return trace.fraction >= 1.0
+}
+
+void function GetDesiredFarDistFromEnemies( AdsVars vars, AdsInternalVars adsInternalVars, vector playerViewOrigin, vector playerViewForward, vector playerViewUp, vector playerViewRight, array<entity> enemies, bool functionref( entity, vector, vector ) npcTraceFunc )
+{
+	foreach ( enemy in enemies )
+	{
+		vector enemyOrigin
+		if ( IsWatchingReplay() )
+		 	enemyOrigin = enemy.GetWorldSpaceCenter() // prefer to use eye position but there is a bug in kill replay making all players return the same eye position
+		else
+			enemyOrigin = enemy.EyePosition()
+
+		vector forwardDif = enemyOrigin - playerViewOrigin
+		float forwardDot = DotProduct( playerViewForward, forwardDif )
+		float dist = forwardDot
+		if ( dist < 180 )
+			continue
+
+		bool isCloaked = enemy.IsCloaked( true )
+		if ( !isCloaked && dist < adsInternalVars.farDist_focusTarget )
+			continue
+
+		float upDot = DotProduct( playerViewUp, forwardDif ) / forwardDot
+		float rightDot = fabs( DotProduct( playerViewRight, forwardDif ) / forwardDot )
+
+		//string msg = format( "R:%.2f F:%.2f U:%.2f", rightDot, forwardDot, upDot )
+		//DebugDrawText( enemy.EyePosition(), msg, false, 0.05 )
+
+		// is enemy outside the focus area? Note: Generic focus area should be replaced with per-scope settings
+		WeaponDofDots dofDots = vars.dofDots
+
+		#if ALWAYS_FAST_DOF
+		printt( "rightDot " + rightDot + " upDot " + upDot )
+		#endif
+
+		if ( rightDot >= dofDots.focusAreaDot_horizontal || upDot < dofDots.focusAreaDot_bottom || upDot > dofDots.focusAreaDot_top )
+		{
+			// is the enemy visible on screen anywhere?
+			if ( rightDot < dofDots.peripheralDot_right && upDot < dofDots.peripheralDot_upTop && upDot > dofDots.peripheralDot_upBottom )
+			{
+				if ( dist <= adsInternalVars.farDist_peripheralOnly )
+					continue
+
+				if ( !npcTraceFunc( enemy, playerViewOrigin, enemyOrigin ) )
+					continue
+
+				// enemy is visible in the peripheral
+				adsInternalVars.farDist_peripheralOnly = dist
+				if ( isCloaked )
+					adsInternalVars.targetCloaked = true
+			}
+
+			continue
+		}
+
+		if ( !npcTraceFunc( enemy, playerViewOrigin, enemyOrigin ) )
+			continue
+
+		#if DEV
+		if ( file.debugMode )
+		{
+			vector offset = <3,3,3>
+			DebugDrawLine( enemy.EyePosition() + offset, playerViewOrigin + offset, 255, 0, 0, true, 0.1 )
+			string msg = format( "R:%.2f F:%.2f U:%.2f", rightDot, forwardDot, upDot )
+			DebugDrawText( enemy.EyePosition(), msg, false, 0.05 )
+		}
+		#endif
+
+		adsInternalVars.farDist_focusTarget = dist
+		if ( isCloaked )
+			adsInternalVars.targetCloaked = true
+	}
+}

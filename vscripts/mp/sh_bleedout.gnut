@@ -1,0 +1,401 @@
+global function BleedoutShared_Init
+global function Bleedout_GetBleedoutTime
+global function Bleedout_GetFirstAidTime
+global function Bleedout_GetFirstAidTimeSelf
+global function Bleedout_GetFirstAidHealPercent
+global function Bleedout_GetForceWeaponHolster
+global function Bleedout_GetDeathOnTeamBleedout
+global function Bleedout_ShouldAIMissPlayer
+global function Bleedout_GetAIMissChance
+global function Bleedout_GetSelfResEnabled
+global function Bleedout_IsBleedoutLogicActive
+global function Bleedout_IsBleedingOut
+global function Bleedout_PlayerCanRes
+global function Bleedout_PlayerCanBeRessed
+global function Bleedout_PlayerCanSelfRes
+global function Bleedout_GetPlayerBleedoutType
+global function Bleedout_GetPlayerBleedoutTypeCount
+global function Bleedout_GetRevivingPlayer
+
+global function BleedoutState_GetPlayerBleedoutState
+
+#if SERVER
+global function BleedoutState_SetPlayerBleedoutState
+global function BleedoutState_AddCallback_OnPlayerBleedoutStateChanged
+#endif // SERVER
+
+//DEFAULT BLEEDOUT RULES
+const float BLEEDOUT_TIME_LV1 = 90.0
+const float BLEEDOUT_TIME_LV2 = 60.0
+const float BLEEDOUT_TIME_LV3 = 30.0
+const float BLEEDOUT_TIME_LV4 = 15.0
+
+const float DEFAULT_FIRSTAID_TIME = 6.0
+const float DEFAULT_FIRSTAID_TIME_SELF = -1.0
+const float DEFAULT_FIRSTAID_HEAL_PERCENT = 0.2
+const float DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE = 0.0
+const bool DEFAULT_FORCE_WEAPON_HOLSTER = true
+const bool DEFAULT_DEATH_ON_TEAM_BLEEDOUT = true
+
+//MEDIC BLEEDOUT RULES
+const float MEDIC_FIRSTAID_TIME = 4.5
+
+global enum eReviveTypes
+{
+	FRIENDLY
+	RECRUIT
+	COUNT
+}
+
+struct BleedoutData
+{
+	float bleedoutTime
+	float firstAidTime
+	float firstAidTimeSelf
+	float firstAidHealPercent
+	float aiBleedingPlayerMissChance
+	bool  forceHolster
+	bool  forceDeathOnTeamBleedout
+	bool  enableSelfRes
+}
+
+struct
+{
+	bool                bleedoutLogicActive = false
+	array<BleedoutData> bleedoutTypes
+
+#if SERVER
+	array< void functionref( entity ) > Callbacks_OnPlayerBleedoutStateChanged
+#endif // SERVER
+} file
+
+void function BleedoutShared_Init()
+{
+	PrecacheWeapon( "mp_weapon_incap_shield" )
+	
+	//DEFAULT BLEEDOUT (Index 0)
+	BleedoutData defData
+	defData.bleedoutTime = GetCurrentPlaylistVarFloat( "survival_bleedout_time_1", BLEEDOUT_TIME_LV1 )
+	defData.firstAidTime = DEFAULT_FIRSTAID_TIME        //This is the amount of time it takes this player to res other players.
+		defData.firstAidTimeSelf = DEFAULT_FIRSTAID_TIME_SELF
+	defData.firstAidHealPercent = DEFAULT_FIRSTAID_HEAL_PERCENT
+	defData.aiBleedingPlayerMissChance = DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE
+	defData.forceHolster = DEFAULT_FORCE_WEAPON_HOLSTER
+	defData.forceDeathOnTeamBleedout = DEFAULT_DEATH_ON_TEAM_BLEEDOUT
+	defData.enableSelfRes = (defData.firstAidTimeSelf >= 0)
+	file.bleedoutTypes.append( defData )
+
+	BleedoutData defData2
+	defData2.bleedoutTime = GetCurrentPlaylistVarFloat( "survival_bleedout_time_2", BLEEDOUT_TIME_LV2 )
+	defData2.firstAidTime = DEFAULT_FIRSTAID_TIME        //This is the amount of time it takes this player to res other players.
+	defData2.firstAidTimeSelf = DEFAULT_FIRSTAID_TIME_SELF
+	defData2.firstAidHealPercent = DEFAULT_FIRSTAID_HEAL_PERCENT
+	defData2.aiBleedingPlayerMissChance = DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE
+	defData2.forceHolster = DEFAULT_FORCE_WEAPON_HOLSTER
+	defData2.forceDeathOnTeamBleedout = DEFAULT_DEATH_ON_TEAM_BLEEDOUT
+	defData2.enableSelfRes = (defData2.firstAidTimeSelf >= 0)
+	file.bleedoutTypes.append( defData2 )
+
+	BleedoutData defData3
+	defData3.bleedoutTime = GetCurrentPlaylistVarFloat( "survival_bleedout_time_3", BLEEDOUT_TIME_LV3 )
+	defData3.firstAidTime = DEFAULT_FIRSTAID_TIME        //This is the amount of time it takes this player to res other players.
+	defData3.firstAidTimeSelf = DEFAULT_FIRSTAID_TIME_SELF
+	defData3.firstAidHealPercent = DEFAULT_FIRSTAID_HEAL_PERCENT
+	defData3.aiBleedingPlayerMissChance = DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE
+	defData3.forceHolster = DEFAULT_FORCE_WEAPON_HOLSTER
+	defData3.forceDeathOnTeamBleedout = DEFAULT_DEATH_ON_TEAM_BLEEDOUT
+	defData3.enableSelfRes = (defData3.firstAidTimeSelf >= 0)
+	file.bleedoutTypes.append( defData3 )
+
+	BleedoutData defData4
+	defData4.bleedoutTime = GetCurrentPlaylistVarFloat( "survival_bleedout_time_4", BLEEDOUT_TIME_LV4 )
+	defData4.firstAidTime = DEFAULT_FIRSTAID_TIME        //This is the amount of time it takes this player to res other players.
+	defData4.firstAidTimeSelf = DEFAULT_FIRSTAID_TIME_SELF
+	defData4.firstAidHealPercent = DEFAULT_FIRSTAID_HEAL_PERCENT
+	defData4.aiBleedingPlayerMissChance = DEFAULT_AI_BLEEDING_PLAYER_MISS_CHANCE
+	defData4.forceHolster = DEFAULT_FORCE_WEAPON_HOLSTER
+	defData4.forceDeathOnTeamBleedout = DEFAULT_DEATH_ON_TEAM_BLEEDOUT
+	defData4.enableSelfRes = (defData4.firstAidTimeSelf >= 0)
+	file.bleedoutTypes.append( defData4 )
+
+	#if CLIENT
+		AddCreateCallback( "player", OnPlayerCreated )
+	#elseif SERVER
+		AddSpawnCallback( "player", OnPlayerCreated )
+	#endif
+
+	AddCallback_CheckPlayerCanUse( CheckPlayerCanUse )
+
+	file.bleedoutLogicActive = true
+}
+
+
+bool function CheckPlayerCanUse( entity player, entity target )
+{
+	if ( !Bleedout_IsBleedingOut( player ) )
+		return true
+
+	if ( target.GetNetworkedClassName() == "prop_door" || target.GetScriptName() == "survival_door_plain" )
+		return true
+
+	return false
+}
+
+const float REVIVE_RANGE_MAX = 144.0
+const float REVIVE_RANGE_MIN = 32.0
+const float REVIVE_RANGE_MAX_SQ = REVIVE_RANGE_MAX * REVIVE_RANGE_MAX
+const float REVIVE_RANGE_MIN_SQ = REVIVE_RANGE_MIN * REVIVE_RANGE_MIN
+const float REVIVE_RANGE_Z_MAX = 96.0
+const float REVIVE_RANGE_Z_MIN = 48.0
+const bool DEBUG_REVIVE_RANGE = false
+
+bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
+{
+	if ( !Bleedout_PlayerCanRes( reviver ) )
+		return false
+
+	if ( !Bleedout_PlayerCanBeRessed( victim ) )
+		return false
+
+	vector victimPos          = victim.GetOrigin()
+	vector vecReviverToVictim = victimPos - reviver.GetOrigin()
+
+	float reviveRangeFrac = (1.0 + DotProduct( reviver.GetViewForward(), Normalize( vecReviverToVictim ) )) * 0.5
+	float reviveRange     = reviveRangeFrac * (REVIVE_RANGE_MAX - REVIVE_RANGE_MIN)
+
+	if ( DEBUG_REVIVE_RANGE )
+	{
+		DebugDrawLine( reviver.GetOrigin(), victimPos, 200, 200, 50, true, 0.3 )
+		DebugDrawTrigger( victimPos, reviveRange, 200, 200, 50, 0.3, true )
+	}
+
+	float distSq = LengthSqr( vecReviverToVictim )
+
+	if ( distSq > reviveRange * reviveRange )
+		return false
+
+	// check the z-height to detect against cliffs (overall detection shape is now a triangle-tipped capsule)
+	float maxZDiff = GraphCapped( distSq, REVIVE_RANGE_MIN_SQ, REVIVE_RANGE_MAX_SQ, REVIVE_RANGE_Z_MAX, REVIVE_RANGE_Z_MIN )
+	if ( fabs( vecReviverToVictim.z ) > maxZDiff )
+		return false
+
+	// this just does a hull trace under the hood.
+	if ( !PlayerMelee_IsExecutionReachable( reviver, victim, 0.15 ) )
+		return false
+
+	return true
+}
+
+
+void function OnPlayerCreated( entity player )
+{
+	SetCallback_CanUseEntityCallback( player, Bleedout_CanRevivePlayer )
+}
+
+
+float function Bleedout_GetBleedoutTime( entity player )
+{
+	//If this is set to -1 the player never dies from a bleedout
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	return file.bleedoutTypes[ type ].bleedoutTime
+}
+
+
+float function Bleedout_GetFirstAidTime( entity player )
+{
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+
+	if ( PlayerHasPassive( player, ePassives.PAS_MEDIC ) )
+		return MEDIC_FIRSTAID_TIME
+
+	return file.bleedoutTypes[ type ].firstAidTime
+}
+
+
+float function Bleedout_GetFirstAidTimeSelf( entity player )
+{
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	return file.bleedoutTypes[ type ].firstAidTimeSelf
+}
+
+
+float function Bleedout_GetFirstAidHealPercent( entity player )
+{
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	return file.bleedoutTypes[ type ].firstAidHealPercent
+}
+
+
+bool function Bleedout_GetForceWeaponHolster( entity player )
+{
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	return file.bleedoutTypes[ type ].forceHolster
+}
+
+
+bool function Bleedout_GetDeathOnTeamBleedout( entity player )
+{
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	return file.bleedoutTypes[ type ].forceDeathOnTeamBleedout
+}
+
+
+bool function Bleedout_ShouldAIMissPlayer( entity player )
+{
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	return file.bleedoutTypes[ type ].aiBleedingPlayerMissChance > 0
+}
+
+
+float function Bleedout_GetAIMissChance( entity player )
+{
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	return file.bleedoutTypes[ type ].aiBleedingPlayerMissChance
+}
+
+
+entity function Bleedout_GetRevivingPlayer( entity player )
+{
+	Assert( Bleedout_IsBleedingOut( player ), "Tried to call function on a player who isn't bleeding out" )
+	return player.GetPlayerNetEnt( "revivePlayerHealer" )
+}
+
+
+bool function Bleedout_GetSelfResEnabled( entity player )
+{
+	//If player has self-res from equipment
+	if ( PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) && !player.GetPlayerNetBool( "usedSelfRevive" ) )
+		return true
+
+	int type = player.GetPlayerNetInt( "bleedoutType" )
+	return file.bleedoutTypes[ type ].enableSelfRes
+}
+
+
+//Returns whether or not the game is currently using bleedout logic.
+bool function Bleedout_IsBleedoutLogicActive()
+{
+	return file.bleedoutLogicActive
+}
+
+
+bool function Bleedout_IsBleedingOut( entity player )
+{
+	if ( !player.IsPlayer() )
+		return false
+
+	return BleedoutState_GetPlayerBleedoutState( player ) != BS_NOT_BLEEDING_OUT
+}
+
+
+bool function Bleedout_PlayerCanRes( entity player )
+{
+	if ( !player.IsPlayer() )
+		return false
+
+	if ( player.ContextAction_IsActive() )
+		return false
+
+	if ( Bleedout_IsBleedingOut( player ) )
+		return false
+
+	if ( player.IsPhaseShiftedOrPending() )
+		return false
+
+	if ( IsValid( player.GetParent() ) )
+		return false
+
+	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
+		return false
+
+	if ( IsValid( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) && player.GetActiveWeapon( eActiveInventorySlot.mainHand ).IsWeaponOffhand() )
+		return false
+
+
+	return true
+}
+
+
+bool function Bleedout_PlayerCanBeRessed( entity player )
+{
+	if ( !player.IsPlayer() )
+		return false
+
+	if ( player.ContextAction_IsActive() )
+		return false
+
+	if ( player.GetPlayerNetTime( "reviveEndTime" ) != 0.0 )
+		return false
+
+	if ( !player.IsOnGround() )
+		return false
+
+	if ( player.IsPhaseShiftedOrPending() )
+		return false
+
+	if ( IsValid( player.GetParent() ) )
+		return false
+
+	if ( BleedoutState_GetPlayerBleedoutState( player ) != BS_BLEEDING_OUT )
+		return false
+
+	return true
+}
+
+
+bool function Bleedout_PlayerCanSelfRes( entity player )
+{
+	if ( !Bleedout_PlayerCanBeRessed( player ) )
+		return false
+
+	if ( !PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) )
+		return false
+
+	if ( player.GetPlayerNetBool( "usedSelfRevive" ) )
+		return false
+
+	return true
+}
+
+
+int function Bleedout_GetPlayerBleedoutType( entity player )
+{
+	return player.GetPlayerNetInt( "bleedoutType" )
+}
+
+
+int function Bleedout_GetPlayerBleedoutTypeCount()
+{
+	return file.bleedoutTypes.len()
+}
+
+#if SERVER
+void function BleedoutState_AddCallback_OnPlayerBleedoutStateChanged( void functionref( entity ) callbackFunc )
+{
+	Assert( !file.Callbacks_OnPlayerBleedoutStateChanged.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with BleedoutState_AddCallback_OnPlayerBleedoutStateChanged" )
+	file.Callbacks_OnPlayerBleedoutStateChanged.append( callbackFunc )
+}
+
+void function BleedoutState_SetPlayerBleedoutState( entity player, int newState )
+{
+	if ( !IsValid( player ) )
+		return
+
+	int oldState = BleedoutState_GetPlayerBleedoutState( player )
+	if ( newState == oldState )
+		return
+
+	player.SetBleedoutState( newState )
+
+	foreach( callbackFunc in file.Callbacks_OnPlayerBleedoutStateChanged )
+	{
+		callbackFunc( player )
+	}
+}
+#endif // SERVER
+
+
+int function BleedoutState_GetPlayerBleedoutState( entity player )
+{
+	return player.GetBleedoutState()
+}

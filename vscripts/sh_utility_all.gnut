@@ -1,0 +1,2086 @@
+untyped
+
+globalize_all_functions
+
+global const DEG_TO_RAD = 0.01745329251994 // PI / 180.0
+global const RAD_TO_DEG = 57.29577951308232 // 180.0 / PI
+
+global array<asset> LEGAL_PLAYER_TITAN_SETTINGS
+
+global const PST_TIME_ZONE_OFFSET				= -7
+
+global struct TimeParts
+{
+	int year
+	int month
+	int day
+	int hour
+	int minute
+	int second
+}
+
+global struct DisplayTime
+{
+	int days
+	int hours
+	int minutes
+	int seconds
+}
+
+global struct AABB
+{
+	vector mins
+	vector maxs
+}
+
+global enum eStreamMode
+{
+	DISABLED,
+	KILLER,
+	ALL,
+}
+
+const int IS_LOBBY_UNSURE = -1
+const int IS_LOBBY_YES = 1
+const int IS_LOBBY_NO = 0
+
+global struct Timeout
+{
+	float startTime
+	float duration
+}
+
+global struct ShuffleData
+{
+	int shufflePos = 999
+	array<int> shuffledIndices
+	int lastIndex = -1
+
+	int count = 0
+}
+
+global struct ThrottleData
+{
+	float lastRunTime = 0.0
+	bool isQueued = false
+	void functionref() latestFunc
+}
+
+
+struct
+{
+	int lastHostThreadMode
+	int lastScriptPrecacheErrors
+	int lastReportFatal
+	bool devUnlockedSPMissions
+
+	int cachedIsLobby = IS_LOBBY_UNSURE
+	int hud_setting_accessibleChatCache
+} file
+
+void function ShUtilityAll_Init()
+{
+	#document( "DistanceAlongVector", "" )
+	#document( "GetClosestPointOnLineSegment", "Get the nearest point on a line segment" )
+	#document( "GetDistanceFromLineSegment", "" )
+	#document( "GetDistanceSqrFromLineSegment", "" )
+
+	LEGAL_PLAYER_TITAN_SETTINGS = GetAllowedPlayerTitanSettings() //Function reads from the data table, no point doing it over and over when it shouldn't change mid-match/game
+
+	RegisterSignal( "Timeout" )
+	RegisterSignal( "CancelTimeout" )
+}
+
+Timeout function BeginTimeout( float duration )
+{
+	Timeout to
+	to.startTime = Time()
+	to.duration = duration
+	thread __RunTimeoutInternal( to )
+	return to
+}
+void function __RunTimeoutInternal( Timeout to )
+{
+	EndSignal( to, "CancelTimeout" )
+	wait to.duration
+	Signal( to, "Timeout" )
+}
+void function CancelTimeoutIfAlive( Timeout to )
+{
+	Signal( to, "CancelTimeout" )
+}
+//void function EndThreadOnTimeout( Timeout to )
+//{
+//	EndSignal( to, "Timeout" )
+//}
+
+void function PrintObject( obj, int indent, int depth, int maxDepth )
+{
+	if ( IsTable( obj ) )
+	{
+		if ( depth >= maxDepth )
+		{
+			printl( "{...}" )
+			return
+		}
+
+		printl( "{" )
+		foreach ( k, v in obj )
+		{
+			print( TableIndent( indent + 2 ) + k + " = " )
+			PrintObject( v, indent + 2, depth + 1, maxDepth )
+		}
+		printl( TableIndent( indent ) + "}" )
+	}
+	else if ( IsArray( obj ) )
+	{
+		if ( depth >= maxDepth )
+		{
+			printl( "[...]" )
+			return
+		}
+
+		printl( "[" )
+		foreach ( v in obj )
+		{
+			print( TableIndent( indent + 2 ) )
+			PrintObject( v, indent + 2, depth + 1, maxDepth )
+		}
+		printl( TableIndent( indent ) + "]" )
+	}
+	else if ( obj != null )
+	{
+		printl( "" + obj )
+	}
+	else
+	{
+		printl( "<null>" )
+	}
+}
+
+// dump the stack trace to the console
+void function DumpStack( int offset = 1 )
+{
+	for ( int i = offset; i < 20; i++ )
+	{
+		if ( !( "src" in getstackinfos(i) ) )
+			break
+		printl( i + " File : " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "]\n    Function : " + getstackinfos(i)["func"] + "() " )
+	}
+}
+
+// dump the stack trace to the console
+string function GetStack( int offset = 1 )
+{
+	string stackInfo = ""
+
+	for ( int i = offset; i < 20; i++ )
+	{
+		if ( !( "src" in getstackinfos(i) ) )
+			break
+
+		stackInfo += i + " File : " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "]\n    Function : " + getstackinfos(i)["func"] + "()\n"
+	}
+
+	return stackInfo
+}
+
+void function DumpPreviousFunction()
+{
+	int i = 3
+	if ( !( "src" in getstackinfos(i) ) )
+		return
+	printl( "Called from: " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "] : " + getstackinfos(i)["func"] + "() " )
+}
+
+string function GetPreviousFunction()
+{
+	int i = 3
+	if ( !( "src" in getstackinfos(i) ) )
+		return ""
+	return "Called from: " + getstackinfos(i)["src"] + " [" + getstackinfos(i)["line"] + "] : " + getstackinfos(i)["func"] + "() "
+}
+
+bool function IsNewThread()
+{
+	//return threads.GetCurrentThread().co == getthread()
+	int i
+	for ( i = 0; i < 20; i++ )
+	{
+		if ( !( "src" in getstackinfos(i) ) )
+			break
+	}
+
+	return i == 3
+}
+
+void function AssertParameters( func, int paramCount, string paramDesc )
+{
+	table funcInfos = expect table( func.getinfos() )
+	string funcName = expect string( funcInfos.name )
+	// subtract one from the param count for the hidden "this" object
+	Assert( funcInfos.parameters.len() == (paramCount + 1), "Function \"" + funcName +"\" must have exactly " + paramCount + " parameters (" + paramDesc + ")." )
+}
+
+void function PrintTable( tbl, int indent = 0, int maxDepth = 4 )
+{
+	print( TableIndent( indent ) )
+	PrintObject( tbl, indent, 0, maxDepth )
+}
+
+string function TableIndent( int indent )
+{
+	return ("                                            ").slice( 0, indent )
+}
+
+
+string function RepeatString( string str, int times )
+{
+	string out = ""
+	for ( int i = 0; i < times; i++ )
+	{
+		out += str
+	}
+	return out
+}
+
+string function GetCurrentPlaylistVar( string val, string opVal = "" )
+{
+	#if UI
+		var result = Code_GetCurrentPlaylistVar( val )
+		if ( result != null )
+			return expect string( result )
+
+		return opVal
+	#else
+		return GetCurrentPlaylistVarOrUseValue( val, opVal )
+	#endif
+}
+
+string function GetCurrentPlaylistVarOrUseValue( string val, string opVal )
+{
+	#if !SERVER
+		if ( !IsConnected() )
+			return opVal
+	#endif
+
+	return Code_GetCurrentPlaylistVarOrUseValue( val, opVal ) // HACK
+}
+
+int function GetCurrentPlaylistVarInt( string val, int useVal )
+{
+	return int( GetCurrentPlaylistVarOrUseValue( val, string( useVal ) ) )
+}
+
+float function GetCurrentPlaylistVarFloat( string val, float useVal )
+{
+	return float( GetCurrentPlaylistVarOrUseValue( val, string( useVal ) ) )
+}
+
+bool function GetCurrentPlaylistVarBool( string val, bool useVal )
+{
+	return GetCurrentPlaylistVarOrUseValue( val, string( useVal ) ) == "true" || GetCurrentPlaylistVarOrUseValue( val, string( useVal ) ) == "1"
+}
+
+string function GetCurrentPlaylistVarString( string val, string useVal )
+{
+	return GetCurrentPlaylistVarOrUseValue( val, useVal )
+}
+
+int function GetCurrentPlaylistVarOrUseValueOriginalInt( string val, int useVal )
+{
+	return int( GetCurrentPlaylistVarOrUseValueOriginal( val, string( useVal ) ) )
+}
+
+float function GetCurrentPlaylistVarOrUseValueOriginalFloat( string val, float useVal )
+{
+	return float( GetCurrentPlaylistVarOrUseValueOriginal( val, string( useVal ) ) )
+}
+
+bool function GetCurrentPlaylistVarOrUseValueOriginalBool( string val, bool useVal )
+{
+	return bool( GetCurrentPlaylistVarOrUseValueOriginal( val, string( useVal ) ) )
+}
+
+string function GetCurrentPlaylistVarOrUseValueOriginalString( string val, string useVal )
+{
+	return GetCurrentPlaylistVarOrUseValueOriginal( val, useVal )
+}
+
+bool function IsMultiplayerPlaylist()
+{
+	return GetCurrentPlaylistVarInt( "classic_mp", 1 ) ? true : false
+}
+
+bool function IsOdd( int num )
+{
+	return ( num % 2 ) == 1
+}
+
+bool function IsEven( int num )
+{
+	return !IsOdd( num )
+}
+
+float function DegToRad( float degrees )
+{
+	return degrees * DEG_TO_RAD
+}
+
+
+float function RadToDeg( float radians )
+{
+	return radians * RAD_TO_DEG
+}
+
+
+float function CalcFOVScale( float baseFOV, float zoomScale )
+{
+	return RadToDeg( atan( tan( DegToRad( baseFOV / 2.0 ) ) / zoomScale ) ) * 2
+}
+
+
+vector function RotateAroundOrigin2D( vector originToRotate, vector origin, float angRadians )
+{
+	vector rotated = <0,0,originToRotate.z>
+	float sinOffsetAng = sin( angRadians )
+	float cosOffsetAng = cos( angRadians )
+	vector offset = originToRotate - origin
+
+	rotated.x = origin.x + ( offset.x * cosOffsetAng ) - ( offset.y * sinOffsetAng )
+	rotated.y = origin.y + ( offset.x * sinOffsetAng ) + ( offset.y * cosOffsetAng )
+
+	return rotated
+}
+
+
+vector function RotateVector( vector vec, vector rotateAngles )
+{
+	return vec.x * AnglesToForward( rotateAngles ) + vec.y * -1.0 * AnglesToRight( rotateAngles ) + vec.z * AnglesToUp( rotateAngles )
+
+	// 2017-12-06 DW: The following implementation doesn't work!
+	//vector vectorAngles = VectorToAngles( vec )
+	//vectorAngles = AnglesCompose( vectorAngles, rotateAngles )
+	//return AnglesToForward( vectorAngles ) * Length( vec )
+}
+
+AABB function RotateAABB( vector mins, vector maxs, vector rotateAngles )
+{
+	vector cnr_000 = RotateVector( < mins.x, mins.y, mins.z >, rotateAngles )
+	vector cnr_001 = RotateVector( < mins.x, mins.y, maxs.z >, rotateAngles )
+	vector cnr_010 = RotateVector( < mins.x, maxs.y, mins.z >, rotateAngles )
+	vector cnr_011 = RotateVector( < mins.x, maxs.y, maxs.z >, rotateAngles )
+	vector cnr_100 = RotateVector( < maxs.x, mins.y, mins.z >, rotateAngles )
+	vector cnr_101 = RotateVector( < maxs.x, mins.y, maxs.z >, rotateAngles )
+	vector cnr_110 = RotateVector( < maxs.x, maxs.y, mins.z >, rotateAngles )
+	vector cnr_111 = RotateVector( < maxs.x, maxs.y, maxs.z >, rotateAngles )
+
+	AABB result
+	result.mins = <
+		min( cnr_000.x, min( cnr_001.x, min( cnr_010.x, min( cnr_011.x, min( cnr_100.x, min( cnr_101.x, min( cnr_110.x, cnr_111.x ) ) ) ) ) ) ),
+		min( cnr_000.y, min( cnr_001.y, min( cnr_010.y, min( cnr_011.y, min( cnr_100.y, min( cnr_101.y, min( cnr_110.y, cnr_111.y ) ) ) ) ) ) ),
+		min( cnr_000.z, min( cnr_001.z, min( cnr_010.z, min( cnr_011.z, min( cnr_100.z, min( cnr_101.z, min( cnr_110.z, cnr_111.z ) ) ) ) ) ) )
+	>
+	result.maxs = <
+		max( cnr_000.x, max( cnr_001.x, max( cnr_010.x, max( cnr_011.x, max( cnr_100.x, max( cnr_101.x, max( cnr_110.x, cnr_111.x ) ) ) ) ) ) ),
+		max( cnr_000.y, max( cnr_001.y, max( cnr_010.y, max( cnr_011.y, max( cnr_100.y, max( cnr_101.y, max( cnr_110.y, cnr_111.y ) ) ) ) ) ) ),
+		max( cnr_000.z, max( cnr_001.z, max( cnr_010.z, max( cnr_011.z, max( cnr_100.z, max( cnr_101.z, max( cnr_110.z, cnr_111.z ) ) ) ) ) ) )
+	>
+	return result
+}
+
+
+float function RadWrap( float ang, float lowValue = -PI )
+{
+	return ((ang - lowValue) % (2.0 * PI)) + lowValue
+}
+
+
+vector function FindAnyPerpendicularVector( vector v )
+{
+	return RotateVector( <0, 0, 1> * Length( v ), VectorToAngles( Normalize( v ) ) )
+}
+
+
+bool function IsLobbyMapName( string levelname )
+{
+	if ( levelname == "mp_lobby" )
+		return true
+
+	return false
+}
+
+bool function IsLobby()
+{
+	string mapName
+
+	#if UI
+		mapName = GetActiveLevel()
+	#else
+		if ( file.cachedIsLobby != IS_LOBBY_UNSURE )
+			return file.cachedIsLobby == IS_LOBBY_YES
+
+		mapName = GetMapName()
+		file.cachedIsLobby = IsLobbyMapName( mapName ) ? IS_LOBBY_YES : IS_LOBBY_NO
+	#endif
+
+	return IsLobbyMapName( mapName )
+}
+
+bool function Is2TeamPvPGame() //Technically this checks if its' 2 teams. Will we have 2 team non-PvP games? Probably not...
+{
+	return ( MAX_TEAMS == 2 )
+}
+
+bool function IsMultiTeamPvPGame()
+{
+	return ( MAX_TEAMS > 2 )
+}
+
+bool function IsFFAGame()
+{
+	return ( MAX_TEAMS == MAX_PLAYERS )
+}
+
+bool function IsSingleTeamMode()
+{
+	return ( 1 == GetCurrentPlaylistVarInt( "max_teams", 2 ) )
+}
+
+bool function IsMultiTeamMission()
+{
+	return false
+}
+
+int function GetEnemyTeam( int team )
+{
+	if ( IsMultiTeamPvPGame() )
+		return TEAM_UNASSIGNED
+
+	if ( team == TEAM_SPECTATOR )
+		return TEAM_UNASSIGNED
+
+	Assert( team == TEAM_IMC || team == TEAM_MILITIA )
+
+	return (TEAM_IMC + TEAM_MILITIA) - team
+}
+
+array<int> function GetAllEnemyTeams( int team )
+{
+	array<int> resultArray
+	if ( Is2TeamPvPGame() || IsSingleTeamMode() )
+	{
+		resultArray.append( GetEnemyTeam( team ) )
+		return resultArray
+	}
+
+	int maxTeams = GetCurrentPlaylistVarInt( "max_teams", MAX_TEAMS )
+	Assert( team >= TEAM_MULTITEAM_FIRST )
+	Assert( team <= TEAM_MULTITEAM_LAST )
+
+	for ( int i = TEAM_MULTITEAM_FIRST; i < TEAM_MULTITEAM_FIRST + maxTeams; ++i )
+	{
+		if ( i == team )
+			continue
+
+		resultArray.append( i )
+	}
+
+	return resultArray
+}
+
+int function GetDefaultNonSpectatorTeam()
+{
+	int resultTeam
+
+	if ( Is2TeamPvPGame() )
+		resultTeam = TEAM_IMC
+	else
+		resultTeam = TEAM_MULTITEAM_FIRST
+
+	return resultTeam
+}
+
+string function GetMapDisplayNameAllCaps( string mapname )
+{
+	return "#" + mapname + "_ALLCAPS"
+}
+
+string function GetMapDisplayName( string mapname )
+{
+	return "#" + mapname
+}
+
+string function GetMapDisplayDesc( string mapname )
+{
+	return "#" + mapname + "_CLASSIC_DESC"
+}
+
+
+string function StringReplace( string baseString, string searchString, string replaceString )
+{
+	Assert( searchString.len() > 0, "cannot use StringReplace with an empty searchString" )
+
+	string newString = ""
+
+	int searchIndex = 0
+	while( searchIndex < (baseString.len() - searchString.len() + 1) )
+	{
+		var occurenceIndexOrNull = baseString.find_olduntyped( searchString, searchIndex )
+
+		if ( occurenceIndexOrNull == null )
+			break
+
+		int occurenceIndex = expect int( occurenceIndexOrNull )
+
+		newString += baseString.slice( searchIndex, occurenceIndex )
+		newString += replaceString
+
+		searchIndex = occurenceIndex + searchString.len()
+	}
+
+	newString += baseString.slice( searchIndex )
+
+	return newString
+}
+
+bool function DoesMatchRegexp( string baseString, string patternString )
+{
+	return expect bool(regexp( patternString ).match( baseString ))
+}
+
+string function RegexpReplace( string baseString, string patternString, string replaceString )
+{
+	var regexpReplaceSubstitutionPattern = regexp( "\\$(\\d+)" ) // todo: initialise earlier
+
+	Assert( patternString.len() > 0, "cannot use RegexpReplace with an empty patternString" )
+
+	array<var> replaceStringPartList = []
+
+	int substitutionSearchIndex = 0
+	while( substitutionSearchIndex < replaceString.len() )
+	{
+		var substitutionCaptureListOrNull = regexpReplaceSubstitutionPattern.capture( replaceString, substitutionSearchIndex )
+
+		if ( substitutionCaptureListOrNull == null )
+			break
+
+		array substitutionCaptureList = expect array( substitutionCaptureListOrNull )
+
+		table matchInfo = expect table( substitutionCaptureList[0] )
+
+		string skipped = replaceString.slice( substitutionSearchIndex, matchInfo.begin )
+		if ( skipped.len() > 0 )
+		{
+			replaceStringPartList.append( replaceString.slice( substitutionSearchIndex, matchInfo.begin ) )
+		}
+
+		table numberCaptureInfo = expect table( substitutionCaptureList[1] )
+		replaceStringPartList.append( int( replaceString.slice( numberCaptureInfo.begin, numberCaptureInfo.end ) ) )
+
+		substitutionSearchIndex = expect int( matchInfo.end )
+	}
+
+	string replaceStringRemainder = replaceString.slice( substitutionSearchIndex )
+	if ( replaceStringRemainder.len() > 0 )
+	{
+		replaceStringPartList.append( replaceStringRemainder )
+	}
+
+	string newString = ""
+	var pattern      = regexp( patternString )
+
+	int searchIndex = 0
+	while( searchIndex < baseString.len() )
+	{
+		var captureListOrNull = pattern.capture( baseString, searchIndex )
+
+		if ( captureListOrNull == null )
+			break
+
+		array captureList = expect array( captureListOrNull )
+
+		table matchInfo = expect table( captureList[0] )
+
+		newString += baseString.slice( searchIndex, matchInfo.begin )
+
+		foreach( var replaceStringPart in replaceStringPartList )
+		{
+			if ( type( replaceStringPart ) == "int" )
+			{
+				int captureIndex = expect int( replaceStringPart )
+
+				Assert( captureIndex < captureList.len(), "Invalid substituion in replacement string (saw $" + captureIndex + " but there's only " + captureList.len() + " captures)" )
+
+				table captureInfo = expect table( captureList[captureIndex] )
+				newString += baseString.slice( captureInfo.begin, captureInfo.end )
+			}
+			else
+			{
+				newString += expect string( replaceStringPart )
+			}
+		}
+
+		searchIndex = expect int( matchInfo.end )
+	}
+
+	newString += baseString.slice( searchIndex )
+
+	return newString
+}
+
+
+string function RegexpReplaceFunc( string baseString, string patternString, string functionref( array<string> captures ) replaceFunc )
+{
+	Assert( patternString.len() > 0, "cannot use RegexpReplace with an empty patternString" )
+
+	string newString = ""
+	var pattern      = regexp( patternString )
+
+	int searchIndex = 0
+	while( searchIndex < baseString.len() )
+	{
+		var captureListOrNull = pattern.capture( baseString, searchIndex )
+
+		if ( captureListOrNull == null )
+			break
+
+		array captureList = expect array( captureListOrNull )
+
+		table matchInfo = expect table( captureList[0] )
+
+		newString += baseString.slice( searchIndex, matchInfo.begin )
+
+		array<string> captureStrList = []
+		foreach( var captureInfoRaw in captureList )
+		{
+			table captureInfo = expect table( captureInfoRaw )
+			captureStrList.append( baseString.slice( captureInfo.begin, captureInfo.end ) )
+		}
+
+		newString += replaceFunc( captureStrList )
+
+		searchIndex = expect int( matchInfo.end )
+	}
+
+	newString += baseString.slice( searchIndex )
+
+	return newString
+}
+
+
+array<array<string> > function RegexpFindAll( string baseString, string patternString )
+{
+	array<array<string> > matches = []
+	var pattern                   = regexp( patternString )
+
+	int searchIndex = 0
+	while( searchIndex < baseString.len() )
+	{
+		var captureListOrNull = pattern.capture( baseString, searchIndex )
+
+		if ( captureListOrNull == null )
+			break
+
+		array captureList = expect array( captureListOrNull )
+
+		table matchInfo = expect table( captureList[0] )
+
+		array<string> captureStringList = []
+		foreach( var captureRawInfo in captureList )
+		{
+			table captureInfo = expect table( captureRawInfo )
+			captureStringList.append( baseString.slice( captureInfo.begin, captureInfo.end ) )
+		}
+
+		searchIndex = expect int( matchInfo.end )
+
+		matches.append( captureStringList )
+	}
+
+	return matches
+}
+
+
+
+float function RoundToNearestInt( float value )
+{
+	return floor( value + 0.5 )
+}
+
+float function RoundToNearestMultiplier( float value, float multiplier )
+{
+	Assert( multiplier > 0 )
+	bool neg = value < 0
+	value = fabs(value)
+
+	float remainder = value % multiplier
+
+	value -= remainder
+
+	if ( remainder >= ( multiplier / 2 ) )
+		value += multiplier
+
+	return neg ? -value : value
+}
+
+int function HIWORD( int value )
+{
+	return (value >> 16) & 0xFFFF
+}
+
+int function LOWORD( int value )
+{
+	return value
+}
+
+
+bool function IsWeaponKeyFieldDefined( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+
+	if ( val != null )
+		return true
+
+	return false
+}
+
+string function GetWeaponInfoFileKeyField_GlobalString( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
+	return expect string( val )
+}
+
+int function GetWeaponInfoFileKeyField_GlobalInt( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
+	return expect int( val )
+}
+
+float function GetWeaponInfoFileKeyField_GlobalFloat( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
+	return expect float( val )
+}
+
+bool function GetWeaponInfoFileKeyField_GlobalBool( string ref, string variable )
+{
+	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
+	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
+	return expect bool( val )
+}
+
+
+#if SERVER
+void function GiveExtraWeaponMod( entity player, string mod )
+{
+	if ( HasExtraWeaponMod( player, mod ) )
+		return
+
+	array mods = player.GetExtraWeaponMods()
+	mods.append( mod )
+
+	player.SetExtraWeaponMods( mods )
+}
+#endif
+
+
+#if SERVER
+bool function HasExtraWeaponMod( entity player, string mod )
+{
+	array mods = player.GetExtraWeaponMods()
+	foreach ( _mod in mods )
+	{
+		if ( _mod == mod )
+			return true
+	}
+	return false
+}
+#endif
+
+
+#if SERVER
+void function TakeExtraWeaponMod( entity player, string mod )
+{
+	if ( !HasExtraWeaponMod( player, mod ) )
+		return
+
+	array mods = player.GetExtraWeaponMods()
+	mods.fastremovebyvalue( mod )
+
+	player.SetExtraWeaponMods( mods )
+}
+#endif
+
+
+#if SERVER
+void function ClearExtraWeaponMods( entity player )
+{
+	player.SetExtraWeaponMods( [] )
+}
+#endif
+
+
+void function WaitFrame()
+{
+	//Don't use wait 0 since it doesn't actually wait a game frame. For example, if you have a client loop that does wait 0 even if the game is paused the loop will still run
+	wait 0.0001
+}
+
+string function VectorToString( vector vec )
+{
+	return "< " + vec.x + "," + vec.y + "," + vec.z + " >"
+}
+
+vector function FlattenNormalizeVec( vector v )
+{
+	return Normalize( <v.x, v.y, 0> )
+}
+
+vector function GetClosestPointOnPlane( vector a, vector b, vector c, vector p, bool clampInside = false )
+{
+	vector n = CrossProduct( b - a, c - a )
+	float eqTop = DotProduct( p - a, n )
+	float eqBot = DotProduct( n, n )
+
+	//can't devide by 0 -> this is a degenerate triangle
+	if ( fabs( eqBot ) < 0.001 )
+		return GetClosestPointOnLineSegment( a, b, p )
+
+	float magnitude = eqTop / eqBot
+
+	vector endPoint = p - ( n * magnitude )
+
+	if ( clampInside )
+	{
+		float testAB = DotProduct( CrossProduct( b - a, n ), p - a )
+		float testBC = DotProduct( CrossProduct( c - b, n ), p - b )
+		float testCA = DotProduct( CrossProduct( a - c, n ), p - c )
+
+		//if the results are negative - we're outside the triangle
+		if ( testAB * testBC < 0 || testBC * testCA < 0 )
+		{
+			vector lineAB = GetClosestPointOnLineSegment( a, b, p )
+			vector lineBC = GetClosestPointOnLineSegment( b, c, p )
+			vector lineCA = GetClosestPointOnLineSegment( c, a, p )
+
+			vector closestVector = lineAB
+			float closestDist = DistanceSqr( p, lineAB )
+			float dist = DistanceSqr( p, lineBC )
+			if ( dist < closestDist )
+			{
+				closestDist = dist
+				closestVector = lineBC
+			}
+			dist = DistanceSqr( p, lineCA )
+			if ( dist < closestDist )
+			{
+				closestDist = dist
+				closestVector = lineCA
+			}
+			return closestVector
+		}
+		//if we got this far - there are no outliers
+	}
+
+	return endPoint
+}
+
+float function DistanceAlongVector( vector origin, vector lineStart, vector lineForward )
+{
+	vector originDif = origin - lineStart
+	return DotProduct( originDif, lineForward )
+}
+
+// NearestPointOnLine
+vector function GetClosestPointOnLineSegment( vector a, vector b, vector p )
+{
+	float distanceSqr = LengthSqr( a - b )
+
+	if ( distanceSqr == 0.0 )
+		return a
+
+	float t = DotProduct( p - a, b - a ) / distanceSqr
+	if ( t < 0.0 )
+		return a
+	else if ( t > 1.0 )
+		return b
+
+	return a + t * (b - a)
+}
+
+vector function GetClosestPointOnLine( vector a, vector b, vector p )
+{
+	float distanceSqr = LengthSqr( a - b )
+
+	if ( distanceSqr == 0.0 )
+		return a
+
+	float t = DotProduct( p - a, b - a ) / distanceSqr
+
+	return a + t * (b - a)
+}
+
+vector ornull function GetIntersectionOfLineAndPlane( vector a, vector b, vector planePoint, vector planeNormal )
+{
+	float sT = DotProduct( planeNormal, planePoint - a )
+	float sB = DotProduct( planeNormal, b - a )
+
+	if ( sB > -0.0000001 && sB < 0.0000001 )
+		return null
+
+	float s = sT / sB
+	return a + (b - a) * s
+}
+
+float function GetDistanceFromLineSegment( vector a, vector b, vector p )
+{
+	vector closestPoint = GetClosestPointOnLineSegment( a, b, p )
+	return Distance( p, closestPoint )
+}
+
+float function GetDistanceSqrFromLineSegment( vector a, vector b, vector p )
+{
+	vector closestPoint = GetClosestPointOnLineSegment( a, b, p )
+	return DistanceSqr( p, closestPoint )
+}
+
+float function GetProgressAlongLineSegment( vector P, vector A, vector B )
+{
+    vector AP = P - A
+    vector AB = B - A
+
+    float ab2 = DotProduct( AB, AB ) // AB.x*AB.x + AB.y*AB.y
+    float ap_ab = DotProduct( AP, AB ) // AP.x*AB.x + AP.y*AB.y
+    float t = ap_ab / ab2
+    return t
+}
+
+string function PadString( string str, int len )
+{
+	for ( int i = str.len(); i < len; i++ )
+		str += " "
+
+	return str
+}
+
+bool function IsSpawner( entity ent )
+{
+	return ( IsValid( ent ) && ent.GetNetworkedClassName() == "spawner" )
+}
+
+string function GetAISettingsStringForMode()
+{
+	return "aiSettingsFile"
+}
+
+array<asset> function GetAllowedPlayerTitanSettings() //Based off AllowedTItanAISettings, which is based off the titan_properties table
+{
+	//string searchString = "mp_npcUseAllowed"
+	//
+	//array<asset> list = []
+	//var dataTable = GetDataTable( TITAN_PROPERTIES_DATATABLE )
+	//int numRows = GetDatatableRowCount( dataTable )
+	//
+	//for ( int r=0; r<numRows; r++ )
+	//{
+	//	bool allowed = GetDataTableBool( dataTable, r, GetDataTableColumnByName( dataTable, searchString ) )
+	//	if ( allowed )
+	//	{
+	//		string titanRef = GetDataTableString( dataTable, r, GetDataTableColumnByName( dataTable, "titanRef" ) )
+	//
+	//		if ( IsDisabledRef( titanRef ) )
+	//			continue
+	//
+	//		list.append( GetDataTableAsset( dataTable, r, GetDataTableColumnByName( dataTable, "setFile" ) ) )
+	//	}
+	//}
+	//
+	//return list
+	return []
+}
+
+array<string> function GetAllowedTitanAISettings( string settings = "" )
+{
+	//if ( settings == "" )
+	//{
+	//	settings = GetAISettingsStringForMode()
+	//}
+	//
+	//string searchString = GetAllowedTitanAISettingsSearchString()
+	//array<string> list
+	//var dataTable = GetDataTable( TITAN_PROPERTIES_DATATABLE )
+	//int numRows = GetDatatableRowCount( dataTable )
+	//
+	//for ( int r=0; r<numRows; r++ )
+	//{
+	//	bool allowed = GetDataTableBool( dataTable, r, GetDataTableColumnByName( dataTable, searchString ) )
+	//	if ( allowed )
+	//	{
+	//		asset setfile = GetDataTableAsset( dataTable, r, GetDataTableColumnByName( dataTable, "setFile" ) )
+	//		string aiSettings = GetGlobalSettingsString( setfile, settings )
+	//		list.append( aiSettings )
+	//	}
+	//}
+	//
+	//return list
+	return []
+}
+
+array<string> function GetAllNPCSettings()
+{
+	// should be replaced with a getter that gets the content of classes.txt
+	array<string> aiSettings
+
+	// these npcs appear in the dev menu. Dev menu presence should be changed to a key in the settings file
+	//aiSettings.append( "npc_drone" )
+	//aiSettings.append( "npc_drone_beam" )
+	//aiSettings.append( "npc_drone_plasma" )
+	//aiSettings.append( "npc_drone_plasma_fast" )
+	//aiSettings.append( "npc_drone_flame" )
+	//aiSettings.append( "npc_drone_worker" )
+	//aiSettings.append( "npc_drone_vipertest" )
+	//aiSettings.append( "npc_dropship" )
+	//aiSettings.append( "npc_frag_drone" )
+	//aiSettings.append( "npc_frag_drone_throwable" )
+	//aiSettings.append( "npc_marvin" )
+	//aiSettings.append( "npc_prowler" )
+	//aiSettings.append( "npc_goliath" )
+	//aiSettings.append( "npc_soldier" )
+	//aiSettings.append( "npc_soldier_hero_bear" )
+	//aiSettings.append( "npc_soldier_hero_sarah" )
+	//aiSettings.append( "npc_soldier_hero_vail" )
+	//aiSettings.append( "npc_pilot_hero_gibraltar" )
+	//aiSettings.append( "npc_soldier_shield_captain" )
+	//aiSettings.append( "npc_soldier_sidearm" )
+	//aiSettings.append( "npc_soldier_specialist" )
+	//aiSettings.append( "npc_soldier_specialist_militia" )
+	//aiSettings.append( "npc_soldier_infected" )
+	//aiSettings.append( "npc_pilot" )
+	//aiSettings.append( "npc_pilot_phaseshift" )
+	//aiSettings.append( "npc_spectre" )
+	//aiSettings.append( "npc_spider" )
+	//aiSettings.append( "npc_stalker" )
+	//aiSettings.append( "npc_stalker_zombie" )
+	//aiSettings.append( "npc_stalker_zombie_mossy" )
+	//aiSettings.append( "npc_super_spectre" )
+	//aiSettings.append( "npc_titan_sarah" )
+	//aiSettings.append( "npc_titan_vanguard" )
+	//
+	//// insert titans here!
+	//aiSettings.extend( GetAllowedTitanAISettings() )
+	//
+	//aiSettings.extend( [
+	//	"npc_turret_mega"
+	//	"npc_turret_mega_rocket"
+	//	"npc_turret_sentry"
+	//	"npc_turret_sentry_plasma"
+	//	"npc_turret_sentry_tday"
+	//] )
+
+	return aiSettings
+}
+
+///////
+// These are Brent's utility functions that match RUI functions of the same name; use these to accurately compute RUI values from script
+float function EaseIn( float val )
+{
+	return AttackDecay( 0, 2, val )
+}
+
+float function EaseOut( float val )
+{
+	return AttackDecay( 2, 0, val )
+}
+
+float function AttackDecay( float attack, float decay, float time )
+{
+	float sum = attack + decay
+	float a = sum - 2.0
+	float b = (3.0 - attack) - sum
+	float c = attack
+	float t = max( min( time, 1.0 ), 0.0 )
+
+	return t * (c + t * (b + t * a))
+}
+
+float function Clamp( float value, float minValue, float maxValue )
+{
+	return max( min( value, maxValue ), minValue )
+}
+
+int function ClampInt( int value, int minValue, int maxValue )
+{
+	return maxint( minint( value, maxValue ), minValue )
+}
+///////
+
+
+void function RemoveDupesFromSorted_String( array<string> data )
+{
+	for ( int i = 0; i < data.len() - 1; i++ )
+	{
+		if ( data[i] == data[i+1] )
+		{
+			data.remove( i )
+			i--
+		}
+	}
+}
+
+function SortAlphabetize( a, b )
+{
+	if ( a > b )
+		return 1
+
+	if ( a < b )
+		return -1
+
+	return 0
+}
+
+int function SortStringAlphabetize( string a, string b )
+{
+	if ( a > b )
+		return 1
+
+	if ( a < b )
+		return -1
+
+	return 0
+}
+
+int function SortAssetAlphabetize( asset a, asset b )
+{
+	if ( a > b )
+		return 1
+
+	if ( a < b )
+		return -1
+
+	return 0
+}
+
+void function RemoveDupesFromSorted_Asset( array<asset> data )
+{
+	for ( int i = 0; i < data.len() - 1; i++ )
+	{
+		if ( data[i] == data[i+1] )
+		{
+			data.remove( i )
+			i--
+		}
+	}
+}
+
+#if CLIENT || UI
+void function DisablePrecacheErrors()
+{
+	file.lastHostThreadMode = GetConVarInt( "host_thread_mode" )
+	file.lastScriptPrecacheErrors = GetConVarInt( "script_precache_errors" )
+	file.lastReportFatal = GetConVarInt( "fs_report_sync_opens_fatal" )
+
+	#if CLIENT
+	entity player = GetLocalClientPlayer()
+	player.ClientCommand( "host_thread_mode 0" )
+	player.ClientCommand( "script_precache_errors 0" )
+	player.ClientCommand( "fs_report_sync_opens_fatal 0" )
+	#endif
+
+	#if UI
+	ClientCommand( "host_thread_mode 0" )
+	ClientCommand( "script_precache_errors 0" )
+	ClientCommand( "fs_report_sync_opens_fatal 0" )
+	#endif
+}
+
+void function RestorePrecacheErrors()
+{
+	#if CLIENT
+	entity player = GetLocalClientPlayer()
+	player.ClientCommand( "host_thread_mode " + file.lastHostThreadMode )
+	player.ClientCommand( "script_precache_errors " + file.lastScriptPrecacheErrors )
+	player.ClientCommand( "fs_report_sync_opens_fatal " + file.lastReportFatal )
+	#endif
+
+	#if UI
+	ClientCommand( "host_thread_mode " + file.lastHostThreadMode )
+	ClientCommand( "script_precache_errors " + file.lastScriptPrecacheErrors )
+	ClientCommand( "fs_report_sync_opens_fatal " + file.lastReportFatal )
+	#endif
+}
+#endif
+
+#if SERVER
+void function DisablePrecacheErrors()
+{
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_UI( player, "DisablePrecacheErrors" )
+	}
+}
+
+void function RestorePrecacheErrors()
+{
+	foreach ( player in GetPlayerArray() )
+	{
+		Remote_CallFunction_UI( player, "RestorePrecacheErrors" )
+	}
+}
+#endif // SERVER
+
+string function GetTitanReadyHintFromSetFile( asset setFile )
+{
+	return GetGlobalSettingsString( setFile, "readyhint" )
+}
+
+bool function CoinFlip()
+{
+	return RandomInt( 2 ) != 0
+}
+
+//int function GetIntFromString( string inString )
+//{
+//	if ( inString.len() > 0 )
+//	{
+//		string firstChar = inString.slice( 0, 1 )
+//		if ( ( firstChar >= "0" && firstChar <= "9" ) || firstChar == "." )
+//			return int( inString )
+//		else
+//			return expect int( getconsttable()[ inString ] )
+//	}
+//
+//	return 0
+//}
+
+//Function returns whether the given mode name is a Frontier Defense mode.
+bool function IsFDMode( string modeName )
+{
+	bool isFD = false
+	switch ( modeName )
+	{
+		case "fd_easy":
+		case "fd_normal":
+		case "fd_hard":
+		case "fd_master":
+		case "fd_insane":
+			isFD = true
+	}
+	return isFD
+}
+
+#if UI || CLIENT
+// TODO: Use Hud_GetPos() instead when code is updated to return type UIPos
+UIPos function REPLACEHud_GetPos( var panel )
+{
+	var untypedPos = Hud_GetPos( panel )
+
+	UIPos pos
+	pos.x = expect int( untypedPos[0] )
+	pos.y = expect int( untypedPos[1] )
+
+	return pos
+}
+
+// TODO: Use Hud_GetAbsPos() instead when code is updated to return type UIPos
+UIPos function REPLACEHud_GetAbsPos( var panel )
+{
+	var untypedPos = Hud_GetAbsPos( panel )
+
+	UIPos pos
+	pos.x = expect int( untypedPos[0] )
+	pos.y = expect int( untypedPos[1] )
+
+	return pos
+}
+
+// TODO: Use Hud_GetBasePos() instead when code is updated to return type UIPos
+UIPos function REPLACEHud_GetBasePos( var panel )
+{
+	var untypedPos = Hud_GetBasePos( panel )
+
+	UIPos pos
+	pos.x = expect int( untypedPos[0] )
+	pos.y = expect int( untypedPos[1] )
+
+	return pos
+}
+
+// TODO: Use Hud_GetSize() instead when code is updated to return type UISize
+UISize function REPLACEHud_GetSize( var panel )
+{
+	var untypedSize = Hud_GetSize( panel )
+
+	UISize size
+	size.width = expect int( untypedSize[0] )
+	size.height = expect int( untypedSize[1] )
+
+	return size
+}
+
+UIPos function REPLACEHud_GetParentRelativePos( var panel )
+{
+	var untypedPos = Hud_GetParentRelativePos( panel )
+
+	UIPos pos
+	pos.x = expect int( untypedPos[0] )
+	pos.y = expect int( untypedPos[1] )
+
+	return pos
+}
+
+UISize function GetScreenSize()
+{
+	#if UI
+		return REPLACEHud_GetSize( GetMenu( "MainMenu" ) )
+	#elseif CLIENT
+		array screenSize = expect array( Hud.GetScreenSize() )
+
+		UISize size
+		size.width = expect int( screenSize[0] )
+		size.height = expect int( screenSize[1] )
+
+		return size
+	#endif
+}
+
+UIScaleFactor function GetContentScaleFactor( var panel )
+{
+	UISize size
+	float heightBasis
+
+	#if UI
+		size = REPLACEHud_GetSize( panel )
+		heightBasis = 1080.0
+	#elseif CLIENT
+		array screenSize = expect array( panel.GetScreenSize() )
+		size.width = expect int( screenSize[0] )
+		size.height = expect int( screenSize[1] )
+		heightBasis = 480.0
+	#endif
+
+	float aspectRatio = size.width / float( size.height )
+
+	UIScaleFactor scaleFactor
+	scaleFactor.x = size.width / ( heightBasis * aspectRatio )
+	scaleFactor.y = size.height / heightBasis
+
+	return scaleFactor
+}
+
+bool function ButtonIsBoundToAction( int buttonID, string actionSubString )
+{
+	string binding = GetEffectiveButtonBinding( buttonID )
+	if ( binding.tolower().find_olduntyped( actionSubString.tolower() ) != null )
+		return true
+
+	return false
+}
+
+bool function ButtonIsBoundToHoldAction( int buttonID, string actionSubString )
+{
+	string binding = GetEffectiveButtonHoldBinding( buttonID )
+	if ( binding.tolower().find_olduntyped( actionSubString.tolower() ) != null )
+		return true
+
+	return false
+}
+
+bool function ButtonIsBoundToPing( int buttonID )
+{
+	return ButtonIsBoundToAction( buttonID, "+ping" )
+}
+
+#endif // UI || CLIENT
+
+//int function GetNumPilotLoadouts()
+//{
+//	return PROTO_GetNumCharacterClasses()
+//}
+
+//int function GetPilotloadoutIndexFromPlayerSetting( asset setting )
+//{
+//	var classDataTable = GetDataTable( $"datatable/default_pilot_classes.rpak" )
+//	int row = -1 // GetDataTableRowMatchingAssetValue( classDataTable, GetDataTableColumnByName( classDataTable, "classAsset" ), setting )
+//	int count = GetDatatableRowCount( classDataTable )
+//	for ( int i=0; i<count; i++ )
+//	{
+//		asset a = GetDataTableAsset( classDataTable, i, GetDataTableColumnByName( classDataTable, "classAsset" ) )
+//		PilotLoadoutDef l = GetPilotLoadoutFromClassAsset( a )
+//
+//		if ( l.setFile == setting )
+//			return i
+//	}
+//	return row
+//}
+
+string function BackslashToSlash( string originalString )
+{
+	array<string> tokens = split( originalString, "\\" )
+	if ( tokens.len() == 0 )
+		return ""
+
+	string resultString = tokens[0]
+	for ( int index = 1; index < tokens.len(); index++ )
+	{
+		resultString += "/"
+		resultString += tokens[index]
+	}
+
+	return resultString
+}
+
+array<string> function GetTrimmedSplitString( string originalString, string splitChars )
+{
+	array<string> stringList = split( originalString, splitChars )
+	for ( int i = 0 ; i < stringList.len() ; i++ )
+		stringList[i] = strip( stringList[i] )
+	return stringList
+}
+
+array<string> function GetTrimmedSplitLoweredString( string originalString, string splitChars )
+{
+	array<string> stringList = split( originalString, splitChars )
+	for ( int i = 0 ; i < stringList.len() ; i++ )
+		stringList[i] = strip( stringList[i] ).tolower()
+	return stringList
+}
+
+int function SortByEntIndex( entity a, entity b )
+{
+	// sort by entity index
+	if ( a.GetEntIndex() > b.GetEntIndex() )
+		return 1
+	else if ( a.GetEntIndex() < b.GetEntIndex() )
+		return -1
+
+	return 0
+}
+
+#if !UI
+bool function AllegianceCheck( int req, entity entA, entity entB )
+{
+	if ( req == eAllegiance.IRRELEVANT )
+		return true
+	if ( req == eAllegiance.FRIENDLY_ONLY )
+		return IsFriendlyTeam( entA.GetTeam(), entB.GetTeam() )
+	if ( req == eAllegiance.ENEMY_ONLY )
+		return IsEnemyTeam( entA.GetTeam(), entB.GetTeam() )
+
+	Assert( 0, ("Unhandled allegience req #:" + req) )
+	return false
+}
+#endif // !UI
+
+vector function GetRandomCenterBiasedToEdge( vector center , float minDeviation, float maxDeviation, float minAngle = 0, float maxAngle = 360 )
+{
+	float deviation = RandomFloatRange( 0.0, 1.0 )
+	deviation = minDeviation + (sqrt( deviation )*( maxDeviation-minDeviation ))
+	vector angles = <0, RandomFloatRange( minAngle, maxAngle ) % 360, 0>
+	vector newCenter = center + (AnglesToForward( angles )*deviation)
+	return newCenter
+}
+
+vector function GetRandomCenter( vector center , float minDeviation, float maxDeviation, float minAngle = 0, float maxAngle = 360 )
+{
+	float deviation = RandomFloatRange( minDeviation, maxDeviation )
+	vector angles = <0, RandomFloatRange( minAngle, maxAngle ) % 360, 0>
+	vector newCenter = center + (AnglesToForward( angles )*deviation)
+	return newCenter
+}
+
+
+table<string, table<int, string> > reverseEnumLookupMap = {}
+bool function BuildEnumReverseLookup( string enumName, bool assertOnDuplicates = true )
+{
+	table enumTableCopy = expect table(getconsttable()[enumName])
+
+	table<int, string> reverseLookup = {}
+	foreach( string key, int value in enumTableCopy )
+	{
+		if ( value in reverseLookup )
+		{
+			Assert( !assertOnDuplicates, "Enum '" + enumName + "' has two keys with value '" + string(value) + "'" )
+			return false
+		}
+		reverseLookup[value] <- key
+	}
+	reverseEnumLookupMap[enumName] <- reverseLookup
+	return true
+}
+
+
+bool function IsValidEnumValue( string enumName, int value )
+{
+	if ( !(enumName in reverseEnumLookupMap) )
+		BuildEnumReverseLookup( enumName )
+
+	return (value in reverseEnumLookupMap[enumName])
+}
+
+
+string function GetEnumString( string enumName, int value )
+{
+	// todo(dw): remove DEV_GetEnumStringFromIndex and Dev_GetEnumString
+
+	if ( !(enumName in reverseEnumLookupMap) )
+		BuildEnumReverseLookup( enumName )
+
+	return reverseEnumLookupMap[enumName][value]
+}
+
+
+string function DEV_GetEnumStringSafe( string enumName, int value )
+{
+	if ( IsValidEnumValue( enumName, value ) )
+		return GetEnumString( enumName, value )
+
+	return "<UNKNOWN ENUM VALUE FOR '" + enumName + "': " + value + ">"
+}
+
+
+string function DEV_EscapeString( string str, bool wrapInQuotes = true )
+{
+	string out = RegexpReplace( str, "[\\t\\n\\r\\\"\\\\]", "$0" )
+	if ( wrapInQuotes )
+		out = "\"" + out + "\""
+	return out
+}
+
+
+string function DEV_ArrayConcat( array<string> arr, string sep = ",", bool shouldQuote = true )
+{
+	string out   = ""
+	bool isFirst = true
+	foreach( string part in arr )
+	{
+		if ( isFirst )
+			isFirst = false
+		else
+			out += sep
+
+		if ( shouldQuote )
+			part = DEV_EscapeString( part )
+
+		out += part
+	}
+	return out
+}
+
+
+int function SortByInventoryIndexAndCount( ConsumableInventoryItem a, ConsumableInventoryItem b )
+{
+	if ( a.type < b.type )
+		return -1
+	if ( a.type > b.type )
+		return 1
+
+	if ( a.count > b.count )
+		return -1
+	if ( a.count < b.count )
+		return 1
+
+	return 0
+}
+
+// Returns an array of strings containing all matches for a single pattern to capture
+array<string> function RegexpFindSimple( string baseString, string patternString )
+{
+	array<string> matches = []
+	var pattern = regexp( patternString )
+
+	int searchIndex = 0
+	while ( searchIndex < baseString.len() )
+	{
+		var captureListOrNull = pattern.capture( baseString, searchIndex )
+
+		if ( captureListOrNull == null )
+			break
+
+		array captureList = expect array( captureListOrNull )
+		table matchInfo = expect table( captureList[0] )
+
+		Assert( captureList.len() == 2, "dont use simple" )
+
+		table captureInfo = expect table( captureList[1] )
+		matches.append( baseString.slice( captureInfo.begin, captureInfo.end ) )
+
+		searchIndex = expect int( matchInfo.end )
+	}
+
+	return matches
+}
+
+vector function RandomVec( float range )
+{
+	// could rewrite so it doesnt make a box of random.
+	vector vec = <0,0,0>
+	vec.x = RandomFloatRange( -range, range )
+	vec.y = RandomFloatRange( -range, range )
+	vec.z = RandomFloatRange( -range, range )
+
+	return vec
+}
+
+float function real_float_modulo( float x, float n )
+{
+	return ((x % n) + n) % n
+}
+
+int function real_int_modulo( int x, int n )
+{
+	return ((x % n) + n) % n
+}
+
+//////
+// Shuffle:
+
+void function Shuffle_Init( ShuffleData data, int numberOfIndices )
+{
+	Assert( numberOfIndices > 0 )
+	data.count = numberOfIndices
+}
+
+int function Shuffle_GetNextIndex( ShuffleData sd )
+{
+	if ( sd.count <= 0 )
+		return -1
+
+	array<int> indices = sd.shuffledIndices
+
+	++(sd.shufflePos)
+	if ( sd.shufflePos >= indices.len() )
+	{
+		sd.shufflePos = 0
+
+		// Shuffle order:
+		{
+			indices.resize( sd.count )
+			for ( int idx = 0; idx < sd.count; ++idx )
+				indices[idx] = idx
+			indices.randomize()
+
+			// no repeats:
+			if ( (sd.count > 1) && (indices[0] == sd.lastIndex) )
+				indices.reverse()
+		}
+	}
+
+	sd.lastIndex = indices[sd.shufflePos]
+	return sd.lastIndex
+}
+//////
+
+#if SERVER || CLIENT
+vector function LocalPosToWorldPos( vector pos, entity ent )
+{
+	return ent.GetOrigin() + RotateVector( pos, ent.GetAngles() )
+}
+vector function LocalPosToWorldPos_NoEnt( vector pos, vector parentPos, vector parentAng )
+{
+	return parentPos + RotateVector( pos, parentAng )
+}
+vector function WorldPosToLocalPos( vector pos, entity ent )
+{
+	return RotateVector( pos - ent.GetOrigin(), AnglesInverse( ent.GetAngles() ) )
+}
+vector function WorldPosToLocalPos_NoEnt( vector pos, vector parentPos, vector parentAng )
+{
+	return RotateVector( pos - parentPos, AnglesInverse( parentAng ) )
+}
+vector function LocalDirToWorldDir( vector dir, entity ent )
+{
+	return RotateVector( dir, ent.GetAngles() )
+}
+vector function LocalDirToWorldDir_NoEnt( vector dir, vector parentAng )
+{
+	return RotateVector( dir, parentAng )
+}
+vector function WorldDirToLocalDir( vector dir, entity ent )
+{
+	return RotateVector( dir, AnglesInverse( ent.GetAngles() ) )
+}
+vector function WorldDirToLocalDir_NoEnt( vector dir, vector parentAng )
+{
+	return RotateVector( dir, AnglesInverse( parentAng ) )
+}
+vector function LocalAngToWorldAng( vector ang, entity ent )
+{
+	return AnglesCompose( ent.GetAngles(), ang )
+}
+vector function LocalAngToWorldAng_NoEnt( vector ang, vector parentAng )
+{
+	return AnglesCompose( parentAng, ang )
+}
+vector function WorldAngToLocalAng( vector ang, entity ent )
+{
+	return AnglesCompose( AnglesInverse( ent.GetAngles() ), ang )
+}
+vector function WorldAngToLocalAng_NoEnt( vector ang, vector parentAng )
+{
+	return AnglesCompose( AnglesInverse( parentAng ), ang )
+}
+#endif
+
+void function WaitForever()
+{
+	#if SERVER
+		svGlobal.levelEnt.WaitSignal( "forever" )
+	#elseif CLIENT
+		clGlobal.levelEnt.WaitSignal( "forever" )
+	#elseif UI
+		WaitSignal( uiGlobal.signalDummy, "forever" )
+	#endif
+}
+
+bool function IsSurvivalTraining()
+{
+	return GetCurrentPlaylistVarBool( "survival_training", false )
+}
+
+float function LerpFloat( float startValue, float endValue, float time )
+{
+	return ((1-time) * startValue + time * endValue)
+}
+
+string function RandomHex( int length = 16 )
+{
+	string out = ""
+	for ( int idx = 0; idx < length; idx++ )
+	{
+		int c = RandomInt( 16 )
+		out += format( "%c", (c < 10 ? '0' : ('A' - 10)) + c )
+	}
+	return out
+}
+
+int function StringHash( string str )
+{
+	int res = 0
+	int length = str.len()
+	for ( int i = 0; i < length; i++ )
+	{
+		res *= 31
+		res += expect int( str[i] )
+	}
+	return res
+}
+
+
+
+#if CLIENT || UI
+int function SortByScriptId( var a, var b )
+{
+	int aId = int( Hud_GetScriptID( a ) )
+	int bId = int( Hud_GetScriptID( b ) )
+	if ( aId > bId )
+		return 1
+	else if ( bId > aId )
+		return -1
+
+	return 0
+}
+#endif
+
+bool function IsNormalized( vector vec ) // (dw): to be replaced by code, R5DEV-53912
+{
+	return fabs(1.0 - LengthSqr( vec )) < 0.01
+}
+
+
+#if CLIENT
+void function UpdateAccessibilityChatHintEnabledCache()
+{
+	file.hud_setting_accessibleChatCache = GetConVarInt( "hud_setting_accessibleChat" )
+}
+#endif
+
+#if CLIENT || UI
+bool function IsAccessibilityChatHintEnabled()
+{
+	#if CLIENT
+		return file.hud_setting_accessibleChatCache == 1 || file.hud_setting_accessibleChatCache == 3
+	#endif
+	#if UI
+		return GetConVarInt( "hud_setting_accessibleChat" ) == 1 || GetConVarInt( "hud_setting_accessibleChat" ) == 3
+	#endif
+}
+#endif
+
+
+#if (CLIENT || UI) && PC_PROG
+bool function IsAccessibilitySpeechToChat()
+{
+	if ( !IsAccessibilityAvailable() )
+		return false
+
+	return GetConVarInt( "hudchat_play_text_to_speech" ) > 0
+}
+#endif
+
+
+#if CLIENT || UI
+bool function IsAccessibilityChatToSpeech()
+{
+	if ( !IsAccessibilityAvailable() )
+		return false
+
+	return GetConVarInt( "speechtotext_enabled" ) > 0
+}
+#endif
+
+#if CLIENT || UI
+bool function IsAccessibilityAvailable()
+{
+	#if UI
+	if ( GetLanguage() != "english" )
+		return false
+	#endif
+
+	return true
+}
+#endif
+
+
+#if CLIENT || UI
+int function GetStreamerMode()
+{
+	return GetConVarInt( "hud_setting_streamerMode" )
+}
+#endif
+
+
+#if CLIENT || UI
+bool function DisplayKillerName()
+{
+	return GetStreamerMode() < eStreamMode.KILLER
+}
+#endif
+
+
+#if CLIENT || UI
+bool function DisplayObituaryName()
+{
+	return GetStreamerMode() < eStreamMode.ALL
+}
+#endif
+
+#if CLIENT || UI
+vector function GetKeyColor( int colorID, int optionalParam = 0 )
+{
+	Assert( optionalParam >= 0, "optionalParam must not be negative" )
+	return ColorPalette_GetColorFromID( colorID + optionalParam )
+}
+#endif
+
+
+#if UI
+bool function IsAccessibilityNarrationEnabled()
+{
+	if ( !IsAccessibilityAvailable() )
+		return false
+
+	return GetConVarInt( "hud_setting_accessibleChat" ) == 2 || GetConVarInt( "hud_setting_accessibleChat" ) == 3
+}
+#endif
+
+
+void function Throttle( ThrottleData data, float interval, void functionref() func )
+{
+	data.latestFunc = func
+
+	if ( data.isQueued )
+		return
+
+	thread __ThrottleInternalThread( data, interval )
+}
+
+
+void function __ThrottleInternalThread( ThrottleData data, float interval )
+{
+	OnThreadEnd( void function() : ( data ) {
+		data.isQueued = false
+		data.latestFunc = null
+	} )
+
+	data.isQueued = true
+
+	wait max( 0.01, interval - (Time() - data.lastRunTime) )
+
+	data.lastRunTime = Time()
+
+	data.latestFunc()
+}
+
+
+
+// Should probably expose the code function instead. But who has time to wait for that? I did make a bug: R5DEV-53700
+const float GAMMA = 2.4
+vector function SrgbToLinear( vector inputColor )
+{
+	if ( inputColor.Length() <= 0.04045 )
+		return inputColor * (1.0 / 12.92)
+
+	const float CVAL = (1.0 / (1 + 0.055))
+	inputColor.x = pow( (inputColor.x + 0.055) * CVAL, GAMMA )
+	inputColor.y = pow( (inputColor.y + 0.055) * CVAL, GAMMA )
+	inputColor.z = pow( (inputColor.z + 0.055) * CVAL, GAMMA )
+
+	return inputColor
+}
+
+
+vector function LinearToSrgb( vector inputColor )
+{
+	inputColor.x = (inputColor.x < 0.0031308) ? (inputColor.x > 0.0 ? inputColor.x * 12.92 : inputColor.x) : 1.055 * pow( inputColor.x, 1.0 / GAMMA ) - 0.055
+	inputColor.y = (inputColor.y < 0.0031308) ? (inputColor.y > 0.0 ? inputColor.y * 12.92 : inputColor.y) : 1.055 * pow( inputColor.y, 1.0 / GAMMA ) - 0.055
+	inputColor.z = (inputColor.z < 0.0031308) ? (inputColor.z > 0.0 ? inputColor.z * 12.92 : inputColor.z) : 1.055 * pow( inputColor.z, 1.0 / GAMMA ) - 0.055
+
+	return inputColor
+}
+
+
+//	██╗   ██╗███╗   ██╗██╗██╗  ██╗    ████████╗██╗███╗   ███╗███████╗    ██╗   ██╗████████╗██╗██╗
+//	██║   ██║████╗  ██║██║╚██╗██╔╝    ╚══██╔══╝██║████╗ ████║██╔════╝    ██║   ██║╚══██╔══╝██║██║
+//	██║   ██║██╔██╗ ██║██║ ╚███╔╝        ██║   ██║██╔████╔██║█████╗      ██║   ██║   ██║   ██║██║
+//	██║   ██║██║╚██╗██║██║ ██╔██╗        ██║   ██║██║╚██╔╝██║██╔══╝      ██║   ██║   ██║   ██║██║
+//	╚██████╔╝██║ ╚████║██║██╔╝ ██╗       ██║   ██║██║ ╚═╝ ██║███████╗    ╚██████╔╝   ██║   ██║███████╗
+//	 ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝       ╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝     ╚═════╝    ╚═╝   ╚═╝╚══════╝
+
+int function GetUnixTimePST()
+{
+	int unixTime = GetUnixTimestamp()
+	unixTime += ( PST_TIME_ZONE_OFFSET * SECONDS_PER_HOUR)
+	return unixTime
+}
+
+TimeParts function GetUnixTimeParts( int unixtime )
+{
+	// Chad's function to convert unix time to month, day, year, hours, minutes, seconds. Used for ranked play seasons
+	TimeParts parts
+
+	// Get hours / minutes / seconds
+
+	parts.second = unixtime % 60
+	unixtime /= 60
+
+	parts.minute = unixtime % 60
+	unixtime /= 60
+
+	parts.hour = unixtime % 24
+	unixtime /= 24
+
+	// unixtime is now days since 01/01/1970 UTC * Rebaseline to the Common Era
+
+	unixtime += 719499
+
+	// Roll forward looking for the year. Have to start at 1969 because the year we calculate here
+	// runs from March, so January and February 1970 will come out as 1969
+
+	for ( parts.year = 1969; unixtime > __YearToDays( parts.year + 1 ) + 30; parts.year++ )
+	{
+	}
+
+	// We have our "year", so subtract off the days accounted for by full years.
+	unixtime -= __YearToDays( parts.year )
+
+	// unixtime is now number of days we are into the year (remembering that March 1 is the first day of the "year" still)
+
+	// Roll forward looking for the month. 1 = March through to 12 = February
+	for ( parts.month = 1; parts.month < 12 && unixtime > 367 * ( parts.month + 1 ) / 12; parts.month++ )
+	{
+	}
+
+	// Subtract off the days accounted for by full months
+	unixtime -= 367 * parts.month / 12
+
+	// unixtime is now number of days we are into the month
+
+	// Adjust the month/year so that 1 = January, and years start where we usually expect them to
+	parts.month += 2
+	if ( parts.month > 12 )
+	{
+		parts.month -= 12
+		parts.year++
+	}
+
+	parts.day = unixtime
+
+	return parts
+}
+
+int function __YearToDays( int y )
+{
+	return (y)*365 + (y)/4 - (y)/100 + (y)/400
+}
+
+DisplayTime function SecondsToDHMS( int seconds )
+{
+	DisplayTime dt
+
+	// extract days
+	dt.days = int( floor( seconds / SECONDS_PER_DAY ) )
+
+	// extract hours
+	int hourSeconds = seconds % SECONDS_PER_DAY
+	dt.hours = int( floor( hourSeconds / SECONDS_PER_HOUR ) )
+
+	// extract minutes
+	int minuteSeconds = hourSeconds % SECONDS_PER_HOUR
+	dt.minutes = int( floor( minuteSeconds / SECONDS_PER_MINUTE ) )
+
+	// extract the remaining seconds
+	int remainingSeconds = minuteSeconds % SECONDS_PER_MINUTE
+	dt.seconds = int( ceil( remainingSeconds ) )
+
+	return dt
+}
+
+int function GetDayOfWeek( int unixTime )
+{
+	return int( (floor(unixTime / SECONDS_PER_DAY) + 4) % 7 )
+}
+
+string function GetDayOfWeekName( int dayOfWeek )
+{
+	array<string> days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+	Assert( dayOfWeek >= 0 && dayOfWeek <= days.len() )
+	return days[dayOfWeek]
+}
+
+
+string function GetDateTimeString( int unixTime )
+{
+	TimeParts timeParts = GetUnixTimeParts( unixTime )
+	string minutesString = string(timeParts.minute).len() == 1 ? "0" + timeParts.minute : string(timeParts.minute)
+	return format( "%i/%i/%i %i:%s.%i", timeParts.month, timeParts.day, timeParts.year, timeParts.hour, minutesString, timeParts.second )
+}
+
+string function GetTimeString( int unixTime )
+{
+	TimeParts timeParts = GetUnixTimeParts( unixTime )
+	return format( "%i:%2i.%i", timeParts.hour, timeParts.minute, timeParts.second )
+}
+
+int function GetStartOfDay( int unixTime )
+{
+	TimeParts timeParts = GetUnixTimeParts( unixTime )
+	int unixTimeStartOfDay = unixTime
+	unixTimeStartOfDay = unixTimeStartOfDay - (timeParts.hour * SECONDS_PER_HOUR) - (timeParts.minute * SECONDS_PER_MINUTE) - timeParts.second
+	return unixTimeStartOfDay
+}
+
+int function GetEndOfDay( int unixTime )
+{
+	return GetStartOfDay( unixTime + SECONDS_PER_DAY )
+}
+
+int function SecondsRemainingInDay( int unixTime )
+{
+	int endOfDay = GetEndOfDay( unixTime )
+	return endOfDay - unixTime
+}
+

@@ -1,0 +1,178 @@
+global function ClTitanSoul_Init
+global function ClientCodeCallback_TitanSoulChanged
+global function ClientCodeCallback_TitanVarChanged
+global function ClientCodeCallback_DoomedStateChanged
+global function InitModelFXGroup
+global function ModelHasFXGroup
+
+struct
+{
+	table<asset,bool> modelHasFXGroup
+} file
+
+void function ClTitanSoul_Init()
+{
+	AddFirstPersonSpectateStartedCallback( FirstPersonSpectateStarted_UpdateTitanHealthFX )
+	AddFirstPersonSpectateEndedCallback( FirstPersonEnded_UpdateTitanHealthFX )
+	AddOnSpectatorTargetChangedCallback( SpectatotrTargetChanged_UpdateTitanHealthFX )
+}
+
+void function InitModelFXGroup( asset model )
+{
+	file.modelHasFXGroup[ model ] <- true
+}
+
+bool function ModelHasFXGroup( asset model )
+{
+	if ( !( model in file.modelHasFXGroup ) )
+		return false
+	return file.modelHasFXGroup[ model ]
+}
+
+
+void function ClientCodeCallback_TitanVarChanged( entity soul )
+{
+	if ( !soul )
+		return
+	entity titan = soul.GetTitan()
+	if ( soul.soul.lastOwner != titan )
+	{
+		if ( IsValid( soul.soul.lastOwner ) )
+			soul.soul.lastOwner.Signal( "OnTitanLost" )
+	}
+
+	soul.soul.lastOwner = titan
+
+	if ( IsValid( titan ) )
+	{
+		soul.Signal( "OnSoulTransfer" )
+		if ( !ModelHasFXGroup( titan.GetModelName() ) )
+			return
+		if ( !soul.IsDoomed() )
+		{
+			ModelFX_DisableGroup( titan, "titanDoomed" )
+			ModelFX_EnableGroup( titan, "titanHealth" )
+		}
+		else
+		{
+			ModelFX_DisableGroup( titan, "titanHealth" )
+			ModelFX_EnableGroup( titan, "titanDoomed" )
+		}
+	}
+}
+
+void function ClientCodeCallback_DoomedStateChanged( entity soul )
+{
+	//Defensive fix temporarily. Code probably shouldn't just pass us null. Remove when bug 36591 is resolved. Should also get this function renamed to CodeClientCallback_ClientCallback_DoomedStateChanged for consistency
+	if ( !IsValid( soul ) )
+		return
+
+	entity titan = soul.GetTitan()
+	if ( !IsValid( titan ) )
+		return
+
+	if ( !ModelHasFXGroup( titan.GetModelName() ) )
+		return
+
+	if ( !soul.IsDoomed() )
+	{
+		ModelFX_DisableGroup( titan, "titanDoomed" )
+		ModelFX_EnableGroup( titan, "titanHealth" )
+	}
+	else
+	{
+		ModelFX_DisableGroup( titan, "titanHealth" )
+		ModelFX_EnableGroup( titan, "titanDoomed" )
+	}
+
+	entity localPlayer = GetLocalViewPlayer()
+	if ( titan == localPlayer )
+	{
+		HandleDoomedState( localPlayer, titan )
+		//UpdateTitanModeHUD( localPlayer )
+		if ( !soul.IsDoomed() )
+		{
+			localPlayer.Signal( "TitanUnDoomed" )
+			localPlayer.p.nextAllowWarningTime = Time() + 10.0
+			entity cockpit = localPlayer.GetCockpit()
+			if ( cockpit != null )
+			{
+				// If we just destroy the cockpit, it will reinitialize itself!
+				// cockpit.Destroy()
+				cockpit.Signal( "TitanUnDoomed" )
+				thread TitanCockpitDoomedThink( cockpit, localPlayer )
+				thread TitanCockpit_WarningAudio( cockpit, localPlayer )
+			}
+		}
+	}
+
+	if ( RodeoState_GetIsPlayerRodeoingVehicle( localPlayer, titan ) )
+	{
+		localPlayer.Signal( "UpdateRodeoAlert" )
+	}
+}
+
+void function ClientCodeCallback_TitanSoulChanged( entity ent )
+{
+}
+
+
+void function FirstPersonSpectateStarted_UpdateTitanHealthFX( entity spectatingPlayer, entity spectatorTarget )
+{
+	if ( !IsValid( spectatorTarget ) )
+		return
+
+	if ( !spectatorTarget.IsTitan() )
+		return
+
+	entity titanSoul = spectatorTarget.GetTitanSoul()
+
+	if ( !IsValid( titanSoul ) )
+		return
+
+	if ( !ModelHasFXGroup( spectatorTarget.GetModelName() ) )
+		return
+
+	ModelFX_DisableAllGroups( spectatorTarget )
+}
+
+void function FirstPersonEnded_UpdateTitanHealthFX( entity spectatingPlayer, entity spectatorTarget )
+{
+	if ( !IsValid( spectatorTarget ) )
+		return
+
+	if ( !spectatorTarget.IsTitan() )
+		return
+
+	entity titanSoul = spectatorTarget.GetTitanSoul()
+
+	if ( !IsValid( titanSoul ) )
+		return
+
+	#if DEV
+	if ( !ModelHasFXGroup( spectatorTarget.GetModelName() ) )
+		return
+	#endif
+
+	if ( titanSoul.IsDoomed() )
+	{
+		ModelFX_EnableGroup( spectatorTarget, "titanDoomed" )
+		ModelFX_DisableGroup( spectatorTarget, "titanHealth" )
+		ModelFX_DisableGroup( spectatorTarget, "titanDamage" )
+	}
+	else
+	{
+		ModelFX_DisableGroup( spectatorTarget, "titanDoomed" )
+		ModelFX_EnableGroup( spectatorTarget, "titanHealth" )
+		ModelFX_EnableGroup( spectatorTarget, "titanDamage" )
+	}
+}
+
+void function SpectatotrTargetChanged_UpdateTitanHealthFX( entity spectatingPlayer, entity prevSpectatorTarget, entity newSpectatorTarget )
+{
+	if ( spectatingPlayer.GetObserverMode() == OBS_MODE_IN_EYE )
+	{
+		FirstPersonEnded_UpdateTitanHealthFX( spectatingPlayer, prevSpectatorTarget )
+		FirstPersonSpectateStarted_UpdateTitanHealthFX( spectatingPlayer, newSpectatorTarget )
+	}
+}

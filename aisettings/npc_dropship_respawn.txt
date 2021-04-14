@@ -1,0 +1,12 @@
+#base "npc_dropship.txt"
+npc_dropship_respawn
+{
+	BaseClass				"npc_dropship"
+	title 					""
+	titleIMC				""
+	titleMIL				""
+	ui_targetinfo			"" [$mp] //targetinfo_titan
+	ui_targetinfo			"" [$sp]
+
+	DefaultModelName		"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
+}

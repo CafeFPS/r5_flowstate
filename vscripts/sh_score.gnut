@@ -1,0 +1,618 @@
+global function ScoreShared_Init
+
+global function ScoreEvent_FromId
+global function ScoreEventForTitanEntityKilled
+#if SERVER
+global function ScoreEventForMethodOfDeath
+#if HAS_NPC_SCORE_EVENTS
+global function ScoreEventForNPCKilled
+#endif // #if HAS_NPC_SCORE_EVENTS
+#endif
+
+global function GetScoreEvent
+
+global function ScoreEvent_Enable
+global function ScoreEvent_Disable
+global function ScoreEvent_IsEnabled
+global function ScoreEvent_GetEventName
+global function ScoreEvent_SetGameModeRelevant
+global function ScoreEvent_HasDisplayType
+global function ScoreEvent_GetDisplayType
+global function ScoreEvent_SetDisplayType
+global function ScoreEvent_GetMedalIcon
+global function ScoreEvent_SetMedalIcon
+global function ScoreEvent_GetEventId
+global function ScoreEvent_SetPointValue
+global function ScoreEvent_GetPointValue
+global function ScoreEvent_SetSplashText
+global function ScoreEvent_GetSplashText
+global function ScoreEvent_SetMedalText
+global function ScoreEvent_GetMedalText
+global function ScoreEvent_SetPointType
+global function ScoreEvent_GetPointType
+global function ScoreEvent_SetConversation
+global function ScoreEvent_GetConversation
+global function ScoreEvent_GetPriority
+global function ScoreEvent_HasConversation
+global function ScoreEvent_GetConversationDelay
+global function ScoreEvent_SetConversationDelay
+global function ScoreEvent_GetBurnPointValue
+global function ScoreEvent_SetBurnPointValue
+global function ScoreEvent_GetBurnMeterChallengeType
+global function ScoreEvent_IsEarnOverridden
+
+global function SetScoreEventOverrideFunc
+
+global enum eEventDisplayType
+{
+	HIDDEN		= 1 << 0,
+	CENTER 		= 1 << 1,
+	MEDAL		= 1 << 2,
+	CALLINGCARD = 1 << 3,
+	ATTRITION	= 1 << 4,
+	BIG			= 1 << 5,
+	GAMEMODE	= 1 << 6,
+	CHALLENGE	= 1 << 7,
+	MEDAL_FORCED= 1 << 8,
+	SHOW_SCORE	= 1 << 9
+}
+
+global struct ScoreEvent
+{
+	int		eventId = -1
+
+	bool	enabled = true
+
+	string	name = ""
+	string 	splashText = ""
+	string	medalText = ""
+	int		pointValue
+	int		pointType
+	int		displayType
+	asset	medalIcon = $""
+
+	string	conversation = ""
+	int		conversationPriority
+
+	float	conversationDelay = 0.0
+
+	int		burnPointValue = 0
+
+	bool 	eventOverridden = false
+	float 	earnMeterOwnValue = 0.00
+	float 	earnMeterEarnValue = 0.00
+	float 	coreMeterScalar = 1.00 //Decouples the core meter earn rate from titan build rate.
+}
+
+struct
+{
+	table<string, ScoreEvent> scoreEvents
+	array<string> scoreEventIdToName
+} file
+
+void function ScoreShared_Init()
+{
+	level.scoreCustomColors <- {}
+
+	InitScoreEvents()
+
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+}
+
+void function EntitiesDidLoad()
+{
+#if SERVER
+	if ( svGlobal.scoreEventOverrideFunc != null )
+		svGlobal.scoreEventOverrideFunc()
+#elseif CLIENT
+	if ( clGlobal.scoreEventOverrideFunc != null )
+		clGlobal.scoreEventOverrideFunc()
+#endif
+}
+
+// If you're modifying more than just the pointValue, this should be called on the client as well
+void function SetScoreEventOverrideFunc( void functionref() func )
+{
+#if SERVER
+	svGlobal.scoreEventOverrideFunc = func
+#elseif CLIENT
+	clGlobal.scoreEventOverrideFunc = func
+#endif
+}
+
+void function InitScoreEvents()
+{
+	var dataTable = GetDataTable( $"datatable/score_events.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
+
+	for ( int i = 0; i < numRows; i++ )
+	{
+		int column = 0
+
+		ScoreEvent event
+
+		event.name = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "name" ) )
+		event.eventId = file.scoreEvents.len()
+
+		event.splashText = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "splashText" ) )
+
+		event.medalText = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "medalText" ) )
+
+		//event.pointValue = GetIntFromString( GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "pointValue" ) ) )
+		//event.burnPointValue = GetIntFromString( GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "burnPointValue" ) ) )
+
+		event.pointType = 0
+		string pointTypeStr = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "pointType" ) )
+		if ( pointTypeStr != "" )
+			event.pointType = scoreEventPointType[ pointTypeStr ]
+
+		string displayTypeStr = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "displayType" ) )
+		if ( displayTypeStr != "" )
+		{
+			array<string> displayTypeSplit = split( displayTypeStr, " " )
+			foreach ( Type in displayTypeSplit )
+			{
+				event.displayType = event.displayType | eEventDisplayType[ Type ]
+			}
+		}
+
+		event.medalIcon = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "medalIcon" ) )
+
+		event.conversation = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "conversation" ) )
+		bool scaleScoreForAutoTitan = GetDataTableBool( dataTable, i, GetDataTableColumnByName( dataTable, "scaleScoreForAutoTitan" ) )
+
+		if ( scaleScoreForAutoTitan )
+			event.pointValue = ScaleScoreForAutoTitan( event.pointValue )
+
+		file.scoreEventIdToName.append( event.name )
+		file.scoreEvents[ event.name ] <- event
+
+		Assert( file.scoreEventIdToName[ event.eventId ] == event.name )
+	}
+}
+
+ScoreEvent function GetScoreEvent( string eventName )
+{
+	return file.scoreEvents[eventName]
+}
+
+void function ScoreEvent_Enable( ScoreEvent scoreEvent )
+{
+	scoreEvent.enabled = true
+}
+
+void function ScoreEvent_Disable( ScoreEvent scoreEvent )
+{
+	scoreEvent.enabled = false
+}
+
+bool function ScoreEvent_IsEnabled( ScoreEvent scoreEvent )
+{
+	return scoreEvent.enabled
+}
+
+string function ScoreEvent_GetEventName( ScoreEvent scoreEvent )
+{
+	return scoreEvent.name
+}
+
+void function ScoreEvent_SetGameModeRelevant( ScoreEvent scoreEvent )
+{
+	scoreEvent.displayType = scoreEvent.displayType | eEventDisplayType.GAMEMODE
+}
+
+bool function ScoreEvent_HasDisplayType( ScoreEvent scoreEvent, int displayType )
+{
+	return ( scoreEvent.displayType & displayType ) != 0
+}
+
+int function ScoreEvent_GetDisplayType( ScoreEvent scoreEvent )
+{
+	return scoreEvent.displayType
+}
+
+void function ScoreEvent_SetMedalIcon( ScoreEvent scoreEvent, asset medalIcon )
+{
+	scoreEvent.medalIcon = medalIcon
+}
+
+asset function ScoreEvent_GetMedalIcon( ScoreEvent scoreEvent )
+{
+	return scoreEvent.medalIcon
+}
+
+bool function ScoreEvent_IsEarnOverridden( ScoreEvent scoreEvent )
+{
+	return scoreEvent.eventOverridden
+}
+
+void function ScoreEvent_SetDisplayType( ScoreEvent scoreEvent, int displayType )
+{
+	scoreEvent.displayType = displayType
+}
+
+int function ScoreEvent_GetEventId( ScoreEvent scoreEvent )
+{
+	return scoreEvent.eventId
+}
+
+void function ScoreEvent_SetPointValue( ScoreEvent scoreEvent, int value )
+{
+	scoreEvent.pointValue = value
+}
+
+int function ScoreEvent_GetPointValue( ScoreEvent scoreEvent )
+{
+	return scoreEvent.pointValue
+}
+
+void function ScoreEvent_SetSplashText( ScoreEvent scoreEvent, string text )
+{
+	scoreEvent.splashText = text
+}
+
+string function ScoreEvent_GetSplashText( ScoreEvent scoreEvent )
+{
+	return scoreEvent.splashText
+}
+
+void function ScoreEvent_SetMedalText( ScoreEvent scoreEvent, string text )
+{
+	scoreEvent.medalText = text
+}
+
+string function ScoreEvent_GetMedalText( ScoreEvent scoreEvent )
+{
+	return scoreEvent.medalText
+}
+
+void function ScoreEvent_SetPointType( ScoreEvent scoreEvent, int value )
+{
+	scoreEvent.pointType = value
+}
+
+int function ScoreEvent_GetPointType( ScoreEvent scoreEvent )
+{
+	return scoreEvent.pointType
+}
+
+void function ScoreEvent_SetConversation( ScoreEvent scoreEvent, string name, int priority )
+{
+	scoreEvent.conversation = name
+	scoreEvent.conversationPriority = priority
+}
+
+string function ScoreEvent_GetConversation( ScoreEvent scoreEvent )
+{
+	return scoreEvent.conversation
+}
+
+int function ScoreEvent_GetPriority( ScoreEvent scoreEvent )
+{
+	return scoreEvent.conversationPriority
+}
+
+bool function ScoreEvent_HasConversation( ScoreEvent scoreEvent )
+{
+	return scoreEvent.conversation != ""
+}
+
+float function ScoreEvent_GetConversationDelay( ScoreEvent scoreEvent )
+{
+	return scoreEvent.conversationDelay
+}
+
+void function ScoreEvent_SetConversationDelay( ScoreEvent scoreEvent, float value )
+{
+	scoreEvent.conversationDelay = value
+}
+
+int function ScoreEvent_GetBurnPointValue( ScoreEvent scoreEvent )
+{
+	return scoreEvent.burnPointValue
+}
+
+void function ScoreEvent_SetBurnPointValue( ScoreEvent scoreEvent, int value )
+{
+	scoreEvent.burnPointValue = value
+}
+
+string function ScoreEvent_GetBurnMeterChallengeType( ScoreEvent scoreEvent )
+{
+	return ""
+//	return this.burnMeterChallengeType
+}
+
+ScoreEvent function ScoreEvent_FromId( int id )
+{
+	string eventName = file.scoreEventIdToName[id]
+	return file.scoreEvents[eventName]
+}
+
+string function ScoreEventForTitanEntityKilled( entity titan, entity inflictor, int damageSourceId )
+{
+	inflictor = InflictorOwner( inflictor )
+
+	// bool electrocuted = damageSourceId == eDamageSourceId.mp_titanability_smoke
+
+	// // hack: shouldn't need a HasSoul check, something changed with Mo's recent titan melee changes
+	// if ( titan.IsTitan() && titan.IsNPC() && HasSoul( titan ) && !titan.GetTitanSoul().IsEjecting() && inflictor.IsPlayer() )
+	// {
+	// 	if ( IsPetTitan( titan ) )
+	// 		return electrocuted ? "ElectrocuteAutoTitan" : "KillTitan_Auto_Pilot"
+	// 	else
+	// 		return electrocuted ? "ElectrocuteTitan" : "KillTitan"
+	// }
+	// else if ( IsValid( inflictor ) )
+	// {
+	// 	if ( IsTitanNPC( inflictor ) )
+	// 		return "Auto_Pilot_KillTitan"
+
+	// 	if ( IsPlayerControlledSpectre( inflictor ) )
+	// 		return "Flipped_Spectre_KillTitan"
+
+	// 	if ( IsPlayerControlledTurret( inflictor ) )
+	// 	{
+	// 		if ( IsAlive( inflictor.GetParent() ) )
+	// 			return "AerialEscort_KillTitan"
+	// 		else
+	// 			return "AutoTurret_KillTitan"
+	// 	}
+	// }
+
+	// if ( electrocuted )
+	// 	return "ElectrocuteTitan"
+
+	// if ( damageSourceId == eDamageSourceId.rodeo )
+	// 	return "Rodeo"
+
+	// if ( damageSourceId == eDamageSourceId.rodeo_forced_titan_eject )
+	// 	return "RodeoForceEject"
+
+	//Default case
+	return "KillTitan"
+}
+
+int function ScaleScoreForAutoTitan( int eventPoints )
+{
+	int score = int( RoundToNearestMultiplier( eventPoints * POINTVALUE_AUTOTITAN_MULTIPLIER, 5.0 ) )
+
+	if ( score < 10 )
+		score = 10
+
+	return score
+}
+
+#if SERVER
+string function ScoreEventForMethodOfDeath( entity player, var damageInfo )
+{
+	string scoreEvent
+	scoreEvent = "KillPilot"
+	// entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	// inflictor = InflictorOwner( inflictor )
+
+	// if ( inflictor )
+	// {
+	// 	if ( IsTitanNPC( inflictor ) )
+	// 		return "Auto_Pilot_KillPilot"
+
+	// 	if ( IsPlayerControlledSpectre( inflictor ) )
+	// 		return "Flipped_Spectre_KillPilot"
+
+	// 	if ( IsPlayerControlledTurret( inflictor ) )
+	// 	{
+	// 		if ( IsAlive( inflictor.GetParent() ) )
+	// 			return "AerialEscort_KillPilot"
+	// 		else
+	// 			return "AutoTurret_KillPilot"
+	// 	}
+	// }
+
+	// int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	// if ( damageSourceId == eDamageSourceId.mp_titanability_smoke )
+	// {
+	// 	return "ElectrocutePilot"
+	// }
+
+	// if ( damageSourceId == eDamageSourceId.human_melee )
+	// {
+	// 	return  "MeleeHumanAttackVsPilot"
+	// }
+
+	// if ( damageSourceId == eDamageSourceId.human_execution )
+	// {
+	// 	return  "MeleeHumanExecutionVsPilot"
+	// }
+
+	// if ( damageSourceId == eDamageSourceId.eviscerate )
+	// {
+	// 	return "EviscerateVsPilot"
+	// }
+
+	// if ( damageSourceId == eDamageSourceId.titan_execution )
+	// {
+	// 	return  "TitanMeleeExecution"
+	// }
+
+	// if ( damageSourceId == eDamageSourceId.wall_smash)
+	// {
+	// 	scoreEvent =  "TitanWallSmashPilot"
+	// }
+
+	// if ( IsTitanCrushDamage( damageInfo ) )
+	// {
+	// 	return "TitanStepCrushPilot"
+	// }
+
+	return scoreEvent
+}
+
+#if HAS_NPC_SCORE_EVENTS
+string function ScoreEventForNPCKilled( entity npc, var damageInfo )
+{
+	string scoreEvent
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	inflictor = InflictorOwner( inflictor )
+
+	int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	string classname = npc.GetClassName()
+	switch ( classname )
+	{
+		case "npc_spider":
+			return "KillSpider"
+		case "npc_frag_drone":
+			return "KillTick"
+		case "npc_titan":
+			return "KillNPCTitan"
+
+		case "npc_super_spectre":
+			return "KillSuperSpectre"
+
+		case "npc_prowler":
+			return "KillProwler"
+
+		case "npc_goliath":
+			return "KillGoliath"
+
+		case "npc_drone":
+			if ( GetDroneType( npc ) == "drone_type_marvin" )
+				return ""
+			return "KillDrone"
+
+		case "npc_turret_mega":
+			return "KillHeavyTurret"
+
+		case "npc_turret_sentry":
+			return "KillLightTurret"
+
+		case "npc_dropship":
+			return ""
+
+		case "npc_stalker":
+			return "KillStalker"
+
+		case "npc_spectre":
+			scoreEvent = "KillSpectre"
+
+			if ( npc.GetBossPlayer() != null )
+				scoreEvent = "KillHackedSpectre"
+			/*
+			if ( inflictor )
+			{
+				if ( IsTitanCrushDamage( damageInfo ) )
+				{
+					return "TitanStepCrush_"+ scoreEvent
+				}
+
+				if ( IsTitanNPC( inflictor ) )
+				{
+					return  "Auto_Pilot_" + scoreEvent
+				}
+
+				if ( IsPlayerControlledSpectre( inflictor) )
+				{
+					return  "Flipped_Spectre_" + scoreEvent
+				}
+
+				if ( IsPlayerControlledTurret( inflictor ) )
+				{
+					return "AutoTurret_" + scoreEvent
+				}
+
+				if ( damageSourceId == eDamageSourceId.mp_titanability_smoke )
+				{
+					return "ElectrocuteSpectre"
+				}
+
+				if ( damageSourceId == eDamageSourceId.human_execution )
+				{
+					return  "MeleeHumanExecutionVsSpectre"
+				}
+
+				if ( damageSourceId == eDamageSourceId.human_melee )
+				{
+					return  "MeleeHumanAttackVsSpectre"
+				}
+
+				if ( damageSourceId == eDamageSourceId.eviscerate )
+				{
+					return  "EviscerateVsSpectre"
+				}
+			}
+			*/
+
+			return scoreEvent
+	}
+
+	if ( ( classname == "npc_soldier" ) && ( IsCreature( npc ) ) )   //TODO: get infected their own classname
+	{
+		scoreEvent = "KillInfected"
+		return scoreEvent
+	}
+
+	if ( npc.GetAIClass() == AIC_HUMAN )
+	{
+		scoreEvent = "KillGrunt"
+		/*
+		if ( inflictor )
+		{
+			if ( IsTitanCrushDamage( damageInfo ) )
+			{
+				return "TitanStepCrush_"+ scoreEvent
+			}
+
+			if ( IsTitanNPC( inflictor ) )
+			{
+				return "Auto_Pilot_" + scoreEvent
+			}
+
+			if ( IsPlayerControlledSpectre( inflictor ) )
+			{
+				return  "Flipped_Spectre_" + scoreEvent
+			}
+
+			if ( IsPlayerControlledTurret( inflictor ) )
+			{
+				if ( IsAlive( inflictor.GetParent() ) )
+					return "AerialEscort_" + scoreEvent
+				else
+					return "AutoTurret_" + scoreEvent
+			}
+
+			if ( damageSourceId == eDamageSourceId.mp_titanability_smoke )
+			{
+				scoreEvent = "ElectrocuteFireteamAI"
+				if ( npc.GetTeam() == TEAM_IMC )
+					scoreEvent = "Electrocute_IMC_Soldier"
+			}
+
+			if ( damageSourceId == eDamageSourceId.human_melee )
+			{
+				scoreEvent =  "MeleeHumanAttackVsGrunt"
+				if ( npc.GetTeam() == TEAM_IMC )
+					scoreEvent = "MeleeHumanAttackVs_IMC_Soldier"
+			}
+
+			if ( damageSourceId == eDamageSourceId.human_execution )
+			{
+				scoreEvent =  "MeleeHumanExecutionVsGrunt"
+				if ( npc.GetTeam() == TEAM_IMC )
+					scoreEvent = "MeleeHumanExecutionVs_IMC_Soldier"
+			}
+
+			if ( damageSourceId == eDamageSourceId.eviscerate )
+			{
+				scoreEvent =  "EviscerateVsGrunt"
+				if ( npc.GetTeam() == TEAM_IMC )
+					scoreEvent = "EviscerateVs_IMC_Soldier"
+			}
+		}
+		*/
+		return scoreEvent
+	}
+
+	unreachable
+}
+#endif // #if HAS_NPC_SCORE_EVENTS
+#endif // SERVER

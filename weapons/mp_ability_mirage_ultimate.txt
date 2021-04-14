@@ -1,0 +1,152 @@
+#base "_base_ability_ultimate.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_DISGUISE"
+	"shortprintname"								"#WPN_DISGUISE_SHORT"
+	"description" 									"#WPN_DISGUISE_DESC"
+	"longdesc" 										"#WPN_DISGUISE_LONGDESC"
+	"menu_icon"										"rui/pilot_loadout/suit/stalker"
+	"hud_icon"										"rui/hud/ultimate_icons/ultimate_mirage"
+
+	"weaponClass" 									"human"
+	"weaponType"									"tactical"
+	"fire_mode"   									"offhand"
+	"offhand_default_inventory_slot"				"0"
+	"offhand_keep_primary_in_hand"					"0"
+	"offhand_holster_primary"						"1"
+    "hide_holstered_sidearm_when_active"			"1"
+    "zoom_effects"                                  "0"
+
+	"OnWeaponChargeEnd"								"OnWeaponChargeEnd_ability_mirage_ultimate"
+	"OnWeaponChargeBegin"							"OnWeaponChargeBegin_ability_mirage_ultimate"
+	"OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_ability_mirage_ultimate"
+	"offhand_interupts_weapon_anims"				"1"
+
+	"play_offhand_charging_anim"  					"1"
+	"play_offhand_start_end_anim"					"0"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_mirage_disguise.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_mirage.rmdl"
+	//"projectilemodel" 							"mdl/dev/empty_model.rmdl"
+	"leveled_pickup"								"1"
+	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
+
+	"bone_merge_world_model"						"1"
+
+	"ammo_suck_behavior"							"offhand_weapons"
+
+	"sound_weapon_ready"							"Survival_UI_Ultimate_Ready"
+	"ammo_display"									"count"
+
+	"ammo_clip_size"   								"180"
+	"ammo_default_total"							"0"
+	"ammo_min_to_fire"								"180"
+	"ammo_per_shot"									"180"
+	"ammo_stockpile_max"							"180"
+	"fire_rate"   									"1.0"
+
+	// Regen Ammo
+	"regen_ammo_refill_rate"						"1"
+	"regen_ammo_refill_start_delay"					"0.0"
+
+	// Damage
+	"damage_type" 									"none"
+	"explosion_damage_heavy_armor"					"0"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+
+	// Sounds
+	"sound_dryfire"									"Survival_UI_Ability_NotReady"
+	"fire_sound_1_player_1p"						""
+	"fire_sound_1_player_3p"						""
+
+	// Rumble
+	"rumble"  										"-1"
+
+	// Behavior
+	"cooldown_type"									"ammo_instant"
+	"holster_time"									"0.0"
+	"deploy_time" 									"0.0"
+	"lower_time"  									"0.0"
+	//"raise_time"  								"0.15"
+	"allow_empty_fire"								"0"
+	"reload_enabled"								"0"
+	"empty_reload_only"   							"0"
+	"allow_empty_click"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"breaks_cloak"									"0"
+	"primary_fire_does_not_block_sprint"			"1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	"fire_duration"									"5.0"
+
+	// Crosshair
+
+	"charge_time" 									"1.0"
+	"charge_levels"									"3"
+	"charge_level_base"								"1"
+	"charge_end_forces_fire"						"1"
+    "charge_require_input"							"0"
+
+	"charge_cooldown_time"							"1.0"
+	"charge_cooldown_delay"   						"0.0"
+	"charge_is_triggered_by_ADS"					"0"
+	"charge_remain_full_when_fired"                 "0"
+
+	"charge_sound_1p"								""
+	"charge_sound_stop_when_full"					"0"
+	"charge_sound_seek_to_charge_fraction"			"0"
+	"charge_full_sound_1p"							""
+	"charge_drain_sound_1p"							""
+	"charge_drain_sound_stop_when_empty"			"1"
+	"charge_drain_sound_seek_to_charge_fraction"	"1"
+
+    "charge_allow_melee"                            "0"
+    "charge_maintained_until_fired"					"1"
+    "charge_allow_midway_charge"					"0"
+
+	Mods
+	{
+	    survival_armor_cooldown_mod
+        {
+            "regen_ammo_refill_rate"    "*1.25"
+        }
+        survival_finite_ordnance
+        {
+
+        }
+        ultimate_active_no_regen
+        {
+   			"regen_ammo_refill_rate"						"0"
+        }
+	}
+
+	"ordnance_crosshair_always_on_start_index"	"0"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			crosshairMovementX          crosshair_movement_x
+		    crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_2
+		{
+			"ui"						"ui/crosshair_tactical"
+			Args
+			{
+			    regenRate               "eWeaponVar.regen_ammo_refill_rate"
+			    ammoFrac                "progress_weapon_clip_ammo_frac"
+			    dryfireTime             "weapon_latest_dryfire_time"
+			}
+		}
+	}
+}

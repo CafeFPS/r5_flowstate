@@ -1,0 +1,371 @@
+global function ShPakRequests_LevelInit
+
+
+#if CLIENT
+global function RequestPakFile
+global function ReleasePakFile
+#endif
+
+
+#if CLIENT
+global function ClientCodeCallback_PakAsyncLoadFinished
+#endif
+
+
+const float WORKAROUND_UNLOAD_MIN_WAIT_TIME = 0.1 // (dw): see R5DEV-61825
+
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+#if CLIENT
+global typedef PakRequestCompleteCallbackType void functionref()
+#endif
+
+
+#if CLIENT
+global struct PakHandle
+{
+	string                         rpakPath = ""
+	PakRequestCompleteCallbackType requestCompleteCallback
+	bool                           isAvailable
+}
+#endif
+
+
+#if CLIENT
+enum ePakRequestStatus
+{
+	INVALID,
+	QUEUED_TO_LOAD,
+	LOAD_REQUESTED,
+	LOAD_REQUESTED_BUT_WILL_UNLOAD_IMMEDIATELY,
+	LOADED,
+	QUEUED_TO_UNLOAD,
+	UNLOADED,
+	ERROR,
+}
+#endif
+
+#if CLIENT
+struct PakRequestState
+{
+	string                 rpakPath
+	table<PakHandle, bool> handleSet
+	int                    status = ePakRequestStatus.INVALID
+	int                    pakId
+
+	float WORKAROUND_unloadQueueTime = -1.0
+}
+#endif
+
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+struct
+{
+	#if CLIENT
+		PakRequestState ornull activeRequestOrNull = null
+		array<PakRequestState> requestQueue
+		array<PakRequestState> unloadQueue
+
+		table<string, PakRequestState> rpakPathRequestStateMap
+
+		table signalDummy
+	#endif
+} file
+
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+void function ShPakRequests_LevelInit()
+{
+	#if CLIENT
+		RegisterSignal( "PakFileLoaded" )
+		RegisterSignal( "PakHandleReleased" )
+
+		RegisterSignal( "WORKAROUND_ProcessPakQueues" )
+		thread WORKAROUND_ProcessPakQueues()
+	#endif
+}
+
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+#if CLIENT
+PakHandle function RequestPakFile( string rpakPath, PakRequestCompleteCallbackType requestCompleteCallback = null )
+{
+	PakHandle handle
+	handle.rpakPath = rpakPath
+	handle.requestCompleteCallback = requestCompleteCallback
+
+	if ( rpakPath in file.rpakPathRequestStateMap )
+	{
+		PakRequestState prs = file.rpakPathRequestStateMap[rpakPath]
+
+		prs.handleSet[handle] <- true
+
+		if ( prs.status == ePakRequestStatus.QUEUED_TO_LOAD || prs.status == ePakRequestStatus.LOAD_REQUESTED )
+		{
+			// pak-file is already in the request queue or has already been requested
+		}
+		else if ( prs.status == ePakRequestStatus.LOAD_REQUESTED_BUT_WILL_UNLOAD_IMMEDIATELY )
+		{
+			// pak-file has already been requested, but nothing wanted it, but now something does!
+			prs.status = ePakRequestStatus.LOAD_REQUESTED
+		}
+		else if ( prs.status == ePakRequestStatus.LOADED )
+		{
+			// pak-file is loaded and ready to use
+			handle.isAvailable = true
+		}
+		else if ( prs.status == ePakRequestStatus.QUEUED_TO_UNLOAD )
+		{
+			// pak-file was queued to be unloaded, but now something wants it!
+			file.unloadQueue.removebyvalue( prs )
+			prs.status = ePakRequestStatus.LOADED
+			// loaded and ready to use
+			handle.isAvailable = true
+		}
+		else if ( prs.status == ePakRequestStatus.ERROR )
+		{
+			//
+		}
+		else
+		{
+			Assert( false, "PakRequestState has unexpected status: " + DEV_GetEnumStringSafe( "ePakRequestStatus", prs.status ) )
+		}
+
+		if ( handle.isAvailable )
+		{
+			Signal( handle, "PakFileLoaded" )
+			if ( handle.requestCompleteCallback != null )
+				handle.requestCompleteCallback()
+		}
+		return handle
+	}
+
+	PakRequestState prs
+	prs.rpakPath = rpakPath
+	prs.handleSet[handle] <- true
+	file.rpakPathRequestStateMap[rpakPath] <- prs
+
+	prs.status = ePakRequestStatus.QUEUED_TO_LOAD
+	file.requestQueue.append( prs )
+	RunPakRequests()
+
+	return handle
+}
+#endif
+
+
+#if CLIENT
+void function ReleasePakFile( PakHandle handle )
+{
+	PakRequestState prs = file.rpakPathRequestStateMap[handle.rpakPath]
+	Assert( prs.status == ePakRequestStatus.QUEUED_TO_LOAD || prs.status == ePakRequestStatus.LOAD_REQUESTED || prs.status == ePakRequestStatus.LOADED || prs.status == ePakRequestStatus.ERROR )
+
+	Assert( handle.isAvailable == (prs.status == ePakRequestStatus.LOADED) )
+	handle.isAvailable = false
+	delete prs.handleSet[handle]
+
+	if ( prs.handleSet.len() == 0 ) // check if nothing wants this pak-file loaded anymore
+	{
+		if ( prs.status == ePakRequestStatus.QUEUED_TO_LOAD )
+		{
+			// pak-file is in the request queue and hasn't been requested yet, so just remove it and call it a day
+			file.requestQueue.removebyvalue( prs )
+			prs.status = ePakRequestStatus.UNLOADED
+			delete file.rpakPathRequestStateMap[prs.rpakPath]
+		}
+		else if ( prs.status == ePakRequestStatus.LOAD_REQUESTED )
+		{
+			Assert( file.activeRequestOrNull == prs )
+			// pak-file has been requested, so mark it for immediate unloading after it is done loading
+			prs.status = ePakRequestStatus.LOAD_REQUESTED_BUT_WILL_UNLOAD_IMMEDIATELY
+		}
+		else if ( prs.status == ePakRequestStatus.LOADED )
+		{
+			// pak-file is loaded, so add it to the unload queue
+			prs.status = ePakRequestStatus.QUEUED_TO_UNLOAD
+			prs.WORKAROUND_unloadQueueTime = Time()
+			file.unloadQueue.push( prs )
+			RunPakRequests()
+		}
+		else if ( prs.status == ePakRequestStatus.ERROR )
+		{
+			delete file.rpakPathRequestStateMap[prs.rpakPath]
+		}
+	}
+
+	Signal( handle, "PakHandleReleased" )
+}
+#endif
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+#if CLIENT
+void function RunPakRequests()
+{
+	//if ( file.activeRequestOrNull != null )
+	//	return
+
+	//while ( file.unloadQueue.len() > 0 )
+	//{
+	//	PakRequestState prs = file.unloadQueue.remove( 0 )
+	//	Assert( prs.status == ePakRequestStatus.QUEUED_TO_UNLOAD )
+	//
+	//	printf( "ClientPakFile_Unload: %s\n", prs.rpakPath + ".rpak" )
+	//	int unloadResult = ClientPakFile_Unload( prs.pakId )
+	//	Assert( unloadResult == PAK_STATUS_FREED )
+	//
+	//	prs.status = ePakRequestStatus.UNLOADED
+	//	delete file.rpakPathRequestStateMap[prs.rpakPath]
+	//}
+
+	//while ( file.requestQueue.len() > 0 )
+	//{
+	//	PakRequestState prs = file.requestQueue.remove( 0 )
+	//	printf( "ClientPakFile_RequestAsyncLoad: %s\n", prs.rpakPath + ".rpak" )
+	//	prs.pakId = ClientPakFile_RequestAsyncLoad( prs.rpakPath + ".rpak" )
+	//	file.activeRequestOrNull = prs
+	//
+	//	if ( prs.pakId == -1 )
+	//	{
+	//		// something went wrong, so move the queue onto the next request
+	//		Warning( "SCRIPT PAK FILE REQUEST FAILED: %s", prs.rpakPath )
+	//		file.activeRequestOrNull = null
+	//		prs.status = ePakRequestStatus.ERROR
+	//		// the handles will be waiting forever
+	//	}
+	//	else
+	//	{
+	//		// request dispatched successfully
+	//		prs.status = ePakRequestStatus.LOAD_REQUESTED
+	//		break
+	//	}
+	//}
+
+	Signal( file.signalDummy, "WORKAROUND_ProcessPakQueues" )
+}
+#endif
+
+
+#if CLIENT
+void function ClientCodeCallback_PakAsyncLoadFinished( int pakId, int status )
+{
+	printf( "ClientCodeCallback_PakAsyncLoadFinished: %d %d\n", pakId, status )
+	Assert( status == PAK_STATUS_LOADED )
+
+	PakRequestState prs = expect PakRequestState(file.activeRequestOrNull)
+	file.activeRequestOrNull = null
+	Assert( prs.pakId == pakId )
+
+	if ( prs.status == ePakRequestStatus.LOAD_REQUESTED )
+	{
+		prs.status = ePakRequestStatus.LOADED
+		// pak-file loaded successfully
+		foreach( PakHandle handle, bool unused in prs.handleSet )
+		{
+			handle.isAvailable = true
+			Signal( handle, "PakFileLoaded" )
+			if ( handle.requestCompleteCallback != null )
+				handle.requestCompleteCallback()
+		}
+	}
+	else if ( prs.status == ePakRequestStatus.LOAD_REQUESTED_BUT_WILL_UNLOAD_IMMEDIATELY )
+	{
+		// while loading, all the things that wanted this pak-file decided they don't want it anymore, so unload it
+		prs.status = ePakRequestStatus.QUEUED_TO_UNLOAD
+		prs.WORKAROUND_unloadQueueTime = Time()
+		file.unloadQueue.push( prs )
+	}
+	else
+	{
+		Assert( false, "PakRequestState has unexpected status: " + DEV_GetEnumStringSafe( "ePakRequestStatus", prs.status ) )
+	}
+
+	RunPakRequests()
+}
+#endif
+
+
+#if CLIENT // (dw): see R5DEV-61825
+void function WORKAROUND_ProcessPakQueues()
+{
+	while ( true )
+	{
+		WaitSignal( file.signalDummy, "WORKAROUND_ProcessPakQueues" )
+
+		if ( file.activeRequestOrNull != null )
+			continue
+
+		while ( file.unloadQueue.len() > 0 )
+		{
+			PakRequestState prs = file.unloadQueue[0] // should be the earliest
+			Assert( prs.status == ePakRequestStatus.QUEUED_TO_UNLOAD )
+
+			float waitTime = Time() - (prs.WORKAROUND_unloadQueueTime + WORKAROUND_UNLOAD_MIN_WAIT_TIME)
+			if ( waitTime > 0.001 )
+				wait waitTime
+
+			if ( prs.status != ePakRequestStatus.QUEUED_TO_UNLOAD )
+				continue // while we were waiting, someone may have requested it again (so its no longer in the unload queue)
+
+			PakRequestState removed = file.unloadQueue.remove( 0 )
+			Assert( removed == prs )
+
+			printf( "ClientPakFile_Unload: %s\n", prs.rpakPath + ".rpak" )
+			int unloadResult = ClientPakFile_Unload( prs.pakId )
+			Assert( unloadResult == PAK_STATUS_FREED )
+
+			prs.status = ePakRequestStatus.UNLOADED
+			delete file.rpakPathRequestStateMap[prs.rpakPath]
+		}
+
+		while ( file.requestQueue.len() > 0 )
+		{
+			PakRequestState prs = file.requestQueue.remove( 0 )
+			printf( "ClientPakFile_RequestAsyncLoad: %s\n", prs.rpakPath + ".rpak" )
+			prs.pakId = ClientPakFile_RequestAsyncLoad( prs.rpakPath + ".rpak" )
+			file.activeRequestOrNull = prs
+
+			if ( prs.pakId == -1 )
+			{
+				// something went wrong, so move the queue onto the next request
+				Warning( "SCRIPT PAK FILE REQUEST FAILED: %s", prs.rpakPath )
+				file.activeRequestOrNull = null
+				prs.status = ePakRequestStatus.ERROR
+				// the handles will be waiting forever
+			}
+			else
+			{
+				// request dispatched successfully
+				prs.status = ePakRequestStatus.LOAD_REQUESTED
+				break // we can only request one at a time, the callback will make us process more
+			}
+		}
+	}
+}
+#endif
+
+

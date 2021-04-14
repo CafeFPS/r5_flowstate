@@ -1,0 +1,66 @@
+untyped
+
+
+global function ServerCallback_SetEntityVar
+global function ServerCallback_SetServerVar
+
+void function ServerCallback_SetEntityVar( int eHandle, varHandle, value )
+{
+	local varName = _entityClassVarHandles[varHandle]
+	if ( eHandle in _entityVarsByEHandle )
+	{
+		_entityVarsByEHandle[ eHandle ][ varName ] = value
+	}
+
+	entity ent = GetEntityFromEncodedEHandle( eHandle )
+
+	if ( !IsValid_ThisFrame( ent ) )
+		return
+
+	local className = ent.GetNetworkedClassName()
+	if ( !( className in _entityVarsByEHandle ) )
+	{
+		_entityVarsByEHandle[ className ] <- {}
+	}
+
+	if ( !( eHandle in _entityVarsByEHandle[ className ] ) )
+	{
+		_entityVarsByEHandle[ className ][ eHandle ] <- clone ent._entityVars
+		ent._entityVars = _entityVarsByEHandle[ className ][ eHandle ]
+	}
+
+
+	Assert( className in _entityClassVars )
+	Assert( className in _entityClassVarsIsEnts )
+
+	Assert( ("_entityVars" in ent) )
+
+	if ( _entityClassVarsIsEnts[className][varName] && value != null )
+	{
+		//printl( "NETWORK VAR VALUE IS EHANDLE. FINDING ENTITY" )
+		value = GetEntityFromEncodedEHandle( value )
+	}
+
+	local oldValue = ent._entityVars[varName]
+	ent._entityVars[varName] = value
+
+	//printl( "Set entityVar " + varName + " to " + value )
+	CodeCallback_EntityVarChanged( ent, varName, value, oldValue )
+}
+
+void function ServerCallback_SetServerVar( varHandle, value )
+{
+	string varName = expect string( _serverVarHandles[varHandle] )
+
+	if ( value != null )
+	{
+		if ( varName in _serverEntityVars )
+			value = GetEntityFromEncodedEHandle( value )
+	}
+
+	_serverVars[varName] = value
+
+	//printl( "Set serverVar " + varName + " to " + value )
+	CodeCallback_ServerVarChanged( varName )
+}
+

@@ -1,0 +1,177 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"Bullets.40mmNearmiss"
+		"whizby_sound_from_AI"		"Bullets.40mmNearmiss"
+		"whizby_maxDistancePilot"	"200"
+		"whizby_maxDistanceTitan"	"500"
+	}
+
+	FX
+	{
+		"C" "P_grndpnd_launch" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_grndpnd_launch" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_grndpnd_launch" // metal_titan
+
+		"F" "P_grndpnd_launch" //flesh
+		"G" "P_grndpnd_launch" //metalgrate, chainlink, chain
+		"H" "P_grndpnd_launch" //alienflesh
+
+		"J" "P_grndpnd_launch" //grass
+		"K" "P_grndpnd_launch" //Mud
+		"L" "P_grndpnd_launch" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_grndpnd_launch" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_grndpnd_launch"
+		"O" "P_grndpnd_launch" //Foliage
+		"P" "P_grndpnd_launch" //Computer
+
+		"R" "P_grndpnd_launch" //metalpanel, grenade, canister
+		"S" "P_grndpnd_launch" //water, slime
+		"T" "P_grndpnd_launch" //tile
+		"U" "P_grndpnd_launch" //glass_breakable
+
+		"V" "P_grndpnd_launch" //Metal Vent
+		"W" "P_grndpnd_launch" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_grndpnd_launch" //xo_shield
+
+		"Y" "P_grndpnd_launch" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_grndpnd_launch"  //sand
+
+		"0" "P_grndpnd_launch"
+		"1" "P_grndpnd_launch"
+		"2" "P_grndpnd_launch"
+		"3" "P_grndpnd_launch"
+		"4" "P_grndpnd_launch"
+		"5" "P_grndpnd_launch"
+		"6" "P_grndpnd_launch"
+		"7" "P_grndpnd_launch"
+		"8" "P_grndpnd_launch"
+		"9" "P_grndpnd_launch" //puddle
+
+		"splash" "P_grndpnd_launch"
+		"slime_splash" "P_grndpnd_launch"
+
+		"airburst" "P_impact_exp_med_air"
+		"shieldhit" "P_grndpnd_launch"
+		"critical_hit" "P_grndpnd_launch"
+	}
+
+	FX_victim
+	{
+		"shieldhit" "P_grndpnd_launch"
+	}
+
+	Sound
+	{
+		"C" "JumpPad_LaunchPlayer_3p"
+		"D" "JumpPad_LaunchPlayer_3p"
+		"E" "JumpPad_LaunchPlayer_3p"
+
+		"F" "JumpPad_LaunchPlayer_3p"
+		"G" "JumpPad_LaunchPlayer_3p"
+		"H" "JumpPad_LaunchPlayer_3p"
+
+		"J" "JumpPad_LaunchPlayer_3p"
+		"K" "JumpPad_LaunchPlayer_3p"
+		"L" "JumpPad_LaunchPlayer_3p"
+		"M" "JumpPad_LaunchPlayer_3p"
+		"N" "JumpPad_LaunchPlayer_3p"
+		"O" "JumpPad_LaunchPlayer_3p"
+		"P" "JumpPad_LaunchPlayer_3p"
+
+		"R" "JumpPad_LaunchPlayer_3p"
+		"S" "JumpPad_LaunchPlayer_3p"
+		"T" "JumpPad_LaunchPlayer_3p"
+		"U" "JumpPad_LaunchPlayer_3p"
+
+		"V" "JumpPad_LaunchPlayer_3p"
+		"W" "JumpPad_LaunchPlayer_3p"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "JumpPad_LaunchPlayer_3p"
+		"Z" "JumpPad_LaunchPlayer_3p"  //sand
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" "JumpPad_LaunchPlayer_3p"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "JumpPad_LaunchPlayer_1p"
+		"D" "JumpPad_LaunchPlayer_1p"
+		"E" "JumpPad_LaunchPlayer_1p"
+
+		"F" "JumpPad_LaunchPlayer_1p"
+		"G" "JumpPad_LaunchPlayer_1p"
+		"H" "JumpPad_LaunchPlayer_1p"
+
+		"J" "JumpPad_LaunchPlayer_1p"
+		"K" "JumpPad_LaunchPlayer_1p"
+		"L" "JumpPad_LaunchPlayer_1p"
+		"M" "JumpPad_LaunchPlayer_1p"
+		"N" "JumpPad_LaunchPlayer_1p"
+		"O" "JumpPad_LaunchPlayer_1p"
+		"P" "JumpPad_LaunchPlayer_1p"
+
+		"R" "JumpPad_LaunchPlayer_1p"
+		"S" "JumpPad_LaunchPlayer_1p"
+		"T" "JumpPad_LaunchPlayer_1p"
+		"U" "JumpPad_LaunchPlayer_1p"
+
+		"V" "JumpPad_LaunchPlayer_1p"
+		"W" "JumpPad_LaunchPlayer_1p"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
+		"Y" "JumpPad_LaunchPlayer_1p"
+		"Z" "JumpPad_LaunchPlayer_1p"  //sand
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" "JumpPad_LaunchPlayer_1p"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "JumpPad_LaunchPlayer_1p"
+		"D" "JumpPad_LaunchPlayer_1p"
+		"E" "Titan.40mm_Impact_3P_vs_1P"
+
+		"F" "JumpPad_LaunchPlayer_1p"
+		"G" "JumpPad_LaunchPlayer_1p"
+		"H" "JumpPad_LaunchPlayer_1p"
+
+		"J" "JumpPad_LaunchPlayer_1p"
+		"K" "JumpPad_LaunchPlayer_1p"
+		"L" "JumpPad_LaunchPlayer_1p"
+		"M" "JumpPad_LaunchPlayer_1p"
+		"N" "JumpPad_LaunchPlayer_1p"
+		"O" "JumpPad_LaunchPlayer_1p"
+		"P" "JumpPad_LaunchPlayer_1p"
+
+		"R" "JumpPad_LaunchPlayer_1p"
+		"S" "JumpPad_LaunchPlayer_1p"
+		"T" "JumpPad_LaunchPlayer_1p"
+		"U" "JumpPad_LaunchPlayer_1p"
+
+		"V" "JumpPad_LaunchPlayer_1p"
+		"W" "JumpPad_LaunchPlayer_1p"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "JumpPad_LaunchPlayer_1p"
+		"Z" "JumpPad_LaunchPlayer_1p"  //sand
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" "SuperSpectre.GroundSlam.Impact"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_1P"
+	}
+
+
+}

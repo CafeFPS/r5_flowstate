@@ -1,0 +1,695 @@
+untyped
+
+global function SmartAmmo_Init
+
+/****************************************************/
+/*				Mega Weapon Functions				*/
+/****************************************************/
+
+// Called from mega weapon script callbacks
+global function SmartAmmo_FireWeapon
+
+/********************************/
+/*	 Global Utility Functions	*/
+/*	Call these from any script	*/
+/********************************/
+
+// Behavior Option Functions
+global function SmartAmmo_SetAllowUnlockedFiring
+global function SmartAmmo_SetAimAttachment				// Set a custom attachment name for target lockon
+global function SmartAmmo_SetMissileSpeed					// Set the speed the missile will travel when it is first created
+global function SmartAmmo_SetMissileSpeedLimit		// Sets the max speed for the missile. After being created it will accelerate up to this speed
+global function SmartAmmo_SetMissileHomingSpeed		// Set the turning 'homing' rate of the missile
+global function SmartAmmo_SetMissileShouldDropKick
+global function SmartAmmo_SetUnlockAfterBurst			// Makes the targets get cleared after the burst fire is complete. Default is false
+global function SmartAmmo_SetMissileAimAtCursor				// Makes missiles fly towards where the crosshair is aimed, instead of parallel to the crosshair direction. Default is false.
+global function SmartAmmo_SetWarningIndicatorDelay
+global function SmartAmmo_SetDisplayKeybinding
+global function SmartAmmo_SetExpandContract
+global function SmartAmmo_EntHasEnoughTrackedMarks
+global function SmartAmmo_SetShouldTrackPosition
+
+/****************************************************/
+/*				Interal Get/Set Functions			*/
+/*	( not meant to be called outside smart script )	*/
+/****************************************************/
+global function SmartAmmo_GetUseAltAmmoFunc
+global function SmartAmmo_GetAllowUnlockedFiring
+global function SmartAmmo_SetWeaponFireFailedTime
+global function SmartAmmo_GetWeaponFireFailedTime
+global function SmartAmmo_GetAimAttachment
+global function SmartAmmo_GetMissileSpeed
+global function SmartAmmo_GetMissileSpeedLimit
+global function SmartAmmo_GetMissileHomingSpeed
+global function SmartAmmo_GetMissileShouldDropKick
+global function SmartAmmo_GetUnlockAfterBurst
+global function SmartAmmo_GetMissileAimAtCursor
+global function SmartAmmo_GetWarningIndicatorDelay
+global function SmartAmmo_GetDisplayKeybinding
+global function SmartAmmo_GetExpandContract
+global function SmartAmmo_GetShouldTrackPosition
+
+global function SmartAmmo_SetMissileTarget
+global function SmartAmmo_TransferMissileLockons
+global function SmartAmmo_CanWeaponBeFired
+
+global function SmartAmmo_WeaponRequiresTrackedMarks
+global function SmartAmmo_GetWeaponTargets
+
+#if CLIENT
+//	global function ClientCodeCallback_OnPredictedEntityRemove
+#endif
+
+global const SMART_AMMO_DEFAULT_AIM_ATTACHMENT = "CHESTFOCUS"
+global const SMART_AMMO_AI_AIM_ATTACHMENT = "HEADSHOT"
+global const SMART_AMMO_GRENADE_AIM_ATTACHMENT = "LIGHT" //Satchels have LIGHT others grenades default to worldspace.
+global const TARGET_SET_FRACTION = 0.0001 //This target.fraction is set so the target is not seen as new.
+global const HOMING_SFX_LOOP	= "Weapon_Sidwinder_Projectile"
+global const SMART_AMMO_PLAYER_MAX_LOCKS			= 3
+
+typedef FireWeaponCallback int functionref( entity, WeaponPrimaryAttackParams, int, int, bool, entity )
+FireWeaponCallback function GetFireWeaponCallbackForWeaponType( int wt )
+{
+	switch( wt )
+	{
+		case eSmartAmmoWeaponType.homingMissile:
+			return SmartAmmo_FireWeapon_HomingMissile
+		case eSmartAmmoWeaponType.bullet:
+			return SmartAmmo_FireWeapon_Bullet
+	}
+
+	Assert( false, "Unhandled eSmartAmmoWeaponType: #" + wt )
+	return SmartAmmo_FireWeapon_Bullet
+}
+
+void function SmartAmmo_Init()
+{
+#if SERVER
+#endif
+}
+
+/******************************************/
+/* 	GLOBAL - CALLED ON CLIENT AND SERVER  */
+/******************************************/
+
+int function SmartAmmo_FireWeapon( entity weapon, WeaponPrimaryAttackParams attackParams, int damageType, int explosionDamageType )
+{
+	if ( !IsValid( weapon ) )
+		return 0
+
+	if ( !weapon.SmartAmmo_IsEnabled() )
+	{
+		if ( !SmartAmmo_GetAllowUnlockedFiring( weapon ) )
+		{
+			SmartAmmo_SetWeaponFireFailedTime( weapon )
+			return 0
+		}
+	}
+
+	#if CLIENT
+		if ( IsWatchingReplay() )
+			return 0 // temp fix for SmartAmmo_GetStoredTargets not returning the same list during kill replay
+	#endif
+
+	array<entity> storedTargets = weapon.SmartAmmo_GetStoredTargets()
+	bool weaponRequiresTrackedMarks = SmartAmmo_WeaponRequiresTrackedMarks( weapon )
+	if ( weaponRequiresTrackedMarks )
+		RemovePartiallyTrackedEnts( weapon, storedTargets )
+	array< SmartAmmoTarget > targets = weapon.SmartAmmo_GetTargets()
+	//TODO: Update with cleaner tracking count method.
+	table targetFracs
+	table targetActiveShots
+
+	foreach ( target in targets )
+	{
+		if ( target.fraction < 1.0 )
+			continue
+
+		targetFracs[target.ent] <- target.fraction
+		targetActiveShots[target.ent] <- target.activeShot
+	}
+
+	if ( attackParams.burstIndex == 0 )
+	{
+		// The first time we fire the weapon we store off all targets we are locked onto so we can iterate through them with each burst shot.
+		// The reason we have to store them off is because if burst bullet 1 kills the first target they will be removed from the smart targets array
+		// when the second burst bullet is fired, and when we try to shoot target '2' we will actually be shooting target '3' becuase index 0 is removed
+		// and all targets shift in the array
+
+		weapon.SmartAmmo_StoreTargets()
+		//printt( "Storing", weapon.SmartAmmo_GetStoredTargets().len(), "targets" )
+		//PrintTable( weapon.SmartAmmo_GetStoredTargets() )
+		storedTargets = weapon.SmartAmmo_GetStoredTargets()
+		if ( weaponRequiresTrackedMarks )
+			RemovePartiallyTrackedEnts( weapon, storedTargets )
+		// figure out how many targets to hit with one pull of the trigger
+		int maxTargetedBurst = SmartAmmo_GetMaxTargetedBurst( weapon )
+
+		bool alwaysDoBurst = weapon.GetWeaponSettingBool( eWeaponVar.smart_ammo_always_do_burst )
+		int burstCount = 0
+		if ( weapon.GetWeaponSettingBool( eWeaponVar.smart_ammo_alt_lock_style ) )
+		{
+			float chargeFrac = 1 - weapon.GetWeaponChargeFraction()
+			float shotFrac = 1 / float( maxTargetedBurst )
+
+			if ( chargeFrac < shotFrac )
+				return 0
+		}
+
+		foreach ( target in storedTargets )
+		{
+			Assert( target in targetFracs )
+
+			burstCount += int( floor( targetFracs[target] ) )
+		}
+
+		if ( alwaysDoBurst )
+			burstCount = maxTargetedBurst
+
+		burstCount = minint( maxTargetedBurst, burstCount )
+
+		if ( weapon.GetWeaponInfoFileKeyField( "smart_ammo_doBurstPerTarget" ) == 1 )
+			burstCount *= storedTargets.len()
+
+		if ( burstCount <= 0 )
+			burstCount = 0
+
+		weapon.SetWeaponBurstFireCount( burstCount )
+	}
+
+	// We don't have any targets locked. Should we do unlocked fire?
+	if ( storedTargets.len() == 0 && !SmartAmmo_GetAllowUnlockedFiring( weapon ) )
+	{
+		SmartAmmo_SetWeaponFireFailedTime( weapon )
+		return 0
+	}
+
+	array<entity> expandedStoredTargets = []
+
+	foreach ( target in storedTargets )
+	{
+		int burstCount
+
+		if ( target in targetFracs )
+			burstCount = int( floor( targetFracs[target] ) )
+		else
+			burstCount = 1
+
+		for ( int index = 0; index < burstCount; index++ )
+		{
+			expandedStoredTargets.append( target )
+		}
+	}
+
+	// Figure out the target we should be shooting this round
+	entity target = null
+	if ( expandedStoredTargets.len() > 0 )
+	{
+		int index = attackParams.burstIndex % expandedStoredTargets.len()
+		target = expandedStoredTargets[index]
+	}
+
+	// Tried to shoot at a target but it's no longer valid. Don't do anything
+	if ( target != null && !IsValid( target ) )
+		return 0
+
+	bool activeShot = false
+	if ( target in targetActiveShots )
+	{
+		if ( targetActiveShots[target] )
+		{
+			activeShot = true
+			damageType = damageType | DF_HEADSHOT
+			explosionDamageType = explosionDamageType | DF_HEADSHOT
+		}
+	}
+
+	// Fire the weapon
+	FireWeaponCallback fireWeapFunc = GetFireWeaponCallbackForWeaponType( weapon.GetWeaponSettingEnum( eWeaponVar.smart_ammo_weapon_type, eSmartAmmoWeaponType ) )
+	int shotsFired = fireWeapFunc( weapon, attackParams, damageType, explosionDamageType, activeShot, target )
+	bool isLastShot = (attackParams.burstIndex + 1 == weapon.GetWeaponBurstFireCount())
+	if ( isLastShot )
+	{
+		if ( weaponRequiresTrackedMarks )
+		{
+			foreach ( storedTarget in storedTargets )
+			{
+				weapon.SmartAmmo_UntrackEntity( storedTarget )
+			}
+		}
+
+		if ( SmartAmmo_GetUnlockAfterBurst( weapon ) )
+		{
+			weapon.SmartAmmo_Clear( true, false )
+		}
+	}
+
+	return shotsFired
+}
+
+int function SmartAmmo_FireWeapon_Bullet( entity weapon, WeaponPrimaryAttackParams attackParams, int damageType, int explosionDamageType, bool activeShot, entity target )
+{
+	if ( target )
+	{
+		// Shoot at the specified target
+		Assert( IsValid( target ) )
+		vector dir = weapon.SmartAmmo_GetFirePosition( target, attackParams.burstIndex ) - attackParams.pos
+
+		WeaponFireBulletSpecialParams fireBulletParams
+		fireBulletParams.pos = attackParams.pos
+		fireBulletParams.dir = dir
+		fireBulletParams.bulletCount = 1
+		fireBulletParams.scriptDamageType = damageType
+		fireBulletParams.skipAntiLag = true
+		fireBulletParams.dontApplySpread = false
+		fireBulletParams.doDryFire = false
+		fireBulletParams.noImpact = false
+		fireBulletParams.noTracer = false
+		fireBulletParams.activeShot = activeShot
+		fireBulletParams.doTraceBrushOnly = false
+		weapon.FireWeaponBullet_Special( fireBulletParams )
+	}
+	else
+	{
+		// Not trying to shoot at a target, so just shoot straight
+		weapon.FireWeaponBullet( attackParams.pos, attackParams.dir, 1, damageType )
+	}
+
+	return 1
+}
+
+int function SmartAmmo_FireWeapon_HomingMissile( entity weapon, WeaponPrimaryAttackParams attackParams, int damageType, int explosionDamageType, bool activeShot, entity target )
+{
+	bool shouldPredict = weapon.ShouldPredictProjectiles()
+
+	#if CLIENT
+		if ( !shouldPredict )
+			return 1
+	#endif
+
+	entity player = weapon.GetWeaponOwner()
+	vector attackPos = attackParams.pos
+	vector attackDir = attackParams.dir
+	float missileSpeed = SmartAmmo_GetMissileSpeed( weapon )
+	bool doPopup = SmartAmmo_GetMissileShouldDropKick( weapon )
+
+	if ( SmartAmmo_GetMissileAimAtCursor( weapon ) )
+		attackDir = GetVectorFromPositionToCrosshair( player, attackPos )
+
+	local homingSpeed = SmartAmmo_GetMissileHomingSpeed( weapon )
+	local missileSpeedLimit = SmartAmmo_GetMissileSpeedLimit( weapon )
+
+	array<entity> firedMissiles
+	table missileFlightData = SmartAmmo_GetExpandContract( weapon )
+
+	if ( missileFlightData.isValid )
+	{
+		firedMissiles = FireExpandContractMissiles( weapon, attackParams, attackPos, attackDir, damageType, explosionDamageType, shouldPredict, expect int( missileFlightData.numRocketsPerShot ), missileSpeed, missileFlightData.launchOutAng, missileFlightData.launchOutTime, missileFlightData.launchInAng, missileFlightData.launchInTime, missileFlightData.launchInLerpTime, missileFlightData.launchStraightLerpTime, missileFlightData.applyRandSpread, weapon.GetWeaponBurstFireCount() )
+	}
+	else
+	{
+		WeaponFireMissileParams fireMissileParams
+		fireMissileParams.pos = attackPos
+		fireMissileParams.dir = attackDir
+		fireMissileParams.speed = missileSpeed
+		fireMissileParams.scriptTouchDamageType = damageType
+		fireMissileParams.scriptExplosionDamageType = explosionDamageType
+		fireMissileParams.doRandomVelocAndThinkVars = doPopup
+		fireMissileParams.clientPredicted = shouldPredict
+		entity missile = weapon.FireWeaponMissile( fireMissileParams )
+		if ( missile )
+		{
+			//InitMissileForRandomDrift( missile, attackPos, attackDir )
+			missile.InitMissileForRandomDriftFromWeaponSettings( attackPos, attackDir )
+			firedMissiles.append( missile )
+		}
+	}
+
+	foreach ( missile in firedMissiles )
+	{
+		missile.kv.lifetime = 10
+
+		#if SERVER
+			missile.SetOwner( player )
+			EmitSoundOnEntity( missile, HOMING_SFX_LOOP )
+		#endif
+
+		missile.SetProjectileSpeed( missileSpeed )
+		missile.SetHomingSpeeds( homingSpeed, homingSpeed )
+		SetTeam( missile, player.GetTeam() )
+
+		if ( target )
+		{
+			if ( SmartAmmo_GetShouldTrackPosition( weapon ) )
+				SmartAmmo_SetMissileTargetPosition( missile, target )
+			else
+				SmartAmmo_SetMissileTarget( missile, target )
+		}
+
+		if ( "missileThinkThread" in weapon.s )
+			thread weapon.s.missileThinkThread( weapon, missile )
+	}
+
+	return firedMissiles.len()
+}
+
+/******************************************/
+/* 	 GLOBAL - WEAPON SETTINGS OVERRIDES   */
+/******************************************/
+
+void function SmartAmmo_SetWeaponSettingOverride( entity weapon, string setting, value )
+{
+	if ( !( setting in weapon.s ) )
+		weapon.s[ setting ] <- null
+	weapon.s[ setting ] = value
+}
+
+function SmartAmmo_GetWeaponSettingOverride( entity weapon, string setting, defaultValue = null )
+{
+	if ( setting in weapon.s )
+		return weapon.s[ setting ]
+	return defaultValue
+}
+
+function SmartAmmo_GetUseAltAmmoFunc( entity weapon )
+{
+	return SmartAmmo_GetWeaponSettingOverride( weapon, "useAltAmmoFunc" )
+}
+
+void function SmartAmmo_SetWarningIndicatorDelay( entity weapon, float warningIndicatorDelay )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "warningIndicatorDelay", warningIndicatorDelay )
+}
+
+float function SmartAmmo_GetWarningIndicatorDelay( entity weapon )
+{
+	return expect float( SmartAmmo_GetWeaponSettingOverride( weapon, "warningIndicatorDelay", 0.0 ) )
+}
+
+void function SmartAmmo_SetAllowUnlockedFiring( entity weapon, bool allow = true )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "allowUnlockedFiring", allow )
+}
+
+bool function SmartAmmo_GetAllowUnlockedFiring( entity weapon )
+{
+	return expect bool( SmartAmmo_GetWeaponSettingOverride( weapon, "allowUnlockedFiring", false ) )
+}
+
+void function SmartAmmo_SetWeaponFireFailedTime( entity weapon )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "lastFireWeaponFailTime", Time() )
+}
+
+function SmartAmmo_GetWeaponFireFailedTime( entity weapon )
+{
+	if ( !( "lastFireWeaponFailTime" in weapon.s ) )
+		weapon.s.lastFireWeaponFailTime <- -1
+	return Time() - weapon.s.lastFireWeaponFailTime
+}
+
+void function SmartAmmo_SetAimAttachment( entity weapon, string targetAttachment )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "targetAttachment", targetAttachment )
+}
+
+string function SmartAmmo_GetAimAttachment( entity weapon, entity ent )
+{
+	string attachName
+
+	if ( ent.IsPlayer())
+		attachName = SMART_AMMO_DEFAULT_AIM_ATTACHMENT
+	else if ( ent.GetNetworkedClassName() == "grenade_frag" )
+		attachName = SMART_AMMO_GRENADE_AIM_ATTACHMENT
+	else
+		attachName = SMART_AMMO_AI_AIM_ATTACHMENT
+
+	return expect string( SmartAmmo_GetWeaponSettingOverride( weapon, "targetAttachment", attachName ) )
+}
+
+void function SmartAmmo_SetShouldTrackPosition( entity weapon, bool shouldTrackPosition )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "shouldTrackPosition", shouldTrackPosition )
+}
+
+bool function SmartAmmo_GetShouldTrackPosition( entity weapon )
+{
+	return expect bool( SmartAmmo_GetWeaponSettingOverride( weapon, "shouldTrackPosition", false ) )
+}
+
+void function SmartAmmo_SetMissileSpeed( entity weapon, float missileSpeed )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "missileSpeed", missileSpeed )
+}
+
+float function SmartAmmo_GetMissileSpeed( entity weapon )
+{
+	return expect float( SmartAmmo_GetWeaponSettingOverride( weapon, "missileSpeed", 2500.0 ) )
+}
+
+void function SmartAmmo_SetMissileHomingSpeed( entity weapon, missileHomingSpeed )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "missileHomingSpeed", missileHomingSpeed )
+}
+
+function SmartAmmo_GetMissileHomingSpeed( entity weapon )
+{
+	return SmartAmmo_GetWeaponSettingOverride( weapon, "missileHomingSpeed", 300 )
+}
+
+void function SmartAmmo_SetMissileShouldDropKick( entity weapon, bool doDropKick = false )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "missilesShouldDropKick", doDropKick )
+}
+
+bool function SmartAmmo_GetMissileShouldDropKick( entity weapon )
+{
+	return expect bool( SmartAmmo_GetWeaponSettingOverride( weapon, "missilesShouldDropKick", false ) )
+}
+
+void function SmartAmmo_SetMissileSpeedLimit( entity weapon, missileSpeedLimit = 0 )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "missileSpeedLimit", missileSpeedLimit )
+}
+
+function SmartAmmo_GetMissileSpeedLimit( entity weapon )
+{
+	return SmartAmmo_GetWeaponSettingOverride( weapon, "missileSpeedLimit", 0 )
+}
+
+void function SmartAmmo_SetUnlockAfterBurst( entity weapon, bool unlockAfterBurst )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "unlockAfterBurst", unlockAfterBurst )
+}
+
+bool function SmartAmmo_GetUnlockAfterBurst( entity weapon )
+{
+	return expect bool( SmartAmmo_GetWeaponSettingOverride( weapon, "unlockAfterBurst", false ) )
+}
+
+void function SmartAmmo_SetMissileAimAtCursor( entity weapon, bool aimAtCenter )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "aimAtCenter", aimAtCenter )
+}
+
+bool function SmartAmmo_GetMissileAimAtCursor( entity weapon )
+{
+	return expect bool( SmartAmmo_GetWeaponSettingOverride( weapon, "aimAtCenter", false ) )
+}
+
+void function SmartAmmo_SetDisplayKeybinding( entity weapon, bool displayKeybinding )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "displayKeybinding", displayKeybinding )
+}
+
+function SmartAmmo_GetDisplayKeybinding( entity weapon )
+{
+	return SmartAmmo_GetWeaponSettingOverride( weapon, "displayKeybinding", true )
+}
+
+void function SmartAmmo_SetExpandContract( entity weapon, int numRocketsPerShot, bool applyRandSpread, launchOutAng, float launchOutTime, float launchInLerpTime, launchInAng, float launchInTime, float launchStraightLerpTime )
+{
+	SmartAmmo_SetWeaponSettingOverride( weapon, "exmissile_numRocketsPerShot", numRocketsPerShot )
+	SmartAmmo_SetWeaponSettingOverride( weapon, "exmissile_applyRandSpread", applyRandSpread )
+	SmartAmmo_SetWeaponSettingOverride( weapon, "exmissile_launchOutAng", launchOutAng )
+	SmartAmmo_SetWeaponSettingOverride( weapon, "exmissile_launchOutTime", launchOutTime )
+	SmartAmmo_SetWeaponSettingOverride( weapon, "exmissile_launchInLerpTime", launchInLerpTime )
+	SmartAmmo_SetWeaponSettingOverride( weapon, "exmissile_launchInAng", launchInAng )
+	SmartAmmo_SetWeaponSettingOverride( weapon, "exmissile_launchInTime", launchInTime )
+	SmartAmmo_SetWeaponSettingOverride( weapon, "exmissile_launchStraightLerpTime", launchStraightLerpTime )
+}
+
+table function SmartAmmo_GetExpandContract( entity weapon )
+{
+	table data
+	data.numRocketsPerShot <- SmartAmmo_GetWeaponSettingOverride( weapon, "exmissile_numRocketsPerShot" )
+	data.applyRandSpread <- SmartAmmo_GetWeaponSettingOverride( weapon, "exmissile_applyRandSpread" )
+	data.launchOutAng <- SmartAmmo_GetWeaponSettingOverride( weapon, "exmissile_launchOutAng" )
+	data.launchOutTime <- SmartAmmo_GetWeaponSettingOverride( weapon, "exmissile_launchOutTime" )
+	data.launchInLerpTime <- SmartAmmo_GetWeaponSettingOverride( weapon, "exmissile_launchInLerpTime" )
+	data.launchInAng <- SmartAmmo_GetWeaponSettingOverride( weapon, "exmissile_launchInAng" )
+	data.launchInTime <- SmartAmmo_GetWeaponSettingOverride( weapon, "exmissile_launchInTime" )
+	data.launchStraightLerpTime <- SmartAmmo_GetWeaponSettingOverride( weapon, "exmissile_launchStraightLerpTime" )
+	data.isValid <- true
+
+	foreach ( k, v in data )
+	{
+		if ( v == null )
+		{
+			data.isValid = false
+			break
+		}
+	}
+
+	return data
+}
+
+/*******************************/
+/* 	 GLOBAL UTILITY FUNCTION   */
+/*******************************/
+
+void function SmartAmmo_SetMissileTarget( entity missile, entity target )
+{
+	if ( !IsValid( missile ) || !IsValid( target ) )
+		return
+
+	// Set the missile locking offset
+	//local missileTargetOffset = target.IsTitan() ? <0,0,-25> : <0,0,-25>
+
+	// Set the missile target and homing speed
+	missile.SetMissileTarget( target, <0,0,0> )
+}
+
+void function SmartAmmo_SetMissileTargetPosition( entity missile, entity target )
+{
+	if ( !IsValid( missile ) || !IsValid( target ) )
+		return
+
+	// Set the missile locking offset
+	//local missileTargetOffset = target.IsTitan() ? <0,0,-25> : <0,0,-25>
+
+	// Set the missile target and homing speed
+	missile.SetMissileTargetPosition( target.EyePosition() )
+}
+
+void function SmartAmmo_TransferMissileLockons( entity soul, entity titan, entity oldTitan )
+{
+	if ( !IsValid( oldTitan ) || !IsValid( titan ) )
+		return
+
+	array<entity> missiles = GetProjectileArray()
+	foreach ( missile in missiles )
+	{
+		if ( missile.GetNetworkedClassName() != "rpg_missile" )
+			continue
+		if ( !( "GetMissileTarget" in missile ) )
+			continue
+		if ( missile.GetMissileTarget() == oldTitan )
+			SmartAmmo_SetMissileTarget( missile, titan )
+	}
+}
+
+bool function SmartAmmo_CanWeaponBeFired( entity weapon )
+{
+	Assert( weapon.SmartAmmo_IsEnabled() )
+
+	if ( !weapon.IsReadyToFire() || weapon.IsReloading() )
+		return false
+
+	// Weapon is ready to fire but it's a smart weapon so we have some additional checks.
+	// If the weapon requires a lock to be fired then we make sure the weapon has a full lock
+	if ( SmartAmmo_GetAllowUnlockedFiring( weapon ) == true )
+		return true
+
+	array< SmartAmmoTarget > targets = weapon.SmartAmmo_GetTargets()
+	float highestFraction = 0
+
+	bool weaponRequiresTrackedMarks = SmartAmmo_WeaponRequiresTrackedMarks( weapon )
+
+	foreach ( target in targets )
+	{
+		if ( weaponRequiresTrackedMarks && !SmartAmmo_EntHasEnoughTrackedMarks( weapon, target.ent ) )
+			continue
+
+		if ( target.fraction > highestFraction )
+			highestFraction = target.fraction
+	}
+
+	return highestFraction == 1.0
+}
+
+/*************************/
+/* 	 INTERNAL FUNCTION   */
+/*************************/
+
+#if CLIENT
+/*
+void function ClientCodeCallback_OnPredictedEntityRemove( entity serverEntity, entity predictedEntity )
+{
+}
+*/
+#endif // CLIENT
+
+#if SERVER
+void function SmartPistol_DamagedPlayerOrNPC( entity ent, var damageInfo )
+{
+	if ( !IsValid( ent ) )
+		return
+
+	int maxHealth = ent.GetMaxHealth()
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	if ( IsSpectre( ent ) )
+	{
+		DamageInfo_SetDamage( damageInfo, (maxHealth / 2) + 1 )
+	}
+	else if ( IsGrunt( ent ) )
+	{
+		if ( damage < maxHealth )
+			DamageInfo_SetDamage( damageInfo, maxHealth )
+	}
+}
+#endif // SERVER
+
+void function RemovePartiallyTrackedEnts( entity weapon, array<entity> targets )
+{
+	for ( int i = targets.len() - 1; i >= 0; i-- )
+	{
+		if ( !SmartAmmo_EntHasEnoughTrackedMarks( weapon, targets[i] ) )
+			targets.remove( i )
+	}
+}
+
+bool function SmartAmmo_WeaponRequiresTrackedMarks( entity weapon )
+{
+	return weapon.GetWeaponSettingInt( eWeaponVar.smart_ammo_max_trackers_per_target ) > 1
+}
+
+bool function SmartAmmo_EntHasEnoughTrackedMarks( entity weapon, entity target )
+{
+	int numTrackers = weapon.SmartAmmo_GetNumTrackersOnEntity( target )
+	int maxTrackers
+	if ( target.IsTitan() )
+		maxTrackers = GetMaxTrackerCountForTitan( target )
+	else
+		maxTrackers = weapon.GetWeaponSettingInt( eWeaponVar.smart_ammo_max_trackers_per_target )
+
+	return numTrackers >= maxTrackers
+}
+
+array<entity> function SmartAmmo_GetWeaponTargets( entity weapon )
+{
+	array< SmartAmmoTarget > targets = weapon.SmartAmmo_GetTargets()
+	array<entity> validTargets = []
+
+	foreach ( target in targets )
+	{
+		if ( target.fraction < 1.0 )
+			continue
+
+		entity ent = target.ent
+		validTargets.append( ent )
+	}
+
+	return validTargets
+}

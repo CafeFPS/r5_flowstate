@@ -1,0 +1,167 @@
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_DEPLOYABLE_INCAP_SHIELD"
+	"shortprintname"								"#WPN_DEPLOYABLE_INCAP_SHIELD_SHORT"
+	"description" 									"#WPN_DEPLOYABLE_INCAP_SHIELD_DESC"
+	"longdesc" 										"#WPN_DEPLOYABLE_INCAP_SHIELD_LONGDESC"
+
+	"menu_icon"										"rui/hud/gametype_icons/survival/sur_incapshield_icon"
+	"hud_icon"										"rui/hud/gametype_icons/survival/sur_incapshield_icon"
+
+	"readymessage"              					"#HUD_BURNMETER_READY_BUBBLE_BUNKER"
+	"readyhint"                 					"#HUD_BURNMETER_READY_BUBBLE_BUNKER_HINT"
+
+    "zoom_effects"									"0"
+
+	"weaponClass" 									"human"
+	"fire_mode"   									"semiauto"
+	"minimap_reveal_distance"						"32000"
+	"fast_swap_to"									"1"
+
+    "does_not_interrupt_cloak"						"1"
+    "allow_gibraltar_shield"                        "0"
+
+	"OnWeaponOwnerChanged"							"OnWeaponOwnerChanged_weapon_incap_shield"
+    "OnWeaponChargeBegin"					       	"OnWeaponChargeBegin_weapon_incap_shield"
+    "OnWeaponChargeEnd"					    		"OnWeaponChargeEnd_weapon_incap_shield"
+	"OnWeaponPrimaryAttack"				            "OnWeaponPrimaryAttack_incap_shield"
+	"OnWeaponDeactivate"                       		"OnWeaponDeactivate_incap_shield"
+	"OnWeaponActivate"                       		"OnWeaponActivate_incap_shield"
+	"OnCreateChargeEffect"                          "OnCreateChargeEffect_incap_shield"
+
+	"projectile_ignores_vortex"						"fall_vortex"
+
+	// Menu Stats
+
+	// Models
+	"viewmodel"										"mdl/weapons/empty_handed/ptpov_downed_shield.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+
+	"offhand_default_inventory_slot"				"1"
+
+    // Sounds
+    "sound_trigger_pull"							"Weapon_ChargeRifle_TriggerOn"
+    "sound_trigger_release" 						"Weapon_ChargeRifle_TriggerOff"
+    "sound_zoom_in"									"Weapon_ChargeRifle_ADS_In"
+    "sound_zoom_out"								"Weapon_ChargeRifle_ADS_Out"
+    "sound_pickup"									"wpn_pickup_ATWeapon_1P"
+    "fire_sound_1_player_1p"						"Weapon_ChargeRifle_Fire_1P"
+    "fire_sound_1_player_3p"						"Weapon_ChargeRifle_Fire_3P"
+    "fire_sound_1_npc"								"Weapon_ChargeRifle_Fire_NPC"
+
+    // Ammo
+    "ammo_clip_size"   								"-1"
+    "ammo_default_total"							"100"
+    "ammo_stockpile_max"							"100"
+    "ammo_suck_behavior"							"offhand_weapons"
+
+    // Behavior
+    "fire_rate"   									"1"
+    "holster_time"									"0.15"
+    "deploy_time" 									"0.25"
+    "lower_time"  									"0.25"
+    "raise_time"  									"0.15"
+    //"vortex_refire_behavior"                        "absorb"
+    "allow_empty_fire"								"0"
+    "allow_empty_click"   							"0"
+    "reload_enabled"  								"0"
+    "empty_reload_only"   							"0"
+    "trigger_snipercam"   							"0"
+    "allow_headshots" 								"0"
+    "bypass_semiauto_hold_protection"				"1"
+    "enable_hud_alert"                              "0"
+
+    "aimassist_disable_hipfire"                     "1"
+    "aimassist_disable_ads"                         "1"
+
+    //Charge Settings
+    "charge_time" 									"-1"
+    "charge_cooldown_time"							"1.0"
+    "charge_cooldown_delay"   						"0.1"
+    "charge_allow_melee"                            "0"
+
+    "charge_sound_1p"								""
+    "charge_sound_3p"								""
+    "charge_sound_stop_when_full"					"0"
+    "charge_sound_seek_to_charge_fraction"			"1"
+    "charge_drain_sound_1p"							""
+    "charge_drain_sound_3p"							""
+    "charge_drain_sound_stop_when_empty"			"1"
+    "charge_drain_sound_seek_to_charge_fraction"	"1"
+    "charge_effect_1p"								"P_down_shield_CP"
+    "charge_effect_3p"								""
+    "charge_effect_attachment"						"muzzle_flash"
+    "charge_effect2_3p"								""
+    "charge_effect2_attachment"						""
+    "charge_rumble_min"								"0"
+    "charge_rumble_max"								"1"
+
+    "viewmodel_offset_hip"							"0 -3 -0"
+    "viewmodel_offset_ads"							"0 -3 -0"
+
+    // Rumble
+    //"fire_rumble"									"rumble_antititan"
+
+    // WeaponED Unhandled Key/Values and custom script Key/Values
+    "sound_dryfire"   								"titan_dryfire"
+    "npc_reload_enabled"  							"0"
+    "sprintcycle_time"								"0.55"
+    "arc_switch_activator"							"1"
+
+    // Bodygroups:
+    "bodygroup5_name"	"proscreen"
+    "bodygroup5_set"	"0"
+
+    Mods
+    {
+        survival_finite_ammo
+        {
+            //"ammo_clip_size"   								"1"
+            //"ammo_default_total"							"1"
+            //"ammo_stockpile_max"							"0"
+            //"ammo_no_remove_from_stockpile"					"0"
+
+            //"low_ammo_fraction" 							"0.3"
+            //"uses_ammo_pool"								"1"
+
+            //"reload_time" 									"2.0"
+            //"reloadempty_time"								"2.0"
+            //"reload_enabled"								"1"
+        }
+        survival_tier_02
+        {
+        }
+        survival_tier_03
+        {
+        }
+    }
+
+	active_crosshair_count				"1"
+	rui_crosshair_index					"0"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_dot"
+			"base_spread"				"0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+	}
+
+}

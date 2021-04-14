@@ -1,0 +1,126 @@
+global struct ClGlobals
+{
+	table signalDummy
+
+	float pilotRedDamageWarningScalar = 1.0
+	table<int, void functionref( entity, var )> eventNotificationCallbacks
+
+	array<void functionref( entity, entity )> pilotHudCallbacks
+	array<void functionref( entity, entity )> titanHudCallbacks
+	array<void functionref( entity )> onLocalViewPlayerSpawnedCallbacks
+	array<void functionref( entity )> onLocalClientPlayerSpawnedCallbacks
+	array<void functionref( entity )> onMinimapEntSpawnedCallbacks
+	array<bool functionref( entity )> onMinimapEntShouldCreateCallbacks
+	array<void functionref( entity )> onUseEntGainFocusCallbacks
+	array<void functionref( entity )> onUseEntLoseFocusCallbacks
+	array<void functionref( entity )> addLocalPlayerFuncs
+	array<void functionref( entity )> onLocalViewPlayerChangedFuncs
+	array<void functionref( StaticPropRui, var )> onStaticPropRUICreatedCallbacks
+	array<void functionref( float, vector, int, int, entity )> onLocalPlayerTookDamageCallback
+	table< int, array<void functionref( float, vector, int, int, entity )> > onLocalPlayerTookDamageTypeCallback
+	array<void functionref( entity, entity, vector, int ) > onLocalPlayerDidDamageCallback
+	array<void functionref( entity, int, int ) > onPlayerLifeStateChangedCallbacks
+	table<string, array<void functionref( entity )> > onCreateCallbacks
+	table<string, array<void functionref( entity )> > onTargetNameCreateCallbacks
+	table<string, array<void functionref( entity )> > onDeathCallbacks
+	array<void functionref()> fullUpdateCallbacks
+	array<void functionref()> uiScriptResetCallbacks
+	array<void functionref()> killReplayStartCallbacks
+	array<void functionref()> killReplayEndCallbacks
+	array<void functionref( entity clientPlayer, entity spectatorTarget )> firstPersonSpectateStartCallbacks
+	array<void functionref( entity clientPlayer, entity spectatorTarget )> firstPersonSpectateEndCallbacks
+	array<void functionref( entity clientPlayer, entity spectatorTarget )> thirdPersonSpectateStartCallbacks
+	array<void functionref( entity clientPlayer, entity spectatorTarget )> thirdPersonSpectateEndCallbacks
+	array<void functionref( entity localClientPlayer, entity prevSpectatorTarget, entity currentSpectatorTarget )> onSpectatorTargetChangedCallbacks
+	table<string, array<void functionref( entity )> > onDestroyedCallbacks
+	table<string, array<void functionref( entity )> > onDeathOrDestroyCallbacks
+	table<int, array<void functionref( entity )> > onCinematicEventFlagChangedCallback
+	array<void functionref( entity )> onClientScriptInitCallback
+	void functionref( entity ) onHardpointChangedCallback
+	void functionref( entity ) onHardpointIDChangedCallback
+	void functionref( entity ) onHardpointEntityChangedCallback
+	array<void functionref( entity )> onPetTitanModeChangedCallbacks
+	array<void functionref( entity )> onPetTitanChangedCallbacks
+	array<void functionref( entity )> onPlayerClassChangedCallbacks
+	array<void functionref( entity )> consumableInventoryChangedCallbacks
+
+	array<bool functionref( entity player, entity zipline, vector ziplineClosestPoint )> canUseZiplineCallbacks
+
+	array<void functionref()>[ eGameState._count_ ] gameStateEnterCallbacks
+	DamageHistoryStruct &lastDamageHistory
+
+	VisGroup menuVisGroup
+
+	float lastMenuToggleTime = 0
+	bool isMenuOpen = false
+	bool isSoloDialogMenuOpen = false
+
+	entity menuCamera
+
+	MenuCharacterDef currentMenuPilotModels
+	MenuCharacterDef previewMenuPilotModels
+
+	entity lastKiller // only valid before kill replay
+	int lastKillerEntIndex
+	AttackerDisplayNameStruct nameOfLastKiller
+
+	table<int, string> permanentEventNotifications
+
+	entity levelEnt
+
+	bool isSpectating = false
+	int observerMode = 0
+
+	table<int, string> hardpointStringIDs
+	table<int, table> hardpointData
+
+	vector[ABSOLUTE_MAX_TEAMS] flagSpawnPoints
+
+	array<void functionref( entity )> onPlayerDisconnectedFuncs
+	array<void functionref( entity )> onWeaponChangedCallbacks
+
+	void functionref() scoreEventOverrideFunc
+
+	var topoFullScreen
+	var topoFullscreenHud
+	var topoFullscreenHudPermanent
+	var topoFullscreenFullMap
+	var topoMinimap
+	var topoTitanCockpitHud
+	var topoTitanCockpitLowerHud
+	var topoTitanCockpitInstrument1
+
+	var		empScreenEffect
+
+	table<var, bool> fullscreenRuiSet
+
+	bool callingCardsEnabled = true
+	var[ABSOLUTE_MAX_TEAMS] callingCardRuis
+
+	array<AnnouncementData> announcementQueue
+	AnnouncementData &activeAnnouncement
+	bool isAnnouncementActive = false
+
+	table<string, var> clientChallengeProgress
+
+	float lastKillConfirmTime
+
+	bool showMatchLossProtection = false
+	bool canShowLateJoinMessage = true
+
+	void functionref() initScoreboardFunc
+	void functionref() showScoreboardFunc
+	void functionref() hideScoreboardFunc
+	bool functionref( int ) scoreboardInputFunc
+
+	table<string, void functionref(entity)> globalAnimEventCallbacks
+	table<string, void functionref(entity,array<string>)> clGlobalAnimEventTokenizeCallbacks
+
+	array<void functionref()> resolutionChangedCallbacks
+
+	bool isScoreboardShown = false
+
+	entity clientCamera
+}
+
+global ClGlobals clGlobal

@@ -1,0 +1,251 @@
+global function PIN_Init
+
+#if UI
+global function UICodeCallback_PINEvent
+global function PIN_Shutdown
+global function PIN_PageView
+global function PIN_Customization
+global function PIN_Message
+global function PIN_Settings
+#endif
+
+struct
+{
+	float startupTime
+} file
+
+table function PIN_StandardHeader()
+{
+	entity player = GetLocalClientPlayer()
+
+	return {
+		pid				= player.GetPINNucleusPid()
+		pidm			=
+		{
+			nucleus		= player.GetPINNucleusId(),
+			uid			= player.GetPINPlatformId(),
+		},
+		pidt			= "persona",
+		game_type		= "online",
+		mode_type		= "multiplayer",
+		#if CLIENT
+			game_mode	= GAMETYPE,
+			map			= GetMapName(),
+		#endif
+		plat			= player.GetPlayerPINPlatformName(),
+		title_id		= player.GetPlayerPINTitleId(),
+		sid				= PIN_GetSessionId(),
+	}
+}
+
+
+void function PIN_Init()
+{
+	file.startupTime = Time()
+
+	#if UI
+		CreatePINTelemetryHeader( 2,0, // version 2.0
+			{
+			}
+		)
+
+//		thread PIN_PageView_Think()
+	#endif
+}
+
+#if UI
+void function UICodeCallback_PINEvent( string eventName, table params )
+{
+	if ( eventName == "boot_start" )
+		file.startupTime = Time() // "All session specific timers should be reset when boot_start is triggered"
+
+	AddPINTelemetryEvent( eventName, PIN_StandardHeader(), params )
+}
+
+void function PIN_Shutdown()
+{
+	AddPINTelemetryEvent( "boot_end",
+		PIN_StandardHeader(),
+		{
+			end_reason = "normal",
+			sdur = PIN_GetSessionDuration(),
+		}
+	)
+}
+#endif //UI
+
+#if UI
+void function PIN_PageView( string menuName, float openDuration, string fromId, bool isDialog )
+{
+	if ( openDuration < 1.0 )
+		return
+
+	AddPINTelemetryEvent( "page_view",
+		PIN_StandardHeader(),
+		{
+			ldur = 0
+			pgdur = int( openDuration )
+			pgid = menuName.tolower()
+			fromid = fromId.tolower()
+			type = isDialog ? "popup" : "menu"
+		}
+	)
+}
+#endif
+
+
+#if UI
+void function PIN_Message( string titleText, string messageText )
+{
+	string msg_idString = titleText.len() > 128 ? titleText.tolower().slice( 0, 128 ) : titleText.tolower()
+	printt( msg_idString )
+	AddPINTelemetryEvent( "message",
+		PIN_StandardHeader(), {
+			sdur 	= PIN_GetSessionDuration()
+			msg_id  = msg_idString
+			service = "game"
+			status  = "impression"
+			type    = "in_game"
+		}
+	)
+}
+#endif
+
+#if UI
+void function PIN_Settings( table settingsTable )
+{
+	AddPINTelemetryEvent( "settings",
+		PIN_StandardHeader(),
+		{
+			settings = settingsTable
+			status  = "update"
+			type    = "preferences"
+		}
+	)
+}
+#endif
+
+#if UI
+void function PIN_Customization( ItemFlavor context, LoadoutEntry loadoutEntry, ItemFlavor itemFlavor )
+{
+	string customizeTarget
+	string customizeType
+	string customizeClass = "NULL"
+
+	string selection1 = "NULL"
+	string selection1_rarity = "NULL"
+	string selection2 = "NULL"
+	string selection2_rarity = "NULL"
+	string selection3 = "NULL"
+	string selection3_rarity = "NULL"
+
+	int index = -1
+
+	string customizeQuality = ItemFlavor_HasQuality( itemFlavor  ) ? GetPINRarity( ItemFlavor_GetQuality( itemFlavor ) + 1 ) : GetPINRarity( eQuality.COMMON )
+
+	switch ( ItemFlavor_GetType( itemFlavor ) )
+	{
+		case eItemType.weapon_skin:
+			customizeTarget = "weapon"
+			customizeType = "skin"
+			//customizeClass = ItemFlavor_GetHumanReadableRef( context ) // would be nice if this were the weapon itself
+			break
+
+		case eItemType.gladiator_card_stat_tracker:
+			index = index == -1 ? GetCardPropertyIndex() : index
+			customizeType = customizeType == "" ? "stat_tracker" : customizeType
+		case eItemType.gladiator_card_badge:
+			index = index == -1 ? GetCardPropertyIndex() : index
+			customizeType = customizeType == "" ? "badge" : customizeType
+		case eItemType.gladiator_card_stance:
+			customizeType = customizeType == "" ? "pose" : customizeType
+		case eItemType.gladiator_card_frame:
+			customizeType = customizeType == "" ? "frame" : customizeType
+		case eItemType.gladiator_card_kill_quip:
+			customizeType = customizeType == "" ? "kill_quip" : customizeType
+		case eItemType.gladiator_card_intro_quip:
+			customizeType = customizeType == "" ? "intro_quip" : customizeType
+			customizeTarget = "gladiator_card"
+			customizeClass = ItemFlavor_GetHumanReadableRef( context )
+			break
+
+		case eItemType.character_skin:
+			customizeType = customizeType == "" ? "skin" : customizeType
+		case eItemType.character_execution:
+			customizeType = customizeType == "" ? "finisher" : customizeType
+			customizeTarget = "character"
+			customizeClass = ItemFlavor_GetHumanReadableRef( context )
+			break
+	}
+
+	if ( index <= 0 )
+		{
+		selection1 = ItemFlavor_GetHumanReadableRef( itemFlavor ).tolower()
+		selection1_rarity = customizeQuality.tolower()
+	}
+	else if ( index == 1 )
+	{
+		selection2 = ItemFlavor_GetHumanReadableRef( itemFlavor ).tolower()
+		selection2_rarity = customizeQuality.tolower()
+	}
+	else if ( index == 2 )
+			{
+		selection3 = ItemFlavor_GetHumanReadableRef( itemFlavor ).tolower()
+		selection3_rarity = customizeQuality.tolower()
+			}
+
+	//printt( index )
+	//printt( customizeQuality )
+	//printt( ItemFlavor_GetHumanReadableRef( context ) )
+	//printt( ItemFlavor_GetHumanReadableRef( itemFlavor ) )
+	//printt( customizeTarget )
+	//printt( customizeType )
+
+	AddPINTelemetryEvent( "customization",
+		PIN_StandardHeader(),
+		{
+			selection =
+			{
+				selection1 = selection1
+				selection1_rarity = selection1_rarity
+				selection2 = selection2
+				selection2_rarity = selection2_rarity
+				selection3 = selection3
+				selection3_rarity = selection3_rarity
+				s_class = customizeClass
+			},
+			target  = customizeTarget,
+			type    = customizeType,
+		}
+	)
+}
+#endif
+
+
+string function GetPINRarity( int tier )
+		{
+	switch ( tier )
+			{
+		case 0:
+		case 1:
+			return "common"
+
+		case 2:
+			return "rare"
+
+		case 3:
+			return "epic"
+
+		case 4:
+			return "legendary"
+
+		case 5:
+			return "heirloom"
+
+		default:
+			Assert( false, "Unhandled loot rarity " + tier )
+			return "unknown_" + tier
+		}
+
+	unreachable
+	}

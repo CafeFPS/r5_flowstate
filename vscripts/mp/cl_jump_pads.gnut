@@ -1,0 +1,24 @@
+global function ClJumpPad_Init
+
+void function ClJumpPad_Init()
+{
+	AddCreateCallback( "trigger_cylinder_heavy", OnJumpPadCreated )
+}
+
+void function OnJumpPadCreated( entity trigger )
+{
+	trigger.SetClientEnterCallback( OnJumpPadAreaEnter )
+}
+
+void function OnJumpPadAreaEnter( entity trigger, entity player )
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+	if ( player != localViewPlayer )
+		return
+
+	if ( !IsPilot( player ) )
+		return
+
+	EmitSoundOnEntity( player, "JumpPad_LaunchPlayer_1p" )
+	EmitSoundOnEntity( player, "JumpPad_Ascent_Windrush" )
+}

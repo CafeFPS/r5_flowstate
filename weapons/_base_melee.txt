@@ -1,0 +1,22 @@
+
+WeaponData
+{
+    "allow_gibraltar_shield"                        "0"
+	"flyoutEnabled"									"0"
+
+    "OnWeaponActivate"								"OnWeaponActivate_weapon_melee_primary"
+    "OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_melee_primary"
+
+	Mods
+	{
+		proto_door_kick
+		{
+			"melee_attack_animtime"     "1.3"
+			//"melee_lunge_time"        "*3.0"
+			"melee_anim_1p_number"      "3"
+			"melee_anim_3p"		        "ACT_GESTURE_MELEE_ATTACK3"
+			"impulse_force"   								"20000"
+		}
+	}
+}
+

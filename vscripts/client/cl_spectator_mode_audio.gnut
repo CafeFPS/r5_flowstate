@@ -1,0 +1,35 @@
+global function ClSpectatorModeAudio_Init
+
+
+void function ClSpectatorModeAudio_Init()
+{
+	if ( !IsMenuLevel() )
+	{
+		AddFirstPersonSpectateStartedCallback( EndThirdPersonSpectatingDuck )
+		AddThirdPersonSpectateStartedCallback( StartThirdPersonSpectatingDuck )
+		AddThirdPersonSpectateEndedCallback( EndThirdPersonSpectatingDuck )
+		AddOnSpectatorTargetChangedCallback( SpectatorTargetChanged_UpdateThirdPersonSpectatingDuck )
+	}
+}
+
+void function StartThirdPersonSpectatingDuck( entity player, entity currentTarget )
+{
+	EndThirdPersonSpectatingDuck( player, currentTarget ) ///End before starting a new one to stop stacking, especially when changing from spectating dropship spot -> player
+	EmitSoundOnEntity( player, "Duck_For_SpectatorFriendlyFire" )
+}
+
+void function EndThirdPersonSpectatingDuck( entity player, entity currentTarget )
+{
+	StopSoundOnEntity( player, "Duck_For_SpectatorFriendlyFire" )
+}
+
+void function SpectatorTargetChanged_UpdateThirdPersonSpectatingDuck( entity player, entity previousTarget, entity currentTarget )
+{
+	if ( currentTarget == null )
+	{
+		if ( previousTarget == null )
+			EndThirdPersonSpectatingDuck( player, currentTarget ) //i.e. we ended observer mode watching the dropship spot
+		else
+			StartThirdPersonSpectatingDuck( player, currentTarget ) //i.e. we started observer mode watching the dropship spot
+	}
+}

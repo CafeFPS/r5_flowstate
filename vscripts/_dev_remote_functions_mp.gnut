@@ -1,0 +1,18 @@
+global function Dev_RemoteFunctions_Init
+global function Dev_RemoteStrings_Init
+
+void function Dev_RemoteFunctions_Init()
+{
+	#if DEVSCRIPTS
+	Remote_RegisterClientFunction( "ServerCallback_PROTO_OnInfoCordTargetFiredWeapon", "entity" )
+	Remote_RegisterClientFunction( "SendFPSToServer" )
+	#endif // DEVSCRIPTS
+}
+
+void function Dev_RemoteStrings_Init()
+{
+	#if DEVSCRIPTS
+		RegisterString( "#FD_TOTAL_VICTORY_HINT" )
+		RegisterString( "#FD_TOTAL_DEFEAT_HINT" )
+	#endif // DEVSCRIPTS
+}

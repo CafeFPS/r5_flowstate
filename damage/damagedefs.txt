@@ -1,0 +1,435 @@
+DamageDefs
+{
+	damagedef_unknown
+	{
+		"code_damage_id"			"CODE_DAMAGE_ID_INVALID"
+		"obituary"					"#DEATH_GENERIC_KILLED"
+	}
+
+	damagedef_unknownBugIt
+	{
+		"obituary"					"#DEATH_GENERIC_KILLED"
+	}
+
+	damagedef_suicide
+	{
+		"code_damage_id"			"CODE_DAMAGE_ID_SUICIDE"
+		"obituary"					"#DEATH_SUICIDE"
+	}
+
+	damagedef_despawn
+	{
+		"code_damage_id"			"CODE_DAMAGE_ID_DESPAWN"
+		"obituary"					"#DESPAWN"
+	}
+
+	damagedef_titan_step
+	{
+		"code_damage_id"			"CODE_DAMAGE_ID_TITAN_STEP"
+		"obituary"					"#DEATH_STEPPED_ON"
+	}
+
+	damagedef_crush
+	{
+		"code_damage_id"			"CODE_DAMAGE_ID_CRUSH"
+		"obituary"					"#DEATH_CRUSHED"
+		"death_protection"			"0"
+	}
+
+	damagedef_sonic_blast
+	{
+		"obituary"					"#DEATH_SONIC_BLAST"
+		"damage_flags"				"DF_BYPASS_SHIELD"
+	}
+
+	damagedef_nuclear_core
+	{
+		"damage" 					"75"
+		"damage_heavy_armor"		"2500"
+		"inner_radius"				"500"
+		"radius"					"750"
+		"impulse_force"				"0"
+		"death_protection"			"0"
+
+		"obituary"					"#DEATH_NUCLEAR_CORE"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION"
+	}
+
+	damagedef_titan_fall
+	{
+		"damage" 					"400"
+		"damage_heavy_armor"		"23000"
+		"inner_radius"				"90"	// defined in script as: const TITANFALL_INNER_RADIUS = 90
+ 		"radius"					"120"	// defined in script as: const TITANFALL_OUTER_RADIUS = 120
+		"impulse_force"				"50000"
+		"death_protection"			"0"
+		"explosion_flags"			"SF_ENVEXPLOSION_NO_DAMAGEOWNER"
+
+		"obituary"					"#DEATH_TITAN_FALL"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE"
+		"impact_effect_table"		"droppod_impact"
+	}
+
+	damagedef_titan_hotdrop
+	{
+		"damage" 					"150"
+		"damage_heavy_armor"		"150"
+		"inner_radius"				"80"
+ 		"radius"					"250"
+		"impulse_force"				"50000"
+		"death_protection"			"0"
+		"explosion_flags"			"SF_ENVEXPLOSION_NO_DAMAGEOWNER"
+
+		"obituary"					"#DEATH_TITAN_HOT_DROP"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION"
+		"impact_effect_table"		"droppod_impact"
+	}
+
+	damagedef_reaper_fall
+	{
+		"damage" 					"400"
+		"damage_heavy_armor"		"23000"
+		"inner_radius"				"90"	// defined in script as: const TITANFALL_INNER_RADIUS = 90
+ 		"radius"					"256"	// defined in script as: const TITANFALL_OUTER_RADIUS = 120
+		"impulse_force"				"40000"
+		"death_protection"			"0"
+		"explosion_flags"			"SF_ENVEXPLOSION_NO_DAMAGEOWNER"
+
+		"obituary"					"#DEATH_REAPER_FALL"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE"
+		"impact_effect_table"		"droppod_impact"
+	}
+
+	damagedef_trip_wire
+	{
+		"damage" 					"120"
+		"damage_heavy_armor"		"1000"
+		"inner_radius"				"256"
+ 		"radius"					"384"
+		"impulse_force"				"3000"
+		"death_protection"			"0"
+
+		"obituary"					"#DEATH_TRIPWIRE"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION"
+		"impact_effect_table"		"exp_large"
+	}
+
+	damagedef_wrecking_ball
+	{
+		"damage" 					"300"
+		"damage_heavy_armor"		"500"
+		"inner_radius"				"100"
+ 		"radius"					"200"
+		"impulse_force"				"3000"
+		"death_protection"			"0"
+		"explosion_flags"			""
+
+		"obituary"					"#WRECKING_BALL"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION"
+		"impact_effect_table"		"exp_large"
+	}
+
+	damagedef_reaper_groundslam
+	{
+		"damage"					"40"
+		"damage_heavy_armor"		"40"
+
+		"radius"					"200"
+		"inner_radius"				"100"
+		"explosion_flags"			"SF_ENVEXPLOSION_NO_DAMAGEOWNER | SF_ENVEXPLOSION_UPWARD_FORCE"
+
+		"impulse_force"				"50000"
+		"obituary"					"#DEATH_MELEE"
+		"damage_flags"				"DF_EXPLOSION | DF_MELEE | DF_KNOCK_BACK"
+	}
+
+	damagedef_reaper_nuke
+	{
+		"damage" 					"85"	[$mp]
+		"damage" 					"40"	[$sp]
+		"damage_heavy_armor"		"700"
+		"inner_radius"				"330"
+		"radius"					"430"
+		"impulse_force"				"50000"
+		"death_protection"			"0"
+
+		"obituary"					"#DEATH_NUCLEAR_CORE"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE"
+	}
+
+	damagedef_frag_drone_explode
+	{
+		// only used to create a danger area
+		"damage" 					"60"	[$mp]
+		"damage" 					"90"	[$sp]
+		"damage_heavy_armor"		"300"
+
+		"inner_radius"				"200"
+		"radius"					"300"
+		"impulse_force"				"2000"
+
+		"obituary"					"#DEATH_SUICIDE_SPECTRE"
+		"damage_flags"				"DF_EXPLOSION | DF_GIB"
+	}
+
+	damagedef_frag_drone_explode_FD
+	{
+		"damage" 					"130"	[$mp]
+		"damage" 					"130"	[$sp]
+		"damage_heavy_armor"		"600"
+		"inner_radius"				"200"	[$mp]
+		"inner_radius"				"180"	[$sp]
+		"radius"					"350"	[$mp]
+		"radius"					"300"	[$sp]
+		"impulse_force"				"2000" [$sp]
+		"impulse_force"				"2000" [$mp]
+		"impulse_force_explosions"	"50000" [$mp]
+		"impulse_force_explosions"	"2000" [$sp]
+		"explosion_flags"			"SF_ENVEXPLOSION_MASK_BRUSHONLY"
+
+		"obituary"					"#DEATH_SUICIDE_SPECTRE"
+		"damage_flags"				"DF_EXPLOSION | DF_GIB"
+	}
+
+	damagedef_frag_drone_throwable_PLAYER
+	{
+		"damage" 					"200"	[$mp]
+		"damage" 					"130"	[$sp]
+		"damage_heavy_armor"		"300"
+		"inner_radius"				"200"	[$mp]
+		"inner_radius"				"180"	[$sp]
+		"radius"					"350"	[$mp]
+		"radius"					"300"	[$sp]
+		"impulse_force"				"2000" [$sp]
+		"impulse_force"				"2000" [$mp]
+		"impulse_force_explosions"	"50000" [$mp]
+		"impulse_force_explosions"	"2000" [$sp]
+		"explosion_flags"			"SF_ENVEXPLOSION_MASK_BRUSHONLY"
+
+		"obituary"					"#DEATH_SUICIDE_SPECTRE"
+		"damage_flags"				"DF_EXPLOSION | DF_GIB"
+	}
+
+	damagedef_frag_drone_throwable_NPC
+	{
+		"damage" 					"90"	[$mp]
+		"damage" 					"90"	[$sp]
+		"damage_heavy_armor"		"90"
+		"inner_radius"				"200"	[$mp]
+		"inner_radius"				"180"	[$sp]
+		"radius"					"300"
+		"impulse_force"				"2000"
+		"explosion_flags"			"SF_ENVEXPLOSION_MASK_BRUSHONLY"
+
+		"obituary"					"#DEATH_SUICIDE_SPECTRE"
+		"damage_flags"				"DF_EXPLOSION | DF_GIB"
+	}
+
+	damagedef_stalker_powersupply_explosion_small
+	{
+		"damage" 					"25"
+		"damage_heavy_armor"		"150"
+		"inner_radius"				"100"
+		"radius"					"200"
+		"impulse_force"				"10000"
+		"explosion_flags"			""
+
+		"obituary"					"#DEATH_STALKER_POWERSUPPLY"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
+		"impact_effect_table"		"exp_small_stalker_powersupply"
+	}
+
+	damagedef_stalker_powersupply_explosion_large
+	{
+		"damage" 					"50"
+		"damage_heavy_armor"		"300"
+		"inner_radius"				"200"
+		"radius"					"350"
+		"impulse_force"				"25000"
+		"explosion_flags"			""
+
+		"obituary"					"#DEATH_STALKER_POWERSUPPLY"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
+		"impact_effect_table"		"exp_stalker_powersupply"
+	}
+
+	damagedef_stalker_powersupply_explosion_large_at
+	{
+		"damage" 					"50"
+		"damage_heavy_armor"		"500"
+		"inner_radius"				"200"
+		"radius"					"350"
+		"impulse_force"				"25000"
+		"explosion_flags"			""
+
+		"obituary"					"#DEATH_STALKER_POWERSUPPLY"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
+		"impact_effect_table"		"exp_stalker_powersupply"
+	}
+
+	damagedef_shield_captain_arc_shield
+	{
+		"damage" 					"15"
+		"damage_heavy_armor"		"100"
+		"inner_radius"				"128"
+ 		"radius"					"256"
+		"impulse_force"				"50"
+		"death_protection"			"0"
+		"explosion_flags"			"SF_ENVEXPLOSION_NO_DAMAGEOWNER"
+
+		"obituary"					"#DEATH_ARC_BLAST"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_ELECTRICAL"
+	}
+
+	damagedef_fd_explosive_barrel
+	{
+		"damage" 					"100"
+		"damage_heavy_armor"		"500"
+		"inner_radius"				"350"
+		"radius"					"350"
+		"impulse_force"				"100"
+		"death_protection"			"0"
+
+		"obituary"					"#DEATH_SLOW_TRAP"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION"
+	}
+
+	damagedef_fd_tether_trap
+	{
+		"damage" 					"1000"
+		"damage_heavy_armor"		"1000"
+		"inner_radius"				"350"
+		"radius"					"350"
+		"impulse_force"				"100"
+		"death_protection"			"0"
+
+		"obituary"					"#DEATH_TETHER_TRAP"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION"
+		"impact_effect_table"		"exp_tether_trap"
+	}
+
+	damagedef_pilot_slam
+	{
+
+		"damage" 					"150"
+		"damage_heavy_armor"		"1500"
+		"inner_radius"				"250"
+ 		"radius"					"300"
+		"impulse_force"				"90000"
+		"explosion_flags"			"SF_ENVEXPLOSION_NO_DAMAGEOWNER | SF_ENVEXPLOSION_UPWARD_FORCE"
+
+		"obituary"					"#DEATH_MELEE"
+		"damage_flags"				"DF_EXPLOSION | DF_MELEE | DF_KNOCK_BACK"
+	}
+
+	damagedef_ticky_arc_blast
+	{
+		"damage" 					"50"
+		"damage_heavy_armor"		"350"
+		"inner_radius"				"1000"
+ 		"radius"					"3000"
+		"impulse_force"				"3000"
+		"death_protection"			"0"
+		"explosion_flags"			"SF_ENVEXPLOSION_NO_DAMAGEOWNER | SF_ENVEXPLOSION_UPWARD_FORCE"
+
+		"obituary"					"#DEATH_ARC_BLAST"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK| DF_ELECTRICAL"
+	}
+
+	damagedef_grenade_gas
+	{
+		"damage" 					"1"
+		"damage_heavy_armor"		"0"
+		"inner_radius"				"400"
+ 		"radius"					"400"
+		"impulse_force"				"0"
+		"explosion_flags"			""
+
+		"obituary"					"#DEATH_GAS"
+		"damage_flags"				"DF_NO_HITBEEP | DF_BYPASS_SHIELD | DF_NO_SELF_DAMAGE"
+	}
+
+	//Used to detect gas damage exposure, damage event intercepts and sets to 0
+	damagedef_gas_exposure
+	{
+		"damage" 					"1"
+		"damage_heavy_armor"		"0"
+		"inner_radius"				"400"
+ 		"radius"					"400"
+		"impulse_force"				"0"
+		"explosion_flags"			""
+
+		"obituary"					"#DEATH_GAS"
+		"damage_flags"				"DF_NO_HITBEEP | DF_BYPASS_SHIELD"
+	}
+
+	damagedef_dirty_bomb_explosion
+	{
+		"damage" 					"750"
+		"damage_heavy_armor"		"2000"
+		"inner_radius"				"256"
+		"radius"					"256"
+		"impulse_force"				"25000"
+		"death_protection"			"0"
+
+		"obituary"					"#DEATH_GAS_EXPLOSION"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
+	}
+
+	damagedef_sonic_boom
+	{
+		"damage" 					"10"
+		"damage_heavy_armor"		"1000"
+		"inner_radius"				"256"
+		"radius"					"256"
+		"impulse_force"				"250000"
+		"death_protection"			"0"
+		"impact_effect_table"		"superSpectre_groundSlam_impact"
+		"explosion_flags"			"SF_ENVEXPLOSION_NO_DAMAGEOWNER | SF_ENVEXPLOSION_UPWARD_FORCE"
+
+		"obituary"					"#DEATH_SONIC_BOOM"
+		"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK | DF_NO_SELF_DAMAGE"
+	}
+
+	damagedef_bangalore_smoke_explosion
+    {
+    	"damage" 					"10"
+    	"damage_heavy_armor"		"10"
+    	"inner_radius"				"256"
+    	"radius"					"256"
+    	"impulse_force"				"25000"
+    	"explosion_flags"			""
+
+    	"obituary"					"#DEATH_BANGALORE_SMOKE"
+    	"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
+    	"impact_effect_table"		"exp_creeping_barrage" //exp_artillery_lg
+    }
+
+    damagedef_creeping_bombardment_detcord_explosion
+    {
+       	"damage" 					"20"
+       	"damage_heavy_armor"		"20"
+       	"inner_radius"				"350"
+       	"radius"					"350"
+       	"impulse_force"				"25000"
+       	"explosion_flags"			"SF_ENVEXPLOSION_UPWARD_FORCE"
+
+       	"obituary"					"#DEATH_CREEPING_BARRAGE"
+       	"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
+       	"impact_effect_table"		"exp_creeping_barrage_detonation"
+    }
+
+    damagedef_defensive_bombardment
+    {
+       	"damage" 					"40"
+       	"damage_heavy_armor"		"40"
+       	"inner_radius"				"256"
+       	"radius"					"256"
+       	"impulse_force"				"25000"
+       	"explosion_flags"			"SF_ENVEXPLOSION_UPWARD_FORCE"
+
+       	"obituary"					"#WPN_DEFENSIVE_BOMBARDMENT"
+       	"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
+       	"impact_effect_table"		"exp_artillery_plasma"
+    }
+}

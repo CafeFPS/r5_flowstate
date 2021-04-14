@@ -1,0 +1,176 @@
+// "Gamematerial" "effect_name"
+
+// "B" bloodyflesh
+// "X" plastic box, wade, ladder, woodladdder,
+// "I" player_control_clip
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"none"
+		"whizby_sound_from_AI"		"none"
+	}
+
+	FX
+	{
+		"C" "P_impact_exp_FRAG_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_exp_FRAG_dirt" //Dirt, mud, sand, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_exp_FRAG_metal" // metal_titan
+
+		"F" "P_impact_exp_FRAG_metal" //flesh
+		"G" "P_impact_exp_FRAG_metal" //metalgrate, chainlink, chain
+		"H" "P_impact_exp_FRAG_concrete" //alienflesh
+
+		"J" "P_impact_exp_FRAG_dirt" //grass
+		"K" "P_impact_exp_FRAG_dirt" //mud
+		"L" "P_impact_exp_FRAG_metal" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_exp_FRAG_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_exp_lrg_slime" //Slime
+		"O" "P_impact_exp_FRAG_dirt" //Foliage
+		"P" "P_impact_exp_FRAG_metal" //Computer
+
+		"R" "P_impact_exp_FRAG_metal" //metalpanel, grenade, canister
+		"S" "P_impact_exp_FRAG_water" //water, slime
+		"T" "P_impact_exp_FRAG_concrete" //tile
+		"U" "P_impact_exp_FRAG_metal" //glass_breakble
+
+		"V" "P_impact_exp_FRAG_metal" //Metal Vent
+		"W" "P_impact_exp_FRAG_metal" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "P_impact_exp_FRAG_metal" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_exp_FRAG_sand"  //sand
+
+		"0" "P_impact_exp_FRAG_concrete"
+		"1" "P_impact_exp_FRAG_concrete"
+		"2" "P_impact_exp_FRAG_concrete"
+		"3" "P_impact_exp_FRAG_concrete"
+		"4" "P_impact_exp_FRAG_concrete"
+		"5" "P_impact_exp_FRAG_concrete"
+		"6" "P_impact_exp_FRAG_concrete"
+		"7" "P_impact_exp_FRAG_concrete"
+		"8" "P_impact_exp_FRAG_concrete"
+		"9" "P_impact_exp_FRAG_water" //puddle
+
+		"splash" "P_impact_exp_FRAG_water"
+		"slime_splash" "P_impact_exp_lrg_slime"
+
+		"airburst" "P_impact_exp_FRAG_air"
+		"shieldhit" "P_impact_exp_FRAG_air"
+		"critical_hit" "P_impact_exp_FRAG_metal"
+	}
+	///This is 2nd set of impacts for shield fx to play with explosion
+	FX
+	{
+		"shieldhit" "P_xo_armor_impact_EXP"
+	}
+
+	Sound
+	{
+		"C" "Explo_FragGrenade_Impact_3P"
+		"D" "Explo_FragGrenade_Impact_3P"
+		"E" "Explo_FragGrenade_Impact_3P"
+
+		"F" "Explo_FragGrenade_Impact_3P"
+		"G" "Explo_FragGrenade_Impact_3P"
+		"H" "Explo_FragGrenade_Impact_3P"
+
+		"J" "Explo_FragGrenade_Impact_3P"
+		"K" "Explo_FragGrenade_Impact_Mud_3P"
+		"L" "Explo_FragGrenade_Impact_3P"
+		"M" "Explo_FragGrenade_Impact_3P"
+		"N" "Explo_FragGrenade_Impact_water_3P"
+		"O" "Explo_FragGrenade_Impact_3P"
+		"P" "Explo_FragGrenade_Impact_3P"
+
+		"R" "Explo_FragGrenade_Impact_3P"
+		"S" "Explo_FragGrenade_Impact_water_3P"
+		"T" "Explo_FragGrenade_Impact_3P"
+		"U" "Explo_FragGrenade_Impact_3P"
+
+		"V" "Explo_FragGrenade_Impact_3P"
+		"W" "explo_fraggrenade_impact_glass_3p"
+		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "explo_fraggrenade_impact_glass_3p"
+		"Z" "Explo_FragGrenade_Impact_Sand_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_FragGrenade_Impact_3P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "Explo_FragGrenade_Impact_1P"
+		"D" "Explo_FragGrenade_Impact_1P"
+		"E" "Explo_FragGrenade_Impact_1P"
+
+		"F" "Explo_FragGrenade_Impact_1P"
+		"G" "Explo_FragGrenade_Impact_1P"
+		"H" "Explo_FragGrenade_Impact_1P"
+
+		"J" "Explo_FragGrenade_Impact_1P"
+		"K" "Explo_FragGrenade_Impact_Mud_1P"  // mud?
+		"L" "Explo_FragGrenade_Impact_1P"
+		"M" "Explo_FragGrenade_Impact_1P"
+		"N" "Explo_FragGrenade_Impact_Water_1P"	// slime?
+		"O" "Explo_FragGrenade_Impact_1P"
+		"P" "Explo_FragGrenade_Impact_1P"
+
+		"R" "Explo_FragGrenade_Impact_1P"
+		"S" "Explo_FragGrenade_Impact_Water_1P"
+		"T" "Explo_FragGrenade_Impact_1P"
+		"U" "Explo_FragGrenade_Impact_1P"
+
+		"V" "Explo_FragGrenade_Impact_1P"
+		"W" "explo_fraggrenade_impact_glass_1p"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
+		"Y" "explo_fraggrenade_impact_glass_1p"
+		"Z" "Explo_FragGrenade_Impact_Sand_1P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_FragGrenade_Impact_1P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "Explo_FragGrenade_Impact_3P"
+		"D" "Explo_FragGrenade_Impact_3P"
+		"E" "Explo_FragGrenade_Impact_3P"
+
+		"F" "Explo_FragGrenade_Impact_3P"
+		"G" "Explo_FragGrenade_Impact_3P"
+		"H" "Explo_FragGrenade_Impact_3P"
+
+		"J" "Explo_FragGrenade_Impact_3P"
+		"K" "Explo_FragGrenade_Impact_Mud_3P"
+		"L" "Explo_FragGrenade_Impact_3P"
+		"M" "Explo_FragGrenade_Impact_3P"
+		"N" "Explo_FragGrenade_Impact_3P"
+		"O" "Explo_FragGrenade_Impact_3P"
+		"P" "Explo_FragGrenade_Impact_3P"
+
+		"R" "Explo_FragGrenade_Impact_3P"
+		"S" "Explo_FragGrenade_Impact_Water_3P"
+		"T" "Explo_FragGrenade_Impact_3P"
+		"U" "Explo_FragGrenade_Impact_3P"
+
+		"V" "Explo_FragGrenade_Impact_3P"
+		"W" "explo_fraggrenade_impact_glass_3p"
+		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "explo_fraggrenade_impact_glass_3p"
+		"Z" "Explo_FragGrenade_Impact_Sand_3P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_FragGrenade_Impact_3P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_1P"
+	}
+
+}

@@ -1,0 +1,71 @@
+global function GetPlayerTitansOnTeam
+global function GetPlayerTitansReadyOnTeam
+
+// Counts all alive player piloted titans and pet titans
+array<entity> function GetPlayerTitansOnTeam( int team )
+{
+	PerfStart( 92 )
+	array<entity> teamTitans
+	array<entity> players
+
+	#if CLIENT
+		players = GetPlayerArrayOfTeam( team )
+	#else
+		players = GetConnectingAndConnectedPlayerArray()
+	#endif
+
+	foreach ( entity player in players )
+	{
+		if ( player.GetTeam() == team )
+		{
+			if ( player.IsTitan() && IsAlive( player ) )
+				teamTitans.append( player )
+			else if ( IsAlive( player.GetPetTitan() ) )
+				teamTitans.append( player.GetPetTitan() )
+		}
+	}
+
+	PerfEnd( 92 )
+	return teamTitans
+}
+
+
+array<entity> function GetPlayerTitansReadyOnTeam( int team )
+{
+	array<entity> teamTitansReady
+	array<entity> players
+
+	#if CLIENT
+		players = GetPlayerArrayOfTeam( team )
+	#else
+		players = GetConnectingAndConnectedPlayerArray()
+	#endif
+
+	foreach ( entity player in players )
+	{
+		if ( player.GetTeam() != team )
+			continue
+
+		if ( player.IsTitan() && IsAlive( player ) )
+			continue
+
+		if ( IsAlive( player.GetPetTitan() ) )
+			continue
+
+		if ( player.GetNextTitanRespawnAvailable() < 0 )
+			continue
+
+		if ( Time() < player.GetNextTitanRespawnAvailable() )
+			continue
+
+		if ( player.GetNextTitanRespawnAvailable() >= 999999 )
+			continue
+
+		if ( !IsAlive( player ) && IsPlayerEliminated( player ) )
+			continue
+
+		teamTitansReady.append( player )
+	}
+
+	return teamTitansReady
+}

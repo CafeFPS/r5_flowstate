@@ -1,0 +1,488 @@
+// commands:
+//	Animate <panel name> <variable> <target value> <interpolator> <start time> <duration>
+//		variables:
+//			FgColor
+//			BgColor
+//			Position
+//			Size
+//			Blur		(hud panels only)
+//			TextColor	(hud panels only)
+//			Ammo2Color	(hud panels only)
+//			Alpha		(hud weapon selection only)
+//			SelectionAlpha  (hud weapon selection only)
+//			TextScan	(hud weapon selection only)
+//
+//		interpolator:
+//			Linear
+//			Accel - starts moving slow, ends fast
+//			Deaccel - starts moving fast, ends slow
+//
+//	RunEvent <event name> <start time>
+//		starts another even running at the specified time
+//
+//	StopEvent <event name> <start time>
+//		stops another event that is current running at the specified time
+//
+//	StopAnimation <panel name> <variable> <start time>
+//		stops all animations refering to the specified variable in the specified panel
+//
+//  Note: This doesn't seem to work any more
+//  Error: Could not find panel <panel name> as child of "CBaseModPanel" for StopPanelAnimations command
+//	StopPanelAnimations <panel name> <start time>
+//		stops all active animations operating on the specified panel
+//
+//
+// Useful game console commands:
+//	cl_Animationinfo <hudelement name> or <panelname>
+//		displays all the animatable variables for the hud element
+//
+//	RunAnimationScript from script on hud elements
+
+// Unique element names force the need for duplicated/renamed anim events for each tab content panel
+// A better solution is to find a way in script to be able to set a start position and then a 2nd position to move to. Didn't work when first tried.
+event MoveLeft_LegacyMainPanel
+{
+	Animate LegacyMainPanel		Position	"480 0"		Linear 0 0
+	Animate LegacyMainPanel		Alpha		"0"			Linear 0 0
+
+	Animate LegacyMainPanel		Position	"0 0"		Deaccel 0 0.125
+	Animate LegacyMainPanel		Alpha		"255"		Accel 0 0.125
+}
+
+event MoveRight_LegacyMainPanel
+{
+	Animate LegacyMainPanel		Position	"-480 0"	Linear 0 0
+	Animate LegacyMainPanel		Alpha		"0"			Linear 0 0
+
+	Animate LegacyMainPanel		Position	"0 0"		Deaccel 0 0.125
+	Animate LegacyMainPanel		Alpha		"255"		Accel 0 0.125
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+event MoveLeft_FriendsPanel
+{
+	Animate FriendsPanel		Position	"480 0"		Linear 0 0
+	Animate FriendsPanel		Alpha		"0"			Linear 0 0
+
+	Animate FriendsPanel		Position	"0 0"		Deaccel 0 0.125
+	Animate FriendsPanel		Alpha		"255"		Accel 0 0.125
+}
+
+event MoveRight_FriendsPanel
+{
+	Animate FriendsPanel		Position	"-480 0"	Linear 0 0
+	Animate FriendsPanel		Alpha		"0"			Linear 0 0
+
+	Animate FriendsPanel		Position	"0 0"		Deaccel 0 0.125
+	Animate FriendsPanel		Alpha		"255"		Accel 0 0.125
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+event MoveLeft_PilotPanel
+{
+	Animate PilotPanel			Position	"480 0"		Linear 0 0
+	Animate PilotPanel			Alpha		"0"			Linear 0 0
+
+	Animate PilotPanel			Position	"0 0"		Deaccel 0 0.125
+	Animate PilotPanel			Alpha		"255"		Accel 0 0.125
+}
+
+event MoveRight_PilotPanel
+{
+	Animate PilotPanel			Position	"-480 0"	Linear 0 0
+	Animate PilotPanel			Alpha		"0"			Linear 0 0
+
+	Animate PilotPanel			Position	"0 0"		Deaccel 0 0.125
+	Animate PilotPanel			Alpha		"255"		Accel 0 0.125
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+event MoveLeft_TitanPanel
+{
+	Animate TitanPanel			Position	"480 0"		Linear 0 0
+	Animate TitanPanel			Alpha		"0"			Linear 0 0
+
+	Animate TitanPanel			Position	"0 0"		Deaccel 0 0.125
+	Animate TitanPanel			Alpha		"255"		Accel 0 0.125
+}
+
+event MoveRight_TitanPanel
+{
+	Animate TitanPanel			Position	"-480 0"	Linear 0 0
+	Animate TitanPanel			Alpha		"0"			Linear 0 0
+
+	Animate TitanPanel			Position	"0 0"		Deaccel 0 0.125
+	Animate TitanPanel			Alpha		"255"		Accel 0 0.125
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+event MoveLeft_SettingsPanel
+{
+	Animate SettingsPanel			Position	"480 0"		Linear 0 0
+	Animate SettingsPanel			Alpha		"0"			Linear 0 0
+
+	Animate SettingsPanel			Position	"0 0"		Deaccel 0 0.125
+	Animate SettingsPanel			Alpha		"255"		Accel 0 0.125
+}
+
+event MoveRight_SettingsPanel
+{
+	Animate SettingsPanel			Position	"-480 0"	Linear 0 0
+	Animate SettingsPanel			Alpha		"0"			Linear 0 0
+
+	Animate SettingsPanel			Position	"0 0"		Deaccel 0 0.125
+	Animate SettingsPanel			Alpha		"255"		Accel 0 0.125
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+event SoloLobby
+{
+	StopEvent PartyLeaderLobby	0
+	StopEvent PartyMemberLobby	0
+	StopEvent MatchLobby 		0
+	StopEvent PrivateMatchLobby 0
+
+	Animate BtnEditPilotLoadouts		Position	"67 389"		Linear 0 0
+	Animate BtnOptions					Position	"67 744"		Linear 0 0
+	Animate ImgTeamLogo					Alpha 		"0"				Linear 0 0
+}
+
+event PartyLeaderLobby
+{
+	StopEvent SoloLobby			0
+	StopEvent PartyMemberLobby	0
+	StopEvent MatchLobby 		0
+	StopEvent PrivateMatchLobby 0
+
+	Animate BtnEditPilotLoadouts		Position	"67 346"		Linear 0 0
+	Animate BtnOptions					Position	"67 704"		Linear 0 0
+	Animate ImgTeamLogo					Alpha 		"0"				Linear 0 0
+}
+
+event PartyMemberLobby
+{
+	StopEvent SoloLobby			0
+	StopEvent PartyLeaderLobby	0
+	StopEvent MatchLobby		0
+	StopEvent PrivateMatchLobby 0
+
+	Animate BtnEditPilotLoadouts		Position	"67 169"		Linear 0 0
+	Animate BtnOptions					Position	"67 495"		Linear 0 0
+	Animate ImgTeamLogo					Alpha 		"0"				Linear 0 0
+}
+
+event MatchLobby
+{
+	StopEvent SoloLobby			0
+	StopEvent PartyLeaderLobby	0
+	StopEvent PartyMemberLobby	0
+	StopEvent PrivateMatchLobby 0
+
+	Animate BtnEditPilotLoadouts		Position	"67 169"		Linear 0 0
+	Animate BtnOptions					Position	"67 495"		Linear 0 0
+	Animate ImgTeamLogo					Alpha 		"255"			Linear 0 0
+}
+
+event PrivateMatchLobby
+{
+	StopEvent SoloLobby			0
+	StopEvent PartyLeaderLobby	0
+	StopEvent PartyMemberLobby	0
+	StopEvent MatchLobby		0
+
+	Animate BtnEditPilotLoadouts		Position	"67 346"		Linear 0 0
+	Animate BtnOptions					Position	"67 591"		Linear 0 0
+	Animate ImgTeamLogo					Alpha 		"255"			Linear 0 0
+}
+
+event ShowPlayButtonMessage
+{
+	StopEvent HidePlayButtonMessage	0
+
+	Animate MainMenuButton0				Size		"674 112"		Deaccel 0 0.125
+}
+
+event HidePlayButtonMessage
+{
+	StopEvent ShowPlayButtonMessage	0
+
+	Animate MainMenuButton0				Size		"674 56"		Deaccel 0 0.125
+}
+
+event ShowStoreButtonMessage
+{
+	StopEvent HideStoreButtonMessage	0
+
+	Animate MainMenuButton1				Size		"674 90"		Deaccel 0 0.125
+}
+
+event HideStoreButtonMessage
+{
+	StopEvent ShowStoreButtonMessage	0
+
+	Animate MainMenuButton1				Size		"674 45"		Deaccel 0 0.125
+}
+
+event LevelInit
+{
+}
+
+event OpenPilotVDU
+{
+	StopEvent 					ClosePilotVDU 			0.0
+	Animate VDU_CockpitScreen 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitScreen 	Size		"270 45"	Spline 0.15 0.25
+	Animate VDU_CockpitScreen 	Size		"270 351"	Spline 0.33 0.3
+	Animate VDU_CockpitScreen 	Size		"270 270"	Spline 0.6 0.08
+	Animate VDU_CockpitScreen 	Alpha 		"0"			Linear 0 0
+	Animate VDU_CockpitScreen 	Alpha 		"255"		Spline 0.15 0.3
+
+	Animate VDU_CockpitStatic 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitStatic 	Size		"270 45"	Spline 0.15 0.25
+	Animate VDU_CockpitStatic 	Size		"270 274"	Spline 0.33 0.3
+	Animate VDU_CockpitStatic 	Size		"270 211"	Spline 0.6 0.08
+	Animate VDU_CockpitStatic 	Alpha 		"0"			Linear 0 0
+	Animate VDU_CockpitStatic 	Alpha 		"255"		Spline 0.15 0.3
+
+	Animate VDU_FG 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_FG 	Size		"373 63"	Spline 0.15 0.25
+	Animate VDU_FG 	Size		"373 486"	Spline 0.33 0.3
+	Animate VDU_FG 	Size		"373 373"	Spline 0.6 0.08
+	Animate VDU_FG 	Alpha 		"0"			Linear 0 0
+	Animate VDU_FG 	Alpha 		"255"		Spline 0.15 0.3
+
+	Animate VDU_BG 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_BG 	Size		"373 63"	Spline 0.15 0.25
+	Animate VDU_BG 	Size		"373 438"	Spline 0.33 0.3
+	Animate VDU_BG 	Size		"373 337"	Spline 0.6 0.08
+	Animate VDU_BG 	Position	"0 4"		Linear 0.0 0.0
+	Animate VDU_BG 	Alpha 		"0"			Linear 0 0
+	Animate VDU_BG 	Alpha 		"255"		Spline 0.15 0.3
+}
+
+event OpenWidescreenVDU
+{
+	StopEvent 					ClosePilotVDU 			0.0
+	Animate VDU_CockpitScreen 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitScreen 	Size		"328 54"	Spline 0.15 0.25
+	Animate VDU_CockpitScreen 	Size		"328 427"	Spline 0.33 0.3
+	Animate VDU_CockpitScreen 	Size		"328 328"	Spline 0.6 0.08
+	Animate VDU_CockpitScreen 	Alpha 		"0"			Linear 0 0
+	Animate VDU_CockpitScreen 	Alpha 		"255"		Spline 0.15 0.3
+
+	Animate VDU_CockpitStatic 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitStatic 	Size		"328 54"	Spline 0.15 0.25
+	Animate VDU_CockpitStatic 	Size		"328 335"	Spline 0.33 0.3
+	Animate VDU_CockpitStatic 	Size		"328 259"	Spline 0.6 0.08
+	Animate VDU_CockpitStatic 	Alpha 		"0"			Linear 0 0
+	Animate VDU_CockpitStatic 	Alpha 		"255"		Spline 0.15 0.3
+
+	Animate VDU_FG 				Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_FG 				Size		"373 63"	Spline 0.15 0.25
+	Animate VDU_FG 				Size		"373 486"	Spline 0.33 0.3
+	Animate VDU_FG 				Size		"373 373"	Spline 0.6 0.08
+	Animate VDU_FG 				Alpha 		"0"			Linear 0 0
+	Animate VDU_FG 				Alpha 		"255"		Spline 0.15 0.3
+
+	Animate VDU_BG 				Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_BG 				Size		"454 63"	Spline 0.15 0.25
+	Animate VDU_BG 				Size		"454 438"	Spline 0.33 0.3
+	Animate VDU_BG 				Size		"454 337"	Spline 0.6 0.08
+	Animate VDU_BG 				Position	"0 9"		Linear 0.0 0.0
+	Animate VDU_BG 				Alpha 		"0"			Linear 0 0
+	Animate VDU_BG 				Alpha 		"255"		Spline 0.15 0.3
+}
+
+event OpenJumpQuest
+{
+	Animate JQ_FG 	Size		"0 0"		Linear 0.0 0.0
+	Animate JQ_FG 	Size		"405 63"	Spline 0.15 0.25
+	Animate JQ_FG 	Size		"405 344"	Spline 0.33 0.3
+	Animate JQ_FG 	Size		"405 270"	Spline 0.6 0.08
+	Animate JQ_FG 	Alpha 		"0"			Linear 0 0
+	Animate JQ_FG 	Alpha 		"255"		Spline 0.15 0.3
+
+	Animate JQ_BG 	Size		"0 0"		Linear 0.0 0.0
+	Animate JQ_BG 	Size		"405 63"	Spline 0.15 0.25
+	Animate JQ_BG 	Size		"405 344"	Spline 0.33 0.3
+	Animate JQ_BG 	Size		"405 270"	Spline 0.6 0.08
+	Animate JQ_BG 	Alpha 		"0"			Linear 0 0
+	Animate JQ_BG 	Alpha 		"255"		Spline 0.15 0.3
+}
+
+event ClosePilotVDU
+{
+	StopEvent 					OpenPilotVDU 			0.0
+	Animate VDU_CockpitScreen 	Size		"270 22"	Spline 0.0 0.2
+	Animate VDU_CockpitScreen 	Size		"0 0"		Spline 0.15 0.25
+	Animate VDU_CockpitScreen 	Alpha 		"0"			Linear 0.2 0.2
+
+	Animate VDU_CockpitStatic 	Size		"270 22"	Spline 0.0 0.2
+	Animate VDU_CockpitStatic 	Size		"0 0"		Spline 0.15 0.25
+	Animate VDU_CockpitStatic 	Alpha 		"0"			Linear 0.2 0.2
+
+	Animate VDU_FG 				Size		"373 31"	Spline 0.0 0.2
+	Animate VDU_FG 				Size		"0 0"		Spline 0.15 0.25
+	Animate VDU_FG 				Alpha 		"0"			Linear 0.2 0.2
+
+	Animate VDU_BG 				Size		"373 31"	Spline 0.0 0.2
+	Animate VDU_BG 				Size		"0 0"		Spline 0.15 0.25
+	Animate VDU_BG 				Alpha 		"0"			Linear 0.2 0.3
+}
+
+event FadeAntiTitanHint
+{
+	Animate 		AntiTitanHint 		Alpha 		"255"	Linear 0 0
+	Animate 		AntiTitanHint 		Alpha 		"0"		Linear 3.0 2.0
+}
+
+event FadeAnitTitanHintInstant
+{
+	StopAnimation 	AntiTitanHint 		Alpha 		"0.0"
+	Animate 		AntiTitanHint 		Alpha 		"0"		Linear 0.1 0.5
+	StopEvent		FadeAntiTitanHint 	0.0
+}
+
+event FadeRodeoBatteryHint
+{
+	Animate 		RodeoBatteryHint 		Alpha 		"255"	Linear 0 0
+	Animate 		RodeoBatteryHint 		Alpha 		"0"		Linear 8.0 2.0
+}
+
+event ShowRodeoBatteryHintInstant
+{
+	Animate 		RodeoBatteryHint 		Alpha 		"255"	Linear 0 0
+}
+
+event AnimateEjectIcon
+{
+	Animate 	CrosshairEjectHintIcon 	ypos 		-18 	Linear 0 0.1
+	Animate 	CrosshairEjectHintIcon 	ypos 		0 		Linear 0.1 0.1
+}
+
+event AnimateEmergencyTitanIcon
+{
+	Animate 	EmergencyTitanAvailableIcon 	Size 		"55 55" 	Linear 0 0.1
+	Animate 	EmergencyTitanAvailableIcon 	Size 		"35 35" 	Linear 0.1 0.1
+}
+
+
+event PulseNextSpawnTimeLabel
+{
+	Animate 		NextSpawnTimeLabel 		Alpha 		"255"	Linear 0 	0
+	Animate 		NextSpawnTimeLabel 		Alpha 		"64"		Linear 0 	0.1
+	Animate 		NextSpawnTimeLabel 		Alpha 		"255"	Accel 0.1	0.1
+	Animate 		NextSpawnTimeLabel 		Alpha 		"64"		Linear 0.2 	0.1
+	Animate 		NextSpawnTimeLabel 		Alpha 		"255"	Accel 0.3	0.1
+}
+
+event CenterBossVDU
+{
+	Animate VDU_CockpitScreen_Boss	Position	"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitScreen_Boss 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitScreen_Boss 	Size		"1000 150"	Linear 0.15 0.1
+	Animate VDU_CockpitScreen_Boss 	Size		"1000 1150"	Linear 0.25 0.1
+	Animate VDU_CockpitScreen_Boss 	Size		"1200 1000"	Linear 0.35 0.05
+	Animate VDU_CockpitScreen_Boss 	Alpha 		"0"			Linear 0 0
+	Animate VDU_CockpitScreen_Boss 	Alpha 		"255"		Linear 0.15 0.3
+
+	Animate VDU_CockpitStatic_Boss	Position	"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitStatic_Boss 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitStatic_Boss 	Size		"1000 150"	Linear 0.15 0.1
+	Animate VDU_CockpitStatic_Boss 	Size		"1000 1150"	Linear 0.25 0.1
+	Animate VDU_CockpitStatic_Boss 	Size		"1200 1000"	Linear 0.35 0.05
+	Animate VDU_CockpitStatic_Boss 	Alpha 		"0"			Linear 0 0
+	Animate VDU_CockpitStatic_Boss 	Alpha 		"255"		Linear 0.15 0.3
+
+	Animate VDU_FG_Boss 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_FG_Boss 	Size		"1400 126"	Linear 0.15 0.1
+	Animate VDU_FG_Boss 	Size		"1400 1200"	Linear 0.25 0.1
+	Animate VDU_FG_Boss 	Size		"1600 1400"	Linear 0.35 0.05
+	Animate VDU_FG_Boss 	Alpha 		"0"			Linear 0 0
+	Animate VDU_FG_Boss 	Alpha 		"255"		Linear 0.15 0.3
+
+	Animate VDU_BG_Boss 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_BG_Boss 	Size		"1400 126"	Linear 0.15 0.1
+	Animate VDU_BG_Boss 	Size		"1400 1200"	Linear 0.25 0.1
+	Animate VDU_BG_Boss 	Size		"1600 1400"	Linear 0.35 0.05
+	Animate VDU_BG_Boss 	Alpha 		"0"			Linear 0 0
+	Animate VDU_BG_Boss 	Alpha 		"255"		Linear 0.15 0.3
+}
+
+event UncenterBossVDU
+{
+	Animate VDU_CockpitScreen_Boss	Position	"450 0"	Linear 0.0 0.3
+	Animate VDU_CockpitScreen_Boss 	Size		"400 275"	Linear 0.0 0.3
+	Animate VDU_CockpitScreen_Boss 	Size		"400 325"	Linear 0.3 0.08
+
+	Animate VDU_CockpitStatic_Boss	Position	"450 0"	Linear 0.0 0.3
+	Animate VDU_CockpitStatic_Boss 	Size		"400 275"	Linear 0.0 0.3
+	Animate VDU_CockpitStatic_Boss 	Size		"400 325"	Linear 0.3 0.08
+
+	Animate VDU_FG_Boss 	Size		"550 500"	Linear 0.0 0.3
+	Animate VDU_FG_Boss 	Size		"550 460"	Linear 0.3 0.08
+
+	Animate VDU_BG_Boss 	Size		"550 500"	Linear 0.0 0.3
+	Animate VDU_BG_Boss 	Size		"550 460"	Linear 0.3 0.08
+}
+
+event OpenBossVDU
+{
+	StopEvent 					CenterBossVDU 			0.0
+	StopEvent 					CloseBossVDU 			0.0
+	Animate VDU_CockpitScreen_Boss	Position	"-450 0"		Linear 0.0 0.0
+	Animate VDU_CockpitScreen_Boss 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitScreen_Boss 	Size		"400 45"	Linear 0.15 0.1
+	Animate VDU_CockpitScreen_Boss 	Size		"400 275"	Linear 0.25 0.1
+	Animate VDU_CockpitScreen_Boss 	Size		"400 225"	Linear 0.35 0.08
+	Animate VDU_CockpitScreen_Boss 	Alpha 		"0"			Linear 0 0
+	Animate VDU_CockpitScreen_Boss 	Alpha 		"255"		Linear 0.15 0.3
+
+	Animate VDU_CockpitStatic_Boss	Position	"-450 0"		Linear 0.0 0.0
+	Animate VDU_CockpitStatic_Boss 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_CockpitStatic_Boss 	Size		"400 45"	Linear 0.15 0.1
+	Animate VDU_CockpitStatic_Boss 	Size		"400 275"	Linear 0.25 0.1
+	Animate VDU_CockpitStatic_Boss 	Size		"400 225"	Linear 0.35 0.08
+	Animate VDU_CockpitStatic_Boss 	Alpha 		"0"			Linear 0 0
+	//Animate VDU_CockpitStatic_Boss 	Alpha 		"255"		Linear 0.15 0.3
+
+	Animate VDU_FG_Boss 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_FG_Boss 	Size		"550 100"	Linear 0.15 0.1
+	Animate VDU_FG_Boss 	Size		"550 500"	Linear 0.25 0.1
+	Animate VDU_FG_Boss 	Size		"600 460"	Linear 0.35 0.08
+	Animate VDU_FG_Boss 	Alpha 		"0"			Linear 0 0
+	Animate VDU_FG_Boss 	Alpha 		"255"		Linear 0.15 0.3
+
+	Animate VDU_BG_Boss 	Size		"0 0"		Linear 0.0 0.0
+	Animate VDU_BG_Boss 	Size		"550 100"	Linear 0.15 0.1
+	Animate VDU_BG_Boss 	Size		"550 500"	Linear 0.25 0.1
+	Animate VDU_BG_Boss 	Size		"600 460"	Linear 0.35 0.08
+	Animate VDU_BG_Boss 	Alpha 		"0"			Linear 0 0
+	Animate VDU_BG_Boss 	Alpha 		"255"		Linear 0.15 0.3
+}
+
+event CloseBossVDU
+{
+	StopEvent 					OpenBossVDU 			0.0
+	Animate VDU_CockpitScreen_Boss	Position	"-475 0"		Linear 0.0 0.0
+	Animate VDU_CockpitScreen_Boss 	Size		"400 45"	Spline 0.0 0.2
+	Animate VDU_CockpitScreen_Boss 	Size		"0 0"		Spline 0.15 0.1
+	Animate VDU_CockpitScreen_Boss 	Alpha 		"0"			Linear 0.2 0.1
+
+	Animate VDU_CockpitStatic_Boss 	Size		"400 45"	Spline 0.0 0.2
+	Animate VDU_CockpitStatic_Boss 	Size		"0 0"		Spline 0.15 0.1
+	Animate VDU_CockpitStatic_Boss 	Alpha 		"0"			Linear 0.2 0.1
+
+	Animate VDU_FG_Boss 				Size		"500 100"	Spline 0.0 0.2
+	Animate VDU_FG_Boss 				Size		"0 0"		Spline 0.15 0.1
+	Animate VDU_FG_Boss 				Alpha 		"0"			Linear 0.2 0.2
+
+	Animate VDU_BG_Boss 				Size		"500 100"	Spline 0.0 0.2
+	Animate VDU_BG_Boss 				Size		"0 0"		Spline 0.15 0.1
+	Animate VDU_BG_Boss 				Alpha 		"0"			Linear 0.2 0.1
+}

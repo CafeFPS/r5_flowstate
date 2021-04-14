@@ -1,0 +1,66 @@
+// "Gamematerial" "effect_name"
+
+// "B" bloodyflesh
+// "X" plastic box, wade, ladder, woodladdder,
+// "I" player_control_clip
+
+ImpactTable
+{
+	FX
+	{
+		"A" "none" //default silent (clip)
+		"B" "none" //Bloodyflesh?
+
+		"C" "P_pilot_slide_default" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_pilot_slide_dust" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "none" // metal_titan
+		"F" "none" //flesh
+		"G" "P_pilot_slide_default" //metalgrate, chainlink, chain
+		"H" "none" //alienflesh
+
+		"I" "none" //player_control_clip
+
+		"J" "P_pilot_slide_dust" //grass
+		"K" "P_pilot_slide_mud" //Mud
+		"L" "P_pilot_slide_default" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_pilot_slide_default" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_pilot_slide_slime" //Slime
+		"O" "P_pilot_slide_dust" //Foliage
+		"P" "P_pilot_slide_default" //Computer
+
+		"Q" "none" //Not listed
+
+		"R" "P_pilot_slide_default" //metalpanel, grenade, canister
+		"S" "P_pilot_slide_water" //water, slime
+		"T" "P_pilot_slide_default" //tile
+		"U" "none" //glass_breakable
+		"V" "P_pilot_slide_default" //Metal Vent
+		"W" "none" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+		"X" "none" //xo_shield
+		"Y" "none" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_pilot_slide_dust" //sand
+
+		"0" "P_pilot_slide_default"
+		"1" "P_pilot_slide_default"
+		"2" "P_pilot_slide_default"
+		"3" "P_pilot_slide_default"
+		"4" "P_pilot_slide_default"
+		"5" "P_pilot_slide_default"
+		"6" "P_pilot_slide_default"
+		"7" "P_pilot_slide_default"
+		"8" "P_pilot_slide_default"
+
+
+		//Hardcocded Surfacprops
+		"splash" "P_pilot_slide_water" //brush water
+		"slime_splash" "P_pilot_slide_water"
+		"airburst" "none"  //No Surface
+		"shieldhit" "none" //Invisible armor
+		"holohit" "none" //Holopilot entity
+		"critical_hit" "none" //titan weekspots
+
+		"headshot_flesh" "none" //Human headshot
+		"headshot_mechanical" "none" //Robotic Headshot
+
+	}
+}

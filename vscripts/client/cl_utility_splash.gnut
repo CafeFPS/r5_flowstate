@@ -1,0 +1,380 @@
+untyped
+
+global function CLUtilitySplash_Init
+
+
+global HUDSplashLine = null
+
+void function CLUtilitySplash_Init()
+{
+	RegisterSignal( "FlareStart" )
+
+	class HUDSplashLine
+	{
+		name 					= null
+		duration 				= null
+		fadeOutDuration 		= null
+		fadeDelay 				= null
+		scrollOffset 			= null
+		scrollDuration 			= null
+		masterGroup 			= null
+		hudGroups 				= null
+		stackCount				= null
+		textGroupStrings		= null
+		textGroupStringsVar1	= null
+		textGroupBrackets		= null
+		textGroupColors			= null
+		iconElems 				= null
+		iconUsage 				= null
+		iconMaterials 			= null
+		flareElems				= null
+		startTime				= null
+		iconSizes 				= null
+		typeWriterDuration 		= null
+		elemOffsetsX 			= null
+		formatted				= null
+		formattingType			= null
+		scale					= null
+
+		function constructor( _name )
+		{
+			this.name = _name
+
+			this.duration 				= 2.0
+			this.fadeOutDuration 		= 0
+			this.fadeDelay 				= 2.0
+			this.scrollOffset 			= 20
+			this.scrollDuration 		= 0.1
+			this.typeWriterDuration 	= 0
+			this.hudGroups 				= {}
+			this.textGroupStrings 		= {}
+			this.textGroupStringsVar1	= {}
+			this.textGroupBrackets		= {}
+			this.textGroupColors 		= {}
+			this.flareElems				= {}
+			this.iconElems 				= {}
+			this.iconUsage 				= {}
+			this.iconMaterials 			= {}
+			this.iconSizes 				= {}
+			this.elemOffsetsX 			= {}
+			this.formatted				= false
+			this.formattingType			= "none"
+			this.scale = 1.0
+			this.startTime = 0.0
+			this.stackCount = 1
+		}
+
+		function SetScale( _scale )
+		{
+			this.scale = _scale
+		}
+
+		function SetDuration( _duration, _fadeDuration = 0 )
+		{
+			this.duration = _duration
+			this.fadeOutDuration = _fadeDuration
+			this.fadeDelay = _duration - _fadeDuration
+		}
+
+		function SetScroll( offset, duration )
+		{
+			offset *= GetContentScaleFactor( Hud ).y
+			this.scrollOffset = offset
+			this.scrollDuration = duration
+		}
+
+		function SetTypeDuration( duration )
+		{
+			this.typeWriterDuration = duration
+		}
+
+		function SetMasterGroup( hudGroup )
+		{
+			this.masterGroup = hudGroup
+		}
+
+		function AddSplashGroup( groupIndex, hudGroup )
+		{
+			Assert( !( groupIndex in this.hudGroups ) )
+
+			this.hudGroups[ groupIndex ] <- hudGroup
+			this.textGroupStrings[ groupIndex ] <- ""
+			this.textGroupStringsVar1[ groupIndex ] <- ""
+			this.textGroupBrackets[ groupIndex ] <- false
+			this.textGroupColors[ groupIndex ] <- OBITUARY_COLOR_DEFAULT
+			this.iconElems[ groupIndex ] <- null
+			this.flareElems[ groupIndex ] <- null
+			this.iconUsage[ groupIndex ] <- false
+			this.iconMaterials[ groupIndex ] <- null
+			this.iconSizes[ groupIndex ] <- null
+		}
+
+		function SetTextForGroup( groupIndex, text, arg1 = null )
+		{
+			Assert( groupIndex in this.textGroupStrings )
+			this.textGroupStrings[ groupIndex ] = text//.toupper()
+			if ( arg1 )
+				this.textGroupStringsVar1[ groupIndex ] = arg1
+			this.textGroupBrackets[ groupIndex ] = false
+		}
+
+		function SetColorForGroup( groupIndex, color )
+		{
+			Assert( groupIndex in this.textGroupStrings )
+			Assert( groupIndex in this.textGroupColors )
+
+			this.textGroupColors[ groupIndex ] = color
+		}
+
+		function AddIconElem( groupIndex, elem )
+		{
+			Assert( groupIndex in this.textGroupStrings )
+			this.iconElems[ groupIndex ] = elem
+		}
+
+		function SetIconMaterial( groupIndex, material, iconSize, iconused )
+		{
+			Assert( this.iconElems[ groupIndex ] != null )
+			this.iconUsage[ groupIndex ] = iconused
+			this.iconMaterials[ groupIndex ] = material
+			this.iconSizes[ groupIndex ] = iconSize
+		}
+
+		function SetFlareEffectElem( groupIndex, elem )
+		{
+			Assert( groupIndex in this.textGroupStrings )
+			this.flareElems[ groupIndex ] = elem
+		}
+
+		function SetStartTime( time )
+		{
+			this.startTime = time
+		}
+
+		function SetStackCount( count )
+		{
+			this.stackCount = count
+		}
+
+		function GetStackCount()
+		{
+			return this.stackCount
+		}
+
+		function Scroll( numLines )
+		{
+			int OffsetY = expect int( this.scrollOffset ) * expect int( numLines )
+			foreach ( index, hudGroup in this.hudGroups )
+			{
+				int OffsetX = 0
+				//if ( index in this.elemOffsetsX )
+				//	OffsetX += this.elemOffsetsX[ index ]
+
+				int newX = expect int( hudGroup.GetX() ) + OffsetX
+				int newY = expect int( hudGroup.GetBaseY() ) + OffsetY
+
+				hudGroup.MoveOverTime( newX, newY, this.scrollDuration )
+
+				if ( this.iconElems[ index ] != null )
+					this.iconElems[ index ].OffsetYOverTime( this.scrollOffset, this.scrollDuration )
+			}
+		}
+
+		function SetBracketsForGroup( groupIndex, bracketed )
+		{
+			Assert( groupIndex in this.textGroupBrackets )
+			Assert( bracketed == true || bracketed == false )
+			this.textGroupBrackets[ groupIndex ] = bracketed
+		}
+
+		function DisplayCenter( leftElem, centerElem, rightElem )
+		{
+			this.elemOffsetsX = {}
+			this.formatted = true
+			this.formattingType = "center"
+
+			this.Display( leftElem, centerElem, rightElem )
+		}
+
+		function DisplayLeft( leftElem, centerElem, rightElem )
+		{
+			this.elemOffsetsX = {}
+			this.formatted = true
+			this.formattingType = "left"
+
+			this.Display( leftElem, centerElem, rightElem )
+		}
+
+		function DisplayRight( leftElem, centerElem, rightElem )
+		{
+			this.elemOffsetsX = {}
+			this.formatted = true
+			this.formattingType = "right"
+
+			this.Display( leftElem, centerElem, rightElem )
+		}
+
+		function Display( leftElem = null, centerElem = null, rightElem = null )
+		{
+			// Reset all elems back to base position
+			if ( !this.formatted )
+				this.elemOffsetsX = {}
+			this.formatted = false
+
+			local allElems = this.masterGroup.GetElements()
+			foreach ( elem in allElems )
+			{
+				elem.ReturnToBasePos()
+				//elem.ReturnToBaseSize()
+				elem.ReturnToBaseColor()
+				elem.Hide()
+			}
+
+			foreach ( index, hudGroup in this.hudGroups )
+			{
+				Assert( index in this.textGroupStrings )
+				Assert( index in this.textGroupColors )
+
+				// If we want to display an icon with this group then reset the image info
+				// too, and offset the position of the group to make room for the icon
+				if ( this.iconUsage[ index ] )
+				{
+					Assert( this.iconMaterials[ index ] != null )
+					Assert( this.iconSizes[ index ] != null )
+
+					local OffsetX = this.iconSizes[ index ]
+					hudGroup.OffsetX( OffsetX )
+
+					this.iconElems[ index ].SetImage( this.iconMaterials[ index ] )
+					this.iconElems[ index ].Show()
+					this.iconElems[ index ].FadeOverTime( 255, 0.1 )
+
+					// store all the offsets so when they scroll they can maintain it
+					this.elemOffsetsX[ index ] <- OffsetX
+				}
+
+				// update the color for this group
+				table color = StringToColors( expect string( this.textGroupColors[ index ] ) )
+				local hudGroupElems = hudGroup.GetElements()
+				foreach ( elem in hudGroupElems )
+				{
+					elem.SetColor( color.r, color.g, color.b, color.a )
+				}
+
+				// show the text for this group
+
+				if ( this.textGroupBrackets[ index ] )
+				{
+					//hudGroup.SetTextTypeWriter( "#OBIT_BRACKETED_STRING", this.textGroupStrings[ index ], typeWriterDuration )
+					hudGroup.SetText( "#OBIT_BRACKETED_STRING", this.textGroupStrings[ index ] )
+					//hudGroup.SetText( this.textGroupStrings[ index ] )
+				}
+				else
+				{
+					//hudGroup.SetTextTypeWriter( this.textGroupStrings[ index ], typeWriterDuration )
+					hudGroup.SetText( this.textGroupStrings[ index ], this.textGroupStringsVar1[ index ] )
+				}
+			}
+
+			// space between words
+			local wordSpacing = 2 * GetContentScaleFactor( Hud ).x
+			local widthRight
+			local widthCenter
+			local widthLeft
+
+			if ( this.formattingType != "none" )
+			{
+				Assert( leftElem )
+				Assert( centerElem )
+				Assert( rightElem )
+
+				widthLeft = float( this.hudGroups[ leftElem ].GetTextWidth() )
+				widthCenter = float( this.hudGroups[ centerElem ].GetTextWidth() )
+				widthRight = float( this.hudGroups[ rightElem ].GetTextWidth() )
+
+				widthLeft *= this.scale
+				widthCenter *= this.scale
+				widthRight *= this.scale
+
+				wordSpacing *= this.scale / 2
+			}
+
+			if ( this.formattingType == "center" )
+			{
+				this.hudGroups[ leftElem ].OffsetX( -( widthCenter * 0.5 ) - wordSpacing )
+				this.hudGroups[ rightElem ].OffsetX( ( widthCenter * 0.5 ) + wordSpacing )
+			}
+			else if ( this.formattingType == "left" )
+			{
+				this.hudGroups[ centerElem ].OffsetX( widthLeft + wordSpacing )
+				this.hudGroups[ rightElem ].OffsetX( widthLeft + widthCenter + ( wordSpacing * 2.0 ) )
+			}
+			else if ( this.formattingType == "right" )
+			{
+				this.hudGroups[ centerElem ].OffsetX( -widthRight - wordSpacing )
+				this.hudGroups[ leftElem ].OffsetX( -widthRight - widthCenter - ( wordSpacing * 2.0 ) )
+			}
+
+			// Flares
+			foreach ( index, hudGroup in this.hudGroups )
+			{
+				if ( this.flareElems[index] == null )
+					continue
+
+				int textWidth = expect int( hudGroup.GetTextWidth() )
+				this.flareElems[index].ReturnToBaseSize()
+				this.flareElems[index].SetBaseSize( textWidth.tofloat() * 3.0, this.flareElems[index].GetHeight() )
+				this.flareElems[index].SetBasePos( ( hudGroup.GetWidth() / 2.0 ) - ( textWidth / 2.0 ), 0 )
+				thread this.DoFlare( this.flareElems[index] )
+			}
+
+			// Show it and fade it out
+			foreach ( index, hudGroup in this.hudGroups )
+				hudGroup.Show()
+
+			this.masterGroup.FadeOverTimeDelayed( 0, this.fadeOutDuration, this.fadeDelay )
+		}
+
+		function UpdateTextDisplay()
+		{
+			foreach ( index, hudGroup in this.hudGroups )
+			{
+				Assert( index in this.textGroupStrings )
+				Assert( index in this.textGroupColors )
+
+				if ( this.textGroupBrackets[ index ] )
+					hudGroup.SetText( "#OBIT_BRACKETED_STRING", this.textGroupStrings[ index ], this.textGroupStringsVar1[ index ] )
+				else
+					hudGroup.SetText( this.textGroupStrings[ index ], this.textGroupStringsVar1[ index ] )
+
+				table color = StringToColors( expect string( this.textGroupColors[ index ] ) )
+				hudGroup.SetColor( color.r, color.g, color.b, color.a )
+
+				if ( this.flareElems[index] != null )
+					this.flareElems[index].Hide()
+
+				float updatedDuration = max( 0, this.duration + this.startTime - Time() )
+				float updatedFadeOutDuration = min( this.fadeOutDuration, updatedDuration )
+				float updatedFadeDelay = updatedDuration - updatedFadeOutDuration
+
+				hudGroup.FadeOverTimeDelayed( 0, updatedFadeOutDuration, updatedFadeDelay )
+			}
+		}
+
+		function DoFlare( flare )
+		{
+			Signal( flare, "FlareStart" )
+			EndSignal( flare, "FlareStart" )
+			EndSignal( flare, "OnDestroy" ) // Do hud elements get OnDestroy?
+
+			flare.SetAlpha( 200 )
+			flare.SetScale( 1.3, 1.3 )
+			flare.Show()
+			wait 0.25
+
+			// normal size and brightness
+			flare.ScaleOverTime( 0.25, 0.25, 1.0 )
+			flare.FadeOverTime( 0, 0.5 )
+		}
+	}
+}

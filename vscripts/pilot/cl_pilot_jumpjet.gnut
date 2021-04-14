@@ -1,0 +1,419 @@
+global function ClPilotJumpjet_Init
+
+global function OnHumanJumpJetDBL
+global function OnHumanJumpJet
+global function OnHumanMeleeTrails
+global function SetupPlayerJumpJetAnimEvents
+global function GetJumpJetFXData
+
+global function CodeCallback_PlayerDecoyStateChange //Client version is here as opposed to in the weapon file since most of the functionality deals with killing the jumpjet effects
+
+const STEALTH_TEAM_JUMPJET_ON = $"P_jump_jet_stealth"
+const STEALTH_TEAM_JUMPJET_DBL = $"P_jump_jet_stealth_DBL"
+const STEALTH_TEAM_JUMPJET_WR = $"P_jump_jet_stealth"
+
+const STEALTH_PENEMY_JUMPJET_ON = $"P_jump_jet_stealth"
+const STEALTH_PENEMY_JUMPJET_DBL = $"P_jump_jet_stealth_DBL"
+const STEALTH_PENEMY_JUMPJET_WR = $"P_jump_jet_stealth"
+
+const TEAM_JUMPJET_ON = $"P_team_jump_jet_ON"
+const TEAM_JUMPJET_RT = $"P_team_jump_jet_RT"
+const TEAM_JUMPJET_DBL = $"P_team_jump_jet_DBL"
+const TEAM_JUMPJET_WR = $"P_team_jump_jet_WR"
+const TEAM_JUMPJET_ON_ENGINEER = $"P_team_jump_jet_center"
+const TEAM_JUMPJET_DBL_ENGINEER = $"P_team_jump_jet_center_DBL"
+const TEAM_JUMPJET_ON_SCOUT = $"P_team_jump_jet_ON_trails"
+const TEAM_JUMPJET_WR_SCOUT = $"P_team_jump_jet_WR_trails"
+
+const PENEMY_JUMPJET_ON = $"P_enemy_jump_jet_ON"
+const PENEMY_JUMPJET_RT = $"P_enemy_jump_jet_RT"
+const PENEMY_JUMPJET_DBL = $"P_enemy_jump_jet_DBL"
+const PENEMY_JUMPJET_WR = $"P_enemy_jump_jet_WR"
+const PENEMY_JUMPJET_ON_ENGINEER = $"P_enemy_jump_jet_center"
+const PENEMY_JUMPJET_DBL_ENGINEER = $"P_enemy_jump_jet_center_DBL"
+const PENEMY_JUMPJET_ON_SCOUT = $"P_enemy_jump_jet_ON_trails"
+const PENEMY_JUMPJET_WR_SCOUT = $"P_enemy_jump_jet_WR_trails"
+
+global enum eJumpJetType
+{
+	ON,
+	DBL,
+	WR,
+	RT,
+	JUMPJETTYPE_COUNT
+}
+
+global struct JumpJetFXNamesStruct
+{
+	asset[ eJumpJetType.JUMPJETTYPE_COUNT ] stealthJumpJets
+	asset[ eJumpJetType.JUMPJETTYPE_COUNT ] regularJumpJets
+}
+
+global struct JumpJetDataStruct
+{
+	array<string> attachments = [ "vent_left", "vent_right" ]
+	string rt_light_attachment = "vent_right"
+	JumpJetFXNamesStruct friendlyJumpJets
+	JumpJetFXNamesStruct enemyJumpJets
+}
+
+struct {
+	JumpJetDataStruct jumpJetFXData
+	table<entity, array<int> > playerDecoyJumpJetFX
+} file
+
+void function ClPilotJumpjet_Init()
+{
+	//Jumpjets
+	PrecacheParticleSystem( PENEMY_JUMPJET_ON )
+	PrecacheParticleSystem( TEAM_JUMPJET_ON )
+	PrecacheParticleSystem( PENEMY_JUMPJET_RT )
+	PrecacheParticleSystem( TEAM_JUMPJET_RT )
+	PrecacheParticleSystem( PENEMY_JUMPJET_DBL )
+	PrecacheParticleSystem( TEAM_JUMPJET_DBL )
+	PrecacheParticleSystem( PENEMY_JUMPJET_WR )
+	PrecacheParticleSystem( TEAM_JUMPJET_WR )
+
+	//Class Jump Jets
+	PrecacheParticleSystem( TEAM_JUMPJET_ON_ENGINEER )
+	PrecacheParticleSystem( TEAM_JUMPJET_DBL_ENGINEER )
+	PrecacheParticleSystem( PENEMY_JUMPJET_ON_ENGINEER )
+	PrecacheParticleSystem( PENEMY_JUMPJET_DBL_ENGINEER )
+
+	PrecacheParticleSystem( TEAM_JUMPJET_ON_SCOUT )
+	PrecacheParticleSystem( TEAM_JUMPJET_WR_SCOUT )
+	PrecacheParticleSystem( PENEMY_JUMPJET_ON_SCOUT )
+	PrecacheParticleSystem( PENEMY_JUMPJET_WR_SCOUT )
+
+	//Stealth Jumpjets
+	PrecacheParticleSystem( STEALTH_PENEMY_JUMPJET_ON )
+	PrecacheParticleSystem( STEALTH_TEAM_JUMPJET_ON )
+	PrecacheParticleSystem( STEALTH_PENEMY_JUMPJET_DBL )
+	PrecacheParticleSystem( STEALTH_TEAM_JUMPJET_DBL )
+	PrecacheParticleSystem( STEALTH_PENEMY_JUMPJET_WR )
+	PrecacheParticleSystem( STEALTH_TEAM_JUMPJET_WR )
+
+	CreateWallRunJumpJetData()
+
+	foreach ( key, value in eJumpJetType ) //Enums are really just a table<string, int> anyway
+		RegisterSignal( "eJumpJetType." +  key )
+
+	AddOnDeathOrDestroyCallback( "player_decoy", CleanUpDecoyFXHandles )
+}
+
+void function CreateWallRunJumpJetData()
+{
+	//Structure is set up so that it's still easy to bring back mutiple pilot subclasses if need be.
+	file.jumpJetFXData.friendlyJumpJets.stealthJumpJets[ eJumpJetType.ON ] = STEALTH_TEAM_JUMPJET_ON
+	file.jumpJetFXData.friendlyJumpJets.stealthJumpJets[ eJumpJetType.DBL ] = STEALTH_TEAM_JUMPJET_DBL
+	file.jumpJetFXData.friendlyJumpJets.stealthJumpJets[ eJumpJetType.WR ] = STEALTH_TEAM_JUMPJET_WR
+	file.jumpJetFXData.friendlyJumpJets.regularJumpJets[ eJumpJetType.ON ]  = TEAM_JUMPJET_ON
+	file.jumpJetFXData.friendlyJumpJets.regularJumpJets[ eJumpJetType.DBL ] = TEAM_JUMPJET_DBL
+	file.jumpJetFXData.friendlyJumpJets.regularJumpJets[ eJumpJetType.WR ]  = TEAM_JUMPJET_WR
+	file.jumpJetFXData.friendlyJumpJets.regularJumpJets[ eJumpJetType.RT ]  = TEAM_JUMPJET_RT
+
+	file.jumpJetFXData.enemyJumpJets.stealthJumpJets[ eJumpJetType.ON ]  = STEALTH_PENEMY_JUMPJET_ON
+	file.jumpJetFXData.enemyJumpJets.stealthJumpJets[ eJumpJetType.DBL ] = STEALTH_PENEMY_JUMPJET_DBL
+	file.jumpJetFXData.enemyJumpJets.stealthJumpJets[ eJumpJetType.WR ]  = STEALTH_PENEMY_JUMPJET_WR
+	file.jumpJetFXData.enemyJumpJets.regularJumpJets[ eJumpJetType.ON ]  = PENEMY_JUMPJET_ON_SCOUT
+	file.jumpJetFXData.enemyJumpJets.regularJumpJets[ eJumpJetType.DBL ] = PENEMY_JUMPJET_DBL
+	file.jumpJetFXData.enemyJumpJets.regularJumpJets[ eJumpJetType.WR ]  = PENEMY_JUMPJET_WR_SCOUT
+	file.jumpJetFXData.enemyJumpJets.regularJumpJets[ eJumpJetType.RT ]  = PENEMY_JUMPJET_RT
+}
+
+int function GetJumpjetFXForPlayer( entity playerOrDecoy, int jumpjetType )
+{
+	if ( GetLocalViewPlayer() == null )
+		return 0
+
+	JumpJetDataStruct dataStruct = file.jumpJetFXData
+
+	JumpJetFXNamesStruct namesStruct = dataStruct.enemyJumpJets
+	if ( IsFriendlyTeam( playerOrDecoy.GetTeam(), GetLocalViewPlayer().GetTeam() ) )
+		namesStruct = dataStruct.friendlyJumpJets
+
+	asset[ 4 ] names = namesStruct.regularJumpJets
+	if ( ShouldDoStealthJumpJetFX( playerOrDecoy ) ) //Has to be here as opposed to in SetupPlayerAnimEvent because playerOrDecoys can switch classes/get the Stealth Movement Mod mid game
+		names = namesStruct.stealthJumpJets
+
+	asset fxString = names[ jumpjetType ]
+
+	int fxID = GetParticleSystemIndex( fxString ) //If there's no particle system associated with it, it'll return 0. Dealt with in PlayJumpJetFX
+
+	return fxID
+}
+
+bool function ShouldDoStealthJumpJetFX( entity playerOrDecoy )
+{
+	if ( playerOrDecoy.IsPlayerDecoy() )
+		return playerOrDecoy.decoy.decoyHasStealthPassive
+
+	return PlayerHasStealthMovement( playerOrDecoy )
+}
+
+array<int> function PlayJumpjetFX( entity playerOrDecoy, int jumpjetType, array<string> attachments )
+{
+	if ( !ShouldDoJumpjetEffects( playerOrDecoy ) )
+		return []
+
+	int fxID = GetJumpjetFXForPlayer( playerOrDecoy, jumpjetType )
+
+	if ( fxID == 0 )
+		return []
+
+	array<int> particleEffects
+	foreach ( attachment in attachments )
+	{
+		int jumpJet = StartParticleEffectOnEntity( playerOrDecoy, fxID, FX_PATTACH_POINT_FOLLOW, playerOrDecoy.LookupAttachment( attachment ) )
+		//if ( jumpjetType != 1 )
+		//	printt( "jumpjet start " + jumpJet + " " + fxID + " " + attachment + " " + jumpjetType )
+		particleEffects.append( jumpJet )
+	}
+
+	return particleEffects
+}
+
+int function PlayJumpjetLight( entity playerOrDecoy )
+{
+	if ( !ShouldDoJumpjetEffects( playerOrDecoy ) )
+		return 0
+
+	int fxID = GetJumpjetFXForPlayer( playerOrDecoy, eJumpJetType.RT )
+
+	if ( fxID == 0 )
+		return 0
+
+	return StartParticleEffectOnEntity( playerOrDecoy, fxID, FX_PATTACH_POINT_FOLLOW, playerOrDecoy.LookupAttachment( file.jumpJetFXData.rt_light_attachment ) )
+}
+
+void function SetupPlayerJumpJetAnimEvents( entity playerOrDecoy )
+{
+	AddAnimEvent( playerOrDecoy, "HMN_Jump_Jet", OnHumanJumpJet )
+	AddAnimEvent( playerOrDecoy, "HMN_Jump_Jet_Left", OnHumanJumpJetLeft )
+	AddAnimEvent( playerOrDecoy, "HMN_Jump_Jet_Right", OnHumanJumpJetRight )
+	AddAnimEvent( playerOrDecoy, "HMN_Jump_Jet_DBL", OnHumanJumpJetDBL )
+	AddAnimEvent( playerOrDecoy, "HMN_Jump_Jet_WallRun_Left", OnHumanJumpJetWallRun_Left )
+	AddAnimEvent( playerOrDecoy, "HMN_Jump_Jet_WallRun_Right", OnHumanJumpJetWallRun_Right )
+	AddAnimEvent( playerOrDecoy, "HMN_Melee", OnHumanMeleeTrails )
+}
+
+void function OnHumanJumpJet( entity playerOrDecoy )
+{
+	array<int> particleEffects = PlayJumpjetFX( playerOrDecoy, eJumpJetType.ON, file.jumpJetFXData.attachments )
+	HandleFXCleanUp( playerOrDecoy, particleEffects, "eJumpJetType.ON" )
+}
+
+void function OnHumanJumpJetOneSide( entity playerOrDecoy, string attachment )
+{
+	array<int> particleEffects = PlayJumpjetFX( playerOrDecoy, eJumpJetType.ON, [ attachment ] )
+
+	if ( particleEffects.len() == 0 )
+		return
+
+	int lightFX = PlayJumpjetLight( playerOrDecoy )
+	if ( lightFX != 0 )
+	{
+		//printt( "jumpjet light start " + lightFX + " " + attachment + " " )
+		particleEffects.append( lightFX )
+	}
+
+	HandleFXCleanUp( playerOrDecoy, particleEffects, "eJumpJetType.ON" )
+}
+
+void function OnHumanJumpJetLeft( entity playerOrDecoy )
+{
+	OnHumanJumpJetOneSide( playerOrDecoy, "vent_left" )
+}
+
+void function OnHumanJumpJetRight( entity playerOrDecoy )
+{
+	OnHumanJumpJetOneSide( playerOrDecoy, "vent_right" )
+}
+
+void function OnHumanJumpJetDBL( entity playerOrDecoy )
+{
+	array<int> particleEffects = PlayJumpjetFX( playerOrDecoy, eJumpJetType.DBL, file.jumpJetFXData.attachments )
+
+	if ( particleEffects.len() > 0 )
+		HandleFXCleanUp( playerOrDecoy, particleEffects, "eJumpJetType.DBL" )
+}
+
+void function OnHumanJumpJetWallRun_Left( entity playerOrDecoy )
+{
+	array<int> particleEffects = PlayJumpjetFX( playerOrDecoy, eJumpJetType.WR, [ "vent_left_out" ] )
+
+	if ( particleEffects.len() > 0 )
+		HandleFXCleanUp( playerOrDecoy, particleEffects, "eJumpJetType.WR" )
+}
+
+void function OnHumanJumpJetWallRun_Right( entity playerOrDecoy )
+{
+	array<int> particleEffects = PlayJumpjetFX( playerOrDecoy, eJumpJetType.WR, [ "vent_right_out" ] )
+
+	if ( particleEffects.len() > 0 )
+		HandleFXCleanUp( playerOrDecoy, particleEffects, "eJumpJetType.WR" )
+}
+
+void function CleanUpJumpJetParticleEffect( entity player, array<int> particleEffects, string stopSignalName )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.Signal( stopSignalName ) //Kill previous thread. Ensures Jumpjet effects don't keep piling on to each other.
+	player.EndSignal( stopSignalName )
+
+	OnThreadEnd
+	(
+		function() : ( player, particleEffects /*, stopSignalName*/ )
+		{
+			bool playEndCap = !IsValid( player ) || !player.IsPhaseShifted()
+			foreach ( particle in particleEffects )
+			{
+				//string exists = ( EffectDoesExist( particle ) ? "exists" : "Not exists" )
+				//printt( "jumpjet stop " + particle + " " + stopSignalName + " " + exists )
+
+				if ( EffectDoesExist( particle ) )
+					EffectStop( particle, false, playEndCap )
+			}
+		}
+	)
+
+	if ( player.IsWallRunning() ) //When wallrunning player.IsOnGround() is true
+	{
+		for ( ;; ) //Bad since we are polling, but clWaitTillAnimDone() doesn't seem to work :/
+		{
+			WaitFrame()
+			if ( !player.IsWallRunning() || player.IsPhaseShifted() )
+				break
+		}
+	}
+	else
+	{
+		for ( ;; ) //Bad since we are polling, but clWaitTillAnimDone() doesn't seem to work :/
+		{
+			WaitFrame()
+			if ( player.IsOnGround() || (player.GetParent() != null) || player.IsPhaseShifted() )
+				break
+		}
+	}
+}
+
+void function OnHumanMeleeTrails( entity player ) //Decoy doesn't melee, so not adding it for now
+{
+	int fxID
+	if ( IsFriendlyTeam( player.GetTeam(), GetLocalViewPlayer().GetTeam() ) )
+		fxID = GetParticleSystemIndex( $"P_team_jump_jet_ON_trails" )
+	else
+		fxID = GetParticleSystemIndex( $"P_enemy_jump_jet_ON_trails" )
+
+	array<int> particleEffects = []
+	foreach ( attachment in file.jumpJetFXData.attachments )
+	{
+		int jumpJet = StartParticleEffectOnEntity( player, fxID, FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( attachment ) )
+		particleEffects.append( jumpJet )
+	}
+
+	thread CleanUpMeleeTrails( player, particleEffects )
+}
+
+void function CleanUpMeleeTrails( entity player, array<int> particleEffects )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
+	OnThreadEnd
+	(
+		function() : ( particleEffects )
+		{
+			foreach ( particle in particleEffects )
+			{
+				if ( EffectDoesExist( particle ) )
+					EffectStop( particle, false, true )
+			}
+		}
+	)
+
+	while ( player.Lunge_IsActive() )
+		WaitFrame()
+}
+
+bool function ShouldDoJumpjetEffects( entity playerOrDecoy )
+{
+	return false
+	/*
+	if ( playerOrDecoy.IsPlayerDecoy() ) //Assume decoy can't ever be phase-shifted...
+		return true
+	entity player = playerOrDecoy
+
+	if ( player.IsPhaseShifted() )
+		return false
+
+	if ( player.IsClassModAvailableForPlayerSetting( string( player.GetPlayerSettings() ), "jumpkit_none" ) )
+	{
+		if ( player.HasClassMod( "jumpkit_none" ) )
+			return false
+	}
+
+	return true
+	*/
+}
+
+void function CleanUpDecoyFXHandles( entity decoy )
+{
+	foreach ( particleIndex in decoy.decoy.particleIndexes )
+	{
+		if ( EffectDoesExist( particleIndex ) )
+			EffectStop( particleIndex, false, true )
+	}
+
+	decoy.decoy.particleIndexes.clear()
+}
+
+void function CodeCallback_PlayerDecoyStateChange( entity decoy, int previousState, int currentState )
+{
+	//printt( "Current State: " + currentState + ", previous State: " + previousState )
+
+	if ( previousState == PLAYER_DECOY_STATE_NONE )
+	{
+		//printt( "Setting up player anim jump events for decoy: " + decoy )
+
+		//Essentially this is "OnPlayerDecoyCreate_Init"
+		SetupPlayerJumpJetAnimEvents( decoy )
+		entity bossPlayer = decoy.GetBossPlayer()
+		if ( IsValid( bossPlayer ) ) //Could theoretically be not valid when the bossPlayer disconnects as another player connects in. In that case the decoy takes some time to clean up as it does the dissolve effect. Also the decoy by default has stealthpassive set to false anyway.
+			decoy.decoy.decoyHasStealthPassive = PlayerHasStealthMovement( bossPlayer )
+	}
+	else if ( currentState != PLAYER_DECOY_STATE_AIRBORNE )
+	{
+		CleanUpDecoyFXHandles( decoy )
+	}
+}
+
+void function HandleFXCleanUp( entity playerOrDecoy, array<int> particleEffects, string stopSignalName )
+{
+	if ( particleEffects.len() == 0 )
+		return
+
+	if ( playerOrDecoy.IsPlayer() ) //Players use a polling thread ( bad ), decoys use the CodeCallback_PlayerDecoyStateChange to clean it up
+		thread CleanUpJumpJetParticleEffect( playerOrDecoy, particleEffects, stopSignalName )
+	else
+		playerOrDecoy.decoy.particleIndexes.extend( particleEffects )
+}
+
+JumpJetDataStruct function GetJumpJetFXData()
+{
+	return file.jumpJetFXData
+}
+
+/*Player decoy states: defined in player_decoy_shared.h
+	PLAYER_DECOY_STATE_NONE,
+	PLAYER_DECOY_STATE_IDLE,
+	PLAYER_DECOY_STATE_CROUCH_IDLE,
+	PLAYER_DECOY_STATE_CROUCH_WALK,
+	PLAYER_DECOY_STATE_WALLHANG,
+	PLAYER_DECOY_STATE_AIRBORNE,
+	PLAYER_DECOY_STATE_WALK,
+	PLAYER_DECOY_STATE_RUN,
+	PLAYER_DECOY_STATE_SPRINT,
+	PLAYER_DECOY_STATE_DYING,
+	PLAYER_DECOY_STATE_COUNT
+*/

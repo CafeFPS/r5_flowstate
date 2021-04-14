@@ -1,0 +1,574 @@
+// Info Cords (AKA Silver Cords)
+
+global function ShInfoCords_Init
+
+#if CLIENT
+global function ClInfoCords_DevToggle
+global function ClInfoCords_TestEffect
+global function ServerCallback_PROTO_OnInfoCordTargetFiredWeapon
+#endif
+
+///**/// begin bad stuff
+///**/#if SERVER
+///**/global function TEMPHACK_InfoCord_UpdateTeammateClientData
+///**/#endif
+///**/
+///**/#if CLIENT
+///**/global function ServerCallback_SURVIVAL_TEMPHACK_InfoCord_UpdateTeammateData
+///**/global function TEMPHACK_InfoCord_GetTeammateData
+///**/#endif
+///**/
+///**/global enum TEMPHACK_INFOCORD_TEAMMATE_CLIENT_DATA_ACTIVITY_STATES
+///**/{
+//	/**/Idle,
+//	/**/Healing,
+//	/**/BleedingOut,
+//	/**/BeingRevived,
+//	/**/Reviving
+//	/**/}
+///**/// end bad stuff (it will go before ship)
+
+
+#if CLIENT
+struct InfoCordTracerFxState
+{
+	vector startPos
+	vector dir
+	float  length
+	float  timeStarted
+	int    fxHandle
+}
+struct InfoCordState
+{
+	entity                       target
+	int                          fxHandle
+	int                          fxCurrentID = -1
+	array<InfoCordTracerFxState> activeTracerEffectList
+	int                          prevHealth
+	float                        timeLastDamaged
+	float                        timeLastFiredWeapon
+	bool                         isShowingDowned = false
+}
+
+global const asset INFO_CORD_FX_DEFAULT = $"P_SChord_default"
+global const asset INFO_CORD_FX_DOWNED = $"P_SChord_downed"
+global const int INFO_CORD_TRACER_LIMIT = 12
+#endif
+
+struct
+{
+	#if CLIENT
+		bool                         cordsEnabled = false
+		table<entity, InfoCordState> playerCordStateMap
+		bool                         isThinkRunning = false
+	#endif
+} file
+
+void function ShInfoCords_Init()
+{
+	#if SERVER
+		AddCallback_OnWeaponAttack( PROTO_OnWeaponAttack )
+	#endif
+
+	#if CLIENT
+		RegisterSignal( "HaltInfoCord" )
+
+		PrecacheParticleSystem( INFO_CORD_FX_DEFAULT )
+		PrecacheParticleSystem( INFO_CORD_FX_DOWNED )
+
+		AddCallback_OnPlayerChangedTeam( OnPlayerChangedTeam )
+		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+		//AddCallback_OnPlayerDisconnected( OnPlayerDisconnected )
+	#endif
+}
+
+#if SERVER
+void function PROTO_OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
+{
+	foreach( entity ally in GetPlayerArrayOfTeam( player.GetTeam() ) )
+	{
+		Remote_CallFunction_NonReplay( ally, "ServerCallback_PROTO_OnInfoCordTargetFiredWeapon", player )
+	}
+}
+#endif
+
+#if CLIENT
+void function EntitiesDidLoad()
+{
+	//
+}
+
+void function ClInfoCords_DevToggle()
+{
+	file.cordsEnabled = !file.cordsEnabled
+	ReconcilePlayerCords()
+}
+
+void function ClInfoCords_TestEffect( float tracerLength )
+{
+	foreach( entity target, InfoCordState state in file.playerCordStateMap )
+	{
+		InfoCordTracerFxState tracerFxState
+		tracerFxState.timeStarted = Time()
+
+		float cordWidth      = 2.3
+		float middleYFrac    = RandomFloatRange( -0.5, 0.5 )
+		float point0YFracMin = GraphCapped( middleYFrac, -0.5, 0.5, 0.0, -1.2 )
+		float point0YFracMax = GraphCapped( middleYFrac, -0.5, 0.5, 1.2, 0.0 )
+		float point0YFrac    = RandomFloatRange( point0YFracMin, point0YFracMax )
+		float point1YFrac    = middleYFrac + 1.2 * (middleYFrac - point0YFrac)
+
+		float point0X             = RandomFloatRange( 14.0, 17.0 )
+		vector pointOnTracerLine0 = <point0X, point0YFrac * cordWidth, 2.0>
+		vector pointOnTracerLine1 = <1.0, point1YFrac * cordWidth, 1.0>
+		vector dir                = Normalize( pointOnTracerLine1 - pointOnTracerLine0 )
+
+		vector midPos   = <1.0, middleYFrac * cordWidth, 1.5>
+		vector startPos = midPos - dir * tracerLength * 0.7
+
+		//printt( startYFrac, middleYFrac, endYFrac, startPos, anotherPointOnTracerLine )
+		//printt( middleYFrac - startYFrac, endYFrac - middleYFrac )
+
+		tracerFxState.startPos = startPos
+		tracerFxState.dir = dir
+		tracerFxState.length = tracerLength
+
+		tracerFxState.fxHandle = StartParticleEffectInWorldWithHandle( PrecacheParticleSystem( $"P_SChord_takingFire" ), <0, 0, 0>, <0, 0, 0> )
+
+		state.activeTracerEffectList.append( tracerFxState )
+	}
+}
+
+void function OnPlayerChangedTeam( entity player, int oldTeam, int newTeam )
+{
+	entity localPlayer = GetLocalViewPlayer()
+	if ( player == localPlayer || oldTeam == localPlayer.GetTeam() || newTeam == localPlayer.GetTeam() )
+	{
+		ReconcilePlayerCords()
+	}
+}
+
+void function ReconcilePlayerCords()
+{
+	entity localPlayer = GetLocalViewPlayer()
+	// This needs to handle the case where we change team too
+	foreach( entity target in GetPlayerArrayOfTeam( TEAM_ANY ) )
+	{
+		bool isSameTeam = (target.GetTeam() == localPlayer.GetTeam())
+		bool shouldShow = file.cordsEnabled && isSameTeam && target != localPlayer
+		if ( target in file.playerCordStateMap )
+		{
+			if ( !shouldShow )
+			{
+				StopCordOnEntity( target )
+			}
+		}
+		else if ( shouldShow )
+		{
+			StartCordOnEntity( target )
+		}
+	}
+}
+
+void function StartCordOnEntity( entity target )
+{
+	entity localPlayer = GetLocalViewPlayer()
+
+
+	InfoCordState state
+	state.target = target
+	state.prevHealth = target.GetHealth()
+	state.timeLastDamaged = -9999.0
+	state.fxHandle = -1
+
+	file.playerCordStateMap[target] <- state
+
+	thread WatchInfoCordTargetExistence( target )
+
+	if ( !file.isThinkRunning )
+	{
+		thread InfoCordsThink()
+	}
+}
+
+void function StopCordOnEntity( entity target )
+{
+	target.Signal( "HaltInfoCord" )
+}
+
+void function WatchInfoCordTargetExistence( entity target )
+{
+	target.EndSignal( "OnDestroy" )
+	target.EndSignal( "HaltInfoCord" )
+
+	OnThreadEnd( function() : ( target ) {
+		InfoCordState state = file.playerCordStateMap[target]
+
+		if ( state.fxCurrentID != -1 )
+			EffectStop( state.fxHandle, false, true )
+
+		foreach( InfoCordTracerFxState tracerFxState in state.activeTracerEffectList )
+		{
+			if ( tracerFxState.fxHandle != -1 )
+				EffectStop( tracerFxState.fxHandle, false, true )
+		}
+
+		delete file.playerCordStateMap[target]
+	} )
+
+	WaitForever()
+}
+
+void function ServerCallback_PROTO_OnInfoCordTargetFiredWeapon( entity target )
+{
+	if ( target in file.playerCordStateMap )
+	{
+		InfoCordState state = file.playerCordStateMap[target]
+		state.timeLastFiredWeapon = Time()
+	}
+}
+
+void function InfoCordsThink()
+{
+	file.isThinkRunning = true
+	OnThreadEnd( function() : () {
+		file.isThinkRunning = false
+	} )
+
+	while( true )
+	{
+		if ( file.playerCordStateMap.len() == 0 )
+			return
+
+		vector camPos = GetFinalClientMainViewOrigin()
+		vector camAng = VectorToAngles( GetFinalClientMainViewDir() )
+
+		foreach( entity target, InfoCordState state in file.playerCordStateMap )
+		{
+			if ( target.GetHealth() != state.prevHealth )
+			{
+				if ( target.GetHealth() < state.prevHealth )
+				{
+					state.timeLastDamaged = Time()
+				}
+				state.prevHealth = target.GetHealth()
+			}
+
+			int desiredFxId = GetParticleSystemIndex( INFO_CORD_FX_DEFAULT )
+
+			if ( Bleedout_IsBleedingOut( target ) )
+			{
+				desiredFxId = GetParticleSystemIndex( INFO_CORD_FX_DOWNED )
+			}
+
+			if ( state.fxCurrentID != desiredFxId )
+			{
+				if ( state.fxCurrentID != -1 )
+				{
+					EffectStop( state.fxHandle, false, true )
+				}
+				state.fxHandle = StartParticleEffectInWorldWithHandle( desiredFxId, <0, 0, 0>, <0, 0, 0> )
+				state.fxCurrentID = desiredFxId
+			}
+
+			if ( !EffectDoesExist( state.fxHandle ) )
+			{
+				state.fxHandle = -1
+				state.fxCurrentID = -1
+			}
+
+			vector targetPos                  = target.GetWorldSpaceCenter()
+			InfoCordTargetCoords targetCoords = GetInfoCordTargetCoords( targetPos )
+			vector cordStartPos               = targetCoords.cordStartPos
+			vector cordStartToTargetDir       = Normalize( targetPos - cordStartPos )
+			//vector cordStartToTargetDirFlat = Normalize( < cordStartToTargetDir.x, cordStartToTargetDir.y, 0.0 > )
+			float targetDist                  = Distance( cordStartPos, targetPos )
+			vector cordEndPos                 = cordStartPos + cordStartToTargetDir * min( 25.0, targetDist )
+			vector cordDir                    = Normalize( cordEndPos - cordStartPos )
+			float targetViewYawOffsetDeg      = targetCoords.viewYawOffsetDeg
+
+			if ( state.fxHandle != -1 )
+			{
+				//// CP 0, pos = world pos of arrow on compass, ang = bendiness control
+				vector cp0pos = cordStartPos
+				vector cp0ang = VectorToAngles( RotateVector( -cordDir, <0, 1.3 * targetViewYawOffsetDeg, 0> ) )
+
+				//// CP 1, pos = RGB, ang = ???
+				vector defaultCol     = <255, 255, 255> // white by default
+				vector firedFadeCol   = ColorFlash(
+					defaultCol, <255, 255, 0>, <180, 180, 30>, Time() - state.timeLastFiredWeapon, 0.0, 0.16, 0.3, 0.1
+				)
+				vector damagedFadeCol = ColorFlash(
+					firedFadeCol, <255, 0, 30>, <170, 0, 20>, Time() - state.timeLastDamaged, 0.0, 0.16, 0.3, 0.1
+				)
+				vector cp1pos         = damagedFadeCol
+				vector cp1ang         = <0, 0, 0>
+
+				//// CP 2, pos = target world pos, ang = ???
+				vector cp2pos = cordEndPos
+				vector cp2ang = <0, 0, 0>
+
+				// These will also draw a debug axis (comment out line 305 (DebugDrawAxis) to remove it, Robot)
+				__SetFXControlPointDebug( state.fxHandle, 0, cp0pos, cp0ang )
+				__SetFXControlPointDebug( state.fxHandle, 1, cp1pos, cp1ang )
+				__SetFXControlPointDebug( state.fxHandle, 2, cp2pos, cp2ang )
+
+				//DebugScreenText( 0.01, 0.5, "" + targetViewYawOffsetDeg )
+
+				//float haha = 0.08
+				//DebugDrawLine( cordStartPos - 2 * haha * AnglesToRight( camAng ), cordEndPos - 0.1 * AnglesToRight( camAng ), col.x, col.y, col.z, true, 0.01 )
+				//DebugDrawLine( cordStartPos - 1 * haha * AnglesToRight( camAng ), cordEndPos - 1 * haha * AnglesToRight( camAng ), col.x, col.y, col.z, true, 0.01 )
+				//DebugDrawLine( cordStartPos + 1 * haha * AnglesToRight( camAng ), cordEndPos + 1 * haha * AnglesToRight( camAng ), col.x, col.y, col.z, true, 0.01 )
+				//DebugDrawLine( cordStartPos + 2 * haha * AnglesToRight( camAng ), cordEndPos + 1 * haha * AnglesToRight( camAng ), col.x, col.y, col.z, true, 0.01 )
+				//DebugDrawLine( cordStartPos - <0, 0, 2 * haha>, cordEndPos - <0, 0, 2 * haha>, col.x, col.y, col.z, true, 0.01 )
+				//DebugDrawLine( cordStartPos - <0, 0, 1 * haha>, cordEndPos - <0, 0, 1 * haha>, col.x, col.y, col.z, true, 0.01 )
+				//DebugDrawLine( cordStartPos, cordEndPos, 255, 255, 30, true, 0.01 )
+				//DebugDrawLine( cordStartPos + <0, 0, 1 * haha>, cordEndPos + <0, 0, 1 * haha>, col.x, col.y, col.z, true, 0.01 )
+				//DebugDrawLine( cordStartPos + <0, 0, 2 * haha>, cordEndPos + <0, 0, 2 * haha>, col.x, col.y, col.z, true, 0.01 )
+
+				//float targetDist     = Length( targetPos - cordStartPos )
+				//float distPerRing    = 380.0
+				//float ringGap        = 1.9
+				//vector ringCircleAng = VectorToAngles( FindAnyPerpendicularVector ( cordDir ) )
+				//float ringRadius     = 2.0
+				//for ( int ringI = 0; ringI * distPerRing < targetDist; ringI++ )
+				//{
+				//	vector ringPos = cordStartPos + cordDir * ringI * ringGap
+				//	DebugDrawCircle( ringPos, ringCircleAng, ringRadius * 0.9, 40, 90, 40, true, 0.01 )
+				//	DebugDrawCircle( ringPos, ringCircleAng, ringRadius * 1.0, 120, 255, 120, true, 0.01 )
+				//	DebugDrawCircle( ringPos, ringCircleAng, ringRadius * 1.1, 40, 90, 40, true, 0.01 )
+				//}
+			}
+
+			vector cordAng = VectorToAngles( cordDir )
+			for ( int tracerIndex = state.activeTracerEffectList.len() - 1; tracerIndex >= 0; tracerIndex-- )
+			{
+				InfoCordTracerFxState tracerFxState = state.activeTracerEffectList[tracerIndex]
+
+				if ( Time() > tracerFxState.timeStarted + 5.0 )
+				{
+					EffectStop( tracerFxState.fxHandle, false, true )
+					tracerFxState.fxHandle = -1
+				}
+
+				if ( tracerFxState.fxHandle != -1 && EffectDoesExist( tracerFxState.fxHandle ) )
+				{
+					float slideTime = 0.3
+					float frac      = GraphCapped( Time() - tracerFxState.timeStarted, 0.0, slideTime, 0.0, 1.0 )
+					float length    = frac * tracerFxState.length
+					vector startPos = tracerFxState.startPos
+					vector endPos   = tracerFxState.startPos + length * tracerFxState.dir
+
+					__SetFXControlPoint( tracerFxState.fxHandle, 2, cordStartPos + RotateVector( startPos, cordAng ), <0, 0, 0> )
+					__SetFXControlPoint( tracerFxState.fxHandle, 0, cordStartPos + RotateVector( endPos, cordAng ), <0, 0, 0> )
+				}
+				else
+				{
+					state.activeTracerEffectList.fastremove( tracerIndex )
+				}
+			}
+		}
+		WaitFrame()
+	}
+}
+
+void function __SetFXControlPoint( int fxHandle, int cpNum, vector pos, vector ang )
+{
+	EffectSetControlPointVector( fxHandle, cpNum, pos )
+	EffectSetControlPointAngles( fxHandle, cpNum, ang )
+}
+
+void function __SetFXControlPointDebug( int fxHandle, int cpNum, vector pos, vector ang )
+{
+	//DebugDrawAxis( pos, ang, 0.1, 5.2 )
+	EffectSetControlPointVector( fxHandle, cpNum, pos )
+	EffectSetControlPointAngles( fxHandle, cpNum, ang )
+}
+
+vector function ColorFlash( vector baseCol, vector peakCol, vector sustainCol, float time, float attackDuration, float decayDuration, float sustainDuration, float releaseDuration )
+{
+	if ( time < 0.0 )
+		return baseCol
+
+	if ( time < attackDuration )
+	{
+		return LerpVector( baseCol, peakCol, time / attackDuration )
+	}
+	time -= attackDuration
+
+	if ( time < decayDuration )
+	{
+		return LerpVector( peakCol, sustainCol, time / decayDuration )
+	}
+	time -= decayDuration
+
+	if ( time < sustainDuration )
+	{
+		return sustainCol
+	}
+	time -= sustainDuration
+
+	if ( time < releaseDuration )
+	{
+		return LerpVector( sustainCol, baseCol, time / releaseDuration )
+	}
+
+	return baseCol
+}
+
+vector function GetFinalClientMainViewDir()
+{
+	// todo(dw): remove this function
+	if ( !IsInOverviewMode() )
+	{
+		UISize uiScreenSize = GetScreenSize()
+		return GetWorldDirectionFor2DPoint( uiScreenSize.width / 2, uiScreenSize.height / 2 )
+	}
+	return <0.0, 0.0, 0.0>
+}
+struct InfoCordTargetCoords
+{
+	vector cordStartPos
+	float  viewYawOffsetDeg
+}
+InfoCordTargetCoords function GetInfoCordTargetCoords( vector targetPos )
+{
+	vector survivalCompassOffset   = <50, 0, -33>
+	vector survivalCompassRotation = <0, 0, 0>
+	float survivalCompassSize      = 49.0
+	float cordStartRadiusFrac      = 0.8
+	float cordStartYawClamp        = 0.41 * PI
+
+	//vector camPos         = GetLocalViewPlayer().EyePosition()
+	//vector camAng         = GetLocalViewPlayer().EyeAngles()
+	vector camPos = GetFinalClientMainViewOrigin()
+	vector camDir = GetFinalClientMainViewDir()
+	vector camAng = VectorToAngles( camDir )
+
+	vector survivalCompassOrigin   = camPos + RotateVector( survivalCompassOffset, camAng )
+	vector camToTarget             = targetPos - camPos//survivalCompassOrigin
+	vector camToTargetDir          = Normalize( camToTarget )
+	vector camSpace_targetDir      = RotateVector( camToTargetDir, AnglesInverse( camAng ) )
+	float camSpace_targetDirYawRad = RadWrap( DEG_TO_RAD * VectorToAngles( camSpace_targetDir ).y, -PI )
+
+	//DebugScreenText( 0.01, 0.5, "" + camSpace_targetDirYawRad )
+
+	float cordStartYaw  = Clamp( camSpace_targetDirYawRad, -cordStartYawClamp, cordStartYawClamp )
+	vector compass2DPos = survivalCompassSize / 2.0 * cordStartRadiusFrac * < -sin( cordStartYaw ), cos( cordStartYaw ), 0.0 >
+	vector compass3DPos = RotateVector( RotateVector( <0, -compass2DPos.x, compass2DPos.y>, survivalCompassRotation ), camAng )
+
+	vector cordStartPos = survivalCompassOrigin + compass3DPos
+
+	//DebugDrawLine( cordStartPos, cordStartPos + <0, 0, 10>, 255, 10, 10, true, 0.01 )
+
+	//DebugDrawLine( survivalCompassOrigin, survivalCompassOrigin + <0, 0, 10>, 255, 10, 10, true, 0.01 )
+	InfoCordTargetCoords result
+	result.cordStartPos = cordStartPos
+	result.viewYawOffsetDeg = RAD_TO_DEG * camSpace_targetDirYawRad
+	return result
+
+
+
+	//// todo(dw): get world position from RUI element
+	//
+	//float ellipseHalfHeight = 171.36
+	//float ellipseHalfWidth  = 306.0
+	//float ellipseLift       = 22.0
+	//UISize uiScreenSize     = GetScreenSize()
+	//vector screenSize       = < float( uiScreenSize.width ), float( uiScreenSize.height ), 0.0 >
+	//
+	//float ellipseAng = DegToRad( camSpace_targetDirYaw )
+	//vector screenPos = < screenSize.x / 2.0, screenSize.y - ellipseLift, 0.0 > + < ellipseHalfWidth * cos( ellipseAng ), ellipseHalfHeight * sin( ellipseAng ), 0.0 >
+	//
+	//vector dir    = GetWorldDirectionFor2DPoint( int( screenPos.x ), int( screenPos.y ) )
+	//vector vertex = camPos + dir * 40.0
+	//return vertex
+}
+#endif
+
+
+//
+//
+//
+//
+//
+//
+// everything below this line is terrible and will go before ship
+//
+//
+//
+//
+//
+//
+//
+//const table<string, int> TEMPHACK_infoCordClientDataKeyIndices = {
+//	// not sure if there's a way to dynamically access enums by their string key -- not that it matters as this is just temporary
+//	maxShieldRegenAmount = 0,
+//	abilityCharge = 1,
+//	ultimateCharge = 2,
+//	healthpackSmallCount = 3,
+//	healthpackLargeCount = 4,
+//	jumpkitState = 5,
+//	activityId = 6,
+//	activityEndTime = 7,
+//}
+//
+//#if SERVER
+//void function TEMPHACK_InfoCord_UpdateTeammateClientData( entity player, string key, float data )
+//{
+//	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
+//	{
+//		if ( true || teamMember != player )
+//		{
+//			string wat = string( data )
+//			Remote_CallFunction_NonReplay(
+//				teamMember, "ServerCallback_SURVIVAL_TEMPHACK_InfoCord_UpdateTeammateData",
+//				player.GetEntIndex(), TEMPHACK_infoCordClientDataKeyIndices[key], data
+//			)
+//		}
+//	}
+//}
+//#endif
+//
+//#if CLIENT
+//table< entity, table< int, float > > TEMPHACK_teamMemberClientData
+//
+//void function ServerCallback_SURVIVAL_TEMPHACK_InfoCord_UpdateTeammateData( int teamMemberEntIndex, string key, float data )
+//{
+//	entity teamMember
+//	foreach ( friendlyPlayer in GetPlayerArrayOfTeam_Alive( GetLocalViewPlayer().GetTeam() ) )
+//	{
+//		if ( friendlyPlayer.GetEntIndex() == teamMemberEntIndex )
+//		{
+//			teamMember = friendlyPlayer
+//			break
+//		}
+//	}
+//	if ( teamMember == null )
+//	{
+//		return // the team member may have disconnected
+//	}
+//
+//	//printt( "ServerCallback_SURVIVAL_TEMPHACK_INFOCORD_UPDATE_TEAMMATE_CLIENT_DATA", teamMember, key, type(data), data )
+//
+//	if ( !(teamMember in TEMPHACK_teamMemberClientData) )
+//	{
+//		TEMPHACK_teamMemberClientData[teamMember] <- {}
+//	}
+//	TEMPHACK_teamMemberClientData[teamMember][key] <- data
+//}
+//
+//float function TEMPHACK_InfoCord_GetTeammateData( entity teamMember, string key, float defaultVal )
+//{
+//	int keyIndex = TEMPHACK_infoCordClientDataKeyIndices[key]
+//	if ( teamMember in TEMPHACK_teamMemberClientData && keyIndex in TEMPHACK_teamMemberClientData[teamMember] )
+//	{
+//		return TEMPHACK_teamMemberClientData[teamMember][keyIndex]
+//	}
+//	return defaultVal
+//}
+//#endif
+//
+//
+
+

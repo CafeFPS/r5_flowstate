@@ -1,0 +1,25 @@
+// Read by code, which generates the enum for script.
+// Weapons that do not specify an cooldown type will be assigned the first type.
+//enum eWeaponCooldownType
+//{
+/////////////////////////////
+
+	ammo
+	ammo_instant
+	ammo_deployed
+	ammo_timed
+	ammo_swordblock
+	ammo_per_shot
+	ammo_alert
+	chargeFrac
+	grapple
+	shared_energy
+	shared_energy_drain
+	vortex_drain
+	charged_shot
+	smart
+	debug
+
+	_count
+/////////////////////////////
+//}

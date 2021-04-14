@@ -1,0 +1,38 @@
+global function ClientSidePickups_Init
+
+#if CLIENT
+global function ClientCodeCallback_OnClientSideItemPickup
+#endif // CLIENT
+
+#if SERVER
+global function CodeCallback_ClaimClientSidePickup
+#endif // SERVER
+
+
+global enum eCSPU
+{
+	_count
+}
+
+void function ClientSidePickups_Init()
+{
+	const asset INVISIBLE_GRENADE_MDL = $"mdl/weapons/grenades/invisible_grenade_projectile.rmdl"
+}
+
+
+#if CLIENT
+void function ClientCodeCallback_OnClientSideItemPickup( int pickupType, int CSPUFLAGflags, int customFlags )
+{
+	entity player = GetLocalViewPlayer()
+	if ( !IsValid( player ) || !IsLocalClientPlayer( player ) )
+		return
+}
+#endif // CLIENT
+
+
+#if SERVER
+void function CodeCallback_ClaimClientSidePickup( entity player, int pickupType, int CSPUFLAGflags, int customFlags, int recieptID )
+{
+}
+#endif // SERVER
+

@@ -1,0 +1,43 @@
+ImpactTable
+{
+	FX
+	{
+		"C" "skit_blood_decal_LG"
+		"D" "skit_blood_decal_LG"
+		"E" "skit_blood_decal_LG"
+		"F" "skit_blood_decal_LG"
+		"G" "skit_blood_decal_LG"
+		"H" "skit_blood_decal_LG"
+		"J" "skit_blood_decal_LG"
+		"K" "skit_blood_decal_LG"
+		"L" "skit_blood_decal_LG"
+		"M" "skit_blood_decal_LG"
+		"N" "skit_blood_decal_LG"
+		"O" "skit_blood_decal_LG"
+		"P" "skit_blood_decal_LG"
+		"R" "skit_blood_decal_LG"
+		//"S" "skit_blood_decal_LG" // water
+		"T" "skit_blood_decal_LG"
+		//"U" "skit_blood_decal_LG" // breakable glass
+		"V" "skit_blood_decal_LG"
+		"W" "skit_blood_decal_LG"
+		"Y" "skit_blood_decal_LG"
+		"0" "skit_blood_decal_LG"
+		"1" "skit_blood_decal_LG"
+		"2" "skit_blood_decal_LG"
+		"3" "skit_blood_decal_LG"
+		"4" "skit_blood_decal_LG"
+		"5" "skit_blood_decal_LG"
+		"6" "skit_blood_decal_LG"
+		"7" "skit_blood_decal_LG"
+		"8" "skit_blood_decal_LG"
+		"9" "skit_blood_decal_LG"
+
+		//"splash" "impact_alienflesh"
+		//"slime_splash" "impact_alienflesh"
+		//"critical_hit" "impact_alienflesh"
+	}
+}
+
+//skit_blood_decal_LG
+//impact_alienflesh

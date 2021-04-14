@@ -1,0 +1,54 @@
+redeye_turret
+{
+    DriverAttachment                ATTACH                  // Where player's eyes (and body for now) will be located when used (default = "")
+    MuzzleAttachment                MUZZLE_LEFT             // Guns will fire out of this attachment (default = "")
+    AltMuzzleAttachment             MUZZLE_RIGHT            // If specified, guns will alternate firing between this attachment too (default = "")
+
+    AmmoType                        Pistol                  // Type of ammo used when firing
+
+    YawPoseParameter                aim_yaw                 // Animation pose parameter to set when rotating turret horizontally
+    PitchPoseParameter              aim_pitch               // Animation pose parameter to set when rotating turret vertically
+
+    // Damage properties from firing
+    DamageNear                      500
+    DamageFar                       500
+    DamageNearDistance              0
+    DamageFarDistance               1000
+
+    AttackSound                     redeye.turret_fire    // Sound to play when firing
+    MuzzleFlashEffect               wpn_muzzleflash_redeye_turret      // Effect to play (on muzzle) when firing
+    TracerType                      AR2Tracer               // Type of tracer to use when firing
+	Crosshair						crosshair_1				// Texture to use for crosshair
+
+    ViewPunchPitchMin               -1.1                    // Lower range of how much view shakes vertically when fired
+    ViewPunchPitchMax               1.1                     // Upper range of how much view shakes vertically when fired
+    ViewPunchYawMin                 -1                      // Lower range of how much view shakes horizontally when fired
+    ViewPunchYawMax                 1                       // Upper range of how much view shakes horizontally when fired
+
+	Rumble							6						// Rumble effect to play on controller when fired
+
+    CanUse                          0                       // Whether player can mount turret with +use key
+    MakeSolid                       1                       // Used to set model collision (0 = no collision, 1 = AABB collision, 2 = use VPhysics, default = 0). You need collision if you want to make it usable with +use (use key)
+    HidePlayer                      1                       // Hides player (calls script hide) when player mounts turret
+    ForceAttackForward              1                       // Force firing to always be in direction player is looking, rather than using muzzle attachment's direction/rotation
+	AttackDownDriverDir				1						// Fire down the driver attachment direction, rather than the turret's direction.
+
+	AttachPlayer					0						// Whether to physically attach player to driver attachment position
+	AlignPlayer						1						// When enabled, player will not snap to the turret's initial absolute rotation
+
+    MouseSensitivityModifierX       0.75                    // Used to dampen mouse sensitivity horizontally
+    MouseSensitivityModifierY       0.75                    // Used to dampen mouse sensitivity vertically
+
+    MouseMaxMovementRateX           7500                    // Used to put an upper limit on mouse movement horizontally
+    MouseMaxMovementRateY           7500                    // Used to put an upper limit on mouse movement vertically
+
+    JoystickSensitivityModifierX    0.75                    // Used to dampen joystick sensitivity horizontally
+    JoystickSensitivityModifierY    0.6                     // Used to dampen joystick sensitivity vertically
+
+    JoystickMaxMovementRateX        50                      // Used to put an upper limit on joystick movement horizontally
+    JoystickMaxMovementRateY        50                      // Used to put an upper limit on joystick movement vertically
+
+    AttackRate                      15                      // How many times gun fires per second
+	AttackShots						2						// Number of bullets fired per shot
+	AttackSpread					2						// Spread to apply to aim direction (0 for 100% accuracy)
+}

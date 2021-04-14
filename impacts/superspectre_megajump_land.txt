@@ -1,0 +1,56 @@
+// "Gamematerial" "effect_name"
+
+// "B" bloodyflesh
+// "X" plastic box, wade, ladder, woodladdder,
+// "I" player_control_clip
+
+ImpactTable
+{
+	FX
+	{
+		"C" "P_sup_spec_land_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_sup_spec_land_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_sup_spec_land_metal" // metal_titan
+
+		"F" "P_sup_spec_land_metal" //flesh
+		"G" "P_sup_spec_land_metal" //metalgrate, chainlink, chain
+		"H" "P_sup_spec_land_metal" //alienflesh
+
+		"J" "P_sup_spec_land_dirt" //grass
+		"K" "P_sup_spec_land_mud" //Mud
+		"L" "P_sup_spec_land_metal" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_sup_spec_land_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_sup_spec_land_metal"
+		"O" "P_sup_spec_land_dirt" //Foliage
+		"P" "P_sup_spec_land_metal" //Computer
+
+		"R" "P_sup_spec_land_metal" //metalpanel, grenade, canister
+		"S" "P_sup_spec_land_water" //water, slime
+		"T" "P_sup_spec_land_concrete" //tile
+		"U" "P_sup_spec_land_metal" //glass_breakble
+
+		"V" "P_sup_spec_land_metal" //Metal Vent
+		"W" "P_sup_spec_land_metal" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "P_sup_spec_land_metal" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_sup_spec_land_sand"  //sand
+
+		"0" "P_sup_spec_land_metal"
+		"1" "P_sup_spec_land_metal"
+		"2" "P_sup_spec_land_metal"
+		"3" "P_sup_spec_land_metal"
+		"4" "P_sup_spec_land_metal"
+		"5" "P_sup_spec_land_metal"
+		"6" "P_sup_spec_land_metal"
+		"7" "P_sup_spec_land_metal"
+		"8" "P_sup_spec_land_metal"
+		"9" "P_sup_spec_land_metal" //puddle
+
+		"splash" "P_sup_spec_land_water"
+		"slime_splash" "P_sup_spec_land_water"
+
+		"airburst" ""
+		"critical_hit" "P_sup_spec_land_metal"
+	}
+}
+

@@ -1,0 +1,300 @@
+
+untyped
+
+global function ClIndicatorsHud_Init
+
+global function OutOfBoundsOverlayHUD_AddPlayer
+global function OutOfBoundsDeadTime_Changed
+global function ServerCallback_UpdateOverheadIconForNPC
+
+global function SetShouldShowFriendIcon
+global function TurnOffAllFriendIcons
+
+
+const vector DEATH_ICON_OFFSET = <0,0,16>
+
+const asset OVERHEAD_ICON_AI_FRIENDLY = $"overhead_icon_ai_friendly"
+
+struct
+{
+	int nextFreeDeathIcon
+	int nextFreeEnemyDeathIcon
+
+	bool shouldShowFriendIcon = true
+} file
+
+void function ClIndicatorsHud_Init()
+{
+	AddCreateCallback( "npc_spectre", FriendIconAddEntity )
+	AddCreateCallback( "npc_soldier", FriendIconAddEntity )
+	AddCreateCallback( "npc_dropship", FriendIconAddEntity )
+
+	PrecacheParticleSystem( OVERHEAD_ICON_AI_FRIENDLY )
+
+	RegisterSignal( "FriendIconAddEntity_Thread" )
+	RegisterSignal( "OutOfBoundsDeadTimeChanged" )
+
+	PrecacheHUDMaterial( $"vgui/hud/sram/sram_targeting_inner_ring" )
+	PrecacheHUDMaterial( $"vgui/hud/sram/sram_targeting_outer_ring" )
+	PrecacheHUDMaterial( $"vgui/hud/sram/sram_targeting_inner_ring_reverse_rotate" )
+	PrecacheHUDMaterial( $"vgui/hud/sram/sram_targeting_outer_ring_reverse_rotate" )
+
+	AddLocalPlayerFunc( OutOfBoundsOverlayHUD_AddPlayer )
+	AddCallback_KillReplayEnded( DeactivateOutOfBoundsIndicator )
+
+	//AddCallback_LocalClientPlayerSpawned( DeathIcon_LocalClientPlayerSpawned )
+	//AddOnDeathCallback( "player", DeathIcon_OnDeathCallback )
+}
+
+void function DeathIcon_LocalClientPlayerSpawned( entity player )
+{
+	if ( player.cv.roundSpawnCount > 1 && GetGameState() == eGameState.Playing )
+	{
+		vector pos = expect vector( player.cv.deathOrigin ) + DEATH_ICON_OFFSET
+		var rui = CreateCockpitRui( $"ui/death_icons.rpak", RuiCalculateDistanceSortKey( player.EyePosition(), pos ) )
+		//var rui = RuiCreate( $"ui/death_icons.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, int( -Distance( player.EyePosition(), pos ) ) )
+		RuiSetGameTime( rui, "startTime", Time() )
+		RuiSetFloat3( rui, "pos", pos )
+		RuiKeepSortKeyUpdated( rui, true, "pos" )
+		RuiSetFloat( rui, "sizeMin", 60.0 )
+		RuiSetImage( rui, "deathImage", $"rui/hud/death_icons/death_icon_self" )
+	}
+}
+
+void function DeathIcon_OnDeathCallback( entity player )
+{
+	entity localClientPlayer = GetLocalClientPlayer()
+
+	if ( !ShouldShowDeathIcon( localClientPlayer, player ) )
+		return
+
+	vector pos = player.GetOrigin() + DEATH_ICON_OFFSET
+	var rui = CreateCockpitRui( $"ui/death_icons.rpak", RuiCalculateDistanceSortKey( localClientPlayer.EyePosition(), pos ) )
+	//var rui = RuiCreate( $"ui/death_icons.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, int( -Distance( player.EyePosition(), pos ) ) )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetFloat3( rui, "pos", pos )
+	RuiKeepSortKeyUpdated( rui, true, "pos" )
+
+	asset icon = $"rui/hud/death_icons/death_icon_friendly"
+
+	if ( player == localClientPlayer )
+	{
+		RuiSetFloat( rui, "sizeMin", 60.0 )
+		icon = $"rui/hud/death_icons/death_icon_self"
+	}
+	else if ( player.GetTeam() != localClientPlayer.GetTeam() )
+	{
+		icon = $"rui/hud/death_icons/death_icon_enemy"
+	}
+	else
+	{
+		EmitSoundOnEntity( player, "UI_FriendlySpawn_Temp_2ch_V2_01" )
+	}
+
+	RuiSetImage( rui, "deathImage", icon )
+}
+
+bool function ShouldShowDeathIcon( entity localPlayer, entity otherPlayer )
+{
+	if ( !GamePlayingOrSuddenDeath() )
+		return false
+
+	if ( IsWatchingReplay() )
+		return false
+
+	if ( localPlayer == otherPlayer )
+		return false
+
+	if ( localPlayer.GetTeam() != otherPlayer.GetTeam() )
+		return false
+
+	return true
+}
+
+void function ServerCallback_UpdateOverheadIconForNPC( int guyEhandle )
+{
+	entity player = GetLocalViewPlayer()
+	entity guy = GetEntityFromEncodedEHandle( guyEhandle )
+	if ( !IsAlive( guy ) )
+		return
+
+	thread FriendIconAddEntity_Thread( guy )
+}
+
+void function FriendIconAddEntity( entity ent )
+{
+	ent.s.fxHandle <- null
+	thread FriendIconAddEntity_Thread( ent )
+}
+
+void function FriendIconAddEntity_Thread( entity ent )
+{
+	if ( !file.shouldShowFriendIcon )
+		return
+
+	ent.Signal( "FriendIconAddEntity_Thread" )
+	ent.EndSignal( "FriendIconAddEntity_Thread" )
+	ent.EndSignal( "OnDestroy" )
+
+	WaitEndFrame() // returning from/entering kill replay seems to kill the effects too late in the frame?
+
+	if ( !IsAlive( ent ) )
+		return
+
+	entity player = GetLocalViewPlayer()
+
+	if ( ent.GetTeam() != player.GetTeam() )
+		return
+
+	int attachIdx = ent.LookupAttachment( "HEADSHOT" )
+
+	if ( attachIdx == 0 )
+		ent.s.fxHandle = StartParticleEffectOnEntity( ent, GetParticleSystemIndex( OVERHEAD_ICON_AI_FRIENDLY ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+	else
+		ent.s.fxHandle = StartParticleEffectOnEntity( ent, GetParticleSystemIndex( OVERHEAD_ICON_AI_FRIENDLY ), FX_PATTACH_POINT_FOLLOW, attachIdx )
+
+	OnThreadEnd(
+		function() : ( ent )
+		{
+			int fxHandle = expect int( ent.s.fxHandle )
+
+			if ( !EffectDoesExist( fxHandle ) )
+				return
+
+			EffectStop( fxHandle, false, true )
+		}
+	)
+
+	while ( IsAlive( ent ) )
+	{
+		// effects aren't playing in the correct position on parented entities sometimes
+		if ( ent.GetParent() )
+		{
+			if ( EffectDoesExist( ent.s.fxHandle ) )
+				EffectStop( ent.s.fxHandle, false, true )
+
+			if ( attachIdx == 0 )
+				ent.s.fxHandle = StartParticleEffectOnEntity( ent, GetParticleSystemIndex( OVERHEAD_ICON_AI_FRIENDLY ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+			else
+				ent.s.fxHandle = StartParticleEffectOnEntity( ent, GetParticleSystemIndex( OVERHEAD_ICON_AI_FRIENDLY ), FX_PATTACH_POINT_FOLLOW, attachIdx )
+		}
+
+		wait 1.0
+	}
+}
+
+void function SetShouldShowFriendIcon( bool value )
+{
+	file.shouldShowFriendIcon = value
+}
+
+void function TurnOffAllFriendIcons()
+{
+	array<entity> allNPCs = GetNPCArray()
+	foreach ( npc in allNPCs  )
+	{
+		npc.Signal( "FriendIconAddEntity_Thread" )
+	}
+
+	SetShouldShowFriendIcon( false )
+}
+
+void function OutOfBoundsOverlayHUD_AddPlayer( entity player )
+{
+	player.InitHudElem( "OutOfBoundsWarning_Anchor" )
+	player.InitHudElem( "OutOfBoundsWarning_Message" )
+	player.InitHudElem( "OutOfBoundsWarning_Timer" )
+
+	DeactivateOutOfBoundsIndicator()
+}
+
+void function OutOfBoundsDeadTime_Changed( entity player )
+{
+	if ( player != GetLocalViewPlayer() ) //Looks like there's lag to when GetLocalViewPlayer is set. WatchingKillReplay() can be false and LocalViewPlayer can be not equal to LocalClientPlayer
+	{
+		//printt( "IsWatchingKillReplay?" + IsWatchingReplay() )
+		//printt( "Returning because not local view player" )
+		return
+	}
+
+	if ( GetGameState() < eGameState.Playing )
+		return
+
+	player.Signal( "OutOfBoundsDeadTimeChanged" )
+
+	if ( player.GetOutOfBoundsDeadTime() == 0 )
+		thread DeactivateOutOfBoundsIndicator()
+	else if ( IsAlive( player ) )
+		thread ActivateOutOfBoundsIndicator()
+}
+
+void function DeactivateOutOfBoundsIndicator( )
+{
+	entity player = GetLocalViewPlayer()
+	StopSoundOnEntity( player, "Boundary_Warning_Loop" )
+
+	Hud_Hide( player.hudElems.OutOfBoundsWarning_Message )
+	Hud_ClearPulsate( player.hudElems.OutOfBoundsWarning_Message )
+
+	Hud_Hide( player.hudElems.OutOfBoundsWarning_Timer )
+	Hud_ClearPulsate( player.hudElems.OutOfBoundsWarning_Timer )
+
+	Hud_Hide( player.hudElems.OutOfBoundsWarning_Anchor )
+}
+
+void function ActivateOutOfBoundsIndicator()
+{
+	entity player = GetLocalViewPlayer()
+	EmitSoundOnEntity( player, "Boundary_Warning_Loop" )
+
+	Hud_Show( player.hudElems.OutOfBoundsWarning_Anchor )
+
+	Hud_Show( player.hudElems.OutOfBoundsWarning_Message )
+	Hud_SetPulsate( player.hudElems.OutOfBoundsWarning_Message, 0.5, 1.0, 10 )
+
+	Hud_Show( player.hudElems.OutOfBoundsWarning_Timer )
+	Hud_SetPulsate( player.hudElems.OutOfBoundsWarning_Timer, 0.5, 1.0, 10 )
+	Hud_SetAutoText( player.hudElems.OutOfBoundsWarning_Timer, "#HUDAUTOTEXT_PLAINCOUNTDOWNTIMEPRECISE", HATT_GAME_COUNTDOWN_SECONDS_MILLISECONDS, player.GetOutOfBoundsDeadTime() )
+
+	thread OutOfBoundsDeadTime_ColorChange( player, player.hudElems.OutOfBoundsWarning_Message, player.hudElems.OutOfBoundsWarning_Timer )
+
+	//Note: Currently looping sounds aren't stopped on entities that are detroyed in kill replay. Eric is going to fix this. Get rid of the below block once he does.
+	if ( IsWatchingReplay() ) //HACK. Need to do this because of kill replay stuff. This sound is played on the player who killed you if you're watching a kill replay. When kill replay ends, we have no way to get a handle to this player to stop the sound there.
+	{
+		player.EndSignal( "OnDestroy" )
+		OnThreadEnd(
+			function() : ( player )
+			{
+				StopSoundOnEntity( player, "Boundary_Warning_Loop" )
+			}
+		)
+
+		WaitForever()
+	}
+}
+
+void function OutOfBoundsDeadTime_ColorChange( entity player, elem1, elem2 )
+{
+	player.EndSignal( "OutOfBoundsDeadTimeChanged" )
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( elem1, elem2 )
+		{
+			elem1.SetColor( 255, 255, 0, 255 )
+			elem2.SetColor( 255, 255, 0, 255 )
+		}
+	)
+
+	//float timeLeft = max( 0, player.GetOutOfBoundsDeadTime() - Time() )
+
+	while ( IsValid( player ) )
+	{
+		elem1.ColorOverTime( 255, 0, 0, 255, 0.5 )
+		elem2.ColorOverTime( 255, 0, 0, 255, 0.5 )
+		wait 0.5
+		elem1.ColorOverTime( 255, 255, 0, 255, 0.5 )
+		elem2.ColorOverTime( 255, 255, 0, 255, 0.5 )
+		wait 0.5
+	}
+}

@@ -1,0 +1,257 @@
+globalize_all_functions
+
+const string PRIVATE_MATCH_PLAYLIST = "private_match"
+
+array<string> function GetPrivateMatchModes()
+{
+	array<string> modesArray
+
+	int numModes = GetPlaylistGamemodesCount( PRIVATE_MATCH_PLAYLIST )
+	for ( int modeIndex = 0; modeIndex < numModes; modeIndex++ )
+	{
+		modesArray.append( GetPlaylistGamemodeByIndex( PRIVATE_MATCH_PLAYLIST, modeIndex ) )
+	}
+
+	return modesArray
+}
+
+int function GetPrivateMatchModeIndex( string modeName )
+{
+	int indexForName = 0
+
+	int numModes = GetPlaylistGamemodesCount( PRIVATE_MATCH_PLAYLIST )
+	for ( int modeIndex = 0; modeIndex < numModes; modeIndex++ )
+	{
+		if ( GetPlaylistGamemodeByIndex( PRIVATE_MATCH_PLAYLIST, modeIndex ) != modeName )
+			continue
+
+		indexForName = modeIndex
+		break
+	}
+
+	return indexForName
+}
+
+array<string> function GetPrivateMatchMapsForMode( string modeName )
+{
+	array<string> mapsArray
+
+	int modeIndex = GetPrivateMatchModeIndex( modeName )
+	int numMaps = GetPlaylistGamemodeByIndexMapsCount( PRIVATE_MATCH_PLAYLIST, modeIndex )
+	for ( int mapIndex = 0; mapIndex < numMaps; mapIndex++ )
+	{
+		mapsArray.append( GetPlaylistGamemodeByIndexMapByIndex( PRIVATE_MATCH_PLAYLIST, modeIndex, mapIndex ) )
+	}
+
+	return mapsArray
+}
+
+array<string> function GetPrivateMatchModesForMap( string mapName )
+{
+	array<string> modesArray
+
+	int numModes = GetPlaylistGamemodesCount( PRIVATE_MATCH_PLAYLIST )
+	for ( int modeIndex = 0; modeIndex < numModes; modeIndex++ )
+	{
+		int numMaps = GetPlaylistGamemodeByIndexMapsCount( PRIVATE_MATCH_PLAYLIST, modeIndex )
+		for ( int mapIndex = 0; mapIndex < numMaps; mapIndex++ )
+		{
+			if ( GetPlaylistGamemodeByIndexMapByIndex( PRIVATE_MATCH_PLAYLIST, modeIndex, mapIndex ) != mapName )
+				continue
+
+			modesArray.append( GetPlaylistGamemodeByIndex( PRIVATE_MATCH_PLAYLIST, modeIndex ) )
+		}
+	}
+
+	return modesArray
+}
+
+string function GetPrivateMatchMapForIndex( int index )
+{
+	array<string> mapsArray = GetPrivateMatchMaps()
+
+	if ( index >= mapsArray.len() )
+		return ""
+
+	return mapsArray[index]
+}
+
+string function GetPrivateMatchModeForIndex( int index )
+{
+	array<string> modesArray = GetPrivateMatchModes()
+
+	if ( index >= modesArray.len() )
+		return ""
+
+	return modesArray[index]
+}
+
+int function GetPrivateMatchMapIndex( string mapName )
+{
+	array<string> mapsArray = GetPrivateMatchMaps()
+	for ( int index = 0; index < mapsArray.len(); index++ )
+	{
+		if ( mapsArray[index] == mapName )
+			return index
+	}
+
+	return 0
+}
+
+/*int function GetPrivateMatchModeIndex( string modeName )
+{
+	array<string> modesArray = GetPrivateMatchModes()
+	for ( int index = 0; index < modesArray.len(); index++ )
+	{
+		if ( modesArray[index] == modeName )
+			return index
+	}
+
+	return 0
+}*/
+
+array<string> function GetPrivateMatchMaps()
+{
+	array<string> mapsArray
+
+	int numModes = GetPlaylistGamemodesCount( PRIVATE_MATCH_PLAYLIST )
+	for ( int modeIndex = 0; modeIndex < numModes; modeIndex++ )
+	{
+		int numMaps = GetPlaylistGamemodeByIndexMapsCount( PRIVATE_MATCH_PLAYLIST, modeIndex )
+		for ( int mapIndex = 0; mapIndex < numMaps; mapIndex++ )
+		{
+			string mapName = GetPlaylistGamemodeByIndexMapByIndex( PRIVATE_MATCH_PLAYLIST, modeIndex, mapIndex )
+			if ( mapsArray.contains( mapName ) )
+				continue
+
+			mapsArray.append( mapName )
+		}
+	}
+
+	return mapsArray
+}
+
+
+
+array<string> function GetPlaylistMaps( string playlistName )
+{
+	array<string> mapsArray
+
+	int numModes = GetPlaylistGamemodesCount( playlistName )
+	for ( int modeIndex = 0; modeIndex < numModes; modeIndex++ )
+	{
+		int numMaps = GetPlaylistGamemodeByIndexMapsCount( playlistName, modeIndex )
+		for ( int mapIndex = 0; mapIndex < numMaps; mapIndex++ )
+		{
+			string mapName = GetPlaylistGamemodeByIndexMapByIndex( playlistName, modeIndex, mapIndex )
+			if ( mapsArray.contains( mapName ) )
+				continue
+
+			mapsArray.append( mapName )
+		}
+	}
+
+	return mapsArray
+}
+
+bool function MapSettings_SupportsTitans( string mapName )
+{
+	if ( mapName.find_olduntyped( "mp_lf_" ) != null )
+		return false
+
+	if ( mapName.find_olduntyped( "coliseum" ) != null )
+		return false
+
+	return true
+}
+
+bool function MapSettings_SupportsAI( string mapName )
+{
+	if ( mapName.find_olduntyped( "mp_lf_" ) != null )
+		return false
+
+	if ( mapName.find_olduntyped( "coliseum" ) != null )
+		return false
+
+	return true
+}
+
+bool function ModeSettings_RequiresTitans( string modeName )
+{
+	switch ( modeName )
+	{
+		case "lts":
+			return true
+	}
+
+	return false
+}
+
+bool function ModeSettings_RequiresAI( string modeName )
+{
+	switch ( modeName )
+	{
+		case "aitdm":
+		case "at":
+			return true
+	}
+
+	return false
+}
+
+#if !CLIENT
+string function PrivateMatch_GetSelectedMap()
+{
+	var mapIndex = level.ui.privatematch_map
+	string mapName = GetPrivateMatchMapForIndex( expect int(mapIndex) )
+
+	return mapName
+}
+
+string function PrivateMatch_GetSelectedMode()
+{
+	var modeIndex = level.ui.privatematch_mode
+	string modeName = GetPrivateMatchModeForIndex( expect int(modeIndex) )
+
+	return modeName
+}
+#endif // CLIENT
+
+bool function PrivateMatch_IsValidMapModeCombo( string mapName, string modeName )
+{
+	array<string> mapsForMode = GetPrivateMatchMapsForMode( modeName )
+
+	return mapsForMode.contains( mapName )
+}
+
+
+int function Player_GetMaxMatchmakingDelay( entity player )
+{
+	//	return GetCurrentPlaylistVarInt( "matchmaking_delay", 0 )
+	return 300
+}
+
+int function Player_GetRemainingMatchmakingDelay( entity player )
+{
+	int lastLeaveTime = player.GetPersistentVarAsInt( PERSISTENCE_LAST_LEAVE_TIME )
+
+	return Player_GetMaxMatchmakingDelay( player ) - (GetCurrentTimeForPersistence() - lastLeaveTime)
+}
+
+int function Player_NextAvailableMatchmakingTime( entity player )
+{
+	int lastLeaveTime = player.GetPersistentVarAsInt( PERSISTENCE_LAST_LEAVE_TIME )
+	if ( GetCurrentTimeForPersistence() - lastLeaveTime < Player_GetMaxMatchmakingDelay( player ) )
+	{
+		return Player_GetRemainingMatchmakingDelay(	player )
+	}
+
+	return 0
+}
+
+int function GetCurrentTimeForPersistence()
+{
+	// Returns the unix timestap offset to the timezone we want to use
+	return GetUnixTimestamp() + DAILY_RESET_TIME_ZONE_OFFSET * SECONDS_PER_HOUR
+}
+

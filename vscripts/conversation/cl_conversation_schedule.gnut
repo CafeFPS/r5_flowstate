@@ -1,0 +1,362 @@
+untyped
+
+global function DialogueScheduleClient_Init
+
+global function AddConversation
+global function ReplaceConversation
+global function AddVDURadio // remaps to AddRadio
+global function AddVDUAnimWithEmbeddedAudio
+global function AddVDULineForSpyglass
+global function AddVDULineForBlisk
+global function AddVDULineForGraves
+global function AddVDUAnimWithEmbeddedAudioForSpyglass
+global function AddVDUAnimWithEmbeddedAudioForBlisk
+global function AddVDUAnimWithEmbeddedAudioForGraves
+global function AddWait
+global function AddMusic
+global function AddVDULineForSarah
+global function AddVDULineForBish
+global function AddVDUAnimWithEmbeddedAudioForSarah
+global function AddVDUAnimWithEmbeddedAudioForBish
+global function AddRadio
+global function AddRadioArray
+global function AddWaveform
+global function AddWaveformHide
+global function AddBossAIEvent
+
+global function AddNeutralTeamConversations
+
+global const CONVFLAG_STARTPOINT 	= 0x0001 // players can enter a scene at this point and still understand the context
+global const CONVFLAG_UNORDERED 	= 0x0002 // this dialog can happen at any time during the scene, it's only context is the scene itself
+global const CONVFLAG_ENDPOINT 		= 0x0004 // this ends the scene
+global const CONVFLAG_GROUP 		= 0x0008 // this groups the conversation with the previous conversation
+
+
+void function DialogueScheduleClient_Init()
+{
+	array<int> actorsABCDEF = [ 1, 1, 1, 1, 1, 1 ]
+	AddConversations( TEAM_IMC, actorsABCDEF )
+}
+
+void function AddNeutralTeamConversations()
+{
+	array<int> actorsABCDEF = [ 1, 1, 1, 1, 1, 1 ]
+	AddConversations( TEAM_BOTH, actorsABCDEF )
+}
+
+Assert( CLIENT )
+
+void function AddConversations( int team, array<int> actors )
+{
+	array Array
+
+	Array =
+	[
+		{ dialogType = "speech", speakerIndex = 0,
+			choices =
+			[
+				Voices( team, "bc_fleePlayerTitanCall_01", actors )
+				Voices( team, "bc_fleePlayerTitanCall_02", actors )
+				Voices( team, "bc_fleePlayerTitanCall_03", actors )
+				Voices( team, "bc_fleePlayerTitanCall_04", actors )
+				Voices( team, "bc_fleePlayerTitanCall_05", actors )
+				Voices( team, "bc_fleePlayerTitanCall_06", actors )
+				Voices( team, "bc_fleePlayerTitanCall_07", actors )
+			]
+		}
+
+		{ dialogType = "speech", speakerIndex = 1,
+			choices =
+			[
+				Voices( team, "bc_fleePlayerTitanResponse_01", actors )
+				Voices( team, "bc_fleePlayerTitanResponse_02", actors )
+				Voices( team, "bc_fleePlayerTitanResponse_03", actors )
+				Voices( team, "bc_fleePlayerTitanResponse_04", actors )
+				Voices( team, "bc_fleePlayerTitanResponse_05", actors )
+				Voices( team, "bc_fleePlayerTitanResponse_06", actors )
+				Voices( team, "bc_fleePlayerTitanResponse_07", actors )
+			]
+		}
+	]
+	AddConversation( "grunt_flees_titan", team, Array )
+
+
+	Array =
+	[
+		{ dialogType = "speech", speakerIndex = 0,
+			choices =
+			[
+				Voices( team, "bc_fleePlayerTitan_01", actors )
+				Voices( team, "bc_fleePlayerTitan_02", actors )
+				Voices( team, "bc_fleePlayerTitan_03", actors )
+				Voices( team, "bc_fleePlayerTitan_04", actors )
+			]
+		}
+	]
+	AddConversation( "grunt_flees_titan", team, Array )
+
+
+	Array =
+	[
+		{ dialogType = "speech", speakerIndex = 0,
+			choices =
+			[
+				Voices( team, "bc_fleePlayerTitanBuildingCall_01", actors )
+				Voices( team, "bc_fleePlayerTitanBuildingCall_02", actors )
+				Voices( team, "bc_fleePlayerTitanBuildingCall_03", actors )
+				Voices( team, "bc_fleePlayerTitanBuildingCall_04", actors )
+			]
+		}
+
+		{ dialogType = "speech", speakerIndex = 1,
+			choices =
+			[
+				Voices( team, "bc_fleePlayerTitanBuildingResponse_01", actors )
+				Voices( team, "bc_fleePlayerTitanBuildingResponse_02", actors )
+				Voices( team, "bc_fleePlayerTitanBuildingResponse_03", actors )
+				Voices( team, "bc_fleePlayerTitanBuildingResponse_04", actors )
+			]
+		}
+	]
+	AddConversation( "grunt_flees_titan_building", team, Array )
+
+
+	Array =
+	[
+		{ dialogType = "speech", speakerIndex = 0,
+			choices =
+			[
+				Voices( team, "bc_fleePlayerTitanGroupCall_01", actors )
+				Voices( team, "bc_fleePlayerTitanGroupCall_02", actors )
+				Voices( team, "bc_fleePlayerTitanGroupCall_03", actors )
+				Voices( team, "bc_fleePlayerTitanGroupCall_04", actors )
+			]
+		}
+
+		{ dialogType = "speech", speakerIndex = 1,
+			choices =
+			[
+				Voices( team, "bc_fleePlayerTitanGroupResponse_01", actors )
+				Voices( team, "bc_fleePlayerTitanGroupResponse_02", actors )
+				Voices( team, "bc_fleePlayerTitanGroupResponse_03", actors )
+				//Voices( team, "bc_fleePlayerTitanGroupResponse_04", actors )  // not available in game yet
+			]
+		}
+	]
+	AddConversation( "grunt_group_flees_titan", team, Array )
+}
+
+
+
+/**********************************************************************
+
+	The following function are for Creating Conversations.
+
+	Example 1:	this will create a conversation of one line but with four choices for that line. the choices will be selected randomly
+		array convRef = AddConversation( "TitanReplacement", TEAM_MILITIA )
+		AddVDU( convRef, "sarah" )
+		AddRadio( convRef, "diag_mp_priv_19_1", "diag_mp_priv_19_2", "diag_mp_priv_19_3", "diag_mp_priv_19_4" )
+
+	Example 2: this will create a conversation between MacAllan and Sarah
+		array convRef = AddConversation( "StartAnnouncement", TEAM_MILITIA )
+		AddVDU( convRef, "mac" )
+		AddRadio( convRef, "diag_mp_priv_10_1" )
+		AddVDU( convRef, "sarah" )
+		AddRadio( convRef, "diag_mp_priv_10_2", "diag_mp_priv_10_13" )
+		AddVDUHide( convRef, 1 )	// only needed if you want to delay the closing of the VDU after the previous line is spoken.
+
+	Example 3: there are some wrappers for simple VDU conversations
+		AddVDULineForSarah( "TitanReplacement", "diag_mp_priv_19_1" )	// this adds a new conversation to the TitanReplacement type
+
+
+	See mp/game_state_dialog.nut for a working example.
+
+**********************************************************************/
+
+array function AddConversation( string conversationType, int team = TEAM_BOTH, array lineArr = [] )
+{
+	Assert( DoesConversationExist( conversationType ), "Conversation " + conversationType + " not registered." )
+	ConversationStruct convStruct = GetConversationStruct( conversationType )
+	convStruct.conversationTable[ team ].append( lineArr )
+
+	return lineArr
+}
+
+array function ReplaceConversation( string conversationType, int team = TEAM_BOTH, array lineArr = [] )
+{
+	Assert( DoesConversationExist( conversationType ), "Conversation " + conversationType + " not registered." )
+	ConversationStruct convStruct = GetConversationStruct( conversationType )
+	convStruct.conversationTable[ team ].clear()
+
+	return AddConversation( conversationType, team, lineArr )
+}
+
+void function AddElement( array convRef, table elem )
+{
+	convRef.append( elem )
+}
+
+void function AddWaveform( array convRef )
+{
+	table elem
+	elem.dialogType <- "waveform"
+
+	convRef.append( elem )
+}
+
+void function AddBossAIEvent( array convRef, string speaker, string event )
+{
+	table elem
+	elem.dialogType <- "boss_titan_conversation"
+	elem.speaker <- speaker
+	elem.event <- event
+
+	convRef.append( elem )
+}
+
+void function AddWaveformHide( array convRef, float delay = 0.0 )
+{
+	table elem
+	elem.dialogType <- "waveform"
+	elem.hide <- true
+	if ( delay )
+		elem.delay <- delay
+
+	convRef.append( elem )
+}
+
+void function AddRadio( array convRef, string aliasName, float delay = 0.0 )
+{
+	table elem
+	elem.dialogType <- "radio"
+	elem.choices <- []
+	if ( delay > 0 )
+		elem.delay <- delay
+
+	//Assert( DoesAliasExist( aliasName ), aliasName + " doesn't exist!" )
+	if ( !DoesAliasExist( aliasName ) )
+		Warning( "No alias named " + aliasName + " exists." )
+	else
+		elem.choices.append( aliasName )
+
+	convRef.append( elem )
+}
+
+void function AddRadioArray( array convRef, array<string> aliases, float delay )
+{
+	table elem
+	elem.dialogType <- "radio"
+	elem.choices <- []
+	elem.delay <- delay
+
+	foreach ( aliasName in aliases )
+	{
+		if ( !DoesAliasExist( aliasName ) )
+		{
+			Warning( "No alias named " + aliasName + " exists." )
+			continue
+		}
+
+		//Assert( IsString( aliasName ) )
+		//Assert( DoesAliasExist( aliasName ), aliasName + " doesn't exist!" )
+		elem.choices.append( aliasName )
+	}
+
+	convRef.append( elem )
+}
+
+void function AddMusic( array convRef, string musicAlias, bool background = true )
+{
+	table elem
+	elem.dialogType <- "music"
+	elem.alias 		<- musicAlias
+
+	if ( !background )
+		elem.halt_conversation <- true
+
+	convRef.append( elem )
+}
+
+void function AddWait( array convRef, float minWait, float maxWait = 0.0 )
+{
+	if ( maxWait < minWait )
+		maxWait = minWait
+	Assert( minWait > 0 )
+	Assert( minWait <= maxWait )
+
+	table elem
+	elem.dialogType <- "wait"
+	elem.durationMin <- minWait
+	elem.durationMax <- maxWait
+
+	convRef.append( elem )
+}
+
+void function AddVDURadio( array convRef, string vduName, string alias, string vduAnim = "" )
+{
+	string realAlias = (alias == "") ? vduAnim : alias
+	if ( realAlias == "" )
+		return
+
+	AddRadio( convRef, realAlias )
+}
+
+void function AddVDUAnimWithEmbeddedAudio( array convRef, string vduName, string animName )
+{
+	AddVDURadio( convRef, vduName, "", animName )
+}
+
+void function AddVDULineForSarah( string convType, string alias, string vduAnim = "" )
+{
+	array convRef = AddConversation( convType, TEAM_MILITIA )	// Sarah is militia
+	AddVDURadio( convRef, "sarah", alias, vduAnim )
+}
+
+void function AddVDULineForBish( string convType, string alias, string vduAnim = "" )
+{
+	array convRef = AddConversation( convType, TEAM_MILITIA )	// Bish is militia
+	AddVDURadio( convRef, "bish", alias, vduAnim )
+}
+
+void function AddVDULineForSpyglass( string convType, string alias, string vduAnim = "" )
+{
+	array convRef = AddConversation( convType, TEAM_IMC )	// IMC_soldier is IMC
+	AddVDURadio( convRef, "spyglass", alias, vduAnim )
+}
+
+void function AddVDULineForBlisk( string convType, string alias, string vduAnim = "" )
+{
+	array convRef = AddConversation( convType, TEAM_IMC )	// IMC_commander is IMC
+	AddVDURadio( convRef, "blisk", alias, vduAnim )
+}
+
+void function AddVDULineForGraves( string convType, string alias, string vduAnim = "" )
+{
+	array convRef = AddConversation( convType, TEAM_IMC )
+	AddVDURadio( convRef, "graves", alias, vduAnim )
+}
+
+void function AddVDUAnimWithEmbeddedAudioForSarah( string convType, string animName )
+{
+	AddVDULineForSarah( convType, "", animName )
+}
+
+void function AddVDUAnimWithEmbeddedAudioForBish( string convType, string animName )
+{
+	AddVDULineForBish( convType, "", animName )
+}
+
+void function AddVDUAnimWithEmbeddedAudioForSpyglass( string convType, string animName )
+{
+	AddVDULineForSpyglass( convType, "", animName )
+}
+
+void function AddVDUAnimWithEmbeddedAudioForBlisk( string convType, string animName )
+{
+	AddVDULineForBlisk( convType, "", animName )
+}
+
+void function AddVDUAnimWithEmbeddedAudioForGraves( string convType, string animName )
+{
+	AddVDULineForGraves( convType, "", animName )
+}

@@ -1,0 +1,372 @@
+global function ScrollPanelInit
+
+global function ScrollPanel_InitPanel
+global function ScrollPanel_SetActive
+global function ScrollPanel_InitScrollBar
+global function ScrollPanel_Refresh
+
+struct ListElementData
+{
+	int assignedIndex
+	var button
+}
+
+struct ScrollPanelData
+{
+	bool isInitialized = false
+	var  panel = null
+	var  contentPanel = null
+
+	bool isActive = false
+	bool isScrollActive = false
+	UIPos scrollStartPos
+	float scrollListOffset
+
+	bool exclusiveSelection = false
+
+	int paddingVert = 8
+
+	array<var> listButtonElements = []
+
+	array<ListElementData> availableElements = []
+	array<ListElementData> usedElements = []
+
+	int   lastItemCount = -1
+	float totalListSize
+	float listOffset
+	float scrollValue
+
+	int buttonHeight = 0
+	int panelHeight = 0
+	int contentHeight = 0
+
+	UIPos &panelAbsPos
+	UISize &panelSize
+
+	void functionref( var panel, var button, int index ) bindCallback
+	void functionref( var panel, var button, int index ) clickCallback
+	void functionref( var panel, var button, int index ) clickRightCallback
+	void functionref( var panel, var button, int index ) getFocusCallback
+	void functionref( var panel, var button, int index ) loseFocusCallback
+	int  functionref( var panel )                        itemCountCallback
+
+	bool functionref( var panel, var button, int position, int keyId, bool isDown ) keyPressHandler
+
+	var scrollBarElement
+	var navUpElement
+	var navDownElement
+}
+
+struct
+{
+	table< string, ScrollPanelData > scrollPanels
+} file
+
+
+const float SCROLL_SPEED = 10.0
+
+void function ScrollPanelInit()
+{
+	thread ScrollPanelScrollUpdate()
+}
+
+
+bool function IsScrollPanelParent( ScrollPanelData data, var element )
+{
+	while ( element )
+	{
+		if ( element == data.panel )
+			return true
+
+		element = Hud_GetParent( element )
+	}
+
+	return false
+}
+
+void function ScrollPanelScrollUpdate()
+{
+	RegisterStickMovedCallback( ANALOG_RIGHT_Y, ScrollVertical )
+	RegisterButtonPressedCallback( MOUSE_WHEEL_UP, MouseWheelUp )
+	RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, MouseWheelDown )
+
+	RegisterButtonPressedCallback( MOUSE_LEFT, ScrollHandlePress )
+	RegisterButtonReleasedCallback( MOUSE_LEFT, ScrollHandleRelease )
+
+	RegisterButtonPressedCallback( BUTTON_A, ScrollHandlePress )
+	RegisterButtonReleasedCallback( BUTTON_A, ScrollHandleRelease )
+
+	while ( true )
+	{
+		foreach ( ScrollPanelData data in file.scrollPanels )
+		{
+			if ( !data.isActive )
+				continue
+
+			if ( data.scrollValue != 0.0 )
+				UpdatePanelElements( data )
+
+			if ( data.isScrollActive )
+			{
+				UIPos cursorPos
+				cursorPos.x = int( GetCursorPosition().x )
+				cursorPos.y = int( GetCursorPosition().y )
+
+				data.listOffset = data.scrollListOffset
+
+				float cursorOffset = float( cursorPos.y - data.scrollStartPos.y )
+				float scrollOffsetFrac = cursorOffset / Hud_GetHeight( data.scrollBarElement )
+				data.scrollValue = (scrollOffsetFrac * data.contentHeight) / SCROLL_SPEED
+				UpdatePanelElements( data )
+				data.scrollValue = 0.0
+			}
+			else if ( GetConVarInt( "gameCursor_ModeActive" ) == 0 || (GetConVarInt( "gameCursor_ModeActive" ) == 2 && IsControllerModeActive()) )
+			{
+				var focusElement = GetFocus()
+				if ( focusElement != null && IsScrollPanelParent( data, focusElement ) )
+				{
+					UIPos panelPos = REPLACEHud_GetAbsPos( data.panel )
+					UISize panelSize = REPLACEHud_GetSize( data.panel )
+					if ( !IsElementFullyInside( focusElement, panelPos, panelSize ) )
+					{
+						if ( Hud_GetAbsY( focusElement ) < panelPos.y )
+						{
+							data.scrollValue = ((panelPos.y - Hud_GetAbsY( focusElement )) / SCROLL_SPEED) * -1
+							UpdatePanelElements( data )
+							data.scrollValue = 0.0
+						}
+						else if ( Hud_GetAbsY( focusElement ) + Hud_GetHeight( focusElement ) > panelPos.y + panelSize.height )
+						{
+							data.scrollValue = (Hud_GetHeight( focusElement ) - (panelPos.y + panelSize.height - Hud_GetAbsY( focusElement ))) / SCROLL_SPEED
+							UpdatePanelElements( data )
+							data.scrollValue = 0.0
+						}
+					}
+				}
+			}
+		}
+
+		WaitFrame()
+	}
+
+	DeregisterStickMovedCallback( ANALOG_RIGHT_Y, ScrollVertical )
+	DeregisterButtonPressedCallback( MOUSE_WHEEL_UP, MouseWheelUp )
+	DeregisterButtonPressedCallback( MOUSE_WHEEL_DOWN, MouseWheelDown )
+
+	DeregisterButtonPressedCallback( MOUSE_LEFT, ScrollHandlePress )
+	DeregisterButtonReleasedCallback( MOUSE_LEFT, ScrollHandleRelease )
+
+	DeregisterButtonPressedCallback( BUTTON_A, ScrollHandlePress )
+	DeregisterButtonReleasedCallback( BUTTON_A, ScrollHandleRelease )
+}
+
+
+void function ScrollPanel_InitPanel( var panel )
+{
+	Assert( Hud_HasChild( panel, "ContentPanel" ) )
+	ScrollPanelData data
+
+	data.panel = panel
+
+	if ( !(string(panel) in file.scrollPanels) )
+		file.scrollPanels[string(panel)] <- data
+
+	file.scrollPanels[string(panel)] = data
+
+	UISize screenSize = GetScreenSize()
+
+	data.paddingVert = ContentScaledYAsInt( data.paddingVert )
+
+	int panelWidth  = Hud_GetWidth( panel )
+	int panelHeight = Hud_GetHeight( panel )
+
+	data.contentPanel = Hud_GetChild( panel, "ContentPanel" )
+
+	if ( Hud_HasChild( data.contentPanel, "PanelBottom" ) )
+	{
+		var contentBottomElement = Hud_GetChild( data.contentPanel, "PanelBottom" )
+		UIPos uiPos = REPLACEHud_GetParentRelativePos( contentBottomElement )
+		printt( "AbsY", uiPos.x, uiPos.y )
+		if ( uiPos.y > 0 )
+			Hud_SetHeight( data.contentPanel, uiPos.y )
+	}
+
+	data.contentHeight = Hud_GetHeight( data.contentPanel )
+
+	data.panelHeight = panelHeight
+
+	data.panelSize = REPLACEHud_GetSize( panel )
+	data.panelAbsPos = REPLACEHud_GetAbsPos( panel )
+
+	UpdatePanelElements( data )
+
+	if ( !data.isInitialized )
+	{
+
+	}
+}
+
+
+void function ScrollPanel_InitScrollBar( var panel, var scrollBarElement )
+{
+	ScrollPanelData data = GetDataForPanel( panel )
+
+	data.scrollBarElement = scrollBarElement
+	Hud_SetKeyValue( data.scrollBarElement, "parentPanel", panel )
+	Hud_AddEventHandler( data.scrollBarElement, UIE_CLICK, OnScrollBarClick )
+
+	UpdatePanelElements( data )
+}
+
+
+void function UpdateScrollBar( ScrollPanelData data )
+{
+	var scrollBarRui = Hud_GetRui( data.scrollBarElement )
+	Hud_Show( data.scrollBarElement )
+	RuiSetFloat( scrollBarRui, "handleOffset", data.listOffset / float( data.contentHeight ) )
+	RuiSetFloat( scrollBarRui, "handleFrac", data.panelHeight / float( data.contentHeight ) )
+
+	if ( data.panelHeight >= data.contentHeight )
+		Hud_Hide( data.scrollBarElement )
+}
+
+
+void function UpdatePanelElements( ScrollPanelData data, bool forceRefresh = false )
+{
+	float lastOffset = data.listOffset
+
+	data.listOffset = clamp( lastOffset + (data.scrollValue * SCROLL_SPEED), 0, (data.contentHeight - data.panelHeight) )
+	data.listOffset = max( data.listOffset, 0 )
+
+	Hud_SetY( data.contentPanel, -data.listOffset )
+
+	if ( data.scrollBarElement != null )
+		UpdateScrollBar( data )
+}
+
+
+void function ScrollVertical( entity player, float val )
+{
+	const float STICK_DEADZONE = 0.15
+	foreach ( ScrollPanelData data in file.scrollPanels )
+	{
+		if ( data.isActive )
+		{
+			if ( fabs( val ) < STICK_DEADZONE )
+				data.scrollValue = 0.0
+			else
+			{
+				if ( (data.scrollValue <= 0 && val < 0) || (data.scrollValue >= 0 && val > 0) )
+				{
+					data.scrollValue = val
+				}
+			}
+
+
+			UpdatePanelElements( data )
+		}
+	}
+}
+
+
+void function MouseWheelUp( var button )
+{
+	foreach ( ScrollPanelData data in file.scrollPanels )
+	{
+		if ( !data.isActive )
+			continue
+
+		data.scrollValue = (60.0 / SCROLL_SPEED) * -1
+		UpdatePanelElements( data )
+		data.scrollValue = 0.0
+	}
+}
+
+
+void function MouseWheelDown( var button )
+{
+	foreach ( ScrollPanelData data in file.scrollPanels )
+	{
+		if ( !data.isActive )
+			continue
+
+		data.scrollValue = 60.0 / SCROLL_SPEED
+		UpdatePanelElements( data )
+		data.scrollValue = 0.0
+	}
+}
+
+void function OnScrollBarClick( var button )
+{
+	ScrollPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+
+	printt( "OnScrollBarClick" )
+	//data.isScrollActive = true
+}
+
+
+void function ScrollHandlePress( var button )
+{
+	foreach ( ScrollPanelData data in file.scrollPanels )
+	{
+		if ( !data.isActive )
+			continue
+
+		if ( data.isScrollActive )
+		{
+			printt( "data.isScrollActive" )
+			continue
+		}
+
+		if ( data.scrollBarElement == null )
+			continue
+
+		UIPos scrollBarPos = REPLACEHud_GetAbsPos( data.scrollBarElement )
+		UISize scrollBarSize = REPLACEHud_GetSize( data.scrollBarElement )
+
+		vector cursorPos = GetCursorPosition()
+
+		if ( !TEMP_CursorInElementBounds( data.scrollBarElement ) )
+			continue
+
+		data.scrollListOffset = data.listOffset
+		data.scrollStartPos.x = int( cursorPos.x )
+		data.scrollStartPos.y = int( cursorPos.y )
+
+		data.isScrollActive = true
+	}
+}
+
+void function ScrollHandleRelease( var button )
+{
+	foreach ( ScrollPanelData data in file.scrollPanels )
+	{
+		data.isScrollActive = false
+		data.scrollStartPos.x = 0
+		data.scrollStartPos.y = 0
+	}
+}
+
+ScrollPanelData function GetDataForPanel( var panel )
+{
+	Assert( string( panel ) in file.scrollPanels )
+	return file.scrollPanels[string(panel)]
+}
+
+
+void function ScrollPanel_Refresh( var panel )
+{
+	ScrollPanelData data = GetDataForPanel( panel )
+
+	UpdatePanelElements( data, true )
+}
+
+
+void function ScrollPanel_SetActive( var panel, bool state )
+{
+	Assert( string( panel ) in file.scrollPanels )
+	file.scrollPanels[string(panel)].isActive = state
+
+	ScrollPanelData data = GetDataForPanel( panel )
+}
+

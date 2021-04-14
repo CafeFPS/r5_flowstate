@@ -1,0 +1,811 @@
+
+global function ScriptCompilerTest
+
+#if DEV
+// This script is for testing the script compiler.
+
+global typedef GlobalTypedefTest int
+
+
+//const array<array<int> > fsdaf = [[],[],[],[],[3,2],[]]
+
+
+global struct testGlobalStruct2
+{
+	int a = 1,
+	int b = 2,
+	float c
+}
+
+global struct testGlobalStruct
+{
+	int a
+	bool b = true
+	var c = null
+	testGlobalStruct2 nestedStruct
+	testGlobalStruct2& referencedStruct
+	var d = 4
+	string e
+	void functionref() wtfunc
+
+	//testGlobalStruct q
+	//testGlobalStruct& w
+	testGlobalStruct ornull f
+}
+
+global testGlobalStruct testGlobal
+
+testGlobalStruct testStructInitialization = { nestedStruct = {a = 0, b = 0, ...}, referencedStruct = {a = 4, b = 5, ...}, ... }
+
+global const struct{ bool b } ___teststruct = {b = false,}
+
+const int binops = ((1 | 2) & ~3)
+
+#if 0
+	#if 0
+		global int testvar = 4
+		Assert( false )
+	#endif
+	global int testvar = 6
+	Assert( false )
+#elseif 0
+	#if 0
+		global int testvar = 5
+		Assert( false )
+	#elseif 1
+	#endif
+	global int testvar = 1
+	Assert( false )
+#elseif 0
+	Assert( false )
+	#if 0
+		Assert( false )
+		#if 1
+		#elseif 1
+		#elseif 1
+		#elseif 1
+		#endif
+		global int testvar = 2
+	#endif
+	global int testvar = 7
+#else
+	global int testvar = 3
+#endif
+
+
+void function testprintt( var str )
+{
+	// printt( str )
+}
+
+float[5][5] testfloatarray = [[1,2,3,...],[5,4,3,2,1],[...],[4,5,6,...],[...],]
+
+
+void function ScriptCompilerTestDev()
+{
+	testGlobalStruct localstructinitialization = {b = true, ...}
+
+	ArithmeticOptimizationTest()
+
+	TestStructStuff()
+
+	TestFunctionTypes()
+
+	//array<int> intarraytest
+	//intarraytest.resize( 4 )
+	//intarraytest.append( false )
+
+	TestOptimizations()
+
+	TestArrayTypes()
+	TestTableTypes()
+	TestTypes()
+
+	#if SERVER
+		thread EntRuntimeTest()
+	#endif
+
+	//TestDefaultArrayArg()
+	//TestDefaultArrayArg()
+}
+
+
+void function TestDefaultArrayArg( array< int > arr = [] )
+{
+	Assert( arr.len() == 0 )
+	arr.append( 1 )
+}
+
+
+
+int function arithtestfunc()
+{
+	return 1
+}
+
+int function arithtestfunc1()
+{
+	return 1
+}
+
+int function arithtestfunc2()
+{
+	return 1
+}
+
+int function arithtestfunc3()
+{
+	return 1
+}
+
+int function arithtestfunc4()
+{
+	return 1
+}
+
+int function arithtestfunc5()
+{
+	return 2
+}
+
+vector function arithtestfuncvec()
+{
+	return <2,3,1>
+}
+
+const int testconst = -4
+void function ArithmeticOptimizationTest()
+{
+	float test4234 = sqrt( 2 )
+
+	if ( 1 && 2 )
+		;
+	else
+		Assert( false )
+	if ( 1 == 2 )
+		Assert( false )
+	else
+		;
+	if ( 1 != 2 )
+		;
+	else
+		Assert( false )
+	if ( 1 == 1 )
+		;
+	else
+		Assert( false )
+	if ( 1 < 2 )
+		;
+	else
+		Assert( false )
+	if ( 1 > 2 )
+		Assert( false )
+	else
+		;
+	if ( 1 <= 2 )
+		;
+	else
+		Assert( false )
+	if ( 1 >= 2 )
+		Assert( false )
+	else
+		;
+
+	int test = 2 ^ 3 ^ 4
+	test = 1 << 1
+	test = 1 >> 1
+	test = testconst >>> 1
+	test = 1 | 2 | arithtestfunc() | 4
+
+	var hello = 1 + arithtestfunc1() + 2 + (-arithtestfunc2() - 1) - (3 + arithtestfunc3() + 4 - (-arithtestfunc4() - 3.25 + 2 - 1) - 2.0 + 1) - (3 + 2) + "hi" + 6
+	// (1+1+2+1 - (3+1+4-(1+3+2-1)-2+1) - (3+2) + 5)
+	// (5 - (3+1+4-5-2+1) - 5 + 6)
+	// (5 - 2 - 5 + 6)
+	// 4
+	Assert( hello == "-13.25hi6" )
+
+	vector hello2 = <1,1,1> + (<1,2,3> - arithtestfuncvec() - (<3,2,1> + <0,0,1>)) + <3,4,5>
+	// <1,1,1> + (<1,2,3> - (2,3,1) - (<3,2,1> + <0,0,1>)) + <3,4,5>
+	// <1,1,1> + (<1,2,3> - (2,3,1) - (3,2,2)) + <3,4,5>
+	// <1,1,1> + (<1,2,3> - (5,5,3)) + <3,4,5>
+	// <1,1,1> + (-4,-3,0) + <3,4,5>
+	// (-3,-2,1) + <3,4,5>
+	// (0,2,6)
+	//local hello2 = 5 - arithtestfunc5()
+	Assert( hello2 == <0,2,6> )
+
+	vector testtest = arithtestfuncvec() - <1,1,1> - <1,2,3>
+	Assert( testtest == <0,0,-3> )
+	vector testtest2 = arithtestfuncvec() - <1,1,1> * 3 / 2.0
+	Assert( testtest2 == <.5,1.5,-.5> )
+
+	//local hello3 = 4 * 1 * arithtestfunc1() / 3 * (arithtestfunc2() / 4.0 * 5 ) / (arithtestfunc3() / 0.5 / 2 / 1) * arithtestfunc4()
+	float hello3 = -((4 * 1) / 3 * (-arithtestfunc2() / 4.0 * 5 ) / (-arithtestfunc3() / 0.5 / 2 / 1) * -arithtestfunc4())
+	Assert( hello3 == 1.25 )
+
+	int hello4 = 17 % 3
+	Assert( hello4 == 2 )
+
+	int hello5 = 1 + (-arithtestfunc1())
+	Assert( hello5 == 0 )
+	int hello6 = 1 - (-(-(-(-arithtestfunc1()))))
+	Assert( hello6 == 0 )
+	int hello7 = -4 * -arithtestfunc1()
+	Assert( hello7 == 4 )
+
+	var hello8 = !!!arithtestfunc1()
+	Assert( hello8 == false )
+	var hello9 = !(!arithtestfunc1() && !arithtestfunc1())
+	Assert( hello9 == 1 ) // actually that's kinda weird
+	var hello10 = !(!arithtestfunc1() || arithtestfunc1())
+	Assert( hello10 == false )
+
+	vector hello11 = Normalize( <1,2,3> )
+	Assert( fabs( Length( hello11 ) - 1 ) < 0.001 )
+	float hello12 = DotProduct( <1,2,3>, -<1,2,3> )
+	Assert( hello12 == -14 )
+	vector hello13 = CrossProduct( <1,2,3>, -<1,2,3> )
+	Assert( hello13 == <0,0,0> )
+	float hello14 = Length( <1,2,3> )
+	Assert( fabs( hello14 - 3.74166 ) < 0.001 )
+	float hello15 = Length2DSqr( <1,2,3> )
+	Assert( hello15 == 5 )
+	float hello16 = Distance( <1,2,3>, -<1,2,3> )
+	Assert( fabs( hello16 - 7.48331 ) < 0.001 )
+	int hello17 = ++(3)
+	Assert( hello17 == 4 )
+	string hello18 = typeof( "hello" )
+	Assert( hello18 == "string" )
+
+	vector vectest = <-1,-2,-0.3>
+
+	int a = 7
+	int b = 1
+	int c = 4
+	int d = 2
+	Assert( (a & (b << c)) == 0)
+	Assert( (a & (b << d)) == 4)
+}
+
+typedef CrazyStringArray string[2]&[2]
+
+
+struct TestStructA
+{
+	int[2] i
+	bool b
+}
+
+struct TestStructB
+{
+	int[1 + 2] i
+	CrazyStringArray s
+	TestStructA[4] t
+}
+
+void function StaticArrayCopyTest( TestStructA t )
+{
+	t.b = false
+	t.i[0] = t.i[1]
+}
+
+int function inttest()
+{
+	return 1
+}
+
+struct TestStructAA
+{
+	var a
+	var b
+	var c
+}
+
+struct TestStructBB
+{
+	int a
+	float b
+	TestStructAA c
+	string d
+}
+
+void function TestFunc( TestStructBB omg, var value )
+{
+	Assert( omg.c.c == value )
+}
+
+void function testfunc( table<string, int>[10] athing )
+{
+	athing[3]["hi"]++
+}
+
+struct TestStruct
+{
+	int[3] a
+	bool b
+}
+
+TestStruct function GetNewTestStruct()
+{
+	TestStruct res
+	res.a[0] = 0
+	res.a[1] = 1
+	res.a[2] = 2
+	res.b = false
+	return res
+}
+
+/*var function OldStyleObject()
+{
+	table<string,array<int> > res = {}
+	res.a <- []
+	res.a.resize( 3 )
+	res.a[0] = 0
+	res.a[1] = 1
+	res.a[2] = 2
+	//res.b <- false
+	return res
+}*/
+
+void function TestPassInt3( int[3] inttime )
+{
+	Assert( inttime[2] == 2 )
+}
+
+string function CrazyStringArrayTest( CrazyStringArray s )
+{
+	return s[1][1]
+}
+
+void function TestStructStuff()
+{
+	testGlobal.a = 1
+	Assert( testGlobal.a == 1)
+	testGlobal.nestedStruct.b = testGlobal.nestedStruct.a
+	testGlobal.referencedStruct = testGlobal.nestedStruct
+	Assert( testGlobal.referencedStruct.b == 1 )
+
+
+
+	TestStructB teststructb
+	foreach ( i, teststructa in teststructb.t )
+	{
+		Assert( teststructb.t[i] == teststructa )
+	}
+	foreach ( teststructa in teststructb.t )
+	{
+		teststructa.b = true
+	}
+	teststructb.t[inttest()].i[1] = 3
+	Assert( teststructb.t[inttest()].b )
+
+	string[2] twostrings
+	twostrings[1] = "ohai"
+	teststructb.s[1] = twostrings
+	CrazyStringArray crazyTest = teststructb.s
+	StaticArrayCopyTest( teststructb.t[1] )
+	Assert( CrazyStringArrayTest( crazyTest ) == "ohai" )
+	int vartime = 0
+	Assert( teststructb.t[1].i[vartime] == 3 )
+
+
+
+	TestStructBB a
+	TestStructBB b
+
+	a.d = "hi"
+	b.a = 1
+	b.c.c = a.d
+	a.c.c = 3
+	TestFunc( a, 3 )
+	TestFunc( b, "hi" )
+
+
+
+	TestStruct tester = GetNewTestStruct()
+	TestPassInt3( tester.a )
+
+	table<string,int>[10] blork
+	for ( int i = 0; i < blork.len(); i++ )
+		blork[i]["hi"] <- i
+
+	foreach ( tbl in blork )
+		Assert( "hi" in tbl )
+
+	foreach ( i, tbl in blork )
+		Assert( tbl["hi"] == i )
+
+	table<string,int>[10] testarr = blork
+	testfunc( testarr )
+	Assert( testarr[3]["hi"] == 4 )
+
+	// test error
+	//testGlobal.nestedStruct = blork
+
+	vector vectest
+	vectest *= 3.5
+
+	vectest = (vectest * (-1)) * 3
+}
+
+int function ohai( float[2] a, int b )
+{
+	return int( a[0] ) + b
+}
+
+void function TestFunctionTypes()
+{
+	float[2] twofloats
+	twofloats[0] = 1.5
+	twofloats[1] = 3.0
+
+	testGlobal.wtfunc = null
+
+	int functionref( float[2], int ) myfunc = ohai
+	int res = myfunc( twofloats, 2 )
+	Assert( res == 3 )
+
+	thread myfunc( twofloats, 1 )
+
+	int functionref( float[2], int )[1] badfunc
+
+	Assert( badfunc[0] == null )
+
+	void functionref() outervartest = void function() : (res, twofloats)
+	{
+		int test = res
+		Assert( twofloats[0] + float( test ) == 4.5 )
+	}
+
+	Assert( TestFunctionTypes == TestFunctionTypes ) // ensure the conversion to closure produces the same object every time a function is evaluated as an expression
+
+	outervartest()
+
+	testGlobalStruct functionref( bool ) localtest = testGlobalStruct function( bool test )
+	{
+		testGlobalStruct it
+		return it
+	}
+}
+
+void function TestOptimizations( array<entity> testEmptyTypedArray = [] )
+{
+	int something = 1
+	if ( something )
+	{
+	}
+	else
+	{
+	}
+
+	array arr = [1,2]
+	arr = [arr[0], arr[1]]
+	Assert( arr[0] == 1 )
+	Assert( arr[1] == 2 )
+
+	bool andtest = false
+	andtest = true && andtest
+	Assert( !andtest )
+
+	int a = 0
+	a = (a == 0 ? a + 1 : 5)
+	Assert( a == 1 )
+
+	int ornull b = (a == 1 ? null : 0)
+	b = (a == 1 ? 0 : null)
+
+	array<string> testEmptyArrayAssignment
+	testEmptyArrayAssignment = []
+
+	int zero = 0
+	int notnottest = !!zero // because of optimizations, !! cancels out and we get the input instead of a bool.
+}
+
+#if SERVER
+void function EntCompileTest( entity ent )
+{
+	vector mins = ent.GetBoundingMins()
+	vector maxs = ent.GetBoundingMaxs()
+
+	float height = maxs.z - mins.z
+
+	// This function never actually runs
+}
+
+void function EntRuntimeTest()
+{
+	wait 3
+	array<entity> ents = GetPlayerArray()
+	if ( ents.len() )
+		Assert( 0 in ents ) // testing "in"
+	//printt( "ENTITY TIME" )
+	foreach ( ent in ents )
+	{
+		//printt( "ITS AN ENT" + ent )
+		vector vec = ent.GetOrigin()
+		//ent.SetOrigin( vec )
+	}
+
+	foreach ( index, ent in ents )
+	{
+	}
+
+	array<entity> noents
+	foreach ( ent in noents )
+	{
+		//ent++
+	}
+}
+
+bool function testboolfunc( entity player )
+{
+	return player.HasPassive( 0 )
+}
+#endif
+
+struct footData {
+   float footSize = 1.0
+}
+
+struct cat {
+   string name = "Harry"
+   array<footData> feet
+}
+
+int function TestArrayTypes()
+{
+	array<array> returnArray = [["goodness", 3.6], ["name", "joeythespawnpoint"]]
+
+	array<cat> cats
+
+	cats.resize( 2 )
+	Assert( cats[ 0 ].name == "Harry" )
+	Assert( cats[ 0 ].feet.len() == 0 )
+	cats[ 0 ].feet.resize( 2 )
+	Assert( cats[ 0 ].feet[ 0 ].footSize == 1.0 )
+
+
+	array<int> arrint = [ 3, 5, 9, 10, 11, 12, 20, 20, 20, 30, 30, 30, 40, 15 ]
+
+	array<vector> arrvec = [<0,0,0>]
+	arrvec[0] = <arrvec[0].x, arrvec[0].y, arrvec[0].z>
+
+	array<int functionref()> funcarray
+	funcarray = [TestArrayTypes]
+	funcarray.append( TestArrayTypes )
+	//funcarray.resize( 3 )
+
+	arrint.remove( 3 )
+	Assert( arrint.len() == 13 )
+	Assert( arrint[3] == 11 )
+
+	arrint.fastremove( 3 )
+	Assert( arrint.len() == 12 )
+	Assert( arrint[3] == 15 )
+
+	arrint.removebyvalue( 20 )
+	Assert( arrint.len() == 9 )
+	Assert( arrint[5] == 30 )
+
+	arrint.fastremovebyvalue( 30 )
+	Assert( arrint.len() == 6 )
+	Assert( arrint[5] == 40 )
+
+	arrint.resize( 10, 0 )
+	Assert( arrint.len() == 10 )
+	Assert( arrint[6] == 0 )
+	Assert( arrint[7] == 0 )
+	Assert( arrint[8] == 0 )
+	Assert( arrint[9] == 0 )
+
+	Assert( arrint.contains( 5 ) )
+	Assert( arrint.find( 3 ) == 0 )
+	Assert( arrint.find( 0, 7 ) == 7 )
+
+	arrint.getrandom()
+
+	arrint.randomize()
+
+	arrint.resize( 20 )
+	Assert( arrint.len() == 20 )
+
+	array< array<string> > burnCardSets
+	burnCardSets.append( [] )
+
+	array<var> titanOverheadIcons
+	titanOverheadIcons.resize( 8 )
+
+	return arrint[0]
+}
+
+void function TestTableTypes()
+{
+	table<float> tablefloat
+	tablefloat.test <- 3
+	table<string, int> tabletest1 = { poop = 5, pop = 3 }
+
+	tabletest1.hi <- 3
+	tabletest1["hi"] = 4
+	tabletest1[""] <- tabletest1.hi
+
+	table< table<var, float>, table<string, int> > tabletable
+	tabletable[tablefloat] <- tabletest1
+
+	array<string> a = ["first", "second", "third"]
+
+	// creates a weakref to the array and assigns it to the table
+	/*var thearray = a.weakref()
+	Assert( thearray.ref()[0] == "first" )
+	a = []
+	Assert( thearray.ref() == null )*/
+
+	var functionref()[10] funcs
+
+	foreach ( int index, func in funcs )
+	{
+		funcs[index] = function() : ( index ) { return index }
+	}
+
+	Assert( funcs[3]() == 3 )
+	Assert( funcs[7]() == 7 )
+}
+
+typedef varTypedefTest var
+typedef ornullTypedefTestSimple int ornull
+typedef ornullTypedefTestComplex array<footData> ornull
+
+int ornull function OrNullTestFunc()
+{
+	return null
+}
+
+array<footData> ornull function ComplexOrNullTestFunc()
+{
+	return []
+}
+
+void function TestTypes()
+{
+	varTypedefTest str
+	ornullTypedefTestSimple intOrNull
+	intOrNull = null
+	intOrNull = OrNullTestFunc()
+	intOrNull = 3
+	expect int( intOrNull )
+
+	ornullTypedefTestComplex arrOrNull
+	arrOrNull = ComplexOrNullTestFunc()
+	if ( arrOrNull == null )
+		return
+	expect array<footData>( arrOrNull )
+
+	asset a = $""
+	string b = ""
+	Assert( a == b )
+	Assert( "" == $"" )
+}
+
+#endif // DEV
+
+void function ScriptCompilerTest()
+{
+	#if DEV
+		ScriptCompilerTestDev()
+		if ( Dev_CommandLineHasParm( "-scriptdocs" ) )
+			DumpConstTable( expect table( getroottable().originalConstTable ) )
+
+		if ( "originalConstTable" in getroottable() )
+			delete getroottable()["originalConstTable"]
+	#endif
+}
+
+
+
+#if DEV
+
+
+struct ConstTableEntry
+{
+	var k
+	var v
+}
+
+int function SortConstTableEntries( ConstTableEntry a, ConstTableEntry b )
+{
+	if ( a.k > b.k )
+		return 1
+	else if ( a.k < b.k )
+		return -1
+
+	return 0;
+}
+
+int function SortEnumKeyEntries( ConstTableEntry a, ConstTableEntry b )
+{
+	if ( a.v > b.v )
+		return 1
+	else if ( a.v < b.v )
+		return -1
+
+	return 0;
+}
+
+void function DumpConstTable( table constTable )
+{
+	Warning( "game running with -scriptdocs" )
+	DevTextBufferClear()
+	string constFileName = ""
+
+	#if CLIENT
+		constFileName = "scripts/codeconsts_CLIENT.txt"
+		DevTextBufferWrite( "\n// [CLIENT] generated file: do not modify\n\n" )
+	#elseif SERVER
+		constFileName = "scripts/codeconsts_SERVER.txt"
+		DevTextBufferWrite( "\n// [SERVER] generated file: do not modify\n\n" )
+	#elseif UI
+		constFileName = "scripts/codeconsts_UI.txt"
+		DevTextBufferWrite( "\n// [UI] generated file: do not modify\n\n" )
+	#endif
+
+	array< ConstTableEntry > constTableEntries
+	foreach ( k, v in constTable )
+	{
+		ConstTableEntry tableEntry
+		tableEntry.k = k
+		tableEntry.v = v
+		constTableEntries.append( tableEntry )
+	}
+
+	constTableEntries.sort( SortConstTableEntries )
+
+	foreach ( entry in constTableEntries )
+	{
+		var k = entry.k
+		var v = entry.v
+
+		if ( type( v ) == "table" )
+		{
+			DevTextBufferWrite( "global enum " + k + "\n" )
+			DevTextBufferWrite( "{\n" )
+			table t = expect table( v )
+			array< ConstTableEntry > enumKeys
+			foreach ( key, val in t )
+			{
+				if ( key == "" )
+					continue
+
+				ConstTableEntry keyEntry
+				keyEntry.k = key
+				keyEntry.v = val
+				enumKeys.append( keyEntry )
+				// DevTextBufferWrite( "\t" + key + " = " + val )
+			}
+
+			enumKeys.sort( SortEnumKeyEntries )
+
+			foreach ( entry2 in enumKeys )
+			{
+				var key = entry2.k
+				var val = entry2.v
+				DevTextBufferWrite( "\t" + key + " = " + val + "\n" )
+			}
+
+			DevTextBufferWrite( "}\n" )
+		}
+		else if ( type( v ) == "array" )
+		{
+			//			DevTextBufferWrite( "array? " + k )
+		}
+		else
+		{
+			DevTextBufferWrite( "global const " + type( v ) + " " + k + " = " + v + "\n" )
+		}
+	}
+
+	DevTextBufferWrite( "// end generated file\n\n" )
+
+	DevP4Checkout( constFileName )
+	DevTextBufferDumpToFile( constFileName )
+}
+#endif
+

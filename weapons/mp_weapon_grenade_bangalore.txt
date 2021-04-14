@@ -1,0 +1,359 @@
+#base "_base_ability_tactical.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_GRENADE_ELECTRIC_SMOKE"
+	"shortprintname"								"#WPN_GRENADE_ELECTRIC_SMOKE_SHORT"
+	"description" 									"#WPN_GRENADE_ELECTRIC_SMOKE_DESC"
+	"longdesc" 										"#WPN_GRENADE_ELECTRIC_SMOKE_LONGDESC"
+
+	"menu_icon"										"rui/pilot_loadout/ordnance/electric_smoke_menu"
+	"hud_icon"										"rui/hud/tactical_icons/tactical_bangalore"
+
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhand"
+	"offhand_active_slot"                           "altHand"
+//	"offhand_active_slot"                           "mainHand"
+	"is_toss_weapon"								"1"
+	"minimap_reveal_distance"						"32000"
+	"leveled_pickup"								"1"
+	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
+	"offhand_default_inventory_slot"				"0"
+
+    "does_not_interrupt_cloak"						"1"
+    "instant_swap_to"								"0"
+
+    "OnWeaponActivate"                              "OnWeaponActivate_weapon_grenade_bangalore"
+	"OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_weapon_grenade_bangalore"
+	"OnWeaponTossPrep"								"Grenade_OnWeaponTossPrep"
+	"OnWeaponDeactivate"							"Grenade_OnWeaponDeactivate"
+	"OnProjectileCollision"							"OnProjectileCollision_weapon_grenade_bangalore"
+	"OnProjectileIgnite"                            "OnProjectileIgnite_weapon_grenade_bangalore"
+	"OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+	"OnClientAnimEvent"								"OnClientAnimEvent_weapon_grenade_bangalore"
+
+	// Menu Stats
+
+	// Models
+	"viewmodel"										"mdl/Weapons/bangalore_rocketpod/ptpov_bangalore_rocketpod.rmdl"
+//	"playermodel"									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+	"projectilemodel"								"mdl/Weapons/grenades/w_bangalore_canister_gas_projectile.rmdl"
+
+    show_grenade_indicator                          0
+    grenade_show_indicator_to_owner                 0
+
+    "zoom_effects"									"0"
+
+	// Effects
+	"impact_effect_table" 							"none"
+	"bounce_effect_table"							"Bangalore_Rocket_Impacts"
+	"projectile_trail_effect_0"						"P_SmokeScreen_FD_trail"
+	"vortex_absorb_effect"							"wpn_vortex_projectile_frag_FP"
+	"vortex_absorb_effect_third_person"				"wpn_vortex_projectile_frag"
+	"vortex_absorb_sound"							"Vortex_Shield_AbsorbBulletLarge"
+	"vortex_absorb_sound_1p_vs_3p"					"Vortex_Shield_AbsorbBulletLarge_1P_VS_3P"
+	"projectile_adjust_to_gun_barrel"				"1"
+	"projectile_adjust_to_hand"						"0"
+	"grenade_orient_to_velocity"					"1"
+	"grenade_arc_indicator_effect_first"			"P_arc_red"
+	"grenade_arc_impact_indicator_effect"			"P_arc_red_end"
+
+	"fx_muzzle_flash_view"							"P_wpn_muzzleflash_mgl_FP_FULL"
+	"fx_muzzle_flash_world"							"P_wpn_muzzleflash_mgl_FULL"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
+
+	"grenade_disc_throw"							"0"
+
+	"critical_hit"									"0"
+
+	// Sounds
+	"sound_throw_1p"								"bangalore_lauch_smoke_grenade_1p"
+	"sound_deploy_1p"								"bangalore_prep_smoke_grenade_1p"
+	"sound_throw_3p"								"bangalore_lauch_smoke_grenade_3p"
+	"sound_deploy_3p"								"bangalore_prep_smoke_grenade_3p"
+	"sound_grenade_projectile"						"Bangalore_Ultimate_Whoosh"
+	"sound_dryfire"									""
+
+	// Damage - When Used by Players
+	"damage_type" 									"burn"
+	"damage_near_distance"							"128"
+	"damage_far_distance" 							"128"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+	"damage_near_value_titanarmor"					"0"
+	"damage_far_value_titanarmor" 					"0"
+	"impulse_force"   								"0"
+	"explosion_shake_radius"						"500"
+	"explosion_shake_amplitude"						"5"
+	"explosion_shake_frequency"						"45"
+	"explosion_shake_duration"						"0.1"
+	"damage_flags"									"DF_RAGDOLL | DF_EXPLOSION"
+
+
+
+	MP_BASE
+	{
+		"ammo_clip_size"   								"200"
+		"ammo_default_total"							"200"
+		"ammo_display"									"bar"
+		"ammo_min_to_fire"								"100"
+		"ammo_per_shot"									"100"
+		"ammo_stockpile_max"							"200"
+		"regen_ammo_refill_rate"						"3"
+		"regen_ammo_refill_start_delay"					"0.0"
+
+		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+
+	//Mods
+		"grenade_arc_indicator_bounce_count"			"1"
+		"grenade_arc_indicator_effect"					"P_arc_red"
+
+		"explosion_damage"								"20"
+		"explosion_damage_heavy_armor"					"20"
+		"npc_explosion_damage"							"20"
+		"npc_explosion_damage_heavy_armor"				"20"
+		"explosion_inner_radius"  						"256"
+		"explosionradius" 								"256"
+		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_1P"
+	}
+
+	SP_BASE
+	{
+		"ammo_clip_size"   								"4"
+		"ammo_default_total"							"1"
+		"ammo_display"									"count"
+		"ammo_min_to_fire"								"1"
+		"ammo_per_shot"									"1"
+		"ammo_stockpile_max"							"6"
+		"regen_ammo_refill_rate"						"0"
+		"regen_ammo_refill_start_delay"					"0.0"
+
+		"enable_highlight_networking_on_creation"		"1"
+
+	//Mods
+		"grenade_arc_indicator_bounce_count"			"1"
+		"grenade_arc_indicator_effect"					"P_arc_red"
+
+		"explosion_damage"								"150"
+		"explosion_damage_heavy_armor"					"500"
+		"npc_explosion_damage"							"150"
+		"npc_explosion_damage_heavy_armor"				"500"
+		"explosion_inner_radius"  						"50"
+		"explosionradius" 								"210"
+		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_SP"
+	}
+
+	// Behavior
+	"cooldown_type"									"ammo_instant"
+	"max_cook_time"									"10000"
+	"grenade_fuse_time"								"0"
+    "start_fuse_on_launch"                          "0"
+	"grenade_ignition_time"                         "5.0"
+	"fire_rate"   									"2"
+	"deploy_time" 									"0.25"
+	"vortex_refire_behavior"  						"grenade"
+	"allow_empty_fire"								"0"
+	"reload_enabled"  								"0"
+	"allow_empty_click"   							"1"
+	"empty_reload_only"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"grenade_bounce_vel_frac_shallow"				"0.53"
+	"grenade_bounce_vel_frac_sharp"					"0.32"
+	"grenade_bounce_vel_frac_along_normal"			"0.5"
+	"grenade_bounce_randomness"						"0.2"
+	"grenade_bounce_extra_vertical_randomness"		"0.2"
+	"grenade_roll_vel_frac_per_second"				"0.1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	//"toss_pullout_time"								"0.25"
+	//"toss_time"										"0.25"
+	//"toss_overhead_time"							"0.25"
+	"projectile_launch_speed"						"2500"
+	"projectile_launch_pitch_offset"				"0"
+
+	"red_crosshair_range" 							"0"
+
+	// Spread
+
+	"ammo_suck_behavior"							"primary_weapons"
+
+	// View Kick
+	"viewkick_spring" 								"pistol"
+
+	// Bob
+	"bob_cycle_time"  								"0.4"
+	"bob_vert_dist"   								"0.19"
+	"bob_horz_dist"   								"0.1"
+	"bob_max_speed"   								"150"
+	//"bob_pitch"   									"0.75"
+	//"bob_yaw" 										"-1.7"
+	//"bob_roll"										"1.2"
+
+	// View Drift
+	"viewdrift_hipfire_stand_scale_pitch" 			"0.325"
+	"viewdrift_hipfire_crouch_scale_pitch"			"0.275"
+	"viewdrift_hipfire_air_scale_pitch"   			"0.5"
+	"viewdrift_hipfire_stand_scale_yaw"   			"0.12"
+	"viewdrift_hipfire_crouch_scale_yaw"  			"0.10"
+	"viewdrift_hipfire_air_scale_yaw" 				"0.22"
+	"viewdrift_hipfire_speed_pitch"   				"0.6"
+	"viewdrift_hipfire_speed_yaw" 					"1.22"
+
+	// Rumble
+	"rumble"  										"3"
+
+	// Sway
+	"sway_rotate_attach"  							"jx_c_pov"
+	"sway_min_x"  									"-0.3"
+	"sway_min_y"  									"-0.5"
+	"sway_min_z"  									"-0.5"
+	"sway_max_x"  									"0.3"
+	"sway_max_y"  									"0.5"
+	"sway_max_z"  									"0.1"
+	"sway_min_pitch"  								"-3"
+	"sway_min_yaw"									"-3.5"
+	"sway_min_roll"   								"-1"
+	"sway_max_pitch"  								"3"
+	"sway_max_yaw"									"3.5"
+	"sway_max_roll"   								"2"
+	"sway_translate_gain" 							"4"
+	"sway_rotate_gain"								"7"
+	"sway_move_forward_translate_x"   				"0"
+	"sway_move_forward_translate_z"   				"-0.5"
+	"sway_move_back_translate_x"  					"-2"
+	"sway_move_back_translate_z"  					"-1"
+	"sway_move_left_translate_y"  					"-1"
+	"sway_move_left_translate_z"  					"-0.5"
+	"sway_move_left_rotate_roll"  					"-1"
+	"sway_move_right_translate_y" 					"1"
+	"sway_move_right_translate_z" 					"-0.5"
+	"sway_move_right_rotate_roll" 					"2"
+	"sway_move_up_translate_z"						"-1"
+	"sway_move_down_translate_z"  					"1"
+	"sway_turn_left_rotate_yaw"   					"-2"
+	"sway_turn_right_rotate_yaw"  					"2"
+	"sway_turn_up_rotate_pitch"   					"2"
+	"sway_turn_down_rotate_pitch" 					"-2"
+	"sway_turn_angle_factor"  						"-0.5"
+	"sway_turn_origin_factor" 						"0"
+	"sway_turn_angle_factor_zoomed"   				"0"
+	"sway_turn_origin_factor_zoomed"  				"0.05"
+	"sway_move_angle_factor"  						"0.5"
+	"sway_move_origin_factor" 						"0.5"
+	"sway_move_angle_factor_zoomed"   				"0"
+	"sway_move_origin_factor_zoomed"  				"0.03"
+	"sway_gain"   									"15.0"
+
+	// NPC
+
+	// WeaponED Unhandled Key/Values and custom script Key/Values
+	"fire_anim_rate"  								"1"
+	"sprintcycle_time"								".55"
+
+	Mods
+	{
+	    survival_armor_cooldown_mod
+        {
+            "regen_ammo_refill_rate"    "*1.25"
+        }
+
+		burn_mod_grenade_electric_smoke
+		{
+			"explosion_damage"								"*1.5"
+			"explosion_damage_heavy_armor"					"*1.5"
+			"is_burn_mod"		"1"
+		}
+
+		pas_ordnance_pack
+		{
+			"regen_ammo_refill_rate"   						"*1.6"
+
+			//Ordnance Beam
+			"grenade_arc_indicator_bounce_count"			"1"
+			"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+
+			active_crosshair_count				"1"
+			rui_crosshair_index					"1"
+		}
+
+		spree_lvl1_grenade_smoke
+		{
+			"ammo_clip_size"								"2"
+			"ammo_default_total"							"2"
+
+			"grenade_arc_indicator_bounce_count"			"1"
+			"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+		}
+
+		spree_lvl2_grenade_smoke
+		{
+			"ammo_clip_size"								"2"
+			"ammo_default_total"							"2"
+
+			"grenade_arc_indicator_bounce_count"			"1"
+			"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+		}
+
+		spree_lvl3_grenade_smoke
+		{
+			"ammo_clip_size"								"2"
+			"ammo_default_total"							"2"
+
+			"grenade_arc_indicator_bounce_count"			"1"
+			"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+		}
+
+		sp_disable_arc_indicator
+		{
+			grenade_arc_indicator_bounce_count				"0"
+		}
+
+        survival_finite_ordnance
+        {
+
+        }
+	}
+
+	active_crosshair_count				"2"
+	rui_crosshair_index					"0"
+
+	"ordnance_crosshair_always_on_start_index"	"1"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_esmoke"
+			"base_spread"				"0.0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+
+		Crosshair_2
+		{
+			"ui"						"ui/crosshair_ordnance"
+			Args
+			{
+			    regenRate               "eWeaponVar.regen_ammo_refill_rate"
+			    ammoFrac                "progress_weapon_clip_ammo_frac"
+			    dryfireTime             "weapon_latest_dryfire_time"
+			}
+		}
+	}
+}

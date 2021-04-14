@@ -1,0 +1,59 @@
+WeaponData
+{
+	Mods
+	{
+		"stock_tactical_l1"
+		{
+			"zoom_time_in"						"*0.85"
+			"zoom_time_out"   					"*0.85"
+
+			"deploy_time" 						"*0.85"
+			"holster_time"						"*0.85"
+			"raise_time" 						"*0.9"
+			"lower_time"						"*0.9"
+
+			"viewdrift_ads_stand_scale_pitch" 	"*0.85"
+	        "viewdrift_ads_stand_scale_yaw"   	"*0.85"
+	        "viewdrift_ads_crouch_scale_pitch"  "*0.85"
+	        "viewdrift_ads_crouch_scale_yaw"	"*0.85"
+	        "viewdrift_ads_air_scale_pitch"   	"*0.85"
+	        "viewdrift_ads_air_scale_yaw" 		"*0.85"
+		}
+
+		"stock_tactical_l2"
+		{
+			"zoom_time_in"						"*0.8"
+			"zoom_time_out"   					"*0.8"
+
+			"deploy_time" 						"*0.8"
+			"holster_time"						"*0.8"
+			"raise_time" 						"*0.85"
+			"lower_time"						"*0.85"
+
+			"viewdrift_ads_stand_scale_pitch" 	"*0.75"
+	        "viewdrift_ads_stand_scale_yaw"   	"*0.75"
+	        "viewdrift_ads_crouch_scale_pitch"  "*0.75"
+	        "viewdrift_ads_crouch_scale_yaw"	"*0.75"
+	        "viewdrift_ads_air_scale_pitch"   	"*0.75"
+	        "viewdrift_ads_air_scale_yaw" 		"*0.75"
+		}
+
+		"stock_tactical_l3"
+		{
+			"zoom_time_in"						"*0.75"
+			"zoom_time_out"   					"*0.75"
+
+			"deploy_time" 						"*0.75"
+			"holster_time"						"*0.75"
+			"raise_time" 						"*0.8"
+			"lower_time"						"*0.8"
+
+			"viewdrift_ads_stand_scale_pitch" 	"*0.55"
+	        "viewdrift_ads_stand_scale_yaw"   	"*0.55"
+	        "viewdrift_ads_crouch_scale_pitch"  "*0.55"
+	        "viewdrift_ads_crouch_scale_yaw"	"*0.55"
+	        "viewdrift_ads_air_scale_pitch"   	"*0.55"
+	        "viewdrift_ads_air_scale_yaw" 		"*0.55"
+		}
+	}
+}

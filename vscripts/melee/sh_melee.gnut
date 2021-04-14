@@ -1,0 +1,642 @@
+//
+// melee attack = regular melee punch/slash/kick/etc
+// synced melee = execution/finisher
+//
+
+#if SERVER || CLIENT || UI
+global function MeleeShared_Init
+
+global function Loadout_MeleeSkin
+global function MeleeSkin_GetMainWeaponClassname
+global function MeleeSkin_GetOffhandWeaponClassname
+global function MeleeSkin_GetMenuModel
+global function MeleeSkin_GetCharacterFlavor
+global function MeleeSkin_GetSortOrdinal
+//global function MeleeSkin_GetWorldModel
+//global function MeleeSkin_GetViewModel
+#endif
+
+
+#if SERVER || CLIENT
+global function DoesWeaponTriggerMeleeAttack
+global function DoesWeaponClassTriggerMeleeAttack
+global function IsWeaponClassMelee
+global function SetObjectCanBeMeleed
+global function GetPlayerMeleeAttackWeapon
+global function AttackerCanStartMelee
+global function IsValidMeleeAttackTarget
+#endif
+
+#if SERVER || CLIENT
+global function CodeCallback_OnMeleePressed
+global function CodeCallback_OnMeleeStartActivity
+global function CodeCallback_OnMeleeHeld
+global function CodeCallback_OnMeleeReleased
+global function CodeCallback_IsValidMeleeAttackTarget
+global function CodeCallback_OnMeleeAttackAnimEvent
+#endif
+
+#if SERVER
+global function CodeCallback_OnMeleeKilled
+global function CodeCallback_NPCMeleeChargedPlayerOrNPC
+#elseif CLIENT
+global function ClientCodeCallback_ShowMeleePrompt
+#endif
+
+
+////////////////
+////////////////
+//// Consts ////
+////////////////
+////////////////
+const float MELEE_CONFIRMATION_SEVERITY_SCALE_WHEN_ENEMY = 1.0
+const float MELEE_CONFIRMATION_SEVERITY_SCALE_WHEN_NOT_ENEMY = 0.5
+
+const float MELEE_KNOCKBACK_SCALE = 350.0
+const float MELEE_KNOCKBACK_DURATION = 0.25
+
+//global const KNIFE_MODEL = $"mdl/weapons/combat_knife/w_combat_knife.rmdl"
+//global const BIRD_MODEL = $"mdl/creatures/bird/bird.rmdl"
+//const HUMAN_BLOOD_FX = $"impact_flesh"
+//const MECHANICAL_BLOOD_FX = $"P_impact_metal_spectre"
+
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+struct FileStruct_LifetimeLevel
+{
+	table<ItemFlavor, LoadoutEntry> characterMeleeSkinLoadoutEntryMap
+
+	table<ItemFlavor, ItemFlavor> meleeSkinCharacterMap
+
+	table<ItemFlavor, int> cosmeticFlavorSortOrdinalMap
+}
+FileStruct_LifetimeLevel& fileLevel
+
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+#if SERVER || CLIENT || UI
+void function MeleeShared_Init()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	AddCallback_OnItemFlavorRegistered( eItemType.character, OnItemFlavorRegistered_Character )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
+{
+	array<ItemFlavor> meleeSkinList = RegisterReferencedItemFlavorsFromArray( characterClass, "meleeSkins", "flavor" )
+	foreach( ItemFlavor meleeSkin in meleeSkinList )
+	{
+		fileLevel.meleeSkinCharacterMap[meleeSkin] <- characterClass
+		#if SERVER || CLIENT
+			//PrecacheModel( MeleeSkin_GetWorldModel( meleeSkin ) )
+			//PrecacheModel( MeleeSkin_GetViewModel( meleeSkin ) )
+			PrecacheWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ) )
+			PrecacheWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ) )
+		#endif
+	}
+
+	MakeItemFlavorSet( meleeSkinList, fileLevel.cosmeticFlavorSortOrdinalMap )
+
+	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_meleeskin_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+	entry.DEV_category = "character_meleeskins"
+	entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Melee Skin"
+	entry.defaultItemFlavor = meleeSkinList[0]
+	entry.validItemFlavorList = meleeSkinList
+	entry.isSlotLocked = bool function( EHI playerEHI ) {
+		return !IsLobby()
+	}
+	entry.isActiveConditions = { [Loadout_CharacterClass()] = { [characterClass] = true, }, }
+	entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+	fileLevel.characterMeleeSkinLoadoutEntryMap[characterClass] <- entry
+
+	#if SERVER && DEV
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( entry, void function( EHI playerEHI, ItemFlavor meleeSkin ) {
+			DEV_UpdatePlayerMeleeWeaponCosmetics( FromEHI( playerEHI ), meleeSkin )
+		} )
+	#endif
+}
+
+int function MeleeSkin_GetSortOrdinal( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.melee_skin )
+
+	return fileLevel.cosmeticFlavorSortOrdinalMap[flavor]
+}
+
+#endif
+
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+#if SERVER || CLIENT || UI
+LoadoutEntry function Loadout_MeleeSkin( ItemFlavor character )
+{
+	Assert( ItemFlavor_GetType( character ) == eItemType.character )
+
+	return fileLevel.characterMeleeSkinLoadoutEntryMap[character]
+}
+#endif
+
+
+//#if SERVER || CLIENT || UI
+//asset function MeleeSkin_GetWorldModel( ItemFlavor flavor )
+//{
+//	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
+//
+//	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "worldModel" )
+//}
+//#endif
+//
+//
+//#if SERVER || CLIENT || UI
+//asset function MeleeSkin_GetViewModel( ItemFlavor flavor )
+//{
+//	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
+//
+//	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "viewModel" )
+//}
+//#endif
+
+
+#if SERVER || CLIENT || UI
+string function MeleeSkin_GetMainWeaponClassname( ItemFlavor meleeSkin )
+{
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
+
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( meleeSkin ), "mainWeaponClassname" )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+string function MeleeSkin_GetOffhandWeaponClassname( ItemFlavor meleeSkin )
+{
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
+
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( meleeSkin ), "offhandWeaponClassname" )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+asset function MeleeSkin_GetMenuModel( ItemFlavor meleeSkin )
+{
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
+
+	string mainWeaponClassname = MeleeSkin_GetMainWeaponClassname( meleeSkin )
+	return GetWeaponInfoFileKeyFieldAsset_Global( mainWeaponClassname, "viewmodel" )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function MeleeSkin_GetCharacterFlavor( ItemFlavor character )
+{
+	Assert( ItemFlavor_GetType( character ) == eItemType.melee_skin )
+
+	return fileLevel.meleeSkinCharacterMap[character]
+}
+#endif
+
+
+#if SERVER || CLIENT
+bool function DoesWeaponTriggerMeleeAttack( entity weapon )
+{
+	return (weapon.IsWeaponMelee() || weapon.GetWeaponSettingBool( eWeaponVar.attack_button_presses_melee ))
+}
+#endif
+
+
+#if SERVER || CLIENT
+bool function DoesWeaponClassTriggerMeleeAttack( string weaponName )
+{
+	return (IsWeaponClassMelee( weaponName ) || GetWeaponInfoFileKeyField_GlobalBool( weaponName, "attack_button_presses_melee" ))
+}
+#endif
+
+
+#if SERVER || CLIENT
+bool function IsWeaponClassMelee( string weaponName )
+{
+	// (dw): meant to mimic weapon.IsWeaponMelee()
+	int fireMode = expect int(GetWeaponInfoFileKeyField_Global( weaponName, "fire_mode" ))
+	return (fireMode == eWeaponFireMode.offhandMelee || fireMode == eWeaponFireMode.offhandMeleeHybrid)
+}
+#endif
+
+
+#if SERVER || CLIENT
+void function SetObjectCanBeMeleed( entity ent, bool value )
+{
+	Assert( !ent.IsPlayer(), ent + " should not be a player. This is for non-player, non-NPC entities." )
+	Assert( !ent.IsNPC(), ent + " should not be an NPC. This is for non-player, non-NPC entities." )
+
+	ent.e.canBeMeleed = value
+}
+#endif
+
+
+#if SERVER || CLIENT
+entity function GetPlayerMeleeAttackWeapon( entity player )
+{
+	entity meleeAttackWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand ) // Check if the active weapon is melee first
+	if ( !IsValid( meleeAttackWeapon ) || !meleeAttackWeapon.IsWeaponMelee() )
+	{
+		meleeAttackWeapon = player.GetOffhandWeapon( OFFHAND_MELEE ) // Try using default melee weapon
+
+		if ( !IsValid( meleeAttackWeapon ) )
+			return null
+	}
+
+	Assert( meleeAttackWeapon.IsWeaponMelee() )
+
+	return meleeAttackWeapon
+}
+#endif
+
+
+#if SERVER || CLIENT
+bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNull, entity attackWeapon, entity target )
+{
+	Assert( attacker != target )
+
+	if ( target.IsBreakableGlass() )
+		return true // special case
+
+	if ( !IsAlive( target ) )
+		return false
+
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
+		return false
+
+	if ( !attacker.DoesShareRealms( target ) )
+		return false
+
+	if ( IsValid( attackWeapon ) && !attackWeapon.GetMeleeCanHitHumanSized() && IsHumanSized( target ) )
+		return false
+
+	if ( target.IsPlayer() || target.IsNPC() )
+	{
+		// target is BaseCombatCharacter
+		if ( target.ContextAction_IsMeleeExecutionTarget() )
+			return false
+	}
+	else
+	{
+		if ( !target.e.canBeMeleed )
+			return false
+	}
+
+	return true
+}
+#endif
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+#if SERVER || CLIENT
+entity function GetMeleeAttackLungeTarget( entity attacker, entity meleeAttackWeapon )
+{
+	return PlayerMelee_LungeConeTrace( attacker, meleeAttackWeapon, SHARED_CB_IS_VALID_MELEE_ATTACK_TARGET )
+}
+#endif
+
+
+#if SERVER || CLIENT
+bool function AttackerCanStartMelee( entity attacker, entity inputWeaponOrNull, entity attackWeapon )
+{
+	Assert( attacker.IsPlayer() )
+
+	if ( !IsAlive( attacker ) )
+		return false
+
+	if ( attacker.PlayerMelee_GetState() != PLAYER_MELEE_STATE_NONE )
+		return false
+
+	if ( attacker.IsWeaponSlotDisabled( eActiveInventorySlot.mainHand ) ) // Covers bleedout
+		return false
+
+	//if ( PlayerIsInMeleeBlockingADS( attacker ) )
+	//	return false
+
+	if ( attacker.Lunge_IsActive() )
+		return false
+
+	if ( IsValid( inputWeaponOrNull ) && !GetCurrentPlaylistVarBool( "quick_melee_enabled", true )
+			&& inputWeaponOrNull == attacker.GetOffhandWeapon( OFFHAND_MELEE ) )
+		return false
+
+	return true
+}
+#endif
+
+
+#if SERVER || CLIENT
+bool function CodeCallback_IsValidMeleeAttackTarget( entity attacker, entity target )
+{
+	entity meleeInputWeapon  = null // We don't know what it is because they haven't pressed a button yet
+	entity meleeAttackWeapon = GetPlayerMeleeAttackWeapon( attacker )
+
+	if ( !IsValidMeleeAttackTarget( attacker, meleeInputWeapon, meleeAttackWeapon, target ) )
+		return false
+
+	return true
+}
+#endif
+
+
+#if SERVER || CLIENT
+void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWeapon )
+{
+	attacker.p.TEMP_lastMeleeInputWeapon = meleeInputWeapon
+
+	entity meleeAttackWeapon = GetPlayerMeleeAttackWeapon( attacker )
+
+	if ( !AttackerCanStartMelee( attacker, meleeInputWeapon, meleeAttackWeapon ) )
+		return
+
+	attacker.PlayerMelee_StartAttack( PLAYER_MELEE_STATE_HUMAN_KICK_ATTACK )
+
+	// DOOR BUSTING PROTOTYPE
+	// todo(dw): use better door detection logic
+	{
+		entity lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
+
+		vector eyeTraceHitPos
+		if ( !IsValid( lungeTarget ) )
+		{
+			TraceResults eyeTrace = TraceLine(
+				attacker.EyePosition(), attacker.EyePosition() + 150.0 * attacker.GetViewVector(),
+				[ attacker ], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
+			)
+			lungeTarget = eyeTrace.hitEnt
+			eyeTraceHitPos = eyeTrace.endPos
+		}
+
+		if ( IsValid( lungeTarget ) && IsDoor( lungeTarget ) && GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_special_kick", true ) )
+		{
+			meleeAttackWeapon.AddMod( "proto_door_kick" )
+
+			attacker.Lunge_SetTargetPosition( <eyeTraceHitPos.x, eyeTraceHitPos.y, lungeTarget.GetWorldSpaceCenter().z> )
+			attacker.Lunge_SetSmoothTime( 0.7 )
+			attacker.Lunge_EnableFlying()
+		}
+		else if ( meleeAttackWeapon.HasMod( "proto_door_kick" ) )
+		{
+			meleeAttackWeapon.RemoveMod( "proto_door_kick" )
+		}
+	}
+
+	#if SERVER
+		meleeAttackWeapon.EmitWeaponNpcSound_DontUpdateLastFiredTime( 200, 0.2 )
+	#endif
+
+	attacker.SetSelectedOffhand( eActiveInventorySlot.mainHand, meleeAttackWeapon )
+}
+#endif
+
+
+#if SERVER || CLIENT
+void function CodeCallback_OnMeleeStartActivity( entity attacker, entity meleeAttackWeapon )
+{
+	if ( GetBugReproNum() == 53982 )
+		Assert( attacker.PlayerMelee_IsAttackActive() )
+	else if ( !attacker.PlayerMelee_IsAttackActive() )
+		return // todo(dw): workaround for R5DEV-53982
+
+	const float STUN_EFFECT_CUTOFF = 0.05
+	float movestunEffect = StatusEffect_GetSeverity( attacker, eStatusEffect.move_slow )
+	bool movestunBlocked = (movestunEffect > STUN_EFFECT_CUTOFF)
+	if ( !movestunBlocked )
+	{
+		entity lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
+
+		if ( IsValid( lungeTarget ) )
+		{
+			bool lungeStartWasSuccessful = attacker.Lunge_SetTargetEntity( lungeTarget )
+
+			if ( lungeStartWasSuccessful && attacker.IsOnGround() )
+				attacker.Lunge_LockPitch( true )
+		}
+	}
+}
+#endif
+
+
+#if SERVER || CLIENT
+void function CodeCallback_OnMeleeHeld( entity player, entity weapon )
+{
+	//
+}
+#endif
+
+
+#if SERVER || CLIENT
+void function CodeCallback_OnMeleeReleased( entity player, entity weapon )
+{
+	//
+}
+#endif
+
+
+#if SERVER || CLIENT
+void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity meleeAttackWeapon )
+{
+	Assert( IsValid( attacker ) )
+
+	if ( !attacker.PlayerMelee_IsAttackActive() )
+		return // (dw): see R5DEV-53886
+
+	Assert( attacker.PlayerMelee_GetState() == PLAYER_MELEE_STATE_HUMAN_KICK_ATTACK )
+	Assert( !attacker.PlayerMelee_GetAttackHitEntity() )
+
+	#if SERVER
+		PIN_OnWeaponAttack( attacker, meleeAttackWeapon, meleeAttackWeapon.GetWeaponClassName(), 1, attacker.GetOrigin(), attacker.GetViewForward() )
+	#endif
+
+	float attackRange = meleeAttackWeapon.GetMeleeAttackRange()
+
+	// attack trace
+	table legacyTraceResults = PlayerMelee_AttackTrace( attacker, attackRange, (bool function( entity attacker, entity target ) : (meleeAttackWeapon) {
+		return IsValidMeleeAttackTarget( attacker, null, meleeAttackWeapon, target )
+	}) )
+
+	entity target         = expect entity(legacyTraceResults.ent)
+	vector endPosition    = expect vector(legacyTraceResults.position)
+	int surfaceProp       = expect int(legacyTraceResults.surfaceProp)
+	int staticPropID      = expect int(legacyTraceResults.staticPropID)
+	int impactEffectFlags = expect int(legacyTraceResults.impactEffectFlags)
+	int codeDamageType    = expect int(legacyTraceResults.damageType)
+	vector startPosition  = expect vector(legacyTraceResults.startPosition)
+	vector hitNormal      = Normalize( startPosition - endPosition )
+
+	// Early out if we didn't hit anything
+	if ( !IsValid( target ) )
+		return
+
+	// Impact effects
+	if ( SERVER == PlayerMelee_IsServerSideEffects() )
+	{
+		#if SERVER
+			impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
+		#endif
+
+		attacker.DispatchImpactEffects( target,
+			startPosition, endPosition, hitNormal,
+			surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
+			attacker, impactEffectFlags )
+	}
+
+	// Melee state
+	attacker.PlayerMelee_SetAttackHitEntity( target )
+	if ( !target.IsWorld() )
+		attacker.PlayerMelee_SetAttackRecoveryShouldBeQuick( true )
+
+	// Special case for breakable glass
+	if ( target.IsBreakableGlass() )
+	{
+		#if SERVER
+			target.BreakSphere( endPosition, 50 )
+		#endif // #if SERVER
+		return
+	}
+
+	// Melee hit confirmation
+	bool targetIsEnemy  = IsEnemyTeam( attacker.GetTeam(), target.GetTeam() )
+	float severityScale = (targetIsEnemy ? MELEE_CONFIRMATION_SEVERITY_SCALE_WHEN_ENEMY : MELEE_CONFIRMATION_SEVERITY_SCALE_WHEN_NOT_ENEMY)
+	meleeAttackWeapon.DoMeleeHitConfirmation( severityScale )
+
+	// Damage (server only)
+	#if SERVER
+		string weaponName = meleeAttackWeapon.GetWeaponClassName()
+
+		int damageAmount     = meleeAttackWeapon.GetDamageAmountForArmorType( target.GetArmorType() )
+		int damageScriptType = meleeAttackWeapon.GetWeaponDamageFlags()
+		int damageType       = DMG_MELEE_ATTACK
+		int damageSourceId   = (weaponName in eDamageSourceId ? eDamageSourceId[weaponName] : eDamageSourceId.damagedef_unknownBugIt)
+		vector damageOrigin  = endPosition
+		vector damageForce   = AnglesToForward( attacker.EyeAngles() ) * meleeAttackWeapon.GetWeaponDamageForce()
+
+		if ( target.IsNPC() && target.CanBeGroundExecuted() )
+		{
+			damageAmount = target.GetHealth()
+			damageScriptType = damageScriptType | DF_RAGDOLL
+			damageForce = <0, 0, 0>
+		}
+
+		// (dw): I'm commenting this out because it's stateful and will stick around on the entity, even if that entity
+		// doesn't die to this melee attack.
+		//if ( IsHumanSized( target ) )
+		//	target.SetContinueAnimatingAfterRagdoll( true )
+
+		int TEMP_targetHealthBefore         = target.GetHealth() // todo(dw): remove
+		bool TEMP_isTargetBleedingOutBefore = Bleedout_IsBleedingOut( target ) // todo(dw): remove
+
+		table damageTable = {
+			scriptType = meleeAttackWeapon.GetWeaponDamageFlags(),
+			damageType = damageType,
+			damageSourceId = damageSourceId,
+			origin = damageOrigin,
+			force = damageForce
+		}
+		target.TakeDamage( damageAmount, attacker, attacker, damageTable )
+		attacker.TraceAttackToTriggers( damageAmount, attacker, attacker, damageTable, startPosition, endPosition, hitNormal )
+	#endif
+
+	// knockback
+	{
+		vector lookDirection    = attacker.GetViewForward()
+		vector pushBackVelocity = lookDirection * MELEE_KNOCKBACK_SCALE
+
+		if ( target.IsPlayer() || target.IsNPC() || target.IsPlayerDecoy() )
+		{
+			vector targetDirection = target.GetWorldSpaceCenter() - attacker.GetWorldSpaceCenter()
+			if ( DotProduct( lookDirection, targetDirection ) < 0 )
+				pushBackVelocity = -pushBackVelocity
+		}
+
+		if ( target.IsPlayer() )
+		{
+			target.KnockBack( pushBackVelocity, MELEE_KNOCKBACK_DURATION )
+		}
+		else if ( !IsWorldSpawn( target ) )
+		{
+			#if SERVER
+				float pushbackScale = target.IsOnGround() ? 1.0 : 0.1
+				PushEnt( target, pushBackVelocity * pushbackScale )
+			#endif
+		}
+
+		// Must end the attack or the melee lunge (which is active during the attack) will cancel our the knock back
+		attacker.PlayerMelee_EndAttack()
+
+		vector attackerKnockBackVelocity = -pushBackVelocity
+		attackerKnockBackVelocity.z = 0.0
+		attacker.KnockBack( attackerKnockBackVelocity * 0.5, 0.25 )
+	}
+}
+#endif
+
+
+#if SERVER
+void function CodeCallback_OnMeleeKilled( entity target )
+{
+	return
+}
+#endif
+
+
+#if SERVER
+void function CodeCallback_NPCMeleeChargedPlayerOrNPC( entity ent, var damageInfo )
+{
+	return
+}
+#endif
+
+
+#if CLIENT
+bool function ClientCodeCallback_ShowMeleePrompt( entity player )
+{
+	return false
+}
+#endif
+
+
+
+///////////////////////
+///////////////////////
+//// Dev functions ////
+///////////////////////
+///////////////////////
+#if SERVER && DEV
+void function DEV_UpdatePlayerMeleeWeaponCosmetics( entity player, ItemFlavor unused )
+{
+	if ( !IsLobby() )
+		SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
+}
+#endif // SERVER
+
+

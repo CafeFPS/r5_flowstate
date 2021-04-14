@@ -1,0 +1,90 @@
+#base "mp_weapon_melee_survival.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"Kunai"
+	"shortprintname"								"Kunai"
+	"description" 									"Kunai"
+	"longdesc"										"Kunai"
+
+    // UI/HUD
+	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
+	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/kunai/ptpov_kunai_wraith.rmdl"
+	"playermodel" 									"mdl/weapons/kunai/w_kunai_wraith.rmdl"
+
+	"OnWeaponActivate"								"OnWeaponActivate_weapon_wraith_kunai_primary"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_wraith_kunai_primary"
+
+	"dof_nearDepthStart"							"0.5"
+	"dof_nearDepthEnd"							    "6.4"
+
+	"idle_sound_player_1p"							"Wraith_Kunai_IdleSparks_1P"
+	// Bob
+	"bob_cycle_time"  								"0.4"
+	"bob_vert_dist"   								"0.19"
+	"bob_horz_dist"   								"0.1"
+	"bob_max_speed"   								"150"
+	//"bob_pitch"   									"0.75"
+	//"bob_yaw" 										"-1.7"
+	//"bob_roll"										"1.2"
+
+	// View Drift
+	"viewdrift_hipfire_stand_scale_pitch" 			"0.325"
+	"viewdrift_hipfire_crouch_scale_pitch"			"0.275"
+	"viewdrift_hipfire_air_scale_pitch"   			"0.5"
+	"viewdrift_hipfire_stand_scale_yaw"   			"0.12"
+	"viewdrift_hipfire_crouch_scale_yaw"  			"0.10"
+	"viewdrift_hipfire_air_scale_yaw" 				"0.22"
+	"viewdrift_hipfire_speed_pitch"   				"0.6"
+	"viewdrift_hipfire_speed_yaw" 					"1.22"
+
+	// Sway
+	"sway_rotate_attach"  							"SWAY_ROTATE"
+	"sway_min_x"  									"-0.5"
+	"sway_min_y"  									"-0.5"
+	"sway_min_z"  									"-0.6"
+	"sway_max_x"  									"0.5"
+	"sway_max_y"  									"0.5"
+	"sway_max_z"  									"0.6"
+	"sway_min_pitch"  								"-3"
+	"sway_min_yaw"									"-2.5"
+	"sway_min_roll"   								"-4"
+	"sway_max_pitch"  								"3"
+	"sway_max_yaw"									"2.5"
+	"sway_max_roll"   								"4"
+	"sway_translate_gain" 							"2.5"
+	"sway_rotate_gain"								"7"
+	"sway_move_forward_translate_x"   				"-0.1"
+	"sway_move_forward_translate_z"   				"-0.5"
+	"sway_move_back_translate_x"  					"0.2"
+	"sway_move_back_translate_z"  					"-0.2"
+	"sway_move_left_translate_y"  					"-1"
+	"sway_move_left_translate_z"  					"-0.5"
+	"sway_move_left_rotate_roll"  					"-4"
+	"sway_move_right_translate_y" 					"1"
+	"sway_move_right_translate_z" 					"-0.5"
+	"sway_move_right_rotate_roll" 					"4"
+	"sway_move_up_translate_z"						"-1"
+	"sway_move_down_translate_z"  					"1"
+	"sway_turn_left_rotate_yaw"   					"-2.5"
+	"sway_turn_right_rotate_yaw"  					"2.5"
+
+	"sway_turn_left_translate_y"  					".5"
+	"sway_turn_right_translate_y"  					"-.5"
+	"sway_turn_up_translate_z"  					".2"
+	"sway_turn_down_translate_z"  					"-.2"
+	"sway_turn_up_translate_x"  					".1"
+	"sway_turn_down_translate_x"  					"-.1"
+
+	"sway_turn_left_rotate_roll"   					"4"
+	"sway_turn_right_rotate_roll"  					"-4"
+	"sway_turn_up_rotate_pitch"   					"3"
+	"sway_turn_down_rotate_pitch" 					"-3"
+	"sway_turn_up_rotate_roll"   					"-0.8"
+	"sway_turn_down_rotate_roll" 					"0.8"
+	"clear_fx_on_new_view_model"					"0"
+}

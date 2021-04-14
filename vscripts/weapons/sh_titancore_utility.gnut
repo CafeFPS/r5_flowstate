@@ -1,0 +1,544 @@
+#if SERVER
+untyped
+#endif
+
+global function MpTitanabilityFusionCore_Init
+
+global function OnAbilityCharge_TitanCore
+
+global function OnAbilityStart_TitanCore
+
+#if SERVER
+	global function OnAbilityEnd_TitanCore
+	global function OnAbilityChargeEnd_TitanCore
+
+	global function SoulTitanCore_SetNextAvailableTime
+	global function SoulTitanCore_SetExpireTime
+#endif
+
+global function SoulTitanCore_GetNextAvailableTime
+global function SoulTitanCore_GetExpireTime
+global function IsTitanCoreFiring
+
+global function CheckCoreAvailable
+global function IsCoreAvailable
+global function IsCoreChargeAvailable
+
+global function CoreChargeBegin
+
+#if SERVER
+	global function CoreChargeEnd
+
+	global function CoreActivate
+	global function CoreDeactivate
+
+	global function CoreBegin
+	global function CoreEnd
+#endif
+
+const EMP_BLAST_EFFECT = $"P_titan_core_atlas_blast"
+const EMP_BLAST_CHARGE_EFFECT = $"P_titan_core_atlas_charge"
+
+#if SERVER
+	global function SetUsedCoreCallback
+	global function CreateDefaultChargeEffect
+	global function SetCoreEffect
+	global function CreateCoreEffect
+	global function CleanupCoreEffect
+	global function HideTitanCoreFX
+
+	global function OnAbilityStart_DashCore
+	global function OnAbilityEnd_DashCore
+
+	global function LowerEnemyAccuracy
+#endif
+
+#if SERVER
+struct
+{
+	void functionref( entity, entity ) usedCoreCallback
+} file
+#endif
+
+void function MpTitanabilityFusionCore_Init()
+{
+	PrecacheParticleSystem( EMP_BLAST_CHARGE_EFFECT )
+	PrecacheParticleSystem( EMP_BLAST_EFFECT )
+	//
+	//#if TITANS_CLASSIC_GAMEPLAY
+	//	Shift_Core_Init()
+	//	LaserCannon_Init()
+	//	FlightCore_Init()
+	//	SalvoCore_Init()
+	//	UpgradeCore_Init()
+	//	Stealth_Core_Init()
+	//#endif
+
+	RegisterSignal( "CoreActivated" )
+	RegisterSignal( "CoreBegin" )
+	RegisterSignal( "CoreEnd" )
+
+	#if SERVER
+		AddCallback_OnPlayerKilled( TitanCore_PlayerKilledCleanup )
+		AddDamageCallback( "player", TitanCore_OnDamage )
+	#endif
+}
+
+#if SERVER
+void function SetUsedCoreCallback( void functionref( entity, entity ) func )
+{
+	file.usedCoreCallback = func
+}
+
+void function TitanCore_OnDamage( entity ent, var damageInfo )
+{
+}
+#endif
+
+bool function IsTitanCoreFiring( entity titan )
+{
+	if ( !titan.IsTitan() )
+		return false
+
+	entity soul = titan.GetTitanSoul()
+	float time = Time()
+	return time >= soul.GetCoreChargeStartTime() && time <= soul.GetCoreChargeExpireTime()
+}
+
+bool function OnAbilityCharge_TitanCore( entity weapon )
+{
+	if ( !CheckCoreAvailable( weapon ) )
+		return false
+
+	entity player = weapon.GetWeaponOwner()
+
+	#if CLIENT
+	if ( !InPrediction() || IsFirstTimePredicted() )
+	{
+	#endif
+		// printt( "chargebegin" )
+	#if SERVER
+		CoreActivate( player )
+	#endif
+		CoreChargeBegin( player, player, weapon )
+	#if CLIENT
+	}
+	#endif
+
+	player.Signal( "CoreActivated" )
+
+	return true
+}
+
+bool function OnAbilityStart_TitanCore( entity weapon )
+{
+	entity titan = weapon.GetWeaponOwner()
+	// printt( "abilitybegin" )
+	titan.Signal( "CoreBegin" )
+
+	#if SERVER
+	CoreBegin( titan, titan, weapon )
+	#endif
+
+	if ( titan.IsPlayer() )
+	{
+		PlayerUsedOffhand( titan, weapon )
+	}
+
+	return true
+}
+
+#if SERVER
+void function OnAbilityChargeEnd_TitanCore( entity weapon )
+{
+	// printt( "chargeend" )
+	entity titan = weapon.GetWeaponOwner()
+
+	if ( titan == null )
+		return
+
+	CoreChargeEnd( titan, weapon )
+}
+
+void function OnAbilityEnd_TitanCore( entity weapon )
+{
+	// printt( "abilityend" )
+	entity titan = weapon.GetWeaponOwner()
+
+	if ( titan == null )
+		return
+
+	CoreDeactivate( titan, weapon )
+	CoreEnd( titan, titan, weapon )
+}
+#endif
+
+bool function CheckCoreAvailable( entity weapon )
+{
+	return false
+}
+
+#if SERVER
+void function CoreActivate( entity player )
+{
+	// printt( "activate" )
+	entity soul = player.GetTitanSoul()
+
+	if ( IsValid( soul ) && !player.ContextAction_IsMeleeExecution() )
+	{
+		if ( TitanDamageRewardsTitanCoreTime() )
+			SoulTitanCore_SetNextAvailableTime( soul, 0.0 )
+		else
+			SoulTitanCore_SetNextAvailableTime( soul, Time() + 1000 )
+	}
+}
+
+void function CoreDeactivate( entity player, entity weapon )
+{
+	// printt( "deactivate" )
+	Assert( player.IsTitan() )
+	entity soul = player.GetTitanSoul()
+
+	if ( IsValid( soul ) && !player.ContextAction_IsMeleeExecution() )
+	{
+		if ( IsValid( player ) )
+		{
+			SoulTitanCore_SetNextAvailableTime( soul, Time() + GetTitanCoreBuildTimeFromWeapon( weapon ) )
+		}
+	}
+}
+
+bool function CoreBegin( entity player, entity titan, entity weapon )
+{
+	entity soul = titan.GetTitanSoul()
+
+	bool marathon = false
+
+	if ( !IsAlive( titan ) )
+		return false
+
+	if ( !titan.IsTitan() )
+		return false
+
+	if ( player.IsPlayer() )
+	{
+		BlastScreenShake( titan )
+
+		var passive = GetPassiveFromWeapon( weapon )
+
+		if ( passive != null )
+			GivePassive( soul, expect int( passive ) )
+
+			PIN_AddToPlayerCountStat( player, "titan_cores" )
+	}
+
+	if ( marathon )
+		EmitSoundOnEntity( titan, "Titan_CoreAbility_Sustain_Long" )
+	else
+		EmitSoundOnEntity( titan, "Titan_CoreAbility_Sustain" )
+
+	SetCoreEffect( titan, CreateCoreEffect, EMP_BLAST_EFFECT )
+
+	if ( file.usedCoreCallback != null )
+		file.usedCoreCallback( titan, weapon )
+
+	return true
+}
+
+void function LowerEnemyAccuracy( entity titan, float duration )
+{
+	Assert( titan.IsPlayer() )
+
+	titan.EndSignal( "OnDeath" )
+	titan.EndSignal( "TitanEjectionStarted" )
+	titan.EndSignal( "CoreEnd" )
+	titan.EndSignal( "DisembarkingTitan" )
+	titan.EndSignal( "OnSyncedMelee" )
+
+	OnThreadEnd(
+	function() : ( titan )
+		{
+			if ( IsValid( titan ) )
+			{
+				print( "Making player titan Shootable\n" )
+				titan.kv.EnemyAccuracyMultiplier = 1.0
+			}
+		}
+	)
+
+	titan.kv.EnemyAccuracyMultiplier = 0.3
+	wait duration
+}
+
+void function CoreEnd( entity player, entity titan, entity weapon )
+{
+	entity soul = titan.GetTitanSoul()
+
+	if ( soul != null )
+	{
+		var passive = GetPassiveFromWeapon( weapon )
+
+		if ( passive != null )
+			TakePassive( soul, expect int( passive ) )
+
+		CleanupCoreEffect( soul )
+
+		if ( IsValid( titan ) )
+		{
+			StopSoundOnEntity( titan, "Titan_CoreAbility_Sustain_Long" )
+			StopSoundOnEntity( titan, "Titan_CoreAbility_Sustain" )
+		}
+	}
+
+	if ( IsValid( player ) )
+		player.Signal( "CoreEnd" )
+}
+#endif // #if SERVER
+
+bool function CoreChargeBegin( entity player, entity titan, entity weapon )
+{
+	entity soul = titan.GetTitanSoul()
+
+#if CLIENT
+	thread CoreActivatedVO( player )
+#if HAS_BOSS_AI
+	if ( titan.IsPlayer() )
+	{
+		BossTitanPlayerUsedCoreAbility( titan, GetTitanCurrentRegenTab( titan ) )
+	}
+#endif
+#endif
+
+#if SERVER
+	float coreWaitTime = GetTitanCoreDurationFromWeapon( weapon ) + GetTitanCoreChargeTimeFromWeapon( weapon )
+
+	SoulTitanCore_SetExpireTime( soul, Time() + coreWaitTime )
+	soul.SetCoreChargeStartTime( Time() )
+	soul.SetCoreUseDuration( coreWaitTime )
+
+#if HAS_BOSS_AI
+	if ( titan.IsNPC() && BossTitanVDUEnabled( titan ) )
+	{
+		entity p = titan.GetEnemy()
+		if ( p.IsPlayer() )
+			Remote_CallFunction_NonReplay( p, "ServerCallback_BossTitanUseCoreAbility", titan.GetEncodedEHandle(), GetTitanCurrentRegenTab( titan ) )
+	}
+#endif
+#endif // #else // #if CLIENT
+
+	return true
+}
+
+#if SERVER
+void function CoreChargeEnd( entity titan, entity weapon )
+{
+	if ( IsValid( titan ) )
+	{
+		entity soul = titan.GetTitanSoul()
+		if ( soul != null )
+			CleanupCoreEffect( soul )
+	}
+}
+#endif // #if SERVER
+
+bool function IsCoreChargeAvailable( entity player, entity soul )
+{
+	if ( soul == null )
+		return false
+
+	if ( TitanDamageRewardsTitanCoreTime() )
+		return SoulTitanCore_GetNextAvailableTime( soul ) >= 1.0
+
+	if ( Time() >= SoulTitanCore_GetNextAvailableTime( soul ) && IsCoreAvailable( player ) )
+		return true
+
+	return false
+}
+
+bool function IsCoreAvailable( entity player )
+{
+	entity coreWeapon = player.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+
+	if ( coreWeapon == null )
+		return false
+
+	return ( GetDoomedState( player ) == false || CoreAvailableDuringDoomState() )
+}
+
+var function GetPassiveFromWeapon( entity weapon )
+{
+	var passiveName = weapon.GetWeaponInfoFileKeyField( "passive" )
+	if ( passiveName == null )
+		return null
+
+	switch ( passiveName )
+	{
+	}
+
+	return null
+}
+
+#if SERVER
+void functionref( entity ) function PROTO_CoreStringToFunction( string funcName )
+{
+	return null
+}
+
+void functionref( entity ) function GetFuncFromWeaponEntry( string weaponName, string field )
+{
+	var funcName = GetWeaponInfoFileKeyField_Global( weaponName, field )
+	if ( funcName == null )
+		return null
+
+	expect string( funcName )
+	return PROTO_CoreStringToFunction( funcName )
+}
+
+////////////////////////////////////////////////////////////////////////
+// Core-start effect functions
+////////////////////////////////////////////////////////////////////////
+
+void function CreateDefaultChargeEffect( entity titan )
+{
+	SetCoreEffect( titan, CreateCoreEffect, EMP_BLAST_CHARGE_EFFECT )
+}
+
+void function BlastScreenShake( entity titan )
+{
+	// Screen shake
+	float amplitude = 16.0
+	float frequency = 5.0
+	float duration = 2.0
+	float radius = 1500.0
+	entity shake = CreateShake( titan.GetOrigin(), amplitude, frequency, duration, radius )
+	shake.SetParent( titan, "CHESTFOCUS" )
+	shake.Kill_Deprecated_UseDestroyInstead( 3.0 )
+}
+
+void function TitanCore_PlayerKilledCleanup( entity player, entity attacker, var damageInfo )
+{
+	ForceTitanSustainedDischargeEnd( player )
+}
+
+void function CleanupCoreEffect( entity soul )
+{
+	if ( "coreEffect" in soul.s && IsValid( soul.s.coreEffect.ent ) )
+	{
+		soul.s.coreEffect.ent.Destroy()
+	}
+
+	if ( "coreEffect" in soul.s )
+		delete soul.s.coreEffect
+}
+
+void function SetCoreEffect( entity titan, entity functionref(entity,asset) func, asset effectName )
+{
+	Assert( IsAlive( titan ) )
+	Assert( titan.IsTitan() )
+	entity soul = titan.GetTitanSoul()
+	entity chargeEffect = func( titan, effectName )
+	if ( "coreEffect" in soul.s )
+	{
+		soul.s.coreEffect.ent.Kill_Deprecated_UseDestroyInstead()
+	}
+	else
+	{
+		soul.s.coreEffect <- null
+	}
+
+	soul.s.coreEffect = { parameter = effectName, ent = chargeEffect, func = func }
+}
+
+////////////////////////////////////////////////////////////////////////
+// core fx and color correction
+////////////////////////////////////////////////////////////////////////
+entity function CreateCoreEffect( entity player, asset effectName )
+{
+	Assert( player.IsTitan() )
+
+	int index = player.LookupAttachment( "hijack" )
+	entity chargeEffect = StartParticleEffectOnEntity_ReturnEntity( player, GetParticleSystemIndex( effectName ), FX_PATTACH_POINT_FOLLOW, index )
+
+	chargeEffect.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) // everyone but owner
+	chargeEffect.SetOwner( player )
+	return chargeEffect
+}
+
+void function HideTitanCoreFX( entity titan, float duration )
+{
+	titan.EndSignal( "OnDestroy" )
+
+	CleanupCoreEffect( titan.GetTitanSoul() )
+
+	wait duration
+
+	CreateDefaultChargeEffect( titan )
+}
+
+////////////////////////////////////////////////////////////////////////
+// R1 core functions
+////////////////////////////////////////////////////////////////////////
+
+void function OnAbilityEnd_DashCore( entity player )
+{
+	player.SetDodgePowerDelayScale( 1.0 )
+	player.SetPowerRegenRateScale( 1.0 )
+}
+
+void function OnAbilityStart_DashCore( entity player )
+{
+	// Dash recharges fast
+	player.SetDodgePowerDelayScale( 0.05 )
+	player.SetPowerRegenRateScale( 16.0 )
+}
+
+//PAS_SHIELDED_CORE
+void function ShieldedCore( entity soul, float coreDuration )
+{
+	soul.EndSignal( "OnDestroy" )
+	soul.EndSignal( "OnTitanDeath" )
+
+	int health = soul.GetShieldHealthMax()
+	soul.SetShieldHealth( health )
+
+	OnThreadEnd(
+	function() : ( soul )
+		{
+			if ( IsValid( soul ) )
+				soul.SetShieldHealth( 0 )
+		}
+	)
+
+	wait max( 3.0, coreDuration )
+}
+
+void function SoulTitanCore_SetNextAvailableTime( entity soul, float time )
+{
+	soul.SetTitanSoulNetFloat( "coreAvailableFrac", min( time, 1.0 ) )
+	soul.SetNextCoreChargeAvailable( time )
+}
+
+void function SoulTitanCore_SetExpireTime( entity soul, float expireTime )
+{
+	if ( expireTime - Time() > 0 )
+	{
+		soul.SetTitanSoulNetFloat( "coreExpireFrac", 1.0 )
+		soul.SetTitanSoulNetFloatOverTime( "coreExpireFrac", 0.0, expireTime - Time() )
+	}
+	else
+	{
+		soul.SetTitanSoulNetFloat( "coreExpireFrac", 0.0 )
+	}
+	soul.SetCoreChargeExpireTime( expireTime )
+}
+#endif // SERVER
+
+float function SoulTitanCore_GetNextAvailableTime( entity soul )
+{
+	return soul.GetNextCoreChargeAvailable()
+}
+
+float function SoulTitanCore_GetExpireTime( entity soul )
+{
+	return soul.GetCoreChargeExpireTime()
+}

@@ -1,0 +1,675 @@
+global function ShPersistentData_LevelInit_Begin
+global function ShPersistentData_LevelInit_Finish
+
+#if SERVER
+global function SvPersistentData_OnClientConnectionCompleted
+global function AddCallback_UpgradePlayerPersistentData
+global function SetPersistenceBitfield
+global function SetPersistentIntArray
+#endif
+
+#if SERVER || CLIENT || UI
+global function AddCallback_OnPersistentDataReady
+global function GetPersistentIntArray
+global function IsPersistenceBitSet
+global function IsAnyPersistenceBitSet
+#endif
+
+#if (SERVER || CLIENT || UI) && DEV
+global function DEV_ShouldIgnorePersistence
+#endif
+
+#if SERVER && DEV
+global function AddCallback_GeneratePDef
+global function DEV_GeneratePersistentDataDefinitionAutogenSection
+global function DEV_PDefGen_AddEnum
+global function DEV_PDefGen_BeginStruct
+global function DEV_PDefGen_EndStruct
+global function DEV_PDefGen_BeginFieldGroup
+global function DEV_PDefGen_EndFieldGroup
+global function DEV_PDefGen_AddField_Internal
+global function DEV_PDefGen_AddField_Int
+global function DEV_PDefGen_AddField_Float
+global function DEV_PDefGen_AddField_Bool
+global function DEV_PDefGen_AddField_String
+global function DEV_PDefGen_AddField_Enum
+global function DEV_PDefGen_AddField_Struct
+global function DEV_PDefGen_AddField_IntArray_IntKey
+global function DEV_PDefGen_AddField_BoolArray_IntKey
+global function DEV_PDefGen_AddField_StructArray_IntKey
+global function DEV_PDefGen_AddField_IntArray_EnumKey
+global function DEV_PDefGen_AddField_BoolArray_EnumKey
+global function DEV_PDefGen_AddField_StructArray_EnumKey
+#endif
+
+#if CLIENT
+global function ServerToClient_OnPersistentDataReady
+#endif
+
+#if UI
+global function ClientToUI_OnPersistentDataReady
+#endif
+
+
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+
+#if SERVER
+global typedef UpgradePlayerPersistentDataCallbackType void functionref( entity player, int oldVersion, int newVersion )
+#if DEV
+global typedef GeneratePDefCallbackType void functionref()
+#endif
+#endif
+
+#if SERVER || CLIENT || UI
+global typedef OnPersistentDataReadyCallbackType void functionref( entity player )
+#endif
+
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+
+struct FileStruct_LifetimeLevel
+{
+	#if SERVER
+		array<UpgradePlayerPersistentDataCallbackType> upgradePlayerPersistentDataCallbacks
+		#if DEV
+			array<GeneratePDefCallbackType> generatePDefCallbacks
+		#endif
+	#endif
+
+	array<OnPersistentDataReadyCallbackType> onPersistentDataReadyCallbacks
+}
+FileStruct_LifetimeLevel& fileLevel
+
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+
+void function ShPersistentData_LevelInit_Begin()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	#if SERVER
+		#if DEV
+			AddCallback_GeneratePDef( GenerateBasicPDef )
+			AddClientCommandCallback( "dev_generate_pdef", ClientCommand_dev_generate_pdef )
+		#endif
+		AddCallback_UpgradePlayerPersistentData( UpgradeBasicPlayerPersistentData )
+	#endif
+
+	#if SERVER || CLIENT
+		Remote_RegisterClientFunction( "ServerToClient_OnPersistentDataReady" )
+	#endif
+}
+
+
+void function ShPersistentData_LevelInit_Finish()
+{
+	#if SERVER && DEV
+		DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( false )
+	#endif
+}
+
+
+#if SERVER && DEV
+void function GenerateBasicPDef()
+{
+	// Stuff like this should not use PDefGen because it's not dynamic
+	//DEV_PDefGen_BeginFieldGroup( "basic", "Basic player data" )
+	//DEV_PDefGen_AddField_Int( "initializedVersion" )
+	//DEV_PDefGen_AddField_Bool( "isACheater" )
+	//DEV_PDefGen_EndFieldGroup()
+}
+#endif
+
+
+#if SERVER
+void function UpgradeBasicPlayerPersistentData( entity player, int oldVersion, int newVersion )
+{
+	if ( oldVersion == 0 )
+	{
+		player.SetPersistentVar( "isACheater", false )
+	}
+}
+#endif
+
+
+
+///////////////////////
+///////////////////////
+//// Dev functions ////
+///////////////////////
+///////////////////////
+
+#if (SERVER || CLIENT || UI) && DEV
+bool function DEV_ShouldIgnorePersistence()
+{
+	return GetConVarBool( "loadouts_ignore_persistence" )
+}
+#endif
+
+
+#if SERVER && DEV
+void function AddCallback_GeneratePDef( GeneratePDefCallbackType cb )
+{
+	Assert( !fileLevel.generatePDefCallbacks.contains( cb ), "Callback already registered" )
+	fileLevel.generatePDefCallbacks.append( cb )
+}
+
+struct DEV_PDefGen_Field
+{
+	string typePart
+	string namePart
+	string nameSuffixPart
+	string commentPart
+}
+struct DEV_PDefGen_Struct
+{
+	string                           name
+	string                           commentPart
+	array<DEV_PDefGen_Field>         fieldList
+	table<string, DEV_PDefGen_Field> fieldMap
+}
+struct DEV_PDefGen_Enum
+{
+	string        name
+	string        commentPart
+	array<string> keys
+	array<string> keyComments
+}
+array<DEV_PDefGen_Enum> DEV_PDefGen_enumList
+table<string, DEV_PDefGen_Enum> DEV_PDefGen_enumMap
+array<DEV_PDefGen_Struct> DEV_PDefGen_structList
+table<string, DEV_PDefGen_Struct> DEV_PDefGen_structMap
+array<DEV_PDefGen_Struct> DEV_PDefGen_fieldGroupList
+table<string, DEV_PDefGen_Struct> DEV_PDefGen_fieldGroupMap
+DEV_PDefGen_Struct& DEF_PDefGen_currentFieldGroupOrStruct
+int DEV_PDefGen_currentlyDoingFieldGroupOrStruct = 0 // 1 = field group, 2 = struct
+
+string function DEV_GeneratePersistentDataDefinitionAutogenSection()
+{
+	DEV_PDefGen_enumList = []
+	DEV_PDefGen_enumMap = {}
+	DEV_PDefGen_structList = []
+	DEV_PDefGen_structMap = {}
+	DEV_PDefGen_Struct dummy
+	DEV_PDefGen_structMap["guid"] <- dummy
+	DEV_PDefGen_fieldGroupList = []
+	DEV_PDefGen_fieldGroupMap = {}
+
+	foreach( GeneratePDefCallbackType cb in fileLevel.generatePDefCallbacks )
+	{
+		cb()
+		Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct != 1, "AddCallback_GeneratePDef callback didn't call DEV_PDefGen_EndFieldGroup" )
+		Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct != 2, "AddCallback_GeneratePDef callback didn't call DEV_PDefGen_EndStruct" )
+	}
+
+	array<string> lines = []
+	lines.append( "//BEGIN_AUTOGEN/////////////////////////////" )
+	lines.append( "////////////////////////////////////////////" )
+	lines.append( "//// AUTO-GENERATED SECTION             ////" )
+	lines.append( "//// Manual changes will be lost.       ////" )
+	lines.append( "////////////////////////////////////////////" )
+	lines.append( "////////////////////////////////////////////" )
+
+	foreach( DEV_PDefGen_Enum e in DEV_PDefGen_enumList )
+	{
+		lines.append( "" )
+		if ( e.commentPart != "" )
+			lines.append( "// " + e.commentPart )
+		lines.append( "$ENUM_START " + e.name )
+		int maxKeyLength = 0
+		foreach( string key in e.keys )
+		{
+			maxKeyLength = maxint( maxKeyLength, key.len() )
+		}
+		foreach( int index, string key in e.keys )
+		{
+			lines.append( "\t" + key + (index in e.keyComments ? RepeatString( " ", maxKeyLength - key.len() ) + " // " + e.keyComments[index] : "") )
+		}
+		lines.append( "$ENUM_END" )
+	}
+
+	foreach( DEV_PDefGen_Struct s in DEV_PDefGen_structList )
+	{
+		lines.append( "" )
+		lines.append( "// " + s.commentPart )
+		lines.append( "$STRUCT_START " + s.name )
+		//int maxTypeLength = 0
+		//foreach( DEV_PDefGen_Field f in s.fieldList )
+		//{
+		//	maxTypeLength = maxint( maxTypeLength, f.typePart.len() )
+		//}
+		foreach( DEV_PDefGen_Field f in s.fieldList )
+		{
+			//lines.append( "\t" + f.typePart + RepeatString( " ", maxTypeLength - f.typePart.len() ) + " " + f.namePart + f.nameSuffixPart )
+			lines.append( "\t" + f.typePart + " " + f.namePart + f.nameSuffixPart + (f.commentPart != "" ? "// " + f.commentPart : "") )
+		}
+		lines.append( "$STRUCT_END" )
+	}
+
+	foreach( DEV_PDefGen_Struct fg in DEV_PDefGen_fieldGroupList )
+	{
+		lines.append( "" )
+		lines.append( "// " + fg.commentPart )
+		lines.append( "//::::" + fg.name.toupper() + "::::" )
+		//int maxTypeLength = 0
+		//foreach( DEV_PDefGen_Field f in fg.fieldList )
+		//{
+		//	maxTypeLength = maxint( maxTypeLength, f.typePart.len() )
+		//}
+		foreach( DEV_PDefGen_Field f in fg.fieldList )
+		{
+			//lines.append( "\t" + f.typePart + RepeatString( " ", maxTypeLength - f.typePart.len() ) + " " + f.namePart + f.nameSuffixPart )
+			lines.append( "\t" + f.typePart + " " + f.namePart + f.nameSuffixPart + (f.commentPart != "" ? "// " + f.commentPart : "") )
+		}
+		lines.append( "//::::" + fg.name.toupper() + "::::" )
+	}
+
+	lines.append( "" )
+	lines.append( "////////////////////////////////////////////" )
+
+	int longestLineLength = 0
+	foreach( string line in lines )
+		longestLineLength = maxint( longestLineLength, 3 + line.len() + ((line.len() > 0 && line[0] == '\t') ? 3 : 0) )
+
+	string out = ""
+	foreach( int index, string line in lines )
+	{
+		out += (line + "\n")
+		//out += (line
+		//		+ RepeatString( ((line.len() > 0 && line[line.len() - 1] == '/') ? "/" : " "), longestLineLength - line.len() - ((line.len() > 0 && line[0] == '\t') ? 3 : 0) )
+		//		+ RepeatString( "/", 8 )
+		//		+ "\n")
+	}
+	out += "//END_AUTOGEN///////////////////////////////"
+
+	return out
+}
+
+void function DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( bool shouldGenerate )
+{
+	// todo(dw): when persistence_use_dev_pdef is set, code should:
+	// - check for persistent_player_data_DEV_DO_NOT_CHECKIN and use it if present
+	// - force new persistent data every load
+
+	#if 0
+		string devPDefPath = "cfg/server/persistent_player_data_DEV_DO_NOT_CHECKIN.pdef"
+		bool useDevPDef    = (GetConVarBool( "persistence_use_dev_pdef", false ) || shouldGenerate)
+		bool devPDefExists = DevDoesFileExist( devPDefPath )
+
+		if ( devPDefExists && !useDevPDef )
+		{
+			Assert( false, "Someone checked in persistent_player_data_DEV_DO_NOT_CHECKIN.pdef! Please bug this (or set persistence_use_dev_pdef 1 if this is expected)." )
+			unreachable
+		}
+
+		string desiredPDefAutogenSectionContents = DEV_GeneratePersistentDataDefinitionAutogenSection()
+		string currentPDefPath
+		if ( devPDefExists )
+		{
+			currentPDefPath = devPDefPath
+		}
+		else
+		{
+			int currentPDefVersion = GetPersistentDataDefVersion()
+			currentPDefPath = "cfg/server/persistent_player_data_" + currentPDefVersion + ".pdef"
+		}
+
+		string currentPDefContents = DevReadFile( currentPDefPath )
+		if ( !shouldGenerate )
+		{
+			array<string> currentPDefAutoGenSectionMatches = RegexpFindSimple( currentPDefContents, "(//BEGIN_AUTOGEN.*//END_AUTOGEN/*)" )
+			Assert( currentPDefAutoGenSectionMatches.len() <= 1, "Found multiple BEGIN_AUTOGEN/END_AUTOGEN sections in PDef file." )
+			Assert( currentPDefAutoGenSectionMatches.len() > 0, "Could not find BEGIN_AUTOGEN/END_AUTOGEN section while reading PDef file." )
+			string currentPDefAutoGenSection = currentPDefAutoGenSectionMatches[0]
+			if ( !useDevPDef )
+			{
+				Assert( false, "PDef file BEGIN_AUTOGEN/END_AUTOGEN section out of date. Please bug this (or set persistence_use_dev_pdef 1 if this is expected)." )
+				unreachable
+			}
+			shouldGenerate = (currentPDefAutoGenSection != desiredPDefAutogenSectionContents)
+		}
+
+		if ( shouldGenerate )
+		{
+			Warning( "PDef file BEGIN_AUTOGEN/END_AUTOGEN section out of date. Regenerating because persistence_use_dev_pdef is set..." )
+			printt( "Reading " + currentPDefPath + " and writing to " + devPDefPath + "..." )
+
+			array<string> pdefParts = RegexpFindAll( currentPDefContents, "^(.*)(//BEGIN_AUTOGEN.*//END_AUTOGEN/*)(.*)$" )[0]
+			//string wholeFile = pdefParts[0]
+			string contentsBefore     = pdefParts[1]
+			//string oldAutoGen = pdefParts[2]
+			string contentsAfter      = pdefParts[3]
+
+			DevTextBufferClear()
+			DevTextBufferWrite( contentsBefore )
+			DevTextBufferWrite( desiredPDefAutogenSectionContents )
+			DevTextBufferWrite( contentsAfter )
+
+			DevP4Checkout( devPDefPath )
+			DevTextBufferDumpToFile( devPDefPath )
+			DevP4Add( devPDefPath )
+			DevTextBufferClear()
+
+			ReInitPersistentDataSystem() // todo(dw): =)
+		}
+	#else
+		if ( shouldGenerate )
+		{
+			printt( "Dumping generated pdef section to r2/cfg/server/pdef_autogen.pdef..." )
+			string desiredPDefAutogenSectionContents = DEV_GeneratePersistentDataDefinitionAutogenSection()
+			DevTextBufferClear()
+			DevTextBufferWrite( desiredPDefAutogenSectionContents )
+			DevP4Checkout( "cfg/server/pdef_autogen.pdef" )
+			DevTextBufferDumpToFile( "cfg/server/pdef_autogen.pdef" )
+			DevP4Add( "cfg/server/pdef_autogen.pdef" )
+			DevTextBufferClear()
+		}
+	#endif
+}
+
+bool function ClientCommand_dev_generate_pdef( entity player, array<string> args )
+{
+	DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( true )
+	return true
+}
+
+void function DEV_PDefGen_AddEnum( string name, array<string> keys, string comment = "", array<string> keyComments = [] )
+{
+	Assert( !(name in DEV_PDefGen_enumMap), "Enum with name '" + name + "' already registered" )
+	Assert( keys.len() > 0, "Attempt to register enum with zero keys" )
+	DEV_PDefGen_Enum e
+	e.name = name
+	e.keys = keys
+	e.commentPart = comment
+	e.keyComments = keyComments
+	DEV_PDefGen_enumList.append( e )
+	DEV_PDefGen_enumMap[name] <- e
+}
+void function DEV_PDefGen_BeginStruct( string name, string comment = "" )
+{
+	Assert( !(name in DEV_PDefGen_structMap), "Struct with name '" + name + "' already registered" )
+	Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct == 0, "DEV_PDefGen_BeginStruct called while already in a field group or struct" )
+	DEV_PDefGen_Struct s
+	s.name = name
+	s.commentPart = comment
+	DEF_PDefGen_currentFieldGroupOrStruct = s
+	DEV_PDefGen_currentlyDoingFieldGroupOrStruct = 2
+}
+void function DEV_PDefGen_EndStruct()
+{
+	Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct != 0, "DEV_PDefGen_EndStruct called with first calling DEV_PDefGen_BeginStruct" )
+	Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct != 1, "DEV_PDefGen_EndStruct called for a field group" )
+	DEV_PDefGen_structList.append( DEF_PDefGen_currentFieldGroupOrStruct )
+	DEV_PDefGen_structMap[DEF_PDefGen_currentFieldGroupOrStruct.name] <- DEF_PDefGen_currentFieldGroupOrStruct
+	DEV_PDefGen_currentlyDoingFieldGroupOrStruct = 0
+}
+void function DEV_PDefGen_BeginFieldGroup( string name, string comment = "" )
+{
+	Assert( !(name in DEV_PDefGen_fieldGroupMap), "Field group with name '" + name + "' already registered" )
+	Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct == 0, "DEV_PDefGen_BeginFieldGroup called while already in a field group or struct" )
+	DEV_PDefGen_Struct fg
+	fg.name = name
+	fg.commentPart = comment
+	DEF_PDefGen_currentFieldGroupOrStruct = fg
+	DEV_PDefGen_currentlyDoingFieldGroupOrStruct = 1
+}
+void function DEV_PDefGen_EndFieldGroup()
+{
+	Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct != 0, "DEV_PDefGen_EndFieldGroup called with first calling DEV_PDefGen_BeginFieldGroup" )
+	Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct != 2, "DEV_PDefGen_EndFieldGroup called for a struct" )
+	DEV_PDefGen_fieldGroupList.append( DEF_PDefGen_currentFieldGroupOrStruct )
+	DEV_PDefGen_fieldGroupMap[DEF_PDefGen_currentFieldGroupOrStruct.name] <- DEF_PDefGen_currentFieldGroupOrStruct
+	DEV_PDefGen_currentlyDoingFieldGroupOrStruct = 0
+}
+void function DEV_PDefGen_AddField_Internal( string typePart, string namePart, string nameSuffixPart, string commentPart )
+{
+	Assert( DEV_PDefGen_currentlyDoingFieldGroupOrStruct != 0, "DEV_PDefGen_AddField_* called with calling DEV_PDefGen_BeginStruct or DEV_PDefGen_BeginFieldGroup first" )
+	Assert( !(namePart in DEF_PDefGen_currentFieldGroupOrStruct.fieldMap), "Duplicate field name '" + namePart + "'" )
+	DEV_PDefGen_Field f
+	f.typePart = typePart
+	f.namePart = namePart
+	f.nameSuffixPart = nameSuffixPart
+	f.commentPart = commentPart
+	DEF_PDefGen_currentFieldGroupOrStruct.fieldList.append( f )
+	DEF_PDefGen_currentFieldGroupOrStruct.fieldMap[namePart] <- f
+}
+void function DEV_PDefGen_AddField_Int( string name, string comment = "" )
+{
+	DEV_PDefGen_AddField_Internal( "int", name, "", comment )
+}
+void function DEV_PDefGen_AddField_Float( string name, string comment = "" )
+{
+	DEV_PDefGen_AddField_Internal( "float", name, "", comment )
+}
+void function DEV_PDefGen_AddField_Bool( string name, string comment = "" )
+{
+	DEV_PDefGen_AddField_Internal( "bool", name, "", comment )
+}
+void function DEV_PDefGen_AddField_String( string name, int maxLength, string comment = "" )
+{
+	DEV_PDefGen_AddField_Internal( "string", name, "", comment )
+}
+void function DEV_PDefGen_AddField_Enum( string enumName, string name, string comment = "" )
+{
+	Assert( enumName in DEV_PDefGen_enumMap, "Field references non-existant enum '" + enumName + "'" )
+	DEV_PDefGen_AddField_Internal( enumName, name, "", comment )
+}
+void function DEV_PDefGen_AddField_Struct( string structName, string name, string comment = "" )
+{
+	Assert( structName in DEV_PDefGen_structMap, "Field references non-existant struct '" + structName + "'" )
+	DEV_PDefGen_AddField_Internal( structName, name, "", comment )
+}
+void function DEV_PDefGen_AddField_IntArray_IntKey( string name, int length, string comment = "" )
+{
+	DEV_PDefGen_AddField_Internal( "int", name, "[" + length + "]", comment )
+}
+void function DEV_PDefGen_AddField_BoolArray_IntKey( string name, int length, string comment = "" )
+{
+	DEV_PDefGen_AddField_Internal( "bool", name, "[" + length + "]", comment )
+}
+void function DEV_PDefGen_AddField_StructArray_IntKey( string structName, string name, int length, string comment = "" )
+{
+	Assert( structName in DEV_PDefGen_structMap, "Field references non-existant struct '" + structName + "'" )
+	DEV_PDefGen_AddField_Internal( structName, name, "[" + length + "]", comment )
+}
+void function DEV_PDefGen_AddField_IntArray_EnumKey( string name, string keyEnumName, string comment = "" )
+{
+	Assert( keyEnumName in DEV_PDefGen_enumMap, "Field references non-existant enum '" + keyEnumName + "' as key" )
+	DEV_PDefGen_AddField_Internal( "int", name, "[" + keyEnumName + "]", comment )
+}
+void function DEV_PDefGen_AddField_BoolArray_EnumKey( string name, string keyEnumName, string comment = "" )
+{
+	Assert( keyEnumName in DEV_PDefGen_enumMap, "Field references non-existant enum '" + keyEnumName + "' as key" )
+	DEV_PDefGen_AddField_Internal( "bool", name, "[" + keyEnumName + "]", comment )
+}
+void function DEV_PDefGen_AddField_StructArray_EnumKey( string structName, string name, string keyEnumName, string comment = "" )
+{
+	Assert( keyEnumName in DEV_PDefGen_enumMap, "Field references non-existant enum '" + keyEnumName + "' as key" )
+	Assert( structName in DEV_PDefGen_structMap, "Field references non-existant struct '" + structName + "'" )
+	DEV_PDefGen_AddField_Internal( structName, name, "[" + keyEnumName + "]", comment )
+}
+#endif // SERVER && DEV
+
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+
+#if SERVER
+void function AddCallback_UpgradePlayerPersistentData( UpgradePlayerPersistentDataCallbackType cb )
+{
+	Assert( !fileLevel.upgradePlayerPersistentDataCallbacks.contains( cb ), "Callback already registered" )
+	fileLevel.upgradePlayerPersistentDataCallbacks.append( cb )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+void function AddCallback_OnPersistentDataReady( OnPersistentDataReadyCallbackType cb )
+{
+	Assert( !fileLevel.onPersistentDataReadyCallbacks.contains( cb ), "Callback already registered" )
+	fileLevel.onPersistentDataReadyCallbacks.append( cb )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+// Get a script array from a persistent int array
+array<int> function GetPersistentIntArray( entity player, string variableName )
+{
+	array<int> arr
+	int size = PersistenceGetArrayCount( variableName )
+
+	for ( int i = 0; i < size; i++ )
+	{
+		int element = player.GetPersistentVarAsInt( variableName + "[" + i + "]" )
+
+		arr.append( element )
+	}
+
+	return arr
+}
+#endif
+
+
+#if SERVER
+// Sets element values in a persistent array from a script array. Modifies elements up to the size of the script array, but not more than the persistent array size.
+void function SetPersistentIntArray( entity player, string variableName, array<int> arr )
+{
+	int size = PersistenceGetArrayCount( variableName )
+
+	for ( int i = 0; i < size; i++ )
+	{
+		if ( i >= arr.len() )
+			break
+
+		player.SetPersistentVar( variableName + "[" + i + "]", arr[i] )
+	}
+}
+#endif
+
+
+#if SERVER
+void function SetPersistenceBitfield( entity player, string persistenceVar, int bitIndex, int value )
+{
+	Assert( value == 0 || value == 1 )
+
+	int arrayIndex = bitIndex / 32
+	int bitOffset  = bitIndex % 32
+
+	int decimalValue = 1 << bitOffset
+
+	Assert( arrayIndex < PersistenceGetArrayCount( persistenceVar ), "Need to increase the array size of the persistenceVar " + persistenceVar )
+	persistenceVar = persistenceVar + "[" + arrayIndex + "]"
+
+	int currentVal = player.GetPersistentVarAsInt( persistenceVar )
+	if ( value == 0 )
+		player.SetPersistentVar( persistenceVar, currentVal & ~decimalValue )
+	else
+		player.SetPersistentVar( persistenceVar, currentVal | decimalValue )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function IsPersistenceBitSet( entity player, string persistenceVar, int bitIndex )
+{
+	int arrayIndex = bitIndex / 32
+	int bitOffset  = bitIndex % 32
+
+	int decimalValue = 1 << bitOffset
+
+	Assert( arrayIndex < PersistenceGetArrayCount( persistenceVar ), "Need to increase the array size of the persistenceVar " + persistenceVar )
+	persistenceVar = persistenceVar + "[" + arrayIndex + "]"
+
+	return ((player.GetPersistentVarAsInt( persistenceVar ) & decimalValue) != 0)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function IsAnyPersistenceBitSet( entity player, string persistenceVar )
+{
+	int arrayCount = PersistenceGetArrayCount( persistenceVar )
+	for ( int i = 0; i < arrayCount; i++ )
+	{
+		if ( player.GetPersistentVarAsInt( persistenceVar + "[" + i + "]" ) > 0 )
+			return true
+	}
+	return false
+}
+#endif
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+
+#if SERVER
+void function SvPersistentData_OnClientConnectionCompleted( entity player )
+{
+	int initializedVersion = player.GetPersistentVarAsInt( "initializedVersion" )
+	int currentVersion     = GetPersistentDataDefVersion()
+
+	Assert( initializedVersion <= currentVersion )
+
+	if ( initializedVersion < currentVersion )
+	{
+		foreach( UpgradePlayerPersistentDataCallbackType cb in fileLevel.upgradePlayerPersistentDataCallbacks )
+		{
+			cb( player, initializedVersion, currentVersion )
+		}
+
+		player.SetPersistentVar( "initializedVersion", currentVersion )
+	}
+
+	foreach( OnPersistentDataReadyCallbackType cb in fileLevel.onPersistentDataReadyCallbacks )
+		cb( player )
+
+	Remote_CallFunction_NonReplay( player, "ServerToClient_OnPersistentDataReady" )
+}
+#endif
+
+
+#if CLIENT
+void function ServerToClient_OnPersistentDataReady()
+{
+	RunUIScript( "ClientToUI_OnPersistentDataReady" )
+
+	foreach( OnPersistentDataReadyCallbackType cb in fileLevel.onPersistentDataReadyCallbacks )
+		cb( GetLocalClientPlayer() )
+}
+#endif
+
+
+#if UI
+void function ClientToUI_OnPersistentDataReady()
+{
+	foreach( OnPersistentDataReadyCallbackType cb in fileLevel.onPersistentDataReadyCallbacks )
+		cb( GetUIPlayer() )
+}
+#endif
+
+

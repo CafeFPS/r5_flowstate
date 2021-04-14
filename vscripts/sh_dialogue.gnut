@@ -1,0 +1,254 @@
+untyped
+
+global function DialogueShared_Init
+
+global function RegisterConversation
+
+global function DoesConversationExist
+
+global function IsForcedDialogueOnly
+global function GetAllConversationData
+global function GetIndexToConversationTable
+global function GetConversationToIndexTable
+global function GetConversationStruct
+global function GetConversationName
+global function GetConversationDebounce
+global function GetConversationPriority
+global function GetConversationRange
+global function GetConversationLastPlayedTime
+global function SetConversationLastPlayedTime
+global function GetInheritedDebounceConversations
+
+global function Dispatch
+
+global function Voices
+
+global function ShouldPlaySquadConversation
+
+int convIndex
+
+global const int GENERIC_PILOT	=	0
+global const int BLISK_ID		=	1
+global const int SPYGLASS_ID	=	2
+global const int GRAVES_ID		=	3
+
+global struct ConversationStruct
+{
+	int priority
+	float debounceTime
+	float lastPlayedTime
+	int range
+	array<string> inheritedDebounceConversations
+	table<int, array> conversationTable //Mainly an SP concept at this point in time
+}
+
+struct
+{
+	table<int, string> indexToConv
+	table<string, int> convToIndex
+	table<string, ConversationStruct> conversations
+} file
+
+
+void function DialogueShared_Init()
+{
+	DialogueScheduleShared_Init()
+
+	#if CLIENT
+		DialogueScheduleClient_Init()
+	#else
+		DialogueScheduleServer_Init()
+	#endif
+
+	#if HAS_GAMEMODES
+	GameStateDialog_Init()
+	#endif
+
+	Weapon_Dialogue_Init()
+}
+
+void function RegisterConversation( string conversation, int priority, float debounceTime = DEFAULT_CONVERSATION_DEBOUNCE_TIME, int range = 0, array<string> inheritedDebounceConversations = [] )
+{
+	convIndex++
+	#if SERVER
+		file.convToIndex[ conversation ] <- convIndex
+	#else
+		file.indexToConv[ convIndex ] <- conversation
+	#endif
+
+	ConversationStruct dataStruct
+
+	dataStruct.conversationTable[ TEAM_MILITIA ] <- []
+	dataStruct.conversationTable[ TEAM_IMC ] <- []
+	dataStruct.conversationTable[ TEAM_BOTH ] <- []
+	dataStruct.priority = priority
+	dataStruct.debounceTime = debounceTime
+	dataStruct.range = range
+	dataStruct.lastPlayedTime = 0.0
+	dataStruct.inheritedDebounceConversations = inheritedDebounceConversations
+
+	file.conversations[ conversation ] <- dataStruct
+}
+
+table< string, ConversationStruct > function GetAllConversationData()
+{
+	return file.conversations
+}
+
+table< int, string > function GetIndexToConversationTable()
+{
+	return file.indexToConv
+}
+
+table< string, int> function GetConversationToIndexTable()
+{
+	return file.convToIndex
+}
+
+bool function DoesConversationExist( string conversationName )
+{
+	return conversationName in file.conversations
+}
+
+ConversationStruct function GetConversationStruct( string conversationName )
+{
+	return file.conversations[ conversationName ]
+}
+
+string function GetConversationName( int index )
+{
+	return file.indexToConv[ index ]
+}
+
+int function GetConversationPriority( string conversationType )
+{
+	return file.conversations[ conversationType ].priority
+}
+
+float function GetConversationLastPlayedTime( string conversationType )
+{
+	return file.conversations[ conversationType ].lastPlayedTime
+}
+
+void function SetConversationLastPlayedTime( string conversationType, float time )
+{
+	file.conversations[ conversationType ].lastPlayedTime = time
+}
+
+float function GetConversationDebounce( string conversationType )
+{
+	return file.conversations[ conversationType ].debounceTime
+}
+
+int function GetConversationRange( string conversationType )
+{
+	return file.conversations[ conversationType ].range
+}
+
+array<string> function GetInheritedDebounceConversations( string conversationType )
+{
+	return file.conversations[ conversationType ].inheritedDebounceConversations
+}
+
+string function Dispatch( int team, string alias )
+{
+	switch ( team )
+	{
+		case TEAM_IMC:
+		case TEAM_BOTH:
+			return "diag_imc_dispatch_" + alias
+
+		case TEAM_MILITIA:
+			return "diag_mcor_dispatch_" + alias
+	}
+
+	Assert( 0, "Unknown team " + team )
+	unreachable
+}
+
+array<string> function Voices( int team, string baseAlias, array<int> voiceAvailability )
+{
+	switch ( team )
+	{
+		case TEAM_IMC:
+		case TEAM_BOTH:
+			return AI_Dialogue_AliasAllVoices( "diag_imc_grunt", "_" + baseAlias, voiceAvailability, true )
+
+		case TEAM_MILITIA:
+			return AI_Dialogue_AliasAllVoices( "diag_mcor_grunt", "_" + baseAlias, voiceAvailability, true )
+	}
+
+	Assert( 0, "Unknown team " + team )
+	unreachable
+}
+
+array<string> function AI_Dialogue_AliasAllVoices( string aliasPreVoice, string aliasPostVoice, array<int> voiceAvailability, bool hasDry = true )
+{
+	Assert( !Flag( "EntitiesDidLoad" ) ) // you must set up your aliases at map init so they can be precached
+
+	// voiceAvailability is an array, hopefully [true,true,true], that specifies which voices exist for this sound.
+	// this lets us hack around missing voices that were not recorded.
+
+	Assert( voiceAvailability.len() == VOICE_COUNT )
+
+	int firstAvailableVoiceIndex = -1
+	foreach ( voiceIndex, available in voiceAvailability )
+	{
+		if ( available )
+		{
+			firstAvailableVoiceIndex = voiceIndex
+			break
+		}
+	}
+	Assert( firstAvailableVoiceIndex >= 0 )
+
+	array<string> res
+	for ( int voiceIndex = 0; voiceIndex < VOICE_COUNT; voiceIndex++ )
+	{
+		int useIndex = voiceIndex
+		if ( !voiceAvailability[ useIndex ] )
+			useIndex = firstAvailableVoiceIndex
+
+		string radioAlias = aliasPreVoice + (useIndex + 1) + aliasPostVoice
+
+		res.append( radioAlias )
+	}
+
+	return res
+}
+
+bool function IsForcedDialogueOnly( entity player )
+{
+	if ( level.nv.forcedDialogueOnly )
+		return true
+
+	return player.GetForcedDialogueOnly()
+}
+
+bool function ShouldPlaySquadConversation( entity player, string conversationType, float allowedTime, vector org, float rangeSqr )
+{
+	if ( !IsValid( player ) )
+		return false
+
+	if ( IsForcedDialogueOnly( player ) )
+	{
+		//printt( "ForcedDialogueOnly, not playing AI Conversation:"  + conversationType )
+		return false
+	}
+
+	if ( !GetGlobalNetBool( "squadConversationEnabled" ) )
+	{
+		//printt( "SquadConversationEnabled is false, not playing AI Conversation:"  + conversationType )
+		return false
+	}
+
+	if ( conversationType in player.s.lastAIConversationTime )
+	{
+		if ( player.s.lastAIConversationTime[ conversationType ] > allowedTime )
+			return false
+	}
+
+	return DistanceSqr( player.GetOrigin(), org ) <= rangeSqr
+}
+
+

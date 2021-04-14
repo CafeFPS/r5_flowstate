@@ -1,0 +1,186 @@
+// "Gamematerial" "effect_name"
+
+// "B" bloodyflesh
+// "X" plastic box, wade, ladder, woodladdder,
+// "I" player_control_clip
+
+ImpactTable
+{
+	FX
+	{
+		"C" "veh_jetwash_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "veh_jetwash_dirt" //Dirt, mud, sand, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "veh_jetwash_metal_Full" // metal_titan
+
+		"F" "veh_jetwash_metal_Full" //flesh
+		"G" "veh_jetwash_metal_Full" //metalgrate, chainlink, chain
+		"H" "veh_jetwash_metal_Full" //alienflesh
+
+		"J" "veh_jetwash_grass_FULL" //grass
+		"K" "veh_jetwash_dirt"
+		"L" "veh_jetwash_metal_Full" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "veh_jetwash_metal_Full" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "veh_jetwash_metal_Full"
+		"O" "veh_jetwash_grass_FULL" //Foliage
+		"P" "veh_jetwash_metal_Full" //Computer
+
+		"R" "veh_jetwash_metal_Full" //metalpanel, grenade, canister
+		"S" "veh_jetwash_dirt" //water, slime
+		"T" "veh_jetwash_concrete" //tile
+		"U" "veh_jetwash_metal_Full" //glass_breakable
+
+		"V" "veh_jetwash_metal_Full" //Metal Vent
+		"W" "veh_jetwash_metal_Full" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "veh_jetwash_dirt" //xo_shield
+
+		"Y" "veh_jetwash_metal_Full" //glass, brokenglass, glassbottle, pottery
+		"Z" "veh_jetwash_dirt"  //sand
+
+		"0" "veh_jetwash_dirt"
+		"1" "veh_jetwash_dirt"
+		"2" "veh_jetwash_dirt"
+		"3" "veh_jetwash_dirt"
+		"4" "veh_jetwash_dirt"
+		"5" "veh_jetwash_dirt"
+		"6" "veh_jetwash_dirt"
+		"7" "veh_jetwash_dirt"
+		"8" "veh_jetwash_dirt"
+		"9" "veh_jetwash_dirt" //puddle
+
+		"splash" "veh_jetwash_dirt"
+		"slime_splash" "veh_jetwash_dirt"
+
+		"airburst" "veh_jetwash_dirt"
+		"critical_hit" "veh_jetwash_metal_Full"
+	}
+
+
+Sound
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// sand?
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+		"X"	"none" // Titan bubble shield
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+		"headshot_flesh" "none"
+		"headshot_mechanical" "none"
+	}
+
+	Sound_attacker
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// Slime
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+		"X"	"none" // Titan bubble shield
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+		"headshot_flesh" "none"
+		"headshot_mechanical" "none"
+	}
+
+	Sound_victim
+	{
+		"C" "none"
+		"D" "none"
+		"E" "none"
+
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// Slime
+		"O" "none"
+		"P" "none"
+
+		"R" "none"
+		"S" "none"
+		"T" "none"
+
+		"V" "none"
+		"W" "none"
+
+		"Y" "none"
+		"Z" "none"
+
+		"splash" "none"
+		"slime_splash" "none"
+
+		"airburst" "none"
+		"shieldhit" "none"
+		"holohit" "none"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "none"
+		//"headshot_mechanical" "none"
+	}
+
+	Sound_victim_from_AI
+	{
+		"F" "none"
+		"P" "none"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "none"
+		//"headshot_mechanical" "none"
+	}
+}

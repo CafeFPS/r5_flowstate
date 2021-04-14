@@ -1,0 +1,511 @@
+
+global function BleedoutClient_Init
+
+global function ClBleedout_RegisterNetworkFunctions
+global function Bleedout_DisplayFirstAidProgressBar
+
+global function Bleedout_SetFirstAidStrings
+
+global function AddCallback_OnBleedoutStarted
+global function AddCallback_OnBleedoutEnded
+
+global function ServerCallback_Bleedout_DownStateThirdPersonCameraSettings
+
+global function Bleedout_DisplayTrainingFirstAidProgressBar
+global function Bleedout_StopTrainingFirstAidProgressBar
+
+global const string SIGNAL_BLEEDOUT_STATE_CHANGED = "sig_BleedoutStateChanged"
+
+const asset FX_BLEEDOUT_SCREEN = $"P_bleedout_fade_FP"
+
+struct
+{
+	array<void functionref( entity,float )> onBleedoutStartedCallbacks
+	array<void functionref( entity )> onBleedoutEndedCallbacks
+	int currentResAttemptID = -1
+	string firstAidApplyString = "#BLEEDOUT_APPLYING_FIRST_AID"
+	string firstAidReceiveString = "#BLEEDOUT_RECIEVING_FIRST_AID"
+	int colorCorrection
+
+	int bleedoutFXID = -1
+	float bleedoutFXAlpha = 0.0
+	float reviveStartTime = 0.0
+	float reviveEndTime = 0.0
+} file
+
+void function BleedoutClient_Init()
+{
+	RegisterSignal( "Bleedout_StopFirstAid" )
+	RegisterSignal( "Bleedout_OnRevive" )
+	RegisterSignal( "BleedOut_OnStartDying" )
+	RegisterSignal( "Bleedout_StopBleedoutEffects" )
+	RegisterSignal( SIGNAL_BLEEDOUT_STATE_CHANGED )
+
+	AddCreateCallback( "player", OnPlayerCreated )
+
+	PrecacheParticleSystem( FX_BLEEDOUT_SCREEN )
+
+	file.colorCorrection = ColorCorrection_Register( "materials/correction/player_is_hurt.raw" )
+}
+
+void function OnPlayerCreated( entity player )
+{
+	AddEntityCallback_GetUseEntOverrideText( player, PlayerBleedoutUseTextOverride )
+}
+
+string function PlayerBleedoutUseTextOverride( entity player )
+{
+	entity localPlayer = GetLocalViewPlayer()
+	if ( IsFriendlyTeam( localPlayer.GetTeam(), player.GetTeam() ) )
+	{
+		if ( !Bleedout_PlayerCanRes( localPlayer ) )
+			return " "
+
+		if ( !Bleedout_PlayerCanBeRessed( player ) )
+			return " "
+
+		return "#BLEEDOUT_USE_TEAMMATE_RES_DYNAMIC"
+	}
+	else if ( IsEnemyTeam( localPlayer.GetTeam(), player.GetTeam() ) )
+	{
+		if ( IsRecruitMode() && CanRecruitOrRevivePlayer( localPlayer, player ) )
+			return "#RECRUIT_USE_TEAMMATE_RES_DYNAMIC"
+		//TODO: handle recruit_same_character == 0
+
+		if ( IsValidSyncedMeleeTarget( localPlayer, null, null, player ) )
+			return "#MELEE_EXECUTE_PROMPT_DYNAMIC"
+	}
+
+	return " "
+}
+
+void function ClBleedout_RegisterNetworkFunctions()
+{
+	RegisterNetworkedVariableChangeCallback_time( "bleedoutEndTime", BleedoutEndTimeChanged )
+	RegisterNetworkedVariableChangeCallback_ent( "revivePlayerHealer", BLEEDOUT_RevivePlayerHealerChanged )
+}
+
+void function AddCallback_OnBleedoutStarted( void functionref(entity,float) func )
+{
+	Assert( !file.onBleedoutStartedCallbacks.contains( func ) )
+	file.onBleedoutStartedCallbacks.append( func )
+}
+
+void function AddCallback_OnBleedoutEnded( void functionref(entity) func )
+{
+	Assert( !file.onBleedoutEndedCallbacks.contains( func ) )
+	file.onBleedoutEndedCallbacks.append( func )
+}
+
+void function Bleedout_SetFirstAidStrings( string applyString, string receiveString )
+{
+	file.firstAidApplyString = applyString
+	file.firstAidReceiveString = receiveString
+}
+
+void function BLEEDOUT_RevivePlayerHealerChanged( entity playerToRes, entity oldPlayerHealer, entity playerHealer, bool actuallyChanged )
+{
+	ManageHighlightEntity( playerToRes )
+
+	if ( !IsValid( playerHealer ) )
+	{
+		if ( IsValid( playerToRes ) )
+			playerToRes.Signal( "Bleedout_StopFirstAid" )
+
+		if ( IsValid( oldPlayerHealer ) )
+			oldPlayerHealer.Signal( "Bleedout_StopFirstAid" )
+
+		return
+	}
+
+	entity viewPlayer = GetLocalViewPlayer()
+	int team = viewPlayer.GetTeam()
+
+	bool playerOnDifferentTeam = IsEnemyTeam( playerToRes.GetTeam(),  playerHealer.GetTeam() )
+	if ( !IsRecruitMode() && playerOnDifferentTeam )
+		return	// Different teams so do nothing
+
+	file.reviveStartTime = Time()
+	float endTime = playerToRes.GetPlayerNetTime( "reviveEndTime" )
+	Assert( endTime > 0, "endTime was zero even though I had a valid playerToRes." )
+	// According to Haggerty, since both net vars is on the same player they should update on the same frame. So this assert shouldn't happen ever. -Roger
+
+	file.reviveEndTime = file.reviveStartTime + endTime
+
+	string ruiString = playerOnDifferentTeam  ? "#RECRUIT_RECIEVING_FIRST_AID" : file.firstAidReceiveString
+	if( viewPlayer == playerHealer )
+		ruiString = playerOnDifferentTeam ? "#RECRUIT_APPLYING_FIRST_AID" : file.firstAidApplyString
+
+	if ( viewPlayer == playerToRes || viewPlayer == playerHealer )
+	{
+		// display center revive rui only for the playerHealer and playerToRes
+		thread Bleedout_DisplayFirstAidProgressBar( viewPlayer, endTime, endTime - Time(), ruiString )
+	}
+}
+
+void function Bleedout_DisplayTrainingFirstAidProgressBar( entity dummy, float endTime, float progressTime )
+{
+	thread Bleedout_DisplayFirstAidProgressBar( dummy, endTime, progressTime, file.firstAidApplyString )
+}
+
+void function Bleedout_StopTrainingFirstAidProgressBar()
+{
+	Signal( GetLocalClientPlayer(), "Bleedout_StopFirstAid" )
+}
+
+void function Bleedout_DisplayFirstAidProgressBar( entity playerToRes, float endTime, float progressTime, string text )
+{
+	//printt( "Bleedout_DisplayFirstAidProgressBar", playerToRes, endTime, progressTime, text, Time(), endTime - Time() )
+
+	Signal( playerToRes, "Bleedout_OnRevive" )
+
+	entity player = GetLocalClientPlayer()
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "Bleedout_StopFirstAid" )
+	playerToRes.EndSignal( "Bleedout_OnRevive" )
+
+	var rui = CreateCockpitRui( $"ui/bleedout_timer.rpak" )
+	RuiSetString( rui, "text", text )
+	RuiSetGameTime( rui, "endTime", endTime )
+	RuiSetFloat( rui, "progressTime", progressTime )
+
+	OnThreadEnd(
+		function() : ( rui, playerToRes )
+		{
+			RuiDestroy( rui )
+
+			if ( IsValid( playerToRes ) && playerToRes.IsPlayer() )
+				BleedoutEndTimeChanged( playerToRes, 0.0, playerToRes.GetPlayerNetTime( "bleedoutEndTime" ), true )
+		}
+	)
+
+	while ( Time() <= endTime )
+	{
+		WaitFrame()
+	}
+}
+
+void function BleedoutEndTimeChanged( entity player, float oldVal, float newVal, bool actuallyChanged )
+{
+	player.Signal( SIGNAL_BLEEDOUT_STATE_CHANGED )
+
+	if ( newVal <= 0.0 )
+		thread HideWoundedMarker( player )
+	else
+	{
+		thread ShowWoundedMarker( player, newVal )
+	}
+}
+
+const bool DO_OLD_WOUNDED_MARKER_1P = true
+const bool DO_OLD_WOUNDED_MARKER_3P = false
+void function ShowWoundedMarker( entity woundedPlayer, float endTime )
+{
+	if ( !IsValid( woundedPlayer ) )
+		return
+
+	if ( !DO_OLD_WOUNDED_MARKER_1P && (woundedPlayer == GetLocalViewPlayer()) )
+		return
+	if ( !DO_OLD_WOUNDED_MARKER_3P && (woundedPlayer != GetLocalViewPlayer()) )
+		return
+
+	if ( IsEnemyTeam( woundedPlayer.GetTeam(), GetLocalViewPlayer().GetTeam() ) )
+		return
+
+	woundedPlayer.Signal( "BleedOut_OnStartDying" )
+
+	foreach ( func in file.onBleedoutStartedCallbacks )
+	{
+		func( woundedPlayer, endTime )
+	}
+
+	float startTime = endTime - Bleedout_GetBleedoutTime( woundedPlayer )
+
+	woundedPlayer.Signal( "Bleedout_OnRevive" )
+	woundedPlayer.EndSignal( "OnDeath" )
+	woundedPlayer.EndSignal( "Bleedout_OnRevive" )
+
+	asset uiAsset = $"ui/bleedout_wounded_marker.rpak"
+
+	if ( woundedPlayer == GetLocalViewPlayer() )
+	{
+		uiAsset = $"ui/bleedout_wounded_marker_2d.rpak"
+	}
+
+	asset shieldUIAsset = $"ui/bleedout_ko_shield_display.rpak"
+
+	bool didCC = false
+	int incapShieldTier = 0
+
+	var rui = CreateCockpitRui( uiAsset, 500 )
+	var shieldRUI = CreateCockpitPostFXRui( shieldUIAsset, 500 )
+	if ( woundedPlayer != GetLocalViewPlayer() )
+	{
+		EmitSoundOnEntity( woundedPlayer, "UI_DownedAlert_Friendly" )
+		RuiTrackFloat3( rui, "pos", woundedPlayer, RUI_TRACK_POINT_FOLLOW, woundedPlayer.LookupAttachment( "HEADSHOT" ) )
+	}
+	else
+	{
+		RuiSetString( rui, "title", "#SURVIVAL_BLEEDING_OUT" )
+
+
+		incapShieldTier = EquipmentSlot_GetEquipmentTier( woundedPlayer, "incapshield" )
+		if( incapShieldTier > 0 )
+		{
+			LootData lootData = EquipmentSlot_GetEquippedLootDataForSlot( woundedPlayer, "incapshield" )
+
+			RuiSetString( shieldRUI, "nameText", lootData.pickupString )
+			RuiSetBool( shieldRUI, "hasKOShield", true )
+			RuiSetInt( shieldRUI, "shieldTier", incapShieldTier )
+			RuiSetImage( shieldRUI, "shieldIcon", lootData.hudIcon )
+			thread TrackKOShieldHealthAndReadiness( woundedPlayer, shieldRUI )
+		}
+
+		//Display self revive propmpt if the player has the ability to self revive.
+		thread TrackSelfReviveState( woundedPlayer, shieldRUI )
+
+		thread BleedoutScreenFX_Start( woundedPlayer, startTime, endTime )
+		didCC = true
+	}
+	RuiSetGameTime( rui, "startTime", startTime )
+	RuiSetGameTime( rui, "endTime", endTime )
+
+	if ( PlayerHasUnitFrame( woundedPlayer ) )
+	{
+		UnitFrameDef unitframe = GetUnitFrame( woundedPlayer )
+	}
+
+	if ( Bleedout_GetBleedoutTime( woundedPlayer ) <= 0 )
+	{
+		RuiSetBool( rui, "showTimer", false )
+	}
+
+	OnThreadEnd(
+	function() : ( rui, shieldRUI, woundedPlayer, didCC )
+		{
+			RuiDestroy( rui )
+			RuiDestroy( shieldRUI )
+
+			if ( PlayerHasUnitFrame( woundedPlayer ) )
+			{
+				UnitFrameDef unitframe = GetUnitFrame( woundedPlayer )
+			}
+
+			if ( didCC )
+			{
+				if ( woundedPlayer == GetLocalViewPlayer() )
+					DoF_SetFarDepthToDefault()
+			}
+		}
+	)
+
+	float fadeTime = 10.0
+	wait Bleedout_GetBleedoutTime( woundedPlayer ) - fadeTime
+	if ( woundedPlayer == GetLocalViewPlayer() )
+		DoF_LerpFarDepth( 1, 20, fadeTime )
+
+	WaitForever()
+}
+
+void function TrackSelfReviveState( entity player, var rui )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "Bleedout_OnRevive" )
+
+	while	( true )
+	{
+		bool canSelfRes = CanSelfRevive( player )
+		RuiSetBool( rui, "canSelfRes", canSelfRes )
+
+		WaitFrame()
+	}
+
+}
+
+bool function CanSelfRevive( entity player )
+{
+	bool canSelfRes = PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE )
+	return canSelfRes
+}
+
+void function TrackKOShieldHealthAndReadiness( entity player, var rui )
+{
+	int shieldTier = EquipmentSlot_GetEquipmentTier( player, "incapshield" )
+	if ( shieldTier == 0 )
+		return
+
+	entity shield = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+
+	if ( !IsValid( shield ) )
+		return
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "Bleedout_OnRevive" )
+	shield.EndSignal( "OnDestroy" )
+
+	float maxShieldHealth = float( IncapShield_GetMaxShieldHealthFromTier( shieldTier ) )
+	RuiSetFloat( rui, "shieldMaxHealth", maxShieldHealth )
+
+	while ( true )
+	{
+		float currentShieldHealth = float( shield.GetScriptInt0() )
+
+		RuiSetFloat( rui, "shieldHealth", currentShieldHealth )
+		RuiSetFloat( rui, "shieldMaxHealth", maxShieldHealth )
+
+		bool isReady = !IsPlayingFirstPersonAnimation( player ) && shield.IsReadyToFire() && (currentShieldHealth > 0)
+		RuiSetBool( rui, "isKOShieldReady", isReady )
+		
+		WaitFrame()
+	}
+}
+
+const float BLEEDOUTFX_ALPHA_START = 0.55
+const float BLEEDOUTFX_ALPHA_END = 1.0
+const float BLEEDOUTFX_ALPHA_REVIVE_START = 0.8
+const float BLEEDOUTFX_ALPHA_REVIVE_END = 0.5
+void function BleedoutScreenFX_Start( entity woundedPlayer, float startTime, float endTime )
+{
+	if( !IsValid( woundedPlayer ) )
+		return
+
+	if( woundedPlayer != GetLocalViewPlayer() )
+		return
+
+	if ( !IsValid( woundedPlayer.GetCockpit() ) )
+		return
+
+	if ( woundedPlayer.ContextAction_IsMeleeExecutionTarget() )
+		return
+
+	if ( EffectDoesExist( file.bleedoutFXID ) )
+		return
+
+	int index = GetParticleSystemIndex( FX_BLEEDOUT_SCREEN )
+
+	EndSignal( woundedPlayer, "OnDeath" )
+	EndSignal( woundedPlayer, "Bleedout_StopBleedoutEffects" )
+
+	//Creates the particle effect
+	file.bleedoutFXID = StartParticleEffectOnEntity( woundedPlayer, index, FX_PATTACH_POINT_FOLLOW, woundedPlayer.GetCockpit().LookupAttachment( "CAMERA" ) )
+
+	//Draw over view model
+	EffectSetIsWithCockpit( file.bleedoutFXID, true )
+
+	OnThreadEnd(
+		function() : ( woundedPlayer )
+		{
+			if ( EffectDoesExist( file.bleedoutFXID ) )
+				thread BleedoutScreenFX_Stop( woundedPlayer )
+			ColorCorrection_SetWeight( file.colorCorrection, 0 )
+		}
+	)
+
+	float colorCorrectionWeight = 0.4
+
+	//Fade the alpha on the control point
+	float currentLerpTime
+	float lerpTime = endTime
+	while ( Bleedout_IsBleedingOut( woundedPlayer ) )
+	{
+		if ( !IsValid( Bleedout_GetRevivingPlayer( woundedPlayer ) ) && !woundedPlayer.ContextAction_IsMeleeExecutionTarget() )
+		{
+			currentLerpTime = Time()
+			currentLerpTime = min( currentLerpTime, lerpTime )
+
+			float lerpPercent = 1 - ((endTime - currentLerpTime) / Bleedout_GetBleedoutTime( woundedPlayer ))
+			float finalLerpPercent = lerpPercent * lerpPercent * lerpPercent
+
+			file.bleedoutFXAlpha = LerpFloat( BLEEDOUTFX_ALPHA_START, BLEEDOUTFX_ALPHA_END, finalLerpPercent )
+			colorCorrectionWeight = 0.4
+		}
+		else if ( woundedPlayer.ContextAction_IsMeleeExecutionTarget() )
+		{
+			file.bleedoutFXAlpha = 0.0
+			colorCorrectionWeight = 0
+		}
+		else
+		{
+			float reviveStartAlpha = file.bleedoutFXAlpha >= BLEEDOUTFX_ALPHA_REVIVE_START ? BLEEDOUTFX_ALPHA_REVIVE_START : file.bleedoutFXAlpha
+			float reviveEnd = file.reviveEndTime
+			file.bleedoutFXAlpha = GraphCapped( Time(), file.reviveStartTime, reviveEnd, reviveStartAlpha, BLEEDOUTFX_ALPHA_REVIVE_END )
+			colorCorrectionWeight = 0.4
+		}
+
+		if ( EffectDoesExist( file.bleedoutFXID ) )
+			EffectSetControlPointVector( file.bleedoutFXID, 1, <file.bleedoutFXAlpha, 0, 0> )
+
+		ColorCorrection_SetWeight( file.colorCorrection, colorCorrectionWeight )
+
+		WaitFrame()
+	}
+}
+
+const float BLEEDOUTFX_END_DELAY = 0.75
+void function BleedoutScreenFX_Stop( entity woundedPlayer )
+{
+	if( !IsValid( woundedPlayer ) )
+		return
+
+	if( woundedPlayer != GetLocalViewPlayer() )
+		return
+
+	if( !EffectDoesExist( file.bleedoutFXID ) )
+		return
+
+	float startTime = Time()
+	float endTime   = startTime + BLEEDOUTFX_END_DELAY
+
+	OnThreadEnd(
+		function() : ( woundedPlayer )
+		{
+			if ( EffectDoesExist( file.bleedoutFXID ) )
+			{
+				EffectStop( file.bleedoutFXID, false, true )
+				file.bleedoutFXAlpha = 0.0
+			}
+		}
+	)
+
+	while ( Time() <= endTime )
+	{
+		float alphaResult = GraphCapped( Time(), startTime, endTime, file.bleedoutFXAlpha, 0.0 )
+		if ( EffectDoesExist( file.bleedoutFXID ) )
+		{
+			EffectSetControlPointVector( file.bleedoutFXID, 1, <alphaResult, 0, 0> )
+			if( alphaResult <= 0 )
+				EffectStop( file.bleedoutFXID, false, true )
+		}
+
+		WaitFrame()
+	}
+}
+
+void function HideWoundedMarker( entity woundedPlayer )
+{
+	if ( !IsValid( woundedPlayer ) )
+		return
+	woundedPlayer.Signal( "Bleedout_OnRevive" )
+
+	thread BleedoutScreenFX_Stop( woundedPlayer )
+
+	foreach ( func in file.onBleedoutEndedCallbacks )
+	{
+		func( woundedPlayer )
+	}
+}
+
+void function ServerCallback_Bleedout_DownStateThirdPersonCameraSettings()
+{
+	SetConVarInt( "c_thirdpersonshoulderdist", 48 )
+	SetConVarFloat( "c_thirdpersonshoulderaimdist", 0.0 )
+	SetConVarFloat( "c_thirdpersonshoulderheight", 8.0 )
+	SetConVarInt( "c_thirdpersonshoulderoffset", 0 )
+	SetConVarFloat( "c_thirdpersonshoulderoffset", 8.0 )
+	SetConVarFloat( "cam_ideallag", 0.0 )
+	SetConVarFloat( "c_mindistance", 48.0 )
+	SetConVarFloat( "c_maxdistance", 48.0 )
+	SetConVarFloat( "cam_idealdist", 0.0 )
+}

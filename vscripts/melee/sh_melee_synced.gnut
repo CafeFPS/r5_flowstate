@@ -1,0 +1,427 @@
+//
+
+#if SERVER || CLIENT || UI
+global function MeleeSyncedShared_Init
+#endif
+
+#if SERVER || CLIENT
+global function AttackerCanStartSyncedMelee
+global function IsValidSyncedMeleeTarget
+#endif
+
+#if SERVER
+global function TryStartSyncedMelee
+//global function DoSyncedMelee
+#endif
+
+#if SERVER || CLIENT
+global function CodeCallback_IsValidMeleeExecutionTarget
+#endif
+
+
+
+////////////////
+////////////////
+//// Consts ////
+////////////////
+////////////////
+const float SYNCED_MELEE_MAX_HEIGHT_DIFFERENCE = 30.0
+
+const float SYNCED_MELEE_ANIMATION_BLEND_TIME = 0.5
+const float SYNCED_MELEE_CAMERA_BLEND_IN_TIME = 0.0
+const float SYNCED_MELEE_CAMERA_BLEND_OUT_TIME = 0.0
+
+// attacker, going for an off white flash frame at start of execution
+const vector SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL = <224, 224, 224>
+const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_ALPHA = 255
+const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_TIME = 0.15
+const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_HOLD = 0.1
+
+// victim, going for red flash frame at start of execution
+const vector SYNCED_MELEE_TARGET_SCREEN_FADE_COL = <173, 15, 15>
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_ALPHA = 255
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_TIME = 0.15
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_HOLD = 0.1
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+#if SERVER || CLIENT || UI
+void function MeleeSyncedShared_Init()
+{
+	#if SERVER
+		RegisterSignal( "OnSyncedMelee" )
+		RegisterSignal( "OnSyncedMeleeVictim" )
+		RegisterSignal( "OnSyncedMeleeAttacker" )
+		RegisterSignal( "InterruptSyncedMelee" )
+		RegisterSignal( "SyncedMeleeOver" )
+	#endif
+
+	#if SERVER
+		AddCallback_OnPreClientDisconnected( OnPlayerDisconnected )
+	#endif
+}
+#endif
+
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+#if SERVER || CLIENT
+bool function AttackerCanStartSyncedMelee( entity attacker, entity meleeInputWeapon, entity meleeAttackWeapon )
+{
+	if ( !AttackerCanStartMelee( attacker, meleeInputWeapon, meleeAttackWeapon ) )
+		return false
+
+	if ( attacker.IsHuman() && !attacker.IsOnGround() )
+		return false
+
+	if ( attacker.IsWallRunning() || attacker.IsTraversing() ) // No necksnaps while wall running or mantling
+		return false
+
+	return true
+}
+#endif
+
+
+#if SERVER || CLIENT
+bool function IsValidSyncedMeleeTarget( entity attacker, entity meleeInputWeapon, entity meleeAttackWeapon, entity target )
+{
+	if ( GetCurrentPlaylistVarInt( "sur_dev_disable_executions", 0 ) > 0 )
+		return false
+
+	Assert( attacker != target )
+
+	if ( !IsValidMeleeAttackTarget( attacker, meleeInputWeapon, meleeAttackWeapon, target ) )
+		return false
+
+	if ( !IsHumanSized( target ) )
+		return false
+
+	if ( target.IsInvulnerable() )
+		return false
+
+	// Disallow executing someone that is already in execution. That road leads to script errors and asserts.
+	if ( target.ContextAction_IsMeleeExecution() ) // Covers both attacker and victim.
+		return false
+
+	//if ( target.ContextAction_IsBusy() ) // (dw): Nothing uses the "busy" context action as of 2018-10-29
+	//	return false
+
+	if ( target.IsPlayer() ) //Disallow execution on a bunch of player-only actions
+	{
+		if ( !target.IsOnGround() ) //disallow mid-air necksnaps.
+			return false
+
+		if ( target.IsWallRunning() )
+			return false
+
+		if ( target.IsTraversing() )
+			return false
+
+		if ( !Bleedout_IsBleedingOut( target ) )
+			return false
+	}
+	else if ( target.IsNPC() )
+	{
+		if ( target.ContextAction_IsActive() )
+			return false
+
+		if ( !target.IsInterruptable() )
+			return false
+
+		if ( !target.CanBeMeleeExecuted() )
+			return false
+
+		if ( target.Dev_GetAISettingByKeyField( "disableMeleeExecution" ) == 1 )
+			return false
+	}
+
+	if ( fabs( attacker.GetWorldSpaceCenter().z - target.GetWorldSpaceCenter().z ) > SYNCED_MELEE_MAX_HEIGHT_DIFFERENCE )
+		return false
+
+	if ( !PlayerMelee_IsExecutionReachable( attacker, target, 0.3 ) )
+		return false
+
+	return true
+}
+#endif
+
+
+#if SERVER
+bool function TryStartSyncedMelee( entity attacker, entity target )
+{
+	Assert( IsValid( attacker ) )
+	Assert( attacker.IsPlayer() )
+	Assert( IsValid( target ) )
+
+	entity meleeInputWeapon  = null // We don't know what it is because they haven't pressed a button yet
+	entity meleeAttackWeapon = null
+
+	if ( !AttackerCanStartSyncedMelee( attacker, meleeInputWeapon, meleeAttackWeapon ) )
+		return false
+
+	if ( !IsValidSyncedMeleeTarget( attacker, meleeInputWeapon, meleeAttackWeapon, target ) )
+		return false
+
+	thread DoSyncedMelee_Thread( attacker, target )
+	return true
+}
+#endif
+
+
+//#if SERVER
+//void function DoSyncedMelee( entity attacker, entity target )
+//{
+//	Assert( IsValid( attacker ) )
+//	Assert( attacker.IsPlayer() )
+//	Assert( IsValid( target ) )
+//	Assert( AttackerCanStartSyncedMelee( attacker ) ) // must call this yourself first before calling this function
+//	Assert( IsValidSyncedMeleeTarget( attacker, target ) ) // must call this yourself first before calling this function
+//
+//	thread DoSyncedMelee_Thread( attacker, target )
+//}
+//#endif
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+#if SERVER || CLIENT
+bool function CodeCallback_IsValidMeleeExecutionTarget( entity attacker, entity target )
+{
+	// Called after pressing the melee button to recheck for targets
+	// (dW): This function never seems to be used.
+
+	return IsValidSyncedMeleeTarget( attacker, null, null, target )
+}
+#endif
+
+
+#if SERVER
+void function DoSyncedMelee_Thread( entity attacker, entity target )
+{
+	bool forceKillTarget = (GetBugReproNum() == 666)
+
+	bool targetWasBleedingOut = (target.IsPlayer() && Bleedout_IsBleedingOut( target ))
+
+	OnThreadEnd( function() : ( attacker, target, targetWasBleedingOut, forceKillTarget ) {
+		if ( IsValid( attacker ) )
+		{
+			RemoveCinematicFlag( attacker, CE_FLAG_TITAN_3P_CAM | CE_FLAG_EXECUTION )
+			ScreenFade( attacker, SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL.x, SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL.y, SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL.z, SYNCED_MELEE_ATTACKER_SCREEN_FADE_ALPHA,
+				SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_TIME, SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_HOLD, FFADE_IN )
+
+			ClearPlayerAnimViewEntity( attacker, SYNCED_MELEE_CAMERA_BLEND_OUT_TIME )
+
+			attacker.PlayerMelee_ExecutionEndAttacker()
+			attacker.PlayerMelee_SetState( PLAYER_MELEE_STATE_NONE )
+			attacker.UnforceStand()
+			DeployAndEnableWeapons( attacker )
+
+			attacker.Anim_Stop()
+			attacker.e.syncedMeleeTarget = null
+
+			PutEntityInSafeSpot( attacker, target, null, attacker.GetOrigin(), attacker.GetOrigin() )
+
+			Signal( attacker, "SyncedMeleeOver" )
+		}
+
+		if ( IsValid( target ) )
+		{
+			target.ClearParent()
+
+			if ( target.IsPlayer() )
+			{
+				RemoveCinematicFlag( target, CE_FLAG_TITAN_3P_CAM | CE_FLAG_EXECUTION )
+				ScreenFade( target, SYNCED_MELEE_TARGET_SCREEN_FADE_COL.x, SYNCED_MELEE_TARGET_SCREEN_FADE_COL.y, SYNCED_MELEE_TARGET_SCREEN_FADE_COL.z, SYNCED_MELEE_TARGET_SCREEN_FADE_ALPHA,
+					SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_TIME, SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_HOLD, FFADE_IN )
+
+				ClearPlayerAnimViewEntity( target, SYNCED_MELEE_CAMERA_BLEND_OUT_TIME )
+
+				target.PlayerMelee_ExecutionEndTarget()
+				target.UnforceStand()
+				DeployAndEnableWeapons( target )
+				if ( IsAlive( target ) )
+				{
+					if ( targetWasBleedingOut )
+						Bleedout_SetBleedoutEffects( target )
+					else
+						target.DeployWeapon()
+
+					if ( target.e.markedForExecutionDeath || forceKillTarget )
+					{
+						entity killCreditAttacker = null //If the attacker disconnected, we don't have a player to give credit to, that's fine. Script will not error
+						if ( IsValid( target.e.syncedMeleeAttacker ) )
+							killCreditAttacker = target.e.syncedMeleeAttacker
+
+						target.TakeDamage( target.GetMaxHealth() + 1, killCreditAttacker, killCreditAttacker, {
+							forceKill = true,
+							damageType = DMG_MELEE_EXECUTION,
+							damageSourceId = eDamageSourceId.human_execution } )
+
+						// target.e.markedForExecutionDeath is cleared by the MarkForDeath anim event thread
+					}
+				}
+			}
+			else if ( target.IsNPC() )
+			{
+				SetForceDrawWhileParented( target, false )
+			}
+
+			target.e.lastSyncedMeleeAttacker = target.e.syncedMeleeAttacker
+			target.e.syncedMeleeAttacker = null
+
+			DeleteAnimEvent( target, "mark_for_death" )
+
+			target.Anim_Stop()
+
+			PutEntityInSafeSpot( target, attacker, null, attacker.GetOrigin(), target.GetOrigin() )
+
+			Signal( target, "SyncedMeleeOver" )
+		}
+	} )
+
+	// Signals to other script
+	{
+		Signal( attacker, "OnSyncedMelee" )
+		Signal( target, "OnSyncedMelee" )
+		Signal( attacker, "OnSyncedMeleeAttacker" )
+		Signal( target, "OnSyncedMeleeVictim" )
+	}
+
+	// Ways this synced melee may end
+	{
+		// someone dies or is destroyed
+		EndSignal( attacker, "OnDeath" )
+		EndSignal( target, "OnDeath" )
+
+		// synced melee gets interrupted
+		EndSignal( attacker, "OnAnimationInterrupted" )
+		EndSignal( attacker, "ScriptAnimStop" )
+		EndSignal( attacker, "BleedOut_OnStartDying" )
+		EndSignal( attacker, "InterruptSyncedMelee" )
+
+		// synced melee animation finishes
+		EndSignal( attacker, "OnAnimationDone" )
+	}
+
+	// Execution loadout data
+	ItemFlavor attackerCharacter = LoadoutSlot_GetItemFlavor( attacker, Loadout_CharacterClass() )
+	ItemFlavor attackerExecution = LoadoutSlot_GetItemFlavor( attacker, Loadout_CharacterExecution( attackerCharacter ) )
+
+	// Anim sequence setup
+	FirstPersonSequenceStruct attackSequence
+	FirstPersonSequenceStruct targetSequence
+	{
+		// positioning
+		attackSequence.noParent = true
+		attackSequence.playerPushable = true
+		attackSequence.enablePlanting = true
+
+		targetSequence.useAnimatedRefAttachment = true
+		targetSequence.attachment = "ref"
+
+		// anim sequences
+		attackSequence.thirdPersonAnim = string(CharacterExecution_GetAttackerAnimSeq( attackerExecution ))
+		string targetRigWeight = target.GetPlayerSettingString( "bodyModelRigWeight" )
+		targetSequence.thirdPersonAnim = string(CharacterExecution_GetVictimAnimSeq( attackerExecution, targetRigWeight ))
+
+		// timing
+		attackSequence.blendTime = SYNCED_MELEE_ANIMATION_BLEND_TIME
+		targetSequence.blendTime = SYNCED_MELEE_ANIMATION_BLEND_TIME
+		attackSequence.thirdPersonBlendInTime = SYNCED_MELEE_CAMERA_BLEND_IN_TIME
+		targetSequence.thirdPersonBlendInTime = SYNCED_MELEE_CAMERA_BLEND_IN_TIME
+		targetSequence.thirdPersonBlendOutTime = SYNCED_MELEE_CAMERA_BLEND_OUT_TIME
+		attackSequence.thirdPersonBlendOutTime = SYNCED_MELEE_CAMERA_BLEND_OUT_TIME
+
+		// camera
+		attackSequence.firstPersonAnim = ""
+		targetSequence.firstPersonAnim = ""
+		attackSequence.thirdPersonCameraAttachments = ["VDU"]
+		targetSequence.thirdPersonCameraAttachments = ["VDU"]
+		attackSequence.thirdPersonCameraVisibilityChecks = true
+		targetSequence.thirdPersonCameraVisibilityChecks = true
+		attackSequence.snapForLocalPlayer = true
+		targetSequence.snapForLocalPlayer = true
+	}
+
+	float attackDuration = attacker.GetSequenceDuration( attackSequence.thirdPersonAnim )
+	float targetDuration = target.GetSequenceDuration( targetSequence.thirdPersonAnim )
+	Assert( attackDuration == targetDuration )
+
+	// Attacker state changes
+	{
+		AddCinematicFlag( attacker, CE_FLAG_TITAN_3P_CAM | CE_FLAG_EXECUTION )
+		ScreenFade( attacker, SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL.x, SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL.y, SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL.z, SYNCED_MELEE_ATTACKER_SCREEN_FADE_ALPHA,
+			SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_TIME, SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_HOLD, FFADE_IN )
+
+		attacker.e.syncedMeleeTarget = target
+		attacker.PlayerMelee_SetState( PLAYER_MELEE_STATE_HUMAN_EXECUTION )
+		attacker.PlayerMelee_ExecutionStartAttacker( Time() + attackDuration )
+		attacker.Lunge_ClearTarget()
+		attacker.ForceStand()
+		HolsterAndDisableWeapons( attacker )
+	}
+
+	// Victim state changes
+	{
+		if ( target.IsPlayer() )
+		{
+			AddCinematicFlag( target, CE_FLAG_TITAN_3P_CAM | CE_FLAG_EXECUTION )
+			ScreenFade( target, SYNCED_MELEE_TARGET_SCREEN_FADE_COL.x, SYNCED_MELEE_TARGET_SCREEN_FADE_COL.y, SYNCED_MELEE_TARGET_SCREEN_FADE_COL.z, SYNCED_MELEE_TARGET_SCREEN_FADE_ALPHA,
+				SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_TIME, SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_HOLD, FFADE_IN )
+			target.ForceStand()
+		}
+		else if ( target.IsNPC() )
+		{
+			SetForceDrawWhileParented( target, true )
+		}
+
+		target.e.syncedMeleeAttacker = attacker
+		target.PlayerMelee_ExecutionStartTarget( attacker )
+		HolsterViewModelAndDisableWeapons( target )
+
+		AddAnimEvent( target, "mark_for_death", MarkForDeath )
+	}
+
+	thread FirstPersonSequence( attackSequence, attacker )
+	thread FirstPersonSequence( targetSequence, target, attacker )
+
+	//wait attackDuration
+	WaitForever()
+}
+#endif
+
+
+#if SERVER
+void function MarkForDeath( entity target )
+{
+	EndSignal( target, "OnDeath" )
+
+	OnThreadEnd( function() : ( target ) {
+		target.e.markedForExecutionDeath = false
+	} )
+
+	target.e.markedForExecutionDeath = true //This will kill off the player even if the execution animation is interruped from this point forward
+
+	WaitForever()
+}
+
+void function OnPlayerDisconnected( entity player )
+{
+	if ( IsValid( player.e.syncedMeleeTarget ) )
+		player.e.syncedMeleeTarget.ClearParent()
+}
+#endif
+
+

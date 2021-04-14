@@ -1,0 +1,454 @@
+global function ClScreenfade_Init
+
+global function RegisterDoomProtectionHintDamage
+
+global function UpdateScreenFade
+
+global function ScreenCoverTransition
+global function ServerToClient_ScreenCoverTransition
+
+// these must match content/r2/ui/screen_fade.rui
+global const float SCREEN_COVER_TRANSITION_IN_DURATION = 0.7
+global const float SCREEN_COVER_TRANSITION_OUT_DURATION = 0.9
+
+
+struct
+{
+	var screenFade = null
+	int lastAlpha = -1
+	void functionref() screenFadeFunc
+
+	float screenCoverEndTime = 0.0
+} file
+
+void function ClScreenfade_Init()
+{
+	RegisterSignal( "NewScreenFade" )
+	file.screenFadeFunc = UpdateScreenFadeInternal
+
+	thread PlayerPainSoundThread()
+	thread PlayerDeathfieldSoundThread()
+
+	file.screenFade = RuiCreate( $"ui/screen_fade.rpak", clGlobal.topoFullScreen, RUI_DRAW_POSTEFFECTS, RUI_SORT_SCREENFADE )
+	RuiSetResolutionToScreenSize( file.screenFade )
+
+	if ( IsLobby() )
+		return
+
+	RuiSetFloat3( file.screenFade, "fadeColor", <0,0,0> )
+	RuiSetFloat( file.screenFade, "fadeAlpha", 1.0 )
+}
+
+float function ScreenCoverTransition( float endTime )
+{
+	printt( "Calling ScreenCoverTransition with endTime", endTime, " at time", Time() )
+	DumpStack()
+	// can be called from server
+	// returns the time remaining until the out transition plays
+
+	//ScreenFade( GetLocalViewPlayer(), 0, 1, 1, 255, screenFadeInOutDuration, screenFadeHoldDuration, FFADE_PURGE | FFADE_INOUT | FFADE_NOT_IN_REPLAY )
+	if ( endTime > file.screenCoverEndTime )
+	{
+		EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_Banner_Appear" )
+
+		file.screenCoverEndTime = endTime
+		RuiSetGameTime( file.screenFade, "coverEndTime", endTime )
+
+		array<entity> teamPlayers = GetPlayerArrayOfTeam( GetLocalClientPlayer().GetTeam() )
+		ArrayRemoveInvalid( teamPlayers )
+		for ( int index = 0 ; index < 4 ; index++ )
+		{
+			if ( index < teamPlayers.len() )
+			{
+				RuiSetString( file.screenFade, "playerName" + (index + 1), teamPlayers[index].GetPlayerName() )
+				RuiTrackInt( file.screenFade, "playerMic" + (index + 1), teamPlayers[index], RUI_TRACK_MIC_STATUS )
+				RuiSetBool( file.screenFade, "playerAvailable" + (index + 1), true )
+			}
+			else
+			{
+				RuiSetString( file.screenFade, "playerName" + (index + 1), "" )
+				RuiSetInt( file.screenFade, "playerMic" + (index + 1), -1 )
+				RuiSetBool( file.screenFade, "playerAvailable" + (index + 1), false )
+			}
+		}
+
+		EmitSoundOnEntityAfterDelay( GetLocalClientPlayer(), "UI_Survival_Intro_Banner_Disappear", max( 0, endTime - Time() - SCREEN_COVER_TRANSITION_OUT_DURATION - 0.1 ) )
+	}
+
+	return file.screenCoverEndTime - SCREEN_COVER_TRANSITION_OUT_DURATION - 0.1 - Time()
+}
+
+void function ServerToClient_ScreenCoverTransition( float endTime )
+{
+	ScreenCoverTransition( endTime )
+}
+
+void function UpdateScreenFade()
+{
+	file.screenFadeFunc()
+}
+
+void function UpdateScreenFadeInternal()
+{
+	table fadeParams = expect table( GetFadeParams() )
+
+	//For debugging screen fade
+	/*int alpha = expect int(fadeParams.a )
+
+	if ( file.lastAlpha != alpha )
+		printt( "Alpha changed in UpdateScreenFade to: " + alpha )
+
+	file.lastAlpha = alpha*/
+
+	RuiSetFloat3( file.screenFade, "fadeColor", <expect int( fadeParams.r ) / 255.0, expect int( fadeParams.g ) / 255.0, expect int( fadeParams.b ) / 255.0> )
+	RuiSetFloat( file.screenFade, "fadeAlpha", expect int( fadeParams.a ) / 255.0 )
+}
+
+void function UpdateScreenFade_SpFirstFrame()
+{
+	RuiSetFloat3( file.screenFade, "fadeColor", <0,0,0> )
+	RuiSetFloat( file.screenFade, "fadeAlpha", 255 )
+	file.screenFadeFunc = UpdateScreenFadeInternal
+}
+
+float g_doomProtectionHintDamage = 0.0
+float g_doomProtectionHintLastShowedTime = 0.0
+
+void function RegisterDoomProtectionHintDamage( float newAmount )
+{
+	const float LOCKOUT_TIME = 20.0
+	if ( newAmount < 0.0 )
+		return
+	if ( (Time() - g_doomProtectionHintLastShowedTime) < LOCKOUT_TIME )
+		return
+
+	g_doomProtectionHintDamage += newAmount
+	printt( "g_doomProtectionHintDamage is now:", g_doomProtectionHintDamage )
+}
+
+void function DoomProtectionHintThread()
+{
+	const float HINT_DURATION = 4.0
+	const float THRESHOLD_PILOT = 1000
+	const float THRESHOLD_TITAN = 2000
+	const float FIRSTTIME_SCALE = 0.6
+
+	while ( true )
+	{
+		WaitFrame()
+
+		entity player = GetLocalViewPlayer()
+		if ( !IsValid( player ) )
+			continue
+
+		float threshold = player.IsTitan() ? THRESHOLD_TITAN : THRESHOLD_PILOT
+		if ( g_doomProtectionHintLastShowedTime == 0.0 )
+			threshold *= FIRSTTIME_SCALE
+
+		if ( g_doomProtectionHintDamage > threshold )
+		{
+			wait 0.4
+			player = GetLocalViewPlayer()
+			if ( IsValid( player ) )
+			{
+				SetTimedEventNotification( HINT_DURATION, player.IsTitan() ? "#NOTIFY_HINT_TITAN_USE_FINISHERS" : "#NOTIFY_HINT_PILOTS_USE_FINISHERS" )
+				g_doomProtectionHintLastShowedTime = Time()
+				g_doomProtectionHintDamage = 0.0
+			}
+		}
+	}
+}
+
+string function GetPainSound( entity player, string varName )
+{
+	return player.GetPlayerSettingString( varName )
+}
+
+void function PlayerDeathfieldSoundThread()
+{
+	entity ourPlayer = null
+	bool arePlaying = false
+
+	const float START_PLAYING_DIST = -30.0		// postive distance is inside safe zone
+	const float STOP_PLAYING_DIST = 0.0
+
+	const string SOUND_DEATHFIELD_START =		"Survival_Circle_Enter"
+	const string SOUND_DEATHFIELD_CONSTANT = 	"Survival_Circle_DamageLoop"
+	const string SOUND_DEATHFIELD_STOP =		"Survival_Circle_Exit"
+
+	while ( true )
+	{
+		bool shouldPlay = false
+
+		entity localViewPlayer = GetLocalViewPlayer()
+		if ( !IsValid( localViewPlayer ) )
+		{
+		}
+		else if ( !IsAlive( localViewPlayer ) )
+		{
+		}
+		else if ( !DeathField_IsActive() )
+		{
+		}
+		else if ( (ourPlayer != null) && (ourPlayer != localViewPlayer) )
+		{
+		}
+		else
+		{
+			//eye
+			vector eyePos = localViewPlayer.EyePosition()
+			float frontierDist = DeathField_PointDistanceFromFrontier( eyePos )
+			if ( arePlaying && (frontierDist < STOP_PLAYING_DIST) )
+				shouldPlay = true
+			if ( !arePlaying && (frontierDist < START_PLAYING_DIST) )
+				shouldPlay = true
+		}
+
+		if ( !arePlaying && shouldPlay )
+		{
+			ourPlayer = localViewPlayer
+			arePlaying = true
+
+			EmitSoundOnEntity( ourPlayer, SOUND_DEATHFIELD_START )
+			EmitSoundOnEntity( ourPlayer, SOUND_DEATHFIELD_CONSTANT )
+		}
+		else if ( arePlaying && !shouldPlay )
+		{
+			if ( IsValid( ourPlayer ) )
+			{
+				//
+				StopSoundOnEntity( ourPlayer, SOUND_DEATHFIELD_CONSTANT )
+				//
+				EmitSoundOnEntity( ourPlayer, SOUND_DEATHFIELD_STOP )
+			}
+
+			arePlaying = false
+		}
+
+		if ( !arePlaying )
+			ourPlayer = null
+
+		WaitFrame()
+	}
+}
+
+void function PlayerPainSoundThread()
+{
+	// Each layer has:
+	//: begin threshold (health falls below XX)
+	//: end threshold (health has risen back up above YY)
+	//: looping sound
+	//: endcap sound
+
+	float HEALTH_PERCENT_LAYER1 = 0.85
+	float HEALTH_PERCENT_LAYER1_END = 0.85
+	float HEALTH_PERCENT_LAYER2 = 0.55
+	float HEALTH_PERCENT_LAYER2_END = 0.55
+	float HEALTH_PERCENT_LAYER3 = 0.55
+	float HEALTH_PERCENT_LAYER3_END = 0.59
+
+	if ( true )	// ( GameRules_GetGameMode() == SURVIVAL )
+	{
+		HEALTH_PERCENT_LAYER1 = 0.66
+		HEALTH_PERCENT_LAYER1_END = 0.66
+		HEALTH_PERCENT_LAYER2 = 0.33
+		HEALTH_PERCENT_LAYER2_END = 0.33
+		HEALTH_PERCENT_LAYER3 = 0.33 // Player settings intentionally sets no sound for layer 3, so value here not that important
+		HEALTH_PERCENT_LAYER3_END = 0.33 // Player settings intentionally sets no sound for layer 3, so value here not that important
+	}
+
+	entity ourPlayer = null
+	bool arePlayingLayer1 = false
+	bool arePlayingLayer2 = false
+	bool arePlayingLayer3 = false
+
+	string soundLayer1Start = ""
+	string soundLayer1Loop = ""
+	string soundLayer1End = ""
+	string soundLayer2Start = ""
+	string soundLayer2Loop = ""
+	string soundLayer2End = ""
+	string soundLayer3Start = ""
+	string soundLayer3Loop = ""
+	string soundLayer3End = ""
+
+	while ( true )
+	{
+		bool shouldPlayLayer1 = false
+		bool shouldPlayLayer2 = false
+		bool shouldPlayLayer3 = false
+		bool endcapsAllowed = false
+		entity localViewPlayer = GetLocalViewPlayer()
+
+		if ( !IsValid( localViewPlayer ) )
+		{
+		}
+		else if ( !IsAlive( localViewPlayer ) )
+		{
+		}
+		else if ( (ourPlayer != null) && (ourPlayer != localViewPlayer) )
+		{
+		}
+		else if ( !localViewPlayer.LowHealthEffectsEnabled() )
+		{
+			endcapsAllowed = true
+		}
+		else if ( localViewPlayer.IsTitan() )
+		{
+			endcapsAllowed = true
+		}
+		else
+		{
+			endcapsAllowed = true
+
+			int health = localViewPlayer.GetHealth()
+			int maxHealth = localViewPlayer.GetMaxHealth()
+			float healthPercent = maxHealth > 0 ? float( health ) / float( maxHealth ) : 1.0
+
+			if ( !arePlayingLayer1 && (healthPercent <= HEALTH_PERCENT_LAYER1) )
+				shouldPlayLayer1 = true
+			else if ( arePlayingLayer1 && (healthPercent <= HEALTH_PERCENT_LAYER1_END) )
+				shouldPlayLayer1 = true
+
+			if ( !arePlayingLayer2 && (healthPercent <= HEALTH_PERCENT_LAYER2) )
+				shouldPlayLayer2 = true
+			else if ( arePlayingLayer2 && (healthPercent <= HEALTH_PERCENT_LAYER2_END) )
+				shouldPlayLayer2 = true
+
+			if ( !arePlayingLayer3 && (healthPercent <= HEALTH_PERCENT_LAYER3) )
+				shouldPlayLayer3 = true
+			else if ( arePlayingLayer3 && (healthPercent <= HEALTH_PERCENT_LAYER3_END) )
+				shouldPlayLayer3 = true
+		}
+
+		if ( shouldPlayLayer1 != arePlayingLayer1 )
+		{
+			if ( shouldPlayLayer1 )
+			{
+				//printt( "LAYER 1 STARTS" )
+				arePlayingLayer1 = true
+				Assert( (ourPlayer == null) || (ourPlayer == localViewPlayer) )
+				ourPlayer = localViewPlayer
+
+				soundLayer1Start = GetPainSound( ourPlayer, "sound_pain_layer1_start" )
+				soundLayer1Loop = GetPainSound( ourPlayer, "sound_pain_layer1_loop" )
+				soundLayer1End = GetPainSound( ourPlayer, "sound_pain_layer1_end" )
+
+				if ( soundLayer1Start != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer1Start )
+
+				if ( soundLayer1Loop != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer1Loop )
+			}
+			else
+			{
+				//printt( "LAYER 1 _stop_" )
+				if ( IsValid( ourPlayer ) )
+				{
+					if ( soundLayer1Start != "" )
+						StopSoundOnEntity( ourPlayer, soundLayer1Start )
+
+					if ( soundLayer1Loop != "" )
+						StopSoundOnEntity( ourPlayer, soundLayer1Loop )
+
+					if ( endcapsAllowed && (soundLayer1End != "") )
+						EmitSoundOnEntity( ourPlayer, soundLayer1End )
+				}
+				arePlayingLayer1 = false
+			}
+		}
+
+		if ( shouldPlayLayer2 != arePlayingLayer2 )
+		{
+			if ( shouldPlayLayer2 )
+			{
+				//printt( "LAYER 2 STARTS" )
+				arePlayingLayer2 = true
+				Assert( (ourPlayer == null) || (ourPlayer == localViewPlayer) )
+				ourPlayer = localViewPlayer
+
+				soundLayer2Start = GetPainSound( ourPlayer, "sound_pain_layer2_start" )
+				soundLayer2Loop = GetPainSound( ourPlayer, "sound_pain_layer2_loop" )
+				soundLayer2End = GetPainSound( ourPlayer, "sound_pain_layer2_end" )
+
+				if ( soundLayer2Start != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer2Start )
+
+				if ( soundLayer2Loop != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer2Loop )
+			}
+			else
+			{
+				//printt( "LAYER 2 _stop_" )
+				if ( IsValid( ourPlayer ) )
+				{
+					if ( soundLayer2Start != "" )
+						StopSoundOnEntity( ourPlayer, soundLayer2Start )
+
+					if ( soundLayer2Loop != "" )
+						StopSoundOnEntity( ourPlayer, soundLayer2Loop )
+
+					if ( endcapsAllowed && (soundLayer2End != "") )
+						EmitSoundOnEntity( ourPlayer, soundLayer2End )
+				}
+				arePlayingLayer2 = false
+			}
+		}
+
+		if ( shouldPlayLayer3 != arePlayingLayer3 )
+		{
+			if ( shouldPlayLayer3 )
+			{
+				//printt( "LAYER 3 STARTS" )
+				arePlayingLayer3 = true
+				Assert( (ourPlayer == null) || (ourPlayer == localViewPlayer) )
+				ourPlayer = localViewPlayer
+
+				soundLayer3Start = GetPainSound( ourPlayer, "sound_pain_layer3_start" )
+				soundLayer3Loop = GetPainSound( ourPlayer, "sound_pain_layer3_loop" )
+				soundLayer3End = GetPainSound( ourPlayer, "sound_pain_layer3_end" )
+
+				if ( soundLayer3Start != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer3Start )
+
+				if ( soundLayer3Loop != "" )
+					EmitSoundOnEntity( ourPlayer, soundLayer3Loop )
+			}
+			else
+			{
+				//printt( "LAYER 3 _stop_" )
+				if ( IsValid( ourPlayer ) )
+				{
+					if ( soundLayer3Start != "" )
+						StopSoundOnEntity( ourPlayer, soundLayer3Start )
+
+					if ( soundLayer3Loop != "" )
+						StopSoundOnEntity( ourPlayer, soundLayer3Loop )
+
+					if ( endcapsAllowed && (soundLayer3End != "") )
+						EmitSoundOnEntity( ourPlayer, soundLayer3End )
+				}
+				arePlayingLayer3 = false
+			}
+		}
+
+		if ( !arePlayingLayer1 && !arePlayingLayer2 && !arePlayingLayer3 )
+			ourPlayer = null
+
+		WaitFrame()
+	}
+}
+
+
+/*
+void function ClientSetPilotPainFlashColor( entity player, int a )
+{
+	player.hudElems.damageOverlayPainFlash.SetColor( 255, 255, 255, a )
+
+	if ( a > 0 )
+		player.hudElems.damageOverlayPainFlash.Show()
+	else
+		player.hudElems.damageOverlayPainFlash.Hide()
+}
+*/
+

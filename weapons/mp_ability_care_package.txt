@@ -1,0 +1,95 @@
+#base "_base_ability_ultimate.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_CARE_PACKAGE"
+	"shortprintname"								"#WPN_CARE_PACKAGE_SHORT"
+	"description" 									"#WPN_CARE_PACKAGE_DESC"
+	"longdesc" 										"#WPN_CARE_PACKAGE_LONGDESC"
+
+	"menu_icon"										"rui/titan_loadout/passive/legion_lightweight_alloys"
+	"hud_icon"										"rui/hud/ultimate_icons/ultimate_lifeline"
+
+    "readymessage"                                  "BUG IT"
+    "readyhint"                                     "BUG IT"
+
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhandHybrid"
+	"is_toss_weapon"                                "0"
+	"offhand_default_inventory_slot"				"4"
+	"offhand_interupts_weapon_anims"				"1"
+
+	"viewmodel"										"mdl/weapons/clacker_detonator/ptpov_proximity_detonator.rmdl"
+
+	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_care_package_medic"
+	"OnWeaponActivate"							    "OnWeaponActivate_care_package"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_care_package"
+    "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+
+	// Ammo
+	"ammo_clip_size"   								"360"
+	"ammo_default_total"							"0"
+	"ammo_display"									"count"
+	"ammo_min_to_fire"								"360"
+	"ammo_per_shot"									"360"
+	"ammo_stockpile_max"							"0"
+	"ammo_drains_to_empty_on_fire"					"0"
+	"ammo_no_remove_from_clip"						"0"
+    "ammo_no_remove_from_stockpile"					"0"
+
+	"offhand_switch_force_draw"						"1"
+
+	// Regen Ammo
+	"regen_ammo_refill_rate"						"1"
+	"regen_ammo_refill_start_delay"					"0.0"
+
+	// Damage
+	"damage_type" 									"none"
+	"explosion_damage_heavy_armor"					"0"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+
+	"zoom_effects"									"0"
+
+	// Rumble
+	"rumble"  										"-1"
+
+	// Behavior
+	"fire_rate"   									"10000.0"
+	"fire_duration"									"14.0"
+	"fire_anim_rate"								"1.0"
+	"holster_time"									"0.15"
+	"deploy_time" 									"0.25"
+	"lower_time"  									"0.25"
+	"raise_time"  									"0.2"
+	"allow_empty_fire"								"0"
+	"reload_enabled"								"0"
+	"empty_reload_only"   							"0"
+	"allow_empty_click"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"breaks_cloak"									"0"
+	"primary_fire_does_not_block_sprint"			"1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	"cooldown_type"									"ammo"
+
+	//"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+	"sound_weapon_ready"							"survival_ui_ultimate_ready"
+
+	Mods
+	{
+	    survival_armor_cooldown_mod
+        {
+            "regen_ammo_refill_rate"    "*1.25"
+        }
+
+		survival_finite_ammo
+		{
+
+		}
+	}
+}

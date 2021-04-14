@@ -1,0 +1,14 @@
+#base "_base_ability.txt"
+
+WeaponData
+{
+	"OnWeaponRegenBegin"				"Ultimate_OnWeaponRegenBegin"
+
+	Mods
+	{
+	    ultimates_charge_over_time_disabled
+	    {
+	    	"regen_ammo_refill_rate"		"0"
+	    }
+	}
+}

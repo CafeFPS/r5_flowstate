@@ -1,0 +1,182 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	FX
+	{
+		"C" "P_impact_proj_med_rock" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_proj_med_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_proj_med_default" // metal_titan
+
+		"F" "P_impact_proj_med_default" //flesh
+		"G" "P_impact_proj_med_default" //metalgrate, chainlink, chain
+		"H" "P_impact_proj_med_default" //alienflesh
+
+		"J" "P_impact_proj_med_dirt" //grass
+		"K" "P_impact_proj_med_mud"  //Mud
+		"L" "P_impact_proj_med_default" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_proj_med_default" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_exp_med_slime" //Slime
+		"O" "P_impact_proj_med_dirt" //Foliage
+		"P" "P_impact_proj_med_default" //Computer
+
+		"R" "P_impact_proj_med_default" //metalpanel, grenade, canister
+		"S" "P_impact_exp_med_water" //water, slime
+		"T" "P_impact_proj_med_rock" //tile
+		"U" "P_impact_proj_med_default" //glass_breakable
+
+		"V" "P_impact_proj_med_default" //Metal Vent
+		"W" "P_impact_proj_med_default" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_proj_med_default" //xo_shield
+
+		"Y" "P_impact_proj_med_default" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_proj_med_sand"  //sand
+
+		"0" "P_impact_proj_med_default"
+		"1" "P_impact_proj_med_default"
+		"2" "P_impact_proj_med_default"
+		"3" "P_impact_proj_med_default"
+		"4" "P_impact_proj_med_default"
+		"5" "P_impact_proj_med_default"
+		"6" "P_impact_proj_med_default"
+		"7" "P_impact_proj_med_default"
+		"8" "P_impact_proj_med_default"
+		"9" "P_impact_proj_med_default" //puddle
+
+		"splash" "P_impact_exp_med_water" //brush water
+		"slime_splash" "P_impact_exp_med_slime"
+		"airburst" "P_impact_exp_med_air"  //No Surface
+
+		"shieldhit" "P_armor_impact"
+		"holohit" "P_holohit_impact"
+		"critical_hit" "impact_metal"
+
+	}
+
+
+	FX_victim
+	{
+		"E" "P_impact_exp_smll_metal"
+	}
+
+
+	///This is 2nd set of impacts for shield fx to play with explosion
+	FX
+	{
+		"shieldhit" "P_xo_armor_impact_EXP"
+	}
+
+
+
+	Sound
+	{
+		"C" "bangalore_ultimate_rocket_impact_concrete"
+		"D" "bangalore_ultimate_rocket_impact_dirt"
+		"E" "bangalore_ultimate_rocket_impact_metal"
+
+		"F" "bangalore_ultimate_rocket_impact_concrete"
+		"G" "bangalore_ultimate_rocket_impact_metal"
+		"H" "bangalore_ultimate_rocket_impact_metal"
+
+		"J" "bangalore_ultimate_rocket_impact_grass"
+		"K" "bangalore_ultimate_rocket_impact_concrete" // mud?
+		"L" "bangalore_ultimate_rocket_impact_concrete"
+		"M" "bangalore_ultimate_rocket_impact_concrete"
+		"N" "bangalore_ultimate_rocket_impact_water"	// sand?
+		"O" "bangalore_ultimate_rocket_impact_foilage"
+		"P" "bangalore_ultimate_rocket_impact_concrete"
+
+		"R" "bangalore_ultimate_rocket_impact_metal"
+		"S" "bangalore_ultimate_rocket_impact_water"
+		"T" "bangalore_ultimate_rocket_impact_tile"
+		"U" "bangalore_ultimate_rocket_impact_concrete"
+
+		"V" "bangalore_ultimate_rocket_impact_concrete"
+		"W" "bangalore_ultimate_rocket_impact_wood"
+		"X"	"bangalore_ultimate_rocket_impact_concrete"
+		"Y" "Explo_MGL_Impact_3P"
+		"Z" "bangalore_ultimate_rocket_impact_sand"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_MGL_Impact_3P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+// Update these when custom explosions are created.
+		"C" "bangalore_ultimate_rocket_impact_concrete"
+		"D" "bangalore_ultimate_rocket_impact_dirt"
+		"E" "bangalore_ultimate_rocket_impact_metal"
+
+		"F" "bangalore_ultimate_rocket_impact_concrete"
+		"G" "bangalore_ultimate_rocket_impact_metal"
+		"H" "bangalore_ultimate_rocket_impact_metal"
+
+		"J" "bangalore_ultimate_rocket_impact_grass"
+		"K" "bangalore_ultimate_rocket_impact_concrete" // mud?
+		"L" "bangalore_ultimate_rocket_impact_concrete"
+		"M" "bangalore_ultimate_rocket_impact_concrete"
+		"N" "bangalore_ultimate_rocket_impact_water"	// sand?
+		"O" "bangalore_ultimate_rocket_impact_foilage"
+		"P" "bangalore_ultimate_rocket_impact_concrete"
+
+		"R" "bangalore_ultimate_rocket_impact_metal"
+		"S" "bangalore_ultimate_rocket_impact_water"
+		"T" "bangalore_ultimate_rocket_impact_tile"
+		"U" "bangalore_ultimate_rocket_impact_concrete"
+
+		"V" "bangalore_ultimate_rocket_impact_concrete"
+		"W" "bangalore_ultimate_rocket_impact_wood"
+		"X"	"bangalore_ultimate_rocket_impact_concrete"
+		"Y" "Explo_MGL_Impact_3P"
+		"Z" "bangalore_ultimate_rocket_impact_sand"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_MGL_Impact_1P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+// Update these when custom explosions are created.
+		"C" "bangalore_ultimate_rocket_impact_concrete"
+		"D" "bangalore_ultimate_rocket_impact_dirt"
+		"E" "bangalore_ultimate_rocket_impact_metal"
+
+		"F" "bangalore_ultimate_rocket_impact_concrete"
+		"G" "bangalore_ultimate_rocket_impact_metal"
+		"H" "bangalore_ultimate_rocket_impact_metal"
+
+		"J" "bangalore_ultimate_rocket_impact_grass"
+		"K" "bangalore_ultimate_rocket_impact_concrete" // mud?
+		"L" "bangalore_ultimate_rocket_impact_concrete"
+		"M" "bangalore_ultimate_rocket_impact_concrete"
+		"N" "bangalore_ultimate_rocket_impact_water"	// sand?
+		"O" "bangalore_ultimate_rocket_impact_foilage"
+		"P" "bangalore_ultimate_rocket_impact_concrete"
+
+		"R" "bangalore_ultimate_rocket_impact_metal"
+		"S" "bangalore_ultimate_rocket_impact_water"
+		"T" "bangalore_ultimate_rocket_impact_tile"
+		"U" "bangalore_ultimate_rocket_impact_concrete"
+
+		"V" "bangalore_ultimate_rocket_impact_concrete"
+		"W" "bangalore_ultimate_rocket_impact_wood"
+		"X"	"bangalore_ultimate_rocket_impact_concrete"
+		"Y" "Explo_MGL_Impact_3P"
+		"Z" "bangalore_ultimate_rocket_impact_sand"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_MGL_Impact_3P"
+		"shieldhit" "TitanShield.ARLRocket.BulletImpact_3P_vs_1P" // Custom for ARL so rapid-fire shieldhit explos don't get overbearing
+	}
+}

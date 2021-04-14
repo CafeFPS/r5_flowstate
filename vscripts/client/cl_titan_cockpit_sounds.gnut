@@ -1,0 +1,174 @@
+global function ClTitanCockpitSounds_Init
+
+global function SCB_PlayTitanCockpitSounds
+global function SCB_StopTitanCockpitSounds
+global function PlayTitanCockpitSounds
+global function StopTitanCockpitSounds
+
+
+struct
+{
+	table<int, var> playerToTitanCockpitSound
+} file
+
+void function ClTitanCockpitSounds_Init()
+{
+	if ( !IsMenuLevel() )
+	{
+		AddCallback_PlayerClassChanged( ClTitanCockpitSounds_OnPlayerClassChanged )
+		AddOnDeathCallback( "player", OnPlayerDeath_StopTitanCockpitSounds )
+
+		AddFirstPersonSpectateStartedCallback( UpdateTitanCockpitSoundsForSpectating )
+		AddFirstPersonSpectateEndedCallback( FirstPersonSpectateEnded_EndCockpitSounds )
+		AddThirdPersonSpectateStartedCallback( UpdateTitanCockpitSoundsForSpectating )
+		AddOnSpectatorTargetChangedCallback( SpectatorTargetChanged_UpdateTitanCockpitSoundsForSpectating )
+
+		AddCallback_KillReplayStarted( KillReplayStarted_UpdateTitanCockpitSounds )
+		AddCallback_KillReplayEnded( KillReplayEnded_UpdateTitanCockpitSounds )
+	}
+}
+
+void function ClTitanCockpitSounds_OnPlayerClassChanged( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	//printt( "ClTitanCockpitSounds_OnPlayerClassChanged, player: " + player )
+
+	string newClass = player.GetPlayerClass()
+
+	if ( newClass == "titan" )
+	{
+		StopTitanCockpitSounds( player ) //Stop existing sounds first, because you can go from titan to titan during grace period
+		PlayTitanCockpitSounds( player )
+	}
+	else
+	{
+		StopTitanCockpitSounds( player )
+	}
+}
+
+void function SCB_PlayTitanCockpitSounds()
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( !player.IsTitan() ) //By the time player gets this from server he might not be Titan anymore. See bug 194727
+		return
+	PlayTitanCockpitSounds( player )
+}
+
+void function SCB_StopTitanCockpitSounds()
+{
+	entity player = GetLocalViewPlayer()
+	StopTitanCockpitSounds( player )
+}
+
+void function OnPlayerDeath_StopTitanCockpitSounds( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	StopTitanCockpitSounds( player )
+}
+
+void function PlayTitanCockpitSounds( entity player ) //Note that the "powerup" sounds don't play here, they play from the titan embark animations, which means if you spawn in as a titan you don't get them, but you get the ambient sounds
+{
+	if ( !IsValid( player ) ) //GetLocalViewPlayer() can return null sometimes, and script needs to handle it
+		return
+
+	EmitSoundOnEntity( player, "sse_titancockpit_enter" )
+
+	string titanName = "Charlie"//GetTitanCharacterName( player )
+	//TEMP: To remove when OS has stubs.
+	if ( titanName == "stealth" )
+		titanName = "ronin"
+	else if ( titanName == "rocket" )
+		titanName = "northstar"
+	else if ( titanName == "drone" )
+		titanName = "tone"
+
+	string soundName = "titan_" + titanName + "_int_engine"
+
+	//printt( " Playing titan cockpit sound: " + soundName )
+
+	var soundHandle = EmitSoundOnEntity( player, soundName )
+	file.playerToTitanCockpitSound[ player.GetEntIndex() ] <- soundHandle
+}
+
+void function StopTitanCockpitSounds( entity player )
+{
+	if ( !IsValid( player ) ) //GetLocalViewPlayer() can return null sometimes, and script needs to handle it
+		return
+
+	int playerEntIndex = player.GetEntIndex()
+	if ( player.GetEntIndex() in file.playerToTitanCockpitSound )
+	{
+		EmitSoundOnEntity( player, "sse_titancockpit_exitdefault" )
+		StopSound( file.playerToTitanCockpitSound[ playerEntIndex ] )
+		delete file.playerToTitanCockpitSound[ playerEntIndex ]
+	}
+}
+
+void function UpdateCockpitSoundsForViewPlayer( entity target )
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+	if ( target.IsTitan() )
+	{
+		StopTitanCockpitSounds( localViewPlayer ) //Stop existing sounds first, because you can go from titan to titan during grace period
+		if ( !target.ContextAction_IsMeleeExecution() ) //JFS: Melee shouldn't be playing titan cockpit sounds. This seems like a a terrible way to do this...
+			PlayTitanCockpitSounds( localViewPlayer )
+	}
+	else
+	{
+		StopTitanCockpitSounds( localViewPlayer )
+	}
+}
+
+void function UpdateTitanCockpitSoundsForSpectating( entity player, entity currentTarget )
+{
+	StopTitanCockpitSounds( player )
+
+	if ( currentTarget == null )
+		return
+
+	if ( !currentTarget.IsPlayer() )
+		return
+
+	int observerMode = player.GetObserverMode()
+
+	if ( observerMode == OBS_MODE_IN_EYE )
+	{
+		UpdateCockpitSoundsForViewPlayer( currentTarget )
+	}
+	else
+	{
+		StopTitanCockpitSounds( currentTarget )
+	}
+}
+
+void function FirstPersonSpectateEnded_EndCockpitSounds( entity player, entity observerTarget )
+{
+	StopTitanCockpitSounds( observerTarget )
+	StopTitanCockpitSounds( player )
+}
+
+void function SpectatorTargetChanged_UpdateTitanCockpitSoundsForSpectating( entity player, entity previousTarget, entity currentTarget )
+{
+	if ( IsValid( previousTarget ) && previousTarget.IsPlayer() )
+		StopTitanCockpitSounds( previousTarget )
+
+	UpdateTitanCockpitSoundsForSpectating( player, currentTarget )
+}
+
+void function KillReplayStarted_UpdateTitanCockpitSounds()
+{
+	StopTitanCockpitSounds( GetLocalClientPlayer() )
+	UpdateCockpitSoundsForViewPlayer( GetLocalViewPlayer() )
+}
+
+void function KillReplayEnded_UpdateTitanCockpitSounds()
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+	StopTitanCockpitSounds( localViewPlayer )
+	UpdateCockpitSoundsForViewPlayer( localViewPlayer )
+}

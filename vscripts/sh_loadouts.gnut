@@ -1,0 +1,1870 @@
+#if UI
+global function ShLoadouts_VMInit
+#endif
+
+#if SERVER || CLIENT || UI
+global function ShLoadouts_LevelInit_Begin
+global function ShLoadouts_LevelInit_Finish
+global function ShLoadouts_OnPlayerEHICreated
+#endif
+#if UI
+global function ShLoadouts_LevelShutdown
+#endif
+
+//////////////////////
+//////////////////////
+
+global function RegisterLoadoutSlot
+
+global function LoadoutSlot_IsReady
+global function LoadoutSlot_GetItemFlavor
+global function LoadoutSlot_GetInteger
+global function LoadoutSlot_WaitForItemFlavor
+//global function LoadoutSlot_GetItemFlavorOrNull
+//global function LoadoutSlot_GetIntegerOrNull
+//global function LoadoutSlot_WaitForItemFlavorOrNull
+global function LoadoutSlot_GetRawStorageContents
+
+global function AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer
+global function AddCallback_IntegerLoadoutSlotDidChange_AnyPlayer
+global function RemoveCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer
+global function RemoveCallback_IntegerLoadoutSlotDidChange_AnyPlayer
+global function AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer
+global function RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer
+#if SERVER
+global function SetItemFlavorLoadoutSlot
+global function SetIntegerLoadoutSlot
+#elseif CLIENT || UI
+global function RequestSetItemFlavorLoadoutSlot
+#if DEV
+global function DEV_RequestSetItemFlavorLoadoutSlot
+#endif
+#endif
+global function IsItemFlavorValidForLoadoutSlot
+global function GetValidItemFlavorsForLoadoutSlot
+global function IsItemFlavorUnlockedForLoadoutSlot
+global function GetUnlockedItemFlavorsForLoadoutSlot
+global function GetRandomGoodItemFlavorForLoadoutSlot
+global function GetDefaultItemFlavorForLoadoutSlot
+
+global function GetAllLoadoutSlots
+global function IsLoadoutSlotActive
+
+#if DEV
+global function DEV_GetValidItemFlavorsForLoadoutSlotForDev
+#endif
+
+//////////////////////
+//////////////////////
+
+#if SERVER
+global function ShLoadouts_PlayerGRXInventoryIsCleanFirstTime
+#endif
+
+#if CLIENT
+global function ServerToClient_LoadoutSlotDidChange
+#endif
+
+#if UI
+global function ClientToUI_RefreshLoadoutSlot
+global function GetLoadoutItemsSortedForMenu
+#endif
+
+//#if CLIENT && DEV
+//global function UIToClient_ResendAllCacheData
+//#endif
+
+
+const bool LOADOUT_NETVAR_DEBUG_PRINTS = false
+
+
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+
+global typedef LoadoutEntry_IsSlotLocked bool functionref( EHI playerEHI )
+#if SERVER
+global typedef LoadoutEntry_IsCurrentlyRelevantFuncType bool functionref( EHI playerEHI )
+#endif
+global typedef ItemFlavorLoadoutEntry_IsItemFlavorUnlockedFuncType bool functionref( EHI playerEHI, ItemFlavor itemFlavor )
+global typedef ItemFlavorLoadoutSlotDidChangeFuncType void functionref( EHI playerEHI, ItemFlavor flavor )
+global typedef IntegerLoadoutSlotDidChangeFuncType void functionref( EHI playerEHI, int value )
+
+global enum eLoadoutNetworking
+{
+	SERVER_ONLY, // the data is still available to the player exclusively, but they don't get notified when it changes
+	PLAYER_EXCLUSIVE, // the data is available only to the player exclusively, and they get notified when it changes
+	PLAYER_GLOBAL, // the data is available to ALL players via a networked variable, and they all get notified when it changes
+}
+
+global enum eLoadoutEntryType
+{
+	ITEM_FLAVOR,
+	INTEGER,
+}
+
+global struct LoadoutEntry
+{
+	int    _____INTERNAL_entryIndex = -1
+	string id = ""
+	int    type = -1
+
+	int stryderCharDataArrayIndex = ePlayerStryderCharDataArraySlots.INVALID // for sh_social.gnut
+
+	int                                            networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+	string ornull                                  networkVarName = ""
+	LoadoutEntry_IsSlotLocked                      isSlotLocked = null // optional, default = unlocked
+	table<LoadoutEntry, table<ItemFlavor, bool> >  isActiveConditions = {}
+	#if SERVER && DEV
+		LoadoutEntry_IsCurrentlyRelevantFuncType isCurrentlyRelevant = null // optional, default = is relevant (currently only used for dev-menu!) // todo(dw): find a way to be rid of isCurrentlyRelevant and shouldNetwork
+	#endif
+	string DEV_category = "Other"
+	string DEV_name = "?"
+	int    _____INTERNAL_nvIndex
+
+	// stuff for item flavor loadout slots only
+	ItemFlavor&                                         defaultItemFlavor // optional, any valid item flavor or an error if none found
+	array<ItemFlavor>                                   validItemFlavorList = []
+	array<ItemFlavor>                                   validItemFlavorList_CopyForRandomizing
+	ItemFlavorLoadoutEntry_IsItemFlavorUnlockedFuncType isItemFlavorUnlocked = null // optional, default = unlocked
+	array<ItemFlavorLoadoutSlotDidChangeFuncType>       changeCallbacks_ItemFlavor = []
+	table<ItemFlavor, array<LoadoutEntry> >             _____INTERNAL_dependentsByItemFlav = {}
+	table<ItemFlavor, int>                              _____INTERNAL_itemFlavorNetworkIndexMap = {}
+	table<SettingsAssetGUID, int>                       _____INTERNAL_itemFlavorGUIDNetworkIndexMap = {}
+	table<int, ItemFlavor>                              _____INTERNAL_networkIndexItemFlavorMap = {}
+	#if DEV
+		array<ItemFlavor>      _____INTERNAL_DEV_validItemFlavorsForDev = []
+	#endif
+
+	// stuff for integer item flavor loadout slots only
+	int                                        defaultInteger = INT_MIN
+	int                                        minInteger = 0
+	int                                        maxInteger = 0
+	array<IntegerLoadoutSlotDidChangeFuncType> changeCallbacks_Integer = []
+
+	// Temp (for performance reasons)
+	//bool TEMP_doNotValidateLocking = false
+}
+
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+const int SLOT_CONTENTS_SENTINEL_INVALID = -9999
+const int SLOT_CONTENTS_SENTINEL_NOTREADY = 0
+const int SLOT_CONTENTS_FIRST_VALID_ITEM = 2
+
+const int PERSISTENT_DATA_INVALID_SENTINEL = 0
+
+struct LoadoutNetworkVarInfo
+{
+	int                    nvIndex
+	string                 fullNetworkVarName
+	int                    type = -1
+	array<LoadoutEntry>    usedByEntries = []
+
+	// used for item flavor loadout slots only
+	array<ItemFlavor>      possibleItemFlavorList = [] // used to convert network indices to item flavors
+	table<ItemFlavor, int> itemFlavorNetworkIndexMap = {}
+}
+
+struct FileStruct_LifetimeLevel
+{
+	bool                         isInitialized = false
+	array<LoadoutEntry>          loadoutSlotEntries = []
+
+	#if SERVER || CLIENT || UI // in UI because of initialization consistency reasons
+		table<string, LoadoutNetworkVarInfo> networkVars = {}
+	#endif
+
+	#if UI
+		table<ItemFlavor, bool> TEMP_filteredItems
+	#endif
+}
+FileStruct_LifetimeLevel& fileLevel
+
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+
+#if UI && DEV
+bool DEV_resendAllCacheData = false // for uiscript_reset
+#endif
+
+#if UI
+void function ShLoadouts_VMInit()
+{
+	#if UI && DEV
+		if ( IsFullyConnected() )
+			DEV_resendAllCacheData = true
+	#endif
+}
+#endif
+
+
+void function ShLoadouts_LevelInit_Begin()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	#if SERVER
+		//AddCallback_OnClientConnected( OnPlayerConnected )
+		AddCallback_UpgradePlayerPersistentData( UpgradePlayerPersistentData )
+		AddClientCommandCallback( "loadouts_set", ClientCommand_loadouts_set )
+		AddClientCommandCallback( "loadouts_reset_persistent", ClientCommand_loadouts_reset_persistent )
+		#if DEV
+			AddCallback_GeneratePDef( GenerateLoadoutsPDef )
+			AddClientCommandCallback( "loadouts_devset", ClientCommand_loadouts_devset )
+			AddClientCommandCallback( "loadouts_dump", ClientCommand_loadouts_dump )
+		#endif
+	#endif
+}
+
+
+void function ShLoadouts_LevelInit_Finish()
+{
+	#if SERVER || CLIENT
+		Remote_RegisterClientFunction( "ServerToClient_LoadoutSlotDidChange", "int", 0, INT_MAX, "int", 0, fileLevel.loadoutSlotEntries.len() )
+	#endif
+
+	foreach( LoadoutEntry entry in fileLevel.loadoutSlotEntries )
+	{
+		if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+		{
+			Assert( entry.validItemFlavorList.len() > 0, "Entry " + entry.id + " had an empty validItemFlavorList" )
+			Assert( IsItemFlavorStructValid( entry.defaultItemFlavor ), "entry.defaultValue must have a valid value." )
+			//Assert( entry.defaultItemFlavor in entry.validItemFlavorList, "entry.defaultValue must be in entry.validItemFlavorList." ) // todo(dw): Causes SCE. See R5DEV-58249.
+		}
+		else if ( entry.type == eLoadoutEntryType.INTEGER )
+		{
+			Assert( !IsItemFlavorStructValid( entry.defaultItemFlavor ) )
+			Assert( entry.validItemFlavorList.len() == 0 )
+			Assert( entry.isItemFlavorUnlocked == null )
+			Assert( entry.minInteger >= 0 )
+			Assert( entry.maxInteger <= INT_MAX )
+			Assert( entry.maxInteger > entry.minInteger )
+			Assert( entry.defaultInteger >= entry.minInteger && entry.defaultInteger <= entry.maxInteger )
+		}
+
+		RegisterSignal( "Loadout_" + entry.id + "_Ready" )
+
+		if ( entry.networkTo == eLoadoutNetworking.PLAYER_GLOBAL )
+		{
+			#if SERVER || CLIENT
+				int desiredNetworkVarType = (entry.type == eLoadoutEntryType.INTEGER ? SNVT_BIG_INT : SNVT_UNSIGNED_INT)
+			#endif
+
+			Assert( entry.networkVarName != "", "LoadoutEntry.networkVarName must be provided if networkTo is set." )
+			LoadoutNetworkVarInfo nvInfo
+			string fullNetworkVarName = "Loadout_" + expect string(entry.networkVarName)
+			entry.networkVarName = fullNetworkVarName
+			if ( fullNetworkVarName in fileLevel.networkVars )
+			{
+				nvInfo = fileLevel.networkVars[fullNetworkVarName]
+				#if SERVER || CLIENT
+					Assert( nvInfo.type == desiredNetworkVarType )
+				#endif
+			}
+			else
+			{
+				nvInfo.nvIndex = fileLevel.networkVars.len()
+				nvInfo.fullNetworkVarName = fullNetworkVarName
+				fileLevel.networkVars[fullNetworkVarName] <- nvInfo
+				#if SERVER || CLIENT
+					nvInfo.type = desiredNetworkVarType
+					RegisterNetworkedVariable(
+						nvInfo.fullNetworkVarName, SNDC_PLAYER_GLOBAL,
+						nvInfo.type, SLOT_CONTENTS_SENTINEL_NOTREADY
+					)
+				#endif
+
+				#if CLIENT
+					RegisterNetworkedVariableChangeCallback_int( fullNetworkVarName, void function( entity player, int old, int new, bool actuallyChanged ) : ( nvInfo )
+					{
+						EHI playerEHI         = ToEHI( player )
+						EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+
+						#if LOADOUT_NETVAR_DEBUG_PRINTS
+							printf( "### LOADOUT SLOT NV, %s (%s), %s, %d --[%d]-> %d (%s)  (=%d)",
+								string(player), string(EHI_IsConnected( playerEHI )), nvInfo.fullNetworkVarName,
+								old, ehiss.netVarsLastSeenValuesMap[nvInfo.nvIndex], new, string(actuallyChanged), player.GetPlayerNetInt( nvInfo.fullNetworkVarName ) )
+						#endif
+
+						new = player.GetPlayerNetInt( nvInfo.fullNetworkVarName ) // todo(dw): workaround for R5DEV-53709
+
+						if ( !ehiss.isConnected )
+							return
+
+						if ( new == ehiss.netVarsLastSeenValuesMap[nvInfo.nvIndex] )
+							return
+
+						ehiss.netVarsLastSeenValuesMap[nvInfo.nvIndex] = new
+
+						#if DEV
+							LoadoutEntry ornull found = null
+						#endif
+						foreach( LoadoutEntry entry in nvInfo.usedByEntries )
+						{
+							if ( IsLoadoutSlotCurrentlyNetworked( playerEHI, entry ) )
+							{
+								#if DEV
+									Assert( found == null, "Attempted to network two loadout slots using the same network variable name at the same time"
+											+ " (slot 1: \"" + expect LoadoutEntry(found).id + "\", slot 2: \"" + entry.id + "\")." )
+									if ( found != null )
+										continue
+									found = entry
+								#endif
+								HandleLoadoutSlotNetworkVarChanged( playerEHI, entry, old, new, actuallyChanged )
+								#if !DEV
+									break
+								#endif
+							}
+						}
+					} )
+				#endif
+			}
+			//#if DEV
+			//	foreach( LoadoutEntry& otherEntry in fileLevel.networkVars[fullNetworkVarName] )
+			//	{
+			//		otherEntry.mutuallyExclusiveWith.append( entry )
+			//		entry.mutuallyExclusiveWith.append( otherEntry )
+			//	}
+			//#endif
+
+			entry._____INTERNAL_nvIndex = nvInfo.nvIndex
+
+			nvInfo.usedByEntries.append( entry )
+
+			if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+			{
+				foreach ( int arrayIndex, ItemFlavor itemFlavor in entry.validItemFlavorList )
+				{
+					// warning: this loop is duplicated in the else-block below (slightly different, but make sure they match)
+
+					int networkIndex
+					if ( itemFlavor in nvInfo.itemFlavorNetworkIndexMap )
+					{
+						networkIndex = nvInfo.itemFlavorNetworkIndexMap[itemFlavor]
+					}
+					else
+					{
+						networkIndex = SLOT_CONTENTS_FIRST_VALID_ITEM + arrayIndex
+						Assert( networkIndex < 1000, "Too many possible items in loadout slot: " + entry.id )
+						nvInfo.possibleItemFlavorList.append( itemFlavor )
+						nvInfo.itemFlavorNetworkIndexMap[itemFlavor] <- networkIndex
+					}
+					entry._____INTERNAL_itemFlavorNetworkIndexMap[itemFlavor] <- networkIndex
+					entry._____INTERNAL_itemFlavorGUIDNetworkIndexMap[ItemFlavor_GetGUID( itemFlavor )] <- networkIndex
+					entry._____INTERNAL_networkIndexItemFlavorMap[networkIndex] <- itemFlavor
+				}
+			}
+		}
+		else
+		{
+			if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+			{
+				foreach ( int arrayIndex, ItemFlavor itemFlavor in entry.validItemFlavorList )
+				{
+					// warning: this loop is duplicated in the if-block above (slightly different, but make sure they match)
+
+					int fakeNetworkIndex = SLOT_CONTENTS_FIRST_VALID_ITEM + arrayIndex
+					entry._____INTERNAL_itemFlavorNetworkIndexMap[itemFlavor] <- fakeNetworkIndex
+					entry._____INTERNAL_itemFlavorGUIDNetworkIndexMap[ItemFlavor_GetGUID( itemFlavor )] <- fakeNetworkIndex
+					entry._____INTERNAL_networkIndexItemFlavorMap[fakeNetworkIndex] <- itemFlavor
+				}
+
+				if ( entry.networkTo == eLoadoutNetworking.PLAYER_EXCLUSIVE )
+				{
+					Assert( entry.networkVarName == "", "LoadoutEntry.networkVarName should only be provided if networkTo is PLAYER_GLOBAL." )
+				}
+				else if ( entry.networkTo == eLoadoutNetworking.SERVER_ONLY )
+				{
+					Assert( entry.networkVarName == "", "LoadoutEntry.networkVarName should only be provided if networkTo is PLAYER_GLOBAL." )
+					//Assert( entry.shouldNetwork == null, "LoadoutEntry.shouldNetwork should only be provided if networkTo is PLAYER_GLOBAL." )
+				}
+				else Assert( false, "Invalid networkTo setting on loadout slot \"" + entry.id + "\": " + entry.networkTo )
+			}
+		}
+
+		if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+		{
+			Assert( entry.validItemFlavorList.len() > 0, "No item flavors are registered that are valid for loadout slot '" + entry.id + "'" )
+			entry.validItemFlavorList_CopyForRandomizing = clone entry.validItemFlavorList
+			#if DEV
+				entry._____INTERNAL_DEV_validItemFlavorsForDev = clone entry.validItemFlavorList
+				//entry.validItemFlavors.randomize()
+			#endif
+		}
+
+		foreach( LoadoutEntry dependencyEntry, table<ItemFlavor, bool> flavorSet in entry.isActiveConditions )
+		{
+			Assert( dependencyEntry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+			foreach( ItemFlavor flavor, bool unused in flavorSet )
+			{
+				array<LoadoutEntry> dependentsForFlavor
+				if ( flavor in dependencyEntry._____INTERNAL_dependentsByItemFlav )
+					dependentsForFlavor = dependencyEntry._____INTERNAL_dependentsByItemFlav[flavor]
+				else
+					dependencyEntry._____INTERNAL_dependentsByItemFlav[flavor] <- dependentsForFlavor
+
+				dependentsForFlavor.append( entry )
+			}
+		}
+	}
+
+	#if DEV
+		if ( DEV_ShouldIgnorePersistence() )
+			Warning( "loadouts_ignore_persistence (ConVar) is enabled" )
+	#endif
+
+	fileLevel.isInitialized = true
+
+	//#if UI && DEV
+	//	if ( DEV_resendAllCacheData )
+	//		RunClientScript( "UIToClient_ResendAllCacheData" ) // for uiscript_reset
+	//#endif
+}
+
+
+#if UI
+void function ShLoadouts_LevelShutdown()
+{
+	fileLevel.isInitialized = false
+}
+#endif
+
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+LoadoutEntry function RegisterLoadoutSlot( int type, string id )
+{
+	Assert( !fileLevel.isInitialized, "Cannot call RegisterLoadoutSlot after initialization has finished." )
+	Assert( type == eLoadoutEntryType.ITEM_FLAVOR || type == eLoadoutEntryType.INTEGER )
+
+	#if DEV
+		foreach( LoadoutEntry otherEntry in fileLevel.loadoutSlotEntries )
+			Assert( id != otherEntry.id, "Found loadout slots with the same id: " + id )
+	#endif
+
+	LoadoutEntry entry
+	entry._____INTERNAL_entryIndex = fileLevel.loadoutSlotEntries.len()
+	entry.id = id
+	entry.type = type
+	fileLevel.loadoutSlotEntries.append( entry )
+
+	return entry
+}
+
+
+// todo(dw): see if these need to be optimised to avoid 3 calls to GetLoadoutSlotContentsIndexInternal
+bool function LoadoutSlot_IsReady( EHI playerEHI, LoadoutEntry entry )
+{
+	//#if CLIENT
+	//	if ( !IsValid( FromEHI( playerEHI ) ) )
+	//		return false
+	//#endif
+
+	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+	return slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY
+}
+
+
+ItemFlavor function LoadoutSlot_GetItemFlavor( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+	Assert( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY, "LoadoutSlot_GetItemFlavor used on a loadout slot that was not ready." )
+
+	return ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+}
+
+
+int function LoadoutSlot_GetInteger( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.INTEGER )
+
+	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+	Assert( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY, "LoadoutSlot_GetItemFlavor used on a loadout slot that was not ready." )
+
+	return entry.minInteger + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM)
+}
+
+
+ItemFlavor function LoadoutSlot_WaitForItemFlavor( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	int slotContentsIndex
+	while ( true )
+	{
+		#if SERVER
+			//printf( "sh_loadouts.gnut debug (R5DEV-29743), LoadoutSlot_WaitForItemFlavor, [%s], WaitSignal( %d, \"%s\" )",
+			//	"server", playerEHI.GetEncodedEHandle(), "Loadout_" + entry.id + "_Ready"
+			//)
+		#else
+			//printf( "sh_loadouts.gnut debug (R5DEV-29743), LoadoutSlot_WaitForItemFlavor, [%d], WaitSignal( %d, \"%s\" )",
+			//	LocalClientEHI(), playerEHI, "Loadout_" + entry.id + "_Ready"
+			//)
+		#endif
+		slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+		if ( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY )
+			break
+
+		WaitSignal( WaitForEHISignalDummy( playerEHI ), "Loadout_" + entry.id + "_Ready" )
+	}
+
+	return ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+}
+
+
+//ItemFlavor ornull function LoadoutSlot_GetItemFlavorOrNull( EHI playerEHI, LoadoutEntry entry )
+//{
+//	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+//	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+//	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY )
+//		return null
+//
+//	return ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+//}
+//
+//
+//int ornull function LoadoutSlot_GetIntegerOrNull( EHI playerEHI, LoadoutEntry entry )
+//{
+//	Assert( entry.type == eLoadoutEntryType.INTEGER )
+//
+//	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+//	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY )
+//		return null
+//
+//	return entry.minValue + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM)
+//}
+//
+//
+//ItemFlavor ornull function LoadoutSlot_WaitForItemFlavorOrNull( EHI playerEHI, LoadoutEntry entry )
+//{
+//	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+//	int slotContentsIndex
+//	while ( true )
+//	{
+//		#if SERVER
+//			//printf( "sh_loadouts.gnut debug (R5DEV-29743), LoadoutSlot_WaitForItemFlavorOrNull, [%s], WaitSignal( %d, \"%s\" )",
+//			//	"server", playerEHI.GetEncodedEHandle(), "Loadout_" + entry.id + "_Ready"
+//			//)
+//		#else
+//			//printf( "sh_loadouts.gnut debug (R5DEV-29743), LoadoutSlot_WaitForItemFlavorOrNull, [%d], WaitSignal( %d, \"%s\" )",
+//			//	LocalClientEHI(), playerEHI, "Loadout_" + entry.id + "_Ready"
+//			//)
+//		#endif
+//		slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+//		if ( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY )
+//			break
+//
+//		WaitSignal( GetEHISignalDummy( playerEHI ), "Loadout_" + entry.id + "_Ready" )
+//	}
+//
+//	return ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+//}
+
+
+int function LoadoutSlot_GetRawStorageContents( EHI playerEHI, LoadoutEntry entry )
+{
+	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+	Assert( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY, "LoadoutSlot_GetRawStorageContents used on a loadout slot that was not ready." )
+
+	if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+	{
+		ItemFlavor flav = ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+		return ItemFlavor_GetGUID( flav )
+	}
+
+	return slotContentsIndex // eLoadoutEntryType.INTEGER
+}
+
+
+void function AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( LoadoutEntry entry, ItemFlavorLoadoutSlotDidChangeFuncType callback, bool shouldCheckRegistered = true )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	if ( shouldCheckRegistered )
+		Assert( !entry.changeCallbacks_ItemFlavor.contains( callback ), "Tried to add a callback that was already added" )
+	else if ( entry.changeCallbacks_ItemFlavor.contains( callback ) )
+		return
+
+	entry.changeCallbacks_ItemFlavor.append( callback )
+}
+
+
+void function AddCallback_IntegerLoadoutSlotDidChange_AnyPlayer( LoadoutEntry entry, IntegerLoadoutSlotDidChangeFuncType callback )
+{
+	Assert( entry.type == eLoadoutEntryType.INTEGER )
+	Assert( !entry.changeCallbacks_Integer.contains( callback ), "Tried to add a callback that was already added" )
+
+	entry.changeCallbacks_Integer.append( callback )
+}
+
+
+void function RemoveCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( LoadoutEntry entry, ItemFlavorLoadoutSlotDidChangeFuncType callback, bool shouldCheckRegistered = true )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	if ( shouldCheckRegistered )
+		Assert( entry.changeCallbacks_ItemFlavor.contains( callback ), "Tried to remove a callback that was not added" )
+	else if ( !entry.changeCallbacks_ItemFlavor.contains( callback ) )
+		return
+
+	entry.changeCallbacks_ItemFlavor.fastremovebyvalue( callback )
+}
+
+
+void function RemoveCallback_IntegerLoadoutSlotDidChange_AnyPlayer( LoadoutEntry entry, IntegerLoadoutSlotDidChangeFuncType callback )
+{
+	Assert( entry.type == eLoadoutEntryType.INTEGER )
+	Assert( entry.changeCallbacks_Integer.contains( callback ), "Tried to remove a callback that was not added" )
+
+	entry.changeCallbacks_Integer.fastremovebyvalue( callback )
+}
+
+
+void function AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( EHI playerEHI, LoadoutEntry entry, ItemFlavorLoadoutSlotDidChangeFuncType callback, bool shouldCheckRegistered = true )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+
+	array<ItemFlavorLoadoutSlotDidChangeFuncType> changeCallbacks
+	if ( entry._____INTERNAL_entryIndex in ehiss.itemFlavorLoadoutSlotChangedCallbacksMap )
+		changeCallbacks = ehiss.itemFlavorLoadoutSlotChangedCallbacksMap[entry._____INTERNAL_entryIndex]
+	else
+		ehiss.itemFlavorLoadoutSlotChangedCallbacksMap[entry._____INTERNAL_entryIndex] <- changeCallbacks
+
+	if ( shouldCheckRegistered )
+		Assert( !changeCallbacks.contains( callback ), "Tried to add a callback that was already added" )
+	else if ( changeCallbacks.contains( callback ) )
+		return
+
+	changeCallbacks.append( callback )
+}
+
+
+void function RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( EHI playerEHI, LoadoutEntry entry, ItemFlavorLoadoutSlotDidChangeFuncType callback, bool shouldCheckRegistered = true )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+
+	array<ItemFlavorLoadoutSlotDidChangeFuncType> changeCallbacks
+	if ( entry._____INTERNAL_entryIndex in ehiss.itemFlavorLoadoutSlotChangedCallbacksMap )
+		changeCallbacks = ehiss.itemFlavorLoadoutSlotChangedCallbacksMap[entry._____INTERNAL_entryIndex]
+	else
+		ehiss.itemFlavorLoadoutSlotChangedCallbacksMap[entry._____INTERNAL_entryIndex] <- changeCallbacks
+
+	if ( shouldCheckRegistered )
+		Assert( changeCallbacks.contains( callback ), "Tried to remove a callback that was not added" )
+	else if ( !changeCallbacks.contains( callback ) )
+		return
+
+	changeCallbacks.fastremovebyvalue( callback )
+}
+
+
+//void function RefreshLoadoutSlot( EHI playerEHI, LoadoutEntry entry )
+//{
+//	RefreshLoadoutSlotInternal( playerEHI, entry )
+//}
+
+
+#if SERVER
+void function SetItemFlavorLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	SetItemFlavorLoadoutSlotContentsInternal( playerEHI, entry, itemFlavor )
+}
+#endif
+
+
+#if SERVER
+void function SetIntegerLoadoutSlot( EHI playerEHI, LoadoutEntry entry, int value )
+{
+	Assert( entry.type == eLoadoutEntryType.INTEGER )
+
+	int slotContentsIndex = SLOT_CONTENTS_FIRST_VALID_ITEM + (value - entry.minInteger)
+	Assert( IsContentsIndexValidForLoadoutSlot( playerEHI, entry, slotContentsIndex, eValidation.ASSERT ) )
+
+	SetIntegerLoadoutSlotContentsInternal( playerEHI, entry, slotContentsIndex )
+}
+#endif
+
+
+#if CLIENT || UI
+void function RequestSetItemFlavorLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor )
+{
+	Assert( playerEHI == LocalClientEHI(), "Tried to use RequestSetLoadoutSlot on a different player" )
+
+	// todo(dw): predicted operations
+
+	int seqNum            = 0 // todo(dw): seqNum
+	int slotContentsIndex = ConvertItemFlavorToLoadoutSlotContentsIndex( entry, itemFlavor )
+
+	string commandString = ("loadouts_set"
+			+ " " + seqNum
+			+ " " + entry._____INTERNAL_entryIndex
+			+ " " + slotContentsIndex)
+
+	#if CLIENT
+		GetLocalClientPlayer().ClientCommand( commandString )
+	#elseif UI
+		ClientCommand( commandString ) // todo(dw): have UI go through client instead of directly telling server
+	#endif
+}
+#endif
+
+
+#if (CLIENT || UI) && DEV
+void function DEV_RequestSetItemFlavorLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor )
+{
+	Assert( playerEHI == LocalClientEHI(), "Tried to use DEV_RequestSetLoadoutSlot on a different player" )
+
+	string commandString = "loadouts_devset " + entry.id + " " + ItemFlavor_GetHumanReadableRef( itemFlavor )
+
+	#if CLIENT
+		GetLocalClientPlayer().ClientCommand( commandString )
+	#elseif UI
+		ClientCommand( commandString )
+	#endif
+}
+#endif
+
+
+bool function IsItemFlavorValidForLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	//return entry.isItemFlavorValid( itemFlavor )
+	return (itemFlavor in entry._____INTERNAL_itemFlavorNetworkIndexMap)
+}
+
+
+array<ItemFlavor> function GetValidItemFlavorsForLoadoutSlot( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	Assert( fileLevel.isInitialized )
+	return entry.validItemFlavorList
+}
+
+
+#if DEV
+array<ItemFlavor> function DEV_GetValidItemFlavorsForLoadoutSlotForDev( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	Assert( fileLevel.isInitialized )
+	return entry._____INTERNAL_DEV_validItemFlavorsForDev
+}
+#endif
+
+
+string function DEV_DescribeLoadoutSlot( LoadoutEntry entry, int slotContentsIndex, bool doId = true )
+{
+	string out = ""
+	if ( doId )
+	{
+		out += entry.id
+		out += ", "
+	}
+	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY )
+	{
+		out += "~~not ready"
+	}
+	else if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_INVALID || slotContentsIndex < 0 )
+	{
+		out += format( "~~invalid:%d~~", slotContentsIndex )
+	}
+	else if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+	{
+		ItemFlavor flav = ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+		out += DEV_DescItemFlavor( flav )
+	}
+	else if ( entry.type == eLoadoutEntryType.INTEGER )
+	{
+		out += string(entry.minInteger + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM))
+	}
+	return out
+}
+
+
+bool function IsItemFlavorUnlockedForLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor, bool shouldIgnoreGRX = false )
+{
+	#if CLIENT || UI
+		Assert( playerEHI == EHI_null || playerEHI == LocalClientEHI() )
+	#endif
+
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	if ( !ItemFlavor_IsAvailableInPlaylist( itemFlavor ) )
+		return false
+
+	if ( entry.isItemFlavorUnlocked != null && !entry.isItemFlavorUnlocked( playerEHI, itemFlavor ) )
+		return false
+
+	// todo(dw): preview flavors on client
+
+	if ( playerEHI == EHI_null )
+		return true
+
+	#if DEV
+		//if ( GetConVarBool( "loadouts_force_check_grx" ) )
+		if ( GetConVarBool( "loadouts_ignore_grx" ) )
+			return true
+	#endif
+
+	if ( shouldIgnoreGRX )
+	{
+		return true
+	}
+	else
+	{
+		entity player = FromEHI( playerEHI )
+		return GRX_IsItemOwnedByPlayer_AllowOutOfDateData( itemFlavor, player )
+	}
+
+	return true
+}
+
+
+array<ItemFlavor> function GetUnlockedItemFlavorsForLoadoutSlot( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	array<ItemFlavor> flavors = []
+
+	foreach( ItemFlavor validItemFlavor in entry.validItemFlavorList )
+	{
+		if ( IsItemFlavorUnlockedForLoadoutSlot( playerEHI, entry, validItemFlavor ) )
+			flavors.append( validItemFlavor )
+	}
+
+	return flavors
+}
+
+
+ItemFlavor function GetRandomGoodItemFlavorForLoadoutSlot( EHI playerEHI, LoadoutEntry entry, bool ignoreLocking = false )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	entry.validItemFlavorList_CopyForRandomizing.randomize()
+	foreach ( ItemFlavor flav in entry.validItemFlavorList_CopyForRandomizing )
+	{
+		if ( ignoreLocking || IsItemFlavorUnlockedForLoadoutSlot( playerEHI, entry, flav ) )
+			return flav
+	}
+
+	Assert( false, "Could not find a random unlocked item flavor for loadout slot: " + entry.id )
+	unreachable
+}
+
+
+array<LoadoutEntry> function GetAllLoadoutSlots()
+{
+	return fileLevel.loadoutSlotEntries
+}
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+#if SERVER && DEV
+void function GenerateLoadoutsPDef()
+{
+	//Assert( !DEV_AreAnyItemflavorsDisabledByPlaylist(), "You cannot regenerate the loadouts persistent data section if you have item flavors disabled by playlist vars! Use playlist survival_dev." )
+	if ( DEV_AreAnyItemflavorsDisabledByPlaylist() )
+		Warning( "You should not regenerate the loadouts persistent data section if you have item flavors disabled by playlist vars! Use playlist survival_dev." )
+
+	DEV_PDefGen_BeginStruct( "sLoadoutsData", "All loadout fields registered by script-func RegisterLoadoutSlot." )
+	foreach ( LoadoutEntry entry in fileLevel.loadoutSlotEntries )
+	{
+		DEV_PDefGen_AddField_Int( entry.id )
+	}
+	DEV_PDefGen_EndStruct()
+
+	DEV_PDefGen_BeginFieldGroup( "loadouts" )
+	DEV_PDefGen_AddField_Struct( "sLoadoutsData", "loadouts" )
+	DEV_PDefGen_EndFieldGroup()
+}
+#endif
+
+
+#if SERVER
+void function UpgradePlayerPersistentData( entity player, int oldVersion, int newVersion )
+{
+	GetEHIScriptStruct( player ).shouldConsiderAsUpgrading = true
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+void function ShLoadouts_OnPlayerEHICreated( EHI player, bool thisCallIsHappeningBecauseTheUIVMReset = false )
+{
+	EHIScriptStruct ehiss = GetEHIScriptStruct( player )
+
+	#if SERVER
+		ValidatePlayerLoadout( player, true )
+	#endif
+
+	#if CLIENT
+		ehiss.netVarsLastSeenValuesMap.resize( fileLevel.networkVars.len(), SLOT_CONTENTS_SENTINEL_NOTREADY )
+	#elseif UI
+		ehiss.loadoutSlotsLastSeenContentsMap.resize( fileLevel.loadoutSlotEntries.len(), SLOT_CONTENTS_SENTINEL_NOTREADY )
+	#endif
+
+	#if CLIENT
+		if ( thisCallIsHappeningBecauseTheUIVMReset )
+		{
+			foreach ( LoadoutEntry entry in fileLevel.loadoutSlotEntries )
+			{
+				if ( !IsLoadoutSlotCurrentlyNetworked( player, entry ) )
+					continue
+
+				int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( player, entry )
+				RunUIScript( "ClientToUI_RefreshLoadoutSlot", player, entry._____INTERNAL_entryIndex, slotContentsIndex )
+			}
+		}
+	#endif
+}
+#endif
+
+
+#if SERVER
+void function ValidatePlayerLoadout( entity player, bool isInitialValidation )
+{
+	// (dw): This function is called twice:
+	//  - Once when the player first connects, to ensure they do not have any invalid data.
+	//  - Once when their GRX data is available, to ensure they do not have any items equipped that they do not own.
+
+	EHIScriptStruct ehiss = GetEHIScriptStruct( player )
+
+	//if ( ehiss.hasBeenValidated )
+	//	return
+
+	bool doWarnings    = !ehiss.shouldConsiderAsUpgrading
+	bool forceReset    = false
+	bool resetToRandom = false
+	#if DEV
+		bool forceNew               = GetConVarBool( "loadouts_forceNew" )
+		bool devForceRandomLoadouts = GetCurrentPlaylistVarBool( "dev_force_random_loadouts", false )
+		bool forceRandomForBots     = GetConVarBool( "bot_loadout_randomize" )
+
+		resetToRandom = player.IsBot() || devForceRandomLoadouts
+		forceReset = forceNew || devForceRandomLoadouts || (player.IsBot() && forceRandomForBots)
+	#endif
+
+	ValidateAndFixAllLoadoutSlots( ToEHI( player ), isInitialValidation, doWarnings, forceReset, resetToRandom )
+}
+#endif
+
+
+#if SERVER
+void function ShLoadouts_PlayerGRXInventoryIsCleanFirstTime( entity player )
+{
+	if ( GetGameState() >= eGameState.Playing )
+	{
+		if ( !player.IsBot() )
+			Warning( "Player loadouts were not validated against their GRX data because it did not arrive in time." )
+		return
+	}
+
+	ValidatePlayerLoadout( player, false )
+}
+#endif
+
+
+#if CLIENT
+void function HandleLoadoutSlotNetworkVarChanged( EHI playerEHI, LoadoutEntry entry, int old, int new, bool actuallyChanged )
+{
+	if ( !fileLevel.isInitialized )
+		return
+
+	RefreshLoadoutSlotInternal( playerEHI, entry )
+}
+#endif
+
+
+bool function IsValidLoadoutSlotContentsIndex( LoadoutEntry entry, int slotContentsIndex, int validationBehavior = eValidation.DONT_ASSERT )
+{
+	if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+		return (slotContentsIndex in entry._____INTERNAL_networkIndexItemFlavorMap)
+
+	if ( entry.type == eLoadoutEntryType.INTEGER )
+	{
+		int value = entry.minInteger + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM)
+		return (value >= entry.minInteger && value <= entry.maxInteger)
+	}
+
+	Assert( validationBehavior != eValidation.ASSERT, "Invalid loadout slot contents index " + slotContentsIndex + " for " + entry.id )
+	return false
+}
+
+
+ItemFlavor function ConvertLoadoutSlotContentsIndexToItemFlavor( LoadoutEntry entry, int slotContentsIndex )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	Assert( slotContentsIndex != SLOT_CONTENTS_SENTINEL_INVALID )
+	Assert( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY )
+	Assert( slotContentsIndex >= SLOT_CONTENTS_FIRST_VALID_ITEM )
+
+	return entry._____INTERNAL_networkIndexItemFlavorMap[slotContentsIndex]
+}
+
+
+int function ConvertItemFlavorToLoadoutSlotContentsIndex( LoadoutEntry entry, ItemFlavor itemFlavor )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+
+	Assert( itemFlavor in entry._____INTERNAL_itemFlavorNetworkIndexMap )
+	return entry._____INTERNAL_itemFlavorNetworkIndexMap[itemFlavor]
+}
+
+
+int function GetLoadoutSlotContentsIndexInternal( EHI playerEHI, LoadoutEntry entry )
+{
+	#if SERVER
+		if ( !EHIHasValidScriptStruct( playerEHI ) )
+			return SLOT_CONTENTS_SENTINEL_NOTREADY
+
+		EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+
+		if ( !ehiss.hasBeenValidated )
+			return SLOT_CONTENTS_SENTINEL_NOTREADY
+
+		return GetLoadoutSlotContentsIndexFromPersistence( playerEHI, entry, eValidation.ASSERT )
+	#elseif CLIENT || UI
+		if ( !EHIHasValidScriptStruct( playerEHI ) )
+			return SLOT_CONTENTS_SENTINEL_NOTREADY
+
+		int slotContentsIndex
+
+		//Assert( entry.networkTo != eLoadoutNetworking.SERVER_ONLY, "Tried to get a SERVER_ONLY loadout slot on the client or UI." )
+
+		if ( entry.networkTo == eLoadoutNetworking.PLAYER_GLOBAL && playerEHI != LocalClientEHI() )
+		{
+			#if CLIENT
+				slotContentsIndex = GetLoadoutSlotContentsIndexFromNetworkVar( playerEHI, entry )
+			#elseif UI
+				slotContentsIndex = GetLoadoutSlotContentsIndexFromCache( playerEHI, entry )
+			#endif
+		}
+		else
+		{
+			Assert( playerEHI == LocalClientEHI(), "Tried to access a loadout slot of a different client (LoadoutEntry.networkTo on '" + entry.id + "' is not PLAYER_GLOBAL)" )
+			slotContentsIndex = GetLoadoutSlotContentsIndexFromPersistence( playerEHI, entry, eValidation.DONT_ASSERT )
+		}
+
+		if ( !IsContentsIndexValidForLoadoutSlot( playerEHI, entry, slotContentsIndex ) )
+		{
+			return SLOT_CONTENTS_SENTINEL_NOTREADY
+		}
+		return slotContentsIndex
+	#endif
+}
+
+
+#if SERVER || CLIENT || UI
+int function GetLoadoutSlotContentsIndexFromPersistence( EHI playerEHI, LoadoutEntry entry, int validationBehavior = eValidation.ASSERT )
+{
+#if DEV
+	if ( DEV_ShouldIgnorePersistence() )
+	{
+		if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+		{
+			ItemFlavor defaultItemFlavor = GetDefaultItemFlavorForLoadoutSlot( playerEHI, entry )
+			return ConvertItemFlavorToLoadoutSlotContentsIndex( entry, defaultItemFlavor )
+		}
+		else if ( entry.type == eLoadoutEntryType.INTEGER )
+		{
+			return SLOT_CONTENTS_FIRST_VALID_ITEM + (entry.defaultInteger - entry.minInteger)
+		}
+	}
+#endif
+
+	#if SERVER || CLIENT
+		entity player         = FromEHI( playerEHI )
+		int slotContentsIndex = expect int(player.GetPersistentVar( "loadouts." + entry.id ))
+	#elseif UI
+		if ( !IsPersistenceAvailable() )
+			return SLOT_CONTENTS_SENTINEL_NOTREADY
+
+		Assert( playerEHI == LocalClientEHI() )
+		int slotContentsIndex = expect int(GetPersistentVar( "loadouts." + entry.id ))
+	#endif
+
+	if ( slotContentsIndex == PERSISTENT_DATA_INVALID_SENTINEL )
+	{
+		#if SERVER
+			Assert( false || validationBehavior != eValidation.ASSERT, "Persistent loadout slot " + entry.id + " was set to invalid value! (" + slotContentsIndex + ")" )
+		#elseif CLIENT || UI
+			//Warning( "Persistent loadout slot " + entry.id + " was set to __invalid__!" )
+		#endif
+		return SLOT_CONTENTS_SENTINEL_INVALID
+	}
+
+	if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+	{
+		if ( !(slotContentsIndex in entry._____INTERNAL_itemFlavorGUIDNetworkIndexMap) )
+		{
+			#if SERVER
+				Assert( false || validationBehavior != eValidation.ASSERT, "Persistent loadout slot " + entry.id + " was set to invalid value! (" + slotContentsIndex + ")" )
+			#elseif CLIENT || UI
+				//Warning( "Persistent loadout slot " + entry.id + " was set to __invalid__!" )
+			#endif
+			return SLOT_CONTENTS_SENTINEL_INVALID
+		}
+
+		return entry._____INTERNAL_itemFlavorGUIDNetworkIndexMap[slotContentsIndex]
+	}
+	else if ( entry.type == eLoadoutEntryType.INTEGER )
+	{
+		int value = entry.minInteger + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM)
+		if ( value < entry.minInteger || value > entry.maxInteger )
+		{
+			#if SERVER
+				Assert( false || validationBehavior != eValidation.ASSERT, "Persistent loadout slot " + entry.id + " was set to invalid value! (" + slotContentsIndex + ")" )
+			#elseif CLIENT || UI
+				//Warning( "Persistent loadout slot " + entry.id + " was set to __invalid__!" )
+			#endif
+			return SLOT_CONTENTS_SENTINEL_INVALID
+		}
+
+		return slotContentsIndex
+	}
+
+	return SLOT_CONTENTS_SENTINEL_INVALID
+}
+#endif
+
+
+#if CLIENT
+int function GetLoadoutSlotContentsIndexFromNetworkVar( EHI playerEHI, LoadoutEntry entry, int validationBehavior = eValidation.ASSERT )
+{
+	return GetEHIScriptStruct( playerEHI ).netVarsLastSeenValuesMap[entry._____INTERNAL_nvIndex]
+}
+#endif
+
+
+#if UI
+int function GetLoadoutSlotContentsIndexFromCache( EHI playerEHI, LoadoutEntry entry, int validationBehavior = eValidation.ASSERT )
+{
+	return GetEHIScriptStruct( playerEHI ).loadoutSlotsLastSeenContentsMap[entry._____INTERNAL_entryIndex]
+}
+#endif
+
+
+#if SERVER
+void function SetItemFlavorLoadoutSlotContentsInternal( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor )
+{
+	#if DEV
+		if ( DEV_ShouldIgnorePersistence() )
+		{
+			Warning( "loadouts_ignore_persistence is set. Persistent var \"loadouts." + entry.id + "\" will not be saved." )
+			return
+		}
+	#endif
+
+	int itemFlavorPDefInt = ItemFlavor_GetGUID( itemFlavor )
+
+	entity player = FromEHI( playerEHI )
+	player.SetPersistentVar( "loadouts." + entry.id, itemFlavorPDefInt )
+
+	//printf( "sh_loadouts.gnut debug (R5DEV-29743), SetItemFlavorLoadoutSlotContentsInternal, [%d], SetPersistentVar( \"%s\", \"%s\"{%d} )",
+	//	player.GetEncodedEHandle(), "loadouts." + entry.id, itemFlavorPDefStringRef, ItemFlavor_GetNetworkIndex( itemFlavor )
+	//)
+
+	RefreshLoadoutSlotInternal( playerEHI, entry )
+}
+#endif
+
+
+#if SERVER
+void function SetIntegerLoadoutSlotContentsInternal( EHI playerEHI, LoadoutEntry entry, int slotContentsIndex )
+{
+	#if DEV
+		if ( DEV_ShouldIgnorePersistence() )
+		{
+			Warning( "loadouts_ignore_persistence is set. Persistent var \"loadouts." + entry.id + "\" will not be saved." )
+			return
+		}
+	#endif
+
+	Assert( slotContentsIndex >= SLOT_CONTENTS_FIRST_VALID_ITEM && slotContentsIndex <= SLOT_CONTENTS_FIRST_VALID_ITEM + (entry.maxInteger - entry.minInteger) )
+
+	int integerPDefInt = slotContentsIndex
+
+	entity player = FromEHI( playerEHI )
+	player.SetPersistentVar( "loadouts." + entry.id, integerPDefInt )
+
+	//printf( "sh_loadouts.gnut debug (R5DEV-29743), SetIntegerLoadoutSlotContentsInternal, [%d], SetPersistentVar( \"%s\", \"%s\"{%d} )",
+	//	player.GetEncodedEHandle(), "loadouts." + entry.id, itemFlavorPDefStringRef, ItemFlavor_GetNetworkIndex( itemFlavor )
+	//)
+
+	RefreshLoadoutSlotInternal( playerEHI, entry )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+void function RefreshLoadoutSlotInternal( EHI playerEHI, LoadoutEntry entry )
+{
+	#if CLIENT || UI
+		LocalClientEHI() // this will assert that the local player is valid, and also send it to the UI
+	#endif
+
+	#if SERVER
+		EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+		if ( !ehiss.hasBeenValidated )
+			return
+
+		//if ( validateAndFix )
+		//{
+		//	if ( ValidateAndFixLoadoutSlot( playerEHI, entry, true, false, false ) )
+		//		return
+		//}
+	#endif
+
+	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+
+	#if SERVER
+		if ( IsLoadoutSlotCurrentlyNetworked( playerEHI, entry ) )
+		{
+			entity player = FromEHI( playerEHI )
+			if ( entry.networkTo == eLoadoutNetworking.PLAYER_GLOBAL )
+			{
+				#if DEV
+					foreach( LoadoutEntry otherEntry in fileLevel.networkVars[expect string(entry.networkVarName)].usedByEntries )
+						Assert( otherEntry == entry || !IsLoadoutSlotCurrentlyNetworked( playerEHI, otherEntry ),
+									"Attempted to network two loadout slots using the same network variable name at the same time"
+									+ " (var: \"" + expect string(entry.networkVarName) + "\", slot 1: \"" + entry.id + "\", slot 2: \"" + otherEntry.id + "\")." )
+				#endif
+
+				Assert( slotContentsIndex != 0 )
+				player.SetPlayerNetInt( expect string(entry.networkVarName), slotContentsIndex )
+			}
+			else if ( entry.networkTo == eLoadoutNetworking.PLAYER_EXCLUSIVE )
+			{
+				// inform the client that their persistent data changed
+				// todo(dw): see if we should get a ClientCodeCallback_OnPersistentDataChanged callback
+				Remote_CallFunction_NonReplay( player, "ServerToClient_LoadoutSlotDidChange", playerEHI.GetEncodedEHandle(), entry._____INTERNAL_entryIndex )
+			}
+		}
+	#elseif CLIENT
+		entity player = FromEHI( playerEHI )
+		//printt( "wtf", entry.id, slotContentsIndex, slotContentsIndex >= 1 ? ItemFlavor_GetRef( GetItemFlavorByNetworkIndex( slotContentsIndex ) ) : string(slotContentsIndex) )
+		RunUIScript( "ClientToUI_RefreshLoadoutSlot", playerEHI, entry._____INTERNAL_entryIndex, slotContentsIndex )
+	#endif
+
+	if ( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY && slotContentsIndex != SLOT_CONTENTS_SENTINEL_INVALID )
+	{
+		#if SERVER
+			//printf( "sh_loadouts.gnut debug (R5DEV-29743), RefreshLoadoutSlotInternal, [%s], Signal( %d, \"%s\" ) {%s}",
+			//	"server", playerEHI.GetEncodedEHandle(), "Loadout_" + entry.id + "_Ready", string(slotContentsIndex)
+			//)
+		#else
+			//printf( "sh_loadouts.gnut debug (R5DEV-29743), RefreshLoadoutSlotInternal, [%d], Signal( %d, \"%s\" ) {%s}",
+			//	LocalClientEHI(), playerEHI, "Loadout_" + entry.id + "_Ready", string(slotContentsIndex)
+			//)
+		#endif
+		Signal( GetEHISignalDummy( playerEHI ), "Loadout_" + entry.id + "_Ready" )
+	}
+
+	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY || slotContentsIndex == SLOT_CONTENTS_SENTINEL_INVALID )
+	{
+		//
+	}
+	else if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+	{
+		ItemFlavor slotContents = ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+
+		if ( IsLoadoutSlotActive( playerEHI, entry ) )
+		{
+			CallItemFlavorLoadoutSlotDidChangeCallbacks( playerEHI, entry, slotContents )
+
+			#if SERVER || CLIENT // not required in UI because CLIENT will call ClientToUI_RefreshLoadoutSlot for each dependent anyway
+				if ( slotContents in entry._____INTERNAL_dependentsByItemFlav )
+				{
+					foreach( LoadoutEntry dependentEntry in entry._____INTERNAL_dependentsByItemFlav[slotContents] )
+					{
+						if ( IsLoadoutSlotActive( playerEHI, dependentEntry, entry ) )
+							RefreshLoadoutSlotInternal( playerEHI, dependentEntry )
+					}
+				}
+			#endif
+		}
+	}
+	else if ( entry.type == eLoadoutEntryType.INTEGER )
+	{
+		int value = entry.minInteger + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM)
+		if ( IsLoadoutSlotActive( playerEHI, entry ) )
+			CallIntegerLoadoutSlotDidChangeCallbacks( playerEHI, entry, value )
+	}
+}
+#endif
+
+
+#if CLIENT
+void function ServerToClient_LoadoutSlotDidChange( EHI playerEHI, int entryIndex )
+{
+	Assert( playerEHI == LocalClientEHI() )
+
+	LoadoutEntry entry = fileLevel.loadoutSlotEntries[entryIndex]
+
+	RefreshLoadoutSlotInternal( playerEHI, entry )
+}
+#endif
+
+
+#if UI
+void function ClientToUI_RefreshLoadoutSlot( EHI playerEHI, int entryIndex, int slotContentsIndex )
+{
+	if ( !fileLevel.isInitialized )
+		return // (dw): this can happen if the UI VM hits an error
+
+	LoadoutEntry entry    = fileLevel.loadoutSlotEntries[entryIndex]
+	EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+	ehiss.loadoutSlotsLastSeenContentsMap[entryIndex] = slotContentsIndex
+
+	RefreshLoadoutSlotInternal( playerEHI, entry )
+}
+
+
+array<ItemFlavor> function TEMP_FilterItemsForGRX( EHI playerEHI, array<ItemFlavor> items )
+{
+	array<ItemFlavor> filteredItems
+
+	foreach ( itemFlavor in items )
+	{
+		if ( ItemFlavor_GetGRXMode( itemFlavor ) == GRX_ITEMFLAVORMODE_REGULAR )
+		{
+			if ( !GRX_AreOffersReady() )
+				continue
+
+			if ( !GRX_IsItemCraftable( itemFlavor ) && !GRX_IsItemOwnedByPlayer( itemFlavor ) )
+			{
+				//printt( "removing", ItemFlavor_GetHumanReadableRef( itemFlavor ), GRX_IsItemOwnedByPlayer( itemFlavor ) )
+				continue
+			}
+		}
+
+		filteredItems.append( itemFlavor )
+	}
+
+	return filteredItems
+}
+
+
+array<ItemFlavor> function GetLoadoutItemsSortedForMenu( LoadoutEntry entry, int functionref( ItemFlavor ) sortOrdinalFunc )
+{
+	EHI playerEHI           = LocalClientEHI()
+	array<ItemFlavor> items = GetValidItemFlavorsForLoadoutSlot( playerEHI, entry )
+
+	if ( GetCurrentPlaylistVarBool( "filter_uncraftable_items", false ) )
+		items = TEMP_FilterItemsForGRX( playerEHI, items )
+
+	ItemFlavor equippedItem
+	if ( LoadoutSlot_IsReady( playerEHI, entry ) )
+		equippedItem = LoadoutSlot_GetItemFlavor( playerEHI, entry )
+
+	items.sort( int function( ItemFlavor a, ItemFlavor b ) : ( playerEHI, equippedItem, sortOrdinalFunc ) {
+		//bool aIsOwned = GRX_IsItemOwnedByPlayer( a, null, true )
+		//bool bIsOwned = GRX_IsItemOwnedByPlayer( b, null, true )
+		//if ( aIsOwned && !bIsOwned )
+		//	return -1
+		//else if ( bIsOwned && !aIsOwned )
+		//	return 1
+
+		bool aIsEquipped = (a == equippedItem)
+		bool bIsEquipped = (b == equippedItem)
+		if ( aIsEquipped && !bIsEquipped )
+			return -1
+		else if ( bIsEquipped && !aIsEquipped )
+			return 1
+
+		int aQuality = ItemFlavor_HasQuality( a ) ? ItemFlavor_GetQuality( a ) : -1
+		int bQuality = ItemFlavor_HasQuality( b ) ? ItemFlavor_GetQuality( b ) : -1
+		if ( aQuality > bQuality )
+			return -1
+		else if ( aQuality < bQuality )
+			return 1
+
+		int itemType = ItemFlavor_GetType( a )
+		if ( itemType == eItemType.gladiator_card_intro_quip || itemType == eItemType.gladiator_card_kill_quip )
+			return SortStringAlphabetize( Localize( ItemFlavor_GetLongName( a ) ), Localize( ItemFlavor_GetLongName( b ) ) )
+
+		return sortOrdinalFunc( a ) - sortOrdinalFunc( b )
+	} )
+
+	return items
+}
+#endif // UI
+
+
+//#if CLIENT && DEV
+//void function UIToClient_ResendAllCacheData()
+//{
+//	if ( !fileLevel.isInitialized )
+//		return
+//
+//	// this may fail
+//	foreach( entity player in GetPlayerArray() )
+//	{
+//		foreach( LoadoutEntry entry in fileLevel.loadoutSlotEntries )
+//		{
+//			if ( player == GetLocalClientPlayer() || entry.networkTo == eLoadoutNetworking.PLAYER_GLOBAL )
+//				RefreshLoadoutSlotInternal( ToEHI( player ), entry )
+//		}
+//	}
+//}
+//#endif
+
+
+bool function IsLoadoutSlotActive( EHI playerEHI, LoadoutEntry entry, LoadoutEntry ornull entryToNotCheck = null )
+{
+	#if CLIENT || UI
+		if ( playerEHI != LocalClientEHI() && entry.networkTo != eLoadoutNetworking.PLAYER_GLOBAL )
+			return false
+	#endif
+
+	foreach ( LoadoutEntry dependency, table<ItemFlavor, bool> flavorSet in entry.isActiveConditions )
+	{
+		if ( dependency == entryToNotCheck )
+			continue
+
+		if ( !IsLoadoutSlotActive( playerEHI, dependency ) )
+			return false
+
+		if ( !LoadoutSlot_IsReady( playerEHI, dependency ) )
+			return false
+
+		ItemFlavor dependencyContents = LoadoutSlot_GetItemFlavor( playerEHI, dependency )
+		if ( !(dependencyContents in flavorSet) )
+			return false
+	}
+
+	return true
+}
+
+
+bool function IsLoadoutSlotCurrentlyNetworked( EHI playerEHI, LoadoutEntry entry, LoadoutEntry ornull entryToNotCheck = null )
+{
+	#if CLIENT || UI
+		if ( playerEHI != LocalClientEHI() && entry.networkTo != eLoadoutNetworking.PLAYER_GLOBAL )
+			return false
+	#endif
+
+	if ( entry.networkTo == eLoadoutNetworking.SERVER_ONLY )
+		return false
+
+	return IsLoadoutSlotActive( playerEHI, entry, entryToNotCheck )
+}
+
+
+void function CallItemFlavorLoadoutSlotDidChangeCallbacks( EHI playerEHI, LoadoutEntry entry, ItemFlavor slotContents )
+{
+	foreach( ItemFlavorLoadoutSlotDidChangeFuncType callback in entry.changeCallbacks_ItemFlavor )
+		callback( playerEHI, slotContents )
+
+	EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+	if ( entry._____INTERNAL_entryIndex in ehiss.itemFlavorLoadoutSlotChangedCallbacksMap )
+	{
+		foreach( ItemFlavorLoadoutSlotDidChangeFuncType callback in ehiss.itemFlavorLoadoutSlotChangedCallbacksMap[entry._____INTERNAL_entryIndex] )
+			callback( playerEHI, slotContents )
+	}
+}
+
+
+void function CallIntegerLoadoutSlotDidChangeCallbacks( EHI playerEHI, LoadoutEntry entry, int value )
+{
+	foreach( IntegerLoadoutSlotDidChangeFuncType callback in entry.changeCallbacks_Integer )
+		callback( playerEHI, value )
+}
+
+
+ItemFlavor function GetDefaultItemFlavorForLoadoutSlot( EHI playerEHI, LoadoutEntry entry )
+{
+	return entry.defaultItemFlavor
+}
+
+
+#if SERVER || CLIENT || UI
+bool function IsContentsIndexValidForLoadoutSlot( EHI playerEHI, LoadoutEntry entry, int slotContentsIndex, int validationBehavior = eValidation.DONT_ASSERT )
+{
+	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_INVALID )
+	{
+		Assert( false || validationBehavior != eValidation.ASSERT, "Tried to assign invalid value to loadout slot." )
+		return false
+	}
+	else if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY )
+	{
+		Assert( false || validationBehavior != eValidation.ASSERT, "Tried to assign invalid value to loadout slot." )
+		return false
+	}
+	else
+	{
+		if ( !IsValidLoadoutSlotContentsIndex( entry, slotContentsIndex, validationBehavior ) )
+		{
+			// func asserts for us
+			return false
+		}
+
+		if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+		{
+			ItemFlavor itemFlavor = ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+			if ( !IsItemFlavorValidForLoadoutSlot( playerEHI, entry, itemFlavor ) )
+			{
+				Assert( false || validationBehavior != eValidation.ASSERT, "Tried to assign invalid item value to loadout slot." )
+				return false
+			}
+			return true
+		}
+		else if ( entry.type == eLoadoutEntryType.INTEGER )
+		{
+			return true
+		}
+	}
+
+	Assert( false || validationBehavior != eValidation.ASSERT, "Value is invalid for loadout slot." )
+	return false
+}
+#endif
+
+
+#if SERVER
+void function ValidateAndFixAllLoadoutSlots( EHI playerEHI, bool isInitialValidation, bool doWarnings, bool forceReset, bool resetToRandom )
+{
+	EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+	ehiss.hasBeenValidated = false
+
+	array<LoadoutEntry> fixedList = [] // only used iff isInitialValidation == false
+
+	foreach( LoadoutEntry entry in fileLevel.loadoutSlotEntries )
+	{
+		bool entryWasFixed = ValidateAndFixLoadoutSlot( playerEHI, entry, isInitialValidation, doWarnings, forceReset, resetToRandom )
+		if ( !isInitialValidation && entryWasFixed )
+			fixedList.append( entry )
+	}
+
+	ehiss.hasBeenValidated = true
+
+	ehiss.HACK_wasJustValidated = true
+	foreach( LoadoutEntry entry in (isInitialValidation ? fileLevel.loadoutSlotEntries : fixedList) )
+	{
+		RefreshLoadoutSlotInternal( playerEHI, entry )
+	}
+	ehiss.HACK_wasJustValidated = false
+}
+#endif
+
+
+#if SERVER
+bool function ValidateAndFixLoadoutSlot( EHI playerEHI, LoadoutEntry entry, bool ignoreGRX, bool doWarnings, bool forceReset, bool resetToRandom )
+{
+	bool wasFixed = false
+
+	entity player = FromEHI( playerEHI )
+
+	int slotContentsIndex = GetLoadoutSlotContentsIndexFromPersistence( playerEHI, entry, eValidation.DONT_ASSERT )
+
+	bool shouldReset = forceReset
+
+	if ( !IsContentsIndexValidForLoadoutSlot( playerEHI, entry, slotContentsIndex ) )
+	{
+		shouldReset = true
+
+		if ( doWarnings )
+			Warning( "Detected invalid persistent loadout slot contents (%s, %s)", string(player), DEV_DescribeLoadoutSlot( entry, slotContentsIndex ) )
+	}
+	else if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+	{
+		ItemFlavor itemFlavor = ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+
+		if ( !IsItemFlavorUnlockedForLoadoutSlot( playerEHI, entry, itemFlavor, ignoreGRX ) )
+		{
+			shouldReset = true
+
+			if ( doWarnings )
+				Warning( "Detected locked persistent loadout slot contents (%s, %s)", string(player), DEV_DescribeLoadoutSlot( entry, slotContentsIndex ) )
+		}
+	}
+
+	if ( shouldReset )
+	{
+		if ( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+		{
+			ItemFlavor itemFlavor
+#if DEV
+			if ( resetToRandom || GetConVarBool( "loadouts_forceRandom" ) )
+			{
+				itemFlavor = GetRandomGoodItemFlavorForLoadoutSlot( playerEHI, entry )
+			}
+			else
+#endif
+			{
+				itemFlavor = GetDefaultItemFlavorForLoadoutSlot( playerEHI, entry )
+			}
+
+			SetItemFlavorLoadoutSlotContentsInternal( playerEHI, entry, itemFlavor )
+			wasFixed = true
+		}
+		else if ( entry.type == eLoadoutEntryType.INTEGER )
+		{
+			int newSlotContentsIndex
+#if DEV
+			if ( resetToRandom || GetConVarBool( "loadouts_forceRandom" ) )
+			{
+				int value = RandomIntRangeInclusive( entry.minInteger, entry.maxInteger )
+				newSlotContentsIndex = SLOT_CONTENTS_FIRST_VALID_ITEM + (value - entry.minInteger)
+			}
+			else
+#endif
+			{
+				newSlotContentsIndex = SLOT_CONTENTS_FIRST_VALID_ITEM + (entry.defaultInteger - entry.minInteger)
+			}
+
+			SetIntegerLoadoutSlotContentsInternal( playerEHI, entry, newSlotContentsIndex )
+			wasFixed = true
+		}
+	}
+
+	return wasFixed
+}
+#endif
+
+
+bool function IsLoadoutSlotLocked( EHI playerEHI, LoadoutEntry entry )
+{
+	if ( entry.isSlotLocked == null )
+		return false
+
+	#if DEV
+		if ( GetCurrentPlaylistVarBool( "dev_loadout_changeable_at_any_time", false ) )
+			return false
+	#endif
+
+	return entry.isSlotLocked( playerEHI )
+}
+
+
+#if SERVER
+bool function ClientCommand_loadouts_set( entity player, array<string> args )
+{
+	// loadouts_set
+	// 0: [client request sequence number]
+	// 1: [loadout slot entry index]
+	// 2: [slot contents index]
+
+	EHI playerEHI = ToEHI( player )
+
+	const int EXPECTED_ARG_COUNT = 3
+	if ( args.len() != EXPECTED_ARG_COUNT )
+	{
+		Assert( false, "Incorrect number of arguments to client command 'loadouts_set' (got \"" + DEV_ArrayConcat( args, " " ) + "\", expected " + EXPECTED_ARG_COUNT + " arguments)." )
+		return true
+	}
+
+	int seqNum = int( args[0] ) // todo(dw): tell the client whether an action succeeded
+
+	int entryIndex = int( args[1] )
+	if ( !(entryIndex in fileLevel.loadoutSlotEntries) )
+	{
+		Assert( false, "'loadouts_set' had invalid entry index (got " + entryIndex + ", valid range 0-" + (fileLevel.loadoutSlotEntries.len() - 1) + ")." )
+		return true
+	}
+	LoadoutEntry entry = fileLevel.loadoutSlotEntries[entryIndex]
+
+	if ( IsLoadoutSlotLocked( playerEHI, entry ) )
+	{
+		Assert( false, "Attempted to use 'loadouts_set' on locked loadout slot \"" + entry.id + "\")." )
+		return true
+	}
+
+	int slotContentsIndex = int( args[2] )
+	if ( !IsContentsIndexValidForLoadoutSlot( playerEHI, entry, slotContentsIndex, eValidation.ASSERT ) )
+	{
+		// func asserts for us in dev
+		return true
+	}
+
+	ItemFlavor itemFlavor = ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+	if ( !IsItemFlavorUnlockedForLoadoutSlot( playerEHI, entry, itemFlavor ) )
+	{
+		// This could happen if two people try to select the same character at the same time
+		//Assert( false, "'loadouts_set' received item flavor \"" + ItemFlavor_GetRef( itemFlavor ) + "\" which is locked for this player (loadout slot \"" + entry.id + "\")." )
+		Warning( "'loadouts_set' received item flavor \"" + DEV_DescItemFlavor( itemFlavor ) + "\" which is locked for this player (loadout slot \"" + entry.id + "\")." )
+		return true
+	}
+	SetItemFlavorLoadoutSlotContentsInternal( playerEHI, entry, itemFlavor )
+
+	return true
+}
+#endif
+
+#if SERVER && DEV
+bool function ClientCommand_loadouts_devset( entity commandPlayer, array<string> args )
+{
+	// loadouts_devset
+	// 1: [loadout slot entry id string]
+	// 2: [slot contents item flavor ref string]
+	//
+	// example: loadouts_devset character_selection character_gibraltar
+
+	const int EXPECTED_ARG_COUNT_MIN = 2
+	const int EXPECTED_ARG_COUNT_MAX = 3
+	if ( args.len() < EXPECTED_ARG_COUNT_MIN || args.len() > EXPECTED_ARG_COUNT_MAX )
+	{
+		Warning( "Incorrect number of arguments to client command 'loadouts_devset' (got \"" + DEV_ArrayConcat( args, " " ) + "\", expected " + EXPECTED_ARG_COUNT_MIN + "-" + EXPECTED_ARG_COUNT_MAX + " arguments)." )
+		return true
+	}
+
+	array<entity> playersToAffect = ((args.len() < 3 || args[2] != "all") ? [commandPlayer] : GetPlayerArray())
+	foreach ( entity player in playersToAffect )
+	{
+		EHI playerEHI = ToEHI( player )
+
+		string entryId = args[0]
+		array<LoadoutEntry> relevantEntries
+		foreach( LoadoutEntry possibleEntry in fileLevel.loadoutSlotEntries )
+		{
+			bool selected = false
+			if ( possibleEntry.id == entryId )
+				selected = true
+			if ( !selected && possibleEntry.DEV_category == entryId )
+			{
+				if ( possibleEntry.isCurrentlyRelevant != null )
+					selected = possibleEntry.isCurrentlyRelevant( playerEHI )
+				else
+					selected = IsLoadoutSlotActive( playerEHI, possibleEntry )
+			}
+			if ( selected )
+				relevantEntries.append( possibleEntry )
+		}
+		if ( relevantEntries.len() == 0 )
+		{
+			Warning( "Tried to use 'loadouts_devset' with invalid entry id \"" + entryId + "\"." )
+			continue
+		}
+
+		//IsLoadoutSlotLocked( playerEHI, entry )
+
+		string slotContentsString = args[1]
+
+		array<ItemFlavor> flavorListForTestingNewness = []
+
+		foreach ( LoadoutEntry entry in relevantEntries )
+		{
+			int slotContentsIndex
+			ItemFlavor itemFlavor
+			if ( slotContentsString == "~default~" )
+			{
+				itemFlavor = GetDefaultItemFlavorForLoadoutSlot( playerEHI, entry )
+			}
+			else if ( slotContentsString == "~random~" )
+			{
+				itemFlavor = GetRandomGoodItemFlavorForLoadoutSlot( playerEHI, entry, true )
+			}
+			else if ( slotContentsString == "~next~" || slotContentsString == "~prev~" )
+			{
+				int dir = (slotContentsString == "~next~" ? 1 : -1)
+
+				array<ItemFlavor> possibleChoices = entry.validItemFlavorList
+				ItemFlavor currentChoice          = LoadoutSlot_GetItemFlavor( playerEHI, entry )
+				itemFlavor = possibleChoices[real_int_modulo( possibleChoices.find( currentChoice ) + dir, possibleChoices.len() )]
+			}
+			else if ( IsValidItemFlavorHumanReadableRef( slotContentsString ) )
+			{
+				itemFlavor = GetItemFlavorByHumanReadableRef( slotContentsString )
+			}
+			else
+			{
+				Warning( "Tried to use 'loadouts_devset' with unknown item flavor ref string \"" + slotContentsString + "\"." )
+				continue
+			}
+
+			if ( !(itemFlavor in entry._____INTERNAL_itemFlavorNetworkIndexMap) )
+				slotContentsIndex = SLOT_CONTENTS_SENTINEL_INVALID
+			else
+				slotContentsIndex = ConvertItemFlavorToLoadoutSlotContentsIndex( entry, itemFlavor )
+
+			if ( !IsContentsIndexValidForLoadoutSlot( playerEHI, entry, slotContentsIndex, eValidation.DONT_ASSERT ) )
+			{
+				Warning( "Tried to use 'loadouts_devset' with item flavor \"" + slotContentsString + "\" which is not valid for loadout slot \"" + entryId + "\"." )
+				continue
+			}
+
+			flavorListForTestingNewness.append( itemFlavor )
+
+			// IsItemFlavorUnlockedForLoadoutSlot( playerEHI, entry, itemFlavor ) )
+
+			SetItemFlavorLoadoutSlotContentsInternal( playerEHI, entry, itemFlavor )
+
+			printt( player, "loadouts_devset", entry.id, ItemFlavor_GetHumanReadableRef( itemFlavor ) )
+		}
+
+		//Newness_MarkItemFlavorsAsNewForPlayer( player, flavorListForTestingNewness, true )
+	}
+
+	return true
+}
+#endif
+
+#if SERVER
+bool function ClientCommand_loadouts_reset_persistent( entity player, array<string> args )
+{
+	ValidateAndFixAllLoadoutSlots( ToEHI( player ), false, false, true, false )
+	return true
+}
+#endif
+
+#if SERVER
+bool function ClientCommand_loadouts_dump( entity player, array<string> args )
+{
+	printt( "--", "loadouts dump for", player )
+	EHI playerEHI = ToEHI( player )
+	foreach( LoadoutEntry entry in fileLevel.loadoutSlotEntries )
+	{
+		string line = format( "-- %-45s %-50s %-80s", entry.DEV_name, entry.id,
+			DEV_DescribeLoadoutSlot( entry, GetLoadoutSlotContentsIndexInternal( playerEHI, entry ), false ) )
+
+		bool matches = true
+		foreach( string arg in args )
+			matches = matches && line.find( arg ) >= 0
+
+		if ( !matches )
+			continue
+
+		printt( line )
+	}
+
+	return true
+}
+#endif
+
+
+

@@ -1,0 +1,115 @@
+WeaponData
+{
+	Mods
+	{
+		// 3x
+   		optic_ranged_hcog
+   		{
+   			// sight_acgs
+
+   			"zoom_fov"				"26.2756" // 3x @ 70
+
+			"zoom_angle_shift_pitch"    "0.15"
+			"zoom_angle_shift_yaw"      "0.3"
+
+			// "crush" viewmodel FOV a little to reduce "looking thru a tube" effect
+			"zoom_fov_viewmodel" 	"14"
+
+   			"bodygroup1_set"		"0"
+			"bodygroup16_set"		"1"
+
+			"ui1_enable"			"0"
+			"ui16_enable" 			"1"
+
+			"mod_activity_modifier"	"optic"
+
+			"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_ACGS"
+			"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_ACGS"
+			"viewmodel_offset_ads_by_centerpoint" 		"1"
+
+			"viewmodel_offset_ads" 				    "0 22 0"
+
+            "dof_zoom_nearDepthStart"				"1.25"
+            "dof_zoom_nearDepthEnd"					"18.0"
+   		}
+
+   		// 2x-4x
+   		optic_ranged_aog_variable
+   		{
+   			// sight_aog
+
+   			"zoom_fov" 				"38.5907" // 2x @ 70
+   			"zoom_toggle_fov" 		"19.8583" // 4x @ 70
+   			"zoom_toggle_lerp_time"	"0.15"
+
+   			"zoom_angle_shift_pitch"    "0.15"
+			"zoom_angle_shift_yaw"      "0.3"
+
+   			"bodygroup1_set"		"0"
+			"bodygroup17_set"		"1"
+
+			"ui1_enable"			"0"
+			"ui17_enable" 			"1"
+
+			"mod_activity_modifier"	"optic"
+
+			"viewmodel_offset_ads_by_centerpoint" 		"1"
+			"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_AOG"
+			"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_AOG"
+
+			// keeps the scope the same apparent size on the screen when zoom_fov is toggled
+   			// NOTE: requires viewmodel_offset_ads Y to be pushed farther AWAY from the camera (usually we bring it closer)
+   			"zoom_fov_viewmodel"        "13.5"
+
+			"viewmodel_offset_ads"      "0 22.0 0"
+
+            "dof_zoom_nearDepthStart"	"1.0"
+            "dof_zoom_nearDepthEnd"		"16.2"
+   		}
+	}
+
+
+	// --- BODYGROUPS AND UIDATA ---
+	// NOTE starts at 16 to give CQ optics room for future expansion
+
+	// optic_ranged_hcog
+	"bodygroup16_name"	"sight_acgs"
+	"bodygroup16_set"	"0"
+
+	"ui16_enable"		"0"
+	"ui16_draw_cloaked"	"1"
+	UiData16
+	{
+		"ui"					"ui/hcog_ranged_sights"
+		"mesh"					"models/weapons/attachments/acgs_rui_upper"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+            zoomFOV             weapon_zoom_fov
+			centerOffset		weapon_ads_center_offset
+		}
+	}
+
+
+	// optic_ranged_aog_variable
+	"bodygroup17_name"	"sight_aog"
+	"bodygroup17_set"	"0"
+
+	"ui17_enable"		"0"
+	"ui17_draw_cloaked"	"1"
+	UiData17
+	{
+		"ui"	"ui/aog_variable_sights"
+		"mesh" "models/weapons/attachments/aog_variable_sights"
+		Args
+		{
+			vis					player_zoomfrac
+			ammo				weapon_ammo
+			clipSize			weapon_clipSize
+            zoomFOV             weapon_zoom_fov
+			centerOffset		weapon_ads_center_offset
+		}
+	}
+}

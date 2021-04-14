@@ -1,0 +1,39 @@
+WeaponData
+{
+	// --- Common Bodygroups & UI Data ---
+	// sometimes the inheriting weapon file will redefine these bodygroups with different name(s) set up for that weapon model
+	"bodygroup1_name"	"sight_front"
+	"bodygroup1_set"	"1"
+	"bodygroup2_name"	"sight_rear"
+	"bodygroup2_set"	"1"
+
+	// reserve up to bodygroup_5 for additional future weapon bodygroups (not just optics)
+	// reserve up to UIData5 for additional future weapon RUIs (not just optics)
+
+
+	// --- Misc Stuff ---
+//	Mods
+//	{
+//		pro_screen
+//		{
+//			"ui5_enable"		"1"
+//			"bodygroup5_set"	"1"
+//		}
+//	}
+
+// 	pro_screen
+//	"bodygroup5_name"	"proscreen"
+//	"bodygroup5_set"	"0"
+
+//	"ui5_enable"		"0"
+//	UiData5
+//	{
+//		"ui"							"ui/pro_screen_panel"
+//		"mesh"							"models/weapons/attachments/pro_screen_rui_upper"
+//		Args
+//		{
+//			proValue					proscreen_int0
+//			proOwnedByPlayer			proscreen_owner_is_player
+//		}
+//	}
+}

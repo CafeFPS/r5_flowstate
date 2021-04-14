@@ -1,0 +1,136 @@
+#base "_base_melee.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"#DEFAULT_MELEE_WEAPON"
+	"shortprintname"								"#DEFAULT_MELEE_WEAPON"
+	"description" 									"#DEFAULT_MELEE_WEAPON"
+	"longdesc"										"#DEFAULT_MELEE_WEAPON"
+
+    // UI/HUD
+	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
+	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
+
+	"weaponClass" 									"human"
+	// "weaponType"									"anti_titan"
+	"body_type"										"battle_rifle"
+	"fire_mode"   									"semiauto"
+	//"never_drop"									"1"
+	"minimap_reveal_distance"						"1"
+	"attack_button_presses_melee"					"1"
+	"leveled_pickup"								"1"
+
+	"ammo_clip_size"   								"0"
+	"ammo_default_total"							"0"
+	"ammo_stockpile_max"							"0"
+
+    "ads_dof_disable"	                            "1"
+    "zoom_fov"										"70"
+    "zoom_effects"                                  "0"
+
+	"move_speed_modifier"							"1.15"
+
+    // Menu
+    "menu_category"                                 "special"
+    "menu_anim_class"                               "medium"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+
+
+	"reload_enabled"								"0"
+
+	"sprint_fractional_anims"						"0"
+
+	//
+	"damage_rodeo" 									"100"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+
+	// Bob
+	"bob_cycle_time"  								"0.45"
+	"bob_vert_dist"   								"0.075"
+	"bob_horz_dist"   								"0.05"
+	"bob_max_speed"   								"150"
+	"bob_pitch"   									"0.75"
+	"bob_yaw" 										"1"
+	"bob_roll"										"-0.75"
+
+	// View Drift
+	"viewdrift_hipfire_stand_scale_pitch" 			"0.325"
+	"viewdrift_hipfire_crouch_scale_pitch"			"0.275"
+	"viewdrift_hipfire_air_scale_pitch"   			"0.5"
+	"viewdrift_hipfire_stand_scale_yaw"   			"0.12"
+	"viewdrift_hipfire_crouch_scale_yaw"  			"0.10"
+	"viewdrift_hipfire_air_scale_yaw" 				"0.22"
+	"viewdrift_hipfire_speed_pitch"   				"0.6"
+	"viewdrift_hipfire_speed_yaw" 					"1.22"
+
+	// Sway
+	"sway_rotate_attach"  							"SWAY_ROTATE"
+	"sway_min_x"  									"-0.3"
+	"sway_min_y"  									"-0.5"
+	"sway_min_z"  									"-0.5"
+	"sway_max_x"  									"0.3"
+	"sway_max_y"  									"0.5"
+	"sway_max_z"  									"0.1"
+	"sway_min_pitch"  								"-3"
+	"sway_min_yaw"									"-3.5"
+	"sway_min_roll"   								"-2"
+	"sway_max_pitch"  								"3"
+	"sway_max_yaw"									"3.5"
+	"sway_max_roll"   								"3"
+	"sway_translate_gain" 							"10"
+	"sway_rotate_gain"								"12"
+	"sway_move_forward_translate_x"   				"0"
+	"sway_move_forward_translate_z"   				"-0.5"
+	"sway_move_back_translate_x"  					"-2"
+	"sway_move_back_translate_z"  					"-1"
+	"sway_move_left_translate_y"  					"-1"
+	"sway_move_left_translate_z"  					"-0.5"
+	"sway_move_left_rotate_roll"  					"-2"
+	"sway_move_right_translate_y" 					"1"
+	"sway_move_right_translate_z" 					"-0.5"
+	"sway_move_right_rotate_roll" 					"4"
+	"sway_move_up_translate_z"						"-1"
+	"sway_move_down_translate_z"  					"1"
+	"sway_turn_left_rotate_yaw"   					"-1"
+	"sway_turn_right_rotate_yaw"  					"1"
+	"sway_turn_up_rotate_pitch"   					"1"
+	"sway_turn_down_rotate_pitch" 					"-1"
+
+	"red_crosshair_range" 							"0"
+
+	// WeaponED Unhandled Key/Values and custom script Key/Values
+	"deployfirst_time"								"1.25"
+	//"sprintcycle_time"								".55"
+
+	active_crosshair_count				"1"
+	rui_crosshair_index					"0"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+			crosshairMovementX          crosshair_movement_x
+			crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_dot"
+			"base_spread"				"0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+	}
+}

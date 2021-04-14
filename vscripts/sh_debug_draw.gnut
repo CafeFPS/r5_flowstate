@@ -1,0 +1,705 @@
+
+globalize_all_functions
+
+void function DebugDrawCylinder( vector origin, vector angles, float radius, float height, int r, int g, int b, bool throughGeo, float time )
+{
+	int numSides = 16
+	float deg = 360.0 / float( numSides )
+	array<vector> points
+	vector forward = AnglesToForward( angles )
+
+	for ( int i = 0; i < numSides; i++ )
+	{
+		vector angles2 = AnglesCompose( angles, <0, 0, deg * i> )
+		vector right = AnglesToRight( angles2 )
+		points.append( origin + ( right * radius ) )
+	}
+
+	for ( int i = 0; i < numSides; i++ )
+	{
+		vector start = points[i]
+		vector end = i == 0 ? points[numSides - 1] : points[i - 1]
+		DebugDrawLine( start, end, r, g, b, throughGeo, time )
+		DebugDrawLine( start + (forward * height), end + (forward * height), r, g, b, throughGeo, time )
+		DebugDrawLine( start, start + (forward * height), r, g, b, throughGeo, time )
+	}
+}
+
+array<vector> function DebugDrawCircle( vector origin, vector angles, float radius, int r, int g, int b, bool throughGeo, float time, int segments = 16 )
+{
+	bool firstLoop = true
+	vector start
+	vector end
+	vector firstend
+	float degrees =  360.0 / float( segments )
+	array<vector> pointsOnCircle = []
+
+	for ( int i = 0; i < segments; i++ )
+	{
+		vector angles2 = AnglesCompose( angles, <0, degrees * i, 0> )
+		vector forward = AnglesToForward( angles2 )
+		end = origin + ( forward * radius )
+
+		if ( firstLoop )
+			firstend = end
+
+		if ( !firstLoop )
+			DebugDrawLine( start, end, r, g, b, throughGeo, time )
+
+		pointsOnCircle.append( end )
+
+		start = end
+
+		firstLoop = false
+	}
+
+	DebugDrawLine( end, firstend, r, g, b, throughGeo, time )
+	return pointsOnCircle
+}
+
+void function DebugDrawMark( vector origin, float radius, array<int> color, bool alwaysDraw, float drawTime )
+{
+	DebugDrawLine( (origin - <radius, 0, 0>), (origin + <radius, 0, 0>), color[0], color[1], color[2], alwaysDraw, drawTime )
+	DebugDrawLine( (origin - <0, radius, 0>), (origin + <0, radius, 0>), color[0], color[1], color[2], alwaysDraw, drawTime )
+	DebugDrawLine( (origin - <0, 0, radius>), (origin + <0, 0, radius>), color[0], color[1], color[2], alwaysDraw, drawTime )
+}
+
+void function DebugDrawSphere( vector origin, float radius, int r, int g, int b, bool throughGeo, float time, int segments = 16 )
+{
+	float degrees = 45.0
+
+	for ( int i = 0; i < 4; i++ )
+	{
+		DebugDrawCircle( origin, <0, 0, degrees * i>, radius, r, g, b, throughGeo, time, segments )
+		DebugDrawCircle( origin, <degrees * i, 0, 0>, radius, r, g, b, throughGeo, time, segments )
+	}
+}
+
+//this draws an actual arrow like this --->, the function below draws an x,y,z axis
+void function DebugDrawArrow( vector start, vector end, float arrowSize, int r, int g, int b, bool throughGeo, float time )
+{
+	DebugDrawLine( start, end, r, g, b, true, time )
+	vector angles = VectorToAngles( Normalize( end - start ) )
+	DebugDrawCircle( end, angles, arrowSize, r, g, b, true, time, 3 )
+}
+
+//this draws an x,y,z axis
+void function DebugDrawAxis( vector origin, vector angles = <0,0,0>, float time = 5.0, float scale = 50, vector rgb = <0,0,0> )
+{
+	vector forward = AnglesToForward( angles )
+	vector right = AnglesToRight( angles )
+	vector up = AnglesToUp( angles )
+
+	if ( rgb != <0,0,0> )
+	{
+		DebugDrawLine( origin, origin + forward * scale, 	rgb.x, rgb.y, rgb.z, true, time )
+		DebugDrawLine( origin, origin + up * scale, 		rgb.x, rgb.y, rgb.z, true, time )
+		DebugDrawLine( origin, origin + right * scale, 		rgb.x, rgb.y, rgb.z, true, time )
+	}
+	else
+	{
+		DebugDrawLine( origin, origin + forward * scale, 	0, 255, 0, true, time )
+		DebugDrawLine( origin, origin + up * scale, 		255, 0, 0, true, time )
+		DebugDrawLine( origin, origin + right * scale, 		0, 0, 255, true, time )
+	}
+}
+
+void function DrawStar( vector origin, int size, float time = 1.0, bool throughWorld = false )
+{
+	for ( int i = 0; i < 50; i++ )
+	{
+		vector forward = AnglesToForward( <RandomInt( 360.0 ), RandomInt( 360.0 ), RandomInt( 360.0 )> )
+		DebugDrawLine( origin, origin + forward * size, RandomInt( 255 ), RandomInt( 255 ), RandomInt( 255 ), throughWorld, time )
+	}
+}
+
+void function DebugDrawBoxSimple( vector origin, vector min = <-4,-4,-4>, vector max = <4,4,4>, int r = 255, int g = 255, int b = 100, int alpha = 255, float time = 0.2 )
+{
+	DebugDrawBox( origin, min, max, r, g, b, alpha, time )
+}
+
+void function DrawBox( vector org, vector mins, vector maxs, int r, int g, int b, bool throughSolid, float time )
+{
+	DrawAngledBox( org, <0,0,0>, mins, maxs, r, g, b, throughSolid, time )
+}
+
+void function DebugDrawCube( vector cubeCenter, float cubeSize, int r, int g, int b, bool throughSolid, float time )
+{
+	vector mins = <-cubeSize * 0.5, -cubeSize * 0.5, -cubeSize * 0.5>
+	vector maxs = <cubeSize * 0.5, cubeSize * 0.5, cubeSize * 0.5>
+	DrawAngledBox( cubeCenter, <0,0,0>, mins, maxs, r, g, b, throughSolid, time )
+}
+
+void function DrawAngledBox( vector org, vector ang, vector mins, vector maxs, int r, int g, int b, bool throughSolid, float time )
+{
+	vector[8] orgs = GetBoxCorners( org, ang, mins, maxs )
+
+	DebugDrawLine( orgs[0], orgs[1], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[1], orgs[2], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[2], orgs[3], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[3], orgs[0], r, g, b, throughSolid, time )
+
+	DebugDrawLine( orgs[4], orgs[5], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[5], orgs[6], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[6], orgs[7], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[7], orgs[4], r, g, b, throughSolid, time )
+
+	DebugDrawLine( orgs[0], orgs[4], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[1], orgs[5], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[2], orgs[6], r, g, b, throughSolid, time )
+	DebugDrawLine( orgs[3], orgs[7], r, g, b, throughSolid, time )
+}
+
+void function DrawBoxFromEye( vector org, vector mins, vector maxs, int r, int g, int b, bool throughSolid, float time )
+{
+	vector ang = <0,0,0>
+
+	DrawAngledBox( org, ang, mins, maxs, r, g, b, throughSolid, time )
+
+	vector[8] corners = GetBoxCorners( org, ang, mins, maxs )
+	entity player = GetPlayerArray()[ 0 ]
+	vector eyePos = player.EyePosition()
+
+	foreach ( corner in corners )
+	{
+		DebugDrawLine( eyePos, corner, r, g, b, throughSolid, time )
+	}
+}
+
+vector[8] function GetBoxCorners( vector org, vector ang, vector mins, vector maxs )
+{
+	vector forward = AnglesToForward( ang )
+	vector up = AnglesToUp( ang )
+	vector right = AnglesToRight( ang )
+
+	vector[8] orgs
+	orgs[0] = org + ( forward * mins.x ) + ( right * maxs.y ) + ( up * maxs.z )
+	orgs[1] = org + ( forward * mins.x ) + ( right * mins.y ) + ( up * maxs.z )
+	orgs[2] = org + ( forward * maxs.x ) + ( right * mins.y ) + ( up * maxs.z )
+	orgs[3] = org + ( forward * maxs.x ) + ( right * maxs.y ) + ( up * maxs.z )
+	orgs[4] = org + ( forward * mins.x ) + ( right * maxs.y ) + ( up * mins.z )
+	orgs[5] = org + ( forward * mins.x ) + ( right * mins.y ) + ( up * mins.z )
+	orgs[6] = org + ( forward * maxs.x ) + ( right * mins.y ) + ( up * mins.z )
+	orgs[7] = org + ( forward * maxs.x ) + ( right * maxs.y ) + ( up * mins.z )
+
+	return orgs
+}
+
+void function DebugDrawRotatedBox( vector origin, vector mins, vector maxs, vector angles, int r, int g, int b, bool throughGeo, float duration )
+{
+	vector forward = AnglesToForward( angles )
+	vector right = -AnglesToRight( angles )
+	vector up = AnglesToUp( angles )
+
+	// Bottom
+	vector corner0 = origin + (forward * maxs.x) + (right * maxs.y) + (up * mins.z)
+	vector corner1 = origin + (forward * maxs.x) + (right * mins.y) + (up * mins.z)
+	vector corner2 = origin + (forward * mins.x) + (right * mins.y) + (up * mins.z)
+	vector corner3 = origin + (forward * mins.x) + (right * maxs.y) + (up * mins.z)
+	vector corner4 = corner0 + (up * (maxs.z - mins.z))
+	vector corner5 = corner1 + (up * (maxs.z - mins.z))
+	vector corner6 = corner2 + (up * (maxs.z - mins.z))
+	vector corner7 = corner3 + (up * (maxs.z - mins.z))
+
+	DebugDrawLine( corner0, corner1, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner1, corner2, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner2, corner3, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner3, corner0, r, g, b, throughGeo, duration )
+
+	DebugDrawLine( corner4, corner5, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner5, corner6, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner6, corner7, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner7, corner4, r, g, b, throughGeo, duration )
+
+	DebugDrawLine( corner0, corner4, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner1, corner5, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner2, corner6, r, g, b, throughGeo, duration )
+	DebugDrawLine( corner3, corner7, r, g, b, throughGeo, duration )
+}
+
+void function DebugDrawCircleTillSignal( entity ent, string signalName, vector origin, float radius, int r, int g, int b )
+{
+	EndSignal( ent, signalName )
+	while ( true )
+	{
+		thread DebugDrawCircle( origin, <0,0,0>, radius, r, g, b, true, 0.2 )
+		WaitFrame()
+	}
+}
+
+void function DebugDrawOriginMovement( entity ent, int r, int g, int b, float time = 9999.0, float trailTime = 5.0 )
+{
+	ent.EndSignal( "OnDeath" )
+	ent.EndSignal( "OnDestroy" )
+
+	float startTime = Time()
+	float endTime = startTime + time
+	vector lastPos = ent.GetOrigin()
+
+	while ( Time() < endTime )
+	{
+		DebugDrawLine( lastPos, ent.GetOrigin(), r, g, b, true, trailTime )
+		lastPos = ent.GetOrigin()
+		WaitFrame()
+	}
+}
+
+void function DebugDrawSpawnpoint( entity spawnpoint, int r, int g, int b, bool throughSolid, float time )
+{
+	vector mins = <-16,-16,0>
+	vector maxs = <16,16,72>
+
+	switch ( spawnpoint.GetNetworkedClassName() )
+	{
+		case "info_spawnpoint_human":
+		case "info_spawnpoint_human_start":
+			mins = <-16,-16,0>
+			maxs = <16,16,72>
+			break
+
+		case "info_spawnpoint_titan":
+		case "info_spawnpoint_titan_start":
+			mins = <-64,-64,0>
+			maxs = <64,64,240>
+			break
+
+		case "info_spawnpoint_droppod":
+		case "info_spawnpoint_droppod_start":
+			mins = <-64,-64,0>
+			maxs = <64,64,144>
+			break
+	}
+
+	vector spawnpointOrg = spawnpoint.GetOrigin()
+	vector spawnpointAng = spawnpoint.GetAngles()
+
+	vector forward = AnglesToForward( spawnpointAng )
+	vector right = AnglesToRight( spawnpointAng )
+
+	DrawAngledBox( spawnpointOrg, spawnpointAng, mins, maxs, r, g, b, throughSolid, time )
+
+	vector frontLeftCorner = spawnpointOrg + forward * maxs.y + right * mins.x
+	vector frontRightCorner = spawnpointOrg + forward * maxs.y + right * maxs.x
+	vector arrowPoint = spawnpointOrg + forward * maxs.y * 2.0
+
+	DebugDrawLine( frontLeftCorner, arrowPoint, r, g, b, throughSolid, time )
+	DebugDrawLine( frontRightCorner, arrowPoint, r, g, b, throughSolid, time )
+}
+
+void function DrawArrowOnTag( entity ent, string ornull tag = null, float time = 5.0, float scale = 50, vector rgb = <0,0,0> )
+{
+	thread DrawArrowOnTagThread( ent, tag, time, scale, rgb )
+}
+
+void function DrawArrowOnTagThread( entity ent, string ornull tag, float time, float scale, vector rgb = <0,0,0> )
+{
+	ent.EndSignal( "OnDestroy" )
+	float endTime = Time() + time
+	vector origin, angles
+
+	int attachIndex
+	if ( tag != null )
+		attachIndex = ent.LookupAttachment( expect string( tag ) )
+
+	while ( Time() < endTime )
+	{
+		if ( tag != null )
+		{
+			origin = ent.GetAttachmentOrigin( attachIndex )
+			angles = ent.GetAttachmentAngles( attachIndex )
+		}
+		else
+		{
+			origin = ent.GetOrigin()
+			angles = ent.GetAngles()
+		}
+
+		DebugDrawAxis( origin, angles, 0.1, scale, rgb )
+		WaitFrame()
+	}
+}
+
+void function DrawTag( entity ent, string tag )
+{
+	if ( IsAlive( ent ) )
+		ent.EndSignal( "OnDeath" )
+	else
+		ent.EndSignal( "OnDestroy" )
+
+	int scale = 10
+
+	for ( ;; )
+	{
+		int attachIndex = ent.LookupAttachment( tag )
+		vector origin = ent.GetAttachmentOrigin( attachIndex )
+		vector angles = ent.GetAttachmentAngles( attachIndex )
+
+		vector forward = AnglesToForward( angles )
+		vector up = AnglesToUp( angles )
+		vector right = AnglesToRight( angles )
+
+		DebugDrawLine( origin, origin + forward * scale, 	255, 0, 0, true, 0.1 )
+		DebugDrawLine( origin, origin + right * scale, 		0, 255, 0, true, 0.1 )
+		DebugDrawLine( origin, origin + up * scale, 		0, 0, 255, true, 0.1 )
+		DebugDrawText( origin, tag, true, 0.1 )
+		WaitFrame()
+	}
+}
+
+void function DrawOrg( entity ent )
+{
+	if ( IsAlive( ent ) )
+		ent.EndSignal( "OnDeath" )
+	else
+		ent.EndSignal( "OnDestroy" )
+
+	int scale = 1000
+
+	for ( ;; )
+	{
+		if ( !IsValid( ent ) )
+			return
+
+		vector origin = ent.GetOrigin()
+		vector angles = ent.GetAngles()
+		vector forward = AnglesToForward( angles )
+		vector up = AnglesToUp( angles )
+		vector right = AnglesToRight( angles )
+
+		DebugDrawLine( origin, origin + forward * scale, 	255, 0, 0, true, 0.1 )
+		DebugDrawLine( origin, origin + right * scale, 		0, 255, 0, true, 0.1 )
+		DebugDrawLine( origin, origin + up * scale, 		0, 0, 255, true, 0.1 )
+		DebugDrawText( origin, "origin", true, 0.1 )
+		WaitFrame()
+	}
+}
+
+void function DrawAttachment( entity pod, string attachment, float time = 0.1, vector ornull color = null )
+{
+	int attachIndex = pod.LookupAttachment( attachment )
+	vector origin = pod.GetAttachmentOrigin( attachIndex )
+	vector angles = pod.GetAttachmentAngles( attachIndex )
+
+	vector forward = AnglesToForward( angles )
+	vector up = AnglesToUp( angles )
+	vector right = AnglesToRight( angles ) * -1
+
+	int scale = 10
+
+	if ( color == null )
+	{
+		DebugDrawLine( origin, origin + forward * scale, 	255, 0, 0, true, time )
+		DebugDrawLine( origin, origin + right * scale, 		0, 255, 0, true, time )
+		DebugDrawLine( origin, origin + up * scale, 		0, 0, 255, true, time )
+	}
+	else
+	{
+		expect vector( color )
+		DebugDrawLine( origin, origin + forward * scale, 	color.x, color.y, color.z, true, time )
+		DebugDrawLine( origin, origin + right * scale, 		color.x, color.y, color.z, true, time )
+		DebugDrawLine( origin, origin + up * scale, 		color.x, color.y, color.z, true, time )
+	}
+}
+
+void function DrawAttachmentForever( entity pod, string attachment )
+{
+	pod.EndSignal( "OnDestroy" )
+	for ( ;; )
+	{
+		DrawAttachment( pod, attachment )
+		WaitFrame()
+	}
+}
+
+void function DrawEntityOrigin( entity ent, float time = 0.1, vector ornull color = null )
+{
+	vector origin = ent.GetOrigin()
+	vector angles = ent.GetAngles()
+	vector forward = AnglesToForward( angles )
+	vector right = AnglesToRight( angles )
+	vector up = AnglesToUp( angles )
+
+	int scale = 10
+
+	if ( color == null )
+	{
+		DebugDrawLine( origin, origin + forward * scale, 	0, 255, 0, true, time )
+		DebugDrawLine( origin, origin + up * scale, 		255, 0, 0, true, time )
+		DebugDrawLine( origin, origin + right * scale, 		0, 0, 255, true, time )
+	}
+	else
+	{
+		expect vector( color )
+		DebugDrawLine( origin, origin + forward * scale, 	color.x, color.y, color.z, true, time )
+		DebugDrawLine( origin, origin + up * scale, 		color.x, color.y, color.z, true, time )
+		DebugDrawLine( origin, origin + right * scale, 		color.x, color.y, color.z, true, time )
+	}
+}
+
+void function DrawOrigin( vector origin, float time = 0.1, vector ornull color = null )
+{
+	vector forward = <1,0,0>
+	vector right = <0,1,0>
+	vector up = <0,0,1>
+
+	int scale = 10
+
+	if ( color == null )
+	{
+		DebugDrawLine( origin, origin + forward * scale, 	0, 255, 0, true, time )
+		DebugDrawLine( origin, origin + up * scale, 		255, 0, 0, true, time )
+		DebugDrawLine( origin, origin + right * scale, 		0, 0, 255, true, time )
+	}
+	else
+	{
+		expect vector( color )
+		DebugDrawLine( origin, origin + forward * scale, 	color.x, color.y, color.z, true, time )
+		DebugDrawLine( origin, origin + up * scale, 		color.x, color.y, color.z, true, time )
+		DebugDrawLine( origin, origin + right * scale, 		color.x, color.y, color.z, true, time )
+	}
+}
+
+vector[16] function DebugDrawTrigger( vector origin, float radius, int r, int g, int b, float time, bool drawThroughWalls )
+{
+	bool firstLoop = true
+	vector start
+	vector end
+	vector firstend
+	vector angles 	= <0,0,0>
+	float degrees 	= 22.5
+
+	const int numPoints = 16
+	vector[numPoints] pointsOnCircle
+
+	for ( int i = 0; i < numPoints; i++ )
+	{
+		vector angles2 = AnglesCompose( angles, <0, degrees * i, 0> )
+		vector forward = AnglesToForward( angles2 )
+		end = origin + ( forward * radius )
+
+		if ( firstLoop )
+			firstend = end
+
+		if ( !firstLoop )
+		{
+			DebugDrawLine( start, end, r, g, b, drawThroughWalls, time )
+			DebugDrawLine( origin, end, r, g, b, drawThroughWalls, time )
+		}
+
+		pointsOnCircle[i] = end
+
+		start = end
+
+		firstLoop = false
+	}
+
+	DebugDrawLine( end, firstend, r, g, b, drawThroughWalls, time )
+	return pointsOnCircle
+}
+
+void function DebugDrawCircleOnEnt( entity ent, float radius, int r, int g, int b, float time )
+{
+	thread _DebugThreadDrawCircleOnEnt( ent, radius, r, g, b, time )
+}
+
+void function DebugDrawSphereOnEnt( entity ent, float radius, int r, int g, int b, float time )
+{
+	float degrees = 45.0
+
+	for ( int i = 0; i < 8; i++ )
+	{
+		thread _DebugThreadDrawCircleOnEnt( ent, radius, r, g, b, time, <0, 0, degrees * i> )
+		thread _DebugThreadDrawCircleOnEnt( ent, radius, r, g, b, time, <degrees * i, 0, 0> )
+	}
+}
+
+void function _DebugThreadDrawCircleOnEnt( entity ent, float radius, int r, int g, int b, float time, vector anglesDelta = <0,0,0> )
+{
+	ent.EndSignal( "OnDeath" )
+
+	float interval = 0.1
+
+	while ( time > 0 )
+	{
+		if ( !IsValid( ent ) )
+			return
+
+		vector origin = ent.GetOrigin()
+		vector angles = ent.GetAngles()
+
+		DebugDrawCircle( origin, angles, radius, r, g, b, true, interval )
+
+		wait interval
+		time -= interval
+	}
+}
+
+void function DebugDrawCircleOnTag( entity ent, string tag, float radius, int r, int g, int b, float time )
+{
+	thread _DebugThreadDrawCircleOnTag( ent, tag, radius, r, g, b, time )
+}
+
+void function DebugDrawSphereOnTag( entity ent, string tag, float radius, int r, int g, int b, float time )
+{
+	float degrees = 45.0
+
+	for ( int i = 0; i < 8; i++ )
+	{
+		thread _DebugThreadDrawCircleOnTag( ent, tag, radius, r, g, b, time, <0, 0, degrees * i> )
+		thread _DebugThreadDrawCircleOnTag( ent, tag, radius, r, g, b, time, <degrees * i, 0, 0> )
+	}
+}
+
+void function _DebugThreadDrawCircleOnTag( entity ent, string tag, float radius, int r, int g, int b, float time, vector anglesDelta = <0,0,0> )
+{
+	ent.EndSignal( "OnDeath" )
+
+	int attachIdx = ent.LookupAttachment( tag )
+	Assert( attachIdx )
+	float interval = 0.1
+
+	while ( time > 0 )
+	{
+		if ( !IsValid( ent ) )
+			return
+
+		vector origin = ent.GetAttachmentOrigin( attachIdx )
+		vector angles = ent.GetAttachmentAngles( attachIdx ) + anglesDelta
+
+		DebugDrawCircle( origin, angles, radius, r, g, b, true, interval )
+
+		wait interval
+		time -= interval
+	}
+}
+
+void function DrawTracerOverTime( vector origin, vector dir, float time )
+{
+	float frac
+	float x
+	float y
+	float timeFrac
+	float interval
+	float lastInterval = 0.0
+
+	int counter = 1
+
+	while ( counter <= 10 )
+	{
+		frac = counter / 10.0
+		x = 1 - frac
+		y = x * x * x * x
+		frac = 1 - y
+		timeFrac = time * frac
+		interval = timeFrac - lastInterval
+		lastInterval = timeFrac
+
+		DebugDrawLine( origin, origin + dir * frac, 255, 255, 150, false, interval + 0.05 )
+		Wait( interval )
+
+		counter++
+	}
+}
+
+void function DebugDrawWeapon( entity weapon )
+{
+	float drawTime 		= 20.0
+	float radius
+
+	float spreadAngle 	= weapon.GetAttackSpreadAngle()
+	float spreadSin 	= deg_sin( spreadAngle * 0.5 )
+	float nearDist 		= weapon.GetWeaponSettingFloat( eWeaponVar.damage_near_distance )
+	float farDist 		= weapon.GetMaxDamageFarDist()
+
+	int nearDmg 		= weapon.GetProjectileWeaponSettingInt( eWeaponVar.damage_near_value )
+	int farDmg 			= weapon.GetProjectileWeaponSettingInt( eWeaponVar.damage_far_value )
+
+	vector barrelPos 	= weapon.GetAttackPosition()
+	vector barrelVec 	= weapon.GetAttackDirection()
+	vector circleAng 	= AnglesCompose( VectorToAngles( barrelVec ), <90,0,0> )
+
+	vector nearPos 		= barrelPos + ( barrelVec * nearDist )
+	vector farPos 		= barrelPos + ( barrelVec * farDist )
+
+	// Straight line for center cone
+	DebugDrawLine( barrelPos, nearPos, 255, 0, 0, true, drawTime )
+	DebugDrawLine( nearPos, farPos, 255, 255, 0, true, drawTime )
+
+	// Circle representing spread at near distance
+	radius = spreadSin * nearDist
+	array<vector> pointsOnCircleNear = DebugDrawCircle( nearPos, circleAng, radius, 255, 0, 0, true, drawTime )
+	for ( int i = 0; i < pointsOnCircleNear.len(); i++ )
+		DebugDrawLine( barrelPos, pointsOnCircleNear[i], 255, 0, 0, true, drawTime )
+	DebugDrawText( nearPos + <0, 0, radius + 15>, string( nearDmg ), true, drawTime )
+
+	// Circle representing spread at far distance
+	radius = spreadSin * farDist
+	array<vector> pointsOnCircleFar = DebugDrawCircle( farPos, circleAng, radius, 255, 255, 0, true, drawTime )
+	for ( int i = 0; i < pointsOnCircleFar.len(); i++ )
+		DebugDrawLine( pointsOnCircleNear[i], pointsOnCircleFar[i], 255, 255, 0, true, drawTime )
+	DebugDrawText( farPos + <0, 0, radius + 15>, string( farDmg ), true, drawTime )
+}
+
+void function DebugDrawAngles( vector position, vector angles, float duration = 9999.0 )
+{
+	vector forward = AnglesToForward( angles )
+	vector right = AnglesToRight( angles )
+	vector up = AnglesToUp( angles )
+
+	DebugDrawLine( position, position + ( forward * 100.0 ), 255, 0, 0, true, duration )
+	DebugDrawLine( position, position + ( right * 100.0 ), 0, 255, 0, true, duration )
+	DebugDrawLine( position, position + ( up * 100.0 ), 0, 0, 255, true, duration )
+}
+
+void function DrawAnglesForMovingEnt( entity ent, float duration, string optionalTag = "" )
+{
+	EndSignal( ent, "OnDestroy" )
+
+	float endTime = Time() + duration
+	int attachID = -1
+	if ( optionalTag != "" )
+		attachID = ent.LookupAttachment( optionalTag )
+
+	while ( Time() <= endTime )
+	{
+		if ( attachID == -1 )
+			DebugDrawAngles( ent.GetOrigin(), ent.GetAngles(), 0.1 )
+		else
+			DebugDrawAngles( ent.GetAttachmentOrigin( attachID ), ent.GetAttachmentAngles( attachID ), 0.1 )
+
+		WaitFrame()
+	}
+}
+
+void function DrawLineFromEntToEntForTime( entity ent1, entity ent2, float duration, int r = 255, int g = 255, int b = 0 )
+{
+	float endTime = Time() + duration
+	while ( Time() <= endTime )
+	{
+		if ( !IsValid( ent1 ) || !IsValid( ent2 ) )
+			return
+
+		DebugDrawLine( ent1.GetOrigin(), ent2.GetOrigin(), r, g, b, true, 0.05 )
+		WaitFrame()
+	}
+}
+
+void function DrawLineFromVecToEntForTime( vector vec, entity ent, float duration, int r = 255, int g = 255, int b = 0 )
+{
+	float endTime = Time() + duration
+	while ( Time() <= endTime )
+	{
+		if ( !IsValid( ent ) )
+			return
+
+		DebugDrawLine( vec, ent.GetOrigin(), r, g, b, true, 0.05 )
+		WaitFrame()
+	}
+}
+
+void function DrawLineForPoints( array<vector> points, vector color, float duration )
+{
+	Assert( points.len() >= 2 )
+	for ( int i = 0; i < points.len() - 1; i++ )
+		DebugDrawLine( points[i], points[i+1], color.x, color.y, color.z, true, duration )
+}

@@ -1,0 +1,73 @@
+//
+
+
+/////////////
+/////////////
+//// HEH ////
+/////////////
+/////////////
+// see sh_ehi.gnut
+
+global typedef EncodedEHandle int
+global const EncodedEHandle EncodedEHandle_null = 0
+
+#if SERVER
+
+global typedef EHI entity
+global const EHI EHI_null = null
+
+#elseif CLIENT || UI
+
+global typedef EHI EncodedEHandle
+global const EHI EHI_null = EncodedEHandle_null
+
+#endif
+
+
+#if SERVER || CLIENT || UI
+global struct EHIScriptStruct
+{
+	EHI ehi
+
+	// general cached data
+	bool isPlayer = false
+	bool isConnected = false
+	int  team = TEAM_INVALID
+	int  teamMemberIndex
+	#if CLIENT || UI
+		bool   isLocalClientPlayer = false
+		string name = ""
+	#endif
+
+	// loadouts
+	#if SERVER
+		bool hasBeenValidated = false
+		bool HACK_wasJustValidated = false
+		bool shouldConsiderAsUpgrading = false
+	#endif
+	#if SERVER || CLIENT || UI
+		table<int, array<void functionref( EHI, ItemFlavor )> > itemFlavorLoadoutSlotChangedCallbacksMap
+	#endif
+	#if CLIENT
+		array<int> netVarsLastSeenValuesMap
+	#endif
+	#if UI
+		array<int> loadoutSlotsLastSeenContentsMap
+	#endif
+
+	// commentary
+	#if SERVER
+		int kills = 0
+	#endif
+}
+#endif
+
+
+#if SERVER
+global typedef EHISignalDummy entity
+#elseif CLIENT || UI
+global typedef EHISignalDummy EHIScriptStruct
+#endif
+
+
+

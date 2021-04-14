@@ -1,0 +1,163 @@
+
+global function TitanCockpit_PlayDialog
+global function TitanCockpitDialog_RodeoAnnounce
+global function ServerCallback_TitanFallWarning
+
+global function SCB_TitanDialogue
+
+void function TitanCockpit_PlayDialog( entity player, string conversationName )
+{
+	//Assert( false )
+	//if ( !IsConnected() ) //Awkward that this has to be checked. Persistence isn't available when we disconnect, but some OnThreadEnds still run trying to play a conversation. See bug 158861
+	//	return
+	//
+	//if ( !ShouldPlayTitanCockpitDialogueIfPlayerIsNotTitan( player, conversationName ) )
+	//	return
+	//
+	//if ( !IsAlive( player ) )
+	//	return
+	//
+	//if ( player != GetLocalClientPlayer() )
+	//	return
+	//
+	//if ( IsWatchingReplay() )
+	//	return
+	//
+	//if ( player != GetLocalViewPlayer() )
+	//	return
+	//
+	//if ( !player.IsTitan() && !IsAlive( player.GetPetTitan() ) ) //No titan to talk too, so bail out. For SP when BT talks to you via scripted moments this function isn't called anyway
+	//	return
+	//
+	//if ( !GamePlayingOrSuddenDeath() )
+	//	return
+	//
+	//if ( Time() - GetConversationLastPlayedTime( conversationName ) <= GetConversationDebounce( conversationName ) )
+	//{
+	//	return
+	//}
+	//
+	//int priority = GetConversationPriority( conversationName )
+	//string soundAlias = GenerateTitanOSAlias( player, conversationName )
+	//entity titan = player.GetPetTitan()
+	//if ( IsAlive( titan ) ) //TODO: Should probably play on the soul instead of playing on the weapon. Next game.
+	//{
+	//	entity weapon = titan.GetOffhandWeapon( OFFHAND_EQUIPMENT )
+	//	if ( IsValid( weapon ) )
+	//		PlayOneLinerConversationOnEntWithPriority( conversationName, soundAlias, weapon, priority )
+	//	else
+	//		PlayOneLinerConversationOnEntWithPriority( conversationName, soundAlias, player, priority )
+	//}
+	//else
+	//{
+	//	PlayOneLinerConversationOnEntWithPriority( conversationName, soundAlias, player, priority )
+	//}
+}
+
+void function TitanCockpitDialog_RodeoAnnounce( entity titan )
+{
+	//Assert( ShouldDrawRodeoVGUI( titan ) )
+
+	// todo(dw): make this handle multiple riders
+	//entity riderEnt = GetRodeoPilot( titan )
+	//if ( !IsValid( riderEnt ) )
+	//	return
+	//
+	//if ( riderEnt.GetTeam() == titan.GetTeam() )
+	//	TitanCockpit_PlayDialog( GetLocalViewPlayer(), "allyRodeoAttach" )
+	//else
+	//	TitanCockpit_PlayDialog( GetLocalViewPlayer(), "rodeoWarning" )
+}
+
+
+bool function ShouldPlayTitanCockpitDialogueIfPlayerIsNotTitan( entity player, string conversationName )
+{
+	if ( player.IsTitan() )
+		return true
+
+	switch ( conversationName )
+	{
+		case "disembark":
+		case "manualEjectNotice":
+		case "autoEngageGrunt":
+		case "autoEngagePilot":
+		case "autoEngageTitan":
+		case "autoEngageTitans":
+		case "sonarPulse":
+			return true
+	}
+
+	return false
+}
+
+void function ServerCallback_TitanFallWarning()
+{
+	entity player = GetLocalClientPlayer()
+
+	if ( !player.IsTitan() )
+		return
+
+	TitanCockpit_PlayDialog( player, "hostileTitanInbound" )
+}
+
+void function SCB_TitanDialogue( int voEnum )
+{
+	entity player = GetLocalClientPlayer()
+
+	if ( !player.IsTitan() )
+		return
+
+//#if !TITANS_CLASSIC_GAMEPLAY
+//	if ( true )
+//	{
+//		printf( "%s() - Skipping.", FUNC_NAME() )
+//		return
+//	}
+//#endif // !TITANS_CLASSIC_GAMEPLAY
+
+	string vo
+	switch ( voEnum )
+	{
+		case eTitanVO.RODEO_RAKE:
+			// Necessary because CodeCallback_TitanRiderEntVarChanged happens before the client knows the entity is dead.
+			vo = "killEnemyRodeo"
+			break
+
+		case eTitanVO.ENEMY_EJECTED:
+			vo = "ejectedEnemy"
+			break
+
+		case eTitanVO.FRIENDLY_EJECTED:
+			vo = "ejectedFriendly"
+			break
+
+		case eTitanVO.FRIENDLY_TITAN_DEAD:
+			vo = "elimFriendlyTitan"
+			break
+
+		case eTitanVO.ENEMY_TITAN_DEAD:
+			vo = "elimEnemyTitan"
+			break
+
+		case eTitanVO.PILOT_HELPING:
+			vo = "assistedByFriendlyPilot"
+			break
+
+		case eTitanVO.FRIENDLY_TITAN_HELPING:
+			vo = "assistedByFriendlyTitan"
+			break
+
+		case eTitanVO.ENEMY_TARGET_ELIMINATED:
+			vo = "elimTarget"
+			break
+
+		case eTitanVO.FRIENDLY_RODEOING_ENEMY:
+			vo = "friendlyRodeoOnEnemyTitan"
+			break
+
+		default:
+			printt( "Unknown titan vo enum " + voEnum )
+	}
+
+	TitanCockpit_PlayDialog( player, vo )
+}

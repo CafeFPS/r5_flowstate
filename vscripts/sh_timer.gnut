@@ -1,0 +1,57 @@
+global function TimerInit
+global function TimerExists
+global function TimerCheck
+global function TimerReset
+
+struct Timer
+{
+	string timerAlias
+	float lastResetTime = -1.0
+	float limit
+}
+
+struct
+{
+	table<string,Timer> timers
+} file
+
+void function TimerInit( string timerAlias, float timerLimit )
+{
+	Assert( !TimerExists( timerAlias ), "Timer already set up: " + timerAlias )
+
+	Timer timer
+	timer.lastResetTime = -1
+	timer.limit 		= timerLimit
+
+	file.timers[ timerAlias ] <- timer
+}
+
+bool function TimerExists( string timerAlias )
+{
+	return timerAlias in file.timers
+}
+
+Timer function GetTimer( string timerAlias )
+{
+	Assert( TimerExists( timerAlias ), "Timer not set up: " + timerAlias )
+	return file.timers[ timerAlias ]
+}
+
+bool function TimerCheck( string timerAlias )
+{
+	Assert( TimerExists( timerAlias ), "Timer not set up: " + timerAlias )
+
+	Timer timer = GetTimer( timerAlias )
+
+	if ( timer.lastResetTime == -1 )
+		return true
+
+	return ( Time() - timer.lastResetTime >= timer.limit )
+}
+
+void function TimerReset( string timerAlias )
+{
+	Assert( TimerExists( timerAlias ), "Timer not set up: " + timerAlias )
+
+	file.timers[ timerAlias ].lastResetTime = Time()
+}

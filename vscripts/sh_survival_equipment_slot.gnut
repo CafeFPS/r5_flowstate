@@ -1,0 +1,716 @@
+global function SURVIVAL_EquipmentSlot_InitShared
+
+global function Survival_GetEquipmentSlotDataByRef
+global function Survival_GetCommsActionForEquipmentSlot
+global function GetEmptyEquipmentImage
+
+global function EquipmentSlot_GetAllEquipmentSlots
+global function EquipmentSlot_IsMainWeaponSlot
+global function EquipmentSlot_IsAttachmentSlot
+global function EquipmentSlot_GetAttachmentPointForSlot
+global function EquipmentSlot_GetOtherWeaponSlot
+global function EquipmentSlot_GetOtherWeaponSlotInt
+global function EquipmentSlot_GetAttachmentWeaponSlot
+global function EquipmentSlot_GetEquipmentTier
+global function EquipmentSlot_GetEquippedLootDataForSlot
+global function EquipmentSlot_GetWeaponSlotForEquipmentSlot
+global function EquipmentSlot_GetLootRefForSlot
+global function EquipmentSlot_IsValidEquipmentSlot
+
+global function GetAllAttachmentPoints
+global function RegisterAttachmentPoint
+global function GetAttachmentPointName
+
+global const table<string, asset> emptyAttachmentSlotImages = {
+	barrel 				= $"rui/pilot_loadout/mods/empty_barrel"
+	barrel_stabilizer 	= $"rui/pilot_loadout/mods/empty_barrel_stabilizer"
+	grip 				= $"rui/pilot_loadout/mods/empty_stock"
+	stock 				= $"rui/pilot_loadout/mods/empty_stock"
+	stock_tactical 		= $"rui/pilot_loadout/mods/empty_stock_tactical"
+	stock_sniper 		= $"rui/pilot_loadout/mods/empty_stock_sniper"
+	mag 				= $"rui/pilot_loadout/mods/empty_mag"
+	mag_straight 		= $"rui/pilot_loadout/mods/empty_mag_straight"
+	mag_shotgun 		= $"rui/pilot_loadout/mods/empty_mag_shotgun"
+	sight				= $"rui/pilot_loadout/mods/empty_sight"
+	hopup 				= $"rui/pilot_loadout/mods/empty_hopup"
+	hopup_turbocharger	= $"rui/pilot_loadout/mods/empty_hopup_turbocharger"
+	hopup_selectfire	= $"rui/pilot_loadout/mods/empty_hopup_autofire"
+	hopup_em_choke		= $"rui/pilot_loadout/mods/empty_hopup_em_choke"
+	hopup_skullpiercer	= $"rui/pilot_loadout/mods/empty_hopup_skullpiercer"
+}
+
+#if CLIENT
+global function AddCallback_OnEquipSlotTrackingIntChanged
+#endif
+
+global struct EquipmentSlot
+{
+	string ref
+	asset emptyImage = $""
+	string title = ""
+
+	#if SERVER
+		bool functionref( entity player, string slot, vector origin, vector velocity ) specialCaseDropFunc
+		void functionref( entity player, string ref ) specialCaseEquipFunc
+	#endif
+
+	#if SERVER || CLIENT
+		string functionref( entity player, string slot ) getEquippedRefFunc
+		int trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP
+		int trackingVisionExchangePOI = -1
+		int trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP
+	#endif
+
+	#if CLIENT
+		array<void functionref( entity player, string equipSlot, int index )> onTrackingIntChangedCallbacks
+	#endif
+
+	int emptyCommsAction = eCommsAction.BLANK
+	int functionref( string equipmentSlot, string equipmentRef, EquipmentSlot es ) emptyCommsActionFunc
+	int functionref( string equipmentSlotRef, string itemRef ) filledCommsActionFunc
+	int weaponSlot = -1
+	string attachmentPoint
+	string nextWeaponSlot = ""
+	string attachmentWeaponSlot = ""
+	string trackingNetInt = ""
+
+	string unitFrameTierVar = ""
+	string unitFrameImageVar = ""
+}
+
+struct
+{
+	array<string> allAttachmentPoints
+	table<string, EquipmentSlot> equipSlotData
+} file
+
+// TODO: these should be turned into Bakery assets
+void function SURVIVAL_EquipmentSlot_InitShared()
+{
+	EquipmentSlot e
+
+	e = RegisterEquipslot( "backpack" )
+	e.title = "#SURVIVAL_BACKPACK"
+	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_BACKPACK
+	e.emptyImage = $"rui/hud/loot/loot_backpack_none"
+	e.trackingNetInt = "equipedItemLootIndex_Backpack"
+	e.unitFrameTierVar = e.ref + "Tier"
+	e.unitFrameImageVar = e.ref + "Icon"
+	#if SERVER || CLIENT
+		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_BACKPACK
+		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_BACKPACK
+		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_BACKPACK
+		e.getEquippedRefFunc = GetEquippedRefBasedOnTrackingNetInt
+	#endif
+	#if SERVER
+		e.specialCaseEquipFunc = Equipment_ApplyBackpack
+	#endif
+
+	e = RegisterEquipslot( "helmet" )
+	e.title = "#SURVIVAL_HELMET"
+	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_HELMET
+	e.emptyImage = $"rui/hud/loot/loot_helmet_none"
+	e.trackingNetInt = "equipedItemLootIndex_Helmet"
+	e.unitFrameTierVar = e.ref + "Tier"
+	e.unitFrameImageVar = e.ref + "Icon"
+	#if SERVER || CLIENT
+		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_HELMET
+		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_HELMET
+		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_HELMET
+		e.getEquippedRefFunc = GetEquippedRefBasedOnTrackingNetInt
+	#endif
+	#if SERVER
+		e.specialCaseEquipFunc = Equipment_ApplyHelmetMod
+	#endif
+
+	e = RegisterEquipslot( "armor" )
+	e.title = "#SURVIVAL_ARMOR"
+	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_ARMOR
+	e.emptyImage = $"rui/hud/loot/loot_armor_none"
+	e.trackingNetInt = "equipedItemLootIndex_Armor"
+	e.unitFrameTierVar = e.ref + "Tier"
+	e.unitFrameImageVar = e.ref + "Icon"
+	#if SERVER || CLIENT
+		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_ARMOR
+		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_ARMOR
+		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_ARMOR
+		e.getEquippedRefFunc = GetEquippedRefBasedOnTrackingNetInt
+	#endif
+	#if SERVER
+		e.specialCaseEquipFunc = Equipment_ApplyArmorMod
+	#endif
+
+	e = RegisterEquipslot( "incapshield" )
+	e.title = "#SURVIVAL_INCAPSHIELD"
+	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_INCAPSHIELD
+	e.emptyImage = $"rui/hud/loot/loot_incapshield_none"
+	e.trackingNetInt = "equipedItemLootIndex_IncapShield"
+	e.unitFrameTierVar = e.ref + "Tier"
+	e.unitFrameImageVar = e.ref + "Icon"
+	#if SERVER || CLIENT
+		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_INCAPSHIELD
+		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_INCAPSHIELD
+		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_INCAPSHIELD
+		e.getEquippedRefFunc = GetEquippedRefBasedOnTrackingNetInt
+	#endif
+
+	e = RegisterEquipslot( "main_weapon0" )
+	e.title = "#SURVIVAL_WEAPON"
+	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_FIRST_WEAPON
+	e.emptyImage = $"rui/hud/loot/loot_weapon_none"
+	e.filledCommsActionFunc = FilledCommsAction_Weapon
+	e.weaponSlot = 0 // WEAPON_INVENTORY_SLOT_PRIMARY_0
+	e.nextWeaponSlot = "main_weapon1"
+	#if SERVER || CLIENT
+		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_WEAPON
+		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_WEAPON
+		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_WEAPON
+		e.getEquippedRefFunc = GetEquippedWeaponForPlayer
+	#endif
+	#if SERVER
+		e.specialCaseDropFunc = SURVIVAL_DropMainWeapon
+	#endif
+
+	e = RegisterEquipslot( "main_weapon0_sight" )
+	e.title = "#INVENTORY_SLOT_SIGHT"
+	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_sight"
+	e.attachmentPoint = "sight"
+	e.attachmentWeaponSlot = "main_weapon0"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon0_mag" )
+	e.title = "#INVENTORY_SLOT_MAG"
+	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_mag"
+	e.attachmentPoint = "mag"
+	e.attachmentWeaponSlot = "main_weapon0"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon0_grip" )
+	e.title = "#INVENTORY_SLOT_GRIP"
+	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_stock"
+	e.attachmentPoint = "grip"
+	e.attachmentWeaponSlot = "main_weapon0"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon0_barrel" )
+	e.title = "#INVENTORY_SLOT_BARREL"
+	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_barrel"
+	e.attachmentPoint = "barrel"
+	e.attachmentWeaponSlot = "main_weapon0"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon0_hopup" )
+	e.title = "#INVENTORY_SLOT_HOPUP"
+	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_WEAPONATTACHMENT_HOPUP
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_hopup"
+	e.attachmentPoint = "hopup"
+	e.attachmentWeaponSlot = "main_weapon0"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon1" )
+	e.title = "#SURVIVAL_WEAPON"
+	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_ANOTHER_WEAPON
+	e.emptyImage = $"rui/hud/loot/loot_weapon_none"
+	e.filledCommsActionFunc = FilledCommsAction_Weapon
+	e.weaponSlot = 1 // WEAPON_INVENTORY_SLOT_PRIMARY_1
+	e.nextWeaponSlot = "main_weapon0"
+	#if SERVER || CLIENT
+		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_WEAPON
+		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_WEAPON
+		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_WEAPON
+		e.getEquippedRefFunc = GetEquippedWeaponForPlayer
+	#endif
+	#if SERVER
+		e.specialCaseDropFunc = SURVIVAL_DropMainWeapon
+	#endif
+
+	e = RegisterEquipslot( "main_weapon1_sight" )
+	e.title = "#INVENTORY_SLOT_SIGHT"
+	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_sight"
+	e.attachmentPoint = "sight"
+	e.attachmentWeaponSlot = "main_weapon1"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon1_mag" )
+	e.title = "#INVENTORY_SLOT_MAG"
+	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_mag"
+	e.attachmentPoint = "mag"
+	e.attachmentWeaponSlot = "main_weapon1"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon1_grip" )
+	e.title = "#INVENTORY_SLOT_GRIP"
+	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_stock"
+	e.attachmentPoint = "grip"
+	e.attachmentWeaponSlot = "main_weapon1"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon1_barrel" )
+	e.title = "#INVENTORY_SLOT_BARREL"
+	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_barrel"
+	e.attachmentPoint = "barrel"
+	e.attachmentWeaponSlot = "main_weapon1"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	e = RegisterEquipslot( "main_weapon1_hopup" )
+	e.title = "#INVENTORY_SLOT_HOPUP"
+	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_WEAPONATTACHMENT_HOPUP
+	e.emptyImage = $"rui/pilot_loadout/mods/empty_hopup"
+	e.attachmentPoint = "hopup"
+	e.attachmentWeaponSlot = "main_weapon1"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+
+	#if SERVER || CLIENT
+	EquipmentSlots_RegisterNetworkTrackingInts()
+	#endif
+}
+
+#if SERVER || CLIENT
+void function EquipmentSlots_RegisterNetworkTrackingInts()
+{
+	foreach ( slot,slotData in EquipmentSlot_GetAllEquipmentSlots() )
+	{
+		if ( slotData.trackingNetInt != "" )
+		{
+			RegisterNetworkedVariable( slotData.trackingNetInt, SNDC_PLAYER_GLOBAL, SNVT_INT, -1 )
+
+			#if CLIENT
+				RegisterNetworkedVariableChangeCallback_int( slotData.trackingNetInt, CreateTrackingNetVarFunction( slot ) )
+			#endif
+		}
+	}
+}
+#endif
+
+EquipmentSlot function Survival_GetEquipmentSlotDataByRef( string ref )
+{
+	return file.equipSlotData[ref]
+}
+
+EquipmentSlot function RegisterEquipslot( string ref )
+{
+	EquipmentSlot e
+	e.ref = ref
+
+	file.equipSlotData[ref] <- e
+
+	return e
+}
+
+int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string equipmentRef, EquipmentSlot es )
+{
+#if CLIENT
+	LootData weaponData = EquipmentSlot_GetEquippedLootDataForSlot( GetLocalClientPlayer(), es.attachmentWeaponSlot )
+	switch( es.attachmentPoint )
+	{
+		case "mag":
+		{
+			switch( weaponData.ammoType )
+			{
+				case "bullet":
+					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_BULLET
+				case "special":
+					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_SPECIAL
+				case "highcal":
+					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_HIGHCAL
+				case "shotgun":
+					return eCommsAction.INVENTORY_NEED_ATTACHMENT_MAG_SHOTGUN
+				default:
+					Warning( format( "%s() - Unhandled ammo type: '%s'.", FUNC_NAME(), weaponData.ammoType ) )
+					return eCommsAction.BLANK
+			}
+		}
+		case "sight":
+		{
+			if ( weaponData.lootTags.contains( "pistol" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_PISTOL
+			else if ( weaponData.lootTags.contains( "smg" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_SMG
+			else if ( weaponData.lootTags.contains( "assault" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_ASSAULT
+			else if ( weaponData.lootTags.contains( "lmg" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_LMG
+			else if ( weaponData.lootTags.contains( "shotgun" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_SHOTGUN
+			else if ( weaponData.lootTags.contains( "sniper" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_SIGHT_SNIPER
+
+			//Assert( 0, "why" )
+			Warning( format( "%s() - Couldn't determine '%s' type for weapon '%s'.", FUNC_NAME(), es.attachmentPoint, weaponData.ref ) )
+			return eCommsAction.BLANK
+		}
+		case "grip":
+		{
+			if ( weaponData.lootTags.contains( "pistol" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_PISTOL
+			else if ( weaponData.lootTags.contains( "smg" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_SMG
+			else if ( weaponData.lootTags.contains( "assault" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_ASSAULT
+			else if ( weaponData.lootTags.contains( "lmg" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_LMG
+			else if ( weaponData.lootTags.contains( "shotgun" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_SHOTGUN
+			else if ( weaponData.lootTags.contains( "sniper" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_GRIP_SNIPER
+
+			Warning( format( "%s() - Couldn't determine '%s' type for weapon '%s'.", FUNC_NAME(), es.attachmentPoint, weaponData.ref ) )
+			return eCommsAction.BLANK
+		}
+		case "barrel":
+		{
+			if ( weaponData.lootTags.contains( "pistol" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_PISTOL
+			else if ( weaponData.lootTags.contains( "smg" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_SMG
+			else if ( weaponData.lootTags.contains( "assault" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_ASSAULT
+			else if ( weaponData.lootTags.contains( "lmg" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_LMG
+			else if ( weaponData.lootTags.contains( "shotgun" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_SHOTGUN
+			else if ( weaponData.lootTags.contains( "sniper" ) )
+				return eCommsAction.INVENTORY_NEED_ATTACHMENT_BARREL_SNIPER
+
+			Warning( format( "%s() - Couldn't determine '%s' type for weapon '%s'.", FUNC_NAME(), es.attachmentPoint, weaponData.ref ) )
+			return eCommsAction.BLANK
+		}
+		default:
+			Warning( format( "%s() - Unhandled attachmentPoint: '%s'.", FUNC_NAME(), es.attachmentPoint ) )
+	}
+#endif // #if CLIENT
+
+	return eCommsAction.QUICKCHAT_READY
+}
+
+int function FilledCommsAction_Weapon( string equipmentSlotRef, string itemRef )
+{
+	LootData lootData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+
+	switch( lootData.ammoType )
+	{
+		case "":
+			return eCommsAction.BLANK
+		case "bullet":
+			return eCommsAction.INVENTORY_NEED_AMMO_BULLET
+		case "special":
+			return eCommsAction.INVENTORY_NEED_AMMO_SPECIAL
+		case "highcal":
+			return eCommsAction.INVENTORY_NEED_AMMO_HIGHCAL
+		case "shotgun":
+			return eCommsAction.INVENTORY_NEED_AMMO_SHOTGUN
+	}
+
+	Warning( "GetCommsActionForEquipmentSlot() - Unhandled ammo type '" + lootData.ammoType + "'" )
+	return eCommsAction.BLANK
+}
+
+asset function GetEmptyEquipmentImage( string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	return es.emptyImage
+}
+
+int function Survival_GetCommsActionForEquipmentSlot( string equipmentSlot, string equipmentRef, bool isEmpty )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+
+	if ( isEmpty )
+	{
+		if ( es.emptyCommsActionFunc != null )
+			return es.emptyCommsActionFunc( equipmentSlot, equipmentRef, es )
+
+		return es.emptyCommsAction
+	}
+	else
+	{
+		if ( es.filledCommsActionFunc != null )
+			return es.filledCommsActionFunc( equipmentSlot, equipmentRef )
+	}
+
+	return eCommsAction.BLANK
+}
+
+void function RegisterAttachmentPoint( string attachment )
+{
+	if ( file.allAttachmentPoints.contains( attachment ) )
+		return
+
+	file.allAttachmentPoints.append( attachment )
+}
+
+array<string> function GetAllAttachmentPoints()
+{
+	return file.allAttachmentPoints
+}
+
+bool function EquipmentSlot_IsMainWeaponSlot( string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	return es.weaponSlot != -1
+}
+
+bool function EquipmentSlot_IsValidEquipmentSlot( string equipmentSlot )
+{
+	return (equipmentSlot in file.equipSlotData)
+}
+
+bool function EquipmentSlot_IsAttachmentSlot( string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	return es.attachmentPoint != ""
+}
+
+string function EquipmentSlot_GetAttachmentPointForSlot( string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	return es.attachmentPoint
+}
+
+int function EquipmentSlot_GetOtherWeaponSlotInt( int equipmentSlotInt )
+{
+	if ( equipmentSlotInt == -1)
+		return -1
+
+	EquipmentSlot es
+
+	bool found = false
+	foreach ( slot,slotData in EquipmentSlot_GetAllEquipmentSlots() )
+	{
+		if ( slotData.weaponSlot == equipmentSlotInt )
+		{
+			es = slotData
+			found = true
+			break
+		}
+	}
+
+	if ( !found )
+		return -1
+
+	EquipmentSlot esNext = Survival_GetEquipmentSlotDataByRef( es.nextWeaponSlot )
+	return esNext.weaponSlot
+}
+
+string function EquipmentSlot_GetOtherWeaponSlot( string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	return es.nextWeaponSlot
+}
+
+string function EquipmentSlot_GetAttachmentWeaponSlot( string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	return es.attachmentWeaponSlot
+}
+
+table<string, EquipmentSlot> function EquipmentSlot_GetAllEquipmentSlots()
+{
+	return file.equipSlotData
+}
+
+int function EquipmentSlot_GetEquipmentTier( entity player, string equipmentSlot )
+{
+	return EquipmentSlot_GetEquippedLootDataForSlot( player, equipmentSlot ).tier
+}
+
+string function EquipmentSlot_GetLootRefForSlot( entity player, string equipmentSlot )
+{
+	return EquipmentSlot_GetEquippedLootDataForSlot( player, equipmentSlot ).ref
+}
+
+LootData function EquipmentSlot_GetEquippedLootDataForSlot( entity player, string equipmentSlot )
+{
+	LootData lootData
+
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+
+	string ref = es.getEquippedRefFunc( player, equipmentSlot )
+
+	if ( SURVIVAL_Loot_IsRefValid( ref ) )
+		lootData = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	return lootData
+}
+
+int function EquipmentSlot_GetWeaponSlotForEquipmentSlot( string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	EquipmentSlot esWeapon = Survival_GetEquipmentSlotDataByRef( es.attachmentWeaponSlot )
+
+	return esWeapon.weaponSlot
+}
+
+#if CLIENT || SERVER
+string function GetEquippedRefBasedOnTrackingNetInt( entity player, string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+
+	if ( es.trackingNetInt == "" )
+		return ""
+
+	int lootId = player.GetPlayerNetInt( es.trackingNetInt )
+
+	if ( lootId == -1 )
+		return ""
+
+	LootData data = SURVIVAL_Loot_GetLootDataByIndex( lootId )
+
+	return data.ref
+}
+
+string function GetEquippedWeaponForPlayer( entity player, string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	entity weapon = player.GetNormalWeapon( es.weaponSlot )
+	if ( !IsValid(weapon) )
+		return ""
+
+	LootData weaponData = SURVIVAL_GetLootDataFromWeapon( weapon )
+
+	return weaponData.ref
+}
+
+string function GetEquippedAttachmentOnWeaponForPlayer( entity player, string equipmentSlot )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	EquipmentSlot esWeapon = Survival_GetEquipmentSlotDataByRef( es.attachmentWeaponSlot )
+
+	entity weapon = player.GetNormalWeapon( esWeapon.weaponSlot )
+	if ( !IsValid(weapon) )
+		return ""
+
+	if ( !SURVIVAL_Loot_IsRefValid( weapon.GetWeaponClassName() ) )
+		return ""
+
+	return GetInstalledWeaponAttachment( weapon, es.attachmentPoint )
+}
+#endif
+
+
+#if SERVER
+void function Equipment_ApplyHelmetMod( entity player, string helmet )
+{
+	int tier = SURVIVAL_Loot_IsRefValid( helmet ) ? SURVIVAL_Loot_GetLootDataByRef( helmet ).tier : 0
+	player.SetSurvivalHelmetType( tier )
+}
+
+void function Equipment_ApplyArmorMod( entity player, string armor )
+{
+	int tier = SURVIVAL_Loot_IsRefValid( armor ) ? SURVIVAL_Loot_GetLootDataByRef( armor ).tier : 0
+	player.SetSurvivalArmorType( tier )
+
+}
+
+void function Equipment_ApplyBackpack( entity player, string backpack )
+{
+	int limit = SURVIVAL_GetInventoryLimit( player )
+	array<ConsumableInventoryItem> playerInventory = player.ConsumableInventory_Get()
+	int backPackCount = playerInventory.len()
+
+	if ( backPackCount > limit )
+	{
+		for ( int i=backPackCount-1; i>=limit; i-- )
+		{
+			ConsumableInventoryItem invItem = playerInventory[i]
+			LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+			SURVIVAL_DropBackpackItem( player, data.ref, invItem.count )
+		}
+	}
+}
+#endif
+
+#if CLIENT
+void function AddCallback_OnEquipSlotTrackingIntChanged( string equipSlot, void functionref(entity,string,int) func )
+{
+	file.equipSlotData[equipSlot].onTrackingIntChangedCallbacks.append( func )
+}
+
+void function EquippedItemLootIndexChange( string equipSlot, entity player, int new )
+{
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipSlot )
+	SetUnitFrameHudImageIfValid( es.unitFrameImageVar, es.unitFrameTierVar, player, new )
+
+	foreach( func in es.onTrackingIntChangedCallbacks )
+	{
+		func( player, equipSlot, new )
+	}
+}
+
+void functionref( entity player, int old, int new, bool actuallyChanged ) function CreateTrackingNetVarFunction( string equipSlot )
+{
+	return void function( entity player, int old, int new, bool actuallyChanged ) : ( equipSlot )
+	{
+		EquippedItemLootIndexChange( equipSlot, player, new )
+	}
+}
+
+void function SetUnitFrameHudImageIfValid( string imageVarName, string tierVarName, entity player, int lootIndex )
+{
+	if ( !PlayerHasUnitFrame( player ) )
+		return
+
+	var rui = GetUnitFrame( player ).rui
+
+	if ( imageVarName != "" )
+	{
+		asset imageAsset = (lootIndex < 0) ? $"" : SURVIVAL_Loot_GetLootDataByIndex( lootIndex ).hudIcon
+		RuiSetImage( rui, imageVarName, imageAsset )
+		RuiSetInt( rui, (imageVarName + "Trigger"), RandomInt( INT_MAX ) )
+	}
+
+	if ( tierVarName != "" )
+	{
+		int lootTier = (lootIndex < 0) ? 0 : SURVIVAL_Loot_GetLootDataByIndex( lootIndex ).tier
+		RuiSetInt( rui, tierVarName, lootTier )
+	}
+}
+#endif
+
+// TODO: Make this data driven
+string function GetAttachmentPointName( string attachmentPoint )
+{
+	switch ( attachmentPoint )
+	{
+		case "barrel":
+			return "#SLOT_BARREL"
+		case "mag":
+			return "#SLOT_MAG"
+		case "grip":
+			return "#SLOT_GRIP"
+		case "hopup":
+			return "#SLOT_HOPUP"
+		case "sight":
+			return "#SLOT_SIGHT"
+	}
+
+	unreachable
+}

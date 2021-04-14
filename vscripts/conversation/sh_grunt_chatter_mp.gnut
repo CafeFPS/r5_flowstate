@@ -1,0 +1,103 @@
+global function ShGruntChatter_MP_Init
+global function ShouldPlayGruntChatterMPLine
+global function GetAliasFromConversation
+
+global const GRUNT_CHATTER_MP_RANGE = 1000
+global const GRUNT_CHATTER_MP_RANGE_SQUARED = GRUNT_CHATTER_MP_RANGE * GRUNT_CHATTER_MP_RANGE
+
+struct AliasData
+{
+	string alias
+	float lastSayTime = -9999
+}
+
+struct {
+	table<string, array<AliasData> > conversationAliases
+} file
+
+void function ShGruntChatter_MP_Init()
+{
+	var dataTable = GetDataTable( $"datatable/grunt_chatter_mp.rpak" )
+
+	int numRows = GetDatatableRowCount( dataTable )
+	for ( int i = 0; i < numRows; i++ )
+	{
+		string conversationName = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "conversationname" ) )
+		string alias = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "alias" ) )
+		int priority = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "priority" ) )
+		float debounce = GetDataTableFloat( dataTable, i, GetDataTableColumnByName( dataTable, "debounce" ) )
+
+		if ( !( DoesConversationExist( conversationName ) ) )
+		{
+			RegisterConversation( conversationName, priority, debounce )
+		}
+
+		if ( !( conversationName in file.conversationAliases ) )
+		{
+			file.conversationAliases[ conversationName ] <- []
+		}
+
+		AliasData a
+		a.alias = alias
+		file.conversationAliases[ conversationName ].append( a )
+		file.conversationAliases[ conversationName ].randomize()
+	}
+}
+
+bool function ShouldPlayGruntChatterMPLine( string conversationType, entity player, entity grunt )
+{
+	if ( !IsAlive( grunt ) )
+		return false
+
+	if ( !IsAlive( player ) )
+		return false
+
+	if ( IsForcedDialogueOnly( player ) )
+	{
+		//printt( "ForcedDialogueOnly, not playing Grunt Chatter MP:"  + conversationType )
+		return false
+	}
+
+	#if CLIENT
+		float debounceTime = GetConversationDebounce( conversationType )
+		float lastPlayedTime = GetConversationLastPlayedTime( conversationType )
+		if ( lastPlayedTime > 0 && lastPlayedTime + debounceTime > Time() )
+		{
+			//printt( "lastPlayedTime: " + lastPlayedTime + " debounce time: " + debounceTime + ", not playing Grunt Chatter MP:"  + conversationType )
+			return false
+		}
+	#endif
+
+	float distSqr = DistanceSqr( grunt.GetOrigin(), player.GetOrigin() )
+
+	if ( distSqr > GRUNT_CHATTER_MP_RANGE_SQUARED )
+	{
+		//printt( "DistanceSqr: " + distSqr + " larger than GRUNT_CHATTER_MP_RANGE_SQUARED: " + Grunt_CHATTER_MP_RANGE_SQUARED + ", not playing Battle Chatter:"  + conversationType )
+		return false
+	}
+
+	return true
+}
+
+string function GetAliasFromConversation( string conversationName )
+{
+	int currentIndex = 0
+	float largestGap = -1
+
+	if ( file.conversationAliases[ conversationName ].len() > 1 )
+	{
+		for ( int i = 0; i < file.conversationAliases[ conversationName ].len(); i++ )
+		{
+			AliasData conv = file.conversationAliases[ conversationName ][i]
+			float gap = Time() - conv.lastSayTime
+			if ( gap > largestGap )
+			{
+				currentIndex = i
+				largestGap = gap
+			}
+		}
+	}
+
+	file.conversationAliases[ conversationName ][currentIndex].lastSayTime = Time()
+	return file.conversationAliases[ conversationName ][currentIndex].alias
+}

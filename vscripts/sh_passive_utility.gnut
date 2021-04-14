@@ -1,0 +1,148 @@
+globalize_all_functions
+
+void function ReloadPrimaryWeapons( entity player )
+{
+	#if CLIENT
+		EmitSoundOnEntity( player, "Coop_AmmoBox_AmmoRefill" )
+	#endif
+	#if SERVER
+		array<entity> weapons = player.GetMainWeapons()
+		foreach ( weapon in weapons )
+		{
+			int max = weapon.GetWeaponPrimaryClipCountMax()
+			weapon.SetWeaponPrimaryClipCount( max )
+		}
+	#endif
+}
+
+void function ReloadPlayerDash( entity player )
+{
+	#if SERVER
+	player.Server_SetDodgePower( 100.0 )
+	#endif
+}
+
+void function ResetRegenTime( entity player )
+{
+	#if SERVER
+	entity soul = GetSoulFromPlayer( player )
+	if ( soul == null )
+		return
+
+	soul.nextRegenTime = Time()
+	soul.nextHealthRegenTime = Time()
+	soul.e.forcedRegenTime = Time() + 0.5
+	#endif
+}
+
+
+void function ReloadTacticalAbility( entity player )
+{
+	#if CLIENT
+		EmitSoundOnEntity( player, "Coop_AmmoBox_AmmoRefill" )
+	#endif
+	#if SERVER
+	entity weapon = player.GetOffhandWeapon( OFFHAND_LEFT )
+	if ( IsValid( weapon ) )
+	{
+		int max = weapon.GetWeaponPrimaryClipCountMax()
+		weapon.SetNextAttackAllowedTime( Time() )
+
+		if ( weapon.IsChargeWeapon() )
+			weapon.SetWeaponChargeFractionForced( 0 )
+		else if ( max > 0 )
+			weapon.SetWeaponPrimaryClipCount( max )
+	}
+	#endif
+}
+
+void function GiveShortUnlimitedDash( entity player )
+{
+	player.EndSignal( "OnDeath" )
+
+	int fxId = -1
+
+	#if CLIENT
+		entity cockpit = player.GetCockpit()
+		if ( IsValid( cockpit ) )
+		{
+			cockpit.EndSignal( "OnDestroy" )
+			fxId = StartParticleEffectOnEntity( cockpit, GetParticleSystemIndex( $"P_core_DMG_boost_screen" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+		}
+	#endif
+	#if SERVER
+		player.SetDodgePowerDelayScale( 0.05 )
+		player.SetPowerRegenRateScale( 16.0 )
+		EmitSoundOnEntity( player, "Titan_CoreAbility_Sustain" )
+	#endif
+
+	OnThreadEnd(
+	function() : ( player, fxId )
+		{
+			if ( IsValid( player ) )
+			{
+				#if SERVER
+					player.SetDodgePowerDelayScale( 1.0 )
+					player.SetPowerRegenRateScale( 1.0 )
+					StopSoundOnEntity( player, "Titan_CoreAbility_Sustain" )
+				#endif
+				#if CLIENT
+					if ( fxId != -1 )
+						EffectStop( fxId, false, true ) // stop particles, play end cap
+				#endif
+			}
+		}
+	)
+
+	wait 2.5
+}
+
+void function GiveOvershield( entity player )
+{
+	#if SERVER
+	entity soul = GetSoulFromPlayer( player )
+	if ( soul == null )
+		return
+
+	soul.SetShieldHealth( soul.GetShieldHealthMax() )
+	DelayShieldDecayTime( soul, 1 )
+	#endif
+}
+
+void function GiveShortDomeShield( entity player )
+{
+	#if SERVER
+	player.EndSignal( "OnDeath" )
+
+	entity soul = GetSoulFromPlayer( player )
+	if ( soul == null )
+		return
+
+	soul.EndSignal( "OnTitanDeath" )
+	soul.EndSignal( "OnDestroy" )
+	soul.EndSignal( "TitanBrokeBubbleShield" )
+
+	float duration = 3.0
+
+	thread CreateParentedBubbleShield( player, player.GetOrigin(), player.GetAngles(), duration )
+
+	OnThreadEnd(
+	function() : ( soul )
+		{
+			if ( IsValid( soul ) )
+			{
+				if ( IsValid( soul.soul.bubbleShield ) )
+					soul.soul.bubbleShield.Destroy()
+			}
+		}
+	)
+
+	soul.soul.bubbleShield.EndSignal( "OnDestroy" )
+
+	wait 0.5
+
+	LetTitanPlayerShootThroughBubbleShield( player )
+
+	wait duration
+	#endif
+}

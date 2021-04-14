@@ -1,0 +1,516 @@
+untyped
+
+global function Flags_Init
+global function FlagInit
+global function FlagSet
+global function FlagClear
+global function FlagEnd
+global function FlagClearEnd
+global function Flag
+global function FlagToggle
+global function FlagWait
+global function FlagWaitAll
+global function FlagWaitWithTimeout
+global function FlagWaitClearWithTimeout
+global function FlagWaitAny
+global function FlagWaitClear
+global function FlagWaitClearAll
+global function FlagWaitClearAllArray
+global function FlagWaitClearAny
+global function GetFlagsFromString
+global function GetFlagsFromField
+global function FlagExists
+global function FlagSetOnFlag
+global function FlagClearOnFlag
+global function GetTriggerEnabled
+
+#if SERVER
+	global function SetupFlagKilledForNPC
+
+	struct
+	{
+		table flagOnKilled
+	} file
+#endif
+
+
+struct
+{
+	table<string,bool> flags
+} shFile
+
+void function Flags_Init()
+{
+	#if DEV
+		//level.flagHistory <- {}
+	#endif
+
+	#if SERVER
+	AddSpawnCallback( "func_brush", FuncBrushMoveFlag )
+	#endif
+
+	RegisterSignal( "deathflag" )
+}
+
+void function FlagInit( string msg, bool isSet = false )
+{
+	// gets init'd from the map too, so not an assert
+	if ( msg in shFile.flags )
+		return
+
+	Assert( !( msg.find_olduntyped( " " ) ), "Can not have spaces in the name of a flag: " + msg )
+	shFile.flags[ msg ] <- isSet
+	RegisterSignal( msg )
+}
+
+void function FlagSet( string msg )
+{
+	Assert( msg in shFile.flags, "flag " + msg + " not initialized yet" )
+
+	#if DEV
+		//if ( !Flag( msg ) )
+		//	level.flagHistory[ msg ] <- true
+	#endif
+
+	__FlagSetValue( msg, true )
+}
+
+void function FlagClear( string msg )
+{
+	Assert( msg in shFile.flags, "flag " + msg + " not initialized yet" )
+
+	__FlagSetValue( msg, false )
+}
+
+void function FlagEnd( string msg )
+{
+		Assert( msg in shFile.flags, "flag " + msg + " not initialized yet" )
+	Assert( !Flag( msg ), "Flag " + msg + " was already set!!" )
+
+	EndSignal( level, msg )
+}
+
+void function FlagClearEnd( string msg )
+{
+		Assert( msg in shFile.flags, "flag " + msg + " not initialized yet" )
+	Assert( Flag( msg ), "Flag " + msg + " is not already set!!" )
+
+	EndSignal( level, msg )
+}
+
+bool function Flag( string msg )
+{
+		Assert( msg in shFile.flags, "flag " + msg + " not initialized yet" )
+
+	return shFile.flags[ msg ]
+}
+
+void function FlagToggle( string msg )
+{
+	if ( Flag( msg ) )
+	{
+		FlagClear( msg )
+	}
+	else
+	{
+		FlagSet( msg )
+	}
+}
+
+//this function only works in threaded functions
+void function FlagWait( string msg )
+{
+		Assert( msg in shFile.flags, "flag " + msg + " not initialized yet" )
+
+	while ( !shFile.flags[ msg ] )
+	{
+		WaitSignal( level, msg )
+	}
+}
+
+//this function only works in threaded functions
+void function FlagWaitAll( ... )
+{
+	array<string> args
+	for ( int i = 0; i < vargc; i++ )
+	{
+		args.append( expect string( vargv[i] ) )
+	}
+
+	bool loop = true
+
+	while ( loop )
+	{
+		foreach ( msg in args )
+		{
+			FlagWait( msg )
+		}
+
+		loop = false
+
+		//extra check to make sure one didn't get cleared after a wait
+		foreach ( i, msg in args )
+		{
+			if ( Flag( msg ) )
+				continue
+
+			loop = true
+			break
+		}
+	}
+}
+
+//this function only works in threaded functions
+void function FlagWaitWithTimeout( string flag, float timeout )
+{
+	string newFlag = "FlagWaitAny" + UniqueString()
+	FlagInit( newFlag )
+	thread __FlagWaitAny( flag, newFlag )
+	thread __FlagWaitTime( timeout, newFlag )
+
+	FlagWait( newFlag )
+}
+
+void function FlagWaitClearWithTimeout( string flag, float timeout )
+{
+	string newFlag = "FlagWaitClearAny" + UniqueString()
+	FlagInit( newFlag )
+	thread __FlagWaitClearAny( flag, newFlag )
+	thread __FlagWaitTime( timeout, newFlag )
+
+	FlagWait( newFlag )
+}
+
+void function __FlagWaitTime( float timeout, string newFlag )
+{
+	EndSignal( level, newFlag )
+
+	Wait( timeout )
+
+	FlagSet( newFlag )
+}
+
+//this function only works in threaded functions
+void function FlagWaitAny( ... )
+{
+	string newFlag = "FlagWaitAny" + UniqueString()
+	FlagInit( newFlag )
+
+	array<string> args
+	for ( int i = 0; i < vargc; i++ )
+	{
+		args.append( expect string( vargv[i] ) )
+	}
+
+	foreach ( msg in args )
+	{
+		thread __FlagWaitAny( msg, newFlag )
+	}
+
+	FlagWait( newFlag )
+}
+
+//this function only works in threaded functions
+void function FlagWaitClear( string msg )
+{
+	Assert( msg in shFile.flags, "flag " + msg + " not initialized yet" )
+
+	while ( shFile.flags[ msg ] )
+	{
+		WaitSignal( level, msg )
+	}
+}
+
+//this function only works in threaded functions
+void function FlagWaitClearAll( ... )
+{
+	array<string> args
+	for ( int i = 0; i < vargc; i++ )
+	{
+		args.append( expect string( vargv[i] ) )
+	}
+	waitthread FlagWaitClearAllArray( args )
+}
+
+void function FlagWaitClearAllArray( array<string> flags )
+{
+	bool loop = true
+
+	while ( loop )
+	{
+		foreach ( flag in flags )
+		{
+			FlagWaitClear( flag )
+		}
+
+		loop = false
+
+		//extra check to make sure one didn't get cleared after a wait
+		foreach ( flag in flags )
+		{
+			if ( !Flag( flag ) )
+				continue
+
+			loop = true
+			break
+		}
+	}
+}
+
+//this function only works in threaded functions
+void function FlagWaitClearAny( ... )
+{
+	string newFlag = "FlagWaitAny" + UniqueString()
+	FlagInit( newFlag )
+
+	array<string> args
+	for ( int i = 0; i < vargc; i++ )
+	{
+		args.append( expect string( vargv[i] ) )
+	}
+
+	foreach ( msg in args )
+	{
+		thread __FlagWaitClearAny( msg, newFlag )
+	}
+
+	FlagWait( newFlag )
+}
+
+// this is terrible, don't use global namespace for local functionality
+void function __FlagWaitAny( string msg, string newFlag )
+{
+	EndSignal( level, newFlag )
+
+	FlagWait( msg )
+
+	FlagSet( newFlag )
+}
+
+// this is terrible, don't use global namespace for local functionality
+void function __FlagWaitClearAny( string msg, string newFlag )
+{
+	EndSignal( level, newFlag )
+
+	FlagWaitClear( msg )
+
+	FlagSet( newFlag )
+}
+
+void function __FlagSetValue( string msg, bool val )
+{
+	if ( shFile.flags[ msg ] == val )
+		return
+
+	shFile.flags[ msg ] = val
+
+ 	#if SERVER
+	UpdateTriggerStatusFromFlagChange( msg )
+	#endif
+
+	// WARNING: Use FlagEnd instead of end signalling directly on this signal
+	Signal( level, msg )
+}
+
+array<string> function GetFlagsFromString( string str )
+{
+	return GetTrimmedSplitString( str, "," )
+}
+
+bool function GetTriggerEnabled( entity trigger )
+{
+	array<string> flags
+
+	bool enabled
+
+	if ( trigger.HasKey( "scr_flagTrueAny" ) )
+	{
+		flags = GetFlagsFromField( trigger, "scr_flagTrueAny" )
+
+		enabled = false
+		foreach ( msg in flags )
+		{
+			if ( Flag( msg ) )
+			{
+				enabled = true
+				break
+			}
+		}
+
+		if ( !enabled )
+			return false
+	}
+
+	if ( trigger.HasKey( "scr_flagTrueAll" ) )
+	{
+		flags = GetFlagsFromField( trigger, "scr_flagTrueAll" )
+
+		enabled = true
+		foreach ( msg in flags )
+		{
+			if ( !Flag( msg ) )
+			{
+				enabled = false
+				break
+			}
+		}
+
+		if ( !enabled )
+			return false
+	}
+
+	if ( trigger.HasKey( "scr_flagFalseAny" ) )
+	{
+		flags = GetFlagsFromField( trigger, "scr_flagFalseAny" )
+
+		enabled = false
+		foreach ( msg in flags )
+		{
+			if ( !Flag( msg ) )
+			{
+				enabled = true
+				break
+			}
+		}
+
+		if ( !enabled )
+			return false
+	}
+
+	if ( trigger.HasKey( "scr_flagFalseAll" ) )
+	{
+		flags = GetFlagsFromField( trigger, "scr_flagFalseAll" )
+
+		enabled = true
+		foreach ( msg in flags )
+		{
+			if ( Flag( msg ) )
+			{
+				enabled = false
+				break
+			}
+		}
+
+		if ( !enabled )
+			return false
+	}
+
+	return true
+}
+
+array<string> function GetFlagsFromField( entity ent, string field )
+{
+	return split( ent.kv[ field ], " " )
+}
+
+#if SERVER
+void function FuncBrushMoveFlag( entity brush )
+{
+	if ( !brush.HasKey( "script_flag" ) )
+		return
+
+	if ( GetEditorClass( brush ) != "" )
+		return
+
+	thread FuncBrushMoveFlag_Thread( brush )
+}
+
+void function FuncBrushMoveFlag_Thread( entity brush )
+{
+	brush.EndSignal( "OnDestroy" )
+	Assert( brush.HasKey( "move_time" ), "No move_time set on brush mover" )
+	Assert( brush.HasKey( "movedirection" ), "No movedirection set on brush mover" )
+
+	string flag = string( brush.kv.script_flag )
+	FlagInit( flag )
+	FlagWait( flag )
+	BrushMoves( brush )
+}
+
+void function SetupFlagKilledForNPC( entity ent )
+{
+	// ent could be a spawner or npc
+
+	string flag
+	vector origin
+	if ( IsSpawner( ent ) )
+	{
+		table spawnerKVs = ent.GetSpawnEntityKeyValues()
+		Assert( "script_flag_killed" in spawnerKVs )
+		flag = string( spawnerKVs.script_flag_killed )
+		origin = StringToVector( string( spawnerKVs.origin ) )
+	}
+	else
+	{
+		Assert( ent.HasKey( "script_flag_killed" ) )
+		flag = ent.GetValueForKey( "script_flag_killed" )
+		origin = ent.GetOrigin()
+	}
+	Assert( flag != "", "Entity " + ent + " at " + origin + " has empty script_flag_killed key" )
+	FlagInit( flag )
+
+	if ( !( flag in file.flagOnKilled ) )
+		file.flagOnKilled[ flag ] <- []
+
+	// Add the entity (spawner or npc) to the list of things that must die for flag to be set
+	file.flagOnKilled[ flag ].append( ent )
+
+	// Wait wait for spawners to die. When those spawners spawn a npc that npc will run this function and we will wait for it to die there
+	if ( IsSpawner( ent ) )
+		return
+
+	// If this npc has a spawner in the array already, remove it if the spawner has spawned once. If the spawner had a repeat counter only remove it when it's reached the counter.
+	entity spawner = ent.GetSpawner()
+	if ( IsValid( spawner ) && file.flagOnKilled[ flag ].contains( spawner ) && spawner.GetSpawnCount() >= spawner.e.repeatSpawnCount )
+		file.flagOnKilled[ flag ].fastremovebyvalue( spawner )
+
+	// Wait for the NPC to die, delete, or get leeched, then remove the npc from the array
+	WaitSignal( ent, "OnDeath", "OnDestroy", "OnLeeched" )
+	file.flagOnKilled[ flag ].fastremovebyvalue( ent )
+
+	//printt( "NPC with script_flag_killed", flag, "died.", file.flagOnKilled[ flag ].len(), "remaining." )
+
+	// Set the flag if everything in the array has been killed or spawned and killed
+	if ( file.flagOnKilled[ flag ].len() == 0 )
+	{
+		//printt( "Setting script_flag_killed:", flag )
+		FlagSet( flag )
+	}
+}
+#endif
+
+
+bool function FlagExists( string msg )
+{
+	// gets init'd from the map too, so not an assert
+	if ( msg in shFile.flags )
+		return true
+
+	return false
+}
+
+void function FlagSetOnFlag( string flagset, string flagwait, float delay = 0 )
+{
+	thread _ThreadFlagSetOnFlag( flagset, flagwait, delay )
+}
+
+void function _ThreadFlagSetOnFlag( string flagset, string flagwait, float delay )
+{
+	FlagWait( flagwait )
+
+	if ( delay )
+		wait delay
+
+	FlagSet( flagset )
+}
+
+void function FlagClearOnFlag( string flagclear, string flagwait )
+{
+	thread _ThreadFlagClearOnFlag( flagclear, flagwait )
+}
+
+void function _ThreadFlagClearOnFlag( string flagclear, string flagwait )
+{
+	FlagWait( flagwait )
+	FlagClear( flagclear )
+}

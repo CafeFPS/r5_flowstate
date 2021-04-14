@@ -1,0 +1,48 @@
+PROTO_at_turret
+{
+    YawPoseParameter                aim_yaw                 // Animation pose parameter to set when rotating turret horizontally
+    PitchPoseParameter              aim_pitch               // Animation pose parameter to set when rotating turret vertically
+
+    MakeSolid                       2                      // Used to set model collision (0 = no collision, 1 = AABB collision, 2 = use VPhysics, default = 0). You need collision if you want to make it usable with +use (use key)
+
+    MouseSensitivityModifierX       0.30                    // Used to dampen mouse sensitivity horizontally
+    MouseSensitivityModifierY       0.25                    // Used to dampen mouse sensitivity vertically
+    JoystickSensitivityModifierX    0.75                   // Used to dampen joystick sensitivity horizontally
+    JoystickSensitivityModifierY    0.7                    // Used to dampen joystick sensitivity vertically
+
+    camera_autoExposureMin          0.5
+    camera_autoExposureMax          2.0
+    camera_autoExposureSpeed        0.1
+    camera_autoExposureCompensation 0.0
+
+    ui_targetinfo                   "ui/targetinfo_remote_turret"
+
+    camera_fov                      50
+
+    //
+    camera_lcd_enabled              1
+
+    camera_lcd_bloomAdd             1.1
+    camera_lcd_brightness           0.01
+    camera_lcd_contrast             -3.0
+    camera_lcd_pixelflicker         0.1
+    camera_lcd_pixelScaleX1         0.2
+    camera_lcd_pixelScaleX2         0.1
+    camera_lcd_pixelScaleY          0.2
+    camera_lcd_waveOffset           -0.015
+    camera_lcd_waveScale            0.025
+    camera_lcd_wavePeriod           1.1
+    camera_lcd_waveSpeed            -0.663
+    camera_lcd_doBloomLuminance     1
+
+    camera_lcd                     "lcd_screen_effect/lcd_turret_camera_hifi"
+    camera_lcdStartup              "lcd_screen_effect/lcd_turret_camera_hifi_startup"
+    camera_lcdStartupTime          0.75
+
+    camera_lcd_startup_pixelFlicker     2.4
+    camera_lcd_startup_bloomAdd         151
+    camera_lcd_startup_brightness          -0.70
+    camera_lcd_startup_pixelScaleX1     0.0
+    camera_lcd_startup_pixelScaleX2     0.0
+    camera_lcd_startup_pixelScaleY      0.0
+}

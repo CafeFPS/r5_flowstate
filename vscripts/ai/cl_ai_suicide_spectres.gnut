@@ -1,0 +1,65 @@
+global function ClSuicideSpectres_Init
+global function PlayWarningFXOnMPFragDrone
+global function PlayWarningFXOnSPTick
+
+global int PILOT_THROWN_TICK_WARNING_FX
+global int AI_GENERATED_TICK_WARNING_FX
+global int AI_GENERATED_TICK_WARNING_BEAMS_FX
+
+void function ClSuicideSpectres_Init()
+{
+	PILOT_THROWN_TICK_WARNING_FX = PrecacheParticleSystem( $"P_drone_frag_warn_sm" )
+	AI_GENERATED_TICK_WARNING_FX = PrecacheParticleSystem( $"P_drone_frag_warn" )
+	AI_GENERATED_TICK_WARNING_BEAMS_FX = PrecacheParticleSystem( $"P_drone_frag_warn_beams" )
+}
+
+void function PlayWarningFXOnMPFragDrone( entity drone ) //Moved from server script to client because of way too many fx handles.
+{
+	array<int> fxEnts
+	int attachementIndex = drone.LookupAttachment( "head_base" )
+	int fxEnt = StartParticleEffectOnEntity( drone, PILOT_THROWN_TICK_WARNING_FX, FX_PATTACH_POINT_FOLLOW, attachementIndex )
+	fxEnts.append( fxEnt )
+
+	drone.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+	function() : ( fxEnts )
+		{
+			foreach ( ent in fxEnts )
+				EffectStop( ent, false, true )
+		}
+	)
+
+	WaitForever()
+}
+
+void function PlayWarningFXOnSPTick( entity tick ) //Moved from server script to client because of way too many fx handles.
+{
+	array<int> fxEnts
+
+	//First play the warning FX on the head base
+	int headBaseAttachmentIndex = tick.LookupAttachment( "head_base" )
+	int headBaseFXEnt = StartParticleEffectOnEntity( tick, AI_GENERATED_TICK_WARNING_FX, FX_PATTACH_POINT_FOLLOW, headBaseAttachmentIndex )
+	fxEnts.append( headBaseFXEnt )
+
+	//Then play warn_beams on head_light attachments
+	for ( int i = 1; i < 26; ++i )
+	{
+		string attachmentName = "head_light_" + i
+		int attachementIndex = tick.LookupAttachment( attachmentName )
+		int fxEnt = StartParticleEffectOnEntity( tick, AI_GENERATED_TICK_WARNING_BEAMS_FX, FX_PATTACH_POINT_FOLLOW, attachementIndex )
+		fxEnts.append( fxEnt )
+	}
+
+	tick.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+	function() : ( fxEnts )
+		{
+			foreach ( ent in fxEnts )
+				EffectStop( ent, false, true )
+		}
+	)
+
+	WaitForever()
+}

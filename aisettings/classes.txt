@@ -1,0 +1,7 @@
+classes
+{
+	import npc_dropship.txt
+	import npc_dropship_respawn.txt
+	import npc_frag_drone.txt
+	import npc_frag_drone_treasure_tick.txt
+}

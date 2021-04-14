@@ -1,0 +1,95 @@
+
+//global function GetPostGameData
+
+global struct postGamePlayerDef
+{
+	string name
+	string xuid
+	int callsignIconIndex
+	array<int> scores
+}
+
+global struct postGameTeamDef
+{
+	string faction
+	int score
+	int maxTeamSize
+	array<postGamePlayerDef> playersData
+}
+
+global struct postGameDataDef
+{
+	int gameMode
+	int map
+	int myTeam
+	string myXuid
+	table<int, postGameTeamDef> teamsData
+}
+
+
+//postGameDataDef function GetPostGameData()
+//{
+//	entity player = GetLocalClientPlayer()
+//
+//	postGameDataDef postGameData
+//	postGameData.myTeam = player.GetPersistentVarAsInt( "postGameData.myTeam" )
+//	postGameData.myXuid = expect string( player.GetPersistentVar( "postGameData.myXuid" ) )
+//	postGameData.gameMode = player.GetPersistentVarAsInt( "postGameData.gameMode" )
+//	postGameData.map = player.GetPersistentVarAsInt( "postGameData.map" )
+//
+//	bool teams = expect bool( player.GetPersistentVar( "postGameData.teams" ) )
+//	int maxTeamSize = player.GetPersistentVarAsInt( "postGameData.maxTeamSize" )
+//	string gameModeString = PersistenceGetEnumItemNameForIndex( "gameModes", postGameData.gameMode )
+//
+//	if ( teams )
+//	{
+//		postGameTeamDef teamDataIMC
+//		teamDataIMC.maxTeamSize = maxTeamSize
+//		teamDataIMC.faction = expect string( player.GetPersistentVar( "postGameData.factionIMC" ) )
+//		teamDataIMC.score = player.GetPersistentVarAsInt( "postGameData.scoreIMC" )
+//		NewPopulateTeamData( teamDataIMC, TEAM_IMC, gameModeString )
+//		postGameData.teamsData[TEAM_IMC] <- teamDataIMC
+//
+//		postGameTeamDef teamDataMCOR
+//		teamDataMCOR.maxTeamSize = maxTeamSize
+//		teamDataMCOR.faction = expect string( player.GetPersistentVar( "postGameData.factionMCOR" ) )
+//		teamDataMCOR.score = player.GetPersistentVarAsInt( "postGameData.scoreMCOR" )
+//		NewPopulateTeamData( teamDataMCOR, TEAM_MILITIA, gameModeString )
+//		postGameData.teamsData[TEAM_MILITIA] <- teamDataMCOR
+//	}
+//	else
+//	{
+//		postGameTeamDef teamData
+//		teamData.maxTeamSize = maxTeamSize
+//		NewPopulateTeamData( teamData, TEAM_MILITIA, gameModeString )
+//		postGameData.teamsData[0] <- teamData
+//	}
+//
+//	return postGameData
+//}
+
+//void function NewPopulateTeamData( postGameTeamDef teamData, int team, string gameMode )
+//{
+//	entity player = GetLocalClientPlayer()
+//
+//	int maxPlayers = PersistenceGetArrayCount( "postGameData.players" )
+//	array<int> scoreTypes = GameMode_GetScoreboardColumnScoreTypes( gameMode )
+//
+//	for ( int i = 0; i < maxPlayers; i++ )
+//	{
+//		int playerTeam = player.GetPersistentVarAsInt( "postGameData.players[" + i + "].team" )
+//
+//		if ( playerTeam == team || ( playerTeam >= 7 && playerTeam <= 27 ) ) // 7 to 27 is free for all range
+//		{
+//			postGamePlayerDef playerData
+//			playerData.name = expect string( player.GetPersistentVar( "postGameData.players[" + i + "].name" ) )
+//			playerData.xuid = expect string( player.GetPersistentVar( "postGameData.players[" + i + "].xuid" ) )
+//			playerData.callsignIconIndex = player.GetPersistentVarAsInt( "postGameData.players[" + i + "].callsignIconIndex" )
+//
+//			foreach ( scoreIndex, scoreType in scoreTypes )
+//				playerData.scores.append( player.GetPersistentVarAsInt( "postGameData.players[" + i + "].scores[" + scoreIndex + "]" ) )
+//
+//			teamData.playersData.append( playerData )
+//		}
+//	}
+//}

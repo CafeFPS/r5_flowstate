@@ -1,0 +1,84 @@
+#if DEV
+global function SetupChangeSurvivalCharacterClass
+global function SetupOverrideSpawnSurvivalCharacter
+global function SetupSurvival
+global function SetupSurvivalLoot
+global function SetupSurvivalIncapShieldBot
+
+void function SetupChangeSurvivalCharacterClass()
+{
+	#if UI
+		array<ItemFlavor> characters = clone GetAllCharacters()
+		characters.sort( int function( ItemFlavor a, ItemFlavor b ) {
+			if ( Localize( ItemFlavor_GetLongName( a ) ) < Localize( ItemFlavor_GetLongName( b ) ) )
+				return -1
+			if ( Localize( ItemFlavor_GetLongName( a ) ) > Localize( ItemFlavor_GetLongName( b ) ) )
+				return 1
+			return 0
+		} )
+		foreach( ItemFlavor character in characters )
+		{
+			SetupDevFunc( Localize( ItemFlavor_GetLongName( character ) ), void function( var unused ) : ( character ) {
+				DEV_RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
+			} )
+		}
+	#endif
+}
+
+void function SetupOverrideSpawnSurvivalCharacter()
+{
+	#if UI
+		SetupDevCommand( "Random (default)", "dev_sur_force_spawn_character random" )
+		SetupDevCommand( "Shipping only", "dev_sur_force_spawn_character special" )
+		array<ItemFlavor> characters = clone GetAllCharacters()
+		characters.sort( int function( ItemFlavor a, ItemFlavor b ) {
+			if ( Localize( ItemFlavor_GetLongName( a ) ) < Localize( ItemFlavor_GetLongName( b ) ) )
+				return -1
+			if ( Localize( ItemFlavor_GetLongName( a ) ) > Localize( ItemFlavor_GetLongName( b ) ) )
+				return 1
+			return 0
+		} )
+		foreach( ItemFlavor characterClass in characters )
+		{
+			SetupDevCommand( Localize( ItemFlavor_GetLongName( characterClass ) ), "dev_sur_force_spawn_character " + ItemFlavor_GetHumanReadableRef( characterClass ) )
+		}
+	#endif
+}
+
+void function SetupSurvival()
+{
+	#if UI
+		SetupDevCommand( "Enable Survival Dev Mode", "playlist survival_dev" )
+		SetupDevCommand( "Disable Match Ending", "mp_enablematchending 0" )
+		SetupDevCommand( "Drop Care Package R1", "script thread AirdropForRound( gp()[0].GetOrigin(), gp()[0].GetAngles(), 0, null )" )
+		SetupDevCommand( "Drop Care Package R2", "script thread AirdropForRound( gp()[0].GetOrigin(), gp()[0].GetAngles(), 1, null )" )
+		SetupDevCommand( "Drop Care Package R3", "script thread AirdropForRound( gp()[0].GetOrigin(), gp()[0].GetAngles(), 2, null )" )
+		SetupDevCommand( "Force Circle Movement", "script FlagWait( \"DeathCircleActive\" );script svGlobal.levelEnt.Signal( \"DeathField_ShrinkNow\" );script FlagClear( \"DeathFieldPaused\" )" )
+		SetupDevCommand( "Pause Circle Movement", "script FlagSet( \"DeathFieldPaused\" )" )
+		SetupDevCommand( "Unpause Circle Movement", "script FlagClear( \"DeathFieldPaused\" )" )
+		SetupDevCommand( "Gladiator Intro Sequence", "script thread DEV_StartGladiatorIntroSequence()" )
+		SetupDevCommand( "Bleedout Debug Mode", "script FlagSet( \"BleedoutDebug\" )" )
+		SetupDevCommand( "Disable Loot Drops on Death", "script FlagSet( \"DisableLootDrops\" )" )
+		SetupDevCommand( "Drop My Death Box", "script thread SURVIVAL_Death_DropLoot_Internal( GP(), null, 100 )" )
+	#endif
+}
+
+void function SetupSurvivalLoot( var categories )
+{
+	#if UI
+		RunClientScript( "SetupSurvivalLoot", categories )
+	#endif
+}
+
+void function SetupSurvivalIncapShieldBot()
+{
+	#if UI
+	SetupDevCommand( "Spawn Bot with Lv 1 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 1 )" )
+	SetupDevCommand( "Spawn Bot with Lv 2 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 2 )" )
+	SetupDevCommand( "Spawn Bot with Lv 3 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 3 )" )
+	SetupDevCommand( "Spawn Bot with Lv 4 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 4 )" )
+	SetupDevCommand( "Spawn Bot with a Random Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( -1 )" )
+	#endif
+}
+
+#endif

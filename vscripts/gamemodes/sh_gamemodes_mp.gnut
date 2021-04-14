@@ -1,0 +1,37 @@
+
+global function GameModes_Init_SV_CL
+
+void function GameModes_Init_SV_CL()
+{
+	string gameMode
+
+	gameMode = TEAM_DEATHMATCH
+	#if SERVER
+		GameMode_AddServerInit( gameMode, GamemodeTdm_Init )
+		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Directional )
+		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Directional )
+	#endif
+	#if !UI
+		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+		GameMode_AddSharedInit( gameMode, GamemodeTdmShared_Init )
+	#endif
+
+	gameMode = SURVIVAL
+#if SERVER
+	GameMode_AddServerInit( gameMode, GamemodeSurvival_Init )
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+#elseif CLIENT
+	GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+#endif
+#if !UI
+	GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
+	GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+#endif
+
+	#if DEVSCRIPTS
+		Dev_GameModes_Init_SV_CL()
+	#endif
+
+}

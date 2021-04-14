@@ -1,0 +1,90 @@
+
+global function IonEnergy_Init
+#if CLIENT
+global function Ion_CreateEnergyBar
+global function Ion_DestroyEnergyBar
+#endif
+
+global const float ION_ENERGY_REGEN_INTERVAL = 0.1
+global const int ION_ENERGY_MAX = 1000
+
+#if CLIENT
+global function FlashEnergyNeeded_Bar
+
+struct
+{
+	var ionEnergyBarRui = null
+} file
+#endif
+
+void function IonEnergy_Init()
+{
+	#if CLIENT
+		AddLocalPlayerDidDamageCallback( Ion_CritHitIndicator )
+		AddTitanCockpitManagedRUI( Ion_CreateEnergyBar, Ion_DestroyEnergyBar, Ion_ShouldCreateEnergyBar, RUI_DRAW_COCKPIT )
+	#endif
+}
+
+#if CLIENT
+var function Ion_CreateEnergyBar()
+{
+	Assert( file.ionEnergyBarRui == null )
+
+	entity player = GetLocalViewPlayer()
+	float energyMax = float( player.GetSharedEnergyTotal() )
+	var rui
+	if ( energyMax > ION_ENERGY_MAX )
+		rui = CreateTitanCockpitRui( $"ui/ion_energy_bar_Fd.rpak" )
+	else
+		rui = CreateTitanCockpitRui( $"ui/ion_energy_bar.rpak" )
+
+	file.ionEnergyBarRui = rui
+
+	RuiSetFloat( file.ionEnergyBarRui, "energyMax", energyMax )
+	RuiTrackFloat( file.ionEnergyBarRui, "energy", GetLocalViewPlayer(), RUI_TRACK_PLAYER_SHARED_ENERGY )
+
+	return file.ionEnergyBarRui
+}
+
+void function Ion_DestroyEnergyBar()
+{
+	TitanCockpitDestroyRui( file.ionEnergyBarRui )
+	file.ionEnergyBarRui = null
+}
+
+bool function Ion_ShouldCreateEnergyBar()
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( !IsAlive( player ) )
+		return false
+
+	array<entity> mainWeapons = player.GetMainWeapons()
+	if ( mainWeapons.len() == 0 )
+		return false
+
+	entity primaryWeapon = mainWeapons[0]
+	if ( primaryWeapon.GetWeaponInfoFileKeyField( "npc_use_check_type" ) != "shared_energy" )
+		return false
+
+	return true
+}
+
+void function FlashEnergyNeeded_Bar( int neededEnergy )
+{
+	if ( file.ionEnergyBarRui == null )
+		return
+
+	RuiSetFloat( file.ionEnergyBarRui, "energyNeededRatio", float( neededEnergy ) / float( ION_ENERGY_MAX ) )
+	RuiSetGameTime( file.ionEnergyBarRui, "energyNeededFlashStartTime", Time() )
+}
+
+void function Ion_CritHitIndicator( entity attacker, entity victim, vector damagePos, int damageType )
+{
+	if ( file.ionEnergyBarRui == null )
+		return
+
+	if ( damageType & DF_CRITICAL )
+		RuiSetGameTime( file.ionEnergyBarRui, "criticalHitFlashStartTime", Time() )
+}
+#endif

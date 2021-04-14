@@ -1,0 +1,23 @@
+global function ClEntityCreationFunctions_Init
+
+void function ClEntityCreationFunctions_Init()
+{
+	AddCreateCallback( "npc_dropship", CreateCallback_Dropship )
+
+	AddCallback_EntitiesDidLoad( DisableSunFlare )
+}
+
+void function DisableSunFlare()
+{
+	if ( GetCurrentPlaylistVarInt( "enable_sun_flare_" + GetMapName(), 1 ) != 0 )
+		return
+
+	array<entity> fxEnts = GetClientEntArrayBySignifier( "info_particle_system" )
+	foreach ( fxEnt in fxEnts )
+	{
+		if ( fxEnt.HasKey( "in_skybox" ) && fxEnt.GetValueForKey("in_skybox") == "0" )
+			continue
+
+		fxEnt.Destroy()
+	}
+}

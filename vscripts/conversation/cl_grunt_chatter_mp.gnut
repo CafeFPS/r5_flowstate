@@ -1,0 +1,61 @@
+global function ServerCallback_PlayGruntChatterMP
+global function ClGruntChatter_MP_Init
+
+struct
+{
+	int currentVoiceIndex = -1 //Start with -1, increment before use so we get 0
+} file
+
+void function ClGruntChatter_MP_Init()
+{
+	AddCreateCallback( "npc_soldier", ClGruntChatter_MP_GruntVoiceIndexInit )
+}
+
+void function IncrementVoiceIndex()
+{
+	++file.currentVoiceIndex
+	if ( file.currentVoiceIndex >= 6 ) //Only 6 voices to use
+		file.currentVoiceIndex = 0
+}
+
+void function ClGruntChatter_MP_GruntVoiceIndexInit( entity grunt )
+{
+	IncrementVoiceIndex()
+	grunt.ai.gruntVoiceIndex = file.currentVoiceIndex
+	//printt( "Assigning voice Index: " + file.currentVoiceIndex + " to grunt: " + grunt )
+}
+
+void function ServerCallback_PlayGruntChatterMP( int conversationIndex, int gruntEHandle )
+{
+	entity grunt = GetEntityFromEncodedEHandle( gruntEHandle )
+	string conversationName = GetConversationName( conversationIndex )
+
+	//Seperate below functionality out into its own function if we have client intiated grunt chatter
+	bool printDebug = GetDialogueDebugLevel() > 0
+
+	if ( printDebug )
+		printt( "ServerCallback_PlayGruntChatterMP: " + conversationName )
+
+	entity player = GetLocalClientPlayer()
+
+	if ( !ShouldPlayGruntChatterMPLine( conversationName, player, grunt ) )
+		return
+
+	int priority = GetConversationPriority( conversationName )
+
+	string alias = GenerateGruntChatterMPAlias( grunt, conversationName )
+
+	PlayOneLinerConversationOnEntWithPriority( conversationName, alias, grunt, priority ) //Could just do an EmitSound here without worrying about priority etc, but done for the sake of consistency
+}
+
+string function GenerateGruntChatterMPAlias( entity grunt, string conversationName )
+{
+	int voiceIndex = grunt.ai.gruntVoiceIndex + 1 //Audio uses 1 based indexing, script uses 0, so adjust here
+	string alias = GetAliasFromConversation( conversationName )
+	string result
+	if ( alias.slice( 0, 3 ) == "bc_" )
+		result = "diag_imc_grunt" + voiceIndex + "_" + alias
+	else
+		result = alias
+	return result
+}

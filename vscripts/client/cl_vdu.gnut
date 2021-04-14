@@ -1,0 +1,45 @@
+global function IsLockedVDU
+global function VideoPanelVDUTest
+
+global enum eVideoPanelPinPositions {
+	TOP_LEFT,
+	TOP_RIGHT,
+	BOTTOM_LEFT,
+	BOTTOM_RIGHT,
+
+	TOP,
+	RIGHT,
+	BOTTOM,
+	LEFT,
+
+	CENTER
+}
+
+global enum eVideoPanelContext {
+	ALL,
+	CLIENT,	// in-game HUD videos
+	UI		// menus/fullscreen videos
+}
+
+void function VideoPanelVDUTest()
+{
+	string video = "vdu_test"
+	string sound = "diag_sp_torture_sk102_01_01_imc_blisk"
+	bool showCaptions = false
+	bool loopEnabled = false
+	bool canBePaused = true
+	PlayVideoScaled( video, eVideoPanelPinPositions.TOP_RIGHT, 151, 253, 240, 135, sound, eVideoPanelContext.CLIENT, showCaptions, loopEnabled, canBePaused )
+
+	// will implement waitsignals if we need them
+	while ( IsPlayingVideo( video ) )
+	{
+		wait 0.1
+	}
+
+	printt( "VDU Video Panel Finished" )
+}
+
+bool function IsLockedVDU()
+{
+	return false
+}

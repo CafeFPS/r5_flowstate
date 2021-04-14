@@ -1,0 +1,247 @@
+#base "_base_ability_tactical.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_BUBBLE_BUNKER"
+	"shortprintname"								"#WPN_BUBBLE_BUNKER_SHORT"
+	"description" 									"#WPN_BUBBLE_BUNKER_DESC"
+	"longdesc" 										"#WPN_BUBBLE_BUNKER_LONGDESC"
+
+	"menu_icon"										"rui/pilot_loadout/suit/hardcover"
+	"hud_icon"										"rui/hud/tactical_icons/tactical_gibraltar"
+
+	"readymessage"              					"#HUD_BURNMETER_READY_BUBBLE_BUNKER"
+	"readyhint"                 					"#HUD_BURNMETER_READY_BUBBLE_BUNKER_HINT"
+
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhand"
+	"is_toss_weapon"								"1"
+	"minimap_reveal_distance"						"32000"
+	"fast_swap_to"									"1"
+	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
+
+    "does_not_interrupt_cloak"							"1"
+    "allow_gibraltar_shield"                        "0"
+
+	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_WeaponBubbleBunker"
+	"OnWeaponTossPrep"								"OnWeaponTossPrep_WeaponBubbleBunker"
+	"OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker"
+	"OnProjectileCollision"							"OnProjectileCollision_weapon_deployable"
+	"OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+	"projectile_ignores_vortex"						"fall_vortex"
+
+
+    "zoom_effects"                                  "0"
+	// Menu Stats
+
+	// Models
+	"viewmodel"										"mdl/weapons/gibraltar_bubbleshield/ptpov_gibraltar_bubbleshield_held.rmdl"
+	"playermodel" 									"mdl/weapons/gibraltar_bubbleshield/w_gibraltar_bubbleshield.rmdl"
+	"projectilemodel" 								"mdl/weapons/gibraltar_bubbleshield/w_gibraltar_bubbleshield.rmdl"
+	"offhand_default_inventory_slot"				"1"
+	"leveled_pickup"								"1"
+
+	"sound_weapon_ready"							"survival_ui_tactical_ready"
+
+	// Effects
+	"bounce_effect_table"							"deployable_cover_bounce_table"
+	"impact_effect_table" 							"exp_deployable_cover"
+	//"projectile_trail_effect_0"						"P_arcTrap_light"
+	//"projectile_trail_attachment" 					"fx_center"
+	"vortex_absorb_effect"							"wpn_vortex_projectile_prox_mine_FP"
+	"vortex_absorb_effect_third_person"				"wpn_vortex_projectile_prox_mine"
+	"vortex_absorb_sound"							"Vortex_Shield_AbsorbBulletLarge"
+	"vortex_absorb_sound_1p_vs_3p"					"Vortex_Shield_AbsorbBulletLarge_1P_VS_3P"
+	"projectile_adjust_to_gun_barrel"				"0"
+	"projectile_adjust_to_hand"						"1"
+
+	"grenade_disc_throw"							"1"
+	"projectile_gravity_scale"						"1"
+
+	"stick_pilot"                                   "0"
+	"stick_titan"                                   "0"
+	"stick_npc"                                     "0"
+
+	"projectile_visible_to_smart_ammo"				"0"
+
+	"critical_hit"									"0"
+
+	// Sounds
+	//"sound_throw_1p"								"Gibraltar_BubbleShield_Throw_1P"
+	"sound_deploy_1p"								"Gibraltar_BubbleShield_Ready_1P"
+	"sound_throw_3p"								"Gibraltar_BubbleShield_Throw_3P"
+	"sound_deploy_3p"								"Gibraltar_BubbleShield_Ready_3P"
+	"sound_grenade_projectile"						""
+	"sound_dryfire"									"Survival_UI_Ability_NotReady"
+
+	// Damage - When Used by Players
+	"damage_type" 									"burn"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+	"damage_near_value_titanarmor"					"0"
+	"damage_far_value_titanarmor" 					"0"
+	"explosion_damage"								"0"
+	"explosion_damage_heavy_armor"					"0"
+	"explosion_inner_radius"  						"250"
+	"explosionradius" 								"450"
+	"impulse_force"   								"0"
+	"explosion_shake_radius"						"0"
+	"explosion_shake_amplitude"						"0"
+	"explosion_shake_frequency"						"0"
+	"explosion_shake_duration"						"0.0"
+
+	"show_grenade_indicator"						"0"
+
+	// Behavior
+	"fire_rate"   									"10.0"
+	"fire_duration"									"15.0"
+	"deploy_time" 									"0.15"
+	"lower_time"  									"0.15"
+	"allow_empty_fire"								"0"
+	"no_ammo_used_on_primary_attack"				"1"
+	"reload_enabled"  								"0"
+	"allow_empty_click"   							"0"
+	"empty_reload_only"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"primary_fire_does_not_block_sprint"			"1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	"grenade_inherit_owner_velocity"				"1"
+	"cooldown_type"									"ammo_timed"
+	//"toss_pullout_time"								"0.8"
+	//"toss_time"									"0.2"
+	//"toss_overhead_time"							"0.2"
+
+
+	"grenade_bounce_vel_frac_shallow"				"0.5"
+	"grenade_bounce_vel_frac_sharp"					"0.3"
+	"grenade_bounce_vel_frac_along_normal"			"0.1"
+	"grenade_bounce_randomness"						"0.05"
+	"grenade_bounce_extra_vertical_randomness"		"0.0"
+	"grenade_roll_vel_frac_per_second"				"0.1"
+	"grenade_radius_vertical"						"5.0"
+	"grenade_radius_horizontal"						"16.0"
+	"projectile_launch_pitch_offset"				"2"
+
+	// Spread
+
+	"ammo_suck_behavior"							"offhand_weapons"
+
+	// View Kick
+	"viewkick_spring" 								"pistol"
+
+	"ammo_drains_to_empty_on_fire"					"0"
+
+	MP_BASE
+	{
+		"ammo_clip_size"   								"100"
+		"ammo_default_total"							"100"
+		"ammo_display"									"count"
+		"ammo_min_to_fire"								"100"
+		"ammo_per_shot"									"100"
+		"ammo_stockpile_max"							"100"
+		"regen_ammo_refill_rate"						"5"
+		"regen_ammo_refill_start_delay"					"0.0"
+
+		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+	}
+
+	SP_BASE
+	{
+		"ammo_clip_size"   								"100"
+		"ammo_default_total"							"100"
+		"ammo_display"									"bar"
+		"ammo_min_to_fire"								"100"
+		"ammo_per_shot"									"100"
+		"ammo_stockpile_max"							"100"
+		"regen_ammo_refill_rate"						"2"
+		"regen_ammo_refill_start_delay"					"0.0"
+
+		"enable_highlight_networking_on_creation"		"1"
+	}
+
+	// Bob
+
+
+	// Rumble
+	"rumble"  										"3"
+
+	// Sway
+
+	// NPC
+
+	"clip_bodygroup"						"projectile"
+    "clip_bodygroup_index_shown"			"0"
+    "clip_bodygroup_index_hidden"			"1"
+    "clip_bodygroup_show_for_milestone_0"	"1"
+    "clip_bodygroup_show_for_milestone_1"	"0"
+    "clip_bodygroup_show_for_milestone_2"	"1"
+    "clip_bodygroup_show_for_milestone_3"	"1"
+
+	// WeaponED Unhandled Key/Values and custom script Key/Values
+	"fire_anim_rate"  								"1"
+
+	Mods
+	{
+	    survival_armor_cooldown_mod
+        {
+            "regen_ammo_refill_rate"    "*1.25"
+        }
+
+	    burn_card_weapon_mod
+        {
+
+        }
+
+        survival_finite_ordnance
+        {
+
+        }
+	}
+
+	active_crosshair_count				"2"
+	rui_crosshair_index					"0"
+
+	"ordnance_crosshair_always_on_start_index"	"1"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+		    crosshairMovementX          crosshair_movement_x
+		    crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_mine"
+			"base_spread"				"0.0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+
+
+		Crosshair_2
+		{
+			"ui"						"ui/crosshair_tactical"
+			Args
+			{
+			    regenRate               "eWeaponVar.regen_ammo_refill_rate"
+			    ammoFrac                "progress_weapon_clip_ammo_frac"
+			    dryfireTime             "weapon_latest_dryfire_time"
+			}
+		}
+	}
+}

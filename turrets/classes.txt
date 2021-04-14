@@ -1,0 +1,9 @@
+classes
+{
+	import	redeye_turret.txt
+	import	redeye_turret_ai.txt
+	import	droppod_fireteam_turret.txt
+	import	turret_imc_lrg.txt
+	import  PROTO_at_turret.txt
+	import  sat_strike_turret.txt
+}

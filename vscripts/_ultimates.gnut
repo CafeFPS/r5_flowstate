@@ -1,0 +1,171 @@
+global function Ultimates_RegisterNetworking
+
+#if SERVER
+global function Ultimates_Init
+global function Ultimates_OnPlayerDealtDamage
+global function Ultimates_OnPlayerRespawned
+#endif // SERVER
+
+#if CLIENT
+global function SCB_OnUltimateReady
+#endif // CLIENT
+
+
+const string FUNCNAME_OnUltimateReady = "SCB_OnUltimateReady"
+void function Ultimates_RegisterNetworking()
+{
+	Remote_RegisterClientFunction( FUNCNAME_OnUltimateReady )
+}
+
+
+#if SERVER
+bool s_chargeFromDamageIsEnabled =			false
+float s_damageDeliveredToUltimateRatio =	0.0
+float s_damageTakenToUltimateRatio =		0.0
+
+bool s_chargeOverTimeIsEnabled =			true
+
+
+void function Ultimates_Init()
+{
+	AddCallback_OnPlayerRespawned( UltimateCharge_OnPlayerRespawned )
+
+	// Charge from damage:
+	{
+		const string PLVAR_DMG_ENABLED = "ultimates_chargefromdamage_enabled"
+		s_chargeFromDamageIsEnabled = GetCurrentPlaylistVarBool( PLVAR_DMG_ENABLED, false )
+		printf( "%s() - Playlist var '%s' is %s.", FUNC_NAME(), PLVAR_DMG_ENABLED, string( s_chargeFromDamageIsEnabled ) )
+		if ( s_chargeFromDamageIsEnabled )
+		{
+			// damage delivered:
+			{
+				const string PLVAR_RATIO_ATTACKER = "ultimates_chargefromdamage_ratio_attacker"
+				float varAttacker = GetCurrentPlaylistVarFloat( PLVAR_RATIO_ATTACKER, 0.0 )
+				s_damageDeliveredToUltimateRatio = (varAttacker == 0.0) ? 0.0 : (1.0 / varAttacker)
+				printf( "    '%s' is %.1f", PLVAR_RATIO_ATTACKER, varAttacker )
+			}
+
+			// damage taken:
+			{
+				const string PLVAR_RATIO_VICTIM = "ultimates_chargefromdamage_ratio_victim"
+				float varVictim = GetCurrentPlaylistVarFloat( PLVAR_RATIO_VICTIM, 0.0 )
+				s_damageTakenToUltimateRatio = (varVictim == 0.0) ? 0.0 : (1.0 / varVictim)
+				printf( "    '%s' is %.1f", PLVAR_RATIO_VICTIM, varVictim )
+			}
+
+			AddDamageFinalCallback( "player", UltimateCharge_OnPlayerDamaged )
+		}
+	}
+
+	// Charge over time:
+	{
+		const string PLVAR_TIME_ENABLED = "ultimates_chargeovertime_enabled"
+		s_chargeOverTimeIsEnabled = GetCurrentPlaylistVarBool( PLVAR_TIME_ENABLED, true )
+		printf( "%s() - Playlist var '%s' is %s.", FUNC_NAME(), PLVAR_TIME_ENABLED, string( s_chargeOverTimeIsEnabled ) )
+	}
+}
+
+void function Ultimates_OnPlayerRespawned( entity player )
+{
+	printf( "%s() - s_chargeOverTimeIsEnabled:%s", FUNC_NAME(), string( s_chargeOverTimeIsEnabled ) )
+	if ( !s_chargeOverTimeIsEnabled )
+	{
+		array mods = player.GetExtraWeaponMods()
+		mods.append( "ultimates_charge_over_time_disabled" )
+		player.SetExtraWeaponMods( mods )
+	}
+}
+
+void function Ultimates_OnPlayerDealtDamage( entity player, entity victim, int healthDamage, int shieldDamage )
+{
+	if ( s_chargeFromDamageIsEnabled )
+		UltimateChargeOnPlayerDealtDamage( player, victim, healthDamage, shieldDamage )
+}
+
+/////////////////
+/////////////////
+void function AddChargeToUltimate( entity player, int newCharge )
+{
+	if ( newCharge < 0 )
+		return
+
+	entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if ( !IsValid( ultimateAbility ) )
+		return
+
+	int ammoNow = ultimateAbility.GetWeaponPrimaryClipCount()
+	int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
+	if ( ammoNow >= ammoMax )
+		return
+
+	int ammoFinal = minint( (ammoNow + newCharge), ammoMax )
+	ultimateAbility.SetWeaponPrimaryClipCount( ammoFinal )
+	if ( ammoFinal == ammoMax )
+		Remote_CallFunction_NonReplay( player, FUNCNAME_OnUltimateReady )
+}
+
+void function UltimateChargeOnPlayerDealtDamage( entity player, entity victim, int healthDamage, int shieldDamage )
+{
+	if ( player == victim )
+		return
+
+	float newCharge = s_damageDeliveredToUltimateRatio * float (healthDamage + shieldDamage)
+	player.p.ultimateStoredChargeFromDamageGiven += newCharge
+	int storedReady = int( player.p.ultimateStoredChargeFromDamageGiven )
+	player.p.ultimateStoredChargeFromDamageGiven -= float( storedReady )
+	AddChargeToUltimate( player, storedReady )
+
+	printf( "%s() - '%s' did (%d + %d) damage to '%s' for %.2f ultimate charge.", FUNC_NAME(), string( player ), healthDamage, shieldDamage, string( victim ), newCharge )
+}
+
+void function UltimateCharge_OnPlayerDamaged( entity player, var damageInfo )
+{
+	Assert( s_chargeFromDamageIsEnabled )
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( player == attacker )
+		return
+	if ( !IsValid( attacker ) )
+		return
+
+	if ( !attacker.IsPlayer() && !attacker.IsNPC() )
+		return
+
+	float damageRaw = DamageInfo_GetDamage( damageInfo )
+	float damage = min( damageRaw, player.GetHealth() )
+	float newCharge = (s_damageTakenToUltimateRatio * damage)
+	player.p.ultimateStoredChargeFromDamageTaken += newCharge
+	int storedReady = int( player.p.ultimateStoredChargeFromDamageTaken )
+	player.p.ultimateStoredChargeFromDamageTaken -= float( storedReady )
+	AddChargeToUltimate( player, storedReady )
+
+	printf( "%s() - '%s' took %.2f damage from attacker '%s' for %.2f ultimate charge.", FUNC_NAME(), string( player ), damage, string( attacker ), newCharge )
+}
+
+void function UltimateCharge_OnPlayerRespawned( entity player )
+{
+	player.p.ultimateStoredChargeFromDamageGiven = 0.0
+	player.p.ultimateStoredChargeFromDamageTaken = 0.0
+}
+
+#endif // #if SERVER
+
+
+#if CLIENT
+void function SCB_OnUltimateReady()
+{
+	entity player = GetLocalViewPlayer()
+	if ( !IsAlive( player ) )
+		return
+
+	entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if ( !IsValid( ultimateAbility ) )
+		return
+
+	string readySound = ultimateAbility.GetWeaponSettingString( eWeaponVar.sound_weapon_ready )
+	if ( readySound == "" )
+		readySound = "survival_ui_ultimate_ready"
+	asset icon = ultimateAbility.GetWeaponSettingAsset( eWeaponVar.hud_icon )
+	string details = IsControllerModeActive() ? "Press %offhand1% + %ping%" : "Press %offhand4%"
+	AnnouncementMessageSweep( player, "Ultimate is Ready", details, <255,135,10>, icon, readySound, 3.0 )
+}
+#endif // CLIENT

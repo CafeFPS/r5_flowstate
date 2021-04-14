@@ -1,0 +1,181 @@
+// "Gamematerial" "effect_name"
+
+// "B" bloodyflesh
+// "X" plastic box, wade, ladder, woodladdder,
+// "I" player_control_clip
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"none"
+		"whizby_sound_from_AI"		"none"
+	}
+
+	FX
+	{
+		"C" "P_impact_exp_XLG_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_exp_XLG_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_exp_XLG_metal" // metal_titan
+
+		"F" "P_impact_exp_XLG_metal" //flesh
+		"G" "P_impact_exp_XLG_metal" //metalgrate, chainlink, chain
+		"H" "P_impact_exp_XLG_concrete" //alienflesh
+
+		"J" "P_impact_exp_XLG_dirt" //grass
+		"K" "P_impact_exp_XLG_concrete" //Mud
+		"L" "P_impact_exp_XLG_metal" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_exp_XLG_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_exp_XLG_slime" //Slime
+		"O" "P_impact_exp_XLG_dirt" //Foliage
+		"P" "P_impact_exp_XLG_metal" //Computer
+
+		"R" "P_impact_exp_XLG_metal" //metalpanel, grenade, canister
+		"S" "P_impact_exp_XLG_water" //water, slime
+		"T" "P_impact_exp_XLG_concrete" //tile
+		"U" "P_impact_exp_XLG_metal" //glass_breakble
+
+		"V" "P_impact_exp_XLG_metal" //Metal Vent
+		"W" "P_impact_exp_XLG_metal" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "P_impact_exp_XLG_metal" //glass, brokenglass, glassbottle, pottery
+		"X"	"P_impact_exp_XLG_air"
+		"Z" "P_impact_exp_XLG_sand"  //sand
+
+		"0" "P_impact_exp_XLG_concrete"
+		"1" "P_impact_exp_XLG_concrete"
+		"2" "P_impact_exp_XLG_concrete"
+		"3" "P_impact_exp_XLG_concrete"
+		"4" "P_impact_exp_XLG_concrete"
+		"5" "P_impact_exp_XLG_concrete"
+		"6" "P_impact_exp_XLG_concrete"
+		"7" "P_impact_exp_XLG_concrete"
+		"8" "P_impact_exp_XLG_concrete"
+		"9" "P_impact_exp_XLG_water" //puddle
+
+		"splash" "P_impact_exp_XLG_water"
+		"slime_splash" "P_impact_exp_XLG_slime"
+
+		"shieldhit" "P_impact_exp_XLG_metal"
+		"airburst" "P_impact_exp_XLG_air"
+		"critical_hit" "P_impact_exp_XLG_metal"
+	}
+
+	///This is 2nd set of impacts for shield fx to play with explosion
+	FX
+	{
+		"shieldhit" "P_xo_armor_impact_EXP"
+	}
+
+
+	Sound
+	{
+		"C" "Wpn_TetherTrap_Explode"
+		"D" "Wpn_TetherTrap_Explode"
+		"E" "Wpn_TetherTrap_Explode"
+
+		"F" "Wpn_TetherTrap_Explode"
+		"G" "Wpn_TetherTrap_Explode"
+		"H" "Wpn_TetherTrap_Explode"
+
+		"J" "Wpn_TetherTrap_Explode"
+		"K" "Wpn_TetherTrap_Explode"
+		"L" "Wpn_TetherTrap_Explode"
+		"M" "Wpn_TetherTrap_Explode"
+		"N" "Wpn_TetherTrap_Explode"
+		"O" "Wpn_TetherTrap_Explode"
+		"P" "Wpn_TetherTrap_Explode"
+
+		"R" "Wpn_TetherTrap_Explode"
+		"S" "Wpn_TetherTrap_Explode"
+		"T" "Wpn_TetherTrap_Explode"
+		"U" "Wpn_TetherTrap_Explode"
+
+		"V" "Wpn_TetherTrap_Explode"
+		"W" "Wpn_TetherTrap_Explode"
+		"X"	"Wpn_TetherTrap_Explode"
+		"Y" "Wpn_TetherTrap_Explode"
+		"Z" "Wpn_TetherTrap_Explode"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Wpn_TetherTrap_Explode"
+		"shieldhit" "Wpn_TetherTrap_Explode"
+	}
+
+	Sound_attacker
+	{
+		"C" "Wpn_TetherTrap_Explode"
+		"D" "Wpn_TetherTrap_Explode"
+		"E" "Wpn_TetherTrap_Explode"
+
+		"F" "Wpn_TetherTrap_Explode"
+		"G" "Wpn_TetherTrap_Explode"
+		"H" "Wpn_TetherTrap_Explode"
+
+		"J" "Wpn_TetherTrap_Explode"
+		"K" "Wpn_TetherTrap_Explode"  // mud?
+		"L" "Wpn_TetherTrap_Explode"
+		"M" "Wpn_TetherTrap_Explode"
+		"N" "Wpn_TetherTrap_Explode"	// sand?
+		"O" "Wpn_TetherTrap_Explode"
+		"P" "Wpn_TetherTrap_Explode"
+
+		"R" "Wpn_TetherTrap_Explode"
+		"S" "Wpn_TetherTrap_Explode"
+		"T" "Wpn_TetherTrap_Explode"
+		"U" "Wpn_TetherTrap_Explode"
+
+		"V" "Wpn_TetherTrap_Explode"
+		"W" "Wpn_TetherTrap_Explode"
+		"X"	"Wpn_TetherTrap_Explode"
+		"Y" "Wpn_TetherTrap_Explode"
+		"Z" "Wpn_TetherTrap_Explode"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Wpn_TetherTrap_Explode"
+		"shieldhit" "Wpn_TetherTrap_Explode"
+	}
+
+	Sound_victim
+	{
+		"C" "Wpn_TetherTrap_Explode"
+		"D" "Wpn_TetherTrap_Explode"
+		"E" "Wpn_TetherTrap_Explode"
+
+		"F" "Wpn_TetherTrap_Explode"
+		"G" "Wpn_TetherTrap_Explode"
+		"H" "Wpn_TetherTrap_Explode"
+
+		"J" "Wpn_TetherTrap_Explode"
+		"K" "Wpn_TetherTrap_Explode"
+		"L" "Wpn_TetherTrap_Explode"
+		"M" "Wpn_TetherTrap_Explode"
+		"N" "Wpn_TetherTrap_Explode"
+		"O" "Wpn_TetherTrap_Explode"
+		"P" "Wpn_TetherTrap_Explode"
+
+		"R" "Wpn_TetherTrap_Explode"
+		"S" "Wpn_TetherTrap_Explode"
+		"T" "Wpn_TetherTrap_Explode"
+		"U" "Wpn_TetherTrap_Explode"
+
+		"V" "Wpn_TetherTrap_Explode"
+		"W" "Wpn_TetherTrap_Explode"
+		"X"	"Wpn_TetherTrap_Explode"
+		"Y" "Wpn_TetherTrap_Explode"
+		"Z" "Wpn_TetherTrap_Explode"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Wpn_TetherTrap_Explode"
+		"shieldhit" "Wpn_TetherTrap_Explode"
+	}
+
+
+}
+

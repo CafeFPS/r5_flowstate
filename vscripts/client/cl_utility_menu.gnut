@@ -1,0 +1,717 @@
+untyped
+
+const string MENU_COLOR_CORRECTION = "materials/correction/menu.raw"
+
+global function CLUtilityMenu_Init
+
+global function HudElement
+global function ClientCodeCallback_GetContentScaleFactor
+global function ContentScaledX
+global function ContentScaledY
+global function Anim_EaseIn
+global function Anim_EaseOut
+
+global function VisGroup_Init
+global function VisGroup_AddElement
+global function VisGroup_Show
+global function VisGroup_Hide
+
+global function UIToClient_SettingsUpdated
+global function AddCallback_OnSettingsUpdated
+
+global function SetMenuOpenState
+
+table _visGroupStates = {}
+
+global var HudElementGroup = null
+
+global struct VisGroup
+{
+	int visGroupID
+	table<string, var> hudElements
+}
+
+struct
+{
+	array<void functionref()> settingsUpdatedCallbacks
+	int menuColorCorrection = -1
+} file
+
+void function VisGroup_Init( VisGroup visGroup )
+{
+	visGroup.visGroupID = CreateVisGroup()
+}
+
+void function VisGroup_AddElement( VisGroup visGroup, var elem )
+{
+	//Assert( hudElem instanceof HudElement )
+	Assert( elem.GetVisGroupID() <= 0 )
+
+	string name = Hud_GetHudName( elem )
+
+	Assert( !(name in visGroup.hudElements), name + " already in menu!" )
+	visGroup.hudElements[name] <- elem
+
+	elem.SetVisGroupID( visGroup.visGroupID )
+	elem.UpdateVisibility()
+}
+
+void function VisGroup_Show( VisGroup visGroup )
+{
+	foreach ( hudElement in visGroup.hudElements )
+		hudElement.UpdateVisibility()
+}
+
+void function VisGroup_Hide( VisGroup visGroup )
+{
+	foreach ( hudElement in visGroup.hudElements )
+		hudElement.UpdateVisibility()
+}
+
+void function CLUtilityMenu_Init()
+{
+	file.menuColorCorrection = ColorCorrection_Register( MENU_COLOR_CORRECTION )
+
+	AddLocalPlayerFunc( SetDefaultBloomScale )
+
+	level.hudElements <- {}
+
+	// make the default visgroup
+	VisGroup_Init( clGlobal.menuVisGroup )
+
+
+	class HudElementGroup
+	{
+		groupName = null
+		elements = null
+		elementsArray = null
+		isVisible = null
+		ownerHud = null
+		parentMenu = null	// the CMenu or CHudMenu that owns us; if this is non-null "Show()" and "Hide()" behave differently
+		hideWithMenus = null
+
+		constructor( groupName, ownerHud = null )
+		{
+			if ( ownerHud == null )
+				ownerHud = Hud
+
+			this.groupName = groupName
+			this.ownerHud = ownerHud
+
+			this.elements = {}
+			this.elementsArray = []
+
+			this.isVisible = false
+
+			this.parentMenu = -1
+		}
+
+		function SetVisGroupID( visParentID )
+		{
+			this.parentMenu = visParentID
+		}
+
+		function HideWithMenus( state )
+		{
+			this.hideWithMenus = state
+
+			if ( !this.hideWithMenus && this.groupName in level.menuHideGroups )
+			{
+				delete level.menuHideGroups[this.groupName]
+				this.parentMenu = null
+			}
+			else if ( this.hideWithMenus && !(this.groupName in level.menuHideGroups) )
+			{
+				level.menuHideGroups[this.groupName] <- this
+				this.parentMenu = GetLocalViewPlayer()
+			}
+		}
+
+		function AddElement( hudElem )
+		{
+			//Assert( hudElem instanceof HudElement )
+			//Assert( hudElem.ownerHud == this.ownerHud )
+
+			string name = Hud_GetHudName( hudElem )
+
+			Assert( !(name in this.elements) )
+			this.elements[name] <- hudElem
+			this.elementsArray.append( hudElem )
+
+			if ( this.parentMenu != -1 )
+			{
+				hudElem.SetVisGroupID( this.parentMenu )
+				hudElem.UpdateVisibility()
+			}
+		}
+
+		function RemoveAllElements()
+		{
+			this.elements = {}
+			this.elementsArray = []
+		}
+
+		function AddGroup( group )
+		{
+			Assert( group instanceof HudElementGroup )
+			local elems = group.GetElements()
+			foreach ( elem in elems )
+			{
+				//Assert( elem.ownerHud == this.ownerHud )
+				this.AddElement( elem )
+			}
+		}
+
+		function CreateElement( name, _ownerHud = null )
+		{
+			if ( _ownerHud == null )
+				_ownerHud = this.ownerHud
+			Assert( !(name in this.elements), "hud element already exists " + name )
+			this.elements[name] <- HudElement( name, _ownerHud )
+			this.elementsArray.append( this.elements[name] )
+
+			if ( this.parentMenu != -1 )
+			{
+				this.elements[name].SetVisGroupID( this.parentMenu )
+				this.elements[name].UpdateVisibility()
+			}
+
+			return this.elements[name]
+		}
+
+		function GetOrCreateElement( name, _ownerHud = null )
+		{
+			if ( _ownerHud == null )
+				_ownerHud = this.ownerHud
+			Assert( !(name in this.elements), "hud element already exists " + name )
+			this.elements[name] <- _ownerHud.GetOrCreateHudElement( name )
+			this.elementsArray.append( this.elements[name] )
+
+			if ( this.parentMenu != -1 )
+			{
+				this.elements[name].SetVisGroupID( this.parentMenu )
+				this.elements[name].UpdateVisibility()
+			}
+
+			return this.elements[name]
+		}
+
+		function SetClampToScreen( state )
+		{
+			foreach ( element in this.elements )
+				Hud_SetClampToScreen( element, state )
+		}
+
+		function SetWorldSpaceScale( minScale, maxScale, minScaleDist, maxScaleDist )
+		{
+			foreach ( element in this.elements )
+				Hud_SetWorldSpaceScale( element, minScale, maxScale, minScaleDist, maxScaleDist )
+		}
+
+		function SetADSFade( mindot, maxdot, minAlpha, maxAlpha )
+		{
+			foreach ( element in this.elements )
+				Hud_SetADSFade( element, mindot, maxdot, minAlpha, maxAlpha )
+		}
+
+		function SetFOVFade( mindot, maxdot, minAlpha, maxAlpha )
+		{
+			foreach ( element in this.elements )
+				Hud_SetFOVFade( element, mindot, maxdot, minAlpha, maxAlpha )
+		}
+
+		function SetDistanceFade( minDist, maxDist, minAlpha, maxAlpha )
+		{
+			foreach ( element in this.elements )
+				Hud_SetDistanceFade( element, minDist, maxDist, minAlpha, maxAlpha )
+		}
+
+		function SetPulsate( minAlpha, maxAlpha, frequency )
+		{
+			foreach ( element in this.elements )
+				Hud_SetPulsate( element, minAlpha, maxAlpha, frequency )
+		}
+
+		function ClearPulsate()
+		{
+			foreach ( element in this.elements )
+				Hud_ClearPulsate( element )
+		}
+
+		function SetEntity( ent, offset = <0,0,0>, screenXOffset = 0, screenYOffset = 0 )
+		{
+			foreach ( element in this.elements )
+				Hud_SetEntity( element, ent, offset, screenXOffset, screenYOffset )
+		}
+
+		function SetEntityOverhead( ent, offset = <0,0,0>, screenXOffset = 0, screenYOffset = 0 )
+		{
+			foreach ( element in this.elements )
+				Hud_SetEntityOverhead( element, ent, offset, screenXOffset, screenYOffset )
+		}
+
+		function Show()
+		{
+			foreach ( element in this.elements )
+				Hud_Show( element )
+		}
+
+		function Hide()
+		{
+			foreach ( element in this.elements )
+			{
+				Hud_Hide( element )
+			}
+		}
+
+		function UpdateVisibility()
+		{
+			foreach ( element in this.elements )
+				Hud_UpdateVisibility( element )
+		}
+
+		function IsVisible()
+		{
+			foreach ( element in this.elements )
+				return Hud_IsVisible( element )
+		}
+
+		function GetBaseAlpha()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetBaseAlpha( element )
+		}
+
+		function GetBaseSize()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetBaseSize( element )
+		}
+
+		function GetBaseHeight()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetBaseHeight( element )
+		}
+
+		function GetBaseWidth()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetBaseWidth( element )
+		}
+
+		function GetBaseX()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetBaseX( element )
+		}
+
+		function GetBaseY()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetBaseY( element )
+		}
+
+		function GetX()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetX( element )
+		}
+
+		function GetY()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetY( element )
+		}
+
+		function GetAbsX()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetAbsX( element )
+		}
+
+		function GetAbsY()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetAbsY( element )
+		}
+
+		function SetColor( arg0 = null, arg1 = null, arg2 = null, arg3 = null )
+		{
+			if ( ( arg0 != null ) && ( arg1 == null ) && ( arg2 == null ) && ( arg3 == null ) )
+			{
+				foreach ( element in this.elements )
+					Hud_SetColor( element, arg0 )
+			}
+			else if ( ( arg0 != null ) && ( arg1 != null ) && ( arg2 != null ) && ( arg3 != null ) )
+			{
+				local args = [arg0, arg1, arg2, arg3]
+
+				foreach ( element in this.elements )
+					Hud_SetColor( element, args )
+			}
+			else
+			{
+				Assert( 0, "Wrong number of arguments" )
+			}
+		}
+
+		function SetText( text, arg0=null, arg1=null, arg2=null, arg3=null, arg4=null )
+		{
+			foreach ( element in this.elements )
+				Hud_SetText( element, text, arg0, arg1, arg2, arg3, arg4 )
+		}
+
+		function SetTextTypeWriter( text, duration )
+		{
+			foreach ( element in this.elements )
+				Hud_SetTextTypeWriter( element, text, duration )
+		}
+
+		function SetSize( width, height )
+		{
+			foreach ( element in this.elements )
+				Hud_SetSize( element, width, height )
+		}
+
+		function SetScale( wScale, hScale )
+		{
+			foreach ( element in this.elements )
+				Hud_SetScale( element, wScale, hScale )
+		}
+
+		function GetTextWidth()
+		{
+			// just returns the width of the first element in the group
+			foreach ( element in this.elements )
+				return Hud_GetTextWidth( element )
+		}
+
+		function SetPos( x, y )
+		{
+			foreach ( element in this.elements )
+				Hud_SetPos( element, x, y )
+		}
+
+		function SetBasePos( x, y )
+		{
+			foreach ( element in this.elements )
+				Hud_SetBasePos( element, x, y )
+		}
+
+		function SetX( x )
+		{
+			foreach ( element in this.elements )
+				Hud_SetX( element, x )
+		}
+
+		function SetY( y )
+		{
+			foreach ( element in this.elements )
+				Hud_SetY( element, y )
+		}
+
+		function SetBaseSize( width, height )
+		{
+			foreach ( element in this.elements )
+				Hud_SetBaseSize( element, width, height )
+		}
+
+		function GetBasePos()
+		{
+			// just returns the position of the first element in the group
+			foreach ( element in this.elementsArray )
+				return Hud_GetBasePos( element )
+		}
+
+		function GetWidth()
+		{
+			// just returns the width of the first element in the group
+			foreach ( element in this.elementsArray )
+				return Hud_GetWidth( element )
+		}
+
+		function GetHeight()
+		{
+			// just returns the width of the first element in the group
+			foreach ( element in this.elementsArray )
+				return Hud_GetHeight( element )
+		}
+
+		function GetPos()
+		{
+			// just returns the position of the first element in the group
+			foreach ( element in this.elementsArray )
+				return Hud_GetPos( element )
+		}
+
+		function GetAbsPos()
+		{
+			foreach ( element in this.elements )
+				return Hud_GetAbsPos( element )
+		}
+
+		function ReturnToBasePos()
+		{
+			foreach ( element in this.elements )
+				Hud_ReturnToBasePos( element )
+		}
+
+		function ReturnToBaseSize()
+		{
+			foreach ( element in this.elements )
+				Hud_ReturnToBaseSize( element )
+		}
+
+		function ReturnToBaseColor()
+		{
+			foreach ( element in this.elements )
+				Hud_ReturnToBaseColor( element )
+		}
+
+		function SetAlpha( alpha )
+		{
+			foreach ( element in this.elements )
+				Hud_SetAlpha( element, alpha )
+		}
+
+		function GetElements()
+		{
+			return this.elements
+		}
+
+		function GetElementsArray()
+		{
+			return this.elementsArray
+		}
+
+		function SetOrigin( origin )
+		{
+			foreach ( element in this.elements )
+				Hud_SetOrigin( element, origin )
+		}
+
+		function MoveOverTime( x, y, duration, interpolator = 0 )
+		{
+			foreach ( element in this.elements )
+				Hud_MoveOverTime( element, x, y, duration, interpolator )
+		}
+
+		function OffsetYOverTime( y, duration, interpolator = 0 )
+		{
+			foreach ( element in this.elements )
+				Hud_MoveOverTime( element, element.GetBaseX(), element.GetBaseY() + y, duration, interpolator )
+		}
+
+		function FadeOverTime( alpha, duration, interpolator = 0 )
+		{
+			foreach ( element in this.elements )
+				Hud_FadeOverTime( element, alpha, duration, interpolator )
+		}
+
+		function HideOverTime( duration, interpolator = 0 )
+		{
+			foreach ( element in this.elements )
+				Hud_HideOverTime( element, duration, interpolator )
+		}
+
+		function FadeOverTimeDelayed( alpha, duration, delay )
+		{
+			foreach ( element in this.elements )
+				Hud_FadeOverTimeDelayed( element, alpha, duration, delay )
+		}
+
+		function OffsetX( offset )
+		{
+			foreach ( element in this.elements )
+				Hud_OffsetX( element, offset )
+		}
+
+		function SetImage( material )
+		{
+			foreach ( element in this.elements )
+				Hud_SetImage( element, material )
+		}
+
+		function SetBaseColor( r, g, b, a )
+		{
+			foreach ( element in this.elements )
+				Hud_SetBaseColor( element, r, g, b, a )
+		}
+
+		function FadePanelOverTime( a, duration )
+		{
+			foreach ( element in this.elements )
+				element.FadePanelOverTime( a, duration )
+		}
+	}
+}
+
+function HudElement( name, ownerHud = null )
+{
+	if ( ownerHud == null || ownerHud == Hud )
+	{
+		ownerHud = Hud
+
+		if ( name in level.hudElements )
+		{
+			return level.hudElements[name]
+		}
+
+		level.hudElements[name] <- ownerHud.HudElement( name )
+		return level.hudElements[name]
+	}
+	else
+	{
+		return ownerHud.HudElement( name )
+	}
+}
+
+table<int, float> function ClientCodeCallback_GetContentScaleFactor()
+{
+	UIScaleFactor scaleFactor = GetContentScaleFactor( Hud )
+
+	table<int, float> scaleFactorTable // TODO: Change type code expects. It expects table for now.
+	scaleFactorTable[0] <- scaleFactor.x
+	scaleFactorTable[1] <- scaleFactor.y
+
+	return scaleFactorTable
+}
+
+function ContentScaledX( val )
+{
+	return val * GetContentScaleFactor( Hud ).x
+}
+
+function ContentScaledY( val )
+{
+	return val * GetContentScaleFactor( Hud ).y
+}
+
+enum Interpolators_e
+{
+	INTERPOLATOR_LINEAR,
+	INTERPOLATOR_ACCEL,
+	INTERPOLATOR_DEACCEL,
+	INTERPOLATOR_PULSE,
+	INTERPOLATOR_FLICKER,
+	INTERPOLATOR_SIMPLESPLINE, // ease in / out
+	INTERPOLATOR_BOUNCE,	   // gravitational bounce
+
+	INTERPOLATOR_COUNT,
+}
+
+function GetInterpolationFunc( interpolator )
+{
+	switch ( interpolator )
+	{
+		case Interpolators_e.INTERPOLATOR_LINEAR:
+			return Anim_Linear
+		case Interpolators_e.INTERPOLATOR_ACCEL:
+			return Anim_EaseIn
+		case Interpolators_e.INTERPOLATOR_DEACCEL:
+			return Anim_EaseOut
+		case Interpolators_e.INTERPOLATOR_PULSE:
+			return Anim_Linear
+		case Interpolators_e.INTERPOLATOR_FLICKER:
+			return Anim_Linear
+		case Interpolators_e.INTERPOLATOR_SIMPLESPLINE:
+			return Anim_SCurve
+		case Interpolators_e.INTERPOLATOR_BOUNCE:
+			return Anim_Linear
+		default:
+			break
+	}
+}
+
+function Anim_Linear( x )
+{
+	return x
+}
+
+function Anim_EaseInSlow( x )
+{
+	x = x - 1
+	return 1 - (pow( x, 2 ))
+}
+
+function Anim_EaseIn( x )
+{
+	x = x - 1
+	return 1 - (pow( x, 6 ))
+}
+
+function Anim_EaseOut( x )
+{
+	return pow( x, 6 )
+}
+
+function Anim_SCurve( x )
+{
+	return x*x*(3 - 2*x)
+}
+
+function Anim_SCurve2( x )
+{
+	return x*x*x*(10 + x*(6*x - 15))
+}
+
+function Anim_Sin( x )
+{
+	return (1 - cos( PI*x )) / 2
+}
+
+void function UIToClient_SettingsUpdated()
+{
+	foreach ( callbackFunc in file.settingsUpdatedCallbacks )
+	{
+		callbackFunc()
+	}
+}
+
+void function AddCallback_OnSettingsUpdated( void functionref() callbackFunc )
+{
+	Assert( !file.settingsUpdatedCallbacks.contains( callbackFunc ) )
+	file.settingsUpdatedCallbacks.append( callbackFunc )
+}
+
+void function SetDefaultBloomScale( entity player )
+{
+	if ( IsLobby() )
+		player.ClientCommand( "mat_bloomscale 0.5" )
+	else
+		player.ClientCommand( "mat_bloomscale 1.0" )
+}
+
+void function SetMenuOpenState( int state )
+{
+	clGlobal.isMenuOpen = (state == 1)
+	clGlobal.lastMenuToggleTime = Time()
+	if ( !IsLobby() )
+	{
+		bool wasSoloDialogMenuOpen = clGlobal.isSoloDialogMenuOpen
+
+		clGlobal.isSoloDialogMenuOpen = (state == 2)
+		if ( clGlobal.isSoloDialogMenuOpen != wasSoloDialogMenuOpen )
+			UpdateMainHudVisibility( GetLocalClientPlayer() )
+
+		if ( clGlobal.isMenuOpen )
+		{
+			ColorCorrection_SetExclusive( file.menuColorCorrection, true )
+			ColorCorrection_SetWeight( file.menuColorCorrection, 1.0 )
+
+			SetMapSetting_FogEnabled( false )
+		}
+		else
+		{
+			DoF_SetNearDepthToDefault()
+			DoF_SetFarDepthToDefault()
+			DoFSetDilateInfocus( false )
+
+			ColorCorrection_SetWeight( file.menuColorCorrection, 0.0 )
+			ColorCorrection_SetExclusive( file.menuColorCorrection, false )
+
+			SetMapSetting_FogEnabled( true )
+		}
+	}
+}

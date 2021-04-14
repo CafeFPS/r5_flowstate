@@ -1,0 +1,29 @@
+
+global function ClMusic_Init
+
+struct
+{
+
+} file
+
+void function ClMusic_Init()
+{
+	RegisterServerVarChangeCallback( "gameState", GameStateChanged )
+}
+
+void function GameStateChanged()
+{
+	/*
+	switch ( GetGameState() )
+	{
+		case eGameState.Prematch:
+			break
+		case eGameState.SuddenDeath:
+			break
+		case eGameState.SwitchingSides:
+			break
+		case eGameState.WinnerDetermined:
+			break
+	}
+	*/
+}

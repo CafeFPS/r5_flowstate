@@ -1,0 +1,378 @@
+global function CloneScriptDamageInfo
+global function GetWeaponClassNameFromDamageInfo
+global function GetWeaponClassNameFromDamageInfoClone
+
+
+global function IsInstantDeath
+global function IsTitanCrushDamage
+global function IsMaxRangeShot
+global function IsMidRangeShot
+global function IsSuicide
+
+#if SERVER
+global function CritWeaponInDamageInfo
+global function GetCriticalScaler
+global function HeavyArmorCriticalHitRequired
+global function IsValidHeadShot
+global function IsLegDamage
+#endif
+
+#if CLIENT
+global function ServerCallback_QuickDeathRumble
+#endif
+
+global struct ScriptDamageInfoClone
+{
+	// todo(dw): either get rid of this struct or get rid of the CScriptDamageInfo class in code
+	// todo(dw): this struct only exists because a CScriptDamageInfo is not valid outside of a callback
+	entity attacker
+	entity inflictor
+	entity weapon
+	bool forceKill
+	float damage
+	float damageCriticalHitScale
+	float damageShieldScale
+	vector damagePosition
+	int hitGroup
+	int hitBox
+	//string deathPackage
+	int damageType
+	int customDamageType
+	int damageSourceIdentifier
+	float viewPunchMultiplier
+	float distFromAttackOrigin
+	float distFromExplosionCenter
+	vector damageForce
+	vector damageForceDirection
+	bool isRagdollAllowed
+	int damageFlags
+	string ornull damageWeaponName
+	bool shouldRecordStatsForWeapon
+}
+
+ScriptDamageInfoClone function CloneScriptDamageInfo( var src )
+{
+	ScriptDamageInfoClone dest
+	dest.attacker = DamageInfo_GetAttacker( src )
+	dest.inflictor = DamageInfo_GetInflictor( src )
+	dest.weapon = DamageInfo_GetWeapon( src )
+	dest.forceKill = DamageInfo_GetForceKill( src )
+	dest.damage = DamageInfo_GetDamage( src )
+	dest.damageCriticalHitScale = DamageInfo_GetDamageCriticalHitScale( src )
+	dest.damageShieldScale = DamageInfo_GetDamageShieldScale( src )
+	dest.damagePosition = DamageInfo_GetDamagePosition( src )
+	dest.hitGroup = DamageInfo_GetHitGroup( src )
+	dest.hitBox = DamageInfo_GetHitBox( src )
+	//dest.deathPackage = DamageInfo_GetDeathPackage( src )
+	dest.damageType = DamageInfo_GetDamageType( src )
+	dest.customDamageType = DamageInfo_GetCustomDamageType( src )
+	dest.damageSourceIdentifier = DamageInfo_GetDamageSourceIdentifier( src )
+	dest.viewPunchMultiplier = DamageInfo_GetViewPunchMultiplier( src )
+	dest.distFromAttackOrigin = DamageInfo_GetDistFromAttackOrigin( src )
+	dest.distFromExplosionCenter = DamageInfo_GetDistFromExplosionCenter( src )
+	dest.damageForce = DamageInfo_GetDamageForce( src )
+	dest.damageForceDirection = DamageInfo_GetDamageForceDirection( src )
+	dest.isRagdollAllowed = DamageInfo_IsRagdollAllowed( src )
+	dest.damageFlags = DamageInfo_GetDamageFlags( src )
+	dest.damageWeaponName = DamageInfo_GetDamageWeaponName( src )
+	dest.shouldRecordStatsForWeapon = DamageInfo_ShouldRecordStatsForWeapon( src )
+	return dest
+}
+
+#if SERVER || CLIENT
+string ornull function GetWeaponClassNameFromDamageInfo( var damageInfo )
+{
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	if ( IsValid( weapon ) )
+	{
+		LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
+		if ( SURVIVAL_Loot_IsRefValid( data.ref ) )
+			return data.ref
+		return weapon.GetWeaponClassName()
+	}
+
+	string ornull damageWeaponNameOrNull = DamageInfo_GetDamageWeaponName( damageInfo )
+	if ( damageWeaponNameOrNull != null && damageWeaponNameOrNull != "" )
+		return damageWeaponNameOrNull
+
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	if ( IsValid( inflictor ) && inflictor.IsProjectile() )
+		return inflictor.ProjectileGetWeaponClassName()
+
+	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( DamageSourceIDHasString( damageSourceID ) )
+		return DamageSourceIDToString( damageSourceID )
+
+	return null
+}
+#endif
+
+#if SERVER || CLIENT
+string ornull function GetWeaponClassNameFromDamageInfoClone( ScriptDamageInfoClone dic )
+{
+	if ( dic.damageWeaponName != null && dic.damageWeaponName != "" )
+		return dic.damageWeaponName
+
+	if ( IsValid( dic.weapon ) )
+		return dic.weapon.GetWeaponClassName()
+
+	if ( IsValid( dic.inflictor ) && dic.inflictor.IsProjectile() )
+		return dic.inflictor.ProjectileGetWeaponClassName()
+
+	if ( DamageSourceIDHasString( dic.damageSourceIdentifier ) )
+		return DamageSourceIDToString( dic.damageSourceIdentifier )
+
+	return null
+}
+#endif
+
+#if SERVER
+
+bool function HeavyArmorCriticalHitRequired( var damageInfo )
+{
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	if ( weapon )
+		return weapon.GetWeaponSettingBool( eWeaponVar.titanarmor_critical_hit_required )
+
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	if ( !inflictor )
+		return false
+	if ( !inflictor.IsProjectile() )
+		return false
+
+	return inflictor.GetProjectileWeaponSettingBool( eWeaponVar.titanarmor_critical_hit_required )
+}
+
+bool function CritWeaponInDamageInfo( var damageInfo )
+{
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	if ( weapon )
+		return weapon.GetWeaponSettingBool( eWeaponVar.critical_hit )
+
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	if ( !inflictor )
+		return false
+	if ( !inflictor.IsProjectile() )
+		return false
+
+	return inflictor.GetProjectileWeaponSettingBool( eWeaponVar.critical_hit )
+}
+
+float function GetCriticalScaler( entity ent, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	int hitBox = DamageInfo_GetHitBox( damageInfo )
+	float damageAmount = DamageInfo_GetDamage( damageInfo )
+
+	if ( !CritWeaponInDamageInfo( damageInfo ) )
+		return 1.0
+
+	if ( !IsCriticalHit( attacker, ent, hitBox, damageAmount, DamageInfo_GetDamageType( damageInfo ) ) )
+		return 1.0
+
+	return DamageInfo_GetDamageCriticalHitScale( damageInfo )
+}
+
+bool function IsValidHeadShot( var damageInfo = null, entity victim = null, entity attacker = null, entity weapon = null, int hitGroup = -1, float attackDist = -1.0, entity inflictor = null )
+{
+	// Pass this function damageInfo if you can, otherwise you'll have to fill out all the other params. If using damageInfo you dont need to.
+	if ( damageInfo != null )
+	{
+		if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_HEADSHOT )
+			return true
+
+		attacker = DamageInfo_GetAttacker( damageInfo )
+		weapon = DamageInfo_GetWeapon( damageInfo )
+		hitGroup = DamageInfo_GetHitGroup( damageInfo )
+		int hitBox = DamageInfo_GetHitBox( damageInfo )
+		//Some models can be shot that don't have models. Adding victim.GetModelName() check to prevent script error.
+		if ( IsValid( victim ) && hitGroup <= HITGROUP_GENERIC && hitBox >= 0 )
+			hitGroup = GetHitgroupForHitboxOnEntity( victim, DamageInfo_GetHitBox( damageInfo ) )
+		attackDist = DamageInfo_GetDistFromAttackOrigin( damageInfo )
+		inflictor = DamageInfo_GetInflictor( damageInfo )
+	}
+
+	if ( IsValid( victim ) && victim.e.headshotImmunity )
+		return false
+
+	if ( IsValid( attacker ) && attacker.IsTitan() && (!IsValid( victim ) || !IsSpectre( victim )) )
+		return false
+
+	if ( hitGroup != HITGROUP_HEAD )
+		return false
+
+	if ( !IsValid( attacker ) || !attacker.IsPlayer() )
+		return false
+
+//	if ( IsSpectre( victim ) )
+//	{
+//		return false
+//		//// head shot off?
+//		//int bodygroup = victim.FindBodygroup( "removableHead" )
+//		//if ( bodygroup != -1 && victim.GetBodygroupModelIndex( bodygroup ) == 1 )
+//		//	return false
+//	}
+
+	float headshotDistance = 0
+
+	if ( IsValid( weapon ) )
+	{
+		headshotDistance = GetWeaponHeadshotDistance( weapon )
+
+		if ( attackDist > headshotDistance )
+			return false
+
+		return weapon.GetAllowHeadShots()
+	}
+	else if ( IsValid( inflictor ) && inflictor.IsProjectile() )
+	{
+		headshotDistance = GetProjectileHeadshotDistance( inflictor )
+
+		if ( attackDist > headshotDistance )
+			return false
+
+		return inflictor.GetProjectileAllowHeadShots()
+	}
+
+	return false
+}
+
+bool function IsLegDamage( var damageInfo )
+{
+	int hitGroup = DamageInfo_GetHitGroup( damageInfo )
+
+	return ( hitGroup == HITGROUP_LEFTLEG || hitGroup == HITGROUP_RIGHTLEG )
+}
+
+#endif // SERVER
+
+float function GetWeaponHeadshotDistance( entity weapon )
+{
+	return weapon.GetWeaponSettingFloat( eWeaponVar.headshot_distance )
+}
+
+float function GetProjectileHeadshotDistance( entity projectile )
+{
+	return projectile.GetProjectileWeaponSettingFloat( eWeaponVar.headshot_distance )
+}
+
+bool function IsMaxRangeShot( var damageInfo )
+{
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+
+	int nearDamage
+	int farDamage
+	float headshotDistance = 0
+
+	if ( IsValid( weapon ) )
+	{
+		nearDamage = weapon.GetWeaponSettingInt( eWeaponVar.damage_near_value )
+		farDamage = weapon.GetWeaponSettingInt( eWeaponVar.damage_far_value )
+		headshotDistance = GetWeaponHeadshotDistance( weapon )
+	}
+	else
+	{
+		weapon = inflictor
+		if ( !IsValid( weapon ) || !weapon.IsProjectile() )
+			return false
+
+		nearDamage = weapon.GetProjectileWeaponSettingInt( eWeaponVar.damage_near_value )
+		farDamage = weapon.GetProjectileWeaponSettingInt( eWeaponVar.damage_far_value )
+		headshotDistance = GetProjectileHeadshotDistance( weapon )
+	}
+
+	if ( farDamage >= nearDamage ) // if the far damage is better than near damage, then "max range" is never really valid
+		return false
+
+	if ( DamageInfo_GetDistFromAttackOrigin( damageInfo ) > headshotDistance )
+		return true
+
+	return false
+}
+
+bool function IsMidRangeShot( var damageInfo )
+{
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+
+	float nearDist
+	float farDist
+	if ( IsValid( weapon ) )
+	{
+		nearDist = weapon.GetWeaponSettingFloat( eWeaponVar.damage_near_distance )
+		farDist = weapon.GetWeaponSettingFloat( eWeaponVar.damage_far_distance )
+	}
+	else
+	{
+		weapon = inflictor
+		if ( !IsValid( weapon ) || !weapon.IsProjectile() )
+			return false
+
+		nearDist = weapon.GetProjectileWeaponSettingFloat( eWeaponVar.damage_near_distance )
+		farDist = weapon.GetProjectileWeaponSettingFloat( eWeaponVar.damage_far_distance )
+	}
+
+	if ( farDist <= nearDist ) // if the far damage is better than near damage, then "max range" is never really valid
+		return false
+
+	//if ( DamageInfo_GetDistFromAttackOrigin( damageInfo ) > nearDist + ((farDist - nearDist) * 0.5))
+	if ( DamageInfo_GetDistFromAttackOrigin( damageInfo ) > nearDist )
+		return true
+
+	return false
+}
+
+bool function IsInstantDeath( var damageInfo )
+{
+	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	switch ( damageSourceID )
+	{
+		case eDamageSourceId.titan_execution:
+		case eDamageSourceId.human_execution:
+		case eDamageSourceId.fall:
+		case eDamageSourceId.splat:
+		case eDamageSourceId.lasergrid:
+		case eDamageSourceId.indoor_inferno:
+		case damagedef_suicide:
+			return true
+
+		default:
+			return false
+	}
+
+	unreachable
+}
+
+bool function IsTitanCrushDamage( var damageInfo )
+{
+	// code detected footstep damage gives this damage source ID
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == damagedef_titan_step )
+		return true
+
+	return false
+}
+
+bool function IsSuicide( entity attacker, entity victim, int damageSourceId )
+{
+	if ( attacker == victim )
+		return true
+
+	if ( damageSourceId == damagedef_suicide )
+		return true
+
+	if ( damageSourceId == eDamageSourceId.outOfBounds )
+		return true
+
+	return false
+}
+
+#if CLIENT
+void function ServerCallback_QuickDeathRumble()
+{
+	entity player = GetLocalClientPlayer()
+	if ( IsValid( player ) )
+		Rumble_Play( "QuickDeath", { position = player.GetOrigin() } )
+}
+#endif // CLIENT

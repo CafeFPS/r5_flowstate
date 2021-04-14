@@ -1,0 +1,1088 @@
+#if CLIENT
+#endif
+
+global function MpAbilityShifter_Init
+global function PhaseShift
+global function CodeCallback_EnterPhaseShift
+global function CodeCallback_ExitPhaseShift
+global function CancelPhaseShift
+
+#if SERVER
+global function PlayPhaseShiftAppearFX
+global function PlayPhaseShiftDisappearFX
+global function UntrackAllToneMarks
+#endif
+
+const SHIFTER_OUTRO_TIME_BEFORE_END = 1.5
+
+const SHIFTER_PRE_FX = $"P_warpjump_FP"
+
+const SHIFTER_APPEAR_FX = $"P_phase_dash_end_fp"
+const SHIFTER_APPEAR_FX_TITAN = $"P_phase_shift_main_XO"
+const SHIFTER_DISAPPEAR_FX = $"P_phase_shift_main"
+const SHIFTER_LOOP_FX = $"P_phase_shift_main"
+const SHIFTER_DISAPPEAR_FX_TITAN = $"P_phase_shift_main_XO"
+
+const SHIFTER_DASH_APPEAR_FX = $"P_phase_dash_end"
+const SHIFTER_DASH_DISAPPEAR_FX = $"P_phase_dash_start"
+const SHIFTER_DASH_DISAPPEAR_ON_WRAITH_FX = $"P_phase_dash_start_mdl"
+
+const SHIFTER_SCREEN_FX = $"P_phase_shift_screen"
+const SHIFTER_PERSONAL_FX = $"P_phase_shift_player"
+const SHIFTER_SCREEN_FX_START = $"P_phase_shift_screen_start"
+const SHIFTER_COLORCORRECTION = "materials/correction/fx_phase_shift.raw_hdr"
+
+const SHIFTER_PRE_SOUND_1P = "Pilot_PhaseShift_PreActivate_1P"
+const SHIFTER_PRE_SOUND_3P = "Pilot_PhaseShift_PreActivate_3P"
+global const SHIFTER_START_SOUND_1P = "Pilot_PhaseShift_Activate_1P"
+global const SHIFTER_START_SOUND_3P = "Pilot_PhaseShift_Activate_3P"
+const SHIFTER_LOOP_SOUND_1P = "Pilot_PhaseShift_Loop_1P"
+const SHIFTER_LOOP_SOUND_3P = "Pilot_PhaseShift_Loop_3P"
+const SHIFTER_PRE_END_SOUND_1P = "Pilot_PhaseShift_WarningToEnd_1P"
+const SHIFTER_PRE_END_SOUND_3P = "Pilot_PhaseShift_WarningToEnd_3P"
+global const SHIFTER_END_SOUND_1P = "Pilot_PhaseShift_End_1P"
+global const SHIFTER_END_SOUND_3P = "Pilot_PhaseShift_End_3P"
+
+const SHIFTER_PRE_SOUND_1P_TITAN = "Pilot_PhaseShift_PreActivate_1P"
+const SHIFTER_PRE_SOUND_3P_TITAN = "Pilot_PhaseShift_PreActivate_3P"
+global const SHIFTER_START_SOUND_1P_TITAN = "titan_phasedash_activate_1p"
+global const SHIFTER_START_SOUND_3P_TITAN = "titan_phasedash_activate_3p"
+const SHIFTER_LOOP_SOUND_1P_TITAN = "titan_phasedash_loop_1p"
+const SHIFTER_LOOP_SOUND_3P_TITAN = "titan_phasedash_loop_3p"
+const SHIFTER_PRE_END_SOUND_1P_TITAN = "titan_phasedash_warningtoend_1p"
+const SHIFTER_PRE_END_SOUND_3P_TITAN = "titan_phasedash_warningtoend_3p"
+global const SHIFTER_END_SOUND_1P_TITAN = "titan_phasedash_end_1p"
+global const SHIFTER_END_SOUND_3P_TITAN = "titan_phasedash_end_3p"
+
+global const RECONSTRUCT_REWIND_TICK = 0.1
+global const RECONSTRUCT_REWIND_COUNT = 100
+global const RECONSTRUCT_END_HOLD_TIME = 0.1
+
+
+global enum eShiftStyle
+{
+	Default,
+	Balance,
+	Tunnel,
+	Dash,
+}
+
+const int TELEFRAG_DAMAGE = 5000
+
+struct
+{
+} file
+
+void function CodeCallback_EnterPhaseShift( entity ent )
+{
+	PhaseShift( ent, 0.0, 999.0 )
+}
+
+
+void function CodeCallback_ExitPhaseShift( entity ent )
+{
+	#if SERVER
+		CancelPhaseShift( ent )
+	#endif
+}
+
+
+void function CancelPhaseShift( entity ent )
+{
+	ent.PhaseShiftCancel()
+
+	#if SERVER
+		bool isPhaseDash = false
+		foreach ( int statusID in ent.e.shiftStatusIDs )
+		{
+			if ( statusID == eStatusEffect.phase_dash )
+				isPhaseDash = true
+			StatusEffect_Stop( ent, statusID )
+		}
+
+		ent.e.shiftStatusIDs = []
+
+		ent.Signal( "ForceStopPhaseShift" )
+		asset effectOverride = isPhaseDash ? SHIFTER_DASH_APPEAR_FX : $""
+		PlayPhaseShiftAppearFX( ent, effectOverride )
+	#endif //
+}
+
+
+void function MpAbilityShifter_Init()
+{
+	#if CLIENT
+		//ColorCorrection_RegisterRemoteTurret( "materials/correction/remote_turret.raw" )
+
+		ColorCorrection_RegisterPhaseShift( SHIFTER_COLORCORRECTION )
+		thread ClientPhaseShiftFirstPersonFXThread()
+
+		thread ClientRemoteTurretFirstPersonFXThread()
+	#endif // #if CLIENT
+
+	PrecacheParticleSystem( SHIFTER_PRE_FX )
+	PrecacheParticleSystem( SHIFTER_APPEAR_FX )
+	PrecacheParticleSystem( SHIFTER_APPEAR_FX_TITAN )
+	PrecacheParticleSystem( SHIFTER_DISAPPEAR_FX )
+	PrecacheParticleSystem( SHIFTER_LOOP_FX )
+	PrecacheParticleSystem( SHIFTER_DISAPPEAR_FX_TITAN )
+	PrecacheParticleSystem( SHIFTER_PERSONAL_FX )
+	PrecacheParticleSystem( SHIFTER_SCREEN_FX )
+	PrecacheParticleSystem( SHIFTER_SCREEN_FX_START )
+	PrecacheParticleSystem( SHIFTER_DASH_APPEAR_FX )
+	PrecacheParticleSystem( SHIFTER_DASH_DISAPPEAR_FX )
+	PrecacheParticleSystem( SHIFTER_DASH_DISAPPEAR_ON_WRAITH_FX )
+
+	MpAbilityPhaseWalk_Init()
+
+	RegisterSignal( "StartPhaseShift" )
+	RegisterSignal( "StopPhaseShift" )
+	RegisterSignal( "ForceStopPhaseShift" )
+	RegisterSignal( "PlayPhaseReflexLoopFX" )
+	RegisterSignal( "StartTrackingPositions" )
+	RegisterSignal( "EndTrackingPositions" )
+	RegisterSignal( "PhaseRewindCrouchPlayer" )
+	RegisterSignal( "PhaseRewindStop" )
+
+
+	#if SERVER
+		//AddDamageCallback( "player", BurnCard_PhaseRewind_OnDamage )
+		//AddCallback_OnTitanBecomesPilot( TitanBecomesPilot_TryStartTrackingPositions )
+		AddCallback_OnPilotBecomesTitan( PilotBecomesTitan_EndTrackingPositions )
+		//AddCallback_OnPlayerRespawned( OnPlayerRespawn_TryStartTrackingPositions )
+	#endif
+}
+
+int function PhaseShift( entity ent, float warmupTime, float duration, int shiftStyle = eShiftStyle.Default, bool fxOnly = false )
+{
+	if ( !IsAlive( ent ) )
+		return 0
+
+	if ( ent.IsPhaseShifted() )
+		return 0
+
+	// PROTO: this should be better eventually
+	// this is to prevent weirdness if you're already in a context action
+	if ( ent.IsPlayer() )
+	{
+		entity proxy = ent.GetFirstPersonProxy()
+		if ( ( ent.ContextAction_IsActive() || (proxy != null && proxy.Anim_IsActive()) )
+			&& !ent.IsZiplining()
+			&& !ent.ContextAction_IsLeeching()
+			&& !RodeoState_GetIsPlayerRodeoing( ent ))
+		{
+			return 0
+		}
+
+		switch ( shiftStyle )
+		{
+			case eShiftStyle.Balance:
+			case eShiftStyle.Tunnel:
+				ent.SetSeeOtherNonShifters( false )
+				StatusEffect_AddTimed( ent, eStatusEffect.speed_boost, 0.05, duration, 0.25 )
+			break
+			case eShiftStyle.Dash:
+				#if SERVER
+				int statusID = StatusEffect_AddEndless( ent, eStatusEffect.phase_dash, 1.0 )
+				ent.e.shiftStatusIDs.append( statusID )
+				#endif
+			default:
+				ent.SetSeeOtherNonShifters( false )
+				break
+		}
+
+		//Don't actually phase if we just want to draw phase FX on the character.
+		if ( !fxOnly )
+			ent.PhaseShiftBegin( warmupTime, duration )
+
+		#if SERVER
+			thread ServerPhaseShiftPlayerThread( ent, warmupTime, duration, shiftStyle )
+		#else
+			thread ClientPhaseShiftWarmupThread( ent, warmupTime )
+		#endif // #if SERVER
+
+		return 1
+	}
+	else
+	{
+		//Don't actually phase if we just want to draw phase FX on the character.
+		if ( !fxOnly )
+			ent.PhaseShiftBegin( warmupTime, duration )
+
+		#if SERVER
+			thread ServerPhaseShiftPlayerThread( ent, warmupTime, duration, shiftStyle )
+		#endif // #if SERVER
+
+		return 1
+	}
+
+	unreachable
+}
+
+#if SERVER
+
+void function BurnCard_PhaseRewind_OnDamage( entity player, var damageInfo )
+{
+	if ( player.IsTitan() )
+		return
+
+	// can't escape executions and such
+	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	if ( IsInstantDeath( damageInfo ) )
+		return
+
+	DamageInfo_SetDamage( damageInfo, 0 )
+	BurnMeter_PhaseRewind( player )
+}
+
+void function BurnMeter_PhaseRewind( entity player )
+{
+	if ( PhaseShift( player, 0.0, 999 ) )
+		thread BurnMeter_PhaseRewind_threaded( player )
+}
+
+void function BurnMeter_PhaseRewind_threaded( entity player )
+{
+	player.EndSignal( "OnDeath" )
+
+	player.SetPredictionEnabled( false )
+	HolsterAndDisableWeapons( player )
+
+	entity mover = CreateScriptMover( player.GetOrigin(), player.GetAngles() )
+
+	PhaseRewindData rewindData
+	rewindData.origin = player.GetOrigin()
+	rewindData.angles = player.GetAngles()
+	rewindData.wasInContextAction = player.ContextAction_IsActive()
+	rewindData.wasCrouched = player.IsCrouched()
+
+	vector originAtStart = player.GetOrigin()
+
+	OnThreadEnd(
+		function() : ( player, mover, rewindData, originAtStart )
+		{
+			if ( IsValid( player ) )
+			{
+				player.SetPredictionEnabled( true )
+				CancelPhaseShift( player )
+				DeployAndEnableWeapons( player )
+				player.ClearParent()
+				player.SetVelocity( <0, 0, 10> )
+				player.SetOrigin( rewindData.origin )
+				player.SetAngles( rewindData.angles )
+				// if ( rewindData.wasCrouched )
+				// {
+				// 	thread PhaseRewindCrouchPlayer( player )
+				// }
+
+				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.clear()
+				player.p.burnCardPhaseRewindStruct.phaseRetreatShouldSave = true
+
+				if ( rewindData.wasInContextAction && !PutEntityInSafeSpot( player, null, null, originAtStart, player.GetOrigin() ) )
+					//Only do PutEntityInSafeSpot check() if the last saved position they were in a context action, since context actions can put you in normally illegal spots, e.g. behind geo. If you do the PutEntityInSafeSpot() check all the time you get false positives if you always use start position as safe starting spot
+				{
+					player.TakeDamage( player.GetHealth() + 1, player, player, { damageSourceId = eDamageSourceId.phase_shift, scriptType = DF_GIB | DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE } )
+				}
+			}
+
+			if ( IsValid( mover ) )
+				mover.Destroy()
+		}
+	)
+
+	player.p.burnCardPhaseRewindStruct.phaseRetreatShouldSave = false
+
+	WaitEndFrame() // wait for the last save
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "pilot_phaserewind_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "pilot_phaserewind_3p" )
+
+	player.SetParent( mover, "REF", false )
+	ViewConeZeroInstant( player )
+	array<PhaseRewindData> savedPositions = player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions
+
+	for ( int i = savedPositions.len() - 1; i >= 0; i-- )
+	{
+		mover.NonPhysicsMoveTo( savedPositions[i].origin, RECONSTRUCT_REWIND_TICK, 0, 0 )
+		mover.NonPhysicsRotateTo( savedPositions[i].angles, RECONSTRUCT_REWIND_TICK, 0, 0 )
+		rewindData.origin = savedPositions[i].origin
+		rewindData.angles = savedPositions[i].angles
+		player.SetVelocity( savedPositions[i].velocity )
+		rewindData.velocity = savedPositions[i].velocity
+		rewindData.wasInContextAction = savedPositions[i].wasInContextAction
+		rewindData.wasCrouched = savedPositions[i].wasCrouched
+		printt( "wasCrouched?" + rewindData.wasCrouched )
+		if ( rewindData.wasCrouched )
+		{
+			printt( "PhaseRewindCrouchPlayer" )
+			thread PhaseRewindCrouchPlayer( player )
+		}
+
+		WaitFrame()
+	}
+}
+
+void function PhaseRewindCrouchPlayer( entity player )
+{
+	Signal( player, "PhaseRewindCrouchPlayer" )
+	EndSignal( player, "OnDeath" )
+	EndSignal( player, "PhaseRewindCrouchPlayer" )
+	player.ForceCrouch()
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) )
+			{
+				player.UnforceCrouch()
+			}
+		}
+	)
+	wait 0.2
+}
+
+void function TitanBecomesPilot_TryStartTrackingPositions( entity playerPilot, entity npcTitan )
+{
+	TryStartTrackingPositions( playerPilot )
+}
+
+void function PilotBecomesTitan_EndTrackingPositions( entity playerTitan, entity npcTitan )
+{
+	EndTrackingPositions( playerTitan )
+}
+
+void function OnPlayerRespawn_TryStartTrackingPositions( entity player )
+{
+	TryStartTrackingPositions( player )
+}
+
+void function TryStartTrackingPositions( entity player )
+{
+	if ( player.IsTitan() )
+		return
+
+	if ( !IsAlive( player ) )
+		return
+
+	if ( player.IsPhaseShifted() )
+		//Might already be phase rewinded, don't clear out phaseRetreatSavedPositions array
+		return
+
+	thread StartTrackingPositions( player )
+}
+
+void function EndTrackingPositions( entity player )
+{
+	player.Signal( "EndTrackingPositions" )
+}
+
+void function StartTrackingPositions( entity player )
+{
+	player.EndSignal( "EndTrackingPositions" )
+	player.Signal( "StartTrackingPositions" )
+	player.EndSignal( "StartTrackingPositions" )
+	player.EndSignal( "OnDeath" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) )
+			{
+				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.clear()
+			}
+		}
+	)
+
+	int maxSaves = 60
+
+	while ( 1 )
+	{
+		if ( player.p.burnCardPhaseRewindStruct.phaseRetreatShouldSave && !player.IsTitan() )
+		{
+			vector origin = player.GetOriginOutOfTraversal()
+			vector angles = player.GetAngles()
+			angles = <0, player.CameraAngles().y, 0>
+
+			PhaseRewindData data
+			data.origin = origin
+			data.angles = angles
+			data.velocity = player.GetVelocity()
+			data.wasInContextAction = player.ContextAction_IsActive()
+			data.wasCrouched = player.IsCrouched()
+			data.time = Time()
+
+			// printt( "----------" + data.wasCrouched + "----------" )
+
+			player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.append( data )
+			if ( player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.len() > maxSaves )
+				player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.remove( 0 )
+		}
+		// wait RECONSTRUCT_REWIND_SAVE_TICK
+		WaitFrame()
+	}
+}
+
+
+void function PlayPhaseShiftLoopFX( entity ent, float duration )
+{
+	ent.EndSignal( "OnDeath" )
+	ent.EndSignal( "ForceStopPhaseShift" )
+
+	float startTime = Time()
+	while ( Time() - startTime < duration )
+	{
+		entity fx = PlayPhaseShiftDisappearFX( ent )
+		thread PhaseShiftDisappearEffectCleanup( ent, fx, duration )
+		wait 1.0
+	}
+}
+
+void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float shiftTime, int shiftStyle )
+{
+	ent.EndSignal( "OnDeath" )
+	ent.EndSignal( "ForceStopPhaseShift" )
+
+	bool keepAnimActive = false
+
+	if ( ent.IsPlayer() )
+	{
+		ent.EndSignal( "player_embarks_titan" )
+
+		Leech_Disallow( ent )
+		//	EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_PRE_SOUND_3P )
+
+		entity proxy = ent.GetFirstPersonProxy()
+		if ( proxy != null )
+			proxy.SetForceVisibleInPhaseShift( true )
+
+		if ( RodeoState_GetIsPlayerRodeoing( ent ) )
+		{
+			if ( ent.GetParent() != null && ent.GetParent().IsPhaseShifted() )
+				keepAnimActive = true
+			else
+				Rodeo_TriggerRiderRodeoEnd( ent, true )
+		}
+
+		if ( ent.IsTitan() )
+		{
+			UntrackAllToneMarks( ent )
+			entity titanSoul = ent.GetTitanSoul()
+			if ( titanSoul != null )
+			{
+				if ( titanSoul.soul.batteryContainer != null )
+				{
+					titanSoul.soul.batteryContainer.SetForceVisibleInPhaseShift( true )
+				}
+			}
+		}
+	}
+	else
+	{
+		if ( ent.IsTitan() )
+			UntrackAllToneMarks( ent )
+		ent.EnableNPCFlag( NPC_IGNORE_ALL )
+		EmitSoundOnEntity( ent, SHIFTER_PRE_SOUND_3P )
+	}
+
+	bool oldNoTarget = ent.GetNoTarget()
+
+	OnThreadEnd(
+		function() : ( ent, oldNoTarget, shiftStyle )
+		{
+			if ( IsValid( ent ) )
+			{
+				ent.Signal( "StopPhaseShift" )
+				ent.Solid()
+				ent.SetNoTarget( oldNoTarget )
+
+				StopSoundOnEntity( ent, SHIFTER_PRE_SOUND_3P )
+				StopSoundOnEntity( ent, SHIFTER_LOOP_SOUND_3P )
+				StopSoundOnEntity( ent, SHIFTER_PRE_SOUND_3P_TITAN )
+				StopSoundOnEntity( ent, SHIFTER_LOOP_SOUND_3P_TITAN )
+
+				ent.DisablePhaseShiftFlags()
+
+				if ( ent.IsPlayer() )
+				{
+					Leech_Allow( ent )
+					UpdatePlayerHighlightsSettings( ent )
+
+					if ( GetSoulFromPlayer( ent ) != null )
+					{
+						entity soul = GetSoulFromPlayer( ent )
+						if ( soul.soul.batteryContainer != null )
+						{
+							soul.soul.batteryContainer.SetForceVisibleInPhaseShift( false )
+						}
+					}
+
+					entity proxy = ent.GetFirstPersonProxy()
+					if ( proxy != null )
+						proxy.SetForceVisibleInPhaseShift( false )
+				}
+				else
+				{
+					ent.DisableNPCFlag( NPC_IGNORE_ALL )
+					Highlight_ClearEnemyHighlight( ent )
+				}
+
+				entity teleFragTarget = ent.GetEntityAtPhaseShiftExitPosition()
+				if ( IsValid( teleFragTarget ) )
+				{
+					if ( IsFragDrone( teleFragTarget ) )
+						teleFragTarget.TakeDamage( teleFragTarget.GetHealth() + 1, ent, ent, { damageSourceId = eDamageSourceId.phase_shift, scriptType = DF_GIB | DF_BYPASS_SHIELD | DF_SKIPS_DOOMED_STATE } )
+					else
+						PushPlayersApart( teleFragTarget, ent, 300.0 ) // this will work for NPCs too
+				}
+			}
+		}
+	)
+
+	wait warmupTime
+
+	//thread PROTO_CapVelocity( ent )
+
+	entity soul
+	if ( ent.IsTitan() )
+	{
+		soul = ent.GetTitanSoul()
+		string titanType = GetSoulTitanSubClass( soul )
+		foreach( entity rider in RodeoState_GetPlayersRodeingVehicle( ent ) )
+		{
+			if ( !rider.IsPlayer() )
+				Rodeo_TriggerRiderRodeoEnd( rider, true )
+			else
+				PhaseShift( rider, 0, shiftTime )
+		}
+	}
+
+	switch ( shiftStyle )
+	{
+		case eShiftStyle.Balance:
+		case eShiftStyle.Tunnel:
+			entity fx = PlayPhaseShiftDisappearFX( ent, SHIFTER_DASH_DISAPPEAR_FX, true )
+			thread PhaseShiftDisappearEffectCleanup( ent, fx, shiftTime )
+			fx = PlayPhaseShiftDisappearFX( ent, SHIFTER_DASH_DISAPPEAR_ON_WRAITH_FX )
+			thread PhaseShiftDisappearEffectCleanup( ent, fx, shiftTime )
+			break
+		case eShiftStyle.Dash:
+			entity fx = PlayPhaseShiftDisappearFX( ent, SHIFTER_DASH_DISAPPEAR_FX, true )
+			thread PhaseShiftDisappearEffectCleanup( ent, fx, shiftTime )
+			fx = PlayPhaseShiftDisappearFX( ent, SHIFTER_DASH_DISAPPEAR_ON_WRAITH_FX )
+			thread PhaseShiftDisappearEffectCleanup( ent, fx, shiftTime )
+			break
+		default:
+			entity fx = PlayPhaseShiftDisappearFX( ent )
+			thread PhaseShiftDisappearEffectCleanup( ent, fx, shiftTime )
+			break
+	}
+
+	ent.Signal( "StartPhaseShift" )
+	if ( !keepAnimActive )
+		ent.Signal( "ScriptAnimStop" )
+	ent.NotSolid()
+	ent.SetNoTarget( true )
+	ent.EnablePhaseShiftFlags()
+	ent.Highlight_SetCurrentContext( -1 )
+
+	if ( ent.IsPlayer() )
+	{
+		PlayerDropsScriptedItems( ent )
+		if ( ent.IsTitan() )
+		{
+			EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_START_SOUND_3P_TITAN )
+			EmitSoundOnEntityExceptToPlayerNotPredicted( ent, ent, SHIFTER_LOOP_SOUND_3P_TITAN )
+		}
+		else
+		{
+			EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_START_SOUND_3P )
+			EmitSoundOnEntityExceptToPlayerNotPredicted( ent, ent, SHIFTER_LOOP_SOUND_3P )
+		}
+
+		foreach ( statusEffect in ent.p.empStatusEffectsToClearForPhaseShift ) //Not great, done to avoid needing code work to get a separate empSlow/empSTurnEffects
+		{
+			StatusEffect_Stop( ent, statusEffect )
+		}
+
+		ent.p.empStatusEffectsToClearForPhaseShift.clear()
+	}
+	else
+	{
+		if ( ent.IsTitan() )
+		{
+			EmitSoundOnEntity( ent, SHIFTER_START_SOUND_3P_TITAN )
+			EmitSoundOnEntity( ent, SHIFTER_LOOP_SOUND_3P_TITAN )
+		}
+		else
+		{
+			EmitSoundOnEntity( ent, SHIFTER_START_SOUND_3P )
+			EmitSoundOnEntity( ent, SHIFTER_LOOP_SOUND_3P )
+		}
+	}
+
+	float FX_WARMUP_TIME = 0.3
+	bool timeAdjusted    = false
+
+	if ( shiftTime > FX_WARMUP_TIME )
+	{
+		shiftTime -= FX_WARMUP_TIME // need to play the fx a little earlier so the timing lines up
+		timeAdjusted = true
+	}
+
+	if ( shiftTime >= SHIFTER_OUTRO_TIME_BEFORE_END )
+	{
+		wait (shiftTime - SHIFTER_OUTRO_TIME_BEFORE_END)
+
+		if ( ent.IsPlayer() )
+		{
+			if ( ent.IsTitan() )
+			{
+				EmitSoundOnEntityOnlyToPlayer( ent, ent, SHIFTER_PRE_END_SOUND_1P_TITAN )
+				EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_PRE_END_SOUND_3P_TITAN )
+			}
+			else
+			{
+				EmitSoundOnEntityOnlyToPlayer( ent, ent, SHIFTER_PRE_END_SOUND_1P )
+				EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_PRE_END_SOUND_3P )
+			}
+		}
+		else
+		{
+			if ( ent.IsTitan() )
+				EmitSoundOnEntity( ent, SHIFTER_PRE_END_SOUND_3P_TITAN )
+			else
+				EmitSoundOnEntity( ent, SHIFTER_PRE_END_SOUND_3P )
+		}
+
+		wait SHIFTER_OUTRO_TIME_BEFORE_END
+	}
+	else
+	{
+		wait shiftTime
+	}
+
+	switch ( shiftStyle )
+	{
+		case eShiftStyle.Dash:
+		case eShiftStyle.Balance:
+			PlayPhaseShiftAppearFX( ent, SHIFTER_DASH_APPEAR_FX )
+			break
+		default:
+			PlayPhaseShiftAppearFX( ent )
+			break
+	}
+
+	if ( timeAdjusted )
+		wait FX_WARMUP_TIME
+}
+
+// ASSUMES THAT SECOND ENTITY IS NOT HUMAN SIZED
+bool function ShouldEntitySelfKill( entity ent, entity largeTelefragTarget )
+{
+	if ( IsHumanSized( ent ) )
+		return true
+
+	return (DistanceSqr( largeTelefragTarget.GetOrigin(), ent.GetOrigin() ) < 4096.0)
+}
+
+void function PhaseShiftDisappearEffectCleanup( entity ent, entity fx, float duration )
+{
+	fx.EndSignal( "OnDestroy" )
+	ent.EndSignal( "ForceStopPhaseShift" )
+
+	OnThreadEnd(
+		function() : ( ent, fx )
+		{
+			if ( IsValid( fx ) )
+			{
+				EffectStop( fx ) // TOOD: is something cleaning this fx entity up?
+				fx.Destroy()
+			}
+			if ( IsValid( ent ) && IsValid( ent.e.phaseShiftMover ) )
+			{
+				ent.e.phaseShiftMover.Destroy()
+			}
+		}
+	)
+
+	float bufferTime = 0.0//1.4
+	if ( ent.IsTitan() )
+		bufferTime = 0.0
+
+	wait max( duration - bufferTime, 0.0 )
+}
+
+entity function PlayPhaseShiftAppearFX( entity ent, asset effectOverride = $"" )
+{
+	asset effect
+	if ( effectOverride != $"" )
+		effect = effectOverride
+	else if ( !IsHumanSized( ent ) )
+		effect = SHIFTER_APPEAR_FX_TITAN
+	else
+		effect = SHIFTER_APPEAR_FX
+
+	if ( ent.IsPlayer() )
+	{
+		if ( ent.IsTitan() )
+			EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_END_SOUND_3P_TITAN )
+		else
+			EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_END_SOUND_3P )
+
+		return PlayFXOnEntityForEveryoneExceptPlayer( effect, ent, ent )
+	}
+	else
+	{
+		if ( ent.IsTitan() )
+			EmitSoundOnEntity( ent, SHIFTER_END_SOUND_3P_TITAN )
+		else
+			EmitSoundOnEntity( ent, SHIFTER_END_SOUND_3P )
+		return PlayFXOnEntity( effect, ent )
+	}
+
+	unreachable
+}
+
+entity function PlayPhaseShiftDisappearFX( entity ent, asset fxAsset = SHIFTER_DISAPPEAR_FX, bool useMover = false, string attachment = "ORIGIN" )
+{
+	if ( !IsHumanSized( ent ) )
+		fxAsset = SHIFTER_DISAPPEAR_FX_TITAN
+
+	int fxid     = GetParticleSystemIndex( fxAsset )
+	int attachId = ent.LookupAttachment( attachment )
+
+	entity dashFX
+	if ( useMover )
+	{
+		dashFX = StartParticleEffectInWorld_ReturnEntity( fxid, ent.GetOrigin(), VectorToAngles( ent.GetVelocity() ) )
+		dashFX.SetOwner( ent )
+		dashFX.RemoveFromAllRealms()
+		dashFX.AddToOtherEntitysRealms( ent )
+		dashFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) //owner cant see
+		entity mover = CreateScriptMover( ent.GetAttachmentOrigin( attachId ), VectorToAngles( ent.GetVelocity() ) )
+		mover.RemoveFromAllRealms()
+		mover.AddToOtherEntitysRealms( ent )
+		mover.SetParent( ent )
+		dashFX.SetParent( mover )
+		SetPhaseShiftMover( ent, mover )
+	}
+	else
+	{
+		dashFX = StartParticleEffectOnEntity_ReturnEntity( ent, fxid, FX_PATTACH_POINT_FOLLOW, attachId )
+		dashFX.RemoveFromAllRealms()
+		dashFX.AddToOtherEntitysRealms( ent )
+	}
+	return dashFX
+}
+
+array<entity> function GetAttachedEnts( entity ent )
+{
+	array<entity> ents = [ ent ]
+
+	if ( HasSoul( ent ) )
+	{
+		entity soul = ent.GetTitanSoul()
+		if ( IsValid( soul.soul.batteryContainer ) )
+			ents.append( soul.soul.batteryContainer )
+	}
+
+	ents.extend( ent.GetAllActiveWeapons() )
+
+	return ents
+}
+
+/*
+void function PROTO_CapVelocity( player )
+{
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "StopPhaseShift" )
+
+	while ( 1 )
+	{
+		local newVel = player.GetVelocity()
+		local zVel = newVel.z
+		newVel = <newVel.x, newVel.y, 0>
+		local speed = Length( newVel )
+		newVel = Normalize( newVel )
+		speed = min( speed, 400 )
+		newVel = newVel * speed
+		player.SetVelocity( <newVel.x, newVel.y, zVel> )
+		WaitFrame()
+	}
+}
+*/
+
+void function UntrackAllToneMarks( entity ent )
+{
+	array<entity> enemyTitans = GetTitanArrayOfEnemies( ent.GetTeam() )
+	foreach ( titan in enemyTitans )
+	{
+		entity offhand = titan.GetOffhandWeapon( OFFHAND_RIGHT )
+		if ( !IsValid( offhand ) )
+			return
+
+		if ( offhand.GetWeaponClassName() != "mp_titanweapon_tracker_rockets" )
+			continue
+
+		offhand.SmartAmmo_UntrackEntity( ent )
+	}
+}
+#endif // #if SERVER
+
+
+#if CLIENT
+void function ClientPhaseShiftWarmupThread( entity player, float warmupTime )
+{
+	player.EndSignal( "OnDeath" )
+
+	if ( player != GetLocalViewPlayer() )
+		return
+	if ( InPrediction() && !IsFirstTimePredicted() )
+		return
+
+	if ( warmupTime <= 0 )
+		return
+
+	int index = GetParticleSystemIndex( SHIFTER_PRE_FX )
+	int fxID  = StartParticleEffectInWorldWithHandle( index, ZERO_VECTOR, ZERO_VECTOR )
+
+	OnThreadEnd(
+		function() : ( fxID )
+		{
+			EffectStop( fxID, true, true )
+		}
+	)
+
+	if ( player.IsTitan() )
+		EmitSoundOnEntity( player, SHIFTER_PRE_SOUND_1P_TITAN )
+	else
+		EmitSoundOnEntity( player, SHIFTER_PRE_SOUND_1P )
+
+	wait warmupTime
+}
+
+void function ClientPhaseShiftFirstPersonFXThread()
+{
+	int effectSparkles
+	int effectScreen
+	bool effectsAreActive = false
+	bool endSoundPlayed   = false
+	entity ourPlayer      = null
+
+	while ( true )
+	{
+		if ( effectsAreActive )
+		{
+			entity localViewPlayer = GetLocalViewPlayer()
+
+			bool needShutdown = false
+			if ( !IsValid( ourPlayer ) || !IsAlive( ourPlayer ) )
+				needShutdown = true
+			else if ( ourPlayer != localViewPlayer )
+				needShutdown = true
+			else if ( !ourPlayer.IsPhaseShifted() )
+				needShutdown = true
+
+			if ( needShutdown )
+			{
+				if ( IsValid( ourPlayer ) && (ourPlayer == localViewPlayer) )
+				{
+					// FX
+					{
+						int fxIndex = GetParticleSystemIndex( SHIFTER_SCREEN_FX_START )
+						StartParticleEffectInWorldWithHandle( fxIndex, ZERO_VECTOR, ZERO_VECTOR )
+					}
+
+					// FX
+					{
+						int fxIndex          = GetParticleSystemIndex( SHIFTER_APPEAR_FX )
+						vector viewAngles    = ourPlayer.EyeAngles()
+						vector viewForward   = AnglesToForward( viewAngles )
+						vector viewForward2d = Normalize( <viewForward.x, viewForward.y, 0> )
+						StartParticleEffectOnEntityWithPos( ourPlayer, fxIndex, FX_PATTACH_ABSORIGIN, -1, (viewForward2d * 30), ZERO_VECTOR )
+					}
+
+					if ( ourPlayer.IsTitan() )
+					{
+						EmitSoundOnEntity( ourPlayer, SHIFTER_END_SOUND_1P_TITAN )
+					}
+					else
+					{
+						EmitSoundOnEntity( ourPlayer, SHIFTER_END_SOUND_1P )
+					}
+					StopSoundOnEntity( ourPlayer, SHIFTER_LOOP_SOUND_1P )
+					StopSoundOnEntity( ourPlayer, SHIFTER_LOOP_SOUND_1P_TITAN )
+				}
+
+				ClientPhaseShift_SCRIPT_HACKS_OFF()
+
+				EffectStop( effectSparkles, true, true )
+				EffectStop( effectScreen, true, true )
+				effectsAreActive = false
+				ourPlayer = null
+				endSoundPlayed = false
+			}
+			else if ( IsValid( localViewPlayer ) && localViewPlayer.IsPhaseShifted() )
+			{
+				if ( !endSoundPlayed && (localViewPlayer.PhaseShiftTimeRemaining() <= SHIFTER_OUTRO_TIME_BEFORE_END) )
+				{
+					endSoundPlayed = true
+					if ( localViewPlayer.IsTitan() )
+						EmitSoundOnEntity( localViewPlayer, SHIFTER_PRE_END_SOUND_1P_TITAN )
+					else
+						EmitSoundOnEntity( localViewPlayer, SHIFTER_PRE_END_SOUND_1P )
+				}
+			}
+		}
+
+		if ( !effectsAreActive )
+		{
+			entity localViewPlayer = GetLocalViewPlayer()
+
+			if ( IsValid( localViewPlayer ) && localViewPlayer.IsPhaseShifted() && localViewPlayer.GetTeam() != TEAM_SPECTATOR )
+			{
+				// FX
+				{
+					int fxIndex   = GetParticleSystemIndex( SHIFTER_PERSONAL_FX )
+					int attachIdx = localViewPlayer.LookupAttachment( "CHESTFOCUS" )
+					effectSparkles = StartParticleEffectOnEntity( localViewPlayer, fxIndex, FX_PATTACH_POINT_FOLLOW, attachIdx )
+				}
+
+				// FX
+				{
+					int fxIndex = GetParticleSystemIndex( SHIFTER_SCREEN_FX )
+					effectScreen = StartParticleEffectInWorldWithHandle( fxIndex, ZERO_VECTOR, ZERO_VECTOR )
+				}
+
+				// FX
+				{
+					int fxIndex = GetParticleSystemIndex( SHIFTER_SCREEN_FX_START )
+					StartParticleEffectInWorldWithHandle( fxIndex, ZERO_VECTOR, ZERO_VECTOR )
+				}
+
+				// FX
+				{
+					entity viewModelEntity  = localViewPlayer.GetViewModelEntity()
+					entity firstPersonProxy = localViewPlayer.GetPredictedFirstPersonProxy()
+
+					if ( IsValid( viewModelEntity ) )
+					{
+						viewModelEntity.Highlight_HideInside( 0.0 )
+						viewModelEntity.Highlight_HideOutline( 0.0 )
+					}
+
+					if ( IsValid( firstPersonProxy ) )
+					{
+						firstPersonProxy.Highlight_HideInside( 0.0 )
+						firstPersonProxy.Highlight_HideOutline( 0.0 )
+					}
+				}
+
+				ClientPhaseShift_SCRIPT_HACKS_ON()
+
+				if ( localViewPlayer.IsTitan() )
+					EmitSoundOnEntity( localViewPlayer, SHIFTER_START_SOUND_1P_TITAN )
+				else
+					EmitSoundOnEntity( localViewPlayer, SHIFTER_START_SOUND_1P )
+
+				if ( localViewPlayer.IsTitan() )
+					EmitSoundOnEntity( localViewPlayer, SHIFTER_LOOP_SOUND_1P_TITAN )
+				else
+					EmitSoundOnEntity( localViewPlayer, SHIFTER_LOOP_SOUND_1P )
+
+				effectsAreActive = true
+				ourPlayer = localViewPlayer
+			}
+		}
+
+		WaitFrame()
+	}
+}
+
+void function ClientRemoteTurretFirstPersonFXThread()
+{
+	int effectSparkles
+	int effectScreen
+	bool effectsAreActive = false
+	entity ourPlayer      = null
+
+	const string TURRET_LOOP_SOUND = "Pilot_RemoteTurret_Loop_1P"
+
+	while ( true )
+	{
+		if ( effectsAreActive )
+		{
+			entity localViewPlayer = GetLocalViewPlayer()
+
+			bool needShutdown = false
+			if ( !IsValid( ourPlayer ) || !IsAlive( ourPlayer ) )
+				needShutdown = true
+			else if ( ourPlayer != localViewPlayer )
+				needShutdown = true
+			else if ( ourPlayer.GetRemoteTurret() == null )
+				needShutdown = true
+
+			if ( needShutdown )
+			{
+				if ( IsValid( ourPlayer ) && (ourPlayer == localViewPlayer) )
+					StopSoundOnEntity( ourPlayer, TURRET_LOOP_SOUND )
+
+				effectsAreActive = false
+				ourPlayer = null
+			}
+		}
+
+		if ( !effectsAreActive )
+		{
+			entity localViewPlayer = GetLocalViewPlayer()
+			if ( IsValid( localViewPlayer ) && (localViewPlayer.GetRemoteTurret() != null) )
+			{
+				EmitSoundOnEntity( localViewPlayer, TURRET_LOOP_SOUND )
+				effectsAreActive = true
+				ourPlayer = localViewPlayer
+			}
+		}
+
+		WaitFrame()
+	}
+}
+
+void function ClientPhaseShift_SCRIPT_HACKS_ON()
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+
+	localViewPlayer.Signal( "StartPhaseShift" )
+
+	if ( localViewPlayer == GetLocalClientPlayer() )
+	{
+		//localViewPlayer.cv.PlayerPetTitanIcon.Hide()
+		//localViewPlayer.cv.PlayerPetTitanArrow.Hide()
+		//localViewPlayer.cv.PlayerPetTitanLabel.Hide()
+	}
+}
+
+void function ClientPhaseShift_SCRIPT_HACKS_OFF()
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+	//
+	//if ( localViewPlayer == GetLocalClientPlayer() )
+	//	UpdatePetTitanIcon( localViewPlayer )
+
+	//It would be great if we could automatically hide icons using SetEntityOverhead if that entity is phased out.
+	// if ( GameRules_GetGameMode() == SURVIVOR )
+	// 	DisplayScrapCounter( GetLocalClientPlayer(), LIFE_ALIVE, LIFE_ALIVE )
+}
+
+#endif // #if CLIENT
+
+#if SERVER
+void function SetPhaseShiftMover( entity ent, entity mover )
+{
+	if ( IsValid( ent.e.phaseShiftMover ) )
+	{
+		ent.e.phaseShiftMover.TransferChildrenTo( mover )
+		ent.e.phaseShiftMover.Destroy()
+	}
+
+	ent.e.phaseShiftMover = mover
+}
+#endif

@@ -1,0 +1,53 @@
+WeaponData
+{
+	Mods
+	{
+		// 1x
+   		optic_cq_threat
+   		{
+   			// sight_cro
+   			"zoom_fov"				"60"
+
+   			"bodygroup1_set"		"0"
+			"bodygroup10_set"		"1"
+
+			"ui1_enable"			"0"
+			"ui10_enable"			"1"
+
+			"mod_activity_modifier"	"optic"
+
+			"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_CRO"
+			"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_CRO"
+			"viewmodel_offset_ads_by_centerpoint" 		"1"
+
+			"viewmodel_offset_ads" 				        "0 10 0"
+			"dof_zoom_nearDepthStart"				    "0.5"
+			"dof_zoom_nearDepthEnd"					    "4.1"
+
+			"threat_scope_enabled"			    "1"
+			"threat_scope_fadedist_start"       "984"  // 25m
+			"threat_scope_fadedist_end"         "2165" // 55m
+			"threat_scope_bounds_tagname1"	    "SCR_TR_CRO"
+			"threat_scope_bounds_tagname2"	    "SCR_BL_CRO"
+   		}
+	}
+
+	// optic_cq_threat
+	"bodygroup10_name"	"sight_cro"
+	"bodygroup10_set"	"0"
+
+	"ui10_enable"		"0"
+	"ui10_draw_cloaked"	"1"
+	UiData10
+	{
+		"ui"							"ui/cro_threat_sights"
+		"mesh"							"models/weapons/attachments/cro_rui_upper"
+		Args
+		{
+			zoomFrac					player_zoomfrac
+			ammo						weapon_ammo
+			clipSize					weapon_clipSize
+			centerOffset				weapon_ads_center_offset
+		}
+	}
+}

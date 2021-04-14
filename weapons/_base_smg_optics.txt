@@ -1,0 +1,100 @@
+#base "_base_optics.txt"
+#base "_base_optics_cq.txt"
+#base "_base_optics_cq_threat.txt"
+#base "_base_optics_ranged.txt"
+
+WeaponData
+{
+	Mods
+	{
+	    optic_cq_hcog_classic
+        {
+            "zoom_time_in"                          "0.24"
+            "zoom_time_out"                         "0.22"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.05"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.05"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_cq_hcog_bruiser
+        {
+            "zoom_time_in"                          "0.24"
+            "zoom_time_out"                         "0.22"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_cq_holosight
+        {
+            "zoom_time_in"                          "0.24"
+            "zoom_time_out"                         "0.22"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.2"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.2"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_cq_holosight_variable
+        {
+            "zoom_time_in"                          "0.24"
+            "zoom_time_out"                         "0.22"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.2"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_cq_threat
+        {
+            "zoom_time_in"                          "0.24"
+            "zoom_time_out"                         "0.22"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_ranged_hcog
+        {
+            "zoom_time_in"                          "0.27"
+            "zoom_time_out"                         "0.23"
+			
+			"viewkick_ads_weaponFraction" 			"0.02"
+			"viewkick_ads_weaponFraction_vmScale" 	"0.98"
+
+			"anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_ranged_aog_variable
+        {
+            "zoom_time_in"                          "0.27"
+            "zoom_time_out"                         "0.23"
+			
+			"viewkick_ads_weaponFraction" 			"0.02"
+			"viewkick_ads_weaponFraction_vmScale" 	"0.98"
+
+			"anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.15"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.15"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+	}
+}

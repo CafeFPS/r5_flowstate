@@ -1,0 +1,21 @@
+// Cubemap visualization tool
+
+WeaponData
+{
+	// Weapon data is loaded by both the Game and Client DLLs.
+	"printname"		"dev cubemap tool"
+	"shortprintname"		"dev cubemap tool"
+	"description"	""
+	"viewmodel"		"mdl/dev/envballs.rmdl"
+	"playermodel"		"mdl/dev/envballs.rmdl"
+	"bucket"		"5"
+	"bucket_position"	"19"
+	"weaponClass" 									"cube"
+
+	"allow_empty_fire"	"1"
+
+	"weight"			"0"
+	"item_flags"		"0"
+
+	"flyoutEnabled"		"0"
+}

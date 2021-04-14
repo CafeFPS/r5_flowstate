@@ -1,0 +1,722 @@
+/*
+TO DO:
+1. FadeElementChildren() - Should find a way to grab all children and fade them.
+2. Page Circle buttons do not update once the grid is initialized, need to be able to update
+*/
+
+untyped
+
+const string GRID_PANEL_NAME = "GridPanel"
+const string PAGE_BTN_PREFIX = "PageButton"
+const string GRID_BTN_PREFIX = "GridButton"
+const string GRID_BTN_DELIM = "x"
+
+global function GridPanel_Init
+global function GridPanel_SetButtonHandler
+global function GridPanel_SetKeyPressHandler
+
+global function GridPanel_SetEnabled
+global function GridPanel_SetNavUp
+global function GridPanelInit
+
+global function GridPanel_SetCommandHandler
+
+global function GridPanel_InitStatic
+
+global enum eGridPanelFillDirection
+{
+	DOWN,
+	RIGHT
+}
+
+/* SAMPLE SCRIPT USAGE:
+
+	GridPanelData
+	data
+	data.rows = 2
+	data.columns = 4
+	data.paddingVert = 1
+	data.paddingHorz = 50
+	data.tileWidth = 150
+	data.tileHeight = 70
+	data.numElements = 14
+	data.initCallback = GridPanel_DefaultInit
+	data.buttonFadeCallback = GridPanel_FadeDefaultElementChildren
+	data.pageType = eGridPageType.HORIZONTAL
+	GridMenuInit( menu, data )
+*/
+
+//global function GridPanel_InitPage
+//global function GridPanel_GetGridDataForButton
+//global function GridPanel_GetRowFromElementNumber
+//global function GridPanel_GetColumnFromElementNumber
+//global function GridPanel_GetButtonAtRowColumn
+//global function GridPanel_GetButtonForElementNumber
+//global function GridPanel_GetMaxWidthForSettings
+//global function GridPanel_GetMaxHeightForSettings
+//global function GridPanel_AutoTileSettings
+//global function GridPanel_AutoAspectSettings
+//global function GridPanel_GetFirstPageButtonIndex
+//global function GridPanel_SetName
+//global function GridPanel_SetSubText
+//global function GridPanel_GetNumPages
+//global function GridPanel_GetElemNumForButton
+//
+//global function IsGridButton
+//global function OnGridButtonGetFocus
+
+global function GridPanel_Refresh
+
+struct GridElementData
+{
+	var button
+	int assignedIndex
+	int row
+	int column
+}
+
+const int MAX_ROWS = 10
+const int MAX_COLS = 10
+
+struct GridPanelData
+{
+	var panel
+
+	// PRIVATE VARS
+	bool isEnabled = true
+	int  lastRowSelected = 0
+	int  lastColSelected = 0
+
+	bool staticSize = false
+
+	// PUBLIC VARS
+	int  rows = 2
+	int  columns = 2
+	int  paddingVert = 8
+	int  paddingHorz = 8
+	int  tileWidth = 64
+	int  tileHeight = 64
+	int  numElements = 6
+	int  pageFillDirection = eGridPanelFillDirection.RIGHT
+
+	int panelLeftPadding = 0
+	int panelRightPadding = 0
+	int panelTopPadding = 0
+	int panelBottomPadding = 0
+
+	void functionref( var panel, var button, int index ) bindCallback
+	void functionref( var panel, var button, int index ) clickCallback
+	void functionref( var panel, var button, int index ) clickRightCallback
+	void functionref( var panel, var button, int index ) getFocusCallback
+	void functionref( var panel, var button, int index ) loseFocusCallback
+	int  functionref( var panel )                        itemCountCallback
+	void functionref( var panel, var button, int index, string command ) commandHandler
+
+	bool functionref( var panel, var button, int position, int keyId, bool isDown ) keyPressHandler
+
+	array<var> gridButtonElements
+
+	GridElementData&[MAX_ROWS][MAX_COLS] gridButtonGrid
+
+	table<string, GridElementData> gridTileTable
+
+	var currentMenu
+}
+
+struct
+{
+	table<string, GridPanelData> gridPanels
+	bool                         bumperButtonsRegistered = false
+
+
+} file
+
+
+void function GridPanelInit()
+{
+
+}
+
+
+void function GridPanel_Init( var panel, int numRows, int numCols, void functionref( var panel, var button, int index ) bindCallback, int functionref( var panel ) itemCountCallback, void functionref( var button ) buttonInitCallback )
+{
+	Assert( numRows <= MAX_ROWS )
+	Assert( numCols <= MAX_COLS )
+
+	GridPanelData data
+	data.panel = panel
+
+	if ( !(string(panel) in file.gridPanels) )
+		file.gridPanels[string(panel)] <- data
+
+	file.gridPanels[string(panel)] = data
+
+	data.rows = numRows
+	data.columns = numCols
+
+	data.bindCallback = bindCallback
+	data.itemCountCallback = itemCountCallback
+
+	int maxRows = 0
+	int maxCols = 0
+
+	while ( Hud_HasChild( panel, "GridButton0x" + maxCols ) )
+	{
+		maxCols++
+	}
+
+	while ( Hud_HasChild( panel, "GridButton" + maxRows + "x0" ) )
+	{
+		maxRows++
+	}
+
+	for ( int row = 0; row < maxRows; row++ )
+	{
+		for ( int column = 0; column < maxCols; column++ )
+		{
+			var gridButton = Hud_GetChild( panel, "GridButton" + row + "x" + column )
+			Hud_AddEventHandler( gridButton, UIE_GET_FOCUS, OnGridTileGetFocus )
+			Hud_AddEventHandler( gridButton, UIE_LOSE_FOCUS, OnGridTileLoseFocus )
+			Hud_AddEventHandler( gridButton, UIE_CLICK, OnGridTileClick )
+			Hud_AddEventHandler( gridButton, UIE_CLICKRIGHT, OnGridTileRightClick )
+			Hud_AddKeyPressHandler( gridButton, OnGridTileKeyPress )
+			Hud_SetCommandHandler( gridButton, OnGridTileCommandEvent )
+
+			//int elemNum = (row * column) + column
+			//Hud_SetKeyValue( gridButton, "elemNum", elemNum )
+			Hud_SetKeyValue( gridButton, "parentPanel", data.panel )
+
+			data.gridButtonElements.append( gridButton )
+
+			GridElementData buttonData
+			buttonData.button = gridButton
+			buttonData.assignedIndex = -1
+
+			data.gridButtonGrid[row][column] = buttonData
+			data.gridTileTable[string(gridButton)] <- buttonData
+
+			Hud_Hide( gridButton )
+			Hud_SetEnabled( gridButton, false )
+
+			Hud_SetNavUp( gridButton, gridButton )
+			Hud_SetNavDown( gridButton, gridButton )
+			Hud_SetNavLeft( gridButton, gridButton )
+			Hud_SetNavRight( gridButton, gridButton )
+
+			if ( buttonInitCallback != null )
+				buttonInitCallback( gridButton )
+		}
+	}
+
+	InitTileSizes( data )
+	InitPanelLayout( data )
+
+	UpdateTileElements( data )
+}
+
+
+void function GridPanel_SetNavUp( var panel, var navUpElement, int singleColumn = -1 )
+{
+	GridPanelData data = GetDataForPanel( panel )
+	if ( singleColumn > -1 )
+	{
+		GridElementData buttonData = data.gridButtonGrid[0][singleColumn]
+		Hud_SetNavUp( buttonData.button, navUpElement )
+		Hud_SetNavDown( navUpElement, buttonData.button )
+	}
+	else
+	{
+		for ( int column = 0; column < data.columns; column++ )
+		{
+			GridElementData buttonData = data.gridButtonGrid[0][column]
+			Hud_SetNavUp( buttonData.button, navUpElement )
+			Hud_SetNavDown( navUpElement, buttonData.button )
+		}
+	}
+}
+
+
+void function GridPanel_SetButtonHandler( var panel, int eventType, void functionref( var panel, var button, int index ) eventCallback )
+{
+	GridPanelData data = GetDataForPanel( panel )
+	switch( eventType )
+	{
+		case UIE_CLICK:
+			data.clickCallback = eventCallback
+			break
+
+		case UIE_CLICKRIGHT:
+			data.clickRightCallback = eventCallback
+			break
+
+		case UIE_GET_FOCUS:
+			data.getFocusCallback = eventCallback
+			break
+
+		case UIE_LOSE_FOCUS:
+			data.loseFocusCallback = eventCallback
+			break
+
+		default:
+			Assert( 0, "Unhandled eventType." )
+	}
+}
+
+void function GridPanel_SetKeyPressHandler( var panel, bool functionref( var panel, var button, int position, int keyId, bool isDown ) keyPressHandler )
+{
+	GridPanelData data = GetDataForPanel( panel )
+	data.keyPressHandler = keyPressHandler
+}
+
+
+void function GridPanel_SetEnabled( var panel, bool state )
+{
+	GridPanelData data = GetDataForPanel( panel )
+	data.isEnabled = state
+
+	UpdateTileElements( data )
+}
+
+
+void function InitPanelLayout( GridPanelData data, bool initData = true )
+{
+	for ( int row = 0; row < data.rows; row++ )
+	{
+		for ( int column = 0; column < data.columns; column++ )
+		{
+			GridElementData buttonData = data.gridButtonGrid[row][column]
+
+			buttonData.assignedIndex = (column * data.rows) + row
+
+			int xPos = ((ContentScaledXAsInt( data.paddingHorz ) + data.tileWidth) * column) + ContentScaledXAsInt( data.panelLeftPadding )
+			int yPos = ((ContentScaledYAsInt( data.paddingVert ) + data.tileHeight) * row) + ContentScaledYAsInt( data.panelTopPadding )
+
+			if ( !data.staticSize )
+				Hud_SetSize( buttonData.button, data.tileWidth, data.tileHeight )
+			else
+				Hud_ReturnToBaseSize( buttonData.button )
+
+			Hud_SetPos( buttonData.button, xPos, yPos )
+
+			if ( row < data.rows - 1 )
+			{
+				Hud_SetNavDown( buttonData.button, data.gridButtonGrid[row + 1][column].button )
+				Hud_SetNavUp( data.gridButtonGrid[row + 1][column].button, buttonData.button )
+			}
+
+			if ( column < data.columns - 1 )
+			{
+				Hud_SetNavRight( buttonData.button, data.gridButtonGrid[row][column + 1].button )
+				Hud_SetNavLeft( data.gridButtonGrid[row][column + 1].button, buttonData.button )
+			}
+
+			Hud_Show( buttonData.button )
+			Hud_SetEnabled( buttonData.button, true )
+		}
+	}
+}
+
+
+void function GridPanel_SetCommandHandler( var panel, void functionref( var panel, var button, int index, string command ) commandHandler )
+{
+	GridPanelData data = GetDataForPanel( panel )
+	data.commandHandler = commandHandler
+}
+
+
+void function UpdateTileElements( GridPanelData data )
+{
+	int numTiles = data.itemCountCallback( data.panel )
+	Assert( numTiles <= data.rows * data.columns )
+
+	for ( int row = 0; row < data.rows; row++ )
+	{
+		for ( int column = 0; column < data.columns; column++ )
+		{
+			GridElementData buttonData = data.gridButtonGrid[row][column]
+
+			int elemNum = buttonData.assignedIndex
+			if ( elemNum < numTiles )
+			{
+				Hud_SetEnabled( buttonData.button, true && data.isEnabled )
+				data.bindCallback( data.panel, buttonData.button, elemNum )
+				if ( !data.isEnabled )
+					Hud_SetEnabled( buttonData.button, false )
+				Hud_Show( buttonData.button )
+			}
+			else
+			{
+				Hud_Hide( buttonData.button )
+				Hud_SetEnabled( buttonData.button, false )
+			}
+		}
+	}
+
+	int numCols     = int( ceil( numTiles / float( data.rows ) ) )
+	int panelWidth = numCols * data.tileWidth + ContentScaledYAsInt( data.panelLeftPadding ) + ContentScaledYAsInt( data.panelLeftPadding ) + ((numCols - 1) * ContentScaledYAsInt( data.paddingHorz ))
+
+	if ( !data.staticSize )
+	{
+		Hud_SetWidth( data.panel, panelWidth )
+		if ( Hud_HasChild( data.panel, "PanelFrame" ) )
+			Hud_SetWidth( Hud_GetChild( data.panel, "PanelFrame" ), panelWidth )
+	}
+}
+
+
+GridPanelData function GetDataForPanel( var panel )
+{
+	Assert( string( panel ) in file.gridPanels )
+	return file.gridPanels[string(panel)]
+}
+
+
+GridElementData function GetDataForButton( GridPanelData gridData, var button )
+{
+	Assert( string( button ) in gridData.gridTileTable )
+	return gridData.gridTileTable[string(button)]
+}
+
+
+int function GetColumn_BottomMostIndex( var panel, int column )
+{
+	GridPanelData data = GetDataForPanel( panel )
+
+	var bestButton = null
+	for ( int rowIndex = data.rows - 1; rowIndex >= 0; rowIndex-- )
+	{
+		var button = GridPanel_GetButtonAtRowColumn( panel, rowIndex, column )
+		if ( !Hud_IsEnabled( button ) )
+			continue
+
+		bestButton = button
+		break
+	}
+
+	if ( !bestButton || !Hud_IsEnabled( bestButton ) )
+		return -1
+
+	return GridPanel_GetElemNumForButton( bestButton )
+}
+
+
+int function GetColumn_TopMostIndex( var panel, int column )
+{
+	GridPanelData data = GetDataForPanel( panel )
+
+	var button = GridPanel_GetButtonAtRowColumn( panel, 0, column )
+
+	return Hud_IsEnabled( button ) ? GridPanel_GetElemNumForButton( button ) : -1
+}
+
+
+int function GetRow_LeftMostIndex( var panel, int row )
+{
+	GridPanelData data = GetDataForPanel( panel )
+
+	var button = GridPanel_GetButtonAtRowColumn( panel, row, 0 )
+
+	return Hud_IsEnabled( button ) ? GridPanel_GetElemNumForButton( button ) : -1
+}
+
+
+int function GetRow_RightMostIndex( var panel, int row )
+{
+	GridPanelData data = GetDataForPanel( panel )
+
+	var bestButton = null
+	for ( int colIndex = data.columns - 1; colIndex >= 0; colIndex-- )
+	{
+		var button = GridPanel_GetButtonAtRowColumn( panel, row, colIndex )
+		if ( !Hud_IsEnabled( button ) )
+			continue
+
+		bestButton = button
+		break
+	}
+
+	if ( !bestButton || !Hud_IsEnabled( bestButton ) )
+		return -1
+
+	return GridPanel_GetElemNumForButton( bestButton )
+}
+
+
+void function ReselectLastElementSelected( GridPanelData data, var menu )
+{
+	int row         = data.lastRowSelected
+	int col         = data.lastColSelected
+	var focusButton = GridPanel_GetButtonAtRowColumn( menu, row, col )
+
+	Hud_Show( focusButton )
+	Hud_SetEnabled( focusButton, true )
+	if ( GetActiveMenu() == data.currentMenu )
+		Hud_SetFocused( focusButton )
+}
+
+
+var function GridPanel_GetButtonAtRowColumn( var panel, int row, int col )
+{
+	return Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
+}
+
+
+var function GridPanel_GetButtonForElementNumber( var panel, int elemNum )
+{
+	GridPanelData data = GetDataForPanel( panel )
+
+	int row = GridPanel_GetRowFromElementNumber( elemNum, data )
+	int col = GridPanel_GetColumnFromElementNumber( elemNum, data )
+
+	return GridPanel_GetButtonAtRowColumn( panel, row, col )
+}
+
+
+int function GridPanel_GetElemNumForButton( var button )
+{
+	int elemNum = expect int( button.s.elemNum )
+	return elemNum
+}
+
+
+void function OnGridTileGetFocus( var button )
+{
+	GridPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	GridElementData buttonData = GetDataForButton( data, button )
+
+	if ( data.getFocusCallback != null )
+		data.getFocusCallback( data.panel, button, buttonData.assignedIndex )
+}
+
+
+void function OnGridTileLoseFocus( var button )
+{
+	GridPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	GridElementData buttonData = GetDataForButton( data, button )
+
+	if ( data.loseFocusCallback != null )
+		data.loseFocusCallback( data.panel, button, buttonData.assignedIndex )
+}
+
+
+void function OnGridTileRightClick( var button )
+{
+	GridPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	GridElementData buttonData = GetDataForButton( data, button )
+
+	if ( data.clickRightCallback != null )
+		data.clickRightCallback( data.panel, button, buttonData.assignedIndex )
+}
+
+
+void function OnGridTileClick( var button )
+{
+	GridPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	GridElementData buttonData = GetDataForButton( data, button )
+
+	if ( data.clickCallback != null )
+		data.clickCallback( data.panel, button, buttonData.assignedIndex )
+}
+
+void function OnGridTileCommandEvent( var button, string command )
+{
+	GridPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	if ( data.commandHandler == null )
+		return
+
+	GridElementData ornull buttonData = GetDataForButton( data, button )
+	if ( buttonData == null )
+		return
+
+	expect GridElementData( buttonData )
+
+	data.commandHandler( data.panel, button, buttonData.assignedIndex, command )
+}
+
+
+bool function OnGridTileKeyPress( var button, int keyId, bool isDown )
+{
+	GridPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
+	if ( data.keyPressHandler == null )
+		return false
+
+	GridElementData buttonData = GetDataForButton( data, button )
+	bool wasHandled = data.keyPressHandler( data.panel, button, buttonData.assignedIndex, keyId, isDown )
+	return wasHandled
+}
+
+int function GridPanel_GetRowFromElementNumber( int elemNum, GridPanelData data )
+{
+	Assert( data.pageFillDirection == eGridPanelFillDirection.RIGHT )
+
+	return (elemNum / data.columns)
+}
+
+
+int function GridPanel_GetColumnFromElementNumber( int elemNum, GridPanelData data )
+{
+	Assert( data.pageFillDirection == eGridPanelFillDirection.RIGHT )
+
+	return elemNum % data.columns
+}
+
+
+int function GridPanel_GetPageFromElementNumber( int elemNum, GridPanelData data )
+{
+	return 1
+}
+
+
+int function GridPanel_GetNumPages( GridPanelData data )
+{
+	return 1
+}
+
+
+int function GetMaxButtonsPerPage( GridPanelData data )
+{
+	int numPerPage = data.rows * data.columns
+	return numPerPage
+}
+
+
+int function GridPanel_GetPanelWidth( var panel )
+{
+	int panelWidth = Hud_GetWidth( panel )
+	return panelWidth
+}
+
+
+int function GridPanel_GetPanelHeight( var panel )
+{
+	int panelHeight = Hud_GetHeight( panel )
+	return panelHeight
+}
+
+
+int function GridPanel_GetMaxHeightForSettings( var panel, GridPanelData data )
+{
+	int panelHeight = Hud_GetHeight( panel )
+	int rows        = data.rows
+	int padding     = ContentScaledYAsInt( data.paddingVert )
+
+	panelHeight -= padding
+
+	int tileHeight = (panelHeight / rows) - padding
+	return tileHeight
+}
+
+// Automatically adjust horzizontal/vertical padding to accommodate specified tile size
+void function GridPanel_InitStatic( var panel, int tileWidth, int tileHeight )
+{
+	GridPanelData gridData = GetDataForPanel( panel )
+	gridData.staticSize = true
+	Hud_ReturnToBaseSize( gridData.panel )
+
+	gridData.tileWidth = tileWidth
+	gridData.tileHeight = tileHeight
+
+	int panelWidth  = GridPanel_GetPanelWidth( gridData.panel ) - ContentScaledXAsInt( gridData.panelLeftPadding + gridData.panelRightPadding )
+	int panelHeight = GridPanel_GetPanelHeight( gridData.panel ) - ContentScaledYAsInt( gridData.panelTopPadding + gridData.panelBottomPadding )
+
+	//Assert( tileWidth * gridData.columns <= panelWidth, "tileWidth " + tileWidth + " is too large for container panel with width " + panelWidth )
+	//Assert( tileHeight * gridData.rows <= panelHeight, "tileHeight " + tileHeight + " is too large for container panel with height " + panelHeight )
+
+	int columnPaddingCount = gridData.columns - 1
+	int rowPaddingCount = gridData.rows - 1
+
+	int paddingHorz = ((panelWidth - (tileWidth * gridData.columns)) / columnPaddingCount)
+	int paddingVert = ((panelHeight - (tileHeight * gridData.rows)) / rowPaddingCount)
+
+	gridData.paddingHorz = int( paddingHorz / GetContentScaleFactor( GetMenu( "MainMenu" ) ).x )
+	gridData.paddingVert = int( paddingVert / GetContentScaleFactor( GetMenu( "MainMenu" ) ).y )
+
+	InitPanelLayout( gridData )
+	UpdateTileElements( gridData )
+}
+
+
+// Automatically size tiles to panel width with a forced number of columns
+void function InitTileSizes( GridPanelData gridData, float tileAspectRatio = 1.0 )
+{
+	int panelWidth  = GridPanel_GetPanelWidth( gridData.panel ) - ContentScaledXAsInt( gridData.panelLeftPadding + gridData.panelRightPadding )
+	int panelHeight = GridPanel_GetPanelHeight( gridData.panel ) - ContentScaledYAsInt( gridData.panelTopPadding + gridData.panelBottomPadding )
+
+	int paddingCount = gridData.columns - 1
+
+	panelWidth -= paddingCount * ContentScaledXAsInt( gridData.paddingHorz )
+
+	int tileWidth = panelWidth / gridData.columns
+
+	gridData.paddingVert = gridData.paddingHorz
+	gridData.tileWidth = tileWidth
+	gridData.tileHeight = int( tileWidth / tileAspectRatio )
+}
+
+
+void function GridPanel_AutoAspectSettings( var panel )
+{
+	GridPanelData gridData = GetDataForPanel( panel )
+
+	int panelWidth  = GridPanel_GetPanelWidth( panel ) - ContentScaledXAsInt( gridData.panelLeftPadding + gridData.panelRightPadding )
+	int panelHeight = GridPanel_GetPanelHeight( panel ) - ContentScaledYAsInt( gridData.panelTopPadding + gridData.panelBottomPadding )
+
+	int basePanelWidth = panelWidth
+
+	float baseWidth  = float( gridData.tileWidth )
+	float baseHeight = float( gridData.tileHeight )
+
+	float tileAspectA = baseHeight / baseWidth
+	float tileAspectB = baseWidth / baseHeight
+
+	int hPaddingCount = gridData.columns - 1
+	int vPaddingCount = gridData.rows - 1
+
+	panelWidth -= hPaddingCount * ContentScaledXAsInt( gridData.paddingHorz )
+	panelHeight -= vPaddingCount * ContentScaledYAsInt( gridData.paddingVert )
+
+	int tileWidthA  = panelWidth / gridData.columns
+	int tileHeightA = int( tileWidthA * tileAspectA )
+
+	int tileHeightB = panelHeight / gridData.rows
+	int tileWidthB  = int( tileHeightB * tileAspectB )
+
+	if ( tileHeightB < tileHeightA )
+	{
+		gridData.tileWidth = tileWidthB
+		gridData.tileHeight = tileHeightB
+	}
+	else
+	{
+		gridData.tileWidth = tileWidthA
+		gridData.tileHeight = tileHeightA
+	}
+}
+
+
+int function GridPanel_GetRowFromButtonName( var button )
+{
+	// Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
+	string name     = Hud_GetHudName( button )
+	string rowByCol = name.slice( GRID_BTN_PREFIX.len(), name.len() )
+	int row         = int( split( rowByCol, GRID_BTN_DELIM )[0] )
+	return row
+}
+
+
+int function GridPanel_GetColFromButtonName( var button )
+{
+	// Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
+	string name     = Hud_GetHudName( button )
+	string rowByCol = name.slice( GRID_BTN_PREFIX.len(), name.len() )
+	int col         = int( split( rowByCol, GRID_BTN_DELIM )[1] )
+	return col
+}
+
+
+void function GridPanel_Refresh( var panel )
+{
+	GridPanelData gridData = GetDataForPanel( panel )
+
+	UpdateTileElements( gridData )
+}

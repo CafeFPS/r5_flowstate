@@ -1,0 +1,1697 @@
+untyped
+
+global function ClDialogue_Init
+
+// call to attempt to start playing a conversation. will return false if it doesn't play, not that we can do anything about it.
+global function ServerCallback_PlayConversation
+global function ServerCallback_PlayTitanConversation
+global function ServerCallback_PlaySquadConversation
+global function SetDialogueDebugLevel
+global function GetDialogueDebugLevel
+global function VerifyConversationAliases
+global function ClDebugPlayConversation
+global function CancelConversation
+global function AddSpeakerToBlacklist
+global function RemoveSpeakerFromBlacklist
+global function AbortConversationDueToPriority
+
+global function CreateWaveform
+global function CreateWaveformVideo
+global function WaveformVideoSwitchTest
+global function WaveformVideoTest
+global function DestroyWaveform
+global function DestroyWaveform_Immediate
+
+global function PlayConversationToLocalClient
+global function ResetSquadConversationDebounceTimers
+
+global function PlayOneLinerConversationOnEntWithPriority //R2 MP style dialogue ( one liner, sound alias needs to be dynamically generated on the client ) should use this function
+global function PlayAnnouncerLineThroughDeathWithPriority //Faction Leader announcers are an exception since sometimes they need to persist through death ( e.g. win announcement shouldn't cancel when you die )
+
+/*
+	ServerCallback_PlayConversation( conversationType, priority )
+*/
+
+const WAVEFORM_FADE_DURATION = 1.0
+const RADIO_SPEECH_DELAY = 0.4
+const PLAYER_HEARS_RADIO = false
+//const FRIENDLY_GRUNT_MINIMAP_MATERIAL = $"vgui/HUD/threathud_friendly_soldier"
+
+struct
+{
+	int nextVoiceIndex = 0
+	int DebugLevel = 0  // no debug = 0
+
+	table squadConversationDebounceTimers
+	array squadConversationPriorities
+
+	table aiTalkers
+	string lastWaveformTalker
+	var waveformRUI
+	var waveformVideoRUI
+	string lastWaveformVideoSound
+	table<string,asset> callerIDs
+	table<string,asset> callerIDsVideo
+
+	int videoChannel = -1
+} file
+
+void function ClDialogue_Init()
+{
+	file.squadConversationPriorities = [
+		VO_PRIORITY_AI_CHATTER_LOWEST,
+		VO_PRIORITY_AI_CHATTER_LOW,
+		VO_PRIORITY_AI_CHATTER,
+		VO_PRIORITY_AI_CHATTER_HIGH
+	]
+
+	file.aiTalkers = {
+		[ TEAM_IMC ] = {},
+		[ TEAM_MILITIA ] = {},
+		[ TEAM_BOTH ] = {},
+	}
+
+	InitGlobals()
+
+	RegisterSignal( "CancelConversation" )
+	RegisterSignal( "ConversationOver" )
+	RegisterSignal( "vdu_close" )
+	RegisterSignal( "vdu_open" )
+	RegisterSignal( "WaveformRuiExtended" )
+
+	AddCreateCallback( "npc_soldier", AI_Dialogue_General_Init )
+
+	//Debug stuff for QA
+	#document( "ClDebugPlayConversation", " Play conversation specified on this client." )
+	AddCallback_KillReplayStarted( ResetSquadConversationDebounceTimers )
+	AddCallback_KillReplayEnded( ResetSquadConversationDebounceTimers )
+
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+
+	var dataTableVideo = GetDataTable( $"datatable/caller_ids_video.rpak" )
+	int videoRows = GetDatatableRowCount( dataTableVideo )
+	for ( int i = 0; i < videoRows; i++ )
+	{
+		string title = GetDataTableString( dataTableVideo, i, GetDataTableColumnByName( dataTableVideo, "title" ) )
+		asset video = GetDataTableAsset( dataTableVideo, i, GetDataTableColumnByName( dataTableVideo, "video" ) )
+		file.callerIDsVideo[ title ] <- video
+	}
+	file.callerIDsVideo[ "default" ] <- $"media/vdu_test"
+
+	var dataTable = GetDataTable( $"datatable/caller_ids_mp.rpak" )
+	int rows = GetDatatableRowCount( dataTable )
+	for ( int i = 0; i < rows; i++ )
+	{
+		string title = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "title" ) )
+		asset image = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "image" ) )
+		file.callerIDs[ title ] <- image
+	}
+
+	file.callerIDs[ "default" ] <- $"rui/hud/caller_ids/caller_id_01"
+
+	file.videoChannel = ReserveVideoChannel()
+}
+
+void function EntitiesDidLoad()
+{
+	VerifyConversationAliases()
+}
+
+void function AI_Dialogue_General_Init( entity guy )
+{
+	int team = guy.GetTeam()
+	guy.s.spawnTeam <- team // so they use native tongue if they switch teams
+
+	if ( !( team in file.aiTalkers ) )
+		return
+
+	table dialogue
+	dialogue.voiceIndex <- file.nextVoiceIndex
+	file.nextVoiceIndex = (file.nextVoiceIndex + 1) % VOICE_COUNT
+
+	dialogue.enabled <- true
+
+	dialogue.hasBeenAlerted <- false
+	dialogue.currentConversationPriority <- 0 // track priority of current conversation for this ai
+
+	guy.s.dialogue <- dialogue
+
+	file.aiTalkers[ team ][ guy ] <- guy
+}
+
+void function InitGlobals()
+{
+	if ( reloadingScripts )
+		return
+
+	level.ConversationIndices		<- {}
+	level.CurrentPriority			<- 0
+	level.AnnouncementPriority		<- 1000
+	level.debugType					<- ""
+
+	level.DefaultLineInterval		<- 0.45	// default interval between lines in a conversations
+
+	level.ConversationIntervalMin	<- 0.5	// interval between conversations in the form of delay before last vdu will close
+	level.ConversationIntervalMax	<- 1.0
+
+	level.speakerBlacklist          <- {}
+}
+
+int function GetDialogueDebugLevel()
+{
+	return file.DebugLevel
+}
+
+void function SetDialogueDebugLevel( int level )
+{
+	file.DebugLevel = level
+}
+
+int function GetTeamForConversation( entity player )
+{
+	if ( !Is2TeamPvPGame() )
+		return TEAM_MILITIA
+
+	return player.GetTeam()
+}
+
+void function PlayConversationToLocalClient( string convAlias )
+{
+	#if FACTION_DIALOGUE_ENABLED
+		return
+	#endif
+
+	if ( IsWatchingReplay() )
+	{
+		if ( file.DebugLevel > 1 )
+			printt( "Watching kill replay, not attempting conversation" )
+
+		return
+	}
+
+	int priority = GetConversationPriority( convAlias )
+	entity player = GetLocalClientPlayer()
+
+	if ( IsLobby() ) // TEMP: Too many MP assumptions that fail in lobby so just play directly
+		thread ClRunConversation( player, convAlias )
+	else
+		thread ClAttemptConversation( convAlias, player, priority )
+}
+
+void function ServerCallback_PlayTitanConversation( int conversationIndex )
+{
+	entity player = GetLocalClientPlayer()
+	string conversationType = GetConversationName( conversationIndex )
+	TitanCockpit_PlayDialog( GetLocalViewPlayer(), conversationType )
+}
+
+void function ServerCallback_PlayConversation( int conversationIndex )
+{
+	entity player = GetLocalClientPlayer()
+	string conversationType = GetConversationName( conversationIndex )
+	PlayConversationToLocalClient( conversationType )
+}
+
+void function ServerCallback_PlaySquadConversation( int conversationIndex, int eHandle1, int eHandle2, int eHandle3, int eHandle4 )
+{
+	#if GRUNT_CHATTER_MP_ENABLED
+		return
+	#endif
+
+	entity ai = GetEntityFromEncodedEHandle( eHandle1 )
+	if ( !IsAlive( ai ) )
+		return
+
+	array<entity> squad
+	squad.append( ai )
+
+	if ( eHandle2 != -1 )
+	{
+		entity ent = GetEntityFromEncodedEHandle( eHandle2 )
+		if ( IsValid( ent ) )
+			squad.append( ent )
+	}
+
+	if ( eHandle3 != -1 )
+	{
+		entity ent = GetEntityFromEncodedEHandle( eHandle3 )
+		if ( IsValid( ent ) )
+			squad.append( ent )
+	}
+
+	if ( eHandle4 != -1 )
+	{
+		entity ent = GetEntityFromEncodedEHandle( eHandle4 )
+		if ( IsValid( ent ) )
+			squad.append( ent )
+	}
+
+	bool foundNonSoldier = false
+	bool dialogueNotInitialized = false
+	foreach ( soldier in squad )
+	{
+		if ( !( "dialogue" in soldier.s ) )
+			dialogueNotInitialized = true
+
+		if ( soldier.GetNetworkedClassName() == "npc_soldier" )
+			continue
+
+		foundNonSoldier = true
+		break
+	}
+
+	string conversationType = GetConversationName( conversationIndex )
+
+	if ( foundNonSoldier )
+	{
+		printt( "ABORTING CONVERSATION: Found non soldier in conversation: " + conversationType )
+		foreach ( soldier in squad )
+		{
+			printt( "Soldier is " + expect string( soldier.GetNetworkedClassName() ) )
+		}
+		//Assert( 0, "See above, found non soldier in conversation" )
+		return
+	}
+
+	if ( dialogueNotInitialized ) //JFS. Kill replay shenenigans with create callback not being run
+	{
+		printt( "ABORTING CONVERSATION: .s.dialogue not initialized: " + conversationType )
+		return
+	}
+
+	int team = ai.GetTeam()
+	Assert( team in file.aiTalkers, "Unknown AI team " + team )
+	int priority = GetConversationPriority( conversationType )
+
+	if ( file.DebugLevel > 1 )
+	{
+		printt( "Attempting squad conversation " + conversationType )
+	}
+
+	int currentConversationPriority = GetSquadConversationPriority( squad )
+
+	if ( priority <= currentConversationPriority ) // cancel if squad conversation is higher priority
+	{
+		if ( file.DebugLevel > 1 )
+			printt( "Priority of conversationType " + conversationType + " is " + priority + ", which is not higher than CurrentConversationPriority of " + currentConversationPriority + ", cancelling squad conversation " )
+
+		return
+	}
+
+	float activeTimer = GetSquadConversationDebounceTimer( conversationType )
+	if ( Time() < activeTimer )
+	{
+		if ( file.DebugLevel > 1 )
+			printt( "Can't play conversation " + conversationType + " because debounce timer hasn't expired, cancelling squad conversation" )
+
+		return
+	}
+
+	// if currently running a conversation, cancel because we have determined this is higher priority
+    if ( currentConversationPriority )
+	{
+		CancelSquadConversation( squad )
+	}
+
+	UpdateSquadConversationDebounceTimer( conversationType )
+
+	entity player = GetLocalViewPlayer()
+	thread ClRunSquadConversation( player, conversationType, squad )
+}
+
+void function TryCreateSquadConversationDebounceTimer( string conversationType )
+{
+	if ( !(conversationType in file.squadConversationDebounceTimers) )
+		file.squadConversationDebounceTimers[ conversationType ] <- 0.0
+}
+
+void function UpdateSquadConversationDebounceTimer( string conversationType )
+{
+	TryCreateSquadConversationDebounceTimer( conversationType )
+
+	float debounceTime = GetConversationDebounce( conversationType )
+	file.squadConversationDebounceTimers[ conversationType ] = Time() + debounceTime
+}
+
+void function ResetSquadConversationDebounceTimers()
+{
+	file.squadConversationDebounceTimers.clear()
+}
+
+float function GetSquadConversationDebounceTimer( string conversationType )
+{
+	TryCreateSquadConversationDebounceTimer( conversationType )
+
+	return expect float( file.squadConversationDebounceTimers[ conversationType ] )
+}
+
+int function GetSquadConversationPriority( array<entity> squad )
+{
+	int highest = 0
+	foreach ( guy in squad )
+	{
+		// handle deletion
+		if ( !IsValid( guy ) )
+			continue
+
+		if ( guy.s.dialogue.currentConversationPriority > highest )
+		{
+			highest = expect int( guy.s.dialogue.currentConversationPriority )
+		}
+	}
+
+	return highest
+}
+
+void function ClDebugPlayConversation( string conversationType )
+{
+	thread ClRunConversation( GetLocalViewPlayer(), conversationType )
+}
+
+void function ClAttemptConversation( string conversationType, entity player, int priority )
+{
+	// no conversations during scripted VDUs
+	if ( IsLockedVDU() )
+		return
+
+	if ( file.DebugLevel > 0 )
+	{
+		printt( "Attempting conversation " + conversationType )
+	}
+
+	// compare new priority to current priority
+	if ( AbortConversationDueToPriority( priority ) )
+	{
+		if ( file.DebugLevel > 1 )
+			printt( "Discarding conversation \"" + conversationType + "\" of priority " + priority +
+			" , which is less than either existing level priority " + level.CurrentPriority +
+			" or is less than existing announcement priority " + level.AnnouncementPriority +
+			" on player: " + player )
+		return
+	}
+
+	//if ( IsLockedVDU() )
+	//{
+	//	if ( file.DebugLevel > 1 )
+	//		printt( "VDU is locked on player " + player + ", discarding conversation " + conversationType )
+	//	return
+	//}
+
+	// cancel any playing conversation
+	CancelConversation( player )
+
+	level.CurrentPriority = priority
+
+	if ( file.DebugLevel > 1 )
+		printt( "Playing conversation \"" + conversationType + "\" of priority " + priority )
+
+	thread ClRunConversation( player, conversationType )
+}
+
+void function CancelSquadConversation( array<entity> squad )
+{
+	if ( file.DebugLevel > 1 )
+		printt( "Cancelling squad conversation" )
+
+	FinishSquadConversation( squad )
+}
+
+void function FinishSquadConversation( array<entity> squad )
+{
+	foreach ( guy in squad )
+	{
+		if ( IsValid( guy ) )
+		{
+			guy.Signal( "CancelConversation" )
+			guy.s.dialogue.currentConversationPriority = 0
+		}
+	}
+}
+
+void function CancelConversation( entity speakingEnt )
+{
+	if ( file.DebugLevel > 0 )
+	{
+		if ( level.CurrentPriority )
+			printt( "Cancelling conversation of priority " + level.CurrentPriority )
+	}
+
+	clGlobal.levelEnt.Signal( "CancelConversation" )
+	speakingEnt.Signal( "CancelConversation" ) //Speaking Ent can be different from listening player, i.e. clientPlayer
+
+	// signaling "CancelConversation" to the player should cause him to be clear level.CurrentPriority.
+	// This happend in the OnThreadEnd for RunConversation(...)
+	Assert( !level.CurrentPriority )
+}
+
+bool function AbortConversationDueToPriority( int priority )
+{
+	// will return true if the conversation should not play
+	if ( priority > level.CurrentPriority )
+		return false
+
+	// conversations above level.AnnouncementPriority interupt conversations of the same priority level
+	if ( priority < level.AnnouncementPriority )
+		return true
+
+	return priority < level.CurrentPriority
+}
+
+int function GetTeamForConversationFromSquad( entity player, array<entity> squad )
+{
+	if ( squad.len() > 0 )
+		return expect int( squad[0].s.spawnTeam )
+
+	return GetTeamForConversation( player )
+}
+
+void function ClRunConversation( entity player, string conversationType )
+{
+	OnThreadEnd(
+		function() : ( player )
+		{
+			level.CurrentPriority = 0
+			if ( IsValid( player ) )
+				player.Signal( "ConversationOver" )
+			if ( file.DebugLevel > 1 )
+				printt( "ConversationOver signal sent" )
+		}
+	)
+
+	level.debugType = conversationType
+
+	clGlobal.levelEnt.EndSignal( "CancelConversation" )
+	player.EndSignal( "OnDestroy" )
+
+	// returns a pseudo random conversation for this team
+	local conversation = ClSelectRandomConversation( conversationType, GetTeamForConversation( player ) )
+	// removes all but one alias choice in the conversation
+	conversation = RemoveChoicesFromConversation( conversation )
+
+	// temp debug print
+	int numRadio = 0
+	foreach ( elem in conversation )
+	{
+		if ( elem.dialogType == "radio" )
+			numRadio++
+	}
+
+	//printt( " Starting conversation " + conversationType + " with " + numRadio + " lines for " + player.GetPlayerName() )
+
+	//Dump( conversation, 2 )
+	foreach ( index, elem in conversation )
+	{
+		if ( file.DebugLevel > 1 )
+		{
+			printt( " Running elem " + elem )
+		}
+
+		ClRunConversationElement( player, elem )	// in the future indexed NPC speakers need to be passed as well for AI dialogue
+
+		if ( file.DebugLevel > 1 )
+		{
+			printt( " Ended elem " + elem )
+		}
+	}
+}
+
+void function RandomizeSquadVoices( array<entity> squad )
+{
+	//local squadCopy = clone squad
+	//squadCopy.randomize()
+	//for ( int i = 0; i < squadCopy.len(); i++ )
+	//{
+	//	squadCopy[i].s.dialogue.voiceIndex = i % VOICE_COUNT
+	//	printt( "index is " + squadCopy[i].s.dialogue.voiceIndex )
+	//}
+
+	int offset = RandomInt( VOICE_COUNT )
+	for ( int i = 0; i < squad.len(); i++ )
+	{
+		squad[i].s.dialogue.voiceIndex = ( i + offset ) % VOICE_COUNT
+		//printt( "index is " + squadCopy[i].s.dialogue.voiceIndex )
+	}
+}
+
+void function ClRunSquadConversation( entity player, string conversationType, array<entity> squad )
+{
+	OnThreadEnd(
+		function () : ( squad )
+		{
+			FinishSquadConversation( squad )
+		}
+	)
+
+	// so the squad members each has a different voice
+	RandomizeSquadVoices( squad )
+
+	squad[0].EndSignal( "CancelConversation" )
+	player.EndSignal( "OnDestroy" )
+
+	int priority = GetConversationPriority( conversationType )
+	squad[0].s.dialogue.currentConversationPriority = priority
+
+	level.debugType = conversationType
+
+	// returns a pseudo random conversation for this team
+	local conversation = ClSelectRandomConversation( conversationType, GetTeamForConversationFromSquad( player, squad ) )
+	// removes all but one alias choice in the conversation
+	conversation = RemoveChoicesFromConversation( conversation )
+
+	foreach ( index, elem in conversation )
+	{
+		if ( file.DebugLevel > 1 )
+		{
+			printt( " Running elem " + elem )
+		}
+
+		ClRunSquadConversationElement( player, elem, squad )	// in the future indexed NPC speakers need to be passed as well for AI dialogue
+
+		if ( file.DebugLevel > 1 )
+		{
+			printt( " Ended elem " + elem )
+		}
+	}
+}
+
+function ClSelectRandomConversation( string conversationType, int team )
+{
+	ConversationStruct convStruct = GetConversationStruct( conversationType )
+	array conversationArray
+
+	Assert( team in convStruct.conversationTable )
+	conversationArray = convStruct.conversationTable[ team ]
+
+	if ( conversationArray.len() == 0 )
+	{
+		conversationArray = convStruct.conversationTable[ TEAM_BOTH ]
+		Assert( conversationArray.len() > 0, "Conversation " + conversationType + " isn't available for team ID: " + team )
+	}
+
+	Assert( IsArray( conversationArray ) )
+
+	// we cycle through a permutation of the conversations.
+
+	// level.ConversationIndices is a map from array to index.
+	// Thus it is actually indexed by the array itself.
+	if ( !( conversationArray in level.ConversationIndices ) || level.ConversationIndices[ conversationArray ] >= conversationArray.len() )
+	{
+		// randomize it each time we use up all choices in the conversation
+		conversationArray.randomize()
+		level.ConversationIndices[ conversationArray ] <- 0
+	}
+
+	local conversation = conversationArray[ level.ConversationIndices[ conversationArray ] ]
+
+	// next time we'll play the next conversation in the system
+	level.ConversationIndices[ conversationArray ]++
+
+	return conversation
+}
+
+// TODO: Return array<table>
+function RemoveChoicesFromConversation( conversation )
+{
+	// removes all but one alias choice, per team, in the conversation
+	local _conversation = []
+	foreach ( elem in conversation )
+	{
+		table _elem = RemoveChoicesFromElem( expect table( elem ) )
+		_conversation.append( _elem )
+	}
+
+	return _conversation
+}
+
+table function RemoveChoicesFromElem( table elem )
+{
+	table _elem
+	_elem.dialogType <- elem.dialogType
+
+	switch ( elem.dialogType )
+	{
+		case "radio":
+			// elem.choices should be an array of lines to choose from randomly
+			Assert( IsArray( elem.choices ) )
+
+			if ( elem.choices.len() )
+			{
+				_elem.alias <- elem.choices.getrandom()
+			}
+			else
+			{
+				_elem.alias <- ""
+			}
+
+			if ( "delay" in elem )
+				_elem.delay <- elem.delay
+			break
+
+		case "multiple":
+			int min = 0
+			int max = expect int( elem.choices.len() )
+
+			if ( "min" in elem )
+				min = expect int( elem.min )
+
+			if ( "max" in elem )
+			{
+				max = expect int( elem.max )
+				if ( max > elem.choices.len() )
+					max = expect int( elem.choices.len() )
+			}
+
+			int count = RandomIntRange( min, max + 1 )
+			Assert( count >= min )
+			Assert( count <= max )
+
+			if ( file.DebugLevel > 1 )
+				printt( "parsing dialogtype multiple. count: " + count )
+
+			if ( elem.randomize )
+				elem.choices.randomize()
+
+			local _choices // TODO: should be array<table> but can't because of _elem.choices <- _choices below
+			for ( int i = 0; i < count; i++ )
+			{
+				table subelem = RemoveChoicesFromElem( expect table( elem.choices[i] ) )
+				_choices.append( subelem )
+			}
+			_elem.choices <- _choices
+			break
+
+		default:
+			_elem = elem
+			break
+	}
+
+	return _elem
+}
+
+void function ClRunConversationElement( entity player, elem )
+{
+	if ( "chance" in elem )
+	{
+		float rnd = RandomFloat( 1.0 )
+		if ( rnd >= elem.chance )
+		{
+			if ( file.DebugLevel > 1 )
+				printt( " Skipping random elem: " + rnd + " >= " + elem.chance )
+
+			return
+		}
+	}
+
+	Assert( IsValid( player ) )
+
+	switch ( elem.dialogType )
+	{
+		case "radio":
+		case "fx":
+			float duration = 0
+			if ( elem.alias == "" )
+			{
+				Warning( "Sound alias for " + level.debugType + " not found!\n" )
+				duration = 1.0
+			}
+			else
+			{
+				if ( SpeakerIsBlacklisted( elem.alias ) )
+				{
+					if ( file.DebugLevel > 1 )
+						printt( "Speaker is blacklisted, not playing radio alias: " + elem.alias )
+
+					return
+				}
+
+				duration = DoGeneralRadioSound( expect string( elem.alias ), null, player )
+			}
+
+			if ( "delay" in elem )
+				duration += expect float( elem.delay )
+			else
+				duration += expect float( level.DefaultLineInterval )
+			wait duration
+			break
+
+		case "music":
+			float duration = DoPlayerMusic( player, expect string( elem.alias ) )
+			if ( "halt_conversation" in elem )
+				wait duration
+			break
+
+		case "dispatch":
+			Assert( false ) // Can't run this script because "squad" is undefined
+			/*
+			Assert( squad != null, "Can't do a speech conversation without using PlaySquadConversation" )
+			// choose an AI to say this
+			local guy = squad[0]
+
+			//SpeakingGuy = guy
+
+			if ( !IsAlive( guy ) )
+			{
+				// We failed to find a guy to speak. Could be that guys have died or walked too far away since the conversation started.
+				// for now just bail.
+
+				if ( file.DebugLevel > 1 )
+					printl( " Bailing: no guy left to talk" )
+
+				CancelConversation( player )
+				break
+			}
+
+			// elem.choices should be an array of lines to choose from randomly
+			Assert( IsArray( elem.choices ) )
+
+			local dialogueChoice = elem.choices.getrandom()
+			local startTime = Time()
+
+			if ( typeof dialogueChoice == "string" )
+			{
+				waitthread DoGuySound( guy, guy, dialogueChoice, 0 )
+			}
+			else
+			{
+				AssertVoiceAliasDataIsValid( dialogueChoice )
+
+				if ( file.DebugLevel > 1 )
+					printt( "Speaking ai: " + guy.GetEntIndex() + " voice index " + guy.s.dialogue.voiceIndex )
+				table aliases = GetAliases( guy, dialogueChoice )
+				DoGuySpeechLine( guy, aliases )
+			}
+
+			//printt( "time passed in dialogue " + ( Time() - startTime ) )
+			wait 0.3 // delay between speech lines
+
+			//if ( IsAlive( guy ) )
+			//	guy.Signal( "FinishedLine", { alias = aliases.radioAlias } )
+			*/
+			break
+
+
+		case "wait":
+			wait RandomFloatRange( elem.durationMin, elem.durationMax )
+			break
+
+		case "flag_set":
+			if ( file.DebugLevel > 1 )
+				printt( " Setting flag " + elem.flag )
+			FlagSet( expect string( elem.flag ) )
+			break
+
+		case "flag_clear":
+			if ( file.DebugLevel > 1 )
+				printt( " Clearing flag " + elem.flag )
+			FlagClear( expect string( elem.flag ) )
+			break
+
+		case "flag_wait":
+			if ( file.DebugLevel > 1 )
+				printt( " Waiting on flag " + elem.flag )
+
+			FlagWait( expect string( elem.flag ) )
+
+			if ( file.DebugLevel > 1 )
+				printt( " Flag wait complete" )
+			break
+
+		case "function":
+			if ( file.DebugLevel > 1 )
+				printt( " Calling function " + elem["func"] )
+
+			elem[ "func" ]()
+			break
+
+		case "thread":
+			if ( file.DebugLevel > 1 )
+				printt( " Calling thread " + elem["func"] )
+
+			local func = elem[ "func" ]
+			thread func()
+			break
+
+		#if HAS_BOSS_AI
+		case "boss_titan_conversation":
+			RunBossConversation( player, expect string( elem.speaker ), expect string( elem.event ) )
+			break
+		#endif
+
+		case "multiple":
+			foreach ( subelem in elem.choices )
+			{
+				// choices and randomization etc removed in RemoveChoicesFromElem( ... )
+				ClRunConversationElement( player, subelem )
+			}
+			break
+
+		default:
+			Assert( false, "Invalid conversation element " + elem.dialogType )
+	}
+}
+
+void function ClRunSquadConversationElement( entity player, elem, array<entity> squad )
+{
+	Assert( IsValid( player ) )
+
+	switch ( elem.dialogType )
+	{
+		case "speech":
+			Assert( squad.len() > 0, "Can't do a speech conversation without using PlaySquadConversation" )
+			// choose an AI to say this
+			entity guy = ChooseSpeakingAI( squad, expect int( elem.speakerIndex ) )
+
+			//SpeakingGuy = guy
+
+			if ( !guy )
+			{
+				// We failed to find a guy to speak. Could be that guys have died or walked too far away since the conversation started.
+				// for now just bail.
+
+				if ( file.DebugLevel > 1 )
+					printl( " Bailing: no guy left to talk" )
+
+				CancelSquadConversation( squad )
+				break
+			}
+
+			if ( !IsAlive( guy ) || guy.ContextAction_IsMeleeExecution() )
+			{
+				// this guy is dead. we should wait a moment and then start an "are you there?" dialogType conversation.
+				// for now just bail.
+
+				if ( file.DebugLevel > 1 )
+					printl( " Bailing: next guy is dead" )
+
+				CancelSquadConversation( squad )
+				break
+			}
+
+			// elem.choices should be an array of lines to choose from randomly
+			Assert( IsArray( elem.choices ) )
+
+			local dialogueChoice = elem.choices.getrandom() //Seems like this is unnecessary since we remove other choices earlier in ClRunSquadConversation, but it's too late in the project to chance changing this...
+
+			AssertVoiceAliasDataIsValid( dialogueChoice )
+
+			if ( file.DebugLevel > 1 )
+				printt( "Speaking ai: " + guy.GetEntIndex() + " voice index " + guy.s.dialogue.voiceIndex )
+			table aliases = GetAliases( guy, dialogueChoice )
+			DoGuySpeechLine( guy, aliases )
+			//wait RandomFloatRange( 0.1, 0.2 )// delay between speech lines. Taking out for now, might bring back later.
+			break
+
+		case "dispatch":
+			Assert( squad.len() > 0, "Can't do a speech conversation without using PlaySquadConversation" )
+			// choose an AI to say this
+			entity guy = squad[0]
+
+			//SpeakingGuy = guy
+
+			if ( !IsAlive( guy ) )
+			{
+				// We failed to find a guy to speak. Could be that guys have died or walked too far away since the conversation started.
+				// for now just bail.
+
+				if ( file.DebugLevel > 1 )
+					printl( " Bailing: no guy left to talk" )
+
+				CancelSquadConversation( squad )
+				break
+			}
+
+			// elem.choices should be an array of lines to choose from randomly
+			Assert( IsArray( elem.choices ) )
+
+			local dialogueChoice = elem.choices.getrandom() //Seems like this is unnecessary since we remove other choices earlier in ClRunSquadConversation, but it's too late in the project to chance changing this...
+			//float startTime = Time()
+
+			if ( typeof dialogueChoice == "string" )
+			{
+				waitthread DoGuySound( guy, guy, expect string( dialogueChoice ), 0 )
+			}
+			else
+			{
+				AssertVoiceAliasDataIsValid( dialogueChoice )
+
+				if ( file.DebugLevel > 1 )
+					printt( "Speaking ai: " + guy.GetEntIndex() + " voice index " + guy.s.dialogue.voiceIndex )
+				table aliases = GetAliases( guy, dialogueChoice )
+				DoGuySpeechLine( guy, aliases )
+			}
+
+			//printt( "time passed in dialogue " + ( Time() - startTime ) )
+			wait 0.3 // delay between speech lines
+
+			//if ( IsAlive( guy ) )
+			//	guy.Signal( "FinishedLine", { alias = aliases.radioAlias } )
+
+			break
+
+		case "multiple":
+			foreach ( subelem in elem.choices )
+			{
+				// choices and randomization etc removed in RemoveChoicesFromElem( ... )
+				ClRunSquadConversationElement( player, subelem, squad )
+			}
+			break
+
+		default:
+			Assert( false, "Invalid conversation element " + elem.dialogType )
+	}
+}
+
+float function DoGeneralRadioSound( string alias, entity sourceGuy, entity player )
+{
+	if ( file.DebugLevel > 1 )
+	{
+		printt( "Playing radio sound alias: " + alias + " to " + player.GetPlayerName() )
+	}
+
+	//printt( "playing alias: " + alias + " to " + player.GetPlayerName() )
+	float duration = GetSoundDuration( alias )
+	EmitSoundOnEntity( player, alias )
+	thread EndPlayerSound( player, sourceGuy, alias, duration )
+
+	return duration
+}
+
+void function EndPlayerSound( entity player, entity sourceGuy, string alias, float delay = 0 )
+{
+	// this function is threaded but it needs to end with the conversation
+	player.EndSignal( "ConversationOver" )
+	player.EndSignal( "OnDestroy" )
+
+	if ( sourceGuy )
+		EndSignal( sourceGuy, "OnDeath" )
+
+	OnThreadEnd(
+		function () : ( player, alias )
+		{
+			if ( IsValid( player ) )
+				StopSoundOnEntity( player, alias )
+		}
+	)
+
+	// necessary because of the OnThreadEnd
+	wait delay	// this is for delayed radio playback of AI dialogue
+}
+
+float function DoPlayerMusic( entity player, string alias )
+{
+	if ( file.DebugLevel > 1 )
+	{
+		printt( "Playing music alias: " + alias + " to " + player )
+	}
+
+	float duration = GetSoundDuration( alias )
+	EmitSoundOnEntity( player, alias )
+	return duration
+}
+
+/*function GetAvailableTalkers( int team )
+{
+	local Array = []
+	local ai = file.aiTalkers[ team ]
+
+	foreach ( ent in clone ai )
+	{
+		if ( IsValid( ent ) )
+		{
+			Array.append( ent )
+			continue
+		}
+
+		delete ai[ ent ]
+	}
+
+	return Array
+}*/
+
+entity function ChooseSpeakingAI( array<entity> squad, int speakerIndex )
+{
+	// originator has to be alive
+	if ( !IsAlive( squad[0] ) )
+		return null
+
+	if ( speakerIndex >= squad.len() )
+	{
+		// find some other dude in the squad
+		for ( int i = squad.len() - 1; i > 0; i-- ) //Dont' want to pick squad[0] since he originated the conversation
+		{
+			if ( IsAlive( squad[i] ) )
+				return squad[i]
+		}
+
+		return null
+	}
+
+	if ( !IsAlive( squad[ speakerIndex ] ) )
+		return null
+
+	return squad[ speakerIndex ]
+
+/*
+	entity player = GetLocalViewPlayer()
+	local guys = GetAvailableTalkers( squad[0].GetTeam() )
+
+	if ( RandomInt( 3 ) == 0 )
+		guys.randomize()
+	else
+		guys = ArrayClosest( guys, player.GetOrigin() )
+
+	local bestOptions = []
+	local options = []
+
+	// get two nearest AI not already in speakerIndexChoices
+	foreach ( guy in guys )
+	{
+		if ( !GuyIsEligibleForDialogue( guy ) )
+			continue
+
+		bool alreadyUsed = false
+		bool sameVoice = false
+		foreach ( otherguy in speakerIndexChoices )
+		{
+			if ( guy == otherguy )
+			{
+				alreadyUsed = true
+				break
+			}
+			if ( guy.s.dialogue.voiceIndex == otherguy.s.dialogue.voiceIndex )
+				sameVoice = true
+		}
+
+		if ( alreadyUsed )
+			continue
+
+		if ( !sameVoice )
+			bestOptions.append( guy )
+
+		options.append( guy )
+		if ( options.len() >= 2 )
+			break
+	}
+
+	if ( bestOptions.len() >= 2 )
+		options = bestOptions
+
+	if ( options.len() <= 0 )
+		return null
+
+	local guy = options.getrandom()
+
+	speakerIndexChoices[speakerIndex] <- guy
+
+	return guy
+	*/
+}
+
+void function DoGuySound( entity guy, entity sourceGuy, string alias, float delay )
+{
+	Assert( IsAlive( guy ) )
+
+	OnThreadEnd(
+		function () : (guy, alias)
+		{
+			if ( !IsValid( guy ) )
+				return
+
+			//Let the AI have a chance to finish speaking
+			if ( !IsAlive( guy ) || guy.ContextAction_IsMeleeExecution() )
+				StopSoundOnEntity( guy, alias )
+		}
+	)
+
+	EndSignal( guy, "OnDeath" )
+	EndSignal( guy, "OnDestroy" )
+	EndSignal( guy, "OnSyncedMeleeVictim" )
+
+	if ( sourceGuy && sourceGuy != guy )
+		sourceGuy.EndSignal( "OnDeath" )
+
+	wait delay
+
+	EmitSoundOnEntity( guy, alias )
+
+	wait GetSoundDuration( alias )
+}
+
+void function DoGuySoundSilentWait( entity guy, entity sourceGuy, string alias )
+{
+	Assert( IsAlive( guy ) )
+
+	guy.EndSignal( "OnDeath" )
+	guy.EndSignal( "OnDestroy" )
+	if ( sourceGuy && sourceGuy != guy )
+	{
+		sourceGuy.EndSignal( "OnDeath" )
+		sourceGuy.EndSignal( "OnDestroy" )
+	}
+
+	float duration = GetSoundDuration( alias )
+	wait duration
+}
+
+void function DoGuySpeechLine( entity guy, table aliases )
+{
+	Assert( "dialogue" in guy.s, guy + " not set up for dialogue; call AI_Dialogue_Scripted_Init on him if this is a scripted conversation" )
+
+	string radioAlias = expect string( aliases.radioAlias )
+
+	if ( file.DebugLevel > 1 )
+	{
+		printt( " Guy " + guy.GetTargetName() + ": " + radioAlias )
+		DebugDrawLine( GetLocalViewPlayer().GetOrigin(), guy.GetOrigin(), 255,255,255, true, 3.0 )
+		DebugDrawText( guy.GetOrigin() + <0,0,60>, radioAlias, true, 6.0 )
+	}
+
+	waitthread DoGuySound( guy, guy, radioAlias, 0 )
+}
+
+/*
+function DoGeneralRadioSound_Nonblocking( alias, sourceGuy, delay )
+{
+	if ( PLAYER_HEARS_RADIO )
+	{
+		thread DoPlayerSound( GetLocalViewPlayer(), sourceGuy, alias, delay )
+	}
+	else
+	{
+		local guys = GetAvailableEnemyTalkers()
+		local playerOrigin = GetLocalViewPlayer().GetOrigin()
+		guys = ArrayClosest( guys, playerOrigin )
+
+		local guyCount = 0
+		foreach ( guy in guys )
+		{
+			if ( guyCount >= MaxRadioPlayGuys )
+				break
+
+			if ( DistanceSqr( guy.GetOrigin(), playerOrigin ) > RadioPlayDistance * RadioPlayDistance )
+				break
+
+			if ( guy == sourceGuy )
+				continue
+
+			if ( !GuyIsEligibleForDialogue( guy ) )
+				continue
+
+			thread DoGuyRadioSound( guy, sourceGuy, alias, delay )
+			guyCount++
+		}
+	}
+}
+*/
+
+bool function GuyIsEligibleForDialogue( entity guy )
+{
+	if ( !("dialogue" in guy.s ) )
+		return false
+
+	if ( !IsAlive( guy ) )
+		return false
+
+	if ( DistanceSqr( guy.GetOrigin(), GetLocalViewPlayer().GetOrigin() ) > MAX_VOICE_DIST_SQRD )
+		return false
+
+	if ( !guy.s.dialogue.enabled )
+		return false
+
+	return true
+}
+
+void function AssertVoiceAliasDataIsValid( aliasData )
+{
+	// NONE OF THE FOLLOWING ASSERTS SHOULD HIT IF YOU USE AI_Dialogue_AliasAllVoices OR AI_Dialogue_AliasSingleVoice for aliasData.
+
+	Assert( IsArray( aliasData ) )
+	Assert( aliasData.len() == VOICE_COUNT )
+	// each voice should have a soundalias for the radio sound
+	Assert( IsString( aliasData[0] ) )
+}
+
+table function GetAliases( entity guy, dialogue, radioDelayOverride = null )
+{
+	table aliases
+	aliases.radioAlias <- dialogue[ guy.s.dialogue.voiceIndex ]
+	aliases.radioDelay <- 0
+
+	if ( radioDelayOverride != null )
+	{
+		aliases.radioDelay = radioDelayOverride
+	}
+
+	return aliases
+}
+
+void function VerifyConversationAliases()
+{
+	if ( !GetDeveloperLevel() )
+		return
+
+	table e
+	e.count <- 0
+	e.failed <- {}
+	e.tried <- {}
+	foreach ( conversationName, convStruct in GetAllConversationData() )
+	{
+		foreach ( conv in convStruct.conversationTable[ TEAM_IMC ] )
+		{
+			VerifyConversation( conv, e )
+		}
+		foreach ( conv in convStruct.conversationTable[ TEAM_MILITIA ] )
+		{
+			VerifyConversation( conv, e )
+		}
+	}
+
+	if ( e.failed.len() )
+	{
+		local failed = []
+		foreach ( alias in e.failed )
+		{
+			failed.append( alias )
+		}
+		failed.sort( SortAlphabetize )
+		foreach ( alias in failed )
+		{
+			Warning( "Sound alias " + alias + " not found!\n" )
+		}
+	}
+}
+
+void function VerifyConversation( convArray, table e )
+{
+	foreach ( conv in convArray )
+	{
+		if ( !( "choices" in conv ) )
+			continue
+
+		if ( conv.dialogType == "temp_text" )
+			continue
+
+		foreach ( Array in conv.choices )
+		{
+			if ( typeof Array == "string" )
+			{
+				VerifyConversationAlias( Array, e )
+				continue
+			}
+
+			foreach ( aliases in Array )
+			{
+				if ( typeof aliases == "array" )
+				{
+					foreach ( alias in aliases )
+					{
+						VerifyConversationAlias( alias, e )
+					}
+				}
+				else
+				{
+					VerifyConversationAlias( aliases, e )
+				}
+			}
+		}
+	}
+}
+
+void function VerifyConversationAlias( alias, table e )
+{
+	if ( alias in e.tried )
+		return
+	e.tried[ alias ] <- alias
+
+	bool result = DoesAliasExist( alias )
+
+	if ( !result )
+	{
+		if ( !( alias in e.failed ) )
+			e.failed[ alias ] <- alias
+	}
+}
+
+void function AddSpeakerToBlacklist( character )
+{
+	if ( character in level.speakerBlacklist )
+		return
+
+	level.speakerBlacklist[ character ] <- true
+}
+
+void function RemoveSpeakerFromBlacklist( character )
+{
+	if ( !(character in level.speakerBlacklist ) )
+		return
+
+	delete level.speakerBlacklist[ character ]
+}
+
+bool function SpeakerIsBlacklisted( alias )
+{
+	foreach ( speaker, _ in level.speakerBlacklist )
+	{
+		if ( alias.find_olduntyped( speaker ) != null )
+			return true
+	}
+
+	return false
+}
+
+void function WaveformVideoTest_Thread()
+{
+	if ( file.waveformVideoRUI != null )
+	{
+		DestroyWaveform( file.waveformVideoRUI, false )
+		file.waveformVideoRUI = null
+		StopSoundOnEntityByName( GetLocalViewPlayer(), file.lastWaveformVideoSound )
+	}
+
+	array<string> keys = [
+		"#BINK_VDU_TEST",
+		"#MEET_ION",
+		"#MEET_LEGION",
+		"#MEET_MONARCH",
+		"#MEET_NORTHSTAR",
+		"#MEET_RONIN",
+		"#MEET_SCORCH",
+		"#MEET_TONE"
+	]
+
+		array<string> sounds = [
+		"diag_sp_torture_sk102_01_01_imc_blisk",
+		"Titan_Video_Ion",
+		"Titan_Video_Legion",
+		"Titan_Video_Monarch",
+		"Titan_Video_Northstar",
+		"Titan_Video_Ronin",
+		"Titan_Video_Scorch",
+		"Titan_Video_Tone"
+	]
+
+	int index = RandomInt( 8 );
+	float duration = GetSoundDuration( sounds[ index ] )
+	EmitSoundOnEntity( GetLocalViewPlayer(), sounds[ index ] )
+	file.lastWaveformVideoSound = sounds[ index ]
+	CreateWaveformVideo( keys[ index ], 2, duration, null, false )
+	thread WaveformVideoTestDestroy_Thread( duration )
+}
+
+void function WaveformVideoTestDestroy_Thread( float duration )
+{
+	Signal( clGlobal.levelEnt, "WaveformRuiExtended" )
+	EndSignal( clGlobal.levelEnt, "WaveformRuiExtended" )
+	wait( duration )
+	if ( file.waveformVideoRUI != null )
+	{
+		DestroyWaveform( file.waveformVideoRUI, false )
+		file.waveformVideoRUI = null
+		StopSoundOnEntityByName( GetLocalViewPlayer(), file.lastWaveformVideoSound )
+	}
+}
+
+var function WaveformVideoTest()
+{
+	thread WaveformVideoTest_Thread()
+}
+
+var function WaveformVideoSwitchTest()
+{
+	thread WaveformVideoTest_Thread()
+	wait 5
+	thread WaveformVideoTest_Thread()
+}
+
+var function CreateWaveformVideo( string title, int team, float duration, entity speaker = null, bool radioIntercept = false )
+{
+	var waveformVideoRUI = file.waveformVideoRUI
+	float timeExtension = 0.2 // FADEIN_TIME in waveform.rui
+
+	if ( title != file.lastWaveformTalker || file.waveformVideoRUI == null )
+	{
+		if ( file.waveformVideoRUI != null )
+		{
+			DestroyWaveform( file.waveformVideoRUI, false )
+		}
+
+		waveformVideoRUI = RuiCreate( $"ui/waveform_video.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+		timeExtension = 0.0
+
+		entity player = GetLocalClientPlayer()
+		if ( IsValid( player ) )
+		{
+			if ( team == TEAM_MILITIA )
+				EmitSoundOnEntity( player, "ui_callerid_chime_friendly" )
+			else if ( team == TEAM_IMC )
+				EmitSoundOnEntity( player, "ui_callerid_chime_enemy" )
+		}
+	}
+	else
+	{
+		Signal( clGlobal.levelEnt, "WaveformRuiExtended" )
+	}
+
+	RuiSetFloat( waveformVideoRUI, "soundStartTime", Time() - timeExtension )
+	RuiSetFloat( waveformVideoRUI, "soundDuration", duration + timeExtension )
+	RuiSetFloat( waveformVideoRUI, "fadeOutDuration", WAVEFORM_FADE_DURATION )
+	RuiSetString( waveformVideoRUI, "speakerName", title )
+	RuiSetBool( waveformVideoRUI, "intercepting", radioIntercept )
+	RuiSetBool( waveformVideoRUI, "isMP", true )
+	RuiSetResolutionToScreenSize( waveformVideoRUI )
+
+	file.lastWaveformTalker	= title
+
+	if ( team == TEAM_MILITIA )
+		RuiSetFloat3( waveformVideoRUI, "tintColor", HIGHLIGHT_COLOR_FRIENDLY )
+	else if ( team == TEAM_IMC )
+		RuiSetFloat3( waveformVideoRUI, "tintColor", HIGHLIGHT_COLOR_ENEMY )
+	else
+		RuiSetFloat3( waveformVideoRUI, "tintColor", HIGHLIGHT_COLOR_NEUTRAL )
+
+	asset video = GetVideoForName( title )
+	StartVideoOnChannel( file.videoChannel, video, false, 0.0 )
+
+	if ( speaker != null && !speaker.IsPhaseShifted() )
+	{
+		int attachment = speaker.LookupAttachment( "HEADFOCUS" )
+
+		if ( attachment <= 0 )
+			attachment = speaker.LookupAttachment( "REF" )
+
+		RuiSetBool( waveformVideoRUI, "hasConnectingLine", true )
+		RuiTrackFloat3( waveformVideoRUI, "connectingLineWorldPos", speaker, RUI_TRACK_POINT_FOLLOW, attachment )
+	}
+
+	//printt( "RUI TRACKING SOUND METER!" )
+	RuiTrackFloat( waveformVideoRUI, "level", null, RUI_TRACK_SOUND_METER, 0 )
+
+	file.waveformVideoRUI = waveformVideoRUI
+	return waveformVideoRUI
+}
+
+var function CreateWaveform( string title, int team, float duration, entity speaker = null, bool radioIntercept = false )
+{
+	var waveformRUI = file.waveformRUI
+	float timeExtension = 0.2 // FADEIN_TIME in waveform.rui
+
+	if ( title != file.lastWaveformTalker || file.waveformRUI == null )
+	{
+		if ( file.waveformRUI != null )
+		{
+			DestroyWaveform( file.waveformRUI, false )
+		}
+
+		waveformRUI = RuiCreate( $"ui/waveform.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+		timeExtension = 0.0
+
+		entity player = GetLocalClientPlayer()
+		if ( IsValid( player ) )
+		{
+			if ( team == TEAM_MILITIA )
+				EmitSoundOnEntity( player, "ui_callerid_chime_friendly" )
+			else if ( team == TEAM_IMC )
+				EmitSoundOnEntity( player, "ui_callerid_chime_enemy" )
+		}
+	}
+	else
+	{
+		Signal( clGlobal.levelEnt, "WaveformRuiExtended" )
+	}
+
+	RuiSetFloat( waveformRUI, "soundStartTime", Time() - timeExtension )
+	RuiSetFloat( waveformRUI, "soundDuration", duration + timeExtension )
+	RuiSetFloat( waveformRUI, "fadeOutDuration", WAVEFORM_FADE_DURATION )
+	RuiSetString( waveformRUI, "speakerName", title )
+	RuiSetBool( waveformRUI, "intercepting", radioIntercept )
+	RuiSetBool( waveformRUI, "isMP", true )
+	RuiSetResolutionToScreenSize( waveformRUI )
+
+	file.lastWaveformTalker	= title
+
+	if ( team == TEAM_MILITIA )
+		RuiSetFloat3( waveformRUI, "tintColor", HIGHLIGHT_COLOR_FRIENDLY )
+	else if ( team == TEAM_IMC )
+		RuiSetFloat3( waveformRUI, "tintColor", HIGHLIGHT_COLOR_ENEMY )
+	else
+		RuiSetFloat3( waveformRUI, "tintColor", HIGHLIGHT_COLOR_NEUTRAL )
+
+	asset image = GetImageForName( title )
+	RuiSetImage( waveformRUI, "bgImage", image )
+
+	if ( IsValid( speaker ) && !speaker.IsPhaseShifted() )
+	{
+		int attachment = speaker.LookupAttachment( "HEADFOCUS" )
+
+		if ( attachment <= 0 )
+			attachment = speaker.LookupAttachment( "REF" )
+
+		RuiSetBool( waveformRUI, "hasConnectingLine", true )
+		RuiTrackFloat3( waveformRUI, "connectingLineWorldPos", speaker, RUI_TRACK_POINT_FOLLOW, attachment )
+	}
+
+	//printt( "RUI TRACKING SOUND METER!" )
+	RuiTrackFloat( waveformRUI, "level", null, RUI_TRACK_SOUND_METER, 0 )
+
+	file.waveformRUI = waveformRUI
+	return waveformRUI
+}
+
+void function DestroyWaveform_Immediate( var rui )
+{
+	DestroyWaveform( rui, false )
+}
+
+void function DestroyWaveform( var rui, bool doWait = true )
+{
+	EndSignal( clGlobal.levelEnt, "WaveformRuiExtended" )
+
+	// usually wait before destroying so waveform can die down; otherwise just kill it
+	if ( doWait )
+		wait WAVEFORM_FADE_DURATION
+
+	if ( rui == file.waveformRUI )
+		file.waveformRUI = null
+	RuiDestroyIfAlive( rui )
+	StopVideoOnChannel( 0 )
+}
+
+//Battle Chatter, Grunt Chatter_MP, Spectre Chatter_MP and TitanOS dialogue should go into this. They all fall into the
+//"One liner, exact sound alias needs to be generated dynamically on the client" category of dialogue.
+//Faction Leader stuff used to use this, but since we need some of them to persist through death they now call PlayAnnouncerLineThroughDeathWithPriority() instead
+void function PlayOneLinerConversationOnEntWithPriority( string conversationName, string soundAlias, entity ent, int priority )
+{
+	bool printDebug = GetDialogueDebugLevel() > 0
+	if ( printDebug )
+		printt( "PlayOneLinerConversationOnEntWithPriority, ConversationName: " + conversationName )
+
+	if ( AbortConversationDueToPriority( priority ) )
+	{
+		if ( printDebug )
+			printt( "Aborting conversation: " + conversationName + " due to higher priority conversation going on" )
+		return
+	}
+
+	CancelConversation( ent )
+
+	SetConversationLastPlayedTime( conversationName, Time() )
+
+	thread PlayOneLinerConversationOnEntWithPriority_internal( soundAlias, ent, priority ) //Only thread this off once we've done the priority check since threading is expensive
+}
+
+void function PlayOneLinerConversationOnEntWithPriority_internal( string soundAlias, entity ent, int priority )
+{
+	ent.EndSignal( "CancelConversation" )
+	ent.EndSignal( "OnDeath" )
+
+	clGlobal.levelEnt.EndSignal( "CancelConversation" )
+
+	OnThreadEnd(
+	function() : ( soundAlias, ent )
+		{
+			//printt( "OnThreadEnd of PlayOneLinerConversationOnEntWithPriority_internal, should try to end " + soundAlias + " onEnt: " + ent )
+			level.CurrentPriority = 0
+			if ( IsValid( ent ) )
+				StopSoundOnEntity( ent, soundAlias )
+		}
+	)
+
+	level.CurrentPriority = priority
+
+	bool printDebug = GetDialogueDebugLevel() > 0
+	if ( printDebug )
+		printt( "PlayOneLinerConversationOnEntWithPriority_internal, soundAlias: " + soundAlias )
+
+	var handle = EmitSoundOnEntity( ent, soundAlias )
+
+	WaitSignal( handle, "OnSoundFinished" )
+}
+
+void function PlayAnnouncerLineThroughDeathWithPriority( string conversationName, string soundAlias, int priority, string waveformName = "" ) //Used primarily with Faction Leader announcements that might need to go through death, e.g. win announcement
+{
+	bool printDebug = GetDialogueDebugLevel() > 0
+	if ( printDebug )
+		printt( "PlayAnnouncerLineThroughDeathWithPriority, ConversationName: " + conversationName )
+
+	if ( AbortConversationDueToPriority( priority ) )
+	{
+		if ( printDebug )
+			printt( "Aborting conversation: " + conversationName + " due to higher priority conversation going on" )
+		return
+	}
+
+	entity localClientPlayer = GetLocalClientPlayer()
+
+	CancelConversation( localClientPlayer )
+
+	SetConversationLastPlayedTime( conversationName, Time() )
+
+	thread PlayAnnouncerLineThroughDeathWithPriority_internal( soundAlias, localClientPlayer, priority, waveformName ) //Only thread this off once we've done the priority check since threading is expensive
+}
+
+void function PlayAnnouncerLineThroughDeathWithPriority_internal( string soundAlias, entity localClientPlayer, int priority, string waveformName )
+{
+	clGlobal.levelEnt.EndSignal( "CancelConversation" )
+
+	var rui
+	if ( waveformName != "" )
+	{
+		rui = CreateWaveform( waveformName, TEAM_MILITIA, 10.0 )
+	}
+
+	OnThreadEnd(
+	function() : ( rui, soundAlias, localClientPlayer )
+		{
+			//printt( "OnThreadEnd of PlayAnnouncerLineThroughDeathWithPriority_internal, should try to end " + soundAlias + " onLocalClientPlayer: " + localClientPlayer )
+			level.CurrentPriority = 0
+			if ( IsValid( localClientPlayer ) )
+				StopSoundOnEntity( localClientPlayer, soundAlias )
+			if ( rui != null )
+			{
+				thread DestroyWaveform( rui )
+			}
+		}
+	)
+
+	level.CurrentPriority = priority
+
+	var handle = EmitSoundOnEntity( localClientPlayer, soundAlias )
+
+	SetPlayThroughKillReplay( handle )
+
+	WaitSignal( handle, "OnSoundFinished" )
+}
+
+asset function GetImageForName( string title )
+{
+	if ( title in file.callerIDs )
+		return file.callerIDs[ title ]
+	return file.callerIDs[ "default" ]
+}
+
+asset function GetVideoForName( string title )
+{
+	if ( title in file.callerIDsVideo )
+		return file.callerIDsVideo[ title ]
+	return file.callerIDsVideo[ "default" ]
+}

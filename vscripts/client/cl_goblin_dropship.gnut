@@ -1,0 +1,93 @@
+untyped
+
+global function CLGoblinDropship_Init
+
+global function ServerCallback_CreateDropShipIntLighting
+global function CreateCallback_Dropship
+global function JetwakeFXChanged
+global function PlayGD_Goblin_Zipline_StrafeSounds //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+global function PlayDropship_Flyer_Attack_Vertical_Successful_FlyInSounds //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+global function PlayDropship_Flyer_Attack_Vertical_Successful_FlyOutSounds //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+
+const FX_DLIGHT_RED 	= $"veh_interior_Dlight_red"
+const FX_DLIGHT_COCKPIT = $"veh_interior_Dlight_cockpit_offset"
+const FX_DLIGHT_BLUE 	= $"interior_Dlight_blue_MED"
+const FX_DLIGHT_COCKPIT_IMC = $"veh_interior_Dlight_cockpit_offset_IMC"
+
+void function CLGoblinDropship_Init()
+{
+	PrecacheParticleSystem( FX_DLIGHT_RED )
+	PrecacheParticleSystem( FX_DLIGHT_BLUE )
+	PrecacheParticleSystem( FX_DLIGHT_COCKPIT )
+	PrecacheParticleSystem( FX_DLIGHT_COCKPIT_IMC )
+}
+
+void function JetwakeFXChanged( entity dropship )
+{
+	if ( dropship.IsJetWakeFXEnabled() )
+		dropship.SetGroundEffectTable( "dropship_dust" )
+	else
+		dropship.SetGroundEffectTable( "" )
+}
+
+void function ServerCallback_CreateDropShipIntLighting( int eHandle, int team )
+{
+	entity dropship = GetEntityFromEncodedEHandle( eHandle )
+	if ( !IsValid( dropship ) )
+		return
+	table lights
+	local rampLightFX, cockpitLightFX
+
+	switch ( team )
+	{
+		case TEAM_MILITIA:
+			rampLightFX = FX_DLIGHT_RED
+			cockpitLightFX = FX_DLIGHT_COCKPIT
+			break
+
+		default:
+			rampLightFX = FX_DLIGHT_BLUE
+			cockpitLightFX = FX_DLIGHT_COCKPIT_IMC
+			break
+	}
+
+	//ramp light L
+	{
+		int index = dropship.LookupAttachment( "IntLightRampL" )
+		int effectIndex = GetParticleSystemIndex( rampLightFX )
+		lights.rampDLightL <- StartParticleEffectOnEntity( dropship, effectIndex, FX_PATTACH_POINT_FOLLOW, index )
+	}
+
+	//cockpit light 1
+	{
+		int index = dropship.LookupAttachment( "IntLightCockpit1" )
+		int effectIndex = GetParticleSystemIndex( cockpitLightFX )
+		lights.cockpitDLight <- StartParticleEffectOnEntity( dropship, effectIndex, FX_PATTACH_POINT_FOLLOW, index )
+	}
+}
+
+/////////////////////////////////////////////
+void function CreateCallback_Dropship( entity ent )
+{
+	ent.SetGroundEffectTable( "dropship_dust" )
+
+	//HACK: Fix dropship sounds for MP AI Game modes when grunts get dropped off being too loud. Necessitated because of last minute use of SP anims in MP. Fix in a better way next game.
+	AddAnimEvent( ent, "PlayGD_Goblin_Zipline_StrafeSounds", PlayGD_Goblin_Zipline_StrafeSounds )
+	AddAnimEvent( ent, "PlayDropship_Flyer_Attack_Vertical_Successful_FlyInSounds", PlayDropship_Flyer_Attack_Vertical_Successful_FlyInSounds )
+	AddAnimEvent( ent, "PlayDropship_Flyer_Attack_Vertical_Successful_FlyOutSounds", PlayDropship_Flyer_Attack_Vertical_Successful_FlyOutSounds )
+}
+
+void function PlayGD_Goblin_Zipline_StrafeSounds( entity ship ) //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+{
+	EmitSoundOnEntity( ship, "Dropship_Flying_2_ships_Attrition" )
+}
+
+void function PlayDropship_Flyer_Attack_Vertical_Successful_FlyInSounds( entity ship ) //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+{
+	EmitSoundOnEntity( ship, "Dropship_Flyer_Attack_Vertical_Successful_Attrition" )
+}
+
+void function PlayDropship_Flyer_Attack_Vertical_Successful_FlyOutSounds( entity ship ) //HACK. Necessitated because of last minute use of SP anims in MP. Cleanup next game please
+{
+	EmitSoundOnEntity( ship, "Dropship_Warpout_Attrition" )
+}

@@ -1,0 +1,179 @@
+#base "_base_ability_ultimate.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_HUNT_MODE"
+	"shortprintname"   								"#WPN_HUNT_MODE"
+	"description" 									"#WPN_HUNT_MODE_DESC"
+	"longdesc"										"#WPN_HUNT_MODE_LONGDESC"
+
+	"menu_icon"				    					"rui/menu/boosts/boost_map_hack"
+	"hud_icon"				    					"rui/hud/ultimate_icons/ultimate_bloodhound"
+	"readymessage"              					"#HUD_BURNMETER_READY_HUNT_MODE"
+	"readyhint"                 					"#HUD_BURNMETER_READY_HUNT_MODE_HINT"
+
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhand"
+	"offhand_default_inventory_slot"				"1"
+	"offhand_interupts_weapon_anims"				"1"
+	"offhand_hold_enabled"							"0"
+
+	"is_toss_weapon"								"1"
+	"toss_pullout_time"								"0.0"
+	//"toss_time"										"5"   // comment out to match anim timing
+	"toss_overhead_time"							"0.0"
+
+	"instant_swap_to"								"0"
+
+	"OnWeaponTossPrep"								"MpAbilityHuntModeWeapon_OnWeaponTossPrep"
+	"OnWeaponTossReleaseAnimEvent"					"OnWeaponPrimaryAttack_hunt_mode"
+	//"OnWeaponPrimaryAttack"						"OnWeaponPrimaryAttack_hunt_mode"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_hunt_mode"
+    "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+
+	// Models
+	//"viewmodel"   									"mdl/weapons/empty_handed/ptpov_phaseshift_device.rmdl"
+
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_bloodhound_huntmode.rmdl"
+	"playermodel"									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
+	"leveled_pickup"								"1"
+	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
+
+	"offhand_keep_primary_in_hand"					"1"
+
+	// Sounds
+	"sound_dryfire"									"Survival_UI_Ability_NotReady"
+	"sound_weapon_ready"							"survival_ui_ultimate_ready"
+
+	"zoom_effects"									"0"
+
+	// Regen Ammo
+	//"regen_ammo_refill_start_delay"					"0.0"
+
+	"ammo_suck_behavior"							"offhand_weapons"
+
+	// Damage
+	"damage_type" 									"none"
+	"explosion_damage_heavy_armor"					"0"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+
+	// Rumble
+	"rumble"  										"-1"
+
+	// Behavior
+	"fire_rate"   									"15.0"
+	"fire_anim_rate"								"1.0"
+	"holster_time"									"0.1"
+	"deploy_time" 									"0.1"
+	"lower_time"  									"0.1"
+	"raise_time"  									"0.1"
+	"no_ammo_used_on_primary_attack"				"1"
+	"allow_empty_fire"								"0"
+	"reload_enabled"								"0"
+	"empty_reload_only"   							"0"
+	"allow_empty_click"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"breaks_cloak"									"0"
+	"primary_fire_does_not_block_sprint"			"1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	"cooldown_type"									"ammo_instant"
+
+	MP_BASE
+	{
+		"ammo_clip_size"								"180"
+        "ammo_default_total"							"0"
+        "ammo_display"									"count"
+        "ammo_min_to_fire"								"180"
+        "ammo_per_shot"									"180"
+        "ammo_stockpile_max"							"0"
+        "regen_ammo_refill_rate"						"1"
+        "regen_ammo_refill_start_delay"					"0.0"
+        "fire_duration"									"35.0"
+        "ammo_no_remove_from_stockpile"					"0"
+
+		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+	}
+
+	SP_BASE
+	{
+		"ammo_clip_size"   								"200"
+		"ammo_default_total"							"200"
+		"ammo_display"									"bar"
+		"ammo_min_to_fire"								"200"
+		"ammo_per_shot"									"200"
+		"ammo_stockpile_max"							"200"
+		"fire_duration"									"0.5"
+		"regen_ammo_refill_rate"						"10"
+		"regen_ammo_refill_start_delay"					"<KEEP_DEFAULT>"
+		"ammo_no_remove_from_stockpile"					"<KEEP_DEFAULT>"
+
+		"enable_highlight_networking_on_creation"		"1"
+	}
+
+	Mods
+	{
+        survival_armor_cooldown_mod
+        {
+            "regen_ammo_refill_rate"    "*1.25"
+        }
+
+		burn_card_weapon_mod
+		{
+		}
+
+		pas_power_cell
+		{
+			"regen_ammo_refill_rate"	"*1.35"
+		}
+
+        survival_finite_ordnance
+        {
+
+        }
+	}
+
+	active_crosshair_count				"2"
+	rui_crosshair_index					"0"
+
+	"ordnance_crosshair_always_on_start_index"	"1"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			crosshairMovementX          crosshair_movement_x
+		    crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_phase_charge"
+			"base_spread"				"0.0"
+			Args
+			{
+				teamColor				crosshair_team_color
+				isFiring				weapon_is_firing
+				chargeStartTime			weapon_script_time_0
+				chargeMaxTime			eWeaponVar.custom_float_0
+			}
+		}
+
+		Crosshair_2
+		{
+			"ui"						"ui/crosshair_tactical"
+			Args
+			{
+			    regenRate               "eWeaponVar.regen_ammo_refill_rate"
+			    ammoFrac                "progress_weapon_clip_ammo_frac"
+			    dryfireTime             "weapon_latest_dryfire_time"
+			}
+		}
+	}
+}

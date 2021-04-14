@@ -1,0 +1,228 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"Bullets.40mmNearmiss"
+		"whizby_sound_from_AI"		"Bullets.40mmNearmiss"
+		"whizby_maxDistancePilot"	"200"
+		"whizby_maxDistanceTitan"	"500"
+	}
+
+	FX
+	{
+		"C" "P_sup_spec_grndpnd" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_sup_spec_grndpnd" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_sup_spec_grndpnd" // metal_titan
+
+		"F" "P_sup_spec_grndpnd" //flesh
+		"G" "P_sup_spec_grndpnd" //metalgrate, chainlink, chain
+		"H" "P_sup_spec_grndpnd" //alienflesh
+
+		"J" "P_sup_spec_grndpnd" //grass
+		"K" "P_sup_spec_grndpnd" //Mud
+		"L" "P_sup_spec_grndpnd" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_sup_spec_grndpnd" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_sup_spec_grndpnd"
+		"O" "P_sup_spec_grndpnd" //Foliage
+		"P" "P_sup_spec_grndpnd" //Computer
+
+		"R" "P_sup_spec_grndpnd" //metalpanel, grenade, canister
+		"S" "P_sup_spec_grndpnd" //water, slime
+		"T" "P_sup_spec_grndpnd" //tile
+		"U" "P_sup_spec_grndpnd" //glass_breakable
+
+		"V" "P_sup_spec_grndpnd" //Metal Vent
+		"W" "P_sup_spec_grndpnd" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_sup_spec_grndpnd" //xo_shield
+
+		"Y" "P_sup_spec_grndpnd" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_sup_spec_grndpnd"  //sand
+
+		"0" "P_sup_spec_grndpnd"
+		"1" "P_sup_spec_grndpnd"
+		"2" "P_sup_spec_grndpnd"
+		"3" "P_sup_spec_grndpnd"
+		"4" "P_sup_spec_grndpnd"
+		"5" "P_sup_spec_grndpnd"
+		"6" "P_sup_spec_grndpnd"
+		"7" "P_sup_spec_grndpnd"
+		"8" "P_sup_spec_grndpnd"
+		"9" "P_sup_spec_grndpnd" //puddle
+
+		"splash" "P_sup_spec_grndpnd"
+		"slime_splash" "P_sup_spec_grndpnd"
+
+		"airburst" "P_impact_exp_med_air"
+		"shieldhit" "P_sup_spec_grndpnd"
+		"critical_hit" "P_sup_spec_grndpnd"
+	}
+
+	///This is 2nd set of impacts for shield fx to play with explosion and ScreenFX on player.
+	FX
+	{
+
+		"C" "P_screen_concussion" 	//Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_screen_mud" 			//Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_screen_concussion" 	// metal_titan
+
+		"F" "P_screen_blood" 		//flesh
+		"G" "P_screen_concussion" 	//metalgrate, chainlink, chain
+		"H" "P_screen_concussion" 	//alienflesh
+
+		"J" "P_screen_mud" 			//grass
+		"K" "P_screen_mud" 			//Mud
+		"L" "P_screen_concussion" 	//plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_screen_concussion" 	//Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_screen_concussion"
+		"O" "P_screen_mud" 			//Foliage
+		"P" "P_screen_concussion" 	//Computer
+
+		"R" "P_screen_concussion" 	//metalpanel, grenade, canister
+		"S" "P_screen_water"	 	//water, slime
+		"T" "P_screen_concussion" 	//tile
+		"U" "P_screen_concussion" 	//glass_breakable
+
+		"V" "P_screen_concussion" 	//Metal Vent
+		"W" "P_screen_concussion" 	//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		//"X" "P_impact_exp_med_xo_shield" //xo_shield
+
+		"Y" "P_screen_concussion" 	//glass, brokenglass, glassbottle, pottery
+		"Z" "P_screen_mud"			//sand
+
+		//"0" "P_screen_concussion"
+		//"1" "P_screen_concussion"
+		//"2" "P_screen_concussion"
+		//"3" "P_screen_concussion"
+		//"4" "P_screen_concussion"
+		//"5" "P_screen_concussion"
+		//"6" "P_screen_concussion"
+		//"7" "P_screen_concussion"
+		//"8" "P_screen_concussion"
+		//"9" "P_screen_water" //puddle
+
+		"splash" "P_screen_water"
+		"slime_splash" "P_screen_water"
+
+		"shieldhit" "P_xo_armor_impact_EXP"
+	}
+
+
+	FX_victim
+	{
+		"shieldhit" "P_sup_spec_grndpnd"
+	}
+
+	Sound
+	{
+		"C" "SuperSpectre.GroundSlam.Impact"
+		"D" "SuperSpectre.GroundSlam.Impact"
+		"E" "SuperSpectre.GroundSlam.Impact"
+
+		"F" "SuperSpectre.GroundSlam.Impact"
+		"G" "SuperSpectre.GroundSlam.Impact"
+		"H" "SuperSpectre.GroundSlam.Impact"
+
+		"J" "SuperSpectre.GroundSlam.Impact"
+		"K" "SuperSpectre.GroundSlam.Impact"
+		"L" "SuperSpectre.GroundSlam.Impact"
+		"M" "SuperSpectre.GroundSlam.Impact"
+		"N" "SuperSpectre.GroundSlam.Impact"
+		"O" "SuperSpectre.GroundSlam.Impact"
+		"P" "SuperSpectre.GroundSlam.Impact"
+
+		"R" "SuperSpectre.GroundSlam.Impact"
+		"S" "SuperSpectre.GroundSlam.Impact"
+		"T" "SuperSpectre.GroundSlam.Impact"
+		"U" "SuperSpectre.GroundSlam.Impact"
+
+		"V" "SuperSpectre.GroundSlam.Impact"
+		"W" "SuperSpectre.GroundSlam.Impact"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "SuperSpectre.GroundSlam.Impact"
+		"Z" "SuperSpectre.GroundSlam.Impact"  //sand
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" "SuperSpectre.GroundSlam.Impact"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "SuperSpectre.GroundSlam.Impact"
+		"D" "SuperSpectre.GroundSlam.Impact"
+		"E" "SuperSpectre.GroundSlam.Impact"
+
+		"F" "SuperSpectre.GroundSlam.Impact"
+		"G" "SuperSpectre.GroundSlam.Impact"
+		"H" "SuperSpectre.GroundSlam.Impact"
+
+		"J" "SuperSpectre.GroundSlam.Impact"
+		"K" "SuperSpectre.GroundSlam.Impact"
+		"L" "SuperSpectre.GroundSlam.Impact"
+		"M" "SuperSpectre.GroundSlam.Impact"
+		"N" "SuperSpectre.GroundSlam.Impact"
+		"O" "SuperSpectre.GroundSlam.Impact"
+		"P" "SuperSpectre.GroundSlam.Impact"
+
+		"R" "SuperSpectre.GroundSlam.Impact"
+		"S" "SuperSpectre.GroundSlam.Impact"
+		"T" "SuperSpectre.GroundSlam.Impact"
+		"U" "SuperSpectre.GroundSlam.Impact"
+
+		"V" "SuperSpectre.GroundSlam.Impact"
+		"W" "SuperSpectre.GroundSlam.Impact"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
+		"Y" "SuperSpectre.GroundSlam.Impact"
+		"Z" "SuperSpectre.GroundSlam.Impact"  //sand
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" "SuperSpectre.GroundSlam.Impact"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "SuperSpectre.GroundSlam.Impact"
+		"D" "SuperSpectre.GroundSlam.Impact"
+		"E" "Titan.40mm_Impact_3P_vs_1P"
+
+		"F" "SuperSpectre.GroundSlam.Impact"
+		"G" "SuperSpectre.GroundSlam.Impact"
+		"H" "SuperSpectre.GroundSlam.Impact"
+
+		"J" "SuperSpectre.GroundSlam.Impact"
+		"K" "SuperSpectre.GroundSlam.Impact"
+		"L" "SuperSpectre.GroundSlam.Impact"
+		"M" "SuperSpectre.GroundSlam.Impact"
+		"N" "SuperSpectre.GroundSlam.Impact"
+		"O" "SuperSpectre.GroundSlam.Impact"
+		"P" "SuperSpectre.GroundSlam.Impact"
+
+		"R" "SuperSpectre.GroundSlam.Impact"
+		"S" "SuperSpectre.GroundSlam.Impact"
+		"T" "SuperSpectre.GroundSlam.Impact"
+		"U" "SuperSpectre.GroundSlam.Impact"
+
+		"V" "SuperSpectre.GroundSlam.Impact"
+		"W" "SuperSpectre.GroundSlam.Impact"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "SuperSpectre.GroundSlam.Impact"
+		"Z" "SuperSpectre.GroundSlam.Impact"  //sand
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" "SuperSpectre.GroundSlam.Impact"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_1P"
+	}
+
+
+}

@@ -1,0 +1,136 @@
+#base "_base_melee.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"Melee"
+	"shortprintname"								"Melee"
+	"description" 									"Description needed"
+	"longdesc"										"Description needed"
+
+	"menu_icon"										"rui/hud/common/melee_icon"
+	"hud_icon"										"rui/hud/common/melee_icon"
+
+	"weaponClass" 									"human"
+	"weaponType" 									"melee"
+	"body_type"										"battle_rifle"
+	"fire_mode"   									"offhandMelee"
+	"never_drop"									"1"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+
+	// Melee
+	"melee_can_hit_humansized"						"1"
+	"melee_can_hit_titans"							"0"
+	"melee_raise_recovery_animtime_normal"			"0.75"
+	"melee_raise_recovery_animtime_quick"			"0.4"
+	"melee_range"									"60"
+	"melee_rumble_on_hit"							"pilot_melee_hit"
+	"melee_rumble_on_hit_partial"					"pilot_melee_hit_partial"
+	"melee_freezelook_on_hit"						"0.25"
+	//"melee_sound_attack_1p"						"Player_Melee_Backhand_1P"
+	//"melee_sound_attack_3p"							"bangalore_smoke_grenade_explosion_3p"
+	"melee_anim_3p"									"ACT_MP_MELEE_KNIFE_FIRST"
+	"damage_flags"									"DF_MELEE | DF_KNOCK_BACK"
+	"impact_effect_table"							"melee_human"
+	"impulse_force"   								"0"
+	"offhand_keep_primary_in_hand"					"1"
+
+	"zoom_effects"									"0"
+	"melee_angle"									"30"
+
+	MP_BASE
+	{
+		"melee_lunge_target_range"						"110"
+		"melee_lunge_no_target_range"					"110"
+		"melee_lunge_target_angle"						"30"
+		"melee_damage"									"100"
+		"melee_damage_heavyarmor"						"0"
+		"melee_attack_animtime"							"0"
+		"melee_lunge_time"								"0.3"
+		"melee_anim_1p_number"							"2"
+	}
+
+	SP_BASE
+	{
+		"melee_lunge_target_range"						"110"
+		"melee_lunge_no_target_range"					"110"
+		"melee_lunge_target_angle"						"40"
+		"melee_damage"									"125"
+		"melee_damage_heavyarmor"						"125"
+		"melee_attack_animtime"							"0"
+		"melee_lunge_time"								"0.2"
+		"melee_anim_1p_number"							"2"
+	}
+
+	//
+
+	"ammo_suck_behavior"							"melee_weapons"
+	"viewkick_spring" 								"melee"
+
+	"viewkick_pitch_base" 							"-1.75"
+	"viewkick_pitch_random"   						"0.75"
+	"viewkick_pitch_softScale"						"2.3"
+	"viewkick_pitch_hardScale"						"2.5"
+
+	"viewkick_yaw_base"   							"1.0"
+	"viewkick_yaw_random" 							"0.38"
+	"viewkick_yaw_softScale"  						"2.38"
+	"viewkick_yaw_hardScale"  						"2.5"
+
+	"viewkick_roll_base"  							"0"
+	"viewkick_roll_randomMin" 						"0.6"
+	"viewkick_roll_randomMax" 						"0.8"
+	"viewkick_roll_softScale" 						"15.2"
+	"viewkick_roll_hardScale" 						"15.75"
+
+	//
+	"damage_rodeo" 									"100"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+
+
+	"deployfirst_time"								"1.25"
+	"sprintcycle_time"								".55"
+
+	Mods
+	{
+		data_knife
+		{
+            "viewmodel"   									"mdl/weapons/data_knife/ptpov_data_knife.rmdl"
+			"melee_attack_animtime"							"1"
+			"damage_flags"									"DF_BULLET"
+
+			"viewkick_pitch_base" 							"-0.5"
+			"viewkick_pitch_random"   						"0.75"
+			"viewkick_pitch_softScale"						"1.3"
+			"viewkick_pitch_hardScale"						"1.5"
+
+			"viewkick_yaw_base"   							"0.5"
+			"viewkick_yaw_random" 							"0.38"
+			"viewkick_yaw_softScale"  						"2.38"
+			"viewkick_yaw_hardScale"  						"2.5"
+
+			"viewkick_roll_base"  							"0"
+			"viewkick_roll_randomMin" 						"0.6"
+			"viewkick_roll_randomMax" 						"0.8"
+			"viewkick_roll_softScale" 						"7.2"
+			"viewkick_roll_hardScale" 						"7.75"
+		}
+
+		survival
+		{
+
+			"melee_lunge_time"							"0.35"
+		//	"melee_attack_animtime"						"0.35"
+
+			"melee_lunge_target_range"						"60"
+			"melee_lunge_no_target_range"					"60"
+			"melee_range"									"40"
+			"melee_damage"									"30"
+			"melee_damage_heavyarmor"						"30"
+		}
+	}
+}

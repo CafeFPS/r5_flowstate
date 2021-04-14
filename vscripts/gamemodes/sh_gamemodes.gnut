@@ -1,0 +1,543 @@
+
+global function GameModes_Init
+
+global function GameMode_Create
+global function GameMode_SetName
+global function GameMode_SetGameModeAttackAnnouncement
+global function GameMode_SetGameModeDefendAnnouncement
+global function GameMode_SetAttackDesc
+global function GameMode_SetDefendDesc
+global function GameMode_SetIcon
+global function GameMode_SetDefaultScoreLimits
+global function GameMode_AddScoreboardColumnData
+global function GameMode_SetGameModeAnnouncement
+global function GameMode_SetDefaultTimeLimits
+global function GameMode_SetDesc
+global function GameMode_SetColor
+global function GameMode_SetSuddenDeath
+
+global function GameMode_GetScoreLimit
+global function GameMode_GetRoundScoreLimit
+global function GameMode_GetTimeLimit
+global function GameMode_GetRoundTimeLimit
+global function GameMode_GetGameModeAnnouncement
+global function GameMode_GetGameModeAttackAnnouncement
+global function GameMode_GetGameModeDefendAnnouncement
+global function GameMode_GetDesc
+global function GameMode_GetName
+global function GameMode_GetIcon
+global function GameMode_GetColor
+global function GameMode_GetAttackDesc
+global function GameMode_GetDefendDesc
+global function GameMode_GetPilotSpawnpointsRatingFunc
+global function GameMode_GetTitanSpawnpointsRatingFunc
+global function GameMode_GetScoreCompareFunc
+global function GameMode_GetSuddenDeathEnabled
+global function GameMode_GetEvacEnabled
+global function GameMode_GetGameEndingWarning
+global function GameMode_GetGameEndingConversation
+global function GameMode_GetScoreboardColumnTitles
+global function GameMode_GetScoreboardColumnScoreTypes
+global function GameMode_GetScoreboardColumnNumDigits
+global function GameMode_GetCustomIntroAnnouncement
+global function GameMode_RunServerInits
+global function GameMode_RunClientInits
+global function GameMode_RunSharedInits
+global function GameMode_IsDefined
+
+global function GameMode_AddServerInit
+global function GameMode_AddClientInit
+global function GameMode_AddSharedInit
+global function GameMode_SetScoreCompareFunc
+global function GameMode_SetPilotSpawnpointsRatingFunc
+global function GameMode_SetTitanSpawnpointsRatingFunc
+global function GameMode_SetCustomIntroAnnouncement
+
+global function GameMode_GetGameModeId
+
+global function GameMode_SetEvacEnabled
+
+global function GameMode_GetLoadoutSelectTime
+
+global struct GamemodeSettings
+{
+	string name = ""
+	string name_localized = "Undefined Game Mode"
+	string desc_localized = "Undefined Game Mode Description"
+	string desc_attack = ""
+	string desc_defend = ""
+	string gameModeAnnoucement = ""
+	string gameModeAttackAnnoucement = ""
+	string gameModeDefendAnnoucement = ""
+	asset icon = $"ui/menu/playlist/classic"
+	array<int> color = [127, 127, 127, 255]
+	array<void functionref()> serverInits
+	array<void functionref()> clientInits
+	array<void functionref()> sharedInits
+	void functionref( int, array<entity>, int, entity ) pilotSpawnpointRatingFunc
+	void functionref( int, array<entity>, int, entity ) titanSpawnpointRatingFunc
+	IntFromEntityCompare scoreCompareFunc
+	int defaultScoreLimit = 100
+	int defaultTimeLimit = 10
+	int defaultRoundScoreLimit = 5
+	float defaultRoundTimeLimit = 5.0
+	bool evacEnabled = true
+	string gameModeEndingWarning = "#GAMEMODE_END_IN_N_SECONDS"
+	string gameModeEndingConversation = ""
+	bool suddenDeathEnabled = false
+	array<string> scoreboardColumnTitles
+	array<int> scoreboardColumnScoreTypes
+	array<int> scoreboardColumnNumDigits
+	void functionref(entity) customIntroAnnouncementFunc
+}
+
+
+
+// Don't remove items from this list once the game is in production
+// Durango online analytics needs the numbers for each mode to stay the same
+// DO NOT CHANGE THESE VALUES AFTER THEY HAVE GONE LIVE
+global enum eGameModes
+{
+	invalid =							-1,
+
+	SURVIVAL_ID =						0,
+	TEAM_DEATHMATCH_ID =				1,
+	//GAMEMODE_SP_ID =					2,
+}
+
+const table<string, int> gameModesStringToIdMap = {
+	[ TEAM_DEATHMATCH ] 					= eGameModes.TEAM_DEATHMATCH_ID,
+	[ SURVIVAL ]							= eGameModes.SURVIVAL_ID,
+}
+
+struct
+{
+	table<string, GamemodeSettings> gameModeDefs
+} file
+
+void function GameModes_Init()
+{
+	string gameMode
+
+	gameMode = TEAM_DEATHMATCH
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#PL_pilot_hunter" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
+
+	gameMode = SURVIVAL
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#GAMEMODE_SURVIVAL" )
+	GameMode_SetGameModeAnnouncement( gameMode, "ffa_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_survival_hint" )
+	GameMode_SetIcon( gameMode, FFA_MODE_ICON )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 10, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
+
+	#if DEVSCRIPTS
+	DevGameModes_Init()
+	#endif
+
+	#if SERVER || CLIENT
+	GameModes_Init_SV_CL()
+	#endif
+
+	////
+	GameMode_VerifyModes()
+}
+
+// TODO: scoreboards
+
+/*************************************************************
+	Setters
+*************************************************************/
+
+GamemodeSettings function GameMode_Create( string gameModeName )
+{
+	Assert( !(gameModeName in file.gameModeDefs), "Gametype already defined!" )
+
+	GamemodeSettings settings
+	file.gameModeDefs[gameModeName] <- settings
+
+	return file.gameModeDefs[gameModeName]
+}
+
+void function GameMode_SetName( string gameModeName, string nameText )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut (" + gameModeName + ")" )
+	file.gameModeDefs[gameModeName].name_localized = nameText
+}
+
+void function GameMode_SetGameModeAnnouncement( string gameModeName, string gameModeAnnoucement ) //Note: Still need to register the conversation
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].gameModeAnnoucement = gameModeAnnoucement
+}
+
+void function GameMode_SetGameModeAttackAnnouncement( string gameModeName, string gameModeAttackAnnoucement ) //Note: Still need to register the conversation
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].gameModeAttackAnnoucement = gameModeAttackAnnoucement
+}
+
+void function GameMode_SetGameModeDefendAnnouncement( string gameModeName, string gameModeDefendAnnoucement )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" ) //Note: Still need to register the conversation
+	file.gameModeDefs[gameModeName].gameModeDefendAnnoucement = gameModeDefendAnnoucement
+}
+
+void function GameMode_SetDesc( string gameModeName, string descText )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].desc_localized = descText
+}
+
+void function GameMode_SetAttackDesc( string gameModeName, string descText )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].desc_attack = descText
+}
+
+void function GameMode_SetDefendDesc( string gameModeName, string descText )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].desc_defend = descText
+}
+
+void function GameMode_SetIcon( string gameModeName, asset icon )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].icon = icon
+}
+
+void function GameMode_SetColor( string gameModeName, array<int> color )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].color = color
+}
+
+void function GameMode_SetSuddenDeath( string gameModeName, bool state )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].suddenDeathEnabled = state
+}
+
+void function GameMode_AddServerInit( string gameModeName, void functionref() func )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].serverInits.append( func )
+}
+
+void function GameMode_AddClientInit( string gameModeName, void functionref() func )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].clientInits.append( func )
+}
+
+void function GameMode_AddSharedInit( string gameModeName, void functionref() func )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].sharedInits.append( func )
+}
+
+void function GameMode_SetPilotSpawnpointsRatingFunc( string gameModeName, void functionref( int, array<entity>, int, entity ) func )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].pilotSpawnpointRatingFunc = func
+}
+
+void function GameMode_SetTitanSpawnpointsRatingFunc( string gameModeName, void functionref( int, array<entity>, int, entity ) func )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].titanSpawnpointRatingFunc = func
+}
+
+void function GameMode_SetScoreCompareFunc( string gameModeName, int functionref( entity, entity ) func )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].scoreCompareFunc = func
+}
+
+void function GameMode_SetDefaultScoreLimits( string gameModeName, int scoreLimit, int roundScoreLimit )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].defaultScoreLimit = scoreLimit
+	file.gameModeDefs[gameModeName].defaultRoundScoreLimit = roundScoreLimit
+}
+
+void function GameMode_SetDefaultTimeLimits( string gameModeName, int timeLimit, float roundTimeLimit )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].defaultTimeLimit = timeLimit
+	file.gameModeDefs[gameModeName].defaultRoundTimeLimit = roundTimeLimit
+}
+
+void function GameMode_AddScoreboardColumnData( string gameModeName, string title, int scoreType, int numDigits )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].scoreboardColumnTitles.append( title )
+	file.gameModeDefs[gameModeName].scoreboardColumnScoreTypes.append( scoreType )
+	file.gameModeDefs[gameModeName].scoreboardColumnNumDigits.append( numDigits )
+}
+
+void function GameMode_SetEvacEnabled( string gameModeName, bool value )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].evacEnabled = value
+}
+
+void function GameMode_SetGameEndingWarning( string gameModeName, string warning )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].gameModeEndingWarning = warning
+}
+
+void function GameMode_SetGameEndingConversation( string gameModeName, string conversation )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].gameModeEndingConversation = conversation
+}
+
+void function GameMode_SetCustomIntroAnnouncement( string gameModeName, void functionref(entity) func )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	file.gameModeDefs[gameModeName].customIntroAnnouncementFunc = func
+}
+
+/*************************************************************
+	Getters
+*************************************************************/
+
+int function GameMode_GetScoreLimit( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return GetCurrentPlaylistVarInt( "scorelimit", file.gameModeDefs[gameModeName].defaultScoreLimit )
+}
+
+int function GameMode_GetRoundScoreLimit( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return GetCurrentPlaylistVarInt( "roundscorelimit", file.gameModeDefs[gameModeName].defaultRoundScoreLimit )
+}
+
+int function GameMode_GetTimeLimit( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return GetCurrentPlaylistVarInt( "timelimit", file.gameModeDefs[gameModeName].defaultTimeLimit )
+}
+
+float function GameMode_GetRoundTimeLimit( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return GetCurrentPlaylistVarFloat( "roundtimelimit", file.gameModeDefs[gameModeName].defaultRoundTimeLimit )
+}
+
+string function GameMode_GetGameModeAnnouncement( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].gameModeAnnoucement
+}
+
+string function GameMode_GetGameModeAttackAnnouncement( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].gameModeAttackAnnoucement
+}
+
+string function GameMode_GetGameModeDefendAnnouncement( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].gameModeDefendAnnoucement
+}
+
+string function GameMode_GetDesc( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].desc_localized
+}
+
+string function GameMode_GetName( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].name_localized
+}
+
+asset function GameMode_GetIcon( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].icon
+}
+
+array<int> function GameMode_GetColor( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].color
+}
+
+string function GameMode_GetAttackDesc( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].desc_attack
+}
+
+string function GameMode_GetDefendDesc( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].desc_defend
+}
+
+void functionref( int, array<entity>, int, entity ) function GameMode_GetPilotSpawnpointsRatingFunc( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	Assert( file.gameModeDefs[gameModeName].pilotSpawnpointRatingFunc != null, "No respawn func set for " + gameModeName )
+	return file.gameModeDefs[gameModeName].pilotSpawnpointRatingFunc
+}
+
+void functionref( int, array<entity>, int, entity ) function GameMode_GetTitanSpawnpointsRatingFunc( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	Assert( file.gameModeDefs[gameModeName].titanSpawnpointRatingFunc != null, "No respawn func set for " + gameModeName )
+	return file.gameModeDefs[gameModeName].titanSpawnpointRatingFunc
+}
+
+IntFromEntityCompare function GameMode_GetScoreCompareFunc( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].scoreCompareFunc
+}
+
+bool function GameMode_GetSuddenDeathEnabled( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].suddenDeathEnabled
+}
+
+bool function GameMode_GetEvacEnabled( string gameModeName ) //TODO: get rid of this or fold into EvacEnabled() function
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].evacEnabled
+}
+
+string function GameMode_GetGameEndingWarning( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].gameModeEndingWarning
+}
+
+string function GameMode_GetGameEndingConversation( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].gameModeEndingConversation
+}
+
+array<string> function GameMode_GetScoreboardColumnTitles( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].scoreboardColumnTitles
+}
+
+array<int> function GameMode_GetScoreboardColumnScoreTypes( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].scoreboardColumnScoreTypes
+}
+
+array<int> function GameMode_GetScoreboardColumnNumDigits( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].scoreboardColumnNumDigits
+}
+
+void functionref(entity) function GameMode_GetCustomIntroAnnouncement( string gameModeName )
+{
+	Assert( gameModeName in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+	return file.gameModeDefs[gameModeName].customIntroAnnouncementFunc
+}
+
+/*************************************************************
+
+*************************************************************/
+void function GameMode_RunServerInits()
+{
+	Assert( GAMETYPE in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+
+	foreach ( initFunc in file.gameModeDefs[GAMETYPE].serverInits )
+	{
+		initFunc()
+	}
+}
+
+void function GameMode_RunClientInits()
+{
+	Assert( GAMETYPE in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+
+	foreach ( initFunc in file.gameModeDefs[GAMETYPE].clientInits )
+	{
+		initFunc()
+	}
+}
+
+void function GameMode_RunSharedInits()
+{
+	Assert( GAMETYPE in file.gameModeDefs, "No MP Gametype specified in _settings.nut" )
+
+	foreach ( initFunc in file.gameModeDefs[GAMETYPE].sharedInits )
+	{
+		initFunc()
+	}
+}
+
+void function GameMode_VerifyModes()
+{
+	foreach ( gameModeName, gameModeData in file.gameModeDefs )
+	{
+		int gameModeId = GameMode_GetGameModeId( gameModeName )
+		bool foundGameModeIdString = false
+		foreach ( idString, gameModeEnumId in eGameModes )
+		{
+			if ( gameModeEnumId != gameModeId )
+				continue
+
+			foundGameModeIdString = true
+			break
+		}
+		Assert( foundGameModeIdString, "GAMEMODE not defined properly in eGameModes!" )
+
+		GAMETYPE_TEXT[gameModeName] <- gameModeData.name_localized
+		GAMETYPE_DESC[gameModeName] <- gameModeData.desc_localized
+		//GAMETYPE_ICON[gameModeName] <- gameModeData.icon
+		GAMETYPE_COLOR[gameModeName] <- gameModeData.color
+		//#if CLIENT
+		//	PrecacheHUDMaterial( GAMETYPE_ICON[gameModeName] )
+		//#endif
+	}
+}
+
+int function GameMode_GetGameModeId( string gameModeName )
+{
+	if ( gameModeName in gameModesStringToIdMap )
+		return gameModesStringToIdMap[gameModeName]
+
+	Assert( false, "GAMEMODE " + gameModeName + " not defined in gameModesStringToIdMap" )
+
+	return 0
+}
+
+bool function GameMode_IsDefined( string gameModeName )
+{
+	return (gameModeName in file.gameModeDefs)
+}
+
+float function GameMode_GetLoadoutSelectTime()
+{
+	return GetCurrentPlaylistVarFloat( "pick_loadout_time", 5.0 )
+}

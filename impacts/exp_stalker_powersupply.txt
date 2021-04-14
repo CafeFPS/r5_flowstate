@@ -1,0 +1,170 @@
+// "Gamematerial" "effect_name"
+
+// "B" bloodyflesh
+// "X" plastic box, wade, ladder, woodladdder,
+// "I" player_control_clip
+
+ImpactTable
+{
+	FX
+	{
+		"C" "P_impact_exp_FRAG_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_exp_FRAG_dirt" //Dirt, mud, sand, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_exp_FRAG_metal" // metal_titan
+
+		"F" "P_impact_exp_FRAG_metal" //flesh
+		"G" "P_impact_exp_FRAG_metal" //metalgrate, chainlink, chain
+		"H" "P_impact_exp_FRAG_concrete" //alienflesh
+
+		"J" "P_impact_exp_FRAG_dirt" //grass
+		"K" "P_impact_exp_FRAG_dirt" //mud
+		"L" "P_impact_exp_FRAG_metal" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_exp_FRAG_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_exp_FRAG_metal"
+		"O" "P_impact_exp_FRAG_dirt" //Foliage
+		"P" "P_impact_exp_FRAG_metal" //Computer
+
+		"R" "P_impact_exp_FRAG_metal" //metalpanel, grenade, canister
+		"S" "P_impact_exp_FRAG_water" //water, slime
+		"T" "P_impact_exp_FRAG_concrete" //tile
+		"U" "P_impact_exp_FRAG_metal" //glass_breakble
+
+		"V" "P_impact_exp_FRAG_metal" //Metal Vent
+		"W" "P_impact_exp_FRAG_metal" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "P_impact_exp_FRAG_metal" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_exp_FRAG_sand"  //sand
+
+		"0" "P_impact_exp_FRAG_concrete"
+		"1" "P_impact_exp_FRAG_concrete"
+		"2" "P_impact_exp_FRAG_concrete"
+		"3" "P_impact_exp_FRAG_concrete"
+		"4" "P_impact_exp_FRAG_concrete"
+		"5" "P_impact_exp_FRAG_concrete"
+		"6" "P_impact_exp_FRAG_concrete"
+		"7" "P_impact_exp_FRAG_concrete"
+		"8" "P_impact_exp_FRAG_concrete"
+		"9" "P_impact_exp_FRAG_water" //puddle
+
+		"splash" "P_impact_exp_FRAG_water"
+		"slime_splash" "P_impact_exp_FRAG_water"
+
+		"airburst" "P_impact_exp_FRAG_air"
+		"shieldhit" "P_impact_exp_FRAG_air"
+		"critical_hit" "P_impact_exp_FRAG_metal"
+	}
+	///This is 2nd set of impacts for shield fx to play with explosion
+	FX
+	{
+		"shieldhit" "P_xo_armor_impact_EXP"
+	}
+
+	Sound
+	{
+		"C" "ai_stalker_nukedestruct_explo_3p"
+		"D" "ai_stalker_nukedestruct_explo_3p"
+		"E" "ai_stalker_nukedestruct_explo_3p"
+
+		"F" "ai_stalker_nukedestruct_explo_3p"
+		"G" "ai_stalker_nukedestruct_explo_3p"
+		"H" "ai_stalker_nukedestruct_explo_3p"
+
+		"J" "ai_stalker_nukedestruct_explo_3p"
+		"K" "ai_stalker_nukedestruct_explo_3p"
+		"L" "ai_stalker_nukedestruct_explo_3p"
+		"M" "ai_stalker_nukedestruct_explo_3p"
+		"N" "ai_stalker_nukedestruct_explo_3p"
+		"O" "ai_stalker_nukedestruct_explo_3p"
+		"P" "ai_stalker_nukedestruct_explo_3p"
+
+		"R" "ai_stalker_nukedestruct_explo_3p"
+		"S" "ai_stalker_nukedestruct_explo_3p"
+		"T" "ai_stalker_nukedestruct_explo_3p"
+		"U" "ai_stalker_nukedestruct_explo_3p"
+
+		"V" "ai_stalker_nukedestruct_explo_3p"
+		"W" "ai_stalker_nukedestruct_explo_3p"
+		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "ai_stalker_nukedestruct_explo_3p"
+		"Z" "ai_stalker_nukedestruct_explo_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "ai_stalker_nukedestruct_explo_3p"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "ai_stalker_nukedestruct_explo_3p"
+		"D" "ai_stalker_nukedestruct_explo_3p"
+		"E" "ai_stalker_nukedestruct_explo_3p"
+
+		"F" "ai_stalker_nukedestruct_explo_3p"
+		"G" "ai_stalker_nukedestruct_explo_3p"
+		"H" "ai_stalker_nukedestruct_explo_3p"
+
+		"J" "ai_stalker_nukedestruct_explo_3p"
+		"K" "ai_stalker_nukedestruct_explo_3p"  // mud?
+		"L" "ai_stalker_nukedestruct_explo_3p"
+		"M" "ai_stalker_nukedestruct_explo_3p"
+		"N" "ai_stalker_nukedestruct_explo_3p"	// sand?
+		"O" "ai_stalker_nukedestruct_explo_3p"
+		"P" "ai_stalker_nukedestruct_explo_3p"
+
+		"R" "ai_stalker_nukedestruct_explo_3p"
+		"S" "ai_stalker_nukedestruct_explo_3p"
+		"T" "ai_stalker_nukedestruct_explo_3p"
+		"U" "ai_stalker_nukedestruct_explo_3p"
+
+		"V" "ai_stalker_nukedestruct_explo_3p"
+		"W" "ai_stalker_nukedestruct_explo_3p"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
+		"Y" "ai_stalker_nukedestruct_explo_3p"
+		"Z" "ai_stalker_nukedestruct_explo_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "ai_stalker_nukedestruct_explo_3p"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "ai_stalker_nukedestruct_explo_3p"
+		"D" "ai_stalker_nukedestruct_explo_3p"
+		"E" "ai_stalker_nukedestruct_explo_3p"
+
+		"F" "ai_stalker_nukedestruct_explo_3p"
+		"G" "ai_stalker_nukedestruct_explo_3p"
+		"H" "ai_stalker_nukedestruct_explo_3p"
+
+		"J" "ai_stalker_nukedestruct_explo_3p"
+		"K" "ai_stalker_nukedestruct_explo_3p"
+		"L" "ai_stalker_nukedestruct_explo_3p"
+		"M" "ai_stalker_nukedestruct_explo_3p"
+		"N" "ai_stalker_nukedestruct_explo_3p"
+		"O" "ai_stalker_nukedestruct_explo_3p"
+		"P" "ai_stalker_nukedestruct_explo_3p"
+
+		"R" "ai_stalker_nukedestruct_explo_3p"
+		"S" "ai_stalker_nukedestruct_explo_3p"
+		"T" "ai_stalker_nukedestruct_explo_3p"
+		"U" "ai_stalker_nukedestruct_explo_3p"
+
+		"V" "ai_stalker_nukedestruct_explo_3p"
+		"W" "ai_stalker_nukedestruct_explo_3p"
+		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "ai_stalker_nukedestruct_explo_3p"
+		"Z" "ai_stalker_nukedestruct_explo_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "ai_stalker_nukedestruct_explo_3p"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_1P"
+	}
+
+}

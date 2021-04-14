@@ -1,0 +1,323 @@
+untyped
+
+global function TitanSoul_Init
+
+#if SERVER
+global function CreateTitanSoul
+global function AddSoulInitFunc
+global function AddSoulTransferFunc
+global function AddSoulSettingsChangeFunc
+global function Soul_SetLastAttackInfo
+global function SoulDies
+global function TitanTaken
+global function SoulBecomesOwnedByPlayer
+global function SetCoreCharged
+global function SetSoulOwner
+#endif
+
+global function HasSoul
+global function SetStanceKneel
+global function SetStanceKneeling
+global function SetStanceStanding
+global function SetStanceStand
+global function GetSoulPlayerSettings
+global function IsSoul
+global function GetSoulTitanSubClass
+global function GetTitanSoulShieldHealth
+global function GetTitanSoulDoomedHealth
+
+void function TitanSoul_Init()
+{
+	RegisterSignal( "OnSoulTransfer" )
+	RegisterSignal( "OnTitanDeath" )
+	RegisterSignal( "OnTitanTaken" )
+	RegisterSignal( "OnPlayerHasTitanInWorld" )
+	RegisterSignal( "TitanKilled" )
+
+	#if SERVER
+	level._titanSouls <- {}
+	AddSpawnCallback( "titan_soul", SpawnTitanSoul )
+	AddDeathCallback( "npc_titan", TitanDiedKillSoul )
+	#endif
+
+	RegisterSignal( "OnTitanLost" ) // sent to a player when they lose their titan, on server and client
+}
+
+#if SERVER
+void function SpawnTitanSoul( entity soul )
+{
+	level._titanSouls[ soul ] <- soul
+}
+#endif // SERVER
+
+// TODO: Should return bool, but errors if set to
+function IsSoul( entity ent )
+{
+	if ( ent == null )
+		return false
+
+	#if CLIENT
+		return ent instanceof C_TitanSoul
+	#else
+		return ent instanceof CTitanSoul
+	#endif
+}
+
+string function GetSoulTitanSubClass( entity soul )
+{
+	asset settings = GetSoulPlayerSettings( soul )
+	return GetGlobalSettingsString( settings, "subclass" )
+}
+
+asset function GetSoulPlayerSettings( entity soul )
+{
+	return soul.GetPlayerSettingsName()
+}
+
+bool function HasSoul( entity ent )
+{
+	return ( ent.IsNPC() || ent.IsPlayer() ) && IsValid( ent.GetTitanSoul() )
+}
+
+#if SERVER
+void function InitSoul( entity soul, entity titan )
+{
+	Assert( titan.IsNPC() )
+
+	asset settings = GetNPCTitanSettingFile( titan )
+	soul.SetPlayerSettingsName( settings )
+
+	soul.hijackProgress = 0
+	soul.lastHijackTime = 0
+
+	SetStanceStand( soul ) // soul seems bad, what if we spawn a crouched titan?
+	SetSoulOwner( soul, titan )
+	SetTeam( soul, titan.GetTeam() )
+
+	float titanShieldHealth = GetTitanSoulShieldHealth( soul )
+	soul.SetShieldHealth( titanShieldHealth )
+	soul.SetShieldHealthMax( titanShieldHealth )
+
+	soul.lastAttackInfo = {
+		attacker = titan,
+		inflictor = titan,
+		damageSourceId = getconsttable().damagedef_suicide,
+		scriptType = 0
+	}
+
+	foreach ( callbackFunc in svGlobal.soulInitFuncs )
+	{
+		callbackFunc( soul )
+	}
+
+	if ( TitanDamageRewardsTitanCoreTime() )
+	{
+		SoulTitanCore_SetNextAvailableTime( soul, 0.0 )
+	}
+	else
+	{
+		//int coreBuildTime = GetCurrentPlaylistVarInt( "titan_core_build_time", TITAN_CORE_BUILD_TIME )
+		//SoulTitanCore_SetNextAvailableTime( soul, Time() + coreBuildTime )
+	}
+}
+
+void function SetSoulOwner( entity soul, entity titan )
+{
+	Assert( soul.GetTitan() != titan, "Already set soul owner as " + titan )
+	entity oldTitan = soul.GetTitan()
+
+	Assert( IsAlive( titan ), titan + " is dead" )
+	foreach ( func in svGlobal.soulTransferFuncs )
+	{
+		func( soul, titan, oldTitan )
+	}
+
+	// must be done manually after setting soul owner
+	// soul is so an entity can share the soul during the part of the transition that has passage of time
+	//if ( ::IsValid( oldTitan ) )
+	//{
+	//	oldTitan.SetTitanSoul( null )
+	//}
+
+	entity pastTitan = GetPlayerTitanFromSouls( titan )
+	if ( IsAlive( pastTitan ) && pastTitan != oldTitan )
+	{
+		// the past titan blows up
+		table extraDeathInfo
+		extraDeathInfo.damageSourceId <- getconsttable().damagedef_suicide
+
+		pastTitan.Die( titan, titan, extraDeathInfo )
+	}
+
+	titan.SetTitanSoul( soul )
+
+	soul.Signal( "OnSoulTransfer" )
+
+	Assert( titan.IsNPC() || titan.IsPlayer(), "Is not a player" )
+}
+
+void function AddSoulInitFunc( void functionref( entity titanSoul ) func )
+{
+	Assert( !svGlobal.soulInitFuncs.contains( func ), "Already added " + string( func ) + " with AddSoulInitFunc" )
+	svGlobal.soulInitFuncs.append( func )
+}
+
+void function AddSoulSettingsChangeFunc( void functionref( entity titanSoul ) func )
+{
+	Assert( !svGlobal.soulSettingsChangeFuncs.contains( func ), "Already added " + string( func ) + " with AddSoulSettingsChangeFunc" )
+	svGlobal.soulSettingsChangeFuncs.append( func )
+}
+
+void function AddSoulTransferFunc( void functionref( entity, entity, entity ) func )
+{
+	Assert( !svGlobal.soulTransferFuncs.contains( func ), "Already added " + string( func ) + " with AddSoulTransferFunc" )
+	svGlobal.soulTransferFuncs.append( func )
+}
+
+entity function CreateTitanSoul( entity titan )
+{
+	entity soul = CreateEntity( "titan_soul" )
+	DispatchSpawn( soul )
+
+	InitSoul( soul, titan )
+	AddEntityDestroyedCallback( soul, HandleSoulDestroy )
+
+	return soul
+}
+
+void function HandleSoulDestroy( entity soul )
+{
+	Assert( soul.IsValidInternal() )
+	soul.SoulDestroy()
+}
+
+void function TitanDiedKillSoul( entity titan, var damageInfo )
+{
+	entity soul = titan.GetTitanSoul()
+	SoulDies( soul, damageInfo )
+}
+
+void function SoulDies( entity soul, var damageInfo )
+{
+	svGlobal.levelEnt.Signal( "TitanKilled" )
+	if ( !IsValid( soul ) )
+		return
+
+	// presuming this titan was owned, a player lost his titan
+	entity lastPlayer = soul.GetBossPlayer()
+
+	if ( IsValid( lastPlayer ) )
+		SetPlayerLostTitanTime( lastPlayer )
+
+	soul.Signal( "OnTitanDeath" )
+
+	foreach ( name, callbackFunc in svGlobal.soulDeathFuncs )
+	{
+		callbackFunc( soul, damageInfo )
+	}
+
+	if ( ( "proto_outlineModel" in soul.s ) && IsValid( soul.s.proto_outlineModel ) )
+		 soul.s.proto_outlineModel.Destroy()
+}
+
+void function SetPlayerLostTitanTime( entity player )
+{
+	entity titan = GetPlayerTitanInMap( player )
+	// already has a titan available? dont change the time then
+	if ( IsAlive( titan ) )
+		return
+
+	player.s.lostTitanTime = Time()
+}
+
+void function TitanTaken( entity player, entity titan )
+{
+	entity soul = titan.GetTitanSoul()
+
+	// presuming this titan was owned by somebody else, a player lost his titan
+	entity lastPlayer = soul.GetBossPlayer()
+	if ( IsValid( lastPlayer ) && player != lastPlayer )
+	{
+		SetPlayerLostTitanTime( lastPlayer )
+		lastPlayer.Signal( "OnTitanLost" )
+	}
+
+	SoulBecomesOwnedByPlayer( soul, player )
+	soul.Signal( "OnTitanTaken", { newOwner = player, lastOwner = lastPlayer } )
+}
+
+void function SoulBecomesOwnedByPlayer( entity soul, entity player )
+{
+	soul.SetBossPlayer( player )
+
+	player.Signal( "OnPlayerHasTitanInWorld" )
+}
+
+void function SetCoreCharged( entity soul )
+{
+	if ( !( "coreCharged" in soul.s ) )
+	{
+		SoulTitanCore_SetNextAvailableTime( soul, 100.0 )
+		soul.s.coreCharged <- true // no reuse
+	}
+}
+
+void function Soul_SetLastAttackInfo( entity soul, var damageInfo )
+{
+	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	if ( !IsValid( attacker ) )
+		return
+
+	if ( !attacker.IsPlayer() && !attacker.IsNPC() && DamageInfo_GetDamageSourceIdentifier( damageInfo ) != eDamageSourceId.floor_is_lava )
+		return
+
+	if ( attacker == soul.GetTitan() )
+		return
+
+	table lastAttackInfo
+	lastAttackInfo.attacker <- DamageInfo_GetAttacker( damageInfo )
+	lastAttackInfo.inflictor <- DamageInfo_GetInflictor( damageInfo )
+	lastAttackInfo.time <- Time()
+	lastAttackInfo.damageSourceId <- DamageInfo_GetDamageSourceIdentifier( damageInfo )
+	lastAttackInfo.scriptType <- DamageInfo_GetCustomDamageType( damageInfo )
+
+	soul.lastAttackInfo = lastAttackInfo
+}
+#endif // SERVER
+
+void function SetStanceKneel( entity soul )
+{
+	soul.SetStance( STANCE_KNEEL )
+	//printt( titan, "Kneel" )
+}
+
+void function SetStanceKneeling( entity soul )
+{
+	soul.SetStance( STANCE_KNEELING )
+	//printt( titan, "Kneeling" )
+}
+
+void function SetStanceStanding( entity soul )
+{
+	soul.SetStance( STANCE_STANDING )
+	//printt( titan, "Standing" )
+}
+
+void function SetStanceStand( entity soul )
+{
+	soul.SetStance( STANCE_STAND )
+	//printt( titan, "Stand" )
+}
+
+float function GetTitanSoulShieldHealth( entity soul )
+{
+	asset playerSettings = GetSoulPlayerSettings( soul )
+	return GetGlobalSettingsFloat( playerSettings, "healthShield" )
+}
+
+float function GetTitanSoulDoomedHealth( entity soul )
+{
+	asset playerSettings = GetSoulPlayerSettings( soul )
+	float doomedHealth = GetGlobalSettingsFloat( playerSettings, "healthDoomed" )
+	return doomedHealth
+}

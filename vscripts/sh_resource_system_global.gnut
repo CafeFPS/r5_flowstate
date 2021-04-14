@@ -1,0 +1,51 @@
+#if SERVER
+global function ObjectiveResourceSystem_ServerInit
+global function SpawnCallback_JustDeleteMeNow
+#endif // #if SERVER
+
+
+
+#if SERVER
+
+global const bool RESOURCE_SYSTEM_ENABLED = false
+
+global const string RESOURCE_INFOENT_BASECLASS = "info_target"
+//
+global const string CLASSNAME_RESOURCEGROUP =	"resource_group"
+global const string CLASSNAME_POI =				"resource_poi"
+global const string CLASSNAME_INFANTRYSPAWN =	"resource_infantryspawn"
+global const string CLASSNAME_SNIPERNEST =		"resource_snipernest"
+global const string CLASSNAME_PATROL_NODE =		"resource_patrol_node"
+
+
+void function SpawnCallback_JustDeleteMeNow( entity spawnEnt )
+{
+	//printf( "zzzz: %s", string( spawnEnt ) )
+	spawnEnt.Destroy()
+}
+
+void function SetupResourceSpawnCallback( string className )
+{
+#if RESOURCE_SYSTEM_ENABLED
+	AddSpawnCallbackEditorClass( RESOURCE_INFOENT_BASECLASS, className, ORS_GetSpawnFuncForEditorClassname( className ) )
+#else
+	AddSpawnCallbackEditorClass( RESOURCE_INFOENT_BASECLASS, className, SpawnCallback_JustDeleteMeNow )
+#endif
+}
+
+void function ObjectiveResourceSystem_ServerInit()
+{
+	SetupResourceSpawnCallback( CLASSNAME_RESOURCEGROUP )
+	SetupResourceSpawnCallback( CLASSNAME_POI )
+	SetupResourceSpawnCallback( CLASSNAME_INFANTRYSPAWN )
+	SetupResourceSpawnCallback( CLASSNAME_SNIPERNEST )
+	SetupResourceSpawnCallback( CLASSNAME_PATROL_NODE )
+
+#if RESOURCE_SYSTEM_ENABLED
+	ObjectiveResourceSystem_ServerInitInternal()
+#endif // RESOURCE_SYSTEM_ENABLED
+}
+
+#endif // #if SERVER
+
+

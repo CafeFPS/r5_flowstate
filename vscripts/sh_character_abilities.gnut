@@ -1,0 +1,188 @@
+//
+
+#if SERVER || CLIENT || UI
+global function ShCharacterAbilities_LevelInit
+#endif
+
+
+#if SERVER || CLIENT || UI
+global function CharacterClass_GetTacticalAbility
+global function CharacterClass_GetUltimateAbility
+global function CharacterClass_GetPassiveAbility
+global function CharacterAbility_GetWeaponClassname
+global function CharacterAbility_GetPassiveIndex
+#endif
+
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+struct FileStruct_LifetimeLevel
+{
+	table<ItemFlavor, ItemFlavor> characterTacAbilityMap
+	table<ItemFlavor, ItemFlavor> characterUltAbilityMap
+	table<ItemFlavor, ItemFlavor> characterPasAbilityMap
+}
+FileStruct_LifetimeLevel& fileLevel
+
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+#if SERVER || CLIENT || UI
+void function ShCharacterAbilities_LevelInit()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	AddCallback_OnItemFlavorRegistered( eItemType.character, OnItemFlavorRegistered_Character )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+void function OnItemFlavorRegistered_Character( ItemFlavor character )
+{
+	array<ItemFlavor> abilityList = []
+
+	// tactical
+	{
+		asset settingsAsset = GetGlobalSettingsAsset( ItemFlavor_GetAsset( character ), "tacticalAbility" )
+		if ( settingsAsset != $"" )
+		{
+			ItemFlavor ornull ability = RegisterItemFlavorFromSettingsAsset( settingsAsset )
+			if ( ability != null )
+			{
+				expect ItemFlavor(ability)
+				Assert( CharacterAbility_GetWeaponClassname( ability ) != "" )
+				Assert( CharacterAbility_GetPassiveIndex( ability ) == ePassives.INVALID )  // no real reason for this other than sanity
+				fileLevel.characterTacAbilityMap[character] <- ability
+				abilityList.append( ability )
+			}
+		}
+	}
+
+	// ultimate
+	{
+		asset settingsAsset = GetGlobalSettingsAsset( ItemFlavor_GetAsset( character ), "ultimateAbility" )
+		if ( settingsAsset != $"" )
+		{
+			ItemFlavor ornull ability = RegisterItemFlavorFromSettingsAsset( settingsAsset )
+			if ( ability != null )
+			{
+				expect ItemFlavor(ability)
+				Assert( CharacterAbility_GetWeaponClassname( ability ) != "" )
+				Assert( CharacterAbility_GetPassiveIndex( ability ) == ePassives.INVALID )  // no real reason for this other than sanity
+				fileLevel.characterUltAbilityMap[character] <- ability
+				abilityList.append( ability )
+			}
+		}
+	}
+
+	// passive
+	{
+		asset settingsAsset = GetGlobalSettingsAsset( ItemFlavor_GetAsset( character ), "passive1" )
+		if ( settingsAsset != $"" )
+		{
+			ItemFlavor ornull ability = RegisterItemFlavorFromSettingsAsset( settingsAsset )
+			if ( ability != null )
+			{
+				expect ItemFlavor(ability)
+				Assert( CharacterAbility_GetWeaponClassname( ability ) == "" )
+				Assert( CharacterAbility_GetPassiveIndex( ability ) != ePassives.INVALID )  // no real reason for this other than sanity
+				fileLevel.characterPasAbilityMap[character] <- ability
+				abilityList.append( ability )
+			}
+		}
+	}
+
+	foreach ( ItemFlavor ability in abilityList )
+	{
+		string weaponClassname = CharacterAbility_GetWeaponClassname( ability )
+		#if SERVER || CLIENT
+			if ( weaponClassname != "" )
+				PrecacheWeapon( weaponClassname )
+		#endif
+
+		// (dw): Result not used. This is called here just to trigger an assert inside it at load time.
+		CharacterAbility_GetPassiveIndex( ability )
+	}
+}
+#endif
+
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+#if SERVER || CLIENT || UI
+ItemFlavor function CharacterClass_GetTacticalAbility( ItemFlavor character )
+{
+	Assert( ItemFlavor_GetType( character ) == eItemType.character )
+
+	return fileLevel.characterTacAbilityMap[character]
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function CharacterClass_GetUltimateAbility( ItemFlavor character )
+{
+	Assert( ItemFlavor_GetType( character ) == eItemType.character )
+
+	return fileLevel.characterUltAbilityMap[character]
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function CharacterClass_GetPassiveAbility( ItemFlavor character )
+{
+	Assert( ItemFlavor_GetType( character ) == eItemType.character )
+
+	return fileLevel.characterPasAbilityMap[character]
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+string function CharacterAbility_GetWeaponClassname( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.ability )
+
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "weaponClassname" )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CharacterAbility_GetPassiveIndex( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.ability )
+
+	string passiveRef = GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "passiveScriptRef" )
+	if ( passiveRef == "" )
+		return ePassives.INVALID
+
+	Assert( passiveRef in ePassives, "Unknown passive script ref: " + passiveRef )
+	return ePassives[passiveRef]
+}
+#endif
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+
+

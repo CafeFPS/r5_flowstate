@@ -1,0 +1,23 @@
+
+global function IsTitanCockpitModelName
+global function IsHumanCockpitModelName
+
+
+const TitanModels = {
+	[ "mdl/Weapons/arms/atlaspov_cockpit2.rmdl" ] = true,
+	[ "mdl/Weapons/arms/ogrepov_cockpit.rmdl" ] = true,
+	[ "mdl/Weapons/arms/stryderpov_cockpit.rmdl" ] = true,
+	[ "mdl/Weapons/arms/pov_titan_light_cockpit.rmdl" ] = true,
+	[ "mdl/Weapons/arms/pov_titan_medium_cockpit.rmdl" ] = true,
+	[ "mdl/Weapons/arms/pov_titan_heavy_cockpit.rmdl" ] = true,
+}
+
+bool function IsTitanCockpitModelName( asset cockpitModelName )
+{
+	return cockpitModelName.tostring() in TitanModels
+}
+
+bool function IsHumanCockpitModelName( asset cockpitModelName )
+{
+	return cockpitModelName.tostring() == "mdl/weapons/arms/human_pov_cockpit.rmdl"
+}

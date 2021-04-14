@@ -1,0 +1,380 @@
+//
+
+#if SERVER || CLIENT || UI
+global function ShSocial_Init
+#endif
+
+#if SERVER
+global function QueueUpdateStryderWithPlayersStryderCharDataArray
+global function ImmediatelyUpdateStryderWithPlayersStryderCharDataArray
+global function AddCallback_OnUpdatingPlayerStryderCharDataArray
+#endif
+
+#if UI
+global function GetFriendsData
+global function IsInParty
+global function GetOnlineFriendCount
+global function GetInGameFriendCount
+#endif
+
+#if UI && DEV
+global function Dev_ToggleInvalidFriendData
+global function Dev_SetFillerFriends
+#endif
+
+
+
+////////////////
+////////////////
+//// Consts ////
+////////////////
+////////////////
+
+// see ePlayerStryderArrayDataSlots in sh_consts.gnut
+
+const float PLAYER_STRYDER_CHAR_DATA_ARRAY_CASUAL_UPDATE_DEBOUNCE_INTERVAL = 2.0 // max update rate
+
+const bool PLAYER_STRYDER_CHAR_DATA_ARRAY_SEND_DEBUG = true
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+#if SERVER || CLIENT || UI
+struct
+{
+	#if SERVER
+		array<void functionref( entity player )> onUpdatingPlayerStryderCharDataArrayCallbacks
+	#endif
+	#if UI
+		bool                        invalidFriendData = false
+		int                         fillerFriends = 0
+		array<CommunityFriendsData> fillerFriendArray
+
+		table<string, string>		slowScriptLowercaseNameCache
+	#endif
+} file
+#endif
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+#if SERVER || CLIENT || UI
+void function ShSocial_Init()
+{
+	#if SERVER
+		AddCallback_OnPreClientDisconnected( ImmediatelyUpdateStryderWithPlayersStryderCharDataArray )
+	#endif
+}
+#endif
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+#if UI
+FriendsData function GetFriendsData( bool groupByStatus = false )
+{
+	CommunityFriendsWithPresence friendInfo = GetFriendInfoAndPresence()
+
+	FriendsData returnData
+	returnData.isValid = friendInfo.isValid
+
+	#if DEV
+		if ( file.invalidFriendData )
+			returnData.isValid = false
+
+		if ( file.fillerFriendArray.len() == 0 )
+		{
+			for ( int index = 0; index < file.fillerFriends; index++ )
+			{
+				returnData.isValid = true
+				file.fillerFriendArray.append( Dev_GetFakeFriendData() )
+			}
+		}
+
+		foreach ( fillerFriend in file.fillerFriendArray )
+		{
+			friendInfo.friends.append( fillerFriend )
+		}
+
+	#endif
+
+	if ( !returnData.isValid )
+		return returnData
+
+	array<Friend> friends
+
+	//printt( "friendInfo:" )
+
+	foreach ( entry in friendInfo.friends )
+	{
+		Friend friend
+		friend.id = entry.id
+		friend.hardware = entry.hardware
+		friend.name = entry.name
+		friend.presence = entry.presence
+		friend.ingame = entry.ingame
+		friend.inparty = IsInParty( entry.id )
+		friend.away = entry.away
+
+		if ( !(friend.name in file.slowScriptLowercaseNameCache) )
+			file.slowScriptLowercaseNameCache[friend.name] <- friend.name.tolower()
+
+		if ( entry.online )
+		{
+			if ( friend.away )
+				friend.status = eFriendStatus.ONLINE_AWAY
+			else if ( friend.ingame )
+				friend.status = eFriendStatus.ONLINE_INGAME
+			else
+				friend.status = eFriendStatus.ONLINE
+		}
+		else
+		{
+			friend.status = eFriendStatus.OFFLINE
+		}
+
+		friends.append( friend )
+	}
+
+	if ( groupByStatus )
+		friends.sort( SortFriendGroupStatus )
+
+	returnData.friends = friends
+
+	return returnData
+}
+#endif
+
+
+#if UI
+bool function IsInParty( string id )
+{
+	Party party = GetParty()
+	foreach (partyMember in party.members)
+	{
+		if ( partyMember.uid == id )
+			return true
+	}
+
+	return false
+}
+#endif
+
+
+#if UI
+int function GetOnlineFriendCount( bool filterParty = false )
+{
+	CommunityFriendsWithPresence friendsData = GetFriendInfoAndPresence()
+	if ( !friendsData.isValid )
+		return 0
+
+	int count = 0
+	foreach ( friend in friendsData.friends )
+	{
+		if ( !friend.online )
+			continue
+
+		if ( filterParty && IsInParty( friend.id ) )
+			continue
+
+		count++
+	}
+
+	return count
+}
+#endif
+
+
+#if UI
+int function GetInGameFriendCount( bool filterParty = false )
+{
+	CommunityFriendsWithPresence friendsData = GetFriendInfoAndPresence()
+	if ( !friendsData.isValid )
+		return 0
+
+	int count = 0
+	foreach ( friend in friendsData.friends )
+	{
+		if ( !friend.online )
+			continue
+
+		if ( !friend.ingame )
+			continue
+
+		if ( filterParty && IsInParty( friend.id ) )
+			continue
+
+		count++
+	}
+
+	return count
+}
+#endif
+
+///////////////////////
+///////////////////////
+//// Dev functions ////
+///////////////////////
+///////////////////////
+#if UI && DEV
+array<string> friendNames = [ "Anderson", "Alavi", "Vinson", "Armstrong", "Perera", "Moy", "Messerly", "Davis", "McCord", "Keating",
+	"Grenier", "Abrahamson", "Sanchez", "Medina", "McCoy", "Horn", "Cavallari", "McCandlish", "Alderman", "DeRose" ]
+
+CommunityFriendsData function Dev_GetFakeFriendData()
+{
+	CommunityFriendsData entry
+	entry.name = friendNames[RandomInt( friendNames.len() )] + "(" + RandomInt( 100000 ) + ")"
+	entry.id = "random" + Time()
+	entry.ingame = CoinFlip()
+	entry.online = entry.ingame && CoinFlip()
+	entry.presence = entry.online ? "IN-ORIGIN" : "45 minutes ago"
+
+	if ( CoinFlip() )
+		entry.name = entry.name.tolower()
+
+	return entry
+}
+#endif
+
+
+#if UI && DEV
+void function Dev_ToggleInvalidFriendData()
+{
+	file.invalidFriendData = !file.invalidFriendData
+}
+#endif
+
+
+#if UI && DEV
+void function Dev_SetFillerFriends( int count )
+{
+	file.fillerFriends = count
+}
+#endif
+
+#if SERVER
+void function QueueUpdateStryderWithPlayersStryderCharDataArray( entity player )
+{
+	Throttle( player.p.playerStryderDataUpdateThrottle, PLAYER_STRYDER_CHAR_DATA_ARRAY_CASUAL_UPDATE_DEBOUNCE_INTERVAL, void function() : ( player ) {
+		if ( !IsValid( player ) )
+			return
+
+		ImmediatelyUpdateStryderWithPlayersStryderCharDataArray( player )
+	} )
+}
+#endif
+
+
+#if SERVER
+void function ImmediatelyUpdateStryderWithPlayersStryderCharDataArray( entity player )
+{
+	int[ePlayerStryderCharDataArraySlots.COUNT] oldData
+	for ( int idx = 0; idx < ePlayerStryderCharDataArraySlots.COUNT; idx++ )
+	{
+		oldData[idx] = player.p.stryderArrayData[idx]
+		player.p.stryderArrayData[idx] = INT_MIN // clear
+	}
+
+
+	// VERSION
+	player.p.stryderArrayData[ePlayerStryderCharDataArraySlots.VERSION] = PLAYER_STRYDER_CHAR_DATA_ARRAY_VERSION
+
+
+	// LOADOUTS
+	foreach ( LoadoutEntry entry in GetAllLoadoutSlots() )
+	{
+		if ( entry.stryderCharDataArrayIndex == ePlayerStryderCharDataArraySlots.INVALID )
+			continue
+
+		Assert( entry.stryderCharDataArrayIndex > ePlayerStryderCharDataArraySlots.VERSION && entry.stryderCharDataArrayIndex < ePlayerStryderCharDataArraySlots.COUNT )
+
+		if ( !IsLoadoutSlotActive( player, entry ) )
+			continue
+
+		Assert( player.p.stryderArrayData[entry.stryderCharDataArrayIndex] == INT_MIN,
+					"Two loadout slots are using the same player stryder char data array slot: " + entry.stryderCharDataArrayIndex )
+
+		Assert( LoadoutSlot_IsReady( player, entry ) )
+
+		player.p.stryderArrayData[entry.stryderCharDataArrayIndex] = LoadoutSlot_GetRawStorageContents( player, entry )
+	}
+
+
+	// CALLBACKS (so they can fill in more data)
+	foreach ( void functionref ( entity ) cb in file.onUpdatingPlayerStryderCharDataArrayCallbacks )
+		cb( player )
+
+
+	// SEND THE DATA (only if different)
+	bool anyDifferent = false
+	array<int> charData
+	charData.resize( player.p.stryderArrayData.len(), 0 )
+	#if PLAYER_STRYDER_CHAR_DATA_ARRAY_SEND_DEBUG
+		string dbgStr = ""
+	#endif
+	for ( int index = 0; index < player.p.stryderArrayData.len(); index++ )
+	{
+		charData[index] = player.p.stryderArrayData[index]
+		#if PLAYER_STRYDER_CHAR_DATA_ARRAY_SEND_DEBUG
+			string itemFlavStr = (IsValidItemFlavorGUID( charData[index] ) ? ItemFlavor_GetHumanReadableRef( GetItemFlavorByGUID( charData[index] ) ) : "~")
+			dbgStr += format( "\nPLAYER_STRYDER_CHAR_DATA_ARRAY_SEND_DEBUG: % 2d % 20s % 14d %s", index, DEV_GetEnumStringSafe( "ePlayerStryderCharDataArraySlots", index ), charData[index], itemFlavStr )
+		#endif
+		if ( player.p.stryderArrayData[index] != oldData[index] )
+			anyDifferent = true
+	}
+
+	#if PLAYER_STRYDER_CHAR_DATA_ARRAY_SEND_DEBUG
+		printt( format( "PLAYER_STRYDER_CHAR_DATA_ARRAY_SEND_DEBUG: %s (%s)%s", string(player), (anyDifferent ? "(SENDING!)" : "(UNCHANGED)"), dbgStr ) )
+	#endif
+
+	if ( anyDifferent )
+		player.SetPlayerCharData( 0, charData )
+}
+#endif
+
+
+#if SERVER
+void function AddCallback_OnUpdatingPlayerStryderCharDataArray( void functionref( entity ) cb )
+{
+	file.onUpdatingPlayerStryderCharDataArrayCallbacks.append( cb )
+}
+#endif
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+#if UI
+int function SortFriendGroupStatus( Friend a, Friend b )
+{
+	if ( a.inparty && !b.inparty )
+		return -1
+	else if ( b.inparty && !a.inparty )
+		return 1
+
+	if ( a.status < b.status )
+		return -1
+	else if ( b.status < a.status )
+		return 1
+
+	if ( file.slowScriptLowercaseNameCache[a.name] > file.slowScriptLowercaseNameCache[b.name] )
+		return 1
+
+	if ( file.slowScriptLowercaseNameCache[a.name] < file.slowScriptLowercaseNameCache[b.name] )
+		return -1
+
+	return 0
+}
+#endif

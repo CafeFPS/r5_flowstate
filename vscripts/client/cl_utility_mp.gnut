@@ -1,0 +1,32 @@
+globalize_all_functions
+
+void function HideFriendlyIndicatorAndCrosshairNames()
+{
+	entity player = GetLocalViewPlayer()
+	player.HideCrosshairNames()
+}
+
+void function ShowFriendlyIndicatorAndCrosshairNames()
+{
+	//Show crosshair names and blue friendly indicators
+	entity player = GetLocalViewPlayer()
+	player.UnhideCrosshairNames()
+}
+
+void function ClientCodeCallback_XPChanged( entity player )
+{
+}
+
+void function ClientCodeCallback_OnPlayerActiveBurnCardIndexChanged( entity player, int oldActiveBurnCardIndex )
+{
+}
+
+
+void function AddCallback_GameStateEnter( int gameState, void functionref() callbackFunc )
+{
+	Assert( gameState < clGlobal.gameStateEnterCallbacks.len() )
+
+	Assert( !clGlobal.gameStateEnterCallbacks[ gameState ].contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_GameStateEnter" )
+
+	clGlobal.gameStateEnterCallbacks[ gameState ].append( callbackFunc )
+}

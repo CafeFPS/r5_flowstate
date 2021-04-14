@@ -1,0 +1,439 @@
+global function SV_CL_Shared_Init
+
+void function SV_CL_Shared_Init()
+{
+#if SERVER
+	SvDemo_ConsistencyCheckString( "SV_CL_Shared_Init()" )
+#endif
+
+	GameModes_Init()
+	Settings_Init()
+	if ( IsLobby() )
+	{
+		Shared_Lobby_Init()
+		return
+	}
+
+	SV_CL_Init()
+
+	#if SERVER
+		Server_Init()
+	#endif
+
+	#if CLIENT
+		Client_Init()
+	#endif
+
+#if SERVER
+	SvDemo_ConsistencyCheckString( "SV_CL_Shared_Init END" )
+#endif
+}
+
+
+void function SV_CL_Init()
+{
+	/*
+	████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████╗
+	██                                                                                                                    ██║
+	██	███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗        ██╗        ██████╗██╗     ██╗███████╗███╗   ██╗████████╗  ██║
+	██	██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗       ██║       ██╔════╝██║     ██║██╔════╝████╗  ██║╚══██╔══╝  ██║
+	██	███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝    ████████╗    ██║     ██║     ██║█████╗  ██╔██╗ ██║   ██║     ██║
+	██	╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗    ██╔═██╔═╝    ██║     ██║     ██║██╔══╝  ██║╚██╗██║   ██║     ██║
+	██	███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║    ██████║      ╚██████╗███████╗██║███████╗██║ ╚████║   ██║     ██║
+	██	╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝    ╚═════╝       ╚═════╝╚══════╝╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝     ██║
+	██                                                                                                                    ██║
+	████████████████████████████████████████████████████████████████████████████████████████████████████████████████████████║
+	╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
+	*/
+
+#if SERVER
+	SvDemo_ConsistencyCheckString( "SV_CL_Init()" )
+#endif
+
+	ShEHI_LevelInit_Begin()
+	Utility_Shared_Init()
+	CodeCallbacksShared_Init()
+	Flags_Init()
+	RemoteFunctions_Init_Begin()
+	ShGamepad_LevelInit()
+	DeathHints_Init()
+	DamageTypes_Init()
+	WeaponUtility_Init()
+	PassivesShared_Init()
+	ShUtilityAll_Init()
+	Anim_Aliases_Init()
+	ShAnimWindows_LevelInit()
+	AnimEvents_Init()
+	MinimapShared_Init()
+	NetworkMarkerShared_Init()
+	PlayerLeechingShared_Init()
+	InitWeaponScripts()
+	Death_Package_Init()
+	TitanSoul_Init()
+	TitanShared_Init()
+	Highlight_Init()
+	FlightpathShared_Init()
+	DialogueShared_Init()
+	SonarShared_Init()
+	TitanEmbark_Init()
+	ShRodeo_Init()
+	IonEnergy_Init()
+	Decoy_Init()
+	ShEHI_LevelInit_End()
+
+	ClientSidePickups_Init()
+	GrappleWeaponInit()
+	ShInfoCords_Init()
+	#if DEV
+		ShDevUtility_Init()
+		CaptureMode_Shared_Init()
+	#endif
+	ShDevWeapons_Init()
+
+	ShPakRequests_LevelInit()
+	ShXP_Init()
+	ShPersistentData_LevelInit_Begin()
+	ScoreShared_Init()
+	//InitStatsTables()
+	ShItems_LevelInit_Begin()
+	ShGRX_LevelInit()
+	ShLoadouts_LevelInit_Begin()
+	ShCharacters_LevelInit()
+	ShCharacterAbilities_LevelInit()
+	ShCharacterCosmetics_LevelInit()
+	ShWeapons_LevelInit()
+	ShWeaponCosmetics_LevelInit()
+	ShGladiatorCards_LevelInit()
+	ShSceneCapture_LevelInit()
+	ShCommsMenu_Init()
+	SPDialogueInit()
+	ShPing_Init()
+	MeleeShared_Init()
+	MeleeSyncedShared_Init()
+	ShQuickchat_Init()
+	ShItems_LevelInit_Finish()
+	ShItemPerPlayerState_LevelInit()
+	ShLoadouts_LevelInit_Finish()
+	ShStatsInternals_LevelInit()
+	ShStats_LevelInit()
+	ShDoors_Init()
+	PlayerWaypoints_Init()
+	GameMode_RunSharedInits()
+	DamageHistoryInit()
+	ShPersistentData_LevelInit_Finish()
+
+
+	ShGruntChatter_MP_Init()
+	ShSpectreChatter_MP_Init()
+
+	SURVIVAL_Loot_All_InitShared()
+	SURVIVAL_Loot_InitShared()
+	SURVIVAL_LootActions_InitShared()
+	SURVIVAL_LootTypes_InitShared()
+	SURVIVAL_EquipmentSlot_InitShared()
+	ShSurvivalTraining_Init()
+	ShGas_Init()
+	ShShellShock_Init()
+	ShCarePackage_Init()
+	ShWeaponInspect_Init()
+	Consumable_Init()
+
+	CharacterSelectNewMenu_Init()
+
+	ShHoverBike_Init()
+	ShLootBin_Init()
+	ShTutorial_Init()
+	Sh_PassiveVoices_Init()
+
+	RemoteFunctions_Init_Finish()
+}
+
+#if SERVER
+void function Server_Init()
+{
+	/*
+	████████████████████████████████████████████████████████╗
+	██                                                    ██║
+	██	███████╗███████╗██████╗ ██╗   ██╗███████╗██████╗  ██║
+	██	██╔════╝██╔════╝██╔══██╗██║   ██║██╔════╝██╔══██╗ ██║
+	██	███████╗█████╗  ██████╔╝██║   ██║█████╗  ██████╔╝ ██║
+	██	╚════██║██╔══╝  ██╔══██╗╚██╗ ██╔╝██╔══╝  ██╔══██╗ ██║
+	██	███████║███████╗██║  ██║ ╚████╔╝ ███████╗██║  ██║ ██║
+	██	╚══════╝╚══════╝╚═╝  ╚═╝  ╚═══╝  ╚══════╝╚═╝  ╚═╝ ██║
+	██                                                    ██║
+	████████████████████████████████████████████████████████║
+	╚═══════════════════════════════════════════════════════╝
+	*/
+
+	CodeCallback_Init()
+	SvCodeCallbacksCommon_Init()
+	Utility_Init()
+	Anim_Init()
+	Viewcone_Init()
+	UIVars_Init()
+	TitanTransfer_Init()
+	TitanNPC_Init()
+	TitanNpcBehavior_Init()
+	ToneController_Init()
+	DropPod_Init()
+	Objective_Init()
+	PainDeathSounds_Init()
+	BaseGametype_Init()
+	AiUtility_Init()
+	GameState_Init()
+	Music_Init()
+	TitanTether_Init()
+	AiSoldiers_Init()
+	AiSpawn_Init()
+#if NPC_TITAN_PILOT_PROTOTYPE
+	AiPilots_Init()
+#endif
+	AiPilot_Init()
+	AiDrone_Init()
+	AiSpectre_Init()
+	AiStalker_Init()
+	AiSpider_Init()
+	AiSuperspectre_Init()
+	Goliath_Init()
+	AiGunship_Init()
+	SuicideSpectres_Init()
+	AiMarvins_Init()
+	ControlPanel_Init()
+	SpectreRack_Init()
+	//LoadoutCrate_Init()
+	TitanCommands_Init()
+	ClassWallrun_Init()
+	PlayerCloak_Init()
+	ParticleWall_Init()
+	Smokescreen_Init()
+	ScriptMovers_Init()
+	ScriptToys_Init()
+	TitanHotdrop_Init()
+	Zipline_Init()
+	Leeching_Init()
+	PlayerLeeching_Init()
+	MarvinJobs_Init()
+	MarvinFaces_Init()
+	TriggerFunctions_Init()
+	SpawnFunctions_Init()
+	GoblinDropship_Init()
+	AiPersonalShield()
+	ATTurrets_Init()
+
+	HoverTank_Init()
+	ThreatTracker_Init()
+	MobilityExperiments_Init()
+	HealthRegen_Init()
+
+	Utility_MP_Init()
+	//Stats_Init()
+	MenuCallbacks_Init()
+	//InitChallenges()
+
+	Score_Init()
+
+	Spawn_Init()
+	DialogueChatter_Init()
+
+	TrackingVision_Init()
+	PassiveGasGear_Init()
+	PassiveMedic_Init()
+	PassiveAdrenaline_Init()
+	Bombardment_Init()
+	ThreatDetection_Init()
+	Staging_Area_Init()
+
+	GameMode_RunServerInits()
+
+	SpectreChatter_MP_Init()
+	GruntChatter_MP_Init()
+
+	SvXP_Init()
+	Achievements_Init()
+
+	SvDevStats_LevelInit()
+
+	PilotsPassage_Init()
+	SneakPeek_Init()
+	JumpPad_Init()
+	#if DEV
+		SmokeTest_Init()
+	#endif // DEV
+}
+#endif // SERVER
+
+#if CLIENT
+void function Client_Init()
+{
+	/*
+	██████████████████████████████████████████████████████╗
+	██                                                  ██║
+	██	 ██████╗██╗     ██╗███████╗███╗   ██╗████████╗  ██║
+	██	██╔════╝██║     ██║██╔════╝████╗  ██║╚══██╔══╝  ██║
+	██	██║     ██║     ██║█████╗  ██╔██╗ ██║   ██║     ██║
+	██	██║     ██║     ██║██╔══╝  ██║╚██╗██║   ██║     ██║
+	██	╚██████╗███████╗██║███████╗██║ ╚████║   ██║     ██║
+	██	 ╚═════╝╚══════╝╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝     ██║
+	██                                                  ██║
+	██████████████████████████████████████████████████████║
+	╚═════════════════════════════════════════════════════╝
+	*/
+
+	ClAnim_Init()
+	CLUtilityMenu_Init()
+	CLAnnouncement_Init()
+	CLEventNotification_Init()
+	CLUtilitySplash_Init()
+	ClientCodeCallbacks_Init()
+	ClPip_LevelInit()
+	ClTitanCockpit_Init()
+	ClDataKnife_Init()
+	//CLLoadoutCrate_Init()
+	SmartAmmoClient_Init()
+	CLGoblinDropship_Init()
+	ClIntroscreen_Init()
+	ClPlayerADSDofInit()
+	ClPlayer_Init()
+	ClWeaponFlyout_Init()
+	ClDroppedWeaponFlyout_Init()
+	ClTitanHud_Init()
+	ClMainHud_Init()
+	ClSuicideSpectres_Init()
+	CinematicIntroScreen_Init()
+	ClWeaponStatus_Init()
+	ClScreenfade_Init()
+	ClIndicatorsHud_Init()
+	ClHealthHud_Init()
+	ClScoreboard_Init()
+	ClDialogue_Init()
+	ClEntityCreationFunctions_Init()
+	ClGoblinDropship_Init()
+	ClDroneMedic_Init()
+	ClDraconisFlyin_Init()
+
+	ClControlPanel_Init()
+	ClSpectre_Init()
+	ClStalker_Init()
+	ClSuperSpectre_Init()
+	CL_ToneHUD_Init()
+	PerfInitLabels()
+
+	Cl_Passives_Init()
+
+	#if HAS_TOOLTIPS
+		Sh_InitToolTips()
+	#endif
+
+	CLHud_Init()
+	ClMusic_Init()
+	GameMode_RunClientInits()
+	ClRespawnselect_MP_Init()
+	ClObituary_Init()
+	ClGameState_Init()
+	ClObjective_Init()
+	ClKillReplayHud_Init()
+	ClScoreboardMp_Init()
+	ClSpectatorHud_Init()
+	ClTitanSoul_Init()
+	ClMinimap_Init()
+
+	ClGruntChatter_MP_Init()
+	ClSpectatorModeAudio_Init()
+	#if HAS_TASKLIST_SYSTEM
+		Tasklist_ClientInit()
+	#endif
+	ClRadialMenu_Init()
+	CLTrackingVision_Init()
+	CLPassiveAdrenaline_Init()
+	ClJumpPad_Init()
+}
+#endif // CLIENT
+
+void function Shared_Lobby_Init()
+{
+	/*
+	██████████████████████████████████████████████████████████████████████████████████████╗
+	██                                                                                  ██║
+	██  ██╗      ██████╗ ██████╗ ██████╗ ██╗   ██╗     ██████╗ ███╗   ██╗██╗  ██╗   ██╗ ██║
+	██  ██║     ██╔═══██╗██╔══██╗██╔══██╗╚██╗ ██╔╝    ██╔═══██╗████╗  ██║██║  ╚██╗ ██╔╝ ██║
+	██  ██║     ██║   ██║██████╔╝██████╔╝ ╚████╔╝     ██║   ██║██╔██╗ ██║██║   ╚████╔╝  ██║
+	██  ██║     ██║   ██║██╔══██╗██╔══██╗  ╚██╔╝      ██║   ██║██║╚██╗██║██║    ╚██╔╝   ██║
+	██  ███████╗╚██████╔╝██████╔╝██████╔╝   ██║       ╚██████╔╝██║ ╚████║███████╗██║    ██║
+	██  ╚══════╝ ╚═════╝ ╚═════╝ ╚═════╝    ╚═╝        ╚═════╝ ╚═╝  ╚═══╝╚══════╝╚═╝    ██║
+	██                                                                                  ██║
+	██████████████████████████████████████████████████████████████████████████████████████║
+	╚═════════════════════════════════════════════════════════════════════════════════════╝
+	*/
+
+	ShEHI_LevelInit_Begin()
+	ShUtilityAll_Init()
+	Utility_Shared_Init()
+	Highlight_Init()
+	ShPakRequests_LevelInit()
+	ShXP_Init()
+	PassivesShared_Init()
+	RemoteFunctions_Init_Begin()
+	ShPersistentData_LevelInit_Begin()
+	ShAnimWindows_LevelInit()
+	ShGamepad_LevelInit()
+	ShItems_LevelInit_Begin()
+	ShGRX_LevelInit()
+	ShLoadouts_LevelInit_Begin()
+	ShCharacters_LevelInit()
+	ShCharacterAbilities_LevelInit()
+	ShCharacterCosmetics_LevelInit()
+	ShWeapons_LevelInit()
+	ShWeaponCosmetics_LevelInit()
+	ShGladiatorCards_LevelInit()
+	ShSceneCapture_LevelInit()
+	MeleeShared_Init()
+	MeleeSyncedShared_Init()
+	ShItems_LevelInit_Finish()
+	ShItemPerPlayerState_LevelInit()
+	ShLoadouts_LevelInit_Finish()
+	ShStatsInternals_LevelInit()
+	ShStats_LevelInit()
+	//SvDevStats_LevelInit()
+	ShApexScreens_Init()
+	ShPersistentData_LevelInit_Finish() // Should be last
+	ShEHI_LevelInit_End()
+
+	SURVIVAL_Loot_All_InitShared() // need this to precache the weapons
+
+	#if SERVER
+		Server_Lobby_Init()
+		LootBoxCeremony_Init()
+		SvXP_Init()
+		Achievements_Init()
+	#elseif CLIENT
+		Client_Lobby_Init()
+	#endif
+
+	RemoteFunctions_Init_Finish()
+}
+
+#if SERVER
+void function Server_Lobby_Init()
+{
+	UIVars_Init()
+	MenuCallbacks_Init()
+	Lobby_Init()
+}
+#endif // SERVER
+
+#if CLIENT
+void function Client_Lobby_Init()
+{
+	CLUtilityMenu_Init()
+	ClMenuModels_Init()
+	CLLootBoxCeremony_Init()
+	ClientCodeCallbacks_Init()
+	ClPlayer_Init()
+	ClMusic_Init()
+	ClScreenfade_Init()
+	PerfInitLabels()
+	ClPip_LevelInit()
+}
+#endif // CLIENT
+
+

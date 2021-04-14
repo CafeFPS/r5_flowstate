@@ -1,0 +1,179 @@
+untyped
+
+globalize_all_functions
+
+bool function MapIsValidForPersistence( string mapName )
+{
+	return PersistenceEnumValueIsValid( "maps", mapName )
+}
+
+float function _GetDaysSinceVar( entity player, string variable )
+{
+	// Assert( IsServer() )
+	Assert( IsValid( player ) )
+	Assert( player.IsPlayer() )
+
+	int storedTime = player.GetPersistentVarAsInt( variable )
+	int currentTime = Daily_GetCurrentTime()
+
+	if ( storedTime <= 0 || currentTime <= storedTime )
+		return 0
+
+	int secondsElapsed = currentTime - storedTime
+
+	return ( secondsElapsed / float( SECONDS_PER_DAY ) )
+}
+
+int function Daily_GetCurrentTime()
+{
+	// Returns the unix timestap offset to the timezone we want to use
+	return GetUnixTimestamp() + DAILY_RESET_TIME_ZONE_OFFSET * SECONDS_PER_HOUR
+}
+
+int function Daily_GetDayForCurrentTime()
+{
+	// Returns an integer for what day it is. Each day is +1 from previous day
+	return Daily_GetDayForTimestamp( Daily_GetCurrentTime() )
+}
+
+int function Daily_GetDayForTimestamp( int timeStamp )
+{
+	return timeStamp / SECONDS_PER_DAY
+}
+
+int function Daily_SecondsTillDayEnd()
+{
+	// Returns the number of seconds left in the current day. This can be used in a timer to count down till the end of the day when dailies reset
+	int currentDayStart = Daily_GetDayForCurrentTime() * SECONDS_PER_DAY
+	return currentDayStart + SECONDS_PER_DAY - Daily_GetCurrentTime()
+}
+
+array<string> function GetPersistenceEnumAsArray( string persistenceEnumName )
+{
+	int enumSize = PersistenceGetEnumCount( persistenceEnumName )
+	array<string> returnArray
+	for ( int i = 0; i < enumSize; i++ )
+	{
+		returnArray.append( PersistenceGetEnumItemNameForIndex( persistenceEnumName, i ) )
+	}
+
+	return returnArray
+}
+
+string function SkillToString( val )
+{
+	// Don't show .0 for ints
+	if ( val % 1 == 0 )
+		return format( "%i", val )
+
+	return format( "%.1f", val )
+}
+
+int function SkillToPerformance( float val )
+{
+	return int( val * 100 )
+}
+
+int function GetAvailableCredits( entity player )
+{
+	return player.GetPersistentVarAsInt( "credits" )
+}
+
+int function GetAvailableFDUnlockPoints( entity player, string titanClass )
+{
+	//int enumCount =	PersistenceGetEnumCount( "titanClasses" )
+	//for ( int i = 0; i < enumCount; i++ )
+	//{
+	//	string enumName = PersistenceGetEnumItemNameForIndex( "titanClasses", i )
+	//	if ( enumName == titanClass )
+	//	{
+	//		return player.GetPersistentVarAsInt( "titanFDUnlockPoints[" + enumName + "]" )
+	//	}
+	//}
+
+	unreachable
+}
+
+#if SERVER
+	#if DEV
+	void function DEV_AddCredits( int additionalCredits, entity optionalPlayer = null )
+	{
+		array<entity> players
+		if ( optionalPlayer )
+			players.append( optionalPlayer )
+		else
+			players = GetPlayerArray()
+
+		foreach ( player in players )
+		{
+			int credits = GetAvailableCredits( player )
+			SetAvailableCredits( player, credits + additionalCredits )
+		}
+	}
+
+	void function DEV_AddCreditsByName( int additionalCredits, string playerName )
+	{
+		array<entity> players = GetPlayerArray()
+
+		foreach ( player in players )
+		{
+			if ( player.GetPlayerName().tolower() != playerName.tolower() )
+				continue
+
+			int credits = GetAvailableCredits( player )
+			SetAvailableCredits( player, credits + additionalCredits )
+		}
+	}
+	#endif
+
+void function SetAvailableCredits( entity player, int credits )
+{
+	int currentCredits = GetAvailableCredits( player )
+	if ( credits > currentCredits )
+	{
+		int additionalCredits = credits - currentCredits
+		int netWorth = player.GetPersistentVarAsInt( NETWORTH_VAR )
+		player.SetPersistentVar( NETWORTH_VAR, netWorth + additionalCredits )
+	}
+
+	player.SetPersistentVar( "credits", credits )
+}
+
+//void function SetAvailableFDUnlockPoints( entity player, string titanClass, int points )
+//{
+//	printt( "GIVE POINTS ", points )
+//	printt( " TO TITAN ", titanClass )
+//	player.SetPersistentVar( "titanFDUnlockPoints[" + titanClass + "]", points )
+//}
+
+//void function AddCreditsForXPGained()
+//{
+//	array<entity> players = GetPlayerArray()
+//	foreach ( player in players )
+//	{
+//		int creditsGained = 0
+//
+//		int playerXPGained = 0
+//		int weaponXPGained = 0
+//		int titanXPGained = 0
+//
+//		playerXPGained += player.GetPersistentVarAsInt( "xp" ) - player.GetPersistentVarAsInt( "previousXP" )
+//
+//		int numPilotWeapons = PersistenceGetArrayCount( "pilotWeapons" )
+//		for ( int i = 0; i < numPilotWeapons; i++ )
+//		{
+//			weaponXPGained += player.GetPersistentVarAsInt( "pilotWeapons[" + i + "].weaponXP" ) - player.GetPersistentVarAsInt( "pilotWeapons[" + i + "].previousWeaponXP" )
+//		}
+//
+//		int numTitanClasses = PersistenceGetEnumCount( "titanClasses" )
+//		for ( int i = 0; i < numTitanClasses; i++ )
+//		{
+//			titanXPGained += player.GetPersistentVarAsInt( "titanXP[" + i + "]" ) - player.GetPersistentVarAsInt( "previousTitanXP[" + i + "]" )
+//		}
+//
+//		creditsGained = playerXPGained + weaponXPGained + titanXPGained
+//
+//		SetAvailableCredits( player, GetAvailableCredits( player ) + creditsGained )
+//	}
+//}
+#endif // SERVER

@@ -1,0 +1,243 @@
+VGUI_Screens
+{
+	// These names can be referenced from within a vgui_screen entity to select the vgui panel
+	vgui_test_screen
+	{
+		type			vgui_screen_panel
+		pixelswide		1079
+		pixelshigh		540
+		resfile			"scripts/screens/vgui_test_screen.res"
+	}
+
+	vgui_titan_health
+	{
+		type			vgui_screen_panel
+		pixelswide		360
+		pixelshigh		234
+		resfile			"scripts/screens/vgui_titan_health.res"
+	}
+
+	vgui_titan_vdu
+	{
+		type			vgui_screen_panel
+		pixelswide		1151
+		pixelshigh		1151
+		resfile			"scripts/screens/vgui_titan_vdu.res"
+	}
+
+	vgui_titan_threat
+	{
+		type			vgui_screen_panel
+		pixelswide		512
+		pixelshigh		544
+		resfile			"scripts/screens/vgui_titan_threat.res"
+	}
+
+	vgui_fullscreen_pilot
+	{
+		type			vgui_screen_panel
+		pixelswide		1920
+		pixelshigh		1080
+		resfile			"scripts/screens/vgui_fullscreen_pilot.res"
+	}
+
+	vgui_fullscreen_titan
+	{
+		type			vgui_screen_panel
+		pixelswide		1920
+		pixelshigh		1080
+		resfile			"scripts/screens/vgui_fullscreen_titan.res"
+	}
+
+	vgui_titan_emp
+	{
+		type			vgui_screen_panel
+		pixelswide		1920
+		pixelshigh		1080
+		resfile			"scripts/screens/vgui_titan_emp.res"
+	}
+
+	vgui_damage_3d
+	{
+		type			vgui_screen_panel
+		pixelswide		1151
+		pixelshigh		1151
+		resfile			"scripts/screens/vgui_damage_3d.res"
+	}
+
+	vgui_titan_ammo
+	{
+		type			vgui_screen_panel
+		pixelswide		319
+		pixelshigh		319
+		resfile			"scripts/screens/vgui_titan_ammo.res"
+	}
+
+	vgui_dashmeter
+	{
+		type			vgui_screen_panel
+		pixelswide		207
+		pixelshigh		148
+		resfile			"scripts/screens/vgui_dashmeter.res"
+	}
+
+	vgui_titan_topcenter
+	{
+		type			vgui_screen_panel
+		pixelswide		967
+		pixelshigh		202
+		resfile			"scripts/screens/vgui_titan_topcenter.res"
+	}
+
+	vgui_titan_center
+	{
+		type			vgui_screen_panel
+		pixelswide		967
+		pixelshigh		427
+		resfile			"scripts/screens/vgui_titan_center.res"
+	}
+
+	vgui_titan_lowercenter
+	{
+		type			vgui_screen_panel
+		pixelswide		967
+		pixelshigh		396
+		resfile			"scripts/screens/vgui_titan_lowercenter.res"
+	}
+
+	vgui_titan_overcharge
+	{
+		type			vgui_screen_panel
+		pixelswide		967
+		pixelshigh		427
+		resfile			"scripts/screens/vgui_titan_overcharge.res"
+	}
+
+// 	vgui_dpad
+// 	{
+// 		type			vgui_screen_panel
+// 		pixelswide		899
+// 		pixelshigh		899
+// 		resfile			"scripts/screens/vgui_dpad.res"
+// 	}
+
+	vgui_icon
+	{
+		type			vgui_screen_panel
+		pixelswide		225
+		pixelshigh		225
+		resfile			"scripts/screens/vgui_icon.res"
+	}
+
+	vgui_binding
+	{
+		type			vgui_screen_panel
+		pixelswide		45
+		pixelshigh		45
+		resfile			"scripts/screens/vgui_binding.res"
+	}
+
+	vgui_world_text
+	{
+		type			vgui_screen_panel
+		pixelswide		512
+		pixelshigh		256
+		resfile			"scripts/screens/vgui_world_text.res"
+	}
+
+	vgui_jump_quest
+	{
+		type			vgui_screen_panel
+		pixelswide		674
+		pixelshigh		450
+		resfile			"scripts/screens/vgui_jump_quest.res"
+	}
+
+	vgui_titan_bottom
+	{
+		type			vgui_screen_panel
+		pixelswide		967
+		pixelshigh		427
+		resfile			"scripts/screens/vgui_titan_bottom.res"
+	}
+
+	vgui_xpbar
+	{
+		type			vgui_screen_panel
+		pixelswide		967
+		pixelshigh		202
+		resfile			"scripts/screens/vgui_xpbar.res"
+	}
+
+	movie_display_screen
+	{
+		type			movie_display_screen
+		pixelswide		256
+		pixelshigh		128
+		acceptsinput	0
+		resfile			"scripts/screens/movie_display_screen.res"
+	}
+
+	control_panel_generic_screen
+	{
+		type			vgui_screen_panel
+		pixelswide		364
+		pixelshigh		274
+		resfile			"scripts/screens/vgui_control_panel_generic.res"
+	}
+
+	vgui_callsign_menu
+	{
+		type			vgui_screen_panel
+		pixelswide		320
+		pixelshigh		174
+		resfile			"scripts/screens/vgui_callsign_menu.res"
+	}
+
+	control_panel_heavy_turret
+	{
+		type			vgui_screen_panel
+		pixelswide		364
+		pixelshigh		274
+		resfile			"scripts/screens/vgui_control_panel_heavy_turret.res"
+	}
+
+	vgui_pilot_launcher_screen
+	{
+		type			vgui_screen_panel
+		pixelswide		1403
+		pixelshigh		998
+		resfile			"scripts/screens/vgui_pilot_launcher.res"
+	}
+
+	vgui_enemy_announce
+	{
+		type			vgui_screen_panel
+		pixelswide		1061
+		pixelshigh		135
+		resfile			"scripts/screens/vgui_enemy_announce.res"
+	}
+
+	vgui_titan_request
+	{
+		type			vgui_screen_panel
+		pixelswide		510
+		pixelshigh		740
+		resfile			"scripts/screens/vgui_titan_request.res"
+	}
+
+	Coop_TeamScoreEventNotification
+	{
+		type			vgui_screen_panel
+		pixelswide		450
+		pixelshigh		36
+		resfile			"scripts/screens/Coop_TeamScoreEventNotification.res"
+	}
+	SideNotification
+	{
+		type			vgui_screen_panel
+		pixelswide		628
+		pixelshigh		80
+		resfile			"scripts/screens/SideNotification.res"
+	}
+}

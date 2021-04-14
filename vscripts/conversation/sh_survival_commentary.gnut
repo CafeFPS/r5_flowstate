@@ -1,0 +1,709 @@
+global function ShSurvivalCommentary_Init
+global function CommentaryDebugText
+global function CommentaryDebugSphere
+global function ToggleCommentaryDebug
+global function PickCommentaryLineFromBucket
+global function AreWeSquadMembers
+global function TryFindSpeakingPlayerOnTeam
+global function TryFindSpeakingPlayerOnTeamDisallowSelf
+global function AllowPlayersToTalkToThemselves
+global function IsBattleChatterEnabled
+global function ShouldPlayBattleChatter
+
+global function SurvivalCommentary_SetBattleChatterEnabled
+
+global function PlayBattleChatterToSelfOnClientAndTeamOnServer
+#if CLIENT
+global function PlayBattleChatterToSelfOnClient
+#endif
+
+
+global const float MAX_SPEAKER_DISTANCE_FROM_EVENT_FOR_CROWD = 6000
+global const float CHANCE_FOR_CHANTING = 25
+global const float CHANCE_FOR_END_CIRCLE_CHANTING = 75
+global const float STANDARD_CROWD_QUIET_TIME = 12
+global const float STANDARD_CROWD_ACTIVE_TIME = 10
+global const float STANDARD_CROWD_CHEER_TIME = 8
+global const float STANDARD_CROWD_CHANT_BEFORE_CIRCLE_CLOSE_TIME = 60
+global const float CHANCE_FOR_CIRCLE_TIMER_CHANT = 40
+global const float STANDARD_CROWD_OVATION_TIME = 4
+global const float STANDARD_DELAY_BETWEEN_SPEAKER_OVATIONS = 1
+global const float STANDARD_DELAY_BETWEEN_SPEAKER_ONESHOTS = 4
+global const int CHANCE_FOR_CROWD_ON_PILOT_WOUNDED = 50
+global const int CHANCE_FOR_PILOT_KILLED_CHEER = 0
+global const int KILL_LEADER_MIN_KILL_REQUIREMENT = 3
+global const int TIME_BETWEEN_KILLS_TO_TRIGGER_COMMENT = 60 * 3
+global const float NOTEWORTHY_KILL_DISTANCE = 300 * 12 //The distance comes in inches
+global const float FAR_FROM_CIRCLE_DISTANCE = 2 //need to be this many times the circle radius to be considered far from the circle
+global const float CROSSHAIR_TARGET_HOLD_TIME_BEFORE_COMMENT = 0.5
+
+global const int CHANCE_FOR_ADDITIONAL_HOST_COMMENT = 0
+global const int COMMENTARY_BRIDGE_CHANCE = 0
+global const int CHANCE_FOR_CHARACTER_COMMENT = 100
+
+global const int NUM_NEARBY_SPEAKERS_TO_PLAY_FROM = 2
+
+global enum eSurvivalCommentaryPlayerType
+{
+	// must match COMMENTARY_PLAYER_TYPE_* in apex_screens.rui
+	NONE,
+	CHAMPION,
+	KILLLEADER,
+	SQUADMATE,
+	KILLER,
+	KILLED,
+	CHAMPSQUADMATE,
+	CHAMP_KILLLEADER,
+
+	_count,
+}
+
+global enum eSurvivalEventType
+{
+	INVALID,
+
+	FIRST_CIRCLE_MOVING,
+	CIRCLE_MOVING,
+	FINAL_CIRCLE_MOVING,
+	CIRCLE_CLOSING_TO_NOTHING,
+	TITANS_DROPPING,
+	CARE_PACKAGE_DROPPING,
+	HOVER_TANK_INBOUND,
+	TWO_SQUADS_LEFT,
+	ONE_VS_ONE,
+	WINNER_WINNER,
+
+	FIRST_CIRCLE_TIMER_STARTED,
+	NEXT_CIRCLE_TIMER_STARTED,
+	FINAL_CIRCLE_TIMER_STARTED,
+	CIRCLE_MOVES_1MIN,
+	CIRCLE_MOVES_45SEC,
+	CIRCLE_MOVES_30SEC,
+	CIRCLE_MOVES_10SEC,
+
+	ROUND_TIMER_STARTED,
+
+	HALF_PLAYERS_ALIVE,
+	PLAYERS_ALIVE_10,
+	PLAYERS_ALIVE_5,
+
+	HALF_SQUADS_ALIVE,
+	SQUADS_ALIVE_6,
+	SQUADS_ALIVE_3,
+
+	FIRST_BLOOD
+
+	PILOT_KILL,
+	PILOT_DOWNED,
+	PILOT_WOUNDED,
+	PILOT_REVIVED,
+	SQUAD_ELIMINATED,
+
+	NO_KILLS_FOR_TIME,
+
+	_count
+}
+
+global enum eSurvivalCommentaryBucket
+{
+	FIRST_CIRCLE_TIMER_START,
+	NEXT_CIRCLE_TIMER_START,
+	CIRCLE_MOVING,
+	FINAL_CIRCLE_TIMER_START,
+	FINAL_CIRCLE_MOVING,
+	CIRCLE_CLOSING_TO_NOTHING,
+	TITAN_DROPPING,
+	CARE_PACKAGE_DROPPING,
+	HOVER_TANK_INBOUND,
+	TWO_SQUADS_LEFT,
+	TWO_SQUADS_LEFT_INTERRUPT,
+	ONE_V_ONE,
+	ONE_V_ONE_INTERRUPT,
+	WINNER,
+	ONE_MIN_TO_CIRCLE_CLOSE,
+	SECONDS_TO_CIRCLE_CLOSE_45,
+	SECONDS_TO_CIRCLE_CLOSE_30,
+	SECONDS_TO_CIRCLE_CLOSE_10,
+	HALF_PLAYERS_LEFT,
+	PLAYERS_LEFT_10,
+	PLAYERS_LEFT_5,
+	HALF_SQUADS_LEFT,
+	SQUADS_LEFT_6,
+	SQUADS_LEFT_3,
+	CHAMPION_DOUBLE_KILL,
+	CHAMPION_DOUBLE_KILL_INTERRUPT,
+	CHAMPION_TRIPLE_KILL,
+	CHAMPION_TRIPLE_KILL_INTERRUPT,
+	CHAMPION_DOMINATING,
+	CHAMPION_DOMINATING_INTERRUPT,
+	CHAMPION_KILLED_KILL_LEADER,
+	CHAMPION_KILLED_KILL_LEADER_INTERRUPT,
+	CHAMPION_ELIMINATED,
+	CHAMPION_EXECUTED,
+	CHAMPION_EXECUTED_INTERRUPT,
+
+	NEW_KILL_LEADER,
+	NEW_KILL_LEADER_INTERRUPT,
+
+	KILL_LEADER_DOUBLE_KILL,
+	KILL_LEADER_DOUBLE_KILL_INTERRUPT,
+	KILL_LEADER_TRIPLE_KILL,
+	KILL_LEADER_TRIPLE_KILL_INTERRUPT,
+	KILL_LEADER_DOMINATING,
+	KILL_LEADER_DOMINATING_INTERRUPT,
+	KILL_LEADER_KILLED_CHAMPION,
+	KILL_LEADER_KILLED_CHAMPION_INTERRUPT,
+	KILL_LEADER_ELIMINATED,
+	KILL_LEADER_EXECUTED,
+	KILL_LEADER_EXECUTED_INTERRUPT,
+
+	PLAYER_FINISHER_PLACE,
+	PLAYER_DID_POORLY,
+	PLAYER_DID_OKAY,
+	PLAYER_DID_GOOD,
+	PLAYER_DID_GREAT,
+	PLAYER_MADE_TOP_10,
+	PLAYER_MADE_TOP_3,
+
+	CHAMPION_KILLED_PLAYER,
+	CHAMPION_IS_KILL_LEADER,
+	CHAMPION_DIED_TO_CIRCLE,
+	CHAMPION_LEFT_GAME,
+
+	KILL_LEADER_KILLED_PLAYER,
+	KILL_LEADER_DIED_TO_CIRCLE,
+	KILL_LEADER_LEFT_GAME,
+
+	FIRST_BLOOD,
+	NO_KILLS_FOR_X_SECONDS,
+	BRIDGE,
+
+	LOADING_INTRO,
+	MATCH_READY,
+	CHOOSE_CLASS_SQUAD,
+	CHOOSE_CLASS_SOLO,
+	INTRO_CHAMPION_SQUAD,
+	INTRO_CHAMPION_SOLO,
+	INTRO_PODS_READY,
+	INTRO_PODS_NAG,
+}
+
+global enum eSurvivalHostType
+{
+	INVALID,
+
+	NONE,
+	AI,
+	LAW,
+	BLISK,
+	OWEN,
+	BILL,
+	JOHN,
+	ICET,
+
+	_count
+}
+
+global enum eSurvivalCrowdEventState
+{
+	INVALID,
+
+	DRONE,
+	CHEER,
+	SHOCK,
+	ROAR,
+	CHANT
+}
+
+global struct SurvivalCommentaryEvent
+{
+	vector origin
+	int    eventType = -1
+	float  eventTimeStamp
+	entity victim //the player who was killed/wounded
+	entity attacker //the aggressor
+	bool   markedDirty = false
+	int    damageType
+	int    damageSourceID
+	float  distanceBetweenPlayers = -1
+	int    commentaryUseType = -1
+}
+
+global struct SurvivalCrowdEvent
+{
+	vector        origin
+	float         eventStartTime
+	float         timeSinceLastEvent
+	int           crowdState
+	int           eventType
+	float         influenceDistance = 2048
+	array<entity> controlledSpeakers
+}
+
+struct
+{
+	bool commentaryDebug = false
+
+	bool isBattleChatterEnabled = true
+
+	table<int, table<int, array<string> > > commentaryTables
+	table<int, array<string> >              commentaryBuckets
+} file
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+//
+//	███████╗███████╗████████╗██╗   ██╗██████╗     ███████╗████████╗██╗   ██╗███████╗███████╗
+//	██╔════╝██╔════╝╚══██╔══╝██║   ██║██╔══██╗    ██╔════╝╚══██╔══╝██║   ██║██╔════╝██╔════╝
+//	███████╗█████╗     ██║   ██║   ██║██████╔╝    ███████╗   ██║   ██║   ██║█████╗  █████╗
+//	╚════██║██╔══╝     ██║   ██║   ██║██╔═══╝     ╚════██║   ██║   ██║   ██║██╔══╝  ██╔══╝
+//	███████║███████╗   ██║   ╚██████╔╝██║         ███████║   ██║   ╚██████╔╝██║     ██║
+//	╚══════╝╚══════╝   ╚═╝    ╚═════╝ ╚═╝         ╚══════╝   ╚═╝    ╚═════╝ ╚═╝     ╚═╝
+//
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+void function ShSurvivalCommentary_Init()
+{
+	RegisterCSVDialogue( $"datatable/dialogue/survival_host_dialogue.rpak" )
+	RegisterCSVDialogue( $"datatable/battle_chatter_dialogue.rpak" )
+	RegisterCSVDialogue( $"datatable/dialogue/execution_quip_dialogue.rpak" )
+	RegisterCommentaryBuckets( $"datatable/dialogue/survival_host_dialogue.rpak" )
+}
+
+
+void function RegisterCommentaryBuckets( asset dt )
+{
+	var dataTable = GetDataTable( dt )
+
+	int columnName             = GetDataTableColumnByName( dataTable, "name" )
+	int columnRadioDisplayName = GetDataTableColumnByName( dataTable, "radioDisplayName" )
+	int columnBucket           = GetDataTableColumnByName( dataTable, "bucket" )
+
+	int numRows = GetDatatableRowCount( dataTable )
+
+	for ( int i = 0; i < numRows; i++ )
+	{
+		string name             = GetDataTableString( dataTable, i, columnName )
+		string radioDisplayName = GetDataTableString( dataTable, i, columnRadioDisplayName )
+		string bucket           = GetDataTableString( dataTable, i, columnBucket )
+
+		if ( name == "" || radioDisplayName == "" || bucket == "" )
+			continue
+
+		int bucketEnum = ConvertBucketStringToEnum( bucket )
+		int hostEnum   = ConvertHostStringToEnum( radioDisplayName )
+
+		if ( !(hostEnum in file.commentaryTables) )
+		{
+			table<int, array<string> > tempBucketTable
+			tempBucketTable[bucketEnum] <- [name]
+			file.commentaryTables[hostEnum] <- tempBucketTable
+		}
+		else
+		{
+			if ( !(bucketEnum in file.commentaryTables[hostEnum]) )
+				file.commentaryTables[hostEnum][bucketEnum] <- [name]
+			else
+				file.commentaryTables[hostEnum][bucketEnum].append( name )
+		}
+	}
+}
+
+
+string function PickCommentaryLineFromBucket( int host, int bucket )
+{
+	return file.commentaryTables[host][bucket].getrandom()
+}
+
+
+int function ConvertBucketStringToEnum( string bucketName )
+{
+	switch( bucketName )
+	{
+		case "FIRST_CIRCLE_TIMER_START":
+			return eSurvivalCommentaryBucket.FIRST_CIRCLE_TIMER_START
+
+		case "NEXT_CIRCLE_TIMER_START":
+			return eSurvivalCommentaryBucket.NEXT_CIRCLE_TIMER_START
+
+		case "CIRCLE_MOVING":
+			return eSurvivalCommentaryBucket.CIRCLE_MOVING
+
+		case "FINAL_CIRCLE_TIMER_START":
+			return eSurvivalCommentaryBucket.FINAL_CIRCLE_TIMER_START
+
+		case "FINAL_CIRCLE_MOVING":
+			return eSurvivalCommentaryBucket.FINAL_CIRCLE_MOVING
+
+		case "CIRCLE_CLOSING_TO_NOTHING":
+			return eSurvivalCommentaryBucket.CIRCLE_CLOSING_TO_NOTHING
+
+		case "TITAN_DROPPING":
+			return eSurvivalCommentaryBucket.TITAN_DROPPING
+
+		case "CARE_PACKAGE_DROPPING":
+			return eSurvivalCommentaryBucket.CARE_PACKAGE_DROPPING
+
+		case "HOVER_TANK_INBOUND":
+			return eSurvivalCommentaryBucket.HOVER_TANK_INBOUND
+
+		case "TWO_SQUADS_LEFT":
+			return eSurvivalCommentaryBucket.TWO_SQUADS_LEFT
+
+		case "TWO_SQUADS_LEFT_INTERRUPT":
+			return eSurvivalCommentaryBucket.TWO_SQUADS_LEFT_INTERRUPT
+
+		case "ONE_V_ONE":
+			return eSurvivalCommentaryBucket.ONE_V_ONE
+
+		case "ONE_V_ONE_INTERRUPT":
+			return eSurvivalCommentaryBucket.ONE_V_ONE_INTERRUPT
+
+		case "WINNER":
+			return eSurvivalCommentaryBucket.WINNER
+
+		case "ONE_MIN_TO_CIRCLE_CLOSE":
+			return eSurvivalCommentaryBucket.ONE_MIN_TO_CIRCLE_CLOSE
+
+		case "SECONDS_TO_CIRCLE_CLOSE_45":
+			return eSurvivalCommentaryBucket.SECONDS_TO_CIRCLE_CLOSE_45
+
+		case "SECONDS_TO_CIRCLE_CLOSE_30":
+			return eSurvivalCommentaryBucket.SECONDS_TO_CIRCLE_CLOSE_30
+
+		case "SECONDS_TO_CIRCLE_CLOSE_10":
+			return eSurvivalCommentaryBucket.SECONDS_TO_CIRCLE_CLOSE_10
+
+		case "HALF_PLAYERS_LEFT":
+			return eSurvivalCommentaryBucket.HALF_PLAYERS_LEFT
+
+		case "PLAYERS_LEFT_10":
+			return eSurvivalCommentaryBucket.PLAYERS_LEFT_10
+
+		case "PLAYERS_LEFT_5":
+			return eSurvivalCommentaryBucket.PLAYERS_LEFT_5
+
+		case "HALF_SQUADS_LEFT":
+			return eSurvivalCommentaryBucket.HALF_SQUADS_LEFT
+
+		case "SQUADS_LEFT_6":
+			return eSurvivalCommentaryBucket.SQUADS_LEFT_6
+
+		case "SQUADS_LEFT_3":
+			return eSurvivalCommentaryBucket.SQUADS_LEFT_3
+
+		case "CHAMPION_DOUBLE_KILL":
+			return eSurvivalCommentaryBucket.CHAMPION_DOUBLE_KILL
+
+		case "CHAMPION_DOUBLE_KILL_INTERRUPT":
+			return eSurvivalCommentaryBucket.CHAMPION_DOUBLE_KILL_INTERRUPT
+
+		case "CHAMPION_TRIPLE_KILL":
+			return eSurvivalCommentaryBucket.CHAMPION_TRIPLE_KILL
+
+		case "CHAMPION_TRIPLE_KILL_INTERRUPT":
+			return eSurvivalCommentaryBucket.CHAMPION_TRIPLE_KILL_INTERRUPT
+
+		case "CHAMPION_DOMINATING":
+			return eSurvivalCommentaryBucket.CHAMPION_DOMINATING
+
+		case "CHAMPION_DOMINATING_INTERRUPT":
+			return eSurvivalCommentaryBucket.CHAMPION_DOMINATING_INTERRUPT
+
+		case "CHAMPION_KILLED_KILL_LEADER":
+			return eSurvivalCommentaryBucket.CHAMPION_KILLED_KILL_LEADER
+
+		case "CHAMPION_KILLED_KILL_LEADER_INTERRUPT":
+			return eSurvivalCommentaryBucket.CHAMPION_KILLED_KILL_LEADER_INTERRUPT
+
+		case "CHAMPION_ELIMINATED":
+			return eSurvivalCommentaryBucket.CHAMPION_ELIMINATED
+
+		case "CHAMPION_EXECUTED":
+			return eSurvivalCommentaryBucket.CHAMPION_EXECUTED
+
+		case "CHAMPION_EXECUTED_INTERRUPT":
+			return eSurvivalCommentaryBucket.CHAMPION_EXECUTED_INTERRUPT
+
+		case "NEW_KILL_LEADER":
+			return eSurvivalCommentaryBucket.NEW_KILL_LEADER
+
+		case "NEW_KILL_LEADER_INTERRUPT":
+			return eSurvivalCommentaryBucket.NEW_KILL_LEADER_INTERRUPT
+
+		case "KILL_LEADER_DOUBLE_KILL":
+			return eSurvivalCommentaryBucket.KILL_LEADER_DOUBLE_KILL
+
+		case "KILL_LEADER_DOUBLE_KILL_INTERRUPT":
+			return eSurvivalCommentaryBucket.KILL_LEADER_DOUBLE_KILL_INTERRUPT
+
+		case "KILL_LEADER_TRIPLE_KILL":
+			return eSurvivalCommentaryBucket.KILL_LEADER_TRIPLE_KILL
+
+		case "KILL_LEADER_TRIPLE_KILL_INTERRUPT":
+			return eSurvivalCommentaryBucket.KILL_LEADER_TRIPLE_KILL_INTERRUPT
+
+		case "KILL_LEADER_DOMINATING":
+			return eSurvivalCommentaryBucket.KILL_LEADER_DOMINATING
+
+		case "KILL_LEADER_DOMINATING_INTERRUPT":
+			return eSurvivalCommentaryBucket.KILL_LEADER_DOMINATING_INTERRUPT
+
+		case "KILL_LEADER_KILLED_CHAMPION":
+			return eSurvivalCommentaryBucket.KILL_LEADER_KILLED_CHAMPION
+
+		case "KILL_LEADER_KILLED_CHAMPION_INTERRUPT":
+			return eSurvivalCommentaryBucket.KILL_LEADER_KILLED_CHAMPION_INTERRUPT
+
+		case "KILL_LEADER_ELIMINATED":
+			return eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED
+
+		case "KILL_LEADER_EXECUTED":
+			return eSurvivalCommentaryBucket.KILL_LEADER_EXECUTED
+
+		case "KILL_LEADER_EXECUTED_INTERRUPT":
+			return eSurvivalCommentaryBucket.KILL_LEADER_EXECUTED_INTERRUPT
+
+		case "PLAYER_FINISHER_PLACE":
+			return eSurvivalCommentaryBucket.PLAYER_FINISHER_PLACE
+
+		case "PLAYER_DID_POORLY":
+			return eSurvivalCommentaryBucket.PLAYER_DID_POORLY
+
+		case "PLAYER_DID_OKAY":
+			return eSurvivalCommentaryBucket.PLAYER_DID_OKAY
+
+		case "PLAYER_DID_GOOD":
+			return eSurvivalCommentaryBucket.PLAYER_DID_GOOD
+
+		case "PLAYER_DID_GREAT":
+			return eSurvivalCommentaryBucket.PLAYER_DID_GREAT
+
+		case "PLAYER_MADE_TOP_10":
+			return eSurvivalCommentaryBucket.PLAYER_MADE_TOP_10
+
+		case "PLAYER_MADE_TOP_3":
+			return eSurvivalCommentaryBucket.PLAYER_MADE_TOP_3
+
+		case "CHAMPION_KILLED_PLAYER":
+			return eSurvivalCommentaryBucket.CHAMPION_KILLED_PLAYER
+
+		case "CHAMPION_IS_KILL_LEADER":
+			return eSurvivalCommentaryBucket.CHAMPION_IS_KILL_LEADER
+
+		case "CHAMPION_DIED_TO_CIRCLE":
+			return eSurvivalCommentaryBucket.CHAMPION_DIED_TO_CIRCLE
+
+		case "CHAMPION_LEFT_GAME":
+			return eSurvivalCommentaryBucket.CHAMPION_LEFT_GAME
+
+		case "FIRST_BLOOD":
+			return eSurvivalCommentaryBucket.FIRST_BLOOD
+
+		case "NO_KILLS_FOR_X_SECONDS":
+			return eSurvivalCommentaryBucket.NO_KILLS_FOR_X_SECONDS
+
+		case "BRIDGE":
+			return eSurvivalCommentaryBucket.BRIDGE
+
+		case "LOADING_INTRO":
+			return eSurvivalCommentaryBucket.LOADING_INTRO
+
+		case "MATCH_READY":
+			return eSurvivalCommentaryBucket.MATCH_READY
+
+		case "CHOOSE_CLASS_SQUAD":
+			return eSurvivalCommentaryBucket.CHOOSE_CLASS_SQUAD
+
+		case "CHOOSE_CLASS_SOLO":
+			return eSurvivalCommentaryBucket.CHOOSE_CLASS_SOLO
+
+		case "INTRO_CHAMPION_SQUAD":
+			return eSurvivalCommentaryBucket.INTRO_CHAMPION_SQUAD
+
+		case "INTRO_CHAMPION_SOLO":
+			return eSurvivalCommentaryBucket.INTRO_CHAMPION_SOLO
+
+		case "INTRO_PODS_READY":
+			return eSurvivalCommentaryBucket.INTRO_PODS_READY
+
+		case "INTRO_PODS_NAG":
+			return eSurvivalCommentaryBucket.INTRO_PODS_NAG
+
+		default:
+			return -1
+	}
+
+	unreachable
+}
+
+
+int function ConvertHostStringToEnum( string hostName )
+{
+	switch( hostName )
+	{
+		case "#HOST_BLISK":
+			return eSurvivalHostType.BLISK
+
+		case "#HOST_AI":
+			return eSurvivalHostType.AI
+
+		default:
+			return eSurvivalHostType.INVALID
+	}
+
+	unreachable
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+//
+//	██╗   ██╗████████╗██╗██╗     ██╗████████╗██╗   ██╗
+//	██║   ██║╚══██╔══╝██║██║     ██║╚══██╔══╝╚██╗ ██╔╝
+//	██║   ██║   ██║   ██║██║     ██║   ██║    ╚████╔╝
+//	██║   ██║   ██║   ██║██║     ██║   ██║     ╚██╔╝
+//	╚██████╔╝   ██║   ██║███████╗██║   ██║      ██║
+//	 ╚═════╝    ╚═╝   ╚═╝╚══════╝╚═╝   ╚═╝      ╚═╝
+//
+///////////////////////////////////////////////////////////////////////////////////
+
+void function CommentaryDebugText( vector origin, string text, float time )
+{
+	if ( file.commentaryDebug )
+		DebugDrawText( origin, text, true, time )
+}
+
+
+void function CommentaryDebugSphere( vector origin, int r, int g, int b, float time, float size = 16 )
+{
+	if ( file.commentaryDebug )
+		DebugDrawSphere( origin, size, r, g, b, true, time )
+}
+
+
+void function ToggleCommentaryDebug()
+{
+	if ( file.commentaryDebug )
+	{
+		file.commentaryDebug = false
+		printt( "Commentary Debug: OFF" )
+	}
+	else
+	{
+		file.commentaryDebug = true
+		printt( "Commentary Debug: ON" )
+	}
+}
+
+
+entity function TryFindSpeakingPlayerOnTeam( int team )
+{
+	array<entity> livingTeammateList = GetPlayerArrayOfTeam_Alive( team )
+
+	livingTeammateList.randomize()
+
+	foreach ( playerOnTeam in livingTeammateList )
+	{
+		// downed players shouldn't talk
+		if ( Bleedout_IsBleedingOut( playerOnTeam ) )
+			continue
+
+		return playerOnTeam
+	}
+
+	// If no eligible speaker was found, this function will return null
+	return null
+}
+
+entity function TryFindSpeakingPlayerOnTeamDisallowSelf( int team, entity forbiddenPlayer, bool chooseSelfIfSolo = false )
+{
+	array<entity> livingTeammateList = GetPlayerArrayOfTeam_Alive( team )
+
+	livingTeammateList.randomize()
+
+	foreach ( playerOnTeam in livingTeammateList )
+	{
+		// downed players shouldn't talk
+		if ( Bleedout_IsBleedingOut( playerOnTeam ) )
+			continue
+
+		// talking to self disallowed
+		if ( playerOnTeam == forbiddenPlayer )
+			continue
+
+		return playerOnTeam
+	}
+
+	if ( chooseSelfIfSolo && livingTeammateList.len() == 1 && livingTeammateList[0] == forbiddenPlayer )
+		return forbiddenPlayer
+
+	// If no eligible speaker was found, this function will return null
+	return null
+}
+
+
+bool function AreWeSquadMembers( entity player1, entity player2 )
+{
+	if ( !IsValid( player1 ) || !IsValid( player2 ) )
+		return false
+
+	array<entity> player1Squad = GetPlayerArrayOfTeam( player1.GetTeam() )
+
+	foreach (player in player1Squad)
+	{
+		if ( player == player2 )
+			return true
+	}
+
+	return false
+}
+
+bool function AllowPlayersToTalkToThemselves()
+{
+	return ( GetCurrentPlaylistVarInt( "passive_self_chatter", 1 ) == 1 )
+}
+
+bool function IsBattleChatterEnabled()
+{
+	return file.isBattleChatterEnabled
+}
+
+void function SurvivalCommentary_SetBattleChatterEnabled( bool value )
+{
+	file.isBattleChatterEnabled = value
+}
+
+bool function ShouldPlayBattleChatter( string conversationType, entity listeningPlayer, entity speakingPlayer )
+{
+	if ( conversationType == "" )
+		return false
+
+	if ( !IsAlive( listeningPlayer ) )
+		return false
+
+	if ( !IsAlive( speakingPlayer ) )
+		return false
+
+	if ( GetGameState() > eGameState.Playing )
+		return false
+
+	return IsBattleChatterEnabled()
+}
+
+void function PlayBattleChatterToSelfOnClientAndTeamOnServer( entity speaker, string chatterLine )
+{
+#if SERVER
+	PlayBattleChatterLineToTeamButNotSpeaker( speaker, chatterLine )
+#endif
+#if CLIENT
+	PlayBattleChatterToSelfOnClient( speaker, chatterLine )
+#endif
+}
+
+#if CLIENT
+void function PlayBattleChatterToSelfOnClient( entity self, string chatterLine )
+{
+	if ( !ShouldPlayBattleChatter( chatterLine, self, self ) )
+		return
+
+	thread PlayClientSelfDialogueByName( self, chatterLine )
+}
+#endif // CLIENT

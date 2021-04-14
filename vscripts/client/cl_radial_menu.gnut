@@ -1,0 +1,241 @@
+global function ClRadialMenu_Init
+
+global function RadialMenu_Create
+global function RadialMenu_IsShowing
+global function RadialMenu_Open
+global function RadialMenu_HandleSelectInput
+global function RadialMenu_Destroy
+global function RadialMenu_GetFocus
+
+struct RadialMenuData
+{
+	asset ruiAsset
+	int functionref( var ) onShow
+	bool functionref( var, int ) onSelect
+	void functionref( var, int ) onViewUpdate
+}
+
+struct
+{
+	var menuRui
+
+	bool isShowing = false
+	string activeMenu = ""
+	int slotCount = 0
+	int focusedSlot = -1
+	float lastFocusTime = 0
+
+	table<string,RadialMenuData> menuData
+} file
+
+void function ClRadialMenu_Init()
+{
+	RegisterSignal( "RadialMenuClosed" )
+
+	AddOnDeathCallback( "player", RadialMenu_OnDeathCallback )
+	// AddCallback_UseEntGainFocus( RadialMenu_OnUseEntGainFocus )
+	AddScoreboardShowCallback( RadialMenu_OnScoreboardShow )
+}
+
+void function RadialMenu_OnDeathCallback( entity player )
+{
+	if ( file.isShowing && IsLocalClientPlayer( player ) )
+		RadialMenu_Destroy()
+}
+
+void function RadialMenu_OnScoreboardShow()
+{
+	if ( file.isShowing )
+		RadialMenu_Destroy()
+}
+
+void function RadialMenu_OnUseEntGainFocus( entity useEntity )
+{
+	if ( file.isShowing )
+		RadialMenu_Destroy()
+}
+
+void function RadialMenu_Create( string menuName, asset ruiAsset, int functionref( var ) onShow, bool functionref( var, int ) onSelect,	void functionref( var, int ) onViewUpdate )
+{
+	RadialMenuData data
+	data.ruiAsset = ruiAsset
+	data.onShow = onShow
+	data.onSelect = onSelect
+	data.onViewUpdate = onViewUpdate
+	file.menuData[ menuName ] <- data
+}
+
+void function RadialMenu_Open( string menuName )
+{
+	if ( file.isShowing )
+		return
+
+	thread RadialMenu_Show( menuName )
+}
+
+void function RadialMenu_Show( string menuName )
+{
+	if (!( menuName in file.menuData ))
+		return
+
+	EndSignal( GetLocalClientPlayer(), "RadialMenuClosed" )
+
+	file.isShowing = true
+	file.activeMenu = menuName
+	file.lastFocusTime = 0
+	file.focusedSlot = -1
+
+	file.menuRui = RuiCreate( file.menuData[ menuName ].ruiAsset, clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	file.slotCount = file.menuData[ menuName ].onShow( file.menuRui )
+
+	SetCrosshairPriorityState( crosshairPriorityLevel.MENU, CROSSHAIR_STATE_HIT_INDICATORS_ONLY )
+
+	HudInputContext inputContext
+	inputContext.keyInputCallback = RadialMenu_HandleKeyInput
+	inputContext.viewInputCallback = RadialMenu_HandleViewInput
+	HudInput_PushContext( inputContext )
+}
+
+void function RadialMenu_Destroy()
+{
+	if ( file.isShowing )
+	{
+		Signal( GetLocalClientPlayer(), "RadialMenuClosed" )
+
+		file.isShowing = false
+		file.activeMenu = ""
+		file.lastFocusTime = 0
+		file.focusedSlot = -1
+
+		RuiDestroy( file.menuRui )
+		file.menuRui = null
+
+		ClearCrosshairPriority( crosshairPriorityLevel.MENU )
+
+		HudInput_PopContext()
+
+		// This will block stick input until you return them back to center
+		HudInputContext inputContext
+		inputContext.keyInputCallback = RadialMenuCleanup_HandleKeyInput
+		inputContext.viewInputCallback = RadialMenuCleanup_HandleViewInput
+		HudInput_PushContext( inputContext )
+	}
+}
+
+bool function RadialMenu_HandleKeyInput( int key )
+{
+	if ( !file.isShowing )
+		return true
+
+	switch ( key )
+	{
+		case BUTTON_TRIGGER_RIGHT:
+		case BUTTON_A:
+		case BUTTON_STICK_RIGHT:
+		case MOUSE_LEFT:
+			RadialMenu_HandleSelectInput()
+			return true
+
+		case MOUSE_RIGHT:
+		case BUTTON_B:
+		case KEY_ESCAPE:
+			RadialMenu_Destroy()
+			return true
+
+		case STICK1_DOWN:
+		case STICK1_UP:
+		case STICK1_LEFT:
+		case STICK1_RIGHT:
+		case STICK2_DOWN:
+		case STICK2_UP:
+		case STICK2_LEFT:
+		case STICK2_RIGHT:
+			return false
+
+		default:
+			// RadialMenu_Destroy()
+			return false
+	}
+
+	unreachable
+}
+
+bool function RadialMenu_HandleViewInput( float x, float y )
+{
+	if ( !file.isShowing )
+		return true
+
+	if ( x == 0 && y == 0 )
+		return true
+
+	if ( file.slotCount > 0 && fabs( x ) + fabs( y ) > 0.4 )
+	{
+		float circle = 2.0*PI
+		float angle = atan2( x, y ) // Indexed angle starts a 12 o'clock and is clockwise
+		if ( angle < 0.0 )
+		 	angle += circle
+
+		float slotWidth = circle / float( file.slotCount )
+		angle += slotWidth*0.5
+
+		int focusedSlot = int( (angle / circle) * file.slotCount ) % file.slotCount
+
+		// if ( file.focusedSlot == -1 )
+		{
+			file.focusedSlot = focusedSlot
+		}
+
+		file.lastFocusTime = Time()
+	}
+	else if ( IsControllerModeActive() )
+	{
+		if ( Time() > file.lastFocusTime + 1.5 )
+		{
+			RuiSetInt( file.menuRui, "focusedSlot", -1 )
+			file.focusedSlot = -1
+		}
+	}
+
+	RuiSetInt( file.menuRui, "focusedSlot", file.focusedSlot )
+	file.menuData[ file.activeMenu ].onViewUpdate( file.menuRui, file.focusedSlot )
+
+	return true
+}
+
+void function RadialMenu_HandleSelectInput()
+{
+	int slot = file.focusedSlot
+
+	bool shouldClose = file.menuData[ file.activeMenu ].onSelect( file.menuRui, file.focusedSlot )
+
+	if ( shouldClose )
+		RadialMenu_Destroy()
+}
+
+int function RadialMenu_GetFocus()
+{
+	return file.focusedSlot
+}
+
+bool function RadialMenu_IsShowing()
+{
+	return file.isShowing
+}
+
+bool function RadialMenuCleanup_HandleKeyInput( int key )
+{
+	HudInput_PopContext()
+	return false
+}
+
+bool function RadialMenuCleanup_HandleViewInput( float x, float y )
+{
+	if ( x == 0 && y == 0 )
+		return true
+
+	if ( fabs( x ) + fabs( y ) > 0.4 )
+		return true
+
+	HudInput_PopContext()
+	return false
+}

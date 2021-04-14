@@ -1,0 +1,193 @@
+#if UI || CLIENT
+global function ReserveVideoChannel
+global function ReleaseVideoChannel
+#endif
+
+#if UI
+global function VideoChannelManager_OnLevelShutdown
+global function IsVideoChannelAvailable
+global function ClientToUI_RequestVideoChannel
+global function ClientToUI_ReleaseVideoChannel
+global function UICodeCallback_VideoChannelFinishedPlaying
+#endif
+
+#if CLIENT
+global function UIToClient_VideoChannelReserved
+global function UIToClient_VideoChannelFinishedPlaying
+#endif
+
+const int NUM_BINK_CHANNELS = 10 // must match C:\depot\r5dev\src\public\avi\ibik.h:28
+
+#if UI
+enum eVideoChannelStatus
+{
+	AVAILABLE,
+	RESERVED_BY_UI,
+	RESERVED_BY_CLIENT,
+}
+#endif
+
+
+struct
+{
+	#if UI
+		int[NUM_BINK_CHANNELS] videoChannelStatusList
+	#endif
+
+	#if CLIENT
+		int videoChannelFromUI = -1
+	#endif
+
+	#if UI || CLIENT
+		table<int, void functionref(int)> channelOnFinishedCallbackMap
+	#endif
+} file
+
+
+#if UI
+void function VideoChannelManager_OnLevelShutdown()
+{
+	// When the CLIENT VM goes away, mark the channels it reserved as available
+	for ( int channelIndex = 0; channelIndex < NUM_BINK_CHANNELS; channelIndex++ )
+	{
+		if ( file.videoChannelStatusList[channelIndex] == eVideoChannelStatus.RESERVED_BY_CLIENT )
+		{
+			file.videoChannelStatusList[channelIndex] = eVideoChannelStatus.AVAILABLE
+		}
+	}
+}
+#endif
+
+
+#if UI || CLIENT
+int function ReserveVideoChannel( void functionref( int channel ) onFinishedCallback = null )
+{
+	int channel
+	#if UI
+		channel = ReserveVideoChannelInternal( true )
+	#elseif CLIENT
+		RunUIScript( "ClientToUI_RequestVideoChannel" )
+		Assert( file.videoChannelFromUI != -1 )
+		channel = file.videoChannelFromUI
+		file.videoChannelFromUI = -1
+	#endif
+
+	if ( onFinishedCallback != null )
+		file.channelOnFinishedCallbackMap[channel] <- onFinishedCallback
+
+	return channel
+}
+#endif
+
+
+#if UI
+int function ReserveVideoChannelInternal( bool calledFromUI )
+{
+	for ( int channelIndex = 0; channelIndex < NUM_BINK_CHANNELS; channelIndex++ )
+	{
+		if ( file.videoChannelStatusList[channelIndex] != eVideoChannelStatus.AVAILABLE )
+			continue
+
+		file.videoChannelStatusList[channelIndex] = (calledFromUI ? eVideoChannelStatus.RESERVED_BY_UI : eVideoChannelStatus.RESERVED_BY_CLIENT)
+
+		return channelIndex
+	}
+
+	Assert( false, "No free video channels." )
+	unreachable
+}
+#endif
+
+
+#if UI
+void function ClientToUI_RequestVideoChannel()
+{
+	int channel = ReserveVideoChannelInternal( false )
+	RunClientScript( "UIToClient_VideoChannelReserved", channel )
+}
+#endif
+
+
+#if CLIENT
+void function UIToClient_VideoChannelReserved( int channel )
+{
+	file.videoChannelFromUI = channel
+}
+#endif
+
+
+#if UI || CLIENT
+void function ReleaseVideoChannel( int channel )
+{
+	#if UI
+		ReleaseVideoChannelInternal( channel )
+	#elseif CLIENT
+		RunUIScript( "ClientToUI_ReleaseVideoChannel", channel )
+	#endif
+
+	if ( channel in file.channelOnFinishedCallbackMap )
+		delete file.channelOnFinishedCallbackMap[channel]
+}
+#endif
+
+
+#if UI
+void function ReleaseVideoChannelInternal( int channelIndex )
+{
+	Assert( file.videoChannelStatusList[channelIndex] != eVideoChannelStatus.AVAILABLE, "Attempted to call ReleaseVideoChannel on a video channel that was not in use." )
+
+	StopVideoOnChannel( channelIndex )
+
+	file.videoChannelStatusList[channelIndex] = eVideoChannelStatus.AVAILABLE
+}
+#endif
+
+
+#if UI
+void function ClientToUI_ReleaseVideoChannel( int channel )
+{
+	ReleaseVideoChannelInternal( channel )
+}
+#endif
+
+
+#if UI
+bool function IsVideoChannelAvailable()
+{
+	#if UI
+		for ( int channelIndex = 0; channelIndex < NUM_BINK_CHANNELS; channelIndex++ )
+		{
+			if ( file.videoChannelStatusList[channelIndex] == eVideoChannelStatus.AVAILABLE )
+				return true
+		}
+		return false
+	#endif
+	// todo(dw): make this available in the CLIENT VM
+}
+#endif
+
+
+#if UI
+void function UICodeCallback_VideoChannelFinishedPlaying( int channel )
+{
+	if ( channel in file.channelOnFinishedCallbackMap )
+	{
+		file.channelOnFinishedCallbackMap[channel]( channel )
+	}
+
+	RunClientScript( "UIToClient_VideoChannelFinishedPlaying", channel )
+}
+#endif
+
+
+#if CLIENT
+void function UIToClient_VideoChannelFinishedPlaying( int channel )
+{
+	if ( channel in file.channelOnFinishedCallbackMap )
+	{
+		file.channelOnFinishedCallbackMap[channel]( channel )
+	}
+}
+#endif
+
+

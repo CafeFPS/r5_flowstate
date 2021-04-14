@@ -1,0 +1,807 @@
+global function ShAnimWindows_LevelInit
+
+#if CLIENT
+global function ShowEntityAndChildren
+global function HideEntityAndChildren
+
+global function ClientCodeCallback_AnimWindowStart
+global function ClientCodeCallback_AnimWindowTransition
+global function ClientCodeCallback_AnimWindowStop
+global function ClientCodeCallback_AnimWindowPrecache
+#endif
+
+#if SERVER
+global function CodeCallback_AnimWindowPrecache
+#endif
+
+////////////////
+////////////////
+//// Consts ////
+////////////////
+////////////////
+const bool SCRIPT_ANIM_WINDOWS_DEBUG = false
+
+const MIRAGE_HOLO_FLASH_FX = $"P_mirage_holo_flash"
+const MIRAGE_HOLO_TRAIL_FX = $"P_mirage_holo_trail"
+
+const asset LIFELINE_DRONE_MDL = $"mdl/props/lifeline_drone/lifeline_drone.rmdl"
+const asset LIFELINE_DRONE_JET_FX = $"P_LL_med_drone_jet_loop"
+int LIFELINE_DRONE_JET_FX_IDX = -1
+const asset LIFELINE_DRONE_VENT_FX = $"P_LL_med_drone_jet_ctr_loop"
+int LIFELINE_DRONE_VENT_FX_IDX = -1
+const asset LIFELINE_DRONE_EYEGLOW_FX = $"P_LL_med_drone_eye_loop"
+int LIFELINE_DRONE_EYEGLOW_FX_IDX = -1
+const int LIFELINE_DRONE_OFFLINE_SKIN = 0
+const int LIFELINE_DRONE_ONLINE_SKIN = 1
+
+const asset BLOODHOUND_BIRD_MDL = $"mdl/creatures/bird/bird.rmdl"
+
+//
+struct {
+	table<string, void functionref(ScriptAnimWindow, var, entity)> createPropScriptCallbackMap
+} file
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+void function ShAnimWindows_LevelInit()
+{
+	const bool BOTH = SERVER || CLIENT
+
+	#if CLIENT
+		RegisterAnimWindowScriptCallback( "add_glad_card_rui", AddGladCardRUIToProp )
+	#endif
+
+	#if SERVER || CLIENT
+		// Generic window types
+		RegisterAnimWindowType( BOTH, "CreateProp", null, AnimWindow_CreateProp_Precache, AnimWindow_CreateProp_Start, AnimWindow_CreateProp_Transition, AnimWindow_CreateProp_Stop )
+		RegisterAnimWindowType( CLIENT, "PlaySound", null, AnimWindow_PlaySound_Precache, AnimWindow_PlaySound_Start, AnimWindow_PlaySound_Transition, AnimWindow_PlaySound_Stop )
+		RegisterAnimWindowType( BOTH, "PlayFX", null, AnimWindow_PlayFX_Precache, AnimWindow_PlayFX_Start, AnimWindow_PlayFX_Transition, AnimWindow_PlayFX_Stop )
+
+		// Window types are pretty darn specific
+		RegisterAnimWindowType( CLIENT, "MirageHoloFX", AnimWindow_MirageHoloFX_Init, AnimWindow_MirageHoloFX_Precache, AnimWindow_MirageHoloFX_Start, AnimWindow_MirageHoloFX_Transition, AnimWindow_MirageHoloFX_Stop )
+		RegisterAnimWindowType( CLIENT, "LifelineDroneCommonFX", AnimWindow_LifelineDroneCommonFX_Init, AnimWindow_LifelineDroneCommonFX_Precache, AnimWindow_LifelineDroneCommonFX_Start, AnimWindow_LifelineDroneCommonFX_Transition, AnimWindow_LifelineDroneCommonFX_Stop )
+	#endif
+}
+
+
+void function RegisterAnimWindowScriptCallback( string ref, void functionref(ScriptAnimWindow, var, entity) func )
+{
+	file.createPropScriptCallbackMap[ ref ] <- func
+}
+
+////////////////////
+////////////////////
+//// CreateProp ////
+////////////////////
+////////////////////
+table<string, entity> windowPropMap = {}
+
+enum eAnimWindowCreatePropModelSelectionStrategy
+{
+	HARD_CODED,
+	COPY_PARENT,
+	SCRIPT_KEY,
+}
+
+#if CLIENT
+void function AddGladCardRUIToProp( ScriptAnimWindow window, var settingsBlock, entity prop )
+{
+	thread CreateGladCardRui( prop )
+}
+#endif
+
+#if CLIENT
+void function CreateGladCardRui( entity prop )
+{
+	prop.EndSignal( "OnDestroy" )
+	prop.RenderWithViewModels( true )
+
+	entity viewPlayer = GetLocalViewPlayer()
+
+	if ( !IsValid( viewPlayer ) )
+		return
+
+	entity player = viewPlayer.GetPlayerNetEnt( "gladCardPlayer" )
+
+	if ( !IsValid( player ) )
+		return
+
+	EHI ehi = ToEHI( player )
+
+	float MAGIC_DEATHBOX_Z_OFFSET = 1.25
+
+	float scale  = 0.0125
+	float width  = 264 * scale
+	float height = 720 * scale
+
+	float direction = 1.0
+	vector right    = <0, 1, 0> * width * 0.5
+	vector fwd      = <1, 0, 0> * height * 0.5
+
+	vector org = <0, 0, 0.2>
+
+	var topo = RuiTopology_CreatePlane( org - fwd * 0.5 - right * 0.5, right, fwd, true )
+	RuiTopology_SetParent( topo, prop )
+
+	var rui = RuiCreate( $"ui/gladiator_card_deathbox.rpak", topo, RUI_DRAW_VIEW_MODEL, MINIMAP_Z_BASE + 10 )
+
+	NestedGladiatorCardHandle nestedGCHandle = CreateNestedGladiatorCard( rui, "card", eGladCardDisplaySituation.DEATH_BOX_STILL, eGladCardPresentation.FRONT_DETAILS )
+	ChangeNestedGladiatorCardOwner( nestedGCHandle, ehi, null, eGladCardLifestateOverride.ALIVE )
+
+	OnThreadEnd (
+		void function() : ( topo, rui, nestedGCHandle )
+		{
+			CleanupNestedGladiatorCard( nestedGCHandle )
+			RuiDestroy( rui )
+			RuiTopology_Destroy( topo )
+		}
+	)
+
+	while ( IsValid( prop ) )
+	{
+		WaitFrame()
+	}
+}
+#endif
+
+void function AnimWindow_CreateProp_Precache( var settingsBlock )
+{
+	int selectModelFrom = eAnimWindowCreatePropModelSelectionStrategy[GetSettingsBlockString( settingsBlock, "selectModelFrom" )]
+	if ( selectModelFrom == eAnimWindowCreatePropModelSelectionStrategy.HARD_CODED )
+	{
+		PrecacheModel( GetSettingsBlockAsset( settingsBlock, "modelName" ) )
+	}
+}
+
+
+void function AnimWindow_CreateProp_Start( ScriptAnimWindow window, var settingsBlock )
+{
+	int selectModelFrom = eAnimWindowCreatePropModelSelectionStrategy[GetSettingsBlockString( settingsBlock, "selectModelFrom" )]
+	asset model         = EMPTY_MODEL
+	if ( selectModelFrom == eAnimWindowCreatePropModelSelectionStrategy.HARD_CODED )
+	{
+		model = GetSettingsBlockAsset( settingsBlock, "modelName" )
+	}
+	else if ( selectModelFrom == eAnimWindowCreatePropModelSelectionStrategy.COPY_PARENT )
+	{
+		model = window.ent.GetModelName()
+	}
+
+	#if SERVER
+		entity prop = null
+		Assert( false ) // todo(dw)
+	#elseif CLIENT
+		entity prop = CreateClientSidePropDynamic( window.ent.GetOrigin(), window.ent.GetAngles(), model )
+		// if ( window.ent.IsSafeForUIScriptHack() ) // todo(dw)
+		prop.MakeSafeForUIScriptHack()
+
+		if ( selectModelFrom == eAnimWindowCreatePropModelSelectionStrategy.SCRIPT_KEY )
+		{
+			SetModelOnPropByScriptKey( prop, GetSettingsBlockString( settingsBlock, "modelScriptKey" ), window.ent )
+		}
+
+		//#if SCRIPT_ANIM_WINDOWS_DEBUG
+		//	printt ( "><><><><><><>" + FUNC_NAME() + ": WAT " + string(window.ent.kv.renderamt) + " " + string(window.ent.IsHidden()) )
+		//#endif
+
+		prop.kv.renderamt = window.ent.kv.renderamt
+		prop.CopyHighlightState( window.ent )
+		if ( window.ent.IsHidden() )
+			prop.Hide()
+	#endif
+
+	if ( selectModelFrom == eAnimWindowCreatePropModelSelectionStrategy.COPY_PARENT )
+	{
+		prop.SetSkin( window.ent.GetSkin() )
+		prop.SetCamo( window.ent.GetCamo() )
+	}
+
+	string scriptCallbackKey = GetSettingsBlockString( settingsBlock, "scriptCallbackKey" )
+	if ( scriptCallbackKey != "" )
+	{
+		Assert( scriptCallbackKey in file.createPropScriptCallbackMap )
+		file.createPropScriptCallbackMap[scriptCallbackKey]( window, settingsBlock, prop )
+	}
+
+	#if DEV
+		disableoverwrite( windowPropMap )
+	#endif
+	windowPropMap[window.stringID] <- prop
+
+	AnimWindow_CreateProp_Transition( window, settingsBlock )
+}
+
+
+void function AnimWindow_CreateProp_Transition( ScriptAnimWindow window, var settingsBlock )
+{
+	asset animSeq         = GetSettingsBlockAsset( settingsBlock, "animSequence" )
+	string attachmentName = GetSettingsBlockString( settingsBlock, "attachPoint" )
+	float scale           = GetSettingsBlockFloat( settingsBlock, "scale" )
+
+	Assert( window.stringID in windowPropMap )
+	entity prop = windowPropMap[window.stringID]
+
+	prop.SetParent( window.ent, attachmentName, false )
+	//prop.RenderWithViewModels( true )
+	prop.SetModelScale( scale * window.ent.GetModelScale() )
+	//if ( !window.ent.IsVisible() )
+	//	prop.Hide()
+
+	if ( animSeq != $"" )
+	{
+		prop.Anim_Play( animSeq )
+		prop.SetCycle( 0.0 )
+	}
+	else
+	{
+		prop.Anim_Stop()
+	}
+}
+
+
+void function AnimWindow_CreateProp_Stop( ScriptAnimWindow window, var settingsBlock )
+{
+	Assert( window.stringID in windowPropMap )
+	entity prop = windowPropMap[window.stringID]
+	delete windowPropMap[window.stringID]
+
+	if ( IsValid( prop ) )
+		prop.Destroy()
+}
+
+
+void function SetModelOnPropByScriptKey( entity propEnt, string key, entity parentEnt )
+{
+	// todo(dw): not hard-code this
+	switch( key )
+	{
+		case "bloodhound_raven":
+			propEnt.SetModel( BLOODHOUND_BIRD_MDL )
+			break
+
+		case "lifeline_drone":
+			propEnt.SetModel( LIFELINE_DRONE_MDL )
+			propEnt.SetSkin( LIFELINE_DRONE_ONLINE_SKIN )
+			break
+
+		default:
+			Assert( false, "Unknown script key for CreateProp anim window: " + key )
+			break
+	}
+}
+
+
+
+///////////////////
+///////////////////
+//// PlaySound ////
+///////////////////
+///////////////////
+#if CLIENT
+table<string, var> windowSoundHandleMap = {}
+#endif
+
+
+void function AnimWindow_PlaySound_Precache( var settingsBlock )
+{
+	//
+}
+
+
+void function AnimWindow_PlaySound_Start( ScriptAnimWindow window, var settingsBlock )
+{
+	string soundEventName = GetSettingsBlockString( settingsBlock, "soundEventName" )
+
+	#if SERVER
+		Assert( 0, "Not Yet Implemented" )
+	#elseif CLIENT
+		entity viewPlayer = GetLocalViewPlayer()
+		if ( IsValid( viewPlayer ) && !viewPlayer.DoesShareRealms( window.ent ) )
+		{
+			windowSoundHandleMap[window.stringID] <- null
+			return
+		}
+		var soundHandle = EmitSoundOnEntity( window.ent, soundEventName )
+
+		#if DEV
+			disableoverwrite( windowSoundHandleMap )
+		#endif
+		windowSoundHandleMap[window.stringID] <- soundHandle
+	#endif
+}
+
+
+void function AnimWindow_PlaySound_Transition( ScriptAnimWindow window, var settingsBlock )
+{
+	//
+}
+
+
+void function AnimWindow_PlaySound_Stop( ScriptAnimWindow window, var settingsBlock )
+{
+	#if SERVER
+		Assert( 0, "NYI" )
+	#elseif CLIENT
+		entity viewPlayer = GetLocalViewPlayer()
+		if ( !windowSoundHandleMap[window.stringID] )
+			return
+
+		StopSound( windowSoundHandleMap[window.stringID] )
+		delete windowSoundHandleMap[window.stringID]
+	#endif
+}
+
+
+////////////////
+////////////////
+//// PlayFX ////
+////////////////
+////////////////
+#if SERVER
+typedef AnimWindow_PlayFX_HandleOrNull entity
+#elseif CLIENT
+typedef AnimWindow_PlayFX_HandleOrNull int ornull
+#endif
+table<string, AnimWindow_PlayFX_HandleOrNull> windowFXHandleMap = {}
+
+
+void function AnimWindow_PlayFX_Precache( var settingsBlock )
+{
+	asset particleAsset = GetSettingsBlockStringAsAsset( settingsBlock, "particleSystemName" )
+	PrecacheParticleSystem( particleAsset )
+}
+
+
+void function AnimWindow_PlayFX_Start( ScriptAnimWindow window, var settingsBlock )
+{
+	asset particleAsset     = GetSettingsBlockStringAsAsset( settingsBlock, "particleSystemName" )
+	int particleSystemIndex = GetParticleSystemIndex( particleAsset )
+
+	bool shouldFollow = GetSettingsBlockBool( settingsBlock, "followAttach" )
+	string attachment = GetSettingsBlockString( settingsBlock, "attachPoint" )
+
+
+	AnimWindow_PlayFX_HandleOrNull fxHandleOrNull = null
+
+	int attachID
+	if ( attachment != "" )
+	{
+		attachID = window.ent.LookupAttachment( attachment )
+		if ( attachID <= 0 )
+			Warning( "Attachment %s not found on model %s while trying to create script anim window %s", attachment, string(window.ent.GetModelName()), string(window.settingsAsset) )
+	}
+
+	if ( shouldFollow )
+	{
+		if ( attachment != "" )
+		{
+			if ( attachID > 0 )
+			{
+				#if SERVER
+					fxHandleOrNull = StartParticleEffectOnEntity_ReturnEntity( window.ent, particleSystemIndex, FX_PATTACH_POINT_FOLLOW, attachID )
+				#elseif CLIENT
+					fxHandleOrNull = StartParticleEffectOnEntity( window.ent, particleSystemIndex, FX_PATTACH_POINT_FOLLOW, attachID )
+				#endif
+			}
+		}
+		else
+		{
+			#if SERVER
+				fxHandleOrNull = StartParticleEffectOnEntityWithPos_ReturnEntity( window.ent, particleSystemIndex, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
+			#elseif CLIENT
+				fxHandleOrNull = StartParticleEffectOnEntityWithPos( window.ent, particleSystemIndex, FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 0>, <0, 0, 0> )
+			#endif
+		}
+	}
+	else
+	{
+		if ( attachment != "" )
+		{
+			if ( attachID > 0 )
+			{
+				vector origin = window.ent.GetAttachmentOrigin( attachID )
+				vector angles = window.ent.GetAttachmentAngles( attachID )
+				#if SERVER
+					fxHandleOrNull = StartParticleEffectInWorld_ReturnEntity( particleSystemIndex, origin, angles )
+				#elseif CLIENT
+					fxHandleOrNull = StartParticleEffectInWorldWithHandle( particleSystemIndex, origin, angles )
+				#endif
+			}
+		}
+		else
+		{
+			vector origin = window.ent.GetOrigin()
+			vector angles = window.ent.GetAngles()
+			#if SERVER
+				fxHandleOrNull = StartParticleEffectInWorld_ReturnEntity( particleSystemIndex, origin, angles )
+			#elseif CLIENT
+				fxHandleOrNull = StartParticleEffectInWorldWithHandle( particleSystemIndex, origin, angles )
+			#endif
+		}
+	}
+
+	#if DEV
+		disableoverwrite( windowFXHandleMap )
+	#endif
+
+	windowFXHandleMap[window.stringID] <- fxHandleOrNull
+}
+
+
+void function AnimWindow_PlayFX_Transition( ScriptAnimWindow window, var settingsBlock )
+{
+	//
+}
+
+
+void function AnimWindow_PlayFX_Stop( ScriptAnimWindow window, var settingsBlock )
+{
+	AnimWindow_PlayFX_HandleOrNull fxHandleOrNull = windowFXHandleMap[window.stringID]
+	delete windowFXHandleMap[window.stringID]
+
+	if ( fxHandleOrNull != null )
+	{
+		bool shouldPlayEndCap = GetSettingsBlockBool( settingsBlock, "playEndCap" )
+
+		#if SERVER
+			if ( shouldPlayEndCap )
+				EffectStop( fxHandleOrNull )
+			else
+				fxHandleOrNull.Destroy()
+		#elseif CLIENT
+			if ( shouldPlayEndCap )
+				EffectStop( expect int( fxHandleOrNull ), false, true )
+			else
+				EffectStop( expect int( fxHandleOrNull ), true, false )
+		#endif
+	}
+}
+
+
+
+//////////////////////
+//////////////////////
+//// MirageHoloFX ////
+//////////////////////
+//////////////////////
+void function AnimWindow_MirageHoloFX_Init()
+{
+	PrecacheParticleSystem( MIRAGE_HOLO_FLASH_FX )
+	PrecacheParticleSystem( MIRAGE_HOLO_TRAIL_FX )
+	#if CLIENT
+		RegisterSignal( "StopMirageHoloFX" )
+	#endif
+}
+
+
+void function AnimWindow_MirageHoloFX_Precache( var settingsBlock )
+{
+	//
+}
+
+
+void function AnimWindow_MirageHoloFX_Start( ScriptAnimWindow window, var settingsBlock )
+{
+	#if SERVER
+		Assert( false )
+	#elseif CLIENT
+		Assert( !window.ent.IsPlayer(), "The \"MirageHoloFX\" script anim window type should not be used on players because it would reset their highlight. Work is required if this is needed." )
+
+		string attachmentName = GetSettingsBlockString( settingsBlock, "attachPoint" )
+		int attachIndex       = window.ent.LookupAttachment( attachmentName )
+
+		float fadeInDuration  = GetSettingsBlockFloat( settingsBlock, "fadeInDuration" )
+		float fadeOutDuration = GetSettingsBlockFloat( settingsBlock, "fadeOutDuration" )
+
+		thread AnimWindow_MirageHoloFX_Thread( window.ent, attachIndex, fadeInDuration, fadeOutDuration )
+	#endif
+}
+
+
+#if CLIENT
+void function AnimWindow_MirageHoloFX_Thread( entity ent, int attachIndex, float fadeInDuration, float fadeOutDuration )
+{
+	EndSignal( ent, "OnDestroy" )
+
+	thread PROTO_FadeModelAlphaOverTime( ent, fadeInDuration, 0, 255 )
+
+	// flash FX
+	StartParticleEffectOnEntity( ent, GetParticleSystemIndex( MIRAGE_HOLO_FLASH_FX ), FX_PATTACH_POINT, attachIndex )
+
+	// trail FX
+	int trailFXHandle = StartParticleEffectOnEntity( ent, GetParticleSystemIndex( MIRAGE_HOLO_TRAIL_FX ), FX_PATTACH_POINT_FOLLOW, attachIndex )
+
+	// highlight
+	ent.Highlight_ResetFlags()
+	ent.Highlight_SetVisibilityType( HIGHLIGHT_VIS_ALWAYS )
+	Highlight_SetNeutralHighlight( ent, "decoy_prop" )
+	ent.Highlight_SetFadeInTime( 0 )
+	ent.Highlight_StartOn()
+
+	OnThreadEnd( void function() : ( trailFXHandle ) {
+		if ( EffectDoesExist( trailFXHandle ) )
+			EffectStop( trailFXHandle, false, true )
+	} )
+
+	WaitSignal( ent, "StopMirageHoloFX" )
+
+	if ( EffectDoesExist( trailFXHandle ) )
+		EffectStop( trailFXHandle, false, true )
+
+
+	StartParticleEffectOnEntity( ent, GetParticleSystemIndex( MIRAGE_HOLO_FLASH_FX ), FX_PATTACH_POINT, attachIndex )
+
+	thread PROTO_FadeModelAlphaOverTime( ent, fadeOutDuration, 255, 0 )
+}
+#endif
+
+
+void function AnimWindow_MirageHoloFX_Transition( ScriptAnimWindow window, var settingsBlock )
+{
+	//
+}
+
+
+void function AnimWindow_MirageHoloFX_Stop( ScriptAnimWindow window, var settingsBlock )
+{
+	#if CLIENT
+		Signal( window.ent, "StopMirageHoloFX" )
+	#endif
+}
+
+
+///////////////////////////////
+///////////////////////////////
+//// LifelineDroneCommonFX ////
+///////////////////////////////
+///////////////////////////////
+void function AnimWindow_LifelineDroneCommonFX_Init()
+{
+	LIFELINE_DRONE_JET_FX_IDX = PrecacheParticleSystem( LIFELINE_DRONE_JET_FX )
+	LIFELINE_DRONE_VENT_FX_IDX = PrecacheParticleSystem( LIFELINE_DRONE_VENT_FX )
+	LIFELINE_DRONE_EYEGLOW_FX_IDX = PrecacheParticleSystem( LIFELINE_DRONE_EYEGLOW_FX )
+	#if CLIENT
+		RegisterSignal( "StopLifelineDroneCommonFX" )
+	#endif
+}
+
+
+void function AnimWindow_LifelineDroneCommonFX_Precache( var settingsBlock )
+{
+	//
+}
+
+
+void function AnimWindow_LifelineDroneCommonFX_Start( ScriptAnimWindow window, var settingsBlock )
+{
+	#if SERVER
+		Assert( false )
+	#elseif CLIENT
+		thread AnimWindow_LifelineDroneCommonFX_Thread( window.ent )
+	#endif
+}
+
+
+#if CLIENT
+void function AnimWindow_LifelineDroneCommonFX_Thread( entity ent )
+{
+	EndSignal( ent, "OnDestroy" )
+
+	array<int> fxToCleanUp = []
+
+	fxToCleanUp.append( StartParticleEffectOnEntity( ent, LIFELINE_DRONE_JET_FX_IDX, FX_PATTACH_POINT_FOLLOW, ent.LookupAttachment( "vent_LF" ) ) )
+	fxToCleanUp.append( StartParticleEffectOnEntity( ent, LIFELINE_DRONE_JET_FX_IDX, FX_PATTACH_POINT_FOLLOW, ent.LookupAttachment( "vent_LR" ) ) )
+	fxToCleanUp.append( StartParticleEffectOnEntity( ent, LIFELINE_DRONE_JET_FX_IDX, FX_PATTACH_POINT_FOLLOW, ent.LookupAttachment( "vent_RR" ) ) )
+	fxToCleanUp.append( StartParticleEffectOnEntity( ent, LIFELINE_DRONE_JET_FX_IDX, FX_PATTACH_POINT_FOLLOW, ent.LookupAttachment( "vent_RF" ) ) )
+
+	fxToCleanUp.append( StartParticleEffectOnEntity( ent, LIFELINE_DRONE_VENT_FX_IDX, FX_PATTACH_POINT_FOLLOW, ent.LookupAttachment( "vent_bot" ) ) )
+
+	fxToCleanUp.append( StartParticleEffectOnEntity( ent, LIFELINE_DRONE_EYEGLOW_FX_IDX, FX_PATTACH_POINT_FOLLOW, ent.LookupAttachment( "EYEGLOW" ) ) )
+
+	if ( SERVER || (CLIENT && ent.IsClientOnly()) )
+		ent.SetSkin( LIFELINE_DRONE_ONLINE_SKIN )
+
+	OnThreadEnd( void function() : ( ent, fxToCleanUp ) {
+		foreach ( int fxHandle in fxToCleanUp )
+		{
+			if ( EffectDoesExist( fxHandle ) )
+				EffectStop( fxHandle, true, true )
+		}
+
+		if ( IsValid( ent ) && (SERVER || (CLIENT && ent.IsClientOnly())) )
+			ent.SetSkin( LIFELINE_DRONE_OFFLINE_SKIN )
+	} )
+
+	WaitSignal( ent, "StopLifelineDroneCommonFX" )
+}
+#endif
+
+
+void function AnimWindow_LifelineDroneCommonFX_Transition( ScriptAnimWindow window, var settingsBlock )
+{
+	//
+}
+
+
+void function AnimWindow_LifelineDroneCommonFX_Stop( ScriptAnimWindow window, var settingsBlock )
+{
+	#if CLIENT
+		Signal( window.ent, "StopLifelineDroneCommonFX" )
+	#endif
+}
+
+
+
+/////////////////////////
+/////////////////////////
+//// Internals       ////
+/////////////////////////
+/////////////////////////
+struct AnimWindowTypeInfo
+{
+	bool isForThisVM
+
+	void functionref( var )                   precacheFunc
+	void functionref( ScriptAnimWindow, var ) startFunc
+	void functionref( ScriptAnimWindow, var ) transitionFunc
+	void functionref( ScriptAnimWindow, var ) stopFunc
+}
+
+struct
+{
+	table<string, AnimWindowTypeInfo> animWindowTypeNameInfoMap
+} fileLevel
+
+#if SERVER || CLIENT
+void function RegisterAnimWindowType( bool isForThisVM, string type,
+		void functionref() initFunc, // can be null
+		void functionref( var ) precacheFunc, // can be null
+		void functionref( ScriptAnimWindow, var ) startFunc,
+		void functionref( ScriptAnimWindow, var ) transitionFunc, // can be null
+		void functionref( ScriptAnimWindow, var ) stopFunc )
+{
+	Assert( !(type in fileLevel.animWindowTypeNameInfoMap) )
+	Assert( startFunc != null )
+	Assert( stopFunc != null )
+	AnimWindowTypeInfo awti
+	awti.isForThisVM = isForThisVM
+	awti.precacheFunc = precacheFunc
+	awti.startFunc = startFunc
+	awti.transitionFunc = transitionFunc
+	awti.stopFunc = stopFunc
+	#if DEV
+		disableoverwrite( fileLevel.animWindowTypeNameInfoMap )
+	#endif
+	fileLevel.animWindowTypeNameInfoMap[type] <- awti
+
+	if ( initFunc != null )
+		initFunc()
+}
+#endif
+
+
+#if SERVER
+void function CodeCallback_AnimWindowPrecache( asset windowSettingsAsset )
+{
+	var block = GetSettingsBlockForAsset( windowSettingsAsset )
+
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on \"" + string(windowSettingsAsset) + "\": " + windowType )
+
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": asset :" + string(windowSettingsAsset) + "; type: " + windowType )
+	#endif
+
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	if ( awti.precacheFunc != null )
+		awti.precacheFunc( block )
+}
+#elseif CLIENT
+void function ClientCodeCallback_AnimWindowPrecache( asset windowSettingsAsset )
+{
+	var block = GetSettingsBlockForAsset( windowSettingsAsset )
+
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on \"" + string(windowSettingsAsset) + "\": " + windowType )
+
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": asset :" + string(windowSettingsAsset) + "; type: " + windowType )
+	#endif
+
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	if ( awti.precacheFunc != null )
+		awti.precacheFunc( block )
+}
+#endif
+
+
+#if CLIENT
+void function ClientCodeCallback_AnimWindowStart( ScriptAnimWindow window )
+{
+	Assert( IsValid( window.ent ) )
+
+	var block = GetSettingsBlockForAsset( window.settingsAsset )
+
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on animseq \"" + window.ent.GetCurrentSequenceName() + "\": " + windowType )
+
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": id : " + window.stringID + "; type: " + windowType + "; name: " + window.windowName + "; startCycle: " + window.startCycle + "><><><><><><><><><><" )
+	#endif
+
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	Assert( awti.isForThisVM, "Script anim window \"" + window.windowName + "\" on animseq \"" + window.ent.GetCurrentSequenceName() + "\" is marked as " + (SERVER ? "SERVER" : "CLIENT") + " but its type (\"" + windowType + "\") is " + (SERVER ? "CLIENT" : "SERVER") + " only." )
+	awti.startFunc( window, block )
+}
+#endif
+
+
+#if CLIENT
+void function ClientCodeCallback_AnimWindowTransition( ScriptAnimWindow window )
+{
+	Assert( IsValid( window.ent ) )
+
+	var block = GetSettingsBlockForAsset( window.settingsAsset )
+
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on animseq \"" + window.ent.GetCurrentSequenceName() + "\": " + windowType )
+
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": id : " + window.stringID + "; type: " + windowType + "; name: " + window.windowName )
+	#endif
+
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	Assert( awti.isForThisVM, "Script anim window \"" + window.windowName + "\" on animseq \"" + window.ent.GetCurrentSequenceName() + "\" is marked as " + (SERVER ? "SERVER" : "CLIENT") + " but its type (\"" + windowType + "\") is " + (SERVER ? "CLIENT" : "SERVER") + " only." )
+	if ( awti.transitionFunc != null )
+		awti.transitionFunc( window, block )
+}
+#endif
+
+
+#if CLIENT
+void function ClientCodeCallback_AnimWindowStop( ScriptAnimWindow window )
+{
+	Assert( IsValid( window.ent ) )
+
+	var block = GetSettingsBlockForAsset( window.settingsAsset )
+
+	string windowType = GetSettingsBlockString( block, "type" )
+	Assert( windowType in fileLevel.animWindowTypeNameInfoMap, "Unknown script anim window type on animseq \"" + window.ent.GetCurrentSequenceName() + "\": " + windowType )
+
+	#if SCRIPT_ANIM_WINDOWS_DEBUG
+		printt ( "><><><><><><>" + FUNC_NAME() + ": id : " + window.stringID + "; type: " + windowType + "; name: " + window.windowName )
+	#endif
+
+	AnimWindowTypeInfo awti = fileLevel.animWindowTypeNameInfoMap[windowType]
+	Assert( awti.isForThisVM, "Script anim window \"" + window.windowName + "\" on animseq \"" + window.ent.GetCurrentSequenceName() + "\" is marked as " + (SERVER ? "SERVER" : "CLIENT") + " but its type (\"" + windowType + "\") is " + (SERVER ? "CLIENT" : "SERVER") + " only." )
+	awti.stopFunc( window, block )
+}
+#endif
+
+
+
+
+#if CLIENT
+
+void function ShowEntityAndChildren( entity ent )
+{
+	ent.Show()
+
+	foreach ( entity hierarchyEnt in GetEntityAndItsChildren( ent ) )
+		hierarchyEnt.Show()
+}
+
+void function HideEntityAndChildren( entity ent )
+{
+	ent.Hide()
+
+	foreach ( entity hierarchyEnt in GetEntityAndItsChildren( ent ) )
+		hierarchyEnt.Hide()
+}
+
+#endif
+

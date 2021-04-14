@@ -1,0 +1,123 @@
+untyped
+
+
+global function ServerCallback_ResetEntSkyScale
+global function ServerCallback_SetEntSkyScale
+global function ServerCallback_ResetMapSettings
+global function ServerCallback_SetMapSettings
+global function ServerCallback_ToneMapping
+global function ServerCallback_LaptopFX
+
+global function CinematicTonemappingThread
+
+
+void function ServerCallback_ResetEntSkyScale( int handle, float time = 1.0 )
+{
+	ServerCallback_SetEntSkyScale( handle, SKYSCALE_DEFAULT, time )
+}
+
+void function ServerCallback_SetEntSkyScale( int handle, float skyScale, float time = 1.0 )
+{
+	entity ent = GetEntityFromEncodedEHandle( handle )
+	if ( !IsValid( ent ) )
+		return
+	ent.LerpSkyScale( skyScale, time )
+}
+
+void function ServerCallback_ResetMapSettings()
+{
+	ServerCallback_SetMapSettings() //default parameters reset it
+}
+
+void function ServerCallback_SetMapSettings( float bloomScale = 1.0, bool fogEnabled = true, float csmTexel1 = 1.0, float csmTexel2 = 1.0, float csmStartDistance = 0.0, sunAngX = null, sunAngY = null, float sunScale = 1.0, float skyScale = 1.0 )
+{
+	SetMapSetting_BloomScale( bloomScale )
+	SetMapSetting_FogEnabled( fogEnabled )
+	SetMapSetting_CsmTexelScale( csmTexel1, csmTexel2 )
+	SetMapSetting_CsmStartDistance( csmStartDistance )
+
+	entity clight = GetLightEnvironmentEntity()
+	clight.ScaleSunSkyIntensity( sunScale, skyScale )
+
+	if ( sunAngX == null || sunAngY == null )
+		clight.UseServerAngles()
+	else
+		clight.OverrideAngles( sunAngX, sunAngY )
+}
+
+void function ServerCallback_ToneMapping( float toneMax = 20.0, float toneMin = 2.0, float rampUp = 0.1, float rampDown = 0.75 )
+{
+	thread CinematicTonemappingThread( toneMax, toneMin, rampUp, rampDown )
+}
+
+void function CinematicTonemappingThread( float toneMax = 20.0, float toneMin = 2.0, float rampUp = 0.1, float rampDown = 0.75 )
+{
+	wait 0.2
+
+	float START_DURATION = rampUp
+	float TONEMAP_MAX = toneMin
+	float TONEMAP_MIN = toneMax
+
+	AutoExposureSetMaxExposureMultiplier( 500.0 )
+
+	float startTime = Time()
+	while ( 1 )
+	{
+		float time = Time() - startTime
+		float factor = GraphCapped( time, 0.0, START_DURATION, 1.0, 0.0 )
+		factor = factor * factor * factor
+		float toneMapScale = TONEMAP_MIN + (TONEMAP_MAX - TONEMAP_MIN) * factor
+		AutoExposureSetExposureCompensationBias( toneMapScale )
+		AutoExposureSnap()
+		wait  0
+		if ( factor == 0 )
+			break
+	}
+
+	START_DURATION = rampDown
+	TONEMAP_MAX = toneMax
+	TONEMAP_MIN = toneMin
+
+	startTime = Time()
+	while ( 1 )
+	{
+		float time = Time() - startTime
+		float factor = GraphCapped( time, 0.0, START_DURATION, 1.0, 0.0 )
+		float toneMapScale = TONEMAP_MIN + (TONEMAP_MAX - TONEMAP_MIN) * factor
+		AutoExposureSetExposureCompensationBias( toneMapScale )
+		AutoExposureSnap()
+		wait  0
+		if ( factor == 0 )
+			break
+	}
+
+	AutoExposureSetExposureCompensationBias( 0.0 )
+
+	// Ramp the exposure max multiplier back down to 1
+	const float TONEMAP_3_START_DURATION = 5.0
+	const float TONEMAP_3_MAX = 10.0
+	const float TONEMAP_3_MIN = 1.0
+	startTime = Time()
+	while ( 1 )
+	{
+		float time = Time() - startTime
+		float factor = GraphCapped( time, 0.0, TONEMAP_3_START_DURATION, 1.0, 0.0 )
+		float scale = TONEMAP_3_MIN + (TONEMAP_3_MAX - TONEMAP_3_MIN) * factor
+		AutoExposureSetMaxExposureMultiplier( scale )
+		wait  0
+		if ( factor == 0 )
+			break
+	}
+}
+
+void function ServerCallback_LaptopFX( int handle )
+{
+	entity laptop = GetEntityFromEncodedEHandle( handle )
+	Assert( IsValid( laptop ) )
+
+	int fxID = GetParticleSystemIndex( $"bish_comp_glow_01" )
+	int attachID = laptop.LookupAttachment( "REF" )
+
+	// blinking light FX
+	int fx = StartParticleEffectOnEntity( laptop, fxID, FX_PATTACH_POINT_FOLLOW, attachID )
+}

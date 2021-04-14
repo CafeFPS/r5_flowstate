@@ -1,0 +1,274 @@
+global function LootCeremonyLightingRigPreCache
+global function InitLootCeremonyLightingRigs
+global function LootCeremonyUpdateSpotLights
+global function LootCeremonySceneLightsUpdateShadows
+
+struct LootCeremonyLightData
+{
+	vector col = <1, 1, 1>
+	float  brightness = 2.0
+	float  specularIntensity = 1.0
+	float  distance = 300.0
+	float  innerCone = 10.0
+	float  outerCone = 30.0
+	float  halfBrightFrac = 0.75
+	bool   pbrFalloff = true
+	bool   castsShadows = false
+}
+
+
+struct LootCeremonyLightingRigData
+{
+	string                    lightingRigAnimSeq
+	LootCeremonyLightData&[4] lightDataList
+}
+
+
+table<int, LootCeremonyLightingRigData> LOOT_TYPE_LIGHTING_RIG_DATA
+void function Init_LOOT_TYPE_LIGHTING_RIG_DATA()
+{
+	{
+		LootCeremonyLightingRigData rigData
+		LOOT_TYPE_LIGHTING_RIG_DATA[eItemType.weapon_skin] <- rigData
+		rigData.lightingRigAnimSeq = "loot_ceremony_light_weapon"
+
+		LootCeremonyLightData ld1
+		ld1.col = <0.9, 0.9, 1.0>
+		ld1.brightness = 0.2
+		ld1.specularIntensity = 1.0
+		ld1.distance = 150.0
+		ld1.innerCone = 5.0
+		ld1.outerCone = 15.0
+		ld1.halfBrightFrac = 0.25
+		ld1.pbrFalloff = true
+		ld1.castsShadows = true
+		rigData.lightDataList[0] = ld1
+	}
+
+	{
+		LootCeremonyLightingRigData rigData
+		LOOT_TYPE_LIGHTING_RIG_DATA[eItemType.character_skin] <- rigData
+		rigData.lightingRigAnimSeq = "loot_ceremony_light_character"
+
+		LootCeremonyLightData ld1
+		ld1.col = <0.9, 0.9, 1.0>
+		ld1.brightness = 0.2
+		ld1.specularIntensity = 1.0
+		ld1.distance = 150.0
+		ld1.innerCone = 5.0
+		ld1.outerCone = 15.0
+		ld1.halfBrightFrac = 0.25
+		ld1.pbrFalloff = true
+		ld1.castsShadows = true
+		rigData.lightDataList[0] = ld1
+	}
+
+	{
+		LootCeremonyLightingRigData rigData
+		LOOT_TYPE_LIGHTING_RIG_DATA[eItemType.character_execution] <- rigData
+		rigData.lightingRigAnimSeq = "loot_ceremony_light_character"
+
+		LootCeremonyLightData ld1
+		ld1.col = <0.9, 0.9, 1.0>
+		ld1.brightness = 0.2
+		ld1.specularIntensity = 1.0
+		ld1.distance = 150.0
+		ld1.innerCone = 5.0
+		ld1.outerCone = 15.0
+		ld1.halfBrightFrac = 0.25
+		ld1.pbrFalloff = true
+		ld1.castsShadows = true
+		rigData.lightDataList[0] = ld1
+	}
+
+	{
+		LootCeremonyLightingRigData rigData
+		LOOT_TYPE_LIGHTING_RIG_DATA[eItemType.account_currency_bundle] <- rigData
+		rigData.lightingRigAnimSeq = "loot_ceremony_light_character"
+
+		LootCeremonyLightData ld1
+		ld1.col = <0.9, 0.9, 1.0>
+		ld1.brightness = 0.5
+		ld1.specularIntensity = 1.0
+		ld1.distance = 150.0
+		ld1.innerCone = 5.0
+		ld1.outerCone = 15.0
+		ld1.halfBrightFrac = 0.25
+		ld1.pbrFalloff = true
+		ld1.castsShadows = true
+		rigData.lightDataList[0] = ld1
+	}
+}
+
+
+struct LootCeremonySpotInfo
+{
+	array<entity> tweakLights
+	string        tickAttachment
+	vector        org
+	vector        ang
+	bool          inUse = false
+	table         signalDummy
+}
+
+struct {
+	array<LootCeremonySpotInfo> spots
+} file
+
+
+void function LootCeremonyLightingRigPreCache()
+{
+	RegisterSignal( "UpdateLootCeremonyLighting" )
+}
+
+
+void function InitLootCeremonyLightingRigs( table< string, table<string, vector> > tickAttachmentOriginsAngles )
+{
+	Init_LOOT_TYPE_LIGHTING_RIG_DATA()
+
+	foreach ( string attachment, table<string, vector> tableData in tickAttachmentOriginsAngles )
+	{
+		LootCeremonySpotInfo spot
+		spot.tickAttachment = attachment
+		spot.org = tableData["origin"]
+		spot.ang = tableData["angles"]
+		spot.inUse = false
+		file.spots.append( spot )
+
+		for ( int lightIndex = 0; true; lightIndex++ )
+		{
+			string location
+			switch ( attachment )
+			{
+				case "FX_L_EYE":
+					location = "left"
+					break
+
+				case "FX_C_EYE":
+					location = "right" // confusing? Of course it is! This is just how the animation turned out. The center attachment ended up on screen right.
+					break
+
+				case "FX_R_EYE":
+					location = "center"
+					break
+
+				default:
+					Assert( 0, "unknown loot tick attachment: " + attachment + ", for grabbing loot ceremony tweaklight." )
+			}
+
+			array<entity> lights = GetEntArrayByScriptName( "loot_ceremony_light_" + location + "_" + lightIndex )
+			Assert( lights.len() < 2, "Multiple entities in level with script name: loot_ceremony_light_" + location + "_" + lightIndex )
+			if ( lights.len() == 0 )
+				break
+			entity light = lights[0]
+			light.SetTweakLightRealtimeShadows( false )
+			spot.tweakLights.append( light )
+		}
+	}
+}
+
+
+void function LootCeremonySceneLightsUpdateShadows( bool shouldUpdate )
+{
+	array<entity> lights
+	lights.append( GetEntByScriptName("lighting_rig_loot_ceremony_a") )
+	lights.append( GetEntByScriptName("lighting_rig_loot_ceremony_b") )
+	lights.append( GetEntByScriptName("lighting_rig_loot_ceremony_c") )
+	lights.append( GetEntByScriptName("lighting_rig_loot_ceremony_d") )
+	lights.append( GetEntByScriptName("lighting_rig_loot_ceremony_e") )
+	lights.append( GetEntByScriptName("lighting_rig_loot_ceremony_f") )
+	
+	foreach	( entity light in lights )
+		light.SetTweakLightUpdateShadowsEveryFrame( shouldUpdate )
+}
+
+
+void function LootCeremonyUpdateSpotLights( string attachment, bool shouldShow, int itemType = -1 )
+{
+	foreach ( LootCeremonySpotInfo spot in file.spots )
+	{
+		if ( spot.tickAttachment == attachment )
+		{
+			if ( !spot.inUse && shouldShow )
+				thread CeremonySpotSceneThread( spot, itemType )
+			else
+				Signal( spot.signalDummy, "UpdateLootCeremonyLighting", { doShow = shouldShow, rewardType = itemType } )
+
+			return
+		}
+	}
+}
+
+
+void function CeremonySpotSceneThread( LootCeremonySpotInfo spot, int itemType )
+{
+	Assert( !spot.inUse )
+	spot.inUse = true
+
+	entity lightingRig = CreateClientSidePropDynamic( spot.org, spot.ang, $"mdl/empty/lights/empty_lights.rmdl" )
+
+	OnThreadEnd( function() : ( spot, lightingRig )
+	{
+		spot.inUse = false
+
+		if ( IsValid( lightingRig ) )
+			lightingRig.Destroy()
+
+		foreach ( entity tweakLight in spot.tweakLights )
+		{
+			tweakLight.SetTweakLightRealtimeShadows( false )
+			tweakLight.SetTweakLightUpdateShadowsEveryFrame( false )
+			tweakLight.SetTweakLightDistance( 2.0 ) // make distance small to reduce impact of light
+		}
+	} )
+
+	DoUpdateSpot( spot, itemType, lightingRig )
+
+	while( true )
+	{
+		table results = WaitSignal( spot.signalDummy, "UpdateLootCeremonyLighting" )
+
+		bool shouldShow = expect bool( results.doShow )
+		itemType = expect int( results.rewardType )
+
+		if ( !shouldShow )
+			break
+
+		DoUpdateSpot( spot, itemType, lightingRig )
+	}
+}
+
+
+void function DoUpdateSpot( LootCeremonySpotInfo spot, int itemType, entity lightingRig )
+{
+	Assert( itemType in LOOT_TYPE_LIGHTING_RIG_DATA )
+
+	LootCeremonyLightingRigData rigData = LOOT_TYPE_LIGHTING_RIG_DATA[itemType]
+
+	thread PlayAnim( lightingRig, rigData.lightingRigAnimSeq )
+
+	array<string> lightAttachments = [ "LIGHT_1", "LIGHT_2", "LIGHT_3", "LIGHT_4" ]
+
+	foreach ( int lightIndex, entity tweakLight in spot.tweakLights )
+	{
+		int attachmentIndex = lightingRig.LookupAttachment( lightAttachments[lightIndex] )
+		vector lightOrigin  = lightingRig.GetAttachmentOrigin( attachmentIndex )
+		vector lightAngles  = lightingRig.GetAttachmentAngles( attachmentIndex )
+		tweakLight.SetTweakLightOrigin( lightOrigin )
+		tweakLight.SetTweakLightAngles( lightAngles )
+
+		LootCeremonyLightData lightData = rigData.lightDataList[lightIndex]
+		tweakLight.SetTweakLightColor( lightData.col )
+		tweakLight.SetTweakLightBrightness( lightData.brightness )
+		tweakLight.SetTweakLightSpecIntensity( lightData.specularIntensity )
+		tweakLight.SetTweakLightDistance( lightData.distance )
+		tweakLight.SetTweakLightInnerCone( lightData.innerCone )
+		tweakLight.SetTweakLightCone( lightData.outerCone )
+		tweakLight.SetTweakLightHalfBrightFrac( lightData.halfBrightFrac )
+		tweakLight.SetTweakLightPBRFalloff( lightData.pbrFalloff )
+		tweakLight.SetTweakLightRealtimeShadows( lightData.castsShadows )
+		tweakLight.SetTweakLightUpdateShadowsEveryFrame( lightData.castsShadows )
+		//tweakLight.SetTweakLightShadowFilterSize( 3 )
+	}
+}
+

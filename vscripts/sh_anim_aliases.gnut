@@ -1,0 +1,81 @@
+untyped
+
+globalize_all_functions
+
+void function Anim_Aliases_Init()
+{
+	level.animAliases <- {}
+	level.animMappings <- {}
+	level.audioAliases <- {}
+}
+
+void function AddAnimAlias( string animName, string alias, string animation )
+{
+	animName = animName.tolower()
+	alias = alias.tolower()
+	animation = animation.tolower()
+
+	if ( !( alias in level.animAliases ) )
+	{
+		level.animAliases[ alias ] <- {}
+	}
+
+	Assert( !( animName in level.animAliases[ alias ] ), "Already set alias " + alias + " in animName " + animName )
+	level.animAliases[ alias ][ animName ] <- animation
+}
+
+string function GetAnimFromAlias( string animName, string alias )
+{
+	animName = animName.tolower()
+	alias = alias.tolower()
+
+	if ( animName in level.animMappings )
+		animName = expect string( level.animMappings[ animName ] )
+
+	Assert( alias in level.animAliases, alias + " is not in level.animAliases" )
+	Assert( animName in level.animAliases[ alias ], animName + " is not in level.animAliases for that alias" )
+
+	return expect string( level.animAliases[ alias ][ animName ] )
+}
+
+string function VerifyAnimAlias( string alias )
+{
+	alias = alias.tolower()
+	Assert( alias in level.animAliases, alias + " is not in level.animAliases" )
+
+	return alias
+}
+
+void function AddAudioAlias( string animName, string alias, string audio )
+{
+	animName = animName.tolower()
+	alias = alias.tolower()
+	audio = audio.tolower()
+
+	if ( !( alias in level.audioAliases ) )
+	{
+		level.audioAliases[ alias ] <- {}
+	}
+
+	Assert( !( animName in level.audioAliases[ alias ] ), "Already set animName " + animName + " in alias " + alias )
+	level.audioAliases[ alias ][ animName ] <- audio
+}
+
+string function GetAudioFromAlias( string animName, string alias )
+{
+	animName = animName.tolower()
+	alias = alias.tolower()
+
+	Assert( alias in level.audioAliases, alias + " is not in level.audioAliases" )
+	Assert( animName in level.audioAliases[ alias ], animName + " is not in level.audioAliases for that alias" )
+
+	return expect string( level.audioAliases[ alias ][ animName ] )
+}
+
+string function VerifyAudioAlias( string alias )
+{
+	alias = alias.tolower()
+	Assert( alias in level.audioAliases, alias + " is not in level.audioAliases" )
+
+	return alias
+}

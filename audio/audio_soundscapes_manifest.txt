@@ -1,0 +1,4 @@
+soundscapes_manifest
+{
+	"file"		"scripts/audio/audio_soundscapes.txt"
+}

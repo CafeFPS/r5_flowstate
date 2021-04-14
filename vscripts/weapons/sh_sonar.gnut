@@ -1,0 +1,475 @@
+#if SERVER
+untyped
+#endif
+
+const bool PULSETRAIL = true
+
+global function SonarShared_Init
+
+#if SERVER
+global function SonarStart
+global function SonarEnd
+global function IncrementSonarPerTeam
+global function DecrementSonarPerTeam
+global function OnSonarTriggerLeaveInternal
+global function AddSonarStartCallback
+global function AddSonarDetectionForPropScript
+global function RemoveSonarDetectionForPropScript
+global function GetSonarRegisteredPropScripts
+#endif
+
+#if CLIENT
+global function SonarPulse
+global function ServerCallback_SonarPulseFromPosition
+global function ServerCallback_SonarPulseConeFromPosition
+#endif
+
+const asset FX_SONAR_TARGET = $"P_ar_target_sonar"
+
+struct
+{
+	#if SERVER
+		table< entity, array<int> > entitySonarHandles
+		table< entity, array<entity> > entitySonarFXs
+		table< int, int > teamSonarCount
+		array< void functionref( entity, vector, int, entity ) > sonarStartCallbacks = []
+		int sonarRegisteredPropScriptsArrayID
+	#endif //Server
+
+
+} file
+
+void function SonarShared_Init()
+{
+	RegisterSignal( "SonarPing" )
+	PrecacheParticleSystem( $"P_ar_sonar_CP_amp" )
+	PrecacheParticleSystem( $"P_ar_sonar_CP" )
+	PrecacheParticleSystem( $"P_ar_sonar_plane_CP" )
+
+	#if PULSETRAIL
+	PrecacheParticleSystem( $"P_sonar_ground_detect" )
+	#endif //PULSETRAIL
+
+	//PrecacheParticleSystem( $"P_ar_holopulse_CP" )
+	PrecacheParticleSystem( $"P_holo_screespace" )
+	PrecacheParticleSystem( FX_SONAR_TARGET )
+
+	#if SERVER
+		file.sonarRegisteredPropScriptsArrayID = CreateScriptManagedEntArray()
+	#endif //SERVER
+
+	#if CLIENT
+		//StatusEffect_RegisterEnabledCallback( eStatusEffect.sonar_detected, EntitySonarDetectedEnabled )
+		//StatusEffect_RegisterDisabledCallback( eStatusEffect.sonar_detected, EntitySonarDetectedDisabled )
+
+		StatusEffect_RegisterEnabledCallback( eStatusEffect.lockon_detected, EntitySonarDetectedEnabled )
+		StatusEffect_RegisterDisabledCallback( eStatusEffect.lockon_detected, EntitySonarDetectedDisabled )
+
+		StatusEffect_RegisterEnabledCallback( eStatusEffect.sonar_blocked, EntitySonarBlockingEnabled )
+		StatusEffect_RegisterDisabledCallback( eStatusEffect.sonar_blocked, EntitySonarBlockingDisabled )
+
+		RegisterSignal( "EntitySonarDetectedDisabled" )
+	#endif //CLIENT
+}
+
+#if SERVER
+void function AddSonarStartCallback( void functionref( entity, vector, int, entity ) callback )
+{
+	file.sonarStartCallbacks.append( callback )
+}
+
+void function AddSonarDetectionForPropScript( entity propScript )
+{
+	AddToScriptManagedEntArray( file.sonarRegisteredPropScriptsArrayID, propScript )
+}
+
+void function RemoveSonarDetectionForPropScript( entity propScript )
+{
+	RemoveFromScriptManagedEntArray( file.sonarRegisteredPropScriptsArrayID, propScript )
+}
+
+array<entity> function GetSonarRegisteredPropScripts()
+{
+	array<entity> entities = GetScriptManagedEntArray( file.sonarRegisteredPropScriptsArrayID )
+	return entities
+}
+
+void function OnSonarTriggerLeaveInternal( entity trigger, entity ent )
+{
+	if ( !ent.e.sonarTriggers.contains( trigger ) )
+		return
+
+	ent.e.sonarTriggers.fastremovebyvalue( trigger )
+	SonarEnd( ent, trigger.GetTeam() )
+}
+
+void function SonarStart( entity ent, vector position, int sonarTeam, entity sonarOwner )
+{
+	if ( !("inSonarTriggerCount" in ent.s) )
+		ent.s.inSonarTriggerCount <- 0
+
+	ent.s.inSonarTriggerCount++
+
+	bool isVisible = true
+	bool blocksSonar = false//
+
+	if ( !(ent in file.entitySonarHandles) )
+		file.entitySonarHandles[ent] <- []
+
+	if ( !(ent in file.entitySonarFXs) )
+		file.entitySonarFXs[ent] <- []
+
+	ent.HighlightEnableForTeam( sonarTeam )
+
+	table signalData = { owner = sonarOwner, pos = position }
+	Signal( ent, "SonarPing", signalData )
+
+	if ( ent.s.inSonarTriggerCount == 1 )
+	{
+
+		//Run callbacks for sonar pulse start
+		foreach ( callback in file.sonarStartCallbacks )
+		{
+			callback( ent, position, sonarTeam, sonarOwner )
+		}
+
+		if (  isVisible && !blocksSonar )
+		{
+			if ( !ent.IsPlayer() )
+			{
+				if ( StatusEffect_GetSeverity( ent, eStatusEffect.damage_received_multiplier ) > 0 )
+					Highlight_SetSonarHighlightWithParam0( ent, "bloodhound_sonar", <1,0,0> )
+				else
+					Highlight_SetSonarHighlightWithParam1( ent, "bloodhound_sonar", position )
+			}
+			else
+			{
+				UpdatePlayerHighlightsSettings( ent )
+				ent.SetCloakFlicker( 0.5, -1 )
+
+				{
+					int fxid = GetParticleSystemIndex( FX_SONAR_TARGET )
+					entity fx = StartParticleEffectOnEntity_ReturnEntity( ent, fxid, FX_PATTACH_POINT_FOLLOW_NOROTATE, ent.LookupAttachment( "CHESTFOCUS" ) )
+					SetTeam( fx, sonarTeam )
+					fx.SetOwner( sonarOwner )
+					fx.kv.VisibilityFlags = ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_OWNER
+					Assert( !file.entitySonarFXs[ent].contains( fx ) )
+					file.entitySonarFXs[ent].append( fx )
+				}
+			}
+
+			Highlight_SetSonarHighlightOrigin( ent, position )
+		}
+
+		if ( isVisible )
+		{
+			int statusEffect = blocksSonar ? eStatusEffect.sonar_blocked : eStatusEffect.sonar_detected
+			int statusEffectHandle = StatusEffect_AddEndless( ent, statusEffect, 1.0 )
+			Assert( !file.entitySonarHandles[ent].contains( statusEffectHandle ) )
+			file.entitySonarHandles[ent].append( statusEffectHandle )
+		}
+	}
+}
+
+void function SonarEnd( entity ent, int team )
+{
+	if ( !IsValid( ent ) )
+		return
+
+	ent.s.inSonarTriggerCount--
+
+	if ( (ent.s.inSonarTriggerCount < file.teamSonarCount[team]) || (ent.s.inSonarTriggerCount <= 0) || (file.teamSonarCount[team] <= 0) )
+		ent.HighlightDisableForTeam( team )
+
+	if ( ent.s.inSonarTriggerCount < 1 )
+	{
+		Assert( ent in file.entitySonarHandles )
+		if ( file.entitySonarHandles[ent].len() )
+		{
+			int statusEffectHandle = file.entitySonarHandles[ent][0]
+			StatusEffect_Stop( ent, statusEffectHandle )
+			file.entitySonarHandles[ent].fastremovebyvalue( statusEffectHandle )
+		}
+		ent.HighlightSetTeamBitField( 0 )
+
+		if ( ent.IsPlayer() )
+			ent.SetCloakFlicker( 0, 0 )
+
+		if ( file.entitySonarFXs[ent].len() )
+		{
+			entity fx = file.entitySonarFXs[ent][0]
+			fx.EffectStop()
+			file.entitySonarFXs[ent].fastremovebyvalue( fx )
+		}
+	}
+}
+
+void function IncrementSonarPerTeam( int team )
+{
+	if ( !(team in file.teamSonarCount) )
+		file.teamSonarCount[team] <- 0
+	file.teamSonarCount[team]++
+}
+
+void function DecrementSonarPerTeam( int team )
+{
+	if ( team in file.teamSonarCount )
+	{
+		file.teamSonarCount[team]--
+
+		if ( file.teamSonarCount[team] <= 0 )
+			file.teamSonarCount[team] = 0
+	}
+}
+#endif //SERVER
+
+#if CLIENT
+const float AR_EFFECT_SIZE 		= 192.0 // coresponds with the size of the sphere model used for the AR effect
+const float AR_EFFECT_SIZE_CONE = 80.0
+
+void function ServerCallback_SonarPulseFromPosition( float x, float y,float z, float range, float speedScale = 1.0, bool hasDamageAmp = false )
+{
+	entity player = GetLocalViewPlayer()
+	thread SonarPulse( player, SONAR_PULSE_SPACE + (SONAR_PULSE_SPEED * speedScale), <x,y,z>, range, hasDamageAmp )
+
+	//If the player has the tracking vision passive register this sonar pulse with the tracking vision logic.
+	if ( player.HasPassive( ePassives.PAS_TRACKING_VISION ) )
+		TrackingVision_CreateSonarPulseArea( <x,y,z>, range, <0,0,0>, 360 )
+}
+
+void function ServerCallback_SonarPulseConeFromPosition( vector pulseConeOrigin, float pulseConeRange, vector pulseConeDir, float pulseConeFOV, int team, float speedScale, bool hasDamageAmp, bool showTrail )
+{
+	entity player = GetLocalViewPlayer()
+	thread SonarPulseCone( player, SONAR_PULSE_SPACE + ( SONAR_PULSE_SPEED * speedScale ), pulseConeOrigin, pulseConeRange, pulseConeDir, 1, 0.25, hasDamageAmp, showTrail )
+
+	//If the player has the tracking vision passive register this sonar pulse with the tracking vision logic.
+	if ( player.HasPassive( ePassives.PAS_TRACKING_VISION ) && team == player.GetTeam() )
+		TrackingVision_CreateSonarPulseArea( pulseConeOrigin, pulseConeRange, pulseConeDir, pulseConeFOV )
+}
+
+void function SonarPulse( entity player, float pulseSpeed, vector pulsePosition, float radius, bool hasDamageAmp )
+{
+	if ( hasDamageAmp )
+	{
+		int fxHandle = StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( $"P_ar_sonar_CP_amp" ), pulsePosition, <0,0,0> )
+		vector controlPoint = <radius / pulseSpeed, radius / AR_EFFECT_SIZE, 0.0>
+		EffectSetControlPointVector( fxHandle, 1, controlPoint )
+	}
+	else
+	{
+		int fxHandle = StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( $"P_ar_sonar_CP" ), pulsePosition, <0,0,0> )
+		vector controlPoint = <radius / pulseSpeed, radius / AR_EFFECT_SIZE, 0.0>
+		EffectSetControlPointVector( fxHandle, 1, controlPoint )
+	}
+}
+
+void function SonarPulseCone( entity player, float pulseSpeed, vector pulsePosition, float radius, vector dir, int count, float interval, bool hasDamageAmp, bool showTrail )
+{
+	for ( int i = 0; i < count; i++ )
+	{
+		vector angles = VectorToAngles( dir )
+		if ( hasDamageAmp )
+		{
+			int fxHandle = StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( $"P_ar_sonar_plane_CP" ), pulsePosition, angles )
+			vector controlPoint = <radius / pulseSpeed, radius / AR_EFFECT_SIZE_CONE, 0.0>
+			EffectSetControlPointVector( fxHandle, 1, controlPoint )
+		}
+		else
+		{
+			int fxHandle = StartParticleEffectInWorldWithHandle( GetParticleSystemIndex( $"P_ar_sonar_plane_CP" ), pulsePosition, angles )
+			vector controlPoint = <radius / pulseSpeed, radius / AR_EFFECT_SIZE_CONE, 0.0>
+			EffectSetControlPointVector( fxHandle, 1, controlPoint )
+		}
+
+		#if PULSETRAIL
+			if ( showTrail )
+				thread SonarPulseConeTrail( player, dir, radius / pulseSpeed, radius )
+		#endif //PULSETRAIL
+
+		wait interval
+	}
+}
+
+#if PULSETRAIL
+void function SonarPulseConeTrail( entity player, vector dir, float duration, float radius )
+{
+	vector origin = player.EyePosition()
+	entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", origin, VectorToAngles( dir ) )
+	int fxHandle = StartParticleEffectOnEntity( mover, GetParticleSystemIndex( $"P_sonar_ground_detect" ), FX_PATTACH_POINT_FOLLOW, mover.LookupAttachment( "REF" ) )
+
+	mover.NonPhysicsMoveTo( origin + dir * radius, duration, 0, 0 )
+	wait duration
+
+	EffectStop( fxHandle, false, true )
+
+	wait 2
+
+	mover.Destroy()
+}
+#endif //PULSETRAIL
+
+void function EntitySonarDetectedEnabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( ent == GetLocalViewPlayer() )
+	{
+		// player is already lockon highlighted
+		if ( statusEffect == eStatusEffect.sonar_detected && StatusEffect_GetSeverity( ent, eStatusEffect.lockon_detected ) )
+			return
+
+		entity viewModelArm = ent.GetViewModelArmsAttachment()
+		entity viewModelEntity = ent.GetViewModelEntity()
+		entity firstPersonProxy = ent.GetFirstPersonProxy()
+		entity predictedFirstPersonProxy = ent.GetPredictedFirstPersonProxy()
+
+		//vector highlightColor = statusEffect == eStatusEffect.sonar_detected ? HIGHLIGHT_COLOR_ENEMY : <1,0,0>
+		vector highlightColor = <1,0,0>
+		if ( StatusEffect_GetSeverity( ent, eStatusEffect.damage_received_multiplier ) > 0.0 )
+			highlightColor = <1,0,0>
+
+		if ( IsValid( viewModelArm ) )
+			SonarViewModelHighlight( viewModelArm, highlightColor )
+
+		if ( IsValid( viewModelEntity ) )
+			SonarViewModelHighlight( viewModelEntity, highlightColor )
+
+		if ( IsValid( firstPersonProxy ) )
+			SonarViewModelHighlight( firstPersonProxy, highlightColor )
+
+		if ( IsValid( predictedFirstPersonProxy ) )
+			SonarViewModelHighlight( predictedFirstPersonProxy, highlightColor )
+
+		thread PlayLoopingSonarSound( ent )
+	}
+	else
+	{
+		ClInitHighlight( ent )
+	}
+}
+
+void function EntitySonarDetectedDisabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( ent == GetLocalViewPlayer() )
+	{
+		// player should have lockon highlighted
+		if ( statusEffect == eStatusEffect.sonar_detected && StatusEffect_GetSeverity( ent, eStatusEffect.lockon_detected ) )
+		{
+			return
+		}
+		else if ( statusEffect == eStatusEffect.lockon_detected && StatusEffect_GetSeverity( ent, eStatusEffect.sonar_detected ) )
+		{
+			// restore sonar after lockon wears off
+			EntitySonarDetectedEnabled( ent, eStatusEffect.sonar_detected, true )
+			return
+		}
+
+		entity viewModelArm = ent.GetViewModelArmsAttachment()
+		entity viewModelEntity = ent.GetViewModelEntity()
+		entity firstPersonProxy = ent.GetFirstPersonProxy()
+		entity predictedFirstPersonProxy = ent.GetPredictedFirstPersonProxy()
+
+		if ( IsValid( viewModelArm ) )
+			SonarViewModelClearHighlight( viewModelArm )
+
+		if ( IsValid( viewModelEntity ) )
+			SonarViewModelClearHighlight( viewModelEntity )
+
+		if ( IsValid( firstPersonProxy ) )
+			SonarViewModelClearHighlight( firstPersonProxy )
+
+		if ( IsValid( predictedFirstPersonProxy ) )
+			SonarViewModelClearHighlight( predictedFirstPersonProxy )
+
+		ent.Signal( "EntitySonarDetectedDisabled" )
+	}
+	else
+	{
+		ClInitHighlight( ent )
+	}
+}
+
+void function EntitySonarBlockingEnabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( ent == GetLocalViewPlayer() )
+	{
+		// player is already lockon highlighted
+		if ( statusEffect == eStatusEffect.sonar_detected && StatusEffect_GetSeverity( ent, eStatusEffect.lockon_detected ) )
+			return
+
+		//entity viewModelEntity = ent.GetViewModelEntity()
+		//entity firstPersonProxy = ent.GetFirstPersonProxy()
+		//entity predictedFirstPersonProxy = ent.GetPredictedFirstPersonProxy()
+
+		//vector highlightColor = statusEffect == eStatusEffect.sonar_detected ? HIGHLIGHT_COLOR_ENEMY : <1,0,0>
+		//if ( StatusEffect_GetSeverity( ent, eStatusEffect.damage_received_multiplier ) > 0.0 )
+		//	highlightColor = <1,0,0>
+
+		//if ( IsValid( viewModelEntity ) )
+		//	SonarViewModelHighlight( viewModelEntity, highlightColor )
+
+		//if ( IsValid( firstPersonProxy ) )
+		//	SonarViewModelHighlight( firstPersonProxy, highlightColor )
+
+		//if ( IsValid( predictedFirstPersonProxy ) )
+		//	SonarViewModelHighlight( predictedFirstPersonProxy, highlightColor )
+
+		thread PlayLoopingSonarSound( ent )
+	}
+	else
+	{
+		ClInitHighlight( ent )
+	}
+}
+
+void function EntitySonarBlockingDisabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( ent == GetLocalViewPlayer() )
+	{
+		// player should have lockon highlighted
+		/*
+		if ( statusEffect == eStatusEffect.sonar_detected && StatusEffect_GetSeverity( ent, eStatusEffect.lockon_detected ) )
+		{
+			return
+		}
+		else if ( statusEffect == eStatusEffect.lockon_detected && StatusEffect_GetSeverity( ent, eStatusEffect.sonar_detected ) )
+		{
+			// restore sonar after lockon wears off
+			EntitySonarDetectedEnabled( ent, eStatusEffect.sonar_detected, true )
+			return
+		}
+		*/
+
+		entity viewModelEntity = ent.GetViewModelEntity()
+		entity firstPersonProxy = ent.GetFirstPersonProxy()
+		entity predictedFirstPersonProxy = ent.GetPredictedFirstPersonProxy()
+
+		if ( IsValid( viewModelEntity ) )
+			SonarViewModelClearHighlight( viewModelEntity )
+
+		if ( IsValid( firstPersonProxy ) )
+			SonarViewModelClearHighlight( firstPersonProxy )
+
+		if ( IsValid( predictedFirstPersonProxy ) )
+			SonarViewModelClearHighlight( predictedFirstPersonProxy )
+
+		ent.Signal( "EntitySonarDetectedDisabled" )
+	}
+	else
+	{
+		ClInitHighlight( ent )
+	}
+}
+
+void function PlayLoopingSonarSound( entity ent )
+{
+	EmitSoundOnEntity( ent, "HUD_MP_EnemySonarTag_Activated_1P" )
+
+	ent.EndSignal( "EntitySonarDetectedDisabled" )
+	ent.EndSignal( "OnDeath" )
+
+	while ( true )
+	{
+		wait 1.5
+		EmitSoundOnEntity( ent, "HUD_MP_EnemySonarTag_Flashed_1P" )
+	}
+}
+#endif

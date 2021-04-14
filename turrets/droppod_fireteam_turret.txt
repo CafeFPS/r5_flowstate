@@ -1,0 +1,53 @@
+droppod_fireteam_turret
+{
+    DriverAttachment                ATTACH                  // Where player's eyes (and body for now) will be located when used (default = "")
+    MuzzleAttachment                MUZZLE_LEFT             // Guns will fire out of this attachment (default = "")
+
+    AmmoType                        Pistol                  // Type of ammo used when firing
+
+    YawPoseParameter                aim_yaw                 // Animation pose parameter to set when rotating turret horizontally
+    PitchPoseParameter              aim_pitch               // Animation pose parameter to set when rotating turret vertically
+
+    // Damage properties from firing
+    DamageNear                      80
+    DamageFar                       45
+    DamageNearDistance              400
+    DamageFarDistance               1200
+
+    AttackSound                     Weapon_HSR.Single    			// Sound to play when firing
+    MuzzleFlashEffect               wpn_muzzleflash_droppod_turret	// Effect to play (on muzzle) when firing
+    TracerType                      weapon_tracers_xo16				// Type of tracer to use when firing
+	Crosshair						crosshair_t						// Texture to use for crosshair
+
+    ViewPunchPitchMin               -0.25                    // Lower range of how much view shakes vertically when fired
+    ViewPunchPitchMax               0.25                     // Upper range of how much view shakes vertically when fired
+    ViewPunchYawMin                 -0.25                      // Lower range of how much view shakes horizontally when fired
+    ViewPunchYawMax                 0.25                       // Upper range of how much view shakes horizontally when fired
+
+	Rumble							6						// Rumble effect to play on controller when fired
+
+    CanUse                          0                       // Whether player can mount turret with +use key
+    MakeSolid                       0                       // Used to set model collision (0 = no collision, 1 = AABB collision, 2 = use VPhysics, default = 0). You need collision if you want to make it usable with +use (use key)
+    HidePlayer                      0                       // Hides player (calls script hide) when player mounts turret
+    ForceAttackForward              1                       // Force firing to always be in direction player is looking, rather than using muzzle attachment's direction/rotation
+	AttackDownDriverDir				0						// Fire down the driver attachment direction, rather than the turret's direction.
+
+	AttachPlayer					0						// Whether to physically attach player to driver attachment position
+	AlignPlayer						1						// When enabled, player will not snap to the turret's initial absolute rotation
+
+    MouseSensitivityModifierX       1                    // Used to dampen mouse sensitivity horizontally
+    MouseSensitivityModifierY       1                    // Used to dampen mouse sensitivity vertically
+
+    MouseMaxMovementRateX           7500                    // Used to put an upper limit on mouse movement horizontally
+    MouseMaxMovementRateY           7500                    // Used to put an upper limit on mouse movement vertically
+
+    JoystickSensitivityModifierX    1                   // Used to dampen joystick sensitivity horizontally
+    JoystickSensitivityModifierY    1                    // Used to dampen joystick sensitivity vertically
+
+    JoystickMaxMovementRateX        1000                      // Used to put an upper limit on joystick movement horizontally
+    JoystickMaxMovementRateY        1000                      // Used to put an upper limit on joystick movement vertically
+
+    AttackRate                      10                      // How many times gun fires per second
+	AttackShots						1						// Number of bullets fired per shot
+	AttackSpread					1.5						// Spread to apply to aim direction (0 for 100% accuracy)
+}
