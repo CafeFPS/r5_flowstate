@@ -118,7 +118,7 @@ bool function IsAccessibilityFooterValid()
 
 bool function IsDataCenterFooterValid()
 {
-	bool hideDurationElapsed = Time() - file.startTime > 60.0
+	bool hideDurationElapsed = Time() - file.startTime > 0.0
 
 	#if DURANGO_PROG
 		return Console_IsSignedIn() && !IsWorking() && !IsSearchingForPartyServer() && hideDurationElapsed

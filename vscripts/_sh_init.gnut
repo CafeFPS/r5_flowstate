@@ -252,6 +252,7 @@ void function Server_Init()
 	Achievements_Init()
 
 	SvDevStats_LevelInit()
+	SURVIVAL_Loot_All_InitShared() // need this to precache the weapons
 
 	PilotsPassage_Init()
 	SneakPeek_Init()

@@ -1487,8 +1487,8 @@ void function OnPlayerWaypointDestroyed( entity wp )
 	entity owner = wp.GetOwner()
 	if ( IsValid( owner ) && owner.IsPlayer() )
 	{
-		owner.p.pings.locations.fastremovebyvalue( wp )
-		owner.p.pings.loots.fastremovebyvalue( wp )
+		//owner.p.pings.locations.fastremovebyvalue( wp )
+		//owner.p.pings.loots.fastremovebyvalue( wp )
 	}
 }
 
@@ -1551,10 +1551,10 @@ entity function GetAnyValidLocPingForReuse( entity player, int pingType, entity 
 	if ( !IsRepingablePingType( pingType ) )
 		return null
 
-	if ( player.p.pings.locations.len() == 0 )
-		return null
+	// if ( player.p.pings.locations.len() == 0 )
+	// 	return null
 
-	entity wp           = player.p.pings.locations.top()
+	entity wp           = null//player.p.pings.locations.top()
 	float timeSincePing = Waypoint_GetWaypointAge( wp )
 	if ( timeSincePing >= PING_REUSE_TIME )
 		return null
@@ -1742,7 +1742,7 @@ entity function CreateWaypoint_Ping_Location( entity player, int pingType, entit
 		DoAnyCleanupForIncomingLocationPing( player, pingType, pingEnt, position )
 
 		wp = CreatePlayerWaypoint_Wrapper( eWaypoint.PING_LOCATION )
-		player.p.pings.locations.append( wp )
+		//player.p.pings.locations.append( wp )
 
 		// One time inits:
 		wp.SetOwner( player )
@@ -1859,15 +1859,15 @@ entity function CreateWaypoint_Ping_Loot( entity player, entity lootItem, int ti
 	}
 
 	// Make room:
-	{
-		if ( player.p.pings.loots.len() >= MAX_LOOT_PINGS_PER_PLAYER )
-			player.p.pings.loots[0].Destroy()
-	}
+	// {
+	// 	if ( player.p.pings.loots.len() >= MAX_LOOT_PINGS_PER_PLAYER )
+	// 		player.p.pings.loots[0].Destroy()
+	// }
 
 	entity wp = CreatePlayerWaypoint_Wrapper( eWaypoint.PING_LOOT )
 	Waypoint_ResetCreatedTime( wp )
 
-	player.p.pings.loots.append( wp )
+	//player.p.pings.loots.append( wp )
 
 	player.p.pings.latestPing = wp
 
@@ -1952,12 +1952,12 @@ bool function PlayerAttemptDibsOnLootWaypoint( entity player, entity wpEnt )
 		return false
 
 	entity oldOwner = wpEnt.GetOwner()
-	if ( oldOwner )
-	{
-		oldOwner.p.pings.loots.fastremovebyvalue( wpEnt )
-		wpEnt.SetOwner( null )
-		SetTicketIDForWaypoint( wpEnt, -1 )
-	}
+	// if ( oldOwner )
+	// {
+	// 	oldOwner.p.pings.loots.fastremovebyvalue( wpEnt )
+	// 	wpEnt.SetOwner( null )
+	// 	SetTicketIDForWaypoint( wpEnt, -1 )
+	// }
 
 	SetDibsPlayerForLootWaypoint( wpEnt, player )
 	thread WaypointTimeout_THREAD( wpEnt, 240.0 )

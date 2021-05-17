@@ -1170,13 +1170,13 @@ Point function GetClosestDrop_Internal( vector baseOrigin, int dataIndex )
 
 Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float radius, array<vector> previousAirdrops )
 {
-	int numTries = 0
-	float minDistance = min( radius, 3000.0 )
-	float angleDeviation = 10.0
-	int timesToTry = 20
-	float minScale = 0.5
-	vector maxs = AIRDROP_MAXS
-	vector mins = AIRDROP_MINS
+	int numTries 			= 0
+	float minDistance 		= min( radius, 3000.0 )
+	float angleDeviation 	= 10.0
+	int timesToTry 			= 20
+	float minScale 			= 0.5
+	vector maxs 			= AIRDROP_MAXS
+	vector mins 			= AIRDROP_MINS
 
 	Point airdropPoint
 

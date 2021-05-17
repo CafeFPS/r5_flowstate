@@ -4,21 +4,21 @@ global function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker
 global function OnWeaponAttemptOffhandSwitch_WeaponBubbleBunker
 global function OnWeaponTossPrep_WeaponBubbleBunker
 
-const float BUBBLE_BUNKER_DEPLOY_DELAY = 1.0
-const float BUBBLE_BUNKER_DURATION_WARNING = 5.0
+const float BUBBLE_BUNKER_DEPLOY_DELAY 		= 1.0
+const float BUBBLE_BUNKER_DURATION_WARNING 	= 5.0
 
-const bool BUBBLE_BUNKER_DAMAGE_ENEMIES = false
+const bool BUBBLE_BUNKER_DAMAGE_ENEMIES 	= false
 
-const float BUBBLE_BUNKER_ANGLE_LIMIT = 0.55
+const float BUBBLE_BUNKER_ANGLE_LIMIT 		= 0.55
 
-const asset BUBBLE_BUNKER_BEAM_FX = $"P_wpn_BBunker_beam"
-const asset BUBBLE_BUNKER_BEAM_END_FX = $"P_wpn_BBunker_beam_end"
-const asset BUBBLE_BUNKER_SHIELD_FX = $"P_wpn_BBunker_shield"
-const asset BUBBLE_BUNKER_SHIELD_COLLISION_MODEL = $"mdl/fx/bb_shield.rmdl"
-const asset BUBBLE_BUNKER_SHIELD_PROJECTILE = $"mdl/props/gibraltar_bubbleshield/gibraltar_bubbleshield.rmdl"
+const asset BUBBLE_BUNKER_BEAM_FX 					= $"P_wpn_BBunker_beam"
+const asset BUBBLE_BUNKER_BEAM_END_FX 				= $"P_wpn_BBunker_beam_end"
+const asset BUBBLE_BUNKER_SHIELD_FX 				= $"P_wpn_BBunker_shield"
+const asset BUBBLE_BUNKER_SHIELD_COLLISION_MODEL 	= $"mdl/fx/bb_shield.rmdl"
+const asset BUBBLE_BUNKER_SHIELD_PROJECTILE 		= $"mdl/props/gibraltar_bubbleshield/gibraltar_bubbleshield.rmdl"
 
-const string BUBBLE_BUNKER_SOUND_ENDING = "Gibraltar_BubbleShield_Ending"
-const string BUBBLE_BUNKER_SOUND_FINISH = "Gibraltar_BubbleShield_Deactivate"
+const string BUBBLE_BUNKER_SOUND_ENDING 			= "Gibraltar_BubbleShield_Ending"
+const string BUBBLE_BUNKER_SOUND_FINISH 			= "Gibraltar_BubbleShield_Deactivate"
 
 struct FriendlyEnemyFXStruct
 {

@@ -575,65 +575,65 @@ global const MATCH_PROGRESS_REFUEL_GOBLINS = 8
 //--------------------------------------------------
 // 				INTRO SKYSCALE SETTINGS
 //--------------------------------------------------
-global const SKYSCALE_SPACE			= 0.0
-global const SKYSCALE_DEFAULT			= 1.0
-global const SKYSCALE_FRACTURE_WARP	= 0.25
-global const SKYSCALE_FRACTURE_DOOROPEN_ACTOR = 0.5
-global const SKYSCALE_FRACTURE_DOOROPEN_PLAYER = 0.33
-global const SKYSCALE_FRACTURE_IMC_ACTOR	= 0.5
-global const SKYSCALE_FRACTURE_IMC_SHIP	= 0.5
-global const SKYSCALE_FRACTURE_IMC_PLAYER	= 0.5
+global const SKYSCALE_SPACE								= 0.0
+global const SKYSCALE_DEFAULT							= 1.0
+global const SKYSCALE_FRACTURE_WARP						= 0.25
+global const SKYSCALE_FRACTURE_DOOROPEN_ACTOR 			= 0.5
+global const SKYSCALE_FRACTURE_DOOROPEN_PLAYER 			= 0.33
+global const SKYSCALE_FRACTURE_IMC_ACTOR				= 0.5
+global const SKYSCALE_FRACTURE_IMC_SHIP					= 0.5
+global const SKYSCALE_FRACTURE_IMC_PLAYER				= 0.5
 
-global const SKYSCALE_COLONY_IMC_ACTOR		= 0.85
-global const SKYSCALE_COLONY_IMC_SHIP		= 0.7
-global const SKYSCALE_COLONY_IMC_PLAYER	= 0.7
-global const SKYSCALE_COLONY_MCOR_ACTOR	= 0.65
-global const SKYSCALE_COLONY_MCOR_SHIP		= 0.65
-global const SKYSCALE_COLONY_MCOR_PLAYER	= 0.65
+global const SKYSCALE_COLONY_IMC_ACTOR					= 0.85
+global const SKYSCALE_COLONY_IMC_SHIP					= 0.7
+global const SKYSCALE_COLONY_IMC_PLAYER					= 0.7
+global const SKYSCALE_COLONY_MCOR_ACTOR					= 0.65
+global const SKYSCALE_COLONY_MCOR_SHIP					= 0.65
+global const SKYSCALE_COLONY_MCOR_PLAYER				= 0.65
 
-global const SKYSCALE_RELIC_IMC_ACTOR		= 0.9
-global const SKYSCALE_RELIC_IMC_SHIP		= 0.5
-global const SKYSCALE_RELIC_IMC_PLAYER		= 0.85
-global const SKYSCALE_RELIC_MCOR_ACTOR		= 0.5
-global const SKYSCALE_RELIC_MCOR_SHIP		= 0.5
-global const SKYSCALE_RELIC_MCOR_PLAYER	= 0.5
+global const SKYSCALE_RELIC_IMC_ACTOR					= 0.9
+global const SKYSCALE_RELIC_IMC_SHIP					= 0.5
+global const SKYSCALE_RELIC_IMC_PLAYER					= 0.85
+global const SKYSCALE_RELIC_MCOR_ACTOR					= 0.5
+global const SKYSCALE_RELIC_MCOR_SHIP					= 0.5
+global const SKYSCALE_RELIC_MCOR_PLAYER					= 0.5
 
-global const SKYSCALE_OUTPOST_IMC_ACTOR	= 0.4
-global const SKYSCALE_OUTPOST_IMC_SHIP		= 0.4
-global const SKYSCALE_OUTPOST_IMC_PLAYER	= 0.4
-global const SKYSCALE_OUTPOST_DOOROPEN_IMC_ACTOR	= 0.9
-global const SKYSCALE_OUTPOST_DOOROPEN_IMC_SHIP	= 0.8
-global const SKYSCALE_OUTPOST_DOOROPEN_IMC_PLAYER	= 0.9
-global const SKYSCALE_OUTPOST_MCOR_ACTOR	= 0.5
-global const SKYSCALE_OUTPOST_MCOR_SHIP	= 0.4
-global const SKYSCALE_OUTPOST_MCOR_PLAYER	= 0.4
-global const SKYSCALE_OUTPOST_DOOROPEN_MCOR_ACTOR	= 1.0
-global const SKYSCALE_OUTPOST_DOOROPEN_MCOR_SHIP	= 0.8
-global const SKYSCALE_OUTPOST_DOOROPEN_MCOR_PLAYER	= 0.6
+global const SKYSCALE_OUTPOST_IMC_ACTOR					= 0.4
+global const SKYSCALE_OUTPOST_IMC_SHIP					= 0.4
+global const SKYSCALE_OUTPOST_IMC_PLAYER				= 0.4
+global const SKYSCALE_OUTPOST_DOOROPEN_IMC_ACTOR		= 0.9
+global const SKYSCALE_OUTPOST_DOOROPEN_IMC_SHIP			= 0.8
+global const SKYSCALE_OUTPOST_DOOROPEN_IMC_PLAYER		= 0.9
+global const SKYSCALE_OUTPOST_MCOR_ACTOR				= 0.5
+global const SKYSCALE_OUTPOST_MCOR_SHIP					= 0.4
+global const SKYSCALE_OUTPOST_MCOR_PLAYER				= 0.4
+global const SKYSCALE_OUTPOST_DOOROPEN_MCOR_ACTOR		= 1.0
+global const SKYSCALE_OUTPOST_DOOROPEN_MCOR_SHIP		= 0.8
+global const SKYSCALE_OUTPOST_DOOROPEN_MCOR_PLAYER		= 0.6
 
-global const SKYSCALE_BONEYARD_MCOR_ACTOR	= 0.5
-global const SKYSCALE_BONEYARD_MCOR_SHIP	= 0.6
-global const SKYSCALE_BONEYARD_MCOR_PLAYER	= 0.5
-global const SKYSCALE_BONEYARD_DOOROPEN_MCOR_ACTOR	= 0.85
-global const SKYSCALE_BONEYARD_DOOROPEN_MCOR_SHIP	= 1.0
-global const SKYSCALE_BONEYARD_DOOROPEN_MCOR_PLAYER= 0.8
-global const SKYSCALE_BONEYARD_IMC_ACTOR	= 0.5
-global const SKYSCALE_BONEYARD_IMC_SHIP	= 0.35
-global const SKYSCALE_BONEYARD_IMC_PLAYER	= 0.5
-global const SKYSCALE_BONEYARD_DOOROPEN_IMC_ACTOR	= 0.8
-global const SKYSCALE_BONEYARD_DOOROPEN_IMC_SHIP	= 1.0
-global const SKYSCALE_BONEYARD_DOOROPEN_IMC_PLAYER	= 0.8
+global const SKYSCALE_BONEYARD_MCOR_ACTOR				= 0.5
+global const SKYSCALE_BONEYARD_MCOR_SHIP				= 0.6
+global const SKYSCALE_BONEYARD_MCOR_PLAYER				= 0.5
+global const SKYSCALE_BONEYARD_DOOROPEN_MCOR_ACTOR		= 0.85
+global const SKYSCALE_BONEYARD_DOOROPEN_MCOR_SHIP		= 1.0
+global const SKYSCALE_BONEYARD_DOOROPEN_MCOR_PLAYER 	= 0.8
+global const SKYSCALE_BONEYARD_IMC_ACTOR				= 0.5
+global const SKYSCALE_BONEYARD_IMC_SHIP					= 0.35
+global const SKYSCALE_BONEYARD_IMC_PLAYER				= 0.5
+global const SKYSCALE_BONEYARD_DOOROPEN_IMC_ACTOR		= 0.8
+global const SKYSCALE_BONEYARD_DOOROPEN_IMC_SHIP		= 1.0
+global const SKYSCALE_BONEYARD_DOOROPEN_IMC_PLAYER		= 0.8
 
-global const SKYSCALE_AIRBASE_MCOR_ACTOR	= 0.95
-global const SKYSCALE_AIRBASE_MCOR_SHIP	= 0.95
-global const SKYSCALE_AIRBASE_MCOR_PLAYER	= 0.95
-
-global const SKYSCALE_O2_MCOR_ACTOR		= 0.4
-global const SKYSCALE_O2_MCOR_SHIP			= 0.4
-global const SKYSCALE_O2_MCOR_PLAYER		= 0.4
-global const SKYSCALE_O2_DOOROPEN_MCOR_ACTOR		= 1.0
-global const SKYSCALE_O2_DOOROPEN_MCOR_SHIP		= 1.1
-global const SKYSCALE_O2_DOOROPEN_MCOR_PLAYER		= 0.9
+global const SKYSCALE_AIRBASE_MCOR_ACTOR				= 0.95
+global const SKYSCALE_AIRBASE_MCOR_SHIP					= 0.95
+global const SKYSCALE_AIRBASE_MCOR_PLAYER				= 0.95
+	
+global const SKYSCALE_O2_MCOR_ACTOR						= 0.4
+global const SKYSCALE_O2_MCOR_SHIP						= 0.4
+global const SKYSCALE_O2_MCOR_PLAYER					= 0.4
+global const SKYSCALE_O2_DOOROPEN_MCOR_ACTOR			= 1.0
+global const SKYSCALE_O2_DOOROPEN_MCOR_SHIP				= 1.1
+global const SKYSCALE_O2_DOOROPEN_MCOR_PLAYER			= 0.9
 
 
 //--------------------------------------------------
@@ -747,12 +747,12 @@ global enum PerfIndexShared
 
 global const HOTDROP_IMPACT_FX_TABLE = "droppod_impact"
 
-global const int PICKUP_FLAG_ALT = 0x00001
-global const int PICKUP_FLAG_AUTO = 0x00002
-global const int PICKUP_FLAG_FROM_MENU = 0x00004
-global const int PICKUP_FLAG_ATTACH_ACTIVE_ONLY = 0x00008
-global const int PICKUP_FLAG_ATTACH_STOWED_ONLY = 0x00010
-global const int PICKUP_FLAG_LONG = 0x00020
+global const int PICKUP_FLAG_ALT 					= 0x00001
+global const int PICKUP_FLAG_AUTO 					= 0x00002
+global const int PICKUP_FLAG_FROM_MENU 				= 0x00004
+global const int PICKUP_FLAG_ATTACH_ACTIVE_ONLY 	= 0x00008
+global const int PICKUP_FLAG_ATTACH_STOWED_ONLY 	= 0x00010
+global const int PICKUP_FLAG_LONG 					= 0x00020
 
 // cinematic event flags; server controlled cinematics should set/clear these when active
 //global const CE_FLAG___						= 0x0001
@@ -768,18 +768,18 @@ global const CE_FLAG_WAVE_SPAWNING			= 0x0200
 global const CE_FLAG_EOG_STAT_DISPLAY		= 0x0400
 global const CE_FLAG_HIDE_PERMANENT_HUD		= 0x0800
 
-global const TITAN_DAMAGE_STAGE_FULL = 1.0
-global const TITAN_DAMAGE_STAGE_1 = 0.75
-global const TITAN_DAMAGE_STAGE_2 = 0.5
-global const TITAN_DAMAGE_STAGE_3 = 0.25
-global const TITAN_DAMAGE_STAGE_DOOMED = 0.0
-global const int DOOMED_MIN_HEALTH = 1
+global const TITAN_DAMAGE_STAGE_FULL 		= 1.0
+global const TITAN_DAMAGE_STAGE_1 			= 0.75
+global const TITAN_DAMAGE_STAGE_2 			= 0.5
+global const TITAN_DAMAGE_STAGE_3 			= 0.25
+global const TITAN_DAMAGE_STAGE_DOOMED 		= 0.0
+global const int DOOMED_MIN_HEALTH 			= 1
 
-global const float AREA_SONAR_SCAN_RADIUS = 1250.0
-global const float AREA_SONAR_SCAN_PULSE_DURATION = 6.0
+global const float AREA_SONAR_SCAN_RADIUS 			= 1250.0
+global const float AREA_SONAR_SCAN_PULSE_DURATION 	= 6.0
 
-global const float SONAR_GRENADE_RADIUS = 1250.0
-global const float SONAR_GRENADE_PULSE_DURATION = 6.0
+global const float SONAR_GRENADE_RADIUS 			= 1250.0
+global const float SONAR_GRENADE_PULSE_DURATION 	= 6.0
 // these numbers should be kept in sync with bakery assets: inside_sonar, outline_sonar
 global const float SONAR_PULSE_SPACE = 400.0
 global const float SONAR_PULSE_SPEED = 300.0
@@ -956,8 +956,8 @@ global enum ePrivateMatchStartState
 	STARTING,
 }
 
-global const float TITANFALL_INNER_RADIUS = 90.0
-global const float TITANFALL_OUTER_RADIUS = 120.0
+global const float TITANFALL_INNER_RADIUS 				= 90.0
+global const float TITANFALL_OUTER_RADIUS 				= 120.0
 
 global const TITANHOTDROP_DISABLE_ENEMY_TITANFALL_RADIUS = 450
 
@@ -965,7 +965,7 @@ global const TITANHOTDROP_DISABLE_ENEMY_TITANFALL_RADIUS = 450
 global const MINION_BUBBLE_SHIELD_RADIUS		= 230
 global const MINION_BUBBLE_SHIELD_RADIUS_SQR	= 51984		//228 * 228 ... we give some slack for floating point error
 
-global const SPECTRE_MAX_SIGHT_DIST = 3000
+global const SPECTRE_MAX_SIGHT_DIST 			= 3000
 
 global const ARC_TITAN_EMP_FIELD_RADIUS 			= 330
 global const ARC_TITAN_EMP_FIELD_RADIUS_SQR 		= 108900 //pow( 330, 2 )
@@ -975,20 +975,20 @@ global const ARC_TITAN_EMP_FIELD_INNER_RADIUS_SQR	= 22500 //pow( 150, 2 )
 global const TITAN_GRAPPLE_DAMAGE 					= 600
 global const TITAN_GRAPPLE_DEBOUNCE_TIME 			= 1.0
 
-global const CLOAKED_DRONE_SPEED		= 1800
-global const CLOAKED_DRONE_ACC		= 1.75
-global const CLOAKED_DRONE_YAWRATE	= 150
-global const CLOAKED_DRONE_LOOPING_SFX = "Coop_CloakDrone_Beam"
-global const CLOAKED_DRONE_WARP_IN_SFX = "Coop_DroneTeleport_In"
-global const CLOAKED_DRONE_WARP_OUT_SFX = "Coop_DroneTeleport_Out"
-global const CLOAKED_DRONE_CLOAK_START_SFX = "CloakDrone_Cloak_On"
-global const CLOAKED_DRONE_CLOAK_LOOP_SFX = "CloakDrone_Cloak_Sustain_Loop"
-global const CLOAKED_DRONE_HOVER_LOOP_SFX = "AngelCity_Scr_DroneSearchHover"
+global const CLOAKED_DRONE_SPEED			= 1800
+global const CLOAKED_DRONE_ACC				= 1.75
+global const CLOAKED_DRONE_YAWRATE			= 150
+global const CLOAKED_DRONE_LOOPING_SFX 		= "Coop_CloakDrone_Beam"
+global const CLOAKED_DRONE_WARP_IN_SFX 		= "Coop_DroneTeleport_In"
+global const CLOAKED_DRONE_WARP_OUT_SFX 	= "Coop_DroneTeleport_Out"
+global const CLOAKED_DRONE_CLOAK_START_SFX 	= "CloakDrone_Cloak_On"
+global const CLOAKED_DRONE_CLOAK_LOOP_SFX 	= "CloakDrone_Cloak_Sustain_Loop"
+global const CLOAKED_DRONE_HOVER_LOOP_SFX 	= "AngelCity_Scr_DroneSearchHover"
 
-global const MINIMAP_CLOAKED_DRONE_SCALE 		= 0.070
+global const MINIMAP_CLOAKED_DRONE_SCALE 	= 0.070
 
-global const FD_FIRE_DAMAGE_SCALE = 1.2
-global const FD_HOT_STREAK_MULTIPLIER = 1.5
+global const FD_FIRE_DAMAGE_SCALE 			= 1.2
+global const FD_HOT_STREAK_MULTIPLIER 		= 1.5
 
 //--------------------------------------------------
 // 					CHALLENGES
@@ -1306,129 +1306,129 @@ global enum eUIEvent
 }
 
 
-global const PILOT_WEAPON_MOD_COMMON_COLUMN = 0
-global const PILOT_WEAPON_MOD_COMMON_TYPE_COLUMN = 1
-global const PILOT_WEAPON_MOD_COMMON_NAME_COLUMN = 2
-global const PILOT_WEAPON_MOD_COMMON_DESCRIPTION_COLUMN = 4
-global const PILOT_WEAPON_MOD_COMMON_IMAGE_COLUMN = 5
+global const PILOT_WEAPON_MOD_COMMON_COLUMN 							= 0
+global const PILOT_WEAPON_MOD_COMMON_TYPE_COLUMN 						= 1
+global const PILOT_WEAPON_MOD_COMMON_NAME_COLUMN 						= 2
+global const PILOT_WEAPON_MOD_COMMON_DESCRIPTION_COLUMN 				= 4
+global const PILOT_WEAPON_MOD_COMMON_IMAGE_COLUMN 						= 5
 
-global const PILOT_WEAPON_MOD_COLUMN = 0
-global const PILOT_WEAPON_MOD_WEAPON_COLUMN = 1
-global const PILOT_WEAPON_MOD_DAMAGEDISPLAY_COLUMN = 2
-global const PILOT_WEAPON_MOD_ACCURACYDISPLAY_COLUMN = 3
-global const PILOT_WEAPON_MOD_RANGEDISPLAY_COLUMN = 4
-global const PILOT_WEAPON_MOD_FIRERATEDISPLAY_COLUMN = 5
-global const PILOT_WEAPON_MOD_CLIPSIZEDISPLAY_COLUMN = 6
-global const PILOT_WEAPON_MOD_HIDDEN_COLUMN = 7
+global const PILOT_WEAPON_MOD_COLUMN 									= 0
+global const PILOT_WEAPON_MOD_WEAPON_COLUMN 							= 1
+global const PILOT_WEAPON_MOD_DAMAGEDISPLAY_COLUMN 						= 2
+global const PILOT_WEAPON_MOD_ACCURACYDISPLAY_COLUMN 					= 3
+global const PILOT_WEAPON_MOD_RANGEDISPLAY_COLUMN 						= 4
+global const PILOT_WEAPON_MOD_FIRERATEDISPLAY_COLUMN 					= 5
+global const PILOT_WEAPON_MOD_CLIPSIZEDISPLAY_COLUMN 					= 6
+global const PILOT_WEAPON_MOD_HIDDEN_COLUMN 							= 7
 
-global const TITAN_PRIMARY_COLUMN = 0
-global const TITAN_PRIMARY_HIDDEN_COLUMN = 1
+global const TITAN_PRIMARY_COLUMN 										= 0
+global const TITAN_PRIMARY_HIDDEN_COLUMN 								= 1
 
-global const TITAN_PRIMARY_MOD_COMMON_COLUMN = 0
-global const TITAN_PRIMARY_MOD_COMMON_NAME_COLUMN = 1
-global const TITAN_PRIMARY_MOD_COMMON_DESCRIPTION_COLUMN = 2
-global const TITAN_PRIMARY_MOD_COMMON_IMAGE_COLUMN = 3
+global const TITAN_PRIMARY_MOD_COMMON_COLUMN 							= 0
+global const TITAN_PRIMARY_MOD_COMMON_NAME_COLUMN 						= 1
+global const TITAN_PRIMARY_MOD_COMMON_DESCRIPTION_COLUMN 				= 2
+global const TITAN_PRIMARY_MOD_COMMON_IMAGE_COLUMN 						= 3
 
-global const TITAN_PRIMARY_MOD_COLUMN = 0
-global const TITAN_PRIMARY_MOD_WEAPON_COLUMN = 1
-global const TITAN_PRIMARY_MOD_DAMAGEDISPLAY_COLUMN = 2
-global const TITAN_PRIMARY_MOD_ACCURACYDISPLAY_COLUMN = 3
-global const TITAN_PRIMARY_MOD_RANGEDISPLAY_COLUMN = 4
-global const TITAN_PRIMARY_MOD_FIRERATEDISPLAY_COLUMN = 5
-global const TITAN_PRIMARY_MOD_CLIPSIZEDISPLAY_COLUMN = 6
-global const TITAN_PRIMARY_MOD_HIDDEN_COLUMN = 7
+global const TITAN_PRIMARY_MOD_COLUMN 									= 0
+global const TITAN_PRIMARY_MOD_WEAPON_COLUMN 							= 1
+global const TITAN_PRIMARY_MOD_DAMAGEDISPLAY_COLUMN 					= 2
+global const TITAN_PRIMARY_MOD_ACCURACYDISPLAY_COLUMN 					= 3
+global const TITAN_PRIMARY_MOD_RANGEDISPLAY_COLUMN 						= 4
+global const TITAN_PRIMARY_MOD_FIRERATEDISPLAY_COLUMN 					= 5
+global const TITAN_PRIMARY_MOD_CLIPSIZEDISPLAY_COLUMN 					= 6
+global const TITAN_PRIMARY_MOD_HIDDEN_COLUMN 							= 7
 
-global const TITAN_ABILITY_COLUMN = 0
-global const TITAN_ABILITY_TYPE_COLUMN = 1
-global const TITAN_ABILITY_DAMAGESOURCE_COLUMN = 2
-global const TITAN_ABILITY_HIDDEN_COLUMN = 3
+global const TITAN_ABILITY_COLUMN 										= 0
+global const TITAN_ABILITY_TYPE_COLUMN 									= 1
+global const TITAN_ABILITY_DAMAGESOURCE_COLUMN 							= 2
+global const TITAN_ABILITY_HIDDEN_COLUMN 								= 3
 
-global const TITAN_PASSIVE_COLUMN = 0
-global const TITAN_PASSIVE_TYPE_COLUMN = 1
-global const TITAN_PASSIVE_NAME_COLUMN = 2
-global const TITAN_PASSIVE_DESCRIPTION_COLUMN = 3
-global const TITAN_PASSIVE_LONGDESCRIPTION_COLUMN = 4
-global const TITAN_PASSIVE_IMAGE_COLUMN = 5
-global const TITAN_PASSIVE_HIDDEN_COLUMN = 6
+global const TITAN_PASSIVE_COLUMN 										= 0
+global const TITAN_PASSIVE_TYPE_COLUMN 									= 1
+global const TITAN_PASSIVE_NAME_COLUMN 									= 2
+global const TITAN_PASSIVE_DESCRIPTION_COLUMN 							= 3
+global const TITAN_PASSIVE_LONGDESCRIPTION_COLUMN 						= 4
+global const TITAN_PASSIVE_IMAGE_COLUMN 								= 5
+global const TITAN_PASSIVE_HIDDEN_COLUMN 								= 6
 
-global const TITAN_VOICE_COLUMN = 0
-global const TITAN_VOICE_NAME_COLUMN = 1
-global const TITAN_VOICE_DESCRIPTION_COLUMN = 2
-global const TITAN_VOICE_IMAGE_COLUMN = 3
-global const TITAN_VOICE_HIDDEN_COLUMN = 4
+global const TITAN_VOICE_COLUMN 										= 0
+global const TITAN_VOICE_NAME_COLUMN 									= 1
+global const TITAN_VOICE_DESCRIPTION_COLUMN 							= 2
+global const TITAN_VOICE_IMAGE_COLUMN 									= 3
+global const TITAN_VOICE_HIDDEN_COLUMN 									= 4
 
-global const NON_LOADOUT_WEAPON_COLUMN = 0
+global const NON_LOADOUT_WEAPON_COLUMN 									= 0
 
-global const int PHYS_EXPLOSION_SMALL = 100
-global const int PHYS_EXPLOSION_MEDIUM = 250
-global const int PHYS_EXPLOSION_LARGE = 500
-global const int PHYS_EXPLOSION_HUGE = 10000
+global const int PHYS_EXPLOSION_SMALL 									= 100
+global const int PHYS_EXPLOSION_MEDIUM 									= 250
+global const int PHYS_EXPLOSION_LARGE 									= 500
+global const int PHYS_EXPLOSION_HUGE 									= 10000
 
-global const int TITAN_WEAK = 0
-global const int TITAN_HENCH = 1
-global const int TITAN_MERC = 2
-global const int TITAN_AUTO = 3
-global const int TITAN_BOSS = 4
+global const int TITAN_WEAK 											= 0
+global const int TITAN_HENCH 											= 1
+global const int TITAN_MERC 											= 2
+global const int TITAN_AUTO 											= 3
+global const int TITAN_BOSS 											= 4
 
-global const ASPECT_RATIO_16_BY_9	= 16.0/9.0
-global const ASPECT_RATIO_21_BY_9	= 64.0/26.5// 21:9 is a marketing term... they like it because it's closer to 16:9, and is better than 64:27
-global const ASPECT_RATIO_16_BY_10	= 16.0/10.0
+global const ASPECT_RATIO_16_BY_9										= 16.0/9.0
+global const ASPECT_RATIO_21_BY_9										= 64.0/26.5// 21:9 is a marketing term... they like it because it's closer to 16:9, and is better than 64:27
+global const ASPECT_RATIO_16_BY_10										= 16.0/10.0
 
-global const float COCKPIT_UI_XOFFSET = 22
-global const float COCKPIT_UI_WIDTH = 41.4
-global const float COCKPIT_UI_HEIGHT = COCKPIT_UI_WIDTH / 1.7665
+global const float COCKPIT_UI_XOFFSET 									= 22
+global const float COCKPIT_UI_WIDTH 									= 41.4
+global const float COCKPIT_UI_HEIGHT 									= COCKPIT_UI_WIDTH / 1.7665
 
-global const float COCKPIT_RUI_WIDTH = 100
-global const float COCKPIT_RUI_HEIGHT = COCKPIT_RUI_WIDTH / ( 1920.0 / 1080.0 )
-global const vector COCKPIT_RUI_OFFSET = <53.6,0,0>
-global const vector COCKPIT_RUI_OFFSET_1610_TEMP = <58,0,0>
-global const float TITAN_COCKPIT_RUI_SUBDIV = 3.5
+global const float COCKPIT_RUI_WIDTH 									= 100
+global const float COCKPIT_RUI_HEIGHT 									= COCKPIT_RUI_WIDTH / ( 1920.0 / 1080.0 )
+global const vector COCKPIT_RUI_OFFSET 									= <53.6,0,0>
+global const vector COCKPIT_RUI_OFFSET_1610_TEMP 						= <58,0,0>
+global const float TITAN_COCKPIT_RUI_SUBDIV 							= 3.5
 
-global const float TITAN_COCKPIT_RUI_SCREEN_WIDTH = 21.0
-global const float TITAN_COCKPIT_TOPO_RADIUS = 150.0
-global const float TITAN_COCKPIT_ROTATION_ANGLE = 0.0
-global const float TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE = 24.0
-global const float TITAN_COCKPIT_LOWER_RUI_SCREEN_HEIGHT_SCALE = 1.3125
-global const float TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE = 4.5
+global const float TITAN_COCKPIT_RUI_SCREEN_WIDTH 						= 21.0
+global const float TITAN_COCKPIT_TOPO_RADIUS 							= 150.0
+global const float TITAN_COCKPIT_ROTATION_ANGLE 						= 0.0
+global const float TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE 			= 24.0
+global const float TITAN_COCKPIT_LOWER_RUI_SCREEN_HEIGHT_SCALE 			= 1.3125
+global const float TITAN_COCKPIT_INSTRUMENT1_RUI_SCREEN_SQUARE_SIZE 	= 4.5
 
-global const int NUM_SPOTS_AVAILABLE = 20
-global const float SPOT_CONE_HEIGHT = 8000.0
-global const float SPOT_CONE_ANGLE_TO_AXIS = 4.5
-global const float SPOT_TRACE_DISTANCE = MAX_WORLD_RANGE
-global const float SPOT_HIGHLIGHT_TIME = 5.0
-global const float SPOT_HIGHLIGHT_FADE_IN_TIME = 0.15
-global const float SPOT_HIGHLIGHT_FADE_OUT_TIME = 3.0
-global const float SPOT_MODEL_SNAPSHOT_TIME = 8.0
-global const float GROUND_SPOT_VISIBLE_TIME = 2.0
-global const float SPOT_GLOBAL_VO_COOLDOWN = 4.0
+global const int NUM_SPOTS_AVAILABLE 					= 20
+global const float SPOT_CONE_HEIGHT 					= 8000.0
+global const float SPOT_CONE_ANGLE_TO_AXIS 				= 4.5
+global const float SPOT_TRACE_DISTANCE 					= MAX_WORLD_RANGE
+global const float SPOT_HIGHLIGHT_TIME 					= 5.0
+global const float SPOT_HIGHLIGHT_FADE_IN_TIME 			= 0.15
+global const float SPOT_HIGHLIGHT_FADE_OUT_TIME 		= 3.0
+global const float SPOT_MODEL_SNAPSHOT_TIME 			= 8.0
+global const float GROUND_SPOT_VISIBLE_TIME 			= 2.0
+global const float SPOT_GLOBAL_VO_COOLDOWN 				= 4.0
 
 
-global const int RUI_SORT_SCREENFADE = 1000
-global const int RUI_SORT_GLADCARD = 990
+global const int RUI_SORT_SCREENFADE 					= 1000
+global const int RUI_SORT_GLADCARD 						= 990
 
-global const int TITAN_HINT_DASH = 5
+global const int TITAN_HINT_DASH 						= 5
 
-global const string CAMO_REF_COLUMN_NAME = "itemRef"
-global const string CAMO_PILOT_REF_COLUMN_NAME = "pilotRef"
-global const string CAMO_TITAN_REF_COLUMN_NAME = "titanRef"
-global const string CAMO_IMAGE_COLUMN_NAME = "image"
-global const string CAMO_NAME_COLUMN_NAME = "name"
-global const string CAMO_DESCRIPTION_COLUMN_NAME = "description"
-global const string CAMO_PILOT_COST_COLUMN_NAME = "pilotCost"
-global const string CAMO_TITAN_COST_COLUMN_NAME = "titanCost"
-global const string CAMO_PILOT_WEAPON_COST_COLUMN_NAME = "pilotWeaponCost"
-global const string CAMO_TITAN_WEAPON_COST_COLUMN_NAME = "titanWeaponCost"
-global const string CAMO_CATEGORY_COLUMN_NAME = "category"
+global const string CAMO_REF_COLUMN_NAME 				= "itemRef"
+global const string CAMO_PILOT_REF_COLUMN_NAME 			= "pilotRef"
+global const string CAMO_TITAN_REF_COLUMN_NAME 			= "titanRef"
+global const string CAMO_IMAGE_COLUMN_NAME 				= "image"
+global const string CAMO_NAME_COLUMN_NAME 				= "name"
+global const string CAMO_DESCRIPTION_COLUMN_NAME 		= "description"
+global const string CAMO_PILOT_COST_COLUMN_NAME 		= "pilotCost"
+global const string CAMO_TITAN_COST_COLUMN_NAME 		= "titanCost"
+global const string CAMO_PILOT_WEAPON_COST_COLUMN_NAME 	= "pilotWeaponCost"
+global const string CAMO_TITAN_WEAPON_COST_COLUMN_NAME 	= "titanWeaponCost"
+global const string CAMO_CATEGORY_COLUMN_NAME 			= "category"
 
-global const int CAMO_INDEX_BASE = 0
-global const int SKIN_INDEX_BASE = 0
-global const int PILOT_SKIN_INDEX_CAMO = 1
-global const int PILOT_SKIN_INDEX_GHOST = 1 // In mlt_hero_jack.qc the holo skin should really be the 3rd skin so it and camo never overlaps
-global const int TITAN_SKIN_INDEX_CAMO = 2
-global const int TITAN_WARPAINT_CAMO_INDEX = -1
-global const int WEAPON_SKIN_INDEX_DEFAULT = 0
-global const int WEAPON_SKIN_INDEX_CAMO = 1
-global const int WEAPON_SKIN_INDEX_GHOST = 9
+global const int CAMO_INDEX_BASE 			= 0
+global const int SKIN_INDEX_BASE 			= 0
+global const int PILOT_SKIN_INDEX_CAMO 		= 1
+global const int PILOT_SKIN_INDEX_GHOST 	= 1 // In mlt_hero_jack.qc the holo skin should really be the 3rd skin so it and camo never overlaps
+global const int TITAN_SKIN_INDEX_CAMO 		= 2
+global const int TITAN_WARPAINT_CAMO_INDEX 	= -1
+global const int WEAPON_SKIN_INDEX_DEFAULT 	= 0
+global const int WEAPON_SKIN_INDEX_CAMO 	= 1
+global const int WEAPON_SKIN_INDEX_GHOST 	= 9
 
 global const int HUD_Z_BASE 				= 300
 
@@ -1447,34 +1447,34 @@ global const int MINIMAP_Z_NPC 				= 75
 global const int MINIMAP_Z_PLAYER 			= 100
 
 // must match values in global_defs.rui
-global const int IMAGE_ATLAS_MENU = 0
-global const int IMAGE_ATLAS_HUD = 1
-global const int IMAGE_ATLAS_COMMS = 3
+global const int IMAGE_ATLAS_MENU 			= 0
+global const int IMAGE_ATLAS_HUD 			= 1
+global const int IMAGE_ATLAS_COMMS 			= 3
 
 // Must match values in ajax_cockpit.rui ( two locations )
-global const float COCKPIT_COLOR_BLUE = 0.0
-global const float COCKPIT_COLOR_YELLOW = 0.05
-global const float COCKPIT_COLOR_RED = 0.15
-global const float COCKPIT_COLOR_SIEGE = 0.25
-global const float COCKPIT_COLOR_THREAT = 0.35
-global const float COCKPIT_COLOR_HIDDEN = 0.45
-global const float COCKPIT_COLOR_VANGUARD = 0.55
+global const float COCKPIT_COLOR_BLUE 		= 0.0
+global const float COCKPIT_COLOR_YELLOW 	= 0.05
+global const float COCKPIT_COLOR_RED 		= 0.15
+global const float COCKPIT_COLOR_SIEGE 		= 0.25
+global const float COCKPIT_COLOR_THREAT 	= 0.35
+global const float COCKPIT_COLOR_HIDDEN 	= 0.45
+global const float COCKPIT_COLOR_VANGUARD 	= 0.55
 
 // Achievements/Trophys
 global enum achievements
 {
-	PLAYER_LEVEL = 0, //REACH LEVEL 50 	= 1
-	DECKED_OUT, //EQUIP A TIER 4 HELMET AND BODY ARMOR
-	RESPAWN_TEAMMATE, //RESPAWN A TEAMMATE
-	FULLY_KITTED, //EQUIP A LEGENDARY CHARACTER OR WEAPON SKIN
-	JUMPMASTER, //BE THE JUMPMASTER 5 TIMES
-	WELL_ROUNDED, //DEAL 5000 DAMAGE WITH 8 DIFFERENT LEGENDS
-	KILL_LEADER, //BECOME THE KILL LEADER
-	APEX_OFFENSE, //WIN A GAME AS AN OFFENSIVE CHARACTER
-	APEX_DEFENSE, //WIN A GAME AS A DEFENSIVE CHARACTER
-	APEX_SUPPORT, //WIN A GAME AS A SUPPORT CHARACTER
-	APEX_RECON, //WIN A GAME AS A RECON CHARACTER
-	APEX_LEGEND, //WIN A GAME WITH 8 DIFFERENT LEGENDS
+	PLAYER_LEVEL = 0, 	//REACH LEVEL 50 	= 1
+	DECKED_OUT, 		//EQUIP A TIER 4 HELMET AND BODY ARMOR
+	RESPAWN_TEAMMATE, 	//RESPAWN A TEAMMATE
+	FULLY_KITTED, 		//EQUIP A LEGENDARY CHARACTER OR WEAPON SKIN
+	JUMPMASTER, 		//BE THE JUMPMASTER 5 TIMES
+	WELL_ROUNDED, 		//DEAL 5000 DAMAGE WITH 8 DIFFERENT LEGENDS
+	KILL_LEADER, 		//BECOME THE KILL LEADER
+	APEX_OFFENSE, 		//WIN A GAME AS AN OFFENSIVE CHARACTER
+	APEX_DEFENSE, 		//WIN A GAME AS A DEFENSIVE CHARACTER
+	APEX_SUPPORT, 		//WIN A GAME AS A SUPPORT CHARACTER
+	APEX_RECON, 		//WIN A GAME AS A RECON CHARACTER
+	APEX_LEGEND, 		//WIN A GAME WITH 8 DIFFERENT LEGENDS
 	MAX_ACHIVEMENTS
 }
 
@@ -1540,16 +1540,16 @@ global const int WEAPONFLAG_ATTACHMENT_GRIP		= (1<<2)
 global const int WEAPONFLAG_ATTACHMENT_SIGHT	= (1<<3)
 global const int WEAPONFLAG_ATTACHMENT_MAG		= (1<<4)
 
-global const string PERSISTENCE_LEAVECOUNT_VAR = "abandonCountForMode"
+global const string PERSISTENCE_LEAVECOUNT_VAR 	= "abandonCountForMode"
 global const string PERSISTENCE_LAST_LEAVE_TIME = "lastAbandonTime"
-global const string PERSISTENCE_LEAVEMODE_VAR = "lastAbandonedMode"
+global const string PERSISTENCE_LEAVEMODE_VAR 	= "lastAbandonedMode"
 
 // LEECHING
-global const DATA_KNIFE_MODEL = $"mdl/weapons/data_knife/v_data_knife.rmdl"
+global const DATA_KNIFE_MODEL 			= $"mdl/weapons/data_knife/v_data_knife.rmdl"
 
-global const asset CONTROL_PANEL_MODEL = $"mdl/communication/terminal_usable_imc_01.rmdl"
-global const asset RODEO_BATTERY_MODEL = $"mdl/titans/medium/titan_medium_battery_static.rmdl"
-global const asset MODEL_GENERATOR = $"mdl/beacon/charge_generator_01_glass.rmdl"
+global const asset CONTROL_PANEL_MODEL 	= $"mdl/communication/terminal_usable_imc_01.rmdl"
+global const asset RODEO_BATTERY_MODEL 	= $"mdl/titans/medium/titan_medium_battery_static.rmdl"
+global const asset MODEL_GENERATOR 		= $"mdl/beacon/charge_generator_01_glass.rmdl"
 
 global const float HUNT_MODE_DURATION 		= 35.0
 global const float PHASE_TUNNEL_PLACEMENT_DURATION = 10.0
@@ -1925,10 +1925,10 @@ global enum eCommsAction
 	_count
 }
 
-global const string BUBBLE_SHIELD_SCRIPTNAME = "bubble_shield"
-global const string CARE_PACKAGE_SCRIPTNAME = "care_package"
-global const string SURVEY_BACON_SCRIPTNAME = "survey_beacon"
-global const string REVIVE_SHIELD_SCRIPTNAME = "revive_shield"
+global const string BUBBLE_SHIELD_SCRIPTNAME 	= "bubble_shield"
+global const string CARE_PACKAGE_SCRIPTNAME 	= "care_package"
+global const string SURVEY_BACON_SCRIPTNAME 	= "survey_beacon"
+global const string REVIVE_SHIELD_SCRIPTNAME 	= "revive_shield"
 
 global enum eToolTipFlag
 {
