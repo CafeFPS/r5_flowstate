@@ -1,0 +1,53 @@
+// stub script
+
+global function HoverTank_Init
+global function IsPointWithinAnyHoverTank
+global function SpawnHoverTank_Cheap
+global function HoverTankTeleportToPosition
+global function HoverTankSetCustomFlySpeed
+global function HoverTankEngineBoost
+global function HoverTankFlyToNode
+global function HoverTankCanFlyPath
+
+global const HOVER_TANK_RADIUS = 0
+
+void function HoverTank_Init()
+{
+
+}
+
+bool function IsPointWithinAnyHoverTank( vector pos )
+{
+    return false
+}
+
+HoverTank function SpawnHoverTank_Cheap( string spawnerName )
+{
+    HoverTank temp
+    return temp
+}
+
+void function HoverTankTeleportToPosition( HoverTank hoverTank, vector origin, vector angles )
+{
+
+}
+
+void function HoverTankSetCustomFlySpeed( HoverTank hoverTank, float speed )
+{
+
+}
+
+void function HoverTankEngineBoost( HoverTank hovertank )
+{
+
+}
+
+void function HoverTankFlyToNode( HoverTank hoverTank, entity nodes )
+{
+
+}
+
+void function HoverTankCanFlyPath( vector currentStartNode, entity currentEndNode )
+{
+
+}

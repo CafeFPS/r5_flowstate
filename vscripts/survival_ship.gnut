@@ -1,0 +1,20 @@
+// stub script
+
+global function Survival_HasPlayerJumpedOutOfPlane
+global function SURVIVAL_SetPlaneHeight
+global function SURVIVAL_SetAirburstHeight
+
+bool function Survival_HasPlayerJumpedOutOfPlane( entity player )
+{
+	return true
+}
+
+void function SURVIVAL_SetPlaneHeight( float height )
+{
+
+}
+
+void function SURVIVAL_SetAirburstHeight( float height )
+{
+	
+}

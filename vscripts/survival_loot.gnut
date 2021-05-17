@@ -1,0 +1,174 @@
+// stub script
+
+global function LootTypeHasAnyChanceToSpawn
+global function SpawnLoot
+global function SURVIVAL_GetWeightedItemFromGroup
+global function SURVIVAL_ThrowLootFromPoint
+global function SURVIVAL_PlayerPickedupItem
+global function EquipAttachments_Internal
+global function PlayPickupSound
+global function AddRoundsToWeapon
+global function SURVIVAL_TryTakeDefaultMeleePrimary
+global function TrackingVision_CreatePOIForPickedUpLoot
+global function SURVIVAL_GiveMainWeapon
+global function GetThrowOrigin
+global function SpawnGenericLoot
+global function SetItemSpawnSource
+global function AddToDeathBox
+global function FakePhysicsThrow
+global function SURVIVAL_GivePlayerEquipment
+global function SpawnWeaponAndAmmo
+global function SpawnArmor
+global function SpawnNothing
+global function SURVIVAL_DropMainWeapon
+global function SURVIVAL_DropBackpackItem
+global function Loot_AddCallback_OnPlayerLootPickup
+global function SURVIVAL_NumItemsInInventory
+global function ResetPlayerInventory
+global function GetAllLootZones
+global function SURVIVAL_LootTierForLootGroup
+
+global const LOOT_TRACE = 10
+global const LOOT_COLLISION_GROUP = 1
+
+global enum eSpawnSource
+{
+	PLAYER_DROP
+	DROPPOD
+}
+
+bool function LootTypeHasAnyChanceToSpawn( string ref )
+{
+	return true
+}
+
+void function SpawnLoot( string name, vector pos, bool idk )
+{
+
+}
+
+string function SURVIVAL_GetWeightedItemFromGroup( string group )
+{
+	return group
+}
+
+void function SURVIVAL_ThrowLootFromPoint( vector throwOrigin, vector forward, string ref, int count )
+{
+
+}
+
+void function SURVIVAL_PlayerPickedupItem( entity pikcup, entity player, int action, int pickupFlags, bool shouldKeepAlive = false )
+{
+	
+}
+
+void function EquipAttachments_Internal( entity player, entity weapon, string item, string modToRemove, bool takeFromInventory, bool returnToInventory, bool forceActive, bool idk, entity deathBox )
+{
+
+}
+
+void function PlayPickupSound( entity player, string ref, int pickupFlags = 0 )
+{
+
+}
+
+void function AddRoundsToWeapon( entity player, entity weapon, int numRounds )
+{
+
+}
+
+void function SURVIVAL_TryTakeDefaultMeleePrimary( entity player )
+{
+
+}
+
+void function TrackingVision_CreatePOIForPickedUpLoot( entity player, int lootType, string ref, vector origin, int team, entity idk )
+{
+
+}
+
+void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity activeWeapon, bool dropCurrentWeapon, entity deathBox, bool doPickupPrint )
+{
+
+}
+
+vector function GetThrowOrigin( entity player )
+{
+	return player.GetOrigin()
+}
+
+entity function SpawnGenericLoot( string ref, ... )
+{
+	return null
+}
+
+void function SetItemSpawnSource( entity drop, int spawnSource, entity player )
+{
+
+}
+
+void function AddToDeathBox( entity drop, entity deathBox )
+{
+
+}
+
+void function FakePhysicsThrow( entity player, entity drop, vector forward, bool idk )
+{
+
+}
+
+void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value )
+{
+
+}
+
+entity function SpawnWeaponAndAmmo( string ref, vector origin )
+{
+	return null
+}
+
+entity function SpawnArmor( string ref, vector origin )
+{
+	return null
+}
+
+entity function SpawnNothing( string ref, vector origin )
+{
+	return null
+}
+
+bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin, vector velocity )
+{
+	return false
+}
+
+void function SURVIVAL_DropBackpackItem( entity player, string ref, int count )
+{
+
+}
+
+void function Loot_AddCallback_OnPlayerLootPickup( void functionref( entity user, entity lootPickup, string ref, bool willDestroy ) callback )
+{
+
+}
+
+int function SURVIVAL_NumItemsInInventory( entity player, string itemRef )
+{
+	return 0
+}
+
+void function ResetPlayerInventory( entity player )
+{
+
+}
+
+array<LootZone> function GetAllLootZones()
+{
+	array<LootZone> lootZone
+	return lootZone
+}
+
+int function SURVIVAL_LootTierForLootGroup( int zone )
+{
+	return 0
+}

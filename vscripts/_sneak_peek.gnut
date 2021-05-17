@@ -1,0 +1,8 @@
+// stub script
+
+global function SneakPeek_Init
+
+void function SneakPeek_Init()
+{
+    
+}

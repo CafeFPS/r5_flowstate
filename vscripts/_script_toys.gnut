@@ -1,0 +1,8 @@
+// stub script
+
+global function ScriptToys_Init
+
+void function ScriptToys_Init()
+{
+
+}

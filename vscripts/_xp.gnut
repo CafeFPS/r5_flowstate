@@ -1,0 +1,8 @@
+// stub script
+
+global function SvXP_Init
+
+void function SvXP_Init()
+{
+    
+}

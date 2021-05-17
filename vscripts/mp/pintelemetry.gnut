@@ -1,0 +1,196 @@
+// stub script
+
+global function PIN_Init
+global function PIN_ItemPickup
+global function PIN_GameStart
+global function PIN_PlanePath
+global function PIN_SetGameStartTime
+global function PIN_GameStartedForPlayer
+global function PIN_CircleLocation
+global function GameSummary_GetPlayerData
+global function PIN_RoundEnd
+global function PIN_GameEnd
+global function PIN_AddPlayer
+global function PIN_PlayerLeft
+global function PIN_PlayerSpawned
+global function PIN_PlayerDowned
+global function PIN_PlayerRevived
+global function PIN_PlayerKilled
+global function PIN_DamageDone
+global function PIN_DamageDoneToPlayerForWeapon
+global function PIN_PlayerEquip
+global function PIN_PlayerUse
+global function PIN_PlayerOutResource
+global function PIN_Interact
+global function PIN_PlayerAbility
+global function PIN_PlayerAbilityReady
+global function PIN_AddToPlayerCountStat
+global function PIN_OnWeaponAttack
+global function PIN_Ping
+global function PIN_OnPlayerHealed
+global function PIN_PlayerLandedOnGround
+global function PIN_PlayerJumpedFromPlane
+global function PIN_Training
+
+global struct GameSummarySquadData 
+{
+	int kills
+	int damageDealt
+	int deaths 
+}
+
+void function PIN_Init()
+{
+
+}
+
+void function PIN_GameStart()
+{
+
+}
+
+void function PIN_RoundEnd( int roundnum )
+{
+
+}
+
+void function PIN_GameEnd()
+{
+
+}
+
+void function PIN_AddPlayer( entity player )
+{
+
+}
+
+void function PIN_PlayerLeft( entity player, string reason )
+{
+
+}
+
+void function PIN_PlayerSpawned( entity player )
+{
+
+}
+
+void function PIN_PlayerDowned( entity victim, entity attacker, var damageInfo )
+{
+
+}
+
+void function PIN_PlayerRevived( entity injured, entity healer )
+{
+
+}
+
+void function PIN_PlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+
+}
+
+void function PIN_PlanePath( vector startPos, vector endPos, float duration )
+{
+
+}
+
+void function PIN_SetGameStartTime()
+{
+
+}
+
+void function PIN_GameStartedForPlayer( entity player )
+{
+
+}
+
+void function PIN_ItemPickup( entity player, entity pickup, string ref, int unitsPickedUp )
+{
+
+}
+
+void function PIN_CircleLocation( string type, vector origin, float radius, string action )
+{
+
+}
+
+void function PIN_DamageDone( entity attacker, entity victim, float damageAmount )
+{
+
+}
+
+void function PIN_DamageDoneToPlayerForWeapon( entity attacker, string weaponclassname, float damageAmount, bool isHeadshot )
+{
+
+}
+
+void function PIN_PlayerEquip( entity player )
+{
+
+}
+
+void function PIN_PlayerUse( entity player, string ref, ... )
+{
+
+}
+
+void function PIN_PlayerOutResource( entity player, string ref )
+{
+	
+}
+
+GameSummarySquadData function GameSummary_GetPlayerData( entity player )
+{
+	GameSummarySquadData data
+	return data
+}
+
+void function PIN_Interact(entity player, string sound, ... )
+{
+
+}
+
+void function PIN_PlayerAbility( entity player, string name, int ability, entity tracked, table additionalData )
+{
+
+}
+
+void function PIN_PlayerAbilityReady( entity player, int ability )
+{
+
+}
+
+void function PIN_AddToPlayerCountStat( entity player, string ability )
+{
+
+}
+
+void function PIN_OnWeaponAttack( entity player, entity meleeAttackWeapon, string classname, int num, vector origin, vector lookDirection )
+{
+
+}
+
+void function PIN_Ping( entity player, string pingType, entity pingEnt, vector position )
+{
+
+}
+
+void function PIN_OnPlayerHealed( entity player, ... )
+{
+	
+}
+
+void function PIN_PlayerLandedOnGround( entity player )
+{
+
+}
+
+void function PIN_PlayerJumpedFromPlane( entity player, int len )
+{
+
+}
+
+void function PIN_Training( entity player, string status, string trainingStatus )
+{
+
+}

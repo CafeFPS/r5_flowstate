@@ -1,0 +1,26 @@
+// stub script
+
+global function Bombardment_Init
+global function VerifyBombardmentWeapon
+global function Bombardment_MortarBarrageFocused
+global function Bombardment_MortarBarrageDetCord
+
+void function Bombardment_Init()
+{
+    
+}
+
+void function VerifyBombardmentWeapon( entity owner, string weapon )
+{
+
+}
+
+void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vector ownerOrigin, vector projectileOrigin, float radius, int intensity, float duration, float delay )
+{
+
+}
+
+void function Bombardment_MortarBarrageDetCord( entity weapon, string something, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
+{
+
+}

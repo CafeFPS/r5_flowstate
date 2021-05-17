@@ -1,0 +1,135 @@
+untyped
+
+//========== Copyright � 2008, Valve Corporation, All rights reserved. ========
+
+global function UniqueString
+global function EntFire
+global function __DumpScope
+
+// mmmm i am going to dump several functions here because i do not know where they should go
+global function GRX_GetUserInfo
+global function GRX_HasItem
+global function GRX_GetPackCount
+global function GRX_OpenPack
+global function GRX_GiveSequenceReward
+
+// r5 stuff
+
+global function MobilityExperiments_Init
+global function PushEnt
+
+
+int __uniqueStringId = 0
+string function UniqueString( string str = "" )
+{
+	return str + "_us" + __uniqueStringId++;
+}
+
+function EntFire( target, action, value = null, delay = 0.0, activator = null )
+{
+	if ( !value )
+	{
+		value = "";
+	}
+
+	local caller = null;
+	if ( "self" in this )
+	{
+		caller = this.self;
+		if ( !activator )
+		{
+			activator = this.self;
+		}
+	}
+
+	DoEntFire( string( target ), string( action ), string( value ), delay, activator, caller );
+}
+
+//---------------------------------------------------------
+// Text dump this scope's contents to the console.
+//---------------------------------------------------------
+void function __DumpScope( int depth, var Table )
+{
+	local indent=function( count )
+	{
+		local i;
+		for( i = 0 ; i < count ; i++ )
+		{
+			print("   ");
+		}
+	}
+
+    foreach(key, value in Table)
+    {
+		indent(depth);
+		print( key );
+        switch (type(value))
+        {
+            case "table":
+				print("(TABLE)\n");
+				indent(depth);
+                print("{\n");
+                __DumpScope( depth + 1, value);
+				indent(depth);
+                print("}");
+                break;
+            case "array":
+				print("(ARRAY)\n");
+				indent(depth);
+                print("[\n")
+                __DumpScope( depth + 1, value);
+				indent(depth);
+                print("]");
+                break;
+            case "string":
+                print(" = \"");
+                print(value);
+                print("\"");
+                break;
+            default:
+                print(" = ");
+                print(value);
+                break;
+        }
+        print("\n");
+	}
+}
+
+// mmmm i am going to dump several functions here because i do not know where they should go
+
+GRXUserInfo function GRX_GetUserInfo( entity player )
+{
+	GRXUserInfo info
+	return info
+}
+
+bool function GRX_HasItem( ... )
+{
+	return false
+}
+
+int function GRX_GetPackCount( entity player, int grxIndex ) 
+{
+	return 0
+}
+
+void function GRX_OpenPack( entity player, int opId, int grxIndex )
+{
+
+}
+
+void function GRX_GiveSequenceReward( entity player, int queryScriptId, int queryGoal, string seqName, int nextSeqNum, array<int> grxIndices, array<int> currencyCounts )
+{
+
+}
+
+// r5 stuff
+void function MobilityExperiments_Init()
+{
+	
+}
+
+void function PushEnt ( entity target, vector scale )
+{
+
+}

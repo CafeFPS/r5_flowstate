@@ -1,0 +1,8 @@
+// stub script
+
+global function PassiveMedic_Init
+
+void function PassiveMedic_Init()
+{
+    
+}

@@ -1,0 +1,7 @@
+// stub script
+global function BaseGametype_Init_MPSP
+
+void function BaseGametype_Init_MPSP()
+{
+    
+}

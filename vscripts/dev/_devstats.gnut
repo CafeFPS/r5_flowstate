@@ -1,0 +1,8 @@
+//fuck
+
+global function SvDevStats_LevelInit
+
+void function SvDevStats_LevelInit()
+{
+
+}

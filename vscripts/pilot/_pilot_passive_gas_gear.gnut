@@ -1,0 +1,8 @@
+// stub script
+
+global function PassiveGasGear_Init
+
+void function PassiveGasGear_Init()
+{
+
+}

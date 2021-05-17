@@ -1,0 +1,8 @@
+// stub script
+
+global function AiPilot_Init
+
+void function AiPilot_Init()
+{
+	//stub
+}

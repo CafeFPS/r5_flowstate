@@ -1,0 +1,14 @@
+// stub script
+
+global function SpectreChatter_MP_Init
+global function PlaySpectreChatterMPLine
+
+void function SpectreChatter_MP_Init()
+{
+    
+}
+
+void function PlaySpectreChatterMPLine( entity guy, string diag )
+{
+    
+}

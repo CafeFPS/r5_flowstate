@@ -1,0 +1,28 @@
+// stub script
+global function GetAllTrackingPlayers
+global function HeatMapStat
+global function TrackingVision_CreatePOI
+global function TrackingVision_Init
+
+array<entity> function GetAllTrackingPlayers()
+{
+	array<entity> players
+	return players
+	
+	//return GetPlayerArray()
+}
+
+void function HeatMapStat( entity player, string id, vector origin )
+{
+
+}
+
+void function TrackingVision_CreatePOI( int poiType, entity target, vector position, int team, entity player )
+{
+
+}
+
+void function TrackingVision_Init()
+{
+	
+}

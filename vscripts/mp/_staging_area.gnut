@@ -1,0 +1,32 @@
+// stub script
+
+global function Staging_Area_Init
+global function RemoveStagingAreaEntsForRealm
+global function GetPlayerStagingSquadRealm
+global function CreateWeaponRacksForRealm
+global function CreateGunRangeTargetsForRealm
+
+void function Staging_Area_Init()
+{
+    
+}
+
+void function RemoveStagingAreaEntsForRealm( int player )
+{
+
+}
+
+int function GetPlayerStagingSquadRealm( entity player )
+{
+    return 0
+}
+
+void function CreateWeaponRacksForRealm( int player )
+{
+
+}
+
+void function CreateGunRangeTargetsForRealm( int player )
+{
+    
+}

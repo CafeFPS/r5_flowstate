@@ -1,0 +1,10 @@
+// stub script
+
+// dumping voices passive stuff here because no serverside voices script
+
+global function PassiveAdrenaline_Init
+
+void function PassiveAdrenaline_Init()
+{
+    
+}

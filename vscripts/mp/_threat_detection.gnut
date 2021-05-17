@@ -1,0 +1,31 @@
+
+global function ThreatDetection_Init
+global function ThreatDetection_StartForPlayer
+global function ThreatDetection_CreateThreatZoneForBombardment
+global function ThreatDetection_CreateThreatZoneForTrap
+global function ThreatDetection_DestroyThreatZone
+
+void function ThreatDetection_Init()
+{
+	
+}
+
+void function ThreatDetection_StartForPlayer( entity player )
+{
+	
+}
+
+void function ThreatDetection_CreateThreatZoneForBombardment( entity player, vector origin, int num0, float radius, float num1 )
+{
+	
+}
+
+int function ThreatDetection_CreateThreatZoneForTrap( entity player, vector origin, int team )
+{
+	return 0
+}
+
+void function ThreatDetection_DestroyThreatZone( int threatZoneID )
+{
+
+}
