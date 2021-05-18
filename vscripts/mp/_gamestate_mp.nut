@@ -39,6 +39,8 @@ void function SetGameState( int newState )
 	level.nv.gameState = newState
 	svGlobal.levelEnt.Signal( "GameStateChanged" )
 
+	SetServerVar( "gameState", newState )
+
 	// added in AddCallback_GameStateEnter
 	foreach ( callbackFunc in svGlobal.gameStateEnterCallbacks[ newState ] )
 	{

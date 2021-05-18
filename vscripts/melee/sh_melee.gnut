@@ -105,8 +105,10 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 		#if SERVER || CLIENT
 			//PrecacheModel( MeleeSkin_GetWorldModel( meleeSkin ) )
 			//PrecacheModel( MeleeSkin_GetViewModel( meleeSkin ) )
-			PrecacheWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ) )
-			PrecacheWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ) )
+			
+			// commented for debugging
+			//PrecacheWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ) )
+			//PrecacheWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ) )
 		#endif
 	}
 
@@ -465,6 +467,8 @@ void function CodeCallback_OnMeleeReleased( entity player, entity weapon )
 #if SERVER || CLIENT
 void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity meleeAttackWeapon )
 {
+	printt("CodeCallback_OnMeleeAttackAnimEvent")
+
 	Assert( IsValid( attacker ) )
 
 	if ( !attacker.PlayerMelee_IsAttackActive() )

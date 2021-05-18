@@ -117,6 +117,10 @@ struct
 #if SERVER || CLIENT
 void function GamemodeSurvivalShared_Init()
 {
+
+	printt("GamemodeSurvivalShared_Init")
+	RegisterSignal("GameStateChanged")
+
 	#if SERVER || CLIENT
 		BleedoutShared_Init()
 		ShApexScreens_Init()
@@ -134,6 +138,8 @@ void function GamemodeSurvivalShared_Init()
 	#endif
 
 	#if SERVER
+	//printt("Setting Game State")
+	//SetGameState(eGameState.PickLoadout)
 	#elseif CLIENT
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
 	#endif

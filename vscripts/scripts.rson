@@ -394,7 +394,6 @@ Scripts:
 	vehicle/_vehicle_behavior.gnut
 	vehicle/_vehicle_dropship_new.nut
 	weapons/_at_turrets.gnut
-	weapons/_ball_lightning.gnut
 	weapons/_cloaker.gnut
 	weapons/_particle_wall.gnut
 

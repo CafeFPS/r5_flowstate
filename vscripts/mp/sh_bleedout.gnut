@@ -71,7 +71,7 @@ struct
 
 void function BleedoutShared_Init()
 {
-	PrecacheWeapon( "mp_weapon_incap_shield" )
+	//PrecacheWeapon( "mp_weapon_incap_shield" )
 	
 	//DEFAULT BLEEDOUT (Index 0)
 	BleedoutData defData

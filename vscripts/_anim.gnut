@@ -37,6 +37,8 @@ function Anim_Init()
 	RegisterSignal( "ScriptAnimStop" )
 	RegisterSignal( "AnimEventKill" )
 
+	RegisterSignal("OnChangedPlayerClass")
+
 	AddGlobalAnimEvent( "enable_weapon", GlobalAnimEvent_EnableWeapon )
 	AddGlobalAnimEvent( "disable_weapon", GlobalAnimEvent_DisableWeapon	)
 	AddGlobalAnimEvent( "clear_parent", GlobalAnimEvent_ClearParent )

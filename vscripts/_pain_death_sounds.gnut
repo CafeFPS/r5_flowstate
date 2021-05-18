@@ -38,6 +38,16 @@ enum eBodyTypes
 	PLAYER_HUMAN_FEMALE
 	PLAYER_HUMAN_MALE
 	TITAN
+
+	CLASS_BANSHEE
+	CLASS_BLOODHOUND
+	CLASS_GIBRALTER
+	CLASS_LIFELINE
+	CLASS_PATHFINDER
+	CLASS_MIRAGE
+	CLASS_BANGALORE
+	CLASS_CAUSTIC
+
 	total
 }
 
@@ -231,6 +241,9 @@ bool functionref( entity, entity, bool, int, int ) function GetSoundTypeFuncFrom
 		// case "SE_TITAN_STEP":
 		// 	return SE_TITAN_STEP
 	}
+
+	return SE_ANY
+
 	unreachable
 }
 

@@ -235,6 +235,8 @@ global enum eDamageSourceId
 	//rocketstrike
 	//orbitallaser
 	//explosion
+
+	mp_weapon_arc_launcher
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
@@ -528,8 +530,8 @@ void function DamageTypes_Init()
 void function RegisterWeaponDamageSource( string weaponRef )
 {
 	int sourceID = eDamageSourceId[weaponRef]
-	file.damageSourceIDToName[ sourceID ] <- GetWeaponInfoFileKeyField_GlobalString( weaponRef, "shortprintname" )
-	file.damageSourceIDToImage[ sourceID ] <- GetWeaponInfoFileKeyFieldAsset_Global( weaponRef, "hud_icon" )
+	file.damageSourceIDToName[ sourceID ] <- "e" //GetWeaponInfoFileKeyField_GlobalString( weaponRef, "shortprintname" )
+	file.damageSourceIDToImage[ sourceID ] <- $"rui/weapon_icons/r5/weapon_flatline"//GetWeaponInfoFileKeyFieldAsset_Global( weaponRef, "hud_icon" )
 	file.damageSourceIDToString[ sourceID ] <- weaponRef
 }
 

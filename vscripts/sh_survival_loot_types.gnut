@@ -40,7 +40,7 @@ void function SURVIVAL_LootTypes_InitShared()
 	lt.equipmentSlot = ""
 	lt.groundActionFunc = GroundAction_ForWeapons
 	lt.groundUseLongActionFunc = GroundLongAction_ForWeapons
-	lt.groundAltActionFunc = GroundAltAction_None// GroundAltAction_ForWeapons
+	lt.groundAltActionFunc = GroundAltAction_ForWeapons
 	#if SERVER
 		lt.specialCaseSpawnFunction = SpawnWeaponAndAmmo
 	#endif

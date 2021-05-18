@@ -168,13 +168,16 @@ global SvGlobals svGlobal
 void function CodeCallback_MapSpawn() // original script entry point
 {
 	ShWeapons_LevelInit()
-	seterrorhandler(void function() {})
+	//seterrorhandler(void function() {})
 	ScriptCompilerTest()
 	LoadDiamond()
 
 	_cc = CreateEntity( "point_clientcommand" )
 	_sc = CreateEntity( "point_servercommand" )
 	PrecacheEntity( "env_entity_dissolver" )
+
+	FlagInit("EntitiesDidLoad")
+	svGlobal.levelEnt = GetEnt( "worldspawn" )
 
 	LevelVarInit()
 
@@ -184,6 +187,13 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/dev/editor_ref.rmdl" )
 	PrecacheModel( $"mdl/dev/empty_model.rmdl" )
 	PrecacheModel( $"mdl/error.rmdl" ) // model used when no model is provided
+
+	PrecacheModel( $"mdl/weapons/arms/pov_pilot_heavy_pathfinder.rmdl" )
+    PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
+
+    PrecacheWeapon( $"mp_weapon_sniper" )
+    PrecacheWeapon( $"mp_weapon_wraith_kunai_primary" )
+    PrecacheWeapon( $"mp_ability_grapple" )
 
 	printl( "Code Script: _mapspawn" )
 

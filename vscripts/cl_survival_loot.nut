@@ -583,6 +583,7 @@ string function Sur_LootTextOverride( entity ent )
 
 	}
 
+	//return "BRUH MOMENT NUMERO DOS"
 	return ""
 }
 

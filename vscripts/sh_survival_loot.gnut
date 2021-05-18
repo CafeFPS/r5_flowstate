@@ -1107,6 +1107,8 @@ int function SURVIVAL_GetCountToFillStack( entity player, string ref )
 		return diff
 	}
 
+	printt("SURVIVAL_GetCountToFillStack", data.inventorySlotCount)
+
 	return data.inventorySlotCount
 }
 
@@ -1389,6 +1391,8 @@ bool function CanUseStackablePropSurvival( entity player, entity prop )
 void function OnPropSurvivalCreate( entity prop )
 {
 	int index = prop.GetSurvivalInt()
+
+	printt("Surv idx ", index)
 
 	if ( index < 0 )
 		return
@@ -2861,6 +2865,10 @@ bool function SurvivalLoot_CanUseFunction( entity player, entity ent )
 	if( Bleedout_IsBleedingOut( player ) )
 		return false
 
+	//printt("SurvivalLoot_CanUseFunction")
+
+	return true
+
 	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 	if ( IsValid( activeWeapon ) )
 	{
@@ -3434,11 +3442,17 @@ bool function DeathBox_CanUseFunction( entity player, entity ent )
 
 void function OnUseSurvivalPickup( entity pickup, entity player, int useInputFlags )
 {
+	//printt("OnUseSurvivalPickup")
+
 	if ( !SURVIVAL_CanPlayerPickup( player, pickup ) )
 		return
 
+	//printt("OnUseSurvivalPickup#3448")
+
 	if ( !SURVIVAL_Loot_IsLootIndexValid( pickup.GetSurvivalInt() ) )
 		return
+
+	//printt("OnUseSurvivalPickup#3453")
 
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 	int lootType = data.lootType
@@ -3481,6 +3495,10 @@ bool function Survival_PickupItem( entity pickup, entity player, int pickupFlags
 	bool shouldDestroy = SURVIVAL_ApplyLootAction( as.action, pickup, player, pickupFlags, deathBox )
 
 	bool pickedup = pickup.GetClipCount() < oldAmmo
+
+	pickedup = true
+
+	printt("picked-up", as.action, pickedup, shouldDestroy, pickup.GetClipCount(), oldAmmo, as.action)
 
 	#if CLIENT
 	if ( Time() - pickup.e.lastUseTime > 0.5 )

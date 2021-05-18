@@ -125,10 +125,10 @@ void function CodeCallback_OnPrecache()
  	Assert( IsSingleplayer() || GAMETYPE in GAMETYPE_TEXT )
 
 	// these should be level specific in SP
-	PrecacheEntity( "npc_soldier" )
-	PrecacheEntity( "turret" )
+	//PrecacheEntity( "npc_soldier" )
+	//PrecacheEntity( "turret" )
 
-	PrecacheEntity( "npc_dropship", DROPSHIP_MODEL )
+	//PrecacheEntity( "npc_dropship", DROPSHIP_MODEL )
 
 	//Scavenger ore models. Need to precache here instead of in gamemode scripts for vpk builds
     //Removing for build

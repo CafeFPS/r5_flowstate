@@ -109,7 +109,7 @@ array<entity> function gp()
 
 
 #if SERVER || CLIENT
-entity function ge( int ornull index = null )
+/*entity function ge( int ornull index = null )
 {
 	if ( index != null )
 		return GetEntByIndex( expect int( index ) )
@@ -123,7 +123,7 @@ entity function ge( int ornull index = null )
 	TraceResults results = TraceLine( traceStart, traceEnd, player )
 
 	return results.hitEnt
-}
+}*/
 #endif
 
 
@@ -402,7 +402,7 @@ bool ornull function DevRespawnGetPlayerEliminationOverride( entity player )
 
 void function DevRespawnPlayer( entity player, bool shouldForce, void functionref( entity, int ) devCallbackFunc = null, int devIndex = -1 )
 {
-	if ( shouldForce && IsAlive( player ) )
+	/*if ( shouldForce && IsAlive( player ) )
 	{
 		player.SetHealth( 0 )
 		wait 1.0
@@ -411,12 +411,12 @@ void function DevRespawnPlayer( entity player, bool shouldForce, void functionre
 	{
 		player.p.respawnPodLanded = true // pretend this is a valid survival respawn
 		thread _DelayUnsetRespawnPodLanded( player )
-		player.p.hasMatchParticipationEnded = false // they're still going!
-		player.p.lastDeathTime = -1.0
+		//player.p.hasMatchParticipationEnded = false // they're still going!
+		//player.p.lastDeathTime = -1.0
 		ClearPlayerEliminated( player )
 		if ( shouldForce )
 		{
-			RespawnTitanPilot( player )
+			//RespawnTitanPilot( player )
 		}
 		else
 		{
@@ -426,7 +426,7 @@ void function DevRespawnPlayer( entity player, bool shouldForce, void functionre
 	if ( devCallbackFunc != null )
 	{
 		devCallbackFunc( player, devIndex )
-	}
+	}*/
 }
 
 void function _DelayUnsetRespawnPodLanded( entity player )

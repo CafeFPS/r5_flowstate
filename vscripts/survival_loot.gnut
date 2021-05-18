@@ -97,9 +97,41 @@ vector function GetThrowOrigin( entity player )
 	return player.GetOrigin()
 }
 
-entity function SpawnGenericLoot( string ref, ... )
+entity function SpawnGenericLoot( string ref, vector origin, vector angles, int count )
 {
-	return null
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	printt("SpawnGenericLoot", ref)
+
+	entity loot = CreateEntity( "prop_survival" )
+	loot.SetOrigin( origin )
+	loot.SetAngles( angles )
+
+	loot.kv.solid = 0
+
+	loot.SetUsable()
+	loot.SetFadeDistance( 100000 )
+	loot.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	loot.SetUsablePriority( USABLE_PRIORITY_HIGH )
+	
+	//LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+	
+	loot.SetSurvivalInt(data.index)
+	loot.SetClipCount( count )
+
+	if (data.lootType == eLootType.MAINWEAPON) {
+		loot.SetWeaponName(data.baseWeapon)
+	}
+
+	loot.SetValueForModelKey( data.model )
+
+	loot.kv.fadedist = -1
+	loot.kv.renderamt = 255
+	loot.kv.rendercolor = "255 255 255"
+	
+	DispatchSpawn( loot )
+	
+	return loot
 }
 
 void function SetItemSpawnSource( entity drop, int spawnSource, entity player )

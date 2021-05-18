@@ -101,6 +101,8 @@ void function SURVIVAL_LootActions_InitShared()
 	action = RegisterLootAction( eLootAction.IGNORE )
 	action.title = ""
 
+	print("SHIT'S REGISTERED")
+
 	Assert( file.lootActionData.len() == eLootAction._count )
 
 }
@@ -131,6 +133,7 @@ string function SURVIVAL_GetStringForLootAction( int action )
 
 bool function SURVIVAL_ApplyLootAction( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
 {
+	printt("SURVIVAL_ApplyLootAction", action)
 	LootActionData a = GetLootActionData( action )
 	if ( IsValid( a.func ) )
 	{
@@ -162,6 +165,8 @@ bool function TryAttachItem( int action, entity pickup, entity player, int picku
 
 bool function TryPickupItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
 {
+	printt("TryPickupItem")
+
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 
 	bool pickedUp = false
@@ -173,6 +178,7 @@ bool function TryPickupItem( int action, entity pickup, entity player, int picku
 			break
 		case eLootType.AMMO:
 			pickedUp = PickupAmmo( pickup, player, pickupFlags )
+			printt("eLT AMMO", pickedUp)
 			break
 		case eLootType.RESOURCE:
 			pickedUp = PickupResource( pickup, player, pickupFlags, deathBox )
@@ -289,6 +295,8 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 
 	bool autopickup = (pickupFlags & PICKUP_FLAG_AUTO) > 0
 
+	printt("PickupAmmo", autopickup, SURVIVAL_GetCountToFillStack( player, data.ref ), data.inventorySlotCount)
+
 	if ( autopickup && SURVIVAL_GetCountToFillStack( player, data.ref ) == data.inventorySlotCount )
 		return false
 
@@ -301,6 +309,9 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 #endif
 
 	numToPickup = SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, false )
+
+	printt("PickupAmmo numToPickup", numToPickup)
+
 	if ( numToPickup == 0 )
 		return false
 
@@ -323,6 +334,8 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 	//Create tracking event for players with tracking passive.
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_AMMO, player, ammoPickup.GetOrigin(), player.GetTeam(), player )
 #endif
+
+	printt("PickupAmmo", clipCount, numToPickup)
 
 	return ( clipCount <= numToPickup )
 }
@@ -511,7 +524,7 @@ bool function EquipEquipment( entity pickup, entity player, string equipSlot, en
 		if ( es.trackingVisionExchangePOI != -1 )
 			TrackingVision_CreatePOI( es.trackingVisionExchangePOI, player, pickup.GetOrigin(), player.GetTeam(), player )
 
-		entity drop = SpawnGenericLoot( oldEquipData.ref, origin )
+		entity drop = SpawnGenericLoot( oldEquipData.ref, origin, <0,0,0>, 1 )
 		SetItemSpawnSource( drop, eSpawnSource.PLAYER_DROP, player )
 
 		if ( oldEquipData.lootType == eLootType.ARMOR  )

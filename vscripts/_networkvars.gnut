@@ -82,6 +82,7 @@ function SetServerVar( varName, value )
 	array<entity> players = GetPlayerArray()
 	foreach ( player in players )
 	{
+		printt("Init shit", player.p.clientScriptInitialized)
 		if ( !player.p.clientScriptInitialized )
 			continue
 

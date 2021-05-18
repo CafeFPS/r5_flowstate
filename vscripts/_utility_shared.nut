@@ -163,7 +163,7 @@ void function InitWeaponScripts()
 	MpWeaponBasicBolt_Init()
 
 	#if SERVER
-		BallLightning_Init()
+		//BallLightning_Init()
 	#endif
 }
 

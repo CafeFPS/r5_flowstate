@@ -28,7 +28,7 @@ global const string LOOT_BIN_MARKER_SCRIPTNAME = "survival_lootbin"
 global const string LOOT_BIN_SCRIPTNAME = "survival_lootbin_spawned"
 
 global const asset LOOT_BIN_MODEL = $"mdl/props/loot_bin/loot_bin_01_animated.rmdl"
-global const bool LOOT_BIN_CLOSABLE = false // note that they will always be closable if playlist var lootbins_infinite is set to 1
+global const bool LOOT_BIN_CLOSABLE = true // note that they will always be closable if playlist var lootbins_infinite is set to 1
 
 global const string SOUND_LOOT_BIN_OPEN = "Door_Lootbin_Open"
 global const string SOUND_LOOT_BIN_IDLE = "Door_Lootbin_Presence_Loop"
@@ -202,6 +202,8 @@ void function InitLootBin( entity lootbin )
 	{
 		DebugDrawLine( lootbin.GetOrigin(), lootbin.GetOrigin() + <0, 0, 1000>, 255, 255, 255, true, 100.0 )
 	}
+
+	AddMultipleLootItemsToLootBin(lootbin, ["mp_weapon_sniper", "mp_weapon_rspn101_gold"])
 }
 
 // the loop doesn't play without a delay involved for some reason
@@ -354,6 +356,11 @@ void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int loo
 {
 	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+	printt("K0k", ref, data.netInt)
+	printt("K0k", ref, data.netInt)
+	printt("K0k", ref, data.netInt)
+	printt("K0k", ref, data.netInt)
+	printt("K0k", ref, data.netInt)
 	entity loot   = SpawnGenericLoot( ref, p.origin, p.angles, data.countPerDrop )
 	loot.RemoveFromAllRealms()
 	loot.AddToOtherEntitysRealms( lootbin )
@@ -564,7 +571,7 @@ bool function LootBin_CanUse( entity player, entity lootBin )
 	if ( LootBin_IsBusy( lootBin ) )
 		return false
 
-	if ( LootBin_IsOpen( lootBin ) )
+	if ( !LOOT_BIN_CLOSABLE && LootBin_IsOpen( lootBin ) )
 		return false
 
 	return true

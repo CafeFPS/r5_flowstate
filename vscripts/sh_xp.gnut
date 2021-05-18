@@ -98,6 +98,10 @@ struct
 
 string[XP_TYPE._NUM_TYPES] xpDisplayNames = ["Unhandled", ...]
 
+bool function DEV_ShouldIgnorePersistence() {
+	return true
+}
+
 void function ShXP_Init()
 {
 	#if CLIENT
@@ -137,10 +141,10 @@ int function GetPlayerAccountXPProgress( EHI playerEHI )
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
-	#if DEV
+	//#if DEV
 		if ( DEV_ShouldIgnorePersistence() )
 			return 0
-	#endif
+	//#endif
 
 	return FromEHI( playerEHI ).GetPersistentVarAsInt( "xp" )
 }
@@ -151,10 +155,10 @@ int function GetPlayerAccountXPPreviousProgress( EHI playerEHI )
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
-	#if DEV
+	//#if DEV
 		if ( DEV_ShouldIgnorePersistence() )
 			return 0
-	#endif
+	//#endif
 
 	return FromEHI( playerEHI ).GetPersistentVarAsInt( "previousXP" )
 }
@@ -189,10 +193,14 @@ void function InitXP( entity player )
 
 void function XP_GameStartedPlaying()
 {
-	#if DEV
+	//#if DEV
+	print("DEVVVVVVVVVVVVVVV")
+	print("DEVVVVVVVVVVVVVVV")
+	print("DEVVVVVVVVVVVVVVV")
+	print("DEVVVVVVVVVVVVVVV")
 		if ( DEV_ShouldIgnorePersistence() )
 			return
-	#endif
+	//#endif
 
 	// Current character class being used (so XP gets added to this character, and EOG knows what you used)
 	foreach( entity player in GetPlayerArray() )

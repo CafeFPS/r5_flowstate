@@ -1033,6 +1033,8 @@ ItemFlavor function ConvertLoadoutSlotContentsIndexToItemFlavor( LoadoutEntry en
 	Assert( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY )
 	Assert( slotContentsIndex >= SLOT_CONTENTS_FIRST_VALID_ITEM )
 
+	if(slotContentsIndex == 0)
+		return entry._____INTERNAL_networkIndexItemFlavorMap[2]
 	return entry._____INTERNAL_networkIndexItemFlavorMap[slotContentsIndex]
 }
 

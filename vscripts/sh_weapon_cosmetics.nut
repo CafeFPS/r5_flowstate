@@ -134,7 +134,7 @@ void function SetupWeaponSkin( ItemFlavor skin )
 			int skinLegendaryIndex = weaponLegendaryIndexMap.len()
 			weaponLegendaryIndexMap[worldModel] <- skinLegendaryIndex
 
-			SetWeaponLegendaryModel( WeaponItemFlavor_GetClassname( weaponFlavor ), skinLegendaryIndex, viewModel, worldModel )
+			//SetWeaponLegendaryModel( WeaponItemFlavor_GetClassname( weaponFlavor ), skinLegendaryIndex, viewModel, worldModel )
 		}
 
 		fileLevel.weaponSkinLegendaryIndexMap[skin] <- weaponLegendaryIndexMap[worldModel]

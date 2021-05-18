@@ -1576,7 +1576,7 @@ entity function CreatePropScript_NoDispatchSpawn( asset model, vector ornull ori
 		if ( angles )
 			prop_script.SetAngles( expect vector( angles ) )
 	}
-	DispatchSpawn( prop_script )
+	//DispatchSpawn( prop_script )
 	if ( origin )
 	{
 		// hack: Setting origin twice. SetOrigin needs to happen after DispatchSpawn, otherwise origin is snapped to nearest whole unit
@@ -4589,5 +4589,5 @@ void function RunClientCommandOnPlayer( entity player, string command )
 
 entity function CreatePropDoor( asset model, vector pos, vector ang )
 {
-	return CreatePropDynamic( model, pos, ang )
+	return CreatePropDynamic_NoDispatchSpawn( model, pos, ang )
 }

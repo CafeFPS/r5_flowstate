@@ -219,6 +219,7 @@ void function SURVIVAL_Loot_All_InitShared()
 		{
 			case eLootType.MAINWEAPON:
 				RegisterWeaponForUse( data.baseWeapon )
+				//PrecacheWeapon( data.baseWeapon )
 				data.model = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "playermodel" )
 				if ( GetWeaponInfoFileKeyField_Global( data.baseWeapon, "ammo_pool_type" ) != null )
 					data.ammoType = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "ammo_pool_type" )

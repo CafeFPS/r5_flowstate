@@ -48,8 +48,8 @@ function AiDrone_Init()
 	PrecacheParticleSystem( FX_DRONE_SHIELD_WALL_HUMAN )
 	PrecacheParticleSystem( FX_DRONE_SHIELD_ROPE_GLOW )
 
-	PrecacheModel( $"models/robots/drone_air_attack/drone_air_attack_rockets.mdl" )
-	PrecacheModel( $"models/robots/drone_air_attack/drone_air_attack_plasma.mdl" )
+	PrecacheModel( $"models/robots/drone_air_attack/drone_air_attack_rockets.rmdl" )
+	PrecacheModel( $"models/robots/drone_air_attack/drone_air_attack_plasma.rmdl" )
 
 	PrecacheMaterial( $"cable/cable_selfillum.vmt" )
 	PrecacheModel( $"cable/cable_selfillum.vmt" )
