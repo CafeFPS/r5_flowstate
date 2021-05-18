@@ -677,6 +677,9 @@ void function __IncrementStat_Float( entity player, StatEntry entry, float incre
 	Assert( entry.behavior == eStatBehavior.ACCUMULATED )
 
 	//player.p.statValues_Float[entry.indexWithinType] += incrementAmount
+    if ( player.p.statValues_Float.len() <= 0 )
+        return printt("!!! player.p.statValues_Float.len() <= 0 !!!")
+    
 	float oldValue = player.p.statValues_Float[entry.indexWithinType]
 	float newValue = oldValue + incrementAmount
 	player.p.statValues_Float[entry.indexWithinType] = newValue
