@@ -66,8 +66,6 @@ void function RemoteFunctions_Init_Begin()
 	RegisterServerVar( "roundScoreLimitComplete", false )
 	RegisterServerVar( "roundWinningKillReplayEntHealthFrac", 0.0 ) //Using .nv because we need the non-rolled back value during round winning kill replay
 
-	RegisterServerVar( "badRepPresent", false )
-
 	RegisterServerVar( "roundBased", false )
 	RegisterServerVar( "roundStartTime", null )
 	RegisterServerVar( "roundEndTime", 0.0 )

@@ -92,7 +92,6 @@ void function ClGameState_Init()
 {
 	RegisterSignal( "GameStateChanged" )
 	RegisterServerVarChangeCallback( "gameState", ClGameState_Changed )
-	RegisterServerVarChangeCallback( "badRepPresent", UpdateScoreboardBadRepPresentMessage )
 
 	AddCallback_OnClientScriptInit( ClGameState_AddClient )
 
@@ -211,19 +210,7 @@ void function ClGameState_RegisterGameStateAsset( asset gameStateAsset )
 
 void function ClGameState_AddClient( entity player )
 {
-	player.cv.scoreboardBadRepPresentMessage <- HudElement( "ScoreboardBadRepPresentMessage", HudElement( "Scoreboard" ) )
-
-	#if PC_PROG
-		player.cv.scoreboardBadRepPresentMessage.SetText( "#ASTERISK_FAIRFIGHT_CHEATER" )
-	#else
-		player.cv.scoreboardBadRepPresentMessage.SetText( "#ASTERISK_BAD_REPUTATION" )
-	#endif
-
-	player.cv.hudCheaterMessage <- HudElement( "HudCheaterMessage" )
-	if ( !Durango_IsDurango() && !IsLobby() && player.HasBadReputation() )
-		player.cv.hudCheaterMessage.Show()
-	else
-		player.cv.hudCheaterMessage.Hide()
+    
 }
 
 
@@ -859,19 +846,6 @@ void function PlayRoundWonConversationWithAnnouncementDelay( float conversationD
 		PlayConversationToLocalClient( "RoundWonAnnouncement" )
 	else if ( level.nv.winningTeam != TEAM_UNASSIGNED )
 		PlayConversationToLocalClient( "RoundLostAnnouncement" )
-}
-
-void function UpdateScoreboardBadRepPresentMessage()
-{
-	if ( IsLobby() )
-		return
-
-	entity player = GetLocalClientPlayer()
-
-	if ( level.nv.badRepPresent )
-		player.cv.scoreboardBadRepPresentMessage.Show()
-	else
-		player.cv.scoreboardBadRepPresentMessage.Hide()
 }
 
 void function UpdateChatHudLocationForTop3()

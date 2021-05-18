@@ -2895,25 +2895,6 @@ void function ForceTimeLimitDone()
 	ServerCommand( "mp_enablematchending 1" )
 }
 
-
-void function UpdateBadRepPresent()
-{
-	array<entity> players = GetPlayerArray()
-	bool found = false
-/*	always set to false for now
-	foreach ( player in players )
-	{
-		if ( player.HasBadReputation() )
-		{
-			found = true
-			break
-		}
-	}
-*/
-	level.nv.badRepPresent = found
-	level.ui.badRepPresent = found
-}
-
 void function Dev_PrintMessage( entity player, string text, string subText = "", float duration = 7.0, string soundAlias = "" )
 {
 	#if DEV
