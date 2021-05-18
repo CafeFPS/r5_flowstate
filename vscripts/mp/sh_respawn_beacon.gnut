@@ -8,10 +8,10 @@ global function GetRespawnStyle
 global function RespawnBeacons_OnSquadEliminated
 global function RespawnBeacon_PutPlayerInDropship
 global function AddCallback_OnDNAPickupDestroyed
-#if DEV
+//#if DEV
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
-#endif
+//#endif
 #endif
 
 #if CLIENT
@@ -972,7 +972,8 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	jumpAnimSequence.attachment = animData.attachment
 	jumpAnimSequence.hideProxy = animData.hideProxy
 
-	player.Signal( "StopPostDeathLogic" )
+    // TODO: below
+	//player.Signal( "StopPostDeathLogic" )
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF

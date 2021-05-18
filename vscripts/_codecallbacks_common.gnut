@@ -95,14 +95,17 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	
 	CodeCallback_OnClientReloadConnectionCompleted(player)
 
-	vector origin = GetEnt( "info_player_start" ).GetOrigin()
-	// player.SetPlayerSettings( $"settings/player/mp/pilot_survival_gunner.rpak" )
-	player.SetOrigin( origin )
-	// player.RespawnPlayer( null )
-
-	//CPlayer.SetPlayerSettingsWithMods( player, DEFAULT_PILOT_SETTINGS, [] )
 	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_grapple.rpak", [ "enable_wallrun", "enable_doublejump" ] )
-	DoRespawnPlayer( player, null )//player.RespawnPlayer( null )
+
+    // Respawn to get out of spectator?
+    DoRespawnPlayer( player, null )
+
+	vector origin = GetEnt( "info_player_start" ).GetOrigin()
+    player.SetOrigin( origin )
+    //thread RespawnPlayersInDropshipAtPoint(GetPlayerArray(), origin, <0, 90, 0>)
+
+    // Give weapons
+	player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_ANY )
 	player.GiveWeapon( "mp_weapon_sniper", WEAPON_INVENTORY_SLOT_ANY )
 	player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_ANY )
 	player.GiveOffhandWeapon( "mp_ability_grapple", OFFHAND_SPECIAL )

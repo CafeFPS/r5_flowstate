@@ -192,6 +192,7 @@ void function CodeCallback_MapSpawn() // original script entry point
     PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
 
     PrecacheWeapon( $"mp_weapon_sniper" )
+    PrecacheWeapon( $"mp_weapon_alternator_smg" )
     PrecacheWeapon( $"mp_weapon_wraith_kunai_primary" )
     PrecacheWeapon( $"mp_ability_grapple" )
 
