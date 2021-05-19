@@ -203,6 +203,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_hunt_mode")
 	PrecacheWeapon( $"mp_weapon_frag_grenade")
 	PrecacheWeapon( $"mp_weapon_grenade_emp" )
+	PrecacheWeapon( $"mp_weapon_dirty_bomb" )
 
 	RegisterSignal("forever")
 	printl( "Code Script: _mapspawn" )
