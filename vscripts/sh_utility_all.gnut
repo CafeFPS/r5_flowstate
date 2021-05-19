@@ -747,8 +747,8 @@ bool function IsWeaponKeyFieldDefined( string ref, string variable )
 
 string function GetWeaponInfoFileKeyField_GlobalString( string ref, string variable )
 {
-	if(variable == "printName") 
-		return "printName"
+	// if(variable == "printName") 
+	// 	return "printName"
 	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
 	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
 	return expect string( val )

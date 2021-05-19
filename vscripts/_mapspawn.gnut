@@ -196,6 +196,7 @@ void function CodeCallback_MapSpawn() // original script entry point
     PrecacheWeapon( $"mp_weapon_wraith_kunai_primary" )
     PrecacheWeapon( $"mp_ability_grapple" )
 
+	RegisterSignal("forever")
 	printl( "Code Script: _mapspawn" )
 
 	//SPMP_MapSpawn_Init() // naw actually dont lol
