@@ -649,23 +649,25 @@ bool function ClientCommand_stats_set( entity player, array<string> args )
 #if SERVER
 void function __IncrementStat_Int( entity player, StatEntry entry, int incrementAmount )
 {
-	Assert( entry.type == eStatType.INT )
-	Assert( entry.behavior == eStatBehavior.ACCUMULATED )
+	// TODOACTUAL: see if you can make this work without commenting the code
+	
+	// Assert( entry.type == eStatType.INT )
+	// Assert( entry.behavior == eStatBehavior.ACCUMULATED )
 
-	//player.p.statValues_Int[entry.indexWithinType] += incrementAmount
-	int oldValue = player.p.statValues_Int[entry.indexWithinType]
-	int newValue = oldValue + incrementAmount
-	player.p.statValues_Int[entry.indexWithinType] = newValue
+	// //player.p.statValues_Int[entry.indexWithinType] += incrementAmount
+	// int oldValue = player.p.statValues_Int[entry.indexWithinType]
+	// int newValue = oldValue + incrementAmount
+	// player.p.statValues_Int[entry.indexWithinType] = newValue
 
-	if ( STATS_DEBUG_PRINT_SPAM )
-		printt( "@@@@ STATS __IncrementStat_Int @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
+	// if ( STATS_DEBUG_PRINT_SPAM )
+	// 	printt( "@@@@ STATS __IncrementStat_Int @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
 
-	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
-		foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
-			cb( player, oldValue, newValue )
+	// if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
+	// 	foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
+	// 		cb( player, oldValue, newValue )
 
-	foreach( StatEntry dependent in entry.dependents )
-		OnDependentStatDependencyChanged( player, dependent )
+	// foreach( StatEntry dependent in entry.dependents )
+	// 	OnDependentStatDependencyChanged( player, dependent )
 }
 #endif
 

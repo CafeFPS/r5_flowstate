@@ -257,6 +257,7 @@ void function Server_Init()
 	PilotsPassage_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
+	Bleedout_Init()
 	#if DEV
 		SmokeTest_Init()
 	#endif // DEV
