@@ -289,14 +289,14 @@ bool function DamageIgnoresFriendlyFire( damageInfo )
 
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
-	switch ( damageSourceID )
-	{
-		case eDamageSourceId.switchback_trap:
-		case eDamageSourceId.suicideSpectreAoE:
-		case eDamageSourceId.mp_titanweapon_stun_laser: // for energy transfer functionality. Preventing FF damage in the callback.
-		case eDamageSourceId.mp_titanability_smoke: // For FD Vanguard Shield Upgrades. Preventing FF damage in the callback.
-			return true
-	}
+	// switch ( damageSourceID )
+	// {
+	// 	case eDamageSourceId.switchback_trap:
+	// 	case eDamageSourceId.suicideSpectreAoE:
+	// 	case eDamageSourceId.mp_titanweapon_stun_laser: // for energy transfer functionality. Preventing FF damage in the callback.
+	// 	case eDamageSourceId.mp_titanability_smoke: // For FD Vanguard Shield Upgrades. Preventing FF damage in the callback.
+	// 		return true
+	// }
 
 	return false
 }

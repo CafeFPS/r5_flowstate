@@ -196,6 +196,9 @@ void function CodeCallback_MapSpawn() // original script entry point
     PrecacheWeapon( $"mp_weapon_wraith_kunai_primary" )
     PrecacheWeapon( $"mp_ability_grapple" )
 	PrecacheWeapon( $"mp_weapon_deployable_medic" )
+	PrecacheWeapon( $"mp_ability_gibraltar_shield" )
+	PrecacheWeapon( $"mp_weapon_bubble_bunker" )
+
 	RegisterSignal("forever")
 	printl( "Code Script: _mapspawn" )
 

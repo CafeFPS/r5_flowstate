@@ -330,7 +330,7 @@ entity function CreateScriptMover( vector origin = <0.0, 0.0, 0.0>, vector angle
 {
 	entity script_mover = CreateEntity( "script_mover_lightweight" )
 	script_mover.kv.solid = solidType
-	script_mover.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	script_mover.kv.SpawnAsPhysicsMover = 0
 	script_mover.SetOrigin( origin )
 	script_mover.SetAngles( angles )
