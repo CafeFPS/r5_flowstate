@@ -201,6 +201,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_holopilot" )
 	PrecacheWeapon( $"mp_ability_phase_walk")
 	PrecacheWeapon( $"mp_ability_hunt_mode")
+	PrecacheWeapon( $"mp_weapon_frag_grenade")
+	PrecacheWeapon( $"mp_weapon_grenade_emp" )
 
 	RegisterSignal("forever")
 	printl( "Code Script: _mapspawn" )

@@ -175,11 +175,13 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			}
 
 			// Don't take damage from projectiles created before you where spawned.
-			if ( inflictor.GetProjectileCreationTime() < ent.s.respawnTime && ( Time() - ent.s.respawnTime ) < 2.0 )
-			{
-				DamageInfo_SetDamage( damageInfo, 0 )
-				return
-			}
+			// if ( inflictor.GetProjectileCreationTime() < ent.s.respawnTime && ( Time() - ent.s.respawnTime ) < 2.0 )
+			// {
+			// 	DamageInfo_SetDamage( damageInfo, 0 )
+			// 	return
+			// }
+
+			//TODOACTUAL: Commented bcs idk how to properly fix it yet
 		}
 
 		if ( inflictor.e.onlyDamageEntitiesOnce == true || inflictor.e.onlyDamageEntitiesOncePerTick == true )

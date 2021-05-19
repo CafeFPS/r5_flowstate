@@ -3477,6 +3477,7 @@ void function PushEntWithVelocity( entity ent, vector velocity )
 
 bool function IsPlayerFemale( entity player )
 {
+	return false; //TODOACTUAL: to do some research of this function
 	return player.Dev_GetPlayerSettingByKeyField( "raceOrSex" ) == "race_human_female"
 }
 

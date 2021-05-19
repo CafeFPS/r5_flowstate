@@ -237,6 +237,12 @@ global enum eDamageSourceId
 	//explosion
 
 	mp_weapon_arc_launcher
+
+	
+	mp_weapon_satchel //added for r5_scripts
+	mp_weapon_proximity_mine //added for r5_scripts
+	mp_titanweapon_arc_pylon //added for r5_scripts
+	mp_titanability_smoke //added for r5_scripts
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
