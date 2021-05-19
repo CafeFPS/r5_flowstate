@@ -904,6 +904,7 @@ void function SetDibsPlayerForLootWaypoint( entity wp, entity itemEnt )
 
 int function Waypoint_GetPingTypeForWaypoint( entity wp )
 {
+	if(!IsValid(wp)) return 0;
 	return wp.GetWaypointInt( INT_INDEX_PING_COMMON_TYPE )
 }
 
@@ -1511,6 +1512,7 @@ void function Waypoint_ResetCreatedTime( entity wp )
 
 float function Waypoint_GetWaypointAge( entity wp )
 {
+	if(!IsValid(wp) || !IsValid(wp.wp)) return 0;
 	return (Time() - wp.wp.waypointCreatedTime)
 }
 
