@@ -254,9 +254,9 @@ struct PlayerGRXScriptState
 struct FileStruct_LifetimeVM
 {
 	// (dw): cached to work around R5DEV-59700
-	int                   WORKAROUND_delayedOffersState
-	array< GRXCodeOffer > WORKAROUND_delayedCraftingOffers
-	array< GRXCodeOffer > WORKAROUND_delayedStoreOffers
+	int                    WORKAROUND_delayedOffersState
+	array< GRXStoreOffer > WORKAROUND_delayedCraftingOffers
+	array< GRXStoreOffer > WORKAROUND_delayedStoreOffers
 
 	bool WORKAROUND_wasUserInfoUpdatedBeforeLevelInit = false
 
@@ -1867,7 +1867,7 @@ void function HandleGRXQueryCompleted( entity player, int queryScriptId, int que
 
 
 #if SERVER
-bool function CodeCallback_GRXCheckStoreOfferPurchase( entity player, GRXCodeOffer codeOffer )
+bool function CodeCallback_GRXCheckStoreOfferPurchase( entity player, GRXStoreOffer codeOffer )
 {
 	Assert( IsLobby() )
 	if ( !IsLobby() )
@@ -1900,7 +1900,7 @@ bool function CodeCallback_GRXCheckStoreOfferPurchase( entity player, GRXCodeOff
 
 
 #if UI
-void function UICodeCallback_GRXOffersRefreshed( int offersState, array< GRXCodeOffer > craftingOffers, array< GRXCodeOffer > storeOffers )
+void function UICodeCallback_GRXOffersRefreshed( int offersState, array< GRXStoreOffer > craftingOffers, array< GRXStoreOffer > storeOffers )
 {
 	#if GRX_DEBUG_PRINTS
 		if ( !fileLevel.GRX_DEBUG_PRINTS_disableTemporarily )
@@ -1951,7 +1951,7 @@ void function _Force_Refresh_Offers()
 
 
 #if UI
-void function HandleGRXOffersRefreshed( int offersState, array< GRXCodeOffer > craftingOffers, array< GRXCodeOffer > storeOffers )
+void function HandleGRXOffersRefreshed( int offersState, array< GRXStoreOffer > craftingOffers, array< GRXStoreOffer > storeOffers )
 {
 	PlayerGRXScriptState scriptState = GetPlayerGRXScriptState( GetUIPlayer() )
 	scriptState.areOffersReady = (offersState == GRX_OFFERSSTATE_READY)
@@ -1960,7 +1960,7 @@ void function HandleGRXOffersRefreshed( int offersState, array< GRXCodeOffer > c
 	fileLevel.storeFeaturedOffers.clear()
 	fileLevel.storeOfferColumns.clear()
 
-	foreach ( GRXCodeOffer codeOffer in craftingOffers )
+	foreach ( GRXStoreOffer codeOffer in craftingOffers )
 	{
 		if ( !IsValidItemFlavorGRXIndex( codeOffer.itemIdx ) )
 			continue
@@ -2016,7 +2016,7 @@ void function HandleGRXOffersRefreshed( int offersState, array< GRXCodeOffer > c
 		ifpi.locationToBundledStoreOffersMap.clear()
 	}
 
-	foreach( GRXCodeOffer codeOffer in storeOffers )
+	foreach( GRXStoreOffer codeOffer in storeOffers )
 	{
 		if ( !IsValidItemFlavorGRXIndex( codeOffer.itemIdx ) )
 		{
