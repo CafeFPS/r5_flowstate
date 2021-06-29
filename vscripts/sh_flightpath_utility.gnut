@@ -1397,7 +1397,7 @@ void function ServerCallback_DestroyAirdropBadPlace( int id )
 }
 #endif //CLIENT
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function AirdropTraceTest( entity player )
 {
 	vector startPosition = player.EyePosition() + <0,0,8>

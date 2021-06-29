@@ -127,7 +127,7 @@ function EngineerDroneHasNoOwner( drone )
 function RunDroneTypeThink( drone )
 {
 	expect entity( drone )
-	#if DEV
+	#if R5DEV
 	Assert( !( "RunDroneTypeThink" in drone.s ), "Already ran drone think!" )
 	drone.s.RunDroneTypeThink <- true
 	#endif

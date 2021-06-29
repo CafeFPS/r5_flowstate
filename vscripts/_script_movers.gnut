@@ -140,7 +140,7 @@ void function CodeCallback_PreBuildAINFile()
 
 void function ScriptedDoorInit( entity door )
 {
-	#if DEV
+	#if R5DEV
 	array validModels = [
 		$"models/door/door_imc_interior_03_128_animated.mdl",
 		$"models/door/pod_door_Hangar_IMC_01_animated.mdl",
@@ -271,7 +271,7 @@ void function CreateDoorMoverModel( asset door, pos, angle, physics)
 
 void function ScriptedSwitchInit( entity button )
 {
-	#if DEV
+	#if R5DEV
 	array< asset > validModels = [
 		$"models/domestic/light_switch_touchscreen.mdl",
 		$"models/props/pressure_plates/pressure_plate_titan_industrial_01.mdl",

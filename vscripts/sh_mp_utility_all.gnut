@@ -95,7 +95,7 @@ int function GetAvailableFDUnlockPoints( entity player, string titanClass )
 }
 
 #if SERVER
-	#if DEV
+	#if R5DEV
 	void function DEV_AddCredits( int additionalCredits, entity optionalPlayer = null )
 	{
 		array<entity> players

@@ -109,7 +109,7 @@ void function ClientCodeCallback_MapSpawn()
 
 	PrecacheResFiles()
 
-	#if DEV
+	#if R5DEV
 		ClModelViewInit()
 	#endif
 

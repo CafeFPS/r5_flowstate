@@ -79,7 +79,7 @@ void function AiSpawn_Init()
 	// RegisterSignal( "OnFinishedAssaultChain" )
 
 	// AiSpawnContent_Init()
-	// #if DEV
+	// #if R5DEV
 	// // just to insure that ai settings are being setup properly.
 	// InitNpcSettingsFileNamesForDevMenu()
 	// SetupSpawnAIButtons( TEAM_MILITIA )
@@ -89,7 +89,7 @@ void function AiSpawn_Init()
 
 void function AiSpawn_EntitiesDidLoad()
 {
-	#if DEV
+	#if R5DEV
 	//	On load in dev, verify that subclass matches leveled_aisettings. Subclass is being eradicated.
 	foreach ( spawner in GetSpawnerArrayByClassName( "npc_titan" ) )
 	{
@@ -588,7 +588,7 @@ void function StopAssaultMoveTarget( entity npc )
 
 void function InitInfoMoveTargetFlags( entity infoMoveTarget )
 {
-	#if DEV
+	#if R5DEV
 	if ( infoMoveTarget.HasKey( "script_goal_radius" ) )
 	{
 		int radius = int( infoMoveTarget.kv.script_goal_radius )

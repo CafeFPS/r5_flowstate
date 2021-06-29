@@ -36,7 +36,7 @@ global function CharacterIntroQuip_GetSortOrdinal
 global function CharacterSkin_Apply
 global function CharacterSkin_WaitForAndApplyFromLoadout
 #endif
-#if DEV && CLIENT
+#if R5DEV && CLIENT
 global function DEV_TestCharacterSkinData
 #endif
 
@@ -549,7 +549,7 @@ ItemFlavor function CharacterIntroQuip_GetCharacterFlavor( ItemFlavor flavor )
 }
 
 
-#if DEV && CLIENT
+#if R5DEV && CLIENT
 void function DEV_TestCharacterSkinData()
 {
 	entity model = CreateClientSidePropDynamic( <0, 0, 0>, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
@@ -567,4 +567,4 @@ void function DEV_TestCharacterSkinData()
 
 	model.Destroy()
 }
-#endif // DEV && CLIENT
+#endif // R5DEV && CLIENT

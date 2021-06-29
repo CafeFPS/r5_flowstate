@@ -154,7 +154,7 @@ void function PainDeathSounds_Init()
 		painOrDeathSound.blocksPriority = blocksPriority
 		painOrDeathSound.priority = priority
 
-		#if DEV
+		#if R5DEV
 		if ( priority < 100 || priority > 500 )
 			Warning( "PainDeathSound event priority must be between 100 and 500. See " + event + " " + method )
 		#endif
@@ -423,7 +423,7 @@ void function PlayPainOrDeathSounds( array<PainOrDeathSound> soundEvents, entity
 		}
 	}
 
-	#if DEV
+	#if R5DEV
 	if ( !file.painDeathDebug )
 		return
 

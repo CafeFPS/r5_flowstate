@@ -4074,7 +4074,7 @@ vector function OffsetPointRelativeToVector( vector point, vector offset, vector
 #if SERVER
 float function GetRoundTimeLimit_ForGameMode()
 {
-#if DEV
+#if R5DEV
 	if ( level.devForcedTimeLimit )
 	{
 		//Make it needed to be called multiple times for RoundBasedGameModes

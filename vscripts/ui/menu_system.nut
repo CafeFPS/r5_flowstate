@@ -48,7 +48,7 @@ void function InitSystemPanelMain( var panel )
 	AddPanelFooterOption( panel, RIGHT, BUTTON_BACK, false, "#BUTTON_RETURN_TO_MAIN", "", ReturnToMain_OnActivate )
 	#endif
 
-	#if DEV
+	#if R5DEV
 		AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenDevMenu )
 	#endif
 }

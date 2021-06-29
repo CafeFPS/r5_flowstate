@@ -84,7 +84,7 @@ void function SV_CL_Init()
 	ClientSidePickups_Init()
 	GrappleWeaponInit()
 	ShInfoCords_Init()
-	#if DEV
+	#if R5DEV
 		ShDevUtility_Init()
 		CaptureMode_Shared_Init()
 	#endif
@@ -258,7 +258,7 @@ void function Server_Init()
 	SneakPeek_Init()
 	JumpPad_Init()
 	Bleedout_Init()
-	#if DEV
+	#if R5DEV
 		SmokeTest_Init()
 	#endif // DEV
 }

@@ -13,7 +13,7 @@ global function IsActiveNodeAnalysis
 
 global function AddDropshipFlightAnalysis
 
-#if DEV && SERVER
+#if R5DEV && SERVER
 global function AddNewAnalysis
 #endif
 
@@ -327,7 +327,7 @@ void function EntitiesDidLoad()
 	//	AddAnalysisFunc( flightPath, AnaylsisFuncDropshipFindDropNodes, HULL_HUMAN )
 	//	AddAnalysisIterator( flightPath, 2 ) // iterate every other node
 	//
-	//	#if DEV
+	//	#if R5DEV
 	//	bool foundDropoffSpawnpoint = FlightPathHasNodeAndMatchesAINData( flightPath )
 	//	#endif
 	//
@@ -337,7 +337,7 @@ void function EntitiesDidLoad()
 	//	AddAnalysisFunc( flightPath, AnaylsisFuncDropshipFindDropNodes, HULL_HUMAN )
 	//	AddAnalysisIterator( flightPath, 2 ) // iterate every other node
 	//
-	//	#if DEV
+	//	#if R5DEV
 	//	if ( !foundDropoffSpawnpoint )
 	//	{
 	//		if ( !FlightPathHasNodeAndMatchesAINData( flightPath ) && !Flag( "DisableDropships" ) )

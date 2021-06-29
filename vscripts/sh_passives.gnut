@@ -17,7 +17,7 @@ global function TakePassive
 global function TakeAllPassives
 #endif
 
-#if (SERVER || CLIENT) && DEV
+#if (SERVER || CLIENT) && R5DEV
 global function DEV_PrintAllPassives
 #endif
 
@@ -230,7 +230,7 @@ void function RemoveCallback_OnPassiveChanged( int passive, void functionref( en
 //// Dev functions ////
 ///////////////////////
 ///////////////////////
-#if (SERVER || CLIENT) && DEV
+#if (SERVER || CLIENT) && R5DEV
 void function DEV_PrintAllPassives( entity player )
 {
 	for ( int passiveIdx = 0; passiveIdx < ePassives._count; passiveIdx++ )

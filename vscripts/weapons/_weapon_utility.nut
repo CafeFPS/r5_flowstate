@@ -77,9 +77,9 @@ global function ServerCallback_SetWeaponPreviewState
 global function GetRadiusDamageDataFromProjectile
 global function OnWeaponAttemptOffhandSwitch_Never
 
-#if DEV
+#if R5DEV
 global function DevPrintAllStatusEffectsOnEnt
-#endif // #if DEV
+#endif // #if R5DEV
 
 #if SERVER
 global function PassThroughDamage
@@ -126,7 +126,7 @@ global function TryApplyingBurnDamage
 global function AddEntityBurnDamageStack
 global function ApplyBurnDamageTick
 
-#if DEV
+#if R5DEV
 global function ToggleZeroingMode
 #endif
 
@@ -236,7 +236,7 @@ struct
 
 		table<string, array<void functionref( entity, string, bool )> > weaponModChangedCallbacks
 
-		#if DEV
+		#if R5DEV
 			bool inZeroingMode = false
 		#endif
 
@@ -1502,7 +1502,7 @@ void function SatchelThink( entity satchel, entity player )
 	int satchelHealth = 15
 	thread TrapExplodeOnDamage( satchel, satchelHealth )
 
-	#if DEV
+	#if R5DEV
 		// temp HACK for FX to use to figure out the size of the particle to play
 		if ( Flag( "ShowExplosionRadius" ) )
 			thread ShowExplosionRadiusOnExplode( satchel )
@@ -1593,7 +1593,7 @@ void function PROTO_ExplodeAfterDelay( entity satchel, float delay )
 }
 #endif // SERVER
 
-#if DEV
+#if R5DEV
 void function ShowExplosionRadiusOnExplode( entity ent )
 {
 	ent.WaitSignal( "OnDestroy" )
@@ -2814,7 +2814,7 @@ void function GiveEMPStunStatusEffects( entity ent, float duration, float fadeou
 	#endif
 }
 
-#if DEV
+#if R5DEV
 string ornull function FindEnumNameForValue( table searchTable, int searchVal )
 {
 	foreach ( string keyname, int value in searchTable )
@@ -2844,7 +2844,7 @@ void function DevPrintAllStatusEffectsOnEnt( entity ent )
 	}
 	printt( found + " effects active.\n" )
 }
-#endif // #if DEV
+#endif // #if R5DEV
 
 entity function GetMeleeWeapon( entity player )
 {
@@ -4554,7 +4554,7 @@ void function AddEntityBurnDamageStack( entity ent, entity owner, entity inflict
 	else if ( ent.IsNPC() )
 		ent.ai.burnDamageStacks.append( stack )
 
-	#if DEV && DEBUG_BURN_DAMAGE
+	#if R5DEV && DEBUG_BURN_DAMAGE
 		printt( "tickInterval:", stack.tickInterval )
 		printt( "numIntervals:", numIntervals )
 		printt( "damagePerTick:", stack.damagePerTick )
@@ -4572,7 +4572,7 @@ void function RemoveEntityBurnDamageStack( entity ent, int stackIdx )
 	else
 		ent.ai.burnDamageStacks.remove( stackIdx )
 
-	#if DEV && DEBUG_BURN_DAMAGE
+	#if R5DEV && DEBUG_BURN_DAMAGE
 		printt( "burn stack removed, num stacks is now:", GetEntityBurnDamageStackCount( ent ) )
 	#endif
 }
@@ -4586,7 +4586,7 @@ void function EntityBurnDamageThread( entity ent )
 	OnThreadEnd(
 		function () : ( ent )
 		{
-			#if DEV && DEBUG_BURN_DAMAGE
+			#if R5DEV && DEBUG_BURN_DAMAGE
 				printt( "EntityBurnDamageThread ended" )
 			#endif
 
@@ -4615,7 +4615,7 @@ void function EntityBurnDamageThread( entity ent )
 					dmgThisTick += remainderDmg
 					stack.damageDealt += remainderDmg
 
-					#if DEV && DEBUG_BURN_DAMAGE
+					#if R5DEV && DEBUG_BURN_DAMAGE
 						printt( "applying", remainderDmg, "burn damage remainder, total damage dealt:", stack.damageDealt )
 					#endif
 				}
@@ -4626,7 +4626,7 @@ void function EntityBurnDamageThread( entity ent )
 				stack.damageDealt += stack.damagePerTick
 				stack.lastDamageTime = Time()
 
-				#if DEV && DEBUG_BURN_DAMAGE
+				#if R5DEV && DEBUG_BURN_DAMAGE
 					printt( "applying", stack.damagePerTick, "burn damage, total damage dealt:", stack.damageDealt )
 				#endif
 			}
@@ -4697,7 +4697,7 @@ void function SetEntityIsBurning( entity ent, bool isBurning )
 }
 
 
-#if DEV
+#if R5DEV
 void function ToggleZeroingMode()
 {
 	if ( !GetPlayerArray().len() )
@@ -4811,7 +4811,7 @@ bool function OnWeaponAttemptOffhandSwitch_Never( entity weapon )
 #if CLIENT
 void function ServerCallback_SetWeaponPreviewState( bool newState )
 {
-	#if DEV
+	#if R5DEV
 		entity player = GetLocalClientPlayer()
 
 		if ( newState )

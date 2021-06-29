@@ -621,7 +621,7 @@ function PilotBecomesTitan( entity player, entity titan, bool fullCopy = true )
 	// 	callbackFunc( player, titan )
 	// }
 
-	// #if DEV
+	// #if R5DEV
 	// 	thread Dev_CheckTitanIsDeletedAtEndOfPilotBecomesTitan( titan )
 	// #endif
 }

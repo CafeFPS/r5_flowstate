@@ -1454,7 +1454,7 @@ entity function GetEntityPlayerIsLookingAt( entity player, array<entity> ents, f
 		lootItem.playerViewDot = dot
 		finalLootEnts.append( lootItem )
 
-#if DEV
+#if R5DEV
 		//DebugDrawMark( ent.GetWorldSpaceCenter(), 10, [255, 128, 0], true, 10.0 )
 		//DebugDrawText( ent.GetWorldSpaceCenter() + <0,0,16>, format( "%f\n", dot ), false, 0.1 )
 #endif

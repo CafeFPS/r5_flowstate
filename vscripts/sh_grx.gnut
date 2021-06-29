@@ -63,7 +63,7 @@ global function CurrencyFlavor_GetRewardIcon
 global function GRX_IsBadLuckProtectionActive
 #endif
 
-#if DEV
+#if R5DEV
 #if SERVER
 global function DEV_GRX_BulkOpenPacksUsingBots
 #elseif CLIENT
@@ -251,7 +251,7 @@ struct FileStruct_LifetimeVM
 
 	bool WORKAROUND_wasUserInfoUpdatedBeforeLevelInit = false
 
-	#if DEV
+	#if R5DEV
 		int grxTimeDeltaMinutes = 0
 	#endif
 }
@@ -634,7 +634,7 @@ bool function IsItemOwnedByPlayerInternal( ItemFlavor flav, entity player = null
 		#endif
 	}
 
-	#if DEV
+	#if R5DEV
 		if ( EverythingUnlockedConVarEnabled() || GetCurrentPlaylistVarBool( "dev_force_everything_unlocked", false ) )
 			return true
 	#endif
@@ -1071,7 +1071,7 @@ bool function GRX_IsGRXEnabled()
 #endif
 
 
-#if DEV && UI
+#if R5DEV && UI
 void function DEV_GRX_TestOpenPack( string ref = "pack_cosmetic_rare" )
 {
 	ItemFlavor pack = GetItemFlavorByHumanReadableRef( ref )
@@ -1087,7 +1087,7 @@ void function DEV_GRX_TestOpenPack( string ref = "pack_cosmetic_rare" )
 #endif
 
 
-#if DEV && UI
+#if R5DEV && UI
 void function DEV_GRX_TestPurchase( string ref = "pack_cosmetic_rare", array<int> price = [1, 0, 0], int qty = 1 )
 {
 	ItemFlavor flav = GetItemFlavorByHumanReadableRef( ref )
@@ -1103,7 +1103,7 @@ void function DEV_GRX_TestPurchase( string ref = "pack_cosmetic_rare", array<int
 #endif
 
 
-#if DEV && CLIENT
+#if R5DEV && CLIENT
 ItemFlavorBag ornull DEV_GRX_ForcePackResults_resultsOrNull
 void function DEV_GRX_ForcePackResults( int packError, ... )
 {
@@ -1141,7 +1141,7 @@ string function GRX_DBG_PREFIX()
 #endif
 
 
-#if DEV && SERVER
+#if R5DEV && SERVER
 const int DEV_GRX_BulkOpenPacksUsingBots_numFreshAccounts = 10000
 const int DEV_GRX_BulkOpenPacksUsingBots_numPackOpeningsPerAccount = 505
 string DEV_GRX_BulkOpenPacksUsingBots_persistenceDomain = "uhoh"
@@ -1163,7 +1163,7 @@ void function DEV_GRX_BulkOpenPacksUsingBots()
 	//SpamLog( "$$$$@ DEV_GRX_BulkOpenPacksUsingBots - BEGIN" + "\n" )
 
 	OnThreadEnd( void function() {
-		#if GRX_DEBUG_PRINTS && DEV
+		#if GRX_DEBUG_PRINTS && R5DEV
 			fileLevel.GRX_DEBUG_PRINTS_disableTemporarily = false
 		#endif
 
@@ -1181,7 +1181,7 @@ void function DEV_GRX_BulkOpenPacksUsingBots()
 	//if ( !Dev_CommandLineHasParm( "-partyDediOnly" ) )
 	//	Dev_CommandLineAddParm( "-partyDediOnly", "-partyDediOnly" )
 
-	#if GRX_DEBUG_PRINTS && DEV
+	#if GRX_DEBUG_PRINTS && R5DEV
 		fileLevel.GRX_DEBUG_PRINTS_disableTemporarily = true
 	#endif
 
@@ -1886,7 +1886,7 @@ void function UICodeCallback_GRXOffersRefreshed( int offersState, array< GRXCode
 }
 #endif
 
-#if DEV
+#if R5DEV
 #if UI
 void function DEV_GRX_SetTimeDelta( int minutes )
 {
@@ -2024,7 +2024,7 @@ void function HandleGRXOffersRefreshed( int offersState, array< GRXCodeOffer > c
 		if ( scriptOffer.expireTime > 0 )
 		{
 			scriptOffer.expireTime -= SECONDS_PER_MINUTE * 30 // 30m grace period on expiring offers
-			#if DEV
+			#if R5DEV
 				scriptOffer.expireTime += (SECONDS_PER_MINUTE * fileVM.grxTimeDeltaMinutes)
 			#endif
 		}
@@ -2211,7 +2211,7 @@ void function ClientCodeCallback_GRXPackOpened( array<int> balanceDiffs, array<i
 		#endif
 	}
 
-	#if DEV
+	#if R5DEV
 		if ( DEV_GRX_ForcePackResults_resultsOrNull != null )
 		{
 			printt( "PACK RESULTS FORCED!!" )
@@ -2283,7 +2283,7 @@ void function CodeCallback_GRXPackOpened( entity player, array<int> balanceDiffs
 {
 	//
 
-	#if DEV
+	#if R5DEV
 		if ( player in DEV_GRX_BulkOpenPacksUsingBots_botPackIndexMap )
 			DEV_GRX_BulkOpenPacksUsingBots_OnPackOpened( player, balanceDiffs, newItems, packError )
 	#endif

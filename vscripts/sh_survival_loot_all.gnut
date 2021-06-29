@@ -15,7 +15,7 @@ global function SURVIVAL_Loot_IsUniqueAmmoWeapon
 global function GetRarityColor
 #endif
 
-#if CLIENT && DEV
+#if CLIENT && R5DEV
 global function DumpModdedKeyColors
 global function DiffKeyColors
 #endif
@@ -489,7 +489,7 @@ vector function GetFXRarityColorForUnlockable( int tier )
 	unreachable
 }
 
-#if CLIENT && DEV
+#if CLIENT && R5DEV
 void function DumpModdedKeyColors( int colorID, float modVal )
 {
 	for ( int index = 0; index < 6; index++ )
@@ -504,7 +504,7 @@ void function DumpModdedKeyColors( int colorID, float modVal )
 }
 #endif
 
-#if CLIENT && DEV
+#if CLIENT && R5DEV
 void function DiffKeyColors( int baseColorID, int colorID )
 {
 	var datatable = GetDataTable( $"datatable/colorpalette_table.rpak" )

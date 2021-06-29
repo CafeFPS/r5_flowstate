@@ -69,7 +69,7 @@ global function SetVictorySequenceLocation
 global function ServerCallback_NessyMessage
 global function ShowChampionVictoryScreen
 
-#if DEV
+#if R5DEV
 global function Dev_ShowVictorySequence
 global function Dev_AdjustVictorySequence
 #endif
@@ -513,7 +513,7 @@ void function Cl_Survival_AddClient( entity player )
 	getroottable().testRui <- file.dpadMenuRui
 	SetDpadMenuVisible()
 
-	#if DEV
+	#if R5DEV
 		if ( GetBugReproNum() == 1972 )
 			file.pilotRui = CreatePermanentCockpitPostFXRui( $"ui/survival_player_hud_editor_version.rpak", HUD_Z_BASE )
 		else
@@ -1295,7 +1295,7 @@ void function ShowMapRui()
 
 bool function MapDevCheatsAreActive()
 {
-	#if DEV
+	#if R5DEV
 	if ( !GetConVarBool( "sv_cheats" ) )
 		return false
 	if ( InputIsButtonDown( KEY_LSHIFT ) || InputIsButtonDown( BUTTON_STICK_LEFT ) )
@@ -2206,7 +2206,7 @@ vector function ConvertNormalizedPosToWorldPos( vector normalizedPos, float zoom
 // TODO: Need to rethink the way all this works. It doesn't consider keybinds so it's going to be impossible to block any player ability that can be rebound.
 bool function Survival_HandleKeyInput( int key )
 {
-	#if DEV
+	#if R5DEV
 	if ( MapDevCheatsAreActive() )
 	{
 		switch ( key )
@@ -3075,7 +3075,7 @@ SquadSummaryData function GetSquadSummaryData()
 	return file.squadSummaryData
 }
 
-#if DEV
+#if R5DEV
 void function Dev_ShowVictorySequence()
 {
 	ServerCallback_AddWinningSquadData( -1, -1, 0, 0, 0, 0, 0 )
@@ -3271,7 +3271,7 @@ void function ShowVictorySequence( bool placementMode = false )
 
 		wait camera_move_duration - 0.5
 
-		#if DEV
+		#if R5DEV
 			if ( placementMode )
 			{
 				if ( IsValid( platformModel ) )

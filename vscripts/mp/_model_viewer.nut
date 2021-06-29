@@ -7,7 +7,7 @@ global function ToggleModelViewer
 
 global modelViewerModels = []
 
-#if DEV
+#if R5DEV
 struct
 {
 	bool initialized
@@ -23,7 +23,7 @@ struct
 
 function ModelViewer_Init()
 {
-	#if DEV
+	#if R5DEV
 		if ( reloadingScripts )
 			return
 		AddClientCommandCallback( "ModelViewer", ClientCommand_ModelViewer )
@@ -32,7 +32,7 @@ function ModelViewer_Init()
 
 function ToggleModelViewer()
 {
-	#if DEV
+	#if R5DEV
 		entity player = GetPlayerArray()[ 0 ]
 		if ( !file.active )
 		{
@@ -74,7 +74,7 @@ function ToggleModelViewer()
 	#endif
 }
 
-#if DEV
+#if R5DEV
 function ModelViewerDisableConflicts()
 {
 	disable_npcs() //Just disable_npcs() for now, will probably add things later

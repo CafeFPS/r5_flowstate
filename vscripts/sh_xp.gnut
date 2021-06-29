@@ -30,7 +30,7 @@ global function GetNextAccountLevel
 #if SERVER
 global function InitXP
 global function XP_GameStartedPlaying
-#if DEV
+#if R5DEV
 global function DEV_PopulatePostGame
 #endif //DEV
 #else
@@ -141,7 +141,7 @@ int function GetPlayerAccountXPProgress( EHI playerEHI )
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
-	//#if DEV
+	//#if R5DEV
 		if ( DEV_ShouldIgnorePersistence() )
 			return 0
 	//#endif
@@ -155,7 +155,7 @@ int function GetPlayerAccountXPPreviousProgress( EHI playerEHI )
 		Assert( playerEHI == LocalClientEHI() )
 	#endif
 
-	//#if DEV
+	//#if R5DEV
 		if ( DEV_ShouldIgnorePersistence() )
 			return 0
 	//#endif
@@ -193,7 +193,7 @@ void function InitXP( entity player )
 
 void function XP_GameStartedPlaying()
 {
-	//#if DEV
+	//#if R5DEV
 	print("DEVVVVVVVVVVVVVVV")
 	print("DEVVVVVVVVVVVVVVV")
 	print("DEVVVVVVVVVVVVVVV")
@@ -323,7 +323,7 @@ asset function GetAccountDisplayBadge( int levelIndex )
 }
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function DEV_PopulatePostGame( entity player, int level = -1 )
 {
 	g_trackXP = false

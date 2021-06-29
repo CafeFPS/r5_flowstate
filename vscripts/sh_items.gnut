@@ -203,7 +203,7 @@ struct FileStruct_LifetimeLevel
 
 	bool isItemRegistrationFinished = false
 
-	#if DEV
+	#if R5DEV
 		bool DEV_hasItemRegistrationStarted = false
 	#endif
 }
@@ -224,7 +224,7 @@ void function ShItems_LevelInit_Begin()
 	FileStruct_LifetimeLevel newFileLevel
 	fileLevel = newFileLevel
 
-	#if DEV
+	#if R5DEV
 		#if SERVER
 			AddClientCommandCallback( "itemflavors_dump", ClientCommand_itemflavors_dump )
 		#endif
@@ -528,7 +528,7 @@ string function ItemFlavor_GetLongName( ItemFlavor flavor )
 	Assert( IsItemFlavorStructValid( flavor, eValidation.ASSERT ) )
 
 	string localizationKey = GetGlobalSettingsString( flavor._____INTERNAL_settingsAsset, "localizationKey_NAME" )
-	#if DEV
+	#if R5DEV
 		if ( localizationKey == "" )
 			localizationKey = format( "%s !UNLOCALIZED!", ItemFlavor_GetHumanReadableRef( flavor ) )
 		else if ( localizationKey.slice( 0, 1 ) != "#" )
@@ -545,7 +545,7 @@ string function ItemFlavor_GetShortName( ItemFlavor flavor )
 	Assert( IsItemFlavorStructValid( flavor, eValidation.ASSERT ) )
 
 	string localizationKey = GetGlobalSettingsString( flavor._____INTERNAL_settingsAsset, "localizationKey_NAME_SHORT" )
-	#if DEV
+	#if R5DEV
 		if ( localizationKey == "" )
 			localizationKey = format( "%s !UNLOCALIZED!", ItemFlavor_GetHumanReadableRef( flavor ) )
 		else if ( localizationKey.slice( 0, 1 ) != "#" )
@@ -562,7 +562,7 @@ string function ItemFlavor_GetLongDescription( ItemFlavor flavor )
 	Assert( IsItemFlavorStructValid( flavor, eValidation.ASSERT ) )
 
 	string localizationKey = GetGlobalSettingsString( flavor._____INTERNAL_settingsAsset, "localizationKey_DESCRIPTION_LONG" )
-	#if DEV
+	#if R5DEV
 		if ( localizationKey == "" )
 			localizationKey = format( "%s !UNLOCALIZED!", ItemFlavor_GetHumanReadableRef( flavor ) )
 		else if ( localizationKey.slice( 0, 1 ) != "#" )
@@ -579,7 +579,7 @@ string function ItemFlavor_GetShortDescription( ItemFlavor flavor )
 	Assert( IsItemFlavorStructValid( flavor, eValidation.ASSERT ) )
 
 	string localizationKey = GetGlobalSettingsString( flavor._____INTERNAL_settingsAsset, "localizationKey_DESCRIPTION_SHORT" )
-	#if DEV
+	#if R5DEV
 		if ( localizationKey == "" )
 			localizationKey = format( "%s !UNLOCALIZED!", ItemFlavor_GetHumanReadableRef( flavor ) )
 		else if ( localizationKey.slice( 0, 1 ) != "#" )
@@ -881,7 +881,7 @@ table<ItemFlavor, bool> function MakeItemFlavorSet( array<ItemFlavor> list, tabl
 const string itemSettingsPathPattern = "^settings/itemflav/([^.]+)\\.rpak$"
 ItemFlavor ornull function RegisterItemFlavorFromSettingsAsset( asset settingsAsset )
 {
-	#if DEV
+	#if R5DEV
 		fileLevel.DEV_hasItemRegistrationStarted = true
 	#endif
 
@@ -980,7 +980,7 @@ ItemFlavor ornull function RegisterItemFlavorFromSettingsAsset( asset settingsAs
 //// Internals ////
 ///////////////////
 ///////////////////
-#if SERVER && DEV
+#if SERVER && R5DEV
 bool function ClientCommand_itemflavors_dump( entity player, array<string> args )
 {
 	// inv_dump
@@ -1029,7 +1029,7 @@ bool function ItemFlavor_HasUnlockFunc( ItemFlavor flavor )
 
 bool function ItemFlavor_PassesUnlockFunc( ItemFlavor flavor, entity player )
 {
-	#if DEV
+	#if R5DEV
 		if ( EverythingUnlockedConVarEnabled() || GetCurrentPlaylistVarBool( "dev_force_everything_unlocked", false ) )
 			return true
 	#endif

@@ -39,7 +39,7 @@ global function GetMinimapBackgroundTileImage
 global function SetMapFeatureItem
 global function RemoveMapFeatureItemByName
 
-#if DEV
+#if R5DEV
 global function DumpMinimapHandles
 #endif
 
@@ -65,7 +65,7 @@ struct {
 
 	var minimap_indicator
 
-	#if DEV
+	#if R5DEV
 		table<int, entity> minimapHandles
 	#endif
 
@@ -343,7 +343,7 @@ var function CreateMinimapRui( asset ruiAsset, int sortKey = 0 )
 	return rui
 }
 
-#if DEV
+#if R5DEV
 void function DumpMinimapHandles()
 {
 	int index = 0
@@ -434,7 +434,7 @@ void function AddMinimapObject( entity ent )
 		return
 	}
 
-	#if DEV
+	#if R5DEV
 		int eHandle = ent.GetEncodedEHandle()
 
 		{

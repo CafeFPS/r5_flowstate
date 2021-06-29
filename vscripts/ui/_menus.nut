@@ -129,7 +129,7 @@ global function OpenXboxPartyApp
 global function OpenXboxHelp
 #endif // DURANGO_PROG
 
-#if DEV
+#if R5DEV
 global function OpenDevMenu
 #endif // DEV
 
@@ -420,7 +420,7 @@ void function UICodeCallback_LevelInit( string levelname )
 	//	}
 	//}
 
-	#if DEV
+	#if R5DEV
 		ShDevUtility_Init()
 	#endif
 	ShDevWeapons_Init()
@@ -455,7 +455,7 @@ void function UICodeCallback_LevelInit( string levelname )
 	//ShWeaponXP_Init()
 	//ShFactionXP_Init()
 
-	#if DEV
+	#if R5DEV
 		UpdatePrecachedSPWeapons()
 	#endif
 
@@ -2010,7 +2010,7 @@ void function OpenXboxHelp( var button )
 }
 #endif // DURANGO_PROG
 
-#if DEV
+#if R5DEV
 void function OpenDevMenu( var button )
 {
 	AdvanceMenu( GetMenu( "DevMenu" ) )

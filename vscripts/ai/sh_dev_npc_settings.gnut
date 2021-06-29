@@ -1,4 +1,4 @@
-#if DEV
+#if R5DEV
 global function SetupChangeSurvivalCharacterClass
 global function SetupOverrideSpawnSurvivalCharacter
 global function SetupSurvival

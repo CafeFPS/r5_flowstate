@@ -1,7 +1,7 @@
 
 global function Canyonlands_MapInit_Common
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 	global function HoverTankTestPositions
 #endif
 
@@ -757,7 +757,7 @@ void function HoverTank_DebugFlightPaths_Thread()
 	printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
 }
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function HoverTankTestPositions()
 {
 	entity player = GetPlayerArray()[0]

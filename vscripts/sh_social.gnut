@@ -17,7 +17,7 @@ global function GetOnlineFriendCount
 global function GetInGameFriendCount
 #endif
 
-#if UI && DEV
+#if UI && R5DEV
 global function Dev_ToggleInvalidFriendData
 global function Dev_SetFillerFriends
 #endif
@@ -87,7 +87,7 @@ FriendsData function GetFriendsData( bool groupByStatus = false )
 	FriendsData returnData
 	returnData.isValid = friendInfo.isValid
 
-	#if DEV
+	#if R5DEV
 		if ( file.invalidFriendData )
 			returnData.isValid = false
 
@@ -225,7 +225,7 @@ int function GetInGameFriendCount( bool filterParty = false )
 //// Dev functions ////
 ///////////////////////
 ///////////////////////
-#if UI && DEV
+#if UI && R5DEV
 array<string> friendNames = [ "Anderson", "Alavi", "Vinson", "Armstrong", "Perera", "Moy", "Messerly", "Davis", "McCord", "Keating",
 	"Grenier", "Abrahamson", "Sanchez", "Medina", "McCoy", "Horn", "Cavallari", "McCandlish", "Alderman", "DeRose" ]
 
@@ -246,7 +246,7 @@ CommunityFriendsData function Dev_GetFakeFriendData()
 #endif
 
 
-#if UI && DEV
+#if UI && R5DEV
 void function Dev_ToggleInvalidFriendData()
 {
 	file.invalidFriendData = !file.invalidFriendData
@@ -254,7 +254,7 @@ void function Dev_ToggleInvalidFriendData()
 #endif
 
 
-#if UI && DEV
+#if UI && R5DEV
 void function Dev_SetFillerFriends( int count )
 {
 	file.fillerFriends = count

@@ -1,4 +1,4 @@
-#if DEV
+#if R5DEV
 untyped
 #endif
 
@@ -6,7 +6,7 @@ global function ServerCallback_MVUpdateModelBounds
 global function ServerCallback_MVEnable
 global function ServerCallback_MVDisable
 
-#if DEV
+#if R5DEV
 global function ClModelViewInit
 global function ModelViewerSpawnModel
 global function SelectNextModel
@@ -240,7 +240,7 @@ void function RefreshHudLabels()
 
 void function ServerCallback_MVUpdateModelBounds( int index, float minX, float minY, float minZ, float maxX, float maxY, float maxZ )
 {
-	#if DEV
+	#if R5DEV
 		table<string, vector> tab = { mins = <minX,minY,minZ>, maxs = <maxX,maxY,maxZ> }
 
 		if ( index < file.modelBounds.len() )
@@ -261,7 +261,7 @@ void function ServerCallback_MVUpdateModelBounds( int index, float minX, float m
 
 void function ServerCallback_MVEnable()
 {
-	#if DEV
+	#if R5DEV
 		if ( !SetModelViewerMode( MODELVIEWERMODE_GAMEPAD ) )
 			return
 
@@ -315,7 +315,7 @@ void function ServerCallback_MVEnable()
 
 void function ServerCallback_MVDisable()
 {
-	#if DEV
+	#if R5DEV
 		file.modelViewerMode = MODELVIEWERMODE_INACTIVE
 
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
@@ -359,7 +359,7 @@ void function ServerCallback_MVDisable()
 	#endif // DEV
 }
 
-#if DEV
+#if R5DEV
 void function ReloadShared()
 {
 	file.modelViewerModels = GetModelViewerList()

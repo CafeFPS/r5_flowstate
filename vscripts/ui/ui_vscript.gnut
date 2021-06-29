@@ -320,7 +320,7 @@ void function UICodeCallback_UIInit()
 
 	ShLoadouts_VMInit()
 
-	#if DEV
+	#if R5DEV
 		if ( IsFullyConnected() ) // special cases to handle uiscript_reset in dev
 		{
 		}

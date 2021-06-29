@@ -316,7 +316,7 @@ void function TrackingVision_UpdateWaypointPOIDrawing( entity waypoint )
 	if ( !IsValid( localViewPlayer ) )
 		return
 
-#if DEV
+#if R5DEV
 	if ( localViewPlayer != file.currentTracker )
 	{
 		ResetWaypointVisibilities()

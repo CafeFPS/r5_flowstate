@@ -256,7 +256,7 @@ array<SegmentData> function CreateSpreadPattern( entity owner, entity inflictor,
 		}
 		firstTrace = false
 
-		#if DEV && DEBUG_THERMITE_GRENADE_TRACES
+		#if R5DEV && DEBUG_THERMITE_GRENADE_TRACES
 			DebugDrawLine( traceStart, traceEndUnder, 0, 255, 0, true, 25.0 )
 		#endif
 
@@ -267,7 +267,7 @@ array<SegmentData> function CreateSpreadPattern( entity owner, entity inflictor,
 		TraceResults forwardTrace = TraceLine( traceStart, traceEndUnder, ignoreArray, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_BLOCK_WEAPONS )
 		if ( forwardTrace.fraction == 1.0 )
 		{
-			#if DEV && DEBUG_THERMITE_GRENADE_TRACES
+			#if R5DEV && DEBUG_THERMITE_GRENADE_TRACES
 				DebugDrawLine( forwardTrace.endPos, forwardTrace.endPos + <0,0,-225>, 255, 0, 0, true, 25.0 )
 			#endif
 
@@ -292,7 +292,7 @@ array<SegmentData> function CreateSpreadPattern( entity owner, entity inflictor,
 
 		TraceResults upwardTrace = TraceLine( traceStart, traceEndOver, ignoreArray, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_BLOCK_WEAPONS )
 
-		#if DEV && DEBUG_THERMITE_GRENADE_TRACES
+		#if R5DEV && DEBUG_THERMITE_GRENADE_TRACES
 			DebugDrawLine( traceStart, traceEndOver, 0, 0, 255, true, 25.0 )
 		#endif
 
@@ -320,7 +320,7 @@ array<SegmentData> function CreateSpreadPattern( entity owner, entity inflictor,
 		}
 	}
 
-	#if DEV && DEBUG_THERMITE_GRENADE_TRACES
+	#if R5DEV && DEBUG_THERMITE_GRENADE_TRACES
 		printt( "Total segments:", segmentsArray.len() )
 	#endif
 

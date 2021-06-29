@@ -15,7 +15,7 @@ global function SetCommsDialogueEnabled
 global function BroadcastCommsActionToTeam
 #endif
 
-#if DEV
+#if R5DEV
 global function DEV_ReloadCommsTable
 #endif // DEV
 

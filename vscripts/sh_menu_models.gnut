@@ -11,7 +11,7 @@ const float TRANSITION_DURATION = 0.25
 const float DEFAULT_MAX_TURN_SPEED = 270.0
 
 const asset CHARACTER_BASE_EFFECT = $"P_menu_char_base_rarity"
-//#if DEV
+//#if R5DEV
 //const asset MENU_TEST_EFFECT = $"P_menu_char_swap"
 //#endif
 
@@ -134,7 +134,7 @@ struct
 
 		array<entity> dimmedEnts
 
-		#if DEV
+		#if R5DEV
 			bool DEV_previewSelfAsParty = false
 		#endif // DEV
 		int  transitionTest = 3
@@ -177,7 +177,7 @@ global function UIToClient_PartyMemberLoseFocus
 global function DisableModelTurn
 global function EnableModelTurn
 
-#if DEV
+#if R5DEV
 global function DEV_TweakPlayCamera
 global function DEV_TweakCharacterCamera
 global function DEV_TweakWeaponCamera
@@ -209,7 +209,7 @@ global function TrackIsOverScrollBar
 void function ClMenuModels_Init()
 {
 	PrecacheParticleSystem( CHARACTER_BASE_EFFECT )
-	//#if DEV
+	//#if R5DEV
 	//	PrecacheParticleSystem( MENU_TEST_EFFECT )
 	//#endif
 
@@ -537,7 +537,7 @@ void function StartPresentation_TEMP()
 
 void function InitMenuEntities()
 {
-	#if DEV
+	#if R5DEV
 		if ( BuildingCubeMaps() )
 			return
 	#endif
@@ -865,7 +865,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 		//Assert( party.amIInThis )
 		string localClientUid = PROTO_GetLocalClientUIDFromUIVM()
 
-		#if DEV
+		#if R5DEV
 			if ( file.DEV_previewSelfAsParty )
 			{
 				party.members.clear()
@@ -936,7 +936,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 				shouldCreateModel = true
 
 				ItemFlavor ornull characterOrNull = null
-				#if DEV
+				#if R5DEV
 					if ( file.DEV_previewSelfAsParty )
 						characterOrNull = LoadoutSlot_GetItemFlavor( LocalClientEHI(), Loadout_CharacterClass() )
 				#endif
@@ -1588,7 +1588,7 @@ void function TransitionTest( entity model, vector color, bool doTransitionFX )
 	}
 }
 
-#if DEV
+#if R5DEV
 void function DEV_TweakPlayCamera( vector origin, vector angles, float fov )
 {
 	file.playCameraTarget.SetOrigin( origin )

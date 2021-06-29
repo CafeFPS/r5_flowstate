@@ -27,7 +27,7 @@ global function LevelVarInit
 global bool reloadingScripts = false
 global bool reloadedScripts = false
 
-#if DEV
+#if R5DEV
 global function __serialize_state
 global function __evalBreakpoint
 #endif
@@ -129,7 +129,7 @@ void function LevelVarInit()
 }
 
 
-#if DEV
+#if R5DEV
 
 //********************************************************************************************
 // _vscript_code.nut

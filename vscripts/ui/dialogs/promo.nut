@@ -53,7 +53,7 @@ void function UICodeCallback_MainMenuPromosUpdated()
 {
 	printt( "Promos updated" )
 
-	#if DEV
+	#if R5DEV
 		if ( GetConVarInt( "mainMenuPromos_preview" ) == 1 )
 			file.promoData = GetMainMenuPromos()
 	#endif // DEV

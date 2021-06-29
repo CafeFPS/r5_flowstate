@@ -90,7 +90,7 @@ void function ShCharacters_LevelInit()
 	FileStruct_LifetimeLevel newFileGame
 	fileLevel = newFileGame
 
-	#if SERVER && DEV
+	#if SERVER && R5DEV
 		AddCallback_GeneratePDef( GenerateCharactersPDef )
 	#endif
 
@@ -156,7 +156,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor character )
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function GenerateCharactersPDef()
 {
 	// this persistent data enum is required by sh_xp.gnut

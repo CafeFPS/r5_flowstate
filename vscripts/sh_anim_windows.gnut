@@ -207,7 +207,7 @@ void function AnimWindow_CreateProp_Start( ScriptAnimWindow window, var settings
 		file.createPropScriptCallbackMap[scriptCallbackKey]( window, settingsBlock, prop )
 	}
 
-	#if DEV
+	#if R5DEV
 		disableoverwrite( windowPropMap )
 	#endif
 	windowPropMap[window.stringID] <- prop
@@ -307,7 +307,7 @@ void function AnimWindow_PlaySound_Start( ScriptAnimWindow window, var settingsB
 		}
 		var soundHandle = EmitSoundOnEntity( window.ent, soundEventName )
 
-		#if DEV
+		#if R5DEV
 			disableoverwrite( windowSoundHandleMap )
 		#endif
 		windowSoundHandleMap[window.stringID] <- soundHandle
@@ -424,7 +424,7 @@ void function AnimWindow_PlayFX_Start( ScriptAnimWindow window, var settingsBloc
 		}
 	}
 
-	#if DEV
+	#if R5DEV
 		disableoverwrite( windowFXHandleMap )
 	#endif
 
@@ -673,7 +673,7 @@ void function RegisterAnimWindowType( bool isForThisVM, string type,
 	awti.startFunc = startFunc
 	awti.transitionFunc = transitionFunc
 	awti.stopFunc = stopFunc
-	#if DEV
+	#if R5DEV
 		disableoverwrite( fileLevel.animWindowTypeNameInfoMap )
 	#endif
 	fileLevel.animWindowTypeNameInfoMap[type] <- awti

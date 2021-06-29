@@ -13,7 +13,7 @@ global function AddCallback_UpdatePlayerWeaponCosmetics
 #if SERVER || CLIENT
 global function WeaponSkin_Apply
 #endif
-#if DEV && CLIENT
+#if R5DEV && CLIENT
 global function DEV_TestWeaponSkinData
 #endif
 
@@ -87,7 +87,7 @@ void function OnItemFlavorRegistered_LootMainWeapon( ItemFlavor weaponFlavor )
 			return !IsLobby()
 		}
 		entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
-		#if SERVER && DEV
+		#if SERVER && R5DEV
 			entry.isCurrentlyRelevant = bool function( EHI playerEHI ) : ( weaponFlavor ) {
 				entity player          = FromEHI( playerEHI )
 				string weaponClassName = WeaponItemFlavor_GetClassname( weaponFlavor )
@@ -161,7 +161,7 @@ LoadoutEntry function Loadout_WeaponSkin( ItemFlavor weaponFlavor )
 #if SERVER
 void function UpdatePlayerWeaponCosmetics( entity player, ItemFlavor weaponFlavor, ItemFlavor skin )
 {
-	#if DEV
+	#if R5DEV
 		string weaponClassName = WeaponItemFlavor_GetClassname( weaponFlavor )
 
 		foreach( entity weapon in player.GetMainWeapons() )
@@ -283,7 +283,7 @@ int function WeaponSkin_GetSortOrdinal( ItemFlavor flavor )
 }
 
 
-#if DEV && CLIENT
+#if R5DEV && CLIENT
 void function DEV_TestWeaponSkinData()
 {
 	entity model = CreateClientSidePropDynamic( <0, 0, 0>, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
@@ -301,4 +301,4 @@ void function DEV_TestWeaponSkinData()
 
 	model.Destroy()
 }
-#endif // DEV && CLIENT
+#endif // R5DEV && CLIENT

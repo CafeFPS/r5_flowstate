@@ -11,7 +11,7 @@ global function AddCallback_OnTeamUnitFrameDestroyed
 
 global function SetUnitFrameDataFromOwner
 
-#if DEV
+#if R5DEV
 global function PrintUnitFrames
 global function PrintTeammates
 #endif
@@ -375,7 +375,7 @@ entity function UnitFrame_GetOwnerByIndex( int index )
 	return null
 }
 
-#if DEV
+#if R5DEV
 void function PrintUnitFrames()
 {
 	printt( "file.teamUnitFrames size:", file.teamUnitFrames.len() )

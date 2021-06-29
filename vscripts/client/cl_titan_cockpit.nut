@@ -553,7 +553,7 @@ entity function CreateCockpitBody( entity cockpit, entity player, entity cockpit
 		bodySettings = DEFAULT_PILOT_SETTINGS
 
 	asset bodyModelName = GetGlobalSettingsAsset( bodySettings, "armsModel" )
-	#if DEV
+	#if R5DEV
 	if ( bodyModelName == $"" )
 	{
 		Warning( "Couldn't find armsmodel for set file: " + bodySettings )

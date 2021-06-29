@@ -197,7 +197,7 @@ void function InitInventoryFooter( var panel )
 	AddPanelFooterOption( panel, RIGHT, BUTTON_START, true, "#HINT_SYSTEM_MENU_GAMEPAD", "#HINT_SYSTEM_MENU_KB", TryOpenSystemMenu )
 	AddPanelFooterOption( panel, RIGHT, BUTTON_DPAD_UP, false, "#UP_BUTTON_CHARACTER_CHANGE", "#UP_BUTTON_CHARACTER_CHANGE", TryChangeCharacters, ShowChangeCharactersOption )
 
-	#if DEV
+	#if R5DEV
 		AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_DOWN, true, "#DOWN_BUTTON_DEV_MENU", "#DEV_MENU", OpenDevMenu )
 	#endif
 }

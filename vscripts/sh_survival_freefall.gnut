@@ -592,7 +592,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 
 	float currentYaw = player.GetAngles().y
 
-	#if DEV
+	#if R5DEV
 		float botLastForwardInputTime = 0.0
 		float botNextForwardInputTime = 0.0
 		float botLastForwardInput = 0.0
@@ -639,7 +639,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 			}
 		}
 
-		#if DEV
+		#if R5DEV
 		// Bots fly random paths, turning, speeding up and slowing down
 		if ( player == leaderPlayer && player.IsBot() )
 		{

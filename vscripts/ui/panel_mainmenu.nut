@@ -161,7 +161,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 		PrintLaunchDebugVal( "isOriginEnabled", isOriginEnabled )
 		if ( !isOriginEnabled )
 		{
-			#if DEV
+			#if R5DEV
 				if ( autoContinue )
 					LaunchMP()
 				else
@@ -831,7 +831,7 @@ void function OnConfirmDialogResult( int result )
 
 void function PrintLaunchDebugVal( string name, bool val )
 {
-	#if DEV
+	#if R5DEV
 		printt( "*** PrelaunchValidation *** " + name + ": " + val )
 	#endif // DEV
 }

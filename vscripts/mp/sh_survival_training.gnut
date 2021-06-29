@@ -353,7 +353,7 @@ void function PlayerStartsTraining( entity player )
 	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
 	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
 
-	#if DEV
+	#if R5DEV
 	if ( GetBugReproNum() == 2020 )
 	{
 		thread SlideDownHillAnimRecord( player )
@@ -599,7 +599,7 @@ void function TrainingNPCRecordedAnim( entity npc, asset animAsset, asset animAs
 	//wait GetRecordedAnimationDuration( anim )
 }
 
-#if DEV
+#if R5DEV
 void function SlideDownHillAnimRecord( entity player )
 {
 	wait 1.0
