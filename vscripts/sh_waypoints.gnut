@@ -122,7 +122,7 @@ const string SIGNAL_WAYPOINT_TIMEOUT_BEGIN = "WaypointTimeoutThreadBegin"
 void function PlayerWaypoints_Init()
 {
 	RegisterSignal( SIGNAL_WAYPOINT_TIMEOUT_BEGIN )
-
+	printt("PlayerWaypoints_Init")
 	#if CLIENT
 		AddCreateCallback( PLAYER_WAYPOINT_CLASSNAME, PlayerWaypoint_CreateCallback )
 		AddDestroyCallback( PLAYER_WAYPOINT_CLASSNAME, PlayerWaypoint_DestroyCallback )
@@ -904,7 +904,6 @@ void function SetDibsPlayerForLootWaypoint( entity wp, entity itemEnt )
 
 int function Waypoint_GetPingTypeForWaypoint( entity wp )
 {
-	if(!IsValid(wp)) return 0;
 	return wp.GetWaypointInt( INT_INDEX_PING_COMMON_TYPE )
 }
 
@@ -1512,7 +1511,6 @@ void function Waypoint_ResetCreatedTime( entity wp )
 
 float function Waypoint_GetWaypointAge( entity wp )
 {
-	if(!IsValid(wp) || !IsValid(wp.wp)) return 0;
 	return (Time() - wp.wp.waypointCreatedTime)
 }
 
@@ -1534,7 +1532,7 @@ bool function IsRepingablePingType( int pingType )
 {
 	switch ( pingType )
 	{
-		//case ePingType.MAP_WAYPOINT:
+		// case ePingType.MAP_WAYPOINT:
 		case ePingType.ENEMY_SPECIFIC:
 		case ePingType.ENEMY_GENERAL:
 			return false
@@ -1553,10 +1551,10 @@ entity function GetAnyValidLocPingForReuse( entity player, int pingType, entity 
 	if ( !IsRepingablePingType( pingType ) )
 		return null
 
-	// if ( player.p.pings.locations.len() == 0 )
-	// 	return null
+	if ( player.p.pings.locations.len() == 0 )
+		return null
 
-	entity wp           = null//player.p.pings.locations.top()
+	entity wp           = player.p.pings.locations.top()
 	float timeSincePing = Waypoint_GetWaypointAge( wp )
 	if ( timeSincePing >= PING_REUSE_TIME )
 		return null
@@ -1735,6 +1733,7 @@ float function GetDefaultTimeoutForPingType( entity player, int pingType )
 
 entity function CreateWaypoint_Ping_Location( entity player, int pingType, entity pingEnt, vector position, int ticketID, bool forceNew )
 {
+	printt( VM_NAME(), FUNC_NAME(), FUNC_NAME(1), "(", player.GetPlayerName(), ")", "pingType:", pingType, "pos:", position, "ticketID:", ticketID, "pingEnt", pingEnt )
 	if ( GetCurrentPlaylistVarBool( "use_new_ping", true ) )
 		position += <0, 0, 72>
 
@@ -1764,8 +1763,10 @@ entity function CreateWaypoint_Ping_Location( entity player, int pingType, entit
 
 	if ( pingType in file.pingCallbackFunctions )
 	{
-		foreach( func in file.pingCallbackFunctions[ pingType ] )
+		foreach( func in file.pingCallbackFunctions[ pingType ] ) 
+		{
 			func( player, wp, pingEnt, pingType )
+		}
 	}
 
 	int team = player.GetTeam()

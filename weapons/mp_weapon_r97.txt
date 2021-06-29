@@ -37,6 +37,8 @@ WeaponData
 
 	//"tracer_effect"   							"weapon_tracers_shotgun"
 
+	"chroma_color"									"1 .9 .5"
+
 	//Sounds
 	"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
 	"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
@@ -319,6 +321,11 @@ WeaponData
 		{
 			"viewmodel"   									"mdl/weapons/r97/ptpov_r97_legendary_01.rmdl"
 			"playermodel" 									"mdl/weapons/r97/w_r97_legendary_01.rmdl"
+		}
+		legendary2
+		{
+			"viewmodel"   									"mdl/weapons/r97/ptpov_r97_legendary_02.rmdl"
+			"playermodel" 									"mdl/weapons/r97/w_r97_legendary_02.rmdl"
 		}
 	}
 

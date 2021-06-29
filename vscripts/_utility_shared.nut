@@ -132,18 +132,27 @@ void function InitWeaponScripts()
 	//	#endif
 
 	MpAbilityShifter_Init()
+	MpWeaponDefender_Init()
 	MpWeaponDmr_Init()
+	MpWeaponRocketLauncher_Init()
+	MpWeaponSmartPistol_Init()
+	SonarGrenade_Init()
 	MpWeaponSniper_Init()
 	MpWeaponLSTAR_Init()
 	MpWeaponEnergyAR_Init()
 	MpWeaponEnergyShotgun_Init()
 	MpWeaponDoubletake_Init()
+	MpWeaponGreandeElectricSmoke_Init()
 	MpWeaponZipline_Init()
 	MpWeaponAlternatorSMG_Init()
-
+	MpWeaponGrenadeGravity_Init()
 	MpWeaponThermiteGrenade_Init()
 	MeleeWraithKunai_Init()
 	MpWeaponWraithKunaiPrimary_Init()
+	MpTitanAbilityLaserTrip_Init()
+	MpWeaponSatchel_Init()
+	MpWeaponProximityMine_Init()
+
 
 	#if DEVSCRIPTS
 		MpAbilityGibraltarShield_Init()
@@ -153,7 +162,10 @@ void function InitWeaponScripts()
 		MpAbilityAreaSonarScan_Init()
 		MpWeaponGrenadeGas_Init()
 		MpWeaponDirtyBomb_Init()
+		MDLSpawner_Init()
 		MpWeaponDeployableMedic_Init()
+		MpWeaponDeployableCover_Init()
+
 		MpWeaponIncapShield_Init()
 		MpWeaponGrenadeBangalore_Init()
 		MpWeaponGrenadeCreepingBombardment_Init()
@@ -901,6 +913,9 @@ bool function ControlPanel_IsValidModel( entity controlPanel )
 bool function ControlPanel_CanUseFunction( entity playerUser, entity controlPanel )
 {
 	if ( Bleedout_IsBleedingOut( playerUser ) )
+		return false
+		
+	if ( !IsValid( playerUser ) )
 		return false
 
 	entity activeWeapon = playerUser.GetActiveWeapon( eActiveInventorySlot.mainHand )
@@ -4176,13 +4191,6 @@ void function DebugDrawLineFromEntToPos( entity ent, vector pos, int r, int g, i
 	}
 }
 
-vector function VectorRotateAxis( vector vecToRotate, vector axisVec, float degrees )
-{
-	float vecLength = vecToRotate.Length()
-	vector newAngles = RotateAnglesAboutAxis( VectorToAngles( vecToRotate ), Normalize( axisVec ), degrees )
-	return Normalize( AnglesToForward( newAngles ) ) * vecLength
-}
-
 //bool function PlayerIsInMeleeBlockingADS( entity player )
 //{
 //	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
@@ -4819,7 +4827,7 @@ array<entity> function GetEntityAndItsChildren( entity parentEnt )
 {
 	array<entity> out = []
 	#if SERVER
-		Assert( false, "NYI" ) // todo(dw)
+		//Assert( false, "NYI" ) // todo(dw)
 	#elseif CLIENT
 		Assert( parentEnt.GetCodeClassName() == "dynamicprop" )
 

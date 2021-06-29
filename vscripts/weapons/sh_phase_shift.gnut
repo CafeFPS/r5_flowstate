@@ -920,6 +920,8 @@ void function ClientPhaseShiftFirstPersonFXThread()
 				effectsAreActive = false
 				ourPlayer = null
 				endSoundPlayed = false
+
+				Chroma_PhaseShiftEnding()
 			}
 			else if ( IsValid( localViewPlayer ) && localViewPlayer.IsPhaseShifted() )
 			{
@@ -991,6 +993,8 @@ void function ClientPhaseShiftFirstPersonFXThread()
 
 				effectsAreActive = true
 				ourPlayer = localViewPlayer
+
+				Chroma_PhaseShiftStarting()
 			}
 		}
 

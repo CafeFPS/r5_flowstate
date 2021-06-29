@@ -16,6 +16,12 @@ MAP_mp_box		True if the given map name is being loaded
 GAMEMODE_at		True of the given game mode is being loaded
 */
 
+When: " SERVER || CLIENT || UI "
+Scripts:
+[
+	root_asset_lists.gnut
+]
+
 When: "SP || MP_CAMPAIGNCOOP"
 Scripts:
 [
@@ -81,6 +87,8 @@ Scripts:
 	sh_consts_mp.gnut
 	sh_loadouts.gnut
 	sh_grx.gnut
+	sh_cal_events.gnut
+	sh_battlepass.gnut
 	sh_characters.gnut
 	sh_character_abilities.gnut
 	sh_character_cosmetics.nut
@@ -200,6 +208,7 @@ Scripts:
 	sh_playermatchstate.gnut
 	sh_flightpath.gnut
 	sh_flightpath_utility.gnut
+	sh_paths_preprocess.gnut //
 	sh_flyers.gnut
 	sh_highlight.gnut
 	sh_minimap.gnut
@@ -219,16 +228,22 @@ Scripts:
 	weapons/_vortex.nut
 	weapons/_weapon_dialogue.nut
 	weapons/_weapon_utility.nut
+	weapons/_weapon_reactive_effects.gnut
 	weapons/mp_ability_cloak.nut
 	weapons/mp_ability_grapple.nut
 	weapons/mp_ability_holopilot.nut
 
+	weapons/mp_ability_heal.nut
 	weapons/mp_ability_sonar.nut
 	weapons/mp_weapon_basic_bolt.nut
+	weapons/mp_weapon_grenade_electric_smoke.nut
+	weapons/mp_weapon_deployable_cover.nut
 
 	weapons/mp_weapon_dmr.nut
 	weapons/mp_weapon_doubletake.nut
 	weapons/mp_weapon_shotgun_pistol.nut
+	
+	weapons/mp_ability_laser_trip.nut
 
 	weapons/mp_weapon_grenade_emp.nut
 	weapons/mp_weapon_lmg.nut
@@ -241,14 +256,25 @@ Scripts:
 	weapons/mp_weapon_shotgun.nut
 	weapons/mp_weapon_sniper.nut
 	weapons/mp_weapon_thermite_grenade.nut
+	weapons/mp_weapon_smr.nut
 	weapons/mp_weapon_zipline.nut
 	weapons/mp_weapon_alternator_smg.nut
-
+	weapons/mp_weapon_softball.nut
+	weapons/mp_weapon_smart_pistol.nut
+	weapons/mp_weapon_defender.nut
+	weapons/mp_weapon_mdlspawner.nut
+	weapons/mp_weapon_rocket_launcher.nut
 	weapons/sh_deployable.gnut
+	weapons/sh_deployable_wall.gnut
 	weapons/sh_phase_shift.gnut
 	weapons/sh_smart_ammo.gnut
 	weapons/sh_sonar.gnut
+	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
+	weapons/mp_weapon_grenade_sonar.nut
+	weapons/mp_weapon_grenade_gravity.nut
+	weapons/mp_weapon_satchel.nut
+	weapons/mp_weapon_proximity_mine.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -274,6 +300,7 @@ Scripts:
 	mp/sh_comms_menu.nut
 	sh_mp_utility.gnut
 	sh_score.gnut
+	mp/sh_revive.gnut
 
 	gamemodes/sh_gamemode_tdm.nut
 	gamemodes/sh_gamemode_recruit.nut
@@ -305,6 +332,7 @@ Scripts:
 	mp/sh_lootbin.gnut
 	mp/_sh_tutorial.gnut
 	mp/sh_survival_training.gnut
+    mp/sh_supply_ship.gnut
 
 	_ultimates.gnut
 ]
@@ -367,6 +395,7 @@ Scripts:
 	mp/_goblin_dropship.nut
 	//mp/_loadout_crate.nut
 	mp/_music.gnut
+	mp/_revive.gnut
 	mp/_threat_detection.gnut
 	mp/_sniper_spectres.nut
 	mp/_spawn_functions.nut
@@ -394,6 +423,7 @@ Scripts:
 	vehicle/_vehicle_behavior.gnut
 	vehicle/_vehicle_dropship_new.nut
 	weapons/_at_turrets.gnut
+	weapons/_ball_lightning.gnut
 	weapons/_cloaker.gnut
 	weapons/_particle_wall.gnut
 
@@ -464,6 +494,9 @@ Scripts:
 	sh_character_select.gnut
 	sh_character_select_new.gnut
 	sh_social.gnut
+
+	// abilities/loba_tactical_translocation.nut //
+	// abilities/loba_passive_eye_for_quality.nut //
 ]
 
 When: "CLIENT || UI"
@@ -509,6 +542,7 @@ Scripts:
 	pilot/cl_pilot_tracking_vision.gnut
 	pilot/cl_pilot_passive_adrenaline.gnut
 	client/cl_bleedout.gnut
+	client/cl_revive.gnut
 	mp/cl_jump_pads.gnut
 ]
 
@@ -576,6 +610,8 @@ When: "CLIENT || UI"
 Scripts:
 [
 	ui/sh_tooltips.nut
+	ui/clui_lobby_panel_pass.nut
+	client/cl_chroma.gnut
 ]
 
 When: "UI"
@@ -612,13 +648,13 @@ Scripts:
 	ui/dialogs/confirm_grx_error.nut
 	ui/dialogs/error.nut
 	ui/dialogs/mode_select.nut
+	ui/dialogs/report_player.nut
 	ui/menu_eula_dialog.nut
 	ui/menu_accessibility_dialog.nut
 	ui/menu_postgame.nut
 	ui/menu_knowledgebase.nut
 	ui/menu_knowledgebase_submenu.nut
 	ui/panel_scoreboard.nut
-	ui/menu_controls_advanced_look.nut
 	ui/menu_gamepad_layout.nut
 	ui/menu_generation_respawn.nut
 	ui/menu_ingame.nut
@@ -631,8 +667,10 @@ Scripts:
 	ui/lobby_panel_play.nut
 	ui/lobby_panel_characters.nut
 	ui/lobby_panel_armory.nut
+	
 	ui/lobby_panel_store.nut
 	ui/lobby_panel_settings.nut
+	ui/menu_controls_advanced_look.nut
 	ui/panel_controls_pc.nut
 	ui/panel_controls_gamepad.nut
 	ui/panel_video.nut
@@ -666,6 +704,8 @@ Scripts:
 	ui/panel_legend.nut
 	ui/menu_survival_ground_list.nut
 	ui/menu_survival_quick_swap.nut
+	
+	
 	lobby/sh_lobby.gnut
 ]
 
@@ -695,6 +735,7 @@ Scripts:
 	weapons/mp_weapon_phase_tunnel.nut
 	weapons/mp_weapon_incap_shield.nut
 	weapons/mp_ability_care_package.nut
+	weapons/mp_weapon_jump_pad.nut
 
 	sh_clientmusic.nut
 

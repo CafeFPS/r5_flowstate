@@ -268,7 +268,6 @@ ValidDecoyDisguise function SetNextDisguiseCharacter( entity player )
 
 entity function CreateDecoy( vector endPosition, asset settingsName, asset modelName, entity player, ItemFlavor skin, float duration )
 {
-	print(endPosition)
 	entity decoy = player.CreateTargetedPlayerDecoy( endPosition, settingsName, modelName, 0, 0 )
 	CharacterSkin_Apply( decoy, skin )
 	decoy.SetMaxHealth( 50 )

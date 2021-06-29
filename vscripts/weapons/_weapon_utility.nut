@@ -49,6 +49,12 @@ global function FireBallisticRoundWithDrop
 global function DoesModExist
 global function DoesModExistFromWeaponClassName
 global function IsModActive
+global function ChargeBall_Precache
+global function ChargeBall_FireProjectile
+global function ChargeBall_ChargeBegin
+global function ChargeBall_ChargeEnd
+global function ChargeBall_StopChargeEffects
+global function ChargeBall_GetChargeTime
 global function PlayerUsedOffhand
 global function GetDistanceString
 global function IsWeaponInSingleShotMode
@@ -59,6 +65,7 @@ global function OnWeaponReadyToFire_ability_tactical
 global function GetMeleeWeapon
 global function OnWeaponRegenEndGeneric
 global function Ultimate_OnWeaponRegenBegin
+global function OnWeaponActivate_RUIColorSchemeOverrides
 
 #if SERVER
 global function CreateDamageInflictorHelper
@@ -72,6 +79,7 @@ global function WeaponHasCosmetics
 
 #if CLIENT
 global function ServerCallback_SetWeaponPreviewState
+global function ServerCallback_GuidedMissileDestroyed
 #endif
 
 global function GetRadiusDamageDataFromProjectile
@@ -145,33 +153,36 @@ global function AddCallback_OnPlayerRemoveWeaponMod
 global function CodeCallback_OnPlayerAddedWeaponMod
 global function CodeCallback_OnPlayerRemovedWeaponMod
 
-global const PROJECTILE_PREDICTED = true
-global const PROJECTILE_NOT_PREDICTED = false
+global const PROJECTILE_PREDICTED 							= true
+global const PROJECTILE_NOT_PREDICTED 						= false
 
-global const PROJECTILE_LAG_COMPENSATED = true
-global const PROJECTILE_NOT_LAG_COMPENSATED = false
+global const PROJECTILE_LAG_COMPENSATED 					= true
+global const PROJECTILE_NOT_LAG_COMPENSATED 				= false
 
-const float DEFAULT_SHOTGUN_SPREAD_INNEREXCLUDE_FRAC = 0.4
+global const PRO_SCREEN_IDX_MATCH_KILLS 					= 1
+global const PRO_SCREEN_IDX_AMMO_COUNTER_OVERRIDE_HACK 		= 2
+
+const float DEFAULT_SHOTGUN_SPREAD_INNEREXCLUDE_FRAC 		= 0.4
 const bool DEBUG_PROJECTILE_BLAST = false
 
-const float EMP_SEVERITY_SLOWTURN = 0.35
-const float EMP_SEVERITY_SLOWMOVE = 0.50
-const float LASER_STUN_SEVERITY_SLOWTURN = 0.20
-const float LASER_STUN_SEVERITY_SLOWMOVE = 0.30
+const float EMP_SEVERITY_SLOWTURN 				= 0.35
+const float EMP_SEVERITY_SLOWMOVE 				= 0.50
+const float LASER_STUN_SEVERITY_SLOWTURN 		= 0.20
+const float LASER_STUN_SEVERITY_SLOWMOVE 		= 0.30
 
-const asset FX_EMP_BODY_HUMAN = $"P_emp_body_human"
-const asset FX_EMP_BODY_TITAN = $"P_emp_body_titan"
-const asset FX_VANGUARD_ENERGY_BODY_HUMAN = $"P_monarchBeam_body_human"
-const asset FX_VANGUARD_ENERGY_BODY_TITAN = $"P_monarchBeam_body_titan"
-const SOUND_EMP_REBOOT_SPARKS = "marvin_weld"
-const FX_EMP_REBOOT_SPARKS = $"weld_spark_01_sparksfly"
-const EMP_GRENADE_BEAM_EFFECT = $"wpn_arc_cannon_beam"
-const DRONE_REBOOT_TIME = 5.0
-const GUNSHIP_REBOOT_TIME = 5.0
+const asset FX_EMP_BODY_HUMAN 				= $"P_emp_body_human"
+const asset FX_EMP_BODY_TITAN 				= $"P_emp_body_titan"
+const asset FX_VANGUARD_ENERGY_BODY_HUMAN 	= $"P_monarchBeam_body_human"
+const asset FX_VANGUARD_ENERGY_BODY_TITAN 	= $"P_monarchBeam_body_titan"
+const SOUND_EMP_REBOOT_SPARKS 				= "marvin_weld"
+const FX_EMP_REBOOT_SPARKS 					= $"weld_spark_01_sparksfly"
+const EMP_GRENADE_BEAM_EFFECT 				= $"wpn_arc_cannon_beam"
+const DRONE_REBOOT_TIME 					= 5.0
+const GUNSHIP_REBOOT_TIME 					= 5.0
 
-const bool DEBUG_BURN_DAMAGE = false
+const bool DEBUG_BURN_DAMAGE 				= false
 
-const float BOUNCE_STUCK_DISTANCE = 5.0
+const float BOUNCE_STUCK_DISTANCE 			= 5.0
 
 global struct RadiusDamageData
 {
@@ -367,6 +378,12 @@ void function OnWeaponActivate_updateViewmodelAmmo( entity weapon )
 	#if CLIENT
 		UpdateViewmodelAmmo( false, weapon )
 	#endif // #if CLIENT
+}
+
+void function OnWeaponActivate_RUIColorSchemeOverrides( entity weapon )
+{
+	#if SERVER
+	#endif
 }
 
 int function Fire_EnergyChargeWeapon( entity weapon, WeaponPrimaryAttackParams attackParams, EnergyChargeWeaponData chargeWeaponData, bool playerFired = true, float patternScale = 1.0, bool ignoreSpread = true )
@@ -2309,6 +2326,33 @@ bool function CanWeaponShootWhileRunning( entity weapon )
 }
 
 #if CLIENT
+void function ServerCallback_GuidedMissileDestroyed()
+{
+	entity player = GetLocalViewPlayer()
+
+	// guided missiles has not been updated to work with replays. added this if statement defensively just in case. - Roger
+	if ( !( "missileInFlight" in player.s ) )
+		return
+
+	player.s.missileInFlight = false
+}
+
+function ServerCallback_AirburstIconUpdate( toggle )
+{
+	entity player = GetLocalViewPlayer()
+	entity cockpit = player.GetCockpit()
+	if ( cockpit )
+	{
+		entity mainVGUI = cockpit.e.mainVGUI
+		if ( mainVGUI )
+		{
+			if ( toggle )
+				cockpit.s.offhandHud[OFFHAND_RIGHT].icon.SetImage( $"vgui/HUD/dpad_airburst_activate" )
+			else
+				cockpit.s.offhandHud[OFFHAND_RIGHT].icon.SetImage( $"vgui/HUD/dpad_airburst" )
+		}
+	}
+}
 
 bool function IsOwnerViewPlayerFullyADSed( entity weapon )
 {
@@ -2851,6 +2895,7 @@ entity function GetMeleeWeapon( entity player )
 	array<entity> weapons = player.GetMainWeapons()
 	foreach ( weaponEnt in weapons )
 	{
+		printt("ismelee", weaponEnt.IsWeaponMelee())
 		if ( weaponEnt.IsWeaponMelee() )
 			return weaponEnt
 	}
@@ -2919,6 +2964,161 @@ entity function GetPlayerFromTitanWeapon( entity weapon )
 		player = titan
 
 	return player
+}
+
+
+const asset CHARGE_SHOT_PROJECTILE = $"models/weapons/bullets/temp_triple_threat_projectile_large.mdl"
+
+const asset CHARGE_EFFECT_1P = $"P_ordnance_charge_st_FP" // $"P_wpn_defender_charge_FP"
+const asset CHARGE_EFFECT_3P = $"P_ordnance_charge_st" // $"P_wpn_defender_charge"
+const asset CHARGE_EFFECT_DLIGHT = $"defender_charge_CH_dlight"
+
+const string CHARGE_SOUND_WINDUP_1P = "Weapon_ChargeRifle_WindUp_1P"
+const string CHARGE_SOUND_WINDUP_3P = "Weapon_ChargeRifle_WindUp_3P"
+const string CHARGE_SOUND_WINDDOWN_1P = "Weapon_ChargeRifle_WindDown_1P"
+const string CHARGE_SOUND_WINDDOWN_3P = "Weapon_ChargeRifle_WindDown_3P"
+
+void function ChargeBall_Precache()
+{
+#if SERVER
+	PrecacheModel( CHARGE_SHOT_PROJECTILE )
+	PrecacheEffect( CHARGE_EFFECT_1P )
+	PrecacheEffect( CHARGE_EFFECT_3P )
+#endif // #if SERVER
+}
+
+void function ChargeBall_FireProjectile( entity weapon, vector position, vector direction, bool shouldPredict )
+{
+	weapon.EmitWeaponNpcSound( LOUD_WEAPON_AI_SOUND_RADIUS_MP, 0.2 )
+
+	entity owner = weapon.GetWeaponOwner()
+	const float MISSILE_SPEED = 1200.0
+	const int CONTACT_DAMAGE_TYPES = (damageTypes.projectileImpact | DF_DOOM_FATALITY)
+	const int EXPLOSION_DAMAGE_TYPES = damageTypes.explosive
+	const bool DO_POPUP = false
+
+	if ( shouldPredict )
+	{
+	WeaponFireMissileParams fireMissileParams
+	fireMissileParams.speed = 1
+	fireMissileParams.scriptTouchDamageType = damageTypes.largeCaliberExp
+	fireMissileParams.scriptExplosionDamageType = damageTypes.largeCaliberExp
+	fireMissileParams.doRandomVelocAndThinkVars = false
+	fireMissileParams.clientPredicted = false
+	entity missile = weapon.FireWeaponMissile( fireMissileParams )
+		if ( missile )
+		{
+			EmitSoundOnEntity( owner, "ShoulderRocket_Cluster_Fire_3P" )
+			missile.SetModel( CHARGE_SHOT_PROJECTILE )
+#if CLIENT
+			const ROCKETEER_MISSILE_EXPLOSION = $"xo_exp_death"
+			const ROCKETEER_MISSILE_SHOULDER_FX = $"wpn_mflash_xo_rocket_shoulder_FP"
+			//entity owner = weapon.GetWeaponOwner()
+			vector origin = owner.OffsetPositionFromView( Vector(0, 0, 0), Vector(25, -25, 15) )
+			vector angles = owner.CameraAngles()
+			StartParticleEffectOnEntityWithPos( owner, GetParticleSystemIndex( ROCKETEER_MISSILE_SHOULDER_FX ), FX_PATTACH_EYES_FOLLOW, -1, origin, angles )
+#else // #if CLIENT
+			missile.SetProjectileImpactDamageOverride( 1440 )
+			missile.kv.damageSourceId = eDamageSourceId.charge_ball
+#endif // #else // #if CLIENT
+		}
+	}
+}
+
+bool function ChargeBall_ChargeBegin( entity weapon, string tagName )
+{
+#if CLIENT
+	if ( InPrediction() && !IsFirstTimePredicted() )
+		return true
+#endif // #if CLIENT
+
+	weapon.w.statusEffects.append( StatusEffect_AddEndless( weapon.GetWeaponOwner(), eStatusEffect.move_slow, 0.6 ) )
+	weapon.w.statusEffects.append( StatusEffect_AddEndless( weapon.GetWeaponOwner(), eStatusEffect.turn_slow, 0.35 ) )
+
+	weapon.PlayWeaponEffect( CHARGE_EFFECT_1P, CHARGE_EFFECT_3P, tagName )
+	weapon.PlayWeaponEffect( $"", CHARGE_EFFECT_DLIGHT, tagName )
+
+#if SERVER
+	StopSoundOnEntity( weapon, CHARGE_SOUND_WINDDOWN_3P )
+	entity weaponOwner = weapon.GetWeaponOwner()
+	if ( IsValid( weaponOwner ) )
+	{
+		if ( weaponOwner.IsPlayer() )
+			EmitSoundOnEntityExceptToPlayer( weapon, weaponOwner, CHARGE_SOUND_WINDUP_3P )
+		else
+			EmitSoundOnEntity( weapon, CHARGE_SOUND_WINDUP_3P )
+	}
+#else
+	StopSoundOnEntity( weapon, CHARGE_SOUND_WINDDOWN_1P )
+	EmitSoundOnEntity( weapon, CHARGE_SOUND_WINDUP_1P )
+#endif
+
+	return true
+}
+
+void function ChargeBall_ChargeEnd( entity weapon )
+{
+#if CLIENT
+	if ( InPrediction() && !IsFirstTimePredicted() )
+		return
+#endif
+
+	if ( IsValid( weapon.GetWeaponOwner() ) )
+	{
+		#if CLIENT
+		if ( InPrediction() && IsFirstTimePredicted() )
+		{
+		#endif
+
+			foreach ( effect in weapon.w.statusEffects )
+			{
+				StatusEffect_Stop( weapon.GetWeaponOwner(), effect )
+			}
+
+		#if CLIENT
+		}
+		#endif
+	}
+
+#if SERVER
+	StopSoundOnEntity( weapon, CHARGE_SOUND_WINDUP_3P )
+	entity weaponOwner = weapon.GetWeaponOwner()
+	if ( IsValid( weaponOwner ) )
+	{
+		if ( weaponOwner.IsPlayer() )
+			EmitSoundOnEntityExceptToPlayer( weapon, weaponOwner, CHARGE_SOUND_WINDDOWN_3P )
+		else
+			EmitSoundOnEntity( weapon, CHARGE_SOUND_WINDDOWN_3P )
+	}
+#else
+	StopSoundOnEntity( weapon, CHARGE_SOUND_WINDUP_1P )
+	EmitSoundOnEntity( weapon, CHARGE_SOUND_WINDDOWN_1P )
+#endif
+
+	ChargeBall_StopChargeEffects( weapon )
+}
+
+void function ChargeBall_StopChargeEffects( entity weapon )
+{
+	Assert( IsValid( weapon ) )
+	// weapon.StopWeaponEffect( CHARGE_EFFECT_1P, CHARGE_EFFECT_3P )
+	// weapon.StopWeaponEffect( CHARGE_EFFECT_3P, CHARGE_EFFECT_1P )
+	// weapon.StopWeaponEffect( CHARGE_EFFECT_DLIGHT, CHARGE_EFFECT_DLIGHT )
+	thread HACK_Deplayed_ChargeBall_StopChargeEffects( weapon )
+}
+
+void function HACK_Deplayed_ChargeBall_StopChargeEffects( entity weapon )
+{
+	weapon.EndSignal( "OnDestroy" )
+	wait 0.2
+	weapon.StopWeaponEffect( CHARGE_EFFECT_1P, CHARGE_EFFECT_3P )
+	weapon.StopWeaponEffect( CHARGE_EFFECT_3P, CHARGE_EFFECT_1P )
+	weapon.StopWeaponEffect( CHARGE_EFFECT_DLIGHT, CHARGE_EFFECT_DLIGHT )
+}
+
+float function ChargeBall_GetChargeTime()
+{
+	return 1.05
 }
 
 #if SERVER

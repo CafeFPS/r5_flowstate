@@ -20,6 +20,10 @@ void function CLPassiveAdrenaline_Init()
 	file.colorCorrection = ColorCorrection_Register( "materials/correction/adrenaline_passive.raw_hdr" )
 	StatusEffect_RegisterEnabledCallback( eStatusEffect.adrenaline_visuals, PassiveAdrenaline_StartVisualEffect )
 	StatusEffect_RegisterDisabledCallback( eStatusEffect.adrenaline_visuals, PassiveAdrenaline_StopVisualEffect )
+	
+	#if SERVER
+	AddCallback_OnPassiveChanged( ePassives.PAS_ADRENALINE, PassiveAdrenaline_OnPassiveChanged )
+	#endif
 }
 
 void function PassiveAdrenaline_StartVisualEffect( entity ent, int statusEffect, bool actuallyChanged )

@@ -1,7 +1,7 @@
 global function ShTutorial_Init
 
 #if SERVER
-global function SetTurorialContext
+global function SetTutorialContext
 global function IsTutorialContextCompleted
 global function UpdateActionCount
 #endif
@@ -61,7 +61,7 @@ struct
 	table< entity, array<bool> >        playerTutorialContextHistory
 } file
 
-table<int, void functionref( entity player ) > baseInputCallacks
+table<int, void functionref( entity player ) > baseInputCallbacks
 
 void function ShTutorial_Init()
 {
@@ -138,7 +138,7 @@ void function ShTutorial_Init()
 }
 
 #if SERVER
-void function SetTurorialContext( entity player, int context )
+void function SetTutorialContext( entity player, int context )
 {
 	Assert( context >= eTutorialContext.NONE && context < eTutorialContext._count )
 	player.SetPlayerNetInt( "tutorialContext", context )
@@ -153,18 +153,18 @@ void function OnPlayerConnected( entity player )
 
 		if ( inputHint.triggerButtonEnum == IN_FORWARD )
 		{
-			AddPlayerPressedForwardCallback( player, baseInputCallacks[inputHint.triggerButtonEnum], 1.0, true )
-			AddPlayerPressedBackCallback( player, baseInputCallacks[inputHint.triggerButtonEnum], 1.0, true )
+			AddPlayerPressedForwardCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum], 1.0, true )
+			AddPlayerPressedBackCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum], 1.0, true )
 		}
 		else
 		{
-			AddOptionalButtonPressedPlayerInputCallback( player, inputHint.triggerButtonEnum, baseInputCallacks[inputHint.triggerButtonEnum] )
+			AddOptionalButtonPressedPlayerInputCallback( player, inputHint.triggerButtonEnum, baseInputCallbacks[inputHint.triggerButtonEnum] )
 		}
 
 		if ( inputHint.triggerButtonEnum == IN_DUCK )
-			AddOptionalButtonPressedPlayerInputCallback( player, IN_DUCKTOGGLE, baseInputCallacks[IN_DUCK] )
+			AddOptionalButtonPressedPlayerInputCallback( player, IN_DUCKTOGGLE, baseInputCallbacks[IN_DUCK] )
 		if ( inputHint.triggerButtonEnum == IN_ZOOM )
-			AddOptionalButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, baseInputCallacks[IN_ZOOM] )
+			AddOptionalButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, baseInputCallbacks[IN_ZOOM] )
 	}
 
 	thread TutorialContextPlayerThink( player )
@@ -182,7 +182,7 @@ void function TutorialContextPlayerThink( entity player )
 			if ( !IsValid( player ) )
 				return
 
-			SetTurorialContext( player, eTutorialContext.NONE )
+			SetTutorialContext( player, eTutorialContext.NONE )
 
 			foreach ( index, inputHint in file.inputHints )
 			{
@@ -191,18 +191,18 @@ void function TutorialContextPlayerThink( entity player )
 
 				if ( inputHint.triggerButtonEnum == IN_FORWARD )
 				{
-					RemovePlayerPressedForwardCallback( player, baseInputCallacks[inputHint.triggerButtonEnum] )
-					RemovePlayerPressedBackCallback( player, baseInputCallacks[inputHint.triggerButtonEnum] )
+					RemovePlayerPressedForwardCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum] )
+					RemovePlayerPressedBackCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum] )
 				}
 				else
 				{
-					RemoveButtonPressedPlayerInputCallback( player, inputHint.triggerButtonEnum, baseInputCallacks[inputHint.triggerButtonEnum] )
+					RemoveButtonPressedPlayerInputCallback( player, inputHint.triggerButtonEnum, baseInputCallbacks[inputHint.triggerButtonEnum] )
 				}
 
 				if ( inputHint.triggerButtonEnum == IN_DUCK )
-					RemoveButtonPressedPlayerInputCallback( player, IN_DUCKTOGGLE, baseInputCallacks[IN_DUCK] )
+					RemoveButtonPressedPlayerInputCallback( player, IN_DUCKTOGGLE, baseInputCallbacks[IN_DUCK] )
 				if ( inputHint.triggerButtonEnum == IN_ZOOM_TOGGLE )
-					RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, baseInputCallacks[IN_ZOOM] )
+					RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, baseInputCallbacks[IN_ZOOM] )
 			}
 		}
 	)
@@ -217,7 +217,7 @@ void function TutorialContextPlayerThink( entity player )
 	{
 		if ( tutorialContext != lastTutorialContext )
 		{
-			SetTurorialContext( player, tutorialContext )
+			SetTutorialContext( player, tutorialContext )
 		}
 
 		lastTutorialContext = tutorialContext
@@ -367,19 +367,19 @@ void function UpdateActionCount( entity player, InputHint inputHint )
 #elseif CLIENT
 void function OnLocalClientConnected( entity player )
 {
-	//int usedIndices = 0
-	//foreach ( index, inputHint in file.inputHints )
-	//{
-	//	if ( player.GetPersistentVar( "tutorialActionCount[" + index + "]" ) < 5 )
-	//	{
-	//		var hintRui = CreateCockpitRui( $"ui/tutorial_hint_line.rpak" )
-	//		RuiSetString( hintRui, "hintText", inputHint.hintText )
-	//		RuiSetInt( hintRui, "hintOffset", usedIndices )
-	//
-	//		inputHint.rui = hintRui
-	//		usedIndices++
-	//	}
-	//}
+	int usedIndices = 0
+	foreach ( index, inputHint in file.inputHints )
+	{
+		if ( player.GetPersistentVar( "tutorialActionCount[" + index + "]" ) < 5 )
+		{
+			var hintRui = CreateCockpitRui( $"ui/tutorial_hint_line.rpak" )
+			RuiSetString( hintRui, "hintText", inputHint.hintText )
+			RuiSetInt( hintRui, "hintOffset", usedIndices )
+	
+			inputHint.rui = hintRui
+			usedIndices++
+		}
+	}
 }
 
 
@@ -525,7 +525,7 @@ void function AddInputHint( int hintContext, int triggerButtonEnum, string butto
 		if ( triggerButtonEnum <= 0 )
 			return
 
-		baseInputCallacks[triggerButtonEnum] <- void function( entity player ) : (triggerButtonEnum) {
+		baseInputCallbacks[triggerButtonEnum] <- void function( entity player ) : (triggerButtonEnum) {
 			RunInputHintCallback( player, triggerButtonEnum )
 		}
 	#endif

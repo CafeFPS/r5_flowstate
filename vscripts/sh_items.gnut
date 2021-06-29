@@ -32,6 +32,8 @@ global function ItemFlavor_GetShortName
 global function ItemFlavor_GetLongDescription
 global function ItemFlavor_GetShortDescription
 global function ItemFlavor_GetIcon
+global function ItemFlavor_HasSourceTag
+global function ItemFlavor_GetSourceIcon
 #endif
 global function ItemFlavor_GetPlaylistOpinion
 global function ItemFlavor_IsAvailableInPlaylist
@@ -85,6 +87,7 @@ global enum eItemType
 	// General & gamerules items
 	tagonly,
 	ability,
+	calevent_season,
 	weapon_category,
 
 	character,
@@ -97,6 +100,9 @@ global enum eItemType
 	account_currency,
 	account_currency_bundle,
 	account_pack,
+	battlepass,
+	battlepass_purchased_xp,
+	xp_boost,
 	character_skin,
 	character_execution,
 	weapon_skin,
@@ -246,6 +252,8 @@ void function ShItems_LevelInit_Begin()
 
 void function ShItems_LevelInit_Finish()
 {
+	RegisterTags()
+
 	foreach( RegisterItemFlavorsCallbackType cb in fileLevel.registerRootItemFlavorsCallbacks )
 		cb()
 
@@ -277,6 +285,16 @@ bool function IsItemFlavorRegistrationFinished()
 	return fileLevel.isItemRegistrationFinished
 }
 
+const table<asset, asset> sourceTagToIcon = {
+	[ $"settings/itemflav/tag/source_valentines_day.rpak" ] = $"rui/menu/buttons/source_valentines_day",
+	[ $"settings/itemflav/tag/source_battlepass_season01.rpak" ] = $"rui/menu/buttons/source_battlepass_season01"
+}
+
+void function RegisterTags()
+{
+	foreach ( sourceTag, icon in sourceTagToIcon )
+		RegisterItemFlavorFromSettingsAsset( sourceTag )
+}
 
 
 //////////////////////////
@@ -595,6 +613,41 @@ asset function ItemFlavor_GetIcon( ItemFlavor flavor )
 {
 	Assert( IsItemFlavorStructValid( flavor, eValidation.ASSERT ) )
 	return GetGlobalSettingsAsset( flavor._____INTERNAL_settingsAsset, "icon" )
+}
+#endif
+
+
+#if CLIENT || UI 
+bool function ItemFlavor_HasSourceTag( ItemFlavor flavor )
+{
+	Assert( IsItemFlavorStructValid( flavor, eValidation.ASSERT ) )
+
+	bool found = false
+	foreach ( sourceTag, icon in sourceTagToIcon )
+	{
+		if ( ItemFlavor_HasTag( flavor, GetItemFlavorByAsset( sourceTag ) ) )
+		{
+			Assert( !found )
+			found = true
+		}
+	}
+
+	return found
+}
+
+asset function ItemFlavor_GetSourceIcon( ItemFlavor flavor )
+{
+	Assert( IsItemFlavorStructValid( flavor, eValidation.ASSERT ) )
+	Assert( ItemFlavor_HasSourceTag( flavor ) )
+
+	foreach ( sourceTag, icon in sourceTagToIcon )
+	{
+		if ( ItemFlavor_HasTag( flavor, GetItemFlavorByAsset( sourceTag ) ) )
+			return icon
+	}
+
+	Assert( false )
+	return $""
 }
 #endif
 
@@ -1029,8 +1082,8 @@ bool function ItemFlavor_HasUnlockFunc( ItemFlavor flavor )
 
 bool function ItemFlavor_PassesUnlockFunc( ItemFlavor flavor, entity player )
 {
-	#if R5DEV
-		if ( EverythingUnlockedConVarEnabled() || GetCurrentPlaylistVarBool( "dev_force_everything_unlocked", false ) )
+	#if SERVER
+		//if ( EverythingUnlockedConVarEnabled() || GetCurrentPlaylistVarBool( "dev_force_everything_unlocked", false ) )
 			return true
 	#endif
 
@@ -1054,7 +1107,7 @@ bool function PlayerIsOnPC( entity player )
 		#if SERVER
 			return ( player.GetPlayerPlatformName().tolower() == "pc" || player.GetPlayerPlatformName().tolower() == "pc_origin" )
 		#endif
-		#if ( UI || CLIENT )
+		#if  UI || CLIENT 
 			#if PC_PROG
 			return true
 			#else
@@ -1068,7 +1121,7 @@ bool function PlayerIsOnXbox( entity player )
 		#if SERVER
 			return player.GetPlayerPlatformName().tolower() == "x1"
 		#endif
-		#if ( UI || CLIENT )
+		#if  UI || CLIENT 
 			#if DURANGO_PROG
 				return true
 			#else
@@ -1082,7 +1135,7 @@ bool function PlayerHasTwitchPrimeRewards( entity player )
 		#if SERVER
 			return player.HasTwitchPrimeRewards() ? true : false
 		#endif
-		#if ( UI || CLIENT )
+		#if  UI || CLIENT 
 			return GetConVarInt( "twitch_prime_linked" ) == 1
 		#endif
 }
@@ -1106,7 +1159,7 @@ bool function PlayerHasStarterPack( entity player )
 		Assert( player != null )
 		return player.HasEntitlement( STARTER_PACK ) || player.HasEntitlement( STARTER_PACK_DURABLE )
 	#endif
-	#if ( UI || CLIENT )
+	#if  UI || CLIENT 
 		return LocalPlayerHasEntitlement( STARTER_PACK ) || LocalPlayerHasEntitlement( STARTER_PACK_DURABLE )
 	#endif
 }
@@ -1117,7 +1170,7 @@ bool function PlayerHasFoundersPack( entity player )
 		Assert( player != null )
 		return player.HasEntitlement( FOUNDERS_PACK ) || player.HasEntitlement( FOUNDERS_PACKAGE_DURABLE )
 	#endif
-	#if ( UI || CLIENT )
+	#if  UI || CLIENT 
 		return LocalPlayerHasEntitlement( FOUNDERS_PACK ) || LocalPlayerHasEntitlement( FOUNDERS_PACKAGE_DURABLE )
 	#endif
 }

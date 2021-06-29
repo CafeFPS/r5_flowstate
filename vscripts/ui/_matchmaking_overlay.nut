@@ -92,7 +92,7 @@ float function CalcMatchmakingWaitTime()
 	return result
 }
 
-void function UpdateTimeToRestartMatchmaking( float time )//JFS: This uses UI time instead of server time, which leads to awkwardness in MatchmakingSetCountdownTimer() and the rui involved
+void function UpdateTimeToRestartMatchmaking( float time )//
 {
 	file.timeToRestartMatchMaking  = time
 
@@ -291,7 +291,7 @@ void function MatchmakingSetCountdownVisible( bool state )
 	MMStatusOnHUD_SetCountdownVisible( state )
 }
 
-void function MatchmakingSetCountdownTimer( float time, bool useServerTime = true ) //JFS: useServerTime bool is awkward, comes from level.ui.gameStartTime using server time and UpdateTimeToRestartMatchmaking() uses UI time.
+void function MatchmakingSetCountdownTimer( float time, bool useServerTime = true ) //
 {
 	foreach ( element in file.matchStatusRuis )
 		MMStatusRui_SetCountdownTimer( Hud_GetRui( element ), time, useServerTime )

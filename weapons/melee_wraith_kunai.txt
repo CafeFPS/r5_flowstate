@@ -23,6 +23,8 @@ WeaponData
 	"impact_effect_table" 							"melee_kunai"
 
 	// Audio
-	//"idle_sound_player_1p"							"Wraith_Kunai_IdleSparks_1P"
-}
+	//"idle_sound_player_1p"						"Wraith_Kunai_IdleSparks_1P"
 
+	// Animation
+	"activitymodifier3P"							"kunai"
+}

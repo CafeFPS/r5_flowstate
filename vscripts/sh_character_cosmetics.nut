@@ -98,7 +98,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 
 		MakeItemFlavorSet( skinList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_skin_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "skin", ItemFlavor_GetGUIDString( characterClass ) )
 		entry.DEV_category = "character_skins"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Skin"
 		entry.stryderCharDataArrayIndex = ePlayerStryderCharDataArraySlots.CHARACTER_SKIN
@@ -128,7 +128,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 			fileLevel.executionCharacterMap[execution] <- characterClass
 		MakeItemFlavorSet( executionsList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_execution_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "execution", ItemFlavor_GetGUIDString( characterClass ) )
 		entry.DEV_category = "character_executions"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Execution"
 		entry.defaultItemFlavor = executionsList[0]
@@ -148,7 +148,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 			fileLevel.introQuipCharacterMap[quip] <- characterClass
 		MakeItemFlavorSet( quipList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_intro_quip_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "intro_quip", ItemFlavor_GetGUIDString( characterClass ) )
 		entry.DEV_category = "character_intro_quips"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Intro Quip"
 		entry.stryderCharDataArrayIndex = ePlayerStryderCharDataArraySlots.CHARACTER_INTRO_QUIP
@@ -170,7 +170,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 			fileLevel.killQuipCharacterMap[quip] <- characterClass
 		MakeItemFlavorSet( quipList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_kill_quip_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "kill_quip", ItemFlavor_GetGUIDString( characterClass ) )
 		entry.DEV_category = "character_kill_quips"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Kill Quip"
 		entry.defaultItemFlavor = quipList[0]
@@ -567,4 +567,4 @@ void function DEV_TestCharacterSkinData()
 
 	model.Destroy()
 }
-#endif // R5DEV && CLIENT
+#endif // DEV && CLIENT

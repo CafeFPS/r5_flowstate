@@ -53,7 +53,7 @@ void function EnableCloak( entity player, float duration, float fadeIn = CLOAK_F
 
 	player.SetCloakDuration( fadeIn, cloakDuration, CLOAK_FADE_OUT )
 
-	player.s.cloakedShotsAllowed = 0
+	//player.s.cloakedShotsAllowed = 0
 
 	//Battery_StopFXAndHideIconForPlayer( player )
 

@@ -1,0 +1,213 @@
+//
+
+//
+
+
+#if false
+
+#endif
+
+//
+#if false
+
+#endif
+
+//
+
+global function WORKAROUND_GetAllCharacterFlavorAssets
+global function WORKAROUND_GetAllLootMainWeaponFlavorAssets
+
+
+//
+//
+//
+//
+array<asset> function WORKAROUND_GetAllCharacterFlavorAssets()
+{
+	//
+	array<asset> out = []
+
+	//
+	out.append( $"settings/itemflav/character/bangalore.rpak" ) //
+	out.append( $"settings/itemflav/character/bloodhound.rpak" ) //
+	out.append( $"settings/itemflav/character/caustic.rpak" ) //
+	out.append( $"settings/itemflav/character/gibraltar.rpak" ) //
+	out.append( $"settings/itemflav/character/lifeline.rpak" ) //
+	out.append( $"settings/itemflav/character/mirage.rpak" ) //
+	out.append( $"settings/itemflav/character/octane.rpak" ) //
+	out.append( $"settings/itemflav/character/pathfinder.rpak" ) //
+	out.append( $"settings/itemflav/character/wraith.rpak" ) //
+
+	//
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+//
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+
+	return out
+}
+
+//
+//
+array<asset> function WORKAROUND_GetAllLootMainWeaponFlavorAssets()
+{
+	//
+	array<asset> out = []
+
+	//
+	out.append( $"settings/itemflav/loot/main_weapon/alternator.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/autopistol.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/devotion.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/dmr.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/eva.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/flatline.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/g7.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/hemlok.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/kraber.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/mastiff.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/mozambique.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/pdw.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/peacekeeper.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/r97.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/r301.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/semipistol.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/spitfire.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/tripletake.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/wingman.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/energy_ar.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/lstar.rpak" )
+
+	//
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+	#if false
+
+#endif
+
+	return out
+}
+
+

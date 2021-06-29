@@ -37,6 +37,8 @@ global function ChangeCustomGamepadButtonIndexToCommandIndex_Pilot
 global function ChangeCustomGamepadButtonIndexToCommandIndex_Titan
 global function GetButtonIndexForButtonEnum
 global function RefreshCustomGamepadBinds_UI
+
+global function GamepadSwapShoulderAndTriggerBinds
 #endif
 
 global enum eGamepadUseSchemeType
@@ -248,6 +250,23 @@ array<int> function BuildCommandForButtonArrayFromConVar( string convarName )
 }
 #endif
 
+#if UI
+void function GamepadSwapShoulderAndTriggerBinds( string convarName )
+{
+	array<int> arr = BuildCommandForButtonArrayFromConVar( convarName )
+
+	int old4 = arr[4]
+	arr[4] = arr[6]
+	arr[6] = old4
+
+	int old5 = arr[5]
+	arr[5] = arr[7]
+	arr[7] = old5
+
+	string newValue = IntArrayToCSS( arr )
+	SetConVarString( convarName, newValue )
+}
+#endif // UI
 
 #if CLIENT || UI
 string function GetCustomBindCommandForButtonIndex_( int buttonIndex, string convarName, array<string> bindAliases )

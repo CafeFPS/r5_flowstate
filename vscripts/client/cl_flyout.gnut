@@ -121,7 +121,7 @@ void function WeaponFlyoutRefresh()
 //	if ( file.flyoutShowTime + ( file.lastFlyoutDuration - 0.2 ) <= Time() )
 //		return
 //
-//#if (MP && !MP_CAMPAIGNCOOP)
+//#if MP && !MP_CAMPAIGNCOOP
 //	if ( !ShouldTrackXPForWeapon( file.weaponClassName ) )
 //		return
 //

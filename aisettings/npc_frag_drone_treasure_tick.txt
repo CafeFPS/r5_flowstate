@@ -80,4 +80,6 @@ npc_frag_drone_treasure_tick
 
 	suicideExplosionDelay			2.1
 	suicideExplosionDistance		200.0
+
+	is_loot_tick                      1
 }

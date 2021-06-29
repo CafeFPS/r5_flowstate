@@ -45,6 +45,7 @@ global function LootCeremony_UpdateOpenAdditionalButton
 
 global function SetStoreItemPresentationModeActive
 global function StoreItemTypePresentationSupported
+global function GetNextLootBoxRarity
 #endif
 
 global const string LOOT_CEREMONY_MUSIC_P1 = "Music_LootCeremony_Pt1"
@@ -529,12 +530,7 @@ void function GRXPackOpened_ErrorHandling( int packError )
 	string message
 	string warningText
 
-	if ( packError == GRX_INVENTORYERROR_NOITEMS )
-	{
-		message = "#GRX_ERROR_MESSAGE_NOITEMS"
-		warningText = "Loot Box had an error: NOITEMS"
-	}
-	else if ( packError == GRX_INVENTORYERROR_UNKNOWNITEM )
+	if ( packError == GRX_INVENTORYERROR_UNKNOWNITEM )
 	{
 		message = "#GRX_ERROR_MESSAGE_UNKNOWNITEM"
 		warningText = "Loot Box had an error: UNKNOWNITEM"
@@ -4018,6 +4014,16 @@ ItemFlavor ornull function GetNextLootBox()
 
 	return nextPack
 
+}
+
+int function GetNextLootBoxRarity()
+{
+	ItemFlavor ornull pack = GetNextLootBox()
+	if ( pack == null )
+		return -1
+	expect ItemFlavor( pack )
+	int quality = ItemFlavor_GetQuality( pack )
+	return quality
 }
 #endif
 

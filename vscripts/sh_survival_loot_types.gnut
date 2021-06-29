@@ -1,5 +1,6 @@
 global function SURVIVAL_LootTypes_InitShared
 
+global function IsLootTypeValid
 global function GetLootTypeData
 
 global const bool AUTOEQUIP_ATTACHMENTS = true
@@ -136,6 +137,11 @@ LootTypeData function RegisterLootType( int lootType )
 	file.lootTypeData[ lootType ] <- lt
 
 	return lt
+}
+
+bool function IsLootTypeValid( int lootType )
+{
+	return (lootType in file.lootTypeData)
 }
 
 LootTypeData function GetLootTypeData( int lootType )

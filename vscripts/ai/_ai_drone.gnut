@@ -14,24 +14,24 @@ global function IsDroneRebooting
 global function DroneOnLeeched
 global function SetRepairDroneTarget
 
-global const DRONE_SHIELD_COOLDOWN = 8
-global const DRONE_SHIELD_WALL_HEALTH = 200
-global const DRONE_SHIELD_WALL_RADIUS_TITAN = 200
-global const DRONE_SHIELD_WALL_RADIUS_HUMAN = 90
-global const DRONE_SHIELD_WALL_HEIGHT_TITAN = 450
-global const DRONE_SHIELD_WALL_HEIGHT_HUMAN = 190
-global const DRONE_SHIELD_WALL_FOV_TITAN = 115
-global const DRONE_SHIELD_WALL_FOV_HUMAN = 105
+global const DRONE_SHIELD_COOLDOWN 						= 8
+global const DRONE_SHIELD_WALL_HEALTH 					= 200
+global const DRONE_SHIELD_WALL_RADIUS_TITAN 			= 200
+global const DRONE_SHIELD_WALL_RADIUS_HUMAN 			= 90
+global const DRONE_SHIELD_WALL_HEIGHT_TITAN 			= 450
+global const DRONE_SHIELD_WALL_HEIGHT_HUMAN 			= 190
+global const DRONE_SHIELD_WALL_FOV_TITAN 				= 115
+global const DRONE_SHIELD_WALL_FOV_HUMAN 				= 105
 global const DRONE_MINIMUM_DEPLOY_CLEARANCE_FROM_GROUND = 120
-global const MIN_DRONE_SHIELD_FROM_OWNER_DIST = 256 //if shield drone gets more than this distance away from host, will drop shield
-global const MIN_DRONE_SHIELD_FROM_OWNER_DIST_TITAN = 400 //if shield drone gets more than this distance away from host, will drop shield
-global const DRONE_LEASH_DISTANCE_SQR =  589824 // Further than this distance, drones will disengage from combat and go back to their owner.
+global const MIN_DRONE_SHIELD_FROM_OWNER_DIST 			= 256 //if shield drone gets more than this distance away from host, will drop shield
+global const MIN_DRONE_SHIELD_FROM_OWNER_DIST_TITAN 	= 400 //if shield drone gets more than this distance away from host, will drop shield
+global const DRONE_LEASH_DISTANCE_SQR 					= 589824 // Further than this distance, drones will disengage from combat and go back to their owner.
 
 global const SOUND_DRONE_EXPLODE_DEFAULT 	= "Drone_DeathExplo"
 global const SOUND_DRONE_EXPLODE_CLOAK 		= "Drone_DeathExplo"
 
 global const FX_DRONE_SHIELD_WALL_TITAN 	= $"P_drone_shield_wall_XO"
-const FX_DRONE_SHIELD_WALL_HUMAN 	= $"P_drone_shield_wall"
+const FX_DRONE_SHIELD_WALL_HUMAN 			= $"P_drone_shield_wall"
 global const FX_DRONE_EXPLOSION 			= $"P_drone_exp_md"
 global const FX_DRONE_R_EXPLOSION 			= $"P_drone_exp_rocket"
 global const FX_DRONE_P_EXPLOSION 			= $"P_drone_exp_plasma"
@@ -48,8 +48,8 @@ function AiDrone_Init()
 	PrecacheParticleSystem( FX_DRONE_SHIELD_WALL_HUMAN )
 	PrecacheParticleSystem( FX_DRONE_SHIELD_ROPE_GLOW )
 
-	PrecacheModel( $"models/robots/drone_air_attack/drone_air_attack_rockets.rmdl" )
-	PrecacheModel( $"models/robots/drone_air_attack/drone_air_attack_plasma.rmdl" )
+	PrecacheModel( $"mdl/robots/drone_air_attack/drone_air_attack_rockets.rmdl" ) // TODO: Does this exist in r5?
+	PrecacheModel( $"mdl/robots/drone_air_attack/drone_air_attack_plasma.rmdl" )  // TODO: Does this exist in r5?
 
 	PrecacheMaterial( $"cable/cable_selfillum.vmt" )
 	PrecacheModel( $"cable/cable_selfillum.vmt" )

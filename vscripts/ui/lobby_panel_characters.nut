@@ -10,7 +10,7 @@ struct
 	array<var>             buttons
 	table<var, ItemFlavor> buttonToCharacter
 	ItemFlavor ornull	   presentedCharacter
-	//var					   actionButton
+	//
 	var					   actionLabel
 } file
 
@@ -31,25 +31,25 @@ void function InitCharactersPanel( var panel )
 		Hud_AddEventHandler( button, UIE_CLICKRIGHT, CharacterButton_OnRightClick )
 		Hud_AddEventHandler( button, UIE_MIDDLECLICK, CharacterButton_OnMiddleClick )
 		//
-		//ToolTipData toolTipData
-		//toolTipData.tooltipStyle = eTooltipStyle.BUTTON_PROMPT
-		//toolTipData.actionHint1 = "#X_BUTTON_TOGGLE_LOADOUT"
-		//Hud_SetToolTipData( button, toolTipData )
+		//
+		//
+		//
+		//
 	}
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 	AddPanelFooterOption( panel, LEFT, BUTTON_A, false, "#A_BUTTON_SELECT", "", null, IsCharacterButtonFocused )
-	//AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_TOGGLE_LOADOUT", "#X_BUTTON_TOGGLE_LOADOUT", OpenFocusedCharacterSkillsDialog, IsCharacterButtonFocused )
+	//
 	AddPanelFooterOption( panel, LEFT, BUTTON_Y, false, "#Y_BUTTON_UNLOCK", "#Y_BUTTON_UNLOCK", JumpToStoreCharacterFromFocus, IsReadyAndFocusedCharacterLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_Y, false, "#Y_BUTTON_SET_FEATURED", "#Y_BUTTON_SET_FEATURED", SetFeaturedCharacterFromFocus, IsReadyAndNonfeaturedCharacterButtonFocused )
-	//AddPanelFooterOption( panel, LEFT, MOUSE_RIGHT, false, "", "#X_BUTTON_TOGGLE_LOADOUT", ToggleCharacterDetails ) // mouse
+	//
 
-	//file.actionButton = Hud_GetChild( panel, "ActionButton" )
-	//HudElem_SetRuiArg( file.actionButton, "bigText", "" )
-	//HudElem_SetRuiArg( file.actionButton, "buttonText", "" )
-	//HudElem_SetRuiArg( file.actionButton, "descText", "" )
-	//HudElem_SetRuiArg( file.actionButton, "centerText", "#X_BUTTON_TOGGLE_LOADOUT" )
-	//Hud_AddEventHandler( file.actionButton, UIE_CLICK, OpenFocusedCharacterSkillsDialog )
+	//
+	//
+	//
+	//
+	//
+	//
 
 	file.actionLabel = Hud_GetChild( panel, "ActionLabel" )
 	Hud_SetText( file.actionLabel, "#X_BUTTON_TOGGLE_LOADOUT" )
@@ -122,6 +122,8 @@ void function JumpToStoreCharacterFromButton( var button )
 {
 	if ( button in file.buttonToCharacter )
 		JumpToStoreCharacter( file.buttonToCharacter[button] )
+
+	EmitUISound( "menu_accept" )
 }
 
 void function SetFeaturedCharacterFromButton( var button )
@@ -166,57 +168,41 @@ void function InitCharacterButtons()
 		allCharacters.append( itemFlav )
 	}
 
-	int count = allCharacters.len()
-	int rows = int( ceil( count / float( MAX_COLUMNS ) ) )
-
-	array<var> visibleButtons
-	for ( int i = 0; i < rows; i++ )
-	{
-		array<var> rowButtons = GetRowButtons( count, i )
-		visibleButtons.extend( rowButtons )
-
-		//SetNavLeftRight( rowButtons ) // TODO: dpad navigation no longer functions at all
-	}
-
-	foreach ( index, button in visibleButtons )
-		CharacterButton_Init( button, allCharacters[index] )
-
 	foreach ( button in file.buttons )
+		Hud_SetVisible( button, false )
+
+	table<int,ItemFlavor> mappingTable = GetCharacterButtonMapping( allCharacters, file.buttons.len() )
+	foreach ( int buttonIndex, ItemFlavor itemFlav in mappingTable )
 	{
-		if ( !visibleButtons.contains( button ) )
-			Hud_SetVisible( button, false )
+		CharacterButton_Init( file.buttons[ buttonIndex ], itemFlav )
+		Hud_SetVisible( file.buttons[ buttonIndex ], true )
 	}
-}
 
+	array<int> rowSizes = GetCharacterButtonRowSizes( allCharacters.len() )
+	array< array<var> > buttonRows
 
-array<var> function GetRowButtons( int totalCount, int targetRow )
-{
-	array<var> rowButtons
-	if ( targetRow >= MAX_ROWS )
-		return rowButtons
+	int buttonIndex = 0
+	foreach ( rowSize in rowSizes )
+	{
+		array<var> buttons
+		int last = buttonIndex + rowSize
 
-	int startIndex = MAX_COLUMNS * targetRow
-	int endIndex = startIndex + GetColumnCountForRow( totalCount, targetRow ) - 1
+		while ( buttonIndex < last )
+		{
+			buttons.append( file.buttons[buttonIndex] )
+			buttonIndex++
+		}
 
-	for ( int i = startIndex; i <= endIndex; i++ )
-		rowButtons.append( file.buttons[i] )
+		buttonRows.append( buttons )
+	}
 
-	return rowButtons
-}
+	//
+	//
+	//
+	//
+	//
 
-
-int function GetColumnCountForRow( int totalCount, int targetRow )
-{
-	if ( targetRow >= MAX_ROWS )
-		return 0
-
-	int rows = int( ceil( totalCount / float( MAX_COLUMNS ) ) )
-	int cols = int( ceil( totalCount / float( rows ) ) )
-
-	if ( targetRow < rows - 1 )
-		return cols
-
-	return totalCount - (cols * targetRow)
+	LayoutCharacterButtons( buttonRows )
 }
 
 
@@ -224,13 +210,13 @@ void function CharacterButton_Init( var button, ItemFlavor character )
 {
 	file.buttonToCharacter[button] <- character
 
-	//bool isNew = (Newness_ReverseQuery_GetNewCount( NEWNESS_QUERIES.CharacterButton[character] ) > 0)
-	// todo(jpg): make new and locked mutually exclusive
+	//
+	//
 	bool isLocked   = IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
 	bool isSelected = LoadoutSlot_GetItemFlavor( LocalClientEHI(), Loadout_CharacterClass() ) == character
 
 	Hud_SetVisible( button, true )
-	//Hud_SetNew( button, isNew )
+	//
 	Hud_SetLocked( button, !IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character ) )
 	Hud_SetSelected( button, isSelected )
 
@@ -238,7 +224,7 @@ void function CharacterButton_Init( var button, ItemFlavor character )
 	RuiSetImage( Hud_GetRui( button ), "buttonImage", CharacterClass_GetGalleryPortrait( character ) )
 	RuiSetImage( Hud_GetRui( button ), "bgImage", CharacterClass_GetGalleryPortraitBackground( character ) )
 	RuiSetImage( Hud_GetRui( button ), "roleImage", CharacterClass_GetCharacterRoleImage( character ) )
-	//RuiSetInt( Hud_GetRui( button ), "characterLevel", GetCharacterLevel( character ) )
+	//
 
 	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterButton[character], OnNewnessQueryChangedUpdateButton, button )
 }
@@ -260,7 +246,7 @@ void function CharactersPanel_OnHide( var panel )
 {
 	if ( NEWNESS_QUERIES.isValid )
 		foreach ( var button, ItemFlavor character in file.buttonToCharacter )
-			if ( character in NEWNESS_QUERIES.CharacterButton ) // todo(dw): aaarggggghhhhh
+			if ( character in NEWNESS_QUERIES.CharacterButton ) //
 				Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterButton[character], OnNewnessQueryChangedUpdateButton, button )
 
 	SetTopLevelCustomizeContext( null )
@@ -272,9 +258,10 @@ void function CharactersPanel_OnHide( var panel )
 
 void function CharactersPanel_OnFocusChanged( var panel, var oldFocus, var newFocus )
 {
-	if ( !IsValid( panel ) ) // uiscript_reset
+	if ( !IsValid( panel ) ) //
 		return
-	if ( GetParentMenu( panel ) != GetActiveMenu() )
+
+	if ( !newFocus || GetParentMenu( panel ) != GetActiveMenu() )
 		return
 
 	UpdateFooterOptions()
@@ -286,7 +273,7 @@ void function CharactersPanel_OnFocusChanged( var panel, var oldFocus, var newFo
 		character = LoadoutSlot_GetItemFlavor( LocalClientEHI(), Loadout_CharacterClass() )
 
 
-	//Hud_SetVisible( file.actionButton, IsCharacterButtonFocused() )
+	//
 	Hud_SetVisible( file.actionLabel, IsCharacterButtonFocused() )
 
 	printt( ItemFlavor_GetHumanReadableRef( character ) )
@@ -300,7 +287,7 @@ void function CharacterButton_OnActivate( var button )
 	SetTopLevelCustomizeContext( character )
 	CustomizeCharacterMenu_SetCharacter( character )
 	if ( GRX_IsItemOwnedByPlayer( character ) )
-		RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character ) // TEMP, Some menu state is broken without this. Need Declan to look at why RefreshLoadoutSlotInternal doesn't run when editing a loadout that isn't the featured one before removing this.
+		RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character ) //
 	Newness_IfNecessaryMarkItemFlavorAsNoLongerNewAndInformServer( character )
 	EmitUISound( "UI_Menu_Legend_Select" )
 	AdvanceMenu( GetMenu( "CustomizeCharacterMenu" ) )

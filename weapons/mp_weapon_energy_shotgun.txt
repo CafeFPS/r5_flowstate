@@ -62,6 +62,8 @@ WeaponData
 	"projectile_do_predict_impact_effects"			"1"
 	"entity_color_from_charge"						"1"
 
+	"chroma_color"									"1 .2 .2"
+
 	"sound_dryfire"									"shotgun_dryfire"
 	"sound_pickup"									"wpn_pickup_Rifle_1P"
 	"fire_sound_1_player_1p"						"Weapon_Peacekeeper_Fire_1P"
@@ -339,19 +341,19 @@ WeaponData
 			// NOTE: since the weapon's main settings file has the same Mod and Key names as the _base_shotgun_bolts,
 			//  it keeps this fire_rate keyvalue pair instead of combining math operations on it with the _base_shotgun_bolts
 			"fire_rate" 		"*1.0"
-			"rechamber_time" 	"*0.9"
+			"rechamber_time" 	"*0.925"
 		}
 
 		shotgun_bolt_l2
 		{
 			"fire_rate" 		"*1.0"
-			"rechamber_time" 	"*0.8"
+			"rechamber_time" 	"*0.87"
 		}
 
 		shotgun_bolt_l3
 		{
 			"fire_rate" 		"*1.0"
-			"rechamber_time" 	"*0.75"
+			"rechamber_time" 	"*0.84"
 		}
 
 		npc_shotgunner

@@ -317,7 +317,7 @@ entity function CreateExpensiveScriptMover( vector origin = <0.0, 0.0, 0.0>, vec
 {
 	entity script_mover = CreateEntity( "script_mover" )
 	script_mover.kv.solid = solidType
-	script_mover.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	script_mover.kv.SpawnAsPhysicsMover = 0
 	script_mover.SetOrigin( origin )
 	script_mover.SetAngles( angles )
@@ -368,7 +368,7 @@ entity function CreateOwnedScriptMover( entity owner )
 {
 	entity script_mover = CreateEntity( "script_mover" )
 	script_mover.kv.solid = 0
-	script_mover.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	script_mover.kv.SpawnAsPhysicsMover = 0
 	script_mover.SetOrigin( owner.GetOrigin() )
 	script_mover.SetAngles( owner.GetAngles() )
@@ -611,7 +611,7 @@ entity function SpawnRefEnt( entity ent )
 
 	entity ref = CreateEntity( "prop_dynamic" )
 	//ref.kv.SpawnAsPhysicsMover = 0
-	ref.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	ref.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	DispatchSpawn( ref )
 
 	ref.SetOrigin( origin )
@@ -2895,6 +2895,25 @@ void function ForceTimeLimitDone()
 	ServerCommand( "mp_enablematchending 1" )
 }
 
+
+void function UpdateBadRepPresent()
+{
+	array<entity> players = GetPlayerArray()
+	bool found = false
+/*	always set to false for now
+	foreach ( player in players )
+	{
+		if ( player.HasBadReputation() )
+		{
+			found = true
+			break
+		}
+	}
+*/
+	level.nv.badRepPresent = found
+	level.ui.badRepPresent = found
+}
+
 void function Dev_PrintMessage( entity player, string text, string subText = "", float duration = 7.0, string soundAlias = "" )
 {
 	#if R5DEV
@@ -3477,8 +3496,8 @@ void function PushEntWithVelocity( entity ent, vector velocity )
 
 bool function IsPlayerFemale( entity player )
 {
-	return false; //TODOACTUAL: to do some research of this function
-	return player.Dev_GetPlayerSettingByKeyField( "raceOrSex" ) == "race_human_female"
+	return false
+	//return player.Dev_GetPlayerSettingByKeyField( "raceOrSex" ) == "race_human_female"
 }
 
 bool function IsPlayerMalePilot( entity player )
@@ -4401,7 +4420,13 @@ void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string s
 
 void function UpdateDamageState( entity ent, var damageInfo )
 {
-	//stub
+	if(ent.IsPlayer())
+		return
+
+  float hp = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+  if(hp < 0)
+    hp = 0.0
+  ent.SetHealth(hp)
 }
 
 void function DisableMantle( entity player )
@@ -4426,7 +4451,8 @@ void function UnlockWeaponsAndMelee( entity player )
 
 void function DelayedDestroy( entity mover, float lifetime )
 {
-	//stub
+	wait lifetime
+	mover.Destroy()
 }
 
 void function SwapToLastEquippedPrimary( entity player )
@@ -4441,7 +4467,7 @@ void function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b
 
 void function SetOutOfBoundsTimeLimit( float maxtime )
 {
-
+	//stub
 }
 
 array<entity> function GetEntityChainOfType( entity endNodes )

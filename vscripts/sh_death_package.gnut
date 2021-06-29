@@ -62,6 +62,7 @@ global const WAYPOINTTYPE_THREAT_INDICATOR = "threat_indicator"
 
 struct
 {
+    table hitDataCache
 	table<string,bool> disallowDissolveList
 } file
 
@@ -166,6 +167,59 @@ void function Death_Package_Init()
 #if SERVER
 void function InitDamageStates( entity ent )
 {
+	asset modelName = ent.GetModelName()
+	if ( !(modelName in file.hitDataCache) )
+	{
+		local hitData = {}
+		file.hitDataCache[modelName] <- hitData
+
+		local entKVs = ent.CreateTableFromModelKeyValues()
+
+		hitData.hasHitData <- ("hit_data" in entKVs)
+		hitData.entKVs <- entKVs
+		hitData.damageStateInfo <- {}
+		hitData.skeletonData <- {}
+
+		if ( !hitData.hasHitData )
+			return
+
+		if ( !(ent.GetModelName() in bodyGroupSkeletons) )
+		{
+			// build a graph of bodygroup connections to calculate radial damage states
+			local skeletonData = {}
+
+			foreach ( bodyGroupName, bodyGroupData in entKVs.hit_data )
+			{
+				skeletonData[bodyGroupName] <- { siblings = [] }
+			}
+
+			foreach ( bodyGroupName, bodyGroupData in entKVs.hit_data )
+			{
+				if ( !("parent" in bodyGroupData ) )
+					continue
+
+				local parentName = bodyGroupData["parent"]
+
+				skeletonData[bodyGroupName].siblings.append( parentName )
+				skeletonData[parentName].siblings.append( bodyGroupName )
+			}
+
+			bodyGroupSkeletons[ ent.GetModelName() ] <- skeletonData
+		}
+
+		hitData.damageStateInfo <- {}
+		foreach ( bodyGroupName, bodyGroupData in entKVs.hit_data )
+		{
+			hitData.damageStateInfo[bodyGroupName] <- 0
+		}
+
+		hitData.skeletonData <- bodyGroupSkeletons[ ent.GetModelName() ]
+	}
+
+	ent.s.hasHitData <- file.hitDataCache[modelName].hasHitData
+	ent.s.entKVs <- clone file.hitDataCache[modelName].entKVs
+	ent.s.damageStateInfo <- clone file.hitDataCache[modelName].damageStateInfo
+	ent.s.skeletonData <- clone file.hitDataCache[modelName].skeletonData
 }
 
 void function TransferDamageStates( entity source, entity dest )
@@ -254,6 +308,14 @@ void function HandleDeathPackage( entity ent, var damageInfo )
 
 	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.round_end )
 		return
+
+	#if REVIVE_ENABLED == true
+	if ( ent.IsPlayer() && ShouldRevivePlayer( ent, damageInfo ) )
+	{
+		thread DeathPackage_PlayerRevive( ent )
+		return
+	}
+	#endif
 
 	int dpFlags = DamageInfo_GetCustomDamageType( damageInfo )
 

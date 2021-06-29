@@ -3,6 +3,7 @@ global function MpWeaponGrenadeCreepingBombardment_Init
 global function OnProjectileCollision_WeaponCreepingBombardment
 global function OnWeaponReadyToFire_WeaponCreepingBombardment
 global function OnWeaponTossReleaseAnimEvent_WeaponCreepingBombardment
+global function OnWeaponDeactivate_WeaponCreepingBombardment
 
 #if SERVER
 global function CreepingBombardmentSmoke
@@ -43,9 +44,13 @@ void function MpWeaponGrenadeCreepingBombardment_Init()
 
 void function OnWeaponReadyToFire_WeaponCreepingBombardment( entity weapon )
 {
-
 	weapon.PlayWeaponEffect( FX_CREEPING_BOMBARDMENT_GLOW_FP, FX_CREEPING_BOMBARDMENT_GLOW_3P, "FX_TRAIL" )
+}
 
+void function OnWeaponDeactivate_WeaponCreepingBombardment( entity weapon )
+{
+	weapon.StopWeaponEffect( FX_CREEPING_BOMBARDMENT_GLOW_FP, FX_CREEPING_BOMBARDMENT_GLOW_3P )
+	Grenade_OnWeaponDeactivate( weapon )
 }
 
 var function OnWeaponTossReleaseAnimEvent_WeaponCreepingBombardment( entity weapon, WeaponPrimaryAttackParams attackParams )
@@ -142,7 +147,7 @@ void function CreepingBombardmentSmoke( entity projectile, asset fx )
 	int fxid = GetParticleSystemIndex( fx )
 	entity signalFX = StartParticleEffectOnEntityWithPos_ReturnEntity( projectile, fxid, FX_PATTACH_POINT_FOLLOW_NOROTATE, projectile.LookupAttachment( "FX_TRAIL" ), <0,0,0>, <0,0,0> )
 	vector dir = Normalize ( FlattenVector ( projectile.GetOrigin() - owner.GetOrigin() ) )
-	float explosionRadius = bombardmentWeapon.GetWeaponSettingFloat( eWeaponVar.explosionradius )
+	//float explosionRadius = bombardmentWeapon.GetWeaponSettingFloat( eWeaponVar.explosionradius )
 
 	EmitSoundOnEntity( projectile, CREEPING_BOMBARDMENT_FLARE_SOUND )
 

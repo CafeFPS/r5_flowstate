@@ -2,10 +2,10 @@ global function DoesPlaylistSupportNoFillTeams
 global function GetMaxTeamSizeForPlaylist
 
 
-#if (CLIENT || UI)
+#if CLIENT || UI
 global function StartMatchmakingStandard
 global function StartMatchmakingWithNoFillTeams
-#endif // #if (CLIENT || UI)
+#endif // #if CLIENT || UI
 
 
 bool function DoesPlaylistSupportNoFillTeams( string playlist )
@@ -21,7 +21,7 @@ int function GetMaxTeamSizeForPlaylist( string playlist )
 	return ((maxTeams != 0) ? (maxPlayers / maxTeams) : (maxPlayers))
 }
 
-#if (CLIENT || UI)
+#if CLIENT || UI
 void function StartMatchmaking_( string playlist, bool requestNoFillTeam )
 {
 	SetConVarInt( "match_teamNoFill", (requestNoFillTeam ? 1 : 0) )
@@ -38,6 +38,6 @@ void function StartMatchmakingWithNoFillTeams( string playlist )
 	Assert( DoesPlaylistSupportNoFillTeams( playlist ) )
 	StartMatchmaking_( playlist, true )
 }
-#endif // #if (CLIENT || UI)
+#endif // #if CLIENT || UI
 
 

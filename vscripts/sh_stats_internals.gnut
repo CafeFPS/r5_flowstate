@@ -167,7 +167,7 @@ global struct StatTemplate
 #endif
 
 
-#if (SERVER || CLIENT || UI) && R5DEV
+#if SERVER || CLIENT || UI && R5DEV
 struct StatEnumStruct_Children
 {
 	array<StatEnumStruct> childEnumStructs
@@ -287,14 +287,16 @@ int function GetStat_Int( entity player, StatEntry entry, bool atStart = false )
 		return entry.calcFunc_Int( player, entry.calcSourceEntries, atStart )
 
 	#if SERVER
-		return (atStart ? player.p.statValuesAtStart_Int : player.p.statValues_Int)[entry.indexWithinType]
+		// todo: fix index
+		return 0 // (atStart ? player.p.statValuesAtStart_Int : player.p.statValues_Int)[entry.indexWithinType]
 	#elseif CLIENT || UI
 		#if R5DEV
 			//if ( GetConVarBool( "persistence_development_mode", false ) )
 			if ( DEV_ShouldIgnorePersistence() )
 				return 0
 		#endif
-		return expect int(player.GetPersistentVar( entry.persistenceFullKey ))
+
+		return 0//expect int(player.GetPersistentVar( entry.persistenceFullKey ))
 	#endif
 }
 #endif
@@ -340,10 +342,18 @@ bool function IsValidStatEntryRef( string ref )
 }
 #endif
 
-
 #if SERVER || CLIENT || UI
 StatEntry function GetStatEntryByRef( string ref )
 {
+	if(!IsValidStatEntryRef(ref)) {
+		StatEnumStruct es
+		es.fieldName = ref
+		es.enumName = ref
+		// todo: check this
+		es.choices = ["r97"]
+		StatTemplate st = InternalRegisterStatCommon(es, ref, eStatType.INT, eStatBehavior.ACCUMULATED, false, true)
+		return st.allEntries[0]
+	}
 	return fileLevel.refStatMap[ref]
 }
 #endif
@@ -565,7 +575,7 @@ void function StatsInternals_UpdatePersistenceOnPurchase( entity player )
 ///////////////////////
 ///////////////////////
 
-#if (SERVER || CLIENT || UI) && R5DEV
+#if SERVER || CLIENT || UI && R5DEV
 string function DEV_GetStatTemplateDebugName( StatTemplate template )
 {
 	//string out = ""
@@ -649,25 +659,26 @@ bool function ClientCommand_stats_set( entity player, array<string> args )
 #if SERVER
 void function __IncrementStat_Int( entity player, StatEntry entry, int incrementAmount )
 {
-	// TODOACTUAL: see if you can make this work without commenting the code
-	
-	// Assert( entry.type == eStatType.INT )
-	// Assert( entry.behavior == eStatBehavior.ACCUMULATED )
+	Assert( entry.type == eStatType.INT )
+	Assert( entry.behavior == eStatBehavior.ACCUMULATED )
 
-	// //player.p.statValues_Int[entry.indexWithinType] += incrementAmount
-	// int oldValue = player.p.statValues_Int[entry.indexWithinType]
-	// int newValue = oldValue + incrementAmount
-	// player.p.statValues_Int[entry.indexWithinType] = newValue
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
 
-	// if ( STATS_DEBUG_PRINT_SPAM )
-	// 	printt( "@@@@ STATS __IncrementStat_Int @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
+	//player.p.statValues_Int[entry.indexWithinType] += incrementAmount
+	int oldValue = player.p.statValues_Int[entry.indexWithinType]
+	int newValue = oldValue + incrementAmount
+	player.p.statValues_Int[entry.indexWithinType] = newValue
 
-	// if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
-	// 	foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
-	// 		cb( player, oldValue, newValue )
+	if ( STATS_DEBUG_PRINT_SPAM )
+		printt( "@@@@ STATS __IncrementStat_Int @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
 
-	// foreach( StatEntry dependent in entry.dependents )
-	// 	OnDependentStatDependencyChanged( player, dependent )
+	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
+		foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
+			cb( player, oldValue, newValue )
+
+	foreach( StatEntry dependent in entry.dependents )
+		OnDependentStatDependencyChanged( player, dependent )
 }
 #endif
 
@@ -678,10 +689,10 @@ void function __IncrementStat_Float( entity player, StatEntry entry, float incre
 	Assert( entry.type == eStatType.FLOAT )
 	Assert( entry.behavior == eStatBehavior.ACCUMULATED )
 
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
+
 	//player.p.statValues_Float[entry.indexWithinType] += incrementAmount
-    if ( player.p.statValues_Float.len() <= 0 )
-        return printt("!!! player.p.statValues_Float.len() <= 0 !!!")
-    
 	float oldValue = player.p.statValues_Float[entry.indexWithinType]
 	float newValue = oldValue + incrementAmount
 	player.p.statValues_Float[entry.indexWithinType] = newValue
@@ -704,6 +715,9 @@ void function __SetStat_Bool( entity player, StatEntry entry, bool newValue, boo
 {
 	Assert( entry.type == eStatType.BOOL )
 	Assert( entry.behavior == eStatBehavior.VARIABLE || (entry.type == eStatType.BOOL && entry.behavior == eStatBehavior.ACCUMULATED && newValue) || DEV_alwaysAllowSet, "Cannot set a bool to false unless its behavior is VARIABLE" )
+
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
 
 	//player.p.statValues_Bool[entry.indexWithinType] = newValue
 	bool oldValue = player.p.statValues_Bool[entry.indexWithinType]
@@ -728,6 +742,9 @@ void function __SetStat_Int( entity player, StatEntry entry, int newValue, bool 
 	Assert( entry.type == eStatType.INT )
 	Assert( entry.behavior == eStatBehavior.VARIABLE || DEV_alwaysAllowSet )
 
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
+
 	//player.p.statValues_Int[entry.indexWithinType] = newValue
 	int oldValue = player.p.statValues_Int[entry.indexWithinType]
 	player.p.statValues_Int[entry.indexWithinType] = newValue
@@ -750,6 +767,9 @@ void function __SetStat_Float( entity player, StatEntry entry, float newValue, b
 {
 	Assert( entry.type == eStatType.FLOAT )
 	Assert( entry.behavior == eStatBehavior.VARIABLE || DEV_alwaysAllowSet )
+
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
 
 	//player.p.statValues_Float[entry.indexWithinType] = newValue
 	float oldValue = player.p.statValues_Float[entry.indexWithinType]
@@ -901,7 +921,7 @@ StatEnumStruct function RegisterStatEnumStruct( StatEnumStruct ornull parentSESO
 
 
 #if SERVER || CLIENT || UI
-StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSESOrNull, string fieldName, int type, int behavior, bool shouldCache )
+StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSESOrNull, string fieldName, int type, int behavior, bool shouldCache, bool useFieldNameAsRef =false )
 {
 	StatTemplate template
 	template.fieldName = fieldName
@@ -912,7 +932,12 @@ StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSE
 
 	if ( parentSESOrNull == null )
 	{
-		template.rootEntry.persistenceFullKey = "stats." + fieldName
+		if(useFieldNameAsRef) {
+			template.rootEntry.persistenceFullKey = fieldName
+		} else {
+			template.rootEntry.persistenceFullKey = "stats." + fieldName
+
+		}
 
 		template.rootEntry.index = fileLevel.allStats.len()
 		fileLevel.allStats.append( template.rootEntry )

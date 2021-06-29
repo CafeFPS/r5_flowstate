@@ -36,8 +36,7 @@ function Anim_Init()
 	RegisterSignal( "NewFirstPersonSequence" )
 	RegisterSignal( "ScriptAnimStop" )
 	RegisterSignal( "AnimEventKill" )
-
-	RegisterSignal("OnChangedPlayerClass")
+	RegisterSignal( "OnChangedPlayerClass" )
 
 	AddGlobalAnimEvent( "enable_weapon", GlobalAnimEvent_EnableWeapon )
 	AddGlobalAnimEvent( "disable_weapon", GlobalAnimEvent_DisableWeapon	)
@@ -369,7 +368,7 @@ function __PlayAnim( guy, animation_name, reference = null, optionalTag = null, 
 
 	guy.SetNextThinkNow()
 
-	#if !DEV
+	#if !R5DEV
 	if ( guy.IsNPC() && !guy.IsInterruptable() )
 	{
 		// better than nothing failsafe
@@ -913,9 +912,25 @@ function PlayAnim( guy, animation_name, reference = null, optionalTag = null, bl
 }
 
 // play the anim
-function PlayAnimNoWait( entity guy, string animation_name )
+function PlayAnimNoWait( guy, animation_name, reference = null, optionalTag = null, blendTime = DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME, initialTime = -1.0)
 {
-	
+	if ( type( guy ) == "array" )
+	{
+		foreach ( ent in guy )
+		{
+			__PlayAnim( ent, animation_name, reference, optionalTag, blendTime )
+			if ( initialTime > 0.0 )
+				guy.Anim_SetInitialTime( initialTime )
+		}
+
+		//WaittillAnimDone( expect entity( guy[0] ) )
+	}
+	else
+	{
+		__PlayAnim( guy, animation_name, reference, optionalTag, blendTime )
+		if ( initialTime > 0.0 )
+			guy.Anim_SetInitialTime( initialTime )
+	}
 }
 
 // play the anim

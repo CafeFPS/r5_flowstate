@@ -1,0 +1,408 @@
+//
+//
+
+#if SERVER || CLIENT || UI
+global function ShCalEvent_LevelInit
+global function GetAllSeasonFlavors
+global function GetLatestSeason
+global function GetActiveSeason
+global function GetUpcomingSeason
+global function CalEvent_IsRevealed
+global function CalEvent_IsVisible
+global function CalEvent_HasStarted
+global function CalEvent_IsActive
+global function CalEvent_GetRevealUnixTime
+global function CalEvent_GetHideUnixTime
+global function CalEvent_GetStartUnixTime
+global function CalEvent_GetFinishUnixTime
+global function Season_GetBattlePass
+global function BattlePass_GetSeason
+#endif
+
+
+//
+//
+//
+//
+//
+
+#if SERVER || CLIENT || UI
+global typedef SeasonRef string ornull
+#endif
+
+
+#if SERVER || CLIENT || UI
+global struct SeasonData
+{
+	string      ref
+	asset       _battlepassFlavAsset
+	ItemFlavor& battlepass
+	int         startUnixTime
+	int         endUnixTime
+
+	//
+	string playlistVarName_startUnixTime
+	string playlistVarName_endUnixTime
+}
+#endif
+
+
+
+//
+//
+//
+//
+//
+
+#if SERVER || CLIENT || UI
+struct CalEventData
+{
+	//
+	//
+	//
+	//
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+struct FileStruct_LifetimeLevel
+{
+	table<ItemFlavor, ItemFlavor> seasonBattlePassMap
+	table<ItemFlavor, ItemFlavor> battlePassSeasonMap
+
+	//
+	//
+	//
+
+	array<ItemFlavor> allCalEvents = []
+	array<ItemFlavor> allSeasons = []
+
+	table<ItemFlavor, CalEventData> calEventDataMap = {}
+}
+FileStruct_LifetimeLevel& fileLevel
+#endif
+
+
+
+//
+//
+//
+//
+//
+
+#if SERVER || CLIENT || UI
+void function ShCalEvent_LevelInit()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	#if false
+
+
+
+#endif
+
+	AddCallback_RegisterRootItemFlavors( void function() {
+		ItemFlavor ornull eventOrNull = RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/calevent/season01.rpak" )
+		if ( eventOrNull != null )
+			fileLevel.allCalEvents.append( expect ItemFlavor( eventOrNull ) )
+
+		foreach ( ItemFlavor event in fileLevel.allCalEvents )
+		{
+			CalEventData ced
+			fileLevel.calEventDataMap[event] <- ced
+
+			if ( ItemFlavor_GetType( event ) == eItemType.calevent_season )
+			{
+				ItemFlavor ornull passOrNull = RegisterItemFlavorFromSettingsAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "battlepassFlav" ) )
+				fileLevel.seasonBattlePassMap[event] <- expect ItemFlavor(passOrNull)
+				fileLevel.battlePassSeasonMap[expect ItemFlavor(passOrNull)] <- event
+
+				//
+				foreach ( ItemFlavor otherEvent in fileLevel.allSeasons )
+				{
+					Assert( CalEvent_GetStartUnixTime( event ) >= CalEvent_GetFinishUnixTime( otherEvent )
+							&& CalEvent_GetStartUnixTime( event ) < CalEvent_GetStartUnixTime( otherEvent ),
+						format( "Season %s start overlaps with season %s", ItemFlavor_GetHumanReadableRef( event ), ItemFlavor_GetHumanReadableRef( otherEvent ) ) )
+					Assert( CalEvent_GetFinishUnixTime( event ) >= CalEvent_GetFinishUnixTime( otherEvent )
+							&& CalEvent_GetFinishUnixTime( event ) < CalEvent_GetStartUnixTime( otherEvent ),
+						format( "Season %s start overlaps with season %s", ItemFlavor_GetHumanReadableRef( event ), ItemFlavor_GetHumanReadableRef( otherEvent ) ) )
+				}
+				//
+				//
+
+				fileLevel.allSeasons.append( event )
+			}
+
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+			//
+		}
+	} )
+
+	AddCallbackOrMaybeCallNow_OnAllItemFlavorsRegistered( void function() {
+		//
+	} )
+}
+#endif
+
+
+
+//
+//
+//
+//
+//
+
+#if SERVER || CLIENT || UI
+//
+array<ItemFlavor> function GetAllSeasonFlavors()
+{
+	return fileLevel.allSeasons
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+//
+ItemFlavor ornull function GetLatestSeason( int t )
+{
+	ItemFlavor ornull currentSeasonOrNull = GetActiveSeason( t )
+	if ( currentSeasonOrNull != null )
+		return currentSeasonOrNull
+
+	ItemFlavor ornull seasonOrNull = null
+	int bestT                      = -1
+	foreach ( ItemFlavor season in fileLevel.allSeasons )
+	{
+		if ( CalEvent_HasStarted( season, t ) )
+		{
+			int startUnixTime = CalEvent_GetStartUnixTime( season )
+			if ( startUnixTime > bestT )
+			{
+				bestT = startUnixTime
+				seasonOrNull = season
+			}
+		}
+	}
+	return seasonOrNull
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+//
+ItemFlavor ornull function GetActiveSeason( int t )
+{
+	//
+	foreach ( ItemFlavor season in fileLevel.allSeasons )
+	{
+		if ( CalEvent_IsActive( season, t ) )
+			return season
+	}
+	return null
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+//
+ItemFlavor ornull function GetUpcomingSeason( int t )
+{
+	Assert( GetActiveSeason( t ) == null )
+
+	ItemFlavor ornull seasonOrNull = null
+	int bestT                      = 32503680001
+	foreach ( ItemFlavor season in fileLevel.allSeasons )
+	{
+		if ( CalEvent_HasStarted( season, t ) )
+		{
+			int startUnixTime = CalEvent_GetStartUnixTime( season )
+			if ( startUnixTime < bestT )
+			{
+				bestT = startUnixTime
+				seasonOrNull = season
+			}
+		}
+	}
+	return seasonOrNull
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_IsRevealed( ItemFlavor event, int t )
+{
+	int revealUnixTime = CalEvent_GetRevealUnixTime( event, true )
+	return (t >= revealUnixTime)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_IsVisible( ItemFlavor event, int t )
+{
+	int hideUnixTime = CalEvent_GetHideUnixTime( event, true )
+	return CalEvent_IsRevealed( event, t ) && (t < hideUnixTime)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_HasStarted( ItemFlavor event, int t )
+{
+	int startUnixTime = CalEvent_GetStartUnixTime( event, true )
+	return CalEvent_IsVisible( event, t ) && (t >= startUnixTime)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_IsActive( ItemFlavor event, int t )
+{
+	int finishUnixTime = CalEvent_GetFinishUnixTime( event, true )
+	return CalEvent_HasStarted( event, t ) && (t < finishUnixTime)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CalEvent_GetRevealUnixTime( ItemFlavor flav, bool warnIfUnset = false )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.calevent_season )
+
+	string playlistVarName = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "revealUnixTimePlaylistVarName" )
+	int val                = GetCurrentPlaylistVarInt( playlistVarName, -1 )
+	if ( val == -1 )
+	{
+		val = 32503680000
+		if ( warnIfUnset )
+			Warning( "CalEvent %s playlist var '%s' is unset. Using %d (the year 3000).", ItemFlavor_GetHumanReadableRef( flav ), playlistVarName, val )
+	}
+	return val
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CalEvent_GetHideUnixTime( ItemFlavor flav, bool warnIfUnset = false )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.calevent_season )
+
+	string playlistVarName = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "hideUnixTimePlaylistVarName" )
+	int val                = GetCurrentPlaylistVarInt( playlistVarName, -1 )
+	if ( val == -1 )
+	{
+		val = 1
+		if ( warnIfUnset )
+			Warning( "CalEvent %s playlist var '%s' is unset. Using %d (the year 1970).", ItemFlavor_GetHumanReadableRef( flav ), playlistVarName, val )
+	}
+	return val
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CalEvent_GetStartUnixTime( ItemFlavor flav, bool warnIfUnset = false )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.calevent_season )
+
+	string playlistVarName = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "startUnixTimePlaylistVarName" )
+	int val                = GetCurrentPlaylistVarInt( playlistVarName, -1 )
+	if ( val == -1 )
+	{
+		val = 32503680000
+		if ( warnIfUnset )
+			Warning( "CalEvent %s playlist var '%s' is unset. Using %d (the year 3000).", ItemFlavor_GetHumanReadableRef( flav ), playlistVarName, val )
+	}
+	return val
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CalEvent_GetFinishUnixTime( ItemFlavor flav, bool warnIfUnset = false )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.calevent_season )
+
+	string playlistVarName = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "finishUnixTimePlaylistVarName" )
+	int val                = GetCurrentPlaylistVarInt( playlistVarName, -1 )
+	if ( val == -1 )
+	{
+		val = 1
+		if ( warnIfUnset )
+			Warning( "CalEvent %s playlist var '%s' is unset. Using %d (the year 1970).", ItemFlavor_GetHumanReadableRef( flav ), playlistVarName, val )
+	}
+	return val
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function Season_GetBattlePass( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.calevent_season )
+
+	return fileLevel.seasonBattlePassMap[flav]
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function BattlePass_GetSeason( ItemFlavor flav ) //
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.battlepass )
+
+	return fileLevel.battlePassSeasonMap[flav]
+}
+#endif
+
+
+
+//
+//
+//
+//
+//
+
+#if false
+
+
+
+
+
+
+
+#endif
+
+
+
+

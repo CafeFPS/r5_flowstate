@@ -119,5 +119,54 @@
 			"text_color"	"255 255 255 255"
 		}
 
+		// Snipercam ////////////////////////////////////////////////////////////
+		"attacker_offscreen"
+		{
+			"file"		"ui/hud/attacker_offscreen"
+			"x"			"0"
+			"y"			"0"
+			"width"		"128"
+			"height"	"128"
+		}
+		"attacker_onscreen"
+		{
+			"file"		"ui/hud/attacker_onscreen"
+			"x"			"0"
+			"y"			"0"
+			"width"		"128"
+			"height"	"128"
+		}
+		"attacker_snipercam"
+		{
+			"file"		"ui/hud/snipercam_monitor"
+			"x"			"0"
+			"y"			"0"
+			"width"		"256"
+			"height"	"256"
+		}
+		"snipercam_crosshair"
+		{
+			"file"		"ui/hud/snipercam_crosshair"
+			"x"			"0"
+			"y"			"0"
+			"width"		"128"
+			"height"	"128"
+		}
+		"snipercam_ring_overlay"
+		{
+			"file"		"ui/hud/snipercam_ring_overlay"
+			"x"			"0"
+			"y"			"0"
+			"width"		"256"
+			"height"	"256"
+		}
+		"enemy_spotted_icon"
+		{
+			"file"		"ui/hud/attacker_onscreen"
+			"x"			"0"
+			"y"			"0"
+			"width"		"128"
+			"height"	"128"
+		}
 	}
 }

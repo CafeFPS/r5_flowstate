@@ -1,5 +1,6 @@
 // stub script
 
+global function SV_Survival_Loot_Init
 global function LootTypeHasAnyChanceToSpawn
 global function SpawnLoot
 global function SURVIVAL_GetWeightedItemFromGroup
@@ -15,6 +16,7 @@ global function GetThrowOrigin
 global function SpawnGenericLoot
 global function SetItemSpawnSource
 global function AddToDeathBox
+global function SURVIVAL_CreateDeathBox
 global function FakePhysicsThrow
 global function SURVIVAL_GivePlayerEquipment
 global function SpawnWeaponAndAmmo
@@ -36,15 +38,59 @@ global enum eSpawnSource
 	PLAYER_DROP
 	DROPPOD
 }
+global enum eLootZoneClass
+{
+	ZONE_NONE,
+	ZONE_LOW,
+	ZONE_MEDIUM,
+	ZONE_HIGH,
+	ZONE_HOTZONE
+}
+
+void function SV_Survival_Loot_Init()
+{
+	AddClientCommandCallback( "Sur_DropEquipment", ClientCommand_Sur_DropEquipment )
+}
+
+bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
+{
+	if( !IsValid( player ) )
+		return true
+	
+	if( args.len() < 1 )
+		return true
+
+	string slotRef = args[0]
+
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( slotRef)
+
+	// SURVIVAL_RemoveFromPlayerInventory
+
+	entity weapon = player.GetNormalWeapon( es.weaponSlot )
+
+	printt( FUNC_NAME(), "weaponSlot:", es.weaponSlot, ", weapon in slot:", weapon.GetWeaponClassName() )
+
+	return true
+
+}
 
 bool function LootTypeHasAnyChanceToSpawn( string ref )
 {
 	return true
 }
 
-void function SpawnLoot( string name, vector pos, bool idk )
+void function SpawnLoot( string name, vector origin, bool idk )
 {
+	// LootData ld = SURVIVAL_Loot_GetLootDataByRef( name )
+	// entity item = CreateEntity( "prop_survival" )
+	// item.SetValueForModelKey( ld.model )
+	// item.SetOrigin( origin )
+	// item.SetAngles( <0, 90, 0> )
+	// item.kv.solid = SOLID_VPHYSICS
+	// item.Solid()
+	// DispatchSpawn( item )
 
+	// SURVIVAL_Loot_SetHighlightForLoot( item, false, name )
 }
 
 string function SURVIVAL_GetWeightedItemFromGroup( string group )
@@ -57,19 +103,45 @@ void function SURVIVAL_ThrowLootFromPoint( vector throwOrigin, vector forward, s
 
 }
 
-void function SURVIVAL_PlayerPickedupItem( entity pikcup, entity player, int action, int pickupFlags, bool shouldKeepAlive = false )
+void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int action, int pickupFlags, bool shouldKeepAlive = false )
 {
-	
+	//SURVIVAL_PlayerPickedupItem( pickup, player, as.action, pickupFlags, !shouldDestroy )
+	printt("!!! SURVIVAL_PlayerPickedupItem !!!")
+	if(!shouldKeepAlive)
+	{
+		pickup.Destroy()
+	}
 }
 
 void function EquipAttachments_Internal( entity player, entity weapon, string item, string modToRemove, bool takeFromInventory, bool returnToInventory, bool forceActive, bool idk, entity deathBox )
 {
+	if( !IsValid( player ) || !IsValid( weapon ) )
+		return
+	
+	array<string> mods = weapon.GetMods()
 
+	if( modToRemove != "" )
+	{
+		for(int i = 0; i < mods.len(); ++i )
+		{
+			if(mods[i] == modToRemove)
+				mods.remove(i)
+		}
+	}
+
+	if( !mods.contains( item ) )
+	{
+		mods.append( item )
+	}
+
+	weapon.SetMods( mods )
+
+	printt("EquipAttachments_Internal", player.GetPlayerName(), "item", item, "modToRemove", modToRemove)
 }
 
 void function PlayPickupSound( entity player, string ref, int pickupFlags = 0 )
 {
-
+	printt("PlayPickupSound", ref)
 }
 
 void function AddRoundsToWeapon( entity player, entity weapon, int numRounds )
@@ -89,7 +161,67 @@ void function TrackingVision_CreatePOIForPickedUpLoot( entity player, int lootTy
 
 void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity activeWeapon, bool dropCurrentWeapon, entity deathBox, bool doPickupPrint )
 {
+	printt("!!! SURVIVAL_GiveMainWeapon !!!")
 
+
+	if( !IsWeaponInPrimarySlot( player, activeWeapon) )
+	{
+		activeWeapon = SURVIVAL_GetLastActiveWeapon( player )
+	}
+
+	LootData newEquipData = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
+	LootTypeData lt       = GetLootTypeData( newEquipData.lootType )
+
+	string newEquip     = newEquipData.ref
+	LootData oldEquipData = SURVIVAL_Loot_GetLootDataByRef( GetWeaponClassName( activeWeapon ) )
+	// EquipmentSlot es    = Survival_GetEquipmentSlotDataByRef( lt.equipmentSlot )
+
+	
+	LootRef lootRef       = SURVIVAL_CreateLootRef( newEquipData, pickup )
+	LootActionStruct as   = lt.groundActionFunc( player, lootRef )
+
+	if( dropCurrentWeapon )
+	{
+		//player.DropWeapon( activeWeapon ) // FIXXX???
+		vector origin = GetThrowOrigin( player )
+		vector fwd    = AnglesToForward( player.EyeAngles() )
+
+		//Create tracking event for players with tracking passive.
+		// if ( es.trackingVisionExchangePOI != -1 )
+		// 	TrackingVision_CreatePOI( es.trackingVisionExchangePOI, player, pickup.GetOrigin(), player.GetTeam(), player )
+
+		entity drop = SpawnGenericLoot( oldEquipData.ref, origin, <0,0,0>, 1 )
+		SetItemSpawnSource( drop, eSpawnSource.PLAYER_DROP, player )
+
+		if ( oldEquipData.lootType == eLootType.ARMOR  )
+		{
+			if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) == 1 )
+			{
+				int dropShieldHealth = player.GetShieldHealth()
+				drop.SetSurvivalProperty( dropShieldHealth )
+			}
+			else if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) == 4 )
+			{
+				drop.SetSurvivalProperty( 0 )
+			}
+		}
+
+		if ( IsValid( deathBox ) )
+		{
+			AddToDeathBox( drop, deathBox )
+		}
+		else
+		{
+			player.DropWeapon( activeWeapon )
+			activeWeapon.Destroy()
+			FakePhysicsThrow( player, drop, fwd * 100, true )
+		}
+
+	}
+
+	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
+	player.GiveWeapon( data.baseWeapon, WEAPON_INVENTORY_SLOT_ANY )
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, data.baseWeapon )
 }
 
 vector function GetThrowOrigin( entity player )
@@ -101,13 +233,13 @@ entity function SpawnGenericLoot( string ref, vector origin, vector angles, int 
 {
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 
-	printt("SpawnGenericLoot", ref)
+	//printt("SpawnGenericLoot", ref)
 
 	entity loot = CreateEntity( "prop_survival" )
 	loot.SetOrigin( origin )
 	loot.SetAngles( angles )
 
-	loot.kv.solid = 0
+	//loot.kv.solid = SOLID_VPHYSICS
 
 	loot.SetUsable()
 	loot.SetFadeDistance( 100000 )
@@ -116,18 +248,23 @@ entity function SpawnGenericLoot( string ref, vector origin, vector angles, int 
 	
 	//LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 	
-	loot.SetSurvivalInt(data.index)
+	loot.SetSurvivalInt( data.index )
 	loot.SetClipCount( count )
 
 	if (data.lootType == eLootType.MAINWEAPON) {
 		loot.SetWeaponName(data.baseWeapon)
 	}
 
+	loot.e.spawnTime = Time()
+
 	loot.SetValueForModelKey( data.model )
 
 	loot.kv.fadedist = -1
 	loot.kv.renderamt = 255
 	loot.kv.rendercolor = "255 255 255"
+
+	// loot.SetSkin( 2 )
+
 	
 	DispatchSpawn( loot )
 	
@@ -144,28 +281,118 @@ void function AddToDeathBox( entity drop, entity deathBox )
 
 }
 
+// this is only SURVIVAL_* because sh_survival_training already has CreateDeathBox
+entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
+{
+	entity box = CreatePropDynamic_NoDispatchSpawn( DEATH_BOX, player.GetOrigin(), <0, 45, 0>, 6 )
+	box.kv.fadedist = 10000
+	if ( hasCard )
+		box.kv.targetname = DEATH_BOX_TARGETNAME_TRAINING
+
+	DispatchSpawn( box )
+
+	box.RemoveFromAllRealms()
+	box.AddToOtherEntitysRealms( player )
+
+	box.Solid()
+	// box.EnableRenderAlways()
+	//box.AllowMantle()
+	box.SetOwner( player )
+
+	if ( hasCard )
+	{
+		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
+		Highlight_ClearNeutralHighlight( box )
+		// file.playerTrainingData[ player ].deathBox = box
+		thread DeathBoxFakePhysics( box )
+	}
+
+	return box
+}
+
+void function DeathBoxFakePhysics( entity box )
+{
+	vector restPos = box.GetOrigin()
+	vector fallPos = restPos + < 0, 0, 54 >
+
+	entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
+	box.SetParent( mover, "", true )
+
+	mover.NonPhysicsMoveTo( fallPos, 0.5, 0.0, 0.5 )
+	wait 0.5
+	mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
+	wait 0.5
+	if ( IsValid( box ) )
+		box.ClearParent()
+	mover.Destroy()
+}
+
 void function FakePhysicsThrow( entity player, entity drop, vector forward, bool idk )
 {
+	entity physics = CreatePropPhysics( drop.GetModelName() , drop.GetOrigin(), player.GetAngles() )
 
+	vector velocity = forward * 1000
+
+
+	drop.SetParent( physics )
+
+	physics.SetVelocity( forward )
 }
 
 void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value )
 {
+	// newEquip - ref
+	// Inventory_SetPlayerEquipment( entity player, string itemRef, string equipmentSlot, int propertyValue = 0 )
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( newEquip )
+	string slot = ""
+	/*
+	ARMOR
+	INCAPSHIELD
+	JUMPKIT
+	ORDNANCE
+	ATTACHMENT
+	CUSTOMPICKUP
+	BACKPACK
+	HELMET
+	*/
 
+	printt("SURVIVAL_GivePlayerEquipment", player, newEquip, value)
+
+	switch(data.lootType) {
+		case eLootType.BACKPACK:
+			slot = "backpack"
+			break
+		case eLootType.ARMOR:
+			slot = "armor"
+			break
+		case eLootType.HELMET:
+			slot = "helmet"
+			break
+		case eLootType.INCAPSHIELD:
+			slot = "incapshield"
+			break
+		/*case eLootType.BACKPACK:
+			slot = "backpack"
+			break*/
+	}
+	Inventory_SetPlayerEquipment(player, newEquip, slot, value)
 }
 
 entity function SpawnWeaponAndAmmo( string ref, vector origin )
 {
+	printt( "SpawnWeaponAndAmmo", ref, origin )
 	return null
 }
 
 entity function SpawnArmor( string ref, vector origin )
 {
+	printt( "SpawnArmor", ref, origin )
 	return null
 }
 
 entity function SpawnNothing( string ref, vector origin )
 {
+	printt( "SpawnNothing", ref, origin )
 	return null
 }
 
@@ -196,11 +423,48 @@ void function ResetPlayerInventory( entity player )
 
 array<LootZone> function GetAllLootZones()
 {
-	array<LootZone> lootZone
-	return lootZone
+	array<LootZone> lootZones
+
+	array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+
+	foreach( lzEnt in lzEnts )
+	{
+		if( GetEditorClass( lzEnt ) != "info_survival_loot_zone" )
+			continue
+		
+		LootZone zone
+		zone.origin = lzEnt.GetOrigin()
+
+		switch( lzEnt.kv.zone_class )
+		{
+			case "zone_hotzone":
+				zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+				break
+			case "zone_high":
+				zone.zoneClass = eLootZoneClass.ZONE_HIGH
+				break
+			case "zone_medium":
+				zone.zoneClass = eLootZoneClass.ZONE_MEDIUM
+				break
+			default:
+				zone.zoneClass = eLootZoneClass.ZONE_NONE
+		}
+		lootZones.append( zone )
+	}
+
+	return lootZones
 }
 
-int function SURVIVAL_LootTierForLootGroup( int zone )
+int function SURVIVAL_LootTierForLootGroup( int zoneClass )
 {
-	return 0
+	return zoneClass
+}
+
+bool function IsWeaponInPrimarySlot( entity player, entity weapon )
+{
+	entity weaponInSlot0 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	entity weaponInSlot1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+
+	bool isInPrimarySlot = IsValid( weapon ) && (weapon == weaponInSlot0 || weapon == weaponInSlot1)
+	return isInPrimarySlot
 }

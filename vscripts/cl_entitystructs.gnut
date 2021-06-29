@@ -74,7 +74,7 @@ global struct ClientEntityStruct
 	string enemyHighlight = ""
 
 	float lastUseTime
-	bool isBusy
+	bool  isBusy
 
 	int __itemFlavorNetworkId
 
@@ -124,6 +124,7 @@ global struct ClientPlayerStruct
 	int lastSaidCommsAction
 	int lastCanceledCommsAction
 	table<int,float> commActionFlavorDebounceTimes
+	float commActionFlavorGlobalDebounceTime = -30.0
 
 	array<TitanCockpitRUI> titanCockpitRUIs
 	bool isInExtendedUse = false
@@ -134,6 +135,9 @@ global struct ClientPlayerStruct
 	entity TEMP_lastMeleeInputWeapon = null
 
 	int mapPingTicketID = -1
+
+	array<int> freefallContrailFXHandles
+	int freefallWindEffectHandle = -1
 }
 
 

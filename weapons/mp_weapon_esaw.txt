@@ -89,6 +89,8 @@ WeaponData
 	"fx_muzzle_flash_world"							"P_mflash_pulse_LMG"
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
+	"chroma_color"									".1 1 .1"
+
 	"burst_or_looping_fire_sound_start_1p"			"weapon_devotion_firstshot_1p"
 	"burst_or_looping_fire_sound_middle_1p"			"Weapon_Devotion_Loop_1P"
 	"burst_or_looping_fire_sound_end_1p"			"weapon_devotion_lastshot_1p"
@@ -454,12 +456,12 @@ WeaponData
 
 		survival_finite_ammo
 		{
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"66"
+            "ammo_default_total"							"1000"
+            "ammo_stockpile_max"							"1000"
             "ammo_no_remove_from_stockpile"					"0"
 
             "low_ammo_fraction" 							"0.3"
-	   		"uses_ammo_pool"								"1"
+	   		"uses_ammo_pool"								"0"
         }
 
         hopup_turbocharger
@@ -488,10 +490,11 @@ WeaponData
 		{
 			"viewmodel"   									"mdl/weapons/hemlock_br/ptpov_hemlock_br_legendary_01.rmdl"
 			"playermodel" 									"mdl/weapons/hemlock_br/w_hemlock_br_legendary_01.rmdl"
-
-			// Temporarily disabled so we can equip the optics without error spam
-			//"dof_zoom_nearDepthStart"						"6.040"
-			//"dof_zoom_nearDepthEnd"							"8.639"
+		}
+		legendary2
+		{
+			"viewmodel"   									"mdl/weapons/hemlock_br/ptpov_hemlock_br_legendary_02.rmdl"
+			"playermodel" 									"mdl/weapons/hemlock_br/w_hemlock_br_legendary_02.rmdl"
 		}
 
 		"barrel_stabilizer_l4_flash_hider"

@@ -42,7 +42,7 @@ void function InitDialogCommon( var menu )
 }
 
 
-void function InitDialogMenu()
+void function InitDialogMenu( var newMenuArg ) //
 {
 	var menu = GetMenu( "Dialog" )
 
@@ -51,7 +51,7 @@ void function InitDialogMenu()
 }
 
 
-void function InitDataCenterDialogMenu()
+void function InitDataCenterDialogMenu( var newMenuArg ) //
 {
 	var menu = GetMenu( "DataCenterDialog" )
 
@@ -60,7 +60,7 @@ void function InitDataCenterDialogMenu()
 }
 
 
-void function InitConnectingDialog()
+void function InitConnectingDialog( var newMenuArg ) //
 {
 	var menu = GetMenu( "ConnectingDialog" )
 
@@ -128,6 +128,7 @@ void function OnDialogButton_Activate( var button )
 void function OnDataCenterButton_Activate( var button )
 {
 	printt( "Chose a data center" )
+	EmitUISound( "ui_menu_accept" )
 	CloseActiveMenu()
 }
 
@@ -251,7 +252,7 @@ void function OpenDialog( DialogData dialogData )
 	RuiSetImage( Hud_GetRui( frameElem ), "basicImage", $"rui/menu/common/dialog_gradient" )
 	RuiSetFloat3( Hud_GetRui( frameElem ), "basicImageColor", <1, 1, 1> )
 
-	// TODO: Add support for string vars? Was 4 vars before.
+	//
 	if ( Hud_HasChild( menu, "DialogHeader" ) )
 		Hud_SetText( Hud_GetChild( menu, "DialogHeader" ), dialogData.header )
 
@@ -331,7 +332,7 @@ void function OpenDialog( DialogData dialogData )
 	int defaultButtonHeight = int( ContentScaledY( 40 ) )
 	int buttonsHeight       = defaultButtonHeight * numChoices
 
-	// Setup each button: hide, or set text and show
+	//
 	foreach ( index, button in buttons )
 	{
 		var ruiButton = Hud_GetRui( button )
@@ -357,7 +358,7 @@ void function OpenDialog( DialogData dialogData )
 		}
 	}
 
-	// Get footer elems and fill in with footerData
+	//
 	array<var> ruiFooterElems = GetElementsByClassname( menu, "LeftRuiFooterButtonClass" )
 	foreach ( elem in ruiFooterElems )
 	{
@@ -373,7 +374,7 @@ void function OpenDialog( DialogData dialogData )
 		}
 	}
 
-	// someday this will be an array
+	//
 	var dialogFooter = Hud_GetChild( menu, "DialogFooterButtons" )
 	var PCBackButton = Hud_GetChild( dialogFooter, "MouseBackFooterButton" )
 	if ( dialogData.showPCBackButton )
@@ -500,29 +501,52 @@ void function LeaveDialog()
 	dialogData.image = $"ui/menu/common/dialog_error"
 	dialogData.darkenBackground = true
 
-	//int lobbyType = GetLobbyTypeScript()
-	if ( IsLobby() ) // && (lobbyType != eLobbyType.MATCH) ) // SOLO, PARTY_LEADER, PARTY_MEMBER, PRIVATE_MATCH
-	{
-		AddDialogButton( dialogData, "#CANCEL_NO" )
+#if(false)
 
-		if ( !PartyHasMembers() || AmIPartyLeader() )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+	{
+		//
+		if ( IsLobby() ) //
 		{
-			if ( AmIPartyLeader() && PartyHasMembers() )
-				AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
+			AddDialogButton( dialogData, "#CANCEL_NO" )
+
+			if ( !PartyHasMembers() || AmIPartyLeader() )
+			{
+				if ( AmIPartyLeader() && PartyHasMembers() )
+					AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
+				else
+					AddDialogButton( dialogData, "#YES_RETURN_TO_TITLE_MENU", Disconnect )
+			}
 			else
-				AddDialogButton( dialogData, "#YES_RETURN_TO_TITLE_MENU", Disconnect )
+			{
+				Assert( PartyHasMembers() )
+				Assert( !AmIPartyLeader() )
+				AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
+			}
 		}
 		else
 		{
-			Assert( PartyHasMembers() )
-			Assert( !AmIPartyLeader() )
-			AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
+			ConfirmLeaveMatchDialog_Open()
+			return
 		}
-	}
-	else
-	{
-		ConfirmLeaveMatchDialog_Open()
-		return
 	}
 
 	OpenDialog( dialogData )
@@ -566,6 +590,24 @@ void function LeaveMatchWithDialog()
 	LeaveMatch()
 	ShowLeavingDialog( "#FINDING_PARTY_SERVER" )
 }
+
+
+#if(false)
+
+
+
+
+
+#endif
+
+
+#if(false)
+
+
+
+
+
+#endif
 
 
 void function ShowLeavingDialog( string header )
@@ -613,11 +655,11 @@ void function OpenDataCenterDialog( var button )
 {
 	DialogData dialogData
 	dialogData.menu = GetMenu( "DataCenterDialog" )
-	dialogData.header = "#DATA_CENTERS"
+	dialogData.header = Localize( "#DATA_CENTERS", GetDatacenterSelectedReasonSymbol() )
 
-	#if PC_PROG
+	#if(PC_PROG)
 		AddDialogButton( dialogData, "#DISMISS" )
-	#endif // PC_PROG
+	#endif //
 
 	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
 	AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )

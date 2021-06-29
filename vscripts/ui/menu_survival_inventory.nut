@@ -58,7 +58,7 @@ struct
 	array<var> inventoryMenus
 } file
 
-void function InitSurvivalInventoryMenu()
+void function InitSurvivalInventoryMenu( var newMenuArg ) //
 {
 	var menu = GetMenu( "SurvivalInventoryMenu" )
 	file.menu = menu
@@ -152,13 +152,23 @@ void function OpenSurvivalInventoryMenu( bool playerIsTitan )
 
 void function OnSurvivalInventoryMenu_Open()
 {
+
 	if ( !file.tabsInitialized )
 	{
+		TabData tabData = GetTabDataForPanel( file.menu )
+		tabData.centerTabs = true
 		AddTab( file.menu, file.quickInventoryPanel, "#INVENTORY_TITLE" )
-		AddTab( file.menu, Hud_GetChild( file.menu, "SquadPanel" ), "#SQUAD" )
+		AddTab( file.menu, Hud_GetChild( file.menu, "SquadPanel" ), "BUG THIS" )
 		AddTab( file.menu, Hud_GetChild( file.menu, "CharacterDetailsPanel" ), "#LEGEND" )
 		file.tabsInitialized = true
 	}
+
+	TabData squadData = GetTabDataForPanel( file.menu )
+	TabDef squadDef   = Tab_GetTabDefByBodyName( squadData, "SquadPanel" )
+	if ( IsSoloMode() )
+		squadDef.title = "#STATS"
+	else
+		squadDef.title = "#SQUAD"
 
 	SetTabNavigationEnabled( file.menu, true )
 	EmitUISound( "UI_InGame_Inventory_Open" )
@@ -263,7 +273,7 @@ bool function Survival_CanPlayerUseTitanItem()
 	return file.playerIsTitan || file.playerIsRodeoing
 }
 
-///
+//
 void function SurvivalInventoryMenu_SetInventoryLimit( int limit )
 {
 	file.inventoryLimit = limit
@@ -306,7 +316,10 @@ void function SurvivalInventoryMenu_EndUpdate()
 	if ( GetActiveMenu() == file.menu )
 	{
 		SurvivalQuickInventory_OnUpdate()
-		ForceVGUIFocusUpdate()
+
+		//
+		if( !GetDpadNavigationActive() )
+			ForceVGUIFocusUpdate()
 	}
 
 	UpdateQuickSwapMenu()

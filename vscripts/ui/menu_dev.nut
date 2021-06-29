@@ -1,10 +1,10 @@
 untyped
 
 global function InitDevMenu
-#if R5DEV
+#if(DEV)
 global function DEV_InitLoadoutDevSubMenu
-global function SetupDevCommand // for dev
-global function SetupDevFunc // for dev
+global function SetupDevCommand //
+global function SetupDevFunc //
 global function SetupDevMenu
 global function RepeatLastDevCommand
 global function UpdatePrecachedSPWeapons
@@ -70,9 +70,10 @@ function Dummy_Untyped( param )
 }
 
 
-void function InitDevMenu()
+void function InitDevMenu( var newMenuArg )
+//
 {
-	#if R5DEV
+	#if(DEV)
 		var menu = GetMenu( "DevMenu" )
 
 		AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnOpenDevMenu )
@@ -98,14 +99,14 @@ void function InitDevMenu()
 		RegisterSignal( "DEV_InitCodeDevMenu" )
 		AddUICallback_LevelLoadingFinished( DEV_InitCodeDevMenu )
 		AddUICallback_LevelShutdown( ClearCodeDevMenu )
-		//OnOpenDevMenu()
+		//
 	#endif
 }
 
 
 void function AddLevelDevCommand( string label, string command )
 {
-	#if R5DEV
+	#if(DEV)
 		string codeDevMenuAlias = DEV_MENU_NAME + "/" + label
 		DevMenu_Alias_DEV( codeDevMenuAlias, command )
 
@@ -116,7 +117,7 @@ void function AddLevelDevCommand( string label, string command )
 	#endif
 }
 
-#if R5DEV
+#if(DEV)
 void function OnOpenDevMenu()
 {
 	file.pageHistory.clear()
@@ -127,19 +128,19 @@ void function OnOpenDevMenu()
 
 	SetDevMenu_MP()
 
-	//DelayedFocusFirstButton()
+	//
 }
 
 
-//void function DelayedFocusFirstButton()
-//{
-//	//Hud_SetFocused( file.buttons[0] )
-//	//Hud_SetSelected( file.buttons[0], true )
-//	//vector screenSize = <GetScreenSize().width, GetScreenSize().height, 0>
-//	vector buttonPos = <Hud_GetAbsX( file.buttons[0] ), Hud_GetAbsY( file.buttons[1] ), 0>
-//	buttonPos += 0.5 * <Hud_GetWidth( file.buttons[0] ), -1 * Hud_GetHeight( file.buttons[0] ), 0>
-//	WarpMouseCursorDEV( <buttonPos.x, buttonPos.y, 0> )
-//}
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 
 void function ServerCallback_OpenDevMenu()
@@ -169,6 +170,12 @@ void function DEV_InitCodeDevMenu_Internal()
 	DevMenu_Rm_DEV( DEV_MENU_NAME )
 	OnOpenDevMenu()
 	file.initializingCodeDevMenu = false
+
+	//
+	#if(false)
+
+
+#endif
 }
 
 
@@ -176,6 +183,10 @@ void function ClearCodeDevMenu()
 {
 	DevMenu_Alias_DEV( DEV_MENU_NAME, "" )
 	DevMenu_Rm_DEV( DEV_MENU_NAME )
+
+	#if(false)
+
+#endif
 }
 
 
@@ -188,7 +199,7 @@ void function UpdateDevMenuButtons()
 	if ( file.initializingCodeDevMenu )
 		return
 
-	// Title:
+	//
 	{
 		string titleText = file.lastDevCommandLabelInProgress
 		if ( titleText == "" )
@@ -279,66 +290,93 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevMenu( "Survival Helmets", SetDevMenu_SurvivalLoot, "helmet" )
 		SetupDevMenu( "Survival Armor", SetDevMenu_SurvivalLoot, "armor" )
 		SetupDevMenu( "Survival Backpack", SetDevMenu_SurvivalLoot, "backpack" )
+		#if(false)
+
+#endif
 		SetupDevMenu( "Survival Incap Shield", SetDevMenu_SurvivalLoot, "incapshield" )
 		SetupDevMenu( "Survival Incap Shield Debugging", SetDevMenu_SurvivalIncapShieldBots )
-		SetupDevMenu( "Survival Items", SetDevMenu_SurvivalLoot, "ordnance ammo health custom_pickup" )
+
+		string itemsString = "ordnance ammo health custom_pickup"
+		#if(true)
+			itemsString += " data_knife"
+		#endif
+		SetupDevMenu( "Survival Items", SetDevMenu_SurvivalLoot, itemsString )
+
 		SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
 	}
+
+	#if(false)
+
+
+#endif
 
 	SetupDevMenu( "Respawn Player(s)", SetDevMenu_RespawnPlayers )
 	SetupDevMenu( "Set Respawn Behaviour Override", SetDevMenu_RespawnOverride )
 
-	//SetupDevMenu( "Spawn NPC [IMC]", SetDevMenu_AISpawn, TEAM_IMC )
-	//SetupDevMenu( "Spawn NPC [Militia]", SetDevMenu_AISpawn, TEAM_MILITIA )
-	//SetupDevMenu( "Spawn NPC [Team 4]", SetDevMenu_AISpawn, TEAM_NPC )
+	//
+	//
+	//
 
 
 	SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
-	//SetupDevCommand( "Toggle Weapon Preview", "ToggleWeaponSkinPreview" )
-	//SetupDevMenu( "Threat Tracker", SetDevMenu_ThreatTracker )
-	//SetupDevMenu( "High-Vis NPC Test", SetDevMenu_HighVisNPCTest )
+	//
+	//
+	//
 
-	//SetupDevCommand( "Disable NPCs", "script disable_npcs()" )
-	// SetupDevCommand( "Disable New NPCs", "script disable_new_npcs()" )
+	//
+	//
 
-	//SetupDevCommand( "Toggle Friendly Highlights", "script DEV_ToggleFriendlyHighlight()" )
-	//SetupDevCommand( "Export precache script", "script_ui Dev_CommandLineAddParm( \"-autoprecache\", \"\" ); script_ui Dev_CommandLineRemoveParm( \"" + STARTPOINT_DEV_STRING + "\" ); reload" )
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 
-	//SetupDevCommand( "Doom my titan", "script_client GetLocalViewPlayer().ClientCommand( \"DoomTitan\" )" )
+	//
+	//
+
+	//
 	SetupDevCommand( "DoF debug (ads)", "script_client ToggleDofDebug()" )
 
-	//SetupDevCommand( "ToggleTitanCallInEffects", "script FlagToggle( \"EnableIncomingTitanDropEffects\" )" )
+	//
 
-	//SetupDevCommand( "Spawn IMC grunt", "SpawnViewGrunt " + TEAM_IMC )
-	//SetupDevCommand( "Spawn Militia grunt", "SpawnViewGrunt " + TEAM_MILITIA )
+	//
+	//
 
-	//SetupDevCommand( "Enable titan-always-executes-titan", "script FlagSet( \"ForceSyncedMelee\" )" )
+	//
 
-	//SetupDevCommand( "Kill All Titans", "script killtitans()" )
-	//SetupDevCommand( "Kill All Minions", "script killminions()" )
+	//
+	//
 
-	SetupDevCommand( "Export leveled_weapons.def / r2_weapons.fgd", "script thread LeveledWeaponDump()" )
+	//
 
 	SetupDevCommand( "Summon Players to player 0", "script summonplayers()" )
-	//SetupDevCommand( "Display Titanfall spots", "script thread ShowAllTitanFallSpots()" )
-	//SetupDevCommand( "Toggle check inside Titanfall Blocker", "script thread DevCheckInTitanfallBlocker()" )
-	//SetupDevCommand( "Test Dropship Intro Spawns with Bots", "script thread DebugTestDropshipStartSpawnsForAll()" )
-	//SetupDevCommand( "Preview Dropship Spawn at this location", "script SetCustomPlayerDropshipSpawn()" )
-	//SetupDevCommand( "Test Dropship Spawn at this location", "script thread DebugTestCustomDropshipSpawn()" )
+	//
+	//
+	//
+	//
+	//
 	SetupDevCommand( "Max Activity (Pilots)", "script SetMaxActivityMode(1)" )
-	//SetupDevCommand( "Max Activity (Titans)", "script SetMaxActivityMode(2)" )
-	//SetupDevCommand( "Max Activity (Conger Mode)", "script SetMaxActivityMode(4)" )
+	//
+	//
 	SetupDevCommand( "Max Activity (Disabled)", "script SetMaxActivityMode(0)" )
 
 	SetupDevCommand( "Toggle Skybox View", "script thread ToggleSkyboxView()" )
 	SetupDevCommand( "Toggle HUD", "ToggleHUD" )
-	//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
+	//
 	SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
 	SetupDevCommand( "Toggle Pain Death sound debug", "script TogglePainDeathDebug()" )
 	SetupDevCommand( "Jump Randomly Forever", "script_client thread JumpRandomlyForever()" )
 
 	SetupDevCommand( "Toggle Zeroing Mode", "script ToggleZeroingMode()" )
 	SetupDevCommand( "Toggle Screen Alignment Tool", "script_client DEV_ToggleScreenAlignmentTool()" )
+
+	SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
 
 	foreach ( DevCommand cmd in file.levelSpecificCommands )
 		SetupDevCommand( cmd.label, cmd.command )
@@ -376,10 +414,10 @@ void function DEV_InitLoadoutDevSubMenu()
 {
 	file.initializingCodeDevMenu = true
 	string codeDevMenuPrefix = file.codeDevMenuPrefix
-	//file.codeDevMenuPrefix = "Alter Loadout"
-	//DevMenu_Alias_DEV( file.codeDevMenuPrefix, "" )
-	//DevMenu_Rm_DEV( file.codeDevMenuPrefix )
-	//file.codeDevMenuPrefix += "/"
+	//
+	//
+	//
+	//
 	file.codeDevMenuPrefix += "Alter Loadout/"
 	DevMenu_Rm_DEV( file.codeDevMenuPrefix + "(Click to load this menu..)" )
 	thread ChangeToThisMenu( SetupAlterLoadout )
@@ -392,7 +430,7 @@ void function SetDevMenu_AlterLoadout( var _ )
 {
 	if ( file.initializingCodeDevMenu )
 	{
-		//return
+		//
 		DevMenu_Alias_DEV( file.codeDevMenuPrefix + "(Click to load this menu..)", "script_ui DEV_InitLoadoutDevSubMenu()" )
 	}
 	else
@@ -433,29 +471,100 @@ void function SetupAlterLoadout_CategoryScreen( string category )
 		return 0
 	} )
 
+	array<string> charactersUsed = []
+
 	foreach( LoadoutEntry entry in  entries)
 	{
 		if ( entry.DEV_category != category )
 			continue
 
-		SetupDevMenu( entry.DEV_name, void function( var unused ) : ( entry ) {
-			thread ChangeToThisMenu( void function() : ( entry ) {
-				SetupAlterLoadout_SlotScreen( entry )
+		string prefix = "character_"
+
+		if ( entry.DEV_name.find( prefix ) == 0 )
+		{
+			string character = GetCharacterNameFromDEV_name( entry.DEV_name )
+
+			if ( !charactersUsed.contains( character ) )
+			{
+				charactersUsed.append( character )
+				SetupDevMenu( character, void function( var unused ) : ( category, character ) {
+					thread ChangeToThisMenu( void function() : ( category, character ) {
+						SetupAlterLoadout_CategoryScreenForCharacter( category, character )
+					} )
+				} )
+			}
+		}
+		else
+		{
+			SetupDevMenu( entry.DEV_name, void function( var unused ) : ( entry ) {
+				thread ChangeToThisMenu( void function() : ( entry ) {
+					SetupAlterLoadout_SlotScreen( entry )
+				} )
 			} )
-		} )
+		}
 	}
 }
 
+void function SetupAlterLoadout_CategoryScreenForCharacter( string category, string character )
+{
+	array<LoadoutEntry> entries = clone GetAllLoadoutSlots()
+	entries.sort( int function( LoadoutEntry a, LoadoutEntry b ) {
+		if ( a.DEV_name < b.DEV_name )
+			return -1
+		if ( a.DEV_name > b.DEV_name )
+			return 1
+		return 0
+	} )
+
+	array< LoadoutEntry > entriesToUse
+
+	foreach( LoadoutEntry entry in entries )
+	{
+		if ( entry.DEV_category != category )
+			continue
+
+		string entryCharacter = GetCharacterNameFromDEV_name( entry.DEV_name )
+
+		if ( entryCharacter != character )
+			continue
+
+		entriesToUse.append( entry )
+	}
+
+
+	if ( entriesToUse.len() > 1 )
+	{
+		foreach ( LoadoutEntry entry in entriesToUse )
+		{
+			SetupDevMenu( entry.DEV_name, void function( var unused ) : ( entry ) {
+				thread ChangeToThisMenu( void function() : ( entry ) {
+					SetupAlterLoadout_SlotScreen( entry )
+				} )
+			} )
+		}
+	}
+	else if ( entriesToUse.len() == 1 )
+	{
+		LoadoutEntry entry = entriesToUse[ 0 ]
+		SetupAlterLoadout_SlotScreen( entry )
+	}
+}
+
+string function GetCharacterNameFromDEV_name( string DEV_name )
+{
+	string prefix = "character_"
+	return split( DEV_name.slice( prefix.len() ), " " )[ 0 ]
+}
 
 void function SetupAlterLoadout_SlotScreen( LoadoutEntry entry )
 {
-	// todo(dw): 368482
-	//if ( entry.canBeEmpty )
-	//{
-	//	SetupDevFunc( "(empty)", void function( var unused ) : ( entry ) {
-	//		DEV_RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), entry, null )
-	//	} )
-	//}
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 
 	array<ItemFlavor> flavors = clone DEV_GetValidItemFlavorsForLoadoutSlotForDev( LocalClientEHI(), entry )
 	flavors.sort( int function( ItemFlavor a, ItemFlavor b ) {
@@ -578,10 +687,10 @@ void function SetupRespawnPlayersDevMenu()
 	SetupDevCommand( "Respawn dead bots", "respawn deadbots" )
 	SetupDevCommand( "Respawn my teammates", "respawn allies" )
 	SetupDevCommand( "Respawn my enemies", "respawn enemies" )
-	//foreach ( player in GetPlayerArray() )
-	//{
-	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
-	//}
+	//
+	//
+	//
+	//
 }
 
 
@@ -634,6 +743,35 @@ void function SetupHighVisNPCTest()
 	SetupDevCommand( "Use R2 Art Settings", "script PROTO_HighVisNPCs_SetTestEnv( \"r2\" )" )
 }
 
+void function SetDevMenu_Prototypes( var _ )
+{
+	thread ChangeToThisMenu( SetupPrototypesDevMenu )
+}
+
+#if(false)
+
+
+
+
+#endif
+
+
+#if(false)
+
+
+
+//
+
+#endif
+
+void function SetupPrototypesDevMenu()
+{
+	#if(true)
+		SetupDevCommand( "Change to Shadow Squad", "script Dev_ShadowFormEnable( GP() )" )
+	#endif
+}
+
+
 void function RunCodeDevCommandByAlias( string alias )
 {
 	RunDevCommand( file.codeDevMenuCommands[alias], false )
@@ -650,8 +788,8 @@ void function SetupDevCommand( string label, string command )
 	if ( file.initializingCodeDevMenu )
 	{
 		string codeDevMenuAlias = file.codeDevMenuPrefix + label
-		//string codeDevMenuCommand = format( "script_ui RunCodeDevCommandByAlias( \"%s\" )", codeDevMenuAlias )
-		//file.codeDevMenuCommands[codeDevMenuAlias] <- cmd
+		//
+		//
 		DevMenu_Alias_DEV( codeDevMenuAlias, command )
 	}
 }
@@ -806,10 +944,10 @@ void function BackOnePage_Activate()
 void function RefreshRepeatLastDevCommandPrompts()
 {
 	string newText = ""
-	//if ( AreOnDefaultDevCommandMenu() )
+	//
 	{
 		if ( file.lastDevCommandAssigned )
-			newText = file.lastDevCommandLabel    // file.lastDevCommand.label
+			newText = file.lastDevCommandLabel    //
 		else
 			newText = "<none>"
 	}
@@ -835,7 +973,7 @@ void function BindCommandToGamepad_Activate( var button )
 	if ( !BindCommandToGamepad_ShouldShow() )
 		return
 
-	// Binding:
+	//
 	{
 		string cmdText = "bind back \"script_ui DEV_ExecBoundDevMenuCommand()\""
 		ClientCommand( cmdText )
@@ -848,7 +986,7 @@ void function BindCommandToGamepad_Activate( var button )
 	file.boundCmd.opParm = file.focusedCmd.opParm
 	file.boundCmdIsAssigned = true
 
-	// Feedback:
+	//
 	{
 		string fullName = ""
 		if ( file.lastDevCommandLabelInProgress.len() > 0 )
@@ -857,8 +995,8 @@ void function BindCommandToGamepad_Activate( var button )
 
 		string prompt = "Bound to gamepad BACK: " + fullName
 		printt( prompt )
-		//string cmdText = "script Dev_PrintMessage( gp()[0], \"" + prompt + "\" )"
-		//ClientCommand( cmdText )
+		//
+		//
 		EmitUISound( "wpn_pickup_titanweapon_1p" )
 	}
 

@@ -8,24 +8,32 @@ WeaponData
 	"description" 									"#DEFAULT_MELEE_WEAPON"
 	"longdesc"										"#DEFAULT_MELEE_WEAPON"
 
+	"weapon_type_flags"								"WPT_VIEWHANDS"
+	"give_command_forced_inventory_slot"	        "2"
+
     // UI/HUD
 	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
 	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
 
-	"weaponClass" 									"human"
-	// "weaponType"									"anti_titan"
+	//"weaponType"									"anti_titan"
 	"body_type"										"battle_rifle"
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 	//"never_drop"									"1"
 	"minimap_reveal_distance"						"1"
 	"attack_button_presses_melee"					"1"
 	"leveled_pickup"								"1"
+	"primary_fire_does_not_block_sprint"			"1"
+
+	"cycle_to_next_when_out_of_ammo"				"0"
 
 	"ammo_clip_size"   								"0"
 	"ammo_default_total"							"0"
 	"ammo_stockpile_max"							"0"
 
     "ads_dof_disable"	                            "1"
+    "dof_nearDepthStart"							"-0.5"
+	"dof_nearDepthEnd"							    "5.05"
     "zoom_fov"										"70"
     "zoom_effects"                                  "0"
 
@@ -44,10 +52,12 @@ WeaponData
 
 	"sprint_fractional_anims"						"0"
 
-	//
 	"damage_rodeo" 									"100"
 	"aimassist_disable_hipfire"						"1"
 	"aimassist_disable_ads"							"1"
+
+
+
 
 	// Bob
 	"bob_cycle_time"  								"0.45"
@@ -101,11 +111,27 @@ WeaponData
 	"sway_turn_up_rotate_pitch"   					"1"
 	"sway_turn_down_rotate_pitch" 					"-1"
 
+
 	"red_crosshair_range" 							"0"
+
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
 	"deployfirst_time"								"1.25"
-	//"sprintcycle_time"								".55"
+	//"sprintcycle_time"							".55"
+
+
+	Mods
+    	{
+                          
+                            
+             
+                                                                   
+                                                       
+                                                   
+             
+                  
+    	}
+
 
 	active_crosshair_count				"1"
 	rui_crosshair_index					"0"

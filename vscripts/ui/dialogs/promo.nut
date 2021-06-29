@@ -1,14 +1,16 @@
-global function UICodeCallback_MainMenuPromosUpdated
-
 global function InitPromoDialog
 global function OpenPromoDialogIfNew
+global function OpenPromoDialogIfNewAfterPakLoad
 global function IsPromoDialogAllowed
 
 global function PromoDialog_OpenHijacked
 
-struct PageContent
+const PROMO_DIALOG_MAX_PAGES = 9
+
+struct PromoDialogPageData
 {
-	asset image = $""
+	asset  image = $""
+	string imageName = ""
 	string title = ""
 	string desc = ""
 	string link = ""
@@ -16,7 +18,7 @@ struct PageContent
 
 enum eTransType
 {
-	// must match TRANSTYPE_* in promo.rui
+	//
 	NONE = 0,
 	SLIDE_LEFT = 1,
 	SLIDE_RIGHT = 2,
@@ -34,54 +36,64 @@ struct
 	string ornull      hijackContent = null
 	void functionref() hijackCloseCallback = null
 
-	MainMenuPromos&      promoData
-	array<asset>         images
-	table<string, asset> imageMap
-	array<PageContent>   pages
-	int                  activePageIndex = 0
+	array<PromoDialogPageData> pages
+	int                        activePageIndex = 0
+	var                        lastPageRui
+	var                        activePageRui
+	int                        updateID = -1
 
-
-
-	var lastPageRui
-	var activePageRui
-	int updateID = -1
+	int promoVersionSeen_PREDICTED = -1
 } file
 
-const int PROMO_PROTOCOL = 1
 
-void function UICodeCallback_MainMenuPromosUpdated()
+bool function OpenPromoDialogIfNew()
 {
-	printt( "Promos updated" )
+	if( GetConVarBool( "assetdownloads_enabled" ) )
+	{
+		//
+		file.pages = InitPages()
+		RunClientScript( "RequestDownloadedImagePakLoad", GetPromoRpakName(), ePakType.DL_PROMO, Hud_GetChild( file.menu, "ActivePage" ), file.pages[0].imageName )
+		RunClientScript( "RequestDownloadedImagePakLoad", GetPromoRpakName(), ePakType.DL_PROMO, Hud_GetChild( file.menu, "LastPage" ), file.pages[0].imageName )
+	}
+	else if ( IsPromoDialogNew() )
+	{
+		AdvanceMenu( file.menu )
+		return true
+	}
 
-	#if R5DEV
-		if ( GetConVarInt( "mainMenuPromos_preview" ) == 1 )
-			file.promoData = GetMainMenuPromos()
-	#endif // DEV
+	return false
 }
 
-
-void function OpenPromoDialogIfNew()
+void function OpenPromoDialogIfNewAfterPakLoad()
 {
-	entity player = GetUIPlayer()
-	file.promoData = GetMainMenuPromos()
-
-	if ( player == null || !IsPromoDialogAllowed() )
-		return
-
-	int promoVersionSeen = player.GetPersistentVarAsInt( "promoVersionSeen" )
-
-	if ( file.promoData.version != 0 && file.promoData.version != promoVersionSeen )
+	RuiSetBool( file.lastPageRui, "isImageLoading", false )
+	
+	if ( IsPromoDialogNew() )
 		AdvanceMenu( file.menu )
 }
 
+bool function IsPromoDialogNew()
+{
+	UpdatePromoData()
+
+	entity player = GetUIPlayer()
+	if ( player == null || !IsPromoDialogAllowed() )
+		return false
+
+	int promoVersion = GetPromoDataVersion()
+	if ( file.promoVersionSeen_PREDICTED == -1 )
+		file.promoVersionSeen_PREDICTED = player.GetPersistentVarAsInt( "promoVersionSeen" )
+
+	return promoVersion != 0 && promoVersion != file.promoVersionSeen_PREDICTED
+}
 
 bool function IsPromoDialogAllowed()
 {
-	return ( file.promoData.prot == PROMO_PROTOCOL && IsLobby() && IsFullyConnected() && GetActiveMenu() == GetMenu( "LobbyMenu" ) && IsTabPanelActive( GetPanel( "PlayPanel" ) ) )
+	return (IsPromoDataProtocolValid() && IsLobby() && IsFullyConnected() && GetActiveMenu() == GetMenu( "LobbyMenu" ) && IsTabPanelActive( GetPanel( "PlayPanel" ) ))
 }
 
 
-void function InitPromoDialog()
+void function InitPromoDialog( var newMenuArg ) //
 {
 	var menu = GetMenu( "PromoDialog" )
 	file.menu = menu
@@ -105,49 +117,20 @@ void function InitPromoDialog()
 
 	AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_CLOSE", "#B_BUTTON_CLOSE" )
 	AddMenuFooterOption( menu, LEFT, BUTTON_X, true, "#X_BUTTON_BUY", "#BUY", GoToStoreItem, PageHasBuyOption )
-
-	RequestMainMenuPromos() // This will be ignored if there was a recent request. "infoblock_requestInterval"
-
-	var dataTable = GetDataTable( $"datatable/promo_images.rpak" )
-	for ( int i = 0; i < GetDatatableRowCount( dataTable ); i++ )
-	{
-		string name = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "name" ) ).tolower()
-		asset image = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "image" ) )
-		file.images.append( image )
-		if ( name != "" )
-			file.imageMap[name] <- image
-	}
 }
 
 
-void function PromoDialog_OpenHijacked( string content, void functionref() closeCallback )
+void function PromoDialog_OpenHijacked( string content )
 {
 	file.hijackContent = content
-	file.hijackCloseCallback = closeCallback
+	//
 	AdvanceMenu( file.menu )
 }
 
 
 void function PromoDialog_OnOpen()
 {
-	string content
-
-	if ( file.hijackContent != null )
-		content = expect string( file.hijackContent )
-	else
-		content = file.promoData.layout
-
-	if ( content.find( "<" ) != 0 ) // plain text
-		content = "<p|0| |" + content + ">"
-
-	// Test content
-	//			"<page|imageIndex|Title text|Message text>"
-	//content = "<p|1|Playable Characters|Gibraltar / Mirage / Caustic\nhello world>"
-	//content += "<p|0|Bleedout Bug Fixed|Please bug it if you continue to see the issue.>"
-	//content += "<p|2|hello|world>"
-	//content += "<p|3|Page 4|Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. Lorem Ipsum is simply dummy text of the printing and typesetting industry.>"
-
-	file.pages = InitPages( content )
+	file.pages = InitPages()
 	file.activePageIndex = 0
 
 	UpdatePageRui( file.activePageRui, 0 )
@@ -166,6 +149,7 @@ void function PromoDialog_OnClose()
 		if ( file.hijackCloseCallback != null )
 		{
 			file.hijackCloseCallback()
+			file.hijackCloseCallback = null
 		}
 	}
 }
@@ -173,15 +157,11 @@ void function PromoDialog_OnClose()
 
 void function PromoDialog_OnNavigateBack()
 {
-	UserClosedPromoDialog( null )
-}
-
-
-void function UserClosedPromoDialog( var button )
-{
-	entity player = GetUIPlayer()
-	if ( player != null && IsFullyConnected() && file.hijackContent == null )
-		ClientCommand( "SetPromoVersionSeen " + string( file.promoData.version ) )
+	if ( GetUIPlayer() != null && IsFullyConnected() && file.hijackContent == null )
+	{
+		file.promoVersionSeen_PREDICTED = GetPromoDataVersion()
+		ClientCommand( format( "SetPromoVersionSeen %d", file.promoVersionSeen_PREDICTED ) )
+	}
 
 	CloseActiveMenu()
 }
@@ -189,48 +169,43 @@ void function UserClosedPromoDialog( var button )
 
 void function GoToStoreItem( var button )
 {
-	// TODO
+	//
 }
 
 
-array<PageContent> function InitPages( string content )
+array<PromoDialogPageData> function InitPages()
 {
-	array<PageContent> pages
-	array<string> elements = RegexpFindSimple( content, "<([^>]+)>" )
-	int pageIndex = 0
+	string content = file.hijackContent != null ? expect string( file.hijackContent ) : GetPromoDataLayout()
+	//
+	//
+	//
+	//
 
-	foreach ( element in elements )
+	if ( content.find( "<" ) != 0 ) //
+		content = "<p|0||" + content + ">"
+
+	//
+	array< array<string> > matches = RegexpFindAll( content, "<p\\|([^>\\|]*)\\|([^>\\|]*)\\|([^>\\|]*)>" )
+	if ( matches.len() > PROMO_DIALOG_MAX_PAGES )
 	{
-		array<string> vals = split( element, "|" )
+		Warning( "Ignoring extra promo dialog pages! Found " + matches.len() + " pages and only " + PROMO_DIALOG_MAX_PAGES + " are supported." )
+		matches.resize( PROMO_DIALOG_MAX_PAGES )
+	}
 
-		//printt( element )
-		//foreach ( val in vals )
-		//	printt( "val:", val )
+	array<PromoDialogPageData> pages
 
-		if ( vals[0] == "p" ) // page
-		{
-			if ( vals.len() != 4 && vals.len() != 3 )
-				continue
-
-			PageContent newPage
-
-			string imageVal = vals[1].tolower()
-			if ( imageVal in file.imageMap )
-				newPage.image = file.imageMap[imageVal]
-			else
-				newPage.image = file.images[int(imageVal)]
-
-			newPage.title = vals[2]
-			newPage.desc = vals.len() == 3 ? "" : vals[3]
-			//if ( vals[1] == "1" ) // Testing buy button
-			//	newPage.link = "buy:test"
-
-			pages.append( newPage )
-		}
-		else
-		{
-			Warning( "Unrecognized element: " + vals[0] )
-		}
+	foreach ( vals in matches )
+	{
+		PromoDialogPageData newPage
+		newPage.imageName = vals[1]
+		//
+		if( !GetConVarBool( "assetdownloads_enabled" ) )
+			newPage.image = GetPromoImage( vals[1] )
+		newPage.title = vals[2]
+		newPage.desc = vals[3]
+		//
+		//
+		pages.append( newPage )
 	}
 
 	return pages
@@ -244,9 +219,12 @@ void function RegisterPageChangeInput()
 
 	RegisterButtonPressedCallback( BUTTON_SHOULDER_LEFT, Page_NavLeft )
 	RegisterButtonPressedCallback( BUTTON_DPAD_LEFT, Page_NavLeft )
+	RegisterButtonPressedCallback( KEY_LEFT, Page_NavLeft )
 
 	RegisterButtonPressedCallback( BUTTON_SHOULDER_RIGHT, Page_NavRight )
 	RegisterButtonPressedCallback( BUTTON_DPAD_RIGHT, Page_NavRight )
+	RegisterButtonPressedCallback( KEY_RIGHT, Page_NavRight )
+
 
 	file.pageChangeInputsRegistered = true
 
@@ -261,12 +239,15 @@ void function DeregisterPageChangeInput()
 
 	DeregisterButtonPressedCallback( BUTTON_SHOULDER_LEFT, Page_NavLeft )
 	DeregisterButtonPressedCallback( BUTTON_DPAD_LEFT, Page_NavLeft )
+	DeregisterButtonPressedCallback( KEY_LEFT, Page_NavLeft )
 
 	DeregisterButtonPressedCallback( BUTTON_SHOULDER_RIGHT, Page_NavRight )
 	DeregisterButtonPressedCallback( BUTTON_DPAD_RIGHT, Page_NavRight )
+	DeregisterButtonPressedCallback( KEY_RIGHT, Page_NavRight )
 
 	file.pageChangeInputsRegistered = false
 }
+
 
 void function TrackDpadInput()
 {
@@ -274,7 +255,7 @@ void function TrackDpadInput()
 
 	while ( file.pageChangeInputsRegistered )
 	{
-		float xAxis = InputGetAxis( ANALOG_LEFT_X )
+		float xAxis = InputGetAxis( ANALOG_RIGHT_X )
 
 		if ( !canChangePage )
 			canChangePage = fabs( xAxis ) < 0.5
@@ -296,6 +277,7 @@ void function TrackDpadInput()
 		WaitFrame()
 	}
 }
+
 
 void function Page_NavLeft( var button )
 {
@@ -332,9 +314,13 @@ void function ChangePage( int delta )
 
 void function UpdatePageRui( var rui, int pageIndex )
 {
-	PageContent page = file.pages[pageIndex]
+	PromoDialogPageData page = file.pages[pageIndex]
 
-	RuiSetImage( rui, "imageAsset", page.image )
+	if( GetConVarBool( "assetdownloads_enabled" ) )
+		RuiSetImage( rui, "imageAsset", GetDownloadedImageAsset( GetPromoRpakName(), page.imageName, ePakType.DL_PROMO ) )
+	else
+		RuiSetImage( rui, "imageAsset", page.image )
+
 	RuiSetString( rui, "titleText", page.title )
 	RuiSetString( rui, "descText", page.desc )
 	RuiSetInt( rui, "activePageIndex", file.activePageIndex )
@@ -377,5 +363,5 @@ bool function PageHasBuyOption()
 {
 	string link = file.pages[file.activePageIndex].link
 
-	return ( link.find( "buy:" ) == 0 )
+	return (link.find( "buy:" ) == 0)
 }

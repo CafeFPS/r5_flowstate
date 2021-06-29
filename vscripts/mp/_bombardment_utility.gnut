@@ -7,12 +7,12 @@ global function Bombardment_MortarBarrageDetCord
 
 void function Bombardment_Init()
 {
-    
+
 }
 
-void function VerifyBombardmentWeapon( entity owner, string weapon )
+entity function VerifyBombardmentWeapon( entity owner, string weapon )
 {
-
+    return owner
 }
 
 void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vector ownerOrigin, vector projectileOrigin, float radius, int intensity, float duration, float delay )
@@ -20,7 +20,7 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 
 }
 
-void function Bombardment_MortarBarrageDetCord( entity weapon, string something, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
+void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
 {
 
 }

@@ -73,8 +73,8 @@ global struct HoverTank
 
 global struct PingTableStruct // TODO: fix shared waypoints script, look at BurnDamageStack for reference
 {
-	table<entity> locations
-	table<entity> loots
+	array<entity> locations
+	array<entity> loots
 	entity latestPing
 }
 
@@ -588,9 +588,9 @@ global struct ServerPlayerStruct
 	array<int> statValues_Int
 	array<float> statValuesAtStart_Float
 	array<float> statValues_Float
-	array< array<void functionref( entity player, bool oldValue, bool newValue )> > statEntryChangeCallbacks_Bool
-	array< array<void functionref( entity player, int oldValue, int newValue )> > statEntryChangeCallbacks_Int
-	array< array<void functionref( entity player, float oldValue, float newValue )> > statEntryChangeCallbacks_Float
+	table< array<void functionref( entity player, bool oldValue, bool newValue )> > statEntryChangeCallbacks_Bool
+	table< array<void functionref( entity player, int oldValue, int newValue )> > statEntryChangeCallbacks_Int
+	table< array<void functionref( entity player, float oldValue, float newValue )> > statEntryChangeCallbacks_Float
 	bool placementStatsRecorded = false
 	bool noWitnessess = false
 	int executions = 0
@@ -760,6 +760,12 @@ global struct ServerWeaponStruct
 	bool ziplineGrenadeCollided
 	entity ziplineStartModel
 	var ziplineStartPos
+
+	entity translocate_predictedInitialProjectile = null
+	entity translocate_predictedRedirectedProjectile = null
+	table ornull translocate_impactRumbleObj = null
+	//
+	bool translocate_isADSForced = false
 }
 
 

@@ -49,6 +49,8 @@ WeaponData
 	"stat_accuracy"   								"34"
 	"stat_rof"										"45"
 
+	"chroma_color"									"1 .5 .5"
+
 	// Models
 	"viewmodel"   									"mdl/weapons/lstar/ptpov_lstar.rmdl"
 	"playermodel" 									"mdl/weapons/lstar/w_lstar.rmdl"

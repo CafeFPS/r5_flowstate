@@ -1,4 +1,5 @@
 #base "_base_sniper.txt"
+#base "_base_assault_rifle.txt"
 
 "WeaponData"
 {
@@ -23,6 +24,8 @@
 	// Models
 	"viewmodel"                                "mdl/weapons/at_rifle/ptpov_at_rifle.rmdl"
 	"playermodel"                              "mdl/weapons/at_rifle/w_at_rifle.rmdl"
+
+	"chroma_color"								"1 .6 .2"
 
 	// Script - Callbacks
 	"OnWeaponActivate"                         "OnWeaponActivate_weapon_basic_bolt"
@@ -103,7 +106,7 @@
 
 	"reload_time"                              "3.2"
 	"reload_time_late1"                        "1.95"
-	"reload_time_late2"                        "0.81"
+	"reload_time_late2"                        "1.95"
 	"reloadempty_time"                         "4.3"
 	"reloadempty_time_late1"                   "3.13"
 	"reloadempty_time_late2"                   "2.08"
@@ -240,9 +243,11 @@
 	{
 		"survival_finite_ammo"
 		{
-			// ammo
-			"ammo_no_remove_from_stockpile" 	"0"
-			"uses_ammo_pool" 					"0"
+			"fire_rate"   									"12"
+			"fire_mode"   									"automatic"
+			"ammo_clip_size"   								"499"
+			"ammo_no_remove_from_clip"						"1"
+			"ammo_no_remove_from_stockpile"					"1"
 		}
 
 		npc_sniper
@@ -255,6 +260,12 @@
 			"damage_far_value_titanarmor"              "65"
 			"damage_very_far_value_titanarmor"         "65"
 		}
+		
+		optic_cq_hcog_classic
+        {
+			"ui1_enable"				"0"
+			"bodygroup2_set"			"0"
+        }
 	}
 
 	// RUI

@@ -12,7 +12,7 @@ struct {
 
 } file
 
-void function InitModeSelectDialog()
+void function InitModeSelectDialog( var newMenuArg ) //
 {
 	var menu = GetMenu( "ModeSelectDialog" )
 	file.menu = menu
@@ -33,16 +33,15 @@ void function InitModeSelectDialog()
 
 void function OnOpenModeSelectDialog()
 {
-	// TEMP START
+	//
 	foreach ( button, playlistName in file.buttonToMode )
 	{
 		Hud_RemoveEventHandler( button, UIE_CLICK, OnModeButton_Activate )
 	}
 	file.buttonToMode.clear()
-	// TEMP END
+	//
 
 	var ownerButton = GetModeSelectButton()
-	Hud_SetSelected( ownerButton, true )
 
 	UIPos ownerPos   = REPLACEHud_GetAbsPos( ownerButton )
 	UISize ownerSize = REPLACEHud_GetSize( ownerButton )
@@ -54,12 +53,19 @@ void function OnOpenModeSelectDialog()
 	for ( int i = 0; i < playlists.len(); i++ )
 	{
 		var button = Hud_GetChild( scrollPanel, ("GridButton" + i) )
+
 		if ( i == 0 )
 		{
-			int popupHeight = (Hud_GetHeight( button ) * playlists.len())
+			int buttonHeight = Hud_GetHeight( button )
+			//
+			//
+			int popupHeight = buttonHeight * playlists.len()
 			Hud_SetPos( file.modeSelectPopup, ownerPos.x, ownerPos.y - popupHeight )
 			Hud_SetSize( file.modeSelectPopup, ownerSize.width, popupHeight )
 			Hud_SetSize( file.modeList, ownerSize.width, popupHeight )
+
+			Hud_SetFocused( button )
+			Hud_SetSelected( button, true )
 		}
 
 		ModeButton_Init( button, playlists[i] )
@@ -71,18 +77,19 @@ void function OnCloseModeSelectDialog()
 {
 	var modeSelectButton = GetModeSelectButton()
 	Hud_SetSelected( modeSelectButton, false )
+	Hud_SetFocused( modeSelectButton )
 }
 
 
 void function ModeButton_Init( var button, string playlistName )
 {
 	var lobbyModeSelectButton = GetModeSelectButton()
-	Assert( Hud_GetWidth( lobbyModeSelectButton ) == Hud_GetWidth( button ), "" + Hud_GetWidth( lobbyModeSelectButton ) + " != " + Hud_GetWidth( button ) )
+	//
 
 	InitButtonRCP( button )
 	var rui = Hud_GetRui( button )
 
-	string name = GetPlaylistVarOrUseValue( playlistName, "name", "#HUD_UNKNONWN" )
+	string name = GetPlaylistVarString( playlistName, "name", "#HUD_UNKNONWN" )
 	RuiSetString( rui, "buttonText", Localize( name ) )
 
 	bool isPlaylistAvailable = Lobby_IsPlaylistAvailable( playlistName )
@@ -98,8 +105,8 @@ void function ModeButton_Init( var button, string playlistName )
 	else
 	{
 		ToolTipData toolTipData
-		toolTipData.titleText = "" //name
-		toolTipData.descText = GetPlaylistVarOrUseValue( playlistName, "description", "#HUD_UNKNOWN" )
+		toolTipData.titleText = "" //
+		toolTipData.descText = GetPlaylistVarString( playlistName, "description", "#HUD_UNKNOWN" )
 
 		Hud_SetToolTipData( button, toolTipData )
 	}
@@ -108,6 +115,7 @@ void function ModeButton_Init( var button, string playlistName )
 	Hud_AddEventHandler( button, UIE_CLICK, OnModeButton_Activate )
 	file.buttonToMode[button] <- playlistName
 }
+
 
 void function OnModeButton_Activate( var button )
 {

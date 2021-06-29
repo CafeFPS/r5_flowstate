@@ -47,6 +47,7 @@ enum eBodyTypes
 	CLASS_MIRAGE
 	CLASS_BANGALORE
 	CLASS_CAUSTIC
+	CLASS_OCTANE
 
 	total
 }
@@ -241,9 +242,7 @@ bool functionref( entity, entity, bool, int, int ) function GetSoundTypeFuncFrom
 		// case "SE_TITAN_STEP":
 		// 	return SE_TITAN_STEP
 	}
-
 	return SE_ANY
-
 	unreachable
 }
 

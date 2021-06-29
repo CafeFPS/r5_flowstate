@@ -10,6 +10,7 @@ global function HoverTankFlyToNode
 global function HoverTankCanFlyPath
 
 global const HOVER_TANK_RADIUS = 0
+global const HOVER_TANK_DURATION = 120
 
 void function HoverTank_Init()
 {
@@ -23,13 +24,24 @@ bool function IsPointWithinAnyHoverTank( vector pos )
 
 HoverTank function SpawnHoverTank_Cheap( string spawnerName )
 {
-    HoverTank temp
-    return temp
+    HoverTank hoverTank
+
+    entity ent = GetEntArrayByScriptName( "_hover_tank_mover" )[0] // bad
+
+    
+    hoverTank.interiorModel = ent
+    hoverTank.flightMover = ent
+    
+    return hoverTank
 }
 
 void function HoverTankTeleportToPosition( HoverTank hoverTank, vector origin, vector angles )
 {
+    if( !IsValid( hoverTank ) )
+        return
 
+    hoverTank.flightMover.SetOrigin( origin )
+    hoverTank.flightMover.SetAngles( angles )
 }
 
 void function HoverTankSetCustomFlySpeed( HoverTank hoverTank, float speed )
@@ -42,12 +54,16 @@ void function HoverTankEngineBoost( HoverTank hovertank )
 
 }
 
-void function HoverTankFlyToNode( HoverTank hoverTank, entity nodes )
+void function HoverTankFlyToNode( HoverTank hoverTank, entity node )
 {
+    // HoverTankTeleportToPosition( hoverTank, node.GetOrigin(), node.GetAngles() )
+
+    hoverTank.flightMover.NonPhysicsMoveTo( node.GetOrigin(), HOVER_TANK_DURATION, 10, 10)
+    wait HOVER_TANK_DURATION
 
 }
 
-void function HoverTankCanFlyPath( vector currentStartNode, entity currentEndNode )
+bool function HoverTankCanFlyPath( vector currentStartNode, entity currentEndNode )
 {
-
+    return true
 }

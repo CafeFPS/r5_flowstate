@@ -2,7 +2,7 @@ global function InitKnowledgeBaseMenu
 global function HaveNewPatchNotes
 global function HaveNewCommunityNotes
 
-//script_ui AdvanceMenu( GetMenu( "KnowledgeBaseMenu" ) )
+//
 
 struct
 {
@@ -16,7 +16,7 @@ void function InitKnowledgeBaseMenu()
 	var menu = GetMenu( "KnowledgeBaseMenu" )
 	file.lastSelectedIndex = 0
 
-	int visibleButtonCount = (KNB_SUBJECT_COUNT + 1)	// "Community" takes index #0
+	int visibleButtonCount = (KNB_SUBJECT_COUNT + 1)	//
 	for ( int idx = 0; idx < 15; ++idx )
 	{
 		string btnName = "BtnKNBSubject" + format( "%02d", idx )
@@ -77,7 +77,7 @@ void function MarkPatchNotesAsCurrent()
 	SetConVarInt( "menu_faq_patchnotes_version", currentVersion )
 }
 
-////
+//
 int function GetCommunityNotesCurrentVersion()
 {
 	return GetCurrentPlaylistVarInt( "faq_community_version", -1 )
@@ -110,7 +110,7 @@ void function MarkCommunityNotesAsCurrent()
 	SetConVarInt( "menu_faq_community_version", currentVersion )
 }
 
-////
+//
 
 void function OnOpenKnowledgeBaseMenu()
 {

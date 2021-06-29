@@ -40,6 +40,8 @@ WeaponData
 	"playermodel" 									"mdl/weapons/rspn101/w_rspn101.rmdl"
 	"holster_type"									"rifle"
 
+	"chroma_color"									"1 .8 .4"
+
 	"looping_sounds"								"1"
 
 	"burst_or_looping_fire_sound_start_1p"			"Weapon_R101_FirstShot_1P"

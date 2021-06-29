@@ -36,6 +36,7 @@ global struct ClGlobals
 	table<string, array<void functionref( entity )> > onDeathOrDestroyCallbacks
 	table<int, array<void functionref( entity )> > onCinematicEventFlagChangedCallback
 	array<void functionref( entity )> onClientScriptInitCallback
+	array<void functionref( var, entity )> onMainHudCreatedCallbacks
 	void functionref( entity ) onHardpointChangedCallback
 	void functionref( entity ) onHardpointIDChangedCallback
 	void functionref( entity ) onHardpointEntityChangedCallback

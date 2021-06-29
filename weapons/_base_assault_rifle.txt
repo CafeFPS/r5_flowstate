@@ -5,17 +5,7 @@
 
 WeaponData
 {
-    MP_BASE
-    {
-        "aimassist_adspull_weaponclass"					"precise"
-        "enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-    }
-
-    SP_BASE
-    {
-        "aimassist_adspull_weaponclass"					"precise_sp"
-        "enable_highlight_networking_on_creation"		"true"
-    }
+   "aimassist_adspull_weaponclass"					"precise"
 
     // General
 	"weaponClass" 									"human"

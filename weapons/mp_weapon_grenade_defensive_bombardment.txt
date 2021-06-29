@@ -37,6 +37,7 @@ WeaponData
 
 	// Menu Stats
 
+
 	// Models
 	"viewmodel"										"mdl/weapons/grenades/ptpov_gibraltar_beacon.rmdl"
 	"playermodel"									"mdl/weapons/grenades/w_gibraltar_beacon.rmdl"

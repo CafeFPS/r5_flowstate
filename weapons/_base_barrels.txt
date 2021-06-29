@@ -8,9 +8,9 @@ WeaponData
 
 		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
 
-            "viewkick_pitch_base" 				"*0.9"
+            "viewkick_pitch_base" 				"*0.95"
 			"viewkick_pitch_random"   			"*0.8"
-			"viewkick_yaw_base" 				"*0.9"
+			"viewkick_yaw_base" 				"*0.95"
 			"viewkick_yaw_random"   			"*0.9"
 		}
 
@@ -20,9 +20,9 @@ WeaponData
 
 		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
 
-			"viewkick_pitch_base" 				"*0.85"
+			"viewkick_pitch_base" 				"*0.9"
 			"viewkick_pitch_random"   			"*0.75"
-			"viewkick_yaw_base" 				"*0.85"
+			"viewkick_yaw_base" 				"*0.9"
 			"viewkick_yaw_random"   			"*0.85"
 		}
 
@@ -32,10 +32,10 @@ WeaponData
 
 		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
 
-			"viewkick_pitch_base" 				"*0.8"
-			"viewkick_pitch_random"   			"*0.65"
-			"viewkick_yaw_base" 				"*0.8"
-			"viewkick_yaw_random"   			"*0.75"
+			"viewkick_pitch_base" 				"*0.85"
+			"viewkick_pitch_random"   			"*0.7"
+			"viewkick_yaw_base" 				"*0.85"
+			"viewkick_yaw_random"   			"*0.8"
 		}
 
 		barrel_stabilizer_l4_flash_hider
@@ -47,10 +47,10 @@ WeaponData
 			"fx_muzzle_flash_view"		        "wpn_muzzleflash_pistol_sup_FP"
 			"fx_muzzle_flash_world"		        "wpn_muzzleflash_pistol_sup"
 
-			"viewkick_pitch_base" 				"*0.8"
-			"viewkick_pitch_random"   			"*0.65"
-			"viewkick_yaw_base" 				"*0.8"
-			"viewkick_yaw_random"   			"*0.75"
+			"viewkick_pitch_base" 				"*0.85"
+			"viewkick_pitch_random"   			"*0.7"
+			"viewkick_yaw_base" 				"*0.85"
+			"viewkick_yaw_random"   			"*0.8"
 		}
 	}
 

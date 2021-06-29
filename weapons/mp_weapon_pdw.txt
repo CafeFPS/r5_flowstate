@@ -31,6 +31,8 @@ WeaponData
 	"viewmodel"   									"mdl/weapons/prowler_smg/ptpov_prowler_smg.rmdl"
 	"playermodel" 									"mdl/weapons/prowler_smg/w_prowler_smg.rmdl"
 
+	"chroma_color"									".2 1 .6"
+
 	"sound_dryfire"									"assault_rifle_dryfire"
 	"sound_pickup"									"wpn_pickup_SMG_1P"
 

@@ -55,7 +55,7 @@ void function InitGenerationRespawnMenu()
 
 	AddEventHandlerToButtonClass( menu, "GenerationRespawnButtonClass", UIE_CLICK, OnRegenButtonClick )
 
-	//AddMenuFooterOption( menu, LEFT, BUTTON_A, true, "#A_BUTTON_SKIP", "#SKIP", OpenMenuStatic, IsRegenFadeComplete )
+	//
 	AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 }
 
@@ -89,12 +89,12 @@ void function UpdateMenu()
 	string xpRate = format( "%.0f", 100.0 )
 
 	file.warningText = GetElem( file.menu, "WarningText" )
-	Hud_SetText( file.warningText, "#GENERATION_RESPAWN_CONFIRM_MESSAGE_0" )//, xpRate, "#GENERATION_NUMERIC_" + (GetGen() + 2) )
+	Hud_SetText( file.warningText, "#GENERATION_RESPAWN_CONFIRM_MESSAGE_0" )//
 	Hud_SetAlpha( file.warningText, 0 )
 	Hud_Hide( file.warningText )
 
 	file.genButton = GetElem( file.menu, "GenerationRespawnButtonClass" )
-	//Hud_SetText( file.genButton, "#GENERATION_RESPAWN_BUTTON_LABEL", PlayerXPDisplayGenAndLevel( GetGen() + 1, 1 ) )
+	//
 	Hud_SetEnabled( file.genButton, false )
 	Hud_Hide( file.genButton )
 
@@ -284,21 +284,21 @@ void function GenUp()
 {
 	int currentGen = GetGen()
 
-	// Notify the server to gen up this player
+	//
 	ClientCommand( "GenUp" )
 
-	// Show visuals
+	//
 	thread RebootScreen( currentGen )
-	//thread DelayedCachedLoadoutUpdate()
+	//
 }
 
-//void function DelayedCachedLoadoutUpdate()
-//{
-//	uiGlobal.pilotSpawnLoadoutIndex = 0
-//	uiGlobal.titanSpawnLoadoutIndex = 0
-//	wait 1.0 // give the server time to network our new persistence
-//	thread UpdateCachedLoadouts()
-//}
+//
+//
+//
+//
+//
+//
+//
 
 void function RebootScreen( int lastGen )
 {
@@ -333,9 +333,9 @@ void function RebootScreen( int lastGen )
 	file.regenSequenceStarted = true
 	EndSignal( file.menu, "StopMenuAnimation" )
 
-	//###################
-	// Fade in the flare
-	//###################
+	//
+	//
+	//
 
 	Hud_SetScale( file.flare, 10.0, 10.0 )
 	Hud_Show( file.flare )
@@ -343,9 +343,9 @@ void function RebootScreen( int lastGen )
 	wait 1.0
 	Hud_Show( file.blackBackground )
 
-	//#####################################################
-	// Allow skipping of this reboot sequence
-	//#####################################################
+	//
+	//
+	//
 
 	if ( !file.buttonsRegistered )
 	{
@@ -355,9 +355,9 @@ void function RebootScreen( int lastGen )
 		file.buttonsRegistered = true
 	}
 
-	//#####################################################
-	// Shrink flare to simulate old school tv shutting off
-	//#####################################################
+	//
+	//
+	//
 
 	Hud_ScaleOverTime( file.flare, 1.5, 0.05, 0.4, INTERPOLATOR_ACCEL )
 	wait 0.4
@@ -365,9 +365,9 @@ void function RebootScreen( int lastGen )
 	Hud_FadeOverTimeDelayed( file.flare, 0, 0.05, 0.1, INTERPOLATOR_ACCEL )
 	wait 1.15
 
-	//###################
-	// Cursor blink
-	//###################
+	//
+	//
+	//
 
 	Hud_SetText( file.bootTextLabel, "_" )
 	Hud_Show( file.bootTextLabel )
@@ -376,9 +376,9 @@ void function RebootScreen( int lastGen )
 	thread BlinkCursor()
 	wait 1.5
 
-	//###################
-	// Boot text
-	//###################
+	//
+	//
+	//
 
 	AddTextLine( "RSPN Modular X-BIOS v" + ( lastGen ) + "." + RandomIntRange( 10, 1000 ) )
 	AddTextLine( "***ARES CLASS VI PROHIBITED DEVICE DETECTED***" )

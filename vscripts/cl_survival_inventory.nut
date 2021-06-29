@@ -1257,6 +1257,7 @@ void function UICallback_GroundItemAction( var button, int position, bool fromEx
 		return
 
 	GroundLootData groundLootData = file.filteredGroundItems[position]
+	printt("UICallback_GroundItemAction", groundLootData.guids.len())
 
 	if ( groundLootData.guids.len() == 0 )
 		return
@@ -1264,6 +1265,7 @@ void function UICallback_GroundItemAction( var button, int position, bool fromEx
 	bool isInventoryFull = SURVIVAL_AddToPlayerInventory( player, groundLootData.lootData.ref ) == 0
 
 	entity ent = GetEntFromGroundLootData( groundLootData )
+	printt("UICallback_GroundItemAction", isInventoryFull)
 
 	LootRef lootRef = SURVIVAL_CreateLootRef( groundLootData.lootData, ent )
 	int groundAction = SURVIVAL_GetActionForGroundItem( player, lootRef, false ).action
@@ -1295,6 +1297,7 @@ void function UICallback_GroundItemAltAction( var button, int position )
 
 	if ( groundLootData.guids.len() == 0 )
 		return
+	printt("UICallback_GroundItemAltAction", groundLootData.guids.len())
 
 	entity ent = GetEntFromGroundLootData( groundLootData )
 
@@ -1577,6 +1580,10 @@ void function GroundItemUpdate( entity player, array<entity> loot )
 	}
 
 	RunUIScript( "SurvivalGroundItem_SetGroundItemCount", file.filteredGroundItems.len() )
+	foreach ( index, item in file.filteredGroundItems )
+	{
+		RunUIScript( "SurvivalGroundItem_SetGroundItemHeader", index, item.isHeader )
+	}
 	RunUIScript( "SurvivalGroundItem_EndUpdate" )
 }
 

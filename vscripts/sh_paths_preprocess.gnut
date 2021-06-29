@@ -1,0 +1,753 @@
+#if R5DEV
+global function DEV_GenerateFlightPath_TraceHullMethod
+global function DEV_Individual_TraceHullMethod
+global function DEV_DrawFlightPath
+#endif
+
+global function GetFlightPath
+
+global struct PathResult
+{
+	vector startPoint
+	vector endPoint
+	array<vector> path
+}
+
+
+TraceResults function TraceHullHighDetail( vector currentStart, vector proposedFlightPath, vector invHullSize, vector hullSize, array<vector> exclusions, int traceMask, int traceCollisionGroup )
+{
+	TraceResults tr
+	tr.fraction = 0.1
+	return tr
+}
+
+bool function IsEqualFloat( float f1, float f2 )
+{
+	return f1 == f2
+}
+
+
+#if R5DEV
+void function DEV_DrawFlightPath( vector start, vector end, array<vector> path )
+{
+	if ( path.len() > 0 )
+	{
+		vector lastNode = path[0]
+		foreach ( vector pos in path )
+		{
+			DebugDrawArrow( lastNode, pos, 35, 255, 255, 255, true, 100000 )
+			lastNode = pos
+		}
+	}
+	else
+	{
+		printt( "[DEV_DrawFlightPath] Can't draw flight path " + start + " to " + end + " as there is no path." )
+		DebugDrawArrow( start, end, 35, 255, 0, 0, true, 100000 )
+	}
+}
+#endif
+
+array<vector> function GetFlightPath( vector startPoint, vector endPoint, array<PathResult> paths, bool pathsAreBidirectional )
+{
+	#if R5DEV
+		if ( paths.len() == 0 )
+			Warning( "[GetFlightPath] paths is empty. No paths were preprocessed." )
+	#endif
+
+	bool found = false
+	array<vector> pathFound
+	int i = 0
+	foreach( path in paths )
+	{
+		if ( ( startPoint == path.startPoint ) && ( endPoint == path.endPoint ) ) //IsEqualVector( startPoint, path.startPoint ) && IsEqualVector( endPoint, path.endPoint ) )
+		{
+			pathFound = clone path.path
+			found = true
+			break
+		}
+		else if ( pathsAreBidirectional && ( endPoint == path.startPoint ) && ( startPoint == path.endPoint ) )// IsEqualVector( endPoint, path.startPoint ) && IsEqualVector( startPoint, path.endPoint ) )
+		{
+			pathFound = clone path.path
+			pathFound.reverse()
+			found = true
+			break
+		}
+		++i
+	}
+
+	#if R5DEV
+		if ( !found )
+			Warning( "[GetFlightPath] Could not find path for startPoint '" + startPoint + "' to endPoint '" + endPoint + "'.  Paths need to be re-processed or there was an error in preprocessing paths.  Check console output when generating paths." )
+		else
+			printt( "[GetFlightPath] pathResult " + i + " was used for startPoint '" + startPoint + "' to endPoint '" + endPoint + "'." )
+	#endif
+	return pathFound
+}
+
+#if R5DEV
+//
+//
+//
+void function DEV_GenerateFlightPath_TraceHullMethod( vector hullSize, vector hullSizeStartEnd, array<vector> startPoints, array<vector> endPoints, bool pathsAreBidirectional )
+{
+	printt( "[Paths_Preprocess] Running Preprocess Step... " )
+	printt( "[Paths_Preprocess] Look out for any warnings (will be labelled with 'Paths_Preprocess').  There should be no warnings if successful. Successful paths will be in yellow. Failed paths will be red arrows in the world." )
+	printt( "[Paths_Preprocess] The file it is dumping out to must pre-exist or an error will be thrown about failing to dump to that file." )
+
+	#if R5DEV
+		//
+		VerifyPoints( startPoints )
+		if ( startPoints.len() == 0 )
+		{
+			Warning( "[DEV_GenerateFlightPath_TraceHullMethod] No startPoints were found, so no paths will generate." )
+		}
+		VerifyPoints( endPoints )
+		if ( endPoints.len() == 0 )
+		{
+			Warning( "[DEV_GenerateFlightPath_TraceHullMethod] No endPoints were found, so no paths will generate." )
+		}
+	#endif
+
+	array<PathResult> paths
+	foreach( startPoint in startPoints )
+	{
+		foreach ( endPoint in endPoints )
+		{
+			PathResult result
+			result.startPoint = startPoint
+			result.endPoint = endPoint
+			bool foundResult = false
+			if ( pathsAreBidirectional )
+			{
+				PathResult prevResult
+				foundResult = Internal_GetPastPathResult( endPoint, startPoint, paths, prevResult )
+				//
+				//
+				//
+				//
+				//
+				//
+				//
+				//
+			}
+
+			if ( !foundResult )
+			{
+				result.path = DEV_Individual_TraceHullMethod( hullSize, hullSizeStartEnd, startPoint, endPoint )
+				paths.append( result )
+			}
+		}
+	}
+
+	if ( paths.len() > 0 )
+	{
+		ExportPathsForMap( paths, pathsAreBidirectional )
+	}
+	else
+	{
+		Warning( "[DEV_GenerateFlightPath_TraceHullMethod] No paths generated. Look for errors above.")
+	}
+}
+#endif
+
+#if R5DEV
+bool function Internal_GetPastPathResult( vector startPoint, vector endPoint, array<PathResult> paths, PathResult outResult )
+{
+	foreach ( PathResult r in paths )
+	{
+		if ( ( startPoint == r.startPoint ) && ( endPoint == r.endPoint ) )//IsEqualVector( startPoint, r.startPoint )  && IsEqualVector( endPoint, r.endPoint ) )
+		{
+			outResult.startPoint = startPoint
+			outResult.endPoint = r.endPoint
+			outResult.path = r.path
+			return true
+		}
+	}
+	return false
+}
+#endif
+
+#if R5DEV
+array<vector> function DEV_Individual_TraceHullMethod( vector hullSize, vector hullSizeStartEnd, vector startPoint, vector endPoint, bool debugVerboseOn = false )
+{
+	const float HULL_BUFFER = 200 //
+	vector hullSizeBuffered = hullSize + < HULL_BUFFER, HULL_BUFFER, HULL_BUFFER >
+
+	float TRY_AGAIN_Z_OFFSET = hullSize.z //
+	const float SEGMENT_Z_OFFSET_CLOSE_GEO = 500
+	const float FLIGHT_PATH_MIN_SEGMENT_DISTANCE = 1000
+	const float FLIGHT_PATH_SEGMENT_REDUCTION_WHEN_NEAR_DEST = 0.75 //
+	const float FLIGHT_PATH_SEGMENT_DISTANCE = 8000
+
+	bool DEBUG_ON = true || debugVerboseOn
+	bool DEBUG_VERBOSE = DEBUG_ON && debugVerboseOn
+	const int traceMask =  ( TRACE_MASK_SOLID | TRACE_MASK_BLOCKLOS )
+	const int traceCollisionGroup = TRACE_COLLISION_GROUP_NONE
+	array<vector> exclusions = []
+
+	if ( startPoint == endPoint )//IsEqualVector( startPoint, endPoint ) )
+	{
+		array<vector> emptyArray
+		return emptyArray
+	}
+
+	array<vector> flightPathNodes
+	float totalDist = Distance( startPoint, endPoint )
+	float segmentDistance = FLIGHT_PATH_SEGMENT_DISTANCE
+	#if R5DEV
+		if ( DEBUG_ON )
+		{
+			printt("[Paths_Preprocess] TraceHull Pathing Start - Segment Distance: " + segmentDistance + " Total dist: " + totalDist )
+		}
+	#endif
+
+	vector currentStart = startPoint
+	flightPathNodes.append( currentStart )
+	int iterations = 0
+
+	hullSize = hullSizeStartEnd
+
+	while ( true )
+	{
+		vector flightDirectionNormalized = Normalize( endPoint - currentStart )
+		vector proposedFlightPath = currentStart + ( flightDirectionNormalized * segmentDistance )
+
+		#if R5DEV
+			if ( DEBUG_VERBOSE )
+			{
+				DebugDrawArrow( currentStart, proposedFlightPath, 35, 0, 255, 255, true, 100000 )
+			}
+		#endif // R5DEV
+
+		TraceResults tr = TraceHullHighDetail( currentStart, proposedFlightPath, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+
+		hullSize = hullSizeBuffered
+
+		//
+		if ( tr.fraction != 1.0 )
+		{
+			#if R5DEV
+				if ( DEBUG_VERBOSE )
+				{
+					DebugDrawMark( tr.endPos, 35, [255, 0, 0], true, 100000 )
+				}
+			#endif // R5DEV
+
+			bool newDestinationFound = false
+			float pitchRotation = 10
+			float lowestFraction = 1.0
+
+			for ( int i = 1; i < 6; i++ )
+			{
+				float yawRotation = 10
+
+				//
+				vector rotatedPitch = VectorRotateAxis( flightDirectionNormalized, Normalize( CrossProduct( <0, 0, 1>, flightDirectionNormalized ) ), ( pitchRotation * i ) )
+				vector rotatedPitchYaw = VectorRotateAxis( rotatedPitch, Normalize( CrossProduct( <1, 0, 0>, flightDirectionNormalized ) ), ( yawRotation * i ) )
+
+				proposedFlightPath = currentStart + ( rotatedPitchYaw * segmentDistance )
+
+				#if R5DEV
+					if ( DEBUG_VERBOSE )
+					{
+						DebugDrawArrow( currentStart, proposedFlightPath, 35, 255, 0, 0, true, 100000 )
+					}
+				#endif // R5DEV
+
+				tr = TraceHullHighDetail( currentStart, proposedFlightPath, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+
+				if ( tr.fraction < lowestFraction )
+				{
+					lowestFraction = tr.fraction
+				}
+
+				if ( IsEqualFloat( tr.fraction, 1.0 ) )
+				{
+					newDestinationFound = true
+					break
+				}
+				else
+				{
+					#if R5DEV
+						if ( DEBUG_VERBOSE )
+						{
+							DebugDrawMark( tr.endPos, 35, [255, 0, 0], true, 100000 )
+						}
+					#endif // R5DEV
+				}
+
+				yawRotation = -10
+				//
+				rotatedPitch = VectorRotateAxis( flightDirectionNormalized, Normalize( CrossProduct( <0, 0, 1>, flightDirectionNormalized ) ), ( pitchRotation * i ) )
+				rotatedPitchYaw = VectorRotateAxis( rotatedPitch, Normalize( CrossProduct( <1, 0, 0>, flightDirectionNormalized ) ), ( yawRotation * i ) )
+
+				proposedFlightPath = currentStart + ( rotatedPitchYaw * segmentDistance )
+
+				#if R5DEV
+					if ( DEBUG_VERBOSE )
+					{
+						DebugDrawArrow( currentStart, proposedFlightPath, 35, 0, 255, 0, true, 100000 )
+					}
+				#endif // R5DEV
+
+				tr = TraceHullHighDetail( currentStart, proposedFlightPath, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+
+				if ( tr.fraction < lowestFraction )
+				{
+					lowestFraction = tr.fraction
+				}
+
+				if ( IsEqualFloat( tr.fraction, 1.0 ) )
+				{
+					newDestinationFound = true
+					break
+				}
+				else
+				{
+					#if R5DEV
+						if ( DEBUG_VERBOSE )
+						{
+							DebugDrawMark( tr.endPos, 35, [255, 0, 0], true, 100000 )
+						}
+					#endif // R5DEV
+				}
+			}
+
+			//
+			if ( !newDestinationFound )
+			{
+				for ( int i = 1; i < 10; i++ )
+				{
+					vector rotatedPitch = VectorRotateAxis( flightDirectionNormalized, Normalize( CrossProduct( <0, 0, 1>, flightDirectionNormalized ) ), ( pitchRotation * i ) )
+
+					proposedFlightPath = currentStart + ( rotatedPitch * segmentDistance )
+
+					#if R5DEV
+						if ( DEBUG_VERBOSE )
+						{
+							DebugDrawArrow( currentStart, proposedFlightPath, 35, 0, 0, 255, true, 100000 )
+						}
+					#endif // R5DEV
+
+					tr = TraceHullHighDetail( currentStart, proposedFlightPath, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+
+					if ( tr.fraction < lowestFraction )
+					{
+						lowestFraction = tr.fraction
+					}
+
+					if ( IsEqualFloat( tr.fraction, 1.0 ) )
+					{
+						newDestinationFound = true
+						break
+					}
+					else
+					{
+						#if R5DEV
+							if ( DEBUG_VERBOSE )
+							{
+								DebugDrawMark( tr.endPos, 35, [255, 0, 0], true, 100000 )
+							}
+						#endif // R5DEV
+					}
+				}
+			}
+
+			//
+			if ( !newDestinationFound )
+			{
+				tr = TraceHullHighDetail( currentStart, currentStart + <0, 0, TRY_AGAIN_Z_OFFSET>, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+
+				if ( IsEqualFloat( tr.fraction, 1.0 ) )
+				{
+					#if R5DEV
+						if ( DEBUG_VERBOSE )
+						{
+							DebugDrawMark( tr.endPos, 55, [0, 255, 0], true, 100000 )
+						}
+					#endif // R5DEV
+
+					newDestinationFound = true
+				}
+				else
+				{
+					#if R5DEV
+						if ( DEBUG_VERBOSE )
+						{
+							DebugDrawMark( tr.endPos, 55, [255, 0, 0], true, 100000 )
+						}
+					#endif // R5DEV
+				}
+			}
+
+			//
+			//
+			//
+			if ( lowestFraction <= 0.1 )
+			{
+				if ( flightPathNodes.len() > 1 )
+				{
+					tr = TraceLine( currentStart, currentStart + <0, 0, SEGMENT_Z_OFFSET_CLOSE_GEO>, exclusions, traceMask, traceCollisionGroup )
+
+					#if R5DEV
+						if ( DEBUG_VERBOSE )
+						{
+							DebugDrawArrow( currentStart, currentStart + <0, 0, SEGMENT_Z_OFFSET_CLOSE_GEO>, 35, 255, 0, 255, true, 100000 )
+						}
+					#endif // R5DEV
+
+					if ( IsEqualFloat( tr.fraction, 1.0 ) )
+					{
+						#if R5DEV
+							if ( DEBUG_VERBOSE )
+							{
+								printt("[Paths_Preprocess] Found lowestFraction " + lowestFraction + " removing last position from path." )
+								DebugDrawMark( tr.endPos, 55, [0, 255, 0], true, 100000 )
+							}
+						#endif // R5DEV
+						flightPathNodes.pop()
+					}
+					else
+					{
+						#if R5DEV
+							if ( DEBUG_VERBOSE )
+							{
+								DebugDrawMark( tr.endPos, 55, [255, 0, 0], true, 100000 )
+							}
+						#endif // R5DEV
+					}
+				}
+			}
+		}
+		else
+		{
+			#if R5DEV
+				if ( DEBUG_ON )
+				{
+					DebugDrawMark( tr.endPos, 35, [0, 255, 0], true, 100000 )
+				}
+			#endif // R5DEV
+		}
+
+		//
+		hullSize = hullSizeStartEnd
+		TraceResults destinationCheck = TraceHullHighDetail( tr.endPos, endPoint, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+		//
+		if ( IsEqualFloat( destinationCheck.fraction, 1.0 ) )
+		{
+			//
+			vector currentStartToCurrentEnd = tr.endPos - currentStart
+			vector normalizedCurrentStartToCurrentEnd = Normalize( currentStartToCurrentEnd )
+			vector currentStartToFinalDest = endPoint - currentStart
+			float scale = DotProduct( currentStartToFinalDest, currentStartToCurrentEnd ) / Length( currentStartToCurrentEnd )
+
+			if ( scale <= segmentDistance )
+			{
+				vector projection = currentStart + ( normalizedCurrentStartToCurrentEnd * scale )
+
+				#if R5DEV
+					if ( DEBUG_ON )
+					{
+						DebugDrawArrow( currentStart, tr.endPos, 35, 255, 0, 0, true, 100000 )
+						DebugDrawArrow( currentStart, endPoint, 35, 0, 255, 0, true, 100000 )
+						DebugDrawArrow( projection, endPoint, 35, 0, 0, 255, true, 100000 )
+					}
+				#endif // R5DEV
+
+				TraceResults finalCheck = TraceHullHighDetail( projection, endPoint, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+
+				//
+				if ( IsEqualFloat( finalCheck.fraction, 1.0 ) )
+				{
+					flightPathNodes.append( projection )
+					break
+				}
+				else
+				{
+					#if R5DEV
+						if ( DEBUG_ON )
+						{
+							DebugDrawMark( tr.endPos, 100, [255, 0, 0], true, 100000 )
+						}
+					#endif // R5DEV
+				}
+			}
+		}
+		else
+		{
+			hullSize = hullSizeBuffered
+		}
+
+		currentStart = tr.endPos
+		flightPathNodes.append( tr.endPos )
+
+		#if R5DEV
+			if ( DEBUG_ON )
+			{
+				DebugDrawMark( tr.endPos, 100, [0, 255, 0], true, 100000 )
+			}
+		#endif // R5DEV
+
+		TraceResults traceToDest = TraceHullHighDetail( currentStart, endPoint, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+
+		//
+		//
+		//
+		//
+		//
+		//
+
+		float distanceToFinalDest = Distance( tr.endPos, endPoint )
+
+		if ( distanceToFinalDest <= segmentDistance )
+		{
+			hullSize = hullSizeStartEnd
+			TraceResults finalCheck = TraceHullHighDetail( currentStart, endPoint, -hullSize, hullSize, exclusions, traceMask, traceCollisionGroup )
+			if ( IsEqualFloat( finalCheck.fraction, 1.0 ) )
+			{
+				break
+			}
+			//
+			else
+			{
+				hullSize = hullSizeBuffered
+				segmentDistance = max( FLIGHT_PATH_MIN_SEGMENT_DISTANCE, distanceToFinalDest * FLIGHT_PATH_SEGMENT_REDUCTION_WHEN_NEAR_DEST )
+			}
+		}
+
+		//
+		iterations++
+		if ( iterations >= 200 )
+		{
+			Warning( "[Paths_Preprocess] Path generation from " + startPoint + " to " + endPoint + " failed despite " + iterations + " iterations, forcing an exit from loop.  Look for red arrows in the world." )
+			#if R5DEV
+				if ( DEBUG_ON )
+				{
+					DebugDrawArrow( startPoint, endPoint, 50, 255, 0, 0, true, 100000 )
+				}
+			#endif // R5DEV
+			break
+		}
+	}
+
+	#if R5DEV
+		if ( DEBUG_VERBOSE )
+		{
+			printt("[Paths_Preprocess] Generated initial Flight Path in " + iterations + " segments.")
+			DebugDrawArrow( currentStart, endPoint, 35, 255, 100, 50, true, 100000 )
+		}
+	#endif // R5DEV
+	//
+	flightPathNodes.append( endPoint )
+
+	array<vector> smoothedflightPathNotes = CreateOptimizedSmoothPath( flightPathNodes )
+
+	#if R5DEV
+		if ( DEBUG_ON )
+		{
+			vector lastNode = smoothedflightPathNotes[0]
+			foreach ( vector smoothNodePos in smoothedflightPathNotes )
+			{
+				DebugDrawArrow( lastNode, smoothNodePos, 35, 255, 255, 0, true, 100000 )
+				lastNode = smoothNodePos
+			}
+		}
+	#endif // R5DEV
+
+	return smoothedflightPathNotes
+}
+#endif
+
+#if R5DEV
+void function VerifyPoints( array<vector> points )
+{
+	array<vector> failures
+	int size = points.len()
+
+	for ( int i = 0; i < size; ++i )
+	{
+		vector a = points[i]
+		for ( int j = i+1; j < size; ++j )
+		{
+			if ( a == points[j] )//IsEqualVector( a, points[j] ) )
+			{
+				failures.append( a )
+			}
+		}
+	}
+
+	if ( failures.len() > 0 )
+	{
+		printt( "[Paths_Preprocess] Error. Duplicated points found: " )
+		foreach ( v in failures )
+		{
+			printt( "[Paths_Preprocess] " + v )
+		}
+		Warning( "[Paths_Preprocess] Start and end vector arrays must have unique entries. See console output for found duplicated points." )
+	}
+}
+#endif
+
+#if R5DEV
+void function ExportPathsForMap( array<PathResult> preprocessedPaths, bool pathsAreBidirectional )
+{
+	string mapName = GetMapName().tolower()
+
+	//
+	DevTextBufferClear()
+	//
+
+	int count = preprocessedPaths.len()
+
+	string mainFuncName = mapName + "_PathsPreprocess_Get"
+
+	//
+	print ( "global function " + mainFuncName )
+	print ( "\n\n" )
+
+	//
+	print ( "array<PathResult> function " + mainFuncName + "()\n" )
+	print ( "{\n" )
+
+	print ( "\t// Autogenerated from [LEVEL] > Map Paths Preprocess\n" )
+	print ( "\t// There are " + count + " preprocessed paths in this function.\n" )
+	print ( "\t// These paths are " + ( pathsAreBidirectional ? "considered bidirectional" : " one way" ) + ".\n\n" )
+	print ( "\tarray<PathResult> paths\n\n" )
+
+	//
+	for ( int i=0; i < count; ++i )
+	{
+		PathResult result = preprocessedPaths[i]
+		string name = "pathResult" + i
+		print ( "\tPathResult " + name + "\n" )
+		print ( "\t" + name + ".startPoint = " + result.startPoint + "\n" )
+		print ( "\t" + name + ".endPoint = " + result.endPoint + "\n" )
+		foreach ( point in result.path )
+		{
+			print ( "\t" + name + ".path.append( " + point + " )\n" )
+		}
+		print ( "\tpaths.append( " + name + " ) " + "\n" )
+	}
+
+	print ( "\treturn paths\n" )
+
+	//
+	print ( "}\n" )
+
+	string filename = "scripts/vscripts/mp/levels/paths_preprocess/" + mapName + ".nut" //
+	DevP4Checkout( filename )
+	DevTextBufferDumpToFile( filename )
+	DevP4Add( filename )
+	printt( "[Paths_Preprocess] Attempted to write " + preprocessedPaths.len() + " paths to " + filename )
+}
+#endif
+
+//
+//
+//
+array<vector> function CreateOptimizedSmoothPath( array<vector> points, bool optimizePath=false )
+{
+	const float SMOOTH_PATHING_SEGMENT_LENGTH = 512.0 //
+	const float SMOOTH_PATHING_TENSION = 0.15 //
+	
+	Assert( points.len() >= 2 )
+
+	//
+	if ( points.len() == 2 )
+		return points
+
+	//
+	points.insert( 0, points[0] )
+	points.append( points[points.len() - 1] )
+
+	array<vector> smoothedPoints
+
+	for ( int i = 0; i < points.len() - 3; i++ )
+	{
+		float d = Distance( points[i+1], points[i+2] )
+		int pointsPerSegment = int( ceil( d / SMOOTH_PATHING_SEGMENT_LENGTH ) )
+		//
+		for ( int k = 0 ; k < pointsPerSegment ; k++ )
+		{
+			float mu = (1.0 / pointsPerSegment) * k
+			vector pt = GetSmoothedPoint( points[i], points[i+1], points[i+2], points[i+3], mu, SMOOTH_PATHING_TENSION )
+
+			if ( optimizePath )
+			{
+				//
+				if ( k == pointsPerSegment - 1 )
+				{
+					smoothedPoints.append( pt )
+				}
+
+				//
+				if ( smoothedPoints.len() > 2 )
+				{
+					vector lastPt = smoothedPoints[smoothedPoints.len() - 1]
+					vector secondLastPt = smoothedPoints[smoothedPoints.len() - 2]
+					vector secondLastToLastPt = Normalize( lastPt - secondLastPt )
+					vector lastPtToNextPt = Normalize( pt - lastPt )
+
+					float dot = DotProduct( secondLastToLastPt, lastPtToNextPt )
+
+					//
+					//
+					if ( !IsEqualFloat( dot, 1.0 ) )
+					{
+						smoothedPoints.append( pt )
+					}
+				}
+
+				else
+				{
+					smoothedPoints.append( pt )
+				}
+			}
+			else
+			{
+				smoothedPoints.append( pt )
+			}
+		}
+	}
+
+	return smoothedPoints
+}
+
+vector function GetSmoothedPoint( vector v0, vector v1, vector v2, vector v3, float mu, float tension, float bias = 0.0 ) //
+{
+	float x = HermiteInterpolate( v0.x, v1.x, v2.x, v3.x, mu, tension, bias )
+	float y = HermiteInterpolate( v0.y, v1.y, v2.y, v3.y, mu, tension, bias )
+	float z = HermiteInterpolate( v0.z, v1.z, v2.z, v3.z, mu, tension, bias )
+	return <x,y,z>
+}
+
+float function HermiteInterpolate( float y0, float y1, float y2, float y3, float mu, float tension, float bias ) //
+{
+	//
+	//
+
+	Assert( mu >= 0.0 && mu <= 1.0 )
+
+	float m0
+	float m1
+	float mu2
+	float mu3
+	float a0
+	float a1
+	float a2
+	float a3
+
+	mu2 = mu * mu
+	mu3 = mu2 * mu
+	m0  = (y1-y0)*(1+bias)*(1-tension)/2.0
+	m0 += (y2-y1)*(1-bias)*(1-tension)/2.0
+	m1  = (y2-y1)*(1+bias)*(1-tension)/2.0
+	m1 += (y3-y2)*(1-bias)*(1-tension)/2.0
+	a0 =  2.0*mu3 - 3.0*mu2 + 1.0
+	a1 =    mu3 - 2.0*mu2 + mu
+	a2 =    mu3 -   mu2
+	a3 = -2.0*mu3 + 3.0*mu2
+
+	return(a0*y1+a1*m0+a2*m1+a3*y2)
+}
+//

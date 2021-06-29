@@ -521,6 +521,11 @@ void function AddCallback_OnClientScriptInit( void functionref( entity ) callbac
 	clGlobal.onClientScriptInitCallback.append( callbackFunc )
 }
 
+void function AddCreateMainHudCallback( void functionref( var, entity ) callbackFunc )
+{
+	clGlobal.onMainHudCreatedCallbacks.append( callbackFunc )
+}
+
 void function AddCreatePilotCockpitCallback( void functionref (entity, entity ) callbackFunc )
 {
 	clGlobal.pilotHudCallbacks.append( callbackFunc )

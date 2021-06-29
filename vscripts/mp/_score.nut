@@ -56,7 +56,12 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 	}
 	
 	if ( ScoreEvent_HasConversation( event ) )
-		thread Delayed_PlayConversationToPlayer( event.conversation, targetPlayer, event.conversationDelay )
+	{
+		printt( FUNC_NAME(), "conversation:", event.conversation, "player:", targetPlayer.GetPlayerName(), "delay:", event.conversationDelay )
+		// todo: reimplement conversations
+		//thread Delayed_PlayConversationToPlayer( event.conversation, targetPlayer, event.conversationDelay )
+
+	}
 }
 
 void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damageInfo )

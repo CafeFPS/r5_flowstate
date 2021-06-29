@@ -40,6 +40,7 @@ WeaponData
 	"fx_shell_eject_view"							""
 	"fx_shell_eject_world"							""
 
+	"chroma_color"									".3 1 .7"
 
 	// Sounds
 	"fire_sound_1"									"Weapon_bulletCasings.Bounce"
@@ -114,7 +115,7 @@ WeaponData
 	"dof_nearDepthEnd"								"0.0"
 
 	// Behavior
-	"fire_rate"   									"3.1"
+	"fire_rate"   									"2.6"
 	"reload_time" 									"2.1"
 	"reload_time_late1" 							"1.75"
 	"reload_time_late2" 							"0.60"
@@ -186,7 +187,7 @@ WeaponData
 	"fire_rumble"									"rumble_pistol_heavy"
 
 	// Spread
-	"spread_stand_hip" 								"1.0"
+	"spread_stand_hip" 								"2.4"
 	"spread_stand_hip_run" 							"3.0"
 	"spread_stand_hip_sprint"						"4.0"
 	"spread_crouch_hip"								"0.5"
@@ -201,7 +202,7 @@ WeaponData
 	"spread_max_kick_air_hip"						"4.5"
 
 	"spread_decay_rate"   							"11.0"
-	"spread_decay_delay"  							".21"
+	"spread_decay_delay"  							".26"
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
 	//setting to "0" so it's tunable in Bakery
@@ -238,11 +239,11 @@ WeaponData
 
         hopup_headshot_dmg
         {
-        	"damage_headshot_scale"			"2.5"
+        	"damage_headshot_scale"			"2.25"
         	"projectile_trail_effect_0"     "P_tracer_proj_sniper_piercer"
-        	"fire_sound_1_player_1p"						"weapon_wingman_fire_skull_1p"
-			"fire_sound_1_player_3p"						"weapon_wingman_fire_skull_3p"
-			"fire_sound_1_npc"								"weapon_wingman_fire_skull_3p"
+        	"fire_sound_1_player_1p"		"weapon_wingman_fire_skull_1p"
+			"fire_sound_1_player_3p"		"weapon_wingman_fire_skull_3p"
+			"fire_sound_1_npc"				"weapon_wingman_fire_skull_3p"
         }
 
 		legendary1

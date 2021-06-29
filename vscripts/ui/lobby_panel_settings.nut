@@ -3,6 +3,7 @@ global function SettingsPanel_NavigateToSavedSelection
 global function SettingsPanel_GetDefaultImageForIndex
 
 global function SetupSettingsButton
+global function SetupSettingsSlider
 
 global function CreateSettingsConVarData
 global function SaveSettingsConVars
@@ -32,6 +33,7 @@ struct
 	table<var, string> buttonTitles
 	table<var, string> buttonDescriptions
 	table<var, asset>  buttonImages
+	table<var, bool>   additionalWidget
 	var                detailsPanel
 	var				   panel
 
@@ -59,7 +61,7 @@ void function InitSettingsPanel( var panel )
 		file.panelDefaultImages.append( $"rui/menu/settings/settings_hud" )
 	}
 
-	#if PC_PROG
+	#if(PC_PROG)
 		{
 			AddTab( panel, Hud_GetChild( panel, "ControlsPCPanelContainer" ), "#MOUSE_KEYBOARD" )
 			AddPanelEventHandler( Hud_GetChild( panel, "ControlsPCPanelContainer" ), eUIEvent.PANEL_SHOW, OnSettingsTab_Show )
@@ -101,7 +103,7 @@ asset function SettingsPanel_GetDefaultImageForIndex( int index )
 void function OnSettingsPanel_Show( var panel )
 {
 	TabData tabData = GetTabDataForPanel( panel )
-	ActivateTab( tabData, tabData.tabIndex )
+	ActivateTab( tabData, tabData.activeTabIdx )
 
 	file.anyChanged = false
 }
@@ -111,11 +113,11 @@ void function OnSettingsTab_Show( var panel )
 {
 	TabData tabData = GetTabDataForPanel( file.panel )
 
-	var rui = Hud_GetRui( file.detailsPanel )
+	var rui = Hud_GetRui( Settings_GetDetailPanel( panel ) )
 	RuiSetArg( rui, "headerText", "" )
 	RuiSetArg( rui, "selectionText", "" )
 	RuiSetArg( rui, "descText", "" )
-	RuiSetAsset( rui, "detailImage", SettingsPanel_GetDefaultImageForIndex( tabData.tabIndex ) )
+	RuiSetAsset( rui, "detailImage", SettingsPanel_GetDefaultImageForIndex( tabData.activeTabIdx ) )
 }
 
 void function OnSettingsPanel_Hide( var panel )
@@ -125,7 +127,7 @@ void function OnSettingsPanel_Hide( var panel )
 
 	if ( file.anyChanged )
 	{
-		// synchronize convars that appear in multiple tabs
+		//
 		SaveSettingsConVars( SoundPanel_GetConVarData() )
 		SaveSettingsConVars( GameplayPanel_GetConVarData() )
 		SaveSettingsConVars( ControlsPCPanel_GetConVarData() )
@@ -165,12 +167,13 @@ void function SettingsPanel_NavigateToSavedSelection()
 }
 
 
-var function SetupSettingsButton( var button, string buttonText, string description, asset image )
+var function SetupSettingsButton( var button, string buttonText, string description, asset image, bool showAdditional = false )
 {
 	SetButtonRuiText( button, buttonText )
 	file.buttonTitles[ button ] <- buttonText
 	file.buttonDescriptions[ button ] <- description
 	file.buttonImages[ button ] <- image
+	file.additionalWidget[ button ] <- showAdditional
 
 	if ( Hud_HasChild( button, "RightButton" ) )
 	{
@@ -180,6 +183,7 @@ var function SetupSettingsButton( var button, string buttonText, string descript
 		file.buttonTitles[ childButton ] <- buttonText
 		file.buttonDescriptions[ childButton ] <- description
 		file.buttonImages[ childButton ] <- image
+		file.additionalWidget[ childButton ] <- showAdditional
 	}
 	if ( Hud_HasChild( button, "LeftButton" ) )
 	{
@@ -189,48 +193,96 @@ var function SetupSettingsButton( var button, string buttonText, string descript
 		file.buttonTitles[ childButton ] <- buttonText
 		file.buttonDescriptions[ childButton ] <- description
 		file.buttonImages[ childButton ] <- image
+		file.additionalWidget[ childButton ] <- showAdditional
 	}
 
 	AddButtonEventHandler( button, UIE_GET_FOCUS, SettingsButton_GetFocus )
 	AddButtonEventHandler( button, UIE_LOSE_FOCUS, SettingsButton_LoseFocus )
 
-	//ToolTipData toolTipData
-	//toolTipData.titleText = buttonText
-	//toolTipData.descText = description
-	//Hud_SetToolTipData( button, toolTipData )
+	//
+	//
+	//
+	//
 
 	return button
 }
 
-
-void function SettingsButton_GetFocus( var button )
+array<var> function SetupSettingsSlider( var slider, string buttonText, string description, asset image, bool showAdditional = false )
 {
-	var rui = Hud_GetRui( file.detailsPanel )
+	var dropButton = Hud_GetChild( slider, "BtnDropButton" )
+
+	SetButtonRuiText( dropButton, buttonText )
+	file.buttonTitles[ dropButton ] <- buttonText
+	file.buttonDescriptions[ dropButton ] <- description
+	file.buttonImages[ dropButton ] <- image
+	file.additionalWidget[ dropButton ] <- showAdditional
+
+	AddButtonEventHandler( dropButton, UIE_GET_FOCUS, DropButton_GetFocus )
+	AddButtonEventHandler( dropButton, UIE_LOSE_FOCUS, DropButton_GetFocus )
+	Hud_AddEventHandler( slider, UIE_GET_FOCUS, ScrollIntoView_OnFocus )
+
+	return [dropButton, slider]
+}
+
+void function DisplaySettingInfoForButton( var button, var rui )
+{
 	RuiSetArg( rui, "selectionText", file.buttonTitles[ button ] )
 	RuiSetArg( rui, "descText", file.buttonDescriptions[ button ] )
 	RuiSetAsset( rui, "detailImage", file.buttonImages[ button ] )
+	RuiSetBool( rui, "showCbInfo", file.additionalWidget[ button ] )
 }
 
+void function SettingsButton_GetFocus( var button )
+{
+	DisplaySettingInfoForButton( button, Hud_GetRui( Settings_GetDetailPanel( button ) ) )
+	ScrollIntoView_OnFocus( button )
+}
 
 void function SettingsButton_LoseFocus( var button )
 {
 	TabData tabData = GetTabDataForPanel( file.panel )
 
-	var rui = Hud_GetRui( file.detailsPanel )
+	var rui = Hud_GetRui( Settings_GetDetailPanel( button ) )
 	RuiSetArg( rui, "selectionText", "" )
 	RuiSetArg( rui, "descText", "" )
-	RuiSetAsset( rui, "detailImage", SettingsPanel_GetDefaultImageForIndex( tabData.tabIndex ) )
+	RuiSetAsset( rui, "detailImage", SettingsPanel_GetDefaultImageForIndex( tabData.activeTabIdx ) )
+	RuiSetBool( rui, "showCbInfo", false )
 }
 
 
 void function SettingsButton_Activate( var button )
 {
-	var rui = Hud_GetRui( file.detailsPanel )
+	var rui = Hud_GetRui( Settings_GetDetailPanel( button ) )
 	RuiSetArg( rui, "selectionText", file.buttonTitles[ button ] )
 	RuiSetArg( rui, "descText", file.buttonDescriptions[ button ] )
 	RuiSetAsset( rui, "detailImage", file.buttonImages[ button ] )
 }
 
+void function DropButton_GetFocus( var button )
+{
+	DisplaySettingInfoForButton( button, Hud_GetRui( Settings_GetDetailPanel( button ) ) )
+}
+
+void function ScrollIntoView_OnFocus( var panel )
+{
+	ScrollPanel_ScrollIntoView( file.panel )
+}
+
+
+var function Settings_GetDetailPanel( var button )
+{
+	var parentElement = Hud_GetParent( button )
+	while ( parentElement != null )
+	{
+		if ( Hud_HasChild( parentElement, "DetailsPanel" ) )
+			return Hud_GetChild( parentElement, "DetailsPanel" )
+
+		parentElement = Hud_GetParent( parentElement )
+	}
+
+	Assert( false, "Should be unreachable" )
+	return file.detailsPanel
+}
 
 
 ConVarData function CreateSettingsConVarData( string conVar, int conVarType )

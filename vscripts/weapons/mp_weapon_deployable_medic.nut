@@ -942,11 +942,11 @@ bool function DeployableMedic_ShouldAttemptHeal( entity player, entity droneMedi
 	}
 
 	//We can't heal a player who is currently in a cloud of gas
-	if ( IsGasCausingDamage( player ) )
-	{
-		//	printt( "DON'T HEAL: PLAYER " + player + " IS IN GAS." )
-		return false
-	}
+	//if ( IsGasCausingDamage( player ) )
+	//{
+	//	//	printt( "DON'T HEAL: PLAYER " + player + " IS IN GAS." )
+	//	return false
+	//}
 
 	//If bleedout logic is active and the player is bleeding we should not heal them.
 	if ( Bleedout_IsBleedoutLogicActive() )
@@ -971,7 +971,7 @@ bool function DeployableMedic_ShouldAttemptHeal( entity player, entity droneMedi
 	if ( trace.hitEnt == player || trace.hitEnt == null )
 		return true
 
-	return false
+	return true
 }
 
 TraceResults function HACK_TraceLineRealm( entity realmEnt, vector startPos, vector endPos, var ignoreEntOrArrayOfEnts = null, int traceMask = 0, int collisionGroup = 0 )
@@ -1203,6 +1203,8 @@ void function DeployableMedic_HealVisualsEnabled( entity ent, int statusEffect, 
 	int fxID = GetParticleSystemIndex( FX_DRONE_MEDIC_HEAL_COCKPIT_FX )
 	file.healFxHandle = StartParticleEffectOnEntity( cockpit, fxID, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 	EffectSetIsWithCockpit( file.healFxHandle, true )
+
+	Chroma_StartHealingDroneEffect()
 }
 
 void function DeployableMedic_HealVisualsDisabled( entity ent, int statusEffect, bool actuallyChanged )
@@ -1217,6 +1219,8 @@ void function DeployableMedic_HealVisualsDisabled( entity ent, int statusEffect,
 		return
 
 	EffectStop( file.healFxHandle, false, true )
+
+	Chroma_EndHealingDroneEffect()
 }
 
 bool function CanDeployHealDrone( entity player )

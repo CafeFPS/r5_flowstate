@@ -18,6 +18,7 @@ global function ShutdownAllPanels
 global function IsPanelTabbed
 global function SetPanelTabEnabled
 global function SetPanelTabNew
+global function IsTabIndexVisible
 global function IsTabIndexEnabled
 global function IsTabPanelActive
 global function _HasActiveTabPanel
@@ -33,6 +34,7 @@ global function SetTabNavigationEndCallback
 global function GetTabBodyParent
 
 global function GetPanelTabs
+global function SetTabDefVisible
 global function SetTabDefEnabled
 
 global function ActivateTabNext
@@ -46,13 +48,19 @@ global struct TabData
 	var             parentPanel
 	var             tabPanel
 	array<var>      tabButtons
+	array<var>      tabDividers
 	array<TabDef>   tabDefs
-	int             tabIndex = INVALID_TAB_INDEX
+	int             activeTabIdx = INVALID_TAB_INDEX
 	string          tabRightSound = "UI_Menu_ApexTab_Select"
 	string          tabLeftSound = "UI_Menu_ApexTab_Select"
 	bool            tabNavigationDisabled = false
+	bool            centerTabs = false
 
 	table<int, void functionref()> tabNavigationEndCallbacks
+
+	int initialFirstTabButtonWidth = -1
+	int initialFirstTabButtonXPos = -1
+	int initialSecondTabButtonXPos = -1
 }
 
 struct
@@ -72,7 +80,7 @@ global enum eTabDirection
 	NEXT
 }
 
-// TODO: Move to be a single call per menu in standard init for all menus (also, apply the same organization to InitFooterOptions())
+//
 void function InitTabs()
 {
 	foreach ( menu in uiGlobal.allMenus )
@@ -92,7 +100,6 @@ void function InitTabs()
 			file.elementTabData[parentPanel] <- tabData
 
 			array<var> tabButtons = GetElementsByClassname( menu, "TabButtonClass" )
-
 			foreach ( tabButton in tabButtons )
 			{
 				var tabButtonParent = Hud_GetParent( tabButton )
@@ -107,6 +114,16 @@ void function InitTabs()
 				Hud_Hide( tabButton )
 
 				file.tabButtonParents[tabButton] <- parentPanel
+			}
+
+			array<var> tabDividers = GetElementsByClassname( menu, "TabDividerClass" )
+			foreach ( tabDivider in tabDividers )
+			{
+				var tabDividerParent = Hud_GetParent( tabDivider )
+				if ( tabDividerParent != tabButtonPanel )
+					continue
+
+				tabData.tabDividers.append( tabDivider )
 			}
 		}
 	}
@@ -137,7 +154,7 @@ array<TabDef> function GetPanelTabs( var panel )
 }
 
 
-TabDef function AddTab( var parentPanel, var panel, string tabTitle )
+TabDef function AddTab( var parentPanel, var panel, string tabTitle, bool wantDividerAfter = false, float tabBarLeftOffsetFracIfVisible = 0.0 )
 {
 	TabData tabData = GetTabDataForPanel( parentPanel )
 
@@ -146,6 +163,8 @@ TabDef function AddTab( var parentPanel, var panel, string tabTitle )
 	data.panel = panel
 	data.title = tabTitle
 	data.parentPanel = parentPanel
+	data.wantDividerAfter = wantDividerAfter
+	data.tabBarLeftOffsetFracIfVisible = tabBarLeftOffsetFracIfVisible
 
 	file.tabBodyDefMap[data.panel] <- data
 
@@ -153,7 +172,7 @@ TabDef function AddTab( var parentPanel, var panel, string tabTitle )
 
 	file.elementTabData[parentPanel].tabDefs.append( data )
 	if ( file.elementTabData[parentPanel].tabDefs.len() == 1 )
-		file.elementTabData[parentPanel].tabIndex = 0
+		file.elementTabData[parentPanel].activeTabIdx = 0
 
 	return data
 }
@@ -165,15 +184,15 @@ TabData function GetTabDataForPanel( var element )
 }
 
 
-void function ClearTabs( var menu )
+void function ClearTabs( var panel )
 {
-	TabData tabData = GetTabDataForPanel( menu )
+	TabData tabData = GetTabDataForPanel( panel )
 
-	if ( tabData.tabIndex != INVALID_TAB_INDEX )
+	if ( tabData.activeTabIdx != INVALID_TAB_INDEX )
 		DeactivateTab( tabData )
 
 	tabData.tabDefs.clear()
-	tabData.tabIndex = INVALID_TAB_INDEX
+	tabData.activeTabIdx = INVALID_TAB_INDEX
 }
 
 
@@ -190,6 +209,7 @@ int function Tab_GetTabIndexByBodyName( TabData tabData, string bodyName )
 	return -1
 }
 
+
 TabDef function Tab_GetTabDefByBodyName( TabData tabData, string bodyName )
 {
 	foreach ( index, tabDef in tabData.tabDefs )
@@ -205,28 +225,32 @@ TabDef function Tab_GetTabDefByBodyName( TabData tabData, string bodyName )
 	unreachable
 }
 
+
 void function SetTabNavigationEndCallback( TabData tabData, int tabSide, void functionref() callbackFunc )
 {
 	tabData.tabNavigationEndCallbacks[tabSide] <- callbackFunc
 }
 
+
 bool function IsTabActive( TabData tabData )
 {
-	var panel = tabData.tabDefs[tabData.tabIndex].panel
+	var panel = tabData.tabDefs[tabData.activeTabIdx].panel
 	return uiGlobal.panelData[panel].isActive
 }
 
-// TODO: Need this to cause open/close and footer update
-// AddMenuEventHandler() and AddMenuFooterOption() has to be different for tab panels
-// AddPanelFooterOption()? This needs more thought. The panel needs to affect the footer options of it's parent, so these setup functions need to work differently for panels.
+//
+//
+//
 void function ActivateTab( TabData tabData, int tabIndex )
 {
 	if ( !CanNavigateFromActiveTab( tabData, tabIndex ) )
 		return
 
+	uiGlobal.lastMenuNavDirection = MENU_NAV_FORWARD
+
 	array<TabDef> tabDefs = tabData.tabDefs
-	int oldTabIndex       = tabData.tabIndex
-	tabData.tabIndex = tabIndex
+	int oldTabIndex       = tabData.activeTabIdx
+	tabData.activeTabIdx = tabIndex
 
 	UpdateMenuTabs()
 
@@ -248,13 +272,16 @@ void function HideVisibleTabBodies( TabData tabData )
 
 void function DeactivateTab( TabData tabData )
 {
-	HidePanel( tabData.tabDefs[tabData.tabIndex].panel )
+	if ( tabData.activeTabIdx == INVALID_TAB_INDEX )
+		return
+
+	HidePanel( tabData.tabDefs[tabData.activeTabIdx].panel )
 }
 
 
 int function GetMenuActiveTabIndex( var menu )
 {
-	return GetTabDataForPanel( menu ).tabIndex
+	return GetTabDataForPanel( menu ).activeTabIdx
 }
 
 
@@ -287,6 +314,11 @@ void function ShowPanelInternal( var panel )
 
 	uiGlobal.activePanels.append( panel )
 	UpdateFooterOptions()
+
+	var menu = GetParentMenu( panel )
+	UpdateMenuBlur( menu )
+	if ( uiGlobal.panelData[ panel ].panelClearBlur )
+		ClearMenuBlur( menu )
 
 	Assert( !uiGlobal.panelData[ panel ].isCurrentlyShown )
 	uiGlobal.panelData[ panel ].isCurrentlyShown = true
@@ -329,7 +361,7 @@ void function HidePanelInternal( var panel )
 
 void function ShutdownAllPanels()
 {
-	uiGlobal.activePanels.clear() // todo(dw): aaaaaahhhhh
+	uiGlobal.activePanels.clear() //
 
 	foreach ( var panel, PanelDef panelDef in uiGlobal.panelData )
 		HidePanel( panel )
@@ -350,57 +382,138 @@ void function UpdateMenuTabs()
 		var parentPanel = Hud_GetParent( tabButtonPanel )
 		TabData tabData = GetTabDataForPanel( parentPanel )
 
-		array<TabDef> tabDefs = tabData.tabDefs
-		array<var> tabButtons = tabData.tabButtons
-		int numTabs           = tabDefs.len()
+		array<TabDef> tabDefs           = tabData.tabDefs
+		array<var> tabButtons           = tabData.tabButtons
+		array<var> availableTabDividers = clone tabData.tabDividers
+		int numTabs                     = tabDefs.len()
 
-		int tabWidth = Hud_GetWidth( tabButtons[0] )
-
-		int tabIndex = 0
-		while ( tabIndex < numTabs )
+		if ( tabData.initialFirstTabButtonWidth == -1 )
 		{
-			var tab = tabButtons[ tabIndex ]
-
-			if ( tabIndex == tabData.tabIndex )
-				Hud_SetSelected( tab, true )
-			else
-				Hud_SetSelected( tab, false )
-
-			var rui = Hud_GetRui( tab )
-			RuiSetString( rui, "buttonText", tabDefs[tabIndex].title )
-
-			Hud_SetEnabled( tab, tabDefs[tabIndex].enabled )
-			Hud_SetNew( tab, tabDefs[tabIndex].new )
-			if ( tabWidth != 0 )
-				Hud_SetWidth( tab, tabWidth )
-
-			if ( Tab_IsRootLevel( tabData ) && isNestedTabActive )
-				RuiSetBool( rui, "isInactive", true )
-			else
-				RuiSetBool( rui, "isInactive", false )
-
-			tabIndex++
+			tabData.initialFirstTabButtonWidth = Hud_GetWidth( tabButtons[0] )
+			tabData.initialFirstTabButtonXPos = Hud_GetX( tabButtons[0] )
+			tabData.initialSecondTabButtonXPos = Hud_GetX( tabButtons[1] )
 		}
 
-		var tabsPanel     = tabData.tabPanel
-		var leftShoulder  = Hud_GetChild( tabsPanel, "LeftNavButton" )
-		var rightShoulder = Hud_GetChild( tabsPanel, "RightNavButton" )
+		int leftMostVisibleTabIndex  = -1
+		int rightMostVisibleTabIndex = 0
+		int firstTabXOffset          = 0
+		int totalWidth               = 0
+		var previousPanelForPinning  = null
+		int offsetForNextPin
+		for ( int tabIndex = 0; tabIndex < MAX_TABS; tabIndex++ )
+		{
+			var tabButton    = tabButtons[ tabIndex ]
+			var tabButtonRUI = Hud_GetRui( tabButton )
 
+			if ( previousPanelForPinning != null )
+				Hud_SetPinSibling( tabButton, Hud_GetHudName( previousPanelForPinning ) )
+			if ( tabIndex > 0 )
+				Hud_SetX( tabButton, offsetForNextPin )
+
+			previousPanelForPinning = tabButton
+			offsetForNextPin = tabData.initialSecondTabButtonXPos
+
+			if ( tabIndex < numTabs )
+			{
+				TabDef tabDef = tabDefs[tabIndex]
+
+				int forceAccessSetting = 0
+				if ( IsConnected() )
+					forceAccessSetting = GetCurrentPlaylistVarInt( format( "ui_tabs_force_access_%s", Hud_GetHudName( tabDef.panel ) ).tolower(), 0 )
+				if ( forceAccessSetting == 1 )
+				{
+					tabDef.visible = true
+					tabDef.enabled = true
+				}
+				else if ( forceAccessSetting == -1 )
+				{
+					tabDef.enabled = false
+					tabDef.new = false
+				}
+			}
+
+			if ( tabIndex >= numTabs || !tabDefs[tabIndex].visible )
+			{
+				RuiSetString( tabButtonRUI, "buttonText", "" )
+
+				Hud_SetEnabled( tabButton, false )
+				Hud_SetNew( tabButton, false )
+				Hud_SetWidth( tabButton, 0 )
+				Hud_SetY( tabButton, 0 )
+
+				continue
+			}
+
+			if ( leftMostVisibleTabIndex == -1 )
+				leftMostVisibleTabIndex = tabIndex
+			rightMostVisibleTabIndex = tabIndex
+			TabDef tabDef = tabDefs[tabIndex]
+
+			if ( tabIndex == tabData.activeTabIdx )
+				Hud_SetSelected( tabButton, true )
+			else
+				Hud_SetSelected( tabButton, false )
+
+			RuiSetString( tabButtonRUI, "buttonText", tabDef.title )
+			RuiSetBool( tabButtonRUI, "useCustomColors", tabDef.useCustomColors )
+			if ( tabDef.useCustomColors )
+			{
+				RuiSetColorAlpha( tabButtonRUI, "customDefaultBGCol", SrgbToLinear( tabDef.customDefaultBGCol ), 1.0 )
+				RuiSetColorAlpha( tabButtonRUI, "customDefaultBarCol", SrgbToLinear( tabDef.customDefaultBarCol ), 1.0 )
+				RuiSetColorAlpha( tabButtonRUI, "customFocusedBGCol", SrgbToLinear( tabDef.customFocusedBGCol ), 1.0 )
+				RuiSetColorAlpha( tabButtonRUI, "customFocusedBarCol", SrgbToLinear( tabDef.customFocusedBarCol ), 1.0 )
+				RuiSetColorAlpha( tabButtonRUI, "customSelectedBGCol", SrgbToLinear( tabDef.customSelectedBGCol ), 1.0 )
+				RuiSetColorAlpha( tabButtonRUI, "customSelectedBarCol", SrgbToLinear( tabDef.customSelectedBarCol ), 1.0 )
+			}
+
+			Hud_SetEnabled( tabButton, tabDef.enabled )
+			Hud_SetNew( tabButton, tabDef.new )
+			Hud_SetWidth( tabButton, tabData.initialFirstTabButtonWidth )
+
+			if ( Tab_IsRootLevel( tabData ) && isNestedTabActive )
+				RuiSetBool( tabButtonRUI, "isInactive", true )
+			else
+				RuiSetBool( tabButtonRUI, "isInactive", false )
+
+			if ( tabDef.wantDividerAfter )
+			{
+				Assert( availableTabDividers.len() > 0, "Ran out of tab dividers" )
+				var divider = availableTabDividers.pop()
+				Hud_Show( divider )
+				Hud_SetPinSibling( divider, Hud_GetHudName( tabButton ) )
+				previousPanelForPinning = divider
+				offsetForNextPin = 0
+			}
+
+			firstTabXOffset -= int(tabDef.tabBarLeftOffsetFracIfVisible * float(Hud_GetWidth( tabButton )))
+			totalWidth += REPLACEHud_GetBasePos( tabButton ).x + Hud_GetWidth( tabButton )
+		}
+
+		foreach ( var remainingTabDivider in availableTabDividers )
+		{
+			Hud_Hide( remainingTabDivider )
+		}
+
+		var tabsPanel          = tabData.tabPanel
+		var leftMostTabButton  = tabButtons[ leftMostVisibleTabIndex != -1 ? leftMostVisibleTabIndex : 0 ]
+		var rightMostTabButton = tabButtons[ rightMostVisibleTabIndex ]
+		var leftShoulder       = Hud_GetChild( tabsPanel, "LeftNavButton" )
+		var rightShoulder      = Hud_GetChild( tabsPanel, "RightNavButton" )
 		if ( GetMenuVarBool( "isGamepadActive" ) && numTabs > 1 )
 		{
 			string leftText
 			string rightText
 
-			//if ( Tab_IsRootLevel( tabData ) )
+			//
 			{
 				leftText = IsGamepadPS4() ? "L1" : "LB"
 				rightText = IsGamepadPS4() ? "R1" : "RB"
 			}
-			//else
-			//{
-			//	leftText = "LT"
-			//	rightText = "RT"
-			//}
+			//
+			//
+			//
+			//
+			//
 
 			SetLabelRuiText( leftShoulder, leftText )
 			Hud_SetVisible( leftShoulder, !isNestedTabActive || !Tab_IsRootLevel( tabData ) )
@@ -408,8 +521,8 @@ void function UpdateMenuTabs()
 			SetLabelRuiText( rightShoulder, rightText )
 			Hud_SetVisible( rightShoulder, !isNestedTabActive || !Tab_IsRootLevel( tabData ) )
 
-			var tab = tabButtons[ tabIndex ]
-			Hud_SetPinSibling( rightShoulder, Hud_GetHudName( tab ) )
+			Hud_SetPinSibling( leftShoulder, Hud_GetHudName( leftMostTabButton ) )
+			Hud_SetPinSibling( rightShoulder, Hud_GetHudName( rightMostTabButton ) )
 		}
 		else
 		{
@@ -420,19 +533,9 @@ void function UpdateMenuTabs()
 			Hud_SetVisible( rightShoulder, false )
 		}
 
-		// Disable empty tabs
-		while ( tabIndex < MAX_TABS )
-		{
-			var tab = tabButtons[ tabIndex ]
-			var rui = Hud_GetRui( tab )
-			RuiSetString( rui, "buttonText", "" )
-
-			Hud_SetEnabled( tab, false )
-			Hud_SetNew( tab, false )
-			Hud_SetWidth( tab, 0 )
-
-			tabIndex++
-		}
+		if ( tabData.centerTabs )
+			firstTabXOffset -= totalWidth / 2
+		Hud_SetX( tabButtons[0], tabData.initialFirstTabButtonXPos + firstTabXOffset )
 	}
 }
 
@@ -465,9 +568,10 @@ void function OnTab_LoseFocus( var button )
 {
 }
 
+
 bool function CanNavigateFromActiveTab( TabData tabData, int desinationTabIndex )
 {
-	TabDef tabDef = tabData.tabDefs[tabData.tabIndex]
+	TabDef tabDef = tabData.tabDefs[tabData.activeTabIdx]
 	if ( tabDef.canNavigateFunc == null )
 		return true
 
@@ -487,18 +591,18 @@ void function OnTab_Activate( var button )
 		return
 
 	string animPrefix
-	if ( tabIndex < tabData.tabIndex )
+	if ( tabIndex < tabData.activeTabIdx )
 		animPrefix = "MoveRight_"
-	else if ( tabIndex > tabData.tabIndex )
+	else if ( tabIndex > tabData.activeTabIdx )
 		animPrefix = "MoveLeft_"
 	else
-		return // Already on this tab
+		return //
 
-	//printt( "tabIndex was:", tabIndex, "menu:", Hud_GetHudName( tabsData[ tabIndex ].panel ) )
+	//
 
 	ActivateTab( tabData, tabIndex )
 
-	//printt( "tabIndex now:", tabIndex, "menu:", Hud_GetHudName( tabsData[ tabIndex ].panel ) )
+	//
 }
 
 
@@ -524,7 +628,7 @@ void function OnMenuTab_NavLeft( var unusedNull )
 
 	if ( tabData.tabNavigationDisabled )
 	{
-		// allow us to back out even when tabs are disabled
+		//
 		if ( tabData.tabNavigationEndCallbacks[eTabDirection.PREV] != null )
 			tabData.tabNavigationEndCallbacks[eTabDirection.PREV]()
 
@@ -537,12 +641,12 @@ void function OnMenuTab_NavLeft( var unusedNull )
 
 void function ActivateTabPrev( TabData tabData )
 {
-	int tabIndex = tabData.tabIndex
+	int tabIndex = tabData.activeTabIdx
 
 	while ( tabIndex > 0 )
 	{
 		tabIndex--
-		if ( !IsTabIndexEnabled( tabData, tabIndex ) )
+		if ( !IsTabIndexVisible( tabData, tabIndex ) || !IsTabIndexEnabled( tabData, tabIndex ) )
 			continue
 
 		EmitUISound( tabData.tabLeftSound )
@@ -559,12 +663,12 @@ void function ActivateTabPrev( TabData tabData )
 
 void function ActivateTabNext( TabData tabData )
 {
-	int tabIndex = tabData.tabIndex
+	int tabIndex = tabData.activeTabIdx
 
 	while ( tabIndex < tabData.tabDefs.len() - 1 )
 	{
 		tabIndex++
-		if ( !IsTabIndexEnabled( tabData, tabIndex ) )
+		if ( !IsTabIndexVisible( tabData, tabIndex ) || !IsTabIndexEnabled( tabData, tabIndex ) )
 			continue
 
 		EmitUISound( tabData.tabRightSound )
@@ -650,7 +754,7 @@ void function OnNestedTab_NavLeft( var unusedNull )
 	if ( tabData.tabNavigationDisabled )
 		return
 
-	int tabIndex = tabData.tabIndex
+	int tabIndex = tabData.activeTabIdx
 	while ( tabIndex > 0 )
 	{
 		tabIndex--
@@ -681,7 +785,7 @@ void function OnNestedTab_NavRight( var unusedNull )
 	if ( tabData.tabNavigationDisabled )
 		return
 
-	int tabIndex = tabData.tabIndex
+	int tabIndex = tabData.activeTabIdx
 
 	while ( tabIndex < tabData.tabDefs.len() - 1 )
 	{
@@ -705,7 +809,7 @@ bool function _HasActiveTabPanel( var menu )
 		return false
 
 	TabData tabData = GetTabDataForPanel( menu )
-	return tabData.tabIndex != INVALID_TAB_INDEX
+	return tabData.activeTabIdx != INVALID_TAB_INDEX
 }
 
 
@@ -715,9 +819,9 @@ var function _GetActiveTabPanel( var menu )
 		return null
 
 	TabData tabData = GetTabDataForPanel( menu )
-	if ( tabData.tabIndex == INVALID_TAB_INDEX )
+	if ( tabData.activeTabIdx == INVALID_TAB_INDEX )
 		return null
-	return tabData.tabDefs[tabData.tabIndex].panel
+	return tabData.tabDefs[tabData.activeTabIdx].panel
 }
 
 
@@ -782,6 +886,18 @@ bool function IsPanelTabbed( var parentPanel )
 }
 
 
+void function SetPanelTabVisible( var panel, bool visible )
+{
+	TabDef tab = GetTabForTabBody( panel )
+
+	if ( tab.visible != visible )
+	{
+		tab.visible = visible
+		UpdateMenuTabs()
+	}
+}
+
+
 void function SetPanelTabEnabled( var panel, bool enabled )
 {
 	TabDef tab = GetTabForTabBody( panel )
@@ -791,6 +907,45 @@ void function SetPanelTabEnabled( var panel, bool enabled )
 		tab.enabled = enabled
 		UpdateMenuTabs()
 	}
+}
+
+
+void function SetTabDefVisible( TabDef tabDef, bool state )
+{
+	if ( state == tabDef.visible )
+		return
+
+	tabDef.visible = state
+
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+
+	UpdateMenuTabs()
 }
 
 
@@ -810,6 +965,12 @@ void function SetPanelTabNew( var panel, bool new )
 		tab.new = new
 		UpdateMenuTabs()
 	}
+}
+
+
+bool function IsTabIndexVisible( TabData tabData, int tabIndex )
+{
+	return (tabIndex in tabData.tabDefs && tabData.tabDefs[ tabIndex ].visible)
 }
 
 
@@ -840,12 +1001,12 @@ void function RegisterTabNavigationInput()
 	{
 		RegisterButtonPressedCallback( BUTTON_SHOULDER_LEFT, OnMenuTab_NavLeft )
 		RegisterButtonPressedCallback( BUTTON_SHOULDER_RIGHT, OnMenuTab_NavRight )
-		//RegisterButtonPressedCallback( BUTTON_TRIGGER_LEFT, OnNestedTab_NavLeft )
-		//RegisterButtonPressedCallback( BUTTON_TRIGGER_RIGHT, OnNestedTab_NavRight )
+		//
+		//
 		RegisterButtonPressedCallback( BUTTON_DPAD_UP, OnTab_DPadUp )
 		RegisterButtonPressedCallback( BUTTON_DPAD_DOWN, OnTab_DPadDown )
 
-		RegisterButtonPressedCallback( BUTTON_Y, OnTab_ButtonY ) // TODO: code should be passing the input index to the registered function
+		RegisterButtonPressedCallback( BUTTON_Y, OnTab_ButtonY ) //
 
 		uiGlobal.tabButtonsRegistered = true
 	}
@@ -858,8 +1019,8 @@ void function DeregisterTabNavigationInput()
 	{
 		DeregisterButtonPressedCallback( BUTTON_SHOULDER_LEFT, OnMenuTab_NavLeft )
 		DeregisterButtonPressedCallback( BUTTON_SHOULDER_RIGHT, OnMenuTab_NavRight )
-		//DeregisterButtonPressedCallback( BUTTON_TRIGGER_LEFT, OnNestedTab_NavLeft )
-		//DeregisterButtonPressedCallback( BUTTON_TRIGGER_RIGHT, OnNestedTab_NavRight )
+		//
+		//
 		DeregisterButtonPressedCallback( BUTTON_DPAD_UP, OnTab_DPadUp )
 		DeregisterButtonPressedCallback( BUTTON_DPAD_DOWN, OnTab_DPadDown )
 
@@ -886,6 +1047,7 @@ bool function IsTabBody( var panel )
 {
 	return panel in file.tabBodyDefMap
 }
+
 
 TabData function GetTabBodyParent( var panel )
 {

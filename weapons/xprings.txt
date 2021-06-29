@@ -1,0 +1,1392 @@
+WeaponSprings
+{
+// Possibly helpful math:
+//
+// If (4*springConstant > damping*damping)
+// then the spring will oscilate.
+// If <=, the spring will not oscilate but just decay exponentially.
+//
+// In the oscillating case, the frequency (cycles per second) is
+//
+//     f = sqrt(4*springConstant - damping*damping)/(4*PI)
+//
+// In that case, making a tweak that leaves (4*springConstant - damping*damping) unchanged
+// will keep the frequency constant but change how fast it decays.
+//
+// In the oscillating case, the amplitude decays with a half-life = 2*ln(2)/damping (in seconds).
+// This is approximately:
+//
+//     halflife = 1.386/damping
+//
+// Thus in the oscillating case, the decay is determined only by damping, and is unaffected by springConstant.
+// So it may be useful to adjust the decay first, and then adjust the springConstant to adjust the frequency.
+// Adjusting them in the other order may be trickier, because adjusting damping affects both frequency and decay.
+
+	sniper
+	{
+		"hipfire_pitch_springConstant"	"15.0"
+		"hipfire_pitch_damping"			"4.0"
+		"hipfire_yaw_springConstant"	"40.0"
+		"hipfire_yaw_damping"			"6.0"
+		"hipfire_roll_springConstant"	"15000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"25.0"
+		"ADS_pitch_damping"				"5.0"
+		"ADS_yaw_springConstant"		"28.0"
+		"ADS_yaw_damping"				"5.0"
+		"ADS_roll_springConstant"		"28000.0"
+		"ADS_roll_damping"				"10.0"
+	}
+
+	semisniper
+	{
+		"hipfire_pitch_springConstant"	"90.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"70.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"300.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"90.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"70.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"350.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+    g2
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"10.0"
+		"hipfire_yaw_springConstant"	"65.0"
+		"hipfire_yaw_damping"			"10.0"
+		"hipfire_roll_springConstant"	"300.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"160.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"70.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"350.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	g2_hot
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"10.0"
+		"hipfire_yaw_springConstant"	"65.0"
+		"hipfire_yaw_damping"			"10.0"
+		"hipfire_roll_springConstant"	"300.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"90.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"70.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"350.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	g2_vkp
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"40.0"
+		"hipfire_yaw_damping"			"6.0"
+		"hipfire_roll_springConstant"	"400.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"190.0"
+		"ADS_pitch_damping"				"25.0"
+		"ADS_yaw_springConstant"		"150.0"
+		"ADS_yaw_damping"				"20.0"
+		"ADS_roll_springConstant"		"30000.0"
+		"ADS_roll_damping"				"25.0"
+	}
+	g2_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"40.0"
+		"hipfire_pitch_damping"			"25.0"
+		"hipfire_yaw_springConstant"	"30.0"
+		"hipfire_yaw_damping"			"12.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"50.0"
+		"ADS_pitch_damping"				"65.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"90.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"25.0"
+	}
+
+    g2_viewmodel_jolt
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"1100.0"
+		"ADS_pitch_damping"				"30.0"
+		"ADS_yaw_springConstant"		"900.0"
+		"ADS_yaw_damping"				"30.0"
+		"ADS_roll_springConstant"		"450.0"
+		"ADS_roll_damping"				"25.0"
+	}
+	g2_scoped_viewmodel_jolt
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"1100.0"
+		"ADS_pitch_damping"				"30.0"
+		"ADS_yaw_springConstant"		"1200.0"
+		"ADS_yaw_damping"				"30.0"
+		"ADS_roll_springConstant"		"450.0"
+		"ADS_roll_damping"				"25.0"
+	}
+
+	dmr
+	{
+		"hipfire_pitch_springConstant"	"90.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"70.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"300.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"90.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"70.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"350.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	doubletake
+	{
+		"hipfire_pitch_springConstant"	"75.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"110.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"80.0"
+		"hipfire_roll_damping"			"10.0"
+
+		"ADS_pitch_springConstant"		"40.0"
+		"ADS_pitch_damping"				"12.0"
+		"ADS_yaw_springConstant"		"50.0"
+		"ADS_yaw_damping"				"10.0"
+		"ADS_roll_springConstant"		"180.0"
+		"ADS_roll_damping"				"10.0"
+	}
+
+	lstar
+	{
+		"hipfire_pitch_springConstant"	"60.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"95.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"250.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"75.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"20.0"
+		"ADS_roll_springConstant"		"220.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	lstar_hot
+	{
+		"hipfire_pitch_springConstant"	"60.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"95.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"250.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"75.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"220.0"
+		"ADS_roll_damping"				"18.0"
+	}
+	lstar_vkp
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"95.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"60.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"18.0"
+	}
+	lstar_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"0.0"
+		"hipfire_pitch_damping"			"35.0"
+		"hipfire_yaw_springConstant"	"0.0"
+		"hipfire_yaw_damping"			"35.0"
+		"hipfire_roll_springConstant"	"25000.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"45.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"50.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"18.0"
+	}
+
+	rspn101
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"115.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"240.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	rspn101_hot
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"70.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"70.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"105.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"260.0"
+		"ADS_roll_damping"				"22.0"
+	}
+
+	rspn101_vkp
+	{
+		"hipfire_pitch_springConstant"	"40.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"22.0"
+
+		"ADS_pitch_springConstant"		"115.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	rspn101_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"40.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"22.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"60.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"20.0"
+		"ADS_roll_springConstant"		"20000"
+		"ADS_roll_damping"				"20.0"
+	}
+
+	autofire_viewmodel_jolt
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"1100.0"
+		"ADS_pitch_damping"				"30.0"
+		"ADS_yaw_springConstant"		"900.0"
+		"ADS_yaw_damping"				"30.0"
+		"ADS_roll_springConstant"		"450.0"
+		"ADS_roll_damping"				"25.0"
+	}
+
+	vkp_zero
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"70.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"60.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"260.0"
+		"ADS_roll_damping"				"22.0"
+	}
+
+	constant_test
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"70.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"250.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"15.0"
+//		"ADS_roll_springConstant"		"260.0"
+//		"ADS_roll_damping"				"22.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"20.0"
+	}
+
+	flatline
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"50.0"
+		"ADS_pitch_damping"				"10.0"
+		"ADS_yaw_springConstant"		"60.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"350.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	flatline_loose
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"70.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"40.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"50.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"250.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	flatline_vkp
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"95.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"60.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"18.0"
+	}
+	flatline_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"0.0"
+		"hipfire_pitch_damping"			"35.0"
+		"hipfire_yaw_springConstant"	"0.0"
+		"hipfire_yaw_damping"			"35.0"
+		"hipfire_roll_springConstant"	"25000.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"45.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"50.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"18.0"
+	}
+
+	hemlok
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"40.0"
+		"hipfire_yaw_damping"			"6.0"
+		"hipfire_roll_springConstant"	"400.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"170.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"20.0"
+		"ADS_roll_springConstant"		"220.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	hemlok_hot
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"40.0"
+		"hipfire_yaw_damping"			"6.0"
+		"hipfire_roll_springConstant"	"350.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"190.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"75.0"
+		"ADS_yaw_damping"				"12.0"
+		"ADS_roll_springConstant"		"240.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	hemlok_vkp
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"40.0"
+		"hipfire_yaw_damping"			"6.0"
+		"hipfire_roll_springConstant"	"400.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"170.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"20.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"25.0"
+	}
+	hemlok_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"40.0"
+		"hipfire_pitch_damping"			"25.0"
+		"hipfire_yaw_springConstant"	"30.0"
+		"hipfire_yaw_damping"			"12.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"45.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"36.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"25.0"
+	}
+
+	smg
+	{
+		"hipfire_pitch_springConstant"	"55.0"
+		"hipfire_pitch_damping"			"8.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"7.0"
+		"hipfire_roll_springConstant"	"16000.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"85.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"85.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"16000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	r97
+	{
+		"hipfire_pitch_springConstant"	"60.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"60.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"400.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"50.0"
+		"ADS_pitch_damping"				"10.0"
+		"ADS_yaw_springConstant"		"85.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"400.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	r97_hot
+	{
+		"hipfire_pitch_springConstant"	"50.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"50.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"350.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"40.0"
+		"ADS_pitch_damping"				"10.0"
+		"ADS_yaw_springConstant"		"75.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"350.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	r97_vkp
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"22.0"
+
+		"ADS_pitch_springConstant"		"115.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	r97_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"40.0"
+		"hipfire_pitch_damping"			"60.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"60.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"22.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"120.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"120.0"
+		"ADS_roll_springConstant"		"20000"
+		"ADS_roll_damping"				"20.0"
+	}
+
+	alternator
+	{
+		"hipfire_pitch_springConstant"	"65"
+		"hipfire_pitch_damping"			"15"
+		"hipfire_yaw_springConstant"	"200"
+		"hipfire_yaw_damping"			"15"
+		"hipfire_roll_springConstant"	"250"
+		"hipfire_roll_damping"			"10"
+
+		"ADS_pitch_springConstant"		"60.0"
+		"ADS_pitch_damping"				"18.0"
+		"ADS_yaw_springConstant"		"120.0"
+		"ADS_yaw_damping"				"20.0"
+		"ADS_roll_springConstant"		"250.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	alternator_hot
+	{
+		"hipfire_pitch_springConstant"	"40"
+		"hipfire_pitch_damping"			"10"
+		"hipfire_yaw_springConstant"	"180"
+		"hipfire_yaw_damping"			"15"
+		"hipfire_roll_springConstant"	"250"
+		"hipfire_roll_damping"			"10"
+
+		"ADS_pitch_springConstant"		"60.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"90.0"
+		"ADS_yaw_damping"				"20.0"
+		"ADS_roll_springConstant"		"225.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	alternator_vkp
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"22.0"
+
+		"ADS_pitch_springConstant"		"115.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	alternator_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"30.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"22.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"30.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"30.0"
+		"ADS_roll_springConstant"		"20000"
+		"ADS_roll_damping"				"20.0"
+	}
+
+	car
+	{
+		"hipfire_pitch_springConstant"	"300"
+		"hipfire_pitch_damping"			"30"
+		"hipfire_yaw_springConstant"	"300"
+		"hipfire_yaw_damping"			"30"
+		"hipfire_roll_springConstant"	"700"
+		"hipfire_roll_damping"			"70"
+
+		"ADS_pitch_springConstant"		"85.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"85.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"16000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	pdw
+	{
+		"hipfire_pitch_springConstant"	"195"
+		"hipfire_pitch_damping"			"20"
+		"hipfire_yaw_springConstant"	"250"
+		"hipfire_yaw_damping"			"20"
+		"hipfire_roll_springConstant"	"250"
+		"hipfire_roll_damping"			"10"
+
+		"ADS_pitch_springConstant"		"75.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"250.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	pdw_hot
+	{
+		"hipfire_pitch_springConstant"	"195"
+		"hipfire_pitch_damping"			"20"
+		"hipfire_yaw_springConstant"	"250"
+		"hipfire_yaw_damping"			"20"
+		"hipfire_roll_springConstant"	"250"
+		"hipfire_roll_damping"			"10"
+
+		"ADS_pitch_springConstant"		"60.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"90.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"220.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	pdw_vkp
+	{
+		"hipfire_pitch_springConstant"	"160"
+		"hipfire_pitch_damping"			"20"
+		"hipfire_yaw_springConstant"	"250"
+		"hipfire_yaw_damping"			"20"
+		"hipfire_roll_springConstant"	"20000"
+		"hipfire_roll_damping"			"15"
+
+		"ADS_pitch_springConstant"		"140.0"
+		"ADS_pitch_damping"				"40.0"
+		"ADS_yaw_springConstant"		"140.0"
+		"ADS_yaw_damping"				"40.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"15"
+	}
+	pdw_burst_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"0"
+		"hipfire_pitch_damping"			"90"
+		"hipfire_yaw_springConstant"	"0"
+		"hipfire_yaw_damping"			"90"
+		"hipfire_roll_springConstant"	"20000"
+		"hipfire_roll_damping"			"15"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"90"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"90"
+		"ADS_roll_springConstant"		"22000"
+		"ADS_roll_damping"				"18"
+	}
+	pdw_auto_vkp_hot
+	{
+	    "hipfire_pitch_springConstant"	"0"
+		"hipfire_pitch_damping"			"100"
+		"hipfire_yaw_springConstant"	"0"
+		"hipfire_yaw_damping"			"100"
+		"hipfire_roll_springConstant"	"20000"
+		"hipfire_roll_damping"			"15"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"80"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"60"
+		"ADS_roll_springConstant"		"22000"
+		"ADS_roll_damping"				"18"
+	}
+	pdw_burst_viewmodel_jolt
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"1100.0"
+		"ADS_pitch_damping"				"30.0"
+		"ADS_yaw_springConstant"		"900.0"
+		"ADS_yaw_damping"				"30.0"
+		"ADS_roll_springConstant"		"1200.0"
+		"ADS_roll_damping"				"30.0"
+	}
+
+	energy_AR
+	{
+		"hipfire_pitch_springConstant"	"65"
+		"hipfire_pitch_damping"			"20"
+		"hipfire_yaw_springConstant"	"65"
+		"hipfire_yaw_damping"			"20"
+		"hipfire_roll_springConstant"	"200"
+		"hipfire_roll_damping"			"10"
+
+		"ADS_pitch_springConstant"		"105"
+		"ADS_pitch_damping"				"15"
+		"ADS_yaw_springConstant"		"90"
+		"ADS_yaw_damping"				"20"
+		"ADS_roll_springConstant"		"150"
+		"ADS_roll_damping"				"12"
+	}
+
+	energy_AR_hot
+	{
+		"hipfire_pitch_springConstant"	"65"
+		"hipfire_pitch_damping"			"20"
+		"hipfire_yaw_springConstant"	"65"
+		"hipfire_yaw_damping"			"20"
+		"hipfire_roll_springConstant"	"200"
+		"hipfire_roll_damping"			"10"
+
+		"ADS_pitch_springConstant"		"105"
+		"ADS_pitch_damping"				"20"
+		"ADS_yaw_springConstant"		"90"
+		"ADS_yaw_damping"				"20"
+		"ADS_roll_springConstant"		"200"
+		"ADS_roll_damping"				"18"
+	}
+
+	energy_AR_vkp
+	{
+		"hipfire_pitch_springConstant"	"65"
+		"hipfire_pitch_damping"			"20"
+		"hipfire_yaw_springConstant"	"65"
+		"hipfire_yaw_damping"			"20"
+		"hipfire_roll_springConstant"	"20000"
+		"hipfire_roll_damping"			"20"
+
+		"ADS_pitch_springConstant"		"105"
+		"ADS_pitch_damping"				"15"
+		"ADS_yaw_springConstant"		"90"
+		"ADS_yaw_damping"				"20"
+		"ADS_roll_springConstant"		"20000"
+		"ADS_roll_damping"				"20"
+	}
+	energy_AR_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"0.0"
+		"hipfire_pitch_damping"			"40"
+		"hipfire_yaw_springConstant"	"0.0"
+		"hipfire_yaw_damping"			"40"
+		"hipfire_roll_springConstant"	"20000"
+		"hipfire_roll_damping"			"20"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"40"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"40"
+		"ADS_roll_springConstant"		"20000"
+		"ADS_roll_damping"				"20"
+	}
+
+	lmg
+	{
+		"hipfire_pitch_springConstant"	"35.0"
+		"hipfire_pitch_damping"			"12.0"
+		"hipfire_yaw_springConstant"	"35.0"
+		"hipfire_yaw_damping"			"12.0"
+		"hipfire_roll_springConstant"	"220.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"85.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"65.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"220.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	lmg_hot
+	{
+		"hipfire_pitch_springConstant"	"55.0"
+		"hipfire_pitch_damping"			"18.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"18.0"
+		"hipfire_roll_springConstant"	"250.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"85.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"65.0"
+		"ADS_yaw_damping"				"14.0"
+		"ADS_roll_springConstant"		"220.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	lmg_vkp
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"95.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"60.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"18.0"
+	}
+	lmg_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"0.0"
+		"hipfire_pitch_damping"			"35.0"
+		"hipfire_yaw_springConstant"	"0.0"
+		"hipfire_yaw_damping"			"35.0"
+		"hipfire_roll_springConstant"	"25000.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"45.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"50.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"18.0"
+	}
+
+	esaw
+	{
+		"hipfire_pitch_springConstant"	"60.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"60.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"150.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"65.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"40.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"900.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	esaw_hot
+	{
+		"hipfire_pitch_springConstant"	"100.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"120.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"600.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"58.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"115.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"750.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	esaw_vkp
+	{
+		"hipfire_pitch_springConstant"	"65"
+		"hipfire_pitch_damping"			"20"
+		"hipfire_yaw_springConstant"	"65"
+		"hipfire_yaw_damping"			"20"
+		"hipfire_roll_springConstant"	"20000"
+		"hipfire_roll_damping"			"20"
+
+		"ADS_pitch_springConstant"		"105"
+		"ADS_pitch_damping"				"15"
+		"ADS_yaw_springConstant"		"90"
+		"ADS_yaw_damping"				"20"
+		"ADS_roll_springConstant"		"20000"
+		"ADS_roll_damping"				"20"
+	}
+	esaw_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"0.0"
+		"hipfire_pitch_damping"			"40"
+		"hipfire_yaw_springConstant"	"0.0"
+		"hipfire_yaw_damping"			"40"
+		"hipfire_roll_springConstant"	"20000"
+		"hipfire_roll_damping"			"20"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"40"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"40"
+		"ADS_roll_springConstant"		"20000"
+		"ADS_roll_damping"				"20"
+	}
+
+	shotgun
+	{
+		"hipfire_pitch_springConstant"	"350.0"
+		"hipfire_pitch_damping"			"22.0"
+		"hipfire_yaw_springConstant"	"350.0"
+		"hipfire_yaw_damping"			"18.0"
+		"hipfire_roll_springConstant"	"350.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"75.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"45.0"
+		"ADS_yaw_damping"				"10.0"
+		"ADS_roll_springConstant"		"350.0"
+		"ADS_roll_damping"				"22.0"
+	}
+
+	energy_shotgun
+	{
+		"hipfire_pitch_springConstant"	"45.0"
+		"hipfire_pitch_damping"			"12.0"
+		"hipfire_yaw_springConstant"	"45.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"300.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"45.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"45.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"300.0"
+		"ADS_roll_damping"				"20.0"
+	}
+
+	mastiff
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"100.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"150.0"
+		"ADS_yaw_damping"				"50.0"
+		"ADS_roll_springConstant"		"350.0"
+		"ADS_roll_damping"				"20.0"
+	}
+
+	pistol
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"60.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"15000.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"55.0"
+		"ADS_pitch_damping"				"10.0"
+		"ADS_yaw_springConstant"		"50.0"
+		"ADS_yaw_damping"				"10.0"
+		"ADS_roll_springConstant"		"100.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	pistol_hot
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"60.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"15000.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"45.0"
+		"ADS_pitch_damping"				"10.0"
+		"ADS_yaw_springConstant"		"45.0"
+		"ADS_yaw_damping"				"10.0"
+		"ADS_roll_springConstant"		"100.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	autopistol
+	{
+		"hipfire_pitch_springConstant"	"65.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"55.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"16000.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"90.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"105.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"150.0"
+		"ADS_roll_damping"				"15.0"
+	}
+	autopistol_hot
+	{
+		"hipfire_pitch_springConstant"	"65.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"55.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"16000.0"
+		"hipfire_roll_damping"			"20.0"
+
+		"ADS_pitch_springConstant"		"90.0"
+		"ADS_pitch_damping"				"10.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"10.0"
+		"ADS_roll_springConstant"		"150.0"
+		"ADS_roll_damping"				"10.0"
+	}
+	autopistol_vkp
+	{
+		"hipfire_pitch_springConstant"	"280.0"
+		"hipfire_pitch_damping"			"60.0"
+		"hipfire_yaw_springConstant"	"220.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"22000.0"
+		"hipfire_roll_damping"			"22.0"
+
+		"ADS_pitch_springConstant"		"380.0"
+		"ADS_pitch_damping"				"60.0"
+		"ADS_yaw_springConstant"		"350.0"
+		"ADS_yaw_damping"				"45.0"
+		"ADS_roll_springConstant"		"22000.0"
+		"ADS_roll_damping"				"20.0"
+	}
+	autopistol_vkp_hot
+	{
+		"hipfire_pitch_springConstant"	"60.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"60.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"22000.0"
+		"hipfire_roll_damping"			"22.0"
+
+		"ADS_pitch_springConstant"		"0.0"
+		"ADS_pitch_damping"				"80.0"
+		"ADS_yaw_springConstant"		"0.0"
+		"ADS_yaw_damping"				"80.0"
+		"ADS_roll_springConstant"		"22000"
+		"ADS_roll_damping"				"20.0"
+	}
+
+	wingman
+	{
+		"hipfire_pitch_springConstant"	"120.0"
+		"hipfire_pitch_damping"			"30.0"
+		"hipfire_yaw_springConstant"	"60.0"
+		"hipfire_yaw_damping"			"30.0"
+		"hipfire_roll_springConstant"	"150.0"
+		"hipfire_roll_damping"			"30.0"
+
+		"ADS_pitch_springConstant"		"100.0"
+		"ADS_pitch_damping"				"25.0"
+		"ADS_yaw_springConstant"		"55.0"
+		"ADS_yaw_damping"				"25.0"
+		"ADS_roll_springConstant"		"150.0"
+		"ADS_roll_damping"				"20.0"
+	}
+
+
+	launcher
+	{
+		"hipfire_pitch_springConstant"	"30.0"
+		"hipfire_pitch_damping"			"9.0"
+		"hipfire_yaw_springConstant"	"40.0"
+		"hipfire_yaw_damping"			"9.0"
+		"hipfire_roll_springConstant"	"6000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"65.0"
+		"ADS_pitch_damping"				"9.0"
+		"ADS_yaw_springConstant"		"65.0"
+		"ADS_yaw_damping"				"9.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	low_springconstant_launcher
+	{
+		"hipfire_pitch_springConstant"	"20.0"
+		"hipfire_pitch_damping"			"5.0"
+		"hipfire_yaw_springConstant"	"40.0"
+		"hipfire_yaw_damping"			"5.0"
+		"hipfire_roll_springConstant"	"10000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"45.0"
+		"ADS_pitch_damping"				"9.0"
+		"ADS_yaw_springConstant"		"45.0"
+		"ADS_yaw_damping"				"9.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+
+	titan_xo16
+	{
+		"hipfire_pitch_springConstant"	"55.0"
+		"hipfire_pitch_damping"			"8.0"
+		"hipfire_yaw_springConstant"	"80.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"20000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"55.0"
+		"ADS_pitch_damping"				"8.0"
+		"ADS_yaw_springConstant"		"45.0"
+		"ADS_yaw_damping"				"7.0"
+		"ADS_roll_springConstant"		"20000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+
+	titan_launcher
+	{
+		"hipfire_pitch_springConstant"	"65.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"20.0"
+		"hipfire_yaw_damping"			"20.0"
+		"hipfire_roll_springConstant"	"19000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"85.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"20.0"
+		"ADS_yaw_damping"				"20.0"
+		"ADS_roll_springConstant"		"19000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+
+	titan_40mm
+	{
+		"hipfire_pitch_springConstant"	"60"
+		"hipfire_pitch_damping"			"27.0"
+		"hipfire_yaw_springConstant"	"20.0"
+		"hipfire_yaw_damping"			"13.5"
+		"hipfire_roll_springConstant"	"19000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"50.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"40.0"
+		"ADS_yaw_damping"				"13.5"
+		"ADS_roll_springConstant"		"19000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	titan_leadwall
+	{
+		"hipfire_pitch_springConstant"	"300"
+		"hipfire_pitch_damping"			"30"
+		"hipfire_yaw_springConstant"	"300"
+		"hipfire_yaw_damping"			"30"
+		"hipfire_roll_springConstant"	"16000"
+		"hipfire_roll_damping"			"15"
+
+		"ADS_pitch_springConstant"		"300"
+		"ADS_pitch_damping"				"30"
+		"ADS_yaw_springConstant"		"300"
+		"ADS_yaw_damping"				"30"
+		"ADS_roll_springConstant"		"16000"
+		"ADS_roll_damping"				"15"
+	}
+
+	titan_arc
+	{
+		"hipfire_pitch_springConstant"	"60"
+		"hipfire_pitch_damping"			"27.0"
+		"hipfire_yaw_springConstant"	"20.0"
+		"hipfire_yaw_damping"			"13.5"
+		"hipfire_roll_springConstant"	"16000.0"
+		"hipfire_roll_damping"			"7.0"
+
+		"ADS_pitch_springConstant"		"50.0"
+		"ADS_pitch_damping"				"20.0"
+		"ADS_yaw_springConstant"		"40.0"
+		"ADS_yaw_damping"				"13.5"
+		"ADS_roll_springConstant"		"16000.0"
+		"ADS_roll_damping"				"7.0"
+	}
+
+
+	//titan_shotgun
+	//{
+	//	"hipfire_pitch_springConstant"	"65.0"
+	//	"hipfire_pitch_damping"			"20.0"
+	//	"hipfire_yaw_springConstant"	"30.0"
+	//	"hipfire_yaw_damping"			"20.0"
+	//	"hipfire_roll_springConstant"	"5000.0"
+	//	"hipfire_roll_damping"			"15.0"
+	//
+	//	"ADS_pitch_springConstant"		"65.0"
+	//	"ADS_pitch_damping"				"20.0"
+	//	"ADS_yaw_springConstant"		"30.0"
+	//	"ADS_yaw_damping"				"20.0"
+	//	"ADS_roll_springConstant"		"5000.0"
+	//	"ADS_roll_damping"				"15.0"
+	//}
+
+
+	titan_railgun
+	{
+		"hipfire_pitch_springConstant"	"35.0"
+		"hipfire_pitch_damping"			"9.0"
+		"hipfire_yaw_springConstant"	"30.0"
+		"hipfire_yaw_damping"			"9.0"
+		"hipfire_roll_springConstant"	"19000.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"35.0"
+		"ADS_pitch_damping"				"9.0"
+		"ADS_yaw_springConstant"		"30.0"
+		"ADS_yaw_damping"				"9.0"
+		"ADS_roll_springConstant"		"19000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	melee
+	{
+		"hipfire_pitch_springConstant"	"65.0"
+		"hipfire_pitch_damping"			"9.0"
+		"hipfire_yaw_springConstant"	"65.0"
+		"hipfire_yaw_damping"			"9.0"
+		"hipfire_roll_springConstant"		"5000.0"
+		"hipfire_roll_damping"				"15.0"
+
+		"ADS_pitch_springConstant"		"65.0"
+		"ADS_pitch_damping"				"9.0"
+		"ADS_yaw_springConstant"		"65.0"
+		"ADS_yaw_damping"				"9.0"
+		"ADS_roll_springConstant"		"5000.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	punch_pilot
+	{
+		"hipfire_pitch_springConstant"	"65.0"
+		"hipfire_pitch_damping"			"9.0"
+		"hipfire_yaw_springConstant"	"65.0"
+		"hipfire_yaw_damping"			"9.0"
+		"hipfire_roll_springConstant"	"65.0"
+		"hipfire_roll_damping"			"9.0"
+
+		"ADS_pitch_springConstant"		"65.0"
+		"ADS_pitch_damping"				"9.0"
+		"ADS_yaw_springConstant"		"65.0"
+		"ADS_yaw_damping"				"9.0"
+		"ADS_roll_springConstant"		"65.0"
+		"ADS_roll_damping"				"9.0"
+	}
+
+	punch_titan_stryder
+	{
+		"hipfire_pitch_springConstant"	"35.0"
+		"hipfire_pitch_damping"			"9.0"
+		"hipfire_yaw_springConstant"	"35.0"
+		"hipfire_yaw_damping"			"9.0"
+		"hipfire_roll_springConstant"	"35.0"
+		"hipfire_roll_damping"			"9.0"
+
+		"ADS_pitch_springConstant"		"35.0"
+		"ADS_pitch_damping"				"9.0"
+		"ADS_yaw_springConstant"		"35.0"
+		"ADS_yaw_damping"				"9.0"
+		"ADS_roll_springConstant"		"35.0"
+		"ADS_roll_damping"				"9.0"
+	}
+
+	punch_titan_atlas
+	{
+		"hipfire_pitch_springConstant"	"65.0"
+		"hipfire_pitch_damping"			"15.0"
+		"hipfire_yaw_springConstant"	"65.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"65.0"
+		"hipfire_roll_damping"			"15.0"
+
+		"ADS_pitch_springConstant"		"65.0"
+		"ADS_pitch_damping"				"15.0"
+		"ADS_yaw_springConstant"		"65.0"
+		"ADS_yaw_damping"				"15.0"
+		"ADS_roll_springConstant"		"65.0"
+		"ADS_roll_damping"				"15.0"
+	}
+
+	punch_titan_ogre
+	{
+		"hipfire_pitch_springConstant"	"95.0"
+		"hipfire_pitch_damping"			"30.0"
+		"hipfire_yaw_springConstant"	"95.0"
+		"hipfire_yaw_damping"			"30.0"
+		"hipfire_roll_springConstant"	"95.0"
+		"hipfire_roll_damping"			"30.0"
+
+		"ADS_pitch_springConstant"		"95.0"
+		"ADS_pitch_damping"				"30.0"
+		"ADS_yaw_springConstant"		"95.0"
+		"ADS_yaw_damping"				"30.0"
+		"ADS_roll_springConstant"		"95.0"
+		"ADS_roll_damping"				"30.0"
+	}
+
+	super_tight
+	{
+		"hipfire_pitch_springConstant"	"80.0"
+		"hipfire_pitch_damping"			"20.0"
+		"hipfire_yaw_springConstant"	"85.0"
+		"hipfire_yaw_damping"			"15.0"
+		"hipfire_roll_springConstant"	"500.0"
+		"hipfire_roll_damping"			"25.0"
+
+		"ADS_pitch_springConstant"		"5000.0"
+		"ADS_pitch_damping"				"30.0"
+		"ADS_yaw_springConstant"		"300.0"
+		"ADS_yaw_damping"				"25.0"
+		"ADS_roll_springConstant"		"300.0"
+		"ADS_roll_damping"				"20.0"
+	}
+}
+

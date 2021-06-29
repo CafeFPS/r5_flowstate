@@ -311,7 +311,10 @@ void function AddPlayerPressedForwardCallback( entity player, void functionref( 
 {
 	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedForwardCallbackStruct()
 	callbackStruct.debounceTime = debounceTime
-	//callbackStruct.callbackFunc = callbackFunc
+	callbackStruct.callbackFunc = bool function( entity player ) : (callbackFunc) {
+		callbackFunc( player )
+		return true
+	}
 
 	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
 }
@@ -320,7 +323,10 @@ void function RemovePlayerPressedForwardCallback( entity player, void functionre
 {
 	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedForwardCallbackStruct()
 	callbackStruct.debounceTime = debounceTime
-	//callbackStruct.callbackFunc = callbackFunc
+	callbackStruct.callbackFunc = bool function( entity player ) : (callbackFunc) {
+		callbackFunc( player )
+		return true
+	}
 
 	RemovePlayerInputAxisEventCallback_Internal( player, callbackStruct )
 }
@@ -340,20 +346,24 @@ void function AddPlayerPressedBackCallback( entity player, void functionref( ent
 {
 	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedBackCallbackStruct()
 	callbackStruct.debounceTime = debounceTime
-	//callbackStruct.callbackFunc = callbackFunc
+	callbackStruct.callbackFunc = bool function( entity player ) : (callbackFunc) {
+		callbackFunc( player )
+		return true
+	}
 
 	AddPlayerInputAxisEventCallback_Internal( player, callbackStruct )
-
 }
 
 void function RemovePlayerPressedBackCallback( entity player, void functionref( entity player ) callbackFunc, float debounceTime = 2.0 )
 {
 	PlayerInputAxisEventCallbackStruct callbackStruct = MakePressedBackCallbackStruct()
 	callbackStruct.debounceTime = debounceTime
-	//callbackStruct.callbackFunc = callbackFunc
-
+	callbackStruct.callbackFunc = bool function( entity player ) : (callbackFunc) {
+		callbackFunc( player )
+		return true
+	}
+	
 	RemovePlayerInputAxisEventCallback_Internal( player, callbackStruct )
-
 }
 
 PlayerInputAxisEventCallbackStruct function MakePressedLeftCallbackStruct()

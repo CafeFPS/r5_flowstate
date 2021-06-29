@@ -1,7 +1,7 @@
 /*
-TO DO:
-1. FadeElementChildren() - Should find a way to grab all children and fade them.
-2. Page Circle buttons do not update once the grid is initialized, need to be able to update
+
+
+
 */
 
 untyped
@@ -29,41 +29,41 @@ global enum eGridPanelFillDirection
 	RIGHT
 }
 
-/* SAMPLE SCRIPT USAGE:
+/*
 
-	GridPanelData
-	data
-	data.rows = 2
-	data.columns = 4
-	data.paddingVert = 1
-	data.paddingHorz = 50
-	data.tileWidth = 150
-	data.tileHeight = 70
-	data.numElements = 14
-	data.initCallback = GridPanel_DefaultInit
-	data.buttonFadeCallback = GridPanel_FadeDefaultElementChildren
-	data.pageType = eGridPageType.HORIZONTAL
-	GridMenuInit( menu, data )
+
+
+
+
+
+
+
+
+
+
+
+
+
 */
 
-//global function GridPanel_InitPage
-//global function GridPanel_GetGridDataForButton
-//global function GridPanel_GetRowFromElementNumber
-//global function GridPanel_GetColumnFromElementNumber
-//global function GridPanel_GetButtonAtRowColumn
-//global function GridPanel_GetButtonForElementNumber
-//global function GridPanel_GetMaxWidthForSettings
-//global function GridPanel_GetMaxHeightForSettings
-//global function GridPanel_AutoTileSettings
-//global function GridPanel_AutoAspectSettings
-//global function GridPanel_GetFirstPageButtonIndex
-//global function GridPanel_SetName
-//global function GridPanel_SetSubText
-//global function GridPanel_GetNumPages
-//global function GridPanel_GetElemNumForButton
 //
-//global function IsGridButton
-//global function OnGridButtonGetFocus
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 global function GridPanel_Refresh
 
@@ -82,14 +82,14 @@ struct GridPanelData
 {
 	var panel
 
-	// PRIVATE VARS
+	//
 	bool isEnabled = true
 	int  lastRowSelected = 0
 	int  lastColSelected = 0
 
 	bool staticSize = false
 
-	// PUBLIC VARS
+	//
 	int  rows = 2
 	int  columns = 2
 	int  paddingVert = 8
@@ -182,8 +182,8 @@ void function GridPanel_Init( var panel, int numRows, int numCols, void function
 			Hud_AddKeyPressHandler( gridButton, OnGridTileKeyPress )
 			Hud_SetCommandHandler( gridButton, OnGridTileCommandEvent )
 
-			//int elemNum = (row * column) + column
-			//Hud_SetKeyValue( gridButton, "elemNum", elemNum )
+			//
+			//
 			Hud_SetKeyValue( gridButton, "parentPanel", data.panel )
 
 			data.gridButtonElements.append( gridButton )
@@ -606,7 +606,7 @@ int function GridPanel_GetMaxHeightForSettings( var panel, GridPanelData data )
 	return tileHeight
 }
 
-// Automatically adjust horzizontal/vertical padding to accommodate specified tile size
+//
 void function GridPanel_InitStatic( var panel, int tileWidth, int tileHeight )
 {
 	GridPanelData gridData = GetDataForPanel( panel )
@@ -619,8 +619,8 @@ void function GridPanel_InitStatic( var panel, int tileWidth, int tileHeight )
 	int panelWidth  = GridPanel_GetPanelWidth( gridData.panel ) - ContentScaledXAsInt( gridData.panelLeftPadding + gridData.panelRightPadding )
 	int panelHeight = GridPanel_GetPanelHeight( gridData.panel ) - ContentScaledYAsInt( gridData.panelTopPadding + gridData.panelBottomPadding )
 
-	//Assert( tileWidth * gridData.columns <= panelWidth, "tileWidth " + tileWidth + " is too large for container panel with width " + panelWidth )
-	//Assert( tileHeight * gridData.rows <= panelHeight, "tileHeight " + tileHeight + " is too large for container panel with height " + panelHeight )
+	//
+	//
 
 	int columnPaddingCount = gridData.columns - 1
 	int rowPaddingCount = gridData.rows - 1
@@ -636,7 +636,7 @@ void function GridPanel_InitStatic( var panel, int tileWidth, int tileHeight )
 }
 
 
-// Automatically size tiles to panel width with a forced number of columns
+//
 void function InitTileSizes( GridPanelData gridData, float tileAspectRatio = 1.0 )
 {
 	int panelWidth  = GridPanel_GetPanelWidth( gridData.panel ) - ContentScaledXAsInt( gridData.panelLeftPadding + gridData.panelRightPadding )
@@ -696,7 +696,7 @@ void function GridPanel_AutoAspectSettings( var panel )
 
 int function GridPanel_GetRowFromButtonName( var button )
 {
-	// Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
+	//
 	string name     = Hud_GetHudName( button )
 	string rowByCol = name.slice( GRID_BTN_PREFIX.len(), name.len() )
 	int row         = int( split( rowByCol, GRID_BTN_DELIM )[0] )
@@ -706,7 +706,7 @@ int function GridPanel_GetRowFromButtonName( var button )
 
 int function GridPanel_GetColFromButtonName( var button )
 {
-	// Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
+	//
 	string name     = Hud_GetHudName( button )
 	string rowByCol = name.slice( GRID_BTN_PREFIX.len(), name.len() )
 	int col         = int( split( rowByCol, GRID_BTN_DELIM )[1] )

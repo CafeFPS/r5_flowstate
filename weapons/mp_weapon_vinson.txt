@@ -28,6 +28,8 @@ WeaponData
 	"viewmodel"   									"mdl/weapons/vinson/ptpov_vinson.rmdl"
 	"playermodel" 									"mdl/weapons/vinson/w_vinson.rmdl"
 
+	"chroma_color"									"1 .8 1"
+
     "projectile_launch_speed"						"24000"
 
 	//Sounds

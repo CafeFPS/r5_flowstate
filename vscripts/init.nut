@@ -8,7 +8,7 @@ global function printl
 global function Msg
 global function CodeCallback_Precompile
 
-global const bool R5DEV = true // enables R5DEV directives
+global const bool R5DEV = true // enables r5dev directives
 
 global struct EchoTestStruct
 {
@@ -298,6 +298,8 @@ global struct GRXUserInfo
 	array< int > balances
 
 	int marketplaceEdition
+
+	bool isOfferRestricted
 }
 
 global struct VortexBulletHit

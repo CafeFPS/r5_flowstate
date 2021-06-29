@@ -30,6 +30,8 @@ WeaponData
 	"viewmodel"   									"mdl/weapons/p2011/ptpov_p2011.rmdl"
 	"playermodel" 									"mdl/weapons/p2011/w_p2011.rmdl"
 
+	"chroma_color"									"1 .8 .6"
+
 	// Sounds
 	"fire_sound_1"									"weapon_re45auto_shell"
 	"fire_sound_2_player_1p"						"Weapon_P2011_Fire_1P"

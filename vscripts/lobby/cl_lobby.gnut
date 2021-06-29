@@ -1,5 +1,4 @@
-
-global function Lobby_AddLocalPlayer
+globalize_all_functions
 
 void function Lobby_AddLocalPlayer()
 {
@@ -8,7 +7,37 @@ void function Lobby_AddLocalPlayer()
 
 	player.FreezeControlsOnClient()
 	player.HideCrosshairNames()
+	vector origin = < 0, 40, 56.5 >
+	vector angles = < 1.5, 90, -9.18695e-17 >
+	entity camera = CreateClientSidePointCamera(origin, angles, 17)
+	player.SetMenuCameraEntity( camera )
 
 	SetStandardAbilityBindingsForPilot( player )
 	RefreshPresentationType()
+}
+
+void function UICallback_ChangeLobbyCameraPosition(int tabIndex)
+{
+	entity player = GetLocalClientPlayer()
+	Assert( IsValid( player ) )
+	vector origin = < 0, 0, 0 >
+	if(tabIndex != 1) {
+		origin = < 7168, 0, 56 >
+	} else {
+		origin = < 5120.02, 0, 56.3 >
+	}
+	
+	vector angles = < 0, 90, 0 >
+	entity camera = CreateClientSidePointCamera(origin, angles, 50)
+	player.SetMenuCameraEntity( camera )
+}
+
+void function UICallback_PlayTabLobbyCamera()
+{
+	entity player = GetLocalClientPlayer()
+	Assert( IsValid( player ) )
+	vector origin = < 0, 40, 56.5 >
+	vector angles = < 1.5, 90, -9.18695e-17 >
+	entity camera = CreateClientSidePointCamera(origin, angles, 17)
+	player.SetMenuCameraEntity( camera )
 }

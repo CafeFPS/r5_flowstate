@@ -1,0 +1,40 @@
+(not a full list)
+
+- [ ] Lifeline - Care Package doesn't work (only animations)
+- [ ] Bangalore - Bombardment Ultimate doesn't work
+- [ ] Gibraltar - Bombardment Ultimate doesn't work
+- [ ] Mirage - Tactical and Ultimate, player have to jump or decoys T-Posing, holo model wrong
+- [ ] Caustic - Tactical and Ultimate, no damage
+- [x] Bangalore Smoke - Crashes the game
+- [x] No "squad left" count
+- [ ] No hotzone
+- [x] No kill count
+- [ ] Dropship Doesn't work
+- [ ] Wrong legend icon
+- [ ] Almost all legend passives broken
+- [ ] Ammos can't be looted
+- [ ] No ground loot
+- [ ] Loot ship - No sounds, no booster fire effect, landing on same location every time
+- [ ] Legend select screen doesn't work
+- [ ] No teammate hud
+- [ ] Player can kill their own teammate
+- [x] Game crashes after someone respawn
+- [ ] Almost every loot legendary, but no attachments
+- [ ] Grenades can't be used from inventory
+- [ ] Knockdown shields crashes the game
+- [ ] Ping system doesn't work (only loots and inventory pings)
+- [ ] Loud double jump sound from multiplayer
+- [ ] Supply drops doesn't work
+- [ ] Ring finishes on unplayable locations
+- [ ] When the player picks up a gun, they equips a grenade
+- [ ] player must change their weapon or attachments will not be updated
+- [ ] player can melee in void
+- [ ] player can melee and shoot while skydiving
+- [ ] kunai effects missing
+- [ ] player can't equip anything from lobby, can't use skins, can't see battlepass
+- [ ] body shield and helmet - wrong shield color even if they blue/ purple or legendary
+- [ ] no deathbox, no player banner, players insta die, no knock system
+- [ ] archer HUD doesn't work
+- [ ] broken weapon icon for EPG, ARCHER, SIDEWINDER and DEFENDER
+- [ ] no phoenix kit/ syringe/ cell hud
+- [ ] melee does insta kill

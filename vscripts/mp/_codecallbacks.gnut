@@ -180,8 +180,6 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			// 	DamageInfo_SetDamage( damageInfo, 0 )
 			// 	return
 			// }
-
-			//TODOACTUAL: Commented bcs idk how to properly fix it yet
 		}
 
 		if ( inflictor.e.onlyDamageEntitiesOnce == true || inflictor.e.onlyDamageEntitiesOncePerTick == true )
@@ -647,13 +645,7 @@ vector function GetDamageOrigin( damageInfo, entity victim = null )
 
 	switch ( damageSourceId )
 	{
-		case eDamageSourceId.mp_weapon_satchel:
-		case eDamageSourceId.mp_weapon_proximity_mine:
-		case eDamageSourceId.mp_titanweapon_arc_pylon:
-			break
-
 		case damagedef_nuclear_core:
-		case eDamageSourceId.mp_titanability_smoke:
 			//if ( IsValid( victim ) && victim.IsPlayer() && IsValid( victim.GetTitanSoulBeingRodeoed() ) )
 			{
 				damageOrigin += (RandomVecInDome( Vector( 0, 0, -1 ) ) * 300.0)
@@ -790,7 +782,7 @@ function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker,
 	if ( player.IsTitan() )
 		Remote_CallFunction_Replay( player, "ServerCallback_TitanTookDamage", DamageInfo_GetDamage( damageInfo ), damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, eModSourceID, titanDamage.doomedNow, titanDamage.doomedDamage )
 	else
-		Remote_CallFunction_Replay( player, "ServerCallback_PilotTookDamage", DamageInfo_GetDamage( damageInfo ), damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, eModSourceID )
+		Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", DamageInfo_GetDamage( damageInfo ), damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, eModSourceID )
 }
 
 // This only handles damage events. Whizbys can still cause snipercam to trigger without passing through this check.

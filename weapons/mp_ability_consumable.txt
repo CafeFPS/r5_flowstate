@@ -231,6 +231,11 @@ WeaponData
             "raise_time"                            "*0.5"
             "holster_time"                          "*0.5"
         }
+
+        consumable_no_weapon_interrupt
+        {
+        	"offhand_interupts_weapon_anims"		"0"
+        }
  	}
 
 	// Ultimate Battery Screen RUI
@@ -252,20 +257,21 @@ WeaponData
 		    crosshairMovementY          crosshair_movement_y
 		}
 
-        Crosshair_1
-        {
-            "ui"						"ui/crosshair_consumable"
-            Args
-            {
-                healStartTime           weapon_script_time_0
-                consumableName          eWeaponVar.printname
-                isFiring				weapon_is_firing
-                chargeFrac              player_chargeFrac
-                chargeTime              eWeaponVar.charge_time
-                raiseTime               eWeaponVar.raise_time
-                hudIcon                 eWeaponVar.hud_icon
-                consumableType          weapon_script_int_0
-            }
-        }
+//		  Moved this to be a script based rui so that we can do BLUR within it. ui consumable_progress in gamemode_survival.rui
+//        Crosshair_1
+//        {
+//            "ui"						"ui/crosshair_consumable"
+//            Args
+//            {
+//                healStartTime           weapon_script_time_0
+//                consumableName          eWeaponVar.printname
+//                isFiring				weapon_is_firing
+//                chargeFrac              player_chargeFrac
+//                chargeTime              eWeaponVar.charge_time
+//                raiseTime               eWeaponVar.raise_time
+//                hudIcon                 eWeaponVar.hud_icon
+//                consumableType          weapon_script_int_0
+//            }
+//        }
 	}
 }

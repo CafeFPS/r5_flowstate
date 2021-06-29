@@ -36,7 +36,7 @@ global function SetItemFlavorLoadoutSlot
 global function SetIntegerLoadoutSlot
 #elseif CLIENT || UI
 global function RequestSetItemFlavorLoadoutSlot
-#if R5DEV
+#if true
 global function DEV_RequestSetItemFlavorLoadoutSlot
 #endif
 #endif
@@ -50,7 +50,7 @@ global function GetDefaultItemFlavorForLoadoutSlot
 global function GetAllLoadoutSlots
 global function IsLoadoutSlotActive
 
-#if R5DEV
+#if true
 global function DEV_GetValidItemFlavorsForLoadoutSlotForDev
 #endif
 
@@ -110,6 +110,7 @@ global struct LoadoutEntry
 {
 	int    _____INTERNAL_entryIndex = -1
 	string id = ""
+	string guid = ""
 	int    type = -1
 
 	int stryderCharDataArrayIndex = ePlayerStryderCharDataArraySlots.INVALID // for sh_social.gnut
@@ -135,7 +136,7 @@ global struct LoadoutEntry
 	table<ItemFlavor, int>                              _____INTERNAL_itemFlavorNetworkIndexMap = {}
 	table<SettingsAssetGUID, int>                       _____INTERNAL_itemFlavorGUIDNetworkIndexMap = {}
 	table<int, ItemFlavor>                              _____INTERNAL_networkIndexItemFlavorMap = {}
-	#if R5DEV
+	#if true
 		array<ItemFlavor>      _____INTERNAL_DEV_validItemFlavorsForDev = []
 	#endif
 
@@ -325,7 +326,7 @@ void function ShLoadouts_LevelInit_Finish()
 									found = entry
 								#endif
 								HandleLoadoutSlotNetworkVarChanged( playerEHI, entry, old, new, actuallyChanged )
-								#if !DEV
+								#if !R5DEV
 									break
 								#endif
 							}
@@ -451,7 +452,7 @@ void function ShLoadouts_LevelShutdown()
 //// Global functions ////
 //////////////////////////
 //////////////////////////
-LoadoutEntry function RegisterLoadoutSlot( int type, string id )
+LoadoutEntry function RegisterLoadoutSlot( int type, string id, string guidString = "" )
 {
 	Assert( !fileLevel.isInitialized, "Cannot call RegisterLoadoutSlot after initialization has finished." )
 	Assert( type == eLoadoutEntryType.ITEM_FLAVOR || type == eLoadoutEntryType.INTEGER )
@@ -464,6 +465,7 @@ LoadoutEntry function RegisterLoadoutSlot( int type, string id )
 	LoadoutEntry entry
 	entry._____INTERNAL_entryIndex = fileLevel.loadoutSlotEntries.len()
 	entry.id = id
+	entry.guid = guidString
 	entry.type = type
 	fileLevel.loadoutSlotEntries.append( entry )
 
@@ -479,6 +481,8 @@ bool function LoadoutSlot_IsReady( EHI playerEHI, LoadoutEntry entry )
 	//		return false
 	//#endif
 
+	// todo:
+	return true
 	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
 	return slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY
 }
@@ -736,7 +740,7 @@ void function RequestSetItemFlavorLoadoutSlot( EHI playerEHI, LoadoutEntry entry
 #endif
 
 
-#if (CLIENT || UI) && R5DEV
+#if CLIENT || UI
 void function DEV_RequestSetItemFlavorLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor )
 {
 	Assert( playerEHI == LocalClientEHI(), "Tried to use DEV_RequestSetLoadoutSlot on a different player" )
@@ -770,7 +774,7 @@ array<ItemFlavor> function GetValidItemFlavorsForLoadoutSlot( EHI playerEHI, Loa
 }
 
 
-#if R5DEV
+#if true
 array<ItemFlavor> function DEV_GetValidItemFlavorsForLoadoutSlotForDev( EHI playerEHI, LoadoutEntry entry )
 {
 	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
@@ -831,8 +835,9 @@ bool function IsItemFlavorUnlockedForLoadoutSlot( EHI playerEHI, LoadoutEntry en
 
 	#if R5DEV
 		//if ( GetConVarBool( "loadouts_force_check_grx" ) )
-		if ( GetConVarBool( "loadouts_ignore_grx" ) )
-			return true
+		return true
+		// if ( GetConVarBool( "loadouts_ignore_grx" ) )
+		// 	return true
 	#endif
 
 	if ( shouldIgnoreGRX )
@@ -970,12 +975,14 @@ void function ValidatePlayerLoadout( entity player, bool isInitialValidation )
 	bool forceReset    = false
 	bool resetToRandom = false
 	#if R5DEV
-		bool forceNew               = GetConVarBool( "loadouts_forceNew" )
-		bool devForceRandomLoadouts = GetCurrentPlaylistVarBool( "dev_force_random_loadouts", false )
-		bool forceRandomForBots     = GetConVarBool( "bot_loadout_randomize" )
+		// these convars aren't registered
 
-		resetToRandom = player.IsBot() || devForceRandomLoadouts
-		forceReset = forceNew || devForceRandomLoadouts || (player.IsBot() && forceRandomForBots)
+		// bool forceNew               = GetConVarBool( "loadouts_forceNew" )
+		// bool devForceRandomLoadouts = GetCurrentPlaylistVarBool( "dev_force_random_loadouts", false )
+		// bool forceRandomForBots     = GetConVarBool( "bot_loadout_randomize" )
+
+		// resetToRandom = player.IsBot() || devForceRandomLoadouts
+		// forceReset = forceNew || devForceRandomLoadouts || (player.IsBot() && forceRandomForBots)
 	#endif
 
 	ValidateAndFixAllLoadoutSlots( ToEHI( player ), isInitialValidation, doWarnings, forceReset, resetToRandom )
@@ -1111,13 +1118,24 @@ int function GetLoadoutSlotContentsIndexFromPersistence( EHI playerEHI, LoadoutE
 
 	#if SERVER || CLIENT
 		entity player         = FromEHI( playerEHI )
-		int slotContentsIndex = expect int(player.GetPersistentVar( "loadouts." + entry.id ))
+		int slotContentsIndex = 0
+		if(entry.guid == "") {
+			slotContentsIndex = expect int(player.GetPersistentVar( "loadouts." + entry.id ))
+		} else {
+			slotContentsIndex = expect int(player.GetPersistentVar( "character_loadouts[" + entry.guid + "]." + entry.id ))
+		}
+		//int slotContentsIndex = expect int(player.GetPersistentVar( "loadouts." + entry.id ))
 	#elseif UI
 		if ( !IsPersistenceAvailable() )
 			return SLOT_CONTENTS_SENTINEL_NOTREADY
 
 		Assert( playerEHI == LocalClientEHI() )
-		int slotContentsIndex = expect int(GetPersistentVar( "loadouts." + entry.id ))
+		int slotContentsIndex = 0
+		if(entry.guid == "") {
+			slotContentsIndex = expect int(GetPersistentVar( "loadouts." + entry.id ))
+		} else {
+			slotContentsIndex = expect int(GetPersistentVar( "character_loadouts[" + entry.guid + "]." + entry.id ))
+		}
 	#endif
 
 	if ( slotContentsIndex == PERSISTENT_DATA_INVALID_SENTINEL )
@@ -1195,7 +1213,11 @@ void function SetItemFlavorLoadoutSlotContentsInternal( EHI playerEHI, LoadoutEn
 	int itemFlavorPDefInt = ItemFlavor_GetGUID( itemFlavor )
 
 	entity player = FromEHI( playerEHI )
-	player.SetPersistentVar( "loadouts." + entry.id, itemFlavorPDefInt )
+	if(entry.guid == "") {
+		player.SetPersistentVar( "loadouts." + entry.id, itemFlavorPDefInt )
+	} else {
+		player.SetPersistentVar( "character_loadouts[" + entry.guid + "]." + entry.id, itemFlavorPDefInt )
+	}
 
 	//printf( "sh_loadouts.gnut debug (R5DEV-29743), SetItemFlavorLoadoutSlotContentsInternal, [%d], SetPersistentVar( \"%s\", \"%s\"{%d} )",
 	//	player.GetEncodedEHandle(), "loadouts." + entry.id, itemFlavorPDefStringRef, ItemFlavor_GetNetworkIndex( itemFlavor )
@@ -1222,7 +1244,12 @@ void function SetIntegerLoadoutSlotContentsInternal( EHI playerEHI, LoadoutEntry
 	int integerPDefInt = slotContentsIndex
 
 	entity player = FromEHI( playerEHI )
-	player.SetPersistentVar( "loadouts." + entry.id, integerPDefInt )
+	if(entry.guid == "") {
+		player.SetPersistentVar( "loadouts." + entry.id, integerPDefInt)
+	} else {
+		player.SetPersistentVar( "character_loadouts[" + entry.guid + "]." + entry.id, integerPDefInt)
+	}
+	//player.SetPersistentVar( "loadouts." + entry.id, integerPDefInt )
 
 	//printf( "sh_loadouts.gnut debug (R5DEV-29743), SetIntegerLoadoutSlotContentsInternal, [%d], SetPersistentVar( \"%s\", \"%s\"{%d} )",
 	//	player.GetEncodedEHandle(), "loadouts." + entry.id, itemFlavorPDefStringRef, ItemFlavor_GetNetworkIndex( itemFlavor )

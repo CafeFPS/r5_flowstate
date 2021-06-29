@@ -59,11 +59,11 @@ WeaponData
 	// Ammo
 	"cooldown_type"                                 "ammo_instant"
 	"ammo_display"									"count"
-	"ammo_clip_size"   								"200"
-	"ammo_default_total"							"200"
-	"ammo_min_to_fire"								"200"
-	"ammo_per_shot"									"200"
-	"ammo_stockpile_max"							"200"
+	"ammo_clip_size"   								"250"
+	"ammo_default_total"							"250"
+	"ammo_min_to_fire"								"250"
+	"ammo_per_shot"									"250"
+	"ammo_stockpile_max"							"250"
 	"ammo_drains_to_empty_on_fire"					"0"
 	"ammo_no_remove_from_clip"						"0"
 

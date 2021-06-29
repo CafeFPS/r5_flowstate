@@ -117,10 +117,10 @@ struct
 #if SERVER || CLIENT
 void function GamemodeSurvivalShared_Init()
 {
-
+	
 	printt("GamemodeSurvivalShared_Init")
 	RegisterSignal("GameStateChanged")
-
+	
 	#if SERVER || CLIENT
 		BleedoutShared_Init()
 		ShApexScreens_Init()
@@ -494,6 +494,9 @@ bool function Survival_CharacterSelectEnabled()
 #if SERVER || CLIENT
 bool function Sur_CanUseZipline( entity player, entity zipline, vector ziplineClosestPoint )
 {
+	if ( player.IsGrapplingZipline() )
+		return true
+
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return false
 

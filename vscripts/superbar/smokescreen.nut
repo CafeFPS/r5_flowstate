@@ -87,7 +87,6 @@ void function Smokescreen_Init()
 	PrecacheSprite( $"sprites/glow01.vmt" )
 
 #if SERVER
-	AddDamageCallbackSourceID( eDamageSourceId.mp_titanability_smoke, TitanElectricSmoke_DamagedPlayerOrNPC )
 	AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_electric_smoke, GrenadeElectricSmoke_DamagedPlayerOrNPC )
 #endif
 }

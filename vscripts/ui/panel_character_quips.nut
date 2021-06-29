@@ -23,18 +23,21 @@ void function InitCharacterQuipsPanel( var panel )
 	file.headerRui = Hud_GetRui( Hud_GetChild( panel, "Header" ) )
 
 	SetPanelTabTitle( panel, "#QUIPS" )
-	RuiSetString( file.headerRui, "title", Localize( "#QUIPS" ).toupper() )
+	RuiSetString( file.headerRui, "title", "" )
 	RuiSetString( file.headerRui, "collected", "" )
 
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, CharacterQuipsPanel_OnShow )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_HIDE, CharacterQuipsPanel_OnHide )
-	AddPanelEventHandler( panel, eUIEvent.PANEL_NAVUP, CharacterQuipsPanel_OnNavUp )
-	AddPanelEventHandler( panel, eUIEvent.PANEL_NAVDOWN, CharacterQuipsPanel_OnNavDown )
 
-	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_LEFT, false, "#TRIGGERS_CHANGE_LEGEND", "", CustomizeCharacterMenu_PrevButton_OnActivate )
-	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
-	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_LEFT, false, "", "", CustomizeCharacterMenu_PrevButton_OnActivate )
-	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
+	//
+	//
+	//
+	//
+
+	//
+	//
+	//
+	//
 
 	AddCallback_OnTopLevelCustomizeContextChanged( panel, CharacterQuipsPanel_OnCustomizeContextChanged )
 

@@ -7,6 +7,8 @@ global function UICallback_DestroyAllClientGladCardData
 global function UICallback_ToggleMute
 global function UICallback_ToggleMutePing
 global function UICallback_ToggleMuteChat
+global function UICallback_InviteSquadMate
+global function UICallback_ReportSquadMate
 
 global function ServerCallback_SURVIVAL_SetRankValuesForDisplay
 global function ServerCallback_AnnounceCircleClosing
@@ -20,6 +22,8 @@ global function ServerCallback_ShowWinningSquadSequence
 global function ServerCallback_AddWinningSquadData
 global function ServerCallback_PromptSayThanks
 global function ServerCallback_RefreshInventoryAndWeaponInfo
+
+global function AddCallback_OnUpdateShowButtonHints
 
 global function OnHealthPickupTypeChanged
 
@@ -68,6 +72,8 @@ global function GetSquadSummaryData
 global function SetVictorySequenceLocation
 global function ServerCallback_NessyMessage
 global function ShowChampionVictoryScreen
+
+global function CanReportPlayer
 
 #if R5DEV
 global function Dev_ShowVictorySequence
@@ -183,6 +189,7 @@ struct
 	vector fullmapAimPos = <0.5, 0.5, 0>
 	vector fullmapZoomPos = <0.5, 0.5, 0>
 	float  fullmapZoomFactor = 1.0
+	float  moveInputPrevTime = 0.0
 
 	table<string,string> toggleAttachments
 
@@ -200,6 +207,7 @@ struct
 	bool shouldShowButtonHintsLocal
 
 	var waitingForPlayersBlackScreenRui = null
+	float nextAllowToggleFireRateTime = 0.0
 } file
 
 void function ClGamemodeSurvival_Init()
@@ -207,6 +215,7 @@ void function ClGamemodeSurvival_Init()
 	Sh_ArenaDeathField_Init()
 	ClSurvivalCommentary_Init()
 	BleedoutClient_Init()
+	ClRevive_Init()
 	ClSurvivalShip_Init()
 	SurvivalFreefall_Init()
 	ClUnitFrames_Init()
@@ -752,7 +761,7 @@ void function OnHealthPickupTypeChanged( entity player, int oldKitType, int kitT
 		Consumable_OnSelectedConsumableTypeNetIntChanged( player, oldKitType, kitType, actuallyChanged )
 	}
 
-	if ( player != GetLocalViewPlayer() )
+	if ( !IsLocalViewPlayer( player ) )
 		return
 
 	UpdateDpadHud( player )
@@ -762,6 +771,9 @@ void function OnHealthPickupTypeChanged( entity player, int oldKitType, int kitT
 void function UpdateDpadHud( entity player  )
 {
 	if ( !IsValid( player ) || file.pilotRui == null || file.dpadMenuRui == null )
+		return
+
+	if ( !IsLocalViewPlayer( player ) )
 		return
 
 	PerfStart( PerfIndexClient.SUR_HudRefresh )
@@ -793,9 +805,28 @@ void function UpdateDpadHud( entity player  )
 	PerfEnd( PerfIndexClient.SUR_HudRefresh )
 
 	RuiSetInt( file.dpadMenuRui, "healthTypeCount", GetCountForLootType( eLootType.HEALTH ) )
+
+	entity ordnanceWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+	int ammo = 0
+	asset ordnanceIcon = $""
+
+	if ( IsValid( ordnanceWeapon ) )
+	{
+		ammo = ordnanceWeapon.GetWeaponPrimaryClipCount()
+		ordnanceIcon = ordnanceWeapon.GetWeaponSettingAsset( eWeaponVar.hud_icon )
+	}
+
+	RuiSetImage( file.dpadMenuRui, "ordnanceIcon", ordnanceIcon )
+	RuiSetInt( file.dpadMenuRui, "ordnanceCount", ammo )
 	RuiSetInt( file.dpadMenuRui, "ordnanceTypeCount", GetCountForLootType( eLootType.ORDNANCE ) )
 }
 
+array<void functionref( bool )> s_callbacks_OnUpdateShowButtonHints
+void function AddCallback_OnUpdateShowButtonHints( void functionref( bool ) func )
+{
+	Assert( !s_callbacks_OnUpdateShowButtonHints.contains( func ) )
+	s_callbacks_OnUpdateShowButtonHints.append( func )
+}
 
 bool s_didScorebarSetup = false
 void function GameModeScoreBarRules( var gamestateRui )
@@ -834,6 +865,10 @@ void function GameModeScoreBarRules( var gamestateRui )
 		ClWeaponStatus_UpdateShowButtonHint()
 		if ( file.dpadMenuRui != null )
 			RuiSetBool( file.dpadMenuRui, "showButtonHints", showButtonHints )
+
+		//just testing
+		foreach( func in s_callbacks_OnUpdateShowButtonHints )
+			func( showButtonHints )
 
 		file.shouldShowButtonHintsLocal = showButtonHints
 	}
@@ -1122,6 +1157,11 @@ void function OnPilotCockpitCreated( entity cockpit, entity player )
 
 void function ToggleFireSelect( entity player )
 {
+	if ( file.nextAllowToggleFireRateTime > Time() )
+		return
+
+	file.nextAllowToggleFireRateTime = Time() + 0.05
+
 	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
 	if ( !IsValid( weapon ) )
@@ -1862,6 +1902,8 @@ void function Survival_OnPlayerClassChanged( entity player )
 	if ( player != GetLocalViewPlayer() )
 		return
 
+	UpdateDpadHud( player )
+
 	if ( player.IsTitan() )
 	{
 		if ( file.playerState != "titan" )
@@ -2247,11 +2289,13 @@ bool function Survival_HandleKeyInput( int key )
 			break
 
 		case BUTTON_TRIGGER_RIGHT:
+		case BUTTON_TRIGGER_RIGHT_FULL:
 			ChangeFullMapZoomFactor( FULLMAP_ZOOM_SPEED_CONTROLLER )
 			swallowInput = true
 			break
 
 		case BUTTON_TRIGGER_LEFT:
+		case BUTTON_TRIGGER_LEFT_FULL:
 			ChangeFullMapZoomFactor( -FULLMAP_ZOOM_SPEED_CONTROLLER )
 			swallowInput = true
 			break
@@ -2385,8 +2429,14 @@ bool function Survival_HandleMoveInput( float x, float y )
 		s_inputDebounceIsActive = false
 	}
 
+	float deltaTime = Time() - file.moveInputPrevTime
+	file.moveInputPrevTime = Time()
+
+	if( deltaTime > 1.0 )
+		deltaTime = 0.01
+
 	vector smoothed = SmoothInput( <x, y, 0> )
-	file.fullmapAimPos += <smoothed.x, (-1.0 * smoothed.y), 0> * 0.01 / file.fullmapZoomFactor
+	file.fullmapAimPos += <smoothed.x, (-1.0 * smoothed.y), 0> * deltaTime / file.fullmapZoomFactor
 	file.fullmapAimPos = <clamp( file.fullmapAimPos.x, 0, 0.99999 ), clamp( file.fullmapAimPos.y, 0, 0.99999 ), 0>
 	file.fullmapZoomPos = file.fullmapAimPos
 	RuiSetFloat2( file.mapAimRui, "pos", file.fullmapAimPos )
@@ -2844,6 +2894,7 @@ void function PROTO_ContainersThink()
 
 void function TryCycleOrdnance( entity player )
 {
+	printt("TryCycleOrdnance")
 	if ( player == GetLocalClientPlayer() && player == GetLocalViewPlayer() )
 	{
 		entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
@@ -2886,7 +2937,9 @@ void function ReloadPressed( entity player )
 	if ( weapon.GetWeaponPrimaryClipCountMax() <= 0 || !weapon.GetWeaponSettingBool( eWeaponVar.uses_ammo_pool ) || player.AmmoPool_GetCount( weapon.GetWeaponAmmoPoolType() ) > 0 )
 		return
 
-	if ( player.IsInputCommandPressed( IN_USE ) && player.HasUsePrompt() )
+	bool isUsePressed = player.IsInputCommandPressed( IN_USE )
+	bool playerHasUsePrompt = player.HasUsePrompt()
+	if ( isUsePressed && playerHasUsePrompt )
 		return
 
 	NotifyReloadAttemptButNoReserveAmmo()
@@ -3031,6 +3084,8 @@ void function ShowChampionVictoryScreen( int winningTeam )
 	RuiSetBool( file.victoryRui, "onWinningTeam", GetLocalClientPlayer().GetTeam() == winningTeam )
 
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_InGame_ChampionVictory" )
+
+	Chroma_VictoryScreen()
 }
 
 void function ServerCallback_ShowSquadSummary()
@@ -3131,7 +3186,7 @@ void function SetSquadDataToLocalTeam()
 
 void function ShowVictorySequence( bool placementMode = false )
 {
-	#if !DEV
+	#if !R5DEV
 		placementMode = false
 	#endif
 
@@ -3509,6 +3564,7 @@ void function OnPlayerMatchStateChanged( entity player, int oldState, int newSta
 	}
 
 	UpdateIsSonyMP()
+	Chroma_UpdateBackground()
 }
 
 
@@ -3522,7 +3578,6 @@ void function UICallback_UpdateCharacterDetailsPanel( var ruiPanel )
 
 void function UICallback_OpenCharacterSelectNewMenu()
 {
-	if ( GetGameState() < eGameState.PickLoadout && !IsSurvivalTraining() )
 	{
 		OpenCharacterSelectNewMenu( true )
 	}
@@ -3577,7 +3632,55 @@ void function UICallback_DestroyClientGladCardData( var elem )
 }
 
 
-void function UICallback_PopulateClientGladCard( var elem, var muteButton, var mutePingButton, var muteChatButton, int teamMemberIndex, float startTime, int displayType )
+bool function CanInviteSquadMate( entity squadMate )
+{
+	if ( !GetCurrentPlaylistVarBool( "enable_squad_invite", false ) )
+		return false
+
+	if ( IsPartyMember( squadMate ) )
+		return false
+
+	if ( GetParty().numFreeSlots == 0 )
+		return false
+
+	return true
+}
+
+
+bool function CanReportPlayer( entity target )
+{
+	int reportStyle = GetCurrentPlaylistVarInt( "enable_report", 0 )
+
+	if ( !IsValid( target ) )
+		return false
+
+	if ( !target.IsPlayer() )
+		return false
+
+	#if(CONSOLE_PROG)
+	reportStyle = minint( reportStyle, 1 )
+	#endif
+
+	switch ( reportStyle )
+	{
+		case 0: //
+			return false
+
+		case 1: //
+			return target.GetHardware() == GetLocalClientPlayer().GetHardware()
+
+		case 2: //
+			break
+
+		default:
+			return false
+	}
+
+	return true
+}
+
+
+void function UICallback_PopulateClientGladCard( var elem, var muteButton, var mutePingButton, var muteChatButton, var reportButton, var inviteButton, int teamMemberIndex, float startTime, int displayType )
 {
 	entity player
 	player = GetLocalClientPlayer()
@@ -3617,6 +3720,8 @@ void function UICallback_PopulateClientGladCard( var elem, var muteButton, var m
 
 			printt( isVoiceMuted )
 			printt( isPingMuted )
+			Hud_SetVisible( inviteButton, CanInviteSquadMate( player ) )
+			Hud_SetVisible( reportButton, CanReportPlayer( player ) )
 
 			ToolTipData d1
 			d1.titleText = isVoiceMuted ? "#UNMUTE" : "#MUTE"
@@ -3635,12 +3740,26 @@ void function UICallback_PopulateClientGladCard( var elem, var muteButton, var m
 			d3.tooltipStyle = eTooltipStyle.DEFAULT
 			d3.descText = " "
 			Hud_SetToolTipData( muteChatButton, d3 )
+
+			ToolTipData d4
+			d4.titleText = "#INVITE_SQUAD_MATE"
+			d4.tooltipStyle = eTooltipStyle.DEFAULT
+			d4.descText = "#INVITE_SQUAD_MATE_DESC"
+			Hud_SetToolTipData( inviteButton, d4 )
+
+			ToolTipData d5
+			d5.titleText = "#REPORT_SQUAD_MATE"
+			d5.tooltipStyle = eTooltipStyle.DEFAULT
+			d5.descText = "#REPORT_SQUAD_MATE_DESC"
+			Hud_SetToolTipData( reportButton, d5 )
 		}
 		else
 		{
 			Hud_Hide( muteChatButton )
 			Hud_Hide( mutePingButton )
 			Hud_Hide( muteButton )
+			Hud_Hide( reportButton )
+			Hud_Hide( inviteButton )
 			//Hud_Hide( elem )
 			return
 		}
@@ -3761,6 +3880,46 @@ void function UICallback_ToggleMuteChat( var button )
 }
 
 
+void function UICallback_InviteSquadMate( var button )
+{
+	int index = int( Hud_GetScriptID( button ) )
+	entity player
+	player = GetLocalClientPlayer()
+	int team = player.GetTeam()
+	array<entity> teamMembers = GetPlayerArrayOfTeam( team )
+	teamMembers.fastremovebyvalue( player )
+
+	index = index-1
+
+	if ( index < teamMembers.len() )
+	{
+		player = teamMembers[ index ]
+	}
+}
+
+void function UICallback_ReportSquadMate( var button )
+{
+	int index = int( Hud_GetScriptID( button ) )
+	entity player
+	player = GetLocalClientPlayer()
+	int team = player.GetTeam()
+	array<entity> teamMembers = GetPlayerArrayOfTeam( team )
+	teamMembers.fastremovebyvalue( player )
+
+	index = index-1
+
+	if ( index < teamMembers.len() )
+	{
+		player = teamMembers[ index ]
+
+		entity reportTarget = player
+		string friendlyOrEnemy = "friendly"
+
+		RunUIScript( "ClientToUI_ShowReportPlayerDialog", reportTarget.GetPlayerName(), reportTarget.GetHardware(), reportTarget.GetPlatformUID(), friendlyOrEnemy )
+	}
+}
+
+
 void function OnPlayerKilled( entity player )
 {
 	entity viewPlayer = GetLocalViewPlayer()
@@ -3813,4 +3972,5 @@ void function ServerCallback_RefreshInventoryAndWeaponInfo()
 {
 	ServerCallback_RefreshInventory()
 	ClWeaponStatus_RefreshWeaponInfo()
+
 }

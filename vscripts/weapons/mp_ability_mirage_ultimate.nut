@@ -21,6 +21,10 @@ var function OnWeaponPrimaryAttack_mirage_ultimate( entity weapon, WeaponPrimary
 	float fireDuration = weapon.GetWeaponSettingFloat( eWeaponVar.fire_duration )
 	thread HolsterAndDisableWeaponsMirageUltimate( weapon.GetWeaponOwner(), fireDuration )
 	#endif
+
+	int ammoMax = weapon.GetWeaponPrimaryClipCountMax()
+	weapon.SetWeaponPrimaryClipCount( ammoMax )
+	
 	return ammoToReturn
 }
 

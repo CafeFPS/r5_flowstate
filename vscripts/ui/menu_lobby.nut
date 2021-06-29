@@ -12,9 +12,11 @@ struct
 	var newsButton
 	var socialButton
 	var gameMenuButton
+	var datacenterButton
 } file
 
-void function InitLobbyMenu()
+void function InitLobbyMenu( var newMenuArg )
+//
 {
 	var menu = GetMenu( "LobbyMenu" )
 	file.menu = menu
@@ -29,16 +31,19 @@ void function InitLobbyMenu()
 	AddMenuEventHandler( menu, eUIEvent.MENU_SHOW, OnLobbyMenu_Show )
 	AddMenuEventHandler( menu, eUIEvent.MENU_HIDE, OnLobbyMenu_Hide )
 
+	AddMenuEventHandler( menu, eUIEvent.MENU_GET_TOP_LEVEL, OnLobbyMenu_GetTopLevel )
+	//
+
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnLobbyMenu_NavigateBack )
 
 	AddMenuVarChangeHandler( "isFullyConnected", UpdateFooterOptions )
 	AddMenuVarChangeHandler( "isPartyLeader", UpdateFooterOptions )
-	#if DURANGO_PROG
+	#if(DURANGO_PROG)
 		AddMenuVarChangeHandler( "DURANGO_canInviteFriends", UpdateFooterOptions )
 		AddMenuVarChangeHandler( "DURANGO_isJoinable", UpdateFooterOptions )
-	#elseif PS4_PROG
+	#elseif(PS4_PROG)
 		AddMenuVarChangeHandler( "PS4_canInviteFriends", UpdateFooterOptions )
-	#elseif PC_PROG
+	#elseif(PC_PROG)
 		AddMenuVarChangeHandler( "ORIGIN_isEnabled", UpdateFooterOptions )
 		AddMenuVarChangeHandler( "ORIGIN_isJoinable", UpdateFooterOptions )
 	#endif
@@ -78,12 +83,20 @@ void function InitLobbyMenu()
 	HudElem_SetRuiArg( gameMenuButton, "icon", $"rui/menu/lobby/settings_icon" )
 	HudElem_SetRuiArg( gameMenuButton, "shortcutText", "%[START|ESCAPE]%" )
 	Hud_AddEventHandler( gameMenuButton, UIE_CLICK, GameMenuButton_OnActivate )
+
+	var datacenterButton = Hud_GetChild( menu, "DatacenterButton" )
+	file.datacenterButton = datacenterButton
+	ToolTipData datacenterTooltip
+	datacenterTooltip.descText = "#LOWPOP_DATACENTER_BUTTON"
+	Hud_SetToolTipData( datacenterButton, datacenterTooltip )
+	HudElem_SetRuiArg( datacenterButton, "icon", $"rui/hud/gamestate/net_latency" )
+	Hud_AddEventHandler( datacenterButton, UIE_CLICK, OpenLowPopDialogFromButton )
 }
 
 
 void function OnLobbyMenu_Open()
 {
-	//ClientCommand( "gameCursor_ModeActive 1" )
+	//
 
 	if ( !file.tabsInitialized )
 	{
@@ -102,7 +115,7 @@ void function OnLobbyMenu_Open()
 	else
 	{
 		TabData tabData = GetTabDataForPanel( file.menu )
-		ActivateTab( tabData, tabData.tabIndex )
+		ActivateTab( tabData, tabData.activeTabIdx )
 	}
 
 	UpdateNewnessCallbacks()
@@ -110,6 +123,12 @@ void function OnLobbyMenu_Open()
 	thread UpdateLobbyUI()
 
 	Lobby_UpdatePlayPanelPlaylists()
+
+	#if(false)
+//
+
+
+#endif
 
 	AddCallbackAndCallNow_OnGRXOffersRefreshed( OnGRXStateChanged )
 	AddCallbackAndCallNow_OnGRXInventoryStateChanged( OnGRXStateChanged )
@@ -120,8 +139,15 @@ void function OnLobbyMenu_Show()
 {
 	thread LobbyMenuUpdate()
 	RegisterInputs()
+
+	Chroma_Lobby()
 }
 
+
+void function OnLobbyMenu_GetTopLevel()
+{
+	thread TryRunDialogFlowThread()
+}
 
 
 void function OnLobbyMenu_Hide()
@@ -145,23 +171,21 @@ void function OnGRXStateChanged()
 {
 	bool ready = GRX_IsInventoryReady() && GRX_AreOffersReady()
 
+	string bpPanel = "PassPanelV2"
+
 	array<var> panels = [
 		GetPanel( "CharactersPanel" ),
 		GetPanel( "ArmoryPanel" ),
-		//GetPanel( "PassPanel" ),
+		GetPanel( bpPanel ),
 		GetPanel( "StorePanel" ),
-		GetPanel( "LootPanel" ),
-		GetPanel( "ECPanel" ),
-		GetPanel( "CharacterPanel" ),
-		GetPanel( "VCPanel" ),
 	]
 
 	foreach ( var panel in panels )
 	{
-		if ( !Hud_IsVisible( panel ) )
-		{
+		if ( panel == GetPanel( bpPanel ) )
+			SetPanelTabEnabled( panel, ready && ShouldBattlePassTabBeEnabled() )
+		else
 			SetPanelTabEnabled( panel, ready )
-		}
 	}
 
 	if ( ready )
@@ -178,6 +202,7 @@ void function UpdateNewnessCallbacks()
 
 	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.GladiatorTab, OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharactersPanel" ) )
 	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.ArmoryTab, OnNewnessQueryChangedUpdatePanelTab, GetPanel( "ArmoryPanel" ) )
+	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.StoreTab, OnNewnessQueryChangedUpdatePanelTab, GetPanel( "StorePanel" ) )
 	file.newnessInitialized = true
 }
 
@@ -189,6 +214,7 @@ void function ClearNewnessCallbacks()
 
 	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.GladiatorTab, OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharactersPanel" ) )
 	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.ArmoryTab, OnNewnessQueryChangedUpdatePanelTab, GetPanel( "ArmoryPanel" ) )
+	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.StoreTab, OnNewnessQueryChangedUpdatePanelTab, GetPanel( "StorePanel" ) )
 	file.newnessInitialized = false
 }
 
@@ -225,17 +251,21 @@ void function LobbyMenuUpdate()
 
 void function UpdateCornerButtons()
 {
-	bool isPlayPanelActive = IsTabPanelActive( GetPanel( "PlayPanel" ) )
-	var postGameButton = Hud_GetChild( file.menu, "PostGameButton" )
-	Hud_SetVisible( postGameButton, isPlayPanelActive && IsPostGameMenuValid() )
+	var playPanel = GetPanel( "PlayPanel" )
+	bool isPlayPanelActive  = IsTabPanelActive( playPanel )
+	var postGameButton      = Hud_GetChild( file.menu, "PostGameButton" )
+	bool showPostGameButton = isPlayPanelActive && IsPostGameMenuValid()
+	Hud_SetVisible( postGameButton, showPostGameButton )
+	if ( showPostGameButton )
+		Hud_SetX( postGameButton, Hud_GetBaseX( postGameButton ) )
+	else
+		Hud_SetX( postGameButton, Hud_GetBaseX( postGameButton ) - Hud_GetWidth( postGameButton ) - Hud_GetBaseX( postGameButton ) )
 
-	var newsButton = Hud_GetChild( file.menu, "NewsButton" )
-	Hud_SetVisible( newsButton, isPlayPanelActive )
+	Hud_SetVisible( file.newsButton, isPlayPanelActive )
+	Hud_SetVisible( file.socialButton, isPlayPanelActive )
+	Hud_SetVisible( file.gameMenuButton, isPlayPanelActive )
 
-	var socialButton = Hud_GetChild( file.menu, "SocialButton" )
-	Hud_SetVisible( socialButton, isPlayPanelActive )
-
-	var accessibilityHint = Hud_GetChild( file.menu, "AccessibilityHint" )
+	var accessibilityHint = Hud_GetChild( playPanel, "AccessibilityHint" )
 	Hud_SetVisible( accessibilityHint, isPlayPanelActive && IsAccessibilityChatHintEnabled() )
 
 	Hud_SetEnabled( file.gameMenuButton, !IsDialog( GetActiveMenu() ) )
@@ -243,23 +273,37 @@ void function UpdateCornerButtons()
 	int count = GetOnlineFriendCount( false )
 	if ( count > 0 )
 	{
-		HudElem_SetRuiArg( socialButton, "buttonText", "" + count )
-		Hud_SetWidth( socialButton, Hud_GetBaseWidth( socialButton ) * 2 )
-		InitButtonRCP( socialButton )
+		HudElem_SetRuiArg( file.socialButton, "buttonText", "" + count )
+		Hud_SetWidth( file.socialButton, Hud_GetBaseWidth( file.socialButton ) * 2 )
+		InitButtonRCP( file.socialButton )
 	}
 	else
 	{
-		HudElem_SetRuiArg( socialButton, "buttonText", "" )
-		Hud_ReturnToBaseSize( socialButton )
-		InitButtonRCP( socialButton )
+		HudElem_SetRuiArg( file.socialButton, "buttonText", "" )
+		Hud_ReturnToBaseSize( file.socialButton )
+		InitButtonRCP( file.socialButton )
+	}
+
+	{
+		bool datacenterButtonVisible = false
+		if ( Lobby_GetSelectedPlaylist() != "" && IsFullyConnected() )
+		{
+			bool lowPop = IsLowPopPlaylist( Lobby_GetSelectedPlaylist() )
+			bool sameDC = GetCurrentMatchmakingDatacenterETA( Lobby_GetSelectedPlaylist() ).datacenterIdx == GetCurrentRankedMatchmakingDatacenterETA( Lobby_GetSelectedPlaylist() ).datacenterIdx
+			datacenterButtonVisible = isPlayPanelActive && lowPop && !sameDC && !AreWeMatchmaking()
+		}
+
+		Hud_SetVisible( file.datacenterButton, datacenterButtonVisible )
 	}
 }
+
 
 void function UpdateTabs()
 {
 	if ( IsFullyConnected() )
 	{
-	} // todo(dw)
+		//
+	} //
 }
 
 
@@ -313,7 +357,7 @@ void function SocialButton_OnActivate( var button )
 	if ( !IsTabPanelActive( GetPanel( "PlayPanel" ) ) )
 		return
 
-	#if PC_PROG
+	#if(PC_PROG)
 		if ( !MeetsAgeRequirements() )
 		{
 			ConfirmDialogData dialogData
@@ -332,7 +376,7 @@ void function SocialButton_OnActivate( var button )
 
 void function GameMenuButton_OnActivate( var button )
 {
-	if ( InputIsButtonDown( BUTTON_STICK_LEFT ) ) // Avoid bug report shortcut
+	if ( InputIsButtonDown( BUTTON_STICK_LEFT ) ) //
 		return
 
 	if ( IsDialog( GetActiveMenu() ) )
@@ -368,56 +412,86 @@ void function OnLobbyMenu_NavigateBack()
 	}
 }
 
+
 void function OnLobbyMenu_PostGameOrChat( var button )
 {
 	var savedMenu = GetActiveMenu()
 
-	#if CONSOLE_PROG
-	const float HOLD_FOR_CHAT_DELAY = 1.0
-	float startTime = Time()
-	while ( InputIsButtonDown( BUTTON_BACK ) || InputIsButtonDown( KEY_TAB ) && GetConVarInt( "hud_setting_accessibleChat" ) != 0 )
-	{
-		if ( Time() - startTime > HOLD_FOR_CHAT_DELAY )
+	#if(CONSOLE_PROG)
+		const float HOLD_FOR_CHAT_DELAY = 1.0
+		float startTime = Time()
+		while ( InputIsButtonDown( BUTTON_BACK ) || InputIsButtonDown( KEY_TAB ) && GetConVarInt( "hud_setting_accessibleChat" ) != 0 )
 		{
-			if ( GetPartySize() > 1 )
+			if ( Time() - startTime > HOLD_FOR_CHAT_DELAY )
 			{
-				printt( "starting message mode", Hud_IsEnabled( GetLobbyChatBox() ) )
-				Hud_StartMessageMode( GetLobbyChatBox() )
-			}
-			else
-			{
-				ConfirmDialogData dialogData
-				dialogData.headerText = "#ACCESSIBILITY_NO_CHAT_HEADER"
-				dialogData.messageText = "#ACCESSIBILITY_NO_CHAT_MESSAGE"
-				dialogData.contextImage = $"ui/menu/common/dialog_notice"
+				if ( GetPartySize() > 1 )
+				{
+					printt( "starting message mode", Hud_IsEnabled( GetLobbyChatBox() ) )
+					Hud_StartMessageMode( GetLobbyChatBox() )
+				}
+				else
+				{
+					ConfirmDialogData dialogData
+					dialogData.headerText = "#ACCESSIBILITY_NO_CHAT_HEADER"
+					dialogData.messageText = "#ACCESSIBILITY_NO_CHAT_MESSAGE"
+					dialogData.contextImage = $"ui/menu/common/dialog_notice"
 
-				OpenOKDialogFromData( dialogData )
+					OpenOKDialogFromData( dialogData )
+				}
+				return
 			}
-			return
+
+			WaitFrame()
 		}
-
-		WaitFrame()
-	}
 	#endif
 
 	if ( IsPostGameMenuValid() && savedMenu == GetActiveMenu() )
-		OpenPostGameMenu( button )
+	{
+#if(false)
+
+
+
+
+
+#endif //
+		{
+			thread PostGameFlow()
+		}
+	}
 }
+
+
+void function PostGameFlow()
+{
+	bool showRankedSummary = GetPersistentVarAsInt( "showRankedSummary" ) != 0
+	bool isFirstTime       = GetPersistentVarAsInt( "showGameSummary" ) != 0
+
+	OpenPostGameMenu( null )
+
+	if ( GetActiveBattlePass() != null )
+	{
+		OpenPostGameBattlePassMenu( isFirstTime )
+	}
+
+	if ( showRankedSummary )
+		OpenRankedSummary( isFirstTime )
+}
+
 
 void function OnLobbyMenu_FocusChat( var panel )
 {
-#if PC_PROG
-	if ( IsDialog( GetActiveMenu() ) )
-		return
+	#if(PC_PROG)
+		if ( IsDialog( GetActiveMenu() ) )
+			return
 
-	if ( !IsTabPanelActive( GetPanel( "PlayPanel" ) ) )
-		return
+		if ( !IsTabPanelActive( GetPanel( "PlayPanel" ) ) )
+			return
 
-	if ( GetPartySize() > 1 )
-	{
-		var playPanel = Hud_GetChild( file.menu, "PlayPanel" )
-		var textChat = Hud_GetChild( playPanel, "ChatRoomTextChat" )
-		Hud_SetFocused( Hud_GetChild( textChat, "ChatInputLine" ) )
-	}
-#endif
+		if ( GetPartySize() > 1 )
+		{
+			var playPanel = Hud_GetChild( file.menu, "PlayPanel" )
+			var textChat  = Hud_GetChild( playPanel, "ChatRoomTextChat" )
+			Hud_SetFocused( Hud_GetChild( textChat, "ChatInputLine" ) )
+		}
+	#endif
 }

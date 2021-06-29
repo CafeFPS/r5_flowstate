@@ -4,6 +4,7 @@ global function InitFooterOptions
 global function AddMenuFooterOption
 global function AddPanelFooterOption
 global function UpdateFooterOptions
+global function UpdateFooterLabels
 global function SetFooterText
 global function ClearMenuFooterOptions
 
@@ -20,40 +21,40 @@ void function InitFooterOptions()
 		foreach ( elem in sizerElems )
 			Hud_EnableKeyBindingIcons( elem )
 
-		#if PC_PROG
+		#if(PC_PROG)
 			array<var> buttonElems = GetElementsByClassname( menu, "LeftRuiFooterButtonClass" )
 			buttonElems.extend( GetElementsByClassname( menu, "RightRuiFooterButtonClass" ) )
 			foreach ( elem in buttonElems )
 				Hud_AddEventHandler( elem, UIE_CLICK, OnFooterOption_Activate )
-		#endif // PC_PROG
+		#endif //
 	}
 
 	thread UpdateFooterSizes()
 }
 
-void function AddMenuFooterOption( var menu, int alignment, int input, bool clickable, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )
+InputDef function AddMenuFooterOption( var menu, int alignment, int input, bool clickable, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )
 {
-	//if ( input == BUTTON_A )
-	//	Assert( activateFunc == null || mouseLabel != "", "Footer input BUTTON_A has a non-null activateFunc! It should always be null to avoid conflicting with code button event handlers." )
+	//
+	//
 
 	if ( input == BUTTON_B )
 	{
 		if ( activateFunc == null )
 		{
-			//printt( "----------activateFunc is null----------" )
+			//
 			activateFunc = PCBackButton_Activate
-			//printt( "----------activateFunc is now----------", string(activateFunc) )
+			//
 		}
 
-		//Assert( activateFunc == PCBackButton_Activate, "Footer input BUTTON_B can only use PCBackButton_Activate() for activateFunc!" )
+		//
 	}
 
 	array<InputDef> footerData = uiGlobal.menuData[ menu ].footerData
 
 	foreach ( entry in footerData )
 	{
-		// For mouse we need to execute a func even if just to call UICodeCallback_NavigateBack
-		// Code automatically calls this in every other case
+		//
+		//
 
 		if ( entry.input == input )
 			Assert( entry.conditionCheckFunc != null, "Duplicate footer input found with no conditional! Duplicates require a conditional." )
@@ -70,25 +71,28 @@ void function AddMenuFooterOption( var menu, int alignment, int input, bool clic
 	data.updateFunc = updateFunc
 
 	footerData.append( data )
+
+	return data
 }
+
 
 void function ClearMenuFooterOptions( var menu )
 {
 	uiGlobal.menuData[ menu ].footerData.clear()
 }
 
-void function AddPanelFooterOption( var panel, int alignment, int input, bool clickable, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )
+InputDef function AddPanelFooterOption( var panel, int alignment, int input, bool clickable, string gamepadLabel, string mouseLabel = "", void functionref( var ) activateFunc = null, bool functionref() conditionCheckFunc = null, void functionref( InputDef ) updateFunc = null )
 {
-	//if ( input == BUTTON_A )
-	//	Assert( activateFunc == null || mouseLabel != "", "Footer input BUTTON_A has a non-null activateFunc! It should always be null to avoid conflicting with code button event handlers." )
+	//
+	//
 
 	if ( input == BUTTON_B )
 	{
 		if ( activateFunc == null )
 		{
-			//printt( "----------activateFunc is null----------" )
+			//
 			activateFunc = PCBackButton_Activate
-			//printt( "----------activateFunc is now----------", string(activateFunc) )
+			//
 		}
 
 		Assert( activateFunc == PCBackButton_Activate, "Footer input BUTTON_B can only use PCBackButton_Activate() for activateFunc!" )
@@ -98,8 +102,8 @@ void function AddPanelFooterOption( var panel, int alignment, int input, bool cl
 
 	foreach ( entry in footerData )
 	{
-		// For mouse we need to execute a func even if just to call UICodeCallback_NavigateBack
-		// Code automatically calls this in every other case
+		//
+		//
 
 		if ( entry.input == input )
 			Assert( entry.conditionCheckFunc != null, "Duplicate footer input found with no conditional! Duplicates require a conditional." )
@@ -116,6 +120,8 @@ void function AddPanelFooterOption( var panel, int alignment, int input, bool cl
 	data.updateFunc = updateFunc
 
 	footerData.append( data )
+
+	return data
 }
 
 void function ClearRegisteredInputs()
@@ -127,13 +133,13 @@ void function ClearRegisteredInputs()
 
 		foreach ( int input, void functionref( var ) func in registeredInput )
 		{
-			if ( input != BUTTON_B && input != -1 ) // Handled by code
+			if ( input != BUTTON_B && input != -1 ) //
 			{
-				//printt( "----------Deregistering input:", input, "func:", string( func ) )
+				//
 				DeregisterButtonPressedCallback( input, func )
 			}
 
-			deleteList.append( input ) // Can't delete while iterating, so make a list and delete below
+			deleteList.append( input ) //
 		}
 
 		foreach ( input in deleteList )
@@ -147,13 +153,13 @@ void function ClearRegisteredInputs()
 
 		foreach ( int input, void functionref( var ) func in registeredInput )
 		{
-			if ( input != BUTTON_B && input != -1 ) // Handled by code
+			if ( input != BUTTON_B && input != -1 ) //
 			{
-				//printt( "----------Deregistering input:", input, "func:", string( func ) )
+				//
 				DeregisterButtonPressedCallback( input, func )
 			}
 
-			deleteList.append( input ) // Can't delete while iterating, so make a list and delete below
+			deleteList.append( input ) //
 		}
 
 		foreach ( input in deleteList )
@@ -161,7 +167,7 @@ void function ClearRegisteredInputs()
 	}
 }
 
-void function UpdateFooterOptions()
+void function UpdateFooter_Internal( bool shouldUpdateInputCallbacks )
 {
 	var menu = GetActiveMenu()
 	if ( menu == null )
@@ -176,11 +182,14 @@ void function UpdateFooterOptions()
 			panel = topActivePanel
 	}
 
-	// Clear all existing registered input
-	ClearRegisteredInputs()
-	Signal( uiGlobal.signalDummy, "EndFooterUpdateFuncs" )
+	//
+	if ( shouldUpdateInputCallbacks )
+	{
+		ClearRegisteredInputs()
+		Signal( uiGlobal.signalDummy, "EndFooterUpdateFuncs" )
+	}
 
-	if ( !Hud_HasChild( menu, "FooterButtons" ) ) // Dialogs don't quite use proper menu footers yet, but they still should clear registered inputs when opened so we early out here after that is complete
+	if ( !Hud_HasChild( menu, "FooterButtons" ) ) //
 		return
 
 	array<InputDef> footerData
@@ -188,7 +197,7 @@ void function UpdateFooterOptions()
 	if ( panel != null )
 	{
 		footerData = uiGlobal.panelData[ panel ].footerData
-		//printt( Hud_GetHudName( panel ), footerData.len() )
+		//
 		registeredInput = uiGlobal.panelData[ panel ].registeredInput
 	}
 	else
@@ -217,34 +226,37 @@ void function UpdateFooterOptions()
 
 		if ( isValid )
 		{
-			if ( input in registeredInput ) // TODO: May always be empty, double-check and remove if so
+			if ( shouldUpdateInputCallbacks )
 			{
-				if ( input != BUTTON_B && input != -1 ) // Handled by code
+				if ( input in registeredInput ) //
 				{
-					DeregisterButtonPressedCallback( input, registeredInput[ input ] )
-					//printt( "----------DeregisterButtonPressedCallback(", input, ",", string( registeredInput[ input ] ), ")" )
+					if ( input != BUTTON_B && input != -1 ) //
+					{
+						DeregisterButtonPressedCallback( input, registeredInput[ input ] )
+						//
+					}
+
+					delete registeredInput[ input ]
 				}
 
-				delete registeredInput[ input ]
-			}
-
-			void functionref( var ) activateFunc = footerData[i].activateFunc
-			if ( activateFunc != null )
-			{
-				if ( input != BUTTON_B && input != -1 ) // Handled by code
+				void functionref( var ) activateFunc = footerData[i].activateFunc
+				if ( activateFunc != null )
 				{
-					RegisterButtonPressedCallback( input, activateFunc )
-					//printt( "----------RegisterButtonPressedCallback(", input, ",", string( activateFunc ), ")" )
-				}
+					if ( input != BUTTON_B && input != -1 ) //
+					{
+						RegisterButtonPressedCallback( input, activateFunc )
+						//
+					}
 
-				registeredInput[ input ] <- activateFunc
+					registeredInput[ input ] <- activateFunc
+				}
 			}
 
-			//printt( "Setting up menu", menu.GetHudName(), footerData[i].gamepadLabel, footerData[i].mouseLabel )
+			//
 
 			Assert( footerData[i].alignment == LEFT || footerData[i].alignment == RIGHT )
 
-			if ( footerData[i].gamepadLabel != "" ) // Allow mouse only display. Ex: On PC we sometimes need to show instructions which do not have a gamepad equivalent.
+			if ( footerData[i].gamepadLabel != "" ) //
 			{
 				if ( footerData[i].alignment == LEFT )
 				{
@@ -258,7 +270,7 @@ void function UpdateFooterOptions()
 				}
 			}
 
-			if ( footerData[i].mouseLabel != "" ) // Allow gamepad only display. Ex: Don't want to show "(Mouse 1) Select" on all menus as the equivalent of "(A) Select"
+			if ( footerData[i].mouseLabel != "" ) //
 			{
 				if ( footerData[i].alignment == LEFT )
 				{
@@ -281,6 +293,16 @@ void function UpdateFooterOptions()
 
 	array<var> rightElems = GetElementsByClassname( menu, "RightRuiFooterButtonClass" )
 	UpdateFooterElems( menu, rightElems, footerData, rightGamepadInfo, rightMouseInfo )
+}
+
+void function UpdateFooterOptions()
+{
+	UpdateFooter_Internal( true )
+}
+
+void function UpdateFooterLabels()
+{
+	UpdateFooter_Internal( false )
 }
 
 void function UpdateFooterElems( var menu, array<var> elems, array<InputDef> footerData, array<int> gamepadInfo, array<int> mouseInfo )
@@ -318,7 +340,7 @@ void function UpdateFooterElems( var menu, array<var> elems, array<InputDef> foo
 				SetFooterText( menu, footerDataEntry.alignment, index, Localize( text ) )
 			}
 
-			// TEMPHACK: .s is bad
+			//
 			elem.s.input <- footerDataEntry.input
 
 			if ( isControllerModeActive || !footerDataEntry.clickable )
@@ -347,7 +369,7 @@ void function SetFooterText( var menu, int alignment, int index, string text )
 
 	if ( alignment == LEFT )
 	{
-		array<var> sizerElems = GetElementsByClassname( menu, "LeftFooterSizerClass" ) // TODO: Remove when old dialogs are gone
+		array<var> sizerElems = GetElementsByClassname( menu, "LeftFooterSizerClass" ) //
 		if ( index < sizerElems.len() )
 			Hud_SetText( sizerElems[index], text )
 
@@ -377,7 +399,7 @@ void function UpdateFooterSizes()
 				InitButtonRCP( Hud_GetChild( panel, "LeftRuiFooterButton0" ) )
 				InitButtonRCP( Hud_GetChild( panel, "LeftRuiFooterButton1" ) )
 			}
-			else if ( Hud_HasChild( activeMenu, "DialogFooterButtons" ) ) // Old R2 style dialog footers which are being deprecated
+			else if ( Hud_HasChild( activeMenu, "DialogFooterButtons" ) ) //
 			{
 				var panel = Hud_GetChild( activeMenu, "DialogFooterButtons" )
 				Hud_SetWidth( Hud_GetChild( panel, "LeftRuiFooterButton0" ), Hud_GetWidth( Hud_GetChild( panel, "LeftFooterSizer0" ) ) )
@@ -391,7 +413,7 @@ void function UpdateFooterSizes()
 
 void function OnFooterOption_Activate( var button )
 {
-	// TEMPHACK: .s is bad
+	//
 	if ( "input" in button.s )
 	{
 		int input = expect int( button.s.input )
@@ -419,7 +441,7 @@ void function OnFooterOption_Activate( var button )
 
 		if ( activateFunc != null )
 		{
-			//printt( "activateFunc: " + string( activateFunc ) )
+			//
 			activateFunc( button )
 		}
 	}

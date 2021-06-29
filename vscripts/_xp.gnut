@@ -1,8 +1,14 @@
 // stub script
 
 global function SvXP_Init
+global function AddXP
 
 void function SvXP_Init()
 {
     
+}
+
+void function AddXP( entity player, int xpType, int xpAmount=1)
+{
+    // todo: implement this --
 }

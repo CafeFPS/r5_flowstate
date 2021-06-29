@@ -28,7 +28,49 @@ global function SURVIVAL_SetMapCenter
 
 void function GamemodeSurvival_Init()
 {
+	SurvivalFreefall_Init()
+	Sh_ArenaDeathField_Init()
 
+	// init flags
+	FlagInit( "DeathCircleActive", true )
+	FlagInit( "Survival_LootSpawned", true )
+	FlagInit( "PathFinished", false )
+
+	RegisterSignal( "SwitchToOrdnance" )
+	RegisterSignal( "SwapToNextOrdnance" )
+
+	// make sure that flags are set/cleared correctly
+	FlagSet("DeathCircleActive")
+
+	AddClientCommandCallback( "GoToMapPoint", ClientCommand_GoToMapPoint )
+	AddCallback_OnPlayerKilled( OnPlayerKilled )
+
+	// run deathfield
+	RunArenaDeathField()
+}
+
+void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if( !IsValid( victim ) || !IsValid( attacker ) )
+		return
+
+	UpdateNetCounts()
+
+	if( attacker.IsPlayer() )
+	{
+		attacker.SetPlayerNetInt( "kills" , attacker.GetPlayerNetInt( "kills" ) + 1 )
+	}
+
+	if( victim.IsPlayer() )
+	{
+		SetPlayerEliminated( victim )
+	}
+	
+}
+
+void function RunArenaDeathField()
+{
+	thread SURVIVAL_RunArenaDeathField()
 }
 
 void function Survival_SetFriendlyOwnerHighlight( entity player, entity characterModel )
@@ -58,7 +100,7 @@ bool function SURVIVAL_IsValidCircleLocation( vector origin )
 
 int function _GetSquadRank ( entity player )
 {
-	return 0
+	return 1
 }
 
 void function JetwashFX( entity dropship )
@@ -112,7 +154,7 @@ float function SURVIVAL_GetAirburstHeight()
 
 void function SURVIVAL_AddLootBin( entity lootbin )
 {
-
+	InitLootBin( lootbin )
 }
 
 array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGroup, int numLootItems )
@@ -139,4 +181,26 @@ void function Survival_CleanupPlayerPermanents( entity player )
 void function SURVIVAL_SetMapCenter( vector center )
 {
 	
+}
+
+bool function ClientCommand_GoToMapPoint( entity player, array<string> args )
+{
+	if( !IsValid( player ) )
+		return true
+
+	float x = float( args[0] )
+	float y = float( args[1] )
+	float z = float( args[2] )
+
+	vector origin = <x, y, z>
+
+	if( z == 0 )
+	{
+		origin = OriginToGround( <x, y, 20000> )
+	}
+
+	player.SetOrigin( origin )
+
+	return true
+
 }

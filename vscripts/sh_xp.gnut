@@ -9,6 +9,8 @@ global function GetAccountDisplayBadge
 
 global function XpEventTypeData_GetAmount
 global function XpEventTypeData_GetFrac
+global function XpEventTypeData_GetBattlePassFrac
+global function XpEventTypeData_BattlePassOnly
 global function XpEventTypeData_IsMultiplyer
 
 global function GetPlayerAccountXPProgress
@@ -23,6 +25,7 @@ global function XpEventTypeData_DisplayEmpty
 
 global function GetImageForReward
 global function GetStringForReward
+global function InitXPEvents
 #endif
 
 global function GetNextAccountLevel
@@ -43,7 +46,9 @@ global struct XPEventData
 
 	float xpAmount = -1
 	float xpFrac = 0.0
+	float battlePassFrac = 0.0
 
+	bool battlePassOnly = false
 	bool isMultiplyer = false
 
 	string displayString
@@ -98,9 +103,12 @@ struct
 
 string[XP_TYPE._NUM_TYPES] xpDisplayNames = ["Unhandled", ...]
 
-bool function DEV_ShouldIgnorePersistence() {
-	return true
+#if !R5DEV
+bool function DEV_ShouldIgnorePersistence()
+{
+	return false
 }
+#endif
 
 void function ShXP_Init()
 {
@@ -194,10 +202,6 @@ void function InitXP( entity player )
 void function XP_GameStartedPlaying()
 {
 	//#if R5DEV
-	print("DEVVVVVVVVVVVVVVV")
-	print("DEVVVVVVVVVVVVVVV")
-	print("DEVVVVVVVVVVVVVVV")
-	print("DEVVVVVVVVVVVVVVV")
 		if ( DEV_ShouldIgnorePersistence() )
 			return
 	//#endif
@@ -326,7 +330,7 @@ asset function GetAccountDisplayBadge( int levelIndex )
 #if SERVER && R5DEV
 void function DEV_PopulatePostGame( entity player, int level = -1 )
 {
-	g_trackXP = false
+	bool g_trackXP = false
 
 	int startXP = level >= 0 ? GetTotalXPToCompleteAccountLevel( level ) + RandomInt( GetTotalXPToCompleteAccountLevel( 0 ) ) : RandomInt( GetTotalXPToCompleteAccountLevel( 100 ) )
 
@@ -451,6 +455,7 @@ void function OnUpdatingPlayerStryderCharDataArray( entity player )
 
 void function InitXPEvents()
 {
+	printt( "InitXPEvents" )
 	InitXpEventTypeData( XP_TYPE.SURVIVAL_DURATION, "xp_survival_duration", "#EOG_XP_SURVIVED" )
 	XpEventTypeData_SetCountDisplay( XP_TYPE.SURVIVAL_DURATION, eNumericDisplayType.TIME_SECONDS_SHORT )
 	XpEventTypeData_SetDisplayEmpty( XP_TYPE.SURVIVAL_DURATION, true )
@@ -493,24 +498,25 @@ void function InitXPEvents()
 	InitXpEventTypeData( XP_TYPE.BONUS_FRIEND, "xp_friend", "#EOG_XP_PREMADE_SQUAD" )
 	XpEventTypeData_SetDisplayEmpty( XP_TYPE.BONUS_FRIEND, true )
 
-	InitXpEventTypeData( XP_TYPE.BONUS_FRIEND_BOOST, "xp_friend_boost", "#EOG_XP_PREMADE_SQUAD" )
+	InitXpEventTypeData( XP_TYPE.BONUS_FRIEND_BOOST, "xp_friend_boost", "#EOG_XP_PREMADE_SQUAD", 0.0 )
 	XpEventTypeData_SetDisplayEmpty( XP_TYPE.BONUS_FRIEND_BOOST, true )
+	XpEventTypeData_SetCountDisplay( XP_TYPE.BONUS_FRIEND_BOOST, eNumericDisplayType.SHORT_INT )
 
 	InitXpEventTypeData( XP_TYPE.WIN_MATCH, "xp_win_match", "#EOG_XP_WON" )
 
 	InitXpEventTypeData( XP_TYPE.TOP_THREE, "xp_top_three", "#EOG_XP_TOP3" )
 
-	InitXpEventTypeData( XP_TYPE.TOTAL_MATCH, "xp_top_three", "#EOG_XP_TOTAL_MATCH" )
+	InitXpEventTypeData( XP_TYPE.TOTAL_MATCH, "xp_total_match", "#EOG_XP_TOTAL_MATCH" )
 }
 
 
-void function InitXpEventTypeData( int xpType, string playlistVar, string displayString )
+void function InitXpEventTypeData( int xpType, string playlistVar, string displayString, float defaultFrac = 1.0 )
 {
 	file.xpEventTypeData[xpType]._playlistVarName = playlistVar
 	file.xpEventTypeData[xpType].displayString = displayString
 	file.xpEventTypeData[xpType].xpAmount = GetCurrentPlaylistVarFloat( playlistVar + "_amount", 0 )
-	file.xpEventTypeData[xpType].xpFrac = GetCurrentPlaylistVarFloat( playlistVar + "_frac", 1.0 )
-
+	file.xpEventTypeData[xpType].xpFrac = GetCurrentPlaylistVarFloat( playlistVar + "_frac", defaultFrac )
+	file.xpEventTypeData[xpType].battlePassOnly = GetCurrentPlaylistVarInt( playlistVar + "_bp_only", 0 ) != 0
 	Assert( file.xpEventTypeData[xpType].xpAmount > -1 )
 }
 
@@ -545,6 +551,18 @@ float function XpEventTypeData_GetFrac( int xpType )
 }
 
 
+float function XpEventTypeData_GetBattlePassFrac( int xpType )
+{
+	return file.xpEventTypeData[xpType].battlePassFrac
+}
+
+
+bool function XpEventTypeData_BattlePassOnly( int xpType )
+{
+	return file.xpEventTypeData[xpType].battlePassOnly
+}
+
+
 bool function XpEventTypeData_IsMultiplyer( int xpType )
 {
 	return xpType == XP_TYPE.BONUS_FRIEND || xpType == XP_TYPE.BONUS_FRIEND_BOOST
@@ -567,24 +585,24 @@ int function GetXPEventValue( entity player, int xpType )
 
 string function GetXPEventNameDisplay( entity player, int xpType )
 {
-	int count = GetXPEventCount( player, xpType )
+	int count = XpEventTypeData_BattlePassOnly( xpType ) ? GetBattlePassXPEventCount( player, xpType ) : GetXPEventCount( player, xpType )
 
 	XPEventData eventData = file.xpEventTypeData[xpType]
 	if ( eventData.characterSpecific )
 	{
-		int characterPDefEnumIndex = player.GetPersistentVarAsInt( "characterForXP" ) // todo(dw): fix this
+		int characterPDefEnumIndex = player.GetPersistentVarAsInt( "characterForXP" ) //
 		Assert( characterPDefEnumIndex >= 0 && characterPDefEnumIndex < PersistenceGetEnumCount( "eCharacterFlavor" ) )
-		string characterRef = PersistenceGetEnumItemNameForIndex( "eCharacterFlavor", characterPDefEnumIndex )
+		SettingsAssetGUID characterGUID = ConvertItemFlavorGUIDStringToGUID( PersistenceGetEnumItemNameForIndex( "eCharacterFlavor", characterPDefEnumIndex ) )
 		string characterName
-		if ( !IsValidItemFlavorHumanReadableRef( characterRef ) )
+		if ( !IsValidItemFlavorGUID( characterGUID ) )
 		{
-			Warning( "Cannot display post-game summary because character \"" + characterRef + "\" is not registered right now." )
-			characterName = characterRef + " not registered"
+			Warning( "Cannot display post-game summary because character \"" + characterGUID + "\" is not registered right now." )
+			characterName = characterGUID + " not registered"
 		}
 		else
 		{
-			ItemFlavor characterClass = GetItemFlavorByHumanReadableRef( characterRef )
-			characterName = ItemFlavor_GetLongName( characterClass )
+			ItemFlavor character = GetItemFlavorByGUID( characterGUID )
+			characterName = ItemFlavor_GetLongName( character )
 		}
 
 		return Localize( eventData.displayString, Localize( characterName ), GetFormattedIntByType( count, eventData.countDisplayType ) )

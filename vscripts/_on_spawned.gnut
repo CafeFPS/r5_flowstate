@@ -263,7 +263,6 @@ string function GetSpawnAISettings( entity npc )
 
 void function CodeCallback_OnSpawned( entity ent )
 {
-
 	if ( IsSpawner( ent ) )
 	{
 		var spawnerKVs = ent.GetSpawnEntityKeyValues()

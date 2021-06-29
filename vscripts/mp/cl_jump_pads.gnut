@@ -21,4 +21,6 @@ void function OnJumpPadAreaEnter( entity trigger, entity player )
 
 	EmitSoundOnEntity( player, "JumpPad_LaunchPlayer_1p" )
 	EmitSoundOnEntity( player, "JumpPad_Ascent_Windrush" )
+
+	Chroma_UsedJumpPad()
 }

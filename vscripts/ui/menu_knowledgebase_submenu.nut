@@ -14,25 +14,25 @@ struct
 } file
 
 
-////////////////////////////////////////////////////////////
-// For the "KNB_SUBJECT_*" strings in r1_english.txt:
+//
+//
 const array<int> KNB_SUBJECT_SUB_COUNTS =
 [
-	-1,		// playlist var: "faq_patchnotes_count"
-	5,		// KNB_SUBJECT_SUB_COUNTS[1]
-	7,		// KNB_SUBJECT_SUB_COUNTS[2]
-	10,		// KNB_SUBJECT_SUB_COUNTS[3]
-	3,		// KNB_SUBJECT_SUB_COUNTS[4]
-	4,		// KNB_SUBJECT_SUB_COUNTS[5]
-	6,		// KNB_SUBJECT_SUB_COUNTS[6]
-	9,		// KNB_SUBJECT_SUB_COUNTS[7]
-	16,		// KNB_SUBJECT_SUB_COUNTS[8]
-	6,		// KNB_SUBJECT_SUB_COUNTS[9]
-	14,		// KNB_SUBJECT_SUB_COUNTS[10]
+	-1,		//
+	5,		//
+	7,		//
+	10,		//
+	3,		//
+	4,		//
+	6,		//
+	9,		//
+	16,		//
+	6,		//
+	14,		//
 ]
 global const int KNB_SUBJECT_COUNT = 11
 global const int KNB_PATCHNOTES_INDEX = 0
-////////////////////////////////////////////////////////////
+//
 
 global int KNB_COMMUNITY_INDEX = -1
 void function AdvanceToKnowledgeBaseSubmenu( int subjectID )

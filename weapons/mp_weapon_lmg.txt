@@ -90,6 +90,8 @@ WeaponData
 	"fx_muzzle_flash_world"							"wpn_muzzleflash_lmg"
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
+	"chroma_color"									".6 1 .6"
+
 	//Sounds
 	"fire_sound_1_player_1p"						"LMG_shell"
 	"fire_sound_1_player_3p"						"LMG_shell"
@@ -579,7 +581,7 @@ WeaponData
 
 		npc_stalker
 		{
-			"fire_rate"   								"30.0"
+			"fire_rate"   								"50.0"
 
 			"projectile_launch_speed"						"3500"
 	    	"bolt_gravity_enabled"							"0"
@@ -592,17 +594,17 @@ WeaponData
 			"npc_rest_time_between_bursts_min"				"2.0"
 			"npc_rest_time_between_bursts_max"				"2.50"
 
-			"damage_near_value"   							"4"
-			"damage_far_value"								"4"
-			"damage_very_far_value"							"4"
-			"damage_near_value_titanarmor"					"4"
-			"damage_far_value_titanarmor" 					"4"
-			"damage_very_far_value_titanarmor" 				"4"
+			"damage_near_value"   							"20"
+			"damage_far_value"								"20"
+			"damage_very_far_value"							"20"
+			"damage_near_value_titanarmor"					"20"
+			"damage_far_value_titanarmor" 					"20"
+			"damage_very_far_value_titanarmor" 				"20"
 
-			"npc_damage_near_value"   						"4"
-			"npc_damage_far_value"							"4"
-			"npc_damage_near_value_titanarmor"				"4"
-			"npc_damage_far_value_titanarmor" 				"4"
+			"npc_damage_near_value"   						"20"
+			"npc_damage_far_value"							"20"
+			"npc_damage_near_value_titanarmor"				"20"
+			"npc_damage_far_value_titanarmor" 				"20"
 
 			"npc_min_engage_range"							"20"
 			"npc_max_engage_range"							"3000"
@@ -610,6 +612,15 @@ WeaponData
 			"npc_max_engage_range_heavy_armor"				"5000"
 			"npc_min_range"   								"0"
 			"npc_max_range"   								"5000"
+		}
+		
+		nerffire
+		{
+			"fire_rate"   								"8.0"
+			"damage_headshot_scale"						"1.6"
+			"damage_near_value"   						"18"
+			"npc_damage_near_value"   					"18"
+			"ammo_clip_size"   							"30"
 		}
 	}
 

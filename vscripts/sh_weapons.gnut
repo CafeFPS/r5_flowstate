@@ -7,6 +7,7 @@ global function WeaponItemFlavor_GetCategory
 global function WeaponItemFlavor_GetStatsCategory
 global function WeaponItemFlavor_GetArmoryScale
 global function WeaponItemFlavor_GetLootCeremonyScale
+global function WeaponItemFlavor_GetBattlePassScale
 global function GetWeaponItemFlavorByClass
 global function GetAllWeaponItemFlavors
 global function GetAllWeaponCategories
@@ -58,13 +59,13 @@ void function ShWeapons_LevelInit()
 		AddCallback_GeneratePDef( GenerateWeaponsPDef )
 	#endif
 
-	#if (SERVER || CLIENT) //&& R5DEV // (dw): needs to be precached even in non-DEV to support DEV clients connecting to non-DEV servers
+	#if SERVER || CLIENT //&& R5DEV // (dw): needs to be precached even in non-DEV to support DEV clients connecting to non-DEV servers
 		PrecacheWeapon( $"weapon_cubemap" )
 	#endif
 
 	AddCallback_RegisterRootItemFlavors( void function() {
-		foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/loot/main_weapons.rpak", "list" ) )
-			RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
+		foreach( asset weaponAsset in WORKAROUND_GetAllLootMainWeaponFlavorAssets() )
+			RegisterItemFlavorFromSettingsAsset( weaponAsset )
 
 		foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/weapon_categories.rpak", "list" ) )
 			RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
@@ -149,6 +150,14 @@ float function WeaponItemFlavor_GetLootCeremonyScale( ItemFlavor weapon )
 	Assert( ItemFlavor_GetType( weapon ) == eItemType.loot_main_weapon )
 
 	return GetGlobalSettingsFloat( ItemFlavor_GetAsset( weapon ), "lootCeremonyScale" )
+}
+
+
+float function WeaponItemFlavor_GetBattlePassScale( ItemFlavor weapon )
+{
+	Assert( ItemFlavor_GetType( weapon ) == eItemType.loot_main_weapon )
+
+	return GetGlobalSettingsFloat( ItemFlavor_GetAsset( weapon ), "battlePassScale" )
 }
 
 

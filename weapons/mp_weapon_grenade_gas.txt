@@ -28,10 +28,9 @@ WeaponData
 	//"OnWeaponTossReleaseAnimEvent"					"Grenade_OnWeaponTossReleaseAnimEvent"
 	"OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_weapon_greande_gas"
 	"OnWeaponTossPrep"								"Grenade_OnWeaponTossPrep"
-	"OnWeaponDeactivate"							"Grenade_OnWeaponDeactivate"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_grenade_gas"
 	"OnProjectileCollision"							"OnProjectileCollision_weapon_grenade_gas"
 	"OnWeaponReadyToFire"                           "OnWeaponReadyToFire_weapon_grenade_gas"
-	//"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_grenade_gas"
     "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
 
 	// Menu Stats

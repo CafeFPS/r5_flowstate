@@ -13,6 +13,7 @@ const FLYER_1000X_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
 const FLYER_500X_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
 const FLYER_MODEL_STATIC = $"mdl/Creatures/flyer/r2_flyer.rmdl"
 
+const PLAYER_CORPSE_FOR_FLYER_MODEL = $"mdl/Humans/pilots/pilot_medium_reaper_m.rmdl"
 
 #if SERVER
 	global function CreateServerFlyer
@@ -58,6 +59,7 @@ struct
 	int devFlyerCountStatic = 0
 
 	int flyerCheapMixCount = 0
+	array< entity > flyerWithCorpseNodes
 } file
 
 void function FlyersShared_Init()

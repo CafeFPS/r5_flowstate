@@ -132,7 +132,7 @@ void function SURVIVAL_Loot_All_InitShared()
 
 		string pingCommsActionName = GetDataTableString( dataTable, i, col_pingCommsActionName )
 
-		#if (SERVER || CLIENT)
+		#if SERVER || CLIENT
 		data.pingCommsAction = GetCommsActionForName( pingCommsActionName )
 		#endif
 
@@ -191,8 +191,9 @@ void function SURVIVAL_Loot_All_InitShared()
 		data.lootType = SURVIVAL_Loot_GetLootTypeFromString( lootType )
 		data.netInt = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "netInt" ) )
 		data.inventorySlotCount = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "inventorySlotCount" ) )
+		printt("  ", data.ref, data.netInt, data.lootType, lootType)
 
-		#if (SERVER || CLIENT)
+		#if SERVER || CLIENT
 			data.minInWorld = GetDataTableFloat( dataTable, i, GetDataTableColumnByName( dataTable, "minInWorld" ) )
 			if ( IsTestMap() )
 				data.minInWorld = max( -1, data.minInWorld )
@@ -219,7 +220,7 @@ void function SURVIVAL_Loot_All_InitShared()
 		{
 			case eLootType.MAINWEAPON:
 				RegisterWeaponForUse( data.baseWeapon )
-				//PrecacheWeapon( data.baseWeapon )
+				// PrecacheWeapon( data.baseWeapon )
 				data.model = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "playermodel" )
 				if ( GetWeaponInfoFileKeyField_Global( data.baseWeapon, "ammo_pool_type" ) != null )
 					data.ammoType = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "ammo_pool_type" )
@@ -273,7 +274,7 @@ void function SURVIVAL_Loot_All_InitShared()
 				data.attachmentStyle = GetDataTableString( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "type" ) )
 				data.emptyImage = GetDataTableAsset( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "emptyImage" ) )
 
-				#if (SERVER || CLIENT)
+				#if SERVER || CLIENT
 				RegisterAttachmentPoint( attachmentPoint )
 				#endif
 

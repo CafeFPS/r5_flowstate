@@ -177,6 +177,9 @@ void function InitLootBin( entity lootbin )
 	if ( file.lootBinList.contains( lootbin ) )
 		return
 
+
+	var dataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+	int numRows = GetDatatableRowCount( dataTable )
 	lootbin.e.isOpen = false
 	lootbin.e.isBusy = false
 	lootbin.e.hasBeenOpened = false
@@ -202,8 +205,15 @@ void function InitLootBin( entity lootbin )
 	{
 		DebugDrawLine( lootbin.GetOrigin(), lootbin.GetOrigin() + <0, 0, 1000>, 255, 255, 255, true, 100.0 )
 	}
+	array<string> items
 
-	AddMultipleLootItemsToLootBin(lootbin, ["mp_weapon_sniper", "mp_weapon_rspn101_gold"])
+	for( int i=0; i < RandomIntRange(2, 4); i++ )
+	{
+		items.append( GetDataTableString( dataTable, RandomInt( numRows ), GetDataTableColumnByName( dataTable, "ref" ) ) )
+	}
+	
+	AddMultipleLootItemsToLootBin(lootbin, items)
+	//AddMultipleLootItemsToLootBin(lootbin, ["mp_weapon_vinson", "mp_weapon_r97", "health_pickup_combo_full", "mp_weapon_thermite_grenade", "backpack_pickup_lv3", "armor_pickup_lv1"])
 }
 
 // the loop doesn't play without a delay involved for some reason
@@ -356,11 +366,7 @@ void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int loo
 {
 	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
-	printt("K0k", ref, data.netInt)
-	printt("K0k", ref, data.netInt)
-	printt("K0k", ref, data.netInt)
-	printt("K0k", ref, data.netInt)
-	printt("K0k", ref, data.netInt)
+	printt(ref, data.netInt)
 	entity loot   = SpawnGenericLoot( ref, p.origin, p.angles, data.countPerDrop )
 	loot.RemoveFromAllRealms()
 	loot.AddToOtherEntitysRealms( lootbin )
@@ -380,6 +386,7 @@ void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int loo
 			ammo.RemoveFromAllRealms()
 			ammo.AddToOtherEntitysRealms( lootbin )
 			ammo.SetParent( lootbin )
+			file.lootBinsSpawnedLootMap[lootbin].append( ammo )
 		}
 	}
 }

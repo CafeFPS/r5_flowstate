@@ -25,6 +25,8 @@
 	"viewmodel"                                    "mdl/weapons/doubletake/ptpov_doubletake.rmdl"
 	"playermodel"                                  "mdl/weapons/doubletake/w_doubletake.rmdl"
 
+	"chroma_color"									".1 1 .3"
+
 	// Script - Callbacks
 	"OnWeaponPrimaryAttack"                         "OnWeaponPrimaryAttack_weapon_doubletake"
 	"OnWeaponNpcPrimaryAttack"                      "OnWeaponNpcPrimaryAttack_weapon_doubletake"
@@ -418,17 +420,6 @@
 
 			// Enable Sniper Threat Hopup RUI
 			"custom_int_0"		"9"
-		}
-
-		"ricochet"
-		{
-
-			// Bolt
-			"bolt_bounce_frac"                        "0.7"
-
-			// Projectile - Behavior
-			"projectile_ricochet_max_count"           "2"
-			"projectile_damages_owner"                "0"
 		}
 	}
 

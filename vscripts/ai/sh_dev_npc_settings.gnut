@@ -1,9 +1,11 @@
-#if R5DEV
+#if true
 global function SetupChangeSurvivalCharacterClass
 global function SetupOverrideSpawnSurvivalCharacter
 global function SetupSurvival
+global function SetupModelSpawner
 global function SetupSurvivalLoot
-global function SetupSurvivalIncapShieldBot
+global function SetupSurvivalIncapShieldBots
+global function SetupAbilities
 
 void function SetupChangeSurvivalCharacterClass()
 {
@@ -63,6 +65,7 @@ void function SetupSurvival()
 	#endif
 }
 
+
 void function SetupSurvivalLoot( var categories )
 {
 	#if UI
@@ -70,7 +73,49 @@ void function SetupSurvivalLoot( var categories )
 	#endif
 }
 
-void function SetupSurvivalIncapShieldBot()
+void function SetupAbilities()
+{
+	#if UI
+	SetupDevCommand( "EYE OF THE ALLFATHER", "give mp_ability_area_sonar_scan" )
+	SetupDevCommand( "BEAST OF THE HUNT", "give mp_ability_hunt_mode" )
+	SetupDevCommand( "D.O.C. HEAL DRONE", "give mp_weapon_deployable_medic" )
+	SetupDevCommand( "CARE PACKAGE", "give mp_ability_care_package" )
+	SetupDevCommand( "GRAPPLING HOOK", "give mp_ability_grapple" )
+	SetupDevCommand( "ZIPLINE GUN", "give mp_weapon_zipline" )
+	SetupDevCommand( "STIM", "give mp_ability_heal" )
+	SetupDevCommand( "LAUNCH PAD", "give mp_weapon_jump_pad" )
+	SetupDevCommand( "PSYCHE OUT", "give mp_ability_holopilot" )
+	SetupDevCommand( "INTO THE VOID", "give mp_ability_phase_walk" )
+	SetupDevCommand( "DOME OF PROTECTION", "give mp_weapon_bubble_bunker" )
+	SetupDevCommand( "NOX GAS TRAP", "give mp_weapon_dirty_bomb" )
+	SetupDevCommand( "NOX GAS GRENADE", "give mp_weapon_grenade_gas" )
+	SetupDevCommand( "PULSE BLADE", "give mp_weapon_grenade_sonar" )
+	SetupDevCommand( "A-WALL", "give mp_weapon_deployable_cover" )
+	SetupDevCommand( "ELECTRIC SMOKE", "give mp_weapon_grenade_electric_smoke" )
+	SetupDevCommand( "MELEE", "give mp_weapon_melee_survival" )
+	SetupDevCommand( "KUNAI", "give mp_weapon_kunai_ns" )
+	#endif
+}
+
+
+void function SetupModelSpawner()
+{
+	#if UI
+	SetupDevCommand( "marvin", "SetMDLSpawnerModel mdl/robots/marvin/marvin.rmdl" )
+	SetupDevCommand( "atpov_titan_raptor_rocket_pod_right", "SetMDLSpawnerModel mdl/weapons/titan_raptor_rocket_pod/atpov_titan_raptor_rocket_pod_right.rmdl" )
+	SetupDevCommand( "currency_crafting_common", "SetMDLSpawnerModel mdl/currency/crafting/currency_crafting_common.rmdl" )
+	SetupDevCommand( "currency_crafting_epic", "SetMDLSpawnerModel mdl/currency/crafting/currency_crafting_epic.rmdl" )
+	SetupDevCommand( "currency_crafting_legendary", "SetMDLSpawnerModel mdl/currency/crafting/currency_crafting_legendary.rmdl" )
+	SetupDevCommand( "currency_crafting_rare", "SetMDLSpawnerModel mdl/currency/crafting/currency_crafting_rare.rmdl" )
+	SetupDevCommand( "droppod_loot_LL_holo", "SetMDLSpawnerModel mdl/vehicle/droppod_loot/droppod_loot_LL_holo.rmdl" )
+	SetupDevCommand( "death_box_01", "SetMDLSpawnerModel mdl/props/death_box/death_box_01.rmdl" )
+	SetupDevCommand( "drone_frag", "mdl/robots/drone_frag/drone_frag.rmdl" )
+	SetupDevCommand( "droppod_fireteam", "SetMDLSpawnerModel mdl/vehicle/droppod_fireteam/droppod_fireteam.rmdl" )
+	SetupDevCommand( "droppod_loot_LL_holo", "mdl/vehicle/droppod_loot/droppod_loot_LL_holo.rmdl" )
+	#endif
+}
+
+void function SetupSurvivalIncapShieldBots()
 {
 	#if UI
 	SetupDevCommand( "Spawn Bot with Lv 1 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 1 )" )

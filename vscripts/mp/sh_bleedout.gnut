@@ -71,7 +71,7 @@ struct
 
 void function BleedoutShared_Init()
 {
-	//PrecacheWeapon( "mp_weapon_incap_shield" )
+	PrecacheWeapon( "mp_weapon_incap_shield" )
 	
 	//DEFAULT BLEEDOUT (Index 0)
 	BleedoutData defData
@@ -281,6 +281,10 @@ bool function Bleedout_IsBleedoutLogicActive()
 
 bool function Bleedout_IsBleedingOut( entity player )
 {
+
+	if ( !IsValid( player ) )
+		return false
+
 	if ( !player.IsPlayer() )
 		return false
 

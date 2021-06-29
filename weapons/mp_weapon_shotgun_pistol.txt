@@ -38,6 +38,8 @@ WeaponData
 	"tracer_effect"   								"weapon_tracers_shotgun"
 	"impact_effect_table" 							"bullet_mastiff"
 
+	"chroma_color"									"1 .3 .3"
+
 	// Projectile
 	"projectile_trail_effect_0" 					"P_mastiff_proj"  // "P_dragonsbreath_trail"
 

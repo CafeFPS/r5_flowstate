@@ -31,6 +31,9 @@ global function ClientCodeCallback_PingSpecificType
 global function SetCallback_PingSpecificType
 global function RemoveCallback_PingSpecificType
 
+global function ClientCodeCallback_UseConsumable
+global function SetCallback_UseConsumable
+global function RemoveCallback_UseConsumable
 #if HAS_WEAPON_PICKUP_HIGHLIGHT
 global function ServerCallback_RefreshWeaponHighlights
 #endif
@@ -42,6 +45,7 @@ struct
 	entity focusedEnt
 	table<string, asset> modImages
 	void functionref( entity, string ) pingCallback = null
+	void functionref( entity, string ) useConsumableCallback = null
 } file
 
 void function ClientCodeCallback_PingSpecificType( entity player, string pingType )
@@ -62,6 +66,26 @@ void function RemoveCallback_PingSpecificType()
 		Warning( "Attempted to remove ping callback when nothing has been set" )
 
 	file.pingCallback = null
+}
+
+void function ClientCodeCallback_UseConsumable( entity player, string consumableType )
+{
+	if ( file.useConsumableCallback != null )
+		file.useConsumableCallback( player, consumableType )
+}
+
+void function SetCallback_UseConsumable( void functionref( entity, string ) callback )
+{
+	Assert( file.useConsumableCallback == null, "Consumable callback already exists! Cannot have more than 1 Consumable callback" )
+	file.useConsumableCallback = callback
+}
+
+void function RemoveCallback_UseConsumable()
+{
+	if( file.useConsumableCallback == null )
+		Warning( "Attempted to remove consumable callback when nothing has been set" )
+
+	file.useConsumableCallback = null
 }
 
 void function ClDroppedWeaponFlyout_Init()

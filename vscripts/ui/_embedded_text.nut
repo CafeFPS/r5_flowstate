@@ -96,10 +96,10 @@ void function EmbeddedText_Init()
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_LWIN", "LWIN" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_RWIN", "RWIN" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_APP", "APP" )
-	//InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_UP", "%$vgui/HUD/pc_arrow_up%" )
-	//InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_LEFT", "%$vgui/HUD/pc_arrow_up%" )
-	//InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_DOWN", "%$vgui/HUD/pc_arrow_up%" )
-	//InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_RIGHT", "%$vgui/HUD/pc_arrow_up%" )
+	//
+	//
+	//
+	//
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_UP", "UP" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_LEFT", "LEFT" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_DOWN", "DOWN" )
@@ -120,6 +120,8 @@ void function EmbeddedText_Init()
 	InitEmbeddedKeyRui( $"ui/key_wide_pc.rpak", "KEY_NUMLOCKTOGGLE", "NUMLOCK" )
 	InitEmbeddedKeyRui( $"ui/key_wide_pc.rpak", "KEY_SCROLLLOCKTOGGLE	", "SCROLL" )
 	InitEmbeddedKeyRui( $"ui/key_square_icon_pc.rpak", "ICON_UNBOUND", "%$vgui/fonts/buttons/icon_unbound%" )
+
+	RuiCreateEmbedded( $"ui/embedded_bullet_point.rpak", "embedded_bullet_point" )
 }
 
 void function InitEmbeddedKeyRui( asset ruiAsset, string stringReplace, string displayText )

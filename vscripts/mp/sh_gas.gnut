@@ -22,7 +22,7 @@ const asset FX_GAS_SMOKE = $"P_gastrap_fill"
 const vector FX_GAS_SMOKE_OFFSET = <0,0,-24>
 
 global float GAS_CLOUD_RADIUS_LARGE		= 375.0
-global float GAS_CLOUD_RADIUS_MEDIUM 	= 256.0
+global float GAS_CLOUD_RADIUS_MEDIUM 	= 282.0
 global float GAS_CLOUD_RADIUS_SMALL 	= 128.0
 
 global const string POISON_SMOKESCREEN_SCRIPTNAME = "poison_smokescreen"
@@ -103,7 +103,7 @@ void function ShGas_Init()
 	#endif
 
 	#if CLIENT
-	RegisterSignal( "StopPassiveProtectionOnHUD" )
+	RegisterSignal( "StopPassiveGasProtectionOnHUD" )
 
 	file.lastDOFLerpTime = Time()
 	RegisterSignal( "GasCloud_StopColorCorrection" )
@@ -112,8 +112,8 @@ void function ShGas_Init()
 	file.colorCorrectionGas = ColorCorrection_Register( "materials/correction/gas_cloud.raw_hdr" )
 	StatusEffect_RegisterEnabledCallback( eStatusEffect.gas_cloud, GasCloud_StartVisualEffect )
 	StatusEffect_RegisterDisabledCallback( eStatusEffect.gas_cloud, GasCloud_StopVisualEffect )
-	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, ShowPassiveProtectionOnHUD )
-	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_PROTECTION, ShowPassiveProtectionOnHUD )
+	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_GEAR, ShowPassiveGasProtectionOnHUD )
+	AddCallback_OnPassiveChanged( ePassives.PAS_GAS_PROTECTION, ShowPassiveGasProtectionOnHUD )
 	#endif //CLIENT
 }
 
@@ -759,8 +759,8 @@ void function CreateGasExposureRadius( SmokescreenStruct smokescreen )
 							{
 								foreach ( ent in smokeFXs[ i ] )
 								{
-									ent.RemoveFromAllRealms()
-									ent.AddToOtherEntitysRealms( smokescreen.inflictor )
+								//	ent.RemoveFromAllRealms()
+								//	ent.AddToOtherEntitysRealms( smokescreen.inflictor )
 								}
 							}
 						}
@@ -964,6 +964,8 @@ void function GasCloud_StartVisualEffect( entity ent, int statusEffect, bool act
 			thread GasScreenFXThink( viewPlayer, fxHandle )
 			thread UpdatePlayerGasCloudDOF( viewPlayer, statusEffect )
 		}
+
+		Chroma_StartGasCloudEffect()
 	}
 }
 
@@ -985,6 +987,8 @@ void function GasCloud_StopVisualEffect( entity ent, int statusEffect, bool actu
 	{
 		ManageHighlightEntity( player )
 	}
+
+	Chroma_EndGasCloudEffect()
 }
 
 void function GasScreenFXThink( entity player, int fxHandle )
@@ -1016,18 +1020,18 @@ void function GasScreenFXThink( entity player, int fxHandle )
 	}
 }
 
-void function ShowPassiveProtectionOnHUD( entity player, int passive, bool didHave, bool nowHas )
+void function ShowPassiveGasProtectionOnHUD( entity player, int passive, bool didHave, bool nowHas )
 {
 	if ( player != GetLocalViewPlayer() )
 		return
 
 	if ( PlayerHasPassive( player, ePassives.PAS_GAS_PROTECTION ) && !PlayerHasPassive( player, ePassives.PAS_GAS_GEAR ) )
 	{
-		thread ShowPassiveProtectionOnHUD_Internal( player )
+		thread ShowPassiveGasProtectionOnHUD_Internal( player )
 	}
 	else
 	{
-		player.Signal( "StopPassiveProtectionOnHUD" )
+		player.Signal( "StopPassiveGasProtectionOnHUD" )
 
 		if ( !PlayerHasGasProtection( player ) )
 		{
@@ -1040,11 +1044,11 @@ void function ShowPassiveProtectionOnHUD( entity player, int passive, bool didHa
 	}
 }
 
-void function ShowPassiveProtectionOnHUD_Internal( entity player )
+void function ShowPassiveGasProtectionOnHUD_Internal( entity player )
 {
-	player.Signal( "StopPassiveProtectionOnHUD" )
+	player.Signal( "StopPassiveGasProtectionOnHUD" )
 	player.EndSignal( "OnDeath" )
-	player.EndSignal( "StopPassiveProtectionOnHUD" )
+	player.EndSignal( "StopPassiveGasProtectionOnHUD" )
 
 	var rui = CreateCockpitRui( $"ui/gas_protection_icon.rpak" )
 	RuiSetImage( rui, "icon", $"rui/hud/passive_icons/passive_caustic" )

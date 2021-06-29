@@ -15,6 +15,8 @@ global function IsDeadCoroutine
 
 global function VM_NAME
 global function FUNC_NAME
+global function FILE_NAME
+global function DBG_INFO
 
 global function printt
 global function PrintFunc
@@ -96,6 +98,21 @@ string function VM_NAME()
 string function FUNC_NAME( int up = 0 )
 {
 	return string( getstackinfos( 2 + up ).func )
+}
+
+string function FILE_NAME( int up = 0 )
+{
+	return string( getstackinfos( 2 + up ).src )
+}
+
+string function DBG_INFO()
+{
+	string vmName   = VM_NAME()
+	var stackInfos  = getstackinfos( 2 )
+	string fileName = expect string(stackInfos.src)
+	int lineNum  = expect int(stackInfos.line)
+	string funcName = expect string(stackInfos.func)
+	return "[" + VM_NAME() + ":" + fileName + ":" + lineNum + ":" + funcName + "]"
 }
 
 void function printt_spamLog( ... )

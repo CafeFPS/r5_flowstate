@@ -692,10 +692,40 @@ void function CodeCallback_OnWeaponDisable( entity weapon )
 void function ClientCodeCallback_PartyUpdated()
 {
 	printt( "ClientCodeCallback_PartyUpdated" )
+	PartyDump( GetParty() )
+
 	foreach ( callbackFunc in file.partyUpdatedCallbacks )
 	{
 		callbackFunc()
 	}
+}
+
+// todo: move this somewhere else
+void function PartyDump( Party party )
+{
+	printt( "******** PARTY DUMP ********" )
+	printt( "partyType =", party.partyType )
+	printt( "playlistName =", party.playlistName )
+	printt( "originatorName =", party.originatorName )
+	printt( "originatorUID =", party.originatorUID )
+	printt( "numSlots =", party.numSlots )
+	printt( "numClaimedSlots =", party.numClaimedSlots )
+	printt( "numFreeSlots =", party.numFreeSlots )
+	printt( "timeLeft =", party.timeLeft )
+	printt( "amIInThis =", party.amIInThis )
+	printt( "amILeader =", party.amILeader )
+	printt( "searching =", party.searching )
+	printt( "members = [" )
+	foreach( PartyMember member in party.members )
+	{
+		printt("")
+		printt( "\tname =", member.name )
+		printt( "\tuid =", member.uid )
+		printt( "\thardware =", member.hardware )
+		printt( "\tready =", member.ready )
+		
+	}
+	printt("]")
 }
 
 void function ClientCodeCallback_PartyMemberAdded()

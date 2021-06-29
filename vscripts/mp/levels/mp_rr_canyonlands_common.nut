@@ -29,9 +29,14 @@ global function Canyonlands_MapInit_Common
 	const int HOVER_TANKS_TYPE_MID = 1
 #endif
 
+#if CLIENT
+	global function CreateClientSideFlyerSwarmAtPosition
+#endif
+
 const int HOVER_TANKS_DEFAULT_COUNT_INTRO = 1
 const int HOVER_TANKS_DEFAULT_COUNT_MID = 1
 const asset LEVIATHAN_MODEL = $"mdl/creatures/leviathan/leviathan_animated.rmdl"
+const asset FLYER_SWARM_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
 
 struct
 {
@@ -53,6 +58,7 @@ void function Canyonlands_MapInit_Common()
 	printt( "Canyonlands_MapInit_Common" )
 
 	PrecacheModel( LEVIATHAN_MODEL )
+	PrecacheModel( FLYER_SWARM_MODEL )
 
 	SetVictorySequencePlatformModel( $"mdl/rocks/victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
@@ -108,8 +114,9 @@ void function Canyonlands_MapInit_Common()
 		AddSpawnCallback_ScriptName( "leviathan_staging", LeviathanThink )
 
 		// adjust skybox for staging area
-		AddCallback_GameStateEnter( eGameState.WaitingForPlayers, StagingArea_MoveSkybox )
-		AddCallback_GameStateEnter( eGameState.PickLoadout, StagingArea_ResetSkybox )
+		// todo: add checks to these. pickloadout is never entered
+		// AddCallback_GameStateEnter( eGameState.WaitingForPlayers, StagingArea_MoveSkybox )
+		// AddCallback_GameStateEnter( eGameState.PickLoadout, StagingArea_ResetSkybox )
 	#endif
 
 	#if CLIENT
@@ -249,8 +256,12 @@ void function FlyHoverTanksIntoPosition( array<HoverTank> hoverTanks, int hoverT
 	{
 		CreateHoverTankMinimapIconForPlayers( hoverTank )
 
-		array<entity> nodeChain = GetEntityChainOfType( endNodes[ i ] )
+		entity tempNode = CreateEntity("info_target")
+		tempNode.SetOrigin( <25568.2, 6651.55, 4966.23> )
+		array<entity> nodeChain = [ //GetEntityChainOfType( endNodes[ i ] )
+			tempNode
 
+		]
 		HoverTankTeleportToPosition( hoverTank, startNodes[i].GetOrigin(), startNodes[i].GetAngles() )
 		//thread HoverTankDrawPathFX( hoverTank, nodeChain[ 0 ] )
 
@@ -316,6 +327,9 @@ void function TeleportHoverTanksIntoPosition( array<HoverTank> hoverTanks, int h
 
 void function HideUnusedHovertankSpecificGeo()
 {
+	//todo:
+	return
+
 	array<entity> hoverTankSpecificGeo
 	array<entity> unusedEndNodes = GetAllHoverTankEndNodes()
 
@@ -328,7 +342,7 @@ void function HideUnusedHovertankSpecificGeo()
 	foreach( entity node in unusedEndNodes )
 	{
 		entity lastNode = GetLastLinkedEntOfType( node )
-		array<entity> endNodeLinkedEnts = lastNode.GetLinkEntArray()
+		array<entity> endNodeLinkedEnts = lastNode.GetLinkEntArray() // [SERVER] Given object is not an entity (type = null)
 		foreach( linkedEnt in endNodeLinkedEnts )
 		{
 			if ( linkedEnt.GetClassName() == "func_brush_lightweight" )
@@ -976,6 +990,65 @@ void function LeviathanThink( entity marker, entity leviathan, bool stagingOnly 
 			count = 0
 			liftCount = RandomIntRange( 3, 10 )
 		}
+	}
+}
+#endif
+
+#if CLIENT
+void function CreateClientSideFlyerSwarmAtPosition( vector origin, float minRadius, float maxRadius, float height, int minFlyers, int maxFlyers )
+{
+	Assert( minRadius > 0 )
+	Assert( maxRadius >= minRadius )
+	Assert( height > 0 )
+	Assert( maxFlyers >= minFlyers )
+
+	if ( GetBugReproNum() == 12345 )
+	{
+		DebugDrawCylinder( origin, < -90, 0, 0 >, minRadius, height, 255, 0, 255, true, 9999.9 )
+		DebugDrawCylinder( origin, < -90, 0, 0 >, maxRadius, height, 255, 0, 255, true, 9999.9 )
+	}
+
+	float speedMin = 300.0
+	float speedMax = 700.0
+	int numFlyers = maxFlyers > minFlyers ? RandomIntRange( minFlyers, maxFlyers ) : maxFlyers
+	float minZ = origin.z
+	float maxZ = minZ + height
+	float startRotIncrement = 360.0 / float(numFlyers)
+
+	//printt( "numFlyers:", numFlyers )
+
+	for ( int i = 0 ; i < numFlyers ; i++ )
+	{
+		bool reverseDirection = CoinFlip()
+		float z = RandomFloatRange( minZ, maxZ )
+		float radius = RandomFloatRange( minRadius, maxRadius )
+		float startRot = startRotIncrement * i
+		float circumference = 2 * PI * radius
+		float speed = RandomFloatRange( speedMin, speedMax )
+		string anim = speed > ( ( speedMin + speedMax ) / 2.0 ) ? "fl_flap_cycle" : "fl_idle_flap_half"
+		float flyerStartYaw = startRot - 90.0
+		if ( reverseDirection )
+			flyerStartYaw += 180.0
+
+		entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", < origin.x, origin.y, z >, < 0, ClampAngle( startRot ), 0 > )
+		//mover.Hide()
+		entity flyer = CreateClientSidePropDynamic( mover.GetOrigin() + ( mover.GetRightVector() * radius ), < 0, ClampAngle( flyerStartYaw ), 0 >, FLYER_SWARM_MODEL )
+
+		flyer.SetParent( mover, "", true )
+		flyer.Anim_PlayOnly( anim )
+		flyer.SetCycle( RandomFloat( 1.0 ) )
+
+		//DebugDrawAngles( mover.GetOrigin(), mover.GetAngles() )
+		//DebugDrawLine( mover.GetOrigin(), flyer.GetOrigin(), 0, 255, 255, true, 9999.0 )
+
+		vector axis = < RandomFloatRange( -0.2, 0.2 ), RandomFloatRange( -0.2, 0.2 ), 1 >
+		axis.Norm()
+		//DebugDrawLine( mover.GetOrigin(), mover.GetOrigin() + ( axis * 200 ), 255, 255, 0, true, 99.9 )
+
+		float rotRate = 360.0 * ( speed / circumference )
+		if ( reverseDirection )
+			rotRate *= -1
+		mover.NonPhysicsRotate( axis, rotRate )
 	}
 }
 #endif

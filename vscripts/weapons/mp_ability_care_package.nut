@@ -1,9 +1,52 @@
 global function OnWeaponPrimaryAttack_care_package_medic
 
+struct AirdropContents
+{
+	array<string> left
+	array<string> right
+	array<string> center
+}
+
+struct LootPool
+{
+	//
+	table< string, int > equipmentTable
+	table< string, int > attachmentTable
+
+	array<string> armorLootGroup
+	array<string> equipmentLootGroup
+	array<string> attachmentsLootGroup
+}
+
+enum eLootPoolType
+{
+	ARMOR
+	OTHER_EQUIPMENT
+	ATTACHMENTS
+	SMALL_CONSUMABLE
+	LARGE_CONSUMABLE
+
+	_count
+}
+
+struct
+{
+	array<string> validSlots = [
+		"armor",
+		"helmet",
+		"incapshield",
+		"backpack",
+	]
+
+} file
+
 var function OnWeaponPrimaryAttack_care_package_medic( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
 	Assert( ownerPlayer.IsPlayer() )
+
+	if ( ownerPlayer.IsPhaseShifted() )
+		return 0
 
 	CarePackagePlacementInfo placementInfo = GetCarePackagePlacementInfo( ownerPlayer )
 

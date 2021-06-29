@@ -36,6 +36,7 @@ global function Client_TryUnlockCharacter
 global function ServerCallback_CharacterLockRejected
 global function OnLoadoutButton_RightClick
 global function UpdateCharacterDetailsMenu
+global function GetOtherTeammates
 
 const string CAMERA_ENT_NAME = "target_char_sel_camera_new"
 const string CHARACTER_ENT_NAME = "target_char_sel_pilot_new"

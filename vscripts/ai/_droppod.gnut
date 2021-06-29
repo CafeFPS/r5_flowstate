@@ -14,9 +14,185 @@ global const DROPPOD_MODEL = $"mdl/vehicle/droppod_fireteam/droppod_fireteam.rmd
 global const int AIR_DROP_BAD_PLACE_RADIUS = 1
 global function AirdropItems
 
+//  SpawnLootInLootBin( entity lootbin, string ref, int lootI, int lootCount )
+//
+// 	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
+// 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+// 	printt(ref, data.netInt)
+// 	entity loot   = SpawnGenericLoot( ref, p.origin, p.angles, data.countPerDrop )
+// 	loot.RemoveFromAllRealms()
+// 	loot.AddToOtherEntitysRealms( lootbin )
+// 	SetItemSpawnSource( loot, eSpawnSource.DROPPOD, lootbin )
+// 	loot.SetParent( lootbin )
+// 	file.lootBinsSpawnedLootMap[lootbin].append( loot )
+
 void function AirdropItems( vector origin, vector angles, array<string> contents, entity fxToStop, string animationName, entity owner, int skin, string sourceWeaponClassName )
 {
+	printt( "AirdropItems", "origin:", origin, "angles:", angles, "anim:", animationName, "srcWpnClass:", sourceWeaponClassName)
 
+	entity dropPod = CreateDropPod( origin, angles, sourceWeaponClassName )
+
+	dropPod.SetSkin( skin )
+
+	waitthread LaunchAnimDropPod( dropPod, animationName, OriginToGround( origin ), angles )
+
+	InitDropPod( dropPod )
+
+	for(int i=0; i < 3; ++i)
+	{
+		SpawnLootInDropPod( dropPod, "mp_weapon_r97", i, 3 )
+	}
+
+
+}
+
+void function SpawnLootInDropPod( entity dropPod, string ref, int lootI, int lootCount )
+{
+	Point p = GetDropPodSpawnLocation( dropPod, lootI, lootCount )
+
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	entity loot = SpawnGenericLoot( ref, p.origin, p.angles, data.countPerDrop )
+
+	loot.RemoveFromAllRealms()
+	loot.AddToOtherEntitysRealms( dropPod )
+	SetItemSpawnSource( loot, eSpawnSource.DROPPOD, dropPod )
+	loot.SetParent( dropPod )
+
+}
+
+void function InitDropPod( entity dropPod )
+{
+
+	// var dataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+	// int numRows = GetDatatableRowCount( dataTable )
+
+	dropPod.e.isOpen = false
+	dropPod.e.isBusy = false
+	dropPod.e.hasBeenOpened = false
+	dropPod.AllowMantle()
+	dropPod.SetForceVisibleInPhaseShift( true )
+	dropPod.SetUsable()
+	dropPod.SetFadeDistance( 100000 )
+	dropPod.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	//dropPod.AddUsableValue( USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
+	dropPod.SetUsablePriority( USABLE_PRIORITY_LOW )
+	AddCallback_OnUseEntity( dropPod, OnDropPodUse )
+
+	SetCallback_CanUseEntityCallback( dropPod, DropPod_CanUse )
+
+	// if ( SURVIVAL_DEBUG_LOOT_BINS )
+	// {
+	// 	DebugDrawLine( lootbin.GetOrigin(), lootbin.GetOrigin() + <0, 0, 1000>, 255, 255, 255, true, 100.0 )
+	// }
+	// array<string> items
+
+	// for( int i=0; i < RandomIntRange(2, 4); i++ )
+	// {
+	// 	items.append( GetDataTableString( dataTable, RandomInt( numRows ), GetDataTableColumnByName( dataTable, "ref" ) ) )
+	// }
+	
+	// AddMultipleLootItemsToLootBin(lootbin, items)
+	// AddMultipleLootItemsToLootBin(lootbin, ["mp_weapon_vinson", "mp_weapon_r97", "health_pickup_combo_full", "mp_weapon_thermite_grenade", "backpack_pickup_lv3", "armor_pickup_lv1"])
+}
+
+void function OnDropPodUse( entity dropPod, entity player, int useInputFlags )
+{
+	if ( (useInputFlags & USE_INPUT_DEFAULT) == 0 )
+		return
+
+	thread HandleDropPodUse( dropPod, player )
+}
+void function HandleDropPodUse( entity dropPod, entity player )
+{
+	dropPod.EndSignal( "OnDestroy" )
+
+	if ( dropPod.Anim_IsActive() )
+		return
+
+	EmitSoundOnEntity( dropPod, SOUND_LOOT_BIN_OPEN )
+
+	if ( !DropPod_IsOpen( dropPod ) )
+		thread DropPod_PlayOpenSequence( dropPod, player )
+	if ( IsValid( player ) )
+		TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOTBIN_USED, dropPod, dropPod.GetWorldSpaceCenter(), player.GetTeam(), player )
+}
+
+void function DropPod_PlayOpenSequence( entity dropPod, entity player )
+{
+	dropPod.EndSignal( "OnDestroy" )
+
+	// CleanUpPermanentsParentedToLootbin( lootbin )
+
+	GradeFlagsSet( dropPod, eGradeFlags.IS_BUSY )
+
+	if ( !dropPod.e.hasBeenOpened )
+	{
+		dropPod.e.hasBeenOpened = true
+
+		StopSoundOnEntity( dropPod, SOUND_LOOT_BIN_IDLE )
+
+		int lootIndex             = 0
+
+		// todo: use this instead of setting loot when droppod lands
+		// array<string> lootToSpawn = GetLootBinContents( lootbin )
+
+		// foreach ( ref in lootToSpawn )
+		// {
+		// 	SpawnLootInLootBin( lootbin, ref, lootIndex, lootToSpawn.len() )
+		// 	lootIndex++
+		// }
+
+		// lootToSpawn.clear()
+	}
+
+	GradeFlagsSet( dropPod, eGradeFlags.IS_OPEN )
+
+	entity dropPodParent = dropPod.GetParent()
+	if ( IsValid( dropPodParent ) )
+		waitthread PlayAnim( dropPod, "droppod_loot_opening", dropPodParent, "ref" )
+	else
+		waitthread PlayAnim( dropPod, "droppod_loot_opening" )
+
+	GradeFlagsClear( dropPod, eGradeFlags.IS_BUSY )
+}
+
+bool function DropPod_IsOpen( entity dropPod )
+{
+	if ( GradeFlagsHas( dropPod, eGradeFlags.IS_OPEN ) )
+		return true
+	return false
+}
+
+bool function DropPod_CanUse( entity player, entity dropPod )
+{
+	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
+		return false
+
+	if ( Bleedout_IsBleedingOut( player ) )
+		return false
+
+	// if ( LootBin_IsBusy( dropPod ) )
+	// 	return false
+
+	if ( DropPod_IsOpen( dropPod ) )
+		return false
+
+	return true
+}
+
+
+
+Point function GetDropPodSpawnLocation( entity dropPod, int lootI, int lootCount )
+{
+	float y    = Graph( lootI + 1, 0, lootCount + 1, -51, 51 )
+	vector pos = dropPod.GetOrigin() + RotateVector( <14, y, 33>, dropPod.GetAngles() )
+	vector ang = AnglesCompose( dropPod.GetAngles(), <10, 0, 0> )
+
+	Point p
+	p.origin = pos
+	p.angles = ang
+	return p
 }
 
 function DropPod_Init()
@@ -115,10 +291,20 @@ function CheckPlayersIntersectingPod( pod, targetOrigin )
 	return false
 }
 
-entity function CreateDropPod( vector ornull origin = null, vector ornull angles = null )
+entity function CreateDropPod( vector ornull origin = null, vector ornull angles = null, string sourceWeaponClassName = "" )
 {
 	entity prop_dynamic = CreateEntity( "prop_dynamic" )
-	prop_dynamic.SetValueForModelKey( DROPPOD_MODEL )
+
+	// if( sourceWeaponClassName == "mp_ability_care_package" )
+	// {
+	// 	prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
+	// }
+	// else {
+	// 	prop_dynamic.SetValueForModelKey( DROPPOD_MODEL )
+	// }
+
+	prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
+
 	prop_dynamic.kv.contents = int( prop_dynamic.kv.contents ) & ~CONTENTS_TITANCLIP
 	prop_dynamic.kv.fadedist = -1
 	prop_dynamic.kv.renderamt = 255
@@ -174,7 +360,7 @@ void function DropPodOnImpactFXAndShake( entity droppod )
 	// 1 - No Damage - Only Force
 	// 2 - Push players
 	// 8 - Test LOS before pushing
-	local flags = 11
+	local flags = 2 // 11
 	local impactOrigin = e.targetOrigin + Vector( 0,0,10 )
 	local impactRadius = 192
 	thread PushPlayerAndCreateDropPodCollision( droppod, expect vector( e.targetOrigin ) )

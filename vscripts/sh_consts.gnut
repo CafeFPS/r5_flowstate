@@ -1,5 +1,7 @@
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
+global const float FLT_MAX = 3.40282e+38
+global const float FLT_EPSILON = 1.0e-6
 
 global typedef IntFromEntityCompare int functionref( entity, entity )
 
@@ -17,6 +19,14 @@ global const DIFFICULTY_MASTER = 3
 #if UI
 global const float RUI_BADGAMETIME = -1 * pow( 10, 30 )
 #endif
+
+global typedef FXHandle int
+
+global const void IN_SET = null
+global typedef IntSet table<int, void>
+global typedef EntitySet table<entity, void>
+global typedef StringSet table<string, void>
+global typedef Sig string
 
 global struct Cylinder
 {
@@ -442,6 +452,7 @@ global const CLUSTER_ROCKET_FX_TABLE 					= "exp_rocket_cluster_secondary"
 // the amount of damage needed to break melee assist
 global const DAMAGE_BREAK_MELEE_ASSIST = 1400
 
+global const float REVIVE_TIME_TO_REVIVE = 30.0
 // ----------------------------
 //  LEVEL SCRIPT SHARED CONSTS
 // ----------------------------
@@ -932,6 +943,7 @@ global enum userSignInState
 global enum eEventNotifications
 {
 	Clear,
+	BeingRevived,
 	RoundWinningKillReplayCancelled,
 	Grapple_WasGrappled_ByTitan,
 	Grapple_WasGrappled_ByPilot,
@@ -1211,7 +1223,8 @@ global enum ePresentationType
 	STORE,
 	NO_MODELS,
 	LOOT,
-	COUNT
+	BATTLE_PASS,
+	COUNT	
 }
 
 global enum ePrimaryWeaponCategory
@@ -1298,6 +1311,8 @@ global enum eUIEvent
 	MENU_NAVIGATE_BACK,
 	//MENU_TAB_CHANGED,
 	MENU_INPUT_MODE_CHANGED,
+	MENU_GET_TOP_LEVEL,
+	MENU_LOSE_TOP_LEVEL,
 	PANEL_SHOW,
 	PANEL_HIDE,
 	PANEL_NAVUP,
@@ -1703,6 +1718,7 @@ global enum eCommsAction
 	PING_ZIPLINE,
 	PING_ENEMY_SPOTTED_GENERAL,
 	PING_ENEMY_SPOTTED_SPECIFIC,
+	PING_ENEMY_SUSPECTED,
 	//
 	PING_ENEMY_NPC_SNIPER,
 	PING_ENEMY_NPC_SPECTRE,
@@ -1921,6 +1937,10 @@ global enum eCommsAction
 	FLAVOR_ITEM_HEALTH_LARGE,
 	FLAVOR_ITEM_HEALTH_SYRINGE,
 	FLAVOR_ITEM_ULTIMATE_ENERGY,
+	FLAVOR_EQUIPMENT_BACKPACK_1,
+	FLAVOR_EQUIPMENT_BACKPACK_2,
+	FLAVOR_EQUIPMENT_BACKPACK_3,
+	FLAVOR_EQUIPMENT_BACKPACK_4,
 
 	_count
 }
@@ -2105,6 +2125,17 @@ global const table<string, vector> ammoColors = {
 	highcal = AMMO_LARGE_COLOR
 }
 
+global enum eRarityTier
+{
+	NONE = -1,
+	COMMON = 0,
+	RARE = 1,
+	EPIC = 2,
+	LEGENDARY = 3,
+	HEIRLOOM = 4,
+	_COUNT,
+}
+
 global struct BurnDamageSettings
 {
 	int 	damageSourceID
@@ -2136,6 +2167,20 @@ global struct BurnDamageStack
 	float 	lastDamageTime 	= -1
 
 	BurnDamageSettings &burnSettings
+}
+
+global const float DEPLOYABLE_COLLISION_DEFAULT_TRACE_LENGTH = 12
+global struct DeployableCollisionParams
+{
+	vector	pos
+	vector	normal
+	entity	hitEnt
+	int		hitBox
+	bool	isCritical
+	int		deployableFlags	//
+	bool 	highDetailTrace
+	bool	ignoreHullSize
+	float	traceLength = DEPLOYABLE_COLLISION_DEFAULT_TRACE_LENGTH
 }
 
 global int PLAYER_STRYDER_CHAR_DATA_ARRAY_VERSION = 0 // be careful changing this

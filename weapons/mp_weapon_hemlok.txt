@@ -31,6 +31,8 @@ WeaponData
 	"viewmodel"   									"mdl/weapons/m1a1_hemlok/ptpov_hemlok.rmdl"
 	"playermodel" 									"mdl/weapons/m1a1_hemlok/w_hemlok.rmdl"
 
+	"chroma_color"									".8 1 .6"
+
 	"sound_dryfire"									"hemlok_dryfire"
 	"sound_pickup"									"wpn_pickup_Rifle_1P"
 	"sound_trigger_pull"							"Weapon_Hemlok_Trigger"
@@ -253,11 +255,14 @@ WeaponData
 
 	Mods
 	{
-		survival_finite_ammo
+		//survival_infinite_ammo
+		sia
         {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"36"
+			"ammo_clip_size"   								"800"
+            "ammo_default_total"							"800"
+            "ammo_stockpile_max"							"800"
             "ammo_no_remove_from_stockpile"					"0"
+        	"fire_rate"   									"240"
 
             "low_ammo_fraction" 							"0.3"
 	   		"uses_ammo_pool"								"1"

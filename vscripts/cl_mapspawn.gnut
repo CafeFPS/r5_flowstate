@@ -251,6 +251,7 @@ void function ClientCodeCallback_FullUpdate()
 {
 	foreach ( callbackFunc in clGlobal.fullUpdateCallbacks )
 		callbackFunc()
+	ScreenCoverTransition( 4.5 )
 }
 
 

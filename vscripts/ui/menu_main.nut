@@ -1,5 +1,4 @@
 global function InitMainMenu
-//global function UpdateDataCenterFooter
 global function LaunchMP
 global function AttemptLaunch
 global function GetUserSignInState
@@ -9,15 +8,16 @@ struct
 {
 	var menu
 	var titleArt
+	var subtitle
 	var versionDisplay
 	var signedInDisplay
-	#if PS4_PROG
+	#if(PS4_PROG)
 		bool chatRestrictionNoticeJustHandled = false
-	#endif // PS4_PROG
+	#endif //
 } file
 
 
-void function InitMainMenu()
+void function InitMainMenu( var newMenuArg ) //
 {
 	var menu = GetMenu( "MainMenu" )
 	file.menu = menu
@@ -25,24 +25,41 @@ void function InitMainMenu()
 	SetGamepadCursorEnabled( menu, false )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_SHOW, OnMainMenu_Show )
+	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnMainMenu_Close )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnMainMenu_NavigateBack )
 
 	file.titleArt = Hud_GetChild( file.menu, "TitleArt" )
 	var titleArtRui = Hud_GetRui( file.titleArt )
 	RuiSetImage( titleArtRui, "basicImage", $"ui/menu/title_screen/title_art" )
 
-	file.versionDisplay = Hud_GetChild( menu, "versionDisplay" )
+	file.subtitle = Hud_GetChild( file.menu, "Subtitle" )
+	var subtitleRui = Hud_GetRui( file.subtitle )
+	RuiSetString( subtitleRui, "subtitleText", Localize( "#SEASON_N", 3 ).toupper() )
+
+	file.versionDisplay = Hud_GetChild( menu, "VersionDisplay" )
 	file.signedInDisplay = Hud_GetChild( menu, "SignInDisplay" )
 }
 
 
 void function OnMainMenu_Show()
 {
-	Hud_SetWidth( file.titleArt, int( Hud_GetHeight( file.titleArt ) * 1.77777778 ) ) // force aspect correct width
+	//
+	int width = int( Hud_GetHeight( file.titleArt ) * 1.77777778 )
+	Hud_SetWidth( file.titleArt, width )
+	Hud_SetWidth( file.subtitle, width )
+
 	Hud_SetText( file.versionDisplay, GetPublicGameVersion() )
 	Hud_Show( file.versionDisplay )
 
 	ActivatePanel( GetPanel( "MainMenuPanel" ) )
+
+	Chroma_MainMenu()
+}
+
+
+void function OnMainMenu_Close()
+{
+	HidePanel( GetPanel( "MainMenuPanel" ) )
 }
 
 
@@ -69,15 +86,15 @@ void function OnMainMenu_NavigateBack()
 		return
 	}
 
-	#if PC_PROG
+	#if(PC_PROG)
 		OpenConfirmExitToDesktopDialog()
-	#endif // PC_PROG
+	#endif //
 }
 
 
 int function GetUserSignInState()
 {
-	#if DURANGO_PROG
+	#if(DURANGO_PROG)
 		if ( Durango_InErrorScreen() )
 		{
 			return userSignInState.ERROR
@@ -88,7 +105,7 @@ int function GetUserSignInState()
 		}
 		else if ( !Console_IsSignedIn() && !Console_SkippedSignIn() )
 		{
-			//printt( "Console_IsSignedIn():", Console_IsSignedIn(), "Console_SkippedSignIn:", Console_SkippedSignIn() )
+			//
 			return userSignInState.SIGNED_OUT
 		}
 
@@ -100,7 +117,7 @@ int function GetUserSignInState()
 
 void function UpdateSignedInState()
 {
-	#if DURANGO_PROG
+	#if(DURANGO_PROG)
 		if ( Console_IsSignedIn() )
 		{
 			Hud_SetText( file.signedInDisplay, Localize( "#SIGNED_IN_AS_N", Durango_GetGameDisplayName() ) )
@@ -123,7 +140,7 @@ void function AttemptLaunch()
 		return
 	Assert( uiGlobal.launching == eLaunching.MULTIPLAYER ||	uiGlobal.launching == eLaunching.MULTIPLAYER_INVITE )
 
-	#if CONSOLE_PROG
+	#if(CONSOLE_PROG)
 		if ( !IsEULAAccepted() )
 		{
 			if ( GetActiveMenu() == GetMenu( "EULADialog" ) )
@@ -138,19 +155,20 @@ void function AttemptLaunch()
 			OpenEULADialog( false )
 			return
 		}
-	#endif // CONSOLE_PROG
+	#endif //
 
-	#if PS4_PROG
-		// If profile has chat restriction enabled show notice
-		// TODO: The implementation of this would be much better if we could check for the need to show it separately from actually showing it.
+	#if(PS4_PROG)
+		//
+		//
 		if ( !file.chatRestrictionNoticeJustHandled )
 		{
 			thread PS4_ChatRestrictionNotice()
 			return
 		}
-	#endif // PS4_PROG
+	#endif //
 
-	if ( !IsIntroViewed() )
+	const int CURRENT_INTRO_VIDEO_VERSION = 3
+	if ( (GetIntroViewedVersion() < CURRENT_INTRO_VIDEO_VERSION) || (InputIsButtonDown( KEY_LSHIFT ) && InputIsButtonDown( KEY_LCONTROL ))  || (InputIsButtonDown( BUTTON_TRIGGER_LEFT_FULL ) && InputIsButtonDown( BUTTON_TRIGGER_RIGHT_FULL )) )
 	{
 		if ( GetActiveMenu() == GetMenu( "PlayVideoMenu" ) )
 			return
@@ -158,20 +176,21 @@ void function AttemptLaunch()
 		if ( IsDialog( GetActiveMenu() ) )
 			CloseActiveMenu( true )
 
-		PlayVideoMenu( "intro", "Apex_Opening_Movie", true, PrelaunchValidateAndLaunch )
+		SetIntroViewedVersion( CURRENT_INTRO_VIDEO_VERSION )
+		PlayVideoMenu( true, "intro", "Apex_Opening_Movie", eVideoSkipRule.HOLD, PrelaunchValidateAndLaunch )
 		return
 	}
 
 	StartSearchForPartyServer()
 
 	uiGlobal.launching = eLaunching.FALSE
-	#if PS4_PROG
+	#if(PS4_PROG)
 		file.chatRestrictionNoticeJustHandled = false
-	#endif // PS4_PROG
+	#endif //
 }
 
 
-#if PS4_PROG
+#if(PS4_PROG)
 void function PS4_ChatRestrictionNotice()
 {
 	Plat_ShowChatRestrictionNotice()
@@ -181,4 +200,4 @@ void function PS4_ChatRestrictionNotice()
 	file.chatRestrictionNoticeJustHandled = true
 	PrelaunchValidateAndLaunch()
 }
-#endif // PS4_PROG
+#endif //

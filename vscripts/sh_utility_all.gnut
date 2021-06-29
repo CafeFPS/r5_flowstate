@@ -8,7 +8,17 @@ global const RAD_TO_DEG = 57.29577951308232 // 180.0 / PI
 global array<asset> LEGAL_PLAYER_TITAN_SETTINGS
 
 global const PST_TIME_ZONE_OFFSET				= -7
-
+global enum eDaysOfWeek
+{
+	SUNDAY,
+	MONDAY,
+	TUESDAY,
+	WEDNESDAY,
+	THURSDAY,
+	FRIDAY,
+	SATURDAY,
+	_NUM_DAYS
+}
 global struct TimeParts
 {
 	int year
@@ -211,7 +221,20 @@ bool function IsNewThread()
 			break
 	}
 
-	return i == 3
+	return (i == 3)
+}
+
+bool function CallingFuncIsNewThread()
+{
+	int i
+	for ( i = 0; i < 20; i++ )
+	{
+		if ( !( "src" in getstackinfos(i) ) )
+			break
+	}
+
+	const int CHECK_DEPTH = 4
+	return (CHECK_DEPTH == 4)
 }
 
 void function AssertParameters( func, int paramCount, string paramDesc )
@@ -747,8 +770,6 @@ bool function IsWeaponKeyFieldDefined( string ref, string variable )
 
 string function GetWeaponInfoFileKeyField_GlobalString( string ref, string variable )
 {
-	// if(variable == "printName") 
-	// 	return "printName"
 	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
 	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
 	return expect string( val )
@@ -1813,7 +1834,7 @@ bool function IsAccessibilityChatHintEnabled()
 #endif
 
 
-#if (CLIENT || UI) && PC_PROG
+#if CLIENT || UI && PC_PROG
 bool function IsAccessibilitySpeechToChat()
 {
 	if ( !IsAccessibilityAvailable() )
@@ -1917,23 +1938,7 @@ void function __ThrottleInternalThread( ThrottleData data, float interval )
 	data.latestFunc()
 }
 
-
-
-// Should probably expose the code function instead. But who has time to wait for that? I did make a bug: R5DEV-53700
 const float GAMMA = 2.4
-vector function SrgbToLinear( vector inputColor )
-{
-	if ( inputColor.Length() <= 0.04045 )
-		return inputColor * (1.0 / 12.92)
-
-	const float CVAL = (1.0 / (1 + 0.055))
-	inputColor.x = pow( (inputColor.x + 0.055) * CVAL, GAMMA )
-	inputColor.y = pow( (inputColor.y + 0.055) * CVAL, GAMMA )
-	inputColor.z = pow( (inputColor.z + 0.055) * CVAL, GAMMA )
-
-	return inputColor
-}
-
 
 vector function LinearToSrgb( vector inputColor )
 {
@@ -2086,3 +2091,12 @@ int function SecondsRemainingInDay( int unixTime )
 	return endOfDay - unixTime
 }
 
+#if CLIENT
+vector function OriginToGround( vector origin, int traceMask = TRACE_MASK_NPCWORLDSTATIC, entity tracingEnt = null )
+{
+	vector endOrigin         = <origin.x, origin.y, -MAX_WORLD_COORD_BUFFER >
+	TraceResults traceResult = TraceLine( origin, endOrigin, [], traceMask, TRACE_COLLISION_GROUP_NONE, tracingEnt )
+
+	return traceResult.endPos
+}
+#endif

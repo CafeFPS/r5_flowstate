@@ -101,8 +101,6 @@ void function SURVIVAL_LootActions_InitShared()
 	action = RegisterLootAction( eLootAction.IGNORE )
 	action.title = ""
 
-	print("SHIT'S REGISTERED")
-
 	Assert( file.lootActionData.len() == eLootAction._count )
 
 }
@@ -320,7 +318,7 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 
 #if SERVER
 #if R5DEV
-	if ( !GetConVarBool( "sv_infinite_ammo" ) )
+	//if ( !GetConVarBool( "sv_infinite_ammo" ) )
 #endif
 	player.AmmoPool_SetCount( ammoType, poolCount + numToPickup )
 	PlayPickupSound( player, data.ref, pickupFlags )

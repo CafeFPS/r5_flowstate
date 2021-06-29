@@ -2,27 +2,14 @@ global function InitConfirmDialog
 global function InitOKDialog
 
 global function OpenConfirmDialogFromData
+global function OpenABDialogFromData
 global function OpenOKDialogFromData
 
 enum eDialogType
 {
 	CONFIRM,
+	AB,
 	OK,
-}
-
-global struct ConfirmDialogData
-{
-	string        headerText = "headerText"
-	string        messageText = "messageText"
-	array<string> okText = ["#B_BUTTON_CLOSE", "#B_BUTTON_CLOSE"]
-	array<string> yesText = ["#A_BUTTON_YES", "#YES"]
-	array<string> noText = ["#B_BUTTON_CANCEL", "#B_BUTTON_CANCEL"]
-	asset         contextImage = $""
-
-	void functionref( int )    resultCallback
-
-	int dialogType
-	var __menu
 }
 
 global enum eDialogResult
@@ -41,7 +28,7 @@ struct
 	ConfirmDialogData ornull showDialogData
 } file
 
-void function InitConfirmDialog()
+void function InitConfirmDialog( var newMenuArg ) //
 {
 	var menu = GetMenu( "ConfirmDialog" )
 	file.confirmMenu = menu
@@ -55,7 +42,7 @@ void function InitConfirmDialog()
 }
 
 
-void function InitOKDialog()
+void function InitOKDialog( var newMenuArg ) //
 {
 	var menu = GetMenu( "OKDialog" )
 	file.okMenu = menu
@@ -80,30 +67,20 @@ void function OpenConfirmDialogFromData( ConfirmDialogData dialogData )
 	file.showDialogData = dialogData
 
 	AdvanceMenu( GetMenu( "ConfirmDialog" ) )
+}
 
-	/*
-	var                    menu
-	string                 header
-	string                 message
-	DialogMessageRuiData & ruiMessage
-	array                  messageColor = [161, 161, 161, 255]
-	asset                  image
-	asset                  rightImage = $""
-	bool                   forceChoice = false
-	bool                   noChoice = false
-	bool                   noChoiceWithNavigateBack = false
-	bool                   showSpinner = false
-	bool                   showPCBackButton = false
-	float                  inputDisableTime = 0
-	table<int, bool>       coloredButton
-	bool                   darkenBackground = false
-	bool                   useFullMessageHeight = false
-	float                  timeoutDuration = -1
-	int                    magicNumber = 0
 
-	array<DialogButtonData> buttonData
-	array<DialogFooterData> footerData
-	*/
+void function OpenABDialogFromData( ConfirmDialogData dialogData )
+{
+	Assert( file.showDialogData == null )
+	Assert( dialogData.resultCallback != null, "resultCallback == null; this dialog won't do anything" )
+
+	dialogData.dialogType = eDialogType.AB
+	dialogData.__menu = file.confirmMenu
+
+	file.showDialogData = dialogData
+
+	AdvanceMenu( GetMenu( "ConfirmDialog" ) )
 }
 
 
@@ -130,10 +107,18 @@ void function Dialog_OnOpen()
 	RuiSetString( contentRui, "messageText", _confirmData().messageText )
 	RuiSetAsset( contentRui, "contextImage", _confirmData().contextImage )
 
+	if ( _confirmData().timerEndTime != -1  )
+		RuiSetGameTime( contentRui, "endTime", _confirmData().timerEndTime )
+
 	if ( _confirmData().dialogType == eDialogType.CONFIRM )
 	{
 		AddMenuFooterOption( _confirmData().__menu, LEFT, BUTTON_A, true, _confirmData().yesText[0], _confirmData().yesText[1], ConfirmDialog_Yes )
 		AddMenuFooterOption( _confirmData().__menu, LEFT, BUTTON_B, true, _confirmData().noText[0], _confirmData().noText[1], ConfirmDialog_No )
+	}
+	else if ( _confirmData().dialogType == eDialogType.AB )
+	{
+		AddMenuFooterOption( _confirmData().__menu, LEFT, BUTTON_X, true, _confirmData().yesText[0], _confirmData().yesText[1], ConfirmDialog_Yes )
+		AddMenuFooterOption( _confirmData().__menu, LEFT, BUTTON_Y, true, _confirmData().noText[0], _confirmData().noText[1], ConfirmDialog_No )
 	}
 	else
 	{
@@ -167,7 +152,7 @@ void function ConfirmDialog_OnNavigateBack()
 
 void function ConfirmDialog_Yes( var button )
 {
-	// todo(bm): AddMenuFooterOption registers the inputs, and it seems flakey.
+	//
 	if ( file.showDialogData == null )
 		return
 
@@ -182,7 +167,7 @@ void function ConfirmDialog_Yes( var button )
 
 void function ConfirmDialog_No( var button )
 {
-	// todo(bm): AddMenuFooterOption registers the inputs, and it seems flakey.
+	//
 	if ( file.showDialogData == null )
 		return
 

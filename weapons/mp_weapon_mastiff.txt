@@ -30,6 +30,8 @@ WeaponData
 	"playermodel" 									"mdl/weapons/mastiff_stgn/w_mastiff.rmdl"
 	"holster_type"									"rifle"
 
+	"chroma_color"									"1 .6 .1"
+
 	// Effects
 	"tracer_effect"   								"weapon_tracers_shotgun"
 	"impact_effect_table" 							"bullet_mastiff"

@@ -1,0 +1,270 @@
+#base "_base_ability_tactical.txt"
+
+WeaponData
+{
+//
+//  Info
+//
+	printname       "#LOBA_TAC_TRANSLOCATION_NAME"
+	shortprintname  "#LOBA_TAC_TRANSLOCATION_SHORT"
+	longdesc        "#LOBA_TAC_TRANSLOCATION_LONGDESC"
+	description     "#LOBA_TAC_TRANSLOCATION_DESC"
+	menu_icon       "white"
+	hud_icon        "rui/hud/tactical_icons/tactical_loba"
+
+
+//
+//  Mechanics
+//
+	fire_mode                           offhand
+	is_toss_weapon                      1
+	offhand_interupts_weapon_anims      1
+	offhand_toss_hold_is_resumable      0
+	fast_swap_to                        1
+	no_ammo_used_on_primary_attack      1
+	reload_enabled                      0
+	allow_empty_click                   0
+	primary_fire_does_not_block_sprint  1
+	aimassist_disable_hipfire           1
+	aimassist_disable_ads               1
+	grenade_ignore_friendly_players		1
+
+	cooldown_type                       ammo_timed
+	regen_ammo_refill_rate              1
+
+	grenade_hull_mins                   "-3.0 -3.0 -3.0"
+	grenade_hull_maxs                   "3.0 3.0 3.0"
+
+	//stick_pilot                         0
+	//stick_titan                         0
+	//stick_npc                           0
+	//stick_drone                         0
+
+	projectile_ignores_vortex           1
+	projectile_visible_to_smart_ammo    0
+
+	damage_near_distance                0
+	damage_near_value                   0
+	damage_far_distance                 0
+	damage_far_value                    0
+
+	damage_type                         none // Necessary, otherwise it defaults to "bullet" which makes code fire a bolt!
+
+
+//
+//  Balance
+//
+	ammo_clip_size                      30 // seconds to full charge
+	ammo_per_shot                       30
+	ammo_min_to_fire                    30
+
+	fire_rate                           10.0
+	fire_duration                       1.0
+	deploy_time                         0.1
+	toss_pullout_time                   0.6 // see ANIMATION before adjusting
+	//toss_time                         0.3 // see ANIMATION before adjusting, length set by sequence
+	//toss_overhead_time                0.3 // see ANIMATION before adjusting, length set by sequence
+	//lower_time                          0.3
+
+	ads_move_speed_scale                1.06
+
+	trophy_system_ignores               "always"
+
+
+	///////////////////////////////////////////////////////
+	////
+	//// Old trajectory (drag)
+	////
+	//projectile_launch_speed                     5950
+	//projectile_launch_pitch_offset              4.5
+	//projectile_drag_coefficient                 0.131
+	///////////////////////////////////////////////////////
+
+
+	///////////////////////////////////////////////////////
+	//
+	//// New trajectory (gravity & linear friction sections)
+	//
+	projectile_launch_pitch_offset              	4.5
+	grenade_angle_dependant_throw_max_speed_angle	30.8
+	projectile_launch_speed                     	1870
+	grenade_angle_dependant_throw_min_speed_angle	50.1
+	grenade_angle_dependant_throw_min_speed			1390
+
+	// Section 1
+	projectile_gravity_scale                    0.5975
+	projectile_air_friction                     1268
+	projectile_gravity_scale_time_2             0.504
+
+	// Section 2
+	projectile_gravity_scale_2                  0.48
+	projectile_air_friction_2                   495
+	projectile_gravity_scale_time_final         1.53
+
+	// Section 3
+	projectile_gravity_scale_final              0.68
+	projectile_air_friction_final               495
+	///////////////////////////////////////////////////////
+
+	grenade_drop_to_ground_on_bounce            1
+	grenade_drop_to_ground_bounce_vel_frac      0.8
+	grenade_drop_velocity                       1650
+
+	projectile_first_person_offset_fraction     1.0
+	grenade_inherit_owner_velocity              1
+
+	grenade_bounce_vel_frac_shallow             1.0//0.5
+	grenade_bounce_vel_frac_sharp               1.0//0.3
+	grenade_bounce_vel_frac_along_normal       	0.2//0.1
+	grenade_bounce_randomness                   0.0//0.05
+	grenade_bounce_extra_vertical_randomness    0.0//0.0
+	grenade_roll_vel_frac_per_second            1.0//0.1
+
+	grenade_view_launch_offset                  "15.0 0.0 0.0"
+
+	grenade_fuse_time                           5.7
+
+	grenade_use_mask_ability                    1
+	grenade_mover_destroy_when_planted			1
+
+	fire_to_redirect_projectile_mid_flight		1
+	//redirect_on_bounce							1
+
+//
+//  Aesthetics
+//
+
+	viewmodel           "mdl/error.rmdl" //"mdl/weapons/loba_rings/ptpov_loba_rings.rmdl"
+	playermodel         "mdl/error.rmdl" //"mdl/weapons/loba_rings/w_loba_rings.rmdl"
+	projectilemodel     "mdl/error.rmdl" //"mdl/weapons/loba_rings/w_loba_rings.rmdl"
+
+                                   
+		zoom_effects                   0
+      
+                                  
+       
+	zoom_time_in                   0.4
+	zoom_time_out                  0.4
+	zoom_fov                       70.0 // matches Maya scene file (70.0 actually results in no change at all)
+	zoom_fov_viewmodel             70.0 // matches Maya scene file
+
+	grenade_arc_indicator_show_from_hip         1
+	grenade_arc_indicator_show_during_toss		1
+	grenade_arc_indicator_show_while_airborne   0
+	grenade_arc_indicator_max_duration          4.6
+	grenade_arc_indicator_bounce_count          1
+	grenade_arc_indicator_show_landing_position	 0
+	grenade_arc_indicator_smooth				1
+	grenade_arc_indicator_smooth_radius			30
+	//grenade_arc_indicator_effect                "P_arc_red"
+	//grenade_arc_indicator_effect_first          "P_arc_red"
+	grenade_arc_indicator_effect                "P_wrp_trl_line"
+	grenade_arc_indicator_effect_first          "P_wrp_trl_line"
+	grenade_arc_impact_indicator_effect         "P_wrp_trl_end"
+
+	projectile_adjust_to_gun_barrel             0
+	projectile_adjust_to_hand                   1
+
+	toss_has_post_loop							1
+
+	fx_muzzle_flash_attach						"R_HAND"
+
+	//sound_deploy_1p                             "Char_13_Tactical_Toss"
+	//sound_deploy_3p                             "Char_13_Tactical_Toss"
+	sound_grenade_projectile                    "Loba_Tactical_Bracelet_Travel_3P"
+
+	sound_throw_1p								"Loba_Tactical_Throw_1P"
+	sound_throw_3P								"Loba_Tactical_Throw_3P"
+
+	projectile_trail_effect_0_1p                "P_warp_proj_default"
+	projectile_trail_effect_0_3p                "P_warp_proj_default_3P"
+	//"projectile_trail_attachment"               "fx_center"
+
+	bounce_effect_table                         "exp_translocator_bounce"
+	impact_effect_table                         "exp_translocator_bounce"
+
+	dof_zoom_nearDepthStart						1.750
+	dof_zoom_nearDepthEnd						4.00
+	dof_nearDepthStart							0.0
+	dof_nearDepthEnd							0.0
+
+	//active_crosshair_count                      1
+	//rui_crosshair_index                         0
+	//ordnance_crosshair_always_on_start_index    1
+	//RUI_CrosshairData
+	//{
+	//	DefaultArgs
+	//	{
+	//		playerZoomFrac                      player_zoomFrac
+    //        weaponIsHoldingToss                 weapon_is_holding_toss
+    //        grenadeIsRedirected                 grenade_is_redirected
+    //        grenadeIsPlanted                    grenade_is_planted
+    //        weaponGrenadeDistToImpact           weapon_grenade_dist_to_impact
+    //
+	//	}
+	//	Crosshair_1
+	//	{
+	//		ui                          "ui/crosshair_loba_translocation"
+	//	}
+	//}
+
+
+//
+// Script hookups
+//
+
+	OnWeaponAttemptOffhandSwitch        "OnWeaponAttemptOffhandSwitch_ability_translocation"
+	OnWeaponActivate                    "OnWeaponActivate_ability_translocation"
+	OnWeaponDeactivate                  "OnWeaponDeactivate_ability_translocation"
+	OnWeaponTossPrep                    "OnWeaponTossPrep_ability_translocation"
+	OnWeaponTossReleaseAnimEvent        "OnWeaponTossReleaseAnimEvent_ability_translocation"
+	OnProjectileCollision               "OnProjectileCollision_weapon_deployable"
+	OnWeaponRegenEnd                    "OnWeaponRegenEndGeneric"
+	OnWeaponRedirectProjectile			"OnWeaponRedirectProjectile_ability_translocation"
+
+
+//
+// Mods
+//
+
+	Mods
+	{
+		survival_armor_cooldown_mod
+		{
+			"regen_ammo_refill_rate"    "*1.25"
+		}
+
+		survival_finite_ordnance
+		{
+
+		}
+
+                            
+        // arenas_tac_max
+        // {
+		// 	"ammo_clip_size"   								"3"
+        //     "ammo_default_total"							"1"
+        //     "ammo_min_to_fire"								"1"
+        //     "ammo_per_shot"									"1"
+        //     "ammo_stockpile_max"							"1"
+        // }
+
+        // arenas_tac_max_cooldown
+        // {
+        //     "ammo_regen_takes_from_stockpile"               "1"
+        //     "ammo_default_total"							"60" // 30 * 2 charges
+        //     "ammo_stockpile_max"							"120" // 30 * 4 charges
+        // }
+           
+
+		// redirect_mod
+		// {
+		// 	projectile_trail_effect_0_1p                "P_warp_proj_dtg"
+		// 	projectile_trail_effect_0_3p                "P_warp_proj_dtg"
+		// 	projectile_trail_start_from_origin			1
+		// 	grenade_view_launch_offset					"0.0 0.0 0.0"
+		// }
+	}
+}
+
+

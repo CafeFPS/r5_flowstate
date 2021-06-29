@@ -107,14 +107,14 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 			//PrecacheModel( MeleeSkin_GetViewModel( meleeSkin ) )
 			
 			// commented for debugging
-			//PrecacheWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ) )
-			//PrecacheWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ) )
+			PrecacheWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ) )
+			PrecacheWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ) )
 		#endif
 	}
 
 	MakeItemFlavorSet( meleeSkinList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_meleeskin_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "meleeskin", ItemFlavor_GetGUIDString( characterClass ) )
 	entry.DEV_category = "character_meleeskins"
 	entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Melee Skin"
 	entry.defaultItemFlavor = meleeSkinList[0]
@@ -241,6 +241,7 @@ bool function IsWeaponClassMelee( string weaponName )
 {
 	// (dw): meant to mimic weapon.IsWeaponMelee()
 	int fireMode = expect int(GetWeaponInfoFileKeyField_Global( weaponName, "fire_mode" ))
+	printt("IsWeaponClassMelee", weaponName, fireMode, eWeaponFireMode.offhandMelee, eWeaponFireMode.offhandMeleeHybrid)
 	return (fireMode == eWeaponFireMode.offhandMelee || fireMode == eWeaponFireMode.offhandMeleeHybrid)
 }
 #endif
@@ -343,6 +344,16 @@ bool function AttackerCanStartMelee( entity attacker, entity inputWeaponOrNull, 
 
 	//if ( PlayerIsInMeleeBlockingADS( attacker ) )
 	//	return false
+	
+	if ( attacker.IsPhaseShifted() )
+    {
+        return false
+    }
+	
+	if ( attacker.Player_IsFreefalling() )
+    {
+        return false
+    }
 
 	if ( attacker.Lunge_IsActive() )
 		return false
@@ -468,7 +479,6 @@ void function CodeCallback_OnMeleeReleased( entity player, entity weapon )
 void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity meleeAttackWeapon )
 {
 	printt("CodeCallback_OnMeleeAttackAnimEvent")
-
 	Assert( IsValid( attacker ) )
 
 	if ( !attacker.PlayerMelee_IsAttackActive() )
@@ -502,17 +512,20 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		return
 
 	// Impact effects
-	if ( SERVER == PlayerMelee_IsServerSideEffects() )
-	{
-		#if SERVER
-			impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
-		#endif
+	if ( !attacker.PlayerMelee_IsAttackActive() )
+		return
+		
+	// if ( SERVER == PlayerMelee_IsServerSideEffects() ) // TODO: FIX THIS!!!!! [N52A r5apex.exe+0101be8]
+	// {
+	// 	#if SERVER
+	// 		impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
+	// 	#endif
 
-		attacker.DispatchImpactEffects( target,
-			startPosition, endPosition, hitNormal,
-			surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
-			attacker, impactEffectFlags )
-	}
+	// 	attacker.DispatchImpactEffects( target,
+	// 		startPosition, endPosition, hitNormal,
+	// 		surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
+	// 		attacker, impactEffectFlags )
+	// }
 
 	// Melee state
 	attacker.PlayerMelee_SetAttackHitEntity( target )
@@ -638,8 +651,8 @@ bool function ClientCodeCallback_ShowMeleePrompt( entity player )
 #if SERVER && R5DEV
 void function DEV_UpdatePlayerMeleeWeaponCosmetics( entity player, ItemFlavor unused )
 {
-	if ( !IsLobby() )
-		SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
+	// if ( !IsLobby() )
+	// 	SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
 }
 #endif // SERVER
 

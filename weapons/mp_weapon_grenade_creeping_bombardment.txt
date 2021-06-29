@@ -31,7 +31,7 @@ WeaponData
 
 	"OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_WeaponCreepingBombardment"
 	"OnWeaponTossPrep"								"Grenade_OnWeaponTossPrep"
-	"OnWeaponDeactivate"							"Grenade_OnWeaponDeactivate"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_WeaponCreepingBombardment"
 	"OnProjectileCollision"							"OnProjectileCollision_WeaponCreepingBombardment"
 	"OnWeaponReadyToFire"                           "OnWeaponReadyToFire_WeaponCreepingBombardment"
 
@@ -170,6 +170,7 @@ WeaponData
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"0"
+	"grenade_touch_triggers_on_impact"				"1"
 	"grenade_bounce_vel_frac_shallow"				"0.53"
 	"grenade_bounce_vel_frac_sharp"					"0.32"
 	"grenade_bounce_vel_frac_along_normal"			"0.5"

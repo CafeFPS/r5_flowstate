@@ -1,7 +1,10 @@
 untyped
 
-//global function InitLobbyStartMenu
+//
 global function InitInGameMPMenu
+#if(false)
+
+#endif
 global function ServerCallback_UI_ObjectiveUpdated
 global function SP_ResetObjectiveStringIndex
 global function SCB_SetDoubleXPStatus
@@ -32,10 +35,10 @@ struct
 	var loadoutHeaderTitan
 	array<var> loadoutButtonsTitan
 
-	//var pilotEditButton
+	//
 } file
 
-void function InitInGameMPMenu()
+void function InitInGameMPMenu( var newMenuArg ) //
 {
 	var menu = GetMenu( "InGameMPMenu" )
 	file.menuMP = menu
@@ -56,9 +59,9 @@ void function InitInGameMPMenu()
 	var pilotSelectButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#SELECT" )
 	Hud_AddEventHandler( pilotSelectButton, UIE_CLICK, PilotLoadoutsSelectOnClick )
 	file.loadoutButtonsPilot.append( pilotSelectButton )
-	//file.pilotEditButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#EDIT" )
-	//Hud_AddEventHandler( file.pilotEditButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditPilotLoadoutsMenu" ) ) )
-	//file.loadoutButtonsPilot.append( file.pilotEditButton )
+	//
+	//
+	//
 
 	headerIndex++
 	buttonIndex = 0
@@ -80,7 +83,7 @@ void function InitInGameMPMenu()
 	var gameHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_GAME" )
 	var leaveButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#LEAVE_MATCH" )
 	Hud_AddEventHandler( leaveButton, UIE_CLICK, OnLeaveButton_Activate )
-	#if R5DEV
+	#if(DEV)
 		var devButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "Dev" )
 		Hud_AddEventHandler( devButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "DevMenu" ) ) )
 	#endif
@@ -96,23 +99,23 @@ void function InitInGameMPMenu()
 	buttonIndex = 0
 	file.settingsHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_SETTINGS" )
 
-	//var controlsButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#CONTROLS" )
-	//Hud_AddEventHandler( controlsButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsMenu" ) ) )
-	#if CONSOLE_PROG
-		//var avButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#AUDIO_VIDEO" )
-		//Hud_AddEventHandler( avButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "AudioVideoMenu" ) ) )
-	#elseif PC_PROG
-		//var videoButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#AUDIO" )
-		//Hud_AddEventHandler( videoButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "AudioMenu" ) ) )
-		//var soundButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#VIDEO" )
-		//Hud_AddEventHandler( soundButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "VideoMenu" ) ) )
+	//
+	//
+	#if(CONSOLE_PROG)
+		//
+		//
+	#elseif(PC_PROG)
+		//
+		//
+		//
+		//
 	#endif
 
 	file.faqButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#KNB_MENU_HEADER" )
-	//Hud_AddEventHandler( file.faqButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "KnowledgeBaseMenu" ) ) )
+	//
 
-	//var dataCenterButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#DATA_CENTER" )
-	//Hud_AddEventHandler( dataCenterButton, UIE_CLICK, OpenDataCenterDialog )
+	//
+	//
 
 	ComboButtons_Finalize( comboStruct )
 
@@ -144,8 +147,8 @@ void function OnInGameMPMenu_Close()
 
 	if ( IsConnected() && !IsLobby() )
 	{
-		//printt( "OnInGameMPMenu_Close() uiGlobal.updatePilotSpawnLoadout is:", uiGlobal.updatePilotSpawnLoadout )
-		//printt( "OnInGameMPMenu_Close() uiGlobal.updateTitanSpawnLoadout is:", uiGlobal.updateTitanSpawnLoadout )
+		//
+		//
 
 		string updatePilotSpawnLoadout = uiGlobal.updatePilotSpawnLoadout ? "1" : "0"
 		string updateTitanSpawnLoadout = uiGlobal.updateTitanSpawnLoadout ? "1" : "0"
@@ -155,7 +158,7 @@ void function OnInGameMPMenu_Close()
 		uiGlobal.updatePilotSpawnLoadout = false
 		uiGlobal.updateTitanSpawnLoadout = false
 
-		//RunClientScript( "RefreshIntroLoadoutDisplay", GetLocalClientPlayer(), uiGlobal.pilotSpawnLoadoutIndex, uiGlobal.titanSpawnLoadoutIndex )
+		//
 	}
 }
 
@@ -174,18 +177,177 @@ struct
 	array<var> leaveButtons
 } s_pauseMenu
 
+#if(false)
+//
+
+
+
+
+
+
+//
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
+//
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//
+
+//
+//
+
+//
+//
+//
+//
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+#if(false)
+
+
+
+#endif
+
+#if(false)
+
+
+
+
+#endif
+
 void function UpdateLoadoutButtons()
 {
-	/*int headerIndex = 0
-	int buttonIndex = 0
-	var pilotHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_PILOT" )
-	file.loadoutHeaderPilot = pilotHeader
-	var pilotSelectButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#SELECT" )
-	Hud_AddEventHandler( pilotSelectButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "PilotLoadoutsMenu" ) ) )
-	file.loadoutButtonsPilot.append( pilotSelectButton )
-	var pilotEditButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#EDIT" )
-	Hud_AddEventHandler( pilotEditButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "EditPilotLoadoutsMenu" ) ) )
-	file.loadoutButtonsPilot.append( pilotEditButton )*/
+	/*
+
+
+
+
+
+
+
+
+*/
 
 	bool pilotLoadoutsEnabled = (GetCurrentPlaylistVarInt( "pilot_loadout_selection_enabled", 0 ) == 1)
 
@@ -201,16 +363,16 @@ void function UpdateLoadoutButtons()
 
 	bool useSurvivalLoadouts = (GetCurrentPlaylistVarInt( "survial_loadouts_enabled", 1 ) == 1)
 
-	//if ( useSurvivalLoadouts )
-	//{
-	//	ComboButton_SetText( file.pilotEditButton, "" )
-	//	Hud_SetEnabled( file.pilotEditButton, false )
-	//}
-	//else
-	//{
-	//	ComboButton_SetText( file.pilotEditButton, "#EDIT" )
-	//	Hud_SetEnabled( file.pilotEditButton, true )
-	//}
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 
 	//
 	{
@@ -224,41 +386,18 @@ void function UpdateLoadoutButtons()
 		else
 			Hud_Hide( file.loadoutHeaderTitan )
 	}
-	//
-	//entity player = GetUIPlayer()
-	//
-	//if ( GetAvailableTitanRefs( player ).len() > 1 )
-	//{
-	//	SetComboButtonHeaderTitle( file.menuMP, file.titanHeaderIndex, "#MENU_HEADER_TITAN" )
-	//	ComboButton_SetText( file.titanSelectButton, "#SELECT" )
-	//	Hud_Show( file.titanEditButton )
-	//}
-	//else if ( GetAvailableTitanRefs( player ).len() == 1 )
-	//{
-	//	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.titanSpawnLoadoutIndex )
-	//
-	//	SetComboButtonHeaderTitle( file.menuMP, file.titanHeaderIndex, GetTitanLoadoutName( loadout ) )
-	//	ComboButton_SetText( file.titanSelectButton, "#EDIT" )
-	//
-	//	Hud_Hide( file.titanEditButton )
-	//	ComboButtons_ResetColumnFocus( file.comboStruct )
-	//}
-	//else
-	//{
-	//	SetTitanSelectButtonVisibleState( true )
-	//}
 }
 
-//////////
+//
 
-//////////
+//
 
 
 void function PROTO_SetPauseMenuWorldMap()
 {
 	var elem = Hud_GetChild( file.menuSP, "PROTO_WorldMapImage" )
-	//array<var> elems = GetElementsByClassname( file.menuSP, "PROTO_WorldMap" )
-	//var elem = elems[0]
+	//
+	//
 
 	var titleElem = Hud_GetChild( file.menuSP, "ObjectivesTitle" )
 
@@ -310,30 +449,35 @@ void function OnInGameLevelInit()
 	RuiSetBool( rui, "isVisible", false )
 
 	Hud_SetVisible( doubleXPWidget, !IsPrivateMatch() )
+
+	#if(false)
+
+
+#endif
 }
 
 void function TitanSelectButtonHandler( var button )
 {
-	//if ( !IsFullyConnected() )
-	//	return
 	//
-	//entity player = GetUIPlayer()
-	//if ( GetAvailableTitanRefs( player ).len() > 1 )
-	//{
-	//	AdvanceMenu( GetMenu( "TitanLoadoutsMenu" ) )
-	//}
-	//else if ( GetAvailableTitanRefs( player ).len() == 1 )
-	//{
-	//	uiGlobal.updateTitanSpawnLoadout = false
-	//	SetEditLoadout( "titan", uiGlobal.titanSpawnLoadoutIndex )
 	//
-	//	RunMenuClientFunction( "SetEditingTitanLoadoutIndex", uiGlobal.titanSpawnLoadoutIndex )
-	//	AdvanceMenu( GetMenu( "EditTitanLoadoutMenu" ) )
-	//}
-	//else
-	//{
-	//	// HIDE
-	//}
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 }
 
 void function SetTitanSelectButtonVisibleState( bool state )

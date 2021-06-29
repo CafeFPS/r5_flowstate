@@ -7,6 +7,7 @@ global function CodeCallback_ZiplineStop
 
 void function CodeCallback_ZiplineMount( entity player, entity zipline )
 {
+	thread Chroma_ZiplineThread()
 }
 
 void function CodeCallback_ZiplineStart( entity player, entity zipline )

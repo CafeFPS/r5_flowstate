@@ -31,10 +31,10 @@ void function InitCharacterExecutionsPanel( var panel )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK_LEGEND", "#X_BUTTON_UNLOCK_LEGEND", null, CustomizeMenus_IsFocusedItemParentItemLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_EQUIP", "#X_BUTTON_EQUIP", null, CustomizeMenus_IsFocusedItemEquippable )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
-	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_LEFT, false, "#TRIGGERS_CHANGE_LEGEND", "", CustomizeCharacterMenu_PrevButton_OnActivate )
-	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
-	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_LEFT, false, "", "", CustomizeCharacterMenu_PrevButton_OnActivate )
-	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
+	//
+	//
+	//
+	//
 
 	file.videoChannel = ReserveVideoChannel()
 	RuiSetInt( file.videoRui, "channel", file.videoChannel )
@@ -61,7 +61,7 @@ void function CharacterExecutionsPanel_Update( var panel )
 {
 	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
 
-	// cleanup
+	//
 	foreach ( int flavIdx, ItemFlavor unused in file.characterExecutionList )
 	{
 		var button = Hud_GetChild( scrollPanel, "GridButton" + flavIdx )
@@ -72,7 +72,7 @@ void function CharacterExecutionsPanel_Update( var panel )
 	StopVideoOnChannel( file.videoChannel )
 	file.currentVideo = $""
 
-	// setup, but only if we're active
+	//
 	if ( IsPanelActive( file.panel ) )
 	{
 		ItemFlavor character = GetTopLevelCustomizeContext()
@@ -83,17 +83,17 @@ void function CharacterExecutionsPanel_Update( var panel )
 		foreach ( int flavIdx, ItemFlavor flav in file.characterExecutionList )
 		{
 			var button = Hud_GetChild( scrollPanel, "GridButton" + flavIdx )
-			CustomizeButton_UpdateAndMarkForUpdating( button, entry, flav, PreviewCharacterExecution, CanEquipCanBuyCharacterItemCheck )
+			CustomizeButton_UpdateAndMarkForUpdating( button, [entry], flav, PreviewCharacterExecution, CanEquipCanBuyCharacterItemCheck )
 		}
 
-		RuiSetString( file.headerRui, "collected", CustomizeMenus_GetCollectedString( entry, file.characterExecutionList ) )
+		RuiSetString( file.headerRui, "collected", CustomizeMenus_GetCollectedString( entry, file.characterExecutionList, false ) )
 	}
 }
 
 
 void function CharacterExecutionsPanel_OnFocusChanged( var panel, var oldFocus, var newFocus )
 {
-	if ( !IsValid( panel ) ) // uiscript_reset
+	if ( !IsValid( panel ) ) //
 		return
 	if ( GetParentMenu( panel ) != GetActiveMenu() )
 		return
@@ -106,7 +106,7 @@ void function PreviewCharacterExecution( ItemFlavor flav )
 {
 	asset desiredVideo = CharacterExecution_GetExecutionVideo( flav )
 
-	if ( file.currentVideo != desiredVideo ) // don't restart video if it is already playing
+	if ( file.currentVideo != desiredVideo ) //
 	{
 		file.currentVideo = desiredVideo
 		StartVideoOnChannel( file.videoChannel, desiredVideo, true, 0.0 )

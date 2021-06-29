@@ -39,6 +39,8 @@ WeaponData
 	"sound_zoom_in"									"Weapon_RE45Auto_ADS_In"
 	"sound_zoom_out"								"Weapon_RE45Auto_ADS_Out"
 
+	"chroma_color"									"1 .7 .4"
+
 	// Sound
 	"fire_sound_1"									"weapon_re45auto_shell"
 	"fire_sound_2_player_1p"						"Weapon_RE45Auto_secondshot_1P"

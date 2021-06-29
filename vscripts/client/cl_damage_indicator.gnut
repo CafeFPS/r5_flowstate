@@ -587,6 +587,9 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 
 		if ( shouldBeVisible )
 		{
+			if ( grenade instanceof C_PlayerWaypoint )
+				damageRadius = grenade.GetWaypointFloat( 0 )
+
 			if ( Distance( player.GetOrigin(), grenade.GetOrigin() ) > damageRadius || !cockpit )
 			{
 				shouldBeVisible = false

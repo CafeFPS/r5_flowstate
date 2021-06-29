@@ -1,0 +1,318 @@
+WeaponData
+{
+	// General
+	"cooldown_type"									"ammo_deployed"
+	"printname"   									"#WPN_SATCHEL"
+	"shortprintname"   								"#WPN_SATCHEL_SHORT"
+	"description"   								"#WPN_SATCHEL_DESC"
+	"longdesc"   									"#WPN_SATCHEL_LONGDESC"
+
+	"menu_icon"										"rui/pilot_loadout/ordnance/satchel_menu"
+	"hud_icon"										"rui/pilot_loadout/ordnance/satchel"
+
+    "does_not_interrupt_cloak"							"1"
+
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhandHybrid"
+	"offhand_toss"									"1"
+	"minimap_reveal_distance"						"32000"
+	"trap_warning_friendly_fx"						"wpn_laser_blink"
+	"trap_warning_enemy_fx"							"wpn_laser_blink"
+	"leveled_pickup"								"1"
+	"offhand_default_inventory_slot"				"1"
+	"projectile_ignores_vortex"						"fall"
+	"projectile_first_person_offset_fraction"		"2"
+
+	"OnWeaponActivate"								"OnWeaponActivate_weapon_satchel"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_satchel"
+	"OnWeaponPrimaryAttackAnimEvent"				"OnWeaponPrimaryAttackAnimEvent_weapon_satchel"
+	"OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_weapon_satchel"
+	"OnProjectileCollision"							"OnProjectileCollision_weapon_satchel"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/clacker_detonator/ptpov_clacker_detonator.rmdl"
+	"playermodel" 									"mdl/weapons/at_satchel_charge/at_satchel_charge.rmdl"
+	"projectilemodel" 								"mdl/weapons/at_satchel_charge/at_satchel_charge.rmdl"
+	"droppedmodel"									"mdl/weapons/at_satchel_charge/at_satchel_charge.rmdl"
+	"activitymodifier"								"satchel"
+
+	"zoom_effects"									"0"
+
+	// Sounds
+	"sound_dryfire"									"coop_sentrygun_deploymentdeniedbeep"
+	"battle_chatter_event"							"bc_pSatchel"
+
+	// Effects
+	"impact_effect_table" 							"exp_satchel"
+	"projectile_trail_effect_0" 						""
+	"vortex_absorb_effect"							"wpn_vortex_projectile_satchel_FP"
+	"vortex_absorb_effect_third_person"				"wpn_vortex_projectile_satchel"
+	"vortex_absorb_sound"							"Vortex_Shield_AbsorbBulletLarge"
+	"vortex_absorb_sound_1p_vs_3p"					"Vortex_Shield_AbsorbBulletLarge_1P_VS_3P"
+	"projectile_adjust_to_gun_barrel"				"1"
+	"projectile_adjust_to_hand"						"0"
+	"grenade_arc_indicator_effect_first"			"P_grenade_arc_proto_first"
+	"grenade_arc_impact_indicator_effect"			"grenade_arc_impact_proto"
+
+	"projectile_launch_speed"						"750"
+	"projectile_launch_pitch_offset"				"8"
+
+	"show_grenade_indicator"						"0"
+	"vortex_refire_behavior"  						"grenade"
+
+	// Damage - When Used by Players
+	"damage_type" 									"burn"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+
+	// Damage - When Used by NPCs
+
+	"explosion_inner_radius"  						"120"
+	"explosionradius" 								"250"
+	"impulse_force"   								"500"
+	"impulse_force_explosions"						"50000"
+	"explosion_shake_radius"						"600"
+	"explosion_shake_amplitude"						"60"
+	"explosion_shake_frequency"						"45"
+	"explosion_shake_duration"						"1.0"
+
+
+	"critical_hit"									"0"
+	"projectile_killreplay_enabled"					"1"
+
+	MP_BASE
+	{
+		"ammo_display"									"bar"
+		"ammo_stockpile_max"							"200"
+		"ammo_clip_size"   								"200"
+		"ammo_default_total"							"200"
+		"ammo_per_shot"									"100"
+		"ammo_min_to_fire"								"100"
+		"projectile_max_deployed"						"2"
+
+		// Regen Ammo
+		"regen_ammo_refill_rate"						"5"
+		"regen_ammo_refill_start_delay"					"0.0"
+
+		"explosion_damage"								"125"
+		"explosion_damage_heavy_armor"					"2200"
+
+		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+
+    	//Mods
+		"grenade_arc_indicator_bounce_count"			"<KEEP_DEFAULT>"
+		"grenade_arc_indicator_effect"					"<KEEP_DEFAULT>"
+
+		"damage_heavyarmor_nontitan_scale"				"0.5"
+		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_1P"
+	}
+
+	SP_BASE
+	{
+		"ammo_display"									"count"
+		"ammo_stockpile_max"							"3"
+		"ammo_clip_size"								"3"
+		"ammo_default_total"							"1"
+		"ammo_per_shot"									"1"
+		"ammo_min_to_fire"								"1"
+		"projectile_max_deployed"						"3"
+
+		// Regen Ammo
+		"regen_ammo_refill_rate"						"0"
+		"regen_ammo_refill_start_delay"					"0.0"
+
+		"explosion_damage"								"300"
+		"explosion_damage_heavy_armor"					"2000"
+
+		"enable_highlight_networking_on_creation"		"1"
+
+	//Mods
+		"grenade_arc_indicator_bounce_count"			"1"
+		"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+
+		"damage_heavyarmor_nontitan_scale"				"1"
+		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_SP"
+	}
+
+	// Behavior
+	"fire_rate"   									"2"
+	"deploy_time" 									"0.25"
+	"lower_time"  									"0.25"
+	"allow_empty_fire"								"0"
+	"no_ammo_used_on_primary_attack"				"1"
+	"reload_enabled"  								"0"
+	"allow_empty_click"   							"0"
+	"empty_reload_only"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"primary_fire_does_not_block_sprint"			"1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	"projectile_inherit_owner_velocity_scale"		"1.0"
+
+	"ammo_suck_behavior"							"offhand_weapons"
+
+	// View Kick
+	"viewkick_spring" 								"pistol"
+
+	// Bob
+	"bob_cycle_time"  								"0.4"
+	"bob_vert_dist"   								"0.19"
+	"bob_horz_dist"   								"0.1"
+	"bob_max_speed"   								"150"
+	"bob_pitch"   									"-0.25"
+	"bob_yaw" 										"1"
+	//"bob_roll"										"-0.75"
+
+	// View Drift
+	"viewdrift_hipfire_stand_scale_pitch" 			"0.325"
+	"viewdrift_hipfire_crouch_scale_pitch"			"0.275"
+	"viewdrift_hipfire_air_scale_pitch"   			"0.5"
+	"viewdrift_hipfire_stand_scale_yaw"   			"0.12"
+	"viewdrift_hipfire_crouch_scale_yaw"  			"0.10"
+	"viewdrift_hipfire_air_scale_yaw" 				"0.22"
+	"viewdrift_hipfire_speed_pitch"   				"0.6"
+	"viewdrift_hipfire_speed_yaw" 					"1.22"
+
+	// Sway
+	"sway_rotate_attach"  							"jx_c_pov"
+	"sway_min_x"  									"-0.3"
+	"sway_min_y"  									"-0.5"
+	"sway_min_z"  									"-0.5"
+	"sway_max_x"  									"0.3"
+	"sway_max_y"  									"0.5"
+	"sway_max_z"  									"0.1"
+	"sway_min_pitch"  								"-3"
+	"sway_min_yaw"									"-3.5"
+	"sway_min_roll"   								"-2"
+	"sway_max_pitch"  								"3"
+	"sway_max_yaw"									"3.5"
+	"sway_max_roll"   								"3"
+	"sway_translate_gain" 							"4"
+	"sway_rotate_gain"								"7"
+	"sway_move_forward_translate_x"   				"0"
+	"sway_move_forward_translate_z"   				"-0.5"
+	"sway_move_back_translate_x"  					"-2"
+	"sway_move_back_translate_z"  					"-1"
+	"sway_move_left_translate_y"  					"-1"
+	"sway_move_left_translate_z"  					"-0.5"
+	//"sway_move_left_rotate_roll"  					"-2"
+	"sway_move_right_translate_y" 					"1"
+	"sway_move_right_translate_z" 					"-0.5"
+	//"sway_move_right_rotate_roll" 					"4"
+	"sway_move_up_translate_z"						"-.7"
+	"sway_move_down_translate_z"  					".7"
+	"sway_turn_left_rotate_yaw"   					".7"
+	"sway_turn_right_rotate_yaw"  					"-.7"
+	"sway_turn_up_rotate_pitch"   					"-.7"
+	"sway_turn_down_rotate_pitch" 					".7"
+
+	"sprintcycle_time"								"0.55"
+
+	// Rumble
+	"rumble"  										"-1"
+
+	// NPC
+	"npc_vortex_block"								"0"
+
+
+	// WeaponED Unhandled Key/Values and custom script Key/Values
+	"item_flags"  									"0"
+
+	"damage_flags"									"DF_RAGDOLL | DF_EXPLOSION | DF_DISMEMBERMENT"
+
+
+	Mods
+	{
+		pas_ordnance_pack
+		{
+			"regen_ammo_refill_rate"   						"*1.6"
+
+			//Ordnance Beam
+			"grenade_arc_indicator_bounce_count"			"1"
+			"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+
+			active_crosshair_count				"1"
+			rui_crosshair_index					"1"
+		}
+
+		bc_satchel_refill
+		{
+		}
+
+		burn_mod_satchel
+		{
+			"explosion_damage"								"*1.5"
+			"explosion_damage_heavy_armor"					"*1.5"
+			"is_burn_mod"		"1"
+		}
+		spree_lvl1_satchel
+		{
+			"ammo_clip_size"								"2"
+			"ammo_default_total"							"2"
+
+			"grenade_arc_indicator_bounce_count"			"1"
+			"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+		}
+		spree_lvl2_satchel
+		{
+			"ammo_clip_size"								"2"
+			"ammo_default_total"							"2"
+
+			"grenade_arc_indicator_bounce_count"			"1"
+			"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+		}
+		spree_lvl3_satchel
+		{
+			"ammo_clip_size"								"2"
+			"ammo_default_total"							"2"
+
+			"grenade_arc_indicator_bounce_count"			"1"
+			"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
+		}
+	}
+
+	active_crosshair_count				"2"
+	rui_crosshair_index					"0"
+
+	"ordnance_crosshair_always_on_start_index"	"1"
+
+	RUI_CrosshairData
+	{
+		DefaultArgs
+		{
+			adjustedSpread				weapon_spread
+			adsFrac 					player_zoomFrac
+			isSprinting					player_is_sprinting
+			isReloading					weapon_is_reloading
+			teamColor					crosshair_team_color
+			isAmped						weapon_is_amped
+		    crosshairMovementX          crosshair_movement_x
+		    crosshairMovementY          crosshair_movement_y
+		}
+
+		Crosshair_1
+		{
+			"ui"						"ui/crosshair_satchel"
+			"base_spread"				"0.0"
+			Args
+			{
+				isFiring				weapon_is_firing
+			}
+		}
+
+
+		Crosshair_2
+		{
+			"ui"						"ui/crosshair_ordnance"
+			Args
+			{
+			    regenRate               "eWeaponVar.regen_ammo_refill_rate"
+			    ammoFrac                "progress_weapon_clip_ammo_frac"
+			    dryfireTime             "weapon_latest_dryfire_time"
+			}
+		}
+	}
+}

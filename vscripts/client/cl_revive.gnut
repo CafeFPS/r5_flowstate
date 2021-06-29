@@ -1,0 +1,188 @@
+untyped
+
+
+global function ClRevive_Init
+
+struct
+{
+	table reviveMainHudGroup
+	table reviveTeammateIcons
+} file
+
+function ClRevive_Init()
+{
+	if ( !ReviveEnabled() )
+		return
+
+	RegisterSignal( "StopReviveColorSkullOverTime" )
+
+	AddCreateMainHudCallback( ReviveMainHud )
+	AddCallback_OnPlayerDisconnected( ReviveOnPlayerDisconnected )
+	RegisterEntityVarChangeCallback( "player", "reviveBleedingOut", ReviveBleedingOutUpdate )
+	RegisterEntityVarChangeCallback( "player", "reviveHealedTime", ReviveHealingUpdate )
+}
+
+function ReviveBleedingOutUpdate( player, newValue, oldValue )
+{
+	expect entity( player )
+	expect float( newValue )
+
+	thread ReviveBleedingOutUpdateClient( player, newValue )
+}
+
+void function ReviveBleedingOutUpdateClient( entity player, float newValue )
+{
+	entity localViewPlayer = GetLocalViewPlayer()
+
+	if ( !IsValid( player ) || !IsValid( localViewPlayer ) )
+		return
+
+	if ( player.GetTeam() != localViewPlayer.GetTeam() )
+		return
+
+	local iconGroup = GetReviveIconGroupForPlayer( player )
+	if ( iconGroup == null )
+		return
+
+	if ( newValue > 0 )
+	{
+		player.Signal( "OnBleedingOut" )
+
+		if ( player != GetLocalClientPlayer() )
+		{
+			iconGroup.group.SetEntityOverhead( player, Vector( 0, 0, -30 ), 0.5, 0.75 )
+		}
+
+		iconGroup.skull.SetColor( 255, 255, 255, 255 )
+		iconGroup.ring.SetBarProgress( 0.0 )
+		iconGroup.label.SetAutoText( "BLEEDING OUT: %s1", HATT_GAME_COUNTDOWN_SECONDS, newValue )
+
+		float time = 1.0
+
+		iconGroup.group.SetClampToScreen( CLAMP_NONE )
+		iconGroup.group.SetAlpha( 0 )
+		iconGroup.group.Show()
+		iconGroup.group.FadeOverTime( 255, time )
+
+		wait( time )
+
+		float duration = newValue - Time()
+		thread ReviveColorSkullOverTime( player, iconGroup.skull, duration )
+	}
+	else
+	{
+		player.Signal( "StopReviveColorSkullOverTime" )
+		iconGroup.group.Hide()
+	}
+}
+
+void function ReviveColorSkullOverTime( entity player, var skull, float duration )
+{
+	player.EndSignal( "OnDestroy" )
+	player.EndSignal( "StopReviveColorSkullOverTime" )
+
+	duration -= 3.0
+	duration *= 0.5
+
+	skull.ColorOverTime( 255, 210, 0, 255, duration ) //yellow
+
+	wait duration
+	skull.ColorOverTime( 255, 0, 0, 255, duration ) //red
+}
+
+void function ReviveOnPlayerDisconnected( entity player )
+{
+	thread ReviveBleedingOutUpdateClient( player, -1.0 )
+}
+
+function ReviveHealingUpdate( player, newValue, oldValue )
+{
+	expect entity( player )
+	expect float( newValue )
+	expect float( oldValue )
+
+	if ( player.GetTeam() != GetLocalViewPlayer().GetTeam() )
+		return
+
+	local iconGroup = GetReviveIconGroupForPlayer( player )
+	if ( iconGroup == null )
+		return
+
+	if ( newValue > 0 )
+	{
+		float duration = newValue - Time()
+		iconGroup.label.SetAutoText( "REVIVED IN: %s1", HATT_GAME_COUNTDOWN_SECONDS, newValue )
+		iconGroup.ring.SetBarProgressOverTime( 0.0, 1.0, duration )
+		iconGroup.group.SetClampToScreen( CLAMP_RECT )
+	}
+	else if ( oldValue > 0 )
+	{
+		float timeLeft = oldValue - Time()
+		float elapsedTime = REVIVE_TIME_TO_REVIVE - timeLeft
+		float progress = elapsedTime / REVIVE_TIME_TO_REVIVE
+
+		iconGroup.ring.SetBarProgressOverTime( progress, 0, 0.2 )
+		iconGroup.label.SetAutoText( "BLEEDING OUT: %s1", HATT_GAME_COUNTDOWN_SECONDS, player.nv.reviveBleedingOut )
+		iconGroup.group.SetClampToScreen( CLAMP_NONE )
+	}
+	else
+	{
+		iconGroup.ring.SetBarProgress( 0 )
+		iconGroup.label.SetAutoText( "BLEEDING OUT: %s1", HATT_GAME_COUNTDOWN_SECONDS, player.nv.reviveBleedingOut )
+	}
+}
+
+var function GetReviveIconGroupForPlayer( entity player )
+{
+	local iconGroup = null
+	if ( player == GetLocalClientPlayer() )
+		iconGroup = file.reviveMainHudGroup
+	//else
+	//	iconGroup = file.reviveTeammateIcons[ GetPlayerIconIndex( player ) ]
+
+	return iconGroup
+}
+
+void function ReviveMainHud( var mainVGUI, entity player )
+{
+	var panel = mainVGUI.GetPanel()
+
+	file.reviveMainHudGroup.group <- HudElementGroup( "ReviveMainHudGroup" )
+	file.reviveMainHudGroup.skull <- file.reviveMainHudGroup.group.CreateElement( "ReviveHudIcon_Skull", panel )
+	file.reviveMainHudGroup.label <- file.reviveMainHudGroup.group.CreateElement( "ReviveHudIcon_Label", panel )
+	file.reviveMainHudGroup.ring <- file.reviveMainHudGroup.group.CreateElement( "ReviveHudIcon_Progress", panel )
+	file.reviveMainHudGroup.group.Hide()
+
+	//world revive teammate icons ( not the player's deathcam elem )
+	int pIndex = GetPlayerIconIndex( player )
+	for ( int index = 0; index < 20; index++ )
+	{
+		//skip the local player... he doesn't need a world icon
+		if ( pIndex == index )
+			continue
+
+		var iconGroup = {}
+		iconGroup.group <- HudElement( "ReviveTeammateIcon" + index )
+
+		iconGroup.skull <- iconGroup.group.GetChild( "ReviveTeammate_Skull" )
+		iconGroup.label <- iconGroup.group.GetChild( "ReviveTeammate_Label" )
+		iconGroup.ring <- iconGroup.group.GetChild( "ReviveTeammate_Progress" )
+
+		iconGroup.skull.SetDistanceFade( 1000, 1800, 1.0, 0.0 )
+		iconGroup.label.SetDistanceFade( 1000, 1800, 1.0, 0.0 )
+		iconGroup.ring.SetDistanceFade( 1000, 1800, 1.0, 0.0 )
+
+		iconGroup.group.Hide()
+		iconGroup.skull.Show()
+		iconGroup.label.Show()
+		iconGroup.ring.Show()
+
+		//add them to the array
+		file.reviveTeammateIcons[ index ] <- iconGroup
+	}
+}
+
+int function GetPlayerIconIndex( entity player )
+{
+	return player.GetEntIndex() - 1
+}

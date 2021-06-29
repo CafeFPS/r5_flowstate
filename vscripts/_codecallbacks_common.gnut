@@ -3,6 +3,7 @@ untyped
 global function CodeCallback_DamageEntity
 global function HandleFootstepDamage
 global function CodeCallback_OnEntityKilled
+global function UpdateNetCounts
 
 global function AddDamageCallback
 global function RemoveDamageCallback
@@ -70,6 +71,7 @@ global function CodeCallback_OnPlayerEndWallrun
 global function CodeCallback_OnPlayerBeginWallhang
 global function CodeCallback_OnPlayerEndWallhang
 global function CodeCallback_OnClientConnectionCompleted 
+global function CodeCallback_OnPlayerRespawned
 
 // r5 stuff
 global function AddCallback_OnWeaponAttack
@@ -81,55 +83,257 @@ global function AddCallback_GameStatePostEnter
 global function AddCallback_OnThreatEventActivation
 global function AddCallback_OnThreatEventStateChange
 
+struct
+{
+	table<string, array< void functionref( entity, var ) > > classDamageCallbacks
+	table<string, array< void functionref( entity, var ) > > classDamageFinalCallbacks
+	table<string, array< void functionref( entity, var ) > > classPostDamageCallbacks
+	array< void functionref( entity ) > playerInventoryChangedCallbacks
+} file
+
+table<asset> IF_Settings = {
+	character_bangalore = $"settings/player/mp/pilot_survival_firesupport.rpak", //character_bangalore_NAME
+	character_bloodhound = $"settings/player/mp/pilot_survival_tracker.rpak", // character_bloodhound_NAME
+	character_caustic = $"settings/player/mp/pilot_survival_gas.rpak", // character_caustic_NAME
+	character_gibraltar = $"settings/player/mp/pilot_survival_gunner.rpak", // character_gibraltar_NAME
+	character_lifeline = $"settings/player/mp/pilot_survival_medic.rpak", // character_lifeline_NAME
+	character_mirage = $"settings/player/mp/pilot_survival_holopilot.rpak", // character_mirage_NAME
+	character_octane = $"settings/player/mp/pilot_survival_stim.rpak", // character_octane_NAME
+	character_pathfinder = $"settings/player/mp/pilot_survival_grapple.rpak", // character_pathfinder_NAME
+	character_wraith = $"settings/player/mp/pilot_survival_closer.rpak" // character_wraith_NAME
+}
+
+#document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
-	//SetGameState(eGameState.PickLoadout)
 
-	player.hasConnected = true
+	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
+	player.s.activeTrapArrayId <- 0
+
+	// Other OnClientConnectionCompleted functions
+
+	ShGRX_OnClientConnectionCompleted( player )
+	ShEHI_OnClientConnectionCompleted( player )
+	// SvPersistentData_OnClientConnectionCompleted( player )
+
+	// Inits
 
 	ZiplineInit( player )
 
+
+
+	player.hasConnected = true
+
+	SetGameState( eGameState.Playing )
+
+	AddDeathCallback( "player", OnPlayerDeathCallback )
+
+	foreach( cb in svGlobal.onClientConnectedCallbacks )
+		cb( player )
+
+
 	NotifyClientsOfConnection( player, 1 )
 
-	SetGameState(eGameState.Playing)
-	
+	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
+
+  thread InitRespawnPlayer(player)
+
+
 	CodeCallback_OnClientReloadConnectionCompleted(player)
 
-	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_grapple.rpak", [ "enable_wallrun", "enable_doublejump" ] )
+	// DEV_PDataInitForPlayer( player ) // this doesn't fully work as persistent data is never ready
 
-    // Respawn to get out of spectator?
-    DoRespawnPlayer( player, null )
-
-	vector origin = GetEnt( "info_player_start" ).GetOrigin()
-    player.SetOrigin( origin )
-    //thread RespawnPlayersInDropshipAtPoint(GetPlayerArray(), origin, <0, 90, 0>)
-
-    // Give weapons
-	player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_ANY )
-	player.GiveWeapon( "mp_weapon_sniper", WEAPON_INVENTORY_SLOT_ANY )
-	player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_ANY )
-	player.GiveOffhandWeapon( "mp_ability_grapple", OFFHAND_SPECIAL )
-	EnableOffhandWeapons( player )
+	UpdateNetCounts()
+	
 }
 
-void function AddCallback_OnWeaponAttack( void functionref( entity, entity, string, int, vector, vector ) callback )
+void function CodeCallback_OnPlayerRespawned( entity player )
 {
-	printt("AddCallback_OnWeaponAttack")
+	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
+		cb( player )
+}
+
+
+void function OnPlayerDeathCallback( entity player, var damageInfo )
+{
+	if( IsAlive( player ) )
+		return
+	
+	if( GetCurrentPlaylistVarBool( "should_respawn_on_death", true ) )
+	{
+		thread InitRespawnPlayer( player )
+		return
+	}
+
+
+	// TODO: deathboxes
+	int team = player.GetTeam()
+	int aliveTeamPlayers = GetPlayerArrayOfTeam_Alive( team ).len()
+
+	if( aliveTeamPlayers == 0 )
+	{
+		// team is dead, create deathbox with no card
+		SURVIVAL_CreateDeathBox( player, true )
+
+	}
+	else {
+		// team is not dead, create deathbox with card
+
+
+	}
+
+
+
+}
+
+void function RespawnOnDie(entity player, var damageInfo) 
+{
+	if( IsAlive( player ) )
+		return
+
+  thread InitRespawnPlayer(player)
+}
+
+void function InitRespawnPlayer(entity player)
+{
+	if( IsAlive( player ) )
+		return
+	
+  wait 1.0
+
+	SetTeam( player, 10 )
+
+	int teamMemberIndex = GetPlayerArrayOfTeam( player.GetTeam() ).len() - 1
+
+	player.SetTeamMemberIndex( teamMemberIndex )
+
+	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
+	player.SetPlayerNetBool( "pingEnabled", true )
+
+  wait 1.0
+	
+	vector origin
+	vector angles
+
+  	DoRespawnPlayer( player, null )
+
+	if( !IsSurvivalTraining() && !IsLobby() && GetMapName() != "mp_rr_test" )
+	{
+		origin = GetEnt( "info_player_start" ).GetOrigin()
+		angles = GetEnt( "info_player_start" ).GetAngles()
+
+	}
+	else if ( GetMapName() == "mp_rr_test" )
+	{
+		origin = <0, 0, 0>
+		angles = <0, 0, 0>
+	}
+	else {
+		origin = <26328, -6235, -27540>
+		angles = <21.5, 0.2, 0>
+	}
+
+	player.SetOrigin( origin )
+	player.SetAngles( angles )
+
+	ItemFlavor character = GetDefaultItemFlavorForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass() )//LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+
+	// settings/player/mp/pilot_survival_gunner.rpak		Gibraltar
+	// settings/player/mp/pilot_survival_tracker.rpak		Bloodhound
+	// settings/player/mp/pilot_survival_grapple.rpak		Pathfinder
+	// settings/player/mp/pilot_survival_stim.rpak			Octane
+	// settings/player/mp/pilot_survival_gas.rpak			Caustic
+	// settings/player/mp/pilot_survival_medic.rpak			Lifeline
+	// settings/player/mp/pilot_survival_closer.rpak		Wraith
+	// settings/player/mp/pilot_survival_firesupport.rpak	Bangalore
+	// settings/player/mp/pilot_survival_holopilot.rpak		Mirage
+
+	//player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_stim.rpak", [ "enable_wallrun", "enable_doublejump" ] )
+	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ) )
+
+	array<string> mods = []
+	if( GetCurrentPlaylistVarBool( "survival_wallrun_enabled", true ) )
+	{
+		mods.append( "enable_wallrun" )
+	}
+	if( GetCurrentPlaylistVarBool( "survival_jumpkit_enabled", true ) )
+	{
+		mods.append( "enable_doublejump")
+	}
+
+	player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
+
+	if( !IsLobby() )
+	{
+		// todo: just reset the inventory before respawning
+		try {
+			player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
+			player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			GivePassive( player, ePassives.PAS_OCTANE )
+			player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
+			player.GiveOffhandWeapon( "mp_weapon_grenade_bangalore", OFFHAND_SPECIAL )
+			player.GiveOffhandWeapon( "mp_ability_care_package", OFFHAND_INVENTORY )
+			player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
+		} catch( error )
+		{
+
+		}
+		EnableOffhandWeapons( player )
+	
+		entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+		int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
+		ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
+	
+		player.SetHealth( 100 )
+	}
+
+
+	UpdateNetCounts()
+}
+
+void function DEV_PDataInitForPlayer( entity player )
+{
+	player.SetPersistentVar( "loadouts.character_selection", 827049897 )
+
+	array< ItemFlavor > characters = GetAllCharacters()
+	foreach ( ItemFlavor character in characters )
+	{
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].execution", 0)
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].intro_quip", 0 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].meleeskin", 0 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].skin", 1644844869 )
+	}
+}
+
+void function UpdateNetCounts()
+{
+	SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
+	SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
+}
+
+void function AddCallback_OnWeaponAttack( void functionref( entity, entity, string, int, vector, vector ) callbackFunc )
+{
+	Assert( !svGlobal.onWeaponAttackCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnWeaponAttack" )
+	svGlobal.onWeaponAttackCallbacks.append( callbackFunc )
 }
 
 void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
 {
-
+	//void function AddClientCommandCallback( string commandString, bool functionref( entity player, array<string> args ) callbackFunc )
+	Assert( !( commandString in svGlobal.clientCommandCallbacksNew ), "Already added " + commandString + " with AddClientCommandCallbackNew" )
+	svGlobal.clientCommandCallbacksNew[ commandString ] <- callbackFunc
 }
 
-void function AddCallback_OnPreClientDisconnected( void functionref( entity player) callbackFunc )
+void function AddCallback_OnPreClientDisconnected( void functionref( entity player ) callbackFunc )
 {
-
+	Assert( !svGlobal.onPreClientDisconnectedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPreClientDisconnected" )
+	svGlobal.onPreClientDisconnectedCallbacks.append( callbackFunc )
 }
 
 void function AddCallback_OnDeathBoxSpawned( void functionref( entity player, entity attacker, int damageSourceID ) callbackFunc )
 {
-
+	Assert( !svGlobal.onDeathBoxSpawnedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnDeathBoxSpawned" )
+	svGlobal.onDeathBoxSpawnedCallbacks.append( callbackFunc )
 }
 
 void function AddCallback_OnGetBestObserverTarget( entity functionref( entity player, bool reverse) callbackFunc )
@@ -152,13 +356,7 @@ void function AddCallback_OnThreatEventStateChange( entity player, int threat, i
 	
 }
 
-struct
-{
-	table<string, array< void functionref( entity, var ) > > classDamageCallbacks
-	table<string, array< void functionref( entity, var ) > > classDamageFinalCallbacks
-	table<string, array< void functionref( entity, var ) > > classPostDamageCallbacks
-	array< void functionref( entity ) > playerInventoryChangedCallbacks
-} file
+
 
 void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 {

@@ -614,7 +614,7 @@ void function AddFakeCluster()
 	cluster.numPointsNear = 5
 	file.fakeClusters.append( cluster )
 }
-#endif //R5DEV && SERVER
+#endif //DEV && SERVER
 
 #if CLIENT
 void function BirdClusterPointSpawned( entity info_target )

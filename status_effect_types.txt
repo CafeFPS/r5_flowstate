@@ -4,6 +4,7 @@
 //{
 /////////////////////////////
 
+	anti_slow
 	move_slow
 	turn_slow
 	dodge_speed_slow
@@ -56,6 +57,10 @@
 	pass_through_amps_weapon
 
 	simple_timer
+    placing_ap_turret
+    placing_at_turret
+
+    pass_through_amps_weapon
 
 	minimap_jammed
 	tethered
@@ -66,6 +71,8 @@
 
 	lockon_detected_titan
 	damage_received_multiplier
+
+    damage_reduction
 
 	drone_healing
 

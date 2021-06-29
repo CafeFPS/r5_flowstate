@@ -140,7 +140,7 @@ void function Sh_ArenaDeathField_Init()
 	RegisterSignal( "DeathField_ShrinkNow" )
 
 	FlagInit( "AllowDeathFieldUpdate", true )
-	FlagInit( "DeathFieldPaused", GetCurrentPlaylistVarBool( "sur_circle_start_paused", false ) )
+	FlagInit( "DeathFieldPaused", (GetCurrentPlaylistVarBool( "sur_circle_start_paused", false ) || IsSurvivalTraining()) )
 	FlagInit( "DoneCreatingDeathFieldPosition" )
 	FlagInit( "SUR_DeathFieldShrinking" )
 
@@ -1271,11 +1271,16 @@ void function UpdateSurveyBeaconHint()
 
 void function OnPropDynamicCreated( entity prop )
 {
-	if ( prop.GetModelName() == SURVEY_BEACON_MODEL )
+	string modelName = prop.GetModelName()
+	if ( modelName == SURVEY_BEACON_MODEL )
 	{
 		CreateCallback_Panel( prop )
 		ClearCallback_CanUseEntityCallback( prop )
 		SetCallback_CanUseEntityCallback( prop, SurveyBeacon_CanUseFunction )
+	}
+	else if ( modelName == "mdl/fx/bb_shield.rmdl" )
+	{
+		Chroma_OnBubbleShieldCreated( prop )
 	}
 }
 
@@ -1706,12 +1711,16 @@ void function TrackDeathfieldDistance_Internal( entity cockpit, entity player )
 	player.EndSignal( "OnDestroy" )
 	cockpit.EndSignal( "OnDestroy" )
 
-	bool wasOutside = false
+	bool wasShowingDeathFieldFx = false
 	int screenFx
 
 	OnThreadEnd(
-		function() : ( screenFx )
+		function() : ( screenFx, player )
 		{
+			//
+			ColorCorrection_SetWeight( file.colorCorrection, 0.0 )
+			Chroma_EnteredRing()
+
 			if ( EffectDoesExist( screenFx ) )
 			{
 				EffectStop( screenFx, true, true )
@@ -1723,11 +1732,11 @@ void function TrackDeathfieldDistance_Internal( entity cockpit, entity player )
 
 	while ( 1 )
 	{
-		bool isOutside = DeathField_PointDistanceFromFrontier( player.GetOrigin() ) < 0
+		bool shouldShowDeathFieldFx = ShouldShowDeathFieldEffects( player ) //
 
-		if ( wasOutside != isOutside )
+		if ( wasShowingDeathFieldFx != shouldShowDeathFieldFx )
 		{
-			if ( isOutside )
+			if ( shouldShowDeathFieldFx )
 			{
 				Callback_OnPlayerEnteredDeathfield( player )
 
@@ -1738,6 +1747,8 @@ void function TrackDeathfieldDistance_Internal( entity cockpit, entity player )
 				}
 
 				ColorCorrection_SetWeight( file.colorCorrection, 1.0 )
+
+				Chroma_LeftRing()
 			}
 			else
 			{
@@ -1749,13 +1760,33 @@ void function TrackDeathfieldDistance_Internal( entity cockpit, entity player )
 				}
 
 				ColorCorrection_SetWeight( file.colorCorrection, 0.0 )
+
+				Chroma_EnteredRing()
 			}
-			wasOutside = isOutside
+			wasShowingDeathFieldFx = shouldShowDeathFieldFx
 		}
 
 		WaitFrame()
 	}
 }
+
+
+bool function ShouldShowDeathFieldEffects( entity player )
+{
+	bool shouldShow = true
+
+	if ( DeathField_PointDistanceFromFrontier( player.GetOrigin() ) >= 0 )
+		shouldShow = false
+
+	if ( !IsAlive( player ) )
+		shouldShow = false
+
+	if ( IsViewingSquadSummary() )
+		shouldShow = false
+
+	return shouldShow
+}
+
 
 void function Callback_OnPlayerEnteredDeathfield( entity player )
 {

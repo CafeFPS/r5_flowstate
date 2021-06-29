@@ -22,6 +22,14 @@ global function Dev_ToggleInvalidFriendData
 global function Dev_SetFillerFriends
 #endif
 
+#if CLIENT || UI 
+global function GetItemFlavorForCommunityUserInfo
+global function GetBadgeItemFlavorForCommunityUserInfo
+global function GetBadgeDataIntegerFromCommunityUserInfo
+global function GetTrackerItemFlavorForCommunityUserInfo
+global function GetTrackerDataIntegerFromCommunityUserInfo
+#endif
+
 
 
 ////////////////
@@ -349,6 +357,93 @@ void function AddCallback_OnUpdatingPlayerStryderCharDataArray( void functionref
 }
 #endif
 
+
+#if UI || CLIENT 
+ItemFlavor function GetItemFlavorForCommunityUserInfo( CommunityUserInfo userInfo, int slotIndex, int itemType )
+{
+	ItemFlavor ornull userCharacterItemFlavor = GetItemFlavorOrNullByGUID( userInfo.charData[slotIndex], itemType )
+
+	if ( userCharacterItemFlavor == null  )
+	{
+		ItemFlavor ornull character = GetItemFlavorOrNullByGUID( userInfo.charData[ ePlayerStryderCharDataArraySlots.CHARACTER ], eItemType.character )
+		if ( character == null )
+			character = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterClass() )
+		expect ItemFlavor( character )
+
+		switch ( itemType )
+		{
+			case eItemType.character :
+			{
+				userCharacterItemFlavor = character
+				break
+			}
+
+			case eItemType.character_skin :
+			{
+				userCharacterItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterSkin( character  ) )
+				break
+			}
+
+			case eItemType.gladiator_card_frame :
+			{
+				userCharacterItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_GladiatorCardFrame( character  ) )
+				break
+			}
+
+			case eItemType.gladiator_card_stance :
+			{
+				userCharacterItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_GladiatorCardStance( character  ) )
+				break
+			}
+
+			case eItemType.gladiator_card_intro_quip :
+			{
+				userCharacterItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterIntroQuip( character  ) )
+				break
+			}
+
+			unreachable //
+		}
+	}
+
+	expect ItemFlavor ( userCharacterItemFlavor  )
+	return userCharacterItemFlavor
+}
+
+ItemFlavor function GetBadgeItemFlavorForCommunityUserInfo( CommunityUserInfo userInfo, ItemFlavor character, int badgeIndex  )
+{
+	ItemFlavor ornull badgeItemFlavor = GetItemFlavorOrNullByGUID( userInfo.charData[ ePlayerStryderCharDataArraySlots.BANNER_BADGE1 + 2 * badgeIndex ], eItemType.gladiator_card_badge  ) //
+	if ( badgeItemFlavor == null )
+		badgeItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_GladiatorCardBadge( character, badgeIndex ) )
+
+	expect ItemFlavor( badgeItemFlavor )
+
+	return badgeItemFlavor
+}
+
+int function GetBadgeDataIntegerFromCommunityUserInfo( CommunityUserInfo userInfo, int badgeIndex )
+{
+	int dataInteger = maxint( 0, userInfo.charData[ePlayerStryderCharDataArraySlots.BANNER_BADGE1_TIER + 2 * badgeIndex] - 2 ) //
+	return dataInteger
+}
+
+ItemFlavor function GetTrackerItemFlavorForCommunityUserInfo( CommunityUserInfo userInfo, ItemFlavor character, int trackerIndex  )
+{
+	ItemFlavor ornull trackerItemFlavor = GetItemFlavorOrNullByGUID( userInfo.charData[ ePlayerStryderCharDataArraySlots.BANNER_TRACKER1 + 2 * trackerIndex], eItemType.gladiator_card_stat_tracker )//
+	if ( trackerItemFlavor == null )
+		trackerItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_GladiatorCardStatTracker( character, trackerIndex ) )
+
+	expect ItemFlavor( trackerItemFlavor )
+
+	return trackerItemFlavor
+}
+
+int function GetTrackerDataIntegerFromCommunityUserInfo( CommunityUserInfo userInfo, int trackerIndex )
+{
+	int dataInteger = maxint( 0, userInfo.charData[ePlayerStryderCharDataArraySlots.BANNER_TRACKER1_VALUE + 2 * trackerIndex] - 2 ) //
+	return dataInteger
+}
+#endif
 
 
 ///////////////////

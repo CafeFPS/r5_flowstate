@@ -101,6 +101,7 @@ struct
 		entity   closeCharacterCameraTarget
 		entity   customizeCharacterCameraTarget
 		entity   customizeWeaponCameraTarget
+		entity   battlepassCameraTarget
 		float[2] mouseRotateDelta
 		float    mouseWheelNewValue = 0.0
 		float    mouseWheelLastValue = 0.0
@@ -176,6 +177,8 @@ global function UIToClient_PartyMemberLoseFocus
 
 global function DisableModelTurn
 global function EnableModelTurn
+
+global function GetAttachmentOriginOffset
 
 #if R5DEV
 global function DEV_TweakPlayCamera
@@ -304,7 +307,7 @@ bool function TurntableUpdateAnglesFromInput( MenuModelData modelData, float max
 	float[2] rotationDelta
 	float maxTurnSpeed            = ModelData_GetMaxTurnSpeed( modelData )
 
-	if ( !file.modelTurnEnabled )
+	if ( !file.modelTurnEnabled && !GetDpadNavigationActive() )
 		return false
 
 	if ( IsControllerModeActive() )
@@ -451,6 +454,7 @@ void function InitPresentationData()
 	//SetPresentationData( ePresentationType.POSTGAME,			file.playCharacter,		 false, 0,   0, DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 				  300.0, 		       0.4,  0.55, 70.0, StartPresentation_TEMP )
 	SetPresentationData( ePresentationType.STORE, null, false, 0, 0, DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 2300.0, 3000.0, 1.0, 1.0, 0.0, StartPresentation_TEMP )
 	SetPresentationData( ePresentationType.NO_MODELS, null, false, 0, 0, 15, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 1.0, 1.0, 0.0, StartPresentation_TEMP )
+	SetPresentationData( ePresentationType.BATTLE_PASS, null, false, 0, 0, 15.5, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0, StartPresentation_BATTLE_PASS, EndPresentation_BATTLE_PASS )
 }
 
 // TODO: Break out camera settings
@@ -531,6 +535,16 @@ void function EndPresentation_WEAPON_SKIN()
 	ModelData_GetModel( file.customizeWeapon ).Hide()
 }
 
+void function StartPresentation_BATTLE_PASS()
+{
+	BattlePassLightsOn()
+}
+
+void function EndPresentation_BATTLE_PASS()
+{
+	BattlePassLightsOff()
+}
+
 void function StartPresentation_TEMP()
 {
 }
@@ -566,6 +580,7 @@ void function InitMenuEntities()
 	file.closeCharacterCameraTarget = GetEntByScriptName( "close_character_camera_target" )
 	file.customizeCharacterCameraTarget = GetEntByScriptName( "customize_character_camera_target" )
 	file.customizeWeaponCameraTarget = GetEntByScriptName( "customize_weapon_camera_target" )
+	file.battlepassCameraTarget = GetEntByScriptName( "battlepass_camera_target" )
 	clGlobal.menuCamera = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, DEFAULT_FOV )
 
 	// Wait for character class to be known
@@ -611,6 +626,7 @@ void function InitMenuEntities()
 
 	//thread DrawOrg( ModelData_GetMover( file.playCharacter ) )
 	//thread DrawOrg( ModelData_GetMover( file.customizeWeapon ) )
+	InitBattlePassLights()
 
 	file.initializedMenuModels = true
 }
@@ -955,7 +971,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 					characterOrNull = partyMemberDisplayThreadData.character
 
 				if ( characterOrNull == null )
-					characterOrNull = GetRandomGoodItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterClass(), true ) // todo(dw): temp
+					characterOrNull = GetItemFlavorByHumanReadableRef( "character_lifeline" ) // todo(dw): temp
 
 				ItemFlavor character = expect ItemFlavor(characterOrNull)
 				if ( partyMemberDisplayThreadData.character != character )
@@ -982,7 +998,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 					skinOrNull = partyMemberDisplayThreadData.skin
 
 				if ( skinOrNull == null )
-					skinOrNull = GetRandomGoodItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterSkin( character ), true ) // todo(dw): temp
+					skinOrNull = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterSkin( character ) ) // todo(dw): temp
 
 				ItemFlavor skin = expect ItemFlavor(skinOrNull)
 				if ( partyMemberDisplayThreadData.skin != skin )
@@ -1445,6 +1461,8 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 		cameraTarget = file.closeCharacterCameraTarget
 	else if ( presentationType == ePresentationType.CHARACTER_SKIN || presentationType == ePresentationType.CHARACTER_CARD )
 		cameraTarget = file.customizeCharacterCameraTarget
+	else if ( presentationType == ePresentationType.BATTLE_PASS )
+		cameraTarget = file.battlepassCameraTarget
 	clGlobal.menuCamera.SetTarget( cameraTarget, fov, interpolate, EASING_CUBIC_INOUT, TRANSITION_DURATION )
 
 	//EASING_LINEAR
@@ -1732,15 +1750,16 @@ void function TrackIsOverScrollBar( var listPanel )
 
 	while ( true )
 	{
-		var focus = GetFocus()
-		bool isFocusedOverList = focus == listPanel || Hud_GetParent( focus ) == listPanel || Hud_GetParent( focus ) == scrollPanel
+		var focus       = GetFocus()
+		var focusParent = focus == null ? null : Hud_GetParent( focus )
+		bool isOverList = focus == listPanel || focusParent == listPanel || focusParent == scrollPanel
 
-		if ( rotationEnabled && isFocusedOverList )
+		if ( rotationEnabled && isOverList )
 		{
 			rotationEnabled = false
 			RunClientScript( "DisableModelTurn" )
 		}
-		else if ( !rotationEnabled && !isFocusedOverList )
+		else if ( !rotationEnabled && !isOverList )
 		{
 			rotationEnabled = true
 			RunClientScript( "EnableModelTurn" )

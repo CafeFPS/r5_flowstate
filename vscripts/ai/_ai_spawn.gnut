@@ -133,10 +133,10 @@ void function AiSpawn_EntitiesDidLoad()
 
 			string aiSettings = expect string( kvs.leveled_aisettings )
 			string playerSettings = expect string(  Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
-			string playerModel = expect string( GetPlayerSettingsFieldForClassName( playerSettings, "bodymodel" ) )
-			string npcModel = expect string( kvs.model )
-			if ( npcModel != playerModel )
-				Warning( "Titan spawner at " + origin + " has model " + npcModel + " that does not match player settings model " + playerModel )
+			// string playerModel = expect string( GetPlayerSettingsFieldForClassName( playerSettings, "bodymodel" ) ) // this causes an error + it's SP so it's not even used afaik --
+			// string npcModel = expect string( kvs.model )
+			// if ( npcModel != playerModel )
+			// 	Warning( "Titan spawner at " + origin + " has model " + npcModel + " that does not match player settings model " + playerModel )
 		}
 	}
 

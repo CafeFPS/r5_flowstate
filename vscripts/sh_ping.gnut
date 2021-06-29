@@ -92,6 +92,7 @@ global enum ePingType
 	ENEMY_GENERAL,
 	ENEMY_SPECIFIC,
 	ENEMY_LOOTSOURCE,
+	ENEMY_SUSPECTED,
 	//
 	ENEMY_TRAP,
 	ENEMY_SMOKE,
@@ -111,6 +112,7 @@ global enum ePingType
 	ABILITY_DRONEMEDIC,
 	ABILITY_DOMESHIELD,
 	ABILITY_WORMHOLE,
+	ABILITY_JUMPPAD,
 
 	RESPAWN_STATION,
 	RESPAWN_DROPSHIP,
@@ -156,6 +158,7 @@ global enum ePingReply
 	RESPAWN_YES,
 
 	ABILITY_DOMESHIELD,
+	ABILITY_JUMPPAD,
 	ABILITY_WORMHOLE,
 
 	_count
@@ -256,6 +259,7 @@ string function Ping_GetSoundForLocationPing( int pingType, bool isOurs )
 		case ePingType.ABILITY_DOMESHIELD:
 		case ePingType.ABILITY_DRONEMEDIC:
 		case ePingType.ABILITY_WORMHOLE:
+		case ePingType.ABILITY_JUMPPAD:
 			return (isOurs ? "" : "")
 	}
 
@@ -326,13 +330,31 @@ void function OnPlayerConnected( entity player )
 
 #endif // SERVER
 
+#if CLIENT
+bool function Ping_ShouldExecutePing( entity player )
+{
+	if ( InPrediction() && !IsFirstTimePredicted() )
+		return false
+
+	#if(false)
+
+
+#endif //
+
+	if ( TryPingBlockingFunction( player, "ping" ) )
+		return false
+
+	if ( !PingIsAllowed( player ) )
+		return false
+
+	return true
+}
+#endif // CLIENT
+
 void function CodeCallback_PingOnDown( entity player )
 {
 	#if CLIENT
-		if ( InPrediction() && !IsFirstTimePredicted() )
-			return
-
-		if ( TryPingBlockingFunction( player, "ping" ) )
+		if ( !Ping_ShouldExecutePing( player ) )
 			return
 
 		OnPingDown( player )
@@ -450,7 +472,7 @@ PingTraceResults function DoPingTrace( entity player )
 	result.tr = tr
 
 	#if R5DEV
-		printf( "PING (%s) -  Dist:%.1f, %s, pos:%s, norm:%s, contents:0x%x", (IsServer() ? "SERVER" : "CLIENT"), result.hitDist, (IsValid( result.hitEnt ) ? ("[" + result.hitEnt + "]   '" + result.hitEnt.GetScriptName() + "'") : ""), string( tr.endPos ), string( tr.surfaceNormal ), tr.contents )
+		//printf( "PING (%s) -  Dist:%.1f, %s, pos:%s, norm:%s, contents:0x%x", (IsServer() ? "SERVER" : "CLIENT"), result.hitDist, (IsValid( result.hitEnt ) ? ("[" + result.hitEnt + "]   '" + result.hitEnt.GetScriptName() + "'") : ""), string( tr.endPos ), string( tr.surfaceNormal ), tr.contents )
 	#endif
 
 	return result
@@ -595,6 +617,9 @@ int function GetCommsActionForOwnerAnnounce( entity player, entity wp )
 
 		case ePingType.ABILITY_WORMHOLE:
 			return eCommsAction.PING_FRIENDLY_TELEPORTER
+
+		case ePingType.ABILITY_JUMPPAD:
+			return eCommsAction.PING_WE_GO
 	}
 
 	return eCommsAction.PING_LOCATION
@@ -685,6 +710,9 @@ ReplyCommsActionInfo function Ping_GetCommsActionForWaypointReply( entity player
 		case ePingReply.ABILITY_DOMESHIELD:
 			result.commsAction = eCommsAction.PING_ENEMY_SHIELD
 			break
+
+		case ePingReply.ABILITY_JUMPPAD:
+			result.commsAction = eCommsAction.PING_I_WATCHING
 
 		default:
 			result.commsAction = eCommsAction.BLANK
@@ -1066,6 +1094,7 @@ array<int> function GetReplyOptionsForWaypoint( entity player, entity wp )
 					case ePingType.ABILITY_DRONEMEDIC:
 					case ePingType.ABILITY_DOMESHIELD:
 					case ePingType.ABILITY_WORMHOLE:
+					case ePingType.ABILITY_JUMPPAD:
 						if ( wp.wp.haveConfirmed )
 							results.append( ePingReply.BLANK )
 						else
@@ -1087,6 +1116,7 @@ array<int> function GetReplyOptionsForWaypoint( entity player, entity wp )
 					case ePingType.ABILITY_DRONEMEDIC:
 					case ePingType.ABILITY_DOMESHIELD:
 					case ePingType.ABILITY_WORMHOLE:
+					case ePingType.ABILITY_JUMPPAD:
 						results.append( ePingReply.THANKS )
 						break
 
@@ -1252,6 +1282,9 @@ bool function ThrottleClientPing()
 
 void function Ping_HandleSpecificPingCommand( entity player, string pingType )
 {
+	if ( !Ping_ShouldExecutePing( player ) )
+		return
+
 	int pingTypeEnum = ePingType._count;
 	if ( pingType == "ENEMY" )
 		pingTypeEnum = ePingType.ENEMY_GENERAL
@@ -1329,6 +1362,7 @@ bool function IsTrapName( string scriptName )
 	switch( scriptName )
 	{
 		case DIRTY_BOMB_TARGETNAME:
+		case "octane_jump_pad":
 			return true
 	}
 
@@ -1823,7 +1857,7 @@ int function GetCarePackageCommsAction( entity pingingPlayer, int pingType, enti
 	return eCommsAction.PING_CAREPACKAGE
 }
 
-Assert( ePingType._count == 49 )
+Assert( ePingType._count == 51 )
 int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity pingedEnt )
 {
 	switch( pingType )
@@ -1888,6 +1922,9 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 		case ePingType.ENEMY_LOOTSOURCE:
 			return eCommsAction.PING_NPC_LOOT_TICK
 
+		case ePingType.ENEMY_SUSPECTED:
+			return eCommsAction.PING_ENEMY_SUSPECTED
+
 		case ePingType.LOOT:
 			return GetPingLootCommsAction( pingedEnt )
 
@@ -1937,8 +1974,7 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 			return eCommsAction.SPAWN_DRONEMEDIC
 
 		case ePingType.ABILITY_DOMESHIELD:
-			return eCommsAction.BLANK
-
+		case ePingType.ABILITY_JUMPPAD:
 		case ePingType.BLEEDOUT:
 		case ePingType.SELF_REVIVE:
 		case ePingType.RESPAWN_CARD:
@@ -2012,7 +2048,7 @@ entity function GetAllyByTeamMemberIndex( entity player, int teamNumIndex )
 	return null
 }
 
-Assert( ePingType._count == 49 )
+Assert( ePingType._count == 51 )
 asset function Ping_IconForPing_Hud( entity player, int pingType, entity pingedEnt, entity owner )
 {
 	switch( pingType )
@@ -2049,6 +2085,9 @@ asset function Ping_IconForPing_Hud( entity player, int pingType, entity pingedE
 
 		case ePingType.SELF_REVIVE:
 			return $"rui/hud/gametype_icons/hunted/bleedout_selfrevive_icon"
+
+		case ePingType.ABILITY_JUMPPAD:
+			return $"rui/hud/ultimate_icons/ultimate_octane_in_world"
 	}
 
 	int commsAction = GetCommsActionForPing( player, pingType, pingedEnt )
@@ -2092,6 +2131,9 @@ bool function Ping_IconForPing_IsAdditive( entity player, int pingType, entity p
 	switch( pingType )
 	{
 		case ePingType.ABILITY_DOMESHIELD:
+			return true
+
+		case ePingType.ABILITY_JUMPPAD:
 			return true
 	}
 

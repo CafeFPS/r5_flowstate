@@ -7,6 +7,17 @@ WeaponData
     "OnWeaponActivate"								"OnWeaponActivate_weapon_melee_primary"
     "OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_melee_primary"
 
+	"allow_empty_fire"								"1"
+	"uses_ammo_pool"								"0"
+
+	"weaponType" 									"melee"
+
+	"melee_can_hit_humansized"						"1"
+	"melee_can_hit_titans"							"0"
+	"melee_raise_recovery_animtime_normal"			"0.75"
+	"melee_raise_recovery_animtime_quick"			"0.4"
+	"melee_range"									"60"
+
 	Mods
 	{
 		proto_door_kick

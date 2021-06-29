@@ -28,6 +28,7 @@
 	"viewmodel"                                "mdl/weapons/g2/ptpov_g2a4.rmdl"
 	"playermodel"                              "mdl/weapons/g2/w_g2a4.rmdl"
 
+	"chroma_color"								"1 .8 .3"
 
 	// Behavior - Firing
 	//

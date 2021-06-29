@@ -9,6 +9,7 @@ global function GetDevNameForZoneId
 #if CLIENT
 global function SCB_OnPlayerEntersMapZone
 global function MapZones_ZoneIntroText
+global function MapZones_GetChromaBackgroundForZoneId
 #endif
 
 #if SERVER
@@ -32,7 +33,7 @@ global function MapZones_ForceRetouchForPlayer
 
 #endif // SERVER
 
-#if (SERVER && R5DEV)
+#if SERVER && R5DEV
 global function DEV_PrintMapZoneInfo
 global function DEV_MapZone_ToggleOverlay
 #endif // (SERVER && R5DEV)
@@ -109,6 +110,16 @@ string function GetZoneNameForZoneId( int zoneId )
 	Assert( zoneId < GetDatatableRowCount( file.mapZonesDataTable ) )
 	string zoneName = GetDataTableString( file.mapZonesDataTable, zoneId, GetDataTableColumnByName( file.mapZonesDataTable, "zoneName" ) )
 	return zoneName
+}
+
+string function MapZones_GetChromaBackgroundForZoneId( int zoneId )
+{
+	int column = GetDataTableColumnByName( file.mapZonesDataTable, "chroma" )
+	if ( column < 0 )
+		return ""
+
+	string chroma = GetDataTableString( file.mapZonesDataTable, zoneId, column )
+	return chroma
 }
 
 int function MapZones_GetZoneIdForTriggerName( string triggerName )
@@ -398,6 +409,7 @@ void function RemovePlayerFromCurrentZone( entity player )
 {
 	if ( player.p.currentZoneId == INVALID_ZONE_ID )
 		return
+
 	if ( player.p.currentZoneId == 0 )
 		return
 
@@ -503,6 +515,8 @@ void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 {
 	entity player = GetLocalViewPlayer()
 
+	Chroma_SetPlayerZone( zoneId )
+
 	int ceFlags = player.GetCinematicEventFlags()
 	if ( ceFlags & (CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_INTRO) )
 		return
@@ -524,7 +538,7 @@ void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 
 
 
-#if (SERVER && R5DEV)
+#if SERVER && R5DEV
 string function GetZoneLineForPlayer( entity player )
 {
 	int zoneId = player.p.currentZoneId
@@ -618,4 +632,4 @@ void function DebugFrameThread()
 	}
 }
 
-#endif // #if (SERVER && R5DEV)
+#endif // #if SERVER && R5DEV

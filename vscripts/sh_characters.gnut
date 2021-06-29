@@ -9,8 +9,10 @@ global function CharacterClass_GetRole
 global function CharacterClass_GetSortOrdinal
 global function CharacterClass_GetMenuSmokeSkinIndex
 global function CharacterClass_GetMenuBackgroundSkinIndex
+global function CharacterClass_GetMenuButtonIndex
 global function CharacterClass_GetMenuLightData
 global function CharacterClass_GetHudUltimateColorData
+global function CharacterClass_GetChromaGradient
 global function CharacterClass_GetGalleryModelOffset
 global function CharacterClass_GetGalleryPortrait
 global function CharacterClass_GetGalleryPortraitBackground
@@ -24,6 +26,10 @@ global function CharacterClass_IsAvailable
 
 #if SERVER
 global function GetStringArrayAvailableClassesForPlayer
+#endif
+
+#if CLIENT || UI 
+global function GetCharacterButtonMapping
 #endif
 
 //////////////////////
@@ -120,9 +126,12 @@ void function OnRegisterRootItemFlavors()
 	fileLevel.characterSelectionSlot = entry
 
 	array<ItemFlavor> characterList = []
-	foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/gamemode_survival/all_characters.rpak", "list" ) )
+	foreach( asset characterAsset in WORKAROUND_GetAllCharacterFlavorAssets() )
 	{
-		ItemFlavor ornull characterOrNull = RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
+		if ( characterAsset == $"" )
+			continue
+
+		ItemFlavor ornull characterOrNull = RegisterItemFlavorFromSettingsAsset( characterAsset )
 		if ( characterOrNull == null )
 			continue
 		characterList.append( expect ItemFlavor(characterOrNull) )
@@ -239,6 +248,12 @@ int function CharacterClass_GetMenuBackgroundSkinIndex( ItemFlavor flavor )
 	return GetGlobalSettingsInt( ItemFlavor_GetAsset( flavor ), "menuBackgroundSkinIndex" )
 }
 
+int function CharacterClass_GetMenuButtonIndex( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character )
+
+	return GetGlobalSettingsInt( ItemFlavor_GetAsset( flavor ), "characterMenuButtonIndex" )
+}
 
 CharacterMenuLightData function CharacterClass_GetMenuLightData( ItemFlavor flavor )
 {
@@ -262,6 +277,15 @@ CharacterHudUltimateColorData function CharacterClass_GetHudUltimateColorData( I
 	return data
 }
 
+table< float, vector > function CharacterClass_GetChromaGradient( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character )
+
+	return {
+		[0.1] = GetGlobalSettingsVector( ItemFlavor_GetAsset( flavor ), "chromaColor0" ),
+		[0.9] = GetGlobalSettingsVector( ItemFlavor_GetAsset( flavor ), "chromaColor1" ),
+	}
+}
 
 vector function CharacterClass_GetGalleryModelOffset( ItemFlavor flavor )
 {
@@ -362,6 +386,53 @@ array<string> function GetStringArrayAvailableClassesForPlayer( entity player )
 }
 #endif
 
+#if CLIENT || UI 
+table<int,ItemFlavor> function GetCharacterButtonMapping( array<ItemFlavor> allCharacters, int totalButtons )
+{
+	table<int,ItemFlavor> mappingTable
+	array<int> freeButtonMappings
+	for ( int i = 0 ; i < totalButtons ; i++ )
+		freeButtonMappings.append( i )
+
+	//
+	for ( int i = 0 ; i < allCharacters.len() ; i++ )
+	{
+		ItemFlavor itemFlav = allCharacters[i]
+		int index = CharacterClass_GetMenuButtonIndex( itemFlav )
+		Assert( index >= -1 && index < totalButtons, "Invalid characterMenuButtonIndex value for character " + ItemFlavor_GetHumanReadableRef( itemFlav ) )
+
+		if ( index < 0 )
+			continue
+
+		Assert( !( index in mappingTable ), "Character " + ItemFlavor_GetHumanReadableRef( itemFlav ) + " characterMenuButtonIndex " + index + " is already used. It must be unique" )
+
+		//
+		mappingTable[ index ] <- itemFlav
+		freeButtonMappings.removebyvalue( index )
+	}
+
+	//
+	for ( int i = 0 ; i < allCharacters.len() ; i++ )
+	{
+		ItemFlavor itemFlav = allCharacters[i]
+		int index = CharacterClass_GetMenuButtonIndex( itemFlav )
+
+		if ( index != -1 )
+			continue
+
+		index = freeButtonMappings[0]
+		Assert( !( index in mappingTable ) )
+
+		//
+		mappingTable[ index ] <- itemFlav
+		freeButtonMappings.removebyvalue( index )
+	}
+
+	Assert( mappingTable.len() == allCharacters.len() )
+	return mappingTable
+
+}
+#endif // CLIENT || UI 
 
 ///////////////////
 ///////////////////

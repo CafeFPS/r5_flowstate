@@ -8,10 +8,8 @@ global function GetRespawnStyle
 global function RespawnBeacons_OnSquadEliminated
 global function RespawnBeacon_PutPlayerInDropship
 global function AddCallback_OnDNAPickupDestroyed
-//#if R5DEV
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
-//#endif
 #endif
 
 #if CLIENT
@@ -606,7 +604,7 @@ void function RespawnChamberOnUse( entity pickup, entity player, int pickupFlags
 
 	#if CLIENT
 	HidePlayerHint( "#RESPAWN_AT_BEACONS_HINT" )
-		#endif
+	#endif
 
 	ExtendedUseSettings settings
 	settings.successSound = RESPAWN_BEACON_SUCCESS_SOUND
@@ -972,8 +970,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	jumpAnimSequence.attachment = animData.attachment
 	jumpAnimSequence.hideProxy = animData.hideProxy
 
-    // TODO: below
-	//player.Signal( "StopPostDeathLogic" )
+	player.Signal( "StopPostDeathLogic" )
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF

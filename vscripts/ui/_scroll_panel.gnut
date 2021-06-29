@@ -4,6 +4,7 @@ global function ScrollPanel_InitPanel
 global function ScrollPanel_SetActive
 global function ScrollPanel_InitScrollBar
 global function ScrollPanel_Refresh
+global function ScrollPanel_ScrollIntoView
 
 struct ListElementData
 {
@@ -122,27 +123,7 @@ void function ScrollPanelScrollUpdate()
 			}
 			else if ( GetConVarInt( "gameCursor_ModeActive" ) == 0 || (GetConVarInt( "gameCursor_ModeActive" ) == 2 && IsControllerModeActive()) )
 			{
-				var focusElement = GetFocus()
-				if ( focusElement != null && IsScrollPanelParent( data, focusElement ) )
-				{
-					UIPos panelPos = REPLACEHud_GetAbsPos( data.panel )
-					UISize panelSize = REPLACEHud_GetSize( data.panel )
-					if ( !IsElementFullyInside( focusElement, panelPos, panelSize ) )
-					{
-						if ( Hud_GetAbsY( focusElement ) < panelPos.y )
-						{
-							data.scrollValue = ((panelPos.y - Hud_GetAbsY( focusElement )) / SCROLL_SPEED) * -1
-							UpdatePanelElements( data )
-							data.scrollValue = 0.0
-						}
-						else if ( Hud_GetAbsY( focusElement ) + Hud_GetHeight( focusElement ) > panelPos.y + panelSize.height )
-						{
-							data.scrollValue = (Hud_GetHeight( focusElement ) - (panelPos.y + panelSize.height - Hud_GetAbsY( focusElement ))) / SCROLL_SPEED
-							UpdatePanelElements( data )
-							data.scrollValue = 0.0
-						}
-					}
-				}
+				ScrollToFocusedPanel( data.panel, data )
 			}
 		}
 
@@ -207,13 +188,15 @@ void function ScrollPanel_InitPanel( var panel )
 }
 
 
-void function ScrollPanel_InitScrollBar( var panel, var scrollBarElement )
+void function ScrollPanel_InitScrollBar( var panel, var scrollBarElement, bool addEventHandler = true )
 {
 	ScrollPanelData data = GetDataForPanel( panel )
 
 	data.scrollBarElement = scrollBarElement
 	Hud_SetKeyValue( data.scrollBarElement, "parentPanel", panel )
-	Hud_AddEventHandler( data.scrollBarElement, UIE_CLICK, OnScrollBarClick )
+
+	if ( addEventHandler )
+		Hud_AddEventHandler( data.scrollBarElement, UIE_CLICK, OnScrollBarClick )
 
 	UpdatePanelElements( data )
 }
@@ -301,7 +284,7 @@ void function OnScrollBarClick( var button )
 	ScrollPanelData data = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
 
 	printt( "OnScrollBarClick" )
-	//data.isScrollActive = true
+	//
 }
 
 
@@ -347,6 +330,31 @@ void function ScrollHandleRelease( var button )
 	}
 }
 
+void function ScrollToFocusedPanel( var panel, ScrollPanelData data )
+{
+	var focusElement = GetFocus()
+	if ( focusElement != null && IsScrollPanelParent( data, focusElement ) )
+	{
+		UIPos panelPos = REPLACEHud_GetAbsPos( data.panel )
+		UISize panelSize = REPLACEHud_GetSize( data.panel )
+		if ( !IsElementFullyInside( focusElement, panelPos, panelSize ) )
+		{
+			if ( Hud_GetAbsY( focusElement ) < panelPos.y )
+			{
+				data.scrollValue = ((panelPos.y - Hud_GetAbsY( focusElement )) / SCROLL_SPEED) * -1
+				UpdatePanelElements( data )
+				data.scrollValue = 0.0
+			}
+			else if ( Hud_GetAbsY( focusElement ) + Hud_GetHeight( focusElement ) > panelPos.y + panelSize.height )
+			{
+				data.scrollValue = (Hud_GetHeight( focusElement ) - (panelPos.y + panelSize.height - Hud_GetAbsY( focusElement ))) / SCROLL_SPEED
+				UpdatePanelElements( data )
+				data.scrollValue = 0.0
+			}
+		}
+	}
+}
+
 ScrollPanelData function GetDataForPanel( var panel )
 {
 	Assert( string( panel ) in file.scrollPanels )
@@ -370,3 +378,13 @@ void function ScrollPanel_SetActive( var panel, bool state )
 	ScrollPanelData data = GetDataForPanel( panel )
 }
 
+void function ScrollPanel_ScrollIntoView( var panel )
+{
+	foreach ( ScrollPanelData data in file.scrollPanels )
+	{
+		if ( !data.isActive )
+			continue
+
+		ScrollToFocusedPanel( panel, data )
+	}
+}
