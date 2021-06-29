@@ -2,12 +2,13 @@ untyped
 
 globalize_all_functions
 
-global const DEG_TO_RAD = 0.01745329251994 // PI / 180.0
+global const DEG_TO_RAD = 0.01745329251994  // PI / 180.0
 global const RAD_TO_DEG = 57.29577951308232 // 180.0 / PI
 
 global array<asset> LEGAL_PLAYER_TITAN_SETTINGS
 
 global const PST_TIME_ZONE_OFFSET				= -7
+
 global enum eDaysOfWeek
 {
 	SUNDAY,
@@ -19,6 +20,7 @@ global enum eDaysOfWeek
 	SATURDAY,
 	_NUM_DAYS
 }
+
 global struct TimeParts
 {
 	int year
@@ -221,7 +223,7 @@ bool function IsNewThread()
 			break
 	}
 
-	return (i == 3)
+	return i == 3
 }
 
 bool function CallingFuncIsNewThread()
@@ -234,7 +236,11 @@ bool function CallingFuncIsNewThread()
 	}
 
 	const int CHECK_DEPTH = 4
-	return (CHECK_DEPTH == 4)
+	return (i == CHECK_DEPTH)
+}
+void function AssertIsNewThread()
+{
+	Assert( CallingFuncIsNewThread(), "Must be threaded off" )
 }
 
 void function AssertParameters( func, int paramCount, string paramDesc )
@@ -265,74 +271,6 @@ string function RepeatString( string str, int times )
 		out += str
 	}
 	return out
-}
-
-string function GetCurrentPlaylistVar( string val, string opVal = "" )
-{
-	#if UI
-		var result = Code_GetCurrentPlaylistVar( val )
-		if ( result != null )
-			return expect string( result )
-
-		return opVal
-	#else
-		return GetCurrentPlaylistVarOrUseValue( val, opVal )
-	#endif
-}
-
-string function GetCurrentPlaylistVarOrUseValue( string val, string opVal )
-{
-	#if !SERVER
-		if ( !IsConnected() )
-			return opVal
-	#endif
-
-	return Code_GetCurrentPlaylistVarOrUseValue( val, opVal ) // HACK
-}
-
-int function GetCurrentPlaylistVarInt( string val, int useVal )
-{
-	return int( GetCurrentPlaylistVarOrUseValue( val, string( useVal ) ) )
-}
-
-float function GetCurrentPlaylistVarFloat( string val, float useVal )
-{
-	return float( GetCurrentPlaylistVarOrUseValue( val, string( useVal ) ) )
-}
-
-bool function GetCurrentPlaylistVarBool( string val, bool useVal )
-{
-	return GetCurrentPlaylistVarOrUseValue( val, string( useVal ) ) == "true" || GetCurrentPlaylistVarOrUseValue( val, string( useVal ) ) == "1"
-}
-
-string function GetCurrentPlaylistVarString( string val, string useVal )
-{
-	return GetCurrentPlaylistVarOrUseValue( val, useVal )
-}
-
-int function GetCurrentPlaylistVarOrUseValueOriginalInt( string val, int useVal )
-{
-	return int( GetCurrentPlaylistVarOrUseValueOriginal( val, string( useVal ) ) )
-}
-
-float function GetCurrentPlaylistVarOrUseValueOriginalFloat( string val, float useVal )
-{
-	return float( GetCurrentPlaylistVarOrUseValueOriginal( val, string( useVal ) ) )
-}
-
-bool function GetCurrentPlaylistVarOrUseValueOriginalBool( string val, bool useVal )
-{
-	return bool( GetCurrentPlaylistVarOrUseValueOriginal( val, string( useVal ) ) )
-}
-
-string function GetCurrentPlaylistVarOrUseValueOriginalString( string val, string useVal )
-{
-	return GetCurrentPlaylistVarOrUseValueOriginal( val, useVal )
-}
-
-bool function IsMultiplayerPlaylist()
-{
-	return GetCurrentPlaylistVarInt( "classic_mp", 1 ) ? true : false
 }
 
 bool function IsOdd( int num )
@@ -450,6 +388,24 @@ bool function IsLobby()
 	return IsLobbyMapName( mapName )
 }
 
+#if UI || MP_PVEMODE 
+bool function Freelance_IsHubLevel()
+{
+#if UI
+	string mapName = GetActiveLevel()
+#else
+	string mapName = GetMapName()
+#endif
+
+	switch( mapName )
+	{
+		case "mp_rr_nobody":
+			return true
+	}
+	return false
+}
+#endif
+
 bool function Is2TeamPvPGame() //Technically this checks if its' 2 teams. Will we have 2 team non-PvP games? Probably not...
 {
 	return ( MAX_TEAMS == 2 )
@@ -473,6 +429,46 @@ bool function IsSingleTeamMode()
 bool function IsMultiTeamMission()
 {
 	return false
+}
+
+bool function IsShotgunsAndSnipersMode()
+{
+	return GetCurrentPlaylistVarBool( "shotguns_and_snipers_mode", false )
+}
+
+int function GetExpectedSquadSize( entity player )
+{
+	return int ( GetCurrentPlaylistVarFloat( "max_players", 60 ) / GetCurrentPlaylistVarFloat( "max_teams", 20 ) )
+}
+
+bool function IsDuoMode()
+{
+	return (GetCurrentPlaylistVarFloat( "max_players", 60 ) / GetCurrentPlaylistVarFloat( "max_teams", 20 ) == 2.0)
+}
+
+bool function IsSoloMode()
+{
+	return GetCurrentPlaylistVarBool( "solo_mode", false )
+}
+
+bool function IsLastPlaylistSolo( entity player )
+{
+	return GetPersistentLastGameTypeFlag( player, eGameType.SOLO )
+}
+
+bool function UseSoloModeIntroPresentation()
+{
+	return GetCurrentPlaylistVarInt( "solo_mode_intro_presentation", 0 ) ? true : false
+}
+
+bool function UseSoloModeInGamePresentation()
+{
+	return GetCurrentPlaylistVarInt( "solo_mode_ingame_presentation", 0 ) ? true : false
+}
+
+bool function UseSoloModePostGamePresentation()
+{
+	return GetCurrentPlaylistVarInt( "solo_mode_postgame_presentation", 0 ) ? true : false
 }
 
 int function GetEnemyTeam( int team )
@@ -565,6 +561,37 @@ string function StringReplace( string baseString, string searchString, string re
 	newString += baseString.slice( searchIndex )
 
 	return newString
+}
+
+var function MakeRegexp( string patternString )
+{
+	return regexp( patternString )
+}
+
+
+bool function Regexp_DoesMatch( var pattern, string str )
+{
+	return expect bool(pattern.match( str ))
+}
+
+
+array<string> function Regexp_Match( var pattern, string str )
+{
+	var captureListOrNull = pattern.capture( str )
+
+	if ( captureListOrNull == null )
+		return []
+
+	array captureList = expect array( captureListOrNull )
+
+	array<string> captures = []
+	foreach( var captureRawInfo in captureList )
+	{
+		table captureInfo = expect table( captureRawInfo )
+		captures.append( str.slice( captureInfo.begin, captureInfo.end ) )
+	}
+
+	return captures
 }
 
 bool function DoesMatchRegexp( string baseString, string patternString )
@@ -770,6 +797,8 @@ bool function IsWeaponKeyFieldDefined( string ref, string variable )
 
 string function GetWeaponInfoFileKeyField_GlobalString( string ref, string variable )
 {
+	if(variable == "printName") 
+		return "printName"
 	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
 	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
 	return expect string( val )
@@ -861,6 +890,15 @@ string function VectorToString( vector vec )
 vector function FlattenNormalizeVec( vector v )
 {
 	return Normalize( <v.x, v.y, 0> )
+}
+
+int function GetReportStyle()
+{
+	#if PS4_PROG
+		return 0
+	#else
+		return GetCurrentPlaylistVarInt( "enable_report", 2 )
+	#endif
 }
 
 vector function GetClosestPointOnPlane( vector a, vector b, vector c, vector p, bool clampInside = false )
@@ -1264,6 +1302,22 @@ bool function CoinFlip()
 {
 	return RandomInt( 2 ) != 0
 }
+
+#if UI
+bool function UI_IsPVEMode()
+{
+	string playlistName = GetCurrentPlaylistName()
+	if ( playlistName.find( "freelance" ) == 0 )
+		return true
+
+	return false
+}
+
+bool function UI_UseFreelanceMenus()
+{
+	return GetCurrentPlaylistVarBool( "freelance_menus", false )
+}
+#endif
 
 //int function GetIntFromString( string inString )
 //{
@@ -1761,7 +1815,19 @@ void function WaitForever()
 
 bool function IsSurvivalTraining()
 {
+	// TODO:
+	return true
 	return GetCurrentPlaylistVarBool( "survival_training", false )
+}
+
+bool function IsFiringRangeGameMode()
+{
+	return GetCurrentPlaylistVarBool( "survival_firingrange", false )
+}
+
+bool function FiringRangeHasFriendlyFire()
+{
+	return GetCurrentPlaylistVarBool( "firingrange_has_friendlyfire", true )
 }
 
 float function LerpFloat( float startValue, float endValue, float time )
@@ -1834,7 +1900,7 @@ bool function IsAccessibilityChatHintEnabled()
 #endif
 
 
-#if CLIENT || UI && PC_PROG
+#if (CLIENT || UI) && PC_PROG
 bool function IsAccessibilitySpeechToChat()
 {
 	if ( !IsAccessibilityAvailable() )
@@ -1957,6 +2023,38 @@ vector function LinearToSrgb( vector inputColor )
 //	╚██████╔╝██║ ╚████║██║██╔╝ ██╗       ██║   ██║██║ ╚═╝ ██║███████╗    ╚██████╔╝   ██║   ██║███████╗
 //	 ╚═════╝ ╚═╝  ╚═══╝╚═╝╚═╝  ╚═╝       ╚═╝   ╚═╝╚═╝     ╚═╝╚══════╝     ╚═════╝    ╚═╝   ╚═╝╚══════╝
 
+#if SERVER || CLIENT || UI
+var unixTimestampStringPattern = null
+var datetimeStringPattern = null
+int ornull function DateTimeStringToUnixTimestamp( string str )
+{
+	str = strip( str )
+	array<string> captures
+
+	unixTimestampStringPattern = MakeRegexp( "^\\d+$" )
+	captures = Regexp_Match( unixTimestampStringPattern, str )
+	Assert( captures.len() == 0 || captures.len() == 1 )
+	if ( captures.len() == 1 )
+		return int(captures[0])
+
+	datetimeStringPattern = MakeRegexp( "^(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d) (\\d\\d):(\\d\\d):(\\d\\d) ([\\+\\-])(\\d\\d):(\\d\\d)$" )
+	captures = Regexp_Match( datetimeStringPattern, str )
+	Assert( captures.len() == 0 || captures.len() == 10 )
+	if ( captures.len() == 0 )
+		return null
+	TimeParts parts
+	parts.year = int(captures[1])
+	parts.month = int(captures[2])
+	parts.day = int(captures[3])
+	parts.hour = int(captures[4])
+	parts.minute = int(captures[5])
+	parts.second = int(captures[6])
+	int timezoneOffsetHours = (captures[7] == "+" ? 1 : -1) * int(captures[8])
+	Assert( int(captures[9]) == 0 ) //
+	return GetUnixTimeFromParts( parts, timezoneOffsetHours )
+}
+#endif
+
 int function GetUnixTimePST()
 {
 	int unixTime = GetUnixTimestamp()
@@ -2017,6 +2115,21 @@ TimeParts function GetUnixTimeParts( int unixtime )
 	parts.day = unixtime
 
 	return parts
+}
+
+int function GetUnixTimeFromParts( TimeParts parts, int timezoneOffsetHours )
+{
+	int y                     = parts.year - (parts.month <= 2 ? 1 : 0)
+	int era                   = (y >= 0 ? y : y - 399) / 400
+	int yoe                   = y - era * 400 //
+	int doy                   = (153 * (parts.month + (parts.month > 2 ? -3 : 9)) + 2) / 5 + parts.day - 1 //
+	int doe                   = yoe * 365 + yoe / 4 - yoe / 100 + doy //
+	int days_since_1970_01_01 = era * 146097 + doe - 719468
+
+	return (SECONDS_PER_DAY * days_since_1970_01_01
+			+ SECONDS_PER_HOUR * (parts.hour - timezoneOffsetHours)
+			+ SECONDS_PER_MINUTE * parts.minute
+			+ parts.second)
 }
 
 int function __YearToDays( int y )
@@ -2091,12 +2204,80 @@ int function SecondsRemainingInDay( int unixTime )
 	return endOfDay - unixTime
 }
 
-#if CLIENT
-vector function OriginToGround( vector origin, int traceMask = TRACE_MASK_NPCWORLDSTATIC, entity tracingEnt = null )
+int function GetCurrentEliteStreak( entity player )
 {
-	vector endOrigin         = <origin.x, origin.y, -MAX_WORLD_COORD_BUFFER >
-	TraceResults traceResult = TraceLine( origin, endOrigin, [], traceMask, TRACE_COLLISION_GROUP_NONE, tracingEnt )
+	int currentStreak = 0
 
-	return traceResult.endPos
+	#if UI
+	if ( !IsFullyConnected() )
+		return 0
+	#endif
+
+	currentStreak = player.GetPersistentVarAsInt( "currentEliteStreak" )
+
+	return currentStreak
+}
+
+int function GetMaxEliteStreak( entity player )
+{
+	int maxStreak = 0
+
+	#if UI
+		if ( !IsFullyConnected() )
+			return 0
+	#endif
+
+	if ( !IsValid( player ) )
+		return 0
+
+	maxStreak = GetStat_Int( player, ResolveStatEntry( CAREER_STATS.season_elite_max_streak, "SAID01769158912" ) )
+
+	return maxStreak
+}
+
+#if CLIENT || UI 
+bool function IsInMyParty( string uid )
+{
+	Party party = GetParty()
+	foreach ( p in party.members )
+	{
+		if ( p.uid == uid )
+			return true
+	}
+	return false
+}
+
+bool function CanSendFriendRequest( entity player )
+{
+	if ( !GetCurrentPlaylistVarBool( "enable_squad_friend_invite", false ) )
+		return false
+
+	return true
+}
+
+bool function CanInviteSquadMate( string uid )
+{
+	if ( !GetCurrentPlaylistVarBool( "enable_squad_invite", false ) )
+		return false
+
+	if ( IsInMyParty( uid ) )
+		return false
+
+	if ( GetParty().numFreeSlots == 0 )
+		return false
+
+	return true
 }
 #endif
+entity function AssertLocalOrServerValidPlayer( entity player )
+{
+	#if SERVER
+
+	#elseif CLIENT || UI 
+		if ( player == null )
+			player = GetLocalClientPlayer()
+		Assert( player == GetLocalClientPlayer() )
+	#endif
+
+	return player
+}

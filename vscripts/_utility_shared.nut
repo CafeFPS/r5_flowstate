@@ -44,38 +44,38 @@ global struct LineSegment
 
 global struct FirstPersonSequenceStruct
 {
-	string firstPersonAnim = ""
-	string thirdPersonAnim = ""
-	string firstPersonAnimIdle = ""
-	string thirdPersonAnimIdle = ""
-	string relativeAnim = ""
-	string attachment = ""
-	bool teleport = false
-	bool noParent = false
-	float blendTime = CALCULATE_SEQUENCE_BLEND_TIME
-	float thirdPersonBlendInTime = -1.0
-	float firstPersonBlendInTime = -1.0
-	float firstPersonBlendOutTime = -1.0
-	float thirdPersonBlendOutTime = -1.0
-	bool noViewLerp = false
-	bool hideProxy = false
+	string firstPersonAnim                      = ""
+	string thirdPersonAnim                      = ""
+	string firstPersonAnimIdle                  = ""
+	string thirdPersonAnimIdle                  = ""
+	string relativeAnim                         = ""
+	string attachment                           = ""
+	bool teleport                               = false
+	bool noParent                               = false
+	float blendTime                             = CALCULATE_SEQUENCE_BLEND_TIME
+	float thirdPersonBlendInTime                = -1.0
+	float firstPersonBlendInTime                = -1.0
+	float firstPersonBlendOutTime               = -1.0
+	float thirdPersonBlendOutTime               = -1.0
+	bool noViewLerp                             = false
+	bool hideProxy                              = false
 	void functionref( entity ) viewConeFunction = null
-	vector ornull origin = null
-	vector ornull angles = null
-	bool enablePlanting = false
-	float setStartTime = -1 // Set what time (in seconds since the beginning of Time()) the animation will start in.
-	float setInitialTime = 0.0 // Set the starting point of the animation in seconds. 0 = beginning of the animation.
-	bool useAnimatedRefAttachment = false //Position entity using ref every frame instead of using root motion
-	bool renderWithViewModels = false
-	bool gravity = false // force gravity command on sequence
-	bool playerPushable = false
-	array<string> thirdPersonCameraAttachments = []
-	bool thirdPersonCameraVisibilityChecks = false
-	entity thirdPersonCameraEntity = null
-	bool snapPlayerFeetToEyes = true
-	bool prediction = false
-	bool setVelocityOnEnd = false
-	bool snapForLocalPlayer = false
+	vector ornull origin                        = null
+	vector ornull angles                        = null
+	bool enablePlanting                         = false
+	float setStartTime                          = -1 // Set what time (in seconds since the beginning of Time()) the animation will start in.
+	float setInitialTime                        = 0.0 // Set the starting point of the animation in seconds. 0 = beginning of the animation.
+	bool useAnimatedRefAttachment               = false //Position entity using ref every frame instead of using root motion
+	bool renderWithViewModels                   = false
+	bool gravity                                = false // force gravity command on sequence
+	bool playerPushable                         = false
+	array<string> thirdPersonCameraAttachments  = []
+	bool thirdPersonCameraVisibilityChecks      = false
+	entity thirdPersonCameraEntity              = null
+	bool snapPlayerFeetToEyes                   = true
+	bool prediction                             = false
+	bool setVelocityOnEnd                       = false
+	bool snapForLocalPlayer                     = false
 }
 
 global struct FrontRightDotProductsStruct
@@ -95,9 +95,10 @@ global enum eGradeFlags
 {
 	NONE = 0,
 
-	IS_OPEN =		(1 << 0),
-	IS_BUSY =		(1 << 1),
-
+	IS_OPEN =			(1 << 0),
+	IS_BUSY =			(1 << 1),
+	IS_OPEN_SECRET =	(1 << 2),
+	IS_LOCKED =			(1 << 3),
 	_flagCount			= 2
 }
 
@@ -134,45 +135,42 @@ void function InitWeaponScripts()
 	MpAbilityShifter_Init()
 	MpWeaponDefender_Init()
 	MpWeaponDmr_Init()
-	MpWeaponRocketLauncher_Init()
-	MpWeaponSmartPistol_Init()
-	SonarGrenade_Init()
 	MpWeaponSniper_Init()
 	MpWeaponLSTAR_Init()
-	MpWeaponEnergyAR_Init()
-	MpWeaponEnergyShotgun_Init()
-	MpWeaponDoubletake_Init()
-	MpWeaponGreandeElectricSmoke_Init()
 	MpWeaponZipline_Init()
 	MpWeaponAlternatorSMG_Init()
-	MpWeaponGrenadeGravity_Init()
 	MpWeaponThermiteGrenade_Init()
 	MeleeWraithKunai_Init()
 	MpWeaponWraithKunaiPrimary_Init()
-	MpTitanAbilityLaserTrip_Init()
-	MpWeaponSatchel_Init()
-	MpWeaponProximityMine_Init()
-
+	MeleeBloodhoundAxe_Init()
+	MpWeaponBloodhoundAxePrimary_Init()
+	MeleeLifelineBaton_Init()
+	MpWeaponLifelineBatonPrimary_Init()
 
 	#if DEVSCRIPTS
 		MpAbilityGibraltarShield_Init()
 		MpWeaponBubbleBunker_Init()
+		MpWeaponEmoteProjector_Init()
 		MpWeaponGrenadeDefensiveBombardment_Init()
 		MpAbilityHuntModeWeapon_Init()
 		MpAbilityAreaSonarScan_Init()
 		MpWeaponGrenadeGas_Init()
 		MpWeaponDirtyBomb_Init()
-		MDLSpawner_Init()
 		MpWeaponDeployableMedic_Init()
-		MpWeaponDeployableCover_Init()
-
 		MpWeaponIncapShield_Init()
 		MpWeaponGrenadeBangalore_Init()
 		MpWeaponGrenadeCreepingBombardment_Init()
 		MpWeaponGrenadeCreepingBombardmentWeapon_Init()
+		MpAbilityMirageUltimate_Init()
+
+		MpAbilityCryptoDrone_Init()
+		MpAbilityCryptoDroneEMP_Init()
+
 		MpWeaponPhaseTunnel_Init()
+
+		MpWeaponTeslaTrap_Init()
+		MpWeaponTrophy_Init()
 	#endif
-	MpWeaponBasicBolt_Init()
 
 	#if SERVER
 		//BallLightning_Init()
@@ -637,10 +635,10 @@ void function FighterExplodes( entity ship )
 	vector angles = ship.GetAngles()
 	EmitSoundAtPosition( TEAM_UNASSIGNED, origin, "AngelCity_Scr_RedeyeWeaponExplos" )
 	#if SERVER
-		PlayFX( FX_HORNET_DEATH, origin )
+		//PlayFX( FX_HORNET_DEATH, origin )
 	#else
-		int fxid = GetParticleSystemIndex( FX_HORNET_DEATH )
-		StartParticleEffectInWorld( fxid, origin, angles )
+		//int fxid = GetParticleSystemIndex( FX_HORNET_DEATH )
+		//StartParticleEffectInWorld( fxid, origin, angles )
 	#endif
 }
 
@@ -913,9 +911,6 @@ bool function ControlPanel_IsValidModel( entity controlPanel )
 bool function ControlPanel_CanUseFunction( entity playerUser, entity controlPanel )
 {
 	if ( Bleedout_IsBleedingOut( playerUser ) )
-		return false
-		
-	if ( !IsValid( playerUser ) )
 		return false
 
 	entity activeWeapon = playerUser.GetActiveWeapon( eActiveInventorySlot.mainHand )
@@ -4671,11 +4666,6 @@ array<entity> function GetPlayerArray_AliveConnected()
 	return connectedArray
 }
 
-bool function IsSoloMode()
-{
-	return ( MAX_TEAMS == MAX_PLAYERS )
-}
-
 entity function GetJumpmasterForTeam( int team )
 {
 	entity jumpMaster
@@ -4827,7 +4817,7 @@ array<entity> function GetEntityAndItsChildren( entity parentEnt )
 {
 	array<entity> out = []
 	#if SERVER
-		//Assert( false, "NYI" ) // todo(dw)
+		Assert( false, "NYI" ) // todo(dw)
 	#elseif CLIENT
 		Assert( parentEnt.GetCodeClassName() == "dynamicprop" )
 
@@ -4835,20 +4825,6 @@ array<entity> function GetEntityAndItsChildren( entity parentEnt )
 	#endif
 	out.append( parentEnt )
 	return out
-}
-bool function UseSoloModeIntroPresentation()
-{
-	return GetCurrentPlaylistVarInt( "solo_mode_intro_presentation", 0 ) ? true : false
-}
-
-bool function UseSoloModeInGamePresentation()
-{
-	return GetCurrentPlaylistVarInt( "solo_mode_ingame_presentation", 0 ) ? true : false
-}
-
-bool function UseSoloModePostGamePresentation()
-{
-	return GetCurrentPlaylistVarInt( "solo_mode_postgame_presentation", 0 ) ? true : false
 }
 
 void function KnockBackPlayer( entity player, vector pushDir, float scale, float time )
