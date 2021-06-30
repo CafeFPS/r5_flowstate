@@ -153,9 +153,11 @@ void function SquadSummaryOnOpenPanel( var panel )
 
 		file.panelData[panel].cardsInitialized[cardElem] = true
 
-		if ( Hud_GetHudName( cardElem ) == "GCard0" && GetExpectedSquadSize( GetLocalClientPlayer() ) == 2 )
+		if ( Hud_GetHudName( cardElem ) == "GCard0" )
 		{
-			Hud_SetX( cardElem, 201 )
+			Hud_SetX( cardElem, 0 )
+			if ( GetExpectedSquadSize( GetLocalClientPlayer() ) == 2 )
+				Hud_SetX( cardElem, 201 )
 		}
 
 		i++

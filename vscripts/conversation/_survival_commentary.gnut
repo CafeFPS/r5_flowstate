@@ -23,79 +23,9 @@ int function SurvivalCommentary_GetChampionEEH()
 	return 0
 }
 
-//  eSurvivalEventType
-
-// 	0  INVALID,
-// 	1  FIRST_CIRCLE_MOVING,
-// 	2  CIRCLE_MOVING,
-// 	3  FINAL_CIRCLE_MOVING,
-// 	4  CIRCLE_CLOSING_TO_NOTHING,
-// 	5  TITANS_DROPPING,
-// 	6  CARE_PACKAGE_DROPPING,
-// 	7  HOVER_TANK_INBOUND,
-// 	8  TWO_SQUADS_LEFT,
-// 	9  ONE_VS_ONE,
-// 	10  WINNER_WINNER,
-// 	11  FIRST_CIRCLE_TIMER_STARTED,
-// 	12  NEXT_CIRCLE_TIMER_STARTED,
-// 	13  FINAL_CIRCLE_TIMER_STARTED,
-// 	14  CIRCLE_MOVES_1MIN,
-// 	15  CIRCLE_MOVES_45SEC,
-// 	16  CIRCLE_MOVES_30SEC,
-// 	17  CIRCLE_MOVES_10SEC,
-// 	18  ROUND_TIMER_STARTED,
-// 	19  HALF_PLAYERS_ALIVE,
-// 	20  PLAYERS_ALIVE_10,
-// 	21  PLAYERS_ALIVE_5,
-// 	22  HALF_SQUADS_ALIVE,
-// 	23  SQUADS_ALIVE_6,
-// 	24  SQUADS_ALIVE_3,
-// 	25  FIRST_BLOOD
-// 	26  PILOT_KILL,
-// 	27  PILOT_DOWNED,
-// 	28  PILOT_WOUNDED,
-// 	29  PILOT_REVIVED,
-// 	30  SQUAD_ELIMINATED,
-// 	31  NO_KILLS_FOR_TIME,
-// 	32  _count
-
-void function AddSurvivalCommentaryEvent ( int event )
+void function AddSurvivalCommentaryEvent ( int param )
 {
-	#if R5DEV
-	string enumString = GetEnumString( "eSurvivalEventType", event )
-	
-	printt( FUNC_NAME(), "eSurvivalEventType:", enumString, event )
-	#endif
 
-	switch( event )
-	{
-		case eSurvivalEventType.CIRCLE_MOVING:
-			thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_aiNotify_circleMoving", 2))
-			break
-		case eSurvivalEventType.ROUND_TIMER_STARTED:
-			thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartRound" + SURVIVAL_GetCurrentRoundString() )
-			break
-			
-	}
-}
-
-string function SurvivalCommentary_GetAlternativeSound( string sound, int max, int min = 0 )
-{
-	int selection = RandomIntRange( min, max + 1 )
-
-	return sound + ( ( selection != 0 ) ? "_0" + selection : "" )
-}
-
-void function SurvivalCommentary_PlaySoundForAllPlayers( string sound )
-{
-	#if R5DEV
-	printt( FUNC_NAME(), "playing sound:", sound, "to all players" )
-	#endif
-
-	foreach( entity player in GetPlayerArray() )
-	{
-		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
-	}
 }
 
 void function SurvivalCommentary_InitThreatChatterForPlayer ( entity player )

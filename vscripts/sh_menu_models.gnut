@@ -101,7 +101,6 @@ struct
 		entity   closeCharacterCameraTarget
 		entity   customizeCharacterCameraTarget
 		entity   customizeWeaponCameraTarget
-		entity   battlepassCameraTarget
 		float[2] mouseRotateDelta
 		float    mouseWheelNewValue = 0.0
 		float    mouseWheelLastValue = 0.0
@@ -140,6 +139,9 @@ struct
 		#endif // DEV
 		int  transitionTest = 3
 	#endif // CLIENT
+
+	array<void functionref()> mouseWheelDownCallbacks
+	array<void functionref()> mouseWheelUpCallbacks
 } file
 
 #if CLIENT
@@ -196,17 +198,34 @@ global function UIToClient_PROTO_UpdateClientWithLocalClientUID
 #if UI
 const MOUSE_ROTATE_MULTIPLIER = 25.0
 
+global function ShMenuModels_UIInit
+
 global function RunMenuClientFunction
 global function UI_SetPresentationType
 
 global function UICodeCallback_MouseMovementCapture
-global function RegisterMouseWheelZoom
-global function DeregisterMouseWheelZoom
+global function OnMouseWheelDown
+global function OnMouseWheelUp
 
 global function ClientToUI_PROTO_UpdateClientWithLocalClientUID
 
 global function TrackIsOverScrollBar
 #endif // UI
+
+#if CLIENT || UI
+global function AddCallback_OnMouseWheelDown
+global function AddCallback_OnMouseWheelUp
+global function RemoveCallback_OnMouseWheelDown
+global function RemoveCallback_OnMouseWheelUp
+#endif
+
+#if UI
+void function ShMenuModels_UIInit()
+{
+	RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, OnMouseWheelDown )
+	RegisterButtonPressedCallback( MOUSE_WHEEL_UP, OnMouseWheelUp )
+}
+#endif
 
 #if CLIENT
 void function ClMenuModels_Init()
@@ -307,7 +326,7 @@ bool function TurntableUpdateAnglesFromInput( MenuModelData modelData, float max
 	float[2] rotationDelta
 	float maxTurnSpeed            = ModelData_GetMaxTurnSpeed( modelData )
 
-	if ( !file.modelTurnEnabled && !GetDpadNavigationActive() )
+	if ( !file.modelTurnEnabled )
 		return false
 
 	if ( IsControllerModeActive() )
@@ -454,7 +473,6 @@ void function InitPresentationData()
 	//SetPresentationData( ePresentationType.POSTGAME,			file.playCharacter,		 false, 0,   0, DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 200.0, 				  300.0, 		       0.4,  0.55, 70.0, StartPresentation_TEMP )
 	SetPresentationData( ePresentationType.STORE, null, false, 0, 0, DEFAULT_FOV, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, 2300.0, 3000.0, 1.0, 1.0, 0.0, StartPresentation_TEMP )
 	SetPresentationData( ePresentationType.NO_MODELS, null, false, 0, 0, 15, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 1.0, 1.0, 0.0, StartPresentation_TEMP )
-	SetPresentationData( ePresentationType.BATTLE_PASS, null, false, 0, 0, 15.5, DEFAULT_DOF_NEAR_START, DEFAULT_DOF_NEAR_END, DEFAULT_DOF_FAR_START, DEFAULT_DOF_FAR_END, 0.22, 0.55, 70.0, StartPresentation_BATTLE_PASS, EndPresentation_BATTLE_PASS )
 }
 
 // TODO: Break out camera settings
@@ -535,16 +553,6 @@ void function EndPresentation_WEAPON_SKIN()
 	ModelData_GetModel( file.customizeWeapon ).Hide()
 }
 
-void function StartPresentation_BATTLE_PASS()
-{
-	BattlePassLightsOn()
-}
-
-void function EndPresentation_BATTLE_PASS()
-{
-	BattlePassLightsOff()
-}
-
 void function StartPresentation_TEMP()
 {
 }
@@ -580,7 +588,6 @@ void function InitMenuEntities()
 	file.closeCharacterCameraTarget = GetEntByScriptName( "close_character_camera_target" )
 	file.customizeCharacterCameraTarget = GetEntByScriptName( "customize_character_camera_target" )
 	file.customizeWeaponCameraTarget = GetEntByScriptName( "customize_weapon_camera_target" )
-	file.battlepassCameraTarget = GetEntByScriptName( "battlepass_camera_target" )
 	clGlobal.menuCamera = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, DEFAULT_FOV )
 
 	// Wait for character class to be known
@@ -626,7 +633,6 @@ void function InitMenuEntities()
 
 	//thread DrawOrg( ModelData_GetMover( file.playCharacter ) )
 	//thread DrawOrg( ModelData_GetMover( file.customizeWeapon ) )
-	InitBattlePassLights()
 
 	file.initializedMenuModels = true
 }
@@ -971,7 +977,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 					characterOrNull = partyMemberDisplayThreadData.character
 
 				if ( characterOrNull == null )
-					characterOrNull = GetItemFlavorByHumanReadableRef( "character_lifeline" ) // todo(dw): temp
+					characterOrNull = GetRandomGoodItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterClass(), true ) // todo(dw): temp
 
 				ItemFlavor character = expect ItemFlavor(characterOrNull)
 				if ( partyMemberDisplayThreadData.character != character )
@@ -998,7 +1004,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 					skinOrNull = partyMemberDisplayThreadData.skin
 
 				if ( skinOrNull == null )
-					skinOrNull = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterSkin( character ) ) // todo(dw): temp
+					skinOrNull = GetRandomGoodItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterSkin( character ), true ) // todo(dw): temp
 
 				ItemFlavor skin = expect ItemFlavor(skinOrNull)
 				if ( partyMemberDisplayThreadData.skin != skin )
@@ -1461,8 +1467,6 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 		cameraTarget = file.closeCharacterCameraTarget
 	else if ( presentationType == ePresentationType.CHARACTER_SKIN || presentationType == ePresentationType.CHARACTER_CARD )
 		cameraTarget = file.customizeCharacterCameraTarget
-	else if ( presentationType == ePresentationType.BATTLE_PASS )
-		cameraTarget = file.battlepassCameraTarget
 	clGlobal.menuCamera.SetTarget( cameraTarget, fov, interpolate, EASING_CUBIC_INOUT, TRANSITION_DURATION )
 
 	//EASING_LINEAR
@@ -1718,18 +1722,24 @@ void function UICodeCallback_MouseMovementCapture( var capturePanel, int deltaX,
 	RunMenuClientFunction( "UpdateMouseRotateDelta", mouseXRotateDelta, mouseYRotationDelta )
 }
 
-void function RegisterMouseWheelZoom()
+#if UI
+void function OnMouseWheelDown( var unused )
 {
-	RegisterButtonPressedCallback( MOUSE_WHEEL_UP, MenuMouseWheelUpInput )
-	RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, MenuMouseWheelDownInput )
-}
+	foreach ( void functionref() cb in file.mouseWheelDownCallbacks )
+		cb()
 
-void function DeregisterMouseWheelZoom()
-{
-	DeregisterButtonPressedCallback( MOUSE_WHEEL_UP, MenuMouseWheelUpInput )
-	DeregisterButtonPressedCallback( MOUSE_WHEEL_DOWN, MenuMouseWheelDownInput )
-	RunClientScript( "UIToClient_ClearMenuMouseWheel" )
+	if ( CanRunClientScript() )
+		RunClientScript( "ShMenuModels_ClientToUI_OnMouseWheel", true )
 }
+void function OnMouseWheelUp( var unused )
+{
+	foreach ( void functionref() cb in file.mouseWheelUpCallbacks )
+		cb()
+
+	if ( CanRunClientScript() )
+		RunClientScript( "ShMenuModels_ClientToUI_OnMouseWheel", false )
+}
+#endif
 
 void function MenuMouseWheelUpInput( var button )
 {
@@ -1750,16 +1760,15 @@ void function TrackIsOverScrollBar( var listPanel )
 
 	while ( true )
 	{
-		var focus       = GetFocus()
-		var focusParent = focus == null ? null : Hud_GetParent( focus )
-		bool isOverList = focus == listPanel || focusParent == listPanel || focusParent == scrollPanel
+		var focus = GetFocus()
+		bool isFocusedOverList = focus == listPanel || Hud_GetParent( focus ) == listPanel || Hud_GetParent( focus ) == scrollPanel
 
-		if ( rotationEnabled && isOverList )
+		if ( rotationEnabled && isFocusedOverList )
 		{
 			rotationEnabled = false
 			RunClientScript( "DisableModelTurn" )
 		}
-		else if ( !rotationEnabled && !isOverList )
+		else if ( !rotationEnabled && !isFocusedOverList )
 		{
 			rotationEnabled = true
 			RunClientScript( "EnableModelTurn" )
@@ -1890,3 +1899,26 @@ void function MenuModelHighlightInMatch( entity model )
 	model.Highlight_StartOn()
 }
 #endif
+
+#if CLIENT || UI
+void function AddCallback_OnMouseWheelDown( void functionref() cb )
+{
+	Assert( !file.mouseWheelDownCallbacks.contains( cb ) )
+	file.mouseWheelDownCallbacks.append( cb )
+}
+void function RemoveCallback_OnMouseWheelDown( void functionref() cb )
+{
+	Assert( file.mouseWheelDownCallbacks.contains( cb ) )
+	file.mouseWheelDownCallbacks.removebyvalue( cb )
+}
+void function AddCallback_OnMouseWheelUp( void functionref() cb )
+{
+	Assert( !file.mouseWheelUpCallbacks.contains( cb ) )
+	file.mouseWheelUpCallbacks.append( cb )
+}
+void function RemoveCallback_OnMouseWheelUp( void functionref() cb )
+{
+	Assert( file.mouseWheelUpCallbacks.contains( cb ) )
+	file.mouseWheelUpCallbacks.removebyvalue( cb )
+}
+#endif //

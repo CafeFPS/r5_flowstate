@@ -1,0 +1,297 @@
+//=========================================================
+//	sh_music.gnut
+//=========================================================
+
+#if CLIENT || UI
+global function ShMusic_LevelInit
+#endif
+
+#if CLIENT || UI
+global function Loadout_MusicPack
+global function MusicPack_GetSortOrdinal
+
+global function MusicPack_GetPreviewMusic
+#endif
+
+#if CLIENT || UI
+global function GetMusicPackForPlayer
+global function WaitForMusicPackForPlayer
+
+global function MusicPack_GetMainMenuToLobbyMusic
+global function MusicPack_GetLobbyMusic
+global function MusicPack_GetLobbyIntoCharacterSelectMusic
+global function MusicPack_GetCharacterSelectMusic
+global function MusicPack_GetSkydiveMusic
+global function MusicPack_GetWinMusic
+global function MusicPack_GetLossMusic
+
+global function MusicPack_GetCharacterOrNull
+global function MusicPack_GetPortraitImage
+#endif
+
+#if SERVER
+#endif
+
+#if CLIENT
+global function ServerCallback_PlayMatchEndMusic
+#endif
+
+#if SERVER
+
+#endif
+
+struct FileStruct_LifetimeLevel
+{
+	LoadoutEntry&          musicPackSelectionSlot
+	table<ItemFlavor, int> musicPackFlavorSortOrdinalMap
+
+	#if SERVER
+
+    #endif
+}
+FileStruct_LifetimeLevel& fileLevel
+
+#if CLIENT || UI
+void function ShMusic_LevelInit()
+{
+	FileStruct_LifetimeLevel newFileGame
+	fileLevel = newFileGame
+
+	AddCallback_RegisterRootItemFlavors( OnRegisterRootItemFlavors )
+}
+#endif
+
+#if CLIENT || UI
+void function OnRegisterRootItemFlavors()
+{
+	array<ItemFlavor> musicPackList = []
+	foreach( asset musicPackAsset in WORKAROUND_GetAllMusicPackAssets() )
+	{
+		if ( musicPackAsset == $"" )
+			continue
+		ItemFlavor ornull musicPack = RegisterItemFlavorFromSettingsAsset( musicPackAsset )
+		if ( musicPack == null )
+			continue
+
+		expect ItemFlavor( musicPack )
+		musicPackList.append( musicPack )
+
+		#if CLIENT
+			array<string> verificationFields = [
+				"musicLobby",
+				"musicCharacterSelect",
+				"musicSkydive",
+				"musicWin",
+				"musicLoss",
+			]
+
+			foreach( string field in verificationFields )
+			{
+				string alias = GetGlobalSettingsString( musicPackAsset, field )
+				Assert( DoesAliasExist( alias ), format( "Music Pack Asset '%s' has invalid '%s' miles event '%s'", ItemFlavor_GetHumanReadableRef( musicPack ), field, alias ) )
+			}
+		#endif
+	}
+
+
+	MakeItemFlavorSet( musicPackList, fileLevel.musicPackFlavorSortOrdinalMap )
+
+	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "music_pack_selection" )
+	entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+	//
+	entry.DEV_name = "Music Pack"
+	fileLevel.musicPackSelectionSlot = entry
+	entry.validItemFlavorList = musicPackList
+	entry.defaultItemFlavor = musicPackList[0]
+
+	#if UI
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( entry, void function( EHI playerEHI, ItemFlavor flavor ) {
+			if ( playerEHI != LocalClientEHI() )
+				return
+
+			// if ( uiGlobal.WORKAROUND_activeMusicPack != flavor )
+			// 	UIMusicUpdate( true )
+		} )
+	#endif
+}
+#endif
+
+
+#if CLIENT || UI
+ItemFlavor function GetMusicPackForPlayer( entity player )
+{
+	LoadoutEntry entry = Loadout_MusicPack()
+	if ( !LoadoutSlot_IsReady( ToEHI( player ), entry ) )
+		return GetDefaultItemFlavorForLoadoutSlot( EHI_null, entry )
+
+	return LoadoutSlot_GetItemFlavor( ToEHI( player ), entry )
+}
+#endif
+
+
+#if CLIENT || UI
+ItemFlavor function WaitForMusicPackForPlayer( entity player )
+{
+	return LoadoutSlot_WaitForItemFlavor( ToEHI( player ), Loadout_MusicPack() )
+}
+#endif
+
+
+#if CLIENT || UI
+LoadoutEntry function Loadout_MusicPack()
+{
+	return fileLevel.musicPackSelectionSlot
+}
+#endif
+
+
+#if CLIENT || UI
+int function MusicPack_GetSortOrdinal( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+
+	return fileLevel.musicPackFlavorSortOrdinalMap[flavor]
+}
+#endif
+
+
+#if CLIENT || UI
+string function MusicPack_GetPreviewMusic( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicPreview" )
+}
+#endif
+
+
+#if CLIENT || UI
+string function MusicPack_GetMainMenuToLobbyMusic( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicMainMenuToLobby" )
+}
+#endif
+
+
+#if CLIENT || UI
+string function MusicPack_GetLobbyMusic( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicLobby" )
+}
+#endif
+
+
+#if CLIENT || UI
+string function MusicPack_GetLobbyIntoCharacterSelectMusic( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicLobbyToCharacterSelect" )
+}
+#endif
+
+
+#if CLIENT || UI
+string function MusicPack_GetCharacterSelectMusic( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+
+	// if ( IsSoloMode() )
+	// 	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicCharacterSelectSolo" )
+
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicCharacterSelect" )
+}
+#endif
+
+
+#if CLIENT || UI
+string function MusicPack_GetSkydiveMusic( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicSkydive" )
+}
+#endif
+
+
+#if CLIENT || UI
+string function MusicPack_GetWinMusic( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicWin" )
+}
+#endif
+
+
+#if CLIENT || UI
+string function MusicPack_GetLossMusic( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "musicLoss" )
+}
+#endif
+
+
+#if CLIENT || UI
+ItemFlavor ornull function MusicPack_GetCharacterOrNull( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+
+	asset characterAsset = GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "character" )
+	if ( characterAsset != $"" && IsValidItemFlavorSettingsAsset( characterAsset ) )
+		return GetItemFlavorByAsset( characterAsset )
+
+	return null
+}
+#endif
+
+
+#if CLIENT || UI
+asset function MusicPack_GetPortraitImage( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+
+	ItemFlavor ornull character = MusicPack_GetCharacterOrNull( flavor )
+	if ( character != null )
+		return CharacterClass_GetGalleryPortrait( expect ItemFlavor( character ) )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "portraitImage" )
+}
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+#if CLIENT
+void function ServerCallback_PlayMatchEndMusic()
+{
+	entity clientPlayer = GetLocalClientPlayer()
+	if ( clientPlayer.GetTeam() == GetWinningTeam() )
+	{
+		EmitSoundOnEntity( clientPlayer, MusicPack_GetWinMusic( GetMusicPackForPlayer( clientPlayer ) ) )
+	}
+	else
+	{
+		StopSoundOnEntity( clientPlayer, MusicPack_GetLossMusic( GetMusicPackForPlayer( clientPlayer ) ) )
+		EmitSoundOnEntity( clientPlayer, MusicPack_GetLossMusic( GetMusicPackForPlayer( clientPlayer ) ) )
+	}
+}
+#endif
+
+
+#if SERVER
+#endif
+
+

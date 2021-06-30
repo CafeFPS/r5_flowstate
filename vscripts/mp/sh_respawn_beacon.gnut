@@ -8,8 +8,10 @@ global function GetRespawnStyle
 global function RespawnBeacons_OnSquadEliminated
 global function RespawnBeacon_PutPlayerInDropship
 global function AddCallback_OnDNAPickupDestroyed
+#if R5DEV
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
+#endif
 #endif
 
 #if CLIENT
@@ -19,44 +21,37 @@ global function ServerCallback_RespawnDNAHint
 
 global function ServerCallback_RespawnBeaconStart
 global function ServerCallback_RespawnBeaconStop
+
+global function GetRespawnStatus
+global function TryPingRespawnItem
 #endif
 
-global const string RESPAWN_CHAMBER_TARGETNAME = "respawn_chamber"
-global const string RESPAWN_DNA_TARGETNAME = "respawn_dna"
-global const string RESPAWN_DROPSHIP_TARGETNAME = "respawn_dropship"
+global const string RESPAWN_CHAMBER_TARGETNAME         = "respawn_chamber"
+global const string RESPAWN_DNA_TARGETNAME             = "respawn_dna"
+global const string RESPAWN_DROPSHIP_TARGETNAME        = "respawn_dropship"
 
-const float RESPAWN_BEACON_HOLO_EFFECT_HEIGHT = 75.0
+const float RESPAWN_BEACON_HOLO_EFFECT_HEIGHT          = 75.0
 
-global const float RESPAWN_DNA_LIFETIME = 90.0
-const float RESPAWN_DROP_TIME = 10.0
-const asset RESPAWN_BEACON_MODEL = $"mdl/dev/empty_model.rmdl"
-global const float RESPAWN_BEACON_RESPAWN_TIME = 5.0
+global const float RESPAWN_DNA_LIFETIME                = 90.0
+const float RESPAWN_DROP_TIME                          = 10.0
+const asset RESPAWN_BEACON_MODEL                       = $"mdl/dev/empty_model.rmdl"
+global const float RESPAWN_BEACON_RESPAWN_TIME         = 5.0
 
-global const string RESPAWN_BEACON_SUCCESS_SOUND = "Survival_RespawnChamber_Activate"
-global const string RESPAWN_BEACON_LOOP_SOUND = "Survival_RespawnBeacon_Linking_loop"
+global const string RESPAWN_BEACON_SUCCESS_SOUND       = "Survival_RespawnChamber_Activate"
+global const string RESPAWN_BEACON_LOOP_SOUND          = "Survival_RespawnBeacon_Linking_loop"
 
-const asset RESPAWN_DROPSHIP_MODEL = $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
+const asset RESPAWN_DROPSHIP_MODEL                     = $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
 
-global const asset RESPAWN_BEACON_EMITTER_FX = $"P_chamber_proj_holo"
-global const asset RESPAWN_BEACON_BEAM_FX = $"P_chamber_beam"
-global const asset RESPAWN_BEACON_SCAN_FX = $"P_chamber_celebration"
+global const asset RESPAWN_BEACON_EMITTER_FX           = $"P_chamber_proj_holo"
+global const asset RESPAWN_BEACON_BEAM_FX              = $"P_chamber_beam"
+global const asset RESPAWN_BEACON_SCAN_FX              = $"P_chamber_celebration"
 
-global const asset RESPAWN_BEACON_ICON = $"rui/hud/gametype_icons/survival/dna_station"
-global const asset RESPAWN_BEACON_ICON_SMALL = $"rui/hud/gametype_icons/survival/dna_station_small"
-const string SOUND_HOLOGRAM_LOOP = "Survival_Emit_RespawnChamber"
+global const asset RESPAWN_BEACON_ICON                 = $"rui/hud/gametype_icons/survival/dna_station"
+global const asset RESPAWN_BEACON_ICON_SMALL           = $"rui/hud/gametype_icons/survival/dna_station_small"
+const string SOUND_HOLOGRAM_LOOP                       = "Survival_Emit_RespawnChamber"
 
-const float RESPAWN_CHAMBER_ICON_FADE_DIST_NEAR = 300.0
-const float RESPAWN_CHAMBER_ICON_FADE_DIST_FAR = 1000.0
-
-global enum eRespawnStatus
-{
-	NONE,
-	WAITING_FOR_PICKUP,
-	WAITING_FOR_DELIVERY,
-	WAITING_FOR_DROPPOD,
-	PICKUP_DESTROYED,
-	SQUAD_ELIMINATED
-}
+const float RESPAWN_CHAMBER_ICON_FADE_DIST_NEAR        = 300.0
+const float RESPAWN_CHAMBER_ICON_FADE_DIST_FAR         = 1000.0
 
 global enum eRespawnStyle
 {
@@ -141,39 +136,39 @@ void function Sh_RespawnBeacon_Init()
 		RegisterSignal( "sRampOpen" )
 
 		dropshipAnimData dataForPlayerA
-		dataForPlayerA.idleAnim = "Classic_MP_flyin_exit_playerA_idle"
-		dataForPlayerA.idlePOVAnim = "Classic_MP_flyin_exit_povA_idle"
-		dataForPlayerA.jumpAnim = "Classic_MP_flyin_exit_playerA_jump"
-		dataForPlayerA.jumpPOVAnim = "Classic_MP_flyin_exit_povA_jump"
-		dataForPlayerA.viewConeFunc = ViewConeWide
-		dataForPlayerA.yawAngle = -18.0
+		dataForPlayerA.idleAnim           = "Classic_MP_flyin_exit_playerA_idle"
+		dataForPlayerA.idlePOVAnim        = "Classic_MP_flyin_exit_povA_idle"
+		dataForPlayerA.jumpAnim           = "Classic_MP_flyin_exit_playerA_jump"
+		dataForPlayerA.jumpPOVAnim        = "Classic_MP_flyin_exit_povA_jump"
+		dataForPlayerA.viewConeFunc       = ViewConeWide
+		dataForPlayerA.yawAngle           = -18.0
 		dataForPlayerA.firstPersonJumpOutSound = "commander_sequence_soldier_a_jump"
 
 		dropshipAnimData dataForPlayerB
-		dataForPlayerB.idleAnim = "Classic_MP_flyin_exit_playerB_idle"
-		dataForPlayerB.idlePOVAnim = "Classic_MP_flyin_exit_povB_idle"
-		dataForPlayerB.jumpAnim = "Classic_MP_flyin_exit_playerB_jump"
-		dataForPlayerB.jumpPOVAnim = "Classic_MP_flyin_exit_povB_jump"
-		dataForPlayerB.viewConeFunc = ViewConeWide
-		dataForPlayerB.yawAngle = 8.0
+		dataForPlayerB.idleAnim           = "Classic_MP_flyin_exit_playerB_idle"
+		dataForPlayerB.idlePOVAnim        = "Classic_MP_flyin_exit_povB_idle"
+		dataForPlayerB.jumpAnim           = "Classic_MP_flyin_exit_playerB_jump"
+		dataForPlayerB.jumpPOVAnim        = "Classic_MP_flyin_exit_povB_jump"
+		dataForPlayerB.viewConeFunc       = ViewConeWide
+		dataForPlayerB.yawAngle           = 8.0
 		dataForPlayerB.firstPersonJumpOutSound = "commander_sequence_soldier_b_jump"
 
 		dropshipAnimData dataForPlayerC
-		dataForPlayerC.idleAnim = "Classic_MP_flyin_exit_playerC_idle"
-		dataForPlayerC.idlePOVAnim = "Classic_MP_flyin_exit_povC_idle"
-		dataForPlayerC.jumpAnim = "Classic_MP_flyin_exit_playerC_jump"
-		dataForPlayerC.jumpPOVAnim = "Classic_MP_flyin_exit_povC_jump"
-		dataForPlayerC.viewConeFunc = ViewConeWide
-		dataForPlayerC.yawAngle = 8.0
+		dataForPlayerC.idleAnim           = "Classic_MP_flyin_exit_playerC_idle"
+		dataForPlayerC.idlePOVAnim        = "Classic_MP_flyin_exit_povC_idle"
+		dataForPlayerC.jumpAnim           = "Classic_MP_flyin_exit_playerC_jump"
+		dataForPlayerC.jumpPOVAnim        = "Classic_MP_flyin_exit_povC_jump"
+		dataForPlayerC.viewConeFunc       = ViewConeWide
+		dataForPlayerC.yawAngle           = 8.0
 		dataForPlayerC.firstPersonJumpOutSound = "commander_sequence_soldier_c_jump"
 
 		dropshipAnimData dataForPlayerD
-		dataForPlayerD.idleAnim = "Classic_MP_flyin_exit_playerD_idle"
-		dataForPlayerD.idlePOVAnim = "Classic_MP_flyin_exit_povD_idle"
-		dataForPlayerD.jumpAnim = "Classic_MP_flyin_exit_playerD_jump"
-		dataForPlayerD.jumpPOVAnim = "Classic_MP_flyin_exit_povD_jump"
-		dataForPlayerD.viewConeFunc = ViewConeWide
-		dataForPlayerD.yawAngle = -16.0
+		dataForPlayerD.idleAnim           = "Classic_MP_flyin_exit_playerD_idle"
+		dataForPlayerD.idlePOVAnim        = "Classic_MP_flyin_exit_povD_idle"
+		dataForPlayerD.jumpAnim           = "Classic_MP_flyin_exit_playerD_jump"
+		dataForPlayerD.jumpPOVAnim        = "Classic_MP_flyin_exit_povD_jump"
+		dataForPlayerD.viewConeFunc       = ViewConeWide
+		dataForPlayerD.yawAngle           = -16.0
 		dataForPlayerD.firstPersonJumpOutSound = "commander_sequence_soldier_d_jump"
 
 		file.dropshipAnimDataList = [ dataForPlayerA, dataForPlayerB, dataForPlayerC, dataForPlayerD ]
@@ -604,7 +599,7 @@ void function RespawnChamberOnUse( entity pickup, entity player, int pickupFlags
 
 	#if CLIENT
 	HidePlayerHint( "#RESPAWN_AT_BEACONS_HINT" )
-	#endif
+		#endif
 
 	ExtendedUseSettings settings
 	settings.successSound = RESPAWN_BEACON_SUCCESS_SOUND
@@ -718,6 +713,14 @@ string function RespawnBeacon_TextOverride( entity ent )
 		return Localize( "%use% Respawn " + owner.GetPlayerName() )
 
 	return Localize( "%use% Destroy Respawn Beacon" )
+}
+
+int function GetRespawnStatus( entity player )
+{
+	if ( !IsValid( player ) )
+		return eRespawnStatus.NONE
+
+	return player.GetPlayerNetInt( "respawnStatus" )
 }
 #endif
 

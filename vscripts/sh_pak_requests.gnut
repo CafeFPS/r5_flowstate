@@ -324,15 +324,15 @@ void function WORKAROUND_ProcessPakQueues()
 			PakRequestState prs = file.unloadQueue[0] // should be the earliest
 			Assert( prs.status == ePakRequestStatus.QUEUED_TO_UNLOAD )
 
-			float waitTime = Time() - (prs.WORKAROUND_unloadQueueTime + WORKAROUND_UNLOAD_MIN_WAIT_TIME)
-			if ( waitTime > 0.001 )
+			float waitTime = (prs.WORKAROUND_unloadQueueTime + WORKAROUND_UNLOAD_MIN_WAIT_TIME) - Time()
+			if ( waitTime > 0.0 )
 				wait waitTime
 
-			if ( prs.status != ePakRequestStatus.QUEUED_TO_UNLOAD )
+			waitTime = (prs.WORKAROUND_unloadQueueTime + WORKAROUND_UNLOAD_MIN_WAIT_TIME) - Time()
+			if ( file.unloadQueue.len() == 0 || file.unloadQueue[0] != prs || waitTime > 0.0 )
 				continue // while we were waiting, someone may have requested it again (so its no longer in the unload queue)
 
-			PakRequestState removed = file.unloadQueue.remove( 0 )
-			Assert( removed == prs )
+			file.unloadQueue.remove( 0 )
 
 			printf( "ClientPakFile_Unload: %s\n", prs.rpakPath + ".rpak" )
 			int unloadResult = ClientPakFile_Unload( prs.pakId )
@@ -367,5 +367,3 @@ void function WORKAROUND_ProcessPakQueues()
 	}
 }
 #endif
-
-

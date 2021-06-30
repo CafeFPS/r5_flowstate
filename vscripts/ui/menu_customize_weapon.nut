@@ -28,6 +28,7 @@ void function InitCustomizeWeaponMenu( var newMenuArg ) //
 		Hud_GetChild( menu, "WeaponSkinsPanel2" )
 		Hud_GetChild( menu, "WeaponSkinsPanel3" )
 		Hud_GetChild( menu, "WeaponSkinsPanel4" )
+		Hud_GetChild( menu, "WeaponSkinsPanel5" )
 	]
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, CustomizeWeaponMenu_OnOpen )

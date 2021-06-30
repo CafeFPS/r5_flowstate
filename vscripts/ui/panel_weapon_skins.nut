@@ -193,9 +193,9 @@ void function WeaponSkinsPanel_OnHide( var panel )
 }
 
 
-void function WeaponSkinsPanel_Update( var panel )
+void function WeaponSkinsPanel_Update( var panel )// TODO: IMPLEMENT
 {
-	PanelData pd    = file.panelDataMap[panel]
+	/*PanelData pd    = file.panelDataMap[panel]
 	var scrollPanel = Hud_GetChild( pd.listPanel, "ScrollPanel" )
 
 	//
@@ -312,7 +312,7 @@ void function WeaponSkinsPanel_Update( var panel )
 		}
 
 		CustomizeMenus_SetActionButton( Hud_GetChild( panel, "ActionButton" ) )
-	}
+	}*/
 }
 
 

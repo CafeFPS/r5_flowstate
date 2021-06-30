@@ -59,7 +59,7 @@ void function ShWeapons_LevelInit()
 		AddCallback_GeneratePDef( GenerateWeaponsPDef )
 	#endif
 
-	#if SERVER || CLIENT //&& R5DEV // (dw): needs to be precached even in non-DEV to support DEV clients connecting to non-DEV servers
+	#if (SERVER || CLIENT) //&& R5DEV // (dw): needs to be precached even in non-DEV to support DEV clients connecting to non-DEV servers
 		PrecacheWeapon( $"weapon_cubemap" )
 	#endif
 

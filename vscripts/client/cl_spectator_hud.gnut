@@ -1,14 +1,7 @@
 global function ClSpectatorHud_Init
 global function CreateSpectatorHud
-global function UpdateRespawnTime
-global function UpdateRespawnStatus
 global function UpdateDeathAndSpectatorHUD
 
-global function ShowRoundEndSquadResults
-global function IsViewingSquadSummary
-
-global function ServerCallback_DeadHudSetDamageHistory
-global function ServerCallback_DeadHudClearDamageHistory
 enum eRuiSort
 {
 	GLAD_CARD = RUI_SORT_GLADCARD
@@ -19,29 +12,15 @@ enum eRuiSort
 	DEAD_HUD
 }
 
-struct DeadHudDamageHistory
-{
-	string attackerName			= ""
-	asset weaponIcon			= $""
-	string weaponDisplayName	= ""
-	int damageTaken 			= 163
-	int hitsTaken				= 9
-	int enemyCount				= 3
-	int damageDealt				= 136
-	int hitsDealt				= 7
-	bool isPopulated			= false	//
-}
-
-
 struct
 {
-	var spectatorHud = null
-	var deadHud = null
+	var spectatorHud                                     = null
+	var deadHud                                          = null
 
-	bool summaryValid = false
+	bool summaryValid                                    = false
 
-	bool lobbyReturnRegistered = false
-	bool summaryRegistered = false
+	bool lobbyReturnRegistered                           = false
+	bool summaryRegistered                               = false
 
 	bool                             viewingSquadSummary = false
 	entity                           squadResultsCamera
@@ -53,11 +32,8 @@ struct
 	bool                             squadResultsApexScreensForcedOff = false
 
 	var    sidePaneRui
-	bool   showGladCard = true
+	bool   showGladCard                                  = true
 	entity currentTarget
-
-	bool isViewingSquadStats = false
-	DeadHudDamageHistory				deadHudDamageHistroy
 } file
 
 void function ClSpectatorHud_Init()
@@ -78,15 +54,12 @@ void function ClSpectatorHud_Init()
 	AddCallback_OnPlayerLifeStateChanged( OnPlayerLifeStateChanged )
 
 	RegisterSignal( "UpdateSpectatorHudCount" )
-	RegisterSignal( "DisplaySpectatorCardSidePane" )
 
 	RegisterButtonPressedCallback( KEY_RSHIFT, TryToggleGladCard )
 	RegisterButtonPressedCallback( KEY_LSHIFT, TryToggleGladCard )
 	RegisterButtonPressedCallback( BUTTON_Y, TryToggleGladCard )
 
 	AddCallback_GameStateEnter( eGameState.Epilogue, SetEpilogueFlag )	// setting flag hides stuff on the ui/dead_hud.rpak. We should wait until the epilogue to do so.
-	AddCallback_GameStateEnter( eGameState.Epilogue, SetEpilogueFlag )	//
-	AddCallback_OnBleedoutEnded( DeadHudClearDamageHistory )
 }
 
 
@@ -95,7 +68,7 @@ void function EntitiesDidLoad()
 	if ( IsMenuLevel() )
 		return
 
-	RuiTrackInt( file.deadHud, "numSpectateTargets", GetLocalClientPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) )
+	//RuiTrackInt( file.deadHud, "numSpectateTargets", GetLocalClientPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) )
 
 	if ( !IsRoundWinningKillReplayEnabled() )
 		//Need to check in EntitiesDidLoad as opposed to main() since the .nv isn't set yet in main()
@@ -107,8 +80,8 @@ void function EntitiesDidLoad()
 
 void function CreateSpectatorHud()
 {
-	file.spectatorHud = CreateFullscreenRui( $"ui/spectator_hud.rpak", eRuiSort.SPECTATOR_HUD )
-	file.deadHud = CreateFullscreenRui( $"ui/dead_hud.rpak", eRuiSort.DEAD_HUD )
+	// file.spectatorHud = CreateFullscreenRui( $"ui/spectator_hud.rpak", eRuiSort.SPECTATOR_HUD )
+	// file.deadHud = CreateFullscreenRui( $"ui/dead_hud.rpak", eRuiSort.DEAD_HUD )
 }
 
 
@@ -117,8 +90,8 @@ void function UpdateDeathAndSpectatorHUD( entity player, entity currentTarget )
 	Assert( file.spectatorHud != null )
 	Assert( file.deadHud != null )
 
-	RuiTrackInt( file.spectatorHud, "numObserverTargets", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) )
-	RuiTrackInt( file.deadHud, "numSpectateTargets", GetLocalClientPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) )
+	//RuiTrackInt( file.spectatorHud, "numObserverTargets", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) )
+	//RuiTrackInt( file.deadHud, "numSpectateTargets", GetLocalClientPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) ) TODO: FIX
 
 	bool playerSpectateTarget = currentTarget != null && currentTarget.IsPlayer()
 
@@ -132,38 +105,24 @@ void function UpdateDeathAndSpectatorHUD( entity player, entity currentTarget )
 		if ( index < teamPlayers.len() && (!playerSpectateTarget || IsEnemyTeam( currentTarget.GetTeam(), player.GetTeam() )) )
 		{
 			printt( "Setting voice Icon to " + teamPlayers[index].GetPlayerName() )
-			RuiSetString( file.deadHud, "playerName" + (index + 1), teamPlayers[index].GetPlayerName() )
-			RuiTrackInt( file.deadHud, "playerMic" + (index + 1), teamPlayers[index], RUI_TRACK_MIC_STATUS )
-			RuiSetBool( file.deadHud, "playerAvailable" + (index + 1), true )
+			//RuiSetString( file.deadHud, "playerName" + (index + 1), teamPlayers[index].GetPlayerName() )
+			//RuiTrackInt( file.deadHud, "playerMic" + (index + 1), teamPlayers[index], RUI_TRACK_MIC_STATUS )
+			//RuiSetBool( file.deadHud, "playerAvailable" + (index + 1), true )
 		}
 		else
 		{
 			printt( "Setting voice Icon to empty" )
-			RuiSetString( file.deadHud, "playerName" + (index + 1), "" )
-			RuiSetInt( file.deadHud, "playerMic" + (index + 1), -1 )
-			RuiSetBool( file.deadHud, "playerAvailable" + (index + 1), false )
+			//RuiSetString( file.deadHud, "playerName" + (index + 1), "" )
+			//RuiSetInt( file.deadHud, "playerMic" + (index + 1), -1 )
+			//RuiSetBool( file.deadHud, "playerAvailable" + (index + 1), false )
 		}
 	}
 
-	//
-	RuiSetString( file.deadHud, "attackerName", file.deadHudDamageHistroy.attackerName )
-	RuiSetAsset( file.deadHud, "weaponIcon", file.deadHudDamageHistroy.weaponIcon )
-	RuiSetString( file.deadHud, "weaponDisplayName", file.deadHudDamageHistroy.weaponDisplayName )
-	RuiSetInt( file.deadHud, "damageTaken", file.deadHudDamageHistroy.damageTaken )
-	RuiSetInt( file.deadHud, "hitsTaken", file.deadHudDamageHistroy.hitsTaken )
-	RuiSetInt( file.deadHud, "enemyCount", file.deadHudDamageHistroy.enemyCount )
-	RuiSetInt( file.deadHud, "damageDealt", file.deadHudDamageHistroy.damageDealt )
-	RuiSetInt( file.deadHud, "hitsDealt", file.deadHudDamageHistroy.hitsDealt )
-
-	bool showDeathRecap = ShouldShowDeathRecap( player )
-
-	RuiSetBool( file.deadHud, "showDeathRecap", showDeathRecap )
-
 	if ( !playerSpectateTarget )
 	{
-		RuiSetBool( file.spectatorHud, "shouldShowPlayerSpectatingText", false )
-		RuiSetBool( file.deadHud, "haveSpectateTarget", false )
-		RuiSetString( file.deadHud, "spectateName", "" )
+		//RuiSetBool( file.spectatorHud, "shouldShowPlayerSpectatingText", false )
+		//RuiSetBool( file.deadHud, "haveSpectateTarget", false )
+		//RuiSetString( file.deadHud, "spectateName", "" )
 		return
 	}
 
@@ -206,8 +165,6 @@ void function SetSpectatorHudIsViewingSquadStats( bool isViewingSquadStats )
 	RuiSetBool( file.deadHud, "summaryValid", file.summaryValid )
 	RuiSetBool( file.spectatorHud, "isViewingSquadStats", isViewingSquadStats )
 	RuiSetBool( file.deadHud, "isViewingSquadStats", isViewingSquadStats )
-
-	file.isViewingSquadStats = isViewingSquadStats
 }
 
 void function SpectatorTargetChanged_UpdateSpectatorHud( entity player, entity previousTarget, entity currentTarget )
@@ -228,34 +185,9 @@ void function SpectatorTargetChanged_UpdateSpectatorHud( entity player, entity p
 }
 
 
-void function DisplaySpectatorCardSidePane( int situation, int playerEHI, asset icon, string titleText )
-{
-	Signal( clGlobal.levelEnt, "DisplaySpectatorCardSidePane" )
-	EndSignal( clGlobal.levelEnt, "DisplaySpectatorCardSidePane" )
-
-	file.sidePaneRui = CreateFullscreenRui( $"ui/spectator_card.rpak", eRuiSort.GLAD_CARD )
-
-	RuiSetImage( file.sidePaneRui, "titleIcon", icon )
-	RuiSetString( file.sidePaneRui, "titleText", Localize( titleText ) ) // todo(dw): localize in RUI instead of here
-	if ( EHIHasValidScriptStruct( playerEHI ) )
-		RuiSetString( file.sidePaneRui, "playerName", GetPlayerName( playerEHI ) )
-
-	NestedGladiatorCardHandle nestedGCHandleFront = CreateNestedGladiatorCard( file.sidePaneRui, "cardFrontFace", situation, eGladCardPresentation.FULL_BOX )
-	ChangeNestedGladiatorCardOwner( nestedGCHandleFront, playerEHI, null, eGladCardLifestateOverride.ALIVE )
-
-	OnThreadEnd( void function() : ( nestedGCHandleFront ) {
-		CleanupNestedGladiatorCard( nestedGCHandleFront )
-		RuiDestroyIfAlive( file.sidePaneRui )
-		file.sidePaneRui = null
-	} )
-
-	WaitForever()
-}
-
-
 void function HideGladCard( bool instant = false )
 {
-	Signal( clGlobal.levelEnt, "DisplaySpectatorCardSidePane" )
+	//
 }
 
 
@@ -302,55 +234,6 @@ void function RoundWinningKillReplayEnd_ShowSpectatorHud()
 		return
 
 	RuiSetFloat( file.spectatorHud, "roundWinningKillReplayAlpha", 1.0 )
-}
-
-
-void function UpdateRespawnStatus( int respawnStatus )
-{
-	string respawnText
-	string respawnHint
-
-	switch ( respawnStatus )
-	{
-		case eRespawnStatus.WAITING_FOR_DELIVERY:
-			respawnText = "#WAITING_FOR_RESPAWN"
-			respawnHint = "#HINT_PING_RESPAWN_BEACON"
-			break
-
-		case eRespawnStatus.PICKUP_DESTROYED:
-			respawnText = "#STATUS_PICKUP_DESTROYED"
-			UpdateSpectateButtons( true, file.summaryValid )
-			break
-
-		case eRespawnStatus.SQUAD_ELIMINATED:
-			respawnText = "#STATUS_SQUAD_ELIMINATED"
-			UpdateSpectateButtons( true, file.summaryValid )
-			break
-
-		case eRespawnStatus.WAITING_FOR_DROPPOD:
-			respawnText = "#RESPAWNING_IN"
-			break
-
-		case eRespawnStatus.WAITING_FOR_PICKUP:
-			respawnText = "#STATUS_PICKUP_WAITING"
-			respawnHint = "#HINT_PING_GLADIATOR_CARD"
-			break
-
-		case eRespawnStatus.NONE:
-			respawnText = ""
-			break
-	}
-
-	RuiSetString( file.deadHud, "respawnText", respawnText )
-	RuiSetString( file.deadHud, "respawnHint", respawnHint )
-	RuiSetInt( file.deadHud, "respawnStatus", respawnStatus )
-}
-
-
-void function UpdateRespawnTime( float startTime, float endTime )
-{
-	RuiSetGameTime( file.deadHud, "respawnStartTime", startTime )
-	RuiSetGameTime( file.deadHud, "respawnEndTime", endTime )
 }
 
 
@@ -440,177 +323,6 @@ void function OnPlayerLifeStateChanged( entity player, int oldState, int newStat
 }
 
 
-void function ShowRoundEndSquadResults( bool show )
-{
-	SquadSummaryData squadSummaryData = GetSquadSummaryData()
-
-	entity player = GetLocalClientPlayer()
-	if ( !IsValid( player ) )
-		return
-
-	if ( IsAlive( player ) && GetGameState() <= eGameState.Playing )
-		show = false
-
-	if ( show )
-		ClearRoundEndSquadResults( player )
-	else
-		StopLocal1PDeathSound()
-
-	if ( show == file.viewingSquadSummary )
-		return
-	file.viewingSquadSummary = show
-
-	SetSpectatorHudIsViewingSquadStats( show )
-	UpdateMainHudVisibility( GetLocalViewPlayer() )
-	Hud_SetAboveBlur( HudElement( "IngameTextChat" ), true )
-	UpdateSpectateButtons( true, true )
-	UpdateWaypointRuiVisibility()
-
-	EmitSoundOnEntity( player, "UI_Menu_RoundSummary_Results" )
-
-	Signal( clGlobal.levelEnt, "DisplaySpectatorCardSidePane" )
-	Signal( player, "Bleedout_StopBleedoutEffects" )
-
-	UpdateGladCardVisibility()
-
-	if ( show )
-	{
-		// Gladiator Cards Room
-
-		// Camera
-		float camera_fov    = 25.0
-		bool hasMenuEnts    = GetEntArrayByScriptName( "target_victory_gcards_ref" ).len() > 0
-		vector cameraOrigin = <0, 0, 10000>
-		vector cameraAngles = <0, 0, 0>
-		if ( !IsValid( file.squadResultsCamera ) )
-		{
-			if ( hasMenuEnts )
-			{
-				entity gladCardRoomEnt = GetEntByScriptName( "target_victory_gcards_ref" )
-				cameraOrigin = gladCardRoomEnt.GetOrigin()
-				cameraAngles = gladCardRoomEnt.GetAngles()
-			}
-			file.squadResultsCamera = CreateClientSidePointCamera( cameraOrigin, cameraAngles, camera_fov )
-		}
-
-		if ( !hasMenuEnts )
-		{
-			file.squadResultsBackgroundModel = CreateClientSidePropDynamic( cameraOrigin - <0, 0, 80>, cameraAngles, SURVIVAL_SQUAD_SUMMARY_MODEL )
-		}
-
-		file.squadResultsCamera.SetTargetFOV( camera_fov, true, EASING_CUBIC_INOUT, 0.0 )
-
-		// Put player on camera view
-		player.SetMenuCameraEntityWithAudio( file.squadResultsCamera )
-		file.squadResultsCamera.SetFogEnable( true )
-		file.squadResultsCamera.SetTargetFOV( camera_fov, true, EASING_CUBIC_INOUT, 0.0 )
-
-		if ( !file.squadResultsApexScreensForcedOff ) // todo(dw): I'm unsure why this is being called twice in a row
-		{
-			ClApexScreens_DisableAllScreens()
-			file.squadResultsApexScreensForcedOff = true
-		}
-
-		// Gladiator card for each squad member
-		array<float> offsets = IsOdd( MAX_TEAM_PLAYERS ) ? [0.0, -1.0, 1.0, -2.0, 2.0] : [-0.5, 0.5, 1.5, -1.5]
-		int squadKillCount   = 0
-		foreach( int i, SquadSummaryPlayerData data in squadSummaryData.playerData )
-		{
-			// Gladiator Card
-			var gladCardsRui = RuiCreate( $"ui/round_end_squad_member_gcard.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, eRuiSort.SQUADSUMMARY_BANNERS )
-			file.squadResultsGladCardRuis.append( gladCardsRui )
-			int gladCardDisplaySituation             = eGladCardDisplaySituation.EOG_SCREEN_LOCAL_SQUAD_ANIMATED
-			NestedGladiatorCardHandle nestedGCHandle = CreateNestedGladiatorCard( gladCardsRui, "card", gladCardDisplaySituation, eGladCardPresentation.FRONT_CLEAN )
-			file.squadResultsGladCardHandles.append( nestedGCHandle )
-			ChangeNestedGladiatorCardOwner( nestedGCHandle, data.eHandle, null, eGladCardLifestateOverride.ALIVE )
-			RuiSetFloat( gladCardsRui, "offset", offsets[i] )
-
-			// Name and Round Stats
-			var playerStatsRui = CreateFullscreenPostFXRui( $"ui/round_end_squad_member_stats.rpak", eRuiSort.SQUADSUMMARY_STATS )
-			file.squadResultsStatsRuis.append( playerStatsRui )
-			RuiSetFloat( playerStatsRui, "offset", offsets[i] )
-
-			// Player Name
-			if ( EHIHasValidScriptStruct( data.eHandle ) )
-			{
-				RuiSetString( playerStatsRui, "playerName", EHI_GetName( data.eHandle ) )
-				if ( IsValid( FromEHI( data.eHandle ) ) )
-					RuiTrackInt( playerStatsRui, "micStatus", FromEHI( data.eHandle ), RUI_TRACK_MIC_STATUS )
-			}
-
-			if ( UseSoloModePostGamePresentation() )
-			{
-				// Kills
-				RuiSetString( playerStatsRui, "title3", "#SQUADSTAT_KILL" )
-				squadKillCount += data.kills
-				RuiSetString( playerStatsRui, "value3", string( data.kills ) )
-
-				// Damage Dealt
-				RuiSetString( playerStatsRui, "title4", "#SQUADSTAT_DAMAGE" )
-				RuiSetString( playerStatsRui, "value4", string( data.damageDealt ) )
-
-				// Survival Time
-				RuiSetString( playerStatsRui, "title5", "#SQUADSTAT_SURVIVE" )
-				string m = string( data.survivalTime / 60 )
-				string s = string ( data.survivalTime % 60 )
-				if ( s.len() == 1 )
-					s = "0" + s
-				RuiSetString( playerStatsRui, "value5", Localize( "#SQUADSTAT_SURVIVE_TIME_FORMAT", m, s ) )
-			}
-			else
-			{
-				// Kills
-				RuiSetString( playerStatsRui, "title1", "#SQUADSTAT_KILL" )
-				squadKillCount += data.kills
-				RuiSetString( playerStatsRui, "value1", string( data.kills ) )
-
-				// Damage Dealt
-				RuiSetString( playerStatsRui, "title2", "#SQUADSTAT_DAMAGE" )
-				RuiSetString( playerStatsRui, "value2", string( data.damageDealt ) )
-
-				// Survival Time
-				RuiSetString( playerStatsRui, "title3", "#SQUADSTAT_SURVIVE" )
-				string m = string( data.survivalTime / 60 )
-				string s = string ( data.survivalTime % 60 )
-				if ( s.len() == 1 )
-					s = "0" + s
-				RuiSetString( playerStatsRui, "value3", Localize( "#SQUADSTAT_SURVIVE_TIME_FORMAT", m, s ) )
-
-				// Revives Given
-				RuiSetString( playerStatsRui, "title4", "#SQUADSTAT_REVIVE" )
-				RuiSetString( playerStatsRui, "value4", string( data.revivesGiven ) )
-
-				// Respawns Given
-				RuiSetString( playerStatsRui, "title5", "#SQUADSTAT_RESPAWN" )
-				RuiSetString( playerStatsRui, "value5", string( data.respawnsGiven ) )
-			}
-		}
-
-		// Border around screen
-		file.squadResultsBorderRui = CreateFullscreenPostFXRui( $"ui/round_end_squads_border.rpak", eRuiSort.SQUADSUMMARY_BORDER )
-		RuiSetInt( file.squadResultsBorderRui, "placementNum", squadSummaryData.squadPlacement )
-		RuiSetInt( file.squadResultsBorderRui, "placementOutOf", player.GetPersistentVarAsInt( "lastGameSquads" ) )
-		RuiSetInt( file.squadResultsBorderRui, "squadKills", squadKillCount )
-		if ( UseSoloModePostGamePresentation() )
-		{
-			RuiSetString( file.squadResultsBorderRui, "headerText", squadSummaryData.squadPlacement == 1 ? "#SOLO_PLACEMENT_GCARDS_TITLE" : "#SOLO_HEADER_DEFEAT" )
-			RuiSetString( file.squadResultsBorderRui, "killsText", "#SOLO_KILLS_COUNT" )
-		}
-		else
-		{
-			RuiSetString( file.squadResultsBorderRui, "headerText", squadSummaryData.squadPlacement == 1 ? "#SQUAD_PLACEMENT_GCARDS_TITLE" : "#SQUAD_HEADER_DEFEAT" )
-			RuiSetString( file.squadResultsBorderRui, "killsText", "#SQUAD_KILLS_COUNT" )
-		}
-	}
-	else
-	{
-		ClearRoundEndSquadResults( player )
-	}
-
-	UpdateScoreboardVisibility()
-}
-
-
 void function ClearRoundEndSquadResults( entity player )
 {
 	if ( file.squadResultsBorderRui != null )
@@ -641,12 +353,6 @@ void function ClearRoundEndSquadResults( entity player )
 }
 
 
-bool function IsViewingSquadSummary()
-{
-	return file.viewingSquadSummary
-}
-
-
 void function TryToggleGladCard( entity player )
 {
 	if ( !IsSpectating() )
@@ -660,7 +366,7 @@ void function TryToggleGladCard( entity player )
 
 void function UpdateGladCardVisibility()
 {
-	RuiSetBool( file.deadHud, "showingCard", file.showGladCard )
+	//RuiSetBool( file.deadHud, "showingCard", file.showGladCard )
 
 	if ( !IsSpectating() || !file.showGladCard || file.viewingSquadSummary || !IsValid( file.currentTarget ) || !file.currentTarget.IsPlayer() || GetGameState() >= eGameState.WinnerDetermined )
 	{
@@ -669,81 +375,9 @@ void function UpdateGladCardVisibility()
 	}
 
 	EHI playerEHI = ToEHI( file.currentTarget )
-
-	thread DisplaySpectatorCardSidePane( eGladCardDisplaySituation.SPECTATE_ANIMATED,
-		playerEHI, $"", "#HUD_SPECTATE_SPECTATING" )
 }
 
 void function SetEpilogueFlag()
 {
 	RuiSetBool( file.deadHud, "epilogue", true )
-}
-
-void function ServerCallback_DeadHudSetDamageHistory( entity attacker, int damageSourceId, int damageTaken, int hitsTaken, int enemyCount, int damageDealt, int hitsDealt )
-{
-	if ( !GetCurrentPlaylistVarBool( "show_death_recap", true ) )
-		return
-
-	string attackerName = ""
-	if ( IsValid( attacker ) )
-		attackerName = GetAttackerDisplayNamesFromClassname( attacker ).attackerName
-
-	bool isMainWeapon = false
-	string damageRef = GetRefFromDamageSourceID( damageSourceId )
-	if ( SURVIVAL_Loot_IsRefValid( damageRef ) )
-	{
-		LootData lootData = SURVIVAL_Loot_GetLootDataByRef( damageRef )
-		isMainWeapon = lootData.lootType == eLootType.MAINWEAPON
-	}
-
-	asset weaponIcon = isMainWeapon ? GetObitImageFromDamageSourceID( damageSourceId ) : $""
-	string weaponDisplayName = GetObitFromDamageSourceID( damageSourceId )
-
-	file.deadHudDamageHistroy.attackerName		= attackerName
-	file.deadHudDamageHistroy.weaponIcon		= weaponIcon
-	file.deadHudDamageHistroy.weaponDisplayName = weaponDisplayName
-	file.deadHudDamageHistroy.damageTaken 		= damageTaken
-	file.deadHudDamageHistroy.hitsTaken			= hitsTaken
-	file.deadHudDamageHistroy.enemyCount		= enemyCount
-	file.deadHudDamageHistroy.damageDealt		= damageDealt
-	file.deadHudDamageHistroy.hitsDealt			= hitsDealt
-	file.deadHudDamageHistroy.isPopulated		= true
-
-	entity clientPlayer = GetLocalClientPlayer()
-
-	#if(DEV)
-	  printt( "\n\n\n************ DEATH RECAP DAMAGE DATA **************" )
-	  printt( "attackerName, weaponIcon, weaponDisplayName, damageTaken, hitsTaken, enemyCount, damageDealt, hitsDealt" )
-	  printt( attackerName, weaponIcon, weaponDisplayName, damageTaken, hitsTaken, enemyCount, damageDealt, hitsDealt )
-	#endif
-}
-
-void function ServerCallback_DeadHudClearDamageHistory()
-{
-	DeadHudClearDamageHistory( GetLocalClientPlayer() )
-}
-
-void function DeadHudClearDamageHistory( entity player )
-{
-	if ( !IsAlive( player ) || player != GetLocalClientPlayer() )
-		return
-
-	file.deadHudDamageHistroy.isPopulated = false
-}
-
-bool function ShouldShowDeathRecap( entity player )
-{
-	if ( file.deadHudDamageHistroy.isPopulated == false )
-		return false
-
-	if ( GetCurrentPlaylistVarBool( "show_death_recap", true ) == false )
-		return false
-
-	if ( IsAlive( player ) )
-		return false
-
-	if ( player.IsObserver() && player.GetObserverMode() != OBS_MODE_DEATHCAM )
-		return false
-
-	return true
 }

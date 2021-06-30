@@ -1,3 +1,4 @@
+untyped
 // todo(dw): re-add rodeo stats
 // todo(dw): player.SetRodeoAllowed( .. )
 // todo(dw): player.SetIsValidRodeoTarget( .. )
@@ -276,7 +277,7 @@ void function Rodeo_RegisterVehicle( entity vehicle, RodeoVehicleFlavor flavor )
 	file.vehicleStateMap[ vehicleState.stateEnt ] <- vehicleState
 
 	#if SERVER
-		vehicle.SetNumRodeoSlots( vehicleState.flavor.spotMap.len() )
+		//vehicle.SetNumRodeoSlots( vehicleState.flavor.spotMap.len() )
 	#endif
 
 	AddEntityDestroyedCallback( vehicleState.stateEnt, OnRodeoVehicleStateEntDestroyed )
@@ -315,31 +316,33 @@ entity function RodeoState_GetPlayerCurrentRodeoVehicle( entity player )
 array<entity> function RodeoState_GetPlayersRodeingVehicle( entity vehicle, int allegiance = eAllegiance.IRRELEVANT )
 {
 	array<entity> riderList = []
-	for ( int spotIndex = 0; spotIndex < vehicle.GetNumRodeoSlots(); spotIndex++ )
-	{
-		entity rider = vehicle.GetRodeoRider( spotIndex )
-		if ( IsValid( rider ) && AllegianceCheck( allegiance, vehicle, rider ) )
-			riderList.append( rider )
-	}
+	// for ( int spotIndex = 0; spotIndex < vehicle.GetNumRodeoSlots(); spotIndex++ )
+	// {
+	// 	entity rider = vehicle.GetRodeoRider( spotIndex )
+	// 	if ( IsValid( rider ) && AllegianceCheck( allegiance, vehicle, rider ) )
+	// 		riderList.append( rider )
+	// }
 	return riderList
 }
 
 
 bool function RodeoState_GetIsVehicleBeingRodeoed( entity vehicle, int allegiance = eAllegiance.IRRELEVANT )
 {
-	for ( int spotIndex = 0; spotIndex < vehicle.GetNumRodeoSlots(); spotIndex++ )
-	{
-		entity rider = vehicle.GetRodeoRider( spotIndex )
-		if ( IsValid( rider ) && AllegianceCheck( allegiance, vehicle, rider ) )
-			return true
-	}
+	// for ( int spotIndex = 0; spotIndex < vehicle.GetNumRodeoSlots(); spotIndex++ )
+	// {
+	// 	entity rider = vehicle.GetRodeoRider( spotIndex )
+	// 	if ( IsValid( rider ) && AllegianceCheck( allegiance, vehicle, rider ) )
+	// 		return true
+	// }
 	return false
 }
 
 
 entity function RodeoState_GetRiderInSpot( entity vehicle, int spotIndex )
 {
-	return vehicle.GetRodeoRider( spotIndex )
+	entity temp
+	return temp
+	//return vehicle.GetRodeoRider( spotIndex )
 }
 
 
@@ -824,10 +827,10 @@ void function SetRiderCurrentVehicle( entity rider, entity vehicle )
 
 entity function GetRodeoRider( entity vehicle, int spotIndex )
 {
-	if ( vehicle.IsPlayer() || vehicle.IsNPC() )
-	{
-		return vehicle.GetRodeoRider( spotIndex )
-	}
+	// if ( vehicle.IsPlayer() || vehicle.IsNPC() )
+	// {
+	// 	return vehicle.GetRodeoRider( spotIndex )
+	// }
 
 	Assert( false, "NYI - vehicle is not CBaseCombatCharacter" )
 	unreachable

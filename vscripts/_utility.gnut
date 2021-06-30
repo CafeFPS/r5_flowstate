@@ -67,7 +67,14 @@ void function Utility_Init()
 	#if R5DEV
 		FlagInit( "AimAssistSwitchTest_Enabled" )
 		AddClientCommandCallback( "DoomTitan", ClientCommand_DoomTitan )
+		AddClientCommandCallback( "toggleconsole", ClientCommand_ToggleConsole )
 	#endif
+}
+
+bool function ClientCommand_ToggleConsole( entity player, array<string> args )
+{
+	ShDevConsole_Init()
+	return true
 }
 
 void function GiveAllTitans()
@@ -132,7 +139,7 @@ bool function ClientCommand_DoomTitan( entity player, array<string> args )
 	entity soul = titan.GetTitanSoul()
 	soul.SetShieldHealth( 0 )
 
-	titan.TakeDamage( titan.GetHealth(), null, null, { damageSourceId=damagedef_suicide, scriptType = DF_SKIP_DAMAGE_PROT } )
+	//titan.TakeDamage( titan.GetHealth(), null, null, { damageSourceId=damagedef_suicide, scriptType = DF_SKIP_DAMAGE_PROT } )
 
 	return true
 }
@@ -428,11 +435,6 @@ bool function IsThreadTop()
 string function ThisFunc()
 {
 	return expect string( expect table( getstackinfos( 2 ) )[ "func" ] )
-}
-
-entity function ge( int index ) // shorthand version for typing from console
-{
-	return GetEntByIndex( index )
 }
 
 entity function GetEnt( string name )
@@ -1014,7 +1016,7 @@ enum eAttach
 void function LoadDiamond()
 {
     printl( " " )
-    printl( " " )
+	printl( "----------------------------" )
     printl( " " )
 
     // Draw a diamond of a random size and phase (of the moon) so it is easy to separate sections of logs.
@@ -1100,7 +1102,7 @@ void function LoadDiamond()
     }
 
     printl( " " )
-    printl( " " )
+	printl( "----------------------------" )
     printl( " " )
 }
 
@@ -1110,7 +1112,7 @@ void function ClearDroppedWeapons( float delayTime = 0.0 )
 	if ( delayTime > 0 )
 		wait delayTime
 
-	bool onlyNotOwnedWeapons = true  // don't get the ones in guys' hands
+	bool onlyNotOwnedWeapons = true // don't get the ones in guys' hands
 	array<entity> weapons = GetWeaponArray( onlyNotOwnedWeapons )
 
 	foreach ( weapon in weapons )
@@ -3496,8 +3498,9 @@ void function PushEntWithVelocity( entity ent, vector velocity )
 
 bool function IsPlayerFemale( entity player )
 {
+	if (player.IsNPC)
+		return true//player.Dev_GetAISettingByKeyField( "raceOrSex" ) == "race_human_female" // TODO: Fix this. Dev_GetPlayerSettingByKeyField does not exist in r5 server vm
 	return false
-	//return player.Dev_GetPlayerSettingByKeyField( "raceOrSex" ) == "race_human_female"
 }
 
 bool function IsPlayerMalePilot( entity player )
@@ -4252,7 +4255,7 @@ void function KillPlayer( entity player, int damageSource )
 
 	Assert( IsAlive( player ) )
 	Assert( player.IsPlayer() )
-	player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = damageSource, scriptType=DF_SKIP_DAMAGE_PROT | DF_SKIPS_DOOMED_STATE } )
+	//player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = damageSource, scriptType=DF_SKIP_DAMAGE_PROT | DF_SKIPS_DOOMED_STATE } )
 }
 
 
@@ -4420,13 +4423,7 @@ void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string s
 
 void function UpdateDamageState( entity ent, var damageInfo )
 {
-	if(ent.IsPlayer())
-		return
-
-  float hp = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
-  if(hp < 0)
-    hp = 0.0
-  ent.SetHealth(hp)
+	//stub
 }
 
 void function DisableMantle( entity player )
@@ -4451,7 +4448,7 @@ void function UnlockWeaponsAndMelee( entity player )
 
 void function DelayedDestroy( entity mover, float lifetime )
 {
-	wait lifetime
+	wait( lifetime )
 	mover.Destroy()
 }
 

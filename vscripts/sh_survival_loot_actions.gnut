@@ -103,6 +103,8 @@ void function SURVIVAL_LootActions_InitShared()
 
 	Assert( file.lootActionData.len() == eLootAction._count )
 
+	printf("###### LOOT ITEMS REGISTERED ######")
+
 }
 
 LootActionData function RegisterLootAction( int lootAction )
@@ -131,13 +133,13 @@ string function SURVIVAL_GetStringForLootAction( int action )
 
 bool function SURVIVAL_ApplyLootAction( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
 {
-	printt("SURVIVAL_ApplyLootAction", action)
+	//printt("SURVIVAL_ApplyLootAction", action)
 	LootActionData a = GetLootActionData( action )
 	if ( IsValid( a.func ) )
 	{
 		return a.func( action, pickup, player, pickupFlags, deathBox )
 	}
-	return false
+	return false // shouldDestroy
 }
 
 bool function TryAttachItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
@@ -163,11 +165,11 @@ bool function TryAttachItem( int action, entity pickup, entity player, int picku
 
 bool function TryPickupItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
 {
-	printt("TryPickupItem")
+	//printt("TryPickupItem")
 
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 
-	bool pickedUp = false
+	bool pickedUp = false // aka shouldDestroy
 
 	switch ( data.lootType )
 	{
@@ -176,23 +178,24 @@ bool function TryPickupItem( int action, entity pickup, entity player, int picku
 			break
 		case eLootType.AMMO:
 			pickedUp = PickupAmmo( pickup, player, pickupFlags )
-			printt("eLT AMMO", pickedUp)
 			break
 		case eLootType.RESOURCE:
 			pickedUp = PickupResource( pickup, player, pickupFlags, deathBox )
+			//printt("eLT AMMO", pickedUp)
 			break
 		default:
 			pickedUp = PickupBackpackItem( pickup, player, pickupFlags )
 	}
+	//printt("TryPickupItem", pickedUp)
 
 #if CLIENT
-	if ( !pickedUp )
+	if ( !pickedUp && (data.inventorySlotCount > 0) )
 	{
 		SURVIVAL_Loot_QuickSwap( pickup, player, pickupFlags, deathBox )
 	}
 #endif
 
-	return pickedUp
+	return pickedUp // shouldDestroy
 }
 
 bool function TryEquipItem( int action, entity pickup, entity player, int pickupFlags = 0, entity deathBox = null )
@@ -292,8 +295,8 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 	int poolCount = player.AmmoPool_GetCount( ammoType )
 
 	bool autopickup = (pickupFlags & PICKUP_FLAG_AUTO) > 0
-
-	printt("PickupAmmo", autopickup, SURVIVAL_GetCountToFillStack( player, data.ref ), data.inventorySlotCount)
+	
+	//printt("PickupAmmo", autopickup, SURVIVAL_GetCountToFillStack( player, data.ref ), data.inventorySlotCount)
 
 	if ( autopickup && SURVIVAL_GetCountToFillStack( player, data.ref ) == data.inventorySlotCount )
 		return false
@@ -307,18 +310,19 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 #endif
 
 	numToPickup = SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, false )
-
-	printt("PickupAmmo numToPickup", numToPickup)
-
+	printt("PickupAmmo numToPickup", numToPickup, ammoPickup.GetClipCount())
 	if ( numToPickup == 0 )
 		return false
 
+#if SERVER
+	//player.AmmoPool_SetCapacity(65535)
+#endif
 	int poolMax = player.AmmoPool_GetCapacity()
 	numToPickup = minint( numToPickup, poolMax - poolCount )
 
 #if SERVER
 #if R5DEV
-	//if ( !GetConVarBool( "sv_infinite_ammo" ) )
+	//if ( !GetConVarBool( "sv_infinite_ammo" ) ) // Cvar does not exist in retail engine
 #endif
 	player.AmmoPool_SetCount( ammoType, poolCount + numToPickup )
 	PlayPickupSound( player, data.ref, pickupFlags )
@@ -327,14 +331,14 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 	int clipCount = ammoPickup.GetClipCount()
 
 #if SERVER
+	//printt("PickupAmmoServer")
 	ammoPickup.SetClipCount( clipCount - numToPickup )
 
+	//SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, true )
 	//Create tracking event for players with tracking passive.
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_AMMO, player, ammoPickup.GetOrigin(), player.GetTeam(), player )
 #endif
-
-	printt("PickupAmmo", clipCount, numToPickup)
-
+	printt("PickupAmmo", clipCount, numToPickup, ammoPickup.GetClipCount(), player.AmmoPool_GetCapacity())
 	return ( clipCount <= numToPickup )
 }
 

@@ -484,7 +484,7 @@ void function MonitorDecoyActiveForPlayer( entity decoy, entity player )
 		}
 	)
 
-	WaitForever()
+	//WaitForever()
 }
 
 int function GetDecoyActiveCountForPlayer( entity player )

@@ -80,7 +80,7 @@ void function ServerCallback_TitanTookDamage( float damage, float x, float y, fl
 		bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
 		bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
 		bool isCritical = (damageType & DF_CRITICAL) ? true : false
-		bool isDoomProtected = (damageType & DF_DOOM_PROTECTED) ? true : false
+		//bool isDoomProtected = (damageType & DF_DOOM_PROTECTED) ? true : false
 		bool isDoomFatality = (damageType & DF_DOOM_FATALITY) ? true : false
 
 		//local weaponMods = []
@@ -587,9 +587,6 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 
 		if ( shouldBeVisible )
 		{
-			if ( grenade instanceof C_PlayerWaypoint )
-				damageRadius = grenade.GetWaypointFloat( 0 )
-
 			if ( Distance( player.GetOrigin(), grenade.GetOrigin() ) > damageRadius || !cockpit )
 			{
 				shouldBeVisible = false

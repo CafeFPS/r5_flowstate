@@ -23,6 +23,8 @@ global function DiffKeyColors
 global function GetFXRarityColorForTier // use this for in game loot
 global function GetFXRarityColorForUnlockable
 
+global function IsDeathboxAutoPickupEnabled
+
 global enum eLootTier
 {
 	NONE
@@ -122,7 +124,7 @@ void function SURVIVAL_Loot_All_InitShared()
 	int col_pingCommsActionName =		GetDataTableColumnByName( dataTable, "pingCommsAction" )
 
 	file.disabledRefs.clear()
-	string disabledRefs = GetCurrentPlaylistVar( "survival_disabled_loot", " " )
+	string disabledRefs = GetCurrentPlaylistVarString( "survival_disabled_loot", " " )
 	file.disabledRefs = split( disabledRefs, " " )
 
 	for ( int i=0; i<numRows; i++ )
@@ -191,7 +193,7 @@ void function SURVIVAL_Loot_All_InitShared()
 		data.lootType = SURVIVAL_Loot_GetLootTypeFromString( lootType )
 		data.netInt = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "netInt" ) )
 		data.inventorySlotCount = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "inventorySlotCount" ) )
-		printt("  ", data.ref, data.netInt, data.lootType, lootType)
+		//printt("  ", data.ref, data.netInt, data.lootType, lootType)
 
 		#if SERVER || CLIENT
 			data.minInWorld = GetDataTableFloat( dataTable, i, GetDataTableColumnByName( dataTable, "minInWorld" ) )
@@ -219,9 +221,11 @@ void function SURVIVAL_Loot_All_InitShared()
 		switch ( data.lootType )
 		{
 			case eLootType.MAINWEAPON:
-				RegisterWeaponForUse( data.baseWeapon )
-				// PrecacheWeapon( data.baseWeapon )
-				data.model = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "playermodel" )
+			RegisterWeaponForUse( data.baseWeapon )
+			data.pickupString = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "printName" )
+			data.desc = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "description" )
+			data.hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "hud_icon" )
+			data.model = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "playermodel" )
 				if ( GetWeaponInfoFileKeyField_Global( data.baseWeapon, "ammo_pool_type" ) != null )
 					data.ammoType = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "ammo_pool_type" )
 				else
@@ -259,10 +263,15 @@ void function SURVIVAL_Loot_All_InitShared()
 				data.hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "hud_icon" )
 				break
 
+			case eLootType.AMMO:
+				data.countPerDrop = int( GetCurrentPlaylistVarFloat( "loot_ammo_scale_per_drop", 1.0 ) * float( data.countPerDrop ) )
+				data.inventorySlotCount = int( GetCurrentPlaylistVarFloat( "inventory_ammo_scale_stacksize", 1.0 ) * float( data.inventorySlotCount ) )
+				break
+
 			case eLootType.ATTACHMENT:
-				int row = GetDataTableRowMatchingStringValue( attachmentTable, PILOT_WEAPON_MOD_COMMON_COLUMN, data.ref )
-				data.pickupString = GetDataTableString( attachmentTable, row, PILOT_WEAPON_MOD_COMMON_NAME_COLUMN )
-				data.desc = GetDataTableString( attachmentTable, row, PILOT_WEAPON_MOD_COMMON_DESCRIPTION_COLUMN )
+				int row = GetDataTableRowMatchingStringValue( attachmentTable, GetDataTableColumnByName( attachmentTable, "mod" ), data.ref )
+				data.pickupString = GetDataTableString( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "name" ) )
+				data.desc = GetDataTableString( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "description" ) )
 
 				data.ammoType = GetDataTableString( attachmentTable, row, GetDataTableColumnByName( attachmentTable, "ammoType" ) )
 				data.hudIcon = GetDataTableAsset( dataTable, i, GetDataTableColumnByName( dataTable, "icon" ) )
@@ -331,34 +340,77 @@ int function SURVIVAL_Loot_GetLootTypeFromString( string lootTypeString )
 	{
 		case "main_weapon":
 			return eLootType.MAINWEAPON
+
 		case "ammo":
 			return eLootType.AMMO
+
 		case "health":
 			return eLootType.HEALTH
+
 		case "armor":
 			return eLootType.ARMOR
+
 		case "incapshield":
 			return eLootType.INCAPSHIELD
+
 		case "jumpkit":
 			return eLootType.JUMPKIT
+
 		case "ordnance":
 			return eLootType.ORDNANCE
+
 		case "attachment":
 			return eLootType.ATTACHMENT
+
 		case "backpack":
 			return eLootType.BACKPACK
+
 		case "custom_pickup":
 			return eLootType.CUSTOMPICKUP
+
 		case "helmet":
 			return eLootType.HELMET
+
+#if SERVER
+
+
+
+#endif
+
+#if SERVER
+
+
+
+#endif
+
 		case "blank":
 			return eLootType.BLANK
+
 		case "resource":
 			return eLootType.RESOURCE
 
+#if SERVER
+
+
+
+#endif
+
+#if SERVER
+
+
+
+#endif
+
+#if SERVER
+
+
+
+#endif
+
 		default:
-			Assert( false, "Error Building LootData Struct: Unknown loot type string: " + lootTypeString )
-			break
+			//
+			Warning( "Error Building LootData Struct: Unknown loot type string: " + lootTypeString )
+			return eLootType.BLANK
 	}
 
 	unreachable
@@ -530,4 +582,9 @@ void function DiffKeyColors( int baseColorID, int colorID )
 bool function SURVIVAL_Loot_IsUniqueAmmoWeapon( string ref )
 {
 	return file.uniqueAmmoWeaponRefs.contains( ref )
+}
+
+bool function IsDeathboxAutoPickupEnabled()
+{
+	return GetCurrentPlaylistVarBool( "survival_deathbox_autopickup_enabled", true )
 }

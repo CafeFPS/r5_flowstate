@@ -787,7 +787,7 @@ void function OnTitanDoomed( entity victim, var damageInfo )
 //				UpdatePlayerStat( riderState.rider, "misc_stats", "rodeosFromEject" )
 //#endif
 //
-//			#if MP && !MP_CAMPAIGNCOOP
+//			#if (MP && !MP_CAMPAIGNCOOP)
 //				PIN_AddToPlayerCountStat( riderState.rider, "rodeos" )
 //				if ( titan.IsPlayer() )
 //					PIN_AddToPlayerCountStat( titan, "rodeo_receives" )

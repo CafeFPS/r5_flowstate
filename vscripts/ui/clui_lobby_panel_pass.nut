@@ -905,7 +905,7 @@ void function BattlePass_RewardButton_OnLoseFocus( var button )
 {
 	//
 	//
-
+	file.currentRewardButtonKey = null
 	UpdateFooterOptions() //
 }
 
@@ -1287,8 +1287,7 @@ void function BattlePass_UpdatePageOnOpen()
 	int desiredPageNum                 = -1
 	string desiredFocusRewardButtonKey = ""
 
-	if ( uiGlobal.lastMenuNavDirection == MENU_NAV_BACK
-			&& file.currentPage != -1 && file.currentRewardButtonKey != null )
+	if ( uiGlobal.lastMenuNavDirection == MENU_NAV_BACK	&& file.currentPage != -1 && file.currentRewardButtonKey != null && (expect string(file.currentRewardButtonKey) in file.rewardKeyToRewardButtonDataMap) )
 	{
 		desiredPageNum = file.currentPage
 		desiredFocusRewardButtonKey = expect string(file.currentRewardButtonKey)
@@ -1301,7 +1300,6 @@ void function BattlePass_UpdatePageOnOpen()
 	BattlePass_SetPage( desiredPageNum )
 	if ( desiredFocusRewardButtonKey != "" )
 	{
-		Assert( desiredFocusRewardButtonKey in file.rewardKeyToRewardButtonDataMap, format( "Tried to focus reward button '%s' on page %d'", desiredFocusRewardButtonKey, desiredPageNum ) )
 		BattlePass_FocusRewardButton( file.rewardKeyToRewardButtonDataMap[desiredFocusRewardButtonKey] )
 	}
 	else
@@ -1705,7 +1703,7 @@ int function GetNumPremiumRewardsOfTypeUpToLevel( int endLevel, int tier, array<
 
 	int count
 
-	for ( int levelIdx = 0; levelIdx < endLevel; levelIdx++ )
+	for ( int levelIdx = 0; levelIdx <= endLevel; levelIdx++ )
 	{
 		array<BattlePassReward> rewards = GetBattlePassLevelRewards( activeBattlePass, levelIdx )
 		foreach ( reward in rewards )
@@ -1719,6 +1717,7 @@ int function GetNumPremiumRewardsOfTypeUpToLevel( int endLevel, int tier, array<
 								)
 						)
 				{
+					printt( ItemFlavor_GetHumanReadableRef( reward.flav ) )
 					count += reward.quantity
 				}
 			}
@@ -2684,6 +2683,17 @@ void function ShowBattlepassItem( ItemFlavor item, int level, float scale, var l
 			ShowBattlePassItem_SkydiveEmote( item, scale )
 			break
 
+#if(false)
+
+
+
+#endif
+
+#if(false)
+
+
+
+#endif
 		default:
 			Warning( "Loot Ceremony reward item type not supported: " + DEV_GetEnumStringSafe( "eItemType", itemType ) )
 			ShowBattlePassItem_Unknown( item, scale )
@@ -2946,7 +2956,7 @@ void function ShowBattlePassItem_WeaponCharm( ItemFlavor item, float scale )
 
 	//
 
-	ModelRarityFlash( model, ItemFlavor_GetQuality( item ) )
+	ModelRarityFlash( charmEnt, ItemFlavor_GetQuality( item ) )
 
 	fileLevel.mover = mover
 	fileLevel.models.append( model )
@@ -3040,6 +3050,59 @@ void function ShowBattlePassItem_Banner( ItemFlavor item, float scale )
 	fileLevel.bannerHandle = nestedGCHandleFront
 }
 
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//
+
+
+
+
+
+
+
+#endif
 
 void function ShowBattlePassItem_Quip( ItemFlavor item, float scale, bool shouldPlayAudioPreview )
 {
@@ -3296,50 +3359,50 @@ void function ShowBattlePassItem_WeaponSkinVideo( ItemFlavor item, float scale, 
 
 void function ShowBattlePassItem_MusicPack( ItemFlavor item, float scale, bool shouldPlayAudioPreview )
 {
-	int itemType = ItemFlavor_GetType( item )
-	Assert( itemType == eItemType.music_pack )
+	// int itemType = ItemFlavor_GetType( item )
+	// Assert( itemType == eItemType.music_pack )
 
-	const float BATTLEPASS_QUIP_WIDTH = 390.0
-	const float BATTLEPASS_QUIP_HEIGHT = 208.0
-	const float BATTLEPASS_QUIP_SCALE = 0.091
-	const float BATTLEPASS_QUIP_Z_OFFSET = 20.5
-	const asset BATTLEPASS_QUIP_BG_MODEL = $"mdl/menu/loot_ceremony_quip_bg.rmdl"
+	// const float BATTLEPASS_QUIP_WIDTH = 390.0
+	// const float BATTLEPASS_QUIP_HEIGHT = 208.0
+	// const float BATTLEPASS_QUIP_SCALE = 0.091
+	// const float BATTLEPASS_QUIP_Z_OFFSET = 20.5
+	// const asset BATTLEPASS_QUIP_BG_MODEL = $"mdl/menu/loot_ceremony_quip_bg.rmdl"
 
-	vector origin        = fileLevel.sceneRefOrigin + <0, 0, BATTLEPASS_QUIP_Z_OFFSET>
-	vector angles        = fileLevel.sceneRefAngles
-	vector placardAngles = VectorToAngles( AnglesToForward( angles ) * -1 )
+	// vector origin        = fileLevel.sceneRefOrigin + <0, 0, BATTLEPASS_QUIP_Z_OFFSET>
+	// vector angles        = fileLevel.sceneRefAngles
+	// vector placardAngles = VectorToAngles( AnglesToForward( angles ) * -1 )
 
-	//
-	float width  = scale * BATTLEPASS_QUIP_WIDTH * BATTLEPASS_QUIP_SCALE
-	float height = scale * BATTLEPASS_QUIP_HEIGHT * BATTLEPASS_QUIP_SCALE
+	// //
+	// float width  = scale * BATTLEPASS_QUIP_WIDTH * BATTLEPASS_QUIP_SCALE
+	// float height = scale * BATTLEPASS_QUIP_HEIGHT * BATTLEPASS_QUIP_SCALE
 
-	entity model = CreateClientSidePropDynamic( origin, angles, BATTLEPASS_QUIP_BG_MODEL )
-	model.MakeSafeForUIScriptHack()
-	model.SetModelScale( scale * BATTLEPASS_QUIP_SCALE )
+	// entity model = CreateClientSidePropDynamic( origin, angles, BATTLEPASS_QUIP_BG_MODEL )
+	// model.MakeSafeForUIScriptHack()
+	// model.SetModelScale( scale * BATTLEPASS_QUIP_SCALE )
 
-	var topo = CreateRUITopology_Worldspace( origin + <0, 0, (height * 0.5)>, placardAngles, width, height )
-	var rui  = RuiCreate( $"ui/loot_reward_intro_quip.rpak", topo, RUI_DRAW_WORLD, 0 )
+	// var topo = CreateRUITopology_Worldspace( origin + <0, 0, (height * 0.5)>, placardAngles, width, height )
+	// var rui  = RuiCreate( $"ui/loot_reward_intro_quip.rpak", topo, RUI_DRAW_WORLD, 0 )
 
-	string previewAlias = MusicPack_GetPreviewMusic( item )
+	// string previewAlias = MusicPack_GetPreviewMusic( item )
 
-	RuiSetBool( rui, "isVisible", true )
-	RuiSetBool( rui, "battlepass", true )
-	RuiSetInt( rui, "rarity", ItemFlavor_GetQuality( item ) )
-	RuiSetImage( rui, "portraitImage", MusicPack_GetPortraitImage( item ) )
-	RuiSetFloat( rui, "portraitBlend", MusicPack_GetPortraitBlend( item ) )
-	RuiSetString( rui, "quipTypeText", "#MUSIC_PACK" )
-	RuiTrackFloat( rui, "level", null, RUI_TRACK_SOUND_METER, 0 )
+	// RuiSetBool( rui, "isVisible", true )
+	// RuiSetBool( rui, "battlepass", true )
+	// RuiSetInt( rui, "rarity", ItemFlavor_GetQuality( item ) )
+	// RuiSetImage( rui, "portraitImage", MusicPack_GetPortraitImage( item ) )
+	// RuiSetFloat( rui, "portraitBlend", MusicPack_GetPortraitBlend( item ) )
+	// RuiSetString( rui, "quipTypeText", "#MUSIC_PACK" )
+	// RuiTrackFloat( rui, "level", null, RUI_TRACK_SOUND_METER, 0 )
 
-	fileLevel.models.append( model )
-	fileLevel.topo = topo
-	fileLevel.rui = rui
+	// fileLevel.models.append( model )
+	// fileLevel.topo = topo
+	// fileLevel.rui = rui
 
-	//
-	if ( previewAlias != "" && shouldPlayAudioPreview )
-	{
-		fileLevel.playingPreviewAlias = previewAlias
-		EmitSoundOnEntity( GetLocalClientPlayer(), previewAlias )
-	}
+	// //
+	// if ( previewAlias != "" && shouldPlayAudioPreview )
+	// {
+	// 	fileLevel.playingPreviewAlias = previewAlias
+	// 	EmitSoundOnEntity( GetLocalClientPlayer(), previewAlias )
+	// }
 }
 
 

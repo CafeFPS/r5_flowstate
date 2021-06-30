@@ -234,7 +234,7 @@ void function SetNavLeftRight( array<var> buttons )
 
 
 //
-#if(UI)
+#if UI
 string function LocalizeAndShortenNumber_Float( float number, int maxDisplayIntegral = 3, int maxDisplayDecimal = 0 )
 {
 	printf( "ShortenNumberDebug: Shortening %f with max Integrals of %i and max decimals of %i", number, maxDisplayIntegral, maxDisplayDecimal )
@@ -242,9 +242,9 @@ string function LocalizeAndShortenNumber_Float( float number, int maxDisplayInte
 	if ( number == 0.0 )
 		return "0"
 
-	string lang = GetLanguage() //
+	string lang = GetLanguage()
 	string thousandsSeparator = lang == "english" || lang == "korean" || lang == "schinese" || lang == "tchinese" || lang == "thai" || lang == "japanese" ? "," : "." //
-	string decimalSeparator = thousandsSeparator == "," ? "." : "," //
+	string decimalSeparator = thousandsSeparator == "," ? "." : ","
 	string integralString = ""
 	string integralSuffix = ""
 
@@ -341,4 +341,4 @@ string function LocalizeAndShortenNumber_Float( float number, int maxDisplayInte
 
 	return finalDisplayNumber
 }
-#endif
+#endif // UI

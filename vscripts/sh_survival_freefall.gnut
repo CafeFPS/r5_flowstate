@@ -177,11 +177,11 @@ void function AddSkydiveBoundaryVolume( entity ent )
 
 void function ForcedSkydiveTriggerThink( entity trigger )
 {
-	// if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )
-	// {
-	// 	trigger.Destroy()
-	// 	return
-	// }
+	if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )
+	{
+		trigger.Destroy()
+		return
+	}
 
 	EndSignal( trigger, "OnDestroy" )
 	trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )
@@ -206,8 +206,8 @@ void function ForcedSkydiveTriggerThink_EnterCallback( entity trigger, entity pl
 
 void function SkydiveTowerEntitySpawned( entity ent )
 {
-	// if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )
-	// 	thread DeleteEntityAfterAllEntitiesLoaded( ent )
+	if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )
+		thread DeleteEntityAfterAllEntitiesLoaded( ent )
 }
 
 void function DeleteEntityAfterAllEntitiesLoaded( entity ent )
@@ -281,7 +281,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 	Signal( player, "PlayerSkyDive" )
 	EndSignal( player, "PlayerSkyDive" )
 	EndSignal( player, "OnDeath" )
-	// EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
+	//EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
 
 	array<entity> jumpJetFX
 	player.p.isSkydiving = true
@@ -370,7 +370,6 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 	player.ClearInvulnerable()
 	player.ClearParent()
-	player.HolsterWeapon()
 
 	ClearPlayerPlaneViewMode( player )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_ClearHints" )
@@ -409,7 +408,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 		file.skydivePlayerDataLookup[ player ] <- skydiveData
 	file.skydivePlayerDataLookup[ player ] = skydiveData
 
-	player.Player_BeginFreefall()
+	player.Player_BeginFreefall( <0,0,0> ) // TODO: Revisit this
 
 	PlayerSkydiveThirdPersonEnable( player )
 
@@ -486,7 +485,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 	EndSignal( player, "OnDeath" )
 	EndSignal( player, "PlayerSkyDive" )
 	EndSignal( player, "BleedOut_OnStartDying" )
-	// EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
+	//EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
 
 	//#####################################
 	// LAUNCH OUT OF PLANE
@@ -496,7 +495,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 	if ( jumpingFromPlane )
 	{
 		entity planeEnt = Sur_GetPlaneEnt()
-		#if !R5DEV
+		#if !DEV
 			Assert( IsValid( planeEnt ), "Tried to skydive but there is no plane entity" )
 		#endif
 		if ( IsValid( planeEnt ) )
@@ -588,9 +587,6 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 				ent.Destroy()
 			}
 			smokeFX.clear()
-			
-			RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
-			PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
 		}
 	)
 

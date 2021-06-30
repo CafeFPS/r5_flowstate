@@ -494,9 +494,6 @@ bool function Survival_CharacterSelectEnabled()
 #if SERVER || CLIENT
 bool function Sur_CanUseZipline( entity player, entity zipline, vector ziplineClosestPoint )
 {
-	if ( player.IsGrapplingZipline() )
-		return true
-
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return false
 

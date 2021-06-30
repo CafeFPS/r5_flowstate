@@ -1,7 +1,0 @@
-global const REVIVE_ENABLED = true // currently not used anywhere
-global function ReviveEnabled
-
-bool function ReviveEnabled()
-{
-	return GetCurrentPlaylistVarInt( "player_revive_enabled", 0 ) == 1
-}

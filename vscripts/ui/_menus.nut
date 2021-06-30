@@ -3,9 +3,6 @@ untyped
 global const bool EDIT_LOADOUT_SELECTS = true
 global const string PURCHASE_SUCCESS_SOUND = "UI_Menu_Store_Purchase_Success"
 
-global function OpenEliteForgivenessDialog
-global function OpenLossForgivenessDialog
-
 global function UICodeCallback_RemoteMatchInfoUpdated
 global function UICodeCallback_InboxUpdated
 global function UICodeCallback_CloseAllMenus
@@ -409,7 +406,7 @@ bool function UICodeCallback_LevelLoadingStarted( string levelname )
 
 	CloseAllMenus()
 
-	Signal( uiGlobal.signalDummy, "EndFooterUpdateFuncs" )
+	//Signal( uiGlobal.signalDummy, "EndFooterUpdateFuncs" ) // TODO: FIX
 	Signal( uiGlobal.signalDummy, "EndSearchForPartyServerTimeout" )
 
 	uiGlobal.loadingLevel = levelname
@@ -496,44 +493,45 @@ void function UICodeCallback_FullyConnected( string levelname )
 	#if(DEV)
 		ShDevUtility_Init()
 	#endif
-	ShDevWeapons_Init()
-	ShEHI_LevelInit_Begin()
-	ShPakRequests_LevelInit()
-	ShPersistentData_LevelInit_Begin()
-	ShItems_LevelInit_Begin()
-	ShGRX_LevelInit()
-	Entitlements_LevelInit()
-	CustomizeCommon_Init()
-	ShLoadouts_LevelInit_Begin()
-	ShCharacters_LevelInit()
-	ShPassives_Init()
-	ShCharacterAbilities_LevelInit()
-	ShCharacterCosmetics_LevelInit()
-	ShCalEvent_LevelInit()
-	CollectionEvents_Init()
-	ThemedShopEvents_Init()
-	ShSkydiveTrails_LevelInit()
-	Sh_Ranked_Init()
-	ShWeapons_LevelInit()
-	ShWeaponCosmetics_LevelInit()
-	ShGladiatorCards_LevelInit()
-	ShQuips_Init()
-	ShLoadscreen_LevelInit()
-	ShMusic_LevelInit()
-	ShBattlePass_LevelInit()
-	MeleeShared_Init()
-	MeleeSyncedShared_Init()
-	ShPing_Init()
-	ShQuickchat_Init()
-	ShChallenges_LevelInit_PreStats()
-	ShItems_LevelInit_Finish()
-	ShItemPerPlayerState_LevelInit()
-	UserInfoPanels_LevelInit()
-	ShLoadouts_LevelInit_Finish()
-	UiNewnessQueries_LevelInit()
-	ShStatsInternals_LevelInit()
-	ShStats_LevelInit()
-	ShChallenges_LevelInit_PostStats()
+	// ShDevWeapons_Init()
+	// ShEHI_LevelInit_Begin()
+	// ShPakRequests_LevelInit()
+	// ShPersistentData_LevelInit_Begin()
+	// ShItems_LevelInit_Begin()
+	// ShGRX_LevelInit()
+	// Entitlements_LevelInit()
+	// CustomizeCommon_Init()
+	// ShLoadouts_LevelInit_Begin()
+	// ShCharacters_LevelInit()
+	// ShPassives_Init()
+	// ShCharacterAbilities_LevelInit()
+	// ShCharacterCosmetics_LevelInit()
+	// ShCalEvent_LevelInit()
+	// TimeGatedLoginRewards_Init()
+	// CollectionEvents_Init()
+	// ThemedShopEvents_Init()
+	// ShSkydiveTrails_LevelInit()
+	// Sh_Ranked_Init()
+	// ShWeapons_LevelInit()
+	// ShWeaponCosmetics_LevelInit()
+	// ShGladiatorCards_LevelInit()
+	// ShQuips_Init()
+	// ShLoadscreen_LevelInit()
+	// ShMusic_LevelInit()
+	// ShBattlePass_LevelInit()
+	// MeleeShared_Init()
+	// MeleeSyncedShared_Init()
+	// ShPing_Init()
+	// ShQuickchat_Init()
+	// ShChallenges_LevelInit_PreStats()
+	// ShItems_LevelInit_Finish()
+	// ShItemPerPlayerState_LevelInit()
+	// UserInfoPanels_LevelInit()
+	// ShLoadouts_LevelInit_Finish()
+	// UiNewnessQueries_LevelInit()
+	// ShStatsInternals_LevelInit()
+	// ShStats_LevelInit()
+	// ShChallenges_LevelInit_PostStats()
 	#if(false)
 
 #endif
@@ -626,6 +624,7 @@ void function UICodeCallback_LevelShutdown()
 	ShGladiatorCards_LevelShutdown()
 	ShLoadouts_LevelShutdown()
 	VideoChannelManager_OnLevelShutdown()
+	ImagePakLoad_OnLevelShutdown()
 	ShGRX_LevelShutdown()
 
 	Signal( uiGlobal.signalDummy, "LevelShutdown" )
@@ -1067,11 +1066,6 @@ void function UpdateMenusOnConnectThread( string levelname )
 			{
 				thread Loadscreen_SetEquppedLoadscreenAsActive()
 			}
-
-			if ( GetPersistentVar( "eliteTutorialState" ) == eEliteTutorialState.SHOW_INTRO )
-			{
-				OpenEliteIntroMenu()
-			}
 		}
 
 		if ( GetPersistentVar( "showGameSummary" ) && IsPostGameMenuValid( true ) )
@@ -1100,51 +1094,6 @@ void function UpdateMenusOnConnectThread( string levelname )
 			DialogFlow()
 		}
 	}
-}
-
-
-void function OpenEliteForgivenessDialog()
-{
-	ConfirmDialogData dialogData
-	dialogData.headerText = "#APEX_ELITE_FORGIVENESS_TITLE"
-	dialogData.messageText = "#APEX_ELITE_FORGIVENESS_MSG"
-	dialogData.contextImage = $"" //
-	dialogData.resultCallback = SetEliteForgivenessRead
-
-	OpenOKDialogFromData( dialogData )
-}
-
-void function OpenLossForgivenessDialog( int reason )
-{
-	table<int, string> reasons = {}
-	reasons[ eLossForgivenessReason.CRASH ] <- "#APEX_ELITE_FORGIVENESS_CRASH"
-	reasons[ eLossForgivenessReason.TEAMMATE_ABANDON ] <- "#APEX_ELITE_FORGIVENESS_TEAMMATE_ABANDON"
-	reasons[ eLossForgivenessReason.NOT_FULL_TEAM ] <- "#APEX_ELITE_FORGIVENESS_NOT_FULL_TEAM"
-
-	if ( !(reason in reasons) )
-	{
-		return
-	}
-
-	string reasonMsg = reasons[ reason ]
-
-	ConfirmDialogData dialogData
-	dialogData.headerText = "#LOSS_FORGIVENESS_TITLE"
-	dialogData.messageText = reasonMsg
-	dialogData.contextImage = $"" //
-	dialogData.resultCallback = SetLossForgivenessRead
-
-	OpenOKDialogFromData( dialogData )
-}
-
-void function SetEliteForgivenessRead( int result )
-{
-	ClientCommand( "MarkEliteForgivenessAsSeen" )
-}
-
-void function SetLossForgivenessRead( int result )
-{
-	ClientCommand( "MarkLossForgivenessAsSeen" )
 }
 
 
@@ -1190,13 +1139,19 @@ void function DialogFlow()
 		PromoDialog_OpenHijacked( "<p|bloodhound_sku|" + Localize( "#PROMO_BLOODHOUND_EDITION" ) + "|" + Localize( "#PROMO_BLOODHOUND_SKU_OWNED" ) + ">" )
 		file.numDialogFlowDialogsDisplayed++
 	}
-	else if ( LocalPlayerHasEntitlement( MELTDOWN_PACK_BUNDLE ) && persistenceAvailable && !TryDialogFlowPersistenceQuery( "meltdownPackAcknowledged" ) )
+	else if ( LocalPlayerHasTimeGatedLoginReward( BP1_SKIN ) && persistenceAvailable && !TryDialogFlowPersistenceQuery( "pathfinderBP1SkinAcknowledged" ) )
 	{
-		ClientCommand( "meltdownPackAcknowledged" )
-		ClientCommand( "lastSeenPremiumCurrency" )
-		PromoDialog_OpenHijacked( "<p|meltdown_pack|" + Localize( "#PROMO_MELTDOWN_PACK" ) + "|" + Localize( "#PROMO_MELTDOWN_PACK_OWNED" ) + ">" )
+		ClientCommand( "pathfinderBP1SkinAcknowledged" )
+		PromoDialog_OpenHijacked( "<p|bp1_skin|" + Localize( "#PROMO_BP1_SKIN_HEADER" ) + "|" + Localize( "#PROMO_BP1_SKIN_TEXT" ) + ">" )
 		file.numDialogFlowDialogsDisplayed++
 	}
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 	else if ( PlayerHasStarterPack( null ) && persistenceAvailable && !TryDialogFlowPersistenceQuery( "starterAcknowledged" ) )
 	{
 		ClientCommand( "starterAcknowledged" )
@@ -1254,6 +1209,13 @@ void function DialogFlow()
 		PromoDialog_OpenHijacked( "<p|" + promotCategory + "|" + Localize( "#ORIGIN_ACCESS_TWITCH" ) + "|" + Localize( "#TWITCH_CAUSTIC1_ENTITLEMENT_OWNED" ) + ">" )
 		file.numDialogFlowDialogsDisplayed++
 	}
+	else if ( DoesUserHaveTwitchPrimeReward( "twitch_crypto_skin1" ) && persistenceAvailable && !TryDialogFlowPersistenceQuery( "twitchCrypto01Acknowledged" ) )
+	{
+		ClientCommand( "twitchCrypto01Acknowledged" )
+		string promotCategory = GetCurrentPlaylistVarString( "motd_category_twitch_crypto_skin1", "twitch_promo_07" )
+		PromoDialog_OpenHijacked( "<p|" + promotCategory + "|" + Localize( "#ORIGIN_ACCESS_TWITCH" ) + "|" + Localize( "#TWITCH_CRYPTO1_ENTITLEMENT_OWNED" ) + ">" )
+		file.numDialogFlowDialogsDisplayed++
+	}
 #if(PS4_PROG)
 	else if ( LocalPlayerHasEntitlement( PSPLUS_PACK_02 ) && persistenceAvailable && !TryDialogFlowPersistenceQuery( "plus02Acknowledged" ) )
 	{
@@ -1276,19 +1238,28 @@ void function DialogFlow()
 		PromoDialog_OpenHijacked( "<p|playstation_plus_pack4|" + Localize( "#PROMO_REWARDS_UNLOCKED" ) + "|" + Localize( "#PROMO_PS4_PLUS04_OWNED" ) + ">" )
 		file.numDialogFlowDialogsDisplayed++
 	}
-#endif
+#if(false)
+
+
+
+
+
+
+
+#endif //
+#endif //
 	else if ( earliestRankedPeriod != "" )
 	{
 		ClientCommand( "rankedPeriodRewardAcknowledged " + earliestRankedPeriod )
 		ItemFlavor rankedPeriodToAcknowledgeReward                = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( earliestRankedPeriod ) )
 		ItemFlavor followingRankedPeriod                          = expect ItemFlavor( GetFollowingRankedPeriod( rankedPeriodToAcknowledgeReward ) )
-		RankedDivisionData rankedDivisionForFollowingRankedPeriod = Ranked_GetNewDivisionForPlayerRankReset( GetUIPlayer(), followingRankedPeriod   )
-		string unlockMessage                                      = Localize( "#RANKED_REWARDS_GIVEN_DIALOG_MESSAGE", Localize( ItemFlavor_GetShortName( rankedPeriodToAcknowledgeReward ) ),
-			Localize( rankedDivisionForFollowingRankedPeriod.divisionName ), Localize( ItemFlavor_GetShortName( followingRankedPeriod ) ) )
+		//RankedDivisionData rankedDivisionForFollowingRankedPeriod = Ranked_GetNewDivisionForPlayerRankReset( GetUIPlayer(), followingRankedPeriod   )
+		// string unlockMessage                                      = Localize( "#RANKED_REWARDS_GIVEN_DIALOG_MESSAGE", Localize( ItemFlavor_GetShortName( rankedPeriodToAcknowledgeReward ) ),
+		// 	Localize( rankedDivisionForFollowingRankedPeriod.divisionName ), Localize( ItemFlavor_GetShortName( followingRankedPeriod ) ) )
 
-		Ranked_PlayRankedLobbyCharacterDialogue( "glad_rankNewSeries", 2.0 ) //
-		PromoDialog_OpenHijacked( "<p|rankedperiod_01_rewards|" + Localize( "#RANKED_REWARDS_GIVEN_DIALOG_HEADER" ) + "|" + unlockMessage + ">" )
-		file.numDialogFlowDialogsDisplayed++
+		// Ranked_PlayRankedLobbyCharacterDialogue( "glad_rankNewSeries", 2.0 ) //
+		// PromoDialog_OpenHijacked( "<p|rankedperiod_01_rewards|" + Localize( "#RANKED_REWARDS_GIVEN_DIALOG_HEADER" ) + "|" + unlockMessage + ">" )
+		// file.numDialogFlowDialogsDisplayed++
 	}
 	else if ( ShouldShowPremiumCurrencyDialog() )
 	{
@@ -1532,13 +1503,12 @@ void function InitMenus()
 	AddPanel( mainMenu, "MainMenuPanel", InitMainMenuPanel )
 
 	AddMenu( "PlayVideoMenu", $"resource/ui/menus/play_video.menu", InitPlayVideoMenu )
-	AddMenu( "EliteIntroMenu", $"resource/ui/menus/elite_intro.menu", InitEliteIntroMenu )
 
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )
 	AddPanel( lobbyMenu, "PlayPanel", InitPlayPanel )
 	AddPanel( lobbyMenu, "CharactersPanel", InitCharactersPanel )
 	AddPanel( lobbyMenu, "ArmoryPanel", InitArmoryPanel )
-	AddPanel( lobbyMenu, "PassPanelV2", InitPassPanel )
+		AddPanel( lobbyMenu, "PassPanelV2", InitPassPanel )
 	//
 
 	var storePanel = AddPanel( lobbyMenu, "StorePanel", InitStorePanel )
@@ -1569,25 +1539,21 @@ void function InitMenus()
 
 	var customizeCharacterMenu = AddMenu( "CustomizeCharacterMenu", $"resource/ui/menus/customize_character.menu", InitCustomizeCharacterMenu )
 	AddPanel( customizeCharacterMenu, "CharacterSkinsPanel", InitCharacterSkinsPanel )
-	#if(true)
-		var cardPanel = AddPanel( customizeCharacterMenu, "CharacterCardsPanelV2", InitCharacterCardsPanel )
-	#else
-
-#endif
+	var cardPanel = AddPanel( customizeCharacterMenu, "CharacterCardsPanelV2", InitCharacterCardsPanel )
 	AddPanel( cardPanel, "CardFramesPanel", InitCardFramesPanel )
 	AddPanel( cardPanel, "CardPosesPanel", InitCardPosesPanel )
 	AddPanel( cardPanel, "CardBadgesPanel", InitCardBadgesPanel )
 	AddPanel( cardPanel, "CardTrackersPanel", InitCardTrackersPanel )
-	#if(true)
-		AddPanel( cardPanel, "IntroQuipsPanel", InitIntroQuipsPanel )
-		AddPanel( cardPanel, "KillQuipsPanel", InitKillQuipsPanel )
+	AddPanel( cardPanel, "IntroQuipsPanel", InitIntroQuipsPanel )
+	AddPanel( cardPanel, "KillQuipsPanel", InitKillQuipsPanel )
+	#if(false)
+
+
+
+#else
 		var quipsPanel = AddPanel( customizeCharacterMenu, "CharacterEmotesPanel", InitCharacterEmotesPanel )
 		AddPanel( quipsPanel, "QuipsPanel", InitQuipsPanel )
-	#else
-
-
-
-#endif
+	#endif
 	AddPanel( customizeCharacterMenu, "CharacterExecutionsPanel", InitCharacterExecutionsPanel )
 
 	var customizeWeaponMenu = AddMenu( "CustomizeWeaponMenu", $"resource/ui/menus/customize_weapon.menu", InitCustomizeWeaponMenu )
@@ -1596,6 +1562,7 @@ void function InitMenus()
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel2", InitWeaponSkinsPanel )
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel3", InitWeaponSkinsPanel )
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel4", InitWeaponSkinsPanel )
+	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel5", InitWeaponSkinsPanel )
 
 	var miscCustomizeMenu = AddMenu( "MiscCustomizeMenu", $"resource/ui/menus/misc_customize.menu", InitMiscCustomizeMenu )
 	AddPanel( miscCustomizeMenu, "LoadscreenPanel", InitLoadscreenPanel )
@@ -1607,10 +1574,10 @@ void function InitMenus()
 
 	AddMenu( "CharacterSelectMenuNew", $"resource/ui/menus/character_select_new.menu", UI_InitCharacterSelectNewMenu )
 
-	var deathScreenMenu = AddMenu( "DeathScreenMenu", $"resource/ui/menus/death_screen.menu", InitDeathScreenMenu )
-	AddPanel( deathScreenMenu, "DeathScreenRecap", InitDeathScreenRecapPanel )
-	AddPanel( deathScreenMenu, "DeathScreenSpectate", InitDeathScreenSpectatePanel )
-	AddPanel( deathScreenMenu, "DeathScreenSquadSummary", InitDeathScreenSquadSummaryPanel )
+		var deathScreenMenu = AddMenu( "DeathScreenMenu", $"resource/ui/menus/death_screen.menu", InitDeathScreenMenu )
+		AddPanel( deathScreenMenu, "DeathScreenRecap", InitDeathScreenRecapPanel )
+		AddPanel( deathScreenMenu, "DeathScreenSpectate", InitDeathScreenSpectatePanel )
+		AddPanel( deathScreenMenu, "DeathScreenSquadSummary", InitDeathScreenSquadSummaryPanel )
 
 	AddMenu( "PostGameRankedMenu", $"resource/ui/menus/post_game_ranked.menu", InitPostGameRankedMenu )
 	AddMenu( "RankedInfoMenu", $"resource/ui/menus/ranked_info.menu", InitRankedInfoMenu )
@@ -1677,6 +1644,10 @@ void function InitMenus()
 	AddPanel( controlsAdvancedLookMenu, "AdvancedLookControlsPanel", InitAdvancedLookControlsPanel )
 	AddMenu( "GamepadLayoutMenu", $"resource/ui/menus/gamepadlayout.menu", InitGamepadLayoutMenu )
 
+	#if(false)
+
+#endif
+
 	#if(PC_PROG)
 		var controlsADSPC = AddMenu( "ControlsAdvancedLookMenuPC", $"resource/ui/menus/controls_ads_pc.menu", InitADSControlsMenuPC, "#CONTROLS_ADVANCED_LOOK" )
 		AddPanel( controlsADSPC, "ADSControlsPanel", InitADSControlsPanelPC )
@@ -1684,6 +1655,9 @@ void function InitMenus()
 
 	var controlsADSConsole = AddMenu( "ControlsAdvancedLookMenuConsole", $"resource/ui/menus/controls_ads_console.menu", InitADSControlsMenuConsole, "#CONTROLS_ADVANCED_LOOK" )
 	AddPanel( controlsADSConsole, "ADSControlsPanel", InitADSControlsPanelConsole )
+	
+	var controlsADSAdvancedConsole = AddMenu( "ControlsAdsAdvancedLookMenuConsole", $"resource/ui/menus/controls_ads_advanced_console.menu", InitADSAdvancedControlsMenuConsole, "#CONTROLS_ADVANCED_LOOK" )
+	AddPanel( controlsADSAdvancedConsole, "ADSAdvancedControlsPanel", InitADSAdvancedControlsPanelConsole )
 	//
 
 	AddMenu( "LootBoxOpen", $"resource/ui/menus/loot_box.menu", InitLootBoxMenu )
@@ -1693,10 +1667,10 @@ void function InitMenus()
 
 	var inspectMenu = AddMenu( "InspectMenu", $"resource/ui/menus/inspect.menu", InitInspectMenu )
 
-	AddPanel( inspectMenu, "StatsSummaryPanel", InitStatsSummaryPanel )
-	//
+		AddPanel( inspectMenu, "StatsSummaryPanel", InitStatsSummaryPanel )
+		//
 
-	AddMenu( "StatsSeasonSelectPopUp", $"resource/ui/menus/dialog_player_stats_season_select.menu", InitSeasonSelectPopUp )
+		AddMenu( "StatsSeasonSelectPopUp", $"resource/ui/menus/dialog_player_stats_season_select.menu", InitSeasonSelectPopUp )
 
 	AddMenu( "DevMenu", $"resource/ui/menus/dev.menu", InitDevMenu, "Dev" )
 
@@ -2037,6 +2011,7 @@ const array<string> WORKAROUND_UI_MUSIC_SOUND_LIST = [
 	"mainmenu_music_Wattson", "Music_Lobby_Wattson",
 	"mainmenu_music_Wraith", "Music_Lobby_Wraith",
 	"mainmenu_music_Event3", "Music_Lobby_Event3",
+	"mainmenu_music_Event4", "Music_Lobby_Event4",
 	"mainmenu_music_Crypto", "Music_Lobby_Crypto",
 	LOOT_CEREMONY_MUSIC_P1,
 	LOOT_CEREMONY_MUSIC_P2

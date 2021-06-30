@@ -1,6 +1,6 @@
 global function ShCarePackage_Init
 global function GetCarePackagePlacementInfo
-global function OnWeaponPrimaryAttack_care_package
+//global function OnWeaponPrimaryAttack_care_package
 global function OnWeaponActivate_care_package
 global function OnWeaponDeactivate_care_package
 global function GetSkinForCarePackageModel
@@ -30,7 +30,7 @@ struct
 #endif
 } file
 
-/* USE THIS AS A TEMPLATE FOR FUTURE WEAPONS */
+/* USE THIS AS A TEMPLATE FOR FUTURE WEAPONS
 var function OnWeaponPrimaryAttack_care_package( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
@@ -54,6 +54,7 @@ var function OnWeaponPrimaryAttack_care_package( entity weapon, WeaponPrimaryAtt
 	int ammoReq = weapon.GetAmmoPerShot()
 	return ammoReq
 }
+*/
 
 void function ShCarePackage_Init()
 {

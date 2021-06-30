@@ -141,7 +141,7 @@ void function CodeCallback_PreBuildAINFile()
 void function ScriptedDoorInit( entity door )
 {
 	#if R5DEV
-	array validModels = [
+	array validModels = [ // TODO: Fix
 		$"models/door/door_imc_interior_03_128_animated.mdl",
 		$"models/door/pod_door_Hangar_IMC_01_animated.mdl",
         $"models/door/door_512x512x16_elevatorstyle01_animated.mdl",

@@ -1525,7 +1525,7 @@ void function ClientCodeCallback_HLMV_SequenceChanged_Thread( HlmvModelData data
 	}
 
 	//var animStartPos = model.Anim_GetStartForRefPoint_Old( sequence, <0,0,0>, <0,0,0> )
-	thread MapLimitsProtect( model )
+	thread MapLimitsProtection( model )
 
 	for ( ;; )
 	{
@@ -1593,7 +1593,7 @@ void function ClientCodeCallback_HLMV_SetCycle( float cycle )
 	}
 }
 
-void function MapLimitsProtect( entity model )
+void function MapLimitsProtection( entity model )
 {
 	model.EndSignal( "OnDestroy" )
 	for ( ;; )

@@ -30,6 +30,32 @@ global struct AttackerDamage
 	table<int,float> damageBySource
 }
 
+global enum eDamageHistorySet
+{
+	DEFAULT,
+	HEALTH,
+	SHIELD,
+	BLEEDOUT,
+	ALL,
+}
+
+global struct DeathRecapDamageData
+{
+	int   attackerEHandle
+	int   victimEHandle
+	int   damageSourceID
+	int   damageType
+	int   totalDamage
+	int   hitCount
+	int   headShotBits
+	float healthFrac
+	float shieldFrac
+	float blockTime
+
+	int gladCardSlotIndex
+	asset customImage
+}
+
 global struct DamageHistoryStruct
 {
 	string attackerName
@@ -459,8 +485,8 @@ array<DamageHistoryStruct> function GetRodeoAttacksByPlayer( entity player, enti
 		if ( history.attacker != attacker )
 			continue
 
-		if ( !(history.damageType & DF_RODEO) )
-			continue
+		// if ( !(history.damageType & DF_RODEO) )
+		// 	continue
 
 		events.append( history )
 	}

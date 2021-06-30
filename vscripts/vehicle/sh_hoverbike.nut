@@ -249,40 +249,40 @@ bool function ClientCommand_spawn_hoverbike( entity player, array<string> args )
 
 void function CreateHoverbike( vector origin, vector angles )
 {
-	entity vehicle = CreateEntity( "script_mover" )
-	vehicle.SetScriptName( "hoverbike" )
-	//vehicle.SetValueForModelKey( HOVERBIKE_MODEL )
-	vehicle.SetValueForModelKey( $"mdl/titans/medium/titan_blackbox.rmdl" )
-	vehicle.SetOrigin( origin )
-	//vehicle.SetAngles( angles )
-	vehicle.kv.SpawnAsPhysicsMover = 0
-	vehicle.SetAngles( DEV_HOVERBIKE_MODEL_ROT )
-	DispatchSpawn( vehicle )
+	// entity vehicle = CreateEntity( "script_mover" )
+	// vehicle.SetScriptName( "hoverbike" )
+	// //vehicle.SetValueForModelKey( HOVERBIKE_MODEL )
+	// vehicle.SetValueForModelKey( $"mdl/titans/medium/titan_blackbox.rmdl" )
+	// vehicle.SetOrigin( origin )
+	// //vehicle.SetAngles( angles )
+	// vehicle.kv.SpawnAsPhysicsMover = 0
+	// vehicle.SetAngles( DEV_HOVERBIKE_MODEL_ROT )
+	// DispatchSpawn( vehicle )
 
-	entity vehicleRodeoProxy = CreateEntity( "npc_gunship" )
-	vehicleRodeoProxy.SetScriptName( "hoverbike_rodeo_proxy" )
-	vehicleRodeoProxy.kv.solid = 0
-	vehicleRodeoProxy.SetOrigin( vehicle.GetOrigin() + < 0.0, 0.0, -7.0 > )
-	//vehicleRodeoProxy.SetAngles( vehicle.GetAngles() )
-	vehicleRodeoProxy.SetAngles( < 0, 0, 0 > )
-	//vehicleRodeoProxy.SetModelScale( DEV_HOVERBIKE_MODEL_SCALE )
-	DispatchSpawn( vehicleRodeoProxy )
-	//vehicleRodeoProxy.SetModel( $"mdl/dev/empty_model.rmdl" )
-	vehicleRodeoProxy.SetModel( HOVERBIKE_MODEL )
-	vehicleRodeoProxy.SetParent( vehicle )
-	vehicleRodeoProxy.Freeze()
-	//vehicleRodeoProxy.NotSolid()
-	vehicleRodeoProxy.SetHullType( "HULL_SMALL" )
-	vehicleRodeoProxy.SetInvulnerable()
+	// entity vehicleRodeoProxy = CreateEntity( "npc_gunship" )
+	// vehicleRodeoProxy.SetScriptName( "hoverbike_rodeo_proxy" )
+	// vehicleRodeoProxy.kv.solid = 0
+	// vehicleRodeoProxy.SetOrigin( vehicle.GetOrigin() + < 0.0, 0.0, -7.0 > )
+	// //vehicleRodeoProxy.SetAngles( vehicle.GetAngles() )
+	// vehicleRodeoProxy.SetAngles( < 0, 0, 0 > )
+	// //vehicleRodeoProxy.SetModelScale( DEV_HOVERBIKE_MODEL_SCALE )
+	// DispatchSpawn( vehicleRodeoProxy )
+	// //vehicleRodeoProxy.SetModel( $"mdl/dev/empty_model.rmdl" )
+	// vehicleRodeoProxy.SetModel( HOVERBIKE_MODEL )
+	// vehicleRodeoProxy.SetParent( vehicle )
+	// vehicleRodeoProxy.Freeze()
+	// //vehicleRodeoProxy.NotSolid()
+	// vehicleRodeoProxy.SetHullType( "HULL_SMALL" )
+	// vehicleRodeoProxy.SetInvulnerable()
 
-	vehicleRodeoProxy.SetRodeoAllowed( true )
-	Rodeo_RegisterVehicle( vehicleRodeoProxy, file.hoverbikeVehicleFlavor )
+	// vehicleRodeoProxy.SetRodeoAllowed( true )
+	// Rodeo_RegisterVehicle( vehicleRodeoProxy, file.hoverbikeVehicleFlavor )
 
-	vehicle.SetOwner( vehicleRodeoProxy )
+	// vehicle.SetOwner( vehicleRodeoProxy )
 
-	vehicle.SetAngles( AnglesCompose( angles, DEV_HOVERBIKE_MODEL_ROT ) )
+	// vehicle.SetAngles( AnglesCompose( angles, DEV_HOVERBIKE_MODEL_ROT ) )
 
-	OnHoverbikeCreated( vehicle )
+	// OnHoverbikeCreated( vehicle )
 }
 #endif
 

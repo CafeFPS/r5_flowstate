@@ -118,11 +118,6 @@ void function BLEEDOUT_RevivePlayerHealerChanged( entity playerToRes, entity old
 		return
 	}
 
-	if ( IsValid( playerHealer ) && IsValid( oldPlayerHealer ) && (playerHealer != oldPlayerHealer) )
-	{
-		oldPlayerHealer.Signal( "Bleedout_StopFirstAid" )
-	}
-
 	entity viewPlayer = GetLocalViewPlayer()
 	int team = viewPlayer.GetTeam()
 
@@ -169,19 +164,15 @@ void function Bleedout_DisplayFirstAidProgressBar( entity playerToRes, float end
 	player.EndSignal( "Bleedout_StopFirstAid" )
 	playerToRes.EndSignal( "Bleedout_OnRevive" )
 
-	var rui = CreateCockpitPostFXRui( $"ui/bleedout_timer.rpak" )
+	var rui = CreateCockpitRui( $"ui/bleedout_timer.rpak" )
 	RuiSetString( rui, "text", text )
 	RuiSetGameTime( rui, "endTime", endTime )
 	RuiSetFloat( rui, "progressTime", progressTime )
-
-	Chroma_BeginRevive( progressTime )
 
 	OnThreadEnd(
 		function() : ( rui, playerToRes )
 		{
 			RuiDestroy( rui )
-
-			Chroma_EndRevive()
 
 			if ( IsValid( playerToRes ) && playerToRes.IsPlayer() )
 				BleedoutEndTimeChanged( playerToRes, 0.0, playerToRes.GetPlayerNetTime( "bleedoutEndTime" ), true )
@@ -264,10 +255,6 @@ void function ShowWoundedMarker( entity woundedPlayer, float endTime )
 			LootData lootData = EquipmentSlot_GetEquippedLootDataForSlot( woundedPlayer, "incapshield" )
 
 			RuiSetString( shieldRUI, "nameText", lootData.pickupString )
-
-			if ( incapShieldTier >= 4 )
-				RuiSetString( shieldRUI, "nameText", "#BLEEDOUT_USE_SELF_RES_TITLE" )
-
 			RuiSetBool( shieldRUI, "hasKOShield", true )
 			RuiSetInt( shieldRUI, "shieldTier", incapShieldTier )
 			RuiSetImage( shieldRUI, "shieldIcon", lootData.hudIcon )
@@ -344,7 +331,6 @@ bool function CanSelfRevive( entity player )
 
 void function TrackKOShieldHealthAndReadiness( entity player, var rui )
 {
-	printf( "KOShieldDebug: %s()", FUNC_NAME() )
 	int shieldTier = EquipmentSlot_GetEquipmentTier( player, "incapshield" )
 	if ( shieldTier == 0 )
 		return
@@ -361,8 +347,6 @@ void function TrackKOShieldHealthAndReadiness( entity player, var rui )
 
 	float maxShieldHealth = float( IncapShield_GetMaxShieldHealthFromTier( shieldTier ) )
 	RuiSetFloat( rui, "shieldMaxHealth", maxShieldHealth )
-	printf( "KOShieldDebug: %s(): Setting shieldMaxHealth RUI to %f", FUNC_NAME(), maxShieldHealth )
-	printf( "KOShieldDebug: %s(): Weapon health at thread call = %i", FUNC_NAME(), shield.GetScriptInt0() )
 
 	while ( true )
 	{
@@ -524,9 +508,4 @@ void function ServerCallback_Bleedout_DownStateThirdPersonCameraSettings()
 	SetConVarFloat( "c_mindistance", 48.0 )
 	SetConVarFloat( "c_maxdistance", 48.0 )
 	SetConVarFloat( "cam_idealdist", 0.0 )
-	SetConVarToDefault( "cam_player_viewheight_scale" )
-	SetConVarToDefault( "c_thirdpersonshouldergetsviewpunch" )
-	SetConVarToDefault( "cam_pitchlock_on" )
-	SetConVarToDefault( "c_minyaw" )
-	SetConVarToDefault( "c_maxyaw" )
 }

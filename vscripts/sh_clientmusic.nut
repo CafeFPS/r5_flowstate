@@ -30,6 +30,7 @@ global enum eMusicTrack
 	//
 	IntroTense,
 	IntroMysterious,
+	GetToTheLZ,
 	BigVictory,
 	BossFight,
 	BossFightVictory,
@@ -57,6 +58,7 @@ const array<string> [eMusicTrack._count] s_TracksMap =
 	//
 	/* IntroTense */						["Music_CloudCity_04_SpottedBySoldiers"],
 	/* IntroMysterious */					["music_timeshift_34_timestop"],
+	/* GetToTheLZ */						["Music_PvE_BossBattle"],
 	/* BigVictory */						["music_cloudcity_05_turretsdestroyed"],
 	/* BossFight */							["music_cloudcity_10_bossintroduction"],
 	/* BossFightVictory */					["music_cloudcity_22_miragebossdefeated"],

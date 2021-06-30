@@ -1,0 +1,421 @@
+global function ShQuips_Init
+global function RegisterEquippableQuipsForCharacter
+
+global function CharacterQuip_IsTheEmpty
+
+#if(false)
+
+#endif
+
+#if(false)
+
+#endif
+
+#if CLIENT
+global function PerformQuip
+global function CharacterQuip_ShortenTextForCommsMenu
+#endif
+
+#if(false)
+
+#endif
+
+#if CLIENT || UI 
+global function CreateNestedRuiForQuip
+
+#if(false)
+
+#endif
+
+#endif
+
+#if(false)
+
+
+
+
+#endif
+
+global function CharacterQuip_GetCharacterFlavor
+global function CharacterQuip_GetAliasSubName
+global function Loadout_CharacterQuip
+global function ItemFlavor_CanEquipToWheel
+
+#if(false)
+
+#endif
+
+global const int MAX_QUIPS_EQUIPPED = 8
+
+#if CLIENT || UI 
+struct FileStruct_LifetimeLevel
+{
+	table<ItemFlavor, array<LoadoutEntry> >     loadoutCharacterQuipsSlotListMap
+
+	array<ItemFlavor> universalQuips
+	table<ItemFlavor, ItemFlavor> quipCharacterMap
+}
+FileStruct_LifetimeLevel& fileLevel
+#endif
+
+void function ShQuips_Init()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+#if(false)
+
+
+
+
+#endif
+}
+
+void function RegisterEquippableQuipsForCharacter( ItemFlavor characterClass, array<ItemFlavor> quipList )
+{
+	foreach( int index, ItemFlavor quip in quipList )
+	{
+		if ( quip in fileLevel.quipCharacterMap )
+		{
+			fileLevel.universalQuips.append( quip )
+		}
+		else
+		{
+			fileLevel.quipCharacterMap[quip] <- characterClass
+		}
+	}
+
+	fileLevel.loadoutCharacterQuipsSlotListMap[characterClass] <- []
+
+	for ( int quipIndex = 0; quipIndex < MAX_QUIPS_EQUIPPED; quipIndex++ )
+	{
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "quips_" + quipIndex + "_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
+		entry.DEV_category = "character_quips"
+		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Quip " + quipIndex
+		entry.validItemFlavorList = quipList
+		entry.defaultItemFlavor = entry.validItemFlavorList[0]
+		entry.isSlotLocked = bool function( EHI playerEHI ) {
+			return !IsLobby()
+		}
+		#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+		entry.isActiveConditions = { [Loadout_CharacterClass()] = { [characterClass] = true, }, }
+		entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+		//
+		fileLevel.loadoutCharacterQuipsSlotListMap[characterClass].append( entry )
+	}
+}
+
+
+#if SERVER || CLIENT
+void function PerformQuip( entity player, int index )
+{
+	if ( !IsAlive( player ) )
+		return
+
+	ItemFlavor quip      = GetItemFlavorByGUID( index )
+
+	CommsAction act
+	act.index = eCommsAction.QUIP
+	act.aliasSubname = CharacterQuip_GetAliasSubName( quip )
+	act.hasCalm = false
+	act.hasCalmFar = false
+	act.hasUrgent = false
+	act.hasUrgentFar = false
+
+	CommsOptions opt
+	opt.isFirstPerson = (player == GetLocalViewPlayer())
+	opt.isFar = false
+	opt.isUrgent = false
+	opt.pauseQueue = player.GetTeam() == GetLocalViewPlayer().GetTeam()
+
+	PlaySoundForCommsAction( player, act, opt )
+}
+#endif
+
+
+
+#if SERVER || CLIENT || UI
+LoadoutEntry function Loadout_CharacterQuip( ItemFlavor characterClass, int badgeIndex )
+{
+	return fileLevel.loadoutCharacterQuipsSlotListMap[characterClass][badgeIndex]
+}
+
+string function CharacterQuip_GetAliasSubName( ItemFlavor flavor )
+{
+	AssertEmoteIsValid( flavor )
+
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "quickchatAliasSubName" )
+}
+
+bool function CharacterQuip_IsTheEmpty( ItemFlavor flavor )
+{
+	AssertEmoteIsValid( flavor )
+
+	return ( GetGlobalSettingsBool( ItemFlavor_GetAsset( flavor ), "isTheEmpty" ) )
+}
+
+#if(false)
+
+
+
+
+
+
+#endif
+
+#if(false)
+
+
+
+
+
+
+#endif
+
+void function AssertEmoteIsValid( ItemFlavor flavor )
+{
+	array<int> allowedList = [
+		eItemType.gladiator_card_kill_quip,
+		eItemType.gladiator_card_intro_quip,
+	#if(false)
+
+#endif
+	#if(false)
+
+#endif
+	]
+
+	Assert( allowedList.contains( ItemFlavor_GetType( flavor ) ) )
+}
+#endif
+
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+bool function ItemFlavor_CanEquipToWheel( ItemFlavor item )
+{
+	switch ( ItemFlavor_GetType( item ) )
+	{
+		case eItemType.gladiator_card_kill_quip:
+		case eItemType.gladiator_card_intro_quip:
+			return true
+	}
+
+	return false
+}
+
+#if CLIENT || UI
+string function CharacterQuip_ShortenTextForCommsMenu( ItemFlavor flav )
+{
+	string txt = ""
+
+	int itemType = ItemFlavor_GetType( flav )
+	if ( itemType == eItemType.gladiator_card_kill_quip || itemType == eItemType.gladiator_card_intro_quip )
+	{
+		txt = Localize( ItemFlavor_GetLongName( flav ) )
+
+		int WORD_MAX_LEN = 11
+		int TEXT_MAX_LEN = 26
+		int TEXT_MAX_LEN_W_DOTS = TEXT_MAX_LEN - 2
+#if(CLIENT)
+		txt = CondenseText( txt, WORD_MAX_LEN, TEXT_MAX_LEN )
+#endif
+	}
+	return txt
+}
+
+var function CreateNestedRuiForQuip( var baseRui, string argName, EHI ehi, ItemFlavor quip, ItemFlavor ornull character )
+{
+	asset ruiAsset = $"ui/comms_menu_icon_default.rpak"
+
+	int type = ItemFlavor_GetType( quip )
+	switch ( type )
+	{
+#if(false)
+
+
+
+
+
+#endif
+	}
+
+	var nestedRui = RuiCreateNested( baseRui, argName, ruiAsset )
+	asset icon       = ItemFlavor_GetIcon( quip )
+	RuiSetImage( nestedRui, "icon", icon )
+
+	string txt = CharacterQuip_ShortenTextForCommsMenu( quip )
+	RuiSetString( nestedRui, "centerText", txt )
+
+	return nestedRui
+}
+
+#if(false)
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+#endif
+
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+
+ItemFlavor ornull function CharacterQuip_GetCharacterFlavor( ItemFlavor item )
+{
+	if ( fileLevel.universalQuips.contains( item ) )
+		return null
+
+	return fileLevel.quipCharacterMap[ item ]
+}

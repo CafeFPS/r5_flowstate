@@ -1,0 +1,66 @@
+global const bool ASSERTING = !!DEV
+
+#if SERVER || CLIENT || UI
+global function GetFeatureFlagByString
+#endif
+
+#if SERVER || CLIENT || UI && ASSERTING 
+global function ForAssertingOnly_IsValidFeatureFlagString
+#endif
+
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+global const table<string, bool> FEATURE_FLAGS_TBL = {
+	["gah stupid vscript compiler and intellij plugin"] = true,
+	HAS_DATAKNIFE_LOOT      = true,
+	HAS_VAULTS              = true,
+	HAS_LOOT_DRONES         = true
+	HAS_LOOT_ROLLERS        = true
+	HAS_FLYERS              = true,
+	HAS_DESERTLANDS_TRAIN   = true,
+	HAS_WEAPON_DEFENDER     = true,
+	HAS_HALLOWEEN           = true,
+	HAS_ENERGY_MAGS         = true,
+	HAS_HIGHCAL_ROUNDS      = true,
+	HAS_DOUBLE_TAP          = true,
+	HAS_S3_GOLD_GEAR        = true,
+	HAS_EVA_HOPUP           = true,
+	HAS_WARP_GATES          = true,
+	HAS_RANDOMIZED_TRAINING = true,
+}
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+#if SERVER || CLIENT || UI
+bool function GetFeatureFlagByString( string featureFlagRef )
+{
+	string featureFlagRefToUse = featureFlagRef
+	bool comparison = true
+
+	if ( featureFlagRefToUse.len() > 0 && featureFlagRefToUse[0] == '!' )
+	{
+		featureFlagRefToUse = featureFlagRefToUse.slice(1)
+		comparison = false
+	}
+
+	Assert( featureFlagRefToUse in FEATURE_FLAGS_TBL, "Unrecognized feature flag (did DFS miss something?): " + featureFlagRef )
+
+	return FEATURE_FLAGS_TBL[featureFlagRefToUse] == comparison
+}
+#endif
+
+
+#if SERVER || CLIENT || UI && ASSERTING 
+bool function ForAssertingOnly_IsValidFeatureFlagString( string featureFlagRef )
+{
+	return (featureFlagRef in FEATURE_FLAGS_TBL)
+}
+#endif

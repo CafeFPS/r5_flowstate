@@ -610,7 +610,7 @@ void function Settings_Init()
 		#endif
 
 		GAMETYPE = GameRules_GetGameMode()
-		printl( "GAMETYPE: " + GAMETYPE )
+		printl( "GAME_TYPE: " + GAMETYPE )
 
 		MAX_TEAMS = GetCurrentPlaylistVarInt( "max_teams", 2 )
 		printl( "MAX_TEAMS: " + MAX_TEAMS )

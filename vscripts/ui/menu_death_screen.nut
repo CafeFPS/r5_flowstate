@@ -9,11 +9,13 @@ global function UI_SetDeathScreenTabTitle
 global function UI_DeathScreenUpdateHeader
 global function UI_DeathScreenSetRespawnStatus
 global function UI_DeathScreenSetSpectateTargetCount
-global function UI_DeathScreenSetCanReportPlayer
+global function UI_DeathScreenSetCanReportRecapPlayer
+global function UI_DeathScreenSetObserverMode
 global function UI_SetCanShowGladCard
 global function UI_SetShouldShowSkip
 global function UI_SetIsEliminiated
 global function UI_DeathScreenFadeInBlur
+global function UI_SetAllowGladCard
 
 global function DeathScreenIsOpen
 global function DeathScreenOnReportButtonClick
@@ -35,12 +37,14 @@ struct
 	bool      tabsInitialized
 	float     menuOpenTime
 	bool      isGladCardShowing = true	//
-	bool      canShowGladCard
-	bool      canReportPlayer
+	bool      canShowGladCard = true	//
+	bool      canReportRecapPlayer
+	int       observerMode
 	bool      shouldShowSkip
 	bool      isEliminated
 	int       respawnStatus
 	int       spectateTargetCount
+	bool      allowGladCard = true
 	InputDef& gladCardToggleInputData
 } file
 
@@ -89,7 +93,7 @@ void function InitDeathScreenPanelFooter( var panel, int panelID )
 	switch( panelID )
 	{
 		case eDeathScreenPanel.DEATH_RECAP:
-			AddPanelFooterOption( panel, RIGHT, BUTTON_STICK_RIGHT, true, "#BUTTON_REPORT_PLAYER", "#BUTTON_REPORT_PLAYER", DeathScreenOnReportButtonClick, DeathScreenCanReportPlayer )
+			AddPanelFooterOption( panel, RIGHT, BUTTON_STICK_RIGHT, true, "#BUTTON_REPORT_PLAYER", "#BUTTON_REPORT_PLAYER", DeathScreenOnReportButtonClick, DeathRecapCanReportPlayer )
 			break
 
 		case eDeathScreenPanel.SPECTATE:
@@ -103,7 +107,7 @@ void function InitDeathScreenPanelFooter( var panel, int panelID )
 			if ( !IsGladCardShowing() )
 				gladCardMessageString = "#SPECTATE_SHOW_BANNER"
 
-			file.gladCardToggleInputData = AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, gladCardMessageString, gladCardMessageString, DeathScreenTryToggleGladCard )
+			file.gladCardToggleInputData = AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, gladCardMessageString, gladCardMessageString, DeathScreenTryToggleGladCard, AllowGladCard )
 
 			AddPanelFooterOption( panel, LEFT, BUTTON_A, true, "#BUTTON_SKIP", "#BUTTON_SKIP", DeathScreenSkipDeathCam, CanSkipDeathCam )
 
@@ -173,6 +177,7 @@ void function DeathScreenMenuOnOpen()
 	UpdateFooterOptions()
 }
 
+
 void function DeathScreenMenuOnClose()
 {
 	TabData tabData = GetTabDataForPanel( file.menu )
@@ -230,7 +235,6 @@ void function UI_CloseDeathScreenMenu()
 		}
 	}
 }
-
 
 
 void function UI_EnableDeathScreenTab( int tabIndex, bool enable )
@@ -360,6 +364,19 @@ void function UI_SetCanShowGladCard( bool canShowGladCard )
 }
 
 
+void function UI_SetAllowGladCard( bool allowGladCard )
+{
+	//
+
+
+	if ( file.allowGladCard == allowGladCard )
+		return
+
+	file.allowGladCard = allowGladCard
+	UpdateFooterOptions()
+}
+
+
 void function UI_SetShouldShowSkip( bool shouldShowSkip )
 {
 	//
@@ -382,6 +399,7 @@ void function UI_DeathScreenSetRespawnStatus( int respawnStatus )
 	UpdateFooterOptions()
 }
 
+
 void function UI_DeathScreenSetSpectateTargetCount( int targetCount )
 {
 	//
@@ -390,12 +408,17 @@ void function UI_DeathScreenSetSpectateTargetCount( int targetCount )
 }
 
 
-void function UI_DeathScreenSetCanReportPlayer( bool canReportPlayer )
+void function UI_DeathScreenSetCanReportRecapPlayer( bool canReport )
 {
-	file.canReportPlayer = canReportPlayer
+	file.canReportRecapPlayer = canReport
 	UpdateFooterOptions()
 }
 
+void function UI_DeathScreenSetObserverMode( int observerMode )
+{
+	file.observerMode = observerMode
+	UpdateFooterOptions()
+}
 
 void function UI_DeathScreenUpdateHeader()
 {
@@ -483,15 +506,18 @@ void function DeathScreen_AddPassthroughCommandsToMenu( var menu )
 	AddCommandForMenuToPassThrough( menu, "toggle_map" )
 }
 
+
 bool function DeathScreenShowLobbySpace()
 {
 	return DeathScreenCanLeaveMatch() && !( GetMenuActiveTabIndex( file.menu ) == eDeathScreenPanel.SQUAD_SUMMARY )
 }
 
+
 bool function DeathScreenShowLobbyButton()
 {
 	return DeathScreenCanLeaveMatch() && ( GetMenuActiveTabIndex( file.menu ) == eDeathScreenPanel.SQUAD_SUMMARY )
 }
+
 
 bool function DeathScreenCanLeaveMatch()
 {
@@ -506,15 +532,18 @@ bool function DeathScreenCanLeaveMatch()
 	return file.isEliminated
 }
 
+
 bool function DeathScreenShowNavBack()
 {
 	return !CurrentTabIsDeadEnd() && GetGameState() < eGameState.Epilogue
 }
 
+
 bool function DeathScreenShowMenuButton()
 {
 	return !DeathScreenCanLeaveMatch() && CurrentTabIsDeadEnd()
 }
+
 
 bool function CurrentTabIsDeadEnd()
 {
@@ -525,6 +554,7 @@ bool function CurrentTabIsDeadEnd()
 
 	return ( GetMenuActiveTabIndex( file.menu ) == eDeathScreenPanel.SPECTATE )
 }
+
 
 bool function DeathScreenRespawnWaitingForPickup()
 {
@@ -544,15 +574,15 @@ bool function DeathScreenCanChangeSpectateTarget()
 }
 
 
-bool function DeathScreenCanReportPlayer()
+bool function DeathRecapCanReportPlayer()
 {
-	return file.canReportPlayer && CanReportPlayer()
+	return GetReportStyle() != 0 && file.canReportRecapPlayer
 }
 
 
 bool function CanReportPlayer()
 {
-	return GetReportStyle() != 0 && !file.shouldShowSkip
+	return GetReportStyle() != 0 && !file.shouldShowSkip && file.observerMode == OBS_MODE_IN_EYE
 }
 
 
@@ -581,6 +611,11 @@ bool function IsGladCardShowing()
 bool function CanShowGladCard()
 {
 	return file.canShowGladCard
+}
+
+bool function AllowGladCard()
+{
+	return file.allowGladCard
 }
 
 
@@ -662,6 +697,7 @@ void function DeathScreenSkipDeathCam( var button )
 	if ( CanSkipDeathCam () )
 		ClientCommand( "SkipDeathCam" )
 }
+
 
 void function ReportPlayerOnHold()
 {

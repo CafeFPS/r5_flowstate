@@ -7,13 +7,14 @@ struct
 	bool announcementsEnabled = true
 } file
 
-global const int ANNOUNCEMENT_STYLE_BIG = 0
-global const int ANNOUNCEMENT_STYLE_QUICK = 1
-global const int ANNOUNCEMENT_STYLE_PLAYER_LEVEL = 2
-global const int ANNOUNCEMENT_STYLE_WEAPON_LEVEL = 3
-global const int ANNOUNCEMENT_STYLE_SWEEP = 5
-global const int ANNOUNCEMENT_STYLE_RESULTS = 6
+global const int ANNOUNCEMENT_STYLE_BIG            = 0
+global const int ANNOUNCEMENT_STYLE_QUICK          = 1
+global const int ANNOUNCEMENT_STYLE_PLAYER_LEVEL   = 2
+global const int ANNOUNCEMENT_STYLE_WEAPON_LEVEL   = 3
+global const int ANNOUNCEMENT_STYLE_SWEEP          = 5
+global const int ANNOUNCEMENT_STYLE_RESULTS        = 6
 global const int ANNOUNCEMENT_STYLE_CIRCLE_WARNING = 8
+global const int ANNOUNCEMENT_STYLE_ELITE          = 9
 
 const int ANNOUNCEMENT_STYLE_DEFAULT = ANNOUNCEMENT_STYLE_BIG
 

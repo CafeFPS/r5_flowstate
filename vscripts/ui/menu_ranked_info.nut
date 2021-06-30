@@ -32,168 +32,172 @@ void function OpenRankedInfoPage( var button )
 	AdvanceMenu( file.menu )
 }
 
-void function OnRankedInfoMenu_Open()
+void function OnRankedInfoMenu_Open() // TODO: IMPLEMENT
 {
-	UI_SetPresentationType( ePresentationType.WEAPON_CATEGORY )
+	// UI_SetPresentationType( ePresentationType.WEAPON_CATEGORY )
 
-	int currentScore                   = GetPlayerRankScore( GetUIPlayer() )
-	array<RankedTierData> divisions    = Ranked_GetTiers()
-	RankedDivisionData currentRank     = GetCurrentRankedDivisionFromScore( currentScore )
-	RankedTierData currentDivision     = currentRank.tier
-	RankedTierData ornull nextDivision = Ranked_GetNextTierData( currentRank.tier )
+	// int currentScore                   = GetPlayerRankScore( GetUIPlayer() )
+	// array<RankedTierData> divisions    = Ranked_GetTiers()
+	// RankedDivisionData currentRank     = GetCurrentRankedDivisionFromScore( currentScore )
+	// RankedTierData currentDivision     = currentRank.tier
+	// RankedTierData ornull nextDivision = Ranked_GetNextTierData( currentRank.tier )
 
-	array< RankedDivisionData > divisionData = Ranked_GetRankedDivisionDataForTier( currentRank.tier )
+	// array< RankedDivisionData > divisionData = Ranked_GetRankedDivisionDataForTier( currentRank.tier )
 
-	array<var> panels = GetElementsByClassname( file.menu, "RankedInfoPanel" )
+	// array<var> panels = GetElementsByClassname( file.menu, "RankedInfoPanel" )
 
-	foreach ( panel in panels )
-	{
-		InitRankedInfoPanel( panel, divisions )
-	}
+	// foreach ( panel in panels )
+	// {
+	// 	InitRankedInfoPanel( panel, divisions )
+	// }
 
-	var mainRui = Hud_GetRui( Hud_GetChild( file.menu, "InfoMain" ) )
-	RuiSetInt( mainRui, "divisionIdx", currentDivision.index )
-	RuiSetInt( mainRui, "currentScore", currentScore )
-	RuiSetBool( mainRui, "inSeason", IsRankedInSeason() )
-	RuiSetString( mainRui, "currentRankString", currentRank.divisionName )
+	// var mainRui = Hud_GetRui( Hud_GetChild( file.menu, "InfoMain" ) )
+	// RuiSetInt( mainRui, "divisionIdx", currentDivision.index )
+	// RuiSetInt( mainRui, "currentScore", currentScore )
+	// RuiSetBool( mainRui, "inSeason", IsRankedInSeason() )
+	// RuiSetString( mainRui, "currentRankString", currentRank.divisionName )
 
 
-	var scoringRui = Hud_GetRui( Hud_GetChild( file.menu, "InfoScoring" ) )
-	RuiSetFloat( scoringRui, "lineDisplayTime", 0.01 )
-	RuiSetFloat( scoringRui, "startDelay", 0.0 )
-	RuiSetGameTime( scoringRui, "startTime", 0 )
-	RuiSetInt( scoringRui, "numLines", divisions.len() )
-	for ( int i=0; i<divisions.len(); i++ )
-	{
-		int idx              = i+1
-		RankedTierData d     = divisions[i]
-		string scoringString = d.entryCost == 0 ? Localize( "#RANKED_FREE" ) : Localize( "#RANKED_COST", d.entryCost )
-		RuiSetString( scoringRui, "line" + idx + "KeyString", d.name )
-		RuiSetString( scoringRui, "line" + idx + "ValueString", scoringString )
-		RuiSetColorAlpha( scoringRui, "line" + idx + "Color", <1,1,1>, 1 )
+	// var scoringRui = Hud_GetRui( Hud_GetChild( file.menu, "InfoScoring" ) )
+	// RuiSetFloat( scoringRui, "lineDisplayTime", 0.01 )
+	// RuiSetFloat( scoringRui, "startDelay", 0.0 )
+	// RuiSetGameTime( scoringRui, "startTime", 0 )
+	// RuiSetInt( scoringRui, "numLines", divisions.len() )
+	// for ( int i=0; i<divisions.len(); i++ )
+	// {
+	// 	int idx              = i+1
+	// 	RankedTierData d     = divisions[i]
+	// 	string scoringString = d.entryCost == 0 ? Localize( "#RANKED_FREE" ) : Localize( "#RANKED_COST", d.entryCost )
+	// 	RuiSetString( scoringRui, "line" + idx + "KeyString", d.name )
+	// 	RuiSetString( scoringRui, "line" + idx + "ValueString", scoringString )
+	// 	RuiSetColorAlpha( scoringRui, "line" + idx + "Color", <1,1,1>, 1 )
 
-		RuiSetInt( mainRui, "entryFee" + i, d.entryCost )
-	}
+	// 	RuiSetInt( mainRui, "entryFee" + i, d.entryCost )
+	// }
 
-	var scoreBarRui = Hud_GetRui( Hud_GetChild( file.menu, "RankedProgressBar" ) )
-	InitRankedScoreBarRui( scoreBarRui, currentScore, Ranked_GetDisplayNumberForRuiBadge( GetUIPlayer() ) )
+	// var scoreBarRui = Hud_GetRui( Hud_GetChild( file.menu, "RankedProgressBar" ) )
+	// InitRankedScoreBarRui( scoreBarRui, currentScore, Ranked_GetLadderPosition( GetUIPlayer() ) )
 
-	var rankedScoringTableRui = Hud_GetRui( Hud_GetChild( file.menu, "RankedScoringTable" ) )
-	RuiSetInt( rankedScoringTableRui, "eleventhPlaceRP", Ranked_GetPointsForPlacement( 11 ) )
-	RuiSetInt( rankedScoringTableRui, "tenthPlaceRP", Ranked_GetPointsForPlacement( 10 ) )
-	RuiSetInt( rankedScoringTableRui, "eighthPlaceRP", Ranked_GetPointsForPlacement( 8 ) )
-	RuiSetInt( rankedScoringTableRui, "sixthPlaceRP", Ranked_GetPointsForPlacement( 6 ) )
-	RuiSetInt( rankedScoringTableRui, "fourthPlaceRP", Ranked_GetPointsForPlacement( 4 ) )
-	RuiSetInt( rankedScoringTableRui, "secondPlaceRP", Ranked_GetPointsForPlacement( 2 ) )
-	RuiSetInt( rankedScoringTableRui, "firstPlaceRP", Ranked_GetPointsForPlacement( 1 ) )
+	// var rankedScoringTableRui = Hud_GetRui( Hud_GetChild( file.menu, "RankedScoringTable" ) )
+	// RuiSetInt( rankedScoringTableRui, "eleventhPlaceRP", Ranked_GetPointsForPlacement( 11 ) )
+	// RuiSetInt( rankedScoringTableRui, "tenthPlaceRP", Ranked_GetPointsForPlacement( 10 ) )
+	// RuiSetInt( rankedScoringTableRui, "eighthPlaceRP", Ranked_GetPointsForPlacement( 8 ) )
+	// RuiSetInt( rankedScoringTableRui, "sixthPlaceRP", Ranked_GetPointsForPlacement( 6 ) )
+	// RuiSetInt( rankedScoringTableRui, "fourthPlaceRP", Ranked_GetPointsForPlacement( 4 ) )
+	// RuiSetInt( rankedScoringTableRui, "secondPlaceRP", Ranked_GetPointsForPlacement( 2 ) )
+	// RuiSetInt( rankedScoringTableRui, "firstPlaceRP", Ranked_GetPointsForPlacement( 1 ) )
 
-	RuiSetInt( rankedScoringTableRui, "eleventhPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 11 ) )
-	RuiSetInt( rankedScoringTableRui, "tenthPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 10 ) )
-	RuiSetInt( rankedScoringTableRui, "fifthPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 5 ) )
-	RuiSetInt( rankedScoringTableRui, "thirdPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 3 ) )
-	RuiSetInt( rankedScoringTableRui, "firstPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 1 ) )
+	// RuiSetInt( rankedScoringTableRui, "eleventhPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 11 ) )
+	// RuiSetInt( rankedScoringTableRui, "tenthPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 10 ) )
+	// RuiSetInt( rankedScoringTableRui, "fifthPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 5 ) )
+	// RuiSetInt( rankedScoringTableRui, "thirdPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 3 ) )
+	// RuiSetInt( rankedScoringTableRui, "firstPlaceKillAssistMultiplier", Ranked_GetPointsPerKillForPlacement( 1 ) )
 
-	int maxKills = Ranked_GetKillsAndAssistsPointCap( 1 ) / Ranked_GetPointsPerKillForPlacement( 1 )
+	// int maxKills = Ranked_GetKillsAndAssistsPointCap( 1 ) / Ranked_GetPointsPerKillForPlacement( 1 )
 
-	RuiSetInt( rankedScoringTableRui, "killAndAssistsCap", maxKills )
+	// RuiSetInt( rankedScoringTableRui, "killAndAssistsCap", maxKills )
 
 }
 
-void function InitRankedScoreBarRuiForDoubleBadge( var rui, int score, int ladderPosition )
+void function InitRankedScoreBarRuiForDoubleBadge( var rui, int score, int ladderPosition ) // TODO: IMPLEMENT
 {
-	for ( int i=0; i<5; i++ )
-	{
-		RuiDestroyNestedIfAlive( rui, "rankedBadgeHandle" + i )
-	}
+	// for ( int i=0; i<5; i++ )
+	// {
+	// 	RuiDestroyNestedIfAlive( rui, "rankedBadgeHandle" + i )
+	// }
 
-	RuiSetBool( rui, "forceDoubleBadge", true )
+	// RuiSetBool( rui, "forceDoubleBadge", true )
 
-	RankedDivisionData currentRank = GetCurrentRankedDivisionFromScore( score )
-	RankedTierData currentDivision = currentRank.tier
+	// RankedDivisionData currentRank = GetCurrentRankedDivisionFromScore( score )
+	// RankedTierData currentDivision = currentRank.tier
 
-	RuiSetGameTime( rui, "animStartTime", RUI_BADGAMETIME )
-	RuiSetInt( rui, "currentDivisionIdx", currentDivision.index )
-	RuiFillInRankedLadderPos( rui, ladderPosition )
+	// RuiSetGameTime( rui, "animStartTime", RUI_BADGAMETIME )
+	// RuiSetInt( rui, "currentDivisionIdx", currentDivision.index )
 
-	//
-	RuiSetImage( rui, "icon0" , currentDivision.icon )
-	RuiSetString( rui, "badgeString0" , currentRank.iconString )
-	RuiSetInt( rui, "badgeScore0", score )
-	CreateNestedRankedRui( rui, currentRank.tier, "rankedBadgeHandle0" )
+	// //
+	// RuiSetImage( rui, "icon0" , currentDivision.icon )
+	// RuiSetString( rui, "emblemText0" , currentRank.emblemText )
+	// RuiSetInt( rui, "badgeScore0", score )
+	// Ranked_FillInRuiEmblemText( rui, currentRank, score, ladderPosition, "0"  )
+	// CreateNestedRankedRui( rui, currentRank.tier, "rankedBadgeHandle0" )
 
-	RuiSetImage( rui, "icon3" , currentDivision.icon )
-	RuiSetString( rui, "badgeString3" , currentRank.iconString )
-	RuiSetInt( rui, "badgeScore3", currentRank.scoreMin )
-	CreateNestedRankedRui( rui, currentRank.tier, "rankedBadgeHandle3" )
+	// RuiSetImage( rui, "icon3" , currentDivision.icon )
+	// RuiSetString( rui, "emblemText3" , currentRank.emblemText )
+	// RuiSetInt( rui, "badgeScore3", currentRank.scoreMin )
+	// Ranked_FillInRuiEmblemText( rui, currentRank, score, ladderPosition, "3"  )
+	// CreateNestedRankedRui( rui, currentRank.tier, "rankedBadgeHandle3" )
 
-	RuiSetInt( rui, "currentScore" , score )
-	RuiSetInt( rui, "startScore" , currentRank.scoreMin )
+	// RuiSetInt( rui, "currentScore" , score )
+	// RuiSetInt( rui, "startScore" , currentRank.scoreMin )
 
-	RankedDivisionData ornull nextRank = GetNextRankedDivisionFromScore( score )
+	// RankedDivisionData ornull nextRank = GetNextRankedDivisionFromScore( score )
 
-	RuiSetBool( rui, "showSingleBadge", nextRank == null )
+	// RuiSetBool( rui, "showSingleBadge", nextRank == null )
 
-	if ( nextRank != null )
-	{
-		expect RankedDivisionData( nextRank )
-		RankedTierData nextDivision = nextRank.tier
+	// if ( nextRank != null )
+	// {
+	// 	expect RankedDivisionData( nextRank )
+	// 	RankedTierData nextDivision = nextRank.tier
 
-		RuiSetBool( rui, "showSingleBadge", nextRank == currentRank )
+	// 	RuiSetBool( rui, "showSingleBadge", nextRank == currentRank )
 
-		RuiSetInt( rui, "endScore" , nextRank.scoreMin )
-		RuiSetString( rui, "badgeString4" , nextRank.iconString  )
-		RuiSetInt( rui, "badgeScore4", nextRank.scoreMin )
-		RuiSetImage( rui, "icon4", nextDivision.icon )
-		RuiSetInt( rui, "forcedNextDivisionIdx", nextDivision.index )
-		CreateNestedRankedRui( rui, nextRank.tier, "rankedBadgeHandle4" )
-	}
+	// 	RuiSetInt( rui, "endScore" , nextRank.scoreMin )
+	// 	RuiSetString( rui, "emblemText4" , nextRank.emblemText  )
+	// 	RuiSetInt( rui, "badgeScore4", nextRank.scoreMin )
+	// 	RuiSetImage( rui, "icon4", nextDivision.icon )
+	// 	RuiSetInt( rui, "forcedNextDivisionIdx", nextDivision.index )
+	// 	Ranked_FillInRuiEmblemText( rui, nextRank, nextRank.scoreMin, ladderPosition, "4"  )
+	// 	CreateNestedRankedRui( rui, nextRank.tier, "rankedBadgeHandle4" )
+	// }
 }
 
-void function InitRankedScoreBarRui( var rui, int score, int ladderPosition )
+void function InitRankedScoreBarRui( var rui, int score, int ladderPosition ) // TODO: IMPLEMENT
 {
-	array<RankedTierData> divisions = Ranked_GetTiers()
-	RankedDivisionData currentRank  = GetCurrentRankedDivisionFromScore( score )
-	RankedTierData currentTier      = currentRank.tier
-	RankedTierData ornull nextTier  = Ranked_GetNextTierData( currentRank.tier )
+	// array<RankedTierData> divisions = Ranked_GetTiers()
+	// RankedDivisionData currentRank  = GetCurrentRankedDivisionFromScore( score )
+	// RankedTierData currentTier      = currentRank.tier
+	// RankedTierData ornull nextTier  = Ranked_GetNextTierData( currentRank.tier )
 
-	array< RankedDivisionData > divisionData = Ranked_GetRankedDivisionDataForTier( currentRank.tier )
+	// array< RankedDivisionData > divisionData = Ranked_GetRankedDivisionDataForTier( currentRank.tier )
 
-	RuiSetGameTime( rui, "animStartTime", RUI_BADGAMETIME )
-	RuiSetInt( rui, "currentDivisionIdx", currentTier.index )
-	RuiFillInRankedLadderPos( rui, ladderPosition )
+	// RuiSetGameTime( rui, "animStartTime", RUI_BADGAMETIME )
+	// RuiSetInt( rui, "currentDivisionIdx", currentTier.index )
+	
 
-	for ( int i=0; i<5; i++ )
-	{
-		RuiDestroyNestedIfAlive( rui, "rankedBadgeHandle" + i )
-	}
+	// for ( int i=0; i<5; i++ )
+	// {
+	// 	RuiDestroyNestedIfAlive( rui, "rankedBadgeHandle" + i )
+	// }
 
-	for ( int i=0; i<divisionData.len(); i++ )
-	{
-		RankedDivisionData data = divisionData[ i ]
-		RuiSetImage( rui, "icon" + i , currentTier.icon )
-		RuiSetString( rui, "badgeString" + i , data.iconString )
-		RuiSetInt( rui, "badgeScore" + i, data.scoreMin )
-		var nestedRuiHandle = CreateNestedRankedRui( rui, data.tier, "rankedBadgeHandle" + i )
-	}
+	// for ( int i=0; i<divisionData.len(); i++ )
+	// {
+	// 	RankedDivisionData data = divisionData[ i ]
+	// 	RuiSetImage( rui, "icon" + i , currentTier.icon )
+	// 	RuiSetInt( rui, "badgeScore" + i, data.scoreMin )
 
-	RuiSetInt( rui, "currentScore" , score )
-	RuiSetInt( rui, "startScore" , divisionData[0].scoreMin )
+	// 	Ranked_FillInRuiEmblemText( rui, currentRank, score, ladderPosition, string(i)  )
+	// 	var nestedRuiHandle = CreateNestedRankedRui( rui, data.tier, "rankedBadgeHandle" + i )
+	// }
 
-	if ( nextTier != null )
-	{
-		expect RankedTierData( nextTier )
-		RankedDivisionData firstRank = Ranked_GetRankedDivisionDataForTier( nextTier )[0]
+	// RuiSetInt( rui, "currentScore" , score )
+	// RuiSetInt( rui, "startScore" , divisionData[0].scoreMin )
 
-		RuiSetInt( rui, "endScore" , firstRank.scoreMin  )
-		RuiSetString( rui, "badgeString4" , firstRank.iconString  )
-		RuiSetInt( rui, "badgeScore4", firstRank.scoreMin )
-		RuiSetImage( rui, "icon4", nextTier.icon )
-		var nestedRuiHandle = CreateNestedRankedRui( rui, firstRank.tier, "rankedBadgeHandle4" )
-	}
+	// if ( nextTier != null )
+	// {
+	// 	expect RankedTierData( nextTier )
+	// 	RankedDivisionData firstRank = Ranked_GetRankedDivisionDataForTier( nextTier )[0]
 
-	RuiSetString( rui, "currentRankString", currentRank.divisionName )
+	// 	RuiSetInt( rui, "endScore" , firstRank.scoreMin  )
+	// 	RuiSetString( rui, "emblemText4" , firstRank.emblemText  )
+	// 	RuiSetInt( rui, "badgeScore4", firstRank.scoreMin )
+	// 	RuiSetImage( rui, "icon4", nextTier.icon )
+	// 	Ranked_FillInRuiEmblemText( rui, firstRank, firstRank.scoreMin, ladderPosition, "4"  )
+	// 	var nestedRuiHandle = CreateNestedRankedRui( rui, firstRank.tier, "rankedBadgeHandle4" )
+	// }
 
-	RuiSetBool( rui, "showSingleBadge", divisionData.len() == 1 )
+	// //
+
+	// RuiSetBool( rui, "showSingleBadge", divisionData.len() == 1 )
 }
 
 void function InitRankedInfoPanel( var panel, array<RankedTierData> tiers )
@@ -238,14 +242,14 @@ void function InitRankedInfoPanel( var panel, array<RankedTierData> tiers )
 		ttd.descText = "#RANKED_REWARD"
 		Hud_SetToolTipData( button, ttd )
 
-		if ( GetCurrentPlaylistVarBool( "ranked_reward_show_button", true ) )
+		if ( GetCurrentPlaylistVarBool( "ranked_reward_show_button", false ) )
 			Hud_Show( button )
 		else
 			Hud_Hide( button )
 
 		int idx = (i+1)
 
-		if ( GetCurrentPlaylistVarBool( "ranked_reward_show_text", false ) )
+		if ( GetCurrentPlaylistVarBool( "ranked_reward_show_text", true ) )
 		{
 			string tierName = string( d.index )
 			string rewardString = GetCurrentPlaylistVarString( "ranked_reward_override_" + tierName + "_" + idx, reward.previewName )

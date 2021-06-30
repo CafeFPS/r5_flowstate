@@ -12,7 +12,7 @@ const bool DEBUG_CHARACTER_SELECT = false
 #endif
 
 const asset BACKGROUND_SMOKE_MODEL = $"mdl/levels_terrain/mp_lobby/mp_character_select_smoke.rmdl" // 1.2
-const asset BACKGROUND_GEO_MODEL = $"mdl/levels_terrain/mp_lobby/mp_character_select_geo.rmdl" // 1.3
+const asset BACKGROUND_GEO_MODEL   = $"mdl/levels_terrain/mp_lobby/mp_character_select_geo.rmdl" // 1.3
 
 #if SERVER
 global function AssignLockStepOrder
@@ -37,29 +37,30 @@ global function ServerCallback_CharacterLockRejected
 global function OnLoadoutButton_RightClick
 global function UpdateCharacterDetailsMenu
 global function GetOtherTeammates
+global function SquadMuteLegendSelectEnabled
 
-const string CAMERA_ENT_NAME = "target_char_sel_camera_new"
-const string CHARACTER_ENT_NAME = "target_char_sel_pilot_new"
-const string BACKGROUND_ENT_NAME = "target_char_sel_bg_new"
-const string LIGHT_KEY_NAME = "char_sel_light_key"
-const string LIGHT_FILL_NAME = "char_sel_light_fill"
-const string LIGHT_RIML_NAME = "char_sel_light_rim_l"
-const string LIGHT_RIMR_NAME = "char_sel_light_rim_r"
+const string CAMERA_ENT_NAME                      = "target_char_sel_camera_new"
+const string CHARACTER_ENT_NAME                   = "target_char_sel_pilot_new"
+const string BACKGROUND_ENT_NAME                  = "target_char_sel_bg_new"
+const string LIGHT_KEY_NAME                       = "char_sel_light_key"
+const string LIGHT_FILL_NAME                      = "char_sel_light_fill"
+const string LIGHT_RIML_NAME                      = "char_sel_light_rim_l"
+const string LIGHT_RIMR_NAME                      = "char_sel_light_rim_r"
 
-const CAMERA_FOV = 35.5
-const CAMERA_TRANSITION_DURATION = 0.25
-const MAIN_DOF_NEAR_START = 7.5
-const MAIN_DOF_NEAR_END = 7.7
-const MAIN_DOF_FAR_START = 225.0
-const MAIN_DOF_FAR_END = 450.0
-const RUI_NAME_PLATE_WIDTH = 262
-const RUI_NAME_PLATE_HEIGHT = 110
-const COLOR_CORRECTION = "materials/correction/menu.raw_hdr"
-const int NUM_CHARACTER_SELECT_BUTTONS = 30
-const int MAX_TEAM_FOCUS_INDEX = 3
-const float READY_ANIM_MIN_DURATION = 4.0
-const int CHAMPION_SQAUD_SMOKE_SKIN_INDEX = 9
-const int CHAMPION_SQAUD_BACKGROUND_SKIN_INDEX = 9
+const CAMERA_FOV                                  = 35.5
+const CAMERA_TRANSITION_DURATION                  = 0.25
+const MAIN_DOF_NEAR_START                         = 7.5
+const MAIN_DOF_NEAR_END                           = 7.7
+const MAIN_DOF_FAR_START                          = 225.0
+const MAIN_DOF_FAR_END                            = 450.0
+const RUI_NAME_PLATE_WIDTH                        = 262
+const RUI_NAME_PLATE_HEIGHT                       = 110
+const COLOR_CORRECTION                            = "materials/correction/menu.raw_hdr"
+const int NUM_CHARACTER_SELECT_BUTTONS            = 30
+const int MAX_TEAM_FOCUS_INDEX                    = 3
+const float READY_ANIM_MIN_DURATION               = 4.0
+const int CHAMPION_SQAUD_SMOKE_SKIN_INDEX         = 9
+const int CHAMPION_SQAUD_BACKGROUND_SKIN_INDEX    = 9
 
 const array<string> CHAMPION_INTRO_VO_LINES = [
 	"diag_ap_ainotify_introchampion_01_01",
@@ -172,19 +173,30 @@ FileLevelStruct& fileLevel
 //  ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝
 
 #if UI
-void function UI_InitCharacterSelectNewMenu()
+void function UI_InitCharacterSelectNewMenu( var newMenuArg )
 {
 	fileForever.menu = GetMenu( "CharacterSelectMenuNew" )
 
 	AddMenuEventHandler( fileForever.menu, eUIEvent.MENU_NAVIGATE_BACK, UI_OnCharacterSelectMenu_NavBack )
 
-	AddMenuFooterOption( fileForever.menu, RIGHT, BUTTON_X, true, "", "", UI_OnLoadoutButton_RightClick ) // console
-	AddMenuFooterOption( fileForever.menu, RIGHT, MOUSE_RIGHT, true, "", "", UI_OnLoadoutButton_RightClick ) // pc
+	AddMenuFooterOption( fileForever.menu, RIGHT, BUTTON_X, true, "", "", UI_OnLoadoutButton_RightClick ) //
+	AddMenuFooterOption( fileForever.menu, RIGHT, MOUSE_RIGHT, true, "", "", UI_OnLoadoutButton_RightClick ) //
+
+	AddMenuFooterOption( fileForever.menu, RIGHT, BUTTON_Y, true, "", "", UI_OnToggleMuteButtonClick, UI_ShouldShowToggleMuteFooter ) //
+	AddMenuFooterOption( fileForever.menu, RIGHT, KEY_F, true, "", "", UI_OnToggleMuteButtonClick, UI_ShouldShowToggleMuteFooter ) //
 
 	AddMenuEventHandler( fileForever.menu, eUIEvent.MENU_CLOSE, void function() {
 		RunClientScript( "OnCharacterSelectNewMenuClosed_RemoveCallbacks" )
 	} )
-	AddMenuFooterOption( fileForever.menu, RIGHT, KEY_ENTER, true, "", "", UI_OnLoadoutButton_Enter )
+
+	#if PC_PROG
+		AddMenuFooterOption( fileForever.menu, RIGHT, KEY_ENTER, true, "", "", UI_OnLoadoutButton_Enter )
+	#endif
+}
+
+bool function UI_ShouldShowToggleMuteFooter()
+{
+	return SquadMuteLegendSelectEnabled()
 }
 
 void function UI_OnLoadoutButton_Enter( var button )
@@ -201,6 +213,12 @@ void function UI_OnLoadoutButton_RightClick( var button )
 {
 	if ( CanRunClientScript() )
 		RunClientScript( "OnLoadoutButton_RightClick" )
+}
+
+void function UI_OnToggleMuteButtonClick( var button )
+{
+	if ( CanRunClientScript() )
+		RunClientScript( "UIToClient_ToggleMute" )
 }
 #endif
 
@@ -230,11 +248,14 @@ void function CharacterSelectNewMenu_Init()
 
 		AddCallback_FullUpdate( Client_FullUpdate )
 		AddCallback_UIScriptReset( Client_UIScriptReset )
+		if ( SquadMuteLegendSelectEnabled() )
+			AddCallback_OnSquadMuteChanged( Client_MuteChanged )
 
 		fileLevel.colorCorrection = ColorCorrection_Register( COLOR_CORRECTION )
 	#endif
 }
 #endif
+
 
 //	 ██████╗ ██████╗ ███████╗███╗   ██╗     ██████╗██╗      ██████╗ ███████╗███████╗
 //	██╔═══██╗██╔══██╗██╔════╝████╗  ██║    ██╔════╝██║     ██╔═══██╗██╔════╝██╔════╝
@@ -251,6 +272,7 @@ void function OpenCharacterSelectNewMenu( bool isBrowseMode = false )
 	fileLevel.lightEntsExist = DoMenuLightsExist()
 	fileLevel.detailsPanelVisible = isBrowseMode
 
+	NotifyCharacterSelectBeginEnd( true )
 	RunUIScript( "UI_RunCharacterSelect", fileLevel.isBrowseMode, fileLevel.menuEntsExist )
 }
 
@@ -272,6 +294,13 @@ void function PanAwayCharacterSelect()
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_LegendPanLeft" )
 
 	wait CHARACTER_SELECT_SCENE_ROTATE_DURATION / 3.0
+
+	NotifyCharacterSelectBeginEnd( false )
+}
+
+void function Client_MuteChanged()
+{
+	UpdateButtonStates()
 }
 
 void function DoSquadCardsPresentation()
@@ -960,8 +989,6 @@ void function ReloadMenu()
 #endif //CLIENT
 
 
-
-
 //	██████╗ ██╗   ██╗████████╗████████╗ ██████╗ ███╗   ██╗     █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗
 //	██╔══██╗██║   ██║╚══██╔══╝╚══██╔══╝██╔═══██╗████╗  ██║    ██╔══██╗██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║
 //	██████╔╝██║   ██║   ██║      ██║   ██║   ██║██╔██╗ ██║    ███████║██║        ██║   ██║██║   ██║██╔██╗ ██║
@@ -993,7 +1020,16 @@ void function OnLoadoutButton_Focused( var button )
 	// Update Scene
 	fileLevel.desiredCharacterOrNull = itemFlav
 	Signal( fileLevel.signalDummy, "UpdateScene" )
+	
+	// todo: reimplement character select models:
+	// this displays nothing.
+	// but like, using actual stgs for actual characters causes even more issues
+	// (bodyModel not found)
 
+	// CreateNewCharacterModel(GetGlobalSettingsAsset( DEFAULT_PILOT_SETTINGS, "bodyModel" ))
+
+
+	
 	// Request Loadout. In browse mode we dont change loadout on focus, only activate
 	//if ( !fileLevel.isBrowseMode )
 	//	RequestSetLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), itemFlav )
@@ -1003,11 +1039,14 @@ void function OnLoadoutButton_Focused( var button )
 
 void function OnLoadoutButton_Activate( var button )
 {
-	if ( Hud_IsLocked( button ) )
+	printt(FUNC_NAME() + " button activated")
+
+	// TODO: like all of this
+	if ( false ) //Hud_IsLocked( button ) )
 		return
 
 	// We aren't in browse mode and it's not our turn to pick
-	if ( !fileLevel.isBrowseMode && GetGlobalNetInt( "characterSelectLockstepIndex" ) != fileLevel.localClientLockstepIndex )
+	if ( false ) //!fileLevel.isBrowseMode && GetGlobalNetInt( "characterSelectLockstepIndex" ) != fileLevel.localClientLockstepIndex )
 		return
 
 	// We already have a character locked
@@ -1026,8 +1065,11 @@ void function OnLoadoutButton_Activate( var button )
 	RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
 
 	// Close the menu if we are in browse mode
-	if ( fileLevel.isBrowseMode )
+	
+	// todo:
+	if ( false ) //fileLevel.isBrowseMode )
 	{
+		printt(FUNC_NAME() + " isBrowseMode")
 		CloseCharacterSelectNewMenu()
 		return
 	}
@@ -1351,21 +1393,6 @@ void function ServerCallback_CharacterLockRejected()
 #endif //CLIENT
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //	██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗    ███████╗ ██████╗███████╗███╗   ██╗███████╗
 //	██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝    ██╔════╝██╔════╝██╔════╝████╗  ██║██╔════╝
 //	██║   ██║██████╔╝██║  ██║███████║   ██║   █████╗      ███████╗██║     █████╗  ██╔██╗ ██║█████╗
@@ -1625,18 +1652,39 @@ void function UpdateButtonStates()
 
 	// Update Footer Text
 	RuiSetBool( fileLevel.buttonHintRui, "showingCharacterDetails", fileLevel.detailsPanelVisible )
-	if ( currentLockStepIndex == fileLevel.localClientLockstepIndex )
+
+	string topString = ""
+	string bottomString = ""
+	if ( currentLockStepIndex >= 0 && currentLockStepIndex < MAX_TEAM_PLAYERS )
 	{
-		if ( localPlayerIsLockedIn )
-			RuiSetString( fileLevel.buttonHintRui, "hintString", "#CHAR_SEL_BUTTON_HINT_CANEL_DETAILS" )
+		if ( SquadMuteLegendSelectEnabled() && !UseSoloModeIntroPresentation() )
+			topString = Localize( IsSquadMuted() ? "#CHAR_SEL_BUTTON_UNMUTE" : "#CHAR_SEL_BUTTON_MUTE" )
+
+		if ( currentLockStepIndex == fileLevel.localClientLockstepIndex )
+		{
+			if ( localPlayerIsLockedIn )
+				bottomString = Localize( "#CHAR_SEL_BUTTON_HINT_CANEL_DETAILS" )
+			else
+				bottomString = Localize( "#CHAR_SEL_BUTTON_HINT_SELECT_DETAILS" )
+		}
 		else
-			RuiSetString( fileLevel.buttonHintRui, "hintString", "#CHAR_SEL_BUTTON_HINT_SELECT_DETAILS" )
+		{
+			bottomString = Localize( "#CHAR_SEL_BUTTON_HINT_DETAILS" )
+		}
 	}
-	else
+	else if ( SquadMuteLegendSelectEnabled() )
 	{
-		RuiSetString( fileLevel.buttonHintRui, "hintString", "#CHAR_SEL_BUTTON_HINT_DETAILS" )
+		if ( !UseSoloModeIntroPresentation() )
+			bottomString = Localize( IsSquadMuted() ? "#CHAR_SEL_BUTTON_UNMUTE" : "#CHAR_SEL_BUTTON_MUTE" )
+		else
+			bottomString = ""
 	}
+
+	string finalString = Localize( "#CHAR_SEL_BUTTON_HINT_N_N", topString, bottomString )
+	RuiSetString( fileLevel.buttonHintRui, "hintString", finalString )
+
 	Hud_SetVisible( fileLevel.buttonHintPanel, currentLockStepIndex >= 0 && currentLockStepIndex < MAX_TEAM_PLAYERS )
+	Hud_SetVisible( fileLevel.buttonHintPanel, true )
 }
 
 void function LocalPlayerPickingSounds()
@@ -1875,24 +1923,6 @@ void function DebugMenuThink()
 }
 
 #endif //CLIENT
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 //  ██╗   ██╗████████╗██╗██╗     ██╗████████╗██╗   ██╗
@@ -2500,4 +2530,7 @@ void function SetCharacterSelectSceneForChampionSquad()
 }
 #endif
 
-
+bool function SquadMuteLegendSelectEnabled()
+{
+	return GetCurrentPlaylistVarBool( "squad_mute_legend_select_enable", true )
+}

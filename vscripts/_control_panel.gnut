@@ -50,7 +50,9 @@ global struct HackPanelAnims
 //////////////////////////////////////////////////////////////////////
 function ControlPanel_Init()
 {
-	PrecacheModel( $"mdl/props/pathfinder_beacon_radar/pathfinder_beacon_radar_animated.rmdl" )
+	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_mu1") // TODO: This asset does not exist in some maps
+		PrecacheModel( $"mdl/communication/terminal_usable_imc_01.rmdl" )
+
 	PrecacheParticleSystem( INCOMING_SPAWN_FX )
 
 	//PrecacheMaterial( $"vgui/hud/control_panel/console_disabled/console_disabled" )
@@ -106,9 +108,9 @@ function GameModeRemovePanel( ent )
 //////////////////////////////////////////////////////////////////////
 void function OnPanelSpawn( entity panel )
 {
-	Assert( panel.GetModelName() == $"mdl/props/pathfinder_beacon_radar/pathfinder_beacon_radar_animated.rmdl" )
+	Assert( panel.GetModelName() == $"mdl/communication/terminal_usable_imc_01.rmdl" )
 
-	thread OnPanelSpawn_Internal( panel )
+	//thread OnPanelSpawn_Internal( panel ) // TODO: FIX
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -343,10 +345,10 @@ function RunPanelUseFunctions( panel, player )
 
 	foreach ( useFuncTable in clone panel.s.useFuncArray )
 	{
-		//if ( useFuncTable.useEnt == null )
-		//	useFuncTable.useFunc( panel, player )
-		//else
-		//	useFuncTable.useFunc( panel, player, useFuncTable.useEnt )
+		if ( useFuncTable.useEnt == null )
+			useFuncTable.useFunc( panel, player )
+		else
+			useFuncTable.useFunc( panel, player, useFuncTable.useEnt )
 	}
 }
 
@@ -371,22 +373,19 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 
 	local action =
 	{
-		playerAnimation1pStart = "ptpov_pathfinder_antenna_hack_start"
-		playerAnimation1pIdle = "ptpov_pathfinder_antenna_hack_mid"
-		playerAnimation1pEnd = "ptpov_pathfinder_antenna_hack_end"
+		playerAnimation1pStart = "ptpov_data_knife_console_leech_start"
+		playerAnimation1pIdle = "ptpov_data_knife_console_leech_idle"
+		playerAnimation1pEnd = "ptpov_data_knife_console_leech_end"
 
-		playerAnimation3pStart = "mp_pt_pathfinder_antenna_hack_start"
-		playerAnimation3pIdle = "mp_pt_pathfinder_antenna_hack_mid"
-		playerAnimation3pEnd = "mp_pt_pathfinder_antenna_hack_end"
+		playerAnimation3pStart = "pt_data_knife_console_leech_start"
+		playerAnimation3pIdle = "pt_data_knife_console_leech_idle"
+		playerAnimation3pEnd = "pt_data_knife_console_leech_end"
 
-		panelAnimation3pStart = "antenna_pathfinder_antenna_hack_start"
-		panelAnimation3pIdle = "antenna_pathfinder_antenna_hack_mid"
-		panelAnimation3pEnd = "antenna_pathfinder_antenna_hack_end"
+		panelAnimation3pStart = "tm_data_knife_console_leech_start"
+		panelAnimation3pIdle = "tm_data_knife_console_leech_idle"
+		panelAnimation3pEnd = "tm_data_knife_console_leech_end"
 
 		direction = Vector( -1, 0, 0 )
-		
-		WaittillAnimDone = panel
-		WaittillAnimDone = player
 	}
 
 	#if HAS_PANEL_HIGHLIGHT
@@ -415,9 +414,9 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 	//
 	if ( panel.s.remoteTurret )
 	{
-		action.playerAnimation1pStart = "ptpov_pathfinder_antenna_hack_start"
-		action.playerAnimation3pStart = "mp_pt_pathfinder_antenna_hack_start"
-		action.panelAnimation3pStart = "antenna_pathfinder_antenna_hack_start"
+		action.playerAnimation1pStart = "ptpov_data_knife_console_leech_remoteturret_start"
+		action.playerAnimation3pStart = "pt_data_knife_console_leech_remoteturret_start"
+		action.panelAnimation3pStart = "tm_data_knife_console_leech_remoteturret_start"
 
 		e.animViewLerpoutTime = 0.0
 		e.doRequireUseButtonHeld = false
@@ -535,7 +534,7 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 
 	local leechTime = panel.s.leechTimeNormal
 
-	if ( PlayerHasPassive( player, ePassives.PAS_PATHFINDER ) )
+	if ( PlayerHasPassive( player, ePassives.PAS_FAST_HACK ) )
 		leechTime = panel.s.leechTimeFast
 
 	local totalTime = leechTime + player.GetSequenceDuration( action.playerAnimation3pStart )
@@ -572,7 +571,6 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 	}
 
 	waitthread ControlPanelFlipExitAnimation( player, panel, action, e )
-
 }
 
 function WaitForEndLeechOrStoppedUse( player, leechTime, e, panel )
@@ -603,7 +601,6 @@ function ControlPanelFlipAnimation( entity panel, entity player, action, e )
 	playerSequence.thirdPersonAnimIdle = expect string ( action.playerAnimation3pIdle )
 	playerSequence.firstPersonAnim = expect string ( action.playerAnimation1pStart )
 	playerSequence.firstPersonAnimIdle = expect string ( action.playerAnimation1pIdle )
-
 	if ( IntroPreviewOn() )
 		playerSequence.viewConeFunction = ControlPanelFlipViewCone
 
@@ -659,7 +656,6 @@ function ControlPanelFlipExitAnimation( entity player, entity panel, action, e )
 	playerSequence.firstPersonAnim = expect string ( action.playerAnimation1pEnd )
 	panelSequence.thirdPersonAnim = expect string ( action.panelAnimation3pEnd )
 
-
 	thread FirstPersonSequence( panelSequence, panel )
 	waitthread FirstPersonSequence( playerSequence, player, panel )
 }
@@ -706,7 +702,7 @@ function AddControlPanelUseFuncTable( panel, Table )
 	// a table that contains
 	//1. a function to be called when the control panel is used
 	//2. an entity that the function refers to, e.g. the turret to be created
-	panel.s.useFuncArray.append( Table )
+	//panel.s.useFuncArray.append( Table ) // TODO: investigate where this belongs.
 }
 
 function SetControlPanelPrompts( ent, func )

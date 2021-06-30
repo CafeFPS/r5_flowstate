@@ -55,6 +55,9 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "SCB_WeaponInspectHint" )
 	Remote_RegisterClientFunction( "SCB_UpdatePlayerWeaponReactiveEffects", "entity", "int", 0, eReactiveEffectUpdateType.len() )
 
+	bool isOptInServer = Dev_CommandLineHasParm( "-optinserver" )
+	RegisterNetworkedVariable( "isOptInServer", SNDC_GLOBAL, SNVT_BOOL, isOptInServer )
+
 	// SHOULD PROBABLY BE CODE
 	RegisterServerVar( "gameStateChangeTime", null )
 	RegisterServerVar( "gameState", -1 )
@@ -129,6 +132,13 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction( "ServerCallback_AddWinningSquadData", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
 			Remote_RegisterClientFunction( "ServerCallback_ShowWinningSquadSequence" )
 
+			RegisterNetworkedVariable( "rageMeter", SNDC_PLAYER_EXCLUSIVE, SNVT_FLOAT_RANGE, 0.0, 0.0, 100.0 )
+			RegisterNetworkedVariable( "hasNomadOnTeam", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
+			RegisterNetworkedVariable( "nomadScrapCount", SNDC_GLOBAL, SNVT_INT, -1 )
+			RegisterNetworkedVariable( "focalTrap", SNDC_PLAYER_EXCLUSIVE, SNVT_ENTITY )
+			RegisterNetworkedVariable( "coverFireMeter", SNDC_PLAYER_EXCLUSIVE, SNVT_FLOAT_RANGE, 0.0, 0.0, 100.0 )
+			RegisterNetworkedVariable( "coverFireLocked", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
+
 			RegisterNetworkedVariable( "gladCardPlayer", SNDC_PLAYER_EXCLUSIVE, SNVT_ENTITY )
 
 			Remote_RegisterClientFunction( "ServerCallback_DisplayWaitingForRespawn", "entity", "float", 0.0, 5000.0, 32, "float", 0.0, 5000.0, 32 )
@@ -142,13 +152,19 @@ void function RemoteFunctions_Init_Begin()
 			RegisterNetworkedVariable( "playerInPlane", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 			RegisterNetworkedVariable( "freefallActive", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 
+			RegisterNetworkedVariable( "canGroundEmote", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, true )
 			RegisterNetworkedVariable( "isEmoting", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
+			RegisterNetworkedVariable( "isOnEmoteCooldown", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 
 			RegisterNetworkedVariable( "inventoryEnabled", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, true )
 
 			RegisterNetworkedVariable( "pingEnabled", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, true )
 
-			RegisterNetworkedVariable( "kills", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
+			#if MP_PVEMODE
+			RegisterNetworkedVariable( "kills", SNDC_PLAYER_GLOBAL, SNVT_BIG_INT, 0 )
+			#else // !MP_PVEMODE
+				RegisterNetworkedVariable( "kills", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
+			#endif // MP_PVEMODE
 			RegisterNetworkedVariable( "isHealing", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 			RegisterNetworkedVariable( "healingKitTypeCurrentlyBeingUsed", SNDC_PLAYER_GLOBAL, SNVT_INT, -1 )
 			RegisterNetworkedVariable( "isReceivingFirstAid", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
@@ -183,6 +199,7 @@ void function RemoteFunctions_Init_Begin()
 			RegisterNetworkedVariable( "skydiveFollowPlayer", SNDC_PLAYER_EXCLUSIVE, SNVT_ENTITY )
 
 			Remote_RegisterClientFunction( "ServerCallback_PlayerBootsOnGround" )
+			Remote_RegisterClientFunction( "ServerCallback_RefreshDeathBoxHighlight" )
 
 			Remote_RegisterUIFunction( "ServerCallback_OpenSurvivalExitMenu", "bool" )
 			Remote_RegisterUIFunction( "ServerToUI_CharacterLockRejected" )
@@ -214,7 +231,7 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction( "ServerCallback_DeadHudClearDamageHistory" )
 			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_SURVIVAL_TEMPHACK_InfoCord_UpdateTeammateData" )
 
-
+			RegisterNetworkedVariable( "playerObservedCount", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, 0 )
 
 			#if CLIENT
 				CLSurvival_RegisterNetworkFunctions()
@@ -256,7 +273,6 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction( "ServerCallback_DataKnifeCancelLeech" )
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_ControlPanelRefresh" )
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_TurretRefresh" )
-
 	Remote_RegisterClientFunction( "ServerCallback_TitanDisembark" ) // plays a line of dialog and calls "cockpit.StartDisembark()", and does tonemapping update, hides crosshair and names
 	Remote_RegisterClientFunction( "ServerCallback_OnEntityKilled", "entity", "entity", "int", INT_MIN, INT_MAX, "int", -1, eDamageSourceId.len() ) // handles obit and death recap
 	Remote_RegisterClientFunction( "ServerCallback_OnEnemyDowned", "entity", "entity", "int", INT_MIN, INT_MAX, "int", -1, eDamageSourceId.len() ) // handles obit
@@ -264,12 +280,11 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_PlayerConnectedOrDisconnected" )
 	Remote_RegisterUIFunction( "SCBUI_PlayerConnectedOrDisconnected", "bool" )
 	Remote_RegisterClientFunction( "ServerCallback_PlayerChangedTeams", "entity", "int", TEAM_INVALID, 126, "int", TEAM_INVALID, 126 ) // todo(dw): verify assumption that there will be no more than 125 teams
-	Remote_RegisterClientFunction( "ServerCallback_GuidedMissileDestroyed" )
 
 	// IMPORTANT BUT MAYBE FINE AS A REMOTE CALL
 	//Remote_RegisterUntypedFunction_deprecated( "ServerCallback_ReplacementTitanSpawnpoint" )
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_TitanTookDamage" ) // should be converted into a code callback... similar to NotifyDidDamage
-	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_PlayerTookDamage" ) // should be converted into a code callback... similar to NotifyDidDamage
+	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_PilotTookDamage" ) // should be converted into a code callback... similar to NotifyDidDamage
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_ScreenShake" )
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_UpdateOverheadIconForNPC" )
 

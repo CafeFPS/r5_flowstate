@@ -1,0 +1,842 @@
+//=========================================================
+//	sh_ranked.gnut
+//=========================================================
+
+global function Sh_Ranked_Init
+global function GetCurrentRankedDivisionFromScore
+global function GetNextRankedDivisionFromScore
+global function GetPreviousRankedDivisionFromScore
+global function GetCurrentRankFromScore
+global function GetNextRankFromScore
+global function GetPreviousRankFromScore
+global function GetPlayerRankScore
+global function IsRankedInSeason
+global function GetRankedPersistenceData
+
+global function Ranked_GetDivisions
+global function Ranked_GetCostForEntry
+global function Ranked_GetPointsForKills
+global function Ranked_GetKillScoreCap
+global function Ranked_GetPointsForPlacement
+global function Ranked_GetPenaltyPointsForAbandon
+global function Ranked_GetIconForRank
+global function Ranked_GetRankedDataForDivision
+global function Ranked_GetNextDivisionData
+global function Ranked_GetPrevDivisionData
+global function Ranked_GetLadderPosition
+global function Ranked_ShouldShowLadderPosition
+
+#if CLIENT || UI
+global function PopulateRuiWithRankedBadgeDetails
+global function CreateNestedRankedRui
+global function RuiFillInRankedLadderPos
+#endif
+
+global const RANKED_LEVEL_REQUIREMENT = ( 10 - 1 ) //
+global const RANKED_MAX_KILL_SCORE = 5
+
+global const RANKED_PLACEMENT_TOP10_SCORE = 2
+global const RANKED_PLACEMENT_TOP5_SCORE = 4
+global const RANKED_PLACEMENT_TOP3_SCORE = 7
+global const RANKED_PLACEMENT_WINNER_SCORE = 12
+
+global const RANKED_RESET_DIVISION_COUNT = 6
+global const RANKED_NUM_ABANDON_FORGIVENESS_GAMES = 3
+
+global const RANKED_KILLCHILL_KILL = 1
+global const RANKED_KILLCHILL_CHILL = 2
+
+global const RANKED_INVALID_RANK_SCORE = -1
+global const RANKED_INVALID_LADDER_POSITION = -1
+
+
+#if CLIENT
+global function IsRankedGame
+global function Ranked_IsPlayerAbandoning
+#endif
+
+#if SERVER
+#endif
+
+#if CLIENT
+global function ShRanked_RegisterNetworkFunctions
+
+#if R5DEV
+global function SetRankedIcon
+#endif
+
+#endif
+
+#if UI
+global function IsRankedPlaylist
+global function Ranked_SetupMenuGladCard
+global function Ranked_GetMatchmakingDelayFromCommunityUserInfo
+global function Ranked_GetUIPlayerMatchmakingDelay
+global function Ranked_GetMaxPartyMatchmakingDelay
+global function Ranked_EarliestRankedPeriodWithRewardsNotAcknowledged
+
+#endif
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+const int RANKED_FORGIVENESS_LIMIT = 3
+
+global enum emblemDisplayMode
+{
+	DISPLAY_DIVISION,
+	DISPLAY_RP,
+	DISPLAY_LADDER_POSITION,
+	NONE,
+}
+global struct RankedReward
+{
+	string previewName
+	bool   previewIconShowBox
+	asset  previewIcon
+	asset  previewImage
+	asset  rewardAsset
+}
+
+global struct RankedTierData
+{
+	string              name
+	int                 scoreMin
+	int                 index
+	asset               icon
+	asset               iconRuiAsset
+	asset               bgImage
+	asset               levelUpRuiAsset
+	int                 entryCost = 9999999
+	array<RankedReward> rewards
+}
+
+global struct RankedDivisionData
+{
+	string          divisionName
+	string          emblemText
+	RankedTierData& tier
+	int             scoreMin
+	int             index
+	int            emblemDisplayMode = emblemDisplayMode.DISPLAY_DIVISION
+}
+
+global struct RankedPlacementScoreStruct
+{
+	int placementPosition
+	int placementPoints
+	int pointsPerKill
+	int pointsPerAssist
+	int sumOfKillsAndAssistsPointCap
+
+}
+
+global struct RankedData
+{
+	string          divisionName
+	string          iconString
+	RankedTierData& tier
+	int             scoreMin
+	int             index
+	bool            showLadderPosition
+}
+
+global struct RankedPostGameScoringStruct
+{
+	bool wasAbandoned
+	bool lossForgiveness
+	int  kills
+	int  killScore
+	int  placement
+	int  placementScore
+	int  entryCost
+	int  penaltyPointsForAbandoning
+	int  tierDerankingProtectionAdjustment
+	int  lossProtectionAdjustment
+	int  currentScore
+	int  previousScore
+}
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+struct
+{
+	bool                          initialized = false
+	array<RankedTierData>         rankedTiers
+	array<RankedData>             rankedData
+	array<RankedDivisionData>     rankedDivisions
+	table< string, array< RankedDivisionData > > historicalRankedDivisions
+
+	RankedDivisionData& topRankedDivisionData
+	array< RankedPlacementScoreStruct > placementScoringData
+
+	#if CLIENT
+		table<EHI, int> playerToMaxTeamSizeThisGameTable
+	#endif
+
+	#if SERVER
+
+	#endif
+
+} file
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+void function Sh_Ranked_Init()
+{
+	if ( !file.initialized )
+	{
+		AddCallback_OnItemFlavorRegistered( eItemType.calevent_rankedperiod, OnRankedPeriodRegistered )
+		file.initialized = true
+	}
+
+
+	#if SERVER
+	#endif
+
+	#if CLIENT
+		if ( !IsRankedGame() )
+			return
+
+		#if SERVER
+		#endif
+
+		#if CLIENT
+			AddCallback_OnScoreboardCreated( OnScoreboardCreated )
+			AddCreateCallback( "player", Ranked_OnPlayerCreated )
+		#endif
+
+	#endif
+}
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+void function OnRankedPeriodRegistered( ItemFlavor rp )
+{
+	file.rankedData.clear()
+	file.rankedTiers.clear()
+
+	foreach ( var tierBlock in IterateSettingsAssetArray( ItemFlavor_GetAsset( rp ), "tiers" ) )
+	{
+		RankedTierData tier
+		tier.name = GetSettingsBlockString( tierBlock, "name" )
+		tier.entryCost = GetSettingsBlockInt( tierBlock, "entryCost" )
+		tier.icon = GetSettingsBlockAsset( tierBlock, "icon" )
+		tier.bgImage = GetSettingsBlockAsset( tierBlock, "bgImage" )
+		tier.levelUpRuiAsset = GetSettingsBlockStringAsAsset( tierBlock, "levelUpRuiAsset" )
+		tier.iconRuiAsset = GetSettingsBlockStringAsAsset( tierBlock, "iconRuiAsset" )
+
+		tier.scoreMin = 99999999
+		foreach ( var divBlock in IterateSettingsArray( GetSettingsBlockArray( tierBlock, "divisions" ) ) )
+		{
+			RankedData data
+			data.divisionName = GetSettingsBlockString( divBlock, "name" )
+			data.iconString = GetSettingsBlockString( divBlock, "iconString" )
+			data.scoreMin = GetSettingsBlockInt( divBlock, "scoreMin" )
+			data.showLadderPosition = GetSettingsBlockBool( divBlock, "shouldShowLadderPos" )
+			data.tier = tier
+
+			if ( data.scoreMin < tier.scoreMin )
+				tier.scoreMin = data.scoreMin
+
+			file.rankedData.append( data )
+		}
+
+		foreach ( var rewardBlock in IterateSettingsArray( GetSettingsBlockArray( tierBlock, "rewards" ) ) )
+		{
+			RankedReward data
+			data.previewName = GetSettingsBlockString( rewardBlock, "previewName" )
+			data.previewIcon = GetSettingsBlockAsset( rewardBlock, "previewIcon" )
+			data.previewIconShowBox = GetSettingsBlockBool( rewardBlock, "previewIconShowBox" )
+			data.previewImage = GetSettingsBlockAsset( rewardBlock, "previewImage" )
+			data.rewardAsset = GetSettingsBlockAsset( rewardBlock, "flavor" )
+
+			tier.rewards.append( data )
+		}
+
+		tier.index = file.rankedTiers.len()
+
+		file.rankedTiers.append( tier )
+	}
+
+	file.rankedData.sort( CompareRank )
+	for ( int i = 0; i < file.rankedData.len(); i++ )
+	{
+		RankedData data = file.rankedData[i]
+		data.index = i
+	}
+}
+
+#if CLIENT
+void function ShRanked_RegisterNetworkFunctions()
+{
+	RegisterNetworkedVariableChangeCallback_int( "currentRankedScore", OnRankedScoreChanged )
+	RegisterNetworkedVariableChangeCallback_int( "currentRankedLadderPosition", OnRankedLadderPositionChanged )
+}
+#endif
+
+int function CompareRankedDivision( RankedDivisionData a, RankedDivisionData b )
+{
+	if ( a == b )
+		return 0
+
+	//
+	if ( a.scoreMin != b.scoreMin )
+		return a.scoreMin - b.scoreMin
+
+	Assert( false, "Cannot have ranks with the same scoreMin " + a.divisionName + " " + b.divisionName )
+
+	unreachable
+}
+
+RankedDivisionData function GetCurrentRankedDivisionFromScore( int score )
+{
+	if ( score <= 0  )
+	{
+		Assert( file.rankedDivisions.len() > 0 )
+		Assert( file.rankedDivisions[ 0 ].scoreMin == 0 )
+		return file.rankedDivisions[ 0 ]
+	}
+
+	bool foundRank = false
+	RankedDivisionData data
+
+	for ( int i = 0; i < file.rankedDivisions.len(); i++ )
+	{
+		if ( file.rankedDivisions[i].scoreMin > score )
+			break
+
+		foundRank = true
+
+		data = file.rankedDivisions[ i ]
+	}
+
+	Assert( foundRank )
+	return data
+}
+
+RankedDivisionData ornull function GetNextRankedDivisionFromScore( int score )
+{
+	bool foundRank = false
+	RankedDivisionData data
+
+	int i = 0
+	for ( ; i < file.rankedDivisions.len(); i++ )
+	{
+		if ( file.rankedDivisions[i].scoreMin > score )
+			break
+
+		foundRank = true
+
+		data = file.rankedDivisions[ i ]
+	}
+
+	if ( i >= file.rankedDivisions.len() )
+	{
+		return null
+	}
+
+	data = file.rankedDivisions[ i ]
+
+	Assert( foundRank )
+	return data
+}
+
+RankedDivisionData ornull function GetPreviousRankedDivisionFromScore( int score )
+{
+	bool foundRank = false
+	RankedDivisionData data
+
+	int i = file.rankedDivisions.len() - 1
+	for ( ; i > 0; --i )
+	{
+		if ( file.rankedDivisions[i].scoreMin < score )
+			break
+
+		foundRank = true
+
+		data = file.rankedDivisions[ i ]
+	}
+
+	if ( i == 0 )
+	{
+		return null
+	}
+
+	data = file.rankedDivisions[ i ]
+
+	Assert( foundRank )
+	return data
+}
+
+int function CompareRank( RankedData a, RankedData b )
+{
+	if ( a == b )
+		return 0
+
+	//
+	if ( a.scoreMin != b.scoreMin )
+		return a.scoreMin - b.scoreMin
+
+	Assert( false, "Cannot have ranks with the same scoreMin " + a.divisionName + " " + b.divisionName )
+
+	unreachable
+}
+
+RankedData function GetCurrentRankFromScore( int score )
+{
+	bool foundRank = false
+	RankedData data
+
+	for ( int i = 0; i < file.rankedData.len(); i++ )
+	{
+		if ( file.rankedData[i].scoreMin > score )
+			break
+
+		foundRank = true
+
+		data = file.rankedData[ i ]
+	}
+
+	Assert( foundRank )
+	return data
+}
+
+RankedData ornull function GetNextRankFromScore( int score )
+{
+	bool foundRank = false
+	RankedData data
+
+	int i = 0
+	for ( ; i < file.rankedData.len(); i++ )
+	{
+		if ( file.rankedData[i].scoreMin > score )
+			break
+
+		foundRank = true
+
+		data = file.rankedData[ i ]
+	}
+
+	if ( i >= file.rankedData.len() )
+	{
+		return null
+	}
+
+	data = file.rankedData[ i ]
+
+	Assert( foundRank )
+	return data
+}
+
+RankedData ornull function GetPreviousRankFromScore( int score )
+{
+	bool foundRank = false
+	RankedData data
+
+	int i = file.rankedData.len() - 1
+	for ( ; i > 0; --i )
+	{
+		if ( file.rankedData[i].scoreMin < score )
+			break
+
+		foundRank = true
+
+		data = file.rankedData[ i ]
+	}
+
+	if ( i == 0 )
+	{
+		return null
+	}
+
+	data = file.rankedData[ i ]
+
+	Assert( foundRank )
+	return data
+}
+
+int function Ranked_GetCostForEntry( RankedData currentRank )
+{
+	return currentRank.tier.entryCost
+}
+
+int function Ranked_GetPointsForKills( RankedData currentRank, int kills )
+{
+	int maxScore = Ranked_GetKillScoreCap()
+	return minint( maxScore, kills )
+}
+
+int function Ranked_GetKillScoreCap()
+{
+	return GetCurrentPlaylistVarInt( "ranked_kills_score_cap", RANKED_MAX_KILL_SCORE )
+}
+
+int function Ranked_GetPointsForPlacement( RankedData currentRank, int placement )
+{
+	if ( placement == 0 )
+	{
+		return 0
+	}
+
+
+	if ( placement > 10 ) //
+	{
+		return 0
+	}
+	else if ( placement > 5 ) //
+	{
+		return GetCurrentPlaylistVarInt( "ranked_placement_top10_score", RANKED_PLACEMENT_TOP10_SCORE )
+	}
+	else if ( placement > 3 ) //
+	{
+		return GetCurrentPlaylistVarInt( "ranked_placement_top5_score", RANKED_PLACEMENT_TOP5_SCORE )
+	}
+	else if ( placement > 1 ) //
+	{
+		return GetCurrentPlaylistVarInt( "ranked_placement_top3_score", RANKED_PLACEMENT_TOP3_SCORE )
+	}
+	else //
+	{
+		return GetCurrentPlaylistVarInt( "ranked_placement_winner_score", RANKED_PLACEMENT_WINNER_SCORE )
+	}
+
+	unreachable
+}
+
+int function Ranked_GetPenaltyPointsForAbandon( RankedData currentRank )
+{
+	return Ranked_GetCostForEntry( currentRank )
+}
+
+int function GetPlayerRankScore( entity player )
+{
+#if UI
+	if ( !IsFullyConnected() )
+		return 0
+#endif
+
+	#if CLIENT
+		if ( !IsConnected() )
+			return 0
+	#endif
+
+	var score = GetRankedPersistenceData( player, "currentRankedScore" )
+
+	#if CLIENT
+		score = player.GetPlayerNetInt( "currentRankedScore" )
+	#endif
+
+	if ( score == null )
+		return 0
+
+	return expect int( score )
+}
+
+#if CLIENT
+bool function IsRankedGame()
+{
+	return GetCurrentPlaylistVarBool( "is_ranked_game", false )
+}
+
+bool function Ranked_IsPlayerAbandoning( entity player )
+{
+	if ( !IsRankedGame() )
+		return false
+
+	if ( !GetCurrentPlaylistVarBool( "ranked_match_abandon_penalty", true ) )
+		return false
+
+	if ( expect bool ( GetRankedPersistenceData( player, "lastGameRankedForgiveness" )  ) )
+		return false
+
+	if ( PlayerMatchState_GetFor( player ) >= ePlayerMatchState.NORMAL )
+	{
+		if ( GetGameState() >= eGameState.WinnerDetermined )
+			return false
+
+		if ( player.GetPlayerNetInt( "respawnStatus" ) == eRespawnStatus.PICKUP_DESTROYED || player.GetPlayerNetInt( "respawnStatus" ) == eRespawnStatus.SQUAD_ELIMINATED )
+			return false
+
+		if ( (ToEHI( player ) in file.playerToMaxTeamSizeThisGameTable) && file.playerToMaxTeamSizeThisGameTable[ ToEHI( player ) ] < GetMaxTeamPlayers() )
+			return false
+	}
+
+	return true
+}
+
+#endif // CLIENT
+
+var function GetRankedPersistenceData( entity player, string persistenceField )
+{
+	string ornull currentSeasonRefOrNull = GetCurrentStatRankedPeriodRefOrNull()
+
+	if ( currentSeasonRefOrNull == null )
+		return null
+
+	expect string( currentSeasonRefOrNull )
+
+	#if R5DEV
+		if ( DEV_ShouldIgnorePersistence() )
+			return null
+	#endif
+
+	return player.GetPersistentVar( "allRankedData[" + currentSeasonRefOrNull + "]." + persistenceField )
+}
+
+#if SERVER
+#endif
+
+#if CLIENT
+void function OnRankedScoreChanged( entity player, int old, int new, bool actuallyChanged )
+{
+	EHI playerEHI         = ToEHI( player )
+	EHIScriptStruct ehiss = GetEHIScriptStruct( playerEHI )
+
+	if ( actuallyChanged )
+	{
+		ehiss.rankScore = maxint( 0, new )
+		ehiss.rankedLadderPosition = Ranked_GetLadderPosition( player )
+	}
+
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	SetRankedIcon( new, ehiss.rankedLadderPosition )
+}
+
+void function SetRankedIcon( int score, int ladderPos )
+{
+	var rui = ClGameState_GetRui()
+
+	if ( rui == null )
+	{
+		printt( "SetRankedIcon failed - gamestate rui not ready" )
+		return
+	}
+
+	if ( score < 0 )
+		return
+
+	RankedData data = GetCurrentRankFromScore( score )
+
+	RuiSetBool( rui, "showRanked", IsRankedGame() )
+	PopulateRuiWithRankedBadgeDetails( rui, score, ladderPos )
+}
+#endif
+
+#if UI
+bool function IsRankedPlaylist( string playlist )
+{
+	return GetPlaylistVarBool( playlist, "is_ranked_game", false )
+}
+#endif
+
+bool function IsRankedInSeason()
+{
+	string ornull currentSeasonRefOrNull = GetCurrentStatRankedPeriodRefOrNull()
+
+	if ( currentSeasonRefOrNull == null )
+		return false
+
+	return true
+}
+
+#if CLIENT
+void function OnScoreboardCreated()
+{
+	int score     = 0
+	int ladderPos = 999
+	if ( GetLocalViewPlayer() != null )
+	{
+		score = GetPlayerRankScore( GetLocalViewPlayer() )
+		ladderPos = Ranked_GetLadderPosition( GetLocalViewPlayer() )
+	}
+	SetRankedIcon( score, ladderPos )
+}
+#endif
+
+asset function Ranked_GetIconForRank( RankedData data )
+{
+	return data.tier.icon
+}
+
+array<RankedTierData> function Ranked_GetDivisions()
+{
+	return file.rankedTiers
+}
+
+RankedTierData ornull function Ranked_GetPrevDivisionData( RankedTierData data )
+{
+	if ( data.index - 1 >= 0 )
+		return file.rankedTiers[ data.index - 1 ]
+
+	return null
+}
+
+RankedTierData ornull function Ranked_GetNextDivisionData( RankedTierData data )
+{
+	if ( data.index + 1 < file.rankedTiers.len() )
+		return file.rankedTiers[ data.index + 1 ]
+
+	return null
+}
+
+array< RankedData > function Ranked_GetRankedDataForDivision( RankedTierData division )
+{
+	array< RankedData > data
+
+	for ( int i = 0; i < file.rankedData.len(); i++ )
+	{
+		if ( file.rankedData[ i ].tier == division )
+			data.append( file.rankedData[ i ] )
+	}
+
+	return data
+}
+
+int function Ranked_GetLadderPosition( entity player )
+{
+	int score       = GetPlayerRankScore( player )
+	RankedData data = GetCurrentRankFromScore( score )
+
+	if ( !GetCurrentPlaylistVarBool( "ranked_show_ladder_position", false ) )
+		return score
+
+	return 12345
+}
+
+bool function Ranked_ShouldShowLadderPosition( RankedData currentRank )
+{
+	return currentRank.showLadderPosition
+}
+
+
+
+#if UI
+void function Ranked_SetupMenuGladCard( entity player )
+{
+	int rankShouldShow = IsRankedPlaylist( Lobby_GetSelectedPlaylist() ) ? 1 : 0
+	SendMenuGladCardPreviewCommand( eGladCardPreviewCommandType.RANKED_SHOULD_SHOW, rankShouldShow, null )
+	SendMenuGladCardPreviewCommand( eGladCardPreviewCommandType.RANKED_DATA, Ranked_GetLadderPosition( player ), null, GetPlayerRankScore( player ) )
+}
+
+int function Ranked_GetMatchmakingDelayFromCommunityUserInfo( CommunityUserInfo userInfo )
+{
+	return userInfo.banSeconds
+}
+
+int function Ranked_GetUIPlayerMatchmakingDelay()
+{
+	CommunityUserInfo ornull userInfo = GetUserInfo( GetPlayerHardware(), GetPlayerUID() )
+	if ( userInfo == null )
+		return 0
+
+	expect CommunityUserInfo( userInfo  )
+
+	return Ranked_GetMatchmakingDelayFromCommunityUserInfo( userInfo )
+}
+
+int function Ranked_GetMaxPartyMatchmakingDelay()
+{
+	Party party    = GetParty()
+	int currentMax = -1
+
+	foreach ( member in party.members )
+	{
+		CommunityUserInfo ornull userInfoOrNull = GetUserInfo( member.hardware, member.uid )
+
+		if ( userInfoOrNull != null )
+		{
+			CommunityUserInfo userInfo = expect CommunityUserInfo(userInfoOrNull)
+
+			int delay = Ranked_GetMatchmakingDelayFromCommunityUserInfo( userInfo )
+
+			printt( "Party member: " + member.uid + " delay: " + delay )
+
+			if ( delay > currentMax )
+			{
+				currentMax = delay
+			}
+		}
+	}
+
+	return currentMax
+}
+
+string function Ranked_EarliestRankedPeriodWithRewardsNotAcknowledged()
+{
+	return ""
+}
+#endif
+
+#if CLIENT
+void function Ranked_OnPlayerCreated( entity player )
+{
+	if ( !(ToEHI ( player ) in file.playerToMaxTeamSizeThisGameTable) )
+		file.playerToMaxTeamSizeThisGameTable[ ToEHI( player )  ] <- 0
+
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
+
+	foreach( teamPlayer in teamPlayers )
+	{
+		if ( !(ToEHI( teamPlayer ) in file.playerToMaxTeamSizeThisGameTable) )
+			continue
+
+		if ( file.playerToMaxTeamSizeThisGameTable[ ToEHI( teamPlayer ) ] < teamPlayers.len() )
+			file.playerToMaxTeamSizeThisGameTable[ ToEHI( teamPlayer ) ] = teamPlayers.len()
+	}
+}
+#endif
+
+
+#if CLIENT || UI
+void function PopulateRuiWithRankedBadgeDetails( var rui, int rankScore, int ladderPosition, bool isNested = false )
+{
+	RankedData currentRank     = GetCurrentRankFromScore( rankScore )
+	RankedTierData currentTier = currentRank.tier
+	RuiSetImage( rui, "rankedIcon", currentTier.icon )
+	RuiSetInt( rui, "rankedIconState", currentTier.index )
+	RuiSetString( rui, "rankedIconString", currentRank.iconString )
+
+	RuiFillInRankedLadderPos( rui, ladderPosition )
+	RuiSetBool( rui, "rankedShowLadderPosition", Ranked_ShouldShowLadderPosition( currentRank ) )
+
+	if ( !isNested )
+	{
+		RuiDestroyNestedIfAlive( rui, "rankedBadgeHandle" )
+		CreateNestedRankedRui( rui, currentRank.tier )
+	}
+}
+
+var function CreateNestedRankedRui( var pRui, RankedTierData tier, string varName = "rankedBadgeHandle" )
+{
+	var rui = RuiCreateNested( pRui, varName, tier.iconRuiAsset )
+
+	PopulateRuiWithRankedBadgeDetails( rui, tier.scoreMin, 0, true )
+
+	return rui
+}
+
+void function RuiFillInRankedLadderPos( var rui, int ladderPosition )
+{
+	bool playlistShowLadderPos = GetCurrentPlaylistVarBool( "ranked_show_ladder_position", false )
+	string rs                  = ShortenNumber( string( ladderPosition ) )
+	string rankedString        = playlistShowLadderPos ? "#RANKED_LADDER_POSITION_DISPLAY" : "#RANKED_POINTS_GENERIC"
+
+	RuiSetString( rui, "rankedLadderPosition", Localize( rankedString, rs ) )
+}
+
+#endif //

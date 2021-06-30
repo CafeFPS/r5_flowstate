@@ -6,6 +6,7 @@ global function PIN_Shutdown
 global function PIN_PageView
 global function PIN_Customization
 global function PIN_Message
+global function PIN_Survey
 global function PIN_Settings
 #endif
 
@@ -106,6 +107,52 @@ void function PIN_Message( string titleText, string messageText )
 			service = "game"
 			status  = "impression"
 			type    = "in_game"
+		}
+	)
+}
+#endif
+
+#if UI
+void function PIN_Survey( int surveyType, string questionText, string aOptionText, string bOptionText, string answerText, float sampleRate, bool ignored )
+{
+	if ( surveyType == eSurveyType.POSTGAME )
+	{
+		if ( !("mid" in uiGlobal.matchPinData) )
+			return
+		if ( !("map" in uiGlobal.matchPinData) )
+			return
+		if ( !("match_type" in uiGlobal.matchPinData) )
+			return
+	}
+
+	string msg_idString = questionText.len() > 128 ? questionText.tolower().slice( 0, 128 ) : questionText.tolower()
+	AddPINTelemetryEvent( "survey",
+		PIN_StandardHeader(), {
+			complete_flag = ignored ? "empty" : "complete",
+			status = "sent",
+			survey_id = msg_idString,
+			type = GetEnumString( "eSurveyType", surveyType ).tolower(),
+			//
+
+			json = {
+				properties = {
+					sample_rate = sampleRate
+					mid = uiGlobal.matchPinData["mid"]
+					map = uiGlobal.matchPinData["map"]
+					match_type = uiGlobal.matchPinData["match_type"]
+				}
+
+				choices = [
+					aOptionText,
+					bOptionText
+				]
+
+				responses = [
+					ignored ? "NA" : answerText
+				]
+
+				questionText = questionText
+			}
 		}
 	)
 }

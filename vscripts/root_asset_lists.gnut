@@ -1,155 +1,45 @@
-//
-
-//
-
-
-#if false
-
-#endif
-
-//
-#if false
-
-#endif
-
-//
+//=========================================================
+//	root_asset_lists.gnut
+//=========================================================
 
 global function WORKAROUND_GetAllCharacterFlavorAssets
 global function WORKAROUND_GetAllLootMainWeaponFlavorAssets
+global function WORKAROUND_GetAllChallengeAssets
+global function WORKAROUND_GetAllLoadscreenAssets
+global function WORKAROUND_GetAllMusicPackAssets
+global function WORKAROUND_GetAllCalEvents
+global function WORKAROUND_GetAllSkydiveTrails
 
 
-//
-//
-//
-//
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
 array<asset> function WORKAROUND_GetAllCharacterFlavorAssets()
 {
-	//
 	array<asset> out = []
 
-	//
-	out.append( $"settings/itemflav/character/bangalore.rpak" ) //
+	out.append( $"settings/itemflav/character/bangalore.rpak" )  //
 	out.append( $"settings/itemflav/character/bloodhound.rpak" ) //
-	out.append( $"settings/itemflav/character/caustic.rpak" ) //
-	out.append( $"settings/itemflav/character/gibraltar.rpak" ) //
-	out.append( $"settings/itemflav/character/lifeline.rpak" ) //
-	out.append( $"settings/itemflav/character/mirage.rpak" ) //
-	out.append( $"settings/itemflav/character/octane.rpak" ) //
+	out.append( $"settings/itemflav/character/caustic.rpak" )    //
+	out.append( $"settings/itemflav/character/gibraltar.rpak" )  //
+	out.append( $"settings/itemflav/character/lifeline.rpak" )   //
+	out.append( $"settings/itemflav/character/mirage.rpak" )     //
+	out.append( $"settings/itemflav/character/octane.rpak" )     //
 	out.append( $"settings/itemflav/character/pathfinder.rpak" ) //
-	out.append( $"settings/itemflav/character/wraith.rpak" ) //
-
-	//
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-//
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-
+	out.append( $"settings/itemflav/character/wraith.rpak" )     //
+	out.append( $"settings/itemflav/character/crypto.rpak" )     //
+	out.append( $"settings/itemflav/character/wattson.rpak" )    //
+	out.append( $"settings/itemflav/character/future_character_SAID01847866776.rpak" ) //
 	return out
 }
 
-//
-//
+
 array<asset> function WORKAROUND_GetAllLootMainWeaponFlavorAssets()
 {
-	//
 	array<asset> out = []
 
-	//
 	out.append( $"settings/itemflav/loot/main_weapon/alternator.rpak" )
 	out.append( $"settings/itemflav/loot/main_weapon/autopistol.rpak" )
 	out.append( $"settings/itemflav/loot/main_weapon/devotion.rpak" )
@@ -172,42 +62,435 @@ array<asset> function WORKAROUND_GetAllLootMainWeaponFlavorAssets()
 	out.append( $"settings/itemflav/loot/main_weapon/energy_ar.rpak" )
 	out.append( $"settings/itemflav/loot/main_weapon/lstar.rpak" )
 
-	//
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
-	#if false
-
-#endif
+	out.append( $"settings/itemflav/loot/main_weapon/softball.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/volt_smg.rpak" )
+	out.append( $"settings/itemflav/loot/main_weapon/defender.rpak" )
 
 	return out
 }
 
 
+array<asset> function WORKAROUND_GetAllChallengeAssets()
+{
+	array<asset> out = []
+
+	out.append( $"settings/itemflav/challenge/daily_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_airdrops_looted.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_single_game_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_knockdowns.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_airdrops_looted.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_damage_done_bloodhound.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_gibraltar.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_lifeline.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_pathfinder.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_wraith.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_bangalore.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_caustic.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_mirage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_octane.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_damage_done_wattson.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_kills_bloodhound.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_gibraltar.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_lifeline.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_pathfinder.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_wraith.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_bangalore.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_caustic.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_mirage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_octane.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_wattson.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_executions_bloodhound.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_gibraltar.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_lifeline.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_pathfinder.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_wraith.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_bangalore.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_caustic.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_mirage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_octane.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_wattson.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_games_played_bloodhound.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_gibraltar.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_lifeline.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_pathfinder.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_wraith.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_bangalore.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_caustic.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_mirage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_octane.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_wattson.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_headshots_bloodhound.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_gibraltar.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_lifeline.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_pathfinder.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_wraith.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_bangalore.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_caustic.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_mirage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_octane.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_wattson.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_top_3_bloodhound.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_gibraltar.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_lifeline.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_pathfinder.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_wraith.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_bangalore.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_caustic.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_mirage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_octane.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_wattson.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_bloodhound.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_gibraltar.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_lifeline.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_pathfinder.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_wraith.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_bangalore.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_caustic.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_mirage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_octane.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_wattson.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_bloodhound_enemies_scanned.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_bloodhound_beast_hunt_kills.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_gibraltar_dome_damage_blocked.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_gibraltar_shield_damage_blocked.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_lifeline_drone_healing.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_lifeline_droppod_items.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_pathfinder_zipline_use.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_pathfinder_beacons_scanned.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_wraith_squadmates_phased.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_bangalore_creeping_barrage_damage.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_caustic_traps_activated.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_caustic_gas_damage_dealt.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_caustic_gassed_enemies_killed.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_mirage_decoys_created.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_mirage_bamboozles.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_octane_jump_pad_allies_launched.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_octane_passive_health_regenerated.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_ar_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_ar_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_ar_damage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_ar_headshots.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_smg_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_smg_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_smg_damage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_smg_headshots.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_lmg_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_lmg_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_lmg_damage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_lmg_headshots.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_crate_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_crate_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_crate_damage.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_shotgun_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_shotgun_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_shotgun_damage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_shotgun_headshots.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_sniper_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_sniper_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_sniper_damage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_sniper_headshots.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_pistol_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_single_game_pistol_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_pistol_damage.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_pistol_headshots.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_zone_can_relay_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_relay_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_relay_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_relay_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_relay_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_wetlands_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_wetlands_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_wetlands_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_wetlands_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_wetlands_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_swamps_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_swamps_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_swamps_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_swamps_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_swamps_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_hydrodam_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_hydrodam_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_hydrodam_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_hydrodam_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_hydrodam_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_repulsor_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_repulsor_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_repulsor_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_repulsor_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_repulsor_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_cage_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_cage_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_cage_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_cage_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_cage_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_artillery_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_artillery_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_artillery_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_artillery_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_artillery_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_containment_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_containment_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_containment_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_containment_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_containment_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_watertreatment_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_watertreatment_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_watertreatment_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_watertreatment_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_watertreatment_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_slumlakes_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_slumlakes_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_slumlakes_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_slumlakes_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_slumlakes_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_pit_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_pit_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_pit_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_pit_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_pit_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_runoff_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_runoff_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_runoff_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_runoff_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_runoff_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_airbase_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_airbase_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_airbase_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_airbase_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_airbase_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_skulltown_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_skulltown_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_skulltown_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_skulltown_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_skulltown_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_market_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_market_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_market_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_market_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_market_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_thunderdome_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_thunderdome_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_thunderdome_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_thunderdome_executions.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_thunderdome_landings.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_bunker_kills.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_bunker_damage_done.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_bunker_dooms.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_zone_can_bunker_executions.rpak" )
+
+	out.append( $"settings/itemflav/challenge/daily_damage_done_crypto.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_kills_crypto.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_executions_crypto.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_games_played_crypto.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_headshots_crypto.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_top_3_crypto.rpak" )
+	out.append( $"settings/itemflav/challenge/daily_knockdowns_crypto.rpak" )
+
+	out.append( $"settings/itemflav/challenge/season_2_recurring_1.rpak" )
+	out.append( $"settings/itemflav/challenge/season_2_recurring_2.rpak" )
+	out.append( $"settings/itemflav/challenge/season_2_recurring_3.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week01_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week01_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week01_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week01_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week01_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week01_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week01_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week02_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week02_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week02_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week02_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week02_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week02_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week02_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week03_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week03_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week03_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week03_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week03_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week03_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week03_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week04_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week04_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week04_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week04_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week04_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week04_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week04_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week05_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week05_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week05_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week05_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week05_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week05_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week05_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week06_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week06_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week06_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week06_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week06_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week06_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week06_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week07_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week07_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week07_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week07_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week07_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week07_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week07_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week08_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week08_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week08_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week08_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week08_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week08_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week08_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week09_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week09_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week09_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week09_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week09_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week09_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week09_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week10_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week10_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week10_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week10_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week10_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week10_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week10_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week11_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week11_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week11_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week11_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week11_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week11_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week11_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week12_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week12_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week12_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week12_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week12_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week12_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week12_07.rpak" )
+
+	out.append( $"settings/itemflav/challenge/weekly_season02_week13_01.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week13_02.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week13_03.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week13_04.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week13_05.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week13_06.rpak" )
+	out.append( $"settings/itemflav/challenge/weekly_season02_week13_07.rpak" )
+
+	return out
+}
+
+
+array<asset> function WORKAROUND_GetAllLoadscreenAssets()
+{
+	array<asset> out = []
+
+	out.append( $"settings/itemflav/loadscreen/default.rpak" )
+	out.append( $"settings/itemflav/loadscreen/kings_canyon_og.rpak" )
+	out.append( $"settings/itemflav/loadscreen/001.rpak" )
+	out.append( $"settings/itemflav/loadscreen/002.rpak" )
+	out.append( $"settings/itemflav/loadscreen/003.rpak" )
+	out.append( $"settings/itemflav/loadscreen/004.rpak" )
+	out.append( $"settings/itemflav/loadscreen/005.rpak" )
+	out.append( $"settings/itemflav/loadscreen/006.rpak" )
+	out.append( $"settings/itemflav/loadscreen/007.rpak" )
+	out.append( $"settings/itemflav/loadscreen/008.rpak" )
+	out.append( $"settings/itemflav/loadscreen/009.rpak" )
+	out.append( $"settings/itemflav/loadscreen/010.rpak" )
+
+	return out
+}
+
+
+array<asset> function WORKAROUND_GetAllMusicPackAssets()
+{
+	array<asset> out = []
+
+	out.append( $"settings/itemflav/musicpack/default.rpak" )
+
+	out.append( $"settings/itemflav/musicpack/season02_event01.rpak" )
+	out.append( $"settings/itemflav/musicpack/bangalore.rpak" )
+	out.append( $"settings/itemflav/musicpack/bloodhound.rpak" )
+	out.append( $"settings/itemflav/musicpack/caustic.rpak" )
+	out.append( $"settings/itemflav/musicpack/gibraltar.rpak" )
+	out.append( $"settings/itemflav/musicpack/lifeline.rpak" )
+	out.append( $"settings/itemflav/musicpack/mirage.rpak" )
+	out.append( $"settings/itemflav/musicpack/octane.rpak" )
+	out.append( $"settings/itemflav/musicpack/pathfinder.rpak" )
+	out.append( $"settings/itemflav/musicpack/wattson.rpak" )
+	out.append( $"settings/itemflav/musicpack/wraith.rpak" )
+
+	return out
+}
+
+
+array<asset> function WORKAROUND_GetAllCalEvents()
+{
+	array<asset> out = []
+
+	out.append( $"settings/itemflav/calevent/season01.rpak" )
+	out.append( $"settings/itemflav/calevent/season02.rpak" )
+
+	out.append( $"settings/itemflav/calevent/rankedperiod01.rpak" )
+
+	out.append( $"settings/itemflav/calevent/season02_event01.rpak" )
+
+	return out
+}
+
+
+array<asset> function WORKAROUND_GetAllSkydiveTrails()
+{
+	array<asset> out = []
+	out.append( $"settings/itemflav/skydive_trail/default.rpak" )
+
+	return out
+}

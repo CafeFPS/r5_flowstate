@@ -820,8 +820,9 @@ void function UICallback_UpdateEquipmentButton( var button )
 		entity weapon = player.GetNormalWeapon( esWeapon.weaponSlot )
 
 		LootData wData = SURVIVAL_GetLootDataFromWeapon( weapon )
-		RuiSetBool( rui, "isFullyKitted", wData.tier == 4 )
-		RuiSetBool( rui, "showBrackets", true )
+		// TODO:
+		//RuiSetBool( rui, "isFullyKitted", wData.tier == 4 )
+		//RuiSetBool( rui, "showBrackets", true )
 
 		if ( IsValid( weapon ) && SURVIVAL_Loot_IsRefValid( wData.ref ) && AttachmentPointSupported( attachmentPoint, wData.ref ) )
 		{
@@ -1580,10 +1581,6 @@ void function GroundItemUpdate( entity player, array<entity> loot )
 	}
 
 	RunUIScript( "SurvivalGroundItem_SetGroundItemCount", file.filteredGroundItems.len() )
-	foreach ( index, item in file.filteredGroundItems )
-	{
-		RunUIScript( "SurvivalGroundItem_SetGroundItemHeader", index, item.isHeader )
-	}
 	RunUIScript( "SurvivalGroundItem_EndUpdate" )
 }
 

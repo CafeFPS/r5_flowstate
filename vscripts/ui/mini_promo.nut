@@ -197,6 +197,10 @@ void function UpdateValidityOfPages( array<MiniPromoPageData> pages )
 				page.isValid = themedShopItems.contains( item ) && !GRX_IsItemOwnedByPlayer( item )
 				break
 
+			case "collectionevent":
+				page.isValid = !GRX_IsItemOwnedByPlayer( GetItemFlavorByHumanReadableRef( page.linkData[0] ) )
+				break
+
 			case "url":
 				page.isValid = true //
 				break
@@ -243,6 +247,7 @@ array<MiniPromoPageData> function InitPages()
 {
 	string content = "<m|m_openpack|OPEN PACK||openpack>"
 	content += GetPromoDataLayout()
+	//
 	//
 	//
 	//
@@ -315,7 +320,7 @@ bool function IsLinkFormatValid( string linkType, array<string> linkData )
 {
 	if ( linkType == "openpack" && linkData.len() == 0 )
 		return true
-	else if ( (linkType == "battlepass" || linkType == "storecharacter" || linkType == "storeskin" || linkType == "themedstoreskin") && linkData.len() == 1 && IsValidItemFlavorHumanReadableRef( linkData[0] ) )
+	else if ( (linkType == "battlepass" || linkType == "storecharacter" || linkType == "storeskin" || linkType == "themedstoreskin" || linkType == "collectionevent") && linkData.len() == 1 && IsValidItemFlavorHumanReadableRef( linkData[0] ) )
 		return true
 	else if ( linkType == "url" && linkData.len() == 1 ) //
 		return true
@@ -465,10 +470,8 @@ void function MiniPromoButton_OnActivate( var button )
 	{
 		EmitUISound( "UI_Menu_Accept" )
 
-		string panelName = "PassPanelV2"
-
 		TabData lobbyTabData = GetTabDataForPanel( GetMenu( "LobbyMenu" ) )
-		ActivateTab( lobbyTabData, Tab_GetTabIndexByBodyName( lobbyTabData, panelName ) )
+		ActivateTab( lobbyTabData, Tab_GetTabIndexByBodyName( lobbyTabData, "PassPanelV2" ) )
 	}
 	else if ( page.linkType == "storecharacter" )
 	{
@@ -496,6 +499,15 @@ void function MiniPromoButton_OnActivate( var button )
 
 		EmitUISound( "UI_Menu_Accept" )
 		JumpToThemedShop()
+	}
+	else if ( page.linkType == "collectionevent" )
+	{
+		ItemFlavor item = GetItemFlavorByHumanReadableRef( page.linkData[0] )
+		if ( GRX_IsItemOwnedByPlayer( item ) )
+			return
+
+		EmitUISound( "UI_Menu_Accept" )
+		JumpToCollectionEvent()
 	}
 	else if ( page.linkType == "url" )
 	{

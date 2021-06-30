@@ -42,7 +42,7 @@ void function ClScreenfade_Init()
 float function ScreenCoverTransition( float endTime )
 {
 	printt( "Calling ScreenCoverTransition with endTime", endTime, " at time", Time() )
-	//DumpStack()
+	DumpStack()
 	// can be called from server
 	// returns the time remaining until the out transition plays
 

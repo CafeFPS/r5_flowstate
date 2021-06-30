@@ -1,0 +1,661 @@
+global function Cl_SquadDisplay_Init
+
+global function UICallback_UpdateGladCardVisibility
+global function UICallback_PlayerStatusUpdateThread
+global function UICallback_PopulateClientGladCard
+global function UICallback_DestroyClientGladCardData
+global function UICallback_DestroyAllClientGladCardData
+global function UICallback_ToggleMute
+global function UICallback_ToggleMutePing
+global function UICallback_ToggleMuteChat
+global function UICallback_InviteSquadMate
+global function UICallback_ReportSquadMate
+global function UICallback_PopulatePlayerStatsRui
+global function GetTeammateAtIndex
+
+struct PlayerInfo
+{
+	EHI ehi
+	string uid
+	string hardware
+	entity player
+}
+
+struct
+{
+	table<EHI, PlayerInfo> teammates
+	table< var, NestedGladiatorCardHandle > elemToGladCardHandle
+} file
+
+void function Cl_SquadDisplay_Init()
+{
+	RegisterSignal( "DisconnectedUpdateThread0" )
+	RegisterSignal( "DisconnectedUpdateThread1" )
+	RegisterSignal( "DisconnectedUpdateThread2" )
+	RegisterSignal( "DisconnectedUpdateThread3" )
+	AddCreateCallback( "player", OnPlayerCreated )
+	AddCallback_OnPlayerChangedTeam( OnPlayerTeamChanged )
+}
+
+void function OnPlayerCreated( entity player )
+{
+	printt( "SS: OnPlayerCreated", player )
+	OnPlayerTeamChanged( player, TEAM_UNASSIGNED, player.GetTeam() )
+}
+
+void function OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
+{
+	int playerTeam = -1
+	entity clientPlayer = GetLocalClientPlayer()
+	if ( IsValid( clientPlayer ) )
+		playerTeam = clientPlayer.GetTeam()
+	printt( "SS: OnPlayerTeamChanged", player, oldTeam, newTeam, clientPlayer, playerTeam )
+
+	EHI ehi = ToEHI( player )
+
+	if ( player != GetLocalClientPlayer() && player.GetTeam() == GetLocalClientPlayer().GetTeam() && player.GetTeam() != TEAM_UNASSIGNED )
+	{
+		if ( !( ehi in file.teammates ) )
+		{
+			PlayerInfo info
+			info.player = player
+			info.uid = player.GetPlatformUID()
+			info.hardware = player.GetHardware()
+			info.ehi = ehi
+			file.teammates[ ehi ] <- info
+		}
+	}
+	else
+	{
+		if ( ehi in file.teammates )
+			delete file.teammates[ ehi ]
+	}
+}
+
+void function UICallback_DestroyAllClientGladCardData()
+{
+	foreach ( rui, nestedGCHandle in file.elemToGladCardHandle )
+	{
+		nestedGCHandle.cardRui = null
+		CleanupNestedGladiatorCard( nestedGCHandle )
+	}
+
+	file.elemToGladCardHandle.clear()
+}
+
+
+void function UICallback_DestroyClientGladCardData( var elem )
+{
+	var rui = Hud_GetRui( elem )
+
+	if ( ( rui in file.elemToGladCardHandle ) )
+	{
+		CleanupNestedGladiatorCard( file.elemToGladCardHandle[ rui ] )
+		delete file.elemToGladCardHandle[ rui ]
+	}
+}
+
+void function UICallback_UpdateGladCardVisibility( var panel, var elem, int teamMemberIndex )
+{
+	entity player
+	player = GetLocalClientPlayer()
+	EHI ehi = player.GetEncodedEHandle()
+
+	Hud_Show( elem )
+
+	if ( teamMemberIndex > 0 )
+	{
+		PlayerInfo ornull info = GetTeammateAtIndex( teamMemberIndex )
+		if ( info == null )
+			Hud_Hide( elem )
+	}
+}
+
+PlayerInfo ornull function GetTeammateAtIndex( int teamMemberIndex )
+{
+	entity player
+	player = GetLocalClientPlayer()
+	EHI ehi = player.GetEncodedEHandle()
+
+	if ( teamMemberIndex > 0 )
+	{
+		int team = player.GetTeam()
+		table<EHI, PlayerInfo> teamMembers = file.teammates
+
+		int index = teamMemberIndex-1
+		PlayerInfo teammateInfo
+
+		bool foundTeammate = false
+		int i=0
+		foreach ( info in teamMembers )
+		{
+			if ( index == i++ )
+			{
+				teammateInfo = info
+				foundTeammate = true
+				break
+			}
+		}
+
+		if ( foundTeammate )
+			return teammateInfo
+		else
+			return null
+	}
+
+	return null
+}
+
+void function UICallback_PopulateClientGladCard( var panel, var elem, var muteButton, var mutePingButton, var muteChatButton, var reportButton, var inviteButton, var overlayButton, var disconnectedElem, int teamMemberIndex, float startTime, int displayType )
+{
+	entity player
+	player = GetLocalClientPlayer()
+	EHI ehi = player.GetEncodedEHandle()
+
+	var rui = Hud_GetRui( elem )
+	RuiSetBool( rui, "isEmpty", true )
+	RuiSetBool( rui, "isUsingFullBox", displayType == eGladCardPresentation.FULL_BOX )
+
+	if ( displayType == eGladCardPresentation.FULL_BOX )
+	{
+		bool ranked = IsRankedGame()
+		float scale = float( GetScreenSize().height ) / 1080.0
+		if ( muteButton != null )
+		{
+			int y = ranked ? Hud_GetBaseY( muteButton ) + int(70 * scale) : Hud_GetBaseY( muteButton )
+			Hud_SetY( muteButton, y )
+		}
+	}
+
+	SetIsVisible( disconnectedElem, false )
+
+	if ( teamMemberIndex > 0 )
+	{
+		PlayerInfo ornull teammateInfo = GetTeammateAtIndex( teamMemberIndex )
+
+		if ( teammateInfo != null )
+		{
+			expect PlayerInfo( teammateInfo )
+
+			ehi = teammateInfo.ehi
+			player = teammateInfo.player
+
+			bool isVoiceMuted = false
+			bool isTextMuted = false
+			bool isPingMuted = false
+			bool canReport = false
+
+			if ( IsValid( player ) )
+			{
+				isVoiceMuted = player.IsVoiceMuted()
+				isTextMuted = player.IsTextMuted()
+				isPingMuted = PlayerIsPingMuted( player )
+
+				SetIsMuted( muteButton, isVoiceMuted )
+				SetIsMuted( mutePingButton, isPingMuted )
+				SetIsMuted( muteChatButton, isTextMuted )
+
+				canReport = CanReportPlayer( player )
+			}
+			else
+			{
+				int reportStyle = GetReportStyle()
+
+				switch ( reportStyle )
+				{
+					case 1: //
+						canReport = teammateInfo.hardware == GetLocalClientPlayer().GetHardware()
+						break
+
+					case 2: //
+						canReport = true
+						break
+
+					case 0: //
+					default:
+						canReport = false
+				}
+			}
+
+			SetIsVisible( muteButton, true )
+			SetIsVisible( mutePingButton, true )
+
+			#if CONSOLE_PROG
+				SetIsVisible( muteChatButton, false )
+			#else
+				SetIsVisible( muteChatButton, true )
+			#endif
+
+			bool canInviteToParty = CanInviteSquadMate( teammateInfo.uid )
+			bool isInMyParty = IsInMyParty( teammateInfo.uid )
+
+			SetIsVisible( inviteButton, canInviteToParty || isInMyParty )
+			SetIsSelected( inviteButton, isInMyParty )
+
+			SetIsVisible( reportButton, canReport )
+
+			SetDefaultTooltipData( muteButton, isVoiceMuted ? "#UNMUTE" : "#MUTE" )
+			SetDefaultTooltipData( mutePingButton, isPingMuted ? "#UNMUTE_PING" : "#MUTE_PING" )
+			SetDefaultTooltipData( muteChatButton, isTextMuted ? "#UNMUTE_CHAT" : "#MUTE_CHAT" )
+			SetDefaultTooltipData( inviteButton, "#INVITE_SQUAD_MATE" )
+			SetDefaultTooltipData( reportButton, "#REPORT_SQUAD_MATE" )
+
+			if ( overlayButton != null )
+				RunUIScript( "ClientCallback_UpdatePlayerOverlayButton", panel, overlayButton, GetPlayerName( ehi ), teammateInfo.uid, teammateInfo.hardware, teamMemberIndex )
+		}
+		else
+		{
+			if ( overlayButton != null )
+				RunUIScript( "ClientCallback_UpdatePlayerOverlayButton", panel, overlayButton, "", "", "", teamMemberIndex )
+
+			SetIsVisible( muteChatButton, false )
+			SetIsVisible( mutePingButton, false )
+			SetIsVisible( muteButton, false )
+			SetIsVisible( reportButton, false )
+			SetIsVisible( inviteButton, false )
+
+			return
+		}
+	}
+
+	if ( ehi == EHI_null )
+		return
+
+	bool isConnected = IsValid( GetEntityFromEncodedEHandle( ehi ) )
+
+	RuiSetBool( rui, "isEmpty", false )
+	RuiSetBool( rui, "isConnected", isConnected )
+
+	if ( !isConnected && teamMemberIndex > 0 && disconnectedElem != null )
+	{
+		SetIsVisible( muteChatButton, false )
+		SetIsVisible( mutePingButton, false )
+		SetIsVisible( muteButton, false )
+		SetIsVisible( inviteButton, false )
+		SetIsVisible( disconnectedElem, true )
+	}
+
+	NestedGladiatorCardHandle nestedGCHandle
+	if (!( rui in file.elemToGladCardHandle ))
+	{
+		nestedGCHandle = CreateNestedGladiatorCard( rui, "card", eGladCardDisplaySituation.SQUAD_MANAGEMENT_PAGE_ANIMATED, displayType )
+		file.elemToGladCardHandle[ rui ] <- nestedGCHandle
+	}
+	else
+	{
+		nestedGCHandle = file.elemToGladCardHandle[ rui ]
+	}
+
+	RuiSetGameTime( rui, "startTime", startTime )
+	RuiSetString( rui, "playerName", GetPlayerName( ehi ) )
+
+	ChangeNestedGladiatorCardOwner( nestedGCHandle, ehi, Time(), eGladCardLifestateOverride.ALIVE )
+}
+
+void function UICallback_PlayerStatusUpdateThread( var panel, var elem, var muteButton, var mutePingButton, var muteChatButton, var reportButton, var inviteButton, var overlayButton, var disconnectedElem, int teamMemberIndex )
+{
+	printt( "SS: UICallback_PlayerStatusUpdateThread", teamMemberIndex )
+	thread _PlayerStatusUpdateThread( panel, elem, muteButton, mutePingButton, muteChatButton, reportButton, inviteButton, overlayButton, disconnectedElem, teamMemberIndex )
+}
+
+void function _PlayerStatusUpdateThread( var panel, var statsPanel, var muteButton, var mutePingButton, var muteChatButton, var reportButton, var inviteButton, var overlayButton, var disconnectedElem, int teamMemberIndex )
+{
+	Signal( clGlobal.levelEnt, "DisconnectedUpdateThread" + teamMemberIndex )
+	EndSignal( clGlobal.levelEnt, "DisconnectedUpdateThread" + teamMemberIndex )
+	EndSignal( clGlobal.levelEnt, "ShowRoundEndSquadResults" )
+	PlayerInfo ornull info = GetTeammateAtIndex( teamMemberIndex )
+	if ( info == null )
+	{
+		printt( "SS:\t index 0 is the local player", teamMemberIndex )
+		return
+	}
+
+	expect PlayerInfo(info)
+
+	bool wasConnected = true
+	int prevMicStatus = -2
+
+	printt( "SS:\t Starting loop", teamMemberIndex )
+
+	while ( 1 )
+	{
+		entity playerEnt = FromEHI( info.ehi )
+		bool connected = IsValid( playerEnt )
+
+		if ( connected != wasConnected )
+		{
+			SetIsEnabled( muteChatButton, connected )
+			SetIsEnabled( mutePingButton, connected )
+			SetIsEnabled( muteButton, connected )
+			SetIsVisible( inviteButton, connected )
+
+			var statsRui = Hud_GetRui( statsPanel )
+			printt( "SS: Updating player stats rui", teamMemberIndex )
+			_PopulatePlayerStatsRui( statsPanel, teamMemberIndex, connected )
+
+			if ( connected )
+			{
+				//
+			}
+
+			wasConnected = connected
+		}
+
+		// int micStatus = GetPlayerMicStatus( playerEnt )
+		// if ( connected && micStatus != prevMicStatus )
+		// {
+		// 	prevMicStatus = micStatus
+
+		// 	var rui = Hud_GetRui( statsPanel )
+		// 	RuiSetInt( rui, "micStatus", micStatus )
+		// }
+
+		WaitFrame()
+	}
+}
+
+void function SetIsVisible( var button, bool isVisible )
+{
+	if ( !IsValid( button ) )
+		return
+
+	if ( isVisible )
+	{
+		Hud_Show( button )
+	}
+	else
+	{
+		Hud_Hide( button )
+	}
+}
+
+void function SetIsEnabled( var button, bool enabled )
+{
+	if ( !IsValid( button ) )
+		return
+
+	Hud_SetEnabled( button, enabled )
+}
+
+void function SetIsSelected( var button, bool enabled )
+{
+	if ( !IsValid( button ) )
+		return
+
+	Hud_SetSelected( button, enabled )
+}
+
+void function SetIsMuted( var button, bool isMuted )
+{
+	if ( !IsValid( button ) )
+		return
+
+	RuiSetBool( Hud_GetRui( button ), "isMuted", isMuted )
+}
+
+void function SetDefaultTooltipData( var button, string titleText )
+{
+	if ( !IsValid( button ) )
+		return
+
+	ToolTipData d
+	d.titleText = titleText
+	d.tooltipStyle = eTooltipStyle.DEFAULT
+	d.descText = "#REPORT_SQUAD_MATE_DESC"
+	Hud_SetToolTipData( button, d )
+}
+
+void function UICallback_ToggleMute( var button )
+{
+	int index = int( Hud_GetScriptID( button ) )
+	entity player
+	player = GetLocalClientPlayer()
+
+	PlayerInfo ornull teammateInfo = GetTeammateAtIndex( index )
+
+	if ( teammateInfo != null )
+	{
+		expect PlayerInfo( teammateInfo )
+
+		player = GetPlayerFromTeammateInfo( teammateInfo )
+
+		if ( !IsValid( player ) )
+			return
+
+		TogglePlayerVoiceMute( player )
+		var rui = Hud_GetRui( button )
+
+		bool isMuted = player.IsVoiceMuted()
+
+		RuiSetBool( rui, "isMuted", isMuted )
+
+		ToolTipData d1
+		d1.titleText = isMuted ? "#UNMUTE" : "#MUTE"
+		d1.tooltipStyle = eTooltipStyle.DEFAULT
+		d1.descText = " "
+		Hud_SetToolTipData( button, d1 )
+	}
+}
+
+
+void function UICallback_ToggleMutePing( var button )
+{
+	int index = int( Hud_GetScriptID( button ) )
+	entity player
+	player = GetLocalClientPlayer()
+	int team = player.GetTeam()
+	table<EHI, PlayerInfo> teamMembers = file.teammates
+
+	index = index-1
+	PlayerInfo teammateInfo
+
+	bool foundTeammate = false
+	int i=0
+	foreach ( info in teamMembers )
+	{
+		if ( index == i++ )
+	{
+			teammateInfo = info
+			foundTeammate = true
+			break
+		}
+	}
+
+	if ( foundTeammate )
+	{
+		player = GetPlayerFromTeammateInfo( teammateInfo )
+
+		if ( !IsValid( player ) )
+			return
+
+		TogglePlayerWaypointMute( player )
+		var rui = Hud_GetRui( button )
+
+		bool isMuted = PlayerIsPingMuted( player )
+
+		RuiSetBool( rui, "isMuted", isMuted )
+
+		ToolTipData d1
+		d1.titleText = isMuted ? "#UNMUTE_PING" : "#MUTE_PING"
+		d1.tooltipStyle = eTooltipStyle.DEFAULT
+		d1.descText = " "
+		Hud_SetToolTipData( button, d1 )
+	}
+}
+
+
+void function UICallback_ToggleMuteChat( var button )
+{
+	int index = int( Hud_GetScriptID( button ) )
+	entity player
+	player = GetLocalClientPlayer()
+	int team = player.GetTeam()
+	table<EHI, PlayerInfo> teamMembers = file.teammates
+
+	index = index-1
+	PlayerInfo teammateInfo
+
+	bool foundTeammate = false
+	int i=0
+	foreach ( info in teamMembers )
+	{
+		if ( index == i++ )
+	{
+			teammateInfo = info
+			foundTeammate = true
+			break
+		}
+	}
+
+	if ( foundTeammate )
+	{
+		player = GetPlayerFromTeammateInfo( teammateInfo )
+
+		if ( !IsValid( player ) )
+			return
+
+		TogglePlayerTextMute( player )
+
+		var rui = Hud_GetRui( button )
+
+		bool isMuted = player.IsTextMuted()
+
+		RuiSetBool( rui, "isMuted", isMuted )
+
+		ToolTipData d1
+		d1.titleText = isMuted ? "#UNMUTE_CHAT" : "#MUTE_CHAT"
+		d1.tooltipStyle = eTooltipStyle.DEFAULT
+		d1.descText = " "
+		Hud_SetToolTipData( button, d1 )
+	}
+}
+
+
+void function UICallback_InviteSquadMate( var button )
+{
+	int index = int( Hud_GetScriptID( button ) )
+	entity player
+	player = GetLocalClientPlayer()
+	int team = player.GetTeam()
+	table<EHI, PlayerInfo> teamMembers = file.teammates
+
+	index = index-1
+	PlayerInfo teammateInfo
+
+	bool foundTeammate = false
+	int i=0
+	foreach ( info in teamMembers )
+	{
+		if ( index == i++ )
+		{
+			teammateInfo = info
+			foundTeammate = true
+			break
+		}
+	}
+
+	if ( foundTeammate )
+	{
+		DoInviteToParty( [ teammateInfo.uid ] )
+		SetDefaultTooltipData( button, "#INVITE_SQUAD_MATE_DONE" )
+		SetIsSelected( button, true )
+	}
+}
+
+void function UICallback_ReportSquadMate( var button )
+{
+	int index = int( Hud_GetScriptID( button ) )
+	entity player
+	player = GetLocalClientPlayer()
+	int team = player.GetTeam()
+	table<EHI, PlayerInfo> teamMembers = file.teammates
+
+	index = index-1
+	PlayerInfo teammateInfo
+
+	bool foundTeammate = false
+	int i=0
+	foreach ( info in teamMembers )
+	{
+		if ( index == i++ )
+	{
+			teammateInfo = info
+			foundTeammate = true
+			break
+		}
+	}
+
+	if ( foundTeammate )
+	{
+		string friendlyOrEnemy = "friendly"
+
+		RunUIScript( "ClientToUI_ShowReportPlayerDialog", GetPlayerName( teammateInfo.ehi ), teammateInfo.hardware, teammateInfo.uid, friendlyOrEnemy )
+	}
+}
+
+entity function GetPlayerFromTeammateInfo( PlayerInfo teammateInfo )
+{
+	entity player = teammateInfo.player
+
+	if ( !IsValid( player ) )
+	{
+		player = FromEHI( teammateInfo.ehi )
+	}
+
+	return player
+}
+
+void function UICallback_PopulatePlayerStatsRui( var panel, int index )
+{
+	printt( "SS: UICallback_PopulatePlayerStatsRui", index )
+	_PopulatePlayerStatsRui( panel, index, true )
+}
+
+void function _PopulatePlayerStatsRui( var cardElem, int index, bool connected )
+{
+	printt( "SS: _PopulatePlayerStatsRui", index, connected )
+	SquadSummaryData squadSummaryData = GetSquadSummaryData()
+	if ( index >= squadSummaryData.playerData.len() )
+	{
+		printt( "SS:\t hide element for index", index )
+		Hud_Hide( cardElem )
+		return
+	}
+
+	printt( "SS:\t have data for index", index )
+	int eHandle = -1
+
+	if ( index > 0 )
+	{
+		PlayerInfo ornull teammateInfo
+		teammateInfo = GetTeammateAtIndex( index )
+
+		if ( teammateInfo == null )
+		{
+			printt( "SS:\t\tNo team info for index", index )
+			return
+		}
+
+		expect PlayerInfo( teammateInfo )
+		eHandle = teammateInfo.ehi
+	}
+	else
+	{
+		printt( "SS:\t\tThis is local player", index )
+		eHandle = GetLocalClientPlayer().GetEncodedEHandle()
+	}
+
+	Hud_Show( cardElem )
+
+	var rui = Hud_GetRui( cardElem )
+
+	for ( int i = 0; i<squadSummaryData.playerData.len(); i++ )
+	{
+		printt( "SS:\t\tPopulating stats rui with playerData[i] where i = ", i, "with eHandle", squadSummaryData.playerData[i].eHandle, "if eHandle is", eHandle )
+		if ( squadSummaryData.playerData[i].eHandle == eHandle )
+		{
+			PopulatePlayerStatsRui( rui, i, connected)
+			break
+		}
+	}
+}

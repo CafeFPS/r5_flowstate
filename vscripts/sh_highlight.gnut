@@ -7,7 +7,6 @@ global function Highlight_SetPingedHighlight
 global function Highlight_SetSonarHighlight
 
 global function SetSurvivalPropHighlight
-global function ClearSurvivalPropHighlight
 
 #if SERVER
 global function Highlight_SetFriendlyHighlight
@@ -115,8 +114,6 @@ const HIGHLIGHT_OUTLINE_LOOT_FOCUSED = 136 // outline_loot_focused
 
 const HIGHLIGHT_FILL_LOOT_DEFAULT = 135 // inside_loot_default
 const HIGHLIGHT_FILL_LOOT_FOCUSED = 136 // inside_ammo_color_distance_faded
-const HIGHLIGHT_FILL_LOOT_SCANNED = 137 //
-const HIGHLIGHT_OUTLINE_LOOT_SCANNED = 138 //
 
 
 global const HIGHLIGHT_FILL_OBJECTIVE = 126 // inside_objective
@@ -469,45 +466,6 @@ void function Highlight_Init()
 	HighlightContext_SetParam( highlight, 0, HIGHLIGHT_COLOR_INTERACT )
 	HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.LOS )
 	HighlightContext_SetADSFade( highlight, false )
-
-	// highlight = RegisterHighlight( "survival_item_heirloom_loba" )
-	// HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_SCANNED )
-	// HighlightContext_SetOutlineFocused( highlight, HIGHLIGHT_OUTLINE_LOOT_SCANNED )
-	// HighlightContext_SetParam( highlight, 0, <0.98, 0.78, 0> ) //
-	// HighlightContext_SetParam( highlight, 1, <.55, .55, .5> )
-	// HighlightContext_SetRadius( highlight, 2 )
-	// HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_LOOT_SCANNED )
-	// HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_SCANNED )
-	// HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
-	// HighlightContext_SetADSFade( highlight, false )
-	// HighlightContext_SetFarFadeDistance( highlight, GetEyeForQualityRadius() )
-	// highlight.colorID = COLORID_LOOT_TIER5
-
-	// highlight = RegisterHighlight( "survival_item_legendary_loba" )
-	// HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_SCANNED )
-	// HighlightContext_SetOutlineFocused( highlight, HIGHLIGHT_OUTLINE_LOOT_SCANNED )
-	// HighlightContext_SetParam( highlight, 0, <0.98, 0.78, 0> )
-	// HighlightContext_SetParam( highlight, 1, <.55, .55, .5> )
-	// HighlightContext_SetRadius( highlight, 2 )
-	// HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_LOOT_SCANNED )
-	// HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_SCANNED )
-	// HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
-	// HighlightContext_SetADSFade( highlight, false )
-	// HighlightContext_SetFarFadeDistance( highlight, GetEyeForQualityRadius() )
-	// highlight.colorID = COLORID_LOOT_TIER4
-
-	// highlight = RegisterHighlight( "survival_item_epic_loba" )
-	// HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_SCANNED )
-	// HighlightContext_SetOutlineFocused( highlight, HIGHLIGHT_OUTLINE_LOOT_SCANNED )
-	// HighlightContext_SetParam( highlight, 0, <0.34, 0, 0.7> )
-	// HighlightContext_SetParam( highlight, 1, <.55, .55, .5> )
-	// HighlightContext_SetRadius( highlight, 2 )
-	// HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_LOOT_SCANNED )
-	// HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_SCANNED )
-	// HighlightContext_SetDrawFunc( highlight, eHighlightDrawFunc.ALWAYS )
-	// HighlightContext_SetADSFade( highlight, false )
-	// HighlightContext_SetFarFadeDistance( highlight, GetEyeForQualityRadius() )
-	// highlight.colorID = COLORID_LOOT_TIER3
 
 	//
 	//
@@ -970,12 +928,6 @@ void function SetSurvivalPropHighlight( entity ent, string assetName, bool isFoc
 	ent.Highlight_SetParam( contextId, 1, fillColor )
 }
 
-void function ClearSurvivalPropHighlight( entity ent, int contextId = HIGHLIGHT_CONTEXT_NEUTRAL )
-{
-	int highlightId = ent.Highlight_GetState( contextId )
-	ent.Highlight_SetFunctions( HIGHLIGHT_CONTEXT_NEUTRAL, HIGHLIGHT_FILL_NONE, true, HIGHLIGHT_OUTLINE_NONE, 1.0, highlightId, false )
-}
-
 #if CLIENT
 void function ClInitHighlight( entity ent )
 {
@@ -1038,7 +990,7 @@ void function OnSettingsUpdated()
 {
 	if ( GetConVarInt( "colorblind_mode" ) != file.colorblindMode )
 	{
-		array<entity> loot = GetSurvivalLootNearbyPlayer( GetLocalClientPlayer(), 65536.0, false )
+		array<entity> loot = GetSurvivalLootNearbyPlayer( GetLocalClientPlayer(), 65536.0, false, false )
 		foreach ( ent in loot )
 		{
 			ManageHighlightEntity( ent )

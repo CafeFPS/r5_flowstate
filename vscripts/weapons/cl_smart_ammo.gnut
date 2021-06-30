@@ -2,10 +2,7 @@ untyped
 
 global function SmartAmmoClient_Init
 
-global function SmartAmmo_LockedOntoWarningHUD_Init
 global function SmartAmmo_LockedOntoWarningHUD_Update
-
-global function SCB_SmartAmmoForceLockedOntoHudDraw
 
 global function SmartAmmo_SetStatusWarning
 global function SmartAmmo_ClearStatusWarning
@@ -18,14 +15,11 @@ const SMART_AMMO_VICTIM_LOCKED_SOUND = "Titan_Cockpit_TitanLocking_Warning"  // 
 /******************************************/
 
 // lockon detector won't alert until this much of the total lock time has passed
-const SmartAmmo_DetectorStartFracOverrides = {
+//const table<string, float> SmartAmmo_DetectorStartFracOverrides = {
 	//[ "mp_weapon_smart_pistol" ] <- (SMART_AMMO_PLAYER_MAX_LOCKS - 1) * 0.25,
 	// HAX; make smart pistol not display lock indicator
 	//[ "mp_weapon_smart_pistol" ] <- 1200.0,
-	[ "mp_weapon_rocket_launcher" ] = 0.0,
-	[ "mp_titanweapon_shoulder_rockets" ] = 0.8,
-	[ "mp_titanweapon_homing_rockets" ] = 0.8,
-}
+//}
 
 struct
 {
@@ -37,10 +31,9 @@ struct
 	var lockon_hud
 
 	string statusWarning = ""
+} file
 
-} file;
-
-function SmartAmmoClient_Init()
+void function SmartAmmoClient_Init()
 {
 	RegisterSignal( "SmartAmmoStatusWarning" )
 
@@ -78,11 +71,7 @@ void function SmartAmmo_ClearStatusWarning( float duration = 0.0 )
 	file.statusWarning = ""
 }
 
-function SmartAmmo_LockedOntoWarningHUD_Init()
-{
-}
-
-function SmartAmmo_LockedOntoWarningHUD_Update()
+void function SmartAmmo_LockedOntoWarningHUD_Update()
 {
 	entity player = GetLocalViewPlayer()
 
@@ -322,9 +311,23 @@ function SmartAmmo_LockedOntoWarningHUD_Update()
 
 	//printt( lockedFraction, highestLockSource, activeLockingWeapon )
 
-	local reqFracForDetection = TARGET_SET_FRACTION
+	float reqFracForDetection = TARGET_SET_FRACTION
 	if ( lockedFraction > TARGET_SET_FRACTION && IsValid( highestLockSource ) )
 	{
+		float delay = SmartAmmo_GetWarningIndicatorDelay( activeLockingWeapon )
+		if ( delay )
+		{
+			reqFracForDetection = delay
+		}
+		else
+		{
+			string weaponclass = expect string( activeLockingWeapon.GetNetworkedClassName() )
+			//if ( weaponclass in SmartAmmo_DetectorStartFracOverrides )
+			//{
+				//reqFracForDetection = SmartAmmo_DetectorStartFracOverrides[ weaponclass ]
+			//}
+		}
+
 		Assert( activeLockingWeapon != null )
 	}
 
@@ -367,15 +370,7 @@ void function ClearLockonHudForceWeapon()
 	file.lockingMissiles = []
 }
 
-void function SCB_SmartAmmoForceLockedOntoHudDraw( int activeLockingWeaponHandle, int missileWeaponHandle )
-{
-	entity activeLockingWeapon = GetEntityFromEncodedEHandle( activeLockingWeaponHandle )
-	entity missile = GetEntityFromEncodedEHandle( missileWeaponHandle )
-	file.lockonHudForceWeapon = activeLockingWeapon
-	file.lockingMissiles.append( missile )
-}
-
-function ShowLockedOntoWarningHUD( entity player, array<entity> lockingEnemies, entity activeLockingWeapon, bool isLocked )
+void function ShowLockedOntoWarningHUD( entity player, array<entity> lockingEnemies, entity activeLockingWeapon, bool isLocked )
 {
 	string displayStr
 	if ( isLocked )
@@ -394,11 +389,10 @@ function ShowLockedOntoWarningHUD( entity player, array<entity> lockingEnemies, 
 	RuiSetBool( file.lockon_hud, "eastLock", showArrows.right )
 }
 
-
 table function GetActiveLockQuadrants( entity player, array<entity> lockingEnemies )
 {
 	vector playerOrg = player.GetOrigin()
-	table arrows = {}
+	table arrows
 	arrows.forward 	<- false
 	arrows.back 	<- false
 	arrows.left 	<- false
@@ -430,7 +424,7 @@ table function GetActiveLockQuadrants( entity player, array<entity> lockingEnemi
 		//   - q1 upperleft, q2 upperright, q3 lowerright, q4 lowerleft
 		// Second: to map to the arrows we split each foursquare quadrant in half and check the degrees; half means one arrow, half means the other
 
-		local dir = null
+		string dir
 		if ( dotForward >= 0 && dotRight >= 0 )			// q2
 			dir = deg <= 45 ? "forward" : "right"
 		else if ( dotForward > 0 && dotRight < 0 )		// q1

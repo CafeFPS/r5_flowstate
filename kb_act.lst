@@ -40,6 +40,7 @@
 "blank"					  				"=========================="
 "blank"					  				"#BINDINGS_HEADER_COMMUNICATION"
 "blank"					  				"=========================="
+"chat_wheel"    		  				"#BIND_OPEN_CHAT_WHEEL"
 "+ping"					  				"#PING_ABILITY"
 "ping_specific_type ENEMY"				"#BINDING_PING_ENEMY"
 "ping_specific_type GOING"				"#BINDING_PING_GOING"

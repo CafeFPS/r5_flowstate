@@ -1,0 +1,1402 @@
+//=========================================================
+//	sh_challenges.gnut
+//=========================================================
+
+#if CLIENT || UI
+global function ShChallenges_LevelInit_PreStats
+global function ShChallenges_LevelInit_PostStats
+global function GetAllChallenges
+global function Challenge_GetTierCount
+global function Challenge_LastTierIsInfinite
+global function Challenge_GetCurrentTier
+global function Challenge_IsComplete
+global function Challenge_GetTimeSpanKind
+global function Challenge_GetGoalVal
+global function Challenge_GetXPReward
+global function Challenge_GetBattlepassLevelsReward
+global function Challenge_GetItemRewards
+global function Challenge_IsPremium
+global function Challenge_GetProgressValue
+
+
+
+global function DoesPlayerHaveChallenge
+global function RegisterChallengeSource
+global function RegisterChallengeFromAsset
+#endif
+
+#if SERVER
+#endif
+
+#if SERVER
+#endif
+
+#if SERVER
+#endif
+
+#if CLIENT && R5DEV
+global function PrintAllChallenges
+#endif
+
+#if CLIENT
+global function ServerToClient_AssignedChallengesDidChange
+global function ServerToClient_ChallengeDataDidChange
+#elseif UI
+global function GetPlayerChallengeGroupData
+global function GetAllChallengeGroupData
+global function GetPinnedChallenges
+global function Challenge_IsPinned
+global function ClientToUI_AssignedChallengesDidChange
+global function ClientToUI_ChallengeDataDidChange
+global function UpdateLobbyChallengeMenu
+global function GetLobbyChallengeButtons
+#endif
+
+#if CLIENT || UI
+global function UpdateChallengeBoxRows
+global function Challenge_GetDescription
+#endif
+
+#if UI
+global function RefreshChallenges
+#endif
+
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+#if CLIENT || UI
+global enum eChallengeTimeSpanKind
+{
+	DAILY,
+	SEASON_WEEKLY,
+	SEASON_WEEKLY_RECURRING,
+	EVENT,
+}
+#endif
+
+
+#if UI
+global struct ChallengeGroupData
+{
+	string               groupName
+	array<ItemFlavor>    challenges
+	int                  completedChallenges
+	int                  timeSpanKind
+}
+#endif
+
+const array<string> CHARACTER_ASSET_FIELDS = [ "character", "character2", "character3", "character4" ]
+
+
+////////////////
+////////////////
+//// Consts ////
+////////////////
+////////////////
+const bool CHALLENGES_DEBUG_PRINTS = false
+
+//
+const int NUM_DAILY_CHALLENGES = 3
+const int NUM_CHALLENGES_ON_LOBBY_MENU = 3
+const int NUM_WEEKLY_CHALLENGES_MAX = 10
+const int NUM_CHALLENGE_WEEKS_MAX = 13
+const int NUM_CHALLENGES_MAX = (NUM_WEEKLY_CHALLENGES_MAX * NUM_CHALLENGE_WEEKS_MAX) + NUM_DAILY_CHALLENGES
+const int NUM_POST_GAME_CHALLENGES_MAX = 32
+
+
+#if CLIENT || UI
+struct ChallengeState
+{
+	int         persistenceIdx = -1
+	ItemFlavor& flav
+}
+#endif
+
+
+#if CLIENT || UI
+struct PlayerChallengesState
+{
+	table<ItemFlavor, ChallengeState>   challengeStateMap
+	array<ChallengeState ornull>        persistentArrayMirror
+}
+#endif
+
+
+#if CLIENT || UI
+struct FileStruct_LifetimeLevel
+{
+	//
+	table<StatEntry, array<ItemFlavor> > statEntryChallengesMap
+	table<ItemFlavor, ItemFlavor>        challengeSourceMap
+	table<ItemFlavor, int>               challengeSortOrdinalMap
+
+	table<ItemFlavor, bool> challengeGRXRewardSequenceBusySet
+
+	#if SERVER
+
+	#elseif CLIENT || UI
+		PlayerChallengesState localPlayerChallengesState
+	#endif
+}
+FileStruct_LifetimeLevel& fileLevel
+#endif
+
+#if CLIENT || UI
+struct
+{
+	bool initialized = false
+} file
+#endif
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+#if CLIENT || UI
+void function ShChallenges_LevelInit_PreStats()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	AddCallback_OnItemFlavorRegistered( eItemType.challenge, OnChallengeRegistered )
+
+	#if SERVER
+
+	#endif
+
+	#if CLIENT
+		Remote_RegisterClientFunction( "ServerToClient_AssignedChallengesDidChange" )
+		Remote_RegisterClientFunction( "ServerToClient_ChallengeDataDidChange" )
+	#endif
+
+	#if UI
+		if ( !file.initialized )
+			AddUICallback_OnResolutionChanged( RefreshChallenges )
+	#endif
+
+	file.initialized = true
+
+	//
+	AddCallback_RegisterRootItemFlavors( void function() {
+		foreach ( asset challengeAsset in WORKAROUND_GetAllChallengeAssets() )
+		{
+			//
+			var settingsBlock = GetSettingsBlockForAsset( challengeAsset )
+			var tierDataArray = GetSettingsBlockArray( settingsBlock, "tiers" )
+			for ( int i = 0 ; i < GetSettingsArraySize( tierDataArray ) ; i++ )
+			{
+				var tierBlock = GetSettingsArrayElem( tierDataArray, i )
+
+				foreach( string field in CHARACTER_ASSET_FIELDS )
+				{
+					asset characterAsset = GetSettingsBlockAsset( tierBlock, field )
+					if ( characterAsset != $"" && !IsValidItemFlavorSettingsAsset( characterAsset ) )
+					{
+						Warning( "Skipping challenge %s because character %s is not registered", string(challengeAsset), string(characterAsset) )
+						continue
+					}
+				}
+			}
+
+			//
+			ItemFlavor ornull challenge = RegisterItemFlavorFromSettingsAsset( challengeAsset )
+		}
+	} )
+}
+
+ItemFlavor ornull function RegisterChallengeFromAsset( asset challengeAsset )
+{
+	//
+	var settingsBlock = GetSettingsBlockForAsset( challengeAsset )
+	var tierDataArray = GetSettingsBlockArray( settingsBlock, "tiers" )
+	for ( int i = 0 ; i < GetSettingsArraySize( tierDataArray ) ; i++ )
+	{
+		var tierBlock = GetSettingsArrayElem( tierDataArray, i )
+
+		foreach( string field in CHARACTER_ASSET_FIELDS )
+		{
+			asset characterAsset = GetSettingsBlockAsset( tierBlock, field )
+			if ( characterAsset != $"" && !IsValidItemFlavorSettingsAsset( characterAsset ) )
+			{
+				Warning( "Skipping challenge %s because character %s is not registered", string(challengeAsset), string(characterAsset) )
+				continue
+			}
+		}
+	}
+
+	//
+	ItemFlavor ornull challenge = RegisterItemFlavorFromSettingsAsset( challengeAsset )
+
+	return challenge
+}
+#endif
+
+
+#if CLIENT || UI
+void function ShChallenges_LevelInit_PostStats()
+{
+	#if R5DEV
+		if ( DEV_ShouldIgnorePersistence() )
+			return
+	#endif
+
+	foreach ( ItemFlavor challenge in GetAllChallenges() )
+	{
+		int tierCount = Challenge_GetTierCount( challenge )
+		for ( int i = 0 ; i < tierCount ; i++ )
+		{
+			array<string> statRefs = Challenge_GetStatRefs( challenge, i )
+			foreach( string statRef in statRefs )
+			{
+				if ( !IsValidStatEntryRef( statRef ) )
+				{
+					Assert( 0, format( "Challenge '%s' tier %d refers to non-existant stat: '%s'", ItemFlavor_GetHumanReadableRef( challenge ), i, statRef ) )
+					continue
+				}
+
+				StatEntry stat = GetStatEntryByRef( statRef )
+
+				if ( (StatEntry_GetFlags( stat ) & eStatFlags.STORE_START_OF_PREVIOUS_MATCH) == 0 )
+				{
+					Assert( 0, format( "Challenge '%s' refers to stat that does not have the STORE_END_OF_PREVIOUS_MATCH flag: '%s'", ItemFlavor_GetHumanReadableRef( challenge ), statRef ) )
+					continue
+				}
+
+				if ( !(stat in fileLevel.statEntryChallengesMap) )
+					fileLevel.statEntryChallengesMap[ stat ] <- []
+				fileLevel.statEntryChallengesMap[ stat ].append( challenge )
+			}
+
+			if ( Challenge_GetGoalVal( challenge, i ) <= 0 )
+			{
+				Assert( 0, format( "Challenge '%s' has invalid goal val: %d", ItemFlavor_GetHumanReadableRef( challenge ), Challenge_GetGoalVal( challenge, i ) ) )
+				continue
+			}
+		}
+	}
+
+	#if UI
+		ClientToUI_ChallengeDataDidChange() //
+	#endif
+}
+#endif
+
+#if CLIENT || UI 
+void function RegisterChallengeSource( ItemFlavor challengeFlav, ItemFlavor sourceFlav, int sortOrdinal )
+{
+	fileLevel.challengeSourceMap[challengeFlav] <- sourceFlav
+	fileLevel.challengeSortOrdinalMap[challengeFlav] <- sortOrdinal
+}
+#endif
+
+#if SERVER
+#endif
+
+
+#if CLIENT || UI
+void function OnChallengeRegistered( ItemFlavor challenge )
+{
+	//
+}
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if CLIENT
+void function ServerToClient_AssignedChallengesDidChange()
+{
+	InitPlayerChallengesStateFromPersistence( GetLocalClientPlayer(), fileLevel.localPlayerChallengesState )
+	RunUIScript( "ClientToUI_AssignedChallengesDidChange" )
+
+	ServerToClient_ChallengeDataDidChange()
+}
+#endif
+
+
+#if UI
+void function ClientToUI_AssignedChallengesDidChange()
+{
+	InitPlayerChallengesStateFromPersistence( GetUIPlayer(), fileLevel.localPlayerChallengesState )
+}
+#endif
+
+
+#if CLIENT
+void function ServerToClient_ChallengeDataDidChange()
+{
+	RunUIScript( "ClientToUI_ChallengeDataDidChange" )
+}
+#endif
+
+
+#if UI
+void function ClientToUI_ChallengeDataDidChange()
+{
+	if ( IsLobby() && IsLocalClientEHIValid() )
+		UpdateLobbyChallengeMenu()
+}
+#endif
+
+
+#if UI
+void function UpdateLobbyChallengeMenu()
+{
+	// TODO: fix challenges
+	return
+	#if SERVER
+
+	#endif
+	var playPanel              = GetPanel( "PlayPanel" )
+	var challengesBoxHeader    = Hud_GetChild( playPanel, "ChallengesBox" )
+	var challengesBoxHeaderRui = Hud_GetRui( challengesBoxHeader )
+	var allChallengesButton    = Hud_GetChild( playPanel, "AllChallengesButton" )
+
+	int rowCount = 3
+	{
+		int remainingDuration = GetPersistentVarAsInt( "dailyExpirationTime" ) - Daily_GetCurrentTime()
+		RuiSetGameTime( challengesBoxHeaderRui, "expireTime", remainingDuration > 0 ? Time() + remainingDuration : RUI_BADGAMETIME )
+		RuiSetArg( challengesBoxHeaderRui, "eventActive", false )
+	}
+
+	array<var> btnList = GetLobbyChallengeButtons()
+
+	bool anyChallengesDisplayed = UpdateChallengeBoxRows( rowCount, challengesBoxHeaderRui, btnList )
+	Hud_SetVisible( challengesBoxHeader, anyChallengesDisplayed )
+	//
+	Hud_SetVisible( allChallengesButton, anyChallengesDisplayed )
+
+	bool isAnyChallengeNew = false
+	foreach ( ChallengeGroupData cgd in GetPlayerChallengeGroupData( GetUIPlayer() ) )
+	{
+		foreach ( ItemFlavor challenge in cgd.challenges )
+		{
+			if ( Newness_IsItemFlavorNew( challenge ) )
+			{
+				isAnyChallengeNew = true
+				break
+			}
+		}
+	}
+	Hud_SetNew( allChallengesButton, isAnyChallengeNew )
+}
+#endif
+
+
+#if UI
+array<var> function GetLobbyChallengeButtons()
+{
+	var playPanel = GetPanel( "PlayPanel" )
+
+	array<var> buttons
+	for ( int rowIdx = 0; rowIdx < 4; rowIdx++ )
+		buttons.append( Hud_GetChild( playPanel, "ChallengeButton" + rowIdx ) )
+
+	return buttons
+}
+#endif
+
+
+/////////////////////////
+/////////////////////////
+//// Internals       ////
+/////////////////////////
+/////////////////////////
+
+#if UI
+array<ChallengeGroupData> function GetPlayerChallengeGroupData( entity player )
+{
+	Assert( player == GetUIPlayer() )
+	array<ChallengeGroupData> groupData
+	array<ItemFlavor> challenges = []
+
+	challenges = GetAssignedChallengesByTimeSpan( GetUIPlayer(), eChallengeTimeSpanKind.DAILY )
+	groupData.append( CreateChallengeGroup( player, Localize( "#CHALLENGE_GROUP_DAILY" ), challenges, eChallengeTimeSpanKind.DAILY ) )
+
+	//
+	challenges = GetAssignedChallengesByTimeSpan( player, eChallengeTimeSpanKind.SEASON_WEEKLY_RECURRING )
+	groupData.append( CreateChallengeGroup( player, Localize( "#CHALLENGE_GROUP_SEASON_WEEKLY_RECURRING" ), challenges, eChallengeTimeSpanKind.SEASON_WEEKLY_RECURRING ) )
+
+	//
+	for ( int i = 0 ; i < NUM_CHALLENGE_WEEKS_MAX ; i++ )
+	{
+		int groupIndex = GetPersistentVarAsInt( "weeklyGroupOrder[" + i + "]" )
+		if ( groupIndex == 0 )
+			break //
+		challenges = GetAssignedChallengesByTimeSpan( player, eChallengeTimeSpanKind.SEASON_WEEKLY, groupIndex )
+		if ( challenges.len() > 0 )
+			groupData.append( CreateChallengeGroup( player, Localize( "#CHALLENGE_GROUP_WEEKLY", i + 1 ), challenges, eChallengeTimeSpanKind.SEASON_WEEKLY ) )
+	}
+
+	return groupData
+}
+#endif
+
+
+#if UI
+array<ChallengeGroupData> function GetAllChallengeGroupData()
+{
+	array<ChallengeGroupData> groupData
+	array<ItemFlavor> challenges = []
+
+	challenges = GetAllChallengesOfTimespan( eChallengeTimeSpanKind.DAILY )
+	groupData.append( CreateChallengeGroup( null, Localize( "#CHALLENGE_GROUP_DAILY" ), challenges, eChallengeTimeSpanKind.DAILY ) )
+
+	challenges = GetAllChallengesOfTimespan( eChallengeTimeSpanKind.SEASON_WEEKLY_RECURRING )
+	groupData.append( CreateChallengeGroup( null, Localize( "#CHALLENGE_GROUP_SEASON_WEEKLY_RECURRING" ), challenges, eChallengeTimeSpanKind.SEASON_WEEKLY_RECURRING ) )
+
+	//
+	for ( int weekIdx = 0 ; weekIdx < NUM_CHALLENGE_WEEKS_MAX ; weekIdx++ )
+	{
+		challenges = GetAllChallengesOfTimespan( eChallengeTimeSpanKind.SEASON_WEEKLY, weekIdx + 1 )
+		if ( challenges.len() > 0 )
+			groupData.append( CreateChallengeGroup( null, Localize( "#CHALLENGE_GROUP_WEEKLY", weekIdx + 1 ), challenges, eChallengeTimeSpanKind.SEASON_WEEKLY ) )
+	}
+
+	return groupData
+}
+#endif
+
+
+#if UI
+array<ItemFlavor> function GetPinnedChallenges()
+{
+	PlayerChallengesState pcs = GetPlayerChallengesState( GetUIPlayer() )
+
+	array<ItemFlavor> pinnedChallenges
+	foreach ( ItemFlavor challengeFlav, ChallengeState cs in pcs.challengeStateMap )
+	{
+		if ( Challenge_IsPinned( challengeFlav ) )
+			pinnedChallenges.append( challengeFlav )
+	}
+
+	return pinnedChallenges
+}
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if CLIENT || UI
+PlayerChallengesState function GetPlayerChallengesState( entity player = null )
+{
+	player = AssertLocalOrServerValidPlayer( player )
+	#if SERVER
+
+#elseif CLIENT || UI
+		return fileLevel.localPlayerChallengesState
+	#endif
+}
+#endif
+
+
+#if CLIENT || UI
+void function InitPlayerChallengesStateFromPersistence( entity player, PlayerChallengesState pcs )
+{
+	#if R5DEV
+		if ( DEV_ShouldIgnorePersistence() )
+			return
+	#endif
+
+	foreach ( ChallengeState ornull cs in pcs.persistentArrayMirror )
+	{
+		if ( cs == null )
+			continue
+		expect ChallengeState(cs)
+		cs.persistenceIdx = -1
+		ItemFlavor badItemFlav
+		cs.flav = badItemFlav
+	}
+	pcs.persistentArrayMirror.clear()
+	pcs.persistentArrayMirror.resize( NUM_CHALLENGES_MAX, null )
+	pcs.challengeStateMap.clear()
+	for ( int persistentArrayIdx = 0 ; persistentArrayIdx < NUM_CHALLENGES_MAX ; persistentArrayIdx++ )
+	{
+		int guid                        = player.GetPersistentVarAsInt( "challenges[" + persistentArrayIdx + "].guid" )
+		ItemFlavor ornull challengeFlav = GetItemFlavorOrNullByGUID( guid, eItemType.challenge )
+		if ( challengeFlav == null )
+			continue
+		expect ItemFlavor( challengeFlav )
+
+		ChallengeState cs
+		cs.persistenceIdx = persistentArrayIdx
+		cs.flav = challengeFlav
+		pcs.challengeStateMap[cs.flav] <- cs
+		pcs.persistentArrayMirror[persistentArrayIdx] = cs
+	}
+}
+#endif
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if CLIENT && R5DEV
+void function PrintAllChallenges()
+{
+	array<ItemFlavor> allChallenges = GetAllChallenges()
+
+	array<string> guid			 = []
+	array<string> ref            = []
+	array<string> desc           = []
+	array<string> xpReward       = []
+	array<string> bpLevelsReward = []
+	array<string> type           = []
+
+	int guidLen			  = 0
+	int refLen            = 0
+	int descLen           = 0
+	int xpRewardLen       = 0
+	int bpLevelsRewardLen = 0
+	int typeLen           = 0
+
+	printt( "------- ALL CHALLENGES -------" )
+	foreach( ItemFlavor challenge in allChallenges )
+	{
+		if ( !GetCurrentPlaylistVarBool( format( "%s_enabled", ItemFlavor_GetGUIDString( challenge ) ), true ) )
+			continue
+
+		string _type = GetEnumString( "eChallengeTimeSpanKind", Challenge_GetTimeSpanKind( challenge ) )
+
+		int tierCount = Challenge_GetTierCount( challenge )
+		for ( int i = 0 ; i < tierCount ; i++ )
+		{
+			string _guid = (i == 0) ? ItemFlavor_GetGUIDString( challenge ) : ""
+			string _ref = (i == 0) ? ItemFlavor_GetHumanReadableRef( challenge ) : ""
+
+			string _desc = Challenge_GetDescription( challenge, i )
+			_desc = StringReplace( _desc, "`1", "" )
+			_desc = StringReplace( _desc, "`0", "" )
+			_desc = StringReplace( _desc, "\n", " " )
+			if ( tierCount > 1 )
+				_desc = (i + 1) + ") " + _desc
+
+			string _xpReward       = format( "   Stars: %d", Challenge_GetXPReward( challenge, i ) )
+			string _bpLevelsReward = format( "   BP Levels: %d", Challenge_GetBattlepassLevelsReward( challenge, i ) )
+
+			guid.append( _guid )
+			ref.append( _ref )
+			desc.append( _desc )
+			xpReward.append( _xpReward )
+			bpLevelsReward.append( _bpLevelsReward )
+			type.append( i == 0 ? _type : "" )
+
+			if ( _guid.len() > guidLen )
+				guidLen = _guid.len()
+			if ( _ref.len() > refLen )
+				refLen = _ref.len()
+			if ( _desc.len() > descLen )
+				descLen = _desc.len()
+			if ( _xpReward.len() > xpRewardLen )
+				xpRewardLen = _xpReward.len()
+			if ( _bpLevelsReward.len() > bpLevelsRewardLen )
+				bpLevelsRewardLen = _bpLevelsReward.len()
+			if ( _type.len() > typeLen )
+				typeLen = _type.len()
+		}
+	}
+
+	Assert( desc.len() == ref.len() && xpReward.len() == ref.len() && bpLevelsReward.len() == ref.len() && type.len() == ref.len() )
+
+	for ( int i = 0 ; i < ref.len() ; i++ )
+	{
+		string _guid           = guid[i]
+		string _ref            = ref[i]
+		string _desc           = desc[i]
+		string _xpReward       = xpReward[i]
+		string _bpLevelsReward = bpLevelsReward[i]
+		string _type           = type[i]
+
+		while( _guid.len() < guidLen )
+			_guid += " "
+		while( _ref.len() < refLen )
+			_ref += " "
+		while( _desc.len() < descLen )
+			_desc += " "
+		while( _xpReward.len() < xpRewardLen )
+			_xpReward += " "
+		while( _bpLevelsReward.len() < bpLevelsRewardLen )
+			_bpLevelsReward += " "
+		while( _type.len() < typeLen )
+			_type += " "
+
+		printl( format( "%s  %s  %s  %s  %s  %s", _guid, _ref, _desc, _xpReward, _bpLevelsReward, _type ) )
+	}
+
+	printt( "------------------------------" )
+	printt( "  Total Challenges:", allChallenges.len() )
+	printt( "------------------------------" )
+}
+#endif
+
+
+#if CLIENT || UI
+array<ItemFlavor> function GetAssignedChallengesByTimeSpan( entity player, int timeSpan, int weekIndex = -1 )
+{
+	Assert( timeSpan >= 0 && timeSpan < eChallengeTimeSpanKind.len() )
+
+	if ( timeSpan == eChallengeTimeSpanKind.SEASON_WEEKLY )
+		Assert( weekIndex > 0 )
+
+	PlayerChallengesState pcs = GetPlayerChallengesState( player )
+
+	array<ItemFlavor> results
+	foreach ( ItemFlavor challengeFlav, ChallengeState cs in pcs.challengeStateMap )
+	{
+		if ( CharacterClass_GetTimeSpan( challengeFlav ) == timeSpan )
+		{
+			if ( !GetCurrentPlaylistVarBool( format( "%s_enabled", ItemFlavor_GetGUIDString( challengeFlav ) ), true ) )
+			{
+				//
+				continue
+			}
+
+			if ( timeSpan == eChallengeTimeSpanKind.SEASON_WEEKLY && Challenge_GetWeekNumber( challengeFlav ) != weekIndex )
+				continue
+
+			results.append( challengeFlav )
+		}
+	}
+
+	return results
+}
+#endif
+
+
+#if CLIENT || UI
+table<var, void functionref(var)> WORKAROUND_challengeButtonToClickHandlerMap = {} //
+bool function UpdateChallengeBoxRows( int rowCount, var mainRUI, array<var> buttonList )
+{
+	string headerText                    = ""
+	asset headerIcon                     = $""
+	ItemFlavor ornull headerBadge        = null
+	int ornull overrideDataIntegerOrNull = null
+	array<ItemFlavor> displayChallenges  = []
+	entity player                        = GetLocalClientPlayer()
+	EHI playerEHI                        = ToEHI( player )
+
+	{
+		ItemFlavor ornull activeBattlePass = GetPlayerLastActiveBattlePass( playerEHI )
+
+		if ( activeBattlePass != null )
+		{
+			expect ItemFlavor( activeBattlePass )
+
+			int currentBattlePassXP = GetPlayerBattlePassXPProgress( playerEHI, activeBattlePass, false )
+			overrideDataIntegerOrNull = GetBattlePassLevelForXP( activeBattlePass, currentBattlePassXP ) + 1
+			headerBadge = GetBattlePassProgressBadge( activeBattlePass )
+		}
+
+		headerText = Localize( "#CHALLENGES_HEADER_DAILY" )
+		displayChallenges = GetAssignedChallengesByTimeSpan( player, eChallengeTimeSpanKind.DAILY )
+	}
+
+	if ( mainRUI != null )
+	{
+		RuiSetString( mainRUI, "headerText", headerText )
+		RuiSetImage( mainRUI, "headerIcon", headerIcon )
+		RuiDestroyNestedIfAlive( mainRUI, "headerBadgeHandle" )
+
+		if ( headerBadge != null )
+		{
+			expect ItemFlavor( headerBadge )
+			ItemFlavor dummy
+
+			CreateNestedGladiatorCardBadge( mainRUI, "headerBadgeHandle", playerEHI, headerBadge, 0, dummy, overrideDataIntegerOrNull )
+		}
+	}
+
+	for ( int rowIdx = 0 ; rowIdx < maxint( rowCount, buttonList.len() ); rowIdx++ )
+	{
+		var button        = null
+		var rui           = mainRUI
+		string suffix     = string(rowIdx)
+		bool doRewardIcon = false
+		#if UI
+			if ( buttonList.len() > 0 )
+			{
+				button = buttonList[rowIdx]
+				rui = Hud_GetRui( button )
+				suffix = ""
+				doRewardIcon = true
+			}
+		#endif
+
+		if ( rowIdx >= displayChallenges.len() || rowIdx >= rowCount )
+		{
+			if ( rui != null )
+			{
+				RuiSetString( rui, "challengeText" + suffix, "" )
+				RuiSetInt( rui, "challengeProgress" + suffix, 0 )
+				RuiSetInt( rui, "challengeGoal" + suffix, 0 )
+				RuiSetString( rui, "xpRewardString" + suffix, "" )
+				RuiSetInt( rui, "bpLevelsAwarded" + suffix, 0 )
+				RuiSetInt( rui, "tierCount" + suffix, 1 )
+				RuiSetInt( rui, "activeTier" + suffix, 0 )
+			}
+			#if UI
+				if ( button != null )
+					Hud_Hide( button )
+			#endif
+			continue
+		}
+
+		ItemFlavor challenge = displayChallenges[rowIdx]
+		int tierCount        = Challenge_GetTierCount( challenge )
+		int activeTier       = Challenge_GetCurrentTier( player, challenge )
+		if ( Challenge_IsComplete( player, challenge ) )
+			activeTier = tierCount - 1 //
+		int challengeProgress = Challenge_GetProgressValue( player, challenge, activeTier )
+		int challengeGoal     = Challenge_GetGoalVal( challenge, activeTier )
+
+		ItemFlavorBag challengeItemRewards = Challenge_GetItemRewards( challenge, activeTier )
+		ItemFlavor ornull singleReward     = challengeItemRewards.flavors.len() == 1 ? challengeItemRewards.flavors[0] : null
+
+		if ( rui != null )
+		{
+			RuiSetString( rui, "challengeText" + suffix, Challenge_GetDescription( challenge, activeTier ) )
+			RuiSetInt( rui, "challengeProgress" + suffix, challengeProgress )
+			RuiSetInt( rui, "challengeGoal" + suffix, challengeGoal )
+			RuiSetString( rui, "xpRewardString" + suffix, Localize( "#CHALLENGE_XP_REWARD_STRING", Challenge_GetXPReward( challenge, activeTier ) ) )
+			RuiSetInt( rui, "bpLevelsAwarded" + suffix, Challenge_GetBattlepassLevelsReward( challenge, activeTier ) )
+			RuiSetInt( rui, "tierCount" + suffix, tierCount )
+			RuiSetInt( rui, "activeTier" + suffix, activeTier )
+
+			if ( doRewardIcon )
+			{
+				if ( singleReward != null )
+				{
+					expect ItemFlavor(singleReward)
+					asset rewardIcon = $""
+					if ( ItemFlavor_GetType( singleReward ) == eItemType.character_skin )
+					{
+						ItemFlavor character = CharacterSkin_GetCharacterFlavor( singleReward )
+						rewardIcon = ItemFlavor_GetIcon( character )
+						RuiSetInt( rui, "tempRewardIconMode", 1 )
+					}
+					else if ( ItemFlavor_GetType( singleReward ) == eItemType.weapon_skin )
+					{
+						ItemFlavor weapon = WeaponSkin_GetWeaponFlavor( singleReward )
+						rewardIcon = GetWeaponInfoFileKeyFieldAsset_Global( WeaponItemFlavor_GetClassname( weapon ), "hud_icon" )
+						RuiSetInt( rui, "tempRewardIconMode", 2 )
+					}
+					else if ( ItemFlavor_GetAsset( singleReward ) == $"settings/itemflav/gcard_badge/account/beasthunter_event.rpak" )
+					{
+						rewardIcon = $"rui/menu/seasonal_event/beast_hunter_badge_reward"
+						RuiSetInt( rui, "tempRewardIconMode", 3 )
+					}
+					RuiSetImage( rui, "rewardIcon", rewardIcon )
+					RuiSetFloat3( rui, "rewardIconCol", GetKeyColor( COLORID_TEXT_LOOT_TIER0, ItemFlavor_GetQuality( singleReward ) + 1 ) / 255.0 )
+				}
+				else
+				{
+					RuiSetInt( rui, "tempRewardIconMode", 0 )
+				}
+			}
+		}
+
+		#if UI
+			if ( button != null )
+			{
+				Hud_Show( button )
+				if ( button in WORKAROUND_challengeButtonToClickHandlerMap )
+				{
+					Hud_RemoveEventHandler( button, UIE_CLICK, WORKAROUND_challengeButtonToClickHandlerMap[button] )
+					delete WORKAROUND_challengeButtonToClickHandlerMap[button]
+				}
+				Hud_ClearToolTipData( button )
+
+				if ( singleReward != null && InspectItemTypePresentationSupported( expect ItemFlavor(singleReward) ) )
+				{
+					expect ItemFlavor(singleReward)
+					void functionref(var) clickHandler = (void function( var button ) : ( challenge, activeTier, singleReward ) {
+						SetChallengeRewardPresentationModeActive( singleReward,
+							"#CHALLENGE_REWARD",
+							Challenge_GetDescription( challenge, activeTier ) )
+					})
+					Hud_AddEventHandler( button, UIE_CLICK, clickHandler )
+					WORKAROUND_challengeButtonToClickHandlerMap[button] <- clickHandler
+
+					ToolTipData toolTipData
+					toolTipData.tooltipStyle = eTooltipStyle.BUTTON_PROMPT
+					toolTipData.actionHint1 = "#VIEW_REWARD_TOOLTIP"
+					Hud_SetToolTipData( button, toolTipData )
+				}
+			}
+		#endif
+	}
+
+	return (displayChallenges.len() > 0)
+}
+#endif
+
+
+#if CLIENT || UI
+string function Challenge_GetDescription( ItemFlavor challenge, int tier )
+{
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( challenge ) )
+
+	int challengeGoal      = Challenge_GetGoalVal( challenge, tier )
+	var tierData           = Challenge_GetTierDataBlock( challenge, tier )
+	string tierDescription = GetSettingsBlockString( tierData, "description" )
+
+	array<ItemFlavor> characterFlavors = Challenge_GetCharacterItemFlavors( challenge, tier )
+	if ( characterFlavors.len() > 0 )
+	{
+		switch ( characterFlavors.len() )
+		{
+			case 1:
+				return Localize( tierDescription, challengeGoal, Localize( ItemFlavor_GetLongName( characterFlavors[0] ) ) )
+
+			case 2:
+				return Localize( tierDescription, challengeGoal, Localize( ItemFlavor_GetLongName( characterFlavors[0] ) ), Localize( ItemFlavor_GetLongName( characterFlavors[1] ) ) )
+
+			case 3:
+				return Localize( tierDescription, challengeGoal, Localize( ItemFlavor_GetLongName( characterFlavors[0] ) ), Localize( ItemFlavor_GetLongName( characterFlavors[1] ) ), Localize( ItemFlavor_GetLongName( characterFlavors[2] ) ) )
+
+			case 4:
+				return Localize( tierDescription, challengeGoal, Localize( ItemFlavor_GetLongName( characterFlavors[0] ) ), Localize( ItemFlavor_GetLongName( characterFlavors[1] ) ), Localize( ItemFlavor_GetLongName( characterFlavors[2] ) ), Localize( ItemFlavor_GetLongName( characterFlavors[3] ) ) )
+
+			default:
+				Assert( 0, "Invalid number of character flavors referened in challenge " + ItemFlavor_GetHumanReadableRef( challenge ) + " tier " + tier )
+		}
+	}
+
+	ItemFlavor ornull weaponFlavor = Challenge_GetWeaponItemFlavorOrNull( challenge, tier )
+	if ( weaponFlavor != null )
+		return Localize( tierDescription, challengeGoal, Localize( ItemFlavor_GetShortName( expect ItemFlavor( weaponFlavor ) ) ) )
+
+	#if(true)
+		string zoneName = Challenge_GetZoneName( challenge, tier )
+		if ( zoneName != "" )
+			return Localize( tierDescription, challengeGoal, Localize( zoneName ) )
+	#endif
+
+	return Localize( tierDescription, challengeGoal )
+}
+#endif
+
+
+#if CLIENT || UI
+bool function DoesPlayerHaveChallenge( entity player, ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+
+	PlayerChallengesState pcs = GetPlayerChallengesState( player )
+	return (flavor in pcs.challengeStateMap)
+}
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if CLIENT || UI
+bool function IsChallengeTierComplete( entity player, ItemFlavor challenge, int tier )
+{
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( challenge ) )
+
+	int goalVal  = Challenge_GetGoalVal( challenge, tier )
+	int progress = Challenge_GetProgressValue( player, challenge, tier )
+	return progress >= goalVal
+}
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if CLIENT || UI
+array<ItemFlavor> function GetAllChallenges()
+{
+	return GetAllItemFlavorsOfType( eItemType.challenge )
+}
+#endif
+
+
+#if CLIENT || UI
+array<ItemFlavor> function GetAllChallengesOfTimespan( int timeSpan, int weekIndex = -1 )
+{
+	Assert( timeSpan >= 0 && timeSpan < eChallengeTimeSpanKind.len() )
+
+	if ( timeSpan == eChallengeTimeSpanKind.SEASON_WEEKLY )
+		Assert( weekIndex > 0 )
+
+	array<ItemFlavor> results = []
+
+	if ( GetActiveBattlePass() == null && timeSpan != eChallengeTimeSpanKind.EVENT )
+		return results
+
+	foreach( ItemFlavor challenge in GetAllChallenges() )
+	{
+		if ( Challenge_GetTimeSpanKind( challenge ) == timeSpan )
+		{
+			if ( timeSpan == eChallengeTimeSpanKind.SEASON_WEEKLY && Challenge_GetWeekNumber( challenge ) != weekIndex )
+				continue
+
+			if ( !GetCurrentPlaylistVarBool( format( "%s_enabled", ItemFlavor_GetGUIDString( challenge ) ), true ) )
+			{
+				continue
+			}
+
+			results.append( challenge )
+		}
+	}
+	return results
+}
+#endif
+
+
+#if CLIENT || UI
+int function Challenge_GetCurrentTier( entity player, ItemFlavor flavor )
+{
+	#if R5DEV
+		if ( DEV_ShouldIgnorePersistence() )
+			return 0
+	#endif
+	PlayerChallengesState pcs = GetPlayerChallengesState( player )
+	Assert( flavor in pcs.challengeStateMap, "Called Challenge_GetCurrentTier for challenge " + ItemFlavor_GetHumanReadableRef( flavor ) + " but it was not assigned to the player " + string(player) )
+	ChallengeState cs = pcs.challengeStateMap[flavor]
+	return player.GetPersistentVarAsInt( "challenges[" + cs.persistenceIdx + "].currentTier" )
+}
+#endif
+
+
+#if CLIENT || UI
+bool function Challenge_IsComplete( entity player, ItemFlavor flavor )
+{
+	int currentTier = Challenge_GetCurrentTier( player, flavor )
+	int tierCount   = Challenge_GetTierCount( flavor )
+	Assert( currentTier <= tierCount )
+	return (currentTier == tierCount)
+}
+#endif
+
+
+#if CLIENT || UI
+int function Challenge_GetTierCount( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+
+	var settingsBlock = ItemFlavor_GetSettingsBlock( flavor )
+	return GetSettingsArraySize( GetSettingsBlockArray( settingsBlock, "tiers" ) )
+}
+#endif
+
+
+#if CLIENT || UI
+int function Challenge_GetTimeSpanKind( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+
+	string key = GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "timeSpan" )
+	Assert( key in eChallengeTimeSpanKind, format( "Challenge %s has invalid time span kind: %s", string(ItemFlavor_GetAsset( flavor )), key ) )
+	return eChallengeTimeSpanKind[key]
+}
+#endif
+
+
+#if CLIENT || UI
+bool function Challenge_IsSingleMatch( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+	return GetSettingsBlockBool( tierData, "inSingleMatch" )
+}
+#endif
+
+
+#if CLIENT || UI
+array<ItemFlavor> function Challenge_GetCharacterItemFlavors( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+
+	array<ItemFlavor> characters = []
+	foreach( string field in CHARACTER_ASSET_FIELDS )
+	{
+		asset characterAsset = GetSettingsBlockAsset( tierData, field )
+		if ( characterAsset != $"" && IsValidItemFlavorSettingsAsset( characterAsset ) )
+			characters.append( GetItemFlavorByAsset( characterAsset ) )
+	}
+
+	return characters
+}
+#endif
+
+
+#if CLIENT || UI
+ItemFlavor ornull function Challenge_GetWeaponItemFlavorOrNull( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	var tierData      = Challenge_GetTierDataBlock( flavor, tier )
+	asset weaponAsset = GetSettingsBlockAsset( tierData, "weapon" )
+	if ( weaponAsset != $"" && IsValidItemFlavorSettingsAsset( weaponAsset ) )
+		return GetItemFlavorByAsset( weaponAsset )
+	return null
+}
+#endif
+
+
+#if CLIENT || UI
+int function Challenge_GetGoalVal( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	int override = GetCurrentPlaylistVarInt( format( "%s_goal_%i", ItemFlavor_GetGUIDString( flavor ), tier ), -1 )
+	if ( override > -1 )
+	{
+		return override
+	}
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+	return GetSettingsBlockInt( tierData, "goalVal" )
+}
+#endif
+
+
+#if CLIENT || UI
+int function Challenge_GetXPReward( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	int override = GetCurrentPlaylistVarInt( format( "%s_xpreward_%i", ItemFlavor_GetGUIDString( flavor ), tier ), -1 )
+	if ( override > -1 )
+	{
+		return override
+	}
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+	return GetSettingsBlockInt( tierData, "xpReward" )
+}
+#endif
+
+
+#if CLIENT || UI
+int function Challenge_GetBattlepassLevelsReward( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	int override = GetCurrentPlaylistVarInt( format( "%s_bpreward_%i", ItemFlavor_GetGUIDString( flavor ), tier ), -1 )
+	if ( override > -1 )
+	{
+		return override
+	}
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+	return GetSettingsBlockInt( tierData, "bpLevelsReward" )
+}
+#endif
+
+
+#if CLIENT || UI
+ItemFlavorBag function Challenge_GetItemRewards( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+
+	ItemFlavorBag rewards
+	foreach ( int rewardIdx, var rewardData in IterateSettingsArray( GetSettingsBlockArray( tierData, "itemRewards" ) ) )
+	{
+		asset rewardAsset = GetSettingsBlockAsset( rewardData, "flavor" )
+		if ( !IsValidItemFlavorSettingsAsset( rewardAsset ) )
+		{
+			Warning( "Skipping item reward #%d of challenge '%s' because the asset is not a valid itemflavor: '%s'", rewardIdx, ItemFlavor_GetHumanReadableRef( flavor ), string(rewardAsset) )
+			continue
+		}
+
+		rewards.flavors.append( GetItemFlavorByAsset( rewardAsset ) )
+		rewards.quantities.append( GetSettingsBlockInt( rewardData, "quantity" ) )
+	}
+	return rewards
+}
+#endif
+
+
+#if CLIENT || UI
+bool function Challenge_LastTierIsInfinite( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+
+	return GetGlobalSettingsBool( ItemFlavor_GetAsset( flavor ), "lastTierIsInfinite" )
+}
+#endif
+
+
+#if UI
+bool function Challenge_IsPinned( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+
+	return GetGlobalSettingsBool( ItemFlavor_GetAsset( flavor ), "pinned" )
+}
+#endif
+
+
+#if CLIENT || UI
+int function Challenge_GetWeekNumber( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+
+	return GetGlobalSettingsInt( ItemFlavor_GetAsset( flavor ), "weekNumber" )
+}
+#endif
+
+
+#if CLIENT || UI
+int function CharacterClass_GetTimeSpan( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+
+	return eChallengeTimeSpanKind[GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "timeSpan" )]
+}
+#endif
+
+
+#if CLIENT || UI
+int function Challenge_GetProgressValue( entity player, ItemFlavor challengeFlav, int tier )
+{
+	Assert( ItemFlavor_GetType( challengeFlav ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( challengeFlav ) )
+
+	#if R5DEV
+		if ( DEV_ShouldIgnorePersistence() )
+			return 0
+	#endif
+
+	PlayerChallengesState pcs = GetPlayerChallengesState( player )
+	Assert( challengeFlav in pcs.challengeStateMap, "Called Challenge_GetActiveTier for challenge " + ItemFlavor_GetHumanReadableRef( challengeFlav ) + " but it was not assigned to the player " + player )
+	ChallengeState cs = pcs.challengeStateMap[challengeFlav]
+
+	int goalVal = Challenge_GetGoalVal( challengeFlav, tier )
+
+	int currentTier = player.GetPersistentVarAsInt( "challenges[" + cs.persistenceIdx + "].currentTier" )
+
+	if ( tier < currentTier )
+		return goalVal
+
+	if ( tier > currentTier )
+		return 0
+
+	int current            = 0
+	array<string> statRefs = Challenge_GetStatRefs( challengeFlav, tier )
+	foreach( string statRef in statRefs )
+	{
+		Assert( IsValidStatEntryRef( statRef ) )
+		StatEntry entry = GetStatEntryByRef( statRef )
+		Assert( entry.type == eStatType.INT )
+		current += GetStat_Int( player, entry, eStatGetWhen.CURRENT )
+	}
+
+	int marker  = player.GetPersistentVarAsInt( "challenges[" + cs.persistenceIdx + "].statMarker" )
+
+	if ( marker < 0 )
+		return 0
+
+	int progress = current - marker
+
+	if ( progress < 0 )
+		return 0
+
+	if ( progress > goalVal )
+		return goalVal
+
+	return progress
+}
+#endif
+
+
+#if CLIENT || UI
+var function Challenge_GetTierDataBlock( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	var settingsBlock      = ItemFlavor_GetSettingsBlock( flavor )
+	var tierDataBlockArray = GetSettingsBlockArray( settingsBlock, "tiers" )
+
+	return GetSettingsArrayElem( tierDataBlockArray, tier )
+}
+#endif
+
+
+#if CLIENT || UI
+array<string> function Challenge_GetStatRefs( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+
+	string specifiedStatRef = GetSettingsBlockString( tierData, "statRef" )
+	array<string> statRefs  = []
+
+	if ( specifiedStatRef.find( "%char%" ) > -1 )
+	{
+		array<ItemFlavor> characterFlavors = Challenge_GetCharacterItemFlavors( flavor, tier )
+		Assert( characterFlavors.len() > 0, format( "Challenge %s tier %i uses char stat ref but doesn't have a character flavor associated with it", ItemFlavor_GetHumanReadableRef( flavor ), tier ) )
+		foreach( ItemFlavor character in characterFlavors )
+		{
+			statRefs.append( StringReplace( specifiedStatRef, "%char%", ItemFlavor_GetGUIDString( character ) ) )
+		}
+	}
+	else if ( specifiedStatRef.find( "%weap%" ) > -1 )
+	{
+		ItemFlavor ornull weapon = Challenge_GetWeaponItemFlavorOrNull( flavor, tier )
+		Assert( weapon != null, format( "Challenge %s tier %i uses weap stat ref but doesn't have a weapon flavor associated with it", ItemFlavor_GetHumanReadableRef( flavor ), tier ) )
+		statRefs.append( StringReplace( specifiedStatRef, "%weap%", ItemFlavor_GetGUIDString( expect ItemFlavor( weapon ) ) ) )
+	}
+	else
+	{
+		statRefs.append( specifiedStatRef )
+	}
+
+	return statRefs
+}
+#endif
+
+
+#if CLIENT || UI
+bool function Challenge_ShouldUseStatMarker( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+
+	return GetSettingsBlockBool( tierData, "useStatMarker" )
+}
+#endif
+
+
+#if CLIENT || UI
+string function Challenge_GetZoneName( ItemFlavor flavor, int tier )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+	Assert( tier >= 0 && tier < Challenge_GetTierCount( flavor ) )
+
+	var tierData = Challenge_GetTierDataBlock( flavor, tier )
+	return GetSettingsBlockString( tierData, "zoneName" )
+}
+#endif
+
+
+#if CLIENT || UI
+bool function Challenge_IsPremium( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
+
+	return GetGlobalSettingsBool( ItemFlavor_GetAsset( flavor ), "isPremium" )
+}
+#endif
+
+
+#if UI
+ChallengeGroupData function CreateChallengeGroup( entity player, string nameString, array<ItemFlavor> challenges, int timeSpanKind )
+{
+	ChallengeGroupData group
+	group.groupName = nameString
+	group.challenges = challenges
+	if ( player != null )
+		group.completedChallenges = GetCompletedChallengeCount( player, challenges )
+	group.timeSpanKind = timeSpanKind
+	return group
+}
+#endif
+
+
+#if CLIENT || UI
+int function GetCompletedChallengeCount( entity player, array<ItemFlavor> challenges )
+{
+	int count = 0
+
+	foreach( ItemFlavor challenge in challenges )
+	{
+		int maxTier = Challenge_GetTierCount( challenge ) - 1
+		Assert( maxTier >= 0 )
+		if ( IsChallengeTierComplete( player, challenge, maxTier ) )
+			count++
+	}
+
+	return count
+}
+#endif
+
+#if UI
+void function RefreshChallenges()
+{
+	RunClientScript( "ServerToClient_AssignedChallengesDidChange" )
+}
+#endif

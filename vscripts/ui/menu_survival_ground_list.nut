@@ -10,6 +10,8 @@ global function SurvivalGroundItem_BeginUpdate
 global function SurvivalGroundItem_EndUpdate
 
 global function ClientCallback_StartGroundItemExtendedUse
+global function ClientCallback_AddPickedUpGroundListItems
+global function ClientCallback_ClearPickedUpGroundListItems
 
 struct
 {
@@ -41,6 +43,7 @@ struct
 	float 		trackedScrollValue
 
 	string guidOverride = ""
+	array<int> pickedUpGroundListItems
 } file
 
 void function OnGroundListCommand( var panel, var button, int index, string command )
@@ -113,6 +116,7 @@ void function InitGroundListMenu( var newMenuArg ) //
 	RuiSetImage( Hud_GetRui( file.inventorySwapIcon ), "basicImage", $"rui/hud/loot/loot_swap_icon" )
 
 	AddMenuFooterOption( menu, RIGHT, BUTTON_B, true, "#B_BUTTON_CLOSE", "#CLOSE" )
+	AddMenuFooterOption( menu, RIGHT, BUTTON_STICK_RIGHT, true, "#STICK2_AUTO_PICKUP", "#STICK2_AUTO_PICKUP", OnAutoPickupClicked, IsDeathboxAutoPickupEnabled )
 
 	var weaponSwapButton = Hud_GetChild( menu, "WeaponSwapButton" )
 	var rui = Hud_GetRui( weaponSwapButton )
@@ -129,7 +133,7 @@ void function OnSurvivalGroundListMenu_Open()
 
 	ListPanel_SetActive( file.groundList, true )
 
-	UpdateGroundListMenu()
+	UpdateGroundListMenu( true )
 	ListPanel_ScrollListPaneltoIndex( file.groundList, 0 )
 	RunClientScript( "UICallback_GroundlistOpened" )
 	ListPanel_FocusFirstItem( file.groundList, true )
@@ -168,10 +172,10 @@ void function Delayed_SetCursorToObject( var obj )
 	SetCursorPosition( <width * x, height * y, 0> )
 }
 
-void function UpdateGroundListMenu()
+void function UpdateGroundListMenu( bool forceUpdate )
 {
-	ListPanel_Refresh( file.groundList )
-	GridPanel_Refresh( file.quickSwapGrid )
+	ListPanel_Refresh( file.groundList, forceUpdate )
+	//
 }
 
 void function OnSurvivalGroundListMenu_Close()
@@ -233,6 +237,8 @@ void function OnGroundItemClick( var panel, var button, int position )
 		Hud_SetToolTipData( button, file.groundListSavedTooltipData )
 		HideInventoryGridPanel()
 		Hud_SetSelected( button, false )
+
+		RunClientScript( "TryUpdateGroundList")
 		return
 	}
 
@@ -246,6 +252,16 @@ void function OnGroundItemClick( var panel, var button, int position )
 void function ClientCallback_StartGroundItemExtendedUse( var button, int position, float duration )
 {
 	thread StartGroundItemExtendedUse( button, position, duration )
+}
+
+void function ClientCallback_AddPickedUpGroundListItems( int index )
+{
+	file.pickedUpGroundListItems.append( index )
+}
+
+void function ClientCallback_ClearPickedUpGroundListItems()
+{
+	file.pickedUpGroundListItems.clear()
 }
 
 void function StartGroundItemExtendedUse( var button, int position, float duration )
@@ -340,15 +356,23 @@ void function GroundItem_OpenQuickSwap( var button, int position, int guid )
 
 void function OnGroundListScroll( var panel, float scrollValue )
 {
-	float timeSinceLastScroll = Time() - file.lastScrollTime
+	bool shouldResetGroundList = file.pickedUpGroundListItems.len() != 0
+	array<int> visibleItemsIndices = ListPanel_GetVisibleListItemsIndices( panel )
+	foreach ( index in file.pickedUpGroundListItems )
+	{
+		//
+		if ( visibleItemsIndices[0] < 0 && file.pickedUpGroundListItems.len() != 0 ||
+			index >= visibleItemsIndices[0] && index <= visibleItemsIndices[1] )
+		{
+			shouldResetGroundList = false
+		}
+	}
 
-	float scrollScalar = GraphCapped( timeSinceLastScroll, 0.0, 0.5, 1.0, 0.0 )
-	file.trackedScrollValue = ( file.trackedScrollValue * scrollScalar ) + fabs( scrollValue )
-
-	file.lastScrollTime = Time()
-
-	if ( file.trackedScrollValue > 7.0 )
-		RunClientScript( "GroundListUpdateNextFrame" )
+	if ( shouldResetGroundList )
+	{
+		file.pickedUpGroundListItems.clear()
+		RunClientScript( "GroundListResetNextFrame" )
+	}
 }
 
 
@@ -420,6 +444,12 @@ void function OnQuickSwapItemClickRight( var panel, var button, int index )
 	int position = TranslateBackpackGridPosition( index )
 
 	RunClientScript( "UICallback_OnQuickSwapItemClickRight", button, position )
+}
+
+
+void function OnAutoPickupClicked( var _ )
+{
+	RunClientScript( "UICallback_AutoPickupFromDeathbox" )
 }
 
 
@@ -499,10 +529,10 @@ void function SurvivalGroundItem_BeginUpdate()
 	file.groundItemUpdateInProgress = true
 }
 
-void function SurvivalGroundItem_EndUpdate()
+void function SurvivalGroundItem_EndUpdate( bool forceUpdate )
 {
 	file.groundItemUpdateInProgress = false
-	UpdateGroundListMenu()
+	UpdateGroundListMenu( forceUpdate )
 }
 
 void function OnWeaponSwapButtonClick( var button )

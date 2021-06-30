@@ -26,6 +26,8 @@ void function StartMatchmaking_( string playlist, bool requestNoFillTeam )
 {
 	SetConVarInt( "match_teamNoFill", (requestNoFillTeam ? 1 : 0) )
 	StartMatchmaking( playlist )
+
+	Chroma_StartMatchmaking()
 }
 
 void function StartMatchmakingStandard( string playlist )

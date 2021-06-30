@@ -6,13 +6,15 @@ global function WeaponSkin_GetViewModel
 global function WeaponSkin_GetSkinName
 global function WeaponSkin_GetCamoIndex
 global function WeaponSkin_GetHackyRUISchemeIdentifier
-global function WeaponSkin_DoesReactToKills
 global function WeaponSkin_GetReactToKillsLevelCount
+global function WeaponSkin_DoesReactToKills
 global function WeaponSkin_GetReactToKillsDataForLevel
 global function WeaponSkin_GetReactToKillsLevelIndexForKillCount
 global function WeaponSkin_GetSortOrdinal
 global function WeaponSkin_GetWeaponFlavor
 global function WeaponSkin_GetVideo
+
+global function Loadout_WeaponCharm
 #if SERVER
 global function AddCallback_UpdatePlayerWeaponCosmetics
 #endif
@@ -36,6 +38,7 @@ global struct WeaponReactiveKillsData
 	string        killSoundEvent3p
 	string        persistentSoundEvent1p
 	string        persistentSoundEvent3p
+	float         emissiveIntensity
 	array<asset>  killFX1PList
 	array<asset>  killFX3PList
 	array<string> killFXAttachmentList
@@ -56,11 +59,19 @@ struct FileStruct_LifetimeLevel
 	table<ItemFlavor, table<ItemFlavor, bool> > weaponSkinSetMap
 	table<ItemFlavor, ItemFlavor>               skinWeaponMap
 
+	table<ItemFlavor, LoadoutEntry>                loadoutWeaponCharmSlotMap
+	table<ItemFlavor, table<ItemFlavor, bool> >    weaponCharmSetMap
+	table<ItemFlavor, ItemFlavor>                  charmWeaponMap
+
 	table<ItemFlavor, int> cosmeticFlavorSortOrdinalMap
 
 	#if SERVER || CLIENT
 		table<ItemFlavor, table<asset, int> > weaponModelLegendaryIndexMapMap
 		table<ItemFlavor, int>                weaponSkinLegendaryIndexMap
+	#endif
+
+	#if CLIENT
+		table<entity, entity>    menuWeaponCharmEntityMap
 	#endif
 }
 FileStruct_LifetimeLevel& fileLevel
@@ -89,7 +100,7 @@ void function OnItemFlavorRegistered_LootMainWeapon( ItemFlavor weaponFlavor )
 {
 	// skins
 	{
-		array<ItemFlavor> skinList = RegisterReferencedItemFlavorsFromArray( weaponFlavor, "skins", "flavor" )
+		array<ItemFlavor> skinList = RegisterReferencedItemFlavorsFromArray( weaponFlavor, "skins", "flavor", "featureFlag" )
 		fileLevel.weaponSkinSetMap[weaponFlavor] <- MakeItemFlavorSet( skinList, fileLevel.cosmeticFlavorSortOrdinalMap )
 		foreach( ItemFlavor skin in skinList )
 		{
@@ -111,8 +122,8 @@ void function OnItemFlavorRegistered_LootMainWeapon( ItemFlavor weaponFlavor )
 				entity player          = FromEHI( playerEHI )
 				string weaponClassName = WeaponItemFlavor_GetClassname( weaponFlavor )
 
-				// if ( IsValid( player.p.DEV_lastDroppedSurvivalWeaponProp ) && player.p.DEV_lastDroppedSurvivalWeaponProp.GetWeaponName() == weaponClassName ) // idek --
-				// 	return true
+				if ( IsValid( player.p.DEV_lastDroppedSurvivalWeaponProp ) && player.p.DEV_lastDroppedSurvivalWeaponProp.GetWeaponName() == weaponClassName )
+					return true
 
 				foreach( entity weapon in player.GetAllActiveWeapons() )
 				{
@@ -157,30 +168,6 @@ void function SetupWeaponSkin( ItemFlavor skin )
 		}
 
 		fileLevel.weaponSkinLegendaryIndexMap[skin] <- weaponLegendaryIndexMap[worldModel]
-
-		//
-		if ( WeaponSkin_DoesReactToKills( skin ) )
-		{
-			for ( int levelIdx = 0; levelIdx < WeaponSkin_GetReactToKillsLevelCount( skin ); levelIdx++ )
-			{
-				WeaponReactiveKillsData rtked = WeaponSkin_GetReactToKillsDataForLevel( skin, levelIdx )
-				foreach ( asset fx in rtked.killFX1PList )
-					if ( fx != $"" )
-						PrecacheParticleSystem( fx )
-
-				foreach ( asset fx in rtked.persistentFX1PList )
-					if ( fx != $"" )
-						PrecacheParticleSystem( fx )
-
-				foreach ( asset fx in rtked.killFX3PList )
-					if ( fx != $"" )
-						PrecacheParticleSystem( fx )
-
-				foreach ( asset fx in rtked.persistentFX3PList )
-					if ( fx != $"" )
-						PrecacheParticleSystem( fx )
-			}
-		}
 	#endif
 }
 
@@ -195,6 +182,10 @@ LoadoutEntry function Loadout_WeaponSkin( ItemFlavor weaponFlavor )
 	return fileLevel.loadoutWeaponSkinSlotMap[weaponFlavor]
 }
 
+LoadoutEntry function Loadout_WeaponCharm( ItemFlavor weaponFlavor )
+{
+	return fileLevel.loadoutWeaponCharmSlotMap[weaponFlavor]
+}
 
 ///////////////////
 ///////////////////
@@ -213,8 +204,8 @@ void function UpdatePlayerWeaponCosmetics( entity player, ItemFlavor weaponFlavo
 				WeaponSkin_Apply( weapon, skin )
 		}
 
-		// if ( IsValid( player.p.DEV_lastDroppedSurvivalWeaponProp ) && player.p.DEV_lastDroppedSurvivalWeaponProp.GetWeaponName() == weaponClassName )
-		// 	WeaponSkin_Apply( player.p.DEV_lastDroppedSurvivalWeaponProp, skin )
+		if ( IsValid( player.p.DEV_lastDroppedSurvivalWeaponProp ) && player.p.DEV_lastDroppedSurvivalWeaponProp.GetWeaponName() == weaponClassName )
+			WeaponSkin_Apply( player.p.DEV_lastDroppedSurvivalWeaponProp, skin )
 	#endif
 
 	foreach( callbackFunc in file.callbacks_UpdatePlayerWeaponCosmetics )
@@ -290,7 +281,7 @@ int function WeaponSkin_GetReactToKillsLevelCount( ItemFlavor flavor )
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
 	Assert( WeaponSkin_DoesReactToKills( flavor ) )
 
-	var skinBlock = GetSettingsBlockForAsset( ItemFlavor_GetAsset( flavor ) )
+	var skinBlock = ItemFlavor_GetSettingsBlock( flavor )
 	return GetSettingsArraySize( GetSettingsBlockArray( skinBlock, "featureReactsToKillsLevels" ) )
 }
 
@@ -300,7 +291,7 @@ WeaponReactiveKillsData function WeaponSkin_GetReactToKillsDataForLevel( ItemFla
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
 	Assert( WeaponSkin_DoesReactToKills( flavor ) )
 
-	var skinBlock           = GetSettingsBlockForAsset( ItemFlavor_GetAsset( flavor ) )
+	var skinBlock           = ItemFlavor_GetSettingsBlock( flavor )
 	var reactsToKillsLevels = GetSettingsBlockArray( skinBlock, "featureReactsToKillsLevels" )
 	Assert( levelIdx < GetSettingsArraySize( reactsToKillsLevels ) )
 	var levelBlock = GetSettingsArrayElem( reactsToKillsLevels, levelIdx )
@@ -311,6 +302,7 @@ WeaponReactiveKillsData function WeaponSkin_GetReactToKillsDataForLevel( ItemFla
 	rtked.killSoundEvent3p = GetSettingsBlockString( levelBlock, "killSoundEvent3p" )
 	rtked.persistentSoundEvent1p = GetSettingsBlockString( levelBlock, "persistentSoundEvent1p" )
 	rtked.persistentSoundEvent3p = GetSettingsBlockString( levelBlock, "persistentSoundEvent3p" )
+	rtked.emissiveIntensity = GetSettingsBlockFloat( levelBlock, "emissiveIntensity" )
 	foreach ( var killFXBlock in IterateSettingsArray( GetSettingsBlockArray( levelBlock, "killFXList" ) ) )
 	{
 		rtked.killFX1PList.append( GetSettingsBlockStringAsAsset( killFXBlock, "fx1p" ) )
@@ -324,28 +316,6 @@ WeaponReactiveKillsData function WeaponSkin_GetReactToKillsDataForLevel( ItemFla
 		rtked.persistentFXAttachmentList.append( GetSettingsBlockString( persistentFXBlock, "attachment" ) )
 	}
 	return rtked
-}
-
-
-int function WeaponSkin_GetReactToKillsLevelIndexForKillCount( ItemFlavor flavor, int killCount )
-{
-	//
-	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
-	Assert( WeaponSkin_DoesReactToKills( flavor ) )
-
-	var skinBlock = GetSettingsBlockForAsset( ItemFlavor_GetAsset( flavor ) )
-
-	var levelsArr = GetSettingsBlockArray( skinBlock, "featureReactsToKillsLevels" )
-	for ( int levelIndex = GetSettingsArraySize( levelsArr ) - 1; levelIndex >= 0; levelIndex-- )
-	{
-		var levelBlock = GetSettingsArrayElem( levelsArr, levelIndex )
-		if ( killCount >= GetSettingsBlockInt( levelBlock, "killCount" ) )
-		{
-			return levelIndex
-		}
-	}
-
-	return -1
 }
 
 
@@ -403,6 +373,28 @@ void function WeaponSkin_Apply( entity ent, ItemFlavor skin )
 	ent.SetCamo( camoIndex )
 }
 #endif // SERVER || CLIENT
+
+
+int function WeaponSkin_GetReactToKillsLevelIndexForKillCount( ItemFlavor flavor, int killCount )
+{
+	//
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
+	Assert( WeaponSkin_DoesReactToKills( flavor ) )
+
+	var skinBlock = ItemFlavor_GetSettingsBlock( flavor )
+
+	var levelsArr = GetSettingsBlockArray( skinBlock, "featureReactsToKillsLevels" )
+	for ( int levelIndex = GetSettingsArraySize( levelsArr ) - 1; levelIndex >= 0; levelIndex-- )
+	{
+		var levelBlock = GetSettingsArrayElem( levelsArr, levelIndex )
+		if ( killCount >= GetSettingsBlockInt( levelBlock, "killCount" ) )
+		{
+			return levelIndex
+		}
+	}
+
+	return -1
+}
 
 
 int function WeaponSkin_GetSortOrdinal( ItemFlavor flavor )

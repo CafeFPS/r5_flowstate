@@ -30,6 +30,8 @@ bool function Survival_HasPlayerLockedInCharacter( EHI playerEHI )
 		if ( player == null || !IsValid( player ) )
 			return false
 
+		printt("player " + (player.GetPlayerNetBool( "hasLockedInCharacter" ) ? "is" : "is not") + " able to select a character (hasLockedInCharacter netbool)")
+		return true
 		return player.GetPlayerNetBool( "hasLockedInCharacter" )
 	#elseif UI
 		// R5DEV-24530

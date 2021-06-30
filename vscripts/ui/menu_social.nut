@@ -932,8 +932,7 @@ void function PreviewFriendCosmetics( bool isForLocalPlayer, CommunityUserInfo o
 			}
 		}
 
-		entity player      = GetUIPlayer()
-		Ranked_SetupMenuGladCard( player )
+		//Ranked_SetupMenuGladCardForUIPlayer() TODO:
 	}
 	else
 	{
@@ -975,9 +974,7 @@ void function PreviewFriendCosmetics( bool isForLocalPlayer, CommunityUserInfo o
 		ItemFlavor introQuip = GetItemFlavorForCommunityUserInfo( userInfo, ePlayerStryderCharDataArraySlots.CHARACTER_INTRO_QUIP, eItemType.gladiator_card_intro_quip )
 		introQuipSoundEventName = CharacterIntroQuip_GetVoiceSoundEvent( introQuip )
 
-		int rankShouldShow = IsRankedPlaylist( Lobby_GetSelectedPlaylist() ) ? 1 : 0
-		SendMenuGladCardPreviewCommand( eGladCardPreviewCommandType.RANKED_SHOULD_SHOW, rankShouldShow, null )
-		SendMenuGladCardPreviewCommand( eGladCardPreviewCommandType.RANKED_DATA, userInfo.rankedLadderPos, null, userInfo.rankScore )
+		//Ranked_SetupMenuGladCardFromCommunityUserInfo( userInfo )// TODO:
 	}
 
 	OnThreadEnd( void function() : ( introQuipSoundEventName ) {

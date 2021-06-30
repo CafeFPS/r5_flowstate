@@ -42,7 +42,7 @@ global const STRATON_DOGFIGHT_ANIM1_PERSUER = "st_Dogfight_Persuer_1"
 global const STRATON_DOGFIGHT_ANIM2_PERSUER = "st_Dogfight_Persuer_2"
 global const STRATON_DOGFIGHT_ANIM3_PERSUER = "st_Dogfight_Persuer_3"
 global const STRATON_ATTACK_FULL = "st_AngelCity_IMC_Win_Full"
-global const FX_HORNET_DEATH =  $"P_veh_exp_hornet_HS"
+//global const FX_HORNET_DEATH =  $"P_veh_exp_hornet_HS" //TODO: "mdl\vehicle\hornet\hornet_fighter_dest_l_wing.rmdl" does not exist. This particle system requires it. All references have been commented for now.
 
 
 global const AIRDROP_BASE_ANIM = "dp_droppod_idle"

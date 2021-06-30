@@ -68,7 +68,7 @@ void function OpenPromoDialogIfNewAfterPakLoad()
 {
 	RuiSetBool( file.lastPageRui, "isImageLoading", false )
 	
-	if ( IsPromoDialogNew() )
+	if ( IsPromoDialogNew() && file.hijackContent == null )
 		AdvanceMenu( file.menu )
 }
 
@@ -199,7 +199,7 @@ array<PromoDialogPageData> function InitPages()
 		PromoDialogPageData newPage
 		newPage.imageName = vals[1]
 		//
-		if( !GetConVarBool( "assetdownloads_enabled" ) )
+		if( !GetConVarBool( "assetdownloads_enabled" ) || file.hijackContent != null )
 			newPage.image = GetPromoImage( vals[1] )
 		newPage.title = vals[2]
 		newPage.desc = vals[3]
@@ -316,10 +316,15 @@ void function UpdatePageRui( var rui, int pageIndex )
 {
 	PromoDialogPageData page = file.pages[pageIndex]
 
-	if( GetConVarBool( "assetdownloads_enabled" ) )
+	if( GetConVarBool( "assetdownloads_enabled" ) && file.hijackContent == null )
+	{
 		RuiSetImage( rui, "imageAsset", GetDownloadedImageAsset( GetPromoRpakName(), page.imageName, ePakType.DL_PROMO ) )
+		RuiSetBool( rui, "isImageLoading", IsImagePakLoading( GetPromoRpakName() ) )
+	}
 	else
+	{
 		RuiSetImage( rui, "imageAsset", page.image )
+	}
 
 	RuiSetString( rui, "titleText", page.title )
 	RuiSetString( rui, "descText", page.desc )

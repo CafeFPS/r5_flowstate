@@ -13,55 +13,55 @@ global function OnWeaponNPCPrimaryAttack_ability_phase_tunnel
 
 const float CROUCH_HEIGHT = 48
 
-const string SOUND_ACTIVATE_1P = "Wraith_PhaseGate_FirstGate_DeviceActivate_1p" // Play (to 1p only) as soon as the "arm raise" animation for placing the first gate starts (basically as soon as the ability key is pressed and the ability successfully starts).
-const string SOUND_ACTIVATE_3P = "Wraith_PhaseGate_FirstGate_DeviceActivate_3p" // Play (to everyone except 1p) as soon as the 3p Wraith begins activating the ability to place the first gate.
-const string SOUND_SUCCESS_1P = "Wraith_PhaseGate_FirstGate_Place_1p" // Play (to 1p only) when the first gate (the "pre-portal" thing) gets placed.  Can be played on the gate or the player.
-const string SOUND_SUCCESS_3P = "Wraith_PhaseGate_FirstGate_Place_3p" // Play (to everyone except 1p) when the first gate (the "pre-portal" thing) gets placed.  Should play on the gate.
-const string SOUND_PREPORTAL_LOOP = "Wraith_PhaseGate_PrePortal_Loop" // Play (to everyone) when first gate is created.  Should play on the gate (pre-portal thing).  Should be stopped when the second gate is placed and the gates connect.
-const string SOUND_PORTAL_OPEN = "Wraith_PhaseGate_Portal_Open" // Play (to everyone) when second gate is created and gates connect.  Should play on each gate.  (Stop Wraith_PhaseGate_PrePortal_Loop when this plays.)
-const string SOUND_PORTAL_LOOP = "Wraith_PhaseGate_Portal_Loop" // Play (to everyone) when second gate is created and gates connect.  Should play on each gate.  Stop when gates expire.
-const string SOUND_PORTAL_CLOSE = "Wraith_PhaseGate_Portal_Expire" // Play (to everyone) when gates expire.  Should play on each gate.
+const string SOUND_ACTIVATE_1P         = "Wraith_PhaseGate_FirstGate_DeviceActivate_1p" // Play (to 1p only) as soon as the "arm raise" animation for placing the first gate starts (basically as soon as the ability key is pressed and the ability successfully starts).
+const string SOUND_ACTIVATE_3P         = "Wraith_PhaseGate_FirstGate_DeviceActivate_3p" // Play (to everyone except 1p) as soon as the 3p Wraith begins activating the ability to place the first gate.
+const string SOUND_SUCCESS_1P          = "Wraith_PhaseGate_FirstGate_Place_1p" // Play (to 1p only) when the first gate (the "pre-portal" thing) gets placed.  Can be played on the gate or the player.
+const string SOUND_SUCCESS_3P          = "Wraith_PhaseGate_FirstGate_Place_3p" // Play (to everyone except 1p) when the first gate (the "pre-portal" thing) gets placed.  Should play on the gate.
+const string SOUND_PREPORTAL_LOOP      = "Wraith_PhaseGate_PrePortal_Loop" // Play (to everyone) when first gate is created.  Should play on the gate (pre-portal thing).  Should be stopped when the second gate is placed and the gates connect.
+const string SOUND_PORTAL_OPEN         = "Wraith_PhaseGate_Portal_Open" // Play (to everyone) when second gate is created and gates connect.  Should play on each gate.  (Stop Wraith_PhaseGate_PrePortal_Loop when this plays.)
+const string SOUND_PORTAL_LOOP         = "Wraith_PhaseGate_Portal_Loop" // Play (to everyone) when second gate is created and gates connect.  Should play on each gate.  Stop when gates expire.
+const string SOUND_PORTAL_CLOSE        = "Wraith_PhaseGate_Portal_Expire" // Play (to everyone) when gates expire.  Should play on each gate.
 
-global const string PHASETUNNEL_BLOCKER_SCRIPTNAME = "phase_tunnel_blocker"
-global const string PHASETUNNEL_PRE_BLOCKER_SCRIPTNAME = "pre_phase_tunnel_blocker"
+global const string PHASETUNNEL_BLOCKER_SCRIPTNAME      = "phase_tunnel_blocker"
+global const string PHASETUNNEL_PRE_BLOCKER_SCRIPTNAME  = "pre_phase_tunnel_blocker"
 
 const float FRAME_TIME = 0.1
 
-const asset PHASE_TUNNEL_3P_FX = $"P_ps_gauntlet_arm_3P"
-const asset PHASE_TUNNEL_PREPLACE_FX = $"P_phasegate_pre_portal"
-const asset PHASE_TUNNEL_FX = $"P_phasegate_portal"
-const asset PHASE_TUNNEL_CROUCH_FX = $"P_phasegate_portal_rnd"
-const asset PHASE_TUNNEL_ABILITY_ACTIVE_FX = $"P_phase_dash_start"
-const asset PHASE_TUNNEL_1P_FX = $"P_phase_tunnel_player"
+const asset PHASE_TUNNEL_3P_FX              = $"P_ps_gauntlet_arm_3P"
+const asset PHASE_TUNNEL_PREPLACE_FX        = $"P_phasegate_pre_portal"
+const asset PHASE_TUNNEL_FX                 = $"P_phasegate_portal"
+const asset PHASE_TUNNEL_CROUCH_FX          = $"P_phasegate_portal_rnd"
+const asset PHASE_TUNNEL_ABILITY_ACTIVE_FX  = $"P_phase_dash_start"
+const asset PHASE_TUNNEL_1P_FX              = $"P_phase_tunnel_player"
 
-const float PHASE_TUNNEL_WEAPON_DRAW_DELAY = 0.75
+const float PHASE_TUNNEL_WEAPON_DRAW_DELAY                 = 0.75
 
-const float PHASE_TUNNEL_TRIGGER_RADIUS = 16.0
-const float PHASE_TUNNEL_TRIGGER_HEIGHT = 32.0
-const float PHASE_TUNNEL_TRIGGER_HEIGHT_CROUCH = 16.0
-const float PHASE_TUNNEL_TRIGGER_RADIUS_PROJECTILE = 42.0
-const float PHASE_TUNNEL_TRIGGER_RADIUS_PROJECTILE_CROUCH = 24.0
+const float PHASE_TUNNEL_TRIGGER_RADIUS                    = 16.0
+const float PHASE_TUNNEL_TRIGGER_HEIGHT                    = 32.0
+const float PHASE_TUNNEL_TRIGGER_HEIGHT_CROUCH             = 16.0
+const float PHASE_TUNNEL_TRIGGER_RADIUS_PROJECTILE         = 42.0
+const float PHASE_TUNNEL_TRIGGER_RADIUS_PROJECTILE_CROUCH  = 24.0
 
 //PHASE TUNNEL PLACEMENT VARS
-const float PHASE_TUNNEL_PLACEMENT_HEIGHT_STANDING = 45.0
-const float PHASE_TUNNEL_PLACEMENT_HEIGHT_CROUCHING = 20
+const float PHASE_TUNNEL_PLACEMENT_HEIGHT_STANDING         = 45.0
+const float PHASE_TUNNEL_PLACEMENT_HEIGHT_CROUCHING        = 20
 
 //PHASE TUNNEL TELEPORT TIME VARS
-const float PHASE_TUNNEL_LIFETIME = 60.0
-const float PHASE_TUNNEL_TELEPORT_TRAVEL_TIME_MIN = 0.3
-const float PHASE_TUNNEL_TELEPORT_TRAVEL_TIME_MAX = 2.0
-const float PHASE_TUNNEL_TELEPORT_DBOUNCE = 0.5
-const float PHASE_TUNNEL_TELEPORT_DBOUNCE_PROJECTILE = 1.0
-const float PHASE_TUNNEL_PATH_FOLLOW_TICK = 0.1
-const float PHASE_TUNNEL_PATH_SNAPSHOT_INTERVAL = 0.1
+const float PHASE_TUNNEL_LIFETIME                          = 60.0
+const float PHASE_TUNNEL_TELEPORT_TRAVEL_TIME_MIN          = 0.3
+const float PHASE_TUNNEL_TELEPORT_TRAVEL_TIME_MAX          = 2.0
+const float PHASE_TUNNEL_TELEPORT_DBOUNCE                  = 0.5
+const float PHASE_TUNNEL_TELEPORT_DBOUNCE_PROJECTILE       = 1.0
+const float PHASE_TUNNEL_PATH_FOLLOW_TICK                  = 0.1
+const float PHASE_TUNNEL_PATH_SNAPSHOT_INTERVAL            = 0.1
 
-const float PHASE_TUNNEL_PLACEMENT_RADIUS 	= 4098.0
-const float PHASE_TUNNEL_PLACEMENT_DIST		= 4098.0
-const float PHASE_TUNNEL_MIN_PORTAL_DIST_SQR = 128.0 * 128.0
-const float PHASE_TUNNEL_MIN_GEO_REVERSE_DIST = 48.0
+const float PHASE_TUNNEL_PLACEMENT_RADIUS                  = 4098.0
+const float PHASE_TUNNEL_PLACEMENT_DIST                    = 4098.0
+const float PHASE_TUNNEL_MIN_PORTAL_DIST_SQR               = 128.0 * 128.0
+const float PHASE_TUNNEL_MIN_GEO_REVERSE_DIST              = 48.0
 
-const bool	PHASE_TUNNEL_DEBUG_DRAW_PROJECTILE_TELEPORT = false
-const bool 	PHASE_TUNNEL_DEBUG_DRAW_PLAYER_TELEPORT = false
+const bool	PHASE_TUNNEL_DEBUG_DRAW_PROJECTILE_TELEPORT  = false
+const bool 	PHASE_TUNNEL_DEBUG_DRAW_PLAYER_TELEPORT      = false
 
 struct PhaseTunnelPathNodeData
 {
@@ -725,8 +725,8 @@ void function PhaseTunnel_CreateTriggerArea( entity tunnelEnt, PhaseTunnelPortal
 	portalMarker.DisableHibernation()
 
 	entity traceBlocker = CreateTraceBlockerVolume( origin, 24.0, false, CONTENTS_NOGRAPPLE, tunnelEnt.GetTeam(), PHASETUNNEL_BLOCKER_SCRIPTNAME )
-	//traceBlocker.RemoveFromAllRealms()
-	//traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
+	traceBlocker.RemoveFromAllRealms()
+	traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
 
 	EmitSoundOnEntity( portalMarker, SOUND_PORTAL_OPEN )
 	EmitSoundOnEntity( portalMarker, SOUND_PORTAL_LOOP )
@@ -1450,8 +1450,8 @@ void function PhaseTunnel_StartTrackingPositions_Internal( entity player, PhaseT
 					shutdownArray.append( fx )
 
 					entity traceBlocker = CreateTraceBlockerVolume( fxOrigin, 24.0, false, CONTENTS_NOGRAPPLE, player.GetTeam(), PHASETUNNEL_PRE_BLOCKER_SCRIPTNAME )
-					//traceBlocker.RemoveFromAllRealms()
-					//traceBlocker.AddToOtherEntitysRealms( player )
+					traceBlocker.RemoveFromAllRealms()
+					traceBlocker.AddToOtherEntitysRealms( player )
 					shutdownArray.append( traceBlocker )
 				}
 

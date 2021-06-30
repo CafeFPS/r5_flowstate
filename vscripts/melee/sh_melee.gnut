@@ -98,7 +98,7 @@ void function MeleeShared_Init()
 #if SERVER || CLIENT || UI
 void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 {
-	array<ItemFlavor> meleeSkinList = RegisterReferencedItemFlavorsFromArray( characterClass, "meleeSkins", "flavor" )
+	array<ItemFlavor> meleeSkinList = RegisterReferencedItemFlavorsFromArray( characterClass, "meleeSkins", "flavor", "featureFlag" )
 	foreach( ItemFlavor meleeSkin in meleeSkinList )
 	{
 		fileLevel.meleeSkinCharacterMap[meleeSkin] <- characterClass
@@ -114,7 +114,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 
 	MakeItemFlavorSet( meleeSkinList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "meleeskin", ItemFlavor_GetGUIDString( characterClass ) )
+	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_meleeskin_for_" + ItemFlavor_GetGUIDString( characterClass ) )
 	entry.DEV_category = "character_meleeskins"
 	entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Melee Skin"
 	entry.defaultItemFlavor = meleeSkinList[0]
@@ -344,16 +344,6 @@ bool function AttackerCanStartMelee( entity attacker, entity inputWeaponOrNull, 
 
 	//if ( PlayerIsInMeleeBlockingADS( attacker ) )
 	//	return false
-	
-	if ( attacker.IsPhaseShifted() )
-    {
-        return false
-    }
-	
-	if ( attacker.Player_IsFreefalling() )
-    {
-        return false
-    }
 
 	if ( attacker.Lunge_IsActive() )
 		return false
@@ -651,8 +641,8 @@ bool function ClientCodeCallback_ShowMeleePrompt( entity player )
 #if SERVER && R5DEV
 void function DEV_UpdatePlayerMeleeWeaponCosmetics( entity player, ItemFlavor unused )
 {
-	// if ( !IsLobby() )
-	// 	SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
+	if ( !IsLobby() )
+		SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
 }
 #endif // SERVER
 

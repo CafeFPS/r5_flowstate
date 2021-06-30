@@ -2,6 +2,7 @@ global function ShCharacterCosmetics_LevelInit
 
 global function Loadout_CharacterSkin
 global function Loadout_CharacterExecution
+global function Loadout_CharacterSkydiveEmote
 global function Loadout_CharacterIntroQuip
 global function Loadout_CharacterKillQuip
 #if SERVER || CLIENT
@@ -28,6 +29,10 @@ global function CharacterKillQuip_GetVictimVoiceSoundEvent
 global function CharacterKillQuip_GetVictimStingSoundEvent
 global function CharacterKillQuip_GetStingSound
 global function CharacterKillQuip_GetSortOrdinal
+global function CharacterSkydiveEmote_GetCharacterFlavor
+global function CharacterSkydiveEmote_IsTheEmpty
+global function CharacterSkydiveEmote_GetAnimSeq
+global function CharacterSkydiveEmote_GetVideo
 global function CharacterIntroQuip_GetCharacterFlavor
 global function CharacterIntroQuip_GetVoiceSoundEvent
 global function CharacterIntroQuip_GetStingSoundEvent
@@ -60,11 +65,13 @@ struct FileStruct_LifetimeLevel
 	table<ItemFlavor, LoadoutEntry>             loadoutCharacterExecutionSlotMap
 	table<ItemFlavor, LoadoutEntry>             loadoutCharacterIntroQuipSlotMap
 	table<ItemFlavor, LoadoutEntry>             loadoutCharacterKillQuipSlotMap
+	table<ItemFlavor, LoadoutEntry>             loadoutCharacterSkydiveEmoteSlotMap
 
 	table<ItemFlavor, ItemFlavor> skinCharacterMap
 	table<ItemFlavor, ItemFlavor> executionCharacterMap
 	table<ItemFlavor, ItemFlavor> killQuipCharacterMap
 	table<ItemFlavor, ItemFlavor> introQuipCharacterMap
+	table<ItemFlavor, ItemFlavor> skydiveEmoteCharacterMap
 
 	table<ItemFlavor, int> cosmeticFlavorSortOrdinalMap
 }
@@ -89,7 +96,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 {
 	// skins
 	{
-		array<ItemFlavor> skinList = RegisterReferencedItemFlavorsFromArray( characterClass, "skins", "flavor" )
+		array<ItemFlavor> skinList = RegisterReferencedItemFlavorsFromArray( characterClass, "skins", "flavor", "featureFlag" )
 		foreach( ItemFlavor skin in skinList )
 		{
 			fileLevel.skinCharacterMap[skin] <- characterClass
@@ -98,7 +105,8 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 
 		MakeItemFlavorSet( skinList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "skin", ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_skin_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 		entry.DEV_category = "character_skins"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Skin"
 		entry.stryderCharDataArrayIndex = ePlayerStryderCharDataArraySlots.CHARACTER_SKIN
@@ -113,22 +121,23 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 		#if CLIENT
 			if ( IsLobby() )
 			{
-		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( entry, void function( EHI playerEHI, ItemFlavor skin ) {
-				UpdateMenuCharacterModel( FromEHI( playerEHI ) )
+				AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( entry, void function( EHI playerEHI, ItemFlavor skin ) {
+					UpdateMenuCharacterModel( FromEHI( playerEHI ) )
 				} )
 			}
-			#endif
+		#endif
 		fileLevel.loadoutCharacterSkinSlotMap[characterClass] <- entry
 	}
 
 	// executions
 	{
-		array<ItemFlavor> executionsList = RegisterReferencedItemFlavorsFromArray( characterClass, "executions", "flavor" )
+		array<ItemFlavor> executionsList = RegisterReferencedItemFlavorsFromArray( characterClass, "executions", "flavor", "featureFlag" )
 		foreach( ItemFlavor execution in executionsList )
 			fileLevel.executionCharacterMap[execution] <- characterClass
 		MakeItemFlavorSet( executionsList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "execution", ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_execution_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 		entry.DEV_category = "character_executions"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Execution"
 		entry.defaultItemFlavor = executionsList[0]
@@ -143,12 +152,13 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 
 	// intro quips
 	{
-		array<ItemFlavor> quipList = RegisterReferencedItemFlavorsFromArray( characterClass, "introQuips", "flavor" )
+		array<ItemFlavor> quipList = RegisterReferencedItemFlavorsFromArray( characterClass, "introQuips", "flavor", "featureFlag" )
 		foreach( ItemFlavor quip in quipList )
 			fileLevel.introQuipCharacterMap[quip] <- characterClass
 		MakeItemFlavorSet( quipList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "intro_quip", ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_intro_quip_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 		entry.DEV_category = "character_intro_quips"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Intro Quip"
 		entry.stryderCharDataArrayIndex = ePlayerStryderCharDataArraySlots.CHARACTER_INTRO_QUIP
@@ -165,12 +175,13 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 
 	// kill quips
 	{
-		array<ItemFlavor> quipList = RegisterReferencedItemFlavorsFromArray( characterClass, "killQuips", "flavor" )
+		array<ItemFlavor> quipList = RegisterReferencedItemFlavorsFromArray( characterClass, "killQuips", "flavor", "featureFlag" )
 		foreach( ItemFlavor quip in quipList )
 			fileLevel.killQuipCharacterMap[quip] <- characterClass
 		MakeItemFlavorSet( quipList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "kill_quip", ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_kill_quip_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 		entry.DEV_category = "character_kill_quips"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Kill Quip"
 		entry.defaultItemFlavor = quipList[0]
@@ -182,6 +193,29 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 		entry.networkTo = eLoadoutNetworking.PLAYER_GLOBAL
 		entry.networkVarName = "KillQuip"
 		fileLevel.loadoutCharacterKillQuipSlotMap[characterClass] <- entry
+	}
+
+	// sky emotes
+	{
+		array<ItemFlavor> skydiveEmotesList = RegisterReferencedItemFlavorsFromArray( characterClass, "skydiveEmotes", "flavor", "featureFlag" )
+		foreach( ItemFlavor skydiveEmote in skydiveEmotesList )
+			fileLevel.skydiveEmoteCharacterMap[skydiveEmote] <- characterClass
+		MakeItemFlavorSet( skydiveEmotesList, fileLevel.cosmeticFlavorSortOrdinalMap )
+
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_skydive_emote_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
+		entry.DEV_category = "character_skydive_emotes"
+		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Skydive Emote"
+		entry.defaultItemFlavor = skydiveEmotesList[0]
+		entry.validItemFlavorList = skydiveEmotesList
+		entry.isSlotLocked = bool function( EHI playerEHI ) {
+			return !IsLobby()
+		}
+		#if SERVER
+		#endif
+		entry.isActiveConditions = { [Loadout_CharacterClass()] = { [characterClass] = true, }, }
+		entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+		fileLevel.loadoutCharacterSkydiveEmoteSlotMap[characterClass] <- entry
 	}
 }
 
@@ -209,6 +243,12 @@ LoadoutEntry function Loadout_CharacterSkin( ItemFlavor characterClass )
 LoadoutEntry function Loadout_CharacterExecution( ItemFlavor characterClass )
 {
 	return fileLevel.loadoutCharacterExecutionSlotMap[characterClass]
+}
+
+
+LoadoutEntry function Loadout_CharacterSkydiveEmote( ItemFlavor characterClass )
+{
+	return fileLevel.loadoutCharacterSkydiveEmoteSlotMap[characterClass]
 }
 
 
@@ -546,6 +586,52 @@ ItemFlavor function CharacterIntroQuip_GetCharacterFlavor( ItemFlavor flavor )
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.gladiator_card_intro_quip )
 
 	return fileLevel.introQuipCharacterMap[flavor]
+}
+
+
+ItemFlavor function GetPlayerSkydiveEmote( entity player )
+{
+	if ( LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ) )
+	{
+		ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+		if ( LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterSkydiveEmote( character ) ) )
+		{
+			return LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkydiveEmote( character ) )
+		}
+	}
+	return GetItemFlavorByAsset( $"settings/itemflav/skydive_emote/_empty.rpak" )
+}
+
+
+bool function CharacterSkydiveEmote_IsTheEmpty( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.skydive_emote )
+
+	return GetGlobalSettingsBool( ItemFlavor_GetAsset( flavor ), "isTheEmpty" )
+}
+
+
+ItemFlavor function CharacterSkydiveEmote_GetCharacterFlavor( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.skydive_emote )
+
+	return fileLevel.skydiveEmoteCharacterMap[flavor]
+}
+
+
+asset function CharacterSkydiveEmote_GetAnimSeq( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.skydive_emote )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "animSequence" )
+}
+
+
+asset function CharacterSkydiveEmote_GetVideo( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.skydive_emote )
+
+	return GetGlobalSettingsStringAsAsset( ItemFlavor_GetAsset( flavor ), "video" )
 }
 
 

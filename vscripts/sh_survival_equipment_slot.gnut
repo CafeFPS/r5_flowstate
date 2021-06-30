@@ -22,21 +22,26 @@ global function RegisterAttachmentPoint
 global function GetAttachmentPointName
 
 global const table<string, asset> emptyAttachmentSlotImages = {
-	barrel 				= $"rui/pilot_loadout/mods/empty_barrel"
-	barrel_stabilizer 	= $"rui/pilot_loadout/mods/empty_barrel_stabilizer"
-	grip 				= $"rui/pilot_loadout/mods/empty_stock"
-	stock 				= $"rui/pilot_loadout/mods/empty_stock"
-	stock_tactical 		= $"rui/pilot_loadout/mods/empty_stock_tactical"
-	stock_sniper 		= $"rui/pilot_loadout/mods/empty_stock_sniper"
-	mag 				= $"rui/pilot_loadout/mods/empty_mag"
-	mag_straight 		= $"rui/pilot_loadout/mods/empty_mag_straight"
-	mag_shotgun 		= $"rui/pilot_loadout/mods/empty_mag_shotgun"
-	sight				= $"rui/pilot_loadout/mods/empty_sight"
-	hopup 				= $"rui/pilot_loadout/mods/empty_hopup"
-	hopup_turbocharger	= $"rui/pilot_loadout/mods/empty_hopup_turbocharger"
-	hopup_selectfire	= $"rui/pilot_loadout/mods/empty_hopup_autofire"
-	hopup_em_choke		= $"rui/pilot_loadout/mods/empty_hopup_em_choke"
-	hopup_skullpiercer	= $"rui/pilot_loadout/mods/empty_hopup_skullpiercer"
+	barrel                 = $"rui/pilot_loadout/mods/empty_barrel"
+	barrel_stabilizer      = $"rui/pilot_loadout/mods/empty_barrel_stabilizer"
+	grip                   = $"rui/pilot_loadout/mods/empty_stock"
+	stock                  = $"rui/pilot_loadout/mods/empty_stock"
+	stock_tactical         = $"rui/pilot_loadout/mods/empty_stock_tactical"
+	stock_sniper           = $"rui/pilot_loadout/mods/empty_stock_sniper"
+	mag                    = $"rui/pilot_loadout/mods/empty_mag"
+	mag_straight           = $"rui/pilot_loadout/mods/empty_mag_straight"
+	mag_energy             = $"rui/pilot_loadout/mods/empty_energy_mag"
+	mag_shotgun            = $"rui/pilot_loadout/mods/empty_mag_shotgun"
+	sight                  = $"rui/pilot_loadout/mods/empty_sight"
+	hopup                  = $"rui/pilot_loadout/mods/empty_hopup"
+	hopup_turbocharger     = $"rui/pilot_loadout/mods/empty_hopup_turbocharger"
+	hopup_selectfire       = $"rui/pilot_loadout/mods/empty_hopup_autofire"
+	hopup_em_choke         = $"rui/pilot_loadout/mods/empty_hopup_em_choke"
+	hopup_skullpiercer     = $"rui/pilot_loadout/mods/empty_hopup_skullpiercer"
+	hopup_shield_breaker   = $"rui/pilot_loadout/mods/empty_hopup_shield_breaker"
+	hopup_unshielded_dmg   = $"rui/pilot_loadout/mods/empty_hopup_unshielded_dmg"
+	hopup_highcal_rounds   = $"rui/pilot_loadout/mods/empty_hopup_anvilreceiver"
+	hopup_double_tap       = $"rui/pilot_loadout/mods/empty_hopup_doubletap"
 }
 
 #if CLIENT
@@ -55,24 +60,24 @@ global struct EquipmentSlot
 	#endif
 
 	#if SERVER || CLIENT
-		string functionref( entity player, string slot ) getEquippedRefFunc
-		int trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP
-		int trackingVisionExchangePOI = -1
-		int trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP
+	string functionref( entity player, string slot ) getEquippedRefFunc
+	int                                              trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP
+	int                                              trackingVisionExchangePOI = -1
+	int                                              trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP
 	#endif
 
 	#if CLIENT
 		array<void functionref( entity player, string equipSlot, int index )> onTrackingIntChangedCallbacks
 	#endif
 
-	int emptyCommsAction = eCommsAction.BLANK
+	int                                                                            emptyCommsAction = eCommsAction.BLANK
 	int functionref( string equipmentSlot, string equipmentRef, EquipmentSlot es ) emptyCommsActionFunc
-	int functionref( string equipmentSlotRef, string itemRef ) filledCommsActionFunc
-	int weaponSlot = -1
-	string attachmentPoint
-	string nextWeaponSlot = ""
-	string attachmentWeaponSlot = ""
-	string trackingNetInt = ""
+	int functionref( string equipmentSlotRef, string itemRef )                     filledCommsActionFunc
+	int                                                                            weaponSlot = -1
+	string                                                                         attachmentPoint
+	string                                                                         nextWeaponSlot = ""
+	string                                                                         attachmentWeaponSlot = ""
+	string                                                                         trackingNetInt = ""
 
 	string unitFrameTierVar = ""
 	string unitFrameImageVar = ""
@@ -90,202 +95,211 @@ void function SURVIVAL_EquipmentSlot_InitShared()
 	EquipmentSlot e
 
 	e = RegisterEquipslot( "backpack" )
-	e.title = "#SURVIVAL_BACKPACK"
-	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_BACKPACK
-	e.emptyImage = $"rui/hud/loot/loot_backpack_none"
-	e.trackingNetInt = "equipedItemLootIndex_Backpack"
-	e.unitFrameTierVar = e.ref + "Tier"
-	e.unitFrameImageVar = e.ref + "Icon"
+	e.title                  = "#SURVIVAL_BACKPACK"
+	e.emptyCommsAction       = eCommsAction.INVENTORY_NEED_BACKPACK
+	e.emptyImage             = $"rui/hud/loot/loot_backpack_none"
+	e.trackingNetInt         = "equipedItemLootIndex_Backpack"
+	e.unitFrameTierVar       = e.ref + "Tier"
+	e.unitFrameImageVar      = e.ref + "Icon"
 	#if SERVER || CLIENT
-		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_BACKPACK
-		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_BACKPACK
-		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_BACKPACK
-		e.getEquippedRefFunc = GetEquippedRefBasedOnTrackingNetInt
+		e.trackingVisionPickupPOI      = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_BACKPACK
+		e.trackingVisionExchangePOI    = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_BACKPACK
+		e.trackingVisionDropPOI        = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_BACKPACK
+		e.getEquippedRefFunc           = GetEquippedRefBasedOnTrackingNetInt
 	#endif
 	#if SERVER
 		e.specialCaseEquipFunc = Equipment_ApplyBackpack
 	#endif
 
 	e = RegisterEquipslot( "helmet" )
-	e.title = "#SURVIVAL_HELMET"
-	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_HELMET
-	e.emptyImage = $"rui/hud/loot/loot_helmet_none"
-	e.trackingNetInt = "equipedItemLootIndex_Helmet"
-	e.unitFrameTierVar = e.ref + "Tier"
-	e.unitFrameImageVar = e.ref + "Icon"
+	e.title                  = "#SURVIVAL_HELMET"
+	e.emptyCommsAction       = eCommsAction.INVENTORY_NEED_HELMET
+	e.emptyImage             = $"rui/hud/loot/loot_helmet_none"
+	e.trackingNetInt         = "equipedItemLootIndex_Helmet"
+	e.unitFrameTierVar       = e.ref + "Tier"
+	e.unitFrameImageVar      = e.ref + "Icon"
 	#if SERVER || CLIENT
-		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_HELMET
-		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_HELMET
-		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_HELMET
-		e.getEquippedRefFunc = GetEquippedRefBasedOnTrackingNetInt
+		e.trackingVisionPickupPOI      = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_HELMET
+		e.trackingVisionExchangePOI    = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_HELMET
+		e.trackingVisionDropPOI        = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_HELMET
+		e.getEquippedRefFunc           = GetEquippedRefBasedOnTrackingNetInt
 	#endif
 	#if SERVER
 		e.specialCaseEquipFunc = Equipment_ApplyHelmetMod
 	#endif
 
 	e = RegisterEquipslot( "armor" )
-	e.title = "#SURVIVAL_ARMOR"
-	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_ARMOR
-	e.emptyImage = $"rui/hud/loot/loot_armor_none"
-	e.trackingNetInt = "equipedItemLootIndex_Armor"
-	e.unitFrameTierVar = e.ref + "Tier"
-	e.unitFrameImageVar = e.ref + "Icon"
+	e.title                  = "#SURVIVAL_ARMOR"
+	e.emptyCommsAction       = eCommsAction.INVENTORY_NEED_ARMOR
+	e.emptyImage             = $"rui/hud/loot/loot_armor_none"
+	e.trackingNetInt         = "equipedItemLootIndex_Armor"
+	e.unitFrameTierVar       = e.ref + "Tier"
+	e.unitFrameImageVar      = e.ref + "Icon"
 	#if SERVER || CLIENT
-		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_ARMOR
-		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_ARMOR
-		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_ARMOR
-		e.getEquippedRefFunc = GetEquippedRefBasedOnTrackingNetInt
+		e.trackingVisionPickupPOI      = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_ARMOR
+		e.trackingVisionExchangePOI    = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_ARMOR
+		e.trackingVisionDropPOI        = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_ARMOR
+		e.getEquippedRefFunc           = GetEquippedRefBasedOnTrackingNetInt
 	#endif
 	#if SERVER
 		e.specialCaseEquipFunc = Equipment_ApplyArmorMod
 	#endif
 
 	e = RegisterEquipslot( "incapshield" )
-	e.title = "#SURVIVAL_INCAPSHIELD"
-	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_INCAPSHIELD
-	e.emptyImage = $"rui/hud/loot/loot_incapshield_none"
-	e.trackingNetInt = "equipedItemLootIndex_IncapShield"
-	e.unitFrameTierVar = e.ref + "Tier"
-	e.unitFrameImageVar = e.ref + "Icon"
+	e.title                  = "#SURVIVAL_INCAPSHIELD"
+	e.emptyCommsAction       = eCommsAction.INVENTORY_NEED_INCAPSHIELD
+	e.emptyImage             = $"rui/hud/loot/loot_incapshield_none"
+	e.trackingNetInt         = "equipedItemLootIndex_IncapShield"
+	e.unitFrameTierVar       = e.ref + "Tier"
+	e.unitFrameImageVar      = e.ref + "Icon"
 	#if SERVER || CLIENT
-		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_INCAPSHIELD
-		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_INCAPSHIELD
-		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_INCAPSHIELD
-		e.getEquippedRefFunc = GetEquippedRefBasedOnTrackingNetInt
+		e.trackingVisionPickupPOI      = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_INCAPSHIELD
+		e.trackingVisionExchangePOI    = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_INCAPSHIELD
+		e.trackingVisionDropPOI        = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_INCAPSHIELD
+		e.getEquippedRefFunc           = GetEquippedRefBasedOnTrackingNetInt
 	#endif
 
 	e = RegisterEquipslot( "main_weapon0" )
-	e.title = "#SURVIVAL_WEAPON"
-	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_FIRST_WEAPON
-	e.emptyImage = $"rui/hud/loot/loot_weapon_none"
-	e.filledCommsActionFunc = FilledCommsAction_Weapon
-	e.weaponSlot = 0 // WEAPON_INVENTORY_SLOT_PRIMARY_0
-	e.nextWeaponSlot = "main_weapon1"
+	e.title                  = "#SURVIVAL_WEAPON"
+	e.emptyCommsAction       = eCommsAction.INVENTORY_NEED_FIRST_WEAPON
+	e.emptyImage             = $"rui/hud/loot/loot_weapon_none"
+	e.filledCommsActionFunc  = FilledCommsAction_Weapon
+	e.weaponSlot             = 0 // WEAPON_INVENTORY_SLOT_PRIMARY_0
+	e.nextWeaponSlot         = "main_weapon1"
 	#if SERVER || CLIENT
-		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_WEAPON
-		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_WEAPON
-		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_WEAPON
-		e.getEquippedRefFunc = GetEquippedWeaponForPlayer
+		e.trackingVisionPickupPOI      = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_WEAPON
+		e.trackingVisionExchangePOI    = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_WEAPON
+		e.trackingVisionDropPOI        = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_WEAPON
+		e.getEquippedRefFunc           = GetEquippedWeaponForPlayer
 	#endif
 	#if SERVER
 		e.specialCaseDropFunc = SURVIVAL_DropMainWeapon
 	#endif
 
 	e = RegisterEquipslot( "main_weapon0_sight" )
-	e.title = "#INVENTORY_SLOT_SIGHT"
-	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_sight"
-	e.attachmentPoint = "sight"
-	e.attachmentWeaponSlot = "main_weapon0"
+	e.title                  = "#INVENTORY_SLOT_SIGHT"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_sight"
+	e.attachmentPoint        = "sight"
+	e.attachmentWeaponSlot   = "main_weapon0"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
+	#endif
+	e = RegisterEquipslot( "bandolier" )
+	e.title                  = "bandolier"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/hud/loot/loot_weapon_none"
+	e.attachmentPoint        = "sight"
+	e.attachmentWeaponSlot   = "main_weapon0"
+	#if SERVER || CLIENT
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon0_mag" )
-	e.title = "#INVENTORY_SLOT_MAG"
-	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_mag"
-	e.attachmentPoint = "mag"
-	e.attachmentWeaponSlot = "main_weapon0"
+	e.title                  = "#INVENTORY_SLOT_MAG"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_mag"
+	e.attachmentPoint        = "mag"
+	e.attachmentWeaponSlot   = "main_weapon0"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon0_grip" )
-	e.title = "#INVENTORY_SLOT_GRIP"
-	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_stock"
-	e.attachmentPoint = "grip"
-	e.attachmentWeaponSlot = "main_weapon0"
+	e.title                  = "#INVENTORY_SLOT_GRIP"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_stock"
+	e.attachmentPoint        = "grip"
+	e.attachmentWeaponSlot   = "main_weapon0"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon0_barrel" )
-	e.title = "#INVENTORY_SLOT_BARREL"
-	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_barrel"
-	e.attachmentPoint = "barrel"
-	e.attachmentWeaponSlot = "main_weapon0"
+	e.title                  = "#INVENTORY_SLOT_BARREL"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_barrel"
+	e.attachmentPoint        = "barrel"
+	e.attachmentWeaponSlot   = "main_weapon0"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon0_hopup" )
-	e.title = "#INVENTORY_SLOT_HOPUP"
-	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_WEAPONATTACHMENT_HOPUP
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_hopup"
-	e.attachmentPoint = "hopup"
-	e.attachmentWeaponSlot = "main_weapon0"
+	e.title                  = "#INVENTORY_SLOT_HOPUP"
+	e.emptyCommsAction       = eCommsAction.INVENTORY_NEED_WEAPONATTACHMENT_HOPUP
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_hopup"
+	e.attachmentPoint        = "hopup"
+	e.attachmentWeaponSlot   = "main_weapon0"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon1" )
-	e.title = "#SURVIVAL_WEAPON"
-	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_ANOTHER_WEAPON
-	e.emptyImage = $"rui/hud/loot/loot_weapon_none"
-	e.filledCommsActionFunc = FilledCommsAction_Weapon
-	e.weaponSlot = 1 // WEAPON_INVENTORY_SLOT_PRIMARY_1
-	e.nextWeaponSlot = "main_weapon0"
+	e.title                  = "#SURVIVAL_WEAPON"
+	e.emptyCommsAction       = eCommsAction.INVENTORY_NEED_ANOTHER_WEAPON
+	e.emptyImage             = $"rui/hud/loot/loot_weapon_none"
+	e.filledCommsActionFunc  = FilledCommsAction_Weapon
+	e.weaponSlot             = 1 // WEAPON_INVENTORY_SLOT_PRIMARY_1
+	e.nextWeaponSlot         = "main_weapon0"
 	#if SERVER || CLIENT
-		e.trackingVisionPickupPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_WEAPON
-		e.trackingVisionExchangePOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_WEAPON
-		e.trackingVisionDropPOI = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_WEAPON
-		e.getEquippedRefFunc = GetEquippedWeaponForPlayer
+		e.trackingVisionPickupPOI      = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_WEAPON
+		e.trackingVisionExchangePOI    = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_WEAPON
+		e.trackingVisionDropPOI        = eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_WEAPON
+		e.getEquippedRefFunc           = GetEquippedWeaponForPlayer
 	#endif
 	#if SERVER
 		e.specialCaseDropFunc = SURVIVAL_DropMainWeapon
 	#endif
 
 	e = RegisterEquipslot( "main_weapon1_sight" )
-	e.title = "#INVENTORY_SLOT_SIGHT"
-	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_sight"
-	e.attachmentPoint = "sight"
-	e.attachmentWeaponSlot = "main_weapon1"
+	e.title                  = "#INVENTORY_SLOT_SIGHT"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_sight"
+	e.attachmentPoint        = "sight"
+	e.attachmentWeaponSlot   = "main_weapon1"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon1_mag" )
-	e.title = "#INVENTORY_SLOT_MAG"
-	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_mag"
-	e.attachmentPoint = "mag"
-	e.attachmentWeaponSlot = "main_weapon1"
+	e.title                  = "#INVENTORY_SLOT_MAG"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_mag"
+	e.attachmentPoint        = "mag"
+	e.attachmentWeaponSlot   = "main_weapon1"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon1_grip" )
-	e.title = "#INVENTORY_SLOT_GRIP"
-	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_stock"
-	e.attachmentPoint = "grip"
-	e.attachmentWeaponSlot = "main_weapon1"
+	e.title                  = "#INVENTORY_SLOT_GRIP"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_stock"
+	e.attachmentPoint        = "grip"
+	e.attachmentWeaponSlot   = "main_weapon1"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon1_barrel" )
-	e.title = "#INVENTORY_SLOT_BARREL"
-	e.emptyCommsActionFunc = EmptyCommsAction_AttachmentForParent
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_barrel"
-	e.attachmentPoint = "barrel"
-	e.attachmentWeaponSlot = "main_weapon1"
+	e.title                  = "#INVENTORY_SLOT_BARREL"
+	e.emptyCommsActionFunc   = EmptyCommsAction_AttachmentForParent
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_barrel"
+	e.attachmentPoint        = "barrel"
+	e.attachmentWeaponSlot   = "main_weapon1"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	e = RegisterEquipslot( "main_weapon1_hopup" )
-	e.title = "#INVENTORY_SLOT_HOPUP"
-	e.emptyCommsAction = eCommsAction.INVENTORY_NEED_WEAPONATTACHMENT_HOPUP
-	e.emptyImage = $"rui/pilot_loadout/mods/empty_hopup"
-	e.attachmentPoint = "hopup"
-	e.attachmentWeaponSlot = "main_weapon1"
+	e.title                  = "#INVENTORY_SLOT_HOPUP"
+	e.emptyCommsAction       = eCommsAction.INVENTORY_NEED_WEAPONATTACHMENT_HOPUP
+	e.emptyImage             = $"rui/pilot_loadout/mods/empty_hopup"
+	e.attachmentPoint        = "hopup"
+	e.attachmentWeaponSlot   = "main_weapon1"
 	#if SERVER || CLIENT
-		e.getEquippedRefFunc = GetEquippedAttachmentOnWeaponForPlayer
+		e.getEquippedRefFunc      = GetEquippedAttachmentOnWeaponForPlayer
 	#endif
 
 	#if SERVER || CLIENT
@@ -403,6 +417,25 @@ int function EmptyCommsAction_AttachmentForParent( string equipmentSlot, string 
 			Warning( format( "%s() - Couldn't determine '%s' type for weapon '%s'.", FUNC_NAME(), es.attachmentPoint, weaponData.ref ) )
 			return eCommsAction.BLANK
 		}
+		case "hopup":
+		{
+			array<string> attachmentRefs = GetAttachmentsForPoint( "hopup", weaponData.ref )
+			if ( attachmentRefs.len() == 1 )
+			{
+				switch ( attachmentRefs[0] )
+				{
+					case "hopup_turbocharger":
+						return eCommsAction.INVENTORY_NEED_HOPUP_TURBOCHARGER
+					case "hopup_selectfire":
+						return eCommsAction.INVENTORY_NEED_HOPUP_SELECTFIRE
+					case "hopup_energy_choke":
+						return eCommsAction.INVENTORY_NEED_HOPUP_CHOKE
+					case "hopup_headshot_dmg":
+						return eCommsAction.INVENTORY_NEED_HOPUP_SKULLPIERCER
+				}
+			}
+			return eCommsAction.INVENTORY_NEED_WEAPONATTACHMENT_HOPUP
+		}
 		default:
 			Warning( format( "%s() - Unhandled attachmentPoint: '%s'.", FUNC_NAME(), es.attachmentPoint ) )
 	}
@@ -427,6 +460,8 @@ int function FilledCommsAction_Weapon( string equipmentSlotRef, string itemRef )
 			return eCommsAction.INVENTORY_NEED_AMMO_HIGHCAL
 		case "shotgun":
 			return eCommsAction.INVENTORY_NEED_AMMO_SHOTGUN
+		case "boomjuice":
+			return eCommsAction.INVENTORY_NEED_AMMO_BOOMJUICE
 	}
 
 	Warning( "GetCommsActionForEquipmentSlot() - Unhandled ammo type '" + lootData.ammoType + "'" )
@@ -563,7 +598,7 @@ LootData function EquipmentSlot_GetEquippedLootDataForSlot( entity player, strin
 
 int function EquipmentSlot_GetWeaponSlotForEquipmentSlot( string equipmentSlot )
 {
-	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
+	EquipmentSlot es       = Survival_GetEquipmentSlotDataByRef( equipmentSlot )
 	EquipmentSlot esWeapon = Survival_GetEquipmentSlotDataByRef( es.attachmentWeaponSlot )
 
 	return esWeapon.weaponSlot
@@ -711,6 +746,6 @@ string function GetAttachmentPointName( string attachmentPoint )
 		case "sight":
 			return "#SLOT_SIGHT"
 	}
-
-	unreachable
+	return ""
+	//unreachable
 }

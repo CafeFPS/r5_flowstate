@@ -627,13 +627,13 @@ void function Chroma_LootPickupEffects( LootData lootData )
 		case eLootType.BACKPACK:
 		case eLootType.BLANK:
 		case eLootType.RESOURCE:
-#if false
+#if(false)
 
 #endif
-#if false
+#if(false)
 
 #endif
-#if false
+#if(false)
 
 #endif
 
@@ -876,7 +876,7 @@ void function Chroma_PlayerUsedAbility( entity player, entity offhandWeapon )
 		Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_SEMICIRCLE, {[0.0] = <1,0.4,0>}, 2.0 )
 		return
 	}
-#if false
+#if(false)
 
 
 

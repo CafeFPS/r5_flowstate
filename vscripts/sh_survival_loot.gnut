@@ -12,7 +12,6 @@ global function SURVIVAL_Loot_GetHealthKitDataFromStruct
 global function SURVIVAL_Loot_GetHealthPickupCategoryFromData
 global function SURVIVAL_Loot_GetTotalHealthItems
 global function SURVIVAL_Loot_RegisterConditionalCheck
-global function SURVIVAL_Loot_RunConditionalCheck
 global function IsAmmoInUse
 global function SetPlayerRequireLootType
 
@@ -52,7 +51,9 @@ global function SURVIVAL_GetShieldHealthForTier
 global function SURVIVAL_IsLootIrrelevant
 global function SURVIVAL_IsLootAnUpgrade
 global function SURVIVAL_GetActionForItem
+global function SURVIVAL_GetInventorySlotCountForPlayer
 
+global function GetAllDeathBoxes
 global function ShouldPickupDNAFromDeathBox
 
 #if CLIENT
@@ -270,20 +271,20 @@ global enum eAttachmentTag
 	SHOTGUN
 	LMG
 	SNIPER
-	SMG
 	LAUNCHER
+	SMG
 	ALL
 	BARREL
 }
 
 global const table<string, int> weaponClassToTag = {
-	pistol = eAttachmentTag.PISTOL
-	assault = eAttachmentTag.ASSAULT
-	shotgun = eAttachmentTag.SHOTGUN
-	lmg = eAttachmentTag.LMG
-	sniper = eAttachmentTag.SNIPER
-	smg = eAttachmentTag.SMG
-	launcher = eAttachmentTag.LAUNCHER
+	pistol    = eAttachmentTag.PISTOL
+	assault   = eAttachmentTag.ASSAULT
+	shotgun   = eAttachmentTag.SHOTGUN
+	lmg       = eAttachmentTag.LMG
+	sniper    = eAttachmentTag.SNIPER
+	smg       = eAttachmentTag.SMG
+	launcher  = eAttachmentTag.LAUNCHER
 }
 
 global struct KitHealData
@@ -347,7 +348,8 @@ struct
 	float lastCacheUpdateTime
 	table<entity,CachedLootActionData> cachedActionForGroundItemData
 	table<entity,CachedLootActionData> cachedActionForGroundItemDataAlt
-#endif // SERVER
+	array<entity> allDeathBoxes
+#endif // SERVER / CLIENT
 
 	table<int, HealthPickup> healthPickups
 	table<string,string> toggleAttachments
@@ -380,39 +382,20 @@ void function SURVIVAL_Loot_InitShared()
 
 	PrecacheModel( $"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl" )
 
-	RegisterSignal( "_SetPlayerInventory" )
-
-
-	//Remote_RegisterClientFunction( "ClientCallback_PickupAllSurvivalItem", "int", INT_MIN, INT_MAX, "bool" )
-	//Remote_RegisterClientFunction( "ClientCallback_PickupSurvivalItem", "entity", "int", INT_MIN, INT_MAX, "entity" )
-	//Remote_RegisterClientFunction( "ClientCallback_PickupSurvivalItem_UI", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
-	//Remote_RegisterClientFunction( "ClientCallback_AutoPickupFromDeathbox", "entity" )
-	//Remote_RegisterClientFunction( "ClientCallback_SwapSurvivalItem", "int", INT_MIN, INT_MAX, "entity", "entity" )
-	//Remote_RegisterClientFunction( "ClientCallback_SwapSurvivalItem_UI", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX )
-	//AddClientCommandCallback( "ClientCallback_UseSurvivalItem", "entity" )
-	//Remote_RegisterClientFunction( "ClientCallback_Sur_SwapToNextOrdnance" )
-	//AddClientCommandCallback( "ClientCallback_Sur_SwitchToOrdnance", "int", INT_MIN, INT_MAX, "bool" )
-	//Remote_RegisterClientFunction( "ClientCallback_DeathboxOpened" )
-	//AddUICallback( "BackpackOpened", UICallback_BackpackOpened )
-	//AddUICallback( "BackpackClosed", UICallback_BackpackClosed )
-	//Remote_RegisterClientFunction( "ClientCallback_Sur_SwapPrimaryPositions" )
-                           
-		//Remote_RegisterClientFunction( "ClientCallback_PickupSurvivalLootFromDeathbox", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "entity", "entity", "int", INT_MIN, INT_MAX, "int", INT_MIN, INT_MAX, "bool", "bool", "bool" )
-
 	#if CLIENT
 		AddCreateCallback( "prop_survival", OnPropSurvivalCreate )
-		AddCreateCallback( "prop_death_box", OnDeathBoxCreated )
-		AddDestroyCallback( "prop_death_box", OnDeathBoxDestroyed )
 		AddCreateCallback( "prop_dynamic", OnDeathBoxCreated )
 	#elseif SERVER
 		AddSpawnCallback( "prop_survival", OnPropSurvivalCreate )
 		AddSpawnCallback( "prop_dynamic", OnDeathBoxCreated )
-		AddSpawnCallback( "prop_death_box", OnDeathBoxCreated )
 	#endif
 
 #if SERVER
 	AddCallback_OnClientConnected( OnClientConnected )
 	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
+#endif // SERVER
+
+#if SERVER
 	SV_Survival_Loot_Init()
 #endif // SERVER
 
@@ -903,20 +886,14 @@ void function SURVIVAL_Loot_RegisterConditionalCheck( string ref, bool functionr
 	file.conditionalLootChecks[ ref ] <- conditionalCheck
 }
 
-bool function SURVIVAL_Loot_RunConditionalCheck( string ref, entity player )
-{
-	Assert( ref in file.conditionalLootChecks, "Loot ref does not have registered conditional function!" )
-	return file.conditionalLootChecks[ ref ]( ref, player )
-}
-
 string function GetAttachPointForAttachment( string attachmentName )
 {
-	var attachmentMatrix = GetDataTable( $"datatable/weapon_attachment_matrix.rpak" )
-	int attachmentRow = GetDataTableRowMatchingStringValue( attachmentMatrix, 0, attachmentName )
-	Assert( attachmentRow >= 0, "Attachment not defined in datatable/weapon_attachment_matrix.rpak" )
-	int attachmentPointColumn = GetDataTableColumnByName( attachmentMatrix, "attachmentPoint" )
+	// var attachmentMatrix = GetDataTable( $"datatable/weapon_attachment_matrix.rpak" )
+	// int attachmentRow = GetDataTableRowMatchingStringValue( attachmentMatrix, 0, attachmentName )
+	// Assert( attachmentRow >= 0, "Attachment not defined in datatable/weapon_attachment_matrix.rpak" )
+	// int attachmentPointColumn = GetDataTableColumnByName( attachmentMatrix, "attachmentPoint" )
 
-	return GetDataTableString( attachmentMatrix, attachmentRow, attachmentPointColumn )
+	return attachmentName//GetDataTableString( attachmentMatrix, attachmentRow, attachmentPointColumn ) // TODO: FIX
 }
 
 #if CLIENT || SERVER
@@ -986,43 +963,37 @@ string function GetWeaponAmmoType( string weaponName )
 	return ""
 }
 
-
 int function SURVIVAL_GetInventoryLimit( entity player )
 {
 	//printt("SURVIVAL_GetInventoryLimit sh_surv_loot")
-	int limit  = 0
 	int bpTier = EquipmentSlot_GetEquipmentTier( player, "backpack" )
 	switch ( bpTier )
 	{
 		case 0:
-			limit = SURVIVAL_BACKPACK_LIMIT
-			break
+			return SURVIVAL_BACKPACK_LIMIT
 
 		case 1:
-			limit = SURVIVAL_BACKPACK_LIMIT_SMALL
-			break
+			return SURVIVAL_BACKPACK_LIMIT_SMALL
 
 		case 2:
-			limit = SURVIVAL_BACKPACK_LIMIT_MEDIUM
-			break
+			return SURVIVAL_BACKPACK_LIMIT_MEDIUM
 
 		case 3:
 		case 4:
-			limit = SURVIVAL_BACKPACK_LIMIT_MAX
-			break
+			return SURVIVAL_BACKPACK_LIMIT_MAX
 
 		default:
 			Assert( false, "invalid backpack tier " + bpTier )
-			break
 	}
 
-	return limit
+	unreachable
 }
 
 int function SURVIVAL_GetMaxInventoryLimit( entity player )
 {
 	return SURVIVAL_BACKPACK_LIMIT_MAX
 }
+
 
 int function SURVIVAL_GetInventoryCount( entity player )
 {
@@ -1455,20 +1426,12 @@ void function OnPropSurvivalCreate( entity prop )
 	SetCallback_CanUseEntityCallback( prop, SurvivalLoot_CanUseFunction )
 }
 
-void function SURVIVAL_Loot_SetHighlightForLoot( entity prop, bool isSelected, string ref = "" )
+void function SURVIVAL_Loot_SetHighlightForLoot( entity prop, bool isSelected )
 {
-	LootData data
-	if( ref != "")
-	{
-		data = SURVIVAL_Loot_GetLootDataByRef( ref )
-	}
-	else {
-		int index = prop.GetSurvivalInt()
+	int index = prop.GetSurvivalInt()
 
-		data = SURVIVAL_Loot_GetLootDataByIndex( index )
-	}
-
-	ref = data.ref
+	LootData data = SURVIVAL_Loot_GetLootDataByIndex( index )
+	string ref = data.ref
 	int lootType = data.lootType
 	int lootTier = data.tier
 
@@ -3477,22 +3440,24 @@ void function OnDeathBoxUse( entity box, entity player, int useInputFlags )
 	}
 }
 
-void function OnDeathBoxCreated( entity ent )
+array<entity> function GetAllDeathBoxes()
 {
-	if ( ent.GetTargetName() != DEATH_BOX_TARGETNAME )
-		return
-
-	SetCallback_CanUseEntityCallback( ent, DeathBox_CanUseFunction )
-
-	AddCallback_OnUseEntity( ent, OnDeathBoxUse )
-
+	#if SERVER
+	array<entity> temp
+	return temp
+	#elseif CLIENT
+	return file.allDeathBoxes
+	#endif // SERVER / CLIENT
 }
 
-void function OnDeathBoxDestroyed( entity ent )
+void function OnDeathBoxCreated( entity ent )
 {
-	//#if(CLIENT)
-	//	file.allDeathBoxes.fastremovebyvalue( ent )
-	//#endif
+	if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME )
+	{
+		SetCallback_CanUseEntityCallback( ent, DeathBox_CanUseFunction )
+
+		AddCallback_OnUseEntity( ent, OnDeathBoxUse )
+	}
 }
 
 bool function DeathBox_CanUseFunction( entity player, entity ent )
@@ -3652,6 +3617,8 @@ LootData function SURVIVAL_GetLootDataFromWeapon( entity weapon )
 
 bool function SURVIVAL_Weapon_IsFullyKitted( string weaponName )
 {
+	// TODO:
+	return false
 	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
 		return false
 	return SURVIVAL_Loot_GetLootDataByRef( weaponName ).baseMods.contains( "gold" )
@@ -3671,4 +3638,15 @@ bool function IsValidAttachment( string attachment )
 AttachmentData function GetAttachmentData( string attachment )
 {
 	return file.attachmentMatrix[ attachment ]
+}
+
+int function SURVIVAL_GetInventorySlotCountForPlayer( entity player, LootData data )
+{
+	int result = data.inventorySlotCount
+	#if SERVER
+
+	return result
+	#endif
+
+	return result
 }

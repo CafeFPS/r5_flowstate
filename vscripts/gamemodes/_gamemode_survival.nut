@@ -19,6 +19,7 @@ global function SURVIVAL_CalculateAirdropPositions
 global function SURVIVAL_GetPlaneHeight
 global function SURVIVAL_GetAirburstHeight
 global function SURVIVAL_AddLootBin
+global function SURVIVAL_AddLootGroupRemapping
 global function SURVIVAL_GetMultipleWeightedItemsFromGroup
 global function SURVIVAL_DebugLoot
 global function Survival_AddCallback_OnAirdropLaunched
@@ -29,24 +30,23 @@ global function SURVIVAL_SetMapCenter
 void function GamemodeSurvival_Init()
 {
 	SurvivalFreefall_Init()
-	Sh_ArenaDeathField_Init()
+	//Sh_ArenaDeathField_Init()
 
 	// init flags
 	FlagInit( "DeathCircleActive", true )
+	FlagInit( "DeathFieldPaused", false )
 	FlagInit( "Survival_LootSpawned", true )
 	FlagInit( "PathFinished", false )
 
-	RegisterSignal( "SwitchToOrdnance" )
-	RegisterSignal( "SwapToNextOrdnance" )
-
 	// make sure that flags are set/cleared correctly
 	FlagSet("DeathCircleActive")
+	FlagClear("DeathFieldPaused")
 
 	AddClientCommandCallback( "GoToMapPoint", ClientCommand_GoToMapPoint )
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 
 	// run deathfield
-	RunArenaDeathField()
+	//RunArenaDeathField()
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -154,7 +154,12 @@ float function SURVIVAL_GetAirburstHeight()
 
 void function SURVIVAL_AddLootBin( entity lootbin )
 {
-	InitLootBin( lootbin )
+
+}
+
+void function SURVIVAL_AddLootGroupRemapping( string hovertank, string supplyship )
+{
+	
 }
 
 array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGroup, int numLootItems )

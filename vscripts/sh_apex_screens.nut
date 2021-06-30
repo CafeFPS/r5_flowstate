@@ -17,9 +17,8 @@ global function ApexScreenMasterThink
 #if CLIENT
 global function ClApexScreens_DisableAllScreens
 global function ClApexScreens_EnableAllScreens
+global function ClApexScreens_IsDisabled
 global function ServerToClient_ApexScreenKillDataChanged
-//global function ClApexScreens_Lobby_SetMode
-//global function ClApexScreens_Lobby_SetCardOwner
 global function ClApexScreens_OnStaticPropRuiVisibilityChange
 #endif
 
@@ -58,19 +57,19 @@ enum eApexScreenPosition
 global enum eApexScreenMode
 {
 	// must match APEX_SCREEN_MODE_* in apex_screens.rui
-	OFF = 0,
-	LOGO = 1,
-	PLAYER_NAME_CHAMPION = 2,
-	PLAYER_NAME_KILLLEADER = 3,
-	GCARD_FRONT_CLEAN = 4,
-	GCARD_FRONT_DETAILS = 5,
-	GCARD_BACK = 6,
-	UNUSED = 7,
-	CIRCLE_STATE = 8,
-	PLAYERS_REMAINING = 9,
-	SQUADS_REMAINING = 10,
-	ZONE_NAME = 11,
-	ZONE_LOOT = 12,
+	OFF                     = 0,
+	LOGO                    = 1,
+	PLAYER_NAME_CHAMPION    = 2,
+	PLAYER_NAME_KILLLEADER  = 3,
+	GCARD_FRONT_CLEAN       = 4,
+	GCARD_FRONT_DETAILS     = 5,
+	GCARD_BACK              = 6,
+	UNUSED                  = 7,
+	CIRCLE_STATE            = 8,
+	PLAYERS_REMAINING       = 9,
+	SQUADS_REMAINING        = 10,
+	ZONE_NAME               = 11,
+	ZONE_LOOT               = 12,
 
 	_COUNT,
 	INVALID = -1,
@@ -79,9 +78,9 @@ global enum eApexScreenMode
 global enum eApexScreenTransitionStyle
 {
 	// must match APEX_SCREEN_TRANSITION_STYLE_* in apex_screens.rui
-	NONE = 0,
-	SLIDE = 1,
-	FADE_TO_BLACK = 2,
+	NONE           = 0,
+	SLIDE          = 1,
+	FADE_TO_BLACK  = 2,
 }
 
 
@@ -124,8 +123,8 @@ struct ApexScreenState
 
 	vector tint
 
-	var    floatingTopo = null
-	var    floatingRui = null
+	var    floatingTopo  = null
+	var    floatingRui   = null
 	var[3] floatingNestedBadgeRuiList = [null, null, null]
 }
 #endif
@@ -146,7 +145,6 @@ struct ApexScreenPositionMasterState
 struct ApexScreenJob
 {
 	int mode = eApexScreenMode.INVALID
-
 }
 #endif
 
@@ -159,19 +157,19 @@ struct {
 	#if CLIENT
 		ApexScreenPositionMasterState[eApexScreenPosition._COUNT] screenPositionMasterStates
 
-		bool                        forceDisableScreens = false
+		bool                        forceDisableScreens                = false
 		array<ApexScreenState>      staticScreenList
-		bool                        allScreenUpdateQueued = false
+		bool                        allScreenUpdateQueued              = false
 		table<int, ApexScreenState> magicIdScreenStateMap
 		table<int, array<var> >     environmentalRUIListMapByMagicId
-		int                         killScreenDamageSourceID = -1
+		int                         killScreenDamageSourceID           = -1
 		float                       killScreenDistance
 		int                         killedPlayerGrade
 		string                      killedPlayerName
 		table                       signalDummy
 
-		bool DEV_activeScreenDebug = false
-		bool DEV_isFloatyBitsPrototypeEnabled = false
+		bool DEV_activeScreenDebug                                     = false
+		bool DEV_isFloatyBitsPrototypeEnabled                          = false
 	#endif
 } file
 
@@ -608,6 +606,11 @@ void function ClApexScreens_EnableAllScreens()
 	Assert( file.forceDisableScreens )
 	file.forceDisableScreens = false
 	UpdateAllScreensContent()
+}
+
+bool function ClApexScreens_IsDisabled()
+{
+	return file.forceDisableScreens
 }
 #endif
 
@@ -1306,5 +1309,3 @@ void function ServerToClient_ApexScreenKillDataChanged( int damageSourceID, floa
 //	// logo
 //}
 //#endif
-
-

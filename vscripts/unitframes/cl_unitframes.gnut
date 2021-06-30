@@ -166,7 +166,7 @@ void function SetUnitFrameOwner( UnitFrameDef unitFrame, entity ent )
 
 void function SetUnitFrameDataFromOwner( var rui, entity ent, bool forceUpdate = false )
 {
-	EndSignal( ent, "OnDestroy" ) //LoadoutSlot_WaitForItemFlavor could take time so ent might get destroyed
+	EndSignal( ent, "OnDestroy" ) // LoadoutSlot_WaitForItemFlavor could take time so ent might get destroyed
 
 	Assert ( IsNewThread(), "Must be threaded off." )
 
@@ -197,7 +197,7 @@ void function SetUnitFrameDataFromOwner( var rui, entity ent, bool forceUpdate =
 
 	RuiSetBool( rui, "disconnected", false )
 	RuiSetImage( rui, "healTypeIcon", $"" )
-	#if HAS_MEMBER_COLORS
+	#if !MP_PVEMODE
 		RuiTrackInt( rui, "teamMemberIndex", ent, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 	#endif
 
@@ -210,6 +210,12 @@ void function SetUnitFrameDataFromOwner( var rui, entity ent, bool forceUpdate =
 	}
 
 	RuiSetBool( rui, "isVisible", true )
+
+	#if MP_PVEMODE
+		RuiSetBool( rui, "isPvE", true )
+		RuiTrackInt( rui, "squadID", ent, RUI_TRACK_SQUADID )
+		UpdateWaitingToRespawnTextForFrame( rui )
+	#endif //MP_PVEMODE
 }
 
 void function OnInUseHealingKitTypeChanged( entity player, int oldkitType, int kitType, bool actuallyChanged )

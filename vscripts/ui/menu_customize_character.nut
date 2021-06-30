@@ -96,11 +96,7 @@ void function CustomizeCharacterMenu_OnClose()
 
 void function RegisterNewnessCallbacks( ItemFlavor character )
 {
-	#if(true)
-		string cardPanelString = "CharacterCardsPanelV2"
-	#else
-
-#endif
+	string cardPanelString = "CharacterCardsPanelV2"
 	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterSkinsTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterSkinsPanel" ) )
 	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterCardTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( cardPanelString ) )
 	//
@@ -110,11 +106,7 @@ void function RegisterNewnessCallbacks( ItemFlavor character )
 
 void function DeregisterNewnessCallbacks( ItemFlavor character )
 {
-	#if(true)
-		string cardPanelString = "CharacterCardsPanelV2"
-	#else
-
-#endif
+	string cardPanelString = "CharacterCardsPanelV2"
 	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterSkinsTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterSkinsPanel" ) )
 	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterCardTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( cardPanelString ) )
 	//

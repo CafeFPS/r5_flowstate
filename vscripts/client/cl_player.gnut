@@ -1115,7 +1115,7 @@ void function TitanEjectHatchSequence( entity soul, float ejectTime )
 		vector boltAngles = titan.GetAttachmentAngles( attachID )
 		vector launchVec = AnglesToForward( boltAngles ) * 500
 
-		CreateClientsideGib( $"mdl/industrial/bolt_tiny01.rmdl", boltOrgin, boltAngles, launchVec, <0,0,0>, 3.0, 1000.0, 200.0 )
+		//CreateClientsideGib( $"mdl/industrial/bolt_tiny01.rmdl", boltOrgin, boltAngles, launchVec, <0,0,0>, 3.0, 1000.0, 200.0 )
 		int effect = PlayFXOnTag( titan, fxID, attachID )
 		effects.append( effect )
 		EmitSoundOnEntity( titan, "titan_bolt_loose" )

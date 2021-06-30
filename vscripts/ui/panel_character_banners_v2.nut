@@ -1,5 +1,3 @@
-#if(true)
-
 global function InitCharacterCardsPanel
 //
 //
@@ -335,5 +333,3 @@ void function ClearNewnessCallbacks()
 	//
 	file.lastNewnessCharacter = null
 }
-
-#endif

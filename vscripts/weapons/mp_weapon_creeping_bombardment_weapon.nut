@@ -1,6 +1,7 @@
 
 global function MpWeaponGrenadeCreepingBombardmentWeapon_Init
 global function OnProjectileCollision_WeaponCreepingBombardmentWeapon
+global function OnWeaponDeactivate_WeaponCreepingBombardment
 
 const asset CREEPING_BOMBARDMENT_WEAPON_SMOKESCREEN_FX = $"P_smokescreen_FD"
 const asset CREEPING_BOMBARDMENT_SMOKE_FX = $"P_bBomb_smoke"
@@ -109,3 +110,8 @@ void function AddThreatIndicator( entity bomb )
 	ShowGrenadeArrow( player, bomb, 350, 0.0 )
 }
 #endif //CLIENT
+
+void function OnWeaponDeactivate_WeaponCreepingBombardment( entity weapon )
+{
+	Grenade_OnWeaponDeactivate( weapon )
+}

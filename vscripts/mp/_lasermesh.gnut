@@ -1,0 +1,2 @@
+// stubscript
+untyped

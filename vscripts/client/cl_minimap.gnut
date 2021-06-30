@@ -10,6 +10,7 @@ global function Minimap_SetSizeScale
 global function Minimap_IsUsingLargeMinimap
 global function Minimap_SetBlankBackground
 global function Minimap_SetNorthFacing
+global function Minimap_UpdateNorthFacingOnSettingChange
 
 global function Minimap_RingPulseAtLocation
 global function ServerCallback_RingPulseMinimap
@@ -88,6 +89,7 @@ struct {
 	var        fullmap_legendRui
 	array<var> fullmap_unitframesRui
 	var        fullmap_gamestateRui
+	var        fullmap_challengeBoxRui
 
 	array<MapFeature> mapFeatureList
 } file
@@ -181,7 +183,6 @@ void function ClMinimap_Init()
 {
 	RegisterDefaultMinimapPackage( "player", MINIMAP_PLAYER_RUI, MinimapPackage_PlayerInit )
 	RegisterDefaultMinimapPackage( "npc_titan", MINIMAP_OBJECT_RUI, MinimapPackage_NPCTitanInit )
-	RegisterDefaultMinimapPackage( "player_vehicle", MINIMAP_OBJECT_RUI, MinimapPackage_VehicleInit )
 	RegisterDefaultMinimapPackage( "npc_soldier", MINIMAP_OBJECT_RUI, MinimapPackage_NPCHumanSizedInit )
 	RegisterDefaultMinimapPackage( "npc_spectre", MINIMAP_OBJECT_RUI, MinimapPackage_NPCHumanSizedInit )
 	RegisterDefaultMinimapPackage( "npc_stalker", MINIMAP_OBJECT_RUI, MinimapPackage_NPCHumanSizedInit )
@@ -207,7 +208,8 @@ void function ClMinimap_Init()
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_LOADOUT_CHEST, MINIMAP_OBJ_AREA_RUI, MinimapPackage_FDLoadoutChest )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_BATTERY_EXCHANGE, MINIMAP_OBJ_AREA_RUI, MinimapPackage_FDBatteryExchange )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.BOOST_STORE, MINIMAP_OBJ_AREA_RUI, MinimapPackage_BoostStore )
-	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.ARC_TRAP, MINIMAP_OBJ_AREA_RUI, MinimapPackage_ArcTrap )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.ARC_TRAP, MINIMAP_ARC_TRAP_RUI, MinimapPackage_ArcTrap )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TROPHY_SYSTEM, MINIMAP_OBJ_AREA_RUI, MinimapPackage_TrophySystem )
 
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.DIRTY_BOMB, MINIMAP_OBJECT_RUI, MinimapPackage_DirtyBomb, FULLMAP_OBJECT_RUI, MinimapPackage_DirtyBomb )
 
@@ -279,6 +281,9 @@ void function ClMinimap_Init()
 	if ( GetCurrentPlaylistVarBool( "beta_watermark", false ) == true )
 	{
 		file.minimap_coords = CreateMinimapRui( MINIMAP_UID_COORDS_RUI, MINIMAP_Z_BASE + 1000 )
+		#if MP_PVEMODE
+			RuiSetBool( file.minimap_coords, "isModeX", true )
+		#endif //MP_PVEMODE
 	}
 
 	file.minimap_you = CreateMinimapRui( MINIMAP_YOU_RUI, MINIMAP_Z_YOU )
@@ -302,6 +307,10 @@ void function ClMinimap_Init()
 	InitHUDRui( file.fullmap_legendRui, false )
 	Fullmap_AddRui( file.fullmap_legendRui )
 
+	file.fullmap_challengeBoxRui = RuiCreate( $"ui/minimap_challenge_box.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 19 )
+	InitHUDRui( file.fullmap_challengeBoxRui, false )
+	Fullmap_AddRui( file.fullmap_challengeBoxRui )
+
 	// create unitframe ruis for the fullmap screen
 	// Taking off one of these to save memory. If we ever need to go above a 3 person team, add it back.
 	 //file.fullmap_unitframesRui.append( RuiCreate( $"ui/unitframe_survival_v3.rpak", clGlobal.topoFullscreenFullMap, FULLMAP_RUI_DRAW_LAYER, 20 ) )
@@ -319,9 +328,9 @@ void function ClMinimap_Init()
 	Fullmap_AddRui( file.fullmap_gamestateRui )
 
 	// temp fix for rui bug R5DEV-59803
-	UISize screenSize = GetCurrentVirtualScreenSize( true )
-	float aspectRatio = screenSize.width / float( screenSize.height )
-	RuiSetFloat2( file.fullmap_gamestateRui, "aspectRatioHack", <aspectRatio,1,0> )
+	// UISize screenSize = GetCurrentVirtualScreenSize( true )
+	// float aspectRatio = screenSize.width / float( screenSize.height )
+	// RuiSetFloat2( file.fullmap_gamestateRui, "aspectRatioHack", <aspectRatio,1,0> )
 }
 
 
@@ -844,7 +853,7 @@ void function UpdatePlayerRuiTracking( entity player )
 	entity viewPlayer = GetLocalViewPlayer()
 
 	RuiTrackFloat3( file.minimap_base, "playerPos", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
-	RuiTrackFloat3( file.minimap_base, "playerAngles", viewPlayer, RUI_TRACK_EYEANGLES_FOLLOW )
+	RuiTrackFloat3( file.minimap_base, "playerAngles", viewPlayer, RUI_TRACK_CAMANGLES_FOLLOW )
 	RuiTrackFloat( file.minimap_base, "minimapZoomScale", player, RUI_TRACK_MINIMAP_ZOOM_SCALE )
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", file.minimapSizeScale )
 	RuiSetFloat( file.minimap_frame, "minimapSizeScale", file.minimapSizeScale )
@@ -853,10 +862,13 @@ void function UpdatePlayerRuiTracking( entity player )
 
 	RuiTrackInt( file.minimap_you, "objectFlags", viewPlayer, RUI_TRACK_MINIMAP_FLAGS )
 	RuiTrackInt( file.minimap_you, "customState", viewPlayer, RUI_TRACK_MINIMAP_CUSTOM_STATE )
-	RuiTrackFloat3( file.minimap_you, "playerAngles", viewPlayer, RUI_TRACK_EYEANGLES_FOLLOW )
-	#if HAS_MEMBER_COLORS
+	RuiTrackFloat3( file.minimap_you, "playerAngles", viewPlayer, RUI_TRACK_CAMANGLES_FOLLOW )
+	#if !MP_PVEMODE
 		RuiTrackInt( file.minimap_you, "teamMemberIndex", viewPlayer, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
-	#endif
+	#endif //!MP_PVEMODE
+	#if MP_PVEMODE
+		RuiTrackInt( file.minimap_you, "squadID", viewPlayer, RUI_TRACK_SQUADID )
+	#endif //MP_PVEMODE
 
 	foreach ( var rui in file.minimapOtherRuis )
 	{
@@ -878,9 +890,16 @@ void function MinimapPackage_PlayerInit( entity ent, var rui )
 		RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
 		RuiTrackFloat( rui, "maphackDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.maphack_detected )
 	}
-	#if HAS_MEMBER_COLORS
+	#if !MP_PVEMODE
 		RuiTrackInt( rui, "teamMemberIndex", ent, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 	#endif
+	#if MP_PVEMODE
+		if ( IsMultiTeamMission() )
+		{
+			RuiSetInt( rui, "squadIDLocalPlayer", GetLocalViewPlayer().GetSquadID() )
+			RuiTrackInt( rui, "squadID", ent, RUI_TRACK_SQUADID )
+		}
+	#endif //MP_PVEMODE
 }
 
 
@@ -1067,6 +1086,14 @@ void function MinimapPackage_MortarPosition( entity ent, var rui )
 void function MinimapPackage_ArcTrap( entity ent, var rui )
 {
 	RuiSetImage( rui, "centerImage", $"rui/hud/minimap/compass_icon_arc_trap" )
+	RuiSetImage( rui, "clampedImage", $"" )
+	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+}
+
+
+void function MinimapPackage_TrophySystem( entity ent, var rui )
+{
+	RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/survival/wattson_ult_map_icon" )
 	RuiSetImage( rui, "clampedImage", $"" )
 	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
 }
@@ -1449,12 +1476,12 @@ void function UpdateFullmapRuiTracks()
 
 	RuiSetInt( viewPlayerRui, "frameSlot", -1 )
 
-	for( int i = 1; i < file.fullmap_unitframesRui.len(); i++ )
+	for ( int i = 1; i < file.fullmap_unitframesRui.len(); i++ )
 	{
 		var rui = file.fullmap_unitframesRui[i]
-		RuiSetBool( rui, "isVisible", false )	// hide if no matching player
+		RuiSetBool( rui, "isVisible", false )    // hide if no matching player
 
-		int slotIndex = i - 1
+		int slotIndex     = i - 1
 		entity teamMember = UnitFrame_GetOwnerByIndex( slotIndex )
 		if ( !IsValid( teamMember ) )
 		{
@@ -1478,23 +1505,15 @@ void function UpdateFullmapRuiTracks()
 	}
 
 	// set gamestate rui tracks
-	RuiTrackInt( file.fullmap_gamestateRui, "killCount", viewPlayer, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
-	RuiTrackInt( file.fullmap_gamestateRui, "playerObservedCount", viewPlayer, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )
+	UpdateCommonScoreRuiTracking( file.fullmap_gamestateRui, viewPlayer )
 	ScorebarInitTracking( viewPlayer, file.fullmap_gamestateRui )
-
-	if ( UseSoloModeInGamePresentation() )
-	{
-		RuiSetBool( file.fullmap_gamestateRui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( file.fullmap_gamestateRui, "squadsRemainingText", "#SURVIVAL_PLAYERS_REMAIN" )
-	}
-	else
-	{
-		RuiSetBool( file.fullmap_gamestateRui, "shouldDisplayLivingPlayerCount", true )
-		RuiSetString( file.fullmap_gamestateRui, "squadsRemainingText", "#SURVIVAL_SQUADS_REMAIN" )
-	}
+	SetCommonScoreRUIVars( file.fullmap_gamestateRui )
 
 	bool gamestateIsPlaying = GamePlaying()
 	RuiSetBool( file.fullmap_gamestateRui, "gamestateIsPlaying", gamestateIsPlaying )
+
+	int challengesCount = 3
+	UpdateChallengeBoxRows( challengesCount, file.fullmap_challengeBoxRui, [] )
 
 	// set circle data
 	int roundNumber = SURVIVAL_GetCurrentDeathFieldStage() + 1
@@ -1519,8 +1538,8 @@ void function UpdateFullmapRuiTracks()
 	if ( currentDeathFieldStage > -1 )
 	{
 		DeathFieldStageData data = GetDeathFieldStage( currentDeathFieldStage )
-		float currentRadius = SURVIVAL_GetDeathFieldCurrentRadius()
-		float endRadius = data.endRadius
+		float currentRadius      = SURVIVAL_GetDeathFieldCurrentRadius()
+		float endRadius          = data.endRadius
 
 		RuiSetFloat( file.fullmap_gamestateRui, "deathfieldStartRadius", currentRadius )
 		RuiSetFloat( file.fullmap_gamestateRui, "deathfieldEndRadius", endRadius )
@@ -1528,7 +1547,7 @@ void function UpdateFullmapRuiTracks()
 
 	RuiTrackFloat3( file.fullmap_gamestateRui, "playerOrigin", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
 
-	#if HAS_MEMBER_COLORS
+	#if !MP_PVEMODE
 		RuiTrackInt( file.fullmap_gamestateRui, "teamMemberIndex", viewPlayer, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 	#endif
 }
@@ -1613,4 +1632,10 @@ void function UpdateMapFeatures()
 		RuiSetString( file.fullmap_legendRui, "itemDesc" + featurePostfix, mapFeature.descDesc )
 		RuiSetImage( file.fullmap_legendRui, "itemIcon" + featurePostfix, mapFeature.icon )
 	}
+}
+
+void function Minimap_UpdateNorthFacingOnSettingChange()
+{
+	if ( file.minimap_base && file.minimap_you )
+		Minimap_SetNorthFacing( !GetConVarBool( "hud_setting_minimapRotate" ) )
 }

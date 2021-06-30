@@ -1,6 +1,42 @@
+global function MpAbilityMirageUltimate_Init
 global function OnWeaponChargeBegin_ability_mirage_ultimate
 global function OnWeaponChargeEnd_ability_mirage_ultimate
 global function OnWeaponAttemptOffhandSwitch_ability_mirage_ultimate
+
+struct
+{
+	#if CLIENT
+	var cancelHintRui
+	#endif
+} file
+
+void function MpAbilityMirageUltimate_Init()
+{
+	RegisterSignal( "CancelCloak" )
+	#if CLIENT
+	StatusEffect_RegisterEnabledCallback( eStatusEffect.mirage_ultimate_cancel_hint, CancelHint_OnCreate )
+	StatusEffect_RegisterDisabledCallback( eStatusEffect.mirage_ultimate_cancel_hint, CancelHint_OnDestroy )
+	#endif
+}
+
+#if CLIENT
+void function CancelHint_OnCreate( entity player, int statusEffect, bool actuallyChanged )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	file.cancelHintRui = CreateFullscreenRui( $"ui/mirage_ultimate_cancel_hint.rpak" )
+}
+
+void function CancelHint_OnDestroy( entity player, int statusEffect, bool actuallyChanged )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	RuiDestroyIfAlive( file.cancelHintRui )
+	file.cancelHintRui = null
+}
+#endif // CLIENT
 
 bool function OnWeaponAttemptOffhandSwitch_ability_mirage_ultimate( entity weapon )
 {

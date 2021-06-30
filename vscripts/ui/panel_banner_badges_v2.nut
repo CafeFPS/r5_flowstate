@@ -1,4 +1,3 @@
-#if(true)
 global function InitCardBadgesPanel
 
 struct
@@ -280,4 +279,3 @@ bool function ShouldDisplayBadge( ItemFlavor badge, table<ItemFlavor, int> equip
 
 	return true
 }
-#endif

@@ -1040,7 +1040,6 @@ bool function HasWeaponForTag( entity player, int tagId )
 			case eAttachmentTag.LMG:
 			case eAttachmentTag.SNIPER:
 			case eAttachmentTag.SMG:
-			case eAttachmentTag.LAUNCHER:
 				if ( weaponClassToTag[weaponData.lootTags[0]] == tagId )
 					return true
 				break
@@ -1124,20 +1123,20 @@ void function ManageVerticalLines()
 							break
 
 						case eGroundListBehavior.NEARBY:
-							loot = GetSurvivalLootNearbyPlayer( player, SURVIVAL_GROUNDLIST_NEARBY_RADIUS, false )
+							loot = GetSurvivalLootNearbyPlayer( player, SURVIVAL_GROUNDLIST_NEARBY_RADIUS, false, false )
 							break
 					}
 				}
 				else if ( IsValid( file.swapOnUseItem ) )
 				{
-					loot = GetSurvivalLootNearbyPlayer( player, VERTICAL_LINE_DIST_MAX, true )
+					loot = GetSurvivalLootNearbyPlayer( player, VERTICAL_LINE_DIST_MAX, true, false )
 				}
 
 				GroundItemUpdate( player, loot )
 			}
 			else
 			{
-				loot = GetSurvivalLootNearbyPos( org, VERTICAL_LINE_DIST_MAX, false )
+				loot = GetSurvivalLootNearbyPos( org, VERTICAL_LINE_DIST_MAX, false, true )
 			}
 
 			loot = ArrayClosest( loot, org )
@@ -1357,7 +1356,7 @@ void function TrackLootToPing( entity player )
 		array<entity> loot
 		if ( shouldLookForLoot )
 		{
-			loot = GetSurvivalLootNearbyPlayer( player, LOOT_PING_DISTANCE * GetFovScalar( player ), false )
+			loot = GetSurvivalLootNearbyPlayer( player, LOOT_PING_DISTANCE * GetFovScalar( player ), false, false )
 			file.crosshairEntity = GetEntityPlayerIsLookingAt( player, loot )
 		}
 		else
@@ -1548,9 +1547,6 @@ void function SetupSurvivalLoot( var categories )
 	// flip thru all the loot and find the ones that match the cats we want to display
 	foreach ( ref, data in SURVIVAL_Loot_GetLootDataTable() )
 	{
-		if ( !IsLootTypeValid( data.lootType ) )
-			continue
-
 		if ( !catTypes.contains( data.lootType ) )
 			continue
 

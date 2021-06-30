@@ -7,10 +7,12 @@ global function OnProjectileCollision_weapon_softball
 global function OnWeaponNpcPrimaryAttack_weapon_softball
 #endif // #if SERVER
 
-const FUSE_TIME = 2.0 //Applies once the grenade has stuck to a surface.
+const float FUSE_TIME 				= 2.0 //Applies once the grenade has stuck to a surface.
+const asset SOFTBALL_PROJECTILE_IMP 	= $"P_impact_exp_smll_metal"
 
 var function OnWeaponPrimaryAttack_weapon_softball( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
+	PrecacheParticleSystem( SOFTBALL_PROJECTILE_IMP )
 	entity player = weapon.GetWeaponOwner()
 
 	weapon.EmitWeaponNpcSound( LOUD_WEAPON_AI_SOUND_RADIUS_MP, 0.2 )
@@ -30,6 +32,7 @@ var function OnWeaponPrimaryAttack_weapon_softball( entity weapon, WeaponPrimary
 #if SERVER
 var function OnWeaponNpcPrimaryAttack_weapon_softball( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
+	PrecacheParticleSystem( SOFTBALL_PROJECTILE_IMP )
 	weapon.EmitWeaponNpcSound( LOUD_WEAPON_AI_SOUND_RADIUS_MP, 0.2 )
 	FireGrenade( weapon, attackParams, true )
 }

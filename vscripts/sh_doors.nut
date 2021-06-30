@@ -11,15 +11,11 @@
 global function ShDoors_Init
 global function IsDoor
 global function GetAllPropDoors
-global function ShDoors_IsDoorGoalToOpen
 
 #if SERVER && R5DEV
 global function DEV_RestartAllDoorThinks
 #endif
 
-#if SERVER
-global function ClientCommand_dev_spawn_blockable_door
-#endif
 global function CodeCallback_OnDoorInteraction
 
 enum eDoorType
@@ -104,7 +100,7 @@ array<entity> function GetAllPropDoors()
 	#endif //CLIENT
 }
 
-#if SERVER
+#if SERVER && R5DEV
 bool function ClientCommand_dev_spawn_blockable_door( entity player, array<string> args )
 {
 	TraceResults tr = TraceLine(
@@ -112,10 +108,10 @@ bool function ClientCommand_dev_spawn_blockable_door( entity player, array<strin
 		[ player ], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
 	)
 
-	entity door = CreateEntity( "prop_door" )
-	door.SetScriptName( "survival_door_blockable" )
-	door.SetValueForModelKey( $"mdl/door/canyonlands_door_single_02.rmdl" )
-	// door.SetValueForModelKey( $"mdl/door/door_104x64x8_elevatorstyle01_right_animated.rmdl" )
+	entity door = CreateEntity( "prop_dynamic" )
+	door.SetScriptName( "survival_door_model" )
+	//door.SetValueForModelKey( $"mdl/door/door_108x60x4_generic_right_animated.rmdl" )
+	door.SetValueForModelKey( $"mdl/door/door_104x64x8_elevatorstyle01_right_animated.rmdl" )
 	door.SetOrigin( tr.endPos )
 	door.SetAngles( AnglesCompose( VectorToAngles( FlattenNormalizeVec( tr.endPos - player.GetOrigin() ) ), <0, -90, 0> ) )
 	DispatchSpawn( door )

@@ -52,8 +52,6 @@ struct
 void function AnimEvents_Init()
 {
 	RegisterImpactTable( "pilot_bodyslam" )
-	RegisterImpactTable( "pilot_bodyslam_small" )
-	RegisterImpactTable( "exp_medium" )
 	RegisterImpactTable( "default" )
 	RegisterImpactTable( "default_nosound" )
 

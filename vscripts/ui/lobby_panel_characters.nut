@@ -153,9 +153,7 @@ void function InitCharacterButtons()
 {
 	file.buttonToCharacter.clear()
 
-	array<ItemFlavor> shippingCharacters
-	array<ItemFlavor> devCharacters
-	array<ItemFlavor> allCharacters
+	array<ItemFlavor> characters
 	foreach ( ItemFlavor itemFlav in GetAllCharacters() )
 	{
 		bool isAvailable = IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), itemFlav )
@@ -165,23 +163,26 @@ void function InitCharacterButtons()
 				continue
 		}
 
-		allCharacters.append( itemFlav )
+		characters.append( itemFlav )
 	}
 
 	foreach ( button in file.buttons )
 		Hud_SetVisible( button, false )
 
-	table<int,ItemFlavor> mappingTable = GetCharacterButtonMapping( allCharacters, file.buttons.len() )
-	foreach ( int buttonIndex, ItemFlavor itemFlav in mappingTable )
+	array<ItemFlavor> orderedCharacters = GetCharacterButtonOrder( characters, file.buttons.len() )
+	int buttonIndex = 0
+	foreach ( character in orderedCharacters )
 	{
-		CharacterButton_Init( file.buttons[ buttonIndex ], itemFlav )
-		Hud_SetVisible( file.buttons[ buttonIndex ], true )
+		var button = file.buttons[ buttonIndex ]
+		CharacterButton_Init( button, character )
+		Hud_SetVisible( button, true )
+		buttonIndex++
 	}
 
-	array<int> rowSizes = GetCharacterButtonRowSizes( allCharacters.len() )
+	array<int> rowSizes = GetCharacterButtonRowSizes( characters.len() )
 	array< array<var> > buttonRows
 
-	int buttonIndex = 0
+	buttonIndex = 0
 	foreach ( rowSize in rowSizes )
 	{
 		array<var> buttons

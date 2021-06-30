@@ -1,0 +1,110 @@
+global function Sh_Airdrops_Init
+
+#if SERVER
+
+#endif
+
+const bool DEBUG_DROP_POINTS = false
+
+const string SOUND_CARE_PACKAGE_MARKER = "Survival_LootPod_Beacon_Marker"
+const string SOUND_CARE_PACKAGE_STEAM = "Survival_LootPod_SteamSizzle"
+
+const string CARE_PACKAGE_ANIMATION = "droppod_loot_drop"
+
+const float CARE_PACKAGE_OPEN_TIME = 6.0
+const float CARE_PACKAGE_LIFELINE_OPEN_TIME = 1.0
+
+global struct AirdropData
+{
+	int           dropCircle
+	int           dropCount
+	float         preWait
+	array<vector> originArray
+	array<vector> anglesArray
+	string        type = "titan"
+	array< array<string> > contents
+	array< array<string> > functionref(int) optionalGetContentsFunc
+	float minDelayBetweenPods = 3.0
+	float maxDelayBetweenPods = 5.0
+	string animation = CARE_PACKAGE_ANIMATION
+}
+
+struct
+{
+	#if SERVER
+
+	#endif
+
+} file
+
+void function Sh_Airdrops_Init()
+{
+	RegisterSignal( "OpenDroppod" )
+
+	#if CLIENT
+		AddCreateCallback( "prop_dynamic", OnAirdropCreated )
+	#elseif SERVER
+
+#endif
+}
+
+#if SERVER
+
+#endif
+
+void function OnAirdropCreated( entity dropPod )
+{
+	if ( dropPod.GetTargetName() != CARE_PACKAGE_TARGETNAME && dropPod.GetTargetName() != CARE_PACKAGE_LIFELINE_TARGETNAME )
+		return
+
+	AddCallback_OnUseEntity( dropPod, OnAirdropUse )
+
+	#if CLIENT
+	AddEntityCallback_GetUseEntOverrideText( dropPod, ExtendedUseTextOverride )
+	#endif
+}
+
+void function OnAirdropUse( entity dropPod, entity player, int useInputFlags )
+{
+	if ( useInputFlags & USE_INPUT_DEFAULT )
+	{
+		#if SERVER
+
+		#endif
+	}
+}
+
+void function AirdropUseThink( entity ent, entity playerUser )
+{
+	ExtendedUseSettings settings
+	#if CLIENT
+	settings.loopSound       = "survival_titan_linking_loop"
+	settings.successSound    = "ui_menu_store_purchase_success"
+	settings.displayRui      = $"ui/extended_use_hint.rpak"
+	settings.displayRuiFunc  = DefaultExtendedUseRui
+	settings.icon            = $""
+	settings.hint            = "#PROMPT_OPEN"
+	#elseif SERVER
+
+	#endif
+
+	settings.duration = ent.GetTargetName() == CARE_PACKAGE_TARGETNAME ? CARE_PACKAGE_OPEN_TIME : CARE_PACKAGE_LIFELINE_OPEN_TIME
+	settings.requireMatchingUseEnt = true
+
+	ent.EndSignal( "OnDestroy" )
+
+	waitthread ExtendedUse( ent, playerUser, settings )
+}
+
+void function SignalOpenAirdrop( entity ent, entity player, ExtendedUseSettings settings )
+{
+	ent.Signal( "OpenDroppod" )
+
+#if SERVER
+
+#endif
+}
+
+#if SERVER
+
+#endif

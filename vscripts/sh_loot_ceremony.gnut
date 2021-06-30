@@ -43,9 +43,13 @@ global function ClientToUI_LootCeremonyMarkItemAsNoLongerNew
 
 global function LootCeremony_UpdateOpenAdditionalButton
 
+global function InspectItemTypePresentationSupported
 global function SetStoreItemPresentationModeActive
+global function SetBattlePassItemPresentationModeActive
 global function StoreItemTypePresentationSupported
-global function GetNextLootBoxRarity
+global function SetEventItemPresentationModeActive
+global function SetChallengeRewardPresentationModeActive
+global function GetNextLootBox
 #endif
 
 global const string LOOT_CEREMONY_MUSIC_P1 = "Music_LootCeremony_Pt1"
@@ -54,59 +58,59 @@ global const string LOOT_CEREMONY_MUSIC_P2 = "Music_LootCeremony_Pt2"
 #if SERVER || CLIENT
 const float CAMERA_FOV = 35.5
 
-const asset TICK_MODEL_NORMAL = $"mdl/robots/drone_frag/drone_frag_loot.rmdl"
-const asset TICK_FX_HOLO_BEAM_BASE = $"P_loot_triad_beam"
-const asset TICK_FX_HOLO_BEAM_TIER1 = $"P_loot_triad_beam_reveal_T1"
-const asset TICK_FX_HOLO_BEAM_TIER2 = $"P_loot_triad_beam_reveal_T2"
-const asset TICK_FX_HOLO_BEAM_TIER3 = $"P_loot_triad_beam_reveal_T3"
-const asset TICK_FX_HOLO_BEAM_TIER4 = $"P_loot_triad_beam_reveal_T4"
-const asset TICK_FX_HOLO_BEAM_TIER5 = $"P_loot_triad_beam_reveal_T4"
-const asset TICK_FX_RARITY_IDLE = $"P_loot_tick_beam_idle_flash"
-const asset TICK_FX_RARITY_BEAM_TIER1 = $"P_loot_tick_rarity_beam_T1"
-const asset TICK_FX_RARITY_BEAM_TIER2 = $"P_loot_tick_rarity_beam_T2"
-const asset TICK_FX_RARITY_BEAM_TIER3 = $"P_loot_tick_rarity_beam_T3"
-const asset TICK_FX_RARITY_BEAM_TIER4 = $"P_loot_tick_rarity_beam_T4"
-const asset TICK_FX_RARITY_BEAM_TIER5 = $"P_loot_tick_rarity_beam_T4"
-const asset TICK_FX_RARITY_FLASH_TIER1 = $"P_loot_tick_rarity_body_T1"
-const asset TICK_FX_RARITY_FLASH_TIER2 = $"P_loot_tick_rarity_body_T2"
-const asset TICK_FX_RARITY_FLASH_TIER3 = $"P_loot_tick_rarity_body_T3"
-const asset TICK_FX_RARITY_FLASH_TIER4 = $"P_loot_tick_rarity_body_T4"
-const asset TICK_FX_RARITY_FLASH_TIER5 = $"P_loot_tick_rarity_body_T4"
-const asset TICK_FX_HEAD_CHARGE = $"P_loot_tick_head_charge"
-const asset TICK_FX_JUMP_JET = $"P_loot_tick_jump_jet"
-const string ATTACHNAME_LEFT = "FX_L_EYE"
-const string ATTACHNAME_CENTER = "FX_R_EYE"        // "right eye" on model winds up in center position
-const string ATTACHNAME_RIGHT = "FX_C_EYE"        //
-const array<string> TICK_LOOT_ATTACHMENTS = [ ATTACHNAME_LEFT, ATTACHNAME_CENTER, ATTACHNAME_RIGHT ]
-const array<string> INSPECT_BUTTONS = [ "RewardLeftButton", "RewardCenterButton", "RewardRightButton" ]
+const asset TICK_MODEL_DEFAULT                = $"mdl/robots/drone_frag/drone_frag_loot.rmdl"
+const asset TICK_FX_HOLO_BEAM_BASE            = $"P_loot_triad_beam"
+const asset TICK_FX_HOLO_BEAM_TIER1           = $"P_loot_triad_beam_reveal_T1"
+const asset TICK_FX_HOLO_BEAM_TIER2           = $"P_loot_triad_beam_reveal_T2"
+const asset TICK_FX_HOLO_BEAM_TIER3           = $"P_loot_triad_beam_reveal_T3"
+const asset TICK_FX_HOLO_BEAM_TIER4           = $"P_loot_triad_beam_reveal_T4"
+const asset TICK_FX_HOLO_BEAM_TIER5           = $"P_loot_triad_beam_reveal_T4"
+const asset TICK_FX_RARITY_IDLE               = $"P_loot_tick_beam_idle_flash"
+const asset TICK_FX_RARITY_BEAM_TIER1         = $"P_loot_tick_rarity_beam_T1"
+const asset TICK_FX_RARITY_BEAM_TIER2         = $"P_loot_tick_rarity_beam_T2"
+const asset TICK_FX_RARITY_BEAM_TIER3         = $"P_loot_tick_rarity_beam_T3"
+const asset TICK_FX_RARITY_BEAM_TIER4         = $"P_loot_tick_rarity_beam_T4"
+const asset TICK_FX_RARITY_BEAM_TIER5         = $"P_loot_tick_rarity_beam_T4"
+const asset TICK_FX_RARITY_FLASH_TIER1        = $"P_loot_tick_rarity_body_T1"
+const asset TICK_FX_RARITY_FLASH_TIER2        = $"P_loot_tick_rarity_body_T2"
+const asset TICK_FX_RARITY_FLASH_TIER3        = $"P_loot_tick_rarity_body_T3"
+const asset TICK_FX_RARITY_FLASH_TIER4        = $"P_loot_tick_rarity_body_T4"
+const asset TICK_FX_RARITY_FLASH_TIER5        = $"P_loot_tick_rarity_body_T4"
+const asset TICK_FX_HEAD_CHARGE               = $"P_loot_tick_head_charge"
+const asset TICK_FX_JUMP_JET                  = $"P_loot_tick_jump_jet"
+const string ATTACHNAME_LEFT                  = "FX_L_EYE"
+const string ATTACHNAME_CENTER                = "FX_R_EYE"        // "right eye" on model winds up in center position
+const string ATTACHNAME_RIGHT                 = "FX_C_EYE"        //
+const array<string> TICK_LOOT_ATTACHMENTS     = [ ATTACHNAME_LEFT, ATTACHNAME_CENTER, ATTACHNAME_RIGHT ]
+const array<string> INSPECT_BUTTONS           = [ "RewardLeftButton", "RewardCenterButton", "RewardRightButton" ]
 
-const asset CURRENCY_MODEL_COMMON = $"mdl/currency/crafting/currency_crafting_common.rmdl"
-const asset CURRENCY_MODEL_RARE = $"mdl/currency/crafting/currency_crafting_rare.rmdl"
-const asset CURRENCY_MODEL_EPIC = $"mdl/currency/crafting/currency_crafting_epic.rmdl"
-const asset CURRENCY_MODEL_LEGENDARY = $"mdl/currency/crafting/currency_crafting_legendary.rmdl"
-const asset QUIP_BG_MODEL = $"mdl/menu/loot_ceremony_quip_bg.rmdl"
-const asset STAT_TRACKER_BG_MODEL = $"mdl/menu/loot_ceremony_stat_tracker_bg.rmdl"
+global const asset CURRENCY_MODEL_COMMON     = $"mdl/currency/crafting/currency_crafting_common.rmdl"
+global const asset CURRENCY_MODEL_RARE       = $"mdl/currency/crafting/currency_crafting_rare.rmdl"
+global const asset CURRENCY_MODEL_EPIC       = $"mdl/currency/crafting/currency_crafting_epic.rmdl"
+global const asset CURRENCY_MODEL_LEGENDARY  = $"mdl/currency/crafting/currency_crafting_legendary.rmdl"
+const asset QUIP_BG_MODEL                    = $"mdl/menu/loot_ceremony_quip_bg.rmdl"
+const asset STAT_TRACKER_BG_MODEL            = $"mdl/menu/loot_ceremony_stat_tracker_bg.rmdl"
 
-const asset FINISHER_SWAP_FX = $"P_menu_finisher_swap"
+const asset FINISHER_SWAP_FX                 = $"P_menu_finisher_swap"
 
-const string SOUND_DEPLOY_ZOOM = "LootCeremony_Tick_Deploy_Zoom"
-const string SOUND_LIGHT_FLASH = "LootCeremony_Tick_LightFlash"
-const string SOUND_BEAM_SWEETEN_TIER1 = "LootCeremony_Tick_Deploy_BeamSweetener_Rare"
-const string SOUND_BEAM_SWEETEN_TIER2 = "LootCeremony_Tick_Deploy_BeamSweetener_Epic"
-const string SOUND_BEAM_SWEETEN_TIER3 = "LootCeremony_Tick_Deploy_BeamSweetener_Legendary"
-const string SOUND_BEAM_SWEETEN_TIER4 = "LootCeremony_Tick_Deploy_BeamSweetener_Heirloom"
-const string SOUND_HOLOGRAM_FIRST_APPEAR = "LootCeremony_LootHologram_FirstAppear"
-const string SOUND_HOLOGRAM_LOOP = "LootCeremony_Inspect_HologramLoop"
-const string SOUND_HOLOGRAM_APPEAR_TIER0 = "LootCeremony_LootHologram_Appear_Common"
-const string SOUND_HOLOGRAM_APPEAR_TIER1 = "LootCeremony_LootHologram_Appear_Rare"
-const string SOUND_HOLOGRAM_APPEAR_TIER2 = "LootCeremony_LootHologram_Appear_Epic"
-const string SOUND_HOLOGRAM_APPEAR_TIER3 = "LootCeremony_LootHologram_Appear_Legendary"
-const string SOUND_HOLOGRAM_APPEAR_TIER4 = "LootCeremony_LootHologram_Appear_Heirloom"
-const string SOUND_INSPECT_ZOOM_IN = "LootCeremony_Inspect_ZoomIn"
-const string SOUND_INSPECT_ZOOM_OUT = "LootCeremony_Inspect_ZoomOut"
-const string SOUND_EQUIP = "UI_Menu_Equip_Generic"
-const string SOUND_HOLOGRAM_PREAPPEAR_TIER3 = "LootCeremony_LootHologram_PreAppear_Legendary"
-const string SOUND_HOLOGRAM_PREAPPEAR_TIER4 = "LootCeremony_LootHologram_PreAppear_Legendary"
+const string SOUND_DEPLOY_ZOOM               = "LootCeremony_Tick_Deploy_Zoom"
+const string SOUND_LIGHT_FLASH               = "LootCeremony_Tick_LightFlash"
+const string SOUND_BEAM_SWEETEN_TIER1        = "LootCeremony_Tick_Deploy_BeamSweetener_Rare"
+const string SOUND_BEAM_SWEETEN_TIER2        = "LootCeremony_Tick_Deploy_BeamSweetener_Epic"
+const string SOUND_BEAM_SWEETEN_TIER3        = "LootCeremony_Tick_Deploy_BeamSweetener_Legendary"
+const string SOUND_BEAM_SWEETEN_TIER4        = "LootCeremony_Tick_Deploy_BeamSweetener_Heirloom"
+const string SOUND_HOLOGRAM_FIRST_APPEAR     = "LootCeremony_LootHologram_FirstAppear"
+const string SOUND_HOLOGRAM_LOOP             = "LootCeremony_Inspect_HologramLoop"
+const string SOUND_HOLOGRAM_APPEAR_TIER0     = "LootCeremony_LootHologram_Appear_Common"
+const string SOUND_HOLOGRAM_APPEAR_TIER1     = "LootCeremony_LootHologram_Appear_Rare"
+const string SOUND_HOLOGRAM_APPEAR_TIER2     = "LootCeremony_LootHologram_Appear_Epic"
+const string SOUND_HOLOGRAM_APPEAR_TIER3     = "LootCeremony_LootHologram_Appear_Legendary"
+const string SOUND_HOLOGRAM_APPEAR_TIER4     = "LootCeremony_LootHologram_Appear_Heirloom"
+const string SOUND_INSPECT_ZOOM_IN           = "LootCeremony_Inspect_ZoomIn"
+const string SOUND_INSPECT_ZOOM_OUT          = "LootCeremony_Inspect_ZoomOut"
+const string SOUND_EQUIP                     = "UI_Menu_Equip_Generic"
+const string SOUND_HOLOGRAM_PREAPPEAR_TIER3  = "LootCeremony_LootHologram_PreAppear_Legendary"
+const string SOUND_HOLOGRAM_PREAPPEAR_TIER4  = "LootCeremony_LootHologram_PreAppear_Legendary"
 const string SOUND_HOLOGRAM_APPEAR_RESETVIEW = "LootCeremony_LootHologram_Appear_ResetView"
 #endif
 
@@ -117,6 +121,7 @@ struct ItemPresentationData
 	ItemFlavor& item
 	string      attachment
 	int         rarity
+	int         quantity = 1
 }
 #endif
 
@@ -148,6 +153,7 @@ struct FileForeverStruct
 	var menu
 	var inspectMenu
 	var equipButton
+	var equipToWheelButton
 	var purchaseButton
 	var mouseClickElem
 	var inspectVideoPanel
@@ -192,6 +198,7 @@ struct FileLevelStruct
 		array< ItemPresentationData > itemPresentationDatas
 
 		bool storeItemPresentationModeActive = false
+		bool specialItemPresentationModeActive = false
 
 		// grx
 		bool grxRewardsReceived = false
@@ -211,10 +218,24 @@ struct FileLevelStruct
 	#endif
 
 	#if UI
-		bool            lootHasBeenPresented = false
-		bool            inspectModeActive = false
-		bool            storeItemPresentationModeActive = false
-		GRXScriptOffer& storeItemPresentationModeItem
+	ItemFlavor ornull forceParticularPackFlav                   = null
+	bool                    lootHasBeenPresented                = false
+	bool                    considerFocusOpenButton             = false
+	bool                    inspectModeActive                   = false
+	bool                    specialItemPresentationModeActive   = false
+	bool                    storeItemPresentationModeActive     = false
+	GRXScriptOffer ornull   storeItemPresentationModeOffer
+	GRXScriptOffer&         storeItemPresentationModeItem
+	ItemFlavor&             specialItemPresentationModeItemFlav
+	ItemFlavor&             specialItemPresentationModeItem
+	int                     specialItemPresentationModeItemQty
+	ItemFlavor ornull       storeItemPresentationModeItemPrereq = null
+	string                  specialItemFormattedPrice           = ""
+	bool ornull             specialItemOverrideOwned            = null
+	bool                    specialItemHideEquipButton          = false
+	string                  specialItemPriceHeader              = ""
+	bool                    specialItemLockPurchaseButton       = false
+	bool                    specialItemIsBattlePassReward       = false
 	#endif
 }
 FileLevelStruct& fileLevel
@@ -3470,7 +3491,7 @@ void function WaitForTimeComplete( float timeToWait )
 
 
 #if UI
-void function InitLootBoxMenu()
+void function InitLootBoxMenu( var newMenuArg )
 {
 	var menu = GetMenu( "LootBoxOpen" )
 	fileForever.menu = menu
@@ -3629,6 +3650,44 @@ void function SetStoreItemPresentationModeActive( GRXScriptOffer grxOffer )
 
 	AdvanceMenu( GetMenu( "LootBoxOpen" ) )
 }
+
+void function SetBattlePassItemPresentationModeActive( BattlePassReward bpReward )
+{
+	fileLevel.specialItemPresentationModeActive = true
+	fileLevel.specialItemPresentationModeItem = bpReward.flav
+	fileLevel.specialItemPresentationModeItemQty = bpReward.quantity
+	fileLevel.storeItemPresentationModeItemPrereq = null
+	fileLevel.specialItemFormattedPrice = bpReward.isPremium ? "#BATTLE_PASS_PREMIUM_REWARD" : "#BATTLE_PASS_FREE_REWARD"
+	fileLevel.specialItemOverrideOwned = null
+	fileLevel.specialItemHideEquipButton = false
+	fileLevel.specialItemPriceHeader = Localize( "#BATTLE_PASS_LEVEL_REQUIRED", bpReward.level + 2 )
+	fileLevel.specialItemLockPurchaseButton = true
+
+	AdvanceMenu( GetMenu( "LootBoxOpen" ) )
+}
+void function SetEventItemPresentationModeActive( ItemFlavor itemFlav, string priceHeader, string subHeader )
+{
+	fileLevel.specialItemPresentationModeActive = true
+	fileLevel.specialItemPresentationModeItem = itemFlav
+	fileLevel.storeItemPresentationModeItemPrereq = null
+	fileLevel.specialItemIsBattlePassReward = true //
+	fileLevel.specialItemPriceHeader = priceHeader
+	fileLevel.specialItemFormattedPrice = subHeader
+
+	AdvanceMenu( GetMenu( "LootBoxOpen" ) )
+}
+
+void function SetChallengeRewardPresentationModeActive( ItemFlavor itemFlav, string priceHeader, string subHeader )
+{
+	fileLevel.specialItemPresentationModeActive = true
+	fileLevel.specialItemPresentationModeItem = itemFlav
+	fileLevel.storeItemPresentationModeItemPrereq = null
+	fileLevel.specialItemIsBattlePassReward = true //
+	fileLevel.specialItemPriceHeader = priceHeader
+	fileLevel.specialItemFormattedPrice = subHeader
+
+	AdvanceMenu( GetMenu( "LootBoxOpen" ) )
+}
 #endif
 
 #if UI
@@ -3647,6 +3706,35 @@ bool function StoreItemTypePresentationSupported( ItemFlavor item )
 		case eItemType.gladiator_card_kill_quip:
 		case eItemType.gladiator_card_stat_tracker:
 			return true
+	}
+
+	return false
+}
+#endif
+
+#if UI
+bool function InspectItemTypePresentationSupported( ItemFlavor item )
+{
+	switch ( ItemFlavor_GetType( item ) )
+	{
+		case eItemType.account_currency_bundle:
+		case eItemType.account_pack:
+		case eItemType.character_skin:
+		case eItemType.character_execution:
+		case eItemType.weapon_skin:
+		case eItemType.melee_skin:
+		case eItemType.gladiator_card_stance:
+		case eItemType.gladiator_card_frame:
+		case eItemType.gladiator_card_intro_quip:
+		case eItemType.gladiator_card_kill_quip:
+		case eItemType.gladiator_card_stat_tracker:
+		case eItemType.gladiator_card_badge:
+		case eItemType.music_pack:
+		case eItemType.loadscreen:
+			return true
+
+		case eItemType.account_currency:
+			return ItemFlavor_GetAsset( item ) != $"settings/itemflav/grx_currency/crafting.rpak" //
 	}
 
 	return false
@@ -3803,8 +3891,18 @@ void function PurchaseButtonOnClick( var button )
 		}
 	}
 
-	ItemFlavor itemFlav = fileLevel.storeItemPresentationModeItem.output.flavors[0]
-	PurchaseDialog( itemFlav, 1, true, null, null )
+	if ( fileLevel.storeItemPresentationModeOffer != null )
+	{
+		PurchaseDialogConfig pdc
+		pdc.offer = fileLevel.storeItemPresentationModeOffer
+		PurchaseDialog( pdc )
+	}
+	else
+	{
+		PurchaseDialogConfig pdc
+		pdc.flav = fileLevel.specialItemPresentationModeItemFlav
+		PurchaseDialog( pdc )
+	}
 }
 #endif
 
@@ -4015,15 +4113,4 @@ ItemFlavor ornull function GetNextLootBox()
 	return nextPack
 
 }
-
-int function GetNextLootBoxRarity()
-{
-	ItemFlavor ornull pack = GetNextLootBox()
-	if ( pack == null )
-		return -1
-	expect ItemFlavor( pack )
-	int quality = ItemFlavor_GetQuality( pack )
-	return quality
-}
 #endif
-

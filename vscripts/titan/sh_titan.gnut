@@ -69,7 +69,7 @@ void function TitanShared_Init()
 		PrecacheParticleSystem( TITAN_NUCLEAR_CORE_FX_1P )
 		PrecacheParticleSystem( TITAN_NUCLEAR_CORE_NUKE_FX )
 
-		PrecacheModel( $"mdl/industrial/bolt_tiny01.rmdl" )
+		//PrecacheModel( $"mdl/industrial/bolt_tiny01.rmdl" )
 	#endif
 }
 

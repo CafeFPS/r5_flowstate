@@ -3,7 +3,6 @@ global function HealthRegen_Init
 
 global function PilotHealthRegenThinkSP
 global function PilotShieldHealthUpdate
-global function IsHealActive
 
 struct
 {

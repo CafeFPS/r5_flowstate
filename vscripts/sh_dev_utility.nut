@@ -38,6 +38,12 @@ void function ShDevUtility_Init()
 }
 #endif
 
+#if SERVER || CLIENT || UI
+void function ShDevConsole_Init()
+{
+	// "ToggleConsole" command callback
+}
+#endif
 
 #if SERVER || CLIENT
 entity function GEBI( int entIndex )
@@ -109,7 +115,7 @@ array<entity> function gp()
 
 
 #if SERVER || CLIENT
-/*entity function ge( int ornull index = null )
+entity function ge( int ornull index = null )
 {
 	if ( index != null )
 		return GetEntByIndex( expect int( index ) )
@@ -123,7 +129,7 @@ array<entity> function gp()
 	TraceResults results = TraceLine( traceStart, traceEnd, player )
 
 	return results.hitEnt
-}*/
+}
 #endif
 
 

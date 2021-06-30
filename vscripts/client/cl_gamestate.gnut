@@ -6,6 +6,8 @@ global function ClGameState_GetRui
 global function ClGameState_RegisterNetworkFunctions
 global function ClGameState_SetInfoStatusText
 
+global function AddCallback_OnScoreboardCreated
+
 global function ShowRoundScoresInAnnouncement
 
 global function PlayRoundWonConversationWithAnnouncementDelay
@@ -13,6 +15,7 @@ global function PlayRoundWonConversationWithAnnouncementDelay
 global function UpdatePilotTitanStatusDisplay
 global function UpdatePilotTitanStatusDisplayWithCount
 global function UpdateGamestateRuiTracking
+global function UpdateCommonScoreRuiTracking
 
 global function SetGameModeScoreBarUpdateRules
 global function SetGameModeScoreBarUpdateRulesWithFlags
@@ -21,7 +24,7 @@ global function SetGameModeSuddenDeathAnnouncementSubtext
 global function GetGameStartTime
 
 global function CreateScoreRUI
-global function DestroyScoreRUI
+global function SetCommonScoreRUIVars
 global function ClGameState_RegisterGameStateAsset
 
 global function ClGameState_SetPilotTitanStatusCallback
@@ -74,6 +77,7 @@ struct
 	bool thirtySecondWarningDone = false
 
 	void functionref( var ) gameModeScoreBarUpdateRules
+	array< void functionref() > onScoreboardCreatedFuncs
 	int gameModeScoreBarUpdateFlags = 0
 
 	table<int, PilotTitanStatus> pilotTitanStatus
@@ -83,6 +87,11 @@ struct
 	string suddenDeathAnnouncementSubtext
 
 	asset gameStateRuiAsset = $""
+	asset gameStateFullmapRuiAsset = $""
+
+	var  nestedNetGraphRui
+	bool netGraphRuiCreated = false
+	bool isNetGraphEnabled
 } file
 
 
@@ -108,49 +117,62 @@ void function CreateScoreRUI()
 	RuiTrackBool( rui, "netIssuePacketLoss", null, RUI_TRACK_NET_ISSUE_PACKETLOSS )
 	RuiTrackBool( rui, "netIssueCongestion", null, RUI_TRACK_NET_ISSUE_CONGESTION )
 	RuiTrackBool( rui, "netIssueLatency", null, RUI_TRACK_NET_ISSUE_LATENCY )
+	RuiTrackBool( rui, "netIssuePredictionError", null, RUI_TRACK_NET_ISSUE_PREDICTION_ERROR )
 	RuiTrackFloat( rui, "hdTextureProgress", null, RUI_TRACK_GAME_FULLY_INSTALLED_PROGRESS )
 	RuiTrackBool( rui, "hdTextureNeedsReboot", null, RUI_TRACK_GAME_HAS_NON_FULLY_INSTALLED_ASSETS_LOADED )
 
 	RuiSetInt( rui, "maxPlayerCount", GetCurrentPlaylistVarInt( "max_players", 12 ) )
 	RuiSetString( rui, "gameModeString", GetCurrentPlaylistVarString( "gameModeString", "" ) )
+	file.gamestateRui = rui
+	file.gameStateRuiCreated = true
+
+	SetCommonScoreRUIVars( rui )
+
+	if ( file.gameModeScoreBarUpdateRules == null )
+		SetGameModeScoreBarUpdateRules( GameModeScoreBarUpdateRules_Default )
+
+	foreach ( func in file.onScoreboardCreatedFuncs )
+	{
+		func()
+	}
+}
+
+void function SetCommonScoreRUIVars( var rui )
+{
 	if ( UseSoloModeInGamePresentation() )
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
-		RuiSetString( rui, "squadsRemainingText", "#SURVIVAL_PLAYERS_REMAIN" )
+		RuiSetString( rui, "squadsRemainingTextSingular", "#SURVIVAL_PLAYERS_REMAIN" )
+		RuiSetString( rui, "squadsRemainingTextPlural", "#SURVIVAL_PLAYERS_REMAIN" )
 	}
 	else
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", true )
-		RuiSetString( rui, "squadsRemainingText", "#SURVIVAL_SQUADS_REMAIN" )
+
+		#if MP_PVEMODE
+			RuiSetInt( rui, "livingPlayerCountMin", -1 )
+			RuiSetString( rui, "squadsRemainingTextSingular", "Squad" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "Squads" )
+			RuiSetImage( rui, "coinImage", $"rui/candy/candy_credit_1" )
+			RuiSetFloat( rui, "coinCounterAlpha", 1.0 )
+		#else //
+			RuiSetInt( rui, "livingPlayerCountMin", 10 )
+			RuiSetString( rui, "squadsRemainingTextSingular", "#SURVIVAL_SQUADS_REMAIN" )
+			RuiSetString( rui, "squadsRemainingTextPlural", "#SURVIVAL_SQUADS_REMAIN" )
+		#endif //
 	}
-
-	RuiSetBool( rui, "disableScoreDisplay", GetCurrentPlaylistVarBool( "disable_hud_score_display", false ) )
-
-	// temp fix for rui bug R5DEV-59803
-	UISize screenSize = GetCurrentVirtualScreenSize( true )
-	float aspectRatio = screenSize.width / float( screenSize.height )
-	RuiSetFloat2( rui, "aspectRatioHack", <aspectRatio,1,0> )
-
-	file.gamestateRui = rui
-	file.gameStateRuiCreated = true
-
-	if ( file.gameModeScoreBarUpdateRules == null )
-		SetGameModeScoreBarUpdateRules( GameModeScoreBarUpdateRules_Default )
 }
 
 void function UpdateGamestateRuiTracking( entity player )
 {
 	if ( IsValid( player ) && player.IsPlayer() )
-	{
-		RuiTrackInt( file.gamestateRui, "killCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
-		RuiTrackInt( file.gamestateRui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )
-	}
+		UpdateCommonScoreRuiTracking( file.gamestateRui, player )
 }
 
-void function DestroyScoreRUI()
+void function UpdateCommonScoreRuiTracking( var rui, entity player )
 {
-	file.gameStateRuiCreated = false
-	RuiDestroyIfAlive( file.gamestateRui )
+	RuiTrackInt( rui, "killCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
+	RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )
 }
 
 void function GameModeScoreBarUpdateRules_Default( var rui )
@@ -907,6 +929,12 @@ void function UpdateScoreBar( entity player )
 	PerfStart( PerfIndexClient.ScoreBoardUpdate )
 	file.gameModeScoreBarUpdateRules( file.gamestateRui )
 	PerfEnd( PerfIndexClient.ScoreBoardUpdate )
+}
+
+void function AddCallback_OnScoreboardCreated( void functionref() func )
+{
+	Assert( !file.onScoreboardCreatedFuncs.contains( func ) )
+	file.onScoreboardCreatedFuncs.append( func )
 }
 
 //maxPlayerCount

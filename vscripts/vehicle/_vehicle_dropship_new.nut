@@ -42,7 +42,7 @@ global function InitDropShipFlightPaths
 
 const FX_DROPSHIP_THRUSTERS = $"xo_atlas_jet_large"
 const FX_GUNSHIP_DAMAGE =  $"veh_gunship_damage_FULL"
-const FX_DROPSHIP_DEATH = $"P_veh_exp_crow"
+//const FX_DROPSHIP_DEATH = $"P_veh_exp_crow" //TODO: "mdl\vehicle\crow_dropship\crow_dropship_dest_l_wing.rmdl" does not exist. This particle system requires it. All references have been commented for now.
 
 const DROPSHIP_ROPE_ENDPOINT_FX = $"runway_light_blue"
 const DROPSHIP_ACL_LIGHT_GREEN_FX = $"acl_light_green"
@@ -67,12 +67,12 @@ function VehicleDropshipNew_Init()
 	#if SERVER
 		PrecacheParticleSystem( FX_GUNSHIP_CRASH_EXPLOSION_ENTRANCE )
 		PrecacheParticleSystem( FX_GUNSHIP_CRASH_EXPLOSION_EXIT )
-		PrecacheParticleSystem( FX_DROPSHIP_DEATH )
+		//PrecacheParticleSystem( FX_DROPSHIP_DEATH )
 		AddDeathCallback( "npc_dropship", OnNPCDropshipDeath )
 		AddDamageCallback( "npc_dropship", OnDropshipDamaged )
 	#endif
 
-	PrecacheParticleSystem( FX_HORNET_DEATH )
+	//PrecacheParticleSystem( FX_HORNET_DEATH )
 	PrecacheParticleSystem( FX_GUNSHIP_DAMAGE )
 	PrecacheParticleSystem( FX_DROPSHIP_THRUSTERS )
 	PrecacheParticleSystem( DROPSHIP_ROPE_ENDPOINT_FX )
@@ -332,7 +332,7 @@ void function OnNPCDropshipDeath( entity dropship, var damageInfo )
 
 	vector dropshipOrigin = dropship.GetOrigin()
 
-	PlayFX( $"P_veh_exp_crow", dropshipOrigin )
+	//PlayFX( $"P_veh_exp_crow", dropshipOrigin )
 
 	EmitSoundAtPosition( TEAM_UNASSIGNED, dropshipOrigin, "Goblin_Dropship_Explode" )
 }

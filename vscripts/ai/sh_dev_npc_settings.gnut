@@ -4,7 +4,7 @@ global function SetupOverrideSpawnSurvivalCharacter
 global function SetupSurvival
 global function SetupModelSpawner
 global function SetupSurvivalLoot
-global function SetupSurvivalIncapShieldBots
+global function SetupSurvivalIncapShieldBot
 global function SetupAbilities
 
 void function SetupChangeSurvivalCharacterClass()
@@ -115,7 +115,7 @@ void function SetupModelSpawner()
 	#endif
 }
 
-void function SetupSurvivalIncapShieldBots()
+void function SetupSurvivalIncapShieldBot()
 {
 	#if UI
 	SetupDevCommand( "Spawn Bot with Lv 1 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 1 )" )

@@ -1,6 +1,7 @@
 global function MpAbilityPhaseWalk_Init
 
 global function OnWeaponActivate_ability_phase_walk
+global function OnWeaponDeactivate_ability_phase_walk
 global function OnWeaponPrimaryAttack_ability_phase_walk
 global function OnWeaponChargeBegin_ability_phase_walk
 global function OnWeaponChargeEnd_ability_phase_walk
@@ -13,7 +14,6 @@ void function MpAbilityPhaseWalk_Init()
 	PrecacheParticleSystem( PHASE_WALK_APPEAR_PRE_FX )
 }
 
-
 void function OnWeaponActivate_ability_phase_walk( entity weapon )
 {
 	#if SERVER
@@ -25,11 +25,16 @@ void function OnWeaponActivate_ability_phase_walk( entity weapon )
 	#endif
 }
 
+void function OnWeaponDeactivate_ability_phase_walk( entity weapon )
+{
+	#if SERVER
+	#endif
+}
 
 var function OnWeaponPrimaryAttack_ability_phase_walk( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	entity player = weapon.GetWeaponOwner()
-	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
+	return 0 //weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
 
 bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )

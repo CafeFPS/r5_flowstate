@@ -40,10 +40,10 @@ void function InitControlsGamepadPanel( var panel )
 	button = SetupSettingsButton( Hud_GetChild( contentPanel, "SwchLookSensitivity" ), "#LOOK_SENSITIVITY", "#GAMEPAD_MENU_SENSITIVITY_DESC", $"rui/menu/settings/settings_gamepad" )
 	file.advanceControlsDisableItems.append( button )
 
-	//
-	//
+	button = SetupSettingsButton( Hud_GetChild( contentPanel, "SwchLookSensitivityADS" ), "#LOOK_SENSITIVITY_ADS", "#GAMEPAD_MENU_SENSITIVITY_ADS_DESC", $"rui/menu/settings/settings_gamepad" )
+	file.advanceControlsDisableItems.append( button )
 
-	button = SetupSettingsButton( Hud_GetChild( contentPanel, "BtnLookSensitivityMenu" ), "#MENU_SENSITIVITY", "#GAMEPAD_MENU_SENSITIVITY_ADS_DESC", $"rui/menu/settings/settings_gamepad" )
+	button = SetupSettingsButton( Hud_GetChild( contentPanel, "BtnLookSensitivityMenu" ), "#MENU_PER_OPTIC_SETTINGS", "#MENU_PER_OPTIC_SETTINGS_DESC", $"rui/menu/settings/settings_gamepad" )
 	AddButtonEventHandler( button, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdvancedLookMenuConsole" ) ) )
 	file.advanceControlsDisableItems.append( button )
 

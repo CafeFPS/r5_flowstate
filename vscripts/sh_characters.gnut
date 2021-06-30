@@ -21,8 +21,8 @@ global function CharacterClass_GetCharacterLockedPortrait
 global function CharacterClass_GetCharacterRoleImage
 global function CharacterClass_GetCharacterSelectSubtitle
 global function CharacterClass_GetReadyUpVoicelineEventList
-
 global function CharacterClass_IsAvailable
+global function CharacterClass_GetDamageScale
 
 #if SERVER
 global function GetStringArrayAvailableClassesForPlayer
@@ -30,6 +30,7 @@ global function GetStringArrayAvailableClassesForPlayer
 
 #if CLIENT || UI 
 global function GetCharacterButtonMapping
+global function GetCharacterButtonOrder
 #endif
 
 //////////////////////
@@ -372,6 +373,13 @@ bool function CharacterClass_IsAvailable( EHI playerEHI, ItemFlavor desiredChara
 	return true
 }
 
+float function CharacterClass_GetDamageScale( ItemFlavor flavor )
+{
+	string characterRef = ItemFlavor_GetHumanReadableRef( flavor )
+	float damageScale = GetCurrentPlaylistVarFloat( "damage_scale_" + characterRef.tolower(), 1.0 )
+
+	return damageScale
+}
 
 #if SERVER
 array<string> function GetStringArrayAvailableClassesForPlayer( entity player )
@@ -386,7 +394,7 @@ array<string> function GetStringArrayAvailableClassesForPlayer( entity player )
 }
 #endif
 
-#if CLIENT || UI 
+#if CLIENT || UI
 table<int,ItemFlavor> function GetCharacterButtonMapping( array<ItemFlavor> allCharacters, int totalButtons )
 {
 	table<int,ItemFlavor> mappingTable
@@ -432,7 +440,41 @@ table<int,ItemFlavor> function GetCharacterButtonMapping( array<ItemFlavor> allC
 	return mappingTable
 
 }
-#endif // CLIENT || UI 
+array<ItemFlavor> function GetCharacterButtonOrder( array<ItemFlavor> allCharacters, int totalButtons )
+{
+	for ( int i = 0 ; i < allCharacters.len() ; i++ )
+	{
+		ItemFlavor character = allCharacters[i]
+		int index            = CharacterClass_GetMenuButtonIndex( character )
+		Assert( index >= -1 && index < totalButtons, "Invalid characterMenuButtonIndex value for character " + ItemFlavor_GetHumanReadableRef( character ) )
+	}
+
+	array<ItemFlavor> sortedCharacters = clone allCharacters
+	sortedCharacters.sort( SortByMenuButtonIndex )
+
+	return sortedCharacters
+}
+
+int function SortByMenuButtonIndex( ItemFlavor a, ItemFlavor b )
+{
+	int aIndex = CharacterClass_GetMenuButtonIndex( a )
+	int bIndex = CharacterClass_GetMenuButtonIndex( b )
+
+	if ( aIndex == -1 && bIndex != -1 )
+		return 1
+
+	if ( aIndex != -1 && bIndex == -1 )
+		return -1
+
+	if ( aIndex > bIndex )
+		return 1
+
+	if ( aIndex < bIndex )
+		return -1
+
+	return 0
+}
+#endif // CLIENT || UI
 
 ///////////////////
 ///////////////////

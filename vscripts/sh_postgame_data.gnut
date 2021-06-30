@@ -1,6 +1,8 @@
 
 //global function GetPostGameData
 
+global function GetPersistentLastGameTypeFlag
+
 global struct postGamePlayerDef
 {
 	string name
@@ -26,6 +28,22 @@ global struct postGameDataDef
 	table<int, postGameTeamDef> teamsData
 }
 
+global enum eGameType
+{
+	SQUADS = (1 << 0),
+	RANKED = (1 << 1),
+	SOLO = (1 << 2),
+}
+
+bool function GetPersistentLastGameTypeFlag( entity player, int flag )
+{
+	#if R5DEV
+		if ( DEV_ShouldIgnorePersistence() )
+			return false
+	#endif
+	
+	return (player.GetPersistentVarAsInt( "lastGameTypeFlags" ) & flag) != 0
+}
 
 //postGameDataDef function GetPostGameData()
 //{

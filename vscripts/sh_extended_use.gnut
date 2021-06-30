@@ -4,16 +4,10 @@ global function ExtendedUse
 global function DefaultExtendedUseRui
 global function ExtendedUseTextOverride
 #endif
-global enum eExtendedUseRuiType
-{
-	COCKPIT,
-	FULLSCREEN
-}
 
 global struct ExtendedUseSettings
 {
 	void functionref( entity ent, entity player, ExtendedUseSettings settings ) successFunc
-	void functionref( entity ent, entity player, ExtendedUseSettings settings ) failureFunc
 	void functionref( entity ent, entity player, ExtendedUseSettings settings ) startFunc
 	void functionref( entity ent, entity player, ExtendedUseSettings settings ) endFunc
 	string loopSound

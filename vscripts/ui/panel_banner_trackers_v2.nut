@@ -1,5 +1,3 @@
-#if(true)
-
 global function InitCardTrackersPanel
 
 struct
@@ -149,4 +147,3 @@ bool function ShouldDisplayTracker( ItemFlavor tracker, table<ItemFlavor, int> e
 
 	return true
 }
-#endif

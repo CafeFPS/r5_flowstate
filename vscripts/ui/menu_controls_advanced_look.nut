@@ -51,6 +51,10 @@ void function InitAdvancedLookControlsPanel( var panel )
 
 	SetupButton( Hud_GetChild( contentPanel, "SwchGamepadCustomAssist" ), "#GAMEPADCUSTOM_ASSIST",	"#GAMEPADCUSTOM_ASSIST_DESC" )
 
+	var perScopeButton = SetupSettingsButton( Hud_GetChild( contentPanel, "BtnLookSensitivityMenu" ), "#MENU_PER_OPTIC_SETTINGS", "#MENU_PER_OPTIC_SETTINGS_DESC", $"" )
+	AddButtonEventHandler( perScopeButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdsAdvancedLookMenuConsole" ) ) )
+	file.enableItems.append( perScopeButton )
+	
 	//
 	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipYaw" ),		"#GAMEPADCUSTOM_HIP_YAW",			"#GAMEPADCUSTOM_HIP_YAW_DESC" )
 	SetupSlider( Hud_GetChild( contentPanel, "SldGamepadCustomHipPitch" ),		"#GAMEPADCUSTOM_HIP_PITCH",			"#GAMEPADCUSTOM_HIP_PITCH_DESC" )
@@ -270,6 +274,7 @@ void function RestoreLookControlsDefaults()
 	SetConVarToDefault( "gamepad_custom_ads_turn_pitch" )
 	SetConVarToDefault( "gamepad_custom_ads_turn_delay" )
 	SetConVarToDefault( "gamepad_custom_ads_turn_time" )
+	RestoreADSAdvancedDefaultsGamePad()
 
 	//
 	SavePlayerSettings()

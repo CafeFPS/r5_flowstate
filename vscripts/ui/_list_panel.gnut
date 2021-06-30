@@ -17,14 +17,17 @@ global function ListPanel_UpdateSelectedState
 global function ListPanel_SetScrollCallback
 global function ListPanel_SetItemHeightCallback
 global function ListPanel_SetItemHeaderCheckCallback
+global function ListPanel_GetVisibleListItemsIndices
 
 global function ListPanel_SetCommandHandler
 
 global function ListPanel_GetBaseButtonHeight
 
+
 global struct ListPanelListDef
 {
 	int          itemCount
+	int 		 headerCount
 }
 
 struct ListElementData
@@ -63,7 +66,7 @@ struct ListPanelData
 
 	array<int> indexAtOffset = []
 
-	array<int> lastVisibleIndices = []
+	array<int> lastVisibleIndices = [-1, -1]
 
 	int buttonHeight = 0
 	int panelHeight = 0
@@ -519,20 +522,16 @@ void function UpdateScrollBar( ListPanelData data )
 int function GetIndexAtOffset( ListPanelData data, float offset )
 {
 	int elementHeight = data.buttonHeight + data.paddingVert
-	int itemIndex     = int( floor( offset / elementHeight ) )
 
-	int itemCount     = ListPanel_GetItemCount( data )
+	//
+	//
+	//
+	int itemCount = ListPanel_GetItemCount( data )
+	int maxIndex = int( min( itemCount - 1, int( floor( offset / elementHeight * 2 ) ) ) )
+	int minIndex = int ( floor( offset / elementHeight ) )
+
 	int bestItemIndex = 0
-	for ( int index = itemCount - 1; index >= 0; index-- )
-	{
-		if ( data.indexAtOffset[index] > offset )
-			continue
-
-		bestItemIndex = index
-		break
-	}
-
-	for ( int index = 0; index < itemCount; index++ )
+	for ( int index = minIndex; index <= maxIndex; index++ )
 	{
 		if ( offset > data.indexAtOffset[index] )
 			continue
@@ -541,9 +540,7 @@ int function GetIndexAtOffset( ListPanelData data, float offset )
 		break
 	}
 
-	itemIndex = bestItemIndex
-
-	return itemIndex
+	return bestItemIndex
 }
 
 
@@ -594,6 +591,7 @@ void function ListPanel_FocusFirstItem( var panel, bool delayUntilFirstUpdate = 
 	UpdateSelectedState( data )
 }
 
+//
 array<int> function GetVisibleListItemsIndices( ListPanelData data, float offset )
 {
 	int firstIndex = GetIndexAtOffset( data, offset )
@@ -602,7 +600,7 @@ array<int> function GetVisibleListItemsIndices( ListPanelData data, float offset
 	if ( ListPanel_GetItemCount( data ) == 0 )
 	{
 		Assert( firstIndex == 0 )
-		return []
+		return [-1, -1]
 	}
 
 	int buttonHeight = ListPanel_GetItemHeight( data, firstIndex )
@@ -613,17 +611,17 @@ array<int> function GetVisibleListItemsIndices( ListPanelData data, float offset
 	int heightPadding = buttonHeight * 2
 	if( firstIndex > 0 )
 		visibleIndices.append ( firstIndex - 1 )
-
-	visibleIndices.append ( firstIndex )
+	else
+		visibleIndices.append ( firstIndex )
 
 	int lastIndex = firstIndex + 1
 	while ( visibleHeight < data.panelHeight + heightPadding && lastIndex < data.indexAtOffset.len() )
 	{
 		visibleHeight += ListPanel_GetItemHeight( data, lastIndex ) + data.paddingVert
-		visibleIndices.append ( lastIndex )
 		lastIndex++
 	}
 
+	visibleIndices.append( lastIndex - 1 )
 	return visibleIndices
 }
 
@@ -634,10 +632,11 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 	int itemCount       = ListPanel_GetItemCount( data )
 	float totalListSize = ListPanel_GetTotalSize( data )
 	bool itemCountDecreased = false
-	if ( data.lastItemCount != itemCount || data.lastTotalListSize != totalListSize )
+	if ( data.lastItemCount != itemCount || data.lastTotalListSize != totalListSize || forceRefresh )
 	{
 		itemCountDecreased = itemCount < data.lastItemCount
 		data.totalListSize = ListPanel_GetTotalSize( data, true )
+		data.lastTotalListSize = data.totalListSize
 		data.lastItemCount = itemCount
 		forceRefresh = true
 	}
@@ -655,12 +654,15 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 
 	data.listOffset = clamp( lastOffset + (data.scrollValue * SCROLL_SPEED), 0, (data.totalListSize - (data.panelHeight / data.totalListSize) * data.totalListSize) )
 	data.listOffset = max( data.listOffset, 0 )
+	data.lastTotalListSize = data.totalListSize
 
 	array<int> visibleIndices = GetVisibleListItemsIndices( data, data.listOffset )
 
-	foreach ( itemIndex in lastVisibleIndices )
+	for ( int itemIndex = lastVisibleIndices[0]; itemIndex <= lastVisibleIndices[1]; itemIndex++ )
 	{
-		if ( visibleIndices.contains( itemIndex ) )
+		if ( itemIndex < 0 )
+			break
+		if ( visibleIndices[0] >= 0 && itemIndex >= visibleIndices[0] && itemIndex <= visibleIndices[1] )
 			continue
 
 		foreach ( ListElementData buttonData in data.usedElements )
@@ -674,9 +676,12 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 		}
 	}
 
-	foreach ( visIndex, itemIndex in visibleIndices )
+	for ( int itemIndex = visibleIndices[0]; itemIndex >= 0 && itemIndex <= visibleIndices[1]; itemIndex++ )
 	{
-		if ( itemIndex >= ListPanel_GetItemCount( data ) )
+		if ( itemIndex < 0 )
+			break
+
+		if ( itemIndex >= itemCount )
 		{
 			if ( HasElementDataForItemIndex( data, itemIndex ) )
 			{
@@ -697,19 +702,19 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 		Hud_SetY( listButton, newY )
 		Hud_SetHeight( listButton, ListPanel_GetItemHeight( data, itemIndex ) )
 
-		if ( visIndex == 0 )
+		if ( itemIndex == visibleIndices[0] )
 		{
 			Hud_SetNavUp( listButton, listButton )
 		}
 		else
 		{
-			int lastItemIndex              = visibleIndices[visIndex - 1]
+			int lastItemIndex              = itemIndex - 1
 			ListElementData lastButtonData = GetElementDataForItemIndex( data, lastItemIndex )
 			Hud_SetNavUp( listButton, lastButtonData.button )
 			Hud_SetNavDown( lastButtonData.button, listButton )
 		}
 
-		if ( visIndex == visibleIndices.len() - 1 )
+		if ( itemIndex == visibleIndices[1] )
 			Hud_SetNavDown( listButton, listButton )
 
 		Hud_Show( listButton )
@@ -722,7 +727,7 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 	//
 	//
 	bool didFocusChangeToHeader = false
-	if( data.lastFocusedIndex < ListPanel_GetItemCount( data ) )
+	if( data.lastFocusedIndex < itemCount )
 		didFocusChangeToHeader = ListPanel_IsHeaderItemAtIndex( data, data.lastFocusedIndex )
 
 	if( data.lastClickedAssignedIndex >= 0 && ( itemCountDecreased || didFocusChangeToHeader ) )
@@ -731,7 +736,6 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 	if ( data.scrollBarElement != null )
 		UpdateScrollBar( data )
 }
-
 
 ListElementData function GetElementDataForItemIndex( ListPanelData data, int itemIndex )
 {
@@ -794,7 +798,7 @@ void function UpdateButtonFocus( ListPanelData data )
 		else if( buttonToFocusIndex >= itemCount )
 			buttonToFocusIndex = itemCount - 1
 
-		if( buttonToFocusIndex < ListPanel_GetItemCount( data ) )
+		if( buttonToFocusIndex < itemCount )
 		{
 			while( ListPanel_IsHeaderItemAtIndex( data, buttonToFocusIndex ) && buttonToFocusIndex > 0 )
 			{
@@ -901,6 +905,12 @@ void function ListPanel_SetItemHeaderCheckCallback( var panel, bool functionref(
 	file.listPanels[string(panel)].getIsHeaderCallback = callbackFunc
 }
 
+array<int> function ListPanel_GetVisibleListItemsIndices( var panel )
+{
+	ListPanelData data = file.listPanels[string(panel)]
+	return GetVisibleListItemsIndices( data, data.listOffset )
+}
+
 void function ListPanel_UpdateSelectedState( var panel )
 {
 	ListPanelData data = GetDataForPanel( panel )
@@ -922,11 +932,11 @@ void function ListPanel_ClearSelection( var panel )
 }
 
 
-void function ListPanel_Refresh( var panel )
+void function ListPanel_Refresh( var panel, bool forceUpdate )
 {
 	ListPanelData data = GetDataForPanel( panel )
 
-	UpdateButtonElements( data, true )
+	UpdateButtonElements( data, forceUpdate )
 }
 
 
@@ -1011,19 +1021,26 @@ float function ListPanel_GetTotalSize( ListPanelData data, bool updateOffsets = 
 	var panel            = data.panel
 	int baseButtonHeight = data.buttonHeight
 	int listItemCount    = ListPanel_GetItemCount( data )
+	int listHeaderCount = ListPanel_GetHeaderCount( data )
 
 	if ( updateOffsets )
 		data.indexAtOffset.resize( listItemCount )
 
-	int totalItemHeight            = 0
 	int totalItemHeightWithPadding = 0
-	for ( int index = 0; index < listItemCount; index++ )
+
+	if( !updateOffsets )
 	{
-		int height = ListPanel_GetItemHeight( data, index )
-		totalItemHeight += height
-		totalItemHeightWithPadding += height + data.paddingVert
-		if ( updateOffsets )
+		if( data.getHeightCallbackFunc == null )
+			totalItemHeightWithPadding = listItemCount * ( data.buttonHeight + data.paddingVert )
+		else
+			totalItemHeightWithPadding = int( (listHeaderCount * 0.5 + (listItemCount - listHeaderCount) * 1.0) * data.buttonHeight ) + listItemCount * data.paddingVert
+	}
+	else
+	{
+		for ( int index = 0; index < listItemCount; index++ )
 		{
+			int height = ListPanel_GetItemHeight( data, index )
+			totalItemHeightWithPadding += height + data.paddingVert
 			data.indexAtOffset[index] = totalItemHeightWithPadding
 		}
 	}
@@ -1035,4 +1052,9 @@ float function ListPanel_GetTotalSize( ListPanelData data, bool updateOffsets = 
 int function ListPanel_GetItemCount( ListPanelData data )
 {
 	return data.listDefCallback( data.panel ).itemCount
+}
+
+int function ListPanel_GetHeaderCount( ListPanelData data )
+{
+	return data.listDefCallback( data.panel ).headerCount
 }

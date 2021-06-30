@@ -42,7 +42,7 @@ function ToggleModelViewer()
 			wait 0.5
 
 			ModelViewerDisableConflicts()
-			//Remote_CallFunction_NonReplay( player, "ServerCallback_ModelViewerDisableConflicts" )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_ModelViewerDisableConflicts" )
 
 			ReloadShared()
 
@@ -55,7 +55,7 @@ function ToggleModelViewer()
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MVEnable" )
 
 			file.lastTitanAvailability = level.nv.titanAvailability
-			// Riff_ForceTitanAvailability( eTitanAvailability.Never )
+			//Riff_ForceTitanAvailability( eTitanAvailability.Never )
 
 			WeaponsRemove()
 			thread UpdateModelBounds()
@@ -66,7 +66,8 @@ function ToggleModelViewer()
 
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MVDisable" )
 			RestorePrecacheErrors()
-			// Riff_ForceTitanAvailability( file.lastTitanAvailability )
+
+			//Riff_ForceTitanAvailability( file.lastTitanAvailability )
 
 			WeaponsRestore()
 		}

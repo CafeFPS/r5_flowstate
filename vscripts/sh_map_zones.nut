@@ -33,7 +33,7 @@ global function MapZones_ForceRetouchForPlayer
 
 #endif // SERVER
 
-#if SERVER && R5DEV
+#if (SERVER && R5DEV)
 global function DEV_PrintMapZoneInfo
 global function DEV_MapZone_ToggleOverlay
 #endif // (SERVER && R5DEV)
@@ -515,8 +515,6 @@ void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 {
 	entity player = GetLocalViewPlayer()
 
-	Chroma_SetPlayerZone( zoneId )
-
 	int ceFlags = player.GetCinematicEventFlags()
 	if ( ceFlags & (CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_INTRO) )
 		return
@@ -538,7 +536,7 @@ void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 
 
 
-#if SERVER && R5DEV
+#if (SERVER && R5DEV)
 string function GetZoneLineForPlayer( entity player )
 {
 	int zoneId = player.p.currentZoneId
@@ -632,4 +630,4 @@ void function DebugFrameThread()
 	}
 }
 
-#endif // #if SERVER && R5DEV
+#endif // #if (SERVER && R5DEV)

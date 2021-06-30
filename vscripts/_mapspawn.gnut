@@ -1,5 +1,3 @@
-untyped
-
 //=========================================================
 //	_mapspawn.nut
 //  Called on newgame or transitions, BEFORE entities have been created and initialized
@@ -7,18 +5,10 @@ untyped
 
 global function CodeCallback_MapSpawn
 global function CodeCallback_ClientCommand
-global table _ClientCommandCallbacks = {}
-global entity _cc = null
-global entity _sc = null
-
-
-
-// dumpsite for other files
-
-global const int TEAM_COUNT = 31
-
-
-// end dumpsite
+global table _ClientCommandCallbacks 	= {}
+global entity _cc 						= null
+global entity _sc 						= null
+global const int TEAM_COUNT 			= 31
 
 
 global struct spawnCallbackFuncArray
@@ -46,13 +36,13 @@ global struct SvGlobals
 {
 	entity worldspawn
 
-	array<spawnCallbackFuncArray> 					spawnCallbackFuncs
-	array<spawnCallbackEditorClassFuncArray>		spawnCallbackEditorClassFuncs
-	array<spawnCallbackFuncArray_scriptNoteworthy>	spawnCallbackFuncs_scriptNoteworthy
+	array<spawnCallbackFuncArray>                   spawnCallbackFuncs
+	array<spawnCallbackEditorClassFuncArray>        spawnCallbackEditorClassFuncs
+	array<spawnCallbackFuncArray_scriptNoteworthy>  spawnCallbackFuncs_scriptNoteworthy
 
 	table<string, array<void functionref( entity )> > spawnCallbacks_scriptName
 
-	array<pilotEliminationDialogueCallbackType> 	pilotEliminationDialogueCallbacks
+	array<pilotEliminationDialogueCallbackType> pilotEliminationDialogueCallbacks
 	table<string, array<bool functionref( entity player, entity healthpack)> > onTouchHealthKitCallbacks
 	array<void functionref( entity )> onClientConnectedCallbacks
 	array<void functionref(entity)> onPlayerRespawnedCallbacks
@@ -79,7 +69,7 @@ global struct SvGlobals
 
 	float pilotRespawnDelay = 0.0
 
-	array<void functionref( entity, var )> 		soulDeathFuncs
+	array<void functionref( entity, var )> soulDeathFuncs
 
 	table<string, void functionref(entity)> globalAnimEventCallbacks
 
@@ -116,9 +106,9 @@ global struct SvGlobals
 	entity levelEnt
 
 	//TODO: Get rid of these and use the new StartParticleEffectInWorld_ReturnEntity etc functions
-	entity fx_CP_color_enemy 		//Used for setting control points on FX
-	entity fx_CP_color_friendly 	//Used for setting control points on FX
-	entity fx_CP_color_neutral 		//Used for setting control points on FX
+	entity fx_CP_color_enemy        //Used for setting control points on FX
+	entity fx_CP_color_friendly     //Used for setting control points on FX
+	entity fx_CP_color_neutral      //Used for setting control points on FX
 
 	array<entity>[ TEAM_COUNT ] classicMPDropships
 	bool evacEnabled = false
@@ -142,21 +132,21 @@ global struct SvGlobals
 
 	array<void functionref( entity, entity )> onLeechedCustomCallbackFunc
 
-	bool forceSpawnAsTitan 						= false
-	bool forceSpawnIntoTitan 					= false
-	bool forceDisableTitanfalls 				= false
-	bool titanfallEnabled 						= true
+	bool forceSpawnAsTitan                      = false
+	bool forceSpawnIntoTitan                    = false
+	bool forceDisableTitanfalls                 = false
+	bool titanfallEnabled                       = true
 
 	//RoundWinningKillReplay related
-	entity roundWinningKillReplayViewEnt 		= null
-	entity roundWinningKillReplayVictim 		= null
-	int roundWinningKillReplayInflictorEHandle 	= -1
-	bool watchingRoundWinningKillReplay 		= false
+	entity roundWinningKillReplayViewEnt        = null
+	entity roundWinningKillReplayVictim         = null
+	int roundWinningKillReplayInflictorEHandle  = -1
+	bool watchingRoundWinningKillReplay         = false
 
-	bool forceNoFinalRoundDraws 				= false //Setting this to true will force a round based mode to keep playing rounds until a winner is determined. Game will not end on draw.
+	bool forceNoFinalRoundDraws                 = false //Setting this to true will force a round based mode to keep playing rounds until a winner is determined. Game will not end on draw.
 
-	bool roundBasedTeamScore_RoundReset 		= true  // if true, reset team scores at the start of each round.
-	bool isInPilotGracePeriod 					= false // if true, all players will be allowed to switch loadouts.
+	bool roundBasedTeamScore_RoundReset         = true  // if true, reset team scores at the start of each round.
+	bool isInPilotGracePeriod                   = false // if true, all players will be allowed to switch loadouts.
 	
 	table<string, void functionref(entity,array<string>)> globalAnimEventTokenizeCallbacks
 	array<bool functionref( entity player, entity zipline, vector ziplineClosestPoint )> canUseZiplineCallbacks
@@ -173,20 +163,12 @@ global SvGlobals svGlobal
 
 void function CodeCallback_MapSpawn() // original script entry point
 {
-	ShWeapons_LevelInit()
-	// seterrorhandler(void function() {})
+	//seterrorhandler(void function() {})
 	ScriptCompilerTest()
 	LoadDiamond()
-	
-	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
-	RegisterSignal( "MirageSpotted" )
-	RegisterSignal( "forever" )
-	RegisterSignal( "UpdatePlayerStatusCounts" )
-	RegisterSignal( "BleedOut_OnReviveStart" )
-	RegisterSignal( "PlayerPlaneStatusChanged" )
-	RegisterSignal( "CancelTryRelinquishSquadLeaderOrBreakFromSquad" )
-	RegisterSignal( "GameStateChanged" )
-	RegisterSignal( "CleanupOutsideCircle" )
+	ShAssets_LevelInit()
+	ShSignal_LevelInit()
+	ShWeapons_LevelInit()
 
 	_cc = CreateEntity( "point_clientcommand" )
 	_sc = CreateEntity( "point_servercommand" )
@@ -200,6 +182,56 @@ void function CodeCallback_MapSpawn() // original script entry point
 	svGlobal.worldspawn = GetEnt( "worldspawn" )
 	svGlobal.worldspawn.kv.startdark = true
 
+	printl( "CODE_SCRIPT: _mapspawn" )
+
+	SV_CL_Shared_Init()
+}
+
+
+var function CodeCallback_ClientCommand( entity player, array<string> args )
+{
+	printl( "############################" )
+	printl( "] CodeCallback_ClientCommand() before" )
+	printl( "] player = " + player )
+	printl( "] args: --------------------" )
+	foreach( key, value in args )
+		printl( "] " + key + " : " + value )
+	printl( "############################" )
+
+	string commandString = args.remove( 0 )
+
+	//TODO: Track down Why VModEnable is being called from code?
+	//Assert( commandString in svGlobal.clientCommandCallbacks )
+	if ( commandString in svGlobal.clientCommandCallbacks  )
+	{
+		printt("CodeCallback_ClientCommand", commandString)
+		return svGlobal.clientCommandCallbacks[ commandString ]( player, args )
+	}
+	else
+	{
+		printl( "############################" )
+		printl( "] CommandString: " + "'" + commandString + "'" + " not added via AddClientCommandCallback [called in CodeCallback_ClientCommand]" )
+		printl( "############################" )
+		return false
+	}
+}
+
+void function ShSignal_LevelInit()
+{
+	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
+	RegisterSignal( "MirageSpotted" )
+	RegisterSignal( "forever" )
+	RegisterSignal( "UpdatePlayerStatusCounts" )
+	RegisterSignal( "BleedOut_OnReviveStart" )
+	RegisterSignal( "PlayerPlaneStatusChanged" )
+	RegisterSignal( "CancelTryRelinquishSquadLeaderOrBreakFromSquad" )
+	RegisterSignal( "GameStateChanged" )
+	RegisterSignal( "CleanupOutsideCircle" )
+	RegisterSignal( "FreefallEnded" )
+}
+
+void function ShAssets_LevelInit()
+{
 	PrecacheModel( $"mdl/dev/editor_ref.rmdl" )
 	PrecacheModel( $"mdl/dev/empty_model.rmdl" )
 	PrecacheModel( $"mdl/error.rmdl" ) // model used when no model is provided
@@ -278,72 +310,4 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_laser_trip" )
 	PrecacheWeapon( $"mp_weapon_satchel" )
 	PrecacheWeapon( $"mp_weapon_spectre_spawner" )
-
-	printl( "Code Script: _mapspawn" )
-
-	SV_CL_Shared_Init()
-
-	AddClientCommandCallback( "script", ClientCommand_script )
-}
-
-bool function ClientCommand_script( entity player, array<string> args )
-{
-	if( !IsValid( player ) )
-		return true
-
-	string func = ""
-
-	for ( int i = 0; i < args.len(); i++ )
-	{
-		func = (func + args[i])
-		if( i == 0 )
-		{
-			func = (func + " ")
-		}
-	}
-	func = StringReplace( func, "'", "\"" )
-	printt( func )
-
-	try{
-		compilestring( "return "+func+"" )()
-	}
-	catch( error ) {
-		printt("error while running script cc", error)
-	}
-	return true
-}
-
-
-var function CodeCallback_ClientCommand( entity player, array<string> args )
-{
-	printl( "############################" )
-	printl( "CodeCallback_ClientCommand() before" )
-	printl( "player = " + player )
-	printl( "args:" )
-	foreach( key, value in args )
-		printl( key + " : " + value )
-	printl( "############################" )
-
-	string commandString = args.remove( 0 )
-
-	//TODO: Track down Why VModEnable is being called from code?
-
-	//Assert( commandString in svGlobal.clientCommandCallbacks )
-	if(commandString in svGlobal.clientCommandCallbacksNew)
-	{
-		printt("CodeCallback_ClientCommand", commandString)
-		svGlobal.clientCommandCallbacksNew[ commandString ]( player, args )
-		return true
-	}
-	if ( commandString in svGlobal.clientCommandCallbacks  )
-	{
-		return svGlobal.clientCommandCallbacks[ commandString ]( player, args )
-	}
-	else
-	{
-		printl( "############################" )
-		printl( "CommandString: " + commandString  + " was not added via AddClientCommandCallback but is being called in CodeCallback_ClientCommand" )
-		printl( "############################" )
-		return false
-	}
 }
