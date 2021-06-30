@@ -1670,7 +1670,7 @@ bool function SurveyBeacon_CanUseFunction( entity player, entity beacon )
 	#if MP_PVEMODE
 	if ( FreelanceMode_GetCurrentPhase() >= eFreelanceModePhase.GetToTheLZ )
 	{
-		#if(CLIENT)
+		#if CLIENT
 			AddPlayerHint( 0.1, 0, $"rui/hud/gametype_icons/survival/survey_beacon_only_pathfinder", "The extraction zone has already been revealed." )
 		#endif //CLIENT
 		return false

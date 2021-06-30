@@ -2,7 +2,7 @@
 global function ShPassPanel_LevelInit
 #endif
 
-#if(CLIENT)
+#if CLIENT
 global function UIToClient_StartTempBattlePassPresentationBackground
 global function UIToClient_StopTempBattlePassPresentationBackground
 global function UIToClient_StopBattlePassScene
@@ -14,7 +14,7 @@ global function BattlePassLightsOff
 global function ClearBattlePassItem
 #endif
 
-#if(UI)
+#if UI
 global function InitPassPanel
 global function UpdateRewardPanel
 global function InitAboutBattlePass1Dialog
@@ -51,7 +51,7 @@ struct BattlePassPageData
 
 struct FileStruct_LifetimeLevel
 {
-	#if(CLIENT)
+	#if CLIENT
 		bool                         isTempBattlePassPresentationBackgroundThreadActive = false
 		vector                       sceneRefOrigin
 		vector                       sceneRefAngles
@@ -75,7 +75,7 @@ struct FileStruct_LifetimeLevel
 FileStruct_LifetimeLevel& fileLevel
 
 
-#if(UI)
+#if UI
 const float CURSOR_DELAY_BASE = 0.3
 const float CURSOR_DELAY_MED = 0.3
 const float CURSOR_DELAY_FAST = 0.1
@@ -98,7 +98,7 @@ struct RewardButtonData
 
 struct
 {
-	#if(UI)
+	#if UI
 		int                                previousPage = -1
 		int                                currentPage = -1
 		array<RewardGroup>                 currentRewardGroups = []
@@ -143,7 +143,7 @@ struct
 
 } file
 
-#if(UI)
+#if UI
 const int MAX_LEVELS_PER_PAGE = 8
 const int REWARDS_PER_PAGE = 9
 #endif
@@ -156,7 +156,7 @@ const int REWARDS_PER_PAGE = 9
 #if CLIENT || UI 
 void function ShPassPanel_LevelInit()
 {
-	#if(CLIENT)
+	#if CLIENT
 		RegisterSignal( "StopTempBattlePassPresentationBackgroundThread" )
 		RegisterButtonPressedCallback( MOUSE_WHEEL_UP, OnMouseWheelUp )
 		RegisterButtonPressedCallback( MOUSE_WHEEL_DOWN, OnMouseWheelDown )
@@ -165,7 +165,7 @@ void function ShPassPanel_LevelInit()
 			fileLevel.loadscreenPreviewBox = null //
 		} )
 	#endif
-	#if(UI)
+	#if UI
 		ItemFlavor ornull activeBattlePass = GetActiveBattlePass()
 		if ( activeBattlePass != null )
 			BuildPageDatas( expect ItemFlavor( activeBattlePass ) )
@@ -174,7 +174,7 @@ void function ShPassPanel_LevelInit()
 #endif
 
 
-#if(UI)
+#if UI
 void function InitPassPanel( var panel )
 {
 	RegisterSignal( "TryChangePageThread" )
@@ -1412,7 +1412,7 @@ void function BattlePass_SetPage( int pageNumber )
 #endif
 
 
-#if(UI)
+#if UI
 void function OnPanelShow( var panel )
 {
 	RegisterStickMovedCallback( ANALOG_RIGHT_X, TryChangePageFromRS )
@@ -1789,7 +1789,7 @@ void function BattlePass_UpdateStatus()
 #endif
 
 
-#if(UI)
+#if UI
 struct
 {
 	var menu
@@ -1811,7 +1811,7 @@ struct
 #endif
 
 
-#if(UI)
+#if UI
 void function InitPassXPPurchaseDialog( var newMenuArg )
 //
 {
@@ -2053,7 +2053,7 @@ void function PassXPDecButton_OnActivate( var button )
 }
 #endif
 
-#if(UI)
+#if UI
 
 void function InitAboutBattlePass1Dialog( var newMenuArg )
 //
@@ -2125,7 +2125,7 @@ void function AboutBattlePass1Dialog_OnClose()
 #endif
 
 
-#if(UI)
+#if UI
 void function ShowRewardTable( var button )
 {
 	//
@@ -2133,7 +2133,7 @@ void function ShowRewardTable( var button )
 #endif
 
 
-#if(CLIENT)
+#if CLIENT
 void function UIToClient_StartTempBattlePassPresentationBackground( asset bgImage )
 {
 	//
@@ -2144,7 +2144,7 @@ void function UIToClient_StartTempBattlePassPresentationBackground( asset bgImag
 #endif
 
 
-#if(CLIENT)
+#if CLIENT
 void function UIToClient_StopTempBattlePassPresentationBackground()
 {
 	//
@@ -2154,7 +2154,7 @@ void function UIToClient_StopTempBattlePassPresentationBackground()
 #endif
 
 
-#if(CLIENT)
+#if CLIENT
 void function UIToClient_StopBattlePassScene()
 {
 	ClearBattlePassItem()
@@ -2162,7 +2162,7 @@ void function UIToClient_StopBattlePassScene()
 #endif
 
 
-#if(CLIENT)
+#if CLIENT
 //
 //
 //
@@ -2230,7 +2230,7 @@ void function TempBattlePassPresentationBackground_Thread( asset bgImage )
 #endif
 
 
-#if(CLIENT)
+#if CLIENT
 void function OnMouseWheelUp( entity unused )
 {
 	//
@@ -2238,14 +2238,14 @@ void function OnMouseWheelUp( entity unused )
 #endif
 
 
-#if(CLIENT)
+#if CLIENT
 void function OnMouseWheelDown( entity unused )
 {
 	//
 }
 #endif
 
-#if(UI)
+#if UI
 struct
 {
 	var menu
@@ -2444,7 +2444,7 @@ void function OnBattlePassPurchaseResults( bool wasSuccessful )
 }
 #endif //
 
-#if(UI)
+#if UI
 bool function TryDisplayBattlePassAwards( bool playSound = false )
 {
 	WaitEndFrame()
@@ -2546,7 +2546,7 @@ int function SortByAwardLevel( BattlePassReward a, BattlePassReward b )
 #endif
 
 
-#if(CLIENT)
+#if CLIENT
 void function UIToClient_ItemPresentation( SettingsAssetGUID itemFlavorGUID, int level, float scale, bool showLow, var loadscreenPreviewBox, bool shouldPlayAudioPreview, string sceneRefName )
 {
 	ItemFlavor flav = GetItemFlavorByGUID( itemFlavorGUID )
@@ -2702,7 +2702,7 @@ void function ShowBattlepassItem( ItemFlavor item, int level, float scale, var l
 }
 #endif //
 
-#if(CLIENT)
+#if CLIENT
 const float BATTLEPASS_MODEL_ROTATE_SPEED = 15.0
 
 void function ClearBattlePassItem()
@@ -3617,7 +3617,7 @@ void function BattlePassModelHighlightBloom( entity model, vector color, float f
 }
 #endif //
 
-#if(UI)
+#if UI
 void function ServerCallback_GotBPFromPremier()
 {
 	thread _GotBPFromPremier()

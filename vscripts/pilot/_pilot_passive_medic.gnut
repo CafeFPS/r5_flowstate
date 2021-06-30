@@ -6,7 +6,7 @@ global function PassiveMedic_Init
 
 #endif
 
-#if(CLIENT)
+#if CLIENT
 global function ServerToClient_DisplayCancelReviveHintForPlayer
 global function ServerToClient_RemoveCancelReviveHintForPlayer
 #endif
@@ -558,7 +558,7 @@ void function PassiveMedic_Init()
 
 #endif
 
-#if(CLIENT)
+#if CLIENT
 void function AttemptCancelRevive( entity player )
 {
 	if ( !PlayerHasPassive( player, ePassives.PAS_MEDIC ) )

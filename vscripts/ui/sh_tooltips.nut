@@ -13,7 +13,7 @@ global function _ToolTips_SetToolTipData
 global function _ToolTips_HasToolTipData
 global function _ToolTips_ClearToolTipData
 
-#if(UI)
+#if UI
 global function ToolTips_AddMenu
 global function ToolTips_MenuOpened
 global function ToolTips_MenuClosed
@@ -55,7 +55,7 @@ void function Sh_InitToolTips()
 {
 	file.enabled = GetConVarBool( "gameCursor_ModeActive" )
 
-	#if(UI)
+	#if UI
 	UpdateTooltipRui( $"ui/generic_tooltip.rpak" )
 	#endif
 
@@ -65,7 +65,7 @@ void function Sh_InitToolTips()
 	}
 }
 
-#if(UI)
+#if UI
 void function ToolTips_AddMenu( var menu )
 {
 	if ( !Hud_HasChild( menu, "ToolTip" ) )
@@ -263,7 +263,7 @@ void function UpdateToolTipElement( var toolTipElement, var focusElement )
 			ruiAsset = $"ui/generic_tooltip.rpak"
 	}
 
-	#if(UI)
+	#if UI
 		UpdateTooltipRui( ruiAsset )
 		ShowTooltipRui()
 

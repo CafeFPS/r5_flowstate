@@ -2,7 +2,7 @@ global function GetCharacterButtonRowSizes
 global function LayoutCharacterButtons
 global function SetNavUpDown
 global function SetNavLeftRight
-#if(UI)
+#if UI
 global function LocalizeAndShortenNumber_Float
 #endif
 

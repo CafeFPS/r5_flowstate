@@ -318,7 +318,7 @@ string function CharacterQuip_ShortenTextForCommsMenu( ItemFlavor flav )
 		int WORD_MAX_LEN = 11
 		int TEXT_MAX_LEN = 26
 		int TEXT_MAX_LEN_W_DOTS = TEXT_MAX_LEN - 2
-#if(CLIENT)
+#if CLIENT
 		txt = CondenseText( txt, WORD_MAX_LEN, TEXT_MAX_LEN )
 #endif
 	}

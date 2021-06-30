@@ -11,7 +11,7 @@ global function ThemedShopEvent_GetChallenges
 global function ThemedShopEvent_GetHeaderIcon
 #endif
 
-#if(UI)
+#if UI
 global function ThemedShopEvent_GetTabText
 global function ThemedShopEvent_GetGRXOfferLocation
 global function ThemedShopEvent_GetTabBGDefaultCol
@@ -52,9 +52,9 @@ struct FileStruct_LifetimeLevel
 	table<ItemFlavor, array<ItemFlavor> > eventChallengesMap
 }
 #endif
-#if(CLIENT)
+#if CLIENT
 FileStruct_LifetimeLevel fileLevel //
-#elseif(UI)
+#elseif UI
 FileStruct_LifetimeLevel& fileLevel //
 
 struct {
@@ -74,7 +74,7 @@ struct {
 #if CLIENT || UI 
 void function ThemedShopEvents_Init()
 {
-	#if(UI)
+	#if UI
 		FileStruct_LifetimeLevel newFileLevel
 		fileLevel = newFileLevel
 	#endif
@@ -123,7 +123,7 @@ array<ItemFlavor> function ThemedShopEvent_GetChallenges( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 string function ThemedShopEvent_GetTabText( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -132,7 +132,7 @@ string function ThemedShopEvent_GetTabText( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 string function ThemedShopEvent_GetGRXOfferLocation( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -141,7 +141,7 @@ string function ThemedShopEvent_GetGRXOfferLocation( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 vector function ThemedShopEvent_GetTabBGDefaultCol( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -150,7 +150,7 @@ vector function ThemedShopEvent_GetTabBGDefaultCol( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 vector function ThemedShopEvent_GetTabBarDefaultCol( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -159,7 +159,7 @@ vector function ThemedShopEvent_GetTabBarDefaultCol( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 vector function ThemedShopEvent_GetTabBGFocusedCol( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -168,7 +168,7 @@ vector function ThemedShopEvent_GetTabBGFocusedCol( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 vector function ThemedShopEvent_GetTabBarFocusedCol( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -177,7 +177,7 @@ vector function ThemedShopEvent_GetTabBarFocusedCol( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 vector function ThemedShopEvent_GetTabBGSelectedCol( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -186,7 +186,7 @@ vector function ThemedShopEvent_GetTabBGSelectedCol( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 vector function ThemedShopEvent_GetTabBarSelectedCol( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -195,7 +195,7 @@ vector function ThemedShopEvent_GetTabBarSelectedCol( ItemFlavor event )
 #endif
 
 
-#if(UI)
+#if UI
 asset function ThemedShopEvent_GetItemButtonBGImage( ItemFlavor event, bool isHighlighted )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -204,7 +204,7 @@ asset function ThemedShopEvent_GetItemButtonBGImage( ItemFlavor event, bool isHi
 #endif
 
 
-#if(UI)
+#if UI
 asset function ThemedShopEvent_GetItemButtonFrameImage( ItemFlavor event, bool isHighlighted )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -213,7 +213,7 @@ asset function ThemedShopEvent_GetItemButtonFrameImage( ItemFlavor event, bool i
 #endif
 
 
-#if(UI)
+#if UI
 asset function ThemedShopEvent_GetItemButtonLowerBGDecoImage( ItemFlavor event, bool isHighlighted )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -222,7 +222,7 @@ asset function ThemedShopEvent_GetItemButtonLowerBGDecoImage( ItemFlavor event, 
 #endif
 
 
-#if(UI)
+#if UI
 vector function ThemedShopEvent_GetItemButtonBorderCol( ItemFlavor event, bool isHighlighted )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -231,7 +231,7 @@ vector function ThemedShopEvent_GetItemButtonBorderCol( ItemFlavor event, bool i
 #endif
 
 
-#if(UI)
+#if UI
 asset function ThemedShopEvent_GetItemButtonSpecialIcon( ItemFlavor event, bool isHighlighted )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -240,7 +240,7 @@ asset function ThemedShopEvent_GetItemButtonSpecialIcon( ItemFlavor event, bool 
 #endif
 
 
-#if(UI)
+#if UI
 asset function ThemedShopEvent_GetItemGroupHeaderImage( ItemFlavor event, int group )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -249,7 +249,7 @@ asset function ThemedShopEvent_GetItemGroupHeaderImage( ItemFlavor event, int gr
 #endif
 
 
-#if(UI)
+#if UI
 string function ThemedShopEvent_GetItemGroupHeaderText( ItemFlavor event, int group )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -258,7 +258,7 @@ string function ThemedShopEvent_GetItemGroupHeaderText( ItemFlavor event, int gr
 #endif
 
 
-#if(UI)
+#if UI
 vector function ThemedShopEvent_GetItemGroupHeaderTextColor( ItemFlavor event, int group )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )
@@ -267,7 +267,7 @@ vector function ThemedShopEvent_GetItemGroupHeaderTextColor( ItemFlavor event, i
 #endif
 
 
-#if(UI)
+#if UI
 asset function ThemedShopEvent_GetItemGroupBackgroundImage( ItemFlavor event, int group )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_themedshop )

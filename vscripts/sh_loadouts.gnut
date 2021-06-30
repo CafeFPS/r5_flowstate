@@ -523,15 +523,15 @@ array<ItemFlavor> function LoadoutSlot_GetFavorites( EHI playerEHI, LoadoutEntry
 	array<ItemFlavor> items
 	foreach ( key in entry._____INTERNAL_favoritePdefKeys )
 	{
-		#if(CLIENT)
-			#if(CLIENT)
+		#if CLIENT
+			#if CLIENT
 				Assert( playerEHI == LocalClientEHI() )
 			#endif
 			entity player         = FromEHI( playerEHI )
 			int guid = expect int(player.GetPersistentVar( "loadouts." + key ))
 		#endif
 
-		#if(UI)
+		#if UI
 			Assert( playerEHI == LocalClientEHI() )
 			int guid = expect int(GetPersistentVar( "loadouts." + key ))
 		#endif

@@ -1,11 +1,11 @@
-#if(CLIENT)
+#if CLIENT
 global function ClImagePakLoadInit
 global function RequestDownloadedImagePakLoad
 global function ClientCodeCallback_OnRpakDownloadComplete
 global function ClientCodeCallback_OnRpakDownloadFailed
 #endif
 
-#if(UI)
+#if UI
 global function GetDownloadedImageAsset
 global function IsImagePakLoading
 global function DidImagePakLoadFail
@@ -13,7 +13,7 @@ global function UISetRpakLoadStatus
 global function ImagePakLoad_OnLevelShutdown
 #endif
 
-#if(CLIENT)
+#if CLIENT
 global function UIScriptResetCallback_ImagePakLoad
 #endif
 
@@ -38,7 +38,7 @@ enum eImagePakLoadStatus
 }
 #endif
 
-#if(CLIENT)
+#if CLIENT
 global struct sImagePakLoadRequest
 {
 	var imageElem
@@ -50,7 +50,7 @@ global struct sImagePakLoadRequest
 
 struct
 {
-#if(CLIENT)
+#if CLIENT
 	array<PakHandle> pakHandles
 	array<sImagePakLoadRequest> activePakLoadReqs
 	array<sImagePakLoadRequest> deferredPakLoadReqs
@@ -62,7 +62,7 @@ struct
 } file
 
 
-#if(CLIENT)
+#if CLIENT
 void function ClImagePakLoadInit()
 {
 	RegisterSignal( "RequestDownloadedImagePakLoad" )
@@ -72,7 +72,7 @@ void function ClImagePakLoadInit()
 }
 #endif
 
-#if(UI)
+#if UI
 void function ImagePakLoad_OnLevelShutdown()
 {
 	file.pakLoadStatuses.clear()
@@ -127,7 +127,7 @@ asset function GetDownloadedImageAsset( string rpakName, string imageName, int d
 	}
 	else
 	{
-	#if(UI)
+	#if UI
 		if( CanRunClientScript() )
 			RunClientScript( "RequestDownloadedImagePakLoad", rpakName, dlType, imageElem, imageName )
 	#endif
@@ -136,7 +136,7 @@ asset function GetDownloadedImageAsset( string rpakName, string imageName, int d
 }
 #endif
 
-#if(UI)
+#if UI
 bool function IsImagePakLoading( string rpakName )
 {
 	if( rpakName in file.pakLoadStatuses )
@@ -146,7 +146,7 @@ bool function IsImagePakLoading( string rpakName )
 }
 #endif
 
-#if(UI)
+#if UI
 bool function DidImagePakLoadFail( string rpakName )
 {
 	if( rpakName in file.pakLoadStatuses )
@@ -156,14 +156,14 @@ bool function DidImagePakLoadFail( string rpakName )
 }
 #endif
 
-#if(UI)
+#if UI
 void function UISetRpakLoadStatus( string rpakName, int status )
 {
 	file.pakLoadStatuses[rpakName] <- status
 }
 #endif
 
-#if(CLIENT)
+#if CLIENT
 void function SetRpakLoadStatus( string rpakName, int status )
 {
 	file.pakLoadStatuses[rpakName] <- status
@@ -173,7 +173,7 @@ void function SetRpakLoadStatus( string rpakName, int status )
 }
 #endif
 
-#if(CLIENT)
+#if CLIENT
 //
 void function UIScriptResetCallback_ImagePakLoad()
 {
@@ -187,7 +187,7 @@ void function UIScriptResetCallback_ImagePakLoad()
 }
 #endif
 
-#if(CLIENT)
+#if CLIENT
 void function ClientCodeCallback_OnRpakDownloadComplete()
 {
 	for( int i = file.deferredPakLoadReqs.len() - 1; i >= 0; i-- )
@@ -207,7 +207,7 @@ void function ClientCodeCallback_OnRpakDownloadComplete()
 }
 #endif
 
-#if(CLIENT)
+#if CLIENT
 void function ClientCodeCallback_OnRpakDownloadFailed( string rpakName )
 {
 	bool wasPakLoadAttempted = rpakName in file.pakLoadStatuses
@@ -262,7 +262,7 @@ void function SetLoadingStateOnImage( string rpakName, int pakType, var imageEle
 }
 #endif
 
-#if(CLIENT)
+#if CLIENT
 void function RequestDownloadedImagePakLoad( string rpakName, int pakType, var imageElem = null, asset imageRef = $"" )
 {
 	if( rpakName == "" || pakType == ePakType.DEFAULT )
@@ -306,7 +306,7 @@ void function RequestDownloadedImagePakLoad( string rpakName, int pakType, var i
 }
 #endif
 
-#if(CLIENT)
+#if CLIENT
 void function RequestDownloadedImagePakLoad_Internal( string rpakName, int pakType, var imageElem = null, asset imageRef = $"" )
 {
 	Signal( clGlobal.signalDummy, "RequestDownloadedImagePakLoad" )
