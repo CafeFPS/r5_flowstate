@@ -1,5 +1,4 @@
 global function DoesPlaylistSupportNoFillTeams
-global function GetMaxTeamSizeForPlaylist
 
 
 #if CLIENT || UI
@@ -12,13 +11,6 @@ bool function DoesPlaylistSupportNoFillTeams( string playlist )
 {
 	int allowNoFillTeams = int( GetPlaylistVarOrUseValue( playlist, "allow_no_fill_teams", "0" ) )
 	return (allowNoFillTeams != 0)
-}
-
-int function GetMaxTeamSizeForPlaylist( string playlist )
-{
-	int maxPlayers = int( GetPlaylistVarOrUseValue( playlist, "max_players", "0" ) )
-	int maxTeams = int( GetPlaylistVarOrUseValue( playlist, "max_teams", "0" ) )
-	return ((maxTeams != 0) ? (maxPlayers / maxTeams) : (maxPlayers))
 }
 
 #if CLIENT || UI
