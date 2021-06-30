@@ -3,7 +3,7 @@
 global function InitRewardCeremonyMenu
 global function ShowRewardCeremonyDialog
 
-#if(DEV)
+##if R5DEV
 global function DEV_TestRewardCeremonyDialog
 #endif
 
@@ -66,7 +66,7 @@ void function ShowRewardCeremonyDialog( string headerText, string titleText, str
 }
 
 
-#if(DEV)
+##if R5DEV
 void function DEV_TestRewardCeremonyDialog( string itemRef, string headerText = "HEADER", string titleText = "TITLE", string descText = "DESC" )
 {
 	BattlePassReward rewardInfo

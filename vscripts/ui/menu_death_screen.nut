@@ -27,7 +27,7 @@ global function DeathScreenUpdateCursor
 
 global function InitDeathScreenPanelFooter
 
-#if(DEV)
+##if R5DEV
 global function ShowBanner
 #endif
 
@@ -170,7 +170,7 @@ void function DeathScreenMenuOnOpen()
 	//
 	RunClientScript( "UICallback_ToggleGladCard", file.isGladCardShowing )
 
-	#if(DEV)
+	##if R5DEV
 		RegisterButtonPressedCallback( KEY_PAD_ENTER, DevExit )
 	#endif
 
@@ -183,7 +183,7 @@ void function DeathScreenMenuOnClose()
 	TabData tabData = GetTabDataForPanel( file.menu )
 	DeactivateTab( tabData )
 
-	#if(DEV)
+	##if R5DEV
 		DeregisterButtonPressedCallback( KEY_PAD_ENTER, DevExit )
 	#endif
 
@@ -734,7 +734,7 @@ bool function DeathScreenIsOpen()
 }
 
 
-#if(DEV)
+##if R5DEV
 void function DevExit( var button )
 {
 	CloseActiveMenu()

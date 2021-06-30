@@ -121,7 +121,7 @@ bool function IsDataCenterFooterVisible()
 
 bool function IsDataCenterFooterClickable()
 {
-#if(DEV)
+##if R5DEV
 	bool hideDurationElapsed = true
 #else //
 	bool hideDurationElapsed = Time() - file.startTime > 10.0
@@ -206,7 +206,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 		PrintLaunchDebugVal( "isOriginEnabled", isOriginEnabled )
 		if ( !isOriginEnabled )
 		{
-			#if(DEV)
+			##if R5DEV
 				if ( autoContinue )
 					LaunchMP()
 				else
@@ -884,7 +884,7 @@ void function OnConfirmDialogResult( int result )
 
 void function PrintLaunchDebugVal( string name, bool val )
 {
-	#if(DEV)
+	##if R5DEV
 		printt( "*** PrelaunchValidation *** " + name + ": " + val )
 	#endif //
 }

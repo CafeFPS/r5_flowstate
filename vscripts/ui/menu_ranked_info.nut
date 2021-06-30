@@ -3,7 +3,7 @@ global function OpenRankedInfoPage
 global function InitRankedScoreBarRui
 global function InitRankedScoreBarRuiForDoubleBadge
 
-#if(DEV)
+##if R5DEV
 global function TestScoreBar
 #endif
 

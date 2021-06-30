@@ -13,7 +13,7 @@ global function LowPop_SetRankedDatacenter
 
 global function ToRelativeTimeString
 
-#if(DEV)
+##if R5DEV
 global function DisplayLowPopWarning
 
 const bool DEBUG_LOW_POP = false
@@ -29,7 +29,7 @@ struct
 	void functionref(int) onButtonClickCallback
 	table<var, MatchmakingDatacenterETA> buttonToDatacenter
 
-#if(DEV)
+##if R5DEV
 	array<MatchmakingDatacenterETA> fakeDatacenters
 	int fakeHomeDatacenter = 0
 	int fakeRankedDatacenter = 0
@@ -172,7 +172,7 @@ array<MatchmakingDatacenterETA> function GetValidMatchmakingDatacenterETASorted(
 {
 	array< MatchmakingDatacenterETA > datas = GetMatchmakingDatacenterETAs( playlistName )
 
-	#if(DEV)
+	##if R5DEV
 		if ( DEBUG_LOW_POP )
 		{
 			datas = clone file.fakeDatacenters
@@ -210,7 +210,7 @@ array<MatchmakingDatacenterETA> function GetValidMatchmakingDatacenterETASorted(
 
 MatchmakingDatacenterETA function GetCurrentRankedMatchmakingDatacenterETA( string playlistName )
 {
-	#if(DEV)
+	##if R5DEV
 		if ( DEBUG_LOW_POP )
 		{
 			return file.fakeDatacenters[ file.fakeRankedDatacenter ]
@@ -226,7 +226,7 @@ MatchmakingDatacenterETA function GetCurrentRankedMatchmakingDatacenterETA( stri
 
 MatchmakingDatacenterETA function GetCurrentMatchmakingDatacenterETA( string playlistName )
 {
-	#if(DEV)
+	##if R5DEV
 		if ( DEBUG_LOW_POP )
 		{
 			return file.fakeDatacenters[ file.fakeHomeDatacenter ]
@@ -415,7 +415,7 @@ string function ToRelativeTimeString( int timestamp, int minsCap = 0 )
 void function LowPop_SetRankedDatacenter( int datacenterIdx )
 {
 	SetRankedDatacenter( datacenterIdx )
-	#if(DEV)
+	##if R5DEV
 		file.fakeRankedDatacenter = datacenterIdx
 	#endif
 }
