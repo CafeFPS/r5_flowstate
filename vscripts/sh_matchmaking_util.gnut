@@ -9,8 +9,7 @@ global function StartMatchmakingWithNoFillTeams
 
 bool function DoesPlaylistSupportNoFillTeams( string playlist )
 {
-	int allowNoFillTeams = int( GetPlaylistVarOrUseValue( playlist, "allow_no_fill_teams", "0" ) )
-	return (allowNoFillTeams != 0)
+	return GetPlaylistVarBool( playlist, "allow_no_fill_teams", false )
 }
 
 #if CLIENT || UI

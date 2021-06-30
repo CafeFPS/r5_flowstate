@@ -1,4 +1,3 @@
-#if true
 global function SetupChangeSurvivalCharacterClass
 global function SetupOverrideSpawnSurvivalCharacter
 global function SetupSurvival
@@ -8,7 +7,7 @@ global function SetupSurvivalIncapShieldBot
 global function SetupAbilities
 
 void function SetupChangeSurvivalCharacterClass()
-{
+{/* // TODO: FIX [Undefined variable "SetupDevFunc"]
 	#if UI
 		array<ItemFlavor> characters = clone GetAllCharacters()
 		characters.sort( int function( ItemFlavor a, ItemFlavor b ) {
@@ -24,11 +23,11 @@ void function SetupChangeSurvivalCharacterClass()
 				DEV_RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
 			} )
 		}
-	#endif
+	#endif*/
 }
 
 void function SetupOverrideSpawnSurvivalCharacter()
-{
+{/*
 	#if UI
 		SetupDevCommand( "Random (default)", "dev_sur_force_spawn_character random" )
 		SetupDevCommand( "Shipping only", "dev_sur_force_spawn_character special" )
@@ -44,11 +43,11 @@ void function SetupOverrideSpawnSurvivalCharacter()
 		{
 			SetupDevCommand( Localize( ItemFlavor_GetLongName( characterClass ) ), "dev_sur_force_spawn_character " + ItemFlavor_GetHumanReadableRef( characterClass ) )
 		}
-	#endif
+	#endif*/
 }
 
 void function SetupSurvival()
-{
+{/*
 	#if UI
 		SetupDevCommand( "Enable Survival Dev Mode", "playlist survival_dev" )
 		SetupDevCommand( "Disable Match Ending", "mp_enablematchending 0" )
@@ -62,19 +61,19 @@ void function SetupSurvival()
 		SetupDevCommand( "Bleedout Debug Mode", "script FlagSet( \"BleedoutDebug\" )" )
 		SetupDevCommand( "Disable Loot Drops on Death", "script FlagSet( \"DisableLootDrops\" )" )
 		SetupDevCommand( "Drop My Death Box", "script thread SURVIVAL_Death_DropLoot_Internal( GP(), null, 100 )" )
-	#endif
+	#endif*/
 }
 
 
 void function SetupSurvivalLoot( var categories )
-{
+{/*
 	#if UI
 		RunClientScript( "SetupSurvivalLoot", categories )
-	#endif
+	#endif*/
 }
 
 void function SetupAbilities()
-{
+{/*
 	#if UI
 	SetupDevCommand( "EYE OF THE ALLFATHER", "give mp_ability_area_sonar_scan" )
 	SetupDevCommand( "BEAST OF THE HUNT", "give mp_ability_hunt_mode" )
@@ -94,12 +93,12 @@ void function SetupAbilities()
 	SetupDevCommand( "ELECTRIC SMOKE", "give mp_weapon_grenade_electric_smoke" )
 	SetupDevCommand( "MELEE", "give mp_weapon_melee_survival" )
 	SetupDevCommand( "KUNAI", "give mp_weapon_kunai_ns" )
-	#endif
+	#endif*/
 }
 
 
 void function SetupModelSpawner()
-{
+{/*
 	#if UI
 	SetupDevCommand( "marvin", "SetMDLSpawnerModel mdl/robots/marvin/marvin.rmdl" )
 	SetupDevCommand( "atpov_titan_raptor_rocket_pod_right", "SetMDLSpawnerModel mdl/weapons/titan_raptor_rocket_pod/atpov_titan_raptor_rocket_pod_right.rmdl" )
@@ -112,18 +111,16 @@ void function SetupModelSpawner()
 	SetupDevCommand( "drone_frag", "mdl/robots/drone_frag/drone_frag.rmdl" )
 	SetupDevCommand( "droppod_fireteam", "SetMDLSpawnerModel mdl/vehicle/droppod_fireteam/droppod_fireteam.rmdl" )
 	SetupDevCommand( "droppod_loot_LL_holo", "mdl/vehicle/droppod_loot/droppod_loot_LL_holo.rmdl" )
-	#endif
+	#endif*/
 }
 
 void function SetupSurvivalIncapShieldBot()
-{
+{/*
 	#if UI
 	SetupDevCommand( "Spawn Bot with Lv 1 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 1 )" )
 	SetupDevCommand( "Spawn Bot with Lv 2 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 2 )" )
 	SetupDevCommand( "Spawn Bot with Lv 3 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 3 )" )
 	SetupDevCommand( "Spawn Bot with Lv 4 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 4 )" )
 	SetupDevCommand( "Spawn Bot with a Random Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( -1 )" )
-	#endif
+	#endif*/
 }
-
-#endif
