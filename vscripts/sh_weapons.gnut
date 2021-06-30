@@ -64,7 +64,7 @@ void function ShWeapons_LevelInit()
 	#endif
 
 	AddCallback_RegisterRootItemFlavors( void function() {
-		foreach( asset weaponAsset in WORKAROUND_GetAllLootMainWeaponFlavorAssets() )
+		foreach( asset weaponAsset in WEAPON_ASSETS )
 			RegisterItemFlavorFromSettingsAsset( weaponAsset )
 
 		foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/weapon_categories.rpak", "list" ) )

@@ -147,7 +147,7 @@ void function OnRegisterRootItemFlavors()
 	fileLevel.characterSelectionSlot = entry
 
 	array<ItemFlavor> characterList = []
-	foreach( asset characterAsset in WORKAROUND_GetAllCharacterFlavorAssets() )
+	foreach( asset characterAsset in CHARACTER_ASSETS )
 	{
 		if ( characterAsset == $"" )
 			continue

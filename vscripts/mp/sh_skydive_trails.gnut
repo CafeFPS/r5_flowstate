@@ -85,7 +85,7 @@ void function RegisterSkydiveTrails()
 {
 	array<ItemFlavor> trailFlavs
 
-	foreach ( asset trailAsset in WORKAROUND_GetAllSkydiveTrails() )
+	foreach ( asset trailAsset in SKYDIVE_TRAIL_ASSET_LIST )
 	{
 		ItemFlavor ornull flav = RegisterItemFlavorFromSettingsAsset( trailAsset )
 		if ( flav == null )

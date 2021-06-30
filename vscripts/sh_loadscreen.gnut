@@ -61,10 +61,11 @@ void function OnRegisterRootItemFlavors()
 
 
 	array<ItemFlavor> loadscreenList = []
-	foreach( asset loadscreenAsset in WORKAROUND_GetAllLoadscreenAssets() )
+	foreach( asset loadscreenAsset in LOADSCREEN_ASSET_LIST )
 	{
 		if ( loadscreenAsset == $"" )
 			continue
+
 		ItemFlavor ornull loadscreenOrNull = RegisterItemFlavorFromSettingsAsset( loadscreenAsset )
 		if ( loadscreenOrNull == null )
 			continue

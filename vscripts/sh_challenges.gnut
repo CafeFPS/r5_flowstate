@@ -169,43 +169,19 @@ void function ShChallenges_LevelInit_PreStats()
 	#endif
 
 	#if CLIENT
+		RegisterSignal( "ChallengeDataDidChange" )
 		Remote_RegisterClientFunction( "ServerToClient_AssignedChallengesDidChange" )
 		Remote_RegisterClientFunction( "ServerToClient_ChallengeDataDidChange" )
 	#endif
 
 	#if UI
 		if ( !file.initialized )
+		{
 			AddUICallback_OnResolutionChanged( RefreshChallenges )
+		}
 	#endif
 
 	file.initialized = true
-
-	//
-	AddCallback_RegisterRootItemFlavors( void function() {
-		foreach ( asset challengeAsset in WORKAROUND_GetAllChallengeAssets() )
-		{
-			//
-			var settingsBlock = GetSettingsBlockForAsset( challengeAsset )
-			var tierDataArray = GetSettingsBlockArray( settingsBlock, "tiers" )
-			for ( int i = 0 ; i < GetSettingsArraySize( tierDataArray ) ; i++ )
-			{
-				var tierBlock = GetSettingsArrayElem( tierDataArray, i )
-
-				foreach( string field in CHARACTER_ASSET_FIELDS )
-				{
-					asset characterAsset = GetSettingsBlockAsset( tierBlock, field )
-					if ( characterAsset != $"" && !IsValidItemFlavorSettingsAsset( characterAsset ) )
-					{
-						Warning( "Skipping challenge %s because character %s is not registered", string(challengeAsset), string(characterAsset) )
-						continue
-					}
-				}
-			}
-
-			//
-			ItemFlavor ornull challenge = RegisterItemFlavorFromSettingsAsset( challengeAsset )
-		}
-	} )
 }
 
 ItemFlavor ornull function RegisterChallengeFromAsset( asset challengeAsset )
