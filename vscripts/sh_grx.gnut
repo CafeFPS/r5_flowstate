@@ -22,6 +22,8 @@ global function GRX_IsItemOwnedByPlayer_AllowOutOfDateData
 global function GRX_GetPlayerEdition
 global function GRX_IsOfferRestricted
 global function GRX_PurchaseItem
+global function GRXPack_GetTickModel
+global function GRXPack_GetTickModelSkin
 #endif
 
 #if SERVER || UI
@@ -139,6 +141,7 @@ global enum eItemFlavorGRXMode
 	PACK 		= GRX_ITEMFLAVORMODE_PACK,
 	CONSUMABLE 	= GRX_ITEMFLAVORMODE_CONSUMABLE,
 	CURRENCY 	= GRX_ITEMFLAVORMODE_CURRENCY,
+	OWNERSHIP_TARGET                  = -1337,
 }
 //Assert( eItemFlavorGRXMode.len() == GRX_ITEMFLAVORMODE_COUNT )
 
@@ -1054,6 +1057,23 @@ ItemFlavorPurchasabilityInfo function GRX_GetItemPurchasabilityInfo( ItemFlavor 
 }
 #endif
 
+#if SERVER || CLIENT || UI
+asset function GRXPack_GetTickModel( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.account_pack )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flav ), "tickMdl" )
+}
+#endif
+
+#if SERVER || CLIENT || UI
+string function GRXPack_GetTickModelSkin( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.account_pack )
+
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "tickMdlSkin" )
+}
+#endif
 
 #if UI
 bool function GRX_IsItemCraftable( ItemFlavor itemFlavor )
@@ -2114,15 +2134,15 @@ void function HandleGRXQueryCompleted( entity player, int queryScriptId, int que
 
 
 #if SERVER
-bool function CodeCallback_GRXCheckStoreOfferPurchase( entity player, GRXCodeOffer codeOffer )
+bool function CodeCallback_GRXCheckStoreOfferPurchase( entity player, GRXStoreOffer storeOffer )
 {
 	Assert( IsLobby() )
 	if ( !IsLobby() )
 		return false
 
-	if ( "prereq" in codeOffer.attrs )
+	if ( "prereq" in storeOffer.attrs )
 	{
-		string prereqAlias = codeOffer.attrs["prereq"]
+		string prereqAlias = storeOffer.attrs["prereq"]
 
 		ItemFlavor prereqFlav
 		foreach ( ItemFlavor iterFlav in GetAllItemFlavors() )
