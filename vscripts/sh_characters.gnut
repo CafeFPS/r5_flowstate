@@ -27,6 +27,8 @@ global function CharacterClass_GetDamageScale
 #if SERVER
 global function GetStringArrayAvailableClassesForPlayer
 #endif
+global function CharacterClass_ConsiderLegHitBoxAsTorso
+global function CharacterClass_GetMenuZoomOffset
 
 #if CLIENT || UI 
 global function GetCharacterButtonMapping
@@ -85,6 +87,7 @@ struct FileStruct_LifetimeLevel
 }
 FileStruct_LifetimeLevel& fileLevel
 
+table< ItemFlavor, array<int> > legHitBoxOverrides = {}
 
 /////////////////////////
 /////////////////////////
@@ -106,6 +109,23 @@ void function ShCharacters_LevelInit()
 }
 #endif
 
+void function InitLegHitBoxOverrides( ItemFlavor character )
+{
+	{
+		string characterRef = ItemFlavor_GetHumanReadableRef( character )
+		string legHitBoxOverrideString = GetCurrentPlaylistVarString( "leg_hitbox_override_" + characterRef.tolower(), "" )
+		if ( legHitBoxOverrideString == "" )
+			return
+
+		legHitBoxOverrides[character] <- []
+		array<string> hitBoxStrings = split( legHitBoxOverrideString, " " )
+		foreach ( hitBoxString in hitBoxStrings )
+		{
+			int hitBoxID = hitBoxString.tointeger()
+			legHitBoxOverrides[character].append( hitBoxID )
+		}
+	}
+}
 
 #if SERVER || CLIENT || UI
 void function OnRegisterRootItemFlavors()
@@ -393,6 +413,22 @@ array<string> function GetStringArrayAvailableClassesForPlayer( entity player )
 	return classes
 }
 #endif
+
+bool function CharacterClass_ConsiderLegHitBoxAsTorso( ItemFlavor flavor, int hitBox )
+{
+	if ( !(flavor in legHitBoxOverrides) )
+		return false
+
+	return ( legHitBoxOverrides[flavor].contains( hitBox ) )
+}
+
+
+vector function CharacterClass_GetMenuZoomOffset( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character )
+
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( flavor ), "menuZoomOffset" )
+}
 
 #if CLIENT || UI
 table<int,ItemFlavor> function GetCharacterButtonMapping( array<ItemFlavor> allCharacters, int totalButtons )

@@ -778,11 +778,6 @@ function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker,
 	local attackerEHandle = IsValid( attacker ) ? attacker.GetEncodedEHandle() : null
 	local weaponEHandle = IsValid( DamageInfo_GetWeapon( damageInfo ) ) ? DamageInfo_GetWeapon( damageInfo ).GetEncodedEHandle() : null
 	local damageOrigin = GetDamageOrigin( damageInfo, player )
-
-	if ( player.IsTitan() )
-		Remote_CallFunction_Replay( player, "ServerCallback_TitanTookDamage", DamageInfo_GetDamage( damageInfo ), damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, eModSourceID, titanDamage.doomedNow, titanDamage.doomedDamage )
-	else
-		Remote_CallFunction_Replay( player, "ServerCallback_PilotTookDamage", DamageInfo_GetDamage( damageInfo ), damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, eModSourceID )
 }
 
 // This only handles damage events. Whizbys can still cause snipercam to trigger without passing through this check.

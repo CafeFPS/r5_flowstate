@@ -60,6 +60,7 @@ global function GetMeleeWeapon
 global function OnWeaponRegenEndGeneric
 global function Ultimate_OnWeaponRegenBegin
 global function OnWeaponActivate_RUIColorSchemeOverrides
+global function PlayDelayedShellEject
 
 #if SERVER
 global function CreateDamageInflictorHelper
@@ -4857,6 +4858,32 @@ void function Ultimate_OnWeaponRegenBegin( entity weapon )
 	#if CLIENT
 		UltimateWeaponStateSet( eUltimateState.CHARGING )
 	#endif
+}
+
+void function PlayDelayedShellEject( entity weapon, float time, int count = 1, bool persistent = false )
+{
+	AssertIsNewThread()
+
+	weapon.EndSignal( "OnDestroy" )
+
+	asset vmShell = weapon.GetWeaponSettingAsset( eWeaponVar.fx_shell_eject_view )
+	asset worldShell = weapon.GetWeaponSettingAsset( eWeaponVar.fx_shell_eject_world )
+	string shellAttach = weapon.GetWeaponSettingString( eWeaponVar.fx_shell_eject_attach )
+
+	if ( shellAttach == "" )
+		return
+
+	for ( int i = 0; i < count; i++ )
+	{
+		wait time
+
+		if ( !IsValid( weapon ) )
+			return
+		entity viewmodel = weapon.GetWeaponViewmodel()
+		if ( !IsValid( viewmodel ) )
+			return
+		weapon.PlayWeaponEffect( vmShell, worldShell, shellAttach, persistent )
+	}
 }
 
 #if SERVER

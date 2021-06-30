@@ -208,10 +208,6 @@ Scripts:
 	mp/sh_teams.gnut
 	pilot/sh_pilot_gun_shield.gnut
 	pilot/sh_pilot_leeching.gnut
-	rodeo/sh_rodeo.gnut
-	rodeo/sh_rodeo_titan.nut
-	rodeo/sh_rodeo_car.nut
-	rodeo/sh_rodeo_reaper.nut
 	sentry_turrets/sh_sentry_turrets.gnut
 	sh_anim_aliases.gnut
 	sh_codecallbacks.gnut
@@ -248,19 +244,29 @@ Scripts:
 
 	weapons/mp_ability_heal.nut
 	weapons/mp_ability_sonar.nut
-	weapons/mp_weapon_basic_bolt.nut
+	weapons/mp_ability_crypto_drone.nut
+	weapons/mp_ability_crypto_drone_emp.nut
+	weapons/mp_ability_care_package_weapons.nut
+	
+	weapons/melee_wraith_kunai.nut
 	weapons/melee_bloodhound_axe.nut
 	weapons/melee_lifeline_baton.nut
-	weapons/mp_ability_care_package_weapons.nut
+
+	weapons/mp_weapon_wraith_kunai_primary.nut
 	weapons/mp_weapon_bloodhound_axe_primary.nut
 	weapons/mp_weapon_lifeline_baton_primary.nut
+
 	weapons/mp_weapon_rspn101.nut
+	weapons/mp_weapon_vinson.nut
+
 	weapons/mp_weapon_shotgun_kick.nut
 	weapons/mp_weapon_tesla_trap.nut
 	weapons/mp_weapon_trophy_defense_system.nut
 
+	weapons/mp_weapon_basic_bolt.nut
 	weapons/mp_weapon_dmr.nut
 	weapons/mp_weapon_doubletake.nut
+	weapons/mp_weapon_defender.nut
 	weapons/mp_weapon_shotgun_pistol.nut
 
 	weapons/mp_weapon_grenade_emp.nut
@@ -269,8 +275,6 @@ Scripts:
 	weapons/mp_weapon_energy_ar.nut
 	weapons/mp_weapon_mastiff.nut
 	weapons/mp_weapon_melee_primary.nut
-	weapons/mp_weapon_wraith_kunai_primary.nut
-	weapons/melee_wraith_kunai.nut
 	weapons/mp_weapon_shotgun.nut
 	weapons/mp_weapon_sniper.nut
 	weapons/mp_weapon_thermite_grenade.nut
@@ -338,7 +342,6 @@ Scripts:
 	sh_survival_deathfield.gnut
 	sh_survival_freefall.gnut
 
-	vehicle/sh_hoverbike.nut
 	mp/sh_lootbin.gnut
 	mp/_sh_tutorial.gnut
 	mp/sh_survival_training.gnut
@@ -413,7 +416,6 @@ Scripts:
 	mp/_spectre_rack.nut
 	mp/_titan_npc.nut
 	mp/_titan_transfer.nut
-	mp/_tonecontroller.nut
 	mp/_vr.nut
 	mp/player_cloak.nut
 	mp/_titan_tether.gnut
@@ -513,7 +515,7 @@ Scripts:
 	sh_social.gnut
 ]
 
-When: "CLIENT || UI"
+When: "SERVER || CLIENT || UI"
 Scripts:
 [
 	sh_postgame_data.gnut

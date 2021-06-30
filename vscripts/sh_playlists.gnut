@@ -24,7 +24,7 @@ global function PrintPlaylists
 #endif
 
 #if UI
-global function GetEmblemColor
+//global function GetEmblemColor
 #endif
 
 
@@ -42,7 +42,7 @@ global typedef PlaylistVarName string
 //// Private Types ////
 ///////////////////////
 ///////////////////////
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 struct FileStruct_LifetimeLevel
 {
 	//
@@ -57,7 +57,7 @@ var ASSERTING_floatRegexp = null
 #endif
 
 const int OUTSIDE_OF_VALID_SCHEDULE_BLOCKS = 0
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 const table<string, asset> GAMEMODE_EMBLEM_MAP = {
 	shotguns_and_snipers = $"rui/menu/gamemode_emblem/shotguns_and_snipers",
 	shadowfall           = $"rui/menu/gamemode_emblem/shadowfall",
@@ -222,17 +222,17 @@ bool function PlaylistShouldBeHiddenForScheduleBlocks( string plName )
 
 	return false
 }
-
+/* // TODO: SERVER SCRIPT COMPILE ERROR: Attempted to return type "var" from function with return type "array< int >" (return type of "ColorStringToArray" is "var")
 array<int> function GetEmblemColor( string playlistName )
 {
 	string colorString = GetPlaylistVarString( playlistName, "emblem_color", "128 128 128 255" )
 	return ColorStringToArray( colorString )
-}
+}*/
 
 array<string> function GetVisiblePlaylistNames()
 {
 	int numPlaylists          = GetPlaylistCount()
-	bool pveLoadingIsForcedOn = IsPvELoadingForcedOn()
+	//bool pveLoadingIsForcedOn = IsPvELoadingForcedOn()
 
 	string forcedVisiblePlaylistsString  = GetConVarString( "match_visiblePlaylists" )
 	array<string> forcedVisiblePlaylists = split( forcedVisiblePlaylistsString, " " )
@@ -245,10 +245,10 @@ array<string> function GetVisiblePlaylistNames()
 		bool visible   = GetPlaylistVarBool( name, "visible", false )
 		bool hubOnly   = GetPlaylistVarBool( name, "hub_only", false )
 		bool optInOnly = GetPlaylistVarBool( name, "opt_in_only", false )
-		bool isPvEOnly = GetPlaylistVarBool( name, "pve_only", false )
+		//bool isPvEOnly = GetPlaylistVarBool( name, "pve_only", false )
 
-		if ( pveLoadingIsForcedOn != isPvEOnly )
-			continue
+		//if ( pveLoadingIsForcedOn != isPvEOnly )
+		//	continue
 
 		if ( forcedVisiblePlaylists.contains( name ) )
 		{
@@ -264,11 +264,11 @@ array<string> function GetVisiblePlaylistNames()
 
 		if ( optInOnly )
 		{
-			if ( ShouldDisplayOptInOptions() )
+			/*if ( ShouldDisplayOptInOptions() )
 			{
 				if ( uiGlobal.isOptInEnabled )
 					optInList.append( name )
-			}
+			}*/
 			continue
 		}
 

@@ -7,6 +7,7 @@ global function OnWeaponChargeEnd_Consumable
 global function OnWeaponPrimaryAttack_Consumable
 global function OnWeaponDeactivate_Consumable
 global function OnWeaponOwnerChanged_Consumable
+global function OnWeaponRaise_Consumable
 
 global function Consumable_Init
 global function Consumable_PredictConsumableUse
@@ -529,6 +530,41 @@ void function OnWeaponDeactivate_Consumable( entity weapon )
 		Signal( weaponOwner, "ConsumableDestroyRui" )
 		Chroma_ConsumableEnd()
 	#endif // CLIENT
+}
+
+void function OnWeaponRaise_Consumable( entity weapon )
+{
+	string modName
+	entity weaponOwner = weapon.GetOwner()
+
+	#if SERVER
+
+	#endif // SERVER
+
+	#if CLIENT
+		Assert( weaponOwner == GetLocalClientPlayer() )
+		Assert( InPrediction() )
+
+		if ( !IsFirstTimePredicted() )
+			return
+
+		modName = file.clientPlayerNextMod
+	#endif // CLIENT
+
+	int consumableType  = file.modNameToConsumableType[ modName ]
+
+	if ( modName == "phoenix_kit" )
+		weapon.SetWeaponSkin( 1 )
+	else
+		weapon.SetWeaponSkin( 0 )
+
+	weapon.SetMods( [ modName ] )
+
+	if ( file.consumableTypeToInfo[ consumableType ].ultimateAmount > 0 )
+	{
+		if ( ShouldPlayUltimateSuperchargedFX( weaponOwner ) )
+			weapon.AddMod( "ultimate_battery_supercharged_fx" )
+	}
 }
 
 #if CLIENT
@@ -1682,4 +1718,12 @@ TargetKitHealthAmounts function Consumable_PredictConsumableUse( entity player, 
 bool function WeaponDrivenConsumablesEnabled()
 {
 	return ( GetCurrentPlaylistVarInt( "weapon_driven_consumables", 1 ) == 1 )
+}
+
+bool function ShouldPlayUltimateSuperchargedFX( entity player )
+{
+	if ( PlayerHasPassive( player, ePassives.PAS_BATTERY_POWERED ) )
+		return true
+
+	return false
 }

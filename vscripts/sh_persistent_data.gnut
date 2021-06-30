@@ -327,7 +327,7 @@ void function DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( b
 		}
 		else
 		{
-			int currentPDefVersion = GetPersistentDataDefVersion()
+			int currentPDefVersion = GetPersistentDataDefScriptVersion()
 			currentPDefPath = "cfg/server/persistent_player_data_" + currentPDefVersion + ".pdef"
 		}
 
@@ -632,7 +632,7 @@ bool function IsAnyPersistenceBitSet( entity player, string persistenceVar )
 void function SvPersistentData_OnClientConnectionCompleted( entity player )
 {
 	int initializedVersion = player.GetPersistentVarAsInt( "initializedVersion" )
-	int currentVersion     = GetPersistentDataDefVersion()
+	int currentVersion     = GetPersistentDataDefScriptVersion()
 
 	Assert( initializedVersion <= currentVersion )
 

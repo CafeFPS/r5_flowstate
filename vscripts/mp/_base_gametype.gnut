@@ -421,21 +421,7 @@ bool function ShouldPlayerTakeDamage( entity player, damageInfo )
 	}
 	else
 	{
-		//Rodeo cases
-		entity titanSoul = player.GetTitanSoulBeingRodeoed()
-		if ( IsValid( titanSoul ) )
-		{
-			entity titan = titanSoul.GetTitan()
-			//Stop being stepped on by the guy you are rodeoing
-			if ( IsTitanCrushDamage( damageInfo ) && ( titan == DamageInfo_GetAttacker( damageInfo ) ) )
-				return false
-			else
-				return true
-		}
-		else
-		{
-			return true
-		}
+		return true
 	}
 
 	unreachable

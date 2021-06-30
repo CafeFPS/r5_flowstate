@@ -33,7 +33,6 @@ npc_dropship
 
 	magneticRange			190
 
-	YawSpeed				45
 	goalTolerance			400
 	waypointTolerance		1000
 	flyingStoppingTime		1.0

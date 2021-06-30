@@ -1,3 +1,5 @@
+global function OnWeaponActivate_weapon_energy_shotgun
+global function OnWeaponDeactivate_weapon_energy_shotgun
 global function OnWeaponPrimaryAttack_weapon_energy_shotgun
 global function OnWeaponChargeLevelIncreased_weapon_energy_shotgun
 global function OnWeaponChargeEnd_weapon_energy_shotgun
@@ -10,6 +12,16 @@ struct
 {
 	EnergyChargeWeaponData chargeWeaponData
 } file
+
+void function OnWeaponActivate_weapon_energy_shotgun( entity weapon )
+{
+	OnWeaponActivate_ReactiveKillEffects( weapon )
+}
+
+void function OnWeaponDeactivate_weapon_energy_shotgun( entity weapon )
+{
+	OnWeaponDeactivate_ReactiveKillEffects( weapon )
+}
 
 var function OnWeaponPrimaryAttack_weapon_energy_shotgun( entity weapon, WeaponPrimaryAttackParams attackParams)
 {

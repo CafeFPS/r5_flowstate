@@ -791,7 +791,7 @@ void function ShowEntityAndChildren( entity ent )
 {
 	ent.Show()
 
-	foreach ( entity hierarchyEnt in GetEntityAndItsChildren( ent ) )
+	foreach ( entity hierarchyEnt in GetEntityAndAllChildren( ent ) )
 		hierarchyEnt.Show()
 }
 
@@ -799,7 +799,7 @@ void function HideEntityAndChildren( entity ent )
 {
 	ent.Hide()
 
-	foreach ( entity hierarchyEnt in GetEntityAndItsChildren( ent ) )
+	foreach ( entity hierarchyEnt in GetEntityAndAllChildren( ent ) )
 		hierarchyEnt.Hide()
 }
 

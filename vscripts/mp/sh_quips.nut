@@ -47,7 +47,7 @@ global function ItemFlavor_CanEquipToWheel
 
 global const int MAX_QUIPS_EQUIPPED = 8
 
-#if CLIENT || UI 
+#if SERVER || CLIENT || UI
 struct FileStruct_LifetimeLevel
 {
 	table<ItemFlavor, array<LoadoutEntry> >     loadoutCharacterQuipsSlotListMap
@@ -143,14 +143,20 @@ void function RegisterEquippableQuipsForCharacter( ItemFlavor characterClass, ar
 }
 
 
-#if SERVER || CLIENT
+#if CLIENT
 void function PerformQuip( entity player, int index )
 {
+	// TODO:
+	// Quips underwent some change in S3
+	// sh_quips.nut and sh_quickchat.gnut
+	// needs a refactor in the future.
+	// For now i pass invalid arguments.
 	if ( !IsAlive( player ) )
 		return
 
 	ItemFlavor quip      = GetItemFlavorByGUID( index )
 
+	int fixAndReplaceMe = 1
 	CommsAction act
 	act.index = eCommsAction.QUIP
 	act.aliasSubname = CharacterQuip_GetAliasSubName( quip )
@@ -165,7 +171,7 @@ void function PerformQuip( entity player, int index )
 	opt.isUrgent = false
 	opt.pauseQueue = player.GetTeam() == GetLocalViewPlayer().GetTeam()
 
-	PlaySoundForCommsAction( player, act, opt )
+	PlaySoundForCommsAction( player, fixAndReplaceMe, opt )
 }
 #endif
 

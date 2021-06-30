@@ -24,7 +24,6 @@ global function LoadoutSlot_WaitForItemFlavor
 //global function LoadoutSlot_GetIntegerOrNull
 //global function LoadoutSlot_WaitForItemFlavorOrNull
 global function LoadoutSlot_GetRawStorageContents
-global function LoadoutSlot_GetFavorites
 
 global function AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer
 global function AddCallback_IntegerLoadoutSlotDidChange_AnyPlayer
@@ -514,37 +513,6 @@ int function LoadoutSlot_GetInteger( EHI playerEHI, LoadoutEntry entry )
 	return entry.minInteger + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM)
 }
 
-array<ItemFlavor> function LoadoutSlot_GetFavorites( EHI playerEHI, LoadoutEntry entry )
-{
-	#if CLIENT || UI 
-		Assert( playerEHI == LocalClientEHI() )
-	#endif
-
-	array<ItemFlavor> items
-	foreach ( key in entry._____INTERNAL_favoritePdefKeys )
-	{
-		#if CLIENT
-			#if CLIENT
-				Assert( playerEHI == LocalClientEHI() )
-			#endif
-			entity player         = FromEHI( playerEHI )
-			int guid = expect int(player.GetPersistentVar( "loadouts." + key ))
-		#endif
-
-		#if UI
-			Assert( playerEHI == LocalClientEHI() )
-			int guid = expect int(GetPersistentVar( "loadouts." + key ))
-		#endif
-
-		if ( guid != 0 )  //
-		{
-			ItemFlavor flav = GetItemFlavorByGUID( guid )
-			items.append( flav )
-		}
-	}
-
-	return items
-}
 
 ItemFlavor function LoadoutSlot_WaitForItemFlavor( EHI playerEHI, LoadoutEntry entry )
 {

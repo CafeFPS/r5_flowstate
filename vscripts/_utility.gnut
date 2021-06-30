@@ -3853,11 +3853,6 @@ float function ShieldModifyDamage( entity ent, var damageInfo )
 			int damageType = DamageInfo_GetCustomDamageType( damageInfo )
 			int attackerEHandle = attacker.GetEncodedEHandle()
 			int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-
-			if ( attacker.IsPlayer() )
-				attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), damageType, shieldDamage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-			if ( ent.IsPlayer() )
-				Remote_CallFunction_Replay( ent, "ServerCallback_TitanTookDamage", shieldDamage, damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, null, false, 0 )
 		}
 		DamageInfo_SetDamage( damageInfo, permanentDamage )
 	}

@@ -20,6 +20,7 @@ global function AddCallback_UpdatePlayerWeaponCosmetics
 #endif
 #if SERVER || CLIENT
 global function WeaponSkin_Apply
+global function WeaponCosmetics_Apply
 #endif
 #if R5DEV && CLIENT
 global function DEV_TestWeaponSkinData
@@ -371,6 +372,11 @@ void function WeaponSkin_Apply( entity ent, ItemFlavor skin )
 
 	ent.SetSkin( skinIndex )
 	ent.SetCamo( camoIndex )
+}
+
+void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, ItemFlavor ornull charmOrNull )
+{
+	// TODO: "WeaponSkin_Apply(...)" has to be replaced for this in the future
 }
 #endif // SERVER || CLIENT
 

@@ -216,10 +216,10 @@ int function ShieldHealthUpdate( entity titan, var damageInfo, bool critHit )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
 		result = int( ShieldModifyDamage( titan, damageInfo ) )
 	}
-	else
-	{
-		TakeAwayFriendlyRodeoPlayerProtection( titan )
-	}
+	// else
+	// {
+	// 	TakeAwayFriendlyRodeoPlayerProtection( titan )
+	// }
 
 	return result
 }

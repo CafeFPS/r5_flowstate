@@ -150,7 +150,6 @@ void function InitWeaponScripts()
 	#if DEVSCRIPTS
 		MpAbilityGibraltarShield_Init()
 		MpWeaponBubbleBunker_Init()
-		MpWeaponEmoteProjector_Init()
 		MpWeaponGrenadeDefensiveBombardment_Init()
 		MpAbilityHuntModeWeapon_Init()
 		MpAbilityAreaSonarScan_Init()
@@ -439,7 +438,6 @@ table function StringToColors( string colorString, string delimiter = " " )
 	return Table
 }
 
-// TODO: Set return type to array<int> when SetColor() accepts this type
 function ColorStringToArray( string colorString )
 {
 	array<string> tokens = split( colorString, " " )
@@ -4756,7 +4754,7 @@ void function PROTO_FadeAlphaOverTimeOnEntityAndChildren( entity parentEnt, floa
 
 	WaitFrame() // todo(dw): aaaaahhh
 
-	array<entity> hierachy = GetEntityAndItsChildren( parentEnt )
+	array<entity> hierachy = GetEntityAndAllChildren( parentEnt )
 	foreach ( entity hierachyEnt in hierachy )
 	{
 		hierachyEnt.kv.rendermode = 4
@@ -4813,11 +4811,11 @@ void function PROTO_FadeAlphaOverTimeOnEntityAndChildren( entity parentEnt, floa
 #endif
 
 
-array<entity> function GetEntityAndItsChildren( entity parentEnt )
+array<entity> function GetEntityAndImmediateChildren( entity parentEnt )
 {
 	array<entity> out = []
 	#if SERVER
-		Assert( false, "NYI" ) // todo(dw)
+	Assert( false, "NYI" ) // todo(dw)
 	#elseif CLIENT
 		Assert( parentEnt.GetCodeClassName() == "dynamicprop" )
 
@@ -4826,6 +4824,28 @@ array<entity> function GetEntityAndItsChildren( entity parentEnt )
 	out.append( parentEnt )
 	return out
 }
+
+
+array<entity> function GetEntityAndAllChildren( entity parentEnt )
+{
+	array<entity> entList = [ parentEnt ]
+	#if SERVER
+	Assert( false, "NYI" ) // todo(dw)
+	#elseif CLIENT
+		int entIdx = 0
+		while ( entIdx < entList.len() )
+		{
+			entity ent = entList[entIdx]
+			Assert( ent.GetCodeClassName() == "dynamicprop" )
+
+			if ( IsValid( ent ) )
+				entList.extend( ent.GetChildren() )
+			entIdx++
+		}
+	#endif
+	return entList
+}
+
 
 void function KnockBackPlayer( entity player, vector pushDir, float scale, float time )
 {

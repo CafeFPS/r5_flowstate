@@ -165,6 +165,8 @@ global struct ClientWeaponStruct
 	float PROTO_lastFireAttemptTime = -1.0
 	float PROTO_lastRandomSpreadUpdate = -1
 	vector PROTO_lastForwardAngle
+
+	bool useRapidHitbeep = false
 }
 
 

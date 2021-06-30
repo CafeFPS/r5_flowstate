@@ -207,8 +207,9 @@ void function CreateHUDRuiTopologies()
 	clGlobal.topoFullscreenHud = CreateFullscreenTopology( true )
 	clGlobal.topoFullscreenHudPermanent = CreateFullscreenTopology( true )
 	clGlobal.topoFullscreenFullMap = CreateFullscreenTopology( true )
+	clGlobal.topFullscreenTargetInfo = CreateFullscreenTopology( true )
 
-	RuiTopology_ShareWithCode( clGlobal.topoFullscreenHudPermanent, RUI_CODE_TOPO_PERMANENT_HUD )
+	RuiTopology_ShareWithCode( clGlobal.topFullscreenTargetInfo, RUI_CODE_TOPO_TARGET_INFO_HUD )
 
 	// titans:
 	{
@@ -221,6 +222,7 @@ void function CreateHUDRuiTopologies()
 	UpdateFullscreenTopology( clGlobal.topoFullscreenHud, true )
 	UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true )
 	UpdateFullscreenTopology( clGlobal.topoFullscreenFullMap, true )
+	UpdateFullscreenTopology( clGlobal.topFullscreenTargetInfo, true )
 }
 
 

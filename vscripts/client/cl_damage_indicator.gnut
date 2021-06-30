@@ -5,8 +5,6 @@ global function Create_DamageIndicatorHUD
 global function GrenadeArrowThink
 global function RumbleForTitanDamage
 
-global function ServerCallback_TitanTookDamage
-global function ServerCallback_PilotTookDamage
 //global function ClientCodeCallback_OnMissileCreation
 global function ClientCodeCallback_CreateGrenadeIndicator
 
@@ -64,92 +62,6 @@ void function ClDamageIndicator_Init()
 
 	if ( !IsLobby() )
 		AddCallback_EntitiesDidLoad( InitDamageArrows )
-}
-
-void function ServerCallback_TitanTookDamage( float damage, float x, float y, float z, int damageType, int damageSourceId, attackerEHandle, int eModId, bool doomedNow, int doomedDamage )
-{
-	expect int( attackerEHandle )
-
-	if ( IsWatchingThirdPersonKillReplay() )
-		return
-
-	if ( DebugVictimClientDamageFeedbackIsEnabled() && (damage > 0.0) )
-	{
-		entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
-		entity localViewPlayer = GetLocalViewPlayer()
-		bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
-		bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
-		bool isCritical = (damageType & DF_CRITICAL) ? true : false
-		//bool isDoomProtected = (damageType & DF_DOOM_PROTECTED) ? true : false
-		bool isDoomFatality = (damageType & DF_DOOM_FATALITY) ? true : false
-
-		//local weaponMods = []
-		//if ( eModId != null && eModId in modNameStrings )
-		//	weaponMods.append( modNameStrings[eModId] )
-
-		string modDesc = (eModId != -1 && eModId in modNameStrings) ? modNameStrings[eModId] : ""
-		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, modDesc, isHeadShot, isKillShot, isCritical, doomedNow, doomedDamage, isDoomProtected, isDoomFatality )
-	}
-
-	// It appears to be faster here to create a new thread so other functions called can wait until the frame ends before running.
-	thread TitanTookDamageThread( damage, x, y, z, damageType, damageSourceId, attackerEHandle, eModId, doomedNow, doomedDamage )
-
-	vector damageOrigin = <x,y,z>
-	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
-
-	foreach ( callback in clGlobal.onLocalPlayerTookDamageCallback )
-		callback( damage, damageOrigin, damageType, damageSourceId, attacker )
-
-	if ( damageSourceId in clGlobal.onLocalPlayerTookDamageTypeCallback )
-	{
-		foreach ( callback in clGlobal.onLocalPlayerTookDamageTypeCallback[ damageSourceId ] )
-			callback( damage, damageOrigin, damageType, damageSourceId, attacker )
-	}
-}
-
-void function TitanTookDamageThread( float damage, x, y, z, int damageType, int damageSourceId, attackerEHandle, eModId, bool doomedNow, int doomedDamage )
-{
-	WaitEndFrame()
-
-	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
-	entity localViewPlayer = GetLocalViewPlayer()
-	entity cockpit = localViewPlayer.GetCockpit()
-
-	if ( cockpit && IsTitanCockpitModelName( cockpit.GetModelName() ) )
-		TitanCockpit_DamageFeedback( localViewPlayer, cockpit, damage, damageType, <x,y,z>, damageSourceId, doomedNow, doomedDamage )
-
-	if ( damage >= DAMAGE_BREAK_MELEE_ASSIST )
-		localViewPlayer.Lunge_ClearTarget()
-
-	array<string> weaponMods
-	if ( eModId != null && eModId in modNameStrings )
-		weaponMods.append( expect string( modNameStrings[ eModId ] ) )
-
-	if ( (damage > 0.0) || doomedDamage )
-	{
-		vector damageOrigin = <x,y,z>
-		DamageHistoryStruct damageHistory = StoreDamageHistoryAndUpdate( localViewPlayer, MAX_DAMAGE_HISTORY_TIME, damage, damageOrigin, damageType, damageSourceId, attacker, weaponMods )
-		DamageIndicators( damageHistory, true )
-	}
-
-	entity soul = localViewPlayer.GetTitanSoul()
-
-	if ( damageType & DF_CRITICAL )
-	{
-		localViewPlayer.Signal( "CriticalHitReceived" )
-		EmitSoundOnEntity( localViewPlayer, "titan_damage_crit_3p_vs_1p" )
-	}
-}
-
-bool function ShouldPlayAutoEjectAnim( entity player, entity titanSoul, bool doomedNow )
-{
-	if ( !titanSoul.IsDoomed() )
-		return false
-
-	if ( player.ContextAction_IsActive() && !player.ContextAction_IsBusy() ) //Some other context action, e.g. melee instead of eject. Then again
-		return false
-
-	return true
 }
 
 string function DevBuildAttackerDesc( entity localViewPlayer, entity ent )
@@ -259,85 +171,6 @@ void function DoDamageFlashForDamageRecieved( entity player, float damage, int d
 
 	float holdTime = GraphCapped( min( damage / 100.0, 1.0 ), 0.0, 1.0, 0.0, 0.25 )
 	ScreenFlash( 2, 2, 2, holdTime, 0.2 )
-}
-
-void function ServerCallback_PilotTookDamage( float damage, float x, float y, float z, int damageType, int damageSourceId, attackerEHandle, int eModId )
-{
-	if ( IsWatchingThirdPersonKillReplay() )
-		return
-
-	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
-	entity localViewPlayer = GetLocalViewPlayer()
-	vector damageOrigin = <x,y,z>
-
-	bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
-	bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
-
-	if ( isHeadShot )
-		PlayVictimHeadshotConfirmation( isKillShot )
-
-	//Jolt view if player is getting meleed
-	//if ( damageSourceId == eDamageSourceId.human_melee )
-	if ( damageType & DF_MELEE )
-	{
-		vector joltDir = Normalize( localViewPlayer.CameraPosition() - damageOrigin )
-		localViewPlayer.CockpitJolt( joltDir * 100.0,  0.25 )
-
-		//clear melee assist when you get meleed
-		localViewPlayer.Lunge_ClearTarget()
-	}
-
-	array<string> weaponMods
-	if ( eModId != -1 && eModId in modNameStrings )
-		weaponMods.append( modNameStrings[ eModId ] )
-
-	if ( DebugVictimClientDamageFeedbackIsEnabled() && !IsWatchingReplay() )
-	{
-		string modDesc = (weaponMods.len() > 0 ? (" +" + weaponMods[0]) : "")
-		bool isCritical = (damageType & DF_CRITICAL) ? true : false
-
-		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, modDesc, isHeadShot, isKillShot, isCritical, false, 0, false, false )
-	}
-
-	RumbleForPilotDamage( damage, damageType, damageSourceId )
-
-	DamageHistoryStruct damageTable = StoreDamageHistoryAndUpdate( localViewPlayer, MAX_DAMAGE_HISTORY_TIME, damage, damageOrigin, damageType, damageSourceId, attacker, weaponMods )
-	DamageIndicators( damageTable, false )
-
-	DoDamageFlashForDamageRecieved( localViewPlayer, damage, damageType, damageSourceId )
-
-	// Circle damage:
-	{
-	if ( damageSourceId == eDamageSourceId.outOfBounds )
-
-		EmitSoundOnEntity( localViewPlayer, "Survival_Circle_ElectricalDamage_1P" )
-	}
-
-/*
-	if ( GetCurrentPlaylistVarBool( "log_damage_to_obituary", false ) )
-	{
-		string logStr
-		string attackerDisplayName = ( !((attacker == null) || (attacker == localViewPlayer)) ) ? GetAttackerDisplayNamesFromClassname( attacker ).attackerName : ""
-		if ( attackerDisplayName.len() == 0 )
-			logStr = format( "Took `3%d`0 damage (%s).", damage, Localize( GetObitFromDamageSourceID( damageSourceId ) ) )
-		else
-			logStr = format( "Hit by `2%s`0 for `3%d`0 damage (%s).", attackerDisplayName, damage, Localize( GetObitFromDamageSourceID( damageSourceId ) ) )
-
-		vector damageNumberColor = (isHeadShot) ? (4.0 * BURN_COLOR) : (1.5 * BURN_COLOR)
-		vector backgroundColor = 0.25 * TEAM_COLOR_ENEMY
-		float backgroundAlpha = 0.5
-		Obituary_Print_Localized( logStr, TEAM_COLOR_YOU, TEAM_COLOR_ENEMY, damageNumberColor, backgroundColor, backgroundAlpha )
-	}
-*/
-
-	foreach ( callback in clGlobal.onLocalPlayerTookDamageCallback )
-		callback( damage, damageOrigin, damageType, damageSourceId, attacker )
-
-	if ( damageSourceId in clGlobal.onLocalPlayerTookDamageTypeCallback )
-	{
-		foreach ( callback in clGlobal.onLocalPlayerTookDamageTypeCallback[ damageSourceId ] )
-			callback( damage, damageOrigin, damageType, damageSourceId, attacker )
-	}
 }
 
 /*

@@ -6,37 +6,37 @@ global function OnWeaponTossPrep_ability_crypto_drone
 #if SERVER
 #endif
 
-global const asset CAMERA_MODEL = $"mdl/props/crypto_drone/crypto_drone.rmdl"
-global const asset CAMERA_RIG = $"mdl/props/editor_ref_camera/editor_ref_camera.rmdl"
-global const asset CAMERA_FX = $"P_drone_contrail"
+// global const asset CAMERA_MODEL            = $"mdl/props/crypto_drone/crypto_drone.rmdl"
+// global const asset CAMERA_RIG              = $"mdl/props/editor_ref_camera/editor_ref_camera.rmdl"
+global const asset CAMERA_FX               = $"P_drone_contrail"
 
-global const asset VISOR_FX_3P = $"P_crypto_visor_ui"
+global const asset VISOR_FX_3P             = $"P_crypto_visor_ui"
 
-const string DRONE_PROPULSION_1P = "Char_11_TacticalA_E"
-const string DRONE_PROPULSION_3P = "Char_11_TacticalA_E_3P"
-const string DRONE_EXPLOSION_3P = "Char_11_TacticalA_F_3p"
-const string DRONE_EXPLOSION_1P = "Char_11_TacticalA_F"
+const string DRONE_PROPULSION_1P           = "Char_11_TacticalA_E"
+const string DRONE_PROPULSION_3P           = "Char_11_TacticalA_E_3P"
+const string DRONE_EXPLOSION_3P            = "Char_11_TacticalA_F_3p"
+const string DRONE_EXPLOSION_1P            = "Char_11_TacticalA_F"
 
-const string DRONE_SCANNING_3P = "Char_11_TacticalA_E2_3p"
+const string DRONE_SCANNING_3P             = "Char_11_TacticalA_E2_3p"
 
-const string TRANSITION_INTO_CAMERA_1P = "Char_11_TacticalA_D"
-const string TRANSITION_OUT_CAMERA_1P = "Char_11_TacticalA_D"
-const string TRANSITION_INTO_CAMERA_3P = "Char_11_TacticalA_D"
-const string TRANSITION_OUT_CAMERA_3P = "Char_11_TacticalA_D"
-const string HACK_SFX_1P = "Coop_AmmoBox_AmmoRefill" //
-const string HACK_SFX_3P = "Coop_AmmoBox_AmmoRefill" //
+const string TRANSITION_INTO_CAMERA_1P     = "Char_11_TacticalA_D"
+const string TRANSITION_OUT_CAMERA_1P      = "Char_11_TacticalA_D"
+const string TRANSITION_INTO_CAMERA_3P     = "Char_11_TacticalA_D"
+const string TRANSITION_OUT_CAMERA_3P      = "Char_11_TacticalA_D"
+const string HACK_SFX_1P                   = "Coop_AmmoBox_AmmoRefill" //
+const string HACK_SFX_3P                   = "Coop_AmmoBox_AmmoRefill" //
 
-const string DRONE_RECALL_1P = "Char_11_TacticalA_A"
-const string DRONE_RECALL_3P = "Char_11_TacticalA_A"
-const string DRONE_RECALL_CRYPTO_3P = "Char_11_TacticalA_A"
+const string DRONE_RECALL_1P               = "Char_11_TacticalA_A"
+const string DRONE_RECALL_3P               = "Char_11_TacticalA_A"
+const string DRONE_RECALL_CRYPTO_3P        = "Char_11_TacticalA_A"
 
-global const float NEUROLINK_RANGE = 1181.1
-global const float MAX_FLIGHT_RANGE = 7913 //
-global const float WARNING_RANGE = 5906 //
-const float DEPLOYABLE_CAMERA_THROW_POWER = 25.0
-const float CAMERA_FLIGHT_SPEED = 450 //
-const CAMERA_EXPLOSION_FX	= $"P_crypto_drone_explosion"
-const CAMERA_MAX_RANGE_SCREEN_FX = $"P_crypto_drone_screen_distort_CP"
+global const float NEUROLINK_RANGE         = 1181.1
+global const float MAX_FLIGHT_RANGE        = 7913 //
+global const float WARNING_RANGE           = 5906 //
+const float DEPLOYABLE_CAMERA_THROW_POWER  = 25.0
+const float CAMERA_FLIGHT_SPEED            = 450 //
+const CAMERA_EXPLOSION_FX                  = $"P_crypto_drone_explosion"
+const CAMERA_MAX_RANGE_SCREEN_FX           = $"P_crypto_drone_screen_distort_CP"
 
 struct
 {
@@ -51,8 +51,8 @@ struct
 
 void function MpAbilityCryptoDrone_Init()
 {
-	PrecacheModel( CAMERA_MODEL )
-	PrecacheModel( CAMERA_RIG )
+	// PrecacheModel( CAMERA_MODEL )
+	// PrecacheModel( CAMERA_RIG )
 	PrecacheParticleSystem( CAMERA_FX )
 	PrecacheParticleSystem( CAMERA_EXPLOSION_FX )
 	PrecacheParticleSystem( CAMERA_MAX_RANGE_SCREEN_FX )

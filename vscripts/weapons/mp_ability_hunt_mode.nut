@@ -49,7 +49,6 @@ void function MpAbilityHuntModeWeapon_OnWeaponTossPrep( entity weapon, WeaponTos
 		thread PlayBattleChatterLineDelayedToSpeakerAndTeam( weaponOwner, "bc_super", 0.1 )
 
 		Embark_Disallow( weaponOwner )
-		Rodeo_RiderDisallow( weaponOwner )
 		DisableMantle( weaponOwner )
 		LockWeaponsAndMelee( weaponOwner )
 
@@ -84,7 +83,6 @@ void function OnWeaponDeactivate_hunt_mode( entity weapon )
 
 	#if SERVER
 		Embark_Allow( weaponOwner )
-		Rodeo_RiderAllow(weaponOwner)
 		EnableMantle(weaponOwner)
 		UnlockWeaponsAndMelee( weaponOwner )
 	#endif //SERVER

@@ -3,15 +3,15 @@ untyped
 global function UIVars_Init
 
 global function GetUIVar
-#if(false)
-
+#if SERVER
+	global function SetUIVar
 #endif
 
 global function ServerCallback_SetUIVar
 global function RegisterUIVarChangeCallback
 
-#if(false)
-
+#if SERVER
+	global function SyncUIVars
 #endif
 
 table _uiVars = {}
@@ -32,7 +32,7 @@ void function UIVars_Init()
 	RegisterUIVar( "privatematch_map", 0 )
 	RegisterUIVar( "privatematch_mode", 0 )
 	RegisterUIVar( "privatematch_starting", 0 )
-	RegisterUIVar( "coopLobbyMap", null ) //
+	RegisterUIVar( "coopLobbyMap", null ) // ePrivateMatchMaps.mp_fracture
 	RegisterUIVar( "createamatch_isPrivate", false )
 	RegisterUIVar( "penalizeDisconnect", true )
 	RegisterUIVar( "rankedPenalizeDisconnect", false )
@@ -56,7 +56,7 @@ void function RegisterUIVar( string varName, value )
 	_uiVars[varName] <- value
 }
 
-//
+// Hooked up in code to .ui
 function GetUIVar( obj, string varName )
 {
 	Assert( varName in _uiVars )
@@ -64,32 +64,32 @@ function GetUIVar( obj, string varName )
 	return _uiVars[varName]
 }
 
-#if(false)
-//
+#if SERVER
+// Hooked up in code to .ui
+void function SetUIVar( table<string,var> obj, string varName, value )
+{
+	Assert( varName in _uiVars )
+	Assert( typeof value != "string" )
 
+	if ( _uiVars[varName] == value )
+		return
 
+	_uiVars[varName] = value
 
+	// Run change callback if one exists
+	thread UIVarChangedCallbacks( varName )
 
+	// Update the var on all clients
+	array<entity> players = GetPlayerArray()
+	foreach ( player in players )
+	{
+		if ( !player.p.clientScriptInitialized )
+			continue
 
-
-
-
-
-
-//
-
-
-//
-
-
-
-
-
-
-
-
-
-#endif //
+		Remote_CallFunction_UI( player, "ServerCallback_SetUIVar", _uiVarHandles[varName], value )
+	}
+}
+#endif // SERVER
 
 function ServerCallback_SetUIVar( varHandle, value )
 {
@@ -114,7 +114,7 @@ void function RegisterUIVarChangeCallback( string varName, callbackFunc )
 
 void function UIVarChangedCallbacks( string varName )
 {
-	//
+	// Run change callback if one exists
 	if ( !( varName in _uiVarChangeCallbacks ) )
 		return
 
@@ -122,12 +122,12 @@ void function UIVarChangedCallbacks( string varName )
 		callbackFunc()
 }
 
-#if(false)
-
-
-
-
-
-
-
+#if SERVER
+void function SyncUIVars( entity player )
+{
+	foreach ( varName, value in _uiVars )
+	{
+		Remote_CallFunction_UI( player, "ServerCallback_SetUIVar", _uiVarHandles[varName], value )
+	}
+}
 #endif

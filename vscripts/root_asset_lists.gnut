@@ -29,9 +29,8 @@ array<asset> function WORKAROUND_GetAllCharacterFlavorAssets()
 	out.append( $"settings/itemflav/character/octane.rpak" )     //
 	out.append( $"settings/itemflav/character/pathfinder.rpak" ) //
 	out.append( $"settings/itemflav/character/wraith.rpak" )     //
-	out.append( $"settings/itemflav/character/crypto.rpak" )     //
 	out.append( $"settings/itemflav/character/wattson.rpak" )    //
-	out.append( $"settings/itemflav/character/future_character_SAID01847866776.rpak" ) //
+	out.append( $"settings/itemflav/character/crypto.rpak" )     //
 	return out
 }
 
@@ -61,10 +60,6 @@ array<asset> function WORKAROUND_GetAllLootMainWeaponFlavorAssets()
 	out.append( $"settings/itemflav/loot/main_weapon/wingman.rpak" )
 	out.append( $"settings/itemflav/loot/main_weapon/energy_ar.rpak" )
 	out.append( $"settings/itemflav/loot/main_weapon/lstar.rpak" )
-
-	out.append( $"settings/itemflav/loot/main_weapon/softball.rpak" )
-	out.append( $"settings/itemflav/loot/main_weapon/volt_smg.rpak" )
-	out.append( $"settings/itemflav/loot/main_weapon/defender.rpak" )
 
 	return out
 }

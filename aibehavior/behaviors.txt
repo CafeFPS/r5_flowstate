@@ -1,3 +1,5 @@
 behavior_dropship
+behavior_dummie_combat
 behavior_frag_drone
+behavior_training_dummy
 behavior_treasure_tick

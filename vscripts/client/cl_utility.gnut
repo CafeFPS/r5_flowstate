@@ -1058,9 +1058,9 @@ bool function ShouldShowWeakpoints( entity ent )
 			return false
 	}
 
-	//Turn off AR if you are rodeoing
-	if ( RodeoState_GetIsPlayerRodeoingVehicle( player, ent ) )
-		return false
+	//Turn off AR if you are in a vehicle
+	//if ( ContextAction_IsInVehicle( player, ent ) )
+	//	return false
 
 	//if ( ent.IsTitan() && GetDoomedState( ent ) )
 	//	return false

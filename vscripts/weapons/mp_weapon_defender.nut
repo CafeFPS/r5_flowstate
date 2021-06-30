@@ -1,48 +1,36 @@
 
 global function MpWeaponDefender_Init
+global function OnWeaponActivate_weapon_defender
+global function OnWeaponSustainedDischargeBegin_Defender
+global function OnWeaponReload_weapon_defender
 
-global function OnWeaponPrimaryAttack_weapon_defender
 
-#if SERVER
-global function OnWeaponNpcPrimaryAttack_weapon_defender
-#endif // #if SERVER
+const asset DEFENDER_FX_RELOAD_1P = $"P_wpn_defender_reload_FP"
+const asset DEFENDER_FX_RELOAD_3P = $"P_wpn_defender_reload"
+
 
 void function MpWeaponDefender_Init()
 {
-	DefenderPrecache()
+	PrecacheParticleSystem( DEFENDER_FX_RELOAD_1P )
+	PrecacheParticleSystem( DEFENDER_FX_RELOAD_3P )
 }
 
-void function DefenderPrecache()
+void function OnWeaponActivate_weapon_defender( entity weapon )
 {
-	PrecacheParticleSystem( $"P_wpn_defender_charge_FP" )
-	PrecacheParticleSystem( $"P_wpn_defender_charge" )
-	PrecacheParticleSystem( $"defender_charge_CH_dlight" )
-
-	PrecacheParticleSystem( $"wpn_muzzleflash_arc_cannon_fp" )
-	PrecacheParticleSystem( $"wpn_muzzleflash_arc_cannon" )
+	#if CLIENT
+		weapon.w.useRapidHitbeep = true
+	#endif //
 }
 
-var function OnWeaponPrimaryAttack_weapon_defender( entity weapon, WeaponPrimaryAttackParams attackParams )
+int function OnWeaponSustainedDischargeBegin_Defender( entity weapon )
 {
-	if ( weapon.GetWeaponChargeFraction() < 1.0 )
-		return 0
-
-	return FireDefender( weapon, attackParams )
+	if ( !IsValid( weapon ) )
+		return 3
+	return weapon.GetWeaponSettingInt( eWeaponVar.ammo_per_shot )
 }
 
-
-#if SERVER
-var function OnWeaponNpcPrimaryAttack_weapon_defender( entity weapon, WeaponPrimaryAttackParams attackParams )
+void function OnWeaponReload_weapon_defender( entity weapon, int milestoneIndex )
 {
-	return FireDefender( weapon, attackParams )
-}
-#endif // #if SERVER
-
-
-int function FireDefender( entity weapon, WeaponPrimaryAttackParams attackParams )
-{
-	weapon.EmitWeaponNpcSound( LOUD_WEAPON_AI_SOUND_RADIUS_MP, 0.2 )
-	weapon.FireWeaponBullet( attackParams.pos, attackParams.dir, 1, DF_GIB | DF_EXPLOSION )
-
-	return 1
+	weapon.PlayWeaponEffect( DEFENDER_FX_RELOAD_1P, DEFENDER_FX_RELOAD_3P, "shell" )
+	weapon.PlayWeaponEffect( DEFENDER_FX_RELOAD_1P, DEFENDER_FX_RELOAD_3P, "shell2" )
 }

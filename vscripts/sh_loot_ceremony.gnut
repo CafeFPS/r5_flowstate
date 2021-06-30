@@ -263,7 +263,7 @@ FileLevelStruct& fileLevel
 #if SERVER
 void function LootBoxCeremony_Init()
 {
-	PrecacheModel( TICK_MODEL_NORMAL )
+	PrecacheModel( TICK_MODEL_DEFAULT )
 	PrecacheModel( CURRENCY_MODEL_COMMON )
 	PrecacheModel( CURRENCY_MODEL_RARE )
 	PrecacheModel( CURRENCY_MODEL_EPIC )
@@ -352,7 +352,7 @@ void function EntitiesDidLoad()
 {
 	entity targetAnimRef = GetEntByScriptName( "target_loot_ceremony_ref" )
 	fileLevel.lootTickMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", targetAnimRef.GetOrigin(), targetAnimRef.GetAngles() )
-	fileLevel.lootTickModel = CreatePropDynamic( TICK_MODEL_NORMAL, fileLevel.lootTickMover.GetOrigin(), fileLevel.lootTickMover.GetAngles() )
+	fileLevel.lootTickModel = CreatePropDynamic( TICK_MODEL_DEFAULT, fileLevel.lootTickMover.GetOrigin(), fileLevel.lootTickMover.GetAngles() )
 
 	// get end positions of triads when they land on the ground, for lighting rig data
 	table< string, table< string, vector > > tickAttachmentOriginsAngles
@@ -784,7 +784,7 @@ void function TickAnimationSequence( int lootTickQuality, bool firstTime )
 		case eQuality.LEGENDARY:
 		case eQuality.HEIRLOOM:
 		default:
-			tickAsset = TICK_MODEL_NORMAL
+			tickAsset = TICK_MODEL_DEFAULT
 	}
 	fileLevel.lootTickModel.SetModel( tickAsset )
 
@@ -1722,7 +1722,7 @@ void function MenuModelHighlightBloomOnEntityAndChildren( entity ent, vector col
 	if ( !IsValid( ent ) )
 		return
 
-	foreach ( entity hierachyEnt in GetEntityAndItsChildren( ent ) )
+	foreach ( entity hierachyEnt in GetEntityAndAllChildren( ent ) )
 		MenuModelHighlightBloom( hierachyEnt, color, intensityScalar, fadeInTime, fadeOutTime, lifeTime )
 }
 #endif

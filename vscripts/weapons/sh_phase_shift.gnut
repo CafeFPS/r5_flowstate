@@ -117,7 +117,6 @@ void function MpAbilityShifter_Init()
 		ColorCorrection_RegisterPhaseShift( SHIFTER_COLORCORRECTION )
 		thread ClientPhaseShiftFirstPersonFXThread()
 
-		thread ClientRemoteTurretFirstPersonFXThread()
 	#endif // #if CLIENT
 
 	PrecacheParticleSystem( SHIFTER_PRE_FX )
@@ -169,7 +168,7 @@ int function PhaseShift( entity ent, float warmupTime, float duration, int shift
 		if ( ( ent.ContextAction_IsActive() || (proxy != null && proxy.Anim_IsActive()) )
 			&& !ent.IsZiplining()
 			&& !ent.ContextAction_IsLeeching()
-			&& !RodeoState_GetIsPlayerRodeoing( ent ))
+			&& !ent.ContextAction_IsInVehicle() )
 		{
 			return 0
 		}
@@ -454,13 +453,13 @@ void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float 
 		if ( proxy != null )
 			proxy.SetForceVisibleInPhaseShift( true )
 
-		if ( RodeoState_GetIsPlayerRodeoing( ent ) )
+		/*if ( RodeoState_GetIsPlayerRodeoing( ent ) ) // RodeoState_GetIsPlayerRodeoing no longer exist in S3
 		{
 			if ( ent.GetParent() != null && ent.GetParent().IsPhaseShifted() )
 				keepAnimActive = true
 			else
 				Rodeo_TriggerRiderRodeoEnd( ent, true )
-		}
+		}*/
 
 		if ( ent.IsTitan() )
 		{
@@ -546,13 +545,13 @@ void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float 
 	{
 		soul = ent.GetTitanSoul()
 		string titanType = GetSoulTitanSubClass( soul )
-		foreach( entity rider in RodeoState_GetPlayersRodeingVehicle( ent ) )
+		/*foreach( entity rider in RodeoState_GetPlayersRodeingVehicle( ent ) ) // RodeoState_GetIsPlayerRodeoing no longer exist in S3
 		{
 			if ( !rider.IsPlayer() )
 				Rodeo_TriggerRiderRodeoEnd( rider, true )
 			else
 				PhaseShift( rider, 0, shiftTime )
-		}
+		}*/
 	}
 
 	switch ( shiftStyle )
@@ -995,54 +994,6 @@ void function ClientPhaseShiftFirstPersonFXThread()
 				ourPlayer = localViewPlayer
 
 				Chroma_PhaseShiftStarting()
-			}
-		}
-
-		WaitFrame()
-	}
-}
-
-void function ClientRemoteTurretFirstPersonFXThread()
-{
-	int effectSparkles
-	int effectScreen
-	bool effectsAreActive = false
-	entity ourPlayer      = null
-
-	const string TURRET_LOOP_SOUND = "Pilot_RemoteTurret_Loop_1P"
-
-	while ( true )
-	{
-		if ( effectsAreActive )
-		{
-			entity localViewPlayer = GetLocalViewPlayer()
-
-			bool needShutdown = false
-			if ( !IsValid( ourPlayer ) || !IsAlive( ourPlayer ) )
-				needShutdown = true
-			else if ( ourPlayer != localViewPlayer )
-				needShutdown = true
-			else if ( ourPlayer.GetRemoteTurret() == null )
-				needShutdown = true
-
-			if ( needShutdown )
-			{
-				if ( IsValid( ourPlayer ) && (ourPlayer == localViewPlayer) )
-					StopSoundOnEntity( ourPlayer, TURRET_LOOP_SOUND )
-
-				effectsAreActive = false
-				ourPlayer = null
-			}
-		}
-
-		if ( !effectsAreActive )
-		{
-			entity localViewPlayer = GetLocalViewPlayer()
-			if ( IsValid( localViewPlayer ) && (localViewPlayer.GetRemoteTurret() != null) )
-			{
-				EmitSoundOnEntity( localViewPlayer, TURRET_LOOP_SOUND )
-				effectsAreActive = true
-				ourPlayer = localViewPlayer
 			}
 		}
 

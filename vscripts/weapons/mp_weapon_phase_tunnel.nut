@@ -337,7 +337,6 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 	weapon.EndSignal( "OnDestroy" )
 
 	Embark_Disallow( player )
-	Rodeo_RiderDisallow(player)
 
 	array mods = player.GetExtraWeaponMods()
 	mods.append( "ult_active" )
@@ -363,7 +362,6 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 			if ( IsValid( player ) )
 			{
 				Embark_Allow( player )
-				Rodeo_RiderAllow(player)
 
 				ForceTacticalEnd( player )
 				if ( player.IsPhaseShifted() )

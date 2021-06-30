@@ -9,6 +9,7 @@ global function GetDefaultIconForCommsAction
 global function GetPingAssetForCommsAction
 global function ShouldMuteCommsActionForCooldown
 global function SetCommsDialogueEnabled
+global function PlaySoundForCommsAction
 #endif // CLIENT
 
 #if SERVER
@@ -30,8 +31,10 @@ global enum eCommsFlags
 	_flagCount = 3
 }
 
-struct CommsAction
+global struct CommsAction
 {
+	int index
+
 	string menuText
 	string shortText
 	string chatText
@@ -46,6 +49,14 @@ struct CommsAction
 
 	asset defaultIcon
 	asset pingAsset
+}
+
+global struct CommsOptions
+{
+	bool isFirstPerson
+	bool isFar
+	bool isUrgent
+	bool pauseQueue
 }
 
 struct
@@ -168,13 +179,6 @@ float function GetPlayerLastSaid( entity player, int actionIndex )
 
 	float result = (Time() - baseline)
 	return result
-}
-
-struct CommsOptions
-{
-	bool isFirstPerson
-	bool isFar
-	bool isUrgent
 }
 
 string function GetSubjectNameForCommsAction( int commsAction, entity subjectEnt )

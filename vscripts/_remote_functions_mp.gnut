@@ -231,8 +231,6 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction( "ServerCallback_DeadHudClearDamageHistory" )
 			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_SURVIVAL_TEMPHACK_InfoCord_UpdateTeammateData" )
 
-			RegisterNetworkedVariable( "playerObservedCount", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, 0 )
-
 			#if CLIENT
 				CLSurvival_RegisterNetworkFunctions()
 				RegisterNetworkedVariableChangeCallback_bool( "playerInPlane", PlayerPlaneStatusChanged )
@@ -283,8 +281,6 @@ void function RemoteFunctions_Init_Begin()
 
 	// IMPORTANT BUT MAYBE FINE AS A REMOTE CALL
 	//Remote_RegisterUntypedFunction_deprecated( "ServerCallback_ReplacementTitanSpawnpoint" )
-	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_TitanTookDamage" ) // should be converted into a code callback... similar to NotifyDidDamage
-	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_PilotTookDamage" ) // should be converted into a code callback... similar to NotifyDidDamage
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_ScreenShake" )
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_UpdateOverheadIconForNPC" )
 

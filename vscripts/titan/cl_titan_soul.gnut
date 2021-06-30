@@ -106,10 +106,10 @@ void function ClientCodeCallback_DoomedStateChanged( entity soul )
 		}
 	}
 
-	if ( RodeoState_GetIsPlayerRodeoingVehicle( localPlayer, titan ) )
+	/*if ( ContextAction_IsInVehicle( localPlayer, titan ) )
 	{
 		localPlayer.Signal( "UpdateRodeoAlert" )
-	}
+	}*/
 }
 
 void function ClientCodeCallback_TitanSoulChanged( entity ent )

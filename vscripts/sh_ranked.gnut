@@ -283,7 +283,7 @@ void function OnRankedPeriodRegistered( ItemFlavor rp )
 void function ShRanked_RegisterNetworkFunctions()
 {
 	RegisterNetworkedVariableChangeCallback_int( "currentRankedScore", OnRankedScoreChanged )
-	RegisterNetworkedVariableChangeCallback_int( "currentRankedLadderPosition", OnRankedLadderPositionChanged )
+	//RegisterNetworkedVariableChangeCallback_int( "currentRankedLadderPosition", OnRankedLadderPositionChanged ) // TODO: ranked needs to be implemented properly
 }
 #endif
 
