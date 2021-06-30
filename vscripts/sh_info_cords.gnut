@@ -8,27 +8,6 @@ global function ClInfoCords_TestEffect
 global function ServerCallback_PROTO_OnInfoCordTargetFiredWeapon
 #endif
 
-///**/// begin bad stuff
-///**/#if SERVER
-///**/global function TEMPHACK_InfoCord_UpdateTeammateClientData
-///**/#endif
-///**/
-///**/#if CLIENT
-///**/global function ServerCallback_SURVIVAL_TEMPHACK_InfoCord_UpdateTeammateData
-///**/global function TEMPHACK_InfoCord_GetTeammateData
-///**/#endif
-///**/
-///**/global enum TEMPHACK_INFOCORD_TEAMMATE_CLIENT_DATA_ACTIVITY_STATES
-///**/{
-//	/**/Idle,
-//	/**/Healing,
-//	/**/BleedingOut,
-//	/**/BeingRevived,
-//	/**/Reviving
-//	/**/}
-///**/// end bad stuff (it will go before ship)
-
-
 #if CLIENT
 struct InfoCordTracerFxState
 {

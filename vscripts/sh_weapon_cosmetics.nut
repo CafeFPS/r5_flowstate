@@ -25,6 +25,10 @@ global function WeaponCosmetics_Apply
 #if R5DEV && CLIENT
 global function DEV_TestWeaponSkinData
 #endif
+#if CLIENT
+global function GetCharmForWeaponEntity
+global function DestroyCharmForWeaponEntity
+#endif
 
 
 //////////////////////
@@ -34,18 +38,21 @@ global function DEV_TestWeaponSkinData
 //////////////////////
 global struct WeaponReactiveKillsData
 {
-	int           killCount
-	string        killSoundEvent1p
-	string        killSoundEvent3p
-	string        persistentSoundEvent1p
-	string        persistentSoundEvent3p
-	float         emissiveIntensity
-	array<asset>  killFX1PList
-	array<asset>  killFX3PList
-	array<string> killFXAttachmentList
-	array<asset>  persistentFX1PList
-	array<asset>  persistentFX3PList
-	array<string> persistentFXAttachmentList
+	int                killCount
+	string             killSoundEvent1p
+	string             killSoundEvent3p
+	string             persistentSoundEvent1p
+	string             persistentSoundEvent3p
+	float              emissiveIntensity
+	array<asset>       killFX1PList
+	array<asset>       killFX3PList
+	array<string>      killFXAttachmentList
+	array<asset>       persistentFX1PList
+	array<asset>       persistentFX3PList
+	array<string>      persistentFXAttachmentList
+	table<string, int> bodygroupSubmodelIdxMap
+	array<string>      weaponModsToAdd
+	array<string>      weaponModsToRemove
 }
 
 
@@ -430,3 +437,35 @@ void function DEV_TestWeaponSkinData()
 	model.Destroy()
 }
 #endif // DEV && CLIENT
+
+#if CLIENT
+entity function GetCharmForWeaponEntity( entity weapEnt )
+{
+	Assert( IsValid( weapEnt ) )
+	Assert( weapEnt.IsClientOnly(), weapEnt + " isn't client only" )
+	Assert( weapEnt.GetCodeClassName() == "dynamicprop", weapEnt + " has classname \"" + weapEnt.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
+
+	entity charmEnt = null
+	if ( weapEnt in fileLevel.menuWeaponCharmEntityMap )
+		charmEnt = fileLevel.menuWeaponCharmEntityMap[weapEnt]
+
+	return charmEnt
+}
+
+void function DestroyCharmForWeaponEntity( entity weapEnt )
+{
+	Assert( IsValid( weapEnt ) )
+	Assert( weapEnt.IsClientOnly(), weapEnt + " isn't client only" )
+	Assert( weapEnt.GetCodeClassName() == "dynamicprop", weapEnt + " has classname \"" + weapEnt.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
+
+	if ( weapEnt in fileLevel.menuWeaponCharmEntityMap )
+	{
+		entity charmEnt = fileLevel.menuWeaponCharmEntityMap[weapEnt]
+		delete fileLevel.menuWeaponCharmEntityMap[weapEnt]
+
+		if ( IsValid( charmEnt ) )
+			charmEnt.Destroy()
+	}
+}
+
+#endif // CLIENT

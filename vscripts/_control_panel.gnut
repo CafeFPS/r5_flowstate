@@ -50,8 +50,8 @@ global struct HackPanelAnims
 //////////////////////////////////////////////////////////////////////
 function ControlPanel_Init()
 {
-	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_mu1") // TODO: This asset does not exist in some maps
-		PrecacheModel( $"mdl/communication/terminal_usable_imc_01.rmdl" )
+	//if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_mu1") // TODO: This asset does not exist in some maps
+	//	PrecacheModel( $"mdl/communication/terminal_usable_imc_01.rmdl" )
 
 	PrecacheParticleSystem( INCOMING_SPAWN_FX )
 

@@ -17,6 +17,7 @@ global function Consumable_CanUseConsumable
 global function Consumable_CreatePotentialHealData
 #if CLIENT
 global function OnCreateChargeEffect_Consumable
+global function OnCreateMuzzleFlashEffect_Consumable
 
 global function Consumable_UseItemByType
 global function Consumable_UseItemByRef
@@ -598,6 +599,24 @@ void function Consumable_DisplayProgressBar( entity player, entity weapon, int c
 	wait raiseTime + chargeTime
 }
 
+void function OnCreateMuzzleFlashEffect_Consumable( entity weapon, int fxHandle )
+{
+	if ( !IsValid( weapon.GetOwner() ) )
+		return
+
+	string modName = GetConsumableModOnWeapon( weapon )
+
+	if ( modName == "health_small" )
+		return
+
+	if ( modName == "health_large" )
+		return
+
+	int armorTier   = EquipmentSlot_GetEquipmentTier( weapon.GetOwner(), "armor" )
+	vector colorVec = GetFXRarityColorForTier( armorTier )
+
+	EffectSetControlPointVector( fxHandle, 2, colorVec )
+}
 
 void function OnCreateChargeEffect_Consumable( entity weapon, int fxHandle )
 {

@@ -312,10 +312,10 @@ void function OnChallengeRegistered( ItemFlavor challenge )
 #if CLIENT
 void function ServerToClient_AssignedChallengesDidChange()
 {
-	InitPlayerChallengesStateFromPersistence( GetLocalClientPlayer(), fileLevel.localPlayerChallengesState )
+	/*InitPlayerChallengesStateFromPersistence( GetLocalClientPlayer(), fileLevel.localPlayerChallengesState )
 	RunUIScript( "ClientToUI_AssignedChallengesDidChange" )
 
-	ServerToClient_ChallengeDataDidChange()
+	ServerToClient_ChallengeDataDidChange()*/ // TODO: FIX this (error while running client script).
 }
 #endif
 

@@ -227,10 +227,6 @@ void function RemoteFunctions_Init_Begin()
 
 			RegisterNetworkedVariable( "playerObservedCount", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, 0 )
 
-			Remote_RegisterClientFunction( "ServerCallback_DeadHudSetDamageHistory", "entity", "int", INT_MIN, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX, "int", 0, INT_MAX )
-			Remote_RegisterClientFunction( "ServerCallback_DeadHudClearDamageHistory" )
-			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_SURVIVAL_TEMPHACK_InfoCord_UpdateTeammateData" )
-
 			#if CLIENT
 				CLSurvival_RegisterNetworkFunctions()
 				RegisterNetworkedVariableChangeCallback_bool( "playerInPlane", PlayerPlaneStatusChanged )

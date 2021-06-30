@@ -1,7 +1,7 @@
-//
+//=========================================================
 // melee attack = regular melee punch/slash/kick/etc
 // synced melee = execution/finisher
-//
+//=========================================================
 
 #if SERVER || CLIENT || UI
 global function MeleeShared_Init
@@ -10,10 +10,10 @@ global function Loadout_MeleeSkin
 global function MeleeSkin_GetMainWeaponClassname
 global function MeleeSkin_GetOffhandWeaponClassname
 global function MeleeSkin_GetMenuModel
+global function MeleeSkin_GetMenuModelRotation
+global function MeleeSkin_GetMenuAnimSeq
 global function MeleeSkin_GetCharacterFlavor
 global function MeleeSkin_GetSortOrdinal
-//global function MeleeSkin_GetWorldModel
-//global function MeleeSkin_GetViewModel
 #endif
 
 
@@ -159,26 +159,6 @@ LoadoutEntry function Loadout_MeleeSkin( ItemFlavor character )
 #endif
 
 
-//#if SERVER || CLIENT || UI
-//asset function MeleeSkin_GetWorldModel( ItemFlavor flavor )
-//{
-//	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
-//
-//	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "worldModel" )
-//}
-//#endif
-//
-//
-//#if SERVER || CLIENT || UI
-//asset function MeleeSkin_GetViewModel( ItemFlavor flavor )
-//{
-//	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
-//
-//	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "viewModel" )
-//}
-//#endif
-
-
 #if SERVER || CLIENT || UI
 string function MeleeSkin_GetMainWeaponClassname( ItemFlavor meleeSkin )
 {
@@ -219,6 +199,24 @@ ItemFlavor function MeleeSkin_GetCharacterFlavor( ItemFlavor character )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+asset function MeleeSkin_GetMenuAnimSeq( ItemFlavor meleeSkin )
+{
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( meleeSkin ), "menuAnimSeq" )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+vector function MeleeSkin_GetMenuModelRotation( ItemFlavor meleeSkin )
+{
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
+
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( meleeSkin ), "menuMdlRot" )
+}
+#endif
 
 #if SERVER || CLIENT
 bool function DoesWeaponTriggerMeleeAttack( entity weapon )

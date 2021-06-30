@@ -13,6 +13,7 @@ global function ItemFlavor_GetGRXMode
 global function ItemFlavor_GetGRXIndex
 global function GRXCurrency_GetCurrencyIndex
 global function GRXCurrency_GetPurchaseSound
+global function GRXCurrency_GetPreviewModel
 global function GRXCurrency_GetRewardIcon
 global function GRXCurrencyBundle_GetValue
 global function GRX_IsInventoryReady
@@ -527,6 +528,14 @@ string function GRXCurrency_GetPurchaseSound( ItemFlavor flav )
 {
 	Assert( ItemFlavor_GetType( flav ) == eItemType.account_currency )
 	return GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "purchaseSound" )
+}
+#endif
+
+#if SERVER || CLIENT || UI
+asset function GRXCurrency_GetPreviewModel( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.account_currency )
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flav ), "previewMdl" )
 }
 #endif
 

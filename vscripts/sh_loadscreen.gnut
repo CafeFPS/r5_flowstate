@@ -7,7 +7,7 @@ global function ShLoadscreen_LevelInit
 global function Loadout_Loadscreen
 global function Loadscreen_GetSortOrdinal
 global function Loadscreen_GetPreviewImageAsset
-global function Loadscreen_GetLoadscreenMaterialAsset
+global function Loadscreen_GetLoadscreenImageAsset
 global function Loadscreen_GetRPakName
 global function Loadscreen_GetImageOverlayText
 
@@ -103,18 +103,18 @@ asset function Loadscreen_GetPreviewImageAsset( ItemFlavor flavor )
 	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "loadscreenImage" )
 }
 
-asset function Loadscreen_GetLoadscreenMaterialAsset( ItemFlavor flavor )
+asset function Loadscreen_GetLoadscreenImageAsset( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
 
-	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "loadscreenMaterial" )
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "loadscreenImage" )
 }
 
 string function Loadscreen_GetRPakName( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
 
-	asset materialAsset         = Loadscreen_GetLoadscreenMaterialAsset( flavor )
+	asset materialAsset         = Loadscreen_GetLoadscreenImageAsset( flavor )
 	array<string> assetStrParts = split( string(materialAsset), "/" )
 	Assert( assetStrParts.len() == 4 ) //
 	Assert( assetStrParts[0] == "material" )
@@ -151,7 +151,7 @@ void function Loadscreen_SetEquppedLoadscreenAsActive()
 void function Loadscreen_SetCustomLoadscreen( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
-	asset image = Loadscreen_GetLoadscreenMaterialAsset( flavor )
+	asset image = Loadscreen_GetLoadscreenImageAsset( flavor )
 
 	SetCustomLoadScreen( image )
 }

@@ -3,6 +3,10 @@ global function OnWeaponTossReleaseAnimEvent_ability_crypto_drone
 global function OnWeaponAttemptOffhandSwitch_ability_crypto_drone
 global function OnWeaponTossPrep_ability_crypto_drone
 
+#if CLIENT
+global function OnClientAnimEvent_ability_crypto_drone
+#endif
+
 #if SERVER
 #endif
 
@@ -75,6 +79,27 @@ void function MpAbilityCryptoDrone_Init()
 }
 
 #if CLIENT
+void function OnClientAnimEvent_ability_crypto_drone( entity weapon, string name )
+{
+	if ( name != "screen_transition" )
+		return
+
+	entity localViewPlayer = GetLocalViewPlayer()
+	if ( !IsValid( localViewPlayer ) )
+		return
+
+	entity weaponOwner = weapon.GetWeaponOwner()
+	if ( weaponOwner != localViewPlayer )
+		return
+
+	thread PlayScreenTransition( weaponOwner, weapon.HasMod( "crypto_has_camera" ) )
+}
+
+void function PlayScreenTransition( entity player, bool playFastTransition )
+{
+	// TODO: implement this: see mp_ability_crypto_drone.nut from the VPK
+}
+
 void function AttemptDroneRecall( entity player )
 {
 	if ( player != GetLocalViewPlayer() || player != GetLocalClientPlayer() )
