@@ -63,7 +63,7 @@ void function OpenPostGameBattlePassMenu( bool firstTime )
 {
 	bool forceFirstTime = false
 
-	##if R5DEV
+	#if R5DEV
 		forceFirstTime = GetBugReproNum() == 100
 	#endif
 

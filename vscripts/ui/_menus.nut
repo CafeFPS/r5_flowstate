@@ -145,7 +145,7 @@ global function OpenXboxPartyApp
 global function OpenXboxHelp
 #endif //
 
-##if R5DEV
+#if R5DEV
 global function OpenDevMenu
 #endif //
 
@@ -490,7 +490,7 @@ void function UICodeCallback_FullyConnected( string levelname )
 
 	InitXPData() //
 
-	##if R5DEV
+	#if R5DEV
 		ShDevUtility_Init()
 	#endif
 	// ShDevWeapons_Init()
@@ -545,7 +545,7 @@ void function UICodeCallback_FullyConnected( string levelname )
 	//
 	//
 
-	##if R5DEV
+	#if R5DEV
 		UpdatePrecachedSPWeapons()
 	#endif
 
@@ -2494,7 +2494,7 @@ void function OpenXboxHelp( var button )
 }
 #endif //
 
-##if R5DEV
+#if R5DEV
 void function OpenDevMenu( var button )
 {
 	AdvanceMenu( GetMenu( "DevMenu" ) )

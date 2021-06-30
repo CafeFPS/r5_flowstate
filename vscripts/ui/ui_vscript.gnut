@@ -373,7 +373,7 @@ void function UICodeCallback_UIInit()
 
 	ShLoadouts_VMInit()
 
-	##if R5DEV
+	#if R5DEV
 		if ( IsFullyConnected() ) //
 		{
 			#if(false)
