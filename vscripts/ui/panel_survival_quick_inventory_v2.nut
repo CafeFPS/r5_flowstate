@@ -584,13 +584,6 @@ ListPanelListDef function GetGroundItemDef( var panel )
 {
 	ListPanelListDef def
 	def.itemCount = file.groundItemCount
-	int headerCount = 0
-	foreach ( isHeader in file.groundItemHeaders )
-	{
-		if( isHeader )
-			headerCount++
-	}
-	def.headerCount = headerCount
 	return def
 }
 

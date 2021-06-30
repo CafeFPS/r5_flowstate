@@ -27,6 +27,7 @@ global function MusicPack_GetLossMusic
 
 global function MusicPack_GetCharacterOrNull
 global function MusicPack_GetPortraitImage
+global function MusicPack_GetPortraitBlend
 #endif
 
 #if SERVER
@@ -258,6 +259,13 @@ asset function MusicPack_GetPortraitImage( ItemFlavor flavor )
 }
 #endif
 
+#if CLIENT || UI
+float function MusicPack_GetPortraitBlend( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
+	return GetGlobalSettingsFloat( ItemFlavor_GetAsset( flavor ), "portraitBlend" )
+}
+#endif
 
 #if SERVER
 #endif

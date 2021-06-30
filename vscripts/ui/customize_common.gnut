@@ -11,13 +11,10 @@ global function CustomizeMenus_GetCollectedString
 global function CustomizeMenus_IsFocusedItem
 global function CustomizeMenus_IsFocusedItemParentItemLocked
 global function CustomizeMenus_IsFocusedItemEquippable
-global function CustomizeMenus_IsFocusedItemFavoriteable
-global function CustomizeMenus_IsFocusedItemFavorite
 global function CustomizeMenus_IsFocusedItemLocked
 global function CustomizeMenus_IsFocusedItemUnlocked
 global function CustomizeMenus_UpdateActionContext
 global function CustomizeMenus_SetActionButton
-global function CustomizeButton_OnMiddleClick
 global function ActionButton_OnClick
 
 global function GetAppropriateLoadoutSlotsForItemFlavor
@@ -203,9 +200,6 @@ void function CustomizeButton_UpdateAndMarkForUpdating( var button,
 	Hud_AddEventHandler( button, UIE_CLICK, CustomizeButton_OnClick )
 	Hud_AddEventHandler( button, UIE_CLICKRIGHT, CustomizeButton_OnRightClick )
 	Hud_AddEventHandler( button, UIE_DOUBLECLICK, CustomizeButton_OnRightOrDoubleClick )
-#if(false)
-
-#endif
 
 	UpdateCustomizeItemButton( cbc, true )
 }
@@ -227,9 +221,6 @@ void function CustomizeButton_UnmarkForUpdating( var button )
 	Hud_RemoveEventHandler( button, UIE_CLICK, CustomizeButton_OnClick )
 	Hud_RemoveEventHandler( button, UIE_CLICKRIGHT, CustomizeButton_OnRightClick )
 	Hud_RemoveEventHandler( button, UIE_DOUBLECLICK, CustomizeButton_OnRightOrDoubleClick )
-#if(false)
-
-#endif
 }
 
 
@@ -281,48 +272,6 @@ bool function CustomizeMenus_IsFocusedItem()
 	return false
 }
 
-bool function CustomizeMenus_IsFocusedItemFavorite()
-{
-	foreach( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
-	{
-		Assert( cbc.loadoutEntries.len() == 1 )
-		LoadoutEntry entry = cbc.loadoutEntries[0]
-		array<ItemFlavor> favs = LoadoutSlot_GetFavorites( LocalClientEHI(), entry )
-
-		if ( Hud_IsFocused( button ) )
-		{
-			if ( favs.contains( cbc.itemFlavor ) )
-				return true
-		}
-	}
-
-	return false
-}
-
-bool function CustomizeMenus_IsFocusedItemFavoriteable()
-{
-	if ( !CustomizeMenus_IsFocusedItemEquippable() )
-		return false
-
-	if ( CustomizeMenus_IsFocusedItemFavorite() )
-		return false
-
-	foreach( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
-	{
-		if ( Hud_IsFocused( button ) )
-		{
-			foreach ( loadoutEntry in cbc.loadoutEntries )
-			{
-				if (cbc.itemFlavor == LoadoutSlot_GetItemFlavor( LocalClientEHI(), loadoutEntry ))
-				{
-					return ( !ItemFlavor_IsTheFavoriteSentinel( ( cbc.itemFlavor ) ) )
-				}
-			}
-		}
-	}
-
-	return true
-}
 
 bool function CustomizeMenus_IsFocusedItemEquippable()
 {
@@ -529,56 +478,6 @@ void function CustomizeButton_OnRightOrDoubleClick( var button )
 	EquipCustomizeButtonItemOrShowSlotPickerDialogOrShowUnlockDialog( cbc )
 }
 
-void function CustomizeButton_OnMiddleClick( var button )
-{
-	CustomizeButtonContext cbc = fileLevel.activeCustomizeButtons[button]
-
-	Assert( cbc.loadoutEntries.len() == 1, "Cannot use favorites with multi select" )
-
-	LoadoutEntry entry = cbc.loadoutEntries[0]
-	if ( entry.maxFavoriteCount == 0 )
-		return
-
-	if ( cbc.itemFlavor == entry.favoriteItemFlavor )
-	{
-		EmitUISound( "UI_Menu_Deny" )
-		return
-	}
-
-	if ( cbc.getItemCanEquipCanBuyStatusFunc != null )
-	{
-		if ( cbc.getItemCanEquipCanBuyStatusFunc( cbc.itemFlavor ) == eItemCanEquipCanBuyStatus.CAN_EQUIP_CAN_BUY
-				|| cbc.getItemCanEquipCanBuyStatusFunc( cbc.itemFlavor ) == eItemCanEquipCanBuyStatus.CAN_EQUIP_CANNOT_BUY )
-		{
-			array<ItemFlavor> favorites = LoadoutSlot_GetFavorites( LocalClientEHI(), entry )
-
-			if ( favorites.contains( cbc.itemFlavor ) )
-			{
-				EmitUISound( "ui_menu_cosmetic_unlock" )
-				RequestClearItemFlavorFavoritesSlot( LocalClientEHI(), entry, favorites.find( cbc.itemFlavor ) )
-			}
-			else
-			{
-				if ( favorites.len() < entry.maxFavoriteCount )
-				{
-					PlayEquipSound( cbc.itemFlavor )
-					RequestSetItemFlavorFavoritesSlot( LocalClientEHI(), entry, cbc.itemFlavor, favorites.len() )
-				}
-				else
-				{
-					EmitUISound( "UI_Menu_Deny" )
-
-					ConfirmDialogData dialogData
-					dialogData.headerText = "#FAVORITES_FULL_TITLE"
-					dialogData.messageText = Localize( "#FAVORITES_FULL_HINT", entry.maxFavoriteCount )
-					//
-
-					OpenOKDialogFromData( dialogData )
-				}
-			}
-		}
-	}
-}
 
 void function PreviewCustomizeButtonItem( CustomizeButtonContext cbc )
 {
@@ -595,16 +494,7 @@ void function PreviewCustomizeButtonItem( CustomizeButtonContext cbc )
 		Hud_SetSelected( b, cbc == cbcIter )
 
 	if ( cbc.previewItemCb != null )
-	{
-		ItemFlavor itemToPreview = cbc.itemFlavor
-		if ( ItemFlavor_IsTheFavoriteSentinel( itemToPreview ) )
-		{
-			Assert( cbc.loadoutEntries.len() == 1, "Cannot use favorites with multi equip menu" )
-			itemToPreview = LoadoutSlot_GetItemFlavor( LocalClientEHI(), cbc.loadoutEntries[0] )
-		}
-
-		cbc.previewItemCb( itemToPreview )
-	}
+		cbc.previewItemCb( cbc.itemFlavor )
 
 	UpdateFooterOptions()
 	CustomizeMenus_UpdateActionContext( cbc.button )
@@ -764,18 +654,6 @@ void function UpdateCustomizeItemButton( CustomizeButtonContext cbc, bool justAd
 		name = Localize( ItemFlavor_GetLongName( cbc.itemFlavor ) )
 	int quality = ItemFlavor_HasQuality( cbc.itemFlavor ) ? ItemFlavor_GetQuality( cbc.itemFlavor ) : 0
 
-	bool isFavorite = false
-
-	#if(false)
-
-
-
-
-
-
-#endif
-
-	RuiSetBool( rui, "isFavorite", isFavorite )
 	RuiSetString( rui, "buttonText", name )
 	RuiSetImage( rui, "buttonImage", ItemFlavor_GetIcon( cbc.itemFlavor ) )
 	RuiSetInt( rui, "quality", quality )

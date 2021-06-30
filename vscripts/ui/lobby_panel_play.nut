@@ -22,6 +22,9 @@ global function CanInvite
 
 global function UpdateMiniPromoPinning
 global function UpdateLootBoxButton
+global function PartyHasEliteAccess
+global function ForceElitePlaylist
+global function ForceNonElitePlaylist
 
 global function ShouldShowMatchmakingDelayDialog
 global function ShowMatchmakingDelayDialog
@@ -53,6 +56,7 @@ global enum ePlaylistState
 	COMPLETED_TRAINING_REQUIRED,
 	PARTY_SIZE_OVER,
 	LOCKED,
+	ELITE_ACCESS_REQUIRED,
 	RANKED_LEVEL_REQUIRED,
 	RANKED_MATCH_ABANDON_DELAY,
 	_COUNT
@@ -66,8 +70,9 @@ const table< int, string > playlistStateMap = {
 	[ ePlaylistState.AVAILABLE ] = "#PLAYLIST_STATE_AVAILABLE",
 	[ ePlaylistState.PARTY_SIZE_OVER ] = "#PLAYLIST_STATE_PARTY_SIZE_OVER",
 	[ ePlaylistState.LOCKED ] = "#PLAYLIST_STATE_LOCKED",
-[ ePlaylistState.RANKED_LEVEL_REQUIRED ] = "#PLAYLIST_STATE_RANKED_LEVEL_REQUIRED",
-[ ePlaylistState.RANKED_MATCH_ABANDON_DELAY ] = "#RANKED_ABANDON_PENALTY_PLAYLIST_STATE"
+	[ ePlaylistState.ELITE_ACCESS_REQUIRED ] = "#PLAYLIST_STATE_ELITE_REQUIRED",
+	[ ePlaylistState.RANKED_LEVEL_REQUIRED ] = "#PLAYLIST_STATE_RANKED_LEVEL_REQUIRED",
+	[ ePlaylistState.RANKED_MATCH_ABANDON_DELAY ] = "#RANKED_ABANDON_PENALTY_PLAYLIST_STATE"
 }
 
 const string PLAYLIST_TRAINING = "survival_training"
@@ -215,6 +220,9 @@ void function InitPlayPanel( var panel )
 	RegisterSignal( "BP_PopupThink" )
 	RegisterSignal( "Lobby_ShowBattlePassPopup" )
 
+	var eliteBadge = Hud_GetChild( file.panel, "EliteBadge" )
+	Hud_AddEventHandler( eliteBadge, UIE_CLICK, OpenEliteIntroMenuNonAnimated )
+
 	var aboutButton = Hud_GetChild( file.panel, "AboutButton" )
 	Hud_AddEventHandler( aboutButton, UIE_CLICK, OpenAboutGameModePage )
 
@@ -234,9 +242,6 @@ bool function IsPlayPanelCurrentlyTopLevel()
 
 void function UpdateLastPlayedPlayerInfo()
 {
-	string oldUid0 = file.lastPlayedPlayerPlatformUid0
-	string oldUid1 = file.lastPlayedPlayerPlatformUid1
-
 	array<string> curPartyMemberUids
 	file.lastPlayedPlayerPlatformUid0 = ""
 	file.lastPlayedPlayerHardware0 = ""
@@ -284,16 +289,6 @@ void function UpdateLastPlayedPlayerInfo()
 			}
 		}
 	}
-
-	if ( file.lastPlayedPlayerPlatformUid0 == oldUid1 )
-	{
-		file.lastPlayedPlayerInviteSentTimestamp0 = file.lastPlayedPlayerInviteSentTimestamp1
-	}
-
-	if ( file.lastPlayedPlayerPlatformUid1 == oldUid0 )
-	{
-		file.lastPlayedPlayerInviteSentTimestamp1 = file.lastPlayedPlayerInviteSentTimestamp0
-	}
 }
 
 
@@ -320,51 +315,18 @@ bool function PlayerIsInMatch( string playerPlatformUid, string playerHardware )
 	return false
 }
 
-void function WatchForLTMModeExpiring( string plName )
-{
-	RegisterSignal( "WatchForLTMModeExpiring" )
-
-	thread function() : (plName)
-	{
-		Signal( uiGlobal.signalDummy, "WatchForLTMModeExpiring" )
-		EndSignal( uiGlobal.signalDummy, "WatchForLTMModeExpiring" )
-		EndSignal( uiGlobal.signalDummy, "LevelShutdown" )
-		EndSignal( uiGlobal.signalDummy, "CleanupInGameMenus" )
-
-		for ( ;; )
-		{
-			WaitFrame()
-
-			int utEndTime = Playlist_GetEndUnixTimeForCurrentScheduleBlock( plName )
-			if ( utEndTime < 0 )
-				return //
-			if ( utEndTime == 0 )
-				break
-		}
-
-		printf( "%s() - Playlist '%s' has expired, so refreshing all.", FUNC_NAME(), plName )
-		if ( AreWeMatchmaking() )
-		{
-			CancelMatchmaking()
-			ClientCommand( "CancelMatchSearch" )
-			EmitUISound( SOUND_STOP_MATCHMAKING_1P )
-			while( AreWeMatchmaking() )
-				WaitFrame()
-		}
-		Lobby_UpdatePlayPanelPlaylists()
-		UpdateLobbyButtons()
-	}()
-}
 
 var function GetModeSelectButton()
 {
 	return file.modeButton
 }
 
+
 var function GetLobbyChatBox()
 {
 	return file.chatBox
 }
+
 
 void function PlayPanel_OnShow( var panel )
 {
@@ -394,6 +356,8 @@ void function PlayPanel_OnShow( var panel )
 
 	UI_SetPresentationType( ePresentationType.PLAY )
 
+	thread TryPopupEliteMessage()
+
 	bool newPlaylistSelect = GamemodeSelectV2_IsEnabled()
 	if ( newPlaylistSelect )
 	{
@@ -404,10 +368,27 @@ void function PlayPanel_OnShow( var panel )
 		Hud_SetNavUp( file.readyButton, file.modeButton )
 	}
 
-	KeepUnixTimeDebugDisplayUpdated()
-
 	thread TryRunDialogFlowThread()
 	thread Lobby_ShowBattlePassPopup()
+}
+
+
+
+void function TryPopupEliteMessage()
+{
+	WaitEndFrame()
+
+	if ( GetActiveMenu() == GetMenu( "LobbyMenu" ) && IsPanelActive( file.panel ) )
+	{
+		if ( GetPersistentVar( "lossForgivenessMessage" ) != eLossForgivenessReason.NONE )
+		{
+			OpenLossForgivenessDialog( GetPersistentVarAsInt( "lossForgivenessMessage" ) )
+		}
+		else if ( GetPersistentVar( "eliteTutorialState" ) == eEliteTutorialState.SHOW_FORGIVENESS )
+		{
+			OpenEliteForgivenessDialog()
+		}
+	}
 }
 
 
@@ -424,41 +405,6 @@ void function UpdateLobbyButtons()
 	UpdatePlaylistBadges()
 }
 
-string function GetDebugTimeString()
-{
-	int utTime = GetUnixTimePST()
-	string timeString = GetDateTimeString( utTime )
-	string dayName = GetDayOfWeekName( GetDayOfWeek( utTime ) )
-	return format( "%s, %s", Localize( dayName ), timeString )
-}
-
-void function KeepUnixTimeDebugDisplayUpdated()
-{
-	RegisterSignal( "KeepFakeDaysDebugDisplayUpdated" )
-
-	thread function() : ()
-	{
-		Signal( uiGlobal.signalDummy, "KeepFakeDaysDebugDisplayUpdated" )
-		EndSignal( uiGlobal.signalDummy, "KeepFakeDaysDebugDisplayUpdated" )
-		EndSignal( uiGlobal.signalDummy, "LevelShutdown" )
-		EndSignal( uiGlobal.signalDummy, "CleanupInGameMenus" )
-
-		var textLabel = Hud_GetChild( file.panel, "LobbyDebugText" )
-
-		int devLevelPrev = -99
-		for ( ;; )
-		{
-			WaitFrame()
-			int devLevel = GetDeveloperLevel()
-			if ( (devLevel == 0) && (devLevel == devLevelPrev) )
-				continue
-
-			string str = ((devLevel == 0) ? "" : GetDebugTimeString())
-			Hud_SetText( textLabel, str )
-			devLevelPrev = devLevel
-		}
-	}()
-}
 
 void function UpdateHDTextureProgress()
 {
@@ -607,8 +553,6 @@ void function Lobby_SetSelectedPlaylist( string playlistName )
 
 	if ( playlistName.len() > 0 )
 		SetMatchmakingPlaylist( playlistName )
-
-	WatchForLTMModeExpiring( playlistName )
 }
 
 
@@ -657,22 +601,21 @@ void function UpdateFriendButton( var rui, PartyMember info, bool inMatch )
 
 	thread KeepMicIconUpdated( info, rui )
 
-	int rankScore      = RANKED_INVALID_RANK_SCORE
-	int ladderPosition = RANKED_INVALID_LADDER_POSITION
+	int rankScore      = 0
+	int ladderPosition = 99999
 
 	CommunityUserInfo ornull userInfo = GetUserInfo( info.hardware, info.uid )
 	if ( userInfo == null )
 	{
 		RuiSetFloat( rui, "accountXPFrac", 0.0 )
-		//
+		RuiSetString( rui, "accountLevel", "" )
 
 		int accountLevel = 0
 		if ( info.uid == GetPlayerUID() && IsPersistenceAvailable() )
 			accountLevel = GetAccountLevelForXP( GetPersistentVarAsInt( "xp" ) )
 
-		//
-		//
-		var nestedAccountBadge = CreateNestedAccountDisplayBadge( rui, "accountBadgeHandle", accountLevel )
+		RuiSetString( rui, "accountLevel", GetAccountDisplayLevel( accountLevel ) )
+		RuiSetImage( rui, "accountBadge", GetAccountDisplayBadge( accountLevel ) )
 
 		if ( info.uid == GetPlayerUID() && IsPersistenceAvailable() )
 			rankScore = GetPlayerRankScore( GetUIPlayer() )
@@ -681,9 +624,8 @@ void function UpdateFriendButton( var rui, PartyMember info, bool inMatch )
 	{
 		expect CommunityUserInfo( userInfo )
 		RuiSetFloat( rui, "accountXPFrac", userInfo.charData[ePlayerStryderCharDataArraySlots.ACCOUNT_PROGRESS_INT] / 100.0 )
-		//
-		//
-		var accountBadge = CreateNestedAccountDisplayBadge( rui, "accountBadgeHandle", userInfo.charData[ePlayerStryderCharDataArraySlots.ACCOUNT_LEVEL] )
+		RuiSetString( rui, "accountLevel", GetAccountDisplayLevel( userInfo.charData[ePlayerStryderCharDataArraySlots.ACCOUNT_LEVEL] ) )
+		RuiSetImage( rui, "accountBadge", GetAccountDisplayBadge( userInfo.charData[ePlayerStryderCharDataArraySlots.ACCOUNT_LEVEL] ) )
 
 		rankScore = userInfo.rankScore
 		ladderPosition = userInfo.rankedLadderPos
@@ -752,7 +694,7 @@ void function UpdateFriendButtons()
 
 			var friendRui = Hud_GetRui( file.selfButton )
 
-				RuiSetBool( friendRui, "canViewStats", true )
+			RuiSetBool( friendRui, "canViewStats", true )
 
 			UpdateFriendButton( friendRui, partyMember, false )
 		}
@@ -834,6 +776,9 @@ void function UpdatePlaylistBadges()
 	var aboutButton         = Hud_GetChild( file.panel, "AboutButton" )
 	Hud_SetVisible( aboutButton, false )
 
+	currentStreak = GetCurrentEliteStreak( GetUIPlayer() )
+	bool shouldShowEliteBadge = IsElitePlaylist( Lobby_GetSelectedPlaylist() )
+
 	bool shouldShowRankedBadge = IsRankedPlaylist( Lobby_GetSelectedPlaylist() )
 
 	var rankedBadge = Hud_GetChild( file.panel, "RankedBadge" )
@@ -848,6 +793,18 @@ void function UpdatePlaylistBadges()
 	{
 		Hud_SetPinSibling( rankedBadge, Hud_GetHudName( file.modeButton ) )
 		Hud_SetPinSibling( aboutButton, Hud_GetHudName( file.modeButton ) )
+	}
+
+	var eliteBadge = Hud_GetChild( file.panel, "EliteBadge" )
+	Hud_SetVisible( eliteBadge, false )
+
+	if ( newPlaylistSelect )
+	{
+		Hud_SetPinSibling( eliteBadge, Hud_GetHudName( file.gamemodeSelectV2Button ) )
+	}
+	else
+	{
+		Hud_SetPinSibling( eliteBadge, Hud_GetHudName( file.modeButton ) )
 	}
 
 	var msgLabel = Hud_GetChild( file.panel, "PlaylistNotificationMessage" )
@@ -901,6 +858,40 @@ void function UpdatePlaylistBadges()
 
 		Hud_SetToolTipData( rankedBadge, tooltip )
 		return
+	}
+
+	if ( shouldShowEliteBadge )
+	{
+		Hud_SetVisible( eliteBadge, shouldShowEliteBadge )
+
+		var rui = Hud_GetRui( eliteBadge )
+
+		RuiSetInt( rui, "streak", currentStreak )
+
+		if ( IsFullyConnected() )
+			RuiSetBool( rui, "eliteForgiveness", expect bool( GetPersistentVar( "hasEliteForgiveness" ) ) )
+
+		int maxStreak = GetMaxEliteStreak( GetUIPlayer() )
+		ToolTipData tooltip
+		tooltip.titleText = Localize( "#ELITE_TOOLTIP_INFO", currentStreak )
+		tooltip.descText = Localize( "#ELITE_TOOLTIP_INFO_2", maxStreak )
+		Hud_SetToolTipData( eliteBadge, tooltip )
+	}
+	else if ( PartyHasEliteAccess() )
+	{
+		bool foundElitePlaylist = false
+
+		foreach ( playlist in GetVisiblePlaylistNames() )
+		{
+			if ( IsElitePlaylist( playlist ) )
+			{
+				foundElitePlaylist = true
+				break
+			}
+		}
+
+		if ( foundElitePlaylist )
+			Hud_SetVisible( msgLabel, true )
 	}
 
 	if ( showLTMAboutButton )
@@ -1115,6 +1106,9 @@ int function Lobby_GetPlaylistState( string playlistName )
 	if ( GetPartySize() > GetMaxTeamSizeForPlaylist( playlistName ) )
 		return ePlaylistState.PARTY_SIZE_OVER
 
+	if ( IsElitePlaylist( playlistName ) && !PartyHasEliteAccess() )
+		return ePlaylistState.ELITE_ACCESS_REQUIRED
+
 	if ( IsRankedPlaylist( playlistName ) )
 	{
 		if ( !PartyHasRankedAccess() )
@@ -1232,21 +1226,6 @@ bool function CanActivateModeButton()
 	return !isReady && isLeader
 }
 
-bool function HasNewModes()
-{
-	bool hasNewModes = false
-	if ( !IsFullyConnected() )
-		return false
-
-	if ( GetCurrentPlaylistVarInt( "gamemodeVersion", 0 ) > GetPersistentVarAsInt( "newModeVersion" ) )
-		return true
-
-	string currentLTM = Playlist_GetLTMSlotPlaylist()
-	if ( (currentLTM != "") && (currentLTM != GetPersistentVar( "lastSeenLobbyLTM" )) )
-		return true
-
-	return false
-}
 
 void function UpdateModeButton()
 {
@@ -1267,7 +1246,11 @@ void function UpdateModeButton()
 	HudElem_SetRuiArg( file.modeButton, "isReady", isReady )
 	HudElem_SetRuiArg( file.gamemodeSelectV2Button, "isReady", isReady )
 
-	bool hasNewModes = HasNewModes()
+	bool hasNewModes = false
+
+	if ( IsFullyConnected() )
+		hasNewModes = GetCurrentPlaylistVarInt( "gamemodeVersion", 0 ) > GetPersistentVarAsInt( "newModeVersion" )
+
 	Hud_SetNew( file.gamemodeSelectV2Button, hasNewModes && (IsTrainingCompleted() || IsExemptFromTraining()) )
 
 	if ( file.wasReady != isReady )
@@ -1996,6 +1979,7 @@ void function Lobby_UpdatePlayPanelPlaylists()
 
 	if ( !IsFullyConnected() )
 		return
+
 	if ( AreWeMatchmaking() )
 		return
 
@@ -2035,8 +2019,83 @@ void function Lobby_UpdatePlayPanelPlaylists()
 			}
 		}
 	}
+
+	if ( PartyHasEliteAccess() )
+	{
+		if ( GetPersistentVar( "shouldForceElitePlaylist" ) )
+			ForceElitePlaylist()
+	}
+	else if ( IsElitePlaylist( file.selectedPlaylist ) )
+	{
+		ForceNonElitePlaylist()
+	}
 }
 
+
+void function ForceElitePlaylist()
+{
+	printt( "ForceElitePlaylist" )
+	foreach ( playlist in file.playlists )
+	{
+		if ( !IsElitePlaylist( playlist ) )
+			continue
+
+		Lobby_SetSelectedPlaylist( playlist )
+		break
+	}
+}
+
+
+void function ForceNonElitePlaylist()
+{
+	printt( "ForceNonElitePlaylist" )
+	foreach ( playlist in file.playlists )
+	{
+		if ( IsElitePlaylist( playlist ) )
+			continue
+
+		Lobby_SetSelectedPlaylist( playlist )
+		break
+	}
+}
+
+
+bool function HasEliteAccess()
+{
+	if ( !IsFullyConnected() )
+		return false
+
+	return GetPersistentVarAsInt( "hasEliteAccess" ) > 0
+}
+
+
+bool function PartyHasEliteAccess()
+{
+	if ( !IsFullyConnected() )
+		return false
+
+	if ( HasEliteAccess() )
+		return true
+
+	if ( GetCurrentPlaylistVarBool( "elite_dev_playtest", false ) )
+		return true
+
+	Party party = GetParty()
+	foreach ( member in party.members )
+	{
+		CommunityUserInfo ornull userInfoOrNull = GetUserInfo( member.hardware, member.uid )
+
+		if ( userInfoOrNull != null )
+		{
+			CommunityUserInfo userInfo = expect CommunityUserInfo(userInfoOrNull)
+
+			if ( userInfo.eliteStreak > 0 )
+				return true
+		}
+	}
+
+	return false
+}
 
 bool function PartyHasRankedAccess()
 {

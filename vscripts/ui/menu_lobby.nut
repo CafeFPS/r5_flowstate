@@ -91,13 +91,6 @@ void function InitLobbyMenu( var newMenuArg )
 	Hud_SetToolTipData( datacenterButton, datacenterTooltip )
 	HudElem_SetRuiArg( datacenterButton, "icon", $"rui/hud/gamestate/net_latency" )
 	Hud_AddEventHandler( datacenterButton, UIE_CLICK, OpenLowPopDialogFromButton )
-
-	PerfInitLabel( 1, "1" )
-	PerfInitLabel( 2, "2" )
-	PerfInitLabel( 3, "3" )
-	PerfInitLabel( 4, "4" )
-	PerfInitLabel( 5, "5" )
-	PerfInitLabel( 6, "6" )
 }
 
 

@@ -297,7 +297,7 @@ void function HoverTanksOnDeathFieldStageChanged( int stage, float nextCircleSta
 	}
 }
 
-#if DEV
+#if R5DEV
 void function Dev_TestHoverTankIntro()
 {
 	FlyHoverTanksIntoPosition( GetAllHoverTanks(), HOVER_TANKS_TYPE_INTRO )

@@ -35,9 +35,6 @@ const table<string, asset> GAMEMODE_IMAGE_MAP = {
 	#if(true)
 		shadow_squad = $"rui/menu/gamemode/shadow_squad",
 	#endif
-	#if(true)
-		winter_express = $"rui/menu/gamemode/winter_express",
-	#endif
 }
 
 const table<string, asset> GAMEMODE_BINK_MAP = {
@@ -54,9 +51,6 @@ const table<string, asset> GAMEMODE_BINK_MAP = {
 	shotguns_and_snipers = $"media/gamemodes/shotguns_and_snipers.bik",
 	#if(true)
 		shadow_squad = $"media/gamemodes/shadow_squad.bik",
-	#endif
-	#if(true)
-		winter_express = $"media/gamemodes/winter_express.bik",
 	#endif
 }
 
@@ -76,10 +70,8 @@ void function GamemodeSelectV2_UpdateSelectButton( var button, string playlistNa
 {
 	var rui = Hud_GetRui( button )
 
-	bool doDebug = (InputIsButtonDown( KEY_LSHIFT ) && InputIsButtonDown( KEY_LCONTROL ))  || (InputIsButtonDown( BUTTON_TRIGGER_LEFT_FULL ) && InputIsButtonDown( BUTTON_SHOULDER_LEFT ))
-	RuiSetString( rui, "modeNameText", GetPlaylistVarString( playlistName, "name", "#PLAYLIST_UNAVAILABLE" ) )
-	RuiSetString( rui, "playlistName", playlistName )
-	RuiSetBool( rui, "doDebug", doDebug )
+	string nameText = GetPlaylistVarString( playlistName, "name", "#PLAYLIST_UNAVAILABLE" )
+	RuiSetString( rui, "modeNameText", nameText )
 
 	string descText = GetPlaylistVarString( playlistName, "description", "#HUD_UNKNOWN" )
 	RuiSetString( rui, "modeDescText", descText )
@@ -241,25 +233,21 @@ void function OnOpenModeSelectDialog()
 		ltm = "",
 	}
 
-	foreach ( string plName in GetVisiblePlaylistNames() )
+	foreach ( string candidatePlaylistName in GetVisiblePlaylistNames() )
 	{
-		string uiSlot = GetPlaylistVarString( plName, "ui_slot", "" )
-		if ( uiSlot == "" )
-			continue
-
-		if ( !(uiSlot in slotToPlaylistNameMap) )
+		string uiSlot = GetPlaylistVarString( candidatePlaylistName, "ui_slot", "" )
+		if ( uiSlot != "" )
 		{
-			Assert( false, format( "Playlist '%s' has invalid value '%s' for 'ui_slot' setting.", plName, uiSlot ) )
-			continue
+			if ( uiSlot in slotToPlaylistNameMap )
+			{
+				if ( slotToPlaylistNameMap[uiSlot] == "" )
+					slotToPlaylistNameMap[uiSlot] = candidatePlaylistName
+				else
+					Warning( "Playlist '%s' and '%s' specify the same 'ui_slot': %s", candidatePlaylistName, slotToPlaylistNameMap[uiSlot], uiSlot )
+			}
+			else
+				Warning( "Playlist '%s' has invalid value for 'ui_slot': %s", candidatePlaylistName, uiSlot )
 		}
-
-		if ( slotToPlaylistNameMap[uiSlot] != "" )
-		{
-			Assert( false, format( "Playlist '%s' and '%s' specify the same 'ui_slot': %s", plName, slotToPlaylistNameMap[uiSlot], uiSlot ) )
-			continue
-		}
-
-		slotToPlaylistNameMap[uiSlot] = plName
 	}
 
 	table<string, var > slotToButtonMap = {
@@ -294,25 +282,12 @@ void function OnOpenModeSelectDialog()
 	float scale = float( GetScreenSize().width ) / 1920.0
 	drawWidth += int( 48 * scale )
 
-	var rui = Hud_GetRui( file.selectionPanel )
-	RuiSetFloat( rui, "drawWidth", (drawWidth / scale) )
+	bool hasLimitedMode = (slotToPlaylistNameMap["ltm"] != "")
+	RuiSetBool( Hud_GetRui( file.selectionPanel ), "hasLimitedMode", hasLimitedMode )
+	RuiSetFloat( Hud_GetRui( file.selectionPanel ), "drawWidth", (drawWidth / scale) )
 	Hud_SetWidth( file.selectionPanel, drawWidth )
-
-	string ltmPlaylist = slotToPlaylistNameMap["ltm"]
-	Assert( ltmPlaylist == Playlist_GetLTMSlotPlaylist() )
-	bool hasLimitedMode = (ltmPlaylist != "")
-	RuiSetBool( rui, "hasLimitedMode", hasLimitedMode )
-	RuiSetGameTime( rui, "ltmExpireTime", RUI_BADGAMETIME )
-	if ( hasLimitedMode )
-	{
-		int expireUnixTime = Playlist_GetEndUnixTimeForCurrentScheduleBlock( ltmPlaylist )
-		if ( expireUnixTime >= 0 )
-		{
-			int remainingDuration = (expireUnixTime - GetUnixTimestamp())
-			RuiSetGameTime( rui, "ltmExpireTime", (Time() + remainingDuration) )
-		}
-	}
 }
+
 
 void function OnCloseModeSelectDialog()
 {

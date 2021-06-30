@@ -284,9 +284,6 @@ void function UpdateToolTipElement( var toolTipElement, var focusElement )
 #if(false)
 
 #endif
-#if(false)
-
-#endif
 			dt.commsPromptDefault = IsControllerModeActive() ? "#PING_PROMPT_REQUEST_AMMO_GAMEPAD" : "#PING_PROMPT_REQUEST_AMMO"
 	}
 

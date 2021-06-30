@@ -216,5 +216,4 @@ bool function ShouldDisplayQuip( ItemFlavor quip, table<ItemFlavor, int> equippe
 
 	return true
 }
-
 #endif

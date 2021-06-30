@@ -32,16 +32,11 @@ void function OnAboutGameModeMenu_Open()
 //
 	RuiSetFloat2( rui, "actualRes", < screenSize.width, screenSize.height, 0 > )
 
-	string playlist = Lobby_GetSelectedPlaylist()
-
-	array<int> emblemColor = GetEmblemColor( playlist )
+	array<int> emblemColor = GetEmblemColor( Lobby_GetSelectedPlaylist() )
 	RuiSetColorAlpha( rui, "emblemColor", SrgbToLinear( <emblemColor[0],emblemColor[1],emblemColor[2]> / 255.0 ), emblemColor[3] / 255.0 )
 
-	asset modeImage = GetModeEmblemImage( playlist )
-	RuiSetImage( rui, "modeImage", modeImage )
-
-	string aboutTitle = GetPlaylistVarString( playlist, "name", "" )
-	string aboutText = GetPlaylistVarString( playlist, "about_text", "" )
+	string aboutTitle = GetPlaylistVarString( Lobby_GetSelectedPlaylist(), "name", "" )
+	string aboutText = GetPlaylistVarString( Lobby_GetSelectedPlaylist(), "about_text", "" )
 	RuiSetString( rui, "aboutTitle", aboutTitle )
 	RuiSetString( rui, "aboutText", aboutText )
 }

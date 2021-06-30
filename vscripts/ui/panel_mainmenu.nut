@@ -548,7 +548,7 @@ void function SetLaunchState( int launchState, string details = "", string promp
 
 	if ( file.statusDetailsVisiblity == true || ( file.statusDetailsVisiblity == false && lastStatusDetailsVisiblity != false ) )
 	{
-		RuiSetBool( file.statusDetails, "ruiVisible", file.statusDetailsVisiblity )
+		RuiSetBool( file.statusDetails, "isVisible", file.statusDetailsVisiblity )
 		RuiSetGameTime( file.statusDetails, "initTime", Time() )
 	}
 

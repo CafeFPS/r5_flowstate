@@ -65,14 +65,6 @@ void function ClientToUI_ShowReportPlayerDialog( string playerName, string playe
 		ver = minint( ver, 1 )
 	#endif
 
-	string buttonText = "#REPORT_OTHER"
-
-	#if(CONSOLE_PROG)
-	if ( friendlyOrEnemy == "friendly" )
-		buttonText = "#REPORT_CHAT"
-	#endif
-	HudElem_SetRuiArg( file.reportOtherButton, "buttonText", buttonText )
-
 	if ( ver == 1 )
 		ShowPlayerProfileCardForUID( file.reportPlayerUID )
 	else if ( ver == 2 )

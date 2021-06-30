@@ -99,7 +99,7 @@ void function PreviewMusicPack( ItemFlavor flav )
 	RuiSetBool( rui, "battlepass", true )
 	RuiSetInt( rui, "rarity", ItemFlavor_GetQuality( flav ) )
 	RuiSetImage( rui, "portraitImage", MusicPack_GetPortraitImage( flav ) )
-	//RuiSetFloat( rui, "portraitBlend", MusicPack_GetPortraitBlend( flav ) )
+	RuiSetFloat( rui, "portraitBlend", MusicPack_GetPortraitBlend( flav ) )
 	RuiSetString( rui, "quipTypeText", "#MUSIC_PACK" )
 	//
 	//

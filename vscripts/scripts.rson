@@ -680,6 +680,7 @@ Scripts:
 	ui/menu_knowledgebase.nut
 	ui/menu_knowledgebase_submenu.nut
 	ui/panel_scoreboard.nut
+	ui/menu_elite_intro.nut
 	ui/menu_gamepad_layout.nut
 	ui/menu_ingame.nut
 	ui/menu_play_video.nut
@@ -711,7 +712,6 @@ Scripts:
 	ui/menu_controls_advanced_look.nut
 	ui/menu_controls_ads_pc.nut
 	ui/menu_controls_ads_console.nut
-	ui/menu_controls_ads_advanced_console.nut
 	ui/panel_controls_pc.nut
 	ui/panel_controls_gamepad.nut
 	ui/panel_video.nut
@@ -721,17 +721,18 @@ Scripts:
 
 	ui/menu_customize_character.nut
 	ui/panel_character_skins.nut
+	ui/panel_character_banners.nut
 	ui/panel_character_banners_v2.nut
 	ui/panel_character_executions.nut
 	ui/panel_music_pack.nut
 	ui/panel_skydive_trail.nut
 	ui/panel_character_quips.nut
 	ui/panel_character_emotes.nut
-	ui/panel_character_emotes_old.nut
 	ui/panel_equippable_quips.nut
-	ui/panel_equippable_quips_v2.nut
+	ui/panel_banner_badges.nut
 	ui/panel_banner_frames.nut
 	ui/panel_banner_poses.nut
+	ui/panel_banner_trackers.nut
 	ui/panel_banner_badges_v2.nut
 	ui/panel_banner_trackers_v2.nut
 	ui/panel_quip_intro.nut

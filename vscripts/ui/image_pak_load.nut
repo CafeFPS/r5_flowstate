@@ -7,14 +7,11 @@ global function ClientCodeCallback_OnRpakDownloadFailed
 
 #if UI
 global function GetDownloadedImageAsset
-global function IsImagePakLoading
-global function DidImagePakLoadFail
 global function UISetRpakLoadStatus
-global function ImagePakLoad_OnLevelShutdown
 #endif
 
-#if CLIENT
-global function UIScriptResetCallback_ImagePakLoad
+#if R5DEV && CLIENT 
+global function DEV_CopyRpakLoadStatuses
 #endif
 
 #if CLIENT || UI 
@@ -66,16 +63,10 @@ struct
 void function ClImagePakLoadInit()
 {
 	RegisterSignal( "RequestDownloadedImagePakLoad" )
-	file.pakLoadStatuses.clear()
 
-	AddCallback_UIScriptReset( UIScriptResetCallback_ImagePakLoad )
-}
+#if R5DEV
+	AddCallback_UIScriptReset( DEV_CopyRpakLoadStatuses )
 #endif
-
-#if UI
-void function ImagePakLoad_OnLevelShutdown()
-{
-	file.pakLoadStatuses.clear()
 }
 #endif
 
@@ -128,31 +119,10 @@ asset function GetDownloadedImageAsset( string rpakName, string imageName, int d
 	else
 	{
 	#if UI
-		if( CanRunClientScript() )
-			RunClientScript( "RequestDownloadedImagePakLoad", rpakName, dlType, imageElem, imageName )
+		RunClientScript( "RequestDownloadedImagePakLoad", rpakName, dlType, imageElem, imageName )
 	#endif
 	}
 	return image
-}
-#endif
-
-#if UI
-bool function IsImagePakLoading( string rpakName )
-{
-	if( rpakName in file.pakLoadStatuses )
-		return file.pakLoadStatuses[rpakName] == eImagePakLoadStatus.LOAD_REQUESTED || file.pakLoadStatuses[rpakName] == eImagePakLoadStatus.LOAD_DEFERRED
-
-	return false
-}
-#endif
-
-#if UI
-bool function DidImagePakLoadFail( string rpakName )
-{
-	if( rpakName in file.pakLoadStatuses )
-		return file.pakLoadStatuses[rpakName] == eImagePakLoadStatus.LOAD_FAILED
-
-	return false
 }
 #endif
 
@@ -173,17 +143,12 @@ void function SetRpakLoadStatus( string rpakName, int status )
 }
 #endif
 
-#if CLIENT
-//
-void function UIScriptResetCallback_ImagePakLoad()
+#if R5DEV && CLIENT 
+void function DEV_CopyRpakLoadStatuses()
 {
 	//
 	foreach( rpakName, status in file.pakLoadStatuses )
 		RunUIScript( "UISetRpakLoadStatus", rpakName, status )
-
-	//
-	foreach( req in file.activePakLoadReqs )
-		req.imageElem = null
 }
 #endif
 
@@ -193,9 +158,9 @@ void function ClientCodeCallback_OnRpakDownloadComplete()
 	for( int i = file.deferredPakLoadReqs.len() - 1; i >= 0; i-- )
 	{
 		sImagePakLoadRequest imgLoadRequest = file.deferredPakLoadReqs[i]
-		int fileDownloadStatus = GetFileDownloadStatus( imgLoadRequest.rpakName )
+		bool isReadyForPakLoad = IsDownloadedFileReadyForPakLoad( imgLoadRequest.rpakName )
 
-		if ( fileDownloadStatus == ASSET_DOWNLOAD_STATUS_UP_TO_DATE )
+		if ( isReadyForPakLoad )
 		{
 			printt( "IMG_DL Load for", imgLoadRequest.rpakName, "was initially deferred, but the file is now downloaded and ready for pak load." )
 			file.activePakLoadReqs.append( imgLoadRequest )
@@ -285,14 +250,9 @@ void function RequestDownloadedImagePakLoad( string rpakName, int pakType, var i
 	imgReq.rpakName = rpakName
 	imgReq.pakType = pakType
 
-	int fileDownloadStatus = GetFileDownloadStatus( rpakName )
+	bool isReadyForPakLoad = IsDownloadedFileReadyForPakLoad( rpakName )
 
-	if( fileDownloadStatus == ASSET_DOWNLOAD_STATUS_FAILED )
-	{
-		SetRpakLoadStatus( rpakName, eImagePakLoadStatus.LOAD_FAILED )
-		return
-	}
-	else if( fileDownloadStatus == ASSET_DOWNLOAD_STATUS_UP_TO_DATE )
+	if( isReadyForPakLoad )
 	{
 		file.activePakLoadReqs.append( imgReq )
 		thread RequestDownloadedImagePakLoad_Internal( rpakName, pakType, imageElem, imageRef )

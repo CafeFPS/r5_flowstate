@@ -30,12 +30,6 @@ void function InitCharacterSkinsPanel( var panel )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_EQUIP", "#X_BUTTON_EQUIP", null, CustomizeMenus_IsFocusedItemEquippable )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_STICK_LEFT, false, "#MENU_ZOOM_CONTROLS_GAMEPAD", "#MENU_ZOOM_CONTROLS" )
-
-	#if(false)
-
-
-#endif
-
 	//
 	//
 	//
@@ -305,14 +299,4 @@ bool function ShouldDisplayCharacterSkin( ItemFlavor characterSkin )
 	}
 
 	return true
-}
-
-void function SetOrClearFavoriteFromFocus( var button )
-{
-	var focus = GetFocus()
-
-	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
-
-	if ( Hud_GetParent( focus ) == scrollPanel )
-		CustomizeButton_OnMiddleClick( focus )
 }

@@ -148,7 +148,6 @@ void function SelectSlotDialog_OnOpen()
 	file.badgeMode = false
 
 	bool useShortButtons = false
-
 	if ( file.loadoutEntries.len() > 0 )
 	{
 		ItemFlavor flavor = LoadoutSlot_GetItemFlavor( LocalClientEHI(), file.loadoutEntries[ 0 ] )

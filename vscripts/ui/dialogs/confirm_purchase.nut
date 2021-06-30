@@ -349,7 +349,6 @@ void function UpdatePurchaseDialog()
 
 	int quality        = eQuality.COMMON
 	string messageText = "#PURCHASE"
-	string prereqText = ""
 	string devDesc
 
 	if ( file.state.cfg.messageOverride != null )
@@ -396,7 +395,6 @@ void function UpdatePurchaseDialog()
 		devDesc = DEV_GRX_DescribeOffer( offer )
 
 		messageText = offer.titleText
-		prereqText = offer.prereqText
 
 		quality = eQuality.COMMON
 		foreach ( ItemFlavor outputFlav in offer.output.flavors )
@@ -409,7 +407,6 @@ void function UpdatePurchaseDialog()
 	HudElem_SetRuiArg( file.dialogContent, "quantity", file.state.cfg.quantity )
 	HudElem_SetRuiArg( file.dialogContent, "headerText", "#CONFIRM_PURCHASE_HEADER" )
 	HudElem_SetRuiArg( file.dialogContent, "messageText", messageText )
-	HudElem_SetRuiArg( file.dialogContent, "reqsText", prereqText )
 
 	UpdateProcessingElements()
 

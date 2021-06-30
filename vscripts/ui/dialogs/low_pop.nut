@@ -63,7 +63,30 @@ void function InitLowPopDialog( var newMenuArg ) //
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnLowPopMenuOpen )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnLowPopMenuClose )
+
+	#if R5DEV
+	GenerateFakeDatacenter( "australia", 150 , 300 )
+	GenerateFakeDatacenter( "japan", 150 , 100 )
+	GenerateFakeDatacenter( "west us", 200 , 50 )
+	GenerateFakeDatacenter( "east us", 350 , 50 )
+	GenerateFakeDatacenter( "europe", 500 , 90 )
+	#endif
 }
+
+#if R5DEV
+void function GenerateFakeDatacenter( string name, int latency, int etaSeconds )
+{
+	MatchmakingDatacenterETA fakeData
+	fakeData.datacenterIdx = file.fakeDatacenters.len()
+	fakeData.datacenterName = name
+	fakeData.idealStartUTC = GetUnixTimestamp() + 15000
+	fakeData.idealStartUTC = fakeData.idealStartUTC + 1200
+	fakeData.latency = latency
+	fakeData.etaSeconds = etaSeconds
+	UpdateMatchmakingDatacenterETASeconds( fakeData )
+	file.fakeDatacenters.append( fakeData )
+}
+#endif
 
 void function GetLowPopDatacenters( string playlistName )
 {
@@ -259,6 +282,9 @@ bool function ShouldShowLowPopDialog( string playlist )
 
 bool function IsLowPopPlaylist( string playlist )
 {
+	if ( IsElitePlaylist( playlist ) )
+		return true
+
 	if ( IsRankedPlaylist( playlist ) )
 		return true
 
