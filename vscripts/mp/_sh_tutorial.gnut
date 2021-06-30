@@ -307,7 +307,7 @@ void function InitPlayerTutorialContextHistory( entity player, bool forceReset =
 
 void function ResetPlayerTutorialContext( entity player, int tutorialContext )
 {
-	player.SetPersistentVar( "tutorialActionCount[" + tutorialContext + "]", 0 )
+	//player.SetPersistentVar( "tutorialActionCount[" + tutorialContext + "]", 0 ) // TODO: Add persistence var
 }
 
 
@@ -319,7 +319,7 @@ bool function WasTutorialContextCompleted( entity player, int tutorialContext )
 
 bool function IsTutorialContextCompleted( entity player, int tutorialContext )
 {
-	array<InputHint> inputHints = file.contextInputHintMap[tutorialContext]
+	/*array<InputHint> inputHints = file.contextInputHintMap[tutorialContext]
 
 	int contextBitField = player.GetPersistentVarAsInt( "tutorialActionCount[" + tutorialContext + "]" )
 
@@ -329,7 +329,7 @@ bool function IsTutorialContextCompleted( entity player, int tutorialContext )
 			continue
 
 		return false
-	}
+	}*/
 
 	return true
 }
@@ -337,7 +337,7 @@ bool function IsTutorialContextCompleted( entity player, int tutorialContext )
 
 void function SetTutorialInputCompleted( entity player, InputHint completedHint )
 {
-	array<InputHint> inputHints = file.contextInputHintMap[completedHint.context]
+	/*array<InputHint> inputHints = file.contextInputHintMap[completedHint.context]
 
 	int contextBitField = player.GetPersistentVarAsInt( "tutorialActionCount[" + completedHint.context + "]" )
 
@@ -349,7 +349,7 @@ void function SetTutorialInputCompleted( entity player, InputHint completedHint 
 		contextBitField = contextBitField | (1 << bitIndex)
 		player.SetPersistentVar( "tutorialActionCount[" + completedHint.context + "]", contextBitField )
 		break
-	}
+	}*/ // TODO: [SERVER] Persistent data not available for client #0
 }
 
 
@@ -366,7 +366,7 @@ void function UpdateActionCount( entity player, InputHint inputHint )
 
 #elseif CLIENT
 void function OnLocalClientConnected( entity player )
-{
+{/*
 	int usedIndices = 0
 	foreach ( index, inputHint in file.inputHints )
 	{
@@ -379,7 +379,7 @@ void function OnLocalClientConnected( entity player )
 			inputHint.rui = hintRui
 			usedIndices++
 		}
-	}
+	}*/
 }
 
 

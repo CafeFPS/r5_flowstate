@@ -112,7 +112,7 @@ FileStruct_LifetimeLevel& fileLevel
 void function ShEHI_LevelInit_Begin()
 {
 	#if CLIENT || UI
-		RegisterSignal( "LocalClientEHI" )
+		RegisterSignal( "OnLocalClientEHIValid" )
 		RegisterSignal( "EHISignalDummyCreated" )
 	#endif
 
@@ -429,9 +429,9 @@ EHI function WaitForLocalClientEHI()
 	while ( fileLevel.localClientEHI == EHI_null )
 	{
 		#if CLIENT
-			WaitSignal( clGlobal.signalDummy, "LocalClientEHI" )
+			WaitSignal( clGlobal.signalDummy, "OnLocalClientEHIValid" )
 		#elseif UI
-			WaitSignal( uiGlobal.signalDummy, "LocalClientEHI" )
+			WaitSignal( uiGlobal.signalDummy, "OnLocalClientEHIValid" )
 		#endif
 	}
 	return fileLevel.localClientEHI
@@ -496,7 +496,7 @@ void function ShEHI_OnPlayerCreated( entity ent )
 		if ( fileLevel.localClientEHI == EHI_null && ehiss.isLocalClientPlayer )
 		{
 			fileLevel.localClientEHI = ehi
-			Signal( clGlobal.signalDummy, "LocalClientEHI" )
+			Signal( clGlobal.signalDummy, "OnLocalClientEHIValid" )
 		}
 
 		Signal( fileLevel.signalDummy, "EHISignalDummyCreated" )
@@ -541,12 +541,12 @@ void function ClientToUI_OnPlayerCreatedOrUpdated( EHI ehi,
 	if ( isLocalClientPlayer )
 	{
 		fileLevel.localClientEHI = ehi
-		Signal( uiGlobal.signalDummy, "LocalClientEHI" )
+		Signal( uiGlobal.signalDummy, "OnLocalClientEHIValid" )
 	}
 
 	Signal( fileLevel.signalDummy, "EHISignalDummyCreated" )
 
-	// callbacks
+	//
 	ShLoadouts_OnPlayerEHICreated( ehi )
 }
 #endif

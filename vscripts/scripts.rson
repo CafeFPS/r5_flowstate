@@ -310,7 +310,6 @@ Scripts:
 	conversation/sh_survival_commentary.gnut
 
 	mp/sh_game_state_dialog.nut
-	mp/sh_quickchat.gnut
 	mp/sh_comms_menu.nut
 	sh_mp_utility.gnut
 	sh_score.gnut
@@ -323,16 +322,19 @@ Scripts:
 When: "SERVER || CLIENT || UI"
 Scripts:
 [
+	mp/sh_quickchat.gnut
+	
 	melee/sh_melee.gnut
 	melee/sh_melee_synced.gnut
 	gamemodes/sh_gamemode_survival.nut
+
+	sh_ping.gnut
 ]
 
 When: "SERVER || CLIENT"
 Scripts:
 [
 	weapons/mp_ability_gibraltar_shield.nut
-	sh_ping.gnut
 
 	weapons/mp_ability_consumable.nut
 

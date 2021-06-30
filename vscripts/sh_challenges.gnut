@@ -280,7 +280,7 @@ void function ShChallenges_LevelInit_PostStats()
 	}
 
 	#if UI
-		ClientToUI_ChallengeDataDidChange() //
+		//ClientToUI_ChallengeDataDidChange() // TODO: FIX
 	#endif
 }
 #endif
@@ -331,7 +331,7 @@ void function ClientToUI_AssignedChallengesDidChange()
 #if CLIENT
 void function ServerToClient_ChallengeDataDidChange()
 {
-	RunUIScript( "ClientToUI_ChallengeDataDidChange" )
+	//RunUIScript( "ClientToUI_ChallengeDataDidChange" ) // TODO: FIX
 }
 #endif
 
@@ -780,7 +780,7 @@ bool function UpdateChallengeBoxRows( int rowCount, var mainRUI, array<var> butt
 				RuiSetString( rui, "challengeText" + suffix, "" )
 				RuiSetInt( rui, "challengeProgress" + suffix, 0 )
 				RuiSetInt( rui, "challengeGoal" + suffix, 0 )
-				RuiSetString( rui, "xpRewardString" + suffix, "" )
+				//RuiSetString( rui, "xpRewardString" + suffix, "" )
 				RuiSetInt( rui, "bpLevelsAwarded" + suffix, 0 )
 				RuiSetInt( rui, "tierCount" + suffix, 1 )
 				RuiSetInt( rui, "activeTier" + suffix, 0 )

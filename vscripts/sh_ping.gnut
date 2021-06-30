@@ -423,7 +423,7 @@ bool function ConsiderPingTraceFailed( TraceResults tr )
 	return false
 }
 
-
+#if SERVER || CLIENT
 PingTraceResults function DoPingTrace( entity player )
 {
 	const int colGroup = TRACE_COLLISION_GROUP_NONE
@@ -455,6 +455,7 @@ PingTraceResults function DoPingTrace( entity player )
 
 	return result
 }
+#endif
 ///////////////////////////
 
 asset function PingFlavor_GetInnerIcon( ItemFlavor flavor )
@@ -582,6 +583,7 @@ vector function PingFlavor_GetColor( ItemFlavor flavor, int optionalParam = -1 )
 }
 #endif
 
+#if SERVER || CLIENT
 int function GetCommsActionForOwnerAnnounce( entity player, entity wp )
 {
 	int pingType = Waypoint_GetPingTypeForWaypoint( wp )
@@ -692,6 +694,7 @@ ReplyCommsActionInfo function Ping_GetCommsActionForWaypointReply( entity player
 
 	return result
 }
+#endif
 
 struct PingCommandParams
 {
@@ -1310,7 +1313,7 @@ bool function IsDoorScriptName( string scriptName )
 	return false
 }
 
-
+#if SERVER || CLIENT
 entity function GetDoorForHitEnt( entity hitEnt )
 {
 	if ( IsDoorScriptName( hitEnt.GetScriptName() ) )
@@ -1322,6 +1325,7 @@ entity function GetDoorForHitEnt( entity hitEnt )
 
 	return null
 }
+
 
 ////
 bool function IsTrapName( string scriptName )
@@ -1772,7 +1776,7 @@ int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
 
 	return eCommsAction.PING_ENEMY_SPOTTED_SPECIFIC
 }
-
+#endif
 #if CLIENT
 void function DoPlayerDefaultPingForLootEntity( entity player, entity lootEnt )
 {

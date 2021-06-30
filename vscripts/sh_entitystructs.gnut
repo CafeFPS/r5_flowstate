@@ -1,5 +1,3 @@
-//
-
 
 /////////////
 /////////////
@@ -30,15 +28,13 @@ global struct EHIScriptStruct
 	EHI ehi
 
 	// general cached data
-	bool isPlayer = false
-	bool isConnected = false
-	int  team = TEAM_INVALID
-	int  teamMemberIndex
-	int  rankScore
-	int  rankedLadderPosition
+	bool isPlayer              = false
+	bool isConnected           = false
+	int  team                  = TEAM_INVALID
+	int  teamMemberIndex       = 0
+	string name                = ""
 	#if CLIENT || UI
 		bool   isLocalClientPlayer = false
-		string name = ""
 	#endif
 
 	// loadouts
@@ -61,6 +57,9 @@ global struct EHIScriptStruct
 	#if SERVER
 		int kills = 0
 	#endif
+
+	int rankScore            = 0
+	int rankedLadderPosition = 9999
 }
 #endif
 
@@ -70,6 +69,3 @@ global typedef EHISignalDummy entity
 #elseif CLIENT || UI
 global typedef EHISignalDummy EHIScriptStruct
 #endif
-
-
-
