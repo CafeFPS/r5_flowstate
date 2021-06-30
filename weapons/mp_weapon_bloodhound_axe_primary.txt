@@ -1,0 +1,29 @@
+#base "mp_weapon_melee_survival.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"MELEE_SKIN_BLOODHOUND_AXE_NAME"
+	"shortprintname"								"MELEE_SKIN_BLOODHOUND_AXE_NAME"
+	"description" 									"MELEE_SKIN_BLOODHOUND_AXE_NAME"
+	"longdesc"										"MELEE_SKIN_BLOODHOUND_AXE_NAME"
+
+	"weapon_type_flags"								"WPT_MELEE"
+	
+    // UI/HUD
+	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
+	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/bloodhound_axe/ptpov_bloodhound_axe.rmdl"
+	"playermodel" 									"mdl/weapons/bloodhound_axe/w_bloodhound_axe.rmdl"
+
+	"OnWeaponActivate"								"OnWeaponActivate_weapon_bloodhound_axe_primary"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_bloodhound_axe_primary"
+
+	"dof_nearDepthStart"							"0.5"
+	"dof_nearDepthEnd"							    "6.4"
+
+	// Behavior
+	"deployfirst_time"								"2.3"  //"1.25"
+}
