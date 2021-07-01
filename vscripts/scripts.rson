@@ -351,6 +351,8 @@ Scripts:
     mp/sh_supply_ship.gnut
 
 	sh_loot_vault_panel.nut
+	mp/sh_loot_drones.nut
+	mp/sh_loot_rollers.nut
 
 	_ultimates.gnut
 	sh_survival_persistentdamagelayer.gnut
