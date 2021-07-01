@@ -1,4 +1,6 @@
-//
+//=========================================================
+//	sh_melee_synced.gnut
+//=========================================================
 
 #if SERVER || CLIENT || UI
 global function MeleeSyncedShared_Init
@@ -18,6 +20,10 @@ global function TryStartSyncedMelee
 global function CodeCallback_IsValidMeleeExecutionTarget
 #endif
 
+#if CLIENT
+global function ServerCallback_WatchForSyncedMeleeCancelPeriod
+global function ServerCallback_SyncedMeleeDone
+#endif
 
 
 ////////////////
@@ -25,23 +31,23 @@ global function CodeCallback_IsValidMeleeExecutionTarget
 //// Consts ////
 ////////////////
 ////////////////
-const float SYNCED_MELEE_MAX_HEIGHT_DIFFERENCE = 30.0
+const float SYNCED_MELEE_MAX_HEIGHT_DIFFERENCE          = 30.0
 
-const float SYNCED_MELEE_ANIMATION_BLEND_TIME = 0.5
-const float SYNCED_MELEE_CAMERA_BLEND_IN_TIME = 0.0
-const float SYNCED_MELEE_CAMERA_BLEND_OUT_TIME = 0.0
+const float SYNCED_MELEE_ANIMATION_BLEND_TIME           = 0.5
+const float SYNCED_MELEE_CAMERA_BLEND_IN_TIME           = 0.0
+const float SYNCED_MELEE_CAMERA_BLEND_OUT_TIME          = 0.0
 
 // attacker, going for an off white flash frame at start of execution
-const vector SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL = <224, 224, 224>
-const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_ALPHA = 255
+const vector SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL      = <224, 224, 224>
+const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_ALPHA     = 255
 const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_TIME = 0.15
 const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_HOLD = 0.1
 
 // victim, going for red flash frame at start of execution
-const vector SYNCED_MELEE_TARGET_SCREEN_FADE_COL = <173, 15, 15>
-const float SYNCED_MELEE_TARGET_SCREEN_FADE_ALPHA = 255
-const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_TIME = 0.15
-const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_HOLD = 0.1
+const vector SYNCED_MELEE_TARGET_SCREEN_FADE_COL        = <173, 15, 15>
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_ALPHA       = 255
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_TIME   = 0.15
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_HOLD   = 0.1
 
 
 /////////////////////////
@@ -206,6 +212,40 @@ bool function CodeCallback_IsValidMeleeExecutionTarget( entity attacker, entity 
 }
 #endif
 
+#if CLIENT
+void function ServerCallback_WatchForSyncedMeleeCancelPeriod_Thread( float allowedCancelTime )
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( !IsAlive( player ) )
+		return
+
+	EndSignal( player, "SyncedMeleeOver_Client" )
+
+	AddPlayerHint( allowedCancelTime, 0, $"", "#SURVIVAL_FINISHER_CANCEL_HINT" )
+
+	OnThreadEnd( function() : () {
+		HidePlayerHint( "#SURVIVAL_FINISHER_CANCEL_HINT" )
+	} )
+
+	wait allowedCancelTime
+}
+
+void function ServerCallback_WatchForSyncedMeleeCancelPeriod( float allowedCancelTime )
+{
+	thread ServerCallback_WatchForSyncedMeleeCancelPeriod_Thread( allowedCancelTime )
+}
+
+void function ServerCallback_SyncedMeleeDone()
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( !IsAlive( player ) )
+		return
+
+	Signal( player, "SyncedMeleeOver_Client" )
+}
+#endif
 
 #if SERVER
 void function DoSyncedMelee_Thread( entity attacker, entity target )
@@ -423,5 +463,3 @@ void function OnPlayerDisconnected( entity player )
 		player.e.syncedMeleeTarget.ClearParent()
 }
 #endif
-
-

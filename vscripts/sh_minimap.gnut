@@ -3,7 +3,7 @@ untyped
 global function MinimapShared_Init
 global function GetMinimapMaterial
 
-const MINIMAP_MINION_SCALE = 0.035
+const MINIMAP_MINION_SCALE      = 0.035
 const MINIMAP_MINION_SCALE_COOP = 0.021
 
 //global const MFD_MINIMAP_FRIENDLY_MATERIAL = $"vgui/HUD/minimap_mfd_friendly"
@@ -65,12 +65,12 @@ global enum eMinimapObject_prop_script
 	DEPLOYABLE_MEDIC,
 	PHASE_GATE,
 	VAULT_PANEL,
+	VAULT_PANEL_OPEN,
 	VAULT_KEY,
 	SURVEY_BEACON,
 	CRYPTO_DRONE,
 	HOVERTANK,
 	HOVERTANK_DESTINATION,
-	FLARE,
 	RESPAWN_CHAMBER,
 	RESPAWN_DNA,
 	TRAIN,

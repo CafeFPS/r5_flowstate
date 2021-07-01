@@ -816,18 +816,18 @@ void function PopulateRuiWithRankedBadgeDetails( var rui, int rankScore, int lad
 
 	if ( !isNested )
 	{
-		RuiDestroyNestedIfAlive( rui, "rankedBadgeHandle" )
-		CreateNestedRankedRui( rui, currentRank.tier )
+		// RuiDestroyNestedIfAlive( rui, "rankedBadgeHandle" )
+		// CreateNestedRankedRui( rui, currentRank.tier )
 	}
 }
 
 var function CreateNestedRankedRui( var pRui, RankedTierData tier, string varName = "rankedBadgeHandle" )
 {
-	var rui = RuiCreateNested( pRui, varName, tier.iconRuiAsset )
+	/*var rui = RuiCreateNested( pRui, varName, tier.iconRuiAsset )
 
 	PopulateRuiWithRankedBadgeDetails( rui, tier.scoreMin, 0, true )
 
-	return rui
+	return rui*/
 }
 
 void function RuiFillInRankedLadderPos( var rui, int ladderPosition )

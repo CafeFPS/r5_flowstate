@@ -1,6 +1,6 @@
 untyped
 
-global function FlyersShared_Init
+global function ShFlyers_Init
 
 global function CreateFlyerSequence
 //global function AddFlyersToSequence
@@ -8,37 +8,28 @@ global function DevFlyerPrintCount
 global function GetCirclingFlyers
 //global function GetFlyerPickupAnimations
 
-global const FLYER_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
-const FLYER_1000X_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
-const FLYER_500X_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
-const FLYER_MODEL_STATIC = $"mdl/Creatures/flyer/r2_flyer.rmdl"
-
-const PLAYER_CORPSE_FOR_FLYER_MODEL = $"mdl/Humans/pilots/pilot_medium_reaper_m.rmdl"
-
 #if SERVER
-	global function CreateServerFlyer
-	global function FlyerTakeOff
-	global function FlyerCrawl
-	global function GetPickupAnimation
-	global function CreatePerchedFlyer
-	global function FlyersAttackDropship
-	global function NextDropshipAttackedByFlyers
+global function CreateServerFlyer
+global function FlyerTakeOff
+global function FlyerCrawl
+global function GetPickupAnimation
+global function CreatePerchedFlyer
+global function FlyersAttackDropship
+global function NextDropshipAttackedByFlyers
 #elseif CLIENT
 //	global function FlyerFlyToPath
+//	global function ServerCallback_PlayLootRarityFXOnDeathboxDrop
 #endif
 
 
-//PrecacheParticleSystem( FX_FLYERDEATH ) -> taking out temporarily, robot deleting old fx
-//const FLYER_PATH_MODEL = $"mdl/unique/redeye/redeye_flyer_path.rmdl"
-//const FLYER_PATH_500X_MODEL = $"models/unique/redeye/r2_flyer.mdl"
-//const FLYER_PATH_1000X_MODEL = $"models/unique/redeye/r2_flyer.mdl"
-
-enum flyerState
-{
-	idle,
-	takeOff
-	takeOffFast
-}
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+global const FLYER_MODEL                       = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+global const string DEATHBOX_FLYER_SCRIPT_NAME = "deathboxFlyer"
+global const string CAGED_FLYER_SCRIPT_NAME    = "cagedFlyer"
 
 global struct FlyerAnim
 {
@@ -48,6 +39,29 @@ global struct FlyerAnim
  	string spectre
  	FlightPath flightPath
  	bool hasAnalysis
+}
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+const FLYER_1000X_MODEL      = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_500X_MODEL       = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_MODEL_STATIC     = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
+
+const PLAYER_CORPSE_FOR_FLYER_MODEL = $"mdl/Humans/pilots/pilot_medium_reaper_m.rmdl"
+
+const asset FX_FLYER_GLOW           = $"P_flyer_glow"
+
+
+enum flyerState
+{
+	idle,
+	takeOff
+	takeOffFast
 }
 
 struct
@@ -62,7 +76,7 @@ struct
 	array< entity > flyerWithCorpseNodes
 } file
 
-void function FlyersShared_Init()
+void function ShFlyers_Init()
 {
 	//PrecacheModel( FLYER_PATH_MODEL )
 	//PrecacheModel( FLYER_PATH_500X_MODEL )

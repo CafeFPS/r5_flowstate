@@ -163,7 +163,7 @@ global SvGlobals svGlobal
 
 void function CodeCallback_MapSpawn() // original script entry point
 {
-	//seterrorhandler(void function() {})
+	seterrorhandler(void function() {})
 	ScriptCompilerTest()
 	LoadDiamond()
 	ShAssets_LevelInit()
