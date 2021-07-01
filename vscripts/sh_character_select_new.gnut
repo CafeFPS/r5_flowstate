@@ -384,8 +384,6 @@ void function DoChampionSquadCardsPresentation()
 {
 	printt( "CHARACTER SELECT: DoChampionSquadCardsPresentation" )
 
-	PauseDialogueQueue()
-
 	string voLine = CHAMPION_INTRO_VO_LINES.getrandom()
 	float fadeToBlackDuration = 0.5
 	float fadeFromBlackDuration = 0.5
@@ -462,7 +460,6 @@ void function DoChampionSquadCardsPresentation()
 	OnThreadEnd(
 		void function() : ( rui, nestedGCHandles )
 		{
-			ResumeDialogueQueue()
 			foreach ( NestedGladiatorCardHandle ngch in nestedGCHandles )
 				CleanupNestedGladiatorCard( ngch )
 			RuiDestroyIfAlive( rui )

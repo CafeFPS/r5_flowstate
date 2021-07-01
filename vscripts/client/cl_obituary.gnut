@@ -5,9 +5,10 @@ global function Obituary_GetEntityInfo
 global function Obituary_Print_Localized
 global function Obituary_SetEnabled
 global function Obituary_SetIndexOffset
+global function Obituary_SetHorizontalOffset
 global function ShouldShowObituaryLineForPlayer
 
-const NUM_OBITUARY_LINES = 4		// cant change arbitrarily, need to have matching entries in the .res file
+const NUM_OBITUARY_LINES = 4		//
 const obituaryTextBoxWidth = 500
 const obituaryTextBoxHeight = 20
 const defaultCharacterWidth = 5
@@ -23,6 +24,7 @@ struct
 	array<ObituaryData>		obituaryQueue = []
 	bool obituariesEnabled = true
 	int indexOffest = 0
+	int horizontalOffset = 0
 } file
 
 struct ObitEntityInfo
@@ -59,7 +61,7 @@ ObitEntityInfo function Obituary_GetEntityInfo( entity ent, int damageSourceId, 
 	if ( !IsValid( ent ) )
 	{
 		string name = GetAttackerDisplayNamesDamageSourceId( damageSourceId )
-		info.displayColor = GetKeyColor( COLORID_ENEMY ) // Since we can't know if it's an enemy of friendly lets assume enemy.
+		info.displayColor = GetKeyColor( COLORID_ENEMY ) //
 		info.displayName = name
 
 		return info
@@ -71,20 +73,20 @@ ObitEntityInfo function Obituary_GetEntityInfo( entity ent, int damageSourceId, 
 
 	entity localPlayer = GetLocalClientPlayer()
 
-	info.displayColor = localPlayer.GetTeam() == ent.GetTeam() ? GetKeyColor( COLORID_MEMBER_COLOR0, ent.GetTeamMemberIndex() ) : <255, 255, 255>//GetKeyColor( COLORID_ENEMY )
+	info.displayColor = localPlayer.GetTeam() == ent.GetTeam() ? GetPlayerInfoColor( ent ) : <255, 255, 255>//
 
 /*
-	if ( !IsWatchingReplay() )
-	{
-		entity entBoss = ent.GetBossPlayer()
-		if ( !IsPrivateMatch() && ((ent.IsPlayer() && IsPartyMember( ent )) || ((entBoss != null) && IsPartyMember( entBoss ))) )
-			info.displayColor = OBITUARY_COLOR_PARTY
 
-		if ( ent == localPlayer )
-			info.displayColor = OBITUARY_COLOR_LOCALPLAYER
-		else if ( !ent.IsPlayer() && (entBoss == localPlayer) )
-			info.displayColor = OBITUARY_COLOR_LOCALPLAYER
-	}
+
+
+
+
+
+
+
+
+
+
 */
 
 	return info
@@ -103,19 +105,19 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 	{
 		if ( victim.IsPlayer() )
 		{
-			// Players
+			//
 			if ( !OBITUARY_ENABLED_PLAYERS )
 				return
 		}
 		else if ( victim.IsTitan() )
 		{
-			// NPC Titans
+			//
 			if ( !OBITUARY_ENABLED_NPC_TITANS )
 				return
 		}
 		else
 		{
-			// NPC
+			//
 			if ( !OBITUARY_ENABLED_NPC )
 				return
 		}
@@ -124,16 +126,16 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 	if ( damageSourceId == eDamageSourceId.round_end )
 		return
 
-	/*******************************************/
-	/* GET INFORMATION ABOUT ENTITIES INVOLVED */
-	/*******************************************/
+	/**/
+	/**/
+	/**/
 
 	bool isRelatedAttacker = (victim.GetTeam() == GetLocalClientPlayer().GetTeam())
 	ObitEntityInfo attackerInfo = Obituary_GetEntityInfo( attacker, damageSourceId, isRelatedAttacker )
 	ObitEntityInfo victimInfo = Obituary_GetEntityInfo( victim, damageSourceId, false )
 	bool isDeathSuicide = IsSuicide( attacker, victim, damageSourceId )
 
-	// Don't show NPC suicides, also makes titan eject deaths not show up which is good
+	//
 	if ( isDeathSuicide && victim.IsNPC() )
 		return
 
@@ -149,9 +151,9 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 
 	sourceDisplayName = GetObitFromDamageSourceID( damageSourceId )
 
-	/********************************************/
-	/* PRINT DEBUG INFO IF SOMETHING GOES WRONG */
-	/********************************************/
+	/**/
+	/**/
+	/**/
 
 	bool printDebugInfo = false
 	string debugSourceDisplayName = sourceDisplayName
@@ -200,9 +202,9 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 		printt( "------------------------------------------" )
 	}
 
-	/**************************/
-	/* PRINT THE OBIT MESSAGE */
-	/**************************/
+	/**/
+	/**/
+	/**/
 
 	if ( isDeathSuicide )
 	{
@@ -211,8 +213,8 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 	}
 
 	asset weaponIcon = GetObitImageFromDamageSourceID( damageSourceId )
-	//if ( isHeadShot )
-	//	weaponIcon = $"vgui/HUD/obituary_headshot"
+	//
+	//
 
 	string attackerString
 	string weaponString
@@ -264,8 +266,6 @@ bool function ShouldShowObituaryLineForPlayer( entity player )
 		return false
 	if ( !IsValid( GetLocalClientPlayer() ) )
 		return false
-	if ( !player.DoesShareRealms( GetLocalViewPlayer() )  )
-		return false
 
 	int playerTeam = player.GetTeam()
 	int localTeam = GetLocalClientPlayer().GetTeam()
@@ -275,6 +275,14 @@ bool function ShouldShowObituaryLineForPlayer( entity player )
 		if ( IsEnemyTeam( playerTeam, localTeam ) )
 			return false
 	}
+
+#if(false)
+
+
+
+
+
+#endif //
 
 	return true
 }
@@ -289,6 +297,8 @@ void function Obituary_Print_Localized( string localizedPrint, vector altColor1 
 	RuiSetGameTime( rui, "startTime", Time() )
 	RuiSetGameTime( rui, "updateTime", Time() )
 	RuiSetFloat( rui, "duration", OBITUARY_DURATION )
+
+	//
 
 	RuiSetString( rui, "obitString", localizedPrint )
 
@@ -324,8 +334,8 @@ void function Obituary_Print_PlayerDeath( string attackerString, asset weaponIco
 	RuiSetFloat3( rui, "victimColor", SrgbToLinear( victimColor / 255.0 ) )
 	RuiSetFloat3( rui, "weaponColor", SrgbToLinear( weaponColor / 255.0 ) )
 
-	//RuiSetFloat3( rui, "backgroundColor", SrgbToLinear( backgroundColor / 255.0 ) )
-	//RuiSetFloat( rui, "backgroundAlpha", backgroundAlpha )
+	//
+	//
 
 	RuiSetBool( rui, "tempIsMainWeapon", tempIsMainWeapon )
 	RuiSetBool( rui, "tempHasModifier", modifierIcon != $"" )
@@ -341,6 +351,12 @@ void function Obituary_Print_PlayerDeath( string attackerString, asset weaponIco
 
 void function UpdateObituaryQueue()
 {
+	#if(false)
+
+#else //
+	const int EXTRA_OFFSET = 0
+	#endif //
+
 	for ( int index = file.obituaryQueue.len() - 1; index >= 0; index-- )
 	{
 		ObituaryData obitData = file.obituaryQueue[index]
@@ -352,63 +368,64 @@ void function UpdateObituaryQueue()
 			continue
 		}
 
-		RuiSetInt( obitData.rui, "offset", index + file.indexOffest )
+		RuiSetInt( obitData.rui, "offset", (EXTRA_OFFSET + index + file.indexOffest) )
+		RuiSetInt( obitData.rui, "horizontalOffset", file.horizontalOffset  )
 		RuiSetGameTime( obitData.rui, "updateTime", Time() )
 	}
 }
 
 /*
-function Obituary_Display( obituaryData )
-{
-	local next = obituaryData.indexToUse
-	BumpDownExistingObituaries()
-
-	if ( split( obituaryData.attackerDisplayName, "(" ).len() )
-		obituaryData.attackerDisplayName = split( obituaryData.attackerDisplayName, "(" )[0]
-
-	if ( split( obituaryData.victimDisplayName, "(" ).len() )
-		obituaryData.victimDisplayName = split( obituaryData.victimDisplayName, "(" )[0]
 
 
-	if ( obituaryData.attackerPetDisplayName != "" )
-		file.obituaryLines[ next ].attacker.SetText( "#OBIT_PLAYER_CONTROLLED_AI_STRING", obituaryData.attackerDisplayName, obituaryData.attackerPetDisplayName )
-	else
-		file.obituaryLines[ next ].attacker.SetText( obituaryData.attackerDisplayName )
-	file.obituaryLines[ next ].attacker.SetColor( ColorStringToArray( expect string( obituaryData.attackerColor ) ) )
 
-	file.obituaryLines[ next ].weapon.SetText( "#OBIT_BRACKETED_STRING", obituaryData.weaponDisplayName, null, null, null, null )
-	file.obituaryLines[ next ].weapon.SetColor( ColorStringToArray( expect string( obituaryData.weaponColor ) ) )
 
-	if ( obituaryData.victimPetDisplayName != "" )
-		file.obituaryLines[ next ].victim.SetText( "#OBIT_PLAYER_CONTROLLED_AI_STRING", obituaryData.victimDisplayName, obituaryData.victimPetDisplayName )
-	else
-		file.obituaryLines[ next ].victim.SetText( obituaryData.victimDisplayName )
-	file.obituaryLines[ next ].victim.SetColor( ColorStringToArray( expect string( obituaryData.victimColor ) ) )
 
-	if ( obituaryData.weaponIcon )
-	{
-		file.obituaryLines[ next ].icon.SetImage( obituaryData.weaponIcon )
-		file.obituaryLines[ next ].icon.SetSize( file.obituaryLines[ next ].victim.GetHeight(), file.obituaryLines[ next ].victim.GetHeight() )
-	}
-	else
-	{
-		file.obituaryLines[ next ].icon.SetWidth( 0 )
-	}
 
-	file.obituaryLines[ next ].victim.ReturnToBasePos()
 
-	foreach ( elem in file.obituaryLines[ next ]	)
-	{
-		elem.SetAlpha( 128 )
-		elem.FadeOverTimeDelayed( 0, OBITUARY_FADE_OUT_DURATION, OBITUARY_DURATION )
-		elem.Show()
-	}
 
-	// increment which hud elems to use next time
-	file.nextObituaryIndexToUse++
-	if ( file.nextObituaryIndexToUse >= NUM_OBITUARY_LINES )
-		file.nextObituaryIndexToUse = 0
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 */
 
 void function Obituary_SetEnabled( bool state )
@@ -419,4 +436,13 @@ void function Obituary_SetEnabled( bool state )
 void function Obituary_SetIndexOffset( int offset )
 {
 	file.indexOffest = offset
+
+	UpdateObituaryQueue()
+}
+
+void function Obituary_SetHorizontalOffset( int offset )
+{
+	file.horizontalOffset = offset
+
+	UpdateObituaryQueue()
 }

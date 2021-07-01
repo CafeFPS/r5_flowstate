@@ -5,7 +5,7 @@ global function Chroma_Lobby
 global function Chroma_LootCeremonyStart
 global function Chroma_StartMatchmaking
 
-#if CLIENT
+#if(CLIENT)
 global function Chroma_SetPlayerZone
 global function Chroma_UpdateBackground
 
@@ -104,7 +104,7 @@ void function CLChroma_Init()
 
 	RegisterSignal( "skydiveover" )
 
-	#if CLIENT
+	#if(CLIENT)
 		AddCallback_LocalPlayerPickedUpLoot( Chroma_PickedUpLoot )
 		AddLocalPlayerTookDamageCallback( Chroma_TookDamage )
 		AddCallback_OnYouDied( Chroma_PlayerDied )
@@ -115,7 +115,7 @@ void function CLChroma_Init()
 	#endif
 }
 
-#if CLIENT
+#if(CLIENT)
 void function DEV_Chroma_ForceBackground( string bg )
 {
 	file.chromaZoneBackgroundName = bg
@@ -214,7 +214,7 @@ void function Chroma_StartMatchmaking()
 	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_FLASH, {[0.0] = <1,0,0>}, 3.0 )
 }
 
-#if CLIENT
+#if(CLIENT)
 string function Chroma_GetActualBackground()
 {
 	entity player = GetLocalViewPlayer()
@@ -624,11 +624,17 @@ void function Chroma_LootPickupEffects( LootData lootData )
 		case eLootType.ORDNANCE:
 		case eLootType.ATTACHMENT:
 		case eLootType.CUSTOMPICKUP:
-		case eLootType.BACKPACK:
-		case eLootType.BLANK:
-		case eLootType.RESOURCE:
 #if(false)
 
+#endif
+		case eLootType.BACKPACK:
+#if(false)
+
+#endif
+		case eLootType.BLANK:
+		case eLootType.RESOURCE:
+#if(true)
+		case eLootType.DATAKNIFE:
 #endif
 #if(false)
 
@@ -638,7 +644,7 @@ void function Chroma_LootPickupEffects( LootData lootData )
 #endif
 
 			effect = CHROMAWAVE_VERTICALONE
-			Assert( lootData.tier <= 4 )
+			Assert( lootData.tier <= MAX_LOOT_TIER )
 			if ( lootData.tier > 2 )
 			{
 				int add = lootData.tier - 2
@@ -657,7 +663,7 @@ void function Chroma_LootPickupEffects( LootData lootData )
 		default:
 			Assert( false, "unhandled loot type " + lootData.lootType + " in Chroma_LootPickupEffects" )
 	}
-	
+
 	//
 	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, effect, {[0.0] = color}, duration )
 }
@@ -666,7 +672,7 @@ void function Chroma_FiredWeapon( entity weapon )
 {
 	if ( InPrediction() && !IsFirstTimePredicted() )
 		return
-		
+
 	float duration
 	float colorfrac
 	if ( IsWeaponInAutomaticMode( weapon ) )
@@ -715,8 +721,13 @@ void function Chroma_HealthChanged()
 
 void function Chroma_TookDamage( float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker )
 {
-	if ( damageSourceId == eDamageSourceId.outOfBounds )
+	if ( damageSourceId == eDamageSourceId.outOfBounds || damageSourceId == eDamageSourceId.deathField )
 		return
+
+	#if(false)
+
+
+#endif
 
 	float duration = GraphCapped( damage, 20.0, 100.0,  1.0, 5.0 )
 
@@ -876,13 +887,11 @@ void function Chroma_PlayerUsedAbility( entity player, entity offhandWeapon )
 		Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_SEMICIRCLE, {[0.0] = <1,0.4,0>}, 2.0 )
 		return
 	}
-#if(false)
-
-
-
-
-
-#endif
+	else if ( weaponName == "mp_weapon_trophy_defense_system" )
+	{
+		Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_SEMICIRCLE, {[0.0] = <1,.7,0>}, 2.0 )
+		return
+	}
 
 	array<int> offhandIndices = [ OFFHAND_TACTICAL, OFFHAND_ULTIMATE ]
 	foreach ( index in offhandIndices )
@@ -1112,7 +1121,7 @@ void function Chroma_UsedJumpPad()
 void function Chroma_EMPEffect()
 {
 	wait 0.1 //
-	
+
 	table< float, vector > gradient = {
 		[0.0] = <.2,.4,1>,
 		[0.7] = <1,1,1>,

@@ -21,6 +21,7 @@ global function GetVirtualScreenSize
 global function GetCurrentVirtualScreenSize
 global function GetScaledVirtualScreenSize
 global function UpdateFullscreenTopology
+global function GetNearestAspectRatio
 
 global var Hud = null
 

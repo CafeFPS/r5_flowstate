@@ -4851,3 +4851,43 @@ void function KnockBackPlayer( entity player, vector pushDir, float scale, float
 {
 	player.KnockBack( pushDir * scale, time )
 }
+
+bool function PlayersInSameParty( entity player1, entity player2 )
+{
+	if ( player1.GetPartyLeaderClientIndex() < 0 )
+		return false
+
+	if ( player2.GetPartyLeaderClientIndex() < 0 )
+		return false
+
+	return (player1.GetPartyLeaderClientIndex() == player2.GetPartyLeaderClientIndex())
+}
+
+
+Point function CreatePoint( vector origin, vector angles )
+{
+	Point data
+	data.origin = origin
+	data.angles = angles
+	return data
+}
+
+
+bool function IsFallLTM()
+{
+	return GetCurrentPlaylistVarInt( "mode_fall_ltm", 0 ) == 1
+}
+
+table<int, array<entity> > function ArrangePlayersByTeam( array<entity> players )
+{
+	table<int, array<entity> > out = {}
+	foreach( entity player in players )
+	{
+		int team = player.GetTeam()
+		if ( team in out )
+			out[team].append( player )
+		else
+			out[team] <- [ player ]
+	}
+	return out
+}

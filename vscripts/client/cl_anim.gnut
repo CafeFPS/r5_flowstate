@@ -1,3 +1,6 @@
+//=========================================================
+//	cl_anim.nut
+//=========================================================
 untyped
 
 global function PlayAnimTeleport
@@ -306,8 +309,11 @@ void function ClGlobalAnimEvent_mirage_holo_fx_end( entity model, array<string> 
 	thread PROTO_FadeModelAlphaOverTime( model, 0.5, 255, 0 )
 
 	string AttachmentString = tokens[1]
-	int attachIndex = model.LookupAttachment( AttachmentString )
 
+	if ( AttachmentString == "NONE" )
+		return
+
+	int attachIndex = model.LookupAttachment( AttachmentString )
 	StartParticleEffectOnEntity( model, GetParticleSystemIndex( MIRAGE_HOLO_FLASH_FX ), FX_PATTACH_POINT, attachIndex )
 
 }

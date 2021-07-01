@@ -36,7 +36,9 @@ global function GetEHISignalDummy
 global function WaitForEHISignalDummy
 global function EHI_IsConnected
 global function EHI_GetName
+global function EEH_GetTeam
 global function EHI_GetTeam
+global function EEH_GetTeamMemberIndex
 global function EHI_GetTeamMemberIndex
 global function GetPlayerEHIArrayOfTeam
 global function GetPlayerSquadSafe
@@ -323,6 +325,13 @@ string function EHI_GetName( EHI ent )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+int function EEH_GetTeam( EncodedEHandle ent )
+{
+	Assert( ent != EncodedEHandle_null )
+	return GetEHIScriptStructFromEncodedEHandle( ent ).team
+}
+#endif
 
 #if SERVER || CLIENT || UI
 int function EHI_GetTeam( EHI ent )
@@ -337,6 +346,13 @@ int function EHI_GetTeam( EHI ent )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+int function EEH_GetTeamMemberIndex( EncodedEHandle ent )
+{
+	Assert( ent != EncodedEHandle_null )
+	return GetEHIScriptStructFromEncodedEHandle( ent ).teamMemberIndex
+}
+#endif
 
 #if SERVER || CLIENT || UI
 int function EHI_GetTeamMemberIndex( EHI ent )
@@ -350,7 +366,6 @@ int function EHI_GetTeamMemberIndex( EHI ent )
 	#endif
 }
 #endif
-
 
 #if SERVER || CLIENT || UI
 array<EHI> function GetPlayerEHIArrayOfTeam( int team )

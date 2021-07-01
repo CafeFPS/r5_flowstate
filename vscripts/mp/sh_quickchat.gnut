@@ -1,6 +1,7 @@
 global function ShQuickchat_Init
 #if CLIENT
 global function Quickchat
+global function QuickchatToLivingAndDead
 global function BroadcastCommsActionToTeam
 global function GetChatTitleColorForPlayer
 global function GetMenuOptionTextForCommsAction
@@ -136,11 +137,32 @@ void function DEV_ReloadCommsTable()
 }
 
 #if CLIENT
-void function Quickchat( entity player, int index )
+void function Quickchat( entity player, int index, entity subject = null )
 {
 	if ( !file.quickchatInitialized )
 		return
-	player.ClientCommand( "ClientCommand_Quickchat " + index )
+
+	string add = ""
+	if ( subject != null )
+	{
+		add = " " + eCommsFlags.NONE + " " + subject.GetEncodedEHandle()
+	}
+
+	player.ClientCommand( "ClientCommand_Quickchat " + index + add )
+}
+
+void function QuickchatToLivingAndDead( entity player, int index, entity subject = null )
+{
+	if ( !file.quickchatInitialized )
+		return
+
+	string add = ""
+	if ( subject != null )
+	{
+		add = " " + subject.GetEncodedEHandle()
+	}
+
+	player.ClientCommand( "ClientCommand_Quickchat " + index + " " + eCommsFlags.INCLUDE_DEAD + add )
 }
 
 vector function GetChatTitleColorForPlayer( entity player )
@@ -489,10 +511,10 @@ void function PlaySoundForCommsAction( entity player, int commsAction, CommsOpti
 		// The dialogue queue is paused here for the duration of the ping VO such that no new items will be popped off of the dialogue queue while ping VO is playing.
 		// This was done to handle multiple pings occurring at the same time, since the dialogue queue pause is done through a stack.
 		var soundHandle = EmitSoundOnEntity( player, sound )
-		thread SuspendDialogueQueueForDurationOfSound( player, soundHandle )
+		//thread SuspendDialogueQueueForDurationOfSound( player, soundHandle )// TODO: undefined
 
 		// Remove any player events from the queue so they don't double-speak
-		RemovePlayerDialogueEventsFromDialogueQueue( player )
+		//RemovePlayerDialogueEventsFromDialogueQueue( player ) TODO: undefined
 
 		player.p.sayLineLatestSound = sound
 		player.p.sayLineLatestTime = Time()
@@ -544,15 +566,17 @@ bool function ShouldPlayFlavorAction( entity player, int flavorAction )
 
 void function PlaySoundForSubActionWhenPrimaryFinishes( var primarySoundHandle, int primaryCommsAction, int subCommsAction, entity player, CommsOptions opt, string flavorEvent = "" )
 {
+	int i = 0//stub
 	EndSignal( player, "OnDestroy" )
 	EndSignal( player, "OnDeath" )
 
-	PauseDialogueQueue()
+	PauseDialogueQueue( i )
 
 	OnThreadEnd(
 		function()
 		{
-			ResumeDialogueQueue()
+			int i = 0//stub
+			ResumeDialogueQueue( i )
 		}
 	)
 

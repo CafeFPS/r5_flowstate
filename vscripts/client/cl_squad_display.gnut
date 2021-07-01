@@ -39,7 +39,7 @@ void function Cl_SquadDisplay_Init()
 
 void function OnPlayerCreated( entity player )
 {
-	printt( "SS: OnPlayerCreated", player )
+	//
 	OnPlayerTeamChanged( player, TEAM_UNASSIGNED, player.GetTeam() )
 }
 
@@ -49,7 +49,7 @@ void function OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
 	entity clientPlayer = GetLocalClientPlayer()
 	if ( IsValid( clientPlayer ) )
 		playerTeam = clientPlayer.GetTeam()
-	printt( "SS: OnPlayerTeamChanged", player, oldTeam, newTeam, clientPlayer, playerTeam )
+	//
 
 	EHI ehi = ToEHI( player )
 
@@ -108,6 +108,13 @@ void function UICallback_UpdateGladCardVisibility( var panel, var elem, int team
 		PlayerInfo ornull info = GetTeammateAtIndex( teamMemberIndex )
 		if ( info == null )
 			Hud_Hide( elem )
+
+		#if(true)
+			if ( IsFallLTM() )
+			{
+				Hud_Hide( elem )
+			}
+		#endif
 	}
 }
 
@@ -168,10 +175,22 @@ void function UICallback_PopulateClientGladCard( var panel, var elem, var muteBu
 	}
 
 	SetIsVisible( disconnectedElem, false )
+	if (Hud_GetHudName( elem ) == "GCard0" && GetExpectedSquadSize( GetLocalClientPlayer() ) == 2 )
+	{
+		Hud_SetX( elem, 201 )
+	}
 
 	if ( teamMemberIndex > 0 )
 	{
 		PlayerInfo ornull teammateInfo = GetTeammateAtIndex( teamMemberIndex )
+
+		#if(true)
+			if ( IsFallLTM() )
+			{
+				if ( teammateInfo != null && expect PlayerInfo( teammateInfo ).ehi != GetLocalClientPlayer().GetEncodedEHandle() )
+					teammateInfo = null
+			}
+		#endif
 
 		if ( teammateInfo != null )
 		{
@@ -220,7 +239,7 @@ void function UICallback_PopulateClientGladCard( var panel, var elem, var muteBu
 			SetIsVisible( muteButton, true )
 			SetIsVisible( mutePingButton, true )
 
-			#if CONSOLE_PROG
+			#if(CONSOLE_PROG)
 				SetIsVisible( muteChatButton, false )
 			#else
 				SetIsVisible( muteChatButton, true )
@@ -233,6 +252,13 @@ void function UICallback_PopulateClientGladCard( var panel, var elem, var muteBu
 			SetIsSelected( inviteButton, isInMyParty )
 
 			SetIsVisible( reportButton, canReport )
+
+			if ( DeathScreenSummaryShouldFadeIn() )
+			{
+				FadeInButtonElement( muteButton, 1.5, 2.0 )
+				FadeInButtonElement( muteChatButton, 1.5, 2.0  )
+				FadeInButtonElement( reportButton, 1.5, 2.0  )
+			}
 
 			SetDefaultTooltipData( muteButton, isVoiceMuted ? "#UNMUTE" : "#MUTE" )
 			SetDefaultTooltipData( mutePingButton, isPingMuted ? "#UNMUTE_PING" : "#MUTE_PING" )
@@ -278,6 +304,7 @@ void function UICallback_PopulateClientGladCard( var panel, var elem, var muteBu
 	NestedGladiatorCardHandle nestedGCHandle
 	if (!( rui in file.elemToGladCardHandle ))
 	{
+		RuiDestroyNestedIfAlive( rui, "card" )
 		nestedGCHandle = CreateNestedGladiatorCard( rui, "card", eGladCardDisplaySituation.SQUAD_MANAGEMENT_PAGE_ANIMATED, displayType )
 		file.elemToGladCardHandle[ rui ] <- nestedGCHandle
 	}
@@ -292,9 +319,22 @@ void function UICallback_PopulateClientGladCard( var panel, var elem, var muteBu
 	ChangeNestedGladiatorCardOwner( nestedGCHandle, ehi, Time(), eGladCardLifestateOverride.ALIVE )
 }
 
+
+void function FadeInButtonElement( var button, float fadeInTime, float fadeInDelay )
+{
+	if ( button == null )
+		return
+
+	var rui = Hud_GetRui( button )
+
+	RuiSetFloat( rui, "fadeInTime", fadeInTime )
+	RuiSetFloat( rui, "fadeInDelay", fadeInDelay )
+	RuiSetFloat( rui, "startTime", Time() )
+}
+
 void function UICallback_PlayerStatusUpdateThread( var panel, var elem, var muteButton, var mutePingButton, var muteChatButton, var reportButton, var inviteButton, var overlayButton, var disconnectedElem, int teamMemberIndex )
 {
-	printt( "SS: UICallback_PlayerStatusUpdateThread", teamMemberIndex )
+	//
 	thread _PlayerStatusUpdateThread( panel, elem, muteButton, mutePingButton, muteChatButton, reportButton, inviteButton, overlayButton, disconnectedElem, teamMemberIndex )
 }
 
@@ -306,20 +346,23 @@ void function _PlayerStatusUpdateThread( var panel, var statsPanel, var muteButt
 	PlayerInfo ornull info = GetTeammateAtIndex( teamMemberIndex )
 	if ( info == null )
 	{
-		printt( "SS:\t index 0 is the local player", teamMemberIndex )
+		//
+		if ( teamMemberIndex == 0 )
+			thread UpdateMicStatus( GetLocalClientPlayer(), Hud_GetRui( statsPanel ) )
+
 		return
 	}
 
 	expect PlayerInfo(info)
 
 	bool wasConnected = true
-	int prevMicStatus = -2
+	entity playerEnt = FromEHI( info.ehi )
 
-	printt( "SS:\t Starting loop", teamMemberIndex )
+	if ( IsValid( playerEnt ) )
+		thread UpdateMicStatus( playerEnt, Hud_GetRui( statsPanel ) )
 
 	while ( 1 )
 	{
-		entity playerEnt = FromEHI( info.ehi )
 		bool connected = IsValid( playerEnt )
 
 		if ( connected != wasConnected )
@@ -330,25 +373,32 @@ void function _PlayerStatusUpdateThread( var panel, var statsPanel, var muteButt
 			SetIsVisible( inviteButton, connected )
 
 			var statsRui = Hud_GetRui( statsPanel )
-			printt( "SS: Updating player stats rui", teamMemberIndex )
+			//
 			_PopulatePlayerStatsRui( statsPanel, teamMemberIndex, connected )
-
-			if ( connected )
-			{
-				//
-			}
 
 			wasConnected = connected
 		}
 
-		// int micStatus = GetPlayerMicStatus( playerEnt )
-		// if ( connected && micStatus != prevMicStatus )
-		// {
-		// 	prevMicStatus = micStatus
+		WaitFrame()
+	}
+}
 
-		// 	var rui = Hud_GetRui( statsPanel )
-		// 	RuiSetInt( rui, "micStatus", micStatus )
-		// }
+void function UpdateMicStatus( entity player, var rui )
+{
+	EndSignal( player, "OnDestroy" )
+	EndSignal( clGlobal.levelEnt, "ShowRoundEndSquadResults" )
+
+	int prevMicStatus = -2
+
+	while( true )
+	{
+		int micStatus = GetPlayerMicStatus( player )
+		if ( micStatus != prevMicStatus )
+		{
+			prevMicStatus = micStatus
+
+			RuiSetInt( rui, "micStatus", micStatus )
+		}
 
 		WaitFrame()
 	}
@@ -514,6 +564,7 @@ void function UICallback_ToggleMuteChat( var button )
 		if ( !IsValid( player ) )
 			return
 
+		//
 		TogglePlayerTextMute( player )
 
 		var rui = Hud_GetRui( button )
@@ -607,22 +658,26 @@ entity function GetPlayerFromTeammateInfo( PlayerInfo teammateInfo )
 
 void function UICallback_PopulatePlayerStatsRui( var panel, int index )
 {
-	printt( "SS: UICallback_PopulatePlayerStatsRui", index )
+	//
 	_PopulatePlayerStatsRui( panel, index, true )
 }
 
 void function _PopulatePlayerStatsRui( var cardElem, int index, bool connected )
 {
-	printt( "SS: _PopulatePlayerStatsRui", index, connected )
+	//
 	SquadSummaryData squadSummaryData = GetSquadSummaryData()
 	if ( index >= squadSummaryData.playerData.len() )
 	{
-		printt( "SS:\t hide element for index", index )
+		//
 		Hud_Hide( cardElem )
+		#if(DEV)
+			printt( "ClearPlayerStatsRui", index )
+		#endif
+		ClearPlayerStatsRui( Hud_GetRui( cardElem ) )
 		return
 	}
 
-	printt( "SS:\t have data for index", index )
+	//
 	int eHandle = -1
 
 	if ( index > 0 )
@@ -632,7 +687,7 @@ void function _PopulatePlayerStatsRui( var cardElem, int index, bool connected )
 
 		if ( teammateInfo == null )
 		{
-			printt( "SS:\t\tNo team info for index", index )
+			//
 			return
 		}
 
@@ -641,7 +696,7 @@ void function _PopulatePlayerStatsRui( var cardElem, int index, bool connected )
 	}
 	else
 	{
-		printt( "SS:\t\tThis is local player", index )
+		//
 		eHandle = GetLocalClientPlayer().GetEncodedEHandle()
 	}
 
@@ -651,7 +706,7 @@ void function _PopulatePlayerStatsRui( var cardElem, int index, bool connected )
 
 	for ( int i = 0; i<squadSummaryData.playerData.len(); i++ )
 	{
-		printt( "SS:\t\tPopulating stats rui with playerData[i] where i = ", i, "with eHandle", squadSummaryData.playerData[i].eHandle, "if eHandle is", eHandle )
+		//
 		if ( squadSummaryData.playerData[i].eHandle == eHandle )
 		{
 			PopulatePlayerStatsRui( rui, i, connected)

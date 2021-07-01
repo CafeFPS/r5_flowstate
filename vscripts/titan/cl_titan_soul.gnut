@@ -62,7 +62,7 @@ void function ClientCodeCallback_TitanVarChanged( entity soul )
 }
 
 void function ClientCodeCallback_DoomedStateChanged( entity soul )
-{
+{/*
 	//Defensive fix temporarily. Code probably shouldn't just pass us null. Remove when bug 36591 is resolved. Should also get this function renamed to CodeClientCallback_ClientCallback_DoomedStateChanged for consistency
 	if ( !IsValid( soul ) )
 		return
@@ -104,7 +104,7 @@ void function ClientCodeCallback_DoomedStateChanged( entity soul )
 				thread TitanCockpit_WarningAudio( cockpit, localPlayer )
 			}
 		}
-	}
+	}*/
 
 	/*if ( ContextAction_IsInVehicle( localPlayer, titan ) )
 	{

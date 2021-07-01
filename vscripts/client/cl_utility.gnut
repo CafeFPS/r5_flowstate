@@ -18,15 +18,15 @@ string dev_infoPanelTitleString = ""
 string dev_infoPanelTextString = ""
 
 global const int RUMBLE_FLAGS_NONE 				= 0x0000
-global const int RUMBLE_FLAG_STOP				= 0x0001 // Stop any instance of this type of effect that's already playing.
-global const int RUMBLE_FLAG_LOOP				= 0x0002 // Make this effect loop.
-global const int RUMBLE_FLAG_RESTART			= 0x0004 // If this effect is already playing, restart it.
-global const int RUMBLE_FLAG_UPDATE_SCALE		= 0x0008 // Apply DATA to this effect if already playing, but don't restart.
-global const int RUMBLE_FLAG_ONLYONE			= 0x0010 // Don't play this effect if it is already playing.
-global const int RUMBLE_FLAG_RANDOM_AMPLITUDE	= 0x0020 // Amplitude scale will be randomly chosen. Between 10% and 100%
-global const int RUMBLE_FLAG_INITIAL_SCALE		= 0x0040 // Data is the initial scale to start this effect ( * 100 )
+global const int RUMBLE_FLAG_STOP				= 0x0001 //
+global const int RUMBLE_FLAG_LOOP				= 0x0002 //
+global const int RUMBLE_FLAG_RESTART			= 0x0004 //
+global const int RUMBLE_FLAG_UPDATE_SCALE		= 0x0008 //
+global const int RUMBLE_FLAG_ONLYONE			= 0x0010 //
+global const int RUMBLE_FLAG_RANDOM_AMPLITUDE	= 0x0020 //
+global const int RUMBLE_FLAG_INITIAL_SCALE		= 0x0040 //
 
-global struct RUIWorldCoordinates // this isn't specific to RUI, it generally represents a cartesian coordinate system
+global struct RUIWorldCoordinates //
 {
 	vector org
 	vector right
@@ -39,31 +39,31 @@ struct
 	int showButtonHintsInt = 1
 } file
 
-/***************************************************
-Code constants already registered for script
+/*
 
-enum GameMovementImpactEventType
-{
-	GM_IET_LANDING = 0
-	GM_IET_WALLSLAM
-	GM_IET_WALLSLAM_AIR
-	GM_IET_HUMANFOOTSTEP
-	GM_IET_TITANFOOTSTEP
 
-	GM_IET_COUNT
-	GM_IET_INVALID
-}
 
-enum Crosshair_State
-{
-	CROSSHAIR_STATE_SHOW_ALL = 0
-	CROSSHAIR_STATE_HIT_INDICATORS_ONLY
-	CROSSHAIR_STATE_HIDE_ALL
 
-	CROSSHAIR_STATE_COUNT
-}
 
-***************************************************/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
 
 array function StringToColorArray( string colorString, string delimiter = " " )
 {
@@ -122,9 +122,7 @@ string function ReloadScripts()
 
 	ReloadingScriptsBegin()
 
-	//DeregisterRespawnCommands()
-
-	TitanEmbark_Init()
+	//
 
 	ReloadScriptCallbacks()
 
@@ -161,7 +159,7 @@ void function AddCreateCallback( string className, void functionref( entity ) ca
 	if ( !( className in clGlobal.onCreateCallbacks ) )
 		clGlobal.onCreateCallbacks[ className ] <- []
 
-#if R5DEV
+#if(DEV)
 	foreach ( func in clGlobal.onCreateCallbacks[ className ] )
 	{
 		Assert( func != callbackFunc )
@@ -176,7 +174,7 @@ void function AddTargetNameCreateCallback( string targetName, void functionref( 
 	if ( !( targetName in clGlobal.onTargetNameCreateCallbacks ) )
 		clGlobal.onTargetNameCreateCallbacks[ targetName ] <- []
 
-#if R5DEV
+#if(DEV)
 	foreach ( func in clGlobal.onTargetNameCreateCallbacks[ targetName ] )
 	{
 		Assert( func != callbackFunc )
@@ -322,7 +320,7 @@ void function AddOnDeathCallback( string className, void functionref( entity ) c
 
 	clGlobal.onDeathCallbacks[ className ].append( callbackFunc )
 
-	// Check if DoDeathCallback has already been enabled for class
+	//
 	if ( className in clGlobal.onCreateCallbacks )
 	{
 		foreach ( func in clGlobal.onCreateCallbacks[ className ] )
@@ -341,7 +339,7 @@ void function AddOnDeathOrDestroyCallback( string className, void functionref( e
 
 	clGlobal.onDeathOrDestroyCallbacks[ className ].append( callbackFunc )
 
-	// Check if DoDeathCallback has already been enabled for class
+	//
 	if ( className in clGlobal.onCreateCallbacks )
 	{
 		foreach ( func in clGlobal.onCreateCallbacks[ className ] )
@@ -358,14 +356,14 @@ void function __OnDeathCallbackEnable( entity ent )
 	ent.DoDeathCallback( true )
 }
 
-void function AddCinematicEventFlagChangedCallback( int flag, void functionref( entity ) callbackFunc ) //Only for local player. Clients don't get sent information about other clients' cinematicEventFlags
+void function AddCinematicEventFlagChangedCallback( int flag, void functionref( entity ) callbackFunc ) //
 {
 	if ( !( flag in clGlobal.onCinematicEventFlagChangedCallback ) )
 		clGlobal.onCinematicEventFlagChangedCallback[ flag ] <- []
 
 	Assert( !clGlobal.onCinematicEventFlagChangedCallback[ flag ].contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCinematicEventFlagChangedCallback" )
 
-	//printt( "Adding callback for flag: " + flag + " with function: " + callbackFunc )
+	//
 
 	clGlobal.onCinematicEventFlagChangedCallback[ flag ].append( callbackFunc )
 }
@@ -376,7 +374,7 @@ void function PrintAspectRatioInfo( float desiredWidth, float width, float heigh
 	printt( "Width/Height:", desiredWidth, int( ( desiredWidth * aspectRatio ) + 0.5 ) )
 }
 
-// returns array of client ents that match a classname and name mask
+//
 array<entity> function GetClientEntArray( string classname, string nameMask )
 {
 	array<entity> ents = GetClientEntArrayBySignifier( classname )
@@ -391,9 +389,9 @@ array<entity> function GetClientEntArray( string classname, string nameMask )
 	return returns
 }
 
-//-----------------------------------------------------------
-// CreatePropDynamic( model ) - create a generic prop_dynamic with default properties
-//------------------------------------------------------------
+//
+//
+//
 entity function CreatePropDynamic( asset model, vector origin = <0,0,0>, vector angles = <0,0,0> )
 {
 	entity prop_dynamic = CreateClientSidePropDynamic( origin, angles, model )
@@ -401,9 +399,9 @@ entity function CreatePropDynamic( asset model, vector origin = <0,0,0>, vector 
 	return prop_dynamic
 }
 
-//-----------------------------------------------------------
-// CreateScriptRef() - create a script ref
-//------------------------------------------------------------
+//
+//
+//
 entity function CreateScriptRef( vector origin = <0,0,0>, vector angles = <0,0,0> )
 {
 	entity ent = CreatePropDynamic( $"mdl/dev/editor_ref.rmdl", origin, angles )
@@ -436,7 +434,7 @@ void function AddLocalPlayerFunc( void functionref(entity player) func )
 	clGlobal.addLocalPlayerFuncs.append( func )
 }
 
-//CLIENT VERSION OF SERVER WARP FUNCS
+//
 void function CLWarpoutEffect( entity dropship )
 {
 	if ( !IsValid( dropship ) )
@@ -451,14 +449,14 @@ void function __DelayDropshipDelete( entity dropship )
 {
 	dropship.EndSignal( "OnDeath" )
 
-	wait 0.1 // so the dropship wont pop out before it warps out
+	wait 0.1 //
 
 	dropship.Destroy()
 }
 
 void function CLWarpinEffect( asset model, string animation, vector origin, vector angles, string sfx = "" )
 {
-	//we need a temp dropship to get the anim offsets
+	//
 	Point start = __GetWarpinPosition( model, animation, origin, angles )
 
 	__WarpInEffectShared( start.origin, start.angles, sfx )
@@ -489,7 +487,7 @@ void function CoreActivatedVO( entity player )
 		return
 
 	expect string( conversationName )
-	TitanCockpit_PlayDialog( player, conversationName )
+	//
 }
 
 void function MonitorFlickerAndChange( entity screen, asset modelname )
@@ -498,7 +496,7 @@ void function MonitorFlickerAndChange( entity screen, asset modelname )
 
 	screen.SetModel( modelname )
 	bool state = false
-	int flickers = RandomIntRange( 2, 6 ) * 2 + 1// always an odd number
+	int flickers = RandomIntRange( 2, 6 ) * 2 + 1//
 
 	for ( int i = 0; i < flickers; i++ )
 	{
@@ -566,49 +564,49 @@ int function PlayFXOnTag( entity ent, int playFxID, int tagID )
 	return fxID
 }
 
-/*void function UpdateEquipmentHud( entity cockpit, entity player )
-{
-	ReCalculatePetTurretNumbers()
+/*
 
-	if ( !( "offhandHud" in cockpit.s ) )
-		return
 
-	cockpit.s.offhandHud[OFFHAND_EQUIPMENT].bg.Show()
-	cockpit.s.offhandHud[OFFHAND_EQUIPMENT].icon.Show()
-	cockpit.s.offhandHud[OFFHAND_EQUIPMENT].hint.Show()
-	cockpit.s.offhandHud[OFFHAND_EQUIPMENT].count.Show()
 
-	local ammoCount = level.sentryTurretInventory // is always between 0 and 3
 
-	cockpit.s.offhandHud[OFFHAND_EQUIPMENT].count.SetText( "#HUDAUTOTEXT_ACTIVEWEAPONMAGAZINECOUNT", ammoCount )
-	cockpit.s.offhandHud[OFFHAND_EQUIPMENT].icon.SetImage( $"vgui/hud/coop/mini_turret_counter" )
 
-	foreach ( index, elem in cockpit.s.offhandHud[OFFHAND_EQUIPMENT].dots )
-	{
-		if ( index < level.petSentryTurrets )
-			elem.Show()
-		else
-			elem.Hide()
-	}
 
-	if ( ammoCount <= 0 || level.petSentryTurrets >= COOP_SENTRY_TURRET_MAX_COUNT_PET || player.IsTitan() )
-	{
-		cockpit.s.offhandHud[OFFHAND_EQUIPMENT].icon.SetColor( 128, 128, 128, 255 )
-	 	cockpit.s.offhandHud[OFFHAND_EQUIPMENT].bar.SetAlpha( 64 )
- 		cockpit.s.offhandHud[OFFHAND_EQUIPMENT].hint.SetAlpha( 64 )
-	}
-	else
-	{
-		cockpit.s.offhandHud[OFFHAND_EQUIPMENT].icon.ReturnToBaseColor()
-	 	cockpit.s.offhandHud[OFFHAND_EQUIPMENT].bar.ReturnToBaseColor()
- 		cockpit.s.offhandHud[OFFHAND_EQUIPMENT].hint.ReturnToBaseColor()
-	}
 
-	if ( player.IsTitan() )
-		cockpit.s.offhandHud[OFFHAND_EQUIPMENT].hint.Hide()
-	else
-		cockpit.s.offhandHud[OFFHAND_EQUIPMENT].hint.Show()
-}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
 
 void function ReCalculatePetTurretNumbers()
 {
@@ -656,19 +654,6 @@ void function Dev_PrintClientMessage( float duration )
 	dev_messageSubString = ""
 }
 
-void function ServerCallback_CollectibleFoundMessage( int numCollectiblesFound, int totalNumCollectibles )
-{
-	// Temp hud until RUI is made
-	entity player = GetLocalClientPlayer()
-	AnnouncementData announcement = Announcement_Create( "#MSG_COLLECTIBLE_FOUND" )
-	Announcement_SetSubText( announcement, "#SUBMSG_COLLECTIBLE_FOUND" )
-	Announcement_SetOptionalSubTextArgsArray( announcement, [string(numCollectiblesFound), string(totalNumCollectibles)] )
-	Announcement_SetHideOnDeath( announcement, false )
-	Announcement_SetDuration( announcement, 3.5 )
-	Announcement_SetPurge( announcement, true )
-	AnnouncementFromClass( player, announcement )
-}
-
 void function ClientCodeCallback_OnDevnetBugScreenshot()
 {
 	printt( "(devnet screenshot client script callback)" )
@@ -678,30 +663,25 @@ void function ClientCodeCallback_OnDevnetBugScreenshot()
 	player.ClientCommand( "OnDevnetBugScreenshot" )
 }
 
-array<float> function GetTitanDamageStateHealthValues()
-{
-	return [ TITAN_DAMAGE_STAGE_1, TITAN_DAMAGE_STAGE_2, TITAN_DAMAGE_STAGE_3 ]
-}
-
-//float[2] function GetScreenSpaceClamped( vector origin )
-//{
-//	UISize screenSize = GetScreenSize()
-//	var result = Hud.ToScreenSpaceClamped( origin )
-//	result = Hud.ClipScreenPositionToBox( result[0], result[1], 0, screenSize.width, 0, screenSize.height )
 //
-//	float[2] coordinates
-//	coordinates[0] = float( result[0] ) / float( screenSize.width )
-//	coordinates[1] = float( result[1] ) / float( screenSize.height )
 //
-//	return coordinates
-//}
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 float function GetNextRespawnTime( entity player )
 {
-	return expect float( player.nv.nextRespawnTime - 0.0 ) // - 0.0 to force this to be a float
+	return expect float( player.nv.nextRespawnTime - 0.0 ) //
 }
 
-#if R5DEV
+#if(DEV)
 void function TwoPinTest()
 {
 	entity player = gp()[0]
@@ -733,7 +713,7 @@ AttackerDisplayNameStruct function GetAttackerDisplayNamesFromClassname( entity 
 
 		if ( bossPlayerName != "" )
 		{
-			// player autotitans are titled "follow mode" or "guard mode" so we need to change the obit display name
+			//
 			if ( IsTurret( ent ) )
 			{
 				names.attackerName = bossPlayerName
@@ -792,7 +772,7 @@ AttackerDisplayNameStruct function GetAttackerDisplayNamesFromClassname( entity 
 				printt( "    ent title:", title )
 				printt( "    ent bossPlayerName:", bossPlayerName )
 				printt( "-----------------------------------------------" )
-				//title = damageSourceStrings[ damagedef_unknownBugIt ]
+				//
 			}
 		}
 
@@ -810,11 +790,11 @@ AttackerDisplayNameStruct function GetAttackerDisplayNamesFromClassname( entity 
 string function GetAttackerDisplayNamesDamageSourceId( int damageSourceId )
 {
 	/*
-		this is not a great solution for bugs #79124, #79124, #78831 etc.
-		but unfortunately the current damage/death system assumes entites exist on the client to
-		ask for names etc. this turns out to be a problem when a player disconnects or an entity
-		is removed just after he caused a death. I think we should rewrite how it works for R2
-	*/
+
+
+
+
+*/
 
 	string killerName = ""
 	switch ( damageSourceId )
@@ -860,47 +840,47 @@ void function AddClientCallback_OnResolutionChanged( void functionref() callback
 
 void function ServerCallback_UpdateHeroStats()
 {
-	//printt( "#################################" )
-	//printt( "UPDATING HERO STATS" )
+	//
+	//
 
-	// Game Progress ( campaign progress + collectible progress + MP player level )
-	// Campaign and MP level each count as 40%, the remaining 20% is collectibles
+	//
+	//
 	/*
-	float campaignFrac = GraphCapped( spProgress, 0.0, 1.0, 0.0, 0.4 )
-	printt( "    campaignFrac:", campaignFrac )
-	int mpLevel = GetConVarInt( "mp_player_level" )
-	printt( "    mpLevel:", mpLevel )
-	var dataTable = GetDataTable( $"datatable/xp_per_player_level.rpak" )
-	int maxPlayerLevel = GetDatatableRowCount( dataTable )
-	printt( "    maxPlayerLevel:", maxPlayerLevel )
-	float mpLevelFrac = GraphCapped( mpLevel, 0.0, maxPlayerLevel, 0.0, 0.4 )
-	printt( "    mpLevelFrac:", mpLevelFrac )
-	float collectiblesFrac = GraphCapped( collectiblesFound, 0, GetTotalLionsInGame(), 0.0, 0.2 )
-	printt( "    collectiblesFrac:", collectiblesFrac )
-	float gameProgressFrac = campaignFrac + mpLevelFrac + collectiblesFrac
-	printt( "  Game Progress:", gameProgressFrac )
 
-	#if DURANGO_PROG
-		Durango_SetGameProgress(gameProgressFrac)
-	#endif
-	*/
 
-	//printt( "#################################" )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
+	//
 }
 
 var function CreateRUITopology_Worldspace( vector org, vector ang, float width, float height )
 {
-	// adjust so the RUI is drawn with the org as its center point
+	//
 	org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
 	org += ( AnglesToUp( ang ) * (height*0.5) )
 
-	// right and down vectors that get added to base org to create the display size
+	//
 	vector right = ( AnglesToRight( ang ) * width )
 	vector down = ( (AnglesToUp( ang )*-1) * height )
 
-	//DebugDrawAngles( org, ang, 10000 )
-	//DebugDrawAngles( org + right, ang, 10000 )
-	//DebugDrawAngles( org + down, ang, 10000 )
+	//
+	//
+	//
 
 	var topo = RuiTopology_CreatePlane( org, right, down, true )
 	return topo
@@ -945,7 +925,7 @@ void function Dev_DestroyTextInfoPanelWithID( int panelID )
 
 void function __Dev_CreateTextInfoPanel( float orgX, float orgY, float orgZ, float angX, float angY, float angZ, bool showPin, float textScale, int panelID = -1 )
 {
-	//float maxVisibleDistSq = 1300 * 1300
+	//
 	vector origin = <orgX,orgY,orgZ>
 	vector angles = <angX,angY,angZ>
 
@@ -955,7 +935,7 @@ void function __Dev_CreateTextInfoPanel( float orgX, float orgY, float orgZ, flo
 	if ( showPin )
 		DebugDrawSphere( origin, 4.0, 255, 255, 0, false, 99999.0, 3 )
 
-	origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center for these infopanels
+	origin += (AnglesToUp( angles )*-1) * (height*0.5)  //
 	var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
 
 	var rui = RuiCreate( $"ui/info_debug_text.rpak", topo, RUI_DRAW_WORLD, 0 )
@@ -983,7 +963,7 @@ void function _Dev_UpdateTextInfoPanelVisibility( var rui, vector origin, int pa
 	if ( panelID != -1 )
 		EndSignal( file.textPanels[ panelID ], "OnDestroy" )
 
-	// Update visibility based on FOV to save RUI verts
+	//
 	while ( true )
 	{
 		WaitFrame()
@@ -1058,13 +1038,6 @@ bool function ShouldShowWeakpoints( entity ent )
 			return false
 	}
 
-	//Turn off AR if you are in a vehicle
-	//if ( ContextAction_IsInVehicle( player, ent ) )
-	//	return false
-
-	//if ( ent.IsTitan() && GetDoomedState( ent ) )
-	//	return false
-
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return false
 
@@ -1090,7 +1063,7 @@ bool function ShouldShowWeakpoints( entity ent )
 			return false
 	}
 
-	#if R5DEV
+	#if(DEV)
 		if ( Dev_CommandLineHasParm( "-noweakpoints" ) )
 			return false
 	#endif
@@ -1098,7 +1071,7 @@ bool function ShouldShowWeakpoints( entity ent )
 	return true
 }
 
-/* GENERIC OVERHEAD ICON */
+/**/
 
 var function AddOverheadIcon( entity prop, asset icon, bool pinToEdge = true, asset ruiFile = $"ui/overhead_icon_generic.rpak" )
 {
@@ -1129,7 +1102,7 @@ void function AddOverheadIconThread( entity prop, var rui )
 		}
 	)
 
-	//If overhead icon owner is cloaked, hide icon.
+	//
 	if ( prop.IsNPC() )
 	{
 		while ( 1 )
@@ -1149,8 +1122,8 @@ void function AddOverheadIconThread( entity prop, var rui )
 
 
 
-const RUI_PERMANENT = true
-const RUI_TRANSIENT = false
+const bool RUI_PERMANENT = true
+const bool RUI_TRANSIENT = false
 
 void function InitHUDRui( var rui, bool isTracked = false )
 {
@@ -1198,7 +1171,7 @@ var function CreateFullscreenPostFXRui( asset ruiAsset, int sortKey = 0 )
 
 var function CreateTransientFullscreenRui( asset ruiAsset, int sortKey = 0 )
 {
-	//var rui = RuiCreate( ruiAsset, clGlobal.topoFullScreen, RUI_DRAW_HUD, sortKey )
+	//
 	var rui = RuiCreate( ruiAsset, clGlobal.topoFullScreen, RUI_DRAW_POSTEFFECTS, sortKey )
 	InitHUDRui( rui, RUI_TRANSIENT )
 	return rui
@@ -1268,11 +1241,11 @@ var function CreateFixedTitanCockpitRui( asset ruiAsset, int sortKey = 0 )
 
 var function CreateOrientedTopology( vector org, vector ang, float width, float height )
 {
-	// adjust so the RUI is drawn with the org as its center point
+	//
 	org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
 	org += ( AnglesToUp( ang ) * (height*0.5) )
 
-	// right and down vectors that get added to base org to create the display size
+	//
 	vector right = ( AnglesToRight( ang ) * width )
 	vector down = ( (AnglesToUp( ang )*-1) * height )
 
@@ -1282,11 +1255,11 @@ var function CreateOrientedTopology( vector org, vector ang, float width, float 
 
 void function UpdateOrientedTopologyPos( var topo, vector org, vector ang, float width, float height )
 {
-	// adjust so the RUI is drawn with the org as its center point
+	//
 	org += ( (AnglesToRight( ang )*-1) * (width*0.5) )
 	org += ( AnglesToUp( ang ) * (height*0.5) )
 
-	// right and down vectors that get added to base org to create the display size
+	//
 	vector right = ( AnglesToRight( ang ) * width )
 	vector down = ( (AnglesToUp( ang )*-1) * height )
 
@@ -1295,11 +1268,11 @@ void function UpdateOrientedTopologyPos( var topo, vector org, vector ang, float
 
 vector function GetCockpitTopoOffsetVector( UISize screenSize )
 {
-	//float offsetDiff = COCKPIT_TOPO_OFFSET_1610.x - COCKPIT_TOPO_OFFSET.x
-	//float aspectRatio = screenSize.width / float( screenSize.height )
-	//vector offsetVector = GraphCappedVector( aspectRatio, ASPECT_RATIO_16_BY_9, ASPECT_RATIO_16_BY_10, COCKPIT_TOPO_OFFSET, COCKPIT_TOPO_OFFSET_1610 )
+	//
+	//
+	//
 
-	//return offsetVector
+	//
 	return <53.6, 0, 0>
 }
 
@@ -1316,7 +1289,7 @@ void function AddCallback_OnStaticPropRUICreated( void functionref( StaticPropRu
 	clGlobal.onStaticPropRUICreatedCallbacks.append( callbackFunc )
 }
 
-#if R5DEV
+#if(DEV)
 table<int, StaticPropRui> DEV_magicIdStaticPropRuiMap
 bool DEV_staticPropRuiVisibilityDebugEnabled = false
 void function DEV_ToggleStaticPropRuiVisibilityDebug()
@@ -1338,15 +1311,15 @@ void function ClientCodeCallback_OnEnumStaticPropRui( StaticPropRui propRui )
 	}
 	if ( shouldCreateDefaultStaticRui )
 	{
-		// If nothing is interested in this prop_static with RUIs, create what's specified in the keyvalues of the prop_static
-		// This is so level creators can add environment RUIs without involving scripters
+		//
+		//
 
 		var rui = RuiCreateOnStaticProp( propRui )
 		foreach ( callbackFunc in clGlobal.onStaticPropRUICreatedCallbacks )
 			callbackFunc( propRui, rui )
 	}
 
-	#if R5DEV
+	#if(DEV)
 		DEV_magicIdStaticPropRuiMap[propRui.magicId] <- propRui
 	#endif
 }
@@ -1358,7 +1331,7 @@ void function ClientCodeCallback_OnStaticPropRuiVisibilityChange( array<int> new
 
 	ClApexScreens_OnStaticPropRuiVisibilityChange( newlyVisible, newlyHidden )
 
-	#if R5DEV
+	#if(DEV)
 		if ( DEV_staticPropRuiVisibilityDebugEnabled )
 		{
 			if ( newlyVisible.len() > 0 )
@@ -1382,7 +1355,7 @@ void function ClientCodeCallback_OnStaticPropRuiVisibilityChange( array<int> new
 	#endif
 }
 
-#if R5DEV
+#if(DEV)
 void function DumpFullscreenRuis()
 {
 	printt( "DumpFullscreenRuis" )
@@ -1412,75 +1385,75 @@ void function CharacterReadyUpCycle_Stop()
 void function CharacterReadyUpCycle_Start()
 {
 	Assert( false )
-/*	EndSignal( clGlobal.levelEnt, "OnPlayerUse" )
+/*
 
-	if ( !IsNewThread() )
-	{
-		printt( "Must thread CharacterReadyUpCycle" )
-		return
-	}
 
-	entity player = GetLocalClientPlayer()
-	Assert( IsValid( player ) )
 
-	array<ItemFlavor> shippingCharacters
-	foreach( ItemFlavor itemFlav in GetAllCharacters() )
-	{
-		if ( CharacterClass_GetIsShippingCharacter( itemFlav ) )
-			shippingCharacters.append( itemFlav )
-	}
-	Assert( shippingCharacters.len() > 0 )
 
-	vector cameraOrigin = player.EyePosition()
-	vector cameraAngles = FlattenAngles( VectorToAngles( player.GetViewVector() ) )
 
-	entity camera = CreateClientSidePointCamera( cameraOrigin, cameraAngles, 35.5 )
-	player.SetMenuCameraEntity( camera )
 
-	float offsetForward = 108.0
-	float offsetRight = -16.0
-	float offsetUp = -48.0
 
-	vector characterOrigin = cameraOrigin + ( camera.GetForwardVector() * offsetForward ) + ( camera.GetRightVector() * offsetRight ) + ( camera.GetUpVector() * offsetUp )
-	vector characterAngles = AnglesCompose( cameraAngles, < 0, 180, 0 > )
 
-	entity ref = CreateScriptRef( characterOrigin, characterAngles )
-	ref.SetParent( camera )
 
-	asset defaultModel = GetGlobalSettingsAsset( DEFAULT_PILOT_SETTINGS, "bodyModel" )
-	entity model = CreateClientSidePropDynamic( characterOrigin, characterAngles, defaultModel )
-	model.MakeSafeForUIScriptHack()
-	model.SetParent( ref )
 
-	OnThreadEnd(
-		function() : ( player, camera, model, ref )
-		{
-			if ( IsValid( player ) )
-				player.ClearMenuCameraEntity()
-			camera.Destroy()
-			model.Destroy()
-			ref.Destroy()
-		}
-	)
 
-	thread _CharacterReadyUpCycleMovement( camera )
 
-	while( true )
-	{
-		foreach( ItemFlavor itemFlav in shippingCharacters )
-		{
-			asset setFile = GetGlobalSettingsAsset( ItemFlavor_GetAsset( itemFlav ), "setFile" )
-			asset modelName = GetGlobalSettingsAsset( setFile, "bodyModel" )
 
-			model.SetModel( modelName )
-			PlayAnim( model, "ACT_MP_MENU_MAIN_INTRO", ref )
-			thread PlayAnim( model, "ACT_MP_MENU_MAIN_IDLE", ref )
-			wait 2.0
-			PlayAnim( model, "ACT_MP_MENU_READYUP_INTRO", ref )
-			thread PlayAnim( model, "ACT_MP_MENU_READYUP_IDLE", ref )
-			wait 2.0
-		}
-	}*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
 }
 
 void function _CharacterReadyUpCycleMovement( entity ent )
@@ -1523,64 +1496,63 @@ bool function ShouldShowButtonHints()
 	return file.showButtonHintsInt == 1
 }
 
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//#if 1
-//// todo(dw): stuff to help track down R5DEV-52085
-//const int MAX_SCRIPT_COLOR_CORRECTS = 16
-//table<int, string> TEMP_scriptColorCorrectionSlots = {}
-//table<string, int> TEMP_scriptColorCorrectionPathSlotMap = {}
-//int function ColorCorrection_Register_WRAPPER( string path, bool doMagicDeDuping = true )
-//{
-//	if ( doMagicDeDuping && path in TEMP_scriptColorCorrectionPathSlotMap )
-//	{
-//		//Warning
-//		printt( format( "Script color correction issue: %s is registering color correction \"%s\", which has already been registered. ColorCorrection_Register_WRAPPER caught this and de-duped them (which is technically incorrect, but we're low on CC budget).",
-//			FUNC_NAME( 1 ), path ) )
-//		return TEMP_scriptColorCorrectionPathSlotMap[path]
-//	}
 //
-//	int slotIndex = ColorCorrection_Register( path )
-//	Assert( !(slotIndex in TEMP_scriptColorCorrectionSlots) )
-//	TEMP_scriptColorCorrectionSlots[slotIndex] <- path
 //
-//	if ( TEMP_scriptColorCorrectionSlots.len() == MAX_SCRIPT_COLOR_CORRECTS - 3 )
-//	{
-//		string message = ""
-//		for ( int iterSlotIndex = 0; iterSlotIndex < MAX_SCRIPT_COLOR_CORRECTS; iterSlotIndex++ )
-//		{
-//			string slotPath = "free (or maybe phase shift)"
-//			if ( iterSlotIndex in TEMP_scriptColorCorrectionSlots )
-//				slotPath = TEMP_scriptColorCorrectionSlots[iterSlotIndex]
-//			string line = format( "script color correction slot %d: %s", iterSlotIndex, slotPath )
-//			printt( line )
-//			message += line + "\n"
-//		}
-//		Assert( false, "Too many script color corrections:\n" + message )
-//	}
 //
-//	if ( doMagicDeDuping )
-//		TEMP_scriptColorCorrectionPathSlotMap[path] <- slotIndex
 //
-//	return slotIndex
-//}
-//void function ColorCorrection_Release_WRAPPER( int slotIndex )
-//{
-//	Assert( slotIndex in TEMP_scriptColorCorrectionSlots )
-//	delete TEMP_scriptColorCorrectionSlots[slotIndex]
-//	ColorCorrection_Release( slotIndex )
-//}
-//void function DumpScriptColorCorrections()
-//{
-//	for ( int slotIndex = 0; slotIndex < MAX_SCRIPT_COLOR_CORRECTS; slotIndex++ )
-//	{
-//		string slotPath = "free (or maybe phase shift)"
-//		if ( slotIndex in TEMP_scriptColorCorrectionSlots )
-//			slotPath = TEMP_scriptColorCorrectionSlots[slotIndex]
-//		printt( format( "script color correction slot %d: %s", slotIndex, slotPath ) )
-//	}
-//}
-//#endif
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//

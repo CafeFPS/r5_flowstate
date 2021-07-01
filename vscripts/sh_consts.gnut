@@ -804,7 +804,7 @@ global const CE_FLAG_INTRO					= 0x0002
 global const CE_FLAG_EXECUTION				= 0x0004 // unused?
 global const CE_FLAG_EMBARK					= 0x0008
 global const CE_FLAG_DISEMBARK				= 0x0010
-global const CE_FLAG_TITAN_HOT_DROP			= 0x0020 // unused?
+global const CE_FLAG_HIDE_MAIN_HUD_INSTANT	= 0x0020
 global const CE_FLAG_CLASSIC_MP_SPAWNING	= 0x0040
 global const CE_FLAG_HIDE_MAIN_HUD			= 0x0080
 global const CE_FLAG_TITAN_3P_CAM			= 0x0100
@@ -1617,11 +1617,12 @@ global enum eHitType
 	VORTEX,
 }
 
+global const vector OVERSHIELD_COLOR = <19, 207, 69>
+
 global const int DAMAGEFLAG_ARMOR1 = 64
 global const int DAMAGEFLAG_ARMOR2 = 128
 global const int DAMAGEFLAG_ARMOR3 = 256
 global const int DAMAGEFLAG_ARMOR4 = 512
-global const int DAMAGEFLAG_HIT_VORTEX = 536870912 // DF_DOOM_PROTECTED
 
 global enum eCommsAction
 {

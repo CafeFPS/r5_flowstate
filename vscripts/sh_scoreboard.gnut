@@ -10,6 +10,7 @@ global function HideScoreboard
 global function ToggleScoreboard
 global function AddScoreboardShowCallback
 global function AddScoreboardHideCallback
+global function TPPromptIsActive
 
 global function ClientCodeCallback_ToggleScoreboard
 global function ClientToUI_ToggleScoreboard
@@ -32,6 +33,8 @@ struct
 	#endif
 } file
 
+bool s_latestShowWasForTPPrompt = false
+bool s_nextShowWantsTPPrompt    = false
 
 
 /////////////////////////
@@ -59,8 +62,8 @@ void function ClScoreboard_Init()
 //////////////////////////
 //// Global functions ////
 //////////////////////////
-/////////////
-#if CLIENT/////////////
+//////////////////////////
+#if CLIENT
 bool function IsScoreboardShown()
 {
 	return clGlobal.isScoreboardShown
@@ -126,6 +129,12 @@ void function ClientToUI_HideScoreboard()
 }
 #endif
 
+#if CLIENT
+bool function TPPromptIsActive()
+{
+	return (clGlobal.isScoreboardShown && s_latestShowWasForTPPrompt)
+}
+#endif
 
 #if CLIENT
 void function UpdateScoreboardVisibility()
@@ -183,5 +192,3 @@ void function AddScoreboardHideCallback( void functionref() func )
 	file.scoreboardHideCallbacks.append( func )
 }
 #endif
-
-

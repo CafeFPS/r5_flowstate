@@ -760,12 +760,12 @@ void function DisplayWaitingForRespawnThread( entity ent, float startTime, float
 	if ( Time() > endTime )
 		return
 
-	UpdateRespawnTime( startTime, endTime )
+		DeathScreen_UpdateRespawnTime( startTime, endTime )
 
 	OnThreadEnd(
 		function() : ()
 		{
-			UpdateRespawnTime( RUI_BADGAMETIME, RUI_BADGAMETIME )
+			DeathScreen_UpdateRespawnTime( RUI_BADGAMETIME, RUI_BADGAMETIME )
 		}
 	)
 
@@ -813,12 +813,12 @@ void function ReviveRuiThread( float endTime )
 	clGlobal.levelEnt.Signal( "ReviveRuiThread" )
 	clGlobal.levelEnt.EndSignal( "SquadEliminated" )
 
-	UpdateRespawnTime( Time(), endTime )
+	DeathScreen_UpdateRespawnTime( Time(), endTime )
 
 	OnThreadEnd(
 		function() : ()
 		{
-			UpdateRespawnTime( RUI_BADGAMETIME, RUI_BADGAMETIME )
+			DeathScreen_UpdateRespawnTime( RUI_BADGAMETIME, RUI_BADGAMETIME )
 		}
 	)
 

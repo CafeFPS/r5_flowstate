@@ -13,22 +13,22 @@ const bool RUI_ENABLED = true
 /*
 
 
-        ==== SCRIPT ====
-        ) Client script can now create and destroy Respawn UIs. To create one, do:
-           rui = RuiCreate( $"ui/assetname.rpak", topology, drawGroup, sortKey )
 
-        You can then manipulate it using the following:
-		   RuiSetVisible( rui, visible )
-           RuiSetString( rui, argName, value )
-           RuiSetBool( rui, argName, value )
-           RuiSetInt( rui, argName, value )
-           RuiSetFloat( rui, argName, value )
-           RuiSetFloat2( rui, argName, value )  // value is a vector; only x and y are used
-           RuiSetFloat3( rui, argName, value )
-           RuiSetColorAlpha( rui, argName, color, alpha )  // color is a vector
 
-        To destroy it, just do:
-           RuiDestroy( rui )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 */
 
 struct MessageData
@@ -135,7 +135,7 @@ int function SortPendingMedals( MessageData eventA, MessageData eventB )
 
 void function QueueMessageThink()
 {
-	// allow multiple queue messages to come in this frame
+	//
 	file.eventQueueActive = true
 	WaitEndFrame()
 
@@ -231,13 +231,15 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 	bool showStackingDamageText = (styleSetting == DAMAGE_TEXT_STYLE_STACKING_ONLY || styleSetting == DAMAGE_TEXT_STYLE_BOTH)
 	bool showFloatingDamageText = (styleSetting == DAMAGE_TEXT_STYLE_FLOATING_ONLY || styleSetting == DAMAGE_TEXT_STYLE_BOTH)
 
-	bool isShieldShot    = (damageType & DF_SHIELD_DAMAGE) ? true : false
-	bool isCritShot      = (damageType & DF_CRITICAL) ? true : false
-	bool isHeadShot      = (damageType & DF_HEADSHOT) ? true : false
-	bool isKillShot      = (damageType & DF_KILLSHOT) ? true : false
-	bool isKOShieldShot  = (damageType & DAMAGEFLAG_VICTIM_HAS_VORTEX) ? true : false
-	bool isKnockdownShot = (damageType & DF_KNOCKDOWN) ? true : false
-	bool isShieldBreak   = (damageType & DF_SHIELD_BREAK) ? true : false
+	bool isShieldShot    	= (damageType & DF_SHIELD_DAMAGE) ? true : false
+	bool isCritShot      	= (damageType & DF_CRITICAL) ? true : false
+	bool isHeadShot      	= (damageType & DF_HEADSHOT) ? true : false
+	bool isKillShot      	= (damageType & DF_KILLSHOT) ? true : false
+	bool isKOShieldShot  	= (damageType & DAMAGEFLAG_VICTIM_HAS_VORTEX) ? true : false
+	bool isKnockdownShot 	= (damageType & DF_KNOCKDOWN) ? true : false
+	bool isShieldBreak   	= (damageType & DF_SHIELD_BREAK) ? true : false
+	bool isShadowShot    	= (damageType & DF_SHADOW_DAMAGE) ? true: false
+	bool isOvershieldShot	= (damageType & DF_OVERSHIELD) ? true : false
 
 	int sortKey = (file.lastSortKey++) % 100
 
@@ -247,8 +249,14 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 	{
 		LootData shieldData = EquipmentSlot_GetEquippedLootDataForSlot( victim, "armor" )
 		shieldIcon = shieldData.hudIcon
-		shieldLevel = shieldData.tier//GetArmorLevelFromDamageFlags( damageFlags )
+		shieldLevel = shieldData.tier//
 	}
+	
+	if ( victim.IsPlayer() && isShadowShot )
+	{
+		//
+	}
+	
 	if ( !victim.IsPlayer() && (isKOShieldShot || hitType == eHitType.VORTEX) )
 	{
 		entity shieldOwner = victim.GetOwner()
@@ -266,6 +274,12 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 				shieldLevel = 1
 			}
 		}
+	}
+
+	if ( victim.IsPlayer() && isOvershieldShot )
+	{
+		shieldIcon = GIBRALTAR_PASSIVE_ICON
+		shieldLevel = 1
 	}
 
 	if ( showHitIndicator )
@@ -321,7 +335,7 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 	}
 
 	float distance      = Distance( victim.GetOrigin(), GetLocalViewPlayer().EyePosition() )
-	damagePosition = GraphCappedVector( distance, 0, 256, victim.GetWorldSpaceCenter(), victim.GetOrigin() + <0, 0, victim.GetBoundingMaxs().z> )// + <0, 0, 8>
+	damagePosition = GraphCappedVector( distance, 0, 256, victim.GetWorldSpaceCenter(), victim.GetOrigin() + <0, 0, victim.GetBoundingMaxs().z> )//
 
 	vector damageTextOffset = <0, -0.015, 0>
 
@@ -352,8 +366,8 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		RuiSetAsset( stackingRui, "shieldIcon", shieldIcon )
 		RuiSetInt( stackingRui, "shieldTier", shieldLevel )
 		RuiSetBool( stackingRui, "isCrit", isHeadShot || isCritShot )
-		// We should be able to track all of this in RUI, but since RUI is threaded, multiple events on the same frame (such as a Kraber shot that breaks shield)
-		// are combined, meaning the RUI will never know that the player had a shield in the first place
+		//
+		//
 		if ( isShieldBreak )
 		{
 			printt( "wasShieldBreak" )
@@ -405,8 +419,8 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 
 				if ( timeDelta < 0.33 )
 				{
-					//RuiSetGameTime( damageData.rui, "startTime", Time() - (0.33 * index) )
-					//damageData.creationTime = Time() - (0.33 * index)
+					//
+					//
 					RuiSetInt( damageData.rui, "index", index )
 				}
 				lastValidIndex = index
@@ -427,8 +441,8 @@ bool function ShouldShowProjectileHitDot( int damageType, entity weapon )
 	if ( !IsValid( weapon ) )
 		return false
 
-	#if R5DEV
-		// disables hit dots for video capture
+	#if(DEV)
+		//
 		if ( GetCurrentPlaylistVarBool( "hud_projectile_hit_dots_disabled", false ) )
 			return false
 	#endif

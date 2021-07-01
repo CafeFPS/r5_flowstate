@@ -13,7 +13,6 @@ global function ServerCallback_Announcement
 global function ClientCodeCallback_ControllerModeChanged
 global function UpdateMainHudFromCEFlags
 global function UpdatePlayerStatusCounts
-//global function ScoreBarsTitanCountThink
 global function UpdateCoreFX
 global function InitCrosshair
 
@@ -25,11 +24,6 @@ global const VGUI_CLOSING = 1
 global const VGUI_OPEN = 2
 global const VGUI_OPENING = 3
 
-global const USE_AUTO_TEXT = 1
-global const SHIELD_R = 176
-global const SHIELD_G = 227
-global const SHIELD_B = 227
-
 global const TEAM_ICON_IMC = $"ui/scoreboard_imc_logo"
 global const TEAM_ICON_MILITIA = $"ui/scoreboard_mcorp_logo"
 
@@ -39,6 +33,13 @@ const float OFFHAND_ALERT_ICON_SCALE = 4.5
 const bool ALWAYS_SHOW_BOOST_MOBILITY_BAR = true
 
 
+struct HudVisibilityStatus
+{
+	bool mainHud
+	bool permanentHud
+	bool targetInfoHud
+}
+
 struct
 {
 	table      crosshairPriorityLevel
@@ -46,6 +47,7 @@ struct
 
 	int iconIdx = 0
 
+	var  rodeoRUI //
 	bool trackingDoF = false
 } file
 
@@ -56,47 +58,6 @@ void function ClMainHud_Init()
 
 	PrecacheHUDMaterial( TEAM_ICON_IMC )
 	PrecacheHUDMaterial( TEAM_ICON_MILITIA )
-
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_base_freindly" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_friendly_held" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_friendly_away" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_base_enemy" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_enemy_away" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_enemy_held" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_friendly_notext" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_enemy_notext" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_friendly_missing" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_friendly_minimap" )
-	//PrecacheHUDMaterial( $"vgui/HUD/ctf_flag_enemy_minimap" )
-	//PrecacheHUDMaterial( $"vgui/HUD/overhead_shieldbar_burn_card_indicator" )
-	//PrecacheHUDMaterial( $"ui/icon_status_burncard_friendly" )
-	//PrecacheHUDMaterial( $"ui/icon_status_burncard_enemy" )
-	//PrecacheHUDMaterial( $"vgui/HUD/riding_icon_enemy" )
-	//PrecacheHUDMaterial( $"vgui/HUD/riding_icon_friendly" )
-
-	//PrecacheHUDMaterial( $"vgui/hud/titan_build_bar" )
-	//PrecacheHUDMaterial( $"vgui/hud/titan_build_bar_bg" )
-	//PrecacheHUDMaterial( $"vgui/hud/titan_build_bar_change" )
-	//PrecacheHUDMaterial( $"vgui/hud/hud_bar_small" )
-	//PrecacheHUDMaterial( $"vgui/hud/shieldbar_health" )
-	//PrecacheHUDMaterial( $"vgui/hud/shieldbar_health_change" )
-	//PrecacheHUDMaterial( $"vgui/hud/titan_doomedbar_fill" )
-	//PrecacheHUDMaterial( $"vgui/hud/hud_hex_progress_timer" )
-	//PrecacheHUDMaterial( $"vgui/hud/hud_hex_progress_hollow_round" )
-	//PrecacheHUDMaterial( $"vgui/hud/hud_hex_progress_hollow_round_bg" )
-	//PrecacheHUDMaterial( $"vgui/hud/hud_bar" )
-	//PrecacheHUDMaterial( $"vgui/hud/corebar_health" )
-	//PrecacheHUDMaterial( $"vgui/hud/corebar_bg" )
-
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_orange_a" )
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_orange_b" )
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_orange_c" )
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_blue_a" )
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_blue_b" )
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_blue_c" )
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_grey_a" )
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_grey_b" )
-	//PrecacheHUDMaterial( $"vgui/HUD/capture_point_status_grey_c" )
 
 	RegisterSignal( "UpdateTitanCounts" )
 	RegisterSignal( "MainHud_TurnOn" )
@@ -112,6 +73,7 @@ void function ClMainHud_Init()
 	RegisterSignal( "AttritionPopup" )
 	RegisterSignal( "UpdateLastTitanStanding" )
 	RegisterSignal( "UpdateMobilityBarVisibility" )
+	RegisterSignal( "UpdateFriendlyRodeoTitanShieldHealth" )
 	RegisterSignal( "DisableShieldBar" )
 	RegisterSignal( "MonitorGrappleMobilityBarState" )
 	RegisterSignal( "StopBossIntro" )
@@ -152,7 +114,6 @@ void function MainHud_AddClient( entity player )
 	thread ClientHudInit( player )
 }
 
-
 void function CockpitHudInit( entity cockpit )
 {
 	entity player = GetLocalViewPlayer()
@@ -163,16 +124,11 @@ void function CockpitHudInit( entity cockpit )
 		thread PilotMainHud( cockpit, player )
 		cockpit.SetCaptureScreenBeforeViewmodels( true )
 	}
-	else if ( IsTitanCockpitModelName( cockpitModelName ) )
-	{
-		cockpit.SetCaptureScreenBeforeViewmodels( false )
-	}
 	else
 	{
 		cockpit.SetCaptureScreenBeforeViewmodels( false )
 	}
 }
-
 
 void function PilotMainHud( entity cockpit, entity player )
 {
@@ -244,7 +200,7 @@ void function UpdatePilotDamageAmpFX( entity player )
 
 	if ( cockpit.s.pilotDamageAmpFXHandle && EffectDoesExist( cockpit.s.pilotDamageAmpFXHandle ) )
 	{
-		EffectStop( cockpit.s.pilotDamageAmpFXHandle, false, true ) // stop particles, play end cap
+		EffectStop( cockpit.s.pilotDamageAmpFXHandle, false, true ) //
 	}
 
 	if ( StatusEffect_GetSeverity( player, eStatusEffect.damageAmpFXOnly ) > 0 )
@@ -271,7 +227,7 @@ void function UpdateTitanDamageAmpFX( entity player )
 
 	if ( cockpit.s.titanDamageAmpFXHandle && EffectDoesExist( cockpit.s.titanDamageAmpFXHandle ) )
 	{
-		EffectStop( cockpit.s.titanDamageAmpFXHandle, false, true ) // stop particles, play end cap
+		EffectStop( cockpit.s.titanDamageAmpFXHandle, false, true ) //
 	}
 
 	entity soul = player.GetTitanSoul()
@@ -286,6 +242,8 @@ void function ScreenEmpEnabled( entity player, int statusEffect, bool actuallyCh
 {
 	if ( player != GetLocalViewPlayer() )
 		return
+
+	thread Chroma_EMPEffect()
 
 	thread EmpStatusEffectThink( player )
 }
@@ -334,31 +292,8 @@ void function UpdateCoreFX( entity player )
 
 	if ( cockpit.s.coreFXHandle && EffectDoesExist( cockpit.s.coreFXHandle ) )
 	{
-		EffectStop( cockpit.s.coreFXHandle, false, true ) // stop particles, play end cap
+		EffectStop( cockpit.s.coreFXHandle, false, true ) //
 	}
-
-	if ( PlayerShouldHaveCoreScreenFX( player ) )
-	{
-		cockpit.s.coreFXHandle = StartParticleEffectOnEntity( cockpit, GetParticleSystemIndex( $"P_core_DMG_boost_screen" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
-	}
-}
-
-
-bool function PlayerShouldHaveCoreScreenFX( entity player )
-{
-	return false
-}
-
-
-string function GetTitanName( entity titan )
-{
-	if ( titan.IsPlayer() )
-		return titan.GetPlayerName()
-
-	if ( IsValid( titan.GetBossPlayer() ) )
-		return titan.GetBossPlayerName()
-
-	return titan.GetTitleForUI()
 }
 
 
@@ -414,8 +349,8 @@ void function UpdatePlayerStatusCounts()
 	if ( !GetCurrentPlaylistVarInt( "hud_score_enabled", 1 ) )
 		return
 
-	clGlobal.levelEnt.Signal( "UpdatePlayerStatusCounts" ) //For Pilot Elimination based modes
-	clGlobal.levelEnt.Signal( "UpdateTitanCounts" ) //For all modes
+	clGlobal.levelEnt.Signal( "UpdatePlayerStatusCounts" ) //
+	clGlobal.levelEnt.Signal( "UpdateTitanCounts" ) //
 }
 
 
@@ -444,8 +379,11 @@ void function UpdateMainHudFromLifeState( entity player, int oldLifeState, int n
 void function UpdateMainHudVisibility( entity player, float duration = 0.0 )
 {
 	int ceFlags                   = player.GetCinematicEventFlags()
-	bool shouldBeVisible          = ShouldMainHudBeVisible( player )
-	bool shouldBeVisiblePermanent = ShouldPermanentHudBeVisible( player )
+
+	HudVisibilityStatus hudStatus 	= GetHudStatus( player )
+	bool shouldBeVisible          	= hudStatus.mainHud
+	bool shouldBeVisiblePermanent 	= hudStatus.permanentHud
+	bool shouldBeVisibleTargetInfo	= hudStatus.targetInfoHud
 
 	if ( shouldBeVisible )
 		ShowFriendlyIndicatorAndCrosshairNames()
@@ -460,10 +398,11 @@ void function UpdateMainHudVisibility( entity player, float duration = 0.0 )
 	if ( !mainVGUI )
 		return
 
-	local isVisible = (mainVGUI.s.enabledState == VGUI_OPEN) || (mainVGUI.s.enabledState == VGUI_OPENING)
-
+	bool isVisible = (mainVGUI.s.enabledState == VGUI_OPEN) || (mainVGUI.s.enabledState == VGUI_OPENING)
+	bool hideHudInstantly = ( (ceFlags & CE_FLAG_HIDE_MAIN_HUD_INSTANT) > 0 ) || !isVisible
+		
 	if ( !shouldBeVisible )
-		thread MainHud_TurnOff_RUI( !isVisible )
+		thread MainHud_TurnOff_RUI( hideHudInstantly )
 	else
 		thread MainHud_TurnOn_RUI()
 
@@ -483,7 +422,7 @@ void function UpdateMainHudVisibility( entity player, float duration = 0.0 )
 	}
 	else if ( !isVisible && shouldBeVisible )
 	{
-		//printt( "turn on" )
+		//
 		table warpSettings = expect table( mainVGUI.s.warpSettings )
 
 		if ( duration <= 0 )
@@ -496,6 +435,11 @@ void function UpdateMainHudVisibility( entity player, float duration = 0.0 )
 		ShowPermanentHudTopo()
 	else
 		HidePermanentHudTopo()
+
+	if ( shouldBeVisibleTargetInfo )
+		ShowTargetInfoHudTopo()
+	else
+		HideTargetInfoHudTopo()
 }
 
 
@@ -512,12 +456,12 @@ void function MainHud_TurnOn( entity vgui, float duration, float xWarp, float xS
 
 	vgui.s.enabledState = VGUI_OPENING
 
-	//vgui.s.panel.WarpGlobalSettings( xWarp, xScale, yWarp, yScale, viewDist )
+	//
 
 	if ( !IsWatchingReplay() )
 	{
 		vgui.s.panel.WarpGlobalSettings( xWarp, 0, yWarp, 0, viewDist )
-		//vgui.SetSize( vgui.s.baseSize[0] * 0.001, vgui.s.baseSize[1] * 0.001 )
+		//
 
 		float xTimeScale = 0
 		float yTimeScale = 0
@@ -528,15 +472,15 @@ void function MainHud_TurnOn( entity vgui, float duration, float xWarp, float xS
 			xTimeScale = expect float( Anim_EaseIn( GraphCapped( Time() - startTime, 0.0, duration / 2, 0.0, 1.0 ) ) )
 			yTimeScale = expect float( Anim_EaseIn( GraphCapped( Time() - startTime, duration / 4, duration, 0.01, 1.0 ) ) )
 
-			//vector scaledSize = <vgui.s.baseSize[0] * xTimeScale, vgui.s.baseSize[1] * yTimeScale, 0>
-			//vgui.SetAttachOffsetOrigin( vgui.s.baseOrigin )
-			//vgui.SetSize( scaledSize.x, scaleSize.y )
+			//
+			//
+			//
 			vgui.s.panel.WarpGlobalSettings( xWarp, xScale * xTimeScale, yWarp, yScale * yTimeScale, viewDist )
 			WaitFrame()
 		}
 	}
 
-	//vgui.SetSize( vgui.s.baseSize[0], vgui.s.baseSize[1] )
+	//
 	vgui.s.panel.WarpGlobalSettings( xWarp, xScale, yWarp, yScale, viewDist )
 	vgui.s.enabledState = VGUI_OPEN
 }
@@ -566,7 +510,7 @@ void function MainHud_TurnOff( entity vgui, float duration, float xWarp, float x
 	vgui.s.enabledState = VGUI_CLOSING
 
 	vgui.s.panel.WarpGlobalSettings( xWarp, xScale, yWarp, yScale, viewDist )
-	//vgui.SetSize( vgui.s.baseSize[0], vgui.s.baseSize[1] )
+	//
 
 	float xTimeScale = 1.0
 	float yTimeScale = 1.0
@@ -577,12 +521,12 @@ void function MainHud_TurnOff( entity vgui, float duration, float xWarp, float x
 		xTimeScale = expect float( Anim_EaseOut( GraphCapped( Time() - startTime, duration * 0.1, duration, 1.0, 0.0 ) ) )
 		yTimeScale = expect float( Anim_EaseOut( GraphCapped( Time() - startTime, 0.0, duration * 0.5, 1.0, 0.01 ) ) )
 
-		//vgui.SetSize( vgui.s.baseSize[0] * xTimeScale, vgui.s.baseSize[1] * yTimeScale )
+		//
 		vgui.s.panel.WarpGlobalSettings( xWarp, xScale * xTimeScale, yWarp, yScale * yTimeScale, viewDist )
 		WaitFrame()
 	}
 
-	//vgui.SetSize( vgui.s.baseSize[0] * 0.001, vgui.s.baseSize[1] * 0.001 )
+	//
 	vgui.s.panel.WarpGlobalSettings( xWarp, 0, yWarp, 0, viewDist )
 
 	vgui.s.enabledState = VGUI_CLOSED
@@ -645,11 +589,22 @@ void function ShowPermanentHudTopo()
 	UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true )
 }
 
+void function HideTargetInfoHudTopo()
+{
+	RuiTopology_UpdatePos( clGlobal.topFullscreenTargetInfo, <0, 0, 0>, <0, 0, 0>, <0, 0, 0> )
+}
+
+
+void function ShowTargetInfoHudTopo()
+{
+	UpdateFullscreenTopology( clGlobal.topFullscreenTargetInfo, true )
+}
+
 
 void function InitCrosshair()
 {
-	// The number of priority levels should not get huge. Will depend on how many different places in script want control at the same time.
-	// All menus for example should show and clear from one place to avoid unneccessary priority levels.
+	//
+	//
 	file.crosshairPriorityOrder.append( crosshairPriorityLevel.ROUND_WINNING_KILL_REPLAY )
 	file.crosshairPriorityOrder.append( crosshairPriorityLevel.MENU )
 	file.crosshairPriorityOrder.append( crosshairPriorityLevel.PREMATCH )
@@ -659,7 +614,7 @@ void function InitCrosshair()
 	foreach ( priority in file.crosshairPriorityOrder )
 		file.crosshairPriorityLevel[priority] <- null
 
-	// Fallback default
+	//
 	file.crosshairPriorityLevel[crosshairPriorityLevel.DEFAULT] = CROSSHAIR_STATE_SHOW_ALL
 	UpdateCrosshairState()
 }
@@ -738,35 +693,46 @@ void function ClientHudInit( entity player )
 {
 	Assert( player == GetLocalClientPlayer() )
 
-	#if R5DEV
+	#if(DEV)
 		HudElement( "Dev_Info1" ).Hide()
 		HudElement( "Dev_Info2" ).Hide()
 		HudElement( "Dev_Info3" ).Hide()
-		{
-			if ( IsTestMap() )
-			{
-				var elem = HudElement( "Dev_Info3" )
-				Hud_SetText( elem, "Test Map" )
-				Hud_Show( elem )
+		#if(false)
 
-				/*switch( GetMapName() )
+
+
+
+
+
+
+
+#else
+			{
+				if ( IsTestMap() )
 				{
-					case "sp_danger_room":
-					case "sp_script_samples":
-					case "sp_enemies":
-					case "sp_grunt_battle":
-					case "mp_rr_box":
-					case "mp_box":
-					case "mp_test_engagement_range":
-						// blessed calm, like a smooth ocean
-						break
-					default:
-						thread DrawAttentionToTestMap( elem )
-						break
-				}*/
+					var elem = HudElement( "Dev_Info3" )
+					Hud_SetText( elem, "Test Map" )
+					Hud_Show( elem )
+
+					/*
+
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+				}
 			}
-		}
-	#endif // DEV
+		#endif
+	#endif //
 }
 
 
@@ -777,14 +743,14 @@ void function CinematicEventUpdateDoF( entity player )
 
 	if ( ShouldHaveFarDoF( player ) )
 	{
-		// DoF_LerpFarDepth( 1000, 1500, 0.5 )
+		//
 		if ( !file.trackingDoF )
 			thread TrackDoF( player )
 	}
 	else
 	{
 		player.Signal( "ClearDoF" )
-		// DoF_LerpFarDepthToDefault( 1.0 )
+		//
 	}
 }
 
@@ -886,6 +852,9 @@ bool function ShouldMainHudBeVisible( entity player )
 
 	if ( ceFlags & CE_FLAG_HIDE_MAIN_HUD )
 		return false
+		
+	if ( ceFlags & CE_FLAG_HIDE_MAIN_HUD_INSTANT )
+		return false
 
 	if ( ceFlags & CE_FLAG_EOG_STAT_DISPLAY )
 		return false
@@ -903,7 +872,7 @@ bool function ShouldMainHudBeVisible( entity player )
 	if ( (!player.IsObserver() || player.GetObserverTarget() == player || player.GetObserverTarget() == null) && !IsAlive( player ) )
 		return false
 
-	if ( IsViewingSquadSummary() )
+	if ( IsViewingSquadSummary() || IsViewingDeathRecap() )
 		return false
 
 	if ( Fullmap_IsVisible() )
@@ -931,7 +900,7 @@ bool function ShouldMainHudBeVisible( entity player )
 			return false
 	}
 
-	#if R5DEV
+	#if(DEV)
 		if ( IsModelViewerActive() )
 			return false
 	#endif
@@ -939,13 +908,27 @@ bool function ShouldMainHudBeVisible( entity player )
 	return true
 }
 
+HudVisibilityStatus function GetHudStatus( entity player )
+{
+	bool showMainHud = ShouldMainHudBeVisible( player )
+	bool showPermanentHud = ShouldPermanentHudBeVisible( player )
+
+	HudVisibilityStatus hudStatus
+	hudStatus.mainHud = showMainHud
+	hudStatus.targetInfoHud = showPermanentHud
+
+	int ceFlags = player.GetCinematicEventFlags()
+	hudStatus.permanentHud = showPermanentHud && ((ceFlags & CE_FLAG_HIDE_PERMANENT_HUD) == 0)
+
+	return hudStatus
+}
 
 bool function ShouldPermanentHudBeVisible( entity player )
 {
-	if ( IsViewingSquadSummary() )
+	if ( IsViewingSquadSummary() || IsViewingDeathRecap() )
 		return false
 
-	// this hud contains the minimap, unintframes and overhead names etc.
+	//
 	int gameState = GetGameState()
 	switch( gameState )
 	{
@@ -974,10 +957,7 @@ bool function ShouldPermanentHudBeVisible( entity player )
 	{
 		int ceFlags = player.GetCinematicEventFlags()
 
-		if ( ceFlags & CE_FLAG_HIDE_PERMANENT_HUD )
-			return false
-
-		// hide during execution
+		//
 		if ( ceFlags & CE_FLAG_TITAN_3P_CAM )
 			return false
 	}
@@ -985,7 +965,7 @@ bool function ShouldPermanentHudBeVisible( entity player )
 	if ( (!player.IsObserver() || player.GetObserverTarget() == player || player.GetObserverTarget() == null) && !IsAlive( player ) )
 		return false
 
-	#if R5DEV
+	#if(DEV)
 		if ( IsModelViewerActive() )
 			return false
 	#endif
@@ -1037,5 +1017,4 @@ bool function IsWatchingReplay()
 
 	return false
 }
-
 

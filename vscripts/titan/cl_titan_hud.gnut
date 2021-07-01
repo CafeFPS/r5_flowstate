@@ -22,7 +22,7 @@ void function TitanCockpitHudInit( entity cockpit )
 }
 
 void function TitanCockpitHudInit_Internal( entity cockpit )
-{
+{/*
 	OnThreadEnd(
 		function () : ()
 		{
@@ -53,7 +53,7 @@ void function TitanCockpitHudInit_Internal( entity cockpit )
 	//	thread DrawRodeoAlertIcons( player.GetTitanSoul() )
 	//}
 
-	thread TitanCockpitThink( cockpit )
+	thread TitanCockpitThink( cockpit )*/
 }
 
 //bool function ShouldDrawRodeoVGUI( entity player )
@@ -167,7 +167,7 @@ void function TitanCockpit_WarningAudio( entity cockpit, entity player )
 }
 
 void function UpdateHudEMPState( entity player, entity cockpit )
-{
+{/*
 	// Get Alpha
 	int alpha = 255
 	if ( cockpit.s.empInfo.startTime != 0 )
@@ -191,7 +191,7 @@ void function UpdateHudEMPState( entity player, entity cockpit )
 		{
 			vgui.SetAlpha( alpha )
 		}
-	}
+	}*/
 }
 
 

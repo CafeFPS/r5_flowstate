@@ -2171,7 +2171,6 @@ string function GetDayOfWeekName( int dayOfWeek )
 	return days[dayOfWeek]
 }
 
-
 string function GetDateTimeString( int unixTime )
 {
 	TimeParts timeParts = GetUnixTimeParts( unixTime )
@@ -2183,6 +2182,12 @@ string function GetTimeString( int unixTime )
 {
 	TimeParts timeParts = GetUnixTimeParts( unixTime )
 	return format( "%i:%2i.%i", timeParts.hour, timeParts.minute, timeParts.second )
+}
+
+string function GetDaysHoursMinutesSecondsString( int unixTime )
+{
+	TimeParts timeParts = GetUnixTimeParts( unixTime )
+	return format( "%i:%i:%2i.%i", timeParts.day, timeParts.hour, timeParts.minute, timeParts.second )
 }
 
 int function GetStartOfDay( int unixTime )

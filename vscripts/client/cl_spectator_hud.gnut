@@ -1,383 +1,1086 @@
-global function ClSpectatorHud_Init
-global function CreateSpectatorHud
-global function UpdateDeathAndSpectatorHUD
+#if(false)
 
-enum eRuiSort
-{
-	GLAD_CARD = RUI_SORT_GLADCARD
-	SQUADSUMMARY_BANNERS
-	SQUADSUMMARY_STATS
-	SQUADSUMMARY_BORDER
-	SPECTATOR_HUD
-	DEAD_HUD
-}
-
-struct
-{
-	var spectatorHud                                     = null
-	var deadHud                                          = null
-
-	bool summaryValid                                    = false
-
-	bool lobbyReturnRegistered                           = false
-	bool summaryRegistered                               = false
-
-	bool                             viewingSquadSummary = false
-	entity                           squadResultsCamera
-	array<var>                       squadResultsGladCardRuis
-	array<NestedGladiatorCardHandle> squadResultsGladCardHandles
-	array<var>                       squadResultsStatsRuis
-	var                              squadResultsBorderRui = null
-	entity                           squadResultsBackgroundModel
-	bool                             squadResultsApexScreensForcedOff = false
-
-	var    sidePaneRui
-	bool   showGladCard                                  = true
-	entity currentTarget
-} file
-
-void function ClSpectatorHud_Init()
-{
-	if ( IsMenuLevel() )
-		return
-
-	AddFirstPersonSpectateStartedCallback( UpdateDeathAndSpectatorHUD )
-	AddThirdPersonSpectateStartedCallback( UpdateDeathAndSpectatorHUD )
-	AddOnSpectatorTargetChangedCallback( SpectatorTargetChanged_UpdateSpectatorHud )
-	AddCallback_OnPlayerLifeStateChanged( UpdateDeathAndSpectatorHUDOnLifestateChange )
-
-	CreateSpectatorHud()
-
-	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
-	RegisterServerVarChangeCallback( "gameState", GameStateChanged )
-
-	AddCallback_OnPlayerLifeStateChanged( OnPlayerLifeStateChanged )
-
-	RegisterSignal( "UpdateSpectatorHudCount" )
-
-	RegisterButtonPressedCallback( KEY_RSHIFT, TryToggleGladCard )
-	RegisterButtonPressedCallback( KEY_LSHIFT, TryToggleGladCard )
-	RegisterButtonPressedCallback( BUTTON_Y, TryToggleGladCard )
-
-	AddCallback_GameStateEnter( eGameState.Epilogue, SetEpilogueFlag )	// setting flag hides stuff on the ui/dead_hud.rpak. We should wait until the epilogue to do so.
-}
-
-
-void function EntitiesDidLoad()
-{
-	if ( IsMenuLevel() )
-		return
-
-	//RuiTrackInt( file.deadHud, "numSpectateTargets", GetLocalClientPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) )
-
-	if ( !IsRoundWinningKillReplayEnabled() )
-		//Need to check in EntitiesDidLoad as opposed to main() since the .nv isn't set yet in main()
-		return
-
-	AddCallback_KillReplayStarted( RoundWinningKillReplayStart_HideSpectatorHud )
-	AddCallback_KillReplayEnded( RoundWinningKillReplayEnd_ShowSpectatorHud )
-}
-
-void function CreateSpectatorHud()
-{
-	// file.spectatorHud = CreateFullscreenRui( $"ui/spectator_hud.rpak", eRuiSort.SPECTATOR_HUD )
-	// file.deadHud = CreateFullscreenRui( $"ui/dead_hud.rpak", eRuiSort.DEAD_HUD )
-}
-
-
-void function UpdateDeathAndSpectatorHUD( entity player, entity currentTarget )
-{
-	Assert( file.spectatorHud != null )
-	Assert( file.deadHud != null )
-
-	//RuiTrackInt( file.spectatorHud, "numObserverTargets", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) )
-	//RuiTrackInt( file.deadHud, "numSpectateTargets", GetLocalClientPlayer(), RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "spectatorTargetCount" ) ) TODO: FIX
-
-	bool playerSpectateTarget = currentTarget != null && currentTarget.IsPlayer()
-
-	file.currentTarget = currentTarget
-	UpdateGladCardVisibility()
-
-	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
-	for ( int index = 0; index < 4; index++ )
-	{
-		// meh; assume that if we're spectating an enemy, our entire team is dead
-		if ( index < teamPlayers.len() && (!playerSpectateTarget || IsEnemyTeam( currentTarget.GetTeam(), player.GetTeam() )) )
-		{
-			printt( "Setting voice Icon to " + teamPlayers[index].GetPlayerName() )
-			//RuiSetString( file.deadHud, "playerName" + (index + 1), teamPlayers[index].GetPlayerName() )
-			//RuiTrackInt( file.deadHud, "playerMic" + (index + 1), teamPlayers[index], RUI_TRACK_MIC_STATUS )
-			//RuiSetBool( file.deadHud, "playerAvailable" + (index + 1), true )
-		}
-		else
-		{
-			printt( "Setting voice Icon to empty" )
-			//RuiSetString( file.deadHud, "playerName" + (index + 1), "" )
-			//RuiSetInt( file.deadHud, "playerMic" + (index + 1), -1 )
-			//RuiSetBool( file.deadHud, "playerAvailable" + (index + 1), false )
-		}
-	}
-
-	if ( !playerSpectateTarget )
-	{
-		//RuiSetBool( file.spectatorHud, "shouldShowPlayerSpectatingText", false )
-		//RuiSetBool( file.deadHud, "haveSpectateTarget", false )
-		//RuiSetString( file.deadHud, "spectateName", "" )
-		return
-	}
-
-	RuiSetBool( file.deadHud, "haveSpectateTarget", true )
-
-	EHI playerEHI = ToEHI( currentTarget )
-	string playerName
-	//if ( IsEnemyTeam( currentTarget.GetTeam(), player.GetTeam() ) )
-	//	playerName = GetKillerName( playerEHI )
-	//else
-		playerName = GetPlayerName( playerEHI )
-
-	RuiSetString( file.spectatorHud, "playerName", playerName )
-	RuiSetInt( file.spectatorHud, "playerTeam", currentTarget.GetTeam() )
-	RuiSetInt( file.spectatorHud, "myTeam", player.GetTeam() )
-	RuiSetBool( file.spectatorHud, "shouldShowPlayerSpectatingText", true )
-
-	RuiSetInt( file.spectatorHud, "gameState", GetGameState() )
-
-	RuiSetString( file.deadHud, "spectateName", playerName )
-	RuiSetBool( file.deadHud, "spectatingEnemy", IsEnemyTeam( currentTarget.GetTeam(), player.GetTeam() ) )
-}
-
-
-void function UpdateDeathAndSpectatorHUDOnLifestateChange( entity player, int oldLifeState, int newLifeState )
-{
-	if ( player != GetLocalClientPlayer() )
-		return
-
-	UpdateDeathAndSpectatorHUD( player, player.GetObserverTarget() )
-	UpdateGladCardVisibility()
-}
-
-
-void function SetSpectatorHudIsViewingSquadStats( bool isViewingSquadStats )
-{
-	if ( isViewingSquadStats )
-		file.summaryValid = true
-	UpdateSpectateButtons( true, file.summaryValid )
-	RuiSetBool( file.deadHud, "summaryValid", file.summaryValid )
-	RuiSetBool( file.spectatorHud, "isViewingSquadStats", isViewingSquadStats )
-	RuiSetBool( file.deadHud, "isViewingSquadStats", isViewingSquadStats )
-}
-
-void function SpectatorTargetChanged_UpdateSpectatorHud( entity player, entity previousTarget, entity currentTarget )
-{
-	UpdateDeathAndSpectatorHUD( player, currentTarget )
-
-	file.currentTarget = currentTarget
-
-	UpdateGladCardVisibility()
-	if ( IsValid( currentTarget ) )
-		UpdateGamestateRuiTracking( currentTarget )
-	else
-		UpdateGamestateRuiTracking( player )
-
-	if ( GetGameState() >= eGameState.WinnerDetermined )
-		ShowChampionVictoryScreen( GetWinningTeam() )
-
-}
-
-
-void function HideGladCard( bool instant = false )
-{
-	//
-}
-
-
-void function GameStateChanged()
-{
-	if ( file.spectatorHud != null )
-		RuiSetInt( file.spectatorHud, "gameState", GetGameState() )
-
-	if ( file.deadHud != null )
-		RuiSetInt( file.deadHud, "gameState", GetGameState() )
-
-	if ( GetGameState() >= eGameState.WinnerDetermined )
-	{
-		UpdateGladCardVisibility()
-		ShowRoundEndSquadResults( false )
-	}
-}
-
-
-void function RoundWinningKillReplayStart_HideSpectatorHud()
-//TODO: JFS. Should fix rui's sys.player.isSpectator to return false when player is in RoundWinningKillReplay
-{
-	if ( IsRoundWinningKillReplayEnabled() == false )
-		return
-
-	if ( IsReplayRoundWinning() == false )
-		return
-
-	Assert( file.spectatorHud != null )
-
-	RuiSetFloat( file.spectatorHud, "roundWinningKillReplayAlpha", 0.0 )
-}
-
-
-void function RoundWinningKillReplayEnd_ShowSpectatorHud()
-//TODO: JFS. Should fix rui's sys.player.isSpectator to return false when player is in RoundWinningKillReplay
-{
-	Assert( file.spectatorHud != null )
-
-	if ( IsRoundWinningKillReplayEnabled() == false )
-		return
-
-	if ( IsReplayRoundWinning() == false )
-		return
-
-	RuiSetFloat( file.spectatorHud, "roundWinningKillReplayAlpha", 1.0 )
-}
-
-
-void function UpdateSpectateButtons( bool allowReturn, bool allowSummary )
-{
-	// for dev
-	bool canBindReturn  = allowReturn && (!IsAlive( GetLocalClientPlayer() ) || GetGameState() >= eGameState.WinnerDetermined)
-	bool canBindSummary = allowSummary && (!IsAlive( GetLocalClientPlayer() ) || GetGameState() >= eGameState.WinnerDetermined)
-
-	if ( canBindReturn && !file.lobbyReturnRegistered )
-	{
-		RegisterButtonPressedCallback( BUTTON_B, ReturnToLobby )
-		RegisterButtonPressedCallback( KEY_SPACE, ReturnToLobby )
-		file.lobbyReturnRegistered = true
-	}
-	else if ( !canBindReturn && file.lobbyReturnRegistered )
-	{
-		DeregisterButtonPressedCallback( BUTTON_B, ReturnToLobby )
-		DeregisterButtonPressedCallback( KEY_SPACE, ReturnToLobby )
-		file.lobbyReturnRegistered = false
-	}
-
-	if ( canBindSummary && !file.summaryRegistered )
-	{
-		RegisterButtonPressedCallback( BUTTON_A, ToggleRoundEndSquadResults )
-		RegisterButtonPressedCallback( KEY_TAB, ToggleRoundEndSquadResults )
-		file.summaryRegistered = true
-	}
-	else if ( !canBindSummary && file.summaryRegistered )
-	{
-		DeregisterButtonPressedCallback( BUTTON_A, ToggleRoundEndSquadResults )
-		DeregisterButtonPressedCallback( KEY_TAB, ToggleRoundEndSquadResults )
-		file.summaryRegistered = false
-	}
-}
-
-
-void function ReturnToLobby( var button )
-{
-	if ( IsLobby() )
-		return
-
-	if ( IsMenuOpen() )
-		return
-
-	if ( Time() - LastMenuToggleTime() < (1 / 30.0) )
-		return
-
-	if ( IsScoreboardShown() )
-		return
-
-	RunUIScript( "OpenLeaveDialogFromSpectate" )
-}
-
-
-void function ToggleRoundEndSquadResults( var button )
-{
-	if ( IsLobby() )
-		return
-
-	if ( IsMenuOpen() )
-		return
-
-	if ( Time() - LastMenuToggleTime() < (1 / 30.0) )
-		return
-
-	if ( IsScoreboardShown() )
-		return
-
-	if ( GetGameState() >= eGameState.WinnerDetermined )
-		return
-
-	ShowRoundEndSquadResults( !file.viewingSquadSummary )
-}
-
-
-void function OnPlayerLifeStateChanged( entity player, int oldState, int newState )
-{
-	if ( player != GetLocalClientPlayer() )
-		return
-
-	if ( newState == LIFE_ALIVE )
-	{
-		UpdateSpectateButtons( false, false )
-		ShowRoundEndSquadResults( false )
-	}
-}
-
-
-void function ClearRoundEndSquadResults( entity player )
-{
-	if ( file.squadResultsBorderRui != null )
-		RuiDestroyIfAlive( file.squadResultsBorderRui )
-
-	foreach( var rui in file.squadResultsStatsRuis )
-		RuiDestroyIfAlive( rui )
-	file.squadResultsStatsRuis.clear()
-
-	foreach( NestedGladiatorCardHandle handle in file.squadResultsGladCardHandles )
-		CleanupNestedGladiatorCard( handle )
-	file.squadResultsGladCardHandles.clear()
-
-	foreach( var rui in file.squadResultsGladCardRuis )
-		RuiDestroyIfAlive( rui )
-	file.squadResultsGladCardRuis.clear()
-
-	if ( file.squadResultsApexScreensForcedOff )
-	{
-		ClApexScreens_EnableAllScreens()
-		file.squadResultsApexScreensForcedOff = false
-	}
-
-	player.ClearMenuCameraEntity()
-
-	if ( IsValid( file.squadResultsBackgroundModel ) )
-		file.squadResultsBackgroundModel.Destroy()
-}
-
-
-void function TryToggleGladCard( entity player )
-{
-	if ( !IsSpectating() )
-		return
-
-	file.showGladCard = !file.showGladCard
-
-	UpdateGladCardVisibility()
-}
-
-
-void function UpdateGladCardVisibility()
-{
-	//RuiSetBool( file.deadHud, "showingCard", file.showGladCard )
-
-	if ( !IsSpectating() || !file.showGladCard || file.viewingSquadSummary || !IsValid( file.currentTarget ) || !file.currentTarget.IsPlayer() || GetGameState() >= eGameState.WinnerDetermined )
-	{
-		HideGladCard( true )
-		return
-	}
-
-	EHI playerEHI = ToEHI( file.currentTarget )
-}
-
-void function SetEpilogueFlag()
-{
-	RuiSetBool( file.deadHud, "epilogue", true )
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+//
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+//
+
+
+
+
+
+
+//
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//
+//
+
+
+
+
+
+//
+//
+//
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+//
+//
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
+
+
+
+
+
+
+
+
+
+
+
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+//
+
+
+
+
+
+//
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+//
+
+
+
+//
+
+
+
+//
+
+
+
+
+
+
+
+
+
+//
+
+
+
+//
+
+
+
+//
+
+
+
+
+
+
+
+//
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif //

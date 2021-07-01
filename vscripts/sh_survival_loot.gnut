@@ -46,7 +46,7 @@ global function SURVIVAL_GetActionForBackpackItem
 global function SURVIVAL_GetAltActionForBackpackItem
 global function SURVIVAL_GetActionForAttachment
 global function SURVIVAL_CreateLootRef
-global function SURVIVAL_GetShieldHealthForTier
+global function SURVIVAL_GetArmorShieldCapacity
 
 global function SURVIVAL_IsLootIrrelevant
 global function SURVIVAL_IsLootAnUpgrade
@@ -143,6 +143,7 @@ global function GetToggleAttachmentsList
 global function VerifyToggleMods
 
 global function SURVIVAL_GetLootDataFromWeapon
+global function SURVIVAL_Weapon_IsAttachmentLocked
 global function SURVIVAL_Weapon_IsFullyKitted
 global function SURVIVAL_Weapon_GetFullyKittedMods
 
@@ -627,7 +628,7 @@ void function OnClientConnected( entity player )
 void function OnPlayerRespawned( entity player )
 {
 	if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
-		player.SetShieldHealthMax( SURVIVAL_GetShieldHealthForTier( 0  ) )
+		player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( 0  ) )
 }
 #endif // SERVER
 
@@ -1754,7 +1755,7 @@ bool function SURVIVAL_CanAddModToWeapon( entity player, entity weapon, string i
 	LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
 	string weaponName = data.ref
 
-	if ( SURVIVAL_Weapon_IsFullyKitted( weaponName ) )
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) )
 		return false
 
 	if ( weapon.IsDiscarding() )
@@ -2482,7 +2483,7 @@ void function SURVIVAL_UpdateStringForEquipmentAction( entity player, string equ
 
 		LootData weaponData = SURVIVAL_GetLootDataFromWeapon( fromWeapon )
 
-		if ( SURVIVAL_Weapon_IsFullyKitted( weaponData.ref ) )
+		if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponData.ref ) )
 		{
 			as.action = eLootAction.NONE
 			as.displayString = ""
@@ -2507,11 +2508,11 @@ void function SURVIVAL_UpdateStringForEquipmentAction( entity player, string equ
 					CanAttachToWeapon( actionLoot.ref, attachWeaponData.baseWeapon )
 					)
 
-				bool canAttach = !SURVIVAL_Weapon_IsFullyKitted( attachWeaponData.ref ) && couldHaveAttached
+				bool canAttach = !SURVIVAL_Weapon_IsAttachmentLocked( attachWeaponData.ref ) && couldHaveAttached
 
 				if ( !canAttach )
 				{
-					if ( couldHaveAttached && SURVIVAL_Weapon_IsFullyKitted( attachWeaponData.ref ) )
+					if ( couldHaveAttached && SURVIVAL_Weapon_IsAttachmentLocked( attachWeaponData.ref ) )
 						 as.displayString = Localize( "#REASON_CANNOT_TRANSFER_FULLY_KITTED" )
 					else if ( attachWeaponData.pickupString != "" )
 						as.displayString = Localize( "#REASON_CANNOT_TRANSFER", Localize( attachWeaponData.pickupString ) )
@@ -2787,7 +2788,7 @@ void function Inventory_SetPlayerEquipment( entity player, string itemRef, strin
 	if ( equipmentSlot == "armor" )
 	{
 		if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
-			player.SetShieldHealthMax( SURVIVAL_GetShieldHealthForTier( 0 ) )
+			player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( 0 ) )
 		else
 			player.SetShieldHealthMax( 0 )
 		player.SetShieldHealth( 0 )
@@ -2805,7 +2806,7 @@ void function Inventory_SetPlayerEquipment( entity player, string itemRef, strin
 
 		if ( data.lootType == eLootType.ARMOR && equipmentSlot == "armor" && GetCurrentPlaylistVarInt( "survival_shields", 1 ) )
 		{
-			player.SetShieldHealthMax( SURVIVAL_GetShieldHealthForTier( data.tier ) )
+			player.SetShieldHealthMax( SURVIVAL_GetArmorShieldCapacity( data.tier ) )
 			player.SetShieldHealth( propertyValue )
 		}
 	}
@@ -3139,7 +3140,7 @@ void function VerifyToggleMods( string mod, array<string> mods )
 	}
 }
 
-int function SURVIVAL_GetShieldHealthForTier( int tier )
+int function SURVIVAL_GetArmorShieldCapacity( int tier )
 {
 	if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) == 1 )
 	{
@@ -3613,6 +3614,14 @@ LootData function SURVIVAL_GetLootDataFromWeapon( entity weapon )
 		data = SURVIVAL_Loot_GetLootDataByRef( ref )
 
 	return data
+}
+
+bool function SURVIVAL_Weapon_IsAttachmentLocked( string weaponName )
+{
+	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
+		return false
+	array<string> baseMods = SURVIVAL_Loot_GetLootDataByRef( weaponName ).baseMods
+	return baseMods.contains( "gold" ) || baseMods.contains( "crate" )
 }
 
 bool function SURVIVAL_Weapon_IsFullyKitted( string weaponName )

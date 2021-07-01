@@ -2420,11 +2420,11 @@ void function TEMP_UpdatePlayerRui( var rui, entity player )
 		RuiSetFloat( rui, "playerShieldFrac", GetShieldHealthFrac( player ) )
 		RuiSetInt( rui, "teamMemberIndex", player.GetTeamMemberIndex() )
 
-		vector shieldFrac = < SURVIVAL_GetShieldHealthForTier( 0 ) / 100.0,
-				SURVIVAL_GetShieldHealthForTier( 1 ) / 100.0,
-				SURVIVAL_GetShieldHealthForTier( 2 ) / 100.0 >
+		vector shieldFrac = < SURVIVAL_GetArmorShieldCapacity( 0 ) / 100.0,
+				SURVIVAL_GetArmorShieldCapacity( 1 ) / 100.0,
+				SURVIVAL_GetArmorShieldCapacity( 2 ) / 100.0 >
 
-		RuiSetColorAlpha( rui, "shieldFrac", shieldFrac, float( SURVIVAL_GetShieldHealthForTier( 3 ) ) )
+		RuiSetColorAlpha( rui, "shieldFrac", shieldFrac, float( SURVIVAL_GetArmorShieldCapacity( 3 ) ) )
 
 		RuiSetFloat( rui, "playerTargetShieldFrac", StatusEffect_GetSeverity( player, eStatusEffect.target_shields ) )
 		RuiSetFloat( rui, "playerTargetHealthFrac", StatusEffect_GetSeverity( player, eStatusEffect.target_health ) )

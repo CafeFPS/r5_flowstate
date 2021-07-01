@@ -1,10 +1,10 @@
 global function ClWeaponStatus_Init
-global function ClWeaponStatus_SetOffhandVisible
 global function ClWeaponStatus_GetWeaponHudRui
 global function ClWeaponStatus_RefreshWeaponStatus
 global function ClWeaponStatus_UpdateShowButtonHint
 global function ClWeaponStatus_RefreshWeaponInfo
 
+global function AddCallback_OnInitWeaponStatusRuis
 global function AddCallback_OnWeaponStatusUpdate
 global function AddCallback_OnPrimaryWeaponStatusUpdate
 
@@ -14,21 +14,22 @@ global function GetHudDefaultVisibility
 global function WeaponStatusSetWeaponInspect
 global function UltimateWeaponStateSet
 global function UpdateHudDataForMainWeapons
-global function ServerCallback_NonActiveWeaponDropped
+global function ServerCallback_UpdateHudWeaponData
 
 global function NotifyReloadAttemptButNoReserveAmmo
+
 global function UpdateWeaponStatusOnBindingChange
 
-#if R5DEV
+#if(DEV)
 global function DEV_TestUltimateStates
 global function GetUltimateWeaponState
-#endif //DEV
+#endif //
 
 global enum eUltimateState
 {
-	CHARGING    // weapon is counting down
-	READY        // ready to be used - pulling out the grenade would still keep it in this state since it can be aborted.
-	ACTIVE        // weapon has been activated
+	CHARGING    //
+	READY        //
+	ACTIVE        //
 }
 
 struct
@@ -47,9 +48,9 @@ struct
 	array<void functionref( entity, var, int )> weaponStatusUpdateCallbacks
 	array<void functionref( entity, var )>      primaryWeaponStatusUpdateCallbacks
 
-	#if R5DEV
+	#if(DEV)
 		bool devTestingUltimateStates
-	#endif //DEV
+	#endif //
 } file
 
 const float NO_RESERVE_AMMO_DISPLAY_TIME = 2.0
@@ -101,7 +102,6 @@ void function AddCallback_OnWeaponStatusUpdate( void functionref( entity, var, i
 	file.weaponStatusUpdateCallbacks.append( func )
 }
 
-
 void function ClWeaponStatus_RefreshWeaponStatus( entity player )
 {
 	if ( !IsValid( player ) )
@@ -120,7 +120,7 @@ var function ClWeaponStatus_GetWeaponHudRui( entity player, entity weapon = null
 		return file.weapon_hud_rui
 
 	var index = weapon.GetWeaponInfoFileKeyField( "offhand_default_inventory_slot" )
-	//int index = weapon.GetWeaponSettingInt( eWeaponVar.offhand_default_inventory_slot ) // TODO: Will always return int with default of 0, but this would match OFFHAND_RIGHT
+	//
 
 	if ( index == null )
 		return file.weapon_hud_rui
@@ -146,7 +146,7 @@ void function ClWeaponStatus_AddClient( entity player )
 	}
 
 	{
-		// tactical
+		//
 		var rui = CreateCockpitPostFXRui( $"ui/tactical_ability_hud.rpak", HUD_Z_BASE )
 		RuiTrackFloat( rui, "bleedoutEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "bleedoutEndTime" ) )
 		RuiTrackFloat( rui, "reviveEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
@@ -154,7 +154,7 @@ void function ClWeaponStatus_AddClient( entity player )
 	}
 
 	{
-		// ultimate ablility
+		//
 		var rui
 		if ( GetCurrentPlaylistVarBool( "hud_ultimate_ready_video", false ) )
 			rui = CreateCockpitPostFXRui( $"ui/ultimate_ability_hud.rpak", HUD_Z_BASE )
@@ -163,33 +163,35 @@ void function ClWeaponStatus_AddClient( entity player )
 
 		RuiTrackFloat( rui, "bleedoutEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "bleedoutEndTime" ) )
 		RuiTrackFloat( rui, "reviveEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
+		RuiTrackInt( rui, "ultimateCredits", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "ultimateCredits" ) )
 		file.ability_left_hud = rui
 	}
 
 	{
-		// not used by human-sized players, might be use by titans?
+		//
 		var rui = CreateCockpitRui( $"ui/ability_hud.rpak", HUD_Z_BASE )
 		RuiTrackFloat( rui, "bleedoutEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "bleedoutEndTime" ) )
 		RuiTrackFloat( rui, "reviveEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
 		file.ability_right_hud = rui
-		UpdateWeaponStatusOnBindingChange()
 	}
 
 	var rui = CreateCockpitPostFXRui( SURVIVAL_HUD_WEAPON_RUI, HUD_Z_BASE )
 	RuiTrackFloat( rui, "reviveEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
+	RuiTrackFloat( rui, "bleedoutEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "bleedoutEndTime" ) )
 	file.weapon_hud_rui = rui
+	UpdateWeaponStatusOnBindingChange()
 }
 
 
 void function ClWeaponStatus_RefreshWeaponInfo()
 {
-	// this gets called when a weapons attachments change
+	//
 	entity player       = GetLocalViewPlayer()
 	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
 	if ( !IsWeaponInPrimarySlot( player, activeWeapon ) )
 	{
-		// if the active weapon is a primary weapon we don't need to update.
+		//
 		UpdateHudDataForMainWeapons( player, null )
 	}
 }
@@ -220,9 +222,16 @@ void function OnSelectedWeaponChanged( entity selectedWeapon )
 	}
 
 	if ( selectedWeapon.IsWeaponOffhand() )
-		return
+	{
+		RuiSetBool( file.weapon_hud_rui, "isMainWeaponSelected", false )
+		bool isOffhandUsesAmmoStatus = selectedWeapon.GetWeaponSettingBool( eWeaponVar.offhand_uses_hud_ammo_status )
+
+		if ( !isOffhandUsesAmmoStatus )
+			return
+	}
 
 	UpdateHudDataForMainWeapons( player, selectedWeapon )
+	UpdateDpadHud( player )
 
 	foreach ( func in file.primaryWeaponStatusUpdateCallbacks )
 		func( selectedWeapon, file.weapon_hud_rui )
@@ -230,45 +239,51 @@ void function OnSelectedWeaponChanged( entity selectedWeapon )
 
 void function AmmoStatusHint_OnCommsMenu( bool menuOpened )
 {
-	// don't show ammo status hints when the comms menu is open.
+	//
 	RuiSetVisible( file.ammo_status_hint, !menuOpened )
 }
 
-void function ServerCallback_NonActiveWeaponDropped( entity weapon )
+void function ServerCallback_UpdateHudWeaponData( entity weaponFromServer )
 {
 	entity player = GetLocalViewPlayer()
-	UpdateHudDataForMainWeapons( player, null )
+	entity weapon = player.GetSelectedWeapon( eActiveInventorySlot.mainHand )
+	if ( !IsValid( weapon ) )
+		weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	UpdateHudDataForMainWeapons( player, weapon )
 }
-
 
 void function UpdateHudDataForMainWeapons( entity player, entity selectedWeapon )
 {
-	if ( player.IsTitan() )
-		return
-
 	var rui = file.weapon_hud_rui
+
+	bool isOffhandUsesAmmoStatus = IsValid( selectedWeapon ) && selectedWeapon.GetWeaponSettingBool( eWeaponVar.offhand_uses_hud_ammo_status )
 
 	entity weaponInSlot0 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	entity weaponInSlot1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-	bool noWeapon        = !IsValid( weaponInSlot0 ) && !IsValid( weaponInSlot1 )
-	bool isMainWeapon    = IsValid( selectedWeapon ) && (selectedWeapon == weaponInSlot0 || selectedWeapon == weaponInSlot1)
+	bool noWeapon        = !IsValid( weaponInSlot0 ) && !IsValid( weaponInSlot1 ) && !isOffhandUsesAmmoStatus
+	bool isMainWeapon    = IsValid( selectedWeapon ) && (selectedWeapon == weaponInSlot0 || selectedWeapon == weaponInSlot1 )
+	bool isTitan =			player.IsTitan()
 
-	if ( noWeapon )
+	if ( noWeapon || isTitan )
 	{
-		ClearRuiWeaponData( rui )
-		RuiSetFloat( file.ammo_status_hint, "lowAmmoFrac", 0.0 )    // don't show ammo hints if don't have a weapon
+		ClearRuiWeaponData( rui, isTitan )
+		RuiSetFloat( file.ammo_status_hint, "lowAmmoFrac", 0.0 )    //
 		return
 	}
 
-	RuiSetBool( rui, "noMainWeaponEquiped", false )
-	RuiSetBool( rui, "isMainWeaponSelected", isMainWeapon )
-	// Weapon status:
+	if ( !isOffhandUsesAmmoStatus )
+	{
+		RuiSetBool( rui, "noMainWeaponEquiped", false )
+		RuiSetBool( rui, "isMainWeaponSelected", isMainWeapon )
+	}
+
+	//
 
 	int activeWeaponTab = -1
 
 	if ( isMainWeapon )
 	{
-		// if we are using one of the main weapons set the tab to the one that is being selected
+		//
 		if ( selectedWeapon == weaponInSlot0 && IsValid( weaponInSlot0 ) )
 			activeWeaponTab = 0
 		if ( selectedWeapon == weaponInSlot1 && IsValid( weaponInSlot1 ) )
@@ -276,7 +291,7 @@ void function UpdateHudDataForMainWeapons( entity player, entity selectedWeapon 
 	}
 	else if ( !IsValid( file.lastSelectedPrimaryWeapon ) )
 	{
-		// if we are not using one of the main weapons and the old selection is invalid. set the tab to the one that is valid, and update the rui tracks
+		//
 		if ( IsValid( weaponInSlot0 ) )
 		{
 			InitWeaponRuiTracks( rui, player, weaponInSlot0 )
@@ -302,25 +317,30 @@ void function UpdateHudDataForMainWeapons( entity player, entity selectedWeapon 
 		float lowAmmoFrac = selectedWeapon.GetWeaponSettingFloat( eWeaponVar.low_ammo_fraction )
 		RuiSetFloat( file.ammo_status_hint, "lowAmmoFrac", lowAmmoFrac )
 
-		bool canShowWeaponCycleHint = CanShowWeaponCycleHint( selectedWeapon )
+		bool canShowWeaponCycleHint = CanShowWeaponCycleHint( selectedWeapon, weaponInSlot0, weaponInSlot1 )
 		RuiSetBool( file.ammo_status_hint, "canShowWeaponCycleHint", canShowWeaponCycleHint )
 
 		bool canShowReloadHint = CanShowReloadHint()
 		RuiSetBool( file.ammo_status_hint, "canShowReloadHint", canShowReloadHint )
 	}
+	else if ( isOffhandUsesAmmoStatus )
+	{
+		float lowAmmoFrac = selectedWeapon.GetWeaponSettingFloat( eWeaponVar.low_ammo_fraction )
+		RuiSetFloat( file.ammo_status_hint, "lowAmmoFrac", lowAmmoFrac )
+	}
 	else
 	{
-		// don't show ammo hints if you are not using a weapon in your first two primary slots.
+		//
 		RuiSetFloat( file.ammo_status_hint, "lowAmmoFrac", 0.0 )
 
-		// update modes on the last selected primary weapon since they might have changed
+		//
 		if ( IsWeaponInPrimarySlot( player, file.lastSelectedPrimaryWeapon ) )
 			UpdateModsOnSurvivalWeaponRui( rui, file.lastSelectedPrimaryWeapon )
 	}
 }
 
 
-void function ClearRuiWeaponData( var rui )
+void function ClearRuiWeaponData( var rui, bool isTitan )
 {
 	RuiSetInt( rui, "sightTier", 0 )
 	RuiSetBool( rui, "sightAllowed", false )
@@ -356,7 +376,7 @@ void function ClearRuiWeaponData( var rui )
 
 	ClearWeaponToggleHUD()
 
-	RuiSetBool( rui, "isVisible", (GetHudDefaultVisibility() && file.ammo_counter_visible) )
+	RuiSetBool( rui, "isVisible", (GetHudDefaultVisibility() && file.ammo_counter_visible && !isTitan) )
 }
 
 
@@ -369,7 +389,7 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 		PrimaryWeapon_UpdateFireSelectHUD( weapon )
 		UpdateModsOnSurvivalWeaponRui( rui, weapon )
 
-		RuiSetBool( rui, "isVisible", (GetHudDefaultVisibility() && file.ammo_counter_visible) )
+		RuiSetBool( rui, "isVisible", (GetHudDefaultVisibility() && file.ammo_counter_visible && !player.IsTitan()) )
 		RuiSetBool( rui, "isTitan", player.IsTitan() )
 		RuiSetBool( rui, "isWeaponAmped", weapon.GetWeaponSettingBool( eWeaponVar.is_burn_mod ) )
 
@@ -454,7 +474,7 @@ void function PrimaryWeapon_UpdateFireSelectHUD( entity weapon )
 		return
 	}
 
-	// traditional single/burst/auto select
+	//
 	if ( WeaponHasFireModeSelect( weapon ) )
 	{
 		bool isAltFire = WeaponIsUsingAltFireMode( weapon )
@@ -476,7 +496,7 @@ void function PrimaryWeapon_UpdateFireSelectHUD( entity weapon )
 			ClearWeaponToggleHUD()
 		}
 	}
-	// special fire selects for other weapons and abilities
+	//
 	else if ( DoesModExist( weapon, "vertical_firestar" ) )
 	{
 		if ( weapon.HasMod( "vertical_firestar" ) )
@@ -499,17 +519,30 @@ void function PrimaryWeapon_UpdateFireSelectHUD( entity weapon )
 			SetWeaponToggleHUD( $"rui/hud/weapon_toggle/single_gun", "#FIRE_MODE_COMBINED", true )
 		}
 	}
-	else if ( DoesModExist( weapon, "akimbo" ) )
-	{
-		if ( weapon.HasMod( "akimbo" ) )
-		{
-			SetWeaponToggleHUD( $"rui/hud/weapon_toggle/akimbo", "#FIRE_MODE_AKIMBO", true )
-		}
-		else
-		{
-			SetWeaponToggleHUD( $"rui/hud/weapon_toggle/single_gun", "#FIRE_MODE_SINGLE", true )
-		}
-	}
+	#if(false)
+
+
+
+
+
+
+
+
+
+
+
+#endif
+	#if(false)
+
+
+
+
+
+
+
+
+
+#endif
 	else
 	{
 		if ( IsWeaponInSingleShotMode( weapon ) )
@@ -582,7 +615,7 @@ void function UpdateModsOnSurvivalWeaponRui( var rui, entity weapon )
 	array<string> attachments = GetAllAttachmentPoints()
 	array<string> mods
 
-	bool isFullyKittedWeapon = SURVIVAL_Weapon_IsFullyKitted( weaponRef )
+	bool isAttachmentLockedWeapon = SURVIVAL_Weapon_IsAttachmentLocked( weaponRef )
 
 	foreach ( attachmentName in attachments )
 	{
@@ -598,7 +631,7 @@ void function UpdateModsOnSurvivalWeaponRui( var rui, entity weapon )
 			if ( SURVIVAL_Loot_IsRefValid( mod ) )
 			{
 				LootData data = SURVIVAL_Loot_GetLootDataByRef( mod )
-				if ( isFullyKittedWeapon )
+				if ( isAttachmentLockedWeapon )
 					RuiSetInt( rui, ruiAttachmentTierArgs[attachmentName], weaponData.tier )
 				else
 					RuiSetInt( rui, ruiAttachmentTierArgs[attachmentName], data.tier )
@@ -636,6 +669,14 @@ bool function WeaponHasFireModeSelect( entity weapon )
 {
 	if ( DoesModExist( weapon, "hopup_selectfire" ) )
 		return IsModActive( weapon, "hopup_selectfire" )
+	#if(true)
+	else if ( DoesModExist( weapon, "hopup_highcal_rounds" ) && IsModActive( weapon, "hopup_highcal_rounds" ))
+		return true
+	#endif //
+	#if(true)
+	else if ( DoesModExist( weapon, "hopup_double_tap" ) && IsModActive( weapon, "hopup_double_tap" ) )
+		return true
+	#endif //
 	else if ( DoesModExist( weapon, "altfire" ) )
 		return true
 
@@ -645,6 +686,14 @@ bool function WeaponHasFireModeSelect( entity weapon )
 
 bool function WeaponIsUsingAltFireMode( entity weapon )
 {
+	#if(true)
+	if ( DoesModExist( weapon, "hopup_highcal_rounds" ) && IsModActive( weapon, "hopup_highcal_rounds" ) )
+		return IsModActive( weapon, "altfire_highcal" )
+	#endif //
+	#if(true)
+	else if ( DoesModExist( weapon, "hopup_double_tap" ) && IsModActive( weapon, "hopup_double_tap" ) )
+		return IsModActive( weapon, "altfire_double_tap" )
+	#endif //
 	if ( DoesModExist( weapon, "altfire" ) )
 		return IsModActive( weapon, "altfire" )
 	return false
@@ -681,7 +730,7 @@ void function UpdateFireSelectHint( entity player, entity weapon, string mod )
 
 void function OnPlayerAddWeaponMod( entity player, entity weapon, string mod )
 {
-	if ( mod == "altfire" && WeaponHasFireModeSelect( weapon ) )
+	if ( ( mod == "altfire" || mod == "altfire_highcal" || mod == "altfire_double_tap" ) && WeaponHasFireModeSelect( weapon ) )
 		UpdateFireSelectHint( player, weapon, mod )
 
 	OnSelectedWeaponChanged( weapon )
@@ -690,26 +739,26 @@ void function OnPlayerAddWeaponMod( entity player, entity weapon, string mod )
 
 void function OnPlayerRemoveWeaponMod( entity player, entity weapon, string mod )
 {
-	if ( mod == "altfire" && WeaponHasFireModeSelect( weapon ) )
+	if ( ( mod == "altfire" || mod == "altfire_highcal" || mod == "altfire_double_tap" ) && WeaponHasFireModeSelect( weapon ) )
 		UpdateFireSelectHint( player, weapon, mod )
 
 	OnSelectedWeaponChanged( weapon )
 }
 
 
-bool function CanShowWeaponCycleHint( entity selectedWeapon )
+bool function CanShowWeaponCycleHint( entity selectedWeapon, entity weaponInSlot0, entity weaponInSlot1 )
 {
 	if ( !IsValid( selectedWeapon ) )
 		return false
 
-	if ( selectedWeapon.GetWeaponSettingBool( eWeaponVar.cycle_to_next_when_out_of_ammo ) )
-		return false  // it'll happen automatically
+	if ( selectedWeapon.ShouldAutoCycleWhenOutOfAmmo() )
+		return false  //
 
-	array<entity> mainWeapons = GetLocalViewPlayer().GetMainWeapons()
-	if ( mainWeapons.len() > 1 )
-		return true
+	bool haveAnotherValidPrimary =  ((IsValid( weaponInSlot0 ) && (selectedWeapon != weaponInSlot0)) || (IsValid( weaponInSlot1 ) && (selectedWeapon != weaponInSlot1)))
+	if ( !haveAnotherValidPrimary )
+		return false
 
-	return false
+	return true
 }
 
 
@@ -737,6 +786,14 @@ void function WeaponStatusSetWeaponInspect( bool inspect )
 	RuiSetBool( file.ability_center_hud, "weaponInspect", inspect )
 	RuiSetBool( file.ability_right_hud, "weaponInspect", inspect )
 	RuiSetBool( file.weapon_hud_rui, "weaponInspect", inspect )
+	array<var> additionalWeaponInspectRuis
+	additionalWeaponInspectRuis.append( GetCryptoAnimatedTacticalRui() )
+	additionalWeaponInspectRuis.append( GetBubbleBunkerRui() )
+	foreach ( rui in additionalWeaponInspectRuis )
+	{
+		if ( rui != null )
+			RuiSetBool( rui, "weaponInspect", inspect )
+	}
 }
 
 
@@ -764,7 +821,6 @@ void function OnPlayerClassChanged( entity player )
 	InitWeaponStatusRuis( player )
 }
 
-
 void function OnLifeStateChanged( entity player, int oldLifeState, int newLifeState )
 {
 	if ( player != GetLocalViewPlayer() )
@@ -773,6 +829,7 @@ void function OnLifeStateChanged( entity player, int oldLifeState, int newLifeSt
 	if ( newLifeState != LIFE_ALIVE )
 		return
 
+	UltimateWeaponStateSet( eUltimateState.CHARGING )	//
 	InitWeaponStatusRuis( player )
 }
 
@@ -788,42 +845,43 @@ void function OnKillReplayEnded()
 void function UpdateOffhandRuis( entity player )
 {
 	UpdateOffhandRuiVisibility( file.ability_left_hud, "%offhand1%" )
+	var cryptoTacticalRui = GetCryptoAnimatedTacticalRui()
+	if ( cryptoTacticalRui != null )
+		UpdateOffhandRuiVisibility( cryptoTacticalRui, "%offhand1%" )
 
-	if ( player.IsTitan() )
-	{
-		UpdateOffhandRuiVisibility( file.ability_center_hud, "%offhand2%" )
-		UpdateOffhandRuiVisibility( file.ability_right_hud, "%offhand0%" )
-	}
-	else
+	if ( !player.IsTitan() )
 	{
 		UpdateOffhandRuiVisibility( file.ability_center_hud, "%offhand0%" )
 		UpdateOffhandRuiVisibility( file.ability_right_hud, "%offhand2%" )
 	}
 
-	// need to recreate this since RuiTrackInt cannot be undone with RuiSetInt
-	//RuiDestroy( file.dpad_left_hud )
-	//var rui = CreateCockpitRui( $"ui/inventory_hud.rpak" )
-	//RuiSetInt( rui, "xPos", 1 )
-	//RuiSetInt( rui, "yPos", 1 )
-	//file.dpad_left_hud = rui
-	//UpdateOffhandRuiVisibility( file.dpad_left_hud, "%offhand4%" )
+	//
+	//
+	//
+	//
+	//
+	//
+	//
 }
 
+array<void functionref( entity )> s_callbacks_OnInitWeaponStatusRuis
+void function AddCallback_OnInitWeaponStatusRuis( void functionref( entity ) func )
+{
+	Assert( !s_callbacks_OnInitWeaponStatusRuis.contains( func ) )
+	s_callbacks_OnInitWeaponStatusRuis.append( func )
+}
 
 void function InitWeaponStatusRuis( entity player )
 {
 	player.Signal( "EndTrackOffhandWeaponSlot" )
 
+	foreach( func in s_callbacks_OnInitWeaponStatusRuis )
+		func( player )
+
 	UpdateOffhandRuis( player )
 	thread TrackPrimaryWeaponEnabled( player, file.ammo_status_hint, "EndTrackOffhandWeaponSlot" )
 
-	if ( player.IsTitan() )
-	{
-		thread TrackOffhandWeaponSlot( player, file.ability_left_hud, OFFHAND_LEFT )
-		thread TrackOffhandWeaponSlot( player, file.ability_center_hud, OFFHAND_TITAN_CENTER )
-		thread TrackOffhandWeaponSlot( player, file.ability_right_hud, OFFHAND_RIGHT )
-	}
-	else
+	if ( !player.IsTitan() )
 	{
 		thread TrackOffhandWeaponSlot( player, file.ability_center_hud, OFFHAND_LEFT )
 		thread TrackOffhandWeaponSlot( player, file.ability_left_hud, OFFHAND_INVENTORY )
@@ -847,7 +905,12 @@ void function TrackPrimaryWeaponEnabled( entity player, var rui, string endStrin
 
 	while ( IsAlive( player ) )
 	{
-		RuiSetBool( rui, "weaponIsUp", player.GetWeaponDisableFlags() != WEAPON_DISABLE_FLAGS_ALL && player.GetWeaponDisableFlags() != WEAPON_DISABLE_FLAGS_MAIN && player.GetActiveWeapon( eActiveInventorySlot.mainHand ) != null && !player.IsUsingOffhandWeapon( eActiveInventorySlot.mainHand ) )
+		bool weaponUsesAmmoStatus 	= false
+		entity selectedWeapon	 	= player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if ( IsValid( selectedWeapon ) )
+			weaponUsesAmmoStatus = !player.IsUsingOffhandWeapon( eActiveInventorySlot.mainHand ) || selectedWeapon.GetWeaponSettingBool( eWeaponVar.offhand_uses_hud_ammo_status )
+
+		RuiSetBool( rui, "weaponIsUp", player.GetWeaponDisableFlags() != WEAPON_DISABLE_FLAGS_ALL && player.GetWeaponDisableFlags() != WEAPON_DISABLE_FLAGS_MAIN && weaponUsesAmmoStatus )
 		WaitFrame()
 	}
 }
@@ -912,6 +975,9 @@ void function TrackOffhandWeaponSlot( entity player, var rui, int slot )
 				else
 					UpdateOffhandRuiVisibility( rui, "%offhand4%" )
 				break
+			case OFFHAND_LEFT:
+				UpdateOffhandRuiVisibility( rui, "%offhand1%" )
+				break
 		}
 
 		foreach ( func in file.weaponStatusUpdateCallbacks )
@@ -926,14 +992,14 @@ void function TrackOffhandWeaponSlot( entity player, var rui, int slot )
 
 void function UltimateWeaponStatusUpdate( entity player, var rui, int slot )
 {
-	// ideally this could be changed to a code callback when an offhand weapon gets enough clip ammo to fire.
-	// and one callback when the weapon becomes ready to fire. Though that seems to happen at odd moments.
-	// It's unfortunate that it's so hard to get the state that an weapon is in. :-(
+	//
+	//
+	//
 
-	#if R5DEV
+	#if(DEV)
 		if ( file.devTestingUltimateStates )
 			return
-	#endif //DEV
+	#endif //
 
 	if ( slot != OFFHAND_ULTIMATE )
 		return
@@ -951,7 +1017,7 @@ void function UltimateWeaponStatusUpdate( entity player, var rui, int slot )
 		UltimateWeaponStateSet( eUltimateState.READY )
 	else if ( !ultimateReady && GetUltimateWeaponState() > eUltimateState.CHARGING && weapon.IsReadyToFire() )
 		UltimateWeaponStateSet( eUltimateState.CHARGING )
-	// might have to add an else herer to turn it so active once we don't do this every frame to handle spectating fully
+	//
 }
 
 
@@ -997,7 +1063,7 @@ void function UltimateWeaponStateCharging()
 
 void function UltimateWeaponStateReady()
 {
-	// this is being tracked by chargeFrac in the rui. We have a callback for it now, but it doesn't trigger when using infinite ammo etc. so I'm not using it for now.
+	//
 }
 
 
@@ -1013,7 +1079,7 @@ void function UltimateReadyVideoFinished( int channel )
 	Signal( clGlobal.levelEnt, "ultimate_video_finished" )
 }
 
-#if R5DEV
+#if(DEV)
 void function DEV_TestUltimateStates()
 {
 	thread DEV_TestUltimateStatesThread()
@@ -1036,128 +1102,132 @@ void function DEV_TestUltimateStatesThread()
 	wait 2
 	file.devTestingUltimateStates = false
 }
-#endif //DEV
+#endif //
 
-
-void function TrackATWeaponSlot( entity player, var rui )
-{
-	player.EndSignal( "EndTrackOffhandWeaponSlot" )
-	player.EndSignal( "OnDeath" )
-
-	OnThreadEnd(
-		function() : ( rui )
-		{
-			RuiSetBool( rui, "isVisible", false )
-		}
-	)
-
-	entity lastWeapon     = null
-	bool wasVisible       = file.slotVisible[OFFHAND_INVENTORY]
-	bool wasHoldingWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == player.GetAntiTitanWeapon()
-	while ( IsAlive( player ) )
-	{
-		entity weapon        = player.GetAntiTitanWeapon()
-		entity activeWeapon  = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-		bool isHoldingWeapon = weapon == activeWeapon
-		if ( weapon != lastWeapon || file.slotVisible[OFFHAND_INVENTORY] != wasVisible || isHoldingWeapon != wasHoldingWeapon )
-		{
-			if ( IsValid( weapon ) && file.slotVisible[OFFHAND_INVENTORY] && !isHoldingWeapon )
-			{
-				thread InitOffhandRui( rui, player, weapon )
-				RuiSetFloat2( rui, "iconSizeScale", <1.5, 0.75, 0> )
-			}
-			else
-			{
-				RuiSetBool( rui, "isVisible", false )
-			}
-		}
-
-		lastWeapon = weapon
-		wasVisible = file.slotVisible[OFFHAND_INVENTORY]
-		wasHoldingWeapon = isHoldingWeapon
-		WaitFrame()
-	}
-}
 /*
-	// VECTOR TYPES
-	RUI_TRACK_ABSORIGIN_FOLLOW,						// Create at absorigin, and update to follow the entity
-	RUI_TRACK_POINT_FOLLOW,							// Create on attachment point, and update to follow the entity
-	RUI_TRACK_OVERHEAD_FOLLOW,						// Create at the top of the entity's bbox
-	RUI_TRACK_EYEANGLES_FOLLOW,
-	RUI_TRACK_WAYPOINT_VECTOR,
 
-	// FLOAT TYPES
-	RUI_TRACK_HEALTH,								// Health as fraction from 0 to 1
-	RUI_TRACK_FRIENDLINESS,							// 0 if ent is enemy, 1 if it's friendly
-	RUI_TRACK_PLAYER_SUIT_POWER,					// Player's suit power from 0 to 1
-	RUI_TRACK_PLAYER_GRAPPLE_POWER,					// Player's grapple power from 0 to 1
-	RUI_TRACK_PLAYER_SHARED_ENERGY,					// Players shared energy value
-	RUI_TRACK_WEAPON_CHARGE_FRACTION,				// Weapon charge as fraction from 0 to 1
-	RUI_TRACK_WEAPON_SMART_AMMO_LOCK_FRACTION,		// Smart ammo weapon lock fraction from 0 to N
-	RUI_TRACK_WEAPON_READY_TO_FIRE_FRACTION,		// Weapon cooldown as fraction from 0 to 1
-	RUI_TRACK_WEAPON_RELOAD_FRACTION,				// Weapon reloading as fraction from 0 to 1
-	RUI_TRACK_WEAPON_DRYFIRE_FRACTION,				//
-	RUI_TRACK_WEAPON_CLIP_AMMO_FRACTION,			// Weapon clip ammo as fraction from 0 to 1
-	RUI_TRACK_WEAPON_REMAINING_AMMO_FRACTION,		// Weapon remaining ammo as fraction from 0 to 1
-	RUI_TRACK_WEAPON_CLIP_AMMO_MAX,					//
-	RUI_TRACK_WEAPON_AMMO_MAX,						//
-	RUI_TRACK_WEAPON_LIFETIME_SHOTS,				//
-	RUI_TRACK_WEAPON_AMMO_REGEN_RATE,				//
-	RUI_TRACK_WEAPON_STOCKPILE_REGEN_FRAC,			// fraction of a players stockpile regen
-	RUI_TRACK_BOOST_METER_FRACTION,					// Player boost meter as fraction from 0 to 1
-	RUI_TRACK_GLIDE_METER_FRACTION,					// Player glide meter as fraction from 0 to 1
-	RUI_TRACK_SHIELD_FRACTION,						// Shield health as fraction from 0 to 1
-	RUI_TRACK_STATUS_EFFECT_SEVERITY,				// Status effect severity as fraction from 0 to 1; attachmentIndex used as status effect index
-	RUI_TRACK_SCRIPT_NETWORK_VAR,					// Value of a script network variable (use GetNetworkedVariableIndex())
-	RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL,			// Value of a script network variable without an entity (use GetNetworkedVariableIndex())
-	RUI_TRACK_SCRIPT_NETWORK_VAR_LOCAL_VIEW_PLAYER,	// Value of a script network variable on the local view player (changes automatically during kill replay) (use GetNetworkedVariableIndex())
-	RUI_TRACK_FRIENDLY_TEAM_SCORE,					//
-	RUI_TRACK_FRIENDLY_TEAM_ROUND_SCORE,			// The value of score2 for friendlies
-	RUI_TRACK_ENEMY_TEAM_SCORE,						//
-	RUI_TRACK_ENEMY_TEAM_ROUND_SCORE,				// The value of score2 for enemies
-	RUI_TRACK_MINIMAP_SCALE,						//
-	RUI_TRACK_SOUND_METER,							// Sound meter as fraction from 0 to 1.
-	RUI_TRACK_GAME_FULLY_INSTALLED_PROGRESS,		// Fraction of full game downloaded 0 to 1
-	RUI_TRACK_WAYPOINT_FLOAT,
 
-	// INT TYPES
-	RUI_TRACK_MINIMAP_FLAGS,
-	RUI_TRACK_MINIMAP_CUSTOM_STATE,
-	RUI_TRACK_TEAM_RELATION_VIEWPLAYER,					// ENEMY: -1, NEUTRAL: 0, FRIENDLY: 1
-	RUI_TRACK_TEAM_RELATION_CLIENTPLAYER,				// ENEMY: -1, NEUTRAL: 0, FRIENDLY: 1
-	RUI_TRACK_SCRIPT_NETWORK_VAR_INT,					// Value of a script network variable (use GetNetworkedVariableIndex())
-	RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT,			// Value of a script network variable without an entity (use GetNetworkedVariableIndex())
-	RUI_TRACK_SCRIPT_NETWORK_VAR_LOCAL_VIEW_PLAYER_INT,	// Value of a script network variable on the local view player (changes automatically during kill replay) (use GetNetworkedVariableIndex())
-	RUI_TRACK_WAYPOINT_INT,
-	RUI_TRACK_WAYPOINT_BITFIELD,
-	RUI_TRACK_PLAYER_AMMO_POOL,							// Player's ammo pool count
 
-	// GAMETIME TYPES
-	RUI_TRACK_LAST_FIRED_TIME,
-	RUI_TRACK_MINIMAP_THREAT_SECTOR,
-	RUI_TRACK_WAYPOINT_GAMETIME,
 
-	// IMAGE TYPES
-	RUI_TRACK_WEAPON_MENU_ICON,
-	RUI_TRACK_WEAPON_HUD_ICON,
-	RUI_TRACK_WAYPOINT_IMAGE,
 
-	// STRING TYPES
-	RUI_TRACK_WAYPOINT_STRING,
-	RUI_TRACK_PLAYER_NAME_STRING
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 */
 
 void function InitOffhandRui( var rui, entity player, entity weapon )
 {
 	Assert ( IsNewThread(), "Must be threaded off." )
 
-	EndSignal( player, "OnDestroy" ) //LoadoutSlot_WaitForItemFlavor could take time so player and weapon might get destroyed
+	EndSignal( player, "OnDestroy" ) //
 	EndSignal( weapon, "OnDestroy" )
 
 	RuiSetGameTime( rui, "hintTime", Time() )
 
 	RuiSetBool( rui, "isTitan", player.IsTitan() )
-	RuiSetBool( rui, "isVisible", GetHudDefaultVisibility() )
+	RuiSetBool( rui, "isVisible", (GetHudDefaultVisibility() && !player.IsTitan()) )
 	RuiSetBool( rui, "isReverseCharge", false )
 	bool isPaused = weapon.HasMod( "survival_ammo_regen_paused" )
 	RuiSetBool( rui, "isPaused", isPaused )
@@ -1210,7 +1280,7 @@ void function InitOffhandRui( var rui, entity player, entity weapon )
 
 			RuiTrackFloat( rui, "useFrac", weapon, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.simple_timer )
 
-			//RuiSetFloat( rui, "refillRate", weapon.GetWeaponSettingFloat( eWeaponVar.regen_ammo_refill_rate ) ) // todo(dw): updated live by TrackOffhandWeaponSlot for now
+			//
 			break
 
 		case eWeaponCooldownType.vortex_drain:
@@ -1226,18 +1296,6 @@ void function InitOffhandRui( var rui, entity player, entity weapon )
 			Assert( false, "Unsupported cooldown_type: " + weapon.GetWeaponSettingEnum( eWeaponVar.cooldown_type, eWeaponCooldownType ) )
 	}
 }
-
-
-void function ClWeaponStatus_SetOffhandVisible( int offhandIndex, bool newState )
-{
-	entity player = GetLocalClientPlayer()
-
-	var rui = GetRuiForIndex( player, offhandIndex )
-
-	file.slotVisible[offhandIndex] = newState
-	RuiSetBool( rui, "isVisible", newState )
-}
-
 
 void function ClWeaponStatus_UpdateShowButtonHint()
 {
@@ -1287,6 +1345,11 @@ var function GetRuiForIndex( entity player, int offhandIndex )
 
 bool function GetHudDefaultVisibility()
 {
+	#if(false)
+
+
+#endif //
+
 	return true
 }
 

@@ -350,8 +350,11 @@ Scripts:
 	mp/sh_airdrops.gnut
     mp/sh_supply_ship.gnut
 
+	sh_loot_vault_panel.nut
+
 	_ultimates.gnut
 	sh_survival_persistentdamagelayer.gnut
+	gamemodes/sh_gamemode_shadow_squad.nut
 ]
 
 When: "SERVER"
@@ -533,7 +536,6 @@ Scripts:
 	client/cl_announcement.gnut
 	client/cl_gamestate.gnut
 	client/cl_kill_replay_hud.gnut
-	client/cl_music.gnut
 	client/cl_player.gnut
 	client/cl_respawnselect.gnut
 	client/cl_scoresplash.gnut
@@ -549,7 +551,6 @@ Scripts:
 	conversation/cl_grunt_chatter_mp.gnut
 	conversation/cl_spectre_chatter_mp.gnut
 	conversation/cl_survival_commentary.gnut
-	client/cl_objective.gnut
 
 	//cinematic_mp/_ai_skits_clientdebugging.nut
 	//cinematic_mp/_cinematic_mp_client.nut
@@ -581,7 +582,6 @@ Scripts:
 	client/cl_dpad_hud.gnut
 	client/cl_entity_creation_functions.gnut
 	client/cl_event_notification.gnut
-	client/cl_flyout.gnut
 	client/cl_goblin_dropship.gnut
 	client/cl_indicators_hud.gnut
 	client/cl_introscreen.gnut
@@ -589,18 +589,14 @@ Scripts:
 	client/cl_main_hud.nut
 	client/cl_rumble.gnut
 	client/cl_screenfade.gnut
-	client/cl_titan_cockpit.nut
-	client/cl_titan_cockpit_sounds.gnut
 	client/cl_spectator_mode_audio.gnut
 	client/cl_utility_menu.gnut
 	client/cl_utility_splash.gnut
 	client/cl_vdu.gnut
 	client/cl_zipline.gnut
-	client/objects/cl_bomber.nut
 	client/objects/cl_control_panel.nut
 	client/objects/cl_goblin_dropship.nut
 	client/objects/cl_spectre.nut
-	client/objects/cl_stalker.nut
 	client/objects/cl_super_spectre.nut
 	conversation/cl_conversation.gnut
 	conversation/cl_conversation_schedule.gnut
@@ -615,6 +611,7 @@ Scripts:
 	weapons/cl_smart_ammo.gnut
 	client/objects/cl_drone_medic.nut
 	client/objects/cl_draconis_flyin.nut
+	client/objects/cl_drone_crypto.nut
 
 	client/rui/cl_weapon_status.gnut
 

@@ -5,6 +5,7 @@
 #if CLIENT || UI
 global function ShPlaylists_LevelInit
 
+global function GetCurrentPlaylistVarTimestamp
 global function GetMaxTeamSizeForPlaylist
 global function GetPlaylistMaps
 

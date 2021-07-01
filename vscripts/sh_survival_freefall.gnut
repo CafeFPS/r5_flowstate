@@ -17,56 +17,56 @@ const asset PLAYER_WIND_FX 	= $"P_wind_cruising"
 	const bool SKYDIVE_DEBUG = false
 
 	//global const asset SKYDIVE_SMOKE_FX = $"P_skydive_trail"
-	global const asset SKYDIVE_SMOKE_COLOR_FX = $"P_skydive_trail_CP"
-	const JUMPJET_FRIENDLY_SKYDIVE = $"P_surv_team_jump_jet"
-	const JUMPJET_ENEMY_SKYDIVE = $"P_surv_enemy_jump_jet"
-	const JUMPJET_LAND_FX = $"P_surv_team_land_jet"
-	const asset CLOUD_MODEL = $"mdl/fx/cloud_fill_01.rmdl"
+	global const asset SKYDIVE_SMOKE_COLOR_FX      = $"P_skydive_trail_CP"
+	const JUMPJET_FRIENDLY_SKYDIVE                 = $"P_surv_team_jump_jet"
+	const JUMPJET_ENEMY_SKYDIVE                    = $"P_surv_enemy_jump_jet"
+	const JUMPJET_LAND_FX                          = $"P_surv_team_land_jet"
+	const asset CLOUD_MODEL                        = $"mdl/fx/cloud_fill_01.rmdl"
 	const float SKYDIVE_LAUNCH_NO_CONTROL_DURATION = 1.0
-	const float ENEMY_SMOKE_COLOR_MULT = 1.0
+	const float ENEMY_SMOKE_COLOR_MULT             = 1.0
 
 	const float UNFOLLOW_CONTROL_BLEND_DURATION = 2.5
 #endif //SERVER
 
-	const float MIN_GLIDE_ANGLE_NORMAL = 35
-	const float MIN_GLIDE_ANGLE_SPEED = -10
-	const float MAX_GLIDE_ANGLE = 90
+	const float MIN_GLIDE_ANGLE_NORMAL      = 35
+	const float MIN_GLIDE_ANGLE_SPEED       = -10
+	const float MAX_GLIDE_ANGLE             = 90
 	const float GLIDE_ANGLE_CHANGE_RATE_MIN = 1.8
 	const float GLIDE_ANGLE_CHANGE_RATE_MAX = 3.0
-	const float HULL_TRACE_SIZE = 20
+	const float HULL_TRACE_SIZE             = 20
 
 	const array<vector> GROUND_TRACE_OFFSETS = [ <0, 0, 0>, <0, HULL_TRACE_SIZE, 0>, <-HULL_TRACE_SIZE, -HULL_TRACE_SIZE, 0>, <HULL_TRACE_SIZE, -HULL_TRACE_SIZE, 0> ]
 
-	global const float SKYDIVE_SLOWDOWN_DIST_FROM_GROUND = 3000.0
+	global const float SKYDIVE_SLOWDOWN_DIST_FROM_GROUND      = 3000.0
 	global const float SKYDIVE_SLOWDOWN_DIST_FROM_GROUND_UNDO = SKYDIVE_SLOWDOWN_DIST_FROM_GROUND + 1000.0
-	global const float SKYDIVE_SLOWDOWN_DIST_FROM_WALL = 1200.0
-	global const float SKYDIVE_SLOWDOWN_DIST_FROM_HOVER_TANK = 600.0
+	global const float SKYDIVE_SLOWDOWN_DIST_FROM_WALL        = 1200.0
+	global const float SKYDIVE_SLOWDOWN_DIST_FROM_HOVER_TANK  = 600.0
 
 	const float SKYDIVE_FINISHED_DIST_FROM_GROUND = 512.0
-	const float SKYDIVE_JETWASH_DIST_FROM_GROUND = 700.0
-	const float SKYDIVE_JETWASH_FREQUENCY = 0.1
+	const float SKYDIVE_JETWASH_DIST_FROM_GROUND  = 700.0
+	const float SKYDIVE_JETWASH_FREQUENCY         = 0.1
 
-	const float MOVEMENT_SPEED_SLOWZONE = 250
-	const float MOVEMENT_SPEED_MIN = 500
-	const float MOVEMENT_SPEED_DEFAULT = 800
-	const float MOVEMENT_SPEED_MAX = 1400
-	const float MOVEMENT_SPEED_MAX_GLIDE = 1200
-	const float MOVEMENT_SPEED_START = 1200
-	const float MOVEMENT_SPEED_FOLLOW_MODE_MULT = 1.5
-	const float MOVEMENT_SPEED_ACCEL = 60.0
-	const float MOVEMENT_SPEED_DECEL_MIN = 10.0
-	const float MOVEMENT_SPEED_DECEL_MAX = 40.0
+	const float MOVEMENT_SPEED_SLOWZONE           = 250
+	const float MOVEMENT_SPEED_MIN                = 500
+	const float MOVEMENT_SPEED_DEFAULT            = 800
+	const float MOVEMENT_SPEED_MAX                = 1400
+	const float MOVEMENT_SPEED_MAX_GLIDE          = 1200
+	const float MOVEMENT_SPEED_START              = 1200
+	const float MOVEMENT_SPEED_FOLLOW_MODE_MULT   = 1.5
+	const float MOVEMENT_SPEED_ACCEL              = 60.0
+	const float MOVEMENT_SPEED_DECEL_MIN          = 10.0
+	const float MOVEMENT_SPEED_DECEL_MAX          = 40.0
 
 	const float ROTATION_MATCH_VIEW_GAIN_COEF_MIN = -1 // The closer to zero the slower it is. Should always be negative.
 	const float ROTATION_MATCH_VIEW_GAIN_COEF_MAX = -10
 
-	const float STRAFE_SPEED = 15.0
-	const float STRAFE_SPEED_SLOWZONE = 25.0
-	const float STRAFE_ANGLE_MAX = MIN_GLIDE_ANGLE_NORMAL
-	const float SLOW_ZONE_FORWARD_STRAFE_SPEED = 100.0
-	const float SLOW_ZONE_DEBOUNCE_TIME = 2.0
+	const float STRAFE_SPEED                      = 15.0
+	const float STRAFE_SPEED_SLOWZONE             = 25.0
+	const float STRAFE_ANGLE_MAX                  = MIN_GLIDE_ANGLE_NORMAL
+	const float SLOW_ZONE_FORWARD_STRAFE_SPEED    = 100.0
+	const float SLOW_ZONE_DEBOUNCE_TIME           = 2.0
 
-	const float SKYDIVE_THIRD_PERSON_START_DIST = -50.0
+	const float SKYDIVE_THIRD_PERSON_START_DIST   = -50.0
 	const float SKYDIVE_THIRD_PERSON_START_HEIGHT = 30.0
 
 #if SERVER
@@ -99,28 +99,31 @@ const asset PLAYER_WIND_FX 	= $"P_wind_cruising"
 #if CLIENT
 	global function SetSkydiveStartingConvars
 	global function PlayerFreefallActiveChanged
+	global function PlayerFreefallEmoteAvailableChanged
 	global function ServerCallback_Mirage_DecoysDeployed
 	global function SkydiveFreelookActiveChanged
 	global function SkydiveFollowPlayerChanged
+	global function ServerCallback_SkydiveTrailStart
+	global function ServerCallback_SkydiveTrailEnd
 
-	const float SKYDIVE_THIRD_PERSON_PLANE_ORBIT_DIST = 8000.0
-	const float SKYDIVE_THIRD_PERSON_NORMAL_DIST = 120.0
-	const float SKYDIVE_THIRD_PERSON_SLOW_DIST = 70.0
-	const float SKYDIVE_THIRD_PERSON_FAST_DIST = 230.0
-	const float SKYDIVE_THIRD_PERSON_SLOW_SPEED_VIEW = 500.0
-	const float SKYDIVE_THIRD_PERSON_FAST_SPEED_VIEW = 1200.0
-	const float SKYDIVE_THIRD_PERSON_SLOW_SPEED_SHAKE = 750.0
-	const float SKYDIVE_THIRD_PERSON_FAST_SPEED_SHAKE = 1100.0
-	const float SKYDIVE_THIRD_PERSON_SLOW_SPEED_RUMBLE = 1000.0
-	const float SKYDIVE_THIRD_PERSON_FAST_SPEED_RUMBLE = 1380.0
+	const float SKYDIVE_THIRD_PERSON_PLANE_ORBIT_DIST   = 8000.0
+	const float SKYDIVE_THIRD_PERSON_NORMAL_DIST        = 120.0
+	const float SKYDIVE_THIRD_PERSON_SLOW_DIST          = 70.0
+	const float SKYDIVE_THIRD_PERSON_FAST_DIST          = 230.0
+	const float SKYDIVE_THIRD_PERSON_SLOW_SPEED_VIEW    = 500.0
+	const float SKYDIVE_THIRD_PERSON_FAST_SPEED_VIEW    = 1200.0
+	const float SKYDIVE_THIRD_PERSON_SLOW_SPEED_SHAKE   = 750.0
+	const float SKYDIVE_THIRD_PERSON_FAST_SPEED_SHAKE   = 1100.0
+	const float SKYDIVE_THIRD_PERSON_SLOW_SPEED_RUMBLE  = 1000.0
+	const float SKYDIVE_THIRD_PERSON_FAST_SPEED_RUMBLE  = 1380.0
 	const float SKYDIVE_THIRD_PERSON_PLANE_ORBIT_HEIGHT = -1500.0
-	const float SKYDIVE_THIRD_PERSON_NORMAL_HEIGHT = 20.0
-	const float SKYDIVE_VIEW_LERP_DURATION_START = 2.3
+	const float SKYDIVE_THIRD_PERSON_NORMAL_HEIGHT      = 20.0
+	const float SKYDIVE_VIEW_LERP_DURATION_START        = 2.3
 
-	const float SKYDIVE_CONTRAIL_SPEED_MIN = 600.0 //1200
-	const float SKYDIVE_CONTRAIL_SPEED_MAX = 1400.0
+	const float SKYDIVE_CONTRAIL_SPEED_MIN              = 600.0 //1200
+	const float SKYDIVE_CONTRAIL_SPEED_MAX              = 1400.0
 
-	const float UNFOLLOW_HOLD_DURATION = 0.3
+	const float UNFOLLOW_HOLD_DURATION                  = 0.3
 
 	const CONTRAIL_FX = $"P_surv_team_jet_contrail"//$"P_team_jump_jet_ON_trails"//$"P_flag_fx_friend"//
 
@@ -128,6 +131,8 @@ const asset PLAYER_WIND_FX 	= $"P_wind_cruising"
 	{
 		var skydiveRui
 		array<string> contrailAttachments = ["l_hand", "r_hand"]//[ "vent_left", "vent_right" ]
+		table< EHI, array< int > > EHIToFriendlyJumpJetFXHandlesTable
+		table< EHI, array< int > > EHIToEnemyJumpJetFXHandlesTable
 	} file
 #endif //CLIENT
 
@@ -1091,7 +1096,23 @@ vector function GetSkydiveSmokeColorForTeam( int team )
 {
 	return file.skydiveSmokeColors[ team % file.skydiveSmokeColors.len() ]
 }
+#if CLIENT
+// TODO: Expose this for the server and implement new CodeCallback features
+/*global function GetSkyDiveTrailPackageForPlayerWithOverrides
+SkyDiveTrailPackage function GetSkyDiveTrailPackageForPlayerWithOverrides( entity player ) //
+{
+	int index = player.GetPlayerNetInt( "skyDiveTrailOverrideIndex" )
+	printt( "player " + player + ", index : " + index )
+	if ( index == -1  )
+	{
+		SkyDiveTrailPackage package =  SkydiveTrail_GetSkyDiveTrailPackageForPlayer( player )
+		printt( "Package smokeColor 0th element? " + package.smokeColorFX[0].fx )
+		return SkydiveTrail_GetSkyDiveTrailPackageForPlayer( player )
+	}
 
+	return SkydiveTrail_GetPackageForIndex( index )
+}*/
+#endif
 void function Freelook_Enable( entity player )
 {
 	if ( player.p.skydiveFreelookEnabled == 0 )
@@ -1369,6 +1390,16 @@ void function PlayerFreefallActiveChanged( entity player, bool oldValue, bool is
 	else
 	{
 		Signal( player, "FreefallEnded" )
+	}
+}
+
+void function PlayerFreefallEmoteAvailableChanged( entity player, bool oldValue, bool isFreefallEmoteAvailable, bool actuallyChanged )
+{
+	printt( "PlayerFreefallEmoteAvailableChanged", isFreefallEmoteAvailable )
+	if ( file.skydiveRui != null )
+	{
+		//
+		RuiSetBool( file.skydiveRui, "emoteAvailable", isFreefallEmoteAvailable )//
 	}
 }
 
@@ -1657,3 +1688,132 @@ void function StopFollowExtendedUse( entity player )
 }
 
 #endif //CLIENT
+
+#if CLIENT
+bool function EmoteMenuOnHold()
+{
+	return ( GetCurrentPlaylistVarBool( "skydive_emote_hold_for_wheel", true ) )
+}
+#endif
+
+#if CLIENT
+void function ServerCallback_SkydiveTrailStart( entity skyDivingPlayer  )
+{
+	UpdatePlayerSkydiveTrailFriendlyEnemyFX( skyDivingPlayer )
+}
+
+void function ServerCallback_SkydiveTrailEnd( entity skyDivingPlayer  )
+{
+	UpdatePlayerSkydiveTrailFriendlyEnemyFX( skyDivingPlayer  )
+}
+
+void function Freefall_OnPlayerCreated( entity skyDivingPlayer )
+{
+	thread Freefall_OnPlayerCreated_threaded( skyDivingPlayer  )
+}
+
+void function Freefall_OnPlayerCreated_threaded( entity skyDivingPlayer )
+{
+	WaitFrame()
+	if ( !IsValid( skyDivingPlayer  )  )
+		return
+	UpdatePlayerSkydiveTrailFriendlyEnemyFX( skyDivingPlayer  )
+}
+
+void function UpdatePlayerSkydiveTrailFriendlyEnemyFX( entity player )
+{
+	if ( !IsValid( player ) )
+		return
+
+	CleanupFriendlyEnemySkydiveTrailFXForPlayer( player )
+
+	if ( !player.Player_IsFreefalling()  )
+		return
+
+	if ( player.Player_IsFreefallAnticipating() )
+		return
+
+	thread StartFriendlyEnemySkydiveTrailFXForPlayer( player )
+}
+
+void function StartFriendlyEnemySkydiveTrailFXForPlayer( entity skyDivingPlayer )
+{/*
+	EHI skyDivingPlayerEHI = ToEHI( skyDivingPlayer  )
+	if ( !( skyDivingPlayerEHI in file.EHIToFriendlyJumpJetFXHandlesTable  )  )
+		file.EHIToFriendlyJumpJetFXHandlesTable[ skyDivingPlayerEHI ] <- []
+
+	if ( !( skyDivingPlayerEHI in file.EHIToEnemyJumpJetFXHandlesTable  )  )
+		file.EHIToEnemyJumpJetFXHandlesTable[ skyDivingPlayerEHI ] <- []
+
+	LoadoutEntry entry = Loadout_SkydiveTrail()
+	while ( !LoadoutSlot_IsReady( ToEHI( skyDivingPlayer ), entry ) )
+	{
+		WaitFrame()
+	}
+
+	SkyDiveTrailPackage package = GetSkyDiveTrailPackageForPlayerWithOverrides( skyDivingPlayer )
+
+	if ( skyDivingPlayer.GetTeam() == GetLocalViewPlayer().GetTeam() )
+	{
+		array<SkyDiveTrailFXStruct> friendlyJumpJetFX = package.friendlyJumpJet
+		foreach( fxStruct in friendlyJumpJetFX )
+		{
+			string attachment = fxStruct.attachName
+			int friendlyID = GetParticleSystemIndex( fxStruct.fx )
+			int friendlyFXHandle = StartParticleEffectOnEntity( skyDivingPlayer, friendlyID, fxStruct.attachType, skyDivingPlayer.LookupAttachment( attachment ) )
+
+			vector smokeColor
+			if ( fxStruct.useSkyDiveSmokeColorForTeam  )
+				smokeColor = GetSkydiveSmokeColorForTeam( skyDivingPlayer.GetTeam() )
+			else
+				smokeColor = fxStruct.controlPoint
+
+			EffectSetControlPointVector( friendlyFXHandle, 1, smokeColor )
+			file.EHIToFriendlyJumpJetFXHandlesTable[ skyDivingPlayerEHI ].append( friendlyFXHandle  )
+		}
+	}
+	else
+	{
+		array<SkyDiveTrailFXStruct> enemyJumpJetFX =  package.enemyJumpJet
+		foreach( fxStruct in enemyJumpJetFX )
+		{
+			string attachment = fxStruct.attachName
+			int enemyID = GetParticleSystemIndex( fxStruct.fx )
+			int enemyFXHandle = StartParticleEffectOnEntity( skyDivingPlayer, enemyID, fxStruct.attachType, skyDivingPlayer.LookupAttachment( attachment ) )
+
+			vector smokeColor
+			if ( fxStruct.useSkyDiveSmokeColorForTeam  )
+				smokeColor = GetSkydiveSmokeColorForTeam( skyDivingPlayer.GetTeam()  )
+			else
+				smokeColor = fxStruct.controlPoint
+
+			EffectSetControlPointVector( enemyFXHandle, 1, smokeColor )
+			file.EHIToEnemyJumpJetFXHandlesTable[ skyDivingPlayerEHI ].append( enemyFXHandle  )
+		}
+	}*/ // TODO: Fix
+}
+
+void function CleanupFriendlyEnemySkydiveTrailFXForPlayer( entity skyDivingPlayer )
+{
+	EHI skyDivingPlayerEHI = ToEHI( skyDivingPlayer  )
+
+	if ( skyDivingPlayerEHI in file.EHIToFriendlyJumpJetFXHandlesTable )
+	{
+		foreach( int friendlyFXHandle in file.EHIToFriendlyJumpJetFXHandlesTable[ skyDivingPlayerEHI ] )
+			EffectStop(  friendlyFXHandle, true, false ) //
+
+		file.EHIToFriendlyJumpJetFXHandlesTable[ skyDivingPlayerEHI ].clear()
+	}
+
+	if (  skyDivingPlayerEHI in file.EHIToEnemyJumpJetFXHandlesTable )
+	{
+		foreach( int enemyFXHandle in file.EHIToEnemyJumpJetFXHandlesTable[ skyDivingPlayerEHI ] )
+			EffectStop(  enemyFXHandle, false, true ) //
+
+		file.EHIToEnemyJumpJetFXHandlesTable[ skyDivingPlayerEHI ].clear()
+
+	}
+
+}
+
+#endif // CLIENT

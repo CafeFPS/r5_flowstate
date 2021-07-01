@@ -241,7 +241,7 @@ void function CommsMenu_OpenMenuForPingReply( entity player, entity wp )
 	}
 }
 
-void function CommsMenu_OpenMenuTo( entity player, int chatPage, int commsMenuStyle )
+void function CommsMenu_OpenMenuTo( entity player, int chatPage, int commsMenuStyle, bool debounce = true )
 {
 	// Kill any running instance:
 	CommsMenu_Shutdown( true )
@@ -261,11 +261,18 @@ void function CommsMenu_OpenMenuTo( entity player, int chatPage, int commsMenuSt
 
 	HudInputContext inputContext
 	inputContext.keyInputCallback = CommsMenu_HandleKeyInput
+
+	if ( chatPage == eChatPage.SKYDIVE_EMOTES )
+	{
+		inputContext.moveInputCallback = CommsMenu_HandleMoveInputControllerOnly
+	}
+
 	inputContext.viewInputCallback = CommsMenu_HandleViewInput
 	inputContext.hudInputFlags = (HIF_BLOCK_WAYPOINT_FOCUS)
 	HudInput_PushContext( inputContext )
 
-	player.SetLookStickDebounce()
+	if ( debounce )
+		player.SetLookStickDebounce()
 
 	float soundDelay = MenuStyleIsFastFadeIn( file.commsMenuStyle ) ? 0.0 : 0.1
 	EmitSoundOnEntityAfterDelay( GetLocalViewPlayer(), WHEEL_SOUND_ON_OPEN, soundDelay )
@@ -1172,6 +1179,14 @@ vector function ProcessMouseInput( float deltaX, float deltaY )
 	vector result = (s_mousePad / Length( s_mousePad ))
 	//DebugScreenText( 0.25, 0.25, format( "result:(%.1f, %.1f)  posNow:(%.1f, %.1f)  lenNow:%.2f", result.x, result.y, s_mousePad.x, s_mousePad.y, lenNow ) )
 	return result
+}
+
+bool function CommsMenu_HandleMoveInputControllerOnly( float x, float y )
+{
+	if ( IsControllerModeActive() )
+		CommsMenu_HandleViewInput( x, y )
+
+	return false
 }
 
 bool function CommsMenu_HandleViewInput( float x, float y )

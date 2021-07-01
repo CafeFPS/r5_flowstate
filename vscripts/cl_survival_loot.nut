@@ -747,7 +747,7 @@ void function UpdateLootRuiWithData( entity player, var rui, LootData data, int 
 
 		if ( asMain.additionalData.lootType == eLootType.ARMOR )
 		{
-			RuiSetInt( rui, "replacePropertyValue", int(player.GetShieldHealth() / float(SURVIVAL_GetShieldHealthForTier( asMain.additionalData.tier )) * 100) )
+			RuiSetInt( rui, "replacePropertyValue", int(player.GetShieldHealth() / float(SURVIVAL_GetArmorShieldCapacity( asMain.additionalData.tier )) * 100) )
 		}
 	}
 
@@ -774,9 +774,9 @@ void function UpdateLootRuiWithData( entity player, var rui, LootData data, int 
 	else if ( data.lootType == eLootType.ARMOR )
 	{
 		if ( !isInMenu && GetLootPromptStyle() == eLootPromptStyle.COMPACT )
-			RuiSetString( rui, "titleText", Localize( "#SURVIVAL_PICKUP_ARMOR_STATUS", Localize( data.pickupString ).toupper(), lootRef.lootProperty, SURVIVAL_GetShieldHealthForTier( data.tier ) ) )
+			RuiSetString( rui, "titleText", Localize( "#SURVIVAL_PICKUP_ARMOR_STATUS", Localize( data.pickupString ).toupper(), lootRef.lootProperty, SURVIVAL_GetArmorShieldCapacity( data.tier ) ) )
 
-		RuiSetInt( rui, "propertyValue", int(lootRef.lootProperty / float(SURVIVAL_GetShieldHealthForTier( data.tier )) * 100) )
+		RuiSetInt( rui, "propertyValue", int(lootRef.lootProperty / float(SURVIVAL_GetArmorShieldCapacity( data.tier )) * 100) )
 	}
 
 	if ( data.ammoType != "" )
