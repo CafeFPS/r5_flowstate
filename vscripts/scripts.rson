@@ -338,6 +338,7 @@ Scripts:
 
 	weapons/mp_ability_consumable.nut
 
+	mp/sh_desertlands_train.nut
 	mp/sh_bleedout.gnut
 	mp/sh_respawn_beacon.gnut
 	sh_apex_screens.nut
