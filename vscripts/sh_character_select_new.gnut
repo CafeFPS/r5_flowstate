@@ -941,9 +941,9 @@ void function DeleteMenuEntities()
 
 void function Client_FullUpdate()
 {
-	//printt( "#################" )
+	printt( "#################" )
 	printt( "Client_FullUpdate" )
-	//printt( "#################" )
+	printt( "#################" )
 
 	thread FixMenuCamera()
 }
@@ -959,9 +959,9 @@ void function FixMenuCamera()
 
 void function Client_UIScriptReset()
 {
-	//printt( "###############" )
+	printt( "###############" )
 	printt( "UI Script Reset" )
-	//printt( "###############" )
+	printt( "###############" )
 
 	if ( GetGameState() == eGameState.PickLoadout )
 		thread ReloadMenu()
