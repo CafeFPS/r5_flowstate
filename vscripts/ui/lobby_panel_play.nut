@@ -1984,9 +1984,9 @@ void function Lobby_UpdatePlayPanelPlaylists()
 		return
 
 	//
-	string compareSting = "#MATCHMAKING_LOADING"
+	string compareString = "#MATCHMAKING_LOADING"
 	string mmStatus     = GetMyMatchmakingStatus()
-	if ( mmStatus.len() >= compareSting.len() && mmStatus.slice( 0, compareSting.len() ) == compareSting )
+	if ( mmStatus.len() >= compareString.len() && mmStatus.slice( 0, compareString.len() ) == compareString )
 		return
 
 	if ( IsPartyLeader() && GetPartySize() == 1 && !IsExemptFromTraining() && !IsTrainingCompleted() )

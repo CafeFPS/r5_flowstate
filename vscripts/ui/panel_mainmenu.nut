@@ -202,7 +202,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 	SetSpinnerDebugInfo( "PrelaunchValidation" )
 #endif
 	#if(PC_PROG)
-		bool isOriginEnabled = Origin_IsEnabled()
+		bool isOriginEnabled = true//Origin_IsEnabled()
 		PrintLaunchDebugVal( "isOriginEnabled", isOriginEnabled )
 		if ( !isOriginEnabled )
 		{
@@ -219,7 +219,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 			return
 		}
 
-		bool isOriginConnected = isOriginEnabled ? Origin_IsOnline() : true
+		bool isOriginConnected = true//isOriginEnabled ? Origin_IsOnline() : true
 		PrintLaunchDebugVal( "isOriginConnected", isOriginConnected )
 		if ( !isOriginConnected )
 		{
@@ -227,7 +227,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 			return
 		}
 
-		bool isOriginLatest = Origin_IsUpToDate()
+		bool isOriginLatest = true//Origin_IsUpToDate()
 		PrintLaunchDebugVal( "isOriginLatest", isOriginLatest )
 		if ( !isOriginLatest )
 		{
@@ -284,7 +284,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 #endif
 		while ( true )
 		{
-			bool isOriginReady = Origin_IsReady()
+			bool isOriginReady = true//Origin_IsReady()
 			PrintLaunchDebugVal( "isOriginReady", isOriginReady )
 			if ( isOriginReady )
 				break
