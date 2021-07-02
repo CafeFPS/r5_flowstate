@@ -3,30 +3,30 @@ global function ClPlayer_Common_Precache
 global function PlayHeadshotConfirmSound
 global function PlayKillshotConfirmSound
 
-global const AUTO_TITAN_GUARD_MODE_DIAG_SUFFIX = "guard"
-global const AUTO_TITAN_GUARD_MODE_SOUND = "Menu_TitanAIMode_Guard"
-global const AUTO_TITAN_FOLLOW_MODE_DIAG_SUFFIX = "follow"
-global const AUTO_TITAN_FOLLOW_MODE_SOUND = "Menu_TitanAIMode_Follow"
+global const AUTO_TITAN_GUARD_MODE_DIAG_SUFFIX      = "guard"
+global const AUTO_TITAN_GUARD_MODE_SOUND            = "Menu_TitanAIMode_Guard"
+global const AUTO_TITAN_FOLLOW_MODE_DIAG_SUFFIX     = "follow"
+global const AUTO_TITAN_FOLLOW_MODE_SOUND           = "Menu_TitanAIMode_Follow"
 
-global const SCREENFX_WARPJUMP = $"P_warpjump_FP"
-global const SCREENFX_WARPJUMPDLIGHT = $"warpjump_CH_dlight"
-global const FX_KILLSHOT_BLOODSPRAY = $"P_deathfx_human"
-global const FX_KILLSHOT_MECHANICAL = $"P_deathfx_mechanical"
-global const FX_KILLSHOT_AR = $"P_ar_impact_pilot_kill"
-global const FX_BLOODSPRAY_DECAL_SML = $"P_deathfx_human_decal_SML"
-global const FX_BLOODSPRAY_DECAL_MED = $"P_deathfx_human_decal_MED"
-global const FX_BLOODSPRAY_DECAL_LRG = $"P_deathfx_human_decal_LRG"
-global const SHIELD_BODY_FX = $"P_armor_body_CP"
-global const SHIELD_BREAK_FX = $"P_armor_3P_break_CP"
-global const SHIELD_MAX_FX = $"P_armor_3P_max_CP"
-global const SPRINT_FP = $"P_sprint_FP"
+global const SCREENFX_WARPJUMP                      = $"P_warpjump_FP"
+global const SCREENFX_WARPJUMPDLIGHT                = $"warpjump_CH_dlight"
+global const FX_KILLSHOT_BLOODSPRAY                 = $"P_deathfx_human"
+global const FX_KILLSHOT_MECHANICAL                 = $"P_deathfx_mechanical"
+global const FX_KILLSHOT_AR                         = $"P_ar_impact_pilot_kill"
+global const FX_BLOODSPRAY_DECAL_SML                = $"P_deathfx_human_decal_SML"
+global const FX_BLOODSPRAY_DECAL_MED                = $"P_deathfx_human_decal_MED"
+global const FX_BLOODSPRAY_DECAL_LRG                = $"P_deathfx_human_decal_LRG"
+global const SHIELD_BODY_FX                         = $"P_armor_body_CP"
+global const SHIELD_BREAK_FX                        = $"P_armor_3P_break_CP"
+global const SHIELD_MAX_FX                          = $"P_armor_3P_max_CP"
+global const SPRINT_FP                              = $"P_sprint_FP"
 
-global const string HITBEEP_HEADSHOT_HUMAN 			= "Player.Hitbeep_headshot.Human_1P_vs_3P"
-global const string HITBEEP_HEADSHOT_ANDROID		= "Player.Hitbeep_headshot.Android_1P_vs_3P"
-global const string HITBEEP_HEADSHOT_KILL_HUMAN		= "Player.Hitbeep_headshot.Kill.Human_1P_vs_3P"
-global const string HITBEEP_HEADSHOT_KILL_ANDROID	= "Player.Hitbeep_headshot.Kill.Android_1P_vs_3P"
-global const string HITBEEP_RAPID_HEADSHOT_HUMAN	= "player_hitbeep_headshotrapid_human_1p_vs_3p"
-global const string HITBEEP_RAPID_HEADSHOT_ANDROID	= "Player.Hitbeep_headshot.Android_1P_vs_3P"
+global const string HITBEEP_HEADSHOT_HUMAN          = "Player.Hitbeep_headshot.Human_1P_vs_3P"
+global const string HITBEEP_HEADSHOT_ANDROID        = "Player.Hitbeep_headshot.Android_1P_vs_3P"
+global const string HITBEEP_HEADSHOT_KILL_HUMAN     = "Player.Hitbeep_headshot.Kill.Human_1P_vs_3P"
+global const string HITBEEP_HEADSHOT_KILL_ANDROID   = "Player.Hitbeep_headshot.Kill.Android_1P_vs_3P"
+global const string HITBEEP_RAPID_HEADSHOT_HUMAN    = "player_hitbeep_headshotrapid_human_1p_vs_3p"
+global const string HITBEEP_RAPID_HEADSHOT_ANDROID  = "Player.Hitbeep_headshot.Android_1P_vs_3P"
 
 void function ClPlayer_Common_Precache()
 {
@@ -94,16 +94,16 @@ bool function PlayKillshotConfirmSound( entity attacker, entity victim, int dama
 	if ( victim.IsTitan() )
 		return false
 
-	//
-	//
-	//
-	//
-	//
+	//if ( !( "playedKillShotSoundTime" in victim.s ) )
+	//	victim.s.playedKillShotSoundTime <- -100
+	// played a kill shot on this guy recently?
+	//if ( Time() - victim.s.playedKillShotSoundTime < 5 )
+	//	return
 
 	string soundAlias = ""
 	if ( damageType & DF_GIB )
 	{
-		//
+		// no confirm here, per Audio
 	}
 	else if ( damageType & DF_SHOTGUN )
 	{
@@ -115,32 +115,32 @@ bool function PlayKillshotConfirmSound( entity attacker, entity victim, int dama
 	else if ( (damageType & damageTypes.bullet) || (damageType & DF_BULLET) )
 	{
 		if ( victim.IsMechanical() )
-			soundAlias = "Android.BulletImpact_KillShot_1P_vs_3P"            //
+			soundAlias = "Android.BulletImpact_KillShot_1P_vs_3P"          // light ballistic vs. Spectre or Marvin
 		else
-			soundAlias = "Flesh.BulletImpact_KillShot_1P_vs_3P"            //
+			soundAlias = "Flesh.BulletImpact_KillShot_1P_vs_3P"            // light ballistic vs. pilot or grunt
 	}
 	else if ( damageType & damageTypes.largeCaliber )
 	{
 		if ( victim.IsMechanical() )
-			soundAlias = "Android.Heavy.BulletImpact_KillShot_1P_vs_3P"    //
+			soundAlias = "Android.Heavy.BulletImpact_KillShot_1P_vs_3P"    // heavy ballistic vs. Spectre or Marvin
 		else
-			soundAlias = "Flesh.Heavy.BulletImpact_Killshot_1P_vs_3P"    //
+			soundAlias = "Flesh.Heavy.BulletImpact_Killshot_1P_vs_3P"      // heavy ballistic vs. pilot or grunt
 	}
 
-	//
+	// Special case for spectre headshot head explosions
 	if ( IsFragDrone( victim ) )
 		soundAlias = "SuicideSpectre.BulletImpact_KillShot_1P_vs_3P"
 
-	//
+	//Special case for turret. Not sure if this differentiates between mega turret and small light turrets, we can further break them apart if needed
 	if ( IsTurret( victim ) )
 	{
-		//
+		//soundAlias = "MegaTurret.BulletImpact_KillShot_1P_vs_3P"
 	}
 
 	if ( soundAlias == "" )
 		return false
 
-	//
+	//victim.s.playedKillShotSoundTime = Time()
 	EmitSoundOnEntity( attacker, soundAlias )
 	return true
 }

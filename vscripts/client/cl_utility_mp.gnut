@@ -8,7 +8,7 @@ void function HideFriendlyIndicatorAndCrosshairNames()
 
 void function ShowFriendlyIndicatorAndCrosshairNames()
 {
-	//
+	//Show crosshair names and blue friendly indicators
 	entity player = GetLocalViewPlayer()
 	player.UnhideCrosshairNames()
 }

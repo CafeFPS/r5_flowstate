@@ -8,8 +8,8 @@ global function Obituary_SetIndexOffset
 global function Obituary_SetHorizontalOffset
 global function ShouldShowObituaryLineForPlayer
 
-const NUM_OBITUARY_LINES = 4		//
-const obituaryTextBoxWidth = 500
+const NUM_OBITUARY_LINES    = 4
+const obituaryTextBoxWidth  = 500
 const obituaryTextBoxHeight = 20
 const defaultCharacterWidth = 5
 
@@ -21,29 +21,29 @@ struct ObituaryData
 
 struct
 {
-	array<ObituaryData>		obituaryQueue = []
+	array<ObituaryData>	obituaryQueue = []
 	bool obituariesEnabled = true
-	int indexOffest = 0
+	int indexOffest      = 0
 	int horizontalOffset = 0
 } file
 
 struct ObitEntityInfo
 {
-	string displayName = ""
-	vector displayColor = OBITUARY_COLOR_WEAPON
+	string displayName    = ""
+	vector displayColor   = OBITUARY_COLOR_WEAPON
 	string petDisplayName = ""
 }
 
 global struct ObitStringData
 {
-	string attackerName = ""
-	string attackerPetName = ""
-	string victimName = ""
-	string victimPetName = ""
-	string weaponLocalizedName = ""
+	string attackerName            = ""
+	string attackerPetName         = ""
+	string victimName              = ""
+	string victimPetName           = ""
+	string weaponLocalizedName     = ""
 	string attackerLocalizedString = "#OBIT_PLAYER_STRING"
-	string victimLocalizedString = "#OBIT_PLAYER_STRING"
-	string weaponLocalizedString = "#OBIT_BRACKETED_STRING"
+	string victimLocalizedString   = "#OBIT_PLAYER_STRING"
+	string weaponLocalizedString   = "#OBIT_BRACKETED_STRING"
 }
 
 void function ClObituary_Init()
@@ -61,7 +61,7 @@ ObitEntityInfo function Obituary_GetEntityInfo( entity ent, int damageSourceId, 
 	if ( !IsValid( ent ) )
 	{
 		string name = GetAttackerDisplayNamesDamageSourceId( damageSourceId )
-		info.displayColor = GetKeyColor( COLORID_ENEMY ) //
+		info.displayColor = GetKeyColor( COLORID_ENEMY )
 		info.displayName = name
 
 		return info
@@ -74,20 +74,6 @@ ObitEntityInfo function Obituary_GetEntityInfo( entity ent, int damageSourceId, 
 	entity localPlayer = GetLocalClientPlayer()
 
 	info.displayColor = localPlayer.GetTeam() == ent.GetTeam() ? GetPlayerInfoColor( ent ) : <255, 255, 255>//
-
-/*
-
-
-
-
-
-
-
-
-
-
-
-*/
 
 	return info
 }
@@ -105,19 +91,16 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 	{
 		if ( victim.IsPlayer() )
 		{
-			//
 			if ( !OBITUARY_ENABLED_PLAYERS )
 				return
 		}
 		else if ( victim.IsTitan() )
 		{
-			//
 			if ( !OBITUARY_ENABLED_NPC_TITANS )
 				return
 		}
 		else
 		{
-			//
 			if ( !OBITUARY_ENABLED_NPC )
 				return
 		}
@@ -126,9 +109,9 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 	if ( damageSourceId == eDamageSourceId.round_end )
 		return
 
-	/**/
-	/**/
-	/**/
+	/***************************************************************/
+	/***************************************************************/
+	/***************************************************************/
 
 	bool isRelatedAttacker = (victim.GetTeam() == GetLocalClientPlayer().GetTeam())
 	ObitEntityInfo attackerInfo = Obituary_GetEntityInfo( attacker, damageSourceId, isRelatedAttacker )
@@ -151,9 +134,9 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 
 	sourceDisplayName = GetObitFromDamageSourceID( damageSourceId )
 
-	/**/
-	/**/
-	/**/
+	/***************************************************************/
+	/***************************************************************/
+	/***************************************************************/
 
 	bool printDebugInfo = false
 	string debugSourceDisplayName = sourceDisplayName
@@ -202,9 +185,9 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 		printt( "------------------------------------------" )
 	}
 
-	/**/
-	/**/
-	/**/
+	/***************************************************************/
+	/***************************************************************/
+	/***************************************************************/
 
 	if ( isDeathSuicide )
 	{
@@ -213,8 +196,6 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 	}
 
 	asset weaponIcon = GetObitImageFromDamageSourceID( damageSourceId )
-	//
-	//
 
 	string attackerString
 	string weaponString
@@ -276,14 +257,6 @@ bool function ShouldShowObituaryLineForPlayer( entity player )
 			return false
 	}
 
-#if(false)
-
-
-
-
-
-#endif //
-
 	return true
 }
 
@@ -297,8 +270,6 @@ void function Obituary_Print_Localized( string localizedPrint, vector altColor1 
 	RuiSetGameTime( rui, "startTime", Time() )
 	RuiSetGameTime( rui, "updateTime", Time() )
 	RuiSetFloat( rui, "duration", OBITUARY_DURATION )
-
-	//
 
 	RuiSetString( rui, "obitString", localizedPrint )
 
@@ -334,9 +305,6 @@ void function Obituary_Print_PlayerDeath( string attackerString, asset weaponIco
 	RuiSetFloat3( rui, "victimColor", SrgbToLinear( victimColor / 255.0 ) )
 	RuiSetFloat3( rui, "weaponColor", SrgbToLinear( weaponColor / 255.0 ) )
 
-	//
-	//
-
 	RuiSetBool( rui, "tempIsMainWeapon", tempIsMainWeapon )
 	RuiSetBool( rui, "tempHasModifier", modifierIcon != $"" )
 
@@ -351,11 +319,7 @@ void function Obituary_Print_PlayerDeath( string attackerString, asset weaponIco
 
 void function UpdateObituaryQueue()
 {
-	#if(false)
-
-#else //
 	const int EXTRA_OFFSET = 0
-	#endif //
 
 	for ( int index = file.obituaryQueue.len() - 1; index >= 0; index-- )
 	{
@@ -373,60 +337,6 @@ void function UpdateObituaryQueue()
 		RuiSetGameTime( obitData.rui, "updateTime", Time() )
 	}
 }
-
-/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
 
 void function Obituary_SetEnabled( bool state )
 {

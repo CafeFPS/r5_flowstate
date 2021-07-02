@@ -3,18 +3,18 @@ global function BeginMovingPIP
 global function CaptureStillPIPThenEndMovingPIPThread
 global function ReleasePIP
 global function PIPSlotState_GetSlotID
-//
-//
+//global function UIToClient_PROTO_StartButtonThumbnail
+//global function UIToClient_PROTO_StopButtonThumbnail
 
 global function ClientCodeCallback_MonitorSnapshotDone
 
 
-Assert( PIP_MONITOR_START_INDEX == 0 ) //
-Assert( PIP_NUM_MONITORS == 3 ) //
-Assert( PIP_SNAPSHOT_START_INDEX == 0 ) //
-Assert( PIP_NUM_SNAPSHOTS == 10 ) //
-Assert( PIP_INVALID == -1 ) //
-//
+Assert( PIP_MONITOR_START_INDEX == 0 )  // todo(dw): temp
+Assert( PIP_NUM_MONITORS == 3 )         // todo(dw): temp
+Assert( PIP_SNAPSHOT_START_INDEX == 0 ) // todo(dw): temp
+Assert( PIP_NUM_SNAPSHOTS == 10 )       // todo(dw): temp
+Assert( PIP_INVALID == -1 )             // todo(dw): temp
+//const int PIP_TOTAL_SLOTS = maxint( PIP_MONITOR_START_INDEX + PIP_NUM_MONITORS, PIP_SNAPSHOT_START_INDEX + PIP_NUM_SNAPSHOTS )
 const int PIP_NUM_TOTAL = PIP_NUM_SNAPSHOTS
 
 
@@ -31,16 +31,16 @@ global struct PIPSlotState
 	bool isUsableForMoving
 
 	int                 status = ePIPSlotStatus.AVAILABLE
-	PIPSlotState ornull associatedProcessingSlotStateOrNull = null //
-	//
+	PIPSlotState ornull associatedProcessingSlotStateOrNull = null // For still, this is the moving. For moving, this is the still.
+	// If it is set: for still, this means it is yet to be captured; for moving, this means it is currently queued be captured into a still.
 
-	entity camera //
+	entity camera // for moving only
 	bool   hasColorCorrectionAssigned = false
 }
 
 struct
 {
-	//
+	//PIPSlotState[PIP_NUM_TOTAL] slotStateList
 	array<PIPSlotState> slotStateList
 
 	bool                isCaptureInProgress = false
@@ -112,12 +112,12 @@ PIPSlotState function BeginMovingPIP( entity camera, int colorCorrectionLayer = 
 
 void function CaptureStillPIPThenEndMovingPIPThread( PIPSlotState movingSlotState, PIPSlotState ornull[1] outArray_stillSlotState, bool allowWaitForStillSlot = false )
 {
-	Assert( movingSlotState.slotIndex != -1 ) //
-	Assert( movingSlotState.isUsableForMoving ) //
-	Assert( movingSlotState.status == ePIPSlotStatus.MOVING ) //
-	Assert( movingSlotState.associatedProcessingSlotStateOrNull == null ) //
+	Assert( movingSlotState.slotIndex != -1 ) // bad struct
+	Assert( movingSlotState.isUsableForMoving ) // tried to capture a non-moving slot
+	Assert( movingSlotState.status == ePIPSlotStatus.MOVING ) // tried to capture from a non-active slot
+	Assert( movingSlotState.associatedProcessingSlotStateOrNull == null ) // tried to capture from a slot that's already in the middle of being captured
 
-	//
+	//printt( "#SNAPSHOT QUEUE" )
 	bool shouldWaitOneFrame = false
 	if ( file.isCaptureInProgress )
 	{
@@ -128,10 +128,10 @@ void function CaptureStillPIPThenEndMovingPIPThread( PIPSlotState movingSlotStat
 		} )
 
 		WaitSignal( movingSlotState, "YouMayProceedWithPIPSnapshot" )
-		//
+		//Assert( !file.isCaptureInProgress )
 		file.captureQueue.remove( 0 )
 
-		shouldWaitOneFrame = true //
+		shouldWaitOneFrame = true // wait 1 frame before proceeding, so that two captures don't happen immediately after each other
 	}
 	else
 	{
@@ -171,7 +171,7 @@ void function CaptureStillPIPThenEndMovingPIPThread( PIPSlotState movingSlotStat
 	PIPSlotState stillSlotState
 	for ( int slotsTriedCount = 0; slotsTriedCount < PIP_NUM_TOTAL; slotsTriedCount++ )
 	{
-		//
+		// use up non-moving slots first
 		int candidateSlotIndex          = (PIP_MONITOR_START_INDEX + PIP_NUM_MONITORS + slotsTriedCount) % PIP_NUM_TOTAL
 		PIPSlotState candidateSlotState = file.slotStateList[candidateSlotIndex]
 		if ( candidateSlotState.status != ePIPSlotStatus.AVAILABLE )
@@ -190,16 +190,16 @@ void function CaptureStillPIPThenEndMovingPIPThread( PIPSlotState movingSlotStat
 	stillSlotState.associatedProcessingSlotStateOrNull = movingSlotState
 	movingSlotState.associatedProcessingSlotStateOrNull = stillSlotState
 
-	//
+	//printt( "# QUEUEUEUEUE", movingSlotState.slotIndex, "->", stillSlotState.slotIndex )
 	movingSlotState.camera.QueueMonitorSnapshot( stillSlotState.slotIndex )
 
 	WaitSignal( stillSlotState, "PIPSnapshotCaptured" )
-	//
+	//printt( "#SNAPSHOT COMPLETE" )
 
-	Assert( stillSlotState.status == ePIPSlotStatus.STILL ) //
-	Assert( movingSlotState.status == ePIPSlotStatus.MOVING ) //
-	Assert( stillSlotState.associatedProcessingSlotStateOrNull == movingSlotState ) //
-	Assert( movingSlotState.associatedProcessingSlotStateOrNull == stillSlotState ) //
+	Assert( stillSlotState.status == ePIPSlotStatus.STILL ) // make sure the still slot hasn't been released
+	Assert( movingSlotState.status == ePIPSlotStatus.MOVING ) // make sure the moving slot hasn't been released
+	Assert( stillSlotState.associatedProcessingSlotStateOrNull == movingSlotState ) // make sure the still slot hasn't been released then reacquired
+	Assert( movingSlotState.associatedProcessingSlotStateOrNull == stillSlotState ) // make sure the moving slot hasn't been released then reacquired
 
 	stillSlotState.associatedProcessingSlotStateOrNull = null
 	movingSlotState.associatedProcessingSlotStateOrNull = null
@@ -207,25 +207,25 @@ void function CaptureStillPIPThenEndMovingPIPThread( PIPSlotState movingSlotStat
 	ReleasePIP( movingSlotState )
 
 	outArray_stillSlotState[0] = stillSlotState
-	//
+	//return stillSlotState
 }
 
 
 void function ClientCodeCallback_MonitorSnapshotDone( int stillSlotIndex )
 {
 	PIPSlotState stillSlotState = file.slotStateList[stillSlotIndex]
-	//
-	//
-	//
+	//Assert( stillSlotState.status == ePIPSlotStatus.STILL )
+	//Assert( stillSlotState.associatedProcessingSlotStateOrNull != null )
+	//Assert( (expect PIPSlotState(stillSlotState.associatedProcessingSlotStateOrNull)).associatedProcessingSlotStateOrNull == stillSlotState )
 
 	Signal( stillSlotState, "PIPSnapshotCaptured" )
-	//
+	//printt( "# DONE DONE DONE", stillSlotIndex )
 }
 
 
 void function ReleasePIP( PIPSlotState slotState )
 {
-	Assert( slotState.slotIndex != -1 ) //
+	Assert( slotState.slotIndex != -1 ) // bad struct
 	Assert( slotState.status != ePIPSlotStatus.AVAILABLE, "Attempted to end PIP on slot that was not in use." )
 
 	if ( slotState.status == ePIPSlotStatus.MOVING )
@@ -249,7 +249,7 @@ void function ReleasePIP( PIPSlotState slotState )
 	}
 	else if ( slotState.status == ePIPSlotStatus.STILL )
 	{
-		Assert( slotState.associatedProcessingSlotStateOrNull == null ) //
+		Assert( slotState.associatedProcessingSlotStateOrNull == null ) // make sure this still isn't being released wrongly before being done captured
 	}
 
 	slotState.status = ePIPSlotStatus.AVAILABLE
@@ -265,166 +265,166 @@ void function ReleasePIP( PIPSlotState slotState )
 
 int function PIPSlotState_GetSlotID( PIPSlotState slotState )
 {
-	Assert( slotState.slotIndex != -1 ) //
+	Assert( slotState.slotIndex != -1 ) // bad struct
 	Assert( slotState.status != ePIPSlotStatus.AVAILABLE, "Attempted to get PIP slot ID for display when it was not in use." )
 	return slotState.slotIndex
 }
 
 
-//
-//
-//
-//
-//
+////
+////////
+//////// BEGIN UI THUMBNAIL EXPERIMENT
+////////
+////
 
 
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+//struct PROTO_ThumbnailCaptureState
+//{
+//	var           button
+//	ItemFlavor&   flav
+//	PIPSlotState& pipSlotState
+//}
+//struct {
+//	table<ItemFlavor, PROTO_ThumbnailCaptureState> flavorTCSMap = {}
+//	array<PROTO_ThumbnailCaptureState>             queue = []
+//
+//	bool isThinkRunning = false
+//	bool sneakyInitDone = false
+//} PROTO_thumbnailProcessorState
+//
+//void function UIToClient_PROTO_StartButtonThumbnail( var button, string itemFlavorRef )
+//{
+//	// aaaa
+//	if ( !PROTO_thumbnailProcessorState.sneakyInitDone )
+//	{
+//		PROTO_thumbnailProcessorState.sneakyInitDone = true
+//		RegisterSignal( "PROTO_StopThumbnailCapture" )
+//		GetLocalClientPlayer().ClientCommand( "monitor_snapshot_frame_delay 10" )
+//	}
+//	// aaaa
+//
+//	printt( "%%%%% UIToClient_PROTO_StartButtonThumbnail", itemFlavorRef, button )
+//	ItemFlavor itemFlavor = GetItemFlavorByRef( itemFlavorRef )
+//	Assert( !(itemFlavor in PROTO_thumbnailProcessorState.flavorTCSMap) )
+//
+//	PROTO_ThumbnailCaptureState tcs
+//	tcs.button = button
+//	tcs.flav = itemFlavor
+//
+//	PROTO_thumbnailProcessorState.flavorTCSMap[itemFlavor] <- tcs
+//
+//	RuiSetInt( Hud_GetRui( button ), "protoCameraSlot", -1 )
+//
+//	PROTO_thumbnailProcessorState.queue.append( tcs )
+//	if ( !PROTO_thumbnailProcessorState.isThinkRunning )
+//		thread PROTO_RunThumbnailProcessor()
+//}
+//
+//
+//void function UIToClient_PROTO_StopButtonThumbnail( string itemFlavorRef )
+//{
+//	printt( "%%%%% UIToClient_PROTO_StopButtonThumbnail", itemFlavorRef )
+//
+//	ItemFlavor itemFlavor = GetItemFlavorByRef( itemFlavorRef )
+//	Assert( itemFlavor in PROTO_thumbnailProcessorState.flavorTCSMap )
+//
+//	PROTO_ThumbnailCaptureState tcs = PROTO_thumbnailProcessorState.flavorTCSMap[itemFlavor]
+//	delete PROTO_thumbnailProcessorState.flavorTCSMap[itemFlavor]
+//
+//	RuiSetInt( Hud_GetRui( tcs.button ), "protoCameraSlot", -1 )
+//
+//	PROTO_thumbnailProcessorState.queue.removebyvalue( tcs )
+//
+//	Signal( tcs, "PROTO_StopThumbnailCapture" )
+//}
+//
+//
+//void function PROTO_RunThumbnailProcessor()
+//{
+//	PROTO_thumbnailProcessorState.isThinkRunning = true
+//	OnThreadEnd( void function() {
+//		PROTO_thumbnailProcessorState.isThinkRunning = false
+//	} )
+//
+//	while ( PROTO_thumbnailProcessorState.queue.len() > 0 )
+//	{
+//		WaitForFreePIP( true )
+//		if ( PROTO_thumbnailProcessorState.queue.len() == 0 )
+//			break
+//
+//		PROTO_ThumbnailCaptureState tcs = PROTO_thumbnailProcessorState.queue.remove( 0 )
+//		printt( "%%%%% PROTO_RunThumbnailProcessor", DEV_DescItemFlavor( tcs.flav ) )
+//		thread PROTO_RunThumbnailCapture( tcs )
+//	}
+//}
+//
+//
+//void function PROTO_RunThumbnailCapture( PROTO_ThumbnailCaptureState tcs )
+//{
+//	EndSignal( tcs, "PROTO_StopThumbnailCapture" )
+//
+//	entity camera = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, 20.0 )
+//	printt( "%%%%% PROTO_RunThumbnailCapture -> BeginMovingPIP", DEV_DescItemFlavor( tcs.flav ) )
+//	tcs.pipSlotState = BeginMovingPIP( camera )
+//
+//	float offset = 200.0 * PIPSlotState_GetSlotID( tcs.pipSlotState )
+//
+//	entity model = CreateClientSidePropDynamic( <0, offset, -1000>, <0, 90, 0>, $"mdl/dev/empty_model.rmdl" )
+//	model.MakeSafeForUIScriptHack()
+//	CharacterSkin_Apply( model, tcs.flav )
+//	model.Anim_Play( "ACT_MP_MENU_MAIN_IDLE" )
+//
+//	camera.SetParent( model, "CHESTFOCUS", false )
+//	camera.SetLocalOrigin( <110, 0, 0> )
+//	camera.SetLocalAngles( <0, 180, 0> )
+//
+//	entity light = CreateClientSideDynamicLight( <0, 0, 0>, <0, 0, 0>, <1, 1, 1>, 175.0 )
+//	light.SetLightExponent( 3.1 )
+//	light.SetParent( model, "CHESTFOCUS", false )
+//	light.SetLocalOrigin( <30, 13, 41> )
+//
+//	float bgSize       = 2000.0
+//	vector bgCenterPos = camera.GetOrigin() + 500.0 * camera.GetForwardVector() - bgSize * 0.5 * camera.GetRightVector() + bgSize * 0.5 * camera.GetUpVector()
+//	var bgTopo         = RuiTopology_CreatePlane( bgCenterPos, bgSize * camera.GetRightVector(), bgSize * -camera.GetUpVector(), false )
+//	var bgRui          = RuiCreate( $"ui/temp_button_thumbnail_pip_bg.rpak", bgTopo, RUI_DRAW_WORLD, 10000 )
+//	RuiSetFloat3( bgRui, "pos", bgCenterPos )
+//	RuiKeepSortKeyUpdated( bgRui, true, "pos" )
+//
+//	OnThreadEnd( function() : ( tcs, camera, model, light, bgTopo, bgRui ) {
+//		printt( "%%%%% PROTO_RunThumbnailCapture -> OnThreadEnd", DEV_DescItemFlavor( tcs.flav ) )
+//
+//		ReleasePIP( tcs.pipSlotState )
+//
+//		RuiDestroy( bgRui )
+//		RuiTopology_Destroy( bgTopo )
+//		if ( IsValid( light ) )
+//			light.Destroy()
+//		if ( IsValid( model ) )
+//			model.Destroy()
+//		if ( IsValid( camera ) )
+//			camera.Destroy()
+//	} )
+//
+//	//RuiSetInt( Hud_GetRui( tcs.button ), "protoCameraSlot", PIPSlotState_GetSlotID( tcs.pipSlotState ) )
+//
+//	PIPSlotState ornull[1] outArray_stillSlotState = [null]
+//	printt( "%%%%% PROTO_RunThumbnailCapture -> CaptureStillPIPThenEndMovingPIPThread", DEV_DescItemFlavor( tcs.flav ) )
+//	waitthread CaptureStillPIPThenEndMovingPIPThread( tcs.pipSlotState, outArray_stillSlotState, true )
+//	tcs.pipSlotState = expect PIPSlotState( outArray_stillSlotState[0] )
+//
+//	RuiSetInt( Hud_GetRui( tcs.button ), "protoCameraSlot", PIPSlotState_GetSlotID( tcs.pipSlotState ) )
+//
+//	light.Destroy()
+//	model.Destroy()
+//	camera.Destroy()
+//	printt( "%%%%% PROTO_RunThumbnailCapture -> WaitForever", DEV_DescItemFlavor( tcs.flav ) )
+//	WaitForever()
+//}
 
 
-//
-//
-//
-//
-//
+////
+////////
+//////// END UI THUMBNAIL EXPERIMENT
+////////
+////
 

@@ -71,7 +71,7 @@ void function ClientCodeCallback_TurretPanelChanged( entity turret )
 {
 	if ( !IsValid( turret ) )
 		return
-	//
+	//thread TurretPanelChanged( turret )
 }
 
 void function ClientCodeCallback_OutOfBoundsDeadTimeChanged( entity player )
@@ -89,12 +89,12 @@ void function ClientCodeCallback_OnShieldHealthChanged( entity ent )
 	int shieldHealth = ent.GetShieldHealth()
 	int maxShieldHealth = ent.GetShieldHealthMax()
 
-	//
+	// don't play on local pilot
 	if ( GetLocalViewPlayer() != ent || ent.IsTitan() )
 	{
 		if ( shieldHealth == 0 && ent.lastShieldHealth && maxShieldHealth > 0 )
 		{
-			PlayShieldBreakEffect( ent ) //
+			PlayShieldBreakEffect( ent ) // duped in cl_player; this callback is delayed and it makes breaking shields feel bad
 		}
 		else if ( shieldHealth == maxShieldHealth && ent.lastShieldHealth != maxShieldHealth && maxShieldHealth > 0 )
 		{
@@ -133,17 +133,17 @@ void function ClientCodeCallback_OnCinematicEventFlagsChanged( entity player, in
 {
 	if ( !IsValid( player ) )
 		return
-	//
+	//printt( "ClientCodeCallback_OnCinematicEventFlagsChanged for player: " + player.GetEntIndex() )
 
-	//
-	//
+	//Strangely enough, even though cinematiceventflag data isn't propagated to other clients,
+	//The codecallback for them triggers e.g. when you first connect onto a server.
 	if ( player == GetLocalClientPlayer() )
 		UpdateMainHudFromCEFlags( player )
 
 	int playerFlags = player.GetCinematicEventFlags()
 
-	int changedFlag = playerFlags ^ oldFlags //
-	//
+	int changedFlag = playerFlags ^ oldFlags //Take XOR of old and new flag to get changed flags
+	//printt( "Old flags:" + oldFlags + ", new Flags: " + playerFlags + ", changedFlag " + changedFlag )
 
 	foreach ( flag, callbackInfoArray in clGlobal.onCinematicEventFlagChangedCallback )
 	{
@@ -167,7 +167,7 @@ void function ClientCodeCallback_OnNextTitanRespawnAvailableChanged( entity play
 	if ( player != GetLocalViewPlayer() )
 		return
 
-	//
+	//UpdateTitanModeHUD( player )
 }
 
 void function ClientCodeCallback_OnNextCoreChargeAvailableChanged( entity titansoul )
@@ -255,7 +255,7 @@ void function ClientCodeCallback_OnEntityCreation( entity ent )
 
 void function ClientCodeCallback_OnDeath( entity ent )
 {
-	//
+	// AddOnDeathCallback sets DoDeathCallback( true ) in a create callback for the class
 
 	string className = expect string( ent.GetNetworkedClassName() )
 
@@ -274,7 +274,7 @@ void function ClientCodeCallback_OnDeath( entity ent )
 
 void function __RunOnDeathOrDestroyCallbacks( entity ent, string className, string targetName )
 {
-	//
+	//do this so they don't run twice
 	if ( ( "ranOnDeathOrDestroyCallbacks" in ent.s ) )
 		return
 
@@ -293,14 +293,14 @@ void function AddEntityDestroyedCallback( entity ent, void functionref( entity )
 {
 	ent.e.onEntityDestroyedCallbacks.append( callbackFunc )
 
-	//
+	// set this or else the ent won't run CodeCallback_OnEntityDestroyed at all
 	ent.SetDoDestroyCallback( true )
 }
 
 void function ClientCodeCallback_OnEntityDestroy( entity ent )
 {
-	//
-	//
+	// need to set this OnEntityCreation or somewhere
+	// ent.SetDoDestroyCallback( true )
 
 	array<void functionref( entity ent )> myCallbacks = clone( ent.e.onEntityDestroyedCallbacks )
 	foreach ( callbackFunc in myCallbacks )
@@ -327,42 +327,42 @@ void function ClientCodeCallback_OnEntityDestroy( entity ent )
 
 void function ClientCodeCallback_OnPlayerLifeStateChanged( entity player, int oldLifeState )
 {
-	//
-	//
+	//printt( player == GetLocalClientPlayer(), oldLifeState, player.GetLifeState(), IsWatchingReplay() )
+	//local isWatchingKillReplay = IsWatchingReplay()
 
 	int newLifeState = player.GetLifeState()
 
-	//
+	// Added via AddCallback_OnPlayerLifeStateChanged
 	foreach ( callbackFunc in clGlobal.onPlayerLifeStateChangedCallbacks )
 	{
 		callbackFunc( player, oldLifeState, newLifeState )
 	}
 
 	/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
+	switch ( oldLifeState )
+	{
+		case LIFE_ALIVE:
+			printt( player.GetPlayerName(), "LIFE_ALIVE", IsAlive( player ) )
+			if ( player == GetLocalClientPlayer() )
+				thread OnClientPlayerAlive( player )
+			player.Signal( "PlayerAlive" )
+			break
+		case LIFE_DYING:
+			printt( player.GetPlayerName(), "LIFE_DYING", IsAlive( player ) )
+			if ( player == GetLocalClientPlayer() )
+				thread OnClientPlayerDying( player )
+			player.Signal( "PlayerDying" )
+			break
+		case LIFE_DEAD:
+			printt( player.GetPlayerName(), "LIFE_DEAD", IsAlive( player ) )
+			player.Signal( "PlayerDead" )
+			break
+		case LIFE_DISCARDBODY:
+			printt( player.GetPlayerName(), "LIFE_DISCARDBODY", IsAlive( player ) )
+			player.Signal( "PlayerDiscardBody" )
+			break
+	}
+	*/
 }
 
 void function AddCallback_OnPlayerLifeStateChanged( void functionref( entity, int, int ) callbackFunc )
@@ -406,26 +406,26 @@ void function ClientCodeCallback_SpecReplayEnded()
 }
 
 /*
+enum
+{
+OBS_MODE_NONE = 0,			// not in spectator mode
+OBS_MODE_DEATHCAM,			// Attempt to watch your killer while orbiting your corpse
+OBS_MODE_STATIC,			// Static position and orientation
+OBS_MODE_STATIC_LOCKED,		// Identical to OBS_MODE_STATIC expect spectator controls don't work with it
+OBS_MODE_IN_EYE_SIMPLE,		// Simplified version of OBS_MODE_IN_EYE
+OBS_MODE_IN_EYE,			// follow a player in first person view
+OBS_MODE_CHASE,				// follow a player in third person view
+OBS_MODE_ROAMING,			// free roaming
+OBS_MODE_MENU,
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+NUM_OBSERVER_MODES,
+}
 */
 
 
 void function ClientCodeCallback_SpectatorModeStarted( entity player, int observerMode )
 {
-	//
+	//printl( "Spectator mode started: " + observerMode )
 	clGlobal.levelEnt.Signal( "OnSpectatorMode" )
 	clGlobal.isSpectating = true
 	clGlobal.observerMode = observerMode
@@ -451,7 +451,7 @@ void function ClientCodeCallback_SpectatorModeStarted( entity player, int observ
 
 void function ClientCodeCallback_SpectatorModeEnded( entity player, int oldObsMode, entity oldTarget )
 {
-	//
+	//printl( "Spectator mode ended: " + oldObsMode )
 	clGlobal.isSpectating = false
 
 	switch ( oldObsMode )
@@ -473,7 +473,7 @@ void function ClientCodeCallback_SpectatorModeEnded( entity player, int oldObsMo
 
 void function ClientCodeCallback_SpectatorTargetChanged( entity player, entity prevTarget, entity currTarget )
 {
-	//
+	//printl( "Spectator target changed: player:  " + player + "target : " + currTarget )
 
 	foreach ( callbackFunc in clGlobal.onSpectatorTargetChangedCallbacks )
 		callbackFunc( player, prevTarget, currTarget )
@@ -560,7 +560,7 @@ void function ClientCodeCallback_SmokeTestRunning( string param )
 
 void function ClientCodeCallback_OnSelectedWeaponChanged( entity selectedWeapon )
 {
-	//
+	// Added via AddCallback_OnSelectedWeaponChanged
 	foreach ( callbackFunc in clGlobal.onWeaponChangedCallbacks )
 	{
 		callbackFunc( selectedWeapon )

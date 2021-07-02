@@ -52,9 +52,9 @@ global struct AnnouncementData
 	int           announcementStyle = ANNOUNCEMENT_STYLE_DEFAULT
 	int           sortKey = MINIMAP_Z_BASE + 200
 	bool          drawOverScreenFade = false
-	//
-	//
-	//
+	// optional func
+	// cockpitFX
+	// moveDest
 	LevelUpData & levelUpData
 }
 
@@ -63,11 +63,11 @@ void function CLAnnouncement_Init()
 	RegisterSignal( "AnnoucementPurge" )
 	RegisterSignal( "UIToClient_Notification" )
 
+	//if ( file.tempRui != null )
+	//	RuiDestroyIfAlive( file.tempRui )
 	//
-	//
-	//
-	//
-	//
+	//file.tempRui = CreateCockpitRui( $"ui/announcement_center.rpak" )
+	//RuiSetGameTime( file.tempRui, "startTime", Time() )
 }
 
 
@@ -156,7 +156,7 @@ void function Announcement_SetSoundAlias( AnnouncementData announcement, string 
 
 void function Announcement_SetOptionalTextArgsArray( AnnouncementData announcement, array<string> args )
 {
-	//
+	// Set these to null just in case someone passes in an array with less than 5 args
 	for ( int i = 0; i < announcement.optionalTextArgs.len(); i++ )
 		announcement.optionalTextArgs[ i ] = ""
 
@@ -167,7 +167,7 @@ void function Announcement_SetOptionalTextArgsArray( AnnouncementData announceme
 
 void function Announcement_SetOptionalSubTextArgsArray( AnnouncementData announcement, array<string> args )
 {
-	//
+	// Set these to null just in case someone passes in an array with less than 5 args
 	for ( int i = 0; i < announcement.optionalSubTextArgs.len(); i++ )
 		announcement.optionalSubTextArgs[ i ] = ""
 
@@ -312,23 +312,6 @@ void function AnnouncementMessageSweep( entity player, string messageText, strin
 		thread AnnouncementMessage_Display( player, announcement )
 }
 
-#if(false)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
 
 bool function InitializeAnnouncement_ShouldDisplayNow( AnnouncementData announcement, string messageText, string subText = "", vector titleColor = <1, 1, 1> )
 {
@@ -337,12 +320,12 @@ bool function InitializeAnnouncement_ShouldDisplayNow( AnnouncementData announce
 
 	foreach ( AnnouncementData queueAnnouncement in clGlobal.announcementQueue )
 	{
-		//
+		// Announcement already in queue
 		if ( announcement.messageText == queueAnnouncement.messageText )
 			return false
 	}
 
-	//
+	// TODO: create add to queue function
 	clGlobal.announcementQueue.append( announcement )
 
 	return !clGlobal.isAnnouncementActive
@@ -368,7 +351,7 @@ void function AnnouncementFromClass( entity player, AnnouncementData announcemen
 
 	foreach ( AnnouncementData queueAnnouncement in clGlobal.announcementQueue )
 	{
-		//
+		// Announcement already in queue
 		if ( announcement.messageText == queueAnnouncement.messageText )
 			return
 	}
@@ -442,7 +425,7 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 	entity player = GetLocalClientPlayer()
 	clGlobal.levelEnt.EndSignal( "AnnoucementPurge" )
 
-	//
+	// This RUI destroys itself internally via "die", but if we're displaying messages rapid fire, we want it to end early
 	if ( file.lastAnnouncementRui != null )
 		RuiDestroyIfAlive( file.lastAnnouncementRui )
 
@@ -461,7 +444,6 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 			EmitSoundOnEntity( player, announcement.soundAlias )
 			RuiSetFloat2( rui, "iconAspect", announcement.iconAspect )
 
-			//
 			RuiSetImage( rui, "leftIconImage", announcement.leftIcon )
 			RuiSetImage( rui, "rightIconImage", announcement.rightIcon )
 

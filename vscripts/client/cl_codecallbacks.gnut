@@ -84,7 +84,7 @@ void function RemoveCallback_UseConsumable()
 
 void function ClientCodeCallback_BodyGroupChanged( entity ent, int bodyGroupIndex, int oldState, int newState )
 {
-	//
+//	PrintFunc( "entity " + ent + " index " + bodyGroupIndex + "newstate " + newState )
 
 	if ( IsSpectre( ent ) || IsStalker( ent ) )
 	{
@@ -192,12 +192,12 @@ void function ClientCodeCallback_OnPetTitanModeChanged( entity player )
 	if ( !IsValid( player ) || player != GetLocalViewPlayer() )
 		return
 
-	if ( !IsValid( player.GetPetTitan() ) ) //
+	if ( !IsValid( player.GetPetTitan() ) ) // should be an assert...
 		return
 
 	player.Signal( "PetTitanModeChanged" )
 
-	//
+	// Added via AddCallback_OnPetTitanModeChanged
 	foreach ( callbackFunc in clGlobal.onPetTitanModeChangedCallbacks )
 	{
 		callbackFunc( player )
@@ -217,7 +217,7 @@ void function ClientCodeCallback_OnPlayerConsumableInventoryChanged( entity play
 	if ( !IsValid( player ) || player != GetLocalViewPlayer() )
 		return
 
-	//
+	// Added via AddCallback_OnPlayerConsumableInventoryChanged
 	foreach ( callbackFunc in clGlobal.consumableInventoryChangedCallbacks )
 	{
 		callbackFunc( player )

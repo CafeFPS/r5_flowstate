@@ -6,7 +6,7 @@ global function GrenadeArrowThink
 global function RumbleForTitanDamage
 
 global function ServerCallback_PlayerTookDamage
-//
+//global function ClientCodeCallback_OnMissileCreation
 global function ClientCodeCallback_CreateGrenadeIndicator
 
 global function ShowGrenadeArrow
@@ -115,10 +115,7 @@ void function PlayVictimHeadshotConfirmation( bool isKillShot )
 void function RumbleForPilotDamage( float damageAmount, int damageType, int damageSourceId )
 {
 	bool isDeathField = (damageSourceId == eDamageSourceId.deathField)
-	#if(false)
 
-
-#endif
 	if ( isDeathField )
 	{
 		Rumble_Play( "death_field_pain", {} )
@@ -155,10 +152,7 @@ bool function ShouldShowMeleeFlashForDamage( float damage, int damageType, int d
 void function DoDamageFlashForDamageRecieved( entity player, float damage, int damageType, int damageSourceId )
 {
 	bool isDeathField = (damageSourceId == eDamageSourceId.deathField)
-	#if(false)
 
-
-#endif
 	if ( isDeathField )
 	{
 		ScreenFlash( 0.7, 0.5, 0.5, 0.1, 2.0 )
@@ -171,12 +165,12 @@ void function DoDamageFlashForDamageRecieved( entity player, float damage, int d
 		return
 	}
 
-	//
-	//
-	//
-	//
-	//
-	//
+	// Non-regen health:
+	//float healthFrac = (float( player.GetHealth() ) / float( player.GetMaxHealth() ))
+	//float redScale = GraphCapped( healthFrac, 0.0, 1.0, 0.75, 0.4 )
+	//float holdTime = GraphCapped( healthFrac, 0.0, 1.0, 0.25, 0.1 )
+	//float fadeTime = GraphCapped( healthFrac, 0.0, 1.0, 0.5, 0.15 )
+	//ScreenFlash( redScale * 2, 0.5, 0.5, holdTime, fadeTime )
 
 	float holdTime = GraphCapped( min( damage / 100.0, 1.0 ), 0.0, 1.0, 0.0, 0.25 )
 	ScreenFlash( 2, 2, 2, holdTime, 0.2 )
@@ -197,14 +191,14 @@ void function ServerCallback_PlayerTookDamage( float damage, float x, float y, f
 	if ( isHeadShot )
 		PlayVictimHeadshotConfirmation( isKillShot )
 
-	//
-	//
+	//Jolt view if player is getting meleed
+	//if ( damageSourceId == eDamageSourceId.human_melee )
 	if ( damageType & DF_MELEE )
 	{
 		vector joltDir = Normalize( localViewPlayer.CameraPosition() - damageOrigin )
 		localViewPlayer.CockpitJolt( joltDir * 100.0,  0.25 )
 
-		//
+		//clear melee assist when you get meleed
 		localViewPlayer.Lunge_ClearTarget()
 	}
 
@@ -224,10 +218,8 @@ void function ServerCallback_PlayerTookDamage( float damage, float x, float y, f
 	switch ( damageSourceId )
 	{
 		case eDamageSourceId.deathField:
-	#if(false)
 
-#endif
-			//
+			// Circle damage:
 			EmitSoundOnEntity( localViewPlayer, "Survival_Circle_ElectricalDamage_1P" )
 			break
 		case eDamageSourceId.burn:
@@ -236,20 +228,20 @@ void function ServerCallback_PlayerTookDamage( float damage, float x, float y, f
 	}
 
 /*
+	if ( GetCurrentPlaylistVarBool( "log_damage_to_obituary", false ) )
+	{
+		string logStr
+		string attackerDisplayName = ( !((attacker == null) || (attacker == localViewPlayer)) ) ? GetAttackerDisplayNamesFromClassname( attacker ).attackerName : ""
+		if ( attackerDisplayName.len() == 0 )
+			logStr = format( "Took `3%d`0 damage (%s).", damage, Localize( GetObitFromDamageSourceID( damageSourceId ) ) )
+		else
+			logStr = format( "Hit by `2%s`0 for `3%d`0 damage (%s).", attackerDisplayName, damage, Localize( GetObitFromDamageSourceID( damageSourceId ) ) )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+		vector damageNumberColor = (isHeadShot) ? (4.0 * BURN_COLOR) : (1.5 * BURN_COLOR)
+		vector backgroundColor = 0.25 * TEAM_COLOR_ENEMY
+		float backgroundAlpha = 0.5
+		Obituary_Print_Localized( logStr, TEAM_COLOR_YOU, TEAM_COLOR_ENEMY, damageNumberColor, backgroundColor, backgroundAlpha )
+	}
 */
 
 	foreach ( callback in clGlobal.onLocalPlayerTookDamageCallback )
@@ -263,9 +255,9 @@ void function ServerCallback_PlayerTookDamage( float damage, float x, float y, f
 }
 
 /*
-
-
-
+void function ClientCodeCallback_OnMissileCreation( entity missileEnt, string weaponName, bool firstTime )
+{
+}
 */
 
 void function ClientCodeCallback_CreateGrenadeIndicator( entity missileEnt, string weaponName )
@@ -273,7 +265,7 @@ void function ClientCodeCallback_CreateGrenadeIndicator( entity missileEnt, stri
 	if ( !IsValid( missileEnt ) )
 		return
 
-	//
+	//Called for all projectiles, not just missiles.
 	TryAddGrenadeIndicator( missileEnt )
 }
 
@@ -328,14 +320,8 @@ bool function ShouldShowDamageArrows( int damageSourceId )
 	{
 		case eDamageSourceId.outOfBounds:
 		case eDamageSourceId.deathField:
-#if(false)
-
-#endif
 		case eDamageSourceId.damagedef_grenade_gas:
 		case eDamageSourceId.mp_weapon_tesla_trap:
-#if(false)
-
-#endif
 		case eDamageSourceId.burn:
 			return false
 	}
@@ -350,7 +336,7 @@ void function DamageIndicatorRui( vector damageOrigin, int arrowType )
 	clGlobal.levelEnt.EndSignal( "KillReplayStarted" )
 	clGlobal.levelEnt.EndSignal( "KillReplayEnded" )
 
-	//
+	// slop
 	float distance = Length( damageOrigin - GetLocalViewPlayer().CameraPosition() )
 	float randomRange = GraphCapped( distance, 0.0, 2048, 0.0, 256.0 )
 	damageOrigin = <damageOrigin.x + RandomFloatRange( randomRange, -randomRange ), damageOrigin.y + RandomFloatRange( randomRange, -randomRange ), damageOrigin.z>
@@ -410,7 +396,7 @@ vector function GetRandomOriginWithinBounds( entity ent )
 
 void function GrenadeArrowThink( entity player, entity grenade, float damageRadius, float startDelay, bool requireLos, string requiredPlayerState = "any" )
 {
-	EndSignal( grenade, "OnDeath" ) //
+	EndSignal( grenade, "OnDeath" ) //On death added primarily for frag_drones
 	EndSignal( grenade, "OnDestroy" )
 	EndSignal( player, "OnDeath" )
 
@@ -419,37 +405,13 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 	asset grenadeModel = GetIndicatorModel( grenade )
 	vector grenadeOffset = <-5,0,0>
 
-	#if(false)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
-
 	entity arrow = CreateClientSidePropDynamic( <0,0,0>, <0,0,0>, GRENADE_INDICATOR_ARROW_MODEL )
 	entity mdl = CreateClientSidePropDynamic( <0,0,0>, <0,0,0>, grenadeModel )
 	EndSignal( arrow, "OnDestroy")
 
-	//
 	if (file.liveGrenadeIndicators.len() + 1 > GRENADE_INDICATOR_LIMIT)
 		return
 
-	//
 	file.liveGrenadeIndicators.append(arrow)
 
 	OnThreadEnd(
@@ -550,32 +512,16 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 			vector damageArrowAngles = AnglesInverse( player.EyeAngles() )
 			vector vecToDamage = grenade.GetOrigin() - (player.EyePosition() + (player.GetViewVector() * 20.0))
 
-			//
+			// reparent for embark/disembark
 			if ( arrow.GetParent() == null )
 				arrow.SetParent( cockpit, "CAMERA_BASE", true )
 
 			arrow.SetAttachOffsetAngles( damageArrowAngles.AnglesCompose( vecToDamage.VectorToAngles() ) )
-
-			#if(false)
-
-
-
-
-
-#endif
 		}
 		else
 		{
 			mdl.DisableDraw()
 			arrow.DisableDraw()
-
-			#if(false)
-
-
-
-
-
-#endif
 		}
 
 		WaitFrame()
@@ -611,9 +557,6 @@ asset function GetIndicatorModel( entity grenade )
 				break
 
 			case eThreatIndicatorID.GRENADE_INDICATOR_BOMB:
-#if(false)
-
-#endif
 				return GRENADE_INDICATOR_BOMB
 				break
 
@@ -646,7 +589,7 @@ void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int e
 	if ( !level.grenadeIndicatorEnabled )
 		return
 
-	#if(DEV)
+	#if DEV
 		if ( !level.clientScriptInitialized )
 			return
 	#endif
@@ -661,12 +604,12 @@ void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int e
 	if ( IsFriendlyTeam( team, player.GetTeam() ) && (owner != player) )
 		return
 
-	//
+	//TryAddGrenadeIndicator( ent ) // TODO: make function handle non-grenade ents
 }
 
 void function TryAddGrenadeIndicator( entity grenade )
 {
-	#if(DEV)
+	#if DEV
 		if ( !level.clientScriptInitialized )
 			return
 	#endif
@@ -676,7 +619,7 @@ void function TryAddGrenadeIndicator( entity grenade )
 
 	entity player = GetLocalViewPlayer()
 
-	//
+	// view player may be null when dead
 	if ( !IsValid( player ) )
 		return
 
@@ -710,19 +653,19 @@ void function TryAddGrenadeIndicator( entity grenade )
 
 	float padding = player.IsTitan() ? 204.0 : 65.0
 
-	//
+	//AddGrenadeIndicator( grenade, radius + padding, startDelay, false )
 	ShowGrenadeArrow( player, grenade, radius + padding, startDelay )
 
-	//
+	//thread ShowRuiGrenadeThreatIndicator( grenade, float( radius ) + padding )
 }
 
 void function ShowRuiGrenadeThreatIndicator( entity grenade, float radius )
 {
 	var rui = RuiCreate( $"ui/grenade_threat_indicator.rpak", clGlobal.topoFullscreenHudPermanent, RUI_DRAW_HUD, 0 )
-	//
+	//var rui = CreateCockpitRui( $"ui/grenade_threat_indicator.rpak", 0 )
 	RuiSetGameTime( rui, "startTime", Time() )
 	RuiSetFloat( rui, "damageRadius", radius )
-	//
+	//RuiTrackFloat3( rui, "pos", grenade, RUI_TRACK_ABSORIGIN_FOLLOW )`
 	RuiTrackFloat3( rui, "pos", grenade, RUI_TRACK_POINT_FOLLOW, grenade.LookupAttachment( "BACK" ) )
 
 	OnThreadEnd(
@@ -750,9 +693,9 @@ void function InitDamageArrows()
 			startTime = -99.0,
 			isDying = false,
 			isVisible = false,
-			whizby = false, //
+			whizby = false, // hack until we get a new model/shader for the whizby indicator - Roger
 			attacker = null,
-			randomAngle = 0 //
+			randomAngle = 0 // Repeated shots from the same attacker randomize the angle of the arrow.
 		}
 
 		entity arrow = CreateClientSidePropDynamic( <0,0,0>, <0,0,0>, DAMAGEARROW_MODEL )
@@ -767,7 +710,7 @@ void function InitDamageArrows()
 	}
 
 	entity arrow = CreateClientSidePropDynamic( <0,0,0>, <0,0,0>, DAMAGEARROW_MODEL )
-	file.damageArrowFadeDuration = arrow.GetSequenceDuration( DAMAGEARROW_FADEANIM ) //
+	file.damageArrowFadeDuration = arrow.GetSequenceDuration( DAMAGEARROW_FADEANIM ) // 0.266
 	arrow.Destroy()
 }
 
@@ -780,7 +723,7 @@ void function DamageArrow_CockpitInit( entity cockpit )
 
 void function ShowDamageArrow( entity player, vector damageOrigin, int arrowType, entity attacker )
 {
-	if ( file.damageArrows.len() == 0 ) //
+	if ( file.damageArrows.len() == 0 ) // not yet initialized
 		return
 
 	table arrowData = file.damageArrows[file.currentDamageArrow]
@@ -798,7 +741,7 @@ void function ShowDamageArrow( entity player, vector damageOrigin, int arrowType
 	arrow.s.arrowData.endTime = time + file.arrowIncomingAnims[ arrowType ].duration
 	arrow.s.arrowData.startTime = time
 	arrow.s.arrowData.isDying = false
-	arrow.s.arrowData.whizby = false	//
+	arrow.s.arrowData.whizby = false	//	hack until we get a new model/shader for the whizby indicator
 	arrow.s.arrowData.attacker = attacker
 
 	if ( !arrow.s.arrowData.isVisible )
@@ -909,7 +852,7 @@ void function UpdateDamageArrows( entity localViewPlayer, entity cockpit )
 				continue
 			}
 
-			if ( !varsUpdated ) //
+			if ( !varsUpdated ) // only call UpdateDamageArrowVars if one or more of the file.damageArrows is visible
 			{
 				varsUpdated = true
 				UpdateDamageArrowVars( localViewPlayer )

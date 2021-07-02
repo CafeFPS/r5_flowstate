@@ -1369,7 +1369,7 @@ string function SpecifyAliasFromGeneric( DialogueData data, entity speaker )
 
 	if ( milesAlias.find( "%perspective%" ) >= 0 )
 	{
-		#if(DEV)
+		#if DEV
 			Assert( specifiedPerspective != "", "Dialogue with generic perspective specified in CSV alias without specifying intended perspective!" )
 		#endif //
 
@@ -1382,7 +1382,7 @@ string function SpecifyAliasFromGeneric( DialogueData data, entity speaker )
 	if ( milesAlias.find( "%voice%" ) >= 0 )
 		milesAlias = StringReplace( milesAlias, "%voice%", voice )
 
-	#if(DEV)
+	#if DEV
 		if ( ShouldTryToReplaceMissingVoiceWithTempVoice() )
 		{
 			if ( !DoesAliasExist( milesAlias ) )
@@ -1473,7 +1473,7 @@ void function SetUseDialogueVDU( bool useVDU )
 #endif //
 
 
-#if(DEV)
+#if DEV
 bool function ShouldTryToReplaceMissingVoiceWithTempVoice()
 {
 	return (GetCurrentPlaylistVarInt( "vo_fallback_to_temp", 0 ) == 1)
