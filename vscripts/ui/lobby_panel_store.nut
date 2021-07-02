@@ -132,7 +132,7 @@ enum eStoreSection
 	SHOP,
 	LOOT,
 	CHARACTERS,
-	CURRECNY
+	CURRENCY
 }
 
 
