@@ -96,10 +96,10 @@ void function EmbeddedText_Init()
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_LWIN", "LWIN" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_RWIN", "RWIN" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_APP", "APP" )
-	//
-	//
-	//
-	//
+	//InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_UP", "%$vgui/HUD/pc_arrow_up%" )
+	//InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_LEFT", "%$vgui/HUD/pc_arrow_up%" )
+	//InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_DOWN", "%$vgui/HUD/pc_arrow_up%" )
+	//InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_RIGHT", "%$vgui/HUD/pc_arrow_up%" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_UP", "UP" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_LEFT", "LEFT" )
 	InitEmbeddedKeyRui( $"ui/key_rect_pc.rpak", "KEY_DOWN", "DOWN" )

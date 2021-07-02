@@ -29,15 +29,10 @@ void function InitCharacterQuipsPanel( var panel )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, CharacterQuipsPanel_OnShow )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_HIDE, CharacterQuipsPanel_OnHide )
 
-	//
-	//
-	//
-	//
-
-	//
-	//
-	//
-	//
+	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_LEFT, false, "#TRIGGERS_CHANGE_LEGEND", "", CustomizeCharacterMenu_PrevButton_OnActivate )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_LEFT, false, "", "", CustomizeCharacterMenu_PrevButton_OnActivate )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
 
 	AddCallback_OnTopLevelCustomizeContextChanged( panel, CharacterQuipsPanel_OnCustomizeContextChanged )
 

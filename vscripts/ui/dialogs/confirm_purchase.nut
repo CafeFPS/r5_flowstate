@@ -4,11 +4,9 @@ global function PurchaseDialog
 
 global struct PurchaseDialogConfig
 {
-	//
 	ItemFlavor ornull     flav = null
 	GRXScriptOffer ornull offer = null
 
-	//
 	int           quantity = 1
 	bool          markAsNew = true
 	string ornull messageOverride = null
@@ -56,13 +54,12 @@ struct
 } file
 
 void function InitConfirmPurchaseDialog( var newMenuArg )
-//
 {
 	var menu = GetMenu( "ConfirmPurchaseDialog" )
 	file.menu = menu
-	//
-	//
-	//
+	//file.contentRui = Hud_GetRui( Hud_GetChild( file.menu, "ContentRui" ) )
+	//file.processingButton = Hud_GetChild( menu, "ProcessingButton" )
+	//file.buttonsPanel = Hud_GetChild( menu, "FooterButtons" )
 
 	file.cancelButton = Hud_GetChild( menu, "CancelButton" )
 	HudElem_SetRuiArg( file.cancelButton, "buttonText", "#B_BUTTON_CANCEL" )
@@ -85,14 +82,14 @@ void function InitConfirmPurchaseDialog( var newMenuArg )
 
 	SetDialog( menu, true )
 	SetClearBlur( menu, false )
-	//
+	//SetGamepadCursorEnabled( menu, false )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, ConfirmPurchaseDialog_OnOpen )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, ConfirmPurchaseDialog_OnClose )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, ConfirmPurchaseDialog_OnNavigateBack )
 
-	//
-	//
+	//AddMenuFooterOption( menu, LEFT, BUTTON_A, true, "#A_BUTTON_PURCHASE", "#PURCHASE", ConfirmPurchase )
+	//AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_CANCEL", "#CANCEL" )
 
 	RegisterSignal( "ConfirmPurchaseClosed" )
 }
@@ -150,7 +147,7 @@ void function PurchaseDialog( PurchaseDialogConfig cfg )
 		return
 	}
 
-	//
+	// todo(dw): locationToBundledStoreOffersMap
 
 	EmitUISound( "UI_Menu_Cosmetic_Unlock" )
 	AdvanceMenu( file.menu )
@@ -251,8 +248,8 @@ void function UpdateProcessingElements()
 {
 	bool isWorking = (file.status == ePurchaseDialogStatus.WORKING)
 
-	//
-	//
+	//Hud_Hide( file.buttonsPanel )
+	//Hud_Show( file.processingButton )
 	Hud_SetEnabled( file.cancelButton, !isWorking )
 	HudElem_SetRuiArg( file.cancelButton, "isProcessing", isWorking )
 	HudElem_SetRuiArg( file.cancelButton, "processingState", file.status )
@@ -287,8 +284,6 @@ void function OnPurchaseOperationFinished( int status, GRXScriptOffer offer, Ite
 			int lowestCurrencyIndex = GRX_CURRENCY_COUNT
 			foreach ( int costIndex, ItemFlavor costFlav in price.flavors )
 			{
-				//
-				//
 				if ( GRXCurrency_GetCurrencyIndex( costFlav ) < lowestCurrencyIndex )
 					lowestCurrencyIndex = GRXCurrency_GetCurrencyIndex( costFlav )
 			}
@@ -415,7 +410,7 @@ void function UpdatePurchaseDialog()
 	file.state.purchaseButtonPriceMap.clear()
 
 	array<GRXScriptOffer> offerList = clone file.state.purchaseOfferList
-	offerList.reverse() //
+	offerList.reverse() // reverse because the purchase buttons are set up from bottom to top
 	foreach ( GRXScriptOffer offer in offerList )
 	{
 		array<ItemFlavorBag> priceList = clone offer.prices
@@ -428,7 +423,7 @@ void function UpdatePurchaseDialog()
 
 			return 0
 		} )
-		//
+		// same thing
 		foreach ( ItemFlavorBag price in priceList )
 		{
 			Assert( purchaseButtonIdx < file.purchaseButtonBottomToTopList.len(), format( "Item %s had more than %d prices, failed to show purchase dialog", devDesc, file.purchaseButtonBottomToTopList.len() ) )

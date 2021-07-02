@@ -16,7 +16,6 @@ struct
 } file
 
 void function InitLobbyMenu( var newMenuArg )
-//
 {
 	var menu = GetMenu( "LobbyMenu" )
 	file.menu = menu
@@ -32,18 +31,16 @@ void function InitLobbyMenu( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_HIDE, OnLobbyMenu_Hide )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_GET_TOP_LEVEL, OnLobbyMenu_GetTopLevel )
-	//
-
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnLobbyMenu_NavigateBack )
 
 	AddMenuVarChangeHandler( "isFullyConnected", UpdateFooterOptions )
 	AddMenuVarChangeHandler( "isPartyLeader", UpdateFooterOptions )
-	#if(DURANGO_PROG)
+	#if DURANGO_PROG
 		AddMenuVarChangeHandler( "DURANGO_canInviteFriends", UpdateFooterOptions )
 		AddMenuVarChangeHandler( "DURANGO_isJoinable", UpdateFooterOptions )
-	#elseif(PS4_PROG)
+	#elseif PS4_PROG
 		AddMenuVarChangeHandler( "PS4_canInviteFriends", UpdateFooterOptions )
-	#elseif(PC_PROG)
+	#elseif PC_PROG
 		AddMenuVarChangeHandler( "ORIGIN_isEnabled", UpdateFooterOptions )
 		AddMenuVarChangeHandler( "ORIGIN_isJoinable", UpdateFooterOptions )
 	#endif
@@ -96,7 +93,7 @@ void function InitLobbyMenu( var newMenuArg )
 
 void function OnLobbyMenu_Open()
 {
-	//
+	//ClientCommand( "gameCursor_ModeActive 1" )
 
 	if ( !file.tabsInitialized )
 	{
@@ -123,12 +120,6 @@ void function OnLobbyMenu_Open()
 	thread UpdateLobbyUI()
 
 	Lobby_UpdatePlayPanelPlaylists()
-
-	#if(false)
-//
-
-
-#endif
 
 	AddCallbackAndCallNow_OnGRXOffersRefreshed( OnGRXStateChanged )
 	AddCallbackAndCallNow_OnGRXInventoryStateChanged( OnGRXStateChanged )
@@ -303,7 +294,7 @@ void function UpdateTabs()
 	if ( IsFullyConnected() )
 	{
 		//
-	} //
+	} // todo(dw)
 }
 
 
@@ -357,7 +348,7 @@ void function SocialButton_OnActivate( var button )
 	if ( !IsTabPanelActive( GetPanel( "PlayPanel" ) ) )
 		return
 
-	#if(PC_PROG)
+	#if PC_PROG
 		if ( !MeetsAgeRequirements() )
 		{
 			ConfirmDialogData dialogData
@@ -376,7 +367,7 @@ void function SocialButton_OnActivate( var button )
 
 void function GameMenuButton_OnActivate( var button )
 {
-	if ( InputIsButtonDown( BUTTON_STICK_LEFT ) ) //
+	if ( InputIsButtonDown( BUTTON_STICK_LEFT ) ) // Avoid bug report shortcut
 		return
 
 	if ( IsDialog( GetActiveMenu() ) )
@@ -417,7 +408,7 @@ void function OnLobbyMenu_PostGameOrChat( var button )
 {
 	var savedMenu = GetActiveMenu()
 
-	#if(CONSOLE_PROG)
+	#if CONSOLE_PROG
 		const float HOLD_FOR_CHAT_DELAY = 1.0
 		float startTime = Time()
 		while ( InputIsButtonDown( BUTTON_BACK ) || InputIsButtonDown( KEY_TAB ) && GetConVarInt( "hud_setting_accessibleChat" ) != 0 )
@@ -447,13 +438,6 @@ void function OnLobbyMenu_PostGameOrChat( var button )
 
 	if ( IsPostGameMenuValid() && savedMenu == GetActiveMenu() )
 	{
-#if(false)
-
-
-
-
-
-#endif //
 		{
 			thread PostGameFlow()
 		}
@@ -480,7 +464,7 @@ void function PostGameFlow()
 
 void function OnLobbyMenu_FocusChat( var panel )
 {
-	#if(PC_PROG)
+	#if PC_PROG
 		if ( IsDialog( GetActiveMenu() ) )
 			return
 

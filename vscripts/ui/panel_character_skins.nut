@@ -1,6 +1,6 @@
 global function InitCharacterSkinsPanel
 
-//
+//global function PROTO_TogglePIPThumbnails
 
 struct
 {
@@ -30,17 +30,17 @@ void function InitCharacterSkinsPanel( var panel )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_EQUIP", "#X_BUTTON_EQUIP", null, CustomizeMenus_IsFocusedItemEquippable )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_STICK_LEFT, false, "#MENU_ZOOM_CONTROLS_GAMEPAD", "#MENU_ZOOM_CONTROLS" )
-	//
-	//
-	//
-	//
+	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_LEFT, false, "#TRIGGERS_CHANGE_LEGEND", "", CustomizeCharacterMenu_PrevButton_OnActivate )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_LEFT, false, "", "", CustomizeCharacterMenu_PrevButton_OnActivate )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
 
 	file.heirloomButton = Hud_GetChild( panel, "EquipHeirloomButton" )
 	HudElem_SetRuiArg( file.heirloomButton, "bigText", "" )
 	HudElem_SetRuiArg( file.heirloomButton, "buttonText", "" )
 	HudElem_SetRuiArg( file.heirloomButton, "descText", "" )
 	Hud_AddEventHandler( file.heirloomButton, UIE_CLICK, CustomizeCharacterMenu_HeirloomButton_OnActivate )
-	//
+	//RegisterSignal( "PROTO_StopButtonThumbnailsThink" )
 }
 
 
@@ -66,7 +66,7 @@ void function CharacterSkinsPanel_OnHide( var panel )
 	RunClientScript( "EnableModelTurn" )
 	CharacterSkinsPanel_Update( panel )
 
-	//
+	//Signal( panel, "PROTO_StopButtonThumbnailsThink" )
 	RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), Loadout_MeleeSkin( GetTopLevelCustomizeContext() ), OnMeleeSkinChanged )
 }
 
@@ -75,7 +75,7 @@ void function CharacterSkinsPanel_Update( var panel )
 {
 	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
 
-	//
+	// cleanup
 	foreach ( int flavIdx, ItemFlavor unused in file.characterSkinList )
 	{
 		var button = Hud_GetChild( scrollPanel, "GridButton" + flavIdx )
@@ -87,7 +87,7 @@ void function CharacterSkinsPanel_Update( var panel )
 
 	RunMenuClientFunction( "ClearAllCharacterPreview" )
 
-	//
+	// setup, but only if we're active
 	if ( IsPanelActive( file.panel ) && IsTopLevelCustomizeContextValid() )
 	{
 		LoadoutEntry entry = Loadout_CharacterSkin( GetTopLevelCustomizeContext() )
@@ -110,7 +110,7 @@ void function CharacterSkinsPanel_Update( var panel )
 
 void function CharacterSkinsPanel_OnFocusChanged( var panel, var oldFocus, var newFocus )
 {
-	if ( !IsValid( panel ) ) //
+	if ( !IsValid( panel ) ) // uiscript_reset
 		return
 	if ( GetParentMenu( panel ) != GetActiveMenu() )
 		return
@@ -128,65 +128,65 @@ void function PreviewCharacterSkin( ItemFlavor flav )
 }
 
 
+//bool doPIPThumbnails = false
+//bool isPanelShown = false
+//void function PROTO_TogglePIPThumbnails()
+//{
+//	doPIPThumbnails = !doPIPThumbnails
+//}
 //
+//void function PROTO_ButtonThumbnailsThink( var panel )
+//{
+//	EndSignal( panel, "PROTO_StopButtonThumbnailsThink" )
 //
+//	ItemFlavor customizeContext = GetCustomizeContext()
 //
+//	table<ItemFlavor, bool> activeFlavorSet = {}
 //
+//	OnThreadEnd( void function() : ( activeFlavorSet ) {
+//		foreach( ItemFlavor flav, bool unused in activeFlavorSet )
+//			RunClientScript( "UIToClient_PROTO_StopButtonThumbnail", ItemFlavor_GetRef( flav ) )
+//	} )
 //
+//	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
 //
+//	WaitFrame()
 //
+//	while ( true )
+//	{
+//		if ( customizeContext != GetCustomizeContext() )
+//		{
+//			customizeContext = GetCustomizeContext()
+//			foreach( ItemFlavor flav, bool unused in activeFlavorSet )
+//				RunClientScript( "UIToClient_PROTO_StopButtonThumbnail", ItemFlavor_GetRef( flav ) )
+//			activeFlavorSet.clear()
+//		}
 //
+//		for ( int buttonIndex = 0; buttonIndex < file.characterSkinList.len(); buttonIndex++ )
+//		{
+//			var button            = Hud_GetChild( scrollPanel, "GridButton" + buttonIndex )
+//			ItemFlavor itemFlavor = file.characterSkinList[buttonIndex]
+//			bool isActive         = (itemFlavor in activeFlavorSet)
+//			bool shouldBeActive   = doPIPThumbnails && Hud_IsVisible( button )
 //
+//			if ( shouldBeActive )
+//			{
+//				if ( !isActive )
+//				{
+//					activeFlavorSet[itemFlavor] <- true
+//					RunClientScript( "UIToClient_PROTO_StartButtonThumbnail", button, ItemFlavor_GetRef( itemFlavor ) )
+//				}
+//			}
+//			else if ( isActive )
+//			{
+//				delete activeFlavorSet[itemFlavor]
+//				RunClientScript( "UIToClient_PROTO_StopButtonThumbnail", ItemFlavor_GetRef( itemFlavor ) )
+//			}
+//		}
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+//		WaitFrame()
+//	}
+//}
 
 void function OnMeleeSkinChanged( EHI playerEHI, ItemFlavor flavor )
 {

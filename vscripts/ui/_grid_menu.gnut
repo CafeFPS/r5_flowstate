@@ -1,7 +1,7 @@
 /*
-
-
-
+TO DO:
+1. FadeElementChildren() - Should find a way to grab all children and fade them.
+2. Page Circle buttons do not update once the grid is initialized, need to be able to update
 */
 
 untyped
@@ -39,20 +39,20 @@ global enum eGridPageStyle
 
 global function Grid_FadeDefaultElementChildren
 
-/*
+/* SAMPLE SCRIPT USAGE:
 
-
-
-
-
-
-
-
-
-
-
-
-
+	GridMenuData data
+	data.rows = 2
+	data.columns = 4
+	data.paddingVert = 1
+	data.paddingHorz = 50
+	data.tileWidth = 150
+	data.tileHeight = 70
+	data.numElements = 14
+	data.initCallback = Grid_DefaultInit
+	data.buttonFadeCallback = Grid_FadeDefaultElementChildren
+	data.pageType = eGridPageType.HORIZONTAL
+	GridMenuInit( menu, data )
 */
 
 global function Grid_InitPage
@@ -81,7 +81,7 @@ global function OnGridButtonGetFocus
 
 global struct GridMenuData
 {
-	//
+	// PRIVATE VARS
 	bool isInitialized = false
 	int  currentPage = 0
 	int  lastElemSelected = 0
@@ -90,7 +90,7 @@ global struct GridMenuData
 	bool busy = false
 	var  lastPageButtonSelected
 
-	//
+	// PUBLIC VARS
 	int  rows = 2
 	int  columns = 2
 	int  paddingVert = 2
@@ -249,10 +249,10 @@ void function GridMenuInit( var menu, GridMenuData data )
 				data.pageButtonR = Hud_GetChild( panel, "PageButtonR" )
 				Hud_AddEventHandler( data.pageButtonR, UIE_CLICK, OnBtnNextPage )
 			}
-			//
-			//
-			//
-			//
+			//if ( Hud_HasChild( panel, "PageButtonU" ) )
+			//	data.pageButtonU = Hud_GetChild( panel, "PageButtonU" )
+			//if ( Hud_HasChild( panel, "PageButtonD" ) )
+			//	data.pageButtonD = Hud_GetChild( panel, "PageButtonD" )
 		}
 
 		if ( Hud_HasChild( panel, "PanelFrame" ) )
@@ -286,7 +286,7 @@ void function GridMenuInit( var menu, GridMenuData data )
 				int yPos = (((data.rows) * (data.tileHeight + ContentScaledXAsInt( data.paddingHorz ))) / 2) - (buttonHeight / 2)
 
 				Hud_SetPos( Hud_GetChild( panel, "PageButtonL" ), 0, yPos )
-				//
+				//Hud_SetPos( Hud_GetChild( panel, "PageButtonR" ), gridWidth + (data.paddingHorz)*2, yPos )
 				Hud_SetPos( Hud_GetChild( panel, "PageButtonR" ), panelWidth - buttonWidth, yPos )
 
 				Hud_GetChild( panel, "PageButtonL" ).s.parentPanel <- menu
@@ -363,13 +363,13 @@ void function GridMenuInit( var menu, GridMenuData data )
 	Grid_InitPage( menu, data )
 
 	if ( GetActiveMenu() == data.currentMenu )
-		Hud_SetFocused( Grid_GetButtonAtRowColumn( menu, 0, 0 ) ) //
+		Hud_SetFocused( Grid_GetButtonAtRowColumn( menu, 0, 0 ) ) //Note: This doesn't actually work! According to Carlos this is because of tabposition. Can do WaitEndFrame to work around this
 }
 
 
 void function GridMenuCleanup( var menu, GridMenuData data )
 {
-	//
+	//Grid_SetReadyState( menu, false )
 
 	var realMenu = data.currentMenu
 	var panel    = Hud_GetChild( menu, GRID_PANEL_NAME )
@@ -481,17 +481,17 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 				Hud_SetWidth( data.pagerPanel_name, panelWidth )
 				Hud_SetWidth( data.pagerPanel_subText, panelWidth )
 
+				//if ( data.pageButtonL )
+				//{
+				//	Hud_SetWidth( data.pageButtonL, data.panelLeftPadding )
+				//	Hud_SetHeight( data.pageButtonL, data.panelLeftPadding * 4 )
+				//}
 				//
-				//
-				//
-				//
-				//
-				//
-				//
-				//
-				//
-				//
-				//
+				//if ( data.pageButtonR )
+				//{
+				//	Hud_SetWidth( data.pageButtonR, data.panelRightPadding )
+				//	Hud_SetHeight( data.pageButtonR, data.panelLeftPadding * 4 )
+				//}
 
 				var labelRui = Hud_GetRui( data.pagerPanel_label )
 
@@ -545,13 +545,13 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 
 		if ( i < data.numElements )
 		{
-			//
-			//
-			//
-			//
-			//
-			//
-			//
+			// printt( "--------------------" )
+			// printt( Hud_GetHudName( elem ) )
+			// printt( "elemNum:" + i )
+			// printt( "row:" + row )
+			// printt( "col:" + col )
+			// printt( "xPos:" + xPos )
+			// printt( "yPos:" + yPos )
 
 			bool didInitializeButton
 			if ( data.initCallback != null && initData )
@@ -588,8 +588,8 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 		}
 	}
 
-	//
-	//
+	// printt( "currentPage: " + data.currentPage )
+	// printt( "numPages: " + numPages )
 
 	if ( data.useCategories )
 	{
@@ -654,47 +654,47 @@ void function Grid_InitPage( var menu, GridMenuData data, bool forceShow = false
 		}
 
 		/*
+		for ( int rowIndex = 0; rowIndex < data.rows; rowIndex++ )
+		{
+			for ( int colIndex = 0; colIndex < data.columns; colIndex++ )
+			{
+				var elem = Grid_GetButtonAtRowColumn( menu, rowIndex, colIndex )
+
+				if ( colIndex == 0 )
+				{
+					elem.SetNavLeft( Grid_GetButtonAtRowColumn( menu, rowIndex, data.columns - 1 ) )
+					elem.SetNavRight( Grid_GetButtonAtRowColumn( menu, rowIndex, colIndex + 1 ) )
+				}
+				else if ( colIndex == data.columns - 1 )
+				{
+					elem.SetNavLeft( Grid_GetButtonAtRowColumn( menu, rowIndex, colIndex - 1 ) )
+					elem.SetNavRight( Grid_GetButtonAtRowColumn( menu, rowIndex, 0 ) )
+				}
+				else
+				{
+					elem.SetNavLeft( Grid_GetButtonAtRowColumn( menu, rowIndex, colIndex - 1 ) )
+					elem.SetNavRight( Grid_GetButtonAtRowColumn( menu, rowIndex, colIndex + 1 ) )
+				}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
+				if ( rowIndex == 0 )
+				{
+					elem.SetNavUp( Grid_GetButtonAtRowColumn( menu, data.rows - 1, colIndex ) )
+					elem.SetNavDown( Grid_GetButtonAtRowColumn( menu, rowIndex + 1, colIndex ) )
+				}
+				else if ( rowIndex == data.rows - 1 )
+				{
+					elem.SetNavUp( Grid_GetButtonAtRowColumn( menu, rowIndex - 1, colIndex ) )
+					elem.SetNavDown( Grid_GetButtonAtRowColumn( menu, 0, colIndex ) )
+				}
+				else
+				{
+					elem.SetNavUp( Grid_GetButtonAtRowColumn( menu, rowIndex - 1, colIndex ) )
+					elem.SetNavDown( Grid_GetButtonAtRowColumn( menu, rowIndex + 1, colIndex ) )
+				}
+			}
+		}
+		*/
 	}
 	else
 	{
@@ -962,7 +962,7 @@ void function Grid_RegisterPageNavInputs( var menu )
 	string parentPanelName = Hud_GetHudName( menu )
 	GridMenuData data      = file.menuData[parentPanelName]
 
-	//
+	// JFS: defensive check
 	if ( !file.bumperButtonsRegistered )
 	{
 		file.bumperButtonsRegistered = true
@@ -977,7 +977,7 @@ void function Grid_DeregisterPageNavInputs( var menu )
 	string parentPanelName = Hud_GetHudName( menu )
 	GridMenuData data      = file.menuData[parentPanelName]
 
-	//
+	// JFS: defensive check
 	if ( file.bumperButtonsRegistered )
 	{
 		file.bumperButtonsRegistered = false
@@ -1080,7 +1080,7 @@ void function OnBtnNextPageInternal( var menu, GridMenuData data, int pageNum, b
 	int numPages = Grid_GetNumPages( data )
 	if ( pageNum >= numPages )
 		return
-	//
+	//pageNum = 0
 
 	if ( data.buttonFadeCallback != null )
 	{
@@ -1160,7 +1160,7 @@ void function OnBtnPrevPageInternal( var menu, GridMenuData data, int pageNum, b
 	int numPages = Grid_GetNumPages( data )
 	if ( pageNum < 0 )
 		return
-	//
+	//pageNum = numPages - 1
 
 	if ( data.buttonFadeCallback != null )
 	{
@@ -1602,7 +1602,7 @@ void function Grid_AutoAspectSettings( var menu, GridMenuData gridData )
 		float baseWidth  = float( gridData.tileWidth )
 		float baseHeight = float( gridData.tileHeight )
 
-		//
+		//int numPages = Grid_GetNumPages( gridData )
 
 		float tileAspectA = baseHeight / baseWidth
 		float tileAspectB = baseWidth / baseHeight
@@ -1613,11 +1613,11 @@ void function Grid_AutoAspectSettings( var menu, GridMenuData gridData )
 		panelWidth -= hPaddingCount * ContentScaledXAsInt( gridData.paddingHorz )
 		panelHeight -= vPaddingCount * ContentScaledYAsInt( gridData.paddingVert )
 
-		//
-		//
-		//
-		//
-		//
+		//if ( numPages > 1 )
+		//{
+		//	var pageButton = Hud_GetChild( panel, "PageButtonU" )
+		//	panelHeight -= (Hud_GetHeight( pageButton ) + gridData.paddingVert)*2
+		//}
 
 		int tileWidthA  = panelWidth / gridData.columns
 		int tileHeightA = int( tileWidthA * tileAspectA )
@@ -1636,24 +1636,24 @@ void function Grid_AutoAspectSettings( var menu, GridMenuData gridData )
 			gridData.tileHeight = tileHeightA
 		}
 
+		//int paddingCount = gridData.columns - 1
+		//if ( gridData.pageStyle == eGridPageStyle.BIG )
+		//{
+		//	int lPageButtonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonL" ) )
+		//	int rPageButtonWidth = Hud_GetWidth( Hud_GetChild( panel, "PageButtonR" ) )
 		//
+		//	panelWidth -= lPageButtonWidth
+		//	panelWidth -= rPageButtonWidth
+		//	paddingCount += 2
+		//}
 		//
+		//panelWidth -= paddingCount * gridData.paddingHorz
 		//
+		//int tileWidth = panelWidth / gridData.columns
 		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-		//
+		//gridData.paddingVert = gridData.paddingHorz
+		//gridData.tileWidth = tileWidth
+		//gridData.tileHeight = tileWidth
 	}
 	else if ( gridData.pageType == eGridPageType.VERTICAL )
 	{
@@ -1742,7 +1742,7 @@ table<int, var> function Grid_GetActivePageButtons( var menu )
 
 int function Grid_GetRowFromButtonName( var button )
 {
-	//
+	// Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
 	string name     = Hud_GetHudName( button )
 	string rowByCol = name.slice( GRID_BTN_PREFIX.len(), name.len() )
 	int row         = int( split( rowByCol, GRID_BTN_DELIM )[0] )
@@ -1752,7 +1752,7 @@ int function Grid_GetRowFromButtonName( var button )
 
 int function Grid_GetColFromButtonName( var button )
 {
-	//
+	// Hud_GetChild( panel, GRID_BTN_PREFIX + row + GRID_BTN_DELIM + col )
 	string name     = Hud_GetHudName( button )
 	string rowByCol = name.slice( GRID_BTN_PREFIX.len(), name.len() )
 	int col         = int( split( rowByCol, GRID_BTN_DELIM )[1] )

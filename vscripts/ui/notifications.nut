@@ -51,7 +51,7 @@ bool function IsViewingNotification()
 	return Hud_IsVisible( file.menu )
 }
 
-void function InitNotificationsMenu( var newMenuArg ) //
+void function InitNotificationsMenu( var newMenuArg )
 {
 	file.menu = GetMenu( "Notifications" )
 

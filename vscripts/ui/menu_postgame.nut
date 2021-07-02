@@ -258,7 +258,8 @@ var function DisplayPostGameSummary( bool isFirstTime )
 		}
 	)
 
-	int characterPDefEnumIndex = player.GetPersistentVarAsInt( "characterForXP" ) //
+	// Update the pilot model to be the character the player used in the last match
+	int characterPDefEnumIndex = player.GetPersistentVarAsInt( "characterForXP" ) // todo(dw): fix this
 	Assert( characterPDefEnumIndex >= 0 && characterPDefEnumIndex < PersistenceGetEnumCount( "eCharacterFlavor" ) )
 	string characterGUIDString = PersistenceGetEnumItemNameForIndex( "eCharacterFlavor", characterPDefEnumIndex )
 
@@ -290,14 +291,23 @@ var function DisplayPostGameSummary( bool isFirstTime )
 	var matchRankRui = Hud_GetRui( Hud_GetChild( file.menu, "MatchRank" ) )
 	var squadDataRui = Hud_GetRui( Hud_GetChild( file.menu, "SquadSummary" ) )
 
+	//################
+	// MATCH PLACEMENT
+	//################
 	RuiSetInt( matchRankRui, "squadRank", GetPersistentVarAsInt( "lastGameRank" ) )
 	RuiSetInt( matchRankRui, "totalPlayers", GetPersistentVarAsInt( "lastGameSquads" ) )
 	int elapsedTime = GetUnixTimestamp() - GetPersistentVarAsInt( "lastGameTime" )
 
 	RuiSetString( matchRankRui, "lastPlayedText", Localize( "#EOG_LAST_PLAYED", GetFormattedIntByType( elapsedTime, eNumericDisplayType.TIME_MINUTES_LONG ) ) )
 
+	//################
+	// SQUAD DATA
+	//################
 	InitSquadDataDisplay( squadDataRui )
 
+	//################
+	// XP EARNED
+	//################
 	const vector COLOR_MATCH = <255, 255, 255> / 255.0
 	const vector COLOR_BONUS = <142, 250, 255> / 255.0
 	vector COLOR_BP_PREMIUM = SrgbToLinear( <255, 90, 40> / 255.0 )
@@ -781,6 +791,7 @@ var function DisplayPostGameSummary( bool isFirstTime )
 	}
 
 	return
+	//######################################
 }
 
 

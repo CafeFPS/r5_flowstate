@@ -8,7 +8,7 @@ struct
 	ItemFlavor& character
 } file
 
-void function InitCharacterSkillsDialog( var newMenuArg ) //
+void function InitCharacterSkillsDialog( var newMenuArg )
 {
 	var menu = GetMenu( "CharacterSkillsDialog" )
 	file.menu = menu
@@ -37,7 +37,7 @@ void function OpenCharacterSkillsDialog( ItemFlavor character )
 
 void function CharacterSkillsDialog_OnOpen()
 {
-	//
+	//printt( Time() )
 	EmitUISound( "UI_Menu_Legend_Details" )
 
 	if ( LoadoutSlot_IsReady( ToEHI( GetUIPlayer() ), Loadout_CharacterClass() ) )

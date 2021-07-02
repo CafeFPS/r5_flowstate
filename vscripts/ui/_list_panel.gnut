@@ -310,8 +310,8 @@ void function OnListButtonGetFocus( var button )
 {
 	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
 	ListElementData ornull buttonData = GetElementDataForButton( data, button )
-	//
-	//
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
 	if ( buttonData == null )
 		return
 
@@ -324,7 +324,6 @@ void function OnListButtonGetFocus( var button )
 
 		if ( focusOffset < 0 )
 		{
-			//
 			bool isIndexValid = buttonData.assignedIndex > 0 && buttonData.assignedIndex < ListPanel_GetItemCount( data )
 			if( isIndexValid && ListPanel_IsHeaderItemAtIndex( data, buttonData.assignedIndex - 1 ) )
 			{
@@ -358,8 +357,8 @@ void function OnListButtonLoseFocus( var button )
 {
 	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
 	ListElementData ornull buttonData = GetElementDataForButton( data, button )
-	//
-	//
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
 	if ( buttonData == null )
 		return
 
@@ -374,8 +373,8 @@ void function ListPanel_OnListButtonClick( var button )
 {
 	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
 	ListElementData ornull buttonData = GetElementDataForButton( data, button )
-	//
-	//
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
 	if ( buttonData == null )
 		return
 
@@ -400,8 +399,8 @@ bool function OnListButtonKeyPress( var button, int keyId, bool isDown )
 		return false
 
 	ListElementData ornull buttonData = GetElementDataForButton( data, button )
-	//
-	//
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
 	if ( buttonData == null )
 		return false
 
@@ -432,8 +431,8 @@ void function ListPanel_OnListButtonClickRight( var button )
 {
 	ListPanelData data                = GetDataForPanel( Hud_GetValueForKey( button, "parentPanel" ) )
 	ListElementData ornull buttonData = GetElementDataForButton( data, button )
-	//
-	//
+	// TEMP fix
+	//Assert( buttonData != null, "Focused an unassigned button element" )
 	if ( buttonData == null )
 		return
 
@@ -609,7 +608,6 @@ array<int> function GetVisibleListItemsIndices( ListPanelData data, float offset
 	int visibleHeight = (buttonHeight + data.paddingVert)
 	visibleHeight = int(data.indexAtOffset[firstIndex] - offset)
 
-	//
 	int heightPadding = buttonHeight * 2
 	if( firstIndex > 0 )
 		visibleIndices.append ( firstIndex - 1 )
@@ -630,7 +628,7 @@ array<int> function GetVisibleListItemsIndices( ListPanelData data, float offset
 
 void function UpdateButtonElements( ListPanelData data, bool forceRefresh = false )
 {
-	//
+	// TODO: find a more appropriate place/way to do this
 	int itemCount       = ListPanel_GetItemCount( data )
 	float totalListSize = ListPanel_GetTotalSize( data )
 	bool itemCountDecreased = false
@@ -650,7 +648,7 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 		if ( data.scrollBarElement != null )
 			UpdateScrollBar( data )
 
-		return //
+		return // don't allow scrolling when an element is selected
 	}
 
 	data.listOffset = clamp( lastOffset + (data.scrollValue * SCROLL_SPEED), 0, (data.totalListSize - (data.panelHeight / data.totalListSize) * data.totalListSize) )
@@ -719,8 +717,6 @@ void function UpdateButtonElements( ListPanelData data, bool forceRefresh = fals
 	if ( data.needsInitialFocus && data.usedElements.len() > 0 )
 		ListPanel_FocusFirstItem( data.panel )
 
-	//
-	//
 	bool didFocusChangeToHeader = false
 	if( data.lastFocusedIndex < ListPanel_GetItemCount( data ) )
 		didFocusChangeToHeader = ListPanel_IsHeaderItemAtIndex( data, data.lastFocusedIndex )
@@ -783,7 +779,6 @@ void function UpdateButtonFocus( ListPanelData data )
 {
 	int usedElemCount = data.usedElements.len()
 
-	//
 	if( IsControllerModeActive() && usedElemCount > 0 && data.lastClickedAssignedIndex >= 0 )
 	{
 		int buttonToFocusIndex = data.lastClickedAssignedIndex

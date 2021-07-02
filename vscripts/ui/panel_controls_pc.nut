@@ -1,4 +1,4 @@
-//
+// TODO: Change code to apply binds instantly. Script has needed to call KeyBindings_Apply( file.panel ) thus far.
 
 global function InitControlsPCPanel
 global function InitControlsPCPanelForCode
@@ -10,7 +10,7 @@ struct
 {
 	var panel
 	var keyBindingPanel
-	//
+	//var itemDescriptionBox
 
 	table<var, string> buttonTitles
 	table<var, string> buttonDescriptions
@@ -27,14 +27,14 @@ struct
 void function InitControlsPCPanelForCode( var panel )
 {
 	file.keyBindingPanel = CreateKeyBindingPanel( panel, "ContentPanel", $"resource/ui/menus/panels/controls_pc.res" )
-	Hud_SetPos( file.keyBindingPanel, 0, 0 ) //
+	Hud_SetPos( file.keyBindingPanel, 0, 0 ) // TEMP
 	//
 	Assert( Hud_HasChild( file.keyBindingPanel, "PanelFrame" ) )
 	UISize elementSize = REPLACEHud_GetSize( Hud_GetChild( file.keyBindingPanel, "PanelFrame" ) )
 	Hud_SetSize( file.keyBindingPanel, elementSize.width, elementSize.height )
 	Hud_Hide( file.keyBindingPanel )
 	//
-	//
+	//// reset first in case we reset the UI. don't want to double register
 	KeyBindings_ClearTappedHeldPairs( file.keyBindingPanel )
 	KeyBindings_AddTappedHeldPair( file.keyBindingPanel, "weaponSelectOrdnance", "+strafe" )
 	KeyBindings_AddTappedHeldPair( file.keyBindingPanel, "+scriptCommand4", "+scriptCommand2" )
@@ -51,10 +51,9 @@ void function InitControlsPCPanel( var panel )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, OnControlsPCPanel_Show )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_HIDE, OnControlsPCPanel_Hide )
 
-	//
+	//file.itemDescriptionBox = Hud_GetChild( panel, "LblMenuItemDescription" )
 
 	SetupSettingsSlider( Hud_GetChild( file.keyBindingPanel, "SldMouseSensitivity" ), "#MOUSE_SENSITIVITY", "#MOUSE_KEYBOARD_MENU_SENSITIVITY_DESC", $"rui/menu/settings/settings_pc" )
-	//
 
 	var button = SetupSettingsButton( Hud_GetChild( file.keyBindingPanel, "BtnLookSensitivityMenu" ), "#MENU_MOUSE_SENSITIVITY_ZOOM", "#MOUSE_KEYBOARD_MENU_SENSITIVITY_ZOOM_DESC", $"rui/menu/settings/settings_pc" )
 	AddButtonEventHandler( button, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "ControlsAdvancedLookMenuPC" ) ) )

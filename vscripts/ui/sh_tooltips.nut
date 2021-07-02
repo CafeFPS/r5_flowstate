@@ -21,7 +21,7 @@ global function ToolTips_MenuClosed
 global function ToolTips_HideTooltipUntilRefocus
 #endif
 
-//
+// needs to match the .menu entry and the .rui
 const int TOOLTIP_HEIGHT = 192
 
 struct ToolTipElementData
@@ -33,7 +33,7 @@ struct ToolTipMenuData
 {
 	var menu
 	var toolTip
-	//
+	//table<string, ToolTipElementData> toolTipElements
 }
 
 struct {
@@ -78,18 +78,18 @@ void function ToolTips_AddMenu( var menu )
 
 	menuData.toolTip = Hud_GetChild( menu, "ToolTip" )
 
+	//array<var> elementsWithToolTips = GetElementsByClassname( menu, "ShowToolTip" )
+	//foreach ( element in elementsWithToolTips )
+	//{
+	//	Hud_SetKeyValue( element, "parentMenu", menu )
+	//	Hud_AddEventHandler( element, UIE_GET_FOCUS, OnElementGetFocus )
+	//	Hud_AddEventHandler( element, UIE_LOSE_FOCUS, OnElementLoseFocus )
 	//
+	//	ToolTipElementData elementData
+	//	elementData.element = element
 	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
+	//	//menuData.toolTipElements[string(element)] <- elementData
+	//}
 
 	AddMenuThinkFunc( menu, OnToolTipMenuThink )
 }
@@ -118,24 +118,24 @@ void function ToolTips_MenuClosed( var menu )
 }
 
 /*
+void function OnElementGetFocus( var element )
+{
+	var menu = Hud_GetValueForKey( element, "parentMenu" )
+
+	//ToolTipMenuData menuData = file.menusWithToolTips[string(menu)]
+	//if ( !(string(element) in menuData.toolTipElements) )
+	//	return
+
+	// update tooltip data
+
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void function OnElementLoseFocus( var element )
+{
+	var menu = Hud_GetValueForKey( element, "parentMenu" )
+	printt( "OnElementLoseFocus" )
+}
 */
 
 var s_hideElement = null
@@ -144,7 +144,7 @@ void function ToolTips_HideTooltipUntilRefocus( var element )
 	s_hideElement = element
 }
 
-//
+// TODO: could probably be replaced with a few event driven code callbacks and the ability to pin an element to the cursor
 void function OnToolTipMenuThink( var menu )
 {
 	ToolTipMenuData menuData = file.menusWithToolTips[string(menu)]
@@ -166,7 +166,7 @@ void function OnToolTipMenuThink( var menu )
 
 	UpdateToolTipElement( menuData.toolTip, focusElement )
 
-	//
+	// populate the tooltip to generate size
 }
 
 var function UpdateTooltipRui( asset ruiAsset )
@@ -241,7 +241,7 @@ void function UpdateToolTipElement( var toolTipElement, var focusElement )
 
 	asset ruiAsset
 
-	//
+	// TODO: have this be data driven
 	switch ( dt.tooltipStyle )
 	{
 		case eTooltipStyle.LOOT_PROMPT:
@@ -281,9 +281,6 @@ void function UpdateToolTipElement( var toolTipElement, var focusElement )
 		case eCommsAction.INVENTORY_NEED_AMMO_SPECIAL:
 		case eCommsAction.INVENTORY_NEED_AMMO_HIGHCAL:
 		case eCommsAction.INVENTORY_NEED_AMMO_SHOTGUN:
-#if(false)
-
-#endif
 			dt.commsPromptDefault = IsControllerModeActive() ? "#PING_PROMPT_REQUEST_AMMO_GAMEPAD" : "#PING_PROMPT_REQUEST_AMMO"
 	}
 

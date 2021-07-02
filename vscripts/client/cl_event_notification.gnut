@@ -13,7 +13,7 @@ global function AddPermanentEventNotification
 global function RestorePermanentEventNotification
 global function EmitCountdownSound
 
-global function SetEventNotificationEndingOnSignals //
+global function SetEventNotificationEndingOnSignals //Should go away once we make gamemodes/etc register their own EventNotifications as opposed to adding to EventNotification()
 
 const EN_SHOW_OVER_SCREENFADE = 0x00000001
 
@@ -47,22 +47,22 @@ void function EventNotification( int eventID, entity ent, var eventVal )
 		case eEventNotifications.Grapple_WasGrappled_ByPilot:
 		case eEventNotifications.Grapple_WasGrappled_ByTitan:
 			SmartAmmo_SetStatusWarning( "#GRAPPLED_WARNING", 3.0 )
+			//AnnouncementData announcement = Announcement_Create( "#GRAPPLED_WARNING" )
 			//
+			//if ( eventID == eEventNotifications.Grapple_WasGrappled_ByPilot )
+			//	Announcement_SetSubText( announcement, "#GRAPPLED_WARNING_HINT_PILOT" )
+			//else
+			//	Announcement_SetSubText( announcement, "#GRAPPLED_WARNING_HINT_TITAN" )
 			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
+			//Announcement_SetPurge( announcement, true )
+			//Announcement_SetDuration( announcement, 2.0 )
+			//Announcement_SetSoundAlias( announcement,  "Weapon_TetherGun_Attach_1P" )
+			//Announcement_SetHideOnDeath( announcement, false )
+			//AnnouncementFromClass( player, announcement )
 			break
 
 		case eEventNotifications.BLEEDOUT_SelfHealPrompt:
-			//
+			//By default notification messages will not display if the new message is the same as the last message.
 			if ( player.p.lastEventNotificationText == "#BLEEDOUT_USE_SELF_RES_DYNAMIC" )
 				player.p.lastEventNotificationText = ""
 			SetTimedEventNotification( 1.0, "#BLEEDOUT_USE_SELF_RES_DYNAMIC" )
@@ -106,7 +106,7 @@ void function SetTimedEventNotificationHATT( float duration, string eventText, e
 
 	player.Signal( "SetEventNotification" )
 
-	int zPos = 1000 //
+	int zPos = 1000 // there is no base Z in code, this value should match the default in HudScripted_mp.res
 	if ( flags & EN_SHOW_OVER_SCREENFADE )
 		zPos = 3501
 
@@ -129,30 +129,30 @@ void function SetTimedEventNotification( float duration, string eventText, event
 
 	if ( eventText == player.p.lastEventNotificationText )
 	{
-		//
-		//
+		//player.cv.hud.s.eventNotification.SetAlpha( 0 )
+		//player.cv.hud.s.eventNotification.FadeOverTime( 255, 1.0 )
 		HidePlayerHint( eventText )
 	}
 	else
 	{
-		//
+		//player.cv.hud.s.eventNotification.SetAlpha( 255 )
 		AddPlayerHint( duration, 0.25, $"", eventText, eventArg1, eventArg2 )
 	}
-	//
+	//player.cv.hud.s.eventNotification.Show()
 
-	//
-	//
+	//if ( player.cv.hud.s.eventNotification.IsAutoText() )
+	//	player.cv.hud.s.eventNotification.DisableAutoText()
 
-	//
+	//player.cv.hud.s.eventNotification.SetText( eventText, eventArg1, eventArg2 )
 	player.p.lastEventNotificationText = eventText
 
 	player.Signal( "SetEventNotification" )
 
-	//
-	//
-	//
+	//local zPos = 1000 // there is no base Z in code, this value should match the default in HudScripted_mp.res
+	//if ( flags & EN_SHOW_OVER_SCREENFADE )
+	//	zPos = 3501
 
-	//
+	//player.cv.hud.s.eventNotification.SetZ( zPos )
 
 	if ( duration && duration < 9999 )
 		thread HideEventNotificationWithDelay( duration )
@@ -206,7 +206,7 @@ void function RestorePermanentEventNotification()
 
 	entity player = GetLocalClientPlayer()
 	int permanentEventNotificationID = expect int( player.nv.permanentEventNotification )
-	//
+	//printt( "HideEventNotification. PermEventNotificationID: " + permanentEventNotificationID )
 	if ( permanentEventNotificationID != ePermanentEventNotifications.Empty )
 	{
 		Assert( permanentEventNotificationID in clGlobal.permanentEventNotifications )
@@ -219,7 +219,7 @@ void function CockpitCreate_RestorePermanentEventNotification( entity cockpit, e
 	RestorePermanentEventNotification()
 }
 
-//
+//Does not restore PermanentEventNotifications!
 void function ClearEventNotification()
 {
 	entity player = GetLocalClientPlayer()
@@ -227,17 +227,17 @@ void function ClearEventNotification()
 		return
 
 	HidePlayerHint( player.p.lastEventNotificationText )
-	//
+	//player.cv.hud.s.eventNotification.FadeOverTime( 0, 1.0 )
 }
 
 void function EmitCountdownSound( float endCountdownTime, string soundAlias = "UI_InGame_MarkedForDeath_CountdownToMarked" )
 {
-	//
+	//player.EndSignal( "OnDestroy" ) //Don't end signal on destroy because if you are watching kill replay while counting down to marked, we don't want this thread to end
 
 	float remainingTime = endCountdownTime - Time()
 	while ( remainingTime > 0 )
 	{
-		entity player = GetLocalClientPlayer() //
+		entity player = GetLocalClientPlayer() //Keep getting handle to local player because we want to keep playing this sound throughout kill replay
 		EmitSoundOnEntity( player, soundAlias )
 		wait 1.0
 		remainingTime -= 1.0
@@ -255,7 +255,7 @@ void function AddPermanentEventNotification( int enumValue, string displayString
 	clGlobal.permanentEventNotifications[ enumValue ] <- displayString
 }
 
-//
+// TODO: Not typed since RegisterEntityVarChangeCallback is untyped
 function PermanentEventNotificationChanged( player, newValue, oldValue )
 {
 	Assert( player == GetLocalClientPlayer() )
@@ -268,7 +268,7 @@ function PermanentEventNotificationChanged( player, newValue, oldValue )
 			return
 
 		if ( newValue == oldValue )
-			//
+			//Tried to clear PermanentEventNotifications twice. Just exit
 			return
 
 		Assert( oldValue in clGlobal.permanentEventNotifications )

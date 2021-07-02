@@ -1,4 +1,6 @@
-//
+//=========================================================
+//	customize_common.gnut
+//=========================================================
 
 global function CustomizeCommon_Init
 
@@ -7,7 +9,7 @@ global function CustomizeButton_UnmarkForUpdating
 global function CustomizeButton_GetItemFlavor
 
 global function CustomizeMenus_GetCollectedString
-//
+//global function CustomizeMenus_IsSelectedItemOwned
 global function CustomizeMenus_IsFocusedItem
 global function CustomizeMenus_IsFocusedItemParentItemLocked
 global function CustomizeMenus_IsFocusedItemEquippable
@@ -19,7 +21,6 @@ global function ActionButton_OnClick
 
 global function GetAppropriateLoadoutSlotsForItemFlavor
 global function IsItemFlavorInspectable
-//
 global function IsItemFlavorEquippable
 global function EquipItemFlavorInAppropriateLoadoutSlot
 global function GetLocalizedItemFlavorDescriptionForOfferButton
@@ -42,7 +43,7 @@ struct CustomizeButtonContext
 	array<LoadoutEntry> loadoutEntries
 	ItemFlavor&         itemFlavor
 	bool                useShortName
-	//
+	//bool          showTooltip
 
 	void functionref( ItemFlavor )                               previewItemCb = null
 	int functionref( ItemFlavor )                                getItemCanEquipCanBuyStatusFunc = null
@@ -130,11 +131,11 @@ table< int, table< int, string > > equipSoundMap = {
 }
 
 
-//
-//
-//
-//
-//
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
 void function CustomizeCommon_Init()
 {
 	FileStruct_LifetimeLevel newFileLevel
@@ -152,11 +153,11 @@ void function OnInputModeChanged( bool controllerModeActive )
 }
 
 
-//
-//
-//
-//
-//
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
 void function CustomizeButton_UpdateAndMarkForUpdating( var button,
 		array<LoadoutEntry> loadoutEntries,
 		ItemFlavor itemFlavor,
@@ -184,7 +185,7 @@ void function CustomizeButton_UpdateAndMarkForUpdating( var button,
 	cbc.loadoutEntries = loadoutEntries
 	cbc.itemFlavor = itemFlavor
 	cbc.useShortName = useShortName
-	//
+	//cbc.showTooltip = showTooltip
 	cbc.previewItemCb = previewItemCb
 	cbc.getItemCanEquipCanBuyStatusFunc = getItemCanEquipCanBuyStatusFunc
 	cbc.customButtonUpdateFunc = customButtonUpdateFunc
@@ -246,19 +247,19 @@ string function CustomizeMenus_GetCollectedString( LoadoutEntry entry, array<Ite
 }
 
 
+//bool function CustomizeMenus_IsSelectedItemOwned()
+//{
+//	if ( !GRX_IsInventoryReady() )
+//		return false
 //
+//	foreach( var button, CustomizeButtonContext cbc in fileLevel.activeCustomizeButtons )
+//	{
+//		if ( Hud_IsSelected( button ) )
+//			return GRX_IsItemOwnedByPlayer( cbc.itemFlavor )
+//	}
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
+//	return false
+//}
 
 
 bool function CustomizeMenus_IsFocusedItem()
@@ -282,7 +283,7 @@ bool function CustomizeMenus_IsFocusedItemEquippable()
 	{
 		if ( Hud_IsFocused( button ) )
 		{
-			//
+			//bool isOwned = GRX_IsItemOwnedByPlayer( cbc.itemFlavor )
 			bool isEquippable = false
 			foreach ( loadoutEntry in cbc.loadoutEntries )
 				isEquippable = isEquippable || IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), loadoutEntry, cbc.itemFlavor )
@@ -313,7 +314,6 @@ bool function CustomizeMenus_IsFocusedItemUnlocked()
 	{
 		if ( Hud_IsFocused( button ) )
 		{
-			//
 			bool isEquippable = false
 			foreach ( loadoutEntry in cbc.loadoutEntries )
 				isEquippable = isEquippable || IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), loadoutEntry, cbc.itemFlavor )
@@ -400,11 +400,11 @@ int function CanEquipCanBuyCharacterItemCheck( ItemFlavor unused )
 
 
 
-//
-//
-//
-//
-//
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
 void function CustomizeButton_OnClick( var button )
 {
 	CustomizeButtonContext cbc = fileLevel.activeCustomizeButtons[button]
@@ -414,7 +414,7 @@ void function CustomizeButton_OnClick( var button )
 
 	if ( ItemFlavor_GetType( cbc.itemFlavor ) == eItemType.gladiator_card_badge || ItemFlavor_GetType( cbc.itemFlavor ) == eItemType.gladiator_card_stat_tracker )
 	{
-		//
+		// (dw): special case for badges because you can already see the content, no need to have a preview-mode
 		if ( !Hud_IsLocked( button ) )
 		{
 			CustomizeButton_OnRightOrDoubleClick( cbc.button )
@@ -486,7 +486,7 @@ void function PreviewCustomizeButtonItem( CustomizeButtonContext cbc )
 
 	if ( ItemFlavor_GetType( cbc.itemFlavor ) == eItemType.gladiator_card_badge || ItemFlavor_GetType( cbc.itemFlavor ) == eItemType.gladiator_card_stat_tracker )
 	{
-		//
+		// (dw): special case for badges because you can already see the content, no need to have a preview-mode
 		return
 	}
 
@@ -552,7 +552,7 @@ void function PlayerClickedToEquipThing_Part1_UnlockDialog( CustomizeButtonConte
 			RuiSetBool( Hud_GetRui( cbc.button ), "isLoading", false )
 
 			if ( !wasPurchaseSuccessful )
-				return //
+				return // can't afford to craft, so don't show dialog
 
 			PlayerClickedToEquipThing_Part2_SlotPicker( cbc )
 		}
@@ -560,11 +560,10 @@ void function PlayerClickedToEquipThing_Part1_UnlockDialog( CustomizeButtonConte
 		return
 	}
 
-	//
+	//Assert( canEquipCanBuyStatus == eItemCanEquipCanBuyStatus.CANNOT_EQUIP_CANNOT_BUY )
 
-	//
-	//
-
+	//foreach ( int unused, string previewSound in previewSoundMap )
+	//	StopUISoundByName( previewSound )
 	EmitUISound( "UI_Menu_Deny" )
 
 	return
@@ -646,7 +645,7 @@ void function UpdateCustomizeItemButton( CustomizeButtonContext cbc, bool justAd
 {
 	var rui = Hud_GetRui( cbc.button )
 
-	//
+	// Name, icon and quality
 	string name = Localize( "#EMPTY" )
 	if ( cbc.useShortName )
 		name = Localize( ItemFlavor_GetShortName( cbc.itemFlavor ) )
@@ -659,21 +658,21 @@ void function UpdateCustomizeItemButton( CustomizeButtonContext cbc, bool justAd
 	RuiSetInt( rui, "quality", quality )
 	RuiSetImage( rui, "sourceIcon", ItemFlavor_HasSourceTag( cbc.itemFlavor ) ? ItemFlavor_GetSourceIcon( cbc.itemFlavor ) : $"" )
 
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
+	// Tooltip
+	//if ( cbc.showTooltip )
+	//{
+	//	ToolTipData toolTipData
+	//	toolTipData.titleText = Localize( ItemFlavor_GetName( cbc.itemFlavor ) )
+	//	//toolTipData.descText = ""
+	//	Hud_SetToolTipData( cbc.button, toolTipData )
+	//}
 
-	//
-	//
+	// Newness
+	// todo(dw): make new and locked mutually exclusive
 	bool isNew = Newness_IsItemFlavorNew( cbc.itemFlavor )
 	Hud_SetNew( cbc.button, isNew )
 
-	//
+	// Seleted/equipped
 	bool isEquipped = IsItemInCBCEquipped( cbc )
 
 	if ( justAdded )
@@ -694,45 +693,45 @@ void function UpdateCustomizeItemButton( CustomizeButtonContext cbc, bool justAd
 
 	RuiSetBool( rui, "isEquipped", isEquipped )
 
-	//
+	// Purchase info
 	bool isOwned = false
 	if ( ItemFlavor_GetGRXMode( cbc.itemFlavor ) == GRX_ITEMFLAVORMODE_NONE )
 	{
 		foreach ( loadoutEntry in cbc.loadoutEntries )
 			isOwned = isOwned || IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), loadoutEntry, cbc.itemFlavor, false )
 	}
-	else //
+	else // GRX item
 	{
 		if ( !GRX_AreOffersReady() || !GRX_IsInventoryReady() )
 		{
-			//
+			// GRX is loading
 			Hud_SetEnabled( cbc.button, false )
 			RuiSetBool( rui, "isLoading", true )
-			return //
+			return // don't update until loading is done
 		}
 
-		//
+		// GRX has loaded
 		Hud_SetEnabled( cbc.button, true )
 		RuiSetBool( rui, "isLoading", false )
 
-		//
+		// Do we own it?
 		isOwned = GRX_IsItemOwnedByPlayer( cbc.itemFlavor )
 
 		if ( !isOwned )
 		{
 			ItemFlavorPurchasabilityInfo ifpi = GRX_GetItemPurchasabilityInfo( cbc.itemFlavor )
-			//
+			//Assert( ifpi.craftingOfferOrNull != null )
 			if ( ifpi.craftingOfferOrNull != null )
 			{
 				GRXScriptOffer offer = expect GRXScriptOffer(ifpi.craftingOfferOrNull)
 				Assert( offer.prices.len() == 1 )
 				Assert( offer.prices[0].flavors[0] == GRX_CURRENCIES[GRX_CURRENCY_CRAFTING] )
 
-				//
+				// How much does it cost?
 				int craftingPrice = offer.prices[0].quantities[0]
 				RuiSetInt( rui, "craftingPrice", craftingPrice )
 
-				//
+				// Can we afford it?
 				RuiSetBool( rui, "canAfford", GRX_CanAfford( offer.prices[0], 1 ) )
 			}
 			else
@@ -744,7 +743,7 @@ void function UpdateCustomizeItemButton( CustomizeButtonContext cbc, bool justAd
 	}
 
 	Hud_SetLocked( cbc.button, !isOwned )
-	//
+	//RuiSetBool( rui, "isOwned", isOwned )
 
 	if ( cbc.customButtonUpdateFunc != null )
 		cbc.customButtonUpdateFunc( cbc.itemFlavor, rui )
@@ -796,7 +795,7 @@ void function CustomizeMenus_UpdateActionContext( var button )
 		fileLevel.actionContext = null
 	}
 
-	//
+	//printt( "Set context:", ItemFlavor_GetHumanReadableRef( expect CustomizeButtonContext( fileLevel.actionContext ).itemFlavor ) )
 	UpdateActionButton()
 }
 
@@ -914,21 +913,6 @@ array<LoadoutEntry> function GetAppropriateLoadoutSlotsForItemFlavor( ItemFlavor
 
 		case eItemType.gladiator_card_stat_tracker:
 			ItemFlavor character = GladiatorCardStatTracker_GetCharacterFlavor( itemFlav )
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
 
 			array<LoadoutEntry> slots
 			for ( int trackerIdx = 0; trackerIdx < GLADIATOR_CARDS_NUM_TRACKERS; trackerIdx++ )
@@ -963,21 +947,6 @@ bool function IsItemFlavorInspectable( ItemFlavor itemFlav )
 {
 	return InspectItemTypePresentationSupported( itemFlav ) || ItemFlavor_GetType( itemFlav ) == eItemType.loadscreen
 }
-
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
 
 
 bool function IsItemFlavorEquippable( ItemFlavor itemFlav )
@@ -1031,7 +1000,6 @@ asset function CustomizeMenu_GetRewardButtonImage( ItemFlavor flavor )
 
 		case eItemType.skydive_emote:
 			buttonImage = ItemFlavor_GetIcon( flavor )
-			//
 			break
 
 		case eItemType.character_skin:

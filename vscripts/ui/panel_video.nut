@@ -23,9 +23,9 @@ struct
 
 void function InitVideoPanelForCode( var panel )
 {
-	#if(PC_PROG)
+	#if PC_PROG
 		asset resFile = $"resource/ui/menus/panels/video.res"
-	#elseif(CONSOLE_PROG)
+	#elseif CONSOLE_PROG
 		asset resFile = $"resource/ui/menus/panels/video_console.res"
 	#endif
 	file.videoPanel = CreateVideoOptionsPanel( panel, "ContentPanel", resFile )
@@ -45,10 +45,10 @@ void function InitVideoPanel( var panel )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, OnVideoPanel_Show )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_HIDE, OnVideoPanel_Hide )
 
-	//
+	//AddMenuEventHandler( panel, eUIEvent.PANEL_NAVBACK, OnVideoMenu_NavigateBack )
 
 	var button
-	#if(PC_PROG)
+	#if PC_PROG
 		button = Hud_GetChild( file.videoPanel, "SwchDisplayMode" )
 		SetupSettingsButton( button, "#DISPLAY_MODE", "#ADVANCED_VIDEO_MENU_DISPLAYMODE_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CHANGE, DisplayMode_Changed )
@@ -97,7 +97,7 @@ void function InitVideoPanel( var panel )
 		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchEffectsDetail" ), "#MENU_EFFECT_DETAIL", "#ADVANCED_VIDEO_MENU_EFFECTS_DETAIL_DESC", $"rui/menu/settings/settings_video" )
 		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchImpactMarks" ), "#MENU_IMPACT_MARKS", "#ADVANCED_VIDEO_MENU_IMPACT_MARKS_DESC", $"rui/menu/settings/settings_video" )
 		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchRagdolls" ), "#MENU_RAGDOLLS", "#ADVANCED_VIDEO_MENU_RAGDOLLS_DESC", $"rui/menu/settings/settings_video" )
-	#elseif(CONSOLE_PROG)
+	#elseif CONSOLE_PROG
 		button = Hud_GetChild( file.videoPanel, "BtnBrightness" )
 		SetupSettingsButton( button, "#BRIGHTNESS", "#CONSOLE_BRIGHTNESS_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "GammaMenu" ) ) )
@@ -108,7 +108,7 @@ void function InitVideoPanel( var panel )
 		AddButtonEventHandler( Hud_GetChild( file.videoPanel, "TextEntrySldFOV" ), UIE_CHANGE, FOVTextEntry_Changed )
 		file.noApplyConfirmationRequired.append( button )
 
-		//
+		//SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchSprintCameraSmoothing" ), "#SMOOTH_SPRINT_CAMERA", "#OPTIONS_MENU_SMOOTH_SPRINT_CAMERA", $"rui/menu/settings/settings_video" )
 
 		button = SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchSprintCameraSmoothing" ), "#SPRINT_VIEW_SHAKE", "#OPTIONS_MENU_SPRINT_VIEW_SHAKE", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CHANGE, SprintViewShake_Changed )
@@ -118,14 +118,14 @@ void function InitVideoPanel( var panel )
 	ScrollPanel_InitScrollBar( panel, Hud_GetChild( panel, "ScrollBar" ) )
 
 
-	var parentMenu = GetMenu( "MiscMenu" ) //
-	AddEventHandlerToButtonClass( parentMenu, "AdvancedVideoButtonClass", UIE_CHANGE, AdvancedVideoButton_Changed ) //
-	//
+	var parentMenu = GetMenu( "MiscMenu" ) //GetParentMenu( file.panel )
+	AddEventHandlerToButtonClass( parentMenu, "AdvancedVideoButtonClass", UIE_CHANGE, AdvancedVideoButton_Changed ) // "AdvancedVideoButtonClass" is not being found as it should
+	//AddEventHandlerToButtonClass( parentMenu, "LeftRuiFooterButtonClass", UIE_GET_FOCUS, FooterButton_Focused )
 
 	file.conVarDataList.append( CreateSettingsConVarData( "colorblind_mode", eConVarType.INT ) )
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
-	AddPanelFooterOption( panel, LEFT, BUTTON_BACK, true, "#BACKBUTTON_RESTORE_DEFAULTS", "#RESTORE_DEFAULTS", OpenConfirmRestoreVideoDefaultsDialog ) //
+	AddPanelFooterOption( panel, LEFT, BUTTON_BACK, true, "#BACKBUTTON_RESTORE_DEFAULTS", "#RESTORE_DEFAULTS", OpenConfirmRestoreVideoDefaultsDialog ) // ShouldEnableRestoreRecommended
 	AddPanelFooterOption( panel, LEFT, -1, false, "#FOOTER_CHOICE_HINT", "" )
 	AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, "#Y_BUTTON_APPLY", "#APPLY", ApplyVideoSettingsButton_Activate, AreVideoSettingsChanged )
 }
@@ -158,7 +158,7 @@ void function OnVideoPanel_Show( var panel )
 	uiGlobal.videoSettingsChanged = false
 	UpdateFooterOptions()
 
-#if(PC_PROG)
+#if PC_PROG
 	var aspectRatioButton = Hud_GetChild( file.videoPanel, "SwchAspectRatio" )
 	var resolutionButton = Hud_GetChild( file.videoPanel, "SwchResolution" )
 
@@ -195,7 +195,7 @@ void function OnVideoPanel_Hide( var panel )
 
 void function AdvancedVideoButton_Changed( var button )
 {
-	//
+	// handle "colorblind_mode" being changed from accessibilty section of gameplay tab
 	if ( !IsTabPanelActive( file.panel ) )
 		return
 
@@ -279,7 +279,7 @@ void function UICodeCallback_ResolutionChanged( bool askForConfirmation )
 {
 	if ( askForConfirmation )
 	{
-		CloseAllDialogs() //
+		CloseAllDialogs() // Promo could be open. To avoid this workaround, menu opening caused by resolution change should be distinguishable from a normal lobby load.
 		AdvanceMenu( GetMenu( "ConfirmKeepVideoChangesDialog" ) )
 	}
 	else
@@ -298,7 +298,7 @@ void function RevertVideoSettings()
 
 void function RevertVideoSettingsThread()
 {
-	//
+	// make sure any ExecConfigs that UI script wants to run get run before we call RejectNewSettings.
 	WaitEndFrame()
 
 	VideoOptions_RejectNewSettings( file.videoPanel )
@@ -369,6 +369,6 @@ void function TextureStreamBudget_Changed( var button )
 
 void function FooterButton_Focused( var button )
 {
-	//
-	//
+	//var label = Hud_GetChild( file.panel, "LblMenuItemDescription" )
+	//Hud_SetText( label, "" )
 }

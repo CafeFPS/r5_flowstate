@@ -1,5 +1,5 @@
 global function UserInfoPanels_LevelInit
-//
+//global function UpdateUserInfoWithXP
 
 
 struct SingleCurrencyBalanceElement
@@ -24,10 +24,10 @@ void function UserInfoPanels_LevelInit()
 	AddCallbackOrMaybeCallNow_OnAllItemFlavorsRegistered( SetupUserInfoPanels )
 }
 
-//
-//
-//
-//
+//void function UserInfoPanels_LevelShutdown()
+//{
+//	//
+//}
 
 
 void function SetupUserInfoPanelToolTips()
@@ -61,18 +61,18 @@ void function SetupUserInfoPanels()
 				RuiSetImage( rui, "symbol2", ItemFlavor_GetIcon( GRX_CURRENCIES[GRX_CURRENCY_CREDITS] ) )
 				RuiSetImage( rui, "symbol3", ItemFlavor_GetIcon( GRX_CURRENCIES[GRX_CURRENCY_CRAFTING] ) )
 
-				fileLevel.activeUserInfoPanelSet[elem] <- true //
+				fileLevel.activeUserInfoPanelSet[elem] <- true // todo(dw)
 			}
 
+			//AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, void function() : ( userInfoElemList ) {
+			//	foreach( var elem in userInfoElemList )
+			//		fileLevel.activeUserInfoPanelSet[elem] <- true
+			//} )
 			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
-			//
+			//AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, void function() : ( userInfoElemList ) {
+			//	foreach( var elem in userInfoElemList )
+			//		delete fileLevel.activeUserInfoPanelSet[elem]
+			//} )
 		}
 	}
 
@@ -115,7 +115,7 @@ void function UpdateActiveUserInfoPanels()
 	foreach( var elem, bool unused in fileLevel.activeUserInfoPanelSet )
 	{
 		var rui = Hud_GetRui( elem )
-		//
+		//RuiSetString( rui, "userName", GetPlayerName() )
 		RuiSetBool( rui, "isQuerying", !isReady )
 
 		if ( isReady )
@@ -140,30 +140,30 @@ void function UpdateActiveUserInfoPanels()
 }
 
 
-/*
+/*void function UpdateUserInfoWithXP()
+{
+	EndSignal( uiGlobal.signalDummy, "CleanupInGameMenus" )
 
+	while ( true )
+	{
+		entity player = GetUIPlayer()
+		if ( player )
+		{
+			int accountXP    = player.GetPersistentVarAsInt( "xp" )
+			int accountLevel = GetAccountLevelForXP( accountXP )
+			int xpRangeStart = GetXPForAccountLevel( accountLevel )
+			int xpRangeEnd   = GetXPForAccountLevel( accountLevel + 1 )
+			Assert( accountXP >= xpRangeStart && accountXP < xpRangeEnd )
+			float progressFrac = GraphCapped( accountXP, xpRangeStart, xpRangeEnd, 0.0, 1.0 )
 
+			foreach( var elem, bool unused in fileLevel.activeUserInfoPanelSet )
+			{
+				var rui = Hud_GetRui( elem )
+				RuiSetInt( rui, "rank", accountLevel )
+				RuiSetFloat( rui, "progressFrac", progressFrac )
+			}
+		}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
+		WaitFrameOrUntilLevelLoaded()
+	}
+}*/

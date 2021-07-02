@@ -61,8 +61,8 @@ void function InitWeaponSkinsPanel( var panel )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_EQUIP", "#X_BUTTON_EQUIP", null, CustomizeMenus_IsFocusedItemEquippable )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_LEFT, false, "#MENU_ZOOM_CONTROLS_GAMEPAD", "#MENU_ZOOM_CONTROLS", null, ZoomFooter_IsVisible )
-	//
-	//
+	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_LEFT, false, "#DPAD_LEFT_RIGHT_SWITCH_CHARACTER", "", PrevButton_OnActivate )
+	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_RIGHT, false, "", "", NextButton_OnActivate )
 }
 
 
@@ -173,9 +173,9 @@ void function WeaponSkinsPanel_OnShow( var panel )
 
 	file.currentPanel = panel
 
-	//
-	//
-	//
+	// (dw): Customize context is already being used for the category, which is unfortunate.
+	//AddCallback_OnTopLevelCustomizeContextChanged( panel, WeaponSkinsPanel_Update )
+	//SetCustomizeContext( PanelData_Get( panel ).weapon )
 
 	thread TrackIsOverScrollBar( file.panelDataMap[panel].listPanel )
 
@@ -185,7 +185,7 @@ void function WeaponSkinsPanel_OnShow( var panel )
 
 void function WeaponSkinsPanel_OnHide( var panel )
 {
-	//
+	//RemoveCallback_OnTopLevelCustomizeContextChanged( panel, WeaponSkinsPanel_Update )
 	Signal( uiGlobal.signalDummy, "TrackIsOverScrollBar" )
 
 	RunClientScript( "EnableModelTurn" )
@@ -198,7 +198,7 @@ void function WeaponSkinsPanel_Update( var panel )// TODO: IMPLEMENT
 	/*PanelData pd    = file.panelDataMap[panel]
 	var scrollPanel = Hud_GetChild( pd.listPanel, "ScrollPanel" )
 
-	//
+	// cleanup
 	foreach ( int flavIdx, ItemFlavor unused in pd.weaponCharmList )
 	{
 		var button = Hud_GetChild( scrollPanel, "GridButton" + flavIdx )
@@ -215,12 +215,12 @@ void function WeaponSkinsPanel_Update( var panel )// TODO: IMPLEMENT
 
 	CustomizeMenus_SetActionButton( null )
 
-	//
+	// Items
 	string ownedText = file.charmsMenuActive ? "#CHARMS_OWNED" : "#SKINS_OWNED"
 
 	RuiSetString( pd.ownedRui, "title", Localize( ownedText ).toupper() )
 
-	//
+	// setup, but only if we're active
 	if ( IsPanelActive( panel ) && pd.weaponOrNull != null )
 	{
 		file.currentWeapon = expect ItemFlavor(pd.weaponOrNull)
@@ -239,7 +239,6 @@ void function WeaponSkinsPanel_Update( var panel )// TODO: IMPLEMENT
 			previewFunc = PreviewWeaponCharm
 			customButtonUpdateFunc = (void function( ItemFlavor charmFlav, var rui )
 			{
-				//
 				asset img = $""
 
 				ItemFlavor ornull weaponFlavorOrNull = GetWeaponThatCharmIsCurrentlyEquippedToForPlayer( ToEHI( GetUIPlayer() ), charmFlav )
@@ -257,7 +256,6 @@ void function WeaponSkinsPanel_Update( var panel )// TODO: IMPLEMENT
 				RuiSetAsset( rui, "equippedCharmWeaponAsset", img )
 			})
 			confirmationFunc = (void function( ItemFlavor charmFlav, void functionref() proceedCb ) {
-				//
 				ItemFlavor ornull charmCurrentWeaponFlav = GetWeaponThatCharmIsCurrentlyEquippedToForPlayer( LocalClientEHI(), charmFlav )
 				if ( charmCurrentWeaponFlav == null || charmCurrentWeaponFlav == file.currentWeapon )
 				{
@@ -318,7 +316,7 @@ void function WeaponSkinsPanel_Update( var panel )// TODO: IMPLEMENT
 
 void function WeaponSkinsPanel_OnFocusChanged( var panel, var oldFocus, var newFocus )
 {
-	if ( !IsValid( panel ) ) //
+	if ( !IsValid( panel ) ) // uiscript_reset
 		return
 	if ( GetParentMenu( panel ) != GetActiveMenu() )
 		return

@@ -28,7 +28,7 @@ struct
 	ConfirmDialogData ornull showDialogData
 } file
 
-void function InitConfirmDialog( var newMenuArg ) //
+void function InitConfirmDialog( var newMenuArg )
 {
 	var menu = GetMenu( "ConfirmDialog" )
 	file.confirmMenu = menu
@@ -42,7 +42,7 @@ void function InitConfirmDialog( var newMenuArg ) //
 }
 
 
-void function InitOKDialog( var newMenuArg ) //
+void function InitOKDialog( var newMenuArg )
 {
 	var menu = GetMenu( "OKDialog" )
 	file.okMenu = menu
@@ -152,7 +152,7 @@ void function ConfirmDialog_OnNavigateBack()
 
 void function ConfirmDialog_Yes( var button )
 {
-	//
+	// todo(bm): AddMenuFooterOption registers the inputs, and it seems flakey.
 	if ( file.showDialogData == null )
 		return
 
@@ -167,7 +167,7 @@ void function ConfirmDialog_Yes( var button )
 
 void function ConfirmDialog_No( var button )
 {
-	//
+	// todo(bm): AddMenuFooterOption registers the inputs, and it seems flakey.
 	if ( file.showDialogData == null )
 		return
 

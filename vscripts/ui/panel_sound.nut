@@ -13,7 +13,7 @@ struct
 	var                itemDescriptionBox
 
 	var 			   audioLanguageButton
-	#if(PC_PROG)
+	#if PC_PROG
 	var 			   voiceSensitivityButton
 	var 			   voiceSensitivitySliderRui
 	#endif
@@ -51,7 +51,7 @@ void function InitSoundPanel( var panel )
 	SetupSettingsSlider( Hud_GetChild( contentPanel, "SldLobbyMusicVolume" ), "#MENU_LOBBY_MUSIC_VOLUME", "#OPTIONS_MENU_LOBBY_MUSIC_VOLUME_DESC", $"rui/menu/settings/settings_audio" )
 	SetupSettingsButton( Hud_GetChild( contentPanel, "SwchChatSpeechToText" ), "#MENU_CHAT_SPEECH_TO_TEXT", "#OPTIONS_MENU_CHAT_SPEECH_TO_TEXT_DESC", $"rui/menu/settings/settings_audio" )
 	Hud_SetVisible( Hud_GetChild( contentPanel, "SwchChatSpeechToText" ), IsAccessibilityAvailable() )
-	#if(PC_PROG)
+	#if PC_PROG
 		SetupSettingsButton( Hud_GetChild( contentPanel, "SwchChatTextToSpeech" ), "#MENU_CHAT_TEXT_TO_SPEECH", "#OPTIONS_MENU_CHAT_TEXT_TO_SPEECH_DESC", $"rui/menu/settings/settings_audio" )
 		Hud_SetVisible( Hud_GetChild( contentPanel, "SwchChatTextToSpeech" ), IsAccessibilityAvailable() )
 
@@ -73,7 +73,7 @@ void function InitSoundPanel( var panel )
 		AddButtonEventHandler( button, UIE_CHANGE, OnDisableVoiceChatSettingChanged )
 	#endif
 
-	//
+	//AddEventHandlerToButtonClass( menu, "LeftRuiFooterButtonClass", UIE_GET_FOCUS, FooterButton_Focused )
 
 	ScrollPanel_InitPanel( panel )
 	ScrollPanel_InitScrollBar( panel, Hud_GetChild( panel, "ScrollBar" ) )
@@ -81,15 +81,15 @@ void function InitSoundPanel( var panel )
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 	AddPanelFooterOption( panel, LEFT, BUTTON_BACK, true, "#BACKBUTTON_RESTORE_DEFAULTS", "#RESTORE_DEFAULTS", OpenConfirmRestoreSoundDefaultsDialog )
 	AddPanelFooterOption( panel, LEFT, -1, false, "#FOOTER_CHOICE_HINT", "" )
-	//
-	//
-	//
+	//#if DURANGO_PROG
+	//AddPanelFooterOption( panel, LEFT, BUTTON_Y, false, "#Y_BUTTON_XBOX_HELP", "", OpenXboxHelp )
+	//#endif // DURANGO_PROG
 
 	file.conVarDataList.append( CreateSettingsConVarData( "TalkIsStream", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "miles_occlusion", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "closecaption", eConVarType.INT ) )
 	file.conVarDataList.append( CreateSettingsConVarData( "speechtotext_enabled", eConVarType.INT ) )
-	#if(PC_PROG)
+	#if PC_PROG
 		file.conVarDataList.append( CreateSettingsConVarData( "hudchat_play_text_to_speech", eConVarType.INT ) )
 	#endif
 }
@@ -100,7 +100,7 @@ void function OnSoundPanel_Show( var panel )
 	ScrollPanel_SetActive( panel, true )
 	Hud_SetEnabled( file.audioLanguageButton, IsAudioLanguageChangeAllowed() )
 
-	#if(PC_PROG)
+	#if PC_PROG
 	OnVoiceChatVolumeSettingChanged( panel )
 	thread UpdateVoiceMeter()
 	#endif
@@ -143,17 +143,14 @@ void function RebootMiles()
 	EndSignal( uiGlobal.signalDummy, "EndRebootMiles" )
 
 	AdvanceMenu( file.processingDialog )
-	//
-	WaitFrame() //
+	WaitFrame()
 
-	//
 	ClientCommand( "miles_reboot" )
 	ResetKeyRepeater()
 
 	string checkSound = "Music_Lobby"
 	var handle = null
 
-	//
 	while ( handle == null || !IsUISoundStillPlaying( handle ) )
 	{
 		WaitFrame()
@@ -179,7 +176,7 @@ void function FooterButton_Focused( var button )
 }
 
 
-#if(PC_PROG)
+#if PC_PROG
 void function UpdateVoiceMeter()
 {
 	Signal( uiGlobal.signalDummy, "UpdateVoiceMeter" )
@@ -214,7 +211,7 @@ void function OnConfirmDialogResult( int result )
 	}
 }
 
-#if(PC_PROG)
+#if PC_PROG
 void function OnVoiceChatVolumeSettingChanged( var slider )
 {
 	bool isVoiceVolumeZero = GetConVarFloat( "sound_volume_voice" ) == 0.0
@@ -222,7 +219,7 @@ void function OnVoiceChatVolumeSettingChanged( var slider )
 }
 #endif
 
-#if(CONSOLE_PROG)
+#if CONSOLE_PROG
 void function OnDisableVoiceChatSettingChanged( var button )
 {
 	bool isVoiceChatDisabled = !GetConVarBool( "voice_enabled" )
@@ -250,7 +247,7 @@ void function RestoreSoundDefaults()
 	SetConVarToDefault( "closecaption" )
 	if ( IsAudioLanguageChangeAllowed() )
 		SetConVarToDefault( "miles_language" )
-	#if(PC_PROG)
+	#if PC_PROG
 		SetConVarToDefault( "TalkIsStream" )
 		SetConVarToDefault( "hudchat_play_text_to_speech" )
 		SetConVarToDefault( "sound_volume_voice" )
@@ -273,7 +270,6 @@ bool function IsAudioLanguageChangeAllowed()
 	return Hud_IsVisible( file.audioLanguageButton ) && IsLobby()
 }
 
-//
 void function InitProcessingDialog( var menu )
 {
 	file.processingDialog = menu

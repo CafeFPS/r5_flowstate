@@ -39,14 +39,14 @@ global function Lobby_MovePopupMessage
 global function Lobby_ShowBattlePassPopup
 #endif
 
-const string SOUND_BP_POPUP = "UI_Menu_BattlePass_PopUp"
+const string SOUND_BP_POPUP             = "UI_Menu_BattlePass_PopUp"
 
 const string SOUND_START_MATCHMAKING_1P = "UI_Menu_ReadyUp_1P"
-const string SOUND_STOP_MATCHMAKING_1P = "UI_Menu_ReadyUp_Cancel_1P"
+const string SOUND_STOP_MATCHMAKING_1P  = "UI_Menu_ReadyUp_Cancel_1P"
 const string SOUND_START_MATCHMAKING_3P = "UI_Menu_ReadyUp_3P"
-const string SOUND_STOP_MATCHMAKING_3P = "UI_Menu_ReadyUp_Cancel_3P"
+const string SOUND_STOP_MATCHMAKING_3P  = "UI_Menu_ReadyUp_Cancel_3P"
 
-const float INVITE_LAST_TIMEOUT = 15.0
+const float INVITE_LAST_TIMEOUT          = 15.0
 const float INVITE_LAST_PANEL_EXPIRATION = 1 * MINUTES_PER_HOUR * SECONDS_PER_MINUTE
 global enum ePlaylistState
 {
@@ -64,15 +64,15 @@ global enum ePlaylistState
 
 
 const table< int, string > playlistStateMap = {
-	[ ePlaylistState.NO_PLAYLIST ] = "#PLAYLIST_STATE_NO_PLAYLIST",
-	[ ePlaylistState.TRAINING_REQUIRED ] = "#PLAYLIST_STATE_TRAINING_REQUIRED",
+	[ ePlaylistState.NO_PLAYLIST ]                 = "#PLAYLIST_STATE_NO_PLAYLIST",
+	[ ePlaylistState.TRAINING_REQUIRED ]           = "#PLAYLIST_STATE_TRAINING_REQUIRED",
 	[ ePlaylistState.COMPLETED_TRAINING_REQUIRED ] = "#PLAYLIST_STATE_COMLETED_TRAINING_REQUIRED",
-	[ ePlaylistState.AVAILABLE ] = "#PLAYLIST_STATE_AVAILABLE",
-	[ ePlaylistState.PARTY_SIZE_OVER ] = "#PLAYLIST_STATE_PARTY_SIZE_OVER",
-	[ ePlaylistState.LOCKED ] = "#PLAYLIST_STATE_LOCKED",
-	[ ePlaylistState.ELITE_ACCESS_REQUIRED ] = "#PLAYLIST_STATE_ELITE_REQUIRED",
-	[ ePlaylistState.RANKED_LEVEL_REQUIRED ] = "#PLAYLIST_STATE_RANKED_LEVEL_REQUIRED",
-	[ ePlaylistState.RANKED_MATCH_ABANDON_DELAY ] = "#RANKED_ABANDON_PENALTY_PLAYLIST_STATE"
+	[ ePlaylistState.AVAILABLE ]                   = "#PLAYLIST_STATE_AVAILABLE",
+	[ ePlaylistState.PARTY_SIZE_OVER ]             = "#PLAYLIST_STATE_PARTY_SIZE_OVER",
+	[ ePlaylistState.LOCKED ]                      = "#PLAYLIST_STATE_LOCKED",
+	[ ePlaylistState.ELITE_ACCESS_REQUIRED ]       = "#PLAYLIST_STATE_ELITE_REQUIRED",
+	[ ePlaylistState.RANKED_LEVEL_REQUIRED ]       = "#PLAYLIST_STATE_RANKED_LEVEL_REQUIRED",
+	[ ePlaylistState.RANKED_MATCH_ABANDON_DELAY ]  = "#RANKED_ABANDON_PENALTY_PLAYLIST_STATE"
 }
 
 const string PLAYLIST_TRAINING = "survival_training"
@@ -209,8 +209,6 @@ void function InitPlayPanel( var panel )
 	file.chatBox = Hud_GetChild( panel, "ChatRoomTextChat" )
 	file.hdTextureProgress = Hud_GetChild( panel, "HDTextureProgress" )
 
-	//
-	//
 	var chatTextEntry = Hud_GetChild( Hud_GetChild( file.chatBox, "ChatInputLine" ), "ChatInputTextEntry" )
 	Hud_SetNavUp( chatTextEntry, chatTextEntry )
 
@@ -330,7 +328,7 @@ var function GetLobbyChatBox()
 
 void function PlayPanel_OnShow( var panel )
 {
-	//
+	//UI_SetPresentationType( ePresentationType.PLAY )
 
 	if ( IsFullyConnected() )
 	{
@@ -408,7 +406,7 @@ void function UpdateLobbyButtons()
 
 void function UpdateHDTextureProgress()
 {
-	//
+	// for some reason we can't do rui tracks in ui script?
 	HudElem_SetRuiArg( file.hdTextureProgress, "hdTextureProgress", GetGameFullyInstalledProgress() )
 	HudElem_SetRuiArg( file.hdTextureProgress, "hdTextureNeedsReboot", HasNonFullyInstalledAssetsLoaded() )
 
@@ -424,7 +422,7 @@ void function UpdateHDTextureProgress()
 		{
 			if ( result == eDialogResult.YES )
 			{
-				//
+				// hd textured fully loaded, return to the main menu
 				ClientCommand( "disconnect" )
 			}
 
@@ -575,8 +573,6 @@ void function PlayPanel_OnHide( var panel )
 	RemoveCallback_OnGRXInventoryStateChanged( UpdatePlayPanelGRXDependantElements )
 	RemoveCallback_OnGRXInventoryStateChanged( UpdateFriendButtons )
 	RemoveCallback_RemoteMatchInfoUpdated( OnRemoteMatchInfoUpdated )
-
-	//
 
 	MiniPromo_Stop()
 }
@@ -752,14 +748,14 @@ void function UpdateFriendButtons()
 		}
 	}
 
-	#if(PC_PROG)
+	#if PC_PROG
 		if ( !Origin_IsOverlayAvailable() && !GetCurrentPlaylistVarBool( "social_menu_enabled", true ) )
 		{
 			toolTipData.descText = "#ORIGIN_INGAME_REQUIRED"
 			Hud_SetLocked( file.inviteFriendsButton0, true )
 			Hud_SetLocked( file.inviteFriendsButton1, true )
 		}
-	#endif //
+	#endif //PC_PROG
 
 	Hud_SetToolTipData( file.inviteFriendsButton0, toolTipData )
 	Hud_SetToolTipData( file.inviteFriendsButton1, toolTipData )
@@ -906,14 +902,6 @@ void function UpdatePlaylistBadges()
 		RuiSetImage( rui, "emblemImage", emblemImage )
 		RuiSetColorAlpha( rui, "emblemColor", SrgbToLinear( <emblemColor[0], emblemColor[1], emblemColor[2]> / 255.0 ), emblemColor[3] / 255.0 )*/
 
-		//
-		//
-		//
-		//
-		//
-		//
-		//
-
 		return
 	}
 }
@@ -993,8 +981,6 @@ void function UpdateLastPlayedButtons()
 		UpdateLastSquadDpadNav()
 	}
 
-	//
-
 	ToolTipData toolTipData0
 	toolTipData0.tooltipStyle = eTooltipStyle.BUTTON_PROMPT
 
@@ -1057,25 +1043,19 @@ bool function CanActivateReadyButton()
 	if ( IsConnectingToMatch() )
 		return false
 
-	//
-	//
+	// just checking the if it's the lobby menu broke the progressive dowload dialog box.
+	// It tries to run ReadyButtonActivate() from inside the callback of the ConfirmDialog... but it would fail since the active menu was still the dialog.
 	if ( GetActiveMenu() == GetMenu( "ModeSelectDialog" ) )
 		return false
 
 	bool isReady = GetConVarBool( "party_readyToSearch" )
 
-	//
+	// always allow unready
 	if ( isReady )
 		return true
 
 	if ( !Lobby_IsPlaylistAvailable( GetSelectedPlaylist() ) )
 		return false
-
-
-	#if(false)
-
-
-#endif
 
 	return true
 }
@@ -1121,13 +1101,6 @@ int function Lobby_GetPlaylistState( string playlistName )
 
 string function Lobby_GetPlaylistStateString( int playlistState )
 {
-	#if(false)
-
-
-
-
-#endif
-
 	return playlistStateMap[playlistState]
 }
 
@@ -1141,7 +1114,6 @@ void function UpdateReadyButton()
 	string buttonDescText
 	float buttonDescFontHeight = 0.0
 
-	#if(true)
 		float timeRemaining = 0
 		if ( file.currentMaxMatchmakingDelayEndTime > 0 )
 			timeRemaining = file.currentMaxMatchmakingDelayEndTime - Time()
@@ -1171,31 +1143,8 @@ void function UpdateReadyButton()
 
 			HudElem_SetRuiArg( file.readyButton, "expireTime", RUI_BADGAMETIME, eRuiArgType.GAMETIME )
 		}
-	#elseif(false)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
-
-
-	HudElem_SetRuiArg( file.readyButton, "isLeader", isLeader ) //
+	HudElem_SetRuiArg( file.readyButton, "isLeader", isLeader ) // TEMP
 	HudElem_SetRuiArg( file.readyButton, "isReady", isReady )
 	HudElem_SetRuiArg( file.readyButton, "buttonText", Localize( buttonText ) )
 	HudElem_SetRuiArg( file.readyButton, "buttonDescText", buttonDescText )
@@ -1427,7 +1376,7 @@ void function ReadyButton_OnActivate( var button )
 			data.noText = ["#TEXTURE_STREAM_WAIT", "#TEXTURE_STREAM_WAIT_PC"]
 			if ( GetGameFullyInstalledProgress() >= 1 && HasNonFullyInstalledAssetsLoaded() )
 			{
-				//
+				// hd textured fully loaded, requires disconnect to use
 				data.headerText = "#TEXTURE_STREAM_REBOOT_HEADER"
 				data.messageText = "#TEXTURE_STREAM_REBOOT_MESSAGE"
 				data.yesText = ["#TEXTURE_STREAM_REBOOT", "#TEXTURE_STREAM_REBOOT_PC"]
@@ -1438,22 +1387,22 @@ void function ReadyButton_OnActivate( var button )
 			{
 				if ( GetGameFullyInstalledProgress() >= 1 && HasNonFullyInstalledAssetsLoaded() )
 				{
-					//
+					// hd textured fully loaded, should we return to the main menu?
 					if ( result == eDialogResult.YES )
 					{
-						//
+						// hd textured fully loaded, return to the main menu
 						ClientCommand( "disconnect" )
 						return
 					}
 				}
 				else if ( result != eDialogResult.YES )
 				{
-					//
+					// still downloading HD textures, elected to wait.
 					return
 
 				}
 
-				//
+				// play without HD textures
 				ReadyButtonActivate()
 			}
 
@@ -1505,12 +1454,12 @@ void function InviteFriendsButton_OnActivate( var button )
 	if ( Hud_IsLocked( button ) )
 		return
 
-	#if(PC_PROG)
+	#if PC_PROG
 		if ( !MeetsAgeRequirements() )
 		{
 			ConfirmDialogData dialogData
-			dialogData.headerText = "#UNAVAILABLE"
-			dialogData.messageText = "#ORIGIN_UNDERAGE_ONLINE"
+			dialogData.headerText   = "#UNAVAILABLE"
+			dialogData.messageText  = "#ORIGIN_UNDERAGE_ONLINE"
 			dialogData.contextImage = $"ui/menu/common/dialog_notice"
 
 			OpenOKDialogFromData( dialogData )
@@ -1533,8 +1482,8 @@ void function InviteLastPlayedButton_OnActivate( var button )
 		if ( !MeetsAgeRequirements() )
 		{
 			ConfirmDialogData dialogData
-			dialogData.headerText = "#UNAVAILABLE"
-			dialogData.messageText = "#ORIGIN_UNDERAGE_ONLINE"
+			dialogData.headerText   = "#UNAVAILABLE"
+			dialogData.messageText  = "#ORIGIN_UNDERAGE_ONLINE"
 			dialogData.contextImage = $"ui/menu/common/dialog_notice"
 
 			OpenOKDialogFromData( dialogData )
@@ -1662,7 +1611,7 @@ void function InviteRoomButton_OnActivate( var button )
 
 	if ( !DoesCurrentCommunitySupportInvites() )
 	{
-		//
+		//OnBrowseNetworksButton_Activate( button )
 		return
 	}
 
@@ -1690,20 +1639,13 @@ void function UpdatePlayPanelGRXDependantElements()
 
 void function UpdateMiniPromoPinning()
 {
-	//
-	//
-	//
-	//
-	//
-	//
-
 	var miniPromoButton = Hud_GetChild( file.panel, "MiniPromo" )
 
 	array<var> pinCandidates
 	pinCandidates.append( Hud_GetChild( file.panel, "AllChallengesButton" ) )
 	array<var> challengeButtons = GetLobbyChallengeButtons()
 	challengeButtons.reverse()
-	pinCandidates.extend( challengeButtons ) //
+	pinCandidates.extend( challengeButtons )
 	pinCandidates.append( Hud_GetChild( file.panel, "TopRightContentAnchor" ) )
 
 	var anchor = Hud_GetChild( file.panel, "TopRightContentAnchor" )
@@ -1792,7 +1734,6 @@ void function UpdateLootBoxButton( var button, array<ItemFlavor> specificPackFla
 
 	Hud_SetLocked( button, lootBoxCount == 0 )
 
-	//
 	Hud_SetEnabled( button, lootBoxCount > 0 )
 }
 
@@ -1815,22 +1756,17 @@ bool function ChatroomIsVisibleAndNotFocused()
 
 bool function CanInvite()
 {
-	#if(false)
-
-
-#endif
-
 	if ( GetParty().amIInThis == false )
 		return false
 
 	if ( GetParty().numFreeSlots == 0 )
 		return false
 
-	#if(DURANGO_PROG)
+	#if DURANGO_PROG
 		return (GetMenuVarBool( "isFullyConnected" ) && GetMenuVarBool( "DURANGO_canInviteFriends" ) && GetMenuVarBool( "DURANGO_isJoinable" ))
-	#elseif(PS4_PROG)
+	#elseif PS4_PROG
 		return GetMenuVarBool( "PS4_canInviteFriends" )
-	#elseif(PC_PROG)
+	#elseif PC_PROG
 		return (GetMenuVarBool( "isFullyConnected" ) && GetMenuVarBool( "ORIGIN_isEnabled" ) && GetMenuVarBool( "ORIGIN_isJoinable" ))
 	#endif
 }
@@ -1866,23 +1802,23 @@ void function OnRemoteMatchInfoUpdated()
 	if ( matchInfo.playlist == "" )
 		return
 
+	//Party party = GetParty()
+	//foreach ( partyMember in party.members )
+	//{
+	//	var button = GetPartyMemberButton( partyMember.uid )
+	//	if ( button == null )
+	//		continue
 	//
+	//	bool memberInMatch = false
+	//	foreach ( clientInfo in matchInfo.clients )
+	//	{
+	//		if ( clientInfo.name == partyMember.name ) // TODO: UID or something better... but that doesn't exist in the matchInfo data
+	//			memberInMatch = true
+	//	}
 	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
+	//	var rui = Hud_GetRui( button )
+	//	RuiSetBool( rui, "inMatch", memberInMatch )
+	//}
 }
 
 
@@ -1983,7 +1919,7 @@ void function Lobby_UpdatePlayPanelPlaylists()
 	if ( AreWeMatchmaking() )
 		return
 
-	//
+	//if ( !file.playlists.contains( file.selectedPlaylist ) )
 	string compareString = "#MATCHMAKING_LOADING"
 	string mmStatus     = GetMyMatchmakingStatus()
 	if ( mmStatus.len() >= compareString.len() && mmStatus.slice( 0, compareString.len() ) == compareString )
@@ -2241,7 +2177,7 @@ void function ShowMatchmakingDelayDialog()
 			{
 				bannedPartyMembers.append( member )
 
-				if ( GetPlayerUID() == userInfo.uid ) //
+				if ( GetPlayerUID() == userInfo.uid )
 				{
 					amIbanned = true
 				}
@@ -2271,7 +2207,7 @@ void function ShowMatchmakingDelayDialog()
 	else
 	{
 		file.haveShownPartyMemberMatchmakingDelay = true
-		switch( bannedPartyMembers.len() ) //
+		switch( bannedPartyMembers.len() )
 		{
 			case 1:
 				dialogData.headerText = "#RANKED_ONE_PARTY_MEMBER_ABANDON_PENALTY_HEADER"
@@ -2365,7 +2301,7 @@ void function Ranked_OnLevelInit()
 	file.haveShownPartyMemberMatchmakingDelay = false
 	file.currentMaxMatchmakingDelayEndTime = -1
 
-	if ( !file.rankedInitialized ) //
+	if ( !file.rankedInitialized )
 	{
 		AddCallbackAndCallNow_UserInfoUpdated( Ranked_OnUserInfoUpdated )
 		file.rankedInitialized = true
@@ -2521,7 +2457,6 @@ void function BP_PopupThink( var popup )
 void function OnClickBPPopup( var button )
 {
 	TabData tabData = GetTabDataForPanel( Hud_GetParent( file.panel ) )
-	//
 	AdvanceMenu( GetMenu( "PassPurchaseMenu" ) )
 	Hud_Hide( button )
 }

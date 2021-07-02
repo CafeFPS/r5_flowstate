@@ -12,7 +12,7 @@ struct {
 
 } file
 
-void function InitModeSelectDialog( var newMenuArg ) //
+void function InitModeSelectDialog( var newMenuArg )
 {
 	var menu = GetMenu( "ModeSelectDialog" )
 	file.menu = menu
@@ -33,13 +33,13 @@ void function InitModeSelectDialog( var newMenuArg ) //
 
 void function OnOpenModeSelectDialog()
 {
-	//
+	// TEMP START
 	foreach ( button, playlistName in file.buttonToMode )
 	{
 		Hud_RemoveEventHandler( button, UIE_CLICK, OnModeButton_Activate )
 	}
 	file.buttonToMode.clear()
-	//
+	// TEMP END
 
 	var ownerButton = GetModeSelectButton()
 
@@ -57,8 +57,6 @@ void function OnOpenModeSelectDialog()
 		if ( i == 0 )
 		{
 			int buttonHeight = Hud_GetHeight( button )
-			//
-			//
 			int popupHeight = buttonHeight * playlists.len()
 			Hud_SetPos( file.modeSelectPopup, ownerPos.x, ownerPos.y - popupHeight )
 			Hud_SetSize( file.modeSelectPopup, ownerSize.width, popupHeight )
@@ -84,7 +82,7 @@ void function OnCloseModeSelectDialog()
 void function ModeButton_Init( var button, string playlistName )
 {
 	var lobbyModeSelectButton = GetModeSelectButton()
-	//
+	//Assert( Hud_GetWidth( lobbyModeSelectButton ) == Hud_GetWidth( button ), "" + Hud_GetWidth( lobbyModeSelectButton ) + " != " + Hud_GetWidth( button ) )
 
 	InitButtonRCP( button )
 	var rui = Hud_GetRui( button )
@@ -105,7 +103,7 @@ void function ModeButton_Init( var button, string playlistName )
 	else
 	{
 		ToolTipData toolTipData
-		toolTipData.titleText = "" //
+		toolTipData.titleText = "" //name
 		toolTipData.descText = GetPlaylistVarString( playlistName, "description", "#HUD_UNKNOWN" )
 
 		Hud_SetToolTipData( button, toolTipData )

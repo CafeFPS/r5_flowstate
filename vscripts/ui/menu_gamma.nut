@@ -11,7 +11,7 @@ struct {
 	bool registeredAcceptButtonPress = false
 } file
 
-void function InitGammaMenu( var newMenuArg ) //
+void function InitGammaMenu( var newMenuArg )
 {
 	var menu = GetMenu( "GammaMenu" )
 	file.menu = menu

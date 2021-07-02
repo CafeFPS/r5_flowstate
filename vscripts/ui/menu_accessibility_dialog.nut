@@ -17,7 +17,7 @@ struct {
 	bool[eAccessibilityHint._COUNT] hasPlayed
 } file
 
-void function InitAccessibilityDialog( var newMenuArg ) //
+void function InitAccessibilityDialog( var newMenuArg )
 {
 	var menu = GetMenu( "AccessibilityDialog" )
 	file.menu = menu
@@ -31,7 +31,7 @@ void function InitAccessibilityDialog( var newMenuArg ) //
 	SetupAccessibilityButton( Hud_GetChild( menu, "SwchSubtitlesSize" ), "#SUBTITLE_SIZE", "#OPTIONS_MENU_SUBTITLE_SIZE_DESC" )
 	SetupAccessibilityButton( Hud_GetChild( menu, "SwchAccessibility" ), "#MENU_CHAT_ACCESSIBILITY", "#OPTIONS_MENU_ACCESSIBILITY_DESC" )
 	SetupAccessibilityButton( Hud_GetChild( menu, "SwchChatSpeechToText" ), "#MENU_CHAT_SPEECH_TO_TEXT", "#OPTIONS_MENU_CHAT_SPEECH_TO_TEXT_DESC" )
-	#if(PC_PROG)
+	#if PC_PROG
 		SetupAccessibilityButton( Hud_GetChild( menu, "SwchChatTextToSpeech" ), "#MENU_CHAT_TEXT_TO_SPEECH", "#OPTIONS_MENU_CHAT_TEXT_TO_SPEECH_DESC" )
 	#endif
 
@@ -45,7 +45,7 @@ void function InitAccessibilityDialog( var newMenuArg ) //
 
 void function OnOpenMenu()
 {
-	#if(DURANGO_PROG)
+	#if DURANGO_PROG
 		HudElem_SetRuiArg( file.contentRui, "messageText", Localize( "#SIGNED_IN_AS_N", Durango_GetGameDisplayName() ) )
 	#else
 		HudElem_SetRuiArg( file.contentRui, "messageText", "#MENU_ACCESSIBILITY_DESC" )

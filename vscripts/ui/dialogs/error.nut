@@ -10,7 +10,7 @@ struct
 	string messageText
 } file
 
-void function InitErrorDialog( var newMenuArg ) //
+void function InitErrorDialog( var newMenuArg )
 {
 	var menu = GetMenu( "ErrorDialog" )
 	file.menu = menu

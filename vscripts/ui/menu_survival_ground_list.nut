@@ -56,7 +56,7 @@ void function OnQuickSwapMenuCommand( var panel, var button, int index, string c
 {
 }
 
-void function InitGroundListMenu( var newMenuArg ) //
+void function InitGroundListMenu( var newMenuArg )
 {
 	RegisterSignal( "Delayed_SetCursorToObject" )
 	RegisterSignal( "StartGroundItemExtendedUse" )
@@ -156,7 +156,7 @@ void function Delayed_SetCursorToObject( var obj )
 	Signal( uiGlobal.signalDummy, "Delayed_SetCursorToObject" )
 	EndSignal( uiGlobal.signalDummy, "Delayed_SetCursorToObject" )
 
-	wait 0.1 //
+	wait 0.1 // TODO: Why do we need this?
 
 	float width  = 1920
 	float height = 1080
@@ -222,7 +222,7 @@ void function OnGroundItemClick( var panel, var button, int position )
 	if ( file.groundItemUpdateInProgress )
 		return
 
-	//
+	// close quick swap
 	if ( Hud_IsSelected( button ) )
 	{
 		file.groundListSelected = null

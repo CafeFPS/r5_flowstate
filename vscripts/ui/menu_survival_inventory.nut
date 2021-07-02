@@ -58,7 +58,7 @@ struct
 	array<var> inventoryMenus
 } file
 
-void function InitSurvivalInventoryMenu( var newMenuArg ) //
+void function InitSurvivalInventoryMenu( var newMenuArg )
 {
 	var menu = GetMenu( "SurvivalInventoryMenu" )
 	file.menu = menu
@@ -317,7 +317,6 @@ void function SurvivalInventoryMenu_EndUpdate()
 	{
 		SurvivalQuickInventory_OnUpdate()
 
-		//
 		if( !GetDpadNavigationActive() )
 			ForceVGUIFocusUpdate()
 	}

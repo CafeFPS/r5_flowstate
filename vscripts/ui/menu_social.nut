@@ -132,7 +132,7 @@ void function InitSocialMenu( var newMenuArg ) //
 
 	AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 
-	#if(PC_PROG)
+	#if PC_PROG
 		s_socialFile.steamButton = Hud_GetChild( s_socialFile.menu, "SteamLink" )
 		HudElem_SetRuiArg( s_socialFile.steamButton, "icon", $"rui/menu/common/steam_link" )
 		Hud_AddEventHandler( s_socialFile.steamButton, UIE_CLICK, OnSteamLinkButton_Activate )
@@ -149,7 +149,7 @@ void function InitSocialMenu( var newMenuArg ) //
 	GridPanel_SetButtonHandler( s_socialFile.friendGrid, UIE_CLICK, FriendButton_OnActivate )
 	GridPanel_SetButtonHandler( s_socialFile.friendGrid, UIE_CLICKRIGHT, FriendButton_OnJoin )
 	GridPanel_SetKeyPressHandler( s_socialFile.friendGrid, FriendButton_OnKeyPress )
-	//
+	//GridPanel_SetButtonHandler( s_socialFile.friendGrid, UIE_CLICKRIGHT, FriendButton_OnInspect )
 	GridPanel_SetButtonHandler( s_socialFile.friendGrid, UIE_GET_FOCUS, FriendButton_OnGetFocus )
 
 	Hud_SetNavLeft( Hud_GetChild( s_socialFile.friendGrid, "GridButton0x0" ), s_socialFile.myGridButton )
@@ -188,7 +188,7 @@ void function SocialMenuThink( var menu )
 		s_socialFile.nextFriendsListUpdate = Time() + 1.0
 	}
 
-	#if(PC_PROG)
+	#if PC_PROG
 		UpdateSteamButton()
 	#endif
 
@@ -323,7 +323,7 @@ void function SocialMenu_Update()
 		Hud_Show( s_socialFile.gridSpinner )
 
 	if ( !s_socialFile.friendsData.isValid )
-		return //
+		return // TEMP HACK
 
 	s_socialFile.friends.clear()
 	s_socialFile.friends.extend( s_socialFile.friendsData.friends )
@@ -388,13 +388,13 @@ void function BindPageButtons( int numItems, int currentPageIdx )
 	int numButtons = s_socialFile.pageButtons.len()
 
 	int numItemsForRegularPage = numButtons - 2
-	//
+	// -2 buttons because most pages have the first and last button taken by arrows
 
-	//
+	//numItems = 3 * numItemsForRegularPage + 2
 
 	int pageCount = int(ceil( float(numItems - 1 - 1) / float(numItemsForRegularPage) ))
-	//
-	//
+	// -1 item for first page being able to have an extra
+	// -1 item for last page being able to have an extra
 
 	int firstNonArrowButtonIdx
 	int firstItemIdx
@@ -817,12 +817,12 @@ void function OnPartyPrivacyButton_Activate( var button )
 
 	if ( GetConVarString( "party_privacy" ) == "open" )
 	{
-		//
+		//HudElem_SetRuiArg( s_socialFile.partyPrivacyButton, "buttonText", Localize( "#PARTY_PRIVACY_N", Localize( "#SETTING_INVITE") ) )
 		SetConVarString( "party_privacy", "invite" )
 	}
 	else
 	{
-		//
+		//HudElem_SetRuiArg( s_socialFile.partyPrivacyButton, "buttonText", Localize( "#PARTY_PRIVACY_N", Localize( "#SETTING_OPEN") ) )
 		SetConVarString( "party_privacy", "open" )
 	}
 }
@@ -846,7 +846,7 @@ void function OnLastSquadInvitePrivacyButton_Activate( var button )
 	}
 }
 
-#if(PC_PROG)
+#if PC_PROG
 void function UpdateSteamButton()
 {
 	var button = s_socialFile.steamButton
@@ -861,14 +861,14 @@ void function UpdateSteamButton()
 	}
 	else if ( linkStatus == 0 )
 	{
-		//
+		// printt( "account unlinked - prompting to log in!" )
 		Hud_SetLocked( button, false )
 		Hud_Show( button )
 		HudElem_SetRuiArg( s_socialFile.steamButton, "buttonText", "LINK_STEAM_BUTTON" )
 	}
 	else if ( linkStatus == 1 )
 	{
-		//
+		// printt( "account linked - prompting to log out! setting button text to " + GetConVarString( "steam_name" ) )
 		Hud_SetLocked( button, false )
 		Hud_Show( button )
 		HudElem_SetRuiArg( s_socialFile.steamButton, "buttonText", Localize( "#STEAM_ACCOUNT_LINKED", GetConVarString( "steam_name" ) ) )
@@ -876,7 +876,7 @@ void function UpdateSteamButton()
 }
 #endif
 
-#if(PC_PROG)
+#if PC_PROG
 void function OnSteamLinkButton_Activate( var button )
 {
 	int linkStatus = GetSteamAccountStatus();
@@ -1008,7 +1008,7 @@ void function InviteFriend( Friend friend )
 }
 
 
-void function InitInspectMenu( var newMenuArg ) //
+void function InitInspectMenu( var newMenuArg )
 {
 	var menu = GetMenu( "InspectMenu" )
 
@@ -1017,7 +1017,6 @@ void function InitInspectMenu( var newMenuArg ) //
 
 	var statTabs           = Hud_GetChild( menu, "TabsCommon" )
 	var summaryPanel       = Hud_GetChild( menu, "StatsSummaryPanel" )
-	//
 	var seasonSelectButton = Hud_GetChild( menu, "SelectSeasonButton" )
 
 	ShPlayerStatCards_Init()
@@ -1070,7 +1069,7 @@ void function OnUserInfoUpdated( string hardware, string id )
 	{
 		userInfoOrNull = GetUserInfo( s_socialFile.actionFriend.hardware, s_socialFile.actionFriend.id )
 		if ( userInfoOrNull == null )
-			return //
+			return // todo(bm): display spinner
 	}
 
 	thread PreviewFriendCosmetics( isForLocalPlayer, userInfoOrNull )
@@ -1090,24 +1089,6 @@ void function OnUserInfoUpdated( string hardware, string id )
 		HudElem_SetRuiArg( s_inspectFile.statsSeasonButton, "buttonText", s_inspectFile.selectedSeasonName )
 	}
 
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-
 	UpdatePlayerStatsDisplay( GetUIPlayer() )
 }
 
@@ -1124,7 +1105,7 @@ void function InspectMenu_OnClose()
 
 void function OnViewProfile( var button )
 {
-	#if(PC_PROG)
+	#if PC_PROG
 		if ( !Origin_IsOverlayAvailable() )
 		{
 			ConfirmDialogData dialogData
@@ -1186,14 +1167,12 @@ void function OnOpenSeasonSelectDialog()
 	array<ItemFlavor> seasonsAndRankedPeriods = []
 	seasonsAndRankedPeriods.extend( StatCard_GetAvailableSeasonsAndRankedPeriods() )
 
-	//
 	foreach ( ItemFlavor seasonOrRankedPeriod in seasonsAndRankedPeriods )
 	{
 		string guid = ItemFlavor_GetGUIDString( seasonOrRankedPeriod )
 		if ( guid == "SAID01769158912" )
 			seasonsAndRankedPeriods.removebyvalue( seasonOrRankedPeriod )
 	}
-	//
 
 	if ( seasonsAndRankedPeriods.len() == 0 )
 		return
@@ -1313,12 +1292,6 @@ void function UpdatePlayerSeasonBattlePassBadge( entity player, string seasonRef
 	SettingsAssetGUID seasonGUID = ConvertItemFlavorGUIDStringToGUID( seasonRef )
 	ItemFlavor season            = GetItemFlavorByGUID( seasonGUID )
 	ItemFlavor battlePass        = Season_GetBattlePass( season )
-
-	//
-	//
-	//
-	//
-	//
 
 	int battlePassXP = GetPlayerBattlePassXPProgress( ToEHI( player ), battlePass, true )
 

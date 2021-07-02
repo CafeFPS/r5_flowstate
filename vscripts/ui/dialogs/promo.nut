@@ -18,7 +18,7 @@ struct PromoDialogPageData
 
 enum eTransType
 {
-	//
+	// must match TRANSTYPE_* in promo.rui
 	NONE = 0,
 	SLIDE_LEFT = 1,
 	SLIDE_RIGHT = 2,
@@ -50,7 +50,6 @@ bool function OpenPromoDialogIfNew()
 {
 	if( GetConVarBool( "assetdownloads_enabled" ) )
 	{
-		//
 		file.pages = InitPages()
 		RunClientScript( "RequestDownloadedImagePakLoad", GetPromoRpakName(), ePakType.DL_PROMO, Hud_GetChild( file.menu, "ActivePage" ), file.pages[0].imageName )
 		RunClientScript( "RequestDownloadedImagePakLoad", GetPromoRpakName(), ePakType.DL_PROMO, Hud_GetChild( file.menu, "LastPage" ), file.pages[0].imageName )
@@ -123,7 +122,6 @@ void function InitPromoDialog( var newMenuArg ) //
 void function PromoDialog_OpenHijacked( string content )
 {
 	file.hijackContent = content
-	//
 	AdvanceMenu( file.menu )
 }
 
@@ -169,22 +167,17 @@ void function PromoDialog_OnNavigateBack()
 
 void function GoToStoreItem( var button )
 {
-	//
+	// TODO
 }
 
 
 array<PromoDialogPageData> function InitPages()
 {
 	string content = file.hijackContent != null ? expect string( file.hijackContent ) : GetPromoDataLayout()
-	//
-	//
-	//
-	//
 
 	if ( content.find( "<" ) != 0 ) //
 		content = "<p|0||" + content + ">"
 
-	//
 	array< array<string> > matches = RegexpFindAll( content, "<p\\|([^>\\|]*)\\|([^>\\|]*)\\|([^>\\|]*)>" )
 	if ( matches.len() > PROMO_DIALOG_MAX_PAGES )
 	{
@@ -198,13 +191,10 @@ array<PromoDialogPageData> function InitPages()
 	{
 		PromoDialogPageData newPage
 		newPage.imageName = vals[1]
-		//
 		if( !GetConVarBool( "assetdownloads_enabled" ) )
 			newPage.image = GetPromoImage( vals[1] )
 		newPage.title = vals[2]
 		newPage.desc = vals[3]
-		//
-		//
 		pages.append( newPage )
 	}
 

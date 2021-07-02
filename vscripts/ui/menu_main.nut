@@ -11,13 +11,13 @@ struct
 	var subtitle
 	var versionDisplay
 	var signedInDisplay
-	#if(PS4_PROG)
+	#if PS4_PROG
 		bool chatRestrictionNoticeJustHandled = false
-	#endif //
+	#endif // PS4_PROG
 } file
 
 
-void function InitMainMenu( var newMenuArg ) //
+void function InitMainMenu( var newMenuArg )
 {
 	var menu = GetMenu( "MainMenu" )
 	file.menu = menu
@@ -86,15 +86,15 @@ void function OnMainMenu_NavigateBack()
 		return
 	}
 
-	#if(PC_PROG)
+	#if PC_PROG
 		OpenConfirmExitToDesktopDialog()
-	#endif //
+	#endif // PC_PROG
 }
 
 
 int function GetUserSignInState()
 {
-	#if(DURANGO_PROG)
+	#if DURANGO_PROG
 		if ( Durango_InErrorScreen() )
 		{
 			return userSignInState.ERROR
@@ -105,7 +105,7 @@ int function GetUserSignInState()
 		}
 		else if ( !Console_IsSignedIn() && !Console_SkippedSignIn() )
 		{
-			//
+			//printt( "Console_IsSignedIn():", Console_IsSignedIn(), "Console_SkippedSignIn:", Console_SkippedSignIn() )
 			return userSignInState.SIGNED_OUT
 		}
 
@@ -117,7 +117,7 @@ int function GetUserSignInState()
 
 void function UpdateSignedInState()
 {
-	#if(DURANGO_PROG)
+	#if DURANGO_PROG
 		if ( Console_IsSignedIn() )
 		{
 			Hud_SetText( file.signedInDisplay, Localize( "#SIGNED_IN_AS_N", Durango_GetGameDisplayName() ) )
@@ -140,7 +140,7 @@ void function AttemptLaunch()
 		return
 	Assert( uiGlobal.launching == eLaunching.MULTIPLAYER ||	uiGlobal.launching == eLaunching.MULTIPLAYER_INVITE )
 
-	#if(CONSOLE_PROG)
+	#if CONSOLE_PROG
 		if ( !IsEULAAccepted() )
 		{
 			if ( GetActiveMenu() == GetMenu( "EULADialog" ) )
@@ -155,17 +155,17 @@ void function AttemptLaunch()
 			OpenEULADialog( false )
 			return
 		}
-	#endif //
+	#endif // CONSOLE_PROG
 
-	#if(PS4_PROG)
-		//
-		//
+	#if PS4_PROG
+		// If profile has chat restriction enabled show notice
+		// TODO: The implementation of this would be much better if we could check for the need to show it separately from actually showing it.
 		if ( !file.chatRestrictionNoticeJustHandled )
 		{
 			thread PS4_ChatRestrictionNotice()
 			return
 		}
-	#endif //
+	#endif // PS4_PROG
 
 	const int CURRENT_INTRO_VIDEO_VERSION = 3
 	if ( (GetIntroViewedVersion() < CURRENT_INTRO_VIDEO_VERSION) || (InputIsButtonDown( KEY_LSHIFT ) && InputIsButtonDown( KEY_LCONTROL ))  || (InputIsButtonDown( BUTTON_TRIGGER_LEFT_FULL ) && InputIsButtonDown( BUTTON_TRIGGER_RIGHT_FULL )) )
@@ -184,13 +184,13 @@ void function AttemptLaunch()
 	StartSearchForPartyServer()
 
 	uiGlobal.launching = eLaunching.FALSE
-	#if(PS4_PROG)
+	#if PS4_PROG
 		file.chatRestrictionNoticeJustHandled = false
-	#endif //
+	#endif // PS4_PROG
 }
 
 
-#if(PS4_PROG)
+#if PS4_PROG
 void function PS4_ChatRestrictionNotice()
 {
 	Plat_ShowChatRestrictionNotice()
@@ -200,4 +200,4 @@ void function PS4_ChatRestrictionNotice()
 	file.chatRestrictionNoticeJustHandled = true
 	PrelaunchValidateAndLaunch()
 }
-#endif //
+#endif // PS4_PROG

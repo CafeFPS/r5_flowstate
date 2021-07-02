@@ -27,7 +27,7 @@ struct {
 	string friendlyOrEnemy = "friendly"
 } file
 
-void function InitReportPlayerDialog( var newMenuArg ) //
+void function InitReportPlayerDialog( var newMenuArg )
 {
 	var menu = GetMenu( "ReportPlayerDialog" )
 	file.menu = menu
@@ -209,7 +209,7 @@ array<string> function GetHarassmentReportReasons()
 }
 
 
-void function InitReportReasonPopup( var newMenuArg ) //
+void function InitReportReasonPopup( var newMenuArg )
 {
 	var reportReasonMenu = GetMenu( "ReportPlayerReasonPopup" )
 	file.reportReasonMenu = reportReasonMenu

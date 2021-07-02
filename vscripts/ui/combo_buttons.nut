@@ -44,7 +44,7 @@ global struct ComboStruct
 	bool sharedColumnFocus = false
 	int numRows = 0
 
-	//
+	// NOTE: there's a bug in script handling that necessitates rows/columns being flipped here
 	ComboButtonData[MAX_COMBO_BUTTON_COLS][MAX_COMBO_BUTTON_ROWS] comboButtonGrid
 	var[MAX_COMBO_BUTTON_ROWS] rowHeaders
 	int[MAX_COMBO_BUTTON_ROWS] defaultColumnIndex
@@ -112,7 +112,7 @@ void function ComboButtons_Finalize( ComboStruct comboStruct )
 				Hud_SetY( button, -(comboStruct.expandedHeight * row) )
 			}
 
-			//
+			// save off the "auto_wide_tocontents" size of the button
 			Hud_SetBaseSize( button, Hud_GetWidth( button ), Hud_GetHeight( button ) )
 
 			if ( col == MAX_COMBO_BUTTON_COLS - 1 || comboStruct.comboButtonGrid[row][col+1].button == null )
@@ -156,14 +156,14 @@ void function ComboButtons_Finalize( ComboStruct comboStruct )
 			}
 		}
 
-//
+//		Assert( minCol == maxCol )
 	}
 
 	array<var> elements = GetElementsByClassname( GetParentMenu( comboStruct.menu ), "ComboButtonAlways" )
 	foreach ( element in elements )
 	{
 		var parentButton = Hud_GetParent( element )
-		if ( !("alwaysChildren" in parentButton.s) ) //
+		if ( !("alwaysChildren" in parentButton.s) ) // unused buttons don't have this initialized
 			continue
 
 		parentButton.s.alwaysChildren.append( element )
@@ -435,8 +435,8 @@ void function OnComboButtonGetFocus( var button )
 				Hud_SetYOverTime( gridbutton, yOffset, TRANSITION_ANIM_TIME, INTERPOLATOR_DEACCEL )
 			}
 
-			//
-			//
+			// ugly for now; there's no SetHeightOverTime() and ScaleOverTime messes up the width
+			// alpha fade in doesn't work with the color overrides
 			if ( rowIndex == row )
 			{
 				gridbutton.SetHeight( comboStruct.expandedHeight )
@@ -477,38 +477,38 @@ void function OnComboButtonGetFocus( var button )
 	UpdateButtonNav( comboStruct )
 }
 /*
+void function UdpateButtonAnim( var button, float duration, int newHeight, int newAlpha )
+{
+	EndSignal( uiGlobal.signalDummy, "UdpateButtonHeight" )
 
+	OnThreadEnd(
+		function() : ( button, newHeight, newAlpha )
+		{
+			Hud_SetPanelAlpha( button, newAlpha )
+			Hud_SetHeight( button, newHeight )
+		}
+	)
 
+	int startHeight = Hud_GetHeight( button )
+	int startAlpha = Hud_GetPanelAlpha( button )
 
+	float heightOffset = 0.0
+	if ( startHeight > newHeight )
+		heightOffset += cbAnimOffset
 
+	float startTime = Time()
+	float height = GraphCapped( Time(), startTime, startTime + duration, startHeight, newHeight + heightOffset )
+	while ( height != newHeight )
+	{
+		float height = GraphCapped( Time(), startTime, startTime + duration, startHeight, newHeight + heightOffset )
+		Hud_SetHeight( button, height )
 
+		float alpha = GraphCapped( Time(), startTime, startTime + duration, startAlpha, newAlpha )
+		Hud_SetPanelAlpha( button, alpha )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		WaitFrame()
+	}
+}
 */
 
 void function OnComboButtonLoseFocus( var button )
@@ -523,16 +523,16 @@ void function OnComboButtonLoseFocus( var button )
 
 	UpdateButtonNav( comboStruct )
 	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
+	//if ( rowIndex == 0 )
+	//{
+	//	var rui = Hud_GetRui( comboStruct.rowHeaders[0] )
+	//	RuiSetBool( rui, "hasFocus", true )
+	//}
+	//else
+	//{
+	//	var rui = Hud_GetRui( comboStruct.rowHeaders[0] )
+	//	RuiSetBool( rui, "hasFocus", true )
+	//}
 }
 
 
@@ -610,8 +610,8 @@ void function UpdateButtonNav( ComboStruct comboStruct )
 				{
 					comboStruct.comboButtonGrid[row][col].button.SetNavRight( comboStruct.navRightButton )
 
-					//
-					//
+					//comboStruct.navRightButton.SetNavLeft( comboStruct.comboButtonGrid[row][col].button )
+					//comboStruct.navRightButton.SetNavLeft( comboStruct.comboButtonGrid[0][0].button )
 				}
 			}
 		}

@@ -323,9 +323,9 @@ void function SurvivalQuickInventory_OnUpdate()
 
 	UpdateBackpackDpadNav()
 
-//
-//
-//
+// -----------------------------------------------------------------
+// CONDENSE UNUSED ATTACHMENTS
+// -----------------------------------------------------------------
 	array<string> attachmentSuffix =
 	[
 		"Barrel",
@@ -365,7 +365,7 @@ void function SurvivalQuickInventory_OnUpdate()
 			prevButton = button
 		}
 	}
-//
+// -----------------------------------------------------------------
 }
 
 
@@ -512,21 +512,19 @@ void function SurvivalQuickInventory_UpdateEquipmentForActiveWeapon( int activeW
 
 		Hud_SetSelected( file.equipmentButtons[slotName], selected )
 
-		//
-		//
-		//
-		//
-		//
-		//
+		//if ( activeWeaponSlot != -1 )
+		//{
+		//	string pinTo = selected ?  "MainWeaponAnchor" : "StowedWeaponAnchor"
+		//	float scale  = selected ?  1.0 : INACTIVE_WEAPON_SCALE
+		//	Hud_SetPinSibling( file.equipmentButtons[slotName], pinTo )
+		//}
 	}
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
+	//		foreach ( point in GetAllAttachmentPoints() )
+	//		{
+	//			ScaleButton( slotName + "_" + point, scale )
+	//		}
+	//	}
+	//}
 }
 
 
@@ -551,8 +549,6 @@ void function OnReskinButtonClick( var button )
 
 	ClientCommand( "WeaponCosmeticsApply " + weaponSlot )
 }
-
-
 
 void function ScaleButton( string equipmentSlot, float scale )
 {
@@ -944,7 +940,7 @@ LootData function GetLootDataFromButton( var button, int index )
 {
 	LootData data
 
-	//
+	// this function will set file.tempButtonRef
 	RunClientScript( "UICallback_GetLootDataFromButton", button, index )
 
 	if ( SURVIVAL_Loot_IsRefValid( file.tempButtonRef ) )
@@ -957,7 +953,7 @@ LootData function GetLootDataFromButton( var button, int index )
 
 bool function MouseDragAllowed( var panel, var button, var index )
 {
-	//
+	// sets file.tempBoolMouseDragAllowed
 	RunClientScript( "UICallback_GetMouseDragAllowedFromButton", button, index )
 	return file.tempBoolMouseDragAllowed
 }

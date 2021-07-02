@@ -14,7 +14,7 @@ struct
 	string warningString = "#ARE_YOU_SURE_YOU_WANT_TO_LEAVE"
 } file
 
-void function InitConfirmLeaveMatchDialog( var newMenuArg ) //
+void function InitConfirmLeaveMatchDialog( var newMenuArg )
 {
 	var menu = GetMenu( "ConfirmLeaveMatchDialog" )
 	file.menu = menu
@@ -43,7 +43,7 @@ void function Confirm( var button )
 
 		if ( file.playerCanBeRespawned && !file.hasShownRespawnWarningString )
 		{
-			file.nextAllowConfirmTime = Time() + 0.5 //
+			file.nextAllowConfirmTime = Time() + 0.5 // Anti A spam
 			file.hasShownRespawnWarningString = true
 			EmitUISound( "ui_ingame_markedfordeath_playermarked" )
 			SetWarningString( "#YOU_CAN_STILL_BE_RESPAWNED" )

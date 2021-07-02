@@ -9,7 +9,7 @@ global function InitGamepadLayoutMenu
 global function GetGamepadButtonLayoutName
 global function RefreshButtonBinds
 
-//
+//script_ui AdvanceMenu( GetMenu( "GamepadLayoutMenu" ) )
 
 
 struct ButtonVars
@@ -150,7 +150,7 @@ void function InitGamepadLayoutMenu( var newMenuArg ) //
 	InitButtonRCP( Hud_GetChild( file.menu, "DialogFrame" ) )
 
 
-	//
+	// Preset binds:
 	for ( int idx = 0; idx < PRESETS_COUNT; ++idx )
 	{
 		string btnName = "BtnPreset" + format( "%d", idx )
@@ -166,10 +166,10 @@ void function InitGamepadLayoutMenu( var newMenuArg ) //
 		SetButtonRuiText( button, PRESET_NAMES[idx] )
 	}
 
-	//
+	////
 	file.description = Hud_GetChild( menu, "lblControllerDescription" )
 
-	//
+	////
 	var customBtn = Hud_GetChild( menu, "BtnCustomizeLayout" )
 	SetButtonRuiText( customBtn, "#GAMEPAD_CUSTOM" )
 	HudElem_SetRuiArg( customBtn, "hideBlur", true )
@@ -371,21 +371,21 @@ void function UpdateInfoText( int layoutIdx )
 	}
 }
 
-//
-//
-//
-//
-//
-//
-//
-//
+//void function OnBackButton_FocusedOn( var button )
+//{
+//	SetInfoText( "" );
+//}
+//void function OnDefaultsButton_FocusedOn( var button )
+//{
+//	SetInfoText( "" );
+//}
 
 bool function AnyBindButtonHasFocus()
 {
 	if ( file.pilotBindFocusIndex >= 0 )
 		return true
-	//
-	//
+	//if ( file.titanBindFocusIndex >= 0 )
+	//	return true
 
 	return false
 }
@@ -413,10 +413,10 @@ void function OnOpenGamepadLayoutMenu()
 {
 	file.listeningForButtonBind = false
 	file.pilotBindFocusIndex = -1
-	//
+	//file.titanBindFocusIndex = -1
 	RegisterBindCallbacks()
 
-	//
+	// Update bind text. Some can change if toggle or hold settings change.
 	foreach ( idx, button in file.customBindButtonsPilot )
 	{
 		var buttonRui = Hud_GetRui( button )
@@ -483,7 +483,7 @@ void function SetBindPromptForPilot( var button )
 	int buttonID       = int( Hud_GetScriptID( button ) )
 	ButtonVars bv      = GetBindDisplayName( CUSTOM_BIND_ALIASES_PILOT[buttonID] )
 	string displayName = (bv.pilot == "") ? bv.common : bv.pilot
-	//
+	//SetInfoText( Localize( "#GAMEPAD_BUTTON_ASSIGN_PROMPT_PILOT", Localize( displayName ) ) );
 }
 
 
@@ -492,7 +492,7 @@ void function SetUnbindablePromptForPilot( var button )
 	int buttonID       = int( Hud_GetScriptID( button ) )
 	ButtonVars bv      = GetBindDisplayName( CUSTOM_BIND_ALIASES_PILOT[buttonID] )
 	string displayName = (bv.pilot == "") ? bv.common : bv.pilot
-	//
+	//SetInfoText( Localize( "#GAMEPAD_BUTTON_CANNOT_ASSIGN_PROMPT", Localize( displayName ) ) );
 }
 
 void function BindButtonPilot_Clicked( var button )
@@ -582,7 +582,7 @@ ButtonVars function GetBindDisplayName( string bind )
 
 		case "scriptcommand4":
 			displayName.common = ""
-			displayName.pilot = "#USE_HEALTH_KIT"        //
+			displayName.pilot = "#USE_HEALTH_KIT"        //"#ACTIVATE_BOOST"
 			displayName.titan = ""
 			break
 
@@ -683,8 +683,8 @@ ButtonVars function GetBindDisplayName( string bind )
 
 		case "offhand3":
 			displayName.common = ""
-			displayName.pilot = "Team Comms"        //
-			displayName.titan = "Team Comms"        //
+			displayName.pilot = "Team Comms"        // "#TITANFALL_TITAN_AI_MODE"
+			displayName.titan = "Team Comms"        // "#TITAN_CORE_CONTROLS"
 			break
 
 		case "offhand4":
@@ -940,7 +940,6 @@ void function RestoreDefaultsButton( var button )
 
 	SetConVarToDefault( "gamepad_custom_pilot" )
 	SetConVarToDefault( "gamepad_button_layout" )
-	//
 
 	Hud_SetFocused( Hud_GetChild( file.menu, "BtnPreset0" ) )
 	SetCustomGamepadLayoutVisible( false )
@@ -1021,28 +1020,25 @@ void function BindCatchCommon( int buttonEnum )
 		return
 	}
 
+	//if ( file.titanBindFocusIndex >= 0 )
+	//{
+	//	int buttonIndex = GetButtonIndexForButtonEnum( buttonEnum )
+	//	bool didAnything = ChangeCustomGamepadButtonIndexToCommandIndex_Titan( buttonIndex, file.titanBindFocusIndex )
+	//	if ( didAnything )
+	//	{
+	//		RefreshButtonBinds()
+	//		if ( buttonEnum != BUTTON_A )
+	//			EmitUISound( "menu_accept" )
+	//	}
 	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
+	//	return
+	//}
 }
 
-//
 const table<string, string> GAMEPAD_BIND_CONFLICTS =
 {
-	//
 	["offhand1"] 	= "ping",
 	["ping"]		= "offhand1",
-	//
 	["zoom"] 		= "attack,speed",
 	["attack"] 		= "zoom",
 	["speed"] 		= "zoom",

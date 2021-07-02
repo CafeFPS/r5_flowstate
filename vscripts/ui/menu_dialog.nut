@@ -42,7 +42,7 @@ void function InitDialogCommon( var menu )
 }
 
 
-void function InitDialogMenu( var newMenuArg ) //
+void function InitDialogMenu( var newMenuArg )
 {
 	var menu = GetMenu( "Dialog" )
 
@@ -51,7 +51,7 @@ void function InitDialogMenu( var newMenuArg ) //
 }
 
 
-void function InitDataCenterDialogMenu( var newMenuArg ) //
+void function InitDataCenterDialogMenu( var newMenuArg )
 {
 	var menu = GetMenu( "DataCenterDialog" )
 
@@ -60,7 +60,7 @@ void function InitDataCenterDialogMenu( var newMenuArg ) //
 }
 
 
-void function InitConnectingDialog( var newMenuArg ) //
+void function InitConnectingDialog( var newMenuArg )
 {
 	var menu = GetMenu( "ConnectingDialog" )
 
@@ -252,7 +252,7 @@ void function OpenDialog( DialogData dialogData )
 	RuiSetImage( Hud_GetRui( frameElem ), "basicImage", $"rui/menu/common/dialog_gradient" )
 	RuiSetFloat3( Hud_GetRui( frameElem ), "basicImageColor", <1, 1, 1> )
 
-	//
+	// TODO: Add support for string vars? Was 4 vars before.
 	if ( Hud_HasChild( menu, "DialogHeader" ) )
 		Hud_SetText( Hud_GetChild( menu, "DialogHeader" ), dialogData.header )
 
@@ -332,7 +332,7 @@ void function OpenDialog( DialogData dialogData )
 	int defaultButtonHeight = int( ContentScaledY( 40 ) )
 	int buttonsHeight       = defaultButtonHeight * numChoices
 
-	//
+	// Setup each button: hide, or set text and show
 	foreach ( index, button in buttons )
 	{
 		var ruiButton = Hud_GetRui( button )
@@ -358,7 +358,7 @@ void function OpenDialog( DialogData dialogData )
 		}
 	}
 
-	//
+	// Get footer elems and fill in with footerData
 	array<var> ruiFooterElems = GetElementsByClassname( menu, "LeftRuiFooterButtonClass" )
 	foreach ( elem in ruiFooterElems )
 	{
@@ -374,7 +374,7 @@ void function OpenDialog( DialogData dialogData )
 		}
 	}
 
-	//
+	// someday this will be an array
 	var dialogFooter = Hud_GetChild( menu, "DialogFooterButtons" )
 	var PCBackButton = Hud_GetChild( dialogFooter, "MouseBackFooterButton" )
 	if ( dialogData.showPCBackButton )
@@ -501,30 +501,9 @@ void function LeaveDialog()
 	dialogData.image = $"ui/menu/common/dialog_error"
 	dialogData.darkenBackground = true
 
-#if(false)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
 	{
-		//
-		if ( IsLobby() ) //
+		//int lobbyType = GetLobbyTypeScript()
+		if ( IsLobby() ) // && (lobbyType != eLobbyType.MATCH) ) // SOLO, PARTY_LEADER, PARTY_MEMBER, PRIVATE_MATCH
 		{
 			AddDialogButton( dialogData, "#CANCEL_NO" )
 
@@ -592,24 +571,6 @@ void function LeaveMatchWithDialog()
 }
 
 
-#if(false)
-
-
-
-
-
-#endif
-
-
-#if(false)
-
-
-
-
-
-#endif
-
-
 void function ShowLeavingDialog( string header )
 {
 	DialogData dialogData
@@ -657,9 +618,9 @@ void function OpenDataCenterDialog( var button )
 	dialogData.menu = GetMenu( "DataCenterDialog" )
 	dialogData.header = Localize( "#DATA_CENTERS", GetDatacenterSelectedReasonSymbol() )
 
-	#if(PC_PROG)
+	#if PC_PROG
 		AddDialogButton( dialogData, "#DISMISS" )
-	#endif //
+	#endif // PC_PROG
 
 	AddDialogFooter( dialogData, "#A_BUTTON_SELECT" )
 	AddDialogFooter( dialogData, "#B_BUTTON_DISMISS_RUI" )

@@ -54,7 +54,7 @@ void function InitSystemPanelMain( var panel )
 	#endif
 	file.qaFooter = AddPanelFooterOption( panel, LEFT, BUTTON_X, true, "#X_BUTTON_QA", "QA", ToggleOptIn, ShouldDisplayOptInOptions )
 
-	#if(CONSOLE_PROG)
+	#if CONSOLE_PROG
 		AddPanelFooterOption( panel, RIGHT, BUTTON_BACK, false, "#BUTTON_RETURN_TO_MAIN", "", ReturnToMain_OnActivate )
 	#endif
 	AddPanelFooterOption( panel, RIGHT, BUTTON_STICK_RIGHT, true, "#BUTTON_VIEW_CINEMATIC", "#VIEW_CINEMATIC", ViewCinematic, IsLobby )
@@ -155,16 +155,6 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-#if(false)
-
-
-
-
-
-
-
-
-#endif
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
@@ -185,7 +175,7 @@ void function UpdateSystemPanel( var panel )
 		if ( AmIPartyMember() || AmIPartyLeader() && GetPartySize() > 1 )
 			SetButtonData( panel, buttonIndex++, file.leavePartyData[ panel ] )
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		#if(PC_PROG)
+		#if PC_PROG
 			SetButtonData( panel, buttonIndex++, file.exitButtonData[ panel ] )
 		#endif
 	}
@@ -256,14 +246,14 @@ void function OpenSettingsMenu()
 	AdvanceMenu( GetMenu( "MiscMenu" ) )
 }
 
-#if(CONSOLE_PROG)
+#if CONSOLE_PROG
 void function ReturnToMain_OnActivate( var button )
 {
 	ConfirmDialogData data
 	data.headerText = "#EXIT_TO_MAIN"
 	data.messageText = ""
 	data.resultCallback = OnReturnToMainMenu
-	//
+	//data.yesText = ["YES_RETURN_TO_TITLE_MENU", "#YES_RETURN_TO_TITLE_MENU"]
 
 	OpenConfirmDialogFromData( data )
 	AdvanceMenu( GetMenu( "ConfirmDialog" ) )

@@ -61,7 +61,7 @@ void function InitSettingsPanel( var panel )
 		file.panelDefaultImages.append( $"rui/menu/settings/settings_hud" )
 	}
 
-	#if(PC_PROG)
+	#if PC_PROG
 		{
 			AddTab( panel, Hud_GetChild( panel, "ControlsPCPanelContainer" ), "#MOUSE_KEYBOARD" )
 			AddPanelEventHandler( Hud_GetChild( panel, "ControlsPCPanelContainer" ), eUIEvent.PANEL_SHOW, OnSettingsTab_Show )
@@ -127,7 +127,7 @@ void function OnSettingsPanel_Hide( var panel )
 
 	if ( file.anyChanged )
 	{
-		//
+		// synchronize convars that appear in multiple tabs
 		SaveSettingsConVars( SoundPanel_GetConVarData() )
 		SaveSettingsConVars( GameplayPanel_GetConVarData() )
 		SaveSettingsConVars( ControlsPCPanel_GetConVarData() )
@@ -199,10 +199,10 @@ var function SetupSettingsButton( var button, string buttonText, string descript
 	AddButtonEventHandler( button, UIE_GET_FOCUS, SettingsButton_GetFocus )
 	AddButtonEventHandler( button, UIE_LOSE_FOCUS, SettingsButton_LoseFocus )
 
-	//
-	//
-	//
-	//
+	//ToolTipData toolTipData
+	//toolTipData.titleText = buttonText
+	//toolTipData.descText = description
+	//Hud_SetToolTipData( button, toolTipData )
 
 	return button
 }

@@ -15,7 +15,7 @@ struct
 	int selectedGroundItemEntIndex = -1
 } file
 
-void function InitQuickSwapMenu( var newMenuArg ) //
+void function InitQuickSwapMenu( var newMenuArg )
 {
 	RegisterSignal( "Delayed_SetCursorToObject" )
 

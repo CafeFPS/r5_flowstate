@@ -122,7 +122,7 @@ struct
 
 	array<var> shopButtons
 
-	//
+	// meh.
 	table< var, GRXScriptOffer > buttonToOfferData
 
 	table< string, SeasonalStoreData > seasonalDataMap
@@ -142,23 +142,15 @@ void function InitStorePanel( var panel )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, OnStorePanel_Show )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_HIDE, OnStorePanel_Hide )
 
-	//
+	// Event
 	{
 		var tabBody                         = Hud_GetChild( panel, "CollectionEventPanel" )
 		bool wantDividerAfter               = true
 		float tabBarLeftOffsetFracIfVisible = 0.4
 		AddTab( panel, tabBody, "#MENU_STORE_PANEL_COLLECTION", wantDividerAfter, tabBarLeftOffsetFracIfVisible )
 	}
-
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-
-	//
+	
+	// Shop
 	{
 		var tabBody                         = Hud_GetChild( panel, "ThemedShopPanel" )
 		bool wantDividerAfter               = true
@@ -166,26 +158,25 @@ void function InitStorePanel( var panel )
 		AddTab( panel, tabBody, "BUG THIS", wantDividerAfter, tabBarLeftOffsetFracIfVisible )
 	}
 
-	//
+	// Offers
 	{
 		var tabBody = Hud_GetChild( panel, "ECPanel" )
-		//
 		AddTab( panel, tabBody, "#MENU_STORE_PANEL_SHOP" )
 	}
 
-	//
+	// Loot
 	{
 		var tabBody = Hud_GetChild( panel, "LootPanel" )
 		AddTab( panel, tabBody, "#MENU_STORE_PANEL_LOOT" )
 	}
 
-	//
+	// Characters
 	{
 		var tabBody = Hud_GetChild( panel, "CharacterPanel" )
 		AddTab( panel, tabBody, "#MENU_STORE_PANEL_CHARACTERS" )
 	}
 
-	//
+	// Virtual Currency
 	{
 		var tabBody = Hud_GetChild( panel, "VCPanel" )
 		AddTab( panel, tabBody, "#MENU_STORE_PANEL_CURRENCY" )
@@ -203,7 +194,7 @@ void function OnStorePanel_Show( var panel )
 		file.tabsInitialized = true
 	}
 
-	//
+	// Start disabled, only enable when store updates are complete
 	DeactivateTab( tabData )
 	SetTabNavigationEnabled( file.storePanel, false )
 
@@ -235,7 +226,7 @@ void function TabNavigateToLobby()
 {
 	TabData lobbyTabData = GetTabDataForPanel( GetMenu( "LobbyMenu" ) )
 
-	//
+	//TODO: assert we're the active tab
 	ActivateTabPrev( lobbyTabData )
 }
 
@@ -379,15 +370,12 @@ void function UpdateLootTickTabNewness()
 
 
 /*
-
-
-
-
-
-
-
-
-
+¦¦+   ¦¦+¦¦+¦¦¦¦¦¦+ ¦¦¦¦¦¦¦¦+¦¦+   ¦¦+ ¦¦¦¦¦+ ¦¦+          ¦¦¦¦¦¦+¦¦+   ¦¦+¦¦¦¦¦¦+ ¦¦¦¦¦¦¦+¦¦¦+   ¦¦+ ¦¦¦¦¦¦+¦¦+   ¦¦+
+¦¦¦   ¦¦¦¦¦¦¦¦+--¦¦++--¦¦+--+¦¦¦   ¦¦¦¦¦+--¦¦+¦¦¦         ¦¦+----+¦¦¦   ¦¦¦¦¦+--¦¦+¦¦+----+¦¦¦¦+  ¦¦¦¦¦+----++¦¦+ ¦¦++
+¦¦¦   ¦¦¦¦¦¦¦¦¦¦¦¦++   ¦¦¦   ¦¦¦   ¦¦¦¦¦¦¦¦¦¦¦¦¦¦         ¦¦¦     ¦¦¦   ¦¦¦¦¦¦¦¦¦++¦¦¦¦¦+  ¦¦+¦¦+ ¦¦¦¦¦¦      +¦¦¦¦++ 
++¦¦+ ¦¦++¦¦¦¦¦+--¦¦+   ¦¦¦   ¦¦¦   ¦¦¦¦¦+--¦¦¦¦¦¦         ¦¦¦     ¦¦¦   ¦¦¦¦¦+--¦¦+¦¦+--+  ¦¦¦+¦¦+¦¦¦¦¦¦       +¦¦++  
+ +¦¦¦¦++ ¦¦¦¦¦¦  ¦¦¦   ¦¦¦   +¦¦¦¦¦¦++¦¦¦  ¦¦¦¦¦¦¦¦¦¦+    +¦¦¦¦¦¦++¦¦¦¦¦¦++¦¦¦  ¦¦¦¦¦¦¦¦¦¦+¦¦¦ +¦¦¦¦¦+¦¦¦¦¦¦+   ¦¦¦   
+  +---+  +-++-+  +-+   +-+    +-----+ +-+  +-++------+     +-----+ +-----+ +-+  +-++------++-+  +---+ +-----+   +-+ 
 */
 
 void function InitStoreVCPanel( var panel )
@@ -494,8 +482,8 @@ void function InitVCPacks( var panel )
 
 		RuiSetImage( vcRui, "vcImage", GetVCPackImage( vcPackIndex ) )
 
-		//
-		//
+		//Hud_SetEnabled( vcButton, vcPack.valid )
+		//Hud_SetLocked( vcButton, !vcPack.valid )
 		Hud_SetEnabled( vcButton, true )
 		Hud_SetLocked( vcButton, false )
 	}
@@ -512,7 +500,7 @@ void function OnVCButtonActivate( var button )
 		return
 	}
 
-	#if(PC_PROG)
+	#if PC_PROG
 		if ( !Origin_IsOverlayAvailable() )
 		{
 			ConfirmDialogData dialogData
@@ -572,8 +560,8 @@ string function GetVCPackTotalString( int vcPackIndex )
 
 string function GetVCPackBonusBaseString( int vcPackIndex )
 {
-	//
-	//
+	//if ( !s_vc.vcPacks[vcPackIndex].bonus )
+	//	return ""
 
 	return Localize( "#STORE_VC_BONUS_BASE", ShortenNumber( string( s_vc.vcPacks[vcPackIndex].base ) ) )
 }
@@ -619,13 +607,12 @@ asset function GetVCPackImage( int vcPackIndex )
 
 
 /*
-
-
-
-
-
-
-
+ ¦¦¦¦¦¦+¦¦+  ¦¦+ ¦¦¦¦¦+ ¦¦¦¦¦¦+  ¦¦¦¦¦+  ¦¦¦¦¦¦+¦¦¦¦¦¦¦¦+¦¦¦¦¦¦¦+¦¦¦¦¦¦+ 
+¦¦+----+¦¦¦  ¦¦¦¦¦+--¦¦+¦¦+--¦¦+¦¦+--¦¦+¦¦+----++--¦¦+--+¦¦+----+¦¦+--¦¦+
+¦¦¦     ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦++¦¦¦¦¦¦¦¦¦¦¦        ¦¦¦   ¦¦¦¦¦+  ¦¦¦¦¦¦++
+¦¦¦     ¦¦+--¦¦¦¦¦+--¦¦¦¦¦+--¦¦+¦¦+--¦¦¦¦¦¦        ¦¦¦   ¦¦+--+  ¦¦+--¦¦+
++¦¦¦¦¦¦+¦¦¦  ¦¦¦¦¦¦  ¦¦¦¦¦¦  ¦¦¦¦¦¦  ¦¦¦+¦¦¦¦¦¦+   ¦¦¦   ¦¦¦¦¦¦¦+¦¦¦  ¦¦¦
+ +-----++-+  +-++-+  +-++-+  +-++-+  +-+ +-----+   +-+   +------++-+  +-+
 */
 
 
@@ -805,20 +792,20 @@ void function CharacterButton_OnGetFocus( var button )
 	foreach ( characterButton in s_characters.buttons )
 		Hud_SetSelected( characterButton, false )
 
-	//
+	//Hud_SetSelected( button, true )
 
 	bool grxReady = GRX_IsInventoryReady() && GRX_AreOffersReady()
 
 	ItemFlavor character     = s_characters.buttonToCharacter[button]
 	ItemFlavor characterSkin = LoadoutSlot_GetItemFlavor( LocalClientEHI(), Loadout_CharacterSkin( character ) )
 
-	//
+	//RuiSetBool( s_characters.characterSelectInfoRui, "showInfo", true )
 	RuiSetString( s_characters.characterSelectInfoRui, "nameText", Localize( ItemFlavor_GetLongName( character ) ).toupper() )
 	RuiSetString( s_characters.characterSelectInfoRui, "subtitleText", Localize( CharacterClass_GetCharacterSelectSubtitle( character ) ) )
-	//
+	//RuiSetString( s_characters.characterSelectInfoRui, "descText", Localize( ItemFlavor_GetShortDescription( character ) ) )
 	if ( s_characters.buttonWithFocus != button )
 		RuiSetGameTime( s_characters.characterSelectInfoRui, "initTime", Time() )
-	//
+	//RuiSetImage( s_characters.characterSelectInfoRui, "roleImage", CharacterClass_GetCharacterRoleImage( character ) )
 
 	s_characters.buttonWithFocus = button
 
@@ -868,24 +855,22 @@ void function CharacterButton_OnGetFocus( var button )
 	RunClientScript( "UIToClient_PreviewCharacterSkin", ItemFlavor_GetNetworkIndex_DEPRECATED( characterSkin ), ItemFlavor_GetNetworkIndex_DEPRECATED( character ) )
 }
 
+
 /*
-
-
-
-
-
-
-
-
-
+¦¦+      ¦¦¦¦¦¦+  ¦¦¦¦¦¦+ ¦¦¦¦¦¦¦¦+    ¦¦¦¦¦¦¦¦+¦¦+ ¦¦¦¦¦¦+¦¦+  ¦¦+
+¦¦¦     ¦¦+---¦¦+¦¦+---¦¦++--¦¦+--+    +--¦¦+--+¦¦¦¦¦+----+¦¦¦ ¦¦++
+¦¦¦     ¦¦¦   ¦¦¦¦¦¦   ¦¦¦   ¦¦¦          ¦¦¦   ¦¦¦¦¦¦     ¦¦¦¦¦++ 
+¦¦¦     ¦¦¦   ¦¦¦¦¦¦   ¦¦¦   ¦¦¦          ¦¦¦   ¦¦¦¦¦¦     ¦¦+-¦¦+ 
+¦¦¦¦¦¦¦++¦¦¦¦¦¦+++¦¦¦¦¦¦++   ¦¦¦          ¦¦¦   ¦¦¦+¦¦¦¦¦¦+¦¦¦  ¦¦+
++------+ +-----+  +-----+    +-+          +-+   +-+ +-----++-+  +-+
 */
 
 void function InitLootPanel( var panel )
 {
 	var lootPanelA = Hud_GetChild( panel, "LootPanelA" )
-	//
-	//
-	//
+	//	var rui = Hud_GetRui( Hud_GetChild( lootPanelA, "LootFrame" ) )
+	//	RuiSetImage( rui, "basicImage", $"rui/menu/store/loot_tick_temp" )
+	//HudElem_SetRuiArg( Hud_GetChild( lootPanelA, "LootFrame" ), "lootImage", $"rui/menu/store/loot_tick_temp" )
 
 	s_loot.lootPanel = Hud_GetChild( lootPanelA, "PanelContent" )
 	HudElem_SetRuiArg( s_loot.lootPanel, "titleText", Localize( "#RARE_LOOT_TICK" ) )
@@ -1045,9 +1030,12 @@ void function OnLootTickPurchaseResult( bool wasSuccessful )
 
 
 /*
-
-
-
+¦¦¦¦¦¦¦+ ¦¦¦¦¦¦+    ¦¦¦¦¦¦¦+¦¦+  ¦¦+ ¦¦¦¦¦¦+ ¦¦¦¦¦¦+ 
+¦¦+----+¦¦+----+    ¦¦+----+¦¦¦  ¦¦¦¦¦+---¦¦+¦¦+--¦¦+
+¦¦¦¦¦+  ¦¦¦         ¦¦¦¦¦¦¦+¦¦¦¦¦¦¦¦¦¦¦   ¦¦¦¦¦¦¦¦¦++
+¦¦+--+  ¦¦¦         +----¦¦¦¦¦+--¦¦¦¦¦¦   ¦¦¦¦¦+---+ 
+¦¦¦¦¦¦¦++¦¦¦¦¦¦+    ¦¦¦¦¦¦¦¦¦¦¦  ¦¦¦+¦¦¦¦¦¦++¦¦¦     
++------+ +-----+    +------++-+  +-+ +-----+ +-+    
 */
 
 void function InitOffersPanel( var panel )

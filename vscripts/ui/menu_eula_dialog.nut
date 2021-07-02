@@ -15,7 +15,7 @@ struct
 } file
 
 
-void function InitEULADialog( var newMenuArg ) //
+void function InitEULADialog( var newMenuArg )
 {
 	var menu = GetMenu( "EULADialog" )
 	file.menu = menu
@@ -76,8 +76,7 @@ void function EULADialog_OnOpen()
 
 	if( file.reviewing && file.parentMenuPanel != null )
 		ScrollPanel_SetActive( file.parentMenuPanel, false )
-
-	//
+		
 	RegisterStickMovedCallback( ANALOG_RIGHT_Y, FocusAgreementForScrolling )
 	RegisterButtonPressedCallback( BUTTON_DPAD_UP, FocusAgreementForScrolling )
 	RegisterButtonPressedCallback( BUTTON_DPAD_DOWN, FocusAgreementForScrolling )

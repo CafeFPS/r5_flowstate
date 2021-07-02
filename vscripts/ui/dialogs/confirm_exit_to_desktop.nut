@@ -7,7 +7,7 @@ struct
 	var contentRui
 } file
 
-void function InitConfirmExitToDesktopDialog( var newMenuArg ) //
+void function InitConfirmExitToDesktopDialog( var newMenuArg )
 {
 	var menu = GetMenu( "ConfirmExitToDesktopDialog" )
 	file.menu = menu

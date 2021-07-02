@@ -21,7 +21,7 @@ struct
 
 //
 
-void function InitControlsAdvancedLookMenu( var newMenuArg ) //
+void function InitControlsAdvancedLookMenu( var newMenuArg )
 {
 	var menu = GetMenu( "ControlsAdvancedLookMenu" )
 	file.menu = menu
@@ -110,7 +110,8 @@ void function OnAdvancedLookControlsPanel_Hide( var panel )
 	SavePlayerSettings()
 }
 
-
+///////
+///////
 void function OnOpenControlsAdvancedLookMenu()
 {
 	if ( IsLobby() )
@@ -129,7 +130,6 @@ void function Button_Toggle_CustomEnabled( var button )
 
 	foreach ( var item in file.enableItems )
 		Hud_SetVisible( item, isEnabled )
-		//
 
 	var btnGamepadCustomEnabled = Hud_GetChild( file.contentPanel, "SwchGamepadCustomEnabled" )
 	var sldGamepadCustomDeadzoneIn = Hud_GetChild( file.contentPanel, "SldGamepadCustomDeadzoneIn" )
@@ -139,7 +139,8 @@ void function Button_Toggle_CustomEnabled( var button )
 		Hud_SetNavDown( btnGamepadCustomEnabled, btnGamepadCustomEnabled )
 }
 
-
+///////
+///////
 void function SetupButtonBase( var button, string buttonText, string description )
 {
 	SetButtonRuiText( button, buttonText )
@@ -208,13 +209,9 @@ void function Button_Focused( var button )
 
 void function Button_LoseFocus( var button )
 {
-	//
-
 	var rui = Hud_GetRui( file.detailsPanel )
 	RuiSetArg( rui, "selectionText", "" )
 	RuiSetArg( rui, "descText", "" )
-	//
-	//
 
 	foreach ( var graph in file.graphs )
 		Hud_SetVisible( graph, false )
@@ -271,6 +268,5 @@ void function RestoreLookControlsDefaults()
 	SetConVarToDefault( "gamepad_custom_ads_turn_delay" )
 	SetConVarToDefault( "gamepad_custom_ads_turn_time" )
 
-	//
 	SavePlayerSettings()
 }
