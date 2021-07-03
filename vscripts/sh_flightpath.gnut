@@ -57,6 +57,18 @@ global const FX_GUNSHIP_CRASH_EXPLOSION_EXIT = $"veh_gunship_warp_OUT_FULL"
 global const float WARPFALL_SOUND_DELAY = 1.1
 global const float WARPFALL_FX_DELAY = 0.9
 
+global enum eFlightPathAnalysisIndex
+{
+	DROPPOD_AIRDROP_BASE_ANIM = 0,
+	CARE_PACKAGE_AIRDROP_IDLE = 1,
+	RESPAWN_DROPSHIP_FLYIN_MOVE = 2,
+	#if(false)
+
+#endif
+	UNUSED4 = 4,
+	UNUSED5 = 5,
+	UNUSED6 = 6,
+}
 // #if HAS_CAPITAL_SHIP_SKYSHOW
 // global const TRINITY_SKYBOX = $"mdl/vehicles_r2/spacecraft/trinity/Trinity_1000x.rmdl"
 // global const DRACONIS_SKYBOX = $"mdl/vehicles_r2/spacecraft/draconis/draconis_flying_1000x.rmdl"
@@ -1788,7 +1800,7 @@ bool function HasDropshipDropTable( entity dropship )
 }
 #endif // SERVER
 
-void function AddDropshipFlightAnalysis( asset model, string anim, bool functionref( FlightPath, vector, float ) analysisFunc, string event = "",  )
+void function AddDropshipFlightAnalysis( int index, asset model, string anim, bool functionref( FlightPath, vector, float ) analysisFunc, string event = "" )
 {
 	shFile.dropshipDropoffAnims.append( anim )
 

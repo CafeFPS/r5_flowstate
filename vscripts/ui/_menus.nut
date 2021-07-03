@@ -1058,7 +1058,7 @@ void function UpdateMenusOnConnectThread( string levelname )
 			}
 			else
 			{
-				thread Loadscreen_SetEquppedLoadscreenAsActive()
+				thread Loadscreen_SetEquippedLoadscreenAsActive()
 			}
 
 			if ( GetPersistentVar( "eliteTutorialState" ) == eEliteTutorialState.SHOW_INTRO )

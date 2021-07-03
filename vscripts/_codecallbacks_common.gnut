@@ -97,50 +97,31 @@ table<asset> IF_Settings = {
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
 
-	//onClientConnectedCallbacks
-	//SetGameState(eGameState.PickLoadout)
+	player.hasConnected = true
+
+	SetGameState(eGameState.WaitingForPlayers)
+	SetGameState(eGameState.PickLoadout)
+	AddDeathCallback( "player", RespawnOnDie )
 
 	foreach( callbackFunc in svGlobal.onClientConnectedCallbacks ) {
 		callbackFunc(player)
 	}
 
-	player.hasConnected = true
-
 	ZiplineInit( player )
 
 	NotifyClientsOfConnection( player, 1 )
 
-	SetGameState(eGameState.Playing)
-	
+
+  thread InitRespawnPlayer(player)
+
+	// SetGameState(eGameState.Prematch)
+
+
 	CodeCallback_OnClientReloadConnectionCompleted(player)
 
-	vector origin = GetEnt( "info_player_start" ).GetOrigin()
-	vector angles = GetEnt( "info_player_start" ).GetAngles()
+	SetGameState(eGameState.Playing)
 
-	// player.SetPlayerSettings( $"settings/player/mp/pilot_survival_gunner.rpak" )
-	player.SetOrigin( origin )
-	player.SetAngles( angles )
-	// player.RespawnPlayer( null )
 
-	//CPlayer.SetPlayerSettingsWithMods( player, DEFAULT_PILOT_SETTINGS, [] )
-	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_closer.rpak", [ "enable_wallrun", "enable_doublejump" ] )
-	DoRespawnPlayer( player, null )//player.RespawnPlayer( null )
-	player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_ANY )
-	player.GiveWeapon( "mp_weapon_energy_ar", WEAPON_INVENTORY_SLOT_ANY )
-	player.GiveWeapon( "mp_weapon_grenade_emp", WEAPON_INVENTORY_SLOT_ANY )
-	//player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
-	//player.GiveOffhandWeapon( "mp_ability_phase_walk", OFFHAND_SPECIAL )
-	player.GiveOffhandWeapon( "mp_ability_grapple", OFFHAND_SPECIAL )
-	player.GiveOffhandWeapon( "mp_ability_care_package", OFFHAND_INVENTORY )
-	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
-	EnableOffhandWeapons( player )
-
-	entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-	int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
-	ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
-
-	player.SetHealth( 100 )
 }
 
 // void function CodeCallback_OnClientConnectionCompleted( entity player )
@@ -175,7 +156,7 @@ void function InitRespawnPlayer(entity player)
 	
   wait 1.0
 	
-	SetTeam(player, 10)
+	SetTeam(player, 1)
 	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
 	player.SetPlayerNetBool( "pingEnabled", true )
 
@@ -186,7 +167,7 @@ void function InitRespawnPlayer(entity player)
 
   DoRespawnPlayer( player, null )
 
-	if( GetCurrentPlaylistName() != "survival_training" && !IsLobby() )
+	if( false && GetCurrentPlaylistName() != "survival_training" && !IsLobby() )
 	{
 		origin = GetEnt( "info_player_start" ).GetOrigin()
 		angles = GetEnt( "info_player_start" ).GetAngles()
@@ -195,53 +176,54 @@ void function InitRespawnPlayer(entity player)
 	else
 	{
 		// todo: set to actual start pos for staging --
-		origin = < 26328, -6235, -27540 >
+		//origin = < 26328, -6235, -27540 >
 		angles = <21.5, 0.2, 0>
 	}
 
-	player.SetOrigin( origin )
-	player.SetAngles( angles )
+	// origin = < 40000, 40000, 40000 >
+	// player.SetOrigin( origin )
+	// player.SetAngles( angles )
 
-	ItemFlavor character = GetDefaultItemFlavorForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass() )//LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	// ItemFlavor character = GetDefaultItemFlavorForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass() )//LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 
-	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_closer.rpak", [ "enable_wallrun", "enable_doublejump" ] )
-	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ) )
+	// player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_stim.rpak", [ "enable_wallrun", "enable_doublejump" ] )
+	// printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ) )
 
-	array<string> mods = []
-	if( GetCurrentPlaylistVarBool( "enable_wallrun", true ) )
-	{
-		mods.append( "enable_wallrun" )
-	}
-	if( GetCurrentPlaylistVarBool( "enable_doublejump", true ) )
-	{
-		mods.append( "enable_doublejump")
-	}
+	// array<string> mods = []
+	// if( GetCurrentPlaylistVarBool( "enable_wallrun", true ) )
+	// {
+	// 	mods.append( "enable_wallrun" )
+	// }
+	// if( GetCurrentPlaylistVarBool( "enable_doublejump", true ) )
+	// {
+	// 	mods.append( "enable_doublejump")
+	// }
 
-	player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
+	// player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
 
 	if( !IsLobby() )
 	{
 		// todo: just reset the inventory before respawning
-		try {
-			player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
-			player.GiveWeapon( "mp_weapon_frag_grenade", WEAPON_INVENTORY_SLOT_ANY )
-			player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-			GivePassive( player, ePassives.PAS_OCTANE )
-			player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
-			player.GiveOffhandWeapon( "mp_weapon_grenade_bangalore", OFFHAND_SPECIAL )
-			player.GiveOffhandWeapon( "mp_ability_care_package", OFFHAND_INVENTORY )
-			player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
-		} catch(error)
-		{
+		// try {
+		// 	player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
+		// 	player.GiveWeapon( "mp_weapon_frag_grenade", WEAPON_INVENTORY_SLOT_ANY )
+		// 	player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		// 	GivePassive( player, ePassives.PAS_OCTANE )
+		// 	player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
+		// 	player.GiveOffhandWeapon( "mp_weapon_grenade_bangalore", OFFHAND_SPECIAL )
+		// 	player.GiveOffhandWeapon( "mp_ability_care_package", OFFHAND_INVENTORY )
+		// 	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
+		// } catch(error)
+		// {
 
-		}
+		// }
 		EnableOffhandWeapons( player )
 	
-		entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-		int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
-		ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
+		// entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+		// int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
+		// ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
 	
-		player.SetHealth( 100 )
+		// player.SetHealth( 100 )
 	}
 	UpdateNetCounts()
 }

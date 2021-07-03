@@ -1,7 +1,7 @@
 
 global function Canyonlands_MapInit_Common
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 	global function HoverTankTestPositions
 	global function Dev_TestHoverTankIntro
 #endif
@@ -300,7 +300,7 @@ void function HoverTanksOnDeathFieldStageChanged( int stage, float nextCircleSta
 #if R5DEV
 void function Dev_TestHoverTankIntro()
 {
-	FlyHoverTanksIntoPosition( GetAllHoverTanks(), HOVER_TANKS_TYPE_INTRO )
+	//FlyHoverTanksIntoPosition( GetAllHoverTanks(), HOVER_TANKS_TYPE_INTRO )
 }
 #endif
 
@@ -913,7 +913,7 @@ void function HoverTank_DebugFlightPaths_Thread()
 	printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
 }
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function HoverTankTestPositions()
 {
 	entity player = GetPlayerArray()[0]

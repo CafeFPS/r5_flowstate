@@ -639,8 +639,10 @@ bool function ClientCodeCallback_ShowMeleePrompt( entity player )
 #if SERVER && R5DEV
 void function DEV_UpdatePlayerMeleeWeaponCosmetics( entity player, ItemFlavor unused )
 {
-	if ( !IsLobby() )
-		SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
+	// TEMP COMMENT
+	
+	// if ( !IsLobby() )
+	// 	SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
 }
 #endif // SERVER
 

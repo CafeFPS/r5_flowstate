@@ -12,7 +12,7 @@ global function Loadscreen_GetRPakName
 global function Loadscreen_GetImageOverlayText
 
 #if UI
-global function Loadscreen_SetEquppedLoadscreenAsActive
+global function Loadscreen_SetEquippedLoadscreenAsActive
 global function Loadscreen_SetCustomLoadscreen
 #endif
 
@@ -45,7 +45,7 @@ void function ShLoadscreen_LevelInit()
 	AddCallback_RegisterRootItemFlavors( OnRegisterRootItemFlavors )
 
 	#if UI
-		RegisterSignal( "SetEquppedLoadscreenAsActive" )
+		RegisterSignal( "SetEquippedLoadscreenAsActive" )
 	#endif
 }
 #endif
@@ -132,10 +132,10 @@ string function Loadscreen_GetImageOverlayText( ItemFlavor flavor )
 }
 
 #if UI
-void function Loadscreen_SetEquppedLoadscreenAsActive()
+void function Loadscreen_SetEquippedLoadscreenAsActive()
 {
-	Signal( uiGlobal.signalDummy, "SetEquppedLoadscreenAsActive" )
-	EndSignal( uiGlobal.signalDummy, "SetEquppedLoadscreenAsActive" )
+	Signal( uiGlobal.signalDummy, "SetEquippedLoadscreenAsActive" )
+	EndSignal( uiGlobal.signalDummy, "SetEquippedLoadscreenAsActive" )
 
 	WaitForLocalClientEHI()
 

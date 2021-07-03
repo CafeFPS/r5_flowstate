@@ -281,7 +281,7 @@ bool function ShouldDisplayOptInOptions()
 	if ( !IsFullyConnected() )
 		return false
 
-	if ( GRX_IsInventoryReady() && (GRX_HasItem( GRX_DEV_ITEM ) || GRX_HasItem( GRX_QA_ITEM )) )
+	// if ( GRX_IsInventoryReady() && (GRX_HasItem( GRX_DEV_ITEM ) || GRX_HasItem( GRX_QA_ITEM )) )
 		return true
 
 	return GetGlobalNetBool( "isOptInServer" )

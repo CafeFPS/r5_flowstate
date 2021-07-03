@@ -805,7 +805,7 @@ void function UICallback_UpdateEquipmentButton( var button )
 
 	if ( equipment == "" )
 	{
-		RunUIScript( "SurvivalQuickInventory_SetEmptyTooltipForSlot", button, Localize( "#TOOLTIP_EMPTY_PROMPT", Localize( es.title ) ), eCommsAction.BLANK )
+		// RunUIScript( "SurvivalQuickInventory_SetEmptyTooltipForSlot", button, Localize( "#TOOLTIP_EMPTY_PROMPT", Localize( es.title ) ), eCommsAction.BLANK )
 	}
 	else
 	{

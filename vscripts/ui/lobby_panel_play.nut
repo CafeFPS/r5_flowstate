@@ -562,7 +562,7 @@ void function Lobby_UpdateLoadscreenFromPlaylist()
 	}
 	else
 	{
-		thread Loadscreen_SetEquppedLoadscreenAsActive()
+		thread Loadscreen_SetEquippedLoadscreenAsActive()
 	}
 }
 

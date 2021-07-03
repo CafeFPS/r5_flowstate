@@ -7,7 +7,7 @@
 global function printl
 global function CodeCallback_Precompile
 
-global const bool R5DEV = false
+global const bool R5DEV = true
 
 global struct EchoTestStruct
 {

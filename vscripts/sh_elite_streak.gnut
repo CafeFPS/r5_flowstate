@@ -14,7 +14,7 @@ global function ServerCallback_UpdateEliteBadge
 #endif
 
 
-#if CLIENT && DEV
+#if CLIENT && R5DEV
 global function TestEliteStreak
 #endif
 
@@ -178,7 +178,7 @@ void function UpdateEliteBadge( int streak, bool hasAccess, bool animate = true 
 #endif
 
 
-#if CLIENT && DEV
+#if CLIENT && R5DEV
 void function TestEliteStreak( int streak = 1 )
 {
 	UpdateEliteBadge( streak, true, true )

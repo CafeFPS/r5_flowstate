@@ -50,6 +50,9 @@ global const asset RESPAWN_BEACON_ICON                 = $"rui/hud/gametype_icon
 global const asset RESPAWN_BEACON_ICON_SMALL           = $"rui/hud/gametype_icons/survival/dna_station_small"
 const string SOUND_HOLOGRAM_LOOP                       = "Survival_Emit_RespawnChamber"
 
+const string ANIM_FLYIN_IDLE = "dropship_classic_mp_flyin_idle"
+const string ANIM_FLYIN_MOVE = "dropship_classic_mp_flyin"
+
 const float RESPAWN_CHAMBER_ICON_FADE_DIST_NEAR        = 300.0
 const float RESPAWN_CHAMBER_ICON_FADE_DIST_FAR         = 1000.0
 
@@ -58,6 +61,7 @@ global enum eRespawnStyle
 	NONE,
 	DEPRECATED,
 	RESPAWN_CHAMBERS,
+	_COUNT
 }
 
 global struct dropshipAnimData
@@ -97,7 +101,7 @@ void function Sh_RespawnBeacon_Init()
 	#endif
 
 	PrecacheModel( RESPAWN_DROPSHIP_MODEL )
-	AddCallback_EntitiesDidLoad( RespawnBeacon_EntitiesdidLoad )
+	// AddCallback_EntitiesDidLoad( RespawnBeacon_EntitiesdidLoad )
 
 	if ( GetRespawnStyle() == eRespawnStyle.NONE )
 		return
@@ -184,17 +188,19 @@ void function Sh_RespawnBeacon_Init()
 
 void function RespawnBeacons_RegisterNetworking()
 {
-	RegisterNetworkedVariable( "respawnDNATimeout", SNDC_PLAYER_GLOBAL, SNVT_TIME, -1 )
-	RegisterNetworkedVariable( "respawnStatus", SNDC_PLAYER_GLOBAL, SNVT_INT, 0 )
+	RegisterNetworkedVariable( "respawnStatus", SNDC_PLAYER_GLOBAL, SNVT_INT, eRespawnStatus.NONE )
+	RegisterNetworkedVariable( "respawnStatusEndTime", SNDC_PLAYER_GLOBAL, SNVT_TIME, -1 )
+	RegisterNetworkedVariable( "respawnBannerPickedUpTime", SNDC_PLAYER_GLOBAL, SNVT_TIME, -1 )
 
 	#if CLIENT
 	RegisterNetworkedVariableChangeCallback_int( "respawnStatus", RespawnStatusChanged )
 	#endif
 }
 
-void function RespawnBeacon_EntitiesdidLoad()
+
+void function ShRespawnBeacon_RegisterAinAnalysisFuncs()
 {
-	AddDropshipFlightAnalysis( RESPAWN_DROPSHIP_MODEL, "dropship_classic_mp_flyin", AnaylsisFuncDropshipTestJumpout, "dropship_deploy" )
+	AddDropshipFlightAnalysis( eFlightPathAnalysisIndex.RESPAWN_DROPSHIP_FLYIN_MOVE, RESPAWN_DROPSHIP_MODEL, ANIM_FLYIN_MOVE, AnaylsisFuncDropshipTestJumpout, "dropship_deploy" )
 }
 
 #if CLIENT
@@ -202,8 +208,8 @@ void function OverrideMinimapPackages( entity player )
 {
 	if ( GetRespawnStyle() == eRespawnStyle.RESPAWN_CHAMBERS )
 	{
-		RegisterMinimapPackage( "prop_script", 	eMinimapObject_prop_script.RESPAWN_CHAMBER, 		MINIMAP_OBJECT_RUI, 		MinimapPackage_RespawnChamber, 		FULLMAP_OBJECT_RUI, 		MinimapPackage_RespawnChamber )
-		RegisterMinimapPackage( "prop_script", 	eMinimapObject_prop_script.RESPAWN_DNA, 			$"ui/minimap_square_respawn_dna_pickup.rpak", MinimapPackage_RespawnDNA, 		$"ui/in_world_minimap_respawn_dna.rpak", 		MinimapPackage_RespawnDNA )
+		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.RESPAWN_CHAMBER, MINIMAP_OBJECT_RUI, MinimapPackage_RespawnChamber, FULLMAP_OBJECT_RUI, MinimapPackage_RespawnChamber )
+		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.RESPAWN_DNA, $"ui/minimap_square_respawn_dna_pickup.rpak", MinimapPackage_RespawnDNA, $"ui/in_world_minimap_respawn_dna.rpak", MinimapPackage_RespawnDNA )
 	}
 }
 
@@ -253,6 +259,9 @@ void function RespawnStatusChanged( entity player, int old, int new, bool actual
 			file.chamberToBeamFX[ ent ] = -1
 		}
 	}
+
+	//
+	DeathScreen_RespawnStatusChanged( player, old, new, actuallyChanged )
 }
 
 void function UpdateRespawnChamberRuis( var rui, bool waitingToBeRespawned )
@@ -588,6 +597,28 @@ string function RespawnDNA_TextOverride( entity ent )
 }
 #endif
 
+float function GetRespawnStationUseTime( entity ent )
+{
+	switch( ent.GetTargetName() )
+	{
+#if(false)
+
+
+#endif //
+
+#if(false)
+
+
+
+#endif //
+
+		default:
+			return RESPAWN_BEACON_RESPAWN_TIME
+	}
+
+	return RESPAWN_BEACON_RESPAWN_TIME
+}
+
 
 void function RespawnChamberOnUse( entity pickup, entity player, int pickupFlags )
 {
@@ -618,7 +649,7 @@ void function RespawnChamberOnUse( entity pickup, entity player, int pickupFlags
 		settings.movementDisable = true
 		settings.holsterWeapon = true
 		#endif
-	settings.duration = RESPAWN_BEACON_RESPAWN_TIME
+	settings.duration = GetRespawnStationUseTime( pickup )
 	settings.useInputFlag = IN_USE_LONG
 
 	thread ExtendedUse( pickup, player, settings )
@@ -726,7 +757,24 @@ int function GetRespawnStatus( entity player )
 
 int function GetRespawnStyle()
 {
-	return GetCurrentPlaylistVarInt( "survival_respawn_style", eRespawnStyle.RESPAWN_CHAMBERS )
+	int respawnStyle
+	string playlistRespawnStyle = GetCurrentPlaylistVarString( "survival_respawn_style", "respawn_chambers" ).tolower()
+	bool respawnStyleFound = false
+
+	for( int i = 0; i < eRespawnStyle._COUNT; i++ )
+	{
+		string enumStyle = GetEnumString( "eRespawnStyle", i )
+		if (enumStyle.tolower() == playlistRespawnStyle)
+		{
+			respawnStyle = i
+			respawnStyleFound = true
+			break
+		}
+	}
+
+	Assert( respawnStyleFound, "Playlist Respawn Style '" + playlistRespawnStyle + "' is not a specified enumerator." )
+
+	return respawnStyle
 }
 
 #if SERVER
@@ -814,6 +862,8 @@ void function ReviveRuiThread( float endTime )
 	clGlobal.levelEnt.EndSignal( "SquadEliminated" )
 
 	DeathScreen_UpdateRespawnTime( Time(), endTime )
+
+	Chroma_RespawningInDropship()
 
 	OnThreadEnd(
 		function() : ()
@@ -1217,6 +1267,27 @@ void function RespawnBeaconStopUse( entity ent, entity player, ExtendedUseSettin
 #endif
 
 #if CLIENT
+bool function IsRespawnStationPingType( int pingType )
+{
+	switch( pingType )
+	{
+		case ePingType.RESPAWN_STATION:
+			return true
+#if(false)
+
+
+
+#endif //
+#if(false)
+
+
+
+#endif //
+	}
+
+	return false
+}
+
 void function PlayerWaypoint_CreateCallback( entity wp )
 {
 	int wpType = wp.GetWaypointType()
@@ -1228,11 +1299,11 @@ void function PlayerWaypoint_CreateCallback( entity wp )
 	if ( WaypointOwnerIsMuted( wp ) )
 		return
 
-	if ( pingType == ePingType.RESPAWN_STATION )
+	if ( IsRespawnStationPingType( pingType ) )
 	{
 		if ( IsValid( pingedEnt ) )
 		{
-			if( pingedEnt.GetTargetName() == RESPAWN_CHAMBER_TARGETNAME )
+			if ( IsRespawnStationEnt( pingedEnt ) )
 			{
 				var rui = pingedEnt.e.overheadRui
 				if ( rui != null )
@@ -1264,11 +1335,11 @@ void function PlayerWaypoint_DestroyCallback( entity wp )
 
 	entity pingedEnt = GetPingedEntForLocWaypoint( wp )
 
-	if ( pingType == ePingType.RESPAWN_STATION )
+	if ( IsRespawnStationPingType( pingType ) )
 	{
 		if ( IsValid( pingedEnt ) )
 		{
-			if( pingedEnt.GetTargetName() == RESPAWN_DNA_TARGETNAME )
+			if ( IsRespawnStationEnt( pingedEnt ) )
 			{
 				var rui = pingedEnt.e.overheadRui
 				if ( rui != null )
@@ -1329,3 +1400,30 @@ void function ServerCallback_RespawnBeaconStop()
 		clGlobal.levelEnt.Signal( "SpectatorShowRespawnRui" )
 }
 #endif
+
+#if SERVER
+// 323 lines
+#endif
+bool function IsRespawnStationEnt( entity ent )
+{
+	switch( ent.GetTargetName() )
+	{
+		case RESPAWN_CHAMBER_TARGETNAME:
+			return true
+
+#if(false)
+// 3 lines
+#endif //
+
+#if(false)
+// 3 lines
+#endif //
+	}
+
+	return false
+}
+
+#if(false)
+// 20 lines
+#endif
+

@@ -541,53 +541,53 @@ ItemFlavor function LoadoutSlot_WaitForItemFlavor( EHI playerEHI, LoadoutEntry e
 }
 
 
-//ItemFlavor ornull function LoadoutSlot_GetItemFlavorOrNull( EHI playerEHI, LoadoutEntry entry )
-//{
-//	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
-//	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
-//	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY )
-//		return null
-//
-//	return ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
-//}
-//
-//
-//int ornull function LoadoutSlot_GetIntegerOrNull( EHI playerEHI, LoadoutEntry entry )
-//{
-//	Assert( entry.type == eLoadoutEntryType.INTEGER )
-//
-//	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
-//	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY )
-//		return null
-//
-//	return entry.minValue + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM)
-//}
-//
-//
-//ItemFlavor ornull function LoadoutSlot_WaitForItemFlavorOrNull( EHI playerEHI, LoadoutEntry entry )
-//{
-//	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
-//	int slotContentsIndex
-//	while ( true )
-//	{
-//		#if SERVER
-//			//printf( "sh_loadouts.gnut debug (R5DEV-29743), LoadoutSlot_WaitForItemFlavorOrNull, [%s], WaitSignal( %d, \"%s\" )",
-//			//	"server", playerEHI.GetEncodedEHandle(), "Loadout_" + entry.id + "_Ready"
-//			//)
-//		#else
-//			//printf( "sh_loadouts.gnut debug (R5DEV-29743), LoadoutSlot_WaitForItemFlavorOrNull, [%d], WaitSignal( %d, \"%s\" )",
-//			//	LocalClientEHI(), playerEHI, "Loadout_" + entry.id + "_Ready"
-//			//)
-//		#endif
-//		slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
-//		if ( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY )
-//			break
-//
-//		WaitSignal( GetEHISignalDummy( playerEHI ), "Loadout_" + entry.id + "_Ready" )
-//	}
-//
-//	return ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
-//}
+ItemFlavor ornull function LoadoutSlot_GetItemFlavorOrNull( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY )
+		return null
+
+	return ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+}
+
+
+int ornull function LoadoutSlot_GetIntegerOrNull( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.INTEGER )
+
+	int slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+	if ( slotContentsIndex == SLOT_CONTENTS_SENTINEL_NOTREADY )
+		return null
+
+	return 0//entry.minValue + (slotContentsIndex - SLOT_CONTENTS_FIRST_VALID_ITEM)
+}
+
+
+ItemFlavor ornull function LoadoutSlot_WaitForItemFlavorOrNull( EHI playerEHI, LoadoutEntry entry )
+{
+	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
+	int slotContentsIndex
+	while ( true )
+	{
+		#if SERVER
+			//printf( "sh_loadouts.gnut debug (R5DEV-29743), LoadoutSlot_WaitForItemFlavorOrNull, [%s], WaitSignal( %d, \"%s\" )",
+			//	"server", playerEHI.GetEncodedEHandle(), "Loadout_" + entry.id + "_Ready"
+			//)
+		#else
+			//printf( "sh_loadouts.gnut debug (R5DEV-29743), LoadoutSlot_WaitForItemFlavorOrNull, [%d], WaitSignal( %d, \"%s\" )",
+			//	LocalClientEHI(), playerEHI, "Loadout_" + entry.id + "_Ready"
+			//)
+		#endif
+		slotContentsIndex = GetLoadoutSlotContentsIndexInternal( playerEHI, entry )
+		if ( slotContentsIndex != SLOT_CONTENTS_SENTINEL_NOTREADY )
+			break
+
+		WaitSignal( GetEHISignalDummy( playerEHI ), "Loadout_" + entry.id + "_Ready" )
+	}
+
+	return ConvertLoadoutSlotContentsIndexToItemFlavor( entry, slotContentsIndex )
+}
 
 
 int function LoadoutSlot_GetRawStorageContents( EHI playerEHI, LoadoutEntry entry )
@@ -691,10 +691,10 @@ void function RemoveCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( EHI 
 }
 
 
-//void function RefreshLoadoutSlot( EHI playerEHI, LoadoutEntry entry )
-//{
-//	RefreshLoadoutSlotInternal( playerEHI, entry )
-//}
+void function RefreshLoadoutSlot( EHI playerEHI, LoadoutEntry entry )
+{
+	RefreshLoadoutSlotInternal( playerEHI, entry )
+}
 
 
 #if SERVER

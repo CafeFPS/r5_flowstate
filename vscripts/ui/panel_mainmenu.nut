@@ -457,7 +457,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 	while ( true )
 	{
 		bool isAuthenticatedByStryder = IsStryderAuthenticated()
-		PrintLaunchDebugVal( "isAuthenticatedByStryder", isAuthenticatedByStryder )
+		//PrintLaunchDebugVal( "isAuthenticatedByStryder", isAuthenticatedByStryder )
 
 		if ( isAuthenticatedByStryder )
 			break

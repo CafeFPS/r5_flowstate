@@ -95,7 +95,7 @@ global function SetNextCircleDisplayCustomClear
 
 global function SetChampionScreenRuiAsset
 
-#if DEV
+#if R5DEV
 global function Dev_ShowVictorySequence
 global function Dev_AdjustVictorySequence
 #endif
@@ -622,7 +622,7 @@ void function Cl_Survival_AddClient( entity player )
 	getroottable().testRui <- file.dpadMenuRui
 	SetDpadMenuVisible()
 
-	#if DEV
+	#if R5DEV
 		if ( GetBugReproNum() == 1972 )
 			file.pilotRui = CreatePermanentCockpitPostFXRui( $"ui/survival_player_hud_editor_version.rpak", HUD_Z_BASE )
 		else
@@ -1752,7 +1752,7 @@ void function ShowMapRui()
 
 bool function MapDevCheatsAreActive()
 {
-	#if DEV
+	#if R5DEV
 		if ( !GetConVarBool( "sv_cheats" ) )
 			return false
 		if ( InputIsButtonDown( KEY_LSHIFT ) || InputIsButtonDown( BUTTON_STICK_LEFT ) )
@@ -2720,7 +2720,7 @@ vector function ConvertNormalizedPosToWorldPos( vector normalizedPos, float zoom
 //
 bool function Survival_HandleKeyInput( int key )
 {
-#if DEV
+#if R5DEV
 	if ( MapDevCheatsAreActive() )
 	{
 		switch ( key )
@@ -3732,7 +3732,7 @@ SquadSummaryData function GetSquadSummaryData()
 	return file.squadSummaryData
 }
 
-#if DEV
+#if R5DEV
 void function Dev_ShowVictorySequence()
 {
 	ServerCallback_AddWinningSquadData( -1, -1, 0, 0, 0, 0, 0 )
@@ -3780,7 +3780,7 @@ void function SetSquadDataToLocalTeam()
 
 	int maxTrackedSquadMembers = PersistenceGetArrayCount( "lastGameSquadStats" )
 
-	#if DEV
+	#if R5DEV
 		printt( "PD: Reading Match Summary Persistet Vars for", player, "and", maxTrackedSquadMembers, "maxTrackedSquadMembers" )
 	#endif
 
@@ -3789,7 +3789,7 @@ void function SetSquadDataToLocalTeam()
 	{
 		int eHandle = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].eHandle" )
 
-		#if DEV
+		#if R5DEV
 			printt( "PD: ", i, "eHandle", player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].eHandle" ) )
 		#endif
 
@@ -3805,7 +3805,7 @@ void function SetSquadDataToLocalTeam()
 		data.revivesGiven = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].revivesGiven" )
 		data.respawnsGiven = player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].respawnsGiven" )
 
-		#if DEV
+		#if R5DEV
 			printt( "PD: ", i, "kills", player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].kills" ) )
 			printt( "PD: ", i, "damageDealt", player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].damageDealt" ) )
 			printt( "PD: ", i, "survivalTime", player.GetPersistentVarAsInt( "lastGameSquadStats[" + i + "].survivalTime" ) )
@@ -3818,7 +3818,7 @@ void function SetSquadDataToLocalTeam()
 
 	file.squadSummaryData.squadPlacement = player.GetPersistentVarAsInt( "lastGameRank" )
 
-	#if DEV
+	#if R5DEV
 		printt( "PD: squadPlacement", player.GetPersistentVarAsInt( "lastGameRank" ) )
 	#endif
 
@@ -3966,7 +3966,7 @@ void function ShowVictorySequence( bool placementMode = false )
 			CharacterSkin_Apply( characterModel, characterSkin )
 			cleanupEnts.append( characterModel )
 
-			#if DEV
+			#if R5DEV
 				if ( GetBugReproNum() == 1111 )
 				{
 					var topo = CreateRUITopology_Worldspace( OffsetPointRelativeToVector( pos, < 0, -50, 0 >, characterModel.GetForwardVector() ), characterAngles + <0, 180, 0>, 1000, 500 )
@@ -4000,7 +4000,7 @@ void function ShowVictorySequence( bool placementMode = false )
 			#endif //
 
 
-			#if DEV
+			#if R5DEV
 				if ( GetBugReproNum() == 1111 || GetBugReproNum() == 2222 )
 				{
 					playersOnPodium++
@@ -4089,7 +4089,7 @@ void function ShowVictorySequence( bool placementMode = false )
 
 		wait camera_move_duration - 0.5
 
-		#if DEV
+		#if R5DEV
 			if ( placementMode )
 			{
 				if ( IsValid( platformModel ) )
@@ -4139,7 +4139,7 @@ void function ShowVictorySequence( bool placementMode = false )
 
 	file.IsShowingVictorySequence = false
 
-	#if DEV
+	#if R5DEV
 		printt( "PD: IsSquadDataPersistenceEmpty", IsSquadDataPersistenceEmpty() )
 	#endif
 

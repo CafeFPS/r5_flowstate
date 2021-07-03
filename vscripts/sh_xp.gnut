@@ -245,7 +245,8 @@ int function GetAccountLevelForXP( int xp )
 			return levelIndex
 	}
 
-	int bonusXP = xp - file.totalXPToCompleteLevel[file.totalXPToCompleteLevel.len() - 1]
+	// TEMP:
+	int bonusXP = xp - 0//file.totalXPToCompleteLevel[file.totalXPToCompleteLevel.len() - 1]
 	return int( levelIndex + ceil( bonusXP / file.xpForBonusLevels ) )
 }
 

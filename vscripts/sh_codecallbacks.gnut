@@ -274,6 +274,7 @@ void function AddCallback_PlayerClassActuallyChanged( void functionref( entity )
 
 void function CodeCallback_PlayerClassChanged( entity player, bool actualSettingsFileChanged )
 {
+	printt(FUNC_NAME(), player, "actualSettingsFileChanged", actualSettingsFileChanged)
 	if ( !IsValid( player ) )
 		return
 
