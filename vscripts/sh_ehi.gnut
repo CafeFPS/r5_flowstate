@@ -42,6 +42,7 @@ global function EEH_GetTeamMemberIndex
 global function EHI_GetTeamMemberIndex
 global function GetPlayerEHIArrayOfTeam
 global function GetPlayerSquadSafe
+global function EEHHasValidScriptStruct
 #endif
 
 
@@ -67,6 +68,8 @@ global function UIToClient_UIVMIsShuttingDown
 global function UIToClient_UIVMJustStarted
 global function GetPlayerName
 global function GetKillerName
+global function GetPlayerRankScoreFromEHI
+global function GetPlayerLadderPosFromEHI
 #endif
 #if UI
 global function ShEHI_VMShutdown
@@ -121,6 +124,9 @@ void function ShEHI_LevelInit_Begin()
 	#if UI
 		FileStruct_LifetimeLevel newFileLevel
 		fileLevel = newFileLevel
+
+		if ( !( uiGlobal.uiShutdownCallbacks.contains(ShEHI_VMShutdown) ) )
+			AddUICallback_UIShutdown( ShEHI_VMShutdown )
 	#endif
 
 	#if CLIENT
@@ -367,7 +373,35 @@ int function EHI_GetTeamMemberIndex( EHI ent )
 }
 #endif
 
-#if SERVER || CLIENT || UI
+#if SERVER || CLIENT || UI 
+int function EHI_GetRankScore( EHI ent )
+{
+	#if SERVER
+		Assert( IsValid( ent ) )
+		return GetPlayerRankScoreFromEHI( ent )
+
+#elseif CLIENT || UI 
+		Assert( ent != EHI_null )
+		return GetEHIScriptStruct( ent ).rankScore
+	#endif
+}
+#endif
+
+#if SERVER || CLIENT || UI 
+int function EHI_GetRankedLadderPos( EHI ent )
+{
+	#if SERVER
+		Assert( IsValid( ent ) )
+		return GetPlayerLadderPosFromEHI( ent )
+
+#elseif CLIENT || UI 
+		Assert( ent != EHI_null )
+		return GetEHIScriptStruct( ent ).rankedLadderPosition
+	#endif
+}
+#endif
+
+#if SERVER || CLIENT || UI 
 array<EHI> function GetPlayerEHIArrayOfTeam( int team )
 {
 	#if SERVER
@@ -441,6 +475,9 @@ EHI function LocalClientEHI()
 #if CLIENT || UI
 EHI function WaitForLocalClientEHI()
 {
+	while ( !IsValidSignal( "OnLocalClientEHIValid" ) )
+		WaitFrame()
+
 	while ( fileLevel.localClientEHI == EHI_null )
 	{
 		#if CLIENT
@@ -502,6 +539,7 @@ void function ShEHI_OnPlayerCreated( entity ent )
 	ehiss.ehi = ehi
 	ehiss.isPlayer = true
 	ehiss.isConnected = true
+	ehiss.name = ent.GetPlayerName()
 	ehiss.team = ent.GetTeam()
 	ehiss.teamMemberIndex = ent.GetTeamMemberIndex()
 	#if CLIENT
@@ -694,5 +732,23 @@ string function GetPlayerName( EHI playerEHI )
 void function EHI_GameStatePlaying()
 {
 	fileLevel.obfuscatedNameMap.clear()
+}
+#endif
+
+#if SERVER || CLIENT
+int function GetPlayerRankScoreFromEHI( EHI playerEHI )
+{
+	int rankScore = EHI_GetRankScore( playerEHI )
+
+	return rankScore
+}
+#endif
+
+#if SERVER || CLIENT
+int function GetPlayerLadderPosFromEHI( EHI playerEHI )
+{
+	int rankScore = EHI_GetRankedLadderPos( playerEHI )
+
+	return rankScore
 }
 #endif

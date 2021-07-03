@@ -107,7 +107,13 @@ void function CreateGladCardRui( entity prop )
 
 	entity player = viewPlayer.GetPlayerNetEnt( "gladCardPlayer" )
 
-	if ( !IsValid( player ) )
+	while ( !IsValid( player ) && IsValid( prop ) )
+	{
+		player = viewPlayer.GetPlayerNetEnt( "gladCardPlayer" )
+		WaitFrame()
+	}
+
+	if ( !IsValid( prop ) )
 		return
 
 	EHI ehi = ToEHI( player )
@@ -194,6 +200,20 @@ void function AnimWindow_CreateProp_Start( ScriptAnimWindow window, var settings
 			prop.Hide()
 	#endif
 
+	//
+	var bodyGroupArr = GetSettingsBlockArray( settingsBlock, "propBodygroups" )
+	int bodygroupArraySize = GetSettingsArraySize( bodyGroupArr )
+	for( int index = 0; index < bodygroupArraySize; index++ )
+	{
+		var bodyGroupElem = GetSettingsArrayElem( bodyGroupArr, index )
+		string bodyGroup = GetSettingsBlockString( bodyGroupElem, "bodygroup" )
+		int subModelIndex = GetSettingsBlockInt( bodyGroupElem, "index" )
+
+		int bodyGroupIndex = prop.FindBodygroup( bodyGroup )
+		if ( bodyGroupIndex != -1 )
+			prop.SetBodygroupModelByIndex( bodyGroupIndex, subModelIndex )
+	}
+
 	if ( selectModelFrom == eAnimWindowCreatePropModelSelectionStrategy.COPY_PARENT )
 	{
 		prop.SetSkin( window.ent.GetSkin() )
@@ -211,6 +231,10 @@ void function AnimWindow_CreateProp_Start( ScriptAnimWindow window, var settings
 		disableoverwrite( windowPropMap )
 	#endif
 	windowPropMap[window.stringID] <- prop
+
+	bool syncCycle = GetSettingsBlockBool( settingsBlock, "syncCycle" )
+	if ( syncCycle )
+		window.ent.AnimSyncScriptProp_Begin( prop, window.startCycle, window.endCycle, window.windowName )
 
 	AnimWindow_CreateProp_Transition( window, settingsBlock )
 }
@@ -248,6 +272,10 @@ void function AnimWindow_CreateProp_Stop( ScriptAnimWindow window, var settingsB
 	Assert( window.stringID in windowPropMap )
 	entity prop = windowPropMap[window.stringID]
 	delete windowPropMap[window.stringID]
+
+	bool syncCycle = GetSettingsBlockBool( settingsBlock, "syncCycle" )
+	if ( syncCycle )
+		window.ent.AnimSyncScriptProp_End( prop )
 
 	if ( IsValid( prop ) )
 		prop.Destroy()
@@ -327,10 +355,8 @@ void function AnimWindow_PlaySound_Stop( ScriptAnimWindow window, var settingsBl
 		Assert( 0, "NYI" )
 	#elseif CLIENT
 		entity viewPlayer = GetLocalViewPlayer()
-		if ( !windowSoundHandleMap[window.stringID] )
-			return
-
-		StopSound( windowSoundHandleMap[window.stringID] )
+		if ( windowSoundHandleMap[window.stringID] )
+			StopSound( windowSoundHandleMap[window.stringID] )
 		delete windowSoundHandleMap[window.stringID]
 	#endif
 }

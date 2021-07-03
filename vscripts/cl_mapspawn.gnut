@@ -23,6 +23,8 @@ global function GetScaledVirtualScreenSize
 global function UpdateFullscreenTopology
 global function GetNearestAspectRatio
 
+global function CreateFullscreenTopology
+
 global var Hud = null
 
 global bool TITAN_CORE_ENABLED = true

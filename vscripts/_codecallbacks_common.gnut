@@ -119,6 +119,8 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	CodeCallback_OnClientReloadConnectionCompleted(player)
 
+
+
 	SetGameState(eGameState.Playing)
 
 
@@ -157,6 +159,7 @@ void function InitRespawnPlayer(entity player)
   wait 1.0
 	
 	SetTeam(player, 1)
+	player.SetTeamMemberIndex( 0 )
 	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
 	player.SetPlayerNetBool( "pingEnabled", true )
 

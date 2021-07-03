@@ -22,6 +22,10 @@ global function CharacterSkin_GetArmsModel
 global function CharacterSkin_GetSkinName
 global function CharacterSkin_GetCamoIndex
 global function CharacterSkin_GetSortOrdinal
+global function CharacterSkin_GetCustomCharSelectIntroAnim
+global function CharacterSkin_GetCustomCharSelectIdleAnim
+global function CharacterSkin_GetCustomCharSelectReadyIntroAnim
+global function CharacterSkin_GetCustomCharSelectReadyIdleAnim
 global function CharacterKillQuip_GetCharacterFlavor
 global function CharacterKillQuip_GetAttackerConversationName
 global function CharacterKillQuip_GetAttackerStingSoundEvent
@@ -29,11 +33,13 @@ global function CharacterKillQuip_GetVictimVoiceSoundEvent
 global function CharacterKillQuip_GetVictimStingSoundEvent
 global function CharacterKillQuip_GetStingSound
 global function CharacterKillQuip_GetSortOrdinal
-global function CharacterSkydiveEmote_GetCharacterFlavor
+global function CharacterIntroQuip_GetCharacterFlavor
+global function GetPlayerSkydiveEmote
+global function GetValidPlayerSkydiveEmotes
 global function CharacterSkydiveEmote_IsTheEmpty
+global function CharacterSkydiveEmote_GetCharacterFlavor
 global function CharacterSkydiveEmote_GetAnimSeq
 global function CharacterSkydiveEmote_GetVideo
-global function CharacterIntroQuip_GetCharacterFlavor
 global function CharacterIntroQuip_GetVoiceSoundEvent
 global function CharacterIntroQuip_GetStingSoundEvent
 global function CharacterIntroQuip_GetSortOrdinal
@@ -53,6 +59,7 @@ global function DEV_TestCharacterSkinData
 //////////////////////
 //
 
+global const int MAX_SKYDIVE_EMOTES = 8
 
 ///////////////////////
 ///////////////////////
@@ -65,7 +72,7 @@ struct FileStruct_LifetimeLevel
 	table<ItemFlavor, LoadoutEntry>             loadoutCharacterExecutionSlotMap
 	table<ItemFlavor, LoadoutEntry>             loadoutCharacterIntroQuipSlotMap
 	table<ItemFlavor, LoadoutEntry>             loadoutCharacterKillQuipSlotMap
-	table<ItemFlavor, LoadoutEntry>             loadoutCharacterSkydiveEmoteSlotMap
+	table<ItemFlavor, array<LoadoutEntry> >             loadoutCharacterSkydiveEmoteSlotMap
 
 	table<ItemFlavor, ItemFlavor> skinCharacterMap
 	table<ItemFlavor, ItemFlavor> executionCharacterMap
@@ -150,6 +157,8 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 		fileLevel.loadoutCharacterExecutionSlotMap[characterClass] <- entry
 	}
 
+	array<ItemFlavor> allEmotes
+
 	// intro quips
 	{
 		array<ItemFlavor> quipList = RegisterReferencedItemFlavorsFromArray( characterClass, "introQuips", "flavor", "featureFlag" )
@@ -171,6 +180,8 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 		entry.networkTo = eLoadoutNetworking.PLAYER_GLOBAL
 		entry.networkVarName = "IntroQuip"
 		fileLevel.loadoutCharacterIntroQuipSlotMap[characterClass] <- entry
+
+		allEmotes.extend( quipList )
 	}
 
 	// kill quips
@@ -193,29 +204,53 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 		entry.networkTo = eLoadoutNetworking.PLAYER_GLOBAL
 		entry.networkVarName = "KillQuip"
 		fileLevel.loadoutCharacterKillQuipSlotMap[characterClass] <- entry
+
+		allEmotes.extend( quipList )
 	}
 
 	// sky emotes
+	RegisterEquippableQuipsForCharacter( characterClass, allEmotes )
 	{
 		array<ItemFlavor> skydiveEmotesList = RegisterReferencedItemFlavorsFromArray( characterClass, "skydiveEmotes", "flavor", "featureFlag" )
 		foreach( ItemFlavor skydiveEmote in skydiveEmotesList )
 			fileLevel.skydiveEmoteCharacterMap[skydiveEmote] <- characterClass
 		MakeItemFlavorSet( skydiveEmotesList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_skydive_emote_for_" + ItemFlavor_GetGUIDString( characterClass ) )
-		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
-		entry.DEV_category = "character_skydive_emotes"
-		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Skydive Emote"
-		entry.defaultItemFlavor = skydiveEmotesList[0]
-		entry.validItemFlavorList = skydiveEmotesList
-		entry.isSlotLocked = bool function( EHI playerEHI ) {
-			return !IsLobby()
+		fileLevel.loadoutCharacterSkydiveEmoteSlotMap[characterClass] <- []
+
+		for ( int i=0; i<MAX_SKYDIVE_EMOTES; i++ )
+		{
+			LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_skydive_emote_" + i + "_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+			entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
+			entry.DEV_category = "character_skydive_emotes"
+			entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Skydive Emote " + i
+			entry.defaultItemFlavor = skydiveEmotesList[0]
+			entry.validItemFlavorList = skydiveEmotesList
+			entry.isSlotLocked = bool function( EHI playerEHI ) {
+				return !IsLobby()
+			}
+			#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+			entry.isActiveConditions = { [Loadout_CharacterClass()] = { [characterClass] = true, }, }
+			entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+			fileLevel.loadoutCharacterSkydiveEmoteSlotMap[characterClass].append( entry )
 		}
-		#if SERVER
-		#endif
-		entry.isActiveConditions = { [Loadout_CharacterClass()] = { [characterClass] = true, }, }
-		entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
-		fileLevel.loadoutCharacterSkydiveEmoteSlotMap[characterClass] <- entry
 	}
 }
 
@@ -246,9 +281,9 @@ LoadoutEntry function Loadout_CharacterExecution( ItemFlavor characterClass )
 }
 
 
-LoadoutEntry function Loadout_CharacterSkydiveEmote( ItemFlavor characterClass )
+LoadoutEntry function Loadout_CharacterSkydiveEmote( ItemFlavor characterClass, int index )
 {
-	return fileLevel.loadoutCharacterSkydiveEmoteSlotMap[characterClass]
+	return fileLevel.loadoutCharacterSkydiveEmoteSlotMap[characterClass][ index ]
 }
 
 
@@ -285,9 +320,12 @@ void function PlayIntroQuipThread( entity emitter, EHI playerEHI, entity excepti
 
 
 #if SERVER || CLIENT
-void function PlayKillQuipThread( entity emitter, EHI playerEHI, entity exceptionPlayer = null )
+void function PlayKillQuipThread( entity emitter, EHI playerEHI, entity exceptionPlayer = null, float delay = 0.0 )
 {
 	EndSignal( emitter, "OnDestroy" )
+	
+	wait delay
+	
 	#if CLIENT
 		Timeout timeout = BeginTimeout( 4.0 )
 		EndSignal( timeout, "Timeout" )
@@ -307,6 +345,10 @@ void function PlayKillQuipThread( entity emitter, EHI playerEHI, entity exceptio
 #if SERVER || CLIENT
 void function PlayQuip( string quipAlias, entity emitter, EHI playerEHI, entity exceptionPlayer )
 {
+	Assert( IsValid( emitter ) )
+	if ( !IsValid( emitter ) )
+		return
+
 	if ( quipAlias != "" )
 	{
 		#if SERVER
@@ -416,6 +458,38 @@ ItemFlavor function CharacterSkin_GetCharacterFlavor( ItemFlavor flavor )
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.character_skin )
 
 	return fileLevel.skinCharacterMap[flavor]
+}
+
+
+asset function CharacterSkin_GetCustomCharSelectIntroAnim( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character_skin )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "customCharSelectIntroAnim" )
+}
+
+
+asset function CharacterSkin_GetCustomCharSelectIdleAnim( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character_skin )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "customCharSelectIdleAnim" )
+}
+
+
+asset function CharacterSkin_GetCustomCharSelectReadyIntroAnim( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character_skin )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "customCharSelectReadyIntroAnim" )
+}
+
+
+asset function CharacterSkin_GetCustomCharSelectReadyIdleAnim( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character_skin )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "customCharSelectReadyIdleAnim" )
 }
 
 
@@ -588,15 +662,26 @@ ItemFlavor function CharacterIntroQuip_GetCharacterFlavor( ItemFlavor flavor )
 	return fileLevel.introQuipCharacterMap[flavor]
 }
 
+table<int,ItemFlavor> function GetValidPlayerSkydiveEmotes( entity player )
+{
+	table<int,ItemFlavor> emotes
+	for ( int i=0; i<MAX_SKYDIVE_EMOTES; i++ )
+	{
+		ItemFlavor flav = GetPlayerSkydiveEmote( player, i )
+		if ( !CharacterSkydiveEmote_IsTheEmpty( flav ) )
+			emotes[i] <- flav
+	}
+	return emotes
+}
 
-ItemFlavor function GetPlayerSkydiveEmote( entity player )
+ItemFlavor function GetPlayerSkydiveEmote( entity player, int index )
 {
 	if ( LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ) )
 	{
 		ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-		if ( LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterSkydiveEmote( character ) ) )
+		if ( LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterSkydiveEmote( character, index ) ) )
 		{
-			return LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkydiveEmote( character ) )
+			return LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkydiveEmote( character, index ) )
 		}
 	}
 	return GetItemFlavorByAsset( $"settings/itemflav/skydive_emote/_empty.rpak" )

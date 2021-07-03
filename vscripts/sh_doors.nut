@@ -10,6 +10,8 @@
 
 global function ShDoors_Init
 global function IsDoor
+global function IsCodeDoor
+global function IsDoorOpen
 global function GetAllPropDoors
 
 #if SERVER && R5DEV
@@ -26,6 +28,19 @@ enum eDoorType
 	SLIDING,
 	BLOCKABLE,
 	CODE,
+}
+
+struct DoorData
+{
+	string className
+	string scriptName
+	vector origin
+	vector angles
+	int realm
+	asset modelName
+	entity linkDoor
+	bool hasLinkDoor
+	DoorData ornull linkDoorData
 }
 
 struct
@@ -85,7 +100,37 @@ void function ShDoors_Init()
 
 bool function IsDoor( entity ent )
 {
-	return IsCodeDoor( ent )
+	if ( IsCodeDoor( ent ) )
+		return true
+
+	switch ( ent.GetScriptName() )
+	{
+		case "survival_door_model":
+		case "survival_door_plain":
+		case "survival_door_sliding":
+		case "survival_door_blockable":
+		case "survival_door_code":
+		return true
+	}
+
+	return false
+}
+
+bool function IsDoorOpen( entity door )
+{
+	if ( !IsDoor( door ) )
+		return false
+
+	if ( IsCodeDoor( door ) )
+	{
+		return door.IsDoorOpen()
+	}
+	else
+	{
+		return GradeFlagsHas( door, eGradeFlags.IS_OPEN ) //
+	}
+
+	return false
 }
 
 array<entity> function GetAllPropDoors()

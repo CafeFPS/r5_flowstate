@@ -2,13 +2,17 @@ untyped
 
 globalize_all_functions
 
-global const DEG_TO_RAD = 0.01745329251994  // PI / 180.0
-global const RAD_TO_DEG = 57.29577951308232 // 180.0 / PI
+global const float FLOAT_INFINITY = 3.40282e+38 + 3.40282e+38
+global const float FLOAT_INDETERMINATE = FLOAT_INFINITY * 0.0
+global const float FLOAT_NAN = -FLOAT_INDETERMINATE
+
+global const float DEG_TO_RAD = 0.01745329251994  // PI / 180.0
+global const float RAD_TO_DEG = 57.29577951308232 // 180.0 / PI
 
 global array<asset> LEGAL_PLAYER_TITAN_SETTINGS
 
-global const PST_TIME_ZONE_OFFSET				= -7
-
+//
+global const PST_TIME_ZONE_OFFSET = -7
 global enum eDaysOfWeek
 {
 	SUNDAY,
@@ -64,26 +68,28 @@ global struct Timeout
 
 global struct ShuffleData
 {
-	int shufflePos = 999
-	array<int> shuffledIndices
-	int lastIndex = -1
-
-	int count = 0
+	array<int> _indices
+	int        _pos
 }
 
 global struct ThrottleData
 {
-	float lastRunTime = 0.0
-	bool isQueued = false
+	float              lastRunTime = 0.0
+	bool               isQueued = false
 	void functionref() latestFunc
 }
 
+global struct WaitQuotaItem
+{
+	int _count
+	int _budget
+}
 
 struct
 {
-	int lastHostThreadMode
-	int lastScriptPrecacheErrors
-	int lastReportFatal
+	int  lastHostThreadMode
+	int  lastScriptPrecacheErrors
+	int  lastReportFatal
 	bool devUnlockedSPMissions
 
 	int cachedIsLobby = IS_LOBBY_UNSURE
@@ -92,15 +98,28 @@ struct
 
 void function ShUtilityAll_Init()
 {
-	#document( "DistanceAlongVector", "" )
-	#document( "GetClosestPointOnLineSegment", "Get the nearest point on a line segment" )
-	#document( "GetDistanceFromLineSegment", "" )
-	#document( "GetDistanceSqrFromLineSegment", "" )
+	#document("DistanceAlongVector","")
+	#document("GetClosestPointOnLineSegment","Get the nearest point on a line segment")
+	#document("GetDistanceFromLineSegment","")
+	#document("GetDistanceSqrFromLineSegment","")
 
 	LEGAL_PLAYER_TITAN_SETTINGS = GetAllowedPlayerTitanSettings() //Function reads from the data table, no point doing it over and over when it shouldn't change mid-match/game
 
 	RegisterSignal( "Timeout" )
 	RegisterSignal( "CancelTimeout" )
+
+	//
+	#if(!UI)
+		PrecacheModel( $"mdl/fx/fire_cylinder_sm1.rmdl" )
+		PrecacheModel( $"mdl/fx/r301_leg07_fire_horns.rmdl" )
+		PrecacheModel( $"mdl/fx/r301_leg07_fire_body.rmdl" )
+
+		PrecacheModel( $"mdl/fx/peacekeeper_legendary_ice_stock.rmdl" )
+		PrecacheModel( $"mdl/fx/peacekeeper_legendary_ice_lvl2_add.rmdl" )
+		PrecacheModel( $"mdl/fx/peacekeeper_legendary_ice_lvl2_add_b.rmdl" )
+		PrecacheModel( $"mdl/fx/peacekeeper_legendary_ice_lvl3_add.rmdl" )
+		PrecacheModel( $"mdl/fx/peacekeeper_legendary_ice_lvl3_add_b.rmdl" )
+	#endif
 }
 
 Timeout function BeginTimeout( float duration )
@@ -249,6 +268,16 @@ void function AssertParameters( func, int paramCount, string paramDesc )
 	string funcName = expect string( funcInfos.name )
 	// subtract one from the param count for the hidden "this" object
 	Assert( funcInfos.parameters.len() == (paramCount + 1), "Function \"" + funcName +"\" must have exactly " + paramCount + " parameters (" + paramDesc + ")." )
+}
+
+string function GetNameForEnum( table<string, int> enumTable, int val )
+{
+	foreach( string name, int index in enumTable )
+	{
+		if ( index == val )
+			return name
+	}
+	return format( "%s() - INVALID: %d", FUNC_NAME(), val )
 }
 
 void function PrintTable( tbl, int indent = 0, int maxDepth = 4 )
@@ -797,8 +826,6 @@ bool function IsWeaponKeyFieldDefined( string ref, string variable )
 
 string function GetWeaponInfoFileKeyField_GlobalString( string ref, string variable )
 {
-	if(variable == "printName") 
-		return "printName"
 	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
 	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
 	return expect string( val )
@@ -1537,6 +1564,18 @@ int function SortByEntIndex( entity a, entity b )
 	return 0
 }
 
+
+int function SortByTeamMemberIndex( entity a, entity b )
+{
+	if ( a.GetTeamMemberIndex() > b.GetTeamMemberIndex() )
+		return 1
+	else if ( a.GetTeamMemberIndex() < b.GetTeamMemberIndex() )
+		return -1
+
+	return 0
+}
+
+
 #if !UI
 bool function AllegianceCheck( int req, entity entA, entity entB )
 {
@@ -1694,7 +1733,7 @@ array<string> function RegexpFindSimple( string baseString, string patternString
 vector function RandomVec( float range )
 {
 	// could rewrite so it doesnt make a box of random.
-	vector vec = <0,0,0>
+	vector vec = <0, 0, 0>
 	vec.x = RandomFloatRange( -range, range )
 	vec.y = RandomFloatRange( -range, range )
 	vec.z = RandomFloatRange( -range, range )
@@ -1712,42 +1751,57 @@ int function real_int_modulo( int x, int n )
 	return ((x % n) + n) % n
 }
 
+#if CLIENT
+vector function OriginToGround( vector origin, int traceMask = TRACE_MASK_NPCWORLDSTATIC )
+{
+	vector endOrigin         = <origin.x, origin.y, -MAX_WORLD_COORD_BUFFER >
+	TraceResults traceResult = TraceLine( origin, endOrigin, [], traceMask, TRACE_COLLISION_GROUP_NONE )
+
+	return traceResult.endPos
+}
+#endif
+
 //////
 // Shuffle:
-
-void function Shuffle_Init( ShuffleData data, int numberOfIndices )
+//////
+void function Shuffle_Init( ShuffleData sd, int count )
 {
-	Assert( numberOfIndices > 0 )
-	data.count = numberOfIndices
+	Assert( count > 0 )
+	sd._indices.resize( count )
+	for ( int idx = 0; idx < count; ++idx )
+		sd._indices[idx] = idx
+
+	sd._pos = count
 }
+
 
 int function Shuffle_GetNextIndex( ShuffleData sd )
 {
-	if ( sd.count <= 0 )
-		return -1
+	Assert( sd._indices.len() > 0 )
 
-	array<int> indices = sd.shuffledIndices
+	array<int> idxs = sd._indices
+	int count       = idxs.len()
+	if ( count == 1 )
+		return idxs[0]
 
-	++(sd.shufflePos)
-	if ( sd.shufflePos >= indices.len() )
+	++(sd._pos)
+	if ( sd._pos >= count )
 	{
-		sd.shufflePos = 0
+		int lastIndexPlayed = ((sd._pos == count) ? idxs.top() : -1)
+		idxs.randomize()
+		if ( idxs[0] == lastIndexPlayed )
+			idxs.reverse()    //
 
-		// Shuffle order:
-		{
-			indices.resize( sd.count )
-			for ( int idx = 0; idx < sd.count; ++idx )
-				indices[idx] = idx
-			indices.randomize()
-
-			// no repeats:
-			if ( (sd.count > 1) && (indices[0] == sd.lastIndex) )
-				indices.reverse()
-		}
+		sd._pos = 0
 	}
 
-	sd.lastIndex = indices[sd.shufflePos]
-	return sd.lastIndex
+	return idxs[sd._pos]
+}
+
+
+int function Shuffle_GetCount( ShuffleData sd )
+{
+	return sd._indices.len()
 }
 //////
 
@@ -2134,7 +2188,7 @@ int function GetUnixTimeFromParts( TimeParts parts, int timezoneOffsetHours )
 
 int function __YearToDays( int y )
 {
-	return (y)*365 + (y)/4 - (y)/100 + (y)/400
+	return (y) * 365 + (y) / 4 - (y) / 100 + (y) / 400
 }
 
 DisplayTime function SecondsToDHMS( int seconds )
@@ -2166,7 +2220,7 @@ int function GetDayOfWeek( int unixTime )
 
 string function GetDayOfWeekName( int dayOfWeek )
 {
-	array<string> days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+	array<string> days = ["#SUNDAY", "#MONDAY", "#TUESDAY", "#WEDNESDAY", "#THURSDAY", "#FRIDAY", "#SATURDAY"]
 	Assert( dayOfWeek >= 0 && dayOfWeek <= days.len() )
 	return days[dayOfWeek]
 }
@@ -2241,20 +2295,9 @@ int function GetMaxEliteStreak( entity player )
 }
 
 #if CLIENT || UI 
-bool function IsInMyParty( string uid )
-{
-	Party party = GetParty()
-	foreach ( p in party.members )
-	{
-		if ( p.uid == uid )
-			return true
-	}
-	return false
-}
-
 bool function CanSendFriendRequest( entity player )
 {
-	if ( !GetCurrentPlaylistVarBool( "enable_squad_friend_invite", false ) )
+	if ( !GetCurrentPlaylistVarBool( "enable_squad_friend_invite", true ) )
 		return false
 
 	return true
@@ -2262,7 +2305,7 @@ bool function CanSendFriendRequest( entity player )
 
 bool function CanInviteSquadMate( string uid )
 {
-	if ( !GetCurrentPlaylistVarBool( "enable_squad_invite", false ) )
+	if ( !GetCurrentPlaylistVarBool( "enable_squad_invite", true ) )
 		return false
 
 	if ( IsInMyParty( uid ) )
@@ -2273,7 +2316,46 @@ bool function CanInviteSquadMate( string uid )
 
 	return true
 }
+
+bool function IsInMyParty( string uid )
+{
+	Party party = GetParty()
+	foreach ( p in party.members )
+	{
+		if ( p.uid == uid )
+			return true
+	}
+	return false
+}
 #endif
+
+//
+//
+WaitQuotaItem function WaitFrameQuota_Init( int maxPerFrame )
+{
+	WaitQuotaItem wq
+	wq._count = 0
+	wq._budget = maxPerFrame
+	return wq
+}
+
+
+void function WaitFrameQuota_Reset( WaitQuotaItem wq )
+{
+	wq._count = 0
+}
+
+
+void function WaitFrameQuota( WaitQuotaItem wq )
+{
+	wq._count += 1
+	if ( wq._count < wq._budget )
+		return
+	wq._count = 0
+	WaitFrame()
+}
+
+
 entity function AssertLocalOrServerValidPlayer( entity player )
 {
 	#if SERVER
@@ -2285,4 +2367,46 @@ entity function AssertLocalOrServerValidPlayer( entity player )
 	#endif
 
 	return player
+}
+
+
+bool function IsEverythingUnlocked()
+{
+	#if(DEV)
+		if ( GetCurrentPlaylistVarBool( "dev_force_everything_unlocked", false ) )
+			return true
+	#endif
+
+	return EverythingUnlockedConVarEnabled()
+}
+
+//
+string function StripRuiStringFormatting( string text )
+{
+	string newText = text
+	while ( newText.find( "`" ) != -1 )
+	{
+		int idx = newText.find( "`" )
+
+		if ( newText.len() < 2 )
+			return ""
+
+		string a = ""
+
+		if ( idx > 0 )
+		{
+			a = newText.slice( 0, idx )
+		}
+
+		string b = ""
+
+		if ( idx+2 < newText.len() )
+		{
+			b = newText.slice( idx+2, newText.len() )
+		}
+
+		newText = a + b
+	}
+
+	return newText
 }

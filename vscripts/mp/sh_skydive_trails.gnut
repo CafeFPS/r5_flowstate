@@ -1,9 +1,13 @@
 global function ShSkydiveTrails_LevelInit
 
 global function Loadout_SkydiveTrail
+global function SkydiveTrail_GetSkyDiveTrailPackageForPlayer
+global function SkydiveTrail_GetSkyDiveTrailPackageFromItemFlavor
 global function SkydiveTrail_GetSortOrdinal
 global function SkydiveTrail_GetVideo
 
+global function SkydiveTrail_GetIndexForPackage
+global function SkydiveTrail_GetPackageForIndex
 
 //////////////////////
 //////////////////////
@@ -60,6 +64,7 @@ global struct SkyDiveTrailPackage
 struct FileStruct_LifetimeLevel
 {
 	LoadoutEntry&             loadoutSkydiveTrailSlot
+
 	table<ItemFlavor, SkyDiveTrailPackage > itemFlavorToSkyDiveTrailPackageTable
 	table<ItemFlavor, int> skyDiveTrailsSortOrdinalMap
 	table<ItemFlavor, int> cosmeticFlavorSortOrdinalMap
@@ -85,25 +90,136 @@ void function RegisterSkydiveTrails()
 {
 	array<ItemFlavor> trailFlavs
 
+	int skyDiveTrailPackageIndex = 0
+
 	foreach ( asset trailAsset in SKYDIVE_TRAIL_ASSET_LIST )
 	{
 		ItemFlavor ornull flav = RegisterItemFlavorFromSettingsAsset( trailAsset )
 		if ( flav == null )
 			continue
 
-		trailFlavs.append( expect ItemFlavor( flav ) )
+		expect ItemFlavor( flav )
+
+		trailFlavs.append( flav )
+
+		SkyDiveTrailPackage trailPackage
+
+		array< SkyDiveTrailFXStruct > smokeColorFX
+
+		foreach( var smokeColorFXBlock in IterateSettingsAssetArray( trailAsset, "smokeColorFXPackage" ) )
+		{
+			SkyDiveTrailFXStruct trailFX
+			trailFX.fx = GetSettingsBlockStringAsAsset( smokeColorFXBlock, "fxAsset" )
+			trailFX.attachName = GetSettingsBlockString( smokeColorFXBlock, "attachName" )
+			trailFX.useSkyDiveSmokeColorForTeam = !GetSettingsBlockBool( smokeColorFXBlock, "useCustomControlPoint" )
+			trailFX.controlPoint = GetSettingsBlockVector( smokeColorFXBlock, "controlPoint" )
+			trailFX.attachType = 7 //
+
+			#if(false)
+
+#endif
+
+			smokeColorFX.append( trailFX )
+		}
+
+		trailPackage.smokeColorFX = smokeColorFX
+
+		array< SkyDiveTrailFXStruct > friendlyJumpJetFX
+
+		foreach( var friendlyJumpJetFXBlock in IterateSettingsAssetArray( trailAsset, "friendlyJumpJetFXPackage" ) )
+		{
+			SkyDiveTrailFXStruct trailFX
+			trailFX.fx = GetSettingsBlockStringAsAsset( friendlyJumpJetFXBlock, "fxAsset" )
+			trailFX.attachName = GetSettingsBlockString( friendlyJumpJetFXBlock, "attachName" )
+			trailFX.useSkyDiveSmokeColorForTeam = !GetSettingsBlockBool( friendlyJumpJetFXBlock, "useCustomControlPoint" )
+			trailFX.controlPoint = GetSettingsBlockVector( friendlyJumpJetFXBlock, "controlPoint" )
+			trailFX.attachType = 7 //
+
+			#if(false)
+
+#endif
+
+			friendlyJumpJetFX.append( trailFX )
+		}
+
+		trailPackage.friendlyJumpJet = friendlyJumpJetFX
+
+		array< SkyDiveTrailFXStruct > enemyJumpJet
+
+		foreach( var enemyJumpJetFXBlock in IterateSettingsAssetArray( trailAsset, "enemyJumpJetFXPackage" ) )
+		{
+			SkyDiveTrailFXStruct trailFX
+			trailFX.fx = GetSettingsBlockStringAsAsset( enemyJumpJetFXBlock, "fxAsset" )
+			trailFX.attachName = GetSettingsBlockString( enemyJumpJetFXBlock, "attachName" )
+			trailFX.useSkyDiveSmokeColorForTeam = !GetSettingsBlockBool( enemyJumpJetFXBlock, "useCustomControlPoint" )
+			trailFX.controlPoint = GetSettingsBlockVector( enemyJumpJetFXBlock, "controlPoint" )
+			trailFX.attachType = 7 //
+
+			#if(false)
+
+#endif
+
+			enemyJumpJet.append( trailFX )
+		}
+
+		trailPackage.enemyJumpJet = enemyJumpJet
+
+		array< SkyDiveTrailFXStruct > jumpJetLandFX
+
+		foreach( var jumpJetLandFxBlock in IterateSettingsAssetArray( trailAsset, "jumpJetLandFXPackage" ) )
+		{
+			SkyDiveTrailFXStruct trailFX
+			trailFX.fx = GetSettingsBlockStringAsAsset( jumpJetLandFxBlock, "fxAsset" )
+			trailFX.attachName = GetSettingsBlockString( jumpJetLandFxBlock, "attachName" )
+			trailFX.useSkyDiveSmokeColorForTeam = !GetSettingsBlockBool( jumpJetLandFxBlock, "useCustomControlPoint" )
+			trailFX.controlPoint = GetSettingsBlockVector( jumpJetLandFxBlock, "controlPoint" )
+			trailFX.attachType = 7 //
+
+			#if(false)
+
+#endif
+
+			jumpJetLandFX.append( trailFX )
+		}
+
+		trailPackage.jumpJetLandFX = jumpJetLandFX
+
+		trailPackage.DropSequenceLaunch1P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceLaunch1P" )
+		trailPackage.DropSequenceLaunch3P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceLaunch3P" )
+		trailPackage.DropSequenceTravel1P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceTravel1P" )
+		trailPackage.DropSequenceTravel3P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceTravel3P" )
+		trailPackage.DropSequenceLandStart1P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceLandStart1P" )
+		trailPackage.DropSequenceLandStart3P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceLandStart3P" )
+		trailPackage.DropSequenceLandStop1P =  GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceLandStop1P" )
+		trailPackage.DropSequenceLandStop3P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceLandStop3P" )
+
+		trailPackage.InGameFlightLaunch1P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "InGameFlightLaunch1P" )
+		trailPackage.InGameFlightLaunch3P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "InGameFlightLaunch3P" )
+		trailPackage.InGameFlightTravel1P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "InGameFlightTravel1P" )
+		trailPackage.InGameFlightTravel3P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "InGameFlightTravel3P" )
+		trailPackage.InGameFlightLandStart1P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "InGameFlightLandStart1P" )
+		trailPackage.InGameFlightLandStart3P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "InGameFlightLandStart3P" )
+		trailPackage.InGameFlightLandStop1P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "InGameFlightLandStop1P" )
+		trailPackage.InGameFlightLandStop3P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "InGameFlightLandStop3P" )
+
+		trailPackage.DropSequenceCameraTransition1P = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "DropSequenceCameraTransition1P" )
+
+		fileLevel.itemFlavorToSkyDiveTrailPackageTable[ flav ] <- trailPackage
+
+		fileLevel.skyDiveTrailPackageIndexTable[ skyDiveTrailPackageIndex++ ] <- trailPackage
 	}
 
-	MakeItemFlavorSet( trailFlavs, fileLevel.cosmeticFlavorSortOrdinalMap )
+	MakeItemFlavorSet( trailFlavs, fileLevel.skyDiveTrailsSortOrdinalMap )
 
 	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "skydive_trail" )
-	entry.DEV_name = "Skydive Trail"
+	entry.DEV_name = "SkydiveTrail"
 	entry.defaultItemFlavor = trailFlavs[0]
 	entry.validItemFlavorList = trailFlavs
 	entry.isSlotLocked = bool function( EHI playerEHI ) {
 		return !IsLobby()
 	}
-	entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+	entry.networkTo = eLoadoutNetworking.PLAYER_GLOBAL
+	entry.networkVarName = "SkydiveTrail"
 
 	fileLevel.loadoutSkydiveTrailSlot = entry
 }

@@ -2,9 +2,14 @@ global function ShCommsMenu_Init
 
 #if CLIENT
 global function CommsMenu_HandleKeyInput
+global function ClientCodeCallback_OpenChatWheel
+global function SetHintTextOnHudElem
+
+global function PingSecondPageIsEnabled
 global function AddCallback_OnCommsMenuStateChanged
 global function IsCommsMenuActive
 
+global function CommsMenu_ExecuteSelectionIfValid
 global function CommsMenu_CanUseMenu
 global function CommsMenu_OpenMenuTo
 global function CommsMenu_Shutdown
@@ -33,10 +38,13 @@ global enum eCommsMenuStyle
 	CHAT_MENU,
 	INVENTORY_HEALTH_MENU,
 	ORDNANCE_MENU,
+	SKYDIVE_EMOTE_MENU,
+
+	_assertion_marker,
 
 	_count
 }
-Assert( eCommsMenuStyle._count == 5 )    // update comms_menu.rui
+Assert( eCommsMenuStyle._assertion_marker == 6 )    //
 
 global enum eChatPage
 {
@@ -58,6 +66,8 @@ global enum eChatPage
 	//
 	INVENTORY_HEALTH,
 	ORDNANCE_LIST,
+
+	SKYDIVE_EMOTES,
 
 	_count
 }
@@ -163,18 +173,26 @@ void function ChatMenuButton_Down( entity player )
 	if ( TryPingBlockingFunction( player, "quickchat" ) )
 		return
 
-	if ( !GetCurrentPlaylistVarBool( "survival_quick_chat_enabled", false ) )
-		return
-
 	int ms = PlayerMatchState_GetFor( player )
-	if ( (ms == ePlayerMatchState.SKYDIVE_PRELAUNCH) || (ms == ePlayerMatchState.SKYDIVE_FALLING) )
+
+	if ( !IsFiringRangeGameMode() )
+	{
+		if ( ms < ePlayerMatchState.SKYDIVE_PRELAUNCH )
+			return
+	}
+
+	if ( PlayerIsInADS( player ) )
 		return
 
 	int chatPage = eChatPage.DEFAULT
 	if ( Bleedout_IsBleedingOut( player ) )
 		chatPage = eChatPage.BLEEDING_OUT
 
-	CommsMenu_OpenMenuTo( player, chatPage, eCommsMenuStyle.CHAT_MENU )
+	if ( GetCurrentPlaylistVarBool( "survival_quick_chat_enabled", true ) )
+	{
+		//
+			CommsMenu_OpenMenuTo( player, chatPage, eCommsMenuStyle.CHAT_MENU )
+	}
 }
 
 void function ChatMenuButton_Up( entity player )
@@ -182,6 +200,14 @@ void function ChatMenuButton_Up( entity player )
 	if ( !IsCommsMenuActive() )
 		return
 	if ( file.commsMenuStyle != eCommsMenuStyle.CHAT_MENU )
+		return
+
+	CommsMenu_ExecuteSelectionIfValid( player, eCommsMenuStyle.CHAT_MENU )
+}
+
+void function CommsMenu_ExecuteSelectionIfValid( entity player, int requiredCommsMenuStyle )
+{
+	if ( file.commsMenuStyle != requiredCommsMenuStyle )
 		return
 
 	if ( CommsMenu_HasValidSelection() )
@@ -282,11 +308,26 @@ void function CommsMenu_OpenMenuTo( entity player, int chatPage, int commsMenuSt
 
 int function GetEffectiveChoice()
 {
+	int effectiveChoice = s_currentChoice
+
 	float delta = (Time() - s_latestValidChoiceTime)
 	if ( delta < 0.15 )
-		return s_latestValidChoice
+		effectiveChoice = s_latestValidChoice
 
-	return s_currentChoice
+	effectiveChoice = ModifyEffectiveChoiceForCurrentMenu( effectiveChoice )
+
+	return effectiveChoice
+}
+
+int function ModifyEffectiveChoiceForCurrentMenu( int choice )
+{
+	if ( file.commsMenuStyle == eCommsMenuStyle.SKYDIVE_EMOTE_MENU )
+	{
+		if ( choice < 0 )
+			return RandomInt( s_currentMenuOptions.len() )
+	}
+
+	return choice
 }
 
 bool function CommsMenu_HasValidSelection()
@@ -322,7 +363,9 @@ enum eOptionType
 	COMMSACTION,
 	NEW_PING,
 	PING_REPLY,
+
 	QUIP,
+	SKYDIVE_EMOTE,
 	HEALTHITEM_USE,
 	ORDNANCE_EQUIP,
 }
@@ -339,6 +382,8 @@ struct CommsMenuOptionData
 	int pingReply
 
 	int healType
+
+	ItemFlavor    ornull    emote
 }
 
 CommsMenuOptionData function MakeOption_NoOp()
@@ -356,11 +401,21 @@ CommsMenuOptionData function MakeOption_CommsAction( int commsAction )
 	return op
 }
 
-CommsMenuOptionData function MakeOption_Quip( int commsAction )
+CommsMenuOptionData function MakeOption_Quip( ItemFlavor quip, int index )
 {
 	CommsMenuOptionData op
 	op.optionType = eOptionType.QUIP
-	op.commsAction = commsAction
+	op.emote = quip
+	op.healType = index
+	return op
+}
+
+CommsMenuOptionData function MakeOption_SkydiveEmote( ItemFlavor quip, int index )
+{
+	CommsMenuOptionData op
+	op.optionType = eOptionType.SKYDIVE_EMOTE
+	op.emote = quip
+	op.healType = index
 	return op
 }
 
@@ -399,29 +454,61 @@ CommsMenuOptionData function MakeOption_Ping( int pingType )
 array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 {
 	array<CommsMenuOptionData> results
-
+	entity player                       = GetLocalViewPlayer()
 	switch ( chatPage )
 	{
 		case eChatPage.DEFAULT:
+		case eChatPage.PING_MAIN_2:
 		{
-			entity viewPlayer = GetLocalViewPlayer()
-			//
-			results.append( MakeOption_CommsAction( eCommsAction.QUICKCHAT_NICE ) )
-			results.append( MakeOption_CommsAction( eCommsAction.QUICKCHAT_WAIT ) )
-			//results.append( MakeOption_CommsAction( eCommsAction.QUICKCHAT_READY ) )
-			//results.append( MakeOption_CommsAction( eCommsAction.QUICKCHAT_STICK_TOGETHER ) )
-			//results.append( MakeOption_Quip( eCommsAction.QUICKCHAT_INTRO_QUIP ) )
-			results.append( MakeOption_CommsAction( eCommsAction.QUICKCHAT_THANKS ) )
-			//results.append( MakeOption_Quip( eCommsAction.QUICKCHAT_KILL_QUIP ) )
-			//results.append( MakeOption_CommsAction( eCommsAction.QUICKCHAT_COVER_ME ) )
+			EHI playerEHI = ToEHI( player )
+
+			results.append( MakeOption_CommsAction( eCommsAction.QUICKCHAT_CELEBRATE ) )
+
+			if ( !LoadoutSlot_IsReady( playerEHI, Loadout_CharacterClass() ) )
+			{
+				break
+			}
+
+			ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, Loadout_CharacterClass() )
+			ItemFlavor ornull emptyQuip
+			int quipsInWheel
+			for ( int i=0; i<MAX_QUIPS_EQUIPPED; i++ )
+			{
+				LoadoutEntry entry = Loadout_CharacterQuip( character, i )
+				ItemFlavor quip = LoadoutSlot_GetItemFlavor( playerEHI, entry )
+				if ( !CharacterQuip_IsTheEmpty( quip ) )
+				{
+					quipsInWheel++
+					results.append( MakeOption_Quip( quip, i ) )
+				}
+				else
+				{
+					emptyQuip = quip
+				}
+			}
+
+			if ( quipsInWheel == 0 && emptyQuip != null )
+			{
+				expect ItemFlavor( emptyQuip )
+				results.append( MakeOption_Quip( emptyQuip, quipsInWheel ) )
+			}
 		}
+		break
+
+		case eChatPage.SKYDIVE_EMOTES:
+			table<int,ItemFlavor> emotes = GetValidPlayerSkydiveEmotes( player )
+			foreach ( index,emote in emotes )
+			{
+				if ( !CharacterSkydiveEmote_IsTheEmpty( emote ) )
+					results.append( MakeOption_SkydiveEmote( emote, index ) )
+			}
 			break
 
 		case eChatPage.PREMATCH:
-		{
-			results.append( MakeOption_NoOp() )
-			results.append( MakeOption_NoOp() )
-		}
+			{
+				results.append( MakeOption_NoOp() )
+				results.append( MakeOption_NoOp() )
+			}
 			break
 
 		case eChatPage.BLEEDING_OUT:
@@ -464,8 +551,6 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 
 		case eChatPage.INVENTORY_HEALTH:
 		{
-			entity player = GetLocalViewPlayer()
-
 			if ( GetCurrentPlaylistVarBool( "auto_heal_option", false ) )
 				results.append( MakeOption_UseHealItem( WHEEL_HEAL_AUTO ) )
 			{
@@ -480,13 +565,25 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 
 		case eChatPage.ORDNANCE_LIST:
 		{
-			entity player                       = GetLocalViewPlayer()
 			table<string, LootData> allLootData = SURVIVAL_Loot_GetLootDataTable()
 
 			foreach ( data in allLootData )
 			{
+				if ( SURVIVAL_Loot_IsRefDisabled( data.ref ) )
+					continue
+
+				if ( !IsLootTypeValid( data.lootType ) )
+					continue
+
 				if ( data.lootType != eLootType.ORDNANCE )
 					continue
+
+				//
+				if ( data.conditional )
+				{
+					if ( !SURVIVAL_Loot_RunConditionalCheck( data.ref, player ) )
+						continue
+				}
 
 				if ( data.isDynamic && SURVIVAL_CountItemsInInventory( player, data.ref ) == 0 )
 					continue
@@ -498,7 +595,7 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 
 		case eChatPage.PINGREPLY_DEFAULT:
 		{
-			entity player = GetLocalViewPlayer()
+			// entity player = GetLocalViewPlayer()
 
 			array<int> pingReplies = Ping_GetOptionsForPendingReply( player )
 			foreach( int pingReply in pingReplies )
@@ -517,6 +614,7 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 
 array<CommsMenuOptionData> s_currentMenuOptions
 int s_currentChatPage = eChatPage.INVALID
+int s_previousChatPage = eChatPage.INVALID
 
 string[2] function GetPromptsForMenuOption( int index )
 {
@@ -532,8 +630,12 @@ string[2] function GetPromptsForMenuOption( int index )
 	switch( op.optionType )
 	{
 		case eOptionType.COMMSACTION:
-		case eOptionType.QUIP:
 			promptTexts[0] = GetMenuOptionTextForCommsAction( op.commsAction )
+			break
+
+		case eOptionType.QUIP:
+		case eOptionType.SKYDIVE_EMOTE:
+			promptTexts[0] = Localize( ItemFlavor_GetLongName( expect ItemFlavor( op.emote ) ) )
 			break
 
 		case eOptionType.NEW_PING:
@@ -584,8 +686,24 @@ asset function GetIconForMenuOption( int index )
 	switch( op.optionType )
 	{
 		case eOptionType.COMMSACTION:
-		case eOptionType.QUIP:
 			return GetDefaultIconForCommsAction( op.commsAction )
+
+		case eOptionType.SKYDIVE_EMOTE:
+			ItemFlavor data = expect ItemFlavor( op.emote )
+			return ItemFlavor_GetIcon( data )
+
+		case eOptionType.QUIP:
+			ItemFlavor data = expect ItemFlavor( op.emote )
+			if ( CharacterQuip_IsTheEmpty( data ) )
+				return $""
+			int type = ItemFlavor_GetType( data )
+			switch ( type )
+			{
+				case eItemType.gladiator_card_kill_quip:
+				case eItemType.gladiator_card_intro_quip:
+					return $""
+			}
+			return ItemFlavor_GetIcon( data )
 
 		case eOptionType.NEW_PING:
 		{
@@ -645,7 +763,7 @@ vector function GetIconColorForMenuOption( int index )
 			}
 			else
 			{
-				return Ping_IconColorForPing_Hud( op.pingType )
+				return Ping_IconColorForPing_Hud( op.pingType, true )
 			}
 		}
 	}
@@ -718,7 +836,6 @@ int function GetCountForHealthItem( entity player, int itemType )
 	return SURVIVAL_CountItemsInInventory( player, itemRef )
 }
 
-
 string function GetNameForHealthItem( int itemType )
 {
 	if ( itemType ==  WHEEL_HEAL_AUTO )
@@ -775,6 +892,8 @@ void function SetRuiOptionsForChatPage( var rui, int chatPage )
 	string labelText        = ""
 	string backText         = "#BUTTON_WHEEL_CANCEL"
 	string promptText       = "#A_BUTTON_ACCEPT"
+	string nextPageText = ""
+	bool showNextPageText = false
 	bool shouldShowLine     = false
 	vector outerCircleColor = <0.0, 0.0, 0.0>
 
@@ -784,38 +903,44 @@ void function SetRuiOptionsForChatPage( var rui, int chatPage )
 		case eChatPage.PREMATCH:
 		case eChatPage.BLEEDING_OUT:
 			labelText = "#COMMS_QUICK_CHAT"
-			promptText = " "
-			backText = (PingSecondPageIsEnabled() ? "#COMMS_NEXT_AND_BACK" : "#COMMS_BACK")
-			outerCircleColor = <25,0,15>
+			promptText = "#COMMS_USE"
+			backText = "#COMMS_BACK"
+			outerCircleColor = <25, 0, 15>
 			break
 
 		case eChatPage.PING_MAIN_1:
-			labelText ="#COMMS_PING"
+			labelText = "#COMMS_PING"
 			promptText = " "
-			backText = (PingSecondPageIsEnabled() ? "#COMMS_NEXT_AND_BACK" : "#COMMS_BACK")
+			showNextPageText = PingSecondPageIsEnabled()
+			nextPageText = "#COMMS_NEXT"
+			backText = "#COMMS_BACK"
 			shouldShowLine = true
-			outerCircleColor = <0,0,21>
+			outerCircleColor = <0, 0, 21>
 			break
 
 		case eChatPage.PING_MAIN_2:
-			labelText = "#COMMS_PING"
+			labelText = "#COMMS_QUICK_CHAT"
 			promptText = " "
+			showNextPageText = s_previousChatPage != eChatPage.INVALID
+			nextPageText = "#COMMS_PREV"
 			backText = "#COMMS_BACK"
 			shouldShowLine = true
-			outerCircleColor = <25,32,25>
+			outerCircleColor = <25, 32, 25>
 			break
 
 		case eChatPage.PING_SKYDIVE:
 			labelText = "#COMMS_PING"
 			promptText = " "
+			showNextPageText = PingSecondPageIsEnabled()
+			nextPageText = "#COMMS_NEXT"
 			shouldShowLine = true
-			outerCircleColor = <0,0,21>
+			outerCircleColor = <0, 0, 21>
 			break
 
 		case eChatPage.PINGREPLY_DEFAULT:
 			shouldShowLine = true
 			promptText = " "
-			outerCircleColor = <0,15,32>
+			outerCircleColor = <0, 15, 32>
 			break
 
 		case eChatPage.INVENTORY_HEALTH:
@@ -824,18 +949,27 @@ void function SetRuiOptionsForChatPage( var rui, int chatPage )
 			//	promptText = "#LOOT_EQUIP"
 			//else
 			promptText = "#LOOT_USE"
-			outerCircleColor = <25,0,15>
+			outerCircleColor = <25, 0, 15>
 			break
 
 		case eChatPage.ORDNANCE_LIST:
 			labelText = "#COMMS_ORDNANCE"
 			promptText = "#LOOT_EQUIP"
+			break
+
+		case eChatPage.SKYDIVE_EMOTES:
+			labelText = "#COMMS_SKYDIVE_EMOTES"
+			promptText = "#LOOT_USE"
+			break
+
 	}
 
 	RuiSetString( rui, "labelText", labelText )
 	RuiSetString( rui, "promptText", promptText )
 	RuiSetString( rui, "backText", backText )
 	RuiSetBool( rui, "shouldShowLine", shouldShowLine )
+	RuiSetBool( rui, "showNextPageText", showNextPageText )
+	RuiSetString( rui, "nextPageText", nextPageText )
 	RuiSetFloat3( rui, "outerCircleColor", SrgbToLinear( outerCircleColor / 255.0 ) ) // the rui isn't actually using this color. It's just black with alpha 0.5
 }
 
@@ -848,6 +982,7 @@ void function ShowCommsMenu( int chatPage )
 
 	array<CommsMenuOptionData> options = BuildMenuOptions( chatPage )
 	s_currentMenuOptions = options
+	s_previousChatPage = s_currentChatPage
 	s_currentChatPage = chatPage
 
 	SetRuiOptionsForChatPage( rui, chatPage )
@@ -860,6 +995,31 @@ void function ShowCommsMenu( int chatPage )
 		RuiSetImage( rui, ("optionIcon" + idx), icon )
 		RuiSetInt( rui, ("optionTier" + idx), 0 )
 		RuiSetFloat3( rui, ("optionColor" + idx), iconColor )
+
+		RuiSetString( rui, ("optionCenterText" + idx), "" )
+
+		if ( idx < s_currentMenuOptions.len() )
+		{
+			CommsMenuOptionData op = s_currentMenuOptions[idx]
+			int WORD_MAX_LEN = 11
+			int TEXT_MAX_LEN = 26
+			int TEXT_MAX_LEN_W_DOTS = TEXT_MAX_LEN - 2
+
+			if ( op.emote != null )
+			{
+				ItemFlavor flav = expect ItemFlavor( op.emote )
+				int itemType = ItemFlavor_GetType( flav )
+				if ( itemType == eItemType.gladiator_card_kill_quip || itemType == eItemType.gladiator_card_intro_quip )
+				{
+					string txt = Localize( ItemFlavor_GetLongName( flav ) )
+
+					txt = CondenseText( txt, WORD_MAX_LEN, TEXT_MAX_LEN )
+					print( "setting optionCenterText" + idx + " to " + txt + "\n" )
+					RuiSetString( rui, ("optionCenterText" + idx), txt)
+				}
+			}
+		}
+
 
 		if ( chatPage == eChatPage.INVENTORY_HEALTH )
 		{
@@ -955,74 +1115,94 @@ void function ShowCommsMenu( int chatPage )
 	}
 }
 
+void function ClientCodeCallback_OpenChatWheel()
+{
+	ChatMenuButton_Down( GetLocalClientPlayer() )
+}
+
 float s_pageSwitchTime = 0.0
+const float BUTTON_PAIR_ACTIVITION_TIME = 0.25
 bool function CommsMenu_HandleKeyInput( int key )
 {
 	Assert( IsCommsMenuActive() )
 
-	if ( PingSecondPageIsEnabled() && ((key == BUTTON_SHOULDER_LEFT) || (key == KEY_SPACE)) )
-	{
-		float timeSinceLastPageSwitch = (Time() - s_pageSwitchTime)
-		if ( (timeSinceLastPageSwitch > 0.1) && (file.commsMenuStyle == eCommsMenuStyle.PING_MENU) )
-		{
-			entity player = GetLocalViewPlayer()
-			if ( (s_currentChatPage == eChatPage.PING_MAIN_1) || (s_currentChatPage == eChatPage.PING_MAIN_2) )
-			{
-				int nextPage = (s_currentChatPage == eChatPage.PING_MAIN_1) ? eChatPage.PING_MAIN_2 : eChatPage.PING_MAIN_1
 
-				ResetViewInput()
-				EmitSoundOnEntity( player, WHEEL_SOUND_ON_CLOSE )
-				ShowCommsMenu( nextPage )
-				s_pageSwitchTime = Time()
-				return true
+	if ( PingSecondPageIsEnabled() )
+	{
+		bool isPageButton = IsControllerModeActive() ? ButtonIsBoundToAction( key, "+weaponcycle" ) : ButtonIsBoundToAction( key, "+jump" )
+
+		array<int> pagesAllowedToGoToChat =
+		[
+			eChatPage.PING_MAIN_1,
+			eChatPage.PING_SKYDIVE,
+		]
+
+		if ( isPageButton )
+		{
+			float timeSinceLastPageSwitch = (Time() - s_pageSwitchTime)
+			if ( (timeSinceLastPageSwitch > 0.1) && (file.commsMenuStyle == eCommsMenuStyle.PING_MENU) )
+			{
+				entity player = GetLocalViewPlayer()
+				int nextPage = eChatPage.INVALID
+
+				if ( pagesAllowedToGoToChat.contains( s_currentChatPage ) )
+				{
+					nextPage = eChatPage.PING_MAIN_2
+				}
+				else if ( s_currentChatPage == eChatPage.PING_MAIN_2 )
+				{
+					nextPage = s_previousChatPage
+				}
+
+				if ( nextPage != eChatPage.INVALID )
+				{
+					ResetViewInput()
+					EmitSoundOnEntity( player, WHEEL_SOUND_ON_CLOSE )
+					ShowCommsMenu( nextPage )
+					s_pageSwitchTime = Time()
+					return true
+				}
 			}
 		}
 	}
 
 	bool shouldExecute    = false
 	bool shouldCancelMenu = false
+	int choice            = -1
 
 	int executeType = eWheelInputType.NONE
 	switch ( key )
 	{
 		case KEY_1:
-			SetCurrentChoice( 0 )
-			executeType = eWheelInputType.USE
+			choice = 0
 			break
 
 		case KEY_2:
-			SetCurrentChoice( 1 )
-			executeType = eWheelInputType.USE
+			choice = 1
 			break
 
 		case KEY_3:
-			SetCurrentChoice( 2 )
-			executeType = eWheelInputType.USE
+			choice = 2
 			break
 
 		case KEY_4:
-			SetCurrentChoice( 3 )
-			executeType = eWheelInputType.USE
+			choice = 3
 			break
 
 		case KEY_5:
-			SetCurrentChoice( 4 )
-			executeType = eWheelInputType.USE
+			choice = 4
 			break
 
 		case KEY_6:
-			SetCurrentChoice( 5 )
-			executeType = eWheelInputType.USE
+			choice = 5
 			break
 
 		case KEY_7:
-			SetCurrentChoice( 6 )
-			executeType = eWheelInputType.USE
+			choice = 6
 			break
 
 		case KEY_8:
-			SetCurrentChoice( 7 )
-			executeType = eWheelInputType.USE
+			choice = 7
 			break
 
 		case BUTTON_A:
@@ -1046,12 +1226,19 @@ bool function CommsMenu_HandleKeyInput( int key )
 		executeType = eWheelInputType.REQUEST
 	}
 
+	if ( IsValidChoice( choice ) && executeType == eWheelInputType.NONE )
+	{
+		SetCurrentChoice( choice )
+		executeType = eWheelInputType.USE
+	}
+
 	shouldExecute = executeType != eWheelInputType.NONE
 
 	shouldExecute = shouldExecute || ((file.commsMenuStyle == eCommsMenuStyle.CHAT_MENU) && ButtonIsBoundToAction( key, CHAT_MENU_BIND_COMMAND ))
 	shouldExecute = shouldExecute || ((file.commsMenuStyle == eCommsMenuStyle.PING_MENU) && ButtonIsBoundToAction( key, "+ping" ))
 	shouldExecute = shouldExecute || ((file.commsMenuStyle == eCommsMenuStyle.PINGREPLY_MENU) && ButtonIsBoundToAction( key, "+ping" ))
 	shouldExecute = shouldExecute || ((file.commsMenuStyle == eCommsMenuStyle.INVENTORY_HEALTH_MENU) && ButtonIsBoundToAction( key, HEALTHKIT_BIND_COMMAND ))
+	shouldExecute = shouldExecute || ((file.commsMenuStyle == eCommsMenuStyle.SKYDIVE_EMOTE_MENU) && executeType == eWheelInputType.USE )
 
 	shouldCancelMenu = shouldCancelMenu || ((file.commsMenuStyle == eCommsMenuStyle.CHAT_MENU) && ButtonIsBoundToAction( key, CHAT_MENU_BIND_COMMAND ))
 
@@ -1077,6 +1264,11 @@ bool function CommsMenu_HandleKeyInput( int key )
 		entity player = GetLocalViewPlayer()
 		if ( IsValid( player ) )
 			EmitSoundOnEntity( player, WHEEL_SOUND_ON_CLOSE )
+
+		if ( ( file.commsMenuStyle == eCommsMenuStyle.PING_MENU || file.commsMenuStyle == eCommsMenuStyle.PINGREPLY_MENU )
+			&& ButtonIsBoundToAction( key, "+offhand1" ) && Time() - s_latestViewInputResetTime < BUTTON_PAIR_ACTIVITION_TIME )
+			return false
+
 		return true
 	}
 
@@ -1143,11 +1335,16 @@ void function SetCurrentChoice( int choice )
 				lootRef = healthKit.lootData.ref
 			}
 
-			int count     = SURVIVAL_CountItemsInInventory( GetLocalViewPlayer(), lootRef )
+			int count = SURVIVAL_CountItemsInInventory( GetLocalViewPlayer(), lootRef )
 			if ( count == 0 )
 				RuiSetString( file.menuRui, "promptText", "#PING_PROMPT_REQUEST" )
 		}
 	}
+}
+bool function IsValidChoice( int choice )
+{
+	//
+	return choice >= 0 && choice < s_currentMenuOptions.len()
 }
 
 
@@ -1260,7 +1457,17 @@ bool function MakeCommMenuSelection( int choice, int wheelInputType )
 
 		case eOptionType.QUIP:
 		{
-			HandleQuipPick( op.commsAction, choice )
+			HandleQuipPick( expect ItemFlavor( op.emote ), op.healType )
+			return true
+		}
+
+		case eOptionType.SKYDIVE_EMOTE:
+		{
+			entity player = GetLocalViewPlayer()
+
+			EmitSoundOnEntity( player, WHEEL_SOUND_ON_EXECUTE )
+
+			player.ClientCommand( "SkydiveEmote " + op.healType )
 			return true
 		}
 
@@ -1320,17 +1527,23 @@ bool function MakeCommMenuSelection( int choice, int wheelInputType )
 	return false
 }
 
-void function HandleQuipPick( int commsAction, int directionIndex )
+void function HandleQuipPick( ItemFlavor quip, int choice )
 {
-	Assert( (commsAction >= 0) && (commsAction < eCommsAction._count) )
-
 	entity player = GetLocalViewPlayer()
 
 	EmitSoundOnEntity( player, WHEEL_SOUND_ON_EXECUTE )
 
+	player.ClientCommand( "BroadcastQuip " + choice )
+
+	#if(false)
 
 
-	player.ClientCommand( "ClientCommand_Quip " + commsAction )
+#endif
+
+	#if(false)
+
+
+#endif
 }
 
 void function HandleCommsActionPick( int commsAction, int directionIndex )
@@ -1456,6 +1669,7 @@ void function DestroyCommsMenu_( bool instant )
 		OverrideHUDHealthFractions( GetLocalClientPlayer() )
 
 	s_currentChatPage = eChatPage.INVALID
+	s_previousChatPage = eChatPage.INVALID
 
 	RuiSetBool( file.menuRui, "isFinished", true )
 
@@ -1496,8 +1710,18 @@ bool function CommsMenu_CanUseMenu( entity player )
 	if ( IsScoreboardShown() )
 		return false
 
+	#if(false)
+
+
+#endif
+
 	if ( IsCommsMenuActive() )
 		return false
+
+	#if(true)
+		if ( IsFallLTM() && IsPlayerShadowSquad( player ) )
+			return false
+	#endif
 
 	return true
 }
@@ -1545,6 +1769,12 @@ void function ClientCommand_Quip( entity player, array<string> args )
 	int commsAction = int( args[0] )
 
 	PlayQuip( player, commsAction )
+}
+#endif
+#if(CLIENT)
+void function SetHintTextOnHudElem( var hudElem, string text )
+{
+	RuiSetString( Hud_GetRui( hudElem ), "buttonText", Localize( text ) )
 }
 #endif
 void function PlayQuip( entity player, int commsAction )

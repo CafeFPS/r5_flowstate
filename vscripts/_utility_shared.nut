@@ -147,42 +147,38 @@ void function InitWeaponScripts()
 	MeleeLifelineBaton_Init()
 	MpWeaponLifelineBatonPrimary_Init()
 
-	#if DEVSCRIPTS
-		MpAbilityGibraltarShield_Init()
-		MpWeaponBubbleBunker_Init()
-		MpWeaponGrenadeDefensiveBombardment_Init()
-		MpAbilityHuntModeWeapon_Init()
-		MpAbilityAreaSonarScan_Init()
-		MpWeaponGrenadeGas_Init()
-		MpWeaponDirtyBomb_Init()
-		MpWeaponDeployableMedic_Init()
-		MpWeaponIncapShield_Init()
-		MpWeaponGrenadeBangalore_Init()
-		MpWeaponGrenadeCreepingBombardment_Init()
-		MpWeaponGrenadeCreepingBombardmentWeapon_Init()
-		MpAbilityMirageUltimate_Init()
-
-		MpAbilityCryptoDrone_Init()
-		MpAbilityCryptoDroneEMP_Init()
-
-		MpWeaponPhaseTunnel_Init()
-
-		MpWeaponTeslaTrap_Init()
-		MpWeaponTrophy_Init()
+	#if(true)
+		MeleeShadowsquadHands_Init()
+		MpWeaponShadowsquadHandsPrimary_Init()
 	#endif
+
+	MpAbilityGibraltarShield_Init()
+	MpWeaponBubbleBunker_Init()
+
+	MpWeaponGrenadeDefensiveBombardment_Init()
+	MpAbilityHuntModeWeapon_Init()
+	MpAbilityAreaSonarScan_Init()
+	MpWeaponGrenadeGas_Init()
+	MpWeaponDirtyBomb_Init()
+	MpWeaponDeployableMedic_Init()
+	MpWeaponIncapShield_Init()
+	MpWeaponGrenadeBangalore_Init()
+	MpWeaponGrenadeCreepingBombardment_Init()
+	MpWeaponGrenadeCreepingBombardmentWeapon_Init()
+	MpAbilityMirageUltimate_Init()
+	MpAbilityCryptoDrone_Init()
+	MpAbilityCryptoDroneEMP_Init()
+	MpWeaponPhaseTunnel_Init()
+	MpWeaponTeslaTrap_Init()
+	MpWeaponTrophy_Init()
+
+	MpWeaponBasicBolt_Init()
 
 	#if SERVER
 		//BallLightning_Init()
 	#endif
 }
 
-void function SetSkinForTeam( entity ent, int team )
-{
-	if ( team == TEAM_IMC )
-		ent.SetSkin( 0 )
-	else if ( team == TEAM_MILITIA )
-		ent.SetSkin( 1 )
-}
 
 void function TableDump( table Table, int depth = 0 )
 {
@@ -391,6 +387,30 @@ entity function GetFarthest( array<entity> entArray, vector origin )
 
 	return bestEnt
 }
+
+
+vector function GetFarthestVector( array<vector> vecArray, vector origin )
+{
+	Assert( vecArray.len() > 0, "Empty array!" )
+
+	vector bestPos    = vecArray[0]
+	float bestDistSqr = DistanceSqr( bestPos, origin )
+
+	for ( int i = 1; i < vecArray.len(); i++ )
+	{
+		vector newVec    = vecArray[ i ]
+		float newDistSqr = DistanceSqr( newVec, origin )
+
+		if ( newDistSqr > bestDistSqr )
+		{
+			bestPos = newVec
+			bestDistSqr = newDistSqr
+		}
+	}
+
+	return bestPos
+}
+
 
 int function GetClosestIndex( array<entity> Array, vector origin )
 {
@@ -1059,6 +1079,103 @@ vector function GetSinglePointOnBezier( array<vector> points, float t )
 	unreachable
 }
 
+array< vector > function GetBezierOfPath( array< vector > path, int numSegments )
+{
+	Assert( path.len() >= 3 )
+	int numNodesInPath = path.len()
+	int idx_cur        = 0
+	array< vector > nodeTangents
+	array< vector > bezierPath
+
+	nodeTangents.append( GetBezierNodeTangent( path[ 1 ], path[ 0 ], path[ 2 ] ) )
+	for ( ; idx_cur < numNodesInPath - 1; idx_cur++ )
+	{
+		int idx_next   = (idx_cur + 1) % numNodesInPath
+		int idx_next_2 = (idx_cur + 2) % numNodesInPath
+
+		//
+		if ( idx_next < (numNodesInPath - 1) )//
+		{
+			nodeTangents.append( GetBezierNodeTangent( path[ idx_next ], path[ idx_cur ], path[ idx_next_2 ] ) )
+		}
+		else
+		{
+			nodeTangents.append( nodeTangents.top() )
+		}
+
+		array< vector > bezierPoints = GetAllPointsOnBezier( [ path[ idx_cur ], path[ idx_cur ] - nodeTangents[ idx_cur ], path[ idx_next ] + nodeTangents[ idx_next ], path[ idx_next ] ], numSegments )
+		//
+		vector endPoint              = bezierPoints.pop()
+		bezierPath.extend( bezierPoints )
+
+		//
+		if ( idx_cur >= (numNodesInPath - 2) )
+			bezierPath.append( endPoint )
+	}
+
+	return bezierPath
+}
+
+array< vector > function GetBezierOfPathLoop( array< vector > path, int numSegments )
+{
+	int numNodesInPath = path.len()
+	int idx_cur        = 0
+	array< vector > nodeTangents
+	array< vector > bezierPath
+
+	nodeTangents.append( GetBezierNodeTangent( path[ 0 ], path[ (numNodesInPath - 1) ], path[ 1 ] ) )
+	for ( ; idx_cur < numNodesInPath; idx_cur++ )
+	{
+		int idx_next   = (idx_cur + 1) % numNodesInPath
+		int idx_next_2 = (idx_cur + 2) % numNodesInPath
+
+		//
+		if ( idx_cur < (numNodesInPath - 1) )
+		{
+			nodeTangents.append( GetBezierNodeTangent( path[ idx_next ], path[ idx_cur ], path[ idx_next_2 ] ) )
+		}
+
+		array< vector > bezierPoints = GetAllPointsOnBezier( [ path[ idx_cur ], path[ idx_cur ] - nodeTangents[ idx_cur ], path[ idx_next ] + nodeTangents[ idx_next ], path[ idx_next ] ], numSegments )
+		//
+		bezierPoints.pop()
+		bezierPath.extend( bezierPoints )
+	}
+
+	return bezierPath
+}
+
+//
+//
+vector function GetBezierNodeTangent( vector nodePos, vector predecessorPos, vector successorPos )
+{
+	vector preToNode       = nodePos - predecessorPos
+	vector nodeToSuccessor = successorPos - nodePos
+
+	float preToNodeLen       = Distance( nodePos, predecessorPos )
+	float nodeToSuccessorLen = Distance( successorPos, nodePos )
+
+	vector preToNodeNorm       = preToNode / preToNodeLen
+	vector nodeToSuccessorNorm = nodeToSuccessor / nodeToSuccessorLen
+
+	float angleToBisect = acos( DotProduct( preToNodeNorm, nodeToSuccessorNorm ) )
+	angleToBisect = 180 - RadToDeg( angleToBisect )
+	angleToBisect *= 0.5
+	vector crossUp = Normalize( CrossProduct( preToNodeNorm, nodeToSuccessorNorm ) )
+	if ( Length( crossUp ) == 0 )
+	{
+		printt( "!!! Cross up length is 0 !!!" )
+		return < 0, 0, 0 >
+	}
+	vector bisectVector = VectorRotateAxis( preToNodeNorm, crossUp, angleToBisect )
+
+	vector tangentDir = Normalize( CrossProduct( bisectVector, crossUp ) )
+	float tangentDist = min( preToNodeLen, nodeToSuccessorLen ) * 0.5
+
+	//
+	return tangentDir * tangentDist
+}
+
+
 bool function GetDoomedState( entity ent )
 {
 	entity soul = ent.GetTitanSoul()
@@ -1090,6 +1207,7 @@ bool function CoreAvailableDuringDoomState()
 	return true
 }
 
+
 bool function HasAntiTitanWeapon( entity guy )
 {
 	foreach ( weapon in guy.GetMainWeapons() )
@@ -1099,6 +1217,7 @@ bool function HasAntiTitanWeapon( entity guy )
 	}
 	return false
 }
+
 
 float function GetTitanCoreActiveTime( entity player )
 {
@@ -1114,6 +1233,7 @@ float function GetTitanCoreActiveTime( entity player )
 	return GetTitanCoreDurationFromWeapon( weapon )
 }
 
+
 float function GetTitanCoreChargeTime( entity player )
 {
 	entity weapon = player.GetOffhandWeapon( OFFHAND_EQUIPMENT )
@@ -1128,15 +1248,18 @@ float function GetTitanCoreChargeTime( entity player )
 	return GetTitanCoreChargeTimeFromWeapon( weapon )
 }
 
+
 float function GetTitanCoreChargeTimeFromWeapon( entity weapon )
 {
 	return expect float( weapon.GetWeaponInfoFileKeyField( "chargeup_time" ) )
 }
 
+
 float function GetTitanCoreBuildTimeFromWeapon( entity weapon )
 {
 	return weapon.GetWeaponSettingFloat( eWeaponVar.core_build_time )
 }
+
 
 float function GetTitanCoreDurationFromWeapon( entity weapon )
 {
@@ -1146,6 +1269,7 @@ float function GetTitanCoreDurationFromWeapon( entity weapon )
 
 	return coreDuration
 }
+
 
 float function GetCoreBuildTime( entity titan )
 {
@@ -1648,19 +1772,13 @@ vector function StringToVector( string vecString, string delimiter = " " )
 	return <float( tokens[0] ), float( tokens[1] ), float( tokens[2] )>
 }
 
+
 float function GetShieldHealthFrac( entity ent )
 {
 	if ( !IsAlive( ent ) )
 		return 0.0
 
-	if ( HasSoul( ent ) )
-	{
-		entity soul = ent.GetTitanSoul()
-		if ( IsValid( soul ) )
-			ent = soul
-	}
-
-	int shieldHealth = ent.GetShieldHealth()
+	int shieldHealth    = ent.GetShieldHealth()
 	int shieldMaxHealth = ent.GetShieldHealthMax()
 
 	if ( shieldMaxHealth == 0 )
@@ -1669,6 +1787,26 @@ float function GetShieldHealthFrac( entity ent )
 	return float( shieldHealth ) / float( shieldMaxHealth )
 }
 
+
+float function GetShieldHealthFracBeforeDamage( entity ent, int damage )
+{
+	if ( !IsAlive( ent ) )
+		return 0.0
+
+	int shieldHealth    = ent.GetShieldHealth() + damage
+	int shieldMaxHealth = ent.GetShieldHealthMax()
+
+	Assert( shieldHealth <= shieldMaxHealth )
+	if ( shieldHealth > shieldMaxHealth )
+		shieldHealth = shieldMaxHealth
+
+	if ( shieldMaxHealth == 0 )
+		return 0.0
+
+	return float( shieldHealth ) / float( shieldMaxHealth )
+}
+
+
 vector function HackGetDeltaToRef( vector origin, vector angles, entity ent, string anim )
 {
 	AnimRefPoint animStartPos = ent.Anim_GetStartForRefPoint( anim, origin, angles )
@@ -1676,6 +1814,7 @@ vector function HackGetDeltaToRef( vector origin, vector angles, entity ent, str
 	vector delta = origin - animStartPos.origin
 	return origin + delta
 }
+
 
 vector function HackGetDeltaToRefOnPlane( vector origin, vector angles, entity ent, string anim, vector up )
 {
@@ -2599,27 +2738,32 @@ bool function IsMatchOver()
 	return false
 }
 
+
 bool function IsRoundBased()
 {
 	return expect bool( level.nv.roundBased )
 }
+
 
 int function GetRoundsPlayed()
 {
 	return expect int( level.nv.roundsPlayed )
 }
 
+
 bool function IsEliminationBased()
 {
-	return true
+	return GetCurrentPlaylistVarBool( "is_elimination_based", true )
 }
+
 
 bool function IsPilotEliminationBased()
 {
 	return true
 }
 
-void function __WarpInEffectShared( vector origin, vector angles, string sfx, float preWaitOverride = -1.0 )
+
+void function __WarpInEffectShared( vector origin, vector angles, string sfx, float preWaitOverride = -1.0, entity ornull vehicle = null )
 {
 	float preWait = 2.0
 	float sfxWait = 0.1
@@ -2640,7 +2784,12 @@ void function __WarpInEffectShared( vector origin, vector angles, string sfx, fl
 		entity fx = PlayFX( FX_GUNSHIP_CRASH_EXPLOSION_ENTRANCE, origin, angles )
 		fx.FXEnableRenderAlways()
 		fx.DisableHibernation()
-	#endif // CLIENT
+		if ( IsValid( vehicle ) )
+		{
+			fx.RemoveFromAllRealms()
+			fx.AddToOtherEntitysRealms( expect entity ( vehicle ) )
+		}
+	#endif //
 
 	wait sfxWait
 	EmitSoundAtPosition( TEAM_UNASSIGNED, origin, sfx )
@@ -2650,7 +2799,7 @@ void function __WarpInEffectShared( vector origin, vector angles, string sfx, fl
 
 void function __WarpOutEffectShared( entity dropship )
 {
-	int attach = dropship.LookupAttachment( "origin" )
+	int attach    = dropship.LookupAttachment( "origin" )
 	vector origin = dropship.GetAttachmentOrigin( attach )
 	vector angles = dropship.GetAttachmentAngles( attach )
 
@@ -2661,10 +2810,16 @@ void function __WarpOutEffectShared( entity dropship )
 		entity fx = PlayFX( FX_GUNSHIP_CRASH_EXPLOSION_EXIT, origin, angles )
 		fx.FXEnableRenderAlways()
 		fx.DisableHibernation()
-	#endif // CLIENT
+		if ( IsValid( dropship ) )
+		{
+			fx.RemoveFromAllRealms()
+			fx.AddToOtherEntitysRealms( dropship )
+		}
+	#endif
 
 	EmitSoundAtPosition( TEAM_UNASSIGNED, origin, "dropship_warpout" )
 }
+
 
 bool function IsSwitchSidesBased()
 {
@@ -3235,6 +3390,14 @@ string function GetPlayerBodyType( entity player )
 
 string function GetPlayerVoice( entity player )
 {
+	if ( player.IsTitan() )
+	{
+		ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+		Assert( ItemFlavor_GetType( character ) == eItemType.character )
+		var block = GetSettingsBlockForAsset( CharacterClass_GetSetFile( character ) )
+		return GetSettingsBlockString( block, "voice" )
+	}
+
 	return player.GetPlayerSettingString( "voice" )
 }
 
@@ -3486,13 +3649,62 @@ float function GetPathDistance( array<entity> nodes )
 	float totalDist = 0.0
 	for ( int i = 0; i < nodes.len() - 1; i++ )
 	{
-		//DebugDrawSphere( nodes[i].GetOrigin(), 16.0, 255, 0, 0, true, 0.1 )
-		totalDist += Distance( nodes[i].GetOrigin(), nodes[i+1].GetOrigin() )
+		//
+		totalDist += Distance( nodes[i].GetOrigin(), nodes[i + 1].GetOrigin() )
+	}
+	//
+
+	return totalDist
+}
+
+
+float function GetPathDistance_VectorArray( array<vector> nodes, bool isLoopingPath )
+{
+	float totalDist = 0.0
+	int end_iter    = nodes.len()
+	int numNodes    = end_iter
+
+	if ( !isLoopingPath )
+		end_iter -= 1
+
+	for ( int i = 0; i < end_iter; i++ )
+	{
+		int idx_next = (i + 1) % numNodes
+		totalDist += Distance( nodes[i], nodes[idx_next] )
 	}
 	//DebugDrawSphere( nodes[nodes.len() -1].GetOrigin(), 16.0, 255, 0, 0, true, 0.1 )
 
 	return totalDist
 }
+
+
+array<float> function GetPathDistancesFromIdxArray_VectorArray( array<vector> nodes, array<int> distanceIdxArray, bool isLoopingPath )
+{
+	float totalDist = 0.0
+	array<float> results
+	int end_iter    = nodes.len()
+	int numNodes    = end_iter
+
+	int idx_curDistanceIdx
+	int numRequestedDistances = distanceIdxArray.len()
+	Assert( numRequestedDistances > 0, "No path distances given! 0 indexes received!" )
+
+	for ( int i = 0; i < end_iter; i++ )
+	{
+		if ( i == distanceIdxArray[ idx_curDistanceIdx ] )
+		{
+			results.append( totalDist )
+			idx_curDistanceIdx++
+			if ( idx_curDistanceIdx == numRequestedDistances )
+				break
+		}
+
+		int idx_next = (i + 1) % numNodes
+		totalDist += Distance( nodes[i], nodes[idx_next] )
+	}
+	return results
+}
+
 
 void function WaittillAnimDone( entity animatingEnt )
 {
@@ -3566,7 +3778,134 @@ vector function GetPointOnPathForFraction( array<entity> nodes, float frac )
 
 	return point
 }
+vector function GetPointOnPathForFraction_VectorArray( array<vector> nodes, float frac )
+{
+	Assert( frac >= 0 )
 
+	float totalPathDist = GetPathDistance_VectorArray( nodes, false )
+	float distRemaining = totalPathDist * frac
+	vector point        = nodes[0]
+
+	for ( int i = 0; i < nodes.len() - 1; i++ )
+	{
+		float segmentDist = Distance( nodes[i], nodes[i + 1] )
+		if ( segmentDist <= distRemaining )
+		{
+			//
+			distRemaining -= segmentDist
+			point = nodes[i + 1]
+		}
+		else
+		{
+			//
+			vector dirVec = Normalize( nodes[i + 1] - nodes[i] )
+			point = nodes[i] + (dirVec * distRemaining)
+			distRemaining = 0
+		}
+		if ( distRemaining <= 0 )
+			break
+	}
+
+	if ( frac > 1.0 && distRemaining > 0 )
+	{
+		vector dirVec = Normalize( nodes[nodes.len() - 1] - nodes[nodes.len() - 2] )
+		point = nodes[nodes.len() - 1] + (dirVec * distRemaining)
+	}
+
+	return point
+}
+
+//
+//
+array<vector> function GetPointsOnLoopingPathForFraction_Simple( array<vector> path, array<float> fracArray )
+{
+	float totalDist  = GetPathDistance_VectorArray( path, true )
+	int numPathNodes = path.len()
+	return GetPointsOnLoopingPathForFraction( path, totalDist, numPathNodes, fracArray )
+}
+
+
+array<vector> function GetPointsOnLoopingPathForFraction( array<vector> path, float totalPathDist, int numPathNodes, array<float> fracArray )
+{
+	Assert( fracArray.len() > 0 )
+	Assert( fracArray.top() <= 1.0, "Fracs must be within [0, 1]!" )
+
+	array<vector> results
+	float totalDistTraveled = 0
+	float curDistRemaining  = totalPathDist * fracArray[ 0 ]
+	int numRemainingFracs   = fracArray.len()
+	int frac_idx            = 0
+
+	for ( int path_idx = 0; path_idx < numPathNodes; path_idx++ )
+	{
+		float curFracArrayValue = fracArray[ frac_idx ]
+		Assert( fracArray[ frac_idx ] >= 0 )
+
+		//
+		int path_idx_next      = (path_idx + 1) % numPathNodes
+		bool fracFoundThisLoop = false
+
+		float segmentDist = Distance( path[path_idx], path[path_idx_next] )
+		if ( segmentDist <= curDistRemaining )
+		{
+			if ( segmentDist == curDistRemaining )
+			{
+				fracFoundThisLoop = true
+				results.append( path[path_idx_next] )
+			}
+			else
+			{
+				//
+				curDistRemaining -= segmentDist
+				totalDistTraveled += segmentDist
+			}
+		}
+		else
+		{
+			//
+			vector dirVec = Normalize( path[path_idx_next] - path[path_idx] )
+			results.append( path[path_idx] + (dirVec * curDistRemaining) )
+
+			fracFoundThisLoop = true
+		}
+
+		if ( fracFoundThisLoop )
+		{
+			numRemainingFracs--
+			frac_idx++
+			path_idx--
+			if ( numRemainingFracs <= 0 )
+				break
+			else
+				curDistRemaining = (totalPathDist * fracArray[ frac_idx ]) - totalDistTraveled
+		}
+	}
+
+	return results
+}
+
+
+array<vector> function GetPointsOnCircle( vector origin, vector angles, float radius, int segments = 16 )
+{
+	vector start
+	vector end
+
+	float degrees                = 360.0 / float( segments )
+	array<vector> pointsOnCircle = []
+
+	for ( int i = 0; i < segments; i++ )
+	{
+		vector angles2 = AnglesCompose( angles, <0, degrees * i, 0> )
+		vector forward = AnglesToForward( angles2 )
+		end = origin + (forward * radius)
+
+		pointsOnCircle.append( end )
+
+		start = end
+	}
+
+	return pointsOnCircle
+}
 #if SERVER
 void function Embark_Allow( entity player )
 {
@@ -4184,6 +4523,20 @@ void function DebugDrawLineFromEntToPos( entity ent, vector pos, int r, int g, i
 	}
 }
 
+
+bool function PlayerIsInADS( entity player )
+{
+	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+
+	if ( !IsValid( activeWeapon ) )
+		return false
+
+	if ( activeWeapon.GetWeaponSettingBool( eWeaponVar.attack_button_presses_melee ) )
+		return false
+
+	return activeWeapon.IsWeaponAdsButtonPressed() || activeWeapon.IsWeaponInAds()
+}
+
 //bool function PlayerIsInMeleeBlockingADS( entity player )
 //{
 //	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
@@ -4247,7 +4600,7 @@ array<string> function GetValidModsInstalled( entity weapon )
 	if ( !SURVIVAL_Loot_IsRefValid( weaponName ) )
 		return []
 
-	if ( SURVIVAL_Weapon_IsFullyKitted( weaponName ) )
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) )
 		return []
 
 	array<string> mods = GetWeaponMods( weapon )
@@ -4269,7 +4622,7 @@ array<string> function GetNonInstallableWeaponMods( entity weapon )
 	if ( weapon.GetNetworkedClassName() != "prop_survival" && !SURVIVAL_Loot_IsRefValid( weaponName ) )
 		return weapon.GetMods()
 
-	bool isFullyKitted = SURVIVAL_Weapon_IsFullyKitted( weaponName )
+	bool isAttachmentLocked = SURVIVAL_Weapon_IsAttachmentLocked( weaponName )
 
 	array<string> mods = GetWeaponMods( weapon )
 	array<string> foundMods
@@ -4277,7 +4630,7 @@ array<string> function GetNonInstallableWeaponMods( entity weapon )
 
 	foreach ( mod in mods )
 	{
-		if ( !CanAttachToWeapon( mod, weaponName ) || isFullyKitted )
+		if ( !CanAttachToWeapon( mod, weaponName ) || isAttachmentLocked )
 			foundMods.append( mod )
 		else
 			installedMods.append( mod )
@@ -4413,9 +4766,9 @@ vector function Get2DLineIntersection( vector A, vector B, vector C, vector D )
 	float dx1 = B.x - A.x
 	float dy2 = D.y - C.y
 	float dx2 = D.x - C.x
-	float x = ((C.y - A.y) * dx1 * dx2 + dy1 * dx2 * A.x - dy2 * dx1 * C.x) / (dy1 * dx2 - dy2 * dx1)
-	float y = A.y + (dy1 / dx1) * (x - A.x)
-	vector p = <x, y, 0>
+	float x   = ((C.y - A.y) * dx1 * dx2 + dy1 * dx2 * A.x - dy2 * dx1 * C.x) / (dy1 * dx2 - dy2 * dx1)
+	float y   = A.y + (fabs( 0.0 - dx1 ) > 0.00001 ? (dy1 / dx1) * (x - A.x) : 0.0)
+	vector p  = <x, y, 0>
 	return p
 }
 
@@ -4442,7 +4795,7 @@ bool function CanAttachToWeapon( string attachment, string weaponName )
 	if ( !SURVIVAL_Loot_IsRefValid( attachment ) )
 		return false
 
-	if ( SURVIVAL_Weapon_IsFullyKitted( weaponName ) )
+	if ( SURVIVAL_Weapon_IsAttachmentLocked( weaponName ) )
 		return false
 
 	AttachmentData aData = GetAttachmentData( attachment )
@@ -4491,6 +4844,8 @@ string function GetAttachmentPointStyle( string attachmentPoint, string weaponNa
 			LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( weaponName )
 			if ( weaponData.ammoType == "bullet" )
 				return "mag_straight"
+			if ( weaponData.ammoType == "special" )
+				return "mag_energy"
 			if ( weaponData.ammoType == "shotgun" )
 				return "mag_shotgun"
 			break
@@ -4596,72 +4951,114 @@ bool function TeamHasBots( int team )
 }
 
 
-int function GetNumTeamsRemaining()
+array<int> function GetTeamsForPlayers( array<entity> playersToUse )
 {
-	return GetTeamsWithLivingPlayers().len()
-}
-
-array<int> function GetTeamsWithLivingPlayers()
-{
-	array<entity> playersAlive = GetPlayerArray_AliveConnected()
-	array<int> teamsWithPlayersAlive
-	int team
-	bool teamFound = false
-
-	foreach (player in playersAlive)
+	array<int> results
+	foreach ( player in playersToUse )
 	{
-		teamFound = false
-		team = player.GetTeam()
-
-		if (teamsWithPlayersAlive.len() == 0)
-		{
-			teamsWithPlayersAlive.append( team )
-			continue
-		}
-
-		foreach (trackedTeam in teamsWithPlayersAlive)
-		{
-			if (team == trackedTeam)
-				teamFound = true
-		}
-
-		if (!teamFound)
-			teamsWithPlayersAlive.append( team )
+		int team = player.GetTeam()
+		if ( !results.contains( team ) )
+			results.append( team )
 	}
 
-	return teamsWithPlayersAlive
+	return results
+}
+
+
+int function GetNumTeamsRemaining()
+{
+	return GetTeamsForPlayers( GetPlayerArray_AliveConnected() ).len()
+}
+
+
+int function GetNumTeamsExisting()
+{
+	return GetTeamsForPlayers( GetPlayerArray() ).len()
+}
+
+array<entity> function GetFriendlySquadArrayForPlayer( entity player )
+{
+	int team = player.GetTeam()
+	if ( IsTeamRabid( team ) )
+		return [player]
+
+	return GetPlayerArrayOfTeam( team )
+}
+array<entity> function GetFriendlySquadArrayForPlayer_AliveConnected( entity player )
+{
+	int team = player.GetTeam()
+	if ( IsTeamRabid( team ) )
+	{
+		if ( !IsAlive( player ) )
+			return []
+		#if SERVER
+		
+		// if (teamsWithPlayersAlive.len() == 0)
+		// {
+		// 	teamsWithPlayersAlive.append( team )
+		// 	continue
+		// }
+
+		// foreach (trackedTeam in teamsWithPlayersAlive)
+		// {
+		// 	if (team == trackedTeam)
+		// 		teamFound = true
+		// }
+
+	#endif
+		return [player]
+	}
+
+	return GetPlayerArrayOfTeam_AliveConnected( team )
 }
 
 array<entity> function GetPlayerArrayOfTeam_AliveConnected( int team )
 {
-	array<entity> playerArray = GetPlayerArrayOfTeam_Alive( team )
-	array<entity> connectedArray
-	foreach( player in playerArray )
-	{
-		#if SERVER
-			if ( IsDisconnected( player ) )
-				continue
-		#endif
-		connectedArray.append( player  )
-	}
+	return GetFilteredArray_Connected( GetPlayerArrayOfTeam_Alive( team ) )
+}
 
-	return connectedArray
+array<entity> function GetPlayerArrayOfTeam_Connected( int team )
+{
+	return GetFilteredArray_Connected( GetPlayerArrayOfTeam( team ) )
 }
 
 array<entity> function GetPlayerArray_AliveConnected()
 {
-	array<entity> playerArray = GetPlayerArray_Alive()
-	array<entity> connectedArray
+	return GetFilteredArray_Connected( GetPlayerArray_Alive() )
+}
+
+array<entity> function GetFilteredArray_Connected( array<entity> playerArray )
+{
+	array<entity> results
 	foreach( player in playerArray )
 	{
 		#if SERVER
 			if ( IsDisconnected( player ) )
 				continue
 		#endif
-		connectedArray.append( player  )
+		results.append( player )
 	}
 
-	return connectedArray
+	return results
+}
+
+array<entity> function GetPlayerArray_ConnectedNotSpectatorTeam()
+{
+	array<entity> results
+	array<entity> playerArray = GetPlayerArray()
+	foreach( player in playerArray )
+	{
+		#if SERVER
+			if ( IsDisconnected( player ) )
+				continue
+		#endif
+		if ( player.GetTeam() == TEAM_SPECTATOR )
+			continue
+
+		results.append( player )
+	}
+
+	return results
 }
 
 entity function GetJumpmasterForTeam( int team )
@@ -4702,15 +5099,53 @@ int function GetNumPlayersJumpingWithSquad( int team )
 	return count
 }
 
-void function DeleteAllByScriptName( string scriptName  )
+
+void function DeleteAllByScriptName( string scriptName, string scriptGroup = "" )
 {
 	array <entity> ents = GetEntArrayByScriptName( scriptName )
 	foreach( ent in ents )
 	{
+		if ( !IsValid( ent ) )
+			continue
+
+
+		if ( scriptGroup != "" )
+		{
+			if ( ent.HasKey( "script_group" ) && ent.GetValueForKey( "script_group" ) == scriptGroup )
+				ent.Destroy()
+		}
+		else
+		{
+			ent.Destroy()
+			continue
+		}
+	}
+}
+
+
+void function DeleteAllByScriptNameWithLinkedEnts( string scriptName )
+{
+	//
+	array <entity> ents = GetEntArrayByScriptName( scriptName )
+	foreach( ent in ents )
+	{
+		DeleteAllLinkedEnts( ent )
 		if ( IsValid( ent ) )
 			ent.Destroy()
 	}
 }
+
+
+void function DeleteAllLinkedEnts( entity ent )
+{
+	array <entity> linkedEnts = ent.GetLinkEntArray()
+	foreach( linkedEnt in linkedEnts )
+	{
+		if ( IsValid( linkedEnt ) )
+			linkedEnt.Destroy()
+	}
+}
+
 
 void function PROTO_FadeModelAlphaOverTime( entity ent, float duration, int startAlpha = 255, int endAlpha = 0 )
 {
@@ -4754,7 +5189,7 @@ void function PROTO_FadeAlphaOverTimeOnEntityAndChildren( entity parentEnt, floa
 
 	WaitFrame() // todo(dw): aaaaahhh
 
-	array<entity> hierachy = GetEntityAndAllChildren( parentEnt )
+	array<entity> hierachy = GetEntityAndImmediateChildren( parentEnt )
 	foreach ( entity hierachyEnt in hierachy )
 	{
 		hierachyEnt.kv.rendermode = 4

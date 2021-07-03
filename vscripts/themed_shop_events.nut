@@ -1,6 +1,6 @@
 //
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 global function ThemedShopEvents_Init
 #endif
 
@@ -46,13 +46,13 @@ global function ThemedShopEvent_GetItemGroupBackgroundImage
 //
 //
 
-#if CLIENT || UI 
+#if SERVER || CLIENT || UI 
 struct FileStruct_LifetimeLevel
 {
 	table<ItemFlavor, array<ItemFlavor> > eventChallengesMap
 }
 #endif
-#if CLIENT
+#if SERVER || CLIENT
 FileStruct_LifetimeLevel fileLevel //
 #elseif UI
 FileStruct_LifetimeLevel& fileLevel //
@@ -71,7 +71,7 @@ struct {
 //
 //
 
-#if CLIENT || UI 
+#if SERVER || CLIENT || UI 
 void function ThemedShopEvents_Init()
 {
 	#if UI

@@ -2,47 +2,88 @@
 //	collection_events.nut
 //=========================================================
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 global function CollectionEvents_Init
 #endif
 
 
 #if CLIENT || UI
 global function GetActiveCollectionEvent
-global function HaveActiveCollectionEventNow
-global function CollectionEvent_GetSeasonName
+global function CollectionEvent_GetChallenges
+global function CollectionEvent_GetFrontPageRewardBoxTitle
+//
+//
 global function CollectionEvent_GetMainPackFlav
-global function CollectionEvent_GetHeirloomDisplayItemFlav
-global function CollectionEvent_GetHeirloomPurchaseItemFlav
-global function CollectionEvent_GetCurrencyFlav
-global function CollectionEvent_GetExpectedCurrencyPerPack
+global function CollectionEvent_GetMainPackShortPluralName
+global function CollectionEvent_GetMainPackImage
+global function CollectionEvent_GetHeirloomPrimaryItemFlav
+global function CollectionEvent_GetHeirloomPackFlav
+global function CollectionEvent_GetHeirloomPackRewardSequenceName
+//
+//
 global function CollectionEvent_GetFrontPageGRXOfferLocation
-global function CollectionEvent_GetShopGRXOfferLocation
+//global function CollectionEvent_GetShopGRXOfferLocation
 global function CollectionEvent_GetRewardGroups
 global function CollectionEvent_GetAboutText
 global function CollectionEvent_GetMainIcon
-global function CollectionEvent_GetKeyColor
+global function CollectionEvent_GetMainThemeCol
+global function CollectionEvent_GetFrontPageBGTintCol
+global function CollectionEvent_GetFrontPageTitleCol
+global function CollectionEvent_GetFrontPageSubtitleCol
+global function CollectionEvent_GetFrontPageTimeRemainingCol
+//
+//
+//
+global function CollectionEvent_GetTabBGDefaultCol
+global function CollectionEvent_GetTabBarDefaultCol
+global function CollectionEvent_GetTabBGFocusedCol
+global function CollectionEvent_GetTabBarFocusedCol
+global function CollectionEvent_GetTabBGSelectedCol
+global function CollectionEvent_GetTabBarSelectedCol
+global function CollectionEvent_GetAboutPageSpecialTextCol
 global function CollectionEvent_GetBGPatternImage
 global function CollectionEvent_GetHeaderIcon
 global function CollectionEvent_GetHeirloomButtonImage
+global function CollectionEvent_GetItemCount
+global function CollectionEvent_GetCurrentRemainingItemCount
 #endif
 
 #if CLIENT || UI 
-global function CollectionEvent_GetTabBGDefaultCol
 global function CollectionEvent_GetFrontTabText
 #endif
+
+#if(UI)
+global function CollectionEvent_GetCurrentMaxEventPackPurchaseCount
+//
+#endif
+
+#if(UI)
+//
+global function CollectionEvent_GetPackOffer
+#endif
+
 
 //////////////////////
 //////////////////////
 //// Global Types ////
 //////////////////////
 //////////////////////
-global const table<asset, array<asset> > S03E02_HARD_CODED_BONUS_QUIPS = {
 
-	[$"settings/itemflav/character_skin/bangalore/s03e02_legendary_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/bangalore/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/bangalore/s03e02_common_02.rpak"
-	],
+#if CLIENT || UI 
+global struct CollectionEventRewardGroup
+{
+	string ref
+	int    quality = -1
+	//
+	//
+
+	array<ItemFlavor> rewards
+}
+#endif
+
+
+//
+global const table<asset, array<asset> > S03E02_HARD_CODED_BONUS_QUIPS = {
 
 	[$"settings/itemflav/character_skin/caustic/s03e02_legendary_01.rpak"] = [
 		$"settings/itemflav/character_kill_quip/caustic/s03e02_common_01.rpak",
@@ -91,32 +132,25 @@ global const table<asset, array<asset> > S03E02_HARD_CODED_BONUS_QUIPS = {
 
 }
 
-#if CLIENT || UI
-global struct CollectionEventRewardGroup
-{
-	string ref
-	int quality = -1
-	string infoSquareTitle
-	string infoSquareSubtitle
-
-	array<ItemFlavor> rewards
-}
-#endif
-
-
 
 ///////////////////////
 ///////////////////////
 //// Private Types ////
 ///////////////////////
 ///////////////////////
-#if CLIENT || UI
+
+#if SERVER || CLIENT || UI
 struct FileStruct_LifetimeLevel
 {
-	//
+	#if(false)
+
+
+#endif
+
+	table<ItemFlavor, array<ItemFlavor> > eventChallengesMap
 }
 #endif
-#if CLIENT
+#if SERVER || CLIENT
 FileStruct_LifetimeLevel fileLevel //
 #elseif UI
 FileStruct_LifetimeLevel& fileLevel //
@@ -133,7 +167,8 @@ struct {
 //// Initialiszation ////
 /////////////////////////
 /////////////////////////
-#if CLIENT || UI
+
+#if SERVER || CLIENT || UI
 void function CollectionEvents_Init()
 {
 	#if UI
@@ -142,7 +177,9 @@ void function CollectionEvents_Init()
 	#endif
 
 	AddCallback_OnItemFlavorRegistered( eItemType.calevent_collection, void function( ItemFlavor ev ) {
-		//
+		fileLevel.eventChallengesMap[ev] <- RegisterReferencedItemFlavorsFromArray( ev, "challenges", "flavor" )
+		foreach ( int challengeSortOrdinal, ItemFlavor challengeFlav in fileLevel.eventChallengesMap[ev] )
+			RegisterChallengeSource( challengeFlav, ev, challengeSortOrdinal )
 	} )
 }
 #endif
@@ -171,19 +208,39 @@ ItemFlavor ornull function GetActiveCollectionEvent( int t )
 }
 #endif
 
-#if CLIENT || UI
-bool function HaveActiveCollectionEventNow()
+
+#if CLIENT || UI 
+array<ItemFlavor> function CollectionEvent_GetLoginRewards( ItemFlavor event )
 {
-	return GetActiveCollectionEvent( GetUnixTimestamp() ) != null
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+
+	array<ItemFlavor> rewards = []
+	foreach ( var rewardBlock in IterateSettingsAssetArray( ItemFlavor_GetAsset( event ), "loginRewards" ) )
+	{
+		asset rewardAsset = GetSettingsBlockAsset( rewardBlock, "flavor" )
+		if ( IsValidItemFlavorSettingsAsset( rewardAsset ) )
+			rewards.append( GetItemFlavorByAsset( rewardAsset ) )
+	}
+	return rewards
 }
 #endif
 
 
-#if CLIENT || UI
-string function CollectionEvent_GetSeasonName( ItemFlavor event )
+#if CLIENT || UI 
+array<ItemFlavor> function CollectionEvent_GetChallenges( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
-	return GetGlobalSettingsString( ItemFlavor_GetAsset( event ), "seasonName" )
+
+	return fileLevel.eventChallengesMap[event]
+}
+#endif
+
+
+#if CLIENT || UI 
+string function CollectionEvent_GetFrontPageRewardBoxTitle( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( event ), "frontPageRewardBoxTitle" )
 }
 #endif
 
@@ -197,43 +254,70 @@ ItemFlavor function CollectionEvent_GetMainPackFlav( ItemFlavor event )
 #endif
 
 
-#if CLIENT || UI
-ItemFlavor function CollectionEvent_GetHeirloomDisplayItemFlav( ItemFlavor event )
+#if CLIENT || UI 
+string function CollectionEvent_GetMainPackShortPluralName( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
-	return GetItemFlavorByAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "heirloomDisplayItemFlav" ) )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( event ), "mainPackShortPluralName" )
 }
 #endif
 
 
-#if CLIENT || UI
-ItemFlavor function CollectionEvent_GetHeirloomPurchaseItemFlav( ItemFlavor event )
+#if CLIENT || UI 
+asset function CollectionEvent_GetMainPackImage( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
-	return GetItemFlavorByAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "heirloomPurchaseItemFlav" ) )
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "mainPackImage" )
 }
 #endif
 
 
-#if CLIENT || UI
-ItemFlavor function CollectionEvent_GetCurrencyFlav( ItemFlavor event )
+#if CLIENT || UI 
+ItemFlavor function CollectionEvent_GetHeirloomPrimaryItemFlav( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
-	return GetItemFlavorByAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "currencyFlav" ) )
+	return GetItemFlavorByAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "heirloomPrimaryItemFlav" ) )
 }
 #endif
 
 
-#if CLIENT || UI
-int function CollectionEvent_GetExpectedCurrencyPerPack( ItemFlavor event )
+#if CLIENT || UI 
+ItemFlavor function CollectionEvent_GetHeirloomPackFlav( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
-	return GetGlobalSettingsInt( ItemFlavor_GetAsset( event ), "expectedCurrencyPerPack" )
+	return GetItemFlavorByAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "heirloomPackItemFlav" ) )
 }
 #endif
 
 
-#if CLIENT || UI
+#if CLIENT || UI 
+string function CollectionEvent_GetHeirloomPackRewardSequenceName( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( event ), "heirloomPackRewardSeqName" )
+}
+#endif
+
+
+//
+//
+//
+//
+//
+//
+//
+
+
+//
+//
+//
+//
+//
+//
+//
+
+
+#if CLIENT || UI 
 string function CollectionEvent_GetFrontPageGRXOfferLocation( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
@@ -242,16 +326,16 @@ string function CollectionEvent_GetFrontPageGRXOfferLocation( ItemFlavor event )
 #endif
 
 
-#if CLIENT || UI
-string function CollectionEvent_GetShopGRXOfferLocation( ItemFlavor event )
-{
-	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
-	return GetGlobalSettingsString( ItemFlavor_GetAsset( event ), "shopGRXOfferLocation" )
-}
-#endif
+//
+//
+//
+//
+//
+//
+//
 
 
-#if CLIENT || UI
+#if CLIENT || UI 
 array<CollectionEventRewardGroup> function CollectionEvent_GetRewardGroups( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
@@ -262,8 +346,8 @@ array<CollectionEventRewardGroup> function CollectionEvent_GetRewardGroups( Item
 		CollectionEventRewardGroup group
 		group.ref = GetSettingsBlockString( groupBlock, "ref" )
 		group.quality = eQuality[GetSettingsBlockString( groupBlock, "quality" )]
-		group.infoSquareTitle = GetSettingsBlockString( groupBlock, "infoSquareTitle" )
-		group.infoSquareSubtitle = GetSettingsBlockString( groupBlock, "infoSquareSubtitle" )
+		// group.infoSquareTitle = GetSettingsBlockString( groupBlock, "infoSquareTitle" )
+		// group.infoSquareSubtitle = GetSettingsBlockString( groupBlock, "infoSquareSubtitle" )
 		foreach ( var rewardBlock in IterateSettingsArray( GetSettingsBlockArray( groupBlock, "rewards" ) ) )
 			group.rewards.append( GetItemFlavorByAsset( GetSettingsBlockAsset( rewardBlock, "flavor" ) ) )
 
@@ -287,7 +371,88 @@ array<string> function CollectionEvent_GetAboutText( ItemFlavor event, bool rest
 }
 #endif
 
-#if CLIENT || UI
+
+#if CLIENT || UI 
+void function CollectionEvent_GetMainIcon( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetMainThemeCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "mainThemeCol" )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetFrontPageBGTintCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "frontPageBGTintCol" )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetFrontPageTitleCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "frontPageTitleCol" )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetFrontPageSubtitleCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "frontPageSubtitleCol" )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetFrontPageTimeRemainingCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "frontPageTimeRemainingCol" )
+}
+#endif
+
+
+//
+//
+//
+//
+//
+//
+//
+
+
+//
+//
+//
+//
+//
+//
+//
+
+
+//
+//
+//
+//
+//
+//
+//
+
+
+#if CLIENT || UI 
 string function CollectionEvent_GetFrontTabText( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
@@ -303,20 +468,57 @@ vector function CollectionEvent_GetTabBGDefaultCol( ItemFlavor event )
 }
 #endif
 
-#if CLIENT || UI
-void function CollectionEvent_GetMainIcon( ItemFlavor event )
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetTabBarDefaultCol( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "tabBarDefaultCol" )
 }
 #endif
 
 
-#if CLIENT || UI
-vector function CollectionEvent_GetKeyColor( ItemFlavor event, int index )
+#if CLIENT || UI 
+vector function CollectionEvent_GetTabBGFocusedCol( ItemFlavor event )
 {
 	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
-	Assert( index >= 0 && index < 5 )
-	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), format( "keyCol%d", index ) )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "tabBGFocusedCol" )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetTabBarFocusedCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "tabBarFocusedCol" )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetTabBGSelectedCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "tabBGSelectedCol" )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetTabBarSelectedCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "tabBarSelectedCol" )
+}
+#endif
+
+
+#if CLIENT || UI 
+vector function CollectionEvent_GetAboutPageSpecialTextCol( ItemFlavor event )
+{
+	Assert( ItemFlavor_GetType( event ) == eItemType.calevent_collection )
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( event ), "aboutPageSpecialTextCol" )
 }
 #endif
 
@@ -346,3 +548,193 @@ asset function CollectionEvent_GetHeirloomButtonImage( ItemFlavor event )
 	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "heirloomButtonImage" )
 }
 #endif
+
+
+#if CLIENT || UI 
+int function CollectionEvent_GetItemCount( ItemFlavor event, bool onlyOwned, entity player = null, bool dontCheckInventoryReady = false )
+{
+	Assert( dontCheckInventoryReady || !onlyOwned || (player != null && GRX_IsInventoryReady( player )) )
+	array<CollectionEventRewardGroup> rewardGroups = CollectionEvent_GetRewardGroups( event )
+	int count                                      = 0
+	foreach ( CollectionEventRewardGroup rewardGroup in rewardGroups )
+	{
+		foreach ( ItemFlavor reward in rewardGroup.rewards )
+		{
+			if ( !onlyOwned || GRX_IsItemOwnedByPlayer_AllowOutOfDateData( reward, player ) )
+				count++
+		}
+	}
+	return count
+}
+#endif
+
+
+#if CLIENT || UI 
+int function CollectionEvent_GetCurrentRemainingItemCount( ItemFlavor event, entity player )
+{
+	return CollectionEvent_GetItemCount( event, false ) - CollectionEvent_GetItemCount( event, true, player )
+}
+#endif
+
+
+#if(UI)
+GRXScriptOffer ornull function CollectionEvent_GetPackOffer( ItemFlavor event )
+{
+	if ( GRX_IsOfferRestricted() )
+		return null
+
+	ItemFlavor packFlav          = CollectionEvent_GetMainPackFlav( event )
+	string offerLocation         = CollectionEvent_GetFrontPageGRXOfferLocation( event )
+	array<GRXScriptOffer> offers = GRX_GetItemDedicatedStoreOffers( packFlav, offerLocation )
+	return offers.len() > 0 ? offers[0] : null
+}
+#endif
+
+
+#if(UI)
+int function CollectionEvent_GetCurrentMaxEventPackPurchaseCount( ItemFlavor event, entity player )
+{
+	#if(false)
+
+
+#elseif(UI)
+		if ( CollectionEvent_GetPackOffer( event ) == null )
+			return 0
+	#endif
+
+
+	ItemFlavor packFlav = CollectionEvent_GetMainPackFlav( event )
+	#if(false)
+
+#elseif(UI)
+		int ownedPackCount = GRX_GetPackCount( ItemFlavor_GetGRXIndex( packFlav ) )
+	#endif
+
+	return CollectionEvent_GetCurrentRemainingItemCount( event, player ) - ownedPackCount
+}
+#endif
+
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+
+
+
+//
+//
+//
+//
+//
+
+//
+
+
+
+//
+//
+//
+//
+//
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+#endif
+
+

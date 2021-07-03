@@ -1,0 +1,59 @@
+//
+
+#if SERVER || CLIENT
+global function Thirdperson_Init
+#endif
+
+
+
+#if SERVER || CLIENT
+void function Thirdperson_Init()
+{
+	#if(CLIENT)
+		Toggle3pCamera()
+		RegisterConCommandTriggeredCallback( "+scriptCommand5", Press3pCameraToggle )
+	#endif //
+}
+#endif //
+
+
+#if(CLIENT)
+int s_cameraMode = -1
+void function SetCameraMode( int mode )
+{
+	switch ( s_cameraMode )
+	{
+		case 0:	//
+			SetConVarFloat( "c_thirdpersonshoulderheight", 30.0 )
+			SetConVarFloat( "c_thirdpersonshoulderoffset", 20.0 )
+			SetConVarFloat( "c_thirdpersonshoulderaimdist", 100.0 )
+			break
+		case 1:		//
+			SetConVarFloat( "c_thirdpersonshoulderheight", 30.0 )
+			SetConVarFloat( "c_thirdpersonshoulderoffset", -20.0 )
+			SetConVarFloat( "c_thirdpersonshoulderaimdist", 100.0 )
+			break
+	}
+
+	//
+	//
+	//
+	//
+}
+
+void function Toggle3pCamera()
+{
+	s_cameraMode = ((s_cameraMode + 1) %  2)
+	SetCameraMode( s_cameraMode )
+}
+
+void function Press3pCameraToggle( entity player )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return
+	if ( player.GetZoomFrac() > 0.1 )
+		return
+
+	Toggle3pCamera()
+}
+#endif //

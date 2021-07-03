@@ -131,6 +131,18 @@ void function ClientMusic_RequestStingerForNewZone( int zoneId )
 	s_zoneStingerRequestedTime = Time()
 }
 
+float function GetStartTimeForAlias( string alias )
+{
+#if(false)
+
+
+
+
+
+#endif //
+	return 0.0
+}
+
 var s_lastPlayedHandle = null
 string s_lastPlayedAliasDEBUG = ""
 void function StartPlayingMusic( string musicAlias )
@@ -141,7 +153,11 @@ void function StartPlayingMusic( string musicAlias )
 	if ( !IsValid( player ) )
 		return
 
-	s_lastPlayedHandle = EmitSoundOnEntity( player, musicAlias )		// EmitSoundOnEntityWithSeek
+	float seekTime = GetStartTimeForAlias( musicAlias )
+	if ( seekTime > 0.0001 )
+		s_lastPlayedHandle = EmitSoundOnEntityWithSeek( player, musicAlias, seekTime )
+	else
+		s_lastPlayedHandle = EmitSoundOnEntity( player, musicAlias )
 	SetPlayThroughKillReplay( s_lastPlayedHandle )
 	s_lastPlayedAliasDEBUG = musicAlias
 
@@ -489,7 +505,6 @@ void function ClientMusic_StopCustomTrackOnAll()
 		ClientMusic_StopCustomTrackOnClient( player )
 }
 #endif // SERVER
-
 
 
 

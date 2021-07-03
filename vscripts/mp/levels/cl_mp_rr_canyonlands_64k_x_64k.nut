@@ -1,8 +1,30 @@
 global function ClientCodeCallback_MapInit
+global function GetClientSideLeviathans
+global function GetClientSideLeviathan1
+global function GetClientSideLeviathan2
 
+struct
+{
+
+	entity clientSideLeviathan1
+	entity clientSideLeviathan2
+
+}
+file
 void function ClientCodeCallback_MapInit()
 {
 	Canyonlands_MapInit_Common()
+
+	MinimapLabelsCanyonlands()
+
+	AddTargetNameCreateCallback( CANYONLANDS_LEVIATHAN1_NAME, OnLeviathanMarkerCreated ) //Created from the server to mark where the leviathans should be on the client
+	AddTargetNameCreateCallback( CANYONLANDS_LEVIATHAN2_NAME, OnLeviathanMarkerCreated )
+	AddTargetNameCreateCallback( "leviathan_staging", OnLeviathanMarkerCreated )
+
+}
+
+void function MinimapLabelsCanyonlands()
+{
 	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_canyonlands_64k_x_64k.rpak" )
 
 //SWAMPLAND
@@ -53,4 +75,81 @@ void function ClientCodeCallback_MapInit()
 	SURVIVAL_AddMinimapLevelLabel( GetZoneMiniMapNameForZoneId( MapZones_GetZoneIdForTriggerName( "Z_16_SKULLTOWN" ) ), 0.32, 0.74, 0.6 )//"Skull Town"
 	//SURVIVAL_AddMinimapLevelLabel( "Pitstop", 0.35, 0.63, 0.4 )
 	//SURVIVAL_AddMinimapLevelLabel( "Scorch City", 0.32, 0.9, 0.4 )
+
 }
+void function OnLeviathanMarkerCreated( entity marker )
+{
+	string markerTargetName = marker.GetTargetName()
+	printt( "OnLeviathanMarkerCreated, targetName: " + markerTargetName  )
+	#if DEV
+		if ( IsValid( file.clientSideLeviathan1 ) && markerTargetName == CANYONLANDS_LEVIATHAN1_NAME )
+		{
+			printt( "Destroying clientSideLeviathan1 with markerName: " + markerTargetName  )
+			file.clientSideLeviathan1.Destroy()
+		}
+
+
+		if ( IsValid( file.clientSideLeviathan2 ) && markerTargetName == CANYONLANDS_LEVIATHAN2_NAME )
+		{
+			printt( "Destroying clientSideLeviathan2 with markerName: " +  markerTargetName )
+			file.clientSideLeviathan2.Destroy()
+		}
+
+	#endif
+
+	entity leviathan = CreateClientSidePropDynamic( marker.GetOrigin(), marker.GetAngles(), LEVIATHAN_MODEL )
+
+
+	if ( markerTargetName == CANYONLANDS_LEVIATHAN1_NAME )
+		file.clientSideLeviathan1 = leviathan
+	else if ( markerTargetName == CANYONLANDS_LEVIATHAN2_NAME )
+		file.clientSideLeviathan2 = leviathan
+
+	bool stagingOnly = markerTargetName == "leviathan_staging"
+	if ( stagingOnly  )
+		SetAnimateInStaticShadow( leviathan, false )
+	else
+		SetAnimateInStaticShadow( leviathan, true )
+
+	thread LeviathanThink( marker, leviathan, stagingOnly )
+}
+
+void function LeviathanThink( entity marker, entity leviathan, bool stagingOnly )
+{
+	marker.EndSignal( "OnDestroy" )
+	leviathan.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function () : ( leviathan )
+		{
+			if ( IsValid( leviathan ) )
+			{
+				leviathan.Destroy()
+			}
+		}
+	)
+
+	leviathan.Anim_Play( "ACT_IDLE"  )
+	leviathan.SetCycle( RandomFloat(1.0 ) )
+	WaitForever()
+
+}
+
+array<entity> function GetClientSideLeviathans()
+{
+	return [ file.clientSideLeviathan1, file.clientSideLeviathan2  ]
+}
+
+entity function GetClientSideLeviathan1()
+{
+	return file.clientSideLeviathan1
+
+}
+
+entity function GetClientSideLeviathan2()
+{
+	return file.clientSideLeviathan2
+
+}
+
+

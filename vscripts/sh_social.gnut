@@ -15,6 +15,7 @@ global function GetFriendsData
 global function IsInParty
 global function GetOnlineFriendCount
 global function GetInGameFriendCount
+global function HasCommunityUserPlayedApex
 #endif
 
 #if UI && R5DEV
@@ -228,6 +229,16 @@ int function GetInGameFriendCount( bool filterParty = false )
 }
 #endif
 
+#if(UI)
+bool function HasCommunityUserPlayedApex( CommunityUserInfo cui )
+{
+	int stryderCharacterData = cui.charData[ ePlayerStryderCharDataArraySlots.CHARACTER ]
+
+	return stryderCharacterData != 0 //
+}
+
+#endif
+
 ///////////////////////
 ///////////////////////
 //// Dev functions ////
@@ -361,62 +372,67 @@ void function AddCallback_OnUpdatingPlayerStryderCharDataArray( void functionref
 #if UI || CLIENT 
 ItemFlavor function GetItemFlavorForCommunityUserInfo( CommunityUserInfo userInfo, int slotIndex, int itemType )
 {
-	ItemFlavor ornull userCharacterItemFlavor = GetItemFlavorOrNullByGUID( userInfo.charData[slotIndex], itemType )
+	ItemFlavor ornull requestedFlavor = GetItemFlavorOrNullByGUID( userInfo.charData[slotIndex], itemType )
 
-	if ( userCharacterItemFlavor == null  )
+	LoadoutEntry entry
+	if ( itemType == eItemType.character )
 	{
-		ItemFlavor ornull character = GetItemFlavorOrNullByGUID( userInfo.charData[ ePlayerStryderCharDataArraySlots.CHARACTER ], eItemType.character )
-		if ( character == null )
-			character = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterClass() )
-		expect ItemFlavor( character )
-
+		entry = Loadout_CharacterClass()
+	}
+	else
+	{
+		ItemFlavor character = GetItemFlavorForCommunityUserInfo( userInfo, ePlayerStryderCharDataArraySlots.CHARACTER, eItemType.character )
 		switch ( itemType )
 		{
-			case eItemType.character :
-			{
-				userCharacterItemFlavor = character
-				break
-			}
-
 			case eItemType.character_skin :
 			{
-				userCharacterItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterSkin( character  ) )
+				entry = Loadout_CharacterSkin( character )
 				break
 			}
 
 			case eItemType.gladiator_card_frame :
 			{
-				userCharacterItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_GladiatorCardFrame( character  ) )
+				entry = Loadout_GladiatorCardFrame( character )
 				break
 			}
 
 			case eItemType.gladiator_card_stance :
 			{
-				userCharacterItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_GladiatorCardStance( character  ) )
+				entry = Loadout_GladiatorCardStance( character )
 				break
 			}
 
 			case eItemType.gladiator_card_intro_quip :
 			{
-				userCharacterItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_CharacterIntroQuip( character  ) )
+				entry = Loadout_CharacterIntroQuip( character )
 				break
 			}
 
-			unreachable //
+			default:
+				unreachable //
 		}
 	}
 
-	expect ItemFlavor ( userCharacterItemFlavor  )
-	return userCharacterItemFlavor
+	if ( requestedFlavor == null || !IsItemFlavorValidForLoadoutSlot( EHI_null, entry, expect ItemFlavor(requestedFlavor) ) )
+		requestedFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, entry )
+
+	expect ItemFlavor(requestedFlavor)
+
+	return requestedFlavor
 }
 
-ItemFlavor function GetBadgeItemFlavorForCommunityUserInfo( CommunityUserInfo userInfo, ItemFlavor character, int badgeIndex  )
+ItemFlavor function GetBadgeItemFlavorForCommunityUserInfo( CommunityUserInfo userInfo, ItemFlavor character, int badgeIndex )
 {
-	ItemFlavor ornull badgeItemFlavor = GetItemFlavorOrNullByGUID( userInfo.charData[ ePlayerStryderCharDataArraySlots.BANNER_BADGE1 + 2 * badgeIndex ], eItemType.gladiator_card_badge  ) //
+	LoadoutEntry entry                = Loadout_GladiatorCardBadge( character, badgeIndex )
+	ItemFlavor ornull badgeItemFlavor = GetItemFlavorOrNullByGUID( userInfo.charData[ ePlayerStryderCharDataArraySlots.BANNER_BADGE1 + 2 * badgeIndex ], eItemType.gladiator_card_badge ) //
+
 	if ( badgeItemFlavor == null )
-		badgeItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_GladiatorCardBadge( character, badgeIndex ) )
+		badgeItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, entry )
 
 	expect ItemFlavor( badgeItemFlavor )
+
+	if ( !IsItemFlavorValidForLoadoutSlot( EHI_null, entry, badgeItemFlavor ) )
+		badgeItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, entry )
 
 	return badgeItemFlavor
 }
@@ -427,13 +443,17 @@ int function GetBadgeDataIntegerFromCommunityUserInfo( CommunityUserInfo userInf
 	return dataInteger
 }
 
-ItemFlavor function GetTrackerItemFlavorForCommunityUserInfo( CommunityUserInfo userInfo, ItemFlavor character, int trackerIndex  )
+ItemFlavor function GetTrackerItemFlavorForCommunityUserInfo( CommunityUserInfo userInfo, ItemFlavor character, int trackerIndex )
 {
+	LoadoutEntry entry                  = Loadout_GladiatorCardStatTracker( character, trackerIndex )
 	ItemFlavor ornull trackerItemFlavor = GetItemFlavorOrNullByGUID( userInfo.charData[ ePlayerStryderCharDataArraySlots.BANNER_TRACKER1 + 2 * trackerIndex], eItemType.gladiator_card_stat_tracker )//
 	if ( trackerItemFlavor == null )
-		trackerItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, Loadout_GladiatorCardStatTracker( character, trackerIndex ) )
+		trackerItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, entry )
 
 	expect ItemFlavor( trackerItemFlavor )
+
+	if ( !IsItemFlavorValidForLoadoutSlot( EHI_null, entry, trackerItemFlavor ) )
+		trackerItemFlavor = GetDefaultItemFlavorForLoadoutSlot( EHI_null, entry )
 
 	return trackerItemFlavor
 }

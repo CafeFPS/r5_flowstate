@@ -51,12 +51,13 @@ Scripts:
 	sh_utility_all.gnut
 	sh_playlists.gnut
 	sh_networkvars.gnut
-	sh_passives.gnut
 	sh_items.gnut
+	sh_passives.gnut
 	sh_entitystructs.gnut
 	sh_death_hints.gnut
 	sh_items_per_player_state.gnut
 	sh_gamepad_utility.gnut
+	sh_thirdperson.gnut
 	sh_pak_requests.gnut
 	sh_ehi.gnut
 ]
@@ -241,40 +242,44 @@ Scripts:
 	weapons/mp_ability_cloak.nut
 	weapons/mp_ability_grapple.nut
 	weapons/mp_ability_holopilot.nut
+	
+	
 
 	weapons/mp_ability_heal.nut
 	weapons/mp_ability_sonar.nut
-	weapons/mp_ability_crypto_drone.nut
-	weapons/mp_ability_crypto_drone_emp.nut
-	weapons/mp_ability_care_package_weapons.nut
-	
-	weapons/melee_wraith_kunai.nut
-	weapons/melee_bloodhound_axe.nut
-	weapons/melee_lifeline_baton.nut
-
-	weapons/mp_weapon_wraith_kunai_primary.nut
-	weapons/mp_weapon_bloodhound_axe_primary.nut
-	weapons/mp_weapon_lifeline_baton_primary.nut
-
-	weapons/mp_weapon_rspn101.nut
-	weapons/mp_weapon_vinson.nut
-
-	weapons/mp_weapon_shotgun_kick.nut
-	weapons/mp_weapon_tesla_trap.nut
-	weapons/mp_weapon_trophy_defense_system.nut
-
 	weapons/mp_weapon_basic_bolt.nut
+	weapons/mp_weapon_defender.nut
+	weapons/mp_weapon_defender_sustained.nut
+
 	weapons/mp_weapon_dmr.nut
 	weapons/mp_weapon_doubletake.nut
-	weapons/mp_weapon_defender.nut
 	weapons/mp_weapon_shotgun_pistol.nut
+	
+    
 
 	weapons/mp_weapon_grenade_emp.nut
 	weapons/mp_weapon_lmg.nut
 	weapons/mp_weapon_lstar.nut
 	weapons/mp_weapon_energy_ar.nut
+	weapons/mp_weapon_rspn101.nut
+	weapons/mp_weapon_vinson.nut
 	weapons/mp_weapon_mastiff.nut
 	weapons/mp_weapon_melee_primary.nut
+	
+	weapons/mp_weapon_wraith_kunai_primary.nut
+	weapons/melee_wraith_kunai.nut
+	
+	weapons/mp_weapon_bloodhound_axe_primary.nut
+	weapons/melee_bloodhound_axe.nut
+	
+	weapons/mp_weapon_lifeline_baton_primary.nut
+	weapons/melee_lifeline_baton.nut
+    
+    
+	weapons/mp_weapon_shadow_squad_hands_primary.nut
+	weapons/melee_shadowsquad_hands.nut
+	
+	
 	weapons/mp_weapon_shotgun.nut
 	weapons/mp_weapon_sniper.nut
 	weapons/mp_weapon_thermite_grenade.nut
@@ -311,6 +316,8 @@ Scripts:
 
 	mp/sh_game_state_dialog.nut
 	mp/sh_comms_menu.nut
+	
+	mp/sh_warp_gates.gnut
 	sh_mp_utility.gnut
 	sh_score.gnut
 	sh_elite_streak.gnut
@@ -341,6 +348,8 @@ Scripts:
 	mp/sh_desertlands_train.nut
 	mp/sh_bleedout.gnut
 	mp/sh_respawn_beacon.gnut
+	sh_evac_ship.nut
+
 	sh_apex_screens.nut
 	sh_survival_deathfield.gnut
 	sh_survival_freefall.gnut
@@ -348,6 +357,7 @@ Scripts:
 	mp/sh_lootbin.gnut
 	mp/_sh_tutorial.gnut
 	mp/sh_survival_training.gnut
+	mp/firing_range.gnut
 	mp/sh_airdrops.gnut
     mp/sh_supply_ship.gnut
 
@@ -493,6 +503,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
+	sh_sneak_peek.gnut
 	pilot/sh_pilot_passive_voices.gnut
 
 	sh_scoreboard.gnut
@@ -792,13 +803,19 @@ Scripts:
 	weapons/mp_weapon_grenade_bangalore.nut
 	weapons/mp_weapon_grenade_creeping_bombardment.nut
 	weapons/mp_weapon_creeping_bombardment_weapon.nut
+	weapons/mp_weapon_jump_pad.nut
+	weapons/mp_weapon_tesla_trap.nut
+	weapons/mp_weapon_trophy_defense_system.nut
 	weapons/mp_ability_phase_walk.nut
 	weapons/mp_weapon_phase_tunnel.nut
 	weapons/mp_weapon_incap_shield.nut
 	weapons/mp_ability_care_package.nut
-	weapons/mp_weapon_jump_pad.nut
+	
+	weapons/mp_ability_crypto_drone.nut
+	weapons/mp_ability_crypto_drone_emp.nut
+	
 
-	sh_clientmusic.nut
+	sh_clientmusic.gnut
 
 	sh_waypoints.gnut
 	sh_resource_system_global.gnut

@@ -2,7 +2,7 @@
 //	sh_challenges.gnut
 //=========================================================
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 global function ShChallenges_LevelInit_PreStats
 global function ShChallenges_LevelInit_PostStats
 global function GetAllChallenges
@@ -21,8 +21,11 @@ global function Challenge_GetProgressValue
 
 
 global function DoesPlayerHaveChallenge
-global function RegisterChallengeSource
 global function RegisterChallengeFromAsset
+#endif
+
+#if SERVER || CLIENT || UI
+global function RegisterChallengeSource
 #endif
 
 #if SERVER
@@ -67,7 +70,7 @@ global function RefreshChallenges
 //// Global Types ////
 //////////////////////
 //////////////////////
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 global enum eChallengeTimeSpanKind
 {
 	DAILY,
@@ -107,7 +110,7 @@ const int NUM_CHALLENGES_MAX = (NUM_WEEKLY_CHALLENGES_MAX * NUM_CHALLENGE_WEEKS_
 const int NUM_POST_GAME_CHALLENGES_MAX = 32
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 struct ChallengeState
 {
 	int         persistenceIdx = -1
@@ -116,7 +119,7 @@ struct ChallengeState
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 struct PlayerChallengesState
 {
 	table<ItemFlavor, ChallengeState>   challengeStateMap
@@ -125,7 +128,7 @@ struct PlayerChallengesState
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 struct FileStruct_LifetimeLevel
 {
 	//
@@ -144,7 +147,7 @@ struct FileStruct_LifetimeLevel
 FileStruct_LifetimeLevel& fileLevel
 #endif
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 struct
 {
 	bool initialized = false
@@ -156,7 +159,7 @@ struct
 //// Initialiszation ////
 /////////////////////////
 /////////////////////////
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 void function ShChallenges_LevelInit_PreStats()
 {
 	FileStruct_LifetimeLevel newFileLevel
@@ -168,7 +171,7 @@ void function ShChallenges_LevelInit_PreStats()
 
 	#endif
 
-	#if CLIENT
+	#if SERVER || CLIENT
 		RegisterSignal( "ChallengeDataDidChange" )
 		Remote_RegisterClientFunction( "ServerToClient_AssignedChallengesDidChange" )
 		Remote_RegisterClientFunction( "ServerToClient_ChallengeDataDidChange" )
@@ -212,7 +215,7 @@ ItemFlavor ornull function RegisterChallengeFromAsset( asset challengeAsset )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 void function ShChallenges_LevelInit_PostStats()
 {
 	#if R5DEV
@@ -261,7 +264,7 @@ void function ShChallenges_LevelInit_PostStats()
 }
 #endif
 
-#if CLIENT || UI 
+#if SERVER || CLIENT || UI 
 void function RegisterChallengeSource( ItemFlavor challengeFlav, ItemFlavor sourceFlav, int sortOrdinal )
 {
 	fileLevel.challengeSourceMap[challengeFlav] <- sourceFlav
@@ -273,7 +276,7 @@ void function RegisterChallengeSource( ItemFlavor challengeFlav, ItemFlavor sour
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 void function OnChallengeRegistered( ItemFlavor challenge )
 {
 	//
@@ -461,12 +464,13 @@ array<ItemFlavor> function GetPinnedChallenges()
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 PlayerChallengesState function GetPlayerChallengesState( entity player = null )
 {
 	player = AssertLocalOrServerValidPlayer( player )
 	#if SERVER
-
+		PlayerChallengesState pcs
+		return pcs
 #elseif CLIENT || UI
 		return fileLevel.localPlayerChallengesState
 	#endif
@@ -474,7 +478,7 @@ PlayerChallengesState function GetPlayerChallengesState( entity player = null )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 void function InitPlayerChallengesStateFromPersistence( entity player, PlayerChallengesState pcs )
 {
 	#if R5DEV
@@ -904,7 +908,7 @@ string function Challenge_GetDescription( ItemFlavor challenge, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 bool function DoesPlayerHaveChallenge( entity player, ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -927,7 +931,7 @@ bool function DoesPlayerHaveChallenge( entity player, ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 bool function IsChallengeTierComplete( entity player, ItemFlavor challenge, int tier )
 {
 	Assert( tier >= 0 && tier < Challenge_GetTierCount( challenge ) )
@@ -943,7 +947,7 @@ bool function IsChallengeTierComplete( entity player, ItemFlavor challenge, int 
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 array<ItemFlavor> function GetAllChallenges()
 {
 	return GetAllItemFlavorsOfType( eItemType.challenge )
@@ -951,7 +955,7 @@ array<ItemFlavor> function GetAllChallenges()
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 array<ItemFlavor> function GetAllChallengesOfTimespan( int timeSpan, int weekIndex = -1 )
 {
 	Assert( timeSpan >= 0 && timeSpan < eChallengeTimeSpanKind.len() )
@@ -984,7 +988,7 @@ array<ItemFlavor> function GetAllChallengesOfTimespan( int timeSpan, int weekInd
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function Challenge_GetCurrentTier( entity player, ItemFlavor flavor )
 {
 	#if R5DEV
@@ -999,7 +1003,7 @@ int function Challenge_GetCurrentTier( entity player, ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 bool function Challenge_IsComplete( entity player, ItemFlavor flavor )
 {
 	int currentTier = Challenge_GetCurrentTier( player, flavor )
@@ -1010,7 +1014,7 @@ bool function Challenge_IsComplete( entity player, ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function Challenge_GetTierCount( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1021,7 +1025,7 @@ int function Challenge_GetTierCount( ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function Challenge_GetTimeSpanKind( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1033,7 +1037,7 @@ int function Challenge_GetTimeSpanKind( ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 bool function Challenge_IsSingleMatch( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1045,7 +1049,7 @@ bool function Challenge_IsSingleMatch( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 array<ItemFlavor> function Challenge_GetCharacterItemFlavors( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1066,7 +1070,7 @@ array<ItemFlavor> function Challenge_GetCharacterItemFlavors( ItemFlavor flavor,
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 ItemFlavor ornull function Challenge_GetWeaponItemFlavorOrNull( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1081,7 +1085,7 @@ ItemFlavor ornull function Challenge_GetWeaponItemFlavorOrNull( ItemFlavor flavo
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function Challenge_GetGoalVal( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1099,7 +1103,7 @@ int function Challenge_GetGoalVal( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function Challenge_GetXPReward( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1117,7 +1121,7 @@ int function Challenge_GetXPReward( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function Challenge_GetBattlepassLevelsReward( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1135,7 +1139,7 @@ int function Challenge_GetBattlepassLevelsReward( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 ItemFlavorBag function Challenge_GetItemRewards( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1161,7 +1165,7 @@ ItemFlavorBag function Challenge_GetItemRewards( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 bool function Challenge_LastTierIsInfinite( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1181,7 +1185,7 @@ bool function Challenge_IsPinned( ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function Challenge_GetWeekNumber( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1191,7 +1195,7 @@ int function Challenge_GetWeekNumber( ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function CharacterClass_GetTimeSpan( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1201,7 +1205,7 @@ int function CharacterClass_GetTimeSpan( ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function Challenge_GetProgressValue( entity player, ItemFlavor challengeFlav, int tier )
 {
 	Assert( ItemFlavor_GetType( challengeFlav ) == eItemType.challenge )
@@ -1254,7 +1258,7 @@ int function Challenge_GetProgressValue( entity player, ItemFlavor challengeFlav
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 var function Challenge_GetTierDataBlock( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1268,7 +1272,7 @@ var function Challenge_GetTierDataBlock( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 array<string> function Challenge_GetStatRefs( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1304,7 +1308,7 @@ array<string> function Challenge_GetStatRefs( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 bool function Challenge_ShouldUseStatMarker( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1317,7 +1321,7 @@ bool function Challenge_ShouldUseStatMarker( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 string function Challenge_GetZoneName( ItemFlavor flavor, int tier )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1329,7 +1333,7 @@ string function Challenge_GetZoneName( ItemFlavor flavor, int tier )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 bool function Challenge_IsPremium( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.challenge )
@@ -1353,7 +1357,7 @@ ChallengeGroupData function CreateChallengeGroup( entity player, string nameStri
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 int function GetCompletedChallengeCount( entity player, array<ItemFlavor> challenges )
 {
 	int count = 0

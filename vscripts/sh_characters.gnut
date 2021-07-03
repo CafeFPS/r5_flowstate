@@ -35,6 +35,11 @@ global function GetCharacterButtonMapping
 global function GetCharacterButtonOrder
 #endif
 
+#if SERVER || CLIENT
+global function GetPlayerSettingBaseHealth
+global function GetPlayerSettingBaseShield
+#endif
+
 //////////////////////
 //////////////////////
 //// Global Types ////
@@ -134,7 +139,7 @@ void function OnRegisterRootItemFlavors()
 	entry.stryderCharDataArrayIndex = ePlayerStryderCharDataArraySlots.CHARACTER
 	entry.networkTo = eLoadoutNetworking.PLAYER_GLOBAL
 	entry.networkVarName = "CharacterSelection"
-	entry.isItemFlavorUnlocked = bool function( EHI playerEHI, ItemFlavor flavor ) {
+	entry.isItemFlavorUnlocked = bool function( EHI playerEHI, ItemFlavor flavor, bool shouldIgnoreOtherSlots ) {
 		return CharacterClass_IsAvailable( playerEHI, flavor )
 	}
 	entry.isSlotLocked = bool function( EHI playerEHI ) {
@@ -511,6 +516,17 @@ int function SortByMenuButtonIndex( ItemFlavor a, ItemFlavor b )
 	return 0
 }
 #endif // CLIENT || UI
+#if(SERVER || CLIENT)
+int function GetPlayerSettingBaseHealth( entity player )
+{
+	return int( player.GetPlayerSettingFloat( "health" ) )
+}
+
+int function GetPlayerSettingBaseShield( entity player )
+{
+	return int( player.GetPlayerSettingFloat( "healthShield" ) )
+}
+#endif
 
 ///////////////////
 ///////////////////
