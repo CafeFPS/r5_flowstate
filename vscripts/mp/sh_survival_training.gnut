@@ -150,7 +150,7 @@ void function ShSurvivalTraining_Init()
 		RegisterNetworkedVariableChangeCallback_time( "TrainingEndTime", TrainingEndTimeChanged )
 		SetCommsDialogueEnabled( false )
 
-		AddCreateCallback( "prop_dynamic", TrainingDeathBoxCreated )
+		AddCreateCallback( "prop_death_box", TrainingDeathBoxCreated )
 	#endif
 }
 
@@ -1612,10 +1612,8 @@ void function TrainingDeathBoxCreated( entity ent )
 {
 	if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME_TRAINING )
 	{
-		TEMP_SaveEHI( ent )
-
 		entity localViewPlayer = GetLocalViewPlayer()
-		if( !IsValid( localViewPlayer ) || ent.DoesShareRealms( localViewPlayer ) )
+		if ( !IsValid( localViewPlayer ) || ent.DoesShareRealms( localViewPlayer ) )
 			thread CreateDeathBoxRui( ent )
 	}
 }

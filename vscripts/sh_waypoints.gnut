@@ -1818,6 +1818,7 @@ entity function CreateWaypoint_Ping_Location( entity player, int pingType, entit
 
 	Waypoint_ResetCreatedTime( wp )
 	SetTicketIDForWaypoint( wp, ticketID )
+	CreatePropDynamic( $"mdl/error.rmdl", position, <0,0,0> )
 	wp.SetAbsOrigin( position )
 
 	Waypoint_ParentToPingEnt( wp, pingEnt, pingType )

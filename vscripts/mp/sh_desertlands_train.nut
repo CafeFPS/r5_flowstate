@@ -11,6 +11,11 @@ global function ServerCallback_SetDesertlandsTrainAtStation
 global function IsDesertlandsTrainAtStation
 #endif
 
+#if SERVER
+global function DesertlandsTrain_Init
+global function DesertlandsTrain_Precaches
+#endif
+
 
 #if SERVER
 
@@ -115,7 +120,16 @@ void function TrainOnFullUpdate()
 
 
 #if SERVER
+void function DesertlandsTrain_Init()
+{
+	// stub :(
 
+}
+
+void function DesertlandsTrain_Precaches()
+{
+
+}
 #endif //
 
 

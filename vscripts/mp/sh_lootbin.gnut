@@ -32,7 +32,7 @@ global const string LOOT_BIN_MARKER_SCRIPTNAME = "survival_lootbin"
 global const string LOOT_BIN_SCRIPTNAME = "survival_lootbin_spawned"
 
 global const asset LOOT_BIN_MODEL = $"mdl/props/loot_bin/loot_bin_01_animated.rmdl"
-global const bool LOOT_BIN_CLOSABLE = true // note that they will always be closable if playlist var lootbins_infinite is set to 1
+global const bool LOOT_BIN_CLOSABLE = false // note that they will always be closable if playlist var lootbins_infinite is set to 1
 
 global const string SOUND_LOOT_BIN_OPEN = "Door_Lootbin_Open"
 global const string SOUND_LOOT_BIN_IDLE = "Door_Lootbin_Presence_Loop"
@@ -41,6 +41,14 @@ const float LOOT_BIN_SOUND_INIT_MIN_WAIT = 5.0
 
 const bool SURVIVAL_DEBUG_LOOT_BINS = false
 
+//
+struct LootBinLocationBackupData
+{
+	vector origin
+	vector angles
+	bool   onMovingGeo
+}
+
 struct
 {
 	bool                          lootBinsInfinite = false
@@ -48,11 +56,14 @@ struct
 	table<entity, array<string> > lootBinsLootInside
 	array<entity>                 lootBinList
 	int                           numLootBins
+	array<LootBinLocationBackupData> lootBinBackupLocations
 } file
 
 void function ShLootBin_Init()
 {
 	PrecacheModel( LOOT_BIN_MODEL )
+
+	RegisterSignal( "TryRefreshLootbinHighlights_Internal" )
 
 	#if SERVER
 		AddSpawnCallback_ScriptName( LOOT_BIN_MARKER_SCRIPTNAME, InitLootBinFromMap )
@@ -63,6 +74,7 @@ void function ShLootBin_Init()
 	#endif
 	#if CLIENT
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
+		AddDestroyCallback( "prop_dynamic", OnPropDynamicDestroyed )
 	#endif
 }
 
@@ -552,6 +564,16 @@ void function OnPropDynamicCreated( entity lootbin )
 	AddEntityCallback_GetUseEntOverrideText( lootbin, GetLootBinUseTextOverride )
 
 	SetCallback_CanUseEntityCallback( lootbin, LootBin_CanUse )
+
+	file.lootBinList.append( lootbin )
+}
+#endif
+
+#if(CLIENT)
+void function OnPropDynamicDestroyed( entity lootbin )
+{
+	if ( file.lootBinList.contains( lootbin ) )
+		file.lootBinList.removebyvalue( lootbin )
 }
 #endif // CLIENT
 
@@ -567,8 +589,8 @@ entity function GetLootBinForHitEnt( entity hitEnt )
 	return null
 }
 
-
-bool function LootBin_CanUse( entity player, entity lootBin )
+#if SERVER || CLIENT
+bool function LootBin_CanUse( entity player, entity lootbin )
 {
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return false
@@ -576,26 +598,40 @@ bool function LootBin_CanUse( entity player, entity lootBin )
 	if ( Bleedout_IsBleedingOut( player ) )
 		return false
 
-	if ( LootBin_IsBusy( lootBin ) )
+	if ( LootBin_IsBusy( lootbin ) )
 		return false
 
-	if ( !LOOT_BIN_CLOSABLE && LootBin_IsOpen( lootBin ) )
-		return false
+	bool anythingToOpen = false
+	if ( !LootBin_IsOpen( lootbin ) )
+		anythingToOpen = true
+	#if(false)
 
-	return true
+
+#endif
+
+	return anythingToOpen
 }
+#endif
 
 #if CLIENT
 string function GetLootBinUseTextOverride( entity lootbin )
 {
 	if ( !LootBin_IsOpen( lootbin ) )
+	{
+		if ( GradeFlagsHas( lootbin, eGradeFlags.IS_LOCKED ) )
+			return "#SURVIVAL_LOOTBIN_LOCKED"
 		return "#SURVIVAL_LOOTBIN_OPEN"
-	else if ( LOOT_BIN_CLOSABLE )
-		return "#SURVIVAL_LOOTBIN_CLOSE"
-	else
-		return ""
+	}
 
-	unreachable
+	#if(false)
+
+
+#endif //
+
+	if ( LOOT_BIN_CLOSABLE )
+		return "#SURVIVAL_LOOTBIN_CLOSE"
+
+	return ""
 }
 #endif
 

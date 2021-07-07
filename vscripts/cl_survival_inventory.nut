@@ -1105,7 +1105,7 @@ void function UICallback_SetGroundMenuHeaderToPlayerName( void elem )
 
 	if ( IsValid( file.currentGroundListData.deathBox ) && file.currentGroundListData.behavior == eGroundListBehavior.CONTENTS )
 	{
-		EHI ornull ehi = TEMP_GetSavedEHI( file.currentGroundListData.deathBox )
+		EHI ornull ehi = GetEHIForDeathBox( file.currentGroundListData.deathBox )
 		if ( ehi != null )
 		{
 			expect EHI( ehi )

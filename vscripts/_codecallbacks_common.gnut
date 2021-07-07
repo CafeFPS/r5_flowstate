@@ -206,7 +206,7 @@ void function InitRespawnPlayer(entity player)
 
 	if( !IsLobby() )
 	{
-		// todo: just reset the inventory before respawning
+		// // todo: just reset the inventory before respawning
 		// try {
 		// 	player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
 		// 	player.GiveWeapon( "mp_weapon_frag_grenade", WEAPON_INVENTORY_SLOT_ANY )
@@ -226,7 +226,7 @@ void function InitRespawnPlayer(entity player)
 		// int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
 		// ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
 	
-		// player.SetHealth( 100 )
+		player.SetHealth( 100 )
 	}
 	UpdateNetCounts()
 }

@@ -263,8 +263,6 @@ void function ShFlyers_Init()
 	#endif
 	
 	#if(CLIENT)
-		AddCreateCallback( "script_mover", FlyerCreationCallback )
-		
 		if ( EvilFlyersEnabled() )
 		{
 			#if(true)
@@ -275,6 +273,7 @@ void function ShFlyers_Init()
 		}
 	#endif
 }
+
 
 bool function EvilFlyersEnabled()
 {

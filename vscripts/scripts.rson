@@ -202,6 +202,7 @@ Scripts:
 [
 	sh_debug_draw.gnut
 	sh_flag.gnut
+	_trigger_functions.gnut
 	_utility_shared.nut
 	sh_damage_types.nut
 	sh_passive_utility.gnut
@@ -392,7 +393,7 @@ Scripts:
 	_objective.gnut
 	_on_spawned.gnut
 	_script_triggers.gnut
-	_trigger_functions.gnut
+	// _trigger_functions.gnut
 	_viewcone.gnut
 	_pain_death_sounds.gnut
 	_threat_tracker.gnut
