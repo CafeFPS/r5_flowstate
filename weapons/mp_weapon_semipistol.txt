@@ -10,13 +10,15 @@ WeaponData
 	"longdesc" 										"#WPN_P2011_LONGDESC"
 
 	"ammo_pool_type"								"bullet"
+	"weapon_type_flags"								"WPT_PRIMARY"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_p2020"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_p2020"
 
 	"body_type"										"close_quarters"
 
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 
 	// Menu
 	"menu_category"                                 "pistol"
@@ -60,12 +62,12 @@ WeaponData
 		"ammo_min_to_fire"								"1"
 
 		// Damage - When Used by Players
-		"damage_near_value"   							"12"
-		"damage_far_value"								"12"
-		"damage_very_far_value"							"12"
-		"damage_near_value_titanarmor"					"12"
-		"damage_far_value_titanarmor" 					"12"
-		"damage_very_far_value_titanarmor" 				"12"
+		"damage_near_value"   							"13"
+		"damage_far_value"								"13"
+		"damage_very_far_value"							"13"
+		"damage_near_value_titanarmor"					"13"
+		"damage_far_value_titanarmor" 					"13"
+		"damage_very_far_value_titanarmor" 				"13"
 		"damage_rodeo" 									"190"
 
 		// Damage - When Used by NPCs
@@ -75,8 +77,6 @@ WeaponData
 		"npc_damage_far_value_titanarmor" 				"0"
 		"npc_damage_near_distance"						"800"
 		"npc_damage_far_distance" 						"1000"
-
-		"damage_heavyarmor_nontitan_scale"				"0.35"
 	}
 
 	SP_BASE
@@ -102,8 +102,6 @@ WeaponData
 		"npc_damage_far_value_titanarmor" 				"<KEEP_DEFAULT>"
 		"npc_damage_near_distance"						"<KEEP_DEFAULT>"
 		"npc_damage_far_distance" 						"<KEEP_DEFAULT>"
-
-		"damage_heavyarmor_nontitan_scale"				"1"
 	}
 
 	// NPC
@@ -200,6 +198,10 @@ WeaponData
 
 	Mods
 	{
+	    gold
+	    {
+	    }
+
 		survival_finite_ammo
         {
             "ammo_default_total"							"0"
@@ -207,6 +209,19 @@ WeaponData
             "ammo_no_remove_from_stockpile"					"0"
 	   		"uses_ammo_pool"								"1"
 	   		"low_ammo_fraction" 							"0.3"
+        }
+
+        hopup_unshielded_dmg
+        {
+            "damage_unshielded_scale"      					"2.7"
+
+            "projectile_trail_effect_0"     				"P_tracer_proj_smg_hammer_point"
+            "impact_effect_table" 							"hammer_point_bullet"
+
+			"fire_sound_1"									"weapon_re45auto_shell"
+			"fire_sound_2_player_1p"						"weapon_p2011_fire_unshieldeddmg_1p"
+			"fire_sound_2_player_3p"						"weapon_p2011_fire_unshieldeddmg_3p"
+			"fire_sound_2_npc"								"Weapon_P2011_Fire_NPC"
         }
 
         optic_cq_hcog_classic

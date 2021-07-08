@@ -17,34 +17,40 @@ struct AirdropBadPlace
 struct
 {
 	array<AirdropBadPlace> airdropBadPlaceArray
-	int airdropBadPlaceCount
+	int                    airdropBadPlaceCount
+
+	array<entity> airdropTraceIgnoreEntArray
 } file
 
 vector function GetOriginFromAttachPoint( AttachPoint point, vector origin, vector forward, vector right )
 {
-	origin += forward *  point.origin.x
-	origin += right *  -point.origin.y
-	origin += <0,0,point.origin.z>
+	origin += forward * point.origin.x
+	origin += right * -point.origin.y
+	origin += <0, 0, point.origin.z>
 	return origin
 }
 
+
 vector function GetOriginFromPoint( Point point, vector origin, vector forward, vector right )
 {
-	origin += forward *  point.origin.x
-	origin += right *  -point.origin.y
-	origin += <0,0,point.origin.z>
+	origin += forward * point.origin.x
+	origin += right * -point.origin.y
+	origin += <0, 0, point.origin.z>
 	return origin
 }
+
 
 vector function GetAnglesFromAttachPoint( AttachPoint point, vector angles )
 {
 	return AnglesCompose( angles, point.angles )
 }
 
+
 vector function GetAnglesFromPoint( Point point, vector angles )
 {
 	return AnglesCompose( angles, point.angles )
 }
+
 
 array<vector> function GetFlightPathPoints( FlightPath flightPath, vector origin, vector forward, vector right )
 {
@@ -900,8 +906,8 @@ bool function FlightPathHasNodeAndMatchesAINData( FlightPath flightPath )
 }
 #endif // SERVER
 
-const DEBUG_DROP_POINTS = false
-const DEBUG_DROP_POINTS_LINES = false
+const bool DEBUG_DROP_POINTS = false
+const bool DEBUG_DROP_POINTS_LINES = false
 const DEBUG_DRAW_TIME = 0.02
 const vector AIRDROP_MAXS = <80,80,256>
 const vector AIRDROP_MINS = <-80,-80,0>
@@ -912,6 +918,7 @@ bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePacka
 	const DOOR_UP_OFFSET = 64
 	const LEDGE_DOWN_OFFSET = 96
 	const EDGE_TRACE_HEIGHT = 48
+	const vector UP_VECTOR = <0, 0, 1>
 
 	int door_space_distance = isCarePackage ? 64 : 128
 	int edge_trace_dist = isCarePackage ? 64 : 96
@@ -934,8 +941,8 @@ bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePacka
 	if ( IsNearAirdropBadPlace( baseOrigin, realmEnt ) )
 		failCode = failCode | 0x0040
 
-	TraceResults trace = TraceHull( startOrigin, endOrigin, mins, maxs, null, ( TRACE_MASK_PLAYERSOLID | TRACE_MASK_TITANSOLID | CONTENTS_NOAIRDROP ), TRACE_COLLISION_GROUP_NONE )
-	float dot = DotProduct( up, trace.surfaceNormal )
+	TraceResults trace = TraceHull( startOrigin, endOrigin, mins, maxs, file.airdropTraceIgnoreEntArray, (TRACE_MASK_PLAYERSOLID | TRACE_MASK_TITANSOLID | CONTENTS_NOAIRDROP), TRACE_COLLISION_GROUP_NONE, UP_VECTOR, realmEnt )
+	float dot          = DotProduct( up, trace.surfaceNormal )
 	// surface angle is to great
 	if ( dot != 0 && DotToAngle( dot ) > maxSurfaceAngle )
 	{
@@ -1110,6 +1117,25 @@ bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePacka
 	// passed all tests, should be find for calling in a drop
 	return true
 }
+
+
+void function AddAirdropTraceIgnoreEnt( entity ent )
+{
+	file.airdropTraceIgnoreEntArray.append( ent )
+	AddEntityDestroyedCallback( ent, RemoveAirdropTraceIgnoreEntOnDestroy )
+}
+
+
+void function RemoveAirdropTraceIgnoreEntOnDestroy( entity ent )
+{
+	file.airdropTraceIgnoreEntArray.fastremovebyvalue( ent )
+}
+
+array<entity> function GetAirDropTraceIgnoreEntArray()
+{
+	return file.airdropTraceIgnoreEntArray
+}
+
 
 #if SERVER
 

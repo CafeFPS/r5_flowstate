@@ -5,6 +5,13 @@ global function ShFlyers_Init
 global function IsFlyerThatStillHasDeathBox
 global function GetDeathBoxFromFlyer
 
+
+global const FLYER_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_1000X_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_500X_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_MODEL_STATIC = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
+
 const TIME_BEFORE_FLYER_DROPS_LOOT = 3.0
 const TIME_FOR_CAGED_FLYER_DAMAGED_STATE_TRANSITIONS = 10.0
 const TIME_FOR_CAGED_FLYER_TRIGGER_VACATED_STATE_TRANSITIONS = 10.0
@@ -30,6 +37,8 @@ const int FLYER_FLYING_APPROACH_DISTANCE_THRESHOLD = 450
 const int FLYER_LOOT_ITEMS_FLOOR = 5
 const int FLYER_LOOT_ITEMS_CEILING = 10
 
+global const string DEATHBOX_FLYER_SCRIPT_NAME = "deathboxFlyer"
+global const string CAGED_FLYER_SCRIPT_NAME = "cagedFlyer"
 
 global function CreateFlyerSequence
 //global function AddFlyersToSequence
@@ -61,9 +70,6 @@ const asset FX_FLYER_GLOW = $"P_flyer_glow"
 //// Global Types ////
 //////////////////////
 //////////////////////
-global const FLYER_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-global const string DEATHBOX_FLYER_SCRIPT_NAME = "deathboxFlyer"
-global const string CAGED_FLYER_SCRIPT_NAME    = "cagedFlyer"
 
 #if R5DEV
 struct TestFlyerSpawnDataStruct
@@ -93,10 +99,6 @@ global function IsDeathboxFlyer
 //// Private Types ////
 ///////////////////////
 ///////////////////////
-const FLYER_1000X_MODEL      = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-const FLYER_500X_MODEL       = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-const FLYER_MODEL_STATIC     = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
 
 enum perchedFlyerState
 {
@@ -263,6 +265,8 @@ void function ShFlyers_Init()
 	#endif
 	
 	#if(CLIENT)
+		AddCreateCallback( "script_mover", FlyerCreationCallback )
+		
 		if ( EvilFlyersEnabled() )
 		{
 			#if(true)
@@ -273,7 +277,6 @@ void function ShFlyers_Init()
 		}
 	#endif
 }
-
 
 bool function EvilFlyersEnabled()
 {

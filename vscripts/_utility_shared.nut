@@ -93,13 +93,10 @@ global struct RaySphereIntersectStruct
 
 global enum eGradeFlags
 {
-	NONE = 0,
-
-	IS_OPEN =			(1 << 0),
-	IS_BUSY =			(1 << 1),
-	IS_OPEN_SECRET =	(1 << 2),
-	IS_LOCKED =			(1 << 3),
-	_flagCount			= 2
+	IS_OPEN = (1 << 0),
+	IS_BUSY = (1 << 1),
+	IS_OPEN_SECRET = (1 << 2),
+	IS_LOCKED = (1 << 3),
 }
 
 
@@ -135,6 +132,7 @@ void function InitWeaponScripts()
 	MpAbilityShifter_Init()
 	MpWeaponDefender_Init()
 	MpWeaponDmr_Init()
+	MpWeaponSmartPistol_Init()
 	MpWeaponSniper_Init()
 	MpWeaponLSTAR_Init()
 	MpWeaponZipline_Init()
@@ -147,9 +145,10 @@ void function InitWeaponScripts()
 	MeleeLifelineBaton_Init()
 	MpWeaponLifelineBatonPrimary_Init()
 
-	#if(true)
+	#if R5DEV
 		MeleeShadowsquadHands_Init()
 		MpWeaponShadowsquadHandsPrimary_Init()
+		MDLSpawner_Init()
 	#endif
 
 	MpAbilityGibraltarShield_Init()

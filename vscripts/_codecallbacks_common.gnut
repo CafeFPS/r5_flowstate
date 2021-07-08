@@ -83,7 +83,7 @@ global function CodeCallback_OnPlayerEndWallhang
 global function CodeCallback_OnClientConnectionCompleted 
 
 table<asset> IF_Settings = {
-	character_bangalore  = $"settings/player/mp/pilot_survival_firesupport.rpak", //character_bangalore_NAME
+	character_bangalore  = $"settings/player/mp/pilot_survival_firesupport.rpak", // character_bangalore_NAME
 	character_bloodhound = $"settings/player/mp/pilot_survival_tracker.rpak",     // character_bloodhound_NAME
 	character_caustic    = $"settings/player/mp/pilot_survival_gas.rpak",         // character_caustic_NAME
 	character_gibraltar  = $"settings/player/mp/pilot_survival_gunner.rpak",      // character_gibraltar_NAME
@@ -92,64 +92,92 @@ table<asset> IF_Settings = {
 	character_octane     = $"settings/player/mp/pilot_survival_stim.rpak",        // character_octane_NAME
 	character_pathfinder = $"settings/player/mp/pilot_survival_grapple.rpak",     // character_pathfinder_NAME
 	character_wraith     = $"settings/player/mp/pilot_survival_closer.rpak"       // character_wraith_NAME
+	character_wattson    = $"settings/player/mp/pilot_survival_barricade.rpak"   // character_wattson_NAME
+	character_crypto     = $"settings/player/mp/pilot_survival_crypto.rpak"       // character_crypto_NAME
 }
 
+#document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
 
-	player.hasConnected = true
-
-	SetGameState(eGameState.WaitingForPlayers)
-	SetGameState(eGameState.PickLoadout)
-	AddDeathCallback( "player", RespawnOnDie )
-
-	foreach( callbackFunc in svGlobal.onClientConnectedCallbacks ) {
-		callbackFunc(player)
-	}
+	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
+	player.s.activeTrapArrayId <- 0
 
 	ZiplineInit( player )
 
+
+
+	player.hasConnected = true
+
+	SetGameState( eGameState.Playing )
+
+	AddDeathCallback( "player", OnPlayerDeathCallback )
+
+	foreach( cb in svGlobal.onClientConnectedCallbacks )
+		cb( player )
+
+
 	NotifyClientsOfConnection( player, 1 )
 
+	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
 
   thread InitRespawnPlayer(player)
-
-	// SetGameState(eGameState.Prematch)
 
 
 	CodeCallback_OnClientReloadConnectionCompleted(player)
 
+	//SetGameState(eGameState.Playing)
+
+	UpdateNetCounts()
+	
+}
+
+void function CodeCallback_OnPlayerRespawned( entity player )
+{
+	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
+		cb( player )
+}
 
 
-	SetGameState(eGameState.Playing)
+void function OnPlayerDeathCallback( entity player, var damageInfo )
+{
+	if( IsAlive( player ) )
+		return
+	
+	if( GetCurrentPlaylistVarBool( "should_respawn_on_death", true ) )
+	{
+		thread InitRespawnPlayer( player )
+		return
+	}
+
+
+	// TODO: deathboxes
+	int team = player.GetTeam()
+	int aliveTeamPlayers = GetPlayerArrayOfTeam_Alive( team ).len()
+
+	if( aliveTeamPlayers == 0 )
+	{
+		// team is dead, create deathbox with no card
+		SURVIVAL_CreateDeathBox( player, true )
+
+	}
+	else {
+		// team is not dead, create deathbox with card
+
+
+	}
+
 
 
 }
 
-// void function CodeCallback_OnClientConnectionCompleted( entity player )
-// {
-// 	player.hasConnected = true
+void function RespawnOnDie(entity player, var damageInfo) 
+{
+	if( IsAlive( player ) )
+		return
 
-// 	SetGameState(eGameState.Playing)
-
-// 	AddDeathCallback( "player", RespawnOnDie )
-
-// 	foreach( callbackFunc in svGlobal.onClientConnectedCallbacks ) {
-// 		callbackFunc(player)
-// 	}
-
-// 	ZiplineInit( player )
-
-// 	NotifyClientsOfConnection( player, 1 )
-
-//   thread InitRespawnPlayer(player)
-
-// 	CodeCallback_OnClientReloadConnectionCompleted(player)
-
-// 	// DEV_PDataInitForPlayer( player ) // this doesn't fully work as persistent data is never ready
-
-// 	UpdateNetCounts()
-// }
+  thread InitRespawnPlayer(player)
+}
 
 void function InitRespawnPlayer(entity player)
 {
@@ -157,9 +185,13 @@ void function InitRespawnPlayer(entity player)
 		return
 	
   wait 1.0
-	
-	SetTeam(player, 1)
-	player.SetTeamMemberIndex( 0 )
+
+	SetTeam( player, 10 )
+
+	int teamMemberIndex = GetPlayerArrayOfTeam( player.GetTeam() ).len() - 1
+
+	player.SetTeamMemberIndex( teamMemberIndex )
+
 	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
 	player.SetPlayerNetBool( "pingEnabled", true )
 
@@ -170,70 +202,126 @@ void function InitRespawnPlayer(entity player)
 
   DoRespawnPlayer( player, null )
 
-	if( false && GetCurrentPlaylistName() != "survival_training" && !IsLobby() )
+	if( !IsSurvivalTraining() && !IsLobby() && GetMapName() != "mp_rr_test" )
 	{
 		origin = GetEnt( "info_player_start" ).GetOrigin()
 		angles = GetEnt( "info_player_start" ).GetAngles()
-
 	}
-	else
+	else if ( GetMapName() == "mp_rr_test" )
 	{
-		// todo: set to actual start pos for staging --
-		//origin = < 26328, -6235, -27540 >
+		origin = <0, 0, 0>
+		angles = <0, 0, 0>
+	}
+	else if ( GetMapName() == "mp_rr_desertlands_64k_x_64k" )
+	{
+		origin = < 6500, 3077, -3368 >
+		angles = <0, 0, 0>
+	}
+	else if ( GetMapName() == "mp_rr_canyonlands_64k_x_64k" )
+	{
+		origin = < 0, 2200, 0 >
+		angles = <0, 0, 0>
+	}
+	else if ( GetMapName() == "mp_rr_canyonlands_mu1" )
+	{
+		origin = < 0, 2200, 0 >
+		angles = <0, 0, 0>
+	}
+	else if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )
+	{
+		origin = < 0, 2200, 0 >
+		angles = <0, 0, 0>
+	}
+	else if ( GetMapName() == "mp_rr_canyonlands_staging" )
+	{
+		origin = <26328, -6235, -27540>
 		angles = <21.5, 0.2, 0>
 	}
 
-	// origin = < 40000, 40000, 40000 >
-	// player.SetOrigin( origin )
-	// player.SetAngles( angles )
+	player.SetOrigin( origin )
+	player.SetAngles( angles )
+	
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )//LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	
+	// settings/player/mp/pilot_survival_gunner.rpak		Gibraltar
+	// settings/player/mp/pilot_survival_tracker.rpak		Bloodhound
+	// settings/player/mp/pilot_survival_grapple.rpak		Pathfinder
+	// settings/player/mp/pilot_survival_stim.rpak			Octane
+	// settings/player/mp/pilot_survival_gas.rpak			Caustic
+	// settings/player/mp/pilot_survival_medic.rpak			Lifeline
+	// settings/player/mp/pilot_survival_closer.rpak		Wraith
+	// settings/player/mp/pilot_survival_firesupport.rpak	Bangalore
+	// settings/player/mp/pilot_survival_holopilot.rpak		Mirage
+	// settings/player/mp/pilot_survival_barricade.rpak		Wattson
+	// settings/player/mp/pilot_survival_crypto.rpak		Crypto
 
-	// ItemFlavor character = GetDefaultItemFlavorForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass() )//LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-
-	// player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_stim.rpak", [ "enable_wallrun", "enable_doublejump" ] )
-	// printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ) )
-
-	// array<string> mods = []
-	// if( GetCurrentPlaylistVarBool( "enable_wallrun", true ) )
-	// {
-	// 	mods.append( "enable_wallrun" )
-	// }
-	// if( GetCurrentPlaylistVarBool( "enable_doublejump", true ) )
-	// {
-	// 	mods.append( "enable_doublejump")
-	// }
-
-	// player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
+	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_holopilot.rpak", [] )	
+	asset thirdperson = $"mdl/Weapons/arms/pov_pilot_light_wattson.rmdl"
+	asset firstperson = $"mdl/Weapons/arms/pov_pilot_medium_holo_legendary_02.rmdl"
+	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ))
+if( !IsLobby() )
+	//player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
 
 	if( !IsLobby() )
 	{
-		// // todo: just reset the inventory before respawning
-		// try {
-		// 	player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
-		// 	player.GiveWeapon( "mp_weapon_frag_grenade", WEAPON_INVENTORY_SLOT_ANY )
-		// 	player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-		// 	GivePassive( player, ePassives.PAS_OCTANE )
-		// 	player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
-		// 	player.GiveOffhandWeapon( "mp_weapon_grenade_bangalore", OFFHAND_SPECIAL )
-		// 	player.GiveOffhandWeapon( "mp_ability_care_package", OFFHAND_INVENTORY )
-		// 	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
-		// } catch(error)
-		// {
+		// todo: just reset the inventory before respawning
+		try {
+			player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_ANY )
+			player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
+			//player.GiveWeapon( "mp_weapon_grenade_gravity", WEAPON_INVENTORY_SLOT_ANY )
+			GivePassive( player, ePassives.PAS_VOICES )
+			
+			//Lifeline Heirloom
+			player.GiveOffhandWeapon( "melee_lifeline_baton", OFFHAND_MELEE )
+			player.GiveWeapon( "mp_weapon_lifeline_baton_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			
+			//Wraith Heirloom
+			//player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
+			//player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			
+			//Bloodhound Heirloom
+			//player.GiveOffhandWeapon( "melee_bloodhound_axe", OFFHAND_MELEE )
+			//player.GiveWeapon( "mp_weapon_bloodhound_axe_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			
+			player.GiveOffhandWeapon( "mp_weapon_deployable_medic", OFFHAND_SPECIAL )
+			player.GiveOffhandWeapon( "mp_weapon_trophy_defense_system", OFFHAND_INVENTORY )
+			player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
+			//player.SetModel( thirdperson )
+			//player.SetviewModel( firstperson )
+		} catch( error )
+		{
 
-		// }
+		}
 		EnableOffhandWeapons( player )
 	
-		// entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-		// int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
-		// ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
+		entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+		int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
+		ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
 	
 		player.SetHealth( 100 )
 	}
+
+	//thread SkydiveTest()
 	UpdateNetCounts()
 }
 
+/*{
+"725342087": "Bangalore",
+"898565421": "Bloodhound",
+"1111853120": "Caustic",
+"80232848": "Crypto",
+"182221730": "Gibraltar",
+"1409694078": "Lifeline",
+"2045656322": "Mirage",
+"843405508": "Octane",
+"1464849662": "Pathfinder",
+"187386164": "Wattson",
+"827049897": "Wraith",
+}*/
+
 void function DEV_PDataInitForPlayer( entity player )
 {
-	player.SetPersistentVar( "loadouts.character_selection", 827049897 )
+	//player.SetPersistentVar( "loadouts.character_selection", 827049897 )
 
 	array< ItemFlavor > characters = GetAllCharacters()
 	foreach ( ItemFlavor character in characters )
@@ -242,6 +330,9 @@ void function DEV_PDataInitForPlayer( entity player )
 		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].intro_quip", 0 )
 		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].meleeskin", 0 )
 		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].skin", 1644844869 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].gcard_badge_0", 0 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].gcard_badge_0_tier", 0 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].gcard_badge_1", 97219464 )
 	}
 }
 
@@ -249,13 +340,6 @@ void function UpdateNetCounts()
 {
 	SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
 	SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
-}
-
-void function RespawnOnDie(entity player, var damageInfo) 
-{
-	if( IsAlive( player ) )
-		return
-  thread InitRespawnPlayer(player)
 }
 
 struct
@@ -695,9 +779,10 @@ void function AddPlayerDropScriptedItemsCallback( void functionref(entity player
 	svGlobal.onPlayerDropsScriptedItemsCallbacks.append( callbackFunc )
 }
 
-void function AddCallback_OnWeaponAttack( void functionref( entity, entity, string, int, vector, vector ) callback )
+void function AddCallback_OnWeaponAttack( void functionref( entity, entity, string, int, vector, vector ) callbackFunc )
 {
-	printt("AddCallback_OnWeaponAttack")
+	Assert( !svGlobal.onWeaponAttackCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnWeaponAttack" )
+	svGlobal.onWeaponAttackCallbacks.append( callbackFunc )
 }
 
 void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
@@ -707,14 +792,16 @@ void function AddClientCommandCallbackNew( string commandString, void functionre
 	svGlobal.clientCommandCallbacksNew[ commandString ] <- callbackFunc
 }
 
-void function AddCallback_OnPreClientDisconnected( void functionref( entity player) callbackFunc )
+void function AddCallback_OnPreClientDisconnected( void functionref( entity player ) callbackFunc )
 {
-
+	Assert( !svGlobal.onPreClientDisconnectedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPreClientDisconnected" )
+	svGlobal.onPreClientDisconnectedCallbacks.append( callbackFunc )
 }
 
 void function AddCallback_OnDeathBoxSpawned( void functionref( entity player, entity attacker, int damageSourceID ) callbackFunc )
 {
-
+	Assert( !svGlobal.onDeathBoxSpawnedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnDeathBoxSpawned" )
+	svGlobal.onDeathBoxSpawnedCallbacks.append( callbackFunc )
 }
 
 void function AddCallback_OnGetBestObserverTarget( entity functionref( entity player, bool reverse) callbackFunc )

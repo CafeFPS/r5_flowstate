@@ -10,7 +10,7 @@ WeaponData
 	"hud_icon"										"r2_ui/menus/loadout_icons/primary_weapon/primary_epg1"
 
 	"weaponClass" 									"human"
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"semi_auto"
 	"body_type"										"heavy"
 	"aimassist_adspull_weaponclass"					"none"
 	"leveled_pickup"								"1"

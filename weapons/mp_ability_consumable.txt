@@ -9,6 +9,7 @@ WeaponData
 	"menu_icon"										"rui/hud/gametype_icons/survival/health_pack_sml"
 	"hud_icon"										""
 
+	"weapon_type_flags"								"WPT_CONSUMABLE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhandHybrid"
     "is_toss_weapon"                                "0"
@@ -21,6 +22,7 @@ WeaponData
 
     "OnWeaponActivate"                              "OnWeaponActivate_Consumable"
     "OnWeaponDeactivate"                            "OnWeaponDeactivate_Consumable"
+    "OnWeaponRaise"                                 "OnWeaponRaise_Consumable"
 	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_Consumable"
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_Consumable"
 	"OnWeaponChargeBegin" 							"OnWeaponChargeBegin_Consumable"
@@ -28,8 +30,7 @@ WeaponData
     "OnWeaponOwnerChanged"                          "OnWeaponOwnerChanged_Consumable"
 //	"OnWeaponPrimaryAttackAnimEvent"				"OnWeaponPrimaryAttackAnimEvent_Consumable"
     "OnCreateChargeEffect"                          "OnCreateChargeEffect_Consumable"
-
-//	"OnWeaponActivate"								"OnWeaponActivate_Consumable"
+    "OnCreateMuzzleFlashEffect"                     "OnCreateMuzzleFlashEffect_Consumable"
 
 	// Models
 	"viewmodel"										"mdl/weapons/shield_battery/ptpov_shield_battery_held.rmdl"
@@ -217,9 +218,16 @@ WeaponData
 			"ui1_enable"							"1"
         }
 
+        ultimate_battery_supercharged_fx
+        {
+            "charge_effect_1p"						"P_watt_UA_charge"
+            "charge_effect_3p"						""
+            "charge_effect_attachment"				"muzzle_flash"
+        }
+
         // This should really be in Bakery or something. It's orphaned here and hidden knowledge to change it to get it to work.
         // No better way to do it for now.
-        lifeline_heal
+        quick_heal
         {
             "charge_time"                           "*0.75"
             "raise_time"                            "*0.75"

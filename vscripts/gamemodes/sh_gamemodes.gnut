@@ -78,7 +78,7 @@ global struct GamemodeSettings
 	void functionref( int, array<entity>, int, entity ) titanSpawnpointRatingFunc
 	IntFromEntityCompare scoreCompareFunc
 	int defaultScoreLimit = 100
-	int defaultTimeLimit = 10
+	int defaultTimeLimit = 30
 	int defaultRoundScoreLimit = 5
 	float defaultRoundTimeLimit = 5.0
 	bool evacEnabled = true
@@ -137,9 +137,9 @@ void function GameModes_Init()
 	GameMode_SetName( gameMode, "#GAMEMODE_SURVIVAL" )
 	GameMode_SetGameModeAnnouncement( gameMode, "ffa_modeDesc" )
 	GameMode_SetDesc( gameMode, "#PL_survival_hint" )
-	GameMode_SetIcon( gameMode, FFA_MODE_ICON )
+	GameMode_SetIcon( gameMode, $"vgui/burncards/burncard_group_icon_weapons" )
 	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 10, 0.0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 30, 0.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
 

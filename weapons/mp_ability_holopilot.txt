@@ -11,6 +11,7 @@ WeaponData
 	"menu_icon"										"rui/pilot_loadout/suit/stalker"
 	"hud_icon"										"rui/hud/tactical_icons/tactical_mirage"
 
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"weaponType"									"tactical"
 	"fire_mode"   									"offhand"

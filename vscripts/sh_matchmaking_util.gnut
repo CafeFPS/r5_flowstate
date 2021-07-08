@@ -18,6 +18,26 @@ void function StartMatchmaking_( string playlist, bool requestNoFillTeam )
 	SetConVarInt( "match_teamNoFill", (requestNoFillTeam ? 1 : 0) )
 	StartMatchmaking( playlist )
 
+	#if UI
+	if ( Dev_CommandLineHasParm( "-auto_ezlaunch" ) )
+	{
+		thread function()
+		{
+			RegisterSignal( "StartMatchmaking_" )
+			Signal( uiGlobal.signalDummy, "StartMatchmaking_" )
+			EndSignal( uiGlobal.signalDummy, "StartMatchmaking_" )
+
+			wait( 1.0 )
+			if ( !IsConnected() )
+				return
+			if ( !AreWeMatchmaking() )
+				return
+
+			ClientCommand( "ezLaunch" )
+		}()
+	}
+	#endif //UI
+
 	Chroma_StartMatchmaking()
 }
 

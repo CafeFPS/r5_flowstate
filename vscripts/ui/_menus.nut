@@ -1058,13 +1058,13 @@ void function UpdateMenusOnConnectThread( string levelname )
 			}
 			else
 			{
-				thread Loadscreen_SetEquippedLoadscreenAsActive()
+				thread Loadscreen_SetEquppedLoadscreenAsActive()
 			}
 
-			if ( GetPersistentVar( "eliteTutorialState" ) == eEliteTutorialState.SHOW_INTRO )
-			{
-				OpenEliteIntroMenu()
-			}
+			//if ( GetPersistentVar( "eliteTutorialState" ) == eEliteTutorialState.SHOW_INTRO )
+			//{
+			//	OpenEliteIntroMenu()
+			//}
 		}
 
 		if ( GetPersistentVar( "showGameSummary" ) && IsPostGameMenuValid( true ) )
@@ -1136,15 +1136,15 @@ void function SetLossForgivenessRead( int result )
 
 bool function TryDialogFlowPersistenceQuery( string persistenceVar )
 {
-	if ( !(persistenceVar in file.t_persistenceAttempts) )
-		file.t_persistenceAttempts[persistenceVar] <- 0
+	//if ( !(persistenceVar in file.t_persistenceAttempts) )
+	//	file.t_persistenceAttempts[persistenceVar] <- 0
 
-	bool result = GetPersistentVarAsInt( persistenceVar ) > 0
+	//bool result = GetPersistentVarAsInt( persistenceVar ) > 0
 	//
-	if ( result || file.t_persistenceAttempts[persistenceVar] > 0 )
-		return true
+	//if ( result || file.t_persistenceAttempts[persistenceVar] > 0 )
+	//	return true
 
-	file.t_persistenceAttempts[persistenceVar]++
+	//file.t_persistenceAttempts[persistenceVar]++
 	return false
 }
 

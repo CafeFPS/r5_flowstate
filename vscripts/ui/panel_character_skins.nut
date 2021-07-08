@@ -277,7 +277,7 @@ void function CustomizeCharacterMenu_HeirloomButton_OnActivate( var button )
 		}
 	}
 
-	//PIN_Customization( context, meleeToEquip )
+	PIN_Customization( context, meleeToEquip )
 	RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), entry, meleeToEquip )
 }
 

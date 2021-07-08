@@ -99,10 +99,16 @@ void function PrintEntArray( array<entity> arr )
 {
 	printf( "%s() - len:%d  %s", FUNC_NAME(), arr.len(), string( arr ) )
 	foreach( int index, entity ent in arr )
-		printf( " [%d] - %s", index, string( arr[index] ) )
+		printf( " [%d] - %s %s", index, string( ent ), string( ent.GetOrigin() ) )
 }
 #endif
 
+void function PrintStringArray( array<string> arr )
+{
+	printf( "%s() - len:%d  %s", FUNC_NAME(), arr.len(), string( arr ) )
+	foreach( int index, string str in arr )
+		printf( " [%d] - \"%s\"", index, str )
+}
 
 // short cut for the console
 // script gp()[0].Die( gp()[1] )

@@ -41,6 +41,7 @@ struct LootRollerClientData
 struct
 {
 	array< entity > allLootRollers
+	//
 
 	table< entity, array< void functionref( entity, var ) > > Callbacks_OnLootRollerDamaged
 	table< entity, array< void functionref( entity, var ) > > Callbacks_OnLootRollerKilled

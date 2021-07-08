@@ -158,8 +158,7 @@ var[eLootPromptStyle._COUNT] function _newPromptStyles()
 void function SurvivalLoot_EntitiesDidLoad()
 {
 	thread ManageDeathBoxLoot()
-
-	#if(true)
+	#if LOOT_GROUND_VERTICAL_LINES
 		thread ManageVerticalLines()
 	#endif // LOOT_GROUND_VERTICAL_LINES
 }
@@ -177,27 +176,27 @@ void function PlayLootPickupFeedbackFX( entity ent )
 
 	Chroma_PredictedLootPickup( ent )
 
-	#if(false)
+	#if HAS_ITEM_PICKUP_FEEDACK_FX
+		vector lootOrigin = ent.GetOrigin() + <0, 0, 0.5>
+		entity entParent  = ent.GetParent()
 
+		if ( IsValid( entParent ) )
+		{
+			vector offset = lootOrigin - entParent.GetOrigin()
+			vector angles = <0, 0, 0>
 
+			entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", lootOrigin, angles )
+			mover.SetParent( entParent )
 
+			StartParticleEffectOnEntity( mover, GetParticleSystemIndex( PICKUP_FEEDBACK_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif //
+			thread DelayDestroy( mover )
+		}
+		else
+		{
+			StartParticleEffectInWorld( GetParticleSystemIndex( PICKUP_FEEDBACK_FX ), lootOrigin, <0, 0, 0> )
+		}
+	#endif //
 }
 
 
@@ -377,7 +376,7 @@ void function OnDeathBoxCreated( entity ent )
 	{
 		AddEntityCallback_GetUseEntOverrideText( ent, DeathBoxTextOverride )
 		ent.SetDoDestroyCallback( true )
-		//
+		//thread AttachCoverToDeathBox( ent )
 
 		if ( ent.GetOwner() == GetLocalClientPlayer() )
 		{
@@ -440,16 +439,12 @@ void function CreateDeathBoxRui( entity deathBox )
 	var rui = RuiCreate( $"ui/gladiator_card_deathbox.rpak", topo, RUI_DRAW_WORLD, MINIMAP_Z_BASE + 10 )
 
 	NestedGladiatorCardHandle nestedGCHandle = CreateNestedGladiatorCard( rui, "card", eGladCardDisplaySituation.DEATH_BOX_STILL, eGladCardPresentation.FRONT_DETAILS )
-
-	//
-	#if(true)
+	#if SERVER
 		if (  deathBox.GetNetBool( "overrideRUI"  ) )
 		{
 			CreateDeathBoxRuiWithOverridenData( deathBox, nestedGCHandle  )
 		}
 	#endif
-
-
 	ChangeNestedGladiatorCardOwner( nestedGCHandle, ehi, null, eGladCardLifestateOverride.ALIVE )
 
 	OnThreadEnd (
@@ -476,6 +471,7 @@ void function CreateDeathBoxRui( entity deathBox )
 
 	WaitForever()
 }
+
 
 string function DeathBoxTextOverride( entity ent )
 {
@@ -807,10 +803,6 @@ void function UpdateLootRuiWithData( entity player, var rui, LootData data, int 
 		if ( asMain.additionalData.lootType == eLootType.ARMOR )
 		{
 			RuiSetInt( rui, "replacePropertyValue", int( SURVIVAL_GetPlayerShieldHealthFromArmor( player ) / float(SURVIVAL_GetArmorShieldCapacity( asMain.additionalData.tier )) * 100) )
-
-			#if(false)
-
-#endif
 		}
 	}
 
@@ -1158,7 +1150,7 @@ void function ManageDeathBoxLoot()
 	}
 }
 
-#if(true)
+
 void function ManageVerticalLines()
 {
 	while ( 1 )
@@ -1283,8 +1275,8 @@ void function ShowVerticalLineStruct( VerticalLineStruct lineStruct, entity ent 
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( ent.GetSurvivalInt() )
 		RuiSetInt( lineStruct.rui, "tier", data.tier )
 	#else
-
-#endif
+		RuiSetInt( lineStruct.rui, "tier", 1 )
+	#endif
 
 	bool isPinged = Waypoint_LootItemIsBeingPingedByAnyone( ent )
 	RuiSetBool( lineStruct.rui, "isPinged", isPinged )
@@ -1295,7 +1287,6 @@ void function HideVerticalLineStruct( VerticalLineStruct lineStruct )
 	RuiSetBool( lineStruct.rui, "isVisible", false )
 	RuiSetVisible( lineStruct.rui, false )
 }
-#endif // #if LOOT_GROUND_VERTICAL_LINES
 
 bool function TryOpenQuickSwap( entity overrideItem = null )
 {
@@ -1733,6 +1724,8 @@ void function ExtendedTryOpenGroundList( entity ent, entity player, ExtendedUseS
 	OpenSurvivalGroundList( player, ent )
 }
 
+
+
 EHI ornull function GetEHIForDeathBox( entity box )
 {
 	EHI eHandle = box.GetNetInt( "ownerEHI" )
@@ -1850,8 +1843,6 @@ float function GetHighlightFillAlphaForLoot( entity lootEnt )
 	return s_highlightFillCache[survivalInt]
 
 }
-
-#if(true)
 void function CreateDeathBoxRuiWithOverridenData( entity deathBox, NestedGladiatorCardHandle nestedGCHandle  )
 {
 	printt( "Creating with overriden profile data"  )
@@ -1889,10 +1880,4 @@ void function CreateDeathBoxRuiWithOverridenData( entity deathBox, NestedGladiat
 	int thirdBadgeDataInt = deathBox.GetNetInt( "thirdBadgeDataInt"  )
 	SetNestedGladiatorCardOverrideBadge( nestedGCHandle, 2, ConvertLoadoutSlotContentsIndexToItemFlavor( thirdBadgeLoadoutEntry, thirdBadgeIndex ), thirdBadgeDataInt )
 
-}
-#endif
-
-bool function IsPingEnabledForPlayer( entity player )
-{
-	return true
 }

@@ -1,0 +1,267 @@
+ImpactTable
+{
+
+	///This is 2nd set of impacts for xtra sparks
+	FX
+	{
+		"C" "P_impact_shieldbreaker_sparks" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_shieldbreaker_sparks" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_shieldbreaker_sparks" // metal_titan
+
+		"F" "P_impact_shieldbreaker_sparks" //flesh
+		"G" "P_impact_shieldbreaker_sparks" //metalgrate, chainlink, chain
+		"H" "P_impact_shieldbreaker_sparks" //alienflesh
+
+		"J" "P_impact_shieldbreaker_sparks" //grass
+		"K" "P_impact_shieldbreaker_sparks" //Mud
+		"L" "P_impact_shieldbreaker_sparks" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_shieldbreaker_sparks" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_shieldbreaker_sparks" //Slime
+		"O" "P_impact_shieldbreaker_sparks"  //Foliage
+		"P" "P_impact_shieldbreaker_sparks" //metal_spectre
+
+		"Q" "P_impact_shieldbreaker_sparks" //snow
+		"R" "P_impact_shieldbreaker_sparks" //ice
+
+		"S" "P_impact_water" //water, slime
+		"T" "P_impact_shieldbreaker_sparks" //tile
+		"U" "P_impact_shieldbreaker_sparks" // glass_breakable
+		"V" "P_impact_shieldbreaker_sparks" //Metal Vent
+		"W" "P_impact_shieldbreaker_sparks"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+//		"X" "P_impact_xo_shield_cp" //xo_shield
+
+		"Y" "P_impact_shieldbreaker_sparks" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_shieldbreaker_sparks"  //sand
+
+		"0" "P_impact_shieldbreaker_sparks"
+		"1" "P_impact_shieldbreaker_sparks" //lava_flow
+		"2" "P_impact_shieldbreaker_sparks" //lava_rock_hot
+		"3" "P_impact_shieldbreaker_sparks"
+		"4" "P_impact_shieldbreaker_sparks"
+		"5" "P_impact_shieldbreaker_sparks"
+		"6" "P_impact_shieldbreaker_sparks"
+		"7" "P_impact_shieldbreaker_sparks"
+		"8" "P_impact_shieldbreaker_sparks"
+		"9" "P_impact_shieldbreaker_sparks"
+
+//		"splash" "P_impact_water" //brush water
+//		"slime_splash" "P_impact_water"
+		"airburst" "P_impact_shieldbreaker_sparks"  //No Surface
+		"shieldhit" "P_impact_shieldbreaker_sparks"
+		"critical_hit" "P_impact_shieldbreaker_sparks"
+	}
+
+
+	FX
+	{
+		"C" "impact_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "impact_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "impact_metal_cheap" // metal_titan
+
+		"F" "P_impact_flesh" //flesh
+		"G" "impact_metal_cheap" //metalgrate, chainlink, chain
+		"H" "impact_alienflesh" //alienflesh
+
+		"J" "impact_grass" //grass
+		"K" "impact_mud" //Mud
+		"L" "impact_plastic" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "impact_metal_cheap" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_slime" //Slime
+		"O" "impact_leaves"  //Foliage
+//		"P" "impact_metal_cheap" //metal_spectre
+
+		"Q" "P_impact_snow" //snow
+		"R" "P_impact_snow" //Ice
+
+		"S" "P_impact_water" //water, slime
+		"T" "impact_tile" //tile
+		"U" "impact_glass" // glass_breakable
+		"V" "impact_metal_cheap" //Metal Vent
+		"W" "impact_wood"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_xo_shield_cp" //xo_shield
+
+		"Y" "impact_glass" //glass, brokenglass, glassbottle, pottery
+		"Z" "impact_sand"  //sand
+
+//		"0" "openslot"
+		"1" "P_impact_lava_nodecal" //lava_flow
+		"2" "P_impact_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "P_impact_water" //brush water
+		"slime_splash" "P_impact_water"
+		"airburst" "impact_air_40mm"  //No Surface
+		"shieldhit" "P_armor_impact"
+//		"critical_hit" "impact_metal"
+	}
+
+
+	FX_victim
+	{
+		"F" "impact_flesh_victim"
+		"shieldhit" "P_impact_shieldbreaker_sparks"
+
+	}
+
+		Sound
+	{
+		"C" "Concrete.BulletImpact_3P_vs_3P"
+		"D" "Dirt.BulletImpact_3P_vs_3P"
+		"E" "SolidMetal.BulletImpact_3P_vs_3P"
+
+		"F" "Flesh.BulletImpact_3P_vs_3P"
+		"G" "MetalGrate.BulletImpact_3P_vs_3P" // "ChainLink.BulletImpact"
+		"H" "Flesh.BulletImpact_3P_vs_3P"
+
+		"J" "Grass.BulletImpact_3P_vs_3P"
+		"K" "Mud.BulletImpact_3P_vs_3P"  // mud?
+		"L" "Default.BulletImpact_3P_vs_3P" // "Plastic_Box.BulletImpact"
+		"M" "SolidMetal.BulletImpact_3P_vs_3P"	//"ArmorFlesh.BulletImpact"
+		"N" "Water.BulletImpact_3P_vs_3P"	// sand?
+		"O" "Grass.BulletImpact_3P_vs_3P"
+		"P" "Android.Light.BulletImpact_3P_vs_3P"
+		"Q" "Concrete.BulletImpact_3P_vs_3P"  //Snow
+		"R" "Concrete.BulletImpact_3P_vs_3P" //Ice
+		"S" "Water.BulletImpact_3P_vs_3P"
+		"T" "Tile.BulletImpact_3P_vs_3P"
+
+		"V" "SolidMetal.BulletImpact_3P_vs_3P"
+		"W" "Wood.BulletImpact_3P_vs_3P"
+		"X"	"TitanBubbleShield.Light.BulletImpact_3P_vs_3P" // Titan bubble shield
+		"Y" "Glass.BulletImpact_3P_vs_3P"
+		"Z" "Sand.BulletImpact_3P_vs_3P"
+
+//		"0" "openslot"
+		"1" "Mud.BulletImpact_3P_vs_3P" //lava_flow
+		"2" "Concrete.BulletImpact_3P_vs_3P" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "Water.BulletImpact"
+		"slime_splash" "Water.BulletImpact"
+
+		"airburst" ""
+		"shieldhit" "humanshield_light_bulletimpact_shieldbreaker_3p_vs_3p"
+		"holohit" "HoloPilot_light_bulletimpact_holo_3p_vs_3p"
+
+		"headshot_flesh" "Flesh.BulletImpact_3P_vs_3P"
+		"headshot_mechanical" "Android.Light.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+		"C" "Concrete.BulletImpact_1P_vs_3P"
+		"D" "Dirt.BulletImpact_1P_vs_3P"
+		"E" "Titan.Light.BulletImpact_1P_vs_3P"
+
+		"F" "Flesh.BulletImpact_1P_vs_3P"
+		"G" "MetalGrate.BulletImpact_1P_vs_3P" // "ChainLink.BulletImpact"
+		"H" "Flesh.BulletImpact_1P_vs_3P"
+
+		"J" "Grass.BulletImpact_1P_vs_3P"
+		"K" "Mud.BulletImpact_1P_vs_3P"  // mud?
+		"L" "Default.BulletImpact_1P_vs_3P" // "Plastic_Box.BulletImpact"
+		"M" "SolidMetal.BulletImpact_1P_vs_3P"	//"ArmorFlesh.BulletImpact"
+		"N" "Water.BulletImpact_1P_vs_3P"	// Slime
+		"O" "Grass.BulletImpact_1P_vs_3P"
+		"P" "Android.Light.BulletImpact_1P_vs_3P"
+		"Q" "Concrete.BulletImpact_1P_vs_3P"
+		"R" "Concrete.BulletImpact_1P_vs_3P"
+		"S" "Water.BulletImpact_1P_vs_3P"
+		"T" "Tile.BulletImpact_1P_vs_3P"
+
+		"V" "SolidMetal.BulletImpact_1P_vs_3P"
+		"W" "Wood.BulletImpact_1P_vs_3P"
+		"X"	"TitanBubbleShield.Light.BulletImpact_1P_vs_3P" // Titan bubble shield
+		"Y" "Glass.BulletImpact_1P_vs_3P"
+		"Z" "Sand.BulletImpact_1P_vs_3P"
+
+//		"0" "openslot"
+		"1" "Mud.BulletImpact_1P_vs_3P" //lava_flow
+		"2" "Concrete.BulletImpact_1P_vs_3P" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "Water.BulletImpact"
+		"slime_splash" "Water.BulletImpact"
+
+		"airburst" ""
+		"shieldhit" "humanshield_light_bulletimpact_shieldbreaker_1p_vs_3p"
+		"holohit" "HoloPilot_light_bulletimpact_holo_1p_vs_3p_V2"
+
+		"headshot_flesh" "Flesh.BulletImpact_1P_vs_3P"
+		"headshot_mechanical" "Android.Light.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+		"C" "Concrete.BulletImpact_3P_vs_1P"
+		"D" "Dirt.BulletImpact_3P_vs_1P"
+		"E" "Titan.Light.BulletImpact_3P_vs_1P"
+
+		"F" "Flesh.BulletImpact_3P_vs_1P"
+		"G" "MetalGrate.BulletImpact_3P_vs_1P" // "ChainLink.BulletImpact"
+		"H" "Flesh.BulletImpact_3P_vs_1P"
+
+		"J" "Grass.BulletImpact_3P_vs_1P"
+		"K" "Mud.BulletImpact_3P_vs_1P"  // mud?
+		"L" "Default.BulletImpact_3P_vs_1P" // "Plastic_Box.BulletImpact"
+		"M" "SolidMetal.BulletImpact_3P_vs_1P"	//"ArmorFlesh.BulletImpact"
+		"N" "Water.BulletImpact_3P_vs_1P"	// Slime
+		"O" "Grass.BulletImpact_3P_vs_1P"
+		"P" "Android.Light.BulletImpact_3P_vs_1P"
+		"Q" "Concrete.BulletImpact_3P_vs_1P"
+		"R" "Concrete.BulletImpact_3P_vs_1P"
+		"S" "Water.BulletImpact_3P_vs_1P"
+		"T" "Tile.BulletImpact_3P_vs_1P"
+
+		"V" "SolidMetal.BulletImpact_3P_vs_1P"
+		"W" "Wood.BulletImpact_3P_vs_1P"
+
+		"Y" "Glass.BulletImpact_3P_vs_1P"
+		"Z" "Sand.BulletImpact_3P_vs_1P"
+
+		"1" "Mud.BulletImpact_3P_vs_1P"  // lava_flow
+		"2" "Default.BulletImpact_3P_vs_1P" // lava_rock_hot
+
+		"splash" "Water.BulletImpact"
+		"slime_splash" "Water.BulletImpact"
+
+		"airburst" ""
+		"shieldhit" "humanshield_light_bulletimpact_shieldbreaker_3p_vs_1p"
+		"holohit" "holopilot_impacts"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "Flesh.BulletImpact_3P_vs_1P"
+		//"headshot_mechanical" "Android.Light.BulletImpact_3P_vs_1P"
+	}
+
+	Sound_victim_from_AI
+	{
+		"F" "Flesh.BulletImpact_AIGrunt3P_vs_1P"
+		"P" "Android.Light.BulletImpact_3P_vs_1P"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "Flesh.BulletImpact_3P_vs_1P"
+		//"headshot_mechanical" "Android.Light.BulletImpact_3P_vs_1P"
+	}
+
+}

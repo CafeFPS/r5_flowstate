@@ -1,5 +1,3 @@
-#if(true)//
-
 global function MeleeLifelineBaton_Init
 
 global function OnWeaponActivate_melee_lifeline_baton
@@ -22,5 +20,3 @@ void function OnWeaponDeactivate_melee_lifeline_baton( entity weapon )
 {
 	//
 }
-
-#endif //

@@ -21,8 +21,10 @@ global function SetNestedGladiatorCardOverrideFrame
 global function SetNestedGladiatorCardOverrideStance
 global function SetNestedGladiatorCardOverrideBadge
 global function SetNestedGladiatorCardOverrideTracker
+
 global function SetNestedGladiatorCardIsKiller
 global function SetNestedGladiatorCardDisableBlur
+
 global function SetNestedGladiatorCardOverrideRankedDetails
 #endif
 
@@ -292,9 +294,9 @@ global struct NestedGladiatorCardHandle
 	ItemFlavor ornull[GLADIATOR_CARDS_NUM_TRACKERS] overrideTrackerList
 	int[GLADIATOR_CARDS_NUM_TRACKERS]               overrideTrackerDataIntegerList
 
-	int ornull                                      rankedScoreOrNull = null
-	int ornull                                      rankedLadderPosOrNull = null
-	bool ornull                                     rankedForceShowOrNull = null
+	int ornull  rankedScoreOrNull = null
+	int ornull  rankedLadderPosOrNull = null
+	bool ornull rankedForceShowOrNull = null
 
 	bool disableBlur = false
 	bool isKiller = false
@@ -895,6 +897,8 @@ void function MenuGladCardThread( bool isForLocalPlayer )
 
 	ChangeNestedGladiatorCardOwner( fileLevel.currentMenuGladCardHandle, isForLocalPlayer ? WaitForLocalClientEHI() : ToEHI( clGlobal.levelEnt ), Time() )
 	RuiSetGameTime( fileLevel.currentMenuGladCardHandle.cardRui, "menuGladCardRevealAt", Time() )
+
+
 
 	while ( true )
 	{
@@ -1784,6 +1788,7 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 
 				if ( !frameHasOwnRUI )
 				{
+					RuiSetBool( fgFrameRui, "isArtFullFrame", isArtFullFrame )
 					RuiSetImage( fgFrameRui, "fgImage", fgFrameImageAsset )
 					RuiSetFloat( fgFrameRui, "fgImageBlend", fgFrameBlend )
 					RuiSetFloat( fgFrameRui, "fgImagePremul", fgFramePremul )

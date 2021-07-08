@@ -4,7 +4,7 @@ global function Sh_PassiveVoices_Init
 global function ServerCallback_PlayPassiveVoice
 #endif
 
-const asset WRAITH_SENSE_FX = $"loot_tick_exp_sparkhigh_1"
+const asset WRAITH_SENSE_FX = $"P_voices_heard"
 const float WARN_COOLDOWN = 60.0
 
 struct VoiceData

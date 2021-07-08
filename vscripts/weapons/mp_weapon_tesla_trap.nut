@@ -16,8 +16,11 @@ global function TeslaTrap_AreTrapsLinked
 global function ClientCodeCallback_TeslaTrapLinked
 global function ClientCodeCallback_TeslaTrapVisibilityChanged
 global function RegisterTeslaTrapMinimapRui
+global function TeslaTrap_OnPlayerTeamChanged
 #endif //
 
+global const string TESLA_TRAP_NAME = "tesla_trap"
+global const string TESLA_TRAP_PROXY_NAME = "tesla_trap_proxy"
 const int TESLA_TRAP_MAX_TRAPS = 12
 
 const asset TESLA_TRAP_FX = $"P_wpn_arcTrap"
@@ -263,6 +266,7 @@ function MpWeaponTeslaTrap_Init()
 		RegisterNetworkedVariableChangeCallback_ent( "focalTrap", OnFocusTrapChanged )
 
 		AddCallback_PlayerClassActuallyChanged( TeslaTrap_OnPlayerClassChanged )
+		AddCallback_OnPlayerChangedTeam( TeslaTrap_OnPlayerTeamChanged )
 	#endif // CLIENT
 }
 
@@ -451,7 +455,7 @@ TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfo( entity player, entit
 	float maxRange = TESLA_TRAP_PLACEMENT_RANGE_MAX
 
 	array<entity> ignoreEnts = TeslaTrap_GetAllDead()
-	ignoreEnts.extend( GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ) )
+	ignoreEnts.extend( GetFriendlySquadArrayForPlayer_AliveConnected( player ) )
 	ignoreEnts.append( player )
 	ignoreEnts.append( proxy )
 
@@ -1135,6 +1139,18 @@ void function TeslaTrap_UpdateFocalNodeForPlayer( entity player, entity proxy )
 		TeslaTrap_ClearFocalTrapForPlayer( player )
 	}
 }
+#if CLIENT
+void function TeslaTrap_OnPlayerTeamChanged( entity player, int oldTeam, int newTeam )
+{
+	foreach( array<int>fxIDs in file.linkFXs_client )
+	{
+		foreach( int fxID in fxIDs )
+		{
+			EffectWake( fxID )
+		}
+	}
+}
+#endif //
 
 void function TeslaTrap_SetFocalTrapForPlayer( entity player, entity focalTrap )
 {
@@ -1565,6 +1581,9 @@ bool function TeslaTrap_ShouldShowIcon( entity localPlayer, entity trapProxy )
 {
 	if ( !GamePlayingOrSuddenDeath() )
 		return false
+	if ( IsEnemyTeam( localPlayer.GetTeam(), trapProxy.GetTeam() ) )
+		return false
+
 	return true
 }
 
@@ -1815,6 +1834,8 @@ void function ClientCodeCallback_TeslaTrapVisibilityChanged( entity trigger, ent
 	{
 		foreach( int fxID in file.linkFXs_client[triggerFXID] )
 			EffectStop( fxID, false, true )
+		
+		file.linkFXs_client[triggerFXID] <- []
 
 		if ( triggerFXID in file.linkAGs_client )
 		{
@@ -1847,6 +1868,8 @@ void function CodeCallback_TeslaTrapCrossed( entity trigger, entity start, entit
 		int triggerFXID = trigger.GetTeslaLinkFXIdx()
 		foreach( int fxID in file.linkFXs_client[triggerFXID] )
 			EffectStop( fxID, false, true )
+			
+		file.linkFXs_client[triggerFXID] <- []
 
 		entity ambientGeneric = file.linkAGs_client[ triggerFXID ]
 		ambientGeneric.SetEnabled( false )

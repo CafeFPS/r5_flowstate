@@ -40,6 +40,9 @@ global function GetVictorySequencePlatformModel
 global function PredictHealthPackUse
 
 global function Survival_GetCurrentRank
+#if CLIENT || UI 
+global function GetMusicForJump
+#endif
 global function CanWeaponInspect
 global function PositionIsInMapBounds
 global function Survival_IsPlayerHealing
@@ -51,7 +54,7 @@ global function Survival_IsPlayerHealing
 //// Global Types ////
 //////////////////////
 //////////////////////
-const float MAX_MAP_BOUNDS = 48000.0
+const float MAX_MAP_BOUNDS = 61000.0
 
 global const string SURVIVAL_DEFAULT_TITAN_DEFENSE = "mp_titanability_arm_block"
 
@@ -73,15 +76,15 @@ global const int SURVIVAL_MAP_GRIDSIZE = 7
 global const SURVIVAL_PLANE_MODEL         = $"mdl/vehicles_r2/spacecraft/draconis/draconis_flying_small.rmdl"
 global const SURVIVAL_SQUAD_SUMMARY_MODEL = $"mdl/levels_terrain/mp_lobby/mp_setting_menu.rmdl"
 
-const int USEHEALTHPACK_DENY_NONE                  = -1
-const int USEHEALTHPACK_ALLOW                      = 0
-const int USEHEALTHPACK_DENY_ULT_FULL              = 1
-const int USEHEALTHPACK_DENY_HEALTH_FULL           = 2
-const int USEHEALTHPACK_DENY_SHIELD_FULL           = 3
-const int USEHEALTHPACK_DENY_NO_HEALTH_KITS        = 4
-const int USEHEALTHPACK_DENY_NO_SHIELD_KITS        = 5
-const int USEHEALTHPACK_DENY_NO_KITS               = 6
-const int USEHEALTHPACK_DENY_FULL                  = 7
+const int USEHEALTHPACK_DENY_NONE = -1
+const int USEHEALTHPACK_ALLOW = 0
+const int USEHEALTHPACK_DENY_ULT_FULL = 1
+const int USEHEALTHPACK_DENY_HEALTH_FULL = 2
+const int USEHEALTHPACK_DENY_SHIELD_FULL = 3
+const int USEHEALTHPACK_DENY_NO_HEALTH_KITS = 4
+const int USEHEALTHPACK_DENY_NO_SHIELD_KITS = 5
+const int USEHEALTHPACK_DENY_NO_KITS = 6
+const int USEHEALTHPACK_DENY_FULL = 7
 
 enum eUseHealthKitResult
 {
@@ -99,6 +102,22 @@ enum eUseHealthKitResult
 	DENY_SPRINTING,
 }
 
+table< int, string > healthKitResultStrings =
+{
+	[eUseHealthKitResult.ALLOW] = "",
+	[eUseHealthKitResult.DENY_NONE] = "",
+	[eUseHealthKitResult.DENY_ULT_FULL] = "#DENY_ULT_FULL",
+	[eUseHealthKitResult.DENY_ULT_NOTREADY ] = "#DENY_ULT_NOTREADY",
+	[eUseHealthKitResult.DENY_HEALTH_FULL] = "#DENY_HEALTH_FULL",
+	[eUseHealthKitResult.DENY_SHIELD_FULL] = "#DENY_SHIELD_FULL",
+	[eUseHealthKitResult.DENY_NO_HEALTH_KIT] = "#DENY_NO_HEALTH_KIT",
+	[eUseHealthKitResult.DENY_NO_SHIELD_KIT] = "#DENY_NO_SHIELD_KIT",
+	[eUseHealthKitResult.DENY_NO_KITS] = "#DENY_NO_KITS",
+	[eUseHealthKitResult.DENY_NO_SHIELDS] = "#DENY_NO_SHIELDS",
+	[eUseHealthKitResult.DENY_FULL] = "#DENY_FULL",
+	[eUseHealthKitResult.DENY_SPRINTING] = "#DENY_SPRINTING",
+}
+
 global struct TargetKitHealthAmounts
 {
 	float targetHealth
@@ -113,32 +132,10 @@ global enum eSurvivalHints
 
 global struct VictoryPlatformModelData
 {
-	bool isSet = false
-	asset modelAsset
+	bool   isSet = false
+	asset  modelAsset
 	vector originOffset
 	vector modelAngles
-}
-
-
-///////////////////////
-///////////////////////
-//// Private Types ////
-///////////////////////
-///////////////////////
-table< int, string > healthKitResultStrings =
-{
-	[eUseHealthKitResult.ALLOW]              = "",
-	[eUseHealthKitResult.DENY_NONE]          = "",
-	[eUseHealthKitResult.DENY_ULT_FULL]      = "#DENY_ULT_FULL",
-	[eUseHealthKitResult.DENY_ULT_NOTREADY ] = "#DENY_ULT_NOTREADY",
-	[eUseHealthKitResult.DENY_HEALTH_FULL]   = "#DENY_HEALTH_FULL",
-	[eUseHealthKitResult.DENY_SHIELD_FULL]   = "#DENY_SHIELD_FULL",
-	[eUseHealthKitResult.DENY_NO_HEALTH_KIT] = "#DENY_NO_HEALTH_KIT",
-	[eUseHealthKitResult.DENY_NO_SHIELD_KIT] = "#DENY_NO_SHIELD_KIT",
-	[eUseHealthKitResult.DENY_NO_KITS]       = "#DENY_NO_KITS",
-	[eUseHealthKitResult.DENY_NO_SHIELDS]    = "#DENY_NO_SHIELDS",
-	[eUseHealthKitResult.DENY_FULL]          = "#DENY_FULL",
-	[eUseHealthKitResult.DENY_SPRINTING]     = "#DENY_SPRINTING",
 }
 
 struct
@@ -153,27 +150,28 @@ struct
 //// Internals       ////
 /////////////////////////
 /////////////////////////
-bool function PreGame_GetWaitingForPlayersHasBlackScreen()  { return GetCurrentPlaylistVarBool( "waiting_for_players_has_black_screen", false ) }
-bool function PreGame_GetWaitingForPlayersSpawningEnabled() { return GetCurrentPlaylistVarBool( "waiting_for_players_spawning_enabled", false ) }
-float function PreGame_GetWaitingForPlayersDelayMin()       { return GetCurrentPlaylistVarFloat( "waiting_for_players_min_wait", 0.0 ) }
-float function PreGame_GetWaitingForPlayersDelayMax()       { return GetCurrentPlaylistVarFloat( "waiting_for_players_timeout_seconds", 20.0 ) }
-float function PreGame_GetWaitingForPlayersCountdown()      { return GetCurrentPlaylistVarFloat( "waiting_for_players_countdown_seconds", 8.0 ) }
-//////////////
-float function CharSelect_GetIntroMusicStartTime()          { return GetCurrentPlaylistVarFloat( "charselect_intro_music_start_time", -0.8 ) }
-float function CharSelect_GetIntroTransitionDuration()      { return GetCurrentPlaylistVarFloat( "charselect_intro_transition_duration", 3.0 ) }
-float function CharSelect_GetIntroCountdownDuration()       { return GetCurrentPlaylistVarFloat( "charselect_intro_countdown_duration", 0.0 ) }
-//////////////
-float function CharSelect_GetPickingDelayBeforeAll()        { return GetCurrentPlaylistVarFloat( "charselect_picking_delay_before_all", 0.0 ) }
-float function CharSelect_GetPickingDelayOnFirst()          { return GetCurrentPlaylistVarFloat( "charselect_picking_delay_on_first", 1.5 ) }
-float function CharSelect_GetPickingSingleDurationMax()     { return GetCurrentPlaylistVarFloat( "character_select_time_max", 8.0 ) }
-float function CharSelect_GetPickingSingleDurationMin()     { return GetCurrentPlaylistVarFloat( "character_select_time_min", 6.0 ) }
-float function CharSelect_GetPickingDelayAfterEachLock()    { return GetCurrentPlaylistVarFloat( "charselect_picking_delay_after_each_lock", 0.5 ) }
-float function CharSelect_GetPickingDelayAfterAll()         { return GetCurrentPlaylistVarFloat( "charselect_picking_delay_after_all", 1.5 ) }
-//////////////
-float function CharSelect_GetOutroSceneChangeDuration()     { return GetCurrentPlaylistVarFloat( "charselect_outro_scene_change_duration", 4.0 ) }
-float function CharSelect_GetOutroSquadPresentDuration()    { return GetCurrentPlaylistVarFloat( "charselect_outro_squad_present_duration", 6.0  ) }
-float function CharSelect_GetOutroChampionPresentDuration() { return GetCurrentPlaylistVarFloat( "charselect_outro_champion_present_duration", 8.0 ) }
-float function CharSelect_GetOutroTransitionDuration()      { return GetCurrentPlaylistVarFloat( "charselect_outro_transition_duration", 3.0 ) }
+//
+bool function PreGame_GetWaitingForPlayersHasBlackScreen()	{ return GetCurrentPlaylistVarBool( "waiting_for_players_has_black_screen", false ) }
+bool function PreGame_GetWaitingForPlayersSpawningEnabled()	{ return GetCurrentPlaylistVarBool( "waiting_for_players_spawning_enabled", false ) }
+float function PreGame_GetWaitingForPlayersDelayMin()		{ return GetCurrentPlaylistVarFloat( "waiting_for_players_min_wait", 0.0 ) }
+float function PreGame_GetWaitingForPlayersDelayMax()		{ return GetCurrentPlaylistVarFloat( "waiting_for_players_timeout_seconds", 20.0 ) }
+float function PreGame_GetWaitingForPlayersCountdown()		{ return GetCurrentPlaylistVarFloat( "waiting_for_players_countdown_seconds", 8.0 ) }
+//
+float function CharSelect_GetIntroMusicStartTime()		 	{ return GetCurrentPlaylistVarFloat( "charselect_intro_music_start_time", -0.8 ) }
+float function CharSelect_GetIntroTransitionDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_intro_transition_duration", 3.0 ) }
+float function CharSelect_GetIntroCountdownDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_intro_countdown_duration", 0.0 ) }
+//
+float function CharSelect_GetPickingDelayBeforeAll()		{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_before_all", 0.0 ) }
+float function CharSelect_GetPickingDelayOnFirst()			{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_on_first", 1.5 ) }
+float function CharSelect_GetPickingSingleDurationMax()		{ return GetCurrentPlaylistVarFloat( "character_select_time_max", 8.0 ) }
+float function CharSelect_GetPickingSingleDurationMin()		{ return GetCurrentPlaylistVarFloat( "character_select_time_min", 6.0 ) }
+float function CharSelect_GetPickingDelayAfterEachLock()	{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_after_each_lock", 0.5 ) }
+float function CharSelect_GetPickingDelayAfterAll()			{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_after_all", 1.5 ) }
+//
+float function CharSelect_GetOutroSceneChangeDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_scene_change_duration", 4.0 ) }
+float function CharSelect_GetOutroSquadPresentDuration()	{ return GetCurrentPlaylistVarFloat( "charselect_outro_squad_present_duration", 6.0  ) }
+float function CharSelect_GetOutroChampionPresentDuration()	{ return GetCurrentPlaylistVarFloat( "charselect_outro_champion_present_duration", 8.0 ) }
+float function CharSelect_GetOutroTransitionDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_transition_duration", 3.0 ) }
 
 
 /////////////////////////
@@ -192,6 +190,7 @@ void function GamemodeSurvivalShared_Init()
 		BleedoutShared_Init()
 		ShApexScreens_Init()
 		Sh_RespawnBeacon_Init()
+		Sh_Airdrops_Init()
 
 		PrecacheImpactEffectTable( "dropship_dust" )
 		PrecacheModel( SURVIVAL_PLANE_MODEL )
@@ -303,23 +302,25 @@ bool function Survival_CanUseHealthPack( entity player, int itemType, bool check
 	}
 
 #if CLIENT
-	if ( printReason )
-	{
-		switch( canUseResult )
+		if ( printReason )
 		{
-			case eUseHealthKitResult.DENY_NONE:
-				// no announcement
-				break
-			case eUseHealthKitResult.DENY_NO_HEALTH_KIT:
-			case eUseHealthKitResult.DENY_NO_KITS:
-			case eUseHealthKitResult.DENY_NO_SHIELD_KIT:
-				player.ClientCommand( "ClientCommand_Quickchat " + eCommsAction.INVENTORY_NEED_HEALTH )
-				// falls through to announcement
-			default:
-				AnnouncementMessageRight( player, healthKitResultStrings[canUseResult] )
-				break
+			switch( canUseResult )
+			{
+				case eUseHealthKitResult.DENY_NONE:
+					//
+					break
+
+				case eUseHealthKitResult.DENY_NO_HEALTH_KIT:
+				case eUseHealthKitResult.DENY_NO_KITS:
+				case eUseHealthKitResult.DENY_NO_SHIELD_KIT:
+					player.ClientCommand( "ClientCommand_Quickchat " + eCommsAction.INVENTORY_NEED_HEALTH )
+					//
+
+				default:
+					AnnouncementMessageRight( player, healthKitResultStrings[canUseResult] )
+					break
+			}
 		}
-	}
 	#endif
 
 	return false
@@ -545,8 +546,8 @@ int function Survival_TryUseHealthPack( entity player, int itemType )
 #if SERVER || CLIENT
 float function Survival_GetCharacterSelectDuration( int pickIndex )
 {
-	float min = GetCurrentPlaylistVarFloat( "character_select_time_min", 6.0 )
-	float max = GetCurrentPlaylistVarFloat( "character_select_time_max", 8.0 )
+	float min = CharSelect_GetPickingSingleDurationMin()
+	float max = CharSelect_GetPickingSingleDurationMax()
 	return GraphCapped( pickIndex, 0, MAX_TEAM_PLAYERS - 1, max, min )
 }
 #endif
@@ -561,6 +562,9 @@ bool function Survival_CharacterSelectEnabled()
 #if SERVER || CLIENT
 bool function Sur_CanUseZipline( entity player, entity zipline, vector ziplineClosestPoint )
 {
+	if ( player.IsGrapplingZipline() )
+		return true
+
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return false
 
@@ -605,8 +609,36 @@ entity function Sur_GetPlaneEnt()
 #if !UI
 void function OnPropDynamicCreated( entity prop )
 {
-	//
+	#if SERVER
+		if ( prop.GetScriptName() == "VaultPanel" )
+			VaultPanelInit( prop )
+	#endif
 }
+
+#if(true)
+void function VaultPanelInit( entity panel )
+{
+	thread Delayed_VaultPanelInit( panel )
+}
+void function Delayed_VaultPanelInit( entity panel )
+{
+	panel.EndSignal( "OnDestroy" )
+	WaitEndFrame() //
+	ClearCallback_CanUseEntityCallback( panel )
+	SetCallback_CanUseEntityCallback( panel, VaultPanel_CanUseFunction )
+
+	#if(false)
+
+#endif
+}
+bool function VaultPanel_CanUseFunction( entity playerUser, entity controlPanel )
+{
+	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
+		return false
+
+	return ControlPanel_CanUseFunction( playerUser, controlPanel )
+}
+#endif
 
 
 TargetKitHealthAmounts function PredictHealthPackUse( entity player, HealthPickup itemData )
@@ -697,8 +729,12 @@ VictoryPlatformModelData function GetVictorySequencePlatformModel()
 	return file.victorySequencePlatforData
 
 }
-
-
+#if CLIENT || UI 
+string function GetMusicForJump( entity player )
+{
+	return MusicPack_GetSkydiveMusic( GetMusicPackForPlayer( player ) )
+}
+#endif
 bool function PositionIsInMapBounds( vector pos )
 {
 	return ( fabs( pos.x ) < MAX_MAP_BOUNDS && fabs( pos.y ) < MAX_MAP_BOUNDS && fabs( pos.z ) < MAX_MAP_BOUNDS )

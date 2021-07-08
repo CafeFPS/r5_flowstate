@@ -1,5 +1,9 @@
 #base "_base_assault_rifle.txt"
 
+                   
+#base "_base_mags_energy.txt"
+      
+
 WeaponData
 {
 	// General
@@ -8,6 +12,7 @@ WeaponData
 	"description" 									"#WPN_ENERGY_AR_DESC"
 	"longdesc"										"#WPN_ENERGY_AR_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"special"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_energy_ar"
@@ -34,17 +39,6 @@ WeaponData
 
     "OnWeaponActivate"                              "OnWeaponActivate_Energy_AR"
     "OnWeaponDeactivate"                            "OnWeaponDeactivate_Energy_AR"
-	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_Energy_AR"
-	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_Energy_AR"
-
-	// Bolt info
-	"bolt_hitsize"									"0.0"
-	"bolt_hitsize_grow1_time"						"0.005"
-	"bolt_hitsize_grow1_size"						"0.1"
-	"bolt_hitsize_grow2_time"						"0.07"
-	"bolt_hitsize_grow2_size"						"0.1"
-	"bolt_hitsize_growfinal_lerptime"				"0.1"
-	"bolt_hitsize_growfinal_size"					"0.1"
 
 	"projectile_launch_speed"						"30500"
 
@@ -100,7 +94,8 @@ WeaponData
 
 	"deployfirst_time"								"1.5"
 
-	"ammo_clip_size"   								"25"
+	"ammo_clip_size"   								"24"
+	"ammo_per_shot" 				                "1"
 	"ammo_min_to_fire"								"1"
 
 	"ammo_default_total"							"180"
@@ -125,10 +120,6 @@ WeaponData
 	"npc_max_range"   								"2500"
 	"npc_max_engage_range"							"2000"
 	"npc_max_engage_range_heavy_armor"				"2500"
-
-	"viewkick_air_scale_ads"						"4.0"
-
-	"damage_heavyarmor_nontitan_scale"				"0.35"
 
 	// NPC
 	"proficiency_poor_spreadscale"					"5.0"
@@ -183,6 +174,7 @@ WeaponData
 	"charge_cooldown_time"							"0.5"
 	"charge_cooldown_delay"   						"0.1"
 	"charge_end_forces_fire"						"0"
+	"charge_attack_requires_full_charge"    		"1"
 
 	"charge_sound_1p"								"Weapon_Havoc_WindUp_1P"
 	"charge_sound_3p"								"Weapon_Havoc_WindUp_3P"
@@ -319,9 +311,11 @@ WeaponData
         {
 			"mod_activity_modifier"			"fire_select"
 
-        	"fire_mode"   					"semiauto"
-        	"ammo_per_shot" 				"5"
-        	"ammo_min_to_fire"				"5"
+			"ballistic_type"                "hitscan"
+
+			"is_semi_auto"					"1"
+        	"ammo_per_shot" 				"4"
+        	"ammo_min_to_fire"				"4"
 
         	"charge_time" 					"0.6"
         	"charge_cooldown_time"			"0.35"
@@ -330,14 +324,14 @@ WeaponData
 
         	"charge_remain_full_when_fired" "0"
 
-        	"damage_near_value"   							"55"
-			"damage_far_value"								"45"
+        	"damage_near_value"   							"60"
+			"damage_far_value"								"50"
 			"damage_very_far_value"							"15"
-			"damage_near_value_titanarmor"					"55"
-			"damage_far_value_titanarmor" 					"45"
+			"damage_near_value_titanarmor"					"60"
+			"damage_far_value_titanarmor" 					"50"
 			"damage_very_far_value_titanarmor" 				"15"
-			"damage_near_distance"							"1377"  // 35m
-			"damage_far_distance" 							"2952"  // 75m
+			"damage_near_distance"							"2952"  // 75m
+			"damage_far_distance" 							"4921"  // 125m
 	    	"damage_very_far_distance"						"9842"  // 250m
 
             "damage_leg_scale"                              "1.0"
@@ -385,7 +379,7 @@ WeaponData
 			"impact_effect_table" 			"exp_energy_ar_charged"
 
 			"fx_muzzle_flash_view"			"P_wpn_havok_muzzleflash_FP"
-			"fx_muzzle_flash_world"			"P_wpn_havok_muzzleflash_FP"
+			"fx_muzzle_flash_world"			"P_wpn_havok_muzzleflash"
 			"fx_muzzle_flash_attach"		"muzzle_flash"
 
 			"looping_sounds"								"0"
@@ -444,13 +438,31 @@ WeaponData
 			"dof_zoom_nearDepthStart"		"1.0"
             "dof_zoom_nearDepthEnd"			"12.3"
 		}
-		
-		bp
+
+                   
+        energy_mag_l1
 		{
-			"viewmodel"   									"mdl/Weapons/beam_ar/ptpov_beam_ar_legendary_02.rmdl"
-			"playermodel" 									"mdl/Weapons/beam_ar/w_beam_ar_legendary_02.rmdl"
+			"ammo_clip_size"   					"28"
 		}
 
+		energy_mag_l2
+		{
+			"ammo_clip_size"   					"32"
+		}
+
+		energy_mag_l3
+		{
+			"ammo_clip_size"   					"36"
+		}
+      
+
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
 	}
 
 	"ui1_enable"		"1"

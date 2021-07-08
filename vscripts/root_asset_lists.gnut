@@ -91,8 +91,7 @@ global const array<asset> SKYDIVE_TRAIL_ASSET_LIST = [
 ]
 
 
-global const array<asset> ENTITLEMENT_ASSETS =
-[
+global const array<asset> ENTITLEMENT_ASSETS = [
 	$"settings/itemflav/entitlement/BLOODHOUND_SKU_PACK.rpak",
 	$"settings/itemflav/entitlement/LIFELINE_SKU_PACK.rpak",
 	$"settings/itemflav/entitlement/MELTDOWN_PACK_BUNDLE.rpak",

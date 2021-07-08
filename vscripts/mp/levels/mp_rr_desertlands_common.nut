@@ -15,7 +15,7 @@ void function Desertlands_MapInit_Common()
 		SURVIVAL_SetMapCenter( <0, 0, 0> )
 		SetOutOfBoundsTimeLimit( 30.0 )
 
-		DesertlandsTrain_Precaches()
+		// DesertlandsTrain_Precaches()
 	#endif
 
 	#if CLIENT
@@ -31,7 +31,7 @@ void function Desertlands_MapInit_Common()
 #if SERVER
 void function EntitiesDidLoad()
 {
-	thread DesertlandsTrain_Init()
+	// thread DesertlandsTrain_Init()
 }
 #endif
 

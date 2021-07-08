@@ -23,6 +23,9 @@ void function RemoteFunctions_Init_Begin()
 			break
 	}
 
+	RegisterSignal("OnChangedPlayerClass")
+	RegisterSignal("BleedOut_OnStartDying")
+
 	Remote_RegisterClientFunction( "ServerCallback_SkydiveTrailStart", "entity" )
 	Remote_RegisterClientFunction( "ServerCallback_SkydiveTrailEnd", "entity" )
 
@@ -45,12 +48,12 @@ void function RemoteFunctions_Init_Begin()
 
 	RegisterNetworkedVariable( "playerAllowedToLeech", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, true )
 
-	//
-	//
+	// we want to keep these as nv's because we want them to ignore kill replay
+	// -------------
 	RegisterEntityVar( "player", "nextRespawnTime", 0 )
 	RegisterEntityVar( "player", "musicPackAssigned", 0 )
-	//
-	//
+	// -------------
+	// end
 
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_UpdateMarker" )
 	Remote_RegisterUntypedFunction_deprecated( "DisablePrecacheErrors" )

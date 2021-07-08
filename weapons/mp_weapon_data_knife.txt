@@ -15,7 +15,7 @@ WeaponData
 	"weaponClass" 									"human"
 	// "weaponType"									"anti_titan"
 	"body_type"										"battle_rifle"
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"semi_auto"
 	//"never_drop"									"1"
 	"minimap_reveal_distance"						"1"
 	"attack_button_presses_melee"					"1"

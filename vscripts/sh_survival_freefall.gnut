@@ -207,6 +207,7 @@ void function SurvivalFreefall_Init()
 		file.skydiveSmokeColors.randomize()
 	#endif
 
+	RegisterSignal( "ReleaseDropEmote" )
 	RegisterSignal( "FreefallEnded" )
 	#if CLIENT
 		RegisterSignal( "FreefallStarted" )
@@ -252,13 +253,13 @@ void function AddSkydiveBoundaryVolume( entity ent )
 
 void function ForcedSkydiveTriggerThink( entity trigger )
 {
-	if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )
-	{
-		trigger.Destroy()
-		return
-	}
+	//if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )
+	//{
+	//	trigger.Destroy()
+	//	return
+	//}
 
-	EndSignal( trigger, "OnDestroy" )
+	//EndSignal( trigger, "OnDestroy" )
 	trigger.SetEnterCallback( ForcedSkydiveTriggerThink_EnterCallback )
 }
 
@@ -281,8 +282,8 @@ void function ForcedSkydiveTriggerThink_EnterCallback( entity trigger, entity pl
 
 void function SkydiveTowerEntitySpawned( entity ent )
 {
-	if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )
-		thread DeleteEntityAfterAllEntitiesLoaded( ent )
+	//if ( GetCurrentPlaylistVarBool( "skydive_ziplines_enabled", true ) == false )
+	//	thread DeleteEntityAfterAllEntitiesLoaded( ent )
 }
 
 void function DeleteEntityAfterAllEntitiesLoaded( entity ent )
@@ -559,7 +560,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 
 	EndSignal( player, "OnDeath" )
 	EndSignal( player, "PlayerSkyDive" )
-	EndSignal( player, "BleedOut_OnStartDying" )
+	//EndSignal( player, "BleedOut_OnStartDying" )
 	//EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
 
 	//#####################################
@@ -642,6 +643,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 		{
 			if ( IsValid( player ) )
 			{
+			
 				Signal( player, "FreefallEnded" )
 				player.RumbleEffect( 0, 0, 0.0 )
 				if (!player.IsBot())

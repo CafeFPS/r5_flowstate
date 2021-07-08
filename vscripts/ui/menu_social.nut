@@ -298,12 +298,12 @@ void function SocialMenu_OnOpen()
 
 void function InitCachedMatchPreferenceFlags()
 {
-	while ( !IsPersistenceAvailable() )
-	{
-		WaitFrame()
-	}
+	//while ( !IsPersistenceAvailable() )
+	//{
+	//	WaitFrame()
+	//}
 
-	s_socialFile.cachedMatchPreferenceFlags = GetPersistentVarAsInt( "matchPreferences" )
+	//s_socialFile.cachedMatchPreferenceFlags = GetPersistentVarAsInt( "matchPreferences" )
 }
 
 

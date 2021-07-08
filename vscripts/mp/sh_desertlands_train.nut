@@ -5,15 +5,12 @@
 #if CLIENT
 global function DesertlandsTrainAnnouncer_Init
 global function ServerCallback_SetDesertlandsTrainAtStation
+global function SCB_DLandsTrain_SetCustomSpeakerIdx
 #endif
 
 #if CLIENT
 global function IsDesertlandsTrainAtStation
-#endif
-
-#if SERVER
-global function DesertlandsTrain_Init
-global function DesertlandsTrain_Precaches
+global function DesertlandsTrain_PreMapInit
 #endif
 
 
@@ -29,7 +26,7 @@ global function DesertlandsTrain_Precaches
 ///////////////////////
 #if CLIENT
 const string TRAIN_MOVER_NAME = "desertlands_train_mover"
-const int TRAIN_CAR_COUNT     = 6
+const int TRAIN_CAR_COUNT = 82
 #endif
 
 #if SERVER
@@ -48,8 +45,10 @@ struct
 
 	#if CLIENT
 		bool trainStoppedAtStation = false
+		int  true_trainCarCount = TRAIN_CAR_COUNT
 	#endif
 
+		int customQueueIdx
 } file
 
 
@@ -71,7 +70,9 @@ void function DesertlandsTrainAnnouncer_Init()
 #if CLIENT
 void function InitTrainClientEnts()
 {
-	InitAnnouncerEnts()
+	if ( !Desertlands_IsTrainEnabled() )
+		return
+
 
 	//
 	entity trainMover = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ) )
@@ -80,6 +81,23 @@ void function InitTrainClientEnts()
 }
 #endif
 
+void function DesertlandsTrain_PreMapInit()
+{
+	AddCallback_OnNetworkRegistration( DesertlandsTrain_OnNetworkRegistration )
+}
+
+void function DesertlandsTrain_OnNetworkRegistration()
+{
+	Remote_RegisterClientFunction( "SCB_DLandsTrain_SetCustomSpeakerIdx", "int", 0 )
+}
+
+#if(CLIENT)
+void function SCB_DLandsTrain_SetCustomSpeakerIdx( int speakerIdx )
+{
+	file.customQueueIdx = speakerIdx
+	InitAnnouncerEnts()
+}
+#endif
 
 #if CLIENT
 void function InitAnnouncerEnts()
@@ -104,9 +122,6 @@ void function InitAnnouncerEnts()
 		entity announcerTarget4 = GetEntByScriptName( "train_announcer_target_4" )
 		customSpeakers1.append( announcerTarget4 )
 	}
-
-	if ( customSpeakers1.len() != 0 )
-		CustomSpeakers1ListInit( customSpeakers1 )
 }
 #endif
 
@@ -114,22 +129,14 @@ void function InitAnnouncerEnts()
 #if CLIENT
 void function TrainOnFullUpdate()
 {
-	InitAnnouncerEnts()
+	if ( !Desertlands_IsTrainEnabled() )
+		return
 }
 #endif
 
 
 #if SERVER
-void function DesertlandsTrain_Init()
-{
-	// stub :(
 
-}
-
-void function DesertlandsTrain_Precaches()
-{
-
-}
 #endif //
 
 
@@ -254,6 +261,29 @@ void function DesertlandsTrain_Precaches()
 
 
 #if CLIENT
+bool function Desertlands_IsTrainEnabled()
+{
+	if ( GetCurrentPlaylistVarBool( "desertlands_script_train_enable", true ) )
+	{
+		bool entitiesExist = true
+		for ( int idx = 0; idx < file.true_trainCarCount; idx++ )
+		{
+			array<entity> movers = GetEntArrayByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, idx ) )
+			if ( movers.len() < 1 )
+			{
+				entitiesExist = false
+				break
+			}
+		}
+
+		if ( entitiesExist )
+			return true
+		else
+			return false
+	}
+
+	return false
+}
 void function ServerCallback_SetDesertlandsTrainAtStation( bool isAtStation )
 {
 	file.trainStoppedAtStation = isAtStation

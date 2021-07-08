@@ -43,9 +43,9 @@ void function OnHideLegendPage( var panel )
 	RunClientScript( "UICallback_DestroyClientGladCardData", elem )
 }
 
-void function PopulateSkillElem( var elem, ItemFlavor character ) // TODO: IMPLEMENT
+void function PopulateSkillElem( var elem, ItemFlavor character )
 {
-	/*string skillType = Hud_GetScriptID( elem )
+	string skillType = Hud_GetScriptID( elem )
 	var rui = Hud_GetRui( elem )
 
 	switch ( skillType )
@@ -117,7 +117,7 @@ void function PopulateSkillElem( var elem, ItemFlavor character ) // TODO: IMPLE
 	}
 
 	RuiSetBool( rui, "isUltimate", skillType == "ultimate" )
-	RuiSetGameTime( rui, "initTime", Time() )*/
+	RuiSetGameTime( rui, "initTime", Time() )
 }
 
 

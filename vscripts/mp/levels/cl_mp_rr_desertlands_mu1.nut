@@ -4,7 +4,7 @@ const JUMP_PAD_LAUNCH_SOUND_1P = "Geyser_LaunchPlayer_1p"
 
 void function ClientCodeCallback_MapInit()
 {
-	//DesertlandsTrainAnnouncer_Init()
+	DesertlandsTrainAnnouncer_Init()
 	ClLaserMesh_Init()
 	Desertlands_MapInit_Common()
 	//ClDesertlandsStoryEvents_Init()

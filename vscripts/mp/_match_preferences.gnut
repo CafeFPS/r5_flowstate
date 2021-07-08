@@ -7,8 +7,5 @@ global enum eMatchPreferenceFlags
 
 void function MatchPreferences_Init()
 {
-#if SERVER
-#endif //SERVER
+//Stub
 }
-#if SERVER
-#endif //SERVER

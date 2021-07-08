@@ -115,15 +115,15 @@ void function WeaponInspectHideHudElements( bool hide )
 
 	if ( file.weaponInspectHideHudCount == 0 && !hide )
 	{
-		// RuiSetBool( gamestateRui, "weaponInspect", false )
-		// PlayerHudSetWeaponInspect( false )
-		// WeaponStatusSetWeaponInspect( false )
+		RuiSetBool( gamestateRui, "weaponInspect", false )
+		PlayerHudSetWeaponInspect( false )
+		WeaponStatusSetWeaponInspect( false )
 	}
 	else if ( hide )
 	{
-		// RuiSetBool( gamestateRui, "weaponInspect", true )
-		// PlayerHudSetWeaponInspect( true )
-		// WeaponStatusSetWeaponInspect( true )
+		RuiSetBool( gamestateRui, "weaponInspect", true )
+		PlayerHudSetWeaponInspect( true )
+		WeaponStatusSetWeaponInspect( true )
 	}
 }
 #endif

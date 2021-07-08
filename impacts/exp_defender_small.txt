@@ -1,0 +1,235 @@
+// "Gamematerial" "effect_name"
+
+ImpactTable
+{
+
+	Info
+	{
+		"whizby_sound_from_player"	"weapon_chargerifle_beam_3p"
+		"whizby_sound_from_AI"		"weapon_chargerifle_beam_3p"
+		"whizby_maxDistancePilot"	"1500"
+		"whizby_maxDistanceTitan"	"2000"
+	}
+
+	FX
+	{
+		"C" "P_impact_defender_sus_default" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_defender_sus_default" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_defender_sus_default" // metal_titan
+
+		//"F" "P_impact_defender_sus_default" //flesh
+		"G" "P_impact_defender_sus_default" //metalgrate, chainlink, chain
+		"H" "P_impact_defender_sus_default" //alienflesh
+
+		"J" "P_impact_defender_sus_default" //grass
+		"K" "P_impact_defender_sus_default" //Mud
+		"L" "P_impact_defender_sus_default" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_defender_sus_default" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_defender_sus_default"
+		"O" "P_impact_defender_sus_default" //Foliage
+		"P" "P_impact_defender_sus_default" //Computer
+
+		"R" "P_impact_defender_sus_default" //metalpanel, grenade, canister
+
+		"R" "P_impact_defender_sus_default" //metalpanel, grenade, canister
+		"S" "P_impact_defender_sus_default" //water, slime
+		"T" "P_impact_defender_sus_default" //tile
+		"U" "P_impact_defender_sus_default" //glass_breakable
+
+		"V" "P_impact_defender_sus_default" //Metal Vent
+		"W" "P_impact_defender_sus_default" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "P_impact_defender_sus_default" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_defender_sus_default"  //sand
+
+		"0" "P_impact_defender_sus_default"
+		"1" "P_impact_defender_sus_default"
+		"2" "P_impact_defender_sus_default"
+		"3" "P_impact_defender_sus_default"
+		"4" "P_impact_defender_sus_default"
+		"5" "P_impact_defender_sus_default"
+		"6" "P_impact_defender_sus_default"
+		"7" "P_impact_defender_sus_default"
+		"8" "P_impact_defender_sus_default"
+		"9" "P_impact_defender_sus_default" //puddle
+
+		"airburst" "P_impact_defender_sus_default"
+		"splash" "P_impact_defender_sus_default"
+		"slime_splash" "P_impact_defender_sus_default"
+
+		"shieldhit" "P_impact_defender_sus_default" // metal_titan
+		"critical_hit" "P_impact_defender_sus_default"
+
+
+		"headshot_flesh" "P_impact_defender_sus_default"
+		"headshot_mechanical" "P_impact_defender_sus_default"
+
+	}
+
+	FX
+	{
+//		"C" "impact_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+//		"D" "impact_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
+		"E" "impact_metal" // metal_titan
+
+		"F" "P_impact_flesh" //flesh
+//		"G" "impact_metal" //metalgrate, chainlink, chain
+		"H" "impact_alienflesh" //alienflesh
+
+//		"J" "impact_grass" //grass
+//		"K" "impact_mud" //Mud
+//		"L" "impact_plastic" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+//		"M" "impact_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+//		"N" "P_impact_slime" //Slime
+//		"O" "impact_leaves"  //Foliage
+		"P" "P_impact_metal_spectre" //metal_spectre
+//		"Q" "P_impact_snow"  //Snow
+//		"R" "P_impact_snow" //Ice
+//		"S" "P_impact_water" //water
+//		"T" "impact_tile" //tile
+//		"U" "impact_glass" // glass_breakable
+//		"V" "impact_metal" //Metal Vent
+//		"W" "impact_wood"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_xo_shield_cp" //xo_shield
+
+//		"Y" "impact_glass" //glass, brokenglass, glassbottle, pottery
+//		"Z" "impact_sand"  //sand
+
+//		"0" "openslot"
+		"1" "P_impact_lava_nodecal" //lava_flow
+		"2" "P_impact_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+//		"splash" "P_impact_water" //brush water
+//		"slime_splash" "P_impact_slime"
+//		"airburst" "P_impact_exp_smll_air"  //No Surface
+		"shieldhit" "P_armor_impact"
+		"holohit" "P_holohit_impact"
+		"critical_hit" "impact_metal"
+
+		"headshot_flesh" "P_impact_flesh"
+		"headshot_mechanical" "impact_metal_titan"
+
+		"pass_through"	"P_impact_amped_shield"
+	}
+
+
+
+	Sound
+	{
+		"C" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"D" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"E" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		"F" "flesh_bulletimpact_chargerifle_3p_vs_3p"
+		"G" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"H" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		"J" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"K" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"L" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"M" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"N" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"O" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"P" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		"R" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"S" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"T" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"U" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		"V" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"W" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"X"	"ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"Y" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"Z" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		//"splash" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		//"slime_splash" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		//"airburst" ""
+		"shieldhit" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+	}
+
+	Sound_attacker
+	{
+		"C" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"D" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"E" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+
+		"F" "flesh_bulletimpact_chargerifle_beam_1p_vs_3p"
+		"G" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"H" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+
+		"J" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"K" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"L" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"M" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"N" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"O" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"P" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+
+		"R" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"S" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"T" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"U" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+
+		"V" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"W" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"X"	"ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"Y" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		"Z" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+
+		//"splash" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+		//"slime_splash" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+
+		//"airburst" ""
+		"shieldhit" "ChargeRifle_SmallBeam_Bulletimpact_1p_vs_3p"
+	}
+
+	Sound_victim
+	{
+		"C" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"D" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"E" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		"F" "flesh_bulletimpact_chargerifle_beam_3p_vs_1p"
+		"F" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"G" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"H" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		"J" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"K" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"L" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"M" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"N" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"O" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"P" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p" // temp
+
+		"R" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"S" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"T" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"U" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		"V" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"W" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"X"	"ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"Y" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		"Z" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		//"splash" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+		//"slime_splash" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+
+		//"airburst" ""
+		"shieldhit" "ChargeRifle_SmallBeam_Bulletimpact_3p_vs_3p"
+	}
+
+
+}

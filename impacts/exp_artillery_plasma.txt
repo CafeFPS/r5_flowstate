@@ -14,7 +14,7 @@ ImpactTable
 	FX
 	{
 		"C" "P_exp_artillery_plasma_sand" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "P_exp_artillery_plasma_sand" //Dirt, mud, sand, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "P_exp_artillery_plasma_sand" //Dirt, mud, sand, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "P_exp_artillery_plasma" // metal_titan
 
 		"F" "P_exp_artillery_plasma_metal" //flesh
@@ -28,9 +28,9 @@ ImpactTable
 		"N" "P_exp_artillery_plasma_metal" //Slime
 		"O" "P_exp_artillery_plasma_metal" //Foliage
 		"P" "P_exp_artillery_plasma_metal" //Computer
-
-		"R" "P_exp_artillery_plasma_metal" //metalpanel, grenade, canister
-		"S" "P_impact_exp_XLG_water" //water, slime
+		"Q" "P_exp_artillery_plasma_snow" //Snow
+		"R" "P_exp_artillery_plasma_snow" //Ice
+		"S" "P_impact_exp_XLG_water" //water
 		"T" "P_exp_artillery_plasma_sand" //tile
 		"U" "P_exp_artillery_plasma_metal" //glass_breakble
 
@@ -41,8 +41,8 @@ ImpactTable
 		"Z" "P_exp_artillery_plasma_sand"  //sand
 
 		"0" "P_exp_artillery_plasma_sand"
-		"1" "P_exp_artillery_plasma_sand"
-		"2" "P_exp_artillery_plasma_sand"
+		"1" "P_exp_artillery_plasma_lava" //lava_flow
+		"2" "P_exp_artillery_plasma_lava" //lava_rock_hot
 		"3" "P_exp_artillery_plasma_sand"
 		"4" "P_exp_artillery_plasma_sand"
 		"5" "P_exp_artillery_plasma_sand"
@@ -81,8 +81,8 @@ ImpactTable
 		"N" "explo_defensivebombardment_impact_dirt_3p_vs_3p"	// sand?
 		"O" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
 		"P" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
-
-		"R" "explo_defensivebombardment_impact_metal_3p_vs_3p"
+		"Q" "explo_defensivebombardment_impact_dirt_3p_vs_3p" //snow
+		"R" "explo_defensivebombardment_impact_metal_3p_vs_3p" //ice
 		"S" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
 		"T" "explo_defensivebombardment_impact_concrete_3p_vs_3p"
 		"U" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
@@ -101,6 +101,19 @@ ImpactTable
 
 		"headshot_flesh" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
 		"headshot_mechanical" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
+
+
+//		"0" "openslot"
+		"1" "explo_defensivebombardment_impact_concrete_3p_vs_3p" //lava_flow
+		"2" "explo_defensivebombardment_impact_concrete_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
 	}
 
 	Sound_attacker
@@ -120,8 +133,8 @@ ImpactTable
 		"N" "explo_defensivebombardment_impact_dirt_3p_vs_3p"	// sand?
 		"O" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
 		"P" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
-
-		"R" "explo_defensivebombardment_impact_metal_3p_vs_3p"
+		"Q" "explo_defensivebombardment_impact_metal_3p_vs_3p" //Snow
+		"R" "explo_defensivebombardment_impact_metal_3p_vs_3p" //Ice
 		"S" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
 		"T" "explo_defensivebombardment_impact_concrete_3p_vs_3p"
 		"U" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
@@ -140,6 +153,18 @@ ImpactTable
 
 		"headshot_flesh" "explo_plasmasmall_impact_3p_vs_1p"
 		"headshot_mechanical" "explo_plasmasmall_impact_3p_vs_1p"
+
+//		"0" "openslot"
+		"1" "explo_defensivebombardment_impact_dirt_3p_vs_3p" //lava_flow
+		"2" "explo_defensivebombardment_impact_dirt_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
 	}
 
 	Sound_victim
@@ -160,7 +185,8 @@ ImpactTable
 		"O" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
 		"P" "android_meteorgun_impact_default_3p_vs_1p"
 
-		"R" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
+		"Q" "explo_defensivebombardment_impact_dirt_3p_vs_3p" //Snow
+		"R" "explo_defensivebombardment_impact_dirt_3p_vs_3p" //Ice
 		"S" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
 		"T" "explo_defensivebombardment_impact_concrete_3p_vs_3p"
 		"U" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
@@ -179,6 +205,17 @@ ImpactTable
 
 		"headshot_flesh" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
 		"headshot_mechanical" "explo_defensivebombardment_impact_dirt_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "explo_defensivebombardment_impact_dirt_3p_vs_3p" //lava_flow
+		"2" "explo_defensivebombardment_impact_dirt_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 	}
 
 	Sound_victim_from_AI

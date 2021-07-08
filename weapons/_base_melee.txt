@@ -7,16 +7,15 @@ WeaponData
     "OnWeaponActivate"								"OnWeaponActivate_weapon_melee_primary"
     "OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_melee_primary"
 
-	"allow_empty_fire"								"1"
-	"uses_ammo_pool"								"0"
-
-	"weaponType" 									"melee"
-
-	"melee_can_hit_humansized"						"1"
-	"melee_can_hit_titans"							"0"
-	"melee_raise_recovery_animtime_normal"			"0.75"
-	"melee_raise_recovery_animtime_quick"			"0.4"
-	"melee_range"									"60"
+	"melee_angle"									"30"
+	"melee_attack_animtime"							"0"
+	"melee_damage"									"30"
+	"melee_damage_heavyarmor"						"30"
+	"melee_lunge_no_target_range"					"60"
+	"melee_lunge_target_angle"						"30"
+	"melee_lunge_target_range"						"60"
+	"melee_lunge_time"								"0.35"
+	"melee_range"									"40"
 
 	Mods
 	{
@@ -26,7 +25,8 @@ WeaponData
 			//"melee_lunge_time"        "*3.0"
 			"melee_anim_1p_number"      "3"
 			"melee_anim_3p"		        "ACT_GESTURE_MELEE_ATTACK3"
-			"impulse_force"   								"20000"
+			"impulse_force"   			"20000"
+			"impact_effect_table" 		"melee_human"
 		}
 	}
 }

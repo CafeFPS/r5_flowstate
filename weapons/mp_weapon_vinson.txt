@@ -9,12 +9,17 @@ WeaponData
 	"description" 									"#WPN_VINSON_DESC"
 	"longdesc"										"#WPN_VINSON_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"highcal"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_flatline"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_flatline"
 
 	"fire_mode"   									"automatic"
+
+    "OnWeaponActivate"                              "OnWeaponActivate_Vinson"
+    "OnWeaponDeactivate"                            "OnWeaponDeactivate_Vinson"
+    "OnWeaponPrimaryAttack"                         "OnWeaponPrimaryAttack_Vinson"
 
 	// Menu
 	"menu_category"                                 "ar"
@@ -74,16 +79,14 @@ WeaponData
     "ammo_no_remove_from_stockpile"					"1"
     "ammo_min_to_fire"								"1"
 
-    "damage_near_value"   							"16"
-    "damage_far_value"								"16"
-    "damage_very_far_value"							"16"
-    "damage_near_value_titanarmor"					"16"
-    "damage_far_value_titanarmor" 					"16"
-    "damage_very_far_value_titanarmor" 				"16"
+    "damage_near_value"   							"19"
+    "damage_far_value"								"19"
+    "damage_very_far_value"							"19"
+    "damage_near_value_titanarmor"					"19"
+    "damage_far_value_titanarmor" 					"19"
+    "damage_very_far_value_titanarmor" 				"19"
 
     "damage_rodeo" 									"100"
-
-    "damage_heavyarmor_nontitan_scale"				"0.35"
 
     "npc_damage_near_value"   						"24"
     "npc_damage_far_value"							"15"
@@ -208,6 +211,10 @@ WeaponData
 
 	Mods
 	{
+	    gold
+	    {
+	    }
+
 		survival_finite_ammo
         {
             "ammo_default_total"							"0"
@@ -224,7 +231,7 @@ WeaponData
 		{
 			"mod_activity_modifier"							"fire_select"
 
-			"fire_mode"   									"semiauto"
+			"is_semi_auto"									"1"
 
 			"fire_sound_1_player_1p"						"Vinson_shell"
 			"fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
@@ -245,7 +252,134 @@ WeaponData
 			"burst_or_looping_fire_sound_end_npc"			""
 
 			"looping_sounds"								"0"
+
+			"low_ammo_sound_name_1"                    "Vinson_LowAmmo_Shot1"
+			"low_ammo_sound_name_2"                    "Vinson_LowAmmo_Shot2"
+			"low_ammo_sound_name_3"                    "Vinson_LowAmmo_Shot3"
+			"low_ammo_sound_name_4"                    "Vinson_LowAmmo_Shot4"
+			"low_ammo_sound_name_5"                    "Vinson_LowAmmo_Shot5"
+			"low_ammo_sound_name_6"                    "Vinson_LowAmmo_Shot6"
 		}
+
+                      
+        hopup_highcal_rounds
+        {
+        	// This mod is only used to indicate that the hop-up is active
+        	// When player changes fire modes, we activate "altfire_empowered"
+        }
+
+		// single shot empowered
+		altfire_highcal
+		{
+            "mod_activity_modifier"							"fire_select"
+
+            "is_semi_auto"									"1"
+
+            // fx
+            "projectile_trail_effect_0"                     "P_tracer_proj_sniper_piercer"
+
+            // sounds
+            "fire_sound_1_player_1p"						"Vinson_shell"
+            "fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
+            "fire_sound_2_player_1p"						"Weapon_Vinson_SingleShot_1P"
+            "fire_sound_2_player_3p"						"Weapon_Vinson_SingleShot_3P"
+            "fire_sound_2_npc"								"Weapon_Vinson_SecondShot_NPC"
+
+            "burst_or_looping_fire_sound_start_1p"			""
+            "burst_or_looping_fire_sound_middle_1p"			""
+            "burst_or_looping_fire_sound_end_1p"			""
+
+            "burst_or_looping_fire_sound_start_3p"			""
+            "burst_or_looping_fire_sound_middle_3p"			""
+            "burst_or_looping_fire_sound_end_3p"			""
+
+            "burst_or_looping_fire_sound_start_npc"			""
+            "burst_or_looping_fire_sound_middle_npc"		""
+            "burst_or_looping_fire_sound_end_npc"			""
+
+            "looping_sounds"								"0"
+
+            "low_ammo_sound_name_1"                         "Vinson_LowAmmo_Shot1"
+            "low_ammo_sound_name_2"                         "Vinson_LowAmmo_Shot2"
+            "low_ammo_sound_name_3"                         "Vinson_LowAmmo_Shot3"
+            "low_ammo_sound_name_4"                         "Vinson_LowAmmo_Shot4"
+            "low_ammo_sound_name_5"                         "Vinson_LowAmmo_Shot5"
+            "low_ammo_sound_name_6"                         "Vinson_LowAmmo_Shot6"
+
+            // behavior
+            "fire_rate"                                     "2.9"   //10
+
+            "damage_near_value"   							"43"
+            "damage_far_value"								"43"
+            "damage_very_far_value"							"43"
+            "damage_near_value_titanarmor"					"43"
+            "damage_far_value_titanarmor" 					"43"
+            "damage_very_far_value_titanarmor" 				"43"
+
+            "damage_leg_scale"                              "0.9"
+
+            "ammo_per_shot" 				                "2"
+            "ammo_min_to_fire"				                "1"
+
+            // viewkick
+            "viewkick_pattern"                              "flatline_highcal"
+
+            "viewkick_spring" 						        "flatline_highcal_vkp"
+            "viewkick_spring_hot"                           "flatline_highcal_vkp_hot"
+            "viewkick_spring_cooldown_holdtime"             "0.28"
+            "viewkick_spring_cooldown_fadetime"             "0.22"
+
+            "viewkick_scale_valueDecayDelay"  				"0.58"
+            "viewkick_scale_valueDecayRate"   				"20"
+
+            "viewkick_pitch_base" 							"1.0"
+            "viewkick_pitch_random"   						"1.0"
+            "viewkick_pitch_softScale"						"3.25"
+            "viewkick_pitch_hardScale"						"0.4"
+
+            "viewkick_yaw_base"   							"1.0"
+            "viewkick_yaw_random" 							"1.0"
+            "viewkick_yaw_random_innerexclude"				"0.05"
+            "viewkick_yaw_softScale"  						"2.2"
+            "viewkick_yaw_hardScale"  						"0.3"
+
+            "viewkick_roll_base"  	                        "2.1"
+            "viewkick_roll_randomMin"                       "-0.2"
+            "viewkick_roll_randomMax"                       "0.2"
+            "viewkick_roll_softScale"                       "1.2"
+            "viewkick_roll_hardScale"                       "0.35"
+
+            "viewkick_hipfire_weaponFraction" 				"0.225" //0.1
+
+            "viewmodel_jolt_scale"                          "2.2"       //1.0
+            "viewmodel_jolt_backwardPerShot"                "-.75"      //"-0.5"
+            "viewmodel_jolt_roll"                           "0 3.8 0"   //"0 3.4 0.0"
+            "viewmodel_jolt_side"                           "0 0.041 0" //"0 0.038 0"
+
+            // spread
+            "spread_stand_hip"								"6.5"   //2.5
+            "spread_stand_hip_run"							"8.5"   //5.5
+            "spread_stand_hip_sprint"                       "9.5"   //7.0
+            "spread_crouch_hip"   							"5.0"   //2.0
+            "spread_air_hip"  								"9.5"   //7.0
+
+            "spread_moving_increase_rate" 					"20"    //3
+            "spread_moving_decay_rate" 						"25"    //10.5
+
+            "spread_kick_on_fire_stand_hip"   				"0.75"  //0.2
+            "spread_kick_on_fire_crouch_hip"  				"0.75"  //0.2
+            "spread_kick_on_fire_air_hip" 					"0.75"  //0.2
+
+            "spread_max_kick_stand_hip"   					"9.0"   //2.0
+            "spread_max_kick_crouch_hip"  					"6.0"   //1.5
+            "spread_max_kick_air_hip" 						"9.0"   //3.0
+
+            "spread_decay_delay"  							"0.325" //0.25
+            "spread_decay_rate"   							"12"    //10
+		}
+// end HAS_HIGHCAL_ROUNDS
+      
+
 
 		highcal_mag_l1
 		{
@@ -259,6 +393,14 @@ WeaponData
 		{
 			"ammo_clip_size" 				"30"
 		}
+
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
 	}
 
 	"ui1_enable"		"1"
@@ -287,7 +429,7 @@ WeaponData
 			ammo						weapon_ammo
 			clipSize					weapon_clipSize
 			clipCount					weapon_ammoClipCount
-			fireMode     				"eWeaponVar.fire_mode"
+			fireMode     				"eWeaponVar.is_semi_auto"
 		}
 	}
 

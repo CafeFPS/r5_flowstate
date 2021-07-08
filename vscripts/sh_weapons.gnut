@@ -8,6 +8,8 @@ global function WeaponItemFlavor_GetStatsCategory
 global function WeaponItemFlavor_GetArmoryScale
 global function WeaponItemFlavor_GetLootCeremonyScale
 global function WeaponItemFlavor_GetBattlePassScale
+global function WeaponItemFlavor_GetHudIcon
+global function WeaponCategoryFlavor_GetMenuZoomOffset
 global function GetWeaponItemFlavorByClass
 global function GetAllWeaponItemFlavors
 global function GetAllWeaponCategories
@@ -158,6 +160,23 @@ float function WeaponItemFlavor_GetBattlePassScale( ItemFlavor weapon )
 	Assert( ItemFlavor_GetType( weapon ) == eItemType.loot_main_weapon )
 
 	return GetGlobalSettingsFloat( ItemFlavor_GetAsset( weapon ), "battlePassScale" )
+}
+
+
+asset function WeaponItemFlavor_GetHudIcon( ItemFlavor weapon )
+{
+	string weaponName = WeaponItemFlavor_GetClassname( weapon )
+
+	return GetWeaponInfoFileKeyFieldAsset_Global( weaponName, "hud_icon" )
+
+}
+
+
+vector function WeaponCategoryFlavor_GetMenuZoomOffset( ItemFlavor weaponCategory )
+{
+	Assert( ItemFlavor_GetType( weaponCategory ) == eItemType.weapon_category )
+
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( weaponCategory ), "menuZoomOffset" )
 }
 
 

@@ -1,6 +1,9 @@
 global function ShPing_Init
 global function CodeCallback_PingOnDown
 global function CodeCallback_PingOnUp
+#if CLIENT
+global function IsPingEnabledForPlayer
+#endif
 
 #if CLIENT
 global function Ping_SetMapWaypoint
@@ -397,6 +400,13 @@ void function CodeCallback_PingOnUp( entity player )
 		OnPingUp( player )
 	#endif
 }
+#if CLIENT
+bool function IsPingEnabledForPlayer( entity player )
+{
+	return player.GetPlayerNetBool( "pingEnabled" )
+}
+#endif
+
 
 #if SERVER
 void function CodeCallback_PingCommandQueueTrace( entity player )

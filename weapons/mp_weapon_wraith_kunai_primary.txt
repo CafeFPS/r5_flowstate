@@ -8,6 +8,8 @@ WeaponData
 	"description" 									"Kunai"
 	"longdesc"										"Kunai"
 
+	"weapon_type_flags"								"WPT_MELEE"
+	
     // UI/HUD
 	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
 	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
@@ -22,17 +24,12 @@ WeaponData
 	"dof_nearDepthStart"							"0.5"
 	"dof_nearDepthEnd"							    "6.4"
 
-	// Audio
 	//"idle_sound_player_1p"						"Wraith_Kunai_IdleSparks_1P"
 
 
-    	"holster_type"									"pistol"
 
 	// Behavior
 	"deployfirst_time"								"1.9"
-
-	// Animation
-	"activitymodifier3P"							"kunai"
 
 
 

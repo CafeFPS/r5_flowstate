@@ -83,51 +83,51 @@ global struct CollectionEventRewardGroup
 
 
 //
-global const table<asset, array<asset> > S03E02_HARD_CODED_BONUS_QUIPS = {
+global const table<asset, array<asset> > S03E01_HARD_CODED_BONUS_QUIPS = {
 
-	[$"settings/itemflav/character_skin/caustic/s03e02_legendary_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/caustic/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/caustic/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/bangalore/s03e01_legendary_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/bangalore/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/bangalore/s03e01_common_01.rpak"
 	],
 
-	[$"settings/itemflav/character_skin/crypto/s03e02_legendary_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/crypto/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/crypto/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/bloodhound/s03e01_legendary_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/bloodhound/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/bloodhound/s03e01_common_01.rpak"
 	],
 
-	[$"settings/itemflav/character_skin/gibraltar/s03e02_legendary_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/gibraltar/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/gibraltar/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/caustic/s03e01_legendary_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/caustic/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/caustic/s03e01_common_01.rpak"
 	],
 
-	[$"settings/itemflav/character_skin/mirage/s03e02_legendary_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/mirage/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/mirage/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/crypto/s03e01_legendary_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/crypto/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/crypto/s03e01_common_01.rpak"
 	],
 
-	[$"settings/itemflav/character_skin/octane/s03e02_legendary_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/octane/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/octane/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/gibraltar/s03e01_legendary_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/gibraltar/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/gibraltar/s03e01_common_01.rpak"
 	],
 
-	[$"settings/itemflav/character_skin/pathfinder/s03e02_legendary_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/pathfinder/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/pathfinder/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/lifeline/s03e01_epic_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/lifeline/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/lifeline/s03e01_common_01.rpak"
 	],
 
-	[$"settings/itemflav/character_skin/wattson/s03e02_legendary_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/wattson/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/wattson/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/mirage/s03e01_legendary_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/mirage/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/mirage/s03e01_common_01.rpak"
 	],
 
-	[$"settings/itemflav/character_skin/lifeline/s03e02_epic_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/lifeline/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/lifeline/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/wattson/s03e01_epic_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/wattson/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/wattson/s03e01_common_01.rpak"
 	],
 
-	[$"settings/itemflav/character_skin/wraith/s03e02_epic_01.rpak"] = [
-		$"settings/itemflav/character_kill_quip/wraith/s03e02_common_01.rpak",
-		$"settings/itemflav/character_kill_quip/wraith/s03e02_common_02.rpak"
+	[$"settings/itemflav/character_skin/wraith/s03e01_legendary_01.rpak"] = [
+		$"settings/itemflav/character_intro_quip/wraith/s03e01_common_01.rpak",
+		$"settings/itemflav/character_kill_quip/wraith/s03e01_common_01.rpak"
 	],
 
 }

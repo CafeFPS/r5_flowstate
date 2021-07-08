@@ -52,8 +52,8 @@ void function InitPromoData()
 void function UpdatePromoData()
 {
 	#if R5DEV
-		if ( GetConVarBool( "mainMenuPromos_scriptUpdateDisabled" ) || GetCurrentPlaylistVarBool( "mainMenuPromos_scriptUpdateDisabled", false ) )
-			return
+		//if ( GetConVarBool( "mainMenuPromos_scriptUpdateDisabled" ) || GetCurrentPlaylistVarBool( "mainMenuPromos_scriptUpdateDisabled", false ) )
+		//	return
 	#endif //
 	file.promoData = GetMainMenuPromos()
 }

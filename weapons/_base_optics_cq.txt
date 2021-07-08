@@ -2,46 +2,171 @@ WeaponData
 {
 	Mods
    	{
+                   
+                                                                                                         
+                                                                                
+                                                                                                         
+       
+                                        
+      
+                      
+                        
+
+                           
+                        
+                         
+
+                     
+                     
+
+                                  
+
+                                                                       
+                                                                         
+                                              
+
+                                          
+
+                                              
+                                             
+
+                                                     
+      
+  
+                                     
+      
+                      
+                        
+
+                           
+                        
+                         
+
+                     
+                     
+
+                                  
+
+                                                                       
+                                                                         
+                                              
+
+                                          
+
+                                              
+                                             
+
+                                                     
+      
+  
+                                     
+      
+                      
+                        
+
+                           
+                        
+                         
+
+                     
+                     
+
+                                  
+
+                                                                       
+                                                                         
+                                              
+
+                                          
+
+                                              
+                                             
+
+                                                     
+      
+  
+                                     
+      
+                      
+                        
+
+                           
+                        
+                         
+
+                     
+                     
+   
+                                           
+                        
+
+                                  
+
+                                                                       
+                                                                         
+                                              
+
+                                          
+
+                                              
+                                             
+
+                                                     
+      
+  
+                                                                                                         
+                                  
+                                                                                                         
+    
+    
+                      
+      
+
    		// 1x
-   		optic_cq_hcog_classic
-   		{
-   			// sight_hcog_og
-   			"zoom_fov"				"60"
+        optic_cq_hcog_classic
+        {
+            // sight_hcog_og
+            "zoom_fov"				"60"
 
-   			"bodygroup1_set"		"0"
-			"bodygroup6_set"		"1"
+            "bodygroup1_set"		"0"
+            "bodygroup6_set"		"1"
 
-			"ui1_enable"			"0"
-			"ui6_enable"			"1"
+            "ui1_enable"			"0"
+            "ui6_enable"			"1"
 
-			"mod_activity_modifier"	"optic"
+			//active_optic_appearance "hcog_classic"
 
-			"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_HCOG_OG"
-			"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_HCOG_OG"
-			"viewmodel_offset_ads_by_centerpoint" 		"1"
+            "mod_activity_modifier"	"optic"
 
-			"viewmodel_offset_ads" 				    "0 13 0"
+            "viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_HCOG_OG"
+            "viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_HCOG_OG"
+            "viewmodel_offset_ads_by_centerpoint" 		"1"
+
+            "viewmodel_offset_ads" 				    "0 13 0"
 
             "dof_zoom_nearDepthStart"				"1.0"
             "dof_zoom_nearDepthEnd"					"8.5"
-   		}
 
-	   	// 2x
-   		optic_cq_hcog_bruiser
-   		{
-   			// sight_hcog
-   			"zoom_fov"				"38.5907" // 2x @ 70
+            zoomed_convar_sensitivity_index         0
+        }
 
-   			"bodygroup1_set"		"0"
-		    "bodygroup7_set"		"1"
+        // 2x
+        optic_cq_hcog_bruiser
+        {
+            // sight_hcog
+            "zoom_fov"				"38.5907" // 2x @ 70
 
-			"ui1_enable"			"0"
-			"ui7_enable"			"1"
-			"ui11_enable"			"1"  // TEMP will be combined with ui7
+            "bodygroup1_set"		"0"
+            "bodygroup7_set"		"1"
 
-			"mod_activity_modifier"	"optic"
+            "ui1_enable"			"0"
+            "ui7_enable"			"1"
 
-			"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_HCOG"
+            //active_optic_appearance "hcog_bruiser"
+
+            "mod_activity_modifier"	"optic"
+
+            "viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_HCOG"
             "viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_HCOG"
             "viewmodel_offset_ads_by_centerpoint" 		"1"
 
@@ -49,32 +174,36 @@ WeaponData
 
             "dof_zoom_nearDepthStart"				"1.0"
             "dof_zoom_nearDepthEnd"					"10.8"
-   		}
 
-   		// 1x
-   		optic_cq_holosight
-   		{
-   			// sight_holo
-   			"zoom_fov"				"60"
+            zoomed_convar_sensitivity_index         1
+        }
 
-   			"bodygroup1_set"		"0"
-		    "bodygroup8_set"		"1"
+        // 1x
+        optic_cq_holosight
+        {
+            // sight_holo
+            "zoom_fov"				"60"
 
-			"ui1_enable"			"0"
-			"ui8_enable"			"1"
+            "bodygroup1_set"		"0"
+            "bodygroup8_set"		"1"
 
-			"mod_activity_modifier"	"optic"
+            "ui1_enable"			"0"
+            "ui8_enable"			"1"
 
-			"viewmodel_ads_rui_bottomleft_attachment"		"RUI_BL_CROSSHAIR_HOLO"
-			"viewmodel_ads_centerpoint_attachment"       	"ADS_CENTER_SIGHT_HOLO"
-			"viewmodel_offset_ads_by_centerpoint" 			"1"
+            "mod_activity_modifier"	"optic"
 
-			"zoom_fov_viewmodel" 	"20.0"
-			"viewmodel_offset_ads" 				    "0 27.5 0"
+            "viewmodel_ads_rui_bottomleft_attachment"		"RUI_BL_CROSSHAIR_HOLO"
+            "viewmodel_ads_centerpoint_attachment"       	"ADS_CENTER_SIGHT_HOLO"
+            "viewmodel_offset_ads_by_centerpoint" 			"1"
+
+            "zoom_fov_viewmodel" 	"20.0"
+            "viewmodel_offset_ads" 				    "0 27.5 0"
 
             "dof_zoom_nearDepthStart"				"1.0"
             "dof_zoom_nearDepthEnd"					"23.0"
-   		}
+
+            zoomed_convar_sensitivity_index         0
+        }
 
    		// 1x-2x
    		optic_cq_holosight_variable
@@ -104,10 +233,81 @@ WeaponData
 
             "dof_zoom_nearDepthStart"				"1.0"
             "dof_zoom_nearDepthEnd"					"7.0"
+
+            zoomed_convar_sensitivity_index         0 // needs to support variable zoom
+            zoomed_convar_toggle_sensitivity_index  1
    		}
    	}
 
+    OpticAppearances
+    {
+        hcog_classic
+        {
+            bodygroups
+            {
+                sight_hcog_og   1
+            }
+            uidatas         "hcog_classic_sights"
+        }
+
+        hcog_bruiser
+        {
+            bodygroups
+            {
+                sight_hcog  1
+            }
+
+            uidatas         "hcog_bruiser_sights"
+        }
+    }
+
    	// --- BODYGROUPS AND UIDATA ---
+
+	UiDatas
+	{
+		hcog_classic_sights
+		{
+			"ui"                    "ui/hcog_classic_sights"
+			"mesh"                  "models/weapons/attachments/hcog_classic_sights"
+			draw_cloaked            1
+			Args
+			{
+				vis                 player_zoomfrac
+				ammo                weapon_ammo
+				clipSize            weapon_clipSize
+				centerOffset        weapon_ads_center_offset
+			}
+		}
+
+		hcog_bruiser_sights
+		{
+			"ui"			    	"ui/hcog_upper"
+			"mesh"					"models/weapons/attachments/hcog2_rui_upper"
+			draw_cloaked            1
+            Args
+			{
+				vis					player_zoomfrac
+				ammo				weapon_ammo
+				clipSize			weapon_clipSize
+				centerOffset		weapon_ads_center_offset
+			}
+		}
+
+		holosight_sights
+		{
+			"ui"					"ui/holo_sights"
+			"mesh"					"models/weapons/attachments/holo_rui_upper"
+			draw_cloaked            1
+            Args
+			{
+				vis					player_zoomfrac
+				ammo				weapon_ammo
+				clipSize			weapon_clipSize
+				clipCount			weapon_ammoClipCount
+				centerOffset		weapon_ads_center_offset
+			}
+		}
+	}
 
 
 	// optic_cq_hcog_classic
@@ -148,22 +348,6 @@ WeaponData
 			centerOffset		weapon_ads_center_offset
 		}
 	}
-	// TEMP, the plan is to combine hcog_upper and hcog_lower and only use UI7 for this
-	"ui11_enable"		"0"
-	"ui11_draw_cloaked"	"1"
-	UiData11
-	{
-		"ui"						"ui/hcog_lower"
-		"mesh"						"models/weapons/attachments/hcog2_rui_lower"
-		Args
-		{
-			vis							player_zoomfrac
-			ammo						weapon_ammo
-			clipSize					weapon_clipSize
-			centerOffset		weapon_ads_center_offset
-		}
-	}
-
 
 	// optic_cq_holosight
 	"bodygroup8_name"	"sight_holo"
@@ -205,4 +389,68 @@ WeaponData
 			centerOffset			weapon_ads_center_offset
 		}
 	}
+
+                   
+                       
+                                                  
+                      
+ 
+                     
+           
+    
+                                                       
+                                                                       
+        
+     
+                             
+                         
+                                
+                                            
+     
+    
+   
+                     
+           
+    
+                                                       
+                                                                       
+        
+     
+                             
+                         
+                                
+                                            
+     
+    
+   
+                     
+           
+    
+                                                       
+                                                                       
+        
+     
+                             
+                         
+                                
+                                            
+     
+    
+
+                                                
+                     
+           
+    
+                                                       
+                                                                       
+        
+     
+                             
+                         
+                                
+                                            
+     
+    
+                      
+      
 }

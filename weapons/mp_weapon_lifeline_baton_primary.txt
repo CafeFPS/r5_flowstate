@@ -1,0 +1,27 @@
+#base "mp_weapon_melee_survival.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"MELEE_SKIN_LIFELINE_BATON_NAME"
+	"shortprintname"								"MELEE_SKIN_LIFELINE_BATON_NAME"
+	"description" 									"MELEE_SKIN_LIFELINE_BATON_NAME"
+	"longdesc"										"MELEE_SKIN_LIFELINE_BATON_NAME"
+
+    // UI/HUD
+	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
+	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/drumstick/ptpov_baton_lifeline.rmdl"
+	"playermodel" 									"mdl/weapons/drumstick/w_baton_lifeline.rmdl"
+
+	"OnWeaponActivate"								"OnWeaponActivate_weapon_lifeline_baton_primary"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_lifeline_baton_primary"
+
+	"dof_nearDepthStart"							"0.5"
+	"dof_nearDepthEnd"							    "6.4"
+
+	// Behavior
+	"deployfirst_time"								"2.3"
+}

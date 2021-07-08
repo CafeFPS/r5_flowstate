@@ -14,16 +14,18 @@ WeaponData
 	"readymessage"              					"#HUD_BURNMETER_READY_BUBBLE_BUNKER"
 	"readyhint"                 					"#HUD_BURNMETER_READY_BUBBLE_BUNKER_HINT"
 
+	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
 	"is_toss_weapon"								"1"
 	"minimap_reveal_distance"						"32000"
 	"fast_swap_to"									"1"
 	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
-
+	"offhand_default_inventory_slot"				"4"
     "does_not_interrupt_cloak"						"1"
 	"offhand_interupts_weapon_anims"				"1"
 	"offhand_toss_activates_on_attack"				"0"
+    "trophy_system_ignore"                          "1"
 
 	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_weapon_jump_pad"
 	"OnWeaponTossPrep"								"OnWeaponTossPrep_weapon_jump_pad"
@@ -62,6 +64,7 @@ WeaponData
 	"stick_pilot"                                   "0"
 	"stick_titan"                                   "0"
 	"stick_npc"                                     "0"
+	"stick_drone"                                   "0"
 
 	"projectile_visible_to_smart_ammo"				"0"
 

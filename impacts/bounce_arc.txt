@@ -6,7 +6,7 @@ ImpactTable
 		"B" "none" //Bloodyflesh?
 
 		"C" "none" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "none" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "none" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "none" // metal_titan
 		"F" "none" //flesh
 		"G" "none" //metalgrate, chainlink, chain
@@ -21,10 +21,8 @@ ImpactTable
 		"N" "P_impact_slime" //Slime
 		"O" "P_hmn_footstep_dust" //Foliage
 		"P" "none" //Computer
-
-		"Q" "none" //Not listed
-
-		"R" "none" //metalpanel, grenade, canister
+		"Q" "P_hmn_footstep_snow" //Snow
+		"R" "P_hmn_footstep_snow" //Ice
 		"S" "P_impact_water" //water, slime
 		"T" "none" //tile
 		"U" "none" //glass_breakable
@@ -33,6 +31,17 @@ ImpactTable
 		"X" "none" //xo_shield
 		"Y" "none" //glass, brokenglass, glassbottle, pottery
 		"Z" "P_hmn_footstep_dust" //sand
+
+//		"0" "openslot"
+		"1" "P_hmn_footstep_lava" //lava_flow
+		"2" "P_hmn_footstep_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 
 		//Hardcocded Surfacprops
@@ -66,8 +75,8 @@ Sound
 		"N" "Water.BulletImpact_3P_vs_3P"	// sand?
 		"O" "PulseBlade_SurfaceImpact_Dirt_3P"
 		"P" "PulseBlade_SurfaceImpact_Metal_3P"
-
-		"R" "PulseBlade_SurfaceImpact_Concrete_3P"
+		"Q" "PulseBlade_SurfaceImpact_Dirt_3P" //snow
+		"R" "PulseBlade_SurfaceImpact_Concrete_3P" //ice
 		"S" "Water.BulletImpact_3P_vs_3P"
 		"T" "PulseBlade_SurfaceImpact_Concrete_3P"
 
@@ -76,6 +85,17 @@ Sound
 		"X"	"PulseBlade_SurfaceImpact_BubbleShield_3P" // Titan bubble shield
 		"Y" "Glass.BulletImpact_3P_vs_3P"
 		"Z" "PulseBlade_SurfaceImpact_Sand_3P"
+
+//		"0" "openslot"
+		"1" "PulseBlade_SurfaceImpact_Dirt_3P" //lava_flow
+		"2" "PulseBlade_SurfaceImpact_Dirt_3P" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Water.BulletImpact"
 		"slime_splash" "Water.BulletImpact"
@@ -105,8 +125,8 @@ Sound
 		"N" "Water.BulletImpact_1P_vs_3P"	// slime?
 		"O" "PulseBlade_SurfaceImpact_Dirt_3P"
 		"P" "PulseBlade_SurfaceImpact_Metal_3P"
-
-		"R" "PulseBlade_SurfaceImpact_Concrete_3P"
+		"Q" "PulseBlade_SurfaceImpact_Dirt_3P" //snow
+		"R" "PulseBlade_SurfaceImpact_Concrete_3P" //ice
 		"S" "Water.BulletImpact_1P_vs_3P"
 		"T" "PulseBlade_SurfaceImpact_Concrete_3P"
 
@@ -115,6 +135,9 @@ Sound
 		"X"	"PulseBlade_SurfaceImpact_BubbleShield_3P" // Titan bubble shield
 		"Y" "Glass.BulletImpact_1P_vs_3P"
 		"Z" "PulseBlade_SurfaceImpact_Sand_3P"
+
+		"1" "PulseBlade_SurfaceImpact_Dirt_3P" //lava_flow
+		"2" "PulseBlade_SurfaceImpact_Dirt_3P" //lava_rock_hot
 
 		"splash" "Water.BulletImpact"
 		"slime_splash" "Water.BulletImpact"
@@ -144,8 +167,8 @@ Sound
 		"N" "Water.BulletImpact_3P_vs_1P"	// Slime
 		"O" "PulseBlade_SurfaceImpact_Dirt_3P"
 		"P" "PulseBlade_SurfaceImpact_Metal_3P"
-
-		"R" "PulseBlade_SurfaceImpact_Concrete_3P"
+		"Q" "PulseBlade_SurfaceImpact_Dirt_3P" //snow
+		"R" "PulseBlade_SurfaceImpact_Concrete_3P" //ice
 		"S" "Water.BulletImpact_3P_vs_1P"
 		"T" "PulseBlade_SurfaceImpact_Concrete_3P"
 

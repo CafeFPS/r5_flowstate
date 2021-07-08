@@ -72,7 +72,7 @@ global struct HoverTank
 	entity turret
 	entity turretBarrelClip
 	entity triggerVolume
-	var linkedEnts
+	array<entity> linkedEnts
 }
 
 global struct SupplyShip

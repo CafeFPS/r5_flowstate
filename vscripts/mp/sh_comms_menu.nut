@@ -19,7 +19,6 @@ global function CommsMenu_HasValidSelection
 global function CommsMenu_ExecuteSelection
 global function CommsMenu_GetCurrentCommsMenu
 
-
 #endif
 
 #if CLIENT

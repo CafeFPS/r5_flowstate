@@ -14,7 +14,7 @@ ImpactTable
 	FX
 	{
 		"C" "P_impact_doubletake" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "P_impact_doubletake" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "P_impact_doubletake" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "P_impact_doubletake" // metal_titan
 
 		"F" "P_impact_doubletake_flesh" //flesh
@@ -29,7 +29,9 @@ ImpactTable
 		"O" "P_impact_doubletake"  //Foliage
 		"P" "P_impact_doubletake_spectre" //metal_spectre
 
-		"R" "P_impact_doubletake" //metalpanel, grenade, canister
+		"Q" "P_impact_doubletake" //snow
+		"R" "P_impact_doubletake" //ice
+
 		"S" "P_impact_water" //water, slime
 		"T" "P_impact_doubletake" //tile
 		"U" "P_impact_doubletake" // glass_breakable
@@ -41,6 +43,16 @@ ImpactTable
 		"Y" "P_impact_doubletake" //glass, brokenglass, glassbottle, pottery
 		"Z" "P_impact_doubletake"  //sand
 
+		"0" "P_impact_doubletake"
+		"1" "P_impact_doubletake" //lava_flow
+		"2" "P_impact_doubletake" //lava_rock_hot
+		"3" "P_impact_doubletake"
+		"4" "P_impact_doubletake"
+		"5" "P_impact_doubletake"
+		"6" "P_impact_doubletake"
+		"7" "P_impact_doubletake"
+		"8" "P_impact_doubletake"
+		"9" "P_impact_doubletake"
 
 //		"splash" "P_impact_water" //brush water
 //		"slime_splash" "P_impact_water"
@@ -79,16 +91,16 @@ ImpactTable
 		"Y" "impact_glass"					//glass, brokenglass, glassbottle, pottery
 	    "Z" "impact_sand_LG"						//Sand
 
-		"0" "impact_dirt_large"
-		"1" "impact_concrete_large"
-		"2" "impact_dirt_large"
-		"3" "impact_concrete_large"
-		"4" "impact_concrete_large"
-		"5" "impact_concrete_large"
-		"6" "impact_concrete_large"
-		"7" "impact_concrete_large"
-		"8" "impact_concrete_large"
-		"9" "impact_puddle"					//puddle
+//		"0" "openslot"
+		"1" "P_impact_lava_nodecal" //lava_flow
+		"2" "P_impact_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "P_impact_water_LG" //brush water
 		"slime_splash" "P_impact_water_LG"

@@ -12,7 +12,7 @@ ImpactTable
 		"B" "none" //Bloodyflesh?
 
 		"C" "P_pilot_slide_default" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "P_pilot_slide_dust" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "P_pilot_slide_dust" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "none" // metal_titan
 		"F" "none" //flesh
 		"G" "P_pilot_slide_default" //metalgrate, chainlink, chain
@@ -28,9 +28,8 @@ ImpactTable
 		"O" "P_pilot_slide_dust" //Foliage
 		"P" "P_pilot_slide_default" //Computer
 
-		"Q" "none" //Not listed
-
-		"R" "P_pilot_slide_default" //metalpanel, grenade, canister
+		"Q" "P_pilot_slide_water" //snow
+		"R" "P_pilot_slide_default" //ice
 		"S" "P_pilot_slide_water" //water, slime
 		"T" "P_pilot_slide_default" //tile
 		"U" "none" //glass_breakable
@@ -41,8 +40,8 @@ ImpactTable
 		"Z" "P_pilot_slide_dust" //sand
 
 		"0" "P_pilot_slide_default"
-		"1" "P_pilot_slide_default"
-		"2" "P_pilot_slide_default"
+		"1" "P_pilot_slide_lava" //lava_flow
+		"2" "P_pilot_slide_lava" //lava_rock_hot
 		"3" "P_pilot_slide_default"
 		"4" "P_pilot_slide_default"
 		"5" "P_pilot_slide_default"

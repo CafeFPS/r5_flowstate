@@ -14,6 +14,7 @@ WeaponData
 	"readymessage"              					"#HUD_BURNMETER_READY_BUBBLE_BUNKER"
 	"readyhint"                 					"#HUD_BURNMETER_READY_BUBBLE_BUNKER_HINT"
 
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"offhand_default_inventory_slot"				"1"
 	"minimap_reveal_distance"						"32000"
@@ -23,6 +24,7 @@ WeaponData
 	"offhand_holster_primary"	                    "1"
 
     "does_not_interrupt_cloak"						"1"
+    "trophy_system_ignore"                          "1"
 
 	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_weapon_dirty_bomb"
 
@@ -38,6 +40,7 @@ WeaponData
 
     "grenade_arc_indicator_show_from_hip"			"1"
     "grenade_arc_indicator_bounce_count"			"1"
+    "grenade_arc_indicator_ignore_base_velocity"	"1"
 	"grenade_arc_indicator_effect"					"P_arc_green_bounce"
 	"grenade_arc_indicator_effect_first"			"P_arc_green"
 	"grenade_arc_impact_indicator_effect"			"P_arc_green_end"
@@ -92,6 +95,7 @@ WeaponData
 	"stick_pilot"                                   "0"
 	"stick_titan"                                   "0"
 	"stick_npc"                                     "0"
+	"stick_drone"                                   "0"
 
 	"projectile_visible_to_smart_ammo"				"0"
 

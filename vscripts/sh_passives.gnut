@@ -118,8 +118,8 @@ struct
 	#endif
 } file
 
-// global ItemFlavor& PAS_FORTIFIED_FLAV  // TODO: FIX
-// global ItemFlavor& PAS_LOW_PROFILE_FLAV// TODO: FIX
+global ItemFlavor& PAS_FORTIFIED_FLAV  
+global ItemFlavor& PAS_LOW_PROFILE_FLAV
 
 /////////////////////////
 /////////////////////////
@@ -156,8 +156,8 @@ void function ShPassives_Init()
 
 void function OnRegisterRootItemFlavors()
 {
-	//PAS_FORTIFIED_FLAV = expect ItemFlavor( RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/ability/pas_fortified.rpak" ) )
-	//PAS_LOW_PROFILE_FLAV = expect ItemFlavor( RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/ability/pas_low_profile.rpak" ) )
+	PAS_FORTIFIED_FLAV = expect ItemFlavor( RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/ability/pas_fortified.rpak" ) )
+	PAS_LOW_PROFILE_FLAV = expect ItemFlavor( RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/ability/pas_low_profile.rpak" ) )
 }
 #endif
 

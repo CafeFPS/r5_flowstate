@@ -5,48 +5,48 @@ ImpactTable
 {
 	FX
 	{
-		"C" "P_grndpnd_exp_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "P_grndpnd_exp_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
-		"E" "P_grndpnd_exp_metal" // metal_titan
+		"C" "P_launchpad_exp_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_launchpad_exp_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_launchpad_exp_metal" // metal_titan
 
-		"F" "P_grndpnd_exp_metal" //flesh
-		"G" "P_grndpnd_exp_metal" //metalgrate, chainlink, chain
-		"H" "P_grndpnd_exp_metal" //alienflesh
+		"F" "P_launchpad_exp_metal" //flesh
+		"G" "P_launchpad_exp_metal" //metalgrate, chainlink, chain
+		"H" "P_launchpad_exp_metal" //alienflesh
 
-		"J" "P_grndpnd_exp_dirt" //grass
-		"K" "P_grndpnd_exp_dirt"  //Mud
-		"L" "P_grndpnd_exp_metal" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
-		"M" "P_grndpnd_exp_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
-		"N" "P_grndpnd_exp_slime" //Slime
-		"O" "P_grndpnd_exp_dirt" //Foliage
-		"P" "P_grndpnd_exp_metal" //Computer
+		"J" "P_launchpad_exp_dirt" //grass
+		"K" "P_launchpad_exp_dirt"  //Mud
+		"L" "P_launchpad_exp_metal" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_launchpad_exp_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_launchpad_exp_slime" //Slime
+		"O" "P_launchpad_exp_dirt" //Foliage
+		"P" "P_launchpad_exp_metal" //Computer
 
-		"R" "P_grndpnd_exp_metal" //metalpanel, grenade, canister
-		"S" "P_grndpnd_exp_water" //water, slime
-		"T" "P_grndpnd_exp_concrete" //tile
-		"U" "P_grndpnd_exp_metal" //glass_breakable
+		"R" "P_launchpad_exp_metal" //metalpanel, grenade, canister
+		"S" "P_launchpad_exp_water" //water, slime
+		"T" "P_launchpad_exp_concrete" //tile
+		"U" "P_launchpad_exp_metal" //glass_breakable
 
-		"V" "P_grndpnd_exp_metal" //Metal Vent
-		"W" "P_grndpnd_exp_metal" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+		"V" "P_launchpad_exp_metal" //Metal Vent
+		"W" "P_launchpad_exp_metal" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
 
 		"X" "P_impact_exp_med_xo_shield" //xo_shield
 
-		"Y" "P_grndpnd_exp_metal" //glass, brokenglass, glassbottle, pottery
-		"Z" "P_grndpnd_exp_sand"  //sand
+		"Y" "P_launchpad_exp_metal" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_launchpad_exp_sand"  //sand
 
-		"0" "P_grndpnd_exp_metal"
-		"1" "P_grndpnd_exp_metal"
-		"2" "P_grndpnd_exp_metal"
-		"3" "P_grndpnd_exp_metal"
-		"4" "P_grndpnd_exp_metal"
-		"5" "P_grndpnd_exp_metal"
-		"6" "P_grndpnd_exp_metal"
-		"7" "P_grndpnd_exp_metal"
-		"8" "P_grndpnd_exp_metal"
-		"9" "P_grndpnd_exp_metal" //puddle
+		"0" "P_launchpad_exp_metal"
+		"1" "P_launchpad_exp_metal"
+		"2" "P_launchpad_exp_metal"
+		"3" "P_launchpad_exp_metal"
+		"4" "P_launchpad_exp_metal"
+		"5" "P_launchpad_exp_metal"
+		"6" "P_launchpad_exp_metal"
+		"7" "P_launchpad_exp_metal"
+		"8" "P_launchpad_exp_metal"
+		"9" "P_launchpad_exp_metal" //puddle
 
-		"airburst" "P_grndpnd_exp_metal"
-		"critical_hit" "P_grndpnd_exp_metal"
+		"airburst" "P_launchpad_exp_metal"
+		"critical_hit" "P_launchpad_exp_metal"
 	}
 
 	Sound

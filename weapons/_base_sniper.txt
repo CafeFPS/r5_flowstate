@@ -31,7 +31,8 @@ WeaponData
 
 	// Behavior - Firing
 	//
-	"fire_mode"                                "semiauto"
+	"fire_mode"   								"automatic"
+	"is_semi_auto"								"1"
 	"impulse_force"                            "2500"
 
 	// Behavior - Animation
@@ -39,11 +40,6 @@ WeaponData
     "holster_time"								"0.6"
 	"raise_time"  								"0.55"
 	"lower_time"  								"0.5"
-
-	"deploy_time"                              "0.9"
-	"holster_time"                             "0.6"
-	"lower_time"                               "0.45"
-	"raise_time"                               "0.75"
 
 	"zoom_time_in"                              "0.34"
 	"zoom_time_out"                             "0.31"
@@ -65,14 +61,17 @@ WeaponData
 	// Network
 	//"net_optimize"		                   "1"
 
+	// Script - Callbacks
+    "OnWeaponActivate"							"OnWeaponActivate_weapon_basic_bolt"
+    "OnClientAnimEvent"							"OnClientAnimEvent_weapon_basic_bolt"
+
 	// Damage
 	//
 	"damage_type"                              "bullet"
 	"headshot_distance"                        "29528"  // 750m
 	"damage_headshot_scale"                    "2.0"
-	"damage_leg_scale"                         "0.725"
+	"damage_leg_scale"                         "0.9"
 	"damage_shield_scale"                      "1"
-	"damage_heavyarmor_nontitan_scale"         "0.35"
 	"critical_hit_damage_scale"                "2"
 
 	// Damage - Distance
@@ -82,7 +81,7 @@ WeaponData
 	"red_crosshair_range"                      "0"
 
 	// Damage - Behavior
-	"damage_flags"                             "DF_BULLET | DF_KNOCK_BACK"
+	"damage_flags"                             "DF_SNIPER | DF_BULLET | DF_KNOCK_BACK"
 	"pass_through_depth"                       "32"
 	"pass_through_damage_preserved_scale"      "0.8"
 
@@ -97,12 +96,12 @@ WeaponData
     "bolt_zero_distance"                            "1968.5" // 50m
 
 	"bolt_hitsize"									"0.0"
-	"bolt_hitsize_grow1_time"						"0.035"
-	"bolt_hitsize_grow1_size"						"0.33"
-	"bolt_hitsize_grow2_time"						"0.08"
-	"bolt_hitsize_grow2_size"						"1.25"
-	"bolt_hitsize_growfinal_lerptime"				"0.18"
-	"bolt_hitsize_growfinal_size"					"2.0"
+	//"bolt_hitsize_grow1_time"						"0.035"
+	//"bolt_hitsize_grow1_size"						"0.33"
+	//"bolt_hitsize_grow2_time"						"0.08"
+	//"bolt_hitsize_grow2_size"						"1.25"
+	//"bolt_hitsize_growfinal_lerptime"				"0.18"
+	//"bolt_hitsize_growfinal_size"					"2.0"
 
 	"projectile_lifetime" 							"6.0"
 	"projectile_inherit_owner_velocity_scale"      	"0.0"
@@ -224,15 +223,15 @@ WeaponData
 	"viewdrift_ads_delay"                      "0.9"
 	"viewdrift_ads_delay_debounce_time"        "0.45"
 
-	"viewdrift_ads_speed_pitch"   				"0.4"
-	"viewdrift_ads_speed_yaw" 					"0.4"
+	"viewdrift_ads_speed_pitch"   				"0.3"
+	"viewdrift_ads_speed_yaw" 					"0.3"
 
-	"viewdrift_ads_stand_scale_pitch" 			"0.6"
-	"viewdrift_ads_stand_scale_yaw"   			"0.45"
-	"viewdrift_ads_crouch_scale_pitch"  		"0.55"
-	"viewdrift_ads_crouch_scale_yaw"			"0.4"
-	"viewdrift_ads_air_scale_pitch"   			"0.7"
-	"viewdrift_ads_air_scale_yaw" 				"0.55"
+	"viewdrift_ads_stand_scale_pitch" 			"0.4"
+	"viewdrift_ads_stand_scale_yaw"   			"0.3"
+	"viewdrift_ads_crouch_scale_pitch"  		"0.35"
+	"viewdrift_ads_crouch_scale_yaw"			"0.25"
+	"viewdrift_ads_air_scale_pitch"   			"0.5"
+	"viewdrift_ads_air_scale_yaw" 				"0.4"
 
 	// Sound - Vortex
 	"vortex_absorb_sound"                      "Vortex_Shield_AbsorbBulletLarge"

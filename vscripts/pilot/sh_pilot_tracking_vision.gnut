@@ -3,6 +3,7 @@ global function TrackingVision_GetOffsetForPOI
 
 const vector TRACKING_ICON_OFFSET = <0,0,16>
 const vector TRACKING_ICON_OFFSET_SHORT = <0,0,8>
+const vector TRACKING_ICON_DEATH_OFFSET = <0,0,40> //
 global const TRACKING_DAMAGE_SOURCE_INDEX = 2	// 0 and 1 are used by CODE
 global const TRACKING_DIST_INDEX = 3			// 0 and 1 are used by CODE
 
@@ -52,6 +53,7 @@ global enum eTrackingVisionNetworkedPOITypes
 	PLAYER_LOOT_PICKUP_INCAPSHIELD,
 	//PLAYER_LOOT_PICKUP_TITAN_REPAIR,
 	//PLAYER_LOOT_PICKUP_TITAN_AMMO,
+	PLAYER_LOOT_PICKUP_DATAKNIFE,
 	PLAYER_LOOT_EXCHANGE_ARMOR,
 	PLAYER_LOOT_EXCHANGE_WEAPON,
 	PLAYER_LOOT_EXCHANGE_JUMPKIT,
@@ -71,11 +73,14 @@ global enum eTrackingVisionNetworkedPOITypes
 	PLAYER_LOOT_DROP_INCAPSHIELD,
 	//PLAYER_LOOT_DROP_TITAN_REPAIR,
 	//PLAYER_LOOT_DROP_TITAN_AMMO,
+	PLAYER_LOOT_DROP_DATAKNIFE,
 
 	PLAYER_ABILITY_DIRTY_BOMB,
 	PLAYER_ABILITY_DEPLOYABLE_MEDIC,
 	PLAYER_ABILITY_JUMP_PAD,
 	PLAYER_ABILITY_BUBBLE_BUNKER,
+	PLAYER_ABILITY_TESLA_TRAP,
+	PLAYER_ABILITY_TROPHY_SYSTEM,
 	PLAYER_ABILITY_PHASE_GATE,
 }
 
@@ -104,6 +109,8 @@ int function TrackingVision_GetPriorityForPOIType( int poiEventID )
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_DEPLOYABLE_MEDIC:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_JUMP_PAD:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_BUBBLE_BUNKER:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_TESLA_TRAP:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_TROPHY_SYSTEM:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_PHASE_GATE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_DEATH:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_KILLER:
@@ -147,6 +154,7 @@ int function TrackingVision_GetPriorityForPOIType( int poiEventID )
 
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_MANTLE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_JUMP_DOWN_STOP:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_LAUNCH_PAD:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_PHASE_DASH_START:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITIES_PHASE_DASH_STOP:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_AMMO:
@@ -154,10 +162,12 @@ int function TrackingVision_GetPriorityForPOIType( int poiEventID )
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_GRENADE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_HEALTH:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_HELMET:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_DATAKNIFE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_AMMO:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_ATTACHMENT:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_GRENADE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_HEALTH:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_DATAKNIFE:
 			return eTrackingPOIPriority.LOW
 
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_FOOTPRINT:
@@ -189,10 +199,12 @@ vector function TrackingVision_GetOffsetForPOI( int poiEventID )
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOTBIN_USED:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_ZIPLINE_START:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_TRAVERSAL_ZIPLINE_STOP:
-		case eTrackingVisionNetworkedPOITypes.PLAYER_DEATH:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_TESLA_TRAP:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_KILLER:
 			return TRACKING_ICON_OFFSET
 
+		case eTrackingVisionNetworkedPOITypes.PLAYER_DEATH:
+			return TRACKING_ICON_DEATH_OFFSET
 		case eTrackingVisionNetworkedPOITypes.TITANFALL:
 		case eTrackingVisionNetworkedPOITypes.DOOR_USE:
 		case eTrackingVisionNetworkedPOITypes.DOOR_DESTROYED:
@@ -220,6 +232,7 @@ vector function TrackingVision_GetOffsetForPOI( int poiEventID )
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_HELMET:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_BACKPACK:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_INCAPSHIELD:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_DATAKNIFE:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_ARMOR:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_WEAPON:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_EXCHANGE_JUMPKIT:
@@ -237,6 +250,7 @@ vector function TrackingVision_GetOffsetForPOI( int poiEventID )
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_HELMET:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_BACKPACK:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_INCAPSHIELD:
+		case eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_DROP_DATAKNIFE:
 			return TRACKING_ICON_OFFSET_SHORT
 
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_DIRTY_BOMB:
@@ -248,6 +262,9 @@ vector function TrackingVision_GetOffsetForPOI( int poiEventID )
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_JUMP_PAD:
 		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_PHASE_GATE:
 			return < 0, 0, 32.0 >
+
+		case eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_TROPHY_SYSTEM:
+			return < 0, 0, 8.0 >
 
 		default:
 			Assert( 0, "Point of intrest event ID is not registered in eTrackingVisionNetworkedPOITypes" )

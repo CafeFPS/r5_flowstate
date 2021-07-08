@@ -168,6 +168,7 @@ global enum eSurvivalHostType
 	BILL,
 	JOHN,
 	ICET,
+	NOC,
 
 	_count
 }
@@ -204,7 +205,7 @@ global struct SurvivalCrowdEvent
 	float         timeSinceLastEvent
 	int           crowdState
 	int           eventType
-	float         influenceDistance     = 2048
+	float         influenceDistance = 2048
 	array<entity> controlledSpeakers
 }
 
@@ -236,6 +237,8 @@ void function ShSurvivalCommentary_Init()
 	RegisterCSVDialogue( $"datatable/dialogue/survival_host_dialogue.rpak" )
 	RegisterCSVDialogue( $"datatable/battle_chatter_dialogue.rpak" )
 	RegisterCommentaryBuckets( $"datatable/dialogue/survival_host_dialogue.rpak" )
+
+	file.isBattleChatterEnabled = GetCurrentPlaylistVarBool( "battlechatter_enabled", true )
 }
 
 
@@ -278,8 +281,16 @@ void function RegisterCommentaryBuckets( asset dt )
 }
 
 
-string function PickCommentaryLineFromBucket( int host, int bucket )
+string function PickCommentaryLineFromBucket( int bucket )
 {
+	int host = file.mainHost
+
+	if ( ! ( bucket in file.commentaryTables[host] ) )
+	{
+		Assert( 0, "Invalid bucket for host" )
+		return ""
+	}
+
 	return file.commentaryTables[host][bucket].getrandom()
 }
 
@@ -387,118 +398,117 @@ int function ConvertBucketStringToEnum( string bucketName )
 		case "CHAMPION_ELIMINATED":
 			return eSurvivalCommentaryBucket.CHAMPION_ELIMINATED
 
-		case "CHAMPION_EXECUTED":
-			return eSurvivalCommentaryBucket.CHAMPION_EXECUTED
-
-		case "CHAMPION_EXECUTED_INTERRUPT":
-			return eSurvivalCommentaryBucket.CHAMPION_EXECUTED_INTERRUPT
+		case "KILL_LEADER_ELIMINATED":
+			return eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED
 
 		case "NEW_KILL_LEADER":
 			return eSurvivalCommentaryBucket.NEW_KILL_LEADER
 
-		case "NEW_KILL_LEADER_INTERRUPT":
-			return eSurvivalCommentaryBucket.NEW_KILL_LEADER_INTERRUPT
-
-		case "KILL_LEADER_DOUBLE_KILL":
-			return eSurvivalCommentaryBucket.KILL_LEADER_DOUBLE_KILL
-
-		case "KILL_LEADER_DOUBLE_KILL_INTERRUPT":
-			return eSurvivalCommentaryBucket.KILL_LEADER_DOUBLE_KILL_INTERRUPT
-
-		case "KILL_LEADER_TRIPLE_KILL":
-			return eSurvivalCommentaryBucket.KILL_LEADER_TRIPLE_KILL
-
-		case "KILL_LEADER_TRIPLE_KILL_INTERRUPT":
-			return eSurvivalCommentaryBucket.KILL_LEADER_TRIPLE_KILL_INTERRUPT
-
-		case "KILL_LEADER_DOMINATING":
-			return eSurvivalCommentaryBucket.KILL_LEADER_DOMINATING
-
-		case "KILL_LEADER_DOMINATING_INTERRUPT":
-			return eSurvivalCommentaryBucket.KILL_LEADER_DOMINATING_INTERRUPT
-
-		case "KILL_LEADER_KILLED_CHAMPION":
-			return eSurvivalCommentaryBucket.KILL_LEADER_KILLED_CHAMPION
-
-		case "KILL_LEADER_KILLED_CHAMPION_INTERRUPT":
-			return eSurvivalCommentaryBucket.KILL_LEADER_KILLED_CHAMPION_INTERRUPT
-
-		case "KILL_LEADER_ELIMINATED":
-			return eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED
-
-		case "KILL_LEADER_EXECUTED":
-			return eSurvivalCommentaryBucket.KILL_LEADER_EXECUTED
-
-		case "KILL_LEADER_EXECUTED_INTERRUPT":
-			return eSurvivalCommentaryBucket.KILL_LEADER_EXECUTED_INTERRUPT
-
-		case "PLAYER_FINISHER_PLACE":
-			return eSurvivalCommentaryBucket.PLAYER_FINISHER_PLACE
-
-		case "PLAYER_DID_POORLY":
-			return eSurvivalCommentaryBucket.PLAYER_DID_POORLY
-
-		case "PLAYER_DID_OKAY":
-			return eSurvivalCommentaryBucket.PLAYER_DID_OKAY
-
-		case "PLAYER_DID_GOOD":
-			return eSurvivalCommentaryBucket.PLAYER_DID_GOOD
-
-		case "PLAYER_DID_GREAT":
-			return eSurvivalCommentaryBucket.PLAYER_DID_GREAT
-
-		case "PLAYER_MADE_TOP_10":
-			return eSurvivalCommentaryBucket.PLAYER_MADE_TOP_10
-
-		case "PLAYER_MADE_TOP_3":
-			return eSurvivalCommentaryBucket.PLAYER_MADE_TOP_3
-
-		case "CHAMPION_KILLED_PLAYER":
-			return eSurvivalCommentaryBucket.CHAMPION_KILLED_PLAYER
-
-		case "CHAMPION_IS_KILL_LEADER":
-			return eSurvivalCommentaryBucket.CHAMPION_IS_KILL_LEADER
-
-		case "CHAMPION_DIED_TO_CIRCLE":
-			return eSurvivalCommentaryBucket.CHAMPION_DIED_TO_CIRCLE
-
-		case "CHAMPION_LEFT_GAME":
-			return eSurvivalCommentaryBucket.CHAMPION_LEFT_GAME
-
 		case "FIRST_BLOOD":
 			return eSurvivalCommentaryBucket.FIRST_BLOOD
 
-		case "NO_KILLS_FOR_X_SECONDS":
-			return eSurvivalCommentaryBucket.NO_KILLS_FOR_X_SECONDS
+		case "INTRO_CHAMPION_CARD":
+			return eSurvivalCommentaryBucket.INTRO_CHAMPION_CARD
 
-		case "BRIDGE":
-			return eSurvivalCommentaryBucket.BRIDGE
+		case "BEGIN_ROUND1":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND1
 
-		case "LOADING_INTRO":
-			return eSurvivalCommentaryBucket.LOADING_INTRO
+		case "BEGIN_ROUND2":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND2
 
-		case "MATCH_READY":
-			return eSurvivalCommentaryBucket.MATCH_READY
+		case "BEGIN_ROUND3":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND3
 
-		case "CHOOSE_CLASS_SQUAD":
-			return eSurvivalCommentaryBucket.CHOOSE_CLASS_SQUAD
+		case "BEGIN_ROUND4":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND4
 
-		case "CHOOSE_CLASS_SOLO":
-			return eSurvivalCommentaryBucket.CHOOSE_CLASS_SOLO
+		case "BEGIN_ROUND5":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND5
 
-		case "INTRO_CHAMPION_SQUAD":
-			return eSurvivalCommentaryBucket.INTRO_CHAMPION_SQUAD
+		case "BEGIN_ROUND6":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND6
 
-		case "INTRO_CHAMPION_SOLO":
-			return eSurvivalCommentaryBucket.INTRO_CHAMPION_SOLO
+		case "BEGIN_ROUND7":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND7
 
-		case "INTRO_PODS_READY":
-			return eSurvivalCommentaryBucket.INTRO_PODS_READY
+		case "BEGIN_ROUND8":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND8
 
-		case "INTRO_PODS_NAG":
-			return eSurvivalCommentaryBucket.INTRO_PODS_NAG
+		case "BEGIN_ROUND9":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND9
+
+		case "BEGIN_ROUND_FINAL":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
+
+
+		case "VICTORY_LEGEND_SOLO":
+			return eSurvivalCommentaryBucket.VICTORY_LEGEND_SOLO
+
+		case "VICTORY_SHADOWSQUAD":
+			return eSurvivalCommentaryBucket.VICTORY_SHADOWSQUAD
+
+		case "VICTORY_APEX_CHAMP_SOLO":
+			return eSurvivalCommentaryBucket.VICTORY_APEX_CHAMP_SOLO
+
+		case "VICTORY_APEX_CHAMP_SQUAD":
+			return eSurvivalCommentaryBucket.VICTORY_APEX_CHAMP_SQUAD
+
+		case "SHADOW_PLAYER_RESPAWN":
+			return eSurvivalCommentaryBucket.SHADOW_PLAYER_RESPAWN
+
+		case "SHADOW_PLAYER_DEATH_FINAL":
+			return eSurvivalCommentaryBucket.SHADOW_PLAYER_DEATH_FINAL
+
+		case "SHADOWS_PLAYER_JOIN":
+			return eSurvivalCommentaryBucket.SHADOWS_PLAYER_JOIN
+
+		case "SHADOWSQUAD_GROW":
+			return eSurvivalCommentaryBucket.SHADOWSQUAD_GROW
+
+		case "SHADOWSQUAD_SPAWNS":
+			return eSurvivalCommentaryBucket.SHADOWSQUAD_SPAWNS
+
+		case "SKYDIVE_TAUNT":
+			return eSurvivalCommentaryBucket.SKYDIVE_TAUNT
+
+		case "STREAK_NEW_KILL_LEADER":
+			return eSurvivalCommentaryBucket.STREAK_NEW_KILL_LEADER
+
+		case "CHAMP_DIED_NO_TOP5_STREAK":
+			return eSurvivalCommentaryBucket.CHAMP_DIED_NO_TOP5_STREAK
+
+		case "STREAK_LOST_CHAMP":
+			return eSurvivalCommentaryBucket.STREAK_LOST_CHAMP
+
+		case "STREAK_LOST_APEX_PRED":
+			return eSurvivalCommentaryBucket.STREAK_LOST_APEX_PRED
+
+		case "GAMECHANGER_ACTIVATE":
+			return eSurvivalCommentaryBucket.GAMECHANGER_ACTIVATE
+
+		case "GAMECHANGER_ACTIVATE_SHADOWS":
+			return eSurvivalCommentaryBucket.GAMECHANGER_ACTIVATE_SHADOWS
+
+		case "EVAC_SHIP_INCOMING":
+			return eSurvivalCommentaryBucket.EVAC_SHIP_INCOMING
+
+		case "EVAC_SHIP_INCOMING_SHADOWS":
+			return eSurvivalCommentaryBucket.EVAC_SHIP_INCOMING_SHADOWS
+
+		case "PRE_VICTORY_LEGENDS_SINGLE":
+			return eSurvivalCommentaryBucket.PRE_VICTORY_LEGENDS_SINGLE
+
+		case "PRE_VICTORY_LEGENDS_MULTIPLE":
+			return eSurvivalCommentaryBucket.PRE_VICTORY_LEGENDS_MULTIPLE
+
+		case "PRE_VICTORY_SHADOWS":
+			return eSurvivalCommentaryBucket.PRE_VICTORY_SHADOWS
+
+		case "SHADOW_REVENGE_KILL":
+			return eSurvivalCommentaryBucket.SHADOW_REVENGE_KILL
 
 		default:
+			Warning( "Bucket not registered" )
 			return -1
 	}
 
@@ -515,6 +525,9 @@ int function ConvertHostStringToEnum( string hostName )
 
 		case "#HOST_AI":
 			return eSurvivalHostType.AI
+
+		case "#HOST_NOC":
+			return eSurvivalHostType.NOC
 
 		default:
 			return eSurvivalHostType.INVALID

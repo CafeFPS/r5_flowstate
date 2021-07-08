@@ -11,6 +11,7 @@ WeaponData
 	"menu_icon"										"rui/pilot_loadout/ordnance/electric_smoke_menu"
 	"hud_icon"										"rui/hud/tactical_icons/tactical_bangalore"
 
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
 	"offhand_active_slot"                           "altHand"
@@ -19,7 +20,7 @@ WeaponData
 	"minimap_reveal_distance"						"32000"
 	"leveled_pickup"								"1"
 	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
-	"offhand_default_inventory_slot"				"0"
+	"offhand_default_inventory_slot"				"1"
 
     "does_not_interrupt_cloak"						"1"
     "instant_swap_to"								"0"

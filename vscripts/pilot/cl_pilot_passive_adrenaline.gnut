@@ -88,7 +88,6 @@ void function PassiveAdrenaline_UpdatePlayerScreenColorCorrection( entity player
 	ColorCorrection_SetExclusive( file.colorCorrection, true )
 	ColorCorrection_SetWeight( file.colorCorrection, 1.0 )
 
-	const FOV_SCALE = 1.2
 	const LERP_IN_TIME = 0.0125	// hack! because statusEffect doesn't seem to have a lerp in feature?
 	float startTime = Time()
 
@@ -99,9 +98,6 @@ void function PassiveAdrenaline_UpdatePlayerScreenColorCorrection( entity player
 		//printt( weight )
 		weight = GraphCapped( Time() - startTime, 0, LERP_IN_TIME, 0, weight )
 		ColorCorrection_SetWeight( file.colorCorrection, weight )
-
-		float fovScale = GraphCapped( weight, 0, 1, 1, FOV_SCALE )
-		//player.SetFOVScale( fovScale, 1 )	// adding a lerp time here increases the total lerp I think
 
 		WaitFrame()
 	}

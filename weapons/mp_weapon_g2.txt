@@ -14,6 +14,8 @@
 	"description"                              "#WPN_G2_DESC"
 	"longdesc"                                 "#WPN_G2_LONGDESC"
 
+	"weapon_type_flags"							"WPT_PRIMARY"
+	
 	// UI - HUD
 	"hud_icon"                                 "rui/weapon_icons/r5/weapon_g7"
 
@@ -47,25 +49,17 @@
 	"zoom_time_in"							   "0.32"
 	"zoom_time_out"   						   "0.25"
 
-	// Script - Callbacks
-    "OnWeaponActivate"							"OnWeaponActivate_weapon_basic_bolt"
-    "OnClientAnimEvent"							"OnClientAnimEvent_weapon_basic_bolt"
-    "OnWeaponPrimaryAttack"						"OnWeaponPrimaryAttack_weapon_basic_bolt"
-    "OnWeaponNpcPrimaryAttack"					"OnWeaponNpcPrimaryAttack_weapon_basic_bolt"
-    "OnProjectileCollision"						"OnProjectileCollision_weapon_basic_bolt"
-
-
 	// Damage
 	//
-	"damage_near_value"                        "30"
-	"damage_far_value"                         "30"
-	"damage_very_far_value"                    "30"
+	"damage_near_value"                        "34"
+	"damage_far_value"                         "34"
+	"damage_very_far_value"                    "34"
 	"damage_rodeo"                             "220"
 
 	// Damage - Titan
-	"damage_near_value_titanarmor"             "30"
-	"damage_far_value_titanarmor"              "30"
-	"damage_very_far_value_titanarmor"         "30"
+	"damage_near_value_titanarmor"             "34"
+	"damage_far_value_titanarmor"              "34"
+	"damage_very_far_value_titanarmor"         "34"
 
 
 	// Viewmodel
@@ -74,6 +68,12 @@
 	// Projectile
 	"projectile_launch_speed"                  "31500"
 
+    "bolt_hitsize_grow1_time"				    "0.123"  //~100m
+    "bolt_hitsize_grow1_size"				    "0.33"
+    "bolt_hitsize_grow2_time"				    "0.246"  //~200m
+    "bolt_hitsize_grow2_size"				    "1.25"
+    "bolt_hitsize_growfinal_lerptime"		    "0.369"  //~300m
+    "bolt_hitsize_growfinal_size"               "2.0"
 
 	// Ammo
 	//
@@ -261,6 +261,10 @@
 
 	"Mods"
 	{
+	    gold
+	    {
+	    }
+
 		"survival_finite_ammo"
 		{
 			// Ammo
@@ -272,11 +276,46 @@
 			"low_ammo_fraction"              "0.3"
 		}
 
-		hopup_headshot_dmg
-        {
-        	"damage_headshot_scale"			"2.5"
-        	"projectile_trail_effect_0"     "P_tracer_proj_sniper_piercer"
-        }
+                  
+		hopup_double_tap
+		{
+            //exists to allow altfire_double_tap toggle mod
+		}
+
+		altfire_double_tap
+		{
+		    "mod_activity_modifier"						"fire_select"
+
+		    "fire_rate"                                 "10.0"
+            "burst_fire_count"                          "2"
+            "burst_fire_delay"                          "0.425"   //was .22 from 4.5 RoF
+
+            "viewkick_pattern"                          "g2_double_tap"
+
+            "viewkick_spring_hot"                       "g2_vkp_double_tap_hot"     //pulls in less than g2_vkp_hot
+
+            "viewkick_spring_heatpershot"				"1.0"
+            "viewkick_spring_cooldown_holdtime"         "0.34"
+            "viewkick_spring_cooldown_fadetime"         "0.26"
+
+            // Viewkick - Pitch
+            "viewkick_pitch_base"                       "1.0"
+            "viewkick_pitch_random"                     "1.0"
+            "viewkick_pitch_softScale"                  "2.7"
+            "viewkick_pitch_hardScale"                  "0.3"
+
+            // Viewkick - Yaw
+            "viewkick_yaw_base"                         "1.0"
+            "viewkick_yaw_random"                       "1.0"
+            "viewkick_yaw_softScale"                    "1.3"
+            "viewkick_yaw_hardScale"                    "0.3"
+
+            // Viewkick - Scale
+            "viewkick_scale_valueDecayDelay"            "0.48"
+            "viewkick_scale_valueDecayRate"             "200"
+		}
+// end HAS_DOUBLE_TAP
+      
 
         // G2 non-fullscreen optics override normal sniper handling settings to be snappier
         optic_cq_hcog_classic
@@ -366,30 +405,13 @@
 			"ammo_clip_size"  "++10"
 		}
 
-		"legendary1"
-		{
-
-			// Models
-			"viewmodel"                "mdl/weapons/g2/ptpov_g2a4_legendary_01.rmdl"
-			"playermodel"              "mdl/weapons/g2/w_g2a4_legendary_01.rmdl"
-
-			// Depth of Field
-			//"dof_zoom_nearDepthStart"  "2.161"
-			//"dof_zoom_nearDepthEnd"    "4.765"
-		}
-
-		"legendary2"
-		{
-
-			// Models
-			"viewmodel"                "mdl/weapons/g2/ptpov_g2a4_legendary_02.rmdl"
-			"playermodel"              "mdl/weapons/g2/w_g2a4_legendary_02.rmdl"
-
-			// Depth of Field
-			// Temporarily disabled so we can equip the optics without error spam
-			//"dof_zoom_nearDepthStart"  "2.161"
-			//"dof_zoom_nearDepthEnd"    "4.765"
-		}
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
 	}
 
 	// RUI
@@ -440,12 +462,14 @@
 
 		"DefaultArgs"
 		{
-			"adjustedSpread"  "weapon_spread"
-			"adsFrac"         "player_zoomFrac"
-			"isSprinting"     "player_is_sprinting"
-			"isReloading"     "weapon_is_reloading"
-			"teamColor"       "crosshair_team_color"
-			"isAmped"         "weapon_is_amped"
+			"adjustedSpread"  		"weapon_spread"
+			"adsFrac"         		"player_zoomFrac"
+			"isSprinting"     		"player_is_sprinting"
+			"isReloading"     		"weapon_is_reloading"
+			"teamColor"       		"crosshair_team_color"
+			"isAmped"         		"weapon_is_amped"
+			"crosshairMovementX"    "crosshair_movement_x"
+			"crosshairMovementY"    "crosshair_movement_y"
 		}
 
 		"Crosshair_1"

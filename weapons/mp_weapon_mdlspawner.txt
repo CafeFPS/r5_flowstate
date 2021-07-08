@@ -12,12 +12,13 @@ WeaponData
 	"menu_icon"										"rui/weapon_icons/r5/weapon_wingman"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_wingman"
 
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 	
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_mdlspawner"
 	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_mdlspawner"
 
-"damage_flags"									"DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
+	"damage_flags"									"DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
 
 	// Menu
 	"menu_category"                                 "pistol"
@@ -28,8 +29,8 @@ WeaponData
 	"stat_rof"										"27"
 
 	// Models
-	"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing.rmdl"
-	"playermodel" 									"mdl/weapons/b3wing/w_b3wing.rmdl"
+	//"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing.rmdl"
+	//"playermodel" 									"mdl/weapons/b3wing/w_b3wing.rmdl"
 
     // FX - Muzzle Flash
 	"fx_muzzle_flash_view"							"wpn_muzzleflash_wingman_FP"

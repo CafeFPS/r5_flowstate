@@ -12,6 +12,8 @@ WeaponData
 	"menu_icon"										"rui/hud/common/melee_icon"
 	"hud_icon"										"rui/hud/common/melee_icon"
 
+	"weapon_type_flags"								"WPT_MELEE"
+	
 	// Models
 	"viewmodel"   									"mdl/weapons/kunai/ptpov_kunai_wraith.rmdl"
 	"playermodel" 									"mdl/weapons/kunai/w_kunai_wraith.rmdl"
@@ -23,8 +25,6 @@ WeaponData
 	"impact_effect_table" 							"melee_kunai"
 
 	// Audio
-	//"idle_sound_player_1p"						"Wraith_Kunai_IdleSparks_1P"
-
-	// Animation
-	"activitymodifier3P"							"kunai"
+	//"idle_sound_player_1p"							"Wraith_Kunai_IdleSparks_1P"
 }
+

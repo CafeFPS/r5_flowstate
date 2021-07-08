@@ -106,7 +106,7 @@ void function GamemodeSelectV2_UpdateSelectButton( var button, string playlistNa
 	{
 		emblemMode = DRAW_RANK
 		int rankScore = GetPlayerRankScore( GetUIPlayer() )
-		PopulateRuiWithRankedBadgeDetails( rui, rankScore, Ranked_GetLadderPosition( GetUIPlayer() ) )
+		PopulateRuiWithRankedBadgeDetails( rui, rankScore, Ranked_GetDisplayNumberForRuiBadge( GetUIPlayer() ) )
 	}
 	else
 	{

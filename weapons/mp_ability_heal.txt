@@ -11,7 +11,7 @@ WeaponData
 	"menu_icon"										"white"
 	"hud_icon"										"rui/hud/tactical_icons/tactical_octane"
 
-
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"weaponType"									"tactical"
 	"fire_mode"   									"offhand"
@@ -38,7 +38,6 @@ WeaponData
 	"charge_effect_1p"								"stim_window_viscous"
 	"charge_effect_attachment"						"FX_IMPACT"
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_ability_heal"
-	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_ability_heal"
 	"OnWeaponChargeBegin"							"OnWeaponChargeBegin_ability_heal"
 	"OnWeaponChargeEnd"								"OnWeaponChargeEnd_ability_heal"
 	"OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
@@ -121,108 +120,7 @@ WeaponData
 	"aimassist_disable_hipfire"						"1"
 	"aimassist_disable_ads"							"1"
 
-	// Crosshair
 
-
-	/*
-	// Bob
-	"bob_cycle_time"  								"0.4"
-	"bob_vert_dist"   								"0.19"
-	"bob_horz_dist"   								"0.1"
-	"bob_max_speed"   								"150"
-	//"bob_pitch"   									"0.75"
-	//"bob_yaw" 										"-1.7"
-	//"bob_roll"										"1.2"
-
-	// Bob zoomed
-	"bob_cycle_time_zoomed"  								"0.4"
-	"bob_vert_dist_zoomed"   								"0.19"
-	"bob_horz_dist_zoomed"   								"0.1"
-	"bob_max_speed_zoomed"   								"150"
-
-	// Sway
-	"sway_rotate_attach"  							"jx_c_pov"
-	"sway_min_x"  									"-0.3"
-	"sway_min_y"  									"-0.5"
-	"sway_min_z"  									"-0.5"
-	"sway_max_x"  									"0.3"
-	"sway_max_y"  									"0.5"
-	"sway_max_z"  									"0.1"
-	"sway_min_pitch"  								"-3"
-	"sway_min_yaw"									"-3.5"
-	"sway_min_roll"   								"-1"
-	"sway_max_pitch"  								"3"
-	"sway_max_yaw"									"3.5"
-	"sway_max_roll"   								"2"
-	"sway_translate_gain" 							"4"
-	"sway_rotate_gain"								"7"
-	"sway_move_forward_translate_x"   				"0"
-	"sway_move_forward_translate_z"   				"-0.5"
-	"sway_move_back_translate_x"  					"-2"
-	"sway_move_back_translate_z"  					"-1"
-	"sway_move_left_translate_y"  					"-1"
-	"sway_move_left_translate_z"  					"-0.5"
-	"sway_move_left_rotate_roll"  					"-1"
-	"sway_move_right_translate_y" 					"1"
-	"sway_move_right_translate_z" 					"-0.5"
-	"sway_move_right_rotate_roll" 					"2"
-	"sway_move_up_translate_z"						"-1"
-	"sway_move_down_translate_z"  					"1"
-	"sway_turn_left_rotate_yaw"   					"-2"
-	"sway_turn_right_rotate_yaw"  					"2"
-	"sway_turn_up_rotate_pitch"   					"2"
-	"sway_turn_down_rotate_pitch" 					"-2"
-	"sway_turn_angle_factor"  						"-0.5"
-	"sway_turn_origin_factor" 						"0"
-	"sway_turn_angle_factor_zoomed"   				"0"
-	"sway_turn_origin_factor_zoomed"  				"0.05"
-	"sway_move_angle_factor"  						"0.5"
-	"sway_move_origin_factor" 						"0.5"
-	"sway_move_angle_factor_zoomed"   				"0"
-	"sway_move_origin_factor_zoomed"  				"0.03"
-	"sway_gain"   									"15.0"
-
-	"sway_rotate_attach_zoomed"  							"jx_c_pov"
-	"sway_min_x_zoomed"  									"-0.3"
-	"sway_min_y_zoomed"  									"-0.5"
-	"sway_min_z_zoomed"  									"-0.5"
-	"sway_max_x_zoomed"  									"0.3"
-	"sway_max_y_zoomed"  									"0.5"
-	"sway_max_z_zoomed"  									"0.1"
-	"sway_min_pitch_zoomed"  								"-3"
-	"sway_min_yaw_zoomed"									"-3.5"
-	"sway_min_roll_zoomed"   								"-1"
-	"sway_max_pitch_zoomed"  								"3"
-	"sway_max_yaw_zoomed"									"3.5"
-	"sway_max_roll_zoomed"  								"2"
-	"sway_translate_gain_zoomed" 							"4"
-	"sway_rotate_gain_zoomed"								"7"
-	"sway_move_forward_translate_x_zoomed"   				"0"
-	"sway_move_forward_translate_z_zoomed"   				"-0.5"
-	"sway_move_back_translate_x_zoomed"  					"-2"
-	"sway_move_back_translate_z_zoomed"  					"-1"
-	"sway_move_left_translate_y_zoomed"  					"-1"
-	"sway_move_left_translate_z_zoomed"  					"-0.5"
-	"sway_move_left_rotate_roll_zoomed"  					"-1"
-	"sway_move_right_translate_y_zoomed" 					"1"
-	"sway_move_right_translate_z_zoomed" 					"-0.5"
-	"sway_move_right_rotate_roll_zoomed" 					"2"
-	"sway_move_up_translate_z_zoomed"						"-1"
-	"sway_move_down_translate_z_zoomed"  					"1"
-	"sway_turn_left_rotate_yaw_zoomed"   					"-2"
-	"sway_turn_right_rotate_yaw_zoomed"  					"2"
-	"sway_turn_up_rotate_pitch_zoomed"   					"2"
-	"sway_turn_down_rotate_pitch_zoomed" 					"-2"
-	"sway_turn_angle_factor_zoomed"  						"-0.5"
-	"sway_turn_origin_factor_zoomed" 						"0"
-	"sway_move_angle_factor_zoomed"  						"0.5"
-	"sway_move_origin_factor_zoomed" 						"0.5"
-	"sway_gain_zoomed"   									"15.0"
-	"sway_turn_angle_factor_zoomed"   				"0"
-	"sway_turn_origin_factor_zoomed"  				"0.05"
-	"sway_move_angle_factor_zoomed"   				"0"
-	"sway_move_origin_factor_zoomed"  				"0.03"
-	*/
 
 
 
@@ -240,7 +138,7 @@ WeaponData
 
 		dev_mod_low_recharge
 		{
-			"regen_ammo_refill_rate"			"0"
+			"regen_ammo_refill_rate"			"600"
 		}
 		spree_lvl1_heal
 		{

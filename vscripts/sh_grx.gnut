@@ -11,10 +11,14 @@ global function IsValidItemFlavorGRXIndex
 global function GetItemFlavorByGRXIndex
 global function ItemFlavor_GetGRXMode
 global function ItemFlavor_GetGRXIndex
+global function ItemFlavor_GetGRXAlias
+global function ItemFlavor_GetGRXOwnershipTarget
+global function ItemFlavor_GetGRXOwnershipTargettedBy
 global function GRXCurrency_GetCurrencyIndex
 global function GRXCurrency_GetPurchaseSound
 global function GRXCurrency_GetPreviewModel
 global function GRXCurrency_GetRewardIcon
+global function GRXCurrencyBundle_GetCurrencyFlav
 global function GRXCurrencyBundle_GetValue
 global function GRX_IsInventoryReady
 global function GRX_HasInventoryEverBeenReady
@@ -23,6 +27,7 @@ global function GRX_IsItemOwnedByPlayer_AllowOutOfDateData
 global function GRX_GetPlayerEdition
 global function GRX_IsOfferRestricted
 global function GRX_PurchaseItem
+global function GRXPack_IsExpectedToContainSingleItemWithCurrency
 global function GRXPack_GetTickModel
 global function GRXPack_GetTickModelSkin
 #endif
@@ -39,6 +44,7 @@ global function GRX_GiveSequenceRewardEasy
 #endif
 
 #if CLIENT
+global function GRXPack_GetTickSoundAlias
 global function GRX_GetMostRecentPackOpeningResults
 #endif
 
@@ -62,6 +68,7 @@ global function GRX_CanAffordDelta
 global function GRX_GetMaxCanAfford
 global function GRX_GetCurrencyArrayFromBag
 global function GRX_GetFormattedPrice
+global function GRX_GetPriceDisplayData
 global function GRX_IsCraftingPrice
 global function GRX_IsPremiumPrice
 global function GetFormattedValueForCurrency
@@ -190,6 +197,14 @@ global struct ItemFlavorPurchasabilityInfo
 }
 #endif
 
+#if UI
+global struct PriceDisplayData
+{
+	asset  symbol
+	string amount
+}
+#endif
+
 
 global ItemFlavor&[GRX_CURRENCY_COUNT] GRX_CURRENCIES = [{...}, {...}, {...}, {...}]
 global asset[GRX_CURRENCY_COUNT] GRX_CURRENCY_CONTAINERS = [$"", $"", $"", $""]
@@ -201,6 +216,18 @@ global int GRX_DEV_ITEM = -1
 global int GRX_QA_ITEM = -1
 
 global int GRX_HTTPQUERYGOAL_PURCHASE_ITEM = 0
+
+#if CLIENT
+global enum eGRXPackTickSoundKind
+{
+	TriadBounce
+	PuckLand
+	Unpack
+	DeployTriadExplo1
+	DeployTriadExplo2
+	DeployTriadExplo3
+}
+#endif
 
 
 ///////////////////////
@@ -302,6 +329,9 @@ struct FileStruct_LifetimeLevel
 	array<ItemFlavor>      packFlavorList
 	table<ItemFlavor, int> currencyIndexMap
 	table<int, ItemFlavor> grxIndexItemFlavorMap
+	#if R5DEV
+		table<string, ItemFlavor> grxRefItemFlavorMap
+	#endif
 
 	#if SERVER
 		table<entity, PlayerGRXScriptState> playerGRXStateMap
@@ -357,9 +387,10 @@ void function ShGRX_LevelInit()
 	fileLevel = newFileLevel
 
 	AddCallback_RegisterRootItemFlavors( void function() {
-		GRX_CURRENCIES[GRX_CURRENCY_PREMIUM] = expect ItemFlavor(RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_currency/premium.rpak" )) // GRX_CURRENCY_PREMIUM
-		GRX_CURRENCIES[GRX_CURRENCY_CREDITS] = expect ItemFlavor(RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_currency/credits.rpak" )) // GRX_CURRENCY_CREDITS
-		GRX_CURRENCIES[GRX_CURRENCY_CRAFTING] = expect ItemFlavor(RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_currency/crafting.rpak" )) // GRX_CURRENCY_CRAFTING
+		GRX_CURRENCIES[GRX_CURRENCY_PREMIUM] = expect ItemFlavor(RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_currency/premium.rpak" )) //
+		GRX_CURRENCIES[GRX_CURRENCY_CREDITS] = expect ItemFlavor(RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_currency/credits.rpak" )) //
+		GRX_CURRENCIES[GRX_CURRENCY_CRAFTING] = expect ItemFlavor(RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_currency/crafting.rpak" )) //
+		GRX_CURRENCIES[GRX_CURRENCY_SEASON02_EVENT01] = expect ItemFlavor(RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_currency/season02_event01.rpak" )) //
 
 		GRX_CURRENCY_CONTAINERS[GRX_CURRENCY_PREMIUM] = $"rui/menu/store/feature_price_container_premium"
 		GRX_CURRENCY_CONTAINERS[GRX_CURRENCY_CREDITS] = $"rui/menu/store/feature_price_container_credits"
@@ -379,11 +410,19 @@ void function ShGRX_LevelInit()
 		{
 			RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
 		}
+
+		//
+		//RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_sentinel/s03e01a_10_pack_offer.rpak" )
+		//RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_sentinel/s03e01a_20_pack_offer.rpak" )
+		//RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/grx_sentinel/s03e01a_50_pack_offer.rpak" )
+		//
 	} )
 	AddCallback_OnItemFlavorRegistered( eItemType.account_currency_bundle, AssertCurrencyBundlePlaylistVarsAreValid )
+	AddCallbackOrMaybeCallNow_OnAllItemFlavorsRegistered( OnAllItemFlavorsRegistered )
 
 	#if SERVER || CLIENT
 		Remote_RegisterUIFunction( "ServerToUI_PROTO_YouAreGreenLightedForGRX" )
+		//Remote_RegisterUIFunction( "ServerToUI_GRX_QueuedRewardsGiven" )
 	#endif
 
 	#if SERVER
@@ -405,6 +444,9 @@ void function ShGRX_LevelInit()
 			thread whatTheFunc()
 		}
 	#endif
+
+	GRX_DEV_ITEM = GRX_RegisterItem( "account_flag_dev", eItemFlavorGRXMode.REGULAR )
+	GRX_QA_ITEM = GRX_RegisterItem( "account_flag_QA", eItemFlavorGRXMode.REGULAR )
 }
 #endif
 
@@ -417,6 +459,8 @@ void function ShGRX_LevelShutdown()
 	fileVM.WORKAROUND_delayedOffersState = GRX_OFFERSSTATE_UNINITIALIZED
 	fileVM.WORKAROUND_delayedCraftingOffers = []
 	fileVM.WORKAROUND_delayedStoreOffers = []
+
+	UpdatePlayerGRXScriptState( GetUIPlayer(), null )
 }
 #endif
 
@@ -437,6 +481,21 @@ void function ShGRX_RegisterItemFlavor( ItemFlavor flavor )
 		flavor._____INTERNAL_grxIndex = GRX_RegisterItem( grxRef, flavor._____INTERNAL_grxMode )
 
 		fileLevel.grxIndexItemFlavorMap[flavor._____INTERNAL_grxIndex] <- flavor
+		#if R5DEV
+			fileLevel.grxRefItemFlavorMap[grxRef] <- flavor
+		#endif
+	}
+	else if ( flavor._____INTERNAL_grxMode == eItemFlavorGRXMode.OWNERSHIP_TARGET )
+	{
+		ItemFlavor ornull ownershipTarget = ItemFlavor_GetGRXOwnershipTarget( flavor )
+		if ( ownershipTarget != null )
+		{
+			expect ItemFlavor(ownershipTarget)
+			if ( ownershipTarget._____INTERNAL_grxOwnershipTargettedBy == null )
+				ownershipTarget._____INTERNAL_grxOwnershipTargettedBy = []
+			array<int> targettedBy = expect array<int>(ownershipTarget._____INTERNAL_grxOwnershipTargettedBy)
+			targettedBy.append( flavor._____INTERNAL_index )
+		}
 	}
 
 	#if UI
@@ -454,6 +513,10 @@ void function ShGRX_RegisterItemFlavor( ItemFlavor flavor )
 //////////////////////////
 //////////////////////////
 #if SERVER || CLIENT || UI
+void function OnAllItemFlavorsRegistered()
+{
+	//
+}
 bool function IsValidItemFlavorGRXIndex( int index, int validationBehavior = eValidation.DONT_ASSERT )
 {
 	bool good = (index in fileLevel.grxIndexItemFlavorMap)
@@ -515,6 +578,34 @@ string function ItemFlavor_GetGRXAlias( ItemFlavor flavor )
 
 
 #if SERVER || CLIENT || UI
+
+ItemFlavor ornull function ItemFlavor_GetGRXOwnershipTarget( ItemFlavor flavor )
+{
+	Assert( IsItemFlavorStructValid( flavor, eValidation.ASSERT ) )
+	if ( flavor._____INTERNAL_grxMode != eItemFlavorGRXMode.OWNERSHIP_TARGET )
+		return null
+
+	asset ownershipTargetFlavAsset = GetGlobalSettingsAsset( flavor._____INTERNAL_settingsAsset, "ownershipTarget" )
+	if ( IsValidItemFlavorSettingsAsset( ownershipTargetFlavAsset ) )
+		return GetItemFlavorByAsset( ownershipTargetFlavAsset )
+
+	return null
+}
+
+
+
+array<ItemFlavor> function ItemFlavor_GetGRXOwnershipTargettedBy( ItemFlavor flavor )
+{
+	array<ItemFlavor> out = []
+	if ( flavor._____INTERNAL_grxOwnershipTargettedBy != null )
+	{
+		foreach ( int targeterIdx in expect array<int>(flavor._____INTERNAL_grxOwnershipTargettedBy) )
+		{
+			out.append( GetItemFlavorByNetworkIndex_DEPRECATED( targeterIdx ) )
+		}
+	}
+	return out
+}
 int function GRXCurrency_GetCurrencyIndex( ItemFlavor flav )
 {
 	Assert( ItemFlavor_GetType( flav ) == eItemType.account_currency )
@@ -546,6 +637,15 @@ asset function GRXCurrency_GetRewardIcon( ItemFlavor flav )
 	return GetGlobalSettingsAsset( flav._____INTERNAL_settingsAsset, "rewardIcon" )
 }
 #endif
+
+#if SERVER || CLIENT || UI
+ItemFlavor function GRXCurrencyBundle_GetCurrencyFlav( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.account_currency_bundle )
+	return GetItemFlavorByAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( flav ), "currencyFlav" ) )
+}
+#endif
+
 
 #if SERVER || CLIENT || UI
 int function GRXCurrencyBundle_GetValue( ItemFlavor flav )
@@ -1007,6 +1107,7 @@ array<ItemFlavor> function GRX_GetLocationOfferItems( string location )
 bool function GRX_AreOffersReady()
 {
 	PlayerGRXScriptState scriptState = GetPlayerGRXScriptState( GetUIPlayer() )
+	return true
 	return scriptState.isInventoryReady && scriptState.areOffersReady
 }
 #endif
@@ -1067,11 +1168,44 @@ ItemFlavorPurchasabilityInfo function GRX_GetItemPurchasabilityInfo( ItemFlavor 
 #endif
 
 #if SERVER || CLIENT || UI
+bool function GRXPack_IsExpectedToContainSingleItemWithCurrency( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.account_pack )
+
+	return GetGlobalSettingsBool( ItemFlavor_GetAsset( flav ), "isExpectedToContainSingleItemWithCurrency" )
+}
+#endif
+
+#if SERVER || CLIENT || UI
 asset function GRXPack_GetTickModel( ItemFlavor flav )
 {
 	Assert( ItemFlavor_GetType( flav ) == eItemType.account_pack )
 
 	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flav ), "tickMdl" )
+}
+#endif
+
+#if CLIENT
+string function GRXPack_GetTickSoundAlias( ItemFlavor flav, int soundKind )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.account_pack )
+
+	switch ( soundKind )
+	{
+		case eGRXPackTickSoundKind.TriadBounce: return GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "triadBounceSound" )
+
+		case eGRXPackTickSoundKind.PuckLand: return GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "puckLandSound" )
+
+		case eGRXPackTickSoundKind.Unpack: return GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "unpackSound" )
+
+		case eGRXPackTickSoundKind.DeployTriadExplo1: return GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "deployTriadExplo1Sound" )
+
+		case eGRXPackTickSoundKind.DeployTriadExplo2: return GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "deployTriadExplo2Sound" )
+
+		case eGRXPackTickSoundKind.DeployTriadExplo3: return GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "deployTriadExplo3Sound" )
+	}
+	Assert( false )
+	return ""
 }
 #endif
 
@@ -1193,6 +1327,24 @@ string function GRX_GetFormattedPrice( ItemFlavorBag bag, int quantity = 1 )
 
 
 #if UI
+PriceDisplayData function GRX_GetPriceDisplayData( ItemFlavorBag bag, int quantity = 1 )
+{
+	array<int> priceArray = GRX_GetCurrencyArrayFromBag( bag ) //
+	PriceDisplayData data
+
+	foreach ( currencyIndex, price in priceArray )
+	{
+		if ( price == 0 )
+			continue
+
+		Assert( data.amount.len() == 0 )
+
+		data.symbol = ItemFlavor_GetIcon( GRX_CURRENCIES[currencyIndex] )
+		data.amount = ShortenNumber( string( price * quantity ) )
+	}
+
+	return data
+}
 bool function GRX_IsCraftingPrice( ItemFlavorBag bag )
 {
 	return (bag.flavors.len() == 1 && bag.flavors[0] == GRX_CURRENCIES[GRX_CURRENCY_CRAFTING])
@@ -1676,19 +1828,6 @@ void function ShGRX_UIScriptResetComplete()
 #if SERVER || UI
 void function HandleGRXCodeUserInfoUpdated( entity player, GRXUserInfo codeUserInfo )
 {
-	#if GRX_DEBUG_PRINTS
-		if ( !fileLevel.GRX_DEBUG_PRINTS_disableTemporarily )
-		{
-			printt( GRX_DBG_PREFIX(), "for", player, "(called from " + FUNC_NAME( 1 ) + ")" )
-			printt( GRX_DBG_PREFIX(), "GRXUserInfo.inventoryState", codeUserInfo.inventoryState, ((codeUserInfo.inventoryState == GRX_INVENTORYSTATE_CLEAN) ? "CLEAN" : "NON-CLEAN") )
-			printt( GRX_DBG_PREFIX(), "GRXUserInfo.balances", codeUserInfo.balances[0], codeUserInfo.balances[1], codeUserInfo.balances[2] )
-			printt( GRX_DBG_PREFIX(), "GRXUserInfo.queryGoal = ", codeUserInfo.queryGoal )
-			printt( GRX_DBG_PREFIX(), "GRXUserInfo.queryOwner = ", codeUserInfo.queryOwner, ((codeUserInfo.queryOwner == GRX_HTTPQUERYOWNER_CLIENT) ? "CLIENT" : "SERVER") )
-			printt( GRX_DBG_PREFIX(), "GRXUserInfo.queryState = ", codeUserInfo.queryState, ((codeUserInfo.queryState == GRX_HTTPQUERYSTATE_ACTIVE) ? "ACTIVE" : "NON-ACTIVE") )
-			printt( GRX_DBG_PREFIX(), "GRXUserInfo.querySeqNum = ", codeUserInfo.querySeqNum )
-		}
-	#endif
-
 	UpdatePlayerGRXScriptState( player, codeUserInfo )
 }
 #endif
@@ -1825,91 +1964,7 @@ void function ServerToUI_PROTO_YouAreGreenLightedForGRX()
 #if UI
 bool function DisplayQueuedRewardsGiven()
 {
-	//
-
 	entity player = GetUIPlayer()
-	for ( int persistentArrayIdx = 0; persistentArrayIdx < QUEUED_REWARDS_MAX_COUNT; persistentArrayIdx++ )
-	{
-		Assert( QUEUED_REWARDS_MAX_ITEMS_COUNT == 1 )
-		SettingsAssetGUID rewardItemFlavGUID = player.GetPersistentVarAsInt( format( "grxQueuedRewards[%d].rewardGUIDs[0]", persistentArrayIdx ) )
-		if ( rewardItemFlavGUID == 0 )
-			continue
-		if ( !IsValidItemFlavorGUID( rewardItemFlavGUID, eValidation.ASSERT ) )
-			continue //
-		ItemFlavor rewardItemFlav = GetItemFlavorByGUID( rewardItemFlavGUID )
-
-		bool rewardGiven        = (player.GetPersistentVarAsInt( format( "grxQueuedRewards[%d].rewardGiven", persistentArrayIdx ) ) > 0)
-		bool rewardAcknowledged = (player.GetPersistentVarAsInt( format( "grxQueuedRewards[%d].rewardAcknowledged", persistentArrayIdx ) ) > 0)
-		Assert( !rewardAcknowledged )
-		if ( !rewardGiven )
-			continue
-
-		if ( !GRX_HasItem( ItemFlavor_GetGRXIndex( rewardItemFlav ) ) )
-		{
-			Assert( false )
-			return false
-		}
-
-		Assert( QUEUED_REWARDS_MAX_ITEMS_COUNT == 1 )
-		int quantity = player.GetPersistentVarAsInt( format( "grxQueuedRewards[%d].rewardQuantities[0]", persistentArrayIdx ) )
-		Assert( quantity == 1 )
-
-		SettingsAssetGUID sourceItemFlavGUID   = player.GetPersistentVarAsInt( format( "grxQueuedRewards[%d].sourceGUID", persistentArrayIdx ) )
-		ItemFlavor ornull sourceItemFlavOrNull = null
-		if ( sourceItemFlavGUID != 0 && IsValidItemFlavorGUID( sourceItemFlavGUID, eValidation.ASSERT ) )
-		{
-			sourceItemFlavOrNull = GetItemFlavorByGUID( sourceItemFlavGUID )
-		}
-		Assert( sourceItemFlavOrNull != null ) //
-
-		string titleText = "#GENERIC_REWARD_RECEIVED"
-		string descText  = ""
-		if ( sourceItemFlavOrNull != null )
-		{
-			ItemFlavor sourceItemFlav = expect ItemFlavor(sourceItemFlavOrNull)
-			switch( ItemFlavor_GetType( sourceItemFlav ) )
-			{
-				case eItemType.challenge:
-				{
-					//
-					titleText = "#LEGENDARY_HUNT_CHALLENGE_COMPLETED_HEADER" //
-
-					//
-					for ( int tierIdx = 0; tierIdx < Challenge_GetTierCount( sourceItemFlav ); tierIdx++ )
-					{
-						if ( Challenge_GetItemRewards( sourceItemFlav, tierIdx ).flavors.contains( rewardItemFlav ) )
-						{
-							Assert( descText == "" )
-							descText = Challenge_GetDescription( sourceItemFlav, tierIdx )
-							#if(!ASSERTING)
-								break
-							#endif
-						}
-					}
-					break
-				}
-
-				default: Assert( false )
-			}
-		}
-
-		BattlePassReward rewardInfo
-		rewardInfo.level = -1
-		rewardInfo.flav = rewardItemFlav
-		rewardInfo.quantity = quantity
-		ShowRewardCeremonyDialog(
-			"",
-			titleText,
-			descText,
-			[rewardInfo],
-			false,
-			true )
-
-		ClientCommand( format( "acknowledge_reward %d %d", persistentArrayIdx, rewardItemFlavGUID ) )
-
-		return true //
-	}
-
 	return false
 }
 #endif
@@ -2288,6 +2343,12 @@ void function HandleGRXOffersRefreshed( int offersState, array< GRXCraftingOffer
 
 		if ( !("location" in codeOffer.attrs) )
 			continue
+	
+			if ( ItemFlavor_GetType( outputFlav ) == eItemType.grx_sentinel )
+			{
+				scriptOffer.WORKAROUND_claimedSentinel = outputFlav
+				continue
+			}
 
 		string storeLocation = codeOffer.attrs.location
 

@@ -41,7 +41,7 @@ void function SURVIVAL_LootTypes_InitShared()
 	lt.equipmentSlot = ""
 	lt.groundActionFunc = GroundAction_ForWeapons
 	lt.groundUseLongActionFunc = GroundLongAction_ForWeapons
-	lt.groundAltActionFunc = GroundAltAction_ForWeapons
+	lt.groundAltActionFunc = GroundAltAction_None//
 	#if SERVER
 		lt.specialCaseSpawnFunction = SpawnWeaponAndAmmo
 	#endif
@@ -113,6 +113,11 @@ void function SURVIVAL_LootTypes_InitShared()
 	lt.groundAltActionFunc = GroundAltAction_None
 	#if SERVER
 		lt.specialCaseSpawnFunction = SpawnNothing
+		lt = RegisterLootType( eLootType.DATAKNIFE )
+		lt.equipmentSlot = ""
+		lt.groundActionFunc = GroundAction_ForBackpackItem
+		lt.groundUseLongActionFunc = GroundLongAction_ForBackpackItem
+		lt.groundAltActionFunc = GroundAltAction_None
 	#endif
 
 	lt = RegisterLootType( eLootType.CUSTOMPICKUP )
@@ -120,6 +125,7 @@ void function SURVIVAL_LootTypes_InitShared()
 	lt.groundActionFunc = GroundAction_ForBackpackItem
 	lt.groundUseLongActionFunc = GroundLongAction_ForBackpackItem
 	lt.groundAltActionFunc = GroundAltAction_None
+	lt.backpackAction = eLootAction.USE
 
 
 	lt = RegisterLootType( eLootType.RESOURCE )
@@ -196,29 +202,29 @@ LootActionStruct function GroundAction_ForEquipment( entity player, LootRef loot
 {
 	LootActionStruct as
 
-	LootData lootData = lootRef.lootData
-	LootTypeData lt = GetLootTypeData( lootData.lootType )
-	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( lt.equipmentSlot )
+	LootData lootData     = lootRef.lootData
+	LootTypeData lt       = GetLootTypeData( lootData.lootType )
+	EquipmentSlot es      = Survival_GetEquipmentSlotDataByRef( lt.equipmentSlot )
 	LootData equippedData = EquipmentSlot_GetEquippedLootDataForSlot( player, lt.equipmentSlot )
-	int tier = equippedData.tier
+	int tier              = equippedData.tier
 
 	bool isDifferent = equippedData.ref != lootData.ref
-	bool hasPerk = (lootData.passive != ePassives.INVALID)
+	bool hasPerk     = (lootData.passive != ePassives.INVALID)
 
-	if( tier == 0 )
+	if ( tier == 0 )
 	{
 		as.action = eLootAction.EQUIP
 	}
-	else if ( lootData.tier > tier || (lootData.ref != equippedData.ref && lootData.tier == tier && hasPerk) )
+	if ( lootData.tier > tier || (lootData.ref != equippedData.ref && lootData.tier == tier && hasPerk) )
 	{
 		as.action = eLootAction.EQUIP
 	}
 	else
 	{
-		if ( GetCurrentPlaylistVarInt( "survival_shields", 1 ) && lootData.lootType == eLootType.ARMOR )
+		if ( lootData.lootType == eLootType.ARMOR )
 		{
-			int currentShields = player.GetShieldHealth()
-			int lootShields = lootRef.lootProperty
+			int currentShields = SURVIVAL_GetPlayerShieldHealthFromArmor( player )
+			int lootShields    = lootRef.lootProperty
 
 			if ( currentShields < lootShields )
 			{
@@ -381,9 +387,9 @@ bool function AlwaysTrue( entity player, entity prop )
 
 bool function MainActionIsNotPickup( entity player, entity ent )
 {
-	int lootIndex = ent.GetSurvivalInt()
+	int lootIndex     = ent.GetSurvivalInt()
 	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( lootIndex )
-	LootRef lootRef = SURVIVAL_CreateLootRef( lootData, ent )
+	LootRef lootRef   = SURVIVAL_CreateLootRef( lootData, ent )
 
 	LootActionStruct asMain = SURVIVAL_GetActionForGroundItem( player, lootRef, false )
 

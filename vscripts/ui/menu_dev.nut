@@ -270,10 +270,12 @@ void function SetupDefaultDevCommandsMP()
 {
 	if ( IsSurvivalMenuEnabled() )
 	{
+		SetupDevMenu( "Abilities", SetDevMenu_Abilities )
+		SetupDevMenu( "Equip Weapon", SetDevMenu_OverrideSpawnSurvivalCharacter )
+		SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
+		SetupDevMenu( "Survival", SetDevMenu_Survival )
 		SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
 		SetupDevMenu( "Alter Loadout", SetDevMenu_AlterLoadout )
-		SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
-		SetupDevMenu( "Survival", SetDevMenu_Survival )
 		SetupDevMenu( "Survival Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
 		SetupDevMenu( "Survival Attachments", SetDevMenu_SurvivalLoot, "attachment" )
 		SetupDevMenu( "Survival Helmets", SetDevMenu_SurvivalLoot, "helmet" )
@@ -345,13 +347,15 @@ void function SetupDefaultDevCommandsMP()
 	SetupDevCommand( "Max Activity (Disabled)", "script SetMaxActivityMode(0)" )
 
 	SetupDevCommand( "Toggle Skybox View", "script thread ToggleSkyboxView()" )
-	SetupDevCommand( "Toggle HUD", "ToggleHUD" )
+	SetupDevCommand( "Toggle HUD", "script thread ToggleHud()" )
 	//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
 	SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
 	SetupDevCommand( "Toggle Pain Death sound debug", "script TogglePainDeathDebug()" )
 	SetupDevCommand( "Jump Randomly Forever", "script_client thread JumpRandomlyForever()" )
 
 	SetupDevCommand( "Toggle Zeroing Mode", "script ToggleZeroingMode()" )
+	SetupDevCommand( "Enable God Mode", "script EnableDemigod( gp()[0] )" )
+	SetupDevCommand( "Disable God Mode", "script DisableDemigod( gp()[0] )" )
 	SetupDevCommand( "Toggle Screen Alignment Tool", "script_client DEV_ToggleScreenAlignmentTool()" )
 
 	SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
@@ -381,6 +385,15 @@ void function SetupLevelDevCommands()
 	}
 }
 
+void function SetDevMenu_ModelSpawner( var _ )
+{
+	thread ChangeToThisMenu( SetupModelSpawner )
+}
+
+void function SetDevMenu_Abilities( var _ )
+{
+	thread ChangeToThisMenu( SetupAbilities )
+}
 
 void function SetDevMenu_SurvivalCharacter( var _ )
 {
@@ -728,9 +741,7 @@ void function SetDevMenu_Prototypes( var _ )
 
 void function SetupPrototypesDevMenu()
 {
-	#if(true)
 		SetupDevCommand( "Change to Shadow Squad", "script Dev_ShadowFormEnable( GP() )" )
-	#endif
 }
 
 

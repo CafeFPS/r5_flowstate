@@ -72,13 +72,14 @@ void function ShTutorial_Init()
 		AddCallback_OnClientConnected( OnPlayerConnected )
 	#elseif CLIENT
 		AddCallback_OnClientScriptInit( OnLocalClientConnected )
+		AddCallback_OnSettingsUpdated( UpdateTutorialWhenOptionsChange )
 		RegisterNetworkedVariableChangeCallback_int( "tutorialContext", OnTutorialContextChanged )
 	#endif
 
 	for( int i = eTutorialContext.NONE ; i < eTutorialContext._count ; i++ )
 		file.contextInputHintMap[i] <- []
 
-	AddInputHint( eTutorialContext.MOVEMENT, IN_FORWARD, "%[S2_UP|forward]%", "#SURVIVAL_TRAINING_MOVE", TryActionMove )
+	AddInputHint( eTutorialContext.MOVEMENT, IN_FORWARD, "%[S2_UP|forward]%", "#SURVIVAL_TRAINING_MOVE", TryActionMove, "", null, "%S2_UP%" )
 	AddInputHint( eTutorialContext.MOVEMENT, -1, "%speed%", "#SURVIVAL_TRAINING_SPRINT", TryActionSprint )
 	AddInputHint( eTutorialContext.MOVEMENT, IN_JUMP, "%jump%", "#SURVIVAL_TRAINING_JUMP", TryActionJump )
 	AddInputHint( eTutorialContext.MOVEMENT, -1, "%duck%", "#SURVIVAL_TRAINING_SLIDE", TryActionSlide )
@@ -420,6 +421,8 @@ void function OnTutorialContextChanged( entity player, int old, int new, bool ac
 			inputHint.altHintCallback( player, inputHint )
 	}
 
+	UpdateTutorialBindingIcons()
+
 	thread ClientTutorialContextThink( player, new )
 }
 
@@ -502,6 +505,43 @@ int function GetHintIndexForButtonEnum( int buttonEnum )
 
 	return -1
 }
+
+#if CLIENT
+void function UpdateTutorialBindingIcons()
+{
+	array<InputHint> movementHints = file.contextInputHintMap[eTutorialContext.MOVEMENT]
+	for ( int i = 0; i < movementHints.len(); ++i )
+	{
+		if ( movementHints[i].rui == null )
+			continue
+
+		if ( movementHints[i].triggerButtonEnum == IN_FORWARD )
+		{
+			int stickLayout = GetConVarInt( "gamepad_stick_layout" )
+			Assert( stickLayout >= 0 && stickLayout <= 3 )
+			string gamepadHintStringForMovement = ""
+
+			if ( stickLayout == 0 )
+				gamepadHintStringForMovement = "%S2_UP%"
+			else if ( stickLayout == 1 )
+				gamepadHintStringForMovement = "%S1_UP%"
+			else if ( stickLayout == 2 || stickLayout == 3 )
+				gamepadHintStringForMovement = "%S2_UP% %S1_UP%"
+
+			movementHints[i].gamepadButtonText = gamepadHintStringForMovement
+
+			RuiSetString( movementHints[i].rui, "gamepadButtonText", movementHints[i].gamepadButtonText )
+
+			break
+		}
+	}
+}
+
+void function UpdateTutorialWhenOptionsChange()
+{
+	UpdateTutorialBindingIcons()
+}
+#endif
 
 void function AddInputHint( int hintContext, int triggerButtonEnum, string buttonText, string hintText, bool functionref( entity, InputHint ) inputPressedCallback, string altHintText = "", void functionref( entity, InputHint ) altHintCallback = null, string gamePadButtonText = "" )
 {

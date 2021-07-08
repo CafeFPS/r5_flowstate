@@ -33,6 +33,7 @@ const asset TROPHY_PLACEMENT_RADIUS_FX 		= $"P_wpn_trophy_ar_ring"
 #endif // SERVER || CLIENT
 
 // FX Table
+global const string TROPHY_SYSTEM_NAME = "trophy_system"
 const TROPHY_TARGET_EXPLOSION_IMPACT_TABLE = "exp_medium"
 
 // Model
@@ -92,7 +93,7 @@ const float TROPHY_LOS_CHARGE_TIMEOUT = 1.0
 const asset TACTICAL_CHARGE_FX = $"P_player_boost_screen"//
 
 // Max
-const int TROPHY_MAX_COUNT = 3
+const int TROPHY_MAX_COUNT = 1
 
 // Trigger
 const float TROPHY_REMINDER_TRIGGER_RADIUS = 300.0

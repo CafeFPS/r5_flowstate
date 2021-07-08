@@ -1,5 +1,6 @@
 global function Sh_ArenaDeathField_Init
 global function GetDeathFieldStage
+global function GetDeathfieldFinalCenter
 global function SURVIVAL_GetDeathField
 
 #if SERVER && R5DEV
@@ -34,6 +35,7 @@ global function SURVIVAL_AddCallback_OnDeathFieldStopShrink
 global function UpdateSurveyBeaconHint
 #endif
 
+global function HasDeathFieldImmunity
 global function SURVIVAL_DeathFieldIsValid
 global function SURVIVAL_GetDeathFieldCenter
 global function SURVIVAL_GetDeathFieldCurrentRadius
@@ -55,6 +57,9 @@ table < float, string > distanceToSound =
 
 const asset DEATHFIELD_EFFECT = $"P_ring_FP_hit_01"
 const string COLOR_CORRECTION = "materials/correction/outside_ring.raw_hdr"
+
+const string DESIGNER_PLACED_CIRCLE_END_SCRIPT_NAME = "circle_end_location_override"
+const string DESIGNER_PLACED_CIRCLE_END_RADIUS_NAME = "selection_radius"
 
 global const float REALBIG_CIRCLE_END_RADIUS = 45000
 global const float REALBIG_CIRCLE_END_RADIUS_SQ = REALBIG_CIRCLE_END_RADIUS * REALBIG_CIRCLE_END_RADIUS
@@ -96,6 +101,7 @@ global struct DeathFieldStageData
 	float  shrinkDuration
 	float  preShrinkDuration
 	float  percentDamagePerTick = 0.2
+	float  circleDeviation = 1.0
 	vector endPos
 }
 
@@ -169,7 +175,17 @@ void function Sh_ArenaDeathField_Init()
 
 DeathFieldStageData function GetDeathFieldStage( int index )
 {
-	return file.deathFieldStages[ 1/*index*/ ] // TODO: Fix -1 index!
+	return file.deathFieldStages[ index ]
+}
+
+vector function GetDeathfieldFinalCenter()
+{
+	int count = file.deathFieldStages.len()
+	if ( count == 0 )
+		return <0,0,0>
+
+	DeathFieldStageData dt = file.deathFieldStages[count - 1]
+	return dt.endPos
 }
 
 void function GenerateDeathFieldStageData()
@@ -214,6 +230,7 @@ DeathFieldStageData function CreateDeathFieldStageData( int index, bool allowMis
 	float circleCloseSpeed = shrinkSpeed > 0 ? shrinkSpeed : defaultSpeed // per second
 
 	DeathFieldStageData data
+	data.circleDeviation = GetCurrentPlaylistVarFloat( "deathfield_circleDeviation_" + index, 1.0 )
 	data.endRadius = GetCurrentPlaylistVarFloat( "deathfield_radius_" + index, allowMissingDefaults ? 20000.0 : -1.0 )
 	data.preShrinkDuration = GetCurrentPlaylistVarFloat( "deathfield_preShrinkDuration_" + index, allowMissingDefaults ? 240.0 : -1.0 )
 	data.shrinkDuration = ((lastRadius - data.endRadius) / circleCloseSpeed)
@@ -240,16 +257,18 @@ void function InitDeathFieldDataAndStageData()
 	if ( file.deathFieldStartStage >= file.deathFieldStages.len() )
 		file.deathFieldStartStage = file.deathFieldStages.len()
 
-	file.deathFieldData.currentRadius  = 65000.0
-	file.deathFieldData.startRadius    = 65000.0
-	file.deathFieldData.endRadius      = 65000.0
+	float startRadius = GetCurrentPlaylistVarFloat( "survival_death_field_start_radius", 65000 )
+
+	file.deathFieldData.currentRadius = startRadius
+	file.deathFieldData.startRadius = startRadius
+	file.deathFieldData.endRadius = startRadius
 
 	if ( file.deathFieldStartStage > 0 )
 	{
 		float r = file.deathFieldStages[file.deathFieldStartStage - 1].endRadius
-		file.deathFieldData.currentRadius  = r
-		file.deathFieldData.startRadius    = r
-		file.deathFieldData.endRadius      = r
+		file.deathFieldData.currentRadius = r
+		file.deathFieldData.startRadius = r
+		file.deathFieldData.endRadius = r
 	}
 }
 
@@ -1314,11 +1333,16 @@ void function UpdateSurveyBeaconHint()
 
 void function OnPropDynamicCreated( entity prop )
 {
-	if ( prop.GetModelName() == SURVEY_BEACON_MODEL )
+	string modelName = prop.GetModelName()
+	if ( modelName == SURVEY_BEACON_MODEL )
 	{
 		CreateCallback_Panel( prop )
 		ClearCallback_CanUseEntityCallback( prop )
 		SetCallback_CanUseEntityCallback( prop, SurveyBeacon_CanUseFunction )
+	}
+	else if ( modelName == "mdl/fx/bb_shield.rmdl" )
+	{
+		Chroma_OnBubbleShieldCreated( prop )
 	}
 }
 
@@ -1335,18 +1359,33 @@ void function OnPropScriptCreated( entity prop )
 		file.deathField = prop
 		thread Cl_DeathFieldThink( prop )
 
-		var rui = ClGameState_GetRui()
-		RuiTrackFloat3( rui, "deathFieldOrigin", prop, RUI_TRACK_ABSORIGIN_FOLLOW )
+		var gamestateRui = ClGameState_GetRui()
+		array<var> ruis = [gamestateRui]
+		var cameraRui = GetCameraCircleStatusRui()
+		if ( IsValid( cameraRui ) )
+			ruis.append( cameraRui )
+
+		foreach( rui in ruis )
+		{
+			RuiTrackFloat3( rui, "deathFieldOrigin", prop, RUI_TRACK_ABSORIGIN_FOLLOW )
+		}
 	}
 
-	if ( prop.GetTargetName() == "safeZone" )
+	if ( (prop.GetTargetName() == "safeZone") || (prop.GetTargetName() == "safeZone_noline") )
 	{
 		file.safeZone = prop
 
-		var rui = ClGameState_GetRui()
-		RuiTrackFloat3( rui, "safeZoneOrigin", prop, RUI_TRACK_ABSORIGIN_FOLLOW )
-	}
+		var gamestateRui = ClGameState_GetRui()
+		array<var> ruis = [gamestateRui]
+		var cameraRui = GetCameraCircleStatusRui()
+		if ( IsValid( cameraRui ) )
+			ruis.append( cameraRui )
 
+		foreach( rui in ruis )
+		{
+			RuiTrackFloat3( rui, "safeZoneOrigin", prop, RUI_TRACK_ABSORIGIN_FOLLOW )
+		}
+	}
 }
 
 void function SurveyZoneCleanupOnDestroy( entity surveyZoneEnt )
@@ -1605,6 +1644,13 @@ bool function SURVIVAL_DeathFieldIsValid()
 	return IsValid( file.deathField )
 }
 
+
+bool function HasDeathFieldImmunity( entity player  )
+{
+	return player.GetPlayerNetBool( "hasDeathFieldImmunity" )
+}
+
+
 vector function SURVIVAL_GetDeathFieldCenter()
 {
 	#if SERVER
@@ -1823,12 +1869,19 @@ bool function ShouldShowDeathFieldEffects( entity player )
 {
 	bool shouldShow = true
 
-	if ( DeathField_PointDistanceFromFrontier( player.GetOrigin() ) >= 0 )
-		shouldShow = false
-
 	if ( !IsAlive( player ) )
 		shouldShow = false
 
+	if ( player.ContextAction_IsInVehicle() )
+	{
+		if ( DeathField_PointDistanceFromFrontier( player.EyePosition() ) >= 0 )
+			shouldShow = false
+	}
+	else
+	{
+		if ( DeathField_PointDistanceFromFrontier( player.GetOrigin() ) >= 0 )
+			shouldShow = false
+	}
 	if ( IsViewingSquadSummary() || IsViewingDeathRecap() )
 		shouldShow = false
 

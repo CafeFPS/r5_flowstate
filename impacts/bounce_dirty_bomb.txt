@@ -31,9 +31,9 @@ ImpactTable
 		"O" "P_hmn_footstep_dust" //Foliage
 		"P" "none" //Computer
 
-		"Q" "none" //Not listed
+		"Q" "P_hmn_footstep_snow" //Snow
+		"R" "P_hmn_footstep_snow" //ice
 
-		"R" "none" //metalpanel, grenade, canister
 		"S" "P_impact_water" //water, slime
 		"T" "none" //tile
 		"U" "none" //glass_breakable
@@ -43,6 +43,16 @@ ImpactTable
 		"Y" "none" //glass, brokenglass, glassbottle, pottery
 		"Z" "P_hmn_footstep_dust" //sand
 
+//		"0" "openslot"
+		"1" "P_hmn_footstep_lava" //lava_flow
+		"2" "P_hmn_footstep_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		//Hardcocded Surfacprops
 		"splash" "P_impact_water" //brush water
@@ -75,7 +85,9 @@ ImpactTable
 		"O" "GasTrap_Land_Default"
 		"P" "GasTrap_Land_Default"
 
-		"R" "GasTrap_Land_Default"
+		"Q" "GasTrap_Land_Default" //snow
+		"R" "GasTrap_Land_Default"  //ice
+
 		"S" "GasTrap_Land_Water"
 		"T" "GasTrap_Land_Default"
 		"U" "GasTrap_Land_Default"
@@ -85,6 +97,10 @@ ImpactTable
 		"X"	"GasTrap_Land_Default"
 		"Y" "GasTrap_Land_Default"
 		"Z" "GasTrap_Land_Default"
+
+
+		"1" "GasTrap_Land_Water" //lava_flow
+		"2" "GasTrap_Land_Default" //lava_rock_hot
 
 		//"splash" "Water.BulletImpact"
 		//"slime_splash" "Water.BulletImpact"
@@ -111,7 +127,9 @@ ImpactTable
 		"O" "GasTrap_Land_Default"
 		"P" "GasTrap_Land_Default"
 
-		"R" "GasTrap_Land_Default"
+		"Q" "GasTrap_Land_Default" //snow
+		"R" "GasTrap_Land_Default"  //ice
+
 		"S" "GasTrap_Land_Water"
 		"T" "GasTrap_Land_Default"
 		"U" "GasTrap_Land_Default"
@@ -121,6 +139,9 @@ ImpactTable
 		"X"	"GasTrap_Land_Default"
 		"Y" "GasTrap_Land_Default"
 		"Z" "GasTrap_Land_Default"
+
+		"1" "GasTrap_Land_Water" //lava_flow
+		"2" "GasTrap_Land_Default" //lava_rock_hot
 
 		//"splash" "Water.BulletImpact"
 		//"slime_splash" "Water.BulletImpact"
@@ -147,7 +168,9 @@ ImpactTable
 		"O" "GasTrap_Land_Default"
 		"P" "GasTrap_Land_Default"
 
-		"R" "GasTrap_Land_Default"
+		"Q" "GasTrap_Land_Default" //snow
+		"R" "GasTrap_Land_Default"  //ice
+
 		"S" "GasTrap_Land_Water"
 		"T" "GasTrap_Land_Default"
 		"U" "GasTrap_Land_Default"
@@ -157,6 +180,9 @@ ImpactTable
 		"X"	"GasTrap_Land_Default"
 		"Y" "GasTrap_Land_Default"
 		"Z" "GasTrap_Land_Default"
+
+		"1" "GasTrap_Land_Water" //lava_flow
+		"2" "GasTrap_Land_Default" //lava_rock_hot
 
 		//"splash" "Water.BulletImpact"
 		//"slime_splash" "Water.BulletImpact"

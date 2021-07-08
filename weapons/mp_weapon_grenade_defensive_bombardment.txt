@@ -14,13 +14,14 @@ WeaponData
 	"readymessage"              					"#HUD_BURNMETER_READY_DEFENSIVE_BOMBARDMENT"
 	"readyhint"                 					"#HUD_BURNMETER_READY_DEFENSIVE_BOMBARDMENT_HINT"
 
+	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
 	"is_toss_weapon"								"1"
 	"minimap_reveal_distance"						"32000"
 	"leveled_pickup"								"1"
 	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
-	"offhand_default_inventory_slot"				"0"
+	"offhand_default_inventory_slot"				"4"
 	"offhand_interupts_weapon_anims"				"1"
 	"offhand_toss_activates_on_attack"              "1"
 	"offhand_toss_hold_is_resumable"                "1"
@@ -37,6 +38,7 @@ WeaponData
 
 	// Menu Stats
 
+    "trophy_system_ignore"                          "1"
 
 	// Models
 	"viewmodel"										"mdl/weapons/grenades/ptpov_gibraltar_beacon.rmdl"
@@ -73,6 +75,7 @@ WeaponData
 	"stick_pilot"                                   "0"
 	"stick_titan"                                   "0"
 	"stick_npc"                                     "0"
+	"stick_drone"                                   "0"
 
 	"critical_hit"									"0"
 
@@ -103,11 +106,11 @@ WeaponData
 
 	MP_BASE
 	{
-		"ammo_clip_size"								"270"
+		"ammo_clip_size"								"180"
         "ammo_default_total"							"0"
         "ammo_display"									"count"
-        "ammo_min_to_fire"								"270"
-        "ammo_per_shot"									"270"
+        "ammo_min_to_fire"								"180"
+        "ammo_per_shot"									"180"
         "ammo_stockpile_max"							"0"
         "regen_ammo_refill_rate"						"1"
         "regen_ammo_refill_start_delay"					"0.0"
@@ -177,7 +180,7 @@ WeaponData
 	//"toss_pullout_time"								"0.2"
 	//"toss_time"										"0.4"
 	"toss_overhead_time"							"0.4"
-	"projectile_launch_speed"						"1100"
+	"projectile_launch_speed"						"1500"
 	"projectile_launch_pitch_offset"				"8"
 
 	"red_crosshair_range" 							"0"

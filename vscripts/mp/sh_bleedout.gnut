@@ -39,6 +39,7 @@ const bool DEFAULT_DEATH_ON_TEAM_BLEEDOUT = true
 
 //MEDIC BLEEDOUT RULES
 const float MEDIC_FIRSTAID_TIME = 4.5
+const float GIB_DOME_REVIVE_TIME = 4.5
 
 global enum eReviveTypes
 {
@@ -120,6 +121,8 @@ void function BleedoutShared_Init()
 
 	#if CLIENT
 		AddCreateCallback( "player", OnPlayerCreated )
+		if ( GetCurrentPlaylistVarBool( "bleedout_ping_los_block_enabled", true ) )
+			AddCallback_OnPingCreatedByAnyPlayer( OnPingCreatedByAnyPlayer_TrackCrosshairTarget )
 	#elseif SERVER
 		AddSpawnCallback( "player", OnPlayerCreated )
 	#endif
@@ -141,13 +144,26 @@ bool function CheckPlayerCanUse( entity player, entity target )
 	return false
 }
 
-const float REVIVE_RANGE_MAX = 144.0
-const float REVIVE_RANGE_MIN = 32.0
-const float REVIVE_RANGE_MAX_SQ = REVIVE_RANGE_MAX * REVIVE_RANGE_MAX
-const float REVIVE_RANGE_MIN_SQ = REVIVE_RANGE_MIN * REVIVE_RANGE_MIN
+const float REVIVE_RANGE = 112
+const float REVIVE_RANGE_SQ = REVIVE_RANGE * REVIVE_RANGE
 const float REVIVE_RANGE_Z_MAX = 96.0
 const float REVIVE_RANGE_Z_MIN = 48.0
+
+const float EXECUTION_ANGLE_UP_DOWN_DEVIATION_MIN = 25
+const float EXECUTION_ANGLE_UP_DOWN_DEVIATION_MAX = 35 //
+const float EXECUTION_ANGLE_UP_DOWN_DEVIATION_RANGE = EXECUTION_ANGLE_UP_DOWN_DEVIATION_MAX - EXECUTION_ANGLE_UP_DOWN_DEVIATION_MIN
+const float EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_MIN = 25
+const float EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_MAX = 65
+const float EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_RANGE = EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_MAX - EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_MIN
+const float EXECUTION_RANGE = 90
+const float EXECUTION_RANGE_SQ = EXECUTION_RANGE * EXECUTION_RANGE
+
 const bool DEBUG_REVIVE_RANGE = false
+const int DEBUG_REVIVE_COLOR_R = 200
+const int DEBUG_REVIVE_COLOR_G = 200
+const int DEBUG_REVIVE_COLOR_B = 50
+const float DEBUG_REVIVE_VECTOR_LENGTH = 50.0
+const float DEBUG_REVIVE_ARROW_SIZE = 4
 
 bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 {
@@ -157,31 +173,87 @@ bool function Bleedout_CanRevivePlayer( entity reviver, entity victim )
 	if ( !Bleedout_PlayerCanBeRessed( victim ) )
 		return false
 
-	vector victimPos          = victim.GetOrigin()
-	vector vecReviverToVictim = victimPos - reviver.GetOrigin()
+	bool tryingToRevive = (IsFriendlyTeam( reviver.GetTeam(), victim.GetTeam() ) || IsRecruitMode())
 
-	float reviveRangeFrac = (1.0 + DotProduct( reviver.GetViewForward(), Normalize( vecReviverToVictim ) )) * 0.5
-	float reviveRange     = reviveRangeFrac * (REVIVE_RANGE_MAX - REVIVE_RANGE_MIN)
+	vector victimPos          = victim.GetOrigin()
+	vector revivorEyePos      = reviver.EyePosition()
+	vector reviverPos         = reviver.GetOrigin()
+	vector reviverToVictim    = victimPos - reviverPos
+	vector reviverEyeToVictim = victimPos - revivorEyePos
+
+	float reviverToVictimSq = LengthSqr( reviverToVictim )
 
 	if ( DEBUG_REVIVE_RANGE )
 	{
-		DebugDrawLine( reviver.GetOrigin(), victimPos, 200, 200, 50, true, 0.3 )
-		DebugDrawTrigger( victimPos, reviveRange, 200, 200, 50, 0.3, true )
+		DebugDrawLine( revivorEyePos, victimPos, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, true, 0.3 )
+		DebugDrawLine( reviverPos, victimPos, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, true, 0.3 )
 	}
 
-	float distSq = LengthSqr( vecReviverToVictim )
+	//
+	//
+	if ( !tryingToRevive )
+	{
+		if ( reviverToVictimSq > EXECUTION_RANGE_SQ )
+			return false
 
-	if ( distSq > reviveRange * reviveRange )
-		return false
+		float reviveRangeFrac = (1.0 + DotProduct( reviver.GetViewForward(), Normalize( reviverEyeToVictim ) )) * 0.5
 
-	// check the z-height to detect against cliffs (overall detection shape is now a triangle-tipped capsule)
-	float maxZDiff = GraphCapped( distSq, REVIVE_RANGE_MIN_SQ, REVIVE_RANGE_MAX_SQ, REVIVE_RANGE_Z_MAX, REVIVE_RANGE_Z_MIN )
-	if ( fabs( vecReviverToVictim.z ) > maxZDiff )
-		return false
+		vector reviverViewForward                             = reviver.GetViewForward()
+		vector reviverRight                                   = reviver.GetViewRight()
+		float reviverEyeToVictimOntoRight                     = DotProduct( reviverEyeToVictim, reviverRight )
+		vector reviverEyeToVictimOntoForwardUpPlane           = reviverEyeToVictim - (reviverEyeToVictimOntoRight * reviverRight)
+		vector reviverEyeToVictimOntoForwardUpPlaneNormalized = Normalize( reviverEyeToVictimOntoForwardUpPlane )
 
-	// this just does a hull trace under the hood.
-	if ( !PlayerMelee_IsExecutionReachable( reviver, victim, 0.15 ) )
-		return false
+		vector reviverEyeToVictimOntoXYPlane           = <reviverEyeToVictim.x, reviverEyeToVictim.y, 0>
+		vector reviverEyeToVictimOntoXYPlaneNormalized = Normalize( reviverEyeToVictimOntoXYPlane )
+		vector reviverViewForwardOntoXYPlane           = <reviverViewForward.x, reviverViewForward.y, 0>
+		vector reviverViewForwardOntoXYNormalized      = Normalize( reviverViewForwardOntoXYPlane )
+
+		if ( DEBUG_REVIVE_RANGE )
+		{
+			DebugDrawArrow( revivorEyePos, revivorEyePos + reviver.GetUpVector() * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, true, 0.3 )
+			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverViewForward * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, true, 0.3 )
+			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverEyeToVictimOntoForwardUpPlaneNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, 200, 50, 50, true, 0.3 )
+			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverEyeToVictimOntoXYPlaneNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, 50, 200, 50, true, 0.3 )
+			DebugDrawArrow( revivorEyePos, revivorEyePos + reviverViewForwardOntoXYNormalized * DEBUG_REVIVE_VECTOR_LENGTH, DEBUG_REVIVE_ARROW_SIZE, 50, 200, 50, true, 0.3 )
+		}
+
+		float distanceFrac              = 1 - reviverToVictimSq / EXECUTION_RANGE_SQ //
+		float finalUpDownAngleThreshold = EXECUTION_ANGLE_UP_DOWN_DEVIATION_MIN + distanceFrac * EXECUTION_ANGLE_UP_DOWN_DEVIATION_RANGE
+
+		float upDownAngle = acos( DotProduct( reviverViewForward, reviverEyeToVictimOntoForwardUpPlaneNormalized ) ) * 180 / PI
+		if ( upDownAngle > finalUpDownAngleThreshold )
+			return false
+
+		float leftRightAngle               = acos( DotProduct( reviverViewForwardOntoXYNormalized, reviverEyeToVictimOntoXYPlaneNormalized ) ) * 180 / PI
+		float finalLeftRightAngleThreshold = EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_MIN + distanceFrac * EXECUTION_ANGLE_LEFT_RIGHT_DEVIATION_RANGE
+		if ( leftRightAngle > finalLeftRightAngleThreshold )
+			return false
+
+		//
+		if ( !IsValidSyncedMeleeTarget( reviver, null, null, victim ) )
+			return false
+	}
+	else
+	{
+		float reviveRangeFrac = (1.0 + DotProduct( reviver.GetViewForward(), Normalize( reviverToVictim ) )) * 0.5
+		float reviveRange     = reviveRangeFrac * REVIVE_RANGE
+
+		if ( DEBUG_REVIVE_RANGE )
+			DebugDrawTrigger( victimPos, reviveRange, DEBUG_REVIVE_COLOR_R, DEBUG_REVIVE_COLOR_G, DEBUG_REVIVE_COLOR_B, 0.3, true )
+
+		if ( reviverToVictimSq > reviveRange * reviveRange )
+			return false
+
+		//
+		float maxZDiff = GraphCapped( reviverToVictimSq, 0, REVIVE_RANGE_SQ, REVIVE_RANGE_Z_MAX, REVIVE_RANGE_Z_MIN )
+		if ( fabs( reviverToVictim.z ) > maxZDiff )
+			return false
+
+		//
+		if ( !PlayerMelee_IsExecutionReachable( reviver, victim, 0.15 ) )
+			return false
+	}
 
 	return true
 }
@@ -207,6 +279,9 @@ float function Bleedout_GetFirstAidTime( entity player )
 
 	if ( PlayerHasPassive( player, ePassives.PAS_MEDIC ) )
 		return MEDIC_FIRSTAID_TIME
+
+	if ( GibraltarIsInDome( player ) && GetCurrentPlaylistVarInt( "gibraltar_fast_revive", 0 ) == 1 )
+		return GIB_DOME_REVIVE_TIME
 
 	return file.bleedoutTypes[ type ].firstAidTime
 }
@@ -352,7 +427,12 @@ bool function Bleedout_PlayerCanSelfRes( entity player )
 	if ( !Bleedout_PlayerCanBeRessed( player ) )
 		return false
 
-	if ( !PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) )
+	bool hasSelfRes = false
+
+	if ( PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) )
+		hasSelfRes = true
+
+	if ( !hasSelfRes )
 		return false
 
 	if ( player.GetPlayerNetBool( "usedSelfRevive" ) )
@@ -398,8 +478,52 @@ void function BleedoutState_SetPlayerBleedoutState( entity player, int newState 
 }
 #endif // SERVER
 
-
 int function BleedoutState_GetPlayerBleedoutState( entity player )
 {
 	return player.GetBleedoutState()
 }
+
+#if CLIENT
+void function OnPingCreatedByAnyPlayer_TrackCrosshairTarget( entity pingingPlayer, int pingType, entity focusEnt, vector pingLoc, entity wayPoint )
+{
+	if ( pingType != ePingType.BLEEDOUT && pingType != ePingType.RESPAWN_BANNER )
+			return
+
+	//
+	if ( !IsAlive( GetLocalClientPlayer() ) )
+		return
+
+	thread TrackCrosshairTargetForPing( wayPoint )
+}
+
+//
+//
+//
+void function TrackCrosshairTargetForPing( entity wayPoint )
+{
+	EndSignal( wayPoint, "OnDestroy" )
+
+	bool wasVisible = true
+	while ( IsValid( wayPoint ) )
+	{
+		bool isVisible = true
+
+		if ( GetAimAssistCurrentTarget() != null )
+		{
+			vector eyePos        = GetLocalViewPlayer().EyePosition()
+			vector vecToTarget   = Normalize( GetAimAssistCurrentTarget().GetWorldSpaceCenter() - eyePos )
+			vector vecToWaypoint = Normalize( wayPoint.GetOrigin() - eyePos )
+			isVisible = vecToTarget.Dot( vecToWaypoint ) < 0.998
+		}
+
+		if ( isVisible != wasVisible )
+		{
+			if ( wayPoint.wp.ruiHud != null )
+				RuiSetBool( wayPoint.wp.ruiHud, "isHidden", !isVisible )
+		}
+
+		wasVisible = isVisible
+		wait 0.1
+	}
+}
+#endif

@@ -1,0 +1,189 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"Pilot_PulseBlade_Fly_By_Whoosh_3P"
+		"whizby_sound_from_AI"		"Pilot_PulseBlade_Fly_By_Whoosh_3P"
+	}
+
+	FX
+	{
+		"C" "P_impact_exp_emp_drone" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_exp_emp_drone" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
+		"E" "P_impact_exp_emp_drone" // metal_titan
+
+		"F" "P_impact_exp_emp_drone" //flesh
+		"G" "P_impact_exp_emp_drone" //metalgrate, chainlink, chain
+		"H" "P_impact_exp_emp_drone" //alienflesh
+
+		"J" "P_impact_exp_emp_drone" //grass
+		"K" "P_impact_exp_emp_drone" //Mud
+		"L" "P_impact_exp_emp_drone" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_exp_emp_drone" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_exp_emp_drone"
+		"O" "P_impact_exp_emp_drone" //Foliage
+		"P" "P_impact_exp_emp_drone" //Computer
+		"Q" "P_impact_exp_emp_drone" //Snow
+		"R" "P_impact_exp_emp_drone" //ice
+		"S" "P_impact_exp_emp_drone" //water, slime
+		"T" "P_impact_exp_emp_drone" //tile
+		"U" "P_impact_exp_emp_drone" //glass_breakable
+
+		"V" "P_impact_exp_emp_drone" //Metal Vent
+		"W" "P_impact_exp_emp_drone" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_exp_emp_drone" //xo_shield
+
+		"Y" "P_impact_exp_emp_drone" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_exp_emp_drone"  //sand
+
+//		"0" "openslot"
+		"1" "P_impact_exp_emp_drone" //lava_flow
+		"2" "P_impact_exp_emp_drone" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"airburst" "P_impact_exp_emp_drone"
+		"critical_hit" "P_impact_exp_emp_drone"
+
+		"headshot_flesh" "P_impact_exp_emp_drone"
+		"headshot_mechanical" "P_impact_exp_emp_drone"
+	}
+
+	Sound
+	{
+		"C" "Char11_UltimateA_C_3p"
+		"D" "Char11_UltimateA_C_3p"
+		"E" "Char11_UltimateA_C_3p"
+
+		"F" "Char11_UltimateA_C_3p"
+		"G" "Char11_UltimateA_C_3p"
+		"H" "Char11_UltimateA_C_3p"
+
+		"J" "Char11_UltimateA_C_3p"
+		"K" "Char11_UltimateA_C_3p"
+		"L" "Char11_UltimateA_C_3p"
+		"M" "Char11_UltimateA_C_3p"
+		"N" "Char11_UltimateA_C_3p"
+		"O" "Char11_UltimateA_C_3p"
+		"P" "Char11_UltimateA_C_3p"
+		"Q" "Char11_UltimateA_C_3p"
+		"R" "Char11_UltimateA_C_3p"
+		"S" "Char11_UltimateA_C_3p"
+		"T" "Char11_UltimateA_C_3p"
+		"U" "Char11_UltimateA_C_3p"
+
+		"V" "Char11_UltimateA_C_3p"
+		"W" "Char11_UltimateA_C_3p"
+		"X" "Char11_UltimateA_C_3p"
+		"Y" "Char11_UltimateA_C_3p"
+		"Z" "Char11_UltimateA_C_3p"
+
+
+		"1" "Char11_UltimateA_C_3p"
+		"2" "Char11_UltimateA_C_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Char11_UltimateA_C_3p"
+		"shieldhit" "Char11_UltimateA_C_3p"
+
+		"headshot_flesh" "Char11_UltimateA_C_3p"
+		"headshot_mechanical" "Char11_UltimateA_C_3p"
+	}
+
+	Sound_attacker
+	{
+		"C" "Explo_ProximityEMP_Impact_1P"
+		"D" "Explo_ProximityEMP_Impact_1P"
+		"E" "Explo_ProximityEMP_Impact_1P"
+
+		"F" "Explo_ProximityEMP_Impact_1P"
+		"G" "Explo_ProximityEMP_Impact_1P"
+		"H" "Explo_ProximityEMP_Impact_1P"
+
+		"J" "Explo_ProximityEMP_Impact_1P"
+		"K" "Explo_ProximityEMP_Impact_1P"  // mud?
+		"L" "Explo_ProximityEMP_Impact_1P"
+		"M" "Explo_ProximityEMP_Impact_1P"
+		"N" "Explo_ProximityEMP_Impact_1P"	// sand?
+		"O" "Explo_ProximityEMP_Impact_1P"
+		"P" "Explo_ProximityEMP_Impact_1P"
+		"Q" "Explo_ProximityEMP_Impact_1P"
+		"R" "Explo_ProximityEMP_Impact_1P"
+		"S" "Explo_ProximityEMP_Impact_1P"
+		"T" "Explo_ProximityEMP_Impact_1P"
+		"U" "Explo_ProximityEMP_Impact_1P"
+
+		"V" "Explo_ProximityEMP_Impact_1P"
+		"W" "Explo_ProximityEMP_Impact_1P"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
+		"Y" "Explo_ProximityEMP_Impact_1P"
+		"Z" "Explo_ProximityEMP_Impact_1P"
+
+		"1" "Explo_ProximityEMP_Impact_1P"
+		"2" "Explo_ProximityEMP_Impact_1P"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_ProximityEMP_Impact_1P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+
+		"headshot_flesh" "Explo_ProximityEMP_Impact_1P"
+		"headshot_mechanical" "Explo_ProximityEMP_Impact_1P"
+	}
+
+	Sound_victim
+	{
+		"C" "Char11_UltimateA_C_3p"
+		"D" "Char11_UltimateA_C_3p"
+		"E" "Char11_UltimateA_C_3p"
+
+		"F" "Char11_UltimateA_C_3p"
+		"G" "Char11_UltimateA_C_3p"
+		"H" "Char11_UltimateA_C_3p"
+
+		"J" "Char11_UltimateA_C_3p"
+		"K" "Char11_UltimateA_C_3p"
+		"L" "Char11_UltimateA_C_3p"
+		"M" "Char11_UltimateA_C_3p"
+		"N" "Char11_UltimateA_C_3p"
+		"O" "Char11_UltimateA_C_3p"
+		"P" "Char11_UltimateA_C_3p"
+		"Q" "Char11_UltimateA_C_3p"
+		"R" "Char11_UltimateA_C_3p"
+		"S" "Char11_UltimateA_C_3p"
+		"T" "Char11_UltimateA_C_3p"
+		"U" "Char11_UltimateA_C_3p"
+
+		"V" "Char11_UltimateA_C_3p"
+		"W" "Char11_UltimateA_C_3p"
+		"X" "Char11_UltimateA_C_3p"
+		"Y" "Char11_UltimateA_C_3p"
+		"Z" "Char11_UltimateA_C_3p"
+
+		"1" "Char11_UltimateA_C_3p"
+		"2" "Char11_UltimateA_C_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Char11_UltimateA_C_3p"
+		"shieldhit" "Char11_UltimateA_C_3p"
+
+		"headshot_flesh" "Char11_UltimateA_C_3p"
+		"headshot_mechanical" "Char11_UltimateA_C_3p"
+	}
+
+
+}

@@ -21,15 +21,15 @@ DF_DISMEMBERMENT								// 17
 DF_MAX_RANGE									// 18
 DF_SHIELD_DAMAGE								// 19
 DF_CRITICAL										// 20
-DF_SKIP_DAMAGE_PROT								// 21
+DF_SNIPER										// 21
 DF_HEADSHOT										// 22
 DF_VORTEX_REFIRE								// 23
-DF_RODEO										// 24
+DF_OVERSHIELD									// 24
 DF_KNOCKDOWN								    // 25
 DF_KILLSHOT										// 26
 DF_SHOTGUN										// 27
 DF_SKIPS_DOOMED_STATE							// 28
 DF_DOOMED_HEALTH_LOSS							// 29
-DF_DOOM_PROTECTED								// 30
+DF_SHADOW_DAMAGE								// 30
 DF_DOOM_FATALITY								// 31
 DF_NO_HITBEEP									// 32 max

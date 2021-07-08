@@ -1451,7 +1451,7 @@ bool function PlayerHadEAAccessOnXbox( entity player )
 
 bool function PlayerHadEAAccess( entity player )
 {
-	return player.GetPersistentVarAsInt( "accessAcknowledged" ) > 0
+	return true//player.GetPersistentVarAsInt( "accessAcknowledged" ) > 0
 }
 
 
@@ -1481,6 +1481,15 @@ bool function PlayerIsOnXbox( entity player )
 				return false
 			#endif
 		#endif
+}
+bool function PlayerHasTwitchPrimeRewards( entity player, string rewardName )
+{
+	//#if(CLIENT)
+	//	return player.DoesUserHaveTwitchPrimeReward( rewardName ) ? true : false
+	//#else
+	//	return DoesUserHaveTwitchPrimeReward( rewardName )
+	//#endif
+	return true
 }
 
 bool function PlayerHasEAAccess( entity player )
@@ -1521,7 +1530,7 @@ bool function PlayerHasFoundersPack( entity player )
 
 bool function PlayerHadPSPlus( entity player )
 {
-	return player.GetPersistentVarAsInt( "plusAcknowledged" ) > 0
+	return true//player.GetPersistentVarAsInt( "plusAcknowledged" ) > 0
 }
 
 

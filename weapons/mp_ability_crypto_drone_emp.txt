@@ -1,0 +1,90 @@
+#base "_base_ability_ultimate.txt"
+
+WeaponData
+{
+	// General
+	"printname"   									"#WPN_DRONE_EMP"
+	"shortprintname"								"#WPN_DRONE_EMP"
+	"description" 									"#WPN_DRONE_EMP_DESC"
+	"longdesc"										"#WPN_DRONE_EMP_LONGDESC"
+
+	"menu_icon"										"rui/hud/ultimate_icons/ultimate_crypto"
+	"hud_icon"										"rui/hud/ultimate_icons/ultimate_crypto"
+
+    "readymessage"                                  "BUG IT"
+    "readyhint"                                     "BUG IT"
+
+	"weapon_type_flags"								"WPT_ULTIMATE"
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhand"
+	"is_toss_weapon"                                "0"
+	"offhand_default_inventory_slot"				"4"
+	"offhand_interupts_weapon_anims"				"1"
+
+	"viewmodel"										"mdl/weapons/crypto_puzzle_remote/ptpov_crypto_puzzle_remote.rmdl"
+
+	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_ability_crypto_drone_emp"
+	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_ability_crypto_drone_emp"
+	"OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
+
+	// Ammo
+	"ammo_clip_size"   								"180"
+	"ammo_default_total"							"0"
+	"ammo_display"									"count"
+	"ammo_min_to_fire"								"180"
+	"ammo_per_shot"									"180"
+	"ammo_stockpile_max"							"0"
+	"ammo_drains_to_empty_on_fire"					"0"
+	"ammo_no_remove_from_clip"						"0"
+    "ammo_no_remove_from_stockpile"					"0"
+
+	"offhand_switch_force_draw"						"1"
+
+	// Regen Ammo
+	"regen_ammo_refill_rate"						"1"
+	"regen_ammo_refill_start_delay"					"0.0"
+
+	// Damage
+	"damage_type" 									"none"
+	"explosion_damage_heavy_armor"					"0"
+	"damage_near_distance"							"0"
+	"damage_far_distance" 							"0"
+	"damage_near_value"   							"0"
+	"damage_far_value"								"0"
+
+	"zoom_effects"									"0"
+
+	// Rumble
+	"rumble"  										"-1"
+
+	// Behavior
+	"fire_rate"   									"1.3"
+	"fire_duration"									"0.0"
+	//"fire_anim_rate"								"1.0"
+	"holster_time"									"0.15"
+	"deploy_time" 									"0.15"
+	"lower_time"  									"0.15"
+	"raise_time"  									"0.15"
+	"allow_empty_fire"								"0"
+	"reload_enabled"								"0"
+	"empty_reload_only"   							"0"
+	"allow_empty_click"   							"0"
+	"trigger_snipercam"   							"0"
+	"allow_headshots" 								"0"
+	"breaks_cloak"									"0"
+	"primary_fire_does_not_block_sprint"			"1"
+	"aimassist_disable_hipfire"						"1"
+	"aimassist_disable_ads"							"1"
+	"cooldown_type"									"ammo"
+
+	//"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+	"sound_weapon_ready"							"survival_ui_ultimate_ready"
+
+	Mods
+	{
+	    survival_armor_cooldown_mod
+        {
+            "regen_ammo_refill_rate"    "*1.25"
+        }
+	}
+}

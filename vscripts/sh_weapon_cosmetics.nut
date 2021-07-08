@@ -15,6 +15,11 @@ global function WeaponSkin_GetWeaponFlavor
 global function WeaponSkin_GetVideo
 
 global function Loadout_WeaponCharm
+global function WeaponCharm_IsTheEmpty
+global function WeaponCharm_GetCharmModel
+global function WeaponCharm_GetAttachmentName
+global function WeaponCharm_GetSortOrdinal
+global function GetWeaponThatCharmIsCurrentlyEquippedToForPlayer
 #if SERVER
 global function AddCallback_UpdatePlayerWeaponCosmetics
 #endif
@@ -24,6 +29,8 @@ global function WeaponCosmetics_Apply
 #endif
 #if R5DEV && CLIENT
 global function DEV_TestWeaponSkinData
+global function DEV_GetCharmForCurrentWeapon
+global function DEV_SetCharmForCurrentWeapon
 #endif
 #if CLIENT
 global function GetCharmForWeaponEntity
@@ -148,8 +155,50 @@ void function OnItemFlavorRegistered_LootMainWeapon( ItemFlavor weaponFlavor )
 		} )
 		fileLevel.loadoutWeaponSkinSlotMap[weaponFlavor] <- entry
 	}
+
+	//
+	{
+		array<ItemFlavor> charmList = RegisterReferencedItemFlavorsFromArray( weaponFlavor, "charms", "flavor", "featureFlag" )
+		fileLevel.weaponCharmSetMap[weaponFlavor] <- MakeItemFlavorSet( charmList, fileLevel.cosmeticFlavorSortOrdinalMap )
+		foreach( ItemFlavor charm in charmList )
+		{
+			fileLevel.charmWeaponMap[charm] <- weaponFlavor
+			SetupWeaponCharm( charm )
+		}
+
+		LoadoutEntry charmEntry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "weapon_charm_for_" + ItemFlavor_GetGUIDString( weaponFlavor ) )
+		charmEntry.pdefSectionKey = "weapon " + ItemFlavor_GetGUIDString( weaponFlavor )
+		charmEntry.DEV_category = "weapon_charms"
+		charmEntry.DEV_name = ItemFlavor_GetHumanReadableRef( weaponFlavor ) + " Charm"
+		charmEntry.defaultItemFlavor = charmList[0]
+		charmEntry.validItemFlavorList = charmList
+		charmEntry.isSlotLocked = bool function( EHI playerEHI ) {
+			return !IsLobby()
+		}
+		charmEntry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+		charmEntry.isItemFlavorUnlocked = bool function( EHI playerEHI, ItemFlavor flavor, bool shouldIgnoreOtherSlots ) : ( weaponFlavor ) {
+			if ( shouldIgnoreOtherSlots )
+				return true
+
+			ItemFlavor ornull flavorCurrentWeaponEquippedTo = GetWeaponThatCharmIsCurrentlyEquippedToForPlayer( playerEHI, flavor )
+			return (flavorCurrentWeaponEquippedTo == null || flavorCurrentWeaponEquippedTo == weaponFlavor)
+		}
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( charmEntry, void function( EHI playerEHI, ItemFlavor charm ) : ( weaponFlavor, charmEntry ) {
+		} )
+
+		fileLevel.loadoutWeaponCharmSlotMap[weaponFlavor] <- charmEntry
+	}
 }
 
+void function SetupWeaponCharm( ItemFlavor charm )
+{
+	asset charmMdoel = WeaponCharm_GetCharmModel( charm )
+
+	#if(CLIENT)
+		if ( charmMdoel != $"" )
+			PrecacheModel( charmMdoel )
+	#endif
+}
 
 void function SetupWeaponSkin( ItemFlavor skin )
 {
@@ -176,6 +225,28 @@ void function SetupWeaponSkin( ItemFlavor skin )
 		}
 
 		fileLevel.weaponSkinLegendaryIndexMap[skin] <- weaponLegendaryIndexMap[worldModel]
+		if ( WeaponSkin_DoesReactToKills( skin ) )
+		{
+			for ( int levelIdx = 0; levelIdx < WeaponSkin_GetReactToKillsLevelCount( skin ); levelIdx++ )
+			{
+				WeaponReactiveKillsData rtked = WeaponSkin_GetReactToKillsDataForLevel( skin, levelIdx )
+				foreach ( asset fx in rtked.killFX1PList )
+					if ( fx != $"" )
+						PrecacheParticleSystem( fx )
+
+				foreach ( asset fx in rtked.persistentFX1PList )
+					if ( fx != $"" )
+						PrecacheParticleSystem( fx )
+
+				foreach ( asset fx in rtked.killFX3PList )
+					if ( fx != $"" )
+						PrecacheParticleSystem( fx )
+
+				foreach ( asset fx in rtked.persistentFX3PList )
+					if ( fx != $"" )
+						PrecacheParticleSystem( fx )
+			}
+		}
 	#endif
 }
 
@@ -195,11 +266,153 @@ LoadoutEntry function Loadout_WeaponCharm( ItemFlavor weaponFlavor )
 	return fileLevel.loadoutWeaponCharmSlotMap[weaponFlavor]
 }
 
+
+bool function WeaponCharm_IsTheEmpty( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_charm )
+
+	return GetGlobalSettingsBool( ItemFlavor_GetAsset( flavor ), "isTheEmpty" )
+}
+
+asset function WeaponCharm_GetCharmModel( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_charm )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "charmModel" )
+}
+
+string function WeaponCharm_GetAttachmentName( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_charm )
+
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "attachmentName" )
+}
+
+int function WeaponCharm_GetSortOrdinal( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_charm )
+
+	return fileLevel.cosmeticFlavorSortOrdinalMap[flavor]
+}
+
+
+ItemFlavor ornull function GetWeaponThatCharmIsCurrentlyEquippedToForPlayer( EHI playerEHI, ItemFlavor charmFlav )
+{
+	if ( WeaponCharm_IsTheEmpty( charmFlav ) )
+		return null
+
+	foreach ( ItemFlavor weaponFlav in GetAllWeaponItemFlavors() )
+	{
+		LoadoutEntry otherEntry = Loadout_WeaponCharm( weaponFlav )
+
+		if ( LoadoutSlot_GetItemFlavor_ForValidation( playerEHI, otherEntry ) == charmFlav )
+			return weaponFlav
+	}
+
+	return null
+}
+
+
+int function WeaponSkin_GetSortOrdinal( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
+
+	return fileLevel.cosmeticFlavorSortOrdinalMap[flavor]
+}
+
+#if R5DEV && CLIENT 
+void function DEV_SetCharmForCurrentWeapon( asset charmModel, string attachmentName )
+{
+	entity player = GetLocalClientPlayer()
+	PrecacheModel( charmModel )
+	if ( IsValid( player ) )
+	{
+		entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if ( IsValid( weapon ) )
+			weapon.SetWeaponCharm( charmModel, attachmentName )
+		else
+			printt( "Error: No active weapon to attach the charm to." )
+	}
+	else
+	{
+		printt( "Error: No valid local player. Can't attach charm to the active weapon." )
+	}
+}
+
+entity function DEV_GetCharmForCurrentWeapon()
+{
+	entity player = GetLocalClientPlayer()
+	entity charm  = null
+	if ( IsValid( player ) )
+	{
+		entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+		if ( IsValid( weapon ) )
+			charm = weapon.GetCurrentWeaponCharm()
+		else
+			printt( "Error: No active wpeaon to get the current charm." )
+	}
+	else
+	{
+		printt( "Error: No valid local player. Can't get charm for the active wepaon." )
+	}
+	return charm
+}
+#endif //
+
 ///////////////////
 ///////////////////
 //// Internals ////
 ///////////////////
 ///////////////////
+#if SERVER || CLIENT
+void function WeaponSkin_Apply( entity ent, ItemFlavor skin )
+{
+	Assert( ItemFlavor_GetType( skin ) == eItemType.weapon_skin )
+
+	ent.e.__itemFlavorNetworkId = ItemFlavor_GetNetworkIndex_DEPRECATED( skin )
+	ent.SetSkin( 0 ) // Lame that we need this, but this avoids invalid skin errors when the model changes and the currently shown skin index doesn't exist for the new model
+
+	#if SERVER
+		if ( ent.GetNetworkedClassName() == "prop_survival" )
+		{
+			ent.SetModel( WeaponSkin_GetWorldModel( skin ) ) // in the world, we want to show the worldmodel
+
+			ent.SetSurvivalProperty( ent.e.__itemFlavorNetworkId ) // TODO: real network values
+		}
+		else if ( ent.GetNetworkedClassName() == "weaponx" )
+		{
+			//Assert( ent.GetWeaponClassName() == WeaponItemFlavor_GetClassname( WeaponSkin_GetWeaponFlavor( skin ) ) ) // gold weapons
+			ent.SetModel( WeaponSkin_GetWorldModel( skin ) )
+			ent.SetLegendaryModelIndex( fileLevel.weaponSkinLegendaryIndexMap[skin] )
+
+			ent.SetGrade( ent.e.__itemFlavorNetworkId ) // TODO: real network values
+		}
+		else
+		{
+			Assert( false, "Attempted to apply weapon skin to unexpected entity: " + string(ent.GetNetworkedClassName()) )
+		}
+	#elseif CLIENT
+		Assert( ent.IsClientOnly(), ent + " isn't client only" )
+		Assert( ent.GetCodeClassName() == "dynamicprop", ent + " has classname \"" + ent.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
+
+		ent.SetModel( WeaponSkin_GetViewModel( skin ) ) // in the menus, we want to show the viewmodel, because it's the highest LOD
+	#endif
+
+	int skinIndex = ent.GetSkinIndexByName( WeaponSkin_GetSkinName( skin ) )
+	int camoIndex = WeaponSkin_GetCamoIndex( skin )
+
+	if ( skinIndex == -1 )
+	{
+		skinIndex = 0
+		camoIndex = 0
+	}
+
+	ent.SetSkin( skinIndex )
+	ent.SetCamo( camoIndex )
+}
+
+#endif // SERVER || CLIENT
+
 #if SERVER
 void function UpdatePlayerWeaponCosmetics( entity player, ItemFlavor weaponFlavor, ItemFlavor skin )
 {
@@ -323,69 +536,22 @@ WeaponReactiveKillsData function WeaponSkin_GetReactToKillsDataForLevel( ItemFla
 		rtked.persistentFX3PList.append( GetSettingsBlockStringAsAsset( persistentFXBlock, "fx3p" ) )
 		rtked.persistentFXAttachmentList.append( GetSettingsBlockString( persistentFXBlock, "attachment" ) )
 	}
+	foreach ( var bodygroupChangeBlock in IterateSettingsArray( GetSettingsBlockArray( levelBlock, "bodygroupChangeList" ) ) )
+	{
+		string name     = GetSettingsBlockString( bodygroupChangeBlock, "bodygroupName" )
+		int submodelIdx = GetSettingsBlockInt( bodygroupChangeBlock, "submodelIdx" )
+		rtked.bodygroupSubmodelIdxMap[name] <- submodelIdx
+	}
+	foreach ( var weaponModBlock in IterateSettingsArray( GetSettingsBlockArray( levelBlock, "weaponModListAdd" ) ) )
+	{
+		rtked.weaponModsToAdd.append( GetSettingsBlockString( weaponModBlock, "weaponMod" ) )
+	}
+	foreach ( var weaponModBlock in IterateSettingsArray( GetSettingsBlockArray( levelBlock, "weaponModListRemove" ) ) )
+	{
+		rtked.weaponModsToRemove.append( GetSettingsBlockString( weaponModBlock, "weaponMod" ) )
+	}
 	return rtked
 }
-
-
-asset function WeaponSkin_GetVideo( ItemFlavor flavor )
-{
-	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
-
-	return GetGlobalSettingsStringAsAsset( ItemFlavor_GetAsset( flavor ), "video" )
-}
-
-#if SERVER || CLIENT
-void function WeaponSkin_Apply( entity ent, ItemFlavor skin )
-{
-	Assert( ItemFlavor_GetType( skin ) == eItemType.weapon_skin )
-
-	ent.e.__itemFlavorNetworkId = ItemFlavor_GetNetworkIndex_DEPRECATED( skin )
-	ent.SetSkin( 0 ) // Lame that we need this, but this avoids invalid skin errors when the model changes and the currently shown skin index doesn't exist for the new model
-
-	#if SERVER
-		if ( ent.GetNetworkedClassName() == "prop_survival" )
-		{
-			ent.SetModel( WeaponSkin_GetWorldModel( skin ) ) // in the world, we want to show the worldmodel
-
-			ent.SetSurvivalProperty( ent.e.__itemFlavorNetworkId ) // TODO: real network values
-		}
-		else if ( ent.GetNetworkedClassName() == "weaponx" )
-		{
-			//Assert( ent.GetWeaponClassName() == WeaponItemFlavor_GetClassname( WeaponSkin_GetWeaponFlavor( skin ) ) ) // gold weapons
-			ent.SetModel( WeaponSkin_GetWorldModel( skin ) )
-			ent.SetLegendaryModelIndex( fileLevel.weaponSkinLegendaryIndexMap[skin] )
-
-			ent.SetGrade( ent.e.__itemFlavorNetworkId ) // TODO: real network values
-		}
-		else
-		{
-			Assert( false, "Attempted to apply weapon skin to unexpected entity: " + string(ent.GetNetworkedClassName()) )
-		}
-	#elseif CLIENT
-		Assert( ent.IsClientOnly(), ent + " isn't client only" )
-		Assert( ent.GetCodeClassName() == "dynamicprop", ent + " has classname \"" + ent.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
-
-		ent.SetModel( WeaponSkin_GetViewModel( skin ) ) // in the menus, we want to show the viewmodel, because it's the highest LOD
-	#endif
-
-	int skinIndex = ent.GetSkinIndexByName( WeaponSkin_GetSkinName( skin ) )
-	int camoIndex = WeaponSkin_GetCamoIndex( skin )
-
-	if ( skinIndex == -1 )
-	{
-		skinIndex = 0
-		camoIndex = 0
-	}
-
-	ent.SetSkin( skinIndex )
-	ent.SetCamo( camoIndex )
-}
-
-void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, ItemFlavor ornull charmOrNull )
-{
-	// TODO: "WeaponSkin_Apply(...)" has to be replaced for this in the future
-}
-#endif // SERVER || CLIENT
 
 
 int function WeaponSkin_GetReactToKillsLevelIndexForKillCount( ItemFlavor flavor, int killCount )
@@ -410,33 +576,132 @@ int function WeaponSkin_GetReactToKillsLevelIndexForKillCount( ItemFlavor flavor
 }
 
 
-int function WeaponSkin_GetSortOrdinal( ItemFlavor flavor )
+asset function WeaponSkin_GetVideo( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
 
-	return fileLevel.cosmeticFlavorSortOrdinalMap[flavor]
+	return GetGlobalSettingsStringAsAsset( ItemFlavor_GetAsset( flavor ), "video" )
 }
 
-
-#if R5DEV && CLIENT
-void function DEV_TestWeaponSkinData()
+const bool CHARM_DEBUG = true
+#if SERVER || CLIENT
+void function WeaponCosmetics_Apply( entity ent, ItemFlavor ornull skinOrNull, ItemFlavor ornull charmOrNull )
 {
-	entity model = CreateClientSidePropDynamic( <0, 0, 0>, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
-
-	foreach ( weapon in GetAllWeaponItemFlavors() )
+	if ( skinOrNull != null )
 	{
-		array<ItemFlavor> weaponSkins = GetValidItemFlavorsForLoadoutSlot( LocalClientEHI(), Loadout_WeaponSkin( weapon ) )
+		ItemFlavor skin = expect ItemFlavor( skinOrNull )
+		Assert( ItemFlavor_GetType( skin ) == eItemType.weapon_skin )
 
-		foreach ( skin in weaponSkins )
+		#if SERVER
+
+
+#endif
+
+		ent.e.__itemFlavorNetworkId = ItemFlavor_GetNetworkIndex_DEPRECATED( skin )
+		ent.SetSkin( 0 ) //
+
+		#if SERVER
+
+
+//
+
+//
+
+
+
+//
+
+
+
+//
+
+
+
+
+
+#elseif CLIENT
+			Assert( ent.IsClientOnly(), ent + " isn't client only" )
+			Assert( ent.GetCodeClassName() == "dynamicprop", ent + " has classname \"" + ent.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
+
+			ent.SetModel( WeaponSkin_GetViewModel( skin ) ) //
+		#endif
+
+		int skinIndex = ent.GetSkinIndexByName( WeaponSkin_GetSkinName( skin ) )
+		int camoIndex = WeaponSkin_GetCamoIndex( skin )
+
+		if ( skinIndex == -1 )
 		{
-			printt( ItemFlavor_GetHumanReadableRef( skin ), "skinName:", WeaponSkin_GetSkinName( skin ) )
-			WeaponSkin_Apply( model, skin )
+			skinIndex = 0
+			camoIndex = 0
 		}
+
+		ent.SetSkin( skinIndex )
+		ent.SetCamo( camoIndex )
+
+		#if SERVER
+
+
+#endif
 	}
 
-	model.Destroy()
+	if ( charmOrNull != null )
+	{
+		ItemFlavor charm = expect ItemFlavor( charmOrNull )
+		Assert( ItemFlavor_GetType( charm ) == eItemType.weapon_charm )
+		asset charmModel = WeaponCharm_GetCharmModel( charm )
+		string attachmentName = WeaponCharm_GetAttachmentName( charm )
+
+	//ent.e.charmItemFlavorNetworkId = ItemFlavor_GetNetworkIndex_DEPRECATED( charm )
+
+	#if SERVER
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#elseif CLIENT
+			Assert( ent.IsClientOnly(), ent + " isn't client only" )
+			Assert( ent.GetCodeClassName() == "dynamicprop", ent + " has classname \"" + ent.GetCodeClassName() + "\" instead of \"dynamicprop\"" )
+
+		if ( CHARM_DEBUG )
+			printt( "CHARM_DEBUG: Setting weapon charm " + ItemFlavor_GetHumanReadableRef( charm ) + " for weapon " + ent + " ( " + ent.GetModelName() + " ) (client)" )
+
+			DestroyCharmForWeaponEntity( ent )
+			if ( charmModel != $"" )
+			{
+				entity charmEnt = CreateClientSidePropDynamic( ent.GetOrigin(), ent.GetAngles(), charmModel )
+				charmEnt.MakeSafeForUIScriptHack()
+				charmEnt.kv.renderamt = ent.kv.renderamt
+				if ( ent.IsHidden() )
+					charmEnt.Hide()
+				charmEnt.SetParent( ent, attachmentName, false )
+				charmEnt.SetModelScale( ent.GetModelScale() )
+
+			fileLevel.menuWeaponCharmEntityMap[ent] <- charmEnt
+
+			AddEntityDestroyedCallback( charmEnt, void function ( entity charmEnt ) : ( ent ) {
+				if ( ent in fileLevel.menuWeaponCharmEntityMap )
+				{
+					delete fileLevel.menuWeaponCharmEntityMap[ent]
+				}
+			} )
+		}
+	#endif
 }
-#endif // DEV && CLIENT
+}
+#endif //
+
+
 
 #if CLIENT
 entity function GetCharmForWeaponEntity( entity weapEnt )
@@ -468,4 +733,55 @@ void function DestroyCharmForWeaponEntity( entity weapEnt )
 	}
 }
 
-#endif // CLIENT
+#endif
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+
+#if R5DEV && CLIENT
+void function DEV_TestWeaponSkinData()
+{
+	entity model = CreateClientSidePropDynamic( <0, 0, 0>, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
+
+	foreach ( weapon in GetAllWeaponItemFlavors() )
+	{
+		array<ItemFlavor> weaponSkins = GetValidItemFlavorsForLoadoutSlot( LocalClientEHI(), Loadout_WeaponSkin( weapon ) )
+
+		foreach ( skin in weaponSkins )
+		{
+			printt( ItemFlavor_GetHumanReadableRef( skin ), "skinName:", WeaponSkin_GetSkinName( skin ) )
+			WeaponCosmetics_Apply( model, skin, null )
+		}
+	}
+
+	model.Destroy()
+}
+#endif // DEV && CLIENT

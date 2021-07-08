@@ -26,7 +26,6 @@ WeaponData
 	"damage_leg_scale"                              "0.75"
 
     "damage_shield_scale"                           "1"
-    "damage_heavyarmor_nontitan_scale"				"0.35"
 
     "critical_hit"									"1"
 	"critical_hit_damage_scale"						"1.5"
@@ -87,18 +86,15 @@ WeaponData
     // Script - Callbacks
     "OnWeaponActivate"								"OnWeaponActivate_weapon_basic_bolt"
     "OnClientAnimEvent"								"OnClientAnimEvent_weapon_basic_bolt"
-    "OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_basic_bolt"
-    "OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_basic_bolt"
-    "OnProjectileCollision"							"OnProjectileCollision_weapon_basic_bolt"
 
     // Projectile - Bolt info
     "bolt_hitsize"									"0.0"
-    "bolt_hitsize_grow1_time"						"0.005"
-    "bolt_hitsize_grow1_size"						"0.1"
-    "bolt_hitsize_grow2_time"						"0.07"
-    "bolt_hitsize_grow2_size"						"0.18"
-    "bolt_hitsize_growfinal_lerptime"				"0.1"
-    "bolt_hitsize_growfinal_size"					"0.25"
+    //"bolt_hitsize_grow1_time"						"0.005"
+    //"bolt_hitsize_grow1_size"						"0.0"
+    //"bolt_hitsize_grow2_time"						"0.07"
+    //"bolt_hitsize_grow2_size"						"0.18"
+    //"bolt_hitsize_growfinal_lerptime"				"0.1"
+    //"bolt_hitsize_growfinal_size"					"0.25"
 
     "projectile_drag_coefficient"                   "0.0025"
 

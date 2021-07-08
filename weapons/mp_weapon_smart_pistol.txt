@@ -16,7 +16,7 @@ WeaponData
 	"weaponClass" 									"human"
 	"weaponSubClass"								"autolock"
 	"body_type"										"light"
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
 	"pickup_hold_prompt"  							"Hold [USE] [WEAPONNAME]"
 	"pickup_press_prompt" 							"[USE] [WEAPONNAME]"
 	"minimap_reveal_distance"						"32000"
@@ -100,8 +100,6 @@ WeaponData
 		// Damage - When Used by Players
 		"damage_near_value"   							"11"
 		"damage_far_value"								"11"
-		"damage_near_value_titanarmor"					"11"
-		"damage_far_value_titanarmor" 					"11"
 
 		"damage_rodeo" 									"200"
 		"damage_near_distance"							"1250"  // match to search distance and red crosshair range
@@ -116,14 +114,6 @@ WeaponData
 		"smart_ammo_targeting_time_min_npc"				"0.1"
 		"smart_ammo_targeting_time_max_npc"				"0.2"
 
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"20"
-		"npc_damage_far_value"							"20"
-		"npc_damage_near_value_titanarmor"				"0"
-		"npc_damage_far_value_titanarmor" 				"0"
-		"npc_damage_near_distance"						"800"
-		"npc_damage_far_distance" 						"1000"
-
 		// NPC
 		"npc_min_range"   								"0"
 		"npc_max_range"   								"1500"
@@ -134,8 +124,6 @@ WeaponData
 		"npc_rest_time_between_bursts_max"				"0.3"
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-
-		"damage_heavyarmor_nontitan_scale"				"0.35"
 
 		"primary_fire_does_not_block_sprint"			"1" //Run and gun default for MP
 
@@ -155,8 +143,6 @@ WeaponData
 		// Damage - When Used by Players
 		"damage_near_value"   							"45"
 		"damage_far_value"								"35"
-		"damage_near_value_titanarmor"					"25"
-		"damage_far_value_titanarmor" 					"25"
 		"damage_rodeo" 									"200"
 		"damage_near_distance"							"750"  // match to search distance and red crosshair range
 		"damage_far_distance" 							"850"
@@ -169,33 +155,6 @@ WeaponData
 		"smart_ammo_targeting_time_max"					"0.8"//"0.65"
 		"smart_ammo_targeting_time_min_npc"				"0.1"
 		"smart_ammo_targeting_time_max_npc"				"0.2"
-
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"20"
-		"npc_damage_far_value"							"20"
-		"npc_damage_near_value_titanarmor"				"<KEEP_DEFAULT>"
-		"npc_damage_far_value_titanarmor" 				"<KEEP_DEFAULT>"
-		"npc_damage_near_distance"						"800"
-		"npc_damage_far_distance" 						"1000"
-
-		// NPC
-		"npc_min_range"   								"0"
-		"npc_max_range"   								"1500"
-
-		"npc_min_burst"   								"2"
-		"npc_max_burst"   								"5"
-		"npc_rest_time_between_bursts_min"				"0.2"
-		"npc_rest_time_between_bursts_max"				"0.3"
-
-		"enable_highlight_networking_on_creation"		"1"
-
-		"damage_heavyarmor_nontitan_scale"				"1"
-
-		"primary_fire_does_not_block_sprint"			"0" //Run and gun default for MP
-
-		"ammo_clip_size"   								"18"
-
-		"destroy_on_drop"								"0"
 	}
 
 	"proficiency_poor_spreadscale"					"7.0"

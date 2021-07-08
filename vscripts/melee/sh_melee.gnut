@@ -10,8 +10,8 @@ global function Loadout_MeleeSkin
 global function MeleeSkin_GetMainWeaponClassname
 global function MeleeSkin_GetOffhandWeaponClassname
 global function MeleeSkin_GetMenuModel
-global function MeleeSkin_GetMenuModelRotation
 global function MeleeSkin_GetMenuAnimSeq
+global function MeleeSkin_GetMenuModelRotation
 global function MeleeSkin_GetCharacterFlavor
 global function MeleeSkin_GetSortOrdinal
 #endif
@@ -191,15 +191,6 @@ asset function MeleeSkin_GetMenuModel( ItemFlavor meleeSkin )
 
 
 #if SERVER || CLIENT || UI
-ItemFlavor function MeleeSkin_GetCharacterFlavor( ItemFlavor character )
-{
-	Assert( ItemFlavor_GetType( character ) == eItemType.melee_skin )
-
-	return fileLevel.meleeSkinCharacterMap[character]
-}
-#endif
-
-#if SERVER || CLIENT || UI
 asset function MeleeSkin_GetMenuAnimSeq( ItemFlavor meleeSkin )
 {
 	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
@@ -208,13 +199,22 @@ asset function MeleeSkin_GetMenuAnimSeq( ItemFlavor meleeSkin )
 }
 #endif
 
-
 #if SERVER || CLIENT || UI
 vector function MeleeSkin_GetMenuModelRotation( ItemFlavor meleeSkin )
 {
 	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
 
 	return GetGlobalSettingsVector( ItemFlavor_GetAsset( meleeSkin ), "menuMdlRot" )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function MeleeSkin_GetCharacterFlavor( ItemFlavor meleeSkin )
+{
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
+
+	return fileLevel.meleeSkinCharacterMap[meleeSkin]
 }
 #endif
 
@@ -278,12 +278,13 @@ entity function GetPlayerMeleeAttackWeapon( entity player )
 #if SERVER || CLIENT
 bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNull, entity attackWeapon, entity target )
 {
-	Assert( attacker != target )
+	if ( attacker == target )
+		return false
 
 	if ( target.IsBreakableGlass() )
-		return true // special case
+		return true //
 
-	if ( !IsAlive( target ) )
+	if ( !target.CanBeMeleed() )
 		return false
 
 	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
@@ -293,6 +294,9 @@ bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNul
 		return false
 
 	if ( IsValid( attackWeapon ) && !attackWeapon.GetMeleeCanHitHumanSized() && IsHumanSized( target ) )
+		return false
+
+	if ( target.IsPhaseShifted() )
 		return false
 
 	if ( target.IsPlayer() || target.IsNPC() )
@@ -342,6 +346,16 @@ bool function AttackerCanStartMelee( entity attacker, entity inputWeaponOrNull, 
 
 	//if ( PlayerIsInMeleeBlockingADS( attacker ) )
 	//	return false
+	
+	if ( attacker.IsPhaseShifted() )
+    {
+        return false
+    }
+	
+	if ( attacker.Player_IsFreefalling() )
+    {
+        return false
+    }
 
 	if ( attacker.Lunge_IsActive() )
 		return false
@@ -384,10 +398,16 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 	// DOOR BUSTING PROTOTYPE
 	// todo(dw): use better door detection logic
 	{
-		entity lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
+		bool isShadowSquad = false
+		#if(true)
+			isShadowSquad = IsPlayerShadowSquad( attacker )
+		#endif //
+
+		bool doorLungeEnabled = !isShadowSquad && GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_special_kick", true )
+		entity lungeTarget    = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
 
 		vector eyeTraceHitPos
-		if ( !IsValid( lungeTarget ) )
+		if ( doorLungeEnabled && !IsValid( lungeTarget ) )
 		{
 			TraceResults eyeTrace = TraceLine(
 				attacker.EyePosition(), attacker.EyePosition() + 150.0 * attacker.GetViewVector(),
@@ -397,11 +417,11 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 			eyeTraceHitPos = eyeTrace.endPos
 		}
 
-		if ( IsValid( lungeTarget ) && IsDoor( lungeTarget ) && GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_special_kick", true ) )
+		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) )
 		{
 			meleeAttackWeapon.AddMod( "proto_door_kick" )
 
-			attacker.Lunge_SetTargetPosition( <eyeTraceHitPos.x, eyeTraceHitPos.y, lungeTarget.GetWorldSpaceCenter().z> )
+			attacker.Lunge_SetTargetPosition( <eyeTraceHitPos.x, eyeTraceHitPos.y, lungeTarget.GetWorldSpaceCenter().z - 52 > ) //
 			attacker.Lunge_SetSmoothTime( 0.7 )
 			attacker.Lunge_EnableFlying()
 		}
@@ -494,6 +514,7 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	int codeDamageType    = expect int(legacyTraceResults.damageType)
 	vector startPosition  = expect vector(legacyTraceResults.startPosition)
 	vector hitNormal      = Normalize( startPosition - endPosition )
+	int meleeAttackWeaponImpactTableIndex = meleeAttackWeapon.GetImpactTableIndex()
 
 	// Early out if we didn't hit anything
 	if ( !IsValid( target ) )
@@ -599,8 +620,15 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		attacker.PlayerMelee_EndAttack()
 
 		vector attackerKnockBackVelocity = -pushBackVelocity
+		bool isAttackingGround           = endPosition.z <= attacker.GetOrigin().z
 		attackerKnockBackVelocity.z = 0.0
-		attacker.KnockBack( attackerKnockBackVelocity * 0.5, 0.25 )
+		attackerKnockBackVelocity *= 0.5
+		if ( LengthSqr( attackerKnockBackVelocity ) > 0.0 && !isAttackingGround )
+		{
+			attacker.KnockBack( attackerKnockBackVelocity, 0.25 )
+		}
+
+		attacker.GrappleDetach()
 	}
 }
 #endif

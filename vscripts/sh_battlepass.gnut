@@ -19,6 +19,7 @@ global function BattlePass_GetBasicPurchasePack
 global function BattlePass_GetBundlePurchasePack
 global function BattlePass_GetXPPurchaseFlav
 global function BattlePass_GetXPBoostFlav
+global function BattlePass_GetRerollFlav
 global function BattlePass_GetScheduleDatatable
 global function BattlePass_GetBulletText
 global function GetBattlePassDisplayLevel
@@ -38,6 +39,9 @@ global function DoesPlayerOwnBattlePass
 global function GetCurrentBattlePassWeek
 global function GetCurrentBattlePassWeekExpirationTime
 global function GetBattlePassProgressBadge
+global function GetBattlePassChallenges
+global function BattlePassHasWeeklyChallenge
+global function GetBattlePassRecurringStarChallenge
 #endif
 
 
@@ -50,7 +54,6 @@ global function CanPlayerPurchaseBattlePass
 
 #if UI
 global function GetBattlePassXPEventValueDisplay
-global function GetImageForBattlePassReward
 global function GetStringForBattlePassReward
 global function ShouldBattlePassTabBeEnabled
 #endif
@@ -88,7 +91,8 @@ struct BattlePassData
 	int         maxPassLevel
 	int         maxPurchaseLevels = 99
 
-	array<asset> baseRewardAssets = []
+	table< int, table< int, array<ItemFlavor> > > challenges
+	ItemFlavor ornull recurringStarChallenge
 }
 
 ////////////////
@@ -128,6 +132,9 @@ void function ShBattlePass_LevelInit()
 		RegisterItemFlavorFromSettingsAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( pass ), "bundlePurchasePack" ) )
 		RegisterItemFlavorFromSettingsAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( pass ), "xpPurchaseFlav" ) )
 		RegisterItemFlavorFromSettingsAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( pass ), "xpBoostFlav" ) )
+		asset reroll = GetGlobalSettingsAsset( ItemFlavor_GetAsset( pass ), "challengeRerollFlav" )
+		if ( reroll != $"" )
+			RegisterItemFlavorFromSettingsAsset( reroll )
 
 		fileLevel.battlePassList.append( pass )
 
@@ -151,29 +158,157 @@ void function ShBattlePass_LevelInit()
 			passData.maxPassLevel = levelIndex
 		}
 
-		if ( ItemFlavor_GetAsset( pass ) == $"settings/itemflav/battlepass/season_01.rpak" )
+		array<asset> dupeCheck = []
+
+		passData.challenges[ eChallengeTimeSpanKind.DAILY ] <- {}
+		passData.challenges[ eChallengeTimeSpanKind.DAILY ][-1] <- []
+		foreach ( var block in IterateSettingsAssetArray( ItemFlavor_GetAsset( pass ), "dailyChallenges" ) )
 		{
-			passData.baseRewardAssets = [
-				$"settings/itemflav/character_skin/lifeline/season01_rare_01.rpak"
-				$"settings/itemflav/character_skin/mirage/season01_rare_01.rpak"
-				$"settings/itemflav/character_skin/wraith/season01_rare_01.rpak"
-			]
+			asset chAsset = GetSettingsBlockAsset( block, "flavor" )
+
+			Assert( !dupeCheck.contains( chAsset ) )
+			dupeCheck.append( chAsset )
+
+			ItemFlavor ornull challenge = RegisterChallengeFromAsset( chAsset )
+			if ( challenge != null )
+				passData.challenges[ eChallengeTimeSpanKind.DAILY ][-1].append( expect ItemFlavor( challenge ) )
 		}
-		else if ( ItemFlavor_GetAsset( pass ) == $"settings/itemflav/battlepass/season02.rpak" )
+
+		dupeCheck.clear()
+
+		passData.challenges[ eChallengeTimeSpanKind.SEASON_WEEKLY_RECURRING ] <- {}
+		passData.challenges[ eChallengeTimeSpanKind.SEASON_WEEKLY_RECURRING ][-1] <- []
+		foreach ( var block in IterateSettingsAssetArray( ItemFlavor_GetAsset( pass ), "weeklyRecurringChallenges" ) )
 		{
-			passData.baseRewardAssets = [
-				$"settings/itemflav/weapon_skin/spitfire/season02_legendary_01.rpak"
-				$"settings/itemflav/character_skin/gibraltar/season02_rare_01.rpak"
-				$"settings/itemflav/character_skin/bangalore/season02_rare_01.rpak"
-				$"settings/itemflav/character_skin/pathfinder/season02_rare_01.rpak"
-				$"settings/itemflav/xp_boost/battlepass_season02.rpak"
-			]
+			asset chAsset = GetSettingsBlockAsset( block, "flavor" )
+
+			Assert( !dupeCheck.contains( chAsset ) )
+			dupeCheck.append( chAsset )
+
+			ItemFlavor ornull challenge = RegisterChallengeFromAsset( chAsset )
+			if ( challenge != null )
+			{
+				expect ItemFlavor( challenge )
+				passData.challenges[ eChallengeTimeSpanKind.SEASON_WEEKLY_RECURRING ][-1].append( challenge )
+
+				if ( Challenge_GetStatRefs( challenge, 0 ).len() > 0 )
+				{
+					bool isStarChallenge = false
+					foreach ( sref in Challenge_GetStatRefs( challenge, 0 ) )
+					{
+						if ( sref == "stats.challenge_xp_earned" )
+						{
+							isStarChallenge = true
+						}
+						else
+						{
+							isStarChallenge = false
+							break
+						}
+					}
+
+					if ( isStarChallenge )
+					{
+						passData.recurringStarChallenge = challenge
+					}
+				}
+			}
 		}
+
+		dupeCheck.clear()
+
+		table<string, table<string,int> > zoneChallenges
+		table<string,int> zoneChallengesAll
+
+		passData.challenges[ eChallengeTimeSpanKind.SEASON_WEEKLY ] <- {}
+		foreach ( var block in IterateSettingsAssetArray( ItemFlavor_GetAsset( pass ), "weeklyChallenges" ) )
+		{
+			int week = GetSettingsBlockInt( block, "weekNumber" )
+			passData.challenges[ eChallengeTimeSpanKind.SEASON_WEEKLY ][week] <- []
+			foreach ( var chBlock in IterateSettingsArray( GetSettingsBlockArray( block, "challenges" ) ) )
+			{
+				asset chAsset = GetSettingsBlockAsset( chBlock, "flavor" )
+
+				Assert( !dupeCheck.contains( chAsset ) )
+				dupeCheck.append( chAsset )
+
+				ItemFlavor ornull challenge = RegisterChallengeFromAsset( chAsset )
+				if ( challenge != null )
+				{
+					expect ItemFlavor( challenge )
+					passData.challenges[ eChallengeTimeSpanKind.SEASON_WEEKLY ][week].append( challenge )
+
+					#if DEV && CLIENT 
+					int tierCount   = Challenge_GetTierCount( challenge )
+
+					for( int i=0; i<tierCount; i++ )
+					{
+						var tierData = Challenge_GetTierDataBlock( challenge, i )
+						string specifiedStatRef = GetSettingsBlockString( tierData, "statRef" )
+
+						if ( specifiedStatRef.find( "%char%" ) == -1 )
+							continue
+
+						foreach ( ref in Challenge_GetStatRefs( challenge, i ) )
+						{
+							array<string> breakdown = split( ref, "[]" )
+							string statType = breakdown[0].slice( "stats.".len() )
+							if ( statType == "characters" )
+							{
+								string zoneStatType = breakdown[2].slice( 1 )
+								ItemFlavor char = GetItemFlavorByGUID( ConvertItemFlavorGUIDStringToGUID( breakdown[1] ) )
+								string zoneName = ItemFlavor_GetLongName( char )
+
+								printt( zoneStatType + " - " + zoneName )
+
+								if (!( zoneStatType in zoneChallenges ))
+								{
+									zoneChallenges[ zoneStatType ] <- {}
+								}
+
+								if (!( zoneName in zoneChallenges[ zoneStatType ] ))
+								{
+									zoneChallenges[ zoneStatType ][ zoneName ] <- 0
+								}
+
+								if (!( zoneName in zoneChallengesAll ))
+								{
+									zoneChallengesAll[ zoneName ] <- 0
+								}
+
+								zoneChallenges[ zoneStatType ][ zoneName ] += 1
+								zoneChallengesAll[ zoneName ] += 1
+							}
+						}
+					}
+					#endif
+				}
+			}
+		}
+
+#if DEV && CLIENT 
+		printt( "---------------- CHARACTER CHALLENGES ----------------" )
+		foreach ( zoneStatType, zoneTbl in zoneChallenges )
+		{
+			printt( "----" + zoneStatType.toupper() + "----" )
+			foreach ( zone, count in zoneTbl )
+			{
+				printt( zone + " - " + count )
+			}
+		}
+
+		printt( "---------------- CHARACTER CHALLENGES TOTAL ----------------" )
+		foreach ( zone, count in zoneChallengesAll )
+		{
+			printt( zone + " - " + count )
+		}
+#endif
+
+		dupeCheck.clear()
 
 		fileLevel.battlePassMap[pass] <- passData
 	} )
 }
-
 
 int function GetMaxBattlePassLevelIndex( var passDataTable )
 {
@@ -239,7 +374,13 @@ ItemFlavor ornull function GetPlayerLastActiveBattlePass( EHI playerEHI )
 	if ( !IsBattlePassEnabled() )
 		return null
 
-	return null//Season_GetBattlePass( GetLatestSeason( GetUnixTimestamp() ) ) TODO: FIX
+	//
+	//
+	//
+	//
+	//
+
+	return Season_GetBattlePass( GetLatestSeason( GetUnixTimestamp() ) )
 }
 #endif
 
@@ -471,20 +612,7 @@ int function GetPlayerBattlePassCharacterXP( entity player, ItemFlavor pass, Ite
 #if SERVER || CLIENT || UI
 array<BattlePassReward> function GetBattlePassBaseRewards( ItemFlavor pass )
 {
-	array<BattlePassReward> rewardList = []
-
-	foreach ( rewardAsset in fileLevel.battlePassMap[pass].baseRewardAssets )
-	{
-		BattlePassReward reward
-		reward.flav = GetItemFlavorByAsset( rewardAsset )
-		reward.quantity = 1
-		reward.level = -1
-		reward.isPremium = true
-
-		rewardList.append( reward )
-	}
-
-	return rewardList
+	return GetBattlePassLevelRewards( pass, 0 )
 }
 
 
@@ -666,6 +794,14 @@ ItemFlavor function BattlePass_GetXPBoostFlav( ItemFlavor pass )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+ItemFlavor function BattlePass_GetRerollFlav( ItemFlavor pass )
+{
+	Assert( ItemFlavor_GetType( pass ) == eItemType.battlepass )
+
+	return GetItemFlavorByAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( pass ), "challengeRerollFlav" ) )
+}
+#endif
 
 #if SERVER || CLIENT || UI
 var function BattlePass_GetScheduleDatatable( ItemFlavor pass )
@@ -826,90 +962,6 @@ asset function GetBattlePassDisplayBadge( int levelIndex )
 	return badgeImage
 }
 
-
-#if UI
-asset function GetImageForBattlePassReward( BattlePassReward reward )
-{
-	ItemFlavor flavor = reward.flav
-	int itemType      = ItemFlavor_GetType( flavor )
-	asset buttonImage = $""
-
-	switch ( itemType )
-	{
-		case eItemType.account_pack:
-			buttonImage = $"rui/menu/buttons/battlepass/apex_pack"
-			break
-
-		case eItemType.character_skin:
-			buttonImage = ItemFlavor_GetIcon( flavor )
-			Assert( buttonImage != $"" )
-			break
-
-		case eItemType.weapon_skin:
-			buttonImage = ItemFlavor_GetIcon( flavor )
-			Assert( buttonImage != $"" )
-			break
-
-		case eItemType.gladiator_card_frame:
-			buttonImage = $"rui/menu/buttons/battlepass/banner_frame"
-			break
-
-		case eItemType.music_pack:
-			buttonImage = $"rui/menu/buttons/battlepass/music_pack"
-			break
-
-		case eItemType.skydive_emote:
-			buttonImage = $"rui/menu/buttons/battlepass/skydive_emote"
-			break
-
-		case eItemType.loadscreen:
-			buttonImage = $"rui/menu/buttons/battlepass/loadscreen"
-			break
-
-		case eItemType.gladiator_card_intro_quip:
-		case eItemType.gladiator_card_kill_quip:
-			buttonImage = $"rui/menu/buttons/battlepass/quip"
-			break
-
-		case eItemType.gladiator_card_stat_tracker:
-			buttonImage = $"rui/menu/buttons/battlepass/tracker"
-			break
-
-		case eItemType.gladiator_card_stance: //
-
-		case eItemType.gladiator_card_badge:
-			buttonImage = $"rui/menu/buttons/battlepass/badge"
-			break
-
-		case eItemType.xp_boost:
-			buttonImage = $"rui/menu/buttons/battlepass/xp_boost"
-			break
-
-		case eItemType.account_currency:
-			if ( flavor == GRX_CURRENCIES[GRX_CURRENCY_PREMIUM] )
-			{
-				buttonImage = $"rui/menu/buttons/battlepass/currency_coins"
-			}
-			else if ( flavor == GRX_CURRENCIES[GRX_CURRENCY_CRAFTING] )
-			{
-				buttonImage = $"rui/menu/buttons/battlepass/currency_crafting"
-			}
-			else
-			{
-				Assert( flavor == GRX_CURRENCIES[GRX_CURRENCY_CREDITS] )
-				buttonImage = $"rui/menu/buttons/battlepass/currency_tokens"
-			}
-			break
-
-		default:
-			Warning( "Unknown item type passed to GetImageForBattlePassReward() " + DEV_GetEnumStringSafe( "eItemType", itemType ) )
-			break
-	}
-
-	return buttonImage
-}
-#endif
-
 #if UI
 string function GetStringForBattlePassReward( BattlePassReward reward )
 {
@@ -919,6 +971,11 @@ string function GetStringForBattlePassReward( BattlePassReward reward )
 	return ItemFlavor_GetShortName( reward.flav )
 }
 #endif
+
+
+
+
+
 
 
 #if SERVER
@@ -1003,5 +1060,22 @@ ItemFlavor function GetBattlePassProgressBadge( ItemFlavor pass )
 	asset badgeAsset = GetGlobalSettingsAsset( passAsset, "progressBadge" )
 
 	return GetItemFlavorByAsset( badgeAsset )
+}
+#endif
+
+#if SERVER || CLIENT || UI
+array<ItemFlavor> function GetBattlePassChallenges( ItemFlavor pass, int challengeKind, int groupIndex )
+{
+	return fileLevel.battlePassMap[ pass ].challenges[ challengeKind ][ groupIndex ]
+}
+
+ItemFlavor ornull function GetBattlePassRecurringStarChallenge( ItemFlavor pass )
+{
+	return fileLevel.battlePassMap[ pass ].recurringStarChallenge
+}
+
+bool function BattlePassHasWeeklyChallenge( ItemFlavor pass, ItemFlavor challenge, int week )
+{
+	return fileLevel.battlePassMap[ pass ].challenges[ eChallengeTimeSpanKind.SEASON_WEEKLY ][ week ].contains( challenge )
 }
 #endif

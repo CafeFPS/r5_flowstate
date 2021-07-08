@@ -292,13 +292,13 @@ void function UpdateLastPlayedPlayerInfo()
 
 bool function InviteLastPlayedPanelShouldBeVisible()
 {
-	if ( GetUnixTimestamp() - GetPersistentVarAsInt( "lastGameTime" ) > INVITE_LAST_PANEL_EXPIRATION )
-		return false
+	//if ( GetUnixTimestamp() - GetPersistentVarAsInt( "lastGameTime" ) > INVITE_LAST_PANEL_EXPIRATION )
+	//	return false
 
-	if ( GetPersistentVarAsInt( "lastGamePlayers" ) == 0 && GetPersistentVarAsInt( "lastGameSquads" ) == 0 )
-		return false
+	//if ( GetPersistentVarAsInt( "lastGamePlayers" ) == 0 && GetPersistentVarAsInt( "lastGameSquads" ) == 0 )
+	//	return false
 
-	return true
+	return false
 }
 
 
@@ -374,19 +374,6 @@ void function PlayPanel_OnShow( var panel )
 
 void function TryPopupEliteMessage()
 {
-	WaitEndFrame()
-
-	if ( GetActiveMenu() == GetMenu( "LobbyMenu" ) && IsPanelActive( file.panel ) )
-	{
-		if ( GetPersistentVar( "lossForgivenessMessage" ) != eLossForgivenessReason.NONE )
-		{
-			OpenLossForgivenessDialog( GetPersistentVarAsInt( "lossForgivenessMessage" ) )
-		}
-		else if ( GetPersistentVar( "eliteTutorialState" ) == eEliteTutorialState.SHOW_FORGIVENESS )
-		{
-			OpenEliteForgivenessDialog()
-		}
-	}
 }
 
 
@@ -562,7 +549,7 @@ void function Lobby_UpdateLoadscreenFromPlaylist()
 	}
 	else
 	{
-		thread Loadscreen_SetEquippedLoadscreenAsActive()
+		thread Loadscreen_SetEquppedLoadscreenAsActive()
 	}
 }
 
@@ -828,7 +815,7 @@ void function UpdatePlaylistBadges()
 		RuiSetInt( rui, "scoreMax", 0 )
 		RuiSetFloat( rui, "scoreFrac", 1.0 )
 		RuiSetString( rui, "rankName", data.divisionName )
-		PopulateRuiWithRankedBadgeDetails( rui, score, Ranked_GetLadderPosition( GetUIPlayer() ) )
+		PopulateRuiWithRankedBadgeDetails( rui, score, Ranked_GetDisplayNumberForRuiBadge( GetUIPlayer() ) )
 		RuiSetBool( rui, "inSeason", IsRankedInSeason() )
 
 		if ( data.tier.index != file.lobbyRankTier )
@@ -1197,8 +1184,8 @@ void function UpdateModeButton()
 
 	bool hasNewModes = false
 
-	if ( IsFullyConnected() )
-		hasNewModes = GetCurrentPlaylistVarInt( "gamemodeVersion", 0 ) > GetPersistentVarAsInt( "newModeVersion" )
+//if ( IsFullyConnected() )
+	//	hasNewModes = GetCurrentPlaylistVarInt( "gamemodeVersion", 0 ) > GetPersistentVarAsInt( "newModeVersion" )
 
 	Hud_SetNew( file.gamemodeSelectV2Button, hasNewModes && (IsTrainingCompleted() || IsExemptFromTraining()) )
 
@@ -1998,10 +1985,10 @@ void function ForceNonElitePlaylist()
 
 bool function HasEliteAccess()
 {
-	if ( !IsFullyConnected() )
+	//if ( !IsFullyConnected() )
 		return false
 
-	return GetPersistentVarAsInt( "hasEliteAccess" ) > 0
+	//return GetPersistentVarAsInt( "hasEliteAccess" ) > 0
 }
 
 

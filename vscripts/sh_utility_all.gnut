@@ -2268,7 +2268,7 @@ int function GetCurrentEliteStreak( entity player )
 	int currentStreak = 0
 
 	#if UI
-	if ( !IsFullyConnected() )
+	//if ( !IsFullyConnected() )
 		return 0
 	#endif
 

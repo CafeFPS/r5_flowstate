@@ -10,12 +10,14 @@ WeaponData
 	"description" 									"#WPN_HEMLOK_DESC"
 	"longdesc"										"#WPN_HEMLOK_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"highcal"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_hemlock"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_hemlock"
 
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 
 	// Menu
 	"menu_category"                                 "ar"
@@ -65,10 +67,7 @@ WeaponData
 	"low_ammo_sound_name_3"							"Hemlok_LowAmmo_Shot1"
 	"low_ammo_sound_name_4"							"Hemlok_LowAmmo_Shot2"
 	"low_ammo_sound_name_5"							"Hemlok_LowAmmo_Shot2"
-	"low_ammo_sound_name_6"							"Hemlok_LowAmmo_Shot2"
-	"low_ammo_sound_name_7"							"Hemlok_LowAmmo_Shot3"
-	"low_ammo_sound_name_8"							"Hemlok_LowAmmo_Shot3"
-	"low_ammo_sound_name_9"							"Hemlok_LowAmmo_Shot3"
+
 
 	"viewmodel_offset_hip"                          "0 0 0"
     "viewmodel_offset_ads"							"0 0.3 0"
@@ -98,12 +97,12 @@ WeaponData
     "ammo_no_remove_from_stockpile"					"1"
 
     // Damage - When Used by Players
-    "damage_near_value"   							"18"
-    "damage_far_value"								"18"
-    "damage_very_far_value"							"18"
-    "damage_near_value_titanarmor"					"18"
-    "damage_far_value_titanarmor" 					"18"
-    "damage_very_far_value_titanarmor" 				"18"
+    "damage_near_value"   							"22"
+    "damage_far_value"								"22"
+    "damage_very_far_value"							"22"
+    "damage_near_value_titanarmor"					"22"
+    "damage_far_value_titanarmor" 					"22"
+    "damage_very_far_value_titanarmor" 				"22"
 
     "damage_rodeo" 									"170"
 
@@ -139,7 +138,7 @@ WeaponData
 	// Behavior
 	"fire_rate"   									"15.5"
 	"burst_fire_count"								"3"
-	"burst_fire_delay"								"0.24"
+	"burst_fire_delay"								"0.32"
 
 	"reload_time" 									"2.4"
 	"reload_time_late1"								"1.54"
@@ -177,7 +176,7 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
-	"viewkick_pitch_softScale"						"1.8"
+	"viewkick_pitch_softScale"						"1.95"
 	"viewkick_pitch_hardScale"						"0.4"
 
 	"viewkick_yaw_base"   							"1.0"
@@ -255,14 +254,11 @@ WeaponData
 
 	Mods
 	{
-		//survival_infinite_ammo
-		sia
+		survival_finite_ammo
         {
-			"ammo_clip_size"   								"800"
-            "ammo_default_total"							"800"
-            "ammo_stockpile_max"							"800"
+            "ammo_default_total"							"0"
+            "ammo_stockpile_max"							"36"
             "ammo_no_remove_from_stockpile"					"0"
-        	"fire_rate"   									"240"
 
             "low_ammo_fraction" 							"0.3"
 	   		"uses_ammo_pool"								"1"
@@ -273,9 +269,9 @@ WeaponData
 		{
 			"mod_activity_modifier"							"fire_select"
 
-			"fire_mode"   									"semiauto"
+			"is_semi_auto"									"1"
 
-        	"fire_rate"   									"8.4"
+        	"fire_rate"   									"5.6"
 			"burst_fire_count"								"0"
 			"burst_fire_delay"								"0"
 
@@ -313,6 +309,13 @@ WeaponData
 			"burst_or_looping_fire_sound_start_npc"			""
 			"burst_or_looping_fire_sound_middle_npc"		""
 			"burst_or_looping_fire_sound_end_npc"			""
+
+			"low_ammo_sound_name_1"							"Hemlok_LowAmmo_Shot1"
+			"low_ammo_sound_name_2"							"Hemlok_LowAmmo_Shot2"
+			"low_ammo_sound_name_3"							"Hemlok_LowAmmo_Shot2"
+			"low_ammo_sound_name_4"							"Hemlok_LowAmmo_Shot3"
+			"low_ammo_sound_name_5"							"Hemlok_LowAmmo_Shot3"
+
 		}
 
 		barrel_stabilizer_l4_flash_hider
@@ -351,6 +354,14 @@ WeaponData
     		//"projectile_gravity_scale"						"1.3"
     		//"bolt_zero_distance"                            "1968.5" // 50m
 		}
+
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
 	}
 
 	"ui1_enable"		"1"

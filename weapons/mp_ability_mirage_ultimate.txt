@@ -10,14 +10,16 @@ WeaponData
 	"menu_icon"										"rui/pilot_loadout/suit/stalker"
 	"hud_icon"										"rui/hud/ultimate_icons/ultimate_mirage"
 
+	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"weaponType"									"tactical"
 	"fire_mode"   									"offhand"
-	"offhand_default_inventory_slot"				"0"
+	"offhand_default_inventory_slot"				"4"
 	"offhand_keep_primary_in_hand"					"0"
 	"offhand_holster_primary"						"1"
     "hide_holstered_sidearm_when_active"			"1"
     "zoom_effects"                                  "0"
+    "locks_weapon_change"							"1"
 
 	"OnWeaponChargeEnd"								"OnWeaponChargeEnd_ability_mirage_ultimate"
 	"OnWeaponChargeBegin"							"OnWeaponChargeBegin_ability_mirage_ultimate"

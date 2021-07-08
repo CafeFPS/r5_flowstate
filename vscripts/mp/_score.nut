@@ -51,7 +51,7 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 			if ( player == targetPlayer ) // targetplayer already gets this in the scorevent callback
 				continue
 				
-			Remote_CallFunction_NonReplay( player, "ServerCallback_CallingCardEvent", event.eventId, associatedHandle )
+			//Remote_CallFunction_NonReplay( player, "ServerCallback_CallingCardEvent", event.eventId, associatedHandle )
 		}
 	}
 	

@@ -12,7 +12,7 @@ ImpactTable
 	FX
 	{
 		"C" "P_impact_exp_emp_med_default" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "P_impact_exp_emp_med_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "P_impact_exp_emp_med_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "P_impact_exp_emp_med_default" // metal_titan
 
 		"F" "P_impact_exp_emp_med_default" //flesh
@@ -26,8 +26,8 @@ ImpactTable
 		"N" "P_impact_exp_emp_med_default"
 		"O" "P_impact_exp_emp_med_default" //Foliage
 		"P" "P_impact_exp_emp_med_default" //Computer
-
-		"R" "P_impact_exp_emp_med_default" //metalpanel, grenade, canister
+		"Q" "P_impact_exp_emp_med_default" //Snow
+		"R" "P_impact_exp_emp_med_default" //ice
 		"S" "P_impact_exp_emp_med_default" //water, slime
 		"T" "P_impact_exp_emp_med_default" //tile
 		"U" "P_impact_exp_emp_med_default" //glass_breakable
@@ -40,22 +40,28 @@ ImpactTable
 		"Y" "P_impact_exp_emp_med_default" //glass, brokenglass, glassbottle, pottery
 		"Z" "P_impact_exp_emp_med_dirt"  //sand
 
-		"0" "P_impact_exp_emp_med_default"
-		"1" "P_impact_exp_emp_med_default"
-		"2" "P_impact_exp_emp_med_default"
-		"3" "P_impact_exp_emp_med_default"
-		"4" "P_impact_exp_emp_med_default"
-		"5" "P_impact_exp_emp_med_default"
-		"6" "P_impact_exp_emp_med_default"
-		"7" "P_impact_exp_emp_med_default"
-		"8" "P_impact_exp_emp_med_default"
-		"9" "P_impact_exp_emp_med_default" //puddle
+//		"0" "openslot"
+		"1" "P_impact_exp_emp_med_lava" //lava_flow
+		"2" "P_impact_exp_emp_med_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "P_impact_water" //brush water
+		"slime_splash" "P_impact_slime"
 
 		"airburst" "P_impact_exp_emp_med_air"
 		"critical_hit" "P_impact_exp_emp_med_default"
+		"shieldhit" "P_impact_exp_emp_med_air"
+		"holohit" "P_impact_exp_emp_med_air"
+		"shadowhit" "P_impact_exp_emp_med_air"
 
-		"headshot_flesh" "P_impact_exp_emp_med_default"
-		"headshot_mechanical" "P_impact_exp_emp_med_default"
+		"headshot_flesh" "P_impact_exp_emp_med_air"
+		"headshot_mechanical" "P_impact_exp_emp_med_air"
 	}
 
 	Sound
@@ -75,7 +81,7 @@ ImpactTable
 		"N" "Explo_ProximityEMP_Impact_3P"
 		"O" "Explo_ProximityEMP_Impact_3P"
 		"P" "Explo_ProximityEMP_Impact_3P"
-
+		"Q" "Explo_ProximityEMP_Impact_3P"
 		"R" "Explo_ProximityEMP_Impact_3P"
 		"S" "Explo_ProximityEMP_Impact_3P"
 		"T" "Explo_ProximityEMP_Impact_3P"
@@ -86,6 +92,10 @@ ImpactTable
 		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
 		"Y" "Explo_ProximityEMP_Impact_3P"
 		"Z" "Explo_ProximityEMP_Impact_3P"
+
+
+		"1" "Explo_ProximityEMP_Impact_3P"
+		"2" "Explo_ProximityEMP_Impact_3P"
 
 		//"splash" "Water.BulletImpact"
 		//"slime_splash" "Water.BulletImpact"
@@ -114,7 +124,7 @@ ImpactTable
 		"N" "Explo_ProximityEMP_Impact_1P"	// sand?
 		"O" "Explo_ProximityEMP_Impact_1P"
 		"P" "Explo_ProximityEMP_Impact_1P"
-
+		"Q" "Explo_ProximityEMP_Impact_1P"
 		"R" "Explo_ProximityEMP_Impact_1P"
 		"S" "Explo_ProximityEMP_Impact_1P"
 		"T" "Explo_ProximityEMP_Impact_1P"
@@ -125,6 +135,9 @@ ImpactTable
 		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
 		"Y" "Explo_ProximityEMP_Impact_1P"
 		"Z" "Explo_ProximityEMP_Impact_1P"
+
+		"1" "Explo_ProximityEMP_Impact_1P"
+		"2" "Explo_ProximityEMP_Impact_1P"
 
 		//"splash" "Water.BulletImpact"
 		//"slime_splash" "Water.BulletImpact"
@@ -153,7 +166,7 @@ ImpactTable
 		"N" "Explo_ProximityEMP_Impact_3P"
 		"O" "Explo_ProximityEMP_Impact_3P"
 		"P" "Explo_ProximityEMP_Impact_3P"
-
+		"Q" "Explo_ProximityEMP_Impact_3P"
 		"R" "Explo_ProximityEMP_Impact_3P"
 		"S" "Explo_ProximityEMP_Impact_3P"
 		"T" "Explo_ProximityEMP_Impact_3P"
@@ -164,6 +177,9 @@ ImpactTable
 		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
 		"Y" "Explo_ProximityEMP_Impact_3P"
 		"Z" "Explo_ProximityEMP_Impact_3P"
+
+		"1" "Explo_ProximityEMP_Impact_3P"
+		"2" "Explo_ProximityEMP_Impact_3P"
 
 		//"splash" "Water.BulletImpact"
 		//"slime_splash" "Water.BulletImpact"

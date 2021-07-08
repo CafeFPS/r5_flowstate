@@ -180,12 +180,23 @@ ImpactTable
 		"Y" "Generic_KunaiImpact_1p_vs_3p"
 		"Z" "Generic_KunaiImpact_1p_vs_3p"
 
+//		"0" "openslot"
+		"1" "Generic_KunaiImpact_1p_vs_3p" //lava_flow
+		"2" "Generic_KunaiImpact_1p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
 		"splash" "Generic_KunaiImpact_1p_vs_3p"
 		"slime_splash" "Generic_KunaiImpact_1p_vs_3p"
 
 		"holohit" "Victim_KunaiImpact_1p_vs_3p"
 		"airburst" ""
-		"shieldhit" "Victim_KunaiShieldImpact_1p_vs_3p"
+		"shieldhit" "humanshield_light_bulletimpact_1p_vs_3p"
 		"headshot_flesh" "Victim_KunaiImpact_1p_vs_3p"
 		"headshot_mechanical" "Victim_KunaiImpact_1p_vs_3p"
 	}

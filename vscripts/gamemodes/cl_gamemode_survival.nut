@@ -143,8 +143,8 @@ const FULLMAP_ZOOM_SPEED_CONTROLLER = 0.1
 
 const string SOUND_UI_TEAMMATE_KILLED = "UI_DeathAlert_Friendly"
 
-const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //
-
+const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
+const string CIRCLE_CLOSING_SOUND = "survival_circle_close_alarm_02"
 const float TITAN_DESYNC_TIME = 1.0
 const float OVERVIEW_MAP_SIZE = 4096 //
 
@@ -198,7 +198,7 @@ struct
 	array<var>         minimapTopos
 	table<entity, var> minimapTopoClientEnt
 
-	//
+	// fullscreen map
 	var   mapAimRui
 	var   mapTopo
 	var   mapTopoBG

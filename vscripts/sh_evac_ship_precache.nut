@@ -3,12 +3,12 @@ global function ShPrecacheEvacShipAssets
 void function ShPrecacheEvacShipAssets()
 {
 	#if SERVER
-		ICON_DROPSHIP_EVAC = $"rui/hud/common/evac_location_friendly"
-		FX_EVAC_FLARE = $"P_road_flare"
-		FX_EVAC_RING_LIGHT_GREEN = $"runway_light_green"
-		FX_EVAC_RING_LIGHT_RED = $"runway_light_red"
-		FX_EVAC_SHIP_BEACON_PENDING = $"P_lootcache_far_beam"
-		FX_EVAC_SHIP_BEACON_ARRIVED = $"P_lootcache_far_beam" //need different beam for when ship has arrived
+		const asset ICON_DROPSHIP_EVAC = $"rui/hud/common/evac_location_friendly"
+		const asset FX_EVAC_FLARE = $"P_road_flare"
+		const asset FX_EVAC_RING_LIGHT_GREEN = $"runway_light_green"
+		const asset FX_EVAC_RING_LIGHT_RED = $"runway_light_red"
+		const asset FX_EVAC_SHIP_BEACON_PENDING = $"P_lootcache_far_beam"
+		const asset FX_EVAC_SHIP_BEACON_ARRIVED = $"P_lootcache_far_beam" //need different beam for when ship has arrived
 
 		PrecacheParticleSystem( FX_EVAC_FLARE )
 		PrecacheParticleSystem( FX_EVAC_RING_LIGHT_GREEN )

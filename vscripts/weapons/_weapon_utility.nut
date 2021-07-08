@@ -147,11 +147,11 @@ global function AddCallback_OnPlayerRemoveWeaponMod
 global function CodeCallback_OnPlayerAddedWeaponMod
 global function CodeCallback_OnPlayerRemovedWeaponMod
 
-global const PROJECTILE_PREDICTED 							= true
-global const PROJECTILE_NOT_PREDICTED 						= false
+global const bool PROJECTILE_PREDICTED = true
+global const bool PROJECTILE_NOT_PREDICTED = false
 
-global const PROJECTILE_LAG_COMPENSATED 					= true
-global const PROJECTILE_NOT_LAG_COMPENSATED 				= false
+global const bool PROJECTILE_LAG_COMPENSATED = true
+global const bool PROJECTILE_NOT_LAG_COMPENSATED = false
 
 global const PRO_SCREEN_IDX_MATCH_KILLS 					= 1
 global const PRO_SCREEN_IDX_AMMO_COUNTER_OVERRIDE_HACK 		= 2
@@ -272,6 +272,7 @@ void function WeaponUtility_Init()
 	level.stickyClasses[ "door_mover" ]                <- true
 	level.stickyClasses[ "prop_door" ]                <- true
 	level.stickyClasses[ "script_mover" ]                <- true
+	level.stickyClasses[ "player_vehicle" ]                <- true
 
 	level.trapChainReactClasses <- {}
 	level.trapChainReactClasses[ "mp_weapon_frag_grenade" ]            <- true
@@ -284,9 +285,11 @@ void function WeaponUtility_Init()
 	RegisterSignal( "EMP_FX" )
 	RegisterSignal( "ArcStunned" )
 	RegisterSignal( "CleanupPlayerPermanents" )
+	RegisterSignal( "PlayerChangedClass" )
 	RegisterSignal( "OnSustainedDischargeEnd" )
 	RegisterSignal( "EnergyWeapon_ChargeStart" )
 	RegisterSignal( "EnergyWeapon_ChargeReleased" )
+	RegisterSignal( "WeaponSignal_EnemyKilled" )
 
 	PrecacheParticleSystem( EMP_GRENADE_BEAM_EFFECT )
 	PrecacheParticleSystem( FX_EMP_BODY_TITAN )
@@ -1017,7 +1020,11 @@ entity function FireBallisticRoundWithDrop( entity weapon, vector pos, vector di
 	fireBoltParams.dontApplySpread = ignoreSpread
 	fireBoltParams.projectileIndex = projectileIndex
 	fireBoltParams.deferred = deferred
-	entity bolt = weapon.FireWeaponBolt( fireBoltParams )
+	entity bolt = weapon.FireWeaponBoltAndReturnEntity( fireBoltParams )
+
+	#if CLIENT
+	Chroma_FiredWeapon( weapon )
+	#endif
 
 	if ( bolt != null )
 	{
@@ -1080,7 +1087,7 @@ int function FireGenericBoltWithDrop( entity weapon, WeaponPrimaryAttackParams a
 	fireBoltParams.scriptExplosionDamageType = damageFlags
 	fireBoltParams.clientPredicted = isPlayerFired
 	fireBoltParams.additionalRandomSeed = 0
-	entity bolt = weapon.FireWeaponBolt( fireBoltParams )
+	entity bolt = weapon.FireWeaponBoltAndReturnEntity( fireBoltParams )
 	if ( bolt != null )
 	{
 		bolt.kv.gravity = PROJ_GRAVITY
@@ -1088,6 +1095,10 @@ int function FireGenericBoltWithDrop( entity weapon, WeaponPrimaryAttackParams a
 		bolt.kv.renderamt = 0
 		bolt.kv.fadedist = 1
 	}
+	#if CLIENT
+	Chroma_FiredWeapon( weapon )
+	#endif
+
 
 	return 1
 }
@@ -1256,11 +1267,15 @@ bool function PlantStickyEntity( entity ent, table collisionParams, vector angle
 		if ( !ent.IsMarkedForDeletion() && !collisionParams.hitEnt.IsMarkedForDeletion() )
 		{
 			if ( collisionParams.hitbox > 0 )
+			{
 				ent.SetParentWithHitbox( collisionParams.hitEnt, collisionParams.hitbox, true )
-
+			}
 			// Hit a func_brush
 			else
+			{
+				//
 				ent.SetParent( collisionParams.hitEnt )
+			}
 
 			if ( collisionParams.hitEnt.IsPlayer() )
 			{
@@ -4769,8 +4784,8 @@ bool function IsWeaponInSingleShotMode( entity weapon )
 	if ( weapon.GetWeaponSettingBool( eWeaponVar.attack_button_presses_melee ) )
 		return false
 
-	// if ( weapon.GetWeaponSettingEnum( eWeaponVar.fire_mode, eWeaponFireMode ) != eWeaponFireMode.semiauto ) // TODO: FIX
-	// 	return false
+	if ( !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto ) )
+		return false
 
 	return weapon.GetWeaponSettingInt( eWeaponVar.burst_fire_count ) == 0
 }
@@ -4797,9 +4812,8 @@ bool function IsWeaponOffhand( entity weapon )
 
 bool function IsWeaponInAutomaticMode( entity weapon )
 {
-	return weapon.GetWeaponSettingEnum( eWeaponVar.fire_mode, eWeaponFireMode ) == eWeaponFireMode.automatic
+	return !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
 }
-
 
 bool function OnWeaponAttemptOffhandSwitch_Never( entity weapon )
 {
@@ -4851,6 +4865,13 @@ void function OnWeaponRegenEndGeneric( entity weapon )
 		return
 	ReportOffhandWeaponRegenEnded( weapon )
 	#endif
+	#if CLIENT
+		entity owner = weapon.GetWeaponOwner()
+		if ( !IsValid( owner ) || !owner.IsPlayer() )
+			return
+		if ( owner.GetOffhandWeapon( OFFHAND_ULTIMATE ) == weapon )
+			Chroma_UltimateReady()
+	#endif
 }
 
 void function Ultimate_OnWeaponRegenBegin( entity weapon )
@@ -4860,6 +4881,23 @@ void function Ultimate_OnWeaponRegenBegin( entity weapon )
 	#endif
 }
 
+
+#if SERVER
+void function ReportOffhandWeaponRegenEnded( entity weapon )
+{
+	entity owner = weapon.GetWeaponOwner()
+	if ( !IsValid( owner ) || !owner.IsPlayer() )
+		return
+
+	if ( !weapon.IsWeaponOffhand() )
+		return
+
+	if ( owner.GetOffhandWeapon( OFFHAND_TACTICAL ) == weapon )
+		PIN_PlayerAbilityReady( owner, ABILITY_TYPE.TACTICAL )
+	else if ( owner.GetOffhandWeapon( OFFHAND_ULTIMATE ) == weapon )
+		PIN_PlayerAbilityReady( owner, ABILITY_TYPE.ULTIMATE )
+}
+#endif
 void function PlayDelayedShellEject( entity weapon, float time, int count = 1, bool persistent = false )
 {
 	AssertIsNewThread()
@@ -4885,20 +4923,3 @@ void function PlayDelayedShellEject( entity weapon, float time, int count = 1, b
 		weapon.PlayWeaponEffect( vmShell, worldShell, shellAttach, persistent )
 	}
 }
-
-#if SERVER
-void function ReportOffhandWeaponRegenEnded( entity weapon )
-{
-	entity owner = weapon.GetWeaponOwner()
-	if ( !IsValid( owner ) || !owner.IsPlayer() )
-		return
-
-	if ( !weapon.IsWeaponOffhand() )
-		return
-
-	if ( owner.GetOffhandWeapon( OFFHAND_TACTICAL ) == weapon )
-		PIN_PlayerAbilityReady( owner, ABILITY_TYPE.TACTICAL )
-	else if ( owner.GetOffhandWeapon( OFFHAND_ULTIMATE ) == weapon )
-		PIN_PlayerAbilityReady( owner, ABILITY_TYPE.ULTIMATE )
-}
-#endif

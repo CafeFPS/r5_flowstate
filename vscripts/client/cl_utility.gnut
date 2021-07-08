@@ -492,7 +492,7 @@ void function CoreActivatedVO( entity player )
 		return
 
 	expect string( conversationName )
-	TitanCockpit_PlayDialog( player, conversationName )
+	//TitanCockpit_PlayDialog( player, conversationName )
 }
 
 void function MonitorFlickerAndChange( entity screen, asset modelname )

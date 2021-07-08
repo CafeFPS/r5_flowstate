@@ -3,27 +3,29 @@ global function MpWeaponBubbleBunker_Init
 global function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker
 global function OnWeaponAttemptOffhandSwitch_WeaponBubbleBunker
 global function OnWeaponTossPrep_WeaponBubbleBunker
-
 #if CLIENT
 global function GetBubbleBunkerRui
 #endif
 global function GibraltarIsInDome
 
-const float BUBBLE_BUNKER_DEPLOY_DELAY      = 1.0
-const float BUBBLE_BUNKER_DURATION_WARNING  = 5.0
+const float BUBBLE_BUNKER_DEPLOY_DELAY = 1.0
+const float BUBBLE_BUNKER_DURATION_WARNING = 5.0
 
-const bool BUBBLE_BUNKER_DAMAGE_ENEMIES     = false
+const bool BUBBLE_BUNKER_DAMAGE_ENEMIES = false
 
-const float BUBBLE_BUNKER_ANGLE_LIMIT       = 0.55
+const float BUBBLE_BUNKER_ANGLE_LIMIT = 0.55
 
-const asset BUBBLE_BUNKER_BEAM_FX                   = $"P_wpn_BBunker_beam"
-const asset BUBBLE_BUNKER_BEAM_END_FX               = $"P_wpn_BBunker_beam_end"
-const asset BUBBLE_BUNKER_SHIELD_FX                 = $"P_wpn_BBunker_shield"
-const asset BUBBLE_BUNKER_SHIELD_COLLISION_MODEL    = $"mdl/fx/bb_shield.rmdl"
-const asset BUBBLE_BUNKER_SHIELD_PROJECTILE         = $"mdl/props/gibraltar_bubbleshield/gibraltar_bubbleshield.rmdl"
+const asset BUBBLE_BUNKER_BEAM_FX = $"P_wpn_BBunker_beam"
+const asset BUBBLE_BUNKER_BEAM_END_FX = $"P_wpn_BBunker_beam_end"
+const asset BUBBLE_BUNKER_SHIELD_FX = $"P_wpn_BBunker_shield"
+const asset BUBBLE_BUNKER_SHIELD_COLLISION_MODEL = $"mdl/fx/bb_shield.rmdl"
+const asset BUBBLE_BUNKER_SHIELD_PROJECTILE = $"mdl/props/gibraltar_bubbleshield/gibraltar_bubbleshield.rmdl"
 
-const string BUBBLE_BUNKER_SOUND_ENDING             = "Gibraltar_BubbleShield_Ending"
-const string BUBBLE_BUNKER_SOUND_FINISH             = "Gibraltar_BubbleShield_Deactivate"
+const string BUBBLE_BUNKER_SOUND_ENDING = "Gibraltar_BubbleShield_Ending"
+const string BUBBLE_BUNKER_SOUND_FINISH = "Gibraltar_BubbleShield_Deactivate"
+
+const BUBBLE_BUNKER_THROW_POWER = 800.0
+const BUBBLE_BUNKER_RADIUS = 240 //
 
 struct FriendlyEnemyFXStruct
 {
@@ -38,6 +40,7 @@ struct
 	var bubbleBunkerRui
 	#endif
 } file
+
 
 void function MpWeaponBubbleBunker_Init()
 {
@@ -75,7 +78,7 @@ var function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker( entity weapon, Wea
 	int ammoReq = weapon.GetAmmoPerShot()
 	weapon.EmitWeaponSound_1p3p( GetGrenadeThrowSound_1p( weapon ), GetGrenadeThrowSound_3p( weapon ) )
 
-	entity deployable = ThrowDeployable( weapon, attackParams, DEPLOYABLE_THROW_POWER, OnBubbleBunkerPlanted )
+	entity deployable = ThrowDeployable( weapon, attackParams, BUBBLE_BUNKER_THROW_POWER, OnBubbleBunkerPlanted )
 	if ( deployable )
 	{
 		entity player = weapon.GetWeaponOwner()
@@ -427,6 +430,7 @@ var function GetBubbleBunkerRui()
 	return file.bubbleBunkerRui
 }
 #endif //CLIENT
+
 
 bool function GibraltarIsInDome( entity player )
 {

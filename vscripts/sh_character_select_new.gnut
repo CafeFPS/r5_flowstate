@@ -1825,7 +1825,7 @@ void function UpdatePlayerModel( ItemFlavor character )
 	float lifeTime               = 0.1
 	float ditherDelay            = 0.1
 	float ditherDuration         = 0.1
-	thread PROTO_HighlightTest( fileLevel.characterModel, rarityColor / 255, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime, ditherDelay, ditherDuration )
+	thread PROTO_HighlightTest( fileLevel.characterModel, rarityColor / 255, fillIntensityScalar, outlineIntensityScalar, fadeInTime, fadeOutTime, lifeTime, ditherDelay, ditherDuration, false )
 
 	// Background
 	int backgroundSkinIndex = CharacterClass_GetMenuBackgroundSkinIndex( character )

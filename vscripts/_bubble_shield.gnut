@@ -11,11 +11,11 @@ global function WaitUntilTitanStandsOrDies
 global function DestroyBubbleShield
 global function CreateBubbleShieldWithSettings
 
-const float SHIELD_TITAN_DAMAGE_FLOOR = 250.0
+const float SHIELD_TITAN_DAMAGE_FLOOR = 0
 const float SHIELD_TITAN_DAMAGE_CEILING = 16000 //Some arbitrarily large number really
-const float SHIELD_PILOT_DAMAGE_FLOOR = 30.0
-const float SHIELD_PILOT_DAMAGE_CEILING = 60.0
-const float SHIELD_NPC_DAMAGE_FLOOR = 30.0
+const float SHIELD_PILOT_DAMAGE_FLOOR = 0
+const float SHIELD_PILOT_DAMAGE_CEILING = 0
+const float SHIELD_NPC_DAMAGE_FLOOR = 0
 
 const float SHIELD_FADE_ARBITRARY_DELAY = 3.0
 const float SHIELD_FADE_ENDCAP_DELAY = 1.0
@@ -44,9 +44,9 @@ void function BubbleShield_Init()
 	RegisterSignal( "NewBubbleShield" )
 	RegisterSignal( "StopBubbleShieldDamage" )
 
-	InitBubbleShieldDamageStructValues( file.titanDamageStruct, SHIELD_TITAN_DAMAGE_FLOOR, SHIELD_TITAN_DAMAGE_CEILING, [ 12.0, 5.0, 2.0 ] )
-	InitBubbleShieldDamageStructValues( file.pilotDamageStruct, SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
-	InitBubbleShieldDamageStructValues( file.aiDamageStruct, 	SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
+	//InitBubbleShieldDamageStructValues( file.titanDamageStruct, SHIELD_TITAN_DAMAGE_FLOOR, SHIELD_TITAN_DAMAGE_CEILING, [ 12.0, 5.0, 2.0 ] )
+	//InitBubbleShieldDamageStructValues( file.pilotDamageStruct, SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
+	//InitBubbleShieldDamageStructValues( file.aiDamageStruct, 	SHIELD_PILOT_DAMAGE_FLOOR, SHIELD_PILOT_DAMAGE_CEILING, [ 2.0, 1.0, 1.0 ] )
 }
 
 void function InitBubbleShieldDamageStructValues( BubbleShieldDamageStruct damageStruct, float damageFloor, float damageCeiling, array<float> quadPolynomialCoeffs )
@@ -209,7 +209,7 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	bubbleShield.SetAngles( angles )
      // Blocks bullets, projectiles but not players and not AI
 	bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
-	bubbleShield.SetBlocksRadiusDamage( true )
+	bubbleShield.SetBlocksRadiusDamage( false )
 	DispatchSpawn( bubbleShield )
 	bubbleShield.Hide()
 
@@ -437,8 +437,6 @@ void function MonitorLastFireTime( entity player )
 void function DamageEntWithinBubbleShield( entity bubbleShield, entity bubbleShieldPlayer, entity touchingEnt, table<entity, int> countTable,  )
 {
 	int ownerTeam = IsValid( bubbleShieldPlayer ) ? bubbleShieldPlayer.GetTeam() : bubbleShield.GetTeam()
-	if ( !BubbleShieldShouldDamage( bubbleShield, ownerTeam,  touchingEnt ) )
-		return
 
 	entity entInCountTable = null
 
@@ -469,33 +467,14 @@ void function DamageEntWithinBubbleShield( entity bubbleShield, entity bubbleShi
 	else
 		damageStruct = file.aiDamageStruct
 
-	float damageAmount = damageStruct.damageFloor + EvaluatePolynomial( float ( countTable[ entInCountTable ] ),  damageStruct.quadraticPolynomialCoefficients )
+	//float damageAmount = damageStruct.damageFloor + EvaluatePolynomial( float ( countTable[ entInCountTable ] ),  damageStruct.quadraticPolynomialCoefficients )
 
 	//printt( "Damage amount: " + damageAmount + ", touchingEnt: " + touchingEnt )
 
-	touchingEnt.TakeDamage( damageAmount, bubbleShieldPlayer, bubbleShield, { origin = bubbleShield.GetOrigin(), damageSourceId=eDamageSourceId.bubble_shield } )
-	StatusEffect_AddTimed( touchingEnt, eStatusEffect.emp, 0.1, 1.0, 0.2 )
+	//touchingEnt.TakeDamage( damageAmount, bubbleShieldPlayer, bubbleShield, { origin = bubbleShield.GetOrigin(), damageSourceId=eDamageSourceId.bubble_shield } )
+	//StatusEffect_AddTimed( touchingEnt, eStatusEffect.emp, 0.1, 1.0, 0.2 )
 
-	EmitSoundOnEntity( bubbleShield, "titan_energyshield_damage" )
-}
-
-bool function BubbleShieldShouldDamage( entity bubbleShield, int ownerTeam, entity ent )
-{
-	if ( !IsAlive( ent ) )
-		return false
-
-	if ( ownerTeam == ent.GetTeam() )
-		return false
-
-	/*if ( ent.IsTitan() && IsTitanWithinBubbleShield( ent ) )
-		return false*/
-
-	if ( ! ( ent instanceof CBaseCombatCharacter ) ) //Projectiles etc won't get damaged
-		return false
-
-	float distSqr = DistanceSqr( bubbleShield.GetOrigin(), ent.GetOrigin() )
-
-	return distSqr <= TITAN_BUBBLE_SHIELD_INVULNERABILITY_RANGE_SQUARED
+	//EmitSoundOnEntity( bubbleShield, "titan_energyshield_damage" )
 }
 
 bool function IsTitanWithinBubbleShield( entity titan )

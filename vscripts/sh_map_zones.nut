@@ -33,10 +33,10 @@ global function MapZones_ForceRetouchForPlayer
 
 #endif // SERVER
 
-#if (SERVER && R5DEV)
+#if SERVER && R5DEV
 global function DEV_PrintMapZoneInfo
 global function DEV_MapZone_ToggleOverlay
-#endif // (SERVER && R5DEV)
+#endif // SERVER && R5DEV
 
 global struct ZonePopulationInfo
 {
@@ -128,6 +128,36 @@ int function MapZones_GetZoneIdForTriggerName( string triggerName )
 	return zoneId
 }
 
+string function GetZoneGroupForZoneId( int zoneId )
+{
+	Assert( zoneId < GetDatatableRowCount( file.mapZonesDataTable ) )
+
+	string name = ""
+	int column = GetDataTableColumnByName( file.mapZonesDataTable, "zoneGroup" )
+	if ( column >= 0 )
+		name = GetDataTableString( file.mapZonesDataTable, zoneId, column )
+
+	if ( name.len() == 0 )
+		return GetZoneNameForZoneId( zoneId )
+	return name
+}
+
+string function MapZones_GetZoneStatsRef( int zoneId )
+{
+	if ( !file.mapZonesInitialized )
+		return ""
+
+	Assert( zoneId < GetDatatableRowCount( file.mapZonesDataTable ) )
+	if ( zoneId < 0 )
+		return ""
+
+	string statsRef = ""
+	int column = GetDataTableColumnByName( file.mapZonesDataTable, "statsRef" )
+	if ( column >= 0 )
+		statsRef = GetDataTableString( file.mapZonesDataTable, zoneId, column )
+
+	return statsRef
+}
 #if SERVER
 
 struct ZoneData
@@ -500,6 +530,9 @@ int function MapZones_GetPopEnumForZone( int zoneId )
 var s_zoneIntroRui = null
 void function MapZones_ZoneIntroText( entity player, string zoneDisplayName, int zoneTier )
 {
+	if ( !GetGlobalNetBool( "displayMapzoneText" ) )
+		return
+
 	if ( s_zoneIntroRui != null )
 		RuiDestroyIfAlive( s_zoneIntroRui )
 
@@ -514,6 +547,8 @@ int s_lastZoneDisplayNameIndex = -1
 void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 {
 	entity player = GetLocalViewPlayer()
+
+	Chroma_SetPlayerZone( zoneId )
 
 	int ceFlags = player.GetCinematicEventFlags()
 	if ( ceFlags & (CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_INTRO) )
@@ -536,7 +571,7 @@ void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 
 
 
-#if (SERVER && R5DEV)
+#if SERVER && R5DEV
 string function GetZoneLineForPlayer( entity player )
 {
 	int zoneId = player.p.currentZoneId
@@ -630,4 +665,4 @@ void function DebugFrameThread()
 	}
 }
 
-#endif // #if (SERVER && R5DEV)
+#endif // #if SERVER && R5DEV

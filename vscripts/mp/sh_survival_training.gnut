@@ -101,6 +101,9 @@ struct PlayerTrainingData
 	bool completed_weapons
 	bool completed_ping
 	bool completed_pathfinder
+
+	vector playerRandomStartOrigin
+	vector bloodhoundRandomStartOrigin
 }
 
 struct
@@ -150,7 +153,7 @@ void function ShSurvivalTraining_Init()
 		RegisterNetworkedVariableChangeCallback_time( "TrainingEndTime", TrainingEndTimeChanged )
 		SetCommsDialogueEnabled( false )
 
-		AddCreateCallback( "prop_death_box", TrainingDeathBoxCreated )
+		AddCreateCallback( "prop_dynamic", TrainingDeathBoxCreated )
 	#endif
 }
 
@@ -268,8 +271,8 @@ void function PlayerStartsTraining( entity player )
 		player.SetPlayerNetBool( "pingEnabled", true )
 	}
 
-	PlayerMatchState_Set( player, ePlayerMatchState.TRAINING )
-	player.SetPersistentVar( "trainingCompleted", 1 )
+	//PlayerMatchState_Set( player, ePlayerMatchState.TRAINING )
+	//player.SetPersistentVar( "trainingCompleted", 1 )
 
 	PIN_Training( player, "start", "training_start" )
 
@@ -1613,7 +1616,7 @@ void function TrainingDeathBoxCreated( entity ent )
 	if ( ent.GetTargetName() == DEATH_BOX_TARGETNAME_TRAINING )
 	{
 		entity localViewPlayer = GetLocalViewPlayer()
-		if ( !IsValid( localViewPlayer ) || ent.DoesShareRealms( localViewPlayer ) )
+		if( !IsValid( localViewPlayer ) || ent.DoesShareRealms( localViewPlayer ) )
 			thread CreateDeathBoxRui( ent )
 	}
 }

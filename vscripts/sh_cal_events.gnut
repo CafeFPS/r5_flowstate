@@ -12,10 +12,14 @@ global function GetAllRankedPeriodFlavors
 global function IsRankedPeriodFlavor
 global function GetLatestRankedPeriod
 global function GetActiveRankedPeriod
+global function GetUpcomingRankedPeriod
+global function GetLatestExpiredRankedPeriod
+global function GetPrecedingRankedPeriod
 global function GetFollowingRankedPeriod
 global function CalEvent_IsRevealed
 global function CalEvent_IsVisible
 global function CalEvent_HasStarted
+global function CalEvent_HasFinished
 global function CalEvent_IsActive
 global function CalEvent_GetRevealUnixTime
 global function CalEvent_GetHideUnixTime
@@ -247,14 +251,18 @@ bool function IsRankedPeriodFlavor( ItemFlavor rankedPeriod )
 #endif
 
 #if SERVER || CLIENT || UI
-ItemFlavor ornull function GetLatestRankedPeriod( int t )
+ItemFlavor function GetLatestRankedPeriod( int t )
 {
 	ItemFlavor ornull currentRankedPeriodOrNull = GetActiveRankedPeriod( t )
 	if ( currentRankedPeriodOrNull != null )
+	{
+		expect ItemFlavor( currentRankedPeriodOrNull )
 		return currentRankedPeriodOrNull
+	}
+
 
 	ItemFlavor ornull rankedPeriodOrNull = null
-	int bestT                            = -1
+	int bestT                            = 2147483647
 	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
 	{
 		if ( CalEvent_HasStarted( rankedPeriod, t ) )
@@ -267,6 +275,9 @@ ItemFlavor ornull function GetLatestRankedPeriod( int t )
 			}
 		}
 	}
+
+	Assert( rankedPeriodOrNull != null, "No Latest Ranked Period found. Check that ranked calendar events are set correctly, and have their start and end times correctly configured in the playlist!" )
+	expect ItemFlavor( rankedPeriodOrNull  )
 	return rankedPeriodOrNull
 }
 #endif
@@ -286,6 +297,80 @@ ItemFlavor ornull function GetActiveRankedPeriod( int t )
 
 
 #if SERVER || CLIENT || UI
+ItemFlavor ornull function GetUpcomingRankedPeriod( int t )
+{
+	Assert( GetActiveRankedPeriod( t ) == null )
+
+	ItemFlavor ornull rankedPeriodOrNull = null
+	int bestT                            = INT_MAX
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		if ( !CalEvent_HasStarted( rankedPeriod, t ) ) //
+		{
+			int startUnixTime = CalEvent_GetStartUnixTime( rankedPeriod )
+			if ( startUnixTime < bestT )
+			{
+				bestT = startUnixTime
+				rankedPeriodOrNull = rankedPeriod
+			}
+		}
+	}
+	return rankedPeriodOrNull
+}
+ItemFlavor ornull function GetLatestExpiredRankedPeriod( int t )
+{
+
+	ItemFlavor ornull rankedPeriodOrNull = null
+	int bestT                            = 0
+
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		if ( CalEvent_HasStarted( rankedPeriod, t ) )
+		{
+			if ( !CalEvent_HasFinished( rankedPeriod, t )  )
+				continue
+
+			int endUnixTime = CalEvent_GetFinishUnixTime( rankedPeriod )
+			if ( endUnixTime > bestT )
+			{
+				bestT = endUnixTime
+				rankedPeriodOrNull = rankedPeriod
+			}
+		}
+	}
+	return rankedPeriodOrNull
+}
+ItemFlavor ornull function GetPrecedingRankedPeriod( ItemFlavor flav )
+{
+	Assert( IsRankedPeriodFlavor( flav ) )
+	ItemFlavor ornull preceedingRankedPeriod = null
+	int previousPeriodStartTime              = 0 //
+	int flavStartTime                        = CalEvent_GetStartUnixTime( flav )
+
+	bool found = false
+
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		int startTimeOfRankedPeriod = CalEvent_GetStartUnixTime( rankedPeriod  )
+
+		Assert( previousPeriodStartTime < startTimeOfRankedPeriod  )
+
+		if ( flav == rankedPeriod )
+		{
+			found = true
+			break
+		}
+
+		Assert( CalEvent_GetFinishUnixTime( rankedPeriod ) <  flavStartTime )
+		previousPeriodStartTime = startTimeOfRankedPeriod
+		preceedingRankedPeriod = rankedPeriod
+	}
+
+	if ( !found  )
+		return null
+
+	return preceedingRankedPeriod
+}
 ItemFlavor ornull function GetFollowingRankedPeriod( ItemFlavor flav )
 {
 	Assert( IsRankedPeriodFlavor( flav ) )
@@ -344,6 +429,14 @@ bool function CalEvent_HasStarted( ItemFlavor event, int t )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+bool function CalEvent_HasFinished( ItemFlavor event, int t )
+{
+	Assert( IsItemFlavorRegistrationFinished() )
+	int finishUnixTime = CalEvent_GetFinishUnixTime( event )
+	return CalEvent_IsVisible( event, t ) && (t >= finishUnixTime )
+}
+#endif
 
 #if SERVER || CLIENT || UI
 bool function CalEvent_IsActive( ItemFlavor event, int t )

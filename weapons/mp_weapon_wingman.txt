@@ -14,8 +14,10 @@ WeaponData
 	"menu_icon"										"rui/weapon_icons/r5/weapon_wingman"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_wingman"
 
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"damage_flags"									"DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
 
 	// Menu
@@ -56,7 +58,7 @@ WeaponData
 
 	"damage_type" 									"bullet"
 
-	"ammo_clip_size"   								"6"
+	"ammo_clip_size"   								"4"
 
 	"dof_zoom_focusArea_horizontal"					"0.06"
 	"dof_zoom_focusArea_top"						"0.070"
@@ -76,13 +78,18 @@ WeaponData
     "damage_very_far_value_titanarmor" 				"45"
     "damage_rodeo" 									"350"
 
-    "damage_headshot_scale"                         "2.0"
+    // this sucks. it should be an %else but I haven't had time to do it yet
+                    
+                                                           
+      
+
+                     
+    "damage_headshot_scale"                         "2.1"   //"2.15"
+      
 
     "damage_near_distance"							"800"
     "damage_far_distance" 							"1300"
     "damage_very_far_distance"						"1800"
-
-    "damage_heavyarmor_nontitan_scale"				"0.35"
 
 	// NPC
 	// Damage - When Used by NPCs
@@ -246,10 +253,32 @@ WeaponData
 			"fire_sound_1_npc"				"weapon_wingman_fire_skull_3p"
         }
 
+        highcal_mag_l1
+		{
+			"ammo_clip_size"   							"6"
+		}
+		highcal_mag_l2
+		{
+			"ammo_clip_size"   							"8"
+		}
+		highcal_mag_l3
+		{
+			"ammo_clip_size"   							"10"
+		}
+
 		legendary1
 		{
 			"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing_legendary_01.rmdl"
 			"playermodel" 									"mdl/weapons/b3wing/w_b3wing_legendary_01.rmdl"
+
+			// Temporarily disabled so we can equip the optics without error spam
+			//"dof_zoom_nearDepthStart"						"4.750"
+			//"dof_zoom_nearDepthEnd"							"11.000"
+		}
+		legendary5
+		{
+			"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing_legendary_05.rmdl"
+			"playermodel" 									"mdl/Weapons/b3wing/w_b3wing_legendary_05.rmdl"
 
 			// Temporarily disabled so we can equip the optics without error spam
 			//"dof_zoom_nearDepthStart"						"4.750"

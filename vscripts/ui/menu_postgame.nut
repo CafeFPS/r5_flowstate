@@ -3,11 +3,14 @@ global function IsPostGameMenuValid
 global function OpenPostGameMenu
 global function ClosePostGameMenu
 
+global function InitXPEarnedDisplay
+
 const PROGRESS_BAR_FILL_TIME = 2.0
 const REWARD_AWARD_TIME = 2
 const POSTGAME_DATA_EXPIRATION_TIME = 5 * SECONDS_PER_MINUTE
 const int MAX_XP_LINES = 7
-const float CHALLENGE_FILL_DURATION = 2.0
+const float CHALLENGE_FILL_DURATION = 1.5
+const float CHALLENGE_POST_FILL_DELAY = 0.75
 const string POSTGAME_LINE_ITEM = "ui_menu_matchsummary_xpbreakdown"
 
 struct RewardStruct
@@ -16,6 +19,19 @@ struct RewardStruct
 	asset image1
 	asset image2
 	bool  characterReward
+}
+
+struct PinnedXPAndStarsProgressBar
+{
+	var         rui
+	ItemFlavor& progressBarFlavor
+	int         tierStart
+	int         startingPoints
+	int         pointsToAddTotal
+	int         challengesCompleted
+	int         battlePassLevelsEarned
+	int         challengeStarsAndXpEarned
+	int         currentPassLevel
 }
 
 struct
@@ -32,6 +48,9 @@ struct
 	bool disableNavigateBack = false
 
 	bool skippableWaitSkipped = false
+
+	int xpChallengeTier = -1
+	int xpChallengeValue = -1
 } file
 
 void function InitPostGameMenu( var newMenuArg )
@@ -97,7 +116,7 @@ void function InitSquadDataDisplay( var squadDataRui )
 array< array< int > > xpDisplayGroups = [
 	[
 		XP_TYPE.WIN_MATCH,
-		XP_TYPE.TOP_THREE,
+		XP_TYPE.TOP_FIVE,
 		XP_TYPE.SURVIVAL_DURATION,
 		XP_TYPE.KILL,
 		XP_TYPE.DOWN,
@@ -119,7 +138,8 @@ array< array< int > > xpDisplayGroups = [
 		XP_TYPE.TOTAL_MATCH,
 		XP_TYPE.BONUS_FRIEND_BOOST,
 		XP_TYPE.BONUS_FIRST_KILL_AS,
-		XP_TYPE.BONUS_RESTED_AS,
+		XP_TYPE.BONUS_FIRST_TOP_FIVE,
+XP_TYPE.CHALLENGE_COMPLETED,
 	],
 ]
 
@@ -136,7 +156,7 @@ int function InitXPEarnedDisplay( var xpEarnedRui, array<int> xpTypes, string he
 	int lineIndex = 0
 	foreach ( index, xpType in xpTypes )
 	{
-		int eventValue = isBattlePass ? 0 : GetXPEventValue( player, xpType )
+		int eventValue = isBattlePass ? 1 : GetXPEventValue( player, xpType )
 		if ( XpEventTypeData_DisplayEmpty( xpType ) || eventValue > 0 )
 		{
 			lineIndex++
@@ -208,6 +228,12 @@ bool function SkippableWait( float waitTime, string uiSound = "" )
 }
 
 
+void function UpdatePostGameSummaryDisplayData()
+{
+	UpdateXPEvents()
+}
+
+
 var function DisplayPostGameSummary( bool isFirstTime )
 {
 	EndSignal( uiGlobal.signalDummy, "PGDisplay" )
@@ -222,7 +248,7 @@ var function DisplayPostGameSummary( bool isFirstTime )
 	Hud_SetVisible( Hud_GetChild( file.menu, "ContinueButton" ), false )
 
 	bool showRankedSummary = GetPersistentVarAsInt( "showRankedSummary" ) != 0
-	if ( !showRankedSummary && isFirstTime && TryOpenSurvey( eSurveyType.POSTGAME ) )
+	if ( GetActiveBattlePass() == null && !showRankedSummary && isFirstTime && TryOpenSurvey( eSurveyType.POSTGAME ) )
 	{
 		while ( IsDialog( GetActiveMenu() ) )
 			WaitFrame()
@@ -240,13 +266,10 @@ var function DisplayPostGameSummary( bool isFirstTime )
 		return
 
 	EmitUISound( "UI_Menu_MatchSummary_Appear" )
-
-	ItemFlavor ornull activeBattlePass
-	if ( IsBattlePassEnabled() )
-		activeBattlePass = GetPlayerActiveBattlePass( WaitForLocalClientEHI() )
+	UpdatePostGameSummaryDisplayData()
 
 	Hud_SetVisible( file.continueButton, isFirstTime )
-	Hud_SetVisible( file.combinedCard, isFirstTime || activeBattlePass == null )
+	Hud_SetVisible( file.combinedCard, true ) //
 
 	file.disableNavigateBack = isFirstTime
 	ResetSkippableWait()
@@ -310,7 +333,9 @@ var function DisplayPostGameSummary( bool isFirstTime )
 	//################
 	const vector COLOR_MATCH = <255, 255, 255> / 255.0
 	const vector COLOR_BONUS = <142, 250, 255> / 255.0
-	vector COLOR_BP_PREMIUM = SrgbToLinear( <255, 90, 40> / 255.0 )
+	vector COLOR_BP_PREMIUM               = SrgbToLinear( <255, 90, 40> / 255.0 )
+	vector COLOR_BP_PINNED_CHALLENGE      = SrgbToLinear( <255, 215, 55> / 255.0 )
+	vector COLOR_BP_PINNED_CHALLENGE_TEXT = SrgbToLinear( <254, 227, 113> / 255.0 )
 
 	const float LINE_DISPLAY_TIME = 0.25
 
@@ -402,7 +427,7 @@ var function DisplayPostGameSummary( bool isFirstTime )
 			RuiSetString( badgeRui, "badgeType", badgeType )
 
 			array<GladCardBadgeTierData> tierDataList = GladiatorCardBadge_GetTierDataList( badge )
-			float unlockRequirement = tierData.unlocksAt
+			float unlockRequirement                   = tierData.unlocksAt
 			if ( tierDataList.len() > 1 )
 				RuiSetString( badgeRui, "badgeDesc", Localize( ItemFlavor_GetShortDescription( badge ), format( "`2%s`0", string(unlockRequirement) ) ) )
 			else
@@ -413,9 +438,15 @@ var function DisplayPostGameSummary( bool isFirstTime )
 
 			EmitUISound( "UI_Menu_Badge_Earned" )
 
-			wait BADGE_CEREMONY_DURATION
+			Hud_SetVisible( Hud_GetChild( file.menu, "BadgeEarned" ), true )
+
+			ResetSkippableWait()
+			SkippableWait( BADGE_CEREMONY_DURATION )
+
+			StopUISound( "UI_Menu_Badge_Earned" )
 		}
 
+		Hud_SetVisible( Hud_GetChild( file.menu, "BadgeEarned" ), false )
 		wait 0.25
 	}
 
@@ -474,11 +505,11 @@ var function DisplayPostGameSummary( bool isFirstTime )
 		RuiSetImage( accountProgressRUI, "currentDisplayBadge", GetAccountDisplayBadge( start_accountLevel ) )
 		RuiSetImage( accountProgressRUI, "nextDisplayBadge", GetAccountDisplayBadge( start_accountLevel + 1 ) )
 
-		/*array<RewardData> accountRewardArray = GetRewardsForAccountLevel( start_accountLevel )
+		array<RewardData> accountRewardArray = GetRewardsForAccountLevel( start_accountLevel )
 		RuiSetImage( accountProgressRUI, "rewardImage1", accountRewardArray.len() >= 1 ? GetImageForReward( accountRewardArray[0] ) : $"" )
 		RuiSetImage( accountProgressRUI, "rewardImage2", accountRewardArray.len() >= 2 ? GetImageForReward( accountRewardArray[1] ) : $"" )
 		RuiSetString( accountProgressRUI, "reward1Value", accountRewardArray.len() >= 1 ? GetStringForReward( accountRewardArray[0] ) : "" )
-		RuiSetString( accountProgressRUI, "reward2Value", accountRewardArray.len() >= 2 ? GetStringForReward( accountRewardArray[1] ) : "" )*/
+		RuiSetString( accountProgressRUI, "reward2Value", accountRewardArray.len() >= 2 ? GetStringForReward( accountRewardArray[1] ) : "" )
 
 		ResetSkippableWait()
 		SkippableWait( baseDelay )
@@ -524,11 +555,11 @@ var function DisplayPostGameSummary( bool isFirstTime )
 			RuiSetImage( accountProgressRUI, "currentDisplayBadge", GetAccountDisplayBadge( startLevel ) )
 			RuiSetImage( accountProgressRUI, "nextDisplayBadge", GetAccountDisplayBadge( startLevel + 1 ) )
 
-			/*array<RewardData> rewardsArray = GetRewardsForAccountLevel( startLevel )
+			array<RewardData> rewardsArray = GetRewardsForAccountLevel( startLevel )
 			RuiSetImage( accountProgressRUI, "rewardImage1", rewardsArray.len() >= 1 ? GetImageForReward( rewardsArray[0] ) : $"" )
 			RuiSetImage( accountProgressRUI, "rewardImage2", rewardsArray.len() >= 2 ? GetImageForReward( rewardsArray[1] ) : $"" )
 			RuiSetString( accountProgressRUI, "reward1Value", rewardsArray.len() >= 1 ? GetStringForReward( rewardsArray[0] ) : "" )
-			RuiSetString( accountProgressRUI, "reward2Value", rewardsArray.len() >= 2 ? GetStringForReward( rewardsArray[1] ) : "" )*/
+			RuiSetString( accountProgressRUI, "reward2Value", rewardsArray.len() >= 2 ? GetStringForReward( rewardsArray[1] ) : "" )
 
 			float waitTime = startDelay + (PROGRESS_BAR_FILL_TIME * (endXPFrac - startXPFrac))
 
@@ -542,13 +573,13 @@ var function DisplayPostGameSummary( bool isFirstTime )
 			if ( currentLevel < ending_accountLevel && isFirstTime )
 			{
 				var rewardDisplayRui = Hud_GetRui( Hud_GetChild( file.menu, "RewardDisplay" ) )
-				/*RuiSetAsset( rewardDisplayRui, "rewardImage1", rewardsArray.len() >= 1 ? GetImageForReward( rewardsArray[0] ) : $"" )
+				RuiSetAsset( rewardDisplayRui, "rewardImage1", rewardsArray.len() >= 1 ? GetImageForReward( rewardsArray[0] ) : $"" )
 				RuiSetAsset( rewardDisplayRui, "rewardImage2", rewardsArray.len() >= 2 ? GetImageForReward( rewardsArray[1] ) : $"" )
 				RuiSetString( rewardDisplayRui, "reward1Value", rewardsArray.len() >= 1 ? GetStringForReward( rewardsArray[0] ) : "" )
-				RuiSetString( rewardDisplayRui, "reward2Value", rewardsArray.len() >= 2 ? GetStringForReward( rewardsArray[1] ) : "" )*/
+				RuiSetString( rewardDisplayRui, "reward2Value", rewardsArray.len() >= 2 ? GetStringForReward( rewardsArray[1] ) : "" )
 
 				RuiSetString( rewardDisplayRui, "headerText", "#EOG_LEVEL_UP_HEADER" )
-				//RuiSetString( rewardDisplayRui, "rewardHeaderText", rewardsArray.len() > 1 ? "#EOG_REWARDS_LABEL" : "#EOG_REWARD_LABEL" )
+				RuiSetString( rewardDisplayRui, "rewardHeaderText", rewardsArray.len() > 1 ? "#EOG_REWARDS_LABEL" : "#EOG_REWARD_LABEL" )
 				RuiSetString( rewardDisplayRui, "accountLevelText", GetAccountDisplayLevel( startLevel + 1 ) )
 
 				RuiSetImage( rewardDisplayRui, "accountBadgeIcon", GetAccountDisplayBadge( startLevel + 1 ) )
@@ -566,232 +597,125 @@ var function DisplayPostGameSummary( bool isFirstTime )
 
 		SkippableWait( baseDelay )
 	}
+}
 
-	if ( IsBattlePassEnabled() )
-		activeBattlePass = GetPlayerActiveBattlePass( WaitForLocalClientEHI() )
-	if ( activeBattlePass == null )
-		return
 
-	expect ItemFlavor(activeBattlePass)
+void function UpdateXPAndStarsProgress( entity player, ItemFlavor activeBattlePass, var passProgressRUI, ItemFlavor bpLevelBadge, var xpEarned3Rui, ItemFlavor dummy, PinnedXPAndStarsProgressBar xpChallengeData, bool isUpdatingStars )
+{
+	int progressEndValue        = 0
+	int currentTier             = xpChallengeData.tierStart
+	int pointsToAddByStep       = xpChallengeData.pointsToAddTotal
+	int startingPointsByStep    = xpChallengeData.startingPoints
+	bool needsReset             = false
+	bool progressComplete       = false
+	float challengeFillDuration = isUpdatingStars ? CHALLENGE_FILL_DURATION * 0.5 : CHALLENGE_FILL_DURATION
 
-	Hud_SetVisible( file.combinedCard, false )
-
+	//
+	while( true )
 	{
-		int previousBattlePassXP = GetPlayerBattlePassXPProgress( ToEHI( player ), activeBattlePass, true )
-		int currentBattlePassXP  = GetPlayerBattlePassXPProgress( ToEHI( player ), activeBattlePass, false )
-		int totalBattlePassXP    = currentBattlePassXP - previousBattlePassXP
+		progressEndValue = startingPointsByStep + pointsToAddByStep
+		int currentGoalValue      = Challenge_GetGoalVal( xpChallengeData.progressBarFlavor, currentTier )
+		float currentFillDuration = (float(pointsToAddByStep) / float(xpChallengeData.pointsToAddTotal)) * challengeFillDuration
 
-		var xpEarned3Rui = Hud_GetRui( Hud_GetChild( file.menu, "XPEarned3" ) )
-		Hud_SetVisible( Hud_GetChild( file.menu, "XPEarned3" ), true )
-		Hud_SetVisible( Hud_GetChild( file.menu, "XPProgressBarBattlePass" ), true )
+		if ( pointsToAddByStep == 0 )
+			currentFillDuration = 0.1
 
-		bool isFreePlayer = GRX_IsInventoryReady() && DoesPlayerOwnBattlePass( GetUIPlayer(), activeBattlePass )
-		RuiSetFloat( xpEarned3Rui, "startDelay", baseDelay )
-		int numLines = InitXPEarnedDisplay( Hud_GetRui( Hud_GetChild( file.menu, "XPEarned3" ) ), xpDisplayGroups[2], "#EOG_MATCH_BP", ItemFlavor_GetShortName( activeBattlePass ), true, COLOR_BP_PREMIUM )
-		RuiSetFloat( xpEarned3Rui, "lineDisplayTime", LINE_DISPLAY_TIME )
-
-		int start_passLevel = GetBattlePassLevelForXP( activeBattlePass, previousBattlePassXP )
-		Assert( start_passLevel >= 0 )
-		int start_passXP          = GetTotalXPToCompletePassLevel( activeBattlePass, start_passLevel - 1 )
-
-		int start_nextPassLevelXP
-		if ( start_passLevel > GetBattlePassMaxLevelIndex( activeBattlePass ) )
-			start_nextPassLevelXP = start_passXP
-		else
-			start_nextPassLevelXP = GetTotalXPToCompletePassLevel( activeBattlePass, start_passLevel )
-
-		Assert( previousBattlePassXP >= start_passXP )
-		Assert( previousBattlePassXP <= start_nextPassLevelXP )
-
-		float start_passLevelFrac = GraphCapped( previousBattlePassXP, start_passXP, start_nextPassLevelXP, 0.0, 1.0 )
-
-		int ending_passLevel       = GetBattlePassLevelForXP( activeBattlePass, currentBattlePassXP )
-		int ending_passXP          = GetTotalXPToCompletePassLevel( activeBattlePass, ending_passLevel - 1 )
-		bool isMaxPassLevel 	   = ending_passLevel > GetBattlePassMaxLevelIndex( activeBattlePass )
-
-		int ending_nextPassLevelXP
-		if ( isMaxPassLevel )
-			ending_nextPassLevelXP = ending_passXP
-		else
-			ending_nextPassLevelXP = GetTotalXPToCompletePassLevel( activeBattlePass, ending_passLevel )
-
-		Assert( currentBattlePassXP >= ending_passXP )
-		Assert( currentBattlePassXP <= ending_nextPassLevelXP )
-		float ending_passLevelFrac = GraphCapped( currentBattlePassXP, ending_passXP, ending_nextPassLevelXP, 0.0, 1.0 )
-
-		var passProgressRUI = Hud_GetRui( Hud_GetChild( file.menu, "XPProgressBarBattlePass" ) )
-		RuiSetBool( passProgressRUI, "battlePass", true )
-		RuiSetAsset( passProgressRUI, "emptyRewardImage", $"rui/menu/buttons/battlepass/button_bg" )
-
-		RuiSetString( passProgressRUI, "displayName", GetPlayerName() )
-		RuiSetColorAlpha( passProgressRUI, "oldProgressColor", <196 / 255.0, 151 / 255.0, 41 / 255.0>, 1 )
-		RuiSetColorAlpha( passProgressRUI, "newProgressColor", <255 / 255.0, 182 / 255.0, 0 / 255.0>, 1 )
-		RuiSetString( passProgressRUI, "totalEarnedXPText", ShortenNumber( string( totalBattlePassXP ) ) )
-		RuiSetBool( passProgressRUI, "largeFormat", true )
-		RuiSetInt( passProgressRUI, "startLevel", start_passLevel )
-		RuiSetFloat( passProgressRUI, "startLevelFrac", start_passLevelFrac )
-		RuiSetInt( passProgressRUI, "endLevel", start_passLevel )
-		RuiSetFloat( passProgressRUI, "endLevelFrac", 1.0 )
-		RuiSetGameTime( passProgressRUI, "startTime", RUI_BADGAMETIME )
-		RuiSetFloat( passProgressRUI, "startDelay", 0.0 )
-		RuiSetString( passProgressRUI, "headerText", "#EOG_XP_HEADER_MATCH" )
-		RuiSetFloat( passProgressRUI, "progressBarFillTime", PROGRESS_BAR_FILL_TIME )
-		if ( isMaxPassLevel )
-			RuiSetInt( passProgressRUI, "displayLevel1XP", 0 )
-		else
-			RuiSetInt( passProgressRUI, "displayLevel1XP", GetTotalXPToCompletePassLevel( activeBattlePass, start_passLevel ) - GetTotalXPToCompletePassLevel( activeBattlePass, start_passLevel - 1 ) )
-
-		ItemFlavor dummy
-		ItemFlavor bpLevelBadge = GetBattlePassProgressBadge( activeBattlePass )
-
-		RuiSetString( passProgressRUI, "currentDisplayLevel", "" )
-		RuiSetString( passProgressRUI, "nextDisplayLevel", "" )
-		RuiSetImage( passProgressRUI, "currentDisplayBadge", $"" )
-		RuiSetImage( passProgressRUI, "nextDisplayBadge", $"" )
-
-		RuiDestroyNestedIfAlive( passProgressRUI, "currentBadgeHandle" )
-		CreateNestedGladiatorCardBadge( passProgressRUI, "currentBadgeHandle", ToEHI( player ), bpLevelBadge, 0, dummy, start_passLevel + 1 )
-
-		RuiDestroyNestedIfAlive( passProgressRUI, "nextBadgeHandle" )
-
-		array<BattlePassReward> passRewardArray = GetBattlePassLevelRewards( activeBattlePass, start_passLevel )
-		RuiSetImage( passProgressRUI, "rewardImage1", passRewardArray.len() >= 1 ? GetImageForBattlePassReward( passRewardArray[0] ) : $"" )
-		RuiSetImage( passProgressRUI, "rewardImage2", passRewardArray.len() >= 2 ? GetImageForBattlePassReward( passRewardArray[1] ) : $"" )
-		RuiSetString( passProgressRUI, "reward1Value", passRewardArray.len() >= 1 ? ItemFlavor_GetType( passRewardArray[0].flav ) == eItemType.account_currency ? string( passRewardArray[0].quantity ) : " " : "" )
-		RuiSetString( passProgressRUI, "reward2Value", passRewardArray.len() >= 2 ? ItemFlavor_GetType( passRewardArray[1].flav ) == eItemType.account_currency ? string( passRewardArray[1].quantity ) : " " : "" )
-		RuiSetBool( passProgressRUI, "reward1Premium", passRewardArray.len() >= 1 ? passRewardArray[0].isPremium : false )
-		RuiSetBool( passProgressRUI, "reward2Premium", passRewardArray.len() >= 2 ? passRewardArray[1].isPremium : false )
-
-
-		RuiDestroyNestedIfAlive( passProgressRUI, "reward1Handle" )
-		if ( passRewardArray.len() >= 1 )
+		if ( progressEndValue > currentGoalValue )
 		{
-			var reward1NestedRui = RuiCreateNested( passProgressRUI, "reward1Handle", $"ui/battle_pass_reward_button.rpak" )
-			RuiSetBool( reward1NestedRui, "isRewardBar", true )
-			InitBattlePassRewardButtonRui( reward1NestedRui, passRewardArray[0] )
+			progressEndValue = currentGoalValue
+			needsReset = true
+			currentFillDuration = ((float(currentGoalValue) - float(startingPointsByStep)) / float(xpChallengeData.pointsToAddTotal)) * challengeFillDuration
 		}
 
-		RuiDestroyNestedIfAlive( passProgressRUI, "reward2Handle" )
-		if ( passRewardArray.len() >= 2 )
+		RuiSetString( xpChallengeData.rui, "challengeText", Challenge_GetDescription( xpChallengeData.progressBarFlavor, currentTier ) )
+		RuiSetInt( xpChallengeData.rui, "challengeProgressStart", startingPointsByStep )
+		RuiSetInt( xpChallengeData.rui, "challengeProgressEnd", progressEndValue )
+		RuiSetInt( xpChallengeData.rui, "challengeGoal", currentGoalValue )
+		RuiSetInt( xpChallengeData.rui, "bpLevelsAwarded", Challenge_GetBattlepassLevelsReward( xpChallengeData.progressBarFlavor, currentTier ) )
+		RuiSetInt( xpChallengeData.rui, "challengePointsAwarded", Challenge_GetXPReward( xpChallengeData.progressBarFlavor, currentTier ) )
+		RuiSetInt( xpChallengeData.rui, "tierCount", Challenge_GetTierCount( xpChallengeData.progressBarFlavor ) )
+		RuiSetInt( xpChallengeData.rui, "activeTier", currentTier )
+		RuiSetInt( xpChallengeData.rui, "starsOrXPIncrement", xpChallengeData.pointsToAddTotal )
+		RuiSetBool( xpChallengeData.rui, "isInfinite", Challenge_LastTierIsInfinite( xpChallengeData.progressBarFlavor ) )
+		RuiSetBool( xpChallengeData.rui, "altColor", true )
+		RuiSetBool( xpChallengeData.rui, "displayStarsIncrement", isUpdatingStars )
+		RuiSetBool( xpChallengeData.rui, "displayXPIncrement", !isUpdatingStars )
+		RuiSetGameTime( xpChallengeData.rui, "fillStartTime", Time() )
+		RuiSetGameTime( xpChallengeData.rui, "fillEndTime", Time() + currentFillDuration )
+
+		RuiSetString( xpEarned3Rui, "line3ValueString", string(xpChallengeData.challengeStarsAndXpEarned) )
+
+		if ( needsReset )
 		{
-			var reward2NestedRui = RuiCreateNested( passProgressRUI, "reward2Handle", $"ui/battle_pass_reward_button.rpak" )
-			RuiSetBool( reward2NestedRui, "isRewardBar", true )
-			InitBattlePassRewardButtonRui( reward2NestedRui, passRewardArray[1] )
+			pointsToAddByStep -= currentGoalValue - startingPointsByStep
+			startingPointsByStep = 0
+		}
+		else
+		{
+			progressComplete = true
 		}
 
-		ResetSkippableWait()
-		SkippableWait( baseDelay )
+		SkippableWait( currentFillDuration, "UI_Menu_MatchSummary_XPBar" )
+		StopUISoundByName( "UI_Menu_MatchSummary_XPBar" )
 
-		for ( int lineIndex = 0; lineIndex < numLines; lineIndex++ )
+		if ( needsReset || progressEndValue == currentGoalValue )
 		{
-			if ( IsSkippableWaitSkipped() )
-				continue
+			EmitUISound( GetGlobalSettingsString( ItemFlavor_GetAsset( activeBattlePass ), "levelUpSound" ) )
 
-			SkippableWait( LINE_DISPLAY_TIME, POSTGAME_LINE_ITEM )
-		}
+			xpChallengeData.challengesCompleted++
+			xpChallengeData.battlePassLevelsEarned++
+			xpChallengeData.currentPassLevel++
 
-		RuiSetFloat( xpEarned3Rui, "startDelay", -50.0 )
-		RuiSetGameTime( xpEarned3Rui, "startTime", Time() - 50.0 )
+			//
+			RuiDestroyNestedIfAlive( passProgressRUI, "currentBadgeHandle" )
+			CreateNestedGladiatorCardBadge( passProgressRUI, "currentBadgeHandle", ToEHI( player ), bpLevelBadge, 0, dummy, xpChallengeData.currentPassLevel + 1 )
 
-
-		int challengesCompleted = 0
-		int battlePassLevelsEarned = 0
-		int challengeStarsEarned = 0
-
-		RuiSetString( xpEarned3Rui, "line1KeyString", "#EOG_CHALLENGES_COMPLETED" )
-		RuiSetString( xpEarned3Rui, "line1ValueString", string(challengesCompleted) )
-		RuiSetColorAlpha( xpEarned3Rui, "line1Color", COLOR_BP_PREMIUM, 1.0 )
-
-		RuiSetString( xpEarned3Rui, "line2KeyString", "#EOG_BATTLE_PASS_LEVELS_EARNED" )
-		RuiSetString( xpEarned3Rui, "line2ValueString", string(battlePassLevelsEarned) )
-		RuiSetColorAlpha( xpEarned3Rui, "line2Color", <1.0, 1.0, 1.0>, 1.0 )
-
-		RuiSetString( xpEarned3Rui, "line3KeyString", "#EOG_CHALLENGE_STARS_EARNED" )
-		RuiSetString( xpEarned3Rui, "line3ValueString", string(challengeStarsEarned) )
-		RuiSetColorAlpha( xpEarned3Rui, "line3Color", COLOR_BP_PREMIUM, 1.0 )
-
-		RuiSetInt( xpEarned3Rui, "numLines", 3 )
-
-
-
-
-		var challengeRui0 = Hud_GetRui( Hud_GetChild( file.menu, "PinnedChallenge0" ) )
-		var challengeRui1 = Hud_GetRui( Hud_GetChild( file.menu, "PinnedChallenge1" ) )
-		int currentPassLevel = start_passLevel
-		RuiDestroyNestedIfAlive( passProgressRUI, "currentBadgeHandle" )
-		CreateNestedGladiatorCardBadge( passProgressRUI, "currentBadgeHandle", ToEHI( player ), bpLevelBadge, 0, dummy, currentPassLevel + 1 )
-
-		ResetSkippableWait()
-		int numChallengesCompleted = PersistenceGetArrayCount( "postGameChallenges" )
-		for ( int i = 0 ; i < numChallengesCompleted ; i++ )
-		{
-			int guid = player.GetPersistentVarAsInt( "postGameChallenges[" + i + "].guid" )
-			if ( guid > 0 )
+			//
+			array<BattlePassReward> nextPassRewardArray = GetBattlePassLevelRewards( activeBattlePass, xpChallengeData.currentPassLevel )
+			RuiDestroyNestedIfAlive( passProgressRUI, "reward1Handle" )
+			if ( nextPassRewardArray.len() >= 1 )
 			{
-				Hud_SetVisible( Hud_GetChild( file.menu, "PinnedChallenge0" ), true )
-
-				ItemFlavor ornull challenge = GetItemFlavorOrNullByGUID( guid, eItemType.challenge )
-				if ( challenge == null )
-					continue
-				expect ItemFlavor( challenge )
-
-				int completedTier = player.GetPersistentVarAsInt( "postGameChallenges[" + i + "].completedTier" )
-				int statMarkerMatchStart = int( max( 0, player.GetPersistentVarAsInt( "postGameChallenges[" + i + "].statMarkerMatchStart" ) ) )
-				int rewardBPLevels = Challenge_GetBattlepassLevelsReward( challenge, completedTier )
-				int rewardXP = Challenge_GetXPReward( challenge, completedTier )
-				int goalValue = Challenge_GetGoalVal( challenge, completedTier )
-				float fillDuration = ((float(goalValue) - float(statMarkerMatchStart)) / float(goalValue)) * CHALLENGE_FILL_DURATION
-
-				RuiSetString( challengeRui0, "challengeText", Challenge_GetDescription( challenge, completedTier ) )
-				RuiSetInt( challengeRui0, "challengeProgressStart", statMarkerMatchStart )
-				RuiSetInt( challengeRui0, "challengeProgressEnd", goalValue )
-				RuiSetInt( challengeRui0, "challengeGoal", goalValue )
-				RuiSetInt( challengeRui0, "bpLevelsAwarded", rewardBPLevels )
-				RuiSetInt( challengeRui0, "challengePointsAwarded", rewardXP )
-				RuiSetInt( challengeRui0, "tierCount", Challenge_GetTierCount( challenge ) )
-				RuiSetInt( challengeRui0, "activeTier", completedTier )
-				RuiSetBool( challengeRui0, "isInfinite", Challenge_LastTierIsInfinite( challenge ) )
-				RuiSetBool( challengeRui0, "altColor", false )
-				RuiSetGameTime( challengeRui0, "fillStartTime", Time() )
-				RuiSetGameTime( challengeRui0, "fillEndTime", Time() + fillDuration )
-
-				SkippableWait( fillDuration, "UI_Menu_MatchSummary_XPBar" )
-				StopUISoundByName( "UI_Menu_MatchSummary_XPBar" )
-
-				challengesCompleted++
-				battlePassLevelsEarned += rewardBPLevels
-				challengeStarsEarned += rewardXP
-
-				if ( rewardBPLevels > 0 )
-				{
-					currentPassLevel += rewardBPLevels
-
-					RuiDestroyNestedIfAlive( passProgressRUI, "currentBadgeHandle" )
-					CreateNestedGladiatorCardBadge( passProgressRUI, "currentBadgeHandle", ToEHI( player ), bpLevelBadge, 0, dummy, currentPassLevel + 1 )
-
-					if ( i < numChallengesCompleted-1 )
-						EmitUISound( "UI_Menu_BattlePass_LevelUp_Season2" )
-				}
-
-				RuiSetString( xpEarned3Rui, "line1ValueString", string(challengesCompleted) )
-				RuiSetString( xpEarned3Rui, "line2ValueString", string(battlePassLevelsEarned) )
-				RuiSetString( xpEarned3Rui, "line3ValueString", string(challengeStarsEarned) )
-
-				SkippableWait( 1.0 )
+				var reward1NestedRui = RuiCreateNested( passProgressRUI, "reward1Handle", $"ui/battle_pass_reward_button.rpak" )
+				RuiSetBool( reward1NestedRui, "isRewardBar", true )
+				InitBattlePassRewardButtonRui( reward1NestedRui, nextPassRewardArray[0] )
 			}
+
+			RuiDestroyNestedIfAlive( passProgressRUI, "reward2Handle" )
+			if ( nextPassRewardArray.len() >= 2 )
+			{
+				var reward2NestedRui = RuiCreateNested( passProgressRUI, "reward2Handle", $"ui/battle_pass_reward_button.rpak" )
+				RuiSetBool( reward2NestedRui, "isRewardBar", true )
+				InitBattlePassRewardButtonRui( reward2NestedRui, nextPassRewardArray[1] )
+			}
+
+			//
+			RuiSetGameTime( passProgressRUI, "badgePulseStartTime", Time() )
+
+			//
+			RuiSetString( xpEarned3Rui, "line1ValueString", string(xpChallengeData.challengesCompleted) )
+
+			//
+			if ( xpChallengeData.currentPassLevel <= GetBattlePassMaxLevelIndex( activeBattlePass ) + 1 )
+				RuiSetString( xpEarned3Rui, "line2ValueString", string(xpChallengeData.battlePassLevelsEarned) )
 		}
 
-		RuiDestroyNestedIfAlive( passProgressRUI, "currentBadgeHandle" )
-		CreateNestedGladiatorCardBadge( passProgressRUI, "currentBadgeHandle", ToEHI( player ), bpLevelBadge, 0, dummy, ending_passLevel + 1 )
+		SkippableWait( CHALLENGE_POST_FILL_DELAY )
 
-		ClientCommand( "ViewedGameSummary" )
-		thread TryDisplayBattlePassAwards()
+		RuiSetBool( xpChallengeData.rui, "displayStarsIncrement", false )
+		RuiSetBool( xpChallengeData.rui, "displayXPIncrement", false )
 
-		SkippableWait( baseDelay )
+		if ( progressComplete )
+			break
+
+		if ( currentTier < Challenge_GetTierCount( xpChallengeData.progressBarFlavor ) - 1 )
+			currentTier++
+
+		needsReset = false
 	}
 
-	return
-	//######################################
+	xpChallengeData.tierStart = currentTier
+	xpChallengeData.startingPoints = progressEndValue
+	xpChallengeData.pointsToAddTotal = 0
 }
 
 
@@ -853,6 +777,7 @@ void function OnShowPostGameMenu()
 	thread DisplayPostGameSummary( isFirstTime )
 }
 
+
 void function OnHidePostGameMenu()
 {
 	Signal( uiGlobal.signalDummy, "PGDisplay" )
@@ -862,6 +787,7 @@ void function OnHidePostGameMenu()
 	DeregisterButtonPressedCallback( BUTTON_A, OnContinue_Activate )
 	DeregisterButtonPressedCallback( KEY_SPACE, OnContinue_Activate )
 }
+
 
 void function OnClosePostGameMenu()
 {

@@ -9,12 +9,12 @@ void function ShPrecacheShadowSquadAssets()
 	FX_SHADOW_FORM_EYEGLOW 				= $"P_BShadow_eye"
 	FX_SHADOW_TRAIL 					= $"P_Bshadow_body"
 	#if SERVER
-		DEATH_FX_SHADOW_SQUAD 				= $"P_Bshadow_death"
-		FX_EVAC_SHIP_FOR_SHADOWS 			= $"P_lootcache_far_beam"
-		ICON_NEMESIS						= $"rui/hud/gametype_icons/ltm/enemy_nemesis_color"
-		ICON_DEATH_LEGEND					= $"rui/hud/gametype_icons/ltm/deathpos_skull_legend"
-		ICON_DEATH_SHADOW					= $"rui/hud/gametype_icons/ltm/deathpos_skull_default_color"
-		ICON_DROPSHIP_EVAC_FOR_SHADOWS 		= $"rui/hud/common/evac_location_enemy"
+		const asset DEATH_FX_SHADOW_SQUAD 				= $"P_Bshadow_death"
+		const asset FX_EVAC_SHIP_FOR_SHADOWS 			= $"P_lootcache_far_beam"
+		const asset ICON_NEMESIS						= $"rui/hud/gametype_icons/ltm/enemy_nemesis_color"
+		const asset ICON_DEATH_LEGEND					= $"rui/hud/gametype_icons/ltm/deathpos_skull_legend"
+		const asset ICON_DEATH_SHADOW					= $"rui/hud/gametype_icons/ltm/deathpos_skull_default_color"
+		const asset ICON_DROPSHIP_EVAC_FOR_SHADOWS 		= $"rui/hud/common/evac_location_enemy"
 	#endif //SERVER
 
 	#if CLIENT

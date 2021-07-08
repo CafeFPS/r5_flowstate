@@ -9,6 +9,7 @@ WeaponData
 	"menu_icon"										""
 	"hud_icon"										""
 
+	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"weaponType"									"shoulder"
 	"fire_mode"   									"offhand"
@@ -16,6 +17,7 @@ WeaponData
 	"offhand_keep_primary_in_hand" 					"1"
 	"projectile_launch_speed"						"12000"
 	"uses_indirect_fire"							"1"
+	"trophy_system_intercept_large"                 "1"
 
 	"aimassist_disable_hipfire"						"1"
 	"aimassist_disable_ads"							"1"

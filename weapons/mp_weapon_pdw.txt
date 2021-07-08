@@ -10,12 +10,14 @@ WeaponData
 	"description" 									"#WPN_PDW_DESC"
 	"longdesc"										"#WPN_PDW_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"highcal"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_prowler"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_prowler"
 
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 
 	"activitymodifier"								"pistol"
 
@@ -90,8 +92,6 @@ WeaponData
 		"npc_damage_far_value_titanarmor" 				"0"
 
 		"npc_max_range"   								"2000"
-
-		"damage_heavyarmor_nontitan_scale"				"0.35"
 	}
 
 	SP_BASE
@@ -117,8 +117,6 @@ WeaponData
 		"npc_damage_far_value_titanarmor" 				"<KEEP_DEFAULT>"
 
 		"npc_max_range"   								"4000"
-
-		"damage_heavyarmor_nontitan_scale"				"1"
 	}
 
 	// NPC
@@ -185,6 +183,7 @@ WeaponData
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
+	"viewkick_yaw_random_innerexclude"              "0.05"
 	"viewkick_yaw_softScale"  						"5.4"
 	"viewkick_yaw_hardScale"  						"0.4"
 
@@ -279,7 +278,7 @@ WeaponData
 
 			"fire_rate"   									"13.25"
 
-        	"fire_mode" 									"automatic"
+        	"is_semi_auto"									"0"
         	"burst_fire_count"								"0"  // also have to do this to disable burstfire
 
         	"viewkick_pattern"                              "pdw_auto_2"
@@ -367,19 +366,21 @@ WeaponData
 			"viewmodel_offset_hip"							"0 0 -0.5"
 		}
 
-		optic_ranged_hcog
-		{
-			"bodygroup2_set"	       						"0"
+                           
+                         
+         
+                                             
 
-			"viewmodel_offset_hip"							"0 0 -0.65"
-		}
+                                                    
+         
 
-		optic_ranged_aog_variable
-		{
-			"bodygroup2_set"	       						"0"
+                                 
+         
+                                             
 
-			"viewmodel_offset_hip"							"0 0 -0.75"
-		}
+                                                    
+         
+      
 
 		highcal_mag_l1
 		{
@@ -393,6 +394,14 @@ WeaponData
 		{
 			"ammo_clip_size"   							"++15"
 		}
+
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
 	}
 	"ui1_enable"		"1"
 	"ui1_draw_cloaked"	"1"
@@ -420,7 +429,7 @@ WeaponData
 			ammo						weapon_ammo
 			clipSize					weapon_clipSize
 			clipCount					weapon_ammoClipCount
-			fireMode     				"eWeaponVar.fire_mode"
+			isSemiAuto     				"eWeaponVar.is_semi_auto"
 		}
 	}
 

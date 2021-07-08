@@ -50,7 +50,7 @@ Schedule
 
 		Tasks
 			TASK_STOP_MOVING		2
-			TASK_FACE_ENEMY			5
+			//TASK_FACE_ENEMY			5
 			TASK_SET_IDLE_ACTIVITY	0
 			TASK_WAIT				1
 
@@ -1521,7 +1521,6 @@ Schedule
 			TASK_GET_PATH_TO_NEXT_SEARCH_POINT	1500
  			TASK_WALK_PATH					0
  			TASK_WAIT_FOR_MOVEMENT			0
- 			TASK_RUN_VSCRIPT				0
 			TASK_RESERVE_NEXT_SEARCH_POINT	0
 
  		Interrupts
@@ -2286,6 +2285,28 @@ Schedule
 End_Schedule
 
 //=========================================================
+// > SCHED_MOVE_TO_BATTLE_LOCATION
+//=========================================================
+Schedule
+
+	SCHED_MOVE_TO_BATTLE_LOCATION
+
+		Tasks
+			TASK_GET_PATH_TO_BATTLE_LOCATION			0
+			TASK_RUN_PATH								0
+			TASK_WAIT_FOR_MOVEMENT						0
+			TASK_FACE_ENEMY								3
+
+		Interrupts
+			COND_ANY_MELEE_ATTACK
+			COND_INSIDE_DANGEROUS_AREA
+			COND_REACT_SURPRISED
+			COND_REACT_CLOAK
+			COND_REACT_JUMPED_OVER
+
+End_Schedule
+
+//=========================================================
 // > SCHED_GRAPPLED
 //=========================================================
 Schedule
@@ -2294,7 +2315,7 @@ Schedule
 
 		Tasks
 			 TASK_STOP_MOVING			0
-			 TASK_BIG_FLINCH			0
+			 //TASK_BIG_FLINCH			0
 
 		Interrupts
 

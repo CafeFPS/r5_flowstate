@@ -1,5 +1,4 @@
-#base "_base_optics.txt"
-#base "_base_character_mods.txt"
+#base "_base_lmg.txt"
 
 WeaponData
 {
@@ -12,6 +11,7 @@ WeaponData
 	"menu_icon"										"rui/weapon_icons/r5/weapon_lstar"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_lstar"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"weaponClass" 									"human"
 	"body_type"										"stalker"
 	"fire_mode"   									"automatic"
@@ -21,11 +21,11 @@ WeaponData
 
 	"cooldown_type"									"chargeFrac"
     "cooldown_time"	                                "0.4" // actually, "blowoff animation time"
-    "charge_time"                                   "2.4"  // while holding trigger, time until weapon overheats
+    "charge_time"                                   "1.7"  // while holding trigger, time until weapon overheats
     "charge_cooldown_time"                          "2.45"  // controls length of overheat anim (along with delay)
     "charge_cooldown_delay"                         "0.05"
 	"charge_overheats_when_full"                    "1"
-	"charge_attack_requires_full_charge"            "0"
+	"charge_weapon_fires_while_charging"            "1"
 	"charge_remain_full_when_fired"                 "1"
 	"entity_color_from_charge"						"1"
 
@@ -72,7 +72,7 @@ WeaponData
 	"fire_sound_2_player_1p"						"weapon_lstar_secondshot_1p"
 	"fire_sound_2_player_3p"						"Weapon_LSTAR_SecondShot_3P"
 
-	"idle_sound_player_1p"							"weapon_lstar_idle_gears_1p"
+	//"idle_sound_player_1p"							"weapon_lstar_idle_gears_1p"
 
 	"vortex_impact_sound_1p"						"vortex_shield_deflect_amped"
 	"vortex_impact_sound_3p"						"vortex_shield_deflect_amped"
@@ -119,12 +119,15 @@ WeaponData
 	//"net_optimize"		                            "1"
 
 	"bolt_hitsize"									"0.0"
+
 	"bolt_hitsize_grow1_time"						"0.075"
 	"bolt_hitsize_grow1_size"						"5.0"
 	"bolt_hitsize_grow2_time"						"0.18"
 	"bolt_hitsize_grow2_size"						"7.0"
 	"bolt_hitsize_growfinal_lerptime"				"0.18"
 	"bolt_hitsize_growfinal_size"					"7.0"
+
+
 
 	"bolt_gravity_enabled"							"1"
 
@@ -292,9 +295,9 @@ WeaponData
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
-	"viewkick_yaw_random_innerexclude"				"0.1"
-	"viewkick_yaw_softScale"  						"3.0"
-	"viewkick_yaw_hardScale"  						"0.4"
+	"viewkick_yaw_random_innerexclude"				"0.05"
+	"viewkick_yaw_softScale"  						"2.2"
+	"viewkick_yaw_hardScale"  						"0.3"
 
 	"viewkick_roll_base"  							"-1.6"
     "viewkick_roll_randomMin" 						"-0.35"
@@ -355,17 +358,16 @@ WeaponData
 
 	// Ammo
 	"ammo_suck_behavior"							"primary_weapons"
-	"ammo_clip_size"   								"60"
-	"ammo_clip_reload_max"							"60"
+	"ammo_clip_size"   								"40"
+	"ammo_clip_reload_max"							"40"
 	"ammo_min_to_fire"								"1"
+	"ammo_per_shot"		    						"1"
 	"ammo_no_remove_from_stockpile"					"0"
 	"chance_for_bonus_last_shot_in_clip"			"0"
 	"critical_hit"									"1"
 
-//    "damage_shield_scale"                           "1.5"
-
-    "ammo_default_total"							"180"
-    "ammo_stockpile_max"							"180"
+    "ammo_stockpile_max"							"80"
+    "ammo_default_total"							"120"
     "low_ammo_fraction" 							"0.3"
     "uses_ammo_pool"								"0"
 
@@ -373,12 +375,12 @@ WeaponData
 
     "aimassist_adspull_weaponclass"					"none"
 
-    "damage_near_value"   							"21"
-    "damage_far_value"								"21"
-    "damage_very_far_value"							"21"
-    "damage_near_value_titanarmor"					"21"
-    "damage_far_value_titanarmor" 					"21"
-    "damage_very_far_value_titanarmor" 				"21"
+    "damage_near_value"   							"19"
+    "damage_far_value"								"19"
+    "damage_very_far_value"							"19"
+    "damage_near_value_titanarmor"					"19"
+    "damage_far_value_titanarmor" 					"19"
+    "damage_very_far_value_titanarmor" 				"19"
 
     "damage_rodeo" 									"100"
     "explosion_damage"								"30"
@@ -409,8 +411,6 @@ WeaponData
     "npc_max_burst"   								"8"
     "npc_rest_time_between_bursts_min"				"3.0"
     "npc_rest_time_between_bursts_max"				"4.0"
-
-    "damage_heavyarmor_nontitan_scale"				"0.35"
 
 	// NPC
 	"proficiency_poor_spreadscale"					"6.0"
@@ -478,86 +478,23 @@ WeaponData
     //"clip_bodygroup_show_for_milestone_2"	"0"
     //"clip_bodygroup_show_for_milestone_3"	"0"
 
+               
+         
+  
+                                       
+                                       
+  
+      
+
 	Mods
 	{
+	    crate
+	    {
+	    }
+
 		survival_finite_ammo
         {
         }
-
-		npc_spectre
-		{
-			"projectile_launch_speed"						"1500"
-			"projectile_gravity_scale"						"0.05"
-
-			"ammo_no_remove_from_clip"						"1"
-			"ammo_no_remove_from_stockpile"					"1"
-
-			"bolt_hitsize"									"0.0"
-			"bolt_hitsize_grow1_time"						"0.0"
-			"bolt_hitsize_grow1_size"						"0.0"
-			"bolt_hitsize_grow2_time"						"0.0"
-			"bolt_hitsize_grow2_size"						"0.0"
-			"bolt_hitsize_growfinal_lerptime"				"0.0"
-			"bolt_hitsize_growfinal_size"					"0.0"
-
-			"npc_min_burst"   								"2"
-			"npc_max_burst"   								"3"
-			"npc_rest_time_between_bursts_min"				"0.5"
-			"npc_rest_time_between_bursts_max"				"1.5"
-
-			//Effects
-			"projectile_trail_effect_0" 					"P_projectile_lstar_burn"
-			"fx_muzzle_flash_view"							"P_muz_lstar_FP_burn"
-			"fx_muzzle_flash_world"							"P_muz_lstar_burn"
-		}
-
-		titan_test
-		{
-			"projectile_launch_speed"						"1000"
-			"projectile_gravity_scale"						"0.0"
-
-			"fire_rate"   									"15.0"
-			"ammo_no_remove_from_clip"						"1"
-			"ammo_no_remove_from_stockpile"					"1"
-
-			"bolt_hitsize"									"10.0"
-			"bolt_hitsize_grow1_time"						"0.0"
-			"bolt_hitsize_grow1_size"						"10.0"
-			"bolt_hitsize_grow2_time"						"0.0"
-			"bolt_hitsize_grow2_size"						"10.0"
-			"bolt_hitsize_growfinal_lerptime"				"0.0"
-			"bolt_hitsize_growfinal_size"					"10.0"
-
-			"npc_min_burst"   								"10"
-			"npc_max_burst"   								"25"
-			"npc_rest_time_between_bursts_min"				"1.5"
-			"npc_rest_time_between_bursts_max"				"3.5"
-
-			//Effects
-			"projectile_trail_effect_0" 					"P_projectile_lstar_burn"
-			"fx_muzzle_flash_view"							"P_muz_lstar_FP_burn"
-			"fx_muzzle_flash_world"							"P_muz_lstar_burn"
-
-			//
-			"npc_damage_near_value"   						"15"
-			"npc_damage_far_value"							"15"
-			"npc_damage_near_value_titanarmor"				"15"
-			"npc_damage_far_value_titanarmor" 				"15"
-
-			//
-			"npc_min_engage_range"							"200"
-			"npc_max_engage_range"							"5000"
-			"npc_min_engage_range_heavy_armor"				"500"
-			"npc_max_engage_range_heavy_armor"				"5000"
-			"npc_min_range"   								"0"
-			"npc_max_range"   								"10000"
-
-			//
-			"viewkick_pitch_softScale"						"*0.0"
-			"viewkick_pitch_hardScale"						"*0.0"
-			"viewkick_yaw_softScale"						"*0.0"
-			"viewkick_yaw_hardScale"						"*0.0"
-		}
 
 		// R2 easter egg, to keep
 		rcee
@@ -568,6 +505,51 @@ WeaponData
 			"dof_zoom_nearDepthStart"						"* 0.0"
 			"dof_zoom_nearDepthEnd"							"* 0.5"
 		}
+
+        optic_cq_threat
+        {
+            // sight_cro
+            "zoom_fov"				"60"
+
+            "bodygroup1_set"		"0"
+            "bodygroup10_set"		"1"
+
+            //"ui1_enable"			"0"
+            "ui10_enable"			"1"
+
+            "mod_activity_modifier"	"optic"
+
+            "viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_CRO"
+            "viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_CRO"
+            "viewmodel_offset_ads_by_centerpoint" 		"1"
+
+            "viewmodel_offset_ads" 				        "0 10 0"
+            "dof_zoom_nearDepthStart"				    "0.5"
+            "dof_zoom_nearDepthEnd"					    "4.1"
+
+            "threat_scope_enabled"			    "1"
+            "threat_scope_fadedist_start"       "984"  // 25m
+            "threat_scope_fadedist_end"         "2165" // 55m
+            "threat_scope_bounds_tagname1"	    "SCR_TR_CRO"
+            "threat_scope_bounds_tagname2"	    "SCR_BL_CRO"
+
+	        "zoom_time_in"                          "0.36"
+	        "zoom_time_out"                         "0.32"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+               
+                                                                                                           
+                    
+         
+                                                                                          
+         
+      
 	}
 
 	"ui1_enable"		"1"
@@ -617,6 +599,24 @@ WeaponData
 		}
 	}
 
+    // optic_cq_threat
+    "bodygroup10_name"	"sight_cro"
+    "bodygroup10_set"	"0"
+
+    "ui10_enable"		"0"
+    "ui10_draw_cloaked"	"1"
+    UiData10
+    {
+        "ui"							"ui/cro_threat_sights"
+        "mesh"							"models/weapons/attachments/cro_rui_upper"
+        Args
+        {
+            zoomFrac					player_zoomfrac
+            ammo						weapon_ammo
+            clipSize					weapon_clipSize
+            centerOffset				weapon_ads_center_offset
+        }
+    }
 
 	active_crosshair_count				"1"
 	rui_crosshair_index					"0"

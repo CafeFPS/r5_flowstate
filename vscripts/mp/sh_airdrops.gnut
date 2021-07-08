@@ -40,6 +40,7 @@ struct
 void function Sh_Airdrops_Init()
 {
 	RegisterSignal( "OpenDroppod" )
+	RegisterSignal( "DroppodRemoveLocationMarker" )
 
 	#if CLIENT
 		AddCreateCallback( "prop_dynamic", OnAirdropCreated )

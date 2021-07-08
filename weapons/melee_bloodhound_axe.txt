@@ -1,0 +1,27 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
+
+	"menu_icon"									"rui/hud/common/melee_icon"
+	"hud_icon"									"rui/hud/common/melee_icon"
+
+	"weapon_type_flags"							"WPT_MELEE"
+	
+	// Models
+	"viewmodel"   								"mdl/weapons/bloodhound_axe/ptpov_bloodhound_axe.rmdl"
+	"playermodel" 								"mdl/weapons/bloodhound_axe/w_bloodhound_axe.rmdl"
+
+	"OnWeaponActivate"							"OnWeaponActivate_melee_bloodhound_axe"
+    "OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bloodhound_axe"
+
+    // FX
+	"impact_effect_table" 						"melee_bhaxe"
+}
+

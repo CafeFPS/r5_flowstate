@@ -11,6 +11,7 @@ WeaponData
 	"menu_icon"										"rui/pilot_loadout/suit/light"
     "hud_icon"										"rui/hud/tactical_icons/tactical_wraith"
 
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"weaponType"									"tactical"
 	"fire_mode"   									"offhand"
@@ -55,6 +56,7 @@ WeaponData
 	"explosion_inner_radius"  						"50"
 	"explosionradius" 								"120"
 	"impulse_force"   								"1"
+	"locks_weapon_change"							"1"
 
 	// Ammo
 	"cooldown_type"                                 "ammo_instant"

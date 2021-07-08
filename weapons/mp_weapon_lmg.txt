@@ -1,9 +1,8 @@
-#base "_base_lmg_optics.txt"
+#base "_base_lmg.txt"
 #base "_base_mags_heavy.txt"
 #base "_base_stocks_tactical.txt"
 #base "_base_barrels_large.txt"
 #base "_base_projectile_ricochet.txt"
-#base "_base_character_mods.txt"
 
 WeaponData
 {
@@ -13,6 +12,7 @@ WeaponData
 	"description" 									"#WPN_LMG_DESC"
 	"longdesc"										"#WPN_LMG_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"highcal"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_spitfire"
@@ -54,18 +54,15 @@ WeaponData
 
 	"OnWeaponActivate"								"OnWeaponActivate_weapon_basic_bolt"
 	"OnClientAnimEvent"								"OnClientAnimEvent_weapon_basic_bolt"
-	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_basic_bolt"
-	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_LMG"
-	"OnProjectileCollision"							"OnProjectileCollision_weapon_basic_bolt"
 
 		// Bolt info
 	"bolt_hitsize"									"0.0"
-	"bolt_hitsize_grow1_time"						"0.005"
-	"bolt_hitsize_grow1_size"						"0.1"
-	"bolt_hitsize_grow2_time"						"0.07"
-	"bolt_hitsize_grow2_size"						"0.1"
-	"bolt_hitsize_growfinal_lerptime"				"0.1"
-	"bolt_hitsize_growfinal_size"					"0.1"
+	//"bolt_hitsize_grow1_time"						"0.005"
+	//"bolt_hitsize_grow1_size"						"0.1"
+	//"bolt_hitsize_grow2_time"						"0.07"
+	//"bolt_hitsize_grow2_size"						"0.1"
+	//"bolt_hitsize_growfinal_lerptime"				"0.1"
+	//"bolt_hitsize_growfinal_size"					"0.1"
 
 	"projectile_drag_coefficient"                   "0.0033"
 
@@ -154,13 +151,12 @@ WeaponData
 
 		"aimassist_adspull_weaponclass"					"none"
 
-		"damage_near_value"   							"20"
-		"damage_far_value"								"20"
-		"damage_very_far_value"							"20"
-
-		"damage_near_value_titanarmor"					"20"
-		"damage_far_value_titanarmor" 					"20"
-		"damage_very_far_value_titanarmor" 				"20"
+		"damage_near_value"   							"18"
+		"damage_far_value"								"18"
+		"damage_very_far_value"							"18"
+		"damage_near_value_titanarmor"					"18"
+		"damage_far_value_titanarmor" 					"18"
+		"damage_very_far_value_titanarmor" 				"18"
 		"damage_rodeo" 									"200"
 
 		"damage_near_distance"							"1500"
@@ -190,8 +186,6 @@ WeaponData
 		"npc_rest_time_between_bursts_max"				"6.0"
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-
-		"damage_heavyarmor_nontitan_scale"				"0.35"
 	}
 
 	SP_BASE
@@ -237,8 +231,6 @@ WeaponData
 		"npc_rest_time_between_bursts_max"				"3.0"
 
 		"enable_highlight_networking_on_creation"		"1"
-
-		"damage_heavyarmor_nontitan_scale"				"1"
 	}
 
     "viewmodel_offset_hip"							"0 1.4 0.4"
@@ -503,7 +495,6 @@ WeaponData
 	{
 	    vkp
 	    {
-
             "spread_stand_hip"								"2.0"
             "spread_stand_hip_run"							"2.5"
             "spread_stand_hip_sprint"                       "3.5"
@@ -562,15 +553,15 @@ WeaponData
 
 		highcal_mag_l1
 		{
-			"ammo_clip_size"   							"++10"
+			"ammo_clip_size"   							"40"
 		}
 		highcal_mag_l2
 		{
-			"ammo_clip_size"   							"++20"
+			"ammo_clip_size"   							"45"
 		}
 		highcal_mag_l3
 		{
-			"ammo_clip_size"   							"++25"
+			"ammo_clip_size"   							"55"
 		}
 
 		"barrel_stabilizer_l4_flash_hider"
@@ -581,7 +572,7 @@ WeaponData
 
 		npc_stalker
 		{
-			"fire_rate"   								"50.0"
+			"fire_rate"   								"30.0"
 
 			"projectile_launch_speed"						"3500"
 	    	"bolt_gravity_enabled"							"0"
@@ -594,17 +585,17 @@ WeaponData
 			"npc_rest_time_between_bursts_min"				"2.0"
 			"npc_rest_time_between_bursts_max"				"2.50"
 
-			"damage_near_value"   							"20"
-			"damage_far_value"								"20"
-			"damage_very_far_value"							"20"
-			"damage_near_value_titanarmor"					"20"
-			"damage_far_value_titanarmor" 					"20"
-			"damage_very_far_value_titanarmor" 				"20"
+			"damage_near_value"   							"4"
+			"damage_far_value"								"4"
+			"damage_very_far_value"							"4"
+			"damage_near_value_titanarmor"					"4"
+			"damage_far_value_titanarmor" 					"4"
+			"damage_very_far_value_titanarmor" 				"4"
 
-			"npc_damage_near_value"   						"20"
-			"npc_damage_far_value"							"20"
-			"npc_damage_near_value_titanarmor"				"20"
-			"npc_damage_far_value_titanarmor" 				"20"
+			"npc_damage_near_value"   						"4"
+			"npc_damage_far_value"							"4"
+			"npc_damage_near_value_titanarmor"				"4"
+			"npc_damage_far_value_titanarmor" 				"4"
 
 			"npc_min_engage_range"							"20"
 			"npc_max_engage_range"							"3000"
@@ -613,15 +604,14 @@ WeaponData
 			"npc_min_range"   								"0"
 			"npc_max_range"   								"5000"
 		}
-		
-		nerffire
-		{
-			"fire_rate"   								"8.0"
-			"damage_headshot_scale"						"1.6"
-			"damage_near_value"   						"18"
-			"npc_damage_near_value"   					"18"
-			"ammo_clip_size"   							"30"
-		}
+
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
 	}
 
 

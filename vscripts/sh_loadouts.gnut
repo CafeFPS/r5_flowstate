@@ -1086,14 +1086,6 @@ void function ValidatePlayerLoadout( entity player, bool isInitialValidation )
 	bool doWarnings    = !ehiss.shouldConsiderAsUpgrading
 	bool forceReset    = false
 	bool resetToRandom = false
-	#if R5DEV
-		bool forceNew               = GetConVarBool( "loadouts_forceNew" )
-		bool devForceRandomLoadouts = GetCurrentPlaylistVarBool( "dev_force_random_loadouts", false )
-		bool forceRandomForBots     = GetConVarBool( "bot_loadout_randomize" )
-
-		resetToRandom = player.IsBot() || devForceRandomLoadouts
-		forceReset = forceNew || devForceRandomLoadouts || (player.IsBot() && forceRandomForBots)
-	#endif
 
 	ValidateAndFixAllLoadoutSlots( ToEHI( player ), isInitialValidation, doWarnings, forceReset, resetToRandom )
 }

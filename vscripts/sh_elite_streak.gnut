@@ -21,10 +21,6 @@ global function TestEliteStreak
 
 global const int ELITE_SQUADS_REQUIRED = 5
 
-#if CLIENT
-#if SERVER
-#endif // CLIENT
-#endif // SERVER
 
 #if CLIENT
 void function ShEliteStreak_Init()

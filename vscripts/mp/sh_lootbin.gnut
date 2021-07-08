@@ -54,9 +54,9 @@ struct
 	bool                          lootBinsInfinite = false
 	table<entity, array<entity> > lootBinsSpawnedLootMap
 	table<entity, array<string> > lootBinsLootInside
-	array<entity>                 lootBinList
-	int                           numLootBins
+	array<entity>                    lootBinList
 	array<LootBinLocationBackupData> lootBinBackupLocations
+	int                              numLootBins
 } file
 
 void function ShLootBin_Init()
@@ -64,7 +64,6 @@ void function ShLootBin_Init()
 	PrecacheModel( LOOT_BIN_MODEL )
 
 	RegisterSignal( "TryRefreshLootbinHighlights_Internal" )
-
 	#if SERVER
 		AddSpawnCallback_ScriptName( LOOT_BIN_MARKER_SCRIPTNAME, InitLootBinFromMap )
 
@@ -540,6 +539,7 @@ void function CleanUpPermanentsParentedToLootbin( entity lootBin )
 
 #endif
 
+
 bool function LootBin_IsOpen( entity lootbin )
 {
 	if ( GradeFlagsHas( lootbin, eGradeFlags.IS_OPEN ) )
@@ -548,12 +548,14 @@ bool function LootBin_IsOpen( entity lootbin )
 }
 
 
+
 bool function LootBin_IsBusy( entity lootbin )
 {
 	if ( GradeFlagsHas( lootbin, eGradeFlags.IS_BUSY ) )
 		return true
 	return false
 }
+
 
 #if CLIENT
 void function OnPropDynamicCreated( entity lootbin )
@@ -567,16 +569,15 @@ void function OnPropDynamicCreated( entity lootbin )
 
 	file.lootBinList.append( lootbin )
 }
-#endif
+#endif // CLIENT
 
-#if(CLIENT)
+#if CLIENT
 void function OnPropDynamicDestroyed( entity lootbin )
 {
 	if ( file.lootBinList.contains( lootbin ) )
 		file.lootBinList.removebyvalue( lootbin )
 }
 #endif // CLIENT
-
 entity function GetLootBinForHitEnt( entity hitEnt )
 {
 	if ( hitEnt.GetScriptName() == LOOT_BIN_SCRIPTNAME )
@@ -589,8 +590,8 @@ entity function GetLootBinForHitEnt( entity hitEnt )
 	return null
 }
 
-#if SERVER || CLIENT
-bool function LootBin_CanUse( entity player, entity lootbin )
+
+bool function LootBin_CanUse( entity player, entity lootBin )
 {
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return false
@@ -598,20 +599,15 @@ bool function LootBin_CanUse( entity player, entity lootbin )
 	if ( Bleedout_IsBleedingOut( player ) )
 		return false
 
-	if ( LootBin_IsBusy( lootbin ) )
+	if ( LootBin_IsBusy( lootBin ) )
 		return false
 
 	bool anythingToOpen = false
-	if ( !LootBin_IsOpen( lootbin ) )
+	if ( !LootBin_IsOpen( lootBin ) )
 		anythingToOpen = true
-	#if(false)
-
-
-#endif
 
 	return anythingToOpen
 }
-#endif
 
 #if CLIENT
 string function GetLootBinUseTextOverride( entity lootbin )
@@ -622,16 +618,12 @@ string function GetLootBinUseTextOverride( entity lootbin )
 			return "#SURVIVAL_LOOTBIN_LOCKED"
 		return "#SURVIVAL_LOOTBIN_OPEN"
 	}
-
-	#if(false)
-
-
-#endif //
-
-	if ( LOOT_BIN_CLOSABLE )
+	else if ( LOOT_BIN_CLOSABLE )
 		return "#SURVIVAL_LOOTBIN_CLOSE"
+	else
+		return ""
 
-	return ""
+	unreachable
 }
 #endif
 
@@ -639,6 +631,7 @@ string function GetLootBinUseTextOverride( entity lootbin )
 void function ServerCallback_RefreshLootbinHighlight()
 {
 	array<entity> lootbins = GetAllLootBins()
+	//
 	foreach ( lootbin in lootbins )
 	{
 		ManageHighlightEntity( lootbin )

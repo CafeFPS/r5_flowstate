@@ -1,0 +1,330 @@
+global function FiringRangeGameMode_Init
+
+#if(false)
+
+
+
+
+
+
+
+//
+#endif //
+
+#if(CLIENT)
+global function SCB_BroadcastFriendlyFireChange
+#endif //
+
+void function FiringRangeGameMode_Init()
+{
+	if ( !IsFiringRangeGameMode() )
+		return
+
+	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
+
+	#if(false)
+
+
+
+
+
+
+
+
+//
+
+
+#endif //
+
+	#if(CLIENT)
+		//
+
+		IntroDisplayThread()
+	#endif //
+}
+
+#if(CLIENT)
+void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
+{
+	entity localPlayer = GetLocalClientPlayer()
+	bool isEnabled = IsTeamRabid( localPlayer.GetTeam() )
+	string mainText = (isEnabled ? "#NOTIFY_FRIENDLY_FIRE_ON" : "#NOTIFY_FRIENDLY_FIRE_OFF")
+	string subText = (IsValid( playerThatChanged ) ? Localize( "#NOTIFY_FRIENDLY_FIRE_SUBTEXT", playerThatChanged.GetPlayerName() ) : "")
+	vector titleColor = (isEnabled ? ENEMY_COLOR : FRIENDLY_COLOR)
+	AnnouncementMessage( localPlayer, mainText, subText, titleColor )
+}
+#endif //
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+//
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif //
+
+#if(CLIENT)
+
+void function IntroDisplayThread()
+{
+	thread function() : ()
+	{
+		FlagWait( "EntitiesDidLoad" )
+		wait 3.0
+
+		entity viewPlayer = GetLocalViewPlayer()
+		if ( IsValid( viewPlayer ) )
+			MapZones_ZoneIntroText( viewPlayer, ("#" + GetMapName()), -1 )
+	}()
+}
+#endif //
+
+
+#if(false)
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+//
+//
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif //

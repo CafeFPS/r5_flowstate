@@ -134,8 +134,11 @@ void function ShPlayerStatCards_Init()
 {
 	file.GUIDToSeasonNumber[ "SAID01769158912" ] <- 1
 	file.GUIDToSeasonNumber[ "SAID01774506873" ] <- 2
+	file.GUIDToSeasonNumber[ "SAID00724938940" ] <- 3
 
+	//
 	file.GUIDToSeasonNumber[ "SAID00747315762" ] <- 0
+	file.GUIDToSeasonNumber[ "SAID00091805734" ] <- 0
 
 	var dataTable = GetDataTable( $"datatable/player_stat_cards.rpak" )
 
@@ -562,11 +565,15 @@ void function StatCard_ConstructRankedBadge( var panel, entity player, string ra
 	var rui = Hud_GetRui( panel )
 	RuiDestroyNestedIfAlive( rui, "battlePassLevelBadge" )
 
-	var badgeRui = CreateNestedRankedBadge( rui, "battlePassLevelBadge" )
-	int score = GetPlayerRankScore( player )
-	RankedData data = GetCurrentRankFromScore( score )
+	var badgeRui            = CreateNestedRankedBadge( rui, "battlePassLevelBadge" )
+	int score               = Ranked_GetHistoricalRankScore( player, rankedPeriodRef )
+	RankedDivisionData data = Ranked_GetHistoricalRankedDivisionFromScore( score, rankedPeriodRef )
 
-	PopulateRuiWithRankedBadgeDetails( badgeRui, score, Ranked_GetLadderPosition( GetUIPlayer() ) )
+	if ( rankedPeriodRef == GetCurrentStatRankedPeriodRefOrNull() )
+		PopulateRuiWithRankedBadgeDetails( badgeRui, score, Ranked_GetDisplayNumberForRuiBadge( GetUIPlayer() ) )
+	else
+		PopulateRuiWithHistoricalRankedBadgeDetails( badgeRui, score, score, rankedPeriodRef  ) //
+
 	RuiSetBool( badgeRui, "showScore", false )
 	RuiSetInt( badgeRui, "score", score )
 	RuiSetInt( badgeRui, "scoreMax", 0 )

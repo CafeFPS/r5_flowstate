@@ -1,0 +1,302 @@
+ImpactTable
+{
+	FX
+	{
+		"C" "P_bhaxe_impact_base" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_bhaxe_impact_base" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
+		"E" "P_bhaxe_impact_base" // metal_titan
+
+		"F" "P_bhaxe_impact_base" //flesh
+		"G" "P_bhaxe_impact_base" //metalgrate, chainlink, chain
+		"H" "P_bhaxe_impact_base" //alienflesh
+
+		"J" "P_bhaxe_impact_base" //grass
+		"K" "P_bhaxe_impact_base" //Mud
+		"L" "P_bhaxe_impact_base" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_bhaxe_impact_base" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_bhaxe_impact_base" //slime
+		"O" "P_bhaxe_impact_base" //Foliage
+		"P" "P_bhaxe_impact_base" //metal_spectre
+
+		"Q" "P_bhaxe_impact_base" //metalpanel, grenade, canister
+		"R" "P_bhaxe_impact_base" //metalpanel, grenade, canister
+		"S" "P_bhaxe_impact_base" //water, slime
+		"T" "P_bhaxe_impact_base" //tile
+		"U" "P_bhaxe_impact_base" // glass_breakable
+		"V" "P_bhaxe_impact_base" //Metal Vent
+		"W" "P_bhaxe_impact_base"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_bhaxe_impact_base" //xo_shield
+
+		"Y" "P_bhaxe_impact_base" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_bhaxe_impact_base" //sand
+
+		"0" "P_bhaxe_impact_base"
+		"1" "P_bhaxe_impact_base" //lava_flow
+		"2" "P_bhaxe_impact_base" //lava_rock_hot
+		"3" "P_bhaxe_impact_base"
+		"4" "P_bhaxe_impact_base"
+		"5" "P_bhaxe_impact_base"
+		"6" "P_bhaxe_impact_base"
+		"7" "P_bhaxe_impact_base"
+		"8" "P_bhaxe_impact_base"
+		"9" "P_bhaxe_impact_base"
+
+		"splash" "P_bhaxe_impact_base" //brush water
+		"slime_splash" "P_bhaxe_impact_base"
+		"airburst" ""
+		"shieldhit" "P_bhaxe_impact_base"
+		"critical_hit" "P_bhaxe_impact_base"
+	}
+
+	FX
+	{
+		"C" "P_melee_default" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_melee_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_melee_metal" // metal_titan
+
+		"F" "impact_flesh" //flesh
+		"G" "P_melee_metal" //metalgrate, chainlink, chain
+		"H" "P_melee_default" //alienflesh
+
+		"J" "P_melee_dirt" //grass
+		"K" "P_melee_dirt" //Mud
+		"L" "P_melee_default" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_melee_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_slime" //slime
+		"O" "P_melee_dirt"  //Foliage
+		"P" "P_melee_metal" //metal_spectre
+
+		"Q" "P_melee_snow"  //Snow
+		"R" "P_melee_ice" //Ice
+
+		"S" "P_impact_water" //water, slime
+		"T" "P_melee_default" //tile
+		"U" "P_melee_glass" // glass_breakable
+		"V" "P_melee_metal" //Metal Vent
+		"W" "P_melee_default"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_xo_shield_cp" //xo_shield
+
+		"Y" "P_melee_glass" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_melee_dirt"  //sand
+
+//		"0" "openslot"
+		"1" "P_impact_lava_nodecal" //lava_flow
+		"2" "P_impact_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "P_impact_water" //brush water
+		"slime_splash" "P_impact_water"
+		"airburst" ""
+		"shieldhit" "P_armor_impact"
+		"critical_hit" "P_melee_default"
+	}
+
+	Sound
+	{
+		"C" "Generic_Axe_Impact_3p_vs_3p"
+		"D" "Generic_Axe_Impact_3p_vs_3p"
+		"E" "Generic_Axe_Impact_3p_vs_3p"
+
+		"F" "Victim_Axe_Impact_3p_vs_3p"
+		"G" "Generic_Axe_Impact_3p_vs_3p"
+		"H" "Victim_Axe_Impact_3p_vs_3p"
+
+		"J" "Generic_Axe_Impact_3p_vs_3p"
+		"K" "Generic_Axe_Impact_3p_vs_3p"
+		"L" "Generic_Axe_Impact_3p_vs_3p"
+		"M" "Generic_Axe_Impact_3p_vs_3p"
+		"N" "Generic_Axe_Impact_3p_vs_3p"
+		"O" "Generic_Axe_Impact_3p_vs_3p"
+		"P" "Victim_Axe_Impact_3p_vs_3p"
+
+		"Q" "Generic_Axe_Impact_3p_vs_3p" //snow
+		"R" "Generic_Axe_Impact_3p_vs_3p" //Ice
+
+		"S" "Generic_Axe_Impact_3p_vs_3p"
+		"T" "Generic_Axe_Impact_3p_vs_3p"
+		"U" "Generic_Axe_Impact_3p_vs_3p"
+
+		"V" "Generic_Axe_Impact_3p_vs_3p"
+		"W" "Generic_Axe_Impact_3p_vs_3p"
+
+		"Y" "Generic_Axe_Impact_3p_vs_3p"
+		"Z" "Generic_Axe_Impact_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Generic_Axe_Impact_3p_vs_3p" //lava_flow
+		"2" "Generic_Axe_Impact_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "Generic_Axe_Impact_3p_vs_3p"
+		"slime_splash" "Generic_Axe_Impact_3p_vs_3p"
+		"holohit" "Generic_Axe_Impact_3p_vs_3p"
+
+		"airburst" ""
+		"shieldhit" "Generic_Axe_Impact_3p_vs_3p"
+		"headshot_flesh" "Generic_Axe_Impact_3p_vs_3p"
+		"headshot_mechanical" "Generic_Axe_Impact_3p_vs_3p"
+	}
+
+	Sound_attacker
+	{
+		"C" "Generic_Axe_Impact_1p_vs_3p"
+		"D" "Generic_Axe_Impact_1p_vs_3p"
+		"E" "Generic_Axe_Impact_1p_vs_3p"
+
+		"F" "Victim_Axe_Impact_1p_vs_3p"
+		"G" "Generic_Axe_Impact_1p_vs_3p"
+		"H" "Victim_Axe_Impact_1p_vs_3p"
+
+		"J" "Generic_Axe_Impact_1p_vs_3p"
+		"K" "Generic_Axe_Impact_1p_vs_3p"
+		"L" "Generic_Axe_Impact_1p_vs_3p"
+		"M" "Generic_Axe_Impact_1p_vs_3p"
+		"N" "Generic_Axe_Impact_1p_vs_3p"
+		"O" "Generic_Axe_Impact_1p_vs_3p"
+		"P" "Victim_Axe_Impact_1p_vs_3p"
+
+		"R" "Generic_Axe_Impact_1p_vs_3p"
+		"S" "Generic_Axe_Impact_1p_vs_3p"
+		"T" "Generic_Axe_Impact_1p_vs_3p"
+		"U" "Generic_Axe_Impact_1p_vs_3p"
+
+		"V" "Generic_Axe_Impact_1p_vs_3p"
+		"W" "Generic_Axe_Impact_1p_vs_3p"
+
+		"Y" "Generic_Axe_Impact_1p_vs_3p"
+		"Z" "Generic_Axe_Impact_1p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Generic_Axe_Impact_1p_vs_3p" //lava_flow
+		"2" "Generic_Axe_Impact_1p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "Generic_Axe_Impact_1p_vs_3p"
+		"slime_splash" "Generic_Axe_Impact_1p_vs_3p"
+
+		"holohit" "Victim_Axe_Impact_1p_vs_3p"
+		"airburst" ""
+		"shieldhit" "humanshield_light_bulletimpact_1p_vs_3p"
+		"headshot_flesh" "Victim_Axe_Impact_1p_vs_3p"
+		"headshot_mechanical" "Victim_Axe_Impact_1p_vs_3p"
+	}
+
+	Sound_victim
+	{
+		"C" "Player_Melee_Impact_Concrete_3p_vs_3p"
+		"D" "Player_Melee_Impact_Dirt_3p_vs_3p"
+		"E" "Player_Melee_Impact_Metal_3p_vs_3p"
+
+		"F" "Victim_Axe_Impact_3p_vs_1p"
+		"G" "Player_Melee_Impact_Metal_3p_vs_3p"
+		"H" "Victim_Axe_Impact_3p_vs_1p"
+
+		"J" "Player_Melee_Impact_Grass_3p_vs_3p"
+		"K" "Player_Melee_Impact_Mud_3p_vs_3p"
+		"L" "Player_Melee_Impact_Default_3p_vs_3p"
+		"M" "Player_Melee_Impact_Metal_3p_vs_3p"
+		"N" "Player_Melee_Impact_Water_3p_vs_3p"
+		"O" "Player_Melee_Impact_Grass_3p_vs_3p"
+		"P" "Victim_Axe_Impact_3p_vs_1p"
+
+		"R" "Player_Melee_Impact_Metal_3p_vs_3p"
+		"S" "Player_Melee_Impact_Water_3p_vs_3p"
+		"T" "Player_Melee_Impact_Concrete_3p_vs_3p"
+		"U" "Player_Melee_Impact_Glass_3p_vs_3p"
+
+		"V" "Player_Melee_Impact_Metal_3p_vs_3p"
+		"W" "Player_Melee_Impact_Default_3p_vs_3p"
+
+		"Y" "Player_Melee_Impact_Glass_3p_vs_3p"
+		"Z" "Player_Melee_Impact_Dirt_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Player_Melee_Impact_Mud_3p_vs_3p" //lava_flow
+		"2" "Player_Melee_Impact_Dirt_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "Player_Melee_Impact_Water_3p_vs_3p"
+		"slime_splash" "Player_Melee_Impact_Water_3p_vs_3p"
+
+		"holohit" "Generic_Axe_Impact_3p_vs_3p"
+		"airburst" ""
+		"shieldhit" "humanshield_light_bulletimpact_3p_vs_1p"
+		"headshot_flesh" "Victim_Axe_Impact_3p_vs_1p"
+		"headshot_mechanical" "Victim_Axe_Impact_3p_vs_1p"
+	}
+
+	Sound_victim_from_AI
+	{
+		"C" "Generic_Axe_Impact_3p_vs_1p"
+		"D" "Generic_Axe_Impact_3p_vs_1p"
+		"E" "Generic_Axe_Impact_3p_vs_1p"
+
+		"F" "Generic_Axe_Impact_3p_vs_1p"
+		"G" "Generic_Axe_Impact_3p_vs_1p"
+		"H" "Generic_Axe_Impact_3p_vs_1p"
+
+		"J" "Generic_Axe_Impact_3p_vs_1p"
+		"K" "Generic_Axe_Impact_3p_vs_1p"
+		"L" "Generic_Axe_Impact_3p_vs_1p"
+		"M" "Generic_Axe_Impact_3p_vs_1p"
+		"N" "Generic_Axe_Impact_3p_vs_1p"
+		"O" "Generic_Axe_Impact_3p_vs_1p"
+		"P" "Generic_Axe_Impact_3p_vs_1p"
+
+		"R" "Generic_Axe_Impact_3p_vs_1p"
+		"S" "Generic_Axe_Impact_3p_vs_1p"
+		"T" "Generic_Axe_Impact_3p_vs_1p"
+		"U" "Generic_Axe_Impact_3p_vs_1p"
+
+		"V" "Generic_Axe_Impact_3p_vs_1p"
+		"W" "Generic_Axe_Impact_3p_vs_1p"
+
+		"Y" "Generic_Axe_Impact_3p_vs_1p"
+		"Z" "Generic_Axe_Impact_3p_vs_1p"
+
+//		"0" "openslot"
+		"1" "Generic_Axe_Impact_3p_vs_1p" //lava_flow
+		"2" "Generic_Axe_Impact_3p_vs_1p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
+		"splash" "Generic_Axe_Impact_3p_vs_1p"
+		"slime_splash" "Generic_Axe_Impact_3p_vs_1p"
+		"holohit" "Generic_Axe_Impact_3p_vs_1p"
+		"airburst" ""
+		"shieldhit" "Generic_Axe_Impact_3p_vs_1p"
+		"headshot_flesh" "Generic_Axe_Impact_3p_vs_1p"
+		"headshot_mechanical" "Generic_Axe_Impact_3p_vs_1p"
+	}
+}

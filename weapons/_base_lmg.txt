@@ -1,0 +1,29 @@
+#base "_base_lmg_optics.txt"
+#base "_base_character_mods.txt"
+
+WeaponData
+{
+    Mods
+    {
+               
+                      
+         
+                                      
+                                           
+                                           
+                                           
+                                           
+                                           
+                                          
+                                              
+                                              
+                                              
+                                              
+                                              
+
+                                                       
+                                                       
+         
+      
+    }
+}

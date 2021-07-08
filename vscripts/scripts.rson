@@ -99,6 +99,7 @@ Scripts:
 	sh_characters.gnut
 	sh_character_abilities.gnut
 	sh_character_cosmetics.nut
+	sh_character_glue_forge_on.gnut
 	sh_loadscreen.gnut
 	mp/sh_music.gnut
 	mp/sh_skydive_trails.gnut
@@ -202,7 +203,6 @@ Scripts:
 [
 	sh_debug_draw.gnut
 	sh_flag.gnut
-	_trigger_functions.gnut
 	_utility_shared.nut
 	sh_damage_types.nut
 	sh_passive_utility.gnut
@@ -243,7 +243,8 @@ Scripts:
 	weapons/mp_ability_cloak.nut
 	weapons/mp_ability_grapple.nut
 	weapons/mp_ability_holopilot.nut
-	
+	weapons/mp_weapon_smart_pistol.nut
+	weapons/mp_weapon_mdlspawner.nut
 	
 
 	weapons/mp_ability_heal.nut
@@ -369,6 +370,7 @@ Scripts:
 	_ultimates.gnut
 	sh_survival_persistentdamagelayer.gnut
 	gamemodes/sh_gamemode_shadow_squad.nut
+	
 ]
 
 When: "SERVER"
@@ -393,7 +395,7 @@ Scripts:
 	_objective.gnut
 	_on_spawned.gnut
 	_script_triggers.gnut
-	// _trigger_functions.gnut
+	_trigger_functions.gnut
 	_viewcone.gnut
 	_pain_death_sounds.gnut
 	_threat_tracker.gnut

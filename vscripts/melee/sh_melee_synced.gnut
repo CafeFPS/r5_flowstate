@@ -31,23 +31,23 @@ global function ServerCallback_SyncedMeleeDone
 //// Consts ////
 ////////////////
 ////////////////
-const float SYNCED_MELEE_MAX_HEIGHT_DIFFERENCE          = 30.0
+const float SYNCED_MELEE_MAX_HEIGHT_DIFFERENCE = 30.0
 
-const float SYNCED_MELEE_ANIMATION_BLEND_TIME           = 0.5
-const float SYNCED_MELEE_CAMERA_BLEND_IN_TIME           = 0.0
-const float SYNCED_MELEE_CAMERA_BLEND_OUT_TIME          = 0.0
+const float SYNCED_MELEE_ANIMATION_BLEND_TIME = 0.5
+const float SYNCED_MELEE_CAMERA_BLEND_IN_TIME = 0.0
+const float SYNCED_MELEE_CAMERA_BLEND_OUT_TIME = 0.0
 
-// attacker, going for an off white flash frame at start of execution
-const vector SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL      = <224, 224, 224>
-const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_ALPHA     = 255
+//
+const vector SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL = <224, 224, 224>
+const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_ALPHA = 255
 const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_TIME = 0.15
 const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_HOLD = 0.1
 
 // victim, going for red flash frame at start of execution
-const vector SYNCED_MELEE_TARGET_SCREEN_FADE_COL        = <173, 15, 15>
-const float SYNCED_MELEE_TARGET_SCREEN_FADE_ALPHA       = 255
-const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_TIME   = 0.15
-const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_HOLD   = 0.1
+const vector SYNCED_MELEE_TARGET_SCREEN_FADE_COL = <173, 15, 15>
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_ALPHA = 255
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_TIME = 0.15
+const float SYNCED_MELEE_TARGET_SCREEN_FADE_FADE_HOLD = 0.1
 
 
 /////////////////////////
@@ -91,6 +91,9 @@ bool function AttackerCanStartSyncedMelee( entity attacker, entity meleeInputWea
 	if ( attacker.IsWallRunning() || attacker.IsTraversing() ) // No necksnaps while wall running or mantling
 		return false
 
+	if ( IsDoingPullshot( attacker ) )
+		return false
+
 	return true
 }
 #endif
@@ -102,12 +105,10 @@ bool function IsValidSyncedMeleeTarget( entity attacker, entity meleeInputWeapon
 	if ( GetCurrentPlaylistVarInt( "sur_dev_disable_executions", 0 ) > 0 )
 		return false
 
-	Assert( attacker != target )
-
 	if ( !IsValidMeleeAttackTarget( attacker, meleeInputWeapon, meleeAttackWeapon, target ) )
 		return false
 
-	if ( !IsHumanSized( target ) )
+	if ( !IsHumanSized( target ) && target.GetScriptName() != "crypto_camera" )
 		return false
 
 	if ( target.IsInvulnerable() )
@@ -132,6 +133,9 @@ bool function IsValidSyncedMeleeTarget( entity attacker, entity meleeInputWeapon
 			return false
 
 		if ( !Bleedout_IsBleedingOut( target ) )
+			return false
+
+		if ( IsDoingPullshot( target ) )
 			return false
 	}
 	else if ( target.IsNPC() )

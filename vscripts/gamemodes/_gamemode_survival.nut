@@ -30,7 +30,7 @@ global function SURVIVAL_SetMapCenter
 void function GamemodeSurvival_Init()
 {
 	SurvivalFreefall_Init()
-	//Sh_ArenaDeathField_Init()
+	Sh_ArenaDeathField_Init()
 
 	// init flags
 	FlagInit( "DeathCircleActive", true )
@@ -38,6 +38,8 @@ void function GamemodeSurvival_Init()
 	FlagInit( "Survival_LootSpawned", true )
 	FlagInit( "PathFinished", false )
 
+	RegisterSignal( "SwitchToOrdnance" )
+	RegisterSignal( "SwapToNextOrdnance" )
 	// make sure that flags are set/cleared correctly
 	FlagSet("DeathCircleActive")
 	FlagClear("DeathFieldPaused")
@@ -46,7 +48,7 @@ void function GamemodeSurvival_Init()
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 
 	// run deathfield
-	//RunArenaDeathField()
+	RunArenaDeathField()
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -154,7 +156,7 @@ float function SURVIVAL_GetAirburstHeight()
 
 void function SURVIVAL_AddLootBin( entity lootbin )
 {
-
+	InitLootBin( lootbin )
 }
 
 void function SURVIVAL_AddLootGroupRemapping( string hovertank, string supplyship )

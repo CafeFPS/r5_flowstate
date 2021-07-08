@@ -735,9 +735,9 @@ bool function CanShowWeaponCycleHint( entity selectedWeapon, entity weaponInSlot
 
 	bool haveAnotherValidPrimary =  ((IsValid( weaponInSlot0 ) && (selectedWeapon != weaponInSlot0)) || (IsValid( weaponInSlot1 ) && (selectedWeapon != weaponInSlot1)))
 	if ( !haveAnotherValidPrimary )
-		return false
+		return true
 
-	return true
+	return false
 }
 
 

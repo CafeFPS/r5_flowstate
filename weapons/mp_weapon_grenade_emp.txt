@@ -9,6 +9,7 @@ WeaponData
 	"menu_icon"										"rui/ordnance_icons/grenade_arc"
 	"hud_icon"										"rui/ordnance_icons/grenade_arc"
 
+	"weapon_type_flags"								"WPT_GRENADE"
 	"weaponClass" 									"human"
 	"weaponType"									"anti_titan"
 	"is_toss_weapon"								"1"
@@ -76,10 +77,10 @@ WeaponData
 	"damage_type" 									"burn"
 	"damage_near_distance"							"1000"
 	"damage_far_distance" 							"3000"
-	"damage_near_value"   							"15"
-	"damage_far_value"								"15"
-	"damage_near_value_titanarmor"					"15"
-	"damage_far_value_titanarmor" 					"15"
+	"damage_near_value"   							"30"
+	"damage_far_value"								"30"
+	"damage_near_value_titanarmor"					"30"
+	"damage_far_value_titanarmor" 					"30"
 	"impulse_force"   								"3000"
 	"explosion_shake_radius"						"500"
 	"explosion_shake_amplitude"						"20"
@@ -94,11 +95,12 @@ WeaponData
 
 	"projectile_killreplay_enabled"					"1"
 
-	"damage_shield_scale"                           "4"
+	"damage_shield_scale"                           "3"
 
 	MP_BASE
 	{
-		"fire_mode"										"semiauto"
+		"fire_mode"   									"automatic"
+		"is_semi_auto"									"1"
 		"ammo_display"									"bar"
 		"ammo_stockpile_max"							"200"
 		"ammo_clip_size"   								"200"
@@ -115,13 +117,13 @@ WeaponData
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
 
-		"damage_heavyarmor_nontitan_scale"				"0.5"
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_1P"
 	}
 
 	SP_BASE
 	{
 		"fire_mode"										"offhand"
+		"is_semi_auto"									"<KEEP_DEFAULT>"
 
 		"npc_explosion_damage"							"25"
 		"npc_explosion_damage_heavy_armor"				"350"
@@ -137,7 +139,6 @@ WeaponData
 
 		"enable_highlight_networking_on_creation"		"1"
 
-		"damage_heavyarmor_nontitan_scale"				"1"
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_SP"
 	}
 
@@ -153,7 +154,7 @@ WeaponData
 	"max_cook_time"									"-1"
 	"grenade_fuse_time"								"0.0"
     "start_fuse_on_launch"                          "0"
-	"grenade_ignition_time"                         "2.5"
+	"grenade_ignition_time"                         "2.8"
 	"fire_rate"   									"1.0"
 	"deploy_time" 									"0.5"
 	"vortex_refire_behavior"  						"grenade"
@@ -190,6 +191,7 @@ WeaponData
 	"stick_pilot"                                   "1"
 	"stick_titan"                                   "1"
 	"stick_npc"                                     "1"
+	"stick_drone"                                   "1"
 
 	// Spread
 
@@ -328,7 +330,7 @@ WeaponData
 
         survival_finite_ordnance
         {
-            "ammo_clip_size"								"20"
+            "ammo_clip_size"								"100"
             "ammo_default_total"							"0"
             "ammo_display"									"count"
             "ammo_min_to_fire"								"1"

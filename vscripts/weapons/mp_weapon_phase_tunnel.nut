@@ -210,6 +210,13 @@ bool function OnWeaponChargeBegin_weapon_phase_tunnel( entity weapon )
 		if ( player.IsPlayer() )
 		{
 			PlayerUsedOffhand( player, weapon, false )
+			int attachIndex = player.LookupAttachment( "R_FOREARM" )
+
+			Assert( attachIndex > 0 )
+			if ( attachIndex == 0 )
+			{
+				return false
+			}
 
 			#if SERVER
 				LockWeaponsAndMelee( player )
@@ -310,11 +317,11 @@ void function ForceTacticalEnd( entity player )
 	entity tactical = player.GetOffhandWeapon( OFFHAND_LEFT )
 	if ( IsValid( tactical ) )
 	{
-		if ( tactical.IsWeaponCharging() )
-		{
-			tactical.ForceChargeEndNoAttack()
-			tactical.SetWeaponPrimaryClipCount(  0 )
-		}
+		if ( tactical.IsChargeWeapon() && tactical.IsWeaponCharging() )
+			{
+				tactical.ForceChargeEndNoAttack()
+				tactical.SetWeaponPrimaryClipCount(  0 )
+			}
 	}
 
 }
@@ -723,8 +730,8 @@ void function PhaseTunnel_CreateTriggerArea( entity tunnelEnt, PhaseTunnelPortal
 	portalMarker.DisableHibernation()
 
 	entity traceBlocker = CreateTraceBlockerVolume( origin, 24.0, false, CONTENTS_NOGRAPPLE, tunnelEnt.GetTeam(), PHASETUNNEL_BLOCKER_SCRIPTNAME )
-	traceBlocker.RemoveFromAllRealms()
-	traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
+	//traceBlocker.RemoveFromAllRealms()
+	//traceBlocker.AddToOtherEntitysRealms( tunnelEnt )
 
 	EmitSoundOnEntity( portalMarker, SOUND_PORTAL_OPEN )
 	EmitSoundOnEntity( portalMarker, SOUND_PORTAL_LOOP )
@@ -1448,8 +1455,8 @@ void function PhaseTunnel_StartTrackingPositions_Internal( entity player, PhaseT
 					shutdownArray.append( fx )
 
 					entity traceBlocker = CreateTraceBlockerVolume( fxOrigin, 24.0, false, CONTENTS_NOGRAPPLE, player.GetTeam(), PHASETUNNEL_PRE_BLOCKER_SCRIPTNAME )
-					traceBlocker.RemoveFromAllRealms()
-					traceBlocker.AddToOtherEntitysRealms( player )
+					//traceBlocker.RemoveFromAllRealms()
+					//traceBlocker.AddToOtherEntitysRealms( player )
 					shutdownArray.append( traceBlocker )
 				}
 
@@ -1693,6 +1700,7 @@ void function PhaseTunnel_OnEndPlacement( entity player, int statusEffect, bool 
 	if ( player != GetLocalViewPlayer() )
 		return
 
+	HidePlayerHint( "#WPN_PHASE_TUNNEL_PLAYER_DEPLOY_STOP_HINT" )
 }
 
 void function TunnelVisualsEnabled( entity ent, int statusEffect, bool actuallyChanged )

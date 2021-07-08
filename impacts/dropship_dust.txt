@@ -9,7 +9,7 @@ ImpactTable
 	FX
 	{
 		"C" "veh_jetwash_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "veh_jetwash_dirt" //Dirt, mud, sand, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "veh_jetwash_dirt" //Dirt, mud, sand, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "veh_jetwash_metal_Full" // metal_titan
 
 		"F" "veh_jetwash_metal_Full" //flesh
@@ -24,7 +24,9 @@ ImpactTable
 		"O" "veh_jetwash_grass_FULL" //Foliage
 		"P" "veh_jetwash_metal_Full" //Computer
 
-		"R" "veh_jetwash_metal_Full" //metalpanel, grenade, canister
+		"Q" "P_veh_jetwash_snow" //snow
+		"R" "P_veh_jetwash_snow" //ice
+
 		"S" "veh_jetwash_dirt" //water, slime
 		"T" "veh_jetwash_concrete" //tile
 		"U" "veh_jetwash_metal_Full" //glass_breakable
@@ -38,15 +40,15 @@ ImpactTable
 		"Z" "veh_jetwash_dirt"  //sand
 
 		"0" "veh_jetwash_dirt"
-		"1" "veh_jetwash_dirt"
-		"2" "veh_jetwash_dirt"
+		"1" "veh_jetwash_metal_Full" //lava_flow
+		"2" "veh_jetwash_metal_Full" //lava_rock_hot
 		"3" "veh_jetwash_dirt"
 		"4" "veh_jetwash_dirt"
 		"5" "veh_jetwash_dirt"
 		"6" "veh_jetwash_dirt"
 		"7" "veh_jetwash_dirt"
 		"8" "veh_jetwash_dirt"
-		"9" "veh_jetwash_dirt" //puddle
+		"9" "veh_jetwash_dirt"
 
 		"splash" "veh_jetwash_dirt"
 		"slime_splash" "veh_jetwash_dirt"
@@ -74,6 +76,7 @@ Sound
 		"O" "none"
 		"P" "none"
 
+		"Q" "none"
 		"R" "none"
 		"S" "none"
 		"T" "none"
@@ -83,6 +86,17 @@ Sound
 		"X"	"none" // Titan bubble shield
 		"Y" "none"
 		"Z" "none"
+
+		"0" "none"
+		"1" "none" //lava_flow
+		"2" "none" //lava_rock_hot
+		"3" "none"
+		"4" "none"
+		"5" "none"
+		"6" "none"
+		"7" "none"
+		"8" "none"
+		"9" "none"
 
 		"splash" "none"
 		"slime_splash" "none"
@@ -109,10 +123,11 @@ Sound
 		"K" "none"  // mud?
 		"L" "none" // "Plastic_Box.BulletImpact"
 		"M" "none"	//"ArmorFlesh.BulletImpact"
-		"N" "none"	// Slime
+		"N" "none"	// sand?
 		"O" "none"
 		"P" "none"
 
+		"Q" "none"
 		"R" "none"
 		"S" "none"
 		"T" "none"
@@ -122,6 +137,17 @@ Sound
 		"X"	"none" // Titan bubble shield
 		"Y" "none"
 		"Z" "none"
+
+		"0" "none"
+		"1" "none" //lava_flow
+		"2" "none" //lava_rock_hot
+		"3" "none"
+		"4" "none"
+		"5" "none"
+		"6" "none"
+		"7" "none"
+		"8" "none"
+		"9" "none"
 
 		"splash" "none"
 		"slime_splash" "none"
@@ -148,19 +174,31 @@ Sound
 		"K" "none"  // mud?
 		"L" "none" // "Plastic_Box.BulletImpact"
 		"M" "none"	//"ArmorFlesh.BulletImpact"
-		"N" "none"	// Slime
+		"N" "none"	// sand?
 		"O" "none"
 		"P" "none"
 
+		"Q" "none"
 		"R" "none"
 		"S" "none"
 		"T" "none"
 
 		"V" "none"
 		"W" "none"
-
+		"X"	"none" // Titan bubble shield
 		"Y" "none"
 		"Z" "none"
+
+		"0" "none"
+		"1" "none" //lava_flow
+		"2" "none" //lava_rock_hot
+		"3" "none"
+		"4" "none"
+		"5" "none"
+		"6" "none"
+		"7" "none"
+		"8" "none"
+		"9" "none"
 
 		"splash" "none"
 		"slime_splash" "none"
