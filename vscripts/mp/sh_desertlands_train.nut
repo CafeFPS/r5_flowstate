@@ -8,10 +8,10 @@ global function ServerCallback_SetDesertlandsTrainAtStation
 global function SCB_DLandsTrain_SetCustomSpeakerIdx
 #endif
 
-#if CLIENT
+
 global function IsDesertlandsTrainAtStation
 global function DesertlandsTrain_PreMapInit
-#endif
+
 
 
 #if SERVER
@@ -24,10 +24,10 @@ global function DesertlandsTrain_PreMapInit
 //// Private Types ////
 ///////////////////////
 ///////////////////////
-#if CLIENT
+
 const string TRAIN_MOVER_NAME = "desertlands_train_mover"
-const int TRAIN_CAR_COUNT = 82
-#endif
+const int TRAIN_CAR_COUNT = 6
+
 
 #if SERVER
 
@@ -43,10 +43,10 @@ struct
 	#if SERVER
     #endif
 
-	#if CLIENT
+
 		bool trainStoppedAtStation = false
 		int  true_trainCarCount = TRAIN_CAR_COUNT
-	#endif
+
 
 		int customQueueIdx
 } file
@@ -291,12 +291,12 @@ void function ServerCallback_SetDesertlandsTrainAtStation( bool isAtStation )
 #endif
 
 
-#if CLIENT
+
 bool function IsDesertlandsTrainAtStation()
 {
 	return file.trainStoppedAtStation
 }
-#endif //
+
 
 #if SERVER
 
