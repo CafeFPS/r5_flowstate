@@ -26,26 +26,26 @@ WeaponData
 	// Menu Stats
 
 	// Models
-	"viewmodel"										"mdl/weapons/grenades/ptpov_smoke_grenade.rmdl"
-	"playermodel"									"mdl/weapons/grenades/smoke_grenade.rmdl"
-	"projectilemodel"								"mdl/weapons/grenades/smoke_grenade_projectile.rmdl"
+	"viewmodel"										"mdl/weapons/shuriken/ptpov_shuriken_held.rmdl"
+	"playermodel"									"mdl/weapons/shuriken/w_shuriken.rmdl"
+	"projectilemodel"								"mdl/weapons/shuriken/w_shuriken.rmdl"
 
-    show_grenade_indicator                          1
-    grenade_show_indicator_to_owner                 1
+	"offhand_default_inventory_slot"				"0"
 
-    "zoom_effects"									"0"
+	"zoom_effects"									"0"
+	"ads_move_speed_scale"							"0.55"
 
 	// Effects
-	"impact_effect_table"							"exp_electric_smoke_grenade"
-	"projectile_trail_effect_0"						"P_wpn_grenade_smoke_trail"
+	"bounce_effect_table"							"bounce_arc"
+	"impact_effect_table" 							"exp_emp"
+	"projectile_trail_effect_0" 					"wpn_grenade_frag_blue"
+	"vortex_impact_effect"							"P_impact_exp_emp_med_default"
 	"vortex_absorb_effect"							"wpn_vortex_projectile_frag_FP"
 	"vortex_absorb_effect_third_person"				"wpn_vortex_projectile_frag"
 	"vortex_absorb_sound"							"Vortex_Shield_AbsorbBulletLarge"
 	"vortex_absorb_sound_1p_vs_3p"					"Vortex_Shield_AbsorbBulletLarge_1P_VS_3P"
 	"projectile_adjust_to_gun_barrel"				"0"
 	"projectile_adjust_to_hand"						"1"
-	"grenade_arc_indicator_effect_first"			"P_grenade_arc_proto_first"
-	"grenade_arc_impact_indicator_effect"			"grenade_arc_impact_proto"
 
 	"show_grenade_indicator"						"0"
 	"grenade_disc_throw"							"1"
