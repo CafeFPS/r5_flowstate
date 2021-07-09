@@ -156,6 +156,7 @@ struct
 	#endif
 } file
 
+
 array<string> attachmentSortOrder = ["barrel", "mag", "sight", "grip", "hopup"]
 
 
@@ -691,6 +692,7 @@ void function DiffKeyColors( int baseColorID, int colorID )
 	}
 }
 #endif
+
 
 bool function SURVIVAL_Loot_IsUniqueAmmoWeapon( string ref )
 {

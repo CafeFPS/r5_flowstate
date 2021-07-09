@@ -1585,6 +1585,7 @@ void function SURVIVAL_Loot_SetHighlightForLoot( entity prop, bool isSelected )
 
 	#if CLIENT
 		SetSurvivalPropHighlight( prop, highlight, isSelected )
+			SetSurvivalPropHighlight( prop, highlight, isSelected )
 		ManageHighlightEntity( prop )
 	#endif
 }
