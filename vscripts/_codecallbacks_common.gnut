@@ -202,12 +202,7 @@ void function InitRespawnPlayer(entity player)
 
   DoRespawnPlayer( player, null )
 
-	if( !IsSurvivalTraining() && !IsLobby() && GetMapName() != "mp_rr_test" )
-	{
-		origin = GetEnt( "info_player_start" ).GetOrigin()
-		angles = GetEnt( "info_player_start" ).GetAngles()
-	}
-	else if ( GetMapName() == "mp_rr_test" )
+	if ( GetMapName() == "mp_rr_test" )
 	{
 		origin = <0, 0, 0>
 		angles = <0, 0, 0>
@@ -241,7 +236,7 @@ void function InitRespawnPlayer(entity player)
 	player.SetOrigin( origin )
 	player.SetAngles( angles )
 	
-	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )//LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	
 	// settings/player/mp/pilot_survival_gunner.rpak		Gibraltar
 	// settings/player/mp/pilot_survival_tracker.rpak		Bloodhound
@@ -255,14 +250,13 @@ void function InitRespawnPlayer(entity player)
 	// settings/player/mp/pilot_survival_barricade.rpak		Wattson
 	// settings/player/mp/pilot_survival_crypto.rpak		Crypto
 
-	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_holopilot.rpak", [] )	
+	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_tracker.rpak", [] )	
 	asset thirdperson = $"mdl/Weapons/arms/pov_pilot_light_wattson.rmdl"
 	asset firstperson = $"mdl/Weapons/arms/pov_pilot_medium_holo_legendary_02.rmdl"
 	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ))
-if( !IsLobby() )
-	//player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
 
 	if( !IsLobby() )
+	//player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
 	{
 		// todo: just reset the inventory before respawning
 		try {
@@ -272,26 +266,24 @@ if( !IsLobby() )
 			GivePassive( player, ePassives.PAS_VOICES )
 			
 			//Lifeline Heirloom
-			player.GiveOffhandWeapon( "melee_lifeline_baton", OFFHAND_MELEE )
-			player.GiveWeapon( "mp_weapon_lifeline_baton_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			//player.GiveOffhandWeapon( "melee_lifeline_baton", OFFHAND_MELEE )
+			//player.GiveWeapon( "mp_weapon_lifeline_baton_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
 			//Wraith Heirloom
 			//player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
 			//player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
 			//Bloodhound Heirloom
-			//player.GiveOffhandWeapon( "melee_bloodhound_axe", OFFHAND_MELEE )
-			//player.GiveWeapon( "mp_weapon_bloodhound_axe_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.GiveOffhandWeapon( "melee_bloodhound_axe", OFFHAND_MELEE )
+			player.GiveWeapon( "mp_weapon_bloodhound_axe_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
-			player.GiveOffhandWeapon( "mp_weapon_deployable_medic", OFFHAND_SPECIAL )
-			player.GiveOffhandWeapon( "mp_weapon_trophy_defense_system", OFFHAND_INVENTORY )
+			player.GiveOffhandWeapon( "mp_ability_area_sonar_scan", OFFHAND_SPECIAL )
+			player.GiveOffhandWeapon( "mp_ability_hunt_mode", OFFHAND_INVENTORY )
 			player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
 			//player.SetModel( thirdperson )
 			//player.SetviewModel( firstperson )
 		} catch( error )
-		{
 
-		}
 		EnableOffhandWeapons( player )
 	
 		entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
