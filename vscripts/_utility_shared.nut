@@ -19,9 +19,7 @@ const TRIG_FLAG_	= 0x0080
 const TRIG_FLAG_	= 0x0100*/
 
 global const TRIGGER_INTERNAL_SIGNAL = "OnTrigger"
-
 global const CALCULATE_SEQUENCE_BLEND_TIME = -1.0
-
 global struct ArrayDistanceEntry
 {
 	float distanceSqr
