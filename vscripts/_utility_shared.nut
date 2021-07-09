@@ -3405,11 +3405,11 @@ void function SetTeam( entity ent, int team )
 	#if CLIENT
 		ent.Code_SetTeam( team )
 	#else
-		if ( ent.IsPlayer() )
-		{
+		//if ( ent.IsPlayer() )
+		//{
 			ent.Code_SetTeam( team )
-		}
-		else if ( ent.IsNPC() )
+		//}
+		if ( ent.IsNPC() )
 		{
 			int currentTeam = ent.GetTeam()
 			bool alreadyAssignedValidTeam = ( currentTeam == TEAM_IMC || currentTeam == TEAM_MILITIA )
