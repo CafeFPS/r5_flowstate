@@ -1608,7 +1608,6 @@ global const asset CONTROL_PANEL_MODEL 	= $"mdl/communication/terminal_usable_im
 global const asset RODEO_BATTERY_MODEL 	= $"mdl/titans/medium/titan_medium_battery_static.rmdl"
 global const asset MODEL_GENERATOR 		= $"mdl/beacon/charge_generator_01_glass.rmdl"
 
-global const float HUNT_MODE_DURATION 		= 35.0
 global const float PHASE_TUNNEL_PLACEMENT_DURATION = 10.0
 
 global struct UseFuncData
