@@ -7,7 +7,6 @@ Scripts:
 When: "CLIENT"
 Scripts:
 [
-
 ]
 
 When: "SERVER || CLIENT"
