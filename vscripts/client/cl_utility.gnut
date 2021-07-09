@@ -1500,6 +1500,34 @@ bool function ShouldShowButtonHints()
 	return file.showButtonHintsInt == 1
 }
 
+// Set map visuals which cannot be set through level entity files
+void function TEMP_MapConVar_Init()
+{
+	if ( GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" )
+	{
+		SetConVarFloat( "mat_autoexposure_max", 1.0 )
+		SetConVarFloat( "mat_autoexposure_max_multiplier", 0.4 )
+		SetConVarFloat( "mat_autoexposure_min", 0.1 )
+		SetConVarFloat( "mat_autoexposure_min_multiplier", 1.0 )
+
+		SetConVarFloat( "mat_sky_scale", 0.4 )
+		SetConVarString( "mat_sky_color", "1.0 1.0 1.0 1.0" )
+		SetConVarFloat( "mat_sun_scale", 1.0 )
+		SetConVarString( "mat_sun_color", "1.0 1.5 2.0 1.0" )
+	}
+	else
+	{
+		SetConVarToDefault( "mat_autoexposure_max" )
+		SetConVarToDefault( "mat_autoexposure_max_multiplier" )
+		SetConVarToDefault( "mat_autoexposure_min" )
+		SetConVarToDefault( "mat_autoexposure_min_multiplier" )
+
+		SetConVarToDefault( "mat_sky_scale" )
+		SetConVarToDefault( "mat_sky_color" )
+		SetConVarToDefault( "mat_sun_scale" )
+		SetConVarToDefault( "mat_sun_color" )
+	}
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
