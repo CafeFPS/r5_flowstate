@@ -27,6 +27,7 @@ const SHIFTER_DASH_APPEAR_FX = $"P_phase_dash_end"
 const SHIFTER_DASH_DISAPPEAR_FX = $"P_phase_dash_start"
 const SHIFTER_DASH_DISAPPEAR_ON_WRAITH_FX = $"P_phase_dash_start_mdl"
 
+const SHIFTER_GATE_DISAPPEAR_FX = $"P_wrth_tt_dash_3P"
 const SHIFTER_SCREEN_FX = $"P_phase_shift_screen"
 const SHIFTER_PERSONAL_FX = $"P_phase_shift_player"
 const SHIFTER_SCREEN_FX_START = $"P_phase_shift_screen_start"
@@ -65,6 +66,8 @@ global enum eShiftStyle
 	Balance,
 	Tunnel,
 	Dash,
+	Gate,
+	COUNT,
 }
 
 const int TELEFRAG_DAMAGE = 5000
@@ -132,6 +135,7 @@ void function MpAbilityShifter_Init()
 	PrecacheParticleSystem( SHIFTER_DASH_DISAPPEAR_FX )
 	PrecacheParticleSystem( SHIFTER_DASH_DISAPPEAR_ON_WRAITH_FX )
 
+	PrecacheParticleSystem( SHIFTER_GATE_DISAPPEAR_FX )
 	MpAbilityPhaseWalk_Init()
 
 	RegisterSignal( "StartPhaseShift" )
@@ -176,6 +180,7 @@ int function PhaseShift( entity ent, float warmupTime, float duration, int shift
 		switch ( shiftStyle )
 		{
 			case eShiftStyle.Balance:
+			case eShiftStyle.Gate:
 			case eShiftStyle.Tunnel:
 				ent.SetSeeOtherNonShifters( false )
 				StatusEffect_AddTimed( ent, eStatusEffect.speed_boost, 0.05, duration, 0.25 )

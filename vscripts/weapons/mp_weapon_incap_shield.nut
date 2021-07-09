@@ -22,6 +22,9 @@ const INCAP_SHIELD_FX_BREAK = $"P_down_shield_break_CP"
 const string SOUND_PILOT_INCAP_SHIELD_3P = "BleedOut_Shield_Sustain_3p"
 const string SOUND_PILOT_INCAP_SHIELD_1P = "BleedOut_Shield_Sustain_1p"
 
+const string SOUND_PILOT_INCAP_SHIELD_END_3P = "BleedOut_Shield_Break_3P"
+const string SOUND_PILOT_INCAP_SHIELD_END_1P = "BleedOut_Shield_Break_1P"
+
 const vector COLOR_SHIELD_TIER4_HIGH = <220, 185, 39>
 const vector COLOR_SHIELD_TIER4_MED = <219, 200, 121>
 const vector COLOR_SHIELD_TIER4_LOW = <219, 211, 175>

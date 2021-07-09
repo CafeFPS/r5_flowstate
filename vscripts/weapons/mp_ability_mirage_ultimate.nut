@@ -64,9 +64,23 @@ var function OnWeaponPrimaryAttack_mirage_ultimate( entity weapon, WeaponPrimary
 	return ammoToReturn
 }
 
+void function MirageUltimateCancelCloak( entity player )
+{
+	player.Signal( "CancelCloak")
+}
+
 void function OnWeaponChargeEnd_ability_mirage_ultimate( entity weapon )
 {
-	if ( weapon.GetWeaponPrimaryClipCount() == 0 ) //This is to prevent a bad bug where ChargeEnd is being called 3 times on the server. Investigating that.
+	if ( weapon.GetWeaponChargeFraction() < 1 )
+	{
+		entity player = weapon.GetWeaponOwner()
+		if ( IsValid( player ) )
+			MirageUltimateCancelCloak( player )
+
+		return
+	}
+
+	if ( weapon.GetWeaponPrimaryClipCount() == 0 ) //
 		return
 
 	weapon.SetWeaponPrimaryClipCount( 0 )

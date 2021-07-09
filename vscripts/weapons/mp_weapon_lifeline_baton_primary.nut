@@ -1,5 +1,3 @@
-#if(true)//
-
 global function MpWeaponLifelineBatonPrimary_Init
 
 global function OnWeaponActivate_weapon_lifeline_baton_primary
@@ -19,5 +17,3 @@ void function OnWeaponDeactivate_weapon_lifeline_baton_primary( entity weapon )
 {
 	//
 }
-
-#endif //

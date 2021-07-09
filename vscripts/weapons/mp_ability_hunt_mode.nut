@@ -6,15 +6,18 @@ global function OnWeaponDeactivate_hunt_mode
 #if SERVER
 global function BurnMeter_HuntMode
 #endif //SERVER
+#if R5DEV && CLIENT 
+global function GetBloodhoundColorCorrectionID
+#endif //
 
-//const float HUNT_MODE_DURATION = 35.0
+const float HUNT_MODE_DURATION = 35.0
 const asset HUNT_MODE_ACTIVATION_SCREEN_FX = $"P_hunt_screen"
 const asset HUNT_MODE_BODY_FX = $"P_hunt_body"
 
 struct
 {
 	#if CLIENT
-	int colorCorrection
+	int colorCorrection = -1
 	#endif //CLIENT
 } file
 
@@ -30,6 +33,7 @@ void function MpAbilityHuntModeWeapon_Init()
 
 	#if CLIENT
 		RegisterSignal( "HuntMode_StopColorCorrection" )
+		RegisterSignal( "HuntMode_StopActivationScreenFX" )
 		//file.colorCorrection = ColorCorrection_Register_WRAPPER( "materials/correction/hunt_mode.raw" )
 		file.colorCorrection = ColorCorrection_Register( "materials/correction/ability_hunt_mode.raw_hdr" )
 		PrecacheParticleSystem( HUNT_MODE_ACTIVATION_SCREEN_FX )
@@ -99,19 +103,13 @@ void function HuntMode_Start( entity player )
 {
 	Assert( IsNewThread(), "Must be threaded off." )
 
-	player.Signal( "HuntMode_ForceAbilityStop" )
-	player.EndSignal( "OnDeath" )
-	player.EndSignal( "OnDestroy" )
-	player.EndSignal( "HuntMode_ForceAbilityStop" )
-	player.EndSignal( "BleedOut_OnStartDying" )
-
 	//EmitSoundOnEntityOnlyToPlayer( player, player, "beastofthehunt_activate_1P" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "beastofthehunt_activate_3P" )
 
 	StatusEffect_AddTimed( player, eStatusEffect.threat_vision, 1.0, HUNT_MODE_DURATION, 5.0 )
 	StatusEffect_AddTimed( player, eStatusEffect.hunt_mode, 1.0, HUNT_MODE_DURATION, HUNT_MODE_DURATION )
 	StatusEffect_AddTimed( player, eStatusEffect.hunt_mode_visuals, 1.0, HUNT_MODE_DURATION, 5.0 )
-	StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.125, HUNT_MODE_DURATION, 5.0 )
+	StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.15, HUNT_MODE_DURATION, 5.0 )
 
 	thread HuntMode_PlayLoopingBodyFx( player )
 
@@ -193,9 +191,6 @@ void function HuntMode_UpdatePlayerScreenColorCorrection( entity player )
 	OnThreadEnd(
 	function() : ( player )
 		{
-			if ( IsValid( player ) )
-				player.SetFOVScale( 1.0, 1 )
-
 			ColorCorrection_SetWeight( file.colorCorrection, 0.0 )
 			ColorCorrection_SetExclusive( file.colorCorrection, false )
 		}
@@ -250,7 +245,9 @@ void function HuntMode_StartVisualEffect( entity ent, int statusEffect, bool act
 		return
 
 	GfxDesaturate( true )
+	Chroma_StartHuntMode()
 	thread HuntMode_UpdatePlayerScreenColorCorrection( ent )
+	thread HuntMode_PlayActivationScreenFX( ent )
 }
 
 void function HuntMode_StopVisualEffect( entity ent, int statusEffect, bool actuallyChanged )
@@ -262,7 +259,9 @@ void function HuntMode_StopVisualEffect( entity ent, int statusEffect, bool actu
 		return
 
 	GfxDesaturate( false )
+	Chroma_EndHuntMode()
 	ent.Signal( "HuntMode_StopColorCorrection" )
+	ent.Signal( "HuntMode_StopActivationScreenFX" )
 }
 
 void function HuntMode_PlayActivationScreenFX( entity clientPlayer )
@@ -292,7 +291,7 @@ void function HuntMode_PlayActivationScreenFX( entity clientPlayer )
 		}
 	)
 
-	wait HUNT_MODE_DURATION
+	clientPlayer.WaitSignal( "HuntMode_StopActivationScreenFX" )
 }
 
 #endif //CLIENT
@@ -308,3 +307,10 @@ void function StopHuntMode()
 			player.Signal( "HuntMode_ForceAbilityStop" )
 	#endif
 }
+
+#if R5DEV && CLIENT 
+int function GetBloodhoundColorCorrectionID()
+{
+	return file.colorCorrection
+}
+#endif //

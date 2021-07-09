@@ -99,6 +99,7 @@ struct PhaseTunnelData
 	table< entity, float > entPhaseTime
 	PhaseTunnelPortalData& startPortal
 	PhaseTunnelPortalData& endPortal
+	bool                   expired
 }
 
 struct

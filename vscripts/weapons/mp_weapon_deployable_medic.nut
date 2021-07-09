@@ -670,7 +670,7 @@ void function DeployableMedic_PlayerHealUpdate( entity trigger, entity player )
 {
 	Assert ( IsNewThread(), "Must be threaded off." )
 
-	//printt( "STARTING HEAL UPDATE FOR PLAYER " + player + " FOR TRIGGER " + trigger )
+	printt( "STARTING HEAL UPDATE FOR PLAYER " + player + " FOR TRIGGER " + trigger )
 	//printt( "PLAYER " + player + " IS PHASESHIFTED: " + player.IsPhaseShifted() )
 
 	SignalStruct singalStruct = CreateSignalStruct( trigger, player )
@@ -941,6 +941,7 @@ bool function DeployableMedic_ShouldAttemptHeal( entity player, entity droneMedi
 		return false
 	}
 
+	//todo: Caustic Gas doesn't work for now so I will disable this (until a fix for daddy Caustic)
 	//We can't heal a player who is currently in a cloud of gas
 	//if ( IsGasCausingDamage( player ) )
 	//{
