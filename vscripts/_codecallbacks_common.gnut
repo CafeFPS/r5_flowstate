@@ -202,35 +202,26 @@ void function InitRespawnPlayer(entity player)
 
   DoRespawnPlayer( player, null )
 
-	if ( GetMapName() == "mp_rr_test" )
+
+	switch( GetMapName() )
 	{
-		origin = <0, 0, 0>
-		angles = <0, 0, 0>
-	}
-	else if ( GetMapName() == "mp_rr_desertlands_64k_x_64k" )
-	{
-		origin = < 6500, 3077, -3368 >
-		angles = <0, 0, 0>
-	}
-	else if ( GetMapName() == "mp_rr_canyonlands_64k_x_64k" )
-	{
-		origin = < 0, 0, 2200 >
-		angles = <0, 0, 0>
-	}
-	else if ( GetMapName() == "mp_rr_canyonlands_mu1" )
-	{
-		origin = < 0, 0, 2200 >
-		angles = <0, 0, 0>
-	}
-	else if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )
-	{
-		origin = < 0, 0, 2200 >
-		angles = <0, 0, 0>
-	}
-	else if ( GetMapName() == "mp_rr_canyonlands_staging" )
-	{
-		origin = <26328, -6235, -27540>
-		angles = <21.5, 0.2, 0>
+		case "mp_rr_desertlands_64k_x_64k":
+			origin = <6500, 3077, -3368>
+			angles = <0, 0, 0>
+			break
+		case "mp_rr_canyonlands_64k_x_64k":
+		case "mp_rr_canyonlands_mu1":
+		case "mp_rr_canyonlands_mu1_night":
+			origin = <0, 0, 2200>
+			angles = <0, 0, 0>
+			break
+		case "mp_rr_canyonlands_staging":
+			origin = <26328, -6235, -27540>
+			angles = <21.5, 0.2, 0>
+			break
+		default:
+			origin = <0, 0, 0>
+			angles = <0, 0, 0>
 	}
 
 	player.SetOrigin( origin )
