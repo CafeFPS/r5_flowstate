@@ -250,6 +250,7 @@ Scripts:
 	weapons/mp_ability_heal.nut
 	weapons/mp_ability_sonar.nut
 	weapons/mp_weapon_basic_bolt.nut
+	//weapons/mp_weapon_grenade_electric_smoke.nut
 	weapons/mp_weapon_defender.nut
 	weapons/mp_weapon_defender_sustained.nut
 
@@ -296,6 +297,7 @@ Scripts:
 	weapons/sh_sonar.gnut
 	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
+	weapons/mp_weapon_grenade_sonar.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -341,13 +343,13 @@ Scripts:
 ]
 
 When: "SERVER || CLIENT"
+
 Scripts:
 [
 	weapons/mp_ability_gibraltar_shield.nut
 
 	weapons/mp_ability_consumable.nut
 
-	mp/sh_desertlands_train.nut
 	mp/sh_bleedout.gnut
 	mp/sh_respawn_beacon.gnut
 	sh_evac_ship.nut
@@ -508,7 +510,7 @@ Scripts:
 [
 	sh_sneak_peek.gnut
 	pilot/sh_pilot_passive_voices.gnut
-
+	mp/sh_desertlands_train.nut
 	sh_scoreboard.gnut
 ]
 
@@ -546,6 +548,7 @@ Scripts:
 When: "CLIENT"
 Scripts:
 [
+
 	client/cl_codecallbacks.gnut
 	client/cl_codecallbacks_mp.gnut
 	client/rui/cl_hud.gnut
