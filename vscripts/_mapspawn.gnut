@@ -204,7 +204,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/dev/empty_model.rmdl" )
 	PrecacheModel( $"mdl/error.rmdl" ) // model used when no model is provided
 	
-	// PrecacheParticleSystem( $"wpn_grenade_sonar_impact" )
+	PrecacheParticleSystem( $"wpn_grenade_sonar_impact" )
 
 	PrecacheModel( $"mdl/weapons/arms/pov_pilot_heavy_pathfinder.rmdl" )
 	PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
@@ -293,9 +293,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_smart_pistol" )
 	PrecacheWeapon( $"mp_weapon_grenade_creeping_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_defensive_bombardment" )
-	// PrecacheWeapon( $"mp_weapon_grenade_sonar" )
+	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
 	// PrecacheWeapon( $"mp_weapon_grenade_gravity" )
-	// PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
+	//PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
 	// PrecacheWeapon( $"mp_weapon_deployable_cover" )
 	// PrecacheWeapon( $"mp_ability_laser_trip" )
 	// PrecacheWeapon( $"mp_weapon_satchel" )
