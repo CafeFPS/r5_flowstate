@@ -75,14 +75,7 @@ void function RegisterEquippableQuipsForCharacter( ItemFlavor characterClass, ar
 {
 	foreach( int index, ItemFlavor quip in quipList )
 	{
-		if ( quip in fileLevel.quipCharacterMap )
-		{
-			fileLevel.universalQuips.append( quip )
-		}
-		else
-		{
-			fileLevel.quipCharacterMap[quip] <- characterClass
-		}
+		fileLevel.quipCharacterMap[quip] <- characterClass
 	}
 
 	fileLevel.loadoutCharacterQuipsSlotListMap[characterClass] <- []
@@ -98,43 +91,6 @@ void function RegisterEquippableQuipsForCharacter( ItemFlavor characterClass, ar
 		entry.isSlotLocked = bool function( EHI playerEHI ) {
 			return !IsLobby()
 		}
-		#if(false)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
 		entry.isActiveConditions = { [Loadout_CharacterClass()] = { [characterClass] = true, }, }
 		entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
 		//
