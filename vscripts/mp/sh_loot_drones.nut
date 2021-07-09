@@ -19,7 +19,7 @@ global function ServerCallback_ClearAllLootDroneFX
 //// Global Types ////
 //////////////////////
 //////////////////////
-global const asset LOOT_DRONE_MODEL                  = $"mdl/props/loot_drone/loot_drone.rmdl"
+global const asset LOOT_DRONE_MODEL = $"mdl/props/loot_drone/loot_drone.rmdl" //
 
 global const float LOOT_DRONE_START_FALL_HEALTH_FRAC = 0.95
 global const float LOOT_DRONE_HEALTH_MAX             = 1.0
