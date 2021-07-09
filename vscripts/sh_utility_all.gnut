@@ -485,6 +485,25 @@ bool function IsLastPlaylistSolo( entity player )
 	return GetPersistentLastGameTypeFlag( player, eGameType.SOLO )
 }
 
+bool function IsPVEMode()
+{
+	#if UI
+		{
+			string playlistName = GetCurrentPlaylistName()
+			if ( playlistName.find( "freelance" ) == 0 )
+				return true
+
+			return false
+		}
+	#else
+		#if MP_PVEMODE
+			return true
+		#else
+			return false
+		#endif
+	#endif //
+}
+
 bool function UseSoloModeIntroPresentation()
 {
 	return GetCurrentPlaylistVarInt( "solo_mode_intro_presentation", 0 ) ? true : false
