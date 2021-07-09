@@ -28,8 +28,9 @@ global enum eCommsFlags
 	FORCE_URGENT = (1 << 0),
 	FORCE_FAR = (1 << 1),
 	SILENCE = (1 << 2),
+	INCLUDE_DEAD = (1 << 3),
 
-	_flagCount = 3
+	_flagCount = 4
 }
 
 global struct CommsAction
@@ -65,65 +66,80 @@ struct
 	bool                    quickchatInitialized = false
 	table<int, CommsAction> actions
 	#if CLIENT
-		bool                commsDialogueEnabled = true
-	    float 				flavorDebounceTime = 60.0
+		bool  commsDialogueEnabled = true
+		float flavorDebounceTime = 120.0 //
+		float flavorGlobalDebounceTime = 30.0 //
     #endif // CLIENT
+	table< int, array<void functionref( entity player, int eventId, entity subjectEnt )> >    onQuickchatCallbacks
 } file
 
 void function LoadCommsActionsFromDatatable()
 {
-	var tbl = GetDataTable( $"datatable/comms_actions.rpak" )
+	var dt = GetDataTable( $"datatable/comms_actions.rpak" )
 
-	int col_event        = GetDataTableColumnByName( tbl, "event" )
-	int col_menuText     = GetDataTableColumnByName( tbl, "menuText" )
-	int col_shortText    = GetDataTableColumnByName( tbl, "shortText" )
-	int col_chatText     = GetDataTableColumnByName( tbl, "chatText" )
-	int col_aliasSubname = GetDataTableColumnByName( tbl, "aliasSubname" )
-	int col_hasCalm      = GetDataTableColumnByName( tbl, "hasCalm" )
-	int col_hasCalmFar   = GetDataTableColumnByName( tbl, "hasCalmFar" )
-	int col_hasUrgent    = GetDataTableColumnByName( tbl, "hasUrgent" )
-	int col_hasUrgentFar = GetDataTableColumnByName( tbl, "hasUrgentFar" )
-	int col_subEvent     = GetDataTableColumnByName( tbl, "subEvent" )
-	int col_flavorEvent     = GetDataTableColumnByName( tbl, "flavorEvent" )
-	int col_defaultIcon  = GetDataTableColumnByName( tbl, "defaultIcon" )
-	int col_pingAsset    = GetDataTableColumnByName( tbl, "pingAsset" )
+	int col_featureFlag  = GetDataTableColumnByName( dt, "featureFlag" )
+	int col_event        = GetDataTableColumnByName( dt, "event" )
+	int col_menuText     = GetDataTableColumnByName( dt, "menuText" )
+	int col_shortText    = GetDataTableColumnByName( dt, "shortText" )
+	int col_chatText     = GetDataTableColumnByName( dt, "chatText" )
+	int col_aliasSubname = GetDataTableColumnByName( dt, "aliasSubname" )
+	int col_hasCalm      = GetDataTableColumnByName( dt, "hasCalm" )
+	int col_hasCalmFar   = GetDataTableColumnByName( dt, "hasCalmFar" )
+	int col_hasUrgent    = GetDataTableColumnByName( dt, "hasUrgent" )
+	int col_hasUrgentFar = GetDataTableColumnByName( dt, "hasUrgentFar" )
+	int col_subEvent     = GetDataTableColumnByName( dt, "subEvent" )
+	int col_flavorEvent  = GetDataTableColumnByName( dt, "flavorEvent" )
+	int col_defaultIcon  = GetDataTableColumnByName( dt, "defaultIcon" )
+	int col_pingAsset    = GetDataTableColumnByName( dt, "pingAsset" )
 
-	for ( int row = 0; row < GetDatatableRowCount( tbl ); row++ )
+	for ( int row = 0; row < GetDatatableRowCount( dt ); row++ )
 	{
-		string commsActionName = GetDataTableString( tbl, row, col_event )
+		string commsActionName = GetDataTableString( dt, row, col_event )
 
-		int commsAction = eCommsAction[commsActionName]
+		string featureFlagRef = GetDataTableString( dt, row, col_featureFlag )
+		if ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) )
+		{
+			printf( "Skipping comms action %s because feature flag %s is off.", commsActionName, featureFlagRef )
+			continue
+		}
 
-		CommsAction action
-		action.menuText = GetDataTableString( tbl, row, col_menuText )
-		action.shortText = GetDataTableString( tbl, row, col_shortText )
-		action.chatText = GetDataTableString( tbl, row, col_chatText )
-		action.aliasSubname = GetDataTableString( tbl, row, col_aliasSubname )
-		action.hasCalm = GetDataTableBool( tbl, row, col_hasCalm )
-		action.hasCalmFar = GetDataTableBool( tbl, row, col_hasCalmFar )
-		action.hasUrgent = GetDataTableBool( tbl, row, col_hasUrgent )
-		action.hasUrgentFar = GetDataTableBool( tbl, row, col_hasUrgentFar )
-		action.subEvent = GetDataTableString( tbl, row, col_subEvent )
-		action.flavorEvent = GetDataTableString( tbl, row, col_flavorEvent )
-		action.defaultIcon = GetDataTableAsset( tbl, row, col_defaultIcon )
-		action.pingAsset = GetDataTableAsset( tbl, row, col_pingAsset )
-		if ( action.pingAsset != $"" )
-			RegisterItemFlavorFromSettingsAsset( action.pingAsset )
-		file.actions[commsAction] <- action
+		asset pingAsset = GetDataTableAsset( dt, row, col_pingAsset )
+		if ( pingAsset != $"" )
+			RegisterItemFlavorFromSettingsAsset( pingAsset )
+
+			int commsAction = eCommsAction[commsActionName]
+
+			CommsAction action
+			action.menuText = GetDataTableString( dt, row, col_menuText )
+			action.shortText = GetDataTableString( dt, row, col_shortText )
+			action.chatText = GetDataTableString( dt, row, col_chatText )
+			action.aliasSubname = GetDataTableString( dt, row, col_aliasSubname )
+			action.hasCalm = GetDataTableBool( dt, row, col_hasCalm )
+			action.hasCalmFar = GetDataTableBool( dt, row, col_hasCalmFar )
+			action.hasUrgent = GetDataTableBool( dt, row, col_hasUrgent )
+			action.hasUrgentFar = GetDataTableBool( dt, row, col_hasUrgentFar )
+			action.subEvent = GetDataTableString( dt, row, col_subEvent )
+			action.flavorEvent = GetDataTableString( dt, row, col_flavorEvent )
+			action.defaultIcon = GetDataTableAsset( dt, row, col_defaultIcon )
+			action.pingAsset = pingAsset
+			action.index = commsAction
+
+			file.actions[commsAction] <- action
 	}
 }
 
 
 void function ShQuickchat_Init()
 {
-	LoadCommsActionsFromDatatable()
+	AddCallback_RegisterRootItemFlavors( LoadCommsActionsFromDatatable )
 
 	#if SERVER
 		AddClientCommandCallback( "ClientCommand_Quickchat", ClientCommand_Quickchat )
 	#endif // SERVER
 
 	#if CLIENT
-		file.flavorDebounceTime = GetCurrentPlaylistVarFloat( "comms_actions_flavor_debounce_time", 60.0 )
+		file.flavorDebounceTime = GetCurrentPlaylistVarFloat( "comms_actions_flavor_debounce_time", 150.0 )
+		file.flavorGlobalDebounceTime = GetCurrentPlaylistVarFloat( "comms_actions_flavor_global_debounce_time", 90.0 )
 	#endif
 
 	file.quickchatInitialized = true
@@ -143,7 +159,7 @@ void function Quickchat( entity player, int index, entity subject = null )
 		return
 
 	string add = ""
-	if ( subject != null )
+	if ( IsValid( subject ) )
 	{
 		add = " " + eCommsFlags.NONE + " " + subject.GetEncodedEHandle()
 	}
@@ -203,32 +219,36 @@ float function GetPlayerLastSaid( entity player, int actionIndex )
 	return result
 }
 
-string function GetSubjectNameForCommsAction( int commsAction, entity subjectEnt )
+array<string> function GetSubjectNamesForCommsAction( int commsAction, entity subjectEnt )
 {
 	if ( !IsValid( subjectEnt ) )
-		return ""
+		return [""]
 
 	if ( subjectEnt.IsPlayer() )
-		return subjectEnt.GetPlayerName()
+		return [subjectEnt.GetPlayerName()]
 
 	switch ( subjectEnt.GetNetworkedClassName() )
 	{
 		case "prop_survival":
 		{
 			LootData ld = SURVIVAL_Loot_GetLootDataByIndex( subjectEnt.GetSurvivalInt() )
-			return ld.pickupString
+			return [ld.pickupString]
 		}
 
 		case "weaponx":
 			string weaponClassName = subjectEnt.GetWeaponClassName()
-			if ( commsAction == eCommsAction.INVENTORY_NEED_WEAPONATTACHMENT_HOPUP )
+			if ( file.actions[commsAction].chatText == "#INVENTORY_NEED_WEAPONATTACHMENT_HOPUP" )
 			{
+				array<string> possibleHopups = []
 				array<string> attachmentRefs = GetAttachmentsForPoint( "hopup", weaponClassName )
-				LootData attachmentData      = SURVIVAL_Loot_GetLootDataByRef( attachmentRefs[0] )
-				return attachmentData.pickupString
+				foreach ( string ref in attachmentRefs )
+				{
+					possibleHopups.append( SURVIVAL_Loot_GetLootDataByRef( ref ).pickupString )
+				}
+				return possibleHopups
 			}
 
-			return string( subjectEnt.GetWeaponPrintName() )
+			return [string( subjectEnt.GetWeaponPrintName() )]
 
 	}
 
@@ -236,19 +256,41 @@ string function GetSubjectNameForCommsAction( int commsAction, entity subjectEnt
 	{
 		entity bossPlayer = subjectEnt.GetBossPlayer()
 		if ( IsValid( bossPlayer ) )
-			return bossPlayer.GetPlayerName()
-		return "<decoyUnk:[" + subjectEnt + "]>"
+			return [bossPlayer.GetPlayerName()]
+		return ["<decoyUnk:[" + subjectEnt + "]>"]
 	}
 
 	if ( subjectEnt.IsNPC() )
 	{
 		if ( commsAction == eCommsAction.PING_NPC_LOOT_TICK )
-			return Localize( "#NPC_LOOT_TICK_UI_TITLE" )
-		return format( "enemy [%s]", subjectEnt.GetTitleForUI() )
+			return [Localize( "#NPC_LOOT_TICK_UI_TITLE" )]
+		return [format( "enemy [%s]", subjectEnt.GetTitleForUI() )]
 	}
 
-	return "<subjectUnk:[" + subjectEnt + "]>"
+
+	if ( commsAction == eCommsAction.PING_LOOT_DRONE )
+	{
+		return [Localize( "#LOOT_DRONE_UI_TITLE" )]
+	}
+
+
+
+	if ( commsAction == eCommsAction.PING_LOOT_ROLLER )
+	{
+		return [Localize( "#LOOT_ROLLER_UI_TITLE" )]
+	}
+
+
+
+		if ( commsAction == eCommsAction.PING_LOOT_VAULT || commsAction == eCommsAction.PING_LOOT_VAULT_OPEN || commsAction == eCommsAction.PING_LOOT_VAULT_HAS_KEY_SQUAD || commsAction == eCommsAction.PING_LOOT_VAULT_HAS_KEY_SELF )
+		{
+			return [Localize( "#LOOT_VAULT_UI_TITLE" )]
+		}
+
+
+	return ["<subjectUnk:[" + subjectEnt + "]>"]
 }
+
 
 vector function GetSubjectColorForCommsAction( entity subjectEnt )
 {
@@ -284,6 +326,15 @@ string function GetSubjectLootTierForCommsAction( entity subjectEnt )
 	int tier = 0
 
 	if ( !IsValid( subjectEnt ) || subjectEnt.GetNetworkedClassName() != "prop_survival" )
+			if ( HACK_IsVaultDoor( subjectEnt ) || IsVaultPanel( subjectEnt ) )
+			{
+				entity playerWithKey = VaultPanel_GetTeammateWithKey( GetLocalClientPlayer().GetTeam() )
+				string playerWithKeyName
+				if ( IsValid( playerWithKey ) )
+					playerWithKeyName = VaultPanel_GetTeammateWithKey( GetLocalClientPlayer().GetTeam() ).GetPlayerName()
+				if ( playerWithKeyName != "" )
+					return playerWithKeyName
+			}
 		return string( tier )
 
 	tier = SURVIVAL_Loot_GetLootDataByIndex( subjectEnt.GetSurvivalInt() ).tier
@@ -405,6 +456,14 @@ bool function PlayerDeliveryShouldBeUrgent( entity player, vector subjectPos, in
 		}
 	}
 
+
+	float stim = StatusEffect_GetSeverity( player, eStatusEffect.stim_visual_effect )
+	if ( stim > 0.001 )
+	{
+		printf( "Urgent [YES] <- Stim (%0.2f)", stim )
+		return true
+	}
+
 	return false
 }
 
@@ -449,12 +508,20 @@ string function GetNameForCommsAction( int commsAction )
 	}
 	return ""
 }
+void function ServerToClient_BroadcastCommsActionToTeam( entity player, int commsAction, entity subjectEnt, vector subjectPos, int commsFlags )
+{
+	BroadcastCommsActionToTeam( player, commsAction, subjectEnt, subjectPos, commsFlags )
+}
 
 void function BroadcastCommsActionToTeam( entity player, int commsAction, entity subjectEnt, vector subjectPos, int commsFlags )
 {
 	if ( !file.quickchatInitialized )
 		return
-	if ( !IsAlive( player ) )
+
+	if ( !IsAlive( player ) && (commsFlags & eCommsFlags.INCLUDE_DEAD) == 0 )
+		return
+
+	if ( !player.IsPlayer() )
 		return
 
 	if ( ShouldMuteCommsActionForCooldown( player, commsAction, subjectEnt ) )
@@ -469,20 +536,28 @@ void function BroadcastCommsActionToTeam( entity player, int commsAction, entity
 	opt.isFirstPerson = (player == GetLocalViewPlayer())
 	opt.isFar = GetCommsActionIsFar( player, subjectEnt, subjectPos, commsFlags )
 	opt.isUrgent = PlayerDeliveryShouldBeUrgent( player, subjectPos, commsFlags )
+	opt.pauseQueue = true
 
 	PlaySoundForCommsAction( player, commsAction, opt )
+
+	RunQuickChatCallbacks( player, commsAction, subjectEnt )
 
 	string chatText = act.chatText
 	if ( chatText != "" )
 	{
-		string playerName   = opt.isFirstPerson ? Localize( "#OBITUARY_YOU" ) : player.GetPlayerName()
-		vector playerColor  = GetChatTitleColorForPlayer( player )
-		string subjectName  = Localize( GetSubjectNameForCommsAction( commsAction, subjectEnt ) )
-		vector subjectColor = GetSubjectColorForCommsAction( subjectEnt )
-		string subjectTier  = GetSubjectLootTierForCommsAction( subjectEnt )
+		string playerName          = opt.isFirstPerson ? Localize( "#OBITUARY_YOU" ) : player.GetPlayerName()
+		vector playerColor         = GetChatTitleColorForPlayer( player )
+		array<string> subjectNames = GetSubjectNamesForCommsAction( commsAction, subjectEnt )
+		vector subjectColor        = GetSubjectColorForCommsAction( subjectEnt )
+		string subjectTier         = GetSubjectLootTierForCommsAction( subjectEnt )
 
 		if ( !PlayerIsPingMuted( player ) )
-			Obituary_Print_Localized( Localize( chatText, playerName, subjectName, subjectTier ), playerColor, subjectColor, <255, 255, 255>, <0, 0, 0>, 0.5 )
+		{
+			foreach ( string subjectName in subjectNames )
+			{
+				Obituary_Print_Localized( Localize( chatText, playerName, Localize( subjectName ), subjectTier ), playerColor, subjectColor, <255, 255, 255>, <0, 0, 0>, 0.5 )
+			}
+		}
 	}
 
 	SetPlayerLastSaid( player, commsAction )
@@ -515,6 +590,11 @@ void function PlaySoundForCommsAction( entity player, int commsAction, CommsOpti
 
 		// Remove any player events from the queue so they don't double-speak
 		//RemovePlayerDialogueEventsFromDialogueQueue( player ) TODO: undefined
+		if ( opt.pauseQueue )
+			thread SuspendMainDialogueQueueForDurationOfSound( player, soundHandle )
+
+		//
+		RemovePlayerDialogueEventsFromMainDialogueQueue( player )
 
 		player.p.sayLineLatestSound = sound
 		player.p.sayLineLatestTime = Time()
@@ -537,10 +617,22 @@ void function PlaySoundForCommsAction( entity player, int commsAction, CommsOpti
 		}
 	}
 }
+CommsAction function GetCommsAction( int index )
+{
+	CommsAction blankAction
+	if ( (index < 0) || (index >= eCommsAction._count) )
+		return blankAction
+
+	return file.actions[ index ]
+}
+
 
 bool function ShouldPlayFlavorAction( entity player, int flavorAction )
 {
 	if ( GetCurrentPlaylistVarInt( "disable_flavor_lines", 0 ) > 0 )
+		return false
+
+	if ( Time() - player.p.commActionFlavorGlobalDebounceTime < file.flavorGlobalDebounceTime )
 		return false
 
 	if ( flavorAction in player.p.commActionFlavorDebounceTimes )
@@ -639,12 +731,43 @@ string function GetPlayerDialogSound( entity player, int index, CommsOptions opt
 		ext = ""
 
 	string result = GetBattleChatterAlias1P3P( player, (subAlias + ext), options.isFirstPerson )
+	#if R5DEV
+		if ( ShouldTryToReplaceMissingVoiceWithTempVoice() )
+		{
+			if ( !DoesAliasExist( result ) )
+			{
+				result = GetBattleChatterAlias1P3PWithTempVoice( (subAlias + ext), options.isFirstPerson )
+
+				if ( !DoesAliasExist( result ) )
+					Warning( "Attempted to fall back to temp voice \"" + TEMP_VOICE + "\", but resulting alias \"" + result + "\" does not exist in miles." )
+			}
+		}
+	#endif //
 	return result
 }
 
 void function SetCommsDialogueEnabled( bool value )
 {
 	file.commsDialogueEnabled = value
+}
+void function AddCallback_OnQuickchatEvent( int index, void functionref(entity, int, entity) func )
+{
+	if ( !(index in file.onQuickchatCallbacks) )
+		file.onQuickchatCallbacks[ index ] <- []
+
+	Assert( !file.onQuickchatCallbacks[ index ].contains( func ) )
+	file.onQuickchatCallbacks[ index ].append( func )
+}
+
+void function RunQuickChatCallbacks( entity player, int commsAction, entity subjectEnt )
+{
+	if ( commsAction in file.onQuickchatCallbacks )
+	{
+		foreach ( func in file.onQuickchatCallbacks[ commsAction ] )
+		{
+			func( player, commsAction, subjectEnt )
+		}
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
