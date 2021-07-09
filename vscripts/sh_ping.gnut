@@ -117,6 +117,8 @@ global enum ePingType
 	FLYER,
 	FLYER_CAGED,
 	JUMPTOWER,
+	GEYSER,
+	LAVA,
 
 	ABILITY_DRONEMEDIC,
 	ABILITY_DOMESHIELD,
@@ -143,8 +145,24 @@ global enum ePingType
 
 	JUMP_PAD,
 
+	CRYPTO_DRONE,
+
 	_assertion_marker, //
 
+		LOOT_VAULT,
+		LOOT_VAULT_OPEN,
+		LOOT_VAULT_HAS_KEY_SQUAD,
+		LOOT_VAULT_HAS_KEY_SELF,
+		LOOT_VAULT_REVEAL,
+		LOOT_DRONE,
+		LOOT_ROLLER,
+		TRAIN,
+		TRAIN_AT_STATION,
+		EVAC_SHIP,
+		EVAC_ZONE,
+		SHADOWFALL_LEGEND_DEATH,
+		SHADOWFALL_SHADOW_DEATH,
+		SHADOWFALL_NEMESIS,
 	_count
 }
 
@@ -277,6 +295,11 @@ string function Ping_GetSoundForLocationPing( int pingType, bool isOurs, bool is
 		case ePingType.ABILITY_DRONEMEDIC:
 		case ePingType.ABILITY_WORMHOLE:
 		case ePingType.ABILITY_JUMPPAD:
+		case ePingType.EVAC_SHIP:
+		case ePingType.EVAC_ZONE:
+		case ePingType.SHADOWFALL_LEGEND_DEATH:
+		case ePingType.SHADOWFALL_SHADOW_DEATH:
+		case ePingType.SHADOWFALL_NEMESIS:
 
 			return ""
 	}
@@ -305,6 +328,12 @@ string function Ping_GetSoundForItemPing( int pingType, bool isOurs )
 
 void function ShPing_Init()
 {
+	AddCallback_RegisterRootItemFlavors( void function() {
+		foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/pings.rpak", "list" ) )
+		{
+			ItemFlavor ornull pingOrNull = RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
+		}
+	} )
 	#if CLIENT
 		RegisterSignal( "UpdatePingBlockingHintAfterDelay" )
 
@@ -487,7 +516,8 @@ PingTraceResults function DoPingTrace( entity player )
 	const int colGroup = TRACE_COLLISION_GROUP_NONE
 	//const int colMask = CONTENTS_SOLID|CONTENTS_OPAQUE
 	//const int colMask = CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_OPAQUE|CONTENTS_MONSTER|CONTENTS_IGNORE_NODRAW_OPAQUE
-	const int colMask = (TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_NOGRAPPLE)
+	//
+	const int colMask = (TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX)
 
 	TraceResults tr = PingTraceForPlayer( player, PING_TRACE_DISTANCE, colMask, colGroup )
 
@@ -1584,6 +1614,29 @@ entity function GetTeleporterForHitEnt( entity hitEnt )
 	return null
 }
 
+
+bool function IsGeyserName( string scriptName )
+{
+	switch( scriptName )
+	{
+		case GEYSER_PING_SCRIPT_NAME:
+			return true
+	}
+	return false
+}
+
+entity function GetGeyserForHitEnt( entity hitEnt )
+{
+	if ( IsGeyserName( hitEnt.GetScriptName() ) )
+		return hitEnt
+
+	entity parentEnt = hitEnt.GetParent()
+	if ( IsValid( parentEnt ) && IsGeyserName( parentEnt.GetScriptName() ) )
+		return parentEnt
+
+	return null
+}
+
 //
 bool function IsJumpTowerName( string scriptName )
 {
@@ -1656,18 +1709,79 @@ entity function GetFlyerForHitEnt( entity hitEnt )
 }
 #endif //
 
-#if(false)
 
 
 
 
+entity function GetLootDroneForHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return null
+
+	if ( hitEnt.GetModelName().tolower() == LOOT_DRONE_MODEL.tolower() )
+		return hitEnt
+
+	return null
+}
+
+
+entity function GetLootRollerForHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return null
+
+	if ( hitEnt.GetModelName().tolower() == LOOT_ROLLER_MODEL.tolower() )
+		return hitEnt
+
+	return null
+}
+
+
+entity function GetVaultPanelEntityForHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return null
+
+	if ( IsVaultPanel( hitEnt ) )
+		return hitEnt
+
+	if ( HACK_IsVaultDoor( hitEnt ) )
+	{
+		return GetVaultPanelFromDoor( hitEnt )
+	}
+
+	return null
+}
+
+
+entity function GetTrainForHitEnt( entity hitEnt, string scriptName )
+{
+	if ( !IsValid( hitEnt ) || !hitEnt.HasKey( "script_name" ) )
+		return null
+
+	if ( hitEnt.GetScriptName() == scriptName )
+		return hitEnt
+
+	return null
+}
 
 
 
+bool function EntIsADynamicProp( entity ent )
+{
+	if ( !IsValid( ent ) )
+		return false
+
+	#if SERVER
 
 
+#elseif(CLIENT)
+		if ( ent instanceof C_DynamicProp )
+			return true
+	#endif
+	return false
+}
 
-#endif //
 
 #if(false)
 
@@ -1717,6 +1831,16 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 	PingCommandParams result
 	if ( !IsValid( processedHitEnt ) || processedHitEnt.IsWorld() )
 	{
+		{
+			//string lavaFlow = tr.tr.surfaceName
+
+			//if ( lavaFlow == LAVA_FLOW_SURFACE_NAME )
+			//{
+			//	result.hitEnt = null
+			//	result.pingType = ePingType.LAVA
+			//	return result
+			//}
+		}
 		result.hitEnt = null
 		result.pingType = defaultPingType
 		return result
@@ -1760,26 +1884,33 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 		entity doorEnt = GetDoorForHitEnt( processedHitEnt )
 		if ( IsValid( doorEnt ) )
 		{
-			#if(false)
+		
+				if ( HACK_IsVaultDoor( doorEnt ) )
+				{
+					entity vaultPanel = GetVaultPanelFromDoor( doorEnt )
 
+					if ( IsValid( vaultPanel ) )
+						result.hitEnt = vaultPanel
+					else
+						result.hitEnt = doorEnt
 
+					result.pingType = ePingType.LOOT_VAULT
 
+					entity playerWithKey = VaultPanel_GetTeammateWithKey( player.GetTeam() )
+					if ( IsValid( playerWithKey ) )
+					{
+						if ( playerWithKey == player )
+							result.pingType = ePingType.LOOT_VAULT_HAS_KEY_SELF
+						else
+							result.pingType = ePingType.LOOT_VAULT_HAS_KEY_SQUAD
+					}
 
+					if ( IsDoorOpen( doorEnt ) )
+						result.pingType = ePingType.LOOT_VAULT_OPEN
 
+					return result
+				}
 
-
-
-
-
-
-
-
-
-
-
-
-
-#endif
 
 			result.hitEnt = doorEnt
 			result.pingType = ( IsDoorOpen( doorEnt ) ? ePingType.DOOR_OPEN : ePingType.DOOR )
@@ -1942,6 +2073,16 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 	}
 
 	{
+		entity geyser = GetGeyserForHitEnt( processedHitEnt )
+		if ( IsValid( geyser ) )
+		{
+			result.hitEnt = geyser
+			result.pingType = ePingType.GEYSER
+			return result
+		}
+	}
+
+	{
 		entity jumpPad = GetHitEntForTargetName( processedHitEnt, JUMP_PAD_TARGETNAME )
 		if ( IsValid( jumpPad ) )
 		{
@@ -1952,23 +2093,117 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 	}
 
 	{
-		if ( GetCurrentPlaylistVarInt( "enableFlyers", 1 ) == 1 )
+		entity drone = GetHitEntForTargetName( processedHitEnt, CRYPTO_DRONE_TARGETNAME )
+		if ( IsValid( drone ) )
 		{
-			entity flyer = GetFlyerForHitEnt( processedHitEnt )
-			if ( IsValid( flyer ) )
+			result.hitEnt = drone
+			result.pingType = ePingType.CRYPTO_DRONE
+			return result
+		}
+	}
+
+
+		{
+			if ( GetCurrentPlaylistVarInt( "enableFlyers", 1 ) == 1 )
 			{
-				result.hitEnt = flyer
-				if ( IsCagedFlyer( flyer) ) //
+				entity flyer = GetFlyerForHitEnt( processedHitEnt )
+				if ( IsValid( flyer ) )
 				{
-					result.pingType = ePingType.FLYER_CAGED
+					result.hitEnt = flyer
+					if ( IsCagedFlyer( flyer ) ) //
+					{
+						result.pingType = ePingType.FLYER_CAGED
+					}
+					else
+					{
+						result.pingType = ePingType.FLYER
+					}
+					return result
+				}
+			}
+		}
+
+
+
+		{
+			entity drone = GetLootDroneForHitEnt( processedHitEnt )
+			if ( IsValid( drone ) )
+			{
+				printf( "LootDronePingDebug: Pinged a Loot Drone" )
+				result.hitEnt = drone
+				result.pingType = ePingType.LOOT_DRONE
+
+				return result
+			}
+		}
+
+
+
+		{
+			entity roller = GetLootRollerForHitEnt( processedHitEnt )
+			if ( IsValid( roller ) )
+			{
+				entity drone = roller.GetParent()
+
+				if ( IsValid( drone ) )
+				{
+					printf( "LootDronePingDebug: Pinged a parented Loot Roller. Returning Loot Drone" )
+					result.hitEnt = drone
+					result.pingType = ePingType.LOOT_DRONE
 				}
 				else
 				{
-					result.pingType = ePingType.FLYER
+					printf( "LootDronePingDebug: Pinged an unparented Loot Roller." )
+					result.hitEnt = roller
+					result.pingType = ePingType.LOOT_ROLLER
 				}
 				return result
 			}
 		}
+
+		{
+			entity vaultPanel = GetVaultPanelEntityForHitEnt( processedHitEnt )
+			if ( IsValid( vaultPanel ) )
+			{
+				string playerWithKey = GetNameOfTeammateWithVaultKey( player.GetTeam() )
+				if ( playerWithKey != "" )
+				{
+					if ( playerWithKey == player.GetPlayerName() )
+						result.pingType = ePingType.LOOT_VAULT_HAS_KEY_SELF
+					else
+						result.pingType = ePingType.LOOT_VAULT_HAS_KEY_SQUAD
+				}
+				else
+					result.pingType = ePingType.LOOT_VAULT
+
+				result.hitEnt = vaultPanel
+
+				return result
+			}
+		}
+
+
+		{
+			entity train = GetTrainForHitEnt( processedHitEnt, TRAIN_BRUSH_SCRIPTNAME )
+			if ( IsValid( train ) )
+			{
+				result.hitEnt = train
+				result.pingType = ePingType.TRAIN
+
+				if ( IsDesertlandsTrainAtStation() )
+					result.pingType = ePingType.TRAIN_AT_STATION
+
+				return result
+			}
+		}
+
+
+	//
+	if ( EntIsADynamicProp( processedHitEnt ) )
+	{
+		result.hitEnt = null
+		result.pingType = defaultPingType
+		return result
 	}
 
 	// Default:
@@ -1991,6 +2226,8 @@ int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
 			case "npc_soldier_spcore_rifleman":
 			case "npc_soldier_spcore_shotgunner":
 			case "npc_boss_guts":
+			case "npc_training_dummy":
+			case "npc_dummie_combat":
 				// no specific callouts for these
 				break;
 
@@ -2091,7 +2328,7 @@ int function GetCarePackageCommsAction( entity pingingPlayer, int pingType, enti
 	return eCommsAction.PING_CAREPACKAGE
 }
 
-Assert( ePingType._assertion_marker == 58 )
+Assert( ePingType._assertion_marker == 61 )
 int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity pingedEnt )
 {
 	switch( pingType )
@@ -2114,6 +2351,9 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 
 		case ePingType.JUMP_PAD:
 			return eCommsAction.PING_JUMP_PAD
+
+		case ePingType.CRYPTO_DRONE:
+			return eCommsAction.PING_CRYPTO_DRONE
 
 		case ePingType.I_GO:
 			return eCommsAction.PING_I_GO
@@ -2201,6 +2441,50 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 		case ePingType.JUMPTOWER:
 			return eCommsAction.PING_JUMPTOWER
 
+		case ePingType.GEYSER:
+			return eCommsAction.PING_GEYSER
+
+		case ePingType.LAVA:
+			return eCommsAction.PING_LAVA
+		case ePingType.LOOT_DRONE:
+			return eCommsAction.PING_LOOT_DRONE
+
+		case ePingType.LOOT_ROLLER:
+			return eCommsAction.PING_LOOT_ROLLER
+		case ePingType.LOOT_VAULT:
+			return eCommsAction.PING_LOOT_VAULT
+
+		case ePingType.LOOT_VAULT_HAS_KEY_SQUAD:
+			return eCommsAction.PING_LOOT_VAULT_HAS_KEY_SQUAD
+
+		case ePingType.LOOT_VAULT_HAS_KEY_SELF:
+			return eCommsAction.PING_LOOT_VAULT_HAS_KEY_SELF
+
+		case ePingType.LOOT_VAULT_OPEN:
+			return eCommsAction.PING_LOOT_VAULT_OPEN
+
+		case ePingType.LOOT_VAULT_REVEAL:
+			return eCommsAction.PING_LOOT_VAULT_REVEAL
+		case ePingType.TRAIN:
+			return eCommsAction.PING_TRAIN
+
+		case ePingType.TRAIN_AT_STATION:
+			return eCommsAction.PING_TRAIN_AT_STATION
+
+		case ePingType.EVAC_SHIP:
+			return eCommsAction.SPAWN_EVAC_SHIP
+
+		case ePingType.EVAC_ZONE:
+			return eCommsAction.SPAWN_EVAC_ZONE
+
+		case ePingType.SHADOWFALL_LEGEND_DEATH:
+			return eCommsAction.SHADOWFALL_LEGEND_DEATH
+
+		case ePingType.SHADOWFALL_SHADOW_DEATH:
+			return eCommsAction.SHADOWFALL_SHADOW_DEATH
+
+		case ePingType.SHADOWFALL_NEMESIS:
+			return eCommsAction.SHADOWFALL_NEMESIS
 		case ePingType.ZIPLINE:
 			return eCommsAction.PING_ZIPLINE
 
@@ -2303,7 +2587,7 @@ entity function GetAllyByTeamMemberIndex( entity player, int teamNumIndex )
 	return null
 }
 
-Assert( ePingType._assertion_marker == 58 )
+Assert( ePingType._assertion_marker == 61 )
 asset function Ping_IconForPing_Hud( entity player, int pingType, entity pingedEnt, entity owner )
 {
 	switch( pingType )
@@ -2412,9 +2696,9 @@ asset function Ping_RuiForPing_Hud( entity player, int pingType, entity pingedEn
 
 		case ePingType.BLEEDOUT:
 		case ePingType.RESPAWN_BANNER:
-		{
+
 			return $"ui/waypoint_status_timer_entpos.rpak"
-		}
+
 	}
 
 	return $"ui/waypoint_basic_entpos.rpak"
