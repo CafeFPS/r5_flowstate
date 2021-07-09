@@ -25,7 +25,7 @@ void function CodeCallback_MapInit()
 	SURVIVAL_AddCallback_OnDeathFieldStopShrink( OnDeathFieldStopShrink_ShadowSquad)
 	//mp_rr_canyonlands_mu1_night_SurvivalPreprocess()
 
-	Canyonlands_MapInit_Common()
+	Canyonlands_MU1_CommonMapInit()
 
 	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_canyonlands_mu1_night.rpak" )
 	//SetFlyersToSpawn( 8  )

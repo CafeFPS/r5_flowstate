@@ -1,6 +1,12 @@
+global function CodeCallback_PreMapInit
 global function ClientCodeCallback_MapInit
 
 const JUMP_PAD_LAUNCH_SOUND_1P = "Geyser_LaunchPlayer_1p"
+
+void function CodeCallback_PreMapInit()
+{
+	Desertlands_PreMapInit_Common()
+}
 
 void function ClientCodeCallback_MapInit()
 {
@@ -26,7 +32,7 @@ void function ClientCodeCallback_MapInit()
 	SURVIVAL_AddMinimapLevelLabel( "#DES_ZONE_13_REFINERY", 0.57, 0.74, 0.5 )
 	SURVIVAL_AddMinimapLevelLabel( "#DES_ZONE_1_DRILL_SITE", 0.29, 0.35, 0.5 )
 	SURVIVAL_AddMinimapLevelLabel( "#DES_ZONE_9_FUEL", 0.52, 0.60, 0.5 )
-
+	//SURVIVAL_AddMinimapLevelLabel( "#DES_ZONE_8_MIRAGE", 0.23, 0.54, 0.5 )
 
 	//SURVIVAL_AddMinimapLevelLabel( "Tunnel", 0.52, 0.64, 0.3)
 //

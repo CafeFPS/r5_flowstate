@@ -1,7 +1,4 @@
 global function ClientCodeCallback_MapInit
-global function GetClientSideLeviathans
-global function GetClientSideLeviathan1
-global function GetClientSideLeviathan2
 
 struct
 {
@@ -16,11 +13,6 @@ void function ClientCodeCallback_MapInit()
 	Canyonlands_MapInit_Common()
 
 	MinimapLabelsCanyonlands()
-
-	AddTargetNameCreateCallback( CANYONLANDS_LEVIATHAN1_NAME, OnLeviathanMarkerCreated ) //Created from the server to mark where the leviathans should be on the client
-	AddTargetNameCreateCallback( CANYONLANDS_LEVIATHAN2_NAME, OnLeviathanMarkerCreated )
-	AddTargetNameCreateCallback( "leviathan_staging", OnLeviathanMarkerCreated )
-
 }
 
 void function MinimapLabelsCanyonlands()
@@ -81,7 +73,7 @@ void function OnLeviathanMarkerCreated( entity marker )
 {
 	string markerTargetName = marker.GetTargetName()
 	printt( "OnLeviathanMarkerCreated, targetName: " + markerTargetName  )
-	#if DEV
+	#if R5DEV
 		if ( IsValid( file.clientSideLeviathan1 ) && markerTargetName == CANYONLANDS_LEVIATHAN1_NAME )
 		{
 			printt( "Destroying clientSideLeviathan1 with markerName: " + markerTargetName  )
