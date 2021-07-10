@@ -64,8 +64,8 @@ void function UICodeCallback_MainMenuPromosUpdated()
 	printt( "Promos updated" )
 
 	#if R5DEV
-		if ( GetConVarInt( "mainMenuPromos_preview" ) == 1 )
-			UpdatePromoData()
+		//if ( GetConVarInt( "mainMenuPromos_preview" ) == 1 ) // ConVar is not registered in R5Launch
+			//UpdatePromoData()
 	#endif //
 }
 
