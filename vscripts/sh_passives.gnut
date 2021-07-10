@@ -96,14 +96,18 @@ global const table<int, string> PASSIVE_NAME_MAP = {
 	[ePassives.PAS_SELF_REVIVE]               = "#PAS_AVAT",
 	[ePassives.PAS_FAST_HEAL]                 = "#PAS_FAST_HEAL",
 	[ePassives.PAS_PILOT_BLOOD]               = "#PAS_PILOT_BLOOD",
-
+	[ePassives.PAS_FORTIFIED] 								= "#PAS_FORTIFIED",
+	[ePassives.PAS_LOWPROFILE] 								= "#PAS_LOW_PROFILE",
 }
+
 global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
 	[ePassives.PAS_REDUCED_COOLDOWNS_TAC_ULT] = "#PAS_COMBINED_COOLDOWN_DESC",
 	[ePassives.PAS_EXEC_BONUS_ARMOR]          = "#PAS_EXEC_BONUS_ARMOR_DESC",
 	[ePassives.PAS_SELF_REVIVE]               = "#PAS_AVAT_DESC",
 	[ePassives.PAS_FAST_HEAL]                 = "#PAS_FAST_HEAL_DESC",
 	[ePassives.PAS_PILOT_BLOOD]               = "#PAS_PILOT_BLOOD_DESC",
+	[ePassives.PAS_FORTIFIED] 								= "#PAS_FORTIFIED_DESC",
+	[ePassives.PAS_LOWPROFILE] 								= "#PAS_LOW_PROFILE_DESC",
 }
 #endif
 
