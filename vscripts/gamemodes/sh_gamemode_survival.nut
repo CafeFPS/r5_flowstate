@@ -179,9 +179,6 @@ float function CharSelect_GetOutroTransitionDuration()		{ return GetCurrentPlayl
 //// Initialiszation ////
 /////////////////////////
 /////////////////////////
-#if(CLIENT)
-	ShEliteStreak_Init()
-#endif
 
 #if SERVER || CLIENT
 void function GamemodeSurvivalShared_Init()
