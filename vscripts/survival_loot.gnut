@@ -163,6 +163,14 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 {
 	printt("!!! SURVIVAL_GiveMainWeapon !!!")
 
+	if( !IsValid( player ) )
+		return
+
+	if( !IsValid( pickup ) )
+		return
+
+	if( !IsValid( activeWeapon ) )
+		return
 
 	if( !IsWeaponInPrimarySlot( player, activeWeapon) )
 	{
@@ -173,8 +181,14 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	LootTypeData lt       = GetLootTypeData( newEquipData.lootType )
 
 	string newEquip     = newEquipData.ref
-	LootData oldEquipData = SURVIVAL_Loot_GetLootDataByRef( GetWeaponClassName( activeWeapon ) )
-	// EquipmentSlot es    = Survival_GetEquipmentSlotDataByRef( lt.equipmentSlot )
+
+	LootData oldEquipData
+
+	if( IsValid( activeWeapon ) )
+	{
+		oldEquipData = SURVIVAL_Loot_GetLootDataByRef( GetWeaponClassName( activeWeapon ) )
+	}
+	
 
 	
 	LootRef lootRef       = SURVIVAL_CreateLootRef( newEquipData, pickup )
@@ -182,7 +196,6 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 	if( dropCurrentWeapon )
 	{
-		//player.DropWeapon( activeWeapon ) // FIXXX???
 		vector origin = GetThrowOrigin( player )
 		vector fwd    = AnglesToForward( player.EyeAngles() )
 
