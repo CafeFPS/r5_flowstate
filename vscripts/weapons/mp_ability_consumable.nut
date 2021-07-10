@@ -539,7 +539,7 @@ void function OnWeaponRaise_Consumable( entity weapon )
 	entity weaponOwner = weapon.GetOwner()
 
 	#if SERVER
-
+	modName = file.playerToNextMod[ weaponOwner ]
 	#endif // SERVER
 
 	#if CLIENT

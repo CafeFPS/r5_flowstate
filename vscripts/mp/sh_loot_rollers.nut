@@ -60,8 +60,9 @@ struct
 void function ShLootRollers_Init()
 {
 	#if SERVER
-
-    #endif
+	AddSpawnCallback( "prop_physics", LootRollerSpawned )
+	AddSpawnCallback( "prop_dynamic", LootRollerSpawned )
+  #endif
 
 	#if CLIENT
 	AddCreateCallback( "prop_physics", LootRollerSpawned )

@@ -108,10 +108,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 		ShGRX_OnClientConnectionCompleted( player )
 		SvPersistentData_OnClientConnectionCompleted( player )
 		ShEHI_OnClientConnectionCompleted( player )
-		
-		
 	}
-
 
 	ZiplineInit( player )
 

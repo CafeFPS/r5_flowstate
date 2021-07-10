@@ -23,6 +23,14 @@ void function RemoteFunctions_Init_Begin()
 			break
 	}
 
+
+	// Custom
+	Remote_RegisterClientFunction("ServerCallback_TDM_DoAnnouncement", "float", 0.0, 256.0, 32, "int", 0, 255)
+	Remote_RegisterClientFunction("ServerCallback_TDM_SetSelectedLocation","int", 0, 255)
+	Remote_RegisterClientFunction("ServerCallback_TDM_DoLocationIntroCutscene")
+    Remote_RegisterClientFunction("ServerCallback_TDM_PlayerKilled")
+
+
 	RegisterSignal("OnChangedPlayerClass")
 	RegisterSignal("BleedOut_OnStartDying")
 
@@ -183,6 +191,7 @@ void function RemoteFunctions_Init_Begin()
 			RegisterNetworkedVariable( "championSquad2EEH", SNDC_GLOBAL, SNVT_BIG_INT, EncodedEHandle_null )
 
 			RegisterNetworkedVariable( "ultimateCredits", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
+			RegisterServerVar( "TDMRoundInProgress", false )
 			Remote_RegisterClientFunction( "ServerCallback_Mirage_DecoysDeployed", "bool" )
 			Remote_RegisterClientFunction( "ServerCallback_MatchEndAnnouncement", "bool", "int", INT_MIN, INT_MAX )
 

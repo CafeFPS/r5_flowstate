@@ -1,6 +1,12 @@
 ///////////////////////////////////////////
 //                                       //
-//    Custom TDM Gamemode by sal#3261    //
+//          Custom TDM Gamemode          //
+//                                       //
+///////////////////////////////////////////
+//                                       //
+//    Credits:                           //
+//      sal#3261 - main                  //
+//      Shrugtal - score ui              //
 //                                       //
 ///////////////////////////////////////////
 
@@ -255,8 +261,10 @@ void function CustomTDM_Init()
     
     #if SERVER
 
-    // Callbacks
+    KC_DeleteFlyers()
 
+
+    // Callbacks
 
     AddCallback_OnPlayerKilled(SV_OnPlayerDied)
     AddCallback_OnClientConnected(SV_OnPlayerConnected)
@@ -389,6 +397,7 @@ void function VotingPhase()
     
     foreach(player in GetPlayerArray()) 
     {
+        if(!IsValid(player)) continue;
         if(!IsAlive(player))
         {
             DoRespawnPlayer(player, null)
@@ -501,10 +510,17 @@ void function FillPlayerToNeedyTeam(entity player)
 
 void function SV_OnPlayerConnected(entity player)
 {
-    // FillPlayerToNeedyTeam(player)
+    // set index of team
     int index = GetPlayerArrayOfTeam(player.GetTeam()).len() - 1
     player.SetTeamMemberIndex(index)
+
+    // Give passive regen (pilot blood)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+
+    // Set player settings (bloodhound)
+    player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_tracker.rpak", [] )	
+
+
     if(GetTDMRoundInProgress())
     {
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 5, eTDMAnnounce.ROUND_START)
@@ -557,6 +573,7 @@ void function PlayerRoundRespawn(entity victim, array<string> weaponNames = [])
 {
     wait 1.5
 
+    if(!IsValid(victim)) return;
     DoRespawnPlayer(victim, null)
 
     victim.SetHealth( 100 )
@@ -640,9 +657,23 @@ void function PlayerRoundRespawn(entity victim, array<string> weaponNames = [])
 	// ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
     
 
+    if(!IsValid(victim)) return;
     MakeInvincible(victim)
     wait 3
+    if(!IsValid(victim)) return;
     ClearInvincible(victim)
+}
+
+void function KC_DeleteFlyers()
+{
+    array<entity> flyers = GetEntArrayByClass_Expensive("prop_dynamic")
+    foreach(flyer in flyers)
+    {
+        if(flyer.GetModelName() == $"mdl/creatures/flyer/flyer_kingscanyon_animated.rmdl") // found the flyer
+        {
+            flyer.Destroy() // burn
+        }
+    }
 }
 
 LocPair function SV_GetAppropriateSpawnLocation(entity player)
