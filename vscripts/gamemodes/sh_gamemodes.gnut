@@ -143,6 +143,7 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
 
+	#if FREELANCE_ENABLED
 	gameMode = FREELANCE
 	GameMode_Create( gameMode )
 	GameMode_SetName( gameMode, "#GAMEMODE_FREELANCE" )
@@ -153,6 +154,7 @@ void function GameModes_Init()
 	GameMode_SetDefaultTimeLimits( gameMode, 30, 0.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
+	#endif
 
 	#if DEVSCRIPTS
 	DevGameModes_Init()
