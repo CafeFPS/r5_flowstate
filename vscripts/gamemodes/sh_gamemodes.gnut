@@ -143,6 +143,17 @@ void function GameModes_Init()
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
 
+	gameMode = FREELANCE
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#GAMEMODE_FREELANCE" )
+	GameMode_SetGameModeAnnouncement( gameMode, "ffa_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_freelance_hint" )
+	GameMode_SetIcon( gameMode, $"vgui/burncards/burncard_group_icon_weapons" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 30, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
+
 	#if DEVSCRIPTS
 	DevGameModes_Init()
 	#endif

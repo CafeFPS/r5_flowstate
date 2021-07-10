@@ -865,3 +865,10 @@ Scripts:
 [
 	gamemodes/sh_custom_tdm.nut
 ]
+
+// Freelance
+When: "SERVER"
+Scripts:
+[
+	freelance/_freelance.gnut
+]

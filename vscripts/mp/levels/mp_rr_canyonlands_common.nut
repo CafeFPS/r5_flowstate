@@ -195,10 +195,13 @@ void function EntitiesDidLoad()
 
 void function __EntitiesDidLoad()
 {
-	waitthread FindHoverTankEndNodes()
-	SpawnHoverTanks()
-	if ( GetCurrentPlaylistVarInt( "enable_nessies", 1 ) == 1 )
-		Nessies()
+	if( GameRules_GetGameMode() != FREELANCE )
+	{
+		waitthread FindHoverTankEndNodes()
+		SpawnHoverTanks()
+		if ( GetCurrentPlaylistVarInt( "enable_nessies", 1 ) == 1 )
+			Nessies()
+	}
 }
 
 void function Canyonlands_UpdraftInit_Common( entity player )

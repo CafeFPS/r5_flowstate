@@ -85,52 +85,55 @@ global struct UIScaleFactor
 	float y = 1.0
 }
 
-global const SPECTATOR_SETTINGS 			= $"settings/player/mp/spectator.rpak"
+global const SPECTATOR_SETTINGS 				= $"settings/player/mp/spectator.rpak"
 
-global const NPC_TITAN_PILOT_PROTOTYPE 		= 0
+global const NPC_TITAN_PILOT_PROTOTYPE	= 0
 
-global const HAS_TASKLIST_SYSTEM 			= false
+global const HAS_TASKLIST_SYSTEM 				= false
 global const HAS_MISSIONINFO_SYSTEM 		= false
 
 
-global const TEAM_DEATHMATCH 				= "tdm"
-global const SURVIVAL 						= "survival"
-global const GAMEMODE_FREELANCE 			= "freelance"
+global const TEAM_DEATHMATCH 						= "tdm"
+global const SURVIVAL 									= "survival"
+global const FREELANCE 									= "freelance"
+global const CUSTOM_TDM									= "custom_tdm"
 
-global const VERBOSE_DAMAGE_PRINTOUTS 		= false
+global const FREELANCE_ENABLED					= false
 
-global const SAVEGAME_VERSION 				= 13 // increment when saves need to be tossed
-global const PERSISTENCE_INIT_VERSION 		= 303
+global const VERBOSE_DAMAGE_PRINTOUTS 	= false
 
-global const NETWORTH_VAR 					= "netWorth"
+global const SAVEGAME_VERSION 					= 13 // increment when saves need to be tossed
+global const PERSISTENCE_INIT_VERSION 	= 303
 
-global const TESTCONST 						= 99
+global const NETWORTH_VAR 							= "netWorth"
 
-global const MAX_GAME_HISTORY 				= 20 // Matches code
+global const TESTCONST 									= 99
 
-global const NON_RARES_PER_RARE 			= 12
+global const MAX_GAME_HISTORY 					= 20 // Matches code
 
-global const MAX_RANK 						= 24
+global const NON_RARES_PER_RARE 				= 12
 
-global const MAX_GEN 						= 100
+global const MAX_RANK 									= 24
 
-global const CPU_LEVEL_MINSPEC 				= 0
-global const CPU_LEVEL_DURANGO 				= 1
-global const CPU_LEVEL_HIGHEND 				= 2
+global const MAX_GEN 										= 100
 
-global const float INCHES_IN_KILOMETER 		= 39370.1
+global const CPU_LEVEL_MINSPEC 					= 0
+global const CPU_LEVEL_DURANGO 					= 1
+global const CPU_LEVEL_HIGHEND 					= 2
+
+global const float INCHES_IN_KILOMETER 	= 39370.1
 
 global const float MAX_WORLD_COORD 			= ( 1 << 16 ) - 1 //65535
 global const float MAX_WORLD_COORD_BUFFER 	= MAX_WORLD_COORD - 512
-global const float COORD_RANGE 				= MAX_WORLD_COORD + MAX_WORLD_COORD + 1 //-65535 to 65535
+global const float COORD_RANGE 					= MAX_WORLD_COORD + MAX_WORLD_COORD + 1 //-65535 to 65535
 global const float MAX_WORLD_RANGE 			= sqrt( COORD_RANGE * COORD_RANGE + COORD_RANGE * COORD_RANGE + COORD_RANGE * COORD_RANGE )
 
 global const string INVERT_CONVAR_GAMEPAD 	= "joy_inverty"
-global const string INVERT_CONVAR_MOUSE 	= "m_invert_pitch"
+global const string INVERT_CONVAR_MOUSE 		= "m_invert_pitch"
 
 global const string AUTOSPRINT_CONVAR_NAME	= "autosprint_type"
 
-global const bool HAS_NPC_SCORE_EVENTS 		= false
+global const bool HAS_NPC_SCORE_EVENTS  = false
 
 //AI TRACKING
 global const AI_HARD_LIMIT 					= 36
