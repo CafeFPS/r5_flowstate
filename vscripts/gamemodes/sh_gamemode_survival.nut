@@ -209,6 +209,11 @@ void function GamemodeSurvivalShared_Init()
 	#elseif CLIENT
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
 	#endif
+
+	if( GetCurrentPlaylistVarBool( "custom_tdm", false ) )
+	{
+		CustomTDM_Init()
+	}
 }
 #endif
 

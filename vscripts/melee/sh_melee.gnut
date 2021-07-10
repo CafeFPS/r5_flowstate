@@ -114,7 +114,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 
 	MakeItemFlavorSet( meleeSkinList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_meleeskin_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "meleeskin", ItemFlavor_GetGUIDString( characterClass ) )
 	entry.DEV_category = "character_meleeskins"
 	entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Melee Skin"
 	entry.defaultItemFlavor = meleeSkinList[0]

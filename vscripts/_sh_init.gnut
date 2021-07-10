@@ -154,21 +154,16 @@ void function SV_CL_Init()
 	ShCarePackage_Init()
 	ShWeaponInspect_Init()
 	Consumable_Init()
-	#if(true)
-		ShWarpGates_Init()
-	#endif
 
-	#if(true)
-		Sh_Loot_Vault_Panel_Init()
-	#endif
+	ShWarpGates_Init()
 
-	#if(true)
-		ShLootDrones_Init()
-	#endif
+	Sh_Loot_Vault_Panel_Init()
 
-	#if(true)
-		ShLootRollers_Init()
-	#endif
+
+	ShLootDrones_Init()
+
+	ShLootRollers_Init()
+
 
 	CharacterSelectNewMenu_Init()
 

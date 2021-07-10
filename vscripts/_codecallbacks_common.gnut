@@ -103,15 +103,23 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
 	player.s.activeTrapArrayId <- 0
 
+	if( !DEV_ShouldIgnorePersistence() )
+	{
+		ShGRX_OnClientConnectionCompleted( player )
+		SvPersistentData_OnClientConnectionCompleted( player )
+		ShEHI_OnClientConnectionCompleted( player )
+		
+		
+	}
+
+
 	ZiplineInit( player )
-
-
 
 	player.hasConnected = true
 
-	SetGameState( eGameState.Playing )
-
 	AddDeathCallback( "player", OnPlayerDeathCallback )
+
+	SetGameState( eGameState.Playing )
 
 	foreach( cb in svGlobal.onClientConnectedCallbacks )
 		cb( player )
@@ -121,12 +129,15 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
 
-  thread InitRespawnPlayer(player)
 
+	if( !GetCurrentPlaylistVarBool( "custom_tdm", false ) )
+	{
+  	thread InitRespawnPlayer(player)
+	}
 
+	// shouldn't this be called from code?
 	CodeCallback_OnClientReloadConnectionCompleted(player)
 
-	//SetGameState(eGameState.Playing)
 
 	UpdateNetCounts()
 	

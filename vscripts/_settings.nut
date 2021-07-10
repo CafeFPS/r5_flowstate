@@ -493,7 +493,7 @@ global const FX_GRENADE_SMOKESCREEN = $"P_smkscreen_test"
 // 				TITAN HEALTH REGEN
 //--------------------------------------------------
 
-global const HEALTH_REGEN_TICK_TIME 					= 2.5
+global const HEALTH_REGEN_TICK_TIME 					= 0.1
 global const TITAN_HEALTH_REGEN_DELAY					= 7.0		// Titan must wait this long after taking damage before any regen begins
 global const TITAN_HEALTH_REGEN_TIME					= 14.0		// Time it takes a titan to regen a full health bar
 global const TITAN_DEFAULT_PERMANANT_DAMAGE_FRAC		= 0.8		// Amount of permanent damage to take relative to damage taken. 0.3 means when titan takes 100 damage, 30 of it will be permanent and non rechargeable

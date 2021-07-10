@@ -112,7 +112,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 
 		MakeItemFlavorSet( skinList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_skin_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "skin", ItemFlavor_GetGUIDString( characterClass ) )
 		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 		entry.DEV_category = "character_skins"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Skin"
@@ -143,7 +143,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 			fileLevel.executionCharacterMap[execution] <- characterClass
 		MakeItemFlavorSet( executionsList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_execution_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "execution", ItemFlavor_GetGUIDString( characterClass ) )
 		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 		entry.DEV_category = "character_executions"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Execution"
@@ -166,7 +166,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 			fileLevel.introQuipCharacterMap[quip] <- characterClass
 		MakeItemFlavorSet( quipList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_intro_quip_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "intro_quip",ItemFlavor_GetGUIDString( characterClass ) )
 		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 		entry.DEV_category = "character_intro_quips"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Intro Quip"
@@ -191,7 +191,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 			fileLevel.killQuipCharacterMap[quip] <- characterClass
 		MakeItemFlavorSet( quipList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_kill_quip_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+		LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "kill_quip", ItemFlavor_GetGUIDString( characterClass ) )
 		entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 		entry.DEV_category = "character_kill_quips"
 		entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Kill Quip"
@@ -220,7 +220,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 
 		for ( int i=0; i<MAX_SKYDIVE_EMOTES; i++ )
 		{
-			LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_skydive_emote_" + i + "_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+			LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "skydive_emote_" + i, ItemFlavor_GetGUIDString( characterClass ) )
 			entry.pdefSectionKey = "character " + ItemFlavor_GetGUIDString( characterClass )
 			entry.DEV_category = "character_skydive_emotes"
 			entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Skydive Emote " + i

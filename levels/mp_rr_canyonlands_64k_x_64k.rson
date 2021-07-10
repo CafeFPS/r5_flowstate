@@ -1,4 +1,4 @@
-When: "CLIENT"
+When: "SERVER || CLIENT"
 Scripts:
 [
 	mp/levels/mp_rr_canyonlands_common.nut

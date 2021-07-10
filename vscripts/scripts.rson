@@ -1,17 +1,17 @@
 
 /*
 Expression values:
-SERVER			Server per-level script VM
-CLIENT			Client per-level script VM
-UI				UI script VM
-SP				Singleplayer (returns true for sp maps)
-MP				Multiplayer (returns true for mp maps)
-DEV				Value of developer convar
+SERVER				Server per-level script VM
+CLIENT				Client per-level script VM
+UI						UI script VM
+SP						Singleplayer (returns true for sp maps)
+MP						Multiplayer (returns true for mp maps)
+DEV						Value of developer convar
 CONSOLE_PROG	True if a Durango or PS4 program
 DURANGO_PROG	True if a Durango program
-PS4_PROG		True if a PS4 program
-PC_PROG			True if a PC program
-LOBBY			True in mp_lobby. (Server and client VMs only)
+PS4_PROG			True if a PS4 program
+PC_PROG				True if a PC program
+LOBBY					True in mp_lobby. (Server and client VMs only)
 MAP_mp_box		True if the given map name is being loaded
 GAMEMODE_at		True of the given game mode is being loaded
 */
@@ -74,7 +74,7 @@ Scripts:
 	gamemodes/sh_dev_gamemodes_mp.gnut // DEVSCRIPTS REMOVE
 	gamemodes/sh_gamemodes_mp.gnut
 
-    pilot/sh_pilot_tracking_vision.gnut
+  pilot/sh_pilot_tracking_vision.gnut
 	sh_bird_cluster.nut
 
 	sh_extended_use.gnut
@@ -104,7 +104,7 @@ Scripts:
 	mp/sh_music.gnut
 	mp/sh_skydive_trails.gnut
 	sh_weapons.gnut
-    sh_dev_weapons.nut
+  sh_dev_weapons.nut
 	sh_dev_menu.nut
 	sh_weapon_cosmetics.nut
 ]
@@ -151,7 +151,7 @@ Scripts:
 When: "SERVER && DEV"
 Scripts:
 [
-    _smoke_test.gnut
+  _smoke_test.gnut
 ]
 
 When: "SERVER"
@@ -194,7 +194,7 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
-    _dev_remote_functions_mp.gnut // DEVSCRIPTS REMOVE
+	_dev_remote_functions_mp.gnut // DEVSCRIPTS REMOVE
 	_remote_functions_mp.gnut
 ]
 
@@ -258,7 +258,7 @@ Scripts:
 	weapons/mp_weapon_doubletake.nut
 	weapons/mp_weapon_shotgun_pistol.nut
 	
-    
+	
 
 	weapons/mp_weapon_grenade_emp.nut
 	weapons/mp_weapon_lmg.nut
@@ -277,8 +277,8 @@ Scripts:
 	
 	weapons/mp_weapon_lifeline_baton_primary.nut
 	weapons/melee_lifeline_baton.nut
-    
-    
+	
+	
 	weapons/mp_weapon_shadow_squad_hands_primary.nut
 	weapons/melee_shadowsquad_hands.nut
 	
@@ -363,7 +363,7 @@ Scripts:
 	mp/sh_survival_training.gnut
 	mp/firing_range.gnut
 	mp/sh_airdrops.gnut
-    mp/sh_supply_ship.gnut
+  mp/sh_supply_ship.gnut
 
 	sh_loot_vault_panel.nut
 	mp/sh_loot_drones.nut
@@ -385,7 +385,7 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
-    _utility.gnut
+  _utility.gnut
 	_anim.gnut
 	_bubble_shield.gnut
 	_codecallbacks_common.gnut
@@ -489,12 +489,12 @@ Scripts:
 	gamemodes/_gamemode_survival.nut
 	mp/_base_gametype_mp.gnut
 	mp/_playlist.gnut
-    mp/_bombardment_utility.gnut
-    mp/_bleedout.gnut
+  mp/_bombardment_utility.gnut
+  mp/_bleedout.gnut
 	mp/_staging_area.gnut
 	_sneak_peek.gnut
 
-    ai/_ai_mortar_spectres.gnut
+  ai/_ai_mortar_spectres.gnut
 	survival_loot.gnut
 	survival_ship.gnut
 	mp/_loot_ticks.nut
@@ -517,7 +517,7 @@ Scripts:
 When: "SERVER || UI"
 Scripts:
 [
-   	mp/_match_preferences.gnut
+  mp/_match_preferences.gnut
 ]
 
 When: "CLIENT || UI"
@@ -738,7 +738,7 @@ Scripts:
 	ui/panel_video.nut
 	ui/panel_sound.nut
 	ui/panel_hud_options.nut
-    ui/menu_challenges.nut
+	ui/menu_challenges.nut
 
 	ui/menu_customize_character.nut
 	ui/panel_character_skins.nut
@@ -759,13 +759,13 @@ Scripts:
 	ui/panel_quip_intro.nut
 	ui/panel_quip_kill.nut
 
-    ui/menu_customize_weapon.nut
-    ui/menu_misc_customize.nut
-    ui/panel_weapon_skins.nut
+	ui/menu_customize_weapon.nut
+	ui/menu_misc_customize.nut
+	ui/panel_weapon_skins.nut
 
 	ui/menu_main.nut
-    ui/panel_mainmenu.nut
-    ui/panel_establishuser.nut
+	ui/panel_mainmenu.nut
+	ui/panel_establishuser.nut
 	ui/menu_gamma.nut
 	ui/menu_matchmaking_utility.nut
 	ui/menu_survival_exit.nut
@@ -848,7 +848,7 @@ Scripts:
 When: "DEV && (SERVER || CLIENT || UI)"
 Scripts:
 [
-    sh_dev_utility.nut
+	sh_dev_utility.nut
 ]
 
 When: "DEV && CLIENT"
@@ -859,3 +859,9 @@ Scripts:
 
 // END DEVSCRIPTS CONTENT
 
+// Custom
+When: "SERVER || CLIENT"
+Scripts:
+[
+	gamemodes/sh_custom_tdm.nut
+]

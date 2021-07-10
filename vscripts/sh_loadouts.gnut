@@ -117,6 +117,7 @@ global struct LoadoutEntry
 {
 	int    _____INTERNAL_entryIndex = -1
 	string id = ""
+	string guid = ""
 	int    type = -1
 
 	string pdefSectionKey = "! general"
@@ -494,7 +495,7 @@ void function ShLoadouts_LevelShutdown()
 //// Global functions ////
 //////////////////////////
 //////////////////////////
-LoadoutEntry function RegisterLoadoutSlot( int type, string id )
+LoadoutEntry function RegisterLoadoutSlot( int type, string id, string guidString = "" )
 {
 	Assert( !fileLevel.isInitialized, "Cannot call RegisterLoadoutSlot after initialization has finished." )
 	Assert( type == eLoadoutEntryType.ITEM_FLAVOR || type == eLoadoutEntryType.INTEGER )
@@ -507,6 +508,7 @@ LoadoutEntry function RegisterLoadoutSlot( int type, string id )
 	LoadoutEntry entry
 	entry._____INTERNAL_entryIndex = fileLevel.loadoutSlotEntries.len()
 	entry.id = id
+	entry.guid = guidString
 	entry.type = type
 	fileLevel.loadoutSlotEntries.append( entry )
 
@@ -1224,13 +1226,24 @@ int function GetLoadoutSlotContentsIndexFromPersistence( EHI playerEHI, LoadoutE
 
 	#if SERVER || CLIENT
 		entity player         = FromEHI( playerEHI )
-		int slotContentsIndex = expect int(player.GetPersistentVar( "loadouts." + entry.id ))
+		int slotContentsIndex = 0
+		if(entry.guid == "") {
+			slotContentsIndex = expect int(player.GetPersistentVar( "loadouts." + entry.id ))
+		} else {
+			slotContentsIndex = expect int(player.GetPersistentVar( "character_loadouts[" + entry.guid + "]." + entry.id ))
+		}
+		//int slotContentsIndex = expect int(player.GetPersistentVar( "loadouts." + entry.id ))
 	#elseif UI
 		if ( !IsPersistenceAvailable() )
 			return SLOT_CONTENTS_SENTINEL_NOTREADY
 
 		Assert( playerEHI == LocalClientEHI() )
-		int slotContentsIndex = expect int(GetPersistentVar( "loadouts." + entry.id ))
+		int slotContentsIndex = 0
+		if(entry.guid == "") {
+			slotContentsIndex = expect int(GetPersistentVar( "loadouts." + entry.id ))
+		} else {
+			slotContentsIndex = expect int(GetPersistentVar( "character_loadouts[" + entry.guid + "]." + entry.id ))
+		}
 	#endif
 
 	if ( slotContentsIndex == PERSISTENT_DATA_INVALID_SENTINEL )
@@ -1308,7 +1321,11 @@ void function SetItemFlavorLoadoutSlotContentsInternal( EHI playerEHI, LoadoutEn
 	int itemFlavorPDefInt = ItemFlavor_GetGUID( itemFlavor )
 
 	entity player = FromEHI( playerEHI )
-	player.SetPersistentVar( "loadouts." + entry.id, itemFlavorPDefInt )
+	if(entry.guid == "") {
+		player.SetPersistentVar( "loadouts." + entry.id, itemFlavorPDefInt )
+	} else {
+		player.SetPersistentVar( "character_loadouts[" + entry.guid + "]." + entry.id, itemFlavorPDefInt )
+	}
 
 	//printf( "sh_loadouts.gnut debug (R5DEV-29743), SetItemFlavorLoadoutSlotContentsInternal, [%d], SetPersistentVar( \"%s\", \"%s\"{%d} )",
 	//	player.GetEncodedEHandle(), "loadouts." + entry.id, itemFlavorPDefStringRef, ItemFlavor_GetNetworkIndex( itemFlavor )
@@ -1335,7 +1352,12 @@ void function SetIntegerLoadoutSlotContentsInternal( EHI playerEHI, LoadoutEntry
 	int integerPDefInt = slotContentsIndex
 
 	entity player = FromEHI( playerEHI )
-	player.SetPersistentVar( "loadouts." + entry.id, integerPDefInt )
+	if(entry.guid == "") {
+		player.SetPersistentVar( "loadouts." + entry.id, integerPDefInt)
+	} else {
+		player.SetPersistentVar( "character_loadouts[" + entry.guid + "]." + entry.id, integerPDefInt)
+	}
+	//player.SetPersistentVar( "loadouts." + entry.id, integerPDefInt )
 
 	//printf( "sh_loadouts.gnut debug (R5DEV-29743), SetIntegerLoadoutSlotContentsInternal, [%d], SetPersistentVar( \"%s\", \"%s\"{%d} )",
 	//	player.GetEncodedEHandle(), "loadouts." + entry.id, itemFlavorPDefStringRef, ItemFlavor_GetNetworkIndex( itemFlavor )
@@ -1806,7 +1828,7 @@ bool function ValidateAndFixLoadoutSlot( EHI playerEHI, LoadoutEntry entry, bool
 		{
 			ItemFlavor itemFlavor
 #if R5DEV
-			if ( resetToRandom || GetConVarBool( "loadouts_forceRandom" ) )
+			if ( resetToRandom ) // || GetConVarBool( "loadouts_forceRandom" ) )
 			{
 				itemFlavor = GetRandomGoodItemFlavorForLoadoutSlot( playerEHI, entry )
 			}
@@ -1823,7 +1845,7 @@ bool function ValidateAndFixLoadoutSlot( EHI playerEHI, LoadoutEntry entry, bool
 		{
 			int newSlotContentsIndex
 #if R5DEV
-			if ( resetToRandom || GetConVarBool( "loadouts_forceRandom" ) )
+			if ( resetToRandom ) // || GetConVarBool( "loadouts_forceRandom" ) )
 			{
 				int value = RandomIntRangeInclusive( entry.minInteger, entry.maxInteger )
 				newSlotContentsIndex = SLOT_CONTENTS_FIRST_VALID_ITEM + (value - entry.minInteger)

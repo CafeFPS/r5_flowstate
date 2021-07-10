@@ -420,12 +420,11 @@ void function SURVIVAL_Loot_InitShared()
 		AddCreateCallback( "prop_survival", OnPropSurvivalCreate )
 		AddCreateCallback( "prop_death_box", OnDeathBoxCreated )
 		AddDestroyCallback( "prop_death_box", OnDeathBoxDestroyed )
-	#elseif(false)
-
-
-
-#endif
-
+	#elseif SERVER
+		AddSpawnCallback( "prop_survival", OnPropSurvivalCreate )
+		AddSpawnCallback( "prop_dynamic", OnDeathBoxCreated )
+		AddSpawnCallback( "prop_death_box", OnDeathBoxCreated )
+	#endif
 
 #if SERVER
 	AddCallback_OnClientConnected( OnClientConnected )
@@ -813,16 +812,10 @@ string function SURVIVAL_Loot_GetDetailTypeStringFromRef( string ref )
 			return ""
 		case eLootType.CUSTOMPICKUP:
 			return ""
-#if(false)
-
-
-#endif
 		case eLootType.HELMET:
 			return ""
-#if(true)
 		case eLootType.DATAKNIFE:
 			return "#ITEM_TYPE_SPECIAL"
-#endif
 		case eLootType.RESOURCE:
 			return "#ITEM_TYPE_SHIELDS"
 		case eLootType.BLANK:
@@ -853,14 +846,8 @@ string function SURVIVAL_Loot_GetGeneralTypeStringFromType( int lootType )
 			return "#SURVIVAL_ATTACHMENT"
 		case eLootType.CUSTOMPICKUP:
 			return "Nope"
-#if(false)
-
-
-#endif
-#if(true)
 		case eLootType.DATAKNIFE:
 			return "#SURVIVAL_SPECIAL"
-#endif
 		case eLootType.RESOURCE:
 			return "#SURVIVAL_RECOVERY"
 		case eLootType.BLANK:
@@ -1293,7 +1280,7 @@ int function SURVIVAL_AddToPlayerInventory( entity player, string ref, int count
 		item.slot = playerInventory.len()
 		item.type = type
 
-		int add = minint( numToAdd, data.inventorySlotCount )
+		int add = minint( numToAdd, slotCount )
 		item.count = add
 		numToAdd -= add
 		numAdded += add
@@ -3697,7 +3684,7 @@ void function OnDeathBoxCreated( entity ent )
 
 #elseif(CLIENT)
 		file.allDeathBoxes.append( ent )
-		#endif //
+		#endif // SERVER / CLIENT
 
 		SetCallback_CanUseEntityCallback( ent, DeathBox_CanUseFunction )
 
@@ -3710,7 +3697,7 @@ void function OnDeathBoxDestroyed( entity ent )
 	#if(CLIENT)
 	if ( file.allDeathBoxes.contains( ent ) )
 		file.allDeathBoxes.removebyvalue( ent )
-	#endif //
+	#endif // CLIENT
 }
 
 bool function DeathBox_CanUseFunction( entity player, entity ent )
