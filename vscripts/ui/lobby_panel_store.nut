@@ -16,6 +16,13 @@ global function JumpToThemedShop
 global function DEV_OffersPanel_DoFakeOffers
 #endif
 
+enum eStoreSection
+{
+	SHOP,
+	LOOT,
+	CHARACTERS,
+	CURRECNY
+}
 
 ///////////////////////
 ///////////////////////
@@ -126,15 +133,6 @@ struct
 
 	table< string, SeasonalStoreData > seasonalDataMap
 } s_offers
-
-enum eStoreSection
-{
-	SHOP,
-	LOOT,
-	CHARACTERS,
-	CURRENCY
-}
-
 
 
 /////////////////////////
@@ -1147,7 +1145,7 @@ void function OffersPanel_Think( var panel )
 
 
 void function InitOffers()
-{/*
+{
 	int totalWidth    = 0
 	int featuredWidth = 0
 
@@ -1340,12 +1338,12 @@ void function InitOffers()
 	Hud_SetWidth( s_offers.featuredHeader, featuredWidth > 0 ? featuredWidth : totalWidth )
 
 	Hud_SetX( s_offers.exclusiveHeader, exclusiveX )
-	Hud_SetWidth( s_offers.exclusiveHeader, exclusiveWidth > 0 ? exclusiveWidth : totalWidth - exclusiveX )*/
+	Hud_SetWidth( s_offers.exclusiveHeader, exclusiveWidth > 0 ? exclusiveWidth : totalWidth - exclusiveX )
 }
 
 
 void function InitSpacerButton( var button, GRXScriptOffer offerData )
-{/*
+{
 	ItemFlavor prereqFlav = expect ItemFlavor( offerData.prereq )
 	Hud_SetVisible( button, true )
 	Hud_SetEnabled( button, false )
@@ -1353,7 +1351,7 @@ void function InitSpacerButton( var button, GRXScriptOffer offerData )
 	HudElem_SetRuiArg( button, "isSpacer", true )
 
 	if ( button in s_offers.buttonToOfferData )
-		delete s_offers.buttonToOfferData[button]*/
+		delete s_offers.buttonToOfferData[button]
 }
 
 

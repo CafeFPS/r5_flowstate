@@ -82,6 +82,8 @@ global function CodeCallback_OnPlayerBeginWallhang
 global function CodeCallback_OnPlayerEndWallhang
 global function CodeCallback_OnClientConnectionCompleted 
 
+global function CodeCallback_OnWeaponAttack
+
 table<asset> IF_Settings = {
 	character_bangalore  = $"settings/player/mp/pilot_survival_firesupport.rpak", // character_bangalore_NAME
 	character_bloodhound = $"settings/player/mp/pilot_survival_tracker.rpak",     // character_bloodhound_NAME
@@ -103,9 +105,10 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
 	player.s.activeTrapArrayId <- 0
 
+	ShGRX_OnClientConnectionCompleted( player )
+
 	if( !DEV_ShouldIgnorePersistence() )
 	{
-		ShGRX_OnClientConnectionCompleted( player )
 		SvPersistentData_OnClientConnectionCompleted( player )
 		ShEHI_OnClientConnectionCompleted( player )
 	}
@@ -146,7 +149,6 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 		cb( player )
 }
 
-
 void function OnPlayerDeathCallback( entity player, var damageInfo )
 {
 	if( IsAlive( player ) )
@@ -158,7 +160,6 @@ void function OnPlayerDeathCallback( entity player, var damageInfo )
 		return
 	}
 
-
 	// TODO: deathboxes
 	int team = player.GetTeam()
 	int aliveTeamPlayers = GetPlayerArrayOfTeam_Alive( team ).len()
@@ -167,16 +168,10 @@ void function OnPlayerDeathCallback( entity player, var damageInfo )
 	{
 		// team is dead, create deathbox with no card
 		SURVIVAL_CreateDeathBox( player, true )
-
 	}
 	else {
 		// team is not dead, create deathbox with card
-
-
 	}
-
-
-
 }
 
 void function RespawnOnDie(entity player, var damageInfo) 
@@ -414,6 +409,12 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 	AddFlinch( ent, damageInfo )
 
 	UpdateAttackerInfo( ent, DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
+}
+
+void function CodeCallback_OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector origin, vector dir )
+{
+	foreach ( callbackFunc in svGlobal.onWeaponAttackCallbacks )
+		callbackFunc( player, weapon, weaponName, ammoUsed, origin, dir )
 }
 
 bool function TrySpectreVirus( entity victim, var damageInfo )

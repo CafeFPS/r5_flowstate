@@ -178,7 +178,7 @@ global struct GRXScriptOffer
 	string               seasonTag      = ""
 	string               tooltipTitle   = ""
 	string               tooltipDesc    = ""
-	string               originalPrice  = ""
+	ItemFlavorBag ornull originalPrice = null
 	int                  expireTime     = 0
 
 	bool                 isAvailable    = true
@@ -2488,16 +2488,16 @@ void function HandleGRXOffersRefreshed( int offersState, array< GRXCraftingOffer
 
 		scriptOffer.tagText = ("tag" in codeOffer.attrs ? codeOffer.attrs.tag : "")
 		scriptOffer.seasonTag = ("seasontag" in codeOffer.attrs ? codeOffer.attrs.seasontag : "")
-		scriptOffer.originalPrice = ""
+		scriptOffer.originalPrice = null
 		if ( "originalprice" in codeOffer.attrs )
 		{
 			Assert( scriptOffer.prices.len() == 1, "NYI!" )
 			Assert( scriptOffer.prices[0].flavors.len() == 1, "NYI!" )
 			ItemFlavor singleCurrencyFlav = scriptOffer.prices[0].flavors[0]
 
-			scriptOffer.originalPrice = ""//MakeItemFlavorBag( {
-				//[singleCurrencyFlav] = int(codeOffer.attrs.originalprice),
-			//} )
+			scriptOffer.originalPrice = MakeItemFlavorBag( {
+				[singleCurrencyFlav] = int(codeOffer.attrs.originalprice),
+			} )
 		}
 		scriptOffer.tooltipDesc = ("tooltiptitle" in codeOffer.attrs ? codeOffer.attrs.tooltiptitle : "")
 		scriptOffer.tooltipTitle = ("tooltipdesc" in codeOffer.attrs ? codeOffer.attrs.tooltipdesc : "")
