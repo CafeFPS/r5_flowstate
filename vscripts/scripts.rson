@@ -863,8 +863,21 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
-	gamemodes/sh_custom_tdm.nut
+	gamemodes/custom_tdm/sh_gamemode_custom_tdm.nut
 ]
+
+When: "SERVER"
+Scripts:
+[
+	gamemodes/custom_tdm/_gamemode_custom_tdm.nut
+]
+
+When: "CLIENT"
+Scripts:
+[
+	gamemodes/custom_tdm/cl_gamemode_custom_tdm.nut
+]
+
 
 // Freelance
 When: "SERVER"

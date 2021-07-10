@@ -417,6 +417,7 @@ global enum eGameState	// These must stay in order from beginning of a match til
 	WinnerDetermined,
 	Epilogue,
 	Postmatch,
+	MapVoting
 
 	_count_
 }

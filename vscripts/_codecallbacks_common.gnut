@@ -116,7 +116,6 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	AddDeathCallback( "player", OnPlayerDeathCallback )
 
-	SetGameState( eGameState.Playing )
 
 	foreach( cb in svGlobal.onClientConnectedCallbacks )
 		cb( player )
@@ -129,6 +128,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	if( !GetCurrentPlaylistVarBool( "custom_tdm", false ) )
 	{
+		SetGameState( eGameState.Playing )
   	thread InitRespawnPlayer(player)
 	}
 

@@ -213,7 +213,7 @@ void function GamemodeSurvivalShared_Init()
 
 	if( GetCurrentPlaylistVarBool( "custom_tdm", false ) )
 	{
-		CustomTDM_Init()
+		Sh_CustomTDM_Init()
 	}
 }
 #endif

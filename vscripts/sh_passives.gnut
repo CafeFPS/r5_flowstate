@@ -98,6 +98,7 @@ global const table<int, string> PASSIVE_NAME_MAP = {
 	[ePassives.PAS_GUARDIAN_ANGEL] = "#PAS_GUARDIAN_ANGEL",
 	[ePassives.PAS_FORTIFIED] = "#PAS_FORTIFIED",
 	[ePassives.PAS_LOWPROFILE] = "#PAS_LOW_PROFILE",
+	[ePassives.PAS_PILOT_BLOOD] = "#PAS_PILOT_BLOOD",
 
 }
 global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
@@ -108,6 +109,7 @@ global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
 	[ePassives.PAS_GUARDIAN_ANGEL] = "#PAS_GUARDIAN_ANGEL_DESC",
 	[ePassives.PAS_FORTIFIED] = "#PAS_FORTIFIED_DESC",
 	[ePassives.PAS_LOWPROFILE] = "#PAS_LOW_PROFILE_DESC",
+	[ePassives.PAS_PILOT_BLOOD] = "#PAS_PILOT_BLOOD_DESC",
 }
 #endif
 
@@ -283,7 +285,7 @@ void function ClientCodeCallback_OnPassiveChanged( entity player, int passiveIdx
 		return
 
 	bool nowHasPassive  = player.HasPassive( passiveIdx )
-	bool didHavePassive = !nowHasPassive //
+	bool didHavePassive = !nowHasPassive // todo(dw): it's a llliieee
 
 	foreach( callback in file.passiveChangedCallbackListMap[passiveIdx] )
 		callback( player, passiveIdx, didHavePassive, nowHasPassive )

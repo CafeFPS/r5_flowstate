@@ -191,7 +191,6 @@ void function RemoteFunctions_Init_Begin()
 			RegisterNetworkedVariable( "championSquad2EEH", SNDC_GLOBAL, SNVT_BIG_INT, EncodedEHandle_null )
 
 			RegisterNetworkedVariable( "ultimateCredits", SNDC_PLAYER_GLOBAL, SNVT_UNSIGNED_INT, 0 )
-			RegisterServerVar( "TDMRoundInProgress", false )
 			Remote_RegisterClientFunction( "ServerCallback_Mirage_DecoysDeployed", "bool" )
 			Remote_RegisterClientFunction( "ServerCallback_MatchEndAnnouncement", "bool", "int", INT_MIN, INT_MAX )
 
