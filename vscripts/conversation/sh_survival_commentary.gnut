@@ -440,7 +440,10 @@ int function ConvertBucketStringToEnum( string bucketName )
 		case "BEGIN_ROUND_FINAL":
 			return eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
 
-
+	if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )
+	{
+		switch( bucketName )
+		{
 		case "VICTORY_LEGEND_SOLO":
 			return eSurvivalCommentaryBucket.VICTORY_LEGEND_SOLO
 
@@ -506,7 +509,8 @@ int function ConvertBucketStringToEnum( string bucketName )
 
 		case "SHADOW_REVENGE_KILL":
 			return eSurvivalCommentaryBucket.SHADOW_REVENGE_KILL
-
+	}
+}
 		default:
 			Warning( "Bucket not registered" )
 			return -1
