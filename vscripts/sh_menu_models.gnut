@@ -2845,7 +2845,7 @@ void function ApplyLightingConfigThread( string name )
 	}
 }
 
-#if(true)
+
 void function SpawnShadowEyeEffects()
 {
 	foreach ( ent in GetEntArrayByScriptName( "lobby_background_character" ) )
@@ -2873,9 +2873,9 @@ void function SpawnShadowEyeEffects()
 		}
 	}
 }
-#endif //
 
-#if(DEV)
+
+#if R5DEV
 void function DrawLightDebug( vector origin, vector angles, vector color, float dist )
 {
 	vector endOrigin = origin + AnglesToForward( angles ) * dist
@@ -2886,7 +2886,7 @@ void function DrawLightDebug( vector origin, vector angles, vector color, float 
 #endif //
 
 
-#if(UI)
+#if UI
 void function OnMouseWheelDown( var unused )
 {
 	foreach ( void functionref() cb in file.mouseWheelDownCallbacks )
