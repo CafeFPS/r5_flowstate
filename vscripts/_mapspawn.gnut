@@ -305,13 +305,20 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 	SV_CL_Shared_Init()
 
+	#if R5DEV
+	// this is really bad to have enabled on non-dev servers
 	AddClientCommandCallback( "script", ClientCommand_script )
+	#endif
 }
 
+#if R5DEV
 bool function ClientCommand_script( entity player, array<string> args )
 {
 	if( !IsValid( player ) )
 		return true
+	
+	if( GetConVarInt( "sv_cheats" ) != 1 )
+		return
 
 	string func = ""
 
@@ -334,6 +341,7 @@ bool function ClientCommand_script( entity player, array<string> args )
 	}
 	return true
 }
+#endif
 
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )

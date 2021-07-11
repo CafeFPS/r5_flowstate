@@ -46,9 +46,9 @@ void function SV_CL_Init()
 	╚═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝
 	*/
 
-#if SERVER
-	SvDemo_ConsistencyCheckString( "SV_CL_Init()" )
-#endif
+	#if SERVER
+	  SvDemo_ConsistencyCheckString( "SV_CL_Init()" )
+	#endif
 
 	ShEHI_LevelInit_Begin()
 	Utility_Shared_Init()
@@ -87,10 +87,12 @@ void function SV_CL_Init()
 	ClientSidePickups_Init()
 	GrappleWeaponInit()
 	ShInfoCords_Init()
+
 	#if R5DEV
 		ShDevUtility_Init()
 		CaptureMode_Shared_Init()
 	#endif
+
 	ShDevWeapons_Init()
 
 	ShPakRequests_LevelInit()
@@ -169,25 +171,22 @@ void function SV_CL_Init()
 
 	//ShHoverBike_Init()
 	ShLootBin_Init()
-	#if(true)
-		ShFlyers_Init()
-	#endif
 
-	#if(true)
-		ShGameModeShadowSquad_Init()
-	#endif
+	ShFlyers_Init()
+
+	ShGameModeShadowSquad_Init()
 
 
 	ShTutorial_Init()
 	Sh_PassiveVoices_Init()
 	#if(false)
 
-#endif
+	#endif
 	#if(false)
 
-#endif
+	#endif
 
-	#if(CLIENT)
+	#if CLIENT
 		Cl_DeathScreen_Init() //
 	#endif
 

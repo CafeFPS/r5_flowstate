@@ -35,9 +35,9 @@ struct LootVaultPanelData
 	int panelState = ePanelState.LOCKED
 
 	array<entity> vaultDoors
-	#if(false)
+	#if SERVER
 
-#endif //
+	#endif // SERVER
 
 	entity minimapObj
 	entity openMinimapObj
@@ -55,17 +55,18 @@ struct
 
 void function Sh_Loot_Vault_Panel_Init()
 {
-	#if(false)
+	#if SERVER
+	AddSpawnCallback( "prop_dynamic", VaultPanelSpawned )
+	AddSpawnCallback( "prop_door", VaultDoorSpawned)
 
 
 
+	#endif // SERVER
 
-#endif //
-
-	#if(CLIENT)
+	#if CLIENT
 	AddCreateCallback( "prop_dynamic", VaultPanelSpawned )
 	AddCreateCallback( "prop_door", VaultDoorSpawned )
-	#endif //
+	#endif // CLIENT
 
 	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocking( VaultPanelUnlocking )
 	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocked( VaultPanelUnlocked )
@@ -80,10 +81,10 @@ void function VaultPanelSpawned( entity panel )
 	LootVaultPanelData newPanel
 	newPanel.panel = panel
 
-	#if(false)
+	#if SERVER
 
 
-#endif //
+#endif // SERVER
 
 	file.vaultControlPanels.append( newPanel )
 
@@ -95,16 +96,15 @@ void function VaultDoorSpawned( entity door )
 	if ( !IsValidLootVaultDoorEnt( door ) )
 		return
 
-	#if(false)
+	#if SERVER
+
+	door.SetSkin( 1 )
 
 
 
 
 
-
-
-
-#endif //
+	#endif // SERVER
 
 	door.kv.IsVaultDoor = true
 
@@ -224,7 +224,7 @@ void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlag
 	settings.successSound = LOOT_VAULT_AUDIO_ACCESS
 	settings.successFunc = VaultPanelUseSuccess
 
-	#if(CLIENT)
+	#if CLIENT
 	settings.loopSound = LOOT_VAULT_AUDIO_STATUSBAR
 	settings.displayRuiFunc = DisplayRuiForLootVaultPanel
 	settings.displayRui = $"ui/health_use_progress.rpak"
@@ -232,13 +232,13 @@ void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlag
 	settings.hint = "#HINT_VAULT_UNLOCKING"
 
 	//
-	#endif //
+	#endif // CLIENT
 
-	#if(false)
+	#if SERVER
 
 
 
-#endif //
+	#endif // SERVER
 
 	thread ExtendedUse( panel, playerUser, settings )
 }
@@ -249,7 +249,7 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 
 	printf( "LootVaultPanelDebug: Panel Use Success" )
 
-	#if(false)
+	#if SERVER
 
 
 
@@ -259,7 +259,7 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 //
 
 
-#endif
+	#endif
 
 	if ( panelData.panelState != ePanelState.UNLOCKING )
 		SetVaultPanelState( panel, ePanelState.UNLOCKING )
@@ -274,9 +274,9 @@ void function VaultPanelUnlocking( LootVaultPanelData panelData, int panelState 
 
 	SetVaultPanelUnusable( panelData.panel )
 
-	#if(false)
+	#if SERVER
 
-#endif //
+	#endif // SERVER
 
 	thread HideVaultPanel( panelData )
 }
@@ -290,7 +290,7 @@ void function VaultPanelUnlocked( LootVaultPanelData panelData, int panelState )
 
 	printf( "LootVaultPanelDebug: Panel State: Unlocked" )
 
-	#if(false)
+	#if SERVER
 
 
 
@@ -307,10 +307,10 @@ void function VaultPanelUnlocked( LootVaultPanelData panelData, int panelState )
 
 
 
-#endif //
+	#endif // SERVER
 }
 
-#if(false)
+#if SERVER
 
 
 
@@ -348,22 +348,22 @@ void function VaultPanelUnlocked( LootVaultPanelData panelData, int panelState )
 
 
 
-#endif //
+#endif // SERVER
 
 void function HideVaultPanel( LootVaultPanelData panelData )
 {
 	entity panel = panelData.panel
 
-	#if(false)
+	#if SERVER
 
-#endif //
+	#endif // SERVER
 
 	wait 2.0
 
 	SetVaultPanelState( panelData.panel, ePanelState.UNLOCKED )
 }
 
-#if(CLIENT)
+#if CLIENT
 string function VaultPanel_TextOverride( entity panel )
 {
 	entity player = GetLocalViewPlayer()
@@ -404,7 +404,7 @@ void function DisplayRuiForLootVaultPanel_Internal( var rui, asset icon, float s
 	RuiSetString( rui, "hintKeyboardMouse", hint )
 	RuiSetString( rui, "hintController", hint )
 }
-#endif //
+#endif // CLIENT
 
 LootVaultPanelData function GetVaultPanelDataFromEntity( entity panel )
 {
@@ -441,27 +441,27 @@ bool function IsValidLootVaultDoorEnt( entity ent )
 
 void function SetVaultPanelUsable( entity panel )
 {
-#if(false)
-
+	#if SERVER
+	AddCallback_OnUseEntity( panel, OnVaultPanelUse )
 
 //
 
 
-#endif //
+	#endif // SERVER
 
 	SetCallback_CanUseEntityCallback( panel, LootVaultPanel_CanUseFunction )
 
-#if(CLIENT)
+	#if CLIENT
 	AddEntityCallback_GetUseEntOverrideText( panel, VaultPanel_TextOverride )
 	AddCallback_OnUseEntity( panel, OnVaultPanelUse )
-#endif //
+	#endif // CLIENT
 }
 
 void function SetVaultPanelUnusable( entity panel )
 {
-	#if(false)
-
-#endif //
+	#if SERVER
+	SetVaultPanelState( panel, ePanelState.LOCKED )
+	#endif // SERVER
 }
 
 void function SetVaultPanelMinimapObj( entity panel, entity minimapObj )
@@ -502,7 +502,7 @@ entity function GetBestVaultPanelMinimapObj( entity panel )
 	return panelData.minimapObj
 }
 
-#if(false)
+#if SERVER
 
 
 
@@ -545,15 +545,15 @@ entity function GetVaultPanelFromDoor( entity door )
 		if ( !IsValid( panelData.panel ) )
 			return null
 
-		#if(false)
+		#if SERVER
 
 
 
 
 
-#endif
+		#endif
 
-		#if(CLIENT)
+		#if CLIENT
 		vector panelPos = panelData.panel.GetOrigin()
 		vector doorPos = door.GetOrigin()
 

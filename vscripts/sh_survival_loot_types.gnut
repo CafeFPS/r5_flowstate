@@ -113,12 +113,13 @@ void function SURVIVAL_LootTypes_InitShared()
 	lt.groundAltActionFunc = GroundAltAction_None
 	#if SERVER
 		lt.specialCaseSpawnFunction = SpawnNothing
-		lt = RegisterLootType( eLootType.DATAKNIFE )
-		lt.equipmentSlot = ""
-		lt.groundActionFunc = GroundAction_ForBackpackItem
-		lt.groundUseLongActionFunc = GroundLongAction_ForBackpackItem
-		lt.groundAltActionFunc = GroundAltAction_None
 	#endif
+
+	lt = RegisterLootType( eLootType.DATAKNIFE )
+	lt.equipmentSlot = ""
+	lt.groundActionFunc = GroundAction_ForBackpackItem
+	lt.groundUseLongActionFunc = GroundLongAction_ForBackpackItem
+	lt.groundAltActionFunc = GroundAltAction_None
 
 	lt = RegisterLootType( eLootType.CUSTOMPICKUP )
 	lt.equipmentSlot = ""

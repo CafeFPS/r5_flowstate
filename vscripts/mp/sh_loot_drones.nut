@@ -125,6 +125,10 @@ void function ShLootDrones_Init()
 	PrecacheParticleSystem( LOOT_DRONE_FX_EXPLOSION )
 	PrecacheParticleSystem( LOOT_DRONE_FX_FALL_EXPLOSION )
 	PrecacheParticleSystem( LOOT_DRONE_FX_TRAIL_FALL )
+
+	#if SERVER
+	AddSpawnCallback( "prop_dynamic", LootDroneSpawned )
+	#endif
 	#if CLIENT
 	AddCreateCallback( "prop_dynamic", LootDroneSpawned )
 	#endif
