@@ -266,6 +266,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_vinson" )
 	PrecacheWeapon( $"mp_weapon_pdw" )
 	PrecacheWeapon( $"mp_ability_phase_walk" )
+	PrecacheWeapon( $"mp_ability_3dash" )
 	PrecacheWeapon( $"mp_weapon_phase_tunnel" )
 	PrecacheWeapon( $"mp_weapon_zipline" )
 	PrecacheWeapon( $"mp_ability_area_sonar_scan" )

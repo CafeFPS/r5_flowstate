@@ -160,18 +160,18 @@ void function OnPlayerDeathCallback( entity player, var damageInfo )
 		return
 	}
 
-	// TODO: deathboxes
-	int team = player.GetTeam()
-	int aliveTeamPlayers = GetPlayerArrayOfTeam_Alive( team ).len()
+	// // TODO: deathboxes
+	// int team = player.GetTeam()
+	// int aliveTeamPlayers = GetPlayerArrayOfTeam_Alive( team ).len()
 
-	if( aliveTeamPlayers == 0 )
-	{
-		// team is dead, create deathbox with no card
-		SURVIVAL_CreateDeathBox( player, true )
-	}
-	else {
-		// team is not dead, create deathbox with card
-	}
+	// if( aliveTeamPlayers == 0 )
+	// {
+	// 	// team is dead, create deathbox with no card
+	// 	SURVIVAL_CreateDeathBox( player, true )
+	// }
+	// else {
+	// 	// team is not dead, create deathbox with card
+	// }
 }
 
 void function RespawnOnDie(entity player, var damageInfo) 
