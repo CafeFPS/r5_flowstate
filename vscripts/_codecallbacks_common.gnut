@@ -156,25 +156,14 @@ void function OnPlayerDeathCallback( entity player, var damageInfo )
 	
 	if( GetCurrentPlaylistVarBool( "should_respawn_on_death", true ) )
 	{
-		thread InitRespawnPlayer( player )
+		thread RespawnOnDeath( player )
 		return
 	}
 
-	// // TODO: deathboxes
-	// int team = player.GetTeam()
-	// int aliveTeamPlayers = GetPlayerArrayOfTeam_Alive( team ).len()
-
-	// if( aliveTeamPlayers == 0 )
-	// {
-	// 	// team is dead, create deathbox with no card
-	// 	SURVIVAL_CreateDeathBox( player, true )
-	// }
-	// else {
-	// 	// team is not dead, create deathbox with card
-	// }
+	// TODO: deathboxes
 }
 
-void function RespawnOnDie(entity player, var damageInfo) 
+void function RespawnOnDeath( entity player ) 
 {
 	if( IsAlive( player ) )
 		return
@@ -245,12 +234,12 @@ void function InitRespawnPlayer(entity player)
 	// settings/player/mp/pilot_survival_crypto.rpak		Crypto
 
 	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_tracker.rpak", [] )	
-	asset thirdperson = $"mdl/Weapons/arms/pov_pilot_light_wattson.rmdl"
-	asset firstperson = $"mdl/Weapons/arms/pov_pilot_medium_holo_legendary_02.rmdl"
+
 	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ))
 
-	if( !IsLobby() )
 	//player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
+
+	if( !IsLobby() )
 	{
 		// todo: just reset the inventory before respawning
 		try {

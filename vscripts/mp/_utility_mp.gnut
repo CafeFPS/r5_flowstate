@@ -2,6 +2,7 @@
 
 global function Utility_MP_Init
 global function ClientCommand_OnDevnetBugScreenshot
+global function SetPlayerSettings
 
 void function Utility_MP_Init()
 {
@@ -11,4 +12,12 @@ void function Utility_MP_Init()
 bool function ClientCommand_OnDevnetBugScreenshot( entity player, array<string> args )
 {
 	return true
+}
+
+void function SetPlayerSettings( entity player, table settings )
+{
+  foreach(k, v in settings)
+  {
+    player.kv[k] = v
+  }
 }
