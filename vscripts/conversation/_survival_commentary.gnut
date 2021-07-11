@@ -67,17 +67,45 @@ void function AddSurvivalCommentaryEvent ( int event )
 	printt( FUNC_NAME(), "eSurvivalEventType:", enumString, event )
 	#endif
 
-	switch( event )
-	{
-		case eSurvivalEventType.CIRCLE_MOVING:
-			thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_aiNotify_circleMoving", 2))
-			break
-		case eSurvivalEventType.ROUND_TIMER_STARTED:
-			thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartRound" + SURVIVAL_GetCurrentRoundString() )
-			break
-			
+
+	if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )
+	{	
+		switch( event )
+		{
+			case eSurvivalEventType.CIRCLE_MOVING:
+			//GetAnyDialogueAliasFromName( PickCommentaryLineFromBucket( eSurvivalCommentaryBucket.CIRCLE_MOVING ) )
+				thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_nocNotify_circleMoving_01_01_3p", 2))
+				break
+			case eSurvivalEventType.ROUND_TIMER_STARTED:
+				thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_circleTimerStartRound" + SURVIVAL_GetCurrentRoundString() + "_01_01_3p" )
+				break
+			case eSurvivalEventType.FIRST_BLOOD:
+				thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_diedFirst_01_01_3p" )
+				break
+
+		}
 	}
+
+	else
+	{
+		switch( event )
+		{
+			case eSurvivalEventType.CIRCLE_MOVING:
+				thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_aiNotify_circleMoving", 2))
+				break
+			case eSurvivalEventType.ROUND_TIMER_STARTED:
+				thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartRound" + SURVIVAL_GetCurrentRoundString() )
+				break
+			case eSurvivalEventType.CIRCLE_MOVES_10SEC:
+				thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_aiNotify_circleMoves10sec", 2))
+				break
+
+		}
+	}
+
+
 }
+
 
 string function SurvivalCommentary_GetAlternativeSound( string sound, int max, int min = 0 )
 {
