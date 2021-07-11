@@ -1,23 +1,29 @@
 
 global function StimShared_Init
 global function StimPlayer
-global function EndlessStimBegin
-global function EndlessStimEnd
+//global function EndlessStimBegin
+//global function EndlessStimEnd
+global function StimPlayerWithOffhandWeapon
 
 
 global int COCKPIT_STIM_FX
 global int PILOT_STIM_HEAD_FX
 global int PILOT_STIM_BODY_FX
 
+const float STIM_EFFECT_DEFAULT_SEVERITY = 0.15	//
 global const float STIM_EFFECT_SEVERITY = 0.15	//
 global const float STIM_MAX_PASSIVE_STACKS = 10
 global const float STIM_PASSIVE_SEVERITY = 0.03
 
+
+int s_cockpitFx
+int s_headFx
+int s_bodyFx
 void function StimShared_Init()
 {
-	COCKPIT_STIM_FX = PrecacheParticleSystem( $"P_pilot_stim_hld_FP" )
-	PILOT_STIM_HEAD_FX = PrecacheParticleSystem( $"P_stim_3p_head" )
-	PILOT_STIM_BODY_FX = PrecacheParticleSystem( $"P_stim_3p_body" )
+	s_cockpitFx = PrecacheParticleSystem( $"P_pilot_stim_hld_FP" )
+	s_headFx = PrecacheParticleSystem( $"P_stim_3p_head" )
+	s_bodyFx = PrecacheParticleSystem( $"P_stim_3p_body" )
 
 	#if CLIENT
 	StatusEffect_RegisterEnabledCallback( eStatusEffect.stim_visual_effect, StimVisualsEnabled )
@@ -28,34 +34,29 @@ void function StimShared_Init()
 	RegisterSignal( "StopEndlessStim" )
 }
 
-void function EndlessStimBegin( entity player, float effectSeverity )
+void function StimPlayer( entity player, float duration )
 {
-	StimPlayer_Internal( player, USE_TIME_INFINITE, effectSeverity )
+	StimPlayer_Internal( player, duration, STIM_EFFECT_DEFAULT_SEVERITY, null )
 }
 
-void function EndlessStimEnd( entity player )
+void function StimPlayerWithOffhandWeapon( entity player, float duration, entity offhandWeapon )
 {
-	player.Signal( "StopEndlessStim" )
+	StimPlayer_Internal( player, duration, STIM_EFFECT_DEFAULT_SEVERITY, offhandWeapon )
 }
 
-void function StimPlayer( entity player, float duration, float effectSeverity = STIM_EFFECT_SEVERITY )
-{
-	StimPlayer_Internal( player, duration, effectSeverity )
-}
-
-void function StimPlayer_Internal( entity player, float duration, float effectSeverity )
+void function StimPlayer_Internal( entity player, float duration, float effectSeverity, entity offhandWeapon )
 {
 	int endlessStatusEffectHandle = 0
 	if ( duration == USE_TIME_INFINITE )
 	{
-		endlessStatusEffectHandle = StatusEffect_AddEndless( player, eStatusEffect.speed_boost, STIM_EFFECT_SEVERITY )
+		endlessStatusEffectHandle = StatusEffect_AddEndless( player, eStatusEffect.speed_boost, effectSeverity )
 	}
 	else
 	{
 		float stimSpeed = StatusEffect_GetSeverity( player, eStatusEffect.speed_boost )
 		//
 		if ( StatusEffect_GetSeverity( player, eStatusEffect.stim_visual_effect ) == 0.0 )
-			stimSpeed += STIM_EFFECT_SEVERITY
+			stimSpeed += effectSeverity
 
 		StatusEffect_AddTimed( player, eStatusEffect.anti_slow, 0.5, duration + 0.5, 0.5 ) //
 		StatusEffect_AddTimed( player, eStatusEffect.speed_boost, stimSpeed, duration + 0.5, 0.5 ) //
@@ -178,7 +179,7 @@ void function StimVisualsEnabled( entity ent, int statusEffect, bool actuallyCha
 
 	Chroma_StartStimEffect()
 
-	int fxHandle = StartParticleEffectOnEntity( cockpit, COCKPIT_STIM_FX, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+	int fxHandle = StartParticleEffectOnEntity( cockpit, s_cockpitFx, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 	thread StimScreenFXThink( player, fxHandle, cockpit )
 }
 
