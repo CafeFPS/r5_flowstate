@@ -309,6 +309,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	// this is really bad to have enabled on non-dev servers
 	AddClientCommandCallback( "script", ClientCommand_script )
 	#endif
+
+	AddClientCommandCallback( "noclip", ClientCommand_noclip )
 }
 
 #if R5DEV
@@ -342,6 +344,19 @@ bool function ClientCommand_script( entity player, array<string> args )
 	return true
 }
 #endif
+
+bool function ClientCommand_noclip( entity player, array<string> args )
+{
+    if ( GetConVarInt( "sv_cheats" ) != 1 )
+        return true
+
+    if ( player.IsNoclipping() )
+        player.SetPhysics( MOVETYPE_WALK )
+    else
+        player.SetPhysics( MOVETYPE_NOCLIP )
+        
+    return true
+}
 
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
