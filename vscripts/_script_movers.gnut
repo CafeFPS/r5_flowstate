@@ -8,6 +8,7 @@ global function ScriptedRotatorRotate
 global function CodeCallback_PreBuildAINFile
 global function CreateDoorMoverModel
 global function GetLinkedEntsByClassName
+global function MoverThink
 
 const FX_BARREL_EXPLOSION 						= $"P_spectre_suicide"
 const FX_GENERATOR_EXPLOSION 					= $"xo_exp_death"
@@ -816,204 +817,209 @@ void function MoverInit( entity mover )
 	thread MoverThink( mover )
 }
 
-void function MoverThink( entity mover )
+void function MoverThink( entity mover, array<entity> nodes = [] )
 {
-	// EndSignal( mover, "OnDestroy" )
+	EndSignal( mover, "OnDestroy" )
 
-	// if ( mover.GetModelName() == $"models/dev/editor_ref.mdl" )
-	// 	mover.Hide()
+	if ( mover.GetModelName() == $"models/dev/editor_ref.mdl" )
+		mover.Hide()
 
-	// array<entity> pathNodes = GetNextMoverPathNodes( mover )
+	array<entity> pathNodes
 
-	// // Go down the path gathering the nodes and init any flags
-	// foreach( entity node in pathNodes )
-	// 	InitMoverNodeFlagsAndErrorCheck( node )
+	if( nodes.len() != 0 )
+    pathNodes = nodes
+	else
+	 	pathNodes = GetNextMoverPathNodes( mover )
 
-	// Assert( mover.HasKey( "path_speed") && float( mover.kv.path_speed ) >= 0.0, "script_mover doesnt have a valid path speed" )
-	// float pathSpeed = float( mover.kv.path_speed )
-	// bool easeIn
-	// bool easeOut
+	// Go down the path gathering the nodes and init any flags
+	foreach( entity node in pathNodes )
+		InitMoverNodeFlagsAndErrorCheck( node )
 
-	// string startFlag = ""
-	// if ( mover.HasKey( "script_flag" ) && mover.kv.script_flag != "" )
-	// {
-	// 	startFlag = mover.GetValueForKey( "script_flag" )
-	// 	FlagInit( startFlag )
-	// }
+	Assert( mover.HasKey( "path_speed") && float( mover.kv.path_speed ) >= 0.0, "script_mover doesnt have a valid path speed" )
+	float pathSpeed = float( mover.kv.path_speed )
+	bool easeIn
+	bool easeOut
 
-	// if ( mover.HasKey( "dangerous_area_radius" ) )
-	// 	mover.AllowNPCGroundEnt( false )
+	string startFlag = ""
+	if ( mover.HasKey( "script_flag" ) && mover.kv.script_flag != "" )
+	{
+		startFlag = mover.GetValueForKey( "script_flag" )
+		FlagInit( startFlag )
+	}
 
-	// if ( pathNodes.len() == 0 )
-	// 	return
+	if ( mover.HasKey( "dangerous_area_radius" ) )
+		mover.AllowNPCGroundEnt( false )
 
-	// if ( startFlag != "" )
-	// 	FlagWait( startFlag )
+	if ( pathNodes.len() == 0 )
+		return
 
-	// if ( mover.HasKey( "start_delay" ) && float( mover.kv.start_delay ) > 0.0 )
-	// 	wait float( mover.kv.start_delay )
+	if ( startFlag != "" )
+		FlagWait( startFlag )
 
-	// entity pathNode = pathNodes.getrandom()
-	// entity lastNode
+	if ( mover.HasKey( "start_delay" ) && float( mover.kv.start_delay ) > 0.0 )
+		wait float( mover.kv.start_delay )
 
-	// easeOut = pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
+	entity pathNode = pathNodes.getrandom()
+	entity lastNode
 
-	// bool isMoving = false
+	easeOut = pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
 
-	// while( IsValid( pathNode ) )
-	// {
-	// 	bool teleport = false
-	// 	if ( pathNode.HasKey( "teleport_to_node" ) )
-	// 		teleport = pathNode.GetValueForKey( "teleport_to_node" ) == "1"
+	bool isMoving = false
 
-	// 	bool perfectRotation = false
-	// 	if ( IsValid( lastNode ) && lastNode.HasKey( "perfect_circular_rotation" ) )
-	// 		perfectRotation = lastNode.GetValueForKey( "perfect_circular_rotation" ) == "1"
+	while( IsValid( pathNode ) )
+	{
+		bool teleport = false
+		if ( pathNode.HasKey( "teleport_to_node" ) )
+			teleport = pathNode.GetValueForKey( "teleport_to_node" ) == "1"
 
-	// 	float rotationTime = 0.0
-	// 	if ( IsValid( lastNode ) && lastNode.HasKey( "circular_rotation_time" ) )
-	// 		rotationTime = float( lastNode.GetValueForKey( "circular_rotation_time" ) )
+		bool perfectRotation = false
+		if ( IsValid( lastNode ) && lastNode.HasKey( "perfect_circular_rotation" ) )
+			perfectRotation = lastNode.GetValueForKey( "perfect_circular_rotation" ) == "1"
 
-	// 	float dist = Distance( pathNode.GetOrigin(), mover.GetOrigin() )
+		float rotationTime = 0.0
+		if ( IsValid( lastNode ) && lastNode.HasKey( "circular_rotation_time" ) )
+			rotationTime = float( lastNode.GetValueForKey( "circular_rotation_time" ) )
 
-	// 	if ( !isMoving )
-	// 		MoverPath_StartSound( mover, pathNode )
+		float dist = Distance( pathNode.GetOrigin(), mover.GetOrigin() )
 
-	// 	if ( dist > 0.0 && !teleport )
-	// 	{
-	// 		easeIn = pathNode.HasKey( "ease_to_node" ) && pathNode.GetValueForKey( "ease_to_node" ) == "1"
-	// 		float moveTime = dist / pathSpeed
-	// 		float easeLeaving = easeOut ? moveTime * 0.5 : 0.0
-	// 		float easeArriving = easeIn ? moveTime * 0.5 : 0.0
-	// 		float angleChange = IsValid( lastNode ) ? MoverPath_GetAngleChange( lastNode, pathNode ) : 0.0
+		if ( !isMoving )
+			MoverPath_StartSound( mover, pathNode )
 
-	// 		if ( perfectRotation && angleChange != 0 )
-	// 		{
-	// 			string rotationSoundEvent = ""
-	// 			if ( mover.HasKey( "sound_circular_rotation" ) )
-	// 				rotationSoundEvent = mover.GetValueForKey( "sound_circular_rotation" )
-	// 			if ( rotationSoundEvent != "" )
-	// 				EmitSoundOnEntity( mover, rotationSoundEvent )
+		if ( dist > 0.0 && !teleport )
+		{
+			easeIn = pathNode.HasKey( "ease_to_node" ) && pathNode.GetValueForKey( "ease_to_node" ) == "1"
+			float moveTime = dist / pathSpeed
+			float easeLeaving = easeOut ? moveTime * 0.5 : 0.0
+			float easeArriving = easeIn ? moveTime * 0.5 : 0.0
+			float angleChange = IsValid( lastNode ) ? MoverPath_GetAngleChange( lastNode, pathNode ) : 0.0
 
-	// 			vector turnAnchorPos = MoverPath_GetAngleAnchor( lastNode, pathNode )
+			if ( perfectRotation && angleChange != 0 )
+			{
+				string rotationSoundEvent = ""
+				if ( mover.HasKey( "sound_circular_rotation" ) )
+					rotationSoundEvent = mover.GetValueForKey( "sound_circular_rotation" )
+				if ( rotationSoundEvent != "" )
+					EmitSoundOnEntity( mover, rotationSoundEvent )
 
-	// 			// Create a new mover because as far as I know I can't get all the children of the mover and clearparent and reparent.
-	// 			entity curveMover = CreateScriptMover( turnAnchorPos, lastNode.GetAngles() )
-	// 			curveMover.SetPusher( mover.GetPusher() )
-	// 			mover.SetParent( curveMover, "", true )
+				vector turnAnchorPos = MoverPath_GetAngleAnchor( lastNode, pathNode )
 
-	// 			// Find the circumference of the turn so we can calculate the rotation time based on the distance traveled around the bend
-	// 			float c = 2 * PI * Length(turnAnchorPos - lastNode.GetOrigin())
-	// 			float frac = fabs(angleChange) / 360.0
-	// 			moveTime = (c * frac) / pathSpeed
+				// Create a new mover because as far as I know I can't get all the children of the mover and clearparent and reparent.
+				entity curveMover = CreateScriptMover( turnAnchorPos, lastNode.GetAngles() )
+				curveMover.SetPusher( mover.GetPusher() )
+				mover.SetParent( curveMover, "", true )
 
-	// 			isMoving = true
-	// 			curveMover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, 0.0, 0.0 )
+				// Find the circumference of the turn so we can calculate the rotation time based on the distance traveled around the bend
+				float c = 2 * PI * Length(turnAnchorPos - lastNode.GetOrigin())
+				float frac = fabs(angleChange) / 360.0
+				moveTime = (c * frac) / pathSpeed
 
-	// 			wait moveTime - 0.01
+				isMoving = true
+				curveMover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, 0.0, 0.0 )
 
-	// 			mover.ClearParent()
-	// 			curveMover.Destroy()
+				wait moveTime - 0.01
 
-	// 			if ( rotationSoundEvent != "" )
-	// 				StopSoundOnEntity( mover, rotationSoundEvent )
-	// 		}
-	// 		else
-	// 		{
-	// 			// Linear move/rotate
-	// 			isMoving = true
-	// 			if ( mover.HasKey( "dangerous_area_radius" ) )
-	// 				thread CreateMoverDangrousAreas( mover, mover.GetOrigin(), pathNode.GetOrigin(), float( mover.GetValueForKey( "dangerous_area_radius" ) ), moveTime )
-	// 			mover.NonPhysicsMoveTo( pathNode.GetOrigin(), moveTime, easeLeaving, easeArriving )
-	// 			mover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, easeLeaving, easeArriving )
-	// 			wait moveTime - 0.01
-	// 		}
-	// 	}
-	// 	else if ( dist == 0.0 && !teleport && rotationTime > 0.0 )
-	// 	{
-	// 		// Rotation in place
-	// 		string rotationSoundEvent = ""
-	// 		if ( mover.HasKey( "sound_rotation" ) )
-	// 			rotationSoundEvent = mover.GetValueForKey( "sound_rotation" )
-	// 		if ( rotationSoundEvent != "" )
-	// 			EmitSoundOnEntity( mover, rotationSoundEvent )
+				mover.ClearParent()
+				curveMover.Destroy()
 
-	// 		isMoving = false
-	// 		MoverPath_StopMoveSound( mover )
-	// 		MoverPath_StopSound( mover, pathNode )
-	// 		float easeIn = easeOut ? rotationTime * 0.5 : 0.0
-	// 		float easeOut = easeIn ? rotationTime * 0.5 : 0.0
-	// 		mover.NonPhysicsRotateTo( pathNode.GetAngles(), rotationTime, easeIn, easeOut )
-	// 		wait rotationTime - 0.01
+				if ( rotationSoundEvent != "" )
+					StopSoundOnEntity( mover, rotationSoundEvent )
+			}
+			else
+			{
+				// Linear move/rotate
+				isMoving = true
+				if ( mover.HasKey( "dangerous_area_radius" ) )
+					thread CreateMoverDangrousAreas( mover, mover.GetOrigin(), pathNode.GetOrigin(), float( mover.GetValueForKey( "dangerous_area_radius" ) ), moveTime )
+				mover.NonPhysicsMoveTo( pathNode.GetOrigin(), moveTime, easeLeaving, easeArriving )
+				mover.NonPhysicsRotateTo( pathNode.GetAngles(), moveTime, easeLeaving, easeArriving )
+				wait moveTime - 0.01
+			}
+		}
+		else if ( dist == 0.0 && !teleport && rotationTime > 0.0 )
+		{
+			// Rotation in place
+			string rotationSoundEvent = ""
+			if ( mover.HasKey( "sound_rotation" ) )
+				rotationSoundEvent = mover.GetValueForKey( "sound_rotation" )
+			if ( rotationSoundEvent != "" )
+				EmitSoundOnEntity( mover, rotationSoundEvent )
 
-	// 		if ( rotationSoundEvent != "" )
-	// 			StopSoundOnEntity( mover, rotationSoundEvent )
-	// 	}
-	// 	else
-	// 	{
-	// 		mover.SetOrigin( pathNode.GetOrigin() )
-	// 		mover.SetAngles( pathNode.GetAngles() )
-	// 	}
+			isMoving = false
+			MoverPath_StopMoveSound( mover )
+			MoverPath_StopSound( mover, pathNode )
+			float easeInF = easeOut ? rotationTime * 0.5 : 0.0
+			float easeOutF = easeIn ? rotationTime * 0.5 : 0.0
+			mover.NonPhysicsRotateTo( pathNode.GetAngles(), rotationTime, easeInF, easeOutF )
+			wait rotationTime - 0.01
 
-	// 	easeOut = pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
+			if ( rotationSoundEvent != "" )
+				StopSoundOnEntity( mover, rotationSoundEvent )
+		}
+		else
+		{
+			mover.SetOrigin( pathNode.GetOrigin() )
+			mover.SetAngles( pathNode.GetAngles() )
+		}
 
-	// 	if ( pathNode.HasKey( "scr_flag_set" ) )
-	// 		FlagSet( pathNode.GetValueForKey( "scr_flag_set" ) )
+		easeOut = pathNode.HasKey( "ease_from_node" ) && pathNode.GetValueForKey( "ease_from_node" ) == "1"
 
-	// 	if ( pathNode.HasKey( "scr_flag_clear" ) )
-	// 		FlagClear( pathNode.GetValueForKey( "scr_flag_clear" ) )
+		if ( pathNode.HasKey( "scr_flag_set" ) )
+			FlagSet( pathNode.GetValueForKey( "scr_flag_set" ) )
 
-	// 	if ( pathNode.HasKey( "scr_flag_wait" ) )
-	// 	{
-	// 		string flag = pathNode.GetValueForKey( "scr_flag_wait" )
-	// 		if ( !Flag( flag ) )
-	// 		{
-	// 			isMoving = false
-	// 			MoverPath_StopMoveSound( mover )
-	// 			MoverPath_StopSound( mover, pathNode )
-	// 			FlagWait( flag )
-	// 		}
-	// 	}
+		if ( pathNode.HasKey( "scr_flag_clear" ) )
+			FlagClear( pathNode.GetValueForKey( "scr_flag_clear" ) )
 
-	// 	if ( pathNode.HasKey( "scr_flag_wait_clear" ) )
-	// 	{
-	// 		string flag = pathNode.GetValueForKey( "scr_flag_wait_clear" )
-	// 		if ( Flag( flag ) )
-	// 		{
-	// 			isMoving = false
-	// 			MoverPath_StopMoveSound( mover )
-	// 			MoverPath_StopSound( mover, pathNode )
-	// 			FlagWaitClear( flag )
-	// 		}
-	// 	}
+		if ( pathNode.HasKey( "scr_flag_wait" ) )
+		{
+			string flag = pathNode.GetValueForKey( "scr_flag_wait" )
+			if ( !Flag( flag ) )
+			{
+				isMoving = false
+				MoverPath_StopMoveSound( mover )
+				MoverPath_StopSound( mover, pathNode )
+				FlagWait( flag )
+			}
+		}
 
-	// 	if ( pathNode.HasKey( "path_wait" ) )
-	// 	{
-	// 		float time = float( pathNode.GetValueForKey( "path_wait" ) )
-	// 		if ( time > 0.0 )
-	// 		{
-	// 			isMoving = false
-	// 			MoverPath_StopMoveSound( mover )
-	// 			MoverPath_StopSound( mover, pathNode )
-	// 			wait time
-	// 		}
-	// 	}
+		if ( pathNode.HasKey( "scr_flag_wait_clear" ) )
+		{
+			string flag = pathNode.GetValueForKey( "scr_flag_wait_clear" )
+			if ( Flag( flag ) )
+			{
+				isMoving = false
+				MoverPath_StopMoveSound( mover )
+				MoverPath_StopSound( mover, pathNode )
+				FlagWaitClear( flag )
+			}
+		}
 
-	// 	pathNodes = GetNextMoverPathNodes( pathNode )
-	// 	if ( pathNodes.len() == 0 )
-	// 	{
-	// 		MoverPath_StopMoveSound( mover )
-	// 		MoverPath_StopSound( mover, pathNode )
-	// 		break
-	// 	}
+		if ( pathNode.HasKey( "path_wait" ) )
+		{
+			float time = float( pathNode.GetValueForKey( "path_wait" ) )
+			if ( time > 0.0 )
+			{
+				isMoving = false
+				MoverPath_StopMoveSound( mover )
+				MoverPath_StopSound( mover, pathNode )
+				wait time
+			}
+		}
 
-	// 	// Update speed based on the node
-	// 	if ( pathNode.HasKey( "path_speed" ) )
-	// 		pathSpeed = float( pathNode.GetValueForKey( "path_speed" ) )
+		pathNodes = GetNextMoverPathNodes( pathNode )
+		if ( pathNodes.len() == 0 )
+		{
+			MoverPath_StopMoveSound( mover )
+			MoverPath_StopSound( mover, pathNode )
+			break
+		}
 
-	// 	lastNode = pathNode
-	// 	pathNode = pathNodes.getrandom()
-	// }
+		// Update speed based on the node
+		if ( pathNode.HasKey( "path_speed" ) )
+			pathSpeed = float( pathNode.GetValueForKey( "path_speed" ) )
+
+		lastNode = pathNode
+		pathNode = pathNodes.getrandom()
+	}
 }
 
 void function CreateMoverDangrousAreas( entity mover, vector start, vector end, float radius, float duration )

@@ -53,6 +53,8 @@ void function Desertlands_MapInit_Common()
 {
 	printt( "Desertlands_MapInit_Common" )
 
+	FlagInit( "PlayConveyerStartFX", true )
+
 	SetVictorySequencePlatformModel( $"mdl/rocks/desertlands_victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
 	#if SERVER
@@ -203,7 +205,7 @@ void function ConveyorRotatorMoverThink( entity mover )
 		mover.SetOrigin( endNode.GetOrigin() )
 		mover.SetAngles( endNode.GetAngles() )
 
-		//thread MoverThink( mover, [ endNode ] )
+		thread MoverThink( mover, [ endNode ] )
 	}
 }
 
