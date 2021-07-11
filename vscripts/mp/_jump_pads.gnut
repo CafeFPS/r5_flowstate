@@ -25,14 +25,13 @@ const JUMP_PAD_DESTRUCTION = "jump_pad_destruction"
 
 void function JumpPad_Init()
 {
-    
+  AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_jumppad", JumpPad_CreatedCallback )
 }
 
-// idk if this should be in here
 void function JumpPad_CreatedCallback( entity jumpPad )
 {
 
-  vector origin = OriginToGround( jumpPad.GetOrigin() )
+  vector origin = jumpPad.GetOrigin() // should this allow weapon_jump_pad to be OriginToGround
 	vector angles = jumpPad.GetAngles()
 
   entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
@@ -41,7 +40,7 @@ void function JumpPad_CreatedCallback( entity jumpPad )
   thread JumpPad_PlayAnims( jumpPad, mover )
 
 	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
-	SetTargetName( trigger, "geyser_trigger" )
+	// SetTargetName( trigger, "geyser_trigger" )
 
 	trigger.SetOwner( jumpPad )
 	trigger.SetRadius( JUMP_PAD_PUSH_RADIUS )
@@ -49,49 +48,48 @@ void function JumpPad_CreatedCallback( entity jumpPad )
 	trigger.SetBelowHeight( 16 ) //need this because the player or jump pad can sink into the ground a tiny bit and we check player feet not half height
 	trigger.SetOrigin( origin )
 	trigger.SetAngles( angles )
-	// trigger.SetTriggerType( "TT_JUMP_PAD" )
+	trigger.SetTriggerType( TT_JUMP_PAD )
 	trigger.SetLaunchScaleValues( JUMP_PAD_PUSH_VELOCITY, 1.25 )
 	trigger.SetViewPunchValues( JUMP_PAD_VIEW_PUNCH_SOFT, JUMP_PAD_VIEW_PUNCH_HARD, JUMP_PAD_VIEW_PUNCH_RAND )
 	//trigger.SetLaunchDir( <0.0, 0.0, 1.0> )
-	//trigger.UsePointCollision()
+	trigger.UsePointCollision()
 	trigger.kv.triggerFilterNonCharacter = "0"
 	DispatchSpawn( trigger )
 	trigger.SetEnterCallback( OnJumpPadAreaEnter )
     
-    //Need to set parent so the jump trigger is destroyed with the pad entity
-    trigger.SetParent( jumpPad )
+  //Need to set parent so the jump trigger is destroyed with the pad entity
+  trigger.SetParent( jumpPad )
 
-	//entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_MILITIA, "GEYSER_PING_SCRIPT_NAME" ) // todo: replace geyser_ping_script_name --
-	//traceBlocker.SetBox( <-192, -192, -16>, <192, 192, 3000> )
+	// entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_MILITIA, "GEYSER_PING_SCRIPT_NAME" ) // todo: replace geyser_ping_script_name --
+	// traceBlocker.SetBox( <-192, -192, -16>, <192, 192, 3000> )
 
 	AddEntityCallback_OnDamaged( jumpPad, JumpPad_OnTakeDamage )
-    AddEntityCallback_OnKilled( jumpPad, JumpPad_OnDeath )
+  AddEntityCallback_OnKilled( jumpPad, JumpPad_OnDeath )
 }
 
 void function JumpPad_OnDeath( entity ent, var damageInfo )
 {
-    //todo: Explosion and sound 
-    EmitSoundOnEntity( ent, "JumpPad_Explo")
-    PlayImpactFXTable( ent.GetOrigin(), ent, "titan_exp_ground" )
+  //todo: Explosion and sound 
+  EmitSoundOnEntity( ent, "JumpPad_Explo")
+  PlayImpactFXTable( ent.GetOrigin(), ent, "titan_exp_ground" )
 }
 
 void function JumpPad_OnTakeDamage( entity ent, var damageInfo )
 {
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
-    printt("JumpPad_OnTakeDamage. HP", ent.GetHealth())
+  printt("JumpPad_OnTakeDamage. HP", ent.GetHealth())
 	if ( IsValid( attacker ) && attacker.IsPlayer() )
 	{
 		PlayerDamageFeedback( ent, damageInfo, 0 )
-        UpdateDamageState( ent, damageInfo )
+    UpdateDamageState( ent, damageInfo )
 	}
 }
 
 void function JumpPad_PlayAnims( entity jumpPad, entity mover )
 {
-    EmitSoundOnEntity( jumpPad, "JumpPad_Deploy_Unpack" )
-    PlayAnim( jumpPad, "prop_octane_jump_pad_deploy", mover )
-    PlayAnim( jumpPad, "prop_octane_jump_pad_deploy_idle", mover )
-    
+  EmitSoundOnEntity( jumpPad, "JumpPad_Deploy_Unpack" )
+  PlayAnim( jumpPad, "prop_octane_jump_pad_deploy", mover )
+  PlayAnim( jumpPad, "prop_octane_jump_pad_deploy_idle", mover )   
 }
 
 void function JumpPad_PlayLaunchAnim( entity trigger )

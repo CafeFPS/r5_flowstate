@@ -4452,9 +4452,10 @@ void function SwapToLastEquippedPrimary( entity player )
 	//stub
 }
 
-void function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b0, int contents, int team, string scriptname )
+entity function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b0, int contents, int team, string scriptname )
 {
-	//stub
+	entity traceBlocker
+	return traceBlocker
 }
 
 void function SetOutOfBoundsTimeLimit( float maxtime )
