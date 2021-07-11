@@ -318,7 +318,7 @@ bool function ClientCommand_script( entity player, array<string> args )
 		return true
 	
 	if( GetConVarInt( "sv_cheats" ) != 1 )
-		return
+		return true
 
 	string func = ""
 
