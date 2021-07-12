@@ -180,6 +180,7 @@ void function ShFlyers_Init()
 	RegisterSignal( "StopFlyerIdle" )
 	RegisterSignal( "RecalculateFlyerState" )
 	RegisterSignal( "CagedFlyerSetPainParameter"  )
+	RegisterSignal( "KillFlyer" )
 
 
 	level.circlingFlyers		<- {}
@@ -258,6 +259,7 @@ void function ShFlyers_Init()
 	#if SERVER
 
 		AddDamageCallback( "script_mover", Flyer_TookDamage )
+		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_flyer_with_corpse", SVFlyerCreationCallback )
 
 		// used to replace the animation used for dropships dropping off soldiers by zipline
 		// only works with RunDropshipDropoff( ... ) in _goblin_dropship.nut
@@ -277,6 +279,19 @@ void function ShFlyers_Init()
 		}
 	#endif
 }
+
+#if SERVER
+void function SVFlyerCreationCallback( entity flyer )
+{
+	if( flyer.GetModelName().tolower() == FLYER_MODEL.tolower() )
+	{
+		flyer.kv.fadedist = 14000
+		flyer.kv.rendercolor = "255 255 255"
+		flyer.kv.modelscale = 1
+		flyer.kv.solid = SOLID_BBOX
+	}
+}
+#endif
 
 bool function EvilFlyersEnabled()
 {
@@ -1163,6 +1178,7 @@ void function FlyerCreationCallback( entity ent )
 
 	if ( ent.GetModelName() == FLYER_MODEL )
 		ent.s.gibDist <- 5120
+	}
 }
 #if(CLIENT)
 void function ServerCallback_PlayLootRarityFXOnDeathboxDrop( entity deathBox  )
@@ -1265,10 +1281,10 @@ entity function GetDeathBoxFromFlyer( entity flyer )
 
 bool function IsFlyer( entity ent )
 {
-	#if(false)
+	#if SERVER
 
 
-#elseif(CLIENT)
+	#elseif CLIENT
 		if ( !(ent instanceof C_DynamicProp) )
 			return false
 	#endif
