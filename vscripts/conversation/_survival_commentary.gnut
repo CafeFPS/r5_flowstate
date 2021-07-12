@@ -10,7 +10,7 @@ global function SurvivalCommentary_OnThreatActivationGrenade
 
 int function SurvivalCommentary_GetKillLeaderEEH()
 {
-	return 0//GetPlayerArray()[0].GetEncodedEHandle()
+	return GetPlayerArray()[0].GetEncodedEHandle()
 }
 
 int function SurvivalCommentary_GetChampionTeam()

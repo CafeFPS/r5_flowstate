@@ -20,8 +20,8 @@ global function ClApexScreens_EnableAllScreens
 global function ClApexScreens_IsDisabled
 global function ServerToClient_ApexScreenKillDataChanged
 global function ServerToClient_ApexScreenRefreshAll
-//
-//
+//global function ClApexScreens_Lobby_SetMode
+//global function ClApexScreens_Lobby_SetCardOwner
 global function ClApexScreens_OnStaticPropRuiVisibilityChange
 #endif
 
@@ -31,9 +31,9 @@ global function DEV_ToggleActiveApexScreenDebug
 global function DEV_ToggleFloatyBitsPrototype
 #endif
 
-#if(CLIENT)
+#if CLIENT
 const bool HAS_FLOATING_BITS_PROTOTYPE = false
-#endif //
+#endif // CLIENT
 
 const float APEX_SCREEN_TRANSITION_IN_DURATION = 0.7 // must stay in sync with apex_screens.rui
 
@@ -100,7 +100,7 @@ global enum eApexScreenMods
 }
 
 
-#if(CLIENT)
+#if CLIENT
 struct ScreenOverrideInfo
 {
 	asset  ruiAsset
@@ -191,7 +191,7 @@ struct {
 		bool DEV_inDebugPreviewMode = false
 	#endif
 
-	#if(CLIENT)
+	#if CLIENT
 		ApexScreenPositionMasterState[eApexScreenPosition._COUNT_BANNERTYPES] screenPositionMasterStates
 
 		bool                        forceDisableScreens = false
@@ -254,7 +254,7 @@ void function ShApexScreens_Init()
 		#endif
 	}
 	RegisterNetworkedVariable( NV_ApexScreensEventTimeA, SNDC_GLOBAL, SNVT_TIME, -1 )
-	#if(CLIENT)
+	#if CLIENT
 		RegisterNetworkedVariableChangeCallback_time( NV_ApexScreensEventTimeA, void function( entity unused, float oldTime, float newTime, bool actuallyChanged )
 		{
 			if ( !actuallyChanged )
@@ -284,7 +284,7 @@ void function ShApexScreens_Init()
 #endif
 
 
-#if(CLIENT)
+#if CLIENT
 asset function CastStringToAsset( string val )
 {
 	return GetKeyValueAsAsset( { kn = val }, "kn" )
