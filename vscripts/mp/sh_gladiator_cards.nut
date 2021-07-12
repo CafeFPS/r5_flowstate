@@ -48,7 +48,7 @@ global function UIToClient_HandleMenuGladCardPreviewCommand
 global function UIToClient_HandleMenuGladCardPreviewString
 global function OnWinnerDetermined
 global function GetSituationPlayer
-#if(true)
+#if true
 global function GladCardDebug
 #endif
 #endif
@@ -109,7 +109,7 @@ global const float GLADIATOR_CARDS_STAT_TRACKER_MAX_PRECISION = 100.0
 
 global const int GLADIATOR_CARDS_NUM_FRAME_KEY_COLORS = 3
 
-const bool GLADCARD_CC_DEBUG_PRINTS_ENABLED = true
+const bool GLADCARD_CC_DEBUG_PRINTS_ENABLED = false
 
 ////////////////////////////////
 ////////////////////////////////
@@ -1965,7 +1965,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 {
 	// todo(dw): move most of this to cl_character_capture.gnut
 
-	#if(true)
+	#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 		printf( "#GLADCARDS CC %s: Start", ccs.key )
 	#endif
 
@@ -2012,7 +2012,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 		fileLevel.stillInProgress = ccs
 	}
 
-	#if(true)
+	#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 		printf( "#GLADCARDS CC %s: Passed queueing", ccs.key )
 	#endif
 
@@ -2047,7 +2047,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 			ccs.cleanupSceneFunc()
 		}
 
-		#if(true)
+		#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 			printf( "#GLADCARDS CC %s: Done", ccs.key )
 		#endif
 	} )
@@ -2056,7 +2056,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 	{
 		// start of closure
 
-		#if(true)
+		#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 			printf( "#GLADCARDS CC %s, %s: Cleanup", ccs.key, ccs.stancePIPSlotStateOrNull == null ? "null" : string(PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) )) )
 		#endif
 
@@ -2250,7 +2250,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 		{
 			//
 
-			#if(true)
+			#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 				printt( "#GLADCARDS --  SHADOWS ON", lightIndex )
 			#endif
 
@@ -2278,7 +2278,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 		while ( !ColorCorrection_PollAsync( ccs.colorCorrectionLayer ) )
 			WaitFrame()
 
-		#if(true)
+		#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 			printf( "#GLADCARDS CC %s: Color correction loaded %s %d", ccs.key, colorCorrectionRawPath, ccs.colorCorrectionLayer )
 		#endif
 	}
@@ -2292,7 +2292,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 	if ( ccs.startTime - Time() > 0 )
 		wait (ccs.startTime - Time())
 
-	#if(true)
+	#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 		printf( "#GLADCARDS CC %s, %d: Commence", ccs.key, PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) ) )
 	#endif
 
@@ -2382,7 +2382,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 		foreach ( OnStancePIPSlotReadyFuncType cb, bool unused in ccs.onPIPSlotReadyFuncSet )
 			cb( PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) ), Time() + movingSeqDuration )
 
-		#if(true)
+		#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 			printf( "#GLADCARDS CC %s, %d: Moving", ccs.key, PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) ) )
 		#endif
 
@@ -2419,13 +2419,13 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 
 	if ( doMoving )
 	{
-		#if(true)
+		#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 			printf( "#GLADCARDS CC %s, %d: Moved", ccs.key, PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) ) )
 		#endif
 	}
 	else
 	{
-		#if(true)
+		#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 			printf( "#GLADCARDS CC %s, %d: Stilling", ccs.key, PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) ) )
 		#endif
 
@@ -2433,7 +2433,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 		waitthread CaptureStillPIPThenEndMovingPIPThread( expect PIPSlotState(ccs.stancePIPSlotStateOrNull), outArray_stillSlotState )
 		ccs.stancePIPSlotStateOrNull = expect PIPSlotState(outArray_stillSlotState[0])
 
-		#if(true)
+		#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 			printf( "#GLADCARDS CC %s, %d: Still", ccs.key, PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) ) )
 		#endif
 
@@ -2444,7 +2444,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 
 		ccs.cleanupSceneFunc()
 
-		#if(true)
+		#if GLADCARD_CC_DEBUG_PRINTS_ENABLED
 			printf( "#GLADCARDS CC %s, %d: Stilled", ccs.key, PIPSlotState_GetSlotID( expect PIPSlotState(ccs.stancePIPSlotStateOrNull) ) )
 		#endif
 	}
