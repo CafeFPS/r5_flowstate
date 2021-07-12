@@ -1178,7 +1178,6 @@ void function FlyerCreationCallback( entity ent )
 
 	if ( ent.GetModelName() == FLYER_MODEL )
 		ent.s.gibDist <- 5120
-	}
 }
 #if(CLIENT)
 void function ServerCallback_PlayLootRarityFXOnDeathboxDrop( entity deathBox  )
