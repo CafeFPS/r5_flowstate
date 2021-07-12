@@ -225,6 +225,21 @@ void function Sh_CustomTDM_Init()
                 )
             )
 
+            Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Train Yard",
+                    {
+                        [TEAM_IMC] = [
+                            NewLocPair(<-15545, 3956, -2118>, <0, 0, 0>)
+                        ],
+                        [TEAM_MILITIA] = [
+                            NewLocPair(<-10570, 4093, -2134>, <0, 180, 0>)
+                        ]
+                    },
+                    <0, 0, 3000>
+                )
+            )
+
         default:
             Assert(false, "No TDM locations found for map!")
     }

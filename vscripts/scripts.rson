@@ -865,6 +865,7 @@ When: "SERVER || CLIENT"
 Scripts:
 [
 	gamemodes/custom_tdm/sh_gamemode_custom_tdm.nut
+	gamemodes/custom_tdm/custom_tdm_settings.nut
 ]
 
 When: "SERVER"
