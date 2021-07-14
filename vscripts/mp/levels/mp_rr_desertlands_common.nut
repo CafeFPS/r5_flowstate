@@ -372,8 +372,8 @@ void function Geyser_JumpJetsWhileAirborne( entity player )
 
 	WaitFrame()
 
-	wait 2.2
-	thread PlayerSkydiveFromCurrentPosition( player )
+	wait 0.1
+	//thread PlayerSkydiveFromCurrentPosition( player )
 	while( !player.IsOnGround() )
 	{
 		WaitFrame()
