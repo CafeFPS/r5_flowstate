@@ -4610,7 +4610,7 @@ entity function CreatePropShield( ... ) // epic stub
 
 void function RunClientCommandOnPlayer( entity player, string command )
 {
-	player.ClientCommand( command )
+	ClientCommand( player, command )
 }
 
 entity function CreatePropDoor( asset model, vector pos, vector ang )
