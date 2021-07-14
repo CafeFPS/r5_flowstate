@@ -4,7 +4,7 @@ untyped
 global function ModelViewer_Init
 
 global function ToggleModelViewer
-global function ToggleHud
+
 global modelViewerModels = []
 
 #if R5DEV
@@ -30,51 +30,6 @@ function ModelViewer_Init()
 	#endif
 }
 
-function ToggleHud()
-{
-	#if R5DEV
-		entity player = GetPlayerArray()[ 0 ]
-		if ( !file.active )
-		{
-			file.active = true
-
-			DisablePrecacheErrors()
-			wait 0.5
-
-			ModelViewerDisableConflicts()
-			//Remote_CallFunction_NonReplay( player, "ServerCallback_ModelViewerDisableConflicts" )
-
-			ReloadShared()
-
-			if ( !file.initialized )
-			{
-				file.initialized = true
-				//ControlsInit()
-			}
-
-			Remote_CallFunction_NonReplay( player, "ServerCallback_NoHudEnable" )
-
-			//file.lastTitanAvailability = level.nv.titanAvailability
-			// ====
-			// Riff_ForceTitanAvailability( eTitanAvailability.Never )
-
-			//WeaponsRemove()
-			thread UpdateModelBounds()
-		}
-		else
-		{
-			file.active = false
-
-			Remote_CallFunction_NonReplay( player, "ServerCallback_HudEnable" )
-			//RestorePrecacheErrors()
-			// ====
-			// Riff_ForceTitanAvailability( file.lastTitanAvailability )
-
-			//WeaponsRestore()
-		}
-	#endif
-}
-
 function ToggleModelViewer()
 {
 	#if R5DEV
@@ -87,21 +42,20 @@ function ToggleModelViewer()
 			wait 0.5
 
 			ModelViewerDisableConflicts()
-			//Remote_CallFunction_NonReplay( player, "ServerCallback_ModelViewerDisableConflicts" )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_ModelViewerDisableConflicts" )
 
 			ReloadShared()
 
 			if ( !file.initialized )
 			{
 				file.initialized = true
-				//ControlsInit()
+				ControlsInit()
 			}
 
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MVEnable" )
 
-			//file.lastTitanAvailability = level.nv.titanAvailability
-			// ====
-			// Riff_ForceTitanAvailability( eTitanAvailability.Never )
+			file.lastTitanAvailability = level.nv.titanAvailability
+			//Riff_ForceTitanAvailability( eTitanAvailability.Never )
 
 			WeaponsRemove()
 			thread UpdateModelBounds()
@@ -111,9 +65,9 @@ function ToggleModelViewer()
 			file.active = false
 
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MVDisable" )
-			//RestorePrecacheErrors()
-			// ====
-			// Riff_ForceTitanAvailability( file.lastTitanAvailability )
+			RestorePrecacheErrors()
+
+			//Riff_ForceTitanAvailability( file.lastTitanAvailability )
 
 			WeaponsRestore()
 		}
@@ -219,7 +173,7 @@ function WeaponsRestore()
 
 	foreach ( index, offhand in file.playerOffhands )
 	{
-	//	player.GiveOffhandWeapon( offhand, index )
+		player.GiveOffhandWeapon( offhand, index )
 	}
 }
 
