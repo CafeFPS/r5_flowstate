@@ -1889,7 +1889,7 @@ void function WaitForever()
 bool function IsSurvivalTraining()
 {
 	// TODO:
-	return true
+	// return true
 	return GetCurrentPlaylistVarBool( "survival_training", false )
 }
 
