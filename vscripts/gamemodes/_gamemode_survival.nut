@@ -40,7 +40,10 @@ void function GamemodeSurvival_Init()
 	RegisterSignal( "SwitchToOrdnance" )
 	RegisterSignal( "SwapToNextOrdnance" )
 
+	#if R5DEV
 	AddClientCommandCallback( "GoToMapPoint", ClientCommand_GoToMapPoint )
+	#endif
+
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 
 	// run deathfield
@@ -54,7 +57,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	UpdateNetCounts()
 
-	if( attacker.IsPlayer() )
+	if( attacker.IsPlayer() && victim.IsPlayer() )
 	{
 		attacker.SetPlayerNetInt( "kills" , attacker.GetPlayerNetInt( "kills" ) + 1 )
 	}

@@ -453,7 +453,7 @@ void function HandleLootbinUse( entity lootbin, entity player )
 
 	EmitSoundOnEntity( lootbin, SOUND_LOOT_BIN_OPEN )
 
-	if ( LOOT_BIN_CLOSABLE && LootBin_IsOpen( lootbin ) )
+	if ( ( LOOT_BIN_CLOSABLE || GetCurrentPlaylistVarBool( "lootbins_infinite", false ) ) && LootBin_IsOpen( lootbin ) )
 		thread LootBin_PlayCloseSequence( lootbin )
 	else
 		thread LootBin_PlayOpenSequence( lootbin, player )
@@ -639,7 +639,7 @@ string function GetLootBinUseTextOverride( entity lootbin )
 			return "#SURVIVAL_LOOTBIN_LOCKED"
 		return "#SURVIVAL_LOOTBIN_OPEN"
 	}
-	else if ( LOOT_BIN_CLOSABLE )
+	else if ( ( LOOT_BIN_CLOSABLE || GetCurrentPlaylistVarBool( "lootbins_infinite", false ) ) )
 		return "#SURVIVAL_LOOTBIN_CLOSE"
 	else
 		return ""
