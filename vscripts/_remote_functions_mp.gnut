@@ -487,8 +487,6 @@ void function RemoteFunctions_Init_Begin()
 	//
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_MVUpdateModelBounds" )
 	Remote_RegisterClientFunction_Optional( "ServerCallback_MVEnable" )
-	Remote_RegisterClientFunction_Optional( "ServerCallback_NoHudEnable" )
-	Remote_RegisterClientFunction_Optional( "ServerCallback_HudEnable" )
 	Remote_RegisterClientFunction_Optional( "ServerCallback_MVDisable" )
 
 	//
