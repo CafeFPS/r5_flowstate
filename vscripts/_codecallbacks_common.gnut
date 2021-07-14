@@ -233,7 +233,7 @@ void function InitRespawnPlayer(entity player)
 	// settings/player/mp/pilot_survival_barricade.rpak		Wattson
 	// settings/player/mp/pilot_survival_crypto.rpak		Crypto
 
-	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_tracker.rpak", [] )	
+	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_stim.rpak", [] )	
 
 	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ))
 
@@ -243,26 +243,32 @@ void function InitRespawnPlayer(entity player)
 	{
 		// todo: just reset the inventory before respawning
 		try {
+			//Weapons
 			player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_ANY )
 			player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
-			//player.GiveWeapon( "mp_weapon_grenade_gravity", WEAPON_INVENTORY_SLOT_ANY )
-			GivePassive( player, ePassives.PAS_VOICES )
 			
 			//Lifeline Heirloom
-			//player.GiveOffhandWeapon( "melee_lifeline_baton", OFFHAND_MELEE )
-			//player.GiveWeapon( "mp_weapon_lifeline_baton_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.GiveOffhandWeapon( "melee_lifeline_baton", OFFHAND_MELEE )
+			player.GiveWeapon( "mp_weapon_lifeline_baton_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
 			//Wraith Heirloom
 			//player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
 			//player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
 			//Bloodhound Heirloom
-			player.GiveOffhandWeapon( "melee_bloodhound_axe", OFFHAND_MELEE )
-			player.GiveWeapon( "mp_weapon_bloodhound_axe_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			//player.GiveOffhandWeapon( "melee_bloodhound_axe", OFFHAND_MELEE )
+			//player.GiveWeapon( "mp_weapon_bloodhound_axe_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
-			player.GiveOffhandWeapon( "mp_ability_area_sonar_scan", OFFHAND_SPECIAL )
-			player.GiveOffhandWeapon( "mp_ability_hunt_mode", OFFHAND_INVENTORY )
+			//Melee
+			//player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE )
+			//player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			
+			//Abilities
+			player.GiveOffhandWeapon( "mp_ability_heal", OFFHAND_SPECIAL )
+			player.GiveOffhandWeapon( "mp_weapon_jump_pad", OFFHAND_INVENTORY )
 			player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
+			GivePassive( player, ePassives.PAS_VOICES )
+			
 			//player.SetModel( thirdperson )
 			//player.SetviewModel( firstperson )
 		} catch( error )
