@@ -268,11 +268,12 @@ void function ChangeToThisMenu_WithOpParm( void functionref( var ) menuFuncWithO
 
 void function SetupDefaultDevCommandsMP()
 {
+	SetupDevMenu( "Abilities", SetDevMenu_Abilities )
+	SetupDevMenu( "Equip Weapon", SetDevMenu_OverrideSpawnSurvivalCharacter )
+	SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
+
 	if ( IsSurvivalMenuEnabled() )
 	{
-		SetupDevMenu( "Abilities", SetDevMenu_Abilities )
-		SetupDevMenu( "Equip Weapon", SetDevMenu_OverrideSpawnSurvivalCharacter )
-		SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
 		SetupDevMenu( "Survival", SetDevMenu_Survival )
 		SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
 		SetupDevMenu( "Alter Loadout", SetDevMenu_AlterLoadout )
@@ -311,7 +312,7 @@ void function SetupDefaultDevCommandsMP()
 
 	SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
 	SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
-	SetupDevCommand( "Spawn Deathbox", "script thread CreateDeathBox()" )
+	SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
 	//SetupDevCommand( "Toggle Weapon Preview", "ToggleWeaponSkinPreview" )
 	//SetupDevMenu( "Threat Tracker", SetDevMenu_ThreatTracker )
 	//SetupDevMenu( "High-Vis NPC Test", SetDevMenu_HighVisNPCTest )
