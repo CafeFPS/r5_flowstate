@@ -22,7 +22,7 @@ const int MAX_SHIELD_DAMAGE = 50
 const asset EMP_WARNING_FX_SCREEN = $"P_emp_screen_player"
 const asset EMP_WARNING_FX_3P = $"P_emp_body_human"
 const asset EMP_WARNING_FX_GROUND = $"P_emp_body_human"
-const asset EMP_RADIUS_FX = $"wpn_grenade_frag_blue_radius"
+const asset EMP_RADIUS_FX = $"P_emp_charge_radius_MDL"
 
 
 //
@@ -48,6 +48,7 @@ void function MpAbilityCryptoDroneEMP_Init()
 	PrecacheParticleSystem( EMP_WARNING_FX_3P )
 	PrecacheParticleSystem( EMP_RADIUS_FX )
 	RegisterSignal( "Emp_Detonated" )
+	RegisterSignal( "EMP_Destroy" )
 	#if CLIENT
 		RegisterSignal( "EndEMPWarningFX" )
 		StatusEffect_RegisterEnabledCallback( eStatusEffect.crypto_emp_warning, EMPWarningVisualsEnabled)
@@ -69,7 +70,7 @@ bool function OnWeaponAttemptOffhandSwitch_ability_crypto_drone_emp( entity weap
 	if ( StatusEffect_GetSeverity( player, eStatusEffect.crypto_has_camera ) == 0.0 )
 	{
 		#if CLIENT
-		AddPlayerHint( 1.0, 0.25, $"rui/hud/tactical_icons/tactical_wattson", "#CRYPTO_ULTIMATE_CAMERA_NOT_READY" )
+		AddPlayerHint( 1.0, 0.25, $"rui/hud/tactical_icons/tactical_crypto", "#CRYPTO_ULTIMATE_CAMERA_NOT_READY" )
 		#endif
 		return false
 	}
@@ -85,12 +86,15 @@ bool function OnWeaponAttemptOffhandSwitch_ability_crypto_drone_emp( entity weap
 
 var function OnWeaponPrimaryAttack_ability_crypto_drone_emp( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
-	if ( StatusEffect_GetSeverity( weapon.GetWeaponOwner(), eStatusEffect.crypto_has_camera ) == 0.0 ) //
+	entity weaponOwner = weapon.GetWeaponOwner()
+	if ( StatusEffect_GetSeverity( weaponOwner, eStatusEffect.crypto_has_camera ) == 0.0 ) //
 		return 0
 
 	#if SERVER
 
 #endif
+
+	PlayerUsedOffhand( weaponOwner, weapon )
 
 	int ammoReq = weapon.GetAmmoPerShot()
 	return ammoReq
