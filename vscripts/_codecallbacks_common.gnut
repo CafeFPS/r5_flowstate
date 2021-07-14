@@ -151,6 +151,7 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 
 void function OnPlayerDeathCallback( entity player, var damageInfo )
 {
+	if(GetCurrentPlaylistVarBool( "custom_tdm", false )) return;
 	if( IsAlive( player ) )
 		return
 	
