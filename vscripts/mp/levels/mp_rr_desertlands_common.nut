@@ -323,7 +323,6 @@ void function Geyser_JumpJetsWhileAirborne( entity player )
 {
 	if ( !IsPilot( player ) )
 		return
-
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 	player.Signal( "JumpPadStart" )
@@ -373,12 +372,13 @@ void function Geyser_JumpJetsWhileAirborne( entity player )
 
 	WaitFrame()
 
-	wait 0.1
-
+	wait 2.2
+	thread PlayerSkydiveFromCurrentPosition( player )
 	while( !player.IsOnGround() )
 	{
 		WaitFrame()
 	}
+
 }
 
 
