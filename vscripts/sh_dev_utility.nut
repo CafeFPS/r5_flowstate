@@ -414,7 +414,7 @@ bool ornull function DevRespawnGetPlayerEliminationOverride( entity player )
 
 void function DevRespawnPlayer( entity player, bool shouldForce, void functionref( entity, int ) devCallbackFunc = null, int devIndex = -1 )
 {
-	/*if ( shouldForce && IsAlive( player ) )
+	if ( shouldForce && IsAlive( player ) )
 	{
 		player.SetHealth( 0 )
 		wait 1.0
@@ -438,7 +438,7 @@ void function DevRespawnPlayer( entity player, bool shouldForce, void functionre
 	if ( devCallbackFunc != null )
 	{
 		devCallbackFunc( player, devIndex )
-	}*/
+	}
 }
 
 void function _DelayUnsetRespawnPodLanded( entity player )

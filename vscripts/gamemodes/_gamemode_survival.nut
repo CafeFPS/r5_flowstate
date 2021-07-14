@@ -118,7 +118,7 @@ void function UpdateDeathBoxHighlight( entity box )
 
 void function DecideRespawnPlayer( entity player )
 {
-
+	DoRespawnPlayer( player, null )
 }
 
 float function Survival_GetMapFloorZ( vector field )
