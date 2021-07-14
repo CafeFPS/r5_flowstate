@@ -29,8 +29,8 @@ WeaponData
 	"stat_rof"										"27"
 
 	// Models
-	//"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing.rmdl"
-	//"playermodel" 									"mdl/weapons/b3wing/w_b3wing.rmdl"
+	"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing.rmdl"
+	"playermodel" 									"mdl/weapons/b3wing/w_b3wing.rmdl"
 
     // FX - Muzzle Flash
 	"fx_muzzle_flash_view"							"wpn_muzzleflash_wingman_FP"
@@ -236,26 +236,12 @@ WeaponData
 
             "low_ammo_fraction" 			"0.3"
 
-	   		"uses_ammo_pool"				"1"
+	   		"uses_ammo_pool"				"0"
         }
-
-        hopup_headshot_dmg
-        {
-        	"damage_headshot_scale"			"2.25"
-        	"projectile_trail_effect_0"     "P_tracer_proj_sniper_piercer"
-        	"fire_sound_1_player_1p"		"weapon_wingman_fire_skull_1p"
-			"fire_sound_1_player_3p"		"weapon_wingman_fire_skull_3p"
-			"fire_sound_1_npc"				"weapon_wingman_fire_skull_3p"
-        }
-
-		legendary1
+		
+        optic_ranged_hcog
 		{
-			"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing_legendary_01.rmdl"
-			"playermodel" 									"mdl/weapons/b3wing/w_b3wing_legendary_01.rmdl"
-
-			// Temporarily disabled so we can equip the optics without error spam
-			//"dof_zoom_nearDepthStart"						"4.750"
-			//"dof_zoom_nearDepthEnd"							"11.000"
+		    "bodygroup1_set"		    "1"
 		}
 	}
 
