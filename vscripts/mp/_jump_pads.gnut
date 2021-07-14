@@ -25,6 +25,8 @@ const JUMP_PAD_DESTRUCTION = "jump_pad_destruction"
 
 void function JumpPad_Init()
 {
+	RegisterSignal("JumpPadStart")
+
   AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_jumppad", JumpPad_CreatedCallback )
 }
 
