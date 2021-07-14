@@ -4,6 +4,8 @@ untyped
 
 global function ServerCallback_MVUpdateModelBounds
 global function ServerCallback_MVEnable
+global function ServerCallback_NoHudEnable
+global function ServerCallback_HudEnable
 global function ServerCallback_MVDisable
 
 #if R5DEV
@@ -259,6 +261,29 @@ void function ServerCallback_MVUpdateModelBounds( int index, float minX, float m
 	#endif // DEV
 }
 
+void function ServerCallback_NoHudEnable()
+{
+	#if R5DEV
+		if ( !SetModelViewerMode( MODELVIEWERMODE_GAMEPAD ) )
+			return
+
+		file.selectedModels.clear()
+		file.lastSelectedModel = null
+
+		UpdateMainHudVisibility( GetLocalViewPlayer() )
+
+		ReloadShared()
+
+
+		file.lastEnablematchending = GetConVarInt( "mp_enablematchending" )
+		GetLocalClientPlayer().ClientCommand( "mp_enablematchending 0" )
+		file.lastEnabletimelimit = GetConVarInt( "mp_enabletimelimit" )
+		GetLocalClientPlayer().ClientCommand( "mp_enabletimelimit 0" )
+
+		ModelViewerModeEnabled()
+	#endif // DEV
+}
+
 void function ServerCallback_MVEnable()
 {
 	#if R5DEV
@@ -359,6 +384,20 @@ void function ServerCallback_MVDisable()
 	#endif // DEV
 }
 
+void function ServerCallback_HudEnable()
+{
+	#if R5DEV
+		file.modelViewerMode = MODELVIEWERMODE_INACTIVE
+
+		UpdateMainHudVisibility( GetLocalViewPlayer() )
+
+		delaythread( 0.5 ) RestoreNoclip() // buttons don't seem to always deregister immediately
+
+		GetLocalClientPlayer().ClientCommand( "mp_enablematchending " + file.lastEnablematchending )
+		GetLocalClientPlayer().ClientCommand( "mp_enabletimelimit " + file.lastEnabletimelimit )
+	#endif // DEV
+}
+
 #if R5DEV
 void function ReloadShared()
 {
@@ -389,8 +428,8 @@ void function ReloadShared()
 	}
 
 	file.modelToDropIndex = 0
-	file.hudGrpModelNames.SetColor( 255, 255, 255, 255 )
-	file.hudModelNames[0].SetColor( 255, 255, 128 )
+	//file.hudGrpModelNames.SetColor( 255, 255, 255, 255 )
+	//file.hudModelNames[0].SetColor( 255, 255, 128 )
 }
 
 void function RestoreNoclip()
