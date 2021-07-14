@@ -1,9 +1,6 @@
-#if(true)//
-
-
 global function ShWarpGates_Init
 
-#if(CLIENT)
+#if CLIENT
 global function ServerCallback_StartWarpGateExitSequence
 global function ServerCallback_FlashScreenForPlayer
 global function ServerCallback_PlayPhaseGateSoundSuite
@@ -15,7 +12,7 @@ const string PHASE_GATE_TRAVEL_1P 	= "PhaseGate_Travel_1p"
 const string PHASE_GATE_EXIT_1P 	= "PhaseGate_Exit_1p"
 #endif
 
-#if(false)
+#if SERVER
 //
 //
 //
@@ -112,26 +109,26 @@ const string PHASE_GATE_EXIT_1P 	= "PhaseGate_Exit_1p"
 
 
 
-#endif //
+#endif // SERVER
 
 void function ShWarpGates_Init()
 {
 
-	#if(CLIENT)
+	#if CLIENT
 	PrecacheParticleSystem( FX_1P_GATE_ENTER )
 	#endif
 
-	#if(false)
+	#if SERVER
 
 
-#endif //
+	#endif // SERVER
 
 	Remote_RegisterClientFunction( "ServerCallback_StartWarpGateExitSequence", "float", 0.0, 100.0, 8 )
 	Remote_RegisterClientFunction( "ServerCallback_FlashScreenForPlayer" )
 	Remote_RegisterClientFunction( "ServerCallback_PlayPhaseGateSoundSuite" )
 }
 
-#if(false)
+#if SERVER
 //
 //
 //
@@ -849,9 +846,9 @@ void function ShWarpGates_Init()
 
 
 
-#endif //
+#endif // SERVER
 
-#if(CLIENT)
+#if CLIENT
 
 void function ServerCallback_StartWarpGateExitSequence( float duration )
 {
@@ -944,8 +941,4 @@ void function StopPhaseSoundsOnPlayer_Thread( entity player, entity mover )
 	//
 }
 
-#endif //
-
-
-
-#endif //
+#endif // CLIENT

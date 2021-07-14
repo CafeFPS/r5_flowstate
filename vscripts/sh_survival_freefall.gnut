@@ -198,7 +198,7 @@ void function SurvivalFreefall_Init()
 		RegisterSignal( "PlayerFallAssistanceDetection" )
 
 		AddSpawnCallback_ScriptName( "skydive_boundary", AddSkydiveBoundaryVolume )
-		AddSpawnCallback_ScriptName( "zipline_skydive", ForcedSkydiveTriggerThink )
+		AddSpawnCallbackEditorClass( "trigger_multiple", "trigger_skydive", ForcedSkydiveTriggerThink )
 		AddSpawnCallback_ScriptName( "skydive_tower", SkydiveTowerEntitySpawned )
 
 		AddCallback_OnClientDisconnected( OnPlayerDisconnected )
