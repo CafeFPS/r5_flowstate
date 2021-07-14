@@ -7,7 +7,8 @@ global function SetupSurvivalIncapShieldBot
 global function SetupAbilities
 
 void function SetupChangeSurvivalCharacterClass()
-{/* // TODO: FIX [Undefined variable "SetupDevFunc"]
+{
+// TODO: FIX [Undefined variable "SetupDevFunc"]
 	#if UI
 		array<ItemFlavor> characters = clone GetAllCharacters()
 		characters.sort( int function( ItemFlavor a, ItemFlavor b ) {
@@ -23,7 +24,7 @@ void function SetupChangeSurvivalCharacterClass()
 				DEV_RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
 			} )
 		}
-	#endif*/
+	#endif
 }
 
 void function SetupOverrideSpawnSurvivalCharacter()
@@ -68,8 +69,9 @@ void function SetupOverrideSpawnSurvivalCharacter()
 }
 
 void function SetupSurvival()
-{/*
+{
 	#if UI
+		SetupDevCommand( "Toggle Training Completed", "script GP().SetPersistentVar( \"trainingCompleted\", (GP().GetPersistentVarAsInt( \"trainingCompleted\" ) == 0 ? 1 : 0) )" )
 		SetupDevCommand( "Enable Survival Dev Mode", "playlist survival_dev" )
 		SetupDevCommand( "Disable Match Ending", "mp_enablematchending 0" )
 		SetupDevCommand( "Drop Care Package R1", "script thread AirdropForRound( gp()[0].GetOrigin(), gp()[0].GetAngles(), 0, null )" )
@@ -82,15 +84,15 @@ void function SetupSurvival()
 		SetupDevCommand( "Bleedout Debug Mode", "script FlagSet( \"BleedoutDebug\" )" )
 		SetupDevCommand( "Disable Loot Drops on Death", "script FlagSet( \"DisableLootDrops\" )" )
 		SetupDevCommand( "Drop My Death Box", "script thread SURVIVAL_Death_DropLoot_Internal( GP(), null, 100 )" )
-	#endif*/
+	#endif
 }
 
 
 void function SetupSurvivalLoot( var categories )
-{/*
+{
 	#if UI
 		RunClientScript( "SetupSurvivalLoot", categories )
-	#endif*/
+	#endif
 }
 
 void function SetupAbilities()
@@ -130,7 +132,7 @@ void function SetupAbilities()
 
 
 void function SetupModelSpawner()
-{/*
+{
 	#if UI
 	SetupDevCommand( "marvin", "SetMDLSpawnerModel mdl/robots/marvin/marvin.rmdl" )
 	SetupDevCommand( "atpov_titan_raptor_rocket_pod_right", "SetMDLSpawnerModel mdl/weapons/titan_raptor_rocket_pod/atpov_titan_raptor_rocket_pod_right.rmdl" )
@@ -143,16 +145,16 @@ void function SetupModelSpawner()
 	SetupDevCommand( "drone_frag", "mdl/robots/drone_frag/drone_frag.rmdl" )
 	SetupDevCommand( "droppod_fireteam", "SetMDLSpawnerModel mdl/vehicle/droppod_fireteam/droppod_fireteam.rmdl" )
 	SetupDevCommand( "droppod_loot_LL_holo", "mdl/vehicle/droppod_loot/droppod_loot_LL_holo.rmdl" )
-	#endif*/
+	#endif
 }
 
 void function SetupSurvivalIncapShieldBot()
-{/*
+{
 	#if UI
 	SetupDevCommand( "Spawn Bot with Lv 1 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 1 )" )
 	SetupDevCommand( "Spawn Bot with Lv 2 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 2 )" )
 	SetupDevCommand( "Spawn Bot with Lv 3 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 3 )" )
 	SetupDevCommand( "Spawn Bot with Lv 4 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 4 )" )
 	SetupDevCommand( "Spawn Bot with a Random Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( -1 )" )
-	#endif*/
+	#endif
 }
