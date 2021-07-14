@@ -2872,6 +2872,31 @@ void function DistCheck()
 	float dist = Distance( here, svGlobal.distCheckTestPoint )
 	printt( "Distance:", dist, "units from", svGlobal.distCheckTestPoint )
 }
+
+void function ToggleHud()
+{
+	entity player = GetPlayerArray()[0]
+
+	if ( !( "hudVisible" in player.s ) )
+		player.s.hudVisible <- true
+
+	player.s.hudVisible = !player.s.hudVisible
+
+	array<int> flagsForHudVisibilityControl = [
+		CE_FLAG_HIDE_MAIN_HUD,
+		CE_FLAG_HIDE_PERMANENT_HUD
+	]
+
+	if ( player.s.hudVisible )
+	{
+		foreach ( flag in flagsForHudVisibilityControl )
+			RemoveCinematicFlag( player, flag )
+	} else
+	{
+		foreach ( flag in flagsForHudVisibilityControl )
+			AddCinematicFlag( player, flag )
+	}
+}
 #endif // DEV
 
 void function ClearChildren( entity parentEnt, bool b0 ) //Probably should have code give us a GetChildren() function that returns a list instead of having to iterate through NextMovePeer
