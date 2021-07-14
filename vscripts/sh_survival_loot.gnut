@@ -1521,9 +1521,6 @@ void function OnPropSurvivalCreate( entity prop )
 	int index = prop.GetSurvivalInt()
 
 	//printt("Surv idx ", index)
-	#if SERVER
-	printt("SERVER OnPropSurvivalCreate")
-	#endif
 
 	if ( index < 0 )
 		return

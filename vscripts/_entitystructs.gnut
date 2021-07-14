@@ -389,6 +389,8 @@ global struct ServerEntityStruct
 	table<entity, float> sharedGasDamageHelper
 	int triggerZoneId
 	bool gravityOrbInteraction
+
+	bool shouldSpawnLoot = true
 }
 
 global struct MeritData

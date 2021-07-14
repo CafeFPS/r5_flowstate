@@ -66,14 +66,14 @@ void function ShLootCreeps_Init()
 	#if SERVER
 		file.lastTimeLootCreepsGarbageCollected = Time()
 
-		//if ( GetCurrentPlaylistVarBool( "zombie_dropship", false ) )
-		//{
-		//	Survival_AddCallback_OnRespawnDropshipCreated( OnRespawnDropshipCreated )
-		//}
-		//if ( GetCurrentPlaylistVarFloat( "lootbin_spiders_chance", 0 ) > 0 || GetCurrentPlaylistVarFloat( "lootbin_infected_chance", 0 ) > 0 )
-		//{
-		//	Survival_AddCallback_OnLootbinOpened( OnLootbinOpened )
-		//}
+		if ( GetCurrentPlaylistVarBool( "zombie_dropship", false ) )
+		{
+			// Survival_AddCallback_OnRespawnDropshipCreated( OnRespawnDropshipCreated )
+		}
+		if ( GetCurrentPlaylistVarFloat( "lootbin_spiders_chance", 0 ) > 0 || GetCurrentPlaylistVarFloat( "lootbin_infected_chance", 0 ) > 0 )
+		{
+			Survival_AddCallback_OnLootbinOpened( OnLootbinOpened )
+		}
 	#endif
 }
 #endif //#if SERVER || CLIENT
@@ -149,7 +149,7 @@ void function OnLootbinOpened( entity player, entity lootbin, array <string> loo
 	///////////////////////////
 	// Spawn the little fucker
 	///////////////////////////
-	//lootbin.e.shouldSpawnLoot = false //don't allow loot to spawn normally in bin....creature will spawn it when killed
+	lootbin.e.shouldSpawnLoot = false //don't allow loot to spawn normally in bin....creature will spawn it when killed
 	thread SpawnLootbinCreep( lootCreepType, lootbin, player, lootToSpawn )
 
 }
@@ -468,10 +468,10 @@ void function LootCreepDeathSetup( entity creep, array<string> lootToSpawn )
 				if ( ref == "blank" )
 					continue
 
-				//vector randFwd = RandomVecInDomeWithFOV( <0, 0, 1>, 45 ) * 1.2
-				//vector up = creep.GetUpVector()
-				//randFwd = Normalize( randFwd + ( up * 0.35 ) )
-				//SURVIVAL_ThrowLootFromPoint( lootOrigin, ref )
+				// vector randFwd = RandomVecInDomeWithFOV( <0, 0, 1>, 45 ) * 1.2
+				// vector up = creep.GetUpVector()
+				// randFwd = Normalize( randFwd + ( up * 0.35 ) )
+				// SURVIVAL_ThrowLootFromPoint( lootOrigin, ref )
 			}
 
 		}

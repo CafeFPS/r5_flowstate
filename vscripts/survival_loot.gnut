@@ -1,6 +1,7 @@
 // stub script
 
 global function SV_Survival_Loot_Init
+global function GetRandomLootArray
 global function LootTypeHasAnyChanceToSpawn
 global function SpawnLoot
 global function SURVIVAL_GetWeightedItemFromGroup
@@ -47,9 +48,53 @@ global enum eLootZoneClass
 	ZONE_HOTZONE
 }
 
+struct {
+	var lootDataTable
+} file
+
 void function SV_Survival_Loot_Init()
 {
 	AddClientCommandCallback( "Sur_DropEquipment", ClientCommand_Sur_DropEquipment )
+	AddSpawnCallbackEditorClass( "script_ref", "info_survival_weapon_location", OnGroundLootSpawned)
+
+	file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+}
+
+void function OnGroundLootSpawned( entity ent )
+{
+	SpawnGenericLoot( GetRandomLootItem(), OriginToGround( ent.GetOrigin() ), <0, 0, 0>, 1)
+}
+
+array<string> function GetRandomLootArray( int min, int max = -1 )
+{
+	int numRows = GetDatatableRowCount( file.lootDataTable )
+
+	array<string> items
+
+
+	for( int i=0; i < RandomIntRange( min, max ); i++ )
+	{
+		items.append( GetRandomLootItem() )
+	}
+	return items
+}
+
+string function GetRandomLootItem()
+{
+	int numRows = GetDatatableRowCount( file.lootDataTable )
+
+	int i = RandomInt( numRows )
+
+	string itemRef = GetDataTableString( file.lootDataTable, i , GetDataTableColumnByName( file.lootDataTable, "ref" ) )
+	string featureFlagRef = GetDataTableString( file.lootDataTable, i, GetDataTableColumnByName( file.lootDataTable, "featureFlag" ) )
+
+	if( itemRef == "blank" || ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) ) )
+	{
+		return GetRandomLootItem()
+	}
+
+	return itemRef
+
 }
 
 bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
@@ -342,14 +387,17 @@ void function DeathBoxFakePhysics( entity box )
 
 void function FakePhysicsThrow( entity player, entity drop, vector forward, bool idk )
 {
-	entity physics = CreatePropPhysics( drop.GetModelName() , drop.GetOrigin(), player.GetAngles() )
+	// entity physics = CreatePropPhysics( drop.GetModelName() , drop.GetOrigin(), player.GetAngles() )
 
-	vector velocity = forward * 1000
+	// vector velocity = forward * 1000
 
 
-	drop.SetParent( physics )
+	// drop.SetParent( physics )
 
-	physics.SetVelocity( forward )
+	// physics.SetVelocity( forward )
+
+	// physics.Destroy()
+
 }
 
 void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value )

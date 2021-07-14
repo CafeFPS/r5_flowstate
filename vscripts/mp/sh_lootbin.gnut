@@ -2,6 +2,7 @@ global function ShLootBin_Init
 global function GetAllLootBins
 
 #if SERVER
+global function Survival_AddCallback_OnLootbinOpened
 global function SURVIVAL_DebugLootBins
 
 global function AddLootToLootBin
@@ -41,6 +42,8 @@ const float LOOT_BIN_SOUND_INIT_MIN_WAIT = 5.0
 
 const bool SURVIVAL_DEBUG_LOOT_BINS = false
 
+global typedef OnLootBinOpenedCallbackType void functionref( entity, entity, array<string> )
+
 //
 struct LootBinLocationBackupData
 {
@@ -57,6 +60,8 @@ struct
 	array<entity>                    lootBinList
 	array<LootBinLocationBackupData> lootBinBackupLocations
 	int                              numLootBins
+	
+	array<OnLootBinOpenedCallbackType> onLootBinOpenedCallbacks
 } file
 
 void function ShLootBin_Init()
@@ -76,6 +81,19 @@ void function ShLootBin_Init()
 		AddDestroyCallback( "prop_dynamic", OnPropDynamicDestroyed )
 	#endif
 }
+
+// These callbacks are called before loot is spawned in a lootbin
+#if SERVER
+void function Survival_AddCallback_OnLootbinOpened( OnLootBinOpenedCallbackType callbackFunc )
+{
+	Assert( !file.onLootBinOpenedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with Survival_AddCallback_OnLootbinOpened" )
+	file.onLootBinOpenedCallbacks.append( callbackFunc )
+}
+#endif
+
+
+
+
 
 
 #if SERVER
@@ -220,11 +238,7 @@ void function InitLootBin( entity lootbin )
 		DebugDrawLine( lootbin.GetOrigin(), lootbin.GetOrigin() + <0, 0, 1000>, 255, 255, 255, true, 100.0 )
 	}
 	
-	array<string> items
-	for( int i=0; i < RandomIntRange(2, 4); i++ )
-	{
-		items.append( GetDataTableString( dataTable, RandomInt( numRows ), GetDataTableColumnByName( dataTable, "ref" ) ) )
-	}
+	array<string> items = GetRandomLootArray( 2, 4 )
 	AddMultipleLootItemsToLootBin( lootbin, items )
 }
 
@@ -464,10 +478,16 @@ void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 		int lootIndex             = 0
 		array<string> lootToSpawn = GetLootBinContents( lootbin )
 
-		foreach ( ref in lootToSpawn )
+		foreach( callbackFunc in file.onLootBinOpenedCallbacks )
+			callbackFunc( player, lootbin, lootToSpawn )
+
+		if( lootbin.e.shouldSpawnLoot )
 		{
-			SpawnLootInLootBin( lootbin, ref, lootIndex, lootToSpawn.len() )
-			lootIndex++
+			foreach ( ref in lootToSpawn )
+			{
+				SpawnLootInLootBin( lootbin, ref, lootIndex, lootToSpawn.len() )
+				lootIndex++
+			}
 		}
 
 		lootToSpawn.clear()
@@ -480,6 +500,7 @@ void function LootBin_PlayOpenSequence( entity lootbin, entity player )
 		waitthread PlayAnim( lootbin, "loot_bin_01_open", lootbinParent, "ref" )
 	else
 		waitthread PlayAnim( lootbin, "loot_bin_01_open" )
+
 
 	GradeFlagsClear( lootbin, eGradeFlags.IS_BUSY )
 }
