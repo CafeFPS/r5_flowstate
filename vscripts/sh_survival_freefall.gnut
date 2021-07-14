@@ -446,6 +446,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 	player.ClearInvulnerable()
 	player.ClearParent()
+	player.HolsterWeapon()
 
 	ClearPlayerPlaneViewMode( player )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_ClearHints" )
@@ -560,7 +561,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 
 	EndSignal( player, "OnDeath" )
 	EndSignal( player, "PlayerSkyDive" )
-	//EndSignal( player, "BleedOut_OnStartDying" )
+	EndSignal( player, "BleedOut_OnStartDying" )
 	//EndSignal( svGlobal.levelEnt, "DevPlaneTest" )
 
 	//#####################################
@@ -571,7 +572,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 	if ( jumpingFromPlane )
 	{
 		entity planeEnt = Sur_GetPlaneEnt()
-		#if !DEV
+		#if !R5DEV
 			Assert( IsValid( planeEnt ), "Tried to skydive but there is no plane entity" )
 		#endif
 		if ( IsValid( planeEnt ) )
@@ -664,6 +665,9 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 				ent.Destroy()
 			}
 			smokeFX.clear()
+			
+			RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+			PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
 		}
 	)
 
