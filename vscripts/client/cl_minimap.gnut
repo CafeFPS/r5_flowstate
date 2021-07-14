@@ -796,10 +796,10 @@ void function OnPlayerCreate( entity player )
 			fakeHexUidString += n
 		}
 
-    RuiSetString( file.minimap_coords, "uid", "" )
-    RuiSetInt( file.minimap_coords, "uidPart1", 0 ) // int( uidPart1 )
-    RuiSetInt( file.minimap_coords, "uidPart2", 0 ) // int( uidPart2 )
-    RuiTrackString( file.minimap_coords, "name", GetLocalClientPlayer(), RUI_TRACK_PLAYER_NAME_STRING )
+		RuiSetString( file.minimap_coords, "uid", "" )
+		RuiSetInt( file.minimap_coords, "uidPart1", 0 ) // int( uidPart1 )
+		RuiSetInt( file.minimap_coords, "uidPart2", 0 ) // int( uidPart2 )
+		RuiTrackString( file.minimap_coords, "name", GetLocalClientPlayer(), RUI_TRACK_PLAYER_NAME_STRING )
 	}
 
 	asset mapImage       = Minimap_GetAssetForKey( "minimap" )
