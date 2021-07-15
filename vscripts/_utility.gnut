@@ -4500,9 +4500,18 @@ entity function GetLastLinkedEntOfType( entity endNodes )
 	return temp
 }
 /////////////////////////////////////////////////////////////////////////////////
-table< int, array< entity > > function GetAllPlayersSortedByTeam()
+table< int, array<entity> > function GetAllPlayersSortedByTeam()
 {
-	table< int, array< entity > >  groupedPlayers
+	table< int, array<entity> > groupedPlayers
+	
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( !( player.GetTeam() in groupedPlayers ) )
+			groupedPlayers[player.GetTeam()] <- []
+		
+		groupedPlayers[player.GetTeam()].append( player )
+	}
+
 	return groupedPlayers
 }
 

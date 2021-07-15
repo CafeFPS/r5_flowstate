@@ -3,7 +3,6 @@ untyped
 global function CodeCallback_DamageEntity
 global function HandleFootstepDamage
 global function CodeCallback_OnEntityKilled
-global function UpdateNetCounts
 
 global function AddDamageCallback
 global function RemoveDamageCallback
@@ -84,30 +83,15 @@ global function CodeCallback_OnClientConnectionCompleted
 
 global function CodeCallback_OnWeaponAttack
 
-table<asset> IF_Settings = {
-	character_bangalore  = $"settings/player/mp/pilot_survival_firesupport.rpak", // character_bangalore_NAME
-	character_bloodhound = $"settings/player/mp/pilot_survival_tracker.rpak",     // character_bloodhound_NAME
-	character_caustic    = $"settings/player/mp/pilot_survival_gas.rpak",         // character_caustic_NAME
-	character_gibraltar  = $"settings/player/mp/pilot_survival_gunner.rpak",      // character_gibraltar_NAME
-	character_lifeline   = $"settings/player/mp/pilot_survival_medic.rpak",       // character_lifeline_NAME
-	character_mirage     = $"settings/player/mp/pilot_survival_holopilot.rpak",   // character_mirage_NAME
-	character_octane     = $"settings/player/mp/pilot_survival_stim.rpak",        // character_octane_NAME
-	character_pathfinder = $"settings/player/mp/pilot_survival_grapple.rpak",     // character_pathfinder_NAME
-	character_wraith     = $"settings/player/mp/pilot_survival_closer.rpak"       // character_wraith_NAME
-	character_wattson    = $"settings/player/mp/pilot_survival_barricade.rpak"   // character_wattson_NAME
-	character_crypto     = $"settings/player/mp/pilot_survival_crypto.rpak"       // character_crypto_NAME
-}
-
 #document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
-
 	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
 	player.s.activeTrapArrayId <- 0
 
 	ShGRX_OnClientConnectionCompleted( player )
 
-	if( !DEV_ShouldIgnorePersistence() )
+	if ( !DEV_ShouldIgnorePersistence() )
 	{
 		SvPersistentData_OnClientConnectionCompleted( player )
 		ShEHI_OnClientConnectionCompleted( player )
@@ -117,30 +101,25 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	player.hasConnected = true
 
-	AddDeathCallback( "player", OnPlayerDeathCallback )
+	// AddDeathCallback( "player", OnPlayerDeathCallback )
 
-
-	foreach( cb in svGlobal.onClientConnectedCallbacks )
+	foreach ( cb in svGlobal.onClientConnectedCallbacks )
 		cb( player )
-
 
 	NotifyClientsOfConnection( player, 1 )
 
-	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
+	// PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
 
-
-	if( !GetCurrentPlaylistVarBool( "custom_tdm", false ) )
-	{
-		SetGameState( eGameState.Playing )
-  	thread InitRespawnPlayer(player)
-	}
+	// if( !GetCurrentPlaylistVarBool( "custom_tdm", false ) )
+	// {
+	// 	SetGameState( eGameState.Playing )
+  	// thread InitRespawnPlayer(player)
+	// }
 
 	// shouldn't this be called from code?
-	CodeCallback_OnClientReloadConnectionCompleted(player)
+	CodeCallback_OnClientReloadConnectionCompleted( player )
 
-
-	UpdateNetCounts()
-	
+	// UpdateNetCounts()	
 }
 
 void function CodeCallback_OnPlayerRespawned( entity player )
@@ -149,136 +128,136 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 		cb( player )
 }
 
-void function OnPlayerDeathCallback( entity player, var damageInfo )
-{
-	if( IsAlive( player ) )
-		return
+// void function OnPlayerDeathCallback( entity player, var damageInfo )
+// {
+// 	if( IsAlive( player ) )
+// 		return
+//	
+// 	if( GetCurrentPlaylistVarBool( "should_respawn_on_death", true ) )
+// 	{
+// 		thread RespawnOnDeath( player )
+// 		return
+// 	}
+//
+// 	// TODO: deathboxes
+// }
+
+// void function RespawnOnDeath( entity player ) 
+// {
+// 	if( IsAlive( player ) )
+// 		return
+//
+//   thread InitRespawnPlayer(player)
+// }
+
+// void function InitRespawnPlayer(entity player)
+// {
+// 	if( IsAlive( player ) )
+// 		return
 	
-	if( GetCurrentPlaylistVarBool( "should_respawn_on_death", true ) )
-	{
-		thread RespawnOnDeath( player )
-		return
-	}
+//   wait 1.0
 
-	// TODO: deathboxes
-}
+// 	SetTeam( player, 10 )
 
-void function RespawnOnDeath( entity player ) 
-{
-	if( IsAlive( player ) )
-		return
+// 	int teamMemberIndex = GetPlayerArrayOfTeam( player.GetTeam() ).len() - 1
 
-  thread InitRespawnPlayer(player)
-}
+// 	player.SetTeamMemberIndex( teamMemberIndex )
 
-void function InitRespawnPlayer(entity player)
-{
-	if( IsAlive( player ) )
-		return
+// 	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
+// 	player.SetPlayerNetBool( "pingEnabled", true )
+
+//   wait 1.0
 	
-  wait 1.0
+// 	vector origin
+// 	vector angles
 
-	SetTeam( player, 10 )
+//   DoRespawnPlayer( player, null )
 
-	int teamMemberIndex = GetPlayerArrayOfTeam( player.GetTeam() ).len() - 1
 
-	player.SetTeamMemberIndex( teamMemberIndex )
+// 	switch( GetMapName() )
+// 	{
+// 		case "mp_rr_desertlands_64k_x_64k":
+// 			origin = <6500, 3077, -3368>
+// 			angles = <0, 0, 0>
+// 			break
+// 		case "mp_rr_canyonlands_64k_x_64k":
+// 		case "mp_rr_canyonlands_mu1":
+// 		case "mp_rr_canyonlands_mu1_night":
+// 			origin = <0, 0, 2200>
+// 			angles = <0, 0, 0>
+// 			break
+// 		case "mp_rr_canyonlands_staging":
+// 			origin = <26328, -6235, -27540>
+// 			angles = <21.5, 0.2, 0>
+// 			break
+// 		default:
+// 			origin = <0, 0, 0>
+// 			angles = <0, 0, 0>
+// 	}
 
-	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
-	player.SetPlayerNetBool( "pingEnabled", true )
-
-  wait 1.0
+// 	player.SetOrigin( origin )
+// 	player.SetAngles( angles )
 	
-	vector origin
-	vector angles
-
-  DoRespawnPlayer( player, null )
-
-
-	switch( GetMapName() )
-	{
-		case "mp_rr_desertlands_64k_x_64k":
-			origin = <6500, 3077, -3368>
-			angles = <0, 0, 0>
-			break
-		case "mp_rr_canyonlands_64k_x_64k":
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-			origin = <0, 0, 2200>
-			angles = <0, 0, 0>
-			break
-		case "mp_rr_canyonlands_staging":
-			origin = <26328, -6235, -27540>
-			angles = <21.5, 0.2, 0>
-			break
-		default:
-			origin = <0, 0, 0>
-			angles = <0, 0, 0>
-	}
-
-	player.SetOrigin( origin )
-	player.SetAngles( angles )
+// 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	
-	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-	
-	// settings/player/mp/pilot_survival_gunner.rpak		Gibraltar
-	// settings/player/mp/pilot_survival_tracker.rpak		Bloodhound
-	// settings/player/mp/pilot_survival_grapple.rpak		Pathfinder
-	// settings/player/mp/pilot_survival_stim.rpak			Octane
-	// settings/player/mp/pilot_survival_gas.rpak			Caustic
-	// settings/player/mp/pilot_survival_medic.rpak			Lifeline
-	// settings/player/mp/pilot_survival_closer.rpak		Wraith
-	// settings/player/mp/pilot_survival_firesupport.rpak	Bangalore
-	// settings/player/mp/pilot_survival_holopilot.rpak		Mirage
-	// settings/player/mp/pilot_survival_barricade.rpak		Wattson
-	// settings/player/mp/pilot_survival_crypto.rpak		Crypto
+// 	// settings/player/mp/pilot_survival_gunner.rpak		Gibraltar
+// 	// settings/player/mp/pilot_survival_tracker.rpak		Bloodhound
+// 	// settings/player/mp/pilot_survival_grapple.rpak		Pathfinder
+// 	// settings/player/mp/pilot_survival_stim.rpak			Octane
+// 	// settings/player/mp/pilot_survival_gas.rpak			Caustic
+// 	// settings/player/mp/pilot_survival_medic.rpak			Lifeline
+// 	// settings/player/mp/pilot_survival_closer.rpak		Wraith
+// 	// settings/player/mp/pilot_survival_firesupport.rpak	Bangalore
+// 	// settings/player/mp/pilot_survival_holopilot.rpak		Mirage
+// 	// settings/player/mp/pilot_survival_barricade.rpak		Wattson
+// 	// settings/player/mp/pilot_survival_crypto.rpak		Crypto
 
-	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_tracker.rpak", [] )	
+// 	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_tracker.rpak", [] )	
 
-	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ))
+// 	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ))
 
-	//player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
+// 	//player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
 
-	if( !IsLobby() )
-	{
-		// todo: just reset the inventory before respawning
-		try {
-			player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_ANY )
-			player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
-			//player.GiveWeapon( "mp_weapon_grenade_gravity", WEAPON_INVENTORY_SLOT_ANY )
-			GivePassive( player, ePassives.PAS_VOICES )
+// 	if( !IsLobby() )
+// 	{
+// 		// todo: just reset the inventory before respawning
+// 		try {
+// 			player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_ANY )
+// 			player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
+// 			//player.GiveWeapon( "mp_weapon_grenade_gravity", WEAPON_INVENTORY_SLOT_ANY )
+// 			GivePassive( player, ePassives.PAS_VOICES )
 			
-			//Lifeline Heirloom
-			//player.GiveOffhandWeapon( "melee_lifeline_baton", OFFHAND_MELEE )
-			//player.GiveWeapon( "mp_weapon_lifeline_baton_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+// 			//Lifeline Heirloom
+// 			//player.GiveOffhandWeapon( "melee_lifeline_baton", OFFHAND_MELEE )
+// 			//player.GiveWeapon( "mp_weapon_lifeline_baton_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
-			//Wraith Heirloom
-			//player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
-			//player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+// 			//Wraith Heirloom
+// 			//player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
+// 			//player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
-			//Bloodhound Heirloom
-			player.GiveOffhandWeapon( "melee_bloodhound_axe", OFFHAND_MELEE )
-			player.GiveWeapon( "mp_weapon_bloodhound_axe_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+// 			//Bloodhound Heirloom
+// 			player.GiveOffhandWeapon( "melee_bloodhound_axe", OFFHAND_MELEE )
+// 			player.GiveWeapon( "mp_weapon_bloodhound_axe_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 			
-			player.GiveOffhandWeapon( "mp_ability_area_sonar_scan", OFFHAND_SPECIAL )
-			player.GiveOffhandWeapon( "mp_ability_hunt_mode", OFFHAND_INVENTORY )
-			player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
-			//player.SetModel( thirdperson )
-			//player.SetviewModel( firstperson )
-		} catch( error )
+// 			player.GiveOffhandWeapon( "mp_ability_area_sonar_scan", OFFHAND_SPECIAL )
+// 			player.GiveOffhandWeapon( "mp_ability_hunt_mode", OFFHAND_INVENTORY )
+// 			player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
+// 			//player.SetModel( thirdperson )
+// 			//player.SetviewModel( firstperson )
+// 		} catch( error )
 
-		EnableOffhandWeapons( player )
+// 		EnableOffhandWeapons( player )
 	
-		entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-		int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
-		ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
+// 		entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+// 		int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
+// 		ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
 	
-		player.SetHealth( 100 )
-	}
+// 		player.SetHealth( 100 )
+// 	}
 
-	//thread SkydiveTest()
-	UpdateNetCounts()
-}
+// 	//thread SkydiveTest()
+// 	UpdateNetCounts()
+// }
 
 /*{
 "725342087": "Bangalore",
@@ -309,12 +288,6 @@ void function DEV_PDataInitForPlayer( entity player )
 		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].gcard_badge_0_tier", 0 )
 		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].gcard_badge_1", 97219464 )
 	}
-}
-
-void function UpdateNetCounts()
-{
-	SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
-	SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
 }
 
 struct
@@ -538,6 +511,7 @@ void function AddDamageFinalCallback( string className, void functionref( entity
 
 	file.classDamageFinalCallbacks[className].append( callbackFunc )
 }
+
 void function RunClassDamageFinalCallbacks( entity ent, var damageInfo )
 {
 	string className = ent.GetClassName()

@@ -1,4 +1,5 @@
 global function GetCharacterButtonRowSizes
+global function GetCharacterButtonRows
 global function LayoutCharacterButtons
 global function SetNavUpDown
 global function SetNavLeftRight
@@ -166,6 +167,24 @@ void function LayoutCharacterButtons( array< array<var> > buttonRows )
 		SetNavUpDown( column )
 }
 
+array< array<var> > function GetCharacterButtonRows( array<var> buttons )
+{
+	array<int> rowSizes = GetCharacterButtonRowSizes( buttons.len() )
+	array< array<var> > buttonRows
+	int buttonIndex = 0
+	foreach ( rowSize in rowSizes )
+	{
+		array<var> row
+		int last = buttonIndex + rowSize
+		while ( buttonIndex < last )
+		{
+			row.append( buttons[buttonIndex] )
+			buttonIndex++
+		}
+		buttonRows.append( row )
+	}
+	return buttonRows
+}
 
 void function SetNavUpDown( array<var> buttons )
 {

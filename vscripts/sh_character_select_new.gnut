@@ -5,7 +5,7 @@ Todo:
 */
 
 #if SERVER
-const bool DEBUG_LOCK_STEP_PICK = false
+const bool DEBUG_LOCK_STEP_PICK = true
 #endif
 #if CLIENT
 const bool DEBUG_CHARACTER_SELECT = false
@@ -16,6 +16,8 @@ const asset BACKGROUND_GEO_MODEL   = $"mdl/levels_terrain/mp_lobby/mp_character_
 
 #if SERVER
 global function AssignLockStepOrder
+global function CharacterSelect_TryAssignCharacterCandidatesToPlayer
+global function CharacterSelect_AssignCharacter
 #endif
 
 #if UI
@@ -231,6 +233,7 @@ void function CharacterSelectNewMenu_Init()
 	#if SERVER
 		AddCallback_OnClientConnected( CharacterSelect_OnClientConnected )
 		AddClientCommandCallback( "UpdateCharacterSelectFocus", ClientCommand_UpdateCharacterSelectFocus )
+		AddClientCommandCallback( "Sur_UpdateCharacterLock", ClientCommand_UpdateCharacterLock )
 	#endif
 
 	#if CLIENT
@@ -627,34 +630,33 @@ void function UpdateMenuButtons()
 
 	Assert( allCharacters.len() < NUM_CHARACTER_SELECT_BUTTONS, "Character select doesn't have enough character buttons. Has " + NUM_CHARACTER_SELECT_BUTTONS + " but needs " + allCharacters.len() )
 
-	array<int> BUTTON_USE_ORDER = GetButtonUseOrder( allCharacters.len() )
+	array<ItemFlavor> orderedCharacters = GetCharacterButtonOrder( allCharacters, NUM_CHARACTER_SELECT_BUTTONS )
+	array<var> characterButtons
 
 	// Assign characters to buttons
-	for ( int i = 0 ; i < allCharacters.len() ; i++ )
+	foreach ( index, character in orderedCharacters )
 	{
-		// Assign the button
-		int buttonIndex = BUTTON_USE_ORDER.find( i )
-		Assert( buttonIndex >= 0 && buttonIndex < NUM_CHARACTER_SELECT_BUTTONS )
+		characterButtons.append( fileLevel.characterButtons[index] )
 
-		ItemFlavor itemFlav = allCharacters[i]
+		var button    = fileLevel.characterButtons[index]
+		var buttonRui = fileLevel.characterButtonRuis[index]
 
-		var button    = fileLevel.characterButtons[buttonIndex]
-		var buttonRui = fileLevel.characterButtonRuis[buttonIndex]
-
-		if ( lockedCharacters.contains( itemFlav ) )
-			fileLevel.lockedButtonIndexies.append( buttonIndex )
+		if ( lockedCharacters.contains( character ) )
+			fileLevel.lockedButtonIndexies.append( index )
 
 		// Update button for character
-		RuiSetImage( buttonRui, "portraitImage", CharacterClass_GetGalleryPortrait( itemFlav ) )
-		RuiSetImage( buttonRui, "portraitBackground", CharacterClass_GetGalleryPortraitBackground( itemFlav ) )
-		RuiSetString( buttonRui, "portraitName", Localize( ItemFlavor_GetLongName( itemFlav ) ) )
-		RuiSetImage( buttonRui, "roleImage", CharacterClass_GetCharacterRoleImage( itemFlav ) )
+		RuiSetImage( buttonRui, "portraitImage", CharacterClass_GetGalleryPortrait( character ) )
+		RuiSetImage( buttonRui, "portraitBackground", CharacterClass_GetGalleryPortraitBackground( character ) )
+		RuiSetString( buttonRui, "portraitName", Localize( ItemFlavor_GetLongName( character ) ) )
+		RuiSetImage( buttonRui, "roleImage", CharacterClass_GetCharacterRoleImage( character ) )
 
 		// Update button mapping so we know assignments later
-		fileLevel.buttonIndexCharacterMap[ buttonIndex ] <- itemFlav
-		fileLevel.buttonIndexUsed.append( buttonIndex )
+		fileLevel.buttonIndexCharacterMap[ index ] <- character
+		fileLevel.buttonIndexUsed.append( index )
 	}
 
+	array< array<var> > buttonRows = GetCharacterButtonRows( characterButtons )
+	LayoutCharacterButtons( buttonRows )
 	UpdateButtonStates()
 }
 #endif //CLIENT
@@ -1239,7 +1241,7 @@ void function OnPlayerUpdatedCharacterLock( entity player, bool wasLocked, bool 
 			return
 		ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterSlot )
 
-		bool doFlash = player != localPlayer
+		bool doFlash = true // player != localPlayer
 		//if ( fileLevel.lastLockedCharacterOrNull == fileLevel.desiredCharacterOrNull && fileLevel.lastLockedPlayer == player )
 		//	doFlash = false
 		if ( doFlash )
@@ -1921,6 +1923,87 @@ void function DebugMenuThink()
 
 #endif //CLIENT
 
+#if SERVER
+table<string, asset> PLAYER_CHARACTER_SETTINGS = {
+	character_bangalore  = $"settings/player/mp/pilot_survival_firesupport.rpak", // character_bangalore_NAME
+	character_bloodhound = $"settings/player/mp/pilot_survival_tracker.rpak",     // character_bloodhound_NAME
+	character_caustic    = $"settings/player/mp/pilot_survival_gas.rpak",         // character_caustic_NAME
+	character_gibraltar  = $"settings/player/mp/pilot_survival_gunner.rpak",      // character_gibraltar_NAME
+	character_lifeline   = $"settings/player/mp/pilot_survival_medic.rpak",       // character_lifeline_NAME
+	character_mirage     = $"settings/player/mp/pilot_survival_holopilot.rpak",   // character_mirage_NAME
+	character_octane     = $"settings/player/mp/pilot_survival_stim.rpak",        // character_octane_NAME
+	character_pathfinder = $"settings/player/mp/pilot_survival_grapple.rpak",     // character_pathfinder_NAME
+	character_wraith     = $"settings/player/mp/pilot_survival_closer.rpak"       // character_wraith_NAME
+	character_wattson    = $"settings/player/mp/pilot_survival_barricade.rpak"   // character_wattson_NAME
+	character_crypto     = $"settings/player/mp/pilot_survival_crypto.rpak"       // character_crypto_NAME
+}
+
+bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor character, bool updateLoadoutSlot = true )
+{
+	printt( "AssignCharacter: player", player, "will be assigned to", ItemFlavor_GetHumanReadableRef( character ) )
+
+	string characterRef = ItemFlavor_GetHumanReadableRef( character )
+	if ( !( characterRef in PLAYER_CHARACTER_SETTINGS ) )
+		return false // Character player setting not found
+
+	table<string, string> possibleMods = {
+		survival_jumpkit_enabled = "enable_jumpkit",
+		survival_wallrun_enabled = "enable_wallrun"
+	}
+
+	array<string> enabledMods = []
+
+	foreach ( playlistVar, modName in possibleMods )
+		if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
+			enabledMods.append( modName )
+
+	player.SetPlayerSettingsWithMods( PLAYER_CHARACTER_SETTINGS[characterRef], enabledMods )
+	if ( updateLoadoutSlot )
+		SetItemFlavorLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), character )
+
+	player.SetPlayerNetBool( "hasLockedInCharacter", true )
+
+	return true
+}
+
+// The function checks if the candidates are suitable for assignment and removes unsuitable candidates.
+// If there are 1 or more suitable candidates left, the first candidate is assigned (order of priority).
+// If there are no suitable candidates left, a random character is assigned.
+bool function CharacterSelect_TryAssignCharacterCandidatesToPlayer( entity player, array<SettingsAssetGUID> candidates )
+{
+	foreach ( candidate in candidates )
+		if ( !IsValidItemFlavorGUID( candidate ) 
+			|| !IsItemFlavorUnlockedForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), GetItemFlavorByGUID( candidate ) ) 
+			)
+			candidates.fastremovebyvalue( candidate )
+
+	bool retValue = true
+
+	if ( candidates.len() == 0 ) {
+		candidates.append( ItemFlavor_GetGUID( GetRandomGoodItemFlavorForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass() ) ) )
+		retValue = false // No suitable candidates found from the candidates list, a random character was assigned
+	}
+
+	ItemFlavor selectedCandidate = GetItemFlavorByGUID( candidates[0] )
+	CharacterSelect_AssignCharacter( player, selectedCandidate )
+
+	return retValue
+}
+
+bool function ClientCommand_UpdateCharacterLock( entity player, array<string> args )
+{
+	if ( args.len() != 1 )
+		return true
+
+	if ( !IsValid( player ) )
+		return true
+
+	bool setLocked = args[0] == "1"
+	player.SetPlayerNetBool( "hasLockedInCharacter", setLocked )
+
+	return true
+}
+#endif //SERVER
 
 //  ██╗   ██╗████████╗██╗██╗     ██╗████████╗██╗   ██╗
 //  ██║   ██║╚══██╔══╝██║██║     ██║╚══██╔══╝╚██╗ ██╔╝
@@ -2318,7 +2401,7 @@ entity ornull function GetPlayerWithLockedCharacter( ItemFlavor character, array
 	LoadoutEntry characterSlot = Loadout_CharacterClass()
 	foreach( entity player in players )
 	{
-		// player doens't have a character locked in
+		// player doesn't have a character locked in
 		if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 			continue
 

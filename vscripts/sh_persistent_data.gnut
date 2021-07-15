@@ -158,8 +158,10 @@ void function UpgradeBasicPlayerPersistentData( entity player, int oldVersion, i
 #if SERVER || CLIENT || UI && R5DEV
 bool function DEV_ShouldIgnorePersistence()
 {
-	//return GetConVarBool( "loadouts_ignore_persistence" )
-	return true
+	// return GetConVarBool( "loadouts_ignore_persistence" )
+	// return true
+
+	return false
 }
 #endif
 
@@ -376,9 +378,9 @@ void function DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( b
 			string desiredPDefAutogenSectionContents = DEV_GeneratePersistentDataDefinitionAutogenSection()
 			DevTextBufferClear()
 			DevTextBufferWrite( desiredPDefAutogenSectionContents )
-			DevP4Checkout( "cfg/server/pdef_autogen.pdef" )
+			//DevP4Checkout( "cfg/server/pdef_autogen.pdef" )
 			DevTextBufferDumpToFile( "cfg/server/pdef_autogen.pdef" )
-			DevP4Add( "cfg/server/pdef_autogen.pdef" )
+			//DevP4Add( "cfg/server/pdef_autogen.pdef" )
 			DevTextBufferClear()
 		}
 	#endif

@@ -1019,15 +1019,28 @@ void function GenerateLoadoutsPDef()
 	if ( DEV_AreAnyItemflavorsDisabledByPlaylist() )
 		Warning( "You should not regenerate the loadouts persistent data section if you have item flavors disabled by playlist vars! Use playlist survival_dev." )
 
-	DEV_PDefGen_BeginStruct( "sLoadoutsData", "All loadout fields registered by script-func RegisterLoadoutSlot." )
+	DEV_PDefGen_BeginStruct( "sLoadoutsData", "All non-character-specific loadout fields registered by script-func RegisterLoadoutSlot." )
 	foreach ( LoadoutEntry entry in fileLevel.loadoutSlotEntries )
 	{
-		DEV_PDefGen_AddField_Int( entry.id )
+		if ( entry.guid == "" )
+			DEV_PDefGen_AddField_Int( entry.id )
+	}
+	DEV_PDefGen_EndStruct()
+
+	DEV_PDefGen_BeginStruct( "sCharacterLoadoutsData", "All character-specific loadout fields registered by script-func RegisterLoadoutSlot." )
+	foreach ( LoadoutEntry entry in fileLevel.loadoutSlotEntries )
+	{
+		if ( entry.guid == "SAID00080232848" ) // constant character GUID, bad but... whatever
+			DEV_PDefGen_AddField_Int( entry.id )
 	}
 	DEV_PDefGen_EndStruct()
 
 	DEV_PDefGen_BeginFieldGroup( "loadouts" )
 	DEV_PDefGen_AddField_Struct( "sLoadoutsData", "loadouts" )
+	DEV_PDefGen_EndFieldGroup()
+
+	DEV_PDefGen_BeginFieldGroup( "character loadouts" )
+	DEV_PDefGen_AddField_Struct( "sCharacterLoadoutsData", "character_loadouts[eCharacterFlavor]" )
 	DEV_PDefGen_EndFieldGroup()
 }
 #endif

@@ -581,7 +581,6 @@ void function OnPersistentDataReady( entity player )
 
 	foreach ( int index, StatEntry entry in fileLevel.stats_Int )
 	{
-		printt(FUNC_NAME(), index)
 		if ( entry.behavior == eStatBehavior.CALCULATED )
 		{
 			calculatedEntries.append( entry )
