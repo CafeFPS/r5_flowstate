@@ -91,6 +91,9 @@ void function EntitiesDidLoad()
 		test_runmapchecks()
 	#endif
 
+	GeyserInit()
+	Updrafts_Init()
+
 	//if ( file.isTrainEnabled )
 	//	thread DesertlandsTrain_Init()
 }
@@ -257,7 +260,7 @@ void function GeyersJumpTriggerArea( entity jumpPad )
 	entity trigger = CreateEntity( "trigger_cylinder_heavy" )
 	SetTargetName( trigger, "geyser_trigger" )
 	trigger.SetOwner( jumpPad )
-	//trigger.SetCylinderRadius( JUMP_PAD_PUSH_RADIUS )
+	trigger.SetRadius( JUMP_PAD_PUSH_RADIUS )
 	trigger.SetAboveHeight( 32 )
 	trigger.SetBelowHeight( 16 ) //need this because the player or jump pad can sink into the ground a tiny bit and we check player feet not half height
 	trigger.SetOrigin( origin )
@@ -271,8 +274,8 @@ void function GeyersJumpTriggerArea( entity jumpPad )
 	DispatchSpawn( trigger )
 	trigger.SetEnterCallback( Geyser_OnJumpPadAreaEnter )
 
-	entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_MILITIA, GEYSER_PING_SCRIPT_NAME )
-	traceBlocker.SetBox( <-192, -192, -16>, <192, 192, 3000> )
+	// entity traceBlocker = CreateTraceBlockerVolume( trigger.GetOrigin(), 24.0, true, CONTENTS_BLOCK_PING | CONTENTS_NOGRAPPLE, TEAM_MILITIA, GEYSER_PING_SCRIPT_NAME )
+	// traceBlocker.SetBox( <-192, -192, -16>, <192, 192, 3000> )
 
 	//DebugDrawCylinder( origin, < -90, 0, 0 >, JUMP_PAD_PUSH_RADIUS, trigger.GetAboveHeight(), 255, 0, 255, true, 9999.9 )
 	//DebugDrawCylinder( origin, < -90, 0, 0 >, JUMP_PAD_PUSH_RADIUS, -trigger.GetBelowHeight(), 255, 0, 255, true, 9999.9 )
@@ -320,7 +323,6 @@ void function Geyser_JumpJetsWhileAirborne( entity player )
 {
 	if ( !IsPilot( player ) )
 		return
-
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 	player.Signal( "JumpPadStart" )
@@ -371,11 +373,12 @@ void function Geyser_JumpJetsWhileAirborne( entity player )
 	WaitFrame()
 
 	wait 0.1
-
+	//thread PlayerSkydiveFromCurrentPosition( player )
 	while( !player.IsOnGround() )
 	{
 		WaitFrame()
 	}
+
 }
 
 

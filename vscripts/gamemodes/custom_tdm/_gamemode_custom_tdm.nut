@@ -243,12 +243,6 @@ void function SV_OnPlayerConnected(entity player)
     PlayerRestoreHP(player, 100, 65)
     TpPlayerToSpawnPoint(player)
 
-    StatusEffect_AddEndless( player, eStatusEffect.sonar_detected, 1.0 )
-
-    player.HighlightEnableForTeam( 1 )
-
-    Highlight_SetSonarHighlightWithParam0( player, "enemy_sonar", <1,0,0> )
-
 
     switch(GetGameState())
     {
