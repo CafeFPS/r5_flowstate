@@ -1924,40 +1924,10 @@ void function DebugMenuThink()
 #endif //CLIENT
 
 #if SERVER
-table<string, asset> PLAYER_CHARACTER_SETTINGS = {
-	character_bangalore  = $"settings/player/mp/pilot_survival_firesupport.rpak", // character_bangalore_NAME
-	character_bloodhound = $"settings/player/mp/pilot_survival_tracker.rpak",     // character_bloodhound_NAME
-	character_caustic    = $"settings/player/mp/pilot_survival_gas.rpak",         // character_caustic_NAME
-	character_gibraltar  = $"settings/player/mp/pilot_survival_gunner.rpak",      // character_gibraltar_NAME
-	character_lifeline   = $"settings/player/mp/pilot_survival_medic.rpak",       // character_lifeline_NAME
-	character_mirage     = $"settings/player/mp/pilot_survival_holopilot.rpak",   // character_mirage_NAME
-	character_octane     = $"settings/player/mp/pilot_survival_stim.rpak",        // character_octane_NAME
-	character_pathfinder = $"settings/player/mp/pilot_survival_grapple.rpak",     // character_pathfinder_NAME
-	character_wraith     = $"settings/player/mp/pilot_survival_closer.rpak"       // character_wraith_NAME
-	character_wattson    = $"settings/player/mp/pilot_survival_barricade.rpak"   // character_wattson_NAME
-	character_crypto     = $"settings/player/mp/pilot_survival_crypto.rpak"       // character_crypto_NAME
-}
-
 bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor character, bool updateLoadoutSlot = true )
 {
-	printt( "AssignCharacter: player", player, "will be assigned to", ItemFlavor_GetHumanReadableRef( character ) )
+	printt( "AssignCharacter: player", player, "is now", ItemFlavor_GetHumanReadableRef( character ) )
 
-	string characterRef = ItemFlavor_GetHumanReadableRef( character )
-	if ( !( characterRef in PLAYER_CHARACTER_SETTINGS ) )
-		return false // Character player setting not found
-
-	table<string, string> possibleMods = {
-		survival_jumpkit_enabled = "enable_jumpkit",
-		survival_wallrun_enabled = "enable_wallrun"
-	}
-
-	array<string> enabledMods = []
-
-	foreach ( playlistVar, modName in possibleMods )
-		if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
-			enabledMods.append( modName )
-
-	player.SetPlayerSettingsWithMods( PLAYER_CHARACTER_SETTINGS[characterRef], enabledMods )
 	if ( updateLoadoutSlot )
 		SetItemFlavorLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), character )
 

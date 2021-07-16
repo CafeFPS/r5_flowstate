@@ -1,5 +1,3 @@
-// stub script
-
 global function GamemodeSurvival_Init
 global function RateSpawnpoints_Directional
 global function Survival_SetFriendlyOwnerHighlight
@@ -16,8 +14,6 @@ global function DecideRespawnPlayer
 global function Survival_GetMapFloorZ
 global function SURVIVAL_GetClosestValidCircleEndLocation
 global function SURVIVAL_CalculateAirdropPositions
-global function SURVIVAL_GetPlaneHeight
-global function SURVIVAL_GetAirburstHeight
 global function SURVIVAL_AddLootBin
 global function SURVIVAL_AddLootGroupRemapping
 global function SURVIVAL_GetMultipleWeightedItemsFromGroup
@@ -25,6 +21,7 @@ global function SURVIVAL_DebugLoot
 global function Survival_AddCallback_OnAirdropLaunched
 global function Survival_CleanupPlayerPermanents
 global function SURVIVAL_SetMapCenter
+global function SURVIVAL_GetMapCenter
 
 struct
 {
@@ -32,6 +29,8 @@ struct
 	bool minPlayersReached = false
 
 	vector mapCenter = <0, 0, 0>
+
+	bool planeDoorsOpen = false
 } file
 
 void function GamemodeSurvival_Init()
@@ -88,6 +87,13 @@ void function UpdateSequencedTimePoints( float referenceTime )
 			SetGlobalNetTime( "championSquadPresentationStartTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection + timeBeforeChampionPresentation )
 			SetGlobalNetTime( "pickLoadoutGamestateEndTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection + timeBeforeChampionPresentation + timeAfterChampionPresentation )
 			break
+		case eGameState.Playing:
+			float timeDoorOpenWait = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 4.0 )
+			float timeDoorCloseWait = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
+
+			SetGlobalNetTime( "PlaneDoorsOpenTime", referenceTime + timeDoorOpenWait )
+			SetGlobalNetTime( "PlaneDoorsCloseTime", referenceTime + timeDoorOpenWait + timeDoorCloseWait )
+			break
 	}
 }
 
@@ -112,7 +118,7 @@ void function Sequence_WaitingForPlayers()
 
 		if ( shouldNotWaitForever 
 			&& timeSpentWaitingForPlayers >= maximumTimeToSpendToWaitForPlayers
-			&& file.connectedPlayerCount > 1
+			&& file.connectedPlayerCount > 0
 			)
 			break
 	}
@@ -148,6 +154,8 @@ void function Sequence_PickLoadout()
 
 	// Signalize that character selection sequence should be started clientside
 	SetGlobalNetBool( "characterSelectionReady", true )
+
+	// TODO: character selection music
 
 	wait CharSelect_GetIntroCountdownDuration()
 
@@ -190,41 +198,22 @@ void function Sequence_PickLoadout()
 
 	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 )
 		wait CharSelect_GetOutroSquadPresentDuration()
-
-	if ( GetCurrentPlaylistVarInt( "survival_enable_gladiator_intros", 1 ) == 1 )
-		wait CharSelect_GetOutroChampionPresentDuration()
-
+		
 	thread Sequence_Prematch()
 }
 
 void function Sequence_Prematch()
 {
-	// TEMP until dropship is done
-	vector pos = GetEnt( "info_player_start" ).GetOrigin()
-	pos.z += 5
+	SetGameState( eGameState.Prematch )
 
-	int i = 0
-	foreach ( player in GetPlayerArray() )
-	{
-		// circle
-		float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
-		player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+	// Update future time points now that the delays should be predictable
+	UpdateSequencedTimePoints( Time() )
 
-		DecideRespawnPlayer( player )
-		player.SetHealth( 100 )
+	// Show the squad and player counter
+	UpdateSquadNetCounts()
 
-		player.SetPlayerNetBool( "pingEnabled", true )
-
-		i++
-	}
-
-	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
-	{
-		thread Sequence_Playing()
-		return
-	}
-
-	// TODO: dropship, the entirety of prematch basically
+	if ( GetCurrentPlaylistVarInt( "survival_enable_gladiator_intros", 1 ) == 1 )
+		wait CharSelect_GetOutroChampionPresentDuration()
 
 	thread Sequence_Playing()
 }
@@ -233,9 +222,116 @@ void function Sequence_Playing()
 {
 	SetGameState( eGameState.Playing )
 
+	// Update future time points now that the delays should be predictable
+	UpdateSequencedTimePoints( Time() )
+
 	SetServerVar( "minimapState", true )
 
+	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
+	{
+		vector pos = GetEnt( "info_player_start" ).GetOrigin()
+		pos.z += 5
+	
+		int i = 0
+		foreach ( player in GetPlayerArray() )
+		{
+			// circle
+			float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
+			player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+	
+			DecideRespawnPlayer( player )
+	
+			i++
+		}
+	}
+	else
+	{
+		const float POS_OFFSET = -500.0 // Offset from dropship's origin
+
+		float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
+		float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
+		float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 10.0 )
+
+		array<vector> foundFlightPath = Survival_GeneratePlaneFlightPath()
+
+		vector shipStart = foundFlightPath[0]
+		vector shipEnd = foundFlightPath[1]
+		vector shipAngles = foundFlightPath[2]
+		vector shipPathCenter = foundFlightPath[3]
+	
+		entity centerEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", shipPathCenter, shipAngles )
+		centerEnt.Minimap_AlwaysShow( 0, null )
+		SetTargetName( centerEnt, "pathCenterEnt" )
+		DispatchSpawn( centerEnt )
+
+		entity dropship = Survival_CreatePlane( shipStart, shipAngles )
+
+		Sur_SetPlaneEnt( dropship )
+
+		entity minimapPlaneEnt = CreatePropScript_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", dropship.GetOrigin(), dropship.GetAngles() )
+		minimapPlaneEnt.SetParent( dropship )
+		minimapPlaneEnt.Minimap_AlwaysShow( 0, null )
+		SetTargetName( minimapPlaneEnt, "planeEnt" )
+		DispatchSpawn( minimapPlaneEnt )
+
+		vector dropshipPlayerOrigin = shipStart
+		dropshipPlayerOrigin.z += POS_OFFSET
+
+		foreach ( player in GetPlayerArray() )
+		{
+			DecideRespawnPlayer( player, false )
+
+			player.SetParent( dropship )
+
+			player.SetOrigin( dropshipPlayerOrigin )
+			player.SetAngles( shipAngles )
+
+			player.UnfreezeControlsOnServer()
+
+			player.SetPlayerNetBool( "playerInPlane", true )
+			player.SetPlayerNetBool( "isJumpingWithSquad", true )
+		}
+
+		foreach ( team in GetTeamsForPlayers( GetPlayerArray() ) )
+		{
+			// TODO: proper jumpmaster logic
+			array<entity> teamMembers = GetPlayerArrayOfTeam(team)
+			teamMembers[0].SetPlayerNetBool( "isJumpmaster", true )
+		}
+
+		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME, 0.0, DROP_TIMEOUT_TIME )
+
+		wait DROP_WAIT_TIME
+
+		foreach ( player in GetPlayerArray_AliveConnected() )
+			AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+
+		file.planeDoorsOpen = true
+
+		// TODO: squad jumpmaster reassignment and solo drop
+
+		wait DROP_TOTAL_TIME
+
+		file.planeDoorsOpen = false
+
+		foreach ( player in GetPlayerArray() )
+		{
+			if ( player.GetPlayerNetBool( "playerInPlane" ) )
+				Survival_DropPlayerFromPlane_UseCallback( player )
+		}
+
+		wait DROP_TIMEOUT_TIME
+
+		centerEnt.Destroy()
+		minimapPlaneEnt.Destroy()
+		dropship.Destroy()
+	}
+
+	wait 5.0
+
 	thread SURVIVAL_RunArenaDeathField()
+
+	// TODO: match ending
 }
 // Sequences END
 
@@ -266,7 +362,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	if ( attacker.IsPlayer() && victim.IsPlayer() )
 	{
-		attacker.SetPlayerNetInt( "kills" , attacker.GetPlayerNetInt( "kills" ) + 1 )
+		attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 	}
 
 	if ( victim.IsPlayer() )
@@ -283,8 +379,6 @@ void function OnClientConnected( entity client )
 
 	int minPlayers = GetCurrentPlaylistVarInt( "min_players", 1 )
 	
-	printt( "SUR OnClientConnected connectedPlayerCount", file.connectedPlayerCount, "minPlayers", minPlayers )
-
 	if ( file.connectedPlayerCount >= minPlayers )
 		file.minPlayersReached = true
 
@@ -296,17 +390,26 @@ void function OnClientConnected( entity client )
 	switch ( GetGameState() )
 	{
 		case eGameState.WaitingForPlayers:
-			client.SetOrigin( file.mapCenter )
+			entity startEnt = GetEnt( "info_player_start" )
+
+			client.SetOrigin( startEnt.GetOrigin() )
+			client.SetAngles( startEnt.GetAngles() )
+
+			client.FreezeControlsOnServer()
+
 			if ( PreGame_GetWaitingForPlayersSpawningEnabled() )
-				DoRespawnPlayer( client, null )
+				DecideRespawnPlayer( client, false )
 			break
 	}
 }
 
 void function OnCharacterClassChanged( EHI playerEHI, ItemFlavor flavor )
 {
+	if ( GetGameState() == eGameState.PickLoadout )
+		return
+
 	entity player = FromEHI( playerEHI )
-	if ( IsAlive(player) ) {
+	if ( IsAlive( player ) ) {
 		TakeAllWeapons( player )
 		
 		CharacterSelect_AssignCharacter( player, flavor, false )
@@ -360,9 +463,9 @@ void function JetwashFX( entity dropship )
 
 }
 
-void function Survival_PlayerRespawnedTeammate( entity playersToSpawn, entity p )
+void function Survival_PlayerRespawnedTeammate( entity playerWhoRespawned, entity respawnedPlayer )
 {
-
+	ClearPlayerEliminated( respawnedPlayer )
 }
 
 void function UpdateDeathBoxHighlight( entity box )
@@ -393,10 +496,33 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
 }
 
-void function DecideRespawnPlayer( entity player )
+void function DecideRespawnPlayer( entity player, bool setPlayerSettings = true )
 {
 	DoRespawnPlayer( player, null )
-	GiveLoadoutRelatedWeapons( player )
+
+	if ( setPlayerSettings )
+	{
+		table<string, string> possibleMods = {
+			survival_jumpkit_enabled = "enable_doublejump",
+			survival_wallrun_enabled = "enable_wallrun"
+		}
+	
+		array<string> enabledMods = []
+		foreach ( playlistVar, modName in possibleMods )
+			if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
+				enabledMods.append( modName )
+	
+		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+
+		player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
+
+		GiveLoadoutRelatedWeapons( player )
+
+		player.SetPlayerNetBool( "pingEnabled", true )
+	}
+
+	player.SetHealth( 100 )
 }
 
 float function Survival_GetMapFloorZ( vector field )
@@ -416,21 +542,9 @@ vector function SURVIVAL_CalculateAirdropPositions()
 	return origin
 }
 
-float function SURVIVAL_GetPlaneHeight()
-{
-	float height = 0.0
-	return height
-}
-
-float function SURVIVAL_GetAirburstHeight()
-{
-	float height = 0.0
-	return height
-}
-
 void function SURVIVAL_AddLootBin( entity lootbin )
 {
-	InitLootBin( lootbin )
+	// InitLootBin( lootbin )
 }
 
 void function SURVIVAL_AddLootGroupRemapping( string hovertank, string supplyship )
@@ -459,10 +573,13 @@ void function Survival_CleanupPlayerPermanents( entity player )
 	
 }
 
+vector function SURVIVAL_GetMapCenter()
+{
+	return file.mapCenter
+}
+
 void function SURVIVAL_SetMapCenter( vector center )
 {
-	center.z = 5000
-
 	file.mapCenter = center
 }
 

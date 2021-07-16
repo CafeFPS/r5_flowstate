@@ -1,20 +1,166 @@
-// stub script
-
 global function Survival_HasPlayerJumpedOutOfPlane
+global function Survival_CreatePlane
+global function Survival_GeneratePlaneFlightPath
+global function Survival_DropPlayerFromPlane_UseCallback
+global function Survival_DropPlayerFromPlane
+global function SURVIVAL_GetPlaneHeight
+global function SURVIVAL_GetAirburstHeight
 global function SURVIVAL_SetPlaneHeight
 global function SURVIVAL_SetAirburstHeight
+global function GetDropshipClearance
+
+struct {
+	float planeHeight = 0.0
+	float airburstHeight = 0.0
+} file
+
+float function GetDropshipClearance( vector origin )
+{
+	vector endOrigin = origin - < 0, 0, 50000 >
+	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	vector endPos = traceResult.endPos
+	float zDelta = ( origin.z - endPos.z )
+
+	return zDelta
+}
+
+vector function TraceInBoundPoint( vector start, vector forward, float multiplier )
+{
+	const float MAX_DELTA = 5000.0
+
+	vector result = start
+	float startClearance = GetDropshipClearance( start )
+
+	while ( GetDropshipClearance( result ) - startClearance <= MAX_DELTA )
+		result += forward * multiplier
+
+	return result
+}
+
+// script gp()[0].SetOrigin(<gp()[0].GetOrigin().x,gp()[0].GetOrigin().y,SURVIVAL_GetPlaneHeight()>)
+// script printt(GetDropshipClearance(gp()[0].GetOrigin()))
+
+entity function Survival_CreatePlane( vector origin, vector angles )
+{
+	entity script_mover = CreateEntity( "script_mover_lightweight" )
+	script_mover.kv.solid = 0
+	script_mover.kv.fadedist = -1
+	script_mover.SetValueForModelKey( SURVIVAL_PLANE_MODEL )
+	script_mover.kv.SpawnAsPhysicsMover = 0
+	script_mover.SetOrigin( origin )
+	script_mover.SetAngles( angles )
+	DispatchSpawn( script_mover )	
+	return script_mover
+}
+
+// Why does this work?
+array<vector> function Survival_GeneratePlaneFlightPath()
+{
+	const float CENTER_DEVIATION = 2.0
+	const float POINT_FINDER_MULTIPLIER = 200
+
+	vector mapCenter = SURVIVAL_GetMapCenter()
+
+	// Get a random point from map center within specified deviation
+	vector dropshipCenterPoint = GetRandomCenter( mapCenter, 0.0, CENTER_DEVIATION )
+	dropshipCenterPoint.z = SURVIVAL_GetPlaneHeight()
+
+	vector dropshipMovingAngle = <0, RandomFloatRange( 0.0, 360.0 ), 0>
+	vector dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
+
+	vector startPos = TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER )
+	vector endPos = TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER * -1.0 )
+
+	if ( CoinFlip() )
+	{
+		vector temp = startPos
+		startPos = endPos
+		endPos = temp
+	}
+
+	dropshipMovingAngle = VectorToAngles(endPos - startPos)
+
+	// printt( "Survival_GeneratePlaneFlightPath: startPos", startPos )
+	// printt( "Survival_GeneratePlaneFlightPath: endPos", endPos )
+	// printt( "Survival_GeneratePlaneFlightPath: dropshipMovingAngle", dropshipMovingAngle )
+
+	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
+}
+
+void function Survival_DropPlayerFromPlane_UseCallback( entity player )
+{
+	Survival_DropPlayerFromPlane( player, true )
+}
+
+bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback = false )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+	{
+		if ( fromUseCallback )
+			RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+
+		return false
+	}
+
+	if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) && !player.GetPlayerNetBool( "isJumpmaster" ) )
+		return false
+
+	player.ClearParent()
+
+	vector driverViewVector = player.GetViewVector()
+
+	TakeAllWeapons( player )
+	DecideRespawnPlayer( player )
+
+	array<entity> squadPlayers = [ player ]
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		squadPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	
+	if ( fromUseCallback )
+		RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+
+	foreach ( squadPlayer in squadPlayers )
+	{
+		if ( squadPlayer != player )
+		{
+			if ( !squadPlayer.GetPlayerNetBool( "isJumpingWithSquad" ) )
+			{
+				squadPlayers.fastremovebyvalue( squadPlayer )
+				continue
+			}
+
+			squadPlayer.ClearParent()
+		}
+
+		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
+
+		thread PlayerSkyDive( squadPlayer, driverViewVector, squadPlayers, player, true, true )
+	}
+
+	return true
+}
 
 bool function Survival_HasPlayerJumpedOutOfPlane( entity player )
 {
-	return true
+	return !player.GetPlayerNetBool( "playerInPlane" )
+}
+
+float function SURVIVAL_GetPlaneHeight()
+{
+	return file.planeHeight
+}
+
+float function SURVIVAL_GetAirburstHeight()
+{
+	return file.airburstHeight
 }
 
 void function SURVIVAL_SetPlaneHeight( float height )
 {
-
+	file.planeHeight = height
 }
 
 void function SURVIVAL_SetAirburstHeight( float height )
 {
-	
+	file.airburstHeight = height
 }
