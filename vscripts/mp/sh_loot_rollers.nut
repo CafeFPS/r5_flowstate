@@ -85,7 +85,7 @@ void function LootRollerSpawned( entity ent )
 
 	#if SERVER
 
-  #endif
+	#endif
 
 	#if CLIENT
 	LootRollerClientData data
