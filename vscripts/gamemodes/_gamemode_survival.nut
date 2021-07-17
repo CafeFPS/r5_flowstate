@@ -618,7 +618,7 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 
 	// Loadout meleeskin
-	player.TakeNormalWeaponByIndex( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	player.TakeOffhandWeapon( OFFHAND_MELEE )
 
 	// Character related
