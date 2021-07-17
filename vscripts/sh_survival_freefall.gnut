@@ -204,6 +204,8 @@ void function SurvivalFreefall_Init()
 		AddCallback_OnClientDisconnected( OnPlayerDisconnected )
 		AddClientCommandCallback( "StopFreefallFollowMode", ClientCommand_StopFreefallFollowMode )
 
+		AddClientCommandCallback( "SkydiveEmote", ClientCommand_SkydiveEmote )
+
 		file.skydiveSmokeColors.randomize()
 	#endif
 
@@ -362,8 +364,11 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 	array<entity> jumpJetFX
 	player.p.isSkydiving = true
 
+	ItemFlavor musicPack = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() )
+	string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
+
 	OnThreadEnd(
-		function() : ( player, leaderPlayer, jumpJetFX, jumpingFromPlane )
+		function() : ( player, leaderPlayer, jumpJetFX, jumpingFromPlane, skydiveMusicID )
 		{
 			if ( IsValid( player ) )
 			{
@@ -373,7 +378,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 				thread DisableSkydiveThirdPerson( player )
 
 				// This track started when we entered the plane, stopping it again (second time) will trigger a fadeout
-				StopMusicOnPlayer( player, "Music_Jump" )
+				StopMusicOnPlayer( player, skydiveMusicID )
 
 				StopSoundOnEntity( player, "Survival_DropSequence_Launch_1P" )
 				StopSoundOnEntity( player, "Survival_DropSequence_Launch_3P" )
@@ -442,7 +447,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 	// This track started when we entered the plane, stopping it will trigger a new stage of the song for the descent
 	//StopMusicOnPlayer( player, "Music_Jump" )
-	SignalSoundOnEntity( player, "Music_Jump" )
+	SignalSoundOnEntity( player, skydiveMusicID )
 
 	player.ClearInvulnerable()
 	player.ClearParent()
@@ -1310,6 +1315,37 @@ bool function ClientCommand_StopFreefallFollowMode( entity player, array<string>
 {
 	if ( IsValid( player ) )
 		player.p.skydiveIsFollowing = false
+	return true
+}
+
+bool function ClientCommand_SkydiveEmote( entity player, array<string> args )
+{
+	if ( args.len() != 1 )
+		return true
+
+	table<int, ItemFlavor> availableSkydiveEmotes = GetValidPlayerSkydiveEmotes( player )
+
+	if ( availableSkydiveEmotes.len() == 0 )
+		return true
+
+	int emoteIndex = int( args[0] )
+
+	if ( emoteIndex < 0 || emoteIndex >= availableSkydiveEmotes.len() )
+		return true
+
+	ItemFlavor selectedEmote = availableSkydiveEmotes[emoteIndex]
+
+	player.SetPlayerNetBool( "freefallEmoteAvailable", false )
+	thread function() : ( player, selectedEmote )
+	{
+		asset animSeq = CharacterSkydiveEmote_GetAnimSeq( selectedEmote )
+		
+		player.Anim_Play( animSeq )
+		wait player.GetSequenceDuration( animSeq )
+
+		player.SetPlayerNetBool( "freefallEmoteAvailable", true )
+	}()
+
 	return true
 }
 

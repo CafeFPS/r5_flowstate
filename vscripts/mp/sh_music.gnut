@@ -18,14 +18,15 @@ global function GetMusicPackDefaultIsSelectedLoadout
 global function WaitForMusicPackForPlayer
 global function GetMusicPackForPlayer
 
-
+#if SERVER || CLIENT || UI
+global function MusicPack_GetLobbyIntoCharacterSelectMusic
+global function MusicPack_GetCharacterSelectMusic
+global function MusicPack_GetSkydiveMusic
+#endif
 
 #if CLIENT || UI
 global function MusicPack_GetMainMenuToLobbyMusic
 global function MusicPack_GetLobbyMusic
-global function MusicPack_GetLobbyIntoCharacterSelectMusic
-global function MusicPack_GetCharacterSelectMusic
-global function MusicPack_GetSkydiveMusic
 global function MusicPack_GetWinMusic
 global function MusicPack_GetLossMusic
 
@@ -239,7 +240,7 @@ string function MusicPack_GetLobbyMusic( ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 string function MusicPack_GetLobbyIntoCharacterSelectMusic( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
@@ -248,7 +249,7 @@ string function MusicPack_GetLobbyIntoCharacterSelectMusic( ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 string function MusicPack_GetCharacterSelectMusic( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )
@@ -263,7 +264,7 @@ string function MusicPack_GetCharacterSelectMusic( ItemFlavor flavor )
 #endif
 
 
-#if CLIENT || UI
+#if SERVER || CLIENT || UI
 string function MusicPack_GetSkydiveMusic( ItemFlavor flavor )
 {
 	Assert( ItemFlavor_GetType( flavor ) == eItemType.music_pack )

@@ -30,7 +30,7 @@ struct
 
 	vector mapCenter = <0, 0, 0>
 
-	bool planeDoorsOpen = false
+	table<entity, bool> eligibleForJumpmasterTable = {}
 } file
 
 void function GamemodeSurvival_Init()
@@ -50,12 +50,20 @@ void function GamemodeSurvival_Init()
 	AddClientCommandCallback( "GoToMapPoint", ClientCommand_GoToMapPoint )
 	#endif
 
+	AddClientCommandCallback( "Sur_MakeEligibleForJumpMaster", ClientCommand_MakeEligibleForJumpMaster )
+
+	AddClientCommandCallback( "Sur_RelinquishJumpMaster", ClientCommand_RelinquishJumpMaster )
+	AddClientCommandCallback( "Sur_RemoveFromSquad", ClientCommand_RemoveFromSquad )
+	AddClientCommandCallback( "Sur_ReturnToSquad", ClientCommand_ReturnToSquad )
+
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
 
 	SetGameState( eGameState.WaitingForPlayers )
 
 	AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnCharacterClassChanged )
+	foreach ( character in GetAllCharacters() )
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterSkin( character ), OnCharacterSkinChanged )
 
 	// Start the WaitingForPlayers sequence.
 	// TODO: staging area support
@@ -65,6 +73,8 @@ void function GamemodeSurvival_Init()
 // Sequences
 void function UpdateSequencedTimePoints( float referenceTime )
 {
+	SetGlobalNetInt( "gameState", GetGameState() )
+
 	switch ( GetGameState() )
 	{
 		case eGameState.WaitingForPlayers:
@@ -78,7 +88,7 @@ void function UpdateSequencedTimePoints( float referenceTime )
 			for ( int pickIndex = 0; pickIndex < MAX_TEAM_PLAYERS; pickIndex++ )
 				timeToSelectAllCharacters += Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
 		
-			float timeAfterCharacterSelection = CharSelect_GetPickingDelayAfterAll()
+			float timeAfterCharacterSelection = CharSelect_GetPickingDelayAfterAll() + CharSelect_GetOutroTransitionDuration()
 
 			float timeBeforeChampionPresentation = GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 ? CharSelect_GetOutroSquadPresentDuration() : 0.0
 			float timeAfterChampionPresentation = GetCurrentPlaylistVarInt( "survival_enable_gladiator_intros", 1 ) == 1 ? CharSelect_GetOutroChampionPresentDuration() : 0.0
@@ -88,7 +98,7 @@ void function UpdateSequencedTimePoints( float referenceTime )
 			SetGlobalNetTime( "pickLoadoutGamestateEndTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection + timeBeforeChampionPresentation + timeAfterChampionPresentation )
 			break
 		case eGameState.Playing:
-			float timeDoorOpenWait = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 4.0 )
+			float timeDoorOpenWait = CharSelect_GetOutroTransitionDuration() + GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
 			float timeDoorCloseWait = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
 
 			SetGlobalNetTime( "PlaneDoorsOpenTime", referenceTime + timeDoorOpenWait )
@@ -125,7 +135,13 @@ void function Sequence_WaitingForPlayers()
 
 	// Update to make client aware of the countdown
 	UpdateSequencedTimePoints( Time() )
-	wait PreGame_GetWaitingForPlayersCountdown()
+
+	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
+
+	wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
+
+	if ( !introCountdownEnabled )
+		PlayPickLoadoutMusic( false )
 
 	thread Sequence_PickLoadout()
 }
@@ -152,12 +168,16 @@ void function Sequence_PickLoadout()
 	// Update future time points now that the delays should be predictable
 	UpdateSequencedTimePoints( Time() )
 
+	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
+
 	// Signalize that character selection sequence should be started clientside
 	SetGlobalNetBool( "characterSelectionReady", true )
 
-	// TODO: character selection music
-
-	wait CharSelect_GetIntroCountdownDuration()
+	if ( introCountdownEnabled )
+	{
+		wait CharSelect_GetIntroCountdownDuration() + (CharSelect_GetIntroMusicStartTime() - CharSelect_GetIntroTransitionDuration())
+		PlayPickLoadoutMusic( true )
+	}
 
 	wait CharSelect_GetPickingDelayBeforeAll()
 
@@ -196,9 +216,18 @@ void function Sequence_PickLoadout()
 
 	wait CharSelect_GetPickingDelayAfterAll()
 
-	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 )
+	wait CharSelect_GetOutroTransitionDuration()
+
+	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 ) {
+		foreach ( player in GetPlayerArray() )
+		{
+			string skydiveMusicID = MusicPack_GetSkydiveMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
+			EmitSoundOnEntityOnlyToPlayer( player, player, skydiveMusicID )
+		}
+
 		wait CharSelect_GetOutroSquadPresentDuration()
-		
+	}
+
 	thread Sequence_Prematch()
 }
 
@@ -208,9 +237,6 @@ void function Sequence_Prematch()
 
 	// Update future time points now that the delays should be predictable
 	UpdateSequencedTimePoints( Time() )
-
-	// Show the squad and player counter
-	UpdateSquadNetCounts()
 
 	if ( GetCurrentPlaylistVarInt( "survival_enable_gladiator_intros", 1 ) == 1 )
 		wait CharSelect_GetOutroChampionPresentDuration()
@@ -250,7 +276,7 @@ void function Sequence_Playing()
 
 		float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
 		float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
-		float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 10.0 )
+		float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
 
 		array<vector> foundFlightPath = Survival_GeneratePlaneFlightPath()
 
@@ -277,6 +303,42 @@ void function Sequence_Playing()
 		vector dropshipPlayerOrigin = shipStart
 		dropshipPlayerOrigin.z += POS_OFFSET
 
+		foreach ( team in GetTeamsForPlayers( GetPlayerArray() ) )
+		{
+			array<entity> teamMembers = GetPlayerArrayOfTeam( team )
+
+			bool foundJumpmaster = false
+			entity ornull jumpMaster = null
+
+			for ( int idx = teamMembers.len() - 1; idx == 0; idx-- )
+			{
+				entity teamMember = teamMembers[idx]
+
+				if ( teamMember in file.eligibleForJumpmasterTable )
+				{
+					foundJumpmaster = true
+					jumpMaster = teamMember
+
+					break
+				}
+			}
+
+			if ( !foundJumpmaster ) // No eligible jumpmasters? Shouldn't happen, but just in case
+			{
+				teamMembers.randomize()
+				
+				entity randomMember = teamMembers[0]
+				jumpMaster = randomMember
+			}
+
+			if ( jumpMaster != null )
+			{
+				expect entity( jumpMaster )
+		
+				jumpMaster.SetPlayerNetBool( "isJumpmaster", true )			
+			}
+		}
+
 		foreach ( player in GetPlayerArray() )
 		{
 			DecideRespawnPlayer( player, false )
@@ -288,31 +350,23 @@ void function Sequence_Playing()
 
 			player.UnfreezeControlsOnServer()
 
-			player.SetPlayerNetBool( "playerInPlane", true )
 			player.SetPlayerNetBool( "isJumpingWithSquad", true )
+			player.SetPlayerNetBool( "playerInPlane", true )
 		}
 
-		foreach ( team in GetTeamsForPlayers( GetPlayerArray() ) )
-		{
-			// TODO: proper jumpmaster logic
-			array<entity> teamMembers = GetPlayerArrayOfTeam(team)
-			teamMembers[0].SetPlayerNetBool( "isJumpmaster", true )
-		}
+		// Show the squad and player counter
+		UpdateSquadNetCounts()
 
-		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME, 0.0, DROP_TIMEOUT_TIME )
+		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME, 0.0, 0.0 )
+
+		wait CharSelect_GetOutroTransitionDuration()
 
 		wait DROP_WAIT_TIME
 
 		foreach ( player in GetPlayerArray_AliveConnected() )
 			AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 
-		file.planeDoorsOpen = true
-
-		// TODO: squad jumpmaster reassignment and solo drop
-
 		wait DROP_TOTAL_TIME
-
-		file.planeDoorsOpen = false
 
 		foreach ( player in GetPlayerArray() )
 		{
@@ -331,7 +385,63 @@ void function Sequence_Playing()
 
 	thread SURVIVAL_RunArenaDeathField()
 
-	// TODO: match ending
+	if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) )
+		WaitForever() // match never ending
+
+	while ( GetGameState() == eGameState.Playing )
+	{
+		if ( GetNumTeamsRemaining() <= 1 )
+		{
+			int winnerTeam = GetTeamsForPlayers( GetPlayerArray_AliveConnected() )[0]
+			level.nv.winningTeam = winnerTeam
+
+			SetGameState( eGameState.WinnerDetermined )
+		}
+	}
+
+	thread Sequence_WinnerDetermined()
+}
+
+void function Sequence_WinnerDetermined()
+{
+	FlagSet( "DeathFieldPaused" )
+
+	foreach ( player in GetPlayerArray() ) {
+		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == GetWinningTeam(), GetWinningTeam() )
+	}
+
+	wait 15.0
+
+	thread Sequence_Epilogue()
+}
+
+void function Sequence_Epilogue()
+{
+	SetGameState( eGameState.Epilogue )
+
+	// TODO squad stats
+	/*
+	foreach ( player in GetPlayerArray() ) {
+		player.FreezeControlsOnServer()
+
+		Remote_CallFunction_NonReplay( player, "ServerCallback_AddWinningSquadData", -1, -1, 0, 0, 0, 0, 0 )
+
+		foreach ( int i, entity champion in GetPlayerArrayOfTeam( GetWinningTeam() ) )
+			Remote_CallFunction_NonReplay( 
+				player, 
+				"ServerCallback_AddWinningSquadData", 
+				i, // Champion index
+				champion.GetEncodedEHandle(), // Champion EEH
+				champion.GetPlayerNetInt( "kills" ),
+				
+			)
+
+		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
+	}
+	*/
+
+	WaitForever()
 }
 // Sequences END
 
@@ -345,6 +455,20 @@ void function ScreenCoverTransition_AllPlayers( float endTime )
 {
 	foreach ( player in GetPlayerArray() )
 		ScreenCoverTransition_Player( player, endTime )
+}
+
+void function PlayPickLoadoutMusic( bool introCountdownEnabled )
+{
+	foreach ( player in GetPlayerArray() )
+	{
+		string pickLoadoutMusicID = MusicPack_GetCharacterSelectMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
+		EmitSoundOnEntityOnlyToPlayer( player, player, pickLoadoutMusicID )
+	}
+
+	wait fabs( CharSelect_GetIntroMusicStartTime() )
+
+	if ( introCountdownEnabled )
+		wait CharSelect_GetIntroTransitionDuration()
 }
 
 void function UpdateSquadNetCounts()
@@ -410,11 +534,24 @@ void function OnCharacterClassChanged( EHI playerEHI, ItemFlavor flavor )
 
 	entity player = FromEHI( playerEHI )
 	if ( IsAlive( player ) ) {
-		TakeAllWeapons( player )
+		TakeLoadoutRelatedWeapons( player )
 		
 		CharacterSelect_AssignCharacter( player, flavor, false )
 		DecideRespawnPlayer( player )
 	}
+}
+
+void function OnCharacterSkinChanged( EHI playerEHI, ItemFlavor flavor )
+{
+	if ( GetGameState() < eGameState.Playing )
+		return
+
+	entity player = FromEHI( playerEHI )
+
+	if ( !IsAlive( player ) || player.GetPlayerNetBool( "playerInPlane" ) )
+		return
+
+	CharacterSkin_Apply( player, flavor )
 }
 
 array<entity> function GetAllPlayersOfLockstepIndex( int index )
@@ -473,6 +610,25 @@ void function UpdateDeathBoxHighlight( entity box )
 
 }
 
+void function TakeLoadoutRelatedWeapons( entity player )
+{
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+
+	// Shared
+	player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
+
+	// Loadout meleeskin
+	player.TakeNormalWeaponByIndex( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.TakeOffhandWeapon( OFFHAND_MELEE )
+
+	// Character related
+	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+
+	ItemFlavor passiveAbility = CharacterClass_GetPassiveAbility( character )
+	TakePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
+}
+
 void function GiveLoadoutRelatedWeapons( entity player )
 {
 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
@@ -496,38 +652,43 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	GivePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
 }
 
-void function DecideRespawnPlayer( entity player, bool setPlayerSettings = true )
+void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
 {
 	DoRespawnPlayer( player, null )
 
-	if ( setPlayerSettings )
-	{
-		table<string, string> possibleMods = {
-			survival_jumpkit_enabled = "enable_doublejump",
-			survival_wallrun_enabled = "enable_wallrun"
-		}
-	
-		array<string> enabledMods = []
-		foreach ( playlistVar, modName in possibleMods )
-			if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
-				enabledMods.append( modName )
-	
-		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	table<string, string> possibleMods = {
+		survival_jumpkit_enabled = "enable_doublejump",
+		survival_wallrun_enabled = "enable_wallrun"
+	}
 
-		player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
+	array<string> enabledMods = []
+	foreach ( playlistVar, modName in possibleMods )
+		if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
+			enabledMods.append( modName )
 
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+
+	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
+
+	ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
+	CharacterSkin_Apply( player, playerCharacterSkin )
+
+	if ( giveLoadoutWeapons )
 		GiveLoadoutRelatedWeapons( player )
 
-		player.SetPlayerNetBool( "pingEnabled", true )
-	}
+	player.SetPlayerNetBool( "pingEnabled", true )
 
 	player.SetHealth( 100 )
 }
 
 float function Survival_GetMapFloorZ( vector field )
 {
-	return 0.0
+	field.z = SURVIVAL_GetPlaneHeight()
+	vector endOrigin = field - < 0, 0, 50000 >
+	TraceResults traceResult = TraceLine( field, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	vector endPos = traceResult.endPos
+	return endPos.z
 }
 
 vector function SURVIVAL_GetClosestValidCircleEndLocation( vector origin )
@@ -600,6 +761,84 @@ bool function ClientCommand_GoToMapPoint( entity player, array<string> args )
 	}
 
 	player.SetOrigin( origin )
+
+	return true
+}
+
+bool function ClientCommand_MakeEligibleForJumpMaster( entity player, array<string> args )
+{
+	file.eligibleForJumpmasterTable[player] <- true
+
+	return true
+}
+
+entity ornull function ChangeJumpmasterInSquad( entity currentJumpmaster )
+{
+	currentJumpmaster.SetPlayerNetBool( "isJumpmaster", false )
+
+	array<entity> availableSquadMembers = GetPlayerArrayOfTeam( currentJumpmaster.GetTeam() )
+	
+	if ( availableSquadMembers.len() == 1 )
+		return null
+
+	availableSquadMembers.fastremovebyvalue( currentJumpmaster )
+	availableSquadMembers.randomize()
+
+	entity selectedMember = availableSquadMembers[0]
+
+	selectedMember.SetPlayerNetBool( "isJumpmaster", true )
+
+	return selectedMember
+}
+
+// Jump related control commands
+bool function ClientCommand_RelinquishJumpMaster( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't relinquish when it's not/past time
+
+	if ( !player.GetPlayerNetBool( "isJumpmaster" ) )
+		return true // Can't relinquish what you don't have
+
+	if ( GetPlayerArrayOfTeam( player.GetTeam() ).len() == 1 )
+		return true // Can't relinquish from yourself to yourself
+	
+	entity ornull newJumpmaster = ChangeJumpmasterInSquad( player )
+	
+	if ( newJumpmaster != null )
+	{
+		expect entity( newJumpmaster )
+
+		MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RelinquishedJumpmaster, null, player, newJumpmaster.GetEncodedEHandle() )
+	}
+	
+	return true
+}
+
+bool function ClientCommand_RemoveFromSquad( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't remove when it's not/past time
+
+	if ( GetPlayerArrayOfTeam( player.GetTeam() ).len() == 1 )
+		return true // Can't remove yourself from yourself
+
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		ChangeJumpmasterInSquad( player )
+
+	player.SetPlayerNetBool( "isJumpingWithSquad", false )
+	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_DroppingSolo, null, player )
+
+	return true
+}
+
+bool function ClientCommand_ReturnToSquad( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't return when it's not/past time
+
+	player.SetPlayerNetBool( "isJumpingWithSquad", true )
+	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RejoinedSquad, null, player )
 
 	return true
 }

@@ -105,9 +105,10 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) && !player.GetPlayerNetBool( "isJumpmaster" ) )
 		return false
 
-	player.ClearParent()
-
 	vector driverViewVector = player.GetViewVector()
+	driverViewVector.x *= -1.0
+
+	player.ClearParent()
 
 	TakeAllWeapons( player )
 	DecideRespawnPlayer( player )
@@ -133,6 +134,10 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 		}
 
 		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
+		squadPlayer.SetPlayerNetBool( "freefallIsFromPlane", true )
+
+		if ( GetValidPlayerSkydiveEmotes( squadPlayer ).len() > 0 )
+			squadPlayer.SetPlayerNetBool( "freefallEmoteAvailable", true )
 
 		thread PlayerSkyDive( squadPlayer, driverViewVector, squadPlayers, player, true, true )
 	}

@@ -13,7 +13,7 @@ const int MUSIC_EVENT_UNINITIALIZED = -1
 
 void function StopMusicOnPlayer( entity player, string music )
 {
-	
+	StopSoundOnEntity( player, music )
 }
 
 struct MusicEvent
