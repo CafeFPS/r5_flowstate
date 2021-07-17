@@ -105,8 +105,10 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) && !player.GetPlayerNetBool( "isJumpmaster" ) )
 		return false
 
+	// Why is this required?	
+	player.SetAngles( player.CameraAngles() )
+
 	vector driverViewVector = player.GetViewVector()
-	driverViewVector.x *= -1.0
 
 	player.ClearParent()
 
