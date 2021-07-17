@@ -367,6 +367,8 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 	ItemFlavor musicPack = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() )
 	string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
 
+	player.SetPlayerNetBool( "freefallEmoteAvailable", GetValidPlayerSkydiveEmotes( player ).len() > 0 )
+
 	OnThreadEnd(
 		function() : ( player, leaderPlayer, jumpJetFX, jumpingFromPlane, skydiveMusicID )
 		{
