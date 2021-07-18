@@ -367,7 +367,6 @@ bool function SE_SMOKE( entity victim, entity attacker, bool isValidHeadshot, in
 void function PlayPainSounds( entity victim, var damageInfo )
 {
 	int bodyType = GetBodyTypeIndexFromVictim( victim )
-	printt(file.painSounds[bodyType].len(), "pain sounds for bodytype", bodyType)
 	if ( bodyType >= 0 )
 		PlayPainOrDeathSounds( file.painSounds[ bodyType ], victim, damageInfo )
 }
