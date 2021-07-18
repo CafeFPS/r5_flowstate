@@ -54,10 +54,16 @@ struct {
 
 void function SV_Survival_Loot_Init()
 {
-	AddClientCommandCallback( "Sur_DropEquipment", ClientCommand_Sur_DropEquipment )
-	AddSpawnCallbackEditorClass( "script_ref", "info_survival_weapon_location", OnGroundLootSpawned)
-
+	switch(GameRules_GetGameMode())
+	{
+		case SURVIVAL:
+			AddClientCommandCallback( "Sur_DropEquipment", ClientCommand_Sur_DropEquipment )
+			AddSpawnCallbackEditorClass( "script_ref", "info_survival_weapon_location", OnGroundLootSpawned)
+		
+			
+	}
 	file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+	
 }
 
 void function OnGroundLootSpawned( entity ent )

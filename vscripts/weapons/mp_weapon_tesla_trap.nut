@@ -263,7 +263,7 @@ function MpWeaponTeslaTrap_Init()
 		RegisterSignal( "TeslaTrap_StopPlacementProxy" )
 		RegisterSignal( "TeslaTrap_StopHudIconUpdate" )
 
-		RegisterNetworkedVariableChangeCallback_ent( "focalTrap", OnFocusTrapChanged )
+		// RegisterNetworkedVariableChangeCallback_ent( "focalTrap", OnFocusTrapChanged )
 
 		AddCallback_PlayerClassActuallyChanged( TeslaTrap_OnPlayerClassChanged )
 		AddCallback_OnPlayerChangedTeam( TeslaTrap_OnPlayerTeamChanged )

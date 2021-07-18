@@ -80,7 +80,7 @@ void function Desertlands_MapInit_Common()
 		SetVictorySequenceSunSkyIntensity( 1.0, 0.5 )
 		SetMinimapBackgroundTileImage( $"overviews/mp_rr_canyonlands_bg" )
 
-		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TRAIN, MINIMAP_OBJECT_RUI, MinimapPackage_Train, FULLMAP_OBJECT_RUI, FullmapPackage_Train )
+		// RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TRAIN, MINIMAP_OBJECT_RUI, MinimapPackage_Train, FULLMAP_OBJECT_RUI, FullmapPackage_Train )
 	#endif
 }
 
