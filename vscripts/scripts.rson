@@ -253,7 +253,7 @@ Scripts:
 	//weapons/mp_weapon_grenade_electric_smoke.nut
 	weapons/mp_weapon_defender.nut
 	weapons/mp_weapon_defender_sustained.nut
-
+	weapons/mp_weapon_deployable_cover.nut
 	weapons/mp_weapon_dmr.nut
 	weapons/mp_weapon_doubletake.nut
 	weapons/mp_weapon_shotgun_pistol.nut
@@ -288,10 +288,9 @@ Scripts:
 	weapons/mp_weapon_thermite_grenade.nut
 	weapons/mp_weapon_zipline.nut
 	weapons/mp_weapon_alternator_smg.nut
-	weapons/mp_weapon_softball.nut
-	weapons/mp_weapon_warmachine.nut
 
 	weapons/sh_deployable.gnut
+	weapons/sh_deployable_wall.gnut
 	weapons/sh_phase_shift.gnut
 	weapons/sh_smart_ammo.gnut
 	weapons/sh_sonar.gnut

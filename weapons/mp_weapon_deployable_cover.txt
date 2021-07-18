@@ -1,4 +1,5 @@
 #base "_base_ability.txt"
+#base "_base_character_mods.txt"
 
 WeaponData
 {
@@ -44,8 +45,8 @@ WeaponData
 	"bounce_effect_table"							"deployable_cover_bounce_table"
 	"impact_effect_table" 							"exp_deployable_cover"
 	"projectile_trail_effect_0"						"wpn_grenade_frag"
-	"vortex_absorb_effect"							"wpn_vortex_projectile_satchel_FP"
-	"vortex_absorb_effect_third_person"				"wpn_vortex_projectile_satchel"
+	//"vortex_absorb_effect"						"wpn_vortex_projectile_satchel_FP"
+	//"vortex_absorb_effect_third_person"			"wpn_vortex_projectile_satchel"
 	"vortex_absorb_sound"							"Vortex_Shield_AbsorbBulletLarge"
 	"vortex_absorb_sound_1p_vs_3p"					"Vortex_Shield_AbsorbBulletLarge_1P_VS_3P"
 	"projectile_adjust_to_gun_barrel"				"0"
