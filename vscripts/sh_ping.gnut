@@ -444,7 +444,7 @@ void function CodeCallback_PingCommandQueueTrace( entity player )
 	player.p.pingQueuedTraceIsValid = tr.success
 	if ( player.p.pingQueuedTraceIsValid )
 	{
-		PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player )
+		PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player, tr )
 		player.p.pingQueuedTraceEnt = params.hitEnt
 		player.p.pingQueuedTraceOrigin = tr.endPos
 	}
@@ -491,9 +491,12 @@ void function CodeCallback_PingCommandExecuteEnemySpotted( entity player, entity
 		Warning( "%s() - Couldn't validate target [%s] for player [%s].", FUNC_NAME(), string( pingEnt ), string( player ) )
 		return
 	}
-
-	PingCommandParams params = GetPingParamsForHitEnt( pingEnt, player )
-	CreateWaypoint_Ping_Location( player, params.pingType, pingEnt, pingEnt.EyePosition(), -1, false )
+	PingTraceResults tr = DoPingTrace( player )
+	if ( tr.success )
+	{
+		PingCommandParams params = GetPingParamsForHitEnt( pingEnt, player, tr )
+		CreateWaypoint_Ping_Location( player, params.pingType, pingEnt, pingEnt.EyePosition(), -1, false )
+	}
 }
 #endif // SERVER
 
@@ -1042,7 +1045,7 @@ void function OnPingDown( entity player )
 		if ( tr.success )
 		{
 			bool allowQuickPing      = !IsValid( spottedEnemy )
-			PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player )
+			PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player, tr )
 			SetPendingNewPing( params.pingType, tr.endPos, params.hitEnt, allowQuickPing )
 			PingCommandQueueTrace()
 
@@ -1377,7 +1380,7 @@ void function Ping_HandleSpecificPingCommand( entity player, string pingType )
 	PingTraceResults tr = DoPingTrace( player )
 	if ( tr.success )
 	{
-		PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player )
+		PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player, tr )
 		SetPendingNewPing( params.pingType, tr.endPos, params.hitEnt, false )
 		PingCommandQueueTrace()
 		Ping_ExecutePendingNewPingWithOverride( pingTypeEnum )
@@ -1814,7 +1817,7 @@ bool function EntIsADynamicProp( entity ent )
 
 #endif
 
-PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player )
+PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player, PingTraceResults tr )
 {
 	int defaultPingType = ePingType.WE_GO // ePingType.LOCATION
 	int ms              = PlayerMatchState_GetFor( player )
@@ -1831,16 +1834,19 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 	PingCommandParams result
 	if ( !IsValid( processedHitEnt ) || processedHitEnt.IsWorld() )
 	{
+		//
+		if ( IsValid( tr.tr ) )
 		{
-			//string lavaFlow = tr.tr.surfaceName
+			string lavaFlow = tr.tr.surfaceName
 
-			//if ( lavaFlow == LAVA_FLOW_SURFACE_NAME )
-			//{
-			//	result.hitEnt = null
-			//	result.pingType = ePingType.LAVA
-			//	return result
-			//}
+			if ( lavaFlow == LAVA_FLOW_SURFACE_NAME )
+			{
+				result.hitEnt = null
+				result.pingType = ePingType.LAVA
+				return result
+			}
 		}
+
 		result.hitEnt = null
 		result.pingType = defaultPingType
 		return result
@@ -1848,7 +1854,7 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 
 	int playerTeam = player.GetTeam()
 
-	if ( ms > ePlayerMatchState.STAGING_AREA )
+	//if ( ms > ePlayerMatchState.STAGING_AREA )
 	{
 		if ( (processedHitEnt.IsPlayer() || processedHitEnt.IsNPC()) && IsEnemyTeam( playerTeam, processedHitEnt.GetTeam() ) )
 		{
@@ -2812,7 +2818,7 @@ string function Ping_GetPromptForPing( entity player, entity wp, int pingType )
 void function OnPingCreatedByAnyPlayer_VocalizeNewPing( entity pingingPlayer, int pingType, entity pingedEnt, vector pingLoc, entity wayPoint )
 {
 	int commsAction = GetCommsActionForPing( pingingPlayer, pingType, pingedEnt )
-	BroadcastCommsActionToTeam( pingingPlayer, commsAction, pingedEnt, pingLoc, eCommsFlags.NONE )
+	HandleBroadcastCommsAction( pingingPlayer, commsAction, pingedEnt, pingLoc, eCommsFlags.NONE )
 }
 
 int function GetPingLootCommsAction( entity ent )
@@ -3178,7 +3184,7 @@ void function ClientCommand_PingReply( entity player, array<string> args )
 	}
 
 	if ( didAnything && (caInfo.commsAction != eCommsAction.BLANK) && !(caInfo.commsFlags & eCommsFlags.SILENCE) )
-		BroadcastCommsActionToTeam( player, caInfo.commsAction, commSubjectEnt, commSubjectOrigin, caInfo.commsFlags )
+		HandleBroadcastCommsAction( player, caInfo.commsAction, commSubjectEnt, commSubjectOrigin, caInfo.commsFlags )
 
 	if ( IsValid( wp ) )
 	{
