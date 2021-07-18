@@ -25,7 +25,7 @@ global function PrintPlaylists
 #endif
 
 #if UI
-//global function GetEmblemColor
+global function GetEmblemColor
 #endif
 
 
@@ -310,6 +310,7 @@ string function Playlist_GetLTMSlotPlaylist()
 	return ""
 }
 
+
 asset function GetModeEmblemImage( string playlistName )
 {
 	string emblemKey = GetPlaylistVarString( playlistName, "emblem", "" )
@@ -325,6 +326,13 @@ asset function GetModeEmblemImage( string playlistName )
 
 	return emblemImage
 }
+#if UI
+array<int> function GetEmblemColor( string playlistName )
+{
+	string colorString = GetPlaylistVarString( playlistName, "emblem_color", "128 128 128 255" )
+	return ColorStringToArray( colorString )
+}
+#endif
 
 #if CLIENT || UI && R5DEV
 void function PrintPlaylists()
