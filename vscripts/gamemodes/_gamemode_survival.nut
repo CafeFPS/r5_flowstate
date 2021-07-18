@@ -586,7 +586,7 @@ void function OnWeaponReload( entity player )
 
 	int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
 
-	printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
+	// printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
 
 	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
 }
