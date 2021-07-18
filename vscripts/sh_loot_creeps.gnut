@@ -6,13 +6,13 @@ global function ShLootCreeps_Init
 #endif
 
 const int MAX_ACTIVE_LOOTBIN_CREEPS = 10
-global const asset MODEL_INFECTED =		$"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl"
-global const asset MODEL_SPIDER =		$"mdl/creatures/spider/spider.rmdl"
-const asset DEATH_FX_SPIDER = $"P_infected_death"
-const asset DEATH_FX_INFECTED = $"P_infected_death"
-const asset FX_LOOTBIN_OPEN = $"P_impact_monarch_beam_v1"
-const asset SPIDER_EYEGLOW_FX = $"P_infected_spider_head" //P_LL_med_drone_eye_loop
-const asset INFECTED_EYEGLOW_FX = $"P_infected_grunt_head" //P_LL_med_drone_eye_loop
+global const asset MODEL_INFECTED   = $"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl"
+global const asset MODEL_SPIDER     = $"mdl/creatures/spider/spider.rmdl"
+const asset DEATH_FX_SPIDER         = $"P_infected_death"
+const asset DEATH_FX_INFECTED       = $"P_infected_death"
+const asset FX_LOOTBIN_OPEN         = $"P_impact_monarch_beam_v1"
+const asset SPIDER_EYEGLOW_FX       = $"P_infected_spider_head" //P_LL_med_drone_eye_loop
+const asset INFECTED_EYEGLOW_FX     = $"P_infected_grunt_head"  //P_LL_med_drone_eye_loop
 
 const float LOOT_CREEP_GARBAGE_COLLECTION_COOLDOWN = 90
 

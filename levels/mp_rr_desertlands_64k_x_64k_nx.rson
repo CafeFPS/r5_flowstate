@@ -1,8 +1,8 @@
 When: "SERVER"
 Scripts:
 [
-	mp/levels/mp_rr_desertlands_64k_x_64k.nut
-	mp/levels/survival_preprocess/mp_rr_desertlands_64k_x_64k.nut
+	mp/levels/mp_rr_desertlands_64k_x_64k_nx.nut
+	mp/levels/survival_preprocess/mp_rr_desertlands_64k_x_64k_nx.nut
 	mp/_lasermesh.gnut
 ]
 When: "CLIENT"

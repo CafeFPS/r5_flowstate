@@ -160,7 +160,7 @@ void function Canyonlands_MapInit_Common()
 		if ( !IsPVEMode() )
 			SetMapFeatureItem( 300, "#SUPPLY_DROP", "#SUPPLY_DROP_DESC", $"rui/hud/gametype_icons/survival/supply_drop" )
 
-		if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )
+		if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )// TODO(AMOS): desertlands_nx
 		{
 			SetVictorySequenceLocation( <10472, 30000, 8500>, <0, 60, 0> )
 			SetVictorySequenceSunSkyIntensity( 0.8, 0.0 )
