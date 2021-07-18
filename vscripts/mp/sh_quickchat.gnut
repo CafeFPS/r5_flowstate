@@ -1,8 +1,10 @@
 global function ShQuickchat_Init
 #if CLIENT
+global function AddCallback_OnQuickchatEvent
 global function Quickchat
 global function QuickchatToLivingAndDead
-global function BroadcastCommsActionToTeam
+global function HandleBroadcastCommsAction
+global function ServerToClient_BroadcastCommsActionToTeam
 global function GetChatTitleColorForPlayer
 global function GetMenuOptionTextForCommsAction
 global function GetShortTextForCommsAction
@@ -14,7 +16,7 @@ global function PlaySoundForCommsAction
 #endif // CLIENT
 
 #if SERVER
-global function BroadcastCommsActionToTeam
+global function HandleBroadcastCommsAction
 #endif
 
 #if R5DEV
@@ -510,10 +512,10 @@ string function GetNameForCommsAction( int commsAction )
 }
 void function ServerToClient_BroadcastCommsActionToTeam( entity player, int commsAction, entity subjectEnt, vector subjectPos, int commsFlags )
 {
-	BroadcastCommsActionToTeam( player, commsAction, subjectEnt, subjectPos, commsFlags )
+	HandleBroadcastCommsAction( player, commsAction, subjectEnt, subjectPos, commsFlags )
 }
 
-void function BroadcastCommsActionToTeam( entity player, int commsAction, entity subjectEnt, vector subjectPos, int commsFlags )
+void function HandleBroadcastCommsAction( entity player, int commsAction, entity subjectEnt, vector subjectPos, int commsFlags )
 {
 	if ( !file.quickchatInitialized )
 		return
@@ -799,15 +801,15 @@ bool function ClientCommand_Quickchat( entity player, array<string> args )
 		}
 	}
 
-	BroadcastCommsActionToTeam( player, index, subject, player.GetOrigin(), eCommsFlags.NONE )
+	HandleBroadcastCommsAction( player, index, subject, player.GetOrigin(), eCommsFlags.NONE )
 	return true
 }
 
-void function BroadcastCommsActionToTeam( entity playerSpeaking, int commsAction, entity subjectEnt, vector subjectPos, int commsFlags )
+void function HandleBroadcastCommsAction( entity playerSpeaking, int commsAction, entity subjectEnt, vector subjectPos, int commsFlags )
 {
 	array<entity> players = GetPlayerArrayOfTeam_Alive( playerSpeaking.GetTeam() )
 	foreach ( player in players )
-		Remote_CallFunction_Replay( player, "BroadcastCommsActionToTeam", playerSpeaking, commsAction, subjectEnt, subjectPos, commsFlags )
+		Remote_CallFunction_Replay( player, "HandleBroadcastCommsAction", playerSpeaking, commsAction, subjectEnt, subjectPos, commsFlags )
 }
 
 #endif // SERVER
