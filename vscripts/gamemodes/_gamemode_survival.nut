@@ -65,6 +65,8 @@ void function GamemodeSurvival_Init()
 	foreach ( character in GetAllCharacters() )
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterSkin( character ), OnCharacterSkinChanged )
 
+	SetCallback_OnPlayerReload( OnWeaponReload )
+
 	// Start the WaitingForPlayers sequence.
 	// TODO: staging area support
 	thread Sequence_WaitingForPlayers()
@@ -459,6 +461,9 @@ void function ScreenCoverTransition_AllPlayers( float endTime )
 
 void function PlayPickLoadoutMusic( bool introCountdownEnabled )
 {
+	if ( !Survival_CharacterSelectEnabled() )
+		return
+
 	foreach ( player in GetPlayerArray() )
 	{
 		string pickLoadoutMusicID = MusicPack_GetCharacterSelectMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
@@ -565,6 +570,27 @@ array<entity> function GetAllPlayersOfLockstepIndex( int index )
 	return result
 }
 
+void function OnWeaponReload( entity player )
+{
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+
+	int ammoType = weapon.GetWeaponAmmoPoolType()
+	string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+
+	int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+	int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+
+	int requiredAmmo = maxAmmo - currentAmmo
+
+	int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+
+	int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
+
+	printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
+
+	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
+}
+
 void function Survival_SetFriendlyOwnerHighlight( entity player, entity characterModel )
 {
 
@@ -618,7 +644,7 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 
 	// Loadout meleeskin
-	player.TakeNormalWeaponByIndex( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	player.TakeOffhandWeapon( OFFHAND_MELEE )
 
 	// Character related

@@ -424,7 +424,7 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_UpdateOverheadIconForNPC" )
 
 	//
-	Remote_RegisterClientFunction( "BroadcastCommsActionToTeam", "entity", "int", 0, eCommsAction._count, "entity", "vector", -32000.0, 32000.0, 32, "int", 0, (1 << eCommsFlags._flagCount) )
+	Remote_RegisterClientFunction( "HandleBroadcastCommsAction", "entity", "int", 0, eCommsAction._count, "entity", "vector", -32000.0, 32000.0, 32, "int", 0, (1 << eCommsFlags._flagCount) )
 
 	//
 	Remote_RegisterClientFunction( "PerformQuip", "entity", "int", 0, INT_MAX )

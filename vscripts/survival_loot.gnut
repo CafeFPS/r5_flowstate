@@ -187,6 +187,8 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 
 	weapon.SetMods( mods )
 
+	Remote_CallFunction_Replay( player, "ServerCallback_UpdateHudWeaponData", weapon )
+
 	printt("EquipAttachments_Internal", player.GetPlayerName(), "item", item, "modToRemove", modToRemove)
 }
 
@@ -284,7 +286,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	}
 
 	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
-	player.GiveWeapon( data.baseWeapon, WEAPON_INVENTORY_SLOT_ANY )
+	player.GiveWeapon( data.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, [ "survival_finite_ammo" ] )
 	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, data.baseWeapon )
 }
 

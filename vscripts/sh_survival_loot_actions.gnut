@@ -323,12 +323,12 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 #endif
 
 	numToPickup = SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, false )
-	printt("PickupAmmo numToPickup", numToPickup, ammoPickup.GetClipCount())
+	//printt("PickupAmmo numToPickup", numToPickup, ammoPickup.GetClipCount())
 	if ( numToPickup == 0 )
 		return false
 
 #if SERVER
-	//player.AmmoPool_SetCapacity(65535)
+	player.AmmoPool_SetCapacity(65535)
 #endif
 	int poolMax = player.AmmoPool_GetCapacity()
 	numToPickup = minint( numToPickup, poolMax - poolCount )
@@ -347,11 +347,12 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 	//printt("PickupAmmoServer")
 	ammoPickup.SetClipCount( clipCount - numToPickup )
 
-	//SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, true )
+	SURVIVAL_AddToPlayerInventory( player, data.ref, numToPickup, true )
+
 	//Create tracking event for players with tracking passive.
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_LOOT_PICKUP_AMMO, player, ammoPickup.GetOrigin(), player.GetTeam(), player )
 #endif
-	printt("PickupAmmo", clipCount, numToPickup, ammoPickup.GetClipCount(), player.AmmoPool_GetCapacity())
+	//printt("PickupAmmo", clipCount, numToPickup, ammoPickup.GetClipCount(), player.AmmoPool_GetCapacity())
 	return ( clipCount <= numToPickup )
 }
 

@@ -440,7 +440,7 @@ int function ConvertBucketStringToEnum( string bucketName )
 		case "BEGIN_ROUND_FINAL":
 			return eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
 
-	if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )
+	if ( GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" )
 	{
 		switch( bucketName )
 		{
