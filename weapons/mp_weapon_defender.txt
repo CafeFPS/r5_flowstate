@@ -82,13 +82,13 @@ WeaponData
 
 
 	// Ammo
-	"uses_ammo_pool"								"0"
+	"uses_ammo_pool"								"1"
 	"ammo_pool_type"								"special"
 
 	"ammo_clip_size"   								"12"
     "ammo_default_total"							"24"
     "ammo_stockpile_max"							"24"
-    "ammo_no_remove_from_stockpile"					"1"
+    "ammo_no_remove_from_stockpile"					"0"
 	"ammo_min_to_fire"								"3"
 	"ammo_per_shot"                                 "3"
 	"low_ammo_fraction" 							"0.34"

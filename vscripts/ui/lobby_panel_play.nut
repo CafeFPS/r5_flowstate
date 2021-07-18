@@ -881,13 +881,13 @@ void function UpdatePlaylistBadges()
 	{
 		Hud_SetVisible( aboutButton, showLTMAboutButton )
 
-		/*array<int> emblemColor = GetEmblemColor( GetSelectedPlaylist() )
+		array<int> emblemColor = GetEmblemColor( GetSelectedPlaylist() )
 
 		var rui = Hud_GetRui( aboutButton )
 		RuiSetString( rui, "buttonText", "#ABOUT_GAMEMODE" )
 		asset emblemImage = GetModeEmblemImage( GetSelectedPlaylist() )
 		RuiSetImage( rui, "emblemImage", emblemImage )
-		RuiSetColorAlpha( rui, "emblemColor", SrgbToLinear( <emblemColor[0], emblemColor[1], emblemColor[2]> / 255.0 ), emblemColor[3] / 255.0 )*/
+		RuiSetColorAlpha( rui, "emblemColor", SrgbToLinear( <emblemColor[0], emblemColor[1], emblemColor[2]> / 255.0 ), emblemColor[3] / 255.0 )
 
 		return
 	}

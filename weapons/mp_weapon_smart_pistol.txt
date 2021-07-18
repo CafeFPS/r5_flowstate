@@ -17,6 +17,7 @@ WeaponData
 	"weaponSubClass"								"autolock"
 	"body_type"										"light"
 	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 	"pickup_hold_prompt"  							"Hold [USE] [WEAPONNAME]"
 	"pickup_press_prompt" 							"[USE] [WEAPONNAME]"
 	"minimap_reveal_distance"						"32000"
@@ -89,8 +90,8 @@ WeaponData
 
 	MP_BASE
 	{
-		"ammo_default_total"							"560"
-		"ammo_stockpile_max"							"560"
+		"ammo_default_total"							"132"
+		"ammo_stockpile_max"							"132"
 		"ammo_no_remove_from_stockpile"				"0"
 		//"ammo_default_total"							"120" //GoldenGun
 		//"ammo_stockpile_max"							"120" //GoldenGun
