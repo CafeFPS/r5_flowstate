@@ -351,6 +351,9 @@ void function Sequence_Playing()
 			player.SetAngles( shipAngles )
 
 			player.UnfreezeControlsOnServer()
+			
+			player.ForceCrouch()
+			player.Hide()
 
 			player.SetPlayerNetBool( "isJumpingWithSquad", true )
 			player.SetPlayerNetBool( "playerInPlane", true )

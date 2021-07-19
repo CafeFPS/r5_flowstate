@@ -382,6 +382,11 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 				// This track started when we entered the plane, stopping it again (second time) will trigger a fadeout
 				StopMusicOnPlayer( player, skydiveMusicID )
 
+				if ( player.GetPlayerNetBool( "freefallIsFromPlane" ) )
+					player.SetPlayerNetBool( "freefallIsFromPlane", false )
+
+				player.SetPlayerNetBool( "isJumpmaster", false )
+
 				StopSoundOnEntity( player, "Survival_DropSequence_Launch_1P" )
 				StopSoundOnEntity( player, "Survival_DropSequence_Launch_3P" )
 				StopSoundOnEntity( player, "Survival_DropSequence_Travel_1P" )

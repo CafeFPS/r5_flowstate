@@ -112,6 +112,9 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 	player.ClearParent()
 
+	player.UnforceCrouch()
+	player.Show()
+
 	TakeAllWeapons( player )
 	DecideRespawnPlayer( player )
 
