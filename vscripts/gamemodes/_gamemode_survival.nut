@@ -159,13 +159,13 @@ void function Sequence_PickLoadout()
 		return
 	}
 
+	// Assign character selection order to teams
+	AssignLockStepOrder()
+
 	ScreenCoverTransition_AllPlayers( Time() + CharSelect_GetIntroTransitionDuration() )
 	wait CharSelect_GetIntroTransitionDuration()
 
 	SetGameState( eGameState.PickLoadout )
-
-	// Assign character selection order to teams
-	AssignLockStepOrder()
 
 	// Update future time points now that the delays should be predictable
 	UpdateSequencedTimePoints( Time() )
@@ -351,6 +351,9 @@ void function Sequence_Playing()
 			player.SetAngles( shipAngles )
 
 			player.UnfreezeControlsOnServer()
+			
+			player.ForceCrouch()
+			player.Hide()
 
 			player.SetPlayerNetBool( "isJumpingWithSquad", true )
 			player.SetPlayerNetBool( "playerInPlane", true )
@@ -586,7 +589,7 @@ void function OnWeaponReload( entity player )
 
 	int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
 
-	printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
+	// printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
 
 	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
 }

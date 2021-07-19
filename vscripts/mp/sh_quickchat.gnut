@@ -328,16 +328,18 @@ string function GetSubjectLootTierForCommsAction( entity subjectEnt )
 	int tier = 0
 
 	if ( !IsValid( subjectEnt ) || subjectEnt.GetNetworkedClassName() != "prop_survival" )
-			if ( HACK_IsVaultDoor( subjectEnt ) || IsVaultPanel( subjectEnt ) )
-			{
-				entity playerWithKey = VaultPanel_GetTeammateWithKey( GetLocalClientPlayer().GetTeam() )
-				string playerWithKeyName
-				if ( IsValid( playerWithKey ) )
-					playerWithKeyName = VaultPanel_GetTeammateWithKey( GetLocalClientPlayer().GetTeam() ).GetPlayerName()
-				if ( playerWithKeyName != "" )
-					return playerWithKeyName
-			}
+	{
+		if ( HACK_IsVaultDoor( subjectEnt ) || IsVaultPanel( subjectEnt ) )
+		{
+			entity playerWithKey = VaultPanel_GetTeammateWithKey( GetLocalClientPlayer().GetTeam() )
+			string playerWithKeyName
+			if ( IsValid( playerWithKey ) )
+				playerWithKeyName = VaultPanel_GetTeammateWithKey( GetLocalClientPlayer().GetTeam() ).GetPlayerName()
+			if ( playerWithKeyName != "" )
+				return playerWithKeyName
+		}
 		return string( tier )
+	}
 
 	tier = SURVIVAL_Loot_GetLootDataByIndex( subjectEnt.GetSurvivalInt() ).tier
 	return string( tier )

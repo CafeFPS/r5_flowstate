@@ -224,9 +224,11 @@ void function GenerateZoneTiers()
 			mapZoneData.zoneTier = maxint( zoneTier, mapZoneData.zoneTier )
 		}
 
-		//printt( mapZoneData.zoneName, mapZoneData.zoneTier )
-		WaitFrame()
+		// printt( mapZoneData.zoneName, mapZoneData.zoneTier )
+		// \WaitFrame()
 	}
+
+	SURVIVAL_PlaceGroundItems()
 }
 
 int function MapZones_GetZoneForOrigin( vector point )
@@ -502,6 +504,9 @@ void function OnPlayerEntersZone( entity player, entity zoneTrigger )
 	//Dev_PrintMessage( player, " ", zoneName, 4  )
 
 	int zoneId = zoneTrigger.e.triggerZoneId
+
+	if ( s_zoneDatas[zoneId].zoneTier > eLootTier.EPIC )
+		return
 
 	Remote_CallFunction_Replay( player, FUNCNAME_OnPlayerEntersZone, zoneId, s_zoneDatas[zoneId].zoneTier )
 

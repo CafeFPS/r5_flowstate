@@ -53,6 +53,8 @@ void function Desertlands_MapInit_Common()
 {
 	printt( "Desertlands_MapInit_Common" )
 
+	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_desertlands_64k_x_64k.rpak" )
+
 	FlagInit( "PlayConveyerStartFX", true )
 
 	SetVictorySequencePlatformModel( $"mdl/rocks/desertlands_victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )

@@ -26,12 +26,12 @@ float function GetDropshipClearance( vector origin )
 
 vector function TraceInBoundPoint( vector start, vector forward, float multiplier )
 {
-	const float MAX_DELTA = 5000.0
+	const float MAX_DELTA = 5200.0
 
 	vector result = start
 	float startClearance = GetDropshipClearance( start )
 
-	while ( GetDropshipClearance( result ) - startClearance <= MAX_DELTA )
+	while ( GetDropshipClearance( result ) - startClearance < MAX_DELTA )
 		result += forward * multiplier
 
 	return result
@@ -78,7 +78,7 @@ array<vector> function Survival_GeneratePlaneFlightPath()
 		endPos = temp
 	}
 
-	dropshipMovingAngle = VectorToAngles(endPos - startPos)
+	dropshipMovingAngle = VectorToAngles( endPos - startPos )
 
 	// printt( "Survival_GeneratePlaneFlightPath: startPos", startPos )
 	// printt( "Survival_GeneratePlaneFlightPath: endPos", endPos )
@@ -112,6 +112,8 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 	player.ClearParent()
 
+	player.UnforceCrouch()
+
 	TakeAllWeapons( player )
 	DecideRespawnPlayer( player )
 
@@ -134,6 +136,8 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 			squadPlayer.ClearParent()
 		}
+
+		squadPlayer.Show()
 
 		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
 		squadPlayer.SetPlayerNetBool( "freefallIsFromPlane", true )
