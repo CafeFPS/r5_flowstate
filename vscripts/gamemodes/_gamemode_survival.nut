@@ -8,6 +8,8 @@ global function _GetSquadRank
 global function JetwashFX
 global function Survival_PlayerRespawnedTeammate
 global function UpdateDeathBoxHighlight
+global function UpdatePlayerCounts
+global function HandleSquadElimination
 // these probably doesn't belong here
 global function DecideRespawnPlayer
 //----------------------------------
@@ -246,6 +248,31 @@ void function Sequence_Prematch()
 	thread Sequence_Playing()
 }
 
+void function RespawnPlayerInDropship( entity player )
+{
+	const float POS_OFFSET = -500.0 // Offset from dropship's origin
+
+	entity dropship = Sur_GetPlaneEnt()
+
+	vector dropshipPlayerOrigin = dropship.GetOrigin()
+	dropshipPlayerOrigin.z += POS_OFFSET
+
+	DecideRespawnPlayer( player, false )
+
+	player.SetParent( dropship )
+
+	player.SetOrigin( dropshipPlayerOrigin )
+	player.SetAngles( dropship.GetAngles() )
+
+	player.UnfreezeControlsOnServer()
+	
+	player.ForceCrouch()
+	player.Hide()
+
+	player.SetPlayerNetBool( "isJumpingWithSquad", true )
+	player.SetPlayerNetBool( "playerInPlane", true )
+}
+
 void function Sequence_Playing()
 {
 	SetGameState( eGameState.Playing )
@@ -274,8 +301,6 @@ void function Sequence_Playing()
 	}
 	else
 	{
-		const float POS_OFFSET = -500.0 // Offset from dropship's origin
-
 		float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 60.0 )
 		float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
 		float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
@@ -302,9 +327,6 @@ void function Sequence_Playing()
 		SetTargetName( minimapPlaneEnt, "planeEnt" )
 		DispatchSpawn( minimapPlaneEnt )
 
-		vector dropshipPlayerOrigin = shipStart
-		dropshipPlayerOrigin.z += POS_OFFSET
-
 		foreach ( team in GetTeamsForPlayers( GetPlayerArray() ) )
 		{
 			array<entity> teamMembers = GetPlayerArrayOfTeam( team )
@@ -326,12 +348,7 @@ void function Sequence_Playing()
 			}
 
 			if ( !foundJumpmaster ) // No eligible jumpmasters? Shouldn't happen, but just in case
-			{
-				teamMembers.randomize()
-				
-				entity randomMember = teamMembers[0]
-				jumpMaster = randomMember
-			}
+				jumpMaster = teamMembers.getrandom()
 
 			if ( jumpMaster != null )
 			{
@@ -342,25 +359,10 @@ void function Sequence_Playing()
 		}
 
 		foreach ( player in GetPlayerArray() )
-		{
-			DecideRespawnPlayer( player, false )
-
-			player.SetParent( dropship )
-
-			player.SetOrigin( dropshipPlayerOrigin )
-			player.SetAngles( shipAngles )
-
-			player.UnfreezeControlsOnServer()
-			
-			player.ForceCrouch()
-			player.Hide()
-
-			player.SetPlayerNetBool( "isJumpingWithSquad", true )
-			player.SetPlayerNetBool( "playerInPlane", true )
-		}
+			RespawnPlayerInDropship( player )
 
 		// Show the squad and player counter
-		UpdateSquadNetCounts()
+		UpdatePlayerCounts()
 
 		dropship.NonPhysicsMoveTo( shipEnd, DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME, 0.0, 0.0 )
 
@@ -479,10 +481,38 @@ void function PlayPickLoadoutMusic( bool introCountdownEnabled )
 		wait CharSelect_GetIntroTransitionDuration()
 }
 
-void function UpdateSquadNetCounts()
+void function UpdatePlayerCounts()
 {
 	SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
 	SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
+}
+
+void function PlayerStartSpectating( entity player )
+{
+	array<entity> clientTeam = GetPlayerArrayOfTeam( player.GetTeam() )
+	bool isAlone = clientTeam.len() == 1
+	bool isSquadEliminated = false // TODO
+	
+	entity specTarget = null
+
+	if ( isAlone || isSquadEliminated )
+	{
+		array<entity> alivePlayers = GetPlayerArray_Alive()
+		if ( alivePlayers.len() > 0 )
+			specTarget = alivePlayers.getrandom()
+		else
+			return // GG
+	}
+	else
+		specTarget = clientTeam.getrandom()
+
+	player.StartObservingPlayerInFirstPerson( specTarget )
+}
+
+void function HandleSquadElimination( int team )
+{
+	foreach ( player in GetPlayerArrayOfTeam( team ) )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_SquadEliminated", team )
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -490,7 +520,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) )
 		return
 
-	UpdateSquadNetCounts()
+	UpdatePlayerCounts()
 
 	if ( attacker.IsPlayer() && victim.IsPlayer() )
 	{
@@ -500,6 +530,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( victim.IsPlayer() )
 	{
 		SetPlayerEliminated( victim )
+		PlayerStartSpectating( victim )
 	}
 }
 
@@ -516,8 +547,14 @@ void function OnClientConnected( entity client )
 
 	PlayerMatchState_Set( client, ePlayerMatchState.NORMAL )
 
-	int teamMemberIndex = GetPlayerArrayOfTeam( client.GetTeam() ).len() - 1
+	array<entity> clientTeam = GetPlayerArrayOfTeam( client.GetTeam() )
+
+	int teamMemberIndex = clientTeam.len() - 1
 	client.SetTeamMemberIndex( teamMemberIndex )
+
+	UpdatePlayerCounts()
+
+	bool isAlone = clientTeam.len() == 1
 
 	switch ( GetGameState() )
 	{
@@ -531,6 +568,36 @@ void function OnClientConnected( entity client )
 
 			if ( PreGame_GetWaitingForPlayersSpawningEnabled() )
 				DecideRespawnPlayer( client, false )
+			break
+		case eGameState.PickLoadout:
+			entity startEnt = GetEnt( "info_player_start" )
+
+			client.SetOrigin( startEnt.GetOrigin() )
+			client.SetAngles( startEnt.GetAngles() )
+
+			client.FreezeControlsOnServer()
+
+			break
+		case eGameState.Prematch:
+			if ( isAlone )
+				client.SetPlayerNetBool( "isJumpmaster", true )
+
+			if ( IsValid( Sur_GetPlaneEnt() ) )
+				RespawnPlayerInDropship( client )
+
+			break
+		case eGameState.Playing:
+			if ( IsPlayerEliminated( client ) || isAlone )
+				PlayerStartSpectating( client )
+			else
+			{
+				vector origin = clientTeam.getrandom().GetOrigin()
+
+				DecideRespawnPlayer( client )
+
+				client.SetOrigin( origin )
+			}
+
 			break
 	}
 }

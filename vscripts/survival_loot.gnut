@@ -233,7 +233,8 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 		vector origin = GetThrowOrigin( player )
 		vector fwd    = AnglesToForward( player.EyeAngles() )
 
-		SURVIVAL_DropMainWeapon( player, slotRef, origin, fwd )
+		if ( !SURVIVAL_DropMainWeapon( player, slotRef, origin, fwd ) )
+			return true
 		
 		if ( ( "main_weapon" + SURVIVAL_GetActiveWeaponSlot( player ) ) == slotRef )
 		{
@@ -253,6 +254,9 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 	{
 		// printt( FUNC_NAME(), "unknown item", slotRef )
 		LootData itemData = EquipmentSlot_GetEquippedLootDataForSlot( player, slotRef )
+
+		if ( itemData.ref == "" )
+			return true
 
 		entity spawnedItem = PlayerThrowLoot( player, itemData.ref )
 
@@ -313,6 +317,9 @@ bool function ClientCommand_Sur_EquipAttachment( entity player, array<string> ar
 			return true
 
 		weapon = player.GetNormalWeapon( weaponSlot )
+
+		if ( !IsValid( weapon ) )
+			return true
 	}
 
 	if ( !SURVIVAL_Loot_IsRefValid( ref ) )
@@ -366,6 +373,10 @@ bool function ClientCommand_Sur_UnequipAttachment( entity player, array<string> 
 		return true
 
 	entity weapon = player.GetNormalWeapon( weaponSlot )
+
+	if ( !IsValid( weapon ) )
+		return true
+
 	array<string> weaponMods = weapon.GetMods()
 	
 	if ( weapon.IsDiscarding() )
@@ -400,6 +411,10 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 		return true
 
 	entity weaponFrom = player.GetNormalWeapon( weaponFromSlot )
+
+	if ( !IsValid( weaponFrom ) )
+		return true
+
 	array<string> weaponFromMods = weaponFrom.GetMods()
 	LootData weaponFromLootData = SURVIVAL_GetLootDataFromWeapon( weaponFrom )
 
@@ -408,17 +423,21 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 			? WEAPON_INVENTORY_SLOT_PRIMARY_1
 			: WEAPON_INVENTORY_SLOT_PRIMARY_0
 	entity weaponTo = player.GetNormalWeapon( weaponToSlot )
+
+	if ( !IsValid( weaponTo ) )
+		return true
+
 	array<string> weaponToMods = weaponTo.GetMods()
 	LootData weaponToLootData = SURVIVAL_GetLootDataFromWeapon( weaponTo )
 
 	if ( !weaponFromMods.contains( ref ) || weaponToMods.contains( ref ) )
-		return false
+		return true
 
 	if ( !CanAttachToWeapon( ref, GetWeaponClassName( weaponTo ) ) )
-		return false // Unsupported attachment
+		return true // Unsupported attachment
 
 	if ( weaponFromLootData.baseMods.contains( ref ) )
-		return false // A default non-removable attachment
+		return true // A default non-removable attachment
 
 	string refAttachPoint = GetAttachPointForAttachment( ref )
 	string toAttachPointAttachmentRef = GetInstalledWeaponAttachment( weaponTo, refAttachPoint )
@@ -426,10 +445,10 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 	if ( toAttachPointAttachmentRef != "" )
 	{
 		if ( weaponToLootData.baseMods.contains( toAttachPointAttachmentRef ) )
-			return false // Can't swap default attachments
+			return true // Can't swap default attachments
 
 		if ( !CanAttachToWeapon( toAttachPointAttachmentRef, GetWeaponClassName( weaponFrom ) ) )
-			return false // Unsupported attachment
+			return true // Unsupported attachment
 
 		weaponTo.RemoveMod( toAttachPointAttachmentRef )
 	}
@@ -1040,13 +1059,17 @@ entity function SpawnNothing( string ref, vector origin )
 
 bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin, vector velocity )
 {
-	LootData dropWeaponData = EquipmentSlot_GetEquippedLootDataForSlot( player, slot )
 	int weaponSlot = Survival_GetEquipmentSlotDataByRef( slot ).weaponSlot
 
 	if ( weaponSlot == -1 )
 		return false
 
 	entity weaponToDrop = player.GetNormalWeapon( weaponSlot )
+
+	if ( !IsValid( weaponToDrop ) )
+		return false
+
+	LootData dropWeaponData = EquipmentSlot_GetEquippedLootDataForSlot( player, slot )
 
 	entity droppedWeapon = SpawnGenericLoot( dropWeaponData.ref, origin, <0, 0, 90>, 1 )
 	droppedWeapon.SetClipCount( weaponToDrop.GetWeaponPrimaryClipCount() )
@@ -1093,7 +1116,7 @@ void function SURVIVAL_DropBackpackItem( entity player, string ref, int count )
 	if ( itemData.lootType == eLootType.AMMO )
 	{
 		int ammoType = AmmoType_GetTypeFromRef( ref )
-		player.AmmoPool_SetCount( ammoType, player.AmmoPool_GetCount( ammoType ) - count )
+		player.AmmoPool_SetCount( ammoType, int( max( 0, player.AmmoPool_GetCount( ammoType ) - count ) ) )
 	}
 
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )

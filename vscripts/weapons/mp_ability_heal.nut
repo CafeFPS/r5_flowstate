@@ -20,6 +20,8 @@ void function StimSounds( entity weapon )
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
 	wait 4
+	if ( !IsValid( weapon ) )
+		return
 	weapon.EmitWeaponSound_1p3p( "octane_stimpack_deactivate_1P", "octane_stimpack_deactivate_3P" )
 }
 
