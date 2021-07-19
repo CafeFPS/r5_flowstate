@@ -28,7 +28,7 @@ global function DEV_Newness_ReverseQueryTest
 #endif
 
 
-const int NUM_NEW_ITEM_FLAVORS_TO_PERSIST = 60
+const int NUM_NEW_ITEM_FLAVORS_TO_PERSIST = 80
 
 
 typedef OnNewnessReverseQueryUpdatedCallbackType void functionref( int newCount, var optionalArg )
@@ -40,12 +40,14 @@ global struct OnNewnessReverseQueryUpdatedCallbackStruct
 
 global struct Newness_ReverseQuery
 {
-	bool isSetUp = false
+	//
+	array<Newness_ReverseQuery> queryDependencies
+	array<ItemFlavor>           itemFlavDependencies
 
-	array<Newness_ReverseQuery> dependentsList
-
-	int newCount
-
+	//
+	bool                                              isSetUp = false
+	array<Newness_ReverseQuery>                       dependentsList
+	int                                               newCount
 	array<OnNewnessReverseQueryUpdatedCallbackStruct> onChangeCallbackList
 }
 
@@ -90,7 +92,7 @@ void function ShItemPerPlayerState_LevelInit()
 	#endif
 
 	#if SERVER || CLIENT
-		Remote_RegisterClientFunction( "ServerToClient_OnItemFlavorBecameNew", "int", -INT_MAX, INT_MAX )
+		Remote_RegisterClientFunction( "ServerToClient_OnItemFlavorBecameNew", "int", -INT_MAX, INT_MAX, "bool" )
 	#endif
 }
 
@@ -225,21 +227,23 @@ int function Newness_ReverseQuery_GetNewCount( Newness_ReverseQuery rq )
 #if UI
 void function Newness_ReverseQuery_Setup(
 		Newness_ReverseQuery rq,
-		array<Newness_ReverseQuery> queryDependecies,
+		array<Newness_ReverseQuery> queryDependencies,
 		array<ItemFlavor> itemFlavDependencies )
 {
 	Assert( !rq.isSetUp, "Called Newness_ReverseQuery_Setup twice on 1 Newness_ReverseQuery struct" )
+	rq.queryDependencies = queryDependencies
+	rq.itemFlavDependencies = itemFlavDependencies
 	rq.isSetUp = true
 	rq.newCount = 0
 
-	foreach ( Newness_ReverseQuery dependency in queryDependecies )
+	foreach ( Newness_ReverseQuery dependency in rq.queryDependencies )
 	{
 		dependency.dependentsList.append( rq )
 		Assert( dependency.dependentsList.len() < 10, "probably leaking Newness_ReverseQuery structs" )
 		rq.newCount += dependency.newCount
 	}
 
-	foreach ( ItemFlavor dependency in itemFlavDependencies )
+	foreach ( ItemFlavor dependency in rq.itemFlavDependencies )
 	{
 		array<Newness_ReverseQuery> itemFlavorShallowDependentList
 		if ( dependency in fileLevel.itemFlavorReverseQueryShallowDependentListMap )
@@ -370,10 +374,10 @@ bool function TEMP_ClientCommand_temp_newness_mark( entity player, array<string>
 
 
 #if UI
-array<Newness_ReverseQuery> function OnItemFlavorBecameNew( ItemFlavor flavor, bool shouldRunCallbacks )
+array<Newness_ReverseQuery> function OnItemFlavorBecameNew( ItemFlavor flavor, bool isNew, bool shouldRunCallbacks )
 {
 	//Assert( !(flavor in fileLevel.newItemFlavorSet), "item flavor was already marked as new (" + ItemFlavor_GetRef( flavor ) + ")" )
-	if ( flavor in fileLevel.newItemFlavorSet )
+	if ( isNew == (flavor in fileLevel.newItemFlavorSet) )
 	{
 		//Warning( "item flavor was already marked as new (%s)", ItemFlavor_GetRef( flavor ) )
 		return []
@@ -381,11 +385,11 @@ array<Newness_ReverseQuery> function OnItemFlavorBecameNew( ItemFlavor flavor, b
 
 	fileLevel.newItemFlavorSet[flavor] <- true
 
+	array<Newness_ReverseQuery> affectedQueriesList = []
 	if ( flavor in fileLevel.itemFlavorReverseQueryShallowDependentListMap )
 	{
 		array<Newness_ReverseQuery> shallowDependentList = fileLevel.itemFlavorReverseQueryShallowDependentListMap[flavor]
-		array<Newness_ReverseQuery> affectedQueriesList  = []
-		UpdateReverseQueryDependents( shallowDependentList, 1, affectedQueriesList )
+		UpdateReverseQueryDependents( shallowDependentList, isNew ? 1 : -1, affectedQueriesList )
 
 		if ( shouldRunCallbacks )
 		{
@@ -395,11 +399,8 @@ array<Newness_ReverseQuery> function OnItemFlavorBecameNew( ItemFlavor flavor, b
 					cbs.cb( affectedQuery.newCount, cbs.optionalArg )
 			}
 		}
-
-		return affectedQueriesList
 	}
-
-	return []
+	return affectedQueriesList
 }
 #endif
 
@@ -445,7 +446,7 @@ void function OnPersistentDataReady( entity _unused )
 
 		ItemFlavor flav                                              = GetItemFlavorByGUID( guid )
 		array<Newness_ReverseQuery> affectedQueriesListForThisFlavor = []
-		affectedQueriesListForThisFlavor = OnItemFlavorBecameNew( flav, false )
+		affectedQueriesListForThisFlavor = OnItemFlavorBecameNew( flav, true, false )
 		foreach ( Newness_ReverseQuery affectedQuery in affectedQueriesListForThisFlavor )
 		{
 			if ( (affectedQuery in affectedQueriesSet) )
@@ -466,18 +467,18 @@ void function OnPersistentDataReady( entity _unused )
 
 
 #if CLIENT
-void function ServerToClient_OnItemFlavorBecameNew( int guid )
+void function ServerToClient_OnItemFlavorBecameNew( int guid, bool isNew )
 {
-	RunUIScript( "ClientToUI_OnItemFlavorBecameNew", guid )
+	RunUIScript( "ClientToUI_OnItemFlavorBecameNew", guid, isNew )
 }
 #endif
 
 
 #if UI
-void function ClientToUI_OnItemFlavorBecameNew( int guid )
+void function ClientToUI_OnItemFlavorBecameNew( int guid, bool isNew )
 {
 	ItemFlavor flavor = GetItemFlavorByGUID( guid )
-	OnItemFlavorBecameNew( flavor, true )
+	OnItemFlavorBecameNew( flavor, isNew, true )
 }
 #endif
 
