@@ -71,6 +71,8 @@ void function SV_Survival_Loot_Init()
 	AddClientCommandCallback( "Sur_UnequipAttachment", ClientCommand_Sur_UnequipAttachment )
 
 	AddClientCommandCallback( "Sur_TransferAttachment", ClientCommand_Sur_TransferAttachment )
+
+	AddClientCommandCallback( "Sur_SwapPrimaryPositions", ClientCommand_Sur_SwapPrimaryPositions )
 	
 	AddClientCommandCallback( CMDNAME_PLAYER_SWITCHED_WEAPONS, ClientCommand_PlayerSwitchedWeapons )
 
@@ -327,11 +329,11 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 	array<string> weaponFromMods = weaponFrom.GetMods()
 	LootData weaponFromLootData = SURVIVAL_GetLootDataFromWeapon( weaponFrom )
 
-	entity weaponTo = player.GetNormalWeapon(
+	int weaponToSlot = 
 		weaponFromSlot == WEAPON_INVENTORY_SLOT_PRIMARY_0 
 			? WEAPON_INVENTORY_SLOT_PRIMARY_1
 			: WEAPON_INVENTORY_SLOT_PRIMARY_0
-	)
+	entity weaponTo = player.GetNormalWeapon( weaponToSlot )
 	array<string> weaponToMods = weaponTo.GetMods()
 	LootData weaponToLootData = SURVIVAL_GetLootDataFromWeapon( weaponTo )
 
@@ -344,10 +346,75 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 	if ( weaponFromLootData.baseMods.contains( ref ) )
 		return false // A default non-removable attachment
 
+	string refAttachPoint = GetAttachPointForAttachment( ref )
+	string toAttachPointAttachmentRef = GetInstalledWeaponAttachment( weaponTo, refAttachPoint )
+
+	if ( toAttachPointAttachmentRef != "" )
+	{
+		if ( weaponToLootData.baseMods.contains( toAttachPointAttachmentRef ) )
+			return false // Can't swap default attachments
+
+		if ( !CanAttachToWeapon( toAttachPointAttachmentRef, GetWeaponClassName( weaponFrom ) ) )
+			return false // Unsupported attachment
+
+		weaponTo.RemoveMod( toAttachPointAttachmentRef )
+	}
+
 	weaponFrom.RemoveMod( ref )
 	weaponTo.AddMod( ref )
 
+	if ( toAttachPointAttachmentRef != "" )
+		weaponFrom.AddMod( toAttachPointAttachmentRef )
+
 	EmitSoundOnEntityOnlyToPlayer( player, player, "survival_loot_attach_pas_fast_swap" )
+
+	return true
+}
+
+bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<string> args )
+{
+	if ( !IsValid( player ) )
+		return true
+
+	// This is horrendous.
+
+	int activeSlot = SURVIVAL_GetActiveWeaponSlot( player )
+
+	entity weapon0 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	string weapon0ClassName = IsValid( weapon0 ) ? GetWeaponClassName( weapon0 ) : ""
+	array<string> ornull weapon0Mods = IsValid( weapon0 ) ? weapon0.GetMods() : null
+
+	entity weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+	string weapon1ClassName =  IsValid( weapon1 ) ? GetWeaponClassName( weapon1 ) : ""
+	array<string> ornull weapon1Mods = IsValid( weapon1 ) ? weapon1.GetMods() : null
+
+	if ( IsValid( weapon0 ) )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+
+	if ( IsValid( weapon1 ) )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+
+	if ( weapon0ClassName != "" )
+	{
+		expect array<string>( weapon0Mods )
+
+		if ( activeSlot == 0 )
+			player.GiveWeapon( weapon0ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_1, weapon0Mods, false )
+		else
+			player.GiveWeapon_NoDeploy( weapon0ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_1, weapon0Mods, false )
+	}
+
+	if ( weapon1ClassName != "" )
+	{
+		expect array<string>( weapon1Mods )
+
+		if ( activeSlot == 1 )
+			player.GiveWeapon( weapon1ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_0, weapon1Mods, false )
+		else
+			player.GiveWeapon_NoDeploy( weapon1ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_0, weapon1Mods, false )
+	}
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 	return true
 }
@@ -444,23 +511,6 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 
 	if ( modToRemove != "" )
 	{
-		/*for(int i = 0; i < mods.len(); ++i )
-		{
-			if(mods[i] == modToRemove) {
-				if ( returnToInventory )
-				{
-					if ( IsValid( deathBox ) )
-						printt( "!!!", FUNC_NAME(), "deathBox valid! TODO" )
-					else
-						SURVIVAL_AddToPlayerInventory( player, modToRemove, 1 )
-				}
-				else
-					PlayerThrowLoot( player, modToRemove )
-
-				mods.remove(i)
-			}
-		}*/
-
 		weapon.RemoveMod( modToRemove )
 
 		if ( returnToInventory )
@@ -498,12 +548,7 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 		slot = 1
 
 	if ( SURVIVAL_GetActiveWeaponSlot( player ) == slot || forceActive )
-	{
-		// WORKS but a bad idea
-		// player.ReplaceActiveWeapon( eActiveInventorySlot.mainHand, GetWeaponClassName( weapon ), mods )
-
 		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, slot )
-	}
 	
 	Remote_CallFunction_Replay( player, "ServerCallback_UpdateHudWeaponData", weapon )
 
@@ -564,13 +609,22 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	LootRef lootRef       = SURVIVAL_CreateLootRef( newEquipData, pickup )
 	LootActionStruct as   = lt.groundActionFunc( player, lootRef )
 
+	array<string> mods = clone newEquipData.baseMods
+
 	if ( dropCurrentWeapon && oldEquipData.ref != "" )
 	{
 		// printt("dropping current weapon", activeWeapon)
 
+		table<string, string> suitableAttachmentsFromWeapon = GetCompatibleAttachmentsFromWeapon( player, activeWeapon, newEquipData.baseWeapon )
+		foreach ( wepPoint, wepMod in suitableAttachmentsFromWeapon )
+		{
+			activeWeapon.RemoveMod( wepMod )
+			mods.append( wepMod )
+		}
+
 		EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( "main_weapon" + SURVIVAL_GetActiveWeaponSlot( player ) )
 
-		//Create tracking event for players with tracking passive.
+		// Create tracking event for players with tracking passive.
 		if ( es.trackingVisionExchangePOI != -1 )
 			TrackingVision_CreatePOI( es.trackingVisionExchangePOI, player, pickup.GetOrigin(), player.GetTeam(), player )
 
@@ -582,16 +636,20 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		else
 			SURVIVAL_DropMainWeapon( player, es.ref, origin, fwd )
 	}
-
-	LootData data = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
-	
-	array<string> mods = clone data.baseMods
 	
 	if ( !InfiniteAmmoEnabled() )
 		mods.append( "survival_finite_ammo" )
 
-	entity weapon = player.GiveWeapon( data.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, mods )
-	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, data.baseWeapon )
+	// Auto-pickup suitable attachments from inventory
+	table<string, string> suitableAttachmentsFromInventory = GetCompatibleAttachmentsFromInventory( player, newEquipData.baseWeapon )
+	foreach ( point, mod in suitableAttachmentsFromInventory )
+	{
+		SURVIVAL_RemoveFromPlayerInventory( player, mod, 1 )
+		mods.append( mod )
+	}
+
+	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, mods )
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, newEquipData.baseWeapon )
 
 	int clipCount = pickup.GetClipCount()
 	if ( clipCount > 0 )
