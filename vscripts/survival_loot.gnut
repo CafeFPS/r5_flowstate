@@ -1,9 +1,8 @@
-// stub script
-
 global function SV_Survival_Loot_Init
 global function GetRandomLootArray
 global function LootTypeHasAnyChanceToSpawn
 global function SpawnLoot
+global function SURVIVAL_PlaceGroundItems
 global function SURVIVAL_GetWeightedItemFromGroup
 global function SURVIVAL_ThrowLootFromPoint
 global function SURVIVAL_PlayerPickedupItem
@@ -48,7 +47,8 @@ global enum eLootZoneClass
 	ZONE_LOW,
 	ZONE_MEDIUM,
 	ZONE_HIGH,
-	ZONE_HOTZONE
+	ZONE_HOTZONE,
+	ZONE_LOOT_VAULT
 }
 
 /*struct {
@@ -62,7 +62,7 @@ bool function InfiniteAmmoEnabled()
 
 void function SV_Survival_Loot_Init()
 {
-	AddSpawnCallbackEditorClass( "script_ref", "info_survival_weapon_location", OnGroundLootSpawned )
+	// AddSpawnCallbackEditorClass( "script_ref", "info_survival_weapon_location", OnGroundLootSpawned )
 
 	AddClientCommandCallback( "Sur_DropEquipment", ClientCommand_Sur_DropEquipment )
 	AddClientCommandCallback( "Sur_DropBackpackItem", ClientCommand_Sur_DropBackpackItem )
@@ -80,6 +80,19 @@ void function SV_Survival_Loot_Init()
 	AddClientCommandCallback( CMDNAME_PLAYER_SWITCHED_WEAPONS, ClientCommand_PlayerSwitchedWeapons )
 
 	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+}
+
+void function SURVIVAL_PlaceGroundItems()
+{
+	array<entity> itemEnts = GetEntArrayByClass_Expensive( "script_ref" )
+
+	foreach ( ent in itemEnts )
+	{
+		if ( GetEditorClass( ent ) != "info_survival_weapon_location" )
+			continue
+
+		OnGroundLootSpawned( ent )
+	}
 }
 
 void function OnGroundLootSpawned( entity ent )
@@ -103,7 +116,7 @@ void function OnGroundLootSpawned( entity ent )
 		spawnOrigin.z += 1.5
 	}
 
-	entity spawned = SpawnGenericLoot( randomRef, spawnOrigin, <0, RandomFloatRange( -180.0, 180.0 ), angleZ>, itemData.countPerDrop )
+	SpawnGenericLoot( randomRef, spawnOrigin, <0, RandomFloatRange( -180.0, 180.0 ), angleZ>, itemData.countPerDrop )
 }
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
@@ -137,34 +150,67 @@ array<string> function GetRandomLootArray( int min, int max = -1 )
 	return itemRef
 }*/
 
+table< int, array<string> > possibleItemsForTiers = {}
+
+array<string> function GetItemsOfTierOrGreater( int minTier )
+{
+	if ( !( minTier in possibleItemsForTiers ) )
+	{
+		possibleItemsForTiers[minTier] <- []
+
+		foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
+		{
+			if ( !LootTypeHasAnyChanceToSpawn( lootRef ) )
+				continue
+
+			if ( minTier == eLootTier.LEGENDARY 
+				&& lootData.lootType == eLootType.MAINWEAPON )
+				continue
+
+			if ( lootData.tier >= minTier )
+				possibleItemsForTiers[minTier].append( lootRef )
+		}
+	}
+
+	return possibleItemsForTiers[minTier]
+}
+
 string function GetRandomLootItem( int mapZone = -1 )
 {
 	int minLootTier = -1
-	if ( mapZone != -1 )
-		minLootTier = MapZones_GetTierForZone( mapZone )
+	int maxLootTier = ( mapZone != -1 ) ? MapZones_GetTierForZone( mapZone ) : eLootTier.LEGENDARY
 
-	int maxLootTier = int( max( eLootTier.EPIC, minLootTier ) )
+	if ( maxLootTier == eLootTier.NONE )
+		maxLootTier = eLootTier.COMMON // TEMP, I don't actually know how it works in retail
 
-	int randomSelectedLootType = RandomIntRange( 0, eLootType._count )
-	if ( randomSelectedLootType == eLootType.DATAKNIFE )
-		randomSelectedLootType = eLootType.AMMO
+	if ( mapZone != -1 && maxLootTier > eLootTier.EPIC )
+		minLootTier = maxLootTier
 
-	array<LootData> items = SURVIVAL_Loot_GetByType_InLevel( randomSelectedLootType, maxLootTier )
+	// printt(FUNC_NAME(), "call", mapZone, minLootTier, maxLootTier)
 	
 	if ( minLootTier > -1 )
-		foreach ( item in items )
-			if ( item.tier < minLootTier )
-				items.fastremovebyvalue( item )
+	{
+		// We HAVE to find a loot of this min tier, so anything goes.
+		array<string> possibleItems = GetItemsOfTierOrGreater( minLootTier )
+		return possibleItems.getrandom()
+	}
+	else
+	{
+		int randomSelectedLootType = RandomIntRange( MIN_LOOT_TIER, MAX_LOOT_TIER )
+		if ( randomSelectedLootType == eLootType.DATAKNIFE )
+			randomSelectedLootType = eLootType.AMMO
 
-	if ( items.len() == 0 ) // Tough luck, let's try again and hope this doesn't get into a recursion loop...
-		return GetRandomLootItem( mapZone )
-	
-	string ref = items.getrandom().ref
+		array<LootData> items = SURVIVAL_Loot_GetByType_InLevel( randomSelectedLootType, maxLootTier )
 
-	if ( ref == "blank" )
-		return GetRandomLootItem( mapZone )
+		if ( items.len() == 0 ) { // Tough luck, let's try again and hope this doesn't get into a recursion loop...
+			printt( FUNC_NAME(), "No items! BUG THIS IF HAPPENS MORE THAN ONCE!", mapZone, minLootTier, maxLootTier, randomSelectedLootType )
+			return GetRandomLootItem( mapZone )
+		}
+		
+		return items.getrandom().ref
+	}
 
-	return ref
+	unreachable
 }
 
 bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
@@ -501,6 +547,9 @@ bool function ClientCommand_BackpackClosed( entity player, array<string> args )
 
 bool function LootTypeHasAnyChanceToSpawn( string ref )
 {
+	if ( ref == "blank" )
+		return false
+
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
 
 	if ( itemData.lootType == eLootType.DATAKNIFE )
@@ -1090,6 +1139,7 @@ array<LootZone> function GetAllLootZones()
 		switch( lzEnt.kv.zone_class )
 		{
 			case "zone_hotzone":
+			case "Desertlands_Train_Station":
 				zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
 				break
 			case "zone_high":
@@ -1097,6 +1147,9 @@ array<LootZone> function GetAllLootZones()
 				break
 			case "zone_medium":
 				zone.zoneClass = eLootZoneClass.ZONE_MEDIUM
+				break
+			case "data_knife_vault":
+				zone.zoneClass = eLootZoneClass.ZONE_LOOT_VAULT
 				break
 			default:
 				zone.zoneClass = eLootZoneClass.ZONE_NONE
@@ -1109,7 +1162,22 @@ array<LootZone> function GetAllLootZones()
 
 int function SURVIVAL_LootTierForLootGroup( int zoneClass )
 {
-	return zoneClass
+	switch ( zoneClass )
+	{
+		case eLootZoneClass.ZONE_LOW:
+			return eLootTier.COMMON
+		case eLootZoneClass.ZONE_MEDIUM:
+			return eLootTier.RARE
+		case eLootZoneClass.ZONE_HIGH:
+		case eLootZoneClass.ZONE_HOTZONE:
+			return eLootTier.EPIC
+		case eLootZoneClass.ZONE_LOOT_VAULT:
+			return eLootTier.LEGENDARY
+		default:
+			return eLootTier.NONE
+	}
+
+	unreachable
 }
 
 bool function IsWeaponInPrimarySlot( entity player, entity weapon )
