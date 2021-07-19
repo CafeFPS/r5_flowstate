@@ -51,9 +51,9 @@ global enum eLootZoneClass
 	ZONE_HOTZONE
 }
 
-struct {
+/*struct {
 	var lootDataTable
-} file
+} file*/
 
 bool function InfiniteAmmoEnabled()
 {
@@ -79,12 +79,14 @@ void function SV_Survival_Loot_Init()
 	
 	AddClientCommandCallback( CMDNAME_PLAYER_SWITCHED_WEAPONS, ClientCommand_PlayerSwitchedWeapons )
 
-	file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
 }
 
 void function OnGroundLootSpawned( entity ent )
 {
-	string randomRef = GetRandomLootItem()
+	int zoneId = MapZones_GetZoneForOrigin( ent.GetOrigin() )
+	string randomRef = GetRandomLootItem( zoneId )
+	
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( randomRef )
 
 	vector spawnOrigin = OriginToGround( ent.GetOrigin() )
@@ -106,8 +108,6 @@ void function OnGroundLootSpawned( entity ent )
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
 {
-	int numRows = GetDatatableRowCount( file.lootDataTable )
-
 	array<string> items
 
 	for( int i=0; i < RandomIntRange( min, max ); i++ )
@@ -118,7 +118,7 @@ array<string> function GetRandomLootArray( int min, int max = -1 )
 	return items
 }
 
-string function GetRandomLootItem()
+/*string function GetRandomLootItem()
 {
 	int numRows = GetDatatableRowCount( file.lootDataTable )
 
@@ -127,13 +127,44 @@ string function GetRandomLootItem()
 	string itemRef = GetDataTableString( file.lootDataTable, i , GetDataTableColumnByName( file.lootDataTable, "ref" ) )
 	string featureFlagRef = GetDataTableString( file.lootDataTable, i, GetDataTableColumnByName( file.lootDataTable, "featureFlag" ) )
 
-	if( itemRef == "blank" || ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) ) )
+	if ( itemRef == "blank" 
+		|| ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) ) 
+		|| !LootTypeHasAnyChanceToSpawn( itemRef ) )
 	{
 		return GetRandomLootItem()
 	}
 
 	return itemRef
+}*/
 
+string function GetRandomLootItem( int mapZone = -1 )
+{
+	int minLootTier = -1
+	if ( mapZone != -1 )
+		minLootTier = MapZones_GetTierForZone( mapZone )
+
+	int maxLootTier = int( max( eLootTier.EPIC, minLootTier ) )
+
+	int randomSelectedLootType = RandomIntRange( 0, eLootType._count )
+	if ( randomSelectedLootType == eLootType.DATAKNIFE )
+		randomSelectedLootType = eLootType.AMMO
+
+	array<LootData> items = SURVIVAL_Loot_GetByType_InLevel( randomSelectedLootType, maxLootTier )
+	
+	if ( minLootTier > -1 )
+		foreach ( item in items )
+			if ( item.tier < minLootTier )
+				items.fastremovebyvalue( item )
+
+	if ( items.len() == 0 ) // Tough luck, let's try again and hope this doesn't get into a recursion loop...
+		return GetRandomLootItem( mapZone )
+	
+	string ref = items.getrandom().ref
+
+	if ( ref == "blank" )
+		return GetRandomLootItem( mapZone )
+
+	return ref
 }
 
 bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
@@ -470,6 +501,11 @@ bool function ClientCommand_BackpackClosed( entity player, array<string> args )
 
 bool function LootTypeHasAnyChanceToSpawn( string ref )
 {
+	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	if ( itemData.lootType == eLootType.DATAKNIFE )
+		return false // DATAKNIFE - Vault Key
+
 	return true
 }
 
@@ -649,28 +685,31 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	{
 		// printt("dropping current weapon", activeWeapon)
 
-		table<string, string> suitableAttachmentsFromWeapon = GetCompatibleAttachmentsFromWeapon( player, activeWeapon, newEquipData.baseWeapon )
-		foreach ( wepPoint, wepMod in suitableAttachmentsFromWeapon )
+		if ( !oldEquipData.baseMods.contains( "gold" ) )
 		{
-			bool skipThisAttachment = false
-		
-			foreach ( baseMod in mods )
+			table<string, string> suitableAttachmentsFromWeapon = GetCompatibleAttachmentsFromWeapon( player, activeWeapon, newEquipData.baseWeapon )
+			foreach ( wepPoint, wepMod in suitableAttachmentsFromWeapon )
 			{
-				if ( !SURVIVAL_Loot_IsRefValid( baseMod ) || !IsValidAttachment( baseMod ) )
-					continue
-
-				if ( GetAttachmentData( baseMod ).attachPoint == wepPoint )
+				bool skipThisAttachment = false
+			
+				foreach ( baseMod in mods )
 				{
-					skipThisAttachment = true
-					break
+					if ( !SURVIVAL_Loot_IsRefValid( baseMod ) || !IsValidAttachment( baseMod ) )
+						continue
+	
+					if ( GetAttachmentData( baseMod ).attachPoint == wepPoint )
+					{
+						skipThisAttachment = true
+						break
+					}
 				}
+				
+				if ( skipThisAttachment )
+					continue // There is already an installed attachment, don't install a second one
+				
+				activeWeapon.RemoveMod( wepMod )
+				mods.append( wepMod )
 			}
-			
-			if ( skipThisAttachment )
-				continue // There is already an installed attachment, don't install a second one
-			
-			activeWeapon.RemoveMod( wepMod )
-			mods.append( wepMod )
 		}
 
 		EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( "main_weapon" + SURVIVAL_GetActiveWeaponSlot( player ) )
@@ -695,28 +734,31 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		ApplyDefaultToggledMods( newEquipData.baseWeapon, possibleHopupMod, mods )
 
 	// Auto-pickup suitable attachments from inventory
-	table<string, string> suitableAttachmentsFromInventory = GetCompatibleAttachmentsFromInventory( player, newEquipData.baseWeapon )
-	foreach ( point, mod in suitableAttachmentsFromInventory )
+	if ( !mods.contains( "gold" ) )
 	{
-		bool skipThisAttachment = false
-		
-		foreach ( baseMod in mods )
+		table<string, string> suitableAttachmentsFromInventory = GetCompatibleAttachmentsFromInventory( player, newEquipData.baseWeapon )
+		foreach ( point, mod in suitableAttachmentsFromInventory )
 		{
-			if ( !SURVIVAL_Loot_IsRefValid( baseMod ) || !IsValidAttachment( baseMod ) )
-				continue
-
-			if ( GetAttachmentData( baseMod ).attachPoint == point )
+			bool skipThisAttachment = false
+			
+			foreach ( baseMod in mods )
 			{
-				skipThisAttachment = true
-				break
+				if ( !SURVIVAL_Loot_IsRefValid( baseMod ) || !IsValidAttachment( baseMod ) )
+					continue
+
+				if ( GetAttachmentData( baseMod ).attachPoint == point )
+				{
+					skipThisAttachment = true
+					break
+				}
 			}
-		}
+			
+			if ( skipThisAttachment )
+				continue // There is already an installed attachment, don't install a second one
 		
-		if ( skipThisAttachment )
-			continue // There is already an installed attachment, don't install a second one
-	
-		SURVIVAL_RemoveFromPlayerInventory( player, mod, 1 )
-		mods.append( mod )
+			SURVIVAL_RemoveFromPlayerInventory( player, mod, 1 )
+			mods.append( mod )
+		}
 	}
 
 	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, mods )
