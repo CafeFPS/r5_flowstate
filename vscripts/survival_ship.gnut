@@ -97,7 +97,11 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
 	{
 		if ( fromUseCallback )
-			RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+		{
+			int ornull funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
+			if ( funcPos != null )
+				RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+		}
 
 		return false
 	}
@@ -122,7 +126,11 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 		squadPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
 	
 	if ( fromUseCallback )
-		RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+	{
+		int ornull funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
+		if ( funcPos != null )
+			RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+	}
 
 	foreach ( squadPlayer in squadPlayers )
 	{

@@ -218,6 +218,10 @@ void function Sequence_PickLoadout()
 	// Reset selection step to lock all character selection loadout slots
 	SetGlobalNetInt( "characterSelectLockstepIndex", MAX_TEAM_PLAYERS )
 
+	foreach ( player in GetPlayerArray() )
+		if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+			CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) // Joined too late, assign a random legend so everything runs fine
+
 	wait CharSelect_GetPickingDelayAfterAll()
 
 	wait CharSelect_GetOutroTransitionDuration()
