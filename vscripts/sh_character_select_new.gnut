@@ -2005,7 +2005,7 @@ void function AssignLockStepOrder()
 
 		ArrayRemoveInvalid( players )
 		players.randomize()
-		int i = 1
+		int i = 0
 		foreach( entity player in players )
 		{
 			#if DEBUG_LOCK_STEP_PICK
