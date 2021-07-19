@@ -489,8 +489,8 @@ void function UpdatePlayerCounts()
 
 void function PlayerStartSpectating( entity player )
 {
-	array<entity> clientTeam = GetPlayerArrayOfTeam( player.GetTeam() )
-	bool isAlone = clientTeam.len() == 1
+	array<entity> clientTeam = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	bool isAlone = clientTeam.len() <= 1
 	bool isSquadEliminated = false // TODO
 	
 	entity specTarget = null
