@@ -492,6 +492,8 @@ void function PlayerStartSpectating( entity player )
 	array<entity> clientTeam = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
 	bool isAlone = clientTeam.len() <= 1
 	bool isSquadEliminated = false // TODO
+
+	clientTeam.fastremovebyvalue( player )
 	
 	entity specTarget = null
 
@@ -554,7 +556,9 @@ void function OnClientConnected( entity client )
 
 	UpdatePlayerCounts()
 
-	bool isAlone = clientTeam.len() == 1
+	bool isAlone = clientTeam.len() <= 1
+
+	clientTeam.fastremovebyvalue( client )
 
 	switch ( GetGameState() )
 	{
@@ -750,8 +754,6 @@ void function GiveLoadoutRelatedWeapons( entity player )
 
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
 {
-	DoRespawnPlayer( player, null )
-
 	table<string, string> possibleMods = {
 		survival_jumpkit_enabled = "enable_doublejump",
 		survival_wallrun_enabled = "enable_wallrun"
@@ -767,6 +769,8 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
 
+	DoRespawnPlayer( player, null )
+
 	ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
 	CharacterSkin_Apply( player, playerCharacterSkin )
 
@@ -774,7 +778,6 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 		GiveLoadoutRelatedWeapons( player )
 
 	player.SetPlayerNetBool( "pingEnabled", true )
-
 	player.SetHealth( 100 )
 }
 
