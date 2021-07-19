@@ -525,16 +525,16 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		return
 		
 	// if ( SERVER == PlayerMelee_IsServerSideEffects() ) // TODO: FIX THIS!!!!! [N52A r5apex.exe+0101be8]
-	// {
-	// 	#if SERVER
-	// 		impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
-	// 	#endif
+	{
+	 	#if SERVER
+	 		impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
+	 	#endif
 
-	// 	attacker.DispatchImpactEffects( target,
-	// 		startPosition, endPosition, hitNormal,
-	// 		surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
-	// 		attacker, impactEffectFlags )
-	// }
+	 	attacker.DispatchImpactEffects( target,
+	 		startPosition, endPosition, hitNormal,
+	 		surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
+	 		attacker, impactEffectFlags )
+	 }
 
 	// Melee state
 	attacker.PlayerMelee_SetAttackHitEntity( target )
