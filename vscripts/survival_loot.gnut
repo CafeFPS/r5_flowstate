@@ -1116,6 +1116,7 @@ void function SURVIVAL_DropBackpackItem( entity player, string ref, int count )
 	if ( itemData.lootType == eLootType.AMMO )
 	{
 		int ammoType = AmmoType_GetTypeFromRef( ref )
+		player.AmmoPool_SetCapacity( 65535 )
 		player.AmmoPool_SetCount( ammoType, int( max( 0, player.AmmoPool_GetCount( ammoType ) - count ) ) )
 	}
 
