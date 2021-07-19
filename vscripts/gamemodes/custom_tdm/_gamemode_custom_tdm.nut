@@ -235,7 +235,7 @@ void function SV_OnPlayerConnected(entity player)
 
     player.SetPlayerSettingsWithMods($"settings/player/mp/pilot_survival_firesupport.rpak", [])
     player.GiveWeapon("mp_weapon_melee_survival", OFFHAND_MELEE )
-	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+    player.GiveOffhandWeapon( "melee_pilot_emptyhanded", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
     //Give passive regen (pilot blood)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 

@@ -1,5 +1,6 @@
-//
-//
+//=========================================================
+//  mp_ability_crypto_drone
+//=========================================================
 
 global function MpAbilityCryptoDrone_Init
 global function OnWeaponTossReleaseAnimEvent_ability_crypto_drone
