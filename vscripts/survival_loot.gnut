@@ -385,10 +385,12 @@ bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<strin
 
 	entity weapon0 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	string weapon0ClassName = IsValid( weapon0 ) ? GetWeaponClassName( weapon0 ) : ""
+	int weapon0Ammo =  ( IsValid( weapon0 ) && weapon0.UsesClipsForAmmo() ) ? weapon0.GetWeaponPrimaryClipCount() : 0
 	array<string> ornull weapon0Mods = IsValid( weapon0 ) ? weapon0.GetMods() : null
 
 	entity weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 	string weapon1ClassName =  IsValid( weapon1 ) ? GetWeaponClassName( weapon1 ) : ""
+	int weapon1Ammo =  ( IsValid( weapon1 ) && weapon1.UsesClipsForAmmo() ) ? weapon1.GetWeaponPrimaryClipCount() : 0
 	array<string> ornull weapon1Mods = IsValid( weapon1 ) ? weapon1.GetMods() : null
 
 	if ( IsValid( weapon0 ) )
@@ -401,20 +403,30 @@ bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<strin
 	{
 		expect array<string>( weapon0Mods )
 
+		entity newWeapon1 = null
+
 		if ( activeSlot == 0 )
-			player.GiveWeapon( weapon0ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_1, weapon0Mods, false )
+			newWeapon1 = player.GiveWeapon( weapon0ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_1, weapon0Mods, false )
 		else
-			player.GiveWeapon_NoDeploy( weapon0ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_1, weapon0Mods, false )
+			newWeapon1 = player.GiveWeapon_NoDeploy( weapon0ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_1, weapon0Mods, false )
+
+		if ( IsValid( newWeapon1 ) && weapon0Ammo > 0 )
+			newWeapon1.SetWeaponPrimaryClipCount( weapon0Ammo )
 	}
 
 	if ( weapon1ClassName != "" )
 	{
 		expect array<string>( weapon1Mods )
 
+		entity newWeapon0 = null
+
 		if ( activeSlot == 1 )
-			player.GiveWeapon( weapon1ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_0, weapon1Mods, false )
+			newWeapon0 = player.GiveWeapon( weapon1ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_0, weapon1Mods, false )
 		else
-			player.GiveWeapon_NoDeploy( weapon1ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_0, weapon1Mods, false )
+			newWeapon0 = player.GiveWeapon_NoDeploy( weapon1ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_0, weapon1Mods, false )
+	
+		if ( IsValid( newWeapon0 ) && weapon1Ammo > 0 )
+			newWeapon0.SetWeaponPrimaryClipCount( weapon1Ammo )
 	}
 
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
