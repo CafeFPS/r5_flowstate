@@ -151,12 +151,6 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 
 	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( slotRef )
 
-	// SURVIVAL_RemoveFromPlayerInventory
-
-	// entity weapon = player.GetNormalWeapon( es.weaponSlot )
-
-	// printt( FUNC_NAME(), "weaponSlot:", es.weaponSlot )
-
 	if ( es.weaponSlot != -1 )
 	{
 		vector origin = GetThrowOrigin( player )
@@ -586,7 +580,7 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 void function PlayPickupSound( entity player, string ref, int pickupFlags = 0 )
 {
 	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
-	EmitDifferentSoundsOnEntityForPlayerAndWorld( itemData.pickupSound_1p, itemData.pickupSound_3p, player, player )
+	EmitSoundOnEntityExceptToPlayer( player, player, itemData.pickupSound_3p )
 }
 
 void function AddRoundsToWeapon( entity player, entity weapon, int numRounds )
