@@ -167,7 +167,7 @@ void function RemoteFunctions_Init_Begin()
 //
 //
 #endif //
-
+		case CUSTOM_TDM:
 		case SURVIVAL:
 			RegisterNetworkedVariable( "isPlayerShadowForm", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 			RegisterNetworkedVariable( "hasDeathFieldImmunity", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )

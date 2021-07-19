@@ -1,3 +1,4 @@
+global function Cl_CustomTDM_Init
 
 global function ServerCallback_TDM_DoAnnouncement
 global function ServerCallback_TDM_SetSelectedLocation
@@ -15,6 +16,10 @@ struct {
 } file;
 
 
+
+void function Cl_CustomTDM_Init()
+{
+}
 
 void function Cl_RegisterLocation(LocationSettings locationSettings)
 {

@@ -63,6 +63,8 @@ struct {
 
 void function Sh_CustomTDM_Init() 
 {
+
+
     // Map locations
 
     switch(GetMapName())
@@ -247,9 +249,6 @@ void function Sh_CustomTDM_Init()
     //Client Signals
     RegisterSignal( "CloseScoreRUI" )
     
-    #if SERVER
-    _CustomTDM_Init()
-    #endif
 }
 
 WeaponKit function NewWeaponKit(string weapon, array<string> mods, int slot)

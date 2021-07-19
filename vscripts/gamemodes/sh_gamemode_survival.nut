@@ -201,6 +201,8 @@ void function GamemodeSurvivalShared_Init()
 		MapZones_SharedInit()
 		ClientMusic_SharedInit()
 
+		
+
 		AddCallback_CanStartCustomWeaponActivity( ACT_VM_WEAPON_INSPECT, CanWeaponInspect )
 	#endif
 
@@ -211,10 +213,6 @@ void function GamemodeSurvivalShared_Init()
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
 	#endif
 
-	if( GetCurrentPlaylistVarBool( "custom_tdm", false ) )
-	{
-		Sh_CustomTDM_Init()
-	}
 }
 #endif
 

@@ -19,13 +19,14 @@ struct {
 
 void function _CustomTDM_Init()
 {
+	SetGameState( eGameState.WaitingForPlayers )
+
     AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {thread SV_OnPlayerDied(victim, attacker, damageInfo)})
     AddCallback_OnClientConnected( void function(entity player) { thread SV_OnPlayerConnected(player) } )
     AddClientCommandCallback("next_round", ClientCommand_NextRound)
         
     thread RunTDM()
 }
-
 
 void function DEBUG_TestSpawnLocs(entity player)
 {
@@ -73,6 +74,8 @@ void function SV_OnPropDynamicSpawned(entity prop)
 }
 void function RunTDM()
 {
+    
+    WaitForever()
     WaitPrematch()
     AddSpawnCallback("prop_dynamic", SV_OnPropDynamicSpawned)
     wait 5
