@@ -78,7 +78,7 @@ array<vector> function Survival_GeneratePlaneFlightPath()
 		endPos = temp
 	}
 
-	dropshipMovingAngle = VectorToAngles(endPos - startPos)
+	dropshipMovingAngle = VectorToAngles( endPos - startPos )
 
 	// printt( "Survival_GeneratePlaneFlightPath: startPos", startPos )
 	// printt( "Survival_GeneratePlaneFlightPath: endPos", endPos )

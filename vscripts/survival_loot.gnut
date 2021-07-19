@@ -32,6 +32,8 @@ global function GetAllLootZones
 global function SURVIVAL_LootTierForLootGroup
 global function InfiniteAmmoEnabled
 
+const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this
+
 global const LOOT_TRACE = 10
 global const LOOT_COLLISION_GROUP = 1
 
@@ -95,14 +97,6 @@ void function OnGroundLootSpawned( entity ent )
 	}
 
 	entity spawned = SpawnGenericLoot( randomRef, spawnOrigin, <0, RandomFloatRange( -180.0, 180.0 ), angleZ>, itemData.countPerDrop )
-
-	if ( itemData.lootType == eLootType.MAINWEAPON )
-		spawned.SetClipCount( expect int( GetWeaponInfoFileKeyField_Global( itemData.baseWeapon, "ammo_clip_size" ) ) )
-
-	if ( itemData.lootType == eLootType.ARMOR )
-	{
-		spawned.SetSurvivalProperty( SURVIVAL_GetArmorShieldCapacity( itemData.tier ) )
-	}
 }
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
@@ -604,8 +598,8 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	{
 		int ammoType = weapon.GetWeaponAmmoPoolType()
 
-		int maxClipSize = expect int( GetWeaponInfoFileKeyField_Global( data.baseWeapon, "ammo_clip_size" ) )
-		int ammoToGive = int( min( clipCount, maxClipSize ) )
+		int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+		int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
 		
 		if ( weapon.UsesClipsForAmmo() )
 			weapon.SetWeaponPrimaryClipCount( ammoToGive )
@@ -663,6 +657,15 @@ entity function SpawnGenericLoot( string ref, vector origin, vector angles, int 
 
 	if ( data.skinOverride > 0 )
 		loot.SetSkin( data.skinOverride )
+
+	if ( count == data.countPerDrop )
+	{
+		if ( data.lootType == eLootType.MAINWEAPON )
+			loot.SetClipCount( GIVE_FULL_AMMO_MARKER )
+
+		if ( data.lootType == eLootType.ARMOR )
+			loot.SetSurvivalProperty( SURVIVAL_GetArmorShieldCapacity( data.tier ) )
+	}
 	
 	DispatchSpawn( loot )
 	
