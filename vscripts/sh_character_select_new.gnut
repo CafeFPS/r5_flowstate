@@ -1968,6 +1968,9 @@ bool function ClientCommand_UpdateCharacterLock( entity player, array<string> ar
 	if ( !IsValid( player ) )
 		return true
 
+	if ( player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) != GetGlobalNetInt( "characterSelectLockstepIndex" ) )
+		return true
+
 	bool setLocked = args[0] == "1"
 	player.SetPlayerNetBool( "hasLockedInCharacter", setLocked )
 

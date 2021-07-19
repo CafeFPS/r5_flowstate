@@ -159,13 +159,13 @@ void function Sequence_PickLoadout()
 		return
 	}
 
+	// Assign character selection order to teams
+	AssignLockStepOrder()
+
 	ScreenCoverTransition_AllPlayers( Time() + CharSelect_GetIntroTransitionDuration() )
 	wait CharSelect_GetIntroTransitionDuration()
 
 	SetGameState( eGameState.PickLoadout )
-
-	// Assign character selection order to teams
-	AssignLockStepOrder()
 
 	// Update future time points now that the delays should be predictable
 	UpdateSequencedTimePoints( Time() )
