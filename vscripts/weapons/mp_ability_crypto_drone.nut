@@ -1,5 +1,5 @@
 //=========================================================
-//  mp_ability_crypto_drone
+//	mp_ability_crypto_drone.nut
 //=========================================================
 
 global function MpAbilityCryptoDrone_Init
