@@ -74,6 +74,8 @@ void function SV_OnPropDynamicSpawned(entity prop)
 }
 void function RunTDM()
 {
+    
+    WaitForever()
     WaitPrematch()
     AddSpawnCallback("prop_dynamic", SV_OnPropDynamicSpawned)
     wait 5

@@ -78,14 +78,17 @@ void function GameModes_Init_SV_CL()
 	gameMode = CUSTOM_TDM
 	#if SERVER || CLIENT
 		GameMode_AddSharedInit(gameMode, Sh_CustomTDM_Init)
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
 	#endif
 	#if SERVER
 	GameMode_AddServerInit(gameMode, _CustomTDM_Init)
+	GameMode_AddServerInit( gameMode, GamemodeSurvival_Init )
 	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetEvacEnabled( gameMode, false )
 	#elseif CLIENT
 	GameMode_AddClientInit(gameMode, Cl_CustomTDM_Init)
+	GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
 
 	#if DEVSCRIPTS

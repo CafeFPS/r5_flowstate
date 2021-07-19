@@ -19,18 +19,6 @@ struct {
 
 void function Cl_CustomTDM_Init()
 {
-	ClGameState_RegisterGameStateAsset( $"ui/gamestate_info_survival.rpak" )
-
-	RegisterSignal( "Sur_EndTrackOffhandWeaponSlot0" )
-	RegisterSignal( "Sur_EndTrackAmmo" )
-	RegisterSignal( "Sur_EndTrackPrimary" )
-	RegisterSignal( "StopShowingRodeoOfferingPrompt" )
-	RegisterSignal( "ReloadPressed" )
-	RegisterSignal( "ClearSwapOnUseThread" )
-	RegisterSignal( "DroppodLanded" )
-	RegisterSignal( "SquadEliminated" )
-
-	FlagInit( "SquadEliminated" )
 }
 
 void function Cl_RegisterLocation(LocationSettings locationSettings)
