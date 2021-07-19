@@ -113,7 +113,6 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	player.ClearParent()
 
 	player.UnforceCrouch()
-	player.Show()
 
 	TakeAllWeapons( player )
 	DecideRespawnPlayer( player )
@@ -137,6 +136,8 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 			squadPlayer.ClearParent()
 		}
+
+		squadPlayer.Show()
 
 		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
 		squadPlayer.SetPlayerNetBool( "freefallIsFromPlane", true )
