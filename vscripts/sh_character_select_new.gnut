@@ -1040,12 +1040,12 @@ void function OnLoadoutButton_Activate( var button )
 {
 	printt(FUNC_NAME() + " button activated")
 
-	// TODO: like all of this
-	if ( false ) //Hud_IsLocked( button ) )
+	// The character is disabled
+	if ( Hud_IsLocked( button ) )
 		return
 
 	// We aren't in browse mode and it's not our turn to pick
-	if ( false ) //!fileLevel.isBrowseMode && GetGlobalNetInt( "characterSelectLockstepIndex" ) != fileLevel.localClientLockstepIndex )
+	if ( !fileLevel.isBrowseMode && GetGlobalNetInt( "characterSelectLockstepIndex" ) != fileLevel.localClientLockstepIndex )
 		return
 
 	// We already have a character locked
@@ -1064,9 +1064,7 @@ void function OnLoadoutButton_Activate( var button )
 	RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
 
 	// Close the menu if we are in browse mode
-	
-	// todo:
-	if ( false ) //fileLevel.isBrowseMode )
+	if ( fileLevel.isBrowseMode )
 	{
 		printt(FUNC_NAME() + " isBrowseMode")
 		CloseCharacterSelectNewMenu()
@@ -2007,7 +2005,7 @@ void function AssignLockStepOrder()
 
 		ArrayRemoveInvalid( players )
 		players.randomize()
-		int i = 0
+		int i = 1
 		foreach( entity player in players )
 		{
 			#if DEBUG_LOCK_STEP_PICK

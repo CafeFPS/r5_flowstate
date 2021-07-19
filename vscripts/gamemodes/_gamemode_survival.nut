@@ -214,7 +214,7 @@ void function Sequence_PickLoadout()
 	}
 
 	// Reset selection step to lock all character selection loadout slots
-	SetGlobalNetInt( "characterSelectLockstepIndex", -1 )
+	SetGlobalNetInt( "characterSelectLockstepIndex", MAX_TEAM_PLAYERS )
 
 	wait CharSelect_GetPickingDelayAfterAll()
 
