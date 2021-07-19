@@ -104,6 +104,7 @@ void function PlayerPlaneStatusChanged( entity statusChangePlayer, bool oldValue
 	{
 		// Player not in plane
 		DestroySquadLeaderBox( player )
+		RevertSkydiveStartingConvars()
 
 		if ( statusChangePlayer == player && file.registeredConCommandCallbacks )
 		{

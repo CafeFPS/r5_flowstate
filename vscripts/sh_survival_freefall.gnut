@@ -143,6 +143,7 @@ global function GetSkydiveSmokeColorForTeam
 
 #if CLIENT
 	global function SetSkydiveStartingConvars
+	global function RevertSkydiveStartingConvars
 	global function PlayerFreefallActiveChanged
 	global function PlayerFreefallEmoteAvailableChanged
 	global function ServerCallback_Mirage_DecoysDeployed
@@ -379,6 +380,8 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 				thread DisableSkydiveThirdPerson( player )
 
+				Highlight_ClearEnemyHighlight( player )
+
 				// This track started when we entered the plane, stopping it again (second time) will trigger a fadeout
 				StopMusicOnPlayer( player, skydiveMusicID )
 
@@ -505,7 +508,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 	player.ForceStand()
 
 	Highlight_SetFriendlyHighlight( player, "survival_friendly_skydiving" )
-	Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
+	// Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
 
 	// Jump Jet FX (Last entire jump duration)
 	vector smokeColor = GetSkydiveSmokeColorForTeam( player.GetTeam() )
@@ -1544,6 +1547,18 @@ void function SetSkydiveStartingConvars()
 	}
 }
 
+void function RevertSkydiveStartingConvars()
+{
+	SetConVarToDefault( "c_thirdpersonshoulderdist" )
+	SetConVarToDefault( "c_thirdpersonshoulderaimdist" )
+	SetConVarToDefault( "c_thirdpersonshoulderheight" )
+	SetConVarToDefault( "c_thirdpersonshoulderoffset" )
+	SetConVarToDefault( "cam_ideallag" )
+	SetConVarToDefault( "c_mindistance" )
+	SetConVarToDefault( "c_maxdistance" )
+	SetConVarToDefault( "cam_idealdist" )
+}
+
 void function UpdateSkydiveRui_Emotes( var rui, entity player )
 {
 	RuiSetBool( rui, "emoteAvailable", false )
@@ -1634,6 +1649,7 @@ void function PlayerFreefallActiveChanged( entity player, bool oldValue, bool is
 	}
 	else
 	{
+		RevertSkydiveStartingConvars()
 		Signal( player, "FreefallEnded" )
 	}
 }
