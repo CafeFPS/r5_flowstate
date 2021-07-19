@@ -5325,3 +5325,10 @@ table<int, array<entity> > function ArrangePlayersByTeam( array<entity> players 
 	}
 	return out
 }
+
+void function WaitForGameState(int state) {
+	while ( GetGameState() != state )
+	{
+		WaitFrame()
+	}
+}

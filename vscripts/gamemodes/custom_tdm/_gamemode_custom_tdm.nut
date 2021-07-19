@@ -19,7 +19,6 @@ struct {
 
 void function _CustomTDM_Init()
 {
-	SetGameState( eGameState.WaitingForPlayers )
 
     AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {thread SV_OnPlayerDied(victim, attacker, damageInfo)})
     AddCallback_OnClientConnected( void function(entity player) { thread SV_OnPlayerConnected(player) } )
@@ -74,9 +73,7 @@ void function SV_OnPropDynamicSpawned(entity prop)
 }
 void function RunTDM()
 {
-    
-    WaitForever()
-    WaitPrematch()
+    WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", SV_OnPropDynamicSpawned)
     wait 5
     for(; ; )
@@ -238,6 +235,7 @@ void function SV_OnPlayerConnected(entity player)
 
     player.SetPlayerSettingsWithMods($"settings/player/mp/pilot_survival_firesupport.rpak", [])
     player.GiveWeapon("mp_weapon_melee_survival", OFFHAND_MELEE )
+	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
     //Give passive regen (pilot blood)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
@@ -338,11 +336,13 @@ void function PlayerRestoreHP(entity player, float health, float shields)
 }
 void function PlayerRestoreWeapons(entity player, array<WeaponKit> weaponKits = [])
 {
+    bool deployedAtLeastOneWeapon = false;
     foreach(weaponKit in weaponKits)
     {
         switch(weaponKit.slot)
         {
             case OFFHAND_SPECIAL:
+            case OFFHAND_ULTIMATE:
             case OFFHAND_INVENTORY:
             
             player.GiveOffhandWeapon(weaponKit.weapon, weaponKit.slot, weaponKit.mods)
@@ -350,7 +350,16 @@ void function PlayerRestoreWeapons(entity player, array<WeaponKit> weaponKits = 
 
             case WEAPON_INVENTORY_SLOT_ANY:
             default:
-            player.GiveWeapon(weaponKit.weapon, weaponKit.slot, weaponKit.mods)
+            if(!deployedAtLeastOneWeapon)
+            {
+                deployedAtLeastOneWeapon = true
+                player.GiveWeapon(weaponKit.weapon, weaponKit.slot, weaponKit.mods)
+            } 
+            else 
+            {
+                player.GiveWeapon_NoDeploy(weaponKit.weapon, weaponKit.slot, weaponKit.mods)
+            }
+            
         }
         
     }
