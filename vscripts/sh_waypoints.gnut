@@ -1677,6 +1677,12 @@ void function DoAnyCleanupForIncomingLocationPing( entity player, int pingType, 
 			bool thisIsUs = (player == teamPlayer)
 			foreach( entity wp in teamPlayer.p.pings.locations )
 			{
+				if ( !IsValid( wp ) )
+				{
+					teamPlayer.p.pings.locations.fastremovebyvalue( wp )
+					continue
+				}
+
 				int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
 				if ( wpPingType == ePingType.ENEMY_SPECIFIC )
 				{
@@ -1694,6 +1700,12 @@ void function DoAnyCleanupForIncomingLocationPing( entity player, int pingType, 
 	{
 		foreach( entity wp in player.p.pings.locations )
 		{
+			if ( !IsValid( wp ) )
+			{
+				player.p.pings.locations.fastremovebyvalue( wp )
+				continue
+			}
+
 			int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
 			if ( (wpPingType == pingType) )
 			{
@@ -2098,6 +2110,9 @@ void function Waypoint_ClearPlayerSimilarPingsForReply( entity player, entity wp
 
 	foreach( entity deadPing in deadPings )
 	{
+		player.p.pings.locations.fastremovebyvalue( deadPing )
+		player.p.pings.loots.fastremovebyvalue( deadPing )
+
 		if ( IsValid( deadPing ) )
 			deadPing.Destroy()
 	}
