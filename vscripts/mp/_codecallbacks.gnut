@@ -293,6 +293,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	if ( entIsPlayer )
 	{
 		PlayerTookDamage( ent, damageInfo, attacker, inflictor, damageSourceId, titanDamage )
+		
 		if ( DamageInfo_GetDamage( damageInfo ) == 0 && entIsTitan )
 		{
 			EarnMeterDamageConversion( damageInfo, attacker, ent, 0, titanDamage )
@@ -407,6 +408,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	#endif
 
 	RunClassPostDamageCallbacks( ent, damageInfo )
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SHIELD_DAMAGE )
+		DamageInfo_SetDamage( damageInfo, 0 ) // Do not damage the player, the damage value was only required for proper client display.
 
 	#if SERVER && MP
 		//Stats_OnPlayerDidDamage( ent, damageInfo )
@@ -738,11 +742,11 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	if ( isKillShot )
 		damageType = (damageType | DF_KILLSHOT)
 
-	if ( isTitan && (DamageInfo_GetDamage( damageInfo ) == 0) )
-	{
-		if ( titanDamage.doomedNow ) // to make kill card come up for you even if you have auto-eject. In Titan_PlayerTookDamage we set damage to 0 if you have Auto-Eject and are doomed
-			TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId, titanDamage )
-	}
+	// if ( isTitan && (DamageInfo_GetDamage( damageInfo ) == 0) )
+	// {
+	// 	if ( titanDamage.doomedNow ) // to make kill card come up for you even if you have auto-eject. In Titan_PlayerTookDamage we set damage to 0 if you have Auto-Eject and are doomed
+	// 		TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId, titanDamage )
+	// }
 
 	vector attackerOrigin = Vector( 0, 0, 0 )
 	if ( IsValid( attacker ) )
@@ -778,6 +782,22 @@ function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker,
 	local attackerEHandle = IsValid( attacker ) ? attacker.GetEncodedEHandle() : null
 	local weaponEHandle = IsValid( DamageInfo_GetWeapon( damageInfo ) ) ? DamageInfo_GetWeapon( damageInfo ).GetEncodedEHandle() : null
 	local damageOrigin = GetDamageOrigin( damageInfo, player )
+
+	Remote_CallFunction_Replay( 
+		player, 
+		"ServerCallback_PlayerTookDamage", 
+
+		DamageInfo_GetDamage( damageInfo ), 
+		
+		damageOrigin.x, 
+		damageOrigin.y,
+		damageOrigin.z,
+
+		damageType,
+		damageSourceId,
+
+		attackerEHandle
+	)
 }
 
 // This only handles damage events. Whizbys can still cause snipercam to trigger without passing through this check.

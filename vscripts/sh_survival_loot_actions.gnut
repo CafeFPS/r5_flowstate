@@ -447,6 +447,9 @@ bool function DataKnifePickUp_Use( entity pickup, entity player, int pickupFlags
 		if( player == GetLocalViewPlayer() )
 			AddPlayerHint( 5.0, 0.25, $"", "#PING_LOOT_VAULT_REVEAL" )
 		#endif
+		#if SERVER
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_vaultKeyGot" )
+		#endif
 		return true
 	}
 	else

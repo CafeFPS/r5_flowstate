@@ -67,8 +67,6 @@ void function GamemodeSurvival_Init()
 	foreach ( character in GetAllCharacters() )
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterSkin( character ), OnCharacterSkinChanged )
 
-	SetCallback_OnPlayerReload( OnWeaponReload )
-
 	// Start the WaitingForPlayers sequence.
 	// TODO: staging area support
 	thread Sequence_WaitingForPlayers()
@@ -226,12 +224,13 @@ void function Sequence_PickLoadout()
 
 	wait CharSelect_GetOutroTransitionDuration()
 
-	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 && GetCurrentPlaylistVarInt("survival_enable_squad_intro_music", 1) == 1) {
-		foreach ( player in GetPlayerArray() )
-		{
-			string skydiveMusicID = MusicPack_GetSkydiveMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
-			EmitSoundOnEntityOnlyToPlayer( player, player, skydiveMusicID )
-		}
+	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 ) {
+		if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro_music", 1 ) == 1 )
+			foreach ( player in GetPlayerArray() )
+			{
+				string skydiveMusicID = MusicPack_GetSkydiveMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
+				EmitSoundOnEntityOnlyToPlayer( player, player, skydiveMusicID )
+			}
 
 		wait CharSelect_GetOutroSquadPresentDuration()
 	}
@@ -279,8 +278,7 @@ void function RespawnPlayerInDropship( entity player )
 }
 
 void function Sequence_Playing()
-{
-	
+{	
 	SetGameState( eGameState.Playing )
 
 	
@@ -521,7 +519,26 @@ void function PlayerStartSpectating( entity player )
 	else
 		specTarget = clientTeam.getrandom()
 
-	player.StartObservingPlayerInFirstPerson( specTarget )
+	player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
+
+	// For CL HUD
+	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.PICKUP_DESTROYED )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
+
+	// player.StartObservingPlayerInFirstPerson( specTarget )
+
+	player.SetSpecReplayDelay( 1 )
+	player.StartObserverMode( OBS_MODE_IN_EYE )
+	player.SetObserverTarget( specTarget )
+}
+
+void function PlayerStopSpectating( entity player )
+{
+	player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+
+	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
+	
+	player.SetSpecReplayDelay( 0 )
 }
 
 void function HandleSquadElimination( int team )
@@ -543,7 +560,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	}
 
 	if ( victim.IsPlayer() )
-	{
+	{	
 		SetPlayerEliminated( victim )
 		PlayerStartSpectating( victim )
 	}
@@ -604,11 +621,20 @@ void function OnClientConnected( entity client )
 
 			break
 		case eGameState.Playing:
-			if ( IsPlayerEliminated( client ) || isAlone )
+			if ( IsPlayerEliminated( client ) )
 				PlayerStartSpectating( client )
 			else
 			{
-				vector origin = clientTeam.getrandom().GetOrigin()
+				array<entity> respawnCandidates = isAlone ? GetPlayerArray_AliveConnected() : clientTeam
+				respawnCandidates.fastremovebyvalue( client )
+
+				if ( respawnCandidates.len() == 0 )
+					break
+
+				if ( !client.GetPlayerNetBool( "hasLockedInCharacter" ) )
+					CharacterSelect_TryAssignCharacterCandidatesToPlayer( client, [] ) // Joined too late, assign a random legend so everything runs fine
+
+				vector origin = respawnCandidates.getrandom().GetOrigin()
 
 				DecideRespawnPlayer( client )
 
@@ -655,27 +681,6 @@ array<entity> function GetAllPlayersOfLockstepIndex( int index )
 			result.append( player )
 
 	return result
-}
-
-void function OnWeaponReload( entity player )
-{
-	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-
-	int ammoType = weapon.GetWeaponAmmoPoolType()
-	string ammoRef = AmmoType_GetRefFromIndex( ammoType )
-
-	int currentAmmo = weapon.GetWeaponPrimaryClipCount()
-	int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-
-	int requiredAmmo = maxAmmo - currentAmmo
-
-	int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
-
-	int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
-
-	// printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
-
-	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
 }
 
 void function Survival_SetFriendlyOwnerHighlight( entity player, entity characterModel )
@@ -784,6 +789,8 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	DoRespawnPlayer( player, null )
 
+	PlayerStopSpectating( player )
+
 	ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
 	CharacterSkin_Apply( player, playerCharacterSkin )
 
@@ -886,17 +893,16 @@ bool function ClientCommand_MakeEligibleForJumpMaster( entity player, array<stri
 
 entity ornull function ChangeJumpmasterInSquad( entity currentJumpmaster )
 {
-	currentJumpmaster.SetPlayerNetBool( "isJumpmaster", false )
-
 	array<entity> availableSquadMembers = GetPlayerArrayOfTeam( currentJumpmaster.GetTeam() )
 	
 	if ( availableSquadMembers.len() == 1 )
 		return null
 
-	availableSquadMembers.fastremovebyvalue( currentJumpmaster )
-	availableSquadMembers.randomize()
+	currentJumpmaster.SetPlayerNetBool( "isJumpmaster", false )
 
-	entity selectedMember = availableSquadMembers[0]
+	availableSquadMembers.fastremovebyvalue( currentJumpmaster )
+
+	entity selectedMember = availableSquadMembers.getrandom()
 
 	selectedMember.SetPlayerNetBool( "isJumpmaster", true )
 

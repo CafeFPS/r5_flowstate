@@ -153,6 +153,7 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 		if ( GetValidPlayerSkydiveEmotes( squadPlayer ).len() > 0 )
 			squadPlayer.SetPlayerNetBool( "freefallEmoteAvailable", true )
 
+		thread PlayDialogueForPlayer( "bc_skydive", squadPlayer, squadPlayer )
 		thread PlayerSkyDive( squadPlayer, driverViewVector, squadPlayers, player, true, true )
 	}
 

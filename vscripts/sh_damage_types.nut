@@ -115,6 +115,17 @@ global enum eDamageSourceId
 	melee_wraith_kunai
 	mp_weapon_wraith_kunai_primary
 
+	melee_bloodhound_axe
+	mp_weapon_bloodhound_axe_primary
+
+	melee_lifeline_baton
+	mp_weapon_lifeline_baton_primary
+
+	melee_shadowsquad_hands
+	melee_shadowroyale_hands
+	mp_weapon_shadow_squad_hands_primary
+
+	mp_weapon_tesla_trap
 
 	// Turret Weapons
 	mp_weapon_yh803

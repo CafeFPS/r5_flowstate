@@ -53,7 +53,7 @@ void function ClientCodeCallback_MapInit()
 	{
 		AddTargetNameCreateCallback( "leviathan_zone_6", OnEvilLeviathanCreated )
 		AddTargetNameCreateCallback( "leviathan_zone_9", OnEvilLeviathanCreated )
-		//AddGlobalAnimEvent( "leviathan_breathes_fire_start", OnLeviathanBreathesFire )
+		AddGlobalAnimEvent( "leviathan_breathes_fire_start", OnLeviathanBreathesFire )
 		PrecacheParticleSystem( FX_LEVIATHAN_EYE_GLOW )
 		PrecacheParticleSystem( FX_LEVIATHAN_FIRE )
 	}
@@ -169,7 +169,7 @@ void function LeviathanThink( entity marker, entity leviathan, bool stagingOnly 
 #endif //CLIENT
 
 
-/*
+
 #if CLIENT
 void function OnLeviathanBreathesFire( entity ent )
 {
@@ -180,9 +180,9 @@ void function OnLeviathanBreathesFire( entity ent )
 
 }
 #endif //CLIENT
-*/
 
-/*
+
+
 #if CLIENT
 void function LeviathanBreathesFire( entity ent )
 {
@@ -237,7 +237,7 @@ void function LeviathanBreathesFire( entity ent )
 	WaitForever()
 }
 #endif //CLIENT
-*/
+
 
 
 #if CLIENT

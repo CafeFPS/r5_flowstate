@@ -79,7 +79,198 @@ void function SV_Survival_Loot_Init()
 	
 	AddClientCommandCallback( CMDNAME_PLAYER_SWITCHED_WEAPONS, ClientCommand_PlayerSwitchedWeapons )
 
+	AddClientCommandCallback( "Sur_SwitchToOrdnance", ClientCommand_Sur_SwitchToOrdnance )
+	AddClientCommandCallback( "Sur_SwapToNextOrdnance", ClientCommand_Sur_SwapToNextOrdnance )
+	AddClientCommandCallback( "Sur_EquipOrdnance", ClientCommand_Sur_EquipOrdnance )
+
+	AddClientCommandCallback( "BackpackClosed", ClientCommand_BackpackClosed )
+
+	SetCallback_OnPlayerReload( OnWeaponReload )
+	AddCallback_OnWeaponAttack( OnWeaponAttack_OrdnanceControl )
+
 	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+}
+
+void function OnWeaponReload( entity player )
+{
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+
+	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_reload" )
+
+	if ( !InfiniteAmmoEnabled() )
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+	
+		int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+		int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+	
+		int requiredAmmo = maxAmmo - currentAmmo
+	
+		int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+	
+		int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
+	
+		// printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
+	
+		SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
+	}
+}
+
+string function GetNextOrdnance( entity player, string currentOrdnance = "" )
+{
+	array<string> allPlayerOrdnances = SURVIVAL_GetAllPlayerOrdnance( player )
+
+	if ( allPlayerOrdnances.len() == 0 )
+		return ""
+
+	int ornull currentOrdnancePos = 0
+	if ( currentOrdnance != "" )
+	{
+		currentOrdnancePos = allPlayerOrdnances.find( currentOrdnance )
+		if ( currentOrdnancePos == null )
+			currentOrdnancePos = 0
+	}
+
+	expect int( currentOrdnancePos )
+
+	int nextOrdnancePos = currentOrdnancePos + 1
+	if ( nextOrdnancePos >= allPlayerOrdnances.len() )
+		nextOrdnancePos = 0
+
+	return allPlayerOrdnances[nextOrdnancePos]
+}
+
+void function SwitchPlayerToOrdnance( entity player, string newOrdnance )
+{
+	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+	bool shouldSelect = false
+
+	if ( IsValid( heldOrdnance ) )
+	{
+		if ( heldOrdnance.GetWeaponClassName() == newOrdnance )
+			return // Already switched to it
+
+		shouldSelect = ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == heldOrdnance ) // Currently selected
+			|| ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == null ) // Nothing selected
+
+		player.TakeWeaponByEntNow( heldOrdnance )
+		heldOrdnance = null
+	}
+
+	player.GiveWeapon( newOrdnance, WEAPON_INVENTORY_SLOT_ANTI_TITAN, ["survival_finite_ordnance"] )
+	entity ordnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+
+	AddRoundsToWeapon( player, ordnance, SURVIVAL_CountItemsInInventory( player, newOrdnance ) )
+
+	if ( shouldSelect )
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+}
+
+void function OnWeaponAttack_OrdnanceControl( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
+{
+	if ( !IsValid( player ) || !IsValid( weapon ) )
+		return
+
+	LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
+
+	if ( data.lootType == eLootType.ORDNANCE )
+	{
+		SURVIVAL_RemoveFromPlayerInventory( player, data.ref, 1 )
+		
+		if ( SURVIVAL_CountItemsInInventory( player, data.ref ) == 0 )
+		{
+			string nextOrdnance = GetNextOrdnance( player, data.ref )
+			if ( nextOrdnance != "" )
+				thread function () : ( player, nextOrdnance )
+				{
+					wait 1
+					SwitchPlayerToOrdnance( player, nextOrdnance )
+				}()
+		}
+	}
+}
+
+bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> args )
+{
+	if ( !IsValid( player ) )
+		return true
+
+	if ( args.len() < 1 )
+		return true
+
+	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
+		return true
+		
+	int ordnanceIdx = int( args[0] )
+
+	if ( ordnanceIdx == -1 )
+		return true
+
+	LootData ordnanceLootData = SURVIVAL_Loot_GetLootDataByIndex( ordnanceIdx )
+
+	if ( ordnanceLootData.lootType != eLootType.ORDNANCE )
+		return true
+
+	int ordnanceCount = SURVIVAL_CountItemsInInventory( player, ordnanceLootData.ref )
+
+	if ( ordnanceCount == 0 )
+		return true
+
+	SwitchPlayerToOrdnance( player, ordnanceLootData.ref )
+
+	return true
+}
+
+bool function ClientCommand_Sur_EquipOrdnance( entity player, array<string> args )
+{
+	if ( !IsValid( player ) )
+		return true
+
+	if ( args.len() < 1 )
+		return true
+
+	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
+		return true
+		
+	string ordnanceRef = args[0]
+
+	if ( !SURVIVAL_Loot_IsRefValid( ordnanceRef ) )
+		return true
+
+	LootData ordnanceLootData = SURVIVAL_Loot_GetLootDataByRef( ordnanceRef )
+
+	if ( ordnanceLootData.lootType != eLootType.ORDNANCE )
+		return true
+
+	int ordnanceCount = SURVIVAL_CountItemsInInventory( player, ordnanceLootData.ref )
+
+	if ( ordnanceCount == 0 )
+		return true
+
+	SwitchPlayerToOrdnance( player, ordnanceLootData.ref )
+
+	return true
+}
+
+bool function ClientCommand_Sur_SwapToNextOrdnance( entity player, array<string> args )
+{
+	if ( !IsValid( player ) )
+		return true
+
+	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
+		return true
+
+	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+	string currentOrdnance = ""
+	if ( IsValid( heldOrdnance ) )
+		currentOrdnance = heldOrdnance.GetWeaponClassName()
+
+	string nextOrdnance = GetNextOrdnance( player, currentOrdnance )
+	if ( nextOrdnance != "" )
+		SwitchPlayerToOrdnance( player, nextOrdnance )
+
+	return true
 }
 
 void function SURVIVAL_PlaceGroundItems()
@@ -1069,7 +1260,7 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 	if ( !IsValid( weaponToDrop ) )
 		return false
 
-	LootData dropWeaponData = EquipmentSlot_GetEquippedLootDataForSlot( player, slot )
+	LootData dropWeaponData = SURVIVAL_GetLootDataFromWeapon( weaponToDrop )
 
 	entity droppedWeapon = SpawnGenericLoot( dropWeaponData.ref, origin, <0, 0, 90>, 1 )
 	droppedWeapon.SetClipCount( weaponToDrop.GetWeaponPrimaryClipCount() )
@@ -1120,6 +1311,18 @@ void function SURVIVAL_DropBackpackItem( entity player, string ref, int count )
 		player.AmmoPool_SetCount( ammoType, int( max( 0, player.AmmoPool_GetCount( ammoType ) - count ) ) )
 	}
 
+	if ( itemData.lootType == eLootType.ORDNANCE )
+	{
+		entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+		if ( IsValid( heldOrdnance ) && heldOrdnance.GetWeaponClassName() == ref )
+		{
+			player.TakeWeaponByEntNow( heldOrdnance )
+			string nextOrdnance = GetNextOrdnance( player, ref )
+			if ( nextOrdnance != "" )
+				SwitchPlayerToOrdnance( player, nextOrdnance )
+		}
+	}
+
 	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 }
 
@@ -1163,13 +1366,13 @@ array<LootZone> function GetAllLootZones()
 		switch( lzEnt.kv.zone_class )
 		{
 			case "zone_hotzone":
-			case "Desertlands_Train_Station":
 				zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
 				break
 			case "zone_high":
 				zone.zoneClass = eLootZoneClass.ZONE_HIGH
 				break
 			case "zone_medium":
+			case "Desertlands_Train_Station":
 				zone.zoneClass = eLootZoneClass.ZONE_MEDIUM
 				break
 			case "data_knife_vault":

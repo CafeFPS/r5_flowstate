@@ -294,6 +294,8 @@ void function Server_Init()
 	ThreatDetection_Init()
 	Staging_Area_Init()
 
+	SurvivalCommentary_Init()
+
 	GameMode_RunServerInits()
 
 	SpectreChatter_MP_Init()
