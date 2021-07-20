@@ -1361,13 +1361,13 @@ array<LootZone> function GetAllLootZones()
 		switch( lzEnt.kv.zone_class )
 		{
 			case "zone_hotzone":
-			case "Desertlands_Train_Station":
 				zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
 				break
 			case "zone_high":
 				zone.zoneClass = eLootZoneClass.ZONE_HIGH
 				break
 			case "zone_medium":
+			case "Desertlands_Train_Station":
 				zone.zoneClass = eLootZoneClass.ZONE_MEDIUM
 				break
 			case "data_knife_vault":
