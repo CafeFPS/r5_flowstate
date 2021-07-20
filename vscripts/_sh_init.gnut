@@ -197,8 +197,6 @@ void function SV_CL_Init()
 	#endif
 
 	RemoteFunctions_Init_Finish()
-
-	GameRules_EnableGlobalChat( GetCurrentPlaylistVarBool( "global_chat_enabled", false ) )
 }
 
 #if SERVER
@@ -315,6 +313,8 @@ void function Server_Init()
 	#if R5DEV
 		SmokeTest_Init()
 	#endif // DEV
+
+	GameRules_EnableGlobalChat( GetCurrentPlaylistVarBool( "global_chat_enabled", false ) )
 }
 #endif // SERVER
 
