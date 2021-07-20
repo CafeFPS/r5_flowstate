@@ -76,16 +76,16 @@ void function OnJumpPadPlanted( entity projectile )
 	vector oldUpDir = AnglesToUp( surfaceAngles )
 
 	// is this used?
-	// TraceResults traceResult = TraceLine( origin, endOrigin, [ projectile ], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS )
-	// if ( traceResult.fraction < 1.0 )
-	// {
-	// 	vector forward = AnglesToForward( projectile.proj.savedAngles )
-	// 	surfaceAngles = AnglesOnSurface( traceResult.surfaceNormal, forward )
+	TraceResults traceResult = TraceLine( origin, endOrigin, [ projectile ], TRACE_MASK_SOLID, TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS )
+	if ( traceResult.fraction < 1.0 )
+	{
+		vector forward = AnglesToForward( projectile.proj.savedAngles )
+		surfaceAngles = AnglesOnSurface( traceResult.surfaceNormal, forward )
 
-	// 	vector newUpDir = AnglesToUp( surfaceAngles )
-	// 	if ( DotProduct( newUpDir, oldUpDir ) < JUMP_PAD_ANGLE_LIMIT )
-	// 		surfaceAngles = projectile.proj.savedAngles
-	// }
+		vector newUpDir = AnglesToUp( surfaceAngles )
+		if ( DotProduct( newUpDir, oldUpDir ) < JUMP_PAD_ANGLE_LIMIT )
+			surfaceAngles = projectile.proj.savedAngles
+	}
 
 	entity oldParent = projectile.GetParent()
 	projectile.ClearParent()
