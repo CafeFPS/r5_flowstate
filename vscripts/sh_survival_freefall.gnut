@@ -1351,6 +1351,8 @@ bool function ClientCommand_SkydiveEmote( entity player, array<string> args )
 	thread function() : ( player, selectedEmote )
 	{
 		asset animSeq = CharacterSkydiveEmote_GetAnimSeq( selectedEmote )
+
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_skydive" )
 		
 		player.Anim_Play( animSeq )
 		wait player.GetSequenceDuration( animSeq )
