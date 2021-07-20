@@ -284,8 +284,10 @@ void function Sequence_Playing()
 	SetGameState( eGameState.Playing )
 
 	
-	if( GetCurrentPlaylistVarInt("survival_play_seq", 1) == 0)
+	if( GetCurrentPlaylistVarInt("survival_custom_deploy", 0) == 1)
+	{
 		return
+	}
 	
 
 	// Update future time points now that the delays should be predictable

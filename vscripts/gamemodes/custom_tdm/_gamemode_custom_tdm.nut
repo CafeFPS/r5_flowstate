@@ -229,19 +229,13 @@ void function FillPlayerToNeedyTeam(entity player)
 void function SV_OnPlayerConnected(entity player)
 {
     wait 1.5
-    // set index of team
-    int index = GetPlayerArrayOfTeam(player.GetTeam()).len() - 1
-    player.SetTeamMemberIndex(index)
-
-    player.SetPlayerSettingsWithMods($"settings/player/mp/pilot_survival_firesupport.rpak", [])
-    player.GiveWeapon("mp_weapon_melee_survival", OFFHAND_MELEE )
-	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
     //Give passive regen (pilot blood)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
-    DoRespawnPlayer(player, null)
+	player.UnfreezeControlsOnServer()
     SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-    PlayerRestoreHP(player, 100, 65)
+    DecideRespawnPlayer( player )
+    PlayerRestoreHP(player, 100, 100)
     TpPlayerToSpawnPoint(player)
 
 
