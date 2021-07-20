@@ -2,7 +2,7 @@ untyped
 
 //********************************************************************************************
 //	_cl_mapspawn.nut
-//  Called on newgame or transitions, BEFORE entities have been created and initialized
+//	Called on newgame or transitions, BEFORE entities have been created and initialized
 //********************************************************************************************
 
 global function ClientCodeCallback_MapSpawn

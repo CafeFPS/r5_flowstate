@@ -63,6 +63,10 @@ void function ShQuips_Init()
 	FileStruct_LifetimeLevel newFileLevel
 	fileLevel = newFileLevel
 
+#if SERVER
+	AddClientCommandCallback( "BroadcastQuip", ClientCommand_BroadcastQuip )
+#endif
+
 #if(false)
 
 
@@ -112,22 +116,26 @@ void function PerformQuip( entity player, int index )
 
 	ItemFlavor quip      = GetItemFlavorByGUID( index )
 
-	int fixAndReplaceMe = 1
-	CommsAction act
-	act.index = eCommsAction.QUIP
-	act.aliasSubname = CharacterQuip_GetAliasSubName( quip )
-	act.hasCalm = false
-	act.hasCalmFar = false
-	act.hasUrgent = false
-	act.hasUrgentFar = false
+	// int fixAndReplaceMe = 1
+	// CommsAction act
+	// act.index = eCommsAction.QUIP
+	// act.aliasSubname = CharacterQuip_GetAliasSubName( quip )
+	// act.hasCalm = false
+	// act.hasCalmFar = false
+	// act.hasUrgent = false
+	// act.hasUrgentFar = false
 
-	CommsOptions opt
-	opt.isFirstPerson = (player == GetLocalViewPlayer())
-	opt.isFar = false
-	opt.isUrgent = false
-	opt.pauseQueue = player.GetTeam() == GetLocalViewPlayer().GetTeam()
+	// CommsOptions opt
+	// opt.isFirstPerson = 
+	// opt.isFar = false
+	// opt.isUrgent = false
+	// opt.pauseQueue = player.GetTeam() == GetLocalViewPlayer().GetTeam()
 
-	PlaySoundForCommsAction( player, fixAndReplaceMe, opt )
+	// PlaySoundForCommsAction( player, fixAndReplaceMe, opt )
+	
+	// this is temp until stuff is reworked
+	string audio = GetBattleChatterAlias1P3P( player, CharacterQuip_GetAliasSubName( quip ), ( player == GetLocalViewPlayer() ) )
+	EmitSoundOnEntity( player, audio )
 }
 #endif
 
@@ -188,6 +196,49 @@ void function AssertEmoteIsValid( ItemFlavor flavor )
 }
 #endif
 
+#if SERVER
+array<ItemFlavor> function GetAllValidQuipsForPlayer( entity player )
+{
+	array<ItemFlavor> results = []
+
+	EHI playerEHI = ToEHI( player )
+
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, Loadout_CharacterClass() )
+
+	for ( int i = 0; i < MAX_QUIPS_EQUIPPED; i++ )
+	{
+		LoadoutEntry entry = Loadout_CharacterQuip( character, i )
+		ItemFlavor quip = LoadoutSlot_GetItemFlavor( playerEHI, entry )
+
+		if ( !CharacterQuip_IsTheEmpty( quip ) )
+			results.append( quip )
+	}
+
+	return results
+}
+
+bool function ClientCommand_BroadcastQuip( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( args.len() < 1 )
+		return true
+
+	int quipWheelChoice = int( args[0] )
+
+	array<ItemFlavor> availableQuips = GetAllValidQuipsForPlayer( player )
+	if ( availableQuips.len() == 0 || quipWheelChoice >= availableQuips.len() )
+		return true
+
+	ItemFlavor selectedQuip = availableQuips[quipWheelChoice]
+
+	foreach ( listener in GetPlayerArray() )
+		Remote_CallFunction_Replay( listener, "PerformQuip", player, ItemFlavor_GetGUID( selectedQuip ) )
+
+	return true
+}
+#endif
 
 #if(false)
 
