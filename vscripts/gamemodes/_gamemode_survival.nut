@@ -39,7 +39,6 @@ void function GamemodeSurvival_Init()
 {
 	SurvivalFreefall_Init()
 	Sh_ArenaDeathField_Init()
-	SurvivalCommentary_Init()
 
 	// init flags
 	FlagInit( "DeathCircleActive", true )
