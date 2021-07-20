@@ -465,6 +465,12 @@ bool function Waypoint_LootItemIsBeingPingedByAnyone( entity item )
 
 	foreach( entity lootWp in s_activeLootPings )
 	{
+		if ( !IsValid( lootWp ) )
+		{
+			s_activeLootPings.fastremovebyvalue( lootWp )
+			continue
+		}
+
 		entity thisLootItem = Waypoint_GetItemEntForLootWaypoint( lootWp )
 		if ( thisLootItem == item )
 			return true
@@ -481,6 +487,12 @@ entity function Waypoint_GetWaypointForLootItemPingedBy( entity item, entity pla
 
 	foreach( entity lootWp in s_activeLootPings )
 	{
+		if ( !IsValid( lootWp ) )
+		{
+			s_activeLootPings.fastremovebyvalue( lootWp )
+			continue
+		}
+
 		entity owner = lootWp.GetOwner()
 		if ( owner != player )
 			continue
@@ -1383,6 +1395,9 @@ void function InstanceLocationPing( entity wp )
 
 void function InstanceLootPing( entity wp )
 {
+	if ( !IsValid( wp ) )
+		return
+
 	int wpType = wp.GetWaypointType()
 	Assert( wpType == eWaypoint.PING_LOOT )
 	int pingType = Waypoint_GetPingTypeForWaypoint( wp )
@@ -1951,6 +1966,12 @@ entity function CreateWaypoint_Ping_Loot( entity player, entity lootItem, int ti
 	// Don't re-ping:
 	foreach ( entity lootWp in player.p.pings.loots )
 	{
+		if ( !IsValid( lootWp ) )
+		{
+			player.p.pings.loots.fastremovebyvalue( lootWp )
+			continue
+		}
+
 		entity item = Waypoint_GetItemEntForLootWaypoint( lootWp )
 		if ( item == lootItem )
 			return lootWp
@@ -1999,6 +2020,12 @@ void function DeleteWaypoint_Ping_Loot( entity player, entity lootItem )
 {
 	foreach ( entity lootWp in player.p.pings.loots )
 	{
+		if ( !IsValid( lootWp ) )
+		{
+			player.p.pings.loots.fastremovebyvalue( lootWp )
+			continue
+		}
+
 		entity item = Waypoint_GetItemEntForLootWaypoint( lootWp )
 		if ( item == lootItem )
 		{
