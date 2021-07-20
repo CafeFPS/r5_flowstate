@@ -388,6 +388,7 @@ Scripts:
 	_anim.gnut
 	_bubble_shield.gnut
 	_codecallbacks_common.gnut
+	_client_commands.gnut
 	_codecallbacks_player_input.gnut
 	_control_panel.gnut
 	_script_movers.gnut

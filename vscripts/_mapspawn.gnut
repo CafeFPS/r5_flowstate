@@ -2,7 +2,7 @@ untyped
 
 //=========================================================
 //	_mapspawn.nut
-//  Called on newgame or transitions, BEFORE entities have been created and initialized
+//	Called on newgame or transitions, BEFORE entities have been created and initialized
 //=========================================================
 
 global function CodeCallback_MapSpawn
@@ -16,7 +16,6 @@ global entity _sc = null
 // dumpsite for other files
 
 global const int TEAM_COUNT = 31
-
 
 // end dumpsite
 
@@ -238,8 +237,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
 
-    PrecacheWeapon( $"mp_weapon_melee_survival" )
-    // PrecacheWeapon( $"mp_weapon_data_knife" )
+	PrecacheWeapon( $"mp_weapon_melee_survival" )
+	// PrecacheWeapon( $"mp_weapon_data_knife" )
 	// PrecacheWeapon( $"mp_weapon_jack_dknife" )
 	PrecacheWeapon( $"mp_weapon_mdlspawner" )
 	PrecacheWeapon( $"mp_weapon_alternator_smg" )
@@ -259,10 +258,10 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_autopistol" )
 	PrecacheWeapon( $"mp_weapon_wingman" )
 	PrecacheWeapon( $"mp_weapon_thermite_grenade" )
-    PrecacheWeapon( $"mp_weapon_wraith_kunai_primary" )
+	PrecacheWeapon( $"mp_weapon_wraith_kunai_primary" )
 	PrecacheWeapon( $"mp_weapon_deployable_medic" )
 	// PrecacheWeapon( $"mp_weapon_car" )
-    PrecacheWeapon( $"mp_ability_grapple" )
+	PrecacheWeapon( $"mp_ability_grapple" )
 	PrecacheWeapon( $"mp_weapon_vinson" )
 	PrecacheWeapon( $"mp_weapon_pdw" )
 	PrecacheWeapon( $"mp_ability_phase_walk" )
@@ -296,7 +295,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_grenade_defensive_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
 	// PrecacheWeapon( $"mp_weapon_grenade_gravity" )
-	//PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
+	// PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
 	PrecacheWeapon( $"mp_weapon_deployable_cover" )
 	// PrecacheWeapon( $"mp_ability_laser_trip" )
 	// PrecacheWeapon( $"mp_weapon_satchel" )
@@ -305,60 +304,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	printl( "Code Script: _mapspawn" )
 
 	SV_CL_Shared_Init()
-
-	#if R5DEV
-	// this is really bad to have enabled on non-dev servers
-	AddClientCommandCallback( "script", ClientCommand_script )
-	#endif
-
-	AddClientCommandCallback( "noclip", ClientCommand_noclip )
+	ClientCommands_Init()
 }
-
-#if R5DEV
-bool function ClientCommand_script( entity player, array<string> args )
-{
-	if( !IsValid( player ) )
-		return true
-	
-	if( GetConVarInt( "sv_cheats" ) != 1 )
-		return true
-
-	string func = ""
-
-	for ( int i = 0; i < args.len(); i++ )
-	{
-		func = (func + args[i])
-		if( i == 0 )
-		{
-			func = (func + " ")
-		}
-	}
-	func = StringReplace( func, "'", "\"" )
-	printt( func )
-
-	try{
-		compilestring( "return "+func+"" )()
-	}
-	catch( error ) {
-		printt("error while running script cc", error)
-	}
-	return true
-}
-#endif
-
-bool function ClientCommand_noclip( entity player, array<string> args )
-{
-    if ( GetConVarInt( "sv_cheats" ) != 1 )
-        return true
-
-    if ( player.IsNoclipping() )
-        player.SetPhysics( MOVETYPE_WALK )
-    else
-        player.SetPhysics( MOVETYPE_NOCLIP )
-        
-    return true
-}
-
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
