@@ -138,7 +138,6 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 	anims[ "character_wraith" ][ "lobby" ] 			<- [ 	"wraith_menu_lobby_center_idle",
 															"wraith_menu_lobby_center_hand",
 															"wraith_menu_lobby_center_voices",
-															"wraith_cyberninja_menu_ready_up",
 															"wraith_menu_lobby_center_readyup" ]
 	anims[ "character_wraith" ][ "other" ] 			<- [ 	"wraith_menu_select_ready_up",
 														 	"wraith_gladcard_animated_bluesteel",
