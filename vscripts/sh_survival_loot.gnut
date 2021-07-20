@@ -2461,7 +2461,7 @@ LootActionStruct function SURVIVAL_BuildStringForAction( entity player, int cont
 				if ( kitCat == eHealthPickupCategory.ULTIMATE )
 				{
 
-					entity ultAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+					entity ultAbility = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 					int ammo = ultAbility.GetWeaponPrimaryClipCount()
 					int maxAmmo = ultAbility.GetWeaponPrimaryClipCountMax()
 
