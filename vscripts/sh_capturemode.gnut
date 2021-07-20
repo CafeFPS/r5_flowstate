@@ -61,6 +61,7 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 															"bloodhound_gladcard_animated_come",
 															"bloodhound_gladcard_animated_knife",
 															"bloodhound_gladcard_animated_mogwai",
+															"bloodhound_gladcard_animated_myaxe",
 															"bloodhound_gladcard_animated_throw" ]
 
 	anims[ "character_gibraltar" ] <- {}
@@ -107,7 +108,8 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 															"lifeline_gladcard_animated_dronedrummer",
 															"lifeline_gladcard_animated_drop",
 															"lifeline_gladcard_animated_gunslinger",
-															"lifeline_gladcard_animated_robotgroove" ]
+															"lifeline_gladcard_animated_robotgroove",
+															"lifeline_gladcard_animated_heirloom" ]
 
 	anims[ "character_mirage" ] <- {}
 	anims[ "character_mirage" ][ "lobby" ] 		<- [ 		"mirage_menu_lobby_center_idle",
@@ -136,6 +138,7 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 	anims[ "character_wraith" ][ "lobby" ] 			<- [ 	"wraith_menu_lobby_center_idle",
 															"wraith_menu_lobby_center_hand",
 															"wraith_menu_lobby_center_voices",
+															"wraith_cyberninja_menu_ready_up",
 															"wraith_menu_lobby_center_readyup" ]
 	anims[ "character_wraith" ][ "other" ] 			<- [ 	"wraith_menu_select_ready_up",
 														 	"wraith_gladcard_animated_bluesteel",
@@ -143,6 +146,17 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 															"wraith_gladcard_animated_rise",
 															"wraith_gladcard_common_kunaithrow",
 															"wraith_gladcard_common_kunaitwirl" ]
+															
+															
+	anims[ "character_wattson" ] <- {}
+	anims[ "character_wattson" ][ "lobby" ] 		<- [ 	"wattson_menu_lobby_center_idle",
+															"wattson_menu_lobby_center_squad" ]
+	anims[ "character_wattson" ][ "other" ] 		<- [ 	"wattson_menu_select_ready_up",
+														 	"wattson_gladcard_animated_shii",
+															"wattson_gladcard_animated_electricfence",
+															"wattson_gladcard_animated_Fix",
+															"wattson_gladcard_animated_electric",
+															"wattson_gladcard_animated_spin" ]
 
 	return anims
 }
