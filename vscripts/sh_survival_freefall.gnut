@@ -390,6 +390,8 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 				player.SetPlayerNetBool( "isJumpmaster", false )
 
+				Survival_SetInventoryEnabled( player, true )
+
 				StopSoundOnEntity( player, "Survival_DropSequence_Launch_1P" )
 				StopSoundOnEntity( player, "Survival_DropSequence_Launch_3P" )
 				StopSoundOnEntity( player, "Survival_DropSequence_Travel_1P" )
@@ -468,7 +470,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_FALLING )
-	//Survival_SetInventoryEnabled( player, false )
+	Survival_SetInventoryEnabled( player, false )
 
 	if ( jumpingFromPlane )
 	{

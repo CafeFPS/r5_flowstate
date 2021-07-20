@@ -285,7 +285,7 @@ void function PlayerStartsTraining( entity player )
 	PlayerTrainingData data = file.playerTrainingData[ player ]
 
 	// Disable inventory for now (gets enabled later)
-	//Survival_SetInventoryEnabled( player, false )
+	Survival_SetInventoryEnabled( player, false )
 
 	EndSignal( player, "OnDeath" )
 

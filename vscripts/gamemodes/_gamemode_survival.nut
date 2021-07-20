@@ -249,8 +249,7 @@ void function Sequence_Prematch()
 	if ( GetCurrentPlaylistVarInt( "survival_enable_gladiator_intros", 1 ) == 1 )
 		wait CharSelect_GetOutroChampionPresentDuration()
 
-	thread Sequence_Playing()
-	
+	thread Sequence_Playing()	
 }
 
 void function RespawnPlayerInDropship( entity player )
@@ -281,13 +280,9 @@ void function RespawnPlayerInDropship( entity player )
 void function Sequence_Playing()
 {	
 	SetGameState( eGameState.Playing )
-
 	
-	if( GetCurrentPlaylistVarInt("survival_custom_deploy", 0) == 1)
-	{
+	if ( GetCurrentPlaylistVarInt( "survival_custom_deploy", 0 ) == 1 )
 		return
-	}
-	
 
 	// Update future time points now that the delays should be predictable
 	UpdateSequencedTimePoints( Time() )
@@ -803,6 +798,8 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	if ( giveLoadoutWeapons )
 		GiveLoadoutRelatedWeapons( player )
+
+	Survival_SetInventoryEnabled( player, giveLoadoutWeapons )
 
 	player.SetPlayerNetBool( "pingEnabled", true )
 	player.SetHealth( 100 )

@@ -30,6 +30,7 @@ global function ResetPlayerInventory
 global function GetAllLootZones
 global function SURVIVAL_LootTierForLootGroup
 global function InfiniteAmmoEnabled
+global function Survival_SetInventoryEnabled
 
 const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this
 
@@ -893,6 +894,11 @@ void function AddRoundsToWeapon( entity player, entity weapon, int numRounds )
 		player.AmmoPool_SetCapacity( 65535 )
 		player.AmmoPool_SetCount( ammoType, player.AmmoPool_GetCount( ammoType ) + numRounds )
 	}
+}
+
+void function Survival_SetInventoryEnabled( entity player, bool state )
+{
+	player.SetPlayerNetBool( "inventoryEnabled", state )
 }
 
 void function SURVIVAL_TryTakeDefaultMeleePrimary( entity player )
