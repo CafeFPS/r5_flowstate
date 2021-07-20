@@ -224,7 +224,7 @@ void function Sequence_PickLoadout()
 
 	wait CharSelect_GetOutroTransitionDuration()
 
-	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 ) {
+	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 && GetCurrentPlaylistVarInt("survival_enable_squad_intro_music", 1) == 1) {
 		foreach ( player in GetPlayerArray() )
 		{
 			string skydiveMusicID = MusicPack_GetSkydiveMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
@@ -248,6 +248,7 @@ void function Sequence_Prematch()
 		wait CharSelect_GetOutroChampionPresentDuration()
 
 	thread Sequence_Playing()
+	
 }
 
 void function RespawnPlayerInDropship( entity player )
@@ -277,7 +278,13 @@ void function RespawnPlayerInDropship( entity player )
 
 void function Sequence_Playing()
 {
+	
 	SetGameState( eGameState.Playing )
+
+	
+	if( GetCurrentPlaylistVarInt("survival_play_seq", 1) == 0)
+		return
+	
 
 	// Update future time points now that the delays should be predictable
 	UpdateSequencedTimePoints( Time() )
