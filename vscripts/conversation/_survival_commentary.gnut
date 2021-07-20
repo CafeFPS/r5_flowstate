@@ -1,5 +1,6 @@
 // stub script
 
+global function SurvivalCommentary_Init
 global function SurvivalCommentary_GetKillLeaderEEH
 global function SurvivalCommentary_GetChampionTeam
 global function SurvivalCommentary_GetChampionEEH
@@ -7,6 +8,11 @@ global function AddSurvivalCommentaryEvent
 global function SurvivalCommentary_InitThreatChatterForPlayer
 global function SurvivalCommentary_OnThreatActivationBombardment
 global function SurvivalCommentary_OnThreatActivationGrenade
+
+void function SurvivalCommentary_Init()
+{
+	ShSurvivalCommentary_Init()
+}
 
 int function SurvivalCommentary_GetKillLeaderEEH()
 {

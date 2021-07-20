@@ -4418,17 +4418,29 @@ void function DestroyAfterDelay( entity ent, float delay )
 // some of these might need a better place. i brought those here for quick stubbing
 void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapon )
 {
-	//stub
+	const table<string, string> WEAPON_BC_LINES = {
+		mp_weapon_thermite_grenade = "bc_thermite",
+		mp_weapon_frag_grenade = "bc_frag",
+		mp_weapon_grenade_emp = "bc_arcStar"
+	}
+
+	string weaponClassName = offhandWeapon.GetWeaponClassName()
+	if ( !( weaponClassName in WEAPON_BC_LINES ) )
+		return
+
+	PlayBattleChatterLineToSpeakerAndTeam( player, WEAPON_BC_LINES[weaponClassName] )
 }
 
 void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound )
 {
-	//stub
+	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
+		thread PlayDialogueForPlayer( sound, teamMember, player )
 }
 
-void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, string sound, float num )
+void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, string sound, float delay )
 {
-	//stub
+	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
+		thread PlayDialogueForPlayer( sound, teamMember, player, delay )
 }
 
 void function AddToUltimateRealm( entity player, entity offhandWeapon )
@@ -4436,9 +4448,13 @@ void function AddToUltimateRealm( entity player, entity offhandWeapon )
 	//stub
 }
 
-void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string speaker )
+void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string sound )
 {
-	//stub
+	array<entity> teamMembers = GetPlayerArrayOfTeam( player.GetTeam() )
+	teamMembers.fastremovebyvalue( player )
+
+	foreach ( teamMember in teamMembers )
+		thread PlayDialogueForPlayer( sound, teamMember, player )
 }
 
 void function UpdateDamageState( entity ent, var damageInfo )

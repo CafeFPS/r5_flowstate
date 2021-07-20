@@ -460,13 +460,13 @@ void function RegisterDialogueLine( string name, string alias, int priority, str
 		Assert( radioDisplayName != "", "Dialogue alias " + name + " specifies a vdu bink without setting radioDisplayName as well." )
 
 #if SERVER && R5DEV
-if ( alias != "" && !DoesAliasExist( alias ) )
-{
-	if ( alias.find( "%" ) >= 0 )
-		VerifyExistenceOfNongenericAliases( alias, extraPerspective )
-	else
-		Warning( "Error: Dialogue '" + name + "': alias '" + alias + "' can't be registered because the alias does not exist" )
-}
+	if ( alias != "" && !DoesAliasExist( alias ) )
+	{
+		if ( alias.find( "%" ) >= 0 )
+			VerifyExistenceOfNongenericAliases( alias, extraPerspective )
+		else
+			Warning( "Error: Dialogue '" + name + "': alias '" + alias + "' can't be registered because the alias does not exist" )
+	}
 #endif // SERVER && R5DEV
 
 	DialogueData data
@@ -497,6 +497,8 @@ if ( alias != "" && !DoesAliasExist( alias ) )
 	data.indexInGroup = group.aliasIds.len()
 	data.group = group
 	group.aliasIds.append( aliasId )
+
+	// printt( "DIALOGUE", name )
 
 	s_prevNameRegistered = name
 }
@@ -545,19 +547,29 @@ void function IssueWarningIfAliasMissing( string alias )
 }
 #endif // SERVER && R5DEV
 
+int function GetLinePriority( int aliasID )
+{
+	if ( aliasID == -1 )
+		return -1
+
+	DialogueData data = file.registeredDialog[aliasID]
+	return data.priority
+}
+
 #if SERVER // TODO: This all needs to be fixed in the future!!!!
 void function PlayDialogueForAnimEvent( entity ent, string dialogueName )
 {
-	/*if ( file.registeredDialog.find( dialogueName ) < 0 )
+	if ( !( dialogueName in file.nameToGroupMap ) )
 	{
 		Warning(  ( "Dialogue line " + dialogueName + " is not registered" ) )
 		return
 	}
 
-	int aliasID = file.registeredDialog.find( dialogueName )
+	DialogueEntryGroup group = file.nameToGroupMap[dialogueName]
+	int aliasID = group.aliasIds.getrandom()
 	DialogueData data = file.registeredDialog[aliasID]
 	Assert( data.priority == PRIORITY_NO_QUEUE, ("Dialogue " + dialogueName + " triggered via qc must use PRIORITY_NO_QUEUE") )
-	thread PlayDialogue( dialogueName, ent )*/
+	thread PlayDialogue( dialogueName, ent )
 }
 
 void function PlayDialogue( string name, entity speaker, float delay = 0, int dialogueFlags = 0 )
@@ -628,28 +640,28 @@ void function StopDialogue()
 {
 	array<entity> players = GetPlayerArray_Alive()
 	foreach ( player in players )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_AbortCurrentDialogue" )
+		Remote_CallFunction_NonReplay( player, "SCB_AbortCurrentDialogue" )
 }
 
 void function StopDialogueForPlayer( entity player )
 {
-	Remote_CallFunction_NonReplay( player, "ServerCallback_AbortCurrentDialogue" )
+	Remote_CallFunction_NonReplay( player, "SCB_AbortCurrentDialogue" )
 }
 
 void function PlayDialogue_Internal( int aliasID, int dialogueFlags, entity player, entity speaker, int responseID = -1, entity responseSpeaker = null )
 {
 	if ( dialogueFlags & eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS )
 	{
-		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayDialogueOnEnvironmentSpeakers", aliasID, NUM_NEARBY_SPEAKERS_TO_PLAY_FROM, dialogueFlags, responseID, responseSpeaker )
+		Remote_CallFunction_NonReplay( player, FUNCNAME_PlayDialogueOnEnvironmentSpeakers, aliasID, NUM_NEARBY_SPEAKERS_TO_PLAY_FROM, dialogueFlags, responseID, responseSpeaker )
 	}
 	else if ( speaker.IsNPC() || speaker.IsPlayer() || (speaker.GetClassName() == "script_mover_lightweight") )
 	{
-		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayDialogueOnEntity", aliasID, dialogueFlags, speaker.GetEncodedEHandle() )
+		Remote_CallFunction_NonReplay( player, FUNCNAME_PlayDialogueOnEntity, aliasID, dialogueFlags, speaker.GetEncodedEHandle() )
 	}
 	else
 	{
 		vector pos = (speaker == svGlobal.worldspawn) ? player.EyePosition() : speaker.GetOrigin()
-		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayDialogueAtPosition", aliasID, dialogueFlags, pos.x, pos.y, pos.z)
+		Remote_CallFunction_NonReplay( player, FUNCNAME_PlayDialogueAtPosition, aliasID, dialogueFlags, pos.x, pos.y, pos.z)
 	}
 }
 
@@ -710,7 +722,10 @@ void function PlayRadioDialogueToPlayer( string alias, entity player )
 }
 
 void function PlayDialogueForPlayer( string name, entity player, entity speaker, float delay = 0, int dialogueFlags = 0, string responseName = "", entity responseSpeaker = null )
-{/*
+{
+	if ( !IsBattleChatterEnabled() )
+		return
+
 	if ( !IsValid( player ) )
 		return
 
@@ -722,22 +737,28 @@ void function PlayDialogueForPlayer( string name, entity player, entity speaker,
 	if ( !( dialogueFlags & eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS ) )
 		EndSignal( speaker, "OnDestroy" )
 
-	if ( file.registeredDialog.find( name ) < 0 )
+	if ( !( name in file.nameToGroupMap ) )
 	{
 		Warning( "Dialogue line " + name + " is not registered" )
 		return
 	}
 
-	int responseID = file.registeredDialog.find( responseName )
+	DialogueEntryGroup group = file.nameToGroupMap[name]
+	int aliasID = group.aliasIds.getrandom()
+
+	int responseID = -1
 	if ( responseName != "" )
 	{
-		if ( responseID < 0 )
+		if ( !( responseName in file.nameToGroupMap ) )
 		{
 			Warning( "Dialogue line " + responseName + " is not registered" )
 		}
 		else
 		{
-			Assert( GetLinePriority( name ) == PRIORITY_NO_QUEUE, "Can only pass responseName as param if primary dialogue line has 0 priority. Response should be queued instead." )
+			DialogueEntryGroup responseGroup = file.nameToGroupMap[responseName]
+			responseID = responseGroup.aliasIds.getrandom()
+
+			Assert( GetLinePriority( responseID ) == PRIORITY_NO_QUEUE, "Can only pass responseName as param if primary dialogue line has 0 priority. Response should be queued instead." )
 
 			if ( ! ShouldPlayDialogueIfSolo( file.registeredDialog[responseID], responseSpeaker ) )
 			{
@@ -751,15 +772,13 @@ void function PlayDialogueForPlayer( string name, entity player, entity speaker,
 	if ( delay > 0 )
 		wait delay
 
-	int aliasID = file.registeredDialog.find( name )
-
 	if ( ! ShouldPlayDialogueIfSolo( file.registeredDialog[aliasID], speaker ) )
 	{
 		return
 	}
 
 	file.dialoguePlaying = true
-	file.lastLineRequestPriority = GetLinePriority( name )
+	file.lastLineRequestPriority = GetLinePriority( aliasID )
 
 	OnThreadEnd(
 	function() : ( aliasID )
@@ -784,7 +803,7 @@ void function PlayDialogueForPlayer( string name, entity player, entity speaker,
 			break
 		if ( !(aliasID in file.waitingOnDialogue) )
 			break
-	}*/
+	}
 }
 
 bool function ClientCommand_DialogueFinishedForID( entity player, array<string> args )
@@ -1149,6 +1168,9 @@ void function SCB_PlayDialogueOnCustomSpeakers1( int aliasID, int dialogueFlags 
 
 void function PlayClientDialogue_Internal( int aliasID, int dialogueFlags, array<entity> speakers, vector pos )
 {
+	if ( !IsBattleChatterEnabled() )
+		return
+	
 	DialogueData data = GetDataForAliasId( aliasID )
 
 	string milesAlias = data.alias
@@ -1491,7 +1513,7 @@ int function GetLinePriorityForAliasId( int aliasId )
 
 bool function ShouldPlayDialogueIfSolo( DialogueData data, entity speaker )
 {
-	if ( data.canPlayIfSolo )
+	if ( data.canPlayIfSolo || AllowPlayersToTalkToThemselves() )
 		return true
 
 	if ( !IsValid( speaker ) ) //

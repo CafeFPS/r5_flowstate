@@ -95,21 +95,26 @@ void function OnWeaponReload( entity player )
 {
 	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
-	int ammoType = weapon.GetWeaponAmmoPoolType()
-	string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_reload" )
 
-	int currentAmmo = weapon.GetWeaponPrimaryClipCount()
-	int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-
-	int requiredAmmo = maxAmmo - currentAmmo
-
-	int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
-
-	int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
-
-	// printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
-
-	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
+	if ( !InfiniteAmmoEnabled() )
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+	
+		int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+		int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+	
+		int requiredAmmo = maxAmmo - currentAmmo
+	
+		int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+	
+		int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
+	
+		// printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
+	
+		SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
+	}
 }
 
 string function GetNextOrdnance( entity player, string currentOrdnance = "" )
