@@ -1617,6 +1617,13 @@ entity function GetAnyValidLocPingForReuse( entity player, int pingType, entity 
 		return null
 
 	entity wp           = player.p.pings.locations.top()
+
+	if ( !IsValid( wp ) )
+	{
+		player.p.pings.locations.fastremovebyvalue( wp )
+		return null
+	}
+
 	float timeSincePing = Waypoint_GetWaypointAge( wp )
 	if ( timeSincePing >= PING_REUSE_TIME )
 		return null
@@ -1756,6 +1763,12 @@ void function Waypoints_DestroyPingsForSkydiveEnding( entity player )
 
 	foreach( entity wp in player.p.pings.locations )
 	{
+		if ( !IsValid( wp ) )
+		{
+			player.p.pings.locations.fastremovebyvalue( wp )
+			continue
+		}
+
 		int pingType = Waypoint_GetPingTypeForWaypoint( wp )
 		switch( pingType )
 		{
