@@ -132,6 +132,9 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 			RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 	}
 
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_podLeaderLaunch" )
+
 	foreach ( squadPlayer in squadPlayers )
 	{
 		if ( squadPlayer != player )
@@ -153,7 +156,6 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 		if ( GetValidPlayerSkydiveEmotes( squadPlayer ).len() > 0 )
 			squadPlayer.SetPlayerNetBool( "freefallEmoteAvailable", true )
 
-		thread PlayDialogueForPlayer( "bc_skydive", squadPlayer, squadPlayer )
 		thread PlayerSkyDive( squadPlayer, driverViewVector, squadPlayers, player, true, true )
 	}
 
