@@ -142,7 +142,7 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 		shieldDamage = PilotShieldModifyDamage( player, damageInfo )
 
 		if ( shieldDamage )
-			DamageInfo_SetDamage( damageInfo, 0 )
+			DamageInfo_SetDamage( damageInfo, shieldDamage )
 	}
 
 	return shieldDamage
@@ -163,7 +163,7 @@ float function PilotShieldModifyDamage( entity player, var damageInfo )
 
 	if ( shieldHealth && newShieldHealth <= 0 )
 	{
-		EmitSoundOnEntity( player, "titan_energyshield_down" )
+		// EmitSoundOnEntity( player, "titan_energyshield_down" )
 	}
 
 	DamageInfo_SetDamage( damageInfo, permanentDamage )
