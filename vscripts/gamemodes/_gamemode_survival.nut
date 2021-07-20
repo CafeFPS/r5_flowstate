@@ -67,7 +67,6 @@ void function GamemodeSurvival_Init()
 	foreach ( character in GetAllCharacters() )
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterSkin( character ), OnCharacterSkinChanged )
 
-	GameRules_EnableGlobalChat( true )
 	// Start the WaitingForPlayers sequence.
 	// TODO: staging area support
 	thread Sequence_WaitingForPlayers()
@@ -586,8 +585,9 @@ void function OnClientConnected( entity client )
 
 	clientTeam.fastremovebyvalue( client )
 	
-	if( GetCurrentPlaylistVarInt("sur_custom_client_connect", 0) == 1)
+	if ( GetCurrentPlaylistVarInt("sur_custom_client_connect", 0 ) == 1 )
 		return
+
 	switch ( GetGameState() )
 	{
 		case eGameState.WaitingForPlayers:
@@ -770,9 +770,9 @@ void function GiveLoadoutRelatedWeapons( entity player )
 
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
 {
-
-	if(IsAlive(player))
+	if ( IsAlive( player ) )
 		return
+
 	table<string, string> possibleMods = {
 		survival_jumpkit_enabled = "enable_doublejump",
 		survival_wallrun_enabled = "enable_wallrun"
@@ -786,7 +786,6 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 
-	print(characterSetFile)
 	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
 
 	DoRespawnPlayer( player, null )
