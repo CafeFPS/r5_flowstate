@@ -96,7 +96,8 @@ void function OnWeaponReload( entity player )
 {
 	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 
-	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_reload" )
+	if ( RandomFloat( 1.0 ) >= 0.95 ) // 5% chance to say the reloading voice line
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_reload" )
 
 	if ( !InfiniteAmmoEnabled() )
 	{
