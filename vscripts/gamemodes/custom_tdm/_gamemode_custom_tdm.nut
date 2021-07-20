@@ -116,10 +116,7 @@ void function VotingPhase()
     foreach(player in GetPlayerArray()) 
     {
         if(!IsValid(player)) continue;
-        if(!IsAlive(player))
-        {
-            DoRespawnPlayer(player, null)
-        }
+        DecideRespawnPlayer(player)
         MakeInvincible(player)
 		HolsterAndDisableWeapons( player )
         player.ForceStand()
@@ -151,11 +148,7 @@ void function StartRound()
     wait 1
     foreach(player in GetPlayerArray())
     {
-        if(!IsAlive(player))
-        {
-            DoRespawnPlayer(player, null)
-            player.SetHealth( 100 )
-        }
+        DecideRespawnPlayer(player)
         TpPlayerToSpawnPoint(player)
         
     }
@@ -176,6 +169,7 @@ void function StartRound()
         DeployAndEnableWeapons(player)
         player.UnforceStand()  
         player.UnfreezeControlsOnServer();
+        PlayerRestoreHP(player, 100, 100)
     }
     float endTime = Time() + ROUND_TIME
     while( Time() <= endTime )
@@ -231,23 +225,17 @@ void function SV_OnPlayerConnected(entity player)
     //Give passive regen (pilot blood)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
-    TpPlayerToSpawnPoint(player)
-    SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-    DecideRespawnPlayer( player )
+    DecideRespawnPlayer(player)
     PlayerRestoreHP(player, 100, 100)
+    TpPlayerToSpawnPoint(player)
+    //SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 
 
     switch(GetGameState())
     {
 
     case eGameState.WaitingForPlayers:
-			entity startEnt = GetEnt( "info_player_start" )
-
-			player.SetOrigin( startEnt.GetOrigin() )
-			player.SetAngles( startEnt.GetAngles() )
-
-			player.FreezeControlsOnServer()
-            break
+        break
     case eGameState.Playing:
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 5, eTDMAnnounce.ROUND_START)
 
