@@ -67,8 +67,6 @@ void function GamemodeSurvival_Init()
 	foreach ( character in GetAllCharacters() )
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterSkin( character ), OnCharacterSkinChanged )
 
-	SetCallback_OnPlayerReload( OnWeaponReload )
-
 	// Start the WaitingForPlayers sequence.
 	// TODO: staging area support
 	thread Sequence_WaitingForPlayers()
@@ -512,7 +510,28 @@ void function PlayerStartSpectating( entity player )
 	else
 		specTarget = clientTeam.getrandom()
 
-	player.StartObservingPlayerInFirstPerson( specTarget )
+	specTarget.SetPlayerNetInt( "spectatorTargetCount", specTarget.GetPlayerNetInt( "spectatorTargetCount" ) + 1 )
+
+	// For CL HUD
+	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.PICKUP_DESTROYED )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
+
+	// player.StartObservingPlayerInFirstPerson( specTarget )
+
+	player.SetSpecReplayDelay( 0.1 )
+	player.StartObserverMode( OBS_MODE_IN_EYE )
+	player.SetObserverTarget( specTarget )
+}
+
+void function PlayerStopSpectating( entity player )
+{
+	entity observerTarget = player.GetObserverTarget()
+	if ( IsValid( observerTarget ) && observerTarget.IsPlayer() )
+		observerTarget.SetPlayerNetInt( "spectatorTargetCount", observerTarget.GetPlayerNetInt( "spectatorTargetCount" ) - 1 )
+
+	player.SetSpecReplayDelay( 0 )
+	player.StopObserverMode()
+	player.SetObserverTarget( null )
 }
 
 void function HandleSquadElimination( int team )
@@ -534,7 +553,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	}
 
 	if ( victim.IsPlayer() )
-	{
+	{	
 		SetPlayerEliminated( victim )
 		PlayerStartSpectating( victim )
 	}
@@ -595,11 +614,20 @@ void function OnClientConnected( entity client )
 
 			break
 		case eGameState.Playing:
-			if ( IsPlayerEliminated( client ) || isAlone )
+			if ( IsPlayerEliminated( client ) )
 				PlayerStartSpectating( client )
 			else
 			{
-				vector origin = clientTeam.getrandom().GetOrigin()
+				array<entity> respawnCandidates = isAlone ? GetPlayerArray_AliveConnected() : clientTeam
+				respawnCandidates.fastremovebyvalue( client )
+
+				if ( respawnCandidates.len() == 0 )
+					break
+
+				if ( !client.GetPlayerNetBool( "hasLockedInCharacter" ) )
+					CharacterSelect_TryAssignCharacterCandidatesToPlayer( client, [] ) // Joined too late, assign a random legend so everything runs fine
+
+				vector origin = respawnCandidates.getrandom().GetOrigin()
 
 				DecideRespawnPlayer( client )
 
@@ -646,27 +674,6 @@ array<entity> function GetAllPlayersOfLockstepIndex( int index )
 			result.append( player )
 
 	return result
-}
-
-void function OnWeaponReload( entity player )
-{
-	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
-
-	int ammoType = weapon.GetWeaponAmmoPoolType()
-	string ammoRef = AmmoType_GetRefFromIndex( ammoType )
-
-	int currentAmmo = weapon.GetWeaponPrimaryClipCount()
-	int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-
-	int requiredAmmo = maxAmmo - currentAmmo
-
-	int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
-
-	int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
-
-	// printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
-
-	SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
 }
 
 void function Survival_SetFriendlyOwnerHighlight( entity player, entity characterModel )
@@ -775,6 +782,8 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	DoRespawnPlayer( player, null )
 
+	PlayerStopSpectating( player )
+
 	ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
 	CharacterSkin_Apply( player, playerCharacterSkin )
 
@@ -877,17 +886,16 @@ bool function ClientCommand_MakeEligibleForJumpMaster( entity player, array<stri
 
 entity ornull function ChangeJumpmasterInSquad( entity currentJumpmaster )
 {
-	currentJumpmaster.SetPlayerNetBool( "isJumpmaster", false )
-
 	array<entity> availableSquadMembers = GetPlayerArrayOfTeam( currentJumpmaster.GetTeam() )
 	
 	if ( availableSquadMembers.len() == 1 )
 		return null
 
-	availableSquadMembers.fastremovebyvalue( currentJumpmaster )
-	availableSquadMembers.randomize()
+	currentJumpmaster.SetPlayerNetBool( "isJumpmaster", false )
 
-	entity selectedMember = availableSquadMembers[0]
+	availableSquadMembers.fastremovebyvalue( currentJumpmaster )
+
+	entity selectedMember = availableSquadMembers.getrandom()
 
 	selectedMember.SetPlayerNetBool( "isJumpmaster", true )
 
