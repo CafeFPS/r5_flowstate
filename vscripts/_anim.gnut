@@ -366,6 +366,9 @@ function __PlayAnim( guy, animation_name, reference = null, optionalTag = null, 
 	Assert( IsValid_ThisFrame( guy ), "Invalid ent sent to PlayAnim " + animation_name )
 	local animation = GetAnim( guy, animation_name )
 
+	if( type(animation) == "asset" )
+		animation = string(animation)
+
 	guy.SetNextThinkNow()
 
 	#if !R5DEV

@@ -233,8 +233,10 @@ void function SpawnLootbinCreep( int lootCreepType, entity lootbin, entity playe
 			Assert( 0, "Unhandled npcType" )
 	}
 
+	////////////////////////////////////////////
 	PlayFX( FX_LOOTBIN_OPEN, origin )
 	wait 0.25
+	////////////////////////////////////////////
 
 	entity creep = CreatePropDynamic( modelAsset, origin, angles, SOLID_BBOX )
 
@@ -456,7 +458,7 @@ void function LootCreepDeathSetup( entity creep, array<string> lootToSpawn )
 
 			thread CreateAirShake( deathOrigin, 2, 50, 1 )
 			int attach_id = creep.LookupAttachment( "CHESTFOCUS" )
-  			vector effectOrigin = creep.GetAttachmentOrigin( attach_id )
+  		vector effectOrigin = creep.GetAttachmentOrigin( attach_id )
 			vector effectAngles = creep.GetAttachmentAngles( attach_id )
 			StartParticleEffectOnEntity( creep, GetParticleSystemIndex( deathFx ), FX_PATTACH_POINT_FOLLOW, attach_id )
 			creep.Hide()
@@ -468,10 +470,16 @@ void function LootCreepDeathSetup( entity creep, array<string> lootToSpawn )
 				if ( ref == "blank" )
 					continue
 
-				// vector randFwd = RandomVecInDomeWithFOV( <0, 0, 1>, 45 ) * 1.2
-				// vector up = creep.GetUpVector()
-				// randFwd = Normalize( randFwd + ( up * 0.35 ) )
-				// SURVIVAL_ThrowLootFromPoint( lootOrigin, ref )
+				vector randFwd = RandomVecInDome( <0, 0, 1> ) * 1.2 //RandomVecInDomeWithFOV( <0, 0, 1>, 45 ) * 1.2
+				vector up = creep.GetUpVector()
+				randFwd = Normalize( randFwd + ( up * 0.35 ) )
+
+				LootData lootData = SURVIVAL_Loot_GetLootDataByRef( ref )
+				int amount = lootData.countPerDrop
+
+
+				printt(FUNC_NAME(), "throwing", lootOrigin, randFwd, ref, amount)
+				SURVIVAL_ThrowLootFromPoint( lootOrigin, randFwd, ref, amount )
 			}
 
 		}
