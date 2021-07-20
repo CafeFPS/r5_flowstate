@@ -515,7 +515,7 @@ void function PlayerStartSpectating( entity player )
 	else
 		specTarget = clientTeam.getrandom()
 
-	specTarget.SetPlayerNetInt( "spectatorTargetCount", specTarget.GetPlayerNetInt( "spectatorTargetCount" ) + 1 )
+	player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
 
 	// For CL HUD
 	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.PICKUP_DESTROYED )
@@ -523,20 +523,18 @@ void function PlayerStartSpectating( entity player )
 
 	// player.StartObservingPlayerInFirstPerson( specTarget )
 
-	player.SetSpecReplayDelay( 0.1 )
+	player.SetSpecReplayDelay( 1 )
 	player.StartObserverMode( OBS_MODE_IN_EYE )
 	player.SetObserverTarget( specTarget )
 }
 
 void function PlayerStopSpectating( entity player )
 {
-	entity observerTarget = player.GetObserverTarget()
-	if ( IsValid( observerTarget ) && observerTarget.IsPlayer() )
-		observerTarget.SetPlayerNetInt( "spectatorTargetCount", observerTarget.GetPlayerNetInt( "spectatorTargetCount" ) - 1 )
+	player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 
+	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
+	
 	player.SetSpecReplayDelay( 0 )
-	player.StopObserverMode()
-	player.SetObserverTarget( null )
 }
 
 void function HandleSquadElimination( int team )
