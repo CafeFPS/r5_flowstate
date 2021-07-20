@@ -193,7 +193,7 @@ void function OnWeaponAttack_OrdnanceControl( entity player, entity weapon, stri
 
 bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	if ( args.len() < 1 )
@@ -224,7 +224,7 @@ bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> a
 
 bool function ClientCommand_Sur_EquipOrdnance( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	if ( args.len() < 1 )
@@ -255,7 +255,7 @@ bool function ClientCommand_Sur_EquipOrdnance( entity player, array<string> args
 
 bool function ClientCommand_Sur_SwapToNextOrdnance( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
@@ -462,7 +462,7 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 
 bool function ClientCommand_Sur_DropBackpackItem( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 	
 	if ( args.len() < 2 )
@@ -490,7 +490,7 @@ bool function ClientCommand_Sur_DropBackpackItem( entity player, array<string> a
 
 bool function ClientCommand_Sur_EquipAttachment( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	if ( args.len() < 1 )
@@ -546,7 +546,7 @@ bool function ClientCommand_Sur_EquipAttachment( entity player, array<string> ar
 
 bool function ClientCommand_Sur_UnequipAttachment( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	if ( args.len() < 3 )
@@ -585,7 +585,7 @@ bool function ClientCommand_Sur_UnequipAttachment( entity player, array<string> 
 
 bool function ClientCommand_Sur_TransferAttachment( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	if ( args.len() < 2 )
@@ -657,7 +657,7 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 
 bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	// This is horrendous.
@@ -717,7 +717,7 @@ bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<strin
 
 bool function ClientCommand_PlayerSwitchedWeapons( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 	
 	if ( args.len() < 1 )
@@ -737,7 +737,7 @@ bool function ClientCommand_PlayerSwitchedWeapons( entity player, array<string> 
 
 bool function ClientCommand_BackpackOpened( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	player.SetInventoryIsOpen()
@@ -747,7 +747,7 @@ bool function ClientCommand_BackpackOpened( entity player, array<string> args )
 
 bool function ClientCommand_BackpackClosed( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
+	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
 	player.ClearInventoryIsOpen()
