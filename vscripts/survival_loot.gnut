@@ -1255,7 +1255,7 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 	if ( !IsValid( weaponToDrop ) )
 		return false
 
-	LootData dropWeaponData = EquipmentSlot_GetEquippedLootDataForSlot( player, slot )
+	LootData dropWeaponData = SURVIVAL_GetLootDataFromWeapon( weaponToDrop )
 
 	entity droppedWeapon = SpawnGenericLoot( dropWeaponData.ref, origin, <0, 0, 90>, 1 )
 	droppedWeapon.SetClipCount( weaponToDrop.GetWeaponPrimaryClipCount() )
