@@ -536,6 +536,16 @@ entity function Waypoint_FindPingByTicketID( entity owner, int ticketID )
 	foreach ( entity wp in s_activeLocationPings )
 #endif
 	{
+		if ( !IsValid( wp ) )
+		{
+#if SERVER
+			owner.p.pings.locations.fastremove( wp )
+#else
+			s_activeLootPings.fastremove( wp )
+#endif
+			continue
+		}
+
 		if ( owner != wp.GetOwner() )
 			continue
 		if ( ticketID == GetTicketIDForWaypoint( wp ) )
@@ -548,6 +558,16 @@ entity function Waypoint_FindPingByTicketID( entity owner, int ticketID )
 	foreach ( entity wp in s_activeLootPings )
 #endif
 	{
+		if ( !IsValid( wp ) )
+		{
+#if SERVER
+			owner.p.pings.loots.fastremove( wp )
+#else
+			s_activeLootPings.fastremove( wp )
+#endif
+			continue
+		}
+
 		if ( owner != wp.GetOwner() )
 			continue
 		if ( ticketID == GetTicketIDForWaypoint( wp ) )
