@@ -6,6 +6,7 @@ global function ShStats_LevelInit
 #if SERVER || CLIENT || UI
 global function GetCurrentStatSeasonRefOrNull
 global function GetCurrentStatRankedPeriodRefOrNull
+global function GetLatestFinishedRankedPeriodRefOrNull
 #endif
 
 #if SERVER
@@ -105,6 +106,7 @@ global struct CareerStats
 	StatTemplate& looted_legendary_helmet
 	StatTemplate& looted_legendary_armor
 
+	StatTemplate& thanks
 	StatTemplate& dooms
 	StatTemplate& kills
 	StatTemplate& times_got_doomed
@@ -164,6 +166,7 @@ global struct CareerStats
 	StatTemplate& character_placements_win_flawless_1
 	StatTemplate& character_placements_win_flawless_2
 	StatTemplate& character_placements_win_with_5_headshots
+
 	StatTemplate& character_won_last_game
 	StatTemplate& character_hot_streaks
 	StatTemplate& character_games_with_respawning_both_teammates
@@ -211,6 +214,11 @@ global struct CareerStats
 	StatTemplate& caustic_tactical_barrels_traps_detonated
 	StatTemplate& caustic_gas_damage_dealt
 	StatTemplate& caustic_passive_enemies_in_gas_killed
+
+	// Crypto
+	StatTemplate& crypto_passive_enemies_scanned
+	StatTemplate& crypto_ultimate_shield_damage
+	StatTemplate& crypto_ultimate_traps_destroyed
 
 	// Gibraltar
 	StatTemplate& gibraltar_tactical_bubble_enemy_damage_absorbed
@@ -291,14 +299,8 @@ global struct CareerStats
 	StatTemplate& zone_executions
 	StatTemplate& zone_landings
 	StatTemplate& zone_loot_bins
-
 	StatTemplate& loot_bins
 	StatTemplate& opponents_outlived
-
-	StatTemplate& season01_event_placements_top_5
-	StatTemplate& season01_event_elite_placements_top_5
-	StatTemplate& season01_event_placements_win
-	StatTemplate& season01_event_bp_premium_lvl
 
 	StatTemplate& rankedperiod_games_played
 	StatTemplate& rankedperiod_placements_win
@@ -313,8 +315,51 @@ global struct CareerStats
 	StatTemplate& rankedperiod_win_streak_longest
 	StatTemplate& rankedperiod_revived_ally
 	StatTemplate& rankedperiod_times_respawned_ally
+	StatTemplate& rankedperiod_current_rank_score
 
 	StatTemplate& rankedperiod_character_damage_done_max_single_game
+
+	//
+	StatTemplate& character_solo_dooms
+	StatTemplate& character_solo_placements_top_5
+	StatTemplate& character_solo_wins
+	StatTemplate& solo_placements_top_5
+	StatTemplate& solo_dooms
+
+	//
+	StatTemplate& season01_event_placements_top_5
+	StatTemplate& season01_event_elite_placements_top_5
+	StatTemplate& season01_event_placements_win
+	StatTemplate& season01_event_bp_premium_lvl
+
+	//
+	StatTemplate& octanett_ringoffire_times_traversed_with_armor
+	StatTemplate& season02_event01_top5s_badge
+	StatTemplate& season02_event01_character_solo_wins
+	StatTemplate& season02_event01_num_characters_with_solo_win
+
+	//
+	StatTemplate& shotguns_and_snipers_plays
+	StatTemplate& shotguns_and_snipers_wins
+	StatTemplate& season02_event02_character_wins
+	StatTemplate& season02_event02_num_characters_with_win
+
+	//
+	StatTemplate& s03e01_badge
+	StatTemplate& s03e01_ltm_placements_win_legend
+	StatTemplate& s03e01_ltm_placements_win_shadow
+	StatTemplate& s03e01_ltm_win_as_both_kinds
+	StatTemplate& s03e01_ltm_shadows_killed
+	StatTemplate& s03e01_ltm_legends_killed
+	StatTemplate& s03e01_ltm_kill_lootbin_creatures
+
+	//
+	StatTemplate& s03e02_badge
+
+	//
+	StatTemplate& s03_duos_badge_play
+	StatTemplate& s03_duos_badge_win
+	StatTemplate& s03_duos_tiers_earned
 }
 global struct MatchStats
 {
@@ -349,6 +394,36 @@ global const array<string> ZONE_STAT_REFS =
 	"can_bunker",
 	"can_bridges",
 	"can_cascades",
+	"can_octanett", "des_wastelands",
+	"des_uncharted",
+	"des_snipe",
+	"des_drill_site",
+	"des_cap_city",
+	"des_tunnel_z2",
+	"des_lost",
+	"des_buried_refinery",
+	"des_ground_zero",
+	"des_lava_fissure",
+	"des_pass",
+	"des_trainyard",
+	"des_tunnel_z5",
+	"des_new_springfield",
+	"des_snow_field",
+	"des_tunnel_z7",
+	"des_hot_spring",
+	"des_end",
+	"des_fuel",
+	"des_ridge_line",
+	"des_bridge",
+	"des_out",
+	"des_research_station_bravo",
+	"des_tunnel_z10",
+	"des_thermal_station",
+	"des_research_station_alpha",
+	"des_refinery",
+	"des_lava_city",
+	"des_volcanic",
+	"des_mt",
 ]
 #endif
 
@@ -453,8 +528,8 @@ void function RegisterAllStats()
 		allRankedPeriodRefs.append( ItemFlavor_GetGUIDString( rankedPeriod ) )
 	}
 
-	const int TRACK = eStatFlags.STORE_START_OF_PREVIOUS_MATCH | eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY
-	const int TRACK_CALC_DEPENDS = eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY
+	const int CHALLENGES_NEED = eStatFlags.STORE_START_OF_PREVIOUS_MATCH | eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY //
+	const int CHALLENGES_CALC_DEPENDS = eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY
 	const int BADGES_NEED = eStatFlags.STORE_START_OF_PREVIOUS_MATCH
 	const int TRACKERS_NEED = 0
 
@@ -482,16 +557,17 @@ void function RegisterAllStats()
 	CAREER_STATS.looted_all_nongold_weapons_in_1_match = RegisterAccumulatedStat_Bool( null, "looted_all_nongold_weapons_in_1_match" ) // ✓
 	CAREER_STATS.valentines_revives_and_respawns = RegisterAccumulatedStat_Int( null, "valentines_revives_and_respawns", BADGES_NEED )
 
-	CAREER_STATS.looted_epic_item = RegisterAccumulatedStat_Int( null, "looted_epic_item", TRACK )
-	CAREER_STATS.looted_legendary_item = RegisterAccumulatedStat_Int( null, "looted_legendary_item", TRACK )
-	CAREER_STATS.looted_legendary_helmet = RegisterAccumulatedStat_Int( null, "looted_legendary_helmet", TRACK )
-	CAREER_STATS.looted_legendary_armor = RegisterAccumulatedStat_Int( null, "looted_legendary_armor", TRACK )
+	CAREER_STATS.looted_epic_item = RegisterAccumulatedStat_Int( null, "looted_epic_item", CHALLENGES_NEED )
+	CAREER_STATS.looted_legendary_item = RegisterAccumulatedStat_Int( null, "looted_legendary_item", CHALLENGES_NEED )
+	CAREER_STATS.looted_legendary_helmet = RegisterAccumulatedStat_Int( null, "looted_legendary_helmet", CHALLENGES_NEED )
+	CAREER_STATS.looted_legendary_armor = RegisterAccumulatedStat_Int( null, "looted_legendary_armor", CHALLENGES_NEED )
 
-	CAREER_STATS.daily_challenges_completed = RegisterAccumulatedStat_Int( null, "daily_challenges_completed", TRACK )
-	CAREER_STATS.challenge_xp_earned = RegisterAccumulatedStat_Int( null, "challenge_xp_earned", TRACK )
+	CAREER_STATS.daily_challenges_completed = RegisterAccumulatedStat_Int( null, "daily_challenges_completed", CHALLENGES_NEED )
+	CAREER_STATS.challenge_xp_earned = RegisterAccumulatedStat_Int( null, "challenge_xp_earned", CHALLENGES_NEED )
 
-	CAREER_STATS.dooms = RegisterAccumulatedStat_Int( null, "dooms", TRACK ) // ✓
-	CAREER_STATS.kills = RegisterAccumulatedStat_Int( null, "kills", TRACK ) // ✓
+	CAREER_STATS.thanks = RegisterAccumulatedStat_Int( null, "thanks", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.dooms = RegisterAccumulatedStat_Int( null, "dooms", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.kills = RegisterAccumulatedStat_Int( null, "kills", CHALLENGES_NEED ) // ✓
 	CAREER_STATS.assists = RegisterAccumulatedStat_Int( null, "assists" )
 	//MATCH_STATS.kills = RegisterAccumulatedStat_Int( null, "kills" ) // ✓
 	CAREER_STATS.times_got_doomed = RegisterAccumulatedStat_Int( null, "times_got_doomed" ) // ✓
@@ -504,48 +580,48 @@ void function RegisterAllStats()
 	CAREER_STATS.win_streak_current = RegisterVariableStat_Int( null, "win_streak_current" ) // ✓
 	CAREER_STATS.kills_while_killleader = RegisterAccumulatedStat_Int( null, "kills_while_killleader" )
 	CAREER_STATS.kills_max_single_game = RegisterAccumulatedStat_Int( null, "kills_max_single_game" )
-	CAREER_STATS.damage_done = RegisterAccumulatedStat_Int( null, "damage_done", TRACK ) // ✓
+	CAREER_STATS.damage_done = RegisterAccumulatedStat_Int( null, "damage_done", CHALLENGES_NEED ) // ✓
 	CAREER_STATS.damage_taken = RegisterAccumulatedStat_Int( null, "damage_taken" ) // ✓
 	CAREER_STATS.shots = RegisterAccumulatedStat_Int( null, "shots" ) // ✓
 	CAREER_STATS.hits = RegisterAccumulatedStat_Int( null, "hits" ) // ✓
-	CAREER_STATS.headshots = RegisterAccumulatedStat_Int( null, "headshots", TRACK ) // ✓
-	CAREER_STATS.executions = RegisterAccumulatedStat_Int( null, "executions", TRACK ) // ✓
-	CAREER_STATS.revived_ally = RegisterAccumulatedStat_Int( null, "revived_ally", TRACK ) // ✓
-	CAREER_STATS.games_played = RegisterAccumulatedStat_Int( null, "games_played", TRACK ) // ✓
+	CAREER_STATS.headshots = RegisterAccumulatedStat_Int( null, "headshots", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.executions = RegisterAccumulatedStat_Int( null, "executions", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.revived_ally = RegisterAccumulatedStat_Int( null, "revived_ally", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.games_played = RegisterAccumulatedStat_Int( null, "games_played", CHALLENGES_NEED ) // ✓
 	CAREER_STATS.placements_win = RegisterAccumulatedStat_Int( null, "placements_win" ) // ✓
 	CAREER_STATS.placements_win_with_squad_alive = RegisterAccumulatedStat_Int( null, "placements_win_with_squad_alive" ) // ✓
-	CAREER_STATS.placements_top_3 = RegisterAccumulatedStat_Int( null, "placements_top_3", TRACK ) // ✓
-	CAREER_STATS.placements_top_5 = RegisterAccumulatedStat_Int( null, "placements_top_5", TRACK ) // ✓
+	CAREER_STATS.placements_top_3 = RegisterAccumulatedStat_Int( null, "placements_top_3", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.placements_top_5 = RegisterAccumulatedStat_Int( null, "placements_top_5", CHALLENGES_NEED ) // ✓
 	CAREER_STATS.placements_win_with_friends = RegisterAccumulatedStat_Int( null, "placements_win_with_friends", BADGES_NEED )
 	CAREER_STATS.placements_win_with_no_witnessess = RegisterAccumulatedStat_Int( null, "placements_win_with_no_witnessess", BADGES_NEED )
 	CAREER_STATS.placements_win_with_min_executions_per_person = RegisterAccumulatedStat_Int( null, "placements_win_with_min_executions_per_person", BADGES_NEED )
 	CAREER_STATS.max_placement_win_streak_with_premade_squad = RegisterAccumulatedStat_Int( null, "max_placement_win_streak_with_premade_squad", BADGES_NEED )
 	CAREER_STATS.team_work_kill_count = RegisterAccumulatedStat_Int( null, "team_work_kill_count", BADGES_NEED )
-	CAREER_STATS.neutral_airdrops_looted = RegisterAccumulatedStat_Int( null, "neutral_airdrops_looted", TRACK )
+	CAREER_STATS.neutral_airdrops_looted = RegisterAccumulatedStat_Int( null, "neutral_airdrops_looted", CHALLENGES_NEED )
 	//CAREER_STATS.distance_traveled = RegisterAccumulatedStat_Float( null, "distance_traveled" )
 
 	StatEnumStruct weapon_SES = RegisterStatEnumStruct( null, "weapons", "eWeaponFlavor", allWeaponsRefs ) // ✓
-	CAREER_STATS.weapon_kills = RegisterAccumulatedStat_Int( weapon_SES, "kills", TRACK ) // ✓
-	CAREER_STATS.weapon_dooms = RegisterAccumulatedStat_Int( weapon_SES, "dooms", TRACK ) // ✓
-	CAREER_STATS.weapon_damage_done = RegisterAccumulatedStat_Int( weapon_SES, "damage_done", TRACK ) // ✓
+	CAREER_STATS.weapon_kills = RegisterAccumulatedStat_Int( weapon_SES, "kills", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.weapon_dooms = RegisterAccumulatedStat_Int( weapon_SES, "dooms", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.weapon_damage_done = RegisterAccumulatedStat_Int( weapon_SES, "damage_done", CHALLENGES_NEED ) // ✓
 	CAREER_STATS.weapon_shots = RegisterAccumulatedStat_Int( weapon_SES, "shots" ) // ✓
 	CAREER_STATS.weapon_hits = RegisterAccumulatedStat_Int( weapon_SES, "hits" ) // ✓
-	CAREER_STATS.weapon_headshots = RegisterAccumulatedStat_Int( weapon_SES, "headshots", TRACK ) // ✓
+	CAREER_STATS.weapon_headshots = RegisterAccumulatedStat_Int( weapon_SES, "headshots", CHALLENGES_NEED ) // ✓
 
 	StatEnumStruct character_SES = RegisterStatEnumStruct( null, "characters", "eCharacterFlavor", allCharacterRefs )
-	CAREER_STATS.character_kills = RegisterAccumulatedStat_Int( character_SES, "kills", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.character_dooms = RegisterAccumulatedStat_Int( character_SES, "dooms", TRACK ) // ✓
+	CAREER_STATS.character_kills = RegisterAccumulatedStat_Int( character_SES, "kills", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.character_dooms = RegisterAccumulatedStat_Int( character_SES, "dooms", CHALLENGES_NEED ) // ✓
 	CAREER_STATS.character_deaths = RegisterAccumulatedStat_Int( character_SES, "deaths" ) // ✓
 	CAREER_STATS.character_winning_kills = RegisterAccumulatedStat_Int( character_SES, "winning_kills", BADGES_NEED | TRACKERS_NEED ) // ✓
 	CAREER_STATS.character_kills_while_killleader = RegisterAccumulatedStat_Int( character_SES, "kills_while_killleader", TRACKERS_NEED )
-	CAREER_STATS.character_damage_done = RegisterAccumulatedStat_Int( character_SES, "damage_done", TRACKERS_NEED | TRACK ) // ✓
+	CAREER_STATS.character_damage_done = RegisterAccumulatedStat_Int( character_SES, "damage_done", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
 	CAREER_STATS.character_damage_done_max_single_game = RegisterAccumulatedStat_Int( character_SES, "character_damage_done_max_single_game", BADGES_NEED ) // ✓
 	CAREER_STATS.character_shots = RegisterAccumulatedStat_Int( character_SES, "shots" ) // ✓
 	CAREER_STATS.character_hits = RegisterAccumulatedStat_Int( character_SES, "hits" ) // ✓
-	CAREER_STATS.character_headshots = RegisterAccumulatedStat_Int( character_SES, "headshots", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.character_executions = RegisterAccumulatedStat_Int( character_SES, "executions", TRACKERS_NEED | TRACK ) // ✓
+	CAREER_STATS.character_headshots = RegisterAccumulatedStat_Int( character_SES, "headshots", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.character_executions = RegisterAccumulatedStat_Int( character_SES, "executions", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
 	CAREER_STATS.character_revived_ally = RegisterAccumulatedStat_Int( character_SES, "revived_ally", TRACKERS_NEED ) // ✓
-	CAREER_STATS.character_games_played = RegisterAccumulatedStat_Int( character_SES, "games_played", TRACKERS_NEED | TRACK ) // ✓
+	CAREER_STATS.character_games_played = RegisterAccumulatedStat_Int( character_SES, "games_played", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
 	CAREER_STATS.character_games_with_5_kills = RegisterAccumulatedStat_Int( character_SES, "games_with_5_kills", BADGES_NEED ) // ✓
 	CAREER_STATS.character_games_with_20_kills = RegisterAccumulatedStat_Int( character_SES, "games_with_20_kills", BADGES_NEED ) // ✓
 	CAREER_STATS.character_games_with_respawning_both_teammates = RegisterAccumulatedStat_Int( character_SES, "character_games_with_respawning_both_teammates", BADGES_NEED ) // ✓
@@ -553,7 +629,7 @@ void function RegisterAllStats()
 	CAREER_STATS.character_most_squad_squad_kills_in_1_game = RegisterAccumulatedStat_Int( character_SES, "most_squad_squad_kills_in_1_game", BADGES_NEED )
 	CAREER_STATS.character_placements_win = RegisterAccumulatedStat_Int( character_SES, "placements_win", BADGES_NEED ) // ✓
 	CAREER_STATS.character_placements_win_with_squad_alive = RegisterAccumulatedStat_Int( character_SES, "placements_win_with_squad_alive", BADGES_NEED | TRACKERS_NEED ) // ✓
-	CAREER_STATS.character_placements_top_3 = RegisterAccumulatedStat_Int( character_SES, "placements_top_3", TRACKERS_NEED | TRACK ) // ✓
+	CAREER_STATS.character_placements_top_3 = RegisterAccumulatedStat_Int( character_SES, "placements_top_3", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
 	CAREER_STATS.character_placements_win_as_jumpmaster = RegisterAccumulatedStat_Int( character_SES, "character_placements_win_as_jumpmaster", BADGES_NEED ) // ✓
 	CAREER_STATS.character_placements_win_as_killleader = RegisterAccumulatedStat_Int( character_SES, "character_placements_win_as_killleader", BADGES_NEED ) // ✓
 	CAREER_STATS.character_placements_win_as_killleader_and_champion = RegisterAccumulatedStat_Int( character_SES, "character_placements_win_as_killleader_and_champion", BADGES_NEED ) // ✓
@@ -571,27 +647,27 @@ void function RegisterAllStats()
 	//CAREER_STATS.character_distance_traveled = RegisterAccumulatedStat_Float( character_SES, "distance_traveled" )
 
 	StatEnumStruct character_weapon_SES = RegisterStatEnumStruct( character_SES, "weapons", "eWeaponFlavor", allWeaponsRefs ) // ✓
-	CAREER_STATS.character_weapon_kills = RegisterAccumulatedStat_Int( character_weapon_SES, "kills", TRACKERS_NEED | TRACK_CALC_DEPENDS ) // ✓
-	CAREER_STATS.character_weapon_dooms = RegisterAccumulatedStat_Int( character_weapon_SES, "dooms", TRACKERS_NEED | TRACK_CALC_DEPENDS ) // ✓
-	CAREER_STATS.character_weapon_damage_done = RegisterAccumulatedStat_Int( character_weapon_SES, "damage_done", TRACK_CALC_DEPENDS ) // ✓
+	CAREER_STATS.character_weapon_kills = RegisterAccumulatedStat_Int( character_weapon_SES, "kills", TRACKERS_NEED | CHALLENGES_CALC_DEPENDS ) // ✓
+	CAREER_STATS.character_weapon_dooms = RegisterAccumulatedStat_Int( character_weapon_SES, "dooms", TRACKERS_NEED | CHALLENGES_CALC_DEPENDS ) // ✓
+	CAREER_STATS.character_weapon_damage_done = RegisterAccumulatedStat_Int( character_weapon_SES, "damage_done", CHALLENGES_CALC_DEPENDS ) // ✓
 	CAREER_STATS.character_weapon_shots = RegisterAccumulatedStat_Int( character_weapon_SES, "shots" ) // ✓
 	CAREER_STATS.character_weapon_hits = RegisterAccumulatedStat_Int( character_weapon_SES, "hits" ) // ✓
-	CAREER_STATS.character_weapon_headshots = RegisterAccumulatedStat_Int( character_weapon_SES, "headshots", TRACK_CALC_DEPENDS ) // ✓
+	CAREER_STATS.character_weapon_headshots = RegisterAccumulatedStat_Int( character_weapon_SES, "headshots", CHALLENGES_CALC_DEPENDS ) // ✓
 
 	StatEnumStruct character_weaponcategory_SES = RegisterStatEnumStruct( character_SES, "weaponcategories", "eWeaponStatCategory", allLootWeaponStatsCategories )
 
 	StatTemplate temp_var_until_R5DEV_35088_is_fixed
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_kills
-	CAREER_STATS.character_weaponcategory_kills = RegisterExpensiveCalculatedStat_Int( character_weaponcategory_SES, "kills", TRACK_CALC_DEPENDS,
+	CAREER_STATS.character_weaponcategory_kills = RegisterExpensiveCalculatedStat_Int( character_weaponcategory_SES, "kills", CHALLENGES_CALC_DEPENDS,
 		SetupCharacterWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_dooms
-	CAREER_STATS.character_weaponcategory_dooms = RegisterExpensiveCalculatedStat_Int( character_weaponcategory_SES, "dooms", TRACK_CALC_DEPENDS,
+	CAREER_STATS.character_weaponcategory_dooms = RegisterExpensiveCalculatedStat_Int( character_weaponcategory_SES, "dooms", CHALLENGES_CALC_DEPENDS,
 		SetupCharacterWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_damage_done
-	CAREER_STATS.character_weaponcategory_damage_done = RegisterExpensiveCalculatedStat_Int( character_weaponcategory_SES, "damage_done", TRACK_CALC_DEPENDS,
+	CAREER_STATS.character_weaponcategory_damage_done = RegisterExpensiveCalculatedStat_Int( character_weaponcategory_SES, "damage_done", CHALLENGES_CALC_DEPENDS,
 		SetupCharacterWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_shots
@@ -603,59 +679,62 @@ void function RegisterAllStats()
 		SetupCharacterWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_headshots
-	CAREER_STATS.character_weaponcategory_headshots = RegisterExpensiveCalculatedStat_Int( character_weaponcategory_SES, "headshots", TRACK_CALC_DEPENDS,
+	CAREER_STATS.character_weaponcategory_headshots = RegisterExpensiveCalculatedStat_Int( character_weaponcategory_SES, "headshots", CHALLENGES_CALC_DEPENDS,
 		SetupCharacterWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 
 	StatEnumStruct weaponcategory_SES = RegisterStatEnumStruct( null, "weaponcategories", "eWeaponStatCategory", allLootWeaponStatsCategories )
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_kills
-	CAREER_STATS.weaponcategory_kills = RegisterExpensiveCalculatedStat_Int( weaponcategory_SES, "kills", TRACK,
+	CAREER_STATS.weaponcategory_kills = RegisterExpensiveCalculatedStat_Int( weaponcategory_SES, "kills", CHALLENGES_NEED,
 		SetupWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_dooms
-	CAREER_STATS.weaponcategory_dooms = RegisterExpensiveCalculatedStat_Int( weaponcategory_SES, "dooms", TRACK,
+	CAREER_STATS.weaponcategory_dooms = RegisterExpensiveCalculatedStat_Int( weaponcategory_SES, "dooms", CHALLENGES_NEED,
 		SetupWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_damage_done
-	CAREER_STATS.weaponcategory_damage_done = RegisterExpensiveCalculatedStat_Int( weaponcategory_SES, "damage_done", TRACK,
+	CAREER_STATS.weaponcategory_damage_done = RegisterExpensiveCalculatedStat_Int( weaponcategory_SES, "damage_done", CHALLENGES_NEED,
 		SetupWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 	temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_weapon_headshots
-	CAREER_STATS.weaponcategory_headshots = RegisterExpensiveCalculatedStat_Int( weaponcategory_SES, "headshots", TRACK,
+	CAREER_STATS.weaponcategory_headshots = RegisterExpensiveCalculatedStat_Int( weaponcategory_SES, "headshots", CHALLENGES_NEED,
 		SetupWeaponCategoryStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) // ✓
 
 
-	CAREER_STATS.bloodhound_tactical_enemies_detected = RegisterAccumulatedStat_Int( null, "bloodhound_tactical_enemies_detected", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.bloodhound_tactical_traps_detected = RegisterAccumulatedStat_Int( null, "bloodhound_tactical_traps_detected", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.bloodhound_ultimate_kills_while_active = RegisterAccumulatedStat_Int( null, "bloodhound_ultimate_kills_while_active", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.caustic_tactical_barrels_traps_detonated = RegisterAccumulatedStat_Int( null, "caustic_tactical_barrels_traps_detonated", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.caustic_gas_damage_dealt = RegisterAccumulatedStat_Int( null, "caustic_gas_damage_dealt", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.caustic_passive_enemies_in_gas_killed = RegisterAccumulatedStat_Int( null, "caustic_passive_enemies_in_gas_killed", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.gibraltar_tactical_bubble_enemy_damage_absorbed = RegisterAccumulatedStat_Int( null, "gibraltar_tactical_bubble_enemy_damage_absorbed", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.gibraltar_ultimate_bombardment_kills = RegisterAccumulatedStat_Int( null, "gibraltar_ultimate_bombardment_kills", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.gibraltar_passive_gunshield_enemy_damage_absorbed = RegisterAccumulatedStat_Int( null, "gibraltar_passive_gunshield_enemy_damage_absorbed", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.lifeline_tactical_drone_healing_given = RegisterAccumulatedStat_Int( null, "lifeline_tactical_drone_healing_given", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.lifeline_ultimate_droppod_items_grabbed_by_allies = RegisterAccumulatedStat_Int( null, "lifeline_ultimate_droppod_items_grabbed_by_allies", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.lifeline_passive_enemy_damage_absorbed = RegisterAccumulatedStat_Int( null, "lifeline_passive_enemy_damage_absorbed", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.mirage_decoys_created = RegisterAccumulatedStat_Int( null, "mirage_decoys_created", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.mirage_successful_bamboozles = RegisterAccumulatedStat_Int( null, "mirage_successful_bamboozles", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.mirage_successful_revives = RegisterAccumulatedStat_Int( null, "mirage_successful_revives", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.octane_stim_distance_traveled = RegisterAccumulatedStat_Float( null, "octane_stim_distance_traveled", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.octane_jump_pad_allies_launched = RegisterAccumulatedStat_Int( null, "octane_jump_pad_allies_launched", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.octane_passive_health_regenerated = RegisterAccumulatedStat_Int( null, "octane_passive_health_regenerated", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.pathfinder_tactical_meters_moved_by_grapple = RegisterAccumulatedStat_Float( null, "pathfinder_tactical_meters_moved_by_grapple", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.pathfinder_ultimate_ziplines_used_by_allies = RegisterAccumulatedStat_Int( null, "pathfinder_ultimate_ziplines_used_by_allies", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.pathfinder_passive_beacons_scanned = RegisterAccumulatedStat_Int( null, "pathfinder_passive_beacons_scanned", TRACKERS_NEED | TRACK ) // ✓
+	CAREER_STATS.bloodhound_tactical_enemies_detected = RegisterAccumulatedStat_Int( null, "bloodhound_tactical_enemies_detected", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.bloodhound_tactical_traps_detected = RegisterAccumulatedStat_Int( null, "bloodhound_tactical_traps_detected", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.bloodhound_ultimate_kills_while_active = RegisterAccumulatedStat_Int( null, "bloodhound_ultimate_kills_while_active", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.caustic_tactical_barrels_traps_detonated = RegisterAccumulatedStat_Int( null, "caustic_tactical_barrels_traps_detonated", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.caustic_gas_damage_dealt = RegisterAccumulatedStat_Int( null, "caustic_gas_damage_dealt", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.caustic_passive_enemies_in_gas_killed = RegisterAccumulatedStat_Int( null, "caustic_passive_enemies_in_gas_killed", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.crypto_passive_enemies_scanned = RegisterAccumulatedStat_Int( null, "crypto_passive_enemies_scanned", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.crypto_ultimate_shield_damage = RegisterAccumulatedStat_Int( null, "crypto_ultimate_shield_damage", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.crypto_ultimate_traps_destroyed = RegisterAccumulatedStat_Int( null, "crypto_ultimate_traps_destroyed", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.gibraltar_tactical_bubble_enemy_damage_absorbed = RegisterAccumulatedStat_Int( null, "gibraltar_tactical_bubble_enemy_damage_absorbed", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.gibraltar_ultimate_bombardment_kills = RegisterAccumulatedStat_Int( null, "gibraltar_ultimate_bombardment_kills", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.gibraltar_passive_gunshield_enemy_damage_absorbed = RegisterAccumulatedStat_Int( null, "gibraltar_passive_gunshield_enemy_damage_absorbed", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.lifeline_tactical_drone_healing_given = RegisterAccumulatedStat_Int( null, "lifeline_tactical_drone_healing_given", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.lifeline_ultimate_droppod_items_grabbed_by_allies = RegisterAccumulatedStat_Int( null, "lifeline_ultimate_droppod_items_grabbed_by_allies", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.lifeline_passive_enemy_damage_absorbed = RegisterAccumulatedStat_Int( null, "lifeline_passive_enemy_damage_absorbed", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.mirage_decoys_created = RegisterAccumulatedStat_Int( null, "mirage_decoys_created", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.mirage_successful_bamboozles = RegisterAccumulatedStat_Int( null, "mirage_successful_bamboozles", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.mirage_successful_revives = RegisterAccumulatedStat_Int( null, "mirage_successful_revives", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.octane_stim_distance_traveled = RegisterAccumulatedStat_Float( null, "octane_stim_distance_traveled", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.octane_jump_pad_allies_launched = RegisterAccumulatedStat_Int( null, "octane_jump_pad_allies_launched", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.octane_passive_health_regenerated = RegisterAccumulatedStat_Int( null, "octane_passive_health_regenerated", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.pathfinder_tactical_meters_moved_by_grapple = RegisterAccumulatedStat_Float( null, "pathfinder_tactical_meters_moved_by_grapple", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.pathfinder_ultimate_ziplines_used_by_allies = RegisterAccumulatedStat_Int( null, "pathfinder_ultimate_ziplines_used_by_allies", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.pathfinder_passive_beacons_scanned = RegisterAccumulatedStat_Int( null, "pathfinder_passive_beacons_scanned", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
 	CAREER_STATS.wattson_breaches_detected = RegisterAccumulatedStat_Int( null, "wattson_breaches_detected", TRACKERS_NEED ) // ✓
 	CAREER_STATS.wattson_friendly_shields_charged = RegisterAccumulatedStat_Int( null, "wattson_friendly_shields_charged", TRACKERS_NEED ) // ✓
 	CAREER_STATS.wattson_enemy_ordnance_intercepted = RegisterAccumulatedStat_Int( null, "wattson_enemy_ordnance_intercepted", TRACKERS_NEED ) // ✓
-	CAREER_STATS.wraith_ultimate_phase_tunnel_ally_uses = RegisterAccumulatedStat_Int( null, "wraith_ultimate_phase_tunnel_ally_uses", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.wraith_passive_voices_heard = RegisterAccumulatedStat_Int( null, "wraith_passive_voices_heard", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.wraith_tactical_time_spent_in_phase = RegisterAccumulatedStat_Float( null, "wraith_tactical_time_spent_in_phase", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.bangalore_passive_distance = RegisterAccumulatedStat_Int( null, "bangalore_passive_distance", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.bangalore_tactical_smoke_hits = RegisterAccumulatedStat_Int( null, "bangalore_tactical_smoke_hits", TRACKERS_NEED | TRACK ) // ✓
-	CAREER_STATS.bangalore_ultimate_damage_done = RegisterAccumulatedStat_Int( null, "bangalore_ultimate_damage_done", TRACKERS_NEED | TRACK ) // ✓
+	CAREER_STATS.wraith_ultimate_phase_tunnel_ally_uses = RegisterAccumulatedStat_Int( null, "wraith_ultimate_phase_tunnel_ally_uses", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.wraith_passive_voices_heard = RegisterAccumulatedStat_Int( null, "wraith_passive_voices_heard", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.wraith_tactical_time_spent_in_phase = RegisterAccumulatedStat_Float( null, "wraith_tactical_time_spent_in_phase", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.bangalore_passive_distance = RegisterAccumulatedStat_Int( null, "bangalore_passive_distance", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.bangalore_tactical_smoke_hits = RegisterAccumulatedStat_Int( null, "bangalore_tactical_smoke_hits", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
+	CAREER_STATS.bangalore_ultimate_damage_done = RegisterAccumulatedStat_Int( null, "bangalore_ultimate_damage_done", TRACKERS_NEED | CHALLENGES_NEED ) // ✓
 
 	StatEnumStruct season_SES = RegisterStatEnumStruct( null, "seasons", "eSeasonFlavor", allSeasonRefs )
 	CAREER_STATS.season_battlepass_level = RegisterCachedCalculatedStat_Int( season_SES, "battlepass_level", BADGES_NEED, SetupGetSeasonBattlePassLevelForStat, [] ) // ✓
@@ -671,6 +750,7 @@ void function RegisterAllStats()
 	CAREER_STATS.season_placements_wins_with_7_characters = RegisterCachedCalculatedStat_Int( season_SES, "placements_wins_with_7_characters", BADGES_NEED, SetupGetNumWinsWithSevenCharactersForSeason, [] ) // ✓
 	CAREER_STATS.season_placements_top_5_with_7_characters = RegisterCachedCalculatedStat_Int( season_SES, "placements_top_5_with_7_characters", BADGES_NEED, SetupGetNumTop5WithSevenCharactersForSeason, [] ) // ✓
 	CAREER_STATS.season_battlepass_bonus_xp_with_7_characters = RegisterCachedCalculatedStat_Int( season_SES, "battlepass_bonus_xp_with_7_characters", BADGES_NEED, SetupGetNumCharactersWithMilestoneBonusBattlePassXPForSeason, [] ) // ✓
+
 
 	CAREER_STATS.season_games_played = RegisterAccumulatedStat_Int( season_SES, "games_played" )
 	CAREER_STATS.season_placements_win = RegisterAccumulatedStat_Int( season_SES, "placements_win" )
@@ -698,27 +778,26 @@ void function RegisterAllStats()
 	CAREER_STATS.season_character_elite_kills = RegisterAccumulatedStat_Int( season_character_SES, "elite_kills" )
 
 	StatEnumStruct zone_SES = RegisterStatEnumStruct( null, "zones", "eMapZones", ZONE_STAT_REFS ) // ✓
-	CAREER_STATS.zone_kills = RegisterAccumulatedStat_Int( zone_SES, "kills", TRACK ) // ✓
-	CAREER_STATS.zone_damage_done = RegisterAccumulatedStat_Int( zone_SES, "damage_done", TRACK ) // ✓
-	CAREER_STATS.zone_dooms = RegisterAccumulatedStat_Int( zone_SES, "dooms", TRACK ) // ✓
-	CAREER_STATS.zone_executions = RegisterAccumulatedStat_Int( zone_SES, "executions", TRACK ) // ✓
-	CAREER_STATS.zone_landings = RegisterAccumulatedStat_Int( zone_SES, "landings", TRACK ) // ✓
-	CAREER_STATS.zone_loot_bins = RegisterAccumulatedStat_Int( zone_SES, "loot_bins_opened", TRACK ) // ✓
+	CAREER_STATS.zone_kills = RegisterAccumulatedStat_Int( zone_SES, "kills", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.zone_damage_done = RegisterAccumulatedStat_Int( zone_SES, "damage_done", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.zone_dooms = RegisterAccumulatedStat_Int( zone_SES, "dooms", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.zone_executions = RegisterAccumulatedStat_Int( zone_SES, "executions", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.zone_landings = RegisterAccumulatedStat_Int( zone_SES, "landings", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.zone_loot_bins = RegisterAccumulatedStat_Int( zone_SES, "loot_bins_opened", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.loot_bins = RegisterAccumulatedStat_Int( null, "loot_bins_opened", CHALLENGES_NEED ) // ✓
+	CAREER_STATS.opponents_outlived = RegisterAccumulatedStat_Int( null, "opponents_outlived", CHALLENGES_NEED ) // ✓
 
-	CAREER_STATS.loot_bins = RegisterAccumulatedStat_Int( null, "loot_bins_opened", TRACK ) // ✓
-	CAREER_STATS.opponents_outlived = RegisterAccumulatedStat_Int( null, "opponents_outlived", TRACK ) // ✓
 
-
-	CAREER_STATS.season01_event_placements_top_5 = RegisterAccumulatedStat_Int( null, "season01_event_placements_top_5", TRACK | BADGES_NEED )
-	CAREER_STATS.season01_event_elite_placements_top_5 = RegisterAccumulatedStat_Int( null, "season01_event_elite_placements_top_5", TRACK )
-	CAREER_STATS.season01_event_placements_win = RegisterAccumulatedStat_Int( null, "season01_event_placements_win", TRACK )
-	CAREER_STATS.season01_event_bp_premium_lvl = RegisterAccumulatedStat_Int( null, "season01_event_bp_premium_lvl", TRACK )
+	CAREER_STATS.season01_event_placements_top_5 = RegisterAccumulatedStat_Int( null, "season01_event_placements_top_5", CHALLENGES_NEED | BADGES_NEED )
+	CAREER_STATS.season01_event_elite_placements_top_5 = RegisterAccumulatedStat_Int( null, "season01_event_elite_placements_top_5", CHALLENGES_NEED )
+	CAREER_STATS.season01_event_placements_win = RegisterAccumulatedStat_Int( null, "season01_event_placements_win", CHALLENGES_NEED )
+	CAREER_STATS.season01_event_bp_premium_lvl = RegisterAccumulatedStat_Int( null, "season01_event_bp_premium_lvl", CHALLENGES_NEED )
 
 	//
 	StatEnumStruct rankedperiod_SES = RegisterStatEnumStruct( null, "rankedperiods", "eRankedPeriodFlavor", allRankedPeriodRefs )
-	CAREER_STATS.rankedperiod_games_played = RegisterAccumulatedStat_Int( rankedperiod_SES, "games_played" )
-	CAREER_STATS.rankedperiod_placements_win = RegisterAccumulatedStat_Int( rankedperiod_SES, "placements_win" )
-	CAREER_STATS.rankedperiod_placements_top_5 = RegisterAccumulatedStat_Int( rankedperiod_SES, "placements_top_5" )
+	CAREER_STATS.rankedperiod_games_played = RegisterAccumulatedStat_Int( rankedperiod_SES, "games_played", BADGES_NEED | CHALLENGES_NEED )
+	CAREER_STATS.rankedperiod_placements_win = RegisterAccumulatedStat_Int( rankedperiod_SES, "placements_win", CHALLENGES_NEED )
+	CAREER_STATS.rankedperiod_placements_top_5 = RegisterAccumulatedStat_Int( rankedperiod_SES, "placements_top_5", CHALLENGES_NEED )
 	CAREER_STATS.rankedperiod_damage_done = RegisterAccumulatedStat_Int( rankedperiod_SES, "damage_done" )
 	CAREER_STATS.rankedperiod_kills = RegisterAccumulatedStat_Int( rankedperiod_SES, "kills" )
 	CAREER_STATS.rankedperiod_deaths = RegisterAccumulatedStat_Int( rankedperiod_SES, "deaths" )
@@ -729,9 +808,47 @@ void function RegisterAllStats()
 	CAREER_STATS.rankedperiod_kills_max_single_game = RegisterAccumulatedStat_Int( rankedperiod_SES, "kills_max_single_game" )
 	CAREER_STATS.rankedperiod_win_streak_longest = RegisterAccumulatedStat_Int( rankedperiod_SES, "win_streak_longest" )
 	CAREER_STATS.rankedperiod_win_streak_current = RegisterVariableStat_Int( rankedperiod_SES, "win_streak_current" )
+	CAREER_STATS.rankedperiod_current_rank_score = RegisterVariableStat_Int( rankedperiod_SES, "current_rank_score", BADGES_NEED | CHALLENGES_NEED )
 
 	StatEnumStruct rankedperiod_character_SES = RegisterStatEnumStruct( rankedperiod_SES, "characters", "eCharacterFlavor", allCharacterRefs )
 	CAREER_STATS.rankedperiod_character_damage_done_max_single_game = RegisterAccumulatedStat_Int( rankedperiod_character_SES, "character_damage_done_max_single_game" )
+
+	//CAREER_STATS.character_solo_dooms = RegisterAccumulatedStat_Int( character_SES, "solo_dooms", CHALLENGES_NEED ) //
+	//CAREER_STATS.character_solo_placements_top_5 = RegisterAccumulatedStat_Int( character_SES, "character_solo_placements_top_5", BADGES_NEED | CHALLENGES_NEED )
+	//CAREER_STATS.character_solo_wins = RegisterAccumulatedStat_Int( character_SES, "character_solo_wins", BADGES_NEED )
+
+	//temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_solo_dooms
+	//CAREER_STATS.solo_dooms = RegisterExpensiveCalculatedStat_Int( null, "solo_dooms", CHALLENGES_NEED,
+		//SetupCharacterStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) //
+
+	//temp_var_until_R5DEV_35088_is_fixed = CAREER_STATS.character_solo_placements_top_5
+	//CAREER_STATS.solo_placements_top_5 = RegisterExpensiveCalculatedStat_Int( null, "solo_placements_top_5", CHALLENGES_NEED,
+		//SetupCharacterStatSumEntryFunc_Int, [temp_var_until_R5DEV_35088_is_fixed] ) //
+
+	CAREER_STATS.octanett_ringoffire_times_traversed_with_armor = RegisterAccumulatedStat_Int( null, "octanett_ringoffire_times_traversed_with_armor", CHALLENGES_NEED )
+	CAREER_STATS.season02_event01_top5s_badge = RegisterAccumulatedStat_Int( null, "season02_event01_top5s_badge", BADGES_NEED | eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY ) //
+	CAREER_STATS.season02_event01_character_solo_wins = RegisterAccumulatedStat_Int( character_SES, "season02_event01_character_solo_wins", BADGES_NEED )
+	CAREER_STATS.season02_event01_num_characters_with_solo_win = RegisterExpensiveCalculatedStat_Int( null, "season02_event01_num_characters_with_solo_win", BADGES_NEED,
+		SetupGetNumSoloWinsWithAllCharactersIronCrown, [] )
+
+	CAREER_STATS.shotguns_and_snipers_plays = RegisterAccumulatedStat_Int( null, "shotguns_and_snipers_plays", CHALLENGES_NEED )
+	CAREER_STATS.shotguns_and_snipers_wins = RegisterAccumulatedStat_Int( null, "shotguns_and_snipers_wins", CHALLENGES_NEED )
+	CAREER_STATS.season02_event02_character_wins = RegisterAccumulatedStat_Int( character_SES, "season02_event02_character_wins", CHALLENGES_NEED )
+	CAREER_STATS.season02_event02_num_characters_with_win = RegisterExpensiveCalculatedStat_Int( null, "season02_event02_num_characters_with_win", CHALLENGES_NEED, SetupGetNumWinsWithAllCharactersWraithEvent, [] )
+
+	CAREER_STATS.s03e01_badge = RegisterAccumulatedStat_Int( null, "s03e01_badge", BADGES_NEED )
+	CAREER_STATS.s03e01_ltm_placements_win_legend = RegisterAccumulatedStat_Int( null, "s03e01_ltm_placements_win_legend", CHALLENGES_NEED )
+	CAREER_STATS.s03e01_ltm_placements_win_shadow = RegisterAccumulatedStat_Int( null, "s03e01_ltm_placements_win_shadow", CHALLENGES_NEED )
+	CAREER_STATS.s03e01_ltm_win_as_both_kinds = RegisterExpensiveCalculatedStat_Int( null, "s03e01_ltm_win_as_both_kinds", CHALLENGES_NEED, SetupS03E01LTMWinAsBothKinds, [] )
+	CAREER_STATS.s03e01_ltm_shadows_killed = RegisterAccumulatedStat_Int( null, "s03e01_ltm_shadows_killed", CHALLENGES_NEED )
+	CAREER_STATS.s03e01_ltm_legends_killed = RegisterAccumulatedStat_Int( null, "s03e01_ltm_legends_killed", CHALLENGES_NEED )
+	CAREER_STATS.s03e01_ltm_kill_lootbin_creatures = RegisterAccumulatedStat_Int( null, "s03e01_ltm_kill_lootbin_creatures", CHALLENGES_NEED )
+
+	CAREER_STATS.s03e02_badge = RegisterAccumulatedStat_Int( null, "s03e02_badge", BADGES_NEED )
+
+	CAREER_STATS.s03_duos_badge_play = RegisterAccumulatedStat_Int( null, "s03_duos_badge_play" )
+	CAREER_STATS.s03_duos_badge_win = RegisterAccumulatedStat_Int( null, "s03_duos_badge_win" )
+	CAREER_STATS.s03_duos_tiers_earned = RegisterExpensiveCalculatedStat_Int( null, "s03_duos_tiers_earned", BADGES_NEED, SetupGetDuosTiersEarned, [] )
 }
 #endif
 
@@ -988,7 +1105,7 @@ void function StatsHook_OnPlayerConnected( entity player )
 	// Triggered in lobby and maps
 	int installTime = expect int( player.GetPersistentVar( "installUnixTime" ) )
 	if ( installTime <= 0 )
-		player.SetPersistentVar( "installUnixTime", GetUnixTimestamp() )
+		player.SetPersistentVar( "installUnixTime", 1635594235 )
 }
 /*
 'end_reason':'Disconnect by user.'
@@ -1819,7 +1936,24 @@ StatCalcFuncInfo function SetupWeaponCategoryStatSumEntryFunc_Int( StatEntry cal
 }
 #endif
 
+
 #if SERVER || CLIENT || UI
+StatCalcFuncInfo function SetupCharacterStatSumEntryFunc_Int( StatEntry calcEntry, array<StatTemplate> sourceTemplates )
+{
+	StatTemplate sourceTemplate = sourceTemplates[0]
+
+	StatCalcFuncInfo info
+
+	foreach( ItemFlavor character in GetAllCharacters() )
+		info.sourceEntries.append( ResolveStatEntry( sourceTemplate, ItemFlavor_GetGUIDString( character ) ) )
+
+	info.calcFunc_Int = CalcStatSum_Int
+
+	return info
+}
+
+
+
 int function CalcStatSum_Int( entity player, array<StatEntry> sourceEntries, int when )
 {
 	int sum = 0
@@ -1935,6 +2069,31 @@ void function OnPlayerModifiedBannerSlot( entity player, ItemFlavor character )
 #endif
 
 #if SERVER || CLIENT || UI
+
+string ornull function GetCurrentStatSeasonRefOrNull()
+{
+	ItemFlavor ornull season = GetActiveSeason( 1635594235 ) //
+	if ( season == null )
+		return null
+	return ItemFlavor_GetGUIDString( expect ItemFlavor(season) )
+}
+string ornull function GetCurrentStatRankedPeriodRefOrNull()
+{
+	ItemFlavor ornull rankedPeriod = GetActiveRankedPeriod( 1635594235 )
+	if ( rankedPeriod == null )
+		return null
+	return ItemFlavor_GetGUIDString( expect ItemFlavor(rankedPeriod) )
+}
+
+
+string ornull function GetLatestFinishedRankedPeriodRefOrNull()
+{
+	ItemFlavor ornull rankedPeriod = GetLatestExpiredRankedPeriod( 1635594235 )
+	if ( rankedPeriod == null )
+		return null
+	return ItemFlavor_GetGUIDString( expect ItemFlavor(rankedPeriod) )
+}
+
 StatCalcFuncInfo function SetupGetStarterPackStatusForStat( StatEntry calcEntry, array<StatTemplate> sourceTemplates )
 {
 	StatCalcFuncInfo info
@@ -2132,6 +2291,45 @@ StatCalcFuncInfo function SetupGetElite888StatusForStat( StatEntry calcEntry, ar
 #endif
 
 #if SERVER || CLIENT || UI
+StatCalcFuncInfo function SetupGetNumSoloWinsWithAllCharactersIronCrown( StatEntry calcEntry, array<StatTemplate> sourceTemplates )
+{
+	StatCalcFuncInfo info
+
+	info.calcFunc_Int = (int function ( entity player, array<StatEntry> sourceEntries, int when ) {
+		int count = 0
+
+		foreach( ItemFlavor character in GetAllCharacters() )
+		{
+			if ( GetStat_Int( player, ResolveStatEntry( CAREER_STATS.season02_event01_character_solo_wins, ItemFlavor_GetGUIDString( character ) ), when ) >= 1 )
+				count++
+		}
+
+		return count
+	})
+
+	return info
+}
+StatCalcFuncInfo function SetupGetDuosTiersEarned( StatEntry calcEntry, array<StatTemplate> sourceTemplates )
+{
+	StatCalcFuncInfo info
+
+	info.calcFunc_Int = (int function ( entity player, array<StatEntry> sourceEntries, int when ) {
+		int tiersEarned = 0
+
+		int gamesPlayed = GetStat_Int( player, ResolveStatEntry( CAREER_STATS.s03_duos_badge_play), when)
+		int gamesWon = GetStat_Int( player, ResolveStatEntry( CAREER_STATS.s03_duos_badge_win), when)
+
+		if ( gamesPlayed > 0 )
+			tiersEarned = 1
+
+		if ( gamesWon >= 2 )
+			tiersEarned = gamesWon
+
+		return tiersEarned
+	})
+
+	return info
+}
 StatCalcFuncInfo function SetupGetCountOfCharactersWithTenWinsForStat( StatEntry calcEntry, array<StatTemplate> sourceTemplates )
 {
 	StatCalcFuncInfo info
@@ -2278,21 +2476,40 @@ StatCalcFuncInfo function SetupGetNumCharactersWithMilestoneBonusBattlePassXPFor
 #endif
 
 #if SERVER || CLIENT || UI
-string ornull function GetCurrentStatSeasonRefOrNull()
+
+StatCalcFuncInfo function SetupGetNumWinsWithAllCharactersWraithEvent( StatEntry calcEntry, array<StatTemplate> sourceTemplates )
 {
-	ItemFlavor ornull season = GetActiveSeason( GetUnixTimestamp() )
-	if ( season == null )
-		return null
-	return ItemFlavor_GetGUIDString( expect ItemFlavor(season) )
+	StatCalcFuncInfo info
+
+	info.calcFunc_Int = (int function ( entity player, array<StatEntry> sourceEntries, int when ) {
+		int count = 0
+		foreach( ItemFlavor character in GetAllCharacters() )
+		{
+			if ( GetStat_Int( player, ResolveStatEntry( CAREER_STATS.season02_event02_character_wins, ItemFlavor_GetGUIDString( character ) ), when ) >= 1 )
+				count++
+		}
+
+		return count
+	})
+
+	return info
+}
+
+StatCalcFuncInfo function SetupS03E01LTMWinAsBothKinds( StatEntry calcEntry, array<StatTemplate> sourceTemplates )
+{
+	StatCalcFuncInfo info
+
+	info.calcFunc_Int = (int function ( entity player, array<StatEntry> sourceEntries, int when ) {
+		int count = 0
+		if ( GetStat_Int( player, ResolveStatEntry( CAREER_STATS.s03e01_ltm_placements_win_legend ), when ) > 0 )
+			count++
+		if ( GetStat_Int( player, ResolveStatEntry( CAREER_STATS.s03e01_ltm_placements_win_shadow ), when ) > 0 )
+			count++
+		return count
+	})
+
+	return info
 }
 #endif
 
-#if SERVER || CLIENT || UI
-string ornull function GetCurrentStatRankedPeriodRefOrNull()
-{
-	ItemFlavor ornull rankedPeriod = GetActiveRankedPeriod( GetUnixTimestamp() )
-	if ( rankedPeriod == null )
-		return null
-	return ItemFlavor_GetGUIDString( expect ItemFlavor(rankedPeriod) )
-}
-#endif
+
