@@ -1,3 +1,5 @@
+global function SurvivalShip_Init
+global function Survival_IsPlayerEligibleForJumpmaster
 global function Survival_HasPlayerJumpedOutOfPlane
 global function Survival_CreatePlane
 global function Survival_GeneratePlaneFlightPath
@@ -7,12 +9,62 @@ global function SURVIVAL_GetPlaneHeight
 global function SURVIVAL_GetAirburstHeight
 global function SURVIVAL_SetPlaneHeight
 global function SURVIVAL_SetAirburstHeight
+global function SURVIVAL_SetMapCenter
+
+#if R5DEV
 global function GetDropshipClearance
+#endif
 
 struct {
 	float planeHeight = 0.0
 	float airburstHeight = 0.0
+
+	vector mapCenter = <0, 0, 0>
+
+	table<entity, bool> eligibleForJumpmasterTable = {}
 } file
+
+void function SurvivalShip_Init()
+{
+	AddClientCommandCallback( "Sur_MakeEligibleForJumpMaster", ClientCommand_MakeEligibleForJumpMaster )
+
+	AddClientCommandCallback( "Sur_RelinquishJumpMaster", ClientCommand_RelinquishJumpMaster )
+	AddClientCommandCallback( "Sur_RemoveFromSquad", ClientCommand_RemoveFromSquad )
+	AddClientCommandCallback( "Sur_ReturnToSquad", ClientCommand_ReturnToSquad )
+}
+
+bool function ClientCommand_MakeEligibleForJumpMaster( entity player, array<string> args )
+{
+	file.eligibleForJumpmasterTable[player] <- true
+
+	return true
+}
+
+bool function Survival_IsPlayerEligibleForJumpmaster( entity player )
+{
+	if ( !( player in file.eligibleForJumpmasterTable ) )
+		return false
+
+	return file.eligibleForJumpmasterTable[player]
+}
+
+entity ornull function ChangeJumpmasterInSquad( entity currentJumpmaster )
+{
+	array<entity> availableSquadMembers = GetPlayerArrayOfTeam( currentJumpmaster.GetTeam() )
+	
+	if ( availableSquadMembers.len() == 1 )
+		return null
+
+	currentJumpmaster.SetPlayerNetBool( "isJumpmaster", false )
+
+	availableSquadMembers.fastremovebyvalue( currentJumpmaster )
+
+	entity selectedMember = availableSquadMembers.getrandom()
+
+	selectedMember.SetPlayerNetBool( "isJumpmaster", true )
+
+	return selectedMember
+}
 
 float function GetDropshipClearance( vector origin )
 {
@@ -37,6 +89,11 @@ vector function TraceInBoundPoint( vector start, vector forward, float multiplie
 	return result
 }
 
+void function SURVIVAL_SetMapCenter( vector center )
+{
+	file.mapCenter = center
+}
+
 // script gp()[0].SetOrigin(<gp()[0].GetOrigin().x,gp()[0].GetOrigin().y,SURVIVAL_GetPlaneHeight()>)
 // script printt(GetDropshipClearance(gp()[0].GetOrigin()))
 
@@ -59,10 +116,8 @@ array<vector> function Survival_GeneratePlaneFlightPath()
 	const float CENTER_DEVIATION = 2.0
 	const float POINT_FINDER_MULTIPLIER = 200
 
-	vector mapCenter = SURVIVAL_GetMapCenter()
-
 	// Get a random point from map center within specified deviation
-	vector dropshipCenterPoint = GetRandomCenter( mapCenter, 0.0, CENTER_DEVIATION )
+	vector dropshipCenterPoint = GetRandomCenter( file.mapCenter, 0.0, CENTER_DEVIATION )
 	dropshipCenterPoint.z = SURVIVAL_GetPlaneHeight()
 
 	vector dropshipMovingAngle = <0, RandomFloatRange( 0.0, 360.0 ), 0>
@@ -185,4 +240,55 @@ void function SURVIVAL_SetPlaneHeight( float height )
 void function SURVIVAL_SetAirburstHeight( float height )
 {
 	file.airburstHeight = height
+}
+
+bool function ClientCommand_RelinquishJumpMaster( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't relinquish when it's not/past time
+
+	if ( !player.GetPlayerNetBool( "isJumpmaster" ) )
+		return true // Can't relinquish what you don't have
+
+	if ( GetPlayerArrayOfTeam( player.GetTeam() ).len() == 1 )
+		return true // Can't relinquish from yourself to yourself
+	
+	entity ornull newJumpmaster = ChangeJumpmasterInSquad( player )
+	
+	if ( newJumpmaster != null )
+	{
+		expect entity( newJumpmaster )
+
+		MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RelinquishedJumpmaster, null, player, newJumpmaster.GetEncodedEHandle() )
+	}
+	
+	return true
+}
+
+bool function ClientCommand_RemoveFromSquad( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't remove when it's not/past time
+
+	if ( GetPlayerArrayOfTeam( player.GetTeam() ).len() == 1 )
+		return true // Can't remove yourself from yourself
+
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		ChangeJumpmasterInSquad( player )
+
+	player.SetPlayerNetBool( "isJumpingWithSquad", false )
+	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_DroppingSolo, null, player )
+
+	return true
+}
+
+bool function ClientCommand_ReturnToSquad( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't return when it's not/past time
+
+	player.SetPlayerNetBool( "isJumpingWithSquad", true )
+	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RejoinedSquad, null, player )
+
+	return true
 }

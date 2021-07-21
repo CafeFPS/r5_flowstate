@@ -40,7 +40,7 @@ void function GameModes_Init_SV_CL()
 			GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 			GameMode_SetEvacEnabled( gameMode, false )
 		#elseif CLIENT
-			GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+			//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 		#endif
 		#if !UI
 			GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
@@ -88,7 +88,7 @@ void function GameModes_Init_SV_CL()
 	GameMode_SetEvacEnabled( gameMode, false )
 	#elseif CLIENT
 	GameMode_AddClientInit(gameMode, Cl_CustomTDM_Init)
-	GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
 
 	#if DEVSCRIPTS

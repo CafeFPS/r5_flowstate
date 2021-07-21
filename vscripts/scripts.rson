@@ -364,6 +364,8 @@ Scripts:
 	mp/sh_airdrops.gnut
   mp/sh_supply_ship.gnut
 
+	sh_onboarding.gnut
+
 	sh_loot_vault_panel.nut
 	mp/sh_loot_drones.nut
 	mp/sh_loot_rollers.nut

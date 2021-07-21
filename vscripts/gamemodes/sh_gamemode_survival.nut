@@ -2,34 +2,12 @@
 //	sh_gamemode_survival.nut
 //=========================================================
 
-global function PreGame_GetWaitingForPlayersHasBlackScreen
-global function PreGame_GetWaitingForPlayersSpawningEnabled
-global function PreGame_GetWaitingForPlayersDelayMin
-global function PreGame_GetWaitingForPlayersDelayMax
-global function PreGame_GetWaitingForPlayersCountdown
-global function CharSelect_GetIntroMusicStartTime
-global function CharSelect_GetIntroTransitionDuration
-global function CharSelect_GetIntroCountdownDuration
-global function CharSelect_GetPickingDelayBeforeAll
-global function CharSelect_GetPickingDelayOnFirst
-global function CharSelect_GetPickingSingleDurationMax
-global function CharSelect_GetPickingSingleDurationMin
-global function CharSelect_GetPickingDelayAfterEachLock
-global function CharSelect_GetPickingDelayAfterAll
-global function CharSelect_GetOutroSceneChangeDuration
-global function CharSelect_GetOutroSquadPresentDuration
-global function CharSelect_GetOutroChampionPresentDuration
-global function CharSelect_GetOutroTransitionDuration
-
 #if SERVER || CLIENT
 global function GamemodeSurvivalShared_Init
 
 global function Survival_CanUseHealthPack
 global function Survival_CanUseTitanItem
 global function Survival_PlayerCanDrop
-
-global function Survival_GetCharacterSelectDuration
-global function Survival_CharacterSelectEnabled
 
 global function Sur_SetPlaneCenterEnt
 global function Sur_SetPlaneEnt
@@ -151,28 +129,6 @@ struct
 /////////////////////////
 /////////////////////////
 //
-bool function PreGame_GetWaitingForPlayersHasBlackScreen()	{ return GetCurrentPlaylistVarBool( "waiting_for_players_has_black_screen", false ) }
-bool function PreGame_GetWaitingForPlayersSpawningEnabled()	{ return GetCurrentPlaylistVarBool( "waiting_for_players_spawning_enabled", false ) }
-float function PreGame_GetWaitingForPlayersDelayMin()		{ return GetCurrentPlaylistVarFloat( "waiting_for_players_min_wait", 0.0 ) }
-float function PreGame_GetWaitingForPlayersDelayMax()		{ return GetCurrentPlaylistVarFloat( "waiting_for_players_timeout_seconds", 20.0 ) }
-float function PreGame_GetWaitingForPlayersCountdown()		{ return GetCurrentPlaylistVarFloat( "waiting_for_players_countdown_seconds", 8.0 ) }
-//
-float function CharSelect_GetIntroMusicStartTime()		 	{ return GetCurrentPlaylistVarFloat( "charselect_intro_music_start_time", -0.8 ) }
-float function CharSelect_GetIntroTransitionDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_intro_transition_duration", 3.0 ) }
-float function CharSelect_GetIntroCountdownDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_intro_countdown_duration", 0.0 ) }
-//
-float function CharSelect_GetPickingDelayBeforeAll()		{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_before_all", 0.0 ) }
-float function CharSelect_GetPickingDelayOnFirst()			{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_on_first", 1.5 ) }
-float function CharSelect_GetPickingSingleDurationMax()		{ return GetCurrentPlaylistVarFloat( "character_select_time_max", 8.0 ) }
-float function CharSelect_GetPickingSingleDurationMin()		{ return GetCurrentPlaylistVarFloat( "character_select_time_min", 6.0 ) }
-float function CharSelect_GetPickingDelayAfterEachLock()	{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_after_each_lock", 0.5 ) }
-float function CharSelect_GetPickingDelayAfterAll()			{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_after_all", 1.5 ) }
-//
-float function CharSelect_GetOutroSceneChangeDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_scene_change_duration", 4.0 ) }
-float function CharSelect_GetOutroSquadPresentDuration()	{ return GetCurrentPlaylistVarFloat( "charselect_outro_squad_present_duration", 6.0  ) }
-float function CharSelect_GetOutroChampionPresentDuration()	{ return GetCurrentPlaylistVarFloat( "charselect_outro_champion_present_duration", 8.0 ) }
-float function CharSelect_GetOutroTransitionDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_transition_duration", 3.0 ) }
-
 
 /////////////////////////
 /////////////////////////
@@ -544,22 +500,6 @@ int function Survival_TryUseHealthPack( entity player, int itemType )
 	}
 
 	return eUseHealthKitResult.ALLOW
-}
-#endif
-
-#if SERVER || CLIENT
-float function Survival_GetCharacterSelectDuration( int pickIndex )
-{
-	float min = CharSelect_GetPickingSingleDurationMin()
-	float max = CharSelect_GetPickingSingleDurationMax()
-	return GraphCapped( pickIndex, 0, MAX_TEAM_PLAYERS - 1, max, min )
-}
-#endif
-
-#if SERVER || CLIENT
-bool function Survival_CharacterSelectEnabled()
-{
-	return Survival_GetCharacterSelectDuration(0) > 0.0
 }
 #endif
 

@@ -89,6 +89,11 @@ void function SV_Survival_Loot_Init()
 	SetCallback_OnPlayerReload( OnWeaponReload )
 	AddCallback_OnWeaponAttack( OnWeaponAttack_OrdnanceControl )
 
+	FlagInit( "Survival_LootSpawned", false )
+	
+	RegisterSignal( "SwitchToOrdnance" )
+	RegisterSignal( "SwapToNextOrdnance" )
+
 	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
 }
 
@@ -220,6 +225,7 @@ bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> a
 		return true
 
 	SwitchPlayerToOrdnance( player, ordnanceLootData.ref )
+	player.Signal( "SwitchToOrdnance" )
 
 	return true
 }
@@ -270,7 +276,10 @@ bool function ClientCommand_Sur_SwapToNextOrdnance( entity player, array<string>
 
 	string nextOrdnance = GetNextOrdnance( player, currentOrdnance )
 	if ( nextOrdnance != "" )
+	{
 		SwitchPlayerToOrdnance( player, nextOrdnance )
+		player.Signal( "SwapToNextOrdnance" )
+	}
 
 	return true
 }
@@ -286,6 +295,8 @@ void function SURVIVAL_PlaceGroundItems()
 
 		OnGroundLootSpawned( ent )
 	}
+
+	FlagSet( "Survival_LootSpawned" )
 }
 
 void function OnGroundLootSpawned( entity ent )

@@ -146,6 +146,7 @@ void function Sh_ArenaDeathField_Init()
 	RegisterSignal( "GenerateDeathFieldData" )
 	RegisterSignal( "DeathField_ShrinkNow" )
 
+	FlagInit( "DeathCircleActive", false )
 	FlagInit( "AllowDeathFieldUpdate", true )
 	FlagInit( "DeathFieldPaused", GetCurrentPlaylistVarBool( "sur_circle_start_paused", false ) )
 	FlagInit( "DoneCreatingDeathFieldPosition" )

@@ -392,6 +392,9 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 				Survival_SetInventoryEnabled( player, true )
 
+				if ( jumpingFromPlane )
+					Remote_CallFunction_NonReplay( player, "ServerCallback_PlayerBootsOnGround" )
+
 				StopSoundOnEntity( player, "Survival_DropSequence_Launch_1P" )
 				StopSoundOnEntity( player, "Survival_DropSequence_Launch_3P" )
 				StopSoundOnEntity( player, "Survival_DropSequence_Travel_1P" )

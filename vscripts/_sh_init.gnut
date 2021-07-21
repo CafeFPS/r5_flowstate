@@ -176,6 +176,7 @@ void function SV_CL_Init()
 
 	ShGameModeShadowSquad_Init()
 
+	SV_CL_Onboarding_Init()
 
 	ShTutorial_Init()
 	Sh_PassiveVoices_Init()
@@ -379,6 +380,7 @@ void function Client_Init()
 	#endif
 
 	CLHud_Init()
+	ClGamemodeSurvival_Init()
 	GameMode_RunClientInits()
 	ClRespawnselect_MP_Init()
 	ClObituary_Init()

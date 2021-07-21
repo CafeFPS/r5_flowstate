@@ -118,6 +118,7 @@ void function Canyonlands_MapInit_Common()
 
 		RegisterSignal( "NessyDamaged" )
 		RegisterSignal( SIGNAL_HOVERTANK_AT_ENDPOINT )
+		RegisterSignal( "PathFinished" )
 
 		PrecacheModel( NESSY_MODEL )
 

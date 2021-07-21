@@ -66,15 +66,10 @@ void function Utility_Init()
 	AddClientCommandCallback( "OnDevnetBugScreenshot", ClientCommand_OnDevnetBugScreenshot )
 	#if R5DEV
 		FlagInit( "AimAssistSwitchTest_Enabled" )
-		AddClientCommandCallback( "DoomTitan", ClientCommand_DoomTitan )
+		// AddClientCommandCallback( "DoomTitan", ClientCommand_DoomTitan )
 		AddClientCommandCallback( "toggleconsole", ClientCommand_ToggleConsole )
+		AddClientCommandCallback( "GoToMapPoint", ClientCommand_GoToMapPoint )
 	#endif
-}
-
-bool function ClientCommand_ToggleConsole( entity player, array<string> args )
-{
-	ShDevConsole_Init()
-	return true
 }
 
 void function GiveAllTitans()
@@ -107,7 +102,6 @@ void function GiveAllTitans()
 }
 
 #if R5DEV
-
 void function KillAllBadguys()
 {
 	array<entity> npcs = GetNPCArrayOfEnemies( GetPlayerArray()[0].GetTeam() )
@@ -122,27 +116,54 @@ void function KillAllBadguys()
 	}
 }
 
-bool function ClientCommand_DoomTitan( entity player, array<string> args )
+bool function ClientCommand_GoToMapPoint( entity player, array<string> args )
 {
-	entity titan
-	if ( player.IsTitan() )
-		titan = player
-	else
-		titan = player.GetPetTitan()
-
-	if ( !IsAlive( titan ) )
+	if ( !IsValid( player ) )
 		return true
 
-	if ( GetDoomedState( titan ) )
-		return true
+	float x = float( args[0] )
+	float y = float( args[1] )
+	float z = float( args[2] )
 
-	entity soul = titan.GetTitanSoul()
-	soul.SetShieldHealth( 0 )
+	vector origin = <x, y, z>
 
-	//titan.TakeDamage( titan.GetHealth(), null, null, { damageSourceId=damagedef_suicide, scriptType = DF_SKIP_DAMAGE_PROT } )
+	if ( z == 0 )
+	{
+		origin = OriginToGround( <x, y, 20000> )
+	}
+
+	player.SetOrigin( origin )
 
 	return true
 }
+
+bool function ClientCommand_ToggleConsole( entity player, array<string> args )
+{
+	ShDevConsole_Init()
+	return true
+}
+
+// bool function ClientCommand_DoomTitan( entity player, array<string> args )
+// {
+// 	entity titan
+// 	if ( player.IsTitan() )
+// 		titan = player
+// 	else
+// 		titan = player.GetPetTitan()
+
+// 	if ( !IsAlive( titan ) )
+// 		return true
+
+// 	if ( GetDoomedState( titan ) )
+// 		return true
+
+// 	entity soul = titan.GetTitanSoul()
+// 	soul.SetShieldHealth( 0 )
+
+// 	//titan.TakeDamage( titan.GetHealth(), null, null, { damageSourceId=damagedef_suicide, scriptType = DF_SKIP_DAMAGE_PROT } )
+
+// 	return true
+// }
 #endif
 
 void function PrintPlaylists()
@@ -4515,6 +4536,30 @@ entity function GetLastLinkedEntOfType( entity endNodes )
 	entity temp
 	return temp
 }
+
+// Screen cover transition functions
+void function ScreenCoverTransition_Player( entity player, float endTime )
+{
+	Remote_CallFunction_NonReplay( player, "ServerToClient_ScreenCoverTransition", endTime )
+}
+
+void function ScreenCoverTransition_AllPlayers( float endTime )
+{
+	foreach ( player in GetPlayerArray() )
+		ScreenCoverTransition_Player( player, endTime )
+}
+
+array<entity> function GetAllPlayersOfLockstepIndex( int index )
+{
+	array<entity> result = []
+
+	foreach ( player in GetPlayerArray() )
+		if ( player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) == index )
+			result.append( player )
+
+	return result
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 table< int, array<entity> > function GetAllPlayersSortedByTeam()
 {
