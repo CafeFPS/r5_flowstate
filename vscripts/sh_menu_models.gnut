@@ -13,10 +13,10 @@ const float TRANSITION_DURATION = 0.25
 const float DEFAULT_MAX_TURN_SPEED = 270.0
 
 const asset CHARACTER_BASE_EFFECT = $"P_menu_char_base_rarity"
-#if R5DEV
+
 const asset SHADOW_TRAIL_FX = $"P_Bshadow_body"
 const asset SHADOW_EYE_FX = $"P_BShadow_eye"
-#endif
+
 
 const vector MENU_MODELS_DEFAULT_HIGHLIGHT_COLOR = <102, 120, 242>
 
@@ -292,10 +292,8 @@ void function ShMenuModels_UIInit()
 void function ClMenuModels_Init()
 {
 	PrecacheParticleSystem( CHARACTER_BASE_EFFECT )
-	#if R5DEV
-		PrecacheParticleSystem( SHADOW_TRAIL_FX )
-		PrecacheParticleSystem( SHADOW_EYE_FX )
-	#endif
+	PrecacheParticleSystem( SHADOW_TRAIL_FX )
+	PrecacheParticleSystem( SHADOW_EYE_FX )
 
 	RegisterSignal( "DrawSelfInfo" )
 	RegisterSignal( "ChangedTeam" )
@@ -1035,13 +1033,11 @@ void function InitMenuEntities()
 
 	Assert( MenuMapEntitiesExist() )
 
-	#if SERVER
-		if ( CalEvent_IsActive( GetItemFlavorByAsset( $"settings/itemflav/calevent/s03e01.rpak" ), GetUnixTimestamp() ) )
-		{
-			ApplyEventPositioning()
-			SpawnShadowEyeEffects()
-		}
-	#endif
+	if ( IsLobbyFallLTM() )
+	{
+		ApplyEventPositioning()
+		SpawnShadowEyeEffects()
+	}
 
 	InitPresentationData()
 
