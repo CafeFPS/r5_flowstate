@@ -937,7 +937,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 	LootData oldEquipData
 
-	if ( IsValid( activeWeapon ) )
+	if ( IsValid( activeWeapon ) && SURVIVAL_Loot_IsRefValid( GetWeaponClassName( activeWeapon ) ) )
 	{
 		oldEquipData = SURVIVAL_Loot_GetLootDataByRef( GetWeaponClassName( activeWeapon ) )
 	}
