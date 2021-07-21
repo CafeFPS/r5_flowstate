@@ -32,9 +32,8 @@ const table<string, asset> GAMEMODE_IMAGE_MAP = {
 	duos = $"rui/menu/gamemode/duos",
 	worlds_edge = $"rui/menu/gamemode/worlds_edge",
 	shotguns_and_snipers = $"rui/menu/gamemode/shotguns_and_snipers",
-	#if(true)
-		shadow_squad = $"rui/menu/gamemode/shadow_squad",
-	#endif
+	shadow_squad = $"rui/menu/gamemode/shadow_squad",
+	worlds_edge_after_dark = $"rui/menu/gamemode/shadow_squad",
 }
 
 const table<string, asset> GAMEMODE_BINK_MAP = {
@@ -49,9 +48,8 @@ const table<string, asset> GAMEMODE_BINK_MAP = {
 	duos = $"media/gamemodes/duos.bik",
 	worlds_edge = $"media/gamemodes/worlds_edge.bik",
 	shotguns_and_snipers = $"media/gamemodes/shotguns_and_snipers.bik",
-	#if(true)
-		shadow_squad = $"media/gamemodes/shadow_squad.bik",
-	#endif
+	shadow_squad = $"media/gamemodes/shadow_squad.bik",
+	worlds_edge_after_dark = $"media/gamemodes/wead.bik",
 }
 
 
