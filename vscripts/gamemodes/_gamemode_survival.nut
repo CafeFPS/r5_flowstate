@@ -770,8 +770,8 @@ void function GiveLoadoutRelatedWeapons( entity player )
 
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
 {
-	if ( IsAlive( player ) )
-		return
+	// if ( IsAlive( player ) )
+	// 	return
 
 	table<string, string> possibleMods = {
 		survival_jumpkit_enabled = "enable_doublejump",
