@@ -20,7 +20,7 @@
 			waiting_for_players_countdown_seconds		- The countdown before the next onboarding stage.
 			charselect_intro_music_start_time			- The offset from character selection unlock when the character selection music should be started.
 		Character selection:
-			charselect_enabled							- Select whether the default character selection logic should be used. If false, set the custom respawn callback or the game will error!
+			charselect_enabled							- Select whether the default character selection logic should be used. If false, random legends will be assigned.
 			charselect_intro_transition_duration		- The duration of transition from waiting for players to character selection.
 			charselect_intro_countdown_duration			- The duration of the pre legend selection countdown (You choose N'nd).
 			charselect_picking_delay_before_all 		- The duration of delay before the legend pick logic starts.
@@ -595,6 +595,6 @@ float function Survival_GetCharacterSelectDuration( int pickIndex )
 
 bool function Survival_CharacterSelectEnabled()
 {
-	return Survival_GetCharacterSelectDuration( 0 ) > 0.0
+	return GetCurrentPlaylistVarBool( "charselect_enabled", true ) // Survival_GetCharacterSelectDuration( 0 ) > 0.0
 }
 #endif
