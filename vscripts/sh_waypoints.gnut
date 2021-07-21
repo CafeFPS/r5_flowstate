@@ -539,9 +539,9 @@ entity function Waypoint_FindPingByTicketID( entity owner, int ticketID )
 		if ( !IsValid( wp ) )
 		{
 #if SERVER
-			owner.p.pings.locations.fastremove( wp )
+			owner.p.pings.locations.fastremovebyvalue( wp )
 #else
-			s_activeLootPings.fastremove( wp )
+			s_activeLootPings.fastremovebyvalue( wp )
 #endif
 			continue
 		}
@@ -561,9 +561,9 @@ entity function Waypoint_FindPingByTicketID( entity owner, int ticketID )
 		if ( !IsValid( wp ) )
 		{
 #if SERVER
-			owner.p.pings.loots.fastremove( wp )
+			owner.p.pings.loots.fastremovebyvalue( wp )
 #else
-			s_activeLootPings.fastremove( wp )
+			s_activeLootPings.fastremovebyvalue( wp )
 #endif
 			continue
 		}
