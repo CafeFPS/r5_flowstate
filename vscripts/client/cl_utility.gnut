@@ -1505,12 +1505,6 @@ void function TEMP_MapConVar_Init()
 {
 	switch( GetMapName() )
 	{
-		case "mp_lobby":
-		case "mp_rr_canyonlands_64k_x_64k":
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_staging":
-		case "mp_rr_desertlands_64k_x_64k":
 		case "mp_rr_desertlands_64k_x_64k_nx":
 			SetConVarFloat( "mat_autoexposure_max", 1.0 )
 			SetConVarFloat( "mat_autoexposure_max_multiplier", 0.4 )
