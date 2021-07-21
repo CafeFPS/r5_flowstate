@@ -4642,3 +4642,26 @@ entity function CreatePropDoor( asset model, vector pos, vector ang )
 {
 	return CreatePropDynamic_NoDispatchSpawn( model, pos, ang )
 }
+
+void function summonplayers()
+{
+	entity player0 = GetPlayerArray()[0]
+
+	vector pos = player0.GetOrigin()
+	pos.z += 5
+
+	int i = 0
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( player == player0 )
+			continue
+
+		// circle
+		float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
+		player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+
+		DecideRespawnPlayer( player )
+
+		i++
+	}
+}
