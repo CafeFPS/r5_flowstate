@@ -43,7 +43,10 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_EventNotification" )
 
 	Remote_RegisterClientFunction( "ServerCallback_UpdateHudWeaponData", "entity" )
-
+	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_BLEEDOUT_ShowWoundedMarker" )
+	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_BLEEDOUT_HideWoundedMarker" )
+	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_BLEEDOUT_StartFirstAidProgressBar" )
+	Remote_RegisterUntypedFunction_deprecated( "ServerCallback_BLEEDOUT_StopFirstAidProgressBar" )
 	Remote_RegisterUntypedFunction_deprecated( "SCB_AddGrenadeIndicatorForEntity" )
 
 	Remote_RegisterUntypedFunction_deprecated( "ScriptCallback_UnlockAchievement" )

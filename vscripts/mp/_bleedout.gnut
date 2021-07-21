@@ -197,7 +197,7 @@ void function EnablePlayerRes( entity player )
 	player.EndSignal( "BleedOut_OnStartDying" )
 	player.EndSignal( "BleedOut_OnRevive" )
 
-	Highlight_SetFriendlyHighlight( player, "interact_object_los_line" )
+	//Highlight_SetFriendlyHighlight( player, "interact_object_los_line" )
 
 	if ( IsPilotEliminationBased() )
 		SetPlayerEliminated( player )

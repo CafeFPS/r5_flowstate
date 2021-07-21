@@ -94,7 +94,7 @@ void function SV_CL_Init()
 	#endif
 
 	ShDevWeapons_Init()
-
+	BleedoutShared_Init()
 	ShPakRequests_LevelInit()
 	ShXP_Init()
 	ShPersistentData_LevelInit_Begin()
@@ -235,6 +235,7 @@ void function Server_Init()
 	Music_Init()
 	TitanTether_Init()
 	AiSoldiers_Init()
+	Bleedout_Init()
 	AiSpawn_Init()
 #if NPC_TITAN_PILOT_PROTOTYPE
 	AiPilots_Init()
