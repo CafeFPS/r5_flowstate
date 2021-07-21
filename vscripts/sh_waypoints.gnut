@@ -1845,6 +1845,8 @@ float function GetDefaultTimeoutForPingType( entity player, int pingType )
 
 entity function CreateWaypoint_Ping_Location( entity player, int pingType, entity pingEnt, vector position, int ticketID, bool forceNew )
 {
+	position = ClampToWorldspace( position )
+
 	if ( GetCurrentPlaylistVarBool( "use_new_ping", true ) )
 		position += <0, 0, 72>
 
