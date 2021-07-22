@@ -54,7 +54,7 @@ function ToggleModelViewer()
 
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MVEnable" )
 
-			file.lastTitanAvailability = level.nv.titanAvailability
+			//file.lastTitanAvailability = level.nv.titanAvailability
 			//Riff_ForceTitanAvailability( eTitanAvailability.Never )
 
 			WeaponsRemove()
@@ -165,15 +165,15 @@ function WeaponsRestore()
 	entity player = GetPlayerArray()[0]
 	if ( !IsValid( player ) )
 		return
-
+	//todo: fix this
 	foreach ( weapon in file.playerWeapons )
 	{
-		player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_ANY )
+		//player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_ANY )
 	}
 
 	foreach ( index, offhand in file.playerOffhands )
 	{
-		player.GiveOffhandWeapon( offhand, index )
+		//player.GiveOffhandWeapon( offhand, index )
 	}
 }
 
