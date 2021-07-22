@@ -5,6 +5,7 @@ global function SetupModelSpawner
 global function SetupSurvivalLoot
 global function SetupSurvivalIncapShieldBot
 global function SetupAbilities
+global function SetupWeapons
 
 void function SetupChangeSurvivalCharacterClass()
 {
@@ -28,6 +29,26 @@ void function SetupChangeSurvivalCharacterClass()
 }
 
 void function SetupOverrideSpawnSurvivalCharacter()
+{
+	#if(UI)
+		SetupDevCommand( "Random (default)", "dev_sur_force_spawn_character random" )
+		SetupDevCommand( "Shipping only", "dev_sur_force_spawn_character special" )
+		array<ItemFlavor> characters = clone GetAllCharacters()
+		characters.sort( int function( ItemFlavor a, ItemFlavor b ) {
+			if ( Localize( ItemFlavor_GetLongName( a ) ) < Localize( ItemFlavor_GetLongName( b ) ) )
+				return -1
+			if ( Localize( ItemFlavor_GetLongName( a ) ) > Localize( ItemFlavor_GetLongName( b ) ) )
+				return 1
+			return 0
+		} )
+		foreach( ItemFlavor characterClass in characters )
+		{
+			SetupDevCommand( Localize( ItemFlavor_GetLongName( characterClass ) ), "dev_sur_force_spawn_character " + ItemFlavor_GetHumanReadableRef( characterClass ) )
+		}
+	#endif
+}
+
+void function SetupWeapons()
 {
 	#if UI
 	SetupDevCommand( "Alternator SMG", "give mp_weapon_alternator_smg" )
@@ -116,10 +137,6 @@ void function SetupAbilities()
 	SetupDevCommand( "Caustic Ultimate", "give mp_weapon_grenade_gas" )
 	SetupDevCommand( "Pulse Blade", "give mp_weapon_grenade_sonar" )
 	SetupDevCommand( "Amped Wall", "give mp_weapon_deployable_cover" )
-	SetupDevCommand( "Melee", "give mp_weapon_melee_survival" )
-	SetupDevCommand( "Wraith Heirloom", "give mp_weapon_wraith_kunai_primary" )
-	SetupDevCommand( "Lifeline Heirloom", "give mp_weapon_lifeline_baton_primary" )
-	SetupDevCommand( "Bloodhound Heirloom", "give mp_weapon_bloodhound_axe_primary" )
 	#endif
 }
 

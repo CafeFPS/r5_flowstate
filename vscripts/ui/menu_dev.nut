@@ -269,14 +269,15 @@ void function ChangeToThisMenu_WithOpParm( void functionref( var ) menuFuncWithO
 void function SetupDefaultDevCommandsMP()
 {
 	SetupDevMenu( "Abilities", SetDevMenu_Abilities )
-	SetupDevMenu( "Equip Weapon", SetDevMenu_OverrideSpawnSurvivalCharacter )
+	SetupDevMenu( "Equip Weapon", SetDevMenu_Weapons )
 	SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
 
 	if ( IsSurvivalMenuEnabled() )
 	{
-		SetupDevMenu( "Survival", SetDevMenu_Survival )
 		SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
 		SetupDevMenu( "Alter Loadout", SetDevMenu_AlterLoadout )
+		SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
+		SetupDevMenu( "Survival", SetDevMenu_Survival )
 		SetupDevMenu( "Survival Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
 		SetupDevMenu( "Survival Attachments", SetDevMenu_SurvivalLoot, "attachment" )
 		SetupDevMenu( "Survival Helmets", SetDevMenu_SurvivalLoot, "helmet" )
@@ -286,7 +287,7 @@ void function SetupDefaultDevCommandsMP()
 
 #endif
 		SetupDevMenu( "Survival Incap Shield", SetDevMenu_SurvivalLoot, "incapshield" )
-		// SetupDevMenu( "Survival Incap Shield Debugging", SetDevMenu_SurvivalIncapShieldBots )
+		SetupDevMenu( "Survival Incap Shield Debugging", SetDevMenu_SurvivalIncapShieldBots )
 
 		string itemsString = "ordnance ammo health custom_pickup"
 		#if(true)
@@ -294,7 +295,7 @@ void function SetupDefaultDevCommandsMP()
 		#endif
 		SetupDevMenu( "Survival Items", SetDevMenu_SurvivalLoot, itemsString )
 
-		// SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
+		SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
 	}
 
 	#if(false)
@@ -396,6 +397,11 @@ void function SetDevMenu_ModelSpawner( var _ )
 void function SetDevMenu_Abilities( var _ )
 {
 	thread ChangeToThisMenu( SetupAbilities )
+}
+
+void function SetDevMenu_Weapons( var _ )
+{
+	thread ChangeToThisMenu( SetupWeapons )
 }
 
 void function SetDevMenu_SurvivalCharacter( var _ )
