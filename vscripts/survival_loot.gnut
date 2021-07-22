@@ -22,6 +22,7 @@ global function SURVIVAL_GivePlayerEquipment
 global function SpawnWeaponAndAmmo
 global function SpawnArmor
 global function SpawnNothing
+global function SpawnAllOptics
 global function SURVIVAL_DropMainWeapon
 global function SURVIVAL_DropBackpackItem
 global function Loot_AddCallback_OnPlayerLootPickup
@@ -1263,6 +1264,12 @@ entity function SpawnArmor( string ref, vector origin )
 entity function SpawnNothing( string ref, vector origin )
 {
 	printt( "SpawnNothing", ref, origin )
+	return null
+}
+
+entity function SpawnAllOptics()
+{
+	printt( "SpawnAllOptics_STUB" )
 	return null
 }
 
