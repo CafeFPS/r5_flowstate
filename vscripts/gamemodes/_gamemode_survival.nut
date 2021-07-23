@@ -94,6 +94,9 @@ void function Sequence_Playing()
 	
 			i++
 		}
+
+		// Show the squad and player counter
+		UpdatePlayerCounts()
 	}
 	else
 	{
@@ -236,34 +239,100 @@ void function Sequence_Epilogue()
 {
 	SetGameState( eGameState.Epilogue )
 
-	// TODO squad stats
-	/*
 	foreach ( player in GetPlayerArray() ) {
 		player.FreezeControlsOnServer()
 
+		// Clear all residue data
 		Remote_CallFunction_NonReplay( player, "ServerCallback_AddWinningSquadData", -1, -1, 0, 0, 0, 0, 0 )
 
 		foreach ( int i, entity champion in GetPlayerArrayOfTeam( GetWinningTeam() ) )
+		{
+			GameSummarySquadData gameSummaryData = GameSummary_GetPlayerData( champion )
+
 			Remote_CallFunction_NonReplay( 
 				player, 
 				"ServerCallback_AddWinningSquadData", 
 				i, // Champion index
 				champion.GetEncodedEHandle(), // Champion EEH
-				champion.GetPlayerNetInt( "kills" ),
-				
+				gameSummaryData.kills,
+				gameSummaryData.damageDealt,
+				gameSummaryData.survivalTime,
+				gameSummaryData.revivesGiven,
+				gameSummaryData.respawnsGiven
 			)
+		}
 
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 	}
-	*/
 
 	WaitForever()
 }
 
 void function HandleSquadElimination( int team )
 {
-	foreach ( player in GetPlayerArrayOfTeam( team ) )
+	RespawnBeacons_OnSquadEliminated( team )
+	StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
+
+	array<entity> squadMembers = GetPlayerArrayOfTeam( team )
+	int maxTrackedSquadMembers = PersistenceGetArrayCount( "lastGameSquadStats" )
+
+	foreach ( teamMember in squadMembers )
+	{
+		teamMember.SetPersistentVar( "lastGameRank", Survival_GetCurrentRank( teamMember ) )
+
+		for ( int i = 0; i < squadMembers.len(); i++ )
+		{
+			if ( i >= maxTrackedSquadMembers )
+				continue
+			
+			entity statMember = squadMembers[i]
+			GameSummarySquadData statSummaryData = GameSummary_GetPlayerData( statMember )
+
+			teamMember.SetPersistentVar( "lastGameSquadStats[" + i + "].eHandle", statMember.GetEncodedEHandle() )
+			teamMember.SetPersistentVar( "lastGameSquadStats[" + i + "].kills", statSummaryData.kills )
+			teamMember.SetPersistentVar( "lastGameSquadStats[" + i + "].damageDealt", statSummaryData.damageDealt )
+			teamMember.SetPersistentVar( "lastGameSquadStats[" + i + "].survivalTime", statSummaryData.survivalTime )
+			teamMember.SetPersistentVar( "lastGameSquadStats[" + i + "].revivesGiven", statSummaryData.revivesGiven )
+			teamMember.SetPersistentVar( "lastGameSquadStats[" + i + "].respawnsGiven", statSummaryData.respawnsGiven )
+		}
+	}
+
+	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_SquadEliminated", team )
+}
+
+// Fully doomed, no chance to respawn, game over
+void function PlayerFullyDoomed( entity player )
+{
+	player.p.respawnChanceExpiryTime = Time()
+	player.p.squadRank = Survival_GetCurrentRank( player )
+
+	StatsHook_RecordPlacementStats( player )
+}
+
+void function OnPlayerDamaged( entity victim, var damageInfo )
+{
+	if ( !IsValid( victim ) || !victim.IsPlayer() || Bleedout_IsBleedingOut( victim ) )
+		return
+
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.bleedout )
+		return
+
+	float damage = DamageInfo_GetDamage( damageInfo )
+
+	int currentHealth = victim.GetHealth()
+	if ( !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
+		currentHealth += victim.GetShieldHealth()
+
+	if ( currentHealth - damage <= 0 
+		&& PlayerRevivingEnabled() )
+	{
+		// Supposed to be bleeding
+		Bleedout_StartPlayerBleedout( victim, DamageInfo_GetAttacker( damageInfo ) )
+
+		// Cancel the damage
+		DamageInfo_SetDamage( damageInfo, 0 )
+	}
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -272,9 +341,21 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		return
 
 	if ( victim.IsPlayer() )
-	{	
+	{
 		SetPlayerEliminated( victim )
 		PlayerStartSpectating( victim )
+
+		int victimTeamNumber = victim.GetTeam()
+		array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
+		bool teamEliminated = victimTeam.len() == 0
+
+		if ( teamEliminated )
+			HandleSquadElimination( victim.GetTeam() )
+
+		if ( !PlayerRespawnEnabled() )
+			PlayerFullyDoomed( victim )
+		else
+			printt( "!!! Respawns are enabled! This is TODO" )
 	}
 }
 
@@ -284,6 +365,10 @@ void function OnClientConnected( entity player )
 	bool isAlone = playerTeam.len() <= 1
 
 	playerTeam.fastremovebyvalue( player )
+
+	player.p.squadRank = 0
+
+	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
 
 	switch ( GetGameState() )
 	{
@@ -353,9 +438,9 @@ bool function SURVIVAL_IsValidCircleLocation( vector origin )
 	return false
 }
 
-int function _GetSquadRank ( entity player )
+int function _GetSquadRank( entity player )
 {
-	return 1
+	return player.p.squadRank
 }
 
 void function JetwashFX( entity dropship )
@@ -365,7 +450,12 @@ void function JetwashFX( entity dropship )
 
 void function Survival_PlayerRespawnedTeammate( entity playerWhoRespawned, entity respawnedPlayer )
 {
+	playerWhoRespawned.p.respawnsGiven++
+
+	respawnedPlayer.p.respawnChanceExpiryTime = 0.0
 	ClearPlayerEliminated( respawnedPlayer )
+
+	StatsHook_PlayerRespawnedTeammate( playerWhoRespawned, respawnedPlayer )
 }
 
 void function UpdateDeathBoxHighlight( entity box )

@@ -61,7 +61,8 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 		printt( "    After Wallrun_PlayerTookDamage:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
 
-	if ( player.GetShieldHealthMax() > 0 )
+	if ( player.GetShieldHealthMax() > 0
+		&& !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
 	{
 		local shieldDamage = PilotShieldHealthUpdate( player, damageInfo )
 		return shieldDamage

@@ -385,6 +385,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			{
 				attacker.p.currentTargetPlayerOrSoul_Ent = ent
 				attacker.p.currentTargetPlayerOrSoul_LastHitTime = Time()
+				attacker.p.playerDamageDealt += savedDamage
 			}
 		}
 	}

@@ -155,7 +155,13 @@ void function Sequence_PickLoadout()
 	if ( !Survival_CharacterSelectEnabled() ) 
 	{
 		foreach ( player in GetPlayerArray() )
+		{
+			ItemFlavor musicPack = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() )
+			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
+			StopMusicOnPlayer( player, skydiveMusicID )
+
 			CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) // No candidates to force it to pick a random legend.
+		}
 
 		thread Sequence_Prematch() 
 		return
@@ -255,11 +261,11 @@ void function Sequence_Prematch()
 }
 
 // Custom logic for sequence orchestration
-void function UpdateSequencedTimePoints( float referenceTime )
+void function UpdateSequencedTimePoints( float referenceTime, int gameStateOverride = -1 )
 {
 	SetGlobalNetInt( "gameState", GetGameState() )
 
-	switch ( GetGameState() )
+	switch ( gameStateOverride != -1 ? gameStateOverride : GetGameState() )
 	{
 		case eGameState.WaitingForPlayers:
 			SetGlobalNetTime( "PreGameStartTime", referenceTime + PreGame_GetWaitingForPlayersCountdown() )
@@ -410,14 +416,15 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 void function PlayerStartSpectating( entity player )
 {
 	array<entity> clientTeam = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
-	bool isAlone = clientTeam.len() <= 1
-	bool isSquadEliminated = false // TODO
+	clientTeam.fastremovebyvalue( player )
+
+	bool isAloneOrSquadEliminated = clientTeam.len() == 0
 
 	clientTeam.fastremovebyvalue( player )
 	
 	entity specTarget = null
 
-	if ( isAlone || isSquadEliminated )
+	if ( isAloneOrSquadEliminated )
 	{
 		array<entity> alivePlayers = GetPlayerArray_Alive()
 		if ( alivePlayers.len() > 0 )
@@ -595,6 +602,9 @@ float function Survival_GetCharacterSelectDuration( int pickIndex )
 
 bool function Survival_CharacterSelectEnabled()
 {
-	return GetCurrentPlaylistVarBool( "charselect_enabled", true ) // Survival_GetCharacterSelectDuration( 0 ) > 0.0
+	if ( Survival_GetCharacterSelectDuration( 0 ) <= 0.0 )
+		return false
+
+	return GetCurrentPlaylistVarBool( "charselect_enabled", true )
 }
 #endif

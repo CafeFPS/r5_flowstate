@@ -4710,3 +4710,14 @@ void function summonplayers()
 		i++
 	}
 }
+
+bool function PlayerRespawnEnabled()
+{
+	// return GetCurrentPlaylistVarBool( "survival_respawn_style", "respawn_chambers" ) != "none"
+	return false // TODO
+}
+
+bool function PlayerRevivingEnabled()
+{
+	return GetCurrentPlaylistVarBool( "survival_revive_enabled", true )
+}

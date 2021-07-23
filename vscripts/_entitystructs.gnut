@@ -648,6 +648,14 @@ global struct ServerPlayerStruct
 	int zoneNoTouchStack
 	int currentZoneId
 	entity DEV_lastDroppedSurvivalWeaponProp
+	
+	int squadRank
+
+	float respawnChanceExpiryTime
+
+	float playerDamageDealt
+	int respawnsGiven
+	int revivesGiven
 }
 
 global struct ServerPlayerWaypoint
