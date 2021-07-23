@@ -14,6 +14,7 @@ global function TPPromptIsActive
 
 global function ClientCodeCallback_ToggleScoreboard
 global function ClientToUI_ToggleScoreboard
+global function ClientToUI_ShowScoreboardWithTPPrompt
 global function ClientToUI_HideScoreboard
 #endif
 
@@ -117,7 +118,28 @@ void function OnScoreboardButtonPressed( entity localPlayer )
 #if CLIENT
 void function ClientToUI_ToggleScoreboard()
 {
+	if ( IsSurvivalTraining() )
+	{
+		printf( "%s() - Aborting, because we're in Training.", FUNC_NAME() )
+		return
+	}
+
+	if ( IsFiringRangeGameMode() )
+	{
+		printf( "%s() - Showing character select because we're in Firing Range.", FUNC_NAME() )
+		RunUIScript( "TryCloseSurvivalInventory", null )
+		EmitSoundOnEntity( GetLocalViewPlayer(), "UI_Menu_accept" )
+		OpenCharacterSelectNewMenu( true )
+		return
+	}
+
 	ToggleScoreboard()
+}
+void function ClientToUI_ShowScoreboardWithTPPrompt()
+{
+	file.wantsToShowScoreboard = true
+	s_nextShowWantsTPPrompt = true
+	UpdateScoreboardVisibility()
 }
 #endif
 
@@ -130,20 +152,21 @@ void function ClientToUI_HideScoreboard()
 #endif
 
 #if CLIENT
+
 bool function TPPromptIsActive()
 {
 	return (clGlobal.isScoreboardShown && s_latestShowWasForTPPrompt)
 }
-#endif
 
-#if CLIENT
 void function UpdateScoreboardVisibility()
 {
-	bool shouldShow = file.wantsToShowScoreboard
+	bool wantsTPPrompt = s_nextShowWantsTPPrompt
+	s_nextShowWantsTPPrompt = false
 
+	bool shouldShow = file.wantsToShowScoreboard
 	if ( GetGameState() >= eGameState.WinnerDetermined )
 		shouldShow = false
-	else if ( IsViewingSquadSummary() )
+	else if ( IsViewingSquadSummary() || IsViewingDeathRecap() )
 		shouldShow = false
 	else if ( GetGameState() < eGameState.Playing && !GetCurrentPlaylistVarBool( "survival_staging_area_enabled", false ) )
 		shouldShow = false
@@ -157,6 +180,7 @@ void function UpdateScoreboardVisibility()
 
 	if ( shouldShow )
 	{
+		s_latestShowWasForTPPrompt = wantsTPPrompt
 		RunUIScript( "TryCloseSurvivalInventory", null )
 		RunUIScript( "SetShowingMap", true )
 

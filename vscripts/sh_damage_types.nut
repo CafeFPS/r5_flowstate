@@ -141,7 +141,9 @@ global enum eDamageSourceId
 	//Character Abilities
 	mp_weapon_defensive_bombardment_weapon
 	mp_weapon_creeping_bombardment_weapon
-
+	mp_ability_octane_stim
+	mp_ability_crypto_drone_emp
+	mp_ability_crypto_drone_emp_trap
 	// AI only Weapons
 	mp_weapon_super_spectre
 	mp_weapon_dronebeam
@@ -419,6 +421,17 @@ void function DamageTypes_Init()
 	}
 #endif
 
+	file.damageSourceIDToImage =
+	{
+		//
+		//
+		//
+		//
+		//
+	}
+
+		file.damageSourceIDToImage[eDamageSourceId.melee_shadowsquad_hands] <- $"rui/gamemodes/shadow_squad/shadow_icon_small"
+
 	file.damageSourceIDToName =
 	{
 		//mp
@@ -532,6 +545,21 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.melee_titan_sword_aoe ]					= "#DEATH_TITAN_SWORD",
 		[ eDamageSourceId.melee_wraith_kunai ] 						= "#DEATH_MELEE_WRAITH_KUNAI",
 		[ eDamageSourceId.mp_weapon_wraith_kunai_primary ] 			= "#DEATH_MELEE_WRAITH_KUNAI",
+
+		[ eDamageSourceId.mp_ability_octane_stim ] 					= "#WPN_OCTANE_STIM_SHORT",
+
+		[ eDamageSourceId.mp_weapon_tesla_trap ] 					= "#DEATH_TESLA_TRAP"
+
+		,[ eDamageSourceId.mp_ability_crypto_drone_emp ]			= "#WPN_DRONE_EMP" //
+		,[ eDamageSourceId.mp_ability_crypto_drone_emp_trap ]		= "#WPN_DRONE_EMP"
+
+		,[ eDamageSourceId.melee_bloodhound_axe ] 				= "#DEATH_MELEE_BLOODHOUND_AXE"
+		,[ eDamageSourceId.mp_weapon_bloodhound_axe_primary ] 	= "#DEATH_MELEE_BLOODHOUND_AXE"
+
+		,[ eDamageSourceId.melee_lifeline_baton ]				= "#DEATH_MELEE_LIFELINE_BATON"
+		,[ eDamageSourceId.mp_weapon_lifeline_baton_primary ]	= "#DEATH_MELEE_LIFELINE_BATON"
+		,[ eDamageSourceId.melee_shadowsquad_hands ] 				= "#DEATH_MELEE_SHADOWSQUAD_HANDS"
+		,[ eDamageSourceId.mp_weapon_shadow_squad_hands_primary ] 	= "#DEATH_MELEE_SHADOWSQUAD_HANDS"
 	}
 
 	#if R5DEV

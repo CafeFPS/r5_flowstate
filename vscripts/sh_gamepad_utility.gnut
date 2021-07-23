@@ -65,6 +65,7 @@ struct
 			["scriptCommand3", "weapon_inspect"],
 			["scriptCommand4", "scriptCommand2"],
 			["weaponselectordnance", "strafe"],
+			["scriptCommand5; chat_wheel", "scriptCommand1"],
 		]
 	#endif
 } file
@@ -86,7 +87,7 @@ global const array<string> CUSTOM_BIND_ALIASES_PILOT =
 	"speed",						// "+speed"				bind "STICK1" 		"+ability 8"
 	"melee",						// "+melee"				bind "STICK2" 		"+ability 9"
 	"scriptCommand4",				// "+offhand4"			bind "UP" 			"+ability 10"
-	"scriptCommand5",				// "+offhand3"			bind "DOWN" 		"+ability 11"
+	"scriptCommand5; chat_wheel",	// "+offhand3"			bind "DOWN" 		"+ability 11"
 	"scriptCommand3",				// "+offhand0"			bind "LEFT" 		"+ability 12"
 	"weaponselectordnance"			// "+scriptCommand4"	bind "RIGHT" 		"+ability 13"
 	"toggle_map"					// "toggle_map"			bind "BACK"			"+ability 14"
@@ -106,7 +107,7 @@ global const array<string> CUSTOM_BIND_ALIASES_TITAN =
 	"speed",						// "+speed"				bind "STICK1" 		"+ability 8"
 	"melee",						// "+melee"				bind "STICK2" 		"+ability 9"
 	"scriptCommand4",				// "+offhand4"			bind "UP" 			"+ability 10"
-	"scriptCommand5",				// "+offhand3"			bind "DOWN" 		"+ability 11"
+	"scriptCommand5; chat_wheel",	// "+offhand3"			bind "DOWN" 		"+ability 11"
 	"scriptCommand3",				// "+offhand0"			bind "LEFT" 		"+ability 12"
 	"weaponselectordnance"			// "+scriptCommand4"	bind "RIGHT" 		"+ability 13"
 	"toggle_map"					// "toggle_map"			bind "BACK"			"+ability 14"
@@ -504,6 +505,7 @@ array<string> function GetABBindsForBaseBind( string baseBind )
 		case "weapon_inspect":
 		case "toggle_inventory":
 		case "toggle_map":
+		case "chat_wheel":
 			return [ baseBind, "" ]
 
 		case "":
@@ -551,7 +553,18 @@ ABBind function GetAbilityABind( int index )
 #if CLIENT || UI
 void function SetCustomGamepadBindsFor_( entity player, string convarName, array<string> bindAliases )
 {
+	bindAliases.resize( CUSTOM_BIND_ALIASES_PILOT.len() )
 	array<int> arr = BuildCommandForButtonArrayFromConVar( convarName )
+	int layoutIdx = GetConVarInt( "gamepad_button_layout" )
+
+	if( layoutIdx < PRESETS_COUNT )
+	{
+		arr = BuildCommandForButtonArrayFromString( PRESET_PILOT_BINDS[layoutIdx] )
+	}
+	else //
+	{
+		arr = BuildCommandForButtonArrayFromConVar( convarName )
+	}
 
 	SetABBind( player, 0, bindAliases[arr[0]] )		// A
 	SetABBind( player, 1, bindAliases[arr[1]] )		// B
@@ -742,7 +755,18 @@ string function GetEffectiveButtonBinding( int buttonID )
 		case "+ability 14":
 		{
 			int bindIndex     = int( binding.slice( 9 ) )
-			string baseBind   = GetCustomBindCommandForButtonIndexPilot( bindIndex )
+			string baseBind = ""
+
+			int layoutIdx = GetConVarInt( "gamepad_button_layout" )
+			if( layoutIdx < PRESETS_COUNT )
+			{
+				array<int> arr = BuildCommandForButtonArrayFromString( PRESET_PILOT_BINDS[layoutIdx] )
+				baseBind = CUSTOM_BIND_ALIASES_PILOT[arr[bindIndex]]
+			}
+			else
+			{
+				baseBind = GetCustomBindCommandForButtonIndexPilot( bindIndex )
+			}
 			string bindString = ("+" + baseBind)
 			return bindString
 		}
@@ -773,7 +797,19 @@ string function GetEffectiveButtonHoldBinding( int buttonID )
 		case "+ability_held 14":
 		{
 			int bindIndex     = int( binding.slice( 14 ) )
-			string baseBind   = GetCustomBindCommandForButtonIndexPilot( bindIndex )
+			string baseBind = ""
+
+			int layoutIdx = GetConVarInt( "gamepad_button_layout" )
+			if( layoutIdx < PRESETS_COUNT )
+			{
+				array<int> arr = BuildCommandForButtonArrayFromString( PRESET_PILOT_BINDS[layoutIdx] )
+				baseBind = CUSTOM_BIND_ALIASES_PILOT[arr[bindIndex]]
+			}
+			else
+			{
+				baseBind = GetCustomBindCommandForButtonIndexPilot( bindIndex )
+			}
+
 			string baseHeldCommand = FindCorrespondingHeldCommandForTappedCommand( baseBind )
 			string bindString = ("+" + baseHeldCommand)
 			return bindString

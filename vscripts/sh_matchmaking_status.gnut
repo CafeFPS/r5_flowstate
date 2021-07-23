@@ -67,7 +67,7 @@ void function MMStatusOnHUD_HideIcons()
 	MMStatusRui_HideIcons( s_mmRui )
 #else
 	if ( uiGlobal.loadedLevel != "" )
-		RunClientScript( FUNC_NAME() )
+		RunClientScript( "MMStatusOnHUD_HideIcons" )
 #endif // #else // #if CLIENT
 }
 
@@ -79,7 +79,7 @@ void function MMStatusOnHUD_ShowIcons()
 	MMStatusRui_ShowIcons( s_mmRui )
 #else
 	if ( uiGlobal.loadedLevel != "" )
-		RunClientScript( FUNC_NAME() )
+		RunClientScript( "MMStatusOnHUD_ShowIcons" )
 #endif // #else // #if CLIENT
 }
 
@@ -91,7 +91,7 @@ void function MMStatusOnHUD_SetSearchVisible( bool state )
 	MMStatusRui_SetSearchVisible( s_mmRui, state )
 #else
 	if ( uiGlobal.loadedLevel != "" )
-		RunClientScript( FUNC_NAME(), state )
+		RunClientScript( "MMStatusOnHUD_SetSearchVisible", state )
 #endif // #else // #if CLIENT
 }
 
@@ -103,7 +103,7 @@ void function MMStatusOnHUD_SetSearchText( string searchText, var param1, var pa
 	MMStatusRui_SetSearchText( s_mmRui, searchText, param1, param2, param3, param4 )
 #else
 	if ( uiGlobal.loadedLevel != "" )
-		RunClientScript( FUNC_NAME(), searchText, param1, param2, param3, param4 )
+		RunClientScript( "MMStatusOnHUD_SetSearchText", searchText, param1, param2, param3, param4 )
 #endif // #else // #if CLIENT
 }
 
@@ -115,7 +115,7 @@ void function MMStatusOnHUD_SetCountdownVisible( bool state )
 	MMStatusRui_SetCountdownVisible( s_mmRui, state )
 #else
 	if ( uiGlobal.loadedLevel != "" )
-		RunClientScript( FUNC_NAME(), state )
+		RunClientScript( "MMStatusOnHUD_SetCountdownVisible", state )
 #endif // #else // #if CLIENT
 }
 
@@ -127,8 +127,8 @@ void function MMStatusOnHUD_SetCountdownTimer( float time, bool useServerTime )
 	MMStatusRui_SetCountdownTimer( s_mmRui, time, useServerTime )
 #else
 	if ( uiGlobal.loadedLevel != "" )
-		RunClientScript( FUNC_NAME(), time, useServerTime )
-#endif // #else // #if CLIENT
+		RunClientScript( "MMStatusOnHUD_SetCountdownTimer", time, useServerTime )
+#endif //CLIENT
 }
 
 

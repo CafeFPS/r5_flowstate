@@ -11,6 +11,7 @@ global function GetStatEntryByRef
 global function StatEntry_GetIndex
 global function StatEntry_GetRef
 global function StatEntry_GetType
+global function StatEntry_GetBehavior
 global function StatEntry_GetFlags
 global function DoesStatSatisfyValue
 
@@ -432,6 +433,13 @@ int function StatEntry_GetType( StatEntry entry )
 #endif
 
 #if SERVER || CLIENT || UI
+
+int function StatEntry_GetBehavior( StatEntry entry )
+{
+	return entry.behavior
+}
+
+
 int function StatEntry_GetFlags( StatEntry entry )
 {
 	return entry.flags
