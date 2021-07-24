@@ -315,7 +315,11 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	if ( !IsValid( victim ) || !victim.IsPlayer() || Bleedout_IsBleedingOut( victim ) )
 		return
 
-	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.bleedout )
+	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+
+	printt("!!!", FUNC_NAME(), victim, sourceId)
+
+	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution )
 		return
 
 	float damage = DamageInfo_GetDamage( damageInfo )
@@ -339,6 +343,8 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( victim ) || !IsValid( attacker ) )
 		return
+
+	printt("!!!", FUNC_NAME(), victim, attacker)
 
 	if ( victim.IsPlayer() )
 	{

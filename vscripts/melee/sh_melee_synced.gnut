@@ -91,8 +91,8 @@ bool function AttackerCanStartSyncedMelee( entity attacker, entity meleeInputWea
 	if ( attacker.IsWallRunning() || attacker.IsTraversing() ) // No necksnaps while wall running or mantling
 		return false
 
-	if ( IsDoingPullshot( attacker ) )
-		return false
+	//if ( IsDoingPullshot( attacker ) )
+	//	return false
 
 	return true
 }
@@ -135,8 +135,8 @@ bool function IsValidSyncedMeleeTarget( entity attacker, entity meleeInputWeapon
 		if ( !Bleedout_IsBleedingOut( target ) )
 			return false
 
-		if ( IsDoingPullshot( target ) )
-			return false
+		//if ( IsDoingPullshot( target ) )
+		//	return false
 	}
 	else if ( target.IsNPC() )
 	{
@@ -308,10 +308,10 @@ void function DoSyncedMelee_Thread( entity attacker, entity target )
 						if ( IsValid( target.e.syncedMeleeAttacker ) )
 							killCreditAttacker = target.e.syncedMeleeAttacker
 
-						target.TakeDamage( target.GetMaxHealth() + 1, killCreditAttacker, killCreditAttacker, {
-							forceKill = true,
+						target.Die( killCreditAttacker, killCreditAttacker, {
 							damageType = DMG_MELEE_EXECUTION,
-							damageSourceId = eDamageSourceId.human_execution } )
+							damageSourceId = eDamageSourceId.human_execution 
+						} )
 
 						// target.e.markedForExecutionDeath is cleared by the MarkForDeath anim event thread
 					}
