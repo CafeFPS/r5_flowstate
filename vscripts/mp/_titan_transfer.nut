@@ -118,7 +118,7 @@ array<StoredWeapon> function StoreWeapons( entity player )
 		sw.name = weapon.GetWeaponClassName()
 		sw.weaponType = eStoredWeaponType.main
 		sw.activeWeapon = ( weapon == activeWeapon )
-		sw.inventoryIndex = i
+		sw.inventoryIndex = weapon.GetInventoryIndex()
 		sw.mods = weapon.GetMods()
 		sw.modBitfield = weapon.GetModBitField()
 		sw.ammoCount = weapon.GetWeaponPrimaryAmmoCount( weapon.GetActiveAmmoSource() )
@@ -126,7 +126,7 @@ array<StoredWeapon> function StoreWeapons( entity player )
 		sw.nextAttackTime = weapon.GetNextAttackAllowedTime()
 		sw.skinIndex = weapon.GetSkin()
 		sw.camoIndex = weapon.GetCamo()
-		sw.isProScreenOwner = weapon.GetProScreenOwner() == player
+		sw.isProScreenOwner = false // weapon.GetProScreenOwner() == player
 
 		storedWeapons.append( sw )
 	}
@@ -145,9 +145,6 @@ array<StoredWeapon> function StoreWeapons( entity player )
 		sw.ammoCount = weapon.GetWeaponPrimaryAmmoCount( weapon.GetActiveAmmoSource() )
 		sw.clipCount = weapon.GetWeaponPrimaryClipCount()
 		sw.nextAttackTime = weapon.GetNextAttackAllowedTime()
-		#if MP
-		sw.burnReward = weapon.e.burnReward
-		#endif
 
 		if ( sw.activeWeapon )
 			storedWeapons.insert( 0, sw )
@@ -158,87 +155,82 @@ array<StoredWeapon> function StoreWeapons( entity player )
 	return storedWeapons
 }
 
-// void function GiveWeaponsFromStoredArray( entity player, array<StoredWeapon> storedWeapons )
-// {
-// 	int activeWeaponSlot = 0
-// 	foreach ( i, storedWeapon in storedWeapons )
-// 	{
-// 		entity weapon
+void function GiveWeaponsFromStoredArray( entity player, array<StoredWeapon> storedWeapons )
+{
+	int activeWeaponSlot = 0
+	foreach ( i, storedWeapon in storedWeapons )
+	{
+		entity weapon
 
-// 		switch ( storedWeapon.weaponType )
-// 		{
-// 			case eStoredWeaponType.main:
-// 				weapon = player.GiveWeapon( storedWeapon.name, storedWeapon.mods )
-// 				weapon.SetWeaponSkin( storedWeapon.skinIndex )
-// 				weapon.SetWeaponCamo( storedWeapon.camoIndex )
-// 				#if MP
-// 				if ( storedWeapon.isProScreenOwner )
-// 				{
-// 					weapon.SetProScreenOwner( player )
-// 					UpdateProScreen( player, weapon )
-// 				}
+		switch ( storedWeapon.weaponType )
+		{
+			case eStoredWeaponType.main:
+				weapon = player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+				weapon.SetWeaponSkin( storedWeapon.skinIndex )
+				weapon.SetWeaponCamo( storedWeapon.camoIndex )
+				#if MP
+				// if ( storedWeapon.isProScreenOwner )
+				// {
+				// 	weapon.SetProScreenOwner( player )
+				// 	UpdateProScreen( player, weapon )
+				// }
 
-// 				string weaponCategory = GetWeaponInfoFileKeyField_GlobalString( weapon.GetWeaponClassName(), "menu_category" )
-// 				if ( weaponCategory == "at" || weaponCategory == "special" ) // refill AT/grenadier ammo stockpile
-// 				{
-// 					int defaultTotal = weapon.GetWeaponSettingInt( eWeaponVar.ammo_default_total )
-// 					int clipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
+				string weaponCategory = GetWeaponInfoFileKeyField_GlobalString( weapon.GetWeaponClassName(), "menu_category" )
+				if ( weaponCategory == "at" || weaponCategory == "special" ) // refill AT/grenadier ammo stockpile
+				{
+					int defaultTotal = weapon.GetWeaponSettingInt( eWeaponVar.ammo_default_total )
+					int clipSize = weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size )
 
-// 					weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, defaultTotal - clipSize )
+					weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, defaultTotal - clipSize )
 
-// 					if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
-// 						weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-// 				}
-// 				else
-// 				{
-// 					weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, storedWeapon.ammoCount )
-// 					if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
-// 						weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-// 				}
-// 				#else
-// 				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, storedWeapon.ammoCount )
-// 				if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
-// 					weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-// 				#endif
+					if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
+						weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
+				}
+				else
+				{
+					weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, storedWeapon.ammoCount )
+					if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
+						weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
+				}
+				#else
+				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, storedWeapon.ammoCount )
+				if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
+					weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
+				#endif
 
 
-// 				if ( storedWeapon.activeWeapon )
-// 					activeWeaponSlot = i
+				if ( storedWeapon.activeWeapon )
+					activeWeaponSlot = i
 
-// 				break
+				break
 
-// 			case eStoredWeaponType.offhand:
-// 				player.GiveOffhandWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+			case eStoredWeaponType.offhand:
+				player.GiveOffhandWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
 
-// 				weapon = player.GetOffhandWeapon( storedWeapon.inventoryIndex )
-// 				weapon.SetNextAttackAllowedTime( storedWeapon.nextAttackTime )
-// 				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, storedWeapon.ammoCount )
-// 				if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
-// 					weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
-// 				#if MP
-// 				weapon.e.burnReward = storedWeapon.burnReward
-// 				#endif
+				weapon = player.GetOffhandWeapon( storedWeapon.inventoryIndex )
+				weapon.SetNextAttackAllowedTime( storedWeapon.nextAttackTime )
+				weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_STOCKPILE, storedWeapon.ammoCount )
+				if ( weapon.GetWeaponPrimaryClipCountMax() > 0 )
+					weapon.SetWeaponPrimaryClipCount( storedWeapon.clipCount )
 
-// 				break
+				break
 
-// 			default:
-// 				unreachable
-// 		}
-// 	}
+			default:
+				unreachable
+		}
+	}
 
-// 	#if MP
-// 		PlayerInventory_RefreshEquippedState( player )
-// 	#endif
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
-// 	player.SetActiveWeaponBySlot( activeWeaponSlot )
-// }
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, activeWeaponSlot )
+}
 
 void function RetrievePilotWeapons( entity player )
 {
-	// TakeAllWeapons( player )
-	// GiveWeaponsFromStoredArray( player, player.p.storedWeapons )
-	// SetPlayerCooldowns( player )
-	// player.p.storedWeapons.clear()
+	TakeAllWeapons( player )
+	GiveWeaponsFromStoredArray( player, player.p.storedWeapons )
+	SetPlayerCooldowns( player )
+	player.p.storedWeapons.clear()
 }
 
 function StorePilotWeapons( entity player )

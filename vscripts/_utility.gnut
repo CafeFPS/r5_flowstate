@@ -4672,10 +4672,37 @@ entity function CreatePropDynamic_NoDispatchSpawn( asset model, vector ornull or
 	return prop_dynamic
 }
 
-// CreatePropShield( gs.model, gs.impacteffectcolorID, gs.parentEnt.GetAttachmentOrigin( idx ), AnglesCompose( gs.parentEnt.GetAttachmentAngles( idx ), gs.modelOverrideAngles ), 6 )
-entity function CreatePropShield( ... ) // epic stub
+entity function CreatePropShield( asset model, int colorID, vector ornull origin = null, vector ornull angles = null, var solidType = 0, float fadeDist = -1 )
 {
-	return null
+	entity prop_shield = CreateEntity( "prop_shield" )
+
+	prop_shield.SetValueForModelKey( model )
+
+	prop_shield.kv.fadedist = fadeDist
+	prop_shield.kv.renderamt = 255
+	prop_shield.kv.rendercolor = "255 255 255"
+	prop_shield.kv.solid = solidType // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	prop_shield.kv.impacteffectcolorid = colorID
+
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_shield.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_shield.SetAngles( expect vector( angles ) )
+	}
+
+	DispatchSpawn( prop_shield )
+
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_shield.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_shield.SetAngles( expect vector( angles ) )
+	}
+
+	return prop_shield
 }
 
 void function RunClientCommandOnPlayer( entity player, string command )

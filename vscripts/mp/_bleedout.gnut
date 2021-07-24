@@ -149,13 +149,27 @@ void function PlayerDying( entity player )
 	player.SetPlayerNetTime( "bleedoutEndTime", bleedoutEndTime )
 
 	if ( forceHolster )
-		HolsterAndDisableWeapons( player )
+		StorePilotWeapons( player )
 
-	player.GiveWeapon( "mp_weapon_incap_shield", WEAPON_INVENTORY_SLOT_ANY )
-	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_incap_shield" )
+	int shieldTier = EquipmentSlot_GetEquipmentTier( player, "incapshield" )
+	string oldWeapon = ""
+	if ( shieldTier > 0 )
+	{
+		entity currentWeapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		if ( IsValid( currentWeapon ) )
+		{
+			oldWeapon = currentWeapon.GetWeaponClassName()
+			player.TakeWeaponByEntNow( currentWeapon )
+		}
+
+		entity incapShield = player.GiveWeapon( "mp_weapon_incap_shield", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		incapShield.SetScriptInt0( IncapShield_GetMaxShieldHealthFromTier( shieldTier ) )
+
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	}
 
 	OnThreadEnd(
-	function() : ( player, ids, forceHolster, bleedoutWp )
+	function() : ( player, ids, forceHolster, bleedoutWp, oldWeapon )
 		{
 			if ( IsValid( player ) )
 			{
@@ -166,6 +180,8 @@ void function PlayerDying( entity player )
 				file.lastAttacker[ player ] = svGlobal.worldspawn
 
 				player.TakeWeaponNow( "mp_weapon_incap_shield" )
+				if ( oldWeapon != "" )
+					player.GiveWeapon( oldWeapon, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 
 				player.SetPlayerNetTime( "bleedoutEndTime", 0.0 )
 
@@ -178,7 +194,7 @@ void function PlayerDying( entity player )
 				DeleteWaypoint_Safe( player, bleedoutWp )
 
 				if ( forceHolster )
-					DeployAndEnableWeapons( player )
+					RetrievePilotWeapons( player )
 
 				//Hide wounded icon for wounded player's allies
 				int woundedPlayerEHandle = player.GetEncodedEHandle()
@@ -270,12 +286,12 @@ void function EnablePlayerSelfRes( entity player )
 
 	while ( true )
 	{
-		if (  !IsPlayerGettingFirstAid( player ) )
-			MessageToPlayer( player, eEventNotifications.BLEEDOUT_SelfHealPrompt )
+		//if (  !IsPlayerGettingFirstAid( player ) )
+		//	MessageToPlayer( player, eEventNotifications.BLEEDOUT_SelfHealPrompt )
 
 		if ( player.UseButtonPressed() && !IsPlayerGettingFirstAid( player ) )
 		{
-			MessageToPlayer( player, eEventNotifications.Clear )
+		//	MessageToPlayer( player, eEventNotifications.Clear )
 			waitthread PlayerAttemptRes( player, player )
 		}
 
