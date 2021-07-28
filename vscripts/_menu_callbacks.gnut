@@ -4,5 +4,12 @@ global function MenuCallbacks_Init
 
 void function MenuCallbacks_Init()
 {
+    AddClientCommandCallback( "LeaveMatch", ClientCommandCallback_LeaveMatch )
+}
 
+bool function ClientCommandCallback_LeaveMatch( entity player, array<string> args )
+{
+    // Maybe save persistent data here.
+    ClientCommand( player, "disconnect" )
+    return true
 }
