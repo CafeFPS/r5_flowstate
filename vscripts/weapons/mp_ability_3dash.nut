@@ -21,7 +21,7 @@ void function OnWeaponActivate_ability_3dash( entity weapon )
 		EmitSoundOnEntityExceptToPlayer(player, player, "Wraith_PhaseGate_Portal_Open")
 
 		if ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) != player.GetOffhandWeapon( OFFHAND_INVENTORY ) )
-			PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
+			PlayBattleChatterLineToSpeakerAndTeam( player, "bc_skydive" )
 	#endif
 }
 
@@ -65,10 +65,10 @@ void function DashPlayer(entity player, float chargeTime)
 	if(player.GetInputAxisForward() || player.GetInputAxisRight()) yes = Normalize(player.GetInputAxisForward() * player.GetViewForward() + player.GetInputAxisRight() * player.GetViewRight())
 	else yes = Normalize(player.GetVelocity())
 
-	TraceResults result = TraceLine(player.GetOrigin(), player.GetOrigin() + 200 * yes, [player], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE)
+	TraceResults result = TraceLine(player.GetOrigin(), player.GetOrigin() + 600 * yes, [player], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE)
 	// mover.NonPhysicsMoveTo(result.endPos, chargeTime, 0, 0)
 	player.SetOrigin(result.endPos)
-	player.SetVelocity(player.GetVelocity() + 400 * yes)
+	player.SetVelocity(player.GetVelocity() + 800 * yes)
 	PutEntityInSafeSpot( player, null, null, player.GetOrigin(), player.GetOrigin() )
 	// wait chargeTime
 	// player.ClearParent()

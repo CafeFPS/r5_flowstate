@@ -135,6 +135,7 @@ void function SetupAbilities()
 	SetupDevCommand( "Bangalore Ultimate", "give mp_weapon_grenade_creeping_bombardment" )
 	SetupDevCommand( "Caustic Tactical", "give mp_weapon_dirty_bomb" )
 	SetupDevCommand( "Caustic Ultimate", "give mp_weapon_grenade_gas" )
+	SetupDevCommand( "3Dash Tactical", "give mp_ability_3dash" )
 	SetupDevCommand( "Pulse Blade", "give mp_weapon_grenade_sonar" )
 	SetupDevCommand( "Amped Wall", "give mp_weapon_deployable_cover" )
 	#endif
