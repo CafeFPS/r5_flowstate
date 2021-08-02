@@ -18,8 +18,8 @@ WeaponData
 	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
 	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 
-	"OnWeaponActivate"							"OnWeaponActivate_melee_bloodhound_axe"
-    "OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bloodhound_axe"
+	//"OnWeaponActivate"							"OnWeaponActivate_melee_bloodhound_axe"
+    //"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bloodhound_axe"
 
     // FX
 	"impact_effect_table"							"melee_human"

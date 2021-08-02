@@ -4,27 +4,24 @@ WeaponData
 {
 
 	// General
-	"printname"   									"Melee"
-	"shortprintname"								"Melee"
-	"description" 									"Description needed"
-	"longdesc"										"Description needed"
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
 
-	"menu_icon"										"rui/hud/common/melee_icon"
-	"hud_icon"										"rui/hud/common/melee_icon"
+	"menu_icon"									"rui/hud/common/melee_icon"
+	"hud_icon"									"rui/hud/common/melee_icon"
 
-	"weapon_type_flags"								"WPT_MELEE"
+	"weapon_type_flags"							"WPT_MELEE"
 	
 	// Models
 	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
 	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 
-	"OnWeaponActivate"								"OnWeaponActivate_melee_wraith_kunai"
-    "OnWeaponDeactivate"							"OnWeaponDeactivate_melee_wraith_kunai"
+	//"OnWeaponActivate"							"OnWeaponActivate_melee_bloodhound_axe"
+    //"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bloodhound_axe"
 
-    // FX - Impacts
+    // FX
 	"impact_effect_table"							"melee_human"
-
-	// Audio
-	//"idle_sound_player_1p"							"Wraith_Kunai_IdleSparks_1P"
 }
 
