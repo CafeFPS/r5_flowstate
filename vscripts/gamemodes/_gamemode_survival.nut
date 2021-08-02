@@ -216,6 +216,7 @@ void function Sequence_Playing()
 
 			SetGameState( eGameState.WinnerDetermined )
 		}
+		WaitFrame()
 	}
 
 	thread Sequence_WinnerDetermined()
