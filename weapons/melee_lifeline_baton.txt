@@ -22,6 +22,6 @@ WeaponData
     "OnWeaponDeactivate"						"OnWeaponDeactivate_melee_lifeline_baton"
 
     // FX
-	"impact_effect_table" 						"melee_baton"
+	"impact_effect_table"							"melee_human"
 }
 

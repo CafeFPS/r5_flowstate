@@ -22,7 +22,7 @@ WeaponData
     "OnWeaponDeactivate"							"OnWeaponDeactivate_melee_wraith_kunai"
 
     // FX - Impacts
-	"impact_effect_table" 							"melee_kunai"
+	"impact_effect_table"							"melee_human"
 
 	// Audio
 	//"idle_sound_player_1p"							"Wraith_Kunai_IdleSparks_1P"
