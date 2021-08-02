@@ -13,8 +13,8 @@ WeaponData
 	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
 
 	// Models
-	"viewmodel"   									"mdl/weapons/drumstick/ptpov_baton_lifeline.rmdl"
-	"playermodel" 									"mdl/weapons/drumstick/w_baton_lifeline.rmdl"
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 
 	"OnWeaponActivate"								"OnWeaponActivate_weapon_lifeline_baton_primary"
 	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_lifeline_baton_primary"

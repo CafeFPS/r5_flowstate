@@ -275,7 +275,6 @@ void function SetupDefaultDevCommandsMP()
 	if ( IsSurvivalMenuEnabled() )
 	{
 		SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
-		SetupDevMenu( "Alter Loadout", SetDevMenu_AlterLoadout )
 		SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
 		SetupDevMenu( "Survival", SetDevMenu_Survival )
 		SetupDevMenu( "Survival Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )

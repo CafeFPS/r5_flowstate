@@ -15,8 +15,8 @@ WeaponData
 	"weapon_type_flags"								"WPT_MELEE"
 	
 	// Models
-	"viewmodel"   									"mdl/weapons/kunai/ptpov_kunai_wraith.rmdl"
-	"playermodel" 									"mdl/weapons/kunai/w_kunai_wraith.rmdl"
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 
 	"OnWeaponActivate"								"OnWeaponActivate_melee_wraith_kunai"
     "OnWeaponDeactivate"							"OnWeaponDeactivate_melee_wraith_kunai"

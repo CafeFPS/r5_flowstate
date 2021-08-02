@@ -15,8 +15,8 @@ WeaponData
 	"weapon_type_flags"							"WPT_MELEE"
 	
 	// Models
-	"viewmodel"   								"mdl/weapons/bloodhound_axe/ptpov_bloodhound_axe.rmdl"
-	"playermodel" 								"mdl/weapons/bloodhound_axe/w_bloodhound_axe.rmdl"
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 
 	"OnWeaponActivate"							"OnWeaponActivate_melee_bloodhound_axe"
     "OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bloodhound_axe"

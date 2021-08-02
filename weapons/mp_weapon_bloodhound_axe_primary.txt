@@ -15,8 +15,8 @@ WeaponData
 	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
 
 	// Models
-	"viewmodel"   									"mdl/weapons/bloodhound_axe/ptpov_bloodhound_axe.rmdl"
-	"playermodel" 									"mdl/weapons/bloodhound_axe/w_bloodhound_axe.rmdl"
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 
 	"OnWeaponActivate"								"OnWeaponActivate_weapon_bloodhound_axe_primary"
 	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_bloodhound_axe_primary"
