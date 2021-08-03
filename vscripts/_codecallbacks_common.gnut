@@ -101,25 +101,13 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	player.hasConnected = true
 
-	// AddDeathCallback( "player", OnPlayerDeathCallback )
-
 	foreach ( cb in svGlobal.onClientConnectedCallbacks )
 		cb( player )
 
 	NotifyClientsOfConnection( player, 1 )
 
-	// PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
-
-	// if( !GetCurrentPlaylistVarBool( "custom_tdm", false ) )
-	// {
-	// 	SetGameState( eGameState.Playing )
-  	// thread InitRespawnPlayer(player)
-	// }
-
 	// shouldn't this be called from code?
 	CodeCallback_OnClientReloadConnectionCompleted( player )
-
-	// UpdateNetCounts()	
 }
 
 void function CodeCallback_OnPlayerRespawned( entity player )
@@ -127,137 +115,6 @@ void function CodeCallback_OnPlayerRespawned( entity player )
 	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
 		cb( player )
 }
-
-// void function OnPlayerDeathCallback( entity player, var damageInfo )
-// {
-// 	if( IsAlive( player ) )
-// 		return
-//	
-// 	if( GetCurrentPlaylistVarBool( "should_respawn_on_death", true ) )
-// 	{
-// 		thread RespawnOnDeath( player )
-// 		return
-// 	}
-//
-// 	// TODO: deathboxes
-// }
-
-// void function RespawnOnDeath( entity player ) 
-// {
-// 	if( IsAlive( player ) )
-// 		return
-//
-//   thread InitRespawnPlayer(player)
-// }
-
-// void function InitRespawnPlayer(entity player)
-// {
-// 	if( IsAlive( player ) )
-// 		return
-	
-//   wait 1.0
-
-// 	SetTeam( player, 10 )
-
-// 	int teamMemberIndex = GetPlayerArrayOfTeam( player.GetTeam() ).len() - 1
-
-// 	player.SetTeamMemberIndex( teamMemberIndex )
-
-// 	PlayerMatchState_Set(player, ePlayerMatchState.NORMAL)
-// 	player.SetPlayerNetBool( "pingEnabled", true )
-
-//   wait 1.0
-	
-// 	vector origin
-// 	vector angles
-
-//   DoRespawnPlayer( player, null )
-
-
-// 	switch( GetMapName() )
-// 	{
-// 		case "mp_rr_desertlands_64k_x_64k":
-// 			origin = <6500, 3077, -3368>
-// 			angles = <0, 0, 0>
-// 			break
-// 		case "mp_rr_canyonlands_64k_x_64k":
-// 		case "mp_rr_canyonlands_mu1":
-// 		case "mp_rr_canyonlands_mu1_night":
-// 			origin = <0, 0, 2200>
-// 			angles = <0, 0, 0>
-// 			break
-// 		case "mp_rr_canyonlands_staging":
-// 			origin = <26328, -6235, -27540>
-// 			angles = <21.5, 0.2, 0>
-// 			break
-// 		default:
-// 			origin = <0, 0, 0>
-// 			angles = <0, 0, 0>
-// 	}
-
-// 	player.SetOrigin( origin )
-// 	player.SetAngles( angles )
-	
-// 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-	
-// 	// settings/player/mp/pilot_survival_gunner.rpak		Gibraltar
-// 	// settings/player/mp/pilot_survival_tracker.rpak		Bloodhound
-// 	// settings/player/mp/pilot_survival_grapple.rpak		Pathfinder
-// 	// settings/player/mp/pilot_survival_stim.rpak			Octane
-// 	// settings/player/mp/pilot_survival_gas.rpak			Caustic
-// 	// settings/player/mp/pilot_survival_medic.rpak			Lifeline
-// 	// settings/player/mp/pilot_survival_closer.rpak		Wraith
-// 	// settings/player/mp/pilot_survival_firesupport.rpak	Bangalore
-// 	// settings/player/mp/pilot_survival_holopilot.rpak		Mirage
-// 	// settings/player/mp/pilot_survival_barricade.rpak		Wattson
-// 	// settings/player/mp/pilot_survival_crypto.rpak		Crypto
-
-// 	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_tracker.rpak", [] )	
-
-// 	printt("setting player (", player.GetPlayerName(), ") settings for character " + ItemFlavor_GetHumanReadableRef( character ))
-
-// 	//player.SetPlayerSettingsWithMods( IF_Settings[ ItemFlavor_GetHumanReadableRef( character ) ], mods )
-
-// 	if( !IsLobby() )
-// 	{
-// 		// todo: just reset the inventory before respawning
-// 		try {
-// 			player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_ANY )
-// 			player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_ANY )
-// 			//player.GiveWeapon( "mp_weapon_grenade_gravity", WEAPON_INVENTORY_SLOT_ANY )
-// 			GivePassive( player, ePassives.PAS_VOICES )
-			
-// 			//Lifeline Heirloom
-// 			//player.GiveOffhandWeapon( "melee_lifeline_baton", OFFHAND_MELEE )
-// 			//player.GiveWeapon( "mp_weapon_lifeline_baton_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-			
-// 			//Wraith Heirloom
-// 			//player.GiveOffhandWeapon( "melee_wraith_kunai", OFFHAND_MELEE )
-// 			//player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-			
-// 			//Bloodhound Heirloom
-// 			player.GiveOffhandWeapon( "melee_bloodhound_axe", OFFHAND_MELEE )
-// 			player.GiveWeapon( "mp_weapon_bloodhound_axe_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-			
-// 			player.GiveOffhandWeapon( "mp_ability_area_sonar_scan", OFFHAND_SPECIAL )
-// 			player.GiveOffhandWeapon( "mp_ability_hunt_mode", OFFHAND_INVENTORY )
-// 			player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES )
-// 			//player.SetModel( thirdperson )
-// 			//player.SetviewModel( firstperson )
-// 		} catch( error )
-
-// 		EnableOffhandWeapons( player )
-	
-// 		entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-// 		int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
-// 		ultimateAbility.SetWeaponPrimaryClipCount( ammoMax )
-	
-// 		player.SetHealth( 100 )
-// 	}
-
-// 	//thread SkydiveTest()
-// 	UpdateNetCounts()
-// }
 
 /*{
 "725342087": "Bangalore",

@@ -309,13 +309,18 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	printl( "############################" )
-	printl( "CodeCallback_ClientCommand() before" )
-	printl( "player = " + player )
-	printl( "args:" )
-	foreach( key, value in args )
-		printl( key + " : " + value )
-	printl( "############################" )
+
+	if( !Dev_CommandLineHasParm( "-nodebugprints" ) )
+	{
+		printl( "############################" )
+		printl( "CodeCallback_ClientCommand() before" )
+		printl( "player = " + player )
+		printl( "args:" )
+		foreach( key, value in args )
+			printl( key + " : " + value )
+		printl( "############################" )
+	}
+
 
 	string commandString = args.remove( 0 )
 

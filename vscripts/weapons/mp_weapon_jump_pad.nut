@@ -94,23 +94,23 @@ void function OnJumpPadPlanted( entity projectile )
 	asset model = $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl"// projectile.GetModelName()
 	//float duration = projectile.GetProjectileWeaponSettingFloat( eWeaponVar.fire_duration )
 
-    //Use NoDispatchSpawn so that we can setup the entity before spawning it in the game world
+	//Use NoDispatchSpawn so that we can setup the entity before spawning it in the game world
 	entity newProjectile = CreatePropDynamic_NoDispatchSpawn( model, origin, surfaceAngles, SOLID_VPHYSICS )
-    
+
 	newProjectile.RemoveFromAllRealms()
 	newProjectile.AddToOtherEntitysRealms( projectile )
 	projectile.Destroy()
-    
-    newProjectile.kv.solid = 6
+
+	newProjectile.kv.solid = 6
 	newProjectile.SetTakeDamageType( DAMAGE_YES )
-    newProjectile.SetMaxHealth( 100 )
+	newProjectile.SetMaxHealth( 100 )
 	newProjectile.SetHealth( 100 )
-    SetVisibleEntitiesInConeQueriableEnabled( newProjectile, true )
-    
+	SetVisibleEntitiesInConeQueriableEnabled( newProjectile, true )
+
 	newProjectile.SetOwner( owner )
 
-    //Dispatch the spawn after our settings are done
-    DispatchSpawn( newProjectile )
+	//Dispatch the spawn after our settings are done
+	DispatchSpawn( newProjectile )
 
 	thread TrapDestroyOnRoundEnd( owner, newProjectile )
 
@@ -140,7 +140,7 @@ void function OnJumpPadPlanted( entity projectile )
 	jumpPadProxy.Hide()
 	jumpPadProxy.SetParent( newProjectile )
 	jumpPadProxy.SetOwner( owner )
-    
+
 	JumpPad_CreatedCallback( newProjectile )
 	#endif
 }

@@ -597,10 +597,10 @@ TeslaTrapPlacementInfo function TeslaTrap_GetPlacementInfoFromTraceResults( enti
 
 		array< vector > groundTestOffsets = [
 			<0, 0, 0>,
-							(-right * 6) + (forward * 6),
-							(-right * 6) + (-forward * 6),
-							(right * 6) + (forward * 6),
-							(right * 6) + (-forward * 6),
+			(-right * 6) + (forward * 6),
+			(-right * 6) + (-forward * 6),
+			(right * 6) + (forward * 6),
+			(right * 6) + (-forward * 6),
 		]
 
 		surfaceAngles = <0, 0, 0>

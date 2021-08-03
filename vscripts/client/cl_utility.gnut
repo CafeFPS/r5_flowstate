@@ -891,17 +891,37 @@ var function CreateRUITopology_Worldspace( vector org, vector ang, float width, 
 	return topo
 }
 
+/*
+████████╗███████╗██╗  ██╗████████╗    ██╗███╗   ██╗███████╗ ██████╗     ██████╗  █████╗ ███╗   ██╗███████╗██╗     ███████╗
+╚══██╔══╝██╔════╝╚██╗██╔╝╚══██╔══╝    ██║████╗  ██║██╔════╝██╔═══██╗    ██╔══██╗██╔══██╗████╗  ██║██╔════╝██║     ██╔════╝
+   ██║   █████╗   ╚███╔╝    ██║       ██║██╔██╗ ██║█████╗  ██║   ██║    ██████╔╝███████║██╔██╗ ██║█████╗  ██║     ███████╗
+   ██║   ██╔══╝   ██╔██╗    ██║       ██║██║╚██╗██║██╔══╝  ██║   ██║    ██╔═══╝ ██╔══██║██║╚██╗██║██╔══╝  ██║     ╚════██║
+   ██║   ███████╗██╔╝ ██╗   ██║       ██║██║ ╚████║██║     ╚██████╔╝    ██║     ██║  ██║██║ ╚████║███████╗███████╗███████║
+   ╚═╝   ╚══════╝╚═╝  ╚═╝   ╚═╝       ╚═╝╚═╝  ╚═══╝╚═╝      ╚═════╝     ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚══════╝
+
+Add Title:
+	Dev_BuildTextInfoPanel( 0, "Example Title" )
+
+Add Text:
+	Dev_BuildTextInfoPanel( 1, "Example Text" )
+
+Display Panel:
+	Dev_CreateTextInfoPanel( posX, posY, posZ, angX, angY, angZ, showPin, textScale )
+
+	Dev_CreateTextInfoPanel( 1000.0, 1000.0, 1000.0, 0.0, 90.0, 0.0, true, 1.0)
+*/
+
 void function Dev_BuildTextInfoPanel( Type, ... )
 {
 	if ( Type == 0 )
 	{
 		for ( int i = 0; i < vargc; i++ )
-			dev_infoPanelTitleString += format("%c", vargv[i] )
+			dev_infoPanelTitleString += format("%s", vargv[i] )
 	}
 	else if ( Type == 1 )
 	{
 		for ( int i = 0; i < vargc; i++ )
-			dev_infoPanelTextString += format("%c", vargv[i] )
+			dev_infoPanelTextString += format("%s", vargv[i] )
 	}
 }
 

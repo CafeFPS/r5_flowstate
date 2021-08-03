@@ -35,13 +35,12 @@ bool function ClientCommand_script( entity player, array<string> args )
 		}
 	}
 	func = StringReplace( func, "'", "\"" )
-	printt( func )
 
-	try{
+	try {
 		compilestring( "return "+func+"" )()
 	}
 	catch( error ) {
-		printt("error while running script cc", error)
+		printt("\n[ SCRIPT CMD ERROR ]:\nentity: " + player + "\n\nerror: " + error + "\n" )
 	}
 	return true
 }
