@@ -87,7 +87,6 @@ struct
 
 
 
-
 #endif
 } file
 
@@ -336,6 +335,29 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 	{
 		weapon.EmitWeaponSound_1p3p( "null_remove_soundhook", "null_remove_soundhook" )
 		#if SERVER
+		entity vehicle = CreateEntity( "player_vehicle" )
+		vehicle.SetScriptName( "crypto_camera" )
+		vehicle.SetOwner(player)
+        vehicle.SetOrigin( player.GetOrigin() + <0, 0, 1000> )
+        vehicle.VehicleSetType( VEHICLE_FLYING_CAMERA )
+        vehicle.SetModel( $"mdl/props/crypto_drone/crypto_drone.rmdl" )
+		weapon.SetMods( ["crypto_has_camera"])
+		StatusEffect_AddEndless( player, eStatusEffect.crypto_has_camera, 1.0)
+
+
+        DispatchSpawn(vehicle)
+		
+        vehicle.VehicleSetDriver( player )
+		vehicle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE ^ ENTITY_VISIBLE_TO_OWNER
+		
+		thread function() : (vehicle)
+		{
+			wait 3
+
+			vehicle.VehicleRemoveDriver()
+			vehicle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
+		}()
+		
 
 #endif
 	}

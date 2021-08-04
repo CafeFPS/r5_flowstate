@@ -80,20 +80,20 @@ void function Sequence_Playing()
 
 	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
 	{
-		vector pos = GetEnt( "info_player_start" ).GetOrigin()
-		pos.z += 5
+		// vector pos = GetEnt( "info_player_start" ).GetOrigin()
+		// pos.z += 5
 	
-		int i = 0
-		foreach ( player in GetPlayerArray() )
-		{
-			// circle
-			float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
-			player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+		// int i = 0
+		// foreach ( player in GetPlayerArray() )
+		// {
+		// 	// circle
+		// 	float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
+		// 	player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
 	
-			DecideRespawnPlayer( player )
+		// 	DecideRespawnPlayer( player )
 	
-			i++
-		}
+		// 	i++
+		// }
 
 		// Show the squad and player counter
 		UpdatePlayerCounts()
@@ -331,10 +331,10 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		&& PlayerRevivingEnabled() )
 	{
 		// Supposed to be bleeding
-		Bleedout_StartPlayerBleedout( victim, DamageInfo_GetAttacker( damageInfo ) )
+		//Bleedout_StartPlayerBleedout( victim, DamageInfo_GetAttacker( damageInfo ) )
 
 		// Cancel the damage
-		DamageInfo_SetDamage( damageInfo, 0 )
+		//DamageInfo_SetDamage( damageInfo, 0 )
 	}
 }
 
@@ -346,7 +346,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( victim.IsPlayer() )
 	{
 		SetPlayerEliminated( victim )
-		PlayerStartSpectating( victim )
+		PlayerStartSpectating( victim, attacker )
 
 		int victimTeamNumber = victim.GetTeam()
 		array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
@@ -395,7 +395,7 @@ void function OnClientConnected( entity player )
 				PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
 
 				if ( IsPlayerEliminated( player ) )
-					PlayerStartSpectating( player )
+					PlayerStartSpectating( player, null )
 				else
 				{
 					array<entity> respawnCandidates = isAlone ? GetPlayerArray_AliveConnected() : playerTeam
