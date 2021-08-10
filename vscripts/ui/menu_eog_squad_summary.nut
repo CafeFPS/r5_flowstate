@@ -131,7 +131,7 @@ void function InitEOGMenu( var newMenuArg ) //
 		AddMenuFooterOption( menu, LEFT, BUTTON_Y, true, "Dev Menu", "Dev Menu", OpenDevMenu )
 	#endif
 
-	#if(PC_PROG)
+	#if PC_PROG
 		AddMenuFooterOption( menu, RIGHT, KEY_ENTER, false, "", "", UI_OnLoadoutButton_Enter )
 	#endif
 }

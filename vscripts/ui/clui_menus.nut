@@ -7,6 +7,7 @@ global function SetNavLeftRight
 global function LocalizeAndShortenNumber_Float
 #endif
 
+const bool SHORTEN_NUMBER_DEBUG = false
 
 struct RowData
 {
@@ -256,7 +257,9 @@ void function SetNavLeftRight( array<var> buttons )
 #if UI
 string function LocalizeAndShortenNumber_Float( float number, int maxDisplayIntegral = 3, int maxDisplayDecimal = 0 )
 {
+	#if SHORTEN_NUMBER_DEBUG
 	printf( "ShortenNumberDebug: Shortening %f with max Integrals of %i and max decimals of %i", number, maxDisplayIntegral, maxDisplayDecimal )
+	#endif
 
 	if ( number == 0.0 )
 		return "0"
@@ -272,12 +275,17 @@ string function LocalizeAndShortenNumber_Float( float number, int maxDisplayInte
 
 	if ( digits > maxDisplayIntegral )
 	{
+		#if SHORTEN_NUMBER_DEBUG
 		printf( "ShortenNumberDebug: Number too large for display (%i digits). Shortening to 3 digits", digits )
+		#endif
+		
 		float displayIntegral = integral / pow( 10, (digits - 3) )
 		displayIntegral = floor( displayIntegral )
 		integralString = format( "%0.0f", displayIntegral )
 
+		#if SHORTEN_NUMBER_DEBUG
 		printf( "ShortenNumberDebug: Number shortened to %s", integralString )
+		#endif
 
 		if ( digits/16 >= 1 )
 			integralSuffix = Localize( "#STATS_VALUE_QUADRILLIONS" )
@@ -300,7 +308,9 @@ string function LocalizeAndShortenNumber_Float( float number, int maxDisplayInte
 		string separatedIntegralString = ""
 		int integralsAdded = 0
 
+		#if SHORTEN_NUMBER_DEBUG
 		printf( "ShortenNumberDebug: Adding integral separators to %s", integralString )
+		#endif
 
 		for ( int i = integralString.len(); i > 0; i-- )
 		{
@@ -315,16 +325,23 @@ string function LocalizeAndShortenNumber_Float( float number, int maxDisplayInte
 				separatedIntegralString = num + separatedIntegralString
 			}
 
+			#if SHORTEN_NUMBER_DEBUG
 			printf( "ShortenNumberDebug: Separated Integral Progress: %s", separatedIntegralString )
+			#endif
 		}
 
+		#if SHORTEN_NUMBER_DEBUG
 		printf( "ShortenNumberDebug: Separated Integral String Complete: %s", separatedIntegralString )
+		#endif
+
 		integralString = separatedIntegralString
 	}
 
 	if ( integralString.len() <= 3 && integralString != "0" && digits > 3 )
 	{
+		#if SHORTEN_NUMBER_DEBUG
 		printf( "ShortenNumberDebug: Four or larger digit number shrunk to 3 or fewer digits! Making the number a decimal and adding a suffix (value = %s, digits = %i, maxDisplayIntegral = %i)", integralString, digits, maxDisplayIntegral )
+		#endif
 
 		int separatorPos
 		if ( maxDisplayIntegral == 3 )
@@ -343,7 +360,11 @@ string function LocalizeAndShortenNumber_Float( float number, int maxDisplayInte
 
 	decimal = number % 1
 	decimalString = string( decimal )
+
+	#if SHORTEN_NUMBER_DEBUG
 	printf( "ShortenNumberDebug: decimalString = %s", decimalString )
+	#endif
+
 	if ( decimalString.find( "0." ) != -1 )
 		decimalString = decimalString.slice( 2 )
 
@@ -354,7 +375,10 @@ string function LocalizeAndShortenNumber_Float( float number, int maxDisplayInte
 
 	if ( maxDisplayDecimal > 0 && decimal != 0.0 )
 	{
+		#if SHORTEN_NUMBER_DEBUG
 		printf( "ShortenNumberDebug: Attaching decimal value %f/%s to final display %s (original number = %f)", decimal, decimalString, finalDisplayNumber, number )
+		#endif
+		
 		finalDisplayNumber += decimalSeparator + decimalString
 	}
 

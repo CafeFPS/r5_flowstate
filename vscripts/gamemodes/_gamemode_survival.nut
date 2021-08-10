@@ -352,11 +352,13 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
 		bool teamEliminated = victimTeam.len() == 0
 
+		if ( !PlayerRespawnEnabled() )
+			PlayerFullyDoomed( victim )
+
 		if ( teamEliminated )
 			HandleSquadElimination( victim.GetTeam() )
 
-		if ( !PlayerRespawnEnabled() )
-			PlayerFullyDoomed( victim )
+
 		else
 			printt( "!!! Respawns are enabled! This is TODO" )
 	}

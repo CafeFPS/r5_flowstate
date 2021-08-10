@@ -1,18 +1,31 @@
 untyped
 
 //=========================================================
-//	_client_commands.gnut
+//	_clientcommands.gnut
 //=========================================================
 
 global function ClientCommands_Init
 
 void function ClientCommands_Init()
 {
+	AddClientCommandCallback( "noclip", ClientCommand_noclip )
+
 	#if R5DEV
 	AddClientCommandCallback( "script", ClientCommand_script )
 	#endif
+}
 
-	AddClientCommandCallback( "noclip", ClientCommand_noclip )
+bool function ClientCommand_noclip( entity player, array<string> args )
+{
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return true
+
+	if ( player.IsNoclipping() )
+		player.SetPhysics( MOVETYPE_WALK )
+	else
+		player.SetPhysics( MOVETYPE_NOCLIP )
+			
+	return true
 }
 
 #if R5DEV
@@ -29,8 +42,10 @@ bool function ClientCommand_script( entity player, array<string> args )
 	for ( int i = 0; i < args.len(); i++ )
 	{
 		func = (func + args[i])
-		if( i == 0 )
-		{
+
+		if(args[i] == "'" || ((i+1) < args.len() && args[i+1] == "'")) {
+			// don't add spaces inside strings
+		} else {
 			func = (func + " ")
 		}
 	}
@@ -40,21 +55,10 @@ bool function ClientCommand_script( entity player, array<string> args )
 		compilestring( "return "+func+"" )()
 	}
 	catch( error ) {
-		printt("\n[ SCRIPT CMD ERROR ]:\nentity: " + player + "\n\nerror: " + error + "\n" )
+		print("[ SCRIPT CMD ERROR ]:\n")
+		print("entity: " + player + "\n")
+		print("error:  " + error + "\n\n")
 	}
 	return true
 }
 #endif
-
-bool function ClientCommand_noclip( entity player, array<string> args )
-{
-    if ( GetConVarInt( "sv_cheats" ) != 1 )
-        return true
-
-    if ( player.IsNoclipping() )
-        player.SetPhysics( MOVETYPE_WALK )
-    else
-        player.SetPhysics( MOVETYPE_NOCLIP )
-        
-    return true
-}
