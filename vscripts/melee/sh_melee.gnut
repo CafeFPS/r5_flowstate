@@ -33,12 +33,12 @@ global function CodeCallback_OnMeleeStartActivity
 global function CodeCallback_OnMeleeHeld
 global function CodeCallback_OnMeleeReleased
 global function CodeCallback_IsValidMeleeAttackTarget
-global function CodeCallback_OnMeleeAttackAnimEvent
 #endif
 
 #if SERVER
 global function CodeCallback_OnMeleeKilled
 global function CodeCallback_NPCMeleeChargedPlayerOrNPC
+global function CodeCallback_OnMeleeAttackAnimEvent
 #elseif CLIENT
 global function ClientCodeCallback_ShowMeleePrompt
 #endif
@@ -483,7 +483,7 @@ void function CodeCallback_OnMeleeReleased( entity player, entity weapon )
 #endif
 
 
-#if SERVER || CLIENT
+#if SERVER
 void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity meleeAttackWeapon )
 {
 	printt("CodeCallback_OnMeleeAttackAnimEvent")
