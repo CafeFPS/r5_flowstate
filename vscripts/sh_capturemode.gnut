@@ -156,7 +156,27 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 															"wattson_gladcard_animated_Fix",
 															"wattson_gladcard_animated_electric",
 															"wattson_gladcard_animated_spin" ]
+															
+															
+	anims[ "character_crypto" ] <- {}
+	anims[ "character_crypto" ][ "lobby" ] 			<- [ 	"Crypto_menu_lobby_center_idle",
+															"Crypto_menu_lobby_center_drone" ]
+	anims[ "character_crypto" ][ "other" ] 			<- [ 	"Crypto_menu_select_ready_up",
+														 	"Crypto_gladcard_animated_sneaker",
+															"Crypto_gladcard_animated_puzzle",
+															"Crypto_gladcard_animated_halloween",
+															"Crypto_gladcard_animated_Hack"]
 
+
+	anims[ "character_octane" ] <- {}
+	anims[ "character_octane" ][ "lobby" ] 			<- [ 	"octane_menu_lobby_center_idle",
+															"octane_menu_lobby_center_epic",
+															"octane_menu_lobby_center_leg" ]
+	anims[ "character_octane" ][ "other" ] 			<- [ 	"octane_menu_select_ready_up",
+														 	"octane_gladcard_animated_wipeout",
+														 	"octane_gladcard_animated_stimhead",
+															"octane_gladcard_animated_jumpspin",
+															"octane_gladcard_animated_consequences"]
 	return anims
 }
 #if CLIENT
