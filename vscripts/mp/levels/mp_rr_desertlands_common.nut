@@ -96,8 +96,8 @@ void function EntitiesDidLoad()
 	GeyserInit()
 	Updrafts_Init()
 
-	//if ( file.isTrainEnabled )
-	//	thread DesertlandsTrain_Init()
+	if ( file.isTrainEnabled )
+		thread DesertlandsTrain_Init()
 }
 #endif
 
