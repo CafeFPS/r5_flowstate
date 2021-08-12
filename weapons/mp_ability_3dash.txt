@@ -66,7 +66,7 @@ WeaponData
 	"ammo_per_shot"									"50"
 	"ammo_stockpile_max"							"100"
 	"ammo_drains_to_empty_on_fire"					"0"
-	"ammo_no_remove_from_clip"						"0"
+	"ammo_no_remove_from_clip"						"1"
 
     "charge_time"									"0.1"
     "charge_cooldown_time"							"0.2"

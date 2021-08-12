@@ -27,26 +27,6 @@ void function _CustomTDM_Init()
     thread RunTDM()
 }
 
-void function DEBUG_TestSpawnLocs(entity player)
-{
-    foreach(locationSetting in file.locationSettings)
-    {
-        foreach(teamSpawnsArray in locationSetting.spawns)
-        {
-            foreach(spawn in teamSpawnsArray)
-            {
-                player.SetOrigin(OriginToGround(spawn.origin))
-                player.SetAngles(spawn.angles)
-                wait 2
-                if(!IsAlive(player)) {
-                    WaitForever()
-                    DoRespawnPlayer(player, null)
-                }
-            }
-        }
-    }
-}
-
 void function _RegisterLocation(LocationSettings locationSettings)
 {
     file.locationSettings.append(locationSettings)
@@ -163,7 +143,7 @@ void function StartRound()
     // }
     wait 2
     foreach(player in GetPlayerArray())
-    {
+    {   
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 5, eTDMAnnounce.ROUND_START)
         ClearInvincible(player)
         DeployAndEnableWeapons(player)
@@ -260,7 +240,7 @@ void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo)
             string weapon1 = SURVIVAL_GetWeaponBySlot(victim, 1)
 
 
-            wait 1.5
+            wait 8
             
             DecideRespawnPlayer( victim )
             PlayerRestoreWeapons(victim, weapon0, weapon1)
