@@ -705,7 +705,10 @@ void function DeathFieldDamage( DeathFieldData data, entity deathField )
 
 			float playerDist = Distance2D( player.GetOrigin(), data.center )
 			if ( playerDist > currentRadius )
-				player.TakeDamage( int( data.percentDamagePerTick * float( player.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.outOfBounds } )
+			{
+				Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+				player.TakeDamage( int( data.percentDamagePerTick * float( player.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+			}
 		}
 
 		wait DAMAGE_CHECK_STEP_TIME

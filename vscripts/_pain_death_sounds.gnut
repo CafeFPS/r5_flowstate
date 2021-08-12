@@ -185,10 +185,6 @@ void function PainDeathSounds_Init()
 		painOrDeathSound.alias_3p_except_attacker = alias_3p_except_attacker
 		painOrDeathSound.blocksPriority = blocksPriority
 		painOrDeathSound.priority = priority
-		
-		printl("---------------------")
-		printl(method)
-		printl(alias_1p_victim_only)
 
 		#if R5DEV
 		if ( priority < 100 || priority > 500 )
@@ -286,6 +282,9 @@ bool functionref( entity, entity, bool, int, int ) function GetSoundTypeFuncFrom
 
 bool function SE_ANY( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
 {
+	if(damageSourceID == eDamageSourceId.deathField) // Ring shouldn't play pain sounds
+		return false
+	
 	return true
 }
 
@@ -405,8 +404,6 @@ void function PlayPainOrDeathSounds( array<PainOrDeathSound> soundEvents, entity
 
 	int lastPriority = 0
 	bool blockingPriority
-	
-	printl(">> "+damageSourceID);
 
 	foreach ( painOrDeathSound in soundEvents )
 	{
