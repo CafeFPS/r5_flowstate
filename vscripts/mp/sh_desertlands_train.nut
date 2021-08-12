@@ -37,6 +37,7 @@ const int TRAIN_ACCELERATION = 50;
 const int TRAIN_INIT_SPEED = 500;	// Has to be the same or we could get an offset because of the junction thread delay
 const int TRAIN_MAX_SPEED = 500;
 const int TRAIN_CAR_OFFSET = 850;	// Original seems to be 840, +10 to fix clipping on angles
+const asset TRAIN_POI_BEAM = $"P_ar_hot_zone_far"
 #endif //
 
 
@@ -304,6 +305,13 @@ void function DesertlandsTrain_Init()
 			item.SetParent(car)
 		}
 	}
+	
+	
+	// Spawn Highlight Beam
+	PrecacheParticleSystem( TRAIN_POI_BEAM )
+	entity trainBeam =  StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( TRAIN_POI_BEAM ), cars[cars.len()-1].GetOrigin(), <90,0,0> )
+	trainBeam.SetParent(cars[cars.len()-1])
+	
 	
 	// Start the train
 	for(int i = 0; i<file.true_trainCarCount; i++)
