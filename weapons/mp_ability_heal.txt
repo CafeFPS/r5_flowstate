@@ -26,7 +26,7 @@ WeaponData
 	"play_offhand_start_end_anim"					"0"
 
    	"charge_time" 									"6.0"
-	"charge_cooldown_time"							"2.0"
+	"charge_cooldown_time"							"4.0"
 	"charge_cooldown_delay"   						"0.0"
     "charge_end_forces_fire"  						"1"
     "charge_require_input"							"0"
@@ -95,7 +95,7 @@ WeaponData
 	// Damage
 	"damage_type" 									"none"
 	"explosion_damage_heavy_armor"					"0"
-	"damage_near_distance"							"0"
+	"damage_near_distance"							"10"	// Stim Damage
 	"damage_far_distance" 							"0"
 	"damage_near_value"   							"0"
 	"damage_far_value"								"0"
