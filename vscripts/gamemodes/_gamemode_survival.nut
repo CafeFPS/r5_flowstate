@@ -317,7 +317,12 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		return
 
 	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-
+	
+	// Trigger_Hurt fix
+	entity inflictor = DamageInfo_GetInflictor(damageInfo);
+	if(sourceId == eDamageSourceId.invalid && inflictor != null && inflictor.GetClassName() == "trigger_hurt" && inflictor.HasKey("damageSourceName"))
+		DamageInfo_SetDamageSourceIdentifier(damageInfo, eDamageSourceId[expect string(inflictor.kv.damageSourceName)])
+	
 	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution )
 		return
 
@@ -352,13 +357,11 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
 		bool teamEliminated = victimTeam.len() == 0
 
-		if ( !PlayerRespawnEnabled() )
-			PlayerFullyDoomed( victim )
-
 		if ( teamEliminated )
 			HandleSquadElimination( victim.GetTeam() )
 
-
+		if ( !PlayerRespawnEnabled() )
+			PlayerFullyDoomed( victim )
 		else
 			printt( "!!! Respawns are enabled! This is TODO" )
 	}

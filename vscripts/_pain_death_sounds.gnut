@@ -185,6 +185,10 @@ void function PainDeathSounds_Init()
 		painOrDeathSound.alias_3p_except_attacker = alias_3p_except_attacker
 		painOrDeathSound.blocksPriority = blocksPriority
 		painOrDeathSound.priority = priority
+		
+		printl("---------------------")
+		printl(method)
+		printl(alias_1p_victim_only)
 
 		#if R5DEV
 		if ( priority < 100 || priority > 500 )
@@ -270,8 +274,11 @@ bool functionref( entity, entity, bool, int, int ) function GetSoundTypeFuncFrom
 		case "SE_SMOKE":
 			return SE_SMOKE
 
-		// case "SE_TITAN_STEP":
-		// 	return SE_TITAN_STEP
+		case "SE_CORROSIVE_GAS":
+			return SE_CORROSIVE_GAS
+
+		case "SE_TITAN_STEP":
+			return SE_TITAN_STEP
 	}
 	return SE_ANY
 	unreachable
@@ -359,10 +366,16 @@ bool function SE_SMOKE( entity victim, entity attacker, bool isValidHeadshot, in
 	return damageSourceID == eDamageSourceId.mp_weapon_grenade_electric_smoke
 }
 
-// bool function SE_TITAN_STEP( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
-// {
-// 	return bool( damageTypes & DF_TITAN_STEP )
-// }
+bool function SE_CORROSIVE_GAS( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
+{
+	return damageSourceID == eDamageSourceId.damagedef_gas_exposure	// no clue if it's the right one
+}
+
+bool function SE_TITAN_STEP( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
+{
+	return false
+	// return bool( damageTypes & DF_TITAN_STEP )
+}
 
 void function PlayPainSounds( entity victim, var damageInfo )
 {
@@ -392,6 +405,8 @@ void function PlayPainOrDeathSounds( array<PainOrDeathSound> soundEvents, entity
 
 	int lastPriority = 0
 	bool blockingPriority
+	
+	printl(">> "+damageSourceID);
 
 	foreach ( painOrDeathSound in soundEvents )
 	{
