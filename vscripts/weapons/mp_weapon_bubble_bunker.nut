@@ -97,9 +97,8 @@ var function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker( entity weapon, Wea
 		#endif
 
 		#if BATTLECHATTER_ENABLED && SERVER
-			TryPlayWeaponBattleChatterLine( player, weapon )
+			PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
 		#endif
-
 	}
 
 	return ammoReq
@@ -108,11 +107,6 @@ var function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker( entity weapon, Wea
 void function OnWeaponTossPrep_WeaponBubbleBunker( entity weapon, WeaponTossPrepParams prepParams )
 {
 	weapon.EmitWeaponSound_1p3p( GetGrenadeDeploySound_1p( weapon ), GetGrenadeDeploySound_3p( weapon ) )
-
-	#if SERVER
-	entity weaponOwner = weapon.GetWeaponOwner()
-	PlayBattleChatterLineToSpeakerAndTeam( weaponOwner, "bc_tactical" )
-	#endif
 }
 
 void function OnBubbleBunkerPlanted( entity projectile )
