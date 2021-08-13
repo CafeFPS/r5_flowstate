@@ -31,11 +31,12 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 	
 	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
 	string sound_incoming = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "sound_incoming")
+	float projectile_launch_speed = GetWeaponInfoFileKeyField_GlobalFloat(weapon.GetWeaponClassName(), "projectile_launch_speed")
 	
 	int damageFlags = weapon.GetWeaponDamageFlags()
 	WeaponFireGrenadeParams fireGrenadeParams
-	fireGrenadeParams.pos = origin+<0,0,5000>
-	fireGrenadeParams.vel = <0,0,-0.5>	// has to be ajusted for when it spawn from the center
+	fireGrenadeParams.pos = origin+<0,0,10000>
+	fireGrenadeParams.vel = <0,0,0>
 	fireGrenadeParams.angVel = <0,0,0>
 	fireGrenadeParams.fuseTime = 8
 	fireGrenadeParams.scriptTouchDamageType = (damageFlags & ~DF_EXPLOSION) // when a grenade "bonks" something, that shouldn't count as explosive.explosive
@@ -69,6 +70,7 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		/* TODO: Should start from the center and move toward the offset pos instead of linear vertical */
 		projectile.SetAngles(<90,0,0>)
 		projectile.SetOrigin(fireGrenadeParams.pos + landRadiusOffset)
+		projectile.SetVelocity(<0,0,-projectile_launch_speed>)
 		
 		/* TODO: Should get the correct destination of the projectile*/	
 		TraceResults trace = TraceLine( projectile.GetOrigin(), origin+landRadiusOffset - <0,0,2000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
