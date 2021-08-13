@@ -149,6 +149,8 @@ void function DefensiveBombardmentSmoke( entity projectile, asset fx )
 	entity bombardmentWeapon = VerifyBombardmentWeapon( owner, DEFENSIVE_BOMBARDMENT_MISSILE_WEAPON )
 	if ( !IsValid( bombardmentWeapon ) )
 		return
+	
+	string sound_incoming_first = GetWeaponInfoFileKeyField_GlobalString(bombardmentWeapon.GetWeaponClassName(), "sound_incoming_first")
 
 	vector origin = projectile.GetOrigin()
 
@@ -157,7 +159,7 @@ void function DefensiveBombardmentSmoke( entity projectile, asset fx )
 
 	ThreatDetection_CreateThreatZoneForBombardment( null, projectile.GetOrigin(), -1, DEFENSIVE_BOMBARDMENT_RADIUS, 1.0 )
 	
-	EmitSoundOnEntity( projectile, "Gibraltar_DefensiveBombardment_Activate" )
+	EmitSoundOnEntity( projectile, sound_incoming_first)
 
 	thread Bombardment_MortarBarrageFocused( bombardmentWeapon, FX_BOMBARDMENT_MARKER, projectile.GetOrigin(),
 		DEFENSIVE_BOMBARDMENT_RADIUS,
