@@ -143,7 +143,7 @@ WeaponData
 	MP_BASE
 	{
 		"ammo_clip_size"   								"90"
-		"ammo_default_total"							"90"
+		"ammo_default_total"							"0"
 		"ammo_display"									"bar"
 		"ammo_min_to_fire"								"90"
 		"ammo_per_shot"									"90"
