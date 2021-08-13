@@ -810,6 +810,7 @@ Scripts:
 	weapons/mp_weapon_deployable_medic.nut
 	weapons/mp_weapon_grenade_bangalore.nut
 	weapons/mp_weapon_grenade_creeping_bombardment.nut
+	weapons/mp_weapon_grenade_electric_smoke.nut
 	weapons/mp_weapon_creeping_bombardment_weapon.nut
 	weapons/mp_weapon_jump_pad.nut
 	weapons/mp_weapon_tesla_trap.nut
