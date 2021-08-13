@@ -76,6 +76,12 @@ void function PilotHealthRegenThinkMP( entity player )
 	player.EndSignal( "OnDestroy" )
 	player.Signal( "PilotHealthRegenThink" )
 	player.EndSignal( "PilotHealthRegenThink" )
+	
+	// There's a delay when you change legends, have to compensate
+	wait 1
+	
+	if(!HealthRegen_IsPlayerAllowed(player))	// Don't give it if they shouldn't have it
+		return
 
 	//float healthRegenStartDelay = player.GetPlayerSettingsField( "powerRegenRateOp" ) // seconds after we take damager to start regen
 //	float healthRegenStartDelay = 5.0 //Needs to use GetPlayerSettingsField() instead of hard coding, waiting on Bug 129567
@@ -127,13 +133,15 @@ void function PilotHealthRegenThinkMP( entity player )
 	}
 }
 
-void function HealthRegen_OnPlayerClassChangedMP( entity player )
+bool function HealthRegen_IsPlayerAllowed( entity player )
 {
-	string character = ItemFlavor_GetHumanReadableRef(  LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) )
-	
-	if(character != "character_octane")
-		return
-	
+	if(PlayerHasPassive( player, ePassives.PAS_OCTANE ))
+		return true
+	return false
+}
+
+void function HealthRegen_OnPlayerClassChangedMP( entity player )
+{	
 	thread PilotHealthRegenThinkMP( player )
 }
 
