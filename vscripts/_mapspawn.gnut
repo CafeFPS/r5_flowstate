@@ -210,6 +210,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/weapons/arms/pov_pilot_medium_stim.rmdl" )
 	PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_stim.rmdl" )
 	
+	PrecacheModel( $"mdl/humans/class/medium/combat_dummie_medium.rmdl" )
+	
 	//Charms - todo: find a better way
 
 	PrecacheModel( $"mdl/props/charm/charm_fireball.rmdl" )

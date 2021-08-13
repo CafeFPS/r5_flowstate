@@ -284,6 +284,24 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
 	// 	thread NPCTitanHotdrops( npc, false )
 }
 
+void function DEV_SpawnDummyAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity dummy = CreateDummy( 99, origin, angles )
+
+	DispatchSpawn( dummy )
+	
+    dummy.SetSkin(RandomInt(6))
+    
+    array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
+    string randomWeapon = weapons[RandomInt(weapons.len())]
+    dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+}
+
 void function DEV_SpawnAllNPCsWithTeam( int team )
 {
 	printt( "script thread DEV_SpawnAllNPCsWithTeam( " + team + " )" )
