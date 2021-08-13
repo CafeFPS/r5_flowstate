@@ -12,12 +12,75 @@ void function Bombardment_Init()
 
 entity function VerifyBombardmentWeapon( entity owner, string weapon )
 {
-    return owner
+	foreach(entity w in GetAllPlayerWeapons(owner))
+	{
+		if(w.GetWeaponClassName() == weapon)
+			return w
+	}
+    return null
 }
 
-void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vector ownerOrigin, vector projectileOrigin, float radius, int intensity, float duration, float delay )
+void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vector origin, float radius, int intensity, float duration, float delay )
 {
-
+	wait delay
+	
+	entity owner = weapon.GetOwner()
+	
+	if(!IsValid(owner))
+		return
+	
+	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
+	string sound_incoming = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "sound_incoming")
+	
+	int damageFlags = weapon.GetWeaponDamageFlags()
+	WeaponFireGrenadeParams fireGrenadeParams
+	fireGrenadeParams.pos = origin+<0,0,5000>
+	fireGrenadeParams.vel = <0,0,-0.5>	// has to be ajusted for when it spawn from the center
+	fireGrenadeParams.angVel = <0,0,0>
+	fireGrenadeParams.fuseTime = 8
+	fireGrenadeParams.scriptTouchDamageType = (damageFlags & ~DF_EXPLOSION) // when a grenade "bonks" something, that shouldn't count as explosive.explosive
+	fireGrenadeParams.scriptExplosionDamageType = damageFlags
+	fireGrenadeParams.clientPredicted = false
+	fireGrenadeParams.lagCompensated = true
+	fireGrenadeParams.useScriptOnDamage = true
+	
+	float endTime = Time() + duration
+	
+	bool isFirst = true
+	
+	while(Time() < endTime)
+	{		
+		wait 1.0/intensity
+		
+		if(weapon == null || !IsValid(weapon))
+			return
+		
+		vector landRadiusOffset = <RandomFloatRange(-radius,radius)/2,RandomFloatRange(-radius,radius)/2,0>
+		
+		entity projectile = weapon.FireWeaponGrenade( fireGrenadeParams )
+		
+		if(isFirst)
+		{
+			EmitSoundOnEntity( projectile, fire_sound_1_player_3p )
+			isFirst = false
+		}
+		EmitSoundOnEntity( projectile, sound_incoming )
+		
+		/* TODO: Should start from the center and move toward the offset pos instead of linear vertical */
+		projectile.SetAngles(<90,0,0>)
+		projectile.SetOrigin(fireGrenadeParams.pos + landRadiusOffset)
+		
+		/* TODO: Should get the correct destination of the projectile*/	
+		TraceResults trace = TraceLine( projectile.GetOrigin(), origin+landRadiusOffset - <0,0,2000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		if ( IsValid( trace.hitEnt ) )
+		{
+			entity marker = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effect ), trace.endPos, <0,0,0> )
+			AddToUltimateRealm( owner, marker )
+			EntFireByHandle( marker, "Kill", "", 2, null, null ) // kill after 2s
+		}
+		
+		
+	}
 }
 
 void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )

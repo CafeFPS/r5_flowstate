@@ -4463,17 +4463,18 @@ void function DestroyAfterDelay( entity ent, float delay )
 // some of these might need a better place. i brought those here for quick stubbing
 void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapon )
 {
-	const table<string, string> WEAPON_BC_LINES = {
-		mp_weapon_thermite_grenade = "bc_thermite",
-		mp_weapon_frag_grenade = "bc_frag",
-		mp_weapon_grenade_emp = "bc_arcStar"
-	}
-
 	string weaponClassName = offhandWeapon.GetWeaponClassName()
-	if ( !( weaponClassName in WEAPON_BC_LINES ) )
-		return
+	var weaponBattleChatterEventOrNull = GetWeaponInfoFileKeyField_Global( weaponClassName, "battle_chatter_event" )
 
-	PlayBattleChatterLineToSpeakerAndTeam( player, WEAPON_BC_LINES[weaponClassName] )
+	if ( weaponBattleChatterEventOrNull == null )
+		return // Field does not exist
+
+	expect string( weaponBattleChatterEventOrNull )
+
+	if ( weaponBattleChatterEventOrNull.len() == 0 )
+		return // Empty field value
+
+	PlayBattleChatterLineToSpeakerAndTeam( player, weaponBattleChatterEventOrNull )
 }
 
 void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound )
