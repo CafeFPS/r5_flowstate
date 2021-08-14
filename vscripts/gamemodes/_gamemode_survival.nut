@@ -32,6 +32,7 @@ void function GamemodeSurvival_Init()
 	SurvivalShip_Init()
 
 	FlagInit( "SpawnInDropship", false )
+	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
@@ -72,6 +73,9 @@ void function RespawnPlayerInDropship( entity player )
 	player.SetPlayerNetBool( "playerInPlane", true )
 
 	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_PRELAUNCH )
+
+	if ( Flag( "PlaneDrop_Respawn_SetUseCallback" ) )
+		AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 }
 
 void function Sequence_Playing()
@@ -179,10 +183,14 @@ void function Sequence_Playing()
 
 		wait DROP_WAIT_TIME
 
+		FlagSet( "PlaneDrop_Respawn_SetUseCallback" )
+
 		foreach ( player in GetPlayerArray_AliveConnected() )
 			AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 
 		wait DROP_TOTAL_TIME
+
+		FlagClear( "PlaneDrop_Respawn_SetUseCallback" )
 
 		FlagClear( "SpawnInDropship" )
 
