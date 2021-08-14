@@ -40,6 +40,8 @@ LocPair function SV_GetVotingLocation()
             return NewLocPair(<-6252, -16500, 3296>, <0, 0, 0>)
         case "mp_rr_desertlands_64k_x_64k":
             return NewLocPair(<1763, 5463, -3145>, <5, -95, 0>)
+        case "mp_rr_desertlands_64k_x_64k_nx":
+                return NewLocPair(<1763, 5463, -3145>, <5, -95, 0>)
         default:
             Assert(false, "No voting location for the map!")
     }
