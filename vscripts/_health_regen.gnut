@@ -129,7 +129,6 @@ void function PilotHealthRegenThinkMP( entity player )
 			ClearRecentDamageHistory( player )
 			ClearLastAttacker( player )
 		}
-		printl("player.GetHealth(): " + player.GetHealth())
 	}
 }
 
