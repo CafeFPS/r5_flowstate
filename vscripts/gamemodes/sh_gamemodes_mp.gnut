@@ -82,7 +82,6 @@ void function GameModes_Init_SV_CL()
 	#endif
 	#if SERVER
 	GameMode_AddServerInit(gameMode, _CustomTDM_Init)
-	GameMode_AddServerInit( gameMode, GamemodeSurvival_Init )
 	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetEvacEnabled( gameMode, false )
