@@ -82,22 +82,23 @@ void function Sequence_Playing()
 {
 	SetServerVar( "minimapState", true )
 
+	
 	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
 	{
-		// vector pos = GetEnt( "info_player_start" ).GetOrigin()
-		// pos.z += 5
+		vector pos = GetEnt( "info_player_start" ).GetOrigin()
+		pos.z += 5
 	
-		// int i = 0
-		// foreach ( player in GetPlayerArray() )
-		// {
-		// 	// circle
-		// 	float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
-		// 	player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+		int i = 0
+		foreach ( player in GetPlayerArray() )
+		{
+			// circle
+			float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
+			player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
 	
-		// 	DecideRespawnPlayer( player )
+			DecideRespawnPlayer( player )
 	
-		// 	i++
-		// }
+			i++
+		}
 
 		// Show the squad and player counter
 		UpdatePlayerCounts()
