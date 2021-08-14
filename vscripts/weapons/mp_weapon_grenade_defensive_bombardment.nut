@@ -12,7 +12,7 @@ const asset FX_BOMBARDMENT_MARKER = $"P_ar_artillery_marker"
 
 const float DEFENSIVE_BOMBARDMENT_RADIUS 		 	= 1024 //The radius of the bombardment area.
 const int	DEFENSIVE_BOMBARDMENT_DENSITY			= 6	//The density of the distributed shell randomness.
-const float DEFENSIVE_BOMBARDMENT_DURATION			= 8.0 //The duration the bombardment will last.
+const float DEFENSIVE_BOMBARDMENT_DURATION			= 6.0 //The duration the bombardment will last.
 const float DEFENSIVE_BOMBARDMENT_DELAY 			= 2.0 //The bombardment will wait 2.0 seconds before firing the first shell.
 
 const float DEFENSIVE_BOMBARDMENT_SHELLSHOCK_DURATION = 4.0

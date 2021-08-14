@@ -283,7 +283,7 @@ void function CreateBubbleShieldAroundProjectile( entity projectile, int team, f
 
 	owner.EndSignal( "CleanupPlayerPermanents" )
 
-	entity bubbleShield = CreateBubbleShieldWithSettings( owner.GetTeam(), projectile.GetOrigin(), projectile.GetAngles(), owner, duration, BUBBLE_BUNKER_DAMAGE_ENEMIES, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
+	entity bubbleShield = CreateBubbleShieldWithSettings( owner.GetTeam(), projectile.GetOrigin(), <0,0,0>/*projectile.GetAngles()*/, owner, duration, BUBBLE_BUNKER_DAMAGE_ENEMIES, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
 	bubbleShield.RemoveFromAllRealms()
 	bubbleShield.AddToOtherEntitysRealms( projectile )
 
