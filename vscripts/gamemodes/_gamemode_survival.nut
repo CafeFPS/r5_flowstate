@@ -386,12 +386,12 @@ void function OnClientConnected( entity player )
 
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
 
+	if ( isAlone )
+		player.SetPlayerNetBool( "isJumpmaster", true )
+
 	switch ( GetGameState() )
 	{
 		case eGameState.Prematch:
-			if ( isAlone )
-				player.SetPlayerNetBool( "isJumpmaster", true )
-
 			if ( IsValid( Sur_GetPlaneEnt() ) )
 				RespawnPlayerInDropship( player )
 
