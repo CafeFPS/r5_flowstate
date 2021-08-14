@@ -413,7 +413,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	This part describes the spectator functions.
 */
 
-void function PlayerStartSpectating( entity player )
+void function PlayerStartSpectating( entity player, entity attacker )
 {
 	array<entity> clientTeam = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
 	clientTeam.fastremovebyvalue( player )
@@ -424,7 +424,14 @@ void function PlayerStartSpectating( entity player )
 	
 	entity specTarget = null
 
-	if ( isAloneOrSquadEliminated )
+	if(Spectator_GetReplayIsEnabled())
+	{
+		if(attacker == player) return;
+		if(attacker == null) return;
+		
+		specTarget = attacker;
+	}
+	else if ( isAloneOrSquadEliminated )
 	{
 		array<entity> alivePlayers = GetPlayerArray_Alive()
 		if ( alivePlayers.len() > 0 )
@@ -443,7 +450,8 @@ void function PlayerStartSpectating( entity player )
 
 	// player.StartObservingPlayerInFirstPerson( specTarget )
 
-	player.SetSpecReplayDelay( 1 )
+	player.SetSpecReplayDelay( Spectator_GetReplayDelay() )
+	
 	player.StartObserverMode( OBS_MODE_IN_EYE )
 	player.SetObserverTarget( specTarget )
 }
@@ -591,6 +599,10 @@ float function CharSelect_GetOutroSceneChangeDuration()			{ return GetCurrentPla
 float function CharSelect_GetOutroSquadPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_squad_present_duration", 6.0  ) }
 float function CharSelect_GetOutroChampionPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_champion_present_duration", 8.0 ) }
 float function CharSelect_GetOutroTransitionDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_outro_transition_duration", 3.0 ) }
+
+// Spectator
+bool function Spectator_GetReplayIsEnabled()                   { return GetCurrentPlaylistVarBool( "replay_enabled", false ) } 
+float function Spectator_GetReplayDelay()                      { return GetCurrentPlaylistVarFloat( "replay_delay", 1 ) } 
 
 // Custom logic
 float function Survival_GetCharacterSelectDuration( int pickIndex )
