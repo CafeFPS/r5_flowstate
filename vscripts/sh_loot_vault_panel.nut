@@ -55,18 +55,18 @@ struct
 
 void function Sh_Loot_Vault_Panel_Init()
 {
+
 	#if SERVER
 	AddSpawnCallback( "prop_dynamic", VaultPanelSpawned )
 	AddSpawnCallback( "prop_door", VaultDoorSpawned)
-
-
-
 	#endif // SERVER
 
 	#if CLIENT
 	AddCreateCallback( "prop_dynamic", VaultPanelSpawned )
 	AddCreateCallback( "prop_door", VaultDoorSpawned )
 	#endif // CLIENT
+
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 
 	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocking( VaultPanelUnlocking )
 	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocked( VaultPanelUnlocked )
@@ -99,9 +99,10 @@ void function VaultDoorSpawned( entity door )
 	#if SERVER
 
 	door.SetSkin( 1 )
-
-
-
+	
+	door.UnsetUsable()
+	door.SetTakeDamageType( DAMAGE_NO )
+	SetObjectCanBeMeleed( door, false )
 
 
 	#endif // SERVER
@@ -116,7 +117,7 @@ const float PANEL_TO_DOOR_RADIUS = 150.0
 void function EntitiesDidLoad()
 {
 	foreach( panelData in file.vaultControlPanels )
-	{
+	{		
 		vector panelPos = panelData.panel.GetOrigin()
 
 		foreach ( door in file.vaultDoors )
@@ -126,7 +127,9 @@ void function EntitiesDidLoad()
 			if ( Distance( panelPos, doorPos ) <= PANEL_TO_DOOR_RADIUS )
 			{
 				if ( !panelData.vaultDoors.contains( door ) )
+				{
 					panelData.vaultDoors.append( door )
+				}
 			}
 		}
 	}
