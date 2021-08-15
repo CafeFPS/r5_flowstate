@@ -76,6 +76,12 @@ void function RespawnPlayerInDropship( entity player )
 
 	if ( Flag( "PlaneDrop_Respawn_SetUseCallback" ) )
 		AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+
+	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
+	bool isAlone = playerTeam.len() <= 1
+
+	if ( isAlone )
+		player.SetPlayerNetBool( "isJumpmaster", true )
 }
 
 void function Sequence_Playing()
@@ -386,9 +392,6 @@ void function OnClientConnected( entity player )
 	player.p.squadRank = 0
 
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
-
-	if ( isAlone )
-		player.SetPlayerNetBool( "isJumpmaster", true )
 
 	switch ( GetGameState() )
 	{
