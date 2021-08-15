@@ -241,7 +241,8 @@ void function Sequence_WinnerDetermined()
 {
 	FlagSet( "DeathFieldPaused" )
 
-	foreach ( player in GetPlayerArray() ) {
+	foreach ( player in GetPlayerArray() )
+	{
 		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == GetWinningTeam(), GetWinningTeam() )
 	}
@@ -255,7 +256,10 @@ void function Sequence_Epilogue()
 {
 	SetGameState( eGameState.Epilogue )
 
-	foreach ( player in GetPlayerArray() ) {
+	UpdateMatchSummaryPersistentVars( GetWinningTeam() )
+
+	foreach ( player in GetPlayerArray() )
+	{
 		player.FreezeControlsOnServer()
 
 		// Clear all residue data
@@ -284,11 +288,8 @@ void function Sequence_Epilogue()
 	WaitForever()
 }
 
-void function HandleSquadElimination( int team )
+void function UpdateMatchSummaryPersistentVars( int team )
 {
-	RespawnBeacons_OnSquadEliminated( team )
-	StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
-
 	array<entity> squadMembers = GetPlayerArrayOfTeam( team )
 	int maxTrackedSquadMembers = PersistenceGetArrayCount( "lastGameSquadStats" )
 
@@ -312,6 +313,14 @@ void function HandleSquadElimination( int team )
 			teamMember.SetPersistentVar( "lastGameSquadStats[" + i + "].respawnsGiven", statSummaryData.respawnsGiven )
 		}
 	}
+}
+
+void function HandleSquadElimination( int team )
+{
+	RespawnBeacons_OnSquadEliminated( team )
+	StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
+
+	UpdateMatchSummaryPersistentVars( team )
 
 	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_SquadEliminated", team )
