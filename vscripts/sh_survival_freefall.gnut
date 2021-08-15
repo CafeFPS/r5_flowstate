@@ -1334,6 +1334,7 @@ bool function ClientCommand_StopFreefallFollowMode( entity player, array<string>
 {
 	if ( IsValid( player ) )
 		player.p.skydiveIsFollowing = false
+	player.Skydive_StopFollowing()
 	return true
 }
 
@@ -1735,6 +1736,7 @@ void function WaitForUnfollow( entity player )
 					{
 #if(CLIENT)
 						player.Skydive_QueueStopFollowing()
+						player.ClientCommand( "StopFreefallFollowMode" )
 #endif
 						return
 					}
