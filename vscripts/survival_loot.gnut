@@ -674,6 +674,9 @@ bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<strin
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
+	if ( player.IsWeaponChangeLocked() )
+		return true
+
 	// This is horrendous.
 
 	int activeSlot = SURVIVAL_GetActiveWeaponSlot( player )
@@ -742,6 +745,9 @@ bool function ClientCommand_PlayerSwitchedWeapons( entity player, array<string> 
 	if ( slot != WEAPON_INVENTORY_SLOT_PRIMARY_0 
 		&& slot != WEAPON_INVENTORY_SLOT_PRIMARY_1
 		&& slot != WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		return true
+
+	if ( player.IsWeaponChangeLocked() )
 		return true
 
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, slot )

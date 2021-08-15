@@ -1215,13 +1215,17 @@ void function Freelook_Enable( entity player )
 		player.p.skydiveFreelookLockedCameraAngles = player.CameraAngles()
 	player.p.skydiveFreelookEnabled++
 	player.SetPlayerNetBool( "skydiveFreelookActive", true )
+	player.Skydive_SetFreelookMode( true )
 }
 
 void function Freelook_Disable( entity player )
 {
 	player.p.skydiveFreelookEnabled = int( max( player.p.skydiveFreelookEnabled - 1, 0 ) )
 	if ( player.p.skydiveFreelookEnabled <= 0 )
+	{
 		player.SetPlayerNetBool( "skydiveFreelookActive", false )
+		player.Skydive_SetFreelookMode( false )
+	}
 }
 
 void function SnapEyeAnglesWithFade( entity player, vector angles )
