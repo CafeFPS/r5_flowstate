@@ -934,6 +934,11 @@ bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePacka
 	vector forward = AnglesToForward( < 0, yaw, 0 > )
 	vector up = <0,0,1>
 
+    #if SERVER
+    if(IsPointOutOfBounds(baseOrigin))
+        return false
+    #endif
+    
 	//bigger than model to compensate for large effect and the fact that we want to be able to walk around it
 	vector maxs = !isCarePackage ? AIRDROP_MAXS : AIRDROP_MAXS * 0.65
 	vector mins = !isCarePackage ? AIRDROP_MINS : AIRDROP_MINS * 0.65
@@ -1197,7 +1202,7 @@ Point function GetClosestDrop_Internal( vector baseOrigin, int dataIndex )
 Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float radius, array<vector> previousAirdrops )
 {
 	int numTries 			= 0
-	float minDistance 		= min( radius, 3000.0 )
+	float minDistance 		= min( radius, 10000.0 )
 	float angleDeviation 	= 10.0
 	int timesToTry 			= 20
 	float minScale 			= 0.5
@@ -1211,8 +1216,6 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 		if ( numTries >= timesToTry && minDistance > 0 )
 		{
 			minDistance -= 100
-			if ( angleDeviation < 90.0 )
-				angleDeviation += 10.0
 			if ( minScale > 0.0 )
 				minScale -= 0.1
 			numTries = 0
@@ -1220,7 +1223,8 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 		}
 
 		bool fail = false
-		vector startPos = GetRandomCenter( center, radius * minScale, radius, baseAngle - angleDeviation, baseAngle + angleDeviation )
+		vector startPos = GetRandomCenter( center, radius * minScale, radius, 0, 360 )
+        
 		foreach ( point in previousAirdrops )
 		{
 			if ( Distance2D( startPos, point ) < minDistance )
@@ -1229,8 +1233,8 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 				break
 			}
 		}
-
-		TraceResults trace = TraceHull( <startPos.x, startPos.y, 10000>, <startPos.x, startPos.y, -10000>, mins, maxs, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
+        
+		TraceResults trace = TraceHull( <startPos.x, startPos.y, 10000>, <startPos.x, startPos.y, 512>, mins, maxs, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
 		if ( trace.fraction == 1 )
 			fail = true	// didn't find any ground
 
@@ -1242,20 +1246,22 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 		}
 
 		vector groundPos = trace.endPos
-		airdropPoint = GetClosestAirdropPoint( groundPos )
-
+        //Can't use this because no navmesh
+		//airdropPoint = GetClosestAirdropPoint( groundPos )
+        
+        airdropPoint.origin = groundPos
+        airdropPoint.angles = trace.surfaceNormal
+        
 		float distToCenter = Distance2D( airdropPoint.origin, center )
 		if ( distToCenter > radius && !IsTestMap() )
 		{
-			printt( "airdrop distToCenter too great", airdropPoint.origin, center, distToCenter )
 			numTries++
 			WaitFrame()
 			continue
 		}
 
 		return airdropPoint
-	}
-
+    }
 	unreachable
 }
 

@@ -2062,6 +2062,8 @@ global const string TRAIN_BRUSH_SCRIPTNAME              = "train_brush"
 global const string GEYSER_PING_SCRIPT_NAME             = "ping_geyser"
 global const string LAVA_FLOW_SURFACE_NAME              = "lava_flow"
 
+global const string CARE_PACKAGE_PROXY                  = "care_package_proxy"
+
 global enum eToolTipFlag
 {
 	// must match TOOLTIP_FLAG_* in tooltips.rui

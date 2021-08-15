@@ -506,11 +506,65 @@ vector function SURVIVAL_GetClosestValidCircleEndLocation( vector origin )
 	return origin
 }
 
-vector function SURVIVAL_CalculateAirdropPositions()
+void function SURVIVAL_CalculateAirdropPositions()
 {
-	// calculate airdrop pos here
-	vector origin = <0, 0, 0>
-	return origin
+    calculatedAirdropData.clear()
+    
+    array<vector> previousAirdrops
+    
+    array<DeathFieldStageData> deathFieldData = SURVIVAL_GetDeathFieldStages()
+    
+    for ( int i = deathFieldData.len() - 1; i >= 0; i-- )
+    {
+        string airdropPlaylistData = GetCurrentPlaylistVarString( "airdrop_data_round_" + i, "" )
+        
+        if (airdropPlaylistData.len() == 0) //if no airdrop data for this ring, continue to next
+            continue;
+            
+        //Split the PlaylistVar that we can parse it
+        array<string> dataArr = split(airdropPlaylistData, ":" )
+        if(dataArr.len() < 5)
+            return;
+         
+        //First part of the playlist string is the number of airdrops for this round.
+        int numAirdropsForThisRound = dataArr[0].tointeger()
+        
+        //Create our AirdropData entry now.
+        AirdropData airdropData;
+        airdropData.dropCircle = i
+        airdropData.dropCount = numAirdropsForThisRound
+        airdropData.preWait = dataArr[1].tofloat()
+
+        //Get the deathfield data.
+        DeathFieldStageData data = deathFieldData[i]
+       
+        vector center = data.endPos
+        float radius = data.endRadius
+        for (int j = 0; j < numAirdropsForThisRound; j++)
+        {
+            Point airdropPoint = FindRandomAirdropDropPoint(AIRDROP_ANGLE_DEVIATION, center, radius, previousAirdrops)
+            
+            if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y ))
+            {
+                //force this to loop again if we didn't verify our airdropPoint
+                printt("Didn't verify this point.")
+                j--;
+            }
+            else
+            {
+                previousAirdrops.push(airdropPoint.origin)
+                printt("Added airdrop with origin ", airdropPoint.origin, " to the array")
+                airdropData.originArray.append(airdropPoint.origin)
+                airdropData.anglesArray.append(airdropPoint.angles)
+                
+                //Should impl contents here.
+                
+                
+            }  
+        }
+        calculatedAirdropData.append(airdropData)
+    }
+    thread AirdropSpawnThink()
 }
 
 void function SURVIVAL_AddLootBin( entity lootbin )

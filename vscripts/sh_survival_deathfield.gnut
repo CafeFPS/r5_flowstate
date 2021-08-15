@@ -24,6 +24,7 @@ global function SURVIVAL_PosInSafeZone
 global function SURVIVAL_PosInsideDeathField
 global function SURVIVAL_GetSafeZoneCenter
 global function SURVIVAL_GetSafeZoneRadius
+global function SURVIVAL_GetDeathFieldShrinking
 global function SetSurveyBaconMinimapVisibility
 #endif
 
@@ -109,6 +110,8 @@ struct
 {
 	#if SERVER
 		int                                          circlesCompleted = -1
+        int                                          currentCircle = -1
+        bool                                         isDeathFieldShrinking = false
 		table<vector, float>                         overrideCircleEndPos
 		array< void functionref ( DeathFieldData ) > ServerCallbacks_OnDeathFieldStartShrink
 		array< void functionref ( DeathFieldData ) > ServerCallbacks_OnDeathFieldStopShrink
@@ -552,10 +555,12 @@ void function SURVIVAL_RunArenaDeathField()
 
 		// time when circle stops moving.
 		SetGlobalNetTime( "circleCloseTime", Time() + stage.shrinkDuration )
-
+        
+        file.isDeathFieldShrinking = true
 		waitthread DeathFieldShrinkThink( data, deathField )
-
-		data.currentRadius = data.endRadius
+        file.isDeathFieldShrinking = false
+		
+        data.currentRadius = data.endRadius
 		mover.NonPhysicsStop()
 		mover.SetOrigin( finalPosition )
 		data.center = mover.GetOrigin()
@@ -1000,9 +1005,9 @@ DeathFieldData function SURVIVAL_GetDeathFieldData()
 	return file.deathFieldData
 }
 
-string function SURVIVAL_GetDeathFieldStages()
+array<DeathFieldStageData> function SURVIVAL_GetDeathFieldStages()
 {
-	return ""
+	return file.deathFieldStages
 }
 
 vector function SURVIVAL_GetNextCircleCenter()
@@ -1603,7 +1608,10 @@ var function SurveyBeacon_CreateHUDMarker( asset beaconImage, entity minimapObj 
 
 int function SURVIVAL_GetCurrentDeathFieldStage()
 {
-	return GetGlobalNetInt( "currentDeathFieldStage" )
+    if(GetServerVar( "minimapState" ))
+        return GetGlobalNetInt( "currentDeathFieldStage" )
+    
+	return -1
 }
 
 string function SURVIVAL_GetCurrentRoundString()
@@ -1786,6 +1794,11 @@ vector function SURVIVAL_GetSafeZoneCenter()
 float function SURVIVAL_GetSafeZoneRadius()
 {
 	return file.deathFieldData.endRadius
+}
+
+bool function SURVIVAL_GetDeathFieldShrinking()
+{
+    return file.isDeathFieldShrinking
 }
 
 bool function SURVIVAL_PosInSafeZone( vector origin )
