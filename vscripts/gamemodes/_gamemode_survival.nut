@@ -219,7 +219,7 @@ void function Sequence_Playing()
 	if ( GetCurrentPlaylistVarBool( "survival_deathfield_enabled", true ) )
 		FlagSet( "DeathCircleActive" )
 
-	if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) )
+	if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) || GetConVarInt( "mp_enablematchending" ) < 1 )
 		WaitForever() // match never ending
 
 	while ( GetGameState() == eGameState.Playing )
