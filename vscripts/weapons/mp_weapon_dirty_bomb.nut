@@ -227,6 +227,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	canisterProxy.SetBossPlayer( owner )
 	canisterProxy.e.isGasSource = true
 	canisterProxy.e.noOwnerFriendlyFire = false
+	canisterProxy.e.isBusy = false
 	canisterProxy.RemoveFromAllRealms()
 	canisterProxy.AddToOtherEntitysRealms( owner )
 //	SetTeam( canisterProxy, team )
@@ -560,6 +561,9 @@ void function DirtyBombProximityActivationUpdate( entity trigger )
 
 void function OnDirtyBombCanisterDamaged( entity canisterProxy, var damageInfo )
 {
+	if(canisterProxy.e.isBusy)
+		return
+	
 	//HACK - Should use damage flags, but we might be capped?
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	switch ( damageSourceID )
@@ -582,6 +586,8 @@ void function OnDirtyBombCanisterDamaged( entity canisterProxy, var damageInfo )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	if( !IsValid( attacker ) )
 		return
+	
+	canisterProxy.e.isBusy = true
 
 	if ( hitBox > 0 ) //Normal Hit
 	{
@@ -630,6 +636,8 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 {
 	if ( !IsValid( canisterProxy ) )
 		return
+	
+	canisterProxy.e.isBusy = true
 
 	Assert( IsNewThread(), "Must be threaded off." )
 	canisterProxy.EndSignal( "OnDestroy" )
