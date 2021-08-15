@@ -229,7 +229,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	canisterProxy.e.noOwnerFriendlyFire = false
 	canisterProxy.RemoveFromAllRealms()
 	canisterProxy.AddToOtherEntitysRealms( owner )
-	SetTeam( canisterProxy, team )
+//	SetTeam( canisterProxy, team )
 	canisterProxy.Minimap_SetCustomState( eMinimapObject_prop_script.DIRTY_BOMB )
 	canisterProxy.Minimap_AlwaysShow( team, null )
 	canisterProxy.Minimap_SetAlignUpright( true )
