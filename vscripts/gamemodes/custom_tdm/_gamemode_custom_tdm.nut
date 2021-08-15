@@ -22,7 +22,9 @@ void function _CustomTDM_Init()
 
     AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {thread SV_OnPlayerDied(victim, attacker, damageInfo)})
     AddCallback_OnClientConnected( void function(entity player) { thread SV_OnPlayerConnected(player) } )
+
     AddClientCommandCallback("next_round", ClientCommand_NextRound)
+    AddClientCommandCallback("give_weapon", ClientCommand_GiveWeapon)
         
     thread RunTDM()
 }
@@ -173,10 +175,24 @@ void function ScreenFadeToFromBlack(entity player, float fadeTime = 1, float hol
 
 bool function ClientCommand_NextRound(entity player, array<string> args)
 {
+    if( !IsServer() ) return false;
     file.tdmState = eTDMState.WINNER_DECIDED
     return true
 }
 
+bool function ClientCommand_GiveWeapon(entity player, array<string> args)
+{
+    entity weapon
+
+    try {
+        print(args[0])
+        weapon = player.GiveWeapon(args[0], WEAPON_INVENTORY_SLOT_ANY)
+        weapon = player.GiveOffhandWeapon(args[0], WEAPON_INVENTORY_SLOT_ANY)
+    } catch( error ) {
+        player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
+        return true
+    }
+}
 
 void function FillPlayerToNeedyTeam(entity player)
 {
@@ -231,6 +247,9 @@ void function SV_OnPlayerConnected(entity player)
 
 void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo) 
 {
+    PlayerStartSpectating( victim, attacker )
+
+    
     switch(GetGameState())
     {
     case eGameState.Playing:
