@@ -59,6 +59,7 @@ void function Sh_Loot_Vault_Panel_Init()
 	#if SERVER
 	AddSpawnCallback( "prop_dynamic", VaultPanelSpawned )
 	AddSpawnCallback( "prop_door", VaultDoorSpawned)
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	#endif // SERVER
 
 	#if CLIENT
@@ -66,7 +67,6 @@ void function Sh_Loot_Vault_Panel_Init()
 	AddCreateCallback( "prop_door", VaultDoorSpawned )
 	#endif // CLIENT
 
-	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 
 	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocking( VaultPanelUnlocking )
 	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocked( VaultPanelUnlocked )
