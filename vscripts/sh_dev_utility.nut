@@ -175,9 +175,6 @@ void function PrintLoc()
 #if CLIENT
 void function BatchClientsideExecutionTest( vector refPoint, vector ang, array<ItemFlavor> characterPool )
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	int count = 0
 	foreach( ItemFlavor attackerCharacter in characterPool )
 	{
@@ -194,9 +191,6 @@ void function BatchClientsideExecutionTest( vector refPoint, vector ang, array<I
 }
 void function ClientsideExecutionTestInspiration( vector refPoint, entity attackerInspiration, entity victimInspiration, string whichCamera = "none" )
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	ItemFlavor attackerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( attackerInspiration ), Loadout_CharacterClass() )
 	ItemFlavor attackerSkin      = LoadoutSlot_GetItemFlavor( ToEHI( attackerInspiration ), Loadout_CharacterSkin( attackerCharacter ) )
 	ItemFlavor victimCharacter, victimSkin
@@ -228,10 +222,6 @@ void function ClientsideExecutionTest(
 		ItemFlavor victimCharacter, ItemFlavor victimSkin,
 		ItemFlavor attackerExecution, string whichCamera = "none" )
 {
-
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	entity attacker = CreateClientSidePropDynamic( refPoint, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
 	entity victim   = CreateClientSidePropDynamic( refPoint, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
 	entity camera   = null
@@ -424,9 +414,6 @@ bool ornull function DevRespawnGetPlayerEliminationOverride( entity player )
 
 void function DevRespawnPlayer( entity player, bool shouldForce, void functionref( entity, int ) devCallbackFunc = null, int devIndex = -1 )
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	if ( shouldForce && IsAlive( player ) )
 	{
 		player.SetHealth( 0 )
@@ -572,9 +559,6 @@ void function DEV_RespawnPlayersBySpecifiers( array<string> specifiers, entity p
 }
 void function DEV_RespawnAllPlayersAndPutThemInALineAndGiveRandomSurvivalStuff( bool circle = false )
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	entity primaryPlayer = GetPlayerArray()[0]
 	vector pos           = primaryPlayer.GetOrigin()
 	vector dir           = AnglesToForward( primaryPlayer.EyeAngles() )
@@ -636,9 +620,6 @@ var DEV_screenAlignmentTopo = null
 var DEV_screenAlignmentRui = null
 var function DEV_ToggleScreenAlignmentTool()
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	if ( DEV_screenAlignmentRui != null )
 	{
 		RuiTopology_Destroy( DEV_screenAlignmentTopo )
@@ -682,9 +663,6 @@ void function DEV_HidePreviewRUIs()
 #if CLIENT
 void function DEV_PreviewScreenRUI( asset ruiAsset, array<int> bgCol )
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	Signal( clGlobal.levelEnt, "DEV_PreviewScreenRUI" )
 	EndSignal( clGlobal.levelEnt, "DEV_PreviewScreenRUI" )
 
@@ -729,9 +707,6 @@ void function DEV_PreviewScreenRUI( asset ruiAsset, array<int> bgCol )
 #if CLIENT
 void function DEV_PreviewWorldRUI( asset ruiAsset, float width = 100, float height = 100 )
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	Signal( clGlobal.levelEnt, "DEV_PreviewWorldRUI" )
 	EndSignal( clGlobal.levelEnt, "DEV_PreviewWorldRUI" )
 
@@ -799,9 +774,6 @@ void function DEV_PreviewWorldRUI( asset ruiAsset, float width = 100, float heig
 #if CLIENT
 void function DEV_PreviewCurvedRUI( asset ruiAsset )
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	Signal( clGlobal.levelEnt, "DEV_PreviewScreenRUI" )
 	EndSignal( clGlobal.levelEnt, "DEV_PreviewScreenRUI" )
 
@@ -858,9 +830,6 @@ void function DEV_PreviewCurvedRUI( asset ruiAsset )
 bool isPlayerDebugLinesToolRunning = false
 void function DEV_TogglePlayerDebugLinesTool()
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	RegisterSignal( "DEV_PlayerDebugLinesTool_Thread" )
 
 	if ( isPlayerDebugLinesToolRunning )
@@ -895,9 +864,6 @@ void function DEV_PlayerDebugLinesTool_Thread( entity localClientPlayer )
 #if CLIENT
 void function DEV_DumpItems()
 {
-	if ( GetConVarInt( "sv_cheats" ) != 1 )
-		return
-
 	string fmtStr = "%s,%s,%s,%s,\"%s\",\"%s\"\n"
 
 	SpamLog( format( fmtStr,
