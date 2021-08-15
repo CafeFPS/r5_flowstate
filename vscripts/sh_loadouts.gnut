@@ -1941,7 +1941,7 @@ bool function ClientCommand_loadouts_set( entity player, array<string> args )
 
 	if ( IsLoadoutSlotLocked( playerEHI, entry ) )
 	{
-		Assert( false, "Attempted to use 'loadouts_set' on locked loadout slot \"" + entry.id + "\")." )
+		Assert( false, "Attempted to use 'loadouts_set' on locked loadout slot (\"" + entry.id + "\")." )
 		return true
 	}
 
@@ -2011,14 +2011,18 @@ bool function ClientCommand_loadouts_devset( entity commandPlayer, array<string>
 			continue
 		}
 
-		//IsLoadoutSlotLocked( playerEHI, entry )
-
 		string slotContentsString = args[1]
 
 		array<ItemFlavor> flavorListForTestingNewness = []
 
 		foreach ( LoadoutEntry entry in relevantEntries )
 		{
+			if ( IsLoadoutSlotLocked( playerEHI, entry ) )
+			{
+				Warning( "Tried to use 'loadouts_devset' on locked loadout slot (\"" + entryId + "\")." )
+				continue
+			}
+
 			int slotContentsIndex
 			ItemFlavor itemFlavor
 			if ( slotContentsString == "~default~" )
@@ -2058,9 +2062,13 @@ bool function ClientCommand_loadouts_devset( entity commandPlayer, array<string>
 				continue
 			}
 
-			flavorListForTestingNewness.append( itemFlavor )
+			if ( !IsItemFlavorUnlockedForLoadoutSlot( playerEHI, entry, itemFlavor ) )
+			{
+				Warning( "Tried to use 'loadouts_devset' with item flavor \"" + DEV_DescItemFlavor( itemFlavor ) + "\" which is locked for this player (loadout slot \"" + entryId + "\")." )
+				continue
+			}
 
-			// IsItemFlavorUnlockedForLoadoutSlot( playerEHI, entry, itemFlavor ) )
+			flavorListForTestingNewness.append( itemFlavor )
 
 			SetItemFlavorLoadoutSlotContentsInternal( playerEHI, entry, itemFlavor )
 

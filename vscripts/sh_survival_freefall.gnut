@@ -1215,13 +1215,17 @@ void function Freelook_Enable( entity player )
 		player.p.skydiveFreelookLockedCameraAngles = player.CameraAngles()
 	player.p.skydiveFreelookEnabled++
 	player.SetPlayerNetBool( "skydiveFreelookActive", true )
+	player.Skydive_SetFreelookMode( true )
 }
 
 void function Freelook_Disable( entity player )
 {
 	player.p.skydiveFreelookEnabled = int( max( player.p.skydiveFreelookEnabled - 1, 0 ) )
 	if ( player.p.skydiveFreelookEnabled <= 0 )
+	{
 		player.SetPlayerNetBool( "skydiveFreelookActive", false )
+		player.Skydive_SetFreelookMode( false )
+	}
 }
 
 void function SnapEyeAnglesWithFade( entity player, vector angles )
@@ -1329,7 +1333,11 @@ void function DisableSkydiveThirdPerson( entity player )
 bool function ClientCommand_StopFreefallFollowMode( entity player, array<string> args )
 {
 	if ( IsValid( player ) )
+	{
 		player.p.skydiveIsFollowing = false
+		player.Skydive_StopFollowing()
+	}
+	
 	return true
 }
 
@@ -1731,6 +1739,7 @@ void function WaitForUnfollow( entity player )
 					{
 #if(CLIENT)
 						player.Skydive_QueueStopFollowing()
+						player.ClientCommand( "StopFreefallFollowMode" )
 #endif
 						return
 					}

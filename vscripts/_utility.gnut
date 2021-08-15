@@ -4510,22 +4510,24 @@ void function UpdateDamageState( entity ent, var damageInfo )
 
 void function DisableMantle( entity player )
 {
-	//stub
+	player.DisableMantle()
 }
 
 void function LockWeaponsAndMelee( entity player )
 {
-	//stub
+	// HolsterViewModelAndDisableWeapons( player )
+	player.LockWeaponChange()
 }
 
 void function EnableMantle( entity player )
 {
-	//stub
+	player.EnableMantle()
 }
 
 void function UnlockWeaponsAndMelee( entity player )
 {
-	//stub
+	// DeployViewModelAndEnableWeapons( player )
+	player.UnlockWeaponChange()
 }
 
 void function DelayedDestroy( entity mover, float lifetime )
@@ -4536,7 +4538,7 @@ void function DelayedDestroy( entity mover, float lifetime )
 
 void function SwapToLastEquippedPrimary( entity player )
 {
-	//stub
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, SURVIVAL_GetLastActiveWeapon( player ).GetClassName() )
 }
 
 entity function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b0, int contents, int team, string scriptname )
