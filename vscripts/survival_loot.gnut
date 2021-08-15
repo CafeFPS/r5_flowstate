@@ -969,7 +969,9 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	{
 		// printt("dropping current weapon", activeWeapon)
 
-		if ( !oldEquipData.baseMods.contains( "gold" ) )
+		array<string> activeMods = activeWeapon.GetMods()
+
+		if ( !activeMods.contains( "gold" ) )
 		{
 			table<string, string> suitableAttachmentsFromWeapon = GetCompatibleAttachmentsFromWeapon( player, activeWeapon, newEquipData.baseWeapon )
 			foreach ( wepPoint, wepMod in suitableAttachmentsFromWeapon )
