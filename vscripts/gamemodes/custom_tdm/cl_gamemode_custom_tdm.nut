@@ -80,7 +80,7 @@ void function ServerCallback_TDM_DoAnnouncement(float duration, int type)
         case eTDMAnnounce.VOTING_PHASE:
         {
             clGlobal.levelEnt.Signal( "CloseScoreRUI" )
-            message = "Voting phase"
+            message = "Welcome To Team Deathmatch"
             break
         }
         case eTDMAnnounce.MAP_FLYOVER:

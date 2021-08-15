@@ -209,6 +209,38 @@ void function Sh_CustomTDM_Init()
         )
         break
 
+        case "mp_rr_desertlands_64k_x_64k_nx":
+            Shared_RegisterLocation(
+                NewLocationSettings(
+                    "TTV Building",
+                    {
+                        [TEAM_IMC] = [
+                            NewLocPair(<11393, 5477, -4289>, <0, 90, 0>),
+                            NewLocPair(<12027, 7121, -4290>, <0, -120, 0>)
+                        ],
+                        [TEAM_MILITIA] = [
+                            NewLocPair(<8105, 6156, -4266>, <0, -45, 0>),
+                            NewLocPair(<7965.0, 5976.0, -4266.0>, <0, -135, 0>)
+                        ]
+                    },
+                    <0, 0, 3000>
+                )
+            )
+
+            Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Train Yard",
+                    {
+                        [TEAM_IMC] = [
+                            NewLocPair(<-15545, 3956, -2118>, <0, 0, 0>)
+                        ],
+                        [TEAM_MILITIA] = [
+                            NewLocPair(<-10570, 4093, -2134>, <0, 180, 0>)
+                        ]
+                    },
+                    <0, 0, 3000>
+                )
+            )
         case "mp_rr_desertlands_64k_x_64k":
             Shared_RegisterLocation(
                 NewLocationSettings(
@@ -242,6 +274,7 @@ void function Sh_CustomTDM_Init()
                 )
             )
 
+        
         default:
             Assert(false, "No TDM locations found for map!")
     }
