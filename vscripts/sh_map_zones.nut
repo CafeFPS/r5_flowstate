@@ -55,13 +55,35 @@ global enum eZonePop
 
 #if SERVER
 const string SIGNAL_ZONES_PLAYER_ENTERED = "PlayerEnteredZone"
+const asset HOT_ZONE_POI_BEAM = $"P_ar_hot_zone_far"
 #endif // SERVER
+
+struct ZoneData
+{
+	entity     zoneTrigger
+	int		   zoneTier
+    bool       isHotZone = false
+	array<int> neighborZoneIds
+
+	float boundsArea2D
+
+	int playersInside
+	int playersNearby
+
+	int zoneId
+	string zoneName
+}
+table<int, ZoneData> s_zoneDatas
+
+global entity hotZoneFx
 
 struct
 {
 	bool mapZonesInitialized = false
 	var mapZonesDataTable
 	table<int, int> calculatedZoneTiers
+    vector hotZoneOrigin
+    float hotZoneRadius
 } file
 
 const int INVALID_ZONE_ID = -1
@@ -160,21 +182,6 @@ string function MapZones_GetZoneStatsRef( int zoneId )
 }
 #if SERVER
 
-struct ZoneData
-{
-	entity     zoneTrigger
-	int		   zoneTier
-	array<int> neighborZoneIds
-
-	float boundsArea2D
-
-	int playersInside
-	int playersNearby
-
-	int zoneId
-	string zoneName
-}
-table<int, ZoneData> s_zoneDatas
 
 
 void function PlayerDeathCallback( entity player, var damageInfo )
@@ -209,23 +216,103 @@ void function EntitiesDidLoad()
 	thread GenerateZoneTiers()
 }
 
+
+void function HotZoneBeamThink(vector origin, float radius)
+{
+    //If we are pre deathfield, spawn hot zone beam
+    if( GetGlobalNetInt( "currentDeathFieldStage" ) == -1 )
+    {
+        //Spawn the beam
+        PrecacheParticleSystem( HOT_ZONE_POI_BEAM )
+        entity hotZoneBeam = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( HOT_ZONE_POI_BEAM ), origin, <90,0,0> )
+                
+        while (true)
+        {
+            if (SURVIVAL_GetCurrentDeathFieldStage() >= 0)
+            {
+                EffectStop(hotZoneBeam)
+                hotZoneBeam.Destroy()
+                return
+            }
+            wait 1 //Low prio - don't need to check every frame, can check every second. If we kill beam a second late it's acceptable.
+        }
+    }
+}
+
+void function HotZone_MinimapThink()
+{
+    //Create the minimap entity
+    entity hotZoneMapEnt = CreateEntity( "prop_script" )
+    hotZoneMapEnt.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+    hotZoneMapEnt.kv.fadedist = -1
+    hotZoneMapEnt.kv.renderamt = 255
+    hotZoneMapEnt.kv.rendercolor = "255 255 255"
+    hotZoneMapEnt.kv.solid = 6 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+    hotZoneMapEnt.SetOrigin( file.hotZoneOrigin )
+    hotZoneMapEnt.SetAngles( <0, 0, 0> )
+    hotZoneMapEnt.NotSolid()
+    hotZoneMapEnt.Hide()
+    hotZoneMapEnt.DisableHibernation()
+    hotZoneMapEnt.Minimap_SetObjectScale( file.hotZoneRadius / SURVIVAL_MINIMAP_RING_SCALE )
+    hotZoneMapEnt.Minimap_SetAlignUpright( true )
+    hotZoneMapEnt.Minimap_SetZOrder( 2 )
+    hotZoneMapEnt.Minimap_SetClampToEdge( true )
+    hotZoneMapEnt.Minimap_SetCustomState( eMinimapObject_prop_script.OBJECTIVE_AREA )
+    SetTargetName( hotZoneMapEnt, "hotZone" )
+    DispatchSpawn( hotZoneMapEnt )
+           
+    foreach ( player in GetPlayerArray() )
+    {
+        hotZoneMapEnt.Minimap_AlwaysShow( 0, player )
+    }
+    
+    while (true)
+    {
+        if (SURVIVAL_GetCurrentDeathFieldStage() >= 0)
+        {
+            foreach ( player in GetPlayerArray() )
+            {
+                hotZoneMapEnt.Minimap_Hide( 0, player )
+            }
+            return
+        }
+        wait 1 //Low prio - don't need to check every frame, can check every second. If we hide RUI a second late it's acceptable.
+    }
+}
+
 void function GenerateZoneTiers()
 {
 	array<LootZone> lootZones = GetAllLootZones()
-
+    LootZone hotZone = RollLootHotZone()
+    
+    float hotZoneRadius = float(hotZone.zoneEnt.kv.script_radius)
+    vector hotZoneOrigin = hotZone.zoneEnt.GetOrigin()
+    
+    file.hotZoneRadius = hotZoneRadius
+    file.hotZoneOrigin = hotZoneOrigin
+    
+    thread HotZoneBeamThink(hotZoneOrigin, hotZoneRadius)
+    AddCallback_GameStateEnter( 
+            eGameState.Playing,
+            void function()
+            {
+                thread HotZone_MinimapThink()
+            }
+        )
+    
 	foreach ( mapZoneData in s_zoneDatas )
 	{
 		foreach ( lootZone in lootZones )
 		{
 			if ( !mapZoneData.zoneTrigger.ContainsPoint( lootZone.origin ) )
 				continue
-
+            if ( Distance2D( mapZoneData.zoneTrigger.GetOrigin(), hotZoneOrigin ) <= hotZoneRadius)
+                mapZoneData.isHotZone = true
+            
 			int zoneTier = SURVIVAL_LootTierForLootGroup( lootZone.zoneClass )
+            
 			mapZoneData.zoneTier = maxint( zoneTier, mapZoneData.zoneTier )
 		}
-
-		// printt( mapZoneData.zoneName, mapZoneData.zoneTier )
-		// \WaitFrame()
 	}
 
 	SURVIVAL_PlaceGroundItems()

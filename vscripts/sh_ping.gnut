@@ -1552,6 +1552,9 @@ entity function GetCarePackageForHitEnt( entity hitEnt )
 	if ( IsValid( parentEnt ) && IsCarePackageName( parentEnt.GetScriptName() ) )
 		return parentEnt
 
+    if (hitEnt.GetModelName() == CARE_PACKAGE_AIRDROP_MODEL)
+        return hitEnt
+
 	return null
 }
 

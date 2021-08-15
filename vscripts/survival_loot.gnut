@@ -29,6 +29,7 @@ global function Loot_AddCallback_OnPlayerLootPickup
 global function SURVIVAL_NumItemsInInventory
 global function ResetPlayerInventory
 global function GetAllLootZones
+global function RollLootHotZone
 global function SURVIVAL_LootTierForLootGroup
 global function InfiniteAmmoEnabled
 global function Survival_SetInventoryEnabled
@@ -1372,6 +1373,31 @@ void function ResetPlayerInventory( entity player )
 	// Clear all equipment slots
 	foreach ( slot, slotData in EquipmentSlot_GetAllEquipmentSlots() )
 		Inventory_SetPlayerEquipment( player, "", slot )
+}
+
+LootZone function RollLootHotZone()
+{
+    array<LootZone> lootZones
+
+    array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+    
+    foreach( lzEnt in lzEnts )
+	{
+		if( GetEditorClass( lzEnt ) != "info_survival_loot_hotzone" )
+			continue
+            
+        LootZone zone
+		zone.origin = lzEnt.GetOrigin()
+        zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+        zone.zoneEnt = lzEnt
+        
+        lootZones.append( zone )
+    }
+    lootZones.randomize()
+    
+    //The hotzone
+    LootZone hotzone = lootZones[0]
+    return hotzone
 }
 
 array<LootZone> function GetAllLootZones()

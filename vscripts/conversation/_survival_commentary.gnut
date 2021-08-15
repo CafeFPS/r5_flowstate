@@ -88,7 +88,9 @@ void function AddSurvivalCommentaryEvent ( int event )
 			case eSurvivalEventType.FIRST_BLOOD:
 				thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_diedFirst_01_01_3p" )
 				break
-
+            case eSurvivalEventType.CARE_PACKAGE_DROPPING:
+                thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_droppingCarePack_01_01_3p")
+                break;
 		}
 	}
 
@@ -105,7 +107,9 @@ void function AddSurvivalCommentaryEvent ( int event )
 			case eSurvivalEventType.CIRCLE_MOVES_10SEC:
 				thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_aiNotify_circleMoves10sec", 2))
 				break
-
+            case eSurvivalEventType.CARE_PACKAGE_DROPPING:
+                thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_droppingCarePack_01")
+                break;
 		}
 	}
 
