@@ -721,13 +721,16 @@ void function UpdateMenuButtons()
 		bool isAvailable = IsItemFlavorUnlockedForLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), itemFlav, true )
 		bool isOwned     = GRX_IsItemOwnedByPlayer_AllowOutOfDateData( itemFlav, GetLocalClientPlayer() )
 
-		if ( !isAvailable )
+		int playlistOpinion = ItemFlavor_GetPlaylistOpinion( itemFlav )
+		bool opinionLock = playlistOpinion == eItemFlavorPlaylistOpinion.LOCKED
+
+		if ( !isAvailable && !opinionLock )
 		{
 			disabledCharacters.append( itemFlav )
 		}
 		else
 		{
-			if ( !isOwned )
+			if ( !isOwned || opinionLock )
 				lockedCharacters.append( itemFlav )
 			else
 				shippingCharacters.append( itemFlav )
