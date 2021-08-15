@@ -137,6 +137,7 @@ global enum eItemType
 	//player_stat,
 
 	// MP account items
+	grx_sentinel,
 	account_currency,
 	account_currency_bundle,
 	account_pack,
@@ -1351,6 +1352,7 @@ ItemFlavor function ItemFlavorBag_GetSingleOutputItemFlavor_Assert( ItemFlavorBa
 //// Internals ////
 ///////////////////
 ///////////////////
+
 #if SERVER && R5DEV
 bool function ClientCommand_itemflavors_dump( entity player, array<string> args )
 {

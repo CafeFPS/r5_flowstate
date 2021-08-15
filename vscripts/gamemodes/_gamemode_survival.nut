@@ -32,6 +32,7 @@ void function GamemodeSurvival_Init()
 	SurvivalShip_Init()
 
 	FlagInit( "SpawnInDropship", false )
+	FlagInit( "PlaneDrop_Respawn_SetUseCallback", false )
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
@@ -72,12 +73,22 @@ void function RespawnPlayerInDropship( entity player )
 	player.SetPlayerNetBool( "playerInPlane", true )
 
 	PlayerMatchState_Set( player, ePlayerMatchState.SKYDIVE_PRELAUNCH )
+
+	if ( Flag( "PlaneDrop_Respawn_SetUseCallback" ) )
+		AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+
+	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
+	bool isAlone = playerTeam.len() <= 1
+
+	if ( isAlone )
+		player.SetPlayerNetBool( "isJumpmaster", true )
 }
 
 void function Sequence_Playing()
 {
 	SetServerVar( "minimapState", true )
 
+	
 	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
 	{
 		vector pos = GetEnt( "info_player_start" ).GetOrigin()
@@ -179,10 +190,14 @@ void function Sequence_Playing()
 
 		wait DROP_WAIT_TIME
 
+		FlagSet( "PlaneDrop_Respawn_SetUseCallback" )
+
 		foreach ( player in GetPlayerArray_AliveConnected() )
 			AddCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 
 		wait DROP_TOTAL_TIME
+
+		FlagClear( "PlaneDrop_Respawn_SetUseCallback" )
 
 		FlagClear( "SpawnInDropship" )
 
@@ -204,7 +219,7 @@ void function Sequence_Playing()
 	if ( GetCurrentPlaylistVarBool( "survival_deathfield_enabled", true ) )
 		FlagSet( "DeathCircleActive" )
 
-	if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) )
+	if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) || GetConVarInt( "mp_enablematchending" ) < 1 )
 		WaitForever() // match never ending
 
 	while ( GetGameState() == eGameState.Playing )
@@ -226,7 +241,8 @@ void function Sequence_WinnerDetermined()
 {
 	FlagSet( "DeathFieldPaused" )
 
-	foreach ( player in GetPlayerArray() ) {
+	foreach ( player in GetPlayerArray() )
+	{
 		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == GetWinningTeam(), GetWinningTeam() )
 	}
@@ -240,7 +256,10 @@ void function Sequence_Epilogue()
 {
 	SetGameState( eGameState.Epilogue )
 
-	foreach ( player in GetPlayerArray() ) {
+	UpdateMatchSummaryPersistentVars( GetWinningTeam() )
+
+	foreach ( player in GetPlayerArray() )
+	{
 		player.FreezeControlsOnServer()
 
 		// Clear all residue data
@@ -269,11 +288,8 @@ void function Sequence_Epilogue()
 	WaitForever()
 }
 
-void function HandleSquadElimination( int team )
+void function UpdateMatchSummaryPersistentVars( int team )
 {
-	RespawnBeacons_OnSquadEliminated( team )
-	StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
-
 	array<entity> squadMembers = GetPlayerArrayOfTeam( team )
 	int maxTrackedSquadMembers = PersistenceGetArrayCount( "lastGameSquadStats" )
 
@@ -297,6 +313,14 @@ void function HandleSquadElimination( int team )
 			teamMember.SetPersistentVar( "lastGameSquadStats[" + i + "].respawnsGiven", statSummaryData.respawnsGiven )
 		}
 	}
+}
+
+void function HandleSquadElimination( int team )
+{
+	RespawnBeacons_OnSquadEliminated( team )
+	StatsHook_SquadEliminated( GetPlayerArrayOfTeam_Connected( team ) )
+
+	UpdateMatchSummaryPersistentVars( team )
 
 	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_SquadEliminated", team )
@@ -336,10 +360,10 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		&& PlayerRevivingEnabled() )
 	{
 		// Supposed to be bleeding
-		Bleedout_StartPlayerBleedout( victim, DamageInfo_GetAttacker( damageInfo ) )
+		//Bleedout_StartPlayerBleedout( victim, DamageInfo_GetAttacker( damageInfo ) )
 
 		// Cancel the damage
-		DamageInfo_SetDamage( damageInfo, 0 )
+		//DamageInfo_SetDamage( damageInfo, 0 )
 	}
 }
 
@@ -351,7 +375,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( victim.IsPlayer() )
 	{
 		SetPlayerEliminated( victim )
-		PlayerStartSpectating( victim )
+		PlayerStartSpectating( victim, attacker )
 
 		int victimTeamNumber = victim.GetTeam()
 		array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
@@ -381,9 +405,6 @@ void function OnClientConnected( entity player )
 	switch ( GetGameState() )
 	{
 		case eGameState.Prematch:
-			if ( isAlone )
-				player.SetPlayerNetBool( "isJumpmaster", true )
-
 			if ( IsValid( Sur_GetPlaneEnt() ) )
 				RespawnPlayerInDropship( player )
 
@@ -400,7 +421,7 @@ void function OnClientConnected( entity player )
 				PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
 
 				if ( IsPlayerEliminated( player ) )
-					PlayerStartSpectating( player )
+					PlayerStartSpectating( player, null )
 				else
 				{
 					array<entity> respawnCandidates = isAlone ? GetPlayerArray_AliveConnected() : playerTeam

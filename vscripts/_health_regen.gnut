@@ -24,6 +24,7 @@ void function HealthRegen_Init()
 		file.healthRegenTickTime = 2.0 // HEALTH_REGEN_TICK_TIME
 		file.healthRegenStartDelay = 5.0 // ttf2 value
 		AddCallback_PlayerClassChanged( HealthRegen_OnPlayerClassChangedMP )
+		AddCallback_OnPassiveChanged( ePassives.PAS_OCTANE, HealthRegen_OnPassiveChanged )
 		RegisterSignal( "PilotHealthRegenThink" )
 	}
 }
@@ -129,17 +130,28 @@ void function PilotHealthRegenThinkMP( entity player )
 			ClearRecentDamageHistory( player )
 			ClearLastAttacker( player )
 		}
-		printl("player.GetHealth(): " + player.GetHealth())
 	}
 }
 
 bool function HealthRegen_IsPlayerAllowed( entity player )
 {
-	if(PlayerHasPassive( player, ePassives.PAS_OCTANE ))
-		return true
+	string character = ItemFlavor_GetHumanReadableRef(  LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) )
+	
+    if(character == "character_octane")
+        return true
+	
+// TODO: Swapping some legends doesn't reset their passive, meaning they'll keep ePassives.PAS_OCTANE
+
+//	if(PlayerHasPassive( player, ePassives.PAS_OCTANE ))
+//		return true
+
 	return false
 }
 
+void function HealthRegen_OnPassiveChanged(entity player, int passive, bool didHave, bool nowHas )
+{
+	thread PilotHealthRegenThinkMP( player )
+}
 void function HealthRegen_OnPlayerClassChangedMP( entity player )
 {	
 	thread PilotHealthRegenThinkMP( player )

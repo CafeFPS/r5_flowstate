@@ -675,6 +675,9 @@ bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<strin
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
+	if ( player.IsWeaponChangeLocked() )
+		return true
+
 	// This is horrendous.
 
 	int activeSlot = SURVIVAL_GetActiveWeaponSlot( player )
@@ -743,6 +746,9 @@ bool function ClientCommand_PlayerSwitchedWeapons( entity player, array<string> 
 	if ( slot != WEAPON_INVENTORY_SLOT_PRIMARY_0 
 		&& slot != WEAPON_INVENTORY_SLOT_PRIMARY_1
 		&& slot != WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		return true
+
+	if ( player.IsWeaponChangeLocked() )
 		return true
 
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, slot )
@@ -964,7 +970,9 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	{
 		// printt("dropping current weapon", activeWeapon)
 
-		if ( !oldEquipData.baseMods.contains( "gold" ) )
+		array<string> activeMods = activeWeapon.GetMods()
+
+		if ( !activeMods.contains( "gold" ) )
 		{
 			table<string, string> suitableAttachmentsFromWeapon = GetCompatibleAttachmentsFromWeapon( player, activeWeapon, newEquipData.baseWeapon )
 			foreach ( wepPoint, wepMod in suitableAttachmentsFromWeapon )

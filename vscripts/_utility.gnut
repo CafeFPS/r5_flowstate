@@ -366,6 +366,30 @@ entity function CreateScriptMover( vector origin = <0.0, 0.0, 0.0>, vector angle
 	return script_mover
 }
 
+void function SpawnDummyAtPlayerZero()
+{
+    entity p = GetPlayerArray()[0];
+    vector pos = p.GetAttachmentOrigin( p.LookupAttachment( "CHESTFOCUS" ) );
+    SpawnDummy(pos, <0,0,0>);
+}
+
+void function SpawnDummy(vector origin, vector angles)
+{
+    entity dummy = CreateEntity( "npc_dummie" )
+    SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
+	SetTargetName(dummy,  "DUMMIE's Revenge")
+    dummy.SetOrigin( origin )
+    dummy.SetAngles( angles )
+    SetTeam(dummy, 99)
+    DispatchSpawn( dummy )
+    
+    dummy.SetSkin(RandomInt(6))
+    
+    array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
+    string randomWeapon = weapons[RandomInt(weapons.len())]
+    dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+}
+
 entity function CreateScriptMoverModel( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
 {
 	entity script_mover = CreateEntity( "script_mover_lightweight" )
@@ -4439,17 +4463,18 @@ void function DestroyAfterDelay( entity ent, float delay )
 // some of these might need a better place. i brought those here for quick stubbing
 void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapon )
 {
-	const table<string, string> WEAPON_BC_LINES = {
-		mp_weapon_thermite_grenade = "bc_thermite",
-		mp_weapon_frag_grenade = "bc_frag",
-		mp_weapon_grenade_emp = "bc_arcStar"
-	}
-
 	string weaponClassName = offhandWeapon.GetWeaponClassName()
-	if ( !( weaponClassName in WEAPON_BC_LINES ) )
-		return
+	var weaponBattleChatterEventOrNull = GetWeaponInfoFileKeyField_Global( weaponClassName, "battle_chatter_event" )
 
-	PlayBattleChatterLineToSpeakerAndTeam( player, WEAPON_BC_LINES[weaponClassName] )
+	if ( weaponBattleChatterEventOrNull == null )
+		return // Field does not exist
+
+	expect string( weaponBattleChatterEventOrNull )
+
+	if ( weaponBattleChatterEventOrNull.len() == 0 )
+		return // Empty field value
+
+	PlayBattleChatterLineToSpeakerAndTeam( player, weaponBattleChatterEventOrNull )
 }
 
 void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound )
@@ -4485,22 +4510,24 @@ void function UpdateDamageState( entity ent, var damageInfo )
 
 void function DisableMantle( entity player )
 {
-	//stub
+	player.DisableMantle()
 }
 
 void function LockWeaponsAndMelee( entity player )
 {
-	//stub
+	// HolsterViewModelAndDisableWeapons( player )
+	player.LockWeaponChange()
 }
 
 void function EnableMantle( entity player )
 {
-	//stub
+	player.EnableMantle()
 }
 
 void function UnlockWeaponsAndMelee( entity player )
 {
-	//stub
+	// DeployViewModelAndEnableWeapons( player )
+	player.UnlockWeaponChange()
 }
 
 void function DelayedDestroy( entity mover, float lifetime )
@@ -4511,7 +4538,7 @@ void function DelayedDestroy( entity mover, float lifetime )
 
 void function SwapToLastEquippedPrimary( entity player )
 {
-	//stub
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, SURVIVAL_GetLastActiveWeapon( player ).GetClassName() )
 }
 
 entity function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b0, int contents, int team, string scriptname )

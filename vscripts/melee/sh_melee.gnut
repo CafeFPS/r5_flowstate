@@ -33,12 +33,12 @@ global function CodeCallback_OnMeleeStartActivity
 global function CodeCallback_OnMeleeHeld
 global function CodeCallback_OnMeleeReleased
 global function CodeCallback_IsValidMeleeAttackTarget
+global function CodeCallback_OnMeleeAttackAnimEvent
 #endif
 
 #if SERVER
 global function CodeCallback_OnMeleeKilled
 global function CodeCallback_NPCMeleeChargedPlayerOrNPC
-global function CodeCallback_OnMeleeAttackAnimEvent
 #elseif CLIENT
 global function ClientCodeCallback_ShowMeleePrompt
 #endif
@@ -417,7 +417,7 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 			eyeTraceHitPos = eyeTrace.endPos
 		}
 
-		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) )
+		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed )
 		{
 			meleeAttackWeapon.AddMod( "proto_door_kick" )
 
@@ -483,7 +483,7 @@ void function CodeCallback_OnMeleeReleased( entity player, entity weapon )
 #endif
 
 
-#if SERVER
+#if SERVER || CLIENT
 void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity meleeAttackWeapon )
 {
 	printt("CodeCallback_OnMeleeAttackAnimEvent")
@@ -528,12 +528,11 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	{
 	 	#if SERVER
 	 		impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
-	 	#endif
-
-	 	attacker.DispatchImpactEffects( target,
+			attacker.DispatchImpactEffects( target,
 	 		startPosition, endPosition, hitNormal,
 	 		surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
 	 		attacker, impactEffectFlags )
+		#endif
 	 }
 
 	// Melee state

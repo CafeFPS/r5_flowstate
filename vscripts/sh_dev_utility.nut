@@ -583,12 +583,18 @@ void function DEV_RespawnAllPlayersAndPutThemInALineAndGiveRandomSurvivalStuff( 
 
 bool function ClientCommand_Respawn( entity commandPlayer, array<string> argList )
 {
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return true
+
 	thread DEV_RespawnPlayersBySpecifiers( argList, commandPlayer )
 	return true
 }
 
 bool function ClientCommand_SetRespawnOverride( entity commandPlayer, array<string> al )
 {
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return true
+
 	if ( al.len() != 1 || !(al[0] == "off" || al[0] == "allow" || al[0] == "deny" || al[0] == "bots") )
 	{
 		Dev_PrintMessage( commandPlayer, "Invalid usage of set_respawn_override", "Please pass one of: off, allow, deny, bots" )

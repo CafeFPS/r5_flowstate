@@ -210,6 +210,7 @@ void function Sh_CustomTDM_Init()
         break
 
         case "mp_rr_desertlands_64k_x_64k":
+        case "mp_rr_desertlands_64k_x_64k_nx":
             Shared_RegisterLocation(
                 NewLocationSettings(
                     "TTV Building",
@@ -229,19 +230,56 @@ void function Sh_CustomTDM_Init()
 
             Shared_RegisterLocation(
                 NewLocationSettings(
-                    "Train Yard",
+                    "Thermal Station",
                     {
                         [TEAM_IMC] = [
-                            NewLocPair(<-15545, 3956, -2118>, <0, 0, 0>)
+                            NewLocPair(<-20091, -17683, -3984>, <0, -90, 0>)
+							NewLocPair(<-22919, -20528, -4010>, <0, 0, 0>)
                         ],
                         [TEAM_MILITIA] = [
-                            NewLocPair(<-10570, 4093, -2134>, <0, 180, 0>)
+                            NewLocPair(<-20109, -23193, -4252>, <0, 90, 0>)
+							NewLocPair(<-17140, -20710, -3973>, <0, -180, 0>)
                         ]
                     },
-                    <0, 0, 3000>
+                    <0, 0, 11000>
+                )
+            )
+			
+            Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Lava Fissure",
+                    {
+                        [TEAM_IMC] = [
+                            NewLocPair(<-26550, 13746, -3048>, <0, -134, 0>)
+							NewLocPair(<-28877, 12943, -3109>, <0, -88.70, 0>)
+                        ],
+                        [TEAM_MILITIA] = [
+                            NewLocPair(<-29881, 9168, -2905>, <-1.87, -2.11, 0>)
+							NewLocPair(<-27590, 9279, -3109>, <0, 90, 0>)
+                        ]
+                    },
+                    <0, 0, 2500>
+                )
+            )
+			
+            Shared_RegisterLocation(
+                NewLocationSettings(
+                    "The Dome",
+                    {
+                        [TEAM_IMC] = [
+                            NewLocPair(<17445.83, -36838.45, -2160.64>, <-2.20, -37.85, 0>)
+							NewLocPair(<17405.53, -39860.60, -2248>, <-6, -52, 0>)
+                        ],
+                        [TEAM_MILITIA] = [
+                            NewLocPair(<21700.48, -40169, -2164.30>, <2, 142, 0>)
+							NewLocPair(<20375.39, -36068.25, -2248>, <-1, -128, 0>)
+                        ]
+                    },
+                    <0, 0, 2850>
                 )
             )
 
+        
         default:
             Assert(false, "No TDM locations found for map!")
     }

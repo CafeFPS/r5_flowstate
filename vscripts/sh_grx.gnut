@@ -770,6 +770,16 @@ bool function GRX_IsItemOwnedByPlayer_AllowOutOfDateData( ItemFlavor flav, entit
 }
 bool function IsItemOwnedByPlayerInternal( ItemFlavor flav, entity player = null )
 {
+	int grxMode = ItemFlavor_GetGRXMode( flav )
+
+	if ( grxMode == GRX_ITEMFLAVORMODE_NONE )
+		return true
+
+	if ( ItemFlavor_GetType( flav ) == eItemType.character )
+		return true
+
+	return false
+
 	if ( !GRX_IsGRXEnabled() )
 		return true
 
@@ -783,17 +793,11 @@ bool function IsItemOwnedByPlayerInternal( ItemFlavor flav, entity player = null
 			player = GetUIPlayer()
 	#endif
 
-
-	int grxMode = ItemFlavor_GetGRXMode( flav )
-
 	if ( ItemFlavor_HasUnlockFunc( flav ) )
 	{
 		Assert( grxMode == GRX_ITEMFLAVORMODE_NONE, "These entitlement unlocks shouldn't also be used in GRX mode." )
 		return ItemFlavor_PassesUnlockFunc( flav, player )
 	}
-
-	if ( grxMode == GRX_ITEMFLAVORMODE_NONE )
-		return true
 
 	if ( ItemFlavor_GetPlaylistOpinion( flav ) == eItemFlavorPlaylistOpinion.FORCE_UNLOCK_FOR_SPECIAL_EVENT )
 		return true

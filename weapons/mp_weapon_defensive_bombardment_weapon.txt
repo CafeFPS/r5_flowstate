@@ -42,7 +42,7 @@ WeaponData
 	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
 
 	// Effects
-	"bounce_effect_table"							"bounce_small"
+	"bounce_effect_table"							"none"
 	"impact_effect_table"							"none"
 	"marker_effect"                                 "P_ar_artillery_marker"
 	"projectile_trail_effect_0" 					"P_projectile_artillery_plasma"

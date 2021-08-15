@@ -22,29 +22,11 @@ void function _CustomTDM_Init()
 
     AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {thread SV_OnPlayerDied(victim, attacker, damageInfo)})
     AddCallback_OnClientConnected( void function(entity player) { thread SV_OnPlayerConnected(player) } )
+
     AddClientCommandCallback("next_round", ClientCommand_NextRound)
+    AddClientCommandCallback("give_weapon", ClientCommand_GiveWeapon)
         
     thread RunTDM()
-}
-
-void function DEBUG_TestSpawnLocs(entity player)
-{
-    foreach(locationSetting in file.locationSettings)
-    {
-        foreach(teamSpawnsArray in locationSetting.spawns)
-        {
-            foreach(spawn in teamSpawnsArray)
-            {
-                player.SetOrigin(OriginToGround(spawn.origin))
-                player.SetAngles(spawn.angles)
-                wait 2
-                if(!IsAlive(player)) {
-                    WaitForever()
-                    DoRespawnPlayer(player, null)
-                }
-            }
-        }
-    }
 }
 
 void function _RegisterLocation(LocationSettings locationSettings)
@@ -60,6 +42,8 @@ LocPair function SV_GetVotingLocation()
             return NewLocPair(<-6252, -16500, 3296>, <0, 0, 0>)
         case "mp_rr_desertlands_64k_x_64k":
             return NewLocPair(<1763, 5463, -3145>, <5, -95, 0>)
+        case "mp_rr_desertlands_64k_x_64k_nx":
+                return NewLocPair(<1763, 5463, -3145>, <5, -95, 0>)
         default:
             Assert(false, "No voting location for the map!")
     }
@@ -163,7 +147,7 @@ void function StartRound()
     // }
     wait 2
     foreach(player in GetPlayerArray())
-    {
+    {   
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 5, eTDMAnnounce.ROUND_START)
         ClearInvincible(player)
         DeployAndEnableWeapons(player)
@@ -191,10 +175,24 @@ void function ScreenFadeToFromBlack(entity player, float fadeTime = 1, float hol
 
 bool function ClientCommand_NextRound(entity player, array<string> args)
 {
+    if( !IsServer() ) return false;
     file.tdmState = eTDMState.WINNER_DECIDED
     return true
 }
 
+bool function ClientCommand_GiveWeapon(entity player, array<string> args)
+{
+    entity weapon
+
+    try {
+        print(args[0])
+        weapon = player.GiveWeapon(args[0], WEAPON_INVENTORY_SLOT_ANY)
+        weapon = player.GiveOffhandWeapon(args[0], WEAPON_INVENTORY_SLOT_ANY)
+    } catch( error ) {
+        player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
+        return true
+    }
+}
 
 void function FillPlayerToNeedyTeam(entity player)
 {
@@ -249,6 +247,9 @@ void function SV_OnPlayerConnected(entity player)
 
 void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo) 
 {
+    PlayerStartSpectating( victim, attacker )
+
+    
     switch(GetGameState())
     {
     case eGameState.Playing:
@@ -260,7 +261,7 @@ void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo)
             string weapon1 = SURVIVAL_GetWeaponBySlot(victim, 1)
 
 
-            wait 1.5
+            wait 8
             
             DecideRespawnPlayer( victim )
             PlayerRestoreWeapons(victim, weapon0, weapon1)

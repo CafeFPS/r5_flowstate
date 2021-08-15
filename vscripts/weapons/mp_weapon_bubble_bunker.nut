@@ -97,9 +97,8 @@ var function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker( entity weapon, Wea
 		#endif
 
 		#if BATTLECHATTER_ENABLED && SERVER
-			TryPlayWeaponBattleChatterLine( player, weapon )
+			PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
 		#endif
-
 	}
 
 	return ammoReq
@@ -108,11 +107,6 @@ var function OnWeaponTossReleaseAnimEvent_WeaponBubbleBunker( entity weapon, Wea
 void function OnWeaponTossPrep_WeaponBubbleBunker( entity weapon, WeaponTossPrepParams prepParams )
 {
 	weapon.EmitWeaponSound_1p3p( GetGrenadeDeploySound_1p( weapon ), GetGrenadeDeploySound_3p( weapon ) )
-
-	#if SERVER
-	entity weaponOwner = weapon.GetWeaponOwner()
-	PlayBattleChatterLineToSpeakerAndTeam( weaponOwner, "bc_tactical" )
-	#endif
 }
 
 void function OnBubbleBunkerPlanted( entity projectile )
@@ -289,7 +283,7 @@ void function CreateBubbleShieldAroundProjectile( entity projectile, int team, f
 
 	owner.EndSignal( "CleanupPlayerPermanents" )
 
-	entity bubbleShield = CreateBubbleShieldWithSettings( owner.GetTeam(), projectile.GetOrigin(), projectile.GetAngles(), owner, duration, BUBBLE_BUNKER_DAMAGE_ENEMIES, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
+	entity bubbleShield = CreateBubbleShieldWithSettings( owner.GetTeam(), projectile.GetOrigin(), <0,0,0>/*projectile.GetAngles()*/, owner, duration, BUBBLE_BUNKER_DAMAGE_ENEMIES, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
 	bubbleShield.RemoveFromAllRealms()
 	bubbleShield.AddToOtherEntitysRealms( projectile )
 

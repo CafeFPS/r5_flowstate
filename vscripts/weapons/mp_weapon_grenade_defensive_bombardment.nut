@@ -12,7 +12,7 @@ const asset FX_BOMBARDMENT_MARKER = $"P_ar_artillery_marker"
 
 const float DEFENSIVE_BOMBARDMENT_RADIUS 		 	= 1024 //The radius of the bombardment area.
 const int	DEFENSIVE_BOMBARDMENT_DENSITY			= 6	//The density of the distributed shell randomness.
-const float DEFENSIVE_BOMBARDMENT_DURATION			= 8.0 //The duration the bombardment will last.
+const float DEFENSIVE_BOMBARDMENT_DURATION			= 6.0 //The duration the bombardment will last.
 const float DEFENSIVE_BOMBARDMENT_DELAY 			= 2.0 //The bombardment will wait 2.0 seconds before firing the first shell.
 
 const float DEFENSIVE_BOMBARDMENT_SHELLSHOCK_DURATION = 4.0
@@ -109,9 +109,13 @@ void function OnProjectileCollision_WeaponDefensiveBombardmentExplosion( entity 
 	#if SERVER
 	entity player = projectile.GetOwner()
 	if ( !IsValid( player ) )
+	{
+		projectile.Destroy()
 		return
-
-	Explosion_DamageDefSimple( eDamageSourceId.damagedef_defensive_bombardment, pos, player, player, pos )
+	}
+	
+	Explosion_DamageDefSimple( eDamageSourceId.damagedef_defensive_bombardment, pos, player, projectile, pos )
+	projectile.Destroy()
 	#endif
 }
 
@@ -145,6 +149,8 @@ void function DefensiveBombardmentSmoke( entity projectile, asset fx )
 	entity bombardmentWeapon = VerifyBombardmentWeapon( owner, DEFENSIVE_BOMBARDMENT_MISSILE_WEAPON )
 	if ( !IsValid( bombardmentWeapon ) )
 		return
+	
+	string sound_incoming_first = GetWeaponInfoFileKeyField_GlobalString(bombardmentWeapon.GetWeaponClassName(), "sound_incoming_first")
 
 	vector origin = projectile.GetOrigin()
 
@@ -152,8 +158,10 @@ void function DefensiveBombardmentSmoke( entity projectile, asset fx )
 	entity smokeFX = StartParticleEffectOnEntity_ReturnEntity( projectile, smokeFxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 
 	ThreatDetection_CreateThreatZoneForBombardment( null, projectile.GetOrigin(), -1, DEFENSIVE_BOMBARDMENT_RADIUS, 1.0 )
+	
+	EmitSoundOnEntity( projectile, sound_incoming_first)
 
-	thread Bombardment_MortarBarrageFocused( bombardmentWeapon, FX_BOMBARDMENT_MARKER, owner.GetOrigin() + <0,0,10000>, projectile.GetOrigin(),
+	thread Bombardment_MortarBarrageFocused( bombardmentWeapon, FX_BOMBARDMENT_MARKER, projectile.GetOrigin(),
 		DEFENSIVE_BOMBARDMENT_RADIUS,
 		DEFENSIVE_BOMBARDMENT_DENSITY,
 		DEFENSIVE_BOMBARDMENT_DURATION,

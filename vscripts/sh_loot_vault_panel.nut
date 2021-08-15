@@ -55,18 +55,18 @@ struct
 
 void function Sh_Loot_Vault_Panel_Init()
 {
+
 	#if SERVER
 	AddSpawnCallback( "prop_dynamic", VaultPanelSpawned )
 	AddSpawnCallback( "prop_door", VaultDoorSpawned)
-
-
-
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	#endif // SERVER
 
 	#if CLIENT
 	AddCreateCallback( "prop_dynamic", VaultPanelSpawned )
 	AddCreateCallback( "prop_door", VaultDoorSpawned )
 	#endif // CLIENT
+
 
 	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocking( VaultPanelUnlocking )
 	LootVaultPanels_AddCallback_OnVaultPanelStateChangedToUnlocked( VaultPanelUnlocked )
@@ -82,11 +82,11 @@ void function VaultPanelSpawned( entity panel )
 	newPanel.panel = panel
 
 	#if SERVER
-
-
-#endif // SERVER
+	
+	#endif // SERVER
 
 	file.vaultControlPanels.append( newPanel )
+//	SetVaultPanelState(panel, ePanelState.UNLOCKED)
 
 	SetVaultPanelUsable( panel )
 }
@@ -99,12 +99,12 @@ void function VaultDoorSpawned( entity door )
 	#if SERVER
 
 	door.SetSkin( 1 )
-
-
-
-
+	door.UnsetUsable()
 
 	#endif // SERVER
+	
+	SetObjectCanBeMeleed( door, false )
+	door.SetTakeDamageType( DAMAGE_NO )
 
 	door.kv.IsVaultDoor = true
 
@@ -116,7 +116,7 @@ const float PANEL_TO_DOOR_RADIUS = 150.0
 void function EntitiesDidLoad()
 {
 	foreach( panelData in file.vaultControlPanels )
-	{
+	{		
 		vector panelPos = panelData.panel.GetOrigin()
 
 		foreach ( door in file.vaultDoors )
@@ -126,7 +126,9 @@ void function EntitiesDidLoad()
 			if ( Distance( panelPos, doorPos ) <= PANEL_TO_DOOR_RADIUS )
 			{
 				if ( !panelData.vaultDoors.contains( door ) )
+				{
 					panelData.vaultDoors.append( door )
+				}
 			}
 		}
 	}
@@ -154,7 +156,7 @@ void function SetVaultPanelState( entity panel, int panelState )
 		}
 		case ePanelState.UNLOCKED:
 		{
-			printf( "LootVaultPanelDebug: Changing panel state to UNLOCKING" )
+			printf( "LootVaultPanelDebug: Changing panel state to UNLOCKED" )
 			LootVaultPanelState_Unlocked( panelData, panelState )
 		}
 		default:
@@ -210,12 +212,14 @@ bool function LootVaultPanel_CanUseFunction( entity playerUser, entity panel )
 
 const float VAULT_PANEL_USE_TIME = 3.0
 void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlags )
-{
+{	
 	if ( !(useInputFlags & USE_INPUT_LONG) )
 		return
 
-	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
-			return
+	// TODO: Fix vault key
+	
+//	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
+//			return
 
 	ExtendedUseSettings settings
 
@@ -251,13 +255,17 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 
 	#if SERVER
 
+	// TODO: proper anims
 
+	foreach( entity door in GetVaultPanelDataFromEntity( panel ).vaultDoors)
+	{
+		door.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 1000 )
+	}
+	
+	panel.SetSkin(0)
+	panel.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 1000 )
 
-
-
-
-//
-
+	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_vaultOpened" )
 
 	#endif
 
@@ -366,27 +374,8 @@ void function HideVaultPanel( LootVaultPanelData panelData )
 #if CLIENT
 string function VaultPanel_TextOverride( entity panel )
 {
-	entity player = GetLocalViewPlayer()
-
-	int currentUnixTime = GetUnixTimestamp()
-	int ornull keyAccessTimeStamp = GetCurrentPlaylistVarTimestamp( "loot_vault_key_availability_unixtime", 1566864000 )
-	if ( keyAccessTimeStamp != null )
-	{
-		if ( currentUnixTime < expect int( keyAccessTimeStamp ) )
-		{
-			int timeDelta = expect int(keyAccessTimeStamp) - currentUnixTime
-			TimeParts timeParts = GetUnixTimeParts( timeDelta )
-			string timeString = GetDaysHoursMinutesSecondsString( timeDelta )
-			string displayString = Localize( "#HINT_VAULT_NEED_TIMESTAMP", timeString )
-			return displayString
-		}
-	}
-
-	if ( !player.GetPlayerNetBool( "hasDataKnife" ) )
-	{
+	if ( !GetLocalViewPlayer().GetPlayerNetBool( "hasDataKnife" ) )
 		return "#HINT_VAULT_NEED"
-	}
-
 	return "#HINT_VAULT_USE"
 }
 
@@ -442,18 +431,24 @@ bool function IsValidLootVaultDoorEnt( entity ent )
 void function SetVaultPanelUsable( entity panel )
 {
 	#if SERVER
-	AddCallback_OnUseEntity( panel, OnVaultPanelUse )
-
-//
-
-
+	
+	panel.SetSkin(1) // red
+	
+	panel.SetUsable()
+	panel.SetUsableByGroup( "pilot" )
+	panel.AddUsableValue( VAULTPANEL_MAX_VIEW_ANGLE_TO_AXIS )
+	
+	// TODO: Fix prompt
+	panel.SetUsePrompts( "#HINT_VAULT_USE", "#HINT_VAULT_USE" )
+	
 	#endif // SERVER
 
 	SetCallback_CanUseEntityCallback( panel, LootVaultPanel_CanUseFunction )
+	AddCallback_OnUseEntity( panel, OnVaultPanelUse )
 
 	#if CLIENT
+	
 	AddEntityCallback_GetUseEntOverrideText( panel, VaultPanel_TextOverride )
-	AddCallback_OnUseEntity( panel, OnVaultPanelUse )
 	#endif // CLIENT
 }
 
