@@ -1333,8 +1333,11 @@ void function DisableSkydiveThirdPerson( entity player )
 bool function ClientCommand_StopFreefallFollowMode( entity player, array<string> args )
 {
 	if ( IsValid( player ) )
+	{
 		player.p.skydiveIsFollowing = false
-	player.Skydive_StopFollowing()
+		player.Skydive_StopFollowing()
+	}
+	
 	return true
 }
 
