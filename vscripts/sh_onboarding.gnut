@@ -380,6 +380,8 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 
+	if(!IsValid( player )) return;
+	
 	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
 
 	DoRespawnPlayer( player, null )
