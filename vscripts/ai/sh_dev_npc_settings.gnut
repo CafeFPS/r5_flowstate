@@ -79,7 +79,7 @@ void function SetupWeapons()
 	SetupDevCommand( "Thermite Grenade", "give mp_weapon_thermite_grenade" )
 	SetupDevCommand( "Frag Grenade", "give mp_weapon_frag_grenade" )
 	SetupDevCommand( "Arc Star", "give mp_weapon_grenade_emp" )
-//	SetupDevCommand( "Gravity Star", "give mp_weapon_grenade_gravity" )
+	SetupDevCommand( "Electric Smoke", "give mp_weapon_grenade_electric_smoke" )
 	#endif
 }
 
