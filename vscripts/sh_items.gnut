@@ -566,8 +566,7 @@ bool function IsValidItemFlavorNetworkIndex_DEPRECATED( int index, int validatio
 	bool good = ((index - 1) in fileLevel.itemFlavorList)
 
 	Assert( good || validationBehavior != eValidation.ASSERT, "Unknown item flavor network index: " + index + " (valid range is 1-" + fileLevel.itemFlavorList.len() + ")" )
-	//return good
-	return false
+	return good
 }
 
 
