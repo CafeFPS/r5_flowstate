@@ -262,12 +262,14 @@ void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo)
     case eGameState.Playing:
 
         
+        string weapon0 = SURVIVAL_GetWeaponBySlot(victim, 0)
+        string weapon1 = SURVIVAL_GetWeaponBySlot(victim, 1)
+
+
         wait GetCurrentPlaylistVarFloat("respawn_delay", 8)
 
         if(IsValid(victim) && !IsAlive(victim))
         {
-            string weapon0 = SURVIVAL_GetWeaponBySlot(victim, 0)
-            string weapon1 = SURVIVAL_GetWeaponBySlot(victim, 1)
 
             DecideRespawnPlayer( victim )
             PlayerRestoreWeapons(victim, weapon0, weapon1)
