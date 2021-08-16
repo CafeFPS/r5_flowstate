@@ -179,7 +179,14 @@ void function Sh_ArenaDeathField_Init()
 
 DeathFieldStageData function GetDeathFieldStage( int index )
 {
-	return file.deathFieldStages[ index ]
+    if(file.deathFieldStages.len() == 0)
+        InitDeathFieldDataAndStageData()
+        
+    if(file.deathFieldStages.len() > index)
+        return file.deathFieldStages[ index ]
+
+    printt("WARNING: Requested death field stage out of populated range!!")    
+    return CreateDeathFieldStageData(index, true)
 }
 
 vector function GetDeathfieldFinalCenter()
