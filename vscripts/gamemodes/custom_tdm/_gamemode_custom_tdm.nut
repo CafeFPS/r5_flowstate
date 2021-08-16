@@ -237,8 +237,10 @@ void function SV_OnPlayerConnected(entity player)
     {
 
     case eGameState.WaitingForPlayers:
+        player.FreezeControlsOnServer()
         break
     case eGameState.Playing:
+        player.UnfreezeControlsOnServer();
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 5, eTDMAnnounce.ROUND_START)
 
         break
