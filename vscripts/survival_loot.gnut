@@ -292,6 +292,9 @@ void function SURVIVAL_PlaceGroundItems()
 
 	foreach ( ent in itemEnts )
 	{
+		if( GetCurrentPlaylistVarBool("ground_loot_enable", true) == false)
+			continue
+
 		if ( GetEditorClass( ent ) != "info_survival_weapon_location" )
 			continue
 

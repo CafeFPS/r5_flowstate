@@ -239,7 +239,11 @@ void function InitLootBin( entity lootbin )
 	}
 	
 	array<string> items = GetRandomLootArray( 2, 4 )
-	AddMultipleLootItemsToLootBin( lootbin, items )
+
+	if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true)
+	{
+		AddMultipleLootItemsToLootBin( lootbin, items )
+	}
 }
 
 // the loop doesn't play without a delay involved for some reason
