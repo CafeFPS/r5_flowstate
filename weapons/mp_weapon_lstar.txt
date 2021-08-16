@@ -362,7 +362,7 @@ WeaponData
 	"ammo_clip_reload_max"							"40"
 	"ammo_min_to_fire"								"1"
 	"ammo_per_shot"		    						"1"
-	"ammo_no_remove_from_stockpile"					"0"
+	"ammo_no_remove_from_stockpile"					"1"
 	"chance_for_bonus_last_shot_in_clip"			"0"
 	"critical_hit"									"1"
 
@@ -492,8 +492,10 @@ WeaponData
 	    {
 	    }
 
-		survival_finite_ammo
+        survival_finite_ammo
         {
+            "ammo_no_remove_from_stockpile"		"0"
+	   		"uses_ammo_pool"					"0"
         }
 
 		// R2 easter egg, to keep
