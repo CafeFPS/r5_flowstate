@@ -542,6 +542,9 @@ asset function GetIndicatorModel( entity grenade )
 	else if ( grenade.GetTargetName() == "creeping_bombardment_projectile" )
 		return GRENADE_INDICATOR_BOMB
 
+    else if ( grenade.GetTargetName() == CARE_PACKAGE_PROXY )
+        return GRENADE_INDICATOR_GENERIC
+
 	if ( grenade instanceof C_PlayerWaypoint )
 	{
 		switch( grenade.GetWaypointInt( 0 ) )

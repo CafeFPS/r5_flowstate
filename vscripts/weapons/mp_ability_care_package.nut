@@ -57,10 +57,13 @@ var function OnWeaponPrimaryAttack_care_package_medic( entity weapon, WeaponPrim
 		vector origin = placementInfo.origin
 		vector angles = placementInfo.angles
 
+        //Start the ground circle particle
+		entity fx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( DROPPOD_SPAWN_FX ), origin, angles)
+
 		thread CreateCarePackageAirdrop(
 			origin, angles,
 			["medic_super", "medic_super_side", "top_tier_inventory" ],
-			null, "droppod_loot_drop_lifeline",
+			fx, "droppod_loot_drop_lifeline",
 			ownerPlayer, weapon.GetWeaponClassName()
 		)
 		PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )

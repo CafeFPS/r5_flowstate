@@ -94,6 +94,7 @@ global struct LootZone
 {
 	vector origin
 	int zoneClass
+    entity zoneEnt
 }
 
 global struct ThreatEventCallbackData

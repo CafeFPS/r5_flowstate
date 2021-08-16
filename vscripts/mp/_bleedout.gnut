@@ -444,7 +444,10 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 		file.Callback_OnPlayerGotFirstAid( playerToRes, playerHealer )
 
 	if ( selfRes )
+    {
 		playerToRes.SetPlayerNetBool( "usedSelfRevive", true )
+        Inventory_SetPlayerEquipment(playerToRes, "incapshield_pickup_lv3", "incapshield")
+    }
 
 	playerToRes.Signal( "BleedOut_OnRevive" )
 	playerHealer.p.revivesGiven++
