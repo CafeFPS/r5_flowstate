@@ -156,6 +156,10 @@ void function StartRound()
             player.UnforceStand()  
             player.UnfreezeControlsOnServer();
 
+            if(!IsAlive( player ))
+            {
+                DecideRespawnPlayer(player)
+            }
             PlayerRestoreHP(player, 100, GetCurrentPlaylistVarFloat("default_shield_hp", 100))
         }
         
@@ -280,7 +284,7 @@ void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo)
             thread GrantSpawnImmunity(victim, 3)
         }
 
-        if(attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
+        if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
         {
             int score = GameRules_GetTeamScore(attacker.GetTeam());
             score++;
