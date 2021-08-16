@@ -547,7 +547,6 @@ void function SURVIVAL_CalculateAirdropPositions()
             if(!VerifyAirdropPoint( airdropPoint.origin, airdropPoint.angles.y ))
             {
                 //force this to loop again if we didn't verify our airdropPoint
-                printt("Didn't verify this point.")
                 j--;
             }
             else
