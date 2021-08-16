@@ -295,7 +295,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_jump_pad" )
 	// PrecacheWeapon( $"mp_weapon_smr" )
 	// PrecacheWeapon( $"mp_weapon_kunai_ns" )
-	PrecacheWeapon( $"mp_weapon_smart_pistol" )
+	// PrecacheWeapon( $"mp_weapon_smart_pistol" )
 	PrecacheWeapon( $"mp_weapon_grenade_creeping_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_defensive_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
