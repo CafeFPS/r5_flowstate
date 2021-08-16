@@ -213,6 +213,41 @@ void function Sh_CustomTDM_Init()
 
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
+	        Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Refinery",
+                    {
+                        [TEAM_IMC] = [
+                            NewLocPair(<22970, 27159, -4612.43>, <0, 135, 0>),
+                            NewLocPair(<20430, 26361, -4140>, <0, 135, 0>)
+                        ],
+                        [TEAM_MILITIA] = [
+
+                            NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
+                            NewLocPair(<18285, 28502, -4140>, <0, -45, 0>)
+                        ]
+                    },
+                    <0, 0, 6500>
+                )
+            )
+			
+            Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Geyser Cave",
+                    {
+                        [TEAM_IMC] = [
+                            NewLocPair(<26330, -3506, -3933>, <8, -177, 0>),
+                            NewLocPair(<24159, -4296, -3915>, <-2.5, 92, 0>)
+                        ],
+                        [TEAM_MILITIA] = [
+                            NewLocPair(<22322, -3326, -3920>, <0, 0, 0>),
+                            NewLocPair(<24199, -2370, -3914>, <0, -90, 0>)
+                        ]
+                    },
+                    <0, 0, 250>
+                )
+            )
+
             Shared_RegisterLocation(
                 NewLocationSettings(
                     "TTV Building",
