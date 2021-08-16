@@ -155,7 +155,8 @@ void function StartRound()
             DeployAndEnableWeapons(player)
             player.UnforceStand()  
             player.UnfreezeControlsOnServer();
-            PlayerRestoreHP(player, 100, 100)
+
+            PlayerRestoreHP(player, 100, GetCurrentPlaylistVarInt("default_shield_hp", 100))
         }
         
     }
@@ -260,21 +261,19 @@ void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo)
     {
     case eGameState.Playing:
 
+        
+        wait GetCurrentPlaylistVarInt("respawn_delay", 8)
+
         if(IsValid(victim) && !IsAlive(victim))
         {
-            
             string weapon0 = SURVIVAL_GetWeaponBySlot(victim, 0)
             string weapon1 = SURVIVAL_GetWeaponBySlot(victim, 1)
 
-
-            wait 8
-            
             DecideRespawnPlayer( victim )
             PlayerRestoreWeapons(victim, weapon0, weapon1)
             SetPlayerSettings(victim, TDM_PLAYER_SETTINGS)
             PlayerRestoreHP(victim, 100, 100)
             
-
             TpPlayerToSpawnPoint(victim)
             thread GrantSpawnImmunity(victim, 3)
         }
