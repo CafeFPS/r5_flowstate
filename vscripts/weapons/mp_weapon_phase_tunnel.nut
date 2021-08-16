@@ -378,7 +378,7 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 				mods.fastremovebyvalue( "ult_active" )
 				player.SetExtraWeaponMods( mods )
 
-				player.ForceAutoSprintOff()
+				//player.ForceAutoSprintOff()	// why?
 				//RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, PhaseTunnel_CancelPlacement )
 				//RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM, PhaseTunnel_CancelPlacement )
 
