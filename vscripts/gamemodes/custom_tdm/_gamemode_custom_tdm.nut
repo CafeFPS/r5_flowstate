@@ -229,7 +229,7 @@ void function SV_OnPlayerConnected(entity player)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
     DecideRespawnPlayer(player)
-    PlayerRestoreHP(player, 100, 100)
+    PlayerRestoreHP(player, 100, GetCurrentPlaylistVarInt("default_shield_hp", 100))
     TpPlayerToSpawnPoint(player)
     //SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 
@@ -272,7 +272,7 @@ void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo)
             DecideRespawnPlayer( victim )
             PlayerRestoreWeapons(victim, weapon0, weapon1)
             SetPlayerSettings(victim, TDM_PLAYER_SETTINGS)
-            PlayerRestoreHP(victim, 100, 100)
+            PlayerRestoreHP(victim, 100, GetCurrentPlaylistVarInt("default_shield_hp", 100))
             
             TpPlayerToSpawnPoint(victim)
             thread GrantSpawnImmunity(victim, 3)
@@ -291,7 +291,7 @@ void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo)
                 }
                 file.tdmState = eTDMState.WINNER_DECIDED
             }
-            PlayerRestoreHP(attacker, 100, 100)
+            PlayerRestoreHP(attacker, 100, GetCurrentPlaylistVarInt("default_shield_hp", 100))
         }
         
         //Tell each player to update their Score RUI
