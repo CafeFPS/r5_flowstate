@@ -424,10 +424,10 @@ void function PlayerStartSpectating( entity player, entity attacker )
 	
 	entity specTarget = null
 
-	if(Spectator_GetReplayIsEnabled())
+	if ( Spectator_GetReplayIsEnabled() )
 	{
-		if(attacker == player) return;
-		if(attacker == null) return;
+		if ( attacker == player ) return;
+		if ( attacker == null ) return;
 		
 		specTarget = attacker;
 	}
@@ -471,7 +471,7 @@ void function PlayerStopSpectating( entity player )
 	██║     ███████║██║     ██║     ██████╔╝███████║██║     █████╔╝ ███████╗
 	██║     ██╔══██║██║     ██║     ██╔══██╗██╔══██║██║     ██╔═██╗ ╚════██║
 	╚██████╗██║  ██║███████╗███████╗██████╔╝██║  ██║╚██████╗██║  ██╗███████║
-	╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝
+	 ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝
 
 	This part describes the onboarding/shared gamemode callbacks.
 */
@@ -561,7 +561,7 @@ void function UpdatePlayerCounts()
 	██║     ██║   ██║██╔██╗ ██║██║  ██║██║   ██║   ██║██║   ██║██╔██╗ ██║███████║██║     ███████╗
 	██║     ██║   ██║██║╚██╗██║██║  ██║██║   ██║   ██║██║   ██║██║╚██╗██║██╔══██║██║     ╚════██║
 	╚██████╗╚██████╔╝██║ ╚████║██████╔╝██║   ██║   ██║╚██████╔╝██║ ╚████║██║  ██║███████╗███████║
-	╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚══════╝
+	 ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚══════╝
 
 	This part describes customizable data which are used in sequence logic.
 	The conditional functions usually get the value from the current playlist.
