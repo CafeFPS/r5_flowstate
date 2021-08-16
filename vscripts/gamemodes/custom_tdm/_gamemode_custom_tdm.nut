@@ -148,12 +148,16 @@ void function StartRound()
     wait 2
     foreach(player in GetPlayerArray())
     {   
-        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 5, eTDMAnnounce.ROUND_START)
-        ClearInvincible(player)
-        DeployAndEnableWeapons(player)
-        player.UnforceStand()  
-        player.UnfreezeControlsOnServer();
-        PlayerRestoreHP(player, 100, 100)
+        if( IsValid( player) )
+        {
+            Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 5, eTDMAnnounce.ROUND_START)
+            ClearInvincible(player)
+            DeployAndEnableWeapons(player)
+            player.UnforceStand()  
+            player.UnfreezeControlsOnServer();
+            PlayerRestoreHP(player, 100, 100)
+        }
+        
     }
     float endTime = Time() + ROUND_TIME
     while( Time() <= endTime )

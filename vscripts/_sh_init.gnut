@@ -139,6 +139,8 @@ void function SV_CL_Init()
 	GameMode_RunSharedInits()
 	DamageHistoryInit()
 	ShPersistentData_LevelInit_Finish()
+	
+	ShWeaponRack_Init()
 
 
 	//ShGruntChatter_MP_Init()
