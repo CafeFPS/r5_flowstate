@@ -191,6 +191,8 @@ void function LootVaultPanelState_Unlocked( LootVaultPanelData panelData, int pa
 const int VAULTPANEL_MAX_VIEW_ANGLE_TO_AXIS = 60
 bool function LootVaultPanel_CanUseFunction( entity playerUser, entity panel )
 {
+	return true
+	
 	if ( Bleedout_IsBleedingOut( playerUser ) )
 		return false
 
@@ -219,7 +221,8 @@ void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlag
 	// TODO: Fix vault key
 	
 //	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
-//			return
+	if ( !VaultPanel_HasPlayerDataKnife(playerUser) )
+			return
 
 	ExtendedUseSettings settings
 
@@ -249,6 +252,12 @@ void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlag
 
 void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSettings settings )
 {
+	if ( !VaultPanel_HasPlayerDataKnife(player) )
+	{
+		printf( "LootVaultPanelDebug: Player likely dropped the vault key while opening" )
+		return
+	}
+	
 	LootVaultPanelData panelData = GetVaultPanelDataFromEntity( panel )
 
 	printf( "LootVaultPanelDebug: Panel Use Success" )
@@ -374,7 +383,8 @@ void function HideVaultPanel( LootVaultPanelData panelData )
 #if CLIENT
 string function VaultPanel_TextOverride( entity panel )
 {
-	if ( !GetLocalViewPlayer().GetPlayerNetBool( "hasDataKnife" ) )
+//	if ( !GetLocalViewPlayer().GetPlayerNetBool( "hasDataKnife" ) )
+	if ( !VaultPanel_HasPlayerDataKnife(GetLocalViewPlayer()) )
 		return "#HINT_VAULT_NEED"
 	return "#HINT_VAULT_USE"
 }
@@ -447,8 +457,7 @@ void function SetVaultPanelUsable( entity panel )
 	AddCallback_OnUseEntity( panel, OnVaultPanelUse )
 
 	#if CLIENT
-	
-	AddEntityCallback_GetUseEntOverrideText( panel, VaultPanel_TextOverride )
+	AddEntityCallback_GetUseEntOverrideText( panel, VaultPanel_TextOverride )	// Doesn't get called somehow, even without SetUsePrompts set
 	#endif // CLIENT
 }
 
@@ -566,7 +575,8 @@ entity function VaultPanel_GetTeammateWithKey( int teamIdx )
 
 	foreach( player in squad )
 	{
-		if ( player.GetPlayerNetBool( "hasDataKnife" ) )
+	//	if ( player.GetPlayerNetBool( "hasDataKnife" ) )
+		if ( VaultPanel_HasPlayerDataKnife(player)  )
 			return player
 	}
 
@@ -601,4 +611,16 @@ array< entity > function VaultPanel_GetAllMinimapObjs()
 	}
 
 	return mapObjs
+}
+
+bool function VaultPanel_HasPlayerDataKnife(entity player)
+{
+	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+
+	foreach ( invItem in playerInventory )
+	{
+		if(invItem.type == 120) // no clue what its const is called, 120 == dataknife/vaultkey
+			return true
+	}
+	return false
 }
