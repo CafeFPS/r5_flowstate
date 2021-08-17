@@ -887,15 +887,50 @@ vector function GetFinalDeathFieldLocation()
 
 		float minDeviation = 1000
 
-		if ( CoinFlip() )
-			endPoint = GetRandomCenter( <0, 0, 0>, minDeviation, REALBIG_CIRCLE_END_RADIUS )
-		else
-			endPoint = GetRandomCenterBiasedToEdge( <0, 0, 0>, minDeviation, REALBIG_CIRCLE_END_RADIUS )
-	}
+        array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+        array<entity> invalidEndZones
+        
+        foreach( lzEnt in lzEnts )
+        {
+            if( GetEditorClass( lzEnt ) != "info_survival_invalid_end_zone" )
+                continue
+            
+            invalidEndZones.push(lzEnt)
+		}
+		bool coinFlip = CoinFlip()
+        while(true)
+        {
+            if ( coinFlip ) 
+                endPoint = GetRandomCenter( <0, 0, 0>, minDeviation, REALBIG_CIRCLE_END_RADIUS * 0.9)
+            else
+                endPoint = GetRandomCenterBiasedToEdge( <0, 0, 0>, minDeviation, REALBIG_CIRCLE_END_RADIUS * 0.9 )
+            
+            TraceResults trace = TraceHull( <endPoint.x, endPoint.y, 10000>, <endPoint.x, endPoint.y, 512>, <-80,-80,0>, <80,80,256>, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
+            if ( trace.fraction == 1 )
+                continue
 
-	vector lootLocation  = SURVIVAL_GetClosestValidCircleEndLocation( endPoint )
+            endPoint = trace.endPos
+            
+            bool bDone = false
+            foreach( invalidZone in invalidEndZones )
+            {
+                if((Distance2D(endPoint, invalidZone.GetOrigin()) < float(invalidZone.kv.script_radius)) || IsPointOutOfBounds(endPoint))
+                {
+                    bDone = false
+                    break
+                }
+                else
+                    bDone = true
+            }
+            if(bDone)
+                break 
+        }
+			
+	}
+	vector finalLocation  = SURVIVAL_GetClosestValidCircleEndLocation( endPoint )
 	//DebugDrawLine( <endPoint.x, endPoint.y, 0>, <lootLocation.x, lootLocation.y, 0>, 0,255,0, true, 100.0 )
-	vector finalLocation = GetClosestEndZonePoint( lootLocation ).origin
+	//vector finalLocation = GetClosestEndZonePoint( lootLocation ).origin
+    //can't call above func because no navmesh
 	//DebugDrawLine( <lootLocation.x, lootLocation.y, 0>, <finalLocation.x, finalLocation.y, 0>, 0,0,255, true, 100.0 )
 	return finalLocation
 }
