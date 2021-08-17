@@ -139,6 +139,9 @@ void function LoadLootZonesForMap()
 		file.lootZones.append( zone )
 	}
     
+    if(file.lootZones.len() == 0)
+        return
+    
     array<LootZone> hotZones
 
     lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
@@ -156,6 +159,9 @@ void function LoadLootZonesForMap()
 
         hotZones.append( zone )
     }
+    
+    if(hotZones.len() == 0)
+        return
     
     //The hotzone
     LootZone hotZone = hotZones.getrandom()
