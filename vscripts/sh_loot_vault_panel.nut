@@ -273,6 +273,8 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 	panel.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 1000 )
 
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_vaultOpened" )
+	
+	SURVIVAL_RemoveFromPlayerInventory( player, "data_knife", 1 )
 
 	#endif
 
@@ -445,10 +447,7 @@ void function SetVaultPanelUsable( entity panel )
 	panel.SetUsable()
 	panel.SetUsableByGroup( "pilot" )
 	panel.AddUsableValue( VAULTPANEL_MAX_VIEW_ANGLE_TO_AXIS )
-	
-	// TODO: Fix prompt
 	panel.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
-//	panel.SetUsePrompts( "#HINT_VAULT_USE", "#HINT_VAULT_USE" )
 	
 	#endif // SERVER
 
@@ -456,7 +455,7 @@ void function SetVaultPanelUsable( entity panel )
 	AddCallback_OnUseEntity( panel, OnVaultPanelUse )
 
 	#if CLIENT
-	AddEntityCallback_GetUseEntOverrideText( panel, VaultPanel_TextOverride )	// Doesn't get called somehow, even without SetUsePrompts set
+	AddEntityCallback_GetUseEntOverrideText( panel, VaultPanel_TextOverride )
 	#endif // CLIENT
 }
 
