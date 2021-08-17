@@ -57,6 +57,7 @@ global enum eLootZoneClass
 struct {
 	array<LootZone> lootZones
     LootZone hotZone
+    table<vector, array<string> > vaultLootSpawned
 } file
 
 bool function InfiniteAmmoEnabled()
@@ -389,10 +390,48 @@ string function LootZones_GetRefForOrigin(vector origin)
     return "zone_low" //fallback spawn low loot
 }
 
+vector function LootZones_GetParentForOrigin(vector origin)
+{
+    FlagWait("Survival_LootZonesLoaded")
+    
+    foreach(LootZone lz in file.lootZones)
+    {
+        if(Distance2D(lz.origin, origin) <= lz.radius)
+        {
+            return lz.origin
+        }
+    }
+    return <0, 0, 0>
+}
+
 void function OnGroundLootSpawned( entity ent )
 {
 	string zoneRef = LootZones_GetRefForOrigin( ent.GetOrigin() )
-	string itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+    string itemRef
+    
+    //
+    if(zoneRef == "data_knife_vault")
+    {
+        vector zoneOrigin = LootZones_GetParentForOrigin(ent.GetOrigin())
+        array<string> alreadySpawnedLoot
+        if(zoneOrigin in file.vaultLootSpawned)
+            alreadySpawnedLoot = file.vaultLootSpawned[zoneOrigin]
+        else
+            file.vaultLootSpawned[zoneOrigin] <- alreadySpawnedLoot
+        itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+        while(alreadySpawnedLoot.contains(itemRef))
+        {
+            itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )     
+        }
+        printt("Added item to Loot Vault: ", itemRef)
+        alreadySpawnedLoot.push(itemRef)
+    }
+    else
+    {
+        itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+    }
+        
+    
     if(itemRef == "blank")
         return
 	
