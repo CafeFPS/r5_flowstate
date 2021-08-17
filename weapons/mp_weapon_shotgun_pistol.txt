@@ -266,12 +266,34 @@ WeaponData
     "clip_bodygroup_show_for_milestone_1"	"0"
     "clip_bodygroup_show_for_milestone_2"	"0"
     "clip_bodygroup_show_for_milestone_3"	"0"
+	
+    "bodygroup26_name"	"suppressor_round_small"
+    "bodygroup26_set"	"0"
+
+    "bodygroup27_name"	"suppressor_square_small"
+    "bodygroup27_set"	"0"
 
 	Mods
 	{
 	    gold
 	    {
 	    }
+
+        silencer //HACK JFS: Doesn't get applied on amped weapons. See bug 170460
+		{
+			"silenced"							"1"
+			"fire_sound_1_player_1p"			"weapon_shotgunpistol_fire_suppressed_1p"
+			"fire_sound_1_player_3p"			"weapon_shotgunpistol_fire_suppressed_3p"
+   			"damage_near_value"   				"--4"
+   			"damage_far_value"					"--4"
+    		"damage_very_far_value"				"--4"
+			"bodygroup27_set"	"1"
+
+			"minimap_reveal_distance"			"1"
+
+			"fx_muzzle_flash_view"				"wpn_muzzleflash_pistol_sup_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_pistol_sup"
+		}
 
 		// survival_finite_ammo
         // {
