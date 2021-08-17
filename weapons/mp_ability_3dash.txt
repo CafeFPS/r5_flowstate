@@ -66,7 +66,7 @@ WeaponData
 	"ammo_per_shot"									"50"
 	"ammo_stockpile_max"							"100"
 	"ammo_drains_to_empty_on_fire"					"0"
-	"ammo_no_remove_from_clip"						"1"
+	"ammo_no_remove_from_clip"						"0"
 
     "charge_time"									"0.1"
     "charge_cooldown_time"							"0.2"
@@ -110,7 +110,7 @@ WeaponData
 	"zoom_time_out"   								"0.01"
 	"zoom_fov"										"50"
 	"reload_time" 									"0"
-	"holster_time"									"0"
+	"holster_time"									"20"
 	"deploy_time" 								"0.1"  //want to be driven by animation
 	"lower_time"  									"0"
 	"raise_time"  									"0"

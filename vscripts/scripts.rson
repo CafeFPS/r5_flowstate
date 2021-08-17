@@ -82,6 +82,7 @@ Scripts:
 	sh_survival_loot_actions.gnut
 	sh_survival_loot_types.gnut
 	sh_survival_equipment_slot.gnut
+    sh_survival_loot_distribution.gnut
 ]
 
 When: "SERVER || CLIENT || UI"
@@ -227,6 +228,8 @@ Scripts:
 	sh_timer.gnut
 	sh_doors.nut
 	sh_capturemode.gnut
+	
+	sh_weaponrack.nut
 
 	sh_clientsidepickups.gnut
 	titan/sh_titan.gnut

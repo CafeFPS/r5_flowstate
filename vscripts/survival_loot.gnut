@@ -3,7 +3,6 @@ global function GetRandomLootArray
 global function LootTypeHasAnyChanceToSpawn
 global function SpawnLoot
 global function SURVIVAL_PlaceGroundItems
-global function SURVIVAL_GetWeightedItemFromGroup
 global function SURVIVAL_ThrowLootFromPoint
 global function SURVIVAL_PlayerPickedupItem
 global function EquipAttachments_Internal
@@ -29,10 +28,11 @@ global function Loot_AddCallback_OnPlayerLootPickup
 global function SURVIVAL_NumItemsInInventory
 global function ResetPlayerInventory
 global function GetAllLootZones
-global function RollLootHotZone
+global function GetLootHotZone
 global function SURVIVAL_LootTierForLootGroup
 global function InfiniteAmmoEnabled
 global function Survival_SetInventoryEnabled
+global function LootZones_GetRefForOrigin
 
 const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this
 
@@ -54,9 +54,11 @@ global enum eLootZoneClass
 	ZONE_LOOT_VAULT
 }
 
-/*struct {
-	var lootDataTable
-} file*/
+struct {
+	array<LootZone> lootZones
+    LootZone hotZone
+    table<vector, array<string> > vaultLootSpawned
+} file
 
 bool function InfiniteAmmoEnabled()
 {
@@ -92,11 +94,79 @@ void function SV_Survival_Loot_Init()
 	AddCallback_OnWeaponAttack( OnWeaponAttack_OrdnanceControl )
 
 	FlagInit( "Survival_LootSpawned", false )
+    FlagInit( "Survival_LootZonesLoaded", false)
+    
+    AddCallback_EntitiesDidLoad( LoadLootZonesForMap )
 	
 	RegisterSignal( "SwitchToOrdnance" )
 	RegisterSignal( "SwapToNextOrdnance" )
 
 	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+}
+
+void function LoadLootZonesForMap()
+{
+	array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+
+	foreach( lzEnt in lzEnts )
+	{
+		if( GetEditorClass( lzEnt ) != "info_survival_loot_zone" )
+			continue
+		
+		LootZone zone
+		zone.origin = lzEnt.GetOrigin()
+        zone.radius = float(lzEnt.kv.script_radius)
+        zone.height = float(lzEnt.kv.script_height)
+        zone.ref = string(lzEnt.kv.zone_class)
+		switch( lzEnt.kv.zone_class )
+		{
+			case "zone_hotzone":
+				zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+				break
+			case "zone_high":
+				zone.zoneClass = eLootZoneClass.ZONE_HIGH
+				break
+			case "zone_medium":
+			case "Desertlands_Train_Station":
+				zone.zoneClass = eLootZoneClass.ZONE_MEDIUM
+				break
+			case "data_knife_vault":
+				zone.zoneClass = eLootZoneClass.ZONE_LOOT_VAULT
+				break
+			default:
+				zone.zoneClass = eLootZoneClass.ZONE_NONE
+		}
+		file.lootZones.append( zone )
+	}
+    
+    array<LootZone> hotZones
+
+    lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+    
+    foreach( lzEnt in lzEnts )
+	{
+		if( GetEditorClass( lzEnt ) != "info_survival_loot_hotzone" )
+			continue
+            
+        LootZone zone
+		zone.origin = lzEnt.GetOrigin()
+        zone.radius = float(lzEnt.kv.script_radius)
+        zone.height = float(lzEnt.kv.script_height)
+        zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+
+        hotZones.append( zone )
+    }
+    
+    //The hotzone
+    LootZone hotZone = hotZones.getrandom()
+    
+    file.hotZone.origin = hotZone.origin
+    file.hotZone.radius = hotZone.radius
+    file.hotZone.height = hotZone.height
+    file.hotZone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+    
+    FlagSet( "Survival_LootZonesLoaded" )
+    printt("Generated Loot Zones!", file.lootZones.len())
 }
 
 void function OnWeaponReload( entity player )
@@ -292,6 +362,9 @@ void function SURVIVAL_PlaceGroundItems()
 
 	foreach ( ent in itemEnts )
 	{
+		if( GetCurrentPlaylistVarBool("ground_loot_enable", true) == false)
+			continue
+
 		if ( GetEditorClass( ent ) != "info_survival_weapon_location" )
 			continue
 
@@ -301,28 +374,86 @@ void function SURVIVAL_PlaceGroundItems()
 	FlagSet( "Survival_LootSpawned" )
 }
 
+string function LootZones_GetRefForOrigin(vector origin)
+{
+    FlagWait("Survival_LootZonesLoaded")
+    
+    if(Distance2D(file.hotZone.origin, origin) <= file.hotZone.radius)
+        return "zone_hotzone"
+    
+    foreach(LootZone lz in file.lootZones)
+    {
+        if(Distance2D(lz.origin, origin) <= lz.radius)
+            return lz.ref
+    }
+    
+    return "zone_low" //fallback spawn low loot
+}
+
+vector function LootZones_GetParentForOrigin(vector origin)
+{
+    FlagWait("Survival_LootZonesLoaded")
+    
+    foreach(LootZone lz in file.lootZones)
+    {
+        if(Distance2D(lz.origin, origin) <= lz.radius)
+        {
+            return lz.origin
+        }
+    }
+    return <0, 0, 0>
+}
+
 void function OnGroundLootSpawned( entity ent )
 {
-	int zoneId = MapZones_GetZoneForOrigin( ent.GetOrigin() )
-	string randomRef = GetRandomLootItem( zoneId )
+	string zoneRef = LootZones_GetRefForOrigin( ent.GetOrigin() )
+    string itemRef
+    
+    //
+    if(zoneRef == "data_knife_vault")
+    {
+        vector zoneOrigin = LootZones_GetParentForOrigin(ent.GetOrigin())
+        array<string> alreadySpawnedLoot
+        if(zoneOrigin in file.vaultLootSpawned)
+            alreadySpawnedLoot = file.vaultLootSpawned[zoneOrigin]
+        else
+            file.vaultLootSpawned[zoneOrigin] <- alreadySpawnedLoot
+        itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+        while(alreadySpawnedLoot.contains(itemRef))
+        {
+            itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )     
+        }
+        printt("Added item to Loot Vault: ", itemRef)
+        alreadySpawnedLoot.push(itemRef)
+    }
+    else
+    {
+        itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+    }
+        
+    
+    if(itemRef == "blank")
+        return
 	
-	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( randomRef )
+	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+    LootTypeData lt = GetLootTypeData( itemData.lootType)
 
 	vector spawnOrigin = OriginToGround( ent.GetOrigin() )
+    
+    if(lt.specialCaseSpawnFunction != null)
+    {
+        lt.specialCaseSpawnFunction(itemRef, spawnOrigin)
+        return
+    }
+    
 	int angleZ = 0
-
-	if ( itemData.lootType == eLootType.MAINWEAPON )
-	{
-		spawnOrigin.z += 1
-		angleZ = 90
-	}
 
 	if ( itemData.lootType == eLootType.ORDNANCE )
 	{
 		spawnOrigin.z += 1.5
 	}
 
-	SpawnGenericLoot( randomRef, spawnOrigin, <0, RandomFloatRange( -180.0, 180.0 ), angleZ>, itemData.countPerDrop )
+	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180.0, 180.0 ), angleZ>, itemData.countPerDrop )
 }
 
 array<string> function GetRandomLootArray( int min, int max = -1 )
@@ -797,10 +928,6 @@ void function SpawnLoot( string name, vector origin, bool idk )
 	SURVIVAL_ThrowLootFromPoint( origin, <0, 0, 0>, name, itemData.countPerDrop )
 }
 
-string function SURVIVAL_GetWeightedItemFromGroup( string group )
-{
-	return group
-}
 
 void function SURVIVAL_ThrowLootFromPoint( vector throwOrigin, vector forward, string ref, int count )
 {
@@ -1081,8 +1208,6 @@ entity function SpawnGenericLoot( string ref, vector origin, vector angles, int 
 {
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 
-	//printt("SpawnGenericLoot", ref)
-
 	entity loot = CreateEntity( "prop_survival" )
 	loot.SetOrigin( origin )
 	loot.SetAngles( angles )
@@ -1090,7 +1215,7 @@ entity function SpawnGenericLoot( string ref, vector origin, vector angles, int 
 	//loot.kv.solid = SOLID_VPHYSICS
 
 	loot.SetUsable()
-	loot.SetFadeDistance( 100000 )
+	loot.SetFadeDistance( 20000 )
 	loot.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
 	loot.SetUsablePriority( USABLE_PRIORITY_HIGH )
 	
@@ -1113,7 +1238,6 @@ entity function SpawnGenericLoot( string ref, vector origin, vector angles, int 
 	loot.SetModel( data.model )
 	loot.SetSkin( 0 )
 
-	loot.kv.fadedist = -1
 	loot.kv.renderamt = 255
 	loot.kv.rendercolor = "255 255 255"
 
@@ -1261,18 +1385,30 @@ void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int 
 }
 
 entity function SpawnWeaponAndAmmo( string ref, vector origin )
-{
-	printt( "SpawnWeaponAndAmmo", ref, origin )
-	return null
+{    
+   //printt( "SpawnWeaponAndAmmo", ref, origin )
+   
+    entity ent
+   
+    //Also spawn 2 ammo containers (as one because edict limit)
+    LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
+    string ammoType = itemData.ammoType
+    if ( SURVIVAL_Loot_IsRefValid( ammoType ) )
+    {
+        itemData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
+        ent = SpawnGenericLoot(ammoType, origin + <RandomFloatRange( 25.0, 50.0 ), RandomFloatRange( 25.0, 50.0 ), 0>, <0, RandomFloatRange( -180.0, 180.0 ), 1>, itemData.countPerDrop * 2)
+    }
+    
+    ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180.0, 180.0 ), 90>, 1)
+    return ent
 }
 
 entity function SpawnArmor( string ref, vector origin )
 {
-	printt( "SpawnArmor", ref, origin )
-	return null
+    return SpawnGenericLoot(ref, origin, <0, RandomFloatRange( -180.0, 180.0 ), 1>, 1)
 }
 
-entity function SpawnNothing( string ref, vector origin )
+entity function SpawnNothing( string ref, vector origin, vector angles )
 {
 	printt( "SpawnNothing", ref, origin )
 	return null
@@ -1385,67 +1521,16 @@ void function ResetPlayerInventory( entity player )
 		Inventory_SetPlayerEquipment( player, "", slot )
 }
 
-LootZone function RollLootHotZone()
+LootZone function GetLootHotZone()
 {
-    array<LootZone> lootZones
-
-    array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
-    
-    foreach( lzEnt in lzEnts )
-	{
-		if( GetEditorClass( lzEnt ) != "info_survival_loot_hotzone" )
-			continue
-            
-        LootZone zone
-		zone.origin = lzEnt.GetOrigin()
-        zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
-        zone.zoneEnt = lzEnt
-        
-        lootZones.append( zone )
-    }
-    lootZones.randomize()
-    
-    //The hotzone
-    LootZone hotzone = lootZones[0]
-    return hotzone
+    FlagWait("Survival_LootZonesLoaded")
+	return file.hotZone
 }
 
 array<LootZone> function GetAllLootZones()
 {
-	array<LootZone> lootZones
-
-	array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
-
-	foreach( lzEnt in lzEnts )
-	{
-		if( GetEditorClass( lzEnt ) != "info_survival_loot_zone" )
-			continue
-		
-		LootZone zone
-		zone.origin = lzEnt.GetOrigin()
-
-		switch( lzEnt.kv.zone_class )
-		{
-			case "zone_hotzone":
-				zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
-				break
-			case "zone_high":
-				zone.zoneClass = eLootZoneClass.ZONE_HIGH
-				break
-			case "zone_medium":
-			case "Desertlands_Train_Station":
-				zone.zoneClass = eLootZoneClass.ZONE_MEDIUM
-				break
-			case "data_knife_vault":
-				zone.zoneClass = eLootZoneClass.ZONE_LOOT_VAULT
-				break
-			default:
-				zone.zoneClass = eLootZoneClass.ZONE_NONE
-		}
-		lootZones.append( zone )
-	}
-
-	return lootZones
+    FlagWait("Survival_LootZonesLoaded")
+	return file.lootZones
 }
 
 int function SURVIVAL_LootTierForLootGroup( int zoneClass )

@@ -428,6 +428,7 @@ void function PlayerStartSpectating( entity player, entity attacker )
 	{
 		if ( attacker == player ) return;
 		if ( attacker == null ) return;
+		if ( !IsValid( attacker ) || !IsAlive( attacker ) ) return;
 		
 		specTarget = attacker;
 	}

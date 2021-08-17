@@ -88,10 +88,10 @@ WeaponData
 	"ammo_clip_size"   								"3"
 	"ammo_per_shot"									"1"
 
-	"ammo_no_remove_from_stockpile"					"0"
+	"ammo_no_remove_from_stockpile"					"1"
 	"ammo_min_to_fire"								"1"
 	"low_ammo_fraction" 							"0.34"
-    "uses_ammo_pool"                                "1"
+//    "uses_ammo_pool"                                "1"
 
 	// Damage - When Used by Players
     "damage_near_value"   							"15"
@@ -180,7 +180,7 @@ WeaponData
 	"spread_air_hip"	   							"3.0"
 	"spread_air_ads"   								"3.0"
 
-	"ammo_suck_behavior"							"primary_weapons"
+//	"ammo_suck_behavior"							"primary_weapons"
 
 	// View Kick
 	"viewkick_spring" 								"shotgun_pistol"
@@ -266,6 +266,12 @@ WeaponData
     "clip_bodygroup_show_for_milestone_1"	"0"
     "clip_bodygroup_show_for_milestone_2"	"0"
     "clip_bodygroup_show_for_milestone_3"	"0"
+	
+    "bodygroup26_name"	"suppressor_round_small"
+    "bodygroup26_set"	"0"
+
+    "bodygroup27_name"	"suppressor_square_small"
+    "bodygroup27_set"	"0"
 
 	Mods
 	{
@@ -273,11 +279,34 @@ WeaponData
 	    {
 	    }
 
+        silencer //HACK JFS: Doesn't get applied on amped weapons. See bug 170460
+		{
+			"silenced"							"1"
+			"fire_sound_1_player_1p"			"weapon_shotgunpistol_fire_suppressed_1p"
+			"fire_sound_1_player_3p"			"weapon_shotgunpistol_fire_suppressed_3p"
+   			"damage_near_value"   				"--4"
+   			"damage_far_value"					"--4"
+    		"damage_very_far_value"				"--4"
+			"bodygroup27_set"	"1"
+
+			"minimap_reveal_distance"			"1"
+
+			"fx_muzzle_flash_view"				"wpn_muzzleflash_pistol_sup_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_pistol_sup"
+		}
+
+		// survival_finite_ammo
+        // {
+            // "ammo_default_total"							"0"
+            // "ammo_stockpile_max"							"12"
+        // }
+		
 		survival_finite_ammo
-        {
-            "ammo_default_total"							"0"
-            "ammo_stockpile_max"							"12"
-        }
+		{
+			"ammo_default_total"             "12"
+			"ammo_no_remove_from_stockpile"  "0"
+			"uses_ammo_pool"                 "1"
+		}
 
         hopup_unshielded_dmg
         {

@@ -349,7 +349,7 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 	array mods = player.GetExtraWeaponMods()
 	mods.append( "ult_active" )
 	player.SetExtraWeaponMods( mods )
-	player.ForceAutoSprintOn()
+	//player.ForceAutoSprintOn()
 
 	array<int> ids
 	ids.append( StatusEffect_AddEndless( player, eStatusEffect.speed_boost, 0.20 ) )
@@ -378,7 +378,7 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 				mods.fastremovebyvalue( "ult_active" )
 				player.SetExtraWeaponMods( mods )
 
-				player.ForceAutoSprintOff()
+				//player.ForceAutoSprintOff()
 				//RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, PhaseTunnel_CancelPlacement )
 				//RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM, PhaseTunnel_CancelPlacement )
 

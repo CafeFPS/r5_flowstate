@@ -92,7 +92,7 @@ void function AirdropSpawnThink()
                         printt("Spawned an airdrop! (", i, ") This dropcircle is ", data.dropCircle, " and there are ", numAirdropsInData, " this round.")
                         entity fx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( DROPPOD_SPAWN_FX ), data.originArray[i], data.anglesArray[i])
 
-                        thread AirdropItems( data.originArray[i], data.anglesArray[i], ["medic_super", "medic_super_side", "top_tier_inventory" ], fx, "droppod_loot_drop", null, 0, "" )
+                        thread AirdropItems( data.originArray[i], data.anglesArray[i], data.contents[i], fx, "droppod_loot_drop", null, 0, "" )
                         if(numAirdropsInData > 1)
                         {
                             //If we have more than one pod spawning, wait between spawning the airdrops.

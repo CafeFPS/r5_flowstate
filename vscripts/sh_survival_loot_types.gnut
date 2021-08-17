@@ -111,9 +111,6 @@ void function SURVIVAL_LootTypes_InitShared()
 	lt.equipmentSlot = ""
 	lt.groundActionFunc = GroundAltAction_None
 	lt.groundAltActionFunc = GroundAltAction_None
-	#if SERVER
-		lt.specialCaseSpawnFunction = SpawnNothing
-	#endif
 
 	lt = RegisterLootType( eLootType.DATAKNIFE )
 	lt.equipmentSlot = ""

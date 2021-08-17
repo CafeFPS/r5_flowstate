@@ -219,7 +219,8 @@ void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlag
 	// TODO: Fix vault key
 	
 //	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
-//			return
+	if ( !VaultPanel_HasPlayerDataKnife(playerUser) )
+			return
 
 	ExtendedUseSettings settings
 
@@ -249,6 +250,12 @@ void function OnVaultPanelUse( entity panel, entity playerUser, int useInputFlag
 
 void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSettings settings )
 {
+	if ( !VaultPanel_HasPlayerDataKnife(player) )
+	{
+		printf( "LootVaultPanelDebug: Player likely dropped the vault key while opening" )
+		return
+	}
+	
 	LootVaultPanelData panelData = GetVaultPanelDataFromEntity( panel )
 
 	printf( "LootVaultPanelDebug: Panel Use Success" )
@@ -266,6 +273,8 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 	panel.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 1000 )
 
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_vaultOpened" )
+	
+	SURVIVAL_RemoveFromPlayerInventory( player, "data_knife", 1 )
 
 	#endif
 
@@ -374,7 +383,8 @@ void function HideVaultPanel( LootVaultPanelData panelData )
 #if CLIENT
 string function VaultPanel_TextOverride( entity panel )
 {
-	if ( !GetLocalViewPlayer().GetPlayerNetBool( "hasDataKnife" ) )
+//	if ( !GetLocalViewPlayer().GetPlayerNetBool( "hasDataKnife" ) )
+	if ( !VaultPanel_HasPlayerDataKnife(GetLocalViewPlayer()) )
 		return "#HINT_VAULT_NEED"
 	return "#HINT_VAULT_USE"
 }
@@ -437,9 +447,7 @@ void function SetVaultPanelUsable( entity panel )
 	panel.SetUsable()
 	panel.SetUsableByGroup( "pilot" )
 	panel.AddUsableValue( VAULTPANEL_MAX_VIEW_ANGLE_TO_AXIS )
-	
-	// TODO: Fix prompt
-	panel.SetUsePrompts( "#HINT_VAULT_USE", "#HINT_VAULT_USE" )
+	panel.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
 	
 	#endif // SERVER
 
@@ -447,7 +455,6 @@ void function SetVaultPanelUsable( entity panel )
 	AddCallback_OnUseEntity( panel, OnVaultPanelUse )
 
 	#if CLIENT
-	
 	AddEntityCallback_GetUseEntOverrideText( panel, VaultPanel_TextOverride )
 	#endif // CLIENT
 }
@@ -566,7 +573,8 @@ entity function VaultPanel_GetTeammateWithKey( int teamIdx )
 
 	foreach( player in squad )
 	{
-		if ( player.GetPlayerNetBool( "hasDataKnife" ) )
+	//	if ( player.GetPlayerNetBool( "hasDataKnife" ) )
+		if ( VaultPanel_HasPlayerDataKnife(player)  )
 			return player
 	}
 
@@ -601,4 +609,16 @@ array< entity > function VaultPanel_GetAllMinimapObjs()
 	}
 
 	return mapObjs
+}
+
+bool function VaultPanel_HasPlayerDataKnife(entity player)
+{
+	array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+
+	foreach ( invItem in playerInventory )
+	{
+		if(invItem.type == 120) // no clue what its const is called, 120 == dataknife/vaultkey
+			return true
+	}
+	return false
 }

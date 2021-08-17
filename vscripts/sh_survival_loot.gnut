@@ -693,6 +693,7 @@ void function OnClientConnected( entity player )
 
 	ValidateDataTable( player, "datatable/survival_loot.rpak" )
 	ValidateDataTable( player, "datatable/survival_weapon_mods.rpak" )
+    ValidateDataTable( player, "datatable/survival_loot_groups_new.rpak" )
 }
 
 void function OnPlayerRespawned( entity player )
