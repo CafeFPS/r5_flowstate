@@ -126,8 +126,12 @@ void function StartRound()
     
     foreach(player in GetPlayerArray())
     {
-        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoLocationIntroCutscene")
-        thread ScreenFadeToFromBlack(player)
+        if(IsValid(player))
+        {
+            Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoLocationIntroCutscene")
+            thread ScreenFadeToFromBlack(player)
+        }
+        
     }
     wait 1
     foreach(player in GetPlayerArray())
@@ -141,10 +145,6 @@ void function StartRound()
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 4, eTDMAnnounce.MAP_FLYOVER)
     }
     wait LOCATION_CUTSCENE_DURATION
-    // foreach(player in GetPlayerArray())
-    // {
-    //     thread ScreenFadeToFromBlack(player)
-    // }
     wait 2
     foreach(player in GetPlayerArray())
     {   
