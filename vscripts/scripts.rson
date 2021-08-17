@@ -82,6 +82,7 @@ Scripts:
 	sh_survival_loot_actions.gnut
 	sh_survival_loot_types.gnut
 	sh_survival_equipment_slot.gnut
+    sh_survival_loot_distribution.gnut
 ]
 
 When: "SERVER || CLIENT || UI"

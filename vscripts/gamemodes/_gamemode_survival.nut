@@ -16,7 +16,6 @@ global function SURVIVAL_GetClosestValidCircleEndLocation
 global function SURVIVAL_CalculateAirdropPositions
 global function SURVIVAL_AddLootBin
 global function SURVIVAL_AddLootGroupRemapping
-global function SURVIVAL_GetMultipleWeightedItemsFromGroup
 global function SURVIVAL_DebugLoot
 global function Survival_AddCallback_OnAirdropLaunched
 global function Survival_CleanupPlayerPermanents
@@ -557,8 +556,7 @@ void function SURVIVAL_CalculateAirdropPositions()
                 airdropData.anglesArray.append(airdropPoint.angles)
                 
                 //Should impl contents here.
-                
-                
+                airdropData.contents.append([dataArr[2], dataArr[3], dataArr[4]])
             }  
         }
         calculatedAirdropData.append(airdropData)
@@ -574,12 +572,6 @@ void function SURVIVAL_AddLootBin( entity lootbin )
 void function SURVIVAL_AddLootGroupRemapping( string hovertank, string supplyship )
 {
 	
-}
-
-array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGroup, int numLootItems )
-{
-	array<string> group = ["TODO"]
-	return group
 }
 
 void function SURVIVAL_DebugLoot( string lootBinsLootInside, vector origin )

@@ -285,8 +285,8 @@ void function GenerateZoneTiers()
 	array<LootZone> lootZones = GetAllLootZones()
     LootZone hotZone = RollLootHotZone()
     
-    float hotZoneRadius = float(hotZone.zoneEnt.kv.script_radius)
-    vector hotZoneOrigin = hotZone.zoneEnt.GetOrigin()
+    float hotZoneRadius = hotZone.radius
+    vector hotZoneOrigin = hotZone.origin
     
     file.hotZoneRadius = hotZoneRadius
     file.hotZoneOrigin = hotZoneOrigin

@@ -93,8 +93,10 @@ global struct PingTableStruct // TODO: fix shared waypoints script, look at Burn
 global struct LootZone
 {
 	vector origin
+    float radius
+    float height
 	int zoneClass
-    entity zoneEnt
+    string ref
 }
 
 global struct ThreatEventCallbackData
