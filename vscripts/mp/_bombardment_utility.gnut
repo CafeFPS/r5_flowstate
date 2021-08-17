@@ -85,6 +85,7 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 	}
 }
 
+
 void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
 {
 	wait delay
@@ -108,24 +109,23 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 	fireGrenadeParams.doRandomVelocAndThinkVars = false
 	fireGrenadeParams.clientPredicted = false
 
-	
-
 	bool isFirst = true
 
-	perStep = width / perStep // perStep is originally CREEPING_BOMBARDMENT_WIDTH / CREEPING_BOMBARDMENT_BOMBS_PER_STEP, by doing width/perStep we get CREEPING_BOMBARDMENT_BOMBS_PER_STEP. The following code was built on the assumption that perStep = CREEPING_BOMBARDMENT_BOMBS_PER_STEP. 
-	float stepSize = width / perStep
+	float bombCount = width / perStep
+	float stepSize = width / bombCount
 	int cur = 0
 	while (cur < count) {
-		vector stepCenter = projectileOrigin + (direction * stepSize * (cur + 1))
+		vector stepCenter = projectileOrigin + (direction * perStep * (cur + 1))
 		vector rot270 = <direction.y, -direction.x, direction.z>
 		rot270 = rot270 * (width / 2)
-		vector lineStart = stepCenter - rot270
+		bool even = cur % 2 == 0;
+		vector lineStart = even ? (stepCenter - rot270) : (stepCenter + rot270)
 		vector reverse = <-1, -1, 1>
 		vector lineDirection = Normalize(rot270)
 		lineDirection = <-lineDirection.x, -lineDirection.y, lineDirection.z>
-		for (int curStep = 0 ; curStep < perStep ; curStep++) {
-			wait (interval / perStep)
-			vector targetPosition = lineStart - (lineDirection * stepSize * curStep)
+		for (int curStep = 0 ; curStep < bombCount ; curStep++) {
+			wait (interval / (2 * bombCount))
+			vector targetPosition = even ? (lineStart - (lineDirection * perStep * curStep)) : (lineStart + (lineDirection * perStep * curStep))
 			entity projectile = weapon.FireWeaponMissile( fireGrenadeParams )
 		
 			if(isFirst)
