@@ -421,8 +421,6 @@ void function PlayerStartSpectating( entity player, entity attacker )
 	clientTeam.fastremovebyvalue( player )
 
 	bool isAloneOrSquadEliminated = clientTeam.len() == 0
-
-	clientTeam.fastremovebyvalue( player )
 	
 	entity specTarget = null
 

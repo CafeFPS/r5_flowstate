@@ -665,6 +665,8 @@ bool function ClientCommand_Sur_TransferAttachment( entity player, array<string>
 	if ( toAttachPointAttachmentRef != "" )
 		weaponFrom.AddMod( toAttachPointAttachmentRef )
 
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
 	EmitSoundOnEntityOnlyToPlayer( player, player, "survival_loot_attach_pas_fast_swap" )
 
 	return true
