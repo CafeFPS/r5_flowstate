@@ -28,7 +28,7 @@ global function Loot_AddCallback_OnPlayerLootPickup
 global function SURVIVAL_NumItemsInInventory
 global function ResetPlayerInventory
 global function GetAllLootZones
-global function RollLootHotZone
+global function GetLootHotZone
 global function SURVIVAL_LootTierForLootGroup
 global function InfiniteAmmoEnabled
 global function Survival_SetInventoryEnabled
@@ -56,6 +56,7 @@ global enum eLootZoneClass
 
 struct {
 	array<LootZone> lootZones
+    LootZone hotZone
 } file
 
 bool function InfiniteAmmoEnabled()
@@ -136,6 +137,33 @@ void function LoadLootZonesForMap()
 		}
 		file.lootZones.append( zone )
 	}
+    
+    array<LootZone> hotZones
+
+    lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+    
+    foreach( lzEnt in lzEnts )
+	{
+		if( GetEditorClass( lzEnt ) != "info_survival_loot_hotzone" )
+			continue
+            
+        LootZone zone
+		zone.origin = lzEnt.GetOrigin()
+        zone.radius = float(lzEnt.kv.script_radius)
+        zone.height = float(lzEnt.kv.script_height)
+        zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+
+        hotZones.append( zone )
+    }
+    
+    //The hotzone
+    LootZone hotZone = hotZones.getrandom()
+    
+    file.hotZone.origin = hotZone.origin
+    file.hotZone.radius = hotZone.radius
+    file.hotZone.height = hotZone.height
+    file.hotZone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+    
     FlagSet( "Survival_LootZonesLoaded" )
     printt("Generated Loot Zones!", file.lootZones.len())
 }
@@ -348,6 +376,10 @@ void function SURVIVAL_PlaceGroundItems()
 string function LootZones_GetRefForOrigin(vector origin)
 {
     FlagWait("Survival_LootZonesLoaded")
+    
+    if(Distance2D(file.hotZone.origin, origin) <= file.hotZone.radius)
+        return "zone_hotzone"
+    
     foreach(LootZone lz in file.lootZones)
     {
         if(Distance2D(lz.origin, origin) <= lz.radius)
@@ -1448,30 +1480,10 @@ void function ResetPlayerInventory( entity player )
 		Inventory_SetPlayerEquipment( player, "", slot )
 }
 
-LootZone function RollLootHotZone()
+LootZone function GetLootHotZone()
 {
-    array<LootZone> lootZones
-
-    array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
-    
-    foreach( lzEnt in lzEnts )
-	{
-		if( GetEditorClass( lzEnt ) != "info_survival_loot_hotzone" )
-			continue
-            
-        LootZone zone
-		zone.origin = lzEnt.GetOrigin()
-        zone.radius = float(lzEnt.kv.script_radius)
-        zone.height = float(lzEnt.kv.script_height)
-        zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
-
-        lootZones.append( zone )
-    }
-    lootZones.randomize()
-    
-    //The hotzone
-    LootZone hotzone = lootZones[0]
-    return hotzone
+    FlagWait("Survival_LootZonesLoaded")
+	return file.hotZone
 }
 
 array<LootZone> function GetAllLootZones()

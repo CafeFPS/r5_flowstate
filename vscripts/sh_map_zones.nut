@@ -62,7 +62,6 @@ struct ZoneData
 {
 	entity     zoneTrigger
 	int		   zoneTier
-    bool       isHotZone = false
 	array<int> neighborZoneIds
 
 	float boundsArea2D
@@ -283,7 +282,7 @@ void function HotZone_MinimapThink()
 void function GenerateZoneTiers()
 {
 	array<LootZone> lootZones = GetAllLootZones()
-    LootZone hotZone = RollLootHotZone()
+    LootZone hotZone = GetLootHotZone()
     
     float hotZoneRadius = hotZone.radius
     vector hotZoneOrigin = hotZone.origin
@@ -306,8 +305,6 @@ void function GenerateZoneTiers()
 		{
 			if ( !mapZoneData.zoneTrigger.ContainsPoint( lootZone.origin ) )
 				continue
-            if ( Distance2D( mapZoneData.zoneTrigger.GetOrigin(), hotZoneOrigin ) <= hotZoneRadius)
-                mapZoneData.isHotZone = true
             
 			int zoneTier = SURVIVAL_LootTierForLootGroup( lootZone.zoneClass )
             
