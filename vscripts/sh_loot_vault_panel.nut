@@ -191,8 +191,6 @@ void function LootVaultPanelState_Unlocked( LootVaultPanelData panelData, int pa
 const int VAULTPANEL_MAX_VIEW_ANGLE_TO_AXIS = 60
 bool function LootVaultPanel_CanUseFunction( entity playerUser, entity panel )
 {
-	return true
-	
 	if ( Bleedout_IsBleedingOut( playerUser ) )
 		return false
 
@@ -449,7 +447,8 @@ void function SetVaultPanelUsable( entity panel )
 	panel.AddUsableValue( VAULTPANEL_MAX_VIEW_ANGLE_TO_AXIS )
 	
 	// TODO: Fix prompt
-	panel.SetUsePrompts( "#HINT_VAULT_USE", "#HINT_VAULT_USE" )
+	panel.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
+//	panel.SetUsePrompts( "#HINT_VAULT_USE", "#HINT_VAULT_USE" )
 	
 	#endif // SERVER
 
