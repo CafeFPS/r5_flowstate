@@ -85,7 +85,6 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 	}
 }
 
-
 void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
 {
 	wait delay
@@ -113,7 +112,7 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 
 	float bombCount = width / perStep
 	int cur = 0
-	while (cur < count) {
+	for (int cur = 0; cur < count; cur++) {
 		vector stepCenter = projectileOrigin + (direction * perStep * (cur + 1))
 		vector rot270 = <direction.y, -direction.x, direction.z>
 		rot270 = rot270 * (width / 2)
@@ -138,8 +137,6 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 			projectile.SetAngles(<90,0,0>)
 			projectile.SetOrigin(targetPosition + <0, 0, 5000>)
 			projectile.SetVelocity(<0,0,-projectile_launch_speed>)
-		
 		}
-		cur = cur + 1
 	}
 }
