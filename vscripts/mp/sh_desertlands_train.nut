@@ -80,7 +80,6 @@ void function InitTrainClientEnts()
 	if ( !Desertlands_IsTrainEnabled() )
 		return
 
-
 	//
 	entity trainMover = GetEntByScriptName( format( "%s_%i", TRAIN_MOVER_NAME, 0 ) )
 	foreach ( entity ambientGeneric in GetEntArrayByScriptName( "Vehicles_Train_SpeedController" ) )
@@ -277,12 +276,18 @@ void function DesertlandsTrain_Init()
 		printl(">>>> " + car)
 		foreach(entity bin in lootBins)
 		{
-			if(bin.GetModelName().find("loot_bin") == 0)
+			if(bin.GetModelName().find("loot_bin_0") <= 0)
 				continue
 			
 			float distance = Distance(car.GetOrigin(),bin.GetOrigin())
 			if(distance > 300)
 				continue
+			
+            if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true)
+            {   
+                ClearLootBinContents( bin )
+                AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "Desertlands_Train", RandomIntRange(2,4) ) )
+            }
 			
 			entity parentPoint = CreateEntity( "script_mover_lightweight" )
 			parentPoint.kv.solid = 0
