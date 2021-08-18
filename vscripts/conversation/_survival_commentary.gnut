@@ -16,7 +16,7 @@ void function SurvivalCommentary_Init()
 {
 	ShSurvivalCommentary_Init()
 
-	if ( !StagingAreaEnabled() )
+	if ( !IsFiringRangeGameMode() )
 		AddCallback_OnPlayerKilled( OnPlayerKilled )
 
 	FlagInit( "SurvivalCommentary_FirstBloodReached", false )

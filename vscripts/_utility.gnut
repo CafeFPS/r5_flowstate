@@ -4794,11 +4794,6 @@ bool function PlayerRevivingEnabled()
 	return GetCurrentPlaylistVarBool( "survival_revive_enabled", true )
 }
 
-bool function StagingAreaEnabled()
-{
-	return GetCurrentPlaylistVarBool( "survival_staging_area_enabled", false )
-}
-
 void function SetRandomStagingPositionForPlayer( entity player )
 {
 	array<entity> allHumanSpawnPoints = GetEntArrayByClass_Expensive( "info_spawnpoint_human" )

@@ -86,9 +86,9 @@ void function RespawnPlayerInDropship( entity player )
 
 void function Sequence_Playing()
 {
-	SetServerVar( "minimapState", StagingAreaEnabled() ? eMinimapState.Hidden : eMinimapState.Default )
+	SetServerVar( "minimapState", IsFiringRangeGameMode() ? eMinimapState.Hidden : eMinimapState.Default )
 
-	if ( StagingAreaEnabled() )
+	if ( IsFiringRangeGameMode() )
 	{
 		SetGameState( eGameState.WaitingForPlayers )
 
@@ -109,13 +109,9 @@ void function Sequence_Playing()
 		int i = 0
 		foreach ( player in GetPlayerArray() )
 		{
-			
-			if(!IsFiringRangeGameMode())	// TODO: Top of the function probably needs a rewrite
-			{
-				// circle
-				float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
-				player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
-			}
+			// circle
+			float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
+			player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
 	
 			DecideRespawnPlayer( player )
 	
@@ -471,7 +467,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 
-	if ( StagingAreaEnabled() )
+	if ( IsFiringRangeGameMode() )
 	{
 		thread function() : ( victim )
 		{
@@ -527,7 +523,7 @@ void function OnClientConnected( entity player )
 				// Joined too late, assign a random legend so everything runs fine
 				CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] )
 
-			if ( StagingAreaEnabled() )
+			if ( IsFiringRangeGameMode() )
 			{
 				PlayerMatchState_Set( player, ePlayerMatchState.STAGING_AREA )
 
