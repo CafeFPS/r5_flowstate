@@ -111,7 +111,6 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 	bool isFirst = true
 
 	float bombCount = width / perStep
-	int cur = 0
 	for (int cur = 0; cur < count; cur++) {
 		vector stepCenter = projectileOrigin + (direction * perStep * (cur + 1))
 		vector rot270 = <direction.y, -direction.x, direction.z>
