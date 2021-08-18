@@ -90,7 +90,6 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 	}
 }
 
-
 void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
 {
 	wait delay
