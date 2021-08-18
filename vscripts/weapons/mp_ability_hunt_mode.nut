@@ -199,7 +199,7 @@ void function HuntMode_UpdatePlayerScreenColorCorrection( entity player )
 	ColorCorrection_SetExclusive( file.colorCorrection, true )
 	ColorCorrection_SetWeight( file.colorCorrection, 1.0 )
 
-	const FOV_SCALE = 1.2
+	const FOV_SCALE = 1.00
 	const LERP_IN_TIME = 0.0125	// hack! because statusEffect doesn't seem to have a lerp in feature?
 	float startTime = Time()
 
