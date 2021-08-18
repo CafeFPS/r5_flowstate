@@ -440,6 +440,11 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 		playerToRes.SetPlayerNetBool( "usedSelfRevive", true )
         Inventory_SetPlayerEquipment(playerToRes, "incapshield_pickup_lv3", "incapshield")
     }
+	else
+	{
+		if ( GetCurrentPlaylistVarBool( "thank_for_revive_enabled", true ) )
+			Remote_CallFunction_NonReplay( playerToRes, "ServerCallback_PromptSayThanks", playerHealer )
+	}
 
 	playerToRes.Signal( "BleedOut_OnRevive" )
 	playerHealer.p.revivesGiven++

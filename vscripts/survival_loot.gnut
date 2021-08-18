@@ -101,6 +101,10 @@ void function SV_Survival_Loot_Init()
 	RegisterSignal( "SwitchToOrdnance" )
 	RegisterSignal( "SwapToNextOrdnance" )
 
+	RegisterSignal( "OnItemPickup" )
+
+	AddPingCallbackForType( ePingType.LOOT, TryThankForLoot )
+
 	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
 }
 
@@ -1011,6 +1015,8 @@ void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int act
 	LootData pickupData = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
 	BroadcastItemPickup( player, pickupData.ref, action )
 
+	pickup.Signal( "OnItemPickup", { player = player } )
+
 	if (!shouldKeepAlive)
 	{
 		pickup.Destroy()
@@ -1711,4 +1717,23 @@ bool function IsWeaponInPrimarySlot( entity player, entity weapon )
 
 	bool isInPrimarySlot = IsValid( weapon ) && (weapon == weaponInSlot0 || weapon == weaponInSlot1)
 	return isInPrimarySlot
+}
+
+void function TryThankForLoot( entity player, entity wp, entity pingEnt, int pingType )
+{
+	if ( !IsValid( pingEnt ) )
+		return
+
+	if ( !GetCurrentPlaylistVarBool( "thank_for_loot_ping_enabled", true ) )
+		return
+
+	thread function() : ( player, wp, pingEnt )
+	{
+		entity pickedUpBy = expect entity( pingEnt.WaitSignal( "OnItemPickup" ).player )
+
+		if ( !IsValid( pickedUpBy ) || player == pickedUpBy || !IsValid( wp ) )
+			return
+
+		Remote_CallFunction_NonReplay( pickedUpBy, "ServerCallback_PromptSayThanks", player )
+	}()
 }

@@ -357,6 +357,13 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 		// Cancel the damage
 		DamageInfo_SetDamage( damageInfo, 0 )
+
+		// Run client callback
+		int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
+		entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+		foreach ( cbPlayer in GetPlayerArray() )
+			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, scriptDamageType, sourceId )
 	}
 }
 

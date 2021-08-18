@@ -801,6 +801,14 @@ bool function ClientCommand_Quickchat( entity player, array<string> args )
 				subject = player.GetNormalWeapon( es.weaponSlot )
 			}
 		}
+
+		if ( args.len() > 2 )
+		{
+			subject = GetEntityFromEncodedEHandle( int( args[2] ) )
+
+			if ( !IsValid( subject ) )
+				return true
+		}
 	}
 
 	HandleBroadcastCommsAction( player, index, subject, player.GetOrigin(), eCommsFlags.NONE )
@@ -812,6 +820,10 @@ void function HandleBroadcastCommsAction( entity playerSpeaking, int commsAction
 	array<entity> players = GetPlayerArrayOfTeam_Alive( playerSpeaking.GetTeam() )
 	foreach ( player in players )
 		Remote_CallFunction_Replay( player, "HandleBroadcastCommsAction", playerSpeaking, commsAction, subjectEnt, subjectPos, commsFlags )
+
+	if ( GetCurrentPlaylistVarBool( "thanks_welcome_reply_enabled", true ) )
+		if ( commsAction == eCommsAction.REPLY_THANKS && IsValid( subjectEnt ) && subjectEnt.IsPlayer() )
+			Remote_CallFunction_NonReplay( subjectEnt, "ServerCallback_PromptWelcome" )
 }
 
 #endif // SERVER
