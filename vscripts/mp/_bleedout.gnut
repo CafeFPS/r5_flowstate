@@ -331,14 +331,33 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	asset toResPlayerSettings = CharacterClass_GetSetFile( toResCharacter )
 	string toResRigWeight = GetGlobalSettingsString( toResPlayerSettings, "bodyModelRigWeight" )
 	// player.GetPlayerSettingString( "bodyModelRigWeight" )
+	string healerAnimation
+	string toResAnimation
+	LoadoutEntry characterSlot = Loadout_CharacterClass()
 
-	string healerAnimation = "Pilot_doomed_revive_healthy"
-	string toResAnimation = "Pilot_doomed_revive_injured"
+	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( playerHealer ), characterSlot ) // this sometimes waits forever
+	string characterRef = ItemFlavor_GetHumanReadableRef( character )
+
+	switch( characterRef )
+	{
+		case "character_lifeline":
+			healerAnimation = "mp_pt_light_revive_quick_healthy"
+			toResAnimation = "Pilot_doomed_revive_quick_injured"
+				break
+		case "character_wattson":
+			healerAnimation = "Pilot_doomed_revive_shock_healthy"
+			toResAnimation = "Pilot_doomed_revive_shock_injured"
+				break
+		default:
+			healerAnimation = "Pilot_doomed_revive_healthy"
+			toResAnimation = "Pilot_doomed_revive_injured"
+	}
+
 
 	if ( selfRes )
 		healerAnimation = "mp_pt_" + toResRigWeight + "_self_revive_crouch"
 
-	float firstAidTime = playerToRes.GetSequenceDuration( healerAnimation ) // playerHealer == playerToRes ? Bleedout_GetFirstAidTimeSelf( playerHealer ) : Bleedout_GetFirstAidTime( playerHealer )
+	float firstAidTime = playerToRes.GetSequenceDuration( toResAnimation ) // playerHealer == playerToRes ? Bleedout_GetFirstAidTimeSelf( playerHealer ) : Bleedout_GetFirstAidTime( playerHealer )
 	float firstAidHealPercent = Bleedout_GetFirstAidHealPercent( playerHealer )
 
 	float endTime = Time() + firstAidTime
