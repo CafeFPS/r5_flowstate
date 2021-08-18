@@ -67,13 +67,19 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		}
 		EmitSoundOnEntity( projectile, sound_incoming )
 		
-		/* TODO: Should start from the center and move toward the offset pos instead of linear vertical */
+		TraceResults trace = TraceLine( projectile.GetOrigin(), origin+landRadiusOffset - <0,0,10000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+
+		vector target = trace.endPos
+		vector velocity = target - fireGrenadeParams.pos
+		velocity = Normalize(velocity)
+		velocity *= projectile_launch_speed
+
 		projectile.SetAngles(<90,0,0>)
-		projectile.SetOrigin(fireGrenadeParams.pos + landRadiusOffset)
-		projectile.SetVelocity(<0,0,-projectile_launch_speed>)
-		
-		/* TODO: Should get the correct destination of the projectile*/	
-		TraceResults trace = TraceLine( projectile.GetOrigin(), origin+landRadiusOffset - <0,0,2000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		projectile.SetOrigin(fireGrenadeParams.pos)
+		projectile.SetVelocity(velocity)
+		projectile.kv.gravity = 0
+
+
 		if ( IsValid( trace.hitEnt ) )
 		{
 			entity marker = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effect ), trace.endPos, <0,0,0> )
@@ -84,6 +90,7 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		
 	}
 }
+
 
 void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
 {
@@ -111,6 +118,7 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 	bool isFirst = true
 
 	float bombCount = width / perStep
+	vector missileOrigin = projectileOrigin + (direction * perStep * ((count / 2) + 1)) + <0, 0, 15000>
 	for (int cur = 0; cur < count; cur++) {
 		vector stepCenter = projectileOrigin + (direction * perStep * (cur + 1))
 		vector rot270 = <direction.y, -direction.x, direction.z>
@@ -122,7 +130,7 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 		lineDirection = <-lineDirection.x, -lineDirection.y, lineDirection.z>
 		for (int curStep = 0 ; curStep < bombCount ; curStep++) {
 			wait (interval / (2 * bombCount))
-			vector targetPosition = even ? (lineStart - (lineDirection * perStep * curStep)) : (lineStart + (lineDirection * perStep * curStep))
+			vector targetPosition = even ? (lineStart - (lineDirection * perStep * curStep) - (lineDirection * (perStep / 2))) : (lineStart + (lineDirection * perStep * curStep) + (lineDirection * (perStep / 2)))
 			entity projectile = weapon.FireWeaponMissile( fireGrenadeParams )
 		
 			if(isFirst)
@@ -132,10 +140,13 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 			}
 			// todo sounds for incoming warning EmitSoundOnEntity( projectile, sound_incoming )
 			
-			/* TODO: Should start from the center and move toward the offset pos instead of linear vertical */
 			projectile.SetAngles(<90,0,0>)
-			projectile.SetOrigin(targetPosition + <0, 0, 5000>)
-			projectile.SetVelocity(<0,0,-projectile_launch_speed>)
+			projectile.SetOrigin(missileOrigin)
+			vector velocity = targetPosition - missileOrigin
+			velocity = Normalize(velocity)
+			velocity *= projectile_launch_speed
+			projectile.kv.gravity = 0
+			projectile.SetVelocity(velocity)
 		}
 	}
 }
