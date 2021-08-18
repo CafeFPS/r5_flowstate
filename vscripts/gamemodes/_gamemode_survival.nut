@@ -86,7 +86,20 @@ void function RespawnPlayerInDropship( entity player )
 
 void function Sequence_Playing()
 {
-	SetServerVar( "minimapState", true )
+	SetServerVar( "minimapState", StagingAreaEnabled() ? eMinimapState.Hidden : eMinimapState.Default )
+
+	if ( StagingAreaEnabled() )
+	{
+		SetGameState( eGameState.WaitingForPlayers )
+
+		foreach ( player in GetPlayerArray() )
+		{
+			SetRandomStagingPositionForPlayer( player )
+			DecideRespawnPlayer( player )
+		}
+
+		return
+	}
 
 	if ( !GetCurrentPlaylistVarBool( "jump_from_plane_enabled", true ) )
 	{
@@ -454,6 +467,19 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 
+	if ( StagingAreaEnabled() )
+	{
+		thread function() : ( victim )
+		{
+			wait 5.0
+
+			SetRandomStagingPositionForPlayer( victim )
+			DecideRespawnPlayer( victim )
+		}()
+
+		return
+	}
+
 	SetPlayerEliminated( victim )
 	PlayerStartSpectating( victim, attacker )
 
@@ -497,7 +523,14 @@ void function OnClientConnected( entity player )
 				// Joined too late, assign a random legend so everything runs fine
 				CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] )
 
-			if ( Flag( "SpawnInDropship" ) )
+			if ( StagingAreaEnabled() )
+			{
+				PlayerMatchState_Set( player, ePlayerMatchState.STAGING_AREA )
+
+				SetRandomStagingPositionForPlayer( player )
+				DecideRespawnPlayer( player )
+			}
+			else if ( Flag( "SpawnInDropship" ) )
 				RespawnPlayerInDropship( player )
 			else
 			{
