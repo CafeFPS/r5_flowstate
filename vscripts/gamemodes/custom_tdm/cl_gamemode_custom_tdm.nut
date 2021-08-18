@@ -108,7 +108,10 @@ void function ServerCallback_TDM_DoLocationIntroCutscene()
 
 void function ServerCallback_TDM_DoLocationIntroCutscene_Body()
 {
-    float playerFOV = GetLocalClientPlayer().GetFOV()
+    entity player = GetLocalClientPlayer()
+    EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
+     
+    float playerFOV = player.GetFOV()
     
     entity camera = CreateClientSidePointCamera(file.selectedLocation.spawns[teams[0]][0].origin + file.selectedLocation.cinematicCameraOffset, <90, 90, 0>, 17)
     camera.SetFOV(90)
@@ -144,6 +147,8 @@ void function ServerCallback_TDM_DoLocationIntroCutscene_Body()
     cutsceneMover.Destroy()
     
     camera.Destroy()
+    
+    FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
 }
 
 void function ServerCallback_TDM_SetSelectedLocation(int sel)
