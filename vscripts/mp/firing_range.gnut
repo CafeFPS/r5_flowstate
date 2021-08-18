@@ -2,8 +2,10 @@ global function FiringRangeGameMode_Init
 
 global const float FIRINGRANGE_DISSOLVE_TIME = 5.0
 global const float FIRINGRANGE_RACK_RESPAWN_TIME = 0.5
-global const float FIRINGRANGE_ATTACHMENTS_POS_OFFSET = 128.0
-global const int FIRINGRANGE_ATTACHMENTS_MAX_COLUMN = 6
+
+global const int FIRINGRANGE_ATTACHMENTS_MAX_COLUMNS = 6
+global const int FIRINGRANGE_ITEMS_MAX_COLUMNS = 2
+global const int FIRINGRANGE_ORDNANCE_MAX_COLUMNS = 2
 
 #if(false)
 
@@ -23,6 +25,11 @@ global function SCB_BroadcastFriendlyFireChange
 struct {
 	table<string, array<LootData> > weaponsPerAmmoType,
 	table<string, array<string> > attachmentsPerAmmoType
+	array< array<LootData> > equipmentsPerIndex
+	array<LootData> items
+	array<LootData> ordnance
+
+	array<entity> rackSpawns
 } file
 
 void function FiringRangeGameMode_Init()
@@ -80,20 +87,19 @@ void function EntitiesDidLoad()
 	foreach(entity lootbin in lootbins)
 		lootbin.Destroy()
 
-	FillWeaponTable()
-	FillAttachmentTable()
+	file.rackSpawns = GetEntArrayByScriptName("weapon_racks")
+
+	FillWeaponTable() // load first to know where the rest goes
+	FillAttachmentTable() // requires weapons to be loaded
+	FillEquipmentTable() // armor + helmet + bp + shield
+	FillOrdnanceTable() // nades
+	FillItemTable() // health + batts + the rest
+
 	CreateRacks()
 	SpawnAttachments()
-
-	foreach(string ammoType, array<string> attachments in file.attachmentsPerAmmoType)
-	{
-		printl(">> " + ammoType)
-		print("\t- ")
-		foreach(string attachment in attachments)
-		{
-			print(" " + attachment)
-		}
-	}
+	SpawnEquipments()
+	SpawnOrdnance()
+	SpawnItems()
 	#endif
 }
 
@@ -158,6 +164,31 @@ void function FillAttachmentTable()
 	}
 }
 
+// Append all equipments
+void function FillEquipmentTable()
+{
+	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.ARMOR ))
+	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.HELMET ))
+	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.INCAPSHIELD ))
+	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.BACKPACK ))		
+}
+
+// Append all items
+void function FillItemTable()
+{
+	file.items.extend(SURVIVAL_Loot_GetByType( eLootType.HEALTH ))
+	file.items.extend(SURVIVAL_Loot_GetByType( eLootType.RESOURCE ))
+	file.items.extend(SURVIVAL_Loot_GetByType( eLootType.DATAKNIFE ))
+	file.items.extend(SURVIVAL_Loot_GetByType( eLootType.CUSTOMPICKUP ))
+	file.items.extend(SURVIVAL_Loot_GetByType( eLootType.JUMPKIT ))
+}
+
+// Append all ordnances
+void function FillOrdnanceTable()
+{
+	file.ordnance.extend(SURVIVAL_Loot_GetByType( eLootType.ORDNANCE ))
+}
+
 // Add string only if missing
 void function ExtendLootDataArrayIfMissing(array<LootData> from, array<LootData> to)
 {
@@ -170,10 +201,115 @@ void function ExtendLootDataArrayIfMissing(array<LootData> from, array<LootData>
 	}
 }
 
+// Spawn nades at the left of the racks
+void function SpawnOrdnance()
+{
+	const float cornerOffset = 128.0 - 24.0
+	const float itemOffsetX = 16.0
+	const float itemOffsetY = 16.0
+	const float itemOffsetZ = 4.0
+	foreach(entity rack in file.rackSpawns)
+	{
+		vector rght = rack.GetRightVector()
+		vector fwd = rack.GetForwardVector()
+		vector up = rack.GetUpVector()
+
+		vector firstPos = rack.GetOrigin() + rght*cornerOffset
+		
+		int col = 0 
+		int row = 0 
+		for(int i = 0; i<file.ordnance.len(); i++)
+		{
+			// Double it
+			for(int j = 0; j<2; j++)
+			{
+				if(col >= FIRINGRANGE_ORDNANCE_MAX_COLUMNS)
+				{
+					row++
+					col = 0
+				}
+
+				LootData item = file.ordnance[i]
+				vector pos = firstPos + rght*itemOffsetX*col + fwd*itemOffsetY*row + up*itemOffsetZ
+
+				entity loot = SpawnGenericLoot(item.ref, pos, <0,90,0>, 1)
+				thread OnPickupGenericThread(loot, item.ref)
+				
+				col++
+			}
+		}
+	}
+}
+
+// Spawn all items at the opposite right of the racks
+void function SpawnItems()
+{
+	const float otherSideOffset = 512.0
+	const float cornerOffset = 128.0 - 16.0
+	const float itemOffsetX = 32.0
+	const float itemOffsetY = 24.0
+	foreach(entity rack in file.rackSpawns)
+	{
+		vector rght = rack.GetRightVector()
+		vector fwd = rack.GetForwardVector()
+
+		vector firstPos = rack.GetOrigin() + fwd*otherSideOffset + rght*cornerOffset
+		
+		int col = 0 
+		int row = 0 
+		for(int i = 0; i<file.items.len(); i++)
+		{
+			if(col >= FIRINGRANGE_ITEMS_MAX_COLUMNS)
+			{
+				row++
+				col = 0
+			}
+
+			LootData item = file.items[i]
+			vector pos = firstPos + rght*itemOffsetX*col - fwd*itemOffsetY*row
+
+			entity loot = SpawnGenericLoot(item.ref, pos, <0,90,0>, 1)
+			thread OnPickupGenericThread(loot, item.ref)
+			
+			col++
+		}
+	}
+}
+
+// Spawn all equipments at the opposite left of the racks
+void function SpawnEquipments()
+{
+	const float otherSideOffset = 512.0
+	const float cornerOffset = 256.0
+	const float itemOffsetX = 32.0
+	const float itemOffsetY = 24.0
+	foreach(entity rack in file.rackSpawns)
+	{
+		vector rght = rack.GetRightVector()
+		vector fwd = rack.GetForwardVector()
+
+		vector firstPos = rack.GetOrigin() + fwd*otherSideOffset - rght*cornerOffset
+		
+		for(int i = 0; i<file.equipmentsPerIndex.len(); i++)
+		{
+			array<LootData> group = file.equipmentsPerIndex[i]
+
+			for(int j = 0; j<group.len(); j++)
+			{
+				LootData item = group[j]
+				vector pos = firstPos + rght*itemOffsetX*j - fwd*itemOffsetY*i
+
+				entity loot = SpawnGenericLoot(item.ref, pos, <0,90,0>, 1)
+				thread OnPickupGenericThread(loot, item.ref)
+			}
+		}
+	}
+}
+
+// Spawn attachments at the right of the racks
 void function SpawnAttachments()
 {
-	array<entity> rackSpawns = GetEntArrayByScriptName("weapon_racks")
-
+	const float cornerOffset = 128.0
 	const float placementOffset = 24.0
 	int ammoIndex = 0
 	foreach ( string ammoType, array<LootData> arr in file.weaponsPerAmmoType) // Correspond to each rack
@@ -183,16 +319,14 @@ void function SpawnAttachments()
 			if(ammoType != ammoType2)
 				continue
 
-			entity r = rackSpawns[ammoIndex]
-			vector firstPos = r.GetOrigin() - r.GetRightVector()*FIRINGRANGE_ATTACHMENTS_POS_OFFSET
-
-			printl("AMMO: " + ammoIndex + ammoType)
+			entity r = file.rackSpawns[ammoIndex]
+			vector firstPos = r.GetOrigin() - r.GetRightVector()*cornerOffset
 
 			int row = 0
 			int col = 0
 			foreach(string ref in refs)
 			{
-				if(col >= FIRINGRANGE_ATTACHMENTS_MAX_COLUMN)
+				if(col >= FIRINGRANGE_ATTACHMENTS_MAX_COLUMNS)
 				{
 					row++
 					col = 0
@@ -212,23 +346,19 @@ void function SpawnAttachments()
 // Create weapon racks per ammo type
 void function CreateRacks()
 {
-	array<entity> rackSpawns = GetEntArrayByScriptName("weapon_racks")
-
 	const float rackOffset = 32.0
 
 	int ammoIndex = 0
 	foreach ( string ammoType, array<LootData> arr in file.weaponsPerAmmoType)
 	{ 
-		if(ammoIndex >= rackSpawns.len() )
+		if(ammoIndex >= file.rackSpawns.len() )
 			break
-
-		printl(">> Spawning weapons from ammo type: " + ammoType)
 
 		float rOffset = (arr.len()*rackOffset)/2
 
 		for(int i = 0; i<arr.len(); i++)
 		{
-			entity r = rackSpawns[ammoIndex]
+			entity r = file.rackSpawns[ammoIndex]
 			vector pos = r.GetOrigin() + r.GetRightVector()*i*rackOffset - r.GetRightVector()*rOffset
 			vector ang = r.GetAngles()
 
