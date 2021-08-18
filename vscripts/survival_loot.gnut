@@ -88,7 +88,7 @@ void function SV_Survival_Loot_Init()
 	AddClientCommandCallback( "Sur_SwapToNextOrdnance", ClientCommand_Sur_SwapToNextOrdnance )
 	AddClientCommandCallback( "Sur_EquipOrdnance", ClientCommand_Sur_EquipOrdnance )
 
-	AddClientCommandCallback( "BackpackClosed", ClientCommand_BackpackClosed )
+	AddClientCommandCallback( "PickupSurvivalItem", ClientCommand_PickupSurvivalItem )
 
 	SetCallback_OnPlayerReload( OnWeaponReload )
 	AddCallback_OnWeaponAttack( OnWeaponAttack_OrdnanceControl )
@@ -356,19 +356,75 @@ bool function ClientCommand_Sur_SwapToNextOrdnance( entity player, array<string>
 	return true
 }
 
+bool function ClientCommand_PickupSurvivalItem( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( args.len() < 2 )
+		return true
+
+	int lootEntEEH = int( args[0] )
+	if ( lootEntEEH == -1 )
+		return true
+
+	int pickupFlags = int( args[1] )
+	if ( pickupFlags == -1 )
+		return true
+
+	entity lootEnt = GetEntityFromEncodedEHandle( lootEntEEH )
+	if ( !IsValid( lootEnt ) )
+		return true
+
+	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
+		return true
+
+	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) )
+		return true
+
+	entity deathBox = null
+	if ( args.len() > 2 )
+	{
+		int deathBoxEEH = int( args[2] )
+		if ( deathBoxEEH  == -1 )
+			return true
+	
+		deathBox = GetEntityFromEncodedEHandle( deathBoxEEH )
+		if ( !IsValid( deathBox ) )
+			return true
+
+		if ( deathBox.GetNetworkedClassName() != "prop_death_box" )
+			return true
+
+		if ( !deathBox.GetLinkEntArray().contains( lootEnt ) )
+			return true
+	}
+
+	Survival_PickupItem( lootEnt, player, pickupFlags, deathBox )
+
+	if ( deathBox.GetLinkEntArray().len() == 0 )
+		deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+	else
+		UpdateDeathBoxHighlight( deathBox )
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
 void function SURVIVAL_PlaceGroundItems()
 {
 	array<entity> itemEnts = GetEntArrayByClass_Expensive( "script_ref" )
 
-	foreach ( ent in itemEnts )
+	if ( GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
 	{
-		if( GetCurrentPlaylistVarBool("ground_loot_enable", true) == false)
-			continue
-
-		if ( GetEditorClass( ent ) != "info_survival_weapon_location" )
-			continue
-
-		OnGroundLootSpawned( ent )
+		foreach ( ent in itemEnts )
+		{
+			if ( GetEditorClass( ent ) != "info_survival_weapon_location" )
+				continue
+	
+			OnGroundLootSpawned( ent )
+		}
 	}
 
 	FlagSet( "Survival_LootSpawned" )
@@ -570,21 +626,23 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 		vector origin = GetThrowOrigin( player )
 		vector fwd    = AnglesToForward( player.EyeAngles() )
 
+		int currentSlot = SURVIVAL_GetActiveWeaponSlot( player )
+
 		if ( !SURVIVAL_DropMainWeapon( player, slotRef, origin, fwd ) )
 			return true
 		
-		if ( ( "main_weapon" + SURVIVAL_GetActiveWeaponSlot( player ) ) == slotRef )
+		if ( currentSlot == es.weaponSlot )
 		{
 			string otherWeaponEsString = EquipmentSlot_GetOtherWeaponSlot( slotRef )
 			EquipmentSlot otherWeaponEs = Survival_GetEquipmentSlotDataByRef( otherWeaponEsString )
 			LootData otherWeaponData = EquipmentSlot_GetEquippedLootDataForSlot( player, otherWeaponEsString )
-	
+
 			player.SetActiveWeaponBySlot( 
 				eActiveInventorySlot.mainHand, 
 				otherWeaponData.ref != ""
 					? otherWeaponEs.weaponSlot // Other weapon exists, switch to it
 					: WEAPON_INVENTORY_SLOT_PRIMARY_2 // No other weapon, switch to melee instead
-			)	
+			)
 		}
 	}
 	else
@@ -602,6 +660,8 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 
 		Inventory_SetPlayerEquipment( player, "", slotRef )
 	}
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 	return true
 }
@@ -630,6 +690,8 @@ bool function ClientCommand_Sur_DropBackpackItem( entity player, array<string> a
 
 		SURVIVAL_DropBackpackItem( player, itemRef, count )
 	}
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 	return true
 }
@@ -886,6 +948,8 @@ bool function ClientCommand_PlayerSwitchedWeapons( entity player, array<string> 
 
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, slot )
 
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
 	return true
 }
 
@@ -928,7 +992,6 @@ void function SpawnLoot( string name, vector origin, bool idk )
 	SURVIVAL_ThrowLootFromPoint( origin, <0, 0, 0>, name, itemData.countPerDrop )
 }
 
-
 void function SURVIVAL_ThrowLootFromPoint( vector throwOrigin, vector forward, string ref, int count )
 {
 	entity loot = SpawnGenericLoot( ref, throwOrigin, <0, 0, 0>, count )
@@ -970,7 +1033,16 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 
 	if ( takeFromInventory && item != "" )
 		if ( IsValid( deathBox ) )
-			printt( "!!!", FUNC_NAME(), "deathBox valid! TODO" )
+		{
+			foreach ( deathBoxItem in deathBox.GetLinkEntArray() )
+			{
+				if ( deathBoxItem.e.lootRef == item )
+				{
+					deathBoxItem.Destroy()
+					break
+				}
+			}
+		}
 		else
 			SURVIVAL_RemoveFromPlayerInventory( player, item, 1 )
 	
@@ -987,7 +1059,10 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 		if ( returnToInventory )
 		{
 			if ( IsValid( deathBox ) )
-				printt( "!!!", FUNC_NAME(), "deathBox valid! TODO" )
+			{
+				entity modLoot = SpawnGenericLoot( modToRemove, deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
+				AddToDeathBox( modLoot, deathBox )
+			}
 			else
 				SURVIVAL_AddToPlayerInventory( player, modToRemove, 1 )
 		}
@@ -1087,7 +1162,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 
 	if ( IsValid( activeWeapon ) && SURVIVAL_Loot_IsRefValid( GetWeaponClassName( activeWeapon ) ) )
 	{
-		oldEquipData = SURVIVAL_Loot_GetLootDataByRef( GetWeaponClassName( activeWeapon ) )
+		oldEquipData = SURVIVAL_GetLootDataFromWeapon( activeWeapon )
 	}
 
 	LootRef lootRef       = SURVIVAL_CreateLootRef( newEquipData, pickup )
@@ -1134,13 +1209,31 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 		if ( es.trackingVisionExchangePOI != -1 )
 			TrackingVision_CreatePOI( es.trackingVisionExchangePOI, player, pickup.GetOrigin(), player.GetTeam(), player )
 
-		vector origin = GetThrowOrigin( player )
-		vector fwd    = AnglesToForward( player.EyeAngles() )
+		if ( IsValid( deathBox ) )
+		{
+			int weaponSlot = es.weaponSlot
 
-		if ( es.specialCaseDropFunc != null )
-			es.specialCaseDropFunc( player, es.ref, origin, fwd )
+			if ( weaponSlot == -1 )
+				return
+
+			entity weaponToDrop = player.GetNormalWeapon( weaponSlot )
+
+			if ( !IsValid( weaponToDrop ) )
+				return
+
+			foreach ( loot in CreateEntitiesForDroppedWeaponAndAttachments( player, weaponToDrop, deathBox.GetOrigin() ) )
+				AddToDeathBox( loot, deathBox )
+		}
 		else
-			SURVIVAL_DropMainWeapon( player, es.ref, origin, fwd )
+		{
+			vector origin = GetThrowOrigin( player )
+			vector fwd    = AnglesToForward( player.EyeAngles() )
+	
+			if ( es.specialCaseDropFunc != null )
+				es.specialCaseDropFunc( player, es.ref, origin, fwd )
+			else
+				SURVIVAL_DropMainWeapon( player, es.ref, origin, fwd )
+		}
 	}
 	
 	if ( !InfiniteAmmoEnabled() )
@@ -1178,7 +1271,7 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 	}
 
 	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, mods )
-	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, newEquipData.baseWeapon )
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
 
 	int clipCount = pickup.GetClipCount()
 	if ( clipCount > 0 )
@@ -1267,19 +1360,21 @@ void function SetItemSpawnSource( entity drop, int spawnSource, entity owner )
 
 void function AddToDeathBox( entity drop, entity deathBox )
 {
-	// Not sure if this is how it works
-
 	drop.Hide()
-	drop.LinkToEnt( deathBox )
+	drop.UnsetUsable()
+
+	drop.SetOrigin( deathBox.GetOrigin() )
+	drop.SetParent( deathBox )
+
+	deathBox.LinkToEnt( drop )
 }
 
-// this is only SURVIVAL_* because sh_survival_training already has CreateDeathBox
 entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 {
-	entity box = CreatePropDynamic_NoDispatchSpawn( DEATH_BOX, player.GetOrigin(), <0, 45, 0>, 6 )
+	entity box = CreatePropDeathBox_NoDispatchSpawn( DEATH_BOX, player.GetOrigin(), <0, 45, 0>, 6 )
 	box.kv.fadedist = 10000
 	if ( hasCard )
-		box.kv.targetname = DEATH_BOX_TARGETNAME_TRAINING
+		SetTargetName( box, DEATH_BOX_TARGETNAME )
 
 	DispatchSpawn( box )
 
@@ -1287,15 +1382,58 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 	box.AddToOtherEntitysRealms( player )
 
 	box.Solid()
-	// box.EnableRenderAlways()
-	//box.AllowMantle()
+
+	box.SetUsable()
+	box.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
+	
 	box.SetOwner( player )
+	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
+
+	if ( hasCard )
+	{
+		box.SetNetBool( "overrideRUI", false )
+
+		// box.SetCustomOwnerName( player.GetPlayerName() )
+
+		// EHI playerEHI = ToEHI( player )
+
+		// LoadoutEntry characterLoadoutEntry = Loadout_CharacterClass()
+		// ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterLoadoutEntry )
+		// box.SetNetInt( "characterIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( characterLoadoutEntry, character ) )
+
+		// LoadoutEntry skinLoadoutEntry = Loadout_CharacterSkin( character )
+		// ItemFlavor characterSkin = LoadoutSlot_GetItemFlavor( playerEHI, skinLoadoutEntry )
+		// box.SetNetInt( "skinIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( skinLoadoutEntry, characterSkin ) )
+
+		// LoadoutEntry frameLoadoutEntry = Loadout_GladiatorCardFrame( character )
+		// ItemFlavor characterFrame = LoadoutSlot_GetItemFlavor( playerEHI, frameLoadoutEntry )
+		// box.SetNetInt( "frameIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( frameLoadoutEntry, characterFrame ) )
+
+		// LoadoutEntry stanceLoadoutEntry = Loadout_GladiatorCardStance( character )
+		// ItemFlavor characterStance = LoadoutSlot_GetItemFlavor( playerEHI, stanceLoadoutEntry )
+		// box.SetNetInt( "stanceIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( stanceLoadoutEntry, characterStance ) )
+
+		// LoadoutEntry firstBadgeLoadoutEntry = Loadout_GladiatorCardBadge( character, 0 )
+		// ItemFlavor characterFirstBadge = LoadoutSlot_GetItemFlavor( playerEHI, firstBadgeLoadoutEntry )
+		// box.SetNetInt( "firstBadgeIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( firstBadgeLoadoutEntry, characterFirstBadge ) )
+		// box.SetNetInt( "firstBadgeDataInt", GetPlayerBadgeDataInteger( playerEHI, characterFirstBadge, 0, character ) )
+
+		// LoadoutEntry secondBadgeLoadoutEntry = Loadout_GladiatorCardBadge( character, 1 )
+		// ItemFlavor characterSecondBadge = LoadoutSlot_GetItemFlavor( playerEHI, secondBadgeLoadoutEntry )
+		// box.SetNetInt( "secondBadgeIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( secondBadgeLoadoutEntry, characterSecondBadge ) )
+		// box.SetNetInt( "secondBadgeDataInt", GetPlayerBadgeDataInteger( playerEHI, characterSecondBadge, 1, character ) )
+
+		// LoadoutEntry thirdBadgeLoadoutEntry = Loadout_GladiatorCardBadge( character, 2 )
+		// ItemFlavor characterThirdBadge = LoadoutSlot_GetItemFlavor( playerEHI, thirdBadgeLoadoutEntry )
+		// box.SetNetInt( "thirdBadgeIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( thirdBadgeLoadoutEntry, characterThirdBadge ) )
+		// box.SetNetInt( "thirdBadgeDataInt", GetPlayerBadgeDataInteger( playerEHI, characterThirdBadge, 2, character ) )
+	}
 
 	if ( hasCard )
 	{
 		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
 		Highlight_ClearNeutralHighlight( box )
-		// file.playerTrainingData[ player ].deathBox = box
+
 		thread DeathBoxFakePhysics( box )
 	}
 
@@ -1420,18 +1558,8 @@ entity function SpawnAllOptics()
 	return null
 }
 
-bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin, vector velocity )
+array<entity> function CreateEntitiesForDroppedWeaponAndAttachments( entity player, entity weaponToDrop, vector origin )
 {
-	int weaponSlot = Survival_GetEquipmentSlotDataByRef( slot ).weaponSlot
-
-	if ( weaponSlot == -1 )
-		return false
-
-	entity weaponToDrop = player.GetNormalWeapon( weaponSlot )
-
-	if ( !IsValid( weaponToDrop ) )
-		return false
-
 	LootData dropWeaponData = SURVIVAL_GetLootDataFromWeapon( weaponToDrop )
 
 	entity droppedWeapon = SpawnGenericLoot( dropWeaponData.ref, origin, <0, 0, 90>, 1 )
@@ -1458,13 +1586,30 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 	player.DropWeapon( weaponToDrop )
 	weaponToDrop.Destroy()
 
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return lootToDrop
+}
+
+bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin, vector velocity )
+{
+	int weaponSlot = Survival_GetEquipmentSlotDataByRef( slot ).weaponSlot
+
+	if ( weaponSlot == -1 )
+		return false
+
+	entity weaponToDrop = player.GetNormalWeapon( weaponSlot )
+
+	if ( !IsValid( weaponToDrop ) )
+		return false
+
+	array<entity> lootToDrop = CreateEntitiesForDroppedWeaponAndAttachments( player, weaponToDrop, origin )
+
 	foreach ( loot in lootToDrop )
 	{
 		SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
 		FakePhysicsThrow( player, loot, velocity * 100, true )
 	}
-
-	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 	return true
 }

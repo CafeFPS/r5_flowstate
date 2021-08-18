@@ -4732,6 +4732,25 @@ entity function CreatePropShield( asset model, int colorID, vector ornull origin
 	return prop_shield
 }
 
+entity function CreatePropDeathBox_NoDispatchSpawn( asset model, vector ornull origin = null, vector ornull angles = null, var solidType = 0, float fadeDist = -1 )
+{
+	entity prop_death_box = CreateEntity( "prop_death_box" )
+	prop_death_box.SetValueForModelKey( model )
+	prop_death_box.kv.fadedist = fadeDist
+	prop_death_box.kv.renderamt = 255
+	prop_death_box.kv.rendercolor = "255 255 255"
+	prop_death_box.kv.solid = solidType // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_death_box.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_death_box.SetAngles( expect vector( angles ) )
+	}
+	
+	return prop_death_box
+}
+
 void function RunClientCommandOnPlayer( entity player, string command )
 {
 	ClientCommand( player, command )
@@ -4767,8 +4786,7 @@ void function summonplayers()
 
 bool function PlayerRespawnEnabled()
 {
-	// return GetCurrentPlaylistVarBool( "survival_respawn_style", "respawn_chambers" ) != "none"
-	return false // TODO
+	return GetRespawnStyle() != eRespawnStyle.NONE
 }
 
 bool function PlayerRevivingEnabled()

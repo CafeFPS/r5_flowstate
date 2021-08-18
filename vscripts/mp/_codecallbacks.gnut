@@ -105,6 +105,13 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		}
 	}
 
+	// if inflictor is trigger_hurt, set the identifier according to ent keyvalue
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.invalid 
+			&& inflictor != null 
+			&& inflictor.GetClassName() == "trigger_hurt" 
+			&& inflictor.HasKey( "damageSourceName" ) )
+		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
+
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "CodeCallback_DamagePlayerOrNPC ent:", ent )
 		printt( "    Attacker:", DamageInfo_GetAttacker( damageInfo ) )

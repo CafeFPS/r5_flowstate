@@ -384,7 +384,11 @@ void function RespawnPlayersInDropship( array<entity> players, entity beacon )
 	}
 	else if ( beacon.GetLinkEntArray().len() == 0 )
 	{
-		p = GetClosestRespawnDropoff( beacon.GetOrigin() )
+		// no navmesh so can't use
+		// p = GetClosestRespawnDropoff( beacon.GetOrigin() )
+
+		p.origin = beacon.GetOrigin() + <0, 0, 500>
+		p.angles = beacon.GetAngles()
 	}
 	else
 	{
@@ -918,8 +922,8 @@ void function OnDeathBoxSpawned( entity deathbox, entity attacker, int damageSou
 
 	entity respawnBeacon = CreateWaypoint_RespawnBanner( player, deathbox )
 	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_PICKUP )
-	player.SetPlayerNetTime( "respawnDNATimeout", Time() + RESPAWN_DNA_LIFETIME )
-	Remote_CallFunction_NonReplay( player, "ServerCallback_DisplayWaitingForRespawn", respawnBeacon, Time(), player.GetPlayerNetTime( "respawnDNATimeout" ) )
+	player.SetPlayerNetTime( "respawnStatusEndTime", Time() + RESPAWN_DNA_LIFETIME )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_DisplayWaitingForRespawn", respawnBeacon, Time(), player.GetPlayerNetTime( "respawnStatusEndTime" ) )
 	thread DelayedDestroyDNA( respawnBeacon, RESPAWN_DNA_LIFETIME )
 	thread DeathBoxThink_RespawnBeacon( deathbox, respawnBeacon )
 }
@@ -938,6 +942,9 @@ void function DeathBoxThink_RespawnBeacon( entity box, entity dna ) // todo(dh) 
 				{
 					SetTeam( box, TEAM_UNASSIGNED )
 					UpdateDeathBoxHighlight( box )
+
+					if ( box.GetLinkEntArray().len() == 0 )
+						box.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 500 )
 				}
 			}
 		}
@@ -959,25 +966,25 @@ void function DeathBoxOnUse( entity box, entity playerUser, int useFlags )
 	if ( !IsValid( owner ) )
 		return
 
-		if ( dna.GetTeam() == playerUser.GetTeam() )
+	if ( dna.GetTeam() == playerUser.GetTeam() )
+	{
+		if ( GetCurrentPlaylistVarBool( "respawn_beacon_fp_gladiator_card", true ) )
 		{
-			if ( GetCurrentPlaylistVarBool( "respawn_beacon_fp_gladiator_card", true ) )
-			{
-				playerUser.SetPlayerNetEnt( "gladCardPlayer", owner )
-				PlayFirstPersonAnimation( playerUser, "ptpov_burn_card_activate_seq_gladcard" )
-			}
-
-			owner.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DELIVERY )
-			owner.SetPlayerNetTime( "respawnDNATimeout", 0 )
-			Remote_CallFunction_Replay( playerUser, "ServerCallback_RespawnDNAHint" )
-			SetTeam( box, TEAM_UNASSIGNED )
-
-			PingNearestRespawnBeacon( owner, playerUser.GetOrigin() )
-
-			PlayBattleChatterLineToSpeakerAndTeam( playerUser, "bc_gotFriendlyBanner" )
-
-			dna.Destroy()
+			playerUser.SetPlayerNetEnt( "gladCardPlayer", owner )
+			PlayFirstPersonAnimation( playerUser, "ptpov_burn_card_activate_seq_gladcard" )
 		}
+
+		owner.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DELIVERY )
+		owner.SetPlayerNetTime( "respawnStatusEndTime", 0 )
+		Remote_CallFunction_Replay( playerUser, "ServerCallback_RespawnDNAHint" )
+		SetTeam( box, TEAM_UNASSIGNED )
+
+		PingNearestRespawnBeacon( owner, playerUser.GetOrigin() )
+
+		PlayBattleChatterLineToSpeakerAndTeam( playerUser, "bc_gotFriendlyBanner" )
+
+		dna.Destroy()
+	}
 }
 
 void function PingMyDNA( entity player )
@@ -1023,7 +1030,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	jumpAnimSequence.attachment = animData.attachment
 	jumpAnimSequence.hideProxy = animData.hideProxy
 
-	player.Signal( "StopPostDeathLogic" )
+	// player.Signal( "StopPostDeathLogic" )
 	AddCinematicFlag( player, CE_FLAG_INTRO )
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 	AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF
@@ -1059,7 +1066,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 					RemoveCinematicFlag( player, CE_FLAG_EMBARK )
 
 				if ( e[ "didHolsterAndDisableWeapons" ] )
-				DeployAndEnableWeapons( player )
+					DeployAndEnableWeapons( player )
 
 				player.SetPlayerNetInt( "respawnStatus", 0 )
 				player.p.respawnPod = null

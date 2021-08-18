@@ -164,6 +164,14 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 		return
 	}
 
+	// if inflictor is trigger_hurt, set the identifier according to ent keyvalue
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.invalid 
+			&& inflictor != null 
+			&& inflictor.GetClassName() == "trigger_hurt" 
+			&& inflictor.HasKey( "damageSourceName" ) )
+		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
+
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "CodeCallback_DamageEntity() top:", DamageInfo_GetDamage( damageInfo ) )
 	#endif
