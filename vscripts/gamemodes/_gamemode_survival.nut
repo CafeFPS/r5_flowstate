@@ -109,9 +109,13 @@ void function Sequence_Playing()
 		int i = 0
 		foreach ( player in GetPlayerArray() )
 		{
-			// circle
-			float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
-			player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+			
+			if(!IsFiringRangeGameMode())	// TODO: Top of the function probably needs a rewrite
+			{
+				// circle
+				float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
+				player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+			}
 	
 			DecideRespawnPlayer( player )
 	
