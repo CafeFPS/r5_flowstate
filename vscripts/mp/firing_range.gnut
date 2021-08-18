@@ -22,6 +22,12 @@ void function FiringRangeGameMode_Init()
 
 	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
 
+	
+	#if SERVER
+		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
+	#endif
+
 	#if(false)
 
 
@@ -34,7 +40,7 @@ void function FiringRangeGameMode_Init()
 //
 
 
-#endif //
+	#endif //
 
 	#if(CLIENT)
 		//
@@ -54,6 +60,91 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 	AnnouncementMessage( localPlayer, mainText, subText, titleColor )
 }
 #endif //
+
+void function EntitiesDidLoad()
+{
+	#if SERVER
+	array<entity> lootbins = GetEntArrayByScriptName("staging_loot_bin")
+	array<entity> movers = GetEntArrayByScriptName("script_mover_lightweight")
+	
+	foreach(entity lootbin in lootbins)
+		lootbin.Destroy()
+
+	CreateRacks()
+	#endif
+}
+
+#if SERVER
+void function CreateRacks()
+{
+	array<entity> rackSpawns = GetEntArrayByScriptName("weapon_racks")
+
+	table<string, array<LootData> > ammoTypePerWeapon
+	
+	foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
+	{
+		if ( lootData.lootType != eLootType.MAINWEAPON )
+			continue
+
+		if ( lootData.ref.find("_gold") > 0)
+			continue
+
+		if(!(lootData.ammoType in ammoTypePerWeapon))
+			ammoTypePerWeapon[lootData.ammoType] <- []
+
+		ammoTypePerWeapon[lootData.ammoType].append(lootData)
+	}
+
+	const float rackOffset = 32.0
+
+	int ammoIndex = 0
+	foreach ( string ammoType, array<LootData> arr in ammoTypePerWeapon)
+	{ 
+		if(ammoIndex >= rackSpawns.len() )
+			break
+
+		printl(">> Spawning weapons from ammo type: " + ammoType)
+
+		float rOffset = (arr.len()*rackOffset)/2
+
+		for(int i = 0; i<arr.len(); i++)
+		{
+			entity r = rackSpawns[ammoIndex]
+			vector pos = r.GetOrigin() + r.GetRightVector()*i*rackOffset - r.GetRightVector()*rOffset
+			vector ang = r.GetAngles()
+
+			entity rack = CreateWeaponRack(pos, ang, arr[i].ref)
+			thread OnPickupFromRackThread(GetWeaponFromRack(rack), arr[i].ref)
+		}
+		ammoIndex++
+	}
+}
+
+void function OnPickupFromRackThread(entity item, string ref)
+{
+	entity rack = item.GetParent()
+	item.WaitSignal("OnItemPickup")
+
+	wait 1
+	thread OnPickupFromRackThread(SpawnWeaponOnRack(rack, ref), ref)
+}
+
+void function OnPropSurvivalSpawned(entity prop)
+{
+	thread OnPropSurvivalSpawned_Thread(prop)
+}
+void function OnPropSurvivalSpawned_Thread(entity prop)
+{
+	wait 0.25
+	if(prop == null || IsValid(prop) == false)
+		return
+
+	entity par = prop.GetParent()
+	if(par && par.GetClassName() == "prop_physics")
+		prop.Dissolve(ENTITY_DISSOLVE_CORE, <0,0,0>, 200)
+}
+
+#endif
 
 #if(false)
 

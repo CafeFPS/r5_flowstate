@@ -8,7 +8,7 @@ global function GetWeaponFromRack
 
 const asset WEAPONRACKMODEL = $"mdl/industrial/gun_rack_arm_down.rmdl"
 const string WEAPONRACK_SCRIPTNAME = "weaponrack_spawned"
-const vector WEAPONRACK_ORIGIN_OFFSET = <0,0,40>
+const vector WEAPONRACK_ORIGIN_OFFSET = <0,0,45>
 const vector WEAPONRACK_ANGLES_OFFSET = <-90,180,0>
 
 
