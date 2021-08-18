@@ -79,7 +79,6 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		projectile.SetVelocity(velocity)
 		projectile.kv.gravity = 0
 
-
 		if ( IsValid( trace.hitEnt ) )
 		{
 			entity marker = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effect ), trace.endPos, <0,0,0> )
