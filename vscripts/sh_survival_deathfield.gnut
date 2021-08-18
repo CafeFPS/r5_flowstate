@@ -905,25 +905,24 @@ vector function GetFinalDeathFieldLocation()
             else
                 endPoint = GetRandomCenterBiasedToEdge( <0, 0, 0>, minDeviation, REALBIG_CIRCLE_END_RADIUS * 0.9 )
             
-            TraceResults trace = TraceHull( <endPoint.x, endPoint.y, 10000>, <endPoint.x, endPoint.y, 512>, <-80,-80,0>, <80,80,256>, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
+            if(invalidEndZones.len() == 0)
+                break
+
+            TraceResults trace = TraceHull( <endPoint.x, endPoint.y, 10000>, <endPoint.x, endPoint.y, -512>, <-80,-80,0>, <80,80,256>, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
             if ( trace.fraction == 1 )
                 continue
 
             endPoint = trace.endPos
             
-            bool bDone = false
+            if(IsPointOutOfBounds(endPoint))
+                continue
+            
             foreach( invalidZone in invalidEndZones )
             {
-                if((Distance2D(endPoint, invalidZone.GetOrigin()) < float(invalidZone.kv.script_radius)) || IsPointOutOfBounds(endPoint))
-                {
-                    bDone = false
-                    break
-                }
-                else
-                    bDone = true
+                if((Distance2D(endPoint, invalidZone.GetOrigin()) < float(invalidZone.kv.script_radius)))
+                    continue
             }
-            if(bDone)
-                break 
+            break
         }
 			
 	}
