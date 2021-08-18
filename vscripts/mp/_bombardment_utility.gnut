@@ -87,5 +87,56 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 
 void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vector direction, vector origin, vector projectileOrigin, float width, float perStep, int count, float interval, float delay )
 {
+	wait delay
+	
+	entity owner = weapon.GetOwner()
+	
+	if(!IsValid(owner))
+		return
+	
+	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
+    // todo sound effects for warnings ("incoming!")
+	float projectile_launch_speed = GetWeaponInfoFileKeyField_GlobalFloat(weapon.GetWeaponClassName(), "projectile_launch_speed")
+	
+	int damageFlags = weapon.GetWeaponDamageFlags()
+	WeaponFireMissileParams fireGrenadeParams
+	fireGrenadeParams.pos = origin+<0,0,10000>
+	fireGrenadeParams.dir = <0, 0, 0>
+	fireGrenadeParams.speed = 2
+	fireGrenadeParams.scriptTouchDamageType = (damageFlags & ~DF_EXPLOSION) // when a grenade "bonks" something, that shouldn't count as explosive.explosive
+	fireGrenadeParams.scriptExplosionDamageType = damageFlags
+	fireGrenadeParams.doRandomVelocAndThinkVars = false
+	fireGrenadeParams.clientPredicted = false
 
+	bool isFirst = true
+
+	float bombCount = width / perStep
+	int cur = 0
+	for (int cur = 0; cur < count; cur++) {
+		vector stepCenter = projectileOrigin + (direction * perStep * (cur + 1))
+		vector rot270 = <direction.y, -direction.x, direction.z>
+		rot270 = rot270 * (width / 2)
+		bool even = cur % 2 == 0;
+		vector lineStart = even ? (stepCenter - rot270) : (stepCenter + rot270)
+		vector reverse = <-1, -1, 1>
+		vector lineDirection = Normalize(rot270)
+		lineDirection = <-lineDirection.x, -lineDirection.y, lineDirection.z>
+		for (int curStep = 0 ; curStep < bombCount ; curStep++) {
+			wait (interval / (2 * bombCount))
+			vector targetPosition = even ? (lineStart - (lineDirection * perStep * curStep)) : (lineStart + (lineDirection * perStep * curStep))
+			entity projectile = weapon.FireWeaponMissile( fireGrenadeParams )
+		
+			if(isFirst)
+			{
+				EmitSoundOnEntity( projectile, fire_sound_1_player_3p )
+				isFirst = false
+			}
+			// todo sounds for incoming warning EmitSoundOnEntity( projectile, sound_incoming )
+			
+			/* TODO: Should start from the center and move toward the offset pos instead of linear vertical */
+			projectile.SetAngles(<90,0,0>)
+			projectile.SetOrigin(targetPosition + <0, 0, 5000>)
+			projectile.SetVelocity(<0,0,-projectile_launch_speed>)
+		}
+	}
 }
