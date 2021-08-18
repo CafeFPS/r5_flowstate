@@ -14,6 +14,8 @@ struct {
     LocationSettings& selectedLocation
 
     array<LocationSettings> locationSettings
+
+    array<string> whitelistedWeapons
 } file;
 
 
@@ -27,6 +29,11 @@ void function _CustomTDM_Init()
     AddClientCommandCallback("give_weapon", ClientCommand_GiveWeapon)
         
     thread RunTDM()
+
+    for(int i = 0; GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
+    {
+        file.whitelistedWeapons.append(GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~"))
+    }
 }
 
 void function _RegisterLocation(LocationSettings locationSettings)
@@ -191,6 +198,21 @@ bool function ClientCommand_NextRound(entity player, array<string> args)
 
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 {
+    bool foundMatch = false
+
+
+    foreach(weaponName in file.whitelistedWeapons)
+    {
+        print(args[0] + " vs " + weaponName)
+        if(args[0] == weaponName)
+        {
+            foundMatch = true
+            break
+        }
+    }
+
+    if(!foundMatch && file.whitelistedWeapons.len()) return false
+
     entity weapon
 
     try {
@@ -201,6 +223,8 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
         player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
         return true
     }
+    return true
+    
 }
 
 void function FillPlayerToNeedyTeam(entity player)

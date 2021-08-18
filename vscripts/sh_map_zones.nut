@@ -290,14 +290,18 @@ void function GenerateZoneTiers()
     file.hotZoneRadius = hotZoneRadius
     file.hotZoneOrigin = hotZoneOrigin
     
-    thread HotZoneBeamThink(hotZoneOrigin, hotZoneRadius)
-    AddCallback_GameStateEnter( 
-            eGameState.Playing,
-            void function()
-            {
-                thread HotZone_MinimapThink()
-            }
-        )
+    if(hotZoneOrigin != <0, 0, 0>)
+    {
+        thread HotZoneBeamThink(hotZoneOrigin, hotZoneRadius)
+        AddCallback_GameStateEnter( 
+                eGameState.Playing,
+                void function()
+                {
+                    thread HotZone_MinimapThink()
+                }
+            )
+            
+    }
     
 	foreach ( mapZoneData in s_zoneDatas )
 	{
