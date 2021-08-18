@@ -451,30 +451,27 @@ void function CreateSurvivalDeathBoxForPlayer( entity victim, entity attacker, v
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	if ( !IsValid( victim ) || !IsValid( attacker ) )
+	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 
-	if ( victim.IsPlayer() )
-	{
-		SetPlayerEliminated( victim )
-		PlayerStartSpectating( victim, attacker )
+	SetPlayerEliminated( victim )
+	PlayerStartSpectating( victim, attacker )
 
-		int victimTeamNumber = victim.GetTeam()
-		array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
-		bool teamEliminated = victimTeam.len() == 0
+	int victimTeamNumber = victim.GetTeam()
+	array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
+	bool teamEliminated = victimTeam.len() == 0
 
-		if ( teamEliminated )
-			HandleSquadElimination( victim.GetTeam() )
+	if ( teamEliminated )
+		HandleSquadElimination( victim.GetTeam() )
 
-		bool canPlayerBeRespawned = PlayerRespawnEnabled() && !teamEliminated
-		int droppableItems = GetAllDroppableItems( victim ).len()
+	bool canPlayerBeRespawned = PlayerRespawnEnabled() && !teamEliminated
+	int droppableItems = GetAllDroppableItems( victim ).len()
 
-		if ( canPlayerBeRespawned || droppableItems > 0 )
-			CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
-		
-		if ( !canPlayerBeRespawned )
-			PlayerFullyDoomed( victim )
-	}
+	if ( canPlayerBeRespawned || droppableItems > 0 )
+		CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
+	
+	if ( !canPlayerBeRespawned )
+		PlayerFullyDoomed( victim )
 }
 
 void function OnClientConnected( entity player )

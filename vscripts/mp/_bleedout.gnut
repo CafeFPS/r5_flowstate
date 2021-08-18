@@ -386,6 +386,18 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 				ClearPlayerAnimViewEntity( playerToRes )
 				playerToRes.MovementEnable()
 				Remote_CallFunction_NonReplay( playerToRes, "ServerCallback_BLEEDOUT_StopFirstAidProgressBar", attemptID )
+
+				if ( !file.isBleeding[ playerToRes ] )
+				{
+					playerToRes.ForceStand()
+
+					// hack
+					thread function() : ( playerToRes )
+					{
+						wait 0.1
+						playerToRes.UnforceStand()
+					}()
+				}
 			}
 		}
 	)
@@ -448,15 +460,6 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 
 	playerToRes.Signal( "BleedOut_OnRevive" )
 	playerHealer.p.revivesGiven++
-
-	playerToRes.ForceStand()
-
-	// hack
-	thread function() : ( playerToRes )
-	{
-		wait 0.1
-		playerToRes.UnforceStand()
-	}()
 }
 
 void function BloodTrail( entity player )

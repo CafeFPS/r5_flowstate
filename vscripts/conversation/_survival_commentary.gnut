@@ -1,5 +1,3 @@
-// stub script
-
 global function SurvivalCommentary_Init
 global function SurvivalCommentary_GetKillLeaderEEH
 global function SurvivalCommentary_GetChampionTeam
@@ -9,14 +7,26 @@ global function SurvivalCommentary_InitThreatChatterForPlayer
 global function SurvivalCommentary_OnThreatActivationBombardment
 global function SurvivalCommentary_OnThreatActivationGrenade
 
+struct {
+	int currentKillLeaderKillAmount = 0
+	entity currentKillLeader = null
+} file
+
 void function SurvivalCommentary_Init()
 {
 	ShSurvivalCommentary_Init()
+
+	AddCallback_OnPlayerKilled( OnPlayerKilled )
+
+	FlagInit( "SurvivalCommentary_FirstBloodReached", false )
 }
 
 int function SurvivalCommentary_GetKillLeaderEEH()
 {
-	return GetPlayerArray()[0].GetEncodedEHandle()
+	if ( file.currentKillLeader == null || !IsValid( file.currentKillLeader ) )
+		return EncodedEHandle_null
+
+	return file.currentKillLeader.GetEncodedEHandle()
 }
 
 int function SurvivalCommentary_GetChampionTeam()
@@ -27,6 +37,68 @@ int function SurvivalCommentary_GetChampionTeam()
 int function SurvivalCommentary_GetChampionEEH()
 {
 	return 0
+}
+
+void function SetKillLeader( entity killLeader, int numKills )
+{
+	wait 5.0
+
+	file.currentKillLeader = killLeader
+	file.currentKillLeaderKillAmount = numKills
+
+	int killLeaderTeam = killLeader.GetTeam()
+
+	foreach ( player in GetPlayerArray() )
+		Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", killLeader, numKills )
+
+	int maxTeams = GetCurrentPlaylistVarInt( "max_teams", MAX_TEAMS )
+	for ( int i = TEAM_MULTITEAM_FIRST; i < TEAM_MULTITEAM_FIRST + maxTeams; ++i )
+	{
+		if ( i == killLeaderTeam )
+			continue
+
+		entity speakingPlayer = TryFindSpeakingPlayerOnTeam( i )
+		if ( speakingPlayer != null )
+			PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, "bc_killLeaderNew" )
+	}
+
+	thread PlayDialogueForPlayer( "bc_iBecomeKillLeader", killLeader, killLeader )
+
+	array<entity> teamMembers = GetPlayerArrayOfTeam( killLeaderTeam )
+	teamMembers.fastremovebyvalue( killLeader )
+
+	foreach ( teamMember in teamMembers )
+		thread PlayDialogueForPlayer( "bc_squadmateBecomesKillLeader", teamMember, teamMember )
+}
+
+void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() || !attacker.IsPlayer() )
+		return
+
+	if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
+	{
+		if ( victim == file.currentKillLeader )
+		{
+			PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_weKilledKillLeader" )
+
+			foreach ( player in GetPlayerArray() )
+				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
+		}
+
+		int attackerKills = attacker.GetPlayerNetInt( "kills" )
+		if ( attackerKills > file.currentKillLeaderKillAmount && attacker != file.currentKillLeader )
+			thread SetKillLeader( attacker, attackerKills )
+	}
+
+	if ( GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true ) )
+	{
+		if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
+		{
+			FlagSet( "SurvivalCommentary_FirstBloodReached" )
+			PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_weTookFirstBlood" )
+		}
+	}
 }
 
 //  eSurvivalEventType
