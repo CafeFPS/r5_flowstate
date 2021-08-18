@@ -146,6 +146,9 @@ void function LoadLootZonesForMap()
     if(file.lootZones.len() == 0)
         return
     
+    if ( !GetCurrentPlaylistVarBool( "ground_loot_enable", true ) || !GetCurrentPlaylistVarBool( "hot_zone_enable", true ) )
+        return
+    
     array<LootZone> hotZones
 
     lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
