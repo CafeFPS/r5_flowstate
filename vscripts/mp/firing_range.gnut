@@ -1,5 +1,10 @@
 global function FiringRangeGameMode_Init
 
+global const float FIRINGRANGE_DISSOLVE_TIME = 5.0
+global const float FIRINGRANGE_RACK_RESPAWN_TIME = 0.5
+global const float FIRINGRANGE_ATTACHMENTS_POS_OFFSET = 128.0
+global const int FIRINGRANGE_ATTACHMENTS_MAX_COLUMN = 6
+
 #if(false)
 
 
@@ -14,6 +19,11 @@ global function FiringRangeGameMode_Init
 #if(CLIENT)
 global function SCB_BroadcastFriendlyFireChange
 #endif //
+
+struct {
+	table<string, array<LootData> > weaponsPerAmmoType,
+	table<string, array<string> > attachmentsPerAmmoType
+} file
 
 void function FiringRangeGameMode_Init()
 {
@@ -70,17 +80,28 @@ void function EntitiesDidLoad()
 	foreach(entity lootbin in lootbins)
 		lootbin.Destroy()
 
+	FillWeaponTable()
+	FillAttachmentTable()
 	CreateRacks()
+	SpawnAttachments()
+
+	foreach(string ammoType, array<string> attachments in file.attachmentsPerAmmoType)
+	{
+		printl(">> " + ammoType)
+		print("\t- ")
+		foreach(string attachment in attachments)
+		{
+			print(" " + attachment)
+		}
+	}
 	#endif
 }
 
 #if SERVER
-void function CreateRacks()
-{
-	array<entity> rackSpawns = GetEntArrayByScriptName("weapon_racks")
 
-	table<string, array<LootData> > ammoTypePerWeapon
-	
+// Get All weapons, arange them in a table per ammo type
+void function FillWeaponTable()
+{
 	foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
 	{
 		if ( lootData.lootType != eLootType.MAINWEAPON )
@@ -89,16 +110,114 @@ void function CreateRacks()
 		if ( lootData.ref.find("_gold") > 0)
 			continue
 
-		if(!(lootData.ammoType in ammoTypePerWeapon))
-			ammoTypePerWeapon[lootData.ammoType] <- []
+		if(!(lootData.ammoType in file.weaponsPerAmmoType))
+			file.weaponsPerAmmoType[lootData.ammoType] <- []
 
-		ammoTypePerWeapon[lootData.ammoType].append(lootData)
+		file.weaponsPerAmmoType[lootData.ammoType].append(lootData)
 	}
+}
+
+// Get All attachments, check if can be put on each gun per ammo
+// Add it if missing to our list
+void function FillAttachmentTable()
+{
+	foreach ( string ammoType, array<LootData> weapons in file.weaponsPerAmmoType )
+	{
+		if ( ammoType.len() == 0 )
+			continue
+
+		array<LootData> allAttachments = SURVIVAL_Loot_GetByType( eLootType.ATTACHMENT )
+		array<LootData> unSortedAttachments = []
+
+		foreach(LootData weapon in weapons)
+		{
+			array<LootData> attachments = []
+			foreach ( LootData data in allAttachments )
+			{
+				if ( !CanAttachToWeapon( data.ref, weapon.ref ) )
+					continue
+				attachments.append(data)
+			}
+			ExtendLootDataArrayIfMissing(attachments, unSortedAttachments)
+		}
+
+		// Make the hopups last, rest alphabetical
+		array<string> strHopups = []
+		array<string> strAttachments = []
+		foreach(LootData a in unSortedAttachments)
+		{
+			if(a.ref.slice(0,a.ref.find("_")) != "hopup")
+				strAttachments.append(a.ref)
+			else
+				strHopups.append(a.ref)
+		}
+		strAttachments.sort()
+		strAttachments.extend(strHopups)
+
+		file.attachmentsPerAmmoType[ammoType] <- strAttachments
+	}
+}
+
+// Add string only if missing
+void function ExtendLootDataArrayIfMissing(array<LootData> from, array<LootData> to)
+{
+	foreach(LootData f in from)
+	{
+		bool add = true
+		foreach(LootData t in to)
+			if(t == f){	add = false; break	}
+		if(add) to.append(f)
+	}
+}
+
+void function SpawnAttachments()
+{
+	array<entity> rackSpawns = GetEntArrayByScriptName("weapon_racks")
+
+	const float placementOffset = 24.0
+	int ammoIndex = 0
+	foreach ( string ammoType, array<LootData> arr in file.weaponsPerAmmoType) // Correspond to each rack
+	{
+		foreach(string ammoType2, array<string> refs in file.attachmentsPerAmmoType)
+		{
+			if(ammoType != ammoType2)
+				continue
+
+			entity r = rackSpawns[ammoIndex]
+			vector firstPos = r.GetOrigin() - r.GetRightVector()*FIRINGRANGE_ATTACHMENTS_POS_OFFSET
+
+			printl("AMMO: " + ammoIndex + ammoType)
+
+			int row = 0
+			int col = 0
+			foreach(string ref in refs)
+			{
+				if(col >= FIRINGRANGE_ATTACHMENTS_MAX_COLUMN)
+				{
+					row++
+					col = 0
+				}
+
+				vector pos = firstPos - r.GetRightVector()*col*placementOffset + r.GetForwardVector()*row*placementOffset
+
+				entity loot = SpawnGenericLoot( ref, pos, <0,0,0>, 1 )
+				thread OnPickupGenericThread(loot, ref)
+				col++
+			}
+		}
+		ammoIndex++
+	}
+}
+
+// Create weapon racks per ammo type
+void function CreateRacks()
+{
+	array<entity> rackSpawns = GetEntArrayByScriptName("weapon_racks")
 
 	const float rackOffset = 32.0
 
 	int ammoIndex = 0
-	foreach ( string ammoType, array<LootData> arr in ammoTypePerWeapon)
+	foreach ( string ammoType, array<LootData> arr in file.weaponsPerAmmoType)
 	{ 
 		if(ammoIndex >= rackSpawns.len() )
 			break
@@ -120,22 +239,35 @@ void function CreateRacks()
 	}
 }
 
+// When the weapon is grabbed from the rack -> respawn it
 void function OnPickupFromRackThread(entity item, string ref)
 {
 	entity rack = item.GetParent()
 	item.WaitSignal("OnItemPickup")
 
-	wait 1
+	wait FIRINGRANGE_RACK_RESPAWN_TIME
 	thread OnPickupFromRackThread(SpawnWeaponOnRack(rack, ref), ref)
 }
 
+// When the item is grabbed -> respawn it
+void function OnPickupGenericThread(entity item, string ref)
+{
+	vector pos = item.GetOrigin()
+	vector angles = item.GetAngles()
+	item.WaitSignal("OnItemPickup")
+
+	wait FIRINGRANGE_RACK_RESPAWN_TIME
+	thread OnPickupGenericThread(SpawnGenericLoot(ref, pos, angles, 1), ref)
+}
+
+// On item dropped
 void function OnPropSurvivalSpawned(entity prop)
 {
 	thread OnPropSurvivalSpawned_Thread(prop)
 }
 void function OnPropSurvivalSpawned_Thread(entity prop)
 {
-	wait 0.25
+	wait FIRINGRANGE_DISSOLVE_TIME
 	if(prop == null || IsValid(prop) == false)
 		return
 
