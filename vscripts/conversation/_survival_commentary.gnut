@@ -88,7 +88,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		}
 
 		int attackerKills = attacker.GetPlayerNetInt( "kills" )
-		if ( attackerKills > file.currentKillLeaderKillAmount && attacker != file.currentKillLeader )
+		if ( attackerKills > file.currentKillLeaderKillAmount && attacker != file.currentKillLeader && attackerKills >= 3)
 			thread SetKillLeader( attacker, attackerKills )
 	}
 
