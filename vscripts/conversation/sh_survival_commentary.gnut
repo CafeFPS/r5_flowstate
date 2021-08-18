@@ -512,7 +512,7 @@ int function ConvertBucketStringToEnum( string bucketName )
 	}
 }
 		default:
-			Warning( "Bucket not registered" )
+			//Warning( "Bucket not registered" )
 			return -1
 	}
 

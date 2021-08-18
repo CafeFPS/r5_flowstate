@@ -1,27 +1,21 @@
 Selector Common
-
 	SelectSchedule_LayeredBehavior
-
 Selector_End
 
 
 Selector Idle
 
-	SelectSchedule_Idle
-
+	SelectSchedule_IdleStand
 Selector_End
 
 
 Selector Alert
 
-	SelectSchedule_Alert
-
+	SelectSchedule_IdleStand
 Selector_End
 
 
 Selector Combat
 
-	SelectSchedule_ChaseEnemy
-	SelectSchedule_CombatFace
-
+	SelectSchedule_IdleStand
 Selector_End

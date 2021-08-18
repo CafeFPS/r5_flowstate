@@ -711,7 +711,7 @@ void function ClRunConversationElement( entity player, elem )
 			float duration = 0
 			if ( elem.alias == "" )
 			{
-				Warning( "Sound alias for " + level.debugType + " not found!\n" )
+				//Warning( "Sound alias for " + level.debugType + " not found!\n" )
 				duration = 1.0
 			}
 			else
@@ -1276,7 +1276,7 @@ void function VerifyConversationAliases()
 		failed.sort( SortAlphabetize )
 		foreach ( alias in failed )
 		{
-			Warning( "Sound alias " + alias + " not found!\n" )
+			//Warning( "Sound alias " + alias + " not found!\n" )
 		}
 	}
 }
