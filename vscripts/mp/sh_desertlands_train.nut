@@ -271,6 +271,7 @@ void function DesertlandsTrain_Init()
 	array<entity> lootBins = GetEntArrayByClass_Expensive( "prop_dynamic" )
 	array<entity> survivalItems = GetEntArrayByClass_Expensive( "prop_survival" )
 	
+    int j = 0
 	foreach(entity car in cars)
 	{
 		printl(">>>> " + car)
@@ -283,10 +284,15 @@ void function DesertlandsTrain_Init()
 			if(distance > 300)
 				continue
 			
+            j++ //Spawn really good loot in the last car
+            
             if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true)
             {   
                 ClearLootBinContents( bin )
-                AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "Desertlands_Train", RandomIntRange(2,4) ) )
+                if(j != 2)
+                    AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "Desertlands_Train", 4 ) )
+                else
+                    AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 4 ) )
             }
 			
 			entity parentPoint = CreateEntity( "script_mover_lightweight" )

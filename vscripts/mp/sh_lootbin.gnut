@@ -211,6 +211,14 @@ void function ClearLootBinContents( entity lootbin )
     if (!(lootbin in file.lootBinsSpawnedLootMap) || !(lootbin in file.lootBinsLootInside))
         return
     
+    array<entity> loot = file.lootBinsSpawnedLootMap[ lootbin ]
+
+	foreach( ent in loot)
+	{
+		if ( IsValid( ent ) )
+			ent.Destroy()
+	}
+    
     file.lootBinsSpawnedLootMap[lootbin] <- []
 	file.lootBinsLootInside[lootbin] <- []
 }
@@ -376,6 +384,12 @@ void function DissolveLootBin( entity lootBin )
 #if SERVER
 void function AddMultipleLootItemsToLootBin( entity lootBin, array<string> refs )
 {
+    array<string> lootToSpawn = GetLootBinContents( lootBin )
+    if(lootToSpawn.len() > 0)
+    {
+        printt("Lootbin already has contents! Clear it first before adding multiple items.")
+        return
+    }
 	int numRefs = refs.len()
 	for ( int i; i < numRefs; i++ )
 		AddLootToLootBin( lootBin, refs[ i ] )
