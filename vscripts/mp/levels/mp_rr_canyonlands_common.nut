@@ -137,6 +137,8 @@ void function Canyonlands_MapInit_Common()
 		AddSpawnCallback_ScriptName( "leviathan", LeviathanThink )
 		AddSpawnCallback_ScriptName( "leviathan_staging", LeviathanThink )
 
+        AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_pvpcurrency_container", OnPvpCurrencyContainerSpawned )    
+        AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_upgrade_station", OnSurvivalUpgradeStationSpawned )  
 		if ( GetMapName() == "mp_rr_canyonlands_staging" )
 		{
 			// adjust skybox for staging area
@@ -180,7 +182,23 @@ void function Canyonlands_MapInit_Common()
 }
 
 #if SERVER
+void function OnPvpCurrencyContainerSpawned(entity ent)
+{	
+    if( GameRules_GetGameMode() != FREELANCE )
+	{
+        if(IsValid(ent))
+            ent.Destroy()
+    }
+}
 
+void function OnSurvivalUpgradeStationSpawned(entity ent)
+{
+    if( GameRules_GetGameMode() != FREELANCE )
+	{
+        if(IsValid(ent))
+            ent.Destroy()
+    }
+}
 void function InitWaterLeviathans()
 {
 	AddSpawnCallback_ScriptName( CANYONLANDS_LEVIATHAN1_NAME, CreateClientSideLeviathanMarkers )
