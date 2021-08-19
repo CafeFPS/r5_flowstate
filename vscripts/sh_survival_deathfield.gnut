@@ -1649,7 +1649,7 @@ var function SurveyBeacon_CreateHUDMarker( asset beaconImage, entity minimapObj 
 
 int function SURVIVAL_GetCurrentDeathFieldStage()
 {
-    if(GetServerVar( "minimapState" ))
+    if(GamePlaying())
         return GetGlobalNetInt( "currentDeathFieldStage" )
     
 	return -1

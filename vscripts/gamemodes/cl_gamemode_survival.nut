@@ -1275,6 +1275,8 @@ void function NextCircleStartTimeChanged( entity player, float old, float new, b
 	if ( !actuallyChanged  || ! CircleAnnouncementsEnabled() )
 		return
 
+    if(SURVIVAL_GetCurrentDeathFieldStage() == -1)
+        return
 	UpdateFullmapRuiTracks()
 
 	var gamestateRui = ClGameState_GetRui()
