@@ -85,8 +85,6 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 			AddToUltimateRealm( owner, marker )
 			EntFireByHandle( marker, "Kill", "", 2, null, null ) // kill after 2s
 		}
-		
-		
 	}
 }
 
