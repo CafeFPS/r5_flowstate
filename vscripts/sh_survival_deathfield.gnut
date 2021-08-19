@@ -306,6 +306,8 @@ bool function PlayerShouldSeeSurveyBeaconMarkers( entity player )
 #if SERVER
 void function EntitiesDidLoad_DeathField()
 {
+    if(file.deathFieldStartStage > 0)
+        SetCurrentDeathFieldStage( file.deathFieldStartStage )
 	DeathFieldCreatePositions()
 }
 
