@@ -96,10 +96,11 @@ void function LootTickSoundThink(entity ent)
     }
 }
 
-void function LootTickParticleThink(entity ent)
+int function GetLootTickRarity(entity ent)
 {
-    ent.EndSignal( "OnDeath" )
-    ent.EndSignal( "OnDestroy" )
+    if(!IsValid(ent))
+        return 0
+    
     array<string> lootToSpawn = GetLootTickContents( ent )
     int lootTier  = 0
     foreach ( ref in lootToSpawn )
@@ -108,6 +109,15 @@ void function LootTickParticleThink(entity ent)
         if(lootData.tier > lootTier)
             lootTier = lootData.tier
     }
+    return lootTier
+}
+
+void function LootTickParticleThink(entity ent)
+{
+    ent.EndSignal( "OnDeath" )
+    ent.EndSignal( "OnDestroy" )
+    
+    int lootTier = GetLootTickRarity(ent)
     while(true)
     {
         int attachID = ent.LookupAttachment( "FX_L_EYE" )
@@ -141,17 +151,16 @@ void function OnLootTickDamaged(entity ent, var damageInfo)
 
 void function OnLootTickKilled(entity ent, var damageInfo)
 {
-    string expSFX = "LootTick_Explosion"
-	int expFX = GetParticleSystemIndex( $"P_loot_tick_exp_CP" )
+	int expFX = GetParticleSystemIndex( FX_LOOT_TICK_DEATH )
     
     vector pos = ent.GetOrigin()
     int tagID = ent.LookupAttachment( "CHESTFOCUS" )
 	vector fxOrg = ent.GetAttachmentOrigin( tagID )
     
-	EmitSoundAtPosition( TEAM_ANY, pos, expSFX )
+	EmitSoundAtPosition( TEAM_ANY, pos, "LootTick_Explosion" )
 	CreateShake( pos, 10, 105, 1.25, 768 )
 	entity newFx = StartParticleEffectInWorld_ReturnEntity( expFX, fxOrg, <0, 0, 0> )
-    EffectSetControlPointVector( newFx, 1, GetFXRarityColorForTier(3) )
+    EffectSetControlPointVector( newFx, 1, GetFXRarityColorForTier(GetLootTickRarity(ent)) )
     EmitSoundOnEntity( ent, "LootTick_Vocal_Death" )
     
     //Spawn loot
