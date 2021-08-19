@@ -47,6 +47,7 @@ struct {
 
 	array<RackGroup> rackSpawns
 
+	vector trackingTraining_pos = <32000,-7853,-29000>
 	vector flickTraining_pos = <32000,-6720,-29033>
 	vector flickTraining_ang = <0,-180,0>
 	float flickTraining_dist = 320
@@ -106,6 +107,8 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 void function OnEntitiesDidLoad()
 {
 	#if SERVER
+
+	// Init
 	array<entity> lootbins = GetEntArrayByScriptName("staging_loot_bin")
 	array<entity> movers = GetEntArrayByScriptName("script_mover_lightweight")
 	
@@ -118,6 +121,7 @@ void function OnEntitiesDidLoad()
 		file.rackSpawns.append(r)
 	}
 
+	// Items
 	FillWeaponTable() // load first to know where the rest goes
 	FillAttachmentTable() // requires weapons to be loaded
 	FillEquipmentTable() // armor + helmet + bp + shield
@@ -131,9 +135,14 @@ void function OnEntitiesDidLoad()
 	SpawnItems()
 	SpawnAmmo()
 
-	SpawnFlickTraining()
-	
+	// Targets
+	SpawnTrainingTarget(file.flickTraining_pos, file.flickTraining_ang, OnTrainingTargetDamagedReposition)
+	thread MoveTrainingTargetAround(
+		SpawnTrainingTarget(file.trackingTraining_pos, file.flickTraining_ang, OnTrainingTargetDamagedNothing))
+	// - - - -
+
 	thread WaitForPlayerSpawn()
+
 	#endif
 }
 
@@ -141,6 +150,10 @@ void function OnEntitiesDidLoad()
 
 
 #if SERVER
+
+// ==================================================
+//					PLAYER EQUIP
+// ==================================================
 
 void function WaitForPlayerSpawn()
 {
@@ -159,59 +172,11 @@ void function OnPlayerRespawned(entity player)
 	Survival_PickupItem(SpawnGenericLoot( "bullet", player.GetOrigin(), player.GetAngles(), 40 ), player)
 }
 
-void function OnFlickTargetDamaged(entity ent, var damageInfo)
-{	
-	EmitSoundOnEntity(ent, FIRINGRANGE_FLICK_TARGET_SOUND)
-	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT ), ent.GetOrigin(), ent.GetAngles() )
 
-	entity root = ent.GetParent()
-	vector newPos = file.flickTraining_pos + 
-					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetUpVector()*0.5 + 
-					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetRightVector();
+// ==================================================
+//					ITEM SPAWNING
+// ==================================================
 
-	ent.SetOrigin(newPos)
-
-	#if SERVER
-	DamageInfo_GetAttacker(damageInfo).NotifyDidDamage
-	(
-		ent,
-		DamageInfo_GetHitBox( damageInfo ),
-		DamageInfo_GetDamagePosition( damageInfo ), 
-		DamageInfo_GetCustomDamageType( damageInfo ),
-		DamageInfo_GetDamage( damageInfo ),
-		DamageInfo_GetDamageFlags( damageInfo ), 
-		DamageInfo_GetHitGroup( damageInfo ),
-		DamageInfo_GetWeapon( damageInfo ), 
-		DamageInfo_GetDistFromAttackOrigin( damageInfo )
-	)
-	#endif
-
-	ent.Signal( "OnActivate" )
-	thread ResetFlickTarget(ent)
-}
-
-void function ResetFlickTarget(entity ent)
-{
-	EndSignal( ent, "OnActivate" )
-	wait 4
-	ent.SetOrigin(file.flickTraining_pos)
-	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), file.flickTraining_pos, <0,0,0> )
-}
-
-void function SpawnFlickTraining()
-{
-	entity root = CreateScriptMover( file.flickTraining_pos, file.flickTraining_ang)
-	entity collision = CreatePropDynamic(FIRINGRANGE_FLICK_TARGET_ASSET, root.GetOrigin(), root.GetAngles(), 6, -1)
-	entity target2 = CreatePropDynamic(FIRINGRANGE_BLUE_TARGET_ASSET, root.GetOrigin(), root.GetAngles(), 6, -1)
-	collision.SetParent(root)
-    collision.SetDamageNotifications( true )
-	collision.Hide()
-	target2.SetParent(collision)
-	target2.SetModelScale(0.45)
-	target2.NotSolid()
-
-    AddEntityCallback_OnDamaged(collision, OnFlickTargetDamaged)
-}
 
 // Get All weapons, arange them in a table per ammo type
 void function FillWeaponTable()
@@ -558,7 +523,102 @@ void function OnPropSurvivalSpawned_Thread(entity prop)
 		prop.Dissolve(ENTITY_DISSOLVE_CORE, <0,0,0>, 200)
 }
 
+
+
+// ==================================================
+//					TARGET PRACTICE
+// ==================================================
+
+void function PlayTrainingTargetReaction(entity ent, var damageInfo)
+{
+	EmitSoundOnEntity(ent, FIRINGRANGE_FLICK_TARGET_SOUND)
+
+	DamageInfo_GetAttacker(damageInfo).NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+}
+
+void function MoveTrainingTargetAround(entity ent)
+{
+	entity o = ent.GetParent()
+	float dist = file.flickTraining_dist * 0.75
+	while(IsValid(ent))
+	{
+		vector next = o.GetOrigin() + RandomFloatRange(-dist,dist)*o.GetUpVector()*0.75 + 
+						RandomFloatRange(-dist,dist)*o.GetRightVector();
+		
+		float t = 0.8;
+		ent.NonPhysicsMoveTo(next, t, 0.1, 0.1 )
+		wait t
+	}
+}
+
+void function OnTrainingTargetDamagedNothing(entity ent, var damageInfo)
+{	
+	PlayTrainingTargetReaction(ent, damageInfo)
+}
+
+void function OnTrainingTargetDamagedReposition(entity ent, var damageInfo)
+{	
+	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT ), ent.GetOrigin(), ent.GetAngles() )
+	PlayTrainingTargetReaction(ent, damageInfo)
+
+	entity root = ent.GetParent()
+	vector newPos = root.GetOrigin() + 
+					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetUpVector()*0.5 + 
+					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetRightVector();
+
+	ent.SetOrigin(newPos)
+
+	ent.Signal( "OnActivate" )
+	thread ResetTrainingTarget(ent)
+}
+
+void function ResetTrainingTarget(entity ent)
+{
+	EndSignal( ent, "OnActivate" )
+	wait 4
+	ent.SetOrigin(ent.GetParent().GetOrigin())
+	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), ent.GetOrigin(), <0,0,0> )
+}
+
+entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( entity, var ) onDamaged )
+{
+	entity root = CreateScriptMover( pos, ang)
+
+	entity target = CreateEntity( "script_mover_lightweight" )
+	target.kv.solid = 6
+	target.SetValueForModelKey( FIRINGRANGE_FLICK_TARGET_ASSET )
+	target.kv.SpawnAsPhysicsMover = 0
+	target.SetOrigin( root.GetOrigin() )
+	target.SetAngles( root.GetAngles() )
+	DispatchSpawn( target )
+	target.Hide()
+	target.SetDamageNotifications( true )
+	target.SetParent(root)
+
+	entity visual = CreatePropDynamic(FIRINGRANGE_BLUE_TARGET_ASSET, root.GetOrigin(), root.GetAngles(), 6, -1)
+	visual.SetParent(target)
+	visual.SetModelScale(0.45)
+	visual.NotSolid()
+
+    AddEntityCallback_OnDamaged(target, onDamaged)
+	return target
+}
 #endif
+
+
+
+
 
 #if(false)
 
