@@ -104,7 +104,9 @@ void function ServerCallback_TDM_DoLocationIntroCutscene()
 void function ServerCallback_TDM_DoLocationIntroCutscene_Body()
 {
     entity player = GetLocalClientPlayer()
-    EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
+    
+    if(IsValid(player))
+        EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
      
     float playerFOV = player.GetFOV()
     
@@ -141,9 +143,13 @@ void function ServerCallback_TDM_DoLocationIntroCutscene_Body()
     GetLocalClientPlayer().ClearMenuCameraEntity()
     cutsceneMover.Destroy()
     
+    player = GetLocalClientPlayer()
+    if(IsValid(player))
+        FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
+    
     camera.Destroy()
     
-    FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
+    
 }
 
 void function ServerCallback_TDM_SetSelectedLocation(int sel)
