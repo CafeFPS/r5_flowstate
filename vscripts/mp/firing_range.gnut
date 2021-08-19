@@ -47,7 +47,7 @@ struct {
 
 	array<RackGroup> rackSpawns
 
-	vector flickTraining_pos = <32000,-6686,-29033>
+	vector flickTraining_pos = <32000,-6720,-29033>
 	vector flickTraining_ang = <0,-180,0>
 	float flickTraining_dist = 320
 } file
@@ -65,7 +65,8 @@ void function FiringRangeGameMode_Init()
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
 	
 	#if SERVER
-		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+		AddCallback_EntitiesDidLoad( OnEntitiesDidLoad )
+		AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
 	#endif
 
@@ -102,7 +103,7 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 }
 #endif //
 
-void function EntitiesDidLoad()
+void function OnEntitiesDidLoad()
 {
 	#if SERVER
 	array<entity> lootbins = GetEntArrayByScriptName("staging_loot_bin")
@@ -131,7 +132,31 @@ void function EntitiesDidLoad()
 	SpawnAmmo()
 
 	SpawnFlickTraining()
+	
+	thread WaitForPlayerSpawn()
 	#endif
+}
+
+
+
+
+#if SERVER
+
+void function WaitForPlayerSpawn()
+{
+	while(gp().len() < 1)
+		wait 0.5
+
+	while(!IsAlive(gp()[0]))
+		wait 0.5
+
+	OnPlayerRespawned(gp()[0])
+}
+void function OnPlayerRespawned(entity player)
+{
+	player.GiveWeapon("mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_semipistol" )
+	Survival_PickupItem(SpawnGenericLoot( "bullet", player.GetOrigin(), player.GetAngles(), 40 ), player)
 }
 
 void function OnFlickTargetDamaged(entity ent, var damageInfo)
@@ -147,7 +172,6 @@ void function OnFlickTargetDamaged(entity ent, var damageInfo)
 	ent.SetOrigin(newPos)
 
 	#if SERVER
-	/*
 	DamageInfo_GetAttacker(damageInfo).NotifyDidDamage
 	(
 		ent,
@@ -160,11 +184,19 @@ void function OnFlickTargetDamaged(entity ent, var damageInfo)
 		DamageInfo_GetWeapon( damageInfo ), 
 		DamageInfo_GetDistFromAttackOrigin( damageInfo )
 	)
-	*/
 	#endif
+
+	ent.Signal( "OnActivate" )
+	thread ResetFlickTarget(ent)
 }
 
-#if SERVER
+void function ResetFlickTarget(entity ent)
+{
+	EndSignal( ent, "OnActivate" )
+	wait 4
+	ent.SetOrigin(file.flickTraining_pos)
+	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), file.flickTraining_pos, <0,0,0> )
+}
 
 void function SpawnFlickTraining()
 {
@@ -177,7 +209,6 @@ void function SpawnFlickTraining()
 	target2.SetParent(collision)
 	target2.SetModelScale(0.45)
 	target2.NotSolid()
-
 
     AddEntityCallback_OnDamaged(collision, OnFlickTargetDamaged)
 }
@@ -347,7 +378,7 @@ void function SpawnAmmo()
 				vector pos = firstPos + rght*itemOffsetX*i + fwd*itemOffsetY*j
 
 				entity loot = SpawnGenericLoot(rackGroup.ammoType, pos, <0,0,0>, ammoStack)
-				thread OnPickupGenericThread(loot, rackGroup.ammoType)
+				thread OnPickupGenericThread(loot, rackGroup.ammoType, ammoStack)
 			}
 		}
 	}
@@ -492,14 +523,14 @@ void function OnPickupFromRackThread(entity item, string ref)
 	item.WaitSignal("OnItemPickup")
 
 	wait FIRINGRANGE_RACK_RESPAWN_TIME
-	
+
 	entity newWeapon = SpawnWeaponOnRack(rack, ref)
 	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), newWeapon.GetOrigin(), newWeapon.GetAngles() )
 	thread OnPickupFromRackThread(newWeapon, ref)
 }
 
 // When the item is grabbed -> respawn it
-void function OnPickupGenericThread(entity item, string ref)
+void function OnPickupGenericThread(entity item, string ref, int amount = 1)
 {
 	vector pos = item.GetOrigin()
 	vector angles = item.GetAngles()
@@ -508,7 +539,7 @@ void function OnPickupGenericThread(entity item, string ref)
 	wait FIRINGRANGE_RACK_RESPAWN_TIME
 
 	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
-	thread OnPickupGenericThread(SpawnGenericLoot(ref, pos, angles, 1), ref)
+	thread OnPickupGenericThread(SpawnGenericLoot(ref, pos, angles, amount), ref, amount)
 }
 
 // On item dropped
