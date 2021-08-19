@@ -67,7 +67,7 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		}
 		EmitSoundOnEntity( projectile, sound_incoming )
 		
-		TraceResults trace = TraceLine( projectile.GetOrigin(), origin+landRadiusOffset - <0,0,10000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		TraceResults trace = TraceLine( fireGrenadeParams.pos, origin+landRadiusOffset - <0,0,2000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 
 		vector target = trace.endPos
 		vector velocity = target - fireGrenadeParams.pos
