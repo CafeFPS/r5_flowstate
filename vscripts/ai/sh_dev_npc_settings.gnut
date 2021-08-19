@@ -146,12 +146,7 @@ void function SetupAbilities()
 void function SetupModelSpawner()
 {
 	#if UI
-	SetupDevCommand( "marvin", "SetMDLSpawnerModel mdl/robots/marvin/marvin.rmdl" )
-	SetupDevCommand( "atpov_titan_raptor_rocket_pod_right", "SetMDLSpawnerModel mdl/weapons/titan_raptor_rocket_pod/atpov_titan_raptor_rocket_pod_right.rmdl" )
-	SetupDevCommand( "currency_crafting_common", "SetMDLSpawnerModel mdl/currency/crafting/currency_crafting_common.rmdl" )
-	SetupDevCommand( "currency_crafting_epic", "SetMDLSpawnerModel mdl/currency/crafting/currency_crafting_epic.rmdl" )
-	SetupDevCommand( "currency_crafting_legendary", "SetMDLSpawnerModel mdl/currency/crafting/currency_crafting_legendary.rmdl" )
-	SetupDevCommand( "currency_crafting_rare", "SetMDLSpawnerModel mdl/currency/crafting/currency_crafting_rare.rmdl" )
+	SetupDevCommand( "marvin", "SetMDLSpawnerModel mdl/robots/marvin/marvin_gladcard.rmdl" )
 	SetupDevCommand( "droppod_loot_LL_holo", "SetMDLSpawnerModel mdl/vehicle/droppod_loot/droppod_loot_LL_holo.rmdl" )
 	SetupDevCommand( "death_box_01", "SetMDLSpawnerModel mdl/props/death_box/death_box_01.rmdl" )
 	SetupDevCommand( "drone_frag", "mdl/robots/drone_frag/drone_frag.rmdl" )
