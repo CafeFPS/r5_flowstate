@@ -19,10 +19,13 @@ global function SURVIVAL_AddLootGroupRemapping
 global function SURVIVAL_DebugLoot
 global function Survival_AddCallback_OnAirdropLaunched
 global function Survival_CleanupPlayerPermanents
+global function Survival_SetCallback_Leviathan_ConsiderLookAtEnt
+global function Survival_Leviathan_ConsiderLookAtEnt
 global function CreateSurvivalDeathBoxForPlayer
 
 struct
 {
+    void functionref( entity, float, float ) leviathanConsiderLookAtEntCallback = null
 } file
 
 void function GamemodeSurvival_Init()
@@ -46,6 +49,18 @@ void function GamemodeSurvival_Init()
 	)
 
 	thread SURVIVAL_RunArenaDeathField()
+}
+
+void function Survival_SetCallback_Leviathan_ConsiderLookAtEnt( void functionref( entity, float, float ) callback )
+{
+	file.leviathanConsiderLookAtEntCallback = callback
+}
+
+void function Survival_Leviathan_ConsiderLookAtEnt(entity ent)
+{
+    wait 1 //Wait until the ent has decided their direction
+    if(file.leviathanConsiderLookAtEntCallback != null)
+        file.leviathanConsiderLookAtEntCallback( ent, 10, 0.3 )
 }
 
 void function RespawnPlayerInDropship( entity player )

@@ -149,7 +149,7 @@ void function Canyonlands_MU1_CommonMapInit()
 
 		AddCallback_GameStateEnter( eGameState.Playing, Leviathan_OptimizeUpperBoneFollowersWhenAllPlayersHaveLanded )
 		AddSpawnCallback_ScriptName( "leviathan_staging", CreateClientSideLeviathanMarkers)
-		//Survival_SetCallback_Leviathan_ConsiderLookAtEnt( Leviathan_ConsiderLookAtEnt_Callback )
+		Survival_SetCallback_Leviathan_ConsiderLookAtEnt( Leviathan_ConsiderLookAtEnt_Callback )
 
 	InitOctaneTownTakeover()
 
@@ -823,6 +823,8 @@ void function LeviathanDamageReaction( entity leviathan, LeviathanDataStruct lev
 		}
 
 		leviathanData.roarSide = 0
+        if(state == LeviathanState.ROAR)
+            thread Leviathan_PlayRoar(leviathan, 5)
 		Leviathan_PlayStateAnimAndWait( leviathan, leviathanData, state )
 
 		if ( ShouldIncreaseRoarFrequency() )
@@ -1025,6 +1027,7 @@ void function Leviathan_RandomRoar( entity leviathan )
 			break
 
 		leviathanData.roarSide = 0
+        thread Leviathan_PlayRoar(leviathan, 5)
 		Leviathan_PlayStateAnimAndWait( leviathan, leviathanData, LeviathanState.ROAR )
 
 		// only rarely have both leviathans roar
@@ -1034,6 +1037,19 @@ void function Leviathan_RandomRoar( entity leviathan )
 		index = 1 - index // other leviathan
 		wait RandomFloatRange( 5, 13 )
 	}
+}
+
+void function Leviathan_PlayRoar(entity leviathan, float waitTime)
+{
+    //This is hacky and there's probably a better way to do this, but it will work for now.
+    wait waitTime
+    
+    int leviathanMouthAttachmentIndex = file.leviathan_zone_6.LookupAttachment( "FX_MOUTH" )
+    vector org = leviathan.GetAttachmentOrigin( leviathanMouthAttachmentIndex )
+    if(GetCurrentPlaylistVarBool( "evil_leviathans", false ) )
+        EmitSoundAtPosition( TEAM_UNASSIGNED, org, "Leviathan_AngryRoar")
+    else
+        EmitSoundAtPosition( TEAM_UNASSIGNED, org, "Leviathan_LongRoar")
 }
 
 const float LOOK_PITCH_DIFF = 25
