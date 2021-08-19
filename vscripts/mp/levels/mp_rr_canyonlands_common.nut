@@ -27,7 +27,7 @@ global function CodeCallback_PlayerLeaveUpdraftTrigger
 	//const asset HOVERTANK_PATH_FX = $"P_wpn_arcball_beam"
 	//const asset HOVERTANK_END_FX = $"P_ar_call_beacon_ring_hovertank"
 
-	const float SKYBOX_Z_OFFSET_STAGING_AREA = 32.0
+	const float SKYBOX_Z_OFFSET_STAGING_AREA = 30.0
 	const vector SKYBOX_ANGLES_STAGING_AREA = <0, 60, 0>
 
 	const int HOVER_TANKS_DEFAULT_CIRCLE_INDEX = 1
