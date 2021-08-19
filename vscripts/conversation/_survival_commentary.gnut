@@ -42,7 +42,7 @@ int function SurvivalCommentary_GetChampionEEH()
 
 void function SetKillLeader( entity killLeader, int numKills )
 {
-	wait 5.0
+	wait 1.0
 
 	file.currentKillLeader = killLeader
 	file.currentKillLeaderKillAmount = numKills
@@ -72,6 +72,11 @@ void function SetKillLeader( entity killLeader, int numKills )
 		thread PlayDialogueForPlayer( "bc_squadmateBecomesKillLeader", teamMember, teamMember )
 }
 
+int function GetMinKillsForKillLeader()
+{
+	return GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 3 )
+}
+
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() || !attacker.IsPlayer() )
@@ -88,7 +93,10 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		}
 
 		int attackerKills = attacker.GetPlayerNetInt( "kills" )
-		if ( attackerKills > file.currentKillLeaderKillAmount && attacker != file.currentKillLeader && attackerKills >= 3)
+		if ( attackerKills > file.currentKillLeaderKillAmount 
+				&& attacker != file.currentKillLeader 
+				&& attackerKills >= GetMinKillsForKillLeader()
+			)
 			thread SetKillLeader( attacker, attackerKills )
 	}
 
