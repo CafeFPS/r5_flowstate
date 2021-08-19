@@ -18,9 +18,22 @@ void function SURVIVAL_LootDistribution_InitShared()
     array<LootDistro> distributions
 	for ( int i = 0; i < numRows; i++ )
 	{
-        string featureFlag = GetDataTableString( dt, i, GetDataTableColumnByName( dt, "featureFlag" ) )
+        string featureFlagRef = GetDataTableString( dt, i, GetDataTableColumnByName( dt, "featureFlag" ) )
+        
         string groupRef = GetDataTableString( dt, i, GetDataTableColumnByName( dt, "groupRef" ) ).tolower()
         string entryRef = GetDataTableString( dt, i, GetDataTableColumnByName( dt, "entryRef" ) ).tolower()
+        
+        if ( featureFlagRef != "" )
+		{
+			Assert( ForAssertingOnly_IsValidFeatureFlagString( featureFlagRef ),
+				format( "Reference to '%s %s' in 'survival_loot_groups_new.csv' is gated by unknown feature flag: %s", groupRef, entryRef, featureFlagRef ) )
+			if ( !GetFeatureFlagByString( featureFlagRef ) )
+			{
+				printf( "Skipping reference to '%s %s' in 'survival_loot_groups_new.csv' because feature flag %s is off.", groupRef, entryRef, featureFlagRef )
+				continue
+			}
+		}
+        
         float entryDistribution = GetDataTableFloat( dt, i, GetDataTableColumnByName( dt, "entryDistribution" ) )
         int groupTier = GetDataTableInt( dt, i, GetDataTableColumnByName( dt, "groupTier" ) )
         
