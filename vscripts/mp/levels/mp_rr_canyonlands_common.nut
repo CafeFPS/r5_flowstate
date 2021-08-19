@@ -110,6 +110,7 @@ void function Canyonlands_MapInit_Common()
 	SupplyShip_Init()
 
 	#if SERVER
+        InitWaterLeviathans()
 		LootTicks_Init()
 
 		FlagSet( "DisableDropships" )
@@ -133,9 +134,6 @@ void function Canyonlands_MapInit_Common()
 		SURVIVAL_SetPlaneHeight( 24000 )
 		SURVIVAL_SetAirburstHeight( 8000 )
 		SURVIVAL_SetMapCenter( <0, 0, 0> )
-
-		AddSpawnCallback_ScriptName( "leviathan", LeviathanThink )
-		AddSpawnCallback_ScriptName( "leviathan_staging", LeviathanThink )
 
         AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_pvpcurrency_container", OnPvpCurrencyContainerSpawned )    
         AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_upgrade_station", OnSurvivalUpgradeStationSpawned )  
@@ -975,20 +973,6 @@ void function TestCreateTooManyLinks()
 			wait 0
 		}
 	}
-}
-
-void function LeviathanThink( entity leviathan )
-{
-	leviathan.EndSignal( "OnDestroy" )
-
-	string targetName = "LeviathanMarker"
-	if ( leviathan.GetScriptName() == "leviathan_staging" )
-		targetName = "LeviathanStagingMarker"
-
-	entity ent = CreatePropDynamic_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", leviathan.GetOrigin(), leviathan.GetAngles() )
-	SetTargetName( ent, targetName )
-	DispatchSpawn( ent )
-	leviathan.Destroy()
 }
 
 void function StagingArea_MoveSkybox()
