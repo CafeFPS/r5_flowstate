@@ -76,9 +76,11 @@ void function Sh_CustomTDM_Init()
                 {
                     [TEAM_IMC] = [
                         NewLocPair(<33560, -8992, -29126>, <0, 90, 0>),
+						NewLocPair(<34525, -7996, -28242>, <0, 100, 0>)
                     ],
                     [TEAM_MILITIA] = [
                         NewLocPair(<33507, -3754, -29165>, <0, -90, 0>),
+						NewLocPair(<34986, -3442, -28263, <0, -113, 0>)
                     ]
                 },
                 <0, 0, 3000>
