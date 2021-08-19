@@ -9,6 +9,8 @@ global function ClientCommands_Init
 void function ClientCommands_Init()
 {
 	AddClientCommandCallback( "noclip", ClientCommand_noclip )
+	AddClientCommandCallback( "infinite_ammo", ClientCommand_infinite_ammo )
+	AddClientCommandCallback( "ToggleThirdPerson", ClientCommand_ToggleThirdPerson )
 
 	#if R5DEV
 	AddClientCommandCallback( "script", ClientCommand_script )
@@ -26,6 +28,25 @@ bool function ClientCommand_noclip( entity player, array<string> args )
 		player.SetPhysics( MOVETYPE_NOCLIP )
 			
 	return true
+}
+
+bool function ClientCommand_ToggleThirdPerson( entity player, array<string> args )
+{
+	if ( !IsFiringRangeGameMode() )
+		return false
+
+	if ( player.IsThirdPersonShoulderModeOn() )
+		player.SetThirdPersonShoulderModeOff() 	
+	else
+		player.SetThirdPersonShoulderModeOn() 	
+			
+	return true
+}
+
+bool function ClientCommand_infinite_ammo( entity player, array<string> args )
+{
+    //soon
+	return false
 }
 
 #if R5DEV

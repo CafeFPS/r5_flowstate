@@ -29,6 +29,7 @@ struct
 	table<var, ButtonData > abandonMissionButtonData
 	table<var, ButtonData > changeCharacterButtonData
 	table<var, ButtonData > friendlyFireButtonData
+	table<var, ButtonData > thirdPersonButtonData
 
 	InputDef& qaFooter
 } file
@@ -77,6 +78,11 @@ void function ToggleFriendlyFire()
 	ClientCommand( "firingrange_toggle_friendlyfire" )
 }
 
+void function ToggleThirdPerson()
+{
+	ClientCommand( "ToggleThirdPerson" )
+}
+
 void function InitSystemPanel( var panel )
 {
 	var menu = Hud_GetParent( panel )
@@ -102,6 +108,7 @@ void function InitSystemPanel( var panel )
 	file.abandonMissionButtonData[ panel ] <- clone data
 	file.changeCharacterButtonData[ panel ] <- clone data
 	file.friendlyFireButtonData[ panel ] <- clone data
+	file.thirdPersonButtonData[ panel ] <- clone data
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
@@ -126,6 +133,9 @@ void function InitSystemPanel( var panel )
 
 	file.friendlyFireButtonData[ panel ].label = "#BUTTON_FRIENDLY_FIRE_TOGGLE"
 	file.friendlyFireButtonData[ panel ].activateFunc = ToggleFriendlyFire
+	
+	file.thirdPersonButtonData[ panel ].label = "TOGGLE THIRD PERSON"
+	file.thirdPersonButtonData[ panel ].activateFunc = ToggleThirdPerson
 
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
@@ -166,6 +176,7 @@ void function UpdateSystemPanel( var panel )
 		if ( IsFiringRangeGameMode() )
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
 
 			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
