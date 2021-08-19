@@ -65,12 +65,7 @@ void function ServerCallback_TDM_DoAnnouncement(float duration, int type)
     string subtext = ""
     switch(type)
     {
-        case eTDMAnnounce.WAITING_FOR_PLAYERS: 
-        {
-            message = "Waiting For Players"
-            subtext = GetPlayerArray().len().tostring() + "/" + MIN_NUMBER_OF_PLAYERS.tostring()
-            break
-        }
+
         case eTDMAnnounce.ROUND_START:
         {
             thread MakeScoreRUI();
@@ -113,27 +108,27 @@ void function ServerCallback_TDM_DoLocationIntroCutscene_Body()
      
     float playerFOV = player.GetFOV()
     
-    entity camera = CreateClientSidePointCamera(file.selectedLocation.spawns[teams[0]][0].origin + file.selectedLocation.cinematicCameraOffset, <90, 90, 0>, 17)
+    entity camera = CreateClientSidePointCamera(file.selectedLocation.spawns[0].origin + file.selectedLocation.cinematicCameraOffset, <90, 90, 0>, 17)
     camera.SetFOV(90)
     
-    entity cutsceneMover = CreateClientsideScriptMover($"mdl/dev/empty_model.rmdl", file.selectedLocation.spawns[teams[0]][0].origin + file.selectedLocation.cinematicCameraOffset, <90, 90, 0>)
+    entity cutsceneMover = CreateClientsideScriptMover($"mdl/dev/empty_model.rmdl", file.selectedLocation.spawns[0].origin + file.selectedLocation.cinematicCameraOffset, <90, 90, 0>)
     camera.SetParent(cutsceneMover)
     wait 1
 
 	GetLocalClientPlayer().SetMenuCameraEntity( camera )
 
 
-    for(int i = 0; i < teams.len(); i++)
+    for(int i = 0; i < file.selectedLocation.spawns.len(); i++)
     {
-        entity spawn = CreateClientSidePropDynamic(OriginToGround(file.selectedLocation.spawns[teams[i]][0].origin), <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
+        entity spawn = CreateClientSidePropDynamic(OriginToGround(file.selectedLocation.spawns[i].origin), <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
         thread CreateTemporarySpawnRUI(spawn, LOCATION_CUTSCENE_DURATION + 2)
     }
 
-    for(int i = 1; i < teams.len(); i++)
+    for(int i = 1; i < file.selectedLocation.spawns.len(); i++)
     {
 
-        float duration = LOCATION_CUTSCENE_DURATION / max(1, teams.len() - 1)
-        cutsceneMover.NonPhysicsMoveTo(file.selectedLocation.spawns[teams[i]][0].origin + file.selectedLocation.cinematicCameraOffset, duration, 1, 1)
+        float duration = LOCATION_CUTSCENE_DURATION / max(1, file.selectedLocation.spawns.len() - 1)
+        cutsceneMover.NonPhysicsMoveTo(file.selectedLocation.spawns[i].origin + file.selectedLocation.cinematicCameraOffset, duration, 1, 1)
         wait duration
     }
 

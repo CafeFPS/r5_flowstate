@@ -1,4 +1,4 @@
-#base "_base_sniper.txt"
+#base "_base_shotgun.txt"
 #base "_base_optics_ranged.txt"
 
 "WeaponData"
@@ -63,16 +63,21 @@
 	"aimassist_disable_ads_titansonly"         "1"
 	"aimassist_adspull_weaponclass"            "none"
 	"gamepad_use_yaw_speed_for_pitch_ads"      "1"
+	
+"blast_pattern"									"energy_shotgun"
+	"blast_pattern_zero_distance"        			"512.0"
+	"blast_pattern_default_scale"        			"1.5"
 
+	"projectiles_per_shot" 							"11"
 
 	// Damage
 	//
-	"damage_near_value"                        "145"
-	"damage_far_value"                         "145"
-	"damage_very_far_value"                    "145"
-	"damage_near_value_titanarmor"             "145"
-	"damage_far_value_titanarmor"              "145"
-	"damage_very_far_value_titanarmor"         "145"
+	"damage_near_value"                        "10"
+	"damage_far_value"                         "10"
+	"damage_very_far_value"                    "10"
+	"damage_near_value_titanarmor"             "10"
+	"damage_far_value_titanarmor"              "10"
+	"damage_very_far_value_titanarmor"         "10"
 
 	"damage_rodeo"                             "900"
 
