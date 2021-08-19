@@ -90,7 +90,7 @@ void function Sequence_Playing()
 
 	if ( IsFiringRangeGameMode() )
 	{
-		//SetGameState( eGameState.WaitingForPlayers )
+		SetGameState( eGameState.WaitingForPlayers )
 
 		foreach ( player in GetPlayerArray() )
 		{

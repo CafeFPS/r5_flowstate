@@ -69,6 +69,23 @@ void function Sh_CustomTDM_Init()
 
     switch(GetMapName())
     {
+    case "mp_rr_canyonlands_staging":
+        Shared_RegisterLocation(
+            NewLocationSettings(
+                "Firing Range",
+                {
+                    [TEAM_IMC] = [
+                        NewLocPair(<33560, -8992, -29126>, <0, 90, 0>),
+                    ],
+                    [TEAM_MILITIA] = [
+                        NewLocPair(<33507, -3754, -29165>, <0, -90, 0>),
+                    ]
+                },
+                <0, 0, 3000>
+            )
+        )
+        break
+
 	case "mp_rr_canyonlands_mu1":
 	case "mp_rr_canyonlands_mu1_night":
     case "mp_rr_canyonlands_64k_x_64k":
