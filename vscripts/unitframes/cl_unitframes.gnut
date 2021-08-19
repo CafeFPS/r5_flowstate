@@ -195,10 +195,8 @@ void function CreateTeamUnitFrame( entity player )
 
 asset function GetUnitFrameAssetForGameMode()
 {
-
-	if ( IsFallLTM() )
+	if ( IsFallLTM() || GetCurrentPlaylistVarBool( "minified_unitframes_enabled", false ) )
 		return $"ui/unitframe_shadow_squad.rpak"
-
 
 	return $"ui/unitframe_survival_v3.rpak"
 }
