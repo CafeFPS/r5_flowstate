@@ -178,9 +178,11 @@ void function StartRound()
 
 void function ScreenFadeToFromBlack(entity player, float fadeTime = 1, float holdTime = 1)
 {
-    ScreenFadeToBlack(player, fadeTime / 2, holdTime / 2)
+    if( IsValid( player ) )
+        ScreenFadeToBlack(player, fadeTime / 2, holdTime / 2)
     wait fadeTime
-    ScreenFadeFromBlack(player, fadeTime / 2, holdTime / 2)
+    if( IsValid( player ) )
+        ScreenFadeFromBlack(player, fadeTime / 2, holdTime / 2)
 }
 
 bool function ClientCommand_NextRound(entity player, array<string> args)
@@ -361,7 +363,7 @@ LocPair function SV_GetAppropriateSpawnLocation(entity player)
         foreach(spawn in file.selectedLocation.spawns)
         {
             vector enemyOrigin = GetClosestEnemyToOrigin(spawn.origin, ourTeam)
-            float distToEnemy = Length2D(spawn.origin - enemyOrigin)
+            float distToEnemy = Distance(spawn.origin, enemyOrigin)
 
             if(distToEnemy > maxDistToEnemy)
             {
@@ -384,7 +386,7 @@ vector function GetClosestEnemyToOrigin(vector origin, int ourTeam)
     {
         if(player.GetTeam() == ourTeam) continue
 
-        float dist = Length2D(player.GetOrigin() - origin)
+        float dist = Distance(player.GetOrigin(), origin)
         if(dist < minDist || minDist < 0)
         {
             minDist = dist
