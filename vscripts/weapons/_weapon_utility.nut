@@ -123,6 +123,7 @@ global function RemoveThreatScopeColorStatusEffect
 global function LimitVelocityHorizontal
 global function GiveMatchingAkimboWeapon
 global function TakeMatchingAkimboWeapon
+global function GetDualPrimarySlotForWeapon
 global function AddWeaponModChangedCallback
 global function TryApplyingBurnDamage
 global function AddEntityBurnDamageStack
@@ -1487,15 +1488,12 @@ bool function EntityCanHaveStickyEnts( entity stickyEnt, entity ent )
 		local stickPlayer      = GetWeaponInfoFileKeyField_Global( weaponClassName, "stick_pilot" )
 		local stickTitan       = GetWeaponInfoFileKeyField_Global( weaponClassName, "stick_titan" )
 		local stickNPC         = GetWeaponInfoFileKeyField_Global( weaponClassName, "stick_npc" )
-		local stickDrone       = GetWeaponInfoFileKeyField_Global( weaponClassName, "stick_drone" )
 
 		if ( ent.IsTitan() && stickTitan == 0 )
 			return false
 		else if ( ent.IsPlayer() && stickPlayer == 0 )
 			return false
 		else if ( ent.IsNPC() && stickNPC == 0 )
-			return false
-		else if ( ent.GetScriptName() == "crypto_camera" && stickDrone == 0 )
 			return false
 	}
 
@@ -4236,7 +4234,6 @@ void function PlayerUsedOffhand( entity player, entity offhandWeapon, bool sendP
 	#if CLIENT
 		if ( offhandWeapon == player.GetOffhandWeapon( OFFHAND_ULTIMATE ) )
 			UltimateWeaponStateSet( eUltimateState.ACTIVE )
-		Chroma_PlayerUsedAbility( player, offhandWeapon )
 	#endif //CLIENT
 }
 
