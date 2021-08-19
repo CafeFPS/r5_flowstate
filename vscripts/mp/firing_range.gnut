@@ -7,6 +7,11 @@ global const int FIRINGRANGE_ATTACHMENTS_MAX_COLUMNS = 6
 global const int FIRINGRANGE_ITEMS_MAX_COLUMNS = 2
 global const int FIRINGRANGE_ORDNANCE_MAX_COLUMNS = 2
 
+global const asset FIRINGRANGE_FLICK_TARGET_ASSET = $"mdl/fx/plasma_sphere_01.rmdl"
+global const asset FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT = $"P_crypto_drone_explosion"
+global const string FIRINGRANGE_FLICK_TARGET_SOUND = "Player.Hitbeep_headshot.Human_3P_vs_1P"
+global const asset FIRINGRANGE_BLUE_TARGET_ASSET = $"mdl/barriers/shooting_range_target_02.rmdl"
+
 #if(false)
 
 
@@ -23,13 +28,17 @@ global function SCB_BroadcastFriendlyFireChange
 #endif //
 
 struct {
-	table<string, array<LootData> > weaponsPerAmmoType,
+	table<string, array<LootData> > weaponsPerAmmoType
 	table<string, array<string> > attachmentsPerAmmoType
 	array< array<LootData> > equipmentsPerIndex
 	array<LootData> items
 	array<LootData> ordnance
 
 	array<entity> rackSpawns
+
+	vector flickTraining_pos = <32000,-6686,-29033>
+	vector flickTraining_ang = <0,-180,0>
+	float flickTraining_dist = 320
 } file
 
 void function FiringRangeGameMode_Init()
@@ -39,6 +48,9 @@ void function FiringRangeGameMode_Init()
 
 	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
 
+	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
+	PrecacheModel( FIRINGRANGE_BLUE_TARGET_ASSET )
+	PrecacheParticleSystem( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT )
 	
 	#if SERVER
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
@@ -100,10 +112,58 @@ void function EntitiesDidLoad()
 	SpawnEquipments()
 	SpawnOrdnance()
 	SpawnItems()
+
+	SpawnFlickTraining()
+	#endif
+}
+
+void function OnFlickTargetDamaged(entity ent, var damageInfo)
+{	
+	EmitSoundOnEntity(ent, FIRINGRANGE_FLICK_TARGET_SOUND)
+	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT ), ent.GetOrigin(), ent.GetAngles() )
+
+	entity root = ent.GetParent()
+	vector newPos = file.flickTraining_pos + 
+					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetUpVector()*0.5 + 
+					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetRightVector();
+
+	ent.SetOrigin(newPos)
+
+	#if SERVER
+	/*
+	DamageInfo_GetAttacker(damageInfo).NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+	*/
 	#endif
 }
 
 #if SERVER
+
+void function SpawnFlickTraining()
+{
+	entity root = CreateScriptMover( file.flickTraining_pos, file.flickTraining_ang)
+	entity collision = CreatePropDynamic(FIRINGRANGE_FLICK_TARGET_ASSET, root.GetOrigin(), root.GetAngles(), 6, -1)
+	entity target2 = CreatePropDynamic(FIRINGRANGE_BLUE_TARGET_ASSET, root.GetOrigin(), root.GetAngles(), 6, -1)
+	collision.SetParent(root)
+    collision.SetDamageNotifications( true )
+	collision.Hide()
+	target2.SetParent(collision)
+	target2.SetModelScale(0.45)
+	target2.NotSolid()
+
+
+    AddEntityCallback_OnDamaged(collision, OnFlickTargetDamaged)
+}
 
 // Get All weapons, arange them in a table per ammo type
 void function FillWeaponTable()
