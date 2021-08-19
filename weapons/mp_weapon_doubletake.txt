@@ -114,8 +114,9 @@
 
 	// Ammo
 	//
+
 	"ammo_pool_type"                               "special"
-	"ammo_clip_size"                               "5"
+	"ammo_clip_size"                               "7"
 	"ammo_stockpile_max"                           "120"
 	"ammo_default_total"                           "120"
 	"ammo_per_shot"                                "1"

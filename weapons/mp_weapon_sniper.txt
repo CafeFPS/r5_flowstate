@@ -125,9 +125,9 @@
 	// Behavior - Animation
 	"deployfirst_time"                         "1.5"
 	"deploy_time"                              "1.2"
-	"holster_time"                             "0.7"
+	"holster_time"                             "0.8"
 	"lower_time"                               "0.55"
-	"raise_time"                               "1.0"
+	"raise_time"                               "0.8"
 
 	"disable_zoomed_rechamber"					"1"
 
