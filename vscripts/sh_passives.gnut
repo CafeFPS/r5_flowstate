@@ -181,6 +181,9 @@ void function OnRegisterRootItemFlavors()
 #if SERVER
 void function GivePassive( entity player, int passive )
 {
+    if(!IsValid(player))
+        return
+    
 	bool didHavePassive = player.HasPassive( passive )
 
 	// printt( "give passive " + GetPassiveName( passive ), passive )
