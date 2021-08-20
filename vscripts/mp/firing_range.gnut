@@ -25,6 +25,10 @@ global const asset FIRINGRANGE_128x128_ASSET = $"mdl/thunderdome/thunderdome_cag
 global const asset FIRINGRANGE_256x128_ASSET = $"mdl/thunderdome/thunderdome_cage_wall_256x128_03.rmdl"
 global const asset FIRINGRANGE_256x256_ASSET = $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl"
 
+#if SERVER
+global bool firingrange_infinite_ammo = false
+#endif
+
 #if(false)
 
 
@@ -89,6 +93,7 @@ void function FiringRangeGameMode_Init()
 	#if SERVER
 		AddCallback_EntitiesDidLoad( OnEntitiesDidLoad )
 		AddCallback_OnPlayerRespawned( OnPlayerRespawned )
+		AddCallback_OnWeaponAttack( OnWeaponAttack )
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
 	#endif
 
@@ -177,126 +182,6 @@ void function OnEntitiesDidLoad()
 
 
 #if SERVER
-
-void function SpawnMapProps()
-{
-	// TELEPORTERS
-	{
-		entity upper = CreateFRButton(<31016.6934, -8667.74414, -29239.7441>, <0,180,0>, "%&use% GO TO UPPER LEVEL")
-		AddCallback_OnUseEntity( upper, void function(entity panel, entity user, int input) 
-		{
-			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-			TeleportFRPlayer(user,<30437.8281, -9880.22852, -25972.6387>,<0,0,0>)
-		})
-	}
-
-	// UPPER LEVEL PLATFORM
-	{
-		vector corner = <30795, -10429,-25988>
-		vector o = <240,240,0>
-
-		// Floor
-		for(int i = 0; i<4; i++)
-		for(int j = 0; j<3; j++)
-		{
-			CreateFRProp( FIRINGRANGE_256x256_ASSET, corner+o+<i*256,j*256,0>, <0,0,0>)
-		}
-		// Side Walls
-		for(int i = 0; i<4; i++)
-		for(int j = 0; j<2; j++)
-		{
-			CreateFRProp( FIRINGRANGE_256x256_ASSET, corner+o+<i*256,-128,128+j*256>, <90,90,0>)
-		}
-		
-	}
-
-	// UPPER DOORS
-	{
-		// Walls
-		entity dbdoorWall = 
-		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorDouble_pos + <-128,-8,64>, <90,90,0>, true)
-		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<256,0,0>, <90,90,0>, true)
-		dbdoorWall = 
-		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorSingle_pos + <-124,8,64>, <90,270,0>, true)
-		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<192,0,0>, <90,270,0>, true)
-	}
-}
-
-void function TeleportFRPlayer(entity player, vector pos, vector ang)
-{
-	player.SetOrigin(pos)
-	player.SetAngles(ang)
-	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
-	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
-}
-
-entity function CreateFRProp(asset a, vector pos, vector ang, bool mantle = false)
-{
-	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,15000)
-	if(mantle) e.AllowMantle()
-	return e
-}
-entity function CreateFRButton(vector pos, vector ang, string prompt)
-{
-	entity button = CreateEntity("prop_dynamic")
-	button.kv.solid = 6
-	button.SetValueForModelKey(FIRINGRANGE_BUTTON_ASSET)
-	button.SetOrigin(pos)
-	button.SetAngles(ang)
-	DispatchSpawn(button)
-
-	button.SetUsable()
-	button.SetUsableByGroup("pilot")
-	button.SetUsePrompts(prompt, prompt)
-	return button
-}
-
-void function SpawnDoors_Init()
-{
-	entity button = CreateFRButton(file.doorResetButton_pos, file.doorResetButton_ang, "%&use% RESPAWN DOORS")
-	AddCallback_OnUseEntity( button, void function(entity panel, entity user, int input) 
-	{
-		EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-		SpawnDoors()
-	})
-
-	SpawnDoors()
-}
-
-void function SpawnDoors()
-{
-	foreach(entity door in file.doors)
-	{
-		if(IsValid(door))
-			door.Destroy()
-	}
-	file.doors.clear()
-
-	entity singleDoor = CreateEntity("prop_door")
-	singleDoor.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
-	singleDoor.SetOrigin(file.doorSingle_pos)
-	singleDoor.SetAngles(file.doorSingle_ang)
-	DispatchSpawn(singleDoor)
-
-	float offset
-
-	entity ddl = CreateEntity("prop_door")
-	ddl.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
-	ddl.SetAngles(file.doorDouble_ang)
-	ddl.SetOrigin(file.doorDouble_pos + ddl.GetRightVector() * 60)
-	DispatchSpawn(ddl)
-
-	entity ddr = CreateEntity("prop_door")
-	ddr.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
-	ddr.SetAngles(file.doorDouble_ang + <0,180,0>)
-	ddr.SetOrigin(file.doorDouble_pos + ddr.GetRightVector() * 60)
-	ddr.LinkToEnt( ddl )
-	DispatchSpawn(ddr)
-
-	file.doors.append(singleDoor)
-	file.doors.append(ddl)
-	file.doors.append(ddr)
-}
 
 // ==================================================
 //					PLAYER EQUIP
@@ -760,6 +645,163 @@ entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( en
 
     AddEntityCallback_OnDamaged(target, onDamaged)
 	return target
+}
+
+
+
+
+
+// ==================================================
+//					UPPER MAP PROPS
+// ==================================================
+
+void function SpawnMapProps()
+{
+	// TELEPORTERS
+	{
+		entity upper = CreateFRButton(<31016.6934, -8667.74414, -29239.7441>, <0,180,0>, "%&use% GO TO UPPER LEVEL")
+		AddCallback_OnUseEntity( upper, void function(entity panel, entity user, int input) 
+		{
+			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+			TeleportFRPlayer(user,<30437.8281, -9880.22852, -25972.6387>,<0,0,0>)
+		})
+	}
+
+	// BUTTONS
+	{
+		entity charger = CreateFRButton(<30575.1016, -4631.76025, -29112.3125>, <0,0,0>, "%&use% CHARGE ABILITIES")
+		AddCallback_OnUseEntity( charger, void function(entity panel, entity user, int input) 
+		{
+			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+			user.GetOffhandWeapon( OFFHAND_INVENTORY )
+				.SetWeaponPrimaryClipCount( user.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
+			user.GetOffhandWeapon( OFFHAND_LEFT )
+				.SetWeaponPrimaryClipCount( user.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
+		})
+	}
+
+	// UPPER LEVEL PLATFORM
+	{
+		int len = 7
+		vector corner = <30795, -10429,-25988>
+		vector o = <240,240,0>
+
+		// Floor
+		for(int i = 0; i<len; i++)
+		for(int j = 0; j<3; j++)
+		{
+			CreateFRProp( FIRINGRANGE_256x256_ASSET, corner+o+<i*256,j*256,0>, <0,0,0>)
+		}
+		// Side Walls
+		for(int i = 0; i<len; i++)
+		for(int j = 0; j<2; j++)
+		{
+			CreateFRProp( FIRINGRANGE_256x128_ASSET, corner+o+<i*256,-128,8+j*128>, <0,0,0>, true)
+		}
+
+		// Small Walls
+		for(int i = 0; i<4; i++){
+		CreateFRProp( FIRINGRANGE_256x128_ASSET, corner+<1024+i*16,640,16>, <0,90,0>, true, 1000)
+		CreateFRProp( FIRINGRANGE_256x128_ASSET, corner+<512+i*16,640,-32>, <0,90,0>, true, 1000)}
+		
+		
+	}
+
+	// UPPER DOORS
+	{
+		// Walls
+		entity dbdoorWall = 
+		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorDouble_pos + <-128,-8,64>, <90,90,0>, true)
+		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<256,0,0>, <90,90,0>, true)
+		dbdoorWall = 
+		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorSingle_pos + <-124,8,64>, <90,270,0>, true)
+		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<192,0,0>, <90,270,0>, true)
+	}
+}
+
+void function TeleportFRPlayer(entity player, vector pos, vector ang)
+{
+	player.SetOrigin(pos)
+	player.SetAngles(ang)
+	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+}
+
+entity function CreateFRProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000)
+{
+	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,15000)
+	e.kv.fadedist = fade
+	if(mantle) e.AllowMantle()
+	return e
+}
+entity function CreateFRButton(vector pos, vector ang, string prompt)
+{
+	entity button = CreateEntity("prop_dynamic")
+	button.kv.solid = 6
+	button.SetValueForModelKey(FIRINGRANGE_BUTTON_ASSET)
+	button.SetOrigin(pos)
+	button.SetAngles(ang)
+	DispatchSpawn(button)
+
+	button.SetUsable()
+	button.SetUsableByGroup("pilot")
+	button.SetUsePrompts(prompt, prompt)
+	return button
+}
+
+void function SpawnDoors_Init()
+{
+	entity button = CreateFRButton(file.doorResetButton_pos, file.doorResetButton_ang, "%&use% RESPAWN DOORS")
+	AddCallback_OnUseEntity( button, void function(entity panel, entity user, int input) 
+	{
+		EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+		SpawnDoors()
+	})
+
+	SpawnDoors()
+}
+
+void function SpawnDoors()
+{
+	foreach(entity door in file.doors)
+	{
+		if(IsValid(door))
+			door.Destroy()
+	}
+	file.doors.clear()
+
+	entity singleDoor = CreateEntity("prop_door")
+	singleDoor.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+	singleDoor.SetOrigin(file.doorSingle_pos)
+	singleDoor.SetAngles(file.doorSingle_ang)
+	DispatchSpawn(singleDoor)
+
+	float offset
+
+	entity ddl = CreateEntity("prop_door")
+	ddl.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+	ddl.SetAngles(file.doorDouble_ang)
+	ddl.SetOrigin(file.doorDouble_pos + ddl.GetRightVector() * 60)
+	DispatchSpawn(ddl)
+
+	entity ddr = CreateEntity("prop_door")
+	ddr.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+	ddr.SetAngles(file.doorDouble_ang + <0,180,0>)
+	ddr.SetOrigin(file.doorDouble_pos + ddr.GetRightVector() * 60)
+	ddr.LinkToEnt( ddl )
+	DispatchSpawn(ddr)
+
+	file.doors.append(singleDoor)
+	file.doors.append(ddl)
+	file.doors.append(ddr)
+}
+
+void function OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
+{
+	if(!firingrange_infinite_ammo)
+		return
+		
+	weapon.SetWeaponPrimaryClipCount(weapon.GetWeaponPrimaryClipCountMax())
 }
 #endif
 
