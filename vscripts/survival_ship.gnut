@@ -10,16 +10,18 @@ global function SURVIVAL_GetAirburstHeight
 global function SURVIVAL_SetPlaneHeight
 global function SURVIVAL_SetAirburstHeight
 global function SURVIVAL_SetMapCenter
-
+global function SURVIVAL_SetMapDelta
 #if R5DEV
 global function GetDropshipClearance
 #endif
 
+const float MAX_DELTA = 5200.0
 struct {
 	float planeHeight = 0.0
 	float airburstHeight = 0.0
 
 	vector mapCenter = <0, 0, 0>
+    float maxDelta = MAX_DELTA
 
 	table<entity, bool> eligibleForJumpmasterTable = {}
 } file
@@ -78,13 +80,15 @@ float function GetDropshipClearance( vector origin )
 
 vector function TraceInBoundPoint( vector start, vector forward, float multiplier )
 {
-	const float MAX_DELTA = 5200.0
-
 	vector result = start
 	float startClearance = GetDropshipClearance( start )
 
-	while ( GetDropshipClearance( result ) - startClearance < MAX_DELTA )
+	while ( GetDropshipClearance( result ) - startClearance < file.maxDelta )
+    {
 		result += forward * multiplier
+        if(result.x > REALBIG_CIRCLE_END_RADIUS || result.x < -REALBIG_CIRCLE_END_RADIUS || result.y > REALBIG_CIRCLE_END_RADIUS || result.y < -REALBIG_CIRCLE_END_RADIUS)
+            break
+    }    
 
 	return result
 }
@@ -92,6 +96,11 @@ vector function TraceInBoundPoint( vector start, vector forward, float multiplie
 void function SURVIVAL_SetMapCenter( vector center )
 {
 	file.mapCenter = center
+}
+
+void function SURVIVAL_SetMapDelta( float maxDelta )
+{
+    file.maxDelta = maxDelta
 }
 
 // script gp()[0].SetOrigin(<gp()[0].GetOrigin().x,gp()[0].GetOrigin().y,SURVIVAL_GetPlaneHeight()>)
@@ -126,14 +135,23 @@ array<vector> function Survival_GeneratePlaneFlightPath()
 	vector startPos = TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER )
 	vector endPos = TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER * -1.0 )
 
+    float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 45.0 )
+	float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
+	float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
+    
+    float velocity = Distance2D(endPos, startPos)/ (DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME)
 	if ( CoinFlip() )
 	{
 		vector temp = startPos
 		startPos = endPos
 		endPos = temp
 	}
+    dropshipMovingAngle = VectorToAngles( endPos - startPos )
+    dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
 
-	dropshipMovingAngle = VectorToAngles( endPos - startPos )
+    startPos = <startPos.x + (-dropshipMovingForward.x * velocity * DROP_WAIT_TIME), startPos.y + (-dropshipMovingForward.y * velocity * DROP_WAIT_TIME), startPos.z>
+    endPos = <endPos.x + (dropshipMovingForward.x * velocity * DROP_TIMEOUT_TIME), endPos.y + (dropshipMovingForward.y * velocity * DROP_TIMEOUT_TIME), endPos.z>
+	
 
 	// printt( "Survival_GeneratePlaneFlightPath: startPos", startPos )
 	// printt( "Survival_GeneratePlaneFlightPath: endPos", endPos )

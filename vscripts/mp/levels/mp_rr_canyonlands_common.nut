@@ -134,6 +134,7 @@ void function Canyonlands_MapInit_Common()
 		SURVIVAL_SetPlaneHeight( 24000 )
 		SURVIVAL_SetAirburstHeight( 8000 )
 		SURVIVAL_SetMapCenter( <0, 0, 0> )
+        SURVIVAL_SetMapDelta( 4900 )
 
         AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_pvpcurrency_container", OnPvpCurrencyContainerSpawned )    
         AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_upgrade_station", OnSurvivalUpgradeStationSpawned )  
