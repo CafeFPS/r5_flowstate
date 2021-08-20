@@ -37,6 +37,7 @@ entity function CreateWeaponRack(vector origin, vector angles, string weaponName
 	rack.SetOrigin( origin )
 	rack.SetAngles( angles )
 	rack.kv.solid = SOLID_VPHYSICS
+	rack.AllowMantle()
 	DispatchSpawn( rack )
 	
 	SpawnWeaponOnRack(rack, weaponName)

@@ -16,6 +16,15 @@ global const asset FIRINGRANGE_BLUE_TARGET_ASSET = $"mdl/barriers/shooting_range
 
 global const asset FIRINGRANGE_ITEM_RESPAWN_PARTICLE = $"P_impact_shieldbreaker_sparks"
 
+global const asset FIRINGRANGE_BUTTON_ASSET = $"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl"
+global const string FIRINGRANGE_BUTTON_SOUND = "UI_Menu_back"
+
+global const asset FIRINGRANGE_DOOR_ASSET = $"mdl/door/canyonlands_door_single_02.rmdl"
+
+global const asset FIRINGRANGE_128x128_ASSET = $"mdl/thunderdome/thunderdome_cage_floor_128x128_01.rmdl"
+global const asset FIRINGRANGE_256x128_ASSET = $"mdl/thunderdome/thunderdome_cage_wall_256x128_03.rmdl"
+global const asset FIRINGRANGE_256x256_ASSET = $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl"
+
 #if(false)
 
 
@@ -51,6 +60,14 @@ struct {
 	vector flickTraining_pos = <32000,-6720,-29033>
 	vector flickTraining_ang = <0,-180,0>
 	float flickTraining_dist = 320
+
+	array<entity> doors
+	vector doorResetButton_pos = <30754,-9885,-25972>
+	vector doorResetButton_ang = <0,270,0>
+	vector doorSingle_pos = <30582,-9725,-25972>
+	vector doorSingle_ang = <0,90,0>
+	vector doorDouble_pos = <30550,-10025,-25972>
+	vector doorDouble_ang = <0,90,0>
 } file
 
 void function FiringRangeGameMode_Init()
@@ -59,6 +76,10 @@ void function FiringRangeGameMode_Init()
 		return
 
 	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
+
+	PrecacheModel( FIRINGRANGE_128x128_ASSET )
+	PrecacheModel( FIRINGRANGE_256x128_ASSET )
+	PrecacheModel( FIRINGRANGE_256x256_ASSET )
 
 	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
 	PrecacheModel( FIRINGRANGE_BLUE_TARGET_ASSET )
@@ -141,6 +162,12 @@ void function OnEntitiesDidLoad()
 		SpawnTrainingTarget(file.trackingTraining_pos, file.flickTraining_ang, OnTrainingTargetDamagedNothing))
 	// - - - -
 
+	// Doors
+	SpawnDoors_Init()
+
+	// Map Props
+	SpawnMapProps()
+
 	thread WaitForPlayerSpawn()
 
 	#endif
@@ -150,6 +177,126 @@ void function OnEntitiesDidLoad()
 
 
 #if SERVER
+
+void function SpawnMapProps()
+{
+	// TELEPORTERS
+	{
+		entity upper = CreateFRButton(<31016.6934, -8667.74414, -29239.7441>, <0,180,0>, "%&use% GO TO UPPER LEVEL")
+		AddCallback_OnUseEntity( upper, void function(entity panel, entity user, int input) 
+		{
+			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+			TeleportFRPlayer(user,<30437.8281, -9880.22852, -25972.6387>,<0,0,0>)
+		})
+	}
+
+	// UPPER LEVEL PLATFORM
+	{
+		vector corner = <30795, -10429,-25988>
+		vector o = <240,240,0>
+
+		// Floor
+		for(int i = 0; i<4; i++)
+		for(int j = 0; j<3; j++)
+		{
+			CreateFRProp( FIRINGRANGE_256x256_ASSET, corner+o+<i*256,j*256,0>, <0,0,0>)
+		}
+		// Side Walls
+		for(int i = 0; i<4; i++)
+		for(int j = 0; j<2; j++)
+		{
+			CreateFRProp( FIRINGRANGE_256x256_ASSET, corner+o+<i*256,-128,128+j*256>, <90,90,0>)
+		}
+		
+	}
+
+	// UPPER DOORS
+	{
+		// Walls
+		entity dbdoorWall = 
+		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorDouble_pos + <-128,-8,64>, <90,90,0>, true)
+		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<256,0,0>, <90,90,0>, true)
+		dbdoorWall = 
+		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorSingle_pos + <-124,8,64>, <90,270,0>, true)
+		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<192,0,0>, <90,270,0>, true)
+	}
+}
+
+void function TeleportFRPlayer(entity player, vector pos, vector ang)
+{
+	player.SetOrigin(pos)
+	player.SetAngles(ang)
+	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+}
+
+entity function CreateFRProp(asset a, vector pos, vector ang, bool mantle = false)
+{
+	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,15000)
+	if(mantle) e.AllowMantle()
+	return e
+}
+entity function CreateFRButton(vector pos, vector ang, string prompt)
+{
+	entity button = CreateEntity("prop_dynamic")
+	button.kv.solid = 6
+	button.SetValueForModelKey(FIRINGRANGE_BUTTON_ASSET)
+	button.SetOrigin(pos)
+	button.SetAngles(ang)
+	DispatchSpawn(button)
+
+	button.SetUsable()
+	button.SetUsableByGroup("pilot")
+	button.SetUsePrompts(prompt, prompt)
+	return button
+}
+
+void function SpawnDoors_Init()
+{
+	entity button = CreateFRButton(file.doorResetButton_pos, file.doorResetButton_ang, "%&use% RESPAWN DOORS")
+	AddCallback_OnUseEntity( button, void function(entity panel, entity user, int input) 
+	{
+		EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+		SpawnDoors()
+	})
+
+	SpawnDoors()
+}
+
+void function SpawnDoors()
+{
+	foreach(entity door in file.doors)
+	{
+		if(IsValid(door))
+			door.Destroy()
+	}
+	file.doors.clear()
+
+	entity singleDoor = CreateEntity("prop_door")
+	singleDoor.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+	singleDoor.SetOrigin(file.doorSingle_pos)
+	singleDoor.SetAngles(file.doorSingle_ang)
+	DispatchSpawn(singleDoor)
+
+	float offset
+
+	entity ddl = CreateEntity("prop_door")
+	ddl.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+	ddl.SetAngles(file.doorDouble_ang)
+	ddl.SetOrigin(file.doorDouble_pos + ddl.GetRightVector() * 60)
+	DispatchSpawn(ddl)
+
+	entity ddr = CreateEntity("prop_door")
+	ddr.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+	ddr.SetAngles(file.doorDouble_ang + <0,180,0>)
+	ddr.SetOrigin(file.doorDouble_pos + ddr.GetRightVector() * 60)
+	ddr.LinkToEnt( ddl )
+	DispatchSpawn(ddr)
+
+	file.doors.append(singleDoor)
+	file.doors.append(ddl)
+	file.doors.append(ddr)
+}
 
 // ==================================================
 //					PLAYER EQUIP
