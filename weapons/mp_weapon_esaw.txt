@@ -134,7 +134,7 @@ WeaponData
 
 	"damage_type" 									"bullet"
 
-	"ammo_clip_size"   								"44"
+	"ammo_clip_size"   								"36"
     "ammo_default_total"							"330"
     "ammo_stockpile_max"							"330"
     "ammo_no_remove_from_stockpile"					"1"
