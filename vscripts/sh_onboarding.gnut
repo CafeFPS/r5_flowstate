@@ -528,7 +528,7 @@ void function OnClientConnected( entity player )
 
 void function OnCharacterClassChanged( EHI playerEHI, ItemFlavor flavor )
 {
-	if ( GetGameState() < eGameState.Playing )
+	if ( GetGameState() < eGameState.Playing || IsFiringRangeGameMode() )
 		return
 
 	entity player = FromEHI( playerEHI )
@@ -540,7 +540,7 @@ void function OnCharacterClassChanged( EHI playerEHI, ItemFlavor flavor )
 
 void function OnCharacterSkinChanged( EHI playerEHI, ItemFlavor flavor )
 {
-	if ( GetGameState() < eGameState.Playing )
+	if ( GetGameState() < eGameState.Playing || IsFiringRangeGameMode() )
 		return
 
 	entity player = FromEHI( playerEHI )
