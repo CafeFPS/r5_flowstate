@@ -636,7 +636,7 @@ entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( en
 {
 	entity root = CreateScriptMover( pos, ang)
 
-	entity target = CreateEntity( "script_mover_lightweight" )
+	entity target = CreateEntity( "script_mover" )
 	target.kv.solid = 6
 	target.SetValueForModelKey( FIRINGRANGE_FLICK_TARGET_ASSET )
 	target.kv.SpawnAsPhysicsMover = 0
