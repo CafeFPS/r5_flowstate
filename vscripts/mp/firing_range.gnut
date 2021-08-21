@@ -24,6 +24,7 @@ global const asset FIRINGRANGE_DOOR_ASSET = $"mdl/door/canyonlands_door_single_0
 global const asset FIRINGRANGE_128x128_ASSET = $"mdl/thunderdome/thunderdome_cage_floor_128x128_01.rmdl"
 global const asset FIRINGRANGE_256x128_ASSET = $"mdl/thunderdome/thunderdome_cage_wall_256x128_03.rmdl"
 global const asset FIRINGRANGE_256x256_ASSET = $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl"
+global const asset FIRINGRANGE_GRATE_ASSET = $"mdl/industrial/landing_mat_metal_02_large.rmdl"
 
 #if SERVER
 global bool firingrange_infinite_ammo = false
@@ -60,7 +61,8 @@ struct {
 
 	array<RackGroup> rackSpawns
 
-	vector trackingTraining_pos = <32000,-7853,-29000>
+	vector training_mov = <1,1,0>
+	vector trackingTraining_pos = <32000,-7853,-29033>
 	vector flickTraining_pos = <32000,-6720,-29033>
 	vector flickTraining_ang = <0,-180,0>
 	float flickTraining_dist = 320
@@ -84,6 +86,7 @@ void function FiringRangeGameMode_Init()
 	PrecacheModel( FIRINGRANGE_128x128_ASSET )
 	PrecacheModel( FIRINGRANGE_256x128_ASSET )
 	PrecacheModel( FIRINGRANGE_256x256_ASSET )
+	PrecacheModel( FIRINGRANGE_GRATE_ASSET )
 
 	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
 	PrecacheModel( FIRINGRANGE_BLUE_TARGET_ASSET )
@@ -385,7 +388,7 @@ void function SpawnAmmo()
 void function SpawnItems()
 {
 	const float otherSideOffset = 512.0
-	const float cornerOffset = 128.0 - 16.0
+	const float cornerOffset = 128.0 - 12.0
 	const float itemOffsetX = 32.0
 	const float itemOffsetY = 24.0
 	foreach(RackGroup rackGroup in file.rackSpawns)
@@ -585,11 +588,17 @@ void function MoveTrainingTargetAround(entity ent)
 	float dist = file.flickTraining_dist * 0.75
 	while(IsValid(ent))
 	{
-		vector next = o.GetOrigin() + RandomFloatRange(-dist,dist)*o.GetUpVector()*0.75 + 
-						RandomFloatRange(-dist,dist)*o.GetRightVector();
+		vector next
 		
-		float t = 0.8;
-		ent.NonPhysicsMoveTo(next, t, 0.1, 0.1 )
+		while(Distance(ent.GetOrigin(),next) < 64 || Distance(ent.GetOrigin(),next) > dist*0.7)
+			next = o.GetOrigin() + 
+			RandomFloatRange(-dist,dist)*o.GetUpVector()*0.75*file.training_mov.y + 
+			RandomFloatRange(-dist,dist)*o.GetRightVector()*file.training_mov.x;
+		
+		float t = 0.6;
+		if(file.training_mov != <1,1,0>)
+			t *= 0.6
+		ent.NonPhysicsMoveTo(next, t, 0.04, 0.04 )
 		wait t
 	}
 }
@@ -606,8 +615,8 @@ void function OnTrainingTargetDamagedReposition(entity ent, var damageInfo)
 
 	entity root = ent.GetParent()
 	vector newPos = root.GetOrigin() + 
-					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetUpVector()*0.5 + 
-					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetRightVector();
+					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetUpVector()*0.5*file.training_mov.y + 
+					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetRightVector()*file.training_mov.x;
 
 	ent.SetOrigin(newPos)
 
@@ -652,7 +661,7 @@ entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( en
 
 
 // ==================================================
-//					UPPER MAP PROPS
+//					MAP PROPS
 // ==================================================
 
 void function SpawnMapProps()
@@ -678,6 +687,20 @@ void function SpawnMapProps()
 			user.GetOffhandWeapon( OFFHAND_LEFT )
 				.SetWeaponPrimaryClipCount( user.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
 		})
+
+		entity target = CreateFRButton(<31446.1016, -7281.54932, -29235.9824>, <0,270,0>, GetTrainingTargetMovementText(file.training_mov))
+		AddCallback_OnUseEntity( target, void function(entity panel, entity user, int input) 
+		{
+			if(file.training_mov == <1,1,0>)
+				file.training_mov = <1,0,0>
+			else if(file.training_mov == <1,0,0>)
+				file.training_mov = <0,1,0>
+			else
+				file.training_mov = <1,1,0>
+			
+			string prompt = GetTrainingTargetMovementText(file.training_mov)
+			panel.SetUsePrompts(prompt,prompt)
+		})
 	}
 
 	// UPPER LEVEL PLATFORM
@@ -685,6 +708,16 @@ void function SpawnMapProps()
 		int len = 7
 		vector corner = <30795, -10429,-25988>
 		vector o = <240,240,0>
+
+		// Firing Range Connectors
+		foreach(entity e in GetEntArrayByScriptName("weapon_racks"))
+		{
+			vector pos = e.GetOrigin()
+			vector rght = e.GetRightVector()
+			vector fwd = e.GetForwardVector()
+			vector up = e.GetUpVector()
+			CreateFRProp( FIRINGRANGE_GRATE_ASSET, pos+rght*-198+fwd*-96+up*-3, <0,0,0>)
+		}
 
 		// Floor
 		for(int i = 0; i<len; i++)
@@ -717,6 +750,19 @@ void function SpawnMapProps()
 		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorSingle_pos + <-124,8,64>, <90,270,0>, true)
 		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<192,0,0>, <90,270,0>, true)
 	}
+}
+
+string function GetTrainingTargetMovementText(vector range)
+{
+	string s = "%&use% Target Movement:\n               "
+	if(range.x > 0 && range.y > 0)
+		return s+"X | Y | (XY)"
+	else if(range.x > 0)
+		return s+"(X) | Y | XY"
+	else
+		return s+"X | (Y) | XY"
+
+	unreachable
 }
 
 void function TeleportFRPlayer(entity player, vector pos, vector ang)
