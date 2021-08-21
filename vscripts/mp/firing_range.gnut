@@ -61,7 +61,7 @@ struct {
 
 	array<RackGroup> rackSpawns
 
-	vector training_mov = <1,1,0>
+	vector training_mov = <1,0,0>
 	vector trackingTraining_pos = <32000,-7853,-29033>
 	vector flickTraining_pos = <32000,-6720,-29033>
 	vector flickTraining_ang = <0,-180,0>
@@ -590,14 +590,22 @@ void function MoveTrainingTargetAround(entity ent)
 	{
 		vector next
 		
+		int tries = 0
 		while(Distance(ent.GetOrigin(),next) < 64 || Distance(ent.GetOrigin(),next) > dist*0.7)
+		{
+			if(tries>20)
+				break
+
 			next = o.GetOrigin() + 
-			RandomFloatRange(-dist,dist)*o.GetUpVector()*0.75*file.training_mov.y + 
-			RandomFloatRange(-dist,dist)*o.GetRightVector()*file.training_mov.x;
+				RandomFloatRange(-dist,dist)*o.GetUpVector()*0.75*file.training_mov.y + 
+				RandomFloatRange(-dist,dist)*o.GetRightVector()*file.training_mov.x;
+
+			tries++
+		}
 		
-		float t = 0.6;
+		float t = 0.5;
 		if(file.training_mov != <1,1,0>)
-			t *= 0.6
+			t *= 0.7
 		ent.NonPhysicsMoveTo(next, t, 0.04, 0.04 )
 		wait t
 	}
