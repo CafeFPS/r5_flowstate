@@ -1,0 +1,50 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
+
+	"menu_icon"									"rui/hud/common/melee_icon"
+	"hud_icon"									"rui/hud/common/melee_icon"
+
+	"weapon_type_flags"							"WPT_MELEE"
+	
+	// Models
+    "viewmodel"   								"mdl/weapons/data_knife/ptpov_data_knife.rmdl"
+	"playermodel" 								"mdl/weapons/combat_knife/w_combat_knife.rmdl"
+
+    // FX
+	"impact_effect_table" 						"pulse_blade"
+	
+	"melee_attack_animtime"							"1"
+
+	"viewkick_pitch_base" 							"-0.5"
+	"viewkick_pitch_random"   						"0.75"
+	"viewkick_pitch_softScale"						"1.3"
+	"viewkick_pitch_hardScale"						"1.5"
+
+	"viewkick_yaw_base"   							"0.5"
+	"viewkick_yaw_random" 							"0.38"
+	"viewkick_yaw_softScale"  						"2.38"
+	"viewkick_yaw_hardScale"  						"2.5"
+
+	"viewkick_roll_base"  							"0"
+	"viewkick_roll_randomMin" 						"0.6"
+	"viewkick_roll_randomMax" 						"0.8"
+	"viewkick_roll_softScale" 						"7.2"
+	"viewkick_roll_hardScale" 						"7.75"
+	
+	Mods
+	{
+		proto_door_kick
+		{
+			"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+			"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+		}
+	}
+}
