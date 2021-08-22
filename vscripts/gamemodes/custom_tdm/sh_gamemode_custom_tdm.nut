@@ -126,7 +126,7 @@ void function Sh_CustomTDM_Init()
                         //Inside
                         NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
                         //Balcony
-                        NewLocPair(<-20175, 24475, 4210>, <0, -160, 0>),
+                        NewLocPair(<-20245, 24475, 2810>, <0, -160, 0>),
                     
                     //West Huge Building
                         //Inside
