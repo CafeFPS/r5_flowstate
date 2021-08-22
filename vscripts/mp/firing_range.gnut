@@ -598,9 +598,10 @@ void function OnPropSurvivalSpawned_Thread(entity prop)
 
 void function PlayTrainingTargetReaction(entity ent, var damageInfo)
 {
-	EmitSoundOnEntity(ent, FIRINGRANGE_FLICK_TARGET_SOUND)
+	entity attacker = DamageInfo_GetAttacker(damageInfo);
+	EmitSoundOnEntityOnlyToPlayer( attacker, attacker, FIRINGRANGE_FLICK_TARGET_SOUND )
 
-	DamageInfo_GetAttacker(damageInfo).NotifyDidDamage
+	attacker.NotifyDidDamage
 	(
 		ent,
 		DamageInfo_GetHitBox( damageInfo ),
