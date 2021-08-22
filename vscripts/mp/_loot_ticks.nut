@@ -3,7 +3,7 @@ global function LootTicks_Init
 const asset LOOT_TICK_MODEL = $"mdl/robots/drone_frag/drone_frag_loot.rmdl"
 const asset FX_LOOT_TICK_DEATH = $"P_loot_tick_exp_CP"
 const asset FX_LOOT_TICK_IDLE = $"P_loot_tick_beam_idle_flash"
-const int NUM_LOOT_TICKS_TO_SPAWN = 12
+const int MAX_LOOT_TICKS_TO_SPAWN = 12
 
 struct
 {
@@ -33,12 +33,17 @@ void function SpawnMultipleLootTicksForMap()
         tickSpawns.push(lzEnt)
     }
     
-    if(tickSpawns.len() == 0 || tickSpawns.len() < NUM_LOOT_TICKS_TO_SPAWN)
+    int maxTicksToSpawn = MAX_LOOT_TICKS_TO_SPAWN
+    
+    if(tickSpawns.len() == 0)
         return
+        
+    if(tickSpawns.len() < maxTicksToSpawn)
+        maxTicksToSpawn = tickSpawns.len()
         
     tickSpawns.randomize()
     
-    for(int i = 0; i < NUM_LOOT_TICKS_TO_SPAWN; i++)
+    for(int i = 0; i < maxTicksToSpawn; i++)
     {
         entity lzEnt = tickSpawns[i]
         SpawnLootTick(lzEnt.GetOrigin() + <0, 0, 50>, lzEnt.GetAngles())
