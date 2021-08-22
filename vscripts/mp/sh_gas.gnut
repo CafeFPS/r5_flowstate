@@ -419,7 +419,10 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 	{
 		//If the player has gas gear passive they take no damage from gas.
 		if ( PlayerHasGasProtection( target ) )
+		{
+			DamageInfo_ScaleDamage( damageInfo, 0 )
 			return
+		}
 	}
 
 	//Titans are not effected.
@@ -437,8 +440,12 @@ void function GasCloud_RampDamageBasedOnExposureTime( entity target, var damageI
 	}
 	else
 	{
+		//If the player already took gas damage they take no additional damage from it
 		if ( Time() - attacker.e.sharedGasDamageHelper[ target ] < GAS_CLOUD_DMG_TICK_RATE )
+		{
+			DamageInfo_ScaleDamage( damageInfo, 0 )
 			return
+		}
 	}
 
 	//Scale Damage
