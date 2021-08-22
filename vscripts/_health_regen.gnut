@@ -9,7 +9,6 @@ struct
 	int healthRegenRate
 	float healthRegenStartDelay
 	float healthRegenTickTime
-	bool octaneOnly
 } file
 
 void function HealthRegen_Init()
@@ -130,6 +129,16 @@ void function PilotHealthRegenThinkMP( entity player )
 			ClearRecentDamageHistory( player )
 			ClearLastAttacker( player )
 		}
+
+		// Green regen HUD bar
+		StatusEffect_AddTimed
+		(
+			player, 
+			eStatusEffect.target_health, // effect
+			float(player.GetHealth() + file.healthRegenRate*2) / player.GetMaxHealth(), // effect frac
+			file.healthRegenTickTime+0.1, // duration
+			0 // duration 2?
+		)
 	}
 }
 
