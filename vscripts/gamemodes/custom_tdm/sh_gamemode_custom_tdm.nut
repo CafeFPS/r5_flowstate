@@ -82,6 +82,73 @@ void function Sh_CustomTDM_Init()
     case "mp_rr_canyonlands_64k_x_64k":
         Shared_RegisterLocation(
             NewLocationSettings(
+                "Interstellar Relay",
+                [
+                    //North Relay Building
+                    NewLocPair(<26420, 31700, 4790>, <0, -90, 0>),
+                    
+                    //West Relay Building
+                        //North Spawn
+                        NewLocPair(<29260, 26245, 4210>, <0, 45, 0>),
+                        //South Spawn
+                        NewLocPair(<29255, 24360, 4210>, <0, 0, 0>),
+                    
+                    //North West Cliff Building
+                    NewLocPair(<24445, 28970, 4340>, <0, -90, 0>),
+                    
+                    //North East Cliff Building
+                    NewLocPair(<27735, 27880, 4370>, <0, 180, 0>),
+                    
+                    //South East Cliff Building
+                    NewLocPair(<25325, 25725, 4270>, <0, 0, 0>),
+                    
+                    //South West Cliff Building
+                    NewLocPair(<27675, 25745, 4370>, <0, 0, 0>),
+                    
+                    //West Cliff Building
+                    NewLocPair(<24375, 27050, 4325>, <0, 180, 0>),
+                    
+                    //North River Building
+                    NewLocPair(<24000, 23650, 4050>, <0, 135, 0>),
+                    
+                    //South River Building
+                    NewLocPair(<23935, 22080, 4200>, <0, 15, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+
+        Shared_RegisterLocation(
+            NewLocationSettings(
+                "Slum Lakes",
+                [                   
+                    //East Huge Building
+                        //Inside
+                        NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
+                        //Balcony
+                        NewLocPair(<-20175, 24475, 4210>, <0, -160, 0>),
+                    
+                    //West Huge Building
+                        //Inside
+                        NewLocPair(<-25650, 22025, 2270>, <0, 20, 0>),
+                        //Rooftop
+                        NewLocPair(<-25550, 21635, 2590>, <0, 20, 0>),
+                        
+                    //North West Tiny Building
+                    NewLocPair(<-25030, 24670, 2410>, <0, -75, 0>),
+                    
+                    //North Big Building
+                    NewLocPair(<-23125, 25320, 2410>, <0, -20, 0>),
+                    
+                    //South Long Building
+                    NewLocPair(<-21925, 21120, 2390>, <0, 180, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+        
+        Shared_RegisterLocation(
+            NewLocationSettings(
                 "Skull Town",
                 [
                     NewLocPair(<-9320, -13528, 3167>, <0, -100, 0>),
