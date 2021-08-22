@@ -377,8 +377,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	if ( !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
 		currentHealth += victim.GetShieldHealth()
 
-	if ( currentHealth - damage <= 0 
-		&& PlayerRevivingEnabled() )
+	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath(damageInfo) )
 	{
 		// Supposed to be bleeding
 		Bleedout_StartPlayerBleedout( victim, DamageInfo_GetAttacker( damageInfo ) )
