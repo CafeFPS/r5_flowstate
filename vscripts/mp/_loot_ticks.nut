@@ -63,9 +63,9 @@ void function SpawnLootTick(vector origin, vector angles)
     file.tickLootInside[lootTick] <- []
     AddMultipleLootItemsToLootTick(lootTick, ["loottick_static_01", "loottick_static_02", "loottick_static_03"])
     DispatchSpawn( lootTick )   
+    thread PlayAnim( lootTick, "sd_closed_to_open" )
     thread LootTickParticleThink(lootTick)
 	thread LootTickSoundThink(lootTick)
-
 }
 
 void function LootTickSoundThink(entity ent)
