@@ -40,7 +40,6 @@ global struct WeaponKit
 {
     string weapon
     array<string> mods
-    int slot
 }
 
 struct {
@@ -344,12 +343,11 @@ void function Sh_CustomTDM_Init()
     
 }
 
-WeaponKit function NewWeaponKit(string weapon, array<string> mods, int slot)
+WeaponKit function NewWeaponKit(string weapon, array<string> mods)
 {
     WeaponKit weaponKit
     weaponKit.weapon = weapon
     weaponKit.mods = mods
-    weaponKit.slot = slot
     
     return weaponKit
 }
