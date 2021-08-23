@@ -15,14 +15,14 @@ const bool BUBBLE_BUNKER_DAMAGE_ENEMIES = false
 
 const float BUBBLE_BUNKER_ANGLE_LIMIT = 0.55
 
-const asset BUBBLE_BUNKER_BEAM_FX = $"P_wpn_BBunker_beam"
-const asset BUBBLE_BUNKER_BEAM_END_FX = $"P_wpn_BBunker_beam_end"
-const asset BUBBLE_BUNKER_SHIELD_FX = $"P_wpn_BBunker_shield"
-const asset BUBBLE_BUNKER_SHIELD_COLLISION_MODEL = $"mdl/fx/bb_shield.rmdl"
-const asset BUBBLE_BUNKER_SHIELD_PROJECTILE = $"mdl/props/gibraltar_bubbleshield/gibraltar_bubbleshield.rmdl"
+global const asset BUBBLE_BUNKER_BEAM_FX = $"P_wpn_BBunker_beam"
+global const asset BUBBLE_BUNKER_BEAM_END_FX = $"P_wpn_BBunker_beam_end"
+global const asset BUBBLE_BUNKER_SHIELD_FX = $"P_wpn_BBunker_shield"
+global const asset BUBBLE_BUNKER_SHIELD_COLLISION_MODEL = $"mdl/fx/bb_shield.rmdl"
+global const asset BUBBLE_BUNKER_SHIELD_PROJECTILE = $"mdl/props/gibraltar_bubbleshield/gibraltar_bubbleshield.rmdl"
 
-const string BUBBLE_BUNKER_SOUND_ENDING = "Gibraltar_BubbleShield_Ending"
-const string BUBBLE_BUNKER_SOUND_FINISH = "Gibraltar_BubbleShield_Deactivate"
+global const string BUBBLE_BUNKER_SOUND_ENDING = "Gibraltar_BubbleShield_Ending"
+global const string BUBBLE_BUNKER_SOUND_FINISH = "Gibraltar_BubbleShield_Deactivate"
 
 const BUBBLE_BUNKER_THROW_POWER = 800.0
 const BUBBLE_BUNKER_RADIUS = 240 //

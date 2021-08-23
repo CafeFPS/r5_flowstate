@@ -15,7 +15,10 @@ struct {
 
     array<LocationSettings> locationSettings
 
+    
     array<string> whitelistedWeapons
+
+    entity bubbleBoundary
 } file;
 
 
@@ -26,7 +29,7 @@ void function _CustomTDM_Init()
     AddCallback_OnClientConnected( void function(entity player) { thread SV_OnPlayerConnected(player) } )
 
     AddClientCommandCallback("next_round", ClientCommand_NextRound)
-    AddClientCommandCallback("give_weapon", ClientCommand_GiveWeapon)
+    AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
         
     thread RunTDM()
 
@@ -69,6 +72,7 @@ void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", SV_OnPropDynamicSpawned)
+
     for(; ; )
     {
         VotingPhase();
@@ -141,6 +145,9 @@ void function StartRound()
         TpPlayerToSpawnPoint(player)
         
     }
+    
+    file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
+
     foreach(player in GetPlayerArray())
     {
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 4, eTDMAnnounce.MAP_FLYOVER)
@@ -165,7 +172,7 @@ void function StartRound()
         }
         
     }
-    float endTime = Time() + GetCurrentPlaylistVarInt("round_time", 480)
+    float endTime = Time() + GetCurrentPlaylistVarFloat("round_time", 480)
     while( Time() <= endTime )
 	{
         if(file.tdmState == eTDMState.WINNER_DECIDED)
@@ -173,6 +180,9 @@ void function StartRound()
 		WaitFrame()
 	}
     file.tdmState = eTDMState.IN_PROGRESS
+
+    file.bubbleBoundary.Destroy()
+    
 }
 
 
@@ -194,12 +204,13 @@ bool function ClientCommand_NextRound(entity player, array<string> args)
 
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 {
+    if(args.len() < 2) return false;
+
     bool foundMatch = false
 
 
     foreach(weaponName in file.whitelistedWeapons)
     {
-        print(args[0] + " vs " + weaponName)
         if(args[0] == weaponName)
         {
             foundMatch = true
@@ -212,13 +223,47 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
     entity weapon
 
     try {
-        print(args[0])
-        weapon = player.GiveWeapon(args[0], WEAPON_INVENTORY_SLOT_ANY)
-        weapon = player.GiveOffhandWeapon(args[0], WEAPON_INVENTORY_SLOT_ANY)
-    } catch( error ) {
-        player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
-        return true
+        entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+        entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+        entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+        entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+        switch(args[0]) 
+        {
+            case "p":
+            case "primary":
+                if( IsValid( primary ) ) player.TakeWeaponByEntNow( primary )
+                weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
+                break
+            case "s":
+            case "secondary":
+                if( IsValid( secondary ) ) player.TakeWeaponByEntNow( secondary )
+                weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
+                break
+            case "t":
+            case "tactical":
+                if( IsValid( tactical ) ) player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+                weapon = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
+                break
+            case "u":
+            case "ultimate":
+                if( IsValid( ultimate ) ) player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+                weapon = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
+                break
+        }
     }
+    catch( e1 ) { }
+
+    if( args.len() > 2 )
+    {
+        try {
+            weapon.SetMods(args.slice(1, args.len()))
+        }
+        catch( e2 ) {
+            print(e2)
+        }
+    }
+    
+    //if( IsValid( weapon) ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
     return true
     
 }
@@ -309,6 +354,66 @@ void function SV_OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
     }
 }
+
+entity function CreateBubbleBoundary(LocationSettings location)
+{
+    array<LocPair> spawns = location.spawns
+    
+    vector bubbleCenter
+    foreach(spawn in spawns)
+    {
+        bubbleCenter += spawn.origin
+    }
+    
+    bubbleCenter /= spawns.len()
+
+    float bubbleRadius = 0
+
+    foreach(LocPair spawn in spawns)
+    {
+        if(Distance(spawn.origin, bubbleCenter) > bubbleRadius)
+        bubbleRadius = Distance(spawn.origin, bubbleCenter)
+    }
+    
+    bubbleRadius += GetCurrentPlaylistVarFloat("bubble_radius_padding", 600)
+
+    entity bubbleShield = CreateEntity( "prop_dynamic" )
+	bubbleShield.SetValueForModelKey( BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
+    bubbleShield.SetOrigin(bubbleCenter)
+    bubbleShield.SetModelScale(bubbleRadius / 235)
+    bubbleShield.kv.CollisionGroup = 0
+    bubbleShield.kv.rendercolor = "127 73 37"
+    DispatchSpawn( bubbleShield )
+
+
+
+    thread MonitorBubbleBoundary(bubbleShield, bubbleCenter, bubbleRadius)
+
+
+    return bubbleShield
+
+}
+
+
+void function MonitorBubbleBoundary(entity bubbleShield, vector bubbleCenter, float bubbleRadius)
+{
+    while(IsValid(bubbleShield))
+    {
+
+        foreach(player in GetPlayerArray_Alive())
+        {
+            if(!IsValid(player)) continue
+            if(Distance(player.GetOrigin(), bubbleCenter) > bubbleRadius)
+            {
+				Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+                player.TakeDamage( int( GetCurrentPlaylistVarFloat("oob_damage_percent", 25) / 100 * float( player.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+            }
+        }
+        wait 1
+    }
+    
+}
+
 
 void function PlayerRestoreHP(entity player, float health, float shields)
 {
