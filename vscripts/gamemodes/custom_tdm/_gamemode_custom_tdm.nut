@@ -168,7 +168,11 @@ void function StartRound()
             {
                 DecideRespawnPlayer(player)
             }
-            PlayerRestoreHP(player, 100, GetCurrentPlaylistVarFloat("default_shield_hp", 100))
+            if(IsAlive(player)) 
+            {
+                PlayerRestoreHP(player, 100, GetCurrentPlaylistVarFloat("default_shield_hp", 100))
+            }
+            
         }
         
     }
@@ -256,7 +260,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
     if( args.len() > 2 )
     {
         try {
-            weapon.SetMods(args.slice(1, args.len()))
+            weapon.SetMods(args.slice(2, args.len()))
         }
         catch( e2 ) {
             print(e2)
@@ -277,6 +281,7 @@ void function SV_OnPlayerConnected(entity player)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
     DecideRespawnPlayer(player)
+    while( !IsAlive( player ) ) { WaitFrame() }
     PlayerRestoreHP(player, 100, GetCurrentPlaylistVarFloat("default_shield_hp", 100))
     TpPlayerToSpawnPoint(player)
     //SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
