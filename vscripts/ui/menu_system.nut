@@ -176,7 +176,7 @@ void function UpdateSystemPanel( var panel )
 		if ( IsFiringRangeGameMode() )
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] )
-			SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
+		//	SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
 
 			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
