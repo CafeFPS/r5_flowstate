@@ -263,7 +263,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
         }
     }
     
-    //if( IsValid( weapon) ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
+    if( IsValid( weapon) && !weapon.IsWeaponOffhand() ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
     return true
     
 }
