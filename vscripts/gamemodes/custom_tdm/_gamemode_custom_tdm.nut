@@ -215,7 +215,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
     foreach(weaponName in file.whitelistedWeapons)
     {
-        if(args[0] == weaponName)
+        if(args[1] == weaponName)
         {
             foundMatch = true
             break

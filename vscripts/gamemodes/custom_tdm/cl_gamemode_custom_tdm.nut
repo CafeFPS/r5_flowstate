@@ -76,6 +76,7 @@ void function ServerCallback_TDM_DoAnnouncement(float duration, int type)
         {
             clGlobal.levelEnt.Signal( "CloseScoreRUI" )
             message = "Welcome To Team Deathmatch"
+            subtext = "Made by sal (score UI by shrugtal)"
             break
         }
         case eTDMAnnounce.MAP_FLYOVER:
