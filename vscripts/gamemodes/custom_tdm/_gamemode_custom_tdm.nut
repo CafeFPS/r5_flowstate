@@ -281,8 +281,8 @@ void function SV_OnPlayerConnected(entity player)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
     DecideRespawnPlayer(player)
-    while( !IsAlive( player ) ) { WaitFrame() }
-    PlayerRestoreHP(player, 100, GetCurrentPlaylistVarFloat("default_shield_hp", 100))
+    if( IsAlive( player ) )
+        PlayerRestoreHP(player, 100, GetCurrentPlaylistVarFloat("default_shield_hp", 100))
     TpPlayerToSpawnPoint(player)
     //SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 
