@@ -324,6 +324,11 @@ void function OnPlayerDisconnected( entity player )
 
 void function SkydiveTest()
 {
+	if( GetConVarString("mp_gamemode") != SURVIVAL ) {
+		printl("Not entering skydive because we are not in survival")
+		return
+	};
+	
 	foreach( entity player in GetPlayerArray() )
 	{
 		player.ClearParent()
