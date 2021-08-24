@@ -24,7 +24,7 @@ const asset EMP_WARNING_FX_3P = $"P_emp_body_human"
 const asset EMP_WARNING_FX_GROUND = $"P_emp_body_human"
 const asset EMP_RADIUS_FX = $"P_emp_charge_radius_MDL"
 
-const float EMP_TIME_TO_DETONATE = 3.0	// from wiki
+const float EMP_TIME_TO_DETONATE = 2.6	// guessed + video ref
 const float EMP_RADIUS = 1024	// guessed
 
 //
@@ -99,7 +99,7 @@ void function DroneFireEMP( entity weapon )
 
 	// - - -
 
-
+	camera.Anim_Play( "drone_EMP" )
 
 	EmitSoundOnEntity( camera, EMP_CHARGING_3P )
 
@@ -128,6 +128,8 @@ void function DroneFireEMP_Thread( entity weapon, entity camera )
 			damageSourceId = eDamageSourceId.mp_ability_crypto_drone_emp 
 		})
 	}
+	
+	camera.Anim_Play( "drone_active_twitch" )
 }
 array<entity> function GetPlayersNpcsInRadius(vector origin, float radius)
 {

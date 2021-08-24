@@ -319,25 +319,30 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 //		return 0
 	}
 
-	int ammoReq = weapon.GetAmmoPerShot()
+	// int ammoReq = weapon.GetAmmoPerShot()
 	if ( !weapon.HasMod( "crypto_has_camera" ) )
 	{
 		weapon.EmitWeaponSound_1p3p( "null_remove_soundhook", "null_remove_soundhook" )
 #if SERVER
 		entity vehicle = CreateEntity( "player_vehicle" )
 		vehicle.SetScriptName( "crypto_camera" )
-		vehicle.SetOwner(player)
+		vehicle.SetOwner( player )
         vehicle.SetOrigin( player.EyePosition() )
         vehicle.VehicleSetType( VEHICLE_FLYING_CAMERA )
-        vehicle.SetModel( $"mdl/props/crypto_drone/crypto_drone.rmdl" )
+        vehicle.SetModel( CAMERA_MODEL )
         vehicle.kv.teamnumber = player.GetTeam()
+        vehicle.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS_AND_PHYSICS
 
 		vehicle.SetHealth( DRONE_HEALTH )
 		vehicle.SetMaxHealth( DRONE_HEALTH )
 		vehicle.SetTakeDamageType( DAMAGE_YES )
 		vehicle.SetDamageNotifications( true )
 
-        DispatchSpawn(vehicle)
+        DispatchSpawn( vehicle )
+
+		vehicle.Anim_Play( "drone_active_twitch" )
+
+		thread DroneCheck_Thread( vehicle )
 
 		weapon.SetMods( ["crypto_has_camera"])
 
@@ -384,6 +389,19 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 
 void function OnWeaponTossPrep_ability_crypto_drone( entity weapon, WeaponTossPrepParams prepParams )
 {
+
+#if SERVER
+	entity owner = weapon.GetOwner()
+	if( !IsValid( owner ) )
+		return
+
+	// If we end up finding a camera anyway, don't create a new one and fix the weapon
+	// Can happen if people play around with switching abilities / legends
+	if ( GetPlayerCamera( owner ) && !weapon.HasMod( "crypto_has_camera" ) )
+		weapon.SetMods( ["crypto_has_camera"])
+#endif
+
+
 	if ( weapon.HasMod( "crypto_has_camera" ) )
 	{
 		weapon.EmitWeaponSound_1p3p( "Char_11_Tactical_Secondary_Deploy", "" )
@@ -402,6 +420,16 @@ void function OnWeaponTossPrep_ability_crypto_drone( entity weapon, WeaponTossPr
 
 #if SERVER
 
+
+entity function GetDroneWeapon( entity owner )
+{
+	foreach(entity w in GetAllPlayerWeapons(owner))
+	{
+		if(w.GetWeaponClassName() == "mp_ability_crypto_drone")
+			return w
+	}
+    return null
+}
 
 entity function GetEMPWeapon( entity owner )
 {
@@ -499,6 +527,29 @@ entity function GetPlayerCamera( entity player )
 	return null
 }
 
+void function DroneCheck_Thread( entity vehicle )
+{
+	while( true )
+	{
+		wait 1
+
+		if(!IsValid( vehicle ))
+			return
+
+		entity owner = vehicle.GetOwner()
+		
+		if( !IsValid( owner ) )
+			break
+		
+		if( owner.GetHealth() < 1 )
+			break
+	}
+
+	entity worldSpawn = GetEnt( "worldspawn" )
+
+	vehicle.TakeDamage( DRONE_HEALTH, worldSpawn, worldSpawn, {} )
+}
+
 void function OnDroneKilled( entity vehicle, var damageInfo )
 {
 	entity owner = vehicle.GetOwner()
@@ -506,23 +557,30 @@ void function OnDroneKilled( entity vehicle, var damageInfo )
 	if(!IsValid(owner))
 		return
 
-	entity ability = owner.GetOffhandWeapon( OFFHAND_LEFT )
-	ability.SetMods( [] )
-	ability.SetWeaponPrimaryClipCount( 0 )
 	StatusEffect_StopAllOfType( owner, eStatusEffect.crypto_has_camera )
-	PlayBattleChatterLineToSpeakerAndTeam( owner, "bc_droneDestroyed" )
+
+	if( owner.GetHealth() > 0 )
+		PlayBattleChatterLineToSpeakerAndTeam( owner, "bc_droneDestroyed" )
 
 	EmitSoundAtPosition( TEAM_ANY, vehicle.GetOrigin(), DRONE_EXPLOSION_3P )
 	StartParticleEffectInWorld( GetParticleSystemIndex( CAMERA_EXPLOSION_FX ), vehicle.GetOrigin(), <0,0,0> )
 
 	GetPlayerOutOfCamera( owner )
+
+	entity ability = GetDroneWeapon( owner )
+
+	if( !IsValid(ability) )
+		return
+
+	ability.SetMods( [] )
+	ability.SetWeaponPrimaryClipCount( 0 )
 }
 
 void function OnDroneDamaged(entity drone, var damageInfo)
 {
 	entity attacker = DamageInfo_GetAttacker(damageInfo);
 	
-	if(!IsValid(attacker))
+	if( !IsValid( attacker ) || !attacker.IsPlayer() )
 		return
 	
 	attacker.NotifyDidDamage
