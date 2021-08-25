@@ -24,7 +24,7 @@ const asset EMP_WARNING_FX_3P = $"P_emp_body_human"
 const asset EMP_WARNING_FX_GROUND = $"P_emp_body_human"
 const asset EMP_RADIUS_FX = $"P_emp_charge_radius_MDL"
 
-const float EMP_TIME_TO_DETONATE = 2.6	// guessed + video ref
+const float EMP_TIME_TO_DETONATE = 2.6	// from wiki
 const float EMP_RADIUS = 1024	// guessed
 
 //
@@ -87,28 +87,70 @@ void function DroneFireEMP( entity weapon )
 
 	PlayBattleChatterLineToSpeakerAndTeam( owner, "bc_super" )
 
+	camera.Anim_Play( "drone_EMP" )
+
 	
 	// TODO: Fix particles not displaying correctly, glow shows from chargeFX, radius doesn't seem to do anything
-	// Likely params for them are missing, need to check inside the .pcf
-
+	// Likely params for them are missing, need to check in
 	entity chargeFX = StartParticleEffectOnEntity_ReturnEntity( camera, GetParticleSystemIndex( EMP_CHARGE_UP_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 	SetTeam( chargeFX, camera.GetTeam() )
 
 //	entity radiusFX = StartParticleEffectOnEntity_ReturnEntity( camera, GetParticleSystemIndex( EMP_RADIUS_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
 //	SetTeam( radiusFX, camera.GetTeam() )
 
-	// - - -
-
-	camera.Anim_Play( "drone_EMP" )
+	entity triggerWarning = CreateEMPWarningNotifier( camera )
+	triggerWarning.SetParent( camera )
 
 	EmitSoundOnEntity( camera, EMP_CHARGING_3P )
 
-	thread DroneFireEMP_Thread( weapon, camera )
+	thread DroneFireEMP_Thread( weapon, camera, [ triggerWarning, chargeFX ] )
 }
 
-void function DroneFireEMP_Thread( entity weapon, entity camera )
+entity function CreateEMPWarningNotifier(entity camera)
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetOwner( camera.GetOwner() )
+	trigger.SetRadius( EMP_RADIUS )
+	trigger.SetOrigin( camera.GetOrigin() )
+	trigger.SetAboveHeight( EMP_RADIUS/2 )
+	trigger.SetBelowHeight( EMP_RADIUS/2 )
+	trigger.SetOrigin( camera.GetOrigin() )
+	trigger.SetPhaseShiftCanTouch( false )
+	DispatchSpawn( trigger )
+
+	trigger.RemoveFromAllRealms()
+	trigger.AddToOtherEntitysRealms( camera )
+
+	trigger.SetEnterCallback( OnEMPWarningTriggerEnter )
+	trigger.SetLeaveCallback( OnEMPWarningTriggerLeave )
+	trigger.SearchForNewTouchingEntity()
+
+	return trigger
+}
+
+void function OnEMPWarningTriggerEnter( entity trigger, entity ent )
+{
+	if ( !ent.IsPlayer() && !ent.IsNPC() )
+		return
+
+	StatusEffect_AddEndless( ent, eStatusEffect.crypto_emp_warning, 1.0 )
+}
+void function OnEMPWarningTriggerLeave( entity trigger, entity ent )
+{
+	if ( !ent.IsPlayer() && !ent.IsNPC() )
+		return
+		
+	StatusEffect_StopAllOfType( ent, eStatusEffect.crypto_emp_warning )
+}
+
+
+void function DroneFireEMP_Thread( entity weapon, entity camera, array<entity> toRemove )
 {
 	wait EMP_TIME_TO_DETONATE
+
+	foreach( entity e in toRemove )
+		if( IsValid(e) )
+			e.Destroy()
 
 	// Drone destroyed or user dead / weapon removed -> don't explode
 	if( !IsValid(camera) || !IsValid(weapon))
@@ -127,6 +169,7 @@ void function DroneFireEMP_Thread( entity weapon, entity camera )
 			scriptType = DF_SHIELD_DAMAGE, 
 			damageSourceId = eDamageSourceId.mp_ability_crypto_drone_emp 
 		})
+		StatusEffect_StopAllOfType( target, eStatusEffect.crypto_emp_warning )
 	}
 	
 	camera.Anim_Play( "drone_active_twitch" )

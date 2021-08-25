@@ -51,6 +51,8 @@ const string DRONE_ALERT_1P = "Char_11_TacticalA_Ping"
 const string DRONE_ALERT_3P = "Char_11_TacticalA_Ping"
 
 const int DRONE_HEALTH = 1
+const float CAMERA_SCAN_RANGE = 1024
+const float CAMERA_SCAN_FOV = 90
 
 //
 //
@@ -87,10 +89,14 @@ struct
 	#if SERVER
 
 
+	table< entity, array<int> > entitySonarHandles
+	table< int, int > teamSonarCount
+	array< void functionref( entity, vector, int, entity ) > SonarStartGrenadeCallbacks = []
 
 
 #endif
 } file
+
 
 void function MpAbilityCryptoDrone_Init()
 {
@@ -340,6 +346,8 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 
         DispatchSpawn( vehicle )
 
+		vehicle.e.attachedEnts.append( CreateScanTrigger( vehicle ) )
+
 		vehicle.Anim_Play( "drone_active_twitch" )
 
 		thread DroneCheck_Thread( vehicle )
@@ -368,7 +376,6 @@ var function OnWeaponTossReleaseAnimEvent_ability_crypto_drone( entity weapon, W
 		{ 
 			wait 0.11 
 			p.SetAngles( a ) 
-
 		})( player, camAng )
 
 #endif
@@ -554,6 +561,12 @@ void function OnDroneKilled( entity vehicle, var damageInfo )
 {
 	entity owner = vehicle.GetOwner()
 
+	DecrementSonarPerTeamGrenade( vehicle.GetTeam() )
+
+	foreach( entity e in vehicle.e.attachedEnts )
+		if( IsValid( e ) )
+			e.Destroy()
+
 	if(!IsValid(owner))
 		return
 
@@ -597,9 +610,51 @@ void function OnDroneDamaged(entity drone, var damageInfo)
 	)
 }
 
+entity function CreateScanTrigger( entity drone )
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( CAMERA_SCAN_RANGE )
+	trigger.SetAboveHeight( CAMERA_SCAN_RANGE/2 ) //Still not quite a sphere, will see if close enough
+	trigger.SetBelowHeight( CAMERA_SCAN_RANGE/2 )
+	SetTeam( trigger, drone.GetTeam() )
+	trigger.SetOwner( drone.GetOwner() )
+	trigger.RemoveFromAllRealms()
+	trigger.AddToOtherEntitysRealms( drone )
+	trigger.SetOrigin( drone.GetOrigin() )
 
+	DispatchSpawn( trigger )
+	
+	trigger.SetEnterCallback( OnScanTriggerEnter )
+	trigger.SetLeaveCallback( OnScanTriggerLeave )
 
+	trigger.SetParent( drone )
+	trigger.SearchForNewTouchingEntity()
 
+	IncrementSonarPerTeamGrenade( drone.GetTeam() )
+
+	return trigger
+}
+
+void function OnScanTriggerEnter( entity trigger, entity ent )
+{
+	if ( !IsEnemyTeam( trigger.GetTeam(), ent.GetTeam() ) )
+		return
+
+	if ( ent.e.sonarTriggers.contains( trigger ) )
+		return
+
+	ent.e.sonarTriggers.append( trigger )
+	SonarStartGrenade( ent, trigger.GetOrigin(), trigger.GetTeam(), trigger.GetOwner() )
+}
+
+void function OnScanTriggerLeave( entity trigger, entity ent )
+{
+	int triggerTeam = trigger.GetTeam()
+	if ( !IsEnemyTeam( triggerTeam, ent.GetTeam() ) )
+		return
+
+	OnSonarTriggerLeaveInternalGrenade( trigger, ent )
+}
 
 
 
