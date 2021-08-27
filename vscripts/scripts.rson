@@ -444,6 +444,8 @@ Scripts:
 	mp/_spectre_rack.nut
 	mp/_titan_npc.nut
 	mp/_titan_transfer.nut
+	mp/_loot_drones.nut
+	mp/_loot_rollers.nut
 	mp/_vr.nut
 	mp/player_cloak.nut
 	mp/_titan_tether.gnut

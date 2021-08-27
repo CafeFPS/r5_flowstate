@@ -3734,6 +3734,21 @@ array<entity> function GetEntityLinkChain( entity startNode )
 	return nodes
 }
 
+array<entity> function GetEntityLinkLoop( entity startNode )
+{
+	Assert( IsValid( startNode ) )
+	array<entity> nodes
+	nodes.append( startNode )
+	while ( true )
+	{
+		entity nextNode = nodes[nodes.len() - 1].GetLinkEnt()
+		if ( !IsValid( nextNode ) || nextNode == startNode )
+			break
+		nodes.append( nextNode )
+	}
+	return nodes
+}
+
 float function HealthRatio( entity ent )
 {
 	int health = ent.GetHealth()

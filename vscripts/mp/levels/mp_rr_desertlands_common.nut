@@ -60,6 +60,10 @@ void function Desertlands_MapInit_Common()
 	SetVictorySequencePlatformModel( $"mdl/rocks/desertlands_victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
 	#if SERVER
+		//%if HAS_LOOT_DRONES && HAS_LOOT_ROLLERS
+		InitLootDrones()
+		//InitLootRollers()
+		//%endif
 
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 
@@ -96,6 +100,15 @@ void function EntitiesDidLoad()
 	GeyserInit()
 	Updrafts_Init()
 
+	InitLootDronePaths()
+
+	string currentPlaylist = GetCurrentPlaylistName()
+	// thread SpawnLootDrones( GetPlaylistVarInt( currentPlaylist, "loot_drones_spawn_count", NUM_LOOT_DRONES_TO_SPAWN ) )
+
+	int keyCount = GetPlaylistVarInt( currentPlaylist, "loot_drones_vault_key_count", NUM_LOOT_DRONES_WITH_VAULT_KEYS )
+	//if ( keyCount > 0 )
+	//	LootRollers_ForceAddLootRefToRandomLootRollers( "data_knife", keyCount )
+
 	if ( file.isTrainEnabled )
 		thread DesertlandsTrain_Init()
 }
@@ -129,11 +142,6 @@ void function Desertlands_MU1_MapInit_Common()
 
 	Desertlands_MapInit_Common()
 	PrecacheParticleSystem( JUMP_PAD_LAUNCH_FX )
-
-	//%if HAS_LOOT_DRONES && HAS_LOOT_ROLLERS
-	//InitLootDrones()
-	//InitLootRollers()
-	//%endif
 
 	//SURVIVAL_SetDefaultLootZone( "zone_medium" )
 
@@ -227,15 +235,6 @@ void function Desertlands_MU1_EntitiesLoaded_Common()
 {
 	GeyserInit()
 	Updrafts_Init()
-
-	//InitLootDronePaths()
-
-	string currentPlaylist = GetCurrentPlaylistName()
-	//thread SpawnLootDrones( GetPlaylistVarInt( currentPlaylist, "loot_drones_spawn_count", NUM_LOOT_DRONES_TO_SPAWN ) )
-
-	int keyCount = GetPlaylistVarInt( currentPlaylist, "loot_drones_vault_key_count", NUM_LOOT_DRONES_WITH_VAULT_KEYS )
-	//if ( keyCount > 0 )
-	//	LootRollers_ForceAddLootRefToRandomLootRollers( "data_knife", keyCount )
 }
 
 
