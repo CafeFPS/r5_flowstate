@@ -278,7 +278,7 @@ void function ServerCallback_ClearAllLootDroneFX( entity droneEnt )
 	if ( EffectDoesExist( clientData.fallFXHandle ) )
 		EffectStop( clientData.fallFXHandle, false, true )
 }
-#endif // CLIENT
+#endif //
 
 bool function IsValidLootDrone( entity ent )
 {

@@ -135,24 +135,31 @@ LootDroneData function LootDrones_SpawnLootDroneAtRandomPath()
 
 	// Create the visible drone model using the model const.
 	// is this the correct way of doing this?
-	entity model = CreatePropScript( LOOT_DRONE_MODEL, startNode.GetOrigin(), startNode.GetAngles() )
-	
-	model.DisableHibernation()
+	entity model = CreatePropDynamic( LOOT_DRONE_MODEL, startNode.GetOrigin(), startNode.GetAngles(), 6 )
 
 	model.SetMaxHealth( LOOT_DRONE_HEALTH_MAX )
 	model.SetHealth( LOOT_DRONE_HEALTH_MAX )
+	model.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
+
+	AddEntityCallback_OnDamaged( model, LootDrones_OnDamaged) 
 
 	// Set model entity in the struct.
 	data.model = model
 
 	// Create script mover for moving. (not for now?)
 	data.mover = CreateOwnedScriptMover( model )
+	data.mover.DisableHibernation()
+	data.model.SetParent( data.mover )
+	
+	// For easier console access
+	// script gp()[0].SetOrigin(Entities_FindByName(null, 'loot_drone').GetOrigin())
+	data.mover.kv.targetname = "loot_drone"
 
 	// Use the same mover for rotating.
 	data.rotator = data.mover
 
-	// Use model entity for sounds.
-	data.soundEntity = model
+	// Sound entity should be our mover
+	data.soundEntity = data.mover
 
 	// Create and attach loot roller.
 	// TODO
@@ -198,6 +205,14 @@ void function LootDroneState( LootDroneData data )
 	data.model.EndSignal( "OnDestroy" )
 	data.model.EndSignal( "OnDeath" )
 
+	// TODO: Find why idle sound isn't playing, only when spammed and close
+	// Doesn't seem to loop either, might be related to a specific entity behavior
+	// Could be PVS too.. no clue yet.
+	//
+	// https://developer.valvesoftware.com/wiki/PVS
+	//
+	// Train works fine, look into how the train works
+
 	OnThreadEnd(
 		function() : ( data )
 		{
@@ -207,16 +222,19 @@ void function LootDroneState( LootDroneData data )
 	)
 
 	EmitSoundOnEntity( data.soundEntity, LOOT_DRONE_LIVING_SOUND )
+
+	WaitForever()
 }
 
 void function LootDroneMove( LootDroneData data )
 {
 	Assert( IsNewThread(), "Must be threaded off" )
+	Assert( data.path.len() > 0, "Path must have at least one node" )
 
 	data.model.EndSignal( "OnDestroy" )
 	data.model.EndSignal( SIGNAL_LOOT_DRONE_FALL_START )
 
-	OnThreadEnd(
+	OnThreadEnd( 
 		function() : ( data )
 		{
 			if ( IsValid( data.mover ) )
@@ -224,48 +242,14 @@ void function LootDroneMove( LootDroneData data )
 		}
 	)
 
-	// Remove the current node from the lists
-	data.path.fastremove( 0 )
-	data.pathVec.fastremove( 0 )
+	// Start the movement using the shared constants
+	data.mover.Train_MoveToTrainNodeEx( data.path[0], 0, LOOT_DRONE_FLIGHT_SPEED_MAX, LOOT_DRONE_FLIGHT_SPEED_MAX, LOOT_DRONE_FLIGHT_ACCEL )
 
-	while ( true )
-	{
-		entity nextNode = data.path[0]
-
-		printf( "%s() - next node: %s", FUNC_NAME(), string( nextNode ) )
-
-		data.mover.Train_MoveToTrainNode( nextNode, data.__maxSpeed, data.__accel )
-
-		printf( 
-			"%s() -  move command sent, time to goal speed: %f, goal speed: %f, last distance: %f, current speed: %f", 
-			
-			FUNC_NAME(), 
-
-			data.mover.Train_GetTotalTimeToGoalSpeed(),
-			data.mover.Train_GetGoalSpeed(),
-			data.mover.Train_GetLastDistance(),
-			data.mover.Train_GetCurrentSpeed()
-		)
-
-		printt( data.mover.GetOrigin() )
-		
-		wait data.mover.Train_GetTotalTimeToGoalSpeed()
-		WaitForever()
-		// wait ( Distance( nextNode.GetOrigin(), data.mover.GetOrigin() ) / data.mover.Train_GetCurrentSpeed() ) // Very rough approximation.
-
-		/*data.path.fastremove( 0 )
-		data.pathVec.fastremove( 0 )
-
-		entity currentNode = data.mover.Train_GetLastNode()
-
-		if ( data.pathVec.len() == 0 )
-		{
-			// Set path from current node.
-			data.path = GetEntityLinkLoop( currentNode )
-			foreach ( entity pathNode in data.path )
-				data.pathVec.append( pathNode.GetOrigin() )
-		}*/
-	}
+	// Make the drone roll on turns
+	// (rollStrengh, rollMax, lookAheadDist) ? nothing in shared consts, values seem fine just like this.
+	data.mover.Train_AutoRoll( 5.0, 45.0, 1024.0 )
+	
+	WaitForever()
 }
 
 // void function LootDroneSound( LootDroneData data )
@@ -288,3 +272,64 @@ void function LootDroneMove( LootDroneData data )
 // 	StopSoundOnEntity( data.model, LOOT_DRONE_CRASHING_SOUND )
 // 	EmitSoundOnEntity( data.model, LOOT_DRONE_CRASHED_SOUND )
 // }
+
+
+void function LootDrones_OnDamaged(entity ent, var damageInfo)
+{
+	entity attacker = DamageInfo_GetAttacker(damageInfo);
+	
+	if( !IsValid( attacker ) || !attacker.IsPlayer() )
+		return
+	
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+
+	// Handle damage, props get destroyed on death, we don't want that.
+	// Not really needed since it has 1 HP, but we do it anyway.
+	float nextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	if( nextHealth > 0 )
+	{
+		ent.SetHealth(nextHealth)
+		return
+	}
+
+	// Drone ""died""
+	// Don't take damage anymore
+	ent.SetTakeDamageType( DAMAGE_NO )
+	ent.Signal( SIGNAL_LOOT_DRONE_FALL_START )
+
+	EmitSoundOnEntity( ent, LOOT_DRONE_DEATH_SOUND )
+	EmitSoundOnEntity( ent, LOOT_DRONE_CRASHING_SOUND )
+
+	entity effect = StartParticleEffectOnEntity_ReturnEntity
+	( 
+		ent, 
+		GetParticleSystemIndex( LOOT_DRONE_FX_FALL_EXPLOSION ), 
+		FX_PATTACH_ABSORIGIN_FOLLOW, 0 
+	)
+	// Kill the particles after a few secs, entity stays in the map indefinitely it seems
+	EntFireByHandle( effect, "Kill", "", 2, null, null )
+
+	// TODO: Make the drone crash and kill it when it lands
+	// Use the attacker to damage other players so they get credits for it
+	// Make sure to kill the rest of the entities from the data struct
+
+	// TEMP removeal
+	thread( 
+		void function() : (ent)
+		{
+			wait 2
+			ent.Destroy()
+		}
+	)()
+}
