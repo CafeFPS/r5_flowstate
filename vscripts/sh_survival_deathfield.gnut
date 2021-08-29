@@ -1488,12 +1488,19 @@ void function Cl_DeathFieldThink( entity deathField )
 				thread callback( currentDeathFieldStage, startTime )
 		}
 
+		if ( stage < 0 )
+		{
+			WaitFrame()
+			continue
+		}
+
 		DeathFieldStageData deathFieldData = file.deathFieldStages[stage]
 		if ( stage > 0 )
 		{
 			DeathFieldStageData prevData = file.deathFieldStages[stage - 1]
 			startRadius = prevData.endRadius
 		}
+
 
 		float duration  = deathFieldData.shrinkDuration
 		float endRadius = deathFieldData.endRadius
