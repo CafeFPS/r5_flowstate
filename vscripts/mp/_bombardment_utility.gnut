@@ -1,5 +1,3 @@
-// stub script
-
 global function Bombardment_Init
 global function VerifyBombardmentWeapon
 global function Bombardment_MortarBarrageFocused
@@ -67,7 +65,7 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		}
 		EmitSoundOnEntity( projectile, sound_incoming )
 		
-		TraceResults trace = TraceLine( fireGrenadeParams.pos, origin+landRadiusOffset - <0,0,2000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		TraceResults trace = TraceLine( fireGrenadeParams.pos + landRadiusOffset, origin+landRadiusOffset - <0,0,2000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
 
 		vector velocity = Normalize(trace.endPos - fireGrenadeParams.pos) * projectile_launch_speed
 
