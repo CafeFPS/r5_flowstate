@@ -394,6 +394,9 @@ global struct ServerEntityStruct
 	bool gravityOrbInteraction
 
 	bool shouldSpawnLoot = true
+
+	array<BurnDamageStack> burnDamageStacks
+	bool isBurning
 }
 
 global struct MeritData
