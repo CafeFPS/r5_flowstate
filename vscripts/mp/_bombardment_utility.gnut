@@ -1,3 +1,5 @@
+// stub script
+
 global function Bombardment_Init
 global function VerifyBombardmentWeapon
 global function Bombardment_MortarBarrageFocused
@@ -65,18 +67,23 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		}
 		EmitSoundOnEntity( projectile, sound_incoming )
 		
-		TraceResults trace = TraceLine( fireGrenadeParams.pos + landRadiusOffset, origin+landRadiusOffset - <0,0,2000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		TraceResults trace = TraceLine( fireGrenadeParams.pos + landRadiusOffset, origin+landRadiusOffset - <0,0,8000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		vector skyOriginToGround = trace.endPos - fireGrenadeParams.pos;
+		// The reason we are going from the sky to (sky + sky->ground + (norm(sky->ground) * 100)) is that if we just went to ground (trace.endPos), we would rarely get markers because it would 
+		// rarely actually "hit" the ground and instead just stop there, not hitting anything, not making a marker.
+		TraceResults trace2 = TraceLine (fireGrenadeParams.pos, fireGrenadeParams.pos + skyOriginToGround + (Normalize(skyOriginToGround) * 100), null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE)
+		vector groundPos2 = trace2.endPos
 
-		vector velocity = Normalize(trace.endPos - fireGrenadeParams.pos) * projectile_launch_speed
+		vector velocity = Normalize(trace2.endPos - fireGrenadeParams.pos) * projectile_launch_speed
 
 		projectile.SetAngles(<90,0,0>)
 		projectile.SetOrigin(fireGrenadeParams.pos)
 		projectile.SetVelocity(velocity)
 		projectile.kv.gravity = 0
 
-		if ( IsValid( trace.hitEnt ) )
+		if ( IsValid( trace2.hitEnt ) )
 		{
-			entity marker = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effect ), trace.endPos, <0,0,0> )
+			entity marker = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effect ), trace2.endPos, <0,0,0> )
 			AddToUltimateRealm( owner, marker )
 			EntFireByHandle( marker, "Kill", "", 2, null, null ) // kill after 2s
 		}
