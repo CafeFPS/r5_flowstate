@@ -29,6 +29,8 @@ void function RemoteFunctions_Init_Begin()
 	Remote_RegisterClientFunction("ServerCallback_TDM_SetSelectedLocation","int", 0, 255)
 	Remote_RegisterClientFunction("ServerCallback_TDM_DoLocationIntroCutscene")
     Remote_RegisterClientFunction("ServerCallback_TDM_PlayerKilled")
+	Remote_RegisterClientFunction("ServerCallback_KillReplayHud_Activate")
+	Remote_RegisterClientFunction("ServerCallback_KillReplayHud_Deactivate")
 
 
 	RegisterSignal("OnChangedPlayerClass")

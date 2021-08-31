@@ -12,7 +12,7 @@ global function RetrievePilotWeapons
 global function SetTitanSettings
 
 global function StoreWeapons
-//global function GiveWeaponsFromStoredArray
+global function GiveWeaponsFromStoredArray
 
 global function TitanCoreEffectTransfer_threaded
 global function ForceTitanSustainedDischargeEnd

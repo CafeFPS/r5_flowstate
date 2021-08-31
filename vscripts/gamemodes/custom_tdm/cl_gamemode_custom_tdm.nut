@@ -104,50 +104,56 @@ void function ServerCallback_TDM_DoLocationIntroCutscene()
 
 void function ServerCallback_TDM_DoLocationIntroCutscene_Body()
 {
+    float desiredSpawnSpeed = Deathmatch_GetIntroSpawnSpeed()
+    float desiredSpawnDuration = Deathmatch_GetIntroCutsceneSpawnDuration()
+    float desireNoSpawns = Deathmatch_GetIntroCutsceneNumSpawns()
+    
+
     entity player = GetLocalClientPlayer()
     
-    if(IsValid(player))
-        EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
+    if(!IsValid(player)) return
+    
+
+    EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
      
     float playerFOV = player.GetFOV()
     
     entity camera = CreateClientSidePointCamera(file.selectedLocation.spawns[0].origin + file.selectedLocation.cinematicCameraOffset, <90, 90, 0>, 17)
     camera.SetFOV(90)
-    
+
     entity cutsceneMover = CreateClientsideScriptMover($"mdl/dev/empty_model.rmdl", file.selectedLocation.spawns[0].origin + file.selectedLocation.cinematicCameraOffset, <90, 90, 0>)
     camera.SetParent(cutsceneMover)
-    wait 1
-
 	GetLocalClientPlayer().SetMenuCameraEntity( camera )
 
+    ////////////////////////////////////////////////////////////////////////////////
+    ///////// EFFECTIVE CUTSCENE CODE START
 
-    for(int i = 0; i < file.selectedLocation.spawns.len(); i++)
+
+    array<LocPair> cutsceneSpawns
+    for(int i = 0; i < desireNoSpawns; i++)
     {
-        entity spawn = CreateClientSidePropDynamic(OriginToGround(file.selectedLocation.spawns[i].origin), <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
-        thread CreateTemporarySpawnRUI(spawn, LOCATION_CUTSCENE_DURATION + 2)
+        if(!cutsceneSpawns.len())
+            cutsceneSpawns = clone file.selectedLocation.spawns
+
+        LocPair spawn = cutsceneSpawns.getrandom()
+        cutsceneSpawns.fastremovebyvalue(spawn)
+
+        cutsceneMover.SetOrigin(spawn.origin)
+        camera.SetAngles(spawn.angles)
+
+
+
+        cutsceneMover.NonPhysicsMoveTo(spawn.origin + AnglesToForward(spawn.angles) * desiredSpawnDuration * desiredSpawnSpeed, desiredSpawnDuration, 0, 0)
+        wait desiredSpawnDuration
     }
 
-    for(int i = 1; i < file.selectedLocation.spawns.len(); i++)
-    {
+    ///////// EFFECTIVE CUTSCENE CODE END
+    ////////////////////////////////////////////////////////////////////////////////
 
-        float duration = LOCATION_CUTSCENE_DURATION / max(1, file.selectedLocation.spawns.len() - 1)
-        cutsceneMover.NonPhysicsMoveTo(file.selectedLocation.spawns[i].origin + file.selectedLocation.cinematicCameraOffset, duration, 0, 0)
-        wait duration
-    }
-
-    wait 1
-    cutsceneMover.NonPhysicsMoveTo(GetLocalClientPlayer().GetOrigin() + <0, 0, 100>, 2, 0, 0)
-    cutsceneMover.NonPhysicsRotateTo(GetLocalClientPlayer().GetAngles(), 2, 0, 0)
-	camera.SetTargetFOV(playerFOV, true, EASING_CUBIC_INOUT, 2 )
-
-    wait 2
     GetLocalClientPlayer().ClearMenuCameraEntity()
     cutsceneMover.Destroy()
-    
-    player = GetLocalClientPlayer()
-    if(IsValid(player))
-        FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
-    
+
+    FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
     camera.Destroy()
     
     

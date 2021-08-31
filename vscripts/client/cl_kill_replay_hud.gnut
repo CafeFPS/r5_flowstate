@@ -4,6 +4,9 @@ global function KillReplayHud_AddClient
 global function KillReplayHud_Activate
 global function KillReplayHud_Deactivate
 
+global function ServerCallback_KillReplayHud_Activate
+global function ServerCallback_KillReplayHud_Deactivate
+
 struct
 {
 	var killReplayOverlayRui
@@ -54,6 +57,14 @@ string function GetRefFromDamageSourceId( int damageSourceId )
 	unreachable
 }
 
+void function ServerCallback_KillReplayHud_Activate() {	
+	KillReplayHud_Activate()
+}
+
+void function ServerCallback_KillReplayHud_Deactivate() {
+	KillReplayHud_Deactivate()
+}
+
 void function KillReplayHud_Activate()
 {
 	if ( IsReplayRoundWinning() )
@@ -77,7 +88,7 @@ void function KillReplayHud_Activate()
 		string attackerPetName = nameOfLastKiller.attackerPetName
 		if ( attackerName != GetLocalClientPlayer().GetPlayerName() )
 		{
-			RuiSetString( file.killReplayOverlayRui, "killerName", attackerName )
+			RuiSetString( file.killReplayOverlayRui, "killerName", "attackerName" )
 		}
 
 		entity attacker
@@ -103,7 +114,7 @@ void function KillReplayHud_Activate()
 		if ( IsFriendlyTeam( attacker.GetTeam(), player.GetTeam() ) )
 			return
 
-		RuiSetBool( file.killReplayOverlayRui, "showKillerInfo", true )
+		RuiSetBool( file.killReplayOverlayRui, "showKillerInfo", false )
 		RuiSetFloat( file.killReplayOverlayRui, "killerHealthFrac", nameOfLastKiller.healthFrac )
 	}
 }

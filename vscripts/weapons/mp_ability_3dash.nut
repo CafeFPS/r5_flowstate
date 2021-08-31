@@ -65,11 +65,20 @@ void function DashPlayer(entity player, float chargeTime)
 	if(player.GetInputAxisForward() || player.GetInputAxisRight()) yes = Normalize(player.GetInputAxisForward() * player.GetViewForward() + player.GetInputAxisRight() * player.GetViewRight())
 	else yes = Normalize(player.GetVelocity())
 
-	TraceResults result = TraceLine(player.GetOrigin(), player.GetOrigin() + 600 * yes, [player], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE)
+	TraceResults result = TraceLine(player.GetOrigin(), player.GetOrigin() + 600 * yes, [player], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_PLAYER)
 	// mover.NonPhysicsMoveTo(result.endPos, chargeTime, 0, 0)
+	vector originalPos = player.GetOrigin()
+
 	player.SetOrigin(result.endPos)
-	player.SetVelocity(player.GetVelocity() + 800 * yes)
-	PutEntityInSafeSpot( player, null, null, player.GetOrigin(), player.GetOrigin() )
+	if(PutEntityInSafeSpot( player, null, null, player.GetOrigin(), player.GetOrigin() ))
+	{
+		player.SetVelocity(player.GetVelocity() + 800 * yes)
+	}
+	else
+	{
+		player.SetOrigin(originalPos)
+	}
+	
 	// wait chargeTime
 	// player.ClearParent()
 	// player.SetPredictionEnabled( true )
