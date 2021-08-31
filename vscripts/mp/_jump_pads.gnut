@@ -126,6 +126,8 @@ void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector 
 				int fxId = GetParticleSystemIndex( JUMP_PAD_LAUNCH_FX )
 				StartParticleEffectOnEntity( jumpPad, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
 			}
+			
+			thread JumpPadAirborne( ent )
 			// thread Geyser_JumpJetsWhileAirborne( ent ) // no
 		}
 		else
@@ -133,6 +135,33 @@ void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector 
 			EmitSoundOnEntity( ent, "JumpPad_LaunchPlayer_3p" )
 			EmitSoundOnEntity( ent, "JumpPad_AirborneMvmt_3p" )
 		}
+	}
+}
+
+void function JumpPadAirborne( entity player ) {
+	if ( !IsPilot( player ) )
+		return
+
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_LaunchPlayer_3p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_AirborneMvmt_3p" )
+
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if ( IsValid( player ) )
+			{
+				StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
+			}
+		}
+	)
+
+	WaitFrame()
+
+	wait 0.1
+
+	while( !player.IsOnGround() )
+	{
+		WaitFrame()
 	}
 }
 
