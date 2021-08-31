@@ -394,6 +394,8 @@ global struct ServerEntityStruct
 	bool gravityOrbInteraction
 
 	bool shouldSpawnLoot = true
+
+	float lastGrappleTime
 }
 
 global struct MeritData
