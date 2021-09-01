@@ -5,6 +5,9 @@ untyped
 //	Called on newgame or transitions, BEFORE entities have been created and initialized
 //********************************************************************************************
 
+global const float COCKPIT_RUI_RADIUS = 350
+global const float COCKPIT_RUI_SUBDIV = 3.5
+
 global function ClientCodeCallback_MapSpawn
 global function ClientCodeCallback_RunClientConnectScripts
 global function ClientCodeCallback_FullUpdate
@@ -24,6 +27,9 @@ global function UpdateFullscreenTopology
 global function GetNearestAspectRatio
 
 global function CreateFullscreenTopology
+
+global function CircularHudEnabled
+global function GetHudDrawGroup
 
 global var Hud = null
 
@@ -165,6 +171,18 @@ void function ClientCodeCallback_OnDetenteEnded()
 {
 }
 
+
+bool function CircularHudEnabled()
+{
+	return GetCurrentPlaylistVarBool( "circular_hud", false )
+}
+
+int function GetHudDrawGroup( int ifNotCircular = RUI_DRAW_HUD )
+{
+	return CircularHudEnabled() ? RUI_DRAW_COCKPIT : ifNotCircular
+}
+
+
 struct TopologyCreateData
 {
 	vector org
@@ -172,60 +190,66 @@ struct TopologyCreateData
 	vector down
 }
 
-TopologyCreateData function BuildTopologyCreateData( bool isHud )
+TopologyCreateData function BuildTopologyCreateData( bool isHud, bool isCircular = false )
 {
 	UISize screenSize              = GetScreenSize()
 	UISize virtualScreenSize       = GetCurrentVirtualScreenSize( isHud )
 	UISize scaledVirtualScreenSize = GetScaledVirtualScreenSize( virtualScreenSize, screenSize )
 	float xOffset                  = ((screenSize.width - scaledVirtualScreenSize.width) / 2.0)
 
+	bool useTemp1610 = screenSize.width / screenSize.height <= 1.6
+	vector cockpitOffset = useTemp1610 ? COCKPIT_RUI_OFFSET_1610_TEMP : COCKPIT_RUI_OFFSET
+
 	TopologyCreateData data
 	{
-		data.org = <xOffset, 0, 0>
-		data.right = <float( scaledVirtualScreenSize.width ), 0, 0>
-		data.down = <0, float( scaledVirtualScreenSize.height ), 0>
+		data.org = isCircular ? cockpitOffset : <xOffset, 0, 0>
+		data.right = isCircular ? <0, -1, 0> : <float( scaledVirtualScreenSize.width ), 0, 0>
+		data.down = isCircular ? <0, 0, -1> : <0, float( scaledVirtualScreenSize.height ), 0>
 	}
 	return data
 }
 
 
-var function CreateFullscreenTopology( bool isHud )
+var function CreateFullscreenTopology( bool isHud, bool canBeCircular = false )
 {
-	TopologyCreateData tcd = BuildTopologyCreateData( isHud )
-	var result             = RuiTopology_CreatePlane( tcd.org, tcd.right, tcd.down, false )
+	bool isCircular = canBeCircular && CircularHudEnabled()
+	TopologyCreateData tcd = BuildTopologyCreateData( isHud, isCircular )
+	var result             = isCircular ? RuiTopology_CreateSphere( tcd.org, tcd.right, tcd.down, COCKPIT_RUI_RADIUS, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, COCKPIT_RUI_SUBDIV ) : RuiTopology_CreatePlane( tcd.org, tcd.right, tcd.down, false )
 	return result
 }
 
 
-void function UpdateFullscreenTopology( var topo, bool isHud )
+void function UpdateFullscreenTopology( var topo, bool isHud, bool canBeCircular = false )
 {
-	TopologyCreateData tcd = BuildTopologyCreateData( isHud )
+	bool isCircular = canBeCircular && CircularHudEnabled()
+	TopologyCreateData tcd = BuildTopologyCreateData( isHud, isCircular )
+	if ( isCircular )
+		RuiTopology_UpdateSphereArcs( topo, COCKPIT_RUI_WIDTH, COCKPIT_RUI_HEIGHT, COCKPIT_RUI_SUBDIV )
 	RuiTopology_UpdatePos( topo, tcd.org, tcd.right, tcd.down )
 }
 
-
 void function CreateHUDRuiTopologies()
 {
-	clGlobal.topoFullScreen = CreateFullscreenTopology( false )
-	clGlobal.topoFullscreenHud = CreateFullscreenTopology( true )
-	clGlobal.topoFullscreenHudPermanent = CreateFullscreenTopology( true )
-	clGlobal.topoFullscreenFullMap = CreateFullscreenTopology( true )
-	clGlobal.topFullscreenTargetInfo = CreateFullscreenTopology( true )
+    clGlobal.topoFullScreen = CreateFullscreenTopology( false )
+    clGlobal.topoFullscreenHud = CreateFullscreenTopology( true, true )
+    clGlobal.topoFullscreenHudPermanent = CreateFullscreenTopology( true, true )
+    clGlobal.topoFullscreenFullMap = CreateFullscreenTopology( true )
+    clGlobal.topFullscreenTargetInfo = CreateFullscreenTopology( true )
 
-	RuiTopology_ShareWithCode( clGlobal.topFullscreenTargetInfo, RUI_CODE_TOPO_TARGET_INFO_HUD )
+    RuiTopology_ShareWithCode( clGlobal.topFullscreenTargetInfo, RUI_CODE_TOPO_TARGET_INFO_HUD )
 
-	// titans:
-	{
-		clGlobal.topoTitanCockpitHud = RuiTopology_CreateSphere( <-120, 0, -TITAN_COCKPIT_TOPO_RADIUS * deg_sin( TITAN_COCKPIT_ROTATION_ANGLE )>, <0, -1, 0>, <deg_sin( TITAN_COCKPIT_ROTATION_ANGLE ), 0, -deg_cos( TITAN_COCKPIT_ROTATION_ANGLE )>, TITAN_COCKPIT_TOPO_RADIUS, TITAN_COCKPIT_RUI_SCREEN_WIDTH, TITAN_COCKPIT_RUI_SCREEN_WIDTH / 1.7665, TITAN_COCKPIT_RUI_SUBDIV )
-		clGlobal.topoTitanCockpitLowerHud = RuiTopology_CreatePlane( <0, 0, 0>, <0, -TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE, 0>, <0, 0, -TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE * TITAN_COCKPIT_LOWER_RUI_SCREEN_HEIGHT_SCALE>, true )
-		clGlobal.topoTitanCockpitInstrument1 = RuiTopology_CreatePlane( <0, 0, 0>, <0, -1, 0>, <0, 0, -1>, true )
-	}
+    // titans:
+    {
+        clGlobal.topoTitanCockpitHud = RuiTopology_CreateSphere( <-120, 0, -TITAN_COCKPIT_TOPO_RADIUS * deg_sin( TITAN_COCKPIT_ROTATION_ANGLE )>, <0, -1, 0>, <deg_sin( TITAN_COCKPIT_ROTATION_ANGLE ), 0, -deg_cos( TITAN_COCKPIT_ROTATION_ANGLE )>, TITAN_COCKPIT_TOPO_RADIUS, TITAN_COCKPIT_RUI_SCREEN_WIDTH, TITAN_COCKPIT_RUI_SCREEN_WIDTH / 1.7665, TITAN_COCKPIT_RUI_SUBDIV )
+        clGlobal.topoTitanCockpitLowerHud = RuiTopology_CreatePlane( <0, 0, 0>, <0, -TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE, 0>, <0, 0, -TITAN_COCKPIT_LOWER_RUI_SCREEN_SQUARE_SIZE * TITAN_COCKPIT_LOWER_RUI_SCREEN_HEIGHT_SCALE>, true )
+        clGlobal.topoTitanCockpitInstrument1 = RuiTopology_CreatePlane( <0, 0, 0>, <0, -1, 0>, <0, 0, -1>, true )
+    }
 
-	UpdateFullscreenTopology( clGlobal.topoFullScreen, false )
-	UpdateFullscreenTopology( clGlobal.topoFullscreenHud, true )
-	UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true )
-	UpdateFullscreenTopology( clGlobal.topoFullscreenFullMap, true )
-	UpdateFullscreenTopology( clGlobal.topFullscreenTargetInfo, true )
+    UpdateFullscreenTopology( clGlobal.topoFullScreen, false )
+    UpdateFullscreenTopology( clGlobal.topoFullscreenHud, true, true )
+    UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true, true )
+    UpdateFullscreenTopology( clGlobal.topoFullscreenFullMap, true )
+    UpdateFullscreenTopology( clGlobal.topFullscreenTargetInfo, true )
 }
 
 

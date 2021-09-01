@@ -3006,7 +3006,8 @@ void function WaitingForPlayersOverlay_Setup( entity player )
 
 	s_overlayRui = CreatePermanentCockpitRui( $"ui/waiting_for_players_blackscreen.rpak", -1 )
 	RuiSetResolutionToScreenSize( s_overlayRui )
-	RuiSetBool( s_overlayRui, "isOpaque", PreGame_GetWaitingForPlayersHasBlackScreen() )
+
+	RuiSetBool( s_overlayRui, "isOpaque", PreGame_GetWaitingForPlayersHasBlackScreen() && !CircularHudEnabled() )
 
 	UpdateWaitingForPlayersMuteHint()
 }

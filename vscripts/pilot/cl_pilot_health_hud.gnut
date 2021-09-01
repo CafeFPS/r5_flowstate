@@ -74,7 +74,8 @@ void function ClHealthHud_Init()
 	file.healthDisplayMin = DEFAULT_HEALTH_DISPLAY_MIN
 	file.healthDisplayMax = DEFAULT_HEALTH_DISPLAY_MAX
 
-	file.healthOverlay = RuiCreate( $"ui/hurt_overlay.rpak", clGlobal.topoFullscreenHudPermanent, RUI_DRAW_HUD, 0 )
+	file.healthOverlay = RuiCreate( $"ui/hurt_overlay.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
+	// file.healthOverlay = RuiCreate( $"ui/hurt_overlay.rpak", clGlobal.topoFullscreenHudPermanent, RUI_DRAW_HUD, 0 )
 	RuiSetResolutionToScreenSize( file.healthOverlay )
 	UISize screenSize = GetVirtualScreenSize( GetScreenSize().width, GetScreenSize().height )
 	RuiSetFloat2( file.healthOverlay, "actualRes", <float( screenSize.width ), float( screenSize.height ), 0> )

@@ -1437,10 +1437,13 @@ global const float COCKPIT_UI_XOFFSET 									= 22
 global const float COCKPIT_UI_WIDTH 									= 41.4
 global const float COCKPIT_UI_HEIGHT 									= COCKPIT_UI_WIDTH / 1.7665
 
-global const float COCKPIT_RUI_WIDTH 									= 100
+// global const float COCKPIT_RUI_WIDTH 									= 100
+global const float COCKPIT_RUI_WIDTH 									= 34
 global const float COCKPIT_RUI_HEIGHT 									= COCKPIT_RUI_WIDTH / ( 1920.0 / 1080.0 )
-global const vector COCKPIT_RUI_OFFSET 									= <53.6,0,0>
-global const vector COCKPIT_RUI_OFFSET_1610_TEMP 						= <58,0,0>
+// global const vector COCKPIT_RUI_OFFSET 									= <53.6,0,0>
+// global const vector COCKPIT_RUI_OFFSET_1610_TEMP 						= <58,0,0>
+global const vector COCKPIT_RUI_OFFSET 									= < -218, 0, 0 >
+global const vector COCKPIT_RUI_OFFSET_1610_TEMP 						= < -216, 0, 0 >
 global const float TITAN_COCKPIT_RUI_SUBDIV 							= 3.5
 
 global const float TITAN_COCKPIT_RUI_SCREEN_WIDTH 						= 21.0

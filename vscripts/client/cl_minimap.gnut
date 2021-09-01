@@ -338,14 +338,14 @@ void function OnSpectateChanged( entity spectatingPlayer, entity spectatorTarget
 
 
 void function OnSpectateTargetChanged( entity spectatingPlayer, entity oldSpectatorTarget, entity newSpectatorTarget )
-{
+{	
 	UpdatePlayerRuiTracking( spectatingPlayer )
 }
 
 
 var function CreateMinimapRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, RUI_DRAW_HUD, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, GetHudDrawGroup(), sortKey )
 	InitHUDRui( rui, true )
 	return rui
 }
