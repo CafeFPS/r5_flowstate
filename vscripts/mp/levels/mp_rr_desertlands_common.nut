@@ -62,7 +62,7 @@ void function Desertlands_MapInit_Common()
 	#if SERVER
 		//%if HAS_LOOT_DRONES && HAS_LOOT_ROLLERS
 		InitLootDrones()
-		//InitLootRollers()
+		InitLootRollers()
 		//%endif
 
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )

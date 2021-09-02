@@ -16,6 +16,13 @@ global function SpawnLootDrones
 global const string LOOT_DRONE_PATH_NODE_ENTNAME = "loot_drone_path_node"
 
 global const float LOOT_DRONE_START_NODE_SELECTION_MIN_DISTANCE = 50
+global const vector LOOT_DRONE_ROTATOR_OFFSET = <8,0,-45>
+global const vector LOOT_DRONE_ROTATOR_DIR = <0,0,1>
+global const float LOOT_DRONE_ROTATOR_SPEED = 60
+
+global const float LOOT_DRONE_EXPLOSION_RADIUS = 128.0
+global const float LOOT_DRONE_EXPLOSION_DAMAGE = 30.0
+global const float LOOT_DRONE_EXPLOSION_DAMAGEID = eDamageSourceId.ai_turret_explosion
 
 
 ///////////////////////
@@ -146,23 +153,32 @@ LootDroneData function LootDrones_SpawnLootDroneAtRandomPath()
 	// Set model entity in the struct.
 	data.model = model
 
-	// Create script mover for moving. (not for now?)
+	// Create script mover for moving.
 	data.mover = CreateOwnedScriptMover( model )
+	data.mover.kv.targetname = LOOT_DRONE_MOVER_SCRIPTNAME
 	data.mover.DisableHibernation()
 	data.model.SetParent( data.mover )
 	
 	// For easier console access
-	// script gp()[0].SetOrigin(Entities_FindByName(null, 'loot_drone').GetOrigin())
-	data.mover.kv.targetname = "loot_drone"
+	// script gp()[0].SetOrigin(Entities_FindByName(null, LOOT_DRONE_MODEL_SCRIPTNAME).GetOrigin())
+	data.mover.kv.targetname = LOOT_DRONE_MODEL_SCRIPTNAME
 
-	// Use the same mover for rotating.
-	data.rotator = data.mover
+	// Create roller rotator.
+	data.rotator = CreateEntity( "script_mover_lightweight" )
+	data.rotator.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	data.rotator.kv.solid = 0
+	data.rotator.kv.targetname = LOOT_DRONE_ROTATOR_SCRIPTNAME
+	data.rotator.kv.SpawnAsPhysicsMover = 0
+	data.rotator.SetParent( data.model )
+	data.rotator.SetOrigin( data.model.GetOrigin() + LOOT_DRONE_ROTATOR_OFFSET )
+	data.rotator.NonPhysicsRotate( LOOT_DRONE_ROTATOR_DIR, LOOT_DRONE_ROTATOR_SPEED )
+	DispatchSpawn( data.rotator )
 
 	// Sound entity should be our mover
 	data.soundEntity = data.mover
 
 	// Create and attach loot roller.
-	// TODO
+	data.roller = SpawnLootRoller_Parented(data.rotator)
 
 	file.droneData[ model ] <- data
 
@@ -207,7 +223,7 @@ void function LootDroneState( LootDroneData data )
 
 	// TODO: Find why idle sound isn't playing, only when spammed and close
 	// Doesn't seem to loop either, might be related to a specific entity behavior
-	// Could be PVS too.. no clue yet.
+	// Could be PVS too.. clientsided? no clue yet.
 	//
 	// https://developer.valvesoftware.com/wiki/PVS
 	//
@@ -218,6 +234,24 @@ void function LootDroneState( LootDroneData data )
 		{
 			if ( IsValid( data.soundEntity ) )
 				StopSoundOnEntity( data.soundEntity, LOOT_DRONE_LIVING_SOUND )
+
+
+			if( IsValid( data.roller ) )
+			{
+				data.roller.ClearParent()
+
+				// Fix the physics
+				EntFireByHandle(data.roller, "DisableMotion", "", 0, null, null)
+				EntFireByHandle(data.roller, "EnableMotion", "", 0.2, null, null)
+
+				// prop_physics don't have a velocity and won't react to basevelocity, 
+				// this is handled by havoc instead
+				/*
+				vector throwSpeed = <RandomFloatRange(-1,1),RandomFloatRange(-1,1),1>
+				throwSpeed *= RandomFloatRange(LOOT_DRONE_RAND_TOSS_MIN,LOOT_DRONE_RAND_TOSS_MAX)
+				data.roller.SetVelocity( throwSpeed )
+				*/
+			}
 		}
 	)
 
@@ -234,11 +268,67 @@ void function LootDroneMove( LootDroneData data )
 	data.model.EndSignal( "OnDestroy" )
 	data.model.EndSignal( SIGNAL_LOOT_DRONE_FALL_START )
 
+	// Go straight down and crash bellow
 	OnThreadEnd( 
 		function() : ( data )
 		{
 			if ( IsValid( data.mover ) )
 				data.mover.Train_StopImmediately()
+
+			TraceResults result = TraceLine
+			( 
+				data.mover.GetOrigin(), 
+				data.mover.GetOrigin() - <0,0,LOOT_DRONE_FALL_TRACE_DIST*2>, // 1024 is so low.. make it double. 
+				data.mover, 
+				TRACE_MASK_NPCSOLID, 
+				TRACE_COLLISION_GROUP_NONE 
+			)
+
+			// TEMP
+			// TODO: Implement gravity + acceleration, perhaps use the Train_ funcs with signals
+			float distance = Distance(data.mover.GetOrigin(), result.endPos)
+			float t = distance / (LOOT_DRONE_FALLING_SPEED_MAX*0.7)
+
+			data.mover.NonPhysicsMoveTo( result.endPos, t, 0, 0	)
+			data.mover.NonPhysicsRotateTo( data.mover.GetAngles() + <0,0,180>, 1, 0, 0 )
+
+			// TEMP
+			thread( 
+				void function() : (data, t)
+				{
+					wait t
+
+					entity effect = StartParticleEffectInWorld_ReturnEntity
+					( 
+						GetParticleSystemIndex( LOOT_DRONE_FX_EXPLOSION ), 
+						data.mover.GetOrigin(), 
+						<0,0,0>
+					)
+					EmitSoundOnEntity( effect, LOOT_DRONE_CRASHED_SOUND )
+
+					// Kill the particles after a few secs, entity stays in the map indefinitely it seems
+					EntFireByHandle( effect, "Kill", "", 2, null, null )
+
+					// TODO: Find the right damage values and damageid
+					RadiusDamage
+					(
+						data.mover.GetOrigin(),													// center
+						data.model.GetOwner(),													// attacker
+						data.mover,																// inflictor
+						LOOT_DRONE_EXPLOSION_DAMAGE,											// damage
+						LOOT_DRONE_EXPLOSION_DAMAGE,											// damageHeavyArmor
+						LOOT_DRONE_EXPLOSION_RADIUS,											// innerRadius
+						LOOT_DRONE_EXPLOSION_RADIUS,											// outerRadius
+						SF_ENVEXPLOSION_MASK_BRUSHONLY,											// flags
+						0.0,																	// distanceFromAttacker
+						LOOT_DRONE_EXPLOSION_DAMAGE,											// explosionForce
+						DF_EXPLOSION | DF_GIB | DF_KNOCK_BACK,									// scriptDamageFlags
+						LOOT_DRONE_EXPLOSION_DAMAGEID 											// scriptDamageSourceIdentifier
+					)
+
+					data.mover.Destroy()
+				}
+			)()
 		}
 	)
 
@@ -306,7 +396,12 @@ void function LootDrones_OnDamaged(entity ent, var damageInfo)
 	// Drone ""died""
 	// Don't take damage anymore
 	ent.SetTakeDamageType( DAMAGE_NO )
+	ent.kv.solid = 0
+
 	ent.Signal( SIGNAL_LOOT_DRONE_FALL_START )
+
+	ent.SetOwner( attacker )
+	ent.kv.teamnumber = attacker.GetTeam()
 
 	EmitSoundOnEntity( ent, LOOT_DRONE_DEATH_SOUND )
 	EmitSoundOnEntity( ent, LOOT_DRONE_CRASHING_SOUND )
@@ -320,16 +415,5 @@ void function LootDrones_OnDamaged(entity ent, var damageInfo)
 	// Kill the particles after a few secs, entity stays in the map indefinitely it seems
 	EntFireByHandle( effect, "Kill", "", 2, null, null )
 
-	// TODO: Make the drone crash and kill it when it lands
-	// Use the attacker to damage other players so they get credits for it
-	// Make sure to kill the rest of the entities from the data struct
-
-	// TEMP removeal
-	thread( 
-		void function() : (ent)
-		{
-			wait 2
-			ent.Destroy()
-		}
-	)()
+	ent.Signal("OnDeath")
 }
