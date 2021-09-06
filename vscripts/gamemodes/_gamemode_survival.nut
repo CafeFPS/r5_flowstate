@@ -97,6 +97,8 @@ void function RespawnPlayerInDropship( entity player )
 
 	if ( isAlone )
 		player.SetPlayerNetBool( "isJumpmaster", true )
+
+	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 }
 
 void function Sequence_Playing()
