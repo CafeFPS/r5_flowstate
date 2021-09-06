@@ -385,7 +385,9 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		Bleedout_StartPlayerBleedout( victim, DamageInfo_GetAttacker( damageInfo ) )
 
 		// Cancel the damage
-		DamageInfo_SetDamage( damageInfo, 0 )
+		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
+		// There might be a better way to do this, but this works well enough
+		DamageInfo_SetDamage( damageInfo, 1 )
 
 		// Run client callback
 		int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
