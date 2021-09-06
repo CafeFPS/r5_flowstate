@@ -2008,19 +2008,7 @@ void function CodeCallback_PlayerFreefallEnd( entity player )
 	player.Anim_Stop()
 
 #if SERVER
-//
-
-
-
-
-
-
-
-
-
-
-
-
+	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 #else
 	//
 

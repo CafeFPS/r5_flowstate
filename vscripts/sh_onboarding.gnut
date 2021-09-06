@@ -400,6 +400,8 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	player.SetPlayerNetBool( "pingEnabled", true )
 	player.SetHealth( 100 )
+	
+	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 }
 #endif
 
