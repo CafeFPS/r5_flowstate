@@ -29,11 +29,12 @@ void function _CustomTDM_Init()
     AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {thread _OnPlayerDied(victim, attacker, damageInfo)})
 
     AddClientCommandCallback("next_round", ClientCommand_NextRound)
-    if( CMD_GetTGiveEnabled() )
-    {
-        AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
-    }
-    
+
+	if( CMD_GetTGiveEnabled() )
+	{
+		AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
+	}
+
     thread RunTDM()
 
     // Whitelisted weapons
@@ -223,71 +224,7 @@ bool function ClientCommand_NextRound(entity player, array<string> args)
     return true
 }
 
-bool function ClientCommand_GiveWeapon(entity player, array<string> args)
-{
-    if(args.len() < 2) return false;
 
-    bool foundMatch = false
-
-
-    foreach(weaponName in file.whitelistedWeapons)
-    {
-        if(args[1] == weaponName)
-        {
-            foundMatch = true
-            break
-        }
-    }
-
-    if(file.whitelistedWeapons.find(args[1]) == -1 && file.whitelistedWeapons.len()) return false
-
-    entity weapon
-
-    try {
-        entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-        entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-        entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
-        entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
-        switch(args[0]) 
-        {
-            case "p":
-            case "primary":
-                if( IsValid( primary ) ) player.TakeWeaponByEntNow( primary )
-                weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
-                break
-            case "s":
-            case "secondary":
-                if( IsValid( secondary ) ) player.TakeWeaponByEntNow( secondary )
-                weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
-                break
-            case "t":
-            case "tactical":
-                if( IsValid( tactical ) ) player.TakeOffhandWeapon( OFFHAND_TACTICAL )
-                weapon = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
-                break
-            case "u":
-            case "ultimate":
-                if( IsValid( ultimate ) ) player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
-                weapon = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
-                break
-        }
-    }
-    catch( e1 ) { }
-
-    if( args.len() > 2 )
-    {
-        try {
-            weapon.SetMods(args.slice(2, args.len()))
-        }
-        catch( e2 ) {
-            print(e2)
-        }
-    }
-    
-    if( IsValid( weapon) && !weapon.IsWeaponOffhand() ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
-    return true
-    
-}
 
 
 
@@ -340,6 +277,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
             victim.p.storedWeapons = StoreWeapons(victim)
             
+            float reservedTime = max(1, Deathmatch_GetRespawnDelay() - 1)// so we dont immediately go to killcam
+            wait reservedTime
             if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker ))
             {
                 victim.SetObserverTarget( attacker )
@@ -348,7 +287,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
                 Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
             }
             
-            wait Deathmatch_GetRespawnDelay()
+            wait max(0, Deathmatch_GetRespawnDelay() - reservedTime)
 
              
 
@@ -597,4 +536,71 @@ void function TpPlayerToSpawnPoint(entity player)
 
     
     PutEntityInSafeSpot( player, null, null, player.GetOrigin() + <0,0,128>, player.GetOrigin() )
+}
+
+
+bool function ClientCommand_GiveWeapon(entity player, array<string> args)
+{
+    if(args.len() < 2) return false;
+
+    bool foundMatch = false
+
+
+    foreach(weaponName in file.whitelistedWeapons)
+    {
+        if(args[1] == weaponName)
+        {
+            foundMatch = true
+            break
+        }
+    }
+
+    if(file.whitelistedWeapons.find(args[1]) == -1 && file.whitelistedWeapons.len()) return false
+
+    entity weapon
+
+    try {
+        entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+        entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+        entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+        entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+        switch(args[0]) 
+        {
+            case "p":
+            case "primary":
+                if( IsValid( primary ) ) player.TakeWeaponByEntNow( primary )
+                weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_0)
+                break
+            case "s":
+            case "secondary":
+                if( IsValid( secondary ) ) player.TakeWeaponByEntNow( secondary )
+                weapon = player.GiveWeapon(args[1], WEAPON_INVENTORY_SLOT_PRIMARY_1)
+                break
+            case "t":
+            case "tactical":
+                if( IsValid( tactical ) ) player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+                weapon = player.GiveOffhandWeapon(args[1], OFFHAND_TACTICAL)
+                break
+            case "u":
+            case "ultimate":
+                if( IsValid( ultimate ) ) player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+                weapon = player.GiveOffhandWeapon(args[1], OFFHAND_ULTIMATE)
+                break
+        }
+    }
+    catch( e1 ) { }
+
+    if( args.len() > 2 )
+    {
+        try {
+            weapon.SetMods(args.slice(2, args.len()))
+        }
+        catch( e2 ) {
+            print(e2)
+        }
+    }
+    
+    if( IsValid(weapon) && !weapon.IsWeaponOffhand() ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
+    return true
+    
 }

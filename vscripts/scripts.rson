@@ -472,6 +472,8 @@ Scripts:
 
 	mp/_mobility_experiments.gnut
 	mp/_model_viewer.nut
+
+	mp/_base_cmds.gnut
 ]
 
 When: "SERVER"

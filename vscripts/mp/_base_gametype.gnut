@@ -709,6 +709,7 @@ void function PlayerOrNPCKilled( entity ent, var damageInfo )
 	if ( ent.IsPlayer() )
 	{
 		LogPlayerMatchStat_Death( ent )
+		ent.p.lastDeathTime = Time()
 
 		if ( attacker.IsPlayer() && (attacker != ent) )
 			LogPlayerMatchStat_KilledAPilot( attacker )

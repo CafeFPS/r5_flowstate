@@ -15,7 +15,6 @@ global function Deathmatch_GetRespawnDelay
 global function Equipment_GetDefaultShieldHP
 global function Deathmatch_GetOOBDamagePercent
 global function Deathmatch_GetVotingTime
-global function CMD_GetTGiveEnabled
 
 global function Deathmatch_GetIntroCutsceneNumSpawns           
 global function Deathmatch_GetIntroCutsceneSpawnDuration        
@@ -463,7 +462,6 @@ float function Deathmatch_GetRespawnDelay()                          { return Ge
 float function Equipment_GetDefaultShieldHP()                        { return GetCurrentPlaylistVarFloat("default_shield_hp", 100) }
 float function Deathmatch_GetOOBDamagePercent()                      { return GetCurrentPlaylistVarFloat("oob_damage_percent", 25) }
 float function Deathmatch_GetVotingTime()                            { return GetCurrentPlaylistVarFloat("voting_time", 5) }
-bool function CMD_GetTGiveEnabled()                                  { return GetCurrentPlaylistVarBool("tgive_enabled", true) }
       
 #if SERVER      
 bool function Equipment_GetRespawnKitEnabled()                       { return GetCurrentPlaylistVarBool("respawn_kit_enabled", false) }
