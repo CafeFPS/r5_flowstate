@@ -261,8 +261,8 @@ void function SuicideSpectre_WaittillNearEnemyOrExploding( entity spectre )
 
 	bool pursuitSoundPlaying = false
 
-	float minScale = expect float( spectre.Dev_GetAISettingByKeyField( "minSpeedScale" ) )
-	float maxScale = expect float( spectre.Dev_GetAISettingByKeyField( "maxSpeedScale" ) )
+	int minScale = expect int( spectre.Dev_GetAISettingByKeyField( "minSpeedScale" ) )
+	int maxScale = expect int( spectre.Dev_GetAISettingByKeyField( "maxSpeedScale" ) )
 
 	while ( true )
 	{
