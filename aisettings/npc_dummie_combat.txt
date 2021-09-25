@@ -20,7 +20,7 @@ npc_dummie_combat
 	mechanical						1
 
 	BehaviorSelector				"behavior_dummie_combat"
-	//LocationScoringCriteria			"CommonShootWithLos"
+	LocationScoringCriteria			"CommonShootWithLos"
 
 	chaseStopDist					300
 	chaseStopDistHeavyArmor			800
