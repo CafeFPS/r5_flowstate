@@ -153,8 +153,14 @@ void function ServerCallback_TDM_DoLocationIntroCutscene_Body()
     GetLocalClientPlayer().ClearMenuCameraEntity()
     cutsceneMover.Destroy()
 
-    FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
-    camera.Destroy()
+    if(IsValid(player))
+    {
+        FadeOutSoundOnEntity( player, "music_skyway_04_smartpistolrun", 1 )
+    }
+    if(IsValid(camera))
+    {
+        camera.Destroy()
+    }
     
     
 }
