@@ -2,6 +2,7 @@
 
 #if SERVER || CLIENT || UI
 global function PassivesShared_Init
+global function ShPassives_Init
 #endif
 
 
@@ -17,7 +18,7 @@ global function TakePassive
 global function TakeAllPassives
 #endif
 
-#if (SERVER || CLIENT) && DEV
+#if (SERVER || CLIENT) && R5DEV
 global function DEV_PrintAllPassives
 #endif
 
@@ -61,7 +62,11 @@ global enum ePassives
 	PAS_STARTER_PACK,
 	PAS_TRACKING_VISION,
 	PAS_VOICES,
-
+	PAS_OCTANE,
+	PAS_CRYPTO,
+	PAS_GUARDIAN_ANGEL
+	PAS_BATTERY_POWERED,
+	PAS_WATTSON_CIRCLE_REFUND,
 	PAS_DOWN_HEALTH,
 	PAS_DOWN_REGEN,
 	PAS_EXEC_BONUS_AMMO,
@@ -75,6 +80,9 @@ global enum ePassives
 	PAS_REDUCED_COOLDOWN_ULT,
 	PAS_SELF_REVIVE,
 	PAS_SYRINGE_BONUS,
+	PAS_FORTIFIED,
+	PAS_LOWPROFILE,
+	PAS_PILOT_BLOOD
 
 	_count,
 }
@@ -87,6 +95,10 @@ global const table<int, string> PASSIVE_NAME_MAP = {
 	[ePassives.PAS_EXEC_BONUS_ARMOR] = "#PAS_EXEC_BONUS_ARMOR",
 	[ePassives.PAS_SELF_REVIVE] = "#PAS_AVAT",
 	[ePassives.PAS_FAST_HEAL] = "#PAS_FAST_HEAL",
+	[ePassives.PAS_GUARDIAN_ANGEL] = "#PAS_GUARDIAN_ANGEL",
+	[ePassives.PAS_FORTIFIED] = "#PAS_FORTIFIED",
+	[ePassives.PAS_LOWPROFILE] = "#PAS_LOW_PROFILE",
+	[ePassives.PAS_PILOT_BLOOD] = "#PAS_PILOT_BLOOD",
 
 }
 global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
@@ -94,6 +106,10 @@ global const table<int, string> PASSIVE_DESCRIPTION_SHORT_MAP = {
 	[ePassives.PAS_EXEC_BONUS_ARMOR] = "#PAS_EXEC_BONUS_ARMOR_DESC",
 	[ePassives.PAS_SELF_REVIVE] = "#PAS_AVAT_DESC",
 	[ePassives.PAS_FAST_HEAL] = "#PAS_FAST_HEAL_DESC",
+	[ePassives.PAS_GUARDIAN_ANGEL] = "#PAS_GUARDIAN_ANGEL_DESC",
+	[ePassives.PAS_FORTIFIED] = "#PAS_FORTIFIED_DESC",
+	[ePassives.PAS_LOWPROFILE] = "#PAS_LOW_PROFILE_DESC",
+	[ePassives.PAS_PILOT_BLOOD] = "#PAS_PILOT_BLOOD_DESC",
 }
 #endif
 
@@ -111,7 +127,8 @@ struct
 	#endif
 } file
 
-
+global ItemFlavor& PAS_FORTIFIED_FLAV
+global ItemFlavor& PAS_LOW_PROFILE_FLAV
 
 /////////////////////////
 /////////////////////////
@@ -133,11 +150,24 @@ void function PassivesShared_Init()
 		Bleedout_AddCallback_OnPlayerStartBleedout( Passives_OnPlayerStartBleedout )
 		AddCallback_OnPassiveChanged( ePassives.PAS_FAST_HEAL, PassiveToggleFastHeal )
 		AddCallback_OnPassiveChanged( ePassives.PAS_MEDIC, Lifeline_PassiveToggle )
+		AddCallback_OnPassiveChanged( ePassives.PAS_PILOT_BLOOD, PilotBlood_Passive )
 	#endif
 
 	#if CLIENT
 		PrecacheParticleSystem( $"P_core_DMG_boost_screen" )
 	#endif
+}
+
+void function ShPassives_Init()
+{
+	AddCallback_RegisterRootItemFlavors( OnRegisterRootItemFlavors )
+}
+
+
+void function OnRegisterRootItemFlavors()
+{
+	PAS_FORTIFIED_FLAV = expect ItemFlavor( RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/ability/pas_fortified.rpak" ) )
+	PAS_LOW_PROFILE_FLAV = expect ItemFlavor( RegisterItemFlavorFromSettingsAsset( $"settings/itemflav/ability/pas_low_profile.rpak" ) )
 }
 #endif
 
@@ -151,6 +181,9 @@ void function PassivesShared_Init()
 #if SERVER
 void function GivePassive( entity player, int passive )
 {
+    if(!IsValid(player))
+        return
+    
 	bool didHavePassive = player.HasPassive( passive )
 
 	// printt( "give passive " + GetPassiveName( passive ), passive )
@@ -230,7 +263,7 @@ void function RemoveCallback_OnPassiveChanged( int passive, void functionref( en
 //// Dev functions ////
 ///////////////////////
 ///////////////////////
-#if (SERVER || CLIENT) && DEV
+#if (SERVER || CLIENT) && R5DEV
 void function DEV_PrintAllPassives( entity player )
 {
 	for ( int passiveIdx = 0; passiveIdx < ePassives._count; passiveIdx++ )
@@ -473,3 +506,46 @@ void function PassiveToggleFastHeal( entity player, int passive, bool didHave, b
 #endif
 
 
+#if SERVER
+void function PilotBlood_Passive( entity player, int passive, bool didHave, bool nowHas )
+{
+	thread PilotBlood_Passive_Body(player, passive, didHave, nowHas)
+}
+
+void function PilotBlood_Passive_Body(entity player, int passive, bool didHave, bool nowHas)
+{
+	float healthRegenStartDelay = 5.0
+
+	while ( IsValid( player ) )
+	{
+		wait( HEALTH_REGEN_TICK_TIME )
+
+		if ( !IsAlive( player ) )
+			continue
+
+		if ( Time() - player.p.lastDamageTime < healthRegenStartDelay )
+		{
+			continue
+		}
+
+		float healthRegenRate = 1.0
+
+
+		if ( player.GetHealth() != player.GetMaxHealth() )
+		{
+			// No regen during phase shift
+			if ( player.IsPhaseShifted() )
+				continue
+
+			player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
+
+		}
+		else if(player.GetShieldHealth() != player.GetShieldHealthMax())
+		{
+			player.SetShieldHealth( min( player.GetShieldHealthMax(), player.GetShieldHealth() + healthRegenRate * 5 ) )
+		}
+
+		
+	}
+}
+#endif

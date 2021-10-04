@@ -1,3 +1,4 @@
+/*
 global function ClSpectatorHud_Init
 global function CreateSpectatorHud
 global function UpdateRespawnTime
@@ -641,3 +642,4 @@ void function SetEpilogueFlag()
 {
 	RuiSetBool( file.deadHud, "epilogue", true )
 }
+*/

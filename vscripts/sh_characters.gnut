@@ -9,8 +9,10 @@ global function CharacterClass_GetRole
 global function CharacterClass_GetSortOrdinal
 global function CharacterClass_GetMenuSmokeSkinIndex
 global function CharacterClass_GetMenuBackgroundSkinIndex
+global function CharacterClass_GetMenuButtonIndex
 global function CharacterClass_GetMenuLightData
 global function CharacterClass_GetHudUltimateColorData
+global function CharacterClass_GetChromaGradient
 global function CharacterClass_GetGalleryModelOffset
 global function CharacterClass_GetGalleryPortrait
 global function CharacterClass_GetGalleryPortraitBackground
@@ -19,11 +21,23 @@ global function CharacterClass_GetCharacterLockedPortrait
 global function CharacterClass_GetCharacterRoleImage
 global function CharacterClass_GetCharacterSelectSubtitle
 global function CharacterClass_GetReadyUpVoicelineEventList
-
 global function CharacterClass_IsAvailable
+global function CharacterClass_GetDamageScale
 
 #if SERVER
 global function GetStringArrayAvailableClassesForPlayer
+#endif
+global function CharacterClass_ConsiderLegHitBoxAsTorso
+global function CharacterClass_GetMenuZoomOffset
+
+#if CLIENT || UI 
+global function GetCharacterButtonMapping
+global function GetCharacterButtonOrder
+#endif
+
+#if SERVER || CLIENT
+global function GetPlayerSettingBaseHealth
+global function GetPlayerSettingBaseShield
 #endif
 
 //////////////////////
@@ -78,6 +92,7 @@ struct FileStruct_LifetimeLevel
 }
 FileStruct_LifetimeLevel& fileLevel
 
+table< ItemFlavor, array<int> > legHitBoxOverrides = {}
 
 /////////////////////////
 /////////////////////////
@@ -90,7 +105,7 @@ void function ShCharacters_LevelInit()
 	FileStruct_LifetimeLevel newFileGame
 	fileLevel = newFileGame
 
-	#if SERVER && DEV
+	#if SERVER && R5DEV
 		AddCallback_GeneratePDef( GenerateCharactersPDef )
 	#endif
 
@@ -99,6 +114,23 @@ void function ShCharacters_LevelInit()
 }
 #endif
 
+void function InitLegHitBoxOverrides( ItemFlavor character )
+{
+	{
+		string characterRef = ItemFlavor_GetHumanReadableRef( character )
+		string legHitBoxOverrideString = GetCurrentPlaylistVarString( "leg_hitbox_override_" + characterRef.tolower(), "" )
+		if ( legHitBoxOverrideString == "" )
+			return
+
+		legHitBoxOverrides[character] <- []
+		array<string> hitBoxStrings = split( legHitBoxOverrideString, " " )
+		foreach ( hitBoxString in hitBoxStrings )
+		{
+			int hitBoxID = hitBoxString.tointeger()
+			legHitBoxOverrides[character].append( hitBoxID )
+		}
+	}
+}
 
 #if SERVER || CLIENT || UI
 void function OnRegisterRootItemFlavors()
@@ -107,7 +139,7 @@ void function OnRegisterRootItemFlavors()
 	entry.stryderCharDataArrayIndex = ePlayerStryderCharDataArraySlots.CHARACTER
 	entry.networkTo = eLoadoutNetworking.PLAYER_GLOBAL
 	entry.networkVarName = "CharacterSelection"
-	entry.isItemFlavorUnlocked = bool function( EHI playerEHI, ItemFlavor flavor ) {
+	entry.isItemFlavorUnlocked = bool function( EHI playerEHI, ItemFlavor flavor, bool shouldIgnoreOtherSlots ) {
 		return CharacterClass_IsAvailable( playerEHI, flavor )
 	}
 	entry.isSlotLocked = bool function( EHI playerEHI ) {
@@ -120,9 +152,12 @@ void function OnRegisterRootItemFlavors()
 	fileLevel.characterSelectionSlot = entry
 
 	array<ItemFlavor> characterList = []
-	foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/gamemode_survival/all_characters.rpak", "list" ) )
+	foreach( asset characterAsset in CHARACTER_ASSETS )
 	{
-		ItemFlavor ornull characterOrNull = RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
+		if ( characterAsset == $"" )
+			continue
+
+		ItemFlavor ornull characterOrNull = RegisterItemFlavorFromSettingsAsset( characterAsset )
 		if ( characterOrNull == null )
 			continue
 		characterList.append( expect ItemFlavor(characterOrNull) )
@@ -156,7 +191,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor character )
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function GenerateCharactersPDef()
 {
 	// this persistent data enum is required by sh_xp.gnut
@@ -239,6 +274,12 @@ int function CharacterClass_GetMenuBackgroundSkinIndex( ItemFlavor flavor )
 	return GetGlobalSettingsInt( ItemFlavor_GetAsset( flavor ), "menuBackgroundSkinIndex" )
 }
 
+int function CharacterClass_GetMenuButtonIndex( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character )
+
+	return GetGlobalSettingsInt( ItemFlavor_GetAsset( flavor ), "characterMenuButtonIndex" )
+}
 
 CharacterMenuLightData function CharacterClass_GetMenuLightData( ItemFlavor flavor )
 {
@@ -262,6 +303,15 @@ CharacterHudUltimateColorData function CharacterClass_GetHudUltimateColorData( I
 	return data
 }
 
+table< float, vector > function CharacterClass_GetChromaGradient( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character )
+
+	return {
+		[0.1] = GetGlobalSettingsVector( ItemFlavor_GetAsset( flavor ), "chromaColor0" ),
+		[0.9] = GetGlobalSettingsVector( ItemFlavor_GetAsset( flavor ), "chromaColor1" ),
+	}
+}
 
 vector function CharacterClass_GetGalleryModelOffset( ItemFlavor flavor )
 {
@@ -348,6 +398,13 @@ bool function CharacterClass_IsAvailable( EHI playerEHI, ItemFlavor desiredChara
 	return true
 }
 
+float function CharacterClass_GetDamageScale( ItemFlavor flavor )
+{
+	string characterRef = ItemFlavor_GetHumanReadableRef( flavor )
+	float damageScale = GetCurrentPlaylistVarFloat( "damage_scale_" + characterRef.tolower(), 1.0 )
+
+	return damageScale
+}
 
 #if SERVER
 array<string> function GetStringArrayAvailableClassesForPlayer( entity player )
@@ -362,6 +419,114 @@ array<string> function GetStringArrayAvailableClassesForPlayer( entity player )
 }
 #endif
 
+bool function CharacterClass_ConsiderLegHitBoxAsTorso( ItemFlavor flavor, int hitBox )
+{
+	if ( !(flavor in legHitBoxOverrides) )
+		return false
+
+	return ( legHitBoxOverrides[flavor].contains( hitBox ) )
+}
+
+
+vector function CharacterClass_GetMenuZoomOffset( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.character )
+
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( flavor ), "menuZoomOffset" )
+}
+
+#if CLIENT || UI
+table<int,ItemFlavor> function GetCharacterButtonMapping( array<ItemFlavor> allCharacters, int totalButtons )
+{
+	table<int,ItemFlavor> mappingTable
+	array<int> freeButtonMappings
+	for ( int i = 0 ; i < totalButtons ; i++ )
+		freeButtonMappings.append( i )
+
+	//
+	for ( int i = 0 ; i < allCharacters.len() ; i++ )
+	{
+		ItemFlavor itemFlav = allCharacters[i]
+		int index = CharacterClass_GetMenuButtonIndex( itemFlav )
+		Assert( index >= -1 && index < totalButtons, "Invalid characterMenuButtonIndex value for character " + ItemFlavor_GetHumanReadableRef( itemFlav ) )
+
+		if ( index < 0 )
+			continue
+
+		Assert( !( index in mappingTable ), "Character " + ItemFlavor_GetHumanReadableRef( itemFlav ) + " characterMenuButtonIndex " + index + " is already used. It must be unique" )
+
+		//
+		mappingTable[ index ] <- itemFlav
+		freeButtonMappings.removebyvalue( index )
+	}
+
+	//
+	for ( int i = 0 ; i < allCharacters.len() ; i++ )
+	{
+		ItemFlavor itemFlav = allCharacters[i]
+		int index = CharacterClass_GetMenuButtonIndex( itemFlav )
+
+		if ( index != -1 )
+			continue
+
+		index = freeButtonMappings[0]
+		Assert( !( index in mappingTable ) )
+
+		//
+		mappingTable[ index ] <- itemFlav
+		freeButtonMappings.removebyvalue( index )
+	}
+
+	Assert( mappingTable.len() == allCharacters.len() )
+	return mappingTable
+
+}
+array<ItemFlavor> function GetCharacterButtonOrder( array<ItemFlavor> allCharacters, int totalButtons )
+{
+	for ( int i = 0 ; i < allCharacters.len() ; i++ )
+	{
+		ItemFlavor character = allCharacters[i]
+		int index            = CharacterClass_GetMenuButtonIndex( character )
+		Assert( index >= -1 && index < totalButtons, "Invalid characterMenuButtonIndex value for character " + ItemFlavor_GetHumanReadableRef( character ) )
+	}
+
+	array<ItemFlavor> sortedCharacters = clone allCharacters
+	sortedCharacters.sort( SortByMenuButtonIndex )
+
+	return sortedCharacters
+}
+
+int function SortByMenuButtonIndex( ItemFlavor a, ItemFlavor b )
+{
+	int aIndex = CharacterClass_GetMenuButtonIndex( a )
+	int bIndex = CharacterClass_GetMenuButtonIndex( b )
+
+	if ( aIndex == -1 && bIndex != -1 )
+		return 1
+
+	if ( aIndex != -1 && bIndex == -1 )
+		return -1
+
+	if ( aIndex > bIndex )
+		return 1
+
+	if ( aIndex < bIndex )
+		return -1
+
+	return 0
+}
+#endif // CLIENT || UI
+#if(SERVER || CLIENT)
+int function GetPlayerSettingBaseHealth( entity player )
+{
+	return int( player.GetPlayerSettingFloat( "health" ) )
+}
+
+int function GetPlayerSettingBaseShield( entity player )
+{
+	return int( player.GetPlayerSettingFloat( "healthShield" ) )
+}
+#endif
 
 ///////////////////
 ///////////////////

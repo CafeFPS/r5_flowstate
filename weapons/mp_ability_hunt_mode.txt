@@ -13,16 +13,18 @@ WeaponData
 	"readymessage"              					"#HUD_BURNMETER_READY_HUNT_MODE"
 	"readyhint"                 					"#HUD_BURNMETER_READY_HUNT_MODE_HINT"
 
+	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
-	"offhand_default_inventory_slot"				"1"
+	"offhand_default_inventory_slot"				"4"
 	"offhand_interupts_weapon_anims"				"1"
 	"offhand_hold_enabled"							"0"
 
 	"is_toss_weapon"								"1"
-	"toss_pullout_time"								"0.0"
-	//"toss_time"										"5"   // comment out to match anim timing
-	"toss_overhead_time"							"0.0"
+	"toss_pullout_time"								"0.1"
+	"toss_time"										"1.6"
+	"toss_overhead_time"							"1.6"
+	"max_cook_time"									"0"
 
 	"instant_swap_to"								"0"
 
@@ -33,8 +35,6 @@ WeaponData
     "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
 
 	// Models
-	//"viewmodel"   									"mdl/weapons/empty_handed/ptpov_phaseshift_device.rmdl"
-
 	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_bloodhound_huntmode.rmdl"
 	"playermodel"									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
@@ -67,7 +67,6 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"15.0"
-	"fire_anim_rate"								"1.0"
 	"holster_time"									"0.1"
 	"deploy_time" 									"0.1"
 	"lower_time"  									"0.1"

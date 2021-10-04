@@ -1,0 +1,32 @@
+globalize_all_functions
+
+
+void function Base_Cmds_Init()
+{
+		
+	if(CMD_GetKillSelfEnabled())
+	{
+		AddClientCommandCallback("kill_self", ClientCommand_KillSelf)
+	}
+
+}
+
+bool function ClientCommand_KillSelf(entity player, array<string> args) 
+{
+    if( !IsValid( player ) ) return false
+    if( !IsAlive( player ) )  return false
+    if( Time() - player.p.lastDeathTime < CMD_GetKillSelfCooldown() ) 
+    {
+        print(Time())
+        print(player.p.lastDeathTime)
+        return false
+    }
+
+    player.TakeDamage(player.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
+    return true
+}
+// PLAYLIST GET
+
+bool function CMD_GetTGiveEnabled()                                  { return GetCurrentPlaylistVarBool("tgive_enabled", true) }
+bool function CMD_GetKillSelfEnabled()                               { return GetCurrentPlaylistVarBool("killself_enabled", true) }
+float function CMD_GetKillSelfCooldown()                             { return GetCurrentPlaylistVarFloat("killself_cooldown", 5) }

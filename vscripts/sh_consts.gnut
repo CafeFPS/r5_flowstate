@@ -1,22 +1,52 @@
 global const int INT_MIN = (1<<31)
 global const int INT_MAX = (1<<31) - 1
+global const float FLT_MAX = 3.40282e+38
+
+global const void IN_SET = null
+global typedef IntSet table<int, void>
+global typedef EntitySet table<entity, void>
 
 global typedef IntFromEntityCompare int functionref( entity, entity )
 
-global const bool DEVSCRIPTS = true
+global const bool DEVSCRIPTS 		= true
 
-global const bool PRE_RELEASE_DEMO = false
+global const bool PRE_RELEASE_DEMO 	= false
 
-global const EMPTY_MODEL = $"mdl/dev/empty_model.rmdl"
+global const EMPTY_MODEL 			= $"mdl/dev/empty_model.rmdl"
 
-global const DIFFICULTY_EASY = 0
-global const DIFFICULTY_NORMAL = 1
-global const DIFFICULTY_HARD = 2
-global const DIFFICULTY_MASTER = 3
+global const DIFFICULTY_EASY 		= 0
+global const DIFFICULTY_NORMAL 		= 1
+global const DIFFICULTY_HARD 		= 2
+global const DIFFICULTY_MASTER 		= 3
 
 #if UI
-global const float RUI_BADGAMETIME = -1 * pow( 10, 30 )
+global const float RUI_BADGAMETIME 	= -1 * pow( 10, 30 )
 #endif
+
+global enum eEliteTutorialState
+{
+	START,
+	SHOW_INTRO,
+	SAW_INTRO,
+	SHOW_FORGIVENESS,
+	SAW_FORGIVENESS,
+}
+
+global enum eLossForgivenessReason
+{
+	NONE,
+	NOT_FULL_TEAM,
+	TEAMMATE_ABANDON,
+	CRASH
+}
+
+global enum eDeathScreenPanel
+{
+	NONE = -1,
+	DEATH_RECAP,
+	SPECTATE,
+	SQUAD_SUMMARY
+}
 
 global struct Cylinder
 {
@@ -55,56 +85,60 @@ global struct UIScaleFactor
 	float y = 1.0
 }
 
-global const SPECTATOR_SETTINGS = $"settings/player/mp/spectator.rpak"
+global const SPECTATOR_SETTINGS 			  = $"settings/player/mp/spectator.rpak"
 
-global const NPC_TITAN_PILOT_PROTOTYPE = 0
+global const NPC_TITAN_PILOT_PROTOTYPE  = 0
 
-global const HAS_TASKLIST_SYSTEM =		false
-global const HAS_MISSIONINFO_SYSTEM =	false
+global const HAS_TASKLIST_SYSTEM        = false
+global const HAS_MISSIONINFO_SYSTEM     = false
 
 
-global const TEAM_DEATHMATCH = "tdm"
-global const SURVIVAL = "survival"
+global const TEAM_DEATHMATCH            = "tdm"
+global const SURVIVAL                   = "survival"
+global const FREELANCE                  = "freelance"
+global const CUSTOM_TDM                 = "custom_tdm"
 
-global const VERBOSE_DAMAGE_PRINTOUTS = false
+global const FREELANCE_ENABLED          = false
 
-global const SAVEGAME_VERSION = 13 // increment when saves need to be tossed
-global const PERSISTENCE_INIT_VERSION = 303
+global const VERBOSE_DAMAGE_PRINTOUTS   = false
 
-global const NETWORTH_VAR = "netWorth"
+global const SAVEGAME_VERSION           = 13 // increment when saves need to be tossed
+global const PERSISTENCE_INIT_VERSION   = 303
 
-global const TESTCONST = 99
+global const NETWORTH_VAR               = "netWorth"
 
-global const MAX_GAME_HISTORY = 20 // Matches code
+global const TESTCONST                  = 99
 
-global const NON_RARES_PER_RARE = 12
+global const MAX_GAME_HISTORY           = 20 // Matches code
 
-global const MAX_RANK = 24
+global const NON_RARES_PER_RARE         = 12
 
-global const MAX_GEN = 100
+global const MAX_RANK                   = 24
 
-global const CPU_LEVEL_MINSPEC = 0
-global const CPU_LEVEL_DURANGO = 1
-global const CPU_LEVEL_HIGHEND = 2
+global const MAX_GEN                    = 100
 
-global const float INCHES_IN_KILOMETER = 39370.1
+global const CPU_LEVEL_MINSPEC          = 0
+global const CPU_LEVEL_DURANGO          = 1
+global const CPU_LEVEL_HIGHEND          = 2
 
-global const float MAX_WORLD_COORD = ( 1 << 16 ) - 1 //65535
-global const float MAX_WORLD_COORD_BUFFER = MAX_WORLD_COORD - 512
-global const float COORD_RANGE = MAX_WORLD_COORD + MAX_WORLD_COORD + 1 //-65535 to 65535
-global const float MAX_WORLD_RANGE = sqrt( COORD_RANGE * COORD_RANGE + COORD_RANGE * COORD_RANGE + COORD_RANGE * COORD_RANGE )
+global const float INCHES_IN_KILOMETER   = 39370.1
 
-global const string INVERT_CONVAR_GAMEPAD 	= "joy_inverty"
-global const string INVERT_CONVAR_MOUSE 	= "m_invert_pitch"
+global const float MAX_WORLD_COORD       = ( 1 << 16 ) - 1 //65535
+global const float MAX_WORLD_COORD_BUFFER   = MAX_WORLD_COORD - 512
+global const float COORD_RANGE           = MAX_WORLD_COORD + MAX_WORLD_COORD + 1 //-65535 to 65535
+global const float MAX_WORLD_RANGE       = sqrt( COORD_RANGE * COORD_RANGE + COORD_RANGE * COORD_RANGE + COORD_RANGE * COORD_RANGE )
 
-global const string AUTOSPRINT_CONVAR_NAME	= "autosprint_type"
+global const string INVERT_CONVAR_GAMEPAD   = "joy_inverty"
+global const string INVERT_CONVAR_MOUSE     = "m_invert_pitch"
 
-global const bool HAS_NPC_SCORE_EVENTS = false
+global const string AUTOSPRINT_CONVAR_NAME  = "autosprint_type"
+
+global const bool HAS_NPC_SCORE_EVENTS  = false
 
 //AI TRACKING
-global const AI_HARD_LIMIT = 36
-global const MID_SPEC_PLAYER_CUTOFF = 8	// treat the server as high-end when the player count is less or equal to this.
-global const MID_SPEC_MAX_AI_COUNT = 9		// max number of AI per side when playing on less then high-end machines (durango)
+global const AI_HARD_LIMIT           = 36
+global const MID_SPEC_PLAYER_CUTOFF  = 8 // treat the server as high-end when the player count is less or equal to this.
+global const MID_SPEC_MAX_AI_COUNT   = 9 // max number of AI per side when playing on less then high-end machines (durango)
 
 global const vector ZERO_VECTOR = <0,0,0>
 
@@ -249,7 +283,7 @@ global const GRUNT_EXECUTE_GROUP_COOLDOWN_MAX			= 	31
 //default to give for connecting players.  This might have to be changed to something else as right now it's controlling the "good" intro for fracture.
 global const CONNECT_TIME_DEFAULT = 23
 
-global const OUT_OF_BOUNDS_TIME_LIMIT = 8.0
+global const OUT_OF_BOUNDS_TIME_LIMIT = 30.0
 global const OUT_OF_BOUNDS_DECAY_TIME = 15.0
 global const OUT_OF_BOUNDS_DECAY_DELAY = 1.0
 
@@ -494,6 +528,17 @@ global enum eFlyerPathScale
 	x1000
 }
 
+global enum eRespawnStatus
+{
+	NONE,
+	WAITING_FOR_PICKUP,
+	WAITING_FOR_DELIVERY,
+	WAITING_FOR_DROPPOD,
+	PICKUP_DESTROYED,
+	SQUAD_ELIMINATED
+	_COUNT,
+}
+
 // types of ways drop calls can be used
 global enum eDropStyle
 {
@@ -508,30 +553,37 @@ global enum eDropStyle
 	FLYER_PICKUP		// same as ZIPLINE_NPC just a more suitable name, starts at the origin and works it's way out in four directions, with fallback
 }
 
+global enum eStickState
+{
+	NEUTRAL = 0,
+	LEFT = 1,
+	RIGHT = 2,
+	_count,
+}
 
 //Max Time spent after death before respawning again is DEATHCAM_TIME + KILL_REPLAY_BEFORE_KILL_TIME_TITAN + KILL_REPLAY_AFTER_KILL_TIME
-global const DEATHCAM_TIME = 11.0 // the amount of time spent watching the you-are-dead death cam (not kill replay)
-global const KILL_REPLAY_BEFORE_KILL_TIME_PILOT = 3.5
-global const KILL_REPLAY_BEFORE_KILL_TIME_TITAN = 6.8
-global const KILL_REPLAY_BEFORE_KILL_TIME_DROPPOD = 2.0
-global const KILL_REPLAY_AFTER_KILL_TIME = 2.0
+global const DEATHCAM_TIME 								= 11.0 // the amount of time spent watching the you-are-dead death cam (not kill replay)
+global const KILL_REPLAY_BEFORE_KILL_TIME_PILOT 		= 3.5
+global const KILL_REPLAY_BEFORE_KILL_TIME_TITAN 		= 6.8
+global const KILL_REPLAY_BEFORE_KILL_TIME_DROPPOD 		= 2.0
+global const KILL_REPLAY_AFTER_KILL_TIME 				= 2.0
 
-global const DEATHCAM_TIME_SHORT = 3.0
-global const KILL_REPLAY_BEFORE_KILL_TIME_SHORT = 3.5
-global const KILL_REPLAY_AFTER_KILL_TIME_SHORT = 1.0
-global const RESPAWN_BUTTON_BUFFER = 0.0 // the amount of time before you're allowed to respawn, after DEATHCAM_TIME
+global const DEATHCAM_TIME_SHORT 						= 3.0
+global const KILL_REPLAY_BEFORE_KILL_TIME_SHORT 		= 3.5
+global const KILL_REPLAY_AFTER_KILL_TIME_SHORT 			= 1.0
+global const RESPAWN_BUTTON_BUFFER 						= 0.0 // the amount of time before you're allowed to respawn, after DEATHCAM_TIME
 
-global const DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME = 0.2
-global const DEFAULT_SCRIPTED_ARRIVAL_DISTANCE 	= 16
+global const DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME 		= 0.2
+global const DEFAULT_SCRIPTED_ARRIVAL_DISTANCE 			= 16
 
-global const RODEO_APPROACH_FALLING_FROM_ABOVE = 0
-global const RODEO_APPROACH_JUMP_ON = 1
+global const RODEO_APPROACH_FALLING_FROM_ABOVE 			= 0
+global const RODEO_APPROACH_JUMP_ON 					= 1
 
-global const SAFE_TITANFALL_DISTANCE = 125
-global const SAFE_TITANFALL_DISTANCE_CTF = 270
+global const SAFE_TITANFALL_DISTANCE 					= 125
+global const SAFE_TITANFALL_DISTANCE_CTF 				= 270
 
-//global const NUM_PERSISTENT_PILOT_LOADOUTS = 10
-global const NUM_PERSISTENT_TITAN_LOADOUTS = 10
+//global const NUM_PERSISTENT_PILOT_LOADOUTS 			= 10
+global const NUM_PERSISTENT_TITAN_LOADOUTS 				= 10
 
 global const EMBARK_TIMEOUT = 13.0 // how long you have to reach your titan before it stands up and bubble shield starts to fade
 
@@ -539,11 +591,11 @@ global const EMBARK_TIMEOUT = 13.0 // how long you have to reach your titan befo
 //-----------------------------------------------------
 // EMP GRENADES
 //-----------------------------------------------------
-global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MIN = 1.5 // duration of emp screen effects when you're at the edge of the damage radius
-global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MAX = 2.5 // duration of emp screen effects when you're at the center of the explosion
-global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_FADE = 1.0
-global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_MIN = 0.15
-global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_MAX = 0.4
+global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MIN 	= 1.5 // duration of emp screen effects when you're at the edge of the damage radius
+global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_DURATION_MAX 	= 2.5 // duration of emp screen effects when you're at the center of the explosion
+global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_FADE 			= 1.0
+global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_MIN 			= 0.15
+global const EMP_GRENADE_PILOT_SCREEN_EFFECTS_MAX 			= 0.4
 
 global const EMP_IMPARED_SOUND = "EMP_VisualImpair"
 
@@ -560,17 +612,17 @@ global const VOICE_COUNT = 6
 // 				ARMOR TYPES
 //--------------------------------------------------
 
-global const ARMOR_TYPE_HEAVY = 1
-global const ARMOR_TYPE_NORMAL = 0
+global const ARMOR_TYPE_HEAVY 	= 1
+global const ARMOR_TYPE_NORMAL 	= 0
 
 global const SKYBOXLEVEL	= "skybox_cam_level"
 global const SKYBOXSPACE 	= "skybox_cam_intro"
 
-global const WARPINFXTIME = 2.7
+global const WARPINFXTIME 	= 2.7
 
-global const MATCH_PROGRESS_RED_EYE_AND_ARMADA = 1
-global const MATCH_PROGRESS_AIR_ZINGERS = 4
-global const MATCH_PROGRESS_REFUEL_GOBLINS = 8
+global const MATCH_PROGRESS_RED_EYE_AND_ARMADA 	= 1
+global const MATCH_PROGRESS_AIR_ZINGERS 		= 4
+global const MATCH_PROGRESS_REFUEL_GOBLINS 		= 8
 
 //--------------------------------------------------
 // 				INTRO SKYSCALE SETTINGS
@@ -760,7 +812,7 @@ global const CE_FLAG_INTRO					= 0x0002
 global const CE_FLAG_EXECUTION				= 0x0004 // unused?
 global const CE_FLAG_EMBARK					= 0x0008
 global const CE_FLAG_DISEMBARK				= 0x0010
-global const CE_FLAG_TITAN_HOT_DROP			= 0x0020 // unused?
+global const CE_FLAG_HIDE_MAIN_HUD_INSTANT	= 0x0020
 global const CE_FLAG_CLASSIC_MP_SPAWNING	= 0x0040
 global const CE_FLAG_HIDE_MAIN_HUD			= 0x0080
 global const CE_FLAG_TITAN_3P_CAM			= 0x0100
@@ -1123,38 +1175,38 @@ NPCMF_WALK_NONCOMBAT
 
 global const ZIPLINE_IDLE_ANIM = "pt_zipline_slide_idle"
 
-global const DEFAULT_CONVERSATION_DEBOUNCE_TIME = 10.0
-global const AI_CONVERSATION_RANGE_SQR = 20250000
-global const AI_CONVERSATION_RANGE = 4500 // should match above
+global const DEFAULT_CONVERSATION_DEBOUNCE_TIME 	= 10.0
+global const AI_CONVERSATION_RANGE_SQR 				= 20250000
+global const AI_CONVERSATION_RANGE 					= 4500 // should match above
 
-global const MAX_VOICE_DIST_SQRD = 9000000 // 3000 * 3000
+global const MAX_VOICE_DIST_SQRD 					= 9000000 // 3000 * 3000
 
-global const AI_FRIENDLY_CHATTER_RANGE_SQR = 4410000
-global const AI_FRIENDLY_CHATTER_RANGE = 2100 // should match above
+global const AI_FRIENDLY_CHATTER_RANGE_SQR 			= 4410000
+global const AI_FRIENDLY_CHATTER_RANGE 				= 2100 // should match above
 
-global const REQUIRES_ANY = 0
-global const REQUIRES_PILOT = 1
-global const REQUIRES_TITAN = 2
+global const REQUIRES_ANY 							= 0
+global const REQUIRES_PILOT 						= 1
+global const REQUIRES_TITAN 						= 2
 
-global const HIGHLIGHT_USE_DEFAULT = -1
+global const HIGHLIGHT_USE_DEFAULT 					= -1
 global struct HighlightContext
 {
 	int highlightId
 	int contextId
 	string name
-	bool entityVisible = true
-	int insideSlot = 0
-	int outsideSlot = 0
-	int insideSlotFocused = HIGHLIGHT_USE_DEFAULT
-	int outsideSlotFocused = HIGHLIGHT_USE_DEFAULT
-	float outlineRadius = 1
-	bool adsFade = true
-	bool afterPostProcess = false
+	bool entityVisible 			= true
+	int insideSlot 				= 0
+	int outsideSlot 			= 0
+	int insideSlotFocused 		= HIGHLIGHT_USE_DEFAULT
+	int outsideSlotFocused 		= HIGHLIGHT_USE_DEFAULT
+	float outlineRadius 		= 1
+	bool adsFade 				= true
+	bool afterPostProcess 		= false
 
 	vector[2] paramVecs
 
-	float nearDist = 0
-	float farDist = -1.0 // will use default code value instead
+	float nearDist 				= 0
+	float farDist 				= -1.0 // will use default code value instead
 	float farFadeInDist
 	bool requiresNotFullHealth
 	bool requiresCanPickupOrdnance
@@ -1162,8 +1214,8 @@ global struct HighlightContext
 	int requiresClass = REQUIRES_ANY
 	bool requiresWeakPointsVisible
 	bool requiresOwnedByLocalPlayer = false
-	bool requiresStationary = false
-	bool disableDeathFade = false
+	bool requiresStationary 		= false
+	bool disableDeathFade 			= false
 
 	int drawFuncId = 0
 	void functionref( entity ) thinkFunction
@@ -1181,10 +1233,10 @@ global struct ShGlobals
 	array<PilotLoadoutDef>								cachedPilotLoadouts
 	TitanLoadoutDef[ NUM_PERSISTENT_TITAN_LOADOUTS ]	cachedTitanLoadouts
 
-	float proto_soldierShieldRegenDelay = 6.0
-	bool proto_npcsDropGrenades = false
+	float proto_soldierShieldRegenDelay 		= 6.0
+	bool proto_npcsDropGrenades 				= false
 	int waveSpawnType = eWaveSpawnType.DISABLED
-	float waveSpawnInterval = 15.0
+	float waveSpawnInterval 					= 15.0
 
 	table<string,array<void functionref(entity, var)> >	deathCallbacks
 	table<int,array<void functionref(entity, var)> >	damageSourceIdCallbacks
@@ -1194,7 +1246,7 @@ global struct ShGlobals
 
 global ShGlobals shGlobal
 
-global const HEALTH_PER_HEALTH_BAR_SEGMENT = 500
+global const HEALTH_PER_HEALTH_BAR_SEGMENT 		= 500
 
 global enum ePresentationType
 {
@@ -1206,11 +1258,16 @@ global enum ePresentationType
 	CHARACTER_QUIPS,
 	WEAPON_CATEGORY,
 	WEAPON_SKIN,
+	WEAPON_CHARMS,
 	WEAPON,
 	POSTGAME,
 	STORE,
 	NO_MODELS,
 	LOOT,
+	BATTLE_PASS,
+	BATTLE_PASS_3,
+	COLLECTION_EVENT,
+	
 	COUNT
 }
 
@@ -1298,6 +1355,8 @@ global enum eUIEvent
 	MENU_NAVIGATE_BACK,
 	//MENU_TAB_CHANGED,
 	MENU_INPUT_MODE_CHANGED,
+	MENU_GET_TOP_LEVEL,
+	MENU_LOSE_TOP_LEVEL,
 	PANEL_SHOW,
 	PANEL_HIDE,
 	PANEL_NAVUP,
@@ -1378,10 +1437,13 @@ global const float COCKPIT_UI_XOFFSET 									= 22
 global const float COCKPIT_UI_WIDTH 									= 41.4
 global const float COCKPIT_UI_HEIGHT 									= COCKPIT_UI_WIDTH / 1.7665
 
-global const float COCKPIT_RUI_WIDTH 									= 100
+// global const float COCKPIT_RUI_WIDTH 									= 100
+global const float COCKPIT_RUI_WIDTH 									= 34
 global const float COCKPIT_RUI_HEIGHT 									= COCKPIT_RUI_WIDTH / ( 1920.0 / 1080.0 )
-global const vector COCKPIT_RUI_OFFSET 									= <53.6,0,0>
-global const vector COCKPIT_RUI_OFFSET_1610_TEMP 						= <58,0,0>
+// global const vector COCKPIT_RUI_OFFSET 									= <53.6,0,0>
+// global const vector COCKPIT_RUI_OFFSET_1610_TEMP 						= <58,0,0>
+global const vector COCKPIT_RUI_OFFSET 									= < -218, 0, 0 >
+global const vector COCKPIT_RUI_OFFSET_1610_TEMP 						= < -216, 0, 0 >
 global const float TITAN_COCKPIT_RUI_SUBDIV 							= 3.5
 
 global const float TITAN_COCKPIT_RUI_SCREEN_WIDTH 						= 21.0
@@ -1541,6 +1603,7 @@ global const int WEAPONFLAG_ATTACHMENT_SIGHT	= (1<<3)
 global const int WEAPONFLAG_ATTACHMENT_MAG		= (1<<4)
 
 global const string PERSISTENCE_LEAVECOUNT_VAR 	= "abandonCountForMode"
+global const string PERSISTENCE_LEAVELIFETIMECOUNT_VAR = "abandonLifetimeCount"
 global const string PERSISTENCE_LAST_LEAVE_TIME = "lastAbandonTime"
 global const string PERSISTENCE_LEAVEMODE_VAR 	= "lastAbandonedMode"
 
@@ -1551,7 +1614,6 @@ global const asset CONTROL_PANEL_MODEL 	= $"mdl/communication/terminal_usable_im
 global const asset RODEO_BATTERY_MODEL 	= $"mdl/titans/medium/titan_medium_battery_static.rmdl"
 global const asset MODEL_GENERATOR 		= $"mdl/beacon/charge_generator_01_glass.rmdl"
 
-global const float HUNT_MODE_DURATION 		= 35.0
 global const float PHASE_TUNNEL_PLACEMENT_DURATION = 10.0
 
 global struct UseFuncData
@@ -1569,13 +1631,16 @@ global enum eHitType
 	SHIELD,
 	ARMOR,
 	VORTEX,
+	SHADOW,
+	OVERSHIELD,
 }
+
+global const vector OVERSHIELD_COLOR = <19, 207, 69>
 
 global const int DAMAGEFLAG_ARMOR1 = 64
 global const int DAMAGEFLAG_ARMOR2 = 128
 global const int DAMAGEFLAG_ARMOR3 = 256
 global const int DAMAGEFLAG_ARMOR4 = 512
-global const int DAMAGEFLAG_HIT_VORTEX = 536870912 // DF_DOOM_PROTECTED
 
 global enum eCommsAction
 {
@@ -1602,6 +1667,7 @@ global enum eCommsAction
 	PING_WEAPON_WINGMAN,
 	PING_WEAPON_SEMIPISTOL,
 	PING_WEAPON_AUTOPISTOL,
+	PING_WEAPON_DEFENDER,
 	//
 	PING_OFFHAND_GRENADE_FIRESTAR,
 	PING_OFFHAND_GRENADE_FRAG,
@@ -1646,15 +1712,23 @@ global enum eCommsAction
 	PING_ATTACHMENT_MAG_HIGHCAL_1,
 	PING_ATTACHMENT_MAG_HIGHCAL_2,
 	PING_ATTACHMENT_MAG_HIGHCAL_3,
+	PING_ATTACHMENT_MAG_ENERGY_1,
+	PING_ATTACHMENT_MAG_ENERGY_2,
+	PING_ATTACHMENT_MAG_ENERGY_3,
+	//
 	PING_ATTACHMENT_SHOTGUN_BOLT_1,
 	PING_ATTACHMENT_SHOTGUN_BOLT_2,
 	PING_ATTACHMENT_SHOTGUN_BOLT_3,
+	PING_ATTACHMENT_SHOTGUN_BOLT_4,
+	//
 	PING_ATTACHMENT_STOCK_STANDARD_1,
 	PING_ATTACHMENT_STOCK_STANDARD_2,
 	PING_ATTACHMENT_STOCK_STANDARD_3,
 	PING_ATTACHMENT_STOCK_SNIPER_1,
 	PING_ATTACHMENT_STOCK_SNIPER_2,
 	PING_ATTACHMENT_STOCK_SNIPER_3,
+	PING_ATTACHMENT_STOCK_SNIPER_4,
+	//
 	PING_ATTACHMENT_BARREL_STABILIZER_1,
 	PING_ATTACHMENT_BARREL_STABILIZER_2,
 	PING_ATTACHMENT_BARREL_STABILIZER_3,
@@ -1664,6 +1738,10 @@ global enum eCommsAction
 	PING_ATTACHMENT_HOPUP_SELECTFIRE,
 	PING_ATTACHMENT_HOPUP_ENERGY_CHOKE,
 	PING_ATTACHMENT_HOPUP_HEADSHOT_DMG,
+	PING_ATTACHMENT_HOPUP_SHIELD_BREAKER,
+	PING_ATTACHMENT_HOPUP_UNSHIELDED_DMG,
+	PING_ATTACHMENT_HOPUP_HIGHCAL_ROUNDS,
+	PING_ATTACHMENT_HOPUP_DOUBLE_TAP,
 	//
 	PING_ITEM_COMBO_FULL,
 	PING_ITEM_SHIELD_SMALL,
@@ -1674,6 +1752,20 @@ global enum eCommsAction
 	PING_ITEM_HEALTH_SYRINGE,
 	PING_ITEM_ULTIMATE_ENERGY,
 	PING_ITEM_ARMOR_SMALL,
+	PING_ITEM_DATA_KNIFE,
+	FLAVOR_ITEM_DATA_KNIFE,
+	//
+	PING_LOOT_DRONE,
+	PING_LOOT_ROLLER,
+	//
+	PING_LOOT_VAULT,
+	PING_LOOT_VAULT_OPEN,
+	PING_LOOT_VAULT_REVEAL,
+	PING_LOOT_VAULT_HAS_KEY_SQUAD,
+	PING_LOOT_VAULT_HAS_KEY_SELF,
+	SUB_TYPE_VAULT_KEY_NEED,
+	SUB_TYPE_VAULT_KEY_HAS_SQUAD,
+	SUB_TYPE_VAULT_KEY_HAS_SELF,
 	//
 	PING_MAP_WAYPOINT,
 	//
@@ -1700,9 +1792,13 @@ global enum eCommsAction
 	PING_MY_CAREPACKAGE,
 	PING_SURVEYBEACON,
 	PING_HOVERTANK,
+	PING_FLYER,
+	PING_FLYER_CAGED,
+	PING_JUMPTOWER,
 	PING_ZIPLINE,
 	PING_ENEMY_SPOTTED_GENERAL,
 	PING_ENEMY_SPOTTED_SPECIFIC,
+	PING_ENEMY_SUSPECTED,
 	//
 	PING_ENEMY_NPC_SNIPER,
 	PING_ENEMY_NPC_SPECTRE,
@@ -1719,6 +1815,8 @@ global enum eCommsAction
 	PING_NPC_LOOT_TICK,
 	//
 	PING_ENEMY_TRAP,
+	PING_ENEMY_TESLA_TRAP,
+	PING_TROPHY_SYSTEM,
 	PING_ENEMY_SMOKE,
 	PING_ENEMY_SHIELD,
 	PING_ENEMY_TELEPORTER,
@@ -1730,6 +1828,12 @@ global enum eCommsAction
 	//
 	PING_RESPAWN_STATION,
 	PING_RESPAWN_DROPSHIP,
+	PING_JUMP_PAD,
+	PING_CRYPTO_DRONE,
+	PING_GEYSER,
+	PING_LAVA,
+	PING_TRAIN,
+	PING_TRAIN_AT_STATION,
 	//
 	CANCELED_PING,
 	//
@@ -1737,6 +1841,7 @@ global enum eCommsAction
 	REPLY_YES,
 	REPLY_NO,
 	REPLY_THANKS,
+	REPLY_WELCOME,
 	REPLY_I_CANNOT,
 	REPLY_LOOT_DIBS,
 	REPLY_LOOT_UNDIBS,
@@ -1745,6 +1850,8 @@ global enum eCommsAction
 	REPLY_BLEEDOUT_COMETOME,
 	REPLY_RESPAWN_YES,
 	//
+	QUICKCHAT_CELEBRATE,
+	QUICKCHAT_GG,
 	QUICKCHAT_INTRO_QUIP,
 	QUICKCHAT_KILL_QUIP,
 	QUICKCHAT_NICE,
@@ -1799,6 +1906,12 @@ global enum eCommsAction
 	INVENTORY_NEED_ATTACHMENT_BARREL_SNIPER,
 
 	INVENTORY_NEED_WEAPONATTACHMENT_HOPUP,
+	INVENTORY_NEED_HOPUP_CHOKE,
+	INVENTORY_NEED_HOPUP_SELECTFIRE,
+	INVENTORY_NEED_HOPUP_TURBOCHARGER,
+	INVENTORY_NEED_HOPUP_SKULLPIERCER,
+	INVENTORY_NEED_HOPUP_DISRUPTOR,
+	INVENTORY_NEED_HOPUP_HAMMERPOINT,
 	//
 	LOOTWHEEL_HEALTH_SMALL,
 	LOOTWHEEL_HEALTH_MEDIUM,
@@ -1826,9 +1939,17 @@ global enum eCommsAction
 	BLOOHOUND_WARN_LOOTING_RECENT,
 	BLOOHOUND_WARN_WOUNDED,
 	BLOOHOUND_WARN_WOUNDED_RECENT,
+
 	//
 	SPAWN_WORMHOLE,
 	SPAWN_DRONEMEDIC,
+
+	//
+	SPAWN_EVAC_SHIP,
+	SPAWN_EVAC_ZONE,
+	SHADOWFALL_NEMESIS,
+	SHADOWFALL_LEGEND_DEATH,
+	SHADOWFALL_SHADOW_DEATH,
 	//
 	SUB_TYPE_LEVEL1,
 	SUB_TYPE_LEVEL2,
@@ -1843,6 +1964,8 @@ global enum eCommsAction
 	SUB_TYPE_SELECTFIRE,
 	SUB_TYPE_TURBOCHARGER,
 	SUB_TYPE_SKULLPIERCER,
+	SUB_TYPE_DISRUPTOR,
+	SUB_TYPE_HAMMERPOINT,
 	//
 	FLAVOR_WEAPON_KRABER,
 	FLAVOR_WEAPON_MASTIFF,
@@ -1921,14 +2044,28 @@ global enum eCommsAction
 	FLAVOR_ITEM_HEALTH_LARGE,
 	FLAVOR_ITEM_HEALTH_SYRINGE,
 	FLAVOR_ITEM_ULTIMATE_ENERGY,
+	FLAVOR_EQUIPMENT_BACKPACK_1,
+	FLAVOR_EQUIPMENT_BACKPACK_2,
+	FLAVOR_EQUIPMENT_BACKPACK_3,
+	FLAVOR_EQUIPMENT_BACKPACK_4,
+
+	QUIP,
 
 	_count
 }
 
-global const string BUBBLE_SHIELD_SCRIPTNAME 	= "bubble_shield"
-global const string CARE_PACKAGE_SCRIPTNAME 	= "care_package"
-global const string SURVEY_BACON_SCRIPTNAME 	= "survey_beacon"
-global const string REVIVE_SHIELD_SCRIPTNAME 	= "revive_shield"
+global const string BUBBLE_SHIELD_SCRIPTNAME            = "bubble_shield"
+global const string CARE_PACKAGE_SCRIPTNAME             = "care_package"
+global const string CARE_PACKAGE_TARGETNAME             = "care_package"
+global const string CARE_PACKAGE_LIFELINE_TARGETNAME    = "care_package_lifeline"
+global const string SURVEY_BACON_SCRIPTNAME             = "survey_beacon"
+global const string REVIVE_SHIELD_SCRIPTNAME            = "revive_shield"
+global const string JUMP_PAD_TARGETNAME                 = "jump_pad"
+global const string TRAIN_BRUSH_SCRIPTNAME              = "train_brush"
+global const string GEYSER_PING_SCRIPT_NAME             = "ping_geyser"
+global const string LAVA_FLOW_SURFACE_NAME              = "lava_flow"
+
+global const string CARE_PACKAGE_PROXY                  = "care_package_proxy"
 
 global enum eToolTipFlag
 {
@@ -1937,6 +2074,7 @@ global enum eToolTipFlag
 	CLIENT_UPDATE = (1 << 1),
 	INSTANT_FADE_IN = (1 << 2),
 	SOLID = (1 << 3),
+	PING_DISSABLED = (1 << 4),
 }
 
 global enum eTooltipStyle
@@ -1984,8 +2122,6 @@ global struct ToolTipData
 
 global const bool HAS_TOOLTIPS = true
 
-global const bool HAS_MEMBER_COLORS = true
-
 global const MINIMAP_UID_COORDS_RUI		= $"ui/minimap_square_coords.rpak"					// north facing implemented
 global const MINIMAP_BASE_RUI			= $"ui/minimap_square_base.rpak"					// north facing implemented
 global const MINIMAP_FRAME_RUI			= $"ui/minimap_square_frame.rpak"
@@ -1996,7 +2132,11 @@ global const MINIMAP_PLAYER_RUI			= $"ui/minimap_square_player.rpak"					// nort
 global const MINIMAP_RING_PULSE_RUI		= $"ui/minimap_square_ring_pulse.rpak"				// north facing implemented
 global const MINIMAP_SQUARE_SIMPLE_RUI	= $"ui/minimap_square_simple.rpak"					// north facing implemented
 global const MINIMAP_OBJ_AREA_RUI		= $"ui/minimap_square_obj_area.rpak"				// north facing implemented
+global const MINIMAP_ARC_TRAP_RUI		= $"ui/minimap_square_arc_trap.rpak"				// north facing implemented
 global const MINIMAP_OBJECTIVE_AREA_RUI	= $"ui/minimap_square_objective_area.rpak"			// north facing implemented
+#if MP_PVEMODE
+global const MINIMAP_PVE_TARGETNPC_RUI	= $"ui/minimap_square_pve_targetnpc.rpak"			// north facing implemented
+#endif
 
 global enum eAllegiance
 {
@@ -2091,12 +2231,12 @@ global const int OBIT_FLAG_DOWNED = 1 << 1
 //	global const vector AMMO_LARGE_COLOR = <76, 120, 105> / 255.0
 
 // Brighter and more saturated versions of the ones above - except for energy
-global const vector AMMO_SHOTGUN_COLOR = <155, 51, 15> / 255.0
-global const vector AMMO_ENERGY_COLOR = <132, 160, 61> / 255.0
-global const vector AMMO_SMALL_COLOR = <180, 123, 68> / 255.0
-global const vector AMMO_LARGE_COLOR = <84, 155, 131> / 255.0
+global const vector AMMO_SHOTGUN_COLOR 		= <155, 51, 15> / 255.0
+global const vector AMMO_ENERGY_COLOR 		= <132, 160, 61> / 255.0
+global const vector AMMO_SMALL_COLOR 		= <180, 123, 68> / 255.0
+global const vector AMMO_LARGE_COLOR 		= <84, 155, 131> / 255.0
 
-global const vector AMMO_LEGENDARY_COLOR = <255, 215, 30> / 255.0
+global const vector AMMO_LEGENDARY_COLOR 	= <255, 215, 30> / 255.0
 
 global const table<string, vector> ammoColors = {
 	bullet = AMMO_SMALL_COLOR

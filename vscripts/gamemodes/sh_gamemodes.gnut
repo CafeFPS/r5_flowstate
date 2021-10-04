@@ -78,7 +78,7 @@ global struct GamemodeSettings
 	void functionref( int, array<entity>, int, entity ) titanSpawnpointRatingFunc
 	IntFromEntityCompare scoreCompareFunc
 	int defaultScoreLimit = 100
-	int defaultTimeLimit = 10
+	int defaultTimeLimit = 30
 	int defaultRoundScoreLimit = 5
 	float defaultRoundTimeLimit = 5.0
 	bool evacEnabled = true
@@ -137,11 +137,38 @@ void function GameModes_Init()
 	GameMode_SetName( gameMode, "#GAMEMODE_SURVIVAL" )
 	GameMode_SetGameModeAnnouncement( gameMode, "ffa_modeDesc" )
 	GameMode_SetDesc( gameMode, "#PL_survival_hint" )
-	GameMode_SetIcon( gameMode, FFA_MODE_ICON )
+	GameMode_SetIcon( gameMode, $"vgui/burncards/burncard_group_icon_weapons" )
 	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
-	GameMode_SetDefaultTimeLimits( gameMode, 10, 0.0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 30, 0.0 )
 	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
 	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
+
+	#if FREELANCE_ENABLED
+	gameMode = FREELANCE
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "#GAMEMODE_FREELANCE" )
+	GameMode_SetGameModeAnnouncement( gameMode, "ffa_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_freelance_hint" )
+	GameMode_SetIcon( gameMode, $"vgui/burncards/burncard_group_icon_weapons" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 30, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_PILOT_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_SetColor( gameMode, [147, 204, 57, 255] )
+	#endif
+
+	
+	gameMode = CUSTOM_TDM
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "custom_tdm" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetDefaultScoreLimits( gameMode, 50, 0 )
+	GameMode_SetDefaultTimeLimits( gameMode, 15, 0.0 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_KILLS", PGS_PILOT_KILLS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_DEATHS", PGS_DEATHS, 2 )
+	GameMode_AddScoreboardColumnData( gameMode, "#SCOREBOARD_ASSISTS", PGS_ASSISTS, 2 )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
 
 	#if DEVSCRIPTS
 	DevGameModes_Init()

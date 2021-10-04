@@ -13,7 +13,7 @@ ImpactTable
 	FX
 	{
 		"C" "impact_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "impact_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "impact_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "impact_metal" // metal_titan
 
 		"F" "P_impact_flesh" //flesh
@@ -27,8 +27,8 @@ ImpactTable
 		"N" "P_impact_slime" //Slime
 		"O" "impact_leaves"  //Foliage
 		"P" "P_impact_metal_spectre" //metal_spectre
-
-		"R" "impact_brick" //metalpanel, grenade, canister
+		"Q" "P_impact_snow"  //Snow
+		"R" "P_impact_snow" //Ice
 		"S" "P_impact_water" //water
 		"T" "impact_tile" //tile
 		"U" "impact_glass" // glass_breakable
@@ -41,8 +41,8 @@ ImpactTable
 		"Z" "impact_sand"  //sand
 
 //		"0" "openslot"
-//		"1" "openslot"
-//		"2" "openslot"
+		"1" "P_impact_lava_nodecal" //lava_flow
+		"2" "P_impact_lava" //lava_rock_hot
 //		"3" "openslot"
 //		"4" "openslot"
 //		"5" "openslot"
@@ -67,7 +67,7 @@ ImpactTable
 	FX //Impacts Far
 	{
 		"C" "P_impact_gen_far" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "P_impact_gen_far" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "P_impact_gen_far" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "P_impact_gen_far" // metal_titan
 
 		//"F" "P_impact_gen_far" //flesh
@@ -81,8 +81,8 @@ ImpactTable
 		"N" "P_impact_gen_far" //Slime
 		"O" "P_impact_gen_far"  //Foliage
 		"P" "P_impact_gen_far" //metal_spectre
-
-		"R" "P_impact_gen_far" //metalpanel, grenade, canister
+		"Q" "P_impact_gen_far"  //Snow
+		"R" "P_impact_gen_far" //Ice
 		"S" "P_impact_gen_far" //water
 		"T" "P_impact_gen_far" //tile
 		"U" "P_impact_gen_far" // glass_breakable
@@ -94,9 +94,9 @@ ImpactTable
 		"Y" "P_impact_gen_far" //glass, brokenglass, glassbottle, pottery
 		"Z" "P_impact_gen_far"  //sand
 
-//		"0" "openslot"
-//		"1" "openslot"
-//		"2" "openslot"
+//		"0" "P_impact_gen_far"
+		"1" "P_impact_gen_far" //lava_flow
+		"2" "P_impact_gen_far" //lava_rock_hot
 //		"3" "openslot"
 //		"4" "openslot"
 //		"5" "openslot"
@@ -158,8 +158,8 @@ ImpactTable
 		"N" "Water.BulletImpact_3P_vs_3P"	// sand?
 		"O" "Grass.BulletImpact_3P_vs_3P"
 		"P" "Android.Light.BulletImpact_3P_vs_3P"
-
-		"R" "Concrete.BulletImpact_3P_vs_3P"
+		"Q" "Sand.BulletImpact_3P_vs_3P" // Snow
+		"R" "Concrete.BulletImpact_3P_vs_3P" //Ice
 		"S" "Water.BulletImpact_3P_vs_3P"
 		"T" "Tile.BulletImpact_3P_vs_3P"
 
@@ -168,6 +168,17 @@ ImpactTable
 		"X"	"TitanBubbleShield.Light.BulletImpact_3P_vs_3P" // Titan bubble shield
 		"Y" "Glass.BulletImpact_3P_vs_3P"
 		"Z" "Sand.BulletImpact_3P_vs_3P"
+
+//		"0" "openslot"
+		"1" "Mud.BulletImpact_3P_vs_3P" //lava_flow
+		"2" "Concrete.BulletImpact_3P_vs_3P" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Water.BulletImpact"
 		"slime_splash" "Water.BulletImpact"
@@ -197,7 +208,7 @@ ImpactTable
 		"N" "Water.BulletImpact_1P_vs_3P"	// Slime
 		"O" "Grass.BulletImpact_1P_vs_3P"
 		"P" "Android.Light.BulletImpact_1P_vs_3P"
-
+		"Q" "Sand.BulletImpact_1P_vs_3P" // Snow
 		"R" "Concrete.BulletImpact_1P_vs_3P"
 		"S" "Water.BulletImpact_1P_vs_3P"
 		"T" "Tile.BulletImpact_1P_vs_3P"
@@ -207,6 +218,17 @@ ImpactTable
 		"X"	"TitanBubbleShield.Light.BulletImpact_1P_vs_3P" // Titan bubble shield
 		"Y" "Glass.BulletImpact_1P_vs_3P"
 		"Z" "Sand.BulletImpact_1P_vs_3P"
+
+//		"0" "openslot"
+		"1" "Mud.BulletImpact_1P_vs_3P" //lava_flow
+		"2" "Concrete.BulletImpact_1P_vs_3P" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Water.BulletImpact"
 		"slime_splash" "Water.BulletImpact"
@@ -236,7 +258,7 @@ ImpactTable
 		"N" "Water.BulletImpact_3P_vs_1P"	// Slime
 		"O" "Grass.BulletImpact_3P_vs_1P"
 		"P" "Android.Light.BulletImpact_3P_vs_1P"
-
+		"Q" "Sand.BulletImpact_3P_vs_3P" // Snow
 		"R" "Concrete.BulletImpact_3P_vs_1P"
 		"S" "Water.BulletImpact_3P_vs_1P"
 		"T" "Tile.BulletImpact_3P_vs_1P"
@@ -246,6 +268,9 @@ ImpactTable
 
 		"Y" "Glass.BulletImpact_3P_vs_1P"
 		"Z" "Sand.BulletImpact_3P_vs_1P"
+
+		"1" "Mud.BulletImpact_3P_vs_1P"  // lava_flow
+		"2" "Default.BulletImpact_3P_vs_1P" // lava_rock_hot
 
 		"splash" "Water.BulletImpact"
 		"slime_splash" "Water.BulletImpact"

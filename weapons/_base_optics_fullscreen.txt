@@ -34,6 +34,8 @@ WeaponData
 			"aimassist_disable_ads_titansonly"         "1"
 			"aimassist_adspull_weaponclass"            "none"
 			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
+
+            zoomed_convar_sensitivity_index         4
 		}
 
 		optic_sniper_variable
@@ -69,6 +71,9 @@ WeaponData
 			"aimassist_disable_ads_titansonly"         "1"
 			"aimassist_adspull_weaponclass"            "none"
 			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
+
+            zoomed_convar_sensitivity_index         3
+            zoomed_convar_toggle_sensitivity_index  5
 		}
 
 		optic_sniper_threat
@@ -110,6 +115,9 @@ WeaponData
 			"aimassist_disable_ads_titansonly"         "1"
 			"aimassist_adspull_weaponclass"            "none"
 			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
+
+            zoomed_convar_sensitivity_index         3
+            zoomed_convar_toggle_sensitivity_index  6
 		}
 	}
 

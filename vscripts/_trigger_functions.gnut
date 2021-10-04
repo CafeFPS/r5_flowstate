@@ -26,18 +26,18 @@ struct
 
 	table<string, int> flagTriggerEntArrayIndex
 	array<BirdAlertInfo> birdAlerts
+
+	table<entity, entity> _flagTriggers
 } file
 
-function TriggerFunctions_Init()
+void function TriggerFunctions_Init()
 {
 	AddCallback_EntitiesDidLoad( InitFlagMaskTriggers )
-
 	level._flagTriggers <- {} // triggers that can be enabled/disabled via flag
 
 	AddTriggerEditorClassFunc( "trigger_flag_set", TriggerSetFlagOnTrigger )
 	AddTriggerEditorClassFunc( "trigger_flag_clear", TriggerClearFlagOnTrigger )
 	AddTriggerEditorClassFunc( "trigger_flag_touching", TriggerTouchingFlagOnTrigger )
-
 	AddSpawnCallback( "trigger_multiple", 		TriggerInit )
 	AddSpawnCallback( "trigger_once", 			TriggerInit )
 	AddSpawnCallback( "trigger_hurt", 			TriggerInit )
@@ -52,6 +52,14 @@ function TriggerFunctions_Init()
 	RegisterSignal( "OutOfDeadlyFog" )
 
 	PrecacheParticleSystem( $"Swtch_Elec_hzd_rope_end" )
+
+#if CLIENT
+	AddTriggerEditorClassFunc( "trigger_multiple_clientside", TriggerTouchingFlagOnTrigger )
+	AddCreateCallback( "trigger_multiple_clientside", TriggerInit )
+
+	RegisterSignal( "OnStartTouch" )
+	RegisterSignal( "OnEndTouch" )
+#endif
 }
 
 void function AddTriggerEditorClassFunc( string editorClass, void functionref( entity ) triggerFunc )
@@ -62,9 +70,44 @@ void function AddTriggerEditorClassFunc( string editorClass, void functionref( e
 	file.triggerEditorClassFunctions[ editorClass ].append( triggerFunc )
 }
 
+void function TriggerInit( entity trigger )
+{
+	if ( trigger.HasKey( "editorclass" ) )
+		RunTriggerEditorClassFunctions( trigger )
+#if CLIENT
+	string className = expect string( trigger.GetNetworkedClassName() )
+	if ( className.len() > 0 )
+		RunTriggerEditorClassFunctions( trigger )
+#endif
+
+	InitFlagsFromTrigger( trigger )
+	AddKeyPairFunctionality( trigger )
+	AddToFlagTriggers( trigger )
+}
+
+
+void function InitFlagsFromTrigger( entity trigger )
+{
+	array<string> check = GetFlagRelatedKeys()
+	array<string> flags
+
+	foreach ( field in check )
+	{
+		if ( !trigger.HasKey( field ) )
+			continue
+		flags = GetFlagsFromField( trigger, field )
+
+		foreach ( flag in flags )
+		{
+			//
+			FlagInit( flag )
+		}
+	}
+}
+
 void function AddKeyPairFunctionality( entity trigger )
 {
-	table< string, void functionref( entity, string )> funcs
+	table<string, void functionref( entity, string )> funcs
 	funcs[ "scr_flagSet" ] <- TriggerFlagSet
 	funcs[ "scr_flagClear" ] <- TriggerFlagClear
 
@@ -77,26 +120,10 @@ void function AddKeyPairFunctionality( entity trigger )
 	}
 }
 
-function AddToFlagTriggers( entity self )
-{
-	level._flagTriggers[ self ] <- self
-}
-
-function GetFlagTriggers()
-{
-	foreach ( entity guy in clone level._flagTriggers )
-	{
-		if ( IsValid_ThisFrame( guy ) )
-			continue
-
-		delete level._flagTriggers[ guy ]
-	}
-
-	return level._flagTriggers
-}
 
 
-function AddKeyPairFunctionToClass( funcs, classname )
+
+void function AddKeyPairFunctionToClass( funcs, classname )
 {
 	array<entity> triggers = GetEntArrayByClass_Expensive( classname )
 
@@ -112,22 +139,7 @@ function AddKeyPairFunctionToClass( funcs, classname )
 	}
 }
 
-void function TriggerChangesFlagOnTrigger( entity trigger, string flag, void functionref( string ) func )
-{
-	trigger.EndSignal( "OnDestroy" )
 
-	array<string> flags = GetFlagsFromString( flag )
-
-	for ( ;; )
-	{
-		trigger.WaitSignal( "OnTrigger" )
-
-		foreach ( flag0 in flags )
-		{
-			func( flag0 )
-		}
-	}
-}
 
 void function TriggerFlagSet( entity trigger, string flagString )
 {
@@ -139,19 +151,31 @@ void function TriggerFlagClear( entity trigger, string flagString )
 	thread TriggerChangesFlagOnTrigger( trigger, flagString, FlagClear )
 }
 
-void function TriggerInit( entity trigger )
+void function TriggerChangesFlagOnTrigger( entity trigger, string flagsCommaSeparated, void functionref( string ) func )
 {
-	if ( trigger.HasKey( "editorclass" ) )
-		RunTriggerEditorClassFunctions( trigger )
+	trigger.EndSignal( "OnDestroy" )
 
-	InitFlagsFromTrigger( trigger )
-	AddKeyPairFunctionality( trigger )
-	AddToFlagTriggers( trigger )
+	array<string> flags = GetFlagsFromString( flagsCommaSeparated )
+	bool triggerOnce = trigger.HasKey( "trigger_once" ) && trigger.kv.trigger_once == "1"
+
+	for ( ;; )
+	{
+		trigger.WaitSignal( "OnTrigger" )
+
+		foreach ( flag in flags )
+			func( flag )
+
+		if ( triggerOnce )
+			return
+	}
 }
 
-function RunTriggerEditorClassFunctions( entity trigger )
+void function RunTriggerEditorClassFunctions( entity trigger )
 {
-	string editorClass = expect string( trigger.kv.editorclass )
+	string editorClass = ""
+#if CLIENT
+	editorClass = expect string( trigger.GetNetworkedClassName() )
+#endif
 	if ( !( editorClass in file.triggerEditorClassFunctions ) )
 		return
 
@@ -159,6 +183,11 @@ function RunTriggerEditorClassFunctions( entity trigger )
 	{
 		thread func( trigger )
 	}
+}
+
+void function AddToFlagTriggers( entity self )
+{
+	file._flagTriggers[ self ] <- self
 }
 
 void function TriggerSetFlagOnTrigger( entity trigger )
@@ -200,49 +229,19 @@ void function TriggerClearFlagOnTrigger( entity trigger )
 	thread TriggerFlagClear( trigger, flag )
 }
 
-void function TriggerTouchingFlagOnTrigger( entity trigger )
-{
-	trigger.EndSignal( "OnDestroy" )
-	string flag = expect string( trigger.kv.script_flag )
-	Assert( flag != "" )
 
-	while ( true )
-	{
-		if ( !trigger.IsTouched() )
-			trigger.WaitSignal( "OnStartTouch" )
 
-		FlagSet( flag )
 
-		if ( trigger.IsTouched() )
-			trigger.WaitSignal( "OnEndTouchAll" )
 
-		FlagClear( flag )
-	}
-}
-
-array<string> function GetFlagRelatedKeys()
-{
-	array<string> check
-	check.append( "scr_flagTrueAll" )
-	check.append( "scr_flagTrueAny" )
-	check.append( "scr_flagFalseAll" )
-	check.append( "scr_flagFalseAny" )
-	check.append( "scr_flag" )
-	check.append( "script_flag" )
-	check.append( "scr_flagSet" )
-	check.append( "scr_flagClear" )
-
-	return check
-}
 
 void function InitFlagMaskTriggers()
 {
-	local triggers = GetFlagTriggers()
+	table<entity, entity> triggers = GetFlagTriggers()
 	array<string> check = GetFlagRelatedKeys()
 	array<string> flags
-	local allTriggersWithFlags = {}
+	table allTriggersWithFlags
 
-	foreach ( entity trigger in triggers )
+	foreach ( trigger in triggers )
 	{
 		if ( trigger.HasKey( "scr_flagTrueAll" ) )
 		{
@@ -269,7 +268,7 @@ void function InitFlagMaskTriggers()
 			if ( trigger.HasKey( field ) )
 			{
 				allTriggersWithFlags[ trigger ] <- true
-				array<string> flags0 = GetFlagsFromField( trigger, field )
+				flags = GetFlagsFromField( trigger, field )
 
 				foreach ( flag in flags )
 				{
@@ -313,24 +312,7 @@ void function UpdateTriggerStatusFromFlagChange( string flag )
 	}
 }
 
-function InitFlagsFromTrigger( entity trigger )
-{
-	array<string> check = GetFlagRelatedKeys()
-	array<string> flags
 
-	foreach ( field in check )
-	{
-		if ( !trigger.HasKey( field ) )
-			continue
-		flags = GetFlagsFromField( trigger, field )
-
-		foreach ( flag in flags )
-		{
-			// init the flag so these flags an be used in hammer more easily
-			FlagInit( flag )
-		}
-	}
-}
 
 
 void function DeadlyFogTriggerInit( entity trigger )
@@ -345,6 +327,66 @@ void function DeadlyFogTriggerInit( entity trigger )
 void function DeadlyFogStartTouch( entity trigger, entity ent, entity caller, var value )
 {
 	thread DeadlyFogDamagedEntity( trigger, ent )
+}
+
+table<entity, entity> function GetFlagTriggers()
+{
+	foreach ( guy in clone file._flagTriggers )
+	{
+		if ( IsValid_ThisFrame( guy ) )
+			continue
+
+		delete file._flagTriggers[ guy ]
+	}
+
+	return file._flagTriggers
+}
+
+array<string> function GetFlagRelatedKeys()
+{
+	array<string> check
+	check.append( "scr_flagTrueAll" )
+	check.append( "scr_flagTrueAny" )
+	check.append( "scr_flagFalseAll" )
+	check.append( "scr_flagFalseAny" )
+	check.append( "scr_flag" )
+	check.append( "script_flag" )
+	check.append( "scr_flagSet" )
+	check.append( "scr_flagClear" )
+
+	return check
+}
+
+void function TriggerTouchingFlagOnTrigger( entity trigger )
+{
+	trigger.EndSignal( "OnDestroy" )
+
+	string className = ""
+	array<string> flags = GetTrimmedSplitString( expect string( trigger.kv.script_flag ), "," )
+
+#if CLIENT
+	className = expect string( trigger.GetNetworkedClassName() )
+#endif
+
+	Assert( flags.len() > 0, "Trigger " + className + " at " + trigger.GetOrigin() + "has empty flag value" )
+	while ( true )
+	{
+		if ( !trigger.IsTouched() )
+			trigger.WaitSignal( "OnStartTouch" )
+		foreach( string flag in flags )
+			FlagSet( flag )
+		if ( trigger.IsTouched() )
+		{
+
+#if CLIENT
+				trigger.WaitSignal( "OnEndTouch" )
+			#endif		}
+		foreach( string flag in flags )
+			FlagClear( flag )
+	}
+	//
+	//
+	//
 }
 
 void function DeadlyFogDamagedEntity( entity trigger, entity ent )

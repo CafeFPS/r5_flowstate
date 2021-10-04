@@ -1,7 +1,7 @@
 global function InitConfirmGrxErrorDialog
 global function OpenConfirmGrxErrorDialog
 
-void function InitConfirmGrxErrorDialog()
+void function InitConfirmGrxErrorDialog( var newMenuArg )
 {
 }
 

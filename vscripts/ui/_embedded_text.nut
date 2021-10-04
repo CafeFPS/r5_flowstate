@@ -120,6 +120,8 @@ void function EmbeddedText_Init()
 	InitEmbeddedKeyRui( $"ui/key_wide_pc.rpak", "KEY_NUMLOCKTOGGLE", "NUMLOCK" )
 	InitEmbeddedKeyRui( $"ui/key_wide_pc.rpak", "KEY_SCROLLLOCKTOGGLE	", "SCROLL" )
 	InitEmbeddedKeyRui( $"ui/key_square_icon_pc.rpak", "ICON_UNBOUND", "%$vgui/fonts/buttons/icon_unbound%" )
+
+	RuiCreateEmbedded( $"ui/embedded_bullet_point.rpak", "embedded_bullet_point" )
 }
 
 void function InitEmbeddedKeyRui( asset ruiAsset, string stringReplace, string displayText )

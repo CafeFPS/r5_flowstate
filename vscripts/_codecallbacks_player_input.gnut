@@ -535,14 +535,14 @@ bool function IsValidPlayerInputAxisEventCallbackStruct( PlayerInputAxisEventCal
 
 void function RunPlayerInputAxisCallbackFunc( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )
 {
-	bool callbackResult = callbackStruct.callbackFunc( player )
-	if ( callbackResult )
-	{
-		callbackStruct.lastTriggeredTime = Time()
+	// bool callbackResult = callbackStruct.callbackFunc( player ) // TODO: FIX "SCRIPT ERROR: [SERVER] attempt to call 'null'"
+	// if ( callbackResult )
+	// {
+	// 	callbackStruct.lastTriggeredTime = Time()
 
-		if ( callbackStruct.debounceTime > 0 )
-			thread RunInputAxisCallbackAfterTimePasses( player, callbackStruct ) //Note that this has the potential to call RunPlayerInputAxisCallbackFunc again
-	}
+	// 	if ( callbackStruct.debounceTime > 0 )
+	// 		thread RunInputAxisCallbackAfterTimePasses( player, callbackStruct ) //Note that this has the potential to call RunPlayerInputAxisCallbackFunc again
+	// }
 }
 
 void function RunInputAxisCallbackAfterTimePasses( entity player, PlayerInputAxisEventCallbackStruct callbackStruct )

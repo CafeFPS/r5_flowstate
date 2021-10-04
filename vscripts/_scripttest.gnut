@@ -1,7 +1,7 @@
 
 global function ScriptCompilerTest
 
-#if DEV
+#if R5DEV
 // This script is for testing the script compiler.
 
 global typedef GlobalTypedefTest int
@@ -689,7 +689,7 @@ void function TestTypes()
 
 void function ScriptCompilerTest()
 {
-	#if DEV
+	#if R5DEV
 		ScriptCompilerTestDev()
 		if ( Dev_CommandLineHasParm( "-scriptdocs" ) )
 			DumpConstTable( expect table( getroottable().originalConstTable ) )
@@ -701,7 +701,7 @@ void function ScriptCompilerTest()
 
 
 
-#if DEV
+#if R5DEV
 
 
 struct ConstTableEntry

@@ -29,6 +29,7 @@ void function InitCharacterSkinsPanel( var panel )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK_LEGEND", "#X_BUTTON_UNLOCK_LEGEND", null, CustomizeMenus_IsFocusedItemParentItemLocked )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_EQUIP", "#X_BUTTON_EQUIP", null, CustomizeMenus_IsFocusedItemEquippable )
 	AddPanelFooterOption( panel, LEFT, BUTTON_X, false, "#X_BUTTON_UNLOCK", "#X_BUTTON_UNLOCK", null, CustomizeMenus_IsFocusedItemLocked )
+	AddPanelFooterOption( panel, LEFT, BUTTON_STICK_LEFT, false, "#MENU_ZOOM_CONTROLS_GAMEPAD", "#MENU_ZOOM_CONTROLS" )
 	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_LEFT, false, "#TRIGGERS_CHANGE_LEGEND", "", CustomizeCharacterMenu_PrevButton_OnActivate )
 	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
 	//AddPanelFooterOption( panel, LEFT, BUTTON_TRIGGER_LEFT, false, "", "", CustomizeCharacterMenu_PrevButton_OnActivate )
@@ -52,7 +53,7 @@ void function CharacterSkinsPanel_OnShow( var panel )
 	thread TrackIsOverScrollBar( file.listPanel )
 	CharacterSkinsPanel_Update( panel )
 
-	//thread PROTO_ButtonThumbnailsThink( panel )
+	//
 	AddCallback_ItemFlavorLoadoutSlotDidChange_SpecificPlayer( LocalClientEHI(), Loadout_MeleeSkin( GetTopLevelCustomizeContext() ), OnMeleeSkinChanged )
 	CustomizeCharacterMenu_UpdateHeirloomButton()
 }
@@ -97,12 +98,12 @@ void function CharacterSkinsPanel_Update( var panel )
 		foreach ( int flavIdx, ItemFlavor flav in file.characterSkinList )
 		{
 			var button = Hud_GetChild( scrollPanel, "GridButton" + flavIdx )
-			CustomizeButton_UpdateAndMarkForUpdating( button, entry, flav, PreviewCharacterSkin, CanEquipCanBuyCharacterItemCheck )
+			CustomizeButton_UpdateAndMarkForUpdating( button, [entry], flav, PreviewCharacterSkin, CanEquipCanBuyCharacterItemCheck )
 		}
 
 		CustomizeMenus_SetActionButton( Hud_GetChild( panel, "ActionButton" ) )
 
-		RuiSetString( file.headerRui, "collected", CustomizeMenus_GetCollectedString( entry, file.characterSkinList ) )
+		RuiSetString( file.headerRui, "collected", CustomizeMenus_GetCollectedString( entry, file.characterSkinList , false ) )
 	}
 }
 
@@ -123,7 +124,7 @@ void function CharacterSkinsPanel_OnFocusChanged( var panel, var oldFocus, var n
 
 void function PreviewCharacterSkin( ItemFlavor flav )
 {
-	RunClientScript( "UIToClient_PreviewCharacterSkin", ItemFlavor_GetNetworkIndex_DEPRECATED( flav ), ItemFlavor_GetNetworkIndex_DEPRECATED( GetTopLevelCustomizeContext() ) )
+	RunClientScript( "UIToClient_PreviewCharacterSkinFromCharacterSkinPanel", ItemFlavor_GetNetworkIndex_DEPRECATED( flav ), ItemFlavor_GetNetworkIndex_DEPRECATED( GetTopLevelCustomizeContext() ) )
 }
 
 
@@ -195,7 +196,7 @@ void function OnMeleeSkinChanged( EHI playerEHI, ItemFlavor flavor )
 ItemFlavor ornull function GetMeleeHeirloom( ItemFlavor character )
 {
 	LoadoutEntry entry = Loadout_MeleeSkin( GetTopLevelCustomizeContext() )
-	array<ItemFlavor> melees = RegisterReferencedItemFlavorsFromArray( GetTopLevelCustomizeContext(), "meleeSkins", "flavor" )
+	array<ItemFlavor> melees = GetValidItemFlavorsForLoadoutSlot( LocalClientEHI(), entry )
 
 	foreach ( meleeFlav in melees )
 	{
@@ -260,7 +261,7 @@ void function CustomizeCharacterMenu_HeirloomButton_OnActivate( var button )
 	if ( meleeHeirloom == null )
 		return
 
-	array<ItemFlavor> meleeSkinList = RegisterReferencedItemFlavorsFromArray( GetTopLevelCustomizeContext(), "meleeSkins", "flavor" )
+	array<ItemFlavor> meleeSkinList = RegisterReferencedItemFlavorsFromArray( GetTopLevelCustomizeContext(), "meleeSkins", "flavor", "featureFlag" )
 	Assert( meleeSkinList.len() == 2 )
 
 	ItemFlavor context = GetTopLevelCustomizeContext()
@@ -276,7 +277,7 @@ void function CustomizeCharacterMenu_HeirloomButton_OnActivate( var button )
 		}
 	}
 
-	PIN_Customization( context, entry, meleeToEquip )
+	PIN_Customization( context, meleeToEquip )
 	RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), entry, meleeToEquip )
 }
 

@@ -58,7 +58,7 @@ void function InitVideoPanel( var panel )
 		AddButtonEventHandler( button, UIE_CHANGE, AspectRatio_Changed )
 
 		button = Hud_GetChild( file.videoPanel, "SldAdaptiveRes" )
-		SetupSettingsButton( Hud_GetChild( button, "BtnDropButton" ), "#ADAPTIVE_RES", "#ADAPTIVE_RES_DESC", $"rui/menu/settings/settings_video" )
+		SetupSettingsSlider( button, "#ADAPTIVE_RES", "#ADAPTIVE_RES_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CHANGE, AdaptiveRes_Changed )
 		AddButtonEventHandler( Hud_GetChild( file.videoPanel, "TextEntryAdaptiveRes" ), UIE_CHANGE, AdaptiveResText_Changed )
 
@@ -70,7 +70,7 @@ void function InitVideoPanel( var panel )
 		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchVolumetricLighting" ), "#VOLUMETRIC_LIGHTING", "#VOLUMETRIC_LIGHTING_DESC", $"rui/menu/settings/settings_video" )
 
 		button = Hud_GetChild( file.videoPanel, "SldFOV" )
-		SetupSettingsButton( Hud_GetChild( button, "BtnDropButton" ), "#FOV", "#ADVANCED_VIDEO_MENU_FOV_DESC", $"rui/menu/settings/settings_video" )
+		SetupSettingsSlider( button, "#FOV", "#ADVANCED_VIDEO_MENU_FOV_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CHANGE, FOV_Changed )
 		AddButtonEventHandler( Hud_GetChild( file.videoPanel, "TextEntrySldFOV" ), UIE_CHANGE, FOVTextEntry_Changed )
 		file.noApplyConfirmationRequired.append( button )
@@ -78,10 +78,13 @@ void function InitVideoPanel( var panel )
 		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchResolution" ), "#RESOLUTION", "#ADVANCED_VIDEO_MENU_RESOLUTION_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( Hud_GetChild( file.videoPanel, "SwchResolution" ), UIE_CHANGE, ResolutionSelection_Changed )
 
-		SetupSettingsButton( Hud_GetChild( Hud_GetChild( file.videoPanel, "SldBrightness" ), "BtnDropButton" ), "#BRIGHTNESS", "#ADVANCED_VIDEO_MENU_BRIGHTNESS_DESC", $"rui/menu/settings/settings_video" )
+		SetupSettingsSlider( Hud_GetChild( file.videoPanel, "SldBrightness" ), "#BRIGHTNESS", "#ADVANCED_VIDEO_MENU_BRIGHTNESS_DESC", $"rui/menu/settings/settings_video" )
 		button = SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchColorBlindMode" ), "#COLORBLIND_MODE", "#OPTIONS_MENU_COLORBLIND_TYPE_DESC", $"rui/menu/settings/settings_video" )
 		file.noApplyConfirmationRequired.append( button )
-		//SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchSprintCameraSmoothing" ), "#SMOOTH_SPRINT_CAMERA", "#OPTIONS_MENU_SMOOTH_SPRINT_CAMERA", $"rui/menu/settings/settings_video" )
+
+		button = SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchSprintCameraSmoothing" ), "#SPRINT_VIEW_SHAKE", "#OPTIONS_MENU_SPRINT_VIEW_SHAKE", $"rui/menu/settings/settings_video" )
+		AddButtonEventHandler( button, UIE_CHANGE, SprintViewShake_Changed )
+
 		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchVSync" ), "#VSYNC", "#ADVANCED_VIDEO_MENU_VSYNC_DESC", $"rui/menu/settings/settings_video" )
 		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchAntialiasing" ), "#ANTIALIASING", "#ADVANCED_VIDEO_MENU_ANTIALIASING_DESC", $"rui/menu/settings/settings_video" )
 		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchFilteringMode" ), "#MENU_TEXTURE_FILTERING", "#ADVANCED_VIDEO_MENU_FILTERING_MODE_DESC", $"rui/menu/settings/settings_video" )
@@ -100,13 +103,15 @@ void function InitVideoPanel( var panel )
 		AddButtonEventHandler( button, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "GammaMenu" ) ) )
 
 		button = Hud_GetChild( file.videoPanel, "SldFOV" )
-		SetupSettingsButton( Hud_GetChild( button, "BtnDropButton" ), "#FOV", "#ADVANCED_VIDEO_MENU_FOV_DESC", $"rui/menu/settings/settings_video" )
+		SetupSettingsSlider( button, "#FOV", "#ADVANCED_VIDEO_MENU_FOV_DESC", $"rui/menu/settings/settings_video" )
 		AddButtonEventHandler( button, UIE_CHANGE, FOV_Changed )
 		AddButtonEventHandler( Hud_GetChild( file.videoPanel, "TextEntrySldFOV" ), UIE_CHANGE, FOVTextEntry_Changed )
 		file.noApplyConfirmationRequired.append( button )
 
-		SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchColorBlindMode" ), "#COLORBLIND_MODE", "#OPTIONS_MENU_COLORBLIND_TYPE_DESC", $"rui/menu/settings/settings_video" )
 		//SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchSprintCameraSmoothing" ), "#SMOOTH_SPRINT_CAMERA", "#OPTIONS_MENU_SMOOTH_SPRINT_CAMERA", $"rui/menu/settings/settings_video" )
+
+		button = SetupSettingsButton( Hud_GetChild( file.videoPanel, "SwchSprintCameraSmoothing" ), "#SPRINT_VIEW_SHAKE", "#OPTIONS_MENU_SPRINT_VIEW_SHAKE", $"rui/menu/settings/settings_video" )
+		AddButtonEventHandler( button, UIE_CHANGE, SprintViewShake_Changed )
 	#endif
 
 	ScrollPanel_InitPanel( panel )
@@ -272,8 +277,6 @@ void function DiscardVideoSettingsDialog( var panel, int desiredTabIndex = -1 )
 
 void function UICodeCallback_ResolutionChanged( bool askForConfirmation )
 {
-	UICodeCallback_ToggleInGameMenu()
-
 	if ( askForConfirmation )
 	{
 		CloseAllDialogs() // Promo could be open. To avoid this workaround, menu opening caused by resolution change should be distinguishable from a normal lobby load.
@@ -350,6 +353,12 @@ void function FOV_Changed( var button )
 void function FOVTextEntry_Changed( var button )
 {
 	VideoOptions_FOVTextChanged( file.videoPanel )
+}
+
+void function SprintViewShake_Changed( var button )
+{
+	uiGlobal.videoSettingsChanged = true
+	UpdateFooterOptions()
 }
 
 

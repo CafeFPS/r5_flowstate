@@ -1,6 +1,9 @@
 global function ShPing_Init
 global function CodeCallback_PingOnDown
 global function CodeCallback_PingOnUp
+#if CLIENT
+global function IsPingEnabledForPlayer
+#endif
 
 #if CLIENT
 global function Ping_SetMapWaypoint
@@ -92,25 +95,36 @@ global enum ePingType
 	ENEMY_GENERAL,
 	ENEMY_SPECIFIC,
 	ENEMY_LOOTSOURCE,
+	ENEMY_SUSPECTED,
 	//
 	ENEMY_TRAP,
 	ENEMY_SMOKE,
 	ENEMY_SHIELD,
 	ENEMY_TELEPORTER,
+	ENEMY_TESLA_TRAP,
+	ENEMY_TROPHY_SYSTEM,
 
 	LOOT,
 	MAP_WAYPOINT,
 	DOOR,
+	DOOR_OPEN,
 	DEATH_BOX,
 	LOOT_BIN,
 	CAREPACKAGE,
 	ZIPLINE,
 	SURVEYBEACON,
 	HOVERTANK,
+	FLYER,
+	FLYER_CAGED,
+	JUMPTOWER,
+	GEYSER,
+	LAVA,
 
 	ABILITY_DRONEMEDIC,
 	ABILITY_DOMESHIELD,
 	ABILITY_WORMHOLE,
+	ABILITY_JUMPPAD,
+
 
 	RESPAWN_STATION,
 	RESPAWN_DROPSHIP,
@@ -129,6 +143,26 @@ global enum ePingType
 	BLOODHOUND_POI_WOUNDED,
 	BLOODHOUND_POI_WOUNDED_RECENT,
 
+	JUMP_PAD,
+
+	CRYPTO_DRONE,
+
+	_assertion_marker, //
+
+		LOOT_VAULT,
+		LOOT_VAULT_OPEN,
+		LOOT_VAULT_HAS_KEY_SQUAD,
+		LOOT_VAULT_HAS_KEY_SELF,
+		LOOT_VAULT_REVEAL,
+		LOOT_DRONE,
+		LOOT_ROLLER,
+		TRAIN,
+		TRAIN_AT_STATION,
+		EVAC_SHIP,
+		EVAC_ZONE,
+		SHADOWFALL_LEGEND_DEATH,
+		SHADOWFALL_SHADOW_DEATH,
+		SHADOWFALL_NEMESIS,
 	_count
 }
 
@@ -156,6 +190,7 @@ global enum ePingReply
 	RESPAWN_YES,
 
 	ABILITY_DOMESHIELD,
+	ABILITY_JUMPPAD,
 	ABILITY_WORMHOLE,
 
 	_count
@@ -204,6 +239,7 @@ struct
 
 	int   specificPingCount
 	float nextSpecificPingTime
+	table< string,float > lastPingBlockingFunctionTriggerTime
 } file
 #endif
 
@@ -239,7 +275,7 @@ const string CMDNAME_PING_REPLY = "cmd_PingReply"
 
 const string CMDNAME_CANCEL_PING_BY_TICKETID = "cmd_CancelPingByTicketID"
 
-string function Ping_GetSoundForLocationPing( int pingType, bool isOurs )
+string function Ping_GetSoundForLocationPing( int pingType, bool isOurs, bool isSameTeam )
 {
 	switch( pingType )
 	{
@@ -248,6 +284,8 @@ string function Ping_GetSoundForLocationPing( int pingType, bool isOurs )
 		case ePingType.ENEMY_GENERAL:
 		case ePingType.ENEMY_SPECIFIC:
 		case ePingType.ENEMY_TRAP:
+		case ePingType.ENEMY_TESLA_TRAP:
+		case ePingType.ENEMY_TROPHY_SYSTEM:
 		case ePingType.ENEMY_SMOKE:
 		case ePingType.ENEMY_TELEPORTER:
 		case ePingType.ENEMY_SHIELD:
@@ -256,7 +294,26 @@ string function Ping_GetSoundForLocationPing( int pingType, bool isOurs )
 		case ePingType.ABILITY_DOMESHIELD:
 		case ePingType.ABILITY_DRONEMEDIC:
 		case ePingType.ABILITY_WORMHOLE:
-			return (isOurs ? "" : "")
+		case ePingType.ABILITY_JUMPPAD:
+		case ePingType.EVAC_SHIP:
+		case ePingType.EVAC_ZONE:
+		case ePingType.SHADOWFALL_LEGEND_DEATH:
+		case ePingType.SHADOWFALL_SHADOW_DEATH:
+		case ePingType.SHADOWFALL_NEMESIS:
+
+			return ""
+	}
+
+	if ( !isSameTeam )
+	{
+		switch ( pingType )
+		{
+			case ePingType.BLEEDOUT:
+			case ePingType.SELF_REVIVE:
+				if ( !isSameTeam )
+					return "ui_mapping_item_3p"
+				break
+		}
 	}
 
 	return (isOurs ? PING_SOUND_LOCATION_1P : PING_SOUND_LOCATION_3P)
@@ -271,6 +328,12 @@ string function Ping_GetSoundForItemPing( int pingType, bool isOurs )
 
 void function ShPing_Init()
 {
+	AddCallback_RegisterRootItemFlavors( void function() {
+		foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/pings.rpak", "list" ) )
+		{
+			ItemFlavor ornull pingOrNull = RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
+		}
+	} )
 	#if CLIENT
 		RegisterSignal( "UpdatePingBlockingHintAfterDelay" )
 
@@ -326,13 +389,30 @@ void function OnPlayerConnected( entity player )
 
 #endif // SERVER
 
+#if(CLIENT)
+bool function Ping_ShouldExecutePing( entity player )
+{
+	if ( InPrediction() && !IsFirstTimePredicted() )
+		return false
+
+
+	if ( GetGameState() >= eGameState.WinnerDetermined )
+		return false
+
+	if ( TryPingBlockingFunction( player, "ping" ) )
+		return false
+
+	if ( !PingIsAllowed( player ) )
+		return false
+
+	return true
+}
+#endif
+
 void function CodeCallback_PingOnDown( entity player )
 {
-	#if CLIENT
-		if ( InPrediction() && !IsFirstTimePredicted() )
-			return
-
-		if ( TryPingBlockingFunction( player, "ping" ) )
+	#if(CLIENT)
+		if ( !Ping_ShouldExecutePing( player ) )
 			return
 
 		OnPingDown( player )
@@ -349,6 +429,13 @@ void function CodeCallback_PingOnUp( entity player )
 		OnPingUp( player )
 	#endif
 }
+#if CLIENT
+bool function IsPingEnabledForPlayer( entity player )
+{
+	return player.GetPlayerNetBool( "pingEnabled" )
+}
+#endif
+
 
 #if SERVER
 void function CodeCallback_PingCommandQueueTrace( entity player )
@@ -357,7 +444,7 @@ void function CodeCallback_PingCommandQueueTrace( entity player )
 	player.p.pingQueuedTraceIsValid = tr.success
 	if ( player.p.pingQueuedTraceIsValid )
 	{
-		PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player )
+		PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player, tr )
 		player.p.pingQueuedTraceEnt = params.hitEnt
 		player.p.pingQueuedTraceOrigin = tr.endPos
 	}
@@ -404,9 +491,12 @@ void function CodeCallback_PingCommandExecuteEnemySpotted( entity player, entity
 		Warning( "%s() - Couldn't validate target [%s] for player [%s].", FUNC_NAME(), string( pingEnt ), string( player ) )
 		return
 	}
-
-	PingCommandParams params = GetPingParamsForHitEnt( pingEnt, player )
-	CreateWaypoint_Ping_Location( player, params.pingType, pingEnt, pingEnt.EyePosition(), -1, false )
+	PingTraceResults tr = DoPingTrace( player )
+	if ( tr.success )
+	{
+		PingCommandParams params = GetPingParamsForHitEnt( pingEnt, player, tr )
+		CreateWaypoint_Ping_Location( player, params.pingType, pingEnt, pingEnt.EyePosition(), -1, false )
+	}
 }
 #endif // SERVER
 
@@ -423,13 +513,14 @@ bool function ConsiderPingTraceFailed( TraceResults tr )
 	return false
 }
 
-
+#if SERVER || CLIENT
 PingTraceResults function DoPingTrace( entity player )
 {
 	const int colGroup = TRACE_COLLISION_GROUP_NONE
 	//const int colMask = CONTENTS_SOLID|CONTENTS_OPAQUE
 	//const int colMask = CONTENTS_SOLID|CONTENTS_MOVEABLE|CONTENTS_OPAQUE|CONTENTS_MONSTER|CONTENTS_IGNORE_NODRAW_OPAQUE
-	const int colMask = (TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_NOGRAPPLE)
+	//
+	const int colMask = (TRACE_MASK_VISIBLE_AND_NPCS | CONTENTS_BLOCKLOS | CONTENTS_BLOCK_PING | CONTENTS_HITBOX)
 
 	TraceResults tr = PingTraceForPlayer( player, PING_TRACE_DISTANCE, colMask, colGroup )
 
@@ -449,12 +540,13 @@ PingTraceResults function DoPingTrace( entity player )
 	}
 	result.tr = tr
 
-	#if DEV
+	#if R5DEV
 		printf( "PING (%s) -  Dist:%.1f, %s, pos:%s, norm:%s, contents:0x%x", (IsServer() ? "SERVER" : "CLIENT"), result.hitDist, (IsValid( result.hitEnt ) ? ("[" + result.hitEnt + "]   '" + result.hitEnt.GetScriptName() + "'") : ""), string( tr.endPos ), string( tr.surfaceNormal ), tr.contents )
 	#endif
 
 	return result
 }
+#endif
 ///////////////////////////
 
 asset function PingFlavor_GetInnerIcon( ItemFlavor flavor )
@@ -582,6 +674,7 @@ vector function PingFlavor_GetColor( ItemFlavor flavor, int optionalParam = -1 )
 }
 #endif
 
+#if SERVER || CLIENT
 int function GetCommsActionForOwnerAnnounce( entity player, entity wp )
 {
 	int pingType = Waypoint_GetPingTypeForWaypoint( wp )
@@ -595,6 +688,9 @@ int function GetCommsActionForOwnerAnnounce( entity player, entity wp )
 
 		case ePingType.ABILITY_WORMHOLE:
 			return eCommsAction.PING_FRIENDLY_TELEPORTER
+
+		case ePingType.ABILITY_JUMPPAD:
+			return eCommsAction.PING_WE_GO
 	}
 
 	return eCommsAction.PING_LOCATION
@@ -686,12 +782,16 @@ ReplyCommsActionInfo function Ping_GetCommsActionForWaypointReply( entity player
 			result.commsAction = eCommsAction.PING_ENEMY_SHIELD
 			break
 
+		case ePingReply.ABILITY_JUMPPAD:
+			result.commsAction = eCommsAction.PING_I_WATCHING
+
 		default:
 			result.commsAction = eCommsAction.BLANK
 	}
 
 	return result
 }
+#endif
 
 struct PingCommandParams
 {
@@ -719,7 +819,6 @@ void function OnBleedoutEnded( entity victim )
 		return
 	Ping_Interrupt()
 }
-
 
 const float DOT_45DEGREE = 0.707106781187
 entity function GetZiplineUseEntity( entity player )
@@ -834,9 +933,6 @@ vector s_lastPingDownViewVector = <0, 0, 0>
 float s_doubleTapTimer = -60.0
 void function OnPingDown( entity player )
 {
-	if ( !PingIsAllowed( player ) )
-		return
-
 	if ( GetConVarBool( "sv_cheats" ) && InputIsButtonDown( BUTTON_TRIGGER_LEFT ) && InputIsButtonDown( BUTTON_STICK_LEFT ) )
 	{
 		PingTraceResults tr = DoPingTrace( player )
@@ -915,7 +1011,7 @@ void function OnPingDown( entity player )
 	bool isOverRecentPing = sinceLastPing < 0.7 && viewDeflection > 0.999
 	bool isDoubleTap      = (sinceLastPing < 0.35) && DoubleTapEnemyPingEnabled()
 
-	// Enemy spLotted:
+	// Enemy spotted:
 	if ( isDoubleTap && !IsValid( spottedEnemy ) ) //&& player.GetViewVector().Dot( s_lastPingDownViewVector ) > 0.999 )
 	{
 		PingTraceResults tr = DoPingTrace( player )
@@ -949,12 +1045,16 @@ void function OnPingDown( entity player )
 		if ( tr.success )
 		{
 			bool allowQuickPing      = !IsValid( spottedEnemy )
-			PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player )
+			PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player, tr )
 			SetPendingNewPing( params.pingType, tr.endPos, params.hitEnt, allowQuickPing )
 			PingCommandQueueTrace()
 
 			if ( !isOverRecentPing )
 				CommsMenu_OpenMenuForNewPing( player, tr.endPos )
+		}
+		else if ( PingSecondPageIsEnabled() )
+		{
+			CommsMenu_OpenMenuTo( player, eChatPage.PING_MAIN_2, eCommsMenuStyle.PING_MENU )
 		}
 	}
 
@@ -1066,6 +1166,7 @@ array<int> function GetReplyOptionsForWaypoint( entity player, entity wp )
 					case ePingType.ABILITY_DRONEMEDIC:
 					case ePingType.ABILITY_DOMESHIELD:
 					case ePingType.ABILITY_WORMHOLE:
+					case ePingType.ABILITY_JUMPPAD:
 						if ( wp.wp.haveConfirmed )
 							results.append( ePingReply.BLANK )
 						else
@@ -1087,6 +1188,7 @@ array<int> function GetReplyOptionsForWaypoint( entity player, entity wp )
 					case ePingType.ABILITY_DRONEMEDIC:
 					case ePingType.ABILITY_DOMESHIELD:
 					case ePingType.ABILITY_WORMHOLE:
+					case ePingType.ABILITY_JUMPPAD:
 						results.append( ePingReply.THANKS )
 						break
 
@@ -1252,6 +1354,9 @@ bool function ThrottleClientPing()
 
 void function Ping_HandleSpecificPingCommand( entity player, string pingType )
 {
+	if ( !Ping_ShouldExecutePing( player ) )
+		return
+
 	int pingTypeEnum = ePingType._count;
 	if ( pingType == "ENEMY" )
 		pingTypeEnum = ePingType.ENEMY_GENERAL
@@ -1269,16 +1374,13 @@ void function Ping_HandleSpecificPingCommand( entity player, string pingType )
 	if ( pingTypeEnum == ePingType._count )
 		return
 
-	if ( ThrottleClientPing() )
-		return
-
 	// if we pressed a button to do a specific trace, just close out the comms menu
 	CommsMenu_Shutdown( false )
 
 	PingTraceResults tr = DoPingTrace( player )
 	if ( tr.success )
 	{
-		PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player )
+		PingCommandParams params = GetPingParamsForHitEnt( tr.hitEnt, player, tr )
 		SetPendingNewPing( params.pingType, tr.endPos, params.hitEnt, false )
 		PingCommandQueueTrace()
 		Ping_ExecutePendingNewPingWithOverride( pingTypeEnum )
@@ -1310,18 +1412,19 @@ bool function IsDoorScriptName( string scriptName )
 	return false
 }
 
-
+#if SERVER || CLIENT
 entity function GetDoorForHitEnt( entity hitEnt )
 {
-	if ( IsDoorScriptName( hitEnt.GetScriptName() ) )
+	if ( IsDoor( hitEnt ) )
 		return hitEnt
 
 	entity parentEnt = hitEnt.GetParent()
-	if ( IsValid( parentEnt ) && IsDoorScriptName( parentEnt.GetScriptName() ) )
+	if ( IsValid( parentEnt ) && IsDoor( parentEnt ) )
 		return parentEnt
 
 	return null
 }
+
 
 ////
 bool function IsTrapName( string scriptName )
@@ -1329,6 +1432,10 @@ bool function IsTrapName( string scriptName )
 	switch( scriptName )
 	{
 		case DIRTY_BOMB_TARGETNAME:
+		case "tesla_trap":
+		case "tesla_trap_proxy":
+		case "trophy_system":
+		case "trophy_system_proxy":
 			return true
 	}
 
@@ -1445,6 +1552,9 @@ entity function GetCarePackageForHitEnt( entity hitEnt )
 	if ( IsValid( parentEnt ) && IsCarePackageName( parentEnt.GetScriptName() ) )
 		return parentEnt
 
+    if (hitEnt.GetModelName() == CARE_PACKAGE_AIRDROP_MODEL)
+        return hitEnt
+
 	return null
 }
 
@@ -1511,7 +1621,206 @@ entity function GetTeleporterForHitEnt( entity hitEnt )
 }
 
 
-PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player )
+bool function IsGeyserName( string scriptName )
+{
+	switch( scriptName )
+	{
+		case GEYSER_PING_SCRIPT_NAME:
+			return true
+	}
+	return false
+}
+
+entity function GetGeyserForHitEnt( entity hitEnt )
+{
+	if ( IsGeyserName( hitEnt.GetScriptName() ) )
+		return hitEnt
+
+	entity parentEnt = hitEnt.GetParent()
+	if ( IsValid( parentEnt ) && IsGeyserName( parentEnt.GetScriptName() ) )
+		return parentEnt
+
+	return null
+}
+
+//
+bool function IsJumpTowerName( string scriptName )
+{
+	switch( scriptName )
+	{
+		case JUMPTOWER_PING_NAME:
+			return true
+	}
+	return false
+}
+
+
+entity function GetJumpTowerForHitEnt( entity hitEnt )
+{
+	if ( IsJumpTowerName( hitEnt.GetScriptName() ) )
+		return hitEnt
+
+	entity parentEnt = hitEnt.GetParent()
+	if ( IsValid( parentEnt ) && IsJumpTowerName( parentEnt.GetScriptName() ) )
+		return parentEnt
+
+	return null
+}
+
+#if(true)
+entity function GetDeathBoxFromFlyerForHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return null
+
+	#if(CLIENT)
+		if ( !(hitEnt instanceof C_DynamicProp) )
+			return null
+
+		if ( hitEnt.GetModelName() != FLYER_MODEL )
+			return null
+
+		array<entity> children = hitEnt.GetChildren()
+		entity deathBoxFromFlyer = null
+
+		if ( children.len() == 0 )
+			return null
+
+		foreach( child in children )
+		{
+			if ( child.GetTargetName() != DEATH_BOX_TARGETNAME )
+				continue
+
+			deathBoxFromFlyer = child
+			break
+		}
+
+		return deathBoxFromFlyer
+
+	#endif
+
+	return null
+}
+
+entity function GetFlyerForHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return null
+
+	if ( IsFlyer( hitEnt ) )
+		return hitEnt
+
+	return null
+
+}
+#endif //
+
+
+
+
+
+entity function GetLootDroneForHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return null
+
+	if ( hitEnt.GetModelName().tolower() == LOOT_DRONE_MODEL.tolower() )
+		return hitEnt
+
+	return null
+}
+
+
+entity function GetLootRollerForHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return null
+
+	if ( hitEnt.GetModelName().tolower() == LOOT_ROLLER_MODEL.tolower() )
+		return hitEnt
+
+	return null
+}
+
+
+entity function GetVaultPanelEntityForHitEnt( entity hitEnt )
+{
+	if ( !IsValid( hitEnt ) )
+		return null
+
+	if ( IsVaultPanel( hitEnt ) )
+		return hitEnt
+
+	if ( HACK_IsVaultDoor( hitEnt ) )
+	{
+		return GetVaultPanelFromDoor( hitEnt )
+	}
+
+	return null
+}
+
+
+entity function GetTrainForHitEnt( entity hitEnt, string scriptName )
+{
+	if ( !IsValid( hitEnt ) || !hitEnt.HasKey( "script_name" ) )
+		return null
+
+	if ( hitEnt.GetScriptName() == scriptName )
+		return hitEnt
+
+	return null
+}
+
+
+
+bool function EntIsADynamicProp( entity ent )
+{
+	if ( !IsValid( ent ) )
+		return false
+
+	#if SERVER
+
+
+#elseif(CLIENT)
+		if ( ent instanceof C_DynamicProp )
+			return true
+	#endif
+	return false
+}
+
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+#endif //
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+
+PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player, PingTraceResults tr )
 {
 	int defaultPingType = ePingType.WE_GO // ePingType.LOCATION
 	int ms              = PlayerMatchState_GetFor( player )
@@ -1528,6 +1837,19 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 	PingCommandParams result
 	if ( !IsValid( processedHitEnt ) || processedHitEnt.IsWorld() )
 	{
+		//
+		if ( IsValid( tr.tr ) )
+		{
+			string lavaFlow = tr.tr.surfaceName
+
+			if ( lavaFlow == LAVA_FLOW_SURFACE_NAME )
+			{
+				result.hitEnt = null
+				result.pingType = ePingType.LAVA
+				return result
+			}
+		}
+
 		result.hitEnt = null
 		result.pingType = defaultPingType
 		return result
@@ -1535,7 +1857,7 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 
 	int playerTeam = player.GetTeam()
 
-	if ( ms > ePlayerMatchState.STAGING_AREA )
+	//if ( ms > ePlayerMatchState.STAGING_AREA )
 	{
 		if ( (processedHitEnt.IsPlayer() || processedHitEnt.IsNPC()) && IsEnemyTeam( playerTeam, processedHitEnt.GetTeam() ) )
 		{
@@ -1567,15 +1889,43 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 	}
 
 	//
-	//{
-	//	entity doorEnt = GetDoorForHitEnt( processedHitEnt )
-	//	if ( IsValid( doorEnt ) )
-	//	{
-	//		result.hitEnt = doorEnt
-	//		result.pingType = (ShDoors_IsDoorGoalToOpen( doorEnt ) ? ePingType.DOOR : defaultPingType)
-	//		return result
-	//	}
-	//}
+	{
+		entity doorEnt = GetDoorForHitEnt( processedHitEnt )
+		if ( IsValid( doorEnt ) )
+		{
+		
+				if ( HACK_IsVaultDoor( doorEnt ) )
+				{
+					entity vaultPanel = GetVaultPanelFromDoor( doorEnt )
+
+					if ( IsValid( vaultPanel ) )
+						result.hitEnt = vaultPanel
+					else
+						result.hitEnt = doorEnt
+
+					result.pingType = ePingType.LOOT_VAULT
+
+					entity playerWithKey = VaultPanel_GetTeammateWithKey( player.GetTeam() )
+					if ( IsValid( playerWithKey ) )
+					{
+						if ( playerWithKey == player )
+							result.pingType = ePingType.LOOT_VAULT_HAS_KEY_SELF
+						else
+							result.pingType = ePingType.LOOT_VAULT_HAS_KEY_SQUAD
+					}
+
+					if ( IsDoorOpen( doorEnt ) )
+						result.pingType = ePingType.LOOT_VAULT_OPEN
+
+					return result
+				}
+
+
+			result.hitEnt = doorEnt
+			result.pingType = ( IsDoorOpen( doorEnt ) ? ePingType.DOOR_OPEN : ePingType.DOOR )
+			return result
+		}
+	}
 
 	//
 	{
@@ -1590,7 +1940,24 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 				if ( IsValid( owner ) )
 					team = owner.GetTeam()
 			}
-			result.pingType = IsEnemyTeam( playerTeam, team ) ? ePingType.ENEMY_TRAP : ePingType.LOCATION
+
+			switch( hitEnt.GetScriptName() )
+			{
+				case "tesla_trap":
+				case "tesla_trap_proxy":
+					result.pingType = IsEnemyTeam( playerTeam, team ) ? ePingType.ENEMY_TESLA_TRAP : ePingType.LOCATION
+					break
+
+				case "trophy_system":
+				case "trophy_system_proxy":
+					result.pingType = IsEnemyTeam( playerTeam, team ) ? ePingType.ENEMY_TROPHY_SYSTEM : ePingType.LOCATION
+					break
+
+				default:
+					result.pingType = IsEnemyTeam( playerTeam, team ) ? ePingType.ENEMY_TRAP : ePingType.LOCATION
+					break
+			}
+
 			return result
 		}
 	}
@@ -1704,6 +2071,150 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 		}
 	}
 
+	{
+		entity jumpTower = GetJumpTowerForHitEnt( processedHitEnt )
+		if ( IsValid( jumpTower ) )
+		{
+			result.hitEnt = jumpTower
+			result.pingType = ePingType.JUMPTOWER
+			return result
+		}
+	}
+
+	{
+		entity geyser = GetGeyserForHitEnt( processedHitEnt )
+		if ( IsValid( geyser ) )
+		{
+			result.hitEnt = geyser
+			result.pingType = ePingType.GEYSER
+			return result
+		}
+	}
+
+	{
+		entity jumpPad = GetHitEntForTargetName( processedHitEnt, JUMP_PAD_TARGETNAME )
+		if ( IsValid( jumpPad ) )
+		{
+			result.hitEnt = jumpPad
+			result.pingType = ePingType.JUMP_PAD
+			return result
+		}
+	}
+
+	{
+		entity drone = GetHitEntForTargetName( processedHitEnt, CRYPTO_DRONE_TARGETNAME )
+		if ( IsValid( drone ) )
+		{
+			result.hitEnt = drone
+			result.pingType = ePingType.CRYPTO_DRONE
+			return result
+		}
+	}
+
+
+		{
+			if ( GetCurrentPlaylistVarInt( "enableFlyers", 1 ) == 1 )
+			{
+				entity flyer = GetFlyerForHitEnt( processedHitEnt )
+				if ( IsValid( flyer ) )
+				{
+					result.hitEnt = flyer
+					if ( IsCagedFlyer( flyer ) ) //
+					{
+						result.pingType = ePingType.FLYER_CAGED
+					}
+					else
+					{
+						result.pingType = ePingType.FLYER
+					}
+					return result
+				}
+			}
+		}
+
+
+
+		{
+			entity drone = GetLootDroneForHitEnt( processedHitEnt )
+			if ( IsValid( drone ) )
+			{
+				printf( "LootDronePingDebug: Pinged a Loot Drone" )
+				result.hitEnt = drone
+				result.pingType = ePingType.LOOT_DRONE
+
+				return result
+			}
+		}
+
+
+
+		{
+			entity roller = GetLootRollerForHitEnt( processedHitEnt )
+			if ( IsValid( roller ) )
+			{
+				entity drone = roller.GetParent()
+
+				if ( IsValid( drone ) )
+				{
+					printf( "LootDronePingDebug: Pinged a parented Loot Roller. Returning Loot Drone" )
+					result.hitEnt = drone
+					result.pingType = ePingType.LOOT_DRONE
+				}
+				else
+				{
+					printf( "LootDronePingDebug: Pinged an unparented Loot Roller." )
+					result.hitEnt = roller
+					result.pingType = ePingType.LOOT_ROLLER
+				}
+				return result
+			}
+		}
+
+		{
+			entity vaultPanel = GetVaultPanelEntityForHitEnt( processedHitEnt )
+			if ( IsValid( vaultPanel ) )
+			{
+				string playerWithKey = GetNameOfTeammateWithVaultKey( player.GetTeam() )
+				if ( playerWithKey != "" )
+				{
+					if ( playerWithKey == player.GetPlayerName() )
+						result.pingType = ePingType.LOOT_VAULT_HAS_KEY_SELF
+					else
+						result.pingType = ePingType.LOOT_VAULT_HAS_KEY_SQUAD
+				}
+				else
+					result.pingType = ePingType.LOOT_VAULT
+
+				result.hitEnt = vaultPanel
+
+				return result
+			}
+		}
+
+
+		{
+			entity train = GetTrainForHitEnt( processedHitEnt, TRAIN_BRUSH_SCRIPTNAME )
+			if ( IsValid( train ) )
+			{
+				result.hitEnt = train
+				result.pingType = ePingType.TRAIN
+
+				if ( IsDesertlandsTrainAtStation() )
+					result.pingType = ePingType.TRAIN_AT_STATION
+
+				return result
+			}
+		}
+
+
+	//
+	if ( EntIsADynamicProp( processedHitEnt ) )
+	{
+		result.hitEnt = null
+		result.pingType = defaultPingType
+		return result
+	}
+
 	// Default:
 	{
 		result.hitEnt = processedHitEnt
@@ -1711,6 +2222,7 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player 
 		return result
 	}
 }
+
 
 
 int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
@@ -1723,6 +2235,8 @@ int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
 			case "npc_soldier_spcore_rifleman":
 			case "npc_soldier_spcore_shotgunner":
 			case "npc_boss_guts":
+			case "npc_training_dummy":
+			case "npc_dummie_combat":
 				// no specific callouts for these
 				break;
 
@@ -1772,8 +2286,8 @@ int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
 
 	return eCommsAction.PING_ENEMY_SPOTTED_SPECIFIC
 }
-
-#if CLIENT
+#endif
+#if(CLIENT)
 void function DoPlayerDefaultPingForLootEntity( entity player, entity lootEnt )
 {
 	if ( !Waypoint_LootItemIsBeingPingedByAnyone( lootEnt ) )
@@ -1823,7 +2337,7 @@ int function GetCarePackageCommsAction( entity pingingPlayer, int pingType, enti
 	return eCommsAction.PING_CAREPACKAGE
 }
 
-Assert( ePingType._count == 49 )
+Assert( ePingType._assertion_marker == 61 )
 int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity pingedEnt )
 {
 	switch( pingType )
@@ -1843,6 +2357,12 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 
 		case ePingType.RESPAWN_DROPSHIP:
 			return eCommsAction.PING_RESPAWN_DROPSHIP
+
+		case ePingType.JUMP_PAD:
+			return eCommsAction.PING_JUMP_PAD
+
+		case ePingType.CRYPTO_DRONE:
+			return eCommsAction.PING_CRYPTO_DRONE
 
 		case ePingType.I_GO:
 			return eCommsAction.PING_I_GO
@@ -1887,6 +2407,9 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 
 		case ePingType.ENEMY_LOOTSOURCE:
 			return eCommsAction.PING_NPC_LOOT_TICK
+			
+		case ePingType.ENEMY_SUSPECTED:
+			return eCommsAction.PING_ENEMY_SUSPECTED
 
 		case ePingType.LOOT:
 			return GetPingLootCommsAction( pingedEnt )
@@ -1899,6 +2422,9 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 
 		case ePingType.DOOR:
 			return eCommsAction.PING_DOOR
+
+		case ePingType.DOOR_OPEN:
+			return eCommsAction.PING_AREA_VISITED
 
 		case ePingType.LOOT_BIN:
 			return GetLootBinPingCommsAction( pingingPlayer, pingType, pingedEnt )
@@ -1915,11 +2441,70 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 		case ePingType.HOVERTANK:
 			return eCommsAction.PING_HOVERTANK
 
+		case ePingType.FLYER:
+			return eCommsAction.PING_FLYER
+
+		case ePingType.FLYER_CAGED:
+			return eCommsAction.PING_FLYER_CAGED
+
+		case ePingType.JUMPTOWER:
+			return eCommsAction.PING_JUMPTOWER
+
+		case ePingType.GEYSER:
+			return eCommsAction.PING_GEYSER
+
+		case ePingType.LAVA:
+			return eCommsAction.PING_LAVA
+		case ePingType.LOOT_DRONE:
+			return eCommsAction.PING_LOOT_DRONE
+
+		case ePingType.LOOT_ROLLER:
+			return eCommsAction.PING_LOOT_ROLLER
+		case ePingType.LOOT_VAULT:
+			return eCommsAction.PING_LOOT_VAULT
+
+		case ePingType.LOOT_VAULT_HAS_KEY_SQUAD:
+			return eCommsAction.PING_LOOT_VAULT_HAS_KEY_SQUAD
+
+		case ePingType.LOOT_VAULT_HAS_KEY_SELF:
+			return eCommsAction.PING_LOOT_VAULT_HAS_KEY_SELF
+
+		case ePingType.LOOT_VAULT_OPEN:
+			return eCommsAction.PING_LOOT_VAULT_OPEN
+
+		case ePingType.LOOT_VAULT_REVEAL:
+			return eCommsAction.PING_LOOT_VAULT_REVEAL
+		case ePingType.TRAIN:
+			return eCommsAction.PING_TRAIN
+
+		case ePingType.TRAIN_AT_STATION:
+			return eCommsAction.PING_TRAIN_AT_STATION
+
+		case ePingType.EVAC_SHIP:
+			return eCommsAction.SPAWN_EVAC_SHIP
+
+		case ePingType.EVAC_ZONE:
+			return eCommsAction.SPAWN_EVAC_ZONE
+
+		case ePingType.SHADOWFALL_LEGEND_DEATH:
+			return eCommsAction.SHADOWFALL_LEGEND_DEATH
+
+		case ePingType.SHADOWFALL_SHADOW_DEATH:
+			return eCommsAction.SHADOWFALL_SHADOW_DEATH
+
+		case ePingType.SHADOWFALL_NEMESIS:
+			return eCommsAction.SHADOWFALL_NEMESIS
 		case ePingType.ZIPLINE:
 			return eCommsAction.PING_ZIPLINE
 
 		case ePingType.ENEMY_TRAP:
 			return eCommsAction.PING_ENEMY_TRAP
+
+		case ePingType.ENEMY_TESLA_TRAP:
+			return eCommsAction.PING_ENEMY_TESLA_TRAP
+
+		case ePingType.ENEMY_TROPHY_SYSTEM:
+			return eCommsAction.PING_TROPHY_SYSTEM
 
 		case ePingType.ENEMY_SMOKE:
 			return eCommsAction.PING_ENEMY_SMOKE
@@ -1937,8 +2522,7 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 			return eCommsAction.SPAWN_DRONEMEDIC
 
 		case ePingType.ABILITY_DOMESHIELD:
-			return eCommsAction.BLANK
-
+		case ePingType.ABILITY_JUMPPAD:
 		case ePingType.BLEEDOUT:
 		case ePingType.SELF_REVIVE:
 		case ePingType.RESPAWN_CARD:
@@ -1962,12 +2546,12 @@ int function GetCommsActionForPing( entity pingingPlayer, int pingType, entity p
 }
 
 
-int function Ping_GetSortModifier( int pingType )
+int function Ping_GetSortModifier( int pingType, bool isSameTeam )
 {
 	switch( pingType )
 	{
 		case ePingType.BLEEDOUT:
-			return 10
+			return (isSameTeam ? 10 : 0)
 
 		case ePingType.RESPAWN_BANNER:
 			return 10
@@ -2012,7 +2596,7 @@ entity function GetAllyByTeamMemberIndex( entity player, int teamNumIndex )
 	return null
 }
 
-Assert( ePingType._count == 49 )
+Assert( ePingType._assertion_marker == 61 )
 asset function Ping_IconForPing_Hud( entity player, int pingType, entity pingedEnt, entity owner )
 {
 	switch( pingType )
@@ -2049,6 +2633,9 @@ asset function Ping_IconForPing_Hud( entity player, int pingType, entity pingedE
 
 		case ePingType.SELF_REVIVE:
 			return $"rui/hud/gametype_icons/hunted/bleedout_selfrevive_icon"
+
+		case ePingType.ABILITY_JUMPPAD:
+			return $"rui/hud/ultimate_icons/ultimate_octane_in_world"
 	}
 
 	int commsAction = GetCommsActionForPing( player, pingType, pingedEnt )
@@ -2093,6 +2680,9 @@ bool function Ping_IconForPing_IsAdditive( entity player, int pingType, entity p
 	{
 		case ePingType.ABILITY_DOMESHIELD:
 			return true
+
+		case ePingType.ABILITY_JUMPPAD:
+			return true
 	}
 
 	return false
@@ -2115,9 +2705,9 @@ asset function Ping_RuiForPing_Hud( entity player, int pingType, entity pingedEn
 
 		case ePingType.BLEEDOUT:
 		case ePingType.RESPAWN_BANNER:
-		{
+
 			return $"ui/waypoint_status_timer_entpos.rpak"
-		}
+
 	}
 
 	return $"ui/waypoint_basic_entpos.rpak"
@@ -2150,6 +2740,8 @@ vector function Ping_LineColorForPing_Hud( int pingType )
 		case ePingType.ENEMY_SPECIFIC:
 		case ePingType.ENEMY_TELEPORTER:
 		case ePingType.ENEMY_TRAP:
+		case ePingType.ENEMY_TESLA_TRAP:
+		case ePingType.ENEMY_TROPHY_SYSTEM:
 			color = <1.0, 0.0, 0.0>
 			break
 
@@ -2167,7 +2759,7 @@ vector function Ping_LineColorForPing_Hud( int pingType )
 }
 
 
-vector function Ping_IconColorForPing_Hud( int pingType )
+vector function Ping_IconColorForPing_Hud( int pingType, bool isSameTeam )
 {
 	vector color
 	switch( pingType )
@@ -2178,6 +2770,8 @@ vector function Ping_IconColorForPing_Hud( int pingType )
 		case ePingType.ENEMY_SPECIFIC:
 		case ePingType.ENEMY_TELEPORTER:
 		case ePingType.ENEMY_TRAP:
+		case ePingType.ENEMY_TESLA_TRAP:
+		case ePingType.ENEMY_TROPHY_SYSTEM:
 			color = <1.0, 0.0, 0.0>
 			break
 
@@ -2188,7 +2782,10 @@ vector function Ping_IconColorForPing_Hud( int pingType )
 			break
 
 		case ePingType.BLEEDOUT:
-			color = SrgbToLinear( GetKeyColor( COLORID_HUD_BLEEDOUT_COLOR ) / 255.0 )
+			if ( isSameTeam )
+				color = SrgbToLinear( GetKeyColor( COLORID_HUD_BLEEDOUT_COLOR ) / 255.0 )
+			else
+				color = 0.25 * (<1, 1, 1> + SrgbToLinear( GetKeyColor( COLORID_HUD_BLEEDOUT_COLOR ) / 255.0 ))
 			break
 
 		case ePingType.RESPAWN_BANNER:
@@ -2221,10 +2818,10 @@ string function Ping_GetPromptForPing( entity player, entity wp, int pingType )
 }
 
 //
-void function OnPingCreatedByAnyPlayer_VocalizeNewPing( entity pingingPlayer, int pingType, entity pingedEnt, vector pingLoc )
+void function OnPingCreatedByAnyPlayer_VocalizeNewPing( entity pingingPlayer, int pingType, entity pingedEnt, vector pingLoc, entity wayPoint )
 {
 	int commsAction = GetCommsActionForPing( pingingPlayer, pingType, pingedEnt )
-	BroadcastCommsActionToTeam( pingingPlayer, commsAction, pingedEnt, pingLoc, eCommsFlags.NONE )
+	HandleBroadcastCommsAction( pingingPlayer, commsAction, pingedEnt, pingLoc, eCommsFlags.NONE )
 }
 
 int function GetPingLootCommsAction( entity ent )
@@ -2233,19 +2830,19 @@ int function GetPingLootCommsAction( entity ent )
 	return data.pingCommsAction
 }
 
-array< void functionref( entity, int, entity, vector ) > s_onCreateClientPingCallbacks
-void function AddCallback_OnPingCreatedByAnyPlayer( void functionref( entity, int, entity, vector ) func )
+array< void functionref( entity, int, entity, vector, entity ) > s_onCreateClientPingCallbacks
+void function AddCallback_OnPingCreatedByAnyPlayer( void functionref( entity, int, entity, vector, entity ) func )
 {
 	s_onCreateClientPingCallbacks.append( func )
 }
 
-void function ExecuteCallbacks_OnPingCreatedByAnyPlayer( entity pingingPlayer, int pingType, entity focusEnt, vector pingLoc )
+void function ExecuteCallbacks_OnPingCreatedByAnyPlayer( entity pingingPlayer, int pingType, entity focusEnt, vector pingLoc, entity wp )
 {
 	if ( !IsValid( pingingPlayer ) )
 		return
 
 	foreach ( func in s_onCreateClientPingCallbacks )
-		func( pingingPlayer, pingType, focusEnt, pingLoc )
+		func( pingingPlayer, pingType, focusEnt, pingLoc, wp )
 }
 
 void function DoLocalPingConfirm( vector origin, int pingType, entity pingedEnt, bool doSound )
@@ -2257,7 +2854,7 @@ void function DoLocalPingConfirm( vector origin, int pingType, entity pingedEnt,
 	RuiSetString( rui, "promptText", "" )
 	RuiSetImage( rui, "iconImage", $"rui/hud/gametype_icons/obj_foreground_diamond" )    // WAYPOINT_ICON_TARGET
 	RuiSetFloat3( rui, "targetPos", origin )
-	RuiSetFloat3( rui, "iconColor", SrgbToLinear( Ping_IconColorForPing_Hud( pingType ) ) )
+	RuiSetFloat3( rui, "iconColor", SrgbToLinear( Ping_IconColorForPing_Hud( pingType, true ) ) )
 	RuiSetFloat( rui, "iconSize", 32.0 )
 	RuiSetFloat( rui, "iconSizePinned", 32.0 )
 	RuiSetBool( rui, "isFinished", true )
@@ -2590,7 +3187,7 @@ void function ClientCommand_PingReply( entity player, array<string> args )
 	}
 
 	if ( didAnything && (caInfo.commsAction != eCommsAction.BLANK) && !(caInfo.commsFlags & eCommsFlags.SILENCE) )
-		BroadcastCommsActionToTeam( player, caInfo.commsAction, commSubjectEnt, commSubjectOrigin, caInfo.commsFlags )
+		HandleBroadcastCommsAction( player, caInfo.commsAction, commSubjectEnt, commSubjectOrigin, caInfo.commsFlags )
 
 	if ( IsValid( wp ) )
 	{
@@ -2638,8 +3235,14 @@ void function ClientCommand_CancelPingByTicketID( entity player, array<string> a
 #if CLIENT
 bool function TryPingBlockingFunction( entity player, string commandRef )
 {
-	if ( ThrottleClientPing() )
-		return true
+	if ( commandRef in file.lastPingBlockingFunctionTriggerTime )
+	{
+		if ( file.lastPingBlockingFunctionTriggerTime[ commandRef ] == Time() )
+			return true
+	}
+
+	//
+	//
 
 	if ( !(commandRef in file.pingBlockingFunctions) )
 		return false
@@ -2659,6 +3262,7 @@ bool function TryPingBlockingFunction( entity player, string commandRef )
 			if ( file.warnRui != null )
 				RuiSetGameTime( file.warnRui, "activateTime", Time() )
 
+			file.lastPingBlockingFunctionTriggerTime[ commandRef ] = Time()
 			return true
 		}
 	}
@@ -2692,6 +3296,9 @@ void function AddPingBlockingFunction( string commandRef, void functionref(entit
 {
 	if ( !(commandRef in file.pingBlockingFunctions) )
 		file.pingBlockingFunctions[ commandRef ] <- []
+
+	if ( !(commandRef in file.lastPingBlockingFunctionTriggerTime) )
+		file.lastPingBlockingFunctionTriggerTime[ commandRef ] <- 0.0
 
 	PingBlockData data
 	data.pingBlockingFunction = pingBlockingFunction

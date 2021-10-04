@@ -1,7 +1,7 @@
-global function ClGoblinDropship_Init
+global function ClGoblinDropship_ModelFX_Init
 
 
-void function ClGoblinDropship_Init()
+void function ClGoblinDropship_ModelFX_Init()
 {
 	ModelFX_BeginData( "friend_lights", $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", "friend", true )
 		//----------------------

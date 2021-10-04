@@ -2,6 +2,11 @@ untyped
 
 globalize_all_functions
 
+//=========================================================
+//	cl_utility
+//
+//=========================================================
+
 global struct AttackerDisplayNameStruct
 {
 	string attackerName
@@ -11,11 +16,11 @@ global struct AttackerDisplayNameStruct
 }
 
 
-string dev_messageString = ""
-string dev_messageSubString = ""
+string dev_messageString        = ""
+string dev_messageSubString     = ""
 
 string dev_infoPanelTitleString = ""
-string dev_infoPanelTextString = ""
+string dev_infoPanelTextString  = ""
 
 global const int RUMBLE_FLAGS_NONE 				= 0x0000
 global const int RUMBLE_FLAG_STOP				= 0x0001 // Stop any instance of this type of effect that's already playing.
@@ -124,8 +129,6 @@ string function ReloadScripts()
 
 	//DeregisterRespawnCommands()
 
-	TitanEmbark_Init()
-
 	ReloadScriptCallbacks()
 
 	reloadingScripts = false
@@ -161,7 +164,7 @@ void function AddCreateCallback( string className, void functionref( entity ) ca
 	if ( !( className in clGlobal.onCreateCallbacks ) )
 		clGlobal.onCreateCallbacks[ className ] <- []
 
-#if DEV
+#if R5DEV
 	foreach ( func in clGlobal.onCreateCallbacks[ className ] )
 	{
 		Assert( func != callbackFunc )
@@ -176,7 +179,7 @@ void function AddTargetNameCreateCallback( string targetName, void functionref( 
 	if ( !( targetName in clGlobal.onTargetNameCreateCallbacks ) )
 		clGlobal.onTargetNameCreateCallbacks[ targetName ] <- []
 
-#if DEV
+#if R5DEV
 	foreach ( func in clGlobal.onTargetNameCreateCallbacks[ targetName ] )
 	{
 		Assert( func != callbackFunc )
@@ -489,7 +492,7 @@ void function CoreActivatedVO( entity player )
 		return
 
 	expect string( conversationName )
-	TitanCockpit_PlayDialog( player, conversationName )
+	//TitanCockpit_PlayDialog( player, conversationName )
 }
 
 void function MonitorFlickerAndChange( entity screen, asset modelname )
@@ -656,19 +659,6 @@ void function Dev_PrintClientMessage( float duration )
 	dev_messageSubString = ""
 }
 
-void function ServerCallback_CollectibleFoundMessage( int numCollectiblesFound, int totalNumCollectibles )
-{
-	// Temp hud until RUI is made
-	entity player = GetLocalClientPlayer()
-	AnnouncementData announcement = Announcement_Create( "#MSG_COLLECTIBLE_FOUND" )
-	Announcement_SetSubText( announcement, "#SUBMSG_COLLECTIBLE_FOUND" )
-	Announcement_SetOptionalSubTextArgsArray( announcement, [string(numCollectiblesFound), string(totalNumCollectibles)] )
-	Announcement_SetHideOnDeath( announcement, false )
-	Announcement_SetDuration( announcement, 3.5 )
-	Announcement_SetPurge( announcement, true )
-	AnnouncementFromClass( player, announcement )
-}
-
 void function ClientCodeCallback_OnDevnetBugScreenshot()
 {
 	printt( "(devnet screenshot client script callback)" )
@@ -676,11 +666,6 @@ void function ClientCodeCallback_OnDevnetBugScreenshot()
 
 	entity player = GetLocalClientPlayer()
 	player.ClientCommand( "OnDevnetBugScreenshot" )
-}
-
-array<float> function GetTitanDamageStateHealthValues()
-{
-	return [ TITAN_DAMAGE_STAGE_1, TITAN_DAMAGE_STAGE_2, TITAN_DAMAGE_STAGE_3 ]
 }
 
 //float[2] function GetScreenSpaceClamped( vector origin )
@@ -701,7 +686,7 @@ float function GetNextRespawnTime( entity player )
 	return expect float( player.nv.nextRespawnTime - 0.0 ) // - 0.0 to force this to be a float
 }
 
-#if DEV
+#if R5DEV
 void function TwoPinTest()
 {
 	entity player = gp()[0]
@@ -906,17 +891,37 @@ var function CreateRUITopology_Worldspace( vector org, vector ang, float width, 
 	return topo
 }
 
+/*
+████████╗███████╗██╗  ██╗████████╗    ██╗███╗   ██╗███████╗ ██████╗     ██████╗  █████╗ ███╗   ██╗███████╗██╗     ███████╗
+╚══██╔══╝██╔════╝╚██╗██╔╝╚══██╔══╝    ██║████╗  ██║██╔════╝██╔═══██╗    ██╔══██╗██╔══██╗████╗  ██║██╔════╝██║     ██╔════╝
+   ██║   █████╗   ╚███╔╝    ██║       ██║██╔██╗ ██║█████╗  ██║   ██║    ██████╔╝███████║██╔██╗ ██║█████╗  ██║     ███████╗
+   ██║   ██╔══╝   ██╔██╗    ██║       ██║██║╚██╗██║██╔══╝  ██║   ██║    ██╔═══╝ ██╔══██║██║╚██╗██║██╔══╝  ██║     ╚════██║
+   ██║   ███████╗██╔╝ ██╗   ██║       ██║██║ ╚████║██║     ╚██████╔╝    ██║     ██║  ██║██║ ╚████║███████╗███████╗███████║
+   ╚═╝   ╚══════╝╚═╝  ╚═╝   ╚═╝       ╚═╝╚═╝  ╚═══╝╚═╝      ╚═════╝     ╚═╝     ╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚══════╝╚══════╝
+
+Add Title:
+	Dev_BuildTextInfoPanel( 0, "Example Title" )
+
+Add Text:
+	Dev_BuildTextInfoPanel( 1, "Example Text" )
+
+Display Panel:
+	Dev_CreateTextInfoPanel( posX, posY, posZ, angX, angY, angZ, showPin, textScale )
+
+	Dev_CreateTextInfoPanel( 1000.0, 1000.0, 1000.0, 0.0, 90.0, 0.0, true, 1.0)
+*/
+
 void function Dev_BuildTextInfoPanel( Type, ... )
 {
 	if ( Type == 0 )
 	{
 		for ( int i = 0; i < vargc; i++ )
-			dev_infoPanelTitleString += format("%c", vargv[i] )
+			dev_infoPanelTitleString += format("%s", vargv[i] )
 	}
 	else if ( Type == 1 )
 	{
 		for ( int i = 0; i < vargc; i++ )
-			dev_infoPanelTextString += format("%c", vargv[i] )
+			dev_infoPanelTextString += format("%s", vargv[i] )
 	}
 }
 
@@ -1058,20 +1063,12 @@ bool function ShouldShowWeakpoints( entity ent )
 			return false
 	}
 
-	//Turn off AR if you are rodeoing
-	if ( RodeoState_GetIsPlayerRodeoingVehicle( player, ent ) )
-		return false
-
-	//if ( ent.IsTitan() && GetDoomedState( ent ) )
-	//	return false
-
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return false
 
 	if ( !WeaponCanCrit( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) ) )
 		return false
 
-	//
 	{
 		vector eyePos = player.EyePosition()
 		eyePos.z = 0
@@ -1090,7 +1087,7 @@ bool function ShouldShowWeakpoints( entity ent )
 			return false
 	}
 
-	#if DEV
+	#if R5DEV
 		if ( Dev_CommandLineHasParm( "-noweakpoints" ) )
 			return false
 	#endif
@@ -1149,8 +1146,8 @@ void function AddOverheadIconThread( entity prop, var rui )
 
 
 
-const RUI_PERMANENT = true
-const RUI_TRANSIENT = false
+const bool RUI_PERMANENT = true
+const bool RUI_TRANSIENT = false
 
 void function InitHUDRui( var rui, bool isTracked = false )
 {
@@ -1168,14 +1165,14 @@ void function ReleaseHUDRui( var rui )
 
 var function CreateCockpitRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHud, RUI_DRAW_HUD, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHud, GetHudDrawGroup(), sortKey )
 	InitHUDRui( rui, RUI_PERMANENT )
 	return rui
 }
 
 var function CreateCockpitPostFXRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHud, RUI_DRAW_POSTEFFECTS, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHud, GetHudDrawGroup( RUI_DRAW_POSTEFFECTS ), sortKey )
 	InitHUDRui( rui, RUI_PERMANENT )
 	return rui
 }
@@ -1213,14 +1210,14 @@ var function CreateTransientCockpitRui( asset ruiAsset, int sortKey = 0 )
 
 var function CreatePermanentCockpitRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, RUI_DRAW_HUD, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, GetHudDrawGroup(), sortKey )
 	InitHUDRui( rui, RUI_PERMANENT )
 	return rui
 }
 
 var function CreatePermanentCockpitPostFXRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, RUI_DRAW_POSTEFFECTS, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, GetHudDrawGroup( RUI_DRAW_POSTEFFECTS ), sortKey )
 	InitHUDRui( rui, RUI_PERMANENT )
 	return rui
 }
@@ -1316,7 +1313,7 @@ void function AddCallback_OnStaticPropRUICreated( void functionref( StaticPropRu
 	clGlobal.onStaticPropRUICreatedCallbacks.append( callbackFunc )
 }
 
-#if DEV
+#if R5DEV
 table<int, StaticPropRui> DEV_magicIdStaticPropRuiMap
 bool DEV_staticPropRuiVisibilityDebugEnabled = false
 void function DEV_ToggleStaticPropRuiVisibilityDebug()
@@ -1346,7 +1343,7 @@ void function ClientCodeCallback_OnEnumStaticPropRui( StaticPropRui propRui )
 			callbackFunc( propRui, rui )
 	}
 
-	#if DEV
+	#if R5DEV
 		DEV_magicIdStaticPropRuiMap[propRui.magicId] <- propRui
 	#endif
 }
@@ -1358,7 +1355,7 @@ void function ClientCodeCallback_OnStaticPropRuiVisibilityChange( array<int> new
 
 	ClApexScreens_OnStaticPropRuiVisibilityChange( newlyVisible, newlyHidden )
 
-	#if DEV
+	#if R5DEV
 		if ( DEV_staticPropRuiVisibilityDebugEnabled )
 		{
 			if ( newlyVisible.len() > 0 )
@@ -1382,7 +1379,7 @@ void function ClientCodeCallback_OnStaticPropRuiVisibilityChange( array<int> new
 	#endif
 }
 
-#if DEV
+#if R5DEV
 void function DumpFullscreenRuis()
 {
 	printt( "DumpFullscreenRuis" )
@@ -1523,6 +1520,34 @@ bool function ShouldShowButtonHints()
 	return file.showButtonHintsInt == 1
 }
 
+// Set map visuals which cannot be set through level entity files
+void function TEMP_MapConVar_Init()
+{
+	switch( GetMapName() )
+	{
+		case "mp_rr_desertlands_64k_x_64k_nx":
+			SetConVarFloat( "mat_autoexposure_max", 1.0 )
+			SetConVarFloat( "mat_autoexposure_max_multiplier", 0.4 )
+			SetConVarFloat( "mat_autoexposure_min", 0.1 )
+			SetConVarFloat( "mat_autoexposure_min_multiplier", 1.0 )
+
+			SetConVarFloat( "mat_sky_scale", 1.0 )
+			SetConVarString( "mat_sky_color", "1.0 1.0 1.0 1.0" )
+			SetConVarFloat( "mat_sun_scale", 1.0 )
+			SetConVarString( "mat_sun_color", "1.0 1.5 2.0 1.0" )
+			break
+		default:
+			SetConVarToDefault( "mat_autoexposure_max" )
+			SetConVarToDefault( "mat_autoexposure_max_multiplier" )
+			SetConVarToDefault( "mat_autoexposure_min" )
+			SetConVarToDefault( "mat_autoexposure_min_multiplier" )
+
+			SetConVarToDefault( "mat_sky_scale" )
+			SetConVarToDefault( "mat_sky_color" )
+			SetConVarToDefault( "mat_sun_scale" )
+			SetConVarToDefault( "mat_sun_color" )
+	}
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

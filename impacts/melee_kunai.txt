@@ -3,7 +3,7 @@ ImpactTable
 	FX
 	{
 		"C" "P_Kunai_impact_base" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "P_Kunai_impact_base" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "P_Kunai_impact_base" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "P_Kunai_impact_base" // metal_titan
 
 		"F" "P_Kunai_impact_base" //flesh
@@ -14,10 +14,11 @@ ImpactTable
 		"K" "P_Kunai_impact_base" //Mud
 		"L" "P_Kunai_impact_base" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
 		"M" "P_Kunai_impact_base" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
-//		"N" "openslot"
-		"O" "P_Kunai_impact_base"  //Foliage
+		"N" "P_Kunai_impact_base" //slime
+		"O" "P_Kunai_impact_base" //Foliage
 		"P" "P_Kunai_impact_base" //metal_spectre
 
+		"Q" "P_Kunai_impact_base" //metalpanel, grenade, canister
 		"R" "P_Kunai_impact_base" //metalpanel, grenade, canister
 		"S" "P_Kunai_impact_base" //water, slime
 		"T" "P_Kunai_impact_base" //tile
@@ -30,16 +31,16 @@ ImpactTable
 		"Y" "P_Kunai_impact_base" //glass, brokenglass, glassbottle, pottery
 		"Z" "P_Kunai_impact_base" //sand
 
-//		"0" "openslot"
-//		"1" "openslot"
-//		"2" "openslot"
-//		"3" "openslot"
-//		"4" "openslot"
-//		"5" "openslot"
-//		"6" "openslot"
-//		"7" "openslot"
-//		"8" "openslot"
-//		"9" "openslot"
+		"0" "P_Kunai_impact_base"
+		"1" "P_Kunai_impact_base" //lava_flow
+		"2" "P_Kunai_impact_base" //lava_rock_hot
+		"3" "P_Kunai_impact_base"
+		"4" "P_Kunai_impact_base"
+		"5" "P_Kunai_impact_base"
+		"6" "P_Kunai_impact_base"
+		"7" "P_Kunai_impact_base"
+		"8" "P_Kunai_impact_base"
+		"9" "P_Kunai_impact_base"
 
 		"splash" "P_Kunai_impact_base" //brush water
 		"slime_splash" "P_Kunai_impact_base"
@@ -62,11 +63,13 @@ ImpactTable
 		"K" "P_melee_dirt" //Mud
 		"L" "P_melee_default" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
 		"M" "P_melee_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
-//		"N" "openslot"
+		"N" "P_impact_slime" //slime
 		"O" "P_melee_dirt"  //Foliage
 		"P" "P_melee_metal" //metal_spectre
 
-		"R" "P_melee_metal" //metalpanel, grenade, canister
+		"Q" "P_melee_snow"  //Snow
+		"R" "P_melee_ice" //Ice
+
 		"S" "P_impact_water" //water, slime
 		"T" "P_melee_default" //tile
 		"U" "P_melee_glass" // glass_breakable
@@ -79,8 +82,8 @@ ImpactTable
 		"Z" "P_melee_dirt"  //sand
 
 //		"0" "openslot"
-//		"1" "openslot"
-//		"2" "openslot"
+		"1" "P_impact_lava_nodecal" //lava_flow
+		"2" "P_impact_lava" //lava_rock_hot
 //		"3" "openslot"
 //		"4" "openslot"
 //		"5" "openslot"
@@ -98,41 +101,54 @@ ImpactTable
 
 	Sound
 	{
-		"C" "Player_Melee_Impact_Concrete_3p_vs_3p"
-		"D" "Player_Melee_Impact_Dirt_3p_vs_3p"
-		"E" "Player_Melee_Impact_Metal_3p_vs_3p"
+		"C" "Generic_Kunai_Impact_3p_vs_3p"
+		"D" "Generic_Kunai_Impact_3p_vs_3p"
+		"E" "Generic_Kunai_Impact_3p_vs_3p"
 
-		"F" "player_melee_impact_flesh_3P_vs_3P"
-		"G" "Player_Melee_Impact_Metal_3p_vs_3p"
-		"H" "player_melee_impact_flesh_3P_vs_3P"
+		"F" "Victim_Kunai_Impact_3p_vs_3p"
+		"G" "Generic_Kunai_Impact_3p_vs_3p"
+		"H" "Victim_Kunai_Impact_3p_vs_3p"
 
-		"J" "Player_Melee_Impact_Grass_3p_vs_3p"
-		"K" "Player_Melee_Impact_Mud_3p_vs_3p"
-		"L" "Player_Melee_Impact_Default_3p_vs_3p"
-		"M" "Player_Melee_Impact_Metal_3p_vs_3p"
-		"N" "Player_Melee_Impact_Water_3p_vs_3p"
-		"O" "Player_Melee_Impact_Grass_3p_vs_3p"
-		"P" "Pilot_Melee_Kick_Impact_Android_3P_vs_3P"
+		"J" "Generic_Kunai_Impact_3p_vs_3p"
+		"K" "Generic_Kunai_Impact_3p_vs_3p"
+		"L" "Generic_Kunai_Impact_3p_vs_3p"
+		"M" "Generic_Kunai_Impact_3p_vs_3p"
+		"N" "Generic_Kunai_Impact_3p_vs_3p"
+		"O" "Generic_Kunai_Impact_3p_vs_3p"
+		"P" "Victim_Kunai_Impact_3p_vs_3p"
 
-		"R" "Player_Melee_Impact_Metal_3p_vs_3p"
-		"S" "Player_Melee_Impact_Water_3p_vs_3p"
-		"T" "Player_Melee_Impact_Concrete_3p_vs_3p"
-		"U" "Player_Melee_Impact_Glass_3p_vs_3p"
+		"Q" "Generic_Kunai_Impact_3p_vs_3p" //snow
+		"R" "Generic_Kunai_Impact_3p_vs_3p" //Ice
 
-		"V" "Player_Melee_Impact_Metal_3p_vs_3p"
-		"W" "Player_Melee_Impact_Default_3p_vs_3p"
+		"S" "Generic_Kunai_Impact_3p_vs_3p"
+		"T" "Generic_Kunai_Impact_3p_vs_3p"
+		"U" "Generic_Kunai_Impact_3p_vs_3p"
 
-		"Y" "Player_Melee_Impact_Glass_3p_vs_3p"
-		"Z" "Player_Melee_Impact_Dirt_3p_vs_3p"
+		"V" "Generic_Kunai_Impact_3p_vs_3p"
+		"W" "Generic_Kunai_Impact_3p_vs_3p"
+
+		"Y" "Generic_Kunai_Impact_3p_vs_3p"
+		"Z" "Generic_Kunai_Impact_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Player_Melee_Impact_Water_3p_vs_3p" //lava_flow
+		"2" "Player_Melee_Impact_Dirt_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Player_Melee_Impact_Water_3p_vs_3p"
 		"slime_splash" "Player_Melee_Impact_Water_3p_vs_3p"
-		"holohit" "Player_Melee_Impact_Default_3p_vs_3p"
+		"holohit" "Generic_Kunai_Impact_3p_vs_3p"
 
 		"airburst" ""
 		"shieldhit" "humanshield_light_bulletimpact_3p_vs_3p"
-		"headshot_flesh" "player_melee_impact_flesh_3P_vs_3P"
-		"headshot_mechanical" "Pilot_Melee_Kick_Impact_Android_3P_vs_3P"
+		"headshot_flesh" "Victim_Kunai_Impact_3p_vs_3p"
+		"headshot_mechanical" "Victim_Kunai_Impact_3p_vs_3p"
 	}
 
 	Sound_attacker
@@ -164,6 +180,17 @@ ImpactTable
 		"Y" "Generic_KunaiImpact_1p_vs_3p"
 		"Z" "Generic_KunaiImpact_1p_vs_3p"
 
+//		"0" "openslot"
+		"1" "Generic_KunaiImpact_1p_vs_3p" //lava_flow
+		"2" "Generic_KunaiImpact_1p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
+
 		"splash" "Generic_KunaiImpact_1p_vs_3p"
 		"slime_splash" "Generic_KunaiImpact_1p_vs_3p"
 
@@ -182,7 +209,7 @@ ImpactTable
 
 		"F" "Victim_Kunai_Impact_3p_vs_1p"
 		"G" "Player_Melee_Impact_Metal_3p_vs_3p"
-		"H" "player_melee_impact_flesh_3P_vs_3P"
+		"H" "Victim_Kunai_Impact_3p_vs_1p"
 
 		"J" "Player_Melee_Impact_Grass_3p_vs_3p"
 		"K" "Player_Melee_Impact_Mud_3p_vs_3p"
@@ -202,6 +229,17 @@ ImpactTable
 
 		"Y" "Player_Melee_Impact_Glass_3p_vs_3p"
 		"Z" "Player_Melee_Impact_Dirt_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Player_Melee_Impact_Mud_3p_vs_3p" //lava_flow
+		"2" "Player_Melee_Impact_Dirt_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Player_Melee_Impact_Water_3p_vs_3p"
 		"slime_splash" "Player_Melee_Impact_Water_3p_vs_3p"
@@ -241,6 +279,17 @@ ImpactTable
 
 		"Y" "Generic_Kunai_Impact_3p_vs_3p"
 		"Z" "Generic_Kunai_Impact_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Generic_Kunai_Impact_3p_vs_3p" //lava_flow
+		"2" "Generic_Kunai_Impact_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Generic_Kunai_Impact_3p_vs_3p"
 		"slime_splash" "Generic_Kunai_Impact_3p_vs_3p"

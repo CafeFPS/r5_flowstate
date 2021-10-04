@@ -9,7 +9,6 @@ global function Bleedout_SetFirstAidStrings
 global function AddCallback_OnBleedoutStarted
 global function AddCallback_OnBleedoutEnded
 
-global function ServerCallback_Bleedout_DownStateThirdPersonCameraSettings
 
 global function Bleedout_DisplayTrainingFirstAidProgressBar
 global function Bleedout_StopTrainingFirstAidProgressBar
@@ -118,6 +117,11 @@ void function BLEEDOUT_RevivePlayerHealerChanged( entity playerToRes, entity old
 		return
 	}
 
+	if ( IsValid( playerHealer ) && IsValid( oldPlayerHealer ) && (playerHealer != oldPlayerHealer) )
+	{
+		oldPlayerHealer.Signal( "Bleedout_StopFirstAid" )
+	}
+
 	entity viewPlayer = GetLocalViewPlayer()
 	int team = viewPlayer.GetTeam()
 
@@ -162,17 +166,22 @@ void function Bleedout_DisplayFirstAidProgressBar( entity playerToRes, float end
 	entity player = GetLocalClientPlayer()
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "Bleedout_StopFirstAid" )
+	playerToRes.EndSignal( "Bleedout_StopFirstAid" )
 	playerToRes.EndSignal( "Bleedout_OnRevive" )
 
-	var rui = CreateCockpitRui( $"ui/bleedout_timer.rpak" )
+	var rui = CreateCockpitPostFXRui( $"ui/bleedout_timer.rpak" )
 	RuiSetString( rui, "text", text )
 	RuiSetGameTime( rui, "endTime", endTime )
 	RuiSetFloat( rui, "progressTime", progressTime )
+
+	Chroma_BeginRevive( progressTime )
 
 	OnThreadEnd(
 		function() : ( rui, playerToRes )
 		{
 			RuiDestroy( rui )
+
+			Chroma_EndRevive()
 
 			if ( IsValid( playerToRes ) && playerToRes.IsPlayer() )
 				BleedoutEndTimeChanged( playerToRes, 0.0, playerToRes.GetPlayerNetTime( "bleedoutEndTime" ), true )
@@ -209,7 +218,7 @@ void function ShowWoundedMarker( entity woundedPlayer, float endTime )
 	if ( !DO_OLD_WOUNDED_MARKER_3P && (woundedPlayer != GetLocalViewPlayer()) )
 		return
 
-	if ( IsEnemyTeam( woundedPlayer.GetTeam(), GetLocalViewPlayer().GetTeam() ) )
+	if ( (woundedPlayer != GetLocalViewPlayer()) && IsEnemyTeam( woundedPlayer.GetTeam(), GetLocalViewPlayer().GetTeam() ) )
 		return
 
 	woundedPlayer.Signal( "BleedOut_OnStartDying" )
@@ -255,6 +264,10 @@ void function ShowWoundedMarker( entity woundedPlayer, float endTime )
 			LootData lootData = EquipmentSlot_GetEquippedLootDataForSlot( woundedPlayer, "incapshield" )
 
 			RuiSetString( shieldRUI, "nameText", lootData.pickupString )
+
+			if ( incapShieldTier >= 4 )
+				RuiSetString( shieldRUI, "nameText", "#BLEEDOUT_USE_SELF_RES_TITLE" )
+
 			RuiSetBool( shieldRUI, "hasKOShield", true )
 			RuiSetInt( shieldRUI, "shieldTier", incapShieldTier )
 			RuiSetImage( shieldRUI, "shieldIcon", lootData.hudIcon )
@@ -325,8 +338,18 @@ void function TrackSelfReviveState( entity player, var rui )
 
 bool function CanSelfRevive( entity player )
 {
-	bool canSelfRes = PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE )
-	return canSelfRes
+	if ( PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) )
+		return true
+
+	#if(false)
+
+
+
+
+
+#endif
+
+	return false
 }
 
 void function TrackKOShieldHealthAndReadiness( entity player, var rui )
@@ -495,17 +518,4 @@ void function HideWoundedMarker( entity woundedPlayer )
 	{
 		func( woundedPlayer )
 	}
-}
-
-void function ServerCallback_Bleedout_DownStateThirdPersonCameraSettings()
-{
-	SetConVarInt( "c_thirdpersonshoulderdist", 48 )
-	SetConVarFloat( "c_thirdpersonshoulderaimdist", 0.0 )
-	SetConVarFloat( "c_thirdpersonshoulderheight", 8.0 )
-	SetConVarInt( "c_thirdpersonshoulderoffset", 0 )
-	SetConVarFloat( "c_thirdpersonshoulderoffset", 8.0 )
-	SetConVarFloat( "cam_ideallag", 0.0 )
-	SetConVarFloat( "c_mindistance", 48.0 )
-	SetConVarFloat( "c_maxdistance", 48.0 )
-	SetConVarFloat( "cam_idealdist", 0.0 )
 }

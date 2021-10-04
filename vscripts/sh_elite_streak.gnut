@@ -1,0 +1,195 @@
+#if CLIENT
+global function ShEliteStreak_Init
+global function IsEliteGame
+#endif
+
+
+#if SERVER
+#endif
+
+
+#if CLIENT
+global function ShEliteStreak_RegisterNetworkFunctions
+global function ServerCallback_UpdateEliteBadge
+#endif
+
+
+#if CLIENT && R5DEV
+global function TestEliteStreak
+#endif
+
+
+global const int ELITE_SQUADS_REQUIRED = 5
+
+
+#if CLIENT
+void function ShEliteStreak_Init()
+{
+	if ( !GetCurrentPlaylistVarBool( "elite_enabled", false ) )
+		return
+
+	if ( IsLobby() )
+		return
+
+	#if SERVER
+
+
+
+#endif
+
+	if ( !IsEliteGame() )
+		return
+
+	#if SERVER
+    #endif
+
+	#if CLIENT
+	AddCallback_OnScoreboardCreated( OnScoreboardCreated )
+	#endif
+}
+#endif
+
+
+#if CLIENT
+void function ShEliteStreak_RegisterNetworkFunctions()
+{
+	RegisterNetworkedVariableChangeCallback_int( "currentEliteStreak", OnCurrentEliteStreakChanged )
+	RegisterNetworkedVariableChangeCallback_int( "squadsRemainingCount", OnSquadsRemainingCountChanged )
+}
+#endif
+
+
+#if SERVER
+#endif
+#if SERVER
+#endif
+#if SERVER
+#endif
+#if SERVER
+#endif
+#if SERVER
+#endif
+#if SERVER
+#endif
+#if SERVER
+#endif
+
+
+#if CLIENT
+void function ServerCallback_UpdateEliteBadge( int streak, bool hasAccess )
+{
+	UpdateEliteBadge( streak, hasAccess )
+}
+#endif
+
+
+#if CLIENT
+void function OnSquadsRemainingCountChanged( entity player, int old, int new, bool actuallyChanged )
+{
+	if ( !actuallyChanged )
+		return
+
+	if ( GetGameState() != eGameState.Playing )
+		return
+
+	if ( new <= 9 && new >= 6 )
+	{
+		EmitSoundOnEntity( GetLocalViewPlayer(), "UI_InGame_Top5_Update_" + new )
+	}
+}
+
+void function OnCurrentEliteStreakChanged( entity player, int old, int new, bool actuallyChanged )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	UpdateEliteBadge( new, bool( player.GetPersistentVar( "hasEliteAccess" ) ), actuallyChanged && GetGameState() == eGameState.Playing )
+}
+#endif
+
+
+#if CLIENT
+void function OnScoreboardCreated()
+{
+	entity player = GetLocalViewPlayer()
+	int streak = 0
+	bool hasAccess = false
+	if ( player != null )
+	{
+		streak = player.GetPlayerNetInt( "currentEliteStreak" )
+		hasAccess = bool( player.GetPersistentVar( "hasEliteAccess" ) )
+	}
+
+	UpdateEliteBadge( streak, hasAccess, false )
+}
+
+void function UpdateEliteBadge( int streak, bool hasAccess, bool animate = true )
+{
+	if ( animate )
+	{
+		float duration = 5.0
+
+		string announceSound = "UI_InGame_Top5_Announce"
+
+		if ( streak > 2 )
+		{
+			if ( streak < 10 )
+				announceSound = "UI_InGame_Top5_Streak_1X"
+			else
+				announceSound = "UI_InGame_Top5_Streak_Above1X"
+		}
+
+		AnnouncementData announcement = Announcement_Create( "" )
+		Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_ELITE )
+		Announcement_SetPurge( announcement, true )
+		Announcement_SetOptionalTextArgsArray( announcement, [ string( streak ) ] )
+		Announcement_SetPriority( announcement, 200 ) //
+		Announcement_SetSoundAlias( announcement, announceSound )
+		announcement.duration = duration
+		AnnouncementFromClass( GetLocalViewPlayer(), announcement )
+	}
+
+	if ( !IsEliteGame() )
+		return
+
+	var rui = ClGameState_GetRui()
+
+	if ( rui == null )
+		return
+
+	bool showCornerBadge = hasAccess
+
+	RuiSetBool( rui, "eliteEnabled", showCornerBadge )
+
+	if ( animate )
+	{
+		RuiSetGameTime( rui, "eliteStartTime", Time() )
+	}
+
+	RuiSetInt( rui, "eliteStreak", streak )
+
+	int obitOffset = showCornerBadge ? 1 : 0
+	Obituary_SetIndexOffset( obitOffset )
+}
+#endif
+
+
+#if CLIENT && R5DEV
+void function TestEliteStreak( int streak = 1 )
+{
+	UpdateEliteBadge( streak, true, true )
+}
+#endif
+
+
+#if CLIENT
+bool function IsEliteGame()
+{
+	return (GetCurrentPlaylistVarBool( "elite_enabled", false ) && GetCurrentPlaylistVarBool( "is_elite_game", false ))
+}
+#endif
+
+#if SERVER
+#endif
+#if SERVER
+#endif

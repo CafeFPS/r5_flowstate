@@ -5,8 +5,6 @@ global function RateSpawnpoints_Generic
 // these comes from gamemode recruit
 global function GetLowestUnusedMemberIndexForTeam
 global function UpdateSquadDataForTeamChange
-global function HandleSquadElimination
-global function UpdatePlayerCounts
 
 void function GamemodeTdm_Init()
 {
@@ -24,16 +22,6 @@ int function GetLowestUnusedMemberIndexForTeam( int test )
 }
 
 void function UpdateSquadDataForTeamChange( entity player, int oldIndex, int newIndex, int oldTeam, int newTeam )
-{
-
-}
-
-void function HandleSquadElimination( int oldTeam )
-{
-
-}
-
-void function UpdatePlayerCounts()
 {
 
 }

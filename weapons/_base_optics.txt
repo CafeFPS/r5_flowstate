@@ -10,6 +10,7 @@ WeaponData
 	// reserve up to bodygroup_5 for additional future weapon bodygroups (not just optics)
 	// reserve up to UIData5 for additional future weapon RUIs (not just optics)
 
+	active_optic_appearance     "__use_old__"
 
 	// --- Misc Stuff ---
 //	Mods

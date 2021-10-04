@@ -61,5 +61,27 @@ WeaponData
 	        "viewdrift_ads_speed_pitch"   	    "*0.8"
 	        "viewdrift_ads_speed_yaw" 		    "*0.8"
 		}
+
+                         
+                   
+   
+                                
+                                            
+
+                                       
+                              
+                            
+                           
+
+                                            
+                                                  
+                                                   
+                                                
+                                                  
+                                               
+                                                  
+                                               
+   
+      
 	}
 }

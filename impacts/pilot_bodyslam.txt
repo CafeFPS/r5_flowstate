@@ -6,7 +6,7 @@ ImpactTable
 	FX
 	{
 		"C" "P_hmn_bslam_concrete" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "P_hmn_bslam_dirt"     //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "P_hmn_bslam_dirt"     //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
 		"E" "P_hmn_bslam_metal"	  // metal_titan
 
 		"F" "none" //flesh
@@ -23,7 +23,8 @@ ImpactTable
 
 		"R" "P_hmn_bslam_metal" //metalpanel, grenade, canister
 
-		"R" "P_hmn_bslam_metal" //metalpanel, grenade, canister
+		"Q" "P_hmn_land_impact_snow" //snow
+		"R" "P_hmn_land_impact_snow" //ice
 		"S" "P_impact_exp_med_water" //water, slime
 		"T" "P_hmn_bslam_concrete" //tile
 		"U" "P_hmn_bslam_metal"	 //glass_breakable
@@ -37,8 +38,8 @@ ImpactTable
 		"airburst" "none"  //No Surface
 
 		"0" "P_hmn_bslam_concrete"
-		"1" "P_hmn_bslam_concrete"
-		"2" "P_hmn_bslam_concrete"
+		"1" "P_hmn_land_impact_lava_nodecal" //lava_flow
+		"2" "P_hmn_land_impact_lava" //lava_rock_hot
 		"3" "P_hmn_bslam_concrete"
 		"4" "P_hmn_bslam_concrete"
 		"5" "P_hmn_bslam_concrete"

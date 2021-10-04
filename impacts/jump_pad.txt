@@ -1,0 +1,186 @@
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"none"
+		"whizby_sound_from_AI"		"none"
+	}
+
+	FX
+	{
+		"A" "none" //default silent (clip)
+		"B" "none" //Bloodyflesh?
+
+		"C" "none" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "none" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "none" // metal_titan
+		"F" "none" //flesh
+		"G" "none" //metalgrate, chainlink, chain
+		"H" "none" //alienflesh
+
+		"I" "none" //player_control_clip
+
+		"J" "P_hmn_footstep_dust" //grass
+		"K" "impact_mud" //Mud
+		"L" "none" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "none" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_slime" //Slime
+		"O" "P_hmn_footstep_dust" //Foliage
+		"P" "none" //Computer
+
+		"Q" "none" //Not listed
+
+		"R" "none" //metalpanel, grenade, canister
+		"S" "P_impact_water" //water, slime
+		"T" "none" //tile
+		"U" "none" //glass_breakable
+		"V" "none" //Metal Vent
+		"W" "none" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+		"X" "none" //xo_shield
+		"Y" "none" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_hmn_footstep_dust" //sand
+
+
+		//Hardcocded Surfacprops
+		"splash" "P_impact_water" //brush water
+		"slime_splash" "P_impact_slime"
+		"airburst" "none"  //No Surface
+		"shieldhit" "none" //Invisible armor
+		"holohit" "none" //Holopilot entity
+		"critical_hit" "none" //titan weekspots
+
+		"headshot_flesh" "none" //Human headshot
+		"headshot_mechanical" "none" //Robotic Headshot
+	}
+
+	Sound
+	{
+		"C" "Phys_Imp_JumpPad_Land_Concrete"
+		"D" "Phys_Imp_JumpPad_Land_Dirt"
+		"E" "Phys_Imp_JumpPad_Land_Metal"
+
+		"F" "Phys_Imp_JumpPad_Land_Concrete"
+		"G" "Phys_Imp_JumpPad_Land_Metal"
+		"H" "Phys_Imp_JumpPad_Land_Concrete"
+
+		"J" "Phys_Imp_JumpPad_Land_Grass"
+		"K" "Phys_Imp_JumpPad_Land_Mud"
+		"L" "Phys_Imp_JumpPad_Land_Dirt"
+		"M" "Phys_Imp_JumpPad_Land_Concrete"
+		"N" "Phys_Imp_JumpPad_Land_Concrete"
+		"O" "Phys_Imp_JumpPad_Land_Dirt"
+		"P" "Phys_Imp_JumpPad_Land_Metal"
+
+		"R" "Phys_Imp_JumpPad_Land_Metal"
+		"S" "Phys_Imp_JumpPad_Land_Concrete"
+		"T" "Phys_Imp_JumpPad_Land_Concrete"
+		"U" "Phys_Imp_JumpPad_Land_Concrete"
+
+		"V" "Phys_Imp_JumpPad_Land_Metal"
+		"W" "Phys_Imp_JumpPad_Land_Wood"
+		"X" "Phys_Imp_JumpPad_Land_Concrete"
+		"Y" "Phys_Imp_JumpPad_Land_Concrete"
+		"Z" "Phys_Imp_JumpPad_Land_Dirt"
+
+		"splash" "Phys_Imp_JumpPad_Land_Water"
+		"slime_splash" "Phys_Imp_JumpPad_Land_Water"
+
+		"airburst" ""
+		"shieldhit" "PulseBlade_SurfaceImpact_BubbleShield_3P"
+		"holohit" "HoloPilot_light_bulletimpact_holo_3p_vs_3p"
+
+	//	"headshot_flesh" ""
+	//	"headshot_mechanical" ""
+	}
+
+	Sound_attacker
+	{
+		"C" "Phys_Imp_JumpPad_Land_Concrete"
+		"D" "Phys_Imp_JumpPad_Land_Dirt"
+		"E" "Phys_Imp_JumpPad_Land_Metal"
+
+		"F" "Phys_Imp_JumpPad_Land_Concrete"
+		"G" "Phys_Imp_JumpPad_Land_Metal"
+		"H" "Phys_Imp_JumpPad_Land_Concrete"
+
+		"J" "Phys_Imp_JumpPad_Land_Grass"
+		"K" "Phys_Imp_JumpPad_Land_Mud"
+		"L" "Phys_Imp_JumpPad_Land_Dirt"
+		"M" "Phys_Imp_JumpPad_Land_Concrete"
+		"N" "Phys_Imp_JumpPad_Land_Concrete"
+		"O" "Phys_Imp_JumpPad_Land_Dirt"
+		"P" "Phys_Imp_JumpPad_Land_Metal"
+
+		"R" "Phys_Imp_JumpPad_Land_Metal"
+		"S" "Phys_Imp_JumpPad_Land_Concrete"
+		"T" "Phys_Imp_JumpPad_Land_Concrete"
+		"U" "Phys_Imp_JumpPad_Land_Concrete"
+
+		"V" "Phys_Imp_JumpPad_Land_Metal"
+		"W" "Phys_Imp_JumpPad_Land_Wood"
+		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "Phys_Imp_JumpPad_Land_Concrete"
+		"Z" "Phys_Imp_JumpPad_Land_Dirt"
+
+		"splash" "Phys_Imp_JumpPad_Land_Water"
+		"slime_splash" "Phys_Imp_JumpPad_Land_Water"
+
+		"airburst" ""
+		"shieldhit" "TitanShield.Light.BulletImpact_1P_vs_3P"
+		"holohit" "HoloPilot_light_bulletimpact_holo_1p_vs_3p_V2"
+
+	//	"headshot_flesh" ""
+	//	"headshot_mechanical" ""
+	}
+
+	Sound_victim
+	{
+		"C" "Phys_Imp_JumpPad_Land_Concrete"
+		"D" "Phys_Imp_JumpPad_Land_Dirt"
+		"E" "Phys_Imp_JumpPad_Land_Metal"
+
+		"F" "Phys_Imp_JumpPad_Land_Concrete"
+		"G" "Phys_Imp_JumpPad_Land_Metal"
+		"H" "Phys_Imp_JumpPad_Land_Concrete"
+
+		"J" "Phys_Imp_JumpPad_Land_Grass"
+		"K" "Phys_Imp_JumpPad_Land_Mud"
+		"L" "Phys_Imp_JumpPad_Land_Dirt"
+		"M" "Phys_Imp_JumpPad_Land_Concrete"
+		"N" "Phys_Imp_JumpPad_Land_Concrete"
+		"O" "Phys_Imp_JumpPad_Land_Dirt"
+		"P" "Phys_Imp_JumpPad_Land_Metal"
+
+		"R" "Phys_Imp_JumpPad_Land_Metal"
+		"S" "Phys_Imp_JumpPad_Land_Concrete"
+		"T" "Phys_Imp_JumpPad_Land_Concrete"
+		"U" "Phys_Imp_JumpPad_Land_Concrete"
+
+		"V" "Phys_Imp_JumpPad_Land_Metal"
+		"W" "Phys_Imp_JumpPad_Land_Wood"
+		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "Phys_Imp_JumpPad_Land_Concrete"
+		"Z" "Phys_Imp_JumpPad_Land_Dirt"
+
+		"splash" "Phys_Imp_JumpPad_Land_Water"
+		"slime_splash" "Phys_Imp_JumpPad_Land_Water"
+
+		"airburst" ""
+		"shieldhit" "PulseBlade_SurfaceImpact_BubbleShield_3P"
+		"holohit" "holopilot_impacts"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "Flesh.BulletImpact_3P_vs_1P"
+		//"headshot_mechanical" "Android.Light.BulletImpact_3P_vs_1P"
+	}
+
+	Sound_victim_from_AI
+	{
+		"F" "Phys_Imp_JumpPad_Land_Concrete"
+		"P" "Phys_Imp_JumpPad_Land_Metal"
+
+		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
+		//"headshot_flesh" "Flesh.BulletImpact_3P_vs_1P"
+		//"headshot_mechanical" "Android.Light.BulletImpact_3P_vs_1P"
+	}
+}

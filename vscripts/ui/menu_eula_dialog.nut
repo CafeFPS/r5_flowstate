@@ -1,6 +1,5 @@
 global function InitEULADialog
 global function OpenEULADialog
-global function OpenEULAReviewFromFooter
 global function IsEULAAccepted
 global function IsLobbyAndEULAAccepted
 
@@ -10,12 +9,13 @@ struct
 	var agreement
 	var acknowledgement
 	var footersPanel
+	var parentMenuPanel
 	int eulaVersion
 	bool reviewing
 } file
 
 
-void function InitEULADialog()
+void function InitEULADialog( var newMenuArg )
 {
 	var menu = GetMenu( "EULADialog" )
 	file.menu = menu
@@ -62,15 +62,10 @@ bool function IsNotReviewingAndEUVersion()
 }
 
 
-void function OpenEULAReviewFromFooter( var button )
-{
-	OpenEULADialog( true )
-}
-
-
-void function OpenEULADialog( bool review )
+void function OpenEULADialog( bool review, var parentMenu = null )
 {
 	file.reviewing = review
+	file.parentMenuPanel = parentMenu
 	AdvanceMenu( file.menu )
 }
 
@@ -78,6 +73,13 @@ void function OpenEULADialog( bool review )
 void function EULADialog_OnOpen()
 {
 	file.eulaVersion = GetCurrentEULAVersion()
+
+	if( file.reviewing && file.parentMenuPanel != null )
+		ScrollPanel_SetActive( file.parentMenuPanel, false )
+		
+	RegisterStickMovedCallback( ANALOG_RIGHT_Y, FocusAgreementForScrolling )
+	RegisterButtonPressedCallback( BUTTON_DPAD_UP, FocusAgreementForScrolling )
+	RegisterButtonPressedCallback( BUTTON_DPAD_DOWN, FocusAgreementForScrolling )
 
 	var frameElem = Hud_GetChild( file.menu, "DialogFrame" )
 	RuiSetImage( Hud_GetRui( frameElem ), "basicImage", $"rui/menu/common/dialog_gradient" )
@@ -104,6 +106,13 @@ void function EULADialog_OnClose()
 		else
 			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, "", Localize( "#MAINMENU_CONTINUE" ) )
 	}
+
+	if( file.reviewing && file.parentMenuPanel != null )
+		ScrollPanel_SetActive( file.parentMenuPanel, true )
+
+	DeregisterStickMovedCallback( ANALOG_RIGHT_Y, FocusAgreementForScrolling )
+	DeregisterButtonPressedCallback( BUTTON_DPAD_UP, FocusAgreementForScrolling )
+	DeregisterButtonPressedCallback( BUTTON_DPAD_DOWN, FocusAgreementForScrolling )
 }
 
 
@@ -123,4 +132,10 @@ bool function IsEULAAccepted()
 bool function IsLobbyAndEULAAccepted()
 {
 	return IsLobby() &&	IsEULAAccepted()
+}
+
+void function FocusAgreementForScrolling( ... )
+{
+	if( !Hud_IsFocused( file.agreement ) )
+		Hud_SetFocused( file.agreement );
 }

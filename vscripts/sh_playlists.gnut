@@ -1,0 +1,348 @@
+//=========================================================
+//	sh_playlists.gnut
+//=========================================================
+
+#if CLIENT || UI
+global function ShPlaylists_LevelInit
+
+global function GetCurrentPlaylistVarTimestamp
+global function GetMaxTeamSizeForPlaylist
+global function GetPlaylistMaps
+
+global function GetVisiblePlaylistNames
+global function GetPlaylistIndexForName
+global function Playlist_GetLTMSlotPlaylist
+global function Playlist_GetEndUnixTimeForCurrentScheduleBlock
+#endif
+
+#if CLIENT || UI
+global function CanPlaylistFitPartySize
+global function GetModeEmblemImage
+#endif
+
+#if CLIENT || UI && R5DEV
+global function PrintPlaylists
+#endif
+
+#if UI
+global function GetEmblemColor
+#endif
+
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+global typedef PlaylistName string
+global typedef PlaylistVarName string
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+#if SERVER || CLIENT || UI
+struct FileStruct_LifetimeLevel
+{
+	//
+}
+FileStruct_LifetimeLevel& fileLevel
+#endif
+
+
+#if ASSERTING
+var ASSERTING_integerRegexp = null
+var ASSERTING_floatRegexp = null
+#endif
+
+const int OUTSIDE_OF_VALID_SCHEDULE_BLOCKS = 0
+#if SERVER || CLIENT || UI
+const table<string, asset> GAMEMODE_EMBLEM_MAP = {
+	shotguns_and_snipers = $"rui/menu/gamemode_emblem/shotguns_and_snipers",
+	shadowfall           = $"rui/menu/gamemode_emblem/shadowfall",
+	duos                 = $"rui/menu/gamemode_emblem/duos",
+	winter_express       = $"rui/menu/gamemode_emblem/winter_express",
+
+}
+#endif
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+#if CLIENT || UI
+void function ShPlaylists_LevelInit()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+}
+#endif
+
+#if CLIENT || UI 
+int ornull function GetCurrentPlaylistVarTimestamp( string varName, int defaultVal )
+{
+	return DateTimeStringToUnixTimestamp( GetCurrentPlaylistVarString( varName, string(defaultVal) ) )
+}
+#endif
+
+#if CLIENT || UI
+int function GetMaxTeamSizeForPlaylist( PlaylistName playlistName )
+{
+	int maxTeamSize = GetPlaylistVarInt( playlistName, "max_team_size", 0 )
+	if ( maxTeamSize > 0 )
+		return maxTeamSize
+
+	int maxPlayers = GetPlaylistVarInt( playlistName, "max_players", 0 )
+	int maxTeams   = GetPlaylistVarInt( playlistName, "max_teams", 0 )
+	if ( maxTeams == 0 )
+		return maxPlayers
+	return maxPlayers / maxTeams
+}
+#endif
+
+
+#if CLIENT || UI
+array<string> function GetPlaylistMaps( PlaylistName playlistName )
+{
+	array<string> mapsArray
+
+	int numModes = GetPlaylistGamemodesCount( playlistName )
+	for ( int modeIndex = 0; modeIndex < numModes; modeIndex++ )
+	{
+		int numMaps = GetPlaylistGamemodeByIndexMapsCount( playlistName, modeIndex )
+		for ( int mapIndex = 0; mapIndex < numMaps; mapIndex++ )
+		{
+			string mapName = GetPlaylistGamemodeByIndexMapByIndex( playlistName, modeIndex, mapIndex )
+			if ( mapsArray.contains( mapName ) )
+				continue
+
+			mapsArray.append( mapName )
+		}
+	}
+
+	return mapsArray
+}
+#endif
+
+
+#if CLIENT || UI
+bool function CanPlaylistFitPartySize( PlaylistName playlistName, int partySize, bool sendOpenInvite )
+{
+	int maxPlayersPerTeam = GetMaxTeamSizeForPlaylist( playlistName )
+	if ( partySize > maxPlayersPerTeam )
+		return false
+
+	if ( sendOpenInvite && maxPlayersPerTeam == 1 )
+		return false
+
+	bool partiesAllowed   = GetPlaylistVarBool( playlistName, "parties_allowed", true )
+	if ( !partiesAllowed )
+	{
+		if ( partySize > 1 )
+			return false
+
+		if ( sendOpenInvite )
+			return false
+	}
+
+	return true
+}
+#endif
+
+
+#if CLIENT || UI
+int function GetPlaylistIndexForName( PlaylistName playlistName )
+{
+	int count = GetPlaylistCount()
+	for ( int idx = 0; idx < count; ++idx )
+	{
+		string ornull thisPlaylist = GetPlaylistName( idx )
+		if ( thisPlaylist == playlistName )
+			return idx
+	}
+
+	return -1
+}
+#endif
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+int function Playlist_GetEndUnixTimeForCurrentScheduleBlock( string plName )
+{
+	int utNow = GetUnixTimestamp()
+	bool foundAScheduleBlock = false
+	const int MAX_SCHEDULE_BLOCKS_PER_PLAYLIST = 5
+	for ( int idx = 0; idx < MAX_SCHEDULE_BLOCKS_PER_PLAYLIST; ++idx )
+	{
+		string settingName = format( "visible_schedule_block_%d", idx )
+		string str = GetPlaylistVarString( plName, settingName, "" )
+		if ( str.len() == 0 )
+			continue
+
+		foundAScheduleBlock = true
+
+		array<string> fields = GetTrimmedSplitString( str, "|" )
+		if ( fields.len() != 2 )
+		{
+			Assert( false, format( "Bad format in playlist '%s' for setting '%s': '%s'", plName, settingName, str ) )
+			return OUTSIDE_OF_VALID_SCHEDULE_BLOCKS
+		}
+
+		int ornull startTime = DateTimeStringToUnixTimestamp( fields[0] )
+		int ornull endTime = DateTimeStringToUnixTimestamp( fields[1] )
+		if ( (startTime == null) || (endTime == null) )
+		{
+			Assert( false, format( "Bad format in playlist '%s' for setting '%s': '%s'", plName, settingName, str ) )
+			return OUTSIDE_OF_VALID_SCHEDULE_BLOCKS
+		}
+
+		expect int( startTime )
+		expect int( endTime )
+		if ( (utNow >= startTime) && (utNow < endTime) )
+			return endTime
+	}
+
+	if ( foundAScheduleBlock )
+		return OUTSIDE_OF_VALID_SCHEDULE_BLOCKS
+
+	return -1
+}
+
+bool function PlaylistShouldBeHiddenForScheduleBlocks( string plName )
+{
+	int utEndTime = Playlist_GetEndUnixTimeForCurrentScheduleBlock( plName )
+	if ( utEndTime == OUTSIDE_OF_VALID_SCHEDULE_BLOCKS )
+		return true
+
+	return false
+}
+/* // TODO: SERVER SCRIPT COMPILE ERROR: Attempted to return type "var" from function with return type "array< int >" (return type of "ColorStringToArray" is "var")
+array<int> function GetEmblemColor( string playlistName )
+{
+	string colorString = GetPlaylistVarString( playlistName, "emblem_color", "128 128 128 255" )
+	return ColorStringToArray( colorString )
+}*/
+
+array<string> function GetVisiblePlaylistNames()
+{
+	int numPlaylists          = GetPlaylistCount()
+	//bool pveLoadingIsForcedOn = IsPvELoadingForcedOn()
+
+	string forcedVisiblePlaylistsString  = GetConVarString( "match_visiblePlaylists" )
+	array<string> forcedVisiblePlaylists = split( forcedVisiblePlaylistsString, " " )
+
+	array<string> list      = []
+	array<string> optInList = []
+	for ( int i = 0; i < numPlaylists; i++ )
+	{
+		string name    = string( GetPlaylistName( i ) )
+		bool visible   = GetPlaylistVarBool( name, "visible", false )
+		bool hubOnly   = GetPlaylistVarBool( name, "hub_only", false )
+		bool optInOnly = GetPlaylistVarBool( name, "opt_in_only", false )
+		//bool isPvEOnly = GetPlaylistVarBool( name, "pve_only", false )
+
+		//if ( pveLoadingIsForcedOn != isPvEOnly )
+		//	continue
+
+		if ( forcedVisiblePlaylists.contains( name ) )
+		{
+			list.append( name )
+			continue
+		}
+
+		if ( !visible )
+			continue
+
+		if ( hubOnly )
+			continue
+
+		if ( optInOnly )
+		{
+			/*if ( ShouldDisplayOptInOptions() )
+			{
+				if ( uiGlobal.isOptInEnabled )
+					optInList.append( name )
+			}*/
+			continue
+		}
+
+		list.append( name )
+	}
+
+	array<string> finalList = []
+
+	if ( forcedVisiblePlaylists.len() > 0 )
+	{
+		foreach ( string name in list )
+		{
+			if ( !forcedVisiblePlaylists.contains( name ) )
+				continue
+
+			finalList.append( name )
+		}
+	}
+
+	if ( finalList.len() == 0 )
+		finalList = list
+
+	finalList.extend( optInList )
+
+	return finalList
+}
+
+string function Playlist_GetLTMSlotPlaylist()
+{
+	array<string> plNames = GetVisiblePlaylistNames()
+	foreach( plName in plNames )
+	{
+		string uiSlot = GetPlaylistVarString( plName, "ui_slot", "" )
+		if ( uiSlot == "ltm" )
+			return plName
+	}
+
+	return ""
+}
+
+
+asset function GetModeEmblemImage( string playlistName )
+{
+	string emblemKey = GetPlaylistVarString( playlistName, "emblem", "" )
+	asset emblemImage = $""
+
+	if ( emblemKey != "" )
+	{
+		if ( emblemKey in GAMEMODE_EMBLEM_MAP )
+			emblemImage = GAMEMODE_EMBLEM_MAP[emblemKey]
+		else
+			Warning( "Playlist '%s' has invalid value for 'emblem': %s", playlistName, emblemKey )
+	}
+
+	return emblemImage
+}
+#if UI
+array<int> function GetEmblemColor( string playlistName )
+{
+	string colorString = GetPlaylistVarString( playlistName, "emblem_color", "128 128 128 255" )
+	return ColorStringToArray( colorString )
+}
+#endif
+
+#if CLIENT || UI && R5DEV
+void function PrintPlaylists()
+{
+	printt( "=== PLAYLIST NAMES: ===" )
+
+	int count = GetPlaylistCount()
+	for ( int idx = 0; idx < count; idx++ )
+	{
+		printt( "--", GetPlaylistName( idx ) )
+	}
+}
+#endif

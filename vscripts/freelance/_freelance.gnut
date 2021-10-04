@@ -1,0 +1,5 @@
+global function GamemodeFreelance_Init
+
+void function GamemodeFreelance_Init()
+{
+}

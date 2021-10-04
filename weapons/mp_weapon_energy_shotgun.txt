@@ -14,9 +14,11 @@ WeaponData
 	"menu_icon"										"rui/weapon_icons/r5/weapon_peacekeeper"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_peacekeeper"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"shotgun"
 
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 
 	// Menu
 	"menu_category"                                 "shotgun"
@@ -30,6 +32,8 @@ WeaponData
 	"viewmodel"   									"mdl/weapons/peacekeeper/ptpov_peacekeeper.rmdl"
 	"playermodel" 									"mdl/weapons/peacekeeper/w_peacekeeper.rmdl"
 
+    "OnWeaponActivate"                              "OnWeaponActivate_weapon_energy_shotgun"
+    "OnWeaponDeactivate"                            "OnWeaponDeactivate_weapon_energy_shotgun"
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_energy_shotgun"
 	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_energy_shotgun"
 	"OnWeaponChargeLevelIncreased"					"OnWeaponChargeLevelIncreased_weapon_energy_shotgun"
@@ -42,6 +46,7 @@ WeaponData
 	"charge_cooldown_time"							"1.0"
 	"charge_cooldown_delay"   						"0.0"
 	"charge_is_triggered_by_ADS"					"1"
+	"charge_fraction_scales_anim_rate"				"1"
 	"charge_end_forces_fire"						"0"
 	"charge_remain_full_when_fired"                 "0"
 	"charge_effect_1p"								"P_mflash_nrg_shot_charge_FP"
@@ -49,6 +54,11 @@ WeaponData
 	"charge_effect_attachment"						"muzzle_flash"
 
 	"projectiles_per_shot" 							"11"
+
+	"blast_pattern"									"energy_shotgun"
+	"blast_pattern_zero_distance"        			"512.0"
+	"blast_pattern_default_scale"        			"1.5"
+	"blast_pattern_npc_scale"            			"1.8"  // scales on top of the default
 
 	// Effects
 	"tracer_effect"   								""
@@ -61,6 +71,8 @@ WeaponData
 	"projectile_adjust_to_gun_barrel"				"1"
 	"projectile_do_predict_impact_effects"			"1"
 	"entity_color_from_charge"						"1"
+
+	"chroma_color"									"1 .2 .2"
 
 	"sound_dryfire"									"shotgun_dryfire"
 	"sound_pickup"									"wpn_pickup_Rifle_1P"
@@ -125,8 +137,6 @@ WeaponData
     "damage_rodeo" 									"550"
     "damage_near_distance"							"100"
     "damage_far_distance" 							"750"
-
-    "damage_heavyarmor_nontitan_scale"				"0.35"
 
 	// NPC
 	"proficiency_poor_spreadscale"					"7.0"
@@ -211,10 +221,6 @@ WeaponData
 	"viewmodel_shake_right"							"0.0"
 
 	// Crosshair Spread
-
-	"projectile_blast_pattern_zero_distance"        "512.0"
-	"projectile_blast_pattern_default_scale"        "1.5"
-	"projectile_blast_pattern_npc_scale"            "1.8"  // scales on top of the default
 
 	// CUSTOM- choke spread fractions for each charge level
 	"projectile_spread_choke_frac_1" 				"1.0"
@@ -339,24 +345,69 @@ WeaponData
 			// NOTE: since the weapon's main settings file has the same Mod and Key names as the _base_shotgun_bolts,
 			//  it keeps this fire_rate keyvalue pair instead of combining math operations on it with the _base_shotgun_bolts
 			"fire_rate" 		"*1.0"
-			"rechamber_time" 	"*0.9"
+			"rechamber_time" 	"*0.925"
 		}
 
 		shotgun_bolt_l2
 		{
 			"fire_rate" 		"*1.0"
-			"rechamber_time" 	"*0.8"
+			"rechamber_time" 	"*0.87"
 		}
 
 		shotgun_bolt_l3
 		{
 			"fire_rate" 		"*1.0"
-			"rechamber_time" 	"*0.75"
+			"rechamber_time" 	"*0.84"
 		}
+
+                         
+                 
+   
+                       
+                            
+                                
+   
+      
 
 		npc_shotgunner
 		{
 			"projectiles_per_shot"	"6"
+		}
+
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
+
+        //Legendary Ice Charge VFX - Skin 1
+        legendary_nrg_ice_reactive_charge
+		{
+			"charge_effect_1p"								"P_nrg_ice_charge_FP"
+			"charge_effect_3p"								"P_nrg_ice_charge_3P"
+		}
+
+		//Legendary Crystal Charge VFX - Skin 2
+        legendary_nrg_crys_reactive_charge
+		{
+			"charge_effect_1p"								"P_nrg_crys_charge_FP"
+			"charge_effect_3p"								"P_nrg_crys_charge_3P"
+		}
+
+		//Legendary Ice Muzzle Flash - Skin 1
+		legendary_nrg_ice_muzzle_flash
+		{
+			"fx_muzzle_flash_view"							"P_nrg_ice_mflash"
+			"fx_muzzle_flash_attach"						"muzzle_flash"
+		}
+
+		//Legendary Crystal Muzzle Flash - Skin 2
+		legendary_nrg_crys_muzzle_flash
+		{
+			"fx_muzzle_flash_view"							"P_nrg_crys_mflash"
+			"fx_muzzle_flash_attach"						"muzzle_flash"
 		}
 	}
 

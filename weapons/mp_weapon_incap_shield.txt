@@ -14,8 +14,10 @@ WeaponData
 
     "zoom_effects"									"0"
 
+	"weapon_type_flags"								"WPT_INCAP_SHIELD"
 	"weaponClass" 									"human"
-	"fire_mode"   									"semiauto"
+	"fire_mode"                                    "automatic"
+    "is_semi_auto"                                  "1"
 	"minimap_reveal_distance"						"32000"
 	"fast_swap_to"									"1"
 

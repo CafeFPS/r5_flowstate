@@ -1,7 +1,7 @@
 global function ShTutorial_Init
 
 #if SERVER
-global function SetTurorialContext
+global function SetTutorialContext
 global function IsTutorialContextCompleted
 global function UpdateActionCount
 #endif
@@ -61,7 +61,7 @@ struct
 	table< entity, array<bool> >        playerTutorialContextHistory
 } file
 
-table<int, void functionref( entity player ) > baseInputCallacks
+table<int, void functionref( entity player ) > baseInputCallbacks
 
 void function ShTutorial_Init()
 {
@@ -72,13 +72,14 @@ void function ShTutorial_Init()
 		AddCallback_OnClientConnected( OnPlayerConnected )
 	#elseif CLIENT
 		AddCallback_OnClientScriptInit( OnLocalClientConnected )
+		AddCallback_OnSettingsUpdated( UpdateTutorialWhenOptionsChange )
 		RegisterNetworkedVariableChangeCallback_int( "tutorialContext", OnTutorialContextChanged )
 	#endif
 
 	for( int i = eTutorialContext.NONE ; i < eTutorialContext._count ; i++ )
 		file.contextInputHintMap[i] <- []
 
-	AddInputHint( eTutorialContext.MOVEMENT, IN_FORWARD, "%[S2_UP|forward]%", "#SURVIVAL_TRAINING_MOVE", TryActionMove )
+	AddInputHint( eTutorialContext.MOVEMENT, IN_FORWARD, "%[S2_UP|forward]%", "#SURVIVAL_TRAINING_MOVE", TryActionMove, "", null, "%S2_UP%" )
 	AddInputHint( eTutorialContext.MOVEMENT, -1, "%speed%", "#SURVIVAL_TRAINING_SPRINT", TryActionSprint )
 	AddInputHint( eTutorialContext.MOVEMENT, IN_JUMP, "%jump%", "#SURVIVAL_TRAINING_JUMP", TryActionJump )
 	AddInputHint( eTutorialContext.MOVEMENT, -1, "%duck%", "#SURVIVAL_TRAINING_SLIDE", TryActionSlide )
@@ -138,7 +139,7 @@ void function ShTutorial_Init()
 }
 
 #if SERVER
-void function SetTurorialContext( entity player, int context )
+void function SetTutorialContext( entity player, int context )
 {
 	Assert( context >= eTutorialContext.NONE && context < eTutorialContext._count )
 	player.SetPlayerNetInt( "tutorialContext", context )
@@ -153,18 +154,18 @@ void function OnPlayerConnected( entity player )
 
 		if ( inputHint.triggerButtonEnum == IN_FORWARD )
 		{
-			AddPlayerPressedForwardCallback( player, baseInputCallacks[inputHint.triggerButtonEnum], 1.0, true )
-			AddPlayerPressedBackCallback( player, baseInputCallacks[inputHint.triggerButtonEnum], 1.0, true )
+			AddPlayerPressedForwardCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum], 1.0, true )
+			AddPlayerPressedBackCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum], 1.0, true )
 		}
 		else
 		{
-			AddOptionalButtonPressedPlayerInputCallback( player, inputHint.triggerButtonEnum, baseInputCallacks[inputHint.triggerButtonEnum] )
+			AddOptionalButtonPressedPlayerInputCallback( player, inputHint.triggerButtonEnum, baseInputCallbacks[inputHint.triggerButtonEnum] )
 		}
 
 		if ( inputHint.triggerButtonEnum == IN_DUCK )
-			AddOptionalButtonPressedPlayerInputCallback( player, IN_DUCKTOGGLE, baseInputCallacks[IN_DUCK] )
+			AddOptionalButtonPressedPlayerInputCallback( player, IN_DUCKTOGGLE, baseInputCallbacks[IN_DUCK] )
 		if ( inputHint.triggerButtonEnum == IN_ZOOM )
-			AddOptionalButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, baseInputCallacks[IN_ZOOM] )
+			AddOptionalButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, baseInputCallbacks[IN_ZOOM] )
 	}
 
 	thread TutorialContextPlayerThink( player )
@@ -182,7 +183,7 @@ void function TutorialContextPlayerThink( entity player )
 			if ( !IsValid( player ) )
 				return
 
-			SetTurorialContext( player, eTutorialContext.NONE )
+			SetTutorialContext( player, eTutorialContext.NONE )
 
 			foreach ( index, inputHint in file.inputHints )
 			{
@@ -191,18 +192,18 @@ void function TutorialContextPlayerThink( entity player )
 
 				if ( inputHint.triggerButtonEnum == IN_FORWARD )
 				{
-					RemovePlayerPressedForwardCallback( player, baseInputCallacks[inputHint.triggerButtonEnum] )
-					RemovePlayerPressedBackCallback( player, baseInputCallacks[inputHint.triggerButtonEnum] )
+					RemovePlayerPressedForwardCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum] )
+					RemovePlayerPressedBackCallback( player, baseInputCallbacks[inputHint.triggerButtonEnum] )
 				}
 				else
 				{
-					RemoveButtonPressedPlayerInputCallback( player, inputHint.triggerButtonEnum, baseInputCallacks[inputHint.triggerButtonEnum] )
+					RemoveButtonPressedPlayerInputCallback( player, inputHint.triggerButtonEnum, baseInputCallbacks[inputHint.triggerButtonEnum] )
 				}
 
 				if ( inputHint.triggerButtonEnum == IN_DUCK )
-					RemoveButtonPressedPlayerInputCallback( player, IN_DUCKTOGGLE, baseInputCallacks[IN_DUCK] )
+					RemoveButtonPressedPlayerInputCallback( player, IN_DUCKTOGGLE, baseInputCallbacks[IN_DUCK] )
 				if ( inputHint.triggerButtonEnum == IN_ZOOM_TOGGLE )
-					RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, baseInputCallacks[IN_ZOOM] )
+					RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, baseInputCallbacks[IN_ZOOM] )
 			}
 		}
 	)
@@ -217,7 +218,7 @@ void function TutorialContextPlayerThink( entity player )
 	{
 		if ( tutorialContext != lastTutorialContext )
 		{
-			SetTurorialContext( player, tutorialContext )
+			SetTutorialContext( player, tutorialContext )
 		}
 
 		lastTutorialContext = tutorialContext
@@ -307,7 +308,7 @@ void function InitPlayerTutorialContextHistory( entity player, bool forceReset =
 
 void function ResetPlayerTutorialContext( entity player, int tutorialContext )
 {
-	player.SetPersistentVar( "tutorialActionCount[" + tutorialContext + "]", 0 )
+	//player.SetPersistentVar( "tutorialActionCount[" + tutorialContext + "]", 0 ) // TODO: Add persistence var
 }
 
 
@@ -319,7 +320,7 @@ bool function WasTutorialContextCompleted( entity player, int tutorialContext )
 
 bool function IsTutorialContextCompleted( entity player, int tutorialContext )
 {
-	array<InputHint> inputHints = file.contextInputHintMap[tutorialContext]
+	/*array<InputHint> inputHints = file.contextInputHintMap[tutorialContext]
 
 	int contextBitField = player.GetPersistentVarAsInt( "tutorialActionCount[" + tutorialContext + "]" )
 
@@ -329,7 +330,7 @@ bool function IsTutorialContextCompleted( entity player, int tutorialContext )
 			continue
 
 		return false
-	}
+	}*/
 
 	return true
 }
@@ -337,7 +338,7 @@ bool function IsTutorialContextCompleted( entity player, int tutorialContext )
 
 void function SetTutorialInputCompleted( entity player, InputHint completedHint )
 {
-	array<InputHint> inputHints = file.contextInputHintMap[completedHint.context]
+	/*array<InputHint> inputHints = file.contextInputHintMap[completedHint.context]
 
 	int contextBitField = player.GetPersistentVarAsInt( "tutorialActionCount[" + completedHint.context + "]" )
 
@@ -349,7 +350,7 @@ void function SetTutorialInputCompleted( entity player, InputHint completedHint 
 		contextBitField = contextBitField | (1 << bitIndex)
 		player.SetPersistentVar( "tutorialActionCount[" + completedHint.context + "]", contextBitField )
 		break
-	}
+	}*/ // TODO: [SERVER] Persistent data not available for client #0
 }
 
 
@@ -366,20 +367,20 @@ void function UpdateActionCount( entity player, InputHint inputHint )
 
 #elseif CLIENT
 void function OnLocalClientConnected( entity player )
-{
-	//int usedIndices = 0
-	//foreach ( index, inputHint in file.inputHints )
-	//{
-	//	if ( player.GetPersistentVar( "tutorialActionCount[" + index + "]" ) < 5 )
-	//	{
-	//		var hintRui = CreateCockpitRui( $"ui/tutorial_hint_line.rpak" )
-	//		RuiSetString( hintRui, "hintText", inputHint.hintText )
-	//		RuiSetInt( hintRui, "hintOffset", usedIndices )
-	//
-	//		inputHint.rui = hintRui
-	//		usedIndices++
-	//	}
-	//}
+{/*
+	int usedIndices = 0
+	foreach ( index, inputHint in file.inputHints )
+	{
+		if ( player.GetPersistentVar( "tutorialActionCount[" + index + "]" ) < 5 )
+		{
+			var hintRui = CreateCockpitRui( $"ui/tutorial_hint_line.rpak" )
+			RuiSetString( hintRui, "hintText", inputHint.hintText )
+			RuiSetInt( hintRui, "hintOffset", usedIndices )
+	
+			inputHint.rui = hintRui
+			usedIndices++
+		}
+	}*/
 }
 
 
@@ -419,6 +420,8 @@ void function OnTutorialContextChanged( entity player, int old, int new, bool ac
 		if ( inputHint.altHintCallback != null )
 			inputHint.altHintCallback( player, inputHint )
 	}
+
+	UpdateTutorialBindingIcons()
 
 	thread ClientTutorialContextThink( player, new )
 }
@@ -503,6 +506,43 @@ int function GetHintIndexForButtonEnum( int buttonEnum )
 	return -1
 }
 
+#if CLIENT
+void function UpdateTutorialBindingIcons()
+{
+	array<InputHint> movementHints = file.contextInputHintMap[eTutorialContext.MOVEMENT]
+	for ( int i = 0; i < movementHints.len(); ++i )
+	{
+		if ( movementHints[i].rui == null )
+			continue
+
+		if ( movementHints[i].triggerButtonEnum == IN_FORWARD )
+		{
+			int stickLayout = GetConVarInt( "gamepad_stick_layout" )
+			Assert( stickLayout >= 0 && stickLayout <= 3 )
+			string gamepadHintStringForMovement = ""
+
+			if ( stickLayout == 0 )
+				gamepadHintStringForMovement = "%S2_UP%"
+			else if ( stickLayout == 1 )
+				gamepadHintStringForMovement = "%S1_UP%"
+			else if ( stickLayout == 2 || stickLayout == 3 )
+				gamepadHintStringForMovement = "%S2_UP% %S1_UP%"
+
+			movementHints[i].gamepadButtonText = gamepadHintStringForMovement
+
+			RuiSetString( movementHints[i].rui, "gamepadButtonText", movementHints[i].gamepadButtonText )
+
+			break
+		}
+	}
+}
+
+void function UpdateTutorialWhenOptionsChange()
+{
+	UpdateTutorialBindingIcons()
+}
+#endif
+
 void function AddInputHint( int hintContext, int triggerButtonEnum, string buttonText, string hintText, bool functionref( entity, InputHint ) inputPressedCallback, string altHintText = "", void functionref( entity, InputHint ) altHintCallback = null, string gamePadButtonText = "" )
 {
 	InputHint inputHint
@@ -525,7 +565,7 @@ void function AddInputHint( int hintContext, int triggerButtonEnum, string butto
 		if ( triggerButtonEnum <= 0 )
 			return
 
-		baseInputCallacks[triggerButtonEnum] <- void function( entity player ) : (triggerButtonEnum) {
+		baseInputCallbacks[triggerButtonEnum] <- void function( entity player ) : (triggerButtonEnum) {
 			RunInputHintCallback( player, triggerButtonEnum )
 		}
 	#endif

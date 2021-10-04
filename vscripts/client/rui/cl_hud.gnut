@@ -231,13 +231,15 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 	bool showStackingDamageText = (styleSetting == DAMAGE_TEXT_STYLE_STACKING_ONLY || styleSetting == DAMAGE_TEXT_STYLE_BOTH)
 	bool showFloatingDamageText = (styleSetting == DAMAGE_TEXT_STYLE_FLOATING_ONLY || styleSetting == DAMAGE_TEXT_STYLE_BOTH)
 
-	bool isShieldShot    = (damageType & DF_SHIELD_DAMAGE) ? true : false
-	bool isCritShot      = (damageType & DF_CRITICAL) ? true : false
-	bool isHeadShot      = (damageType & DF_HEADSHOT) ? true : false
-	bool isKillShot      = (damageType & DF_KILLSHOT) ? true : false
-	bool isKOShieldShot  = (damageType & DAMAGEFLAG_VICTIM_HAS_VORTEX) ? true : false
-	bool isKnockdownShot = (damageType & DF_KNOCKDOWN) ? true : false
-	bool isShieldBreak   = (damageType & DF_SHIELD_BREAK) ? true : false
+	bool isShieldShot    	= (damageType & DF_SHIELD_DAMAGE) ? true : false
+	bool isCritShot      	= (damageType & DF_CRITICAL) ? true : false
+	bool isHeadShot      	= (damageType & DF_HEADSHOT) ? true : false
+	bool isKillShot      	= (damageType & DF_KILLSHOT) ? true : false
+	bool isKOShieldShot  	= (damageType & DAMAGEFLAG_VICTIM_HAS_VORTEX) ? true : false
+	bool isKnockdownShot 	= (damageType & DF_KNOCKDOWN) ? true : false
+	bool isShieldBreak   	= (damageType & DF_SHIELD_BREAK) ? true : false
+	bool isShadowShot    	= (damageType & DF_SHADOW_DAMAGE) ? true: false
+	bool isOvershieldShot	= (damageType & DF_OVERSHIELD) ? true : false
 
 	int sortKey = (file.lastSortKey++) % 100
 
@@ -249,6 +251,12 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		shieldIcon = shieldData.hudIcon
 		shieldLevel = shieldData.tier//GetArmorLevelFromDamageFlags( damageFlags )
 	}
+	
+	if ( victim.IsPlayer() && isShadowShot )
+	{
+		//
+	}
+	
 	if ( !victim.IsPlayer() && (isKOShieldShot || hitType == eHitType.VORTEX) )
 	{
 		entity shieldOwner = victim.GetOwner()
@@ -266,6 +274,12 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 				shieldLevel = 1
 			}
 		}
+	}
+
+	if ( victim.IsPlayer() && isOvershieldShot )
+	{
+		shieldIcon = GIBRALTAR_PASSIVE_ICON
+		shieldLevel = 1
 	}
 
 	if ( showHitIndicator )
@@ -427,7 +441,7 @@ bool function ShouldShowProjectileHitDot( int damageType, entity weapon )
 	if ( !IsValid( weapon ) )
 		return false
 
-	#if DEV
+	#if R5DEV
 		// disables hit dots for video capture
 		if ( GetCurrentPlaylistVarBool( "hud_projectile_hit_dots_disabled", false ) )
 			return false

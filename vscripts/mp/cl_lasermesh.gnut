@@ -1,0 +1,92 @@
+const FX_LASER = $"P_security_laser"
+
+struct
+{
+	int playerIsIndoors
+	var scanningHudElem
+	var ruiFloatText1
+	var ruiFloatText2
+	bool isCoreDataDownloadComplete = false
+	int colorCorrectionOvergrown
+	int colorCorrectionPristine
+	int colorCorrectionFrozen
+	array<entity> laserMeshEnts
+} file
+
+global function ClLaserMesh_Init
+
+void function ClLaserMesh_Init()
+{
+	StatusEffect_RegisterEnabledCallback( eStatusEffect.laser_mesh, LaserMeshEnable )
+	StatusEffect_RegisterDisabledCallback( eStatusEffect.laser_mesh, LaserMeshDisable )
+	RegisterSignal( "StopLaserMesh" )
+}
+
+void function LaserMeshEnable( entity maxs, int statusEffect, bool actuallyChanged )
+{
+	thread LaserMeshClientThread( maxs, actuallyChanged )
+}
+
+void function LaserMeshDisable( entity maxs, int statusEffect, bool actuallyChanged )
+{
+	maxs.Signal( "StopLaserMesh" )
+}
+
+void function LaserMeshClientThread( entity maxs, bool showStartupEffects )
+{
+	array< int > fxHandles
+
+	entity mins = maxs.GetLinkEnt()
+	entity maxConnect = mins.GetLinkEnt()
+
+	vector topCorner = maxs.GetOrigin()
+	vector btmCorner = mins.GetOrigin()
+	vector connectCorner = maxConnect.GetOrigin()
+	vector dwn = Normalize( btmCorner - connectCorner )
+	vector nextDwn = btmCorner - connectCorner
+
+	// DebugDrawSphere( topCorner, 5, 255, 0, 0, true, 100.0 )
+	// DebugDrawSphere( btmCorner, 5, 0, 255, 0, true, 100.0 )
+	// DebugDrawSphere( connectCorner, 5, 0, 0, 255, true, 100.0 )
+
+	vector soundOrigin = (topCorner + btmCorner) * 0.5
+
+	vector laserOffset = connectCorner - topCorner
+
+	int laserEffect = PrecacheParticleSystem( FX_LASER )
+
+	float increment = 10.0
+	while ( VectorsFacingSameDirection( nextDwn, dwn, 0 ) )
+	{
+		if ( showStartupEffects )
+			WaitFrame()
+
+		topCorner = topCorner + dwn*increment
+		connectCorner = topCorner + laserOffset
+		nextDwn = Normalize( btmCorner - connectCorner )
+
+		// DebugDrawLine( connectCorner, connectCorner + nextDwn*increment, 255,0,0,true, 100.0 )
+
+		int fxHandle = StartParticleEffectInWorldWithHandle( laserEffect, topCorner, connectCorner )
+		EffectSetControlPointVector( fxHandle, 2, connectCorner )
+
+		fxHandles.append( fxHandle )
+	}
+		//thread EmitSoundAtPositionHack( TEAM_UNASSIGNED, soundOrigin, SOUND_LASER_LOOP )
+
+	OnThreadEnd(
+		void function() : ( maxs, fxHandles, soundOrigin )
+		{
+			foreach ( fxHandle in fxHandles )
+			{
+				EffectStop( fxHandle, true, true )
+			}
+			//StopSoundAtPosition( soundOrigin, SOUND_LASER_LOOP )
+			//EmitSoundAtPosition( TEAM_UNASSIGNED, soundOrigin, SOUND_LASER_DEACTIVATE )
+		}
+	)
+
+	file.laserMeshEnts.append( maxs )
+
+	maxs.WaitSignal( "StopLaserMesh" )
+}

@@ -14,6 +14,7 @@ WeaponData
 	"readymessage"              					"#HUD_BURNMETER_READY_BUBBLE_BUNKER"
 	"readyhint"                 					"#HUD_BURNMETER_READY_BUBBLE_BUNKER_HINT"
 
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
 	"is_toss_weapon"								"1"
@@ -23,6 +24,7 @@ WeaponData
 
     "does_not_interrupt_cloak"							"1"
     "allow_gibraltar_shield"                        "0"
+    "trophy_system_ignore"                          "1"
 
 	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_WeaponBubbleBunker"
 	"OnWeaponTossPrep"								"OnWeaponTossPrep_WeaponBubbleBunker"
@@ -62,6 +64,7 @@ WeaponData
 	"stick_pilot"                                   "0"
 	"stick_titan"                                   "0"
 	"stick_npc"                                     "0"
+	"stick_drone"                                   "0"
 
 	"projectile_visible_to_smart_ammo"				"0"
 
@@ -97,7 +100,7 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"10.0"
-	"fire_duration"									"15.0"
+	"fire_duration"									"18.0"
 	"deploy_time" 									"0.15"
 	"lower_time"  									"0.15"
 	"allow_empty_fire"								"0"
@@ -138,12 +141,12 @@ WeaponData
 
 	MP_BASE
 	{
-		"ammo_clip_size"   								"100"
-		"ammo_default_total"							"100"
+		"ammo_clip_size"   								"150"
+		"ammo_default_total"							"150"
 		"ammo_display"									"count"
-		"ammo_min_to_fire"								"100"
-		"ammo_per_shot"									"100"
-		"ammo_stockpile_max"							"100"
+		"ammo_min_to_fire"								"150"
+		"ammo_per_shot"									"150"
+		"ammo_stockpile_max"							"150"
 		"regen_ammo_refill_rate"						"5"
 		"regen_ammo_refill_start_delay"					"0.0"
 

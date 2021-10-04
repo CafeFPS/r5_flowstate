@@ -21,7 +21,7 @@ struct
 const bool NEXT = true
 const bool PREV = false
 
-void function InitCustomizeCharacterMenu()
+void function InitCustomizeCharacterMenu( var newMenuArg )
 {
 	var menu = GetMenu( "CustomizeCharacterMenu" )
 	file.menu = menu
@@ -96,18 +96,20 @@ void function CustomizeCharacterMenu_OnClose()
 
 void function RegisterNewnessCallbacks( ItemFlavor character )
 {
+	string cardPanelString = "CharacterCardsPanelV2"
 	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterSkinsTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterSkinsPanel" ) )
-	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterCardTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterCardsPanel" ) )
-	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterQuipsTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterQuipsPanel" ) )
+	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterCardTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( cardPanelString ) )
+	//Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterQuipsTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterQuipsPanel" ) )
 	Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterFinishersTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterExecutionsPanel" ) )
 }
 
 
 void function DeregisterNewnessCallbacks( ItemFlavor character )
 {
+	string cardPanelString = "CharacterCardsPanelV2"
 	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterSkinsTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterSkinsPanel" ) )
-	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterCardTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterCardsPanel" ) )
-	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterQuipsTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterQuipsPanel" ) )
+	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterCardTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( cardPanelString ) )
+	//Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterQuipsTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterQuipsPanel" ) )
 	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.CharacterFinishersTab[character], OnNewnessQueryChangedUpdatePanelTab, GetPanel( "CharacterExecutionsPanel" ) )
 }
 

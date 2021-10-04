@@ -1,7 +1,11 @@
-#base "_base_lmg_optics.txt"
-#base "_base_stocks_tactical.txt"
+#base "_base_lmg.txt"
 #base "_base_barrels_large.txt"
-#base "_base_character_mods.txt"
+
+                   
+#base "_base_mags_energy.txt"
+      
+
+#base "_base_stocks_tactical.txt"
 
 WeaponData
 {
@@ -11,6 +15,7 @@ WeaponData
 	"description" 									"#WPN_ESAW_DESC"
 	"longdesc"										"#WPN_ESAW_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"special"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_devotion"
@@ -41,9 +46,6 @@ WeaponData
 
 	"OnWeaponActivate"								"OnWeaponActivate_weapon_basic_bolt"
 	"OnClientAnimEvent"								"OnClientAnimEvent_weapon_basic_bolt"
-	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_basic_bolt"
-	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_basic_bolt"
-	"OnProjectileCollision"							"OnProjectileCollision_weapon_basic_bolt"
 
 	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
 	"projectile_trail_effect_0" 					"P_tracer_projectile_smg_blue"
@@ -52,12 +54,13 @@ WeaponData
 
 	// Bolt info
 	"bolt_hitsize"									"0.0"
-	"bolt_hitsize_grow1_time"						"0.005"
-	"bolt_hitsize_grow1_size"						"0.1"
-	"bolt_hitsize_grow2_time"						"0.07"
-	"bolt_hitsize_grow2_size"						"0.1"
-	"bolt_hitsize_growfinal_lerptime"				"0.1"
-	"bolt_hitsize_growfinal_size"					"0.1"
+	//"bolt_hitsize_grow1_time"						"0.005"
+	//"bolt_hitsize_grow1_size"						"0.1"
+	//"bolt_hitsize_grow2_time"						"0.07"
+	//"bolt_hitsize_grow2_size"						"0.1"
+	//"bolt_hitsize_growfinal_lerptime"				"0.1"
+	//"bolt_hitsize_growfinal_size"					"0.1"
+
 	"bolt_zero_distance"							"1968.5" // 50m
 
 	"bolt_gravity_enabled"							"1"
@@ -88,6 +91,8 @@ WeaponData
 	"fx_muzzle_flash_view"							"P_mflash_pulse_LMG_FP"
 	"fx_muzzle_flash_world"							"P_mflash_pulse_LMG"
 	"fx_muzzle_flash_attach"						"muzzle_flash"
+
+	"chroma_color"									".1 1 .1"
 
 	"burst_or_looping_fire_sound_start_1p"			"weapon_devotion_firstshot_1p"
 	"burst_or_looping_fire_sound_middle_1p"			"Weapon_Devotion_Loop_1P"
@@ -129,7 +134,7 @@ WeaponData
 
 	"damage_type" 									"bullet"
 
-	"ammo_clip_size"   								"44"
+	"ammo_clip_size"   								"36"
     "ammo_default_total"							"330"
     "ammo_stockpile_max"							"330"
     "ammo_no_remove_from_stockpile"					"1"
@@ -164,8 +169,6 @@ WeaponData
     "npc_damage_far_value_titanarmor" 				"12"
 
     "npc_max_range"   								"4000"
-
-    "damage_heavyarmor_nontitan_scale"				"0.35"
 
 	// NPC
 	"proficiency_poor_spreadscale"					"7.0"
@@ -484,21 +487,36 @@ WeaponData
 			"burst_or_looping_fire_sound_end_npc"			""
         }
 
-		legendary1
+                   
+        energy_mag_l1
 		{
-			"viewmodel"   									"mdl/weapons/hemlock_br/ptpov_hemlock_br_legendary_01.rmdl"
-			"playermodel" 									"mdl/weapons/hemlock_br/w_hemlock_br_legendary_01.rmdl"
-
-			// Temporarily disabled so we can equip the optics without error spam
-			//"dof_zoom_nearDepthStart"						"6.040"
-			//"dof_zoom_nearDepthEnd"							"8.639"
+			"ammo_clip_size"   					"40"
 		}
+
+		energy_mag_l2
+		{
+			"ammo_clip_size"   					"44"
+		}
+
+		energy_mag_l3
+		{
+			"ammo_clip_size"   					"48"
+		}
+      
 
 		"barrel_stabilizer_l4_flash_hider"
 		{
 			"fx_muzzle_flash_view"				"P_mflash_pulse_LMG_sup_FP"
 			"fx_muzzle_flash_world"				"P_mflash_pulse_LMG_sup"
 		}
+
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
 	}
 
 

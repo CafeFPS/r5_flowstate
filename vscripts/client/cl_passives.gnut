@@ -2,13 +2,61 @@ global function Cl_Passives_Init
 
 struct
 {
+	var cameraCircleStatusRui
+	var cryptoTacticalRui
 } file
 
 void function Cl_Passives_Init()
 {
+	AddCallback_OnInitWeaponStatusRuis( OnInitWeaponStatusRuis_CLPassives )
+	AddCallback_PlayerClassChanged( OnPlayerClassChanged_CLPassives )
+}
+
+void function OnInitWeaponStatusRuis_CLPassives( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	if ( PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
+	{
+		CreateCryptoCameraCircleRui( player )
+		CreateCryptoTacticalRui( player )
+	}
+}
+
+void function OnPlayerClassChanged_CLPassives( entity player )
+{
+	if ( player != GetLocalViewPlayer() )
+		return
+
+	if ( !PlayerHasPassive( player, ePassives.PAS_CRYPTO ) )
+	{
+		if ( file.cameraCircleStatusRui != null )
+		{
+			DestroyCameraCircleStatusRui()
+			file.cameraCircleStatusRui = null
+		}
+		if ( file.cryptoTacticalRui != null )
+		{
+			DestroyCryptoAnimatedTacticalRui()
+			file.cryptoTacticalRui = null
+		}
+	}
 }
 
 
+void function CreateCryptoCameraCircleRui( entity player )
+{
+	if ( GetCameraCircleStatusRui() != null )
+		return
 
+	file.cameraCircleStatusRui = CreateCameraCircleStatusRui()
+}
 
+void function CreateCryptoTacticalRui( entity player )
+{
+	if ( GetCryptoAnimatedTacticalRui() != null )
+		return
 
+	file.cryptoTacticalRui = CreateCryptoAnimatedTacticalRui()
+}

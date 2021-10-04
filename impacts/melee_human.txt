@@ -14,11 +14,13 @@ ImpactTable
 		"K" "P_melee_dirt" //Mud
 		"L" "P_melee_default" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
 		"M" "P_melee_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
-//		"N" "openslot"
+		"N" "P_impact_slime" //slime
 		"O" "P_melee_dirt"  //Foliage
 		"P" "P_melee_metal" //metal_spectre
 
-		"R" "P_melee_metal" //metalpanel, grenade, canister
+		"Q" "P_melee_snow"  //Snow
+		"R" "P_melee_ice" //Ice
+
 		"S" "P_impact_water" //water, slime
 		"T" "P_melee_default" //tile
 		"U" "P_melee_glass" // glass_breakable
@@ -31,8 +33,8 @@ ImpactTable
 		"Z" "P_melee_dirt"  //sand
 
 //		"0" "openslot"
-//		"1" "openslot"
-//		"2" "openslot"
+		"1" "P_impact_lava_nodecal" //lava_flow
+		"2" "P_impact_lava" //lava_rock_hot
 //		"3" "openslot"
 //		"4" "openslot"
 //		"5" "openslot"
@@ -41,11 +43,14 @@ ImpactTable
 //		"8" "openslot"
 //		"9" "openslot"
 
+
 		"splash" "P_impact_water" //brush water
 		"slime_splash" "P_impact_water"
 		"airburst" ""
 		"shieldhit" "P_armor_impact"
 		"critical_hit" "P_melee_default"
+		"holohit" "P_holohit_impact"
+
 	}
 
 	Sound
@@ -66,7 +71,8 @@ ImpactTable
 		"O" "Player_Melee_Impact_Grass_3p_vs_3p"
 		"P" "Pilot_Melee_Kick_Impact_Android_3P_vs_3P"
 
-		"R" "Player_Melee_Impact_Metal_3p_vs_3p"
+		"Q" "Player_Melee_Impact_Dirt_3p_vs_3p"  //Snow
+		"R" "Player_Melee_Impact_Metal_3p_vs_3p" //Ice
 		"S" "Player_Melee_Impact_Water_3p_vs_3p"
 		"T" "Player_Melee_Impact_Concrete_3p_vs_3p"
 		"U" "Player_Melee_Impact_Glass_3p_vs_3p"
@@ -76,6 +82,17 @@ ImpactTable
 
 		"Y" "Player_Melee_Impact_Glass_3p_vs_3p"
 		"Z" "Player_Melee_Impact_Dirt_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Player_Melee_Impact_Mud_3p_vs_3p" //lava_flow
+		"2" "Player_Melee_Impact_Concrete_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Player_Melee_Impact_Water_3p_vs_3p"
 		"slime_splash" "Player_Melee_Impact_Water_3p_vs_3p"
@@ -105,7 +122,8 @@ ImpactTable
 		"O" "Player_Melee_Impact_Grass_1p_vs_3p"
 		"P" "Pilot_Melee_Kick_Impact_Android_1P_vs_3P"
 
-		"R" "Player_Melee_Impact_Metal_1p_vs_3p"
+		"Q" "Player_Melee_Impact_Dirt_1p_vs_3p"  //Snow
+		"R" "Player_Melee_Impact_Metal_1p_vs_3p" //Ice
 		"S" "Player_Melee_Impact_Water_1p_vs_3p"
 		"T" "Player_Melee_Impact_Concrete_1p_vs_3p"
 		"U" "Player_Melee_Impact_Glass_1p_vs_3p"
@@ -115,6 +133,17 @@ ImpactTable
 
 		"Y" "Player_Melee_Impact_Glass_1p_vs_3p"
 		"Z" "Player_Melee_Impact_Dirt_1p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Player_Melee_Impact_Mud_1p_vs_3p" //lava_flow
+		"2" "Player_Melee_Impact_Concrete_1p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Player_Melee_Impact_Water_1p_vs_3p"
 		"slime_splash" "Player_Melee_Impact_Water_1p_vs_3p"
@@ -144,7 +173,8 @@ ImpactTable
 		"O" "Player_Melee_Impact_Grass_3p_vs_3p"
 		"P" "spectre_melee_kick_impact_human_3p_vs_1p"
 
-		"R" "Player_Melee_Impact_Metal_3p_vs_3p"
+		"Q" "Player_Melee_Impact_Dirt_3p_vs_3p"  //Snow
+		"R" "Player_Melee_Impact_Metal_3p_vs_3p" //Ice
 		"S" "Player_Melee_Impact_Water_3p_vs_3p"
 		"T" "Player_Melee_Impact_Concrete_3p_vs_3p"
 		"U" "Player_Melee_Impact_Glass_3p_vs_3p"
@@ -154,6 +184,17 @@ ImpactTable
 
 		"Y" "Player_Melee_Impact_Glass_3p_vs_3p"
 		"Z" "Player_Melee_Impact_Dirt_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Player_Melee_Impact_Mud_1p_vs_3p" //lava_flow
+		"2" "Player_Melee_Impact_Concrete_1p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Player_Melee_Impact_Water_3p_vs_3p"
 		"slime_splash" "Player_Melee_Impact_Water_3p_vs_3p"
@@ -183,7 +224,8 @@ ImpactTable
 		"O" "Player_Melee_Impact_Grass_3p_vs_3p"
 		"P" "spectre_melee_kick_impact_human_3p_vs_1p"
 
-		"R" "Player_Melee_Impact_Metal_3p_vs_3p"
+		"Q" "Player_Melee_Impact_Dirt_3p_vs_3p"  //Snow
+		"R" "Player_Melee_Impact_Metal_3p_vs_3p" //Ice
 		"S" "Player_Melee_Impact_Water_3p_vs_3p"
 		"T" "Player_Melee_Impact_Concrete_3p_vs_3p"
 		"U" "Player_Melee_Impact_Glass_3p_vs_3p"
@@ -193,6 +235,17 @@ ImpactTable
 
 		"Y" "Player_Melee_Impact_Glass_3p_vs_3p"
 		"Z" "Player_Melee_Impact_Dirt_3p_vs_3p"
+
+//		"0" "openslot"
+		"1" "Player_Melee_Impact_Mud_3p_vs_3p" //lava_flow
+		"2" "Player_Melee_Impact_Concrete_3p_vs_3p" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 		"splash" "Player_Melee_Impact_Water_3p_vs_3p"
 		"slime_splash" "Player_Melee_Impact_Water_3p_vs_3p"

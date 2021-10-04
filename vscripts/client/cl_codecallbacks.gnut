@@ -1,6 +1,3 @@
-
-global function ClDroppedWeaponFlyout_Init
-
 global function ClientCodeCallback_BodyGroupChanged
 
 global function ClientCodeCallback_UseEntGainedFocus
@@ -17,31 +14,26 @@ global function ClientCodeCallback_OnPetTitanModeChanged
 global function AddCallback_OnPetTitanModeChanged
 global function ClientCodeCallback_OnPetTitanChanged
 
-global function DestroyPickupFlyout
-global function HidePickupFlyout
-global function ShowPickupFlyout
 global function IsCurrentlyFocusedWeapon
-global function IsPickupFlyoutValid
-
-global function CreateDroppedFlyoutRui
-global function UpdateDroppedWeaponFlyout
-global function UpdateModsOnRui
 
 global function ClientCodeCallback_PingSpecificType
 global function SetCallback_PingSpecificType
 global function RemoveCallback_PingSpecificType
 
-#if HAS_WEAPON_PICKUP_HIGHLIGHT
+global function ClientCodeCallback_UseConsumable
+global function SetCallback_UseConsumable
+global function RemoveCallback_UseConsumable
+
 global function ServerCallback_RefreshWeaponHighlights
-#endif
 
 struct
 {
-	var flyoutRUI
-	var lastWeaponRuiSet
-	entity focusedEnt
-	table<string, asset> modImages
+	var                                flyoutRUI
+	var                                lastWeaponRuiSet
+	entity                             focusedEnt
+	table<string, asset>               modImages
 	void functionref( entity, string ) pingCallback = null
+	void functionref( entity, string ) useConsumableCallback = null
 } file
 
 void function ClientCodeCallback_PingSpecificType( entity player, string pingType )
@@ -50,41 +42,45 @@ void function ClientCodeCallback_PingSpecificType( entity player, string pingTyp
 		file.pingCallback( player, pingType )
 }
 
+
 void function SetCallback_PingSpecificType( void functionref( entity, string ) callback )
 {
 	Assert( file.pingCallback == null, "Ping callback already exists! Cannot have more than 1 ping callback" )
 	file.pingCallback = callback
 }
 
+
 void function RemoveCallback_PingSpecificType()
 {
-	if( file.pingCallback == null )
+	if ( file.pingCallback == null )
 		Warning( "Attempted to remove ping callback when nothing has been set" )
 
 	file.pingCallback = null
 }
 
-void function ClDroppedWeaponFlyout_Init()
+
+void function ClientCodeCallback_UseConsumable( entity player, string consumableType )
 {
-	RegisterSignal( "PetTitanChanged" )
-	RegisterSignal( "PetTitanModeChanged" )
-
-	var dataTable = GetDataTable( $"datatable/survival_weapon_mods.rpak" )
-	int numRows = GetDatatableRowCount( dataTable )
-
-	for ( int i = 0; i < numRows; i++ )
-	{
-		string modRef = GetDataTableString( dataTable, i, PILOT_WEAPON_MOD_COMMON_COLUMN )
-		asset modImage = GetDataTableAsset( dataTable, i, PILOT_WEAPON_MOD_COMMON_IMAGE_COLUMN )
-		file.modImages[ modRef ] <- modImage
-	}
-
-	AddCinematicEventFlagChangedCallback( CE_FLAG_HIDE_MAIN_HUD, WeaponPickupFlyout_UpdateVisibility )
-
-	#if HAS_WEAPON_PICKUP_HIGHLIGHT
-	AddCreateCallback( "weaponx", ClWeaponCreationCallback )
-	#endif
+	if ( file.useConsumableCallback != null )
+		file.useConsumableCallback( player, consumableType )
 }
+
+
+void function SetCallback_UseConsumable( void functionref( entity, string ) callback )
+{
+	Assert( file.useConsumableCallback == null, "Consumable callback already exists! Cannot have more than 1 Consumable callback" )
+	file.useConsumableCallback = callback
+}
+
+
+void function RemoveCallback_UseConsumable()
+{
+	if ( file.useConsumableCallback == null )
+		Warning( "Attempted to remove consumable callback when nothing has been set" )
+
+	file.useConsumableCallback = null
+}
+
 
 void function ClientCodeCallback_BodyGroupChanged( entity ent, int bodyGroupIndex, int oldState, int newState )
 {
@@ -100,10 +96,9 @@ void function ClientCodeCallback_BodyGroupChanged( entity ent, int bodyGroupInde
 	}
 }
 
+
 void function ClientCodeCallback_UseEntGainedFocus( entity ent )
 {
-	DestroyPickupFlyout()
-
 	foreach ( callbackFunc in clGlobal.onUseEntGainFocusCallbacks )
 	{
 		callbackFunc( ent )
@@ -111,20 +106,6 @@ void function ClientCodeCallback_UseEntGainedFocus( entity ent )
 
 	if ( ent.GetNetworkedClassName() == "weaponx" )
 	{
-		if ( file.flyoutRUI == null )
-			CreateDroppedFlyoutRui()
-
-		UpdateDroppedWeaponFlyout(
-			file.flyoutRUI,
-			ent,
-			ent.GetWeaponSettingString( eWeaponVar.shortprintname ),
-			ent.GetWeaponSettingString( eWeaponVar.description ),
-			ent.GetWeaponInfoFileKeyFieldAsset( "hud_icon" ),
-			ent.IsWeaponOffhand(),
-			ent.GetMods(),
-			ent.GetWeaponSettingBool( eWeaponVar.is_burn_mod )
-			)
-
 		var rui = ClWeaponStatus_GetWeaponHudRui( GetLocalViewPlayer(), ent )
 		if ( rui != null )
 		{
@@ -134,60 +115,10 @@ void function ClientCodeCallback_UseEntGainedFocus( entity ent )
 	}
 
 	file.focusedEnt = ent
-	if ( GetWeaponFlyoutAliveTime() < 0.5 && IsWeaponFlyoutVisible() )
-	{
-		HidePickupFlyout( 2.0 )
-		SetWeaponFlyoutRemainingTime( 2.0 )
-	}
-	else
-	{
-		DestroyWeaponFlyout()
-	}
 
-#if HAS_AMMO_FULL_FLYOUT
-	if ( IsAmmoFullWeapon( ent ) )
-		HideAmmoFullFlyout()
-#endif
-
-#if HAS_WEAPON_PICKUP_HIGHLIGHT
 	ManageHighlightEntity( ent )
-#endif
 }
 
-var function CreateDroppedFlyoutRui( asset ruiFile = $"ui/dropped_weapon_flyout.rpak" )
-{
-	DestroyPickupFlyout()
-	file.flyoutRUI = RuiCreate( ruiFile, clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
-	return file.flyoutRUI
-}
-
-void function UpdateDroppedWeaponFlyout( var rui, entity ent, string titleText, string description, asset hudIcon, bool isOffhandWeapon, array<string> weaponMods = [], bool isAmped = false )
-{
-	UpdateModsOnRui( rui, weaponMods )
-
-	RuiSetGameTime( rui, "startTime", Time() )
-	RuiTrackFloat3( rui, "pos", ent, RUI_TRACK_ABSORIGIN_FOLLOW )
-	RuiSetString( rui, "titleText", titleText )
-	RuiSetString( rui, "descriptionText", description )
-
-	RuiSetBool( rui, "isOffhandWeapon", isOffhandWeapon )
-	RuiSetImage( rui, "icon", hudIcon )
-	RuiSetFloat( rui, "worldOffsetY", GetLocalViewPlayer().IsTitan() ? 98.0 : 32.0 )
-	RuiSetResolutionToScreenSize( rui )
-
-	if ( isAmped )
-		RuiSetFloat3( rui, "color", SrgbToLinear( BURN_CARD_WEAPON_HUD_COLOR_VECTOR ) )
-}
-
-void function UpdateModsOnRui( var rui, array<string> weaponMods )
-{
-	int modNum = 1
-	foreach ( mod in weaponMods )
-	{
-		if ( mod in file.modImages )
-			RuiSetImage( rui, "mod" + modNum++, file.modImages[ mod ] )
-	}
-}
 
 void function ClientCodeCallback_UseEntLostFocus( entity ent )
 {
@@ -195,8 +126,6 @@ void function ClientCodeCallback_UseEntLostFocus( entity ent )
 	{
 		callbackFunc( ent )
 	}
-
-	DestroyPickupFlyout()
 
 	if ( file.lastWeaponRuiSet != null )
 	{
@@ -209,11 +138,10 @@ void function ClientCodeCallback_UseEntLostFocus( entity ent )
 		file.focusedEnt = null
 	}
 
-#if HAS_WEAPON_PICKUP_HIGHLIGHT
 	if ( IsValid( ent ) )
 		ManageHighlightEntity( ent )
-#endif
 }
+
 
 string function ClientCodeCallback_GetUseEntOverrideText( entity ent )
 {
@@ -226,59 +154,20 @@ string function ClientCodeCallback_GetUseEntOverrideText( entity ent )
 	return textOverride
 }
 
+
 void function AddEntityCallback_GetUseEntOverrideText( entity ent, string functionref( entity ) callback )
 {
 	Assert( !IsValid( ent.e.entTextOverrideCallback ), "Use ent override text callback already set for entity." )
 	ent.e.entTextOverrideCallback = callback
 }
 
-bool function IsPickupFlyoutValid()
-{
-	return ( file.flyoutRUI != null )
-}
 
 bool function IsCurrentlyFocusedWeapon( entity ent )
 {
 	return file.focusedEnt == ent
 }
 
-void function DestroyPickupFlyout()
-{
-	if ( file.flyoutRUI == null )
-		return
 
-	RuiDestroy( file.flyoutRUI )
-	file.flyoutRUI = null
-}
-
-void function HidePickupFlyout( float hideDuration )
-{
-	if ( file.flyoutRUI == null )
-		return
-
-	RuiSetFloat( file.flyoutRUI, "hideDuration", hideDuration )
-	RuiSetGameTime( file.flyoutRUI, "hideStartTime", Time() )
-}
-
-void function ShowPickupFlyout()
-{
-	if ( file.flyoutRUI == null )
-		return
-
-	RuiSetFloat( file.flyoutRUI, "hideDuration", 0.0 )
-}
-
-void function WeaponPickupFlyout_UpdateVisibility( entity player )
-{
-	if ( file.flyoutRUI == null )
-		return
-
-	int ceFlags = player.GetCinematicEventFlags()
-	bool hideHud = ( ceFlags & CE_FLAG_HIDE_MAIN_HUD ) > 0
-	RuiSetBool( file.flyoutRUI, "inCinematic", hideHud )
-}
-
-#if HAS_WEAPON_PICKUP_HIGHLIGHT
 void function ServerCallback_RefreshWeaponHighlights( int eHandle )
 {
 	entity weapon = GetEntityFromEncodedEHandle( eHandle )
@@ -286,20 +175,17 @@ void function ServerCallback_RefreshWeaponHighlights( int eHandle )
 		ManageHighlightEntity( weapon )
 }
 
-void function ClWeaponCreationCallback( entity weapon )
-{
-}
-#endif
-
 
 void function AddCallback_OnPetTitanChanged( void functionref( entity ) callbackFunc )
 {
 	clGlobal.onPetTitanChangedCallbacks.append( callbackFunc )
 }
 
+
 void function ClientCodeCallback_OnPetTitanChanged( entity player )
 {
 }
+
 
 void function ClientCodeCallback_OnPetTitanModeChanged( entity player )
 {

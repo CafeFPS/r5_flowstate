@@ -1,3 +1,14 @@
+//=========================================================
+//	cl_survival_commentary.gnut
+//=========================================================
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+
+
 const float FLEX_SCREEN_A_WIDTH = 1200
 const float FLEX_SCREEN_A_HEIGHT =  1200
 const float FLEX_SCREEN_A_INSET = 128.0
@@ -9,37 +20,55 @@ global function SurvivalCommentary_ClearCurrentSpeakerPrefix
 global function SurvivalCommentary_IsEnabled
 global function GetBattleChatterAlias1P3P
 
+#if R5DEV
+global function GetBattleChatterAlias1P3PWithTempVoice
+#endif //R5DEV
+
 global function ServerCallback_Survival_PlayCrowdEvent
 global function ServerCallback_Survival_NewKillLeader
 global function ServerCallback_Survival_HighlightedPlayerKilled
-global function ServerCallback_Survival_PlayerKilledWrapUp
 
+
+
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
 struct
 {
 	array<EnvironmentSpeaker> speakers
-	bool isCommentaryPlaying = false
-	string currentCommentaryLinePlaying = ""
-	bool endCircleChantStarted = false
+	bool isCommentaryPlaying               = false
+	string currentCommentaryLinePlaying    = ""
+	bool endCircleChantStarted             = false
 
-	array<string> crowd_quietLoopAliases = ["survival_crowd_quiet_atmo_lp_01","survival_crowd_quiet_atmo_lp_02","survival_crowd_quiet_atmo_lp_03","survival_crowd_quiet_atmo_lp_04"]
-	array<string> crowd_activeLoopAliases = ["survival_crowd_active_atmo_lp_01","survival_crowd_active_atmo_lp_02","survival_crowd_active_atmo_lp_03","survival_crowd_active_atmo_lp_04"]
-	array<string> crowd_cheerLoopAliases = ["survival_crowd_cheering_lp_01", "survival_crowd_cheering_lp_02", "survival_crowd_cheering_lp_03"]
+	array<string> crowd_quietLoopAliases   = ["survival_crowd_quiet_atmo_lp_01","survival_crowd_quiet_atmo_lp_02","survival_crowd_quiet_atmo_lp_03","survival_crowd_quiet_atmo_lp_04"]
+	array<string> crowd_activeLoopAliases  = ["survival_crowd_active_atmo_lp_01","survival_crowd_active_atmo_lp_02","survival_crowd_active_atmo_lp_03","survival_crowd_active_atmo_lp_04"]
+	array<string> crowd_cheerLoopAliases   = ["survival_crowd_cheering_lp_01", "survival_crowd_cheering_lp_02", "survival_crowd_cheering_lp_03"]
 	array<string> crowd_ovationLoopAliases = ["survival_crowd_ovation_lp_01", "survival_crowd_ovation_lp_02", "survival_crowd_ovation_lp_03"]
 
-	array<string> crowd_cheerOneshot = ["survival_crowd_cheering_01", "survival_crowd_cheering_02","survival_crowd_cheering_03","survival_crowd_cheering_04"]
-	array<string> crowd_roarOneshot = ["survival_crowd_roar_01", "survival_crowd_roar_02","survival_crowd_roar_03","survival_crowd_roar_04"]
-	array<string> crowd_booOneshot = ["survival_crowd_boo_01","survival_crowd_boo_02","survival_crowd_boo_03","survival_crowd_boo_04"]
+	array<string> crowd_cheerOneshot       = ["survival_crowd_cheering_01", "survival_crowd_cheering_02","survival_crowd_cheering_03","survival_crowd_cheering_04"]
+	array<string> crowd_roarOneshot        = ["survival_crowd_roar_01", "survival_crowd_roar_02","survival_crowd_roar_03","survival_crowd_roar_04"]
+	array<string> crowd_booOneshot         = ["survival_crowd_boo_01","survival_crowd_boo_02","survival_crowd_boo_03","survival_crowd_boo_04"]
 
-	array<string> crowd_chants = ["survival_crowd_chanting"]
+	array<string> crowd_chants             = ["survival_crowd_chanting"]
 
 	var testFlexScreenRui
 
 	string currentSpeakerPrefix
 
 	bool didPlayerPlacementReview = false
-	bool isEnabled = false
+	bool isEnabled                = false
 } file
 
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
 bool function SurvivalCommentary_IsEnabled()
 {
 	return file.isEnabled
@@ -449,25 +478,30 @@ string function SelecRandomCrowdOneshot()
 
 ///////////////////////////////////////////////////////////////////////////////////
 //
-//███╗   ███╗███████╗███████╗███████╗ █████╗  ██████╗ ███████╗███████╗
-//████╗ ████║██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝ ██╔════╝██╔════╝
-//██╔████╔██║█████╗  ███████╗███████╗███████║██║  ███╗█████╗  ███████╗
-//██║╚██╔╝██║██╔══╝  ╚════██║╚════██║██╔══██║██║   ██║██╔══╝  ╚════██║
-//██║ ╚═╝ ██║███████╗███████║███████║██║  ██║╚██████╔╝███████╗███████║
-//╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝
+//	███╗   ███╗███████╗███████╗███████╗ █████╗  ██████╗ ███████╗███████╗
+//	████╗ ████║██╔════╝██╔════╝██╔════╝██╔══██╗██╔════╝ ██╔════╝██╔════╝
+//	██╔████╔██║█████╗  ███████╗███████╗███████║██║  ███╗█████╗  ███████╗
+//	██║╚██╔╝██║██╔══╝  ╚════██║╚════██║██╔══██║██║   ██║██╔══╝  ╚════██║
+//	██║ ╚═╝ ██║███████╗███████║███████║██║  ██║╚██████╔╝███████╗███████║
+//	╚═╝     ╚═╝╚══════╝╚══════╝╚══════╝╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚══════╝
 //
 ///////////////////////////////////////////////////////////////////////////////////
 
 void function ServerCallback_Survival_NewKillLeader( entity killLeader, int numKills )
 {
 	EHI playerEHI = ToEHI( killLeader )
+
+	//
+	if ( playerEHI == EHI_null )
+		return
+
 	string playerName = GetPlayerName( playerEHI )
-	vector playerNameColor = killLeader.GetTeam() == GetLocalViewPlayer().GetTeam() ? GetKeyColor( COLORID_MEMBER_COLOR0, killLeader.GetTeamMemberIndex() ) : GetKeyColor( COLORID_ENEMY )
+	vector playerNameColor = killLeader.GetTeam() == GetLocalViewPlayer().GetTeam() ? GetPlayerInfoColor( killLeader ) : GetKeyColor( COLORID_ENEMY )
 
 	Obituary_Print_Localized( Localize( "#SURVIVAL_NEWKILLLEADER_OBIT", playerName, numKills ), playerNameColor )
 
 	if (GetLocalViewPlayer() == killLeader)
-		AnnouncementMessageSweep( GetLocalClientPlayer(), "#SURVIVAL_YOUAREKILLLEADER", Localize( "#SURVIVAL_KILLLEADERKILLS", numKills, GetKeyColor( COLORID_MEMBER_COLOR0, killLeader.GetTeamMemberIndex() ) ) )
+		AnnouncementMessageSweep( GetLocalClientPlayer(), "#SURVIVAL_YOUAREKILLLEADER", Localize( "#SURVIVAL_KILLLEADERKILLS", numKills, GetPlayerInfoColor( killLeader ) ) )
 }
 
 
@@ -480,7 +514,7 @@ void function ServerCallback_Survival_HighlightedPlayerKilled(entity killedPlaye
 	{
 		EHI playerEHI = ToEHI( killedPlayer )
 		playerName = GetPlayerName( playerEHI )
-		playerNameColor = killedPlayer.GetTeam() == GetLocalViewPlayer().GetTeam() ? GetKeyColor( COLORID_MEMBER_COLOR0, killedPlayer.GetTeamMemberIndex() ) : <255, 255, 255>
+		playerNameColor = killedPlayer.GetTeam() == GetLocalViewPlayer().GetTeam() ? GetPlayerInfoColor( killedPlayer ) : <255, 255, 255>
 
 		entity localClientPlayer = GetLocalClientPlayer()
 
@@ -488,51 +522,15 @@ void function ServerCallback_Survival_HighlightedPlayerKilled(entity killedPlaye
 		{
 			Obituary_Print_Localized( Localize( "#SURVIVAL_CHAMPION_OBIT", playerName ), playerNameColor )
 			if ( localClientPlayer == killer && killer != killedPlayer )
-				AnnouncementMessageSweep( localClientPlayer, "#SURVIVAL_YOUKILLED_CHAMPION", Localize( killedPlayer.GetPlayerName() ), GetKeyColor( COLORID_MEMBER_COLOR0, killedPlayer.GetTeamMemberIndex() ) )
+				AnnouncementMessageSweep( localClientPlayer, "#SURVIVAL_YOUKILLED_CHAMPION", Localize( killedPlayer.GetPlayerName() ), GetPlayerInfoColor( killedPlayer ) )
 		}
 		else if ( playerType == eSurvivalCommentaryPlayerType.KILLLEADER )
 		{
 			Obituary_Print_Localized( Localize( "#SURVIVAL_KILLLEADER_OBIT", playerName ), playerNameColor )
 			if ( localClientPlayer == killer && killer != killedPlayer )
-				AnnouncementMessageSweep( localClientPlayer, "#SURVIVAL_YOUKILLED_KILLLEADER", Localize( killedPlayer.GetPlayerName() ), GetKeyColor( COLORID_MEMBER_COLOR0, killedPlayer.GetTeamMemberIndex() ) )
+				AnnouncementMessageSweep( localClientPlayer, "#SURVIVAL_YOUKILLED_KILLLEADER", Localize( killedPlayer.GetPlayerName() ), GetPlayerInfoColor( killedPlayer ) )
 		}
 	}
-}
-
-void function ServerCallback_Survival_PlayerKilledWrapUp(int playerPlace, int numPlayerAtStart, int host)
-{
-	thread PlayerKilledWrapUp_Internal( playerPlace, numPlayerAtStart, host )
-}
-
-void function PlayerKilledWrapUp_Internal(int playerPlace, int numPlayerAtStart, int host)
-{
-	WaitFrame()
-
-	if (Flag("KillReplayStarted"))
-		FlagWait( "KillReplayComplete" )
-
-	if (!file.didPlayerPlacementReview)
-		file.didPlayerPlacementReview = true
-	else
-		return
-
-	entity player = GetLocalClientPlayer()
-	wait 2
-
-	EmitSoundToPlayer_IfValid(player, GetDialogueAliasFromName( PickCommentaryLineFromBucket(host, eSurvivalCommentaryBucket.PLAYER_FINISHER_PLACE) ) )
-
-	wait 3.5
-
-	if ( playerPlace <= 3 )
-		EmitSoundToPlayer_IfValid( player, GetDialogueAliasFromName( PickCommentaryLineFromBucket( host, eSurvivalCommentaryBucket.PLAYER_MADE_TOP_3 ) ) )
-	else if ( playerPlace <= (numPlayerAtStart / 2) - 3 )
-		EmitSoundToPlayer_IfValid( player, GetDialogueAliasFromName( PickCommentaryLineFromBucket( host, eSurvivalCommentaryBucket.PLAYER_DID_GREAT ) ) )
-	else if ( playerPlace <= numPlayerAtStart / 2 )
-		EmitSoundToPlayer_IfValid( player, GetDialogueAliasFromName( PickCommentaryLineFromBucket( host, eSurvivalCommentaryBucket.PLAYER_DID_GOOD ) ) )
-	else if ( playerPlace <= numPlayerAtStart - 3 )
-		EmitSoundToPlayer_IfValid( player, GetDialogueAliasFromName( PickCommentaryLineFromBucket( host, eSurvivalCommentaryBucket.PLAYER_DID_OKAY ) ) )
-	else
-		EmitSoundToPlayer_IfValid( player, GetDialogueAliasFromName( PickCommentaryLineFromBucket( host, eSurvivalCommentaryBucket.PLAYER_DID_POORLY ) ) )
 }
 
 void function EmitSoundToPlayer_IfValid( entity player, string alias)
@@ -582,6 +580,18 @@ string function GetBattleChatterAlias1P3P( entity player, string aliasSubname, b
 		return ""
 	return result
 }
+
+#if R5DEV
+string function GetBattleChatterAlias1P3PWithTempVoice( string aliasSubname, bool firstPerson )
+{
+	string voice = TEMP_VOICE
+	string perspective = firstPerson ? "1p" : "3p"
+	string result = "diag_mp_" + voice + "_" + aliasSubname + "_" + perspective
+	if ( result in FORBIDDEN_DIALOGUE_EVENT_NAMES )
+		return ""
+	return result
+}
+#endif //
 
 string function SurvivalCommentary_GetCurrentSpeakerPrefix()
 {

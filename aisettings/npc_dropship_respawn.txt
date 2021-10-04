@@ -5,8 +5,7 @@ npc_dropship_respawn
 	title 					""
 	titleIMC				""
 	titleMIL				""
-	ui_targetinfo			"" [$mp] //targetinfo_titan
-	ui_targetinfo			"" [$sp]
+	ui_targetinfo			""
 
 	DefaultModelName		"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
 }

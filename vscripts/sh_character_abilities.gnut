@@ -106,7 +106,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor character )
 	{
 		string weaponClassname = CharacterAbility_GetWeaponClassname( ability )
 		#if SERVER || CLIENT
-			if ( false && weaponClassname != "" )
+			if ( weaponClassname != "" )
 				PrecacheWeapon( weaponClassname )
 		#endif
 

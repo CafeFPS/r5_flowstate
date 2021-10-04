@@ -11,10 +11,11 @@ WeaponData
 	"menu_icon"										"rui/pilot_loadout/suit/light"
     "hud_icon"										"rui/hud/ultimate_icons/ultimate_wraith"
 
+	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"weaponType"									"tactical"
 	"fire_mode"   									"offhand"
-	"offhand_default_inventory_slot"				"0"
+	"offhand_default_inventory_slot"				"4"
 	"offhand_keep_primary_in_hand"					"0"
 	"offhand_holster_primary"						"1"
     "hide_holstered_sidearm_when_active"			"1"
@@ -59,6 +60,7 @@ WeaponData
 	"explosion_inner_radius"  						"50"
 	"explosionradius" 								"120"
 	"impulse_force"   								"1"
+	"locks_weapon_change"							"1"
 
 	// Ammo
 	"cooldown_type"                                 "ammo_instant"

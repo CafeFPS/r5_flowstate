@@ -7,7 +7,7 @@ struct
 	bool revertChanges = true
 } file
 
-void function InitConfirmKeepVideoChangesDialog()
+void function InitConfirmKeepVideoChangesDialog( var newMenuArg )
 {
 	RegisterSignal( "EndVideoChangesCountdown" )
 

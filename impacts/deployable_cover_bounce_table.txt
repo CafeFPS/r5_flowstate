@@ -12,7 +12,7 @@ ImpactTable
 		"B" "none" //Bloodyflesh?
 
 		"C" "none" // Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "none" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"D" "P_hmn_footstep_dust" // Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lavarock
 		"E" "none" // metal_titan
 		"F" "none" //flesh
 		"G" "none" //metalgrate, chainlink, chain
@@ -27,10 +27,8 @@ ImpactTable
 		"N" "P_impact_slime" //Slime
 		"O" "P_hmn_footstep_dust" //Foliage
 		"P" "none" //Computer
-
-		"Q" "none" //Not listed
-
-		"R" "none" //metalpanel, grenade, canister
+		"Q" "P_hmn_footstep_snow" //Snow
+		"R" "none" //Ice
 		"S" "P_impact_water" //water, slime
 		"T" "none" //tile
 		"U" "none" //glass_breakable
@@ -39,6 +37,17 @@ ImpactTable
 		"X" "none" //xo_shield
 		"Y" "none" //glass, brokenglass, glassbottle, pottery
 		"Z" "P_hmn_footstep_dust" //sand
+
+//		"0" "openslot"
+		"1" "P_hmn_footstep_lava" //lava_flow
+		"2" "P_hmn_footstep_lava" //lava_rock_hot
+//		"3" "openslot"
+//		"4" "openslot"
+//		"5" "openslot"
+//		"6" "openslot"
+//		"7" "openslot"
+//		"8" "openslot"
+//		"9" "openslot"
 
 
 		//Hardcocded Surfacprops
@@ -71,6 +80,7 @@ ImpactTable
 		"O" "Phys_Imp_BubbleShieldDisc_Dirt"
 		"P" "Phys_Imp_BubbleShieldDisc_Metal"
 
+		"Q" "Phys_Imp_BubbleShieldDisc_Metal"
 		"R" "Phys_Imp_BubbleShieldDisc_Metal"
 		"S" "Phys_Imp_BubbleShieldDisc_Concrete"
 		"T" "Phys_Imp_BubbleShieldDisc_Concrete"
@@ -81,6 +91,9 @@ ImpactTable
 		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
 		"Y" "Phys_Imp_BubbleShieldDisc_Concrete"
 		"Z" "Phys_Imp_BubbleShieldDisc_Dirt"
+
+		"1" "Phys_Imp_BubbleShieldDisc_Concrete"
+		"2" "Phys_Imp_BubbleShieldDisc_Dirt"
 
 		"splash" "Phys_Imp_BubbleShieldDisc_Water"
 		"slime_splash" "Phys_Imp_BubbleShieldDisc_Water"
@@ -111,6 +124,7 @@ ImpactTable
 		"O" "Phys_Imp_BubbleShieldDisc_Dirt"
 		"P" "Phys_Imp_BubbleShieldDisc_Metal"
 
+		"Q" "Phys_Imp_BubbleShieldDisc_Metal"
 		"R" "Phys_Imp_BubbleShieldDisc_Metal"
 		"S" "Phys_Imp_BubbleShieldDisc_Concrete"
 		"T" "Phys_Imp_BubbleShieldDisc_Concrete"
@@ -121,6 +135,9 @@ ImpactTable
 		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
 		"Y" "Phys_Imp_BubbleShieldDisc_Concrete"
 		"Z" "Phys_Imp_BubbleShieldDisc_Dirt"
+
+		"1" "Phys_Imp_BubbleShieldDisc_Concrete"
+		"2" "Phys_Imp_BubbleShieldDisc_Dirt"
 
 		"splash" "Phys_Imp_BubbleShieldDisc_Water"
 		"slime_splash" "Phys_Imp_BubbleShieldDisc_Water"
@@ -151,6 +168,7 @@ ImpactTable
 		"O" "Phys_Imp_BubbleShieldDisc_Dirt"
 		"P" "Phys_Imp_BubbleShieldDisc_Metal"
 
+		"Q" "Phys_Imp_BubbleShieldDisc_Metal"
 		"R" "Phys_Imp_BubbleShieldDisc_Metal"
 		"S" "Phys_Imp_BubbleShieldDisc_Concrete"
 		"T" "Phys_Imp_BubbleShieldDisc_Concrete"
@@ -161,6 +179,9 @@ ImpactTable
 		"X" "TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
 		"Y" "Phys_Imp_BubbleShieldDisc_Concrete"
 		"Z" "Phys_Imp_BubbleShieldDisc_Dirt"
+
+		"1" "Phys_Imp_BubbleShieldDisc_Concrete"
+		"2" "Phys_Imp_BubbleShieldDisc_Dirt"
 
 		"splash" "Phys_Imp_BubbleShieldDisc_Water"
 		"slime_splash" "Phys_Imp_BubbleShieldDisc_Water"

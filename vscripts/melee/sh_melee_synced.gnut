@@ -1,4 +1,6 @@
-//
+//=========================================================
+//	sh_melee_synced.gnut
+//=========================================================
 
 #if SERVER || CLIENT || UI
 global function MeleeSyncedShared_Init
@@ -18,6 +20,10 @@ global function TryStartSyncedMelee
 global function CodeCallback_IsValidMeleeExecutionTarget
 #endif
 
+#if CLIENT
+global function ServerCallback_WatchForSyncedMeleeCancelPeriod
+global function ServerCallback_SyncedMeleeDone
+#endif
 
 
 ////////////////
@@ -31,7 +37,7 @@ const float SYNCED_MELEE_ANIMATION_BLEND_TIME = 0.5
 const float SYNCED_MELEE_CAMERA_BLEND_IN_TIME = 0.0
 const float SYNCED_MELEE_CAMERA_BLEND_OUT_TIME = 0.0
 
-// attacker, going for an off white flash frame at start of execution
+//
 const vector SYNCED_MELEE_ATTACKER_SCREEN_FADE_COL = <224, 224, 224>
 const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_ALPHA = 255
 const float SYNCED_MELEE_ATTACKER_SCREEN_FADE_FADE_TIME = 0.15
@@ -85,6 +91,9 @@ bool function AttackerCanStartSyncedMelee( entity attacker, entity meleeInputWea
 	if ( attacker.IsWallRunning() || attacker.IsTraversing() ) // No necksnaps while wall running or mantling
 		return false
 
+	//if ( IsDoingPullshot( attacker ) )
+	//	return false
+
 	return true
 }
 #endif
@@ -96,12 +105,10 @@ bool function IsValidSyncedMeleeTarget( entity attacker, entity meleeInputWeapon
 	if ( GetCurrentPlaylistVarInt( "sur_dev_disable_executions", 0 ) > 0 )
 		return false
 
-	Assert( attacker != target )
-
 	if ( !IsValidMeleeAttackTarget( attacker, meleeInputWeapon, meleeAttackWeapon, target ) )
 		return false
 
-	if ( !IsHumanSized( target ) )
+	if ( !IsHumanSized( target ) && target.GetScriptName() != "crypto_camera" )
 		return false
 
 	if ( target.IsInvulnerable() )
@@ -127,6 +134,9 @@ bool function IsValidSyncedMeleeTarget( entity attacker, entity meleeInputWeapon
 
 		if ( !Bleedout_IsBleedingOut( target ) )
 			return false
+
+		//if ( IsDoingPullshot( target ) )
+		//	return false
 	}
 	else if ( target.IsNPC() )
 	{
@@ -206,6 +216,40 @@ bool function CodeCallback_IsValidMeleeExecutionTarget( entity attacker, entity 
 }
 #endif
 
+#if CLIENT
+void function ServerCallback_WatchForSyncedMeleeCancelPeriod_Thread( float allowedCancelTime )
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( !IsAlive( player ) )
+		return
+
+	EndSignal( player, "SyncedMeleeOver_Client" )
+
+	AddPlayerHint( allowedCancelTime, 0, $"", "#SURVIVAL_FINISHER_CANCEL_HINT" )
+
+	OnThreadEnd( function() : () {
+		HidePlayerHint( "#SURVIVAL_FINISHER_CANCEL_HINT" )
+	} )
+
+	wait allowedCancelTime
+}
+
+void function ServerCallback_WatchForSyncedMeleeCancelPeriod( float allowedCancelTime )
+{
+	thread ServerCallback_WatchForSyncedMeleeCancelPeriod_Thread( allowedCancelTime )
+}
+
+void function ServerCallback_SyncedMeleeDone()
+{
+	entity player = GetLocalViewPlayer()
+
+	if ( !IsAlive( player ) )
+		return
+
+	Signal( player, "SyncedMeleeOver_Client" )
+}
+#endif
 
 #if SERVER
 void function DoSyncedMelee_Thread( entity attacker, entity target )
@@ -264,10 +308,10 @@ void function DoSyncedMelee_Thread( entity attacker, entity target )
 						if ( IsValid( target.e.syncedMeleeAttacker ) )
 							killCreditAttacker = target.e.syncedMeleeAttacker
 
-						target.TakeDamage( target.GetMaxHealth() + 1, killCreditAttacker, killCreditAttacker, {
-							forceKill = true,
+						target.Die( killCreditAttacker, killCreditAttacker, {
 							damageType = DMG_MELEE_EXECUTION,
-							damageSourceId = eDamageSourceId.human_execution } )
+							damageSourceId = eDamageSourceId.human_execution 
+						} )
 
 						// target.e.markedForExecutionDeath is cleared by the MarkForDeath anim event thread
 					}
@@ -423,5 +467,3 @@ void function OnPlayerDisconnected( entity player )
 		player.e.syncedMeleeTarget.ClearParent()
 }
 #endif
-
-

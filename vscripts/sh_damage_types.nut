@@ -69,6 +69,7 @@ global enum eDamageSourceId
 	mp_weapon_r97
 	mp_weapon_dmr
 	mp_weapon_wingman
+	mp_weapon_wingmanelite
 	mp_weapon_semipistol
 	mp_weapon_autopistol
 	mp_weapon_sniper
@@ -87,7 +88,12 @@ global enum eDamageSourceId
 	mp_weapon_wrecking_ball
 	mp_weapon_melee_survival
 	mp_weapon_pdw
+	mp_weapon_epg
 	mp_weapon_energy_ar
+	mp_weapon_volt_smg
+	mp_weapon_defender
+	mp_weapon_softball
+	mp_weapon_warmachine
 	//
 	melee_pilot_emptyhanded
 	melee_pilot_arena
@@ -109,6 +115,17 @@ global enum eDamageSourceId
 	melee_wraith_kunai
 	mp_weapon_wraith_kunai_primary
 
+	melee_bloodhound_axe
+	mp_weapon_bloodhound_axe_primary
+
+	melee_lifeline_baton
+	mp_weapon_lifeline_baton_primary
+
+	melee_shadowsquad_hands
+	melee_shadowroyale_hands
+	mp_weapon_shadow_squad_hands_primary
+
+	mp_weapon_tesla_trap
 
 	// Turret Weapons
 	mp_weapon_yh803
@@ -124,7 +141,9 @@ global enum eDamageSourceId
 	//Character Abilities
 	mp_weapon_defensive_bombardment_weapon
 	mp_weapon_creeping_bombardment_weapon
-
+	mp_ability_octane_stim
+	mp_ability_crypto_drone_emp
+	mp_ability_crypto_drone_emp_trap
 	// AI only Weapons
 	mp_weapon_super_spectre
 	mp_weapon_dronebeam
@@ -179,6 +198,7 @@ global enum eDamageSourceId
 	burn
 	lasergrid
 	outOfBounds
+	deathField
 	indoor_inferno
 	submerged
 	switchback_trap
@@ -217,6 +237,7 @@ global enum eDamageSourceId
 	mp_titancore_upgrade
 	mp_titanweapon_xo16_vanguard
 	mp_weapon_arc_trap
+	mp_weapon_arc_launcher
 	core_overload
 	mp_titanweapon_stasis
 	mp_titanweapon_stealth_titan
@@ -235,14 +256,6 @@ global enum eDamageSourceId
 	//rocketstrike
 	//orbitallaser
 	//explosion
-
-	mp_weapon_arc_launcher
-
-	
-	mp_weapon_satchel //added for r5_scripts
-	mp_weapon_proximity_mine //added for r5_scripts
-	mp_titanweapon_arc_pylon //added for r5_scripts
-	mp_titanability_smoke //added for r5_scripts
 }
 
 //When adding new mods, they need to be added below and to persistent_player_data_version_N.pdef in r1/cfg/server.
@@ -393,7 +406,7 @@ void function DamageTypes_Init()
 
 	PrecacheWeapon( $"mp_weapon_rspn101" ) // used by npc_soldier ><
 
-#if DEV
+#if R5DEV
 
 	int numDamageDefs = DamageDef_GetCount()
 	table damageSourceIdEnum = expect table( getconsttable().eDamageSourceId )
@@ -407,6 +420,17 @@ void function DamageTypes_Init()
 		Assert( damageDefName == name, "damage def (" + id + ") name: '" + damageDefName + "' doesn't match damage source id '" + name + "'" )
 	}
 #endif
+
+	file.damageSourceIDToImage =
+	{
+		//
+		//
+		//
+		//
+		//
+	}
+
+		file.damageSourceIDToImage[eDamageSourceId.melee_shadowsquad_hands] <- $"rui/gamemodes/shadow_squad/shadow_icon_small"
 
 	file.damageSourceIDToName =
 	{
@@ -521,9 +545,24 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.melee_titan_sword_aoe ]					= "#DEATH_TITAN_SWORD",
 		[ eDamageSourceId.melee_wraith_kunai ] 						= "#DEATH_MELEE_WRAITH_KUNAI",
 		[ eDamageSourceId.mp_weapon_wraith_kunai_primary ] 			= "#DEATH_MELEE_WRAITH_KUNAI",
+
+		[ eDamageSourceId.mp_ability_octane_stim ] 					= "#WPN_OCTANE_STIM_SHORT",
+
+		[ eDamageSourceId.mp_weapon_tesla_trap ] 					= "#DEATH_TESLA_TRAP"
+
+		,[ eDamageSourceId.mp_ability_crypto_drone_emp ]			= "#WPN_DRONE_EMP" //
+		,[ eDamageSourceId.mp_ability_crypto_drone_emp_trap ]		= "#WPN_DRONE_EMP"
+
+		,[ eDamageSourceId.melee_bloodhound_axe ] 				= "#DEATH_MELEE_BLOODHOUND_AXE"
+		,[ eDamageSourceId.mp_weapon_bloodhound_axe_primary ] 	= "#DEATH_MELEE_BLOODHOUND_AXE"
+
+		,[ eDamageSourceId.melee_lifeline_baton ]				= "#DEATH_MELEE_LIFELINE_BATON"
+		,[ eDamageSourceId.mp_weapon_lifeline_baton_primary ]	= "#DEATH_MELEE_LIFELINE_BATON"
+		,[ eDamageSourceId.melee_shadowsquad_hands ] 				= "#DEATH_MELEE_SHADOWSQUAD_HANDS"
+		,[ eDamageSourceId.mp_weapon_shadow_squad_hands_primary ] 	= "#DEATH_MELEE_SHADOWSQUAD_HANDS"
 	}
 
-	#if DEV
+	#if R5DEV
 		//development, with retail versions incase a rare bug happens we dont want to show developer text
 		file.damageSourceIDToName[ eDamageSourceId.damagedef_unknownBugIt ] 			= "UNKNOWN! BUG IT!"
 		file.damageSourceIDToName[ eDamageSourceId.damagedef_unknown ] 				= "Unknown"
@@ -536,8 +575,8 @@ void function DamageTypes_Init()
 void function RegisterWeaponDamageSource( string weaponRef )
 {
 	int sourceID = eDamageSourceId[weaponRef]
-	file.damageSourceIDToName[ sourceID ] <- "e" //GetWeaponInfoFileKeyField_GlobalString( weaponRef, "shortprintname" )
-	file.damageSourceIDToImage[ sourceID ] <- $"rui/weapon_icons/r5/weapon_flatline"//GetWeaponInfoFileKeyFieldAsset_Global( weaponRef, "hud_icon" )
+	file.damageSourceIDToName[ sourceID ] <- GetWeaponInfoFileKeyField_GlobalString( weaponRef, "shortprintname" )
+	file.damageSourceIDToImage[ sourceID ] <- GetWeaponInfoFileKeyFieldAsset_Global( weaponRef, "hud_icon" )
 	file.damageSourceIDToString[ sourceID ] <- weaponRef
 }
 

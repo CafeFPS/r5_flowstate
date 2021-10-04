@@ -50,7 +50,9 @@ global struct HackPanelAnims
 //////////////////////////////////////////////////////////////////////
 function ControlPanel_Init()
 {
-	PrecacheModel( $"mdl/communication/terminal_usable_imc_01.rmdl" )
+	//if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_mu1") // TODO: This asset does not exist in some maps
+	//	PrecacheModel( $"mdl/communication/terminal_usable_imc_01.rmdl" )
+
 	PrecacheParticleSystem( INCOMING_SPAWN_FX )
 
 	//PrecacheMaterial( $"vgui/hud/control_panel/console_disabled/console_disabled" )
@@ -108,7 +110,7 @@ void function OnPanelSpawn( entity panel )
 {
 	Assert( panel.GetModelName() == $"mdl/communication/terminal_usable_imc_01.rmdl" )
 
-	thread OnPanelSpawn_Internal( panel )
+	//thread OnPanelSpawn_Internal( panel ) // TODO: FIX
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -700,7 +702,7 @@ function AddControlPanelUseFuncTable( panel, Table )
 	// a table that contains
 	//1. a function to be called when the control panel is used
 	//2. an entity that the function refers to, e.g. the turret to be created
-	panel.s.useFuncArray.append( Table )
+	//panel.s.useFuncArray.append( Table ) // TODO: investigate where this belongs.
 }
 
 function SetControlPanelPrompts( ent, func )

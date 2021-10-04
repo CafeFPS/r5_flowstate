@@ -1,3 +1,4 @@
+/*
 global function InitCardBadgesPanel
 
 struct
@@ -67,6 +68,13 @@ void function CardBadgesPanel_Update( var panel )
 		file.cardBadgeList = clone GetValidItemFlavorsForLoadoutSlot( LocalClientEHI(), entry )
 		SortBadgesAndFilter( character, file.cardBadgeList, badgeIndex )
 
+		// debug code 
+		// printt("****************************************************")
+		// foreach ( int flavIdx, ItemFlavor flav in file.cardBadgeList ) {
+		// 	string unlockStatRef = GladiatorCardBadge_GetUnlockStatRef( flav, character )
+		// 	printt(unlockStatRef)
+		// }
+
 		Hud_InitGridButtons( file.listPanel, file.cardBadgeList.len() )
 		foreach ( int flavIdx, ItemFlavor flav in file.cardBadgeList )
 		{
@@ -124,7 +132,7 @@ void function CardBadgesPanel_Update( var panel )
 								if ( goalVal == 1 )
 									good = false
 								else
-									currVal = float(GetStat_Int( GetUIPlayer(), se ))
+									currVal = 0//float(GetStat_Int( GetUIPlayer(), se ))
 							}
 							else if ( se.type == eStatType.FLOAT )
 							{
@@ -277,3 +285,4 @@ bool function ShouldDisplayBadge( ItemFlavor badge, table<ItemFlavor, int> equip
 
 	return true
 }
+*/

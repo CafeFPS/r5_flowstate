@@ -1,0 +1,728 @@
+
+global function ShLootCreeps_Init
+
+#if SERVER
+	global function LootCreepGarbageCollect
+#endif
+
+const int MAX_ACTIVE_LOOTBIN_CREEPS = 10
+global const asset MODEL_INFECTED   = $"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl"
+global const asset MODEL_SPIDER     = $"mdl/creatures/spider/spider.rmdl"
+const asset DEATH_FX_SPIDER         = $"P_infected_death"
+const asset DEATH_FX_INFECTED       = $"P_infected_death"
+const asset FX_LOOTBIN_OPEN         = $"P_impact_monarch_beam_v1"
+const asset SPIDER_EYEGLOW_FX       = $"P_infected_spider_head" //P_LL_med_drone_eye_loop
+const asset INFECTED_EYEGLOW_FX     = $"P_infected_grunt_head"  //P_LL_med_drone_eye_loop
+
+const float LOOT_CREEP_GARBAGE_COLLECTION_COOLDOWN = 90
+
+enum eLootCreepType
+{
+	SPIDER,
+	INFECTED
+}
+
+#if SERVER
+struct
+{
+	array<entity>	lootCreeps
+	int				numActiveLootCreeps
+	float			lastTimeLootCreepsGarbageCollected
+
+} file
+#endif //#if SERVER
+
+
+#if SERVER || CLIENT
+void function ShLootCreeps_Init()
+{
+	bool shouldInitGenericCreepAssets = false
+
+	//if ( ShouldPrecacheLootCreep( eLootCreepType.SPIDER ) )
+	{
+		shouldInitGenericCreepAssets = true
+		PrecacheModel( MODEL_SPIDER )
+		PrecacheParticleSystem( DEATH_FX_SPIDER )
+	}
+
+	//if ( ShouldPrecacheLootCreep( eLootCreepType.INFECTED ) )
+	{
+		shouldInitGenericCreepAssets = true
+		PrecacheModel( MODEL_INFECTED )
+		PrecacheParticleSystem( DEATH_FX_INFECTED )
+	}
+
+	if ( shouldInitGenericCreepAssets )
+	{
+		PrecacheParticleSystem( FX_LOOTBIN_OPEN )
+		#if CLIENT
+			PrecacheParticleSystem( SPIDER_EYEGLOW_FX )
+			PrecacheParticleSystem( INFECTED_EYEGLOW_FX )
+			AddCreateCallback( "prop_dynamic", OnLootCreepCreated )
+			//AddDestroyCallback( "prop_dynamic", OnPropDynamicDestroyed )
+		#endif
+	}
+
+	#if SERVER
+		file.lastTimeLootCreepsGarbageCollected = Time()
+
+		if ( GetCurrentPlaylistVarBool( "zombie_dropship", false ) )
+		{
+			// Survival_AddCallback_OnRespawnDropshipCreated( OnRespawnDropshipCreated )
+		}
+		if ( GetCurrentPlaylistVarFloat( "lootbin_spiders_chance", 0 ) > 0 || GetCurrentPlaylistVarFloat( "lootbin_infected_chance", 0 ) > 0 )
+		{
+			Survival_AddCallback_OnLootbinOpened( OnLootbinOpened )
+		}
+	#endif
+}
+#endif //#if SERVER || CLIENT
+
+
+/*
+=======================================================================================================================
+=======================================================================================================================
+=======================================================================================================================
+
+##        #######   #######  ######## ########  #### ##    ##        ######  ########  ######## ######## ########   ######
+##       ##     ## ##     ##    ##    ##     ##  ##  ###   ##       ##    ## ##     ## ##       ##       ##     ## ##    ##
+##       ##     ## ##     ##    ##    ##     ##  ##  ####  ##       ##       ##     ## ##       ##       ##     ## ##
+##       ##     ## ##     ##    ##    ########   ##  ## ## ##       ##       ########  ######   ######   ########   ######
+##       ##     ## ##     ##    ##    ##     ##  ##  ##  ####       ##       ##   ##   ##       ##       ##              ##
+##       ##     ## ##     ##    ##    ##     ##  ##  ##   ###       ##    ## ##    ##  ##       ##       ##        ##    ##
+########  #######   #######     ##    ########  #### ##    ##        ######  ##     ## ######## ######## ##         ######
+
+=======================================================================================================================
+=======================================================================================================================
+=======================================================================================================================
+*/
+
+#if SERVER
+void function OnLootbinOpened( entity player, entity lootbin, array <string> lootToSpawn )
+{
+	if (!IsValid( lootbin ) )
+		return
+
+	if ( !ShouldTrySpawnLootbinCreep( player, lootbin.GetAngles() ) )
+		return
+
+	//////////////////////////////
+	// Decide which creep to spawn
+	//////////////////////////////
+	int lootCreepType
+	float chanceToSpawn
+	bool shouldSpawnSpiders = GetCurrentPlaylistVarFloat( "lootbin_spiders_chance", 0 ) > 0
+	bool shouldSpawnInfected = GetCurrentPlaylistVarFloat( "lootbin_infected_chance", 0 ) > 0
+	if ( shouldSpawnSpiders && shouldSpawnInfected )
+	{
+		if ( RandomFloat( 1.0 ) <= 0.5 )
+			lootCreepType =  eLootCreepType.INFECTED
+		else
+			lootCreepType =  eLootCreepType.SPIDER
+	}
+	else if ( shouldSpawnSpiders )
+	{
+		lootCreepType =  eLootCreepType.SPIDER
+	}
+	else if ( shouldSpawnInfected )
+	{
+		lootCreepType =  eLootCreepType.INFECTED
+	}
+	else
+	{
+		return //should alredy be handled by ShouldTrySpawnLootbinCreep
+	}
+
+	////////////////////////////////////
+	// Abort if chance to spawn not met
+	////////////////////////////////////
+	float rand = RandomFloat( 1.0 )
+
+	if ( lootCreepType == eLootCreepType.INFECTED )
+		chanceToSpawn = GetCurrentPlaylistVarFloat( "lootbin_infected_chance", 0 )
+	else
+		chanceToSpawn = GetCurrentPlaylistVarFloat( "lootbin_spiders_chance", 0 )
+
+	if ( rand > chanceToSpawn )
+		return
+
+	///////////////////////////
+	// Spawn the little fucker
+	///////////////////////////
+	lootbin.e.shouldSpawnLoot = false //don't allow loot to spawn normally in bin....creature will spawn it when killed
+	thread SpawnLootbinCreep( lootCreepType, lootbin, player, lootToSpawn )
+
+}
+#endif //#if SERVER
+
+
+#if SERVER
+bool function ShouldTrySpawnLootbinCreep( entity player, vector lootbinAngles )
+{
+
+	if ( !IsAlive( player ) )
+		return false
+
+	bool shouldSpawnSpiders = GetCurrentPlaylistVarFloat( "lootbin_spiders_chance", 0 ) > 0
+	bool shouldSpawnInfected = GetCurrentPlaylistVarFloat( "lootbin_infected_chance", 0 ) > 0
+
+	if ( !shouldSpawnSpiders && !shouldSpawnInfected )
+		return false
+
+	if ( file.numActiveLootCreeps >= MAX_ACTIVE_LOOTBIN_CREEPS )
+		return false
+
+	float maxAngle = 10.0 //don't want to deal with extreme haphazard angles
+	if ( lootbinAngles.x > maxAngle || lootbinAngles.z > maxAngle )
+		return false
+
+	if ( lootbinAngles.x < ( maxAngle * -1 ) || lootbinAngles.z < ( maxAngle * -1 )  )
+		return false
+
+	return true
+
+}
+#endif //#if SERVER
+
+
+
+#if SERVER
+void function SpawnLootbinCreep( int lootCreepType, entity lootbin, entity player, array<string> lootToSpawn )
+{
+	AssertIsNewThread() //needs to be threaded for a micro wait delay before spawning creep
+
+	asset modelAsset
+	vector origin            = lootbin.GetOrigin()
+	vector angles            = lootbin.GetAngles()
+	array <string> spawnAnims
+	string spawnSound
+	string idleAnim
+	int skin = -1
+
+	switch( lootCreepType )
+	{
+		case eLootCreepType.INFECTED:
+			modelAsset = MODEL_INFECTED
+			skin = 2
+			spawnAnims.append( "pt_infected_lootbox_creepy" )
+			spawnAnims.append( "pt_infected_lootbox_leap" )
+			spawnAnims.append( "pt_infected_lootbox_inbox" )
+			spawnAnims.append( "pt_infected_lootbox_rollout" )
+			idleAnim = "pt_infected_idle_05_alert" //all use this except pt_infected_lootbox_creepy
+			spawnSound = "prowler_vocal_attackmiss"
+			break
+
+		case eLootCreepType.SPIDER:
+			modelAsset = MODEL_SPIDER
+			spawnAnims.append( "spdr_melee_mouth_dart_jump_02" )
+			//idleAnim = "spdr_back_and_forth_idle"
+			idleAnim = "spdr_casual_idle"  //just static
+			spawnSound = "Lootbin_Spider_Vocal"
+			//leap out near player but not on top of him
+			array<vector> possibleSpawnOrgs
+			possibleSpawnOrgs.append( origin )
+			possibleSpawnOrgs.append( PositionOffsetFromEnt( lootbin, 0, 40, 0 ) )
+			possibleSpawnOrgs.append( PositionOffsetFromEnt( lootbin, 0, -40, 0 ) )
+			if ( IsAlive( player ) )
+				origin = GetFarthestVector( possibleSpawnOrgs, player.GetOrigin() )
+			else
+				origin = possibleSpawnOrgs.getrandom()
+			break
+
+		default:
+			Assert( 0, "Unhandled npcType" )
+	}
+
+	////////////////////////////////////////////
+	PlayFX( FX_LOOTBIN_OPEN, origin )
+	wait 0.25
+	////////////////////////////////////////////
+
+	entity creep = CreatePropDynamic( modelAsset, origin, angles, SOLID_BBOX )
+
+	creep.EndSignal( "OnDestroy" )
+	creep.EndSignal( "OnDeath" )
+
+	creep.Highlight_Enable()
+	creep.Code_SetTeam( TEAM_NPC_HOSTILE_TO_ALL )
+	creep.EnableAttackableByAI( AI_PRIORITY_NO_THREAT, 0, AI_AP_FLAG_NONE )   //HACK: Set life state to alive so things like thermite can hit it
+	creep.SetTouchTriggers( true )
+	creep.SetMaxHealth( 1 )
+	creep.SetHealth( 1 )
+	creep.SetCanBeMeleed( true )
+	SetVisibleEntitiesInConeQueriableEnabled( creep, true )
+	//creep.e.canBurn = true
+	//creep.e.canBeDamagedFromGas = true
+	//creep.SetBoundingBox( < -150, -75, 0 >, <150, 75, 100 >  )
+
+	if ( skin != -1 )
+		creep.SetSkin( skin )
+	file.lootCreeps.append( creep )
+	file.numActiveLootCreeps++
+
+
+	LootCreepDeathSetup( creep, lootToSpawn )
+
+	//////////////////////////////////
+	// Check if anim ends in solid
+	//////////////////////////////////
+	bool allowJumpOutAnims = true
+	if ( lootCreepType == eLootCreepType.SPIDER )
+	{
+		int sequenceIdx        = creep.LookupSequence( "spdr_melee_mouth_dart_jump_02" )
+		vector animStartPos    = creep.Anim_GetStartForRefEntity( "spdr_melee_mouth_dart_jump_02", creep, "" ).origin
+		vector animMotionDelta = creep.GetAnimDeltas( sequenceIdx, 0, 1 )
+		animMotionDelta = VectorRotate( animMotionDelta, angles )
+		vector animEndPos      = animStartPos + animMotionDelta + <0, 0, 40>
+
+		//DebugDrawSphere( animStartPos, 32, 0, 255, 0, true, 10.0 )
+		//DebugDrawSphere( animEndPos, 32, 0, 0, 255, true, 10.0 )
+
+		// If the point is in solid don't allow jump out anim
+		TraceResults result = TraceHull( animEndPos, animEndPos + <0,0,1>, <-32,-32,-32>, <32,32,32>, [], TRACE_MASK_NPCSOLID, TRACE_COLLISION_GROUP_NONE )
+		if ( result.startSolid || result.allSolid || result.fraction < 1.0 )
+			allowJumpOutAnims = false
+	}
+
+	int animNumber
+	if ( lootCreepType == eLootCreepType.SPIDER )
+	{
+		animNumber = 0 //only one spider anim
+	}
+	else //Zombie
+	{
+		animNumber = RandomIntRange( 0, spawnAnims.len() )
+		if ( spawnAnims[ animNumber ] == "pt_infected_lootbox_creepy" )
+			idleAnim = "pt_infected_idle_05_lootbin" //this anim needs a custom idle
+	}
+
+
+
+	if ( lootCreepType == eLootCreepType.SPIDER && !allowJumpOutAnims )
+	{
+		//skip the jump out anims and just have him idle inside the bin
+		creep.SetOrigin( creep.GetOrigin() + < 0, 0, 24> )
+		EmitSoundOnEntity( creep, spawnSound )
+	}
+	else
+	{
+		waitthread PlayAnimTeleport( creep, spawnAnims[ animNumber ], origin, angles )
+	}
+
+
+	/*
+	if ( lootCreepType == eLootCreepType.SPIDER )
+	{
+		//make sure not stuck in ground
+		vector newOrigin = creep.GetOrigin() + <0, 0, 100>
+		newOrigin = OriginToGround( newOrigin )
+		creep.SetOrigin( newOrigin )
+	}
+	*/
+
+	if ( !IsValid( creep ) )
+		return
+
+	thread PlayAnim( creep, idleAnim, creep.GetOrigin(), creep.GetAngles() )
+
+	if ( Time() - file.lastTimeLootCreepsGarbageCollected > LOOT_CREEP_GARBAGE_COLLECTION_COOLDOWN )
+		LootCreepGarbageCollect()
+
+}
+#endif //#if SERVER
+
+
+
+#if SERVER
+void function LootCreepGarbageCollect()
+{
+	foreach( creep in file.lootCreeps )
+	{
+		if ( !IsValid( creep ) )
+		{
+			file.lootCreeps.fastremovebyvalue( creep )
+			continue
+		}
+
+		if ( ShouldGarbageCollectCreep( creep ) )
+		{
+			file.lootCreeps.fastremovebyvalue( creep )
+			creep.Destroy()
+		}
+	}
+
+	file.numActiveLootCreeps = file.lootCreeps.len()
+	file.lastTimeLootCreepsGarbageCollected = Time()
+}
+#endif //#if SERVER
+
+
+
+#if SERVER
+bool function ShouldGarbageCollectCreep( entity creep )
+{
+	vector origin = creep.GetOrigin()
+
+	if ( !SURVIVAL_PosInsideDeathField( origin ) )
+		return true
+
+	//no players nearby?
+	const float maxDistSqr = 4000 * 4000
+	bool playerNearby = false
+	foreach( guy in GetPlayerArray_AliveConnected() )
+	{
+		float distanceSqr = Distance2DSqr( guy.GetOrigin(), origin )
+		if ( distanceSqr < maxDistSqr )
+			return false
+	}
+
+	return true
+
+}
+#endif //#if SERVER
+
+#if SERVER
+void function LootCreepDeathSetup( entity creep, array<string> lootToSpawn )
+{
+	int lootCreepType = GetLootCreepType( creep )
+
+	array <string> deathSounds
+	deathSounds.append( "LootTick_Explosion" ) //ui_ingame_starearned_third
+	asset deathFx
+
+	switch( lootCreepType )
+	{
+		case eLootCreepType.INFECTED:
+			deathSounds.append( "Lootbin_Infected_Death" )
+			deathFx = DEATH_FX_INFECTED
+			break
+
+		case eLootCreepType.SPIDER:
+			deathSounds.append( "Lootbin_Spider_Death" )
+			deathFx = DEATH_FX_SPIDER
+			break
+
+		default:
+			Assert( 0, "Unhandled npcType" )
+	}
+
+	AddEntityCallback_OnDamaged( creep,
+		void function ( entity creep, var damageInfo ) : ( lootToSpawn, deathSounds, deathFx )
+		{
+			if ( !IsValid( creep ) )
+				return
+
+			if ( creep.e.isDisabled ) //already in the process of being killed
+				return
+
+			float damage = DamageInfo_GetDamage( damageInfo )
+			int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+			if ( !IsValid( damageSourceId ) )
+				return
+
+			switch( damageSourceId )
+			{
+				case eDamageSourceId.mp_weapon_frag_grenade:
+				case eDamageSourceId.mp_weapon_grenade_emp:
+					if ( damage < 40 )
+						return
+					break
+
+			}
+
+			entity attacker = DamageInfo_GetAttacker( damageInfo )
+			bool markedForDeath = false
+
+			if ( damageSourceId == eDamageSourceId.damagedef_despawn )
+				markedForDeath = true
+
+			else if ( IsValid( attacker ) && attacker.IsPlayer())
+				markedForDeath = true
+
+			if ( !markedForDeath )
+				return
+
+			//StatsHook_LootCreepKilled( creep, attacker )
+
+			creep.e.isDisabled = true
+
+			vector lootOrigin = creep.GetOrigin() + <0, 0, 16>
+			vector deathOrigin = creep.GetOrigin()
+
+
+
+			file.numActiveLootCreeps--
+
+			foreach( sound in deathSounds)
+				EmitSoundAtPosition( TEAM_ANY, lootOrigin, sound )
+
+			thread CreateAirShake( deathOrigin, 2, 50, 1 )
+			int attach_id = creep.LookupAttachment( "CHESTFOCUS" )
+  		vector effectOrigin = creep.GetAttachmentOrigin( attach_id )
+			vector effectAngles = creep.GetAttachmentAngles( attach_id )
+			StartParticleEffectOnEntity( creep, GetParticleSystemIndex( deathFx ), FX_PATTACH_POINT_FOLLOW, attach_id )
+			creep.Hide()
+			creep.NotSolid()
+			thread CreepDestroyAfterDelay( creep )
+
+			foreach( ref in lootToSpawn )
+			{
+				if ( ref == "blank" )
+					continue
+
+				vector randFwd = RandomVecInDome( <0, 0, 1> ) * 1.2 //RandomVecInDomeWithFOV( <0, 0, 1>, 45 ) * 1.2
+				vector up = creep.GetUpVector()
+				randFwd = Normalize( randFwd + ( up * 0.35 ) )
+
+				LootData lootData = SURVIVAL_Loot_GetLootDataByRef( ref )
+				int amount = lootData.countPerDrop
+
+
+				printt(FUNC_NAME(), "throwing", lootOrigin, randFwd, ref, amount)
+				SURVIVAL_ThrowLootFromPoint( lootOrigin, randFwd, ref, amount )
+			}
+
+		}
+	)
+}
+#endif //#if SERVER
+
+#if SERVER
+void function CreepDestroyAfterDelay( entity creep )
+{
+	wait 0.5
+	if ( !IsValid( creep ) )
+		return
+
+	creep.Destroy()
+}
+#endif //#if SERVER
+
+#if SERVER
+int function GetLootCreepType( entity creep )
+{
+	int lootCreepType
+	asset modelAsset = creep.GetModelName().tolower()
+
+	switch( modelAsset )
+	{
+		//case $"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl":
+		case MODEL_INFECTED.tolower():
+			lootCreepType = eLootCreepType.INFECTED
+			break
+		case MODEL_SPIDER.tolower():
+			lootCreepType = eLootCreepType.SPIDER
+			break
+		default:
+			Assert( 0, "Unhandled model " + modelAsset )
+	}
+
+	return lootCreepType
+}
+#endif //#if SERVER
+
+/*
+=======================================================================================================================
+=======================================================================================================================
+=======================================================================================================================
+
+########  #######  ##     ## ########  #### ########       ########  ########   #######  ########   ######  ##     ## #### ########   ######
+     ##  ##     ## ###   ### ##     ##  ##  ##             ##     ## ##     ## ##     ## ##     ## ##    ## ##     ##  ##  ##     ## ##    ##
+    ##   ##     ## #### #### ##     ##  ##  ##             ##     ## ##     ## ##     ## ##     ## ##       ##     ##  ##  ##     ## ##
+   ##    ##     ## ## ### ## ########   ##  ######         ##     ## ########  ##     ## ########   ######  #########  ##  ########   ######
+  ##     ##     ## ##     ## ##     ##  ##  ##             ##     ## ##   ##   ##     ## ##              ## ##     ##  ##  ##              ##
+ ##      ##     ## ##     ## ##     ##  ##  ##             ##     ## ##    ##  ##     ## ##        ##    ## ##     ##  ##  ##        ##    ##
+########  #######  ##     ## ########  #### ########       ########  ##     ##  #######  ##         ######  ##     ## #### ##         ######
+
+=======================================================================================================================
+=======================================================================================================================
+=======================================================================================================================
+*/
+
+#if SERVER
+void function OnRespawnDropshipCreated( entity dropship )
+{
+	thread SpawnDropshipZombies( dropship )
+}
+#endif //#if SERVER
+
+
+#if SERVER
+void function SpawnDropshipZombies( entity dropship  )
+{
+	//zombies jump out of respawn ship with the player (to their deaths)
+	int numZombies = 2
+	array <entity> zombies
+
+	//zombies will gib when they hit the ground and drop some low-level gear
+	array<string> lootToSpawn
+	lootToSpawn.append( "shotgun" )
+	lootToSpawn.append( "mp_weapon_shotgun_pistol" )
+
+	for( int i = 0; i < numZombies; i++ )
+	{
+		//entity zombie = CreatePropDynamic( $"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl", dropship.GetOrigin(), dropship.GetAngles(), 6 )
+		entity zombie = CreatePropDynamic( MODEL_INFECTED, dropship.GetOrigin(), dropship.GetAngles(), 6 )
+		LootCreepDeathSetup( zombie, lootToSpawn )
+		thread DropShipZombieJumpAndDie( zombie, dropship, i )
+	}
+}
+#endif //#if SERVER
+
+#if SERVER
+void function DropShipZombieJumpAndDie( entity zombie, entity dropship, int zombieNumber )
+{
+	AssertIsNewThread()
+
+	if ( !IsValid( dropship ) )
+		return
+
+	if ( !IsValid( zombie ) )
+		return
+
+	dropship.EndSignal( "OnDestroy" )
+	zombie.EndSignal( "OnDestroy" )
+
+	entity mover = CreateScriptMover( zombie.GetOrigin() )
+
+	string idleAnim
+	string jumpAnim
+
+	if ( zombieNumber == 0 )
+	{
+		idleAnim = "Classic_MP_flyin_exit_playerA_idle"
+		jumpAnim = "Classic_MP_flyin_exit_playerA_jump"
+	}
+	else //only 2 zombies allowed
+	{
+		idleAnim = "Classic_MP_flyin_exit_playerC_idle"
+		jumpAnim = "Classic_MP_flyin_exit_playerC_jump"
+	}
+
+	OnThreadEnd(
+		function() : ( zombie, mover )
+		{
+			if ( IsValid( zombie ) )
+			{
+				zombie.ClearParent()
+				zombie.TakeDamage( 25, null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
+			}
+
+			if ( IsValid( mover ) )
+				mover.Destroy()
+
+		}
+	)
+	string attachment = "origin"
+	zombie.SetParent( dropship, "origin" )
+	thread PlayAnimTeleport( zombie, idleAnim, dropship, attachment )
+
+	dropship.WaitSignal( "PlayersDeployingFromDropship" )
+
+	EmitSoundOnEntity( zombie, "prowler_vocal_attackmiss" )
+	waitthread PlayAnim( zombie, jumpAnim, dropship, attachment )
+	zombie.ClearParent()
+	EmitSoundOnEntity( zombie, "prowler_vocal_attackmiss" )
+
+	thread PlayAnim( zombie, "ai_grunt_skyfall" )
+
+	vector groundPos = OriginToGround( zombie.GetOrigin() )
+	mover.SetOrigin( zombie.GetOrigin() )
+	zombie.SetParent( mover )
+	float timeToMove = Distance( mover.GetOrigin(), groundPos ) / 400
+	mover.NonPhysicsMoveTo( groundPos, timeToMove, 0, 0 )
+	float minDistSq = ( 8 * 8 )
+
+	while( DistanceSqr( zombie.GetOrigin(), groundPos ) > minDistSq )
+		wait 0.1
+
+}
+#endif //#if SERVER
+
+/*
+=======================================================================================================================
+=======================================================================================================================
+=======================================================================================================================
+
+##        #######   #######  ########        ######  ########  ######## ######## ########        ##     ## ######## #### ##       #### ######## ##    ##
+##       ##     ## ##     ##    ##          ##    ## ##     ## ##       ##       ##     ##       ##     ##    ##     ##  ##        ##     ##     ##  ##
+##       ##     ## ##     ##    ##          ##       ##     ## ##       ##       ##     ##       ##     ##    ##     ##  ##        ##     ##      ####
+##       ##     ## ##     ##    ##          ##       ########  ######   ######   ########        ##     ##    ##     ##  ##        ##     ##       ##
+##       ##     ## ##     ##    ##          ##       ##   ##   ##       ##       ##              ##     ##    ##     ##  ##        ##     ##       ##
+##       ##     ## ##     ##    ##          ##    ## ##    ##  ##       ##       ##              ##     ##    ##     ##  ##        ##     ##       ##
+########  #######   #######     ##           ######  ##     ## ######## ######## ##               #######     ##    #### ######## ####    ##       ##
+
+
+=======================================================================================================================
+=======================================================================================================================
+=======================================================================================================================
+*/
+
+
+#if CLIENT
+void function OnLootCreepCreated( entity prop )
+{
+	asset modelAsset = prop.GetModelName().tolower()
+	int lootCreepType
+	entity creep
+	string eyeGlowAttachment = "HEADFOCUS"
+	int fxIndex
+	switch( modelAsset )
+	{
+		case MODEL_INFECTED.tolower():
+			creep = prop
+			lootCreepType = eLootCreepType.INFECTED
+			fxIndex = GetParticleSystemIndex( INFECTED_EYEGLOW_FX )
+			break
+		case MODEL_SPIDER.tolower():
+			creep = prop
+			lootCreepType = eLootCreepType.SPIDER
+			fxIndex = GetParticleSystemIndex( SPIDER_EYEGLOW_FX )
+			break
+		default:
+			return
+	}
+
+	/////////////
+	// Eye glows
+	/////////////
+	StartParticleEffectOnEntity( creep, fxIndex, FX_PATTACH_POINT_FOLLOW, creep.LookupAttachment( eyeGlowAttachment ) )
+
+}
+#endif
+
+#if SERVER || CLIENT
+bool function ShouldPrecacheLootCreep( int lootCreepType )
+{
+	switch ( lootCreepType )
+	{
+		case eLootCreepType.SPIDER:
+			if ( GetCurrentPlaylistVarFloat( "lootbin_spiders_chance", 0 ) > 0 )
+				return true
+			break
+
+		case eLootCreepType.INFECTED:
+			if ( GetCurrentPlaylistVarFloat( "lootbin_infected_chance", 0 ) > 0 )
+				return true
+			if ( GetCurrentPlaylistVarBool( "zombie_dropship", false ) )
+				return true
+			break
+		default:
+			Assert( 0, "Unhandled loot creep type" )
+
+	}
+
+	return false
+
+}
+#endif //#if SERVER
+
+
+
+
+
+
+
+
+
+

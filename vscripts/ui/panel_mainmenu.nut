@@ -16,11 +16,7 @@ global function UICodeCallback_OnCompletedUserSignIn
 global function UICodeCallback_OnUserSignOut
 #endif
 
-#if PC_PROG
-const bool SPINNER_DEBUG_INFO = true
-#else
-const bool SPINNER_DEBUG_INFO = false
-#endif
+const bool SPINNER_DEBUG_INFO = PC_PROG
 
 struct
 {
@@ -61,6 +57,7 @@ void function InitMainMenuPanel( var panel )
 	RegisterSignal( "EndPrelaunchValidation" )
 	RegisterSignal( "EndSearchForPartyServerTimeout" )
 	RegisterSignal( "SetLaunchState" )
+	RegisterSignal( "MainMenu_Think" )
 
 	file.panel = GetPanel( "MainMenuPanel" )
 	file.menu = GetParentMenu( file.panel )
@@ -80,9 +77,10 @@ void function InitMainMenuPanel( var panel )
 
 	#if PC_PROG
 		AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_EXIT_TO_DESKTOP", "#B_BUTTON_EXIT_TO_DESKTOP", null, IsExitToDesktopFooterValid )
+	// AddPanelFooterOption( panel, LEFT, KEY_TAB, false, "", "#DATACENTER_DOWNLOADING", OpenDataCenterDialog, IsDataCenterFooterVisible, UpdateDataCenterFooter )
 	#endif // PC_PROG
+	// AddPanelFooterOption( panel, LEFT, BUTTON_STICK_RIGHT, false, "#DATACENTER_DOWNLOADING", "", OpenDataCenterDialog, IsDataCenterFooterVisible, UpdateDataCenterFooter )
 	AddPanelFooterOption( panel, LEFT, BUTTON_START, true, "#START_BUTTON_ACCESSIBLITY", "#BUTTON_ACCESSIBLITY", Accessibility_OnActivate, IsAccessibilityFooterValid )
-	AddPanelFooterOption( panel, LEFT, BUTTON_STICK_RIGHT, true, "#STICK2_DATA_CENTER", "#DATA_CENTER", OpenDataCenterDialog, IsDataCenterFooterValid )
 
 	#if DURANGO_PROG
 		AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, "#Y_BUTTON_SWITCH_PROFILE", "", SwitchProfile_OnActivate, IsSwitchProfileFooterValid )
@@ -115,10 +113,19 @@ bool function IsAccessibilityFooterValid()
 	#endif
 }
 
-
-bool function IsDataCenterFooterValid()
+bool function IsDataCenterFooterVisible()
 {
-	bool hideDurationElapsed = Time() - file.startTime > 0.0
+	return !IsWorking() && !IsSearchingForPartyServer()
+}
+
+
+bool function IsDataCenterFooterClickable()
+{
+#if R5DEV
+	bool hideDurationElapsed = true
+#else //
+	bool hideDurationElapsed = Time() - file.startTime > 10.0
+#endif //
 
 	#if DURANGO_PROG
 		return Console_IsSignedIn() && !IsWorking() && !IsSearchingForPartyServer() && hideDurationElapsed
@@ -127,17 +134,54 @@ bool function IsDataCenterFooterValid()
 	#endif
 }
 
+void function UpdateDataCenterFooter( InputDef footerData )
+{
+	string label = "#DATACENTER_DOWNLOADING"
+	if ( !IsDatacenterMatchmakingOk() )
+	{
+		if ( IsSendingDatacenterPings() )
+			label = Localize( "#DATACENTER_CALCULATING" )
+		else
+			label = Localize( label, GetDatacenterDownloadStatusCode() )
+	}
+	else
+	{
+		label = Localize( "#DATACENTER_INFO", GetDatacenterName(), GetDatacenterMinPing(), GetDatacenterPing(), GetDatacenterPacketLoss(), GetDatacenterSelectedReasonSymbol() )
+		if ( IsDataCenterFooterClickable() )
+			footerData.clickable = true
+	}
+
+	var elem = footerData.vguiElem
+	Hud_SetText( elem, label )
+	Hud_Show( elem )
+}
 
 void function OnMainMenuPanel_Show( var panel )
 {
 	file.startTime = Time()
 
 	AccessibilityHintReset()
+	EnterLobbySurveyReset()
+
+	thread MainMenu_Think()
 
 	thread PrelaunchValidation()
 
 	ExecCurrentGamepadButtonConfig()
 	ExecCurrentGamepadStickConfig()
+}
+
+void function MainMenu_Think()
+{
+	Signal( uiGlobal.signalDummy, "MainMenu_Think" )
+	EndSignal( uiGlobal.signalDummy, "MainMenu_Think" )
+
+	while ( true )
+	{
+		UpdateFooterOptions()
+
+		WaitFrame()
+	}
 }
 
 
@@ -153,15 +197,18 @@ void function PrelaunchValidation( bool autoContinue = false )
 
 	SetLaunchState( eLaunchState.WORKING )
 
+	SetLaunchState( eLaunchState.CANT_CONTINUE, "Press F10 to access the Server Browser" )
+
+	return
 #if SPINNER_DEBUG_INFO
 	SetSpinnerDebugInfo( "PrelaunchValidation" )
 #endif
 	#if PC_PROG
-		bool isOriginEnabled = Origin_IsEnabled()
+		bool isOriginEnabled = true//Origin_IsEnabled()
 		PrintLaunchDebugVal( "isOriginEnabled", isOriginEnabled )
 		if ( !isOriginEnabled )
 		{
-			#if DEV
+			#if R5DEV
 				if ( autoContinue )
 					LaunchMP()
 				else
@@ -174,7 +221,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 			return
 		}
 
-		bool isOriginConnected = isOriginEnabled ? Origin_IsOnline() : true
+		bool isOriginConnected = true//isOriginEnabled ? Origin_IsOnline() : true
 		PrintLaunchDebugVal( "isOriginConnected", isOriginConnected )
 		if ( !isOriginConnected )
 		{
@@ -182,11 +229,11 @@ void function PrelaunchValidation( bool autoContinue = false )
 			return
 		}
 
-		bool isOriginLatest = Origin_IsUpToDate()
+		bool isOriginLatest = true//Origin_IsUpToDate()
 		PrintLaunchDebugVal( "isOriginLatest", isOriginLatest )
 		if ( !isOriginLatest )
 		{
-			SetLaunchState( eLaunchState.CANT_CONTINUE, Localize( "#ORIGIN_UPDATE_AVAILABLE" ) )
+			SetLaunchState( eLaunchState.CANT_CONTINUE, Localize( "#TITLE_UPDATE_AVAILABLE" ) )
 			return
 		}
 	#endif // PC_PROG
@@ -239,7 +286,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 #endif
 		while ( true )
 		{
-			bool isOriginReady = Origin_IsReady()
+			bool isOriginReady = true//Origin_IsReady()
 			PrintLaunchDebugVal( "isOriginReady", isOriginReady )
 			if ( isOriginReady )
 				break
@@ -409,13 +456,20 @@ void function PrelaunchValidation( bool autoContinue = false )
 #if SPINNER_DEBUG_INFO
 	SetSpinnerDebugInfo( "isAuthenticatedByStryder" )
 #endif
+	float startTime = Time()
 	while ( true )
 	{
 		bool isAuthenticatedByStryder = IsStryderAuthenticated()
-		PrintLaunchDebugVal( "isAuthenticatedByStryder", isAuthenticatedByStryder )
+		//PrintLaunchDebugVal( "isAuthenticatedByStryder", isAuthenticatedByStryder )
 
 		if ( isAuthenticatedByStryder )
 			break
+		if ( Time() - startTime > 10.0 )
+		{
+			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#ORIGIN_IS_OFFLINE" ), Localize( "#MAINMENU_RETRY" ) )
+			return
+		}
+
 		WaitFrame()
 	}
 
@@ -451,6 +505,7 @@ void function PrelaunchValidation( bool autoContinue = false )
 
 void function OnMainMenuPanel_Hide( var panel )
 {
+	Signal( uiGlobal.signalDummy, "MainMenu_Think" )
 	Signal( uiGlobal.signalDummy, "EndPrelaunchValidation" )
 	file.working = false
 	file.searching = false
@@ -831,7 +886,7 @@ void function OnConfirmDialogResult( int result )
 
 void function PrintLaunchDebugVal( string name, bool val )
 {
-	#if DEV
+	#if R5DEV
 		printt( "*** PrelaunchValidation *** " + name + ": " + val )
 	#endif // DEV
 }

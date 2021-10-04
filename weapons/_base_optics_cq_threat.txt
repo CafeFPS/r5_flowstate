@@ -29,6 +29,8 @@ WeaponData
 			"threat_scope_fadedist_end"         "2165" // 55m
 			"threat_scope_bounds_tagname1"	    "SCR_TR_CRO"
 			"threat_scope_bounds_tagname2"	    "SCR_BL_CRO"
+
+            zoomed_convar_sensitivity_index         0
    		}
 	}
 

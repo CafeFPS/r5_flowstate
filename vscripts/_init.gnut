@@ -1,4 +1,4 @@
-#if DEV
+#if R5DEV
 untyped
 #endif
 
@@ -13,7 +13,7 @@ bool _initialized = false
 
 void function CodeCallback_PostEntityInit()
 {
-	printl( "Code Script: _init" )
+	printl( "CODE_SCRIPT: _init" )
 
 	// prevent save/load code from running global scripts again
 	Assert( !_initialized )

@@ -81,7 +81,16 @@ void function MpAbilityCarePackage_ClientConnected( entity player )
 
 void function CreateCarePackageAirdrop( vector origin, vector angles, array<string> contents, entity fxToStop = null, string animationName = "droppod_loot_drop", entity owner = null, string sourceWeaponClassName = "" )
 {
-	int skin = GetSkinForCarePackageModel( owner )
+	int skin = 0
+
+	if( animationName == "droppod_loot_drop_lifeline" )
+	{
+		skin = 1
+	} else {
+		// this is literal garbage please fix
+		skin = GetSkinForCarePackageModel( owner )
+	}
+
 	thread AirdropItems( origin, angles, contents, fxToStop, animationName, owner, skin, sourceWeaponClassName )
 }
 #endif // SERVER
@@ -199,15 +208,15 @@ int function GetSkinForCarePackageModel( entity player )
 {
 	LoadoutEntry characterSlot = Loadout_CharacterClass()
 
-	#if DEV
+	#if R5DEV
 		if ( !LoadoutSlot_IsReady( ToEHI( player ), characterSlot ) )
 			printt( "Need to get character for player, but the data is not available" )
 	#endif
 
-	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), characterSlot )
+	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), characterSlot ) // this sometimes waits forever
 	string characterRef = ItemFlavor_GetHumanReadableRef( character )
 
-	#if DEV
+	#if R5DEV
 		printt( "got character", characterRef )
 	#endif
 

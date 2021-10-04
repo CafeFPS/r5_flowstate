@@ -61,6 +61,7 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 															"bloodhound_gladcard_animated_come",
 															"bloodhound_gladcard_animated_knife",
 															"bloodhound_gladcard_animated_mogwai",
+															"bloodhound_gladcard_animated_myaxe",
 															"bloodhound_gladcard_animated_throw" ]
 
 	anims[ "character_gibraltar" ] <- {}
@@ -107,7 +108,8 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 															"lifeline_gladcard_animated_dronedrummer",
 															"lifeline_gladcard_animated_drop",
 															"lifeline_gladcard_animated_gunslinger",
-															"lifeline_gladcard_animated_robotgroove" ]
+															"lifeline_gladcard_animated_robotgroove",
+															"lifeline_gladcard_animated_heirloom" ]
 
 	anims[ "character_mirage" ] <- {}
 	anims[ "character_mirage" ][ "lobby" ] 		<- [ 		"mirage_menu_lobby_center_idle",
@@ -143,7 +145,38 @@ table<string, table<string, array<string> > > function CM_GetAnimTable()
 															"wraith_gladcard_animated_rise",
 															"wraith_gladcard_common_kunaithrow",
 															"wraith_gladcard_common_kunaitwirl" ]
+															
+															
+	anims[ "character_wattson" ] <- {}
+	anims[ "character_wattson" ][ "lobby" ] 		<- [ 	"wattson_menu_lobby_center_idle",
+															"wattson_menu_lobby_center_squad" ]
+	anims[ "character_wattson" ][ "other" ] 		<- [ 	"wattson_menu_select_ready_up",
+														 	"wattson_gladcard_animated_shii",
+															"wattson_gladcard_animated_electricfence",
+															"wattson_gladcard_animated_Fix",
+															"wattson_gladcard_animated_electric",
+															"wattson_gladcard_animated_spin" ]
+															
+															
+	anims[ "character_crypto" ] <- {}
+	anims[ "character_crypto" ][ "lobby" ] 			<- [ 	"Crypto_menu_lobby_center_idle",
+															"Crypto_menu_lobby_center_drone" ]
+	anims[ "character_crypto" ][ "other" ] 			<- [ 	"Crypto_menu_select_ready_up",
+														 	"Crypto_gladcard_animated_sneaker",
+															"Crypto_gladcard_animated_puzzle",
+															"Crypto_gladcard_animated_halloween",
+															"Crypto_gladcard_animated_Hack"]
 
+
+	anims[ "character_octane" ] <- {}
+	anims[ "character_octane" ][ "lobby" ] 			<- [ 	"octane_menu_lobby_center_idle",
+															"octane_menu_lobby_center_epic",
+															"octane_menu_lobby_center_leg" ]
+	anims[ "character_octane" ][ "other" ] 			<- [ 	"octane_menu_select_ready_up",
+														 	"octane_gladcard_animated_wipeout",
+														 	"octane_gladcard_animated_stimhead",
+															"octane_gladcard_animated_jumpspin",
+															"octane_gladcard_animated_consequences"]
 	return anims
 }
 #if CLIENT

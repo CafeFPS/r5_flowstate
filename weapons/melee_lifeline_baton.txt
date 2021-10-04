@@ -1,0 +1,27 @@
+#base "melee_pilot_emptyhanded.txt"
+
+WeaponData
+{
+
+	// General
+	"printname"   								"Melee"
+	"shortprintname"							"Melee"
+	"description" 								"Description needed"
+	"longdesc"									"Description needed"
+
+	"menu_icon"									"rui/hud/common/melee_icon"
+	"hud_icon"									"rui/hud/common/melee_icon"
+
+	"weapon_type_flags"							"WPT_MELEE"
+
+	// Models
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+
+	//"OnWeaponActivate"							"OnWeaponActivate_melee_lifeline_baton"
+    //"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_lifeline_baton"
+
+    // FX
+	"impact_effect_table"							"melee_human"
+}
+

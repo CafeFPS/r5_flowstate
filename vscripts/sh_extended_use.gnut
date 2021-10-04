@@ -1,5 +1,10 @@
 global function ExtendedUse
 
+#if CLIENT
+global function DefaultExtendedUseRui
+global function ExtendedUseTextOverride
+#endif
+
 global struct ExtendedUseSettings
 {
 	void functionref( entity ent, entity player, ExtendedUseSettings settings ) successFunc
@@ -139,7 +144,7 @@ void function ExtendedUse( entity ent, entity player, ExtendedUseSettings settin
 	waitthread ExtendedUse_TrackContinuousUse( player, ent, settings.duration, settings.useInputFlag, settings.requireMatchingUseEnt )
 
 	if ( settings.successFunc != null )
-		settings.successFunc( ent, player, settings )
+		thread settings.successFunc( ent, player, settings )
 
 	if ( settings.loopSound != "" )
 		StopSoundOnEntity( ent, settings.loopSound )
@@ -195,7 +200,12 @@ void function ExtendedUse_TrackContinuousUse( entity player, entity useTarget, f
 		if ( player.IsPhaseShifted() )
 			return
 
-		if ( DistanceSqr( player.GetOrigin(), useTarget.GetOrigin() ) > maxDist2 )
+		vector eyePos = player.UseableEyePosition( useTarget )
+		vector eyePos2D = <eyePos.x, eyePos.y, 0.0>
+		vector useOrigin = useTarget.GetOrigin()
+		vector useOrigin2D = <useOrigin.x, useOrigin.y, 0.0>
+		float vertDist = player.GetOrigin().z - useTarget.GetOrigin().z
+		if ( (DistanceSqr( eyePos2D, useOrigin2D ) > maxDist2) || ((vertDist * vertDist) > (64*64)) )
 			return
 
 		if ( requireMatchingUseEnt && player.GetUseEntity() != useTarget )
@@ -232,3 +242,21 @@ void function TryClearPlayerExtendedUse( entity player, int inputFlags )
 	while ( UseHeld( player, inputFlags ) )
 		WaitFrame()
 }
+
+#if CLIENT
+void function DefaultExtendedUseRui( entity ent, entity player, var rui, ExtendedUseSettings settings )
+{
+	RuiSetString( rui, "holdButtonHint", settings.holdHint )
+	RuiSetString( rui, "hintText", settings.hint )
+	RuiSetGameTime( rui, "startTime", Time() )
+	RuiSetGameTime( rui, "endTime", Time() + settings.duration )
+}
+
+string function ExtendedUseTextOverride( entity ent )
+{
+	if ( ent.e.isBusy )
+		return " "
+
+	return ""
+}
+#endif

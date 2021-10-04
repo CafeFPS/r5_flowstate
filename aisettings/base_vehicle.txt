@@ -27,7 +27,6 @@ base_vehicle
 	FOV_Combat_Far_Horz		180
 	FOV_Combat_Far_Vert		180
 
-	YawSpeed				25
 	MoveYawSpeed			15
 	AimAngularSpeed			25
 

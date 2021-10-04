@@ -11,7 +11,7 @@ global enum eVideoPanelContext
 {
 	ALL,
 	CLIENT, // in-game HUD videos
-	UI // menus/fullscreen videos
+	UI      // menus/fullscreen videos
 }
 
 global enum eVideoPanelPinPositions
@@ -89,7 +89,7 @@ int function ContentScaledYAsInt( int val )
 
 string function GetActiveLevel()
 {
-	// The level load callbacks overlap with the level init/shutdown callbacks, so we track each one separately.
+	//
 	if ( uiGlobal.loadedLevel != "" )
 		return uiGlobal.loadedLevel
 	return uiGlobal.loadingLevel
@@ -279,7 +279,7 @@ int function GetLobbyTypeScript()
 }
 
 
-var function AddMenu( string blockName, asset resourceFile, void functionref() initFunc = null, string displayName = "" )
+var function AddMenu( string blockName, asset resourceFile, void functionref( var ) initFunc = null, string displayName = "" )
 {
 	var menu = CreateMenu( "menu_" + blockName, resourceFile )
 	uiGlobal.menus[blockName] <- menu
@@ -325,12 +325,6 @@ var function AddPanel( var menu, string panelName, void functionref( var ) initF
 		uiGlobal.panelData[ panel ].initFunc = initFunc
 
 	return panel
-}
-
-
-void function HudElem_SetText( var hudelem, string text )
-{
-	hudelem.SetText( text )
 }
 
 
@@ -523,7 +517,7 @@ void function ScriptCallback_UnlockAchievement( int achievementID )
 {
 	Assert( achievementID >= 0 && achievementID < achievements.MAX_ACHIVEMENTS, "Tried to unlock achievement with invalid enum value" )
 
-	#if DEV
+	#if R5DEV
 		string ref
 		foreach ( string _ref, int val in achievements )
 		{
@@ -535,7 +529,7 @@ void function ScriptCallback_UnlockAchievement( int achievementID )
 		printt( "#############################################" )
 		printt( "UNLOCKED ACHIEVEMENT:", ref, "(" + achievementID + ")" )
 		printt( "#############################################" )
-	#endif //DEV
+	#endif //R5DEV
 
 	Plat_UnlockAchievementByID( achievementID )
 }
@@ -675,7 +669,6 @@ string function GetFormattedIntByType( int value, int numericType )
 }
 
 
-
 string function GetFormattedFloatByType( float value, int numericType )
 {
 	string displayValue
@@ -766,7 +759,15 @@ bool function IsElementFullyInside( var element, UIPos pos, UISize size )
 	return true
 }
 
+
 bool function MeetsAgeRequirements()
 {
 	return !GetConVarBool( "cl_isUnderAge" )
 }
+
+
+bool function IsElitePlaylist( string playlist )
+{
+	return GetPlaylistVarBool( playlist, "is_elite_game", false )
+}
+

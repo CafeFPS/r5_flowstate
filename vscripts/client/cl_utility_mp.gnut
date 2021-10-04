@@ -17,11 +17,6 @@ void function ClientCodeCallback_XPChanged( entity player )
 {
 }
 
-void function ClientCodeCallback_OnPlayerActiveBurnCardIndexChanged( entity player, int oldActiveBurnCardIndex )
-{
-}
-
-
 void function AddCallback_GameStateEnter( int gameState, void functionref() callbackFunc )
 {
 	Assert( gameState < clGlobal.gameStateEnterCallbacks.len() )

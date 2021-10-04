@@ -711,7 +711,7 @@ void function ClRunConversationElement( entity player, elem )
 			float duration = 0
 			if ( elem.alias == "" )
 			{
-				Warning( "Sound alias for " + level.debugType + " not found!\n" )
+				//Warning( "Sound alias for " + level.debugType + " not found!\n" )
 				duration = 1.0
 			}
 			else
@@ -1276,7 +1276,7 @@ void function VerifyConversationAliases()
 		failed.sort( SortAlphabetize )
 		foreach ( alias in failed )
 		{
-			Warning( "Sound alias " + alias + " not found!\n" )
+			//Warning( "Sound alias " + alias + " not found!\n" )
 		}
 	}
 }
@@ -1490,7 +1490,7 @@ var function CreateWaveformVideo( string title, int team, float duration, entity
 	return waveformVideoRUI
 }
 
-var function CreateWaveform( string title, int team, float duration, entity speaker = null, bool radioIntercept = false )
+var function CreateWaveform( string title, float duration, asset specificImage = $"", entity speaker = null, bool radioIntercept = false )
 {
 	var waveformRUI = file.waveformRUI
 	float timeExtension = 0.2 // FADEIN_TIME in waveform.rui
@@ -1502,16 +1502,13 @@ var function CreateWaveform( string title, int team, float duration, entity spea
 			DestroyWaveform( file.waveformRUI, false )
 		}
 
-		waveformRUI = RuiCreate( $"ui/waveform.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+		waveformRUI = RuiCreate( $"ui/waveform.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 500 )
 		timeExtension = 0.0
 
 		entity player = GetLocalClientPlayer()
 		if ( IsValid( player ) )
 		{
-			if ( team == TEAM_MILITIA )
-				EmitSoundOnEntity( player, "ui_callerid_chime_friendly" )
-			else if ( team == TEAM_IMC )
-				EmitSoundOnEntity( player, "ui_callerid_chime_enemy" )
+			EmitSoundOnEntity( player, "ui_callerid_chime_friendly" )
 		}
 	}
 	else
@@ -1524,20 +1521,22 @@ var function CreateWaveform( string title, int team, float duration, entity spea
 	RuiSetFloat( waveformRUI, "fadeOutDuration", WAVEFORM_FADE_DURATION )
 	RuiSetString( waveformRUI, "speakerName", title )
 	RuiSetBool( waveformRUI, "intercepting", radioIntercept )
-	RuiSetBool( waveformRUI, "isMP", true )
 	RuiSetResolutionToScreenSize( waveformRUI )
 
 	file.lastWaveformTalker	= title
 
-	if ( team == TEAM_MILITIA )
-		RuiSetFloat3( waveformRUI, "tintColor", HIGHLIGHT_COLOR_FRIENDLY )
-	else if ( team == TEAM_IMC )
-		RuiSetFloat3( waveformRUI, "tintColor", HIGHLIGHT_COLOR_ENEMY )
-	else
-		RuiSetFloat3( waveformRUI, "tintColor", HIGHLIGHT_COLOR_NEUTRAL )
+	RuiSetFloat3( waveformRUI, "tintColor", HIGHLIGHT_COLOR_NEUTRAL )
 
-	asset image = GetImageForName( title )
-	RuiSetImage( waveformRUI, "bgImage", image )
+	if ( specificImage != $"" )
+	{
+		RuiSetImage( waveformRUI, "bgImage", specificImage )
+		RuiSetBool( waveformRUI, "altPresentation", true )
+	}
+	else
+	{
+		RuiSetImage( waveformRUI, "bgImage", GetImageForName( title ) )
+		RuiSetBool( waveformRUI, "altPresentation", false )
+	}
 
 	if ( IsValid( speaker ) && !speaker.IsPhaseShifted() )
 	{
@@ -1656,7 +1655,7 @@ void function PlayAnnouncerLineThroughDeathWithPriority_internal( string soundAl
 	var rui
 	if ( waveformName != "" )
 	{
-		rui = CreateWaveform( waveformName, TEAM_MILITIA, 10.0 )
+		rui = CreateWaveform( waveformName, 10.0 )
 	}
 
 	OnThreadEnd(

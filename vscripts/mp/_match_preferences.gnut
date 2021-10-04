@@ -1,0 +1,11 @@
+global function MatchPreferences_Init
+
+global enum eMatchPreferenceFlags
+{
+	LAST_SQUAD_INVITE_OPT_OUT			= (1 << 0)
+}
+
+void function MatchPreferences_Init()
+{
+//Stub
+}

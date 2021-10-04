@@ -1,0 +1,198 @@
+//=========================================================
+//	sh_loadscreen.gnut
+//=========================================================
+
+global function ShLoadscreen_LevelInit
+
+global function Loadout_Loadscreen
+global function Loadscreen_GetSortOrdinal
+global function Loadscreen_GetPreviewImageAsset
+global function Loadscreen_GetLoadscreenImageAsset
+global function Loadscreen_GetRPakName
+global function Loadscreen_GetImageOverlayText
+
+#if UI
+global function Loadscreen_SetEquppedLoadscreenAsActive
+global function Loadscreen_SetCustomLoadscreen
+#endif
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+struct FileStruct_LifetimeLevel
+{
+	LoadoutEntry&          loadoutSelectionSlot
+	table<ItemFlavor, int> loadscreenFlavorSortOrdinalMap
+
+}
+FileStruct_LifetimeLevel& fileLevel
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+#if SERVER || CLIENT || UI
+void function ShLoadscreen_LevelInit()
+{
+	FileStruct_LifetimeLevel newFileGame
+	fileLevel = newFileGame
+
+	AddCallback_RegisterRootItemFlavors( OnRegisterRootItemFlavors )
+
+	RegisterSignal( "Loadscreen_SetCustomLoadscreen" )
+
+	#if UI
+		RegisterSignal( "SetEquppedLoadscreenAsActive" )
+	#endif
+}
+#endif
+
+#if SERVER || CLIENT || UI
+void function OnRegisterRootItemFlavors()
+{
+	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "loadscreen_selection" )
+	entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
+	//
+	entry.DEV_name = "Loadscreen"
+	fileLevel.loadoutSelectionSlot = entry
+
+
+	array<ItemFlavor> loadscreenList = []
+	foreach( asset loadscreenAsset in LOADSCREEN_ASSET_LIST )
+	{
+		if ( loadscreenAsset == $"" )
+			continue
+
+		ItemFlavor ornull loadscreenOrNull = RegisterItemFlavorFromSettingsAsset( loadscreenAsset )
+		if ( loadscreenOrNull == null )
+			continue
+		loadscreenList.append( expect ItemFlavor( loadscreenOrNull ) )
+	}
+
+	MakeItemFlavorSet( loadscreenList, fileLevel.loadscreenFlavorSortOrdinalMap )
+
+	entry.validItemFlavorList = loadscreenList
+	entry.defaultItemFlavor = loadscreenList[0]
+}
+#endif
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+LoadoutEntry function Loadout_Loadscreen()
+{
+	return fileLevel.loadoutSelectionSlot
+}
+
+int function Loadscreen_GetSortOrdinal( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
+
+	return fileLevel.loadscreenFlavorSortOrdinalMap[flavor]
+}
+
+asset function Loadscreen_GetPreviewImageAsset( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "loadscreenImage" )
+}
+
+asset function Loadscreen_GetLoadscreenImageAsset( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
+
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "loadscreenImage" )
+}
+
+string function Loadscreen_GetRPakName( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
+
+	asset imageAsset         = Loadscreen_GetLoadscreenImageAsset( flavor )
+	array<string> assetStrParts = split( string(imageAsset), "/" )
+	Assert( assetStrParts.len() == 3 ) //
+	Assert( assetStrParts[0] == "loadscreens" )
+	Assert( assetStrParts[1] == "custom" )
+	return assetStrParts[2] //
+}
+
+string function Loadscreen_GetImageOverlayText( ItemFlavor flavor )
+{
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
+
+	return GetGlobalSettingsString( ItemFlavor_GetAsset( flavor ), "overlayText" )
+}
+
+#if UI
+void function Loadscreen_SetEquppedLoadscreenAsActive()
+{
+	Signal( uiGlobal.signalDummy, "SetEquppedLoadscreenAsActive" )
+	EndSignal( uiGlobal.signalDummy, "SetEquppedLoadscreenAsActive" )
+
+	WaitForLocalClientEHI()
+
+	LoadoutEntry loadscreenSlot = Loadout_Loadscreen()
+	ItemFlavor flavor           = LoadoutSlot_WaitForItemFlavor( LocalClientEHI(), Loadout_Loadscreen() )
+
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
+
+	thread Loadscreen_SetCustomLoadscreen( flavor )
+}
+#endif
+
+#if UI
+void function Loadscreen_SetCustomLoadscreen( ItemFlavor flavor )
+{
+	Signal( uiGlobal.signalDummy, "Loadscreen_SetCustomLoadscreen" )
+	EndSignal( uiGlobal.signalDummy, "Loadscreen_SetCustomLoadscreen" )
+
+	Assert( ItemFlavor_GetType( flavor ) == eItemType.loadscreen )
+
+	ItemFlavor flavToUse = flavor
+
+	if ( ItemFlavor_IsTheRandom( flavor ) )
+	{
+		entity player = GetUIPlayer()
+
+		EndSignal( player, "OnDestroy" )
+
+		LoadoutEntry loadscreenSlot = Loadout_Loadscreen()
+		array<ItemFlavor> items = clone GetValidItemFlavorsForLoadoutSlot( LocalClientEHI(), loadscreenSlot )
+
+		while ( !GRX_IsInventoryReady( player ) )
+			WaitFrame()
+
+		foreach ( item in clone items )
+		{
+			if (
+					( ItemFlavor_GetGRXMode( item ) != GRX_ITEMFLAVORMODE_NONE && !GRX_IsItemOwnedByPlayer( item, player ) )
+					|| ItemFlavor_IsTheRandom( item )
+				)
+				items.fastremovebyvalue( item )
+		}
+
+		if ( items.len() > 0 )
+		{
+			flavToUse = items.getrandom()
+		}
+	}
+
+	if ( ItemFlavor_IsTheDefault( flavor ) )
+	{
+		SetCustomLoadScreen( $"" )
+		return
+	}
+
+	asset image = Loadscreen_GetLoadscreenImageAsset( flavToUse )
+	SetCustomLoadScreen( image )
+}
+#endif

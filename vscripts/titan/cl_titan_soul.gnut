@@ -62,7 +62,7 @@ void function ClientCodeCallback_TitanVarChanged( entity soul )
 }
 
 void function ClientCodeCallback_DoomedStateChanged( entity soul )
-{
+{/*
 	//Defensive fix temporarily. Code probably shouldn't just pass us null. Remove when bug 36591 is resolved. Should also get this function renamed to CodeClientCallback_ClientCallback_DoomedStateChanged for consistency
 	if ( !IsValid( soul ) )
 		return
@@ -104,12 +104,12 @@ void function ClientCodeCallback_DoomedStateChanged( entity soul )
 				thread TitanCockpit_WarningAudio( cockpit, localPlayer )
 			}
 		}
-	}
+	}*/
 
-	if ( RodeoState_GetIsPlayerRodeoingVehicle( localPlayer, titan ) )
+	/*if ( ContextAction_IsInVehicle( localPlayer, titan ) )
 	{
 		localPlayer.Signal( "UpdateRodeoAlert" )
-	}
+	}*/
 }
 
 void function ClientCodeCallback_TitanSoulChanged( entity ent )
@@ -149,7 +149,7 @@ void function FirstPersonEnded_UpdateTitanHealthFX( entity spectatingPlayer, ent
 	if ( !IsValid( titanSoul ) )
 		return
 
-	#if DEV
+	#if R5DEV
 	if ( !ModelHasFXGroup( spectatorTarget.GetModelName() ) )
 		return
 	#endif

@@ -105,6 +105,13 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		}
 	}
 
+	// if inflictor is trigger_hurt, set the identifier according to ent keyvalue
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.invalid 
+			&& inflictor != null 
+			&& inflictor.GetClassName() == "trigger_hurt" 
+			&& inflictor.HasKey( "damageSourceName" ) )
+		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
+
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "CodeCallback_DamagePlayerOrNPC ent:", ent )
 		printt( "    Attacker:", DamageInfo_GetAttacker( damageInfo ) )
@@ -180,8 +187,6 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			// 	DamageInfo_SetDamage( damageInfo, 0 )
 			// 	return
 			// }
-
-			//TODOACTUAL: Commented bcs idk how to properly fix it yet
 		}
 
 		if ( inflictor.e.onlyDamageEntitiesOnce == true || inflictor.e.onlyDamageEntitiesOncePerTick == true )
@@ -295,6 +300,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	if ( entIsPlayer )
 	{
 		PlayerTookDamage( ent, damageInfo, attacker, inflictor, damageSourceId, titanDamage )
+		
 		if ( DamageInfo_GetDamage( damageInfo ) == 0 && entIsTitan )
 		{
 			EarnMeterDamageConversion( damageInfo, attacker, ent, 0, titanDamage )
@@ -386,6 +392,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			{
 				attacker.p.currentTargetPlayerOrSoul_Ent = ent
 				attacker.p.currentTargetPlayerOrSoul_LastHitTime = Time()
+				attacker.p.playerDamageDealt += savedDamage
 			}
 		}
 	}
@@ -409,6 +416,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	#endif
 
 	RunClassPostDamageCallbacks( ent, damageInfo )
+
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SHIELD_DAMAGE )
+		DamageInfo_SetDamage( damageInfo, 0 ) // Do not damage the player, the damage value was only required for proper client display.
 
 	#if SERVER && MP
 		//Stats_OnPlayerDidDamage( ent, damageInfo )
@@ -579,27 +589,7 @@ void function SetGameModeRulesEarnMeterOnDamage( void functionref( entity, entit
 
 bool function ShouldGiveTimerCredit_Default( entity player, entity victim, var damageInfo )
 {
-	if ( player == victim )
-		return false
-
-	if ( player.IsTitan() && !IsCoreAvailable( player ) )
-		return false
-
-	// if ( GAMETYPE == FREE_AGENCY && !player.IsTitan() )
-	// 	return false
-
-	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-	switch ( damageSourceID )
-	{
-		case eDamageSourceId.mp_titancore_flame_wave:
-		case eDamageSourceId.mp_titancore_flame_wave_secondary:
-		case eDamageSourceId.mp_titancore_salvo_core:
-		case damagedef_titan_fall:
-		case damagedef_nuclear_core:
-			return false
-	}
-
-	return true
+	return false
 }
 
 bool function GameModeRulesShouldGiveTimerCredit( entity player, entity victim, var damageInfo )
@@ -647,13 +637,7 @@ vector function GetDamageOrigin( damageInfo, entity victim = null )
 
 	switch ( damageSourceId )
 	{
-		case eDamageSourceId.mp_weapon_satchel:
-		case eDamageSourceId.mp_weapon_proximity_mine:
-		case eDamageSourceId.mp_titanweapon_arc_pylon:
-			break
-
 		case damagedef_nuclear_core:
-		case eDamageSourceId.mp_titanability_smoke:
 			//if ( IsValid( victim ) && victim.IsPlayer() && IsValid( victim.GetTitanSoulBeingRodeoed() ) )
 			{
 				damageOrigin += (RandomVecInDome( Vector( 0, 0, -1 ) ) * 300.0)
@@ -746,11 +730,11 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	if ( isKillShot )
 		damageType = (damageType | DF_KILLSHOT)
 
-	if ( isTitan && (DamageInfo_GetDamage( damageInfo ) == 0) )
-	{
-		if ( titanDamage.doomedNow ) // to make kill card come up for you even if you have auto-eject. In Titan_PlayerTookDamage we set damage to 0 if you have Auto-Eject and are doomed
-			TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId, titanDamage )
-	}
+	// if ( isTitan && (DamageInfo_GetDamage( damageInfo ) == 0) )
+	// {
+	// 	if ( titanDamage.doomedNow ) // to make kill card come up for you even if you have auto-eject. In Titan_PlayerTookDamage we set damage to 0 if you have Auto-Eject and are doomed
+	// 		TellClientPlayerTookDamage( player, damageInfo, attacker, eModSourceID, damageType, damageSourceId, titanDamage )
+	// }
 
 	vector attackerOrigin = Vector( 0, 0, 0 )
 	if ( IsValid( attacker ) )
@@ -787,10 +771,21 @@ function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker,
 	local weaponEHandle = IsValid( DamageInfo_GetWeapon( damageInfo ) ) ? DamageInfo_GetWeapon( damageInfo ).GetEncodedEHandle() : null
 	local damageOrigin = GetDamageOrigin( damageInfo, player )
 
-	if ( player.IsTitan() )
-		Remote_CallFunction_Replay( player, "ServerCallback_TitanTookDamage", DamageInfo_GetDamage( damageInfo ), damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, eModSourceID, titanDamage.doomedNow, titanDamage.doomedDamage )
-	else
-		Remote_CallFunction_Replay( player, "ServerCallback_PilotTookDamage", DamageInfo_GetDamage( damageInfo ), damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, eModSourceID )
+	Remote_CallFunction_Replay( 
+		player, 
+		"ServerCallback_PlayerTookDamage", 
+
+		DamageInfo_GetDamage( damageInfo ), 
+		
+		damageOrigin.x, 
+		damageOrigin.y,
+		damageOrigin.z,
+
+		damageType,
+		damageSourceId,
+
+		attackerEHandle
+	)
 }
 
 // This only handles damage events. Whizbys can still cause snipercam to trigger without passing through this check.

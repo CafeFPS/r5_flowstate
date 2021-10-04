@@ -47,6 +47,9 @@ enum eBodyTypes
 	CLASS_MIRAGE
 	CLASS_BANGALORE
 	CLASS_CAUSTIC
+	CLASS_OCTANE
+	CLASS_WATTSON
+	CLASS_CRYPTO
 
 	total
 }
@@ -71,6 +74,35 @@ int function GetBodyTypeIndexFromVictim( entity victim )
 		}
 		else
 		{
+			ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( victim ), Loadout_CharacterClass() )
+			string charRef = ItemFlavor_GetHumanReadableRef( character )
+
+			switch( charRef )
+			{
+				case "character_bangalore":
+					return eBodyTypes.CLASS_BANGALORE
+				case "character_bloodhound":
+					return eBodyTypes.CLASS_BLOODHOUND
+				case "character_caustic":
+					return eBodyTypes.CLASS_CAUSTIC
+				case "character_crypto":
+					return eBodyTypes.CLASS_CRYPTO
+				case "character_gibraltar":
+					return eBodyTypes.CLASS_GIBRALTER
+				case "character_lifeline":
+					return eBodyTypes.CLASS_LIFELINE
+				case "character_mirage":
+					return eBodyTypes.CLASS_MIRAGE
+				case "character_octane":
+					return eBodyTypes.CLASS_OCTANE
+				case "character_pathfinder":
+					return eBodyTypes.CLASS_PATHFINDER
+				case "character_wraith":
+					return eBodyTypes.CLASS_BANSHEE // is this even the right class?
+				case "character_wattson":
+					return eBodyTypes.CLASS_WATTSON
+			}
+
 			if ( IsPlayerFemale( victim ) )
 				return eBodyTypes.PLAYER_HUMAN_FEMALE
 
@@ -119,20 +151,20 @@ void function PainDeathSounds_Init()
 	int alias_3p_except_victim_column = GetDataTableColumnByName( dataTable, "alias_3p_except_victim" )
 	int alias_3p_attacker_only_column = GetDataTableColumnByName( dataTable, "alias_3p_attacker_only" )
 	int alias_3p_except_attacker_column = GetDataTableColumnByName( dataTable, "alias_3p_except_attacker" )
-	int visibleColumn			= GetDataTableColumnByName( dataTable, "spmp" )
+	// int visibleColumn			= GetDataTableColumnByName( dataTable, "spmp" )
 
- 	table<string,bool> visibleMask
-	visibleMask[ "spmp" ] <- true
-	if ( IsMultiplayer() )
-		visibleMask[ "mp" ] <- true
-	else if ( IsSingleplayer() )
-		visibleMask[ "sp" ] <- true
+ 	// table<string,bool> visibleMask
+	// visibleMask[ "spmp" ] <- true
+	// if ( IsMultiplayer() )
+	// 	visibleMask[ "mp" ] <- true
+	// else if ( IsSingleplayer() )
+	// 	visibleMask[ "sp" ] <- true
 
 	for ( int i = 0; i < numRows; i++ )
 	{
-		string visible = GetDataTableString( dataTable, i, visibleColumn )
-		if ( !( visible in visibleMask ) )
-			continue
+		// string visible = GetDataTableString( dataTable, i, visibleColumn )
+		// if ( !( visible in visibleMask ) )
+		// 	continue
 
 		int priority			 		= GetDataTableInt( dataTable, i, priorityColumn )
 		bool blocksPriority		 		= GetDataTableBool( dataTable, i, blocksPriorityColumn )
@@ -154,7 +186,7 @@ void function PainDeathSounds_Init()
 		painOrDeathSound.blocksPriority = blocksPriority
 		painOrDeathSound.priority = priority
 
-		#if DEV
+		#if R5DEV
 		if ( priority < 100 || priority > 500 )
 			Warning( "PainDeathSound event priority must be between 100 and 500. See " + event + " " + method )
 		#endif
@@ -238,17 +270,21 @@ bool functionref( entity, entity, bool, int, int ) function GetSoundTypeFuncFrom
 		case "SE_SMOKE":
 			return SE_SMOKE
 
-		// case "SE_TITAN_STEP":
-		// 	return SE_TITAN_STEP
+		case "SE_CORROSIVE_GAS":
+			return SE_CORROSIVE_GAS
+
+		case "SE_TITAN_STEP":
+			return SE_TITAN_STEP
 	}
-
 	return SE_ANY
-
 	unreachable
 }
 
 bool function SE_ANY( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
 {
+	if(damageSourceID == eDamageSourceId.deathField) // Ring shouldn't play pain sounds
+		return false
+	
 	return true
 }
 
@@ -329,10 +365,16 @@ bool function SE_SMOKE( entity victim, entity attacker, bool isValidHeadshot, in
 	return damageSourceID == eDamageSourceId.mp_weapon_grenade_electric_smoke
 }
 
-// bool function SE_TITAN_STEP( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
-// {
-// 	return bool( damageTypes & DF_TITAN_STEP )
-// }
+bool function SE_CORROSIVE_GAS( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
+{
+	return damageSourceID == eDamageSourceId.damagedef_gas_exposure	// no clue if it's the right one
+}
+
+bool function SE_TITAN_STEP( entity victim, entity attacker, bool isValidHeadshot, int damageTypes, int damageSourceID )
+{
+	return false
+	// return bool( damageTypes & DF_TITAN_STEP )
+}
 
 void function PlayPainSounds( entity victim, var damageInfo )
 {
@@ -423,7 +465,7 @@ void function PlayPainOrDeathSounds( array<PainOrDeathSound> soundEvents, entity
 		}
 	}
 
-	#if DEV
+	#if R5DEV
 	if ( !file.painDeathDebug )
 		return
 

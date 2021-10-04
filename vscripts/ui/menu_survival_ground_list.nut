@@ -56,7 +56,7 @@ void function OnQuickSwapMenuCommand( var panel, var button, int index, string c
 {
 }
 
-void function InitGroundListMenu()
+void function InitGroundListMenu( var newMenuArg )
 {
 	RegisterSignal( "Delayed_SetCursorToObject" )
 	RegisterSignal( "StartGroundItemExtendedUse" )
@@ -74,7 +74,7 @@ void function InitGroundListMenu()
 
 	file.groundList = Hud_GetChild( menu, "ListPanel" )
 	file.groundScrollBar = Hud_GetChild( menu, "ScrollBar" )
-	ListPanel_InitPanel( file.groundList, OnBindListItem, GetGroundItemCount, Survival_CommonButtonInit )
+	ListPanel_InitPanel( file.groundList, OnBindListItem, GetGroundItemDef, Survival_CommonButtonInit )
 	ListPanel_SetExclusiveSelection( file.groundList, true )
 	ListPanel_InitScrollBar( file.groundList, file.groundScrollBar )
 	ListPanel_SetButtonHandler( file.groundList, UIE_CLICK, OnGroundItemClick )
@@ -83,6 +83,8 @@ void function InitGroundListMenu()
 	ListPanel_SetButtonHandler( file.groundList, UIE_LOSE_FOCUS, OnGroundItemLoseFocus )
 	ListPanel_SetKeyPressHandler( file.groundList, OnGroundItemKeyPress )
 	ListPanel_SetScrollCallback( file.groundList, OnGroundListScroll )
+	ListPanel_SetItemHeightCallback( file.groundList, GetGroundListItemHeight )
+	ListPanel_SetItemHeaderCheckCallback( file.groundList, GetGroundListItemIsHeader )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_INPUT_MODE_CHANGED, OnSurvivalGroundListMenu_InputModeChanged )
 	Survival_AddPassthroughCommandsToMenu( menu )
@@ -115,7 +117,7 @@ void function InitGroundListMenu()
 	var weaponSwapButton = Hud_GetChild( menu, "WeaponSwapButton" )
 	var rui = Hud_GetRui( weaponSwapButton )
 	RuiSetImage( rui, "iconImage", $"rui/hud/loot/weapon_swap_icon" )
-	//RuiSetString( rui, "buttonText", "Cycle Weapon" )
+	//
 	RuiSetInt( rui, "lootTier", 1 )
 	Hud_AddEventHandler( weaponSwapButton, UIE_CLICK, OnWeaponSwapButtonClick )
 }
@@ -130,6 +132,7 @@ void function OnSurvivalGroundListMenu_Open()
 	UpdateGroundListMenu()
 	ListPanel_ScrollListPaneltoIndex( file.groundList, 0 )
 	RunClientScript( "UICallback_GroundlistOpened" )
+	ListPanel_FocusFirstItem( file.groundList, true )
 	thread Delayed_SetCursorToObject( file.groundHeader )
 
 	RunClientScript( "UICallback_SetGroundMenuHeaderToPlayerName", file.groundHeader )
@@ -273,7 +276,7 @@ void function StartGroundItemExtendedUse( var button, int position, float durati
 		}
 	)
 
-	while ( ( InputIsButtonDown( MOUSE_LEFT ) || InputIsButtonDown( BUTTON_A ) ) && Time() < uiEndTime && GetMouseFocus() == button )
+	while ( ( InputIsButtonDown( MOUSE_LEFT ) || InputIsButtonDown( BUTTON_A ) ) && Time() < uiEndTime && ( GetMouseFocus() == button || GetDpadNavigationActive() ) )
 	{
 		vector screenPos = ConvertCursorToScreenPos()
 		Hud_SetPos( elem, screenPos.x - Hud_GetWidth( elem )*0.5, screenPos.y - Hud_GetHeight( elem )*0.5 )
@@ -326,6 +329,9 @@ void function GroundItem_OpenQuickSwap( var button, int position, int guid )
 
 	Hud_SetY( file.quickSwapGrid, gridOffset )
 
+	if ( GetDpadNavigationActive() )
+		Hud_SetFocused( Hud_GetChild( file.quickSwapGrid, "GridButton0x0" ) )
+
 	int gridWidth = Hud_GetWidth( file.quickSwapGrid )
 
 	Hud_SetSize( file.quickSwapHeader, gridWidth, 64 )
@@ -344,6 +350,7 @@ void function OnGroundListScroll( var panel, float scrollValue )
 	if ( file.trackedScrollValue > 7.0 )
 		RunClientScript( "GroundListUpdateNextFrame" )
 }
+
 
 bool function OnGroundItemKeyPress( var panel, var button, int position, int keyId, bool isDown )
 {
@@ -505,4 +512,14 @@ void function OnWeaponSwapButtonClick( var button )
 
 	if ( IsFullyConnected() )
 		RunClientScript( "UICallback_WeaponSwap" )
+}
+
+float function GetGroundListItemHeight( var panel, int index )
+{
+	return SurvivalGroundItem_IsHeader( index ) ? 0.5 : 1.0
+}
+
+bool function GetGroundListItemIsHeader( var panel, int index )
+{
+	return SurvivalGroundItem_IsHeader( index )
 }

@@ -10,7 +10,10 @@ WeaponData
 	"playermodel"		"mdl/dev/envballs.rmdl"
 	"bucket"		"5"
 	"bucket_position"	"19"
+	"weapon_type_flags"								"WPT_OTHER"
 	"weaponClass" 									"cube"
+
+	"give_command_forced_inventory_slot"	 "3"
 
 	"allow_empty_fire"	"1"
 

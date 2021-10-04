@@ -5,30 +5,90 @@ void function GameModes_Init_SV_CL()
 {
 	string gameMode
 
+	////////////////////////////
+	//                        //
+	//          TDM           //
+	//                        //
+	////////////////////////////
+
 	gameMode = TEAM_DEATHMATCH
-	#if SERVER
-		GameMode_AddServerInit( gameMode, GamemodeTdm_Init )
-		GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Directional )
-		GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Directional )
-	#endif
-	#if !UI
-		GameMode_SetScoreCompareFunc( gameMode, CompareKills )
-		GameMode_AddSharedInit( gameMode, GamemodeTdmShared_Init )
-	#endif
+
+	{	
+		#if SERVER
+			GameMode_AddServerInit( gameMode, GamemodeTdm_Init )
+			GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Directional )
+			GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Directional )
+		#endif
+		#if !UI
+			GameMode_SetScoreCompareFunc( gameMode, CompareKills )
+			GameMode_AddSharedInit( gameMode, GamemodeTdmShared_Init )
+		#endif
+	}
+
+	////////////////////////////
+	//                        //
+	//        Survival        //
+	//                        //
+	////////////////////////////
 
 	gameMode = SURVIVAL
-#if SERVER
-	GameMode_AddServerInit( gameMode, GamemodeSurvival_Init )
+
+	{
+		#if SERVER
+			GameMode_AddServerInit( gameMode, GamemodeSurvival_Init )
+			GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+			GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+			GameMode_SetEvacEnabled( gameMode, false )
+		#elseif CLIENT
+			//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+		#endif
+		#if !UI
+			GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
+			GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+		#endif
+	}
+
+	////////////////////////////
+	//                        //
+	//        Freelance       //
+	//                        //
+	////////////////////////////
+
+	#if FREELANCE_ENABLED
+	gameMode = FREELANCE
+
+	{
+		#if SERVER
+			GameMode_AddServerInit( gameMode, GamemodeFreelance_Init )
+			GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+			GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+			GameMode_SetEvacEnabled( gameMode, false )
+		#elseif CLIENT
+			// GameMode_AddClientInit( gameMode, ClGamemodeFreelance_Init )
+		#endif
+	}
+	#endif
+
+	////////////////////////////
+	//                        //
+	//       Custom TDM       //
+	//                        //
+	////////////////////////////
+
+	gameMode = CUSTOM_TDM
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit(gameMode, Sh_CustomTDM_Init)
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	GameMode_AddServerInit(gameMode, _CustomTDM_Init)
 	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 	GameMode_SetEvacEnabled( gameMode, false )
-#elseif CLIENT
-	GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
-#endif
-#if !UI
-	GameMode_SetScoreCompareFunc( gameMode, CompareAssaultScore )
-	GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
-#endif
+	#elseif CLIENT
+	GameMode_AddClientInit(gameMode, Cl_CustomTDM_Init)
+	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
+	#endif
 
 	#if DEVSCRIPTS
 		Dev_GameModes_Init_SV_CL()

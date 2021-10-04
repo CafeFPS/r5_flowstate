@@ -34,9 +34,6 @@ WeaponData
 	// Script - Callbacks
     "OnWeaponActivate"								"OnWeaponActivate_weapon_basic_bolt"
     "OnClientAnimEvent"								"OnClientAnimEvent_weapon_basic_bolt"
-    "OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_basic_bolt"
-    "OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_basic_bolt"
-    "OnProjectileCollision"							"OnProjectileCollision_weapon_basic_bolt"
 
 	// Sounds
 	"sound_dryfire"									"pistol_dryfire"

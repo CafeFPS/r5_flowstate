@@ -59,6 +59,8 @@ global function OnWeaponReadyToFire_ability_tactical
 global function GetMeleeWeapon
 global function OnWeaponRegenEndGeneric
 global function Ultimate_OnWeaponRegenBegin
+global function OnWeaponActivate_RUIColorSchemeOverrides
+global function PlayDelayedShellEject
 
 #if SERVER
 global function CreateDamageInflictorHelper
@@ -77,9 +79,9 @@ global function ServerCallback_SetWeaponPreviewState
 global function GetRadiusDamageDataFromProjectile
 global function OnWeaponAttemptOffhandSwitch_Never
 
-#if DEV
+#if R5DEV
 global function DevPrintAllStatusEffectsOnEnt
-#endif // #if DEV
+#endif // #if R5DEV
 
 #if SERVER
 global function PassThroughDamage
@@ -121,12 +123,13 @@ global function RemoveThreatScopeColorStatusEffect
 global function LimitVelocityHorizontal
 global function GiveMatchingAkimboWeapon
 global function TakeMatchingAkimboWeapon
+global function GetDualPrimarySlotForWeapon
 global function AddWeaponModChangedCallback
 global function TryApplyingBurnDamage
 global function AddEntityBurnDamageStack
 global function ApplyBurnDamageTick
 
-#if DEV
+#if R5DEV
 global function ToggleZeroingMode
 #endif
 
@@ -145,33 +148,36 @@ global function AddCallback_OnPlayerRemoveWeaponMod
 global function CodeCallback_OnPlayerAddedWeaponMod
 global function CodeCallback_OnPlayerRemovedWeaponMod
 
-global const PROJECTILE_PREDICTED = true
-global const PROJECTILE_NOT_PREDICTED = false
+global const bool PROJECTILE_PREDICTED = true
+global const bool PROJECTILE_NOT_PREDICTED = false
 
-global const PROJECTILE_LAG_COMPENSATED = true
-global const PROJECTILE_NOT_LAG_COMPENSATED = false
+global const bool PROJECTILE_LAG_COMPENSATED = true
+global const bool PROJECTILE_NOT_LAG_COMPENSATED = false
 
-const float DEFAULT_SHOTGUN_SPREAD_INNEREXCLUDE_FRAC = 0.4
+global const PRO_SCREEN_IDX_MATCH_KILLS 					= 1
+global const PRO_SCREEN_IDX_AMMO_COUNTER_OVERRIDE_HACK 		= 2
+
+const float DEFAULT_SHOTGUN_SPREAD_INNEREXCLUDE_FRAC 		= 0.4
 const bool DEBUG_PROJECTILE_BLAST = false
 
-const float EMP_SEVERITY_SLOWTURN = 0.35
-const float EMP_SEVERITY_SLOWMOVE = 0.50
-const float LASER_STUN_SEVERITY_SLOWTURN = 0.20
-const float LASER_STUN_SEVERITY_SLOWMOVE = 0.30
+const float EMP_SEVERITY_SLOWTURN 				= 0.35
+const float EMP_SEVERITY_SLOWMOVE 				= 0.50
+const float LASER_STUN_SEVERITY_SLOWTURN 		= 0.20
+const float LASER_STUN_SEVERITY_SLOWMOVE 		= 0.30
 
-const asset FX_EMP_BODY_HUMAN = $"P_emp_body_human"
-const asset FX_EMP_BODY_TITAN = $"P_emp_body_titan"
-const asset FX_VANGUARD_ENERGY_BODY_HUMAN = $"P_monarchBeam_body_human"
-const asset FX_VANGUARD_ENERGY_BODY_TITAN = $"P_monarchBeam_body_titan"
-const SOUND_EMP_REBOOT_SPARKS = "marvin_weld"
-const FX_EMP_REBOOT_SPARKS = $"weld_spark_01_sparksfly"
-const EMP_GRENADE_BEAM_EFFECT = $"wpn_arc_cannon_beam"
-const DRONE_REBOOT_TIME = 5.0
-const GUNSHIP_REBOOT_TIME = 5.0
+const asset FX_EMP_BODY_HUMAN 				= $"P_emp_body_human"
+const asset FX_EMP_BODY_TITAN 				= $"P_emp_body_titan"
+const asset FX_VANGUARD_ENERGY_BODY_HUMAN 	= $"P_monarchBeam_body_human"
+const asset FX_VANGUARD_ENERGY_BODY_TITAN 	= $"P_monarchBeam_body_titan"
+const SOUND_EMP_REBOOT_SPARKS 				= "marvin_weld"
+const FX_EMP_REBOOT_SPARKS 					= $"weld_spark_01_sparksfly"
+const EMP_GRENADE_BEAM_EFFECT 				= $"wpn_arc_cannon_beam"
+const DRONE_REBOOT_TIME 					= 5.0
+const GUNSHIP_REBOOT_TIME 					= 5.0
 
-const bool DEBUG_BURN_DAMAGE = false
+const bool DEBUG_BURN_DAMAGE 				= false
 
-const float BOUNCE_STUCK_DISTANCE = 5.0
+const float BOUNCE_STUCK_DISTANCE 			= 5.0
 
 global struct RadiusDamageData
 {
@@ -236,7 +242,7 @@ struct
 
 		table<string, array<void functionref( entity, string, bool )> > weaponModChangedCallbacks
 
-		#if DEV
+		#if R5DEV
 			bool inZeroingMode = false
 		#endif
 
@@ -267,6 +273,7 @@ void function WeaponUtility_Init()
 	level.stickyClasses[ "door_mover" ]                <- true
 	level.stickyClasses[ "prop_door" ]                <- true
 	level.stickyClasses[ "script_mover" ]                <- true
+	level.stickyClasses[ "player_vehicle" ]                <- true
 
 	level.trapChainReactClasses <- {}
 	level.trapChainReactClasses[ "mp_weapon_frag_grenade" ]            <- true
@@ -279,9 +286,11 @@ void function WeaponUtility_Init()
 	RegisterSignal( "EMP_FX" )
 	RegisterSignal( "ArcStunned" )
 	RegisterSignal( "CleanupPlayerPermanents" )
+	RegisterSignal( "PlayerChangedClass" )
 	RegisterSignal( "OnSustainedDischargeEnd" )
 	RegisterSignal( "EnergyWeapon_ChargeStart" )
 	RegisterSignal( "EnergyWeapon_ChargeReleased" )
+	RegisterSignal( "WeaponSignal_EnemyKilled" )
 
 	PrecacheParticleSystem( EMP_GRENADE_BEAM_EFFECT )
 	PrecacheParticleSystem( FX_EMP_BODY_TITAN )
@@ -369,54 +378,47 @@ void function OnWeaponActivate_updateViewmodelAmmo( entity weapon )
 	#endif // #if CLIENT
 }
 
+void function OnWeaponActivate_RUIColorSchemeOverrides( entity weapon )
+{
+	#if SERVER
+	#endif
+}
+
 int function Fire_EnergyChargeWeapon( entity weapon, WeaponPrimaryAttackParams attackParams, EnergyChargeWeaponData chargeWeaponData, bool playerFired = true, float patternScale = 1.0, bool ignoreSpread = true )
 {
-	weapon.EmitWeaponNpcSound( LOUD_WEAPON_AI_SOUND_RADIUS_MP, 0.2 )
-
-	bool shouldCreateProjectile = false
-	if ( IsServer() || weapon.ShouldPredictProjectiles() )
-		shouldCreateProjectile = true
-
-	#if CLIENT
-		if ( !playerFired )
-			shouldCreateProjectile = false
-	#endif
-
 	int chargeLevel = EnergyChargeWeapon_GetChargeLevel( weapon )
 	//printt( "LVL", chargeLevel )
 	if ( chargeLevel == 0 )
 		return 0
 
-	if ( shouldCreateProjectile )
+	// scale spread pattern for weapon charge level
+	float spreadChokeFrac = 1.0
+	// NOTE uses a switch instead of concatenating the string, so we can search for the same string that is in weaponsettings
+	switch( chargeLevel )
 	{
-		// scale spread pattern for weapon charge level
-		float spreadChokeFrac = 1.0
-		// NOTE uses a switch instead of concatenating the string, so we can search for the same string that is in weaponsettings
-		switch( chargeLevel )
-		{
-			case 1:
-				spreadChokeFrac = expect float( weapon.GetWeaponInfoFileKeyField( "projectile_spread_choke_frac_1" ) )
-				break
+		case 1:
+			spreadChokeFrac = expect float( weapon.GetWeaponInfoFileKeyField( "projectile_spread_choke_frac_1" ) )
+			break
 
-			case 2:
-				spreadChokeFrac = expect float( weapon.GetWeaponInfoFileKeyField( "projectile_spread_choke_frac_2" ) )
-				break
+		case 2:
+			spreadChokeFrac = expect float( weapon.GetWeaponInfoFileKeyField( "projectile_spread_choke_frac_2" ) )
+			break
 
-			case 3:
-				spreadChokeFrac = expect float( weapon.GetWeaponInfoFileKeyField( "projectile_spread_choke_frac_3" ) )
-				break
+		case 3:
+			spreadChokeFrac = expect float( weapon.GetWeaponInfoFileKeyField( "projectile_spread_choke_frac_3" ) )
+			break
 
-			case 4:
-				spreadChokeFrac = expect float( weapon.GetWeaponInfoFileKeyField( "projectile_spread_choke_frac_4" ) )
-				break
+		case 4:
+			spreadChokeFrac = expect float( weapon.GetWeaponInfoFileKeyField( "projectile_spread_choke_frac_4" ) )
+			break
 
-			default:
-				Assert( false, "chargeLevel " + chargeLevel + " doesn't have matching weaponsetting for projectile_spread_choke_frac_" + chargeLevel )
-		}
-		patternScale *= spreadChokeFrac
-
-		FireProjectileBlastPattern( weapon, attackParams, playerFired, chargeWeaponData.blastPattern, patternScale, ignoreSpread )
+		default:
+			Assert( false, "chargeLevel " + chargeLevel + " doesn't have matching weaponsetting for projectile_spread_choke_frac_" + chargeLevel )
 	}
+	patternScale *= spreadChokeFrac
+
+	float speedScale = 1.0
+	weapon.FireWeapon_Default( attackParams.pos, attackParams.dir, speedScale, patternScale, ignoreSpread )
 
 	if ( weapon.IsChargeWeapon() )
 		EnergyChargeWeapon_StopCharge( weapon, chargeWeaponData )
@@ -1019,7 +1021,11 @@ entity function FireBallisticRoundWithDrop( entity weapon, vector pos, vector di
 	fireBoltParams.dontApplySpread = ignoreSpread
 	fireBoltParams.projectileIndex = projectileIndex
 	fireBoltParams.deferred = deferred
-	entity bolt = weapon.FireWeaponBolt( fireBoltParams )
+	entity bolt = weapon.FireWeaponBoltAndReturnEntity( fireBoltParams )
+
+	#if CLIENT
+	Chroma_FiredWeapon( weapon )
+	#endif
 
 	if ( bolt != null )
 	{
@@ -1082,7 +1088,7 @@ int function FireGenericBoltWithDrop( entity weapon, WeaponPrimaryAttackParams a
 	fireBoltParams.scriptExplosionDamageType = damageFlags
 	fireBoltParams.clientPredicted = isPlayerFired
 	fireBoltParams.additionalRandomSeed = 0
-	entity bolt = weapon.FireWeaponBolt( fireBoltParams )
+	entity bolt = weapon.FireWeaponBoltAndReturnEntity( fireBoltParams )
 	if ( bolt != null )
 	{
 		bolt.kv.gravity = PROJ_GRAVITY
@@ -1090,6 +1096,10 @@ int function FireGenericBoltWithDrop( entity weapon, WeaponPrimaryAttackParams a
 		bolt.kv.renderamt = 0
 		bolt.kv.fadedist = 1
 	}
+	#if CLIENT
+	Chroma_FiredWeapon( weapon )
+	#endif
+
 
 	return 1
 }
@@ -1258,11 +1268,15 @@ bool function PlantStickyEntity( entity ent, table collisionParams, vector angle
 		if ( !ent.IsMarkedForDeletion() && !collisionParams.hitEnt.IsMarkedForDeletion() )
 		{
 			if ( collisionParams.hitbox > 0 )
+			{
 				ent.SetParentWithHitbox( collisionParams.hitEnt, collisionParams.hitbox, true )
-
+			}
 			// Hit a func_brush
 			else
+			{
+				//
 				ent.SetParent( collisionParams.hitEnt )
+			}
 
 			if ( collisionParams.hitEnt.IsPlayer() )
 			{
@@ -1474,12 +1488,15 @@ bool function EntityCanHaveStickyEnts( entity stickyEnt, entity ent )
 		local stickPlayer      = GetWeaponInfoFileKeyField_Global( weaponClassName, "stick_pilot" )
 		local stickTitan       = GetWeaponInfoFileKeyField_Global( weaponClassName, "stick_titan" )
 		local stickNPC         = GetWeaponInfoFileKeyField_Global( weaponClassName, "stick_npc" )
+		local stickDrone       = GetWeaponInfoFileKeyField_Global( weaponClassName, "stick_drone" )
 
 		if ( ent.IsTitan() && stickTitan == 0 )
 			return false
 		else if ( ent.IsPlayer() && stickPlayer == 0 )
 			return false
 		else if ( ent.IsNPC() && stickNPC == 0 )
+			return false
+		else if ( ent.GetScriptName() == "crypto_camera" && stickDrone == 0 )
 			return false
 	}
 
@@ -1502,7 +1519,7 @@ void function SatchelThink( entity satchel, entity player )
 	int satchelHealth = 15
 	thread TrapExplodeOnDamage( satchel, satchelHealth )
 
-	#if DEV
+	#if R5DEV
 		// temp HACK for FX to use to figure out the size of the particle to play
 		if ( Flag( "ShowExplosionRadius" ) )
 			thread ShowExplosionRadiusOnExplode( satchel )
@@ -1593,7 +1610,7 @@ void function PROTO_ExplodeAfterDelay( entity satchel, float delay )
 }
 #endif // SERVER
 
-#if DEV
+#if R5DEV
 void function ShowExplosionRadiusOnExplode( entity ent )
 {
 	ent.WaitSignal( "OnDestroy" )
@@ -2814,7 +2831,7 @@ void function GiveEMPStunStatusEffects( entity ent, float duration, float fadeou
 	#endif
 }
 
-#if DEV
+#if R5DEV
 string ornull function FindEnumNameForValue( table searchTable, int searchVal )
 {
 	foreach ( string keyname, int value in searchTable )
@@ -2844,13 +2861,14 @@ void function DevPrintAllStatusEffectsOnEnt( entity ent )
 	}
 	printt( found + " effects active.\n" )
 }
-#endif // #if DEV
+#endif // #if R5DEV
 
 entity function GetMeleeWeapon( entity player )
 {
 	array<entity> weapons = player.GetMainWeapons()
 	foreach ( weaponEnt in weapons )
 	{
+		printt("ismelee", weaponEnt.IsWeaponMelee())
 		if ( weaponEnt.IsWeaponMelee() )
 			return weaponEnt
 	}
@@ -4219,6 +4237,7 @@ void function PlayerUsedOffhand( entity player, entity offhandWeapon, bool sendP
 	#if CLIENT
 		if ( offhandWeapon == player.GetOffhandWeapon( OFFHAND_ULTIMATE ) )
 			UltimateWeaponStateSet( eUltimateState.ACTIVE )
+		Chroma_PlayerUsedAbility( player, offhandWeapon )
 	#endif //CLIENT
 }
 
@@ -4554,7 +4573,7 @@ void function AddEntityBurnDamageStack( entity ent, entity owner, entity inflict
 	else if ( ent.IsNPC() )
 		ent.ai.burnDamageStacks.append( stack )
 
-	#if DEV && DEBUG_BURN_DAMAGE
+	#if R5DEV && DEBUG_BURN_DAMAGE
 		printt( "tickInterval:", stack.tickInterval )
 		printt( "numIntervals:", numIntervals )
 		printt( "damagePerTick:", stack.damagePerTick )
@@ -4572,7 +4591,7 @@ void function RemoveEntityBurnDamageStack( entity ent, int stackIdx )
 	else
 		ent.ai.burnDamageStacks.remove( stackIdx )
 
-	#if DEV && DEBUG_BURN_DAMAGE
+	#if R5DEV && DEBUG_BURN_DAMAGE
 		printt( "burn stack removed, num stacks is now:", GetEntityBurnDamageStackCount( ent ) )
 	#endif
 }
@@ -4586,7 +4605,7 @@ void function EntityBurnDamageThread( entity ent )
 	OnThreadEnd(
 		function () : ( ent )
 		{
-			#if DEV && DEBUG_BURN_DAMAGE
+			#if R5DEV && DEBUG_BURN_DAMAGE
 				printt( "EntityBurnDamageThread ended" )
 			#endif
 
@@ -4615,7 +4634,7 @@ void function EntityBurnDamageThread( entity ent )
 					dmgThisTick += remainderDmg
 					stack.damageDealt += remainderDmg
 
-					#if DEV && DEBUG_BURN_DAMAGE
+					#if R5DEV && DEBUG_BURN_DAMAGE
 						printt( "applying", remainderDmg, "burn damage remainder, total damage dealt:", stack.damageDealt )
 					#endif
 				}
@@ -4626,7 +4645,7 @@ void function EntityBurnDamageThread( entity ent )
 				stack.damageDealt += stack.damagePerTick
 				stack.lastDamageTime = Time()
 
-				#if DEV && DEBUG_BURN_DAMAGE
+				#if R5DEV && DEBUG_BURN_DAMAGE
 					printt( "applying", stack.damagePerTick, "burn damage, total damage dealt:", stack.damageDealt )
 				#endif
 			}
@@ -4697,7 +4716,7 @@ void function SetEntityIsBurning( entity ent, bool isBurning )
 }
 
 
-#if DEV
+#if R5DEV
 void function ToggleZeroingMode()
 {
 	if ( !GetPlayerArray().len() )
@@ -4770,7 +4789,7 @@ bool function IsWeaponInSingleShotMode( entity weapon )
 	if ( weapon.GetWeaponSettingBool( eWeaponVar.attack_button_presses_melee ) )
 		return false
 
-	if ( weapon.GetWeaponSettingEnum( eWeaponVar.fire_mode, eWeaponFireMode ) != eWeaponFireMode.semiauto )
+	if ( !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto ) )
 		return false
 
 	return weapon.GetWeaponSettingInt( eWeaponVar.burst_fire_count ) == 0
@@ -4798,9 +4817,8 @@ bool function IsWeaponOffhand( entity weapon )
 
 bool function IsWeaponInAutomaticMode( entity weapon )
 {
-	return weapon.GetWeaponSettingEnum( eWeaponVar.fire_mode, eWeaponFireMode ) == eWeaponFireMode.automatic
+	return !weapon.GetWeaponSettingBool( eWeaponVar.is_semi_auto )
 }
-
 
 bool function OnWeaponAttemptOffhandSwitch_Never( entity weapon )
 {
@@ -4811,7 +4829,7 @@ bool function OnWeaponAttemptOffhandSwitch_Never( entity weapon )
 #if CLIENT
 void function ServerCallback_SetWeaponPreviewState( bool newState )
 {
-	#if DEV
+	#if R5DEV
 		entity player = GetLocalClientPlayer()
 
 		if ( newState )
@@ -4852,6 +4870,13 @@ void function OnWeaponRegenEndGeneric( entity weapon )
 		return
 	ReportOffhandWeaponRegenEnded( weapon )
 	#endif
+	#if CLIENT
+		entity owner = weapon.GetWeaponOwner()
+		if ( !IsValid( owner ) || !owner.IsPlayer() )
+			return
+		if ( owner.GetOffhandWeapon( OFFHAND_ULTIMATE ) == weapon )
+			Chroma_UltimateReady()
+	#endif
 }
 
 void function Ultimate_OnWeaponRegenBegin( entity weapon )
@@ -4860,6 +4885,7 @@ void function Ultimate_OnWeaponRegenBegin( entity weapon )
 		UltimateWeaponStateSet( eUltimateState.CHARGING )
 	#endif
 }
+
 
 #if SERVER
 void function ReportOffhandWeaponRegenEnded( entity weapon )
@@ -4877,3 +4903,28 @@ void function ReportOffhandWeaponRegenEnded( entity weapon )
 		PIN_PlayerAbilityReady( owner, ABILITY_TYPE.ULTIMATE )
 }
 #endif
+void function PlayDelayedShellEject( entity weapon, float time, int count = 1, bool persistent = false )
+{
+	AssertIsNewThread()
+
+	weapon.EndSignal( "OnDestroy" )
+
+	asset vmShell = weapon.GetWeaponSettingAsset( eWeaponVar.fx_shell_eject_view )
+	asset worldShell = weapon.GetWeaponSettingAsset( eWeaponVar.fx_shell_eject_world )
+	string shellAttach = weapon.GetWeaponSettingString( eWeaponVar.fx_shell_eject_attach )
+
+	if ( shellAttach == "" )
+		return
+
+	for ( int i = 0; i < count; i++ )
+	{
+		wait time
+
+		if ( !IsValid( weapon ) )
+			return
+		entity viewmodel = weapon.GetWeaponViewmodel()
+		if ( !IsValid( viewmodel ) )
+			return
+		weapon.PlayWeaponEffect( vmShell, worldShell, shellAttach, persistent )
+	}
+}

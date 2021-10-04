@@ -13,7 +13,7 @@ global function IsActiveNodeAnalysis
 
 global function AddDropshipFlightAnalysis
 
-#if DEV && SERVER
+#if R5DEV && SERVER
 global function AddNewAnalysis
 #endif
 
@@ -42,7 +42,7 @@ global const STRATON_DOGFIGHT_ANIM1_PERSUER = "st_Dogfight_Persuer_1"
 global const STRATON_DOGFIGHT_ANIM2_PERSUER = "st_Dogfight_Persuer_2"
 global const STRATON_DOGFIGHT_ANIM3_PERSUER = "st_Dogfight_Persuer_3"
 global const STRATON_ATTACK_FULL = "st_AngelCity_IMC_Win_Full"
-global const FX_HORNET_DEATH =  $"P_veh_exp_hornet_HS"
+//global const FX_HORNET_DEATH =  $"P_veh_exp_hornet_HS" //TODO: "mdl\vehicle\hornet\hornet_fighter_dest_l_wing.rmdl" does not exist. This particle system requires it. All references have been commented for now.
 
 
 global const AIRDROP_BASE_ANIM = "dp_droppod_idle"
@@ -57,6 +57,18 @@ global const FX_GUNSHIP_CRASH_EXPLOSION_EXIT = $"veh_gunship_warp_OUT_FULL"
 global const float WARPFALL_SOUND_DELAY = 1.1
 global const float WARPFALL_FX_DELAY = 0.9
 
+global enum eFlightPathAnalysisIndex
+{
+	DROPPOD_AIRDROP_BASE_ANIM = 0,
+	CARE_PACKAGE_AIRDROP_IDLE = 1,
+	RESPAWN_DROPSHIP_FLYIN_MOVE = 2,
+	#if(false)
+
+#endif
+	UNUSED4 = 4,
+	UNUSED5 = 5,
+	UNUSED6 = 6,
+}
 // #if HAS_CAPITAL_SHIP_SKYSHOW
 // global const TRINITY_SKYBOX = $"mdl/vehicles_r2/spacecraft/trinity/Trinity_1000x.rmdl"
 // global const DRACONIS_SKYBOX = $"mdl/vehicles_r2/spacecraft/draconis/draconis_flying_1000x.rmdl"
@@ -327,7 +339,7 @@ void function EntitiesDidLoad()
 	//	AddAnalysisFunc( flightPath, AnaylsisFuncDropshipFindDropNodes, HULL_HUMAN )
 	//	AddAnalysisIterator( flightPath, 2 ) // iterate every other node
 	//
-	//	#if DEV
+	//	#if R5DEV
 	//	bool foundDropoffSpawnpoint = FlightPathHasNodeAndMatchesAINData( flightPath )
 	//	#endif
 	//
@@ -337,7 +349,7 @@ void function EntitiesDidLoad()
 	//	AddAnalysisFunc( flightPath, AnaylsisFuncDropshipFindDropNodes, HULL_HUMAN )
 	//	AddAnalysisIterator( flightPath, 2 ) // iterate every other node
 	//
-	//	#if DEV
+	//	#if R5DEV
 	//	if ( !foundDropoffSpawnpoint )
 	//	{
 	//		if ( !FlightPathHasNodeAndMatchesAINData( flightPath ) && !Flag( "DisableDropships" ) )
@@ -1788,7 +1800,7 @@ bool function HasDropshipDropTable( entity dropship )
 }
 #endif // SERVER
 
-void function AddDropshipFlightAnalysis( asset model, string anim, bool functionref( FlightPath, vector, float ) analysisFunc, string event = "",  )
+void function AddDropshipFlightAnalysis( int index, asset model, string anim, bool functionref( FlightPath, vector, float ) analysisFunc, string event = "" )
 {
 	shFile.dropshipDropoffAnims.append( anim )
 

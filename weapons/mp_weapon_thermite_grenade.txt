@@ -10,6 +10,7 @@ WeaponData
 	"menu_icon"										"rui/ordnance_icons/grenade_incendiary"
 	"hud_icon"										"rui/ordnance_icons/grenade_incendiary"
 
+	"weapon_type_flags"								"WPT_GRENADE"
 	"weaponClass"									"human"
 	"weaponType"									"anti_titan"
 	"is_toss_weapon"								"1"
@@ -115,7 +116,8 @@ WeaponData
 
 	MP_BASE
 	{
-		"fire_mode"										"semiauto"
+		"fire_mode"   									"automatic"
+		"is_semi_auto"									"1"
 		"ammo_display"									"bar"
 		"ammo_stockpile_max"							"100"
 		"ammo_clip_size"   								"100"
@@ -141,13 +143,13 @@ WeaponData
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
 
-		"damage_heavyarmor_nontitan_scale"				"0.5"
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_1P"
 	}
 
 	SP_BASE
 	{
 		"fire_mode"										"offhand"
+		"is_semi_auto"									"<KEEP_DEFAULT>"
 		"ammo_clip_size"   								"4"
 		"ammo_default_total"							"1"
 		"ammo_display"									"count"
@@ -171,7 +173,6 @@ WeaponData
 
 		"enable_highlight_networking_on_creation"		"1"
 
-		"damage_heavyarmor_nontitan_scale"				"1"
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_SP"
 	}
 
@@ -361,6 +362,7 @@ WeaponData
 	"stick_pilot"										"0"
 	"stick_titan"										"0"
 	"stick_npc"											"0"
+	"stick_drone"                                   "0"
 
 	Mods
 	{
@@ -371,7 +373,7 @@ WeaponData
 
         survival_finite_ordnance
         {
-            "ammo_clip_size"								"20"
+            "ammo_clip_size"								"100"
             "ammo_default_total"							"0"
             "ammo_display"									"count"
             "ammo_min_to_fire"								"1"

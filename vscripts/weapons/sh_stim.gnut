@@ -1,0 +1,226 @@
+
+global function StimShared_Init
+global function StimPlayer
+//global function EndlessStimBegin
+//global function EndlessStimEnd
+global function StimPlayerWithOffhandWeapon
+
+
+global int COCKPIT_STIM_FX
+global int PILOT_STIM_HEAD_FX
+global int PILOT_STIM_BODY_FX
+
+const float STIM_EFFECT_DEFAULT_SEVERITY = 0.15	//
+global const float STIM_EFFECT_SEVERITY = 0.15	//
+global const float STIM_MAX_PASSIVE_STACKS = 10
+global const float STIM_PASSIVE_SEVERITY = 0.03
+
+
+int s_cockpitFx
+int s_headFx
+int s_bodyFx
+void function StimShared_Init()
+{
+	s_cockpitFx = PrecacheParticleSystem( $"P_pilot_stim_hld_FP" )
+	s_headFx = PrecacheParticleSystem( $"P_stim_3p_head" )
+	s_bodyFx = PrecacheParticleSystem( $"P_stim_3p_body" )
+
+	#if CLIENT
+	StatusEffect_RegisterEnabledCallback( eStatusEffect.stim_visual_effect, StimVisualsEnabled )
+	StatusEffect_RegisterDisabledCallback( eStatusEffect.stim_visual_effect, StimVisualsDisabled )
+	#endif
+
+	RegisterSignal( "EndStim" )
+	RegisterSignal( "StopEndlessStim" )
+}
+
+void function StimPlayer( entity player, float duration )
+{
+	StimPlayer_Internal( player, duration, STIM_EFFECT_DEFAULT_SEVERITY, null )
+}
+
+void function StimPlayerWithOffhandWeapon( entity player, float duration, entity offhandWeapon )
+{
+	StimPlayer_Internal( player, duration, STIM_EFFECT_DEFAULT_SEVERITY, offhandWeapon )
+}
+
+void function StimPlayer_Internal( entity player, float duration, float effectSeverity, entity offhandWeapon )
+{
+	int endlessStatusEffectHandle = 0
+	if ( duration == USE_TIME_INFINITE )
+	{
+		endlessStatusEffectHandle = StatusEffect_AddEndless( player, eStatusEffect.speed_boost, effectSeverity )
+	}
+	else
+	{
+		float stimSpeed = StatusEffect_GetSeverity( player, eStatusEffect.speed_boost )
+		//
+		if ( StatusEffect_GetSeverity( player, eStatusEffect.stim_visual_effect ) == 0.0 )
+			stimSpeed += effectSeverity
+
+		StatusEffect_AddTimed( player, eStatusEffect.anti_slow, 0.5, duration + 0.5, 0.5 ) //
+		StatusEffect_AddTimed( player, eStatusEffect.speed_boost, stimSpeed, duration + 0.5, 0.5 ) //
+		StatusEffect_AddTimed( player, eStatusEffect.stim_visual_effect, 1.0, duration, duration )
+	}
+
+#if SERVER
+
+#else
+
+	if ( IsFirstTimePredicted() )
+		ScreenFlash( 2, 3.5, 2, 0.15, 0.3 )
+
+	entity cockpit = player.GetCockpit()
+	if ( !IsValid( cockpit ) )
+		return
+
+	HealthHUD_ClearFX( player )
+#endif
+}
+
+#if SERVER
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+//
+
+
+
+
+
+
+
+//
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#else // SERVER
+void function StimVisualsEnabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( ent != GetLocalViewPlayer() )
+		return
+
+	entity player = ent
+
+	entity cockpit = player.GetCockpit()
+	if ( !IsValid( cockpit ) )
+		return
+
+	Chroma_StartStimEffect()
+
+	int fxHandle = StartParticleEffectOnEntity( cockpit, s_cockpitFx, FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+	thread StimScreenFXThink( player, fxHandle, cockpit )
+}
+
+void function StimVisualsDisabled( entity ent, int statusEffect, bool actuallyChanged )
+{
+	if ( ent != GetLocalViewPlayer() )
+		return
+
+	Chroma_EndStimEffect()
+
+	ent.Signal( "EndStim" )
+}
+
+void function StimScreenFXThink( entity player, int fxHandle, entity cockpit )
+{
+	player.EndSignal( "EndStim" )
+	player.EndSignal( "OnDeath" )
+	cockpit.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( fxHandle )
+		{
+			if ( !EffectDoesExist( fxHandle ) )
+				return
+
+			EffectStop( fxHandle, false, true )
+			ScreenFlash( 2, 2, 2, 0.2, 0.2 )
+		}
+	)
+
+	for ( ;; )
+	{
+		float velocityX = Length( player.GetVelocity() )
+
+		if ( !EffectDoesExist( fxHandle ) )
+			break
+
+		velocityX = GraphCapped( velocityX, 0.0, 360, 5, 200 )
+		EffectSetControlPointVector( fxHandle, 1, <velocityX,999,0> )
+		WaitFrame()
+	}
+}
+
+#endif // CLIENT

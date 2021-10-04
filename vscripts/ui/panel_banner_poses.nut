@@ -40,6 +40,8 @@ void function CardPosesPanel_OnHide( var panel )
 {
 	RemoveCallback_OnTopLevelCustomizeContextChanged( panel, CardPosesPanel_Update )
 	CardPosesPanel_Update( panel )
+	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
+	Hud_SetSelected( Hud_GetChild( scrollPanel, "GridButton0" ), true )
 }
 
 
@@ -67,7 +69,7 @@ void function CardPosesPanel_Update( var panel )
 		foreach ( int flavIdx, ItemFlavor flav in file.cardPoseList )
 		{
 			var button = Hud_GetChild( scrollPanel, "GridButton" + flavIdx )
-			CustomizeButton_UpdateAndMarkForUpdating( button, entry, flav, PreviewCardPose, CanEquipCanBuyCharacterItemCheck )
+			CustomizeButton_UpdateAndMarkForUpdating( button, [entry], flav, PreviewCardPose, CanEquipCanBuyCharacterItemCheck )
 		}
 	}
 }

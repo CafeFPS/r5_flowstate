@@ -1,6 +1,44 @@
 untyped
 
-global function FlyersShared_Init
+global function ShFlyers_Init
+
+global function IsFlyerThatStillHasDeathBox
+global function GetDeathBoxFromFlyer
+
+
+global const FLYER_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_1000X_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_500X_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const FLYER_MODEL_STATIC = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
+
+const TIME_BEFORE_FLYER_DROPS_LOOT = 3.0
+const TIME_FOR_CAGED_FLYER_DAMAGED_STATE_TRANSITIONS = 10.0
+const TIME_FOR_CAGED_FLYER_TRIGGER_VACATED_STATE_TRANSITIONS = 10.0
+float TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE = 5.0 //
+const TIME_FOR_CAGED_FLYER_STAY_IN_ANGRY_STATE = 10.0
+const DIST_THRESHOLD_FOR_ANGRY_CAGED_FLYER = 275
+
+global int FLYER_WITH_DEATHBOX_COUNT_TO_SPAWN = 0 //
+const bool FLYER_WITH_DEATHBOX_FLYING_IDLE_ALWAYS = false
+const float FLYER_WITH_DEATHBOX_FLYING_IDLE_RADIUS = 1500
+const int FLYER_WITH_DEATHBOX_HEALTH = 250
+const int CAGED_FLYER_HEALTH = 100
+
+
+const float FLYER_LOOT_LEGENDARY_TIER_PROBABILTY = 0.02
+const float FLYER_LOOT_EPIC_TIER_PROBABILITY = 0.38
+const int FLYER_LOOT_CAP_ON_EPIC_OR_HIGHER_ITEM_COUNT = 3
+
+const float FLYER_LOOT_TIER_OVERRIDE = -1.0
+const int FLYER_PERCHED_APPROACH_DISTANCE_THRESHOLD = 1024
+const int FLYER_FLYING_APPROACH_DISTANCE_THRESHOLD = 450
+
+const int FLYER_LOOT_ITEMS_FLOOR = 5
+const int FLYER_LOOT_ITEMS_CEILING = 10
+
+global const string DEATHBOX_FLYER_SCRIPT_NAME = "deathboxFlyer"
+global const string CAGED_FLYER_SCRIPT_NAME = "cagedFlyer"
 
 global function CreateFlyerSequence
 //global function AddFlyersToSequence
@@ -8,36 +46,39 @@ global function DevFlyerPrintCount
 global function GetCirclingFlyers
 //global function GetFlyerPickupAnimations
 
-global const FLYER_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
-const FLYER_1000X_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
-const FLYER_500X_MODEL = $"mdl/Creatures/flyer/r2_flyer.rmdl"
-const FLYER_MODEL_STATIC = $"mdl/Creatures/flyer/r2_flyer.rmdl"
-
-
 #if SERVER
-	global function CreateServerFlyer
-	global function FlyerTakeOff
-	global function FlyerCrawl
-	global function GetPickupAnimation
-	global function CreatePerchedFlyer
-	global function FlyersAttackDropship
-	global function NextDropshipAttackedByFlyers
+global function CreateServerFlyer
+global function FlyerTakeOff
+global function FlyerCrawl
+global function GetPickupAnimation
+global function CreatePerchedFlyer
+global function FlyersAttackDropship
+global function NextDropshipAttackedByFlyers
 #elseif CLIENT
 //	global function FlyerFlyToPath
+//	global function ServerCallback_PlayLootRarityFXOnDeathboxDrop
 #endif
 
+#if CLIENT
+global function ServerCallback_PlayLootRarityFXOnDeathboxDrop
 
-//PrecacheParticleSystem( FX_FLYERDEATH ) -> taking out temporarily, robot deleting old fx
-//const FLYER_PATH_MODEL = $"mdl/unique/redeye/redeye_flyer_path.rmdl"
-//const FLYER_PATH_500X_MODEL = $"models/unique/redeye/r2_flyer.mdl"
-//const FLYER_PATH_1000X_MODEL = $"models/unique/redeye/r2_flyer.mdl"
+const asset FX_FLYER_GLOW = $"P_flyer_glow"
+#endif
 
-enum flyerState
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+
+#if R5DEV
+struct TestFlyerSpawnDataStruct
 {
-	idle,
-	takeOff
-	takeOffFast
+	vector origin
+	vector angles
+	bool   startsInFlight
 }
+#endif
 
 global struct FlyerAnim
 {
@@ -49,18 +90,76 @@ global struct FlyerAnim
  	bool hasAnalysis
 }
 
+global function IsFlyer
+global function IsCagedFlyer
+global function IsDeathboxFlyer
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+
+enum perchedFlyerState
+{
+	idle,
+	takeOff,
+}
+
+struct DeathBoxFlyerDataStruct
+{
+	bool   isPerched = false
+	float  timeTakeoffStarted = -1.0
+	bool   droppedLoot = false
+	entity deathBox
+	entity scriptMoverParent
+	bool   startsFlying = false
+}
+
+
+enum flyerState
+{
+	IDLE,
+	CAUTIOUS_TO_ANGRY,
+	CAUTIOUS_TO_IDLE,
+	ANGRY,
+	INVALID,
+}
+
+struct CagedFlyerDataStruct
+{
+	float  timeLastDamaged = -1.0
+	float  timeTriggerLastVacated = -1.0
+	float  timeLastBecameCautious = -1.0
+	float  timeLastBecameAngry = -1.0
+	entity linkedTrigger
+}
+
 struct
 {
+	array< entity >                          deathBoxFlyerNodes
+	table< entity, DeathBoxFlyerDataStruct > deathBoxFlyerToDataStructTable //
+	table< entity, CagedFlyerDataStruct >    cagedFlyerToDataStructTable //
+	
 	array<FlyerAnim> flyerPickupAnimations
-
+	array< entity > flyerWithCorpseNodes
+	
 	int devFlyerCountReal = 0
 	int devFlyerCountCheap = 0
 	int devFlyerCountStatic = 0
-
+	
 	int flyerCheapMixCount = 0
+	
+	int fliersToSpawn = 0
+
+	#if(DEV)
+		int                               currentTestFlyerSpawnIndex = -1 //
+		array< TestFlyerSpawnDataStruct > testflyerSpawnData
+		bool flyerSpawnDataSorted = false
+	#endif
 } file
 
-void function FlyersShared_Init()
+void function ShFlyers_Init()
 {
 	//PrecacheModel( FLYER_PATH_MODEL )
 	//PrecacheModel( FLYER_PATH_500X_MODEL )
@@ -71,19 +170,18 @@ void function FlyersShared_Init()
 	PrecacheModel( FLYER_1000X_MODEL )
 	//PrecacheModel( $"mdl/creatures/flyer/r2_flyer.rmdl" )
 
-	RegisterSignal( "FlyerNewPath" )
-	RegisterSignal( "KillFlyer" )
+	PrecacheParticleSystem( DEATHBOX_DROP_FX )
+
+	//
+
 
 	RegisterSignal( "FlyerStopThink" )
 	RegisterSignal( "FlyerDeath" )
-	RegisterSignal( "StopPerchedIdle" )
-	RegisterSignal( "PickupAborted" )
-	RegisterSignal( "EndAddToSequence" )
+	RegisterSignal( "StopFlyerIdle" )
+	RegisterSignal( "RecalculateFlyerState" )
+	RegisterSignal( "CagedFlyerSetPainParameter"  )
+	RegisterSignal( "KillFlyer" )
 
-	//HACK FOR NOW
-	#if CLIENT
-		RegisterSignal( "OnBreak" )
-	#endif
 
 	level.circlingFlyers		<- {}
 
@@ -161,14 +259,48 @@ void function FlyersShared_Init()
 	#if SERVER
 
 		AddDamageCallback( "script_mover", Flyer_TookDamage )
+		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_flyer_with_corpse", SVFlyerCreationCallback )
 
 		// used to replace the animation used for dropships dropping off soldiers by zipline
 		// only works with RunDropshipDropoff( ... ) in _goblin_dropship.nut
 		level.nextDropshipAttackedByFlyers <- false
 	#endif
-	#if CLIENT
+	
+	#if(CLIENT)
 		AddCreateCallback( "script_mover", FlyerCreationCallback )
+		
+		if ( EvilFlyersEnabled() )
+		{
+			#if(true)
+				AddCreateCallback( "prop_dynamic", OnEvilFlyerCreated )
+				PrecacheParticleSystem( FX_FLYER_GLOW )
+				//
+			#endif
+		}
 	#endif
+}
+
+#if SERVER
+void function SVFlyerCreationCallback( entity flyer )
+{
+	if( flyer.GetModelName().tolower() == FLYER_MODEL.tolower() )
+	{
+		flyer.kv.fadedist = 14000
+		flyer.kv.rendercolor = "255 255 255"
+		flyer.kv.modelscale = 1
+		flyer.kv.solid = SOLID_BBOX
+	}
+}
+#endif
+
+bool function EvilFlyersEnabled()
+{
+	#if(true)
+		if ( GetCurrentPlaylistVarBool( "evil_flyers", false ) )
+			return true
+	#endif
+
+	return false
 }
 
 
@@ -1046,6 +1178,137 @@ void function FlyerCreationCallback( entity ent )
 
 	if ( ent.GetModelName() == FLYER_MODEL )
 		ent.s.gibDist <- 5120
+}
+#if(CLIENT)
+void function ServerCallback_PlayLootRarityFXOnDeathboxDrop( entity deathBox  )
+{
+	thread PlayLootRarityFXOnDeathboxDrop_threaded( deathBox  )
+}
+
+void function PlayLootRarityFXOnDeathboxDrop_threaded( entity deathBox  )
+{
+	EndSignal( deathBox, "OnDeath" )
+	EndSignal( deathBox, "OnDestroy" )
+
+	int fxID = GetParticleSystemIndex( DEATHBOX_DROP_FX )
+	vector boxOrigin = deathBox.GetOrigin()
+	int deatboxTier = deathBox.GetNetInt( "lootRarity"  )
+	vector colorVec = GetFXRarityColorForTier( deatboxTier )
+
+	int deathBoxFX = StartParticleEffectOnEntity( deathBox, fxID, FX_PATTACH_POINT_FOLLOW, deathBox.LookupAttachment( "FX_CENTER" ) )
+	EffectSetControlPointVector( deathBoxFX, 1, colorVec )
+
+	OnThreadEnd(
+		function() : ( deathBoxFX )
+		{
+			if ( EffectDoesExist( deathBoxFX  )  )
+				EffectStop( deathBoxFX, true, true )
+		}
+	)
+
+	wait 1.0
+
+}
+
+
+#if(true)
+void function OnEvilFlyerCreated( entity ent )
+{
+	asset modelAsset = ent.GetModelName().tolower()
+
+	switch( modelAsset )
+	{
+		case FLYER_MODEL.tolower():
+		case FLYER_1000X_MODEL.tolower():
+		case FLYER_500X_MODEL.tolower():
+		case FLYER_MODEL_STATIC.tolower():
+			break
+		default:
+			return
+	}
+
+	//
+	//
+	//
+
+	entity flyer = ent
+	array <string> bodyGlowAttachments
+	bodyGlowAttachments.append( "CHESTFOCUS" )
+	//
+	int fxIndex = GetParticleSystemIndex( FX_FLYER_GLOW )
+	foreach( eyeGlowAttachment in bodyGlowAttachments )
+		StartParticleEffectOnEntity( flyer, fxIndex, FX_PATTACH_POINT_FOLLOW, flyer.LookupAttachment( eyeGlowAttachment ) )
+
+
+}
+#endif //
+
+
+
+
+#endif //
+
+
+//
+bool function IsFlyerThatStillHasDeathBox( entity flyer )
+{
+	if ( !IsValid( flyer ) )
+		return false
+
+	if ( !(flyer in file.deathBoxFlyerToDataStructTable) )
+		return false
+
+	return IsValid( file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox )
+}
+
+
+entity function GetDeathBoxFromFlyer( entity flyer )
+{
+	if ( !IsValid( flyer ) )
+		return null
+
+	if ( !(flyer in file.deathBoxFlyerToDataStructTable) )
+		return null
+
+	if ( !IsValid( file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox ) )
+		return null
+
+	return file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox
+
+}
+
+
+bool function IsFlyer( entity ent )
+{
+	#if SERVER
+
+
+	#elseif CLIENT
+		if ( !(ent instanceof C_DynamicProp) )
+			return false
+	#endif
+
+	if ( ent.GetModelName().tolower() != FLYER_MODEL.tolower() ) //
+		return false
+
+	return true
+
+}
+bool function IsDeathboxFlyer( entity ent  )
+{
+	if ( !IsFlyer( ent ) )
+		return false
+
+	return ent.GetScriptName() == DEATHBOX_FLYER_SCRIPT_NAME
+
+}
+
+bool function IsCagedFlyer( entity ent )
+{
+	if ( !IsFlyer( ent ) )
+		return false
+
+	return ent.GetScriptName() == CAGED_FLYER_SCRIPT_NAME
 }
 
 

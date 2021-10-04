@@ -1,0 +1,98 @@
+global function Sh_PersistentDamageLayer_Init
+global function SURVIVAL_GetPersistentDamageLayer
+
+#if CLIENT
+global function HandlePersistentDamageLayerThresholdNotification
+#endif
+
+global struct PersistentDamageLayerData
+{
+	float damagePercentPerTick = 0.01
+
+	int killThreshold
+	int flagThreshold
+}
+
+struct {
+	PersistentDamageLayerData layerData
+	float                     damageHintReset
+} file
+
+void function Sh_PersistentDamageLayer_Init()
+{
+	Remote_RegisterClientFunction( "HandlePersistentDamageLayerThresholdNotification", "int", -1, 126 )
+
+	if (!GetCurrentPlaylistVarBool( "persistentdamagelayer_enabled", false ))
+		return
+
+	#if SERVER
+    #endif
+
+	#if CLIENT
+		AddLocalPlayerTookDamageTypeCallback( eDamageSourceId.persistent_damage_layer, Callback_OnPlayerTakeDeathFieldDamage )
+	#endif
+}
+
+#if SERVER
+#endif
+#if SERVER
+#endif
+
+#if CLIENT
+void function Callback_OnPlayerTakeDeathFieldDamage( float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker )
+{
+	HandleThresholdNotifWarnings()
+}
+
+#endif
+
+#if SERVER
+#endif
+
+#if CLIENT
+void function HandleThresholdNotifWarnings()
+{
+	string thresholdType = GenerateThresholdType()
+	int threshold = GetCurrentPlaylistVarInt( "persistentdamagelayer_round" + SURVIVAL_GetCurrentDeathFieldStage() + "threshold", -1 )
+	RuiSetString( GetCompassRui(), "deadlineTextArg", thresholdType + " Quota `1Failed.     `0Reach the threshold of `1" + threshold + " " + thresholdType + "(s) `0to stop the damage." )
+}
+
+void function HandlePersistentDamageLayerThresholdNotification( int killCount )
+{
+	int threshold = GetCurrentPlaylistVarInt( "persistentdamagelayer_round" + SURVIVAL_GetCurrentDeathFieldStage() + "threshold", -1 )
+	if ( killCount >= threshold )
+	{
+		HandleThresholdNotifReached()
+	}
+	else
+	{
+		string thresholdType = GenerateThresholdType()
+		RuiSetString( GetCompassRui(), "deadlineTextArg", "Incoming " + thresholdType + " Quota.     Score `2" + threshold + " `0" + thresholdType + "(s) for protection." )
+	}
+}
+
+void function HandleThresholdNotifReached()
+{
+	int quota = SURVIVAL_GetCurrentDeathFieldStage() + 1
+	string threshold = "-1"
+	if (quota > 7) {
+		threshold = "FULFILLED"
+	} else {
+		threshold = "" + GetCurrentPlaylistVarInt( "persistentdamagelayer_round" + quota + "threshold", -1 )
+	}
+
+	string thresholdType = GenerateThresholdType()
+	RuiSetString( GetCompassRui(), "deadlineTextArg", thresholdType + " Quota `3Reached.     `0Next " + thresholdType +" quota is `3" + threshold + " " + thresholdType + "(s)."  )
+}
+#endif
+
+PersistentDamageLayerData function SURVIVAL_GetPersistentDamageLayer()
+{
+	return file.layerData
+}
+
+string function GenerateThresholdType()
+{
+	string retVal = "Kill"
+	return retVal
+}

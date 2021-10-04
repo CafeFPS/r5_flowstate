@@ -1,14 +1,14 @@
 
-/*
 global function CodeCallback_ZiplineMount
-global function CodeCallback_ZiplineStart
-global function CodeCallback_ZiplineMove
-global function CodeCallback_ZiplineStop
+//global function CodeCallback_ZiplineStart
+//global function CodeCallback_ZiplineMove
+//global function CodeCallback_ZiplineStop
 
 void function CodeCallback_ZiplineMount( entity player, entity zipline )
 {
+	thread Chroma_ZiplineThread()
 }
-
+/*
 void function CodeCallback_ZiplineStart( entity player, entity zipline )
 {
 }

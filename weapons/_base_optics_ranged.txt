@@ -31,6 +31,8 @@ WeaponData
 
             "dof_zoom_nearDepthStart"				"1.25"
             "dof_zoom_nearDepthEnd"					"18.0"
+
+            zoomed_convar_sensitivity_index         2
    		}
 
    		// 2x-4x
@@ -65,6 +67,9 @@ WeaponData
 
             "dof_zoom_nearDepthStart"	"1.0"
             "dof_zoom_nearDepthEnd"		"16.2"
+
+            zoomed_convar_sensitivity_index         1
+            zoomed_convar_toggle_sensitivity_index  3
    		}
 	}
 

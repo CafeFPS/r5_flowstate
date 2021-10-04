@@ -5,8 +5,9 @@
 //=============================================================================
 
 global function printl
-global function Msg
 global function CodeCallback_Precompile
+
+global const bool R5DEV = true
 
 global struct EchoTestStruct
 {
@@ -171,10 +172,20 @@ global struct CommunityUserInfo
 	string kills
 	int wins
 	int matches
+	int banReason
+	int banSeconds
+	int eliteStreak
+	int rankScore
+	int rankLadderPos
+	int rankedLadderPos
+	string rankedPeriodName
 	int lastCharIdx
 	bool isLivestreaming
 	bool isOnline
 	bool isJoinable
+	bool partyFull
+	bool partyInMatch
+	float lastServerChangeTime
 	string privacySetting
 	array<int> charData
 
@@ -187,6 +198,7 @@ global struct PartyMember
 	string uid
 	string hardware
 	bool ready
+	bool present
 }
 
 global struct OpenInvite
@@ -243,6 +255,7 @@ global struct RemoteMatchInfo
 	int roundsWonMilitia
 	int timeLimitSecs
 	int timeLeftSecs
+	int teamsLeft
 	int maxScore
 	array<RemoteClientInfoFromMatchInfo> clients
 	array<int> teamScores
@@ -272,13 +285,34 @@ global struct MainMenuPromos
 {
 	int prot,
 	int version,
-	string layout
+	string layout,
+	string promoRpak,
+	string miniPromoRpak
 }
 
 #if SERVER || UI
-global struct GRXCodeOffer
+global struct MatchmakingDatacenterETA
+{
+	int datacenterIdx
+	string datacenterName
+	int latency
+	int packetLoss
+	int etaSeconds
+	int idealStartUTC
+	int idealEndUTC
+}
+#endif // #if SERVER || UI
+
+#if SERVER || UI
+global struct GRXCraftingOffer
 {
 	int itemIdx
+	int craftingPrice
+}
+
+global struct GRXStoreOffer
+{
+	array< int > items
 	array< array< int > > prices
 	table< string, string > attrs
 }
@@ -296,6 +330,8 @@ global struct GRXUserInfo
 	array< int > balances
 
 	int marketplaceEdition
+
+	bool isOfferRestricted
 }
 
 global struct VortexBulletHit
@@ -308,21 +344,6 @@ global struct AnimRefPoint
 {
 	vector origin
 	vector angles
-}
-
-global enum eSPLevel
-{
-	UNKNOWN,
-	TRAINING,
-	WILDS,
-	SEWERS,
-	BOOM_TOWN,
-	TIME_SHIFT,
-	BEACON,
-	TDAY,
-	SHIP2SHIP,
-	SKYWAY,
-	CLOUD_CITY
 }
 
 global struct LevelTransitionStruct
@@ -342,22 +363,7 @@ global struct LevelTransitionStruct
 	int titan_mainWeapon = -1
 	int titan_unlocksBitfield = 0
 
-	int levelID = eSPLevel.UNKNOWN
-
 	int difficulty = 0
-
-	bool pilotHasBattery
-	bool embarked
-
-	//timeshift
-	bool timeshiftKilledLobbyMarvin = false
-	int timeshiftMostRecentTimeline
-	int boyleAudioLogsCollected = 0
-	int[5] boyleAudioLogNumberAssignments = [ 0, 0, 0, 0, 0 ]
-
-	//cloud city
-	// bool elevatorSpotted
-	vector playerPos
 }
 
 global struct WeaponOwnerChangedParams
@@ -453,6 +459,13 @@ global struct ModInventoryItem
 	int count
 }
 
+global struct OpticAppearanceOverride
+{
+	array<string>	bodygroupNames
+	array<int>		bodygroupValues
+	array<string>	uiDataNames
+}
+
 global struct ConsumableInventoryItem
 {
 	int slot
@@ -511,8 +524,8 @@ global struct StaticPropRui
 	//
 	// If you create a StaticPropRui struct from scratch to pass to RuiCreateOnStaticProp, you must initialize "ruiName", but "args" can be left empty.
 
-	asset ruiName               // Name of the RUI asset to create
-	table<string, string> args  // Arg overrides.
+	asset ruiName               //
+	table<string, string> args  //
 
 	//------------------------------
 	// This magic number is how code knows which prop and RUI mesh to use for the topology. Do not remember this across levels, and do not modify it.
@@ -577,14 +590,9 @@ void function printl( var text )
 	return print( text + "\n" )
 }
 
-void function Msg( var text )
-{
-	return print( text )
-}
-
 void function CodeCallback_Precompile()
 {
-#if DEV
+#if R5DEV
 	// save the const table for later printing when documenting code consts
 	//if ( Dev_CommandLineHasParm( "-scriptdocs" ) )
 		getroottable().originalConstTable <- clone getconsttable()

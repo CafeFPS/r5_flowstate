@@ -4,6 +4,7 @@
 //{
 /////////////////////////////
 
+	anti_slow
 	move_slow
 	turn_slow
 	dodge_speed_slow
@@ -12,6 +13,7 @@
 	speed_boost
 	stim_visual_effect
 	timeshift_visual_effect
+	enemy_only_threat_vision
 	threat_vision
 	gravity_grenade_visual
     //slowmo_visual_effect //removed to make room for sonar_pulse_visuals
@@ -26,7 +28,29 @@
     burning
     phase_dash
     passive_cloak
+
+                
+              
+      
+
+                
+                      
+      
+
+               
+                            
+      
+
 	smokescreen
+
+                
+                      
+      
+
+	marked_for_death
+	revenge_view_visuals
+	revenge_view_visuals_enemy
+	mirage_ultimate_cancel_hint
 
 	laser_mesh
 	destroyed_by_emp
@@ -34,6 +58,7 @@
 
     sonar_blocked
 	sonar_detected
+	camera_detected
 	maphack_detected
 	lockon_detected
     device_detected
@@ -49,9 +74,56 @@
 	smart_ammo_tracker_neutral
 	smart_ammo_tracker_all
 
+	placing_tesla_trap
+	placing_trophy_system
 	placing_phase_gate
 	placing_phase_tunnel
 	placing_caustic_barrel
+
+               
+                   
+                                 
+      
+
+                      
+                       
+      
+
+                         
+                          
+      
+
+	camera_view
+	crypto_has_camera
+	crypto_camera_is_recalling
+	crypto_camera_is_emp
+	crypto_emp_warning
+
+                      
+                         
+      
+
+             
+                       
+      
+
+             
+                    
+              
+              
+      
+
+                
+                          
+                   
+         
+      
+
+            
+               
+      
+
+	script_helper
 
 	pass_through_amps_weapon
 
@@ -67,6 +139,11 @@
 	lockon_detected_titan
 	damage_received_multiplier
 
+	bombardment_uses_extended_height
+
+
+
+
 	drone_healing
 
 	// TEMP DEV
@@ -75,6 +152,10 @@
 	placing_care_package
 	target_shields
 	target_health
+	trophy_tactical_charge
+	trophy_shield_repair
+
+	bubble_bunker
 
 /////////////////////////////
 //}

@@ -1,0 +1,68 @@
+global function Entitlements_LevelInit
+
+global table<string, array< ItemFlavor > > allTwitchPrimeRewardRefs
+table<entity, bool> checkedPlayerTwitchPrimeRewardsSet = {}
+
+void function Entitlements_LevelInit()
+{
+	allTwitchPrimeRewardRefs["twitch_launch_promo"] <- []
+	allTwitchPrimeRewardRefs["twitch_wattson_skin1"] <- []
+	allTwitchPrimeRewardRefs["twitch_bangalore_skin1"] <- []
+	allTwitchPrimeRewardRefs["twitch_octane_skin1"] <- []
+	allTwitchPrimeRewardRefs["twitch_mirage_skin1"] <- []
+
+	AddCallback_OnItemFlavorRegistered( eItemType.character_skin, UnlockFuncRegisterForTwitch )
+	AddCallback_OnItemFlavorRegistered( eItemType.weapon_skin, UnlockFuncRegisterForTwitch )
+	AddCallback_OnItemFlavorRegistered( eItemType.gladiator_card_frame, UnlockFuncRegisterForTwitch )
+
+	#if SERVER
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif
+}
+
+
+#if SERVER || CLIENT || UI
+void function UnlockFuncRegisterForTwitch( ItemFlavor flavor )
+{
+	if ( !ItemFlavor_HasUnlockFunc( flavor ) )
+		return
+
+	string unlockFuncKey = ItemFlavor_GetUnlockFuncKey( flavor )
+	if ( !(unlockFuncKey in allTwitchPrimeRewardRefs) )
+		return
+
+	allTwitchPrimeRewardRefs[unlockFuncKey].append( flavor )
+}
+#endif

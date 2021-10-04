@@ -15,11 +15,11 @@ global function IsPersistenceBitSet
 global function IsAnyPersistenceBitSet
 #endif
 
-#if (SERVER || CLIENT || UI) && DEV
+#if SERVER || CLIENT || UI && R5DEV
 global function DEV_ShouldIgnorePersistence
 #endif
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 global function AddCallback_GeneratePDef
 global function DEV_GeneratePersistentDataDefinitionAutogenSection
 global function DEV_PDefGen_AddEnum
@@ -60,7 +60,7 @@ global function ClientToUI_OnPersistentDataReady
 
 #if SERVER
 global typedef UpgradePlayerPersistentDataCallbackType void functionref( entity player, int oldVersion, int newVersion )
-#if DEV
+#if R5DEV
 global typedef GeneratePDefCallbackType void functionref()
 #endif
 #endif
@@ -81,7 +81,7 @@ struct FileStruct_LifetimeLevel
 {
 	#if SERVER
 		array<UpgradePlayerPersistentDataCallbackType> upgradePlayerPersistentDataCallbacks
-		#if DEV
+		#if R5DEV
 			array<GeneratePDefCallbackType> generatePDefCallbacks
 		#endif
 	#endif
@@ -104,7 +104,7 @@ void function ShPersistentData_LevelInit_Begin()
 	fileLevel = newFileLevel
 
 	#if SERVER
-		#if DEV
+		#if R5DEV
 			AddCallback_GeneratePDef( GenerateBasicPDef )
 			AddClientCommandCallback( "dev_generate_pdef", ClientCommand_dev_generate_pdef )
 		#endif
@@ -119,13 +119,13 @@ void function ShPersistentData_LevelInit_Begin()
 
 void function ShPersistentData_LevelInit_Finish()
 {
-	#if SERVER && DEV
+	#if SERVER && R5DEV
 		DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( false )
 	#endif
 }
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function GenerateBasicPDef()
 {
 	// Stuff like this should not use PDefGen because it's not dynamic
@@ -155,16 +155,18 @@ void function UpgradeBasicPlayerPersistentData( entity player, int oldVersion, i
 ///////////////////////
 ///////////////////////
 
-#if (SERVER || CLIENT || UI) && DEV
+#if SERVER || CLIENT || UI && R5DEV
 bool function DEV_ShouldIgnorePersistence()
 {
-	//return GetConVarBool( "loadouts_ignore_persistence" )
-	return true
+	// return GetConVarBool( "loadouts_ignore_persistence" )
+	// return true
+
+	return false
 }
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function AddCallback_GeneratePDef( GeneratePDefCallbackType cb )
 {
 	Assert( !fileLevel.generatePDefCallbacks.contains( cb ), "Callback already registered" )
@@ -327,7 +329,7 @@ void function DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( b
 		}
 		else
 		{
-			int currentPDefVersion = GetPersistentDataDefVersion()
+			int currentPDefVersion = GetPersistentDataDefScriptVersion()
 			currentPDefPath = "cfg/server/persistent_player_data_" + currentPDefVersion + ".pdef"
 		}
 
@@ -376,9 +378,9 @@ void function DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( b
 			string desiredPDefAutogenSectionContents = DEV_GeneratePersistentDataDefinitionAutogenSection()
 			DevTextBufferClear()
 			DevTextBufferWrite( desiredPDefAutogenSectionContents )
-			DevP4Checkout( "cfg/server/pdef_autogen.pdef" )
+			//DevP4Checkout( "cfg/server/pdef_autogen.pdef" )
 			DevTextBufferDumpToFile( "cfg/server/pdef_autogen.pdef" )
-			DevP4Add( "cfg/server/pdef_autogen.pdef" )
+			//DevP4Add( "cfg/server/pdef_autogen.pdef" )
 			DevTextBufferClear()
 		}
 	#endif
@@ -505,7 +507,7 @@ void function DEV_PDefGen_AddField_StructArray_EnumKey( string structName, strin
 	Assert( structName in DEV_PDefGen_structMap, "Field references non-existant struct '" + structName + "'" )
 	DEV_PDefGen_AddField_Internal( structName, name, "[" + keyEnumName + "]", comment )
 }
-#endif // SERVER && DEV
+#endif // SERVER && R5DEV
 
 
 
@@ -632,7 +634,7 @@ bool function IsAnyPersistenceBitSet( entity player, string persistenceVar )
 void function SvPersistentData_OnClientConnectionCompleted( entity player )
 {
 	int initializedVersion = player.GetPersistentVarAsInt( "initializedVersion" )
-	int currentVersion     = GetPersistentDataDefVersion()
+	int currentVersion     = GetPersistentDataDefScriptVersion()
 
 	Assert( initializedVersion <= currentVersion )
 

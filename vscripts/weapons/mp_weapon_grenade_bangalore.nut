@@ -295,9 +295,16 @@ void function CreateSmokeTrigger( SmokescreenStruct smokescreen, entity smokeGre
 	int aboveHeight = radius / 2
 	int belowHeight = 0
 
-	entity trigger = CreateTriggerCylinder( origin, radius, aboveHeight, belowHeight )
+
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( radius )
+	trigger.SetAboveHeight( aboveHeight )
+	trigger.SetBelowHeight( belowHeight )
+	trigger.SetOrigin( origin )
+	trigger.kv.triggerFilterNonCharacter = "0"
 	trigger.RemoveFromAllRealms()
 	trigger.AddToOtherEntitysRealms( smokeGrenade )
+	DispatchSpawn( trigger )
 
 	trigger.SetEnterCallback( BangaloreSmokeGrenadeTriggerEnter )
 	trigger.SearchForNewTouchingEntity()  // set this to catch an entity in the trigger right away

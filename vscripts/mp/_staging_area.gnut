@@ -8,10 +8,10 @@ global function CreateGunRangeTargetsForRealm
 
 void function Staging_Area_Init()
 {
-    
+    PrecacheModel( $"mdl/industrial/gun_rack_arm_down.rmdl" )
 }
 
-void function RemoveStagingAreaEntsForRealm( int player )
+void function RemoveStagingAreaEntsForRealm( int realm )
 {
 
 }
@@ -21,9 +21,14 @@ int function GetPlayerStagingSquadRealm( entity player )
     return 0
 }
 
-void function CreateWeaponRacksForRealm( int player )
+void function CreateWeaponRacksForRealm( int realm )
 {
-
+	// this probably doesn't work
+	array<entity> racks = GetEntArrayByScriptName( "weapon_racks" )
+	foreach( entity rack in racks )
+	{
+    	rack.SetModel( $"mdl/industrial/gun_rack_arm_down.rmdl" )
+	}
 }
 
 void function CreateGunRangeTargetsForRealm( int player )

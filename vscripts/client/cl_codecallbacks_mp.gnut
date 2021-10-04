@@ -33,7 +33,6 @@ global function ServerCallback_YouDied
 global function ClientCodeCallback_SaveResumed
 global function ClientCodeCallback_SmokeTestRunning
 global function ClientCodeCallback_OnSelectedWeaponChanged
-global function CodeCallback_CheckPassThroughAddsMods
 global function ClientCodeCallback_OnLinkedButtonPairPressed
 global function AddCallback_OnYouRespawned
 global function AddCallback_OnYouDied
@@ -173,36 +172,10 @@ void function ClientCodeCallback_OnNextTitanRespawnAvailableChanged( entity play
 
 void function ClientCodeCallback_OnNextCoreChargeAvailableChanged( entity titansoul )
 {
-	if ( !IsValid( titansoul ) )
-		return
-
-	entity player = GetLocalViewPlayer()
-	if ( !IsValid( player ) )
-		return
-
-	if ( titansoul != player.GetTitanSoul() )
-		return
-
-	local coreTimeRemaining = GetTitanCoreTimeRemaining( player )
-	if ( coreTimeRemaining != null )
-		player.Signal( "ActivateTitanCore" )
-
-	//UpdateTitanModeHUD( player )
 }
 
 void function ClientCodeCallback_OnCoreChargeExpireTimeChanged( entity titansoul )
 {
-	if ( !IsValid( titansoul ) )
-		return
-
-	entity player = GetLocalViewPlayer()
-	if ( !IsValid( player ) )
-		return
-
-	if ( titansoul != player.GetTitanSoul() )
-		return
-
-	//UpdateTitanModeHUD( player )
 }
 
 void function ClientCodeCallback_OnEntityCreation( entity ent )
@@ -286,13 +259,6 @@ void function ClientCodeCallback_OnDeath( entity ent )
 
 	string className = expect string( ent.GetNetworkedClassName() )
 
-	if ( ent.IsTitan() )
-	{
-		entity soul = ent.GetTitanSoul()
-		if ( IsValid( soul ) )
-			soul.Signal( "OnTitanDeath" )
-	}
-
 	ent.Signal( "OnDeath" )
 
 	if ( className in clGlobal.onDeathCallbacks )
@@ -336,7 +302,8 @@ void function ClientCodeCallback_OnEntityDestroy( entity ent )
 	// need to set this OnEntityCreation or somewhere
 	// ent.SetDoDestroyCallback( true )
 
-	foreach ( callbackFunc in ent.e.onEntityDestroyedCallbacks )
+	array<void functionref( entity ent )> myCallbacks = clone( ent.e.onEntityDestroyedCallbacks )
+	foreach ( callbackFunc in myCallbacks )
 	{
 		callbackFunc( ent )
 	}
@@ -598,20 +565,6 @@ void function ClientCodeCallback_OnSelectedWeaponChanged( entity selectedWeapon 
 	{
 		callbackFunc( selectedWeapon )
 	}
-}
-
-string function CodeCallback_CheckPassThroughAddsMods( entity player, entity hitEnt, string currWeaponName )
-{
-	if ( !IsValid( player ) )
-		return ""
-
-	if ( StatusEffect_GetSeverity( hitEnt, eStatusEffect.pass_through_amps_weapon ) > 0 )
-	{
-		array<string> mods = GetWeaponBurnMods( currWeaponName )
-		if ( mods.len() > 0 )
-			return mods[0]
-	}
-	return ""
 }
 
 void function ClientCodeCallback_UIScriptResetComplete()

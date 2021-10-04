@@ -1,0 +1,1081 @@
+global function CLChroma_Init
+
+global function Chroma_MainMenu
+global function Chroma_Lobby
+global function Chroma_LootCeremonyStart
+global function Chroma_StartMatchmaking
+
+#if CLIENT
+global function Chroma_SetPlayerZone
+global function Chroma_UpdateBackground
+
+global function DEV_Chroma_ForceBackground
+
+global function Chroma_PhaseShiftStarting
+global function Chroma_PhaseShiftEnding
+global function Chroma_LeftRing
+global function Chroma_EnteredRing
+global function Chroma_BeginBannerTransition
+global function Chroma_EndBannerTransition
+
+global function Chroma_BeginCharacterSelect
+global function Chroma_EndCharacterSelect
+
+global function Chroma_PredictedLootPickup
+
+global function Chroma_FiredWeapon
+
+global function Chroma_UltimateReady
+
+global function Chroma_LootCeremonyBeam
+global function Chroma_LootCeremonyFlash
+global function Chroma_LootCeremonyReward
+
+global function Chroma_HealthChanged
+
+global function Chroma_ConsumableBegin
+global function Chroma_ConsumableEnd
+global function Chroma_ConsumableSucceeded
+
+global function Chroma_BeginRevive
+global function Chroma_EndRevive
+//
+//
+global function Chroma_RespawningInDropship
+global function Chroma_RespawnComplete
+
+global function Chroma_PlayerUsedAbility
+
+global function Chroma_VictoryScreen
+
+global function Chroma_StartGasCloudEffect
+global function Chroma_EndGasCloudEffect
+global function Chroma_StartSmokescreenEffect
+global function Chroma_EndSmokescreenEffect
+global function Chroma_StartHealingDroneEffect
+global function Chroma_EndHealingDroneEffect
+global function Chroma_StartStimEffect
+global function Chroma_EndStimEffect
+
+global function Chroma_ZiplineThread
+
+global function Chroma_OnBubbleShieldCreated
+
+global function Chroma_StartHuntMode
+global function Chroma_EndHuntMode
+
+global function Chroma_UsedJumpPad
+
+global function Chroma_EMPEffect
+#endif
+
+struct
+{
+	int zoneId = -1
+	string chromaZoneBackgroundName
+	string chromaBackgroundName
+	bool phaseShifted
+	bool outsideRing
+	bool bannerTransitionActive
+	bool inCharacterSelect
+	bool respawning
+	bool victory
+	bool huntMode
+	array signalEnt
+
+	int logoHandle = -1
+
+	int healthOverlayHandle = -1
+	int consumableOverlayHandle = -1
+
+	int gasCloudOverlayHandle = -1
+	int smokescreenOverlayHandle = -1
+	int healDroneOverlayHandle = -1
+	int stimOverlayHandle = -1
+	int ziplineOverlayHandle = -1
+
+	vector[3] lootCeremonyColors
+} file
+
+void function CLChroma_Init()
+{
+	RegisterSignal( "skydiveover" )
+
+	#if CLIENT
+		AddCallback_LocalPlayerPickedUpLoot( Chroma_PickedUpLoot )
+		AddLocalPlayerTookDamageCallback( Chroma_TookDamage )
+		AddCallback_OnYouDied( Chroma_PlayerDied )
+		AddCallback_OnViewPlayerChanged( Chroma_ViewPlayerChanged )
+		AddCallback_OnBleedoutEnded( Chroma_OnBleedoutEnded )
+
+		file.healthOverlayHandle = Chroma_AddPersistentOverlay( CHROMALOOP_SMOOTHNOISE, CHROMALOOP_SMOOTHNOISE, CHROMATRANS_BLEND, {[0.0] = <1,0,0>}, 0.0, 0.1 )
+	#endif
+}
+
+#if CLIENT
+void function DEV_Chroma_ForceBackground( string bg )
+{
+	file.chromaZoneBackgroundName = bg
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_PhaseShiftStarting()
+{
+	file.phaseShifted = true
+	Chroma_UpdateBackground()
+}
+void function Chroma_PhaseShiftEnding()
+{
+	file.phaseShifted = false
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_LeftRing()
+{
+	file.outsideRing = true
+	Chroma_UpdateBackground()
+}
+void function Chroma_EnteredRing()
+{
+	file.outsideRing = false
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_BeginBannerTransition()
+{
+	file.bannerTransitionActive = true
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_EndBannerTransition()
+{
+	file.bannerTransitionActive = false
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_BeginCharacterSelect()
+{
+	file.inCharacterSelect = true
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_EndCharacterSelect()
+{
+	file.inCharacterSelect = false
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_PlayerDied( entity attacker, float healthFrac, int damageSourceId, float recentHealthDamage )
+{
+	Chroma_UpdateBackground()
+}
+#endif
+
+
+const table< float, vector > redFlagGradient =
+{
+	[0.0] = <1.0, .17, .1>,
+	[1.0] = <0.3, 0.0, 0.0>,
+}
+
+
+void function Chroma_MainMenu()
+{
+	Chroma_SetBaseLayer( CHROMALOOP_SOFTRIPPLES, CHROMATRANS_FLAGS, redFlagGradient, 2.0 )
+}
+
+void function Chroma_RemoveLogo()
+{
+	//
+}
+
+void function Chroma_Lobby()
+{
+	Chroma_RemoveLogo()
+	Chroma_SetBaseLayer( CHROMALOOP_SMOKE, CHROMATRANS_FLAGS, {[1.0] = <.25,0,0>, [0.5] = <.2,.6,1>, [0.0] = <1,1,1>}, 2.0, 0.5 )
+}
+
+void function Chroma_LootCeremonyStart()
+{
+	Chroma_SetBaseLayer( CHROMALOOP_SMOKE, CHROMATRANS_SMOKE, {[0.0] = <0,0,0>}, 2.0 )
+	foreach ( idx, color in file.lootCeremonyColors )
+		file.lootCeremonyColors[idx] = <0,0,0>
+}
+
+void function Chroma_StartMatchmaking()
+{
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_FLASH, {[0.0] = <1,0,0>}, 3.0 )
+}
+
+#if CLIENT
+string function Chroma_GetActualBackground()
+{
+	entity player = GetLocalViewPlayer()
+	if ( file.bannerTransitionActive )
+		return "flags"
+	if ( file.inCharacterSelect )
+		return "characterselect"
+	if ( file.victory )
+		return "none" //
+	if ( file.respawning )
+		return "respawning"
+
+	if ( !IsAlive( player ) )
+		return "none"
+
+	if ( file.huntMode )
+		return "huntmode"
+
+	int playerMatchState = PlayerMatchState_GetFor( player )
+	switch ( playerMatchState )
+	{
+		case ePlayerMatchState.TRAINING:
+		case ePlayerMatchState.STAGING_AREA:
+			return "desert"
+
+		case ePlayerMatchState.SKYDIVE_PRELAUNCH:
+			return "none"
+		case ePlayerMatchState.SKYDIVE_FALLING:
+			return "skydive"
+	}
+
+	if ( file.phaseShifted )
+		return "phase"
+	if ( file.outsideRing )
+		return "ring"
+
+	switch ( file.chromaZoneBackgroundName )
+	{
+		case "wetland":
+			return "river"
+		case "swamp":
+			return "grass"
+	}
+	return file.chromaZoneBackgroundName
+}
+
+const float SkyDiveLayerTransitionTime = 2.0
+
+Assert( CHROMALOOP_CONEWAVELEFT + 1 == CHROMALOOP_CONEWAVEMIDDLE )
+Assert( CHROMALOOP_CONEWAVELEFT + 2 == CHROMALOOP_CONEWAVERIGHT )
+Assert( CHROMATRANS_CONELEFT + 1 == CHROMATRANS_CONEMIDDLE )
+Assert( CHROMATRANS_CONELEFT + 2 == CHROMATRANS_CONERIGHT)
+
+void function Chroma_SkyDiveUpdate()
+{
+	EndSignal( file.signalEnt, "skydiveover" )
+
+	int[3] overlays
+	overlays[0] = -1
+	overlays[1] = -1
+	overlays[2] = -1
+
+	entity[3][2] players
+	int playerPingPong = 0
+
+	OnThreadEnd( function() : ( overlays ) {
+		foreach ( idx, overlay in overlays )
+			Chroma_RemovePersistentOverlay( overlay, CHROMATRANS_CONELEFT + idx, SkyDiveLayerTransitionTime )
+	})
+
+	LoadoutEntry characterSlot = Loadout_CharacterClass()
+
+	Chroma_SetBaseLayer( CHROMALOOP_SMOOTHNOISE, CHROMATRANS_FLAGS, {[0.0] = <0,0,0>}, 2.0 )
+
+	while ( 1 )
+	{
+		if ( file.chromaBackgroundName != "skydive" )
+			break
+
+		int prevPlayerPingPong = playerPingPong
+		playerPingPong = 1 - playerPingPong
+
+		{
+			entity player = GetLocalViewPlayer()
+			entity parentPlayer = player.GetParent()
+
+			vector right = player.GetRightVector()
+
+			if ( IsValid( parentPlayer ) && parentPlayer.IsPlayer() )
+			{
+				printt( "parented" )
+
+				players[playerPingPong][1] = parentPlayer
+
+				entity otherPlayer
+				array<entity> followers = GetOtherTeammates()
+				foreach ( ent in followers )
+				{
+					Assert( ent.IsPlayer() )
+					if ( ent.GetParent() == parentPlayer && ent != player )
+					{
+						otherPlayer = ent
+						break
+					}
+				}
+
+				if ( DotProduct( player.GetOrigin() - parentPlayer.GetOrigin(), right ) < 0.0 )
+				{
+					players[playerPingPong][0] = player
+					players[playerPingPong][2] = otherPlayer
+				}
+				else
+				{
+					players[playerPingPong][0] = otherPlayer
+					players[playerPingPong][2] = player
+				}
+			}
+			else
+			{
+				players[playerPingPong][1] = player
+
+				players[playerPingPong][0] = null
+				players[playerPingPong][2] = null
+
+				array<entity> followers = GetOtherTeammates()
+				foreach ( ent in followers )
+				{
+					Assert( ent.IsPlayer() )
+					if ( ent.GetParent() != player )
+						continue
+
+					if ( DotProduct( ent.GetOrigin() - player.GetOrigin(), right ) < 0.0 )
+						players[playerPingPong][0] = ent
+					else
+						players[playerPingPong][2] = ent
+				}
+			}
+		}
+
+		for ( int i = 0; i < 3; i++ )
+		{
+			if ( players[prevPlayerPingPong][i] == players[playerPingPong][i] )
+				continue
+
+			Chroma_RemovePersistentOverlay( overlays[i], CHROMATRANS_CONELEFT + i, SkyDiveLayerTransitionTime )
+
+			entity player = players[playerPingPong][i]
+			if ( player )
+			{
+				ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), characterSlot )
+				table< float, vector > gradient = CharacterClass_GetChromaGradient( character )
+
+				table< float, vector > gradientInv
+				foreach ( key, val in gradient )
+					gradientInv[1.0 - key] <- val
+
+				overlays[i] = Chroma_AddPersistentOverlay( CHROMALOOP_VERTICALGRADIENT, CHROMALOOP_CONEWAVELEFT + i, CHROMATRANS_CONELEFT + i, gradientInv, SkyDiveLayerTransitionTime )
+			}
+			else
+			{
+				overlays[i] = -1
+			}
+		}
+
+		wait 0.25
+	}
+}
+
+
+const float ZoneBackgroundBrightness = 0.7
+
+void function Chroma_UpdateBackground()
+{
+	string bg = Chroma_GetActualBackground()
+	if ( bg == file.chromaBackgroundName )
+		return
+
+	Chroma_RemoveLogo()
+
+	string oldbg = file.chromaBackgroundName
+	file.chromaBackgroundName = bg
+
+	table< float, vector > gradient
+	float rate = 0.5
+	float transitionTime = 3.0
+	int anim = CHROMALOOP_SMOOTHNOISE
+	int transition = CHROMATRANS_BLEND
+
+	switch ( file.chromaBackgroundName )
+	{
+		case "phase":
+			gradient = {
+				[0.0] = <0,0,0>,
+				[0.25] = <.7,.7,1>,
+				[0.5] = <.7,.7,1>,
+				[0.75] = <0,0,0>,
+				[1.0] = <.7,.7,1>,
+			}
+			rate = 2
+			break
+		case "ring":
+			gradient = {
+				[0.0] = <0,0,0>,
+				[0.6] = <1,.25,.15>,
+				[0.9] = <1,.78,.3>,
+			}
+			rate = 2
+			break
+		case "flags":
+			gradient = redFlagGradient
+			anim = CHROMALOOP_SOFTRIPPLES
+			break
+		case "characterselect":
+			gradient = {
+				[0.0] = <1,.9,.5>,
+				[0.5] = <1,.5,.1>,
+				[1.0] = <1,.5,.1> * 0.3
+			}
+			anim = CHROMALOOP_SMOKE
+			transition = CHROMATRANS_VERTICAL
+			transitionTime = 0.5
+			break
+
+		case "sky":
+			gradient = {
+				[0.0] = <.75,1,1> * ZoneBackgroundBrightness,
+				[0.75] = <.5,.5,.55> * ZoneBackgroundBrightness,
+			}
+			break
+
+		case "skydive":
+			thread Chroma_SkyDiveUpdate()
+			return
+
+		case "respawning":
+			gradient = {
+				[0.0] = <.8,.9,1>,
+				[0.5] = <1,0.5,0.4>,
+				[1.0] = <0.2,0,0.2>,
+			}
+			anim = CHROMALOOP_SMOKE
+			transition = CHROMATRANS_SMOKE
+			rate = 1
+			break
+
+		case "none":
+			gradient = {[0.0] = <0,0,0>,}
+			transition = CHROMATRANS_FLAGS
+			transitionTime = 2.0
+			break
+
+		case "huntmode":
+			gradient = {
+				[0.0] = <0,0,0>,
+				[1.0] = <.3,.3,.3>,
+			}
+			transitionTime = 0.5
+			break
+
+		case "industrial":
+			gradient = {
+				[0.0] = <.5,.5,.5> * ZoneBackgroundBrightness,
+				[0.75] = <.4,.4,.45> * ZoneBackgroundBrightness,
+				[1.0] = <.5,.2,.1> * ZoneBackgroundBrightness,
+			}
+			break
+		case "": //
+		case "wetland":
+		case "river":
+			gradient = {
+				[0.3] = <.4,.5,.15> * ZoneBackgroundBrightness,
+				[0.7] = <.15,.4,.4> * ZoneBackgroundBrightness,
+			}
+			break
+		case "grass":
+		case "swamp":
+			gradient = {
+				[0.0] = <.4,.5,.15> * ZoneBackgroundBrightness,
+				[1.0] = <.5,.3,.1> * ZoneBackgroundBrightness,
+			}
+			break
+		case "burnt":
+			gradient = {
+				[0.0] = <.4,.25,.12> * ZoneBackgroundBrightness,
+				[0.95] = <.25,.25,.25> * ZoneBackgroundBrightness,
+				[1.0] = <1,.5,.15> * 0.7 * ZoneBackgroundBrightness,
+			}
+			break
+		case "rocky":
+			gradient = {
+				[0.0] = <1,.65,.5> * ZoneBackgroundBrightness,
+				[1.0] = <.6,.3,.15> * ZoneBackgroundBrightness,
+			}
+			break
+		case "desert":
+			gradient = {
+				[0.3] = <.53,.25,.12> * ZoneBackgroundBrightness,
+				[1.0] = <1,.72,.42> * 0.8 * ZoneBackgroundBrightness,
+			}
+			break
+		default:
+			Assert( false, "unknown chroma background " + file.chromaBackgroundName )
+			break
+	}
+
+	Signal( file.signalEnt, "skydiveover" )
+
+	if ( oldbg == "phase" || bg == "phase" )
+	{
+		transitionTime = 0.5
+		transition = CHROMATRANS_OUTWARD
+	}
+	if ( oldbg == "ring" || bg == "ring" )
+	{
+		transitionTime = 0.5
+	}
+	if ( oldbg == "flags" || bg == "flags" )
+	{
+		transitionTime = 1.0
+		transition = CHROMATRANS_FLAGS
+	}
+
+	Chroma_UpdateHealthOverlay()
+	Chroma_SetBaseLayer( anim, transition, gradient, transitionTime, rate )
+}
+
+void function Chroma_SetPlayerZone( int zoneId )
+{
+	string bgName = MapZones_GetChromaBackgroundForZoneId( zoneId )
+	if ( bgName != file.chromaZoneBackgroundName )
+	{
+		file.chromaZoneBackgroundName = bgName
+		Chroma_UpdateBackground()
+	}
+}
+
+
+void function Chroma_PredictedLootPickup( entity ent )
+{
+	LootData lootData = SURVIVAL_Loot_GetLootDataByIndex( ent.GetSurvivalInt() )
+	Chroma_LootPickupEffects( lootData )
+}
+
+void function Chroma_PickedUpLoot( entity player, LootData lootData, int lootAction )
+{
+	//
+}
+
+void function Chroma_PickedUpLoot2( entity player, LootData lootData, int lootAction )
+{
+	switch ( lootAction )
+	{
+		case eLootAction.PICKUP:
+		case eLootAction.PICKUP_ALL:
+		case eLootAction.EQUIP:
+		case eLootAction.SWAP:
+		case eLootAction.ATTACH_TO_ACTIVE:
+		case eLootAction.ATTACH_TO_STOWED:
+			break
+
+		default:
+			return
+	}
+
+	Chroma_LootPickupEffects( lootData )
+}
+
+Assert( CHROMAWAVE_VERTICALONE + 1 == CHROMAWAVE_VERTICALTWO )
+Assert( CHROMAWAVE_VERTICALONE + 2 == CHROMAWAVE_VERTICALTHREE )
+
+vector function GetAmmoChromaColor( string ref )
+{
+	vector color = ammoColors[ref]
+	float maxComp = max( max( max( color.x, color.y ), color.z ), 0.1 )
+	return color / maxComp
+}
+
+void function Chroma_LootPickupEffects( LootData lootData )
+{
+	vector color = GetKeyColor( COLORID_TEXT_LOOT_TIER0, lootData.tier )
+	color /= 255.0
+
+	float duration = 1.0
+
+	int effect
+	switch ( lootData.lootType )
+	{
+		case eLootType.AMMO:
+			effect = CHROMAWAVE_SPARKLE
+			color = GetAmmoChromaColor( lootData.ref )
+			break
+
+		case eLootType.MAINWEAPON:
+		case eLootType.HEALTH:
+		case eLootType.JUMPKIT:
+		case eLootType.ORDNANCE:
+		case eLootType.ATTACHMENT:
+		case eLootType.CUSTOMPICKUP:
+		case eLootType.BACKPACK:
+		case eLootType.BLANK:
+		case eLootType.RESOURCE:
+		case eLootType.DATAKNIFE:
+
+			effect = CHROMAWAVE_VERTICALONE
+			Assert( lootData.tier <= MAX_LOOT_TIER )
+			if ( lootData.tier > 2 )
+			{
+				int add = lootData.tier - 2
+				effect += add
+				duration += add * 0.25
+			}
+			break
+
+		case eLootType.ARMOR:
+		case eLootType.HELMET:
+		case eLootType.INCAPSHIELD:
+			effect = CHROMAWAVE_HEXAGONS
+			duration = 1.0 + lootData.tier * 0.5
+			break
+
+		default:
+			Assert( false, "unhandled loot type " + lootData.lootType + " in Chroma_LootPickupEffects" )
+	}
+
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, effect, {[0.0] = color}, duration )
+}
+
+void function Chroma_FiredWeapon( entity weapon )
+{
+	if ( InPrediction() && !IsFirstTimePredicted() )
+		return
+
+	float duration
+	float colorfrac
+	if ( IsWeaponInAutomaticMode( weapon ) )
+	{
+		duration = 0.5
+		colorfrac = 0.6
+	}
+	else
+	{
+		duration = 1.5
+		colorfrac = 0.3
+	}
+
+	vector color = weapon.GetWeaponSettingVector( eWeaponVar.chroma_color )
+	if ( color == <0,0,0> )
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		string ammoTypeName = AmmoType_GetRefFromIndex( ammoType )
+		color = GetAmmoChromaColor( ammoTypeName )
+	}
+
+	Chroma_AddOverlay( CHROMALOOP_FADE, CHROMAWAVE_FLASH, {[0.0] = <1,1,1>, [colorfrac] = color}, duration, 1 / duration )
+}
+
+void function Chroma_UpdateHealthOverlay()
+{
+	entity player = GetLocalViewPlayer()
+	float alpha
+	if ( IsValid( player ) && IsAlive( player ) )
+	{
+		if ( Bleedout_IsBleedingOut( player ) )
+			alpha = 1
+		else
+			alpha = GraphCapped( player.GetHealth(), 0.0, player.GetMaxHealth() * 0.7, 1.0, 0.0 )
+	}
+	else
+		alpha = 0
+
+	Chroma_SetPersistentOverlayAlpha( file.healthOverlayHandle, alpha )
+}
+
+void function Chroma_HealthChanged()
+{
+	Chroma_UpdateHealthOverlay()
+}
+
+void function Chroma_TookDamage( float damage, vector damageOrigin, int damageType, int damageSourceId, entity attacker )
+{
+	if ( damageSourceId == eDamageSourceId.outOfBounds || damageSourceId == eDamageSourceId.deathField )
+		return
+
+	float duration = GraphCapped( damage, 20.0, 100.0,  1.0, 5.0 )
+
+	Chroma_UpdateHealthOverlay()
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_FLASH, {[0.0] = <1,0,0>}, duration )
+}
+
+void function Chroma_ViewPlayerChanged( entity player )
+{
+	Chroma_UpdateHealthOverlay()
+}
+
+
+void function Chroma_UltimateReady()
+{
+	entity player = GetLocalViewPlayer()
+
+	LoadoutEntry characterSlot = Loadout_CharacterClass()
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), characterSlot )
+	CharacterHudUltimateColorData colorData = CharacterClass_GetHudUltimateColorData( character )
+
+	table< float, vector > gradient = {[0.5] = colorData.ultimateColor, [1.0] = colorData.ultimateColorHighlight}
+
+	Chroma_AddOverlay( CHROMALOOP_SMOKE, CHROMAWAVE_SPLASH, gradient, 1.0 )
+}
+
+void function Chroma_LootCeremonyBeam( int rarity )
+{
+	vector color = GetKeyColor( COLORID_TEXT_LOOT_TIER0, rarity + 1 )
+	color /= 255.0
+
+	Chroma_AddOverlay( CHROMALOOP_SMOKE, CHROMAWAVE_VERTICALONE, {[0.0] = color}, 0.5 )
+}
+
+void function Chroma_LootCeremonyFlash( int rarity )
+{
+	vector color = GetKeyColor( COLORID_TEXT_LOOT_TIER0, rarity + 1 )
+	color /= 255.0
+
+	Chroma_AddOverlay( CHROMALOOP_SMOKE, CHROMAWAVE_FLASH, {[0.0] = color}, 0.6 )
+}
+
+void function Chroma_LootCeremonyReward( int index, int rarity )
+{
+	vector color = GetKeyColor( COLORID_TEXT_LOOT_TIER0, rarity + 1 )
+	color /= 255.0
+
+	if ( rarity == 0 )
+		color *= 0.5
+	file.lootCeremonyColors[index] = color
+
+	table< float, vector > gradient =
+	{
+		[0.2] = file.lootCeremonyColors[0],
+		[0.25] = file.lootCeremonyColors[1],
+		[0.55] = file.lootCeremonyColors[1],
+		[0.6] = file.lootCeremonyColors[2],
+	}
+
+	Chroma_SetBaseLayer( CHROMALOOP_HORIZONTALGRADIENT, CHROMATRANS_VERTICAL, gradient, 0.3 )
+}
+
+vector function GetConsumableColor( ConsumableInfo info )
+{
+	if ( info.healAmount > 0 )
+	{
+		if ( info.shieldAmount > 0 )
+			return GetKeyColor( COLORID_TEXT_LOOT_TIER0, 3 ) / 255.0
+		else
+			return <0.05, 1, 0.3>
+	}
+	else if ( info.shieldAmount > 0 )
+	{
+		return <0.4, 0.4, 1>
+	}
+	return <1,1,1>
+}
+
+void function BeginProgressOverlay( vector color, float duration )
+{
+	Assert( file.consumableOverlayHandle == -1 )
+	file.consumableOverlayHandle = Chroma_AddPersistentOverlay( CHROMALOOP_SMOOTHNOISE, CHROMALOOP_PROGRESSBAR, CHROMATRANS_BLEND, {[0.0] = color}, 0.0, 1.0, 5.0 / duration )
+}
+
+void function EndProgressOverlay()
+{
+	Chroma_RemovePersistentOverlay( file.consumableOverlayHandle, CHROMATRANS_BLEND, 0.25 )
+	file.consumableOverlayHandle = -1
+}
+
+void function Chroma_ConsumableBegin( entity weapon, ConsumableInfo info )
+{
+	vector color = GetConsumableColor( info )
+
+	float chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time ) + weapon.GetWeaponSettingFloat( eWeaponVar.raise_time ) + weapon.GetWeaponSettingFloat( eWeaponVar.holster_time )
+
+	BeginProgressOverlay( color, chargeTime )
+}
+
+void function Chroma_ConsumableEnd()
+{
+	EndProgressOverlay()
+}
+
+void function Chroma_ConsumableSucceeded( ConsumableInfo info )
+{
+	vector color = GetConsumableColor( info )
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_FLASH, {[0.0] = color}, 1.0 )
+}
+
+void function Chroma_BeginRevive( float duration )
+{
+	BeginProgressOverlay( <0.05, 1, 0.3>, duration )
+}
+
+void function Chroma_EndRevive()
+{
+	EndProgressOverlay()
+}
+
+void function Chroma_OnBleedoutEnded( entity victim )
+{
+	if ( victim != GetLocalViewPlayer() )
+		return
+
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_FLASH, {[0.0] = <0.7,1,0.9>}, 2.0 )
+}
+
+void function Chroma_RespawningInDropship()
+{
+	file.respawning = true
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_FLASH, {[0.0] = <1,1,1>}, 4.0 )
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_RespawnComplete()
+{
+	file.respawning = false
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_PlayerUsedAbility( entity player, entity offhandWeapon )
+{
+	string weaponName = offhandWeapon.GetWeaponClassName()
+	if ( weaponName == "mp_ability_area_sonar_scan" )
+	{
+		Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_SEMICIRCLE, {[0.0] = <1,0.4,0>}, 2.0 )
+		return
+	}
+	else if ( weaponName == "mp_weapon_trophy_defense_system" )
+	{
+		Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_SEMICIRCLE, {[0.0] = <1,.7,0>}, 2.0 )
+		return
+	}
+
+	array<int> offhandIndices = [ OFFHAND_TACTICAL, OFFHAND_ULTIMATE ]
+	foreach ( index in offhandIndices )
+	{
+		entity weapon = player.GetOffhandWeapon( index )
+		if ( !IsValid( weapon ) )
+			continue
+
+		if ( weapon != offhandWeapon )
+			continue
+
+		LoadoutEntry characterSlot = Loadout_CharacterClass()
+		ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), characterSlot )
+		table< float, vector > gradient = CharacterClass_GetChromaGradient( character )
+
+		Chroma_AddOverlay( CHROMALOOP_SMOKE, CHROMAWAVE_FLASH, gradient, 2.0 )
+		if ( index == OFFHAND_ULTIMATE )
+			Chroma_AddOverlay( CHROMALOOP_SMOKE, CHROMAWAVE_SPLASH, gradient, 5.0 )
+
+		return
+	}
+
+}
+
+void function Chroma_VictoryScreen()
+{
+	file.victory = true
+	Chroma_UpdateBackground()
+	thread Chroma_VictorySequence()
+}
+
+vector function RandomFireworkColor()
+{
+	float min = RandomFloatRange( 0.1, 0.6 )
+	float max = 1
+
+	float mid = RandomFloatRange( min, max )
+
+	switch( RandomInt( 6 ) )
+	{
+		case 0: return <min, mid, max>
+		case 1: return <mid, min, max>
+		case 2: return <mid, max, min>
+		case 3: return <min, max, mid>
+		case 4: return <max, min, mid>
+		case 5: return <max, mid, min>
+	}
+	unreachable
+}
+
+table< float, vector > function RandomFireGradient()
+{
+	vector color0 = RandomFireworkColor()
+	vector color1 = RandomFireworkColor()
+
+	return {[0.0] = color0, [0.7] = color1, [1.0] = color1 * 0.5}
+}
+
+void function Chroma_VictorySequence()
+{
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_FLASH, {[0.0] = <1,1,1>}, 2.5 )
+
+	table< float, vector > gradient = {
+		[0.0] = <1,.75,.2>,
+		[0.5] = <.75,.3,.05>,
+		[1.0] = <.3,.1,0>,
+	}
+
+	Chroma_SetBaseLayer( CHROMALOOP_SMOKE, CHROMATRANS_SMOKE, RandomFireGradient(), 3.0, 2.0 )
+	wait 2.0
+
+	for ( ;; )
+	{
+		Chroma_SetBaseLayer( CHROMALOOP_SMOKE, CHROMATRANS_SMOKE, RandomFireGradient(), 3.0, 2.0 )
+
+		wait RandomFloatRange( 1.0, 8.0 )
+
+		Chroma_SetBaseLayer( CHROMALOOP_SMOKE, CHROMATRANS_SMOKE, {[0.0] = <0,0,0>}, 2.0 )
+		wait 1.0
+
+		int count = RandomIntRange( 2, 8 )
+		for ( int i = 0; i < count; i++ )
+		{
+			vector color0 = RandomFireworkColor()
+			vector color1 = RandomFireworkColor()
+
+			Chroma_AddOverlay( CHROMALOOP_VERTICALGRADIENT, CHROMAWAVE_SPLASH, {[0.0] = color0, [1.0] = color1}, 1.2 )
+
+			wait 1.0
+		}
+	}
+}
+
+void function Chroma_StartGasCloudEffect()
+{
+	Chroma_EndGasCloudEffect()
+
+	table< float, vector > gradient = {
+		[0.0] = <.86, 1, .2>,
+		[1.0] = <.75, 1, .2> * 0.25,
+	}
+
+	file.gasCloudOverlayHandle = Chroma_AddPersistentOverlay( CHROMALOOP_SMOOTHNOISE, CHROMALOOP_SMOKE, CHROMATRANS_SMOKE, gradient, 2.0 )
+}
+
+void function Chroma_EndGasCloudEffect()
+{
+	Chroma_RemovePersistentOverlay( file.gasCloudOverlayHandle, CHROMATRANS_SMOKE, 2.0 )
+	file.gasCloudOverlayHandle = -1
+}
+
+void function Chroma_StartSmokescreenEffect()
+{
+	Chroma_EndSmokescreenEffect()
+
+	table< float, vector > gradient = {
+		[0.0] = <1,1,1> * 0.3,
+		[1.0] = <1,1,1> * 0.6,
+	}
+
+	file.smokescreenOverlayHandle = Chroma_AddPersistentOverlay( CHROMALOOP_SMOOTHNOISE, CHROMALOOP_SMOKE, CHROMATRANS_SMOKE, gradient, 2.0 )
+}
+
+void function Chroma_EndSmokescreenEffect()
+{
+	Chroma_RemovePersistentOverlay( file.smokescreenOverlayHandle, CHROMATRANS_SMOKE, 2.0 )
+	file.smokescreenOverlayHandle = -1
+}
+
+void function Chroma_OnBubbleShieldCreated( entity bubbleShield )
+{
+	printt( "bubble!" )
+	entity player = GetLocalViewPlayer()
+	if ( player.GetTeam() != bubbleShield.GetTeam() )
+		return
+
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_SEMICIRCLE, {[0.0] = <0.4,0.5,1>}, 2.0 )
+}
+
+void function Chroma_StartHuntMode()
+{
+	file.huntMode = true
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_EndHuntMode()
+{
+	file.huntMode = false
+	Chroma_UpdateBackground()
+}
+
+void function Chroma_StartHealingDroneEffect()
+{
+	Chroma_EndHealingDroneEffect()
+
+	table< float, vector > gradient = {
+		[0.0] = <0,0,0>,
+		[0.4] = <0,0.5,0>,
+		[0.6] = <.4,.7,.4>,
+		[0.9] = <1,1,1>
+	}
+	file.healDroneOverlayHandle = Chroma_AddPersistentOverlay( CHROMALOOP_HEARTRATE, CHROMALOOP_HEARTRATE, CHROMATRANS_HORIZONTAL, gradient, 3.0 )
+}
+
+void function Chroma_EndHealingDroneEffect()
+{
+	Chroma_RemovePersistentOverlay( file.healDroneOverlayHandle, CHROMATRANS_HORIZONTAL, 3.0 )
+	file.healDroneOverlayHandle = -1
+}
+
+void function Chroma_StartStimEffect()
+{
+	Chroma_EndStimEffect()
+
+	table< float, vector > gradient = {
+		[0.0] = <0.2,1,1>,
+		[1.0] = <0,.6,1>,
+	}
+	file.stimOverlayHandle = Chroma_AddPersistentOverlay( CHROMALOOP_VERTICALGRADIENT, CHROMALOOP_SPEED, CHROMATRANS_VERTICAL, gradient, 0.25 )
+}
+
+void function Chroma_EndStimEffect()
+{
+	Chroma_RemovePersistentOverlay( file.stimOverlayHandle, CHROMATRANS_VERTICAL, 0.25 )
+	file.stimOverlayHandle = -1
+}
+
+void function Chroma_ZiplineThread()
+{
+	if ( file.ziplineOverlayHandle != -1 )
+		return
+
+	table< float, vector > gradient = {
+		[0.0] = <1,.9,0>,
+		[1.0] = <1,1,.5>,
+	}
+	file.ziplineOverlayHandle = Chroma_AddPersistentOverlay( CHROMALOOP_VERTICALGRADIENT, CHROMALOOP_SPEED, CHROMATRANS_VERTICAL, gradient, 1.0 )
+
+	for ( ;; )
+	{
+		wait 0.5
+
+		entity player = GetLocalViewPlayer()
+		if ( !IsValid( player ) )
+			break
+		if ( !player.IsZiplining() )
+			break
+	}
+
+	Chroma_RemovePersistentOverlay( file.ziplineOverlayHandle, CHROMATRANS_VERTICAL, 0.5 )
+	file.ziplineOverlayHandle = -1
+}
+
+
+void function Chroma_UsedJumpPad()
+{
+	table< float, vector > gradient = {
+		[0.0] = <1,.5,.1>,
+		[1.0] = <1,.7,.3>,
+	}
+	Chroma_AddOverlay( CHROMALOOP_VERTICALGRADIENT, CHROMAWAVE_VERTICALTWO, gradient, 1.25 )
+}
+
+void function Chroma_EMPEffect()
+{
+	wait 0.1
+
+	table< float, vector > gradient = {
+		[0.0] = <.2,.4,1>,
+		[0.7] = <1,1,1>,
+	}
+	Chroma_AddOverlay( CHROMALOOP_SMOOTHNOISE, CHROMAWAVE_SPARKLE, gradient, 1.5, 5.0 )
+}
+
+#endif

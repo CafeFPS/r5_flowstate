@@ -14,6 +14,7 @@ WeaponData
 	"readymessage"              					"#HUD_BURNMETER_READY_DEFENSIVE_BOMBARDMENT"
 	"readyhint"                 					"#HUD_BURNMETER_READY_DEFENSIVE_BOMBARDMENT_HINT"
 
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
 	"minimap_reveal_distance"						"32000"
@@ -107,7 +108,7 @@ WeaponData
 	"fire_rate"   									"1.25"
 	"fire_anim_rate"								"1.0"
 	"holster_time"									"0"
-	"deploy_time" 									"0.6"
+	"deploy_time" 									"0.4"
 	"lower_time"  									"0"
 	"raise_time"  									"0"
 	"allow_empty_fire"								"0"

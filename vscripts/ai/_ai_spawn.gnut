@@ -21,6 +21,7 @@ global function CreateNPCFromAISettings
 global function CreateNPCTitan
 global function CreateOgre
 global function CreateProwler
+global function CreateDummy
 global function CreateRocketDrone
 global function CreateRocketDroneGrunt
 global function CreateShieldDrone
@@ -79,7 +80,7 @@ void function AiSpawn_Init()
 	// RegisterSignal( "OnFinishedAssaultChain" )
 
 	// AiSpawnContent_Init()
-	// #if DEV
+	// #if R5DEV
 	// // just to insure that ai settings are being setup properly.
 	// InitNpcSettingsFileNamesForDevMenu()
 	// SetupSpawnAIButtons( TEAM_MILITIA )
@@ -89,7 +90,7 @@ void function AiSpawn_Init()
 
 void function AiSpawn_EntitiesDidLoad()
 {
-	#if DEV
+	#if R5DEV
 	//	On load in dev, verify that subclass matches leveled_aisettings. Subclass is being eradicated.
 	foreach ( spawner in GetSpawnerArrayByClassName( "npc_titan" ) )
 	{
@@ -133,10 +134,10 @@ void function AiSpawn_EntitiesDidLoad()
 
 			string aiSettings = expect string( kvs.leveled_aisettings )
 			string playerSettings = expect string(  Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
-			string playerModel = expect string( GetPlayerSettingsFieldForClassName( playerSettings, "bodymodel" ) )
-			string npcModel = expect string( kvs.model )
-			if ( npcModel != playerModel )
-				Warning( "Titan spawner at " + origin + " has model " + npcModel + " that does not match player settings model " + playerModel )
+			// string playerModel = expect string( GetPlayerSettingsFieldForClassName( playerSettings, "bodymodel" ) ) // this causes an error + it's SP so it's not even used afaik --
+			// string npcModel = expect string( kvs.model )
+			// if ( npcModel != playerModel )
+			// 	Warning( "Titan spawner at " + origin + " has model " + npcModel + " that does not match player settings model " + playerModel )
 		}
 	}
 
@@ -279,6 +280,13 @@ entity function CreateSoldier( int team, vector origin, vector angles )
 entity function CreateProwler( int team, vector origin, vector angles )
 {
 	return CreateNPC( "npc_prowler", team, origin, angles )
+}
+
+entity function CreateDummy( int team, vector origin, vector angles )
+{
+    entity npc = CreateNPC( "npc_dummie", team, origin, angles )
+    SetSpawnOption_AISettings( npc, "npc_dummie_combat" )
+	return npc
 }
 
 entity function CreateRocketDroneGrunt( int team, vector origin, vector angles )
@@ -588,7 +596,7 @@ void function StopAssaultMoveTarget( entity npc )
 
 void function InitInfoMoveTargetFlags( entity infoMoveTarget )
 {
-	#if DEV
+	#if R5DEV
 	if ( infoMoveTarget.HasKey( "script_goal_radius" ) )
 	{
 		int radius = int( infoMoveTarget.kv.script_goal_radius )

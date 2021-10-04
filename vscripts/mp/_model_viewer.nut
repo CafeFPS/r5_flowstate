@@ -7,7 +7,7 @@ global function ToggleModelViewer
 
 global modelViewerModels = []
 
-#if DEV
+#if R5DEV
 struct
 {
 	bool initialized
@@ -23,7 +23,7 @@ struct
 
 function ModelViewer_Init()
 {
-	#if DEV
+	#if R5DEV
 		if ( reloadingScripts )
 			return
 		AddClientCommandCallback( "ModelViewer", ClientCommand_ModelViewer )
@@ -32,7 +32,7 @@ function ModelViewer_Init()
 
 function ToggleModelViewer()
 {
-	#if DEV
+	#if R5DEV
 		entity player = GetPlayerArray()[ 0 ]
 		if ( !file.active )
 		{
@@ -54,8 +54,8 @@ function ToggleModelViewer()
 
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MVEnable" )
 
-			file.lastTitanAvailability = level.nv.titanAvailability
-			Riff_ForceTitanAvailability( eTitanAvailability.Never )
+			//file.lastTitanAvailability = level.nv.titanAvailability
+			//Riff_ForceTitanAvailability( eTitanAvailability.Never )
 
 			WeaponsRemove()
 			thread UpdateModelBounds()
@@ -67,14 +67,14 @@ function ToggleModelViewer()
 			Remote_CallFunction_NonReplay( player, "ServerCallback_MVDisable" )
 			RestorePrecacheErrors()
 
-			Riff_ForceTitanAvailability( file.lastTitanAvailability )
+			//Riff_ForceTitanAvailability( file.lastTitanAvailability )
 
 			WeaponsRestore()
 		}
 	#endif
 }
 
-#if DEV
+#if R5DEV
 function ModelViewerDisableConflicts()
 {
 	disable_npcs() //Just disable_npcs() for now, will probably add things later
@@ -165,15 +165,15 @@ function WeaponsRestore()
 	entity player = GetPlayerArray()[0]
 	if ( !IsValid( player ) )
 		return
-
+	//todo: fix this
 	foreach ( weapon in file.playerWeapons )
 	{
-		player.GiveWeapon( weapon )
+		//player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_ANY )
 	}
 
 	foreach ( index, offhand in file.playerOffhands )
 	{
-		player.GiveOffhandWeapon( offhand, index )
+		//player.GiveOffhandWeapon( offhand, index )
 	}
 }
 

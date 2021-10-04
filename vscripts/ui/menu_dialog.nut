@@ -42,7 +42,7 @@ void function InitDialogCommon( var menu )
 }
 
 
-void function InitDialogMenu()
+void function InitDialogMenu( var newMenuArg )
 {
 	var menu = GetMenu( "Dialog" )
 
@@ -51,7 +51,7 @@ void function InitDialogMenu()
 }
 
 
-void function InitDataCenterDialogMenu()
+void function InitDataCenterDialogMenu( var newMenuArg )
 {
 	var menu = GetMenu( "DataCenterDialog" )
 
@@ -60,7 +60,7 @@ void function InitDataCenterDialogMenu()
 }
 
 
-void function InitConnectingDialog()
+void function InitConnectingDialog( var newMenuArg )
 {
 	var menu = GetMenu( "ConnectingDialog" )
 
@@ -128,6 +128,7 @@ void function OnDialogButton_Activate( var button )
 void function OnDataCenterButton_Activate( var button )
 {
 	printt( "Chose a data center" )
+	EmitUISound( "ui_menu_accept" )
 	CloseActiveMenu()
 }
 
@@ -500,29 +501,31 @@ void function LeaveDialog()
 	dialogData.image = $"ui/menu/common/dialog_error"
 	dialogData.darkenBackground = true
 
-	//int lobbyType = GetLobbyTypeScript()
-	if ( IsLobby() ) // && (lobbyType != eLobbyType.MATCH) ) // SOLO, PARTY_LEADER, PARTY_MEMBER, PRIVATE_MATCH
 	{
-		AddDialogButton( dialogData, "#CANCEL_NO" )
-
-		if ( !PartyHasMembers() || AmIPartyLeader() )
+		//int lobbyType = GetLobbyTypeScript()
+		if ( IsLobby() ) // && (lobbyType != eLobbyType.MATCH) ) // SOLO, PARTY_LEADER, PARTY_MEMBER, PRIVATE_MATCH
 		{
-			if ( AmIPartyLeader() && PartyHasMembers() )
-				AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
+			AddDialogButton( dialogData, "#CANCEL_NO" )
+
+			if ( !PartyHasMembers() || AmIPartyLeader() )
+			{
+				if ( AmIPartyLeader() && PartyHasMembers() )
+					AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
+				else
+					AddDialogButton( dialogData, "#YES_RETURN_TO_TITLE_MENU", Disconnect )
+			}
 			else
-				AddDialogButton( dialogData, "#YES_RETURN_TO_TITLE_MENU", Disconnect )
+			{
+				Assert( PartyHasMembers() )
+				Assert( !AmIPartyLeader() )
+				AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
+			}
 		}
 		else
 		{
-			Assert( PartyHasMembers() )
-			Assert( !AmIPartyLeader() )
-			AddDialogButton( dialogData, "#YES_LEAVE_PARTY", LeaveParty )
+			ConfirmLeaveMatchDialog_Open()
+			return
 		}
-	}
-	else
-	{
-		ConfirmLeaveMatchDialog_Open()
-		return
 	}
 
 	OpenDialog( dialogData )
@@ -613,7 +616,7 @@ void function OpenDataCenterDialog( var button )
 {
 	DialogData dialogData
 	dialogData.menu = GetMenu( "DataCenterDialog" )
-	dialogData.header = "#DATA_CENTERS"
+	dialogData.header = Localize( "#DATA_CENTERS", GetDatacenterSelectedReasonSymbol() )
 
 	#if PC_PROG
 		AddDialogButton( dialogData, "#DISMISS" )

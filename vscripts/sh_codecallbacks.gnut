@@ -33,6 +33,7 @@ global function ClientCodeCallback_PartyMemberRemoved
 global function ClientCodeCallback_UserInfoUpdated
 global function AddCallback_OnPartyUpdated
 global function RemoveCallback_OnPartyUpdated
+global function AddCallback_PlayerClassActuallyChanged
 #endif
 
 #if SERVER
@@ -264,9 +265,16 @@ void function AddCallback_PlayerClassChanged( void functionref( entity ) callbac
 	#endif
 }
 
+#if CLIENT
+void function AddCallback_PlayerClassActuallyChanged( void functionref( entity ) callbackFunc )
+{
+	clGlobal.onPlayerClassActuallyChangedCallbacks.append( callbackFunc )
+}
+#endif
 
 void function CodeCallback_PlayerClassChanged( entity player, bool actualSettingsFileChanged )
 {
+	printt(FUNC_NAME(), player, "actualSettingsFileChanged", actualSettingsFileChanged)
 	if ( !IsValid( player ) )
 		return
 
@@ -301,6 +309,7 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		//player.ForceShadowVisible( newClass == "titan" )
 
 		UpdatePlayerStatusCounts()
+		TEMP_MapConVar_Init()
 
 		/*if ( IsWatchingReplay() )
 			UpdateKillReplayIconPosition()*/
@@ -609,7 +618,7 @@ void function ServerCallback_PlayerChangedTeams( entity player, int oldTeam, int
 	foreach( void functionref(entity, int, int) callbackFunc in s_callbacksOnPlayerChangedTeam )
 		callbackFunc( player, oldTeam, newTeam )
 
-	#if DEV
+	#if R5DEV
 		if ( oldTeam == TEAM_INVALID || newTeam == TEAM_INVALID )
 			return
 

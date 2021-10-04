@@ -10,6 +10,7 @@ WeaponData
 	"description" 									"#WPN_R97_DESC"
 	"longdesc"										"#WPN_R97_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"bullet"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_r97"
@@ -36,6 +37,8 @@ WeaponData
 	"playermodel" 									"mdl/weapons/r97/w_r97.rmdl"
 
 	//"tracer_effect"   							"weapon_tracers_shotgun"
+
+	"chroma_color"									"1 .9 .5"
 
 	//Sounds
 	"fire_sound_1_player_1p"						"Weapon_bulletCasings.Bounce"
@@ -92,8 +95,6 @@ WeaponData
 		"npc_damage_far_value"							"7"
 
 		"npc_max_range"   								"2000"
-
-		"damage_heavyarmor_nontitan_scale"				"0.35"
 	}
 
 	SP_BASE
@@ -120,8 +121,6 @@ WeaponData
 		"npc_damage_far_value"							"7"
 
 		"npc_max_range"   								"4000"
-
-		"damage_heavyarmor_nontitan_scale"				"1"
 	}
 
 	// NPC
@@ -177,7 +176,7 @@ WeaponData
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
-	"viewkick_yaw_random_innerexclude"				"0.0"
+	"viewkick_yaw_random_innerexclude"				"0.05"
     "viewkick_yaw_softScale"						"2.0"
     "viewkick_yaw_hardScale"						"0.4"
 
@@ -284,17 +283,19 @@ WeaponData
 			"ui2_enable" 							"0"
 		}
 
-		optic_ranged_hcog
-		{
-			"bodygroup2_set" 						"0"
-			"ui2_enable" 							"0"
-		}
+                           
+                         
+         
+                                      
+                                   
+         
 
-		optic_ranged_aog_variable
-		{
-			"bodygroup2_set" 						"0"
-			"ui2_enable" 							"0"
-		}
+                                 
+         
+                                      
+                                   
+         
+      
 
 		barrel_stabilizer_l4_flash_hider
         {
@@ -304,15 +305,15 @@ WeaponData
 
 		bullets_mag_l1
 		{
-			"ammo_clip_size"   							"22"
+			"ammo_clip_size"   							"20"
 		}
 		bullets_mag_l2
 		{
-			"ammo_clip_size"   							"26"
+			"ammo_clip_size"   							"23"
 		}
 		bullets_mag_l3
 		{
-			"ammo_clip_size"   							"30"
+			"ammo_clip_size"   							"27"
 		}
 
 		legendary1
@@ -320,6 +321,14 @@ WeaponData
 			"viewmodel"   									"mdl/weapons/r97/ptpov_r97_legendary_01.rmdl"
 			"playermodel" 									"mdl/weapons/r97/w_r97_legendary_01.rmdl"
 		}
+
+               
+                                                                                                     
+                    
+         
+                                                                                          
+         
+      
 	}
 
 

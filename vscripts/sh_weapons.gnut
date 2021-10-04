@@ -7,6 +7,9 @@ global function WeaponItemFlavor_GetCategory
 global function WeaponItemFlavor_GetStatsCategory
 global function WeaponItemFlavor_GetArmoryScale
 global function WeaponItemFlavor_GetLootCeremonyScale
+global function WeaponItemFlavor_GetBattlePassScale
+global function WeaponItemFlavor_GetHudIcon
+global function WeaponCategoryFlavor_GetMenuZoomOffset
 global function GetWeaponItemFlavorByClass
 global function GetAllWeaponItemFlavors
 global function GetAllWeaponCategories
@@ -54,17 +57,17 @@ void function ShWeapons_LevelInit()
 	FileStruct_LifetimeLevel newFileLevel
 	fileLevel = newFileLevel
 
-	#if SERVER && DEV
+	#if SERVER && R5DEV
 		AddCallback_GeneratePDef( GenerateWeaponsPDef )
 	#endif
 
-	#if (SERVER || CLIENT) //&& DEV // (dw): needs to be precached even in non-DEV to support DEV clients connecting to non-DEV servers
+	#if (SERVER || CLIENT) //&& R5DEV // (dw): needs to be precached even in non-DEV to support DEV clients connecting to non-DEV servers
 		PrecacheWeapon( $"weapon_cubemap" )
 	#endif
 
 	AddCallback_RegisterRootItemFlavors( void function() {
-		foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/loot/main_weapons.rpak", "list" ) )
-			RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
+		foreach( asset weaponAsset in WEAPON_ASSETS )
+			RegisterItemFlavorFromSettingsAsset( weaponAsset )
 
 		foreach( var block in IterateSettingsAssetArray( $"settings/itemflavlist/weapon_categories.rpak", "list" ) )
 			RegisterItemFlavorFromSettingsAsset( GetSettingsBlockAsset( block, "flavor" ) )
@@ -149,6 +152,31 @@ float function WeaponItemFlavor_GetLootCeremonyScale( ItemFlavor weapon )
 	Assert( ItemFlavor_GetType( weapon ) == eItemType.loot_main_weapon )
 
 	return GetGlobalSettingsFloat( ItemFlavor_GetAsset( weapon ), "lootCeremonyScale" )
+}
+
+
+float function WeaponItemFlavor_GetBattlePassScale( ItemFlavor weapon )
+{
+	Assert( ItemFlavor_GetType( weapon ) == eItemType.loot_main_weapon )
+
+	return GetGlobalSettingsFloat( ItemFlavor_GetAsset( weapon ), "battlePassScale" )
+}
+
+
+asset function WeaponItemFlavor_GetHudIcon( ItemFlavor weapon )
+{
+	string weaponName = WeaponItemFlavor_GetClassname( weapon )
+
+	return GetWeaponInfoFileKeyFieldAsset_Global( weaponName, "hud_icon" )
+
+}
+
+
+vector function WeaponCategoryFlavor_GetMenuZoomOffset( ItemFlavor weaponCategory )
+{
+	Assert( ItemFlavor_GetType( weaponCategory ) == eItemType.weapon_category )
+
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( weaponCategory ), "menuZoomOffset" )
 }
 
 
@@ -246,7 +274,7 @@ void function ShowDefaultBodygroupsOnFakeWeapon( entity ent, string weaponClassN
 //// Internals ////
 ///////////////////
 ///////////////////
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function GenerateWeaponsPDef()
 {
 	// this persistent data enum is required by sh_xp.gnut

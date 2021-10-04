@@ -9,6 +9,7 @@ WeaponData
 	"menu_icon"										"rui/hud/gametype_icons/survival/health_pack_sml"
 	"hud_icon"										""
 
+	"weapon_type_flags"								"WPT_CONSUMABLE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhandHybrid"
     "is_toss_weapon"                                "0"
@@ -21,6 +22,7 @@ WeaponData
 
     "OnWeaponActivate"                              "OnWeaponActivate_Consumable"
     "OnWeaponDeactivate"                            "OnWeaponDeactivate_Consumable"
+    "OnWeaponRaise"                                 "OnWeaponRaise_Consumable"
 	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_Consumable"
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_Consumable"
 	"OnWeaponChargeBegin" 							"OnWeaponChargeBegin_Consumable"
@@ -28,8 +30,7 @@ WeaponData
     "OnWeaponOwnerChanged"                          "OnWeaponOwnerChanged_Consumable"
 //	"OnWeaponPrimaryAttackAnimEvent"				"OnWeaponPrimaryAttackAnimEvent_Consumable"
     "OnCreateChargeEffect"                          "OnCreateChargeEffect_Consumable"
-
-//	"OnWeaponActivate"								"OnWeaponActivate_Consumable"
+    "OnCreateMuzzleFlashEffect"                     "OnCreateMuzzleFlashEffect_Consumable"
 
 	// Models
 	"viewmodel"										"mdl/weapons/shield_battery/ptpov_shield_battery_held.rmdl"
@@ -217,9 +218,16 @@ WeaponData
 			"ui1_enable"							"1"
         }
 
+        ultimate_battery_supercharged_fx
+        {
+            "charge_effect_1p"						"P_watt_UA_charge"
+            "charge_effect_3p"						""
+            "charge_effect_attachment"				"muzzle_flash"
+        }
+
         // This should really be in Bakery or something. It's orphaned here and hidden knowledge to change it to get it to work.
         // No better way to do it for now.
-        lifeline_heal
+        quick_heal
         {
             "charge_time"                           "*0.75"
             "raise_time"                            "*0.75"
@@ -230,6 +238,11 @@ WeaponData
             "charge_time"                           "*0.5"
             "raise_time"                            "*0.5"
             "holster_time"                          "*0.5"
+        }
+
+        consumable_no_weapon_interrupt
+        {
+        	"offhand_interupts_weapon_anims"		"0"
         }
  	}
 
@@ -252,20 +265,21 @@ WeaponData
 		    crosshairMovementY          crosshair_movement_y
 		}
 
-        Crosshair_1
-        {
-            "ui"						"ui/crosshair_consumable"
-            Args
-            {
-                healStartTime           weapon_script_time_0
-                consumableName          eWeaponVar.printname
-                isFiring				weapon_is_firing
-                chargeFrac              player_chargeFrac
-                chargeTime              eWeaponVar.charge_time
-                raiseTime               eWeaponVar.raise_time
-                hudIcon                 eWeaponVar.hud_icon
-                consumableType          weapon_script_int_0
-            }
-        }
+//		  Moved this to be a script based rui so that we can do BLUR within it. ui consumable_progress in gamemode_survival.rui
+//        Crosshair_1
+//        {
+//            "ui"						"ui/crosshair_consumable"
+//            Args
+//            {
+//                healStartTime           weapon_script_time_0
+//                consumableName          eWeaponVar.printname
+//                isFiring				weapon_is_firing
+//                chargeFrac              player_chargeFrac
+//                chargeTime              eWeaponVar.charge_time
+//                raiseTime               eWeaponVar.raise_time
+//                hudIcon                 eWeaponVar.hud_icon
+//                consumableType          weapon_script_int_0
+//            }
+//        }
 	}
 }

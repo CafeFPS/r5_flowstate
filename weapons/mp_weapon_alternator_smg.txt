@@ -10,6 +10,7 @@ WeaponData
 	"description" 									"#WPN_ALTERNATOR_SMG_DESC"
 	"longdesc"										"#WPN_ALTERNATOR_SMG_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"bullet"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_alternator"
@@ -31,6 +32,8 @@ WeaponData
 	"viewmodel"   									"mdl/weapons/alternator_smg/ptpov_alternator_smg.rmdl"
 	"playermodel" 									"mdl/weapons/alternator_smg/w_alternator_smg.rmdl"
 	"holster_type"									"rifle"
+
+	"chroma_color"									".9 1 .2"
 
 	"alt_fire_anim_count"							"1"
 
@@ -88,101 +91,49 @@ WeaponData
 	// Behavior
 	"fire_rate"   									"10"
 
-	"damage_type" 									"bullet"
-
 	// Ammo
 	"ammo_clip_size"   								"16"
 
-	MP_BASE
-	{
-		"ammo_default_total"							"100"
-		"ammo_stockpile_max"							"100"
-		"ammo_no_remove_from_stockpile"					"1"
-		"ammo_min_to_fire"								"1"
+    "ammo_default_total"							"100"
+    "ammo_stockpile_max"							"100"
+    "ammo_no_remove_from_stockpile"					"1"
+    "ammo_min_to_fire"								"1"
 
-		// Damage - When Used by Players
-		"damage_near_value"   							"13"
-		"damage_far_value"								"13"
-   	 	"damage_very_far_value"							"13"
-		"damage_near_value_titanarmor"					"13"
-		"damage_far_value_titanarmor" 					"13"
-		"damage_very_far_value_titanarmor" 				"13"
-		"damage_rodeo" 									"90"
+	"damage_type" 									"bullet"
 
-		// NPC
-		"proficiency_poor_spreadscale"					"5.0"
-		"proficiency_average_spreadscale" 				"3.0"
-		"proficiency_good_spreadscale"					"3.0"
-		"proficiency_very_good_spreadscale"   			"2.5"
-		"proficiency_perfect_spreadscale" 				"1.0"
+    // Damage - When Used by Players
+    "damage_near_value"   							"15"
+    "damage_far_value"								"15"
+    "damage_very_far_value"							"15"
+    "damage_near_value_titanarmor"					"15"
+    "damage_far_value_titanarmor" 					"15"
+    "damage_very_far_value_titanarmor" 				"15"
+    "damage_rodeo" 									"90"
 
-		"npc_min_engage_range"							"0"
-		"npc_max_engage_range"							"750"
-		"npc_min_engage_range_heavy_armor"				"500"
-		"npc_max_engage_range_heavy_armor"				"1000"
+    "damage_unshielded_scale"              			"1.0"
 
-		"npc_min_burst"   								"2"
-		"npc_max_burst"   								"5"
-		"npc_rest_time_between_bursts_min"				"0.9"
-		"npc_rest_time_between_bursts_max"				"1.0"
+    // NPC settings
+    "proficiency_poor_spreadscale"					"5.0"
+    "proficiency_average_spreadscale" 				"3.5"
+    "proficiency_good_spreadscale"					"3.0"
+    "proficiency_very_good_spreadscale"   			"2.5"
+    "proficiency_perfect_spreadscale" 				"1.0"
 
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"10"
-		"npc_damage_far_value"							"7"
+    "npc_min_engage_range"							"0"
+    "npc_max_engage_range"							"1100"
+    "npc_min_engage_range_heavy_armor"				"500"
+    "npc_max_engage_range_heavy_armor"				"2000"
 
-		"npc_max_range"   								"2500"
+    "npc_min_burst"   								"2"
+    "npc_max_burst"   								"3"
+    "npc_rest_time_between_bursts_min"				"0.6"
+    "npc_rest_time_between_bursts_max"				"0.8"
 
-		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
+    "npc_max_range"   								"4000"
 
-		"damage_heavyarmor_nontitan_scale"				"0.35"
-	}
-
-	SP_BASE
-	{
-		"ammo_default_total"							"100"
-		"ammo_stockpile_max"							"160"
-		"ammo_no_remove_from_stockpile"					"0"
-		"ammo_min_to_fire"								"1"
-
-		// Damage - When Used by Players
-		"damage_near_value"   							"27"
-		"damage_far_value"								"13"
-		"damage_near_value_titanarmor"					"45"
-		"damage_far_value_titanarmor" 					"22"
-		"damage_very_far_value_titanarmor" 				"22"
-		"damage_rodeo" 									"90"
-
-   	 	"damage_very_far_value"							"<KEEP_DEFAULT>"
-
-		// NPC
-		"proficiency_poor_spreadscale"					"5.0"
-		"proficiency_average_spreadscale" 				"3.5"
-		"proficiency_good_spreadscale"					"3.0"
-		"proficiency_very_good_spreadscale"   			"2.5"
-		"proficiency_perfect_spreadscale" 				"1.0"
-
-		"npc_min_engage_range"							"0"
-		"npc_max_engage_range"							"1100"
-		"npc_min_engage_range_heavy_armor"				"500"
-		"npc_max_engage_range_heavy_armor"				"2000"
-
-		"npc_min_burst"   								"2"
-		"npc_max_burst"   								"3"
-		"npc_rest_time_between_bursts_min"				"0.6"
-		"npc_rest_time_between_bursts_max"				"0.8"
-
-
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"13"
-		"npc_damage_far_value"							"7"
-
-		"npc_max_range"   								"4000"
-
-		"enable_highlight_networking_on_creation"		"1"
-
-		"damage_heavyarmor_nontitan_scale"				"1"
-	}
-
+    // Damage - When Used by NPCs
+    "npc_damage_near_value"   						"13"
+    "npc_damage_far_value"							"7"
 
 	"dof_zoom_nearDepthStart"						"3.5"
 	"dof_zoom_nearDepthEnd"							"5.2"
@@ -294,6 +245,10 @@ WeaponData
 
 	Mods
 	{
+	    gold
+	    {
+	    }
+
 		survival_finite_ammo
         {
             "ammo_default_total"							"0"
@@ -303,6 +258,25 @@ WeaponData
             "low_ammo_fraction" 							"0.3"
 
 	   		"uses_ammo_pool"								"1"
+        }
+
+        hopup_shield_breaker
+        {
+            "damage_shield_scale"                       "1.55"
+            "projectile_trail_effect_0"                 "P_tracer_proj_smg_shield_breaker"
+            "impact_effect_table" 				        "shield_breaker_bullet"
+
+            "burst_or_looping_fire_sound_start_1p"		"Weapon_Alternator_FirstShot_1P"
+            "burst_or_looping_fire_sound_middle_1p"		"Weapon_Alternator_Loop_ShieldBreaker_1P"
+            "burst_or_looping_fire_sound_end_1p"		"Weapon_Alternator_LoopEnd_ShieldBreaker_1P"
+
+            "burst_or_looping_fire_sound_start_3p"		""
+            "burst_or_looping_fire_sound_middle_3p"		"Weapon_Alternator_Loop_ShieldBreaker_3P"
+            "burst_or_looping_fire_sound_end_3p"		"Weapon_Alternator_LoopEnd_ShieldBreaker_3P"
+
+            "burst_or_looping_fire_sound_start_npc"		""
+            "burst_or_looping_fire_sound_middle_npc"	"Weapon_Alternator_Loop_3p_NPC_a"
+            "burst_or_looping_fire_sound_end_npc"		"Weapon_Alternator_LoopEnd_NPC"
         }
 
         optic_cq_hcog_classic
@@ -330,15 +304,17 @@ WeaponData
         	"bodygroup1_set"			"1"
         }
 
-        optic_ranged_hcog
-		{
-		    "bodygroup1_set"		    "1"
-		}
+                           
+                         
+         
+                                     
+         
 
-        optic_ranged_aog_variable
-		{
-			"bodygroup1_set"			"1"
-		}
+                                 
+         
+                                  
+         
+      
 
 		bullets_mag_l1
 		{
@@ -354,45 +330,66 @@ WeaponData
 			"ammo_clip_size"   						"26"
 		}
 
+
 		// NOTE: override barrel FX for both Alternator barrels
 		barrel_stabilizer_l1
 		{
-		    "fx_muzzle_flash_view"				"wpn_muzzleflash_smg_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_smg"
+			"viewkick_yaw_base" 				"*0.85"
+			"viewkick_yaw_random"   			"*0.8"
 
-		    "fx_muzzle_flash2_attach"			"muzzle_flash_suppressor_small"
-		    "fx_muzzle_flash2_view"				"wpn_muzzleflash_smg_FP"
-			"fx_muzzle_flash2_world"			"wpn_muzzleflash_smg"
+			"fx_muzzle_flash_attach"			"muzzle_flash"
+			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
+			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+
+			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
+			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
+			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
 		}
 
         barrel_stabilizer_l2
 		{
-		    "fx_muzzle_flash_view"				"wpn_muzzleflash_smg_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_smg"
+			"viewkick_yaw_base" 				"*0.8"
+			"viewkick_yaw_random"   			"*0.75"
 
-		    "fx_muzzle_flash2_attach"			"muzzle_flash_suppressor_small"
-		    "fx_muzzle_flash2_view"				"wpn_muzzleflash_smg_FP"
-			"fx_muzzle_flash2_world"			"wpn_muzzleflash_smg"
+			"fx_muzzle_flash_attach"			"muzzle_flash"
+			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
+			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+
+			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
+			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
+			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
 		}
 
         barrel_stabilizer_l3
 		{
-		    "fx_muzzle_flash_view"				"wpn_muzzleflash_smg_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_smg"
+		    "viewkick_pitch_base" 				"*0.8"
+			"viewkick_pitch_random"   			"*0.65"
+			"viewkick_yaw_base" 				"*0.75"
+			"viewkick_yaw_random"   			"*0.7"
 
-		    "fx_muzzle_flash2_attach"			"muzzle_flash_suppressor_small"
-		    "fx_muzzle_flash2_view"				"wpn_muzzleflash_smg_FP"
-			"fx_muzzle_flash2_world"			"wpn_muzzleflash_smg"
+			"fx_muzzle_flash_attach"			"muzzle_flash"
+			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
+			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+
+			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
+			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
+			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
 		}
 
 		barrel_stabilizer_l4_flash_hider
         {
-        	"fx_muzzle_flash_view"				"wpn_muzzleflash_smg_sup_FP" //"P_wpn_muzzleflash_alternator_sup_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_smg_sup" //"P_wpn_muzzleflash_alternator_sup"
+            "viewkick_pitch_base" 				"*0.8"
+			"viewkick_pitch_random"   			"*0.65"
+			"viewkick_yaw_base" 				"*0.75"
+			"viewkick_yaw_random"   			"*0.7"
 
-			"fx_muzzle_flash2_attach"			"muzzle_flash_suppressor_small"
-			"fx_muzzle_flash2_view"				"wpn_muzzleflash_smg_sup_FP" //"P_wpn_muzzleflash_alternator_sup_FP"
+        	"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_sup_FP" //"P_wpn_muzzleflash_alternator_sup_FP"
+			"fx_muzzle_flash_world"				"wpn_muzzleflash_smg_sup" //"P_wpn_muzzleflash_alternator_sup"
+			"fx_muzzle_flash_attach"			"muzzle_flash"
+
+			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_sup_FP" //"P_wpn_muzzleflash_alternator_sup_FP"
 			"fx_muzzle_flash2_world"			"wpn_muzzleflash_smg_sup" //"P_wpn_muzzleflash_alternator_sup"
+			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
 		}
 	}
 

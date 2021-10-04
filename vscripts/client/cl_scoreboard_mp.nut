@@ -545,13 +545,13 @@ void function ShowScoreboardMP()
 		}
 		else
 		{
-			RuiSetInt( Hud_GetRui( file.teamElems[ winningTeam ].score ), "score", GameScore_GetScore( winningTeam ) )
+			RuiSetInt( Hud_GetRui( file.teamElems[ winningTeam ].score ), "score", GameRules_GetTeamScore( winningTeam ) )
 			file.teamElems[ winningTeam ].logo.SetY( winningTeamYOffset )
 
 			for ( int i = 1; i < teamsSortedByScore.len(); ++i )
 			{
 				int losingTeam = teamsSortedByScore[ i ]
-				RuiSetInt( Hud_GetRui( file.teamElems[losingTeam].score ), "score", GameScore_GetScore( losingTeam ) )
+				RuiSetInt( Hud_GetRui( file.teamElems[losingTeam].score ), "score", GameRules_GetTeamScore( losingTeam ) )
 				int calculatedOffSet = winningTeamYOffset + ( i * teamHeightMultiplied ) + losingTeamYOffset
 				file.teamElems[losingTeam].logo.SetY(  calculatedOffSet  )
 			}

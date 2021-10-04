@@ -1,0 +1,547 @@
+//=========================================================
+//	sh_call_events.gnut
+//=========================================================
+
+global function ShCalEvent_LevelInit
+global function GetAllSeasonFlavors
+global function IsSeasonFlavor
+global function GetLatestSeason
+global function GetActiveSeason
+global function GetUpcomingSeason
+global function GetAllRankedPeriodFlavors
+global function IsRankedPeriodFlavor
+global function GetLatestRankedPeriod
+global function GetActiveRankedPeriod
+global function GetUpcomingRankedPeriod
+global function GetLatestExpiredRankedPeriod
+global function GetPrecedingRankedPeriod
+global function GetFollowingRankedPeriod
+global function CalEvent_IsRevealed
+global function CalEvent_IsVisible
+global function CalEvent_HasStarted
+global function CalEvent_HasFinished
+global function CalEvent_IsActive
+global function CalEvent_GetRevealUnixTime
+global function CalEvent_GetHideUnixTime
+global function CalEvent_GetStartUnixTime
+global function CalEvent_GetFinishUnixTime
+global function Season_GetBattlePass
+global function BattlePass_GetSeason
+
+
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+
+#if SERVER || CLIENT || UI
+global typedef SeasonRef string ornull
+#endif
+
+
+#if SERVER || CLIENT || UI
+global struct SeasonData
+{
+	string      ref
+	asset       _battlepassFlavAsset
+	ItemFlavor& battlepass
+	int         startUnixTime
+	int         endUnixTime
+
+	string playlistVarName_startUnixTime
+	string playlistVarName_endUnixTime
+}
+#endif
+
+
+
+///////////////////////
+///////////////////////
+//// Private Types ////
+///////////////////////
+///////////////////////
+
+int UNIX_TIME_FALLBACK_1970 = 1
+int UNIX_TIME_FALLBACK_2038 = 2145916800
+
+
+#if SERVER || CLIENT || UI
+struct FileStruct_LifetimeLevel
+{
+	table<ItemFlavor, ItemFlavor> seasonBattlePassMap
+	table<ItemFlavor, ItemFlavor> battlePassSeasonMap
+
+	array<ItemFlavor> allCalEvents = []
+	array<ItemFlavor> allSeasons = []
+	array<ItemFlavor> allRankedPeriods = []
+}
+FileStruct_LifetimeLevel& fileLevel
+#endif
+
+
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
+
+#if SERVER || CLIENT || UI
+void function ShCalEvent_LevelInit()
+{
+	FileStruct_LifetimeLevel newFileLevel
+	fileLevel = newFileLevel
+
+	#if SERVER
+	#endif
+
+	AddCallback_RegisterRootItemFlavors( void function() {
+		foreach ( asset eventAsset in CAL_EVENT_ASSET_LIST )
+		{
+			ItemFlavor ornull eventOrNull = RegisterItemFlavorFromSettingsAsset( eventAsset )
+			if ( eventOrNull != null )
+				fileLevel.allCalEvents.append( expect ItemFlavor( eventOrNull ) )
+		}
+
+		foreach ( ItemFlavor event in fileLevel.allCalEvents )
+		{
+			if ( CalEvent_GetStartUnixTime( event ) == UNIX_TIME_FALLBACK_2038 )
+				Warning( "CalEvent %s playlist var '%s' is unset. Using %d (the year 2038).", ItemFlavor_GetHumanReadableRef( event ), GetGlobalSettingsString( ItemFlavor_GetAsset( event ), "startUnixTimePlaylistVarName" ), UNIX_TIME_FALLBACK_2038 )
+			if ( CalEvent_GetFinishUnixTime( event ) == UNIX_TIME_FALLBACK_1970 )
+				Warning( "CalEvent %s playlist var '%s' is unset. Using %d (the year 1970).", ItemFlavor_GetHumanReadableRef( event ), GetGlobalSettingsString( ItemFlavor_GetAsset( event ), "finishUnixTimePlaylistVarName" ), UNIX_TIME_FALLBACK_1970 )
+
+			if ( ItemFlavor_GetType( event ) == eItemType.calevent_season )
+			{
+				ItemFlavor ornull passOrNull = RegisterItemFlavorFromSettingsAsset( GetGlobalSettingsAsset( ItemFlavor_GetAsset( event ), "battlepassFlav" ) )
+				fileLevel.seasonBattlePassMap[event] <- expect ItemFlavor(passOrNull)
+				fileLevel.battlePassSeasonMap[expect ItemFlavor(passOrNull)] <- event
+
+				foreach ( ItemFlavor otherEvent in fileLevel.allSeasons )
+				{
+					Assert( CalEvent_GetStartUnixTime( event ) >= CalEvent_GetFinishUnixTime( otherEvent ),
+						format( "Season %s start overlaps with season %s", ItemFlavor_GetHumanReadableRef( event ), ItemFlavor_GetHumanReadableRef( otherEvent ) ) )
+					Assert( CalEvent_GetFinishUnixTime( event ) >= CalEvent_GetFinishUnixTime( otherEvent ),
+						format( "Season %s start overlaps with season %s", ItemFlavor_GetHumanReadableRef( event ), ItemFlavor_GetHumanReadableRef( otherEvent ) ) )
+				}
+
+				fileLevel.allSeasons.append( event )
+			}
+
+			if ( ItemFlavor_GetType( event ) == eItemType.calevent_rankedperiod )
+			{
+				foreach ( ItemFlavor otherEvent in fileLevel.allRankedPeriods )
+				{
+					Assert( CalEvent_GetStartUnixTime( event ) >= CalEvent_GetFinishUnixTime( otherEvent ),
+						format( "Ranked period %s start overlaps with ranked period %s", ItemFlavor_GetHumanReadableRef( event ), ItemFlavor_GetHumanReadableRef( otherEvent ) ) )
+					Assert( CalEvent_GetFinishUnixTime( event ) >= CalEvent_GetFinishUnixTime( otherEvent ),
+						format( "Ranked period %s start overlaps with ranked period %s", ItemFlavor_GetHumanReadableRef( event ), ItemFlavor_GetHumanReadableRef( otherEvent ) ) )
+				}
+
+				fileLevel.allRankedPeriods.append( event )
+			}
+		}
+	} )
+
+	AddCallbackOrMaybeCallNow_OnAllItemFlavorsRegistered( void function() {
+		//
+	} )
+}
+#endif
+
+
+
+//////////////////////////
+//////////////////////////
+//// Global functions ////
+//////////////////////////
+//////////////////////////
+
+#if SERVER || CLIENT || UI
+array<ItemFlavor> function GetAllSeasonFlavors()
+{
+	return fileLevel.allSeasons
+}
+#endif
+
+#if SERVER || CLIENT || UI
+bool function IsSeasonFlavor( ItemFlavor season )
+{
+	return ItemFlavor_GetType( season ) == eItemType.calevent_season
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function GetLatestSeason( int t )
+{
+	ItemFlavor ornull currentSeasonOrNull = GetActiveSeason( t )
+	if ( currentSeasonOrNull != null )
+		return expect ItemFlavor(currentSeasonOrNull)
+
+	ItemFlavor ornull seasonOrNull = null
+	int bestT                      = -1
+	foreach ( ItemFlavor season in fileLevel.allSeasons )
+	{
+		if ( CalEvent_HasStarted( season, t ) )
+		{
+			int startUnixTime = CalEvent_GetStartUnixTime( season )
+			if ( startUnixTime > bestT )
+			{
+				bestT = startUnixTime
+				seasonOrNull = season
+			}
+		}
+	}
+	Assert( seasonOrNull != null )
+	return expect ItemFlavor(seasonOrNull)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor ornull function GetActiveSeason( int t )
+{
+	foreach ( ItemFlavor season in fileLevel.allSeasons )
+	{
+		if ( CalEvent_IsActive( season, t ) )
+			return season
+	}
+	return null
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor ornull function GetUpcomingSeason( int t )
+{
+	Assert( GetActiveSeason( t ) == null )
+
+	ItemFlavor ornull seasonOrNull = null
+	int bestT                      = 2147483647  //
+	foreach ( ItemFlavor season in fileLevel.allSeasons )
+	{
+		if ( CalEvent_HasStarted( season, t ) )
+		{
+			int startUnixTime = CalEvent_GetStartUnixTime( season )
+			if ( startUnixTime < bestT )
+			{
+				bestT = startUnixTime
+				seasonOrNull = season
+			}
+		}
+	}
+	return seasonOrNull
+}
+#endif
+
+#if SERVER || CLIENT || UI
+array<ItemFlavor> function GetAllRankedPeriodFlavors()
+{
+	return fileLevel.allRankedPeriods
+}
+#endif
+
+#if SERVER || CLIENT || UI
+bool function IsRankedPeriodFlavor( ItemFlavor rankedPeriod )
+{
+	return ItemFlavor_GetType( rankedPeriod ) == eItemType.calevent_rankedperiod
+}
+#endif
+
+#if SERVER || CLIENT || UI
+ItemFlavor function GetLatestRankedPeriod( int t )
+{
+	ItemFlavor ornull currentRankedPeriodOrNull = GetActiveRankedPeriod( t )
+	if ( currentRankedPeriodOrNull != null )
+	{
+		expect ItemFlavor( currentRankedPeriodOrNull )
+		return currentRankedPeriodOrNull
+	}
+
+
+	ItemFlavor ornull rankedPeriodOrNull = null
+	int bestT                            = 2147483647
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		if ( CalEvent_HasStarted( rankedPeriod, t ) )
+		{
+			int startUnixTime = CalEvent_GetStartUnixTime( rankedPeriod )
+			if ( startUnixTime > bestT )
+			{
+				bestT = startUnixTime
+				rankedPeriodOrNull = rankedPeriod
+			}
+		}
+	}
+
+	Assert( rankedPeriodOrNull != null, "No Latest Ranked Period found. Check that ranked calendar events are set correctly, and have their start and end times correctly configured in the playlist!" )
+	expect ItemFlavor( rankedPeriodOrNull  )
+	return rankedPeriodOrNull
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor ornull function GetActiveRankedPeriod( int t )
+{
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		if ( CalEvent_IsActive( rankedPeriod, t ) )
+			return rankedPeriod
+	}
+	return null
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor ornull function GetUpcomingRankedPeriod( int t )
+{
+	Assert( GetActiveRankedPeriod( t ) == null )
+
+	ItemFlavor ornull rankedPeriodOrNull = null
+	int bestT                            = INT_MAX
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		if ( !CalEvent_HasStarted( rankedPeriod, t ) ) //
+		{
+			int startUnixTime = CalEvent_GetStartUnixTime( rankedPeriod )
+			if ( startUnixTime < bestT )
+			{
+				bestT = startUnixTime
+				rankedPeriodOrNull = rankedPeriod
+			}
+		}
+	}
+	return rankedPeriodOrNull
+}
+ItemFlavor ornull function GetLatestExpiredRankedPeriod( int t )
+{
+
+	ItemFlavor ornull rankedPeriodOrNull = null
+	int bestT                            = 0
+
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		if ( CalEvent_HasStarted( rankedPeriod, t ) )
+		{
+			if ( !CalEvent_HasFinished( rankedPeriod, t )  )
+				continue
+
+			int endUnixTime = CalEvent_GetFinishUnixTime( rankedPeriod )
+			if ( endUnixTime > bestT )
+			{
+				bestT = endUnixTime
+				rankedPeriodOrNull = rankedPeriod
+			}
+		}
+	}
+	return rankedPeriodOrNull
+}
+ItemFlavor ornull function GetPrecedingRankedPeriod( ItemFlavor flav )
+{
+	Assert( IsRankedPeriodFlavor( flav ) )
+	ItemFlavor ornull preceedingRankedPeriod = null
+	int previousPeriodStartTime              = 0 //
+	int flavStartTime                        = CalEvent_GetStartUnixTime( flav )
+
+	bool found = false
+
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		int startTimeOfRankedPeriod = CalEvent_GetStartUnixTime( rankedPeriod  )
+
+		Assert( previousPeriodStartTime < startTimeOfRankedPeriod  )
+
+		if ( flav == rankedPeriod )
+		{
+			found = true
+			break
+		}
+
+		Assert( CalEvent_GetFinishUnixTime( rankedPeriod ) <  flavStartTime )
+		previousPeriodStartTime = startTimeOfRankedPeriod
+		preceedingRankedPeriod = rankedPeriod
+	}
+
+	if ( !found  )
+		return null
+
+	return preceedingRankedPeriod
+}
+ItemFlavor ornull function GetFollowingRankedPeriod( ItemFlavor flav )
+{
+	Assert( IsRankedPeriodFlavor( flav ) )
+	ItemFlavor precedingRankedPeriod
+	ItemFlavor ornull followingRankedPeriod = null
+	int previousPeriodFinishTime            = 0 //
+	int flavStartTime                       = CalEvent_GetStartUnixTime( flav )
+
+	foreach ( ItemFlavor rankedPeriod in fileLevel.allRankedPeriods )
+	{
+		int finishTimeOfRankedPeriod = CalEvent_GetFinishUnixTime( rankedPeriod  )
+
+		Assert( previousPeriodFinishTime < finishTimeOfRankedPeriod )
+
+		if ( precedingRankedPeriod == flav )
+		{
+			followingRankedPeriod = rankedPeriod
+			break
+		}
+
+		previousPeriodFinishTime = finishTimeOfRankedPeriod
+		precedingRankedPeriod = rankedPeriod
+	}
+
+	return followingRankedPeriod
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_IsRevealed( ItemFlavor event, int t )
+{
+	Assert( IsItemFlavorRegistrationFinished() )
+	int revealUnixTime = CalEvent_GetRevealUnixTime( event )
+	return (t >= revealUnixTime)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_IsVisible( ItemFlavor event, int t )
+{
+	Assert( IsItemFlavorRegistrationFinished() )
+	int hideUnixTime = CalEvent_GetHideUnixTime( event )
+	return CalEvent_IsRevealed( event, t ) && (t < hideUnixTime)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_HasStarted( ItemFlavor event, int t )
+{
+	Assert( IsItemFlavorRegistrationFinished() )
+	int startUnixTime = CalEvent_GetStartUnixTime( event )
+	return CalEvent_IsVisible( event, t ) && (t >= startUnixTime)
+}
+#endif
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_HasFinished( ItemFlavor event, int t )
+{
+	Assert( IsItemFlavorRegistrationFinished() )
+	int finishUnixTime = CalEvent_GetFinishUnixTime( event )
+	return CalEvent_IsVisible( event, t ) && (t >= finishUnixTime )
+}
+#endif
+
+#if SERVER || CLIENT || UI
+bool function CalEvent_IsActive( ItemFlavor event, int t )
+{
+	Assert( IsItemFlavorRegistrationFinished() )
+	int finishUnixTime = CalEvent_GetFinishUnixTime( event )
+	return CalEvent_HasStarted( event, t ) && (t < finishUnixTime)
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CalEvent_GetRevealUnixTime( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) > eItemType._CALEVENT_RANGE_START && ItemFlavor_GetType( flav ) < eItemType._CALEVENT_RANGE_END )
+
+	string playlistVarName = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "revealUnixTimePlaylistVarName" )
+	if ( playlistVarName != "" )
+	{
+		int val = GetCurrentPlaylistVarInt( playlistVarName, -1 )
+		if ( val != -1 )
+			return val
+	}
+	return UNIX_TIME_FALLBACK_1970
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CalEvent_GetHideUnixTime( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) > eItemType._CALEVENT_RANGE_START && ItemFlavor_GetType( flav ) < eItemType._CALEVENT_RANGE_END )
+
+	string playlistVarName = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "hideUnixTimePlaylistVarName" )
+	if ( playlistVarName != "" )
+	{
+		int val = GetCurrentPlaylistVarInt( playlistVarName, -1 )
+		if ( val != -1 )
+			return val
+	}
+	return UNIX_TIME_FALLBACK_2038
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CalEvent_GetStartUnixTime( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) > eItemType._CALEVENT_RANGE_START && ItemFlavor_GetType( flav ) < eItemType._CALEVENT_RANGE_END )
+
+	string playlistVarName = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "startUnixTimePlaylistVarName" )
+	if ( playlistVarName != "" )
+	{
+		int val = GetCurrentPlaylistVarInt( playlistVarName, -1 )
+		if ( val != -1 )
+			return val
+	}
+	return UNIX_TIME_FALLBACK_2038
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+int function CalEvent_GetFinishUnixTime( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) > eItemType._CALEVENT_RANGE_START && ItemFlavor_GetType( flav ) < eItemType._CALEVENT_RANGE_END )
+
+	string playlistVarName = GetGlobalSettingsString( ItemFlavor_GetAsset( flav ), "finishUnixTimePlaylistVarName" )
+	if ( playlistVarName != "" )
+	{
+		int val = GetCurrentPlaylistVarInt( playlistVarName, -1 )
+		if ( val != -1 )
+			return val
+	}
+	return UNIX_TIME_FALLBACK_2038
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function Season_GetBattlePass( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) > eItemType._CALEVENT_RANGE_START && ItemFlavor_GetType( flav ) < eItemType._CALEVENT_RANGE_END )
+
+	return fileLevel.seasonBattlePassMap[flav]
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function BattlePass_GetSeason( ItemFlavor flav )
+{
+	Assert( ItemFlavor_GetType( flav ) == eItemType.battlepass )
+
+	return fileLevel.battlePassSeasonMap[flav]
+}
+#endif
+
+
+
+///////////////////
+///////////////////
+//// Internals ////
+///////////////////
+///////////////////
+
+#if SERVER
+#endif

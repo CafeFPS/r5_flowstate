@@ -1,13 +1,17 @@
-
 global function Canyonlands_MapInit_Common
+global function CodeCallback_PlayerEnterUpdraftTrigger
+global function CodeCallback_PlayerLeaveUpdraftTrigger
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 	global function HoverTankTestPositions
+
 #endif
 
 #if SERVER
 	global function HoverTank_DebugFlightPaths
 	global function TestCreateTooManyLinks
+	global function InitWaterLeviathans
+	global function Canyonlands_UpdraftInit_Common
 
 	const int MAX_HOVERTANKS = 2
 	const string HOVERTANK_START_NODE_NAME		= "hovertank_start_node"
@@ -18,20 +22,37 @@ global function Canyonlands_MapInit_Common
 
 	const asset NESSY_MODEL = $"mdl/domestic/nessy_doll.rmdl"
 
+	const asset ROCK_MODEL_FOR_CANYONLANDS_GEOFIX = $"mdl/rocks/rock_white_chalk_modular_flat_02.rmdl"
+
 	//const asset HOVERTANK_PATH_FX = $"P_wpn_arcball_beam"
 	//const asset HOVERTANK_END_FX = $"P_ar_call_beacon_ring_hovertank"
 
-	const float SKYBOX_Z_OFFSET_STAGING_AREA = 32.0
+	const float SKYBOX_Z_OFFSET_STAGING_AREA = 30.0
 	const vector SKYBOX_ANGLES_STAGING_AREA = <0, 60, 0>
 
 	const int HOVER_TANKS_DEFAULT_CIRCLE_INDEX = 1
 	const int HOVER_TANKS_TYPE_INTRO = 0
 	const int HOVER_TANKS_TYPE_MID = 1
+
+	global enum eCanyonlandsMapUpdatePreviewPhases
+	{
+		MAP_UNCHANGED,
+		LEVIATHANS_MOVE_CLOSER,
+		LEVIATHANS_MOVE_MUCH_CLOSER,
+		//FLYERS_APPEAR,
+		REPULSOR_TOWER_TURNS_ON,
+		CRYPTO_TEASE,
+	}
 #endif
 
 const int HOVER_TANKS_DEFAULT_COUNT_INTRO = 1
 const int HOVER_TANKS_DEFAULT_COUNT_MID = 1
-const asset LEVIATHAN_MODEL = $"mdl/creatures/leviathan/leviathan_animated.rmdl"
+global const asset LEVIATHAN_MODEL = $"mdl/creatures/leviathan/leviathan_kingscanyon_preview_animated.rmdl"
+//const asset FLYER_SWARM_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
+global const string CANYONLANDS_LEVIATHAN1_NAME = "leviathan1"
+global const string CANYONLANDS_LEVIATHAN2_NAME= "leviathan2"
+
+global const asset MU1_LEVIATHAN_MODEL = $"mdl/Creatures/leviathan/leviathan_kingscanyon_animated.rmdl"
 
 struct
 {
@@ -46,6 +67,13 @@ struct
 	#endif
 	int numHoverTanksIntro = 0
 	int numHoverTanksMid = 0
+
+	#if CLIENT
+		entity clientSideLeviathan1
+		entity clientSideLeviathan2
+		float lastLevAnimCycleChosen = -1.0
+	#endif
+
 } file
 
 void function Canyonlands_MapInit_Common()
@@ -53,6 +81,7 @@ void function Canyonlands_MapInit_Common()
 	printt( "Canyonlands_MapInit_Common" )
 
 	PrecacheModel( LEVIATHAN_MODEL )
+	//PrecacheModel( FLYER_SWARM_MODEL )
 
 	SetVictorySequencePlatformModel( $"mdl/rocks/victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
@@ -71,15 +100,17 @@ void function Canyonlands_MapInit_Common()
 	#if SERVER
 		printt( "HOVER TANKS MID MAX:", file.numHoverTanksMid )
 	#endif
-	chance = GetCurrentPlaylistVarFloat( "hovertanks_chance_mid", 1.0 ) * 100.0
+	chance = GetCurrentPlaylistVarFloat( "hovertanks_chance_mid", 0.33 ) * 100.0
 	if ( RandomInt(100) > chance )
 		file.numHoverTanksMid = 0
 	#if SERVER
 		printt( "HOVER TANKS MID ACTUAL:", file.numHoverTanksMid, "(was " + chance + "% chance)" )
 	#endif
 
+	SupplyShip_Init()
 
 	#if SERVER
+        InitWaterLeviathans()
 		LootTicks_Init()
 
 		FlagSet( "DisableDropships" )
@@ -88,6 +119,7 @@ void function Canyonlands_MapInit_Common()
 
 		RegisterSignal( "NessyDamaged" )
 		RegisterSignal( SIGNAL_HOVERTANK_AT_ENDPOINT )
+		RegisterSignal( "PathFinished" )
 
 		PrecacheModel( NESSY_MODEL )
 
@@ -102,41 +134,162 @@ void function Canyonlands_MapInit_Common()
 		SURVIVAL_SetPlaneHeight( 24000 )
 		SURVIVAL_SetAirburstHeight( 8000 )
 		SURVIVAL_SetMapCenter( <0, 0, 0> )
-		SetOutOfBoundsTimeLimit( 30.0 )
+        SURVIVAL_SetMapDelta( 4900 )
 
-		AddSpawnCallback_ScriptName( "leviathan", LeviathanThink )
-		AddSpawnCallback_ScriptName( "leviathan_staging", LeviathanThink )
-
-		// adjust skybox for staging area
-		AddCallback_GameStateEnter( eGameState.WaitingForPlayers, StagingArea_MoveSkybox )
-		AddCallback_GameStateEnter( eGameState.PickLoadout, StagingArea_ResetSkybox )
+        AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_pvpcurrency_container", OnPvpCurrencyContainerSpawned )    
+        AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_upgrade_station", OnSurvivalUpgradeStationSpawned )  
+		if ( GetMapName() == "mp_rr_canyonlands_staging" )
+		{
+			// adjust skybox for staging area
+			AddCallback_GameStateEnter( eGameState.WaitingForPlayers, StagingArea_MoveSkybox )
+			AddCallback_GameStateEnter( eGameState.PickLoadout, StagingArea_ResetSkybox )
+		}
 	#endif
 
 	#if CLIENT
-		AddTargetNameCreateCallback( "LeviathanMarker", OnLeviathanCreated )
-		AddTargetNameCreateCallback( "LeviathanStagingMarker", OnLeviathanCreated )
+		// Doing this automatically since someone has to call InitWaterLeviathans() just to make the markers
+		AddTargetNameCreateCallback( CANYONLANDS_LEVIATHAN1_NAME, OnLeviathanMarkerCreated ) //Created from the server to mark where the leviathans should be on the client
+		AddTargetNameCreateCallback( CANYONLANDS_LEVIATHAN2_NAME, OnLeviathanMarkerCreated )
+		AddTargetNameCreateCallback( "LeviathanMarker", OnLeviathanMarkerCreated  )
+		AddTargetNameCreateCallback( "LeviathanStagingMarker", OnLeviathanMarkerCreated )
 
-		SetVictorySequenceLocation( <11926.5957, -17612.0508, 11025.5176>, <0, 248.69014, 0> )
-		SetMinimapBackgroundTileImage( $"overviews/mp_rr_canyonlands_bg" )
+		Freefall_SetPlaneHeight( 24000 )
+		Freefall_SetDisplaySeaHeightForLevel( -956.0 )
 
 		if ( file.numHoverTanksIntro > 0 || file.numHoverTanksMid > 0 )
 			SetMapFeatureItem( 500, "#HOVER_TANK", "#HOVER_TANK_DESC", $"rui/hud/gametype_icons/survival/sur_hovertank_minimap" )
 
-		SetMapFeatureItem( 300, "#SUPPLY_DROP", "#SUPPLY_DROP_DESC", $"rui/hud/gametype_icons/survival/supply_drop" )
+		if ( !IsPVEMode() )
+			SetMapFeatureItem( 300, "#SUPPLY_DROP", "#SUPPLY_DROP_DESC", $"rui/hud/gametype_icons/survival/supply_drop" )
 
+		if ( GetMapName() == "mp_rr_canyonlands_mu1_night" )// TODO(AMOS): desertlands_nx
+		{
+			SetVictorySequenceLocation( <10472, 30000, 8500>, <0, 60, 0> )
+			SetVictorySequenceSunSkyIntensity( 0.8, 0.0 )
+		}
+		else
+		{
+			SetVictorySequenceLocation( <11926.5957, -17612.0508, 11025.5176>, <0, 248.69014, 0> )
+			SetVictorySequenceSunSkyIntensity( 1.3, 4.0 )
+		}
+
+		SetMinimapBackgroundTileImage( $"overviews/mp_rr_canyonlands_bg" )
+
+		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.HOVERTANK, MINIMAP_OBJECT_RUI, MinimapPackage_HoverTank, FULLMAP_OBJECT_RUI, MinimapPackage_HoverTank )
+		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.HOVERTANK_DESTINATION, MINIMAP_OBJECT_RUI, MinimapPackage_HoverTankDestination, FULLMAP_OBJECT_RUI, MinimapPackage_HoverTankDestination )
 	#endif
 }
 
 #if SERVER
+void function OnPvpCurrencyContainerSpawned(entity ent)
+{	
+    if( GameRules_GetGameMode() != FREELANCE )
+	{
+        if(IsValid(ent))
+            ent.Destroy()
+    }
+}
+
+void function OnSurvivalUpgradeStationSpawned(entity ent)
+{
+    if( GameRules_GetGameMode() != FREELANCE )
+	{
+        if(IsValid(ent))
+            ent.Destroy()
+    }
+}
+void function InitWaterLeviathans()
+{
+	AddSpawnCallback_ScriptName( CANYONLANDS_LEVIATHAN1_NAME, CreateClientSideLeviathanMarkers )
+	AddSpawnCallback_ScriptName( CANYONLANDS_LEVIATHAN2_NAME, CreateClientSideLeviathanMarkers)
+	AddSpawnCallback_ScriptName( "leviathan_staging", CreateClientSideLeviathanMarkers)
+}
+
 void function EntitiesDidLoad()
 {
-	FindHoverTankEndNodes()
-	SpawnHoverTanks()
-	Nessies()
+
+	thread __EntitiesDidLoad()
+}
+
+void function __EntitiesDidLoad()
+{
+	if( GameRules_GetGameMode() != FREELANCE )
+	{
+		waitthread FindHoverTankEndNodes()
+		SpawnHoverTanks()
+		if ( GetCurrentPlaylistVarInt( "enable_nessies", 1 ) == 1 )
+			Nessies()
+	}
+}
+
+void function Canyonlands_UpdraftInit_Common( entity player )
+{
+	//ApplyUpdraftModUntilTouchingGround( player )
+	//thread PlayerSkydiveFromCurrentPosition( player )
+}
+
+void function CreateClientSideLeviathanMarkers( entity leviathan )
+{
+	leviathan.EndSignal( "OnDestroy" )
+
+	vector leviathanOrigin = leviathan.GetOrigin()
+	vector leviathanAngles = leviathan.GetAngles()
+
+	if (  leviathan.GetScriptName() != "leviathan_staging" )
+	{
+		bool isLeviathan1 = leviathan.GetScriptName() == CANYONLANDS_LEVIATHAN1_NAME
+		int previewPhase = GetCurrentPlaylistVarInt( "mu_preview_phase", eCanyonlandsMapUpdatePreviewPhases.MAP_UNCHANGED )
+		switch ( previewPhase )
+		{
+			case eCanyonlandsMapUpdatePreviewPhases.LEVIATHANS_MOVE_CLOSER:
+				leviathanOrigin = isLeviathan1 ? < 2599.376709, -48505.000000 , -1600 > : leviathanOrigin
+				leviathanAngles = isLeviathan1 ? < 2.346743, 154.202164, 0 > : leviathanAngles
+				break
+
+			case eCanyonlandsMapUpdatePreviewPhases.LEVIATHANS_MOVE_MUCH_CLOSER:
+				leviathanOrigin = isLeviathan1 ? < -44615.867188, -22612.208984, -1600 > : < 30792.123047, -45749.824219, -2784 >
+				leviathanAngles = isLeviathan1 ? < 0, 70, 0 > : < 0, 117, 0 >
+				break
+
+			//case eCanyonlandsMapUpdatePreviewPhases.FLYERS_APPEAR:
+			//	leviathanOrigin = isLeviathan1 ? < -46599.632813, 561.130737, -1600 > : < 30792.123047, -45749.824219, -2784 >
+			//	leviathanAngles = isLeviathan1 ? < 0, 22, 0 > : < 0, 117, 0 >
+			//	break
+
+			case eCanyonlandsMapUpdatePreviewPhases.REPULSOR_TOWER_TURNS_ON:
+				leviathanOrigin = isLeviathan1 ? < -46599.632813, 561.130737, -1600 > : < 30792.123047, -45749.824219, -2784 >
+				leviathanAngles = isLeviathan1 ? < 3.686208, 169.509933, 0.000000 > : < 6.670253, -146.874985, 0.000000 >
+				break
+
+			case eCanyonlandsMapUpdatePreviewPhases.CRYPTO_TEASE:
+				leviathanOrigin = isLeviathan1 ? < -46599.632813, 561.130737, -1600 > : < 30792.123047, -45749.824219, -2784 >
+				leviathanAngles = isLeviathan1 ? < 3.686208, 169.509933, 0.000000 > : < 6.670253, -146.874985, 0.000000 >
+				break
+
+
+			case eCanyonlandsMapUpdatePreviewPhases.MAP_UNCHANGED:
+			default:
+				break
+		}
+	}
+
+	entity ent = CreatePropDynamic_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", leviathanOrigin, leviathanAngles )
+	SetTargetName( ent, leviathan.GetScriptName() )
+	DispatchSpawn( ent )
+
+	leviathan.Destroy()
+
+	ent.EndSignal( "OnDestroy" )
+
+	wait 3.0
+
+	ent.Destroy()
 }
 
 void function FindHoverTankEndNodes()
 {
+	//FlagWait( "DeathFieldCalculationComplete" )
+
 	file.hoverTankEndNodesMid = GetHoverTankEndNodes( file.numHoverTanksMid, HOVER_TANKS_TYPE_MID, [] )
 	file.hoverTankEndNodesIntro = GetHoverTankEndNodes( file.numHoverTanksIntro, HOVER_TANKS_TYPE_INTRO, file.hoverTankEndNodesMid )
 
@@ -168,10 +321,12 @@ void function SpawnHoverTanks()
 	{
 		HoverTank hoverTank = SpawnHoverTank_Cheap( spawnerName )
 		hoverTank.playerRiding = true
+
 		if ( i + 1 <= file.numHoverTanksIntro )
 		{
 			printt( "HOVER TANKS INTRO SPAWNER:", spawnerName )
 			file.hoverTanksIntro.append( hoverTank )
+
 		}
 		else
 		{
@@ -249,8 +404,12 @@ void function FlyHoverTanksIntoPosition( array<HoverTank> hoverTanks, int hoverT
 	{
 		CreateHoverTankMinimapIconForPlayers( hoverTank )
 
-		array<entity> nodeChain = GetEntityChainOfType( endNodes[ i ] )
+		entity tempNode = CreateEntity("info_target")
+		tempNode.SetOrigin( <25568.2, 6651.55, 4966.23> )
+		array<entity> nodeChain = [ //GetEntityChainOfType( endNodes[ i ] )
+			tempNode
 
+		]
 		HoverTankTeleportToPosition( hoverTank, startNodes[i].GetOrigin(), startNodes[i].GetAngles() )
 		//thread HoverTankDrawPathFX( hoverTank, nodeChain[ 0 ] )
 
@@ -316,6 +475,9 @@ void function TeleportHoverTanksIntoPosition( array<HoverTank> hoverTanks, int h
 
 void function HideUnusedHovertankSpecificGeo()
 {
+	//todo:
+	return
+
 	array<entity> hoverTankSpecificGeo
 	array<entity> unusedEndNodes = GetAllHoverTankEndNodes()
 
@@ -328,7 +490,7 @@ void function HideUnusedHovertankSpecificGeo()
 	foreach( entity node in unusedEndNodes )
 	{
 		entity lastNode = GetLastLinkedEntOfType( node )
-		array<entity> endNodeLinkedEnts = lastNode.GetLinkEntArray()
+		array<entity> endNodeLinkedEnts = lastNode.GetLinkEntArray() // [SERVER] Given object is not an entity (type = null)
 		foreach( linkedEnt in endNodeLinkedEnts )
 		{
 			if ( linkedEnt.GetClassName() == "func_brush_lightweight" )
@@ -344,7 +506,7 @@ void function CreateHoverTankMinimapIconForPlayers( HoverTank hoverTank )
 	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.HOVERTANK )		// Minimap icon
 	minimapObj.SetParent( hoverTank.interiorModel )
 	minimapObj.SetLocalAngles( < 0, 0, 0 > )
-	minimapObj.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
+	minimapObj.Minimap_SetZOrder( MINIMAP_Z_OBJECT + 10 ) // +10 to make it show up above the endpoint marker below
 	SetTeam( minimapObj, TEAM_UNASSIGNED )
 	SetTargetName( minimapObj, "hovertank" )		// Full map icon
 
@@ -356,15 +518,15 @@ void function CreateHoverTankEndpointIconForPlayers( entity endpoint, HoverTank 
 	vector hoverTankOrigin = endpoint.GetOrigin()
 	entity minimapObj = CreatePropScript( $"mdl/dev/empty_model.rmdl", hoverTankOrigin )
 	minimapObj.Minimap_SetCustomState( eMinimapObject_prop_script.HOVERTANK_DESTINATION )		// Minimap icon
-	minimapObj.Minimap_SetZOrder( MINIMAP_Z_OBJECT )
+	minimapObj.Minimap_SetZOrder( MINIMAP_Z_OBJECT + 5 ) // +5 to make it show up above respawn beacons etc
 	SetTeam( minimapObj, TEAM_UNASSIGNED )
 	SetTargetName( minimapObj, "hovertankDestination" )		// Full map icon
 	file.hovertankEndpointMapObjects[ hoverTank ] <- minimapObj
 
 	SetMinimapObjectVisibleToPlayers( minimapObj, true )
 
-	foreach( entity player in GetPlayerArray_Alive() )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_SUR_PingMinimap", endpoint.GetOrigin(), 30.0, 500.0, 50.0, 2 )
+	//foreach( entity player in GetPlayerArray_Alive() )
+	//	Remote_CallFunction_NonReplay( player, "ServerCallback_SUR_PingMinimap", endpoint.GetOrigin(), 30.0, 500.0, 50.0, 2 )
 }
 
 void function HideHoverTankEndpointIconForPlayers( HoverTank hoverTank )
@@ -706,8 +868,9 @@ void function HoverTankFlyNodeChain( HoverTank hoverTank, array<entity> nodes )
 		waitthread HoverTankFlyToNode( hoverTank, nodes[ i ] )
 	}
 
-	FireHoverTankZiplines( hoverTank, nodes.top() )
 	Signal( hoverTank, SIGNAL_HOVERTANK_AT_ENDPOINT )
+
+	FireHoverTankZiplines( hoverTank, nodes.top() )
 }
 
 array<entity> function GetAllHoverTankEndNodes()
@@ -757,7 +920,7 @@ void function HoverTank_DebugFlightPaths_Thread()
 	printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
 }
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function HoverTankTestPositions()
 {
 	entity player = GetPlayerArray()[0]
@@ -811,20 +974,6 @@ void function TestCreateTooManyLinks()
 			wait 0
 		}
 	}
-}
-
-void function LeviathanThink( entity leviathan )
-{
-	leviathan.EndSignal( "OnDestroy" )
-
-	string targetName = "LeviathanMarker"
-	if ( leviathan.GetScriptName() == "leviathan_staging" )
-		targetName = "LeviathanStagingMarker"
-
-	entity ent = CreatePropDynamic_NoDispatchSpawn( $"mdl/dev/empty_model.rmdl", leviathan.GetOrigin(), leviathan.GetAngles() )
-	SetTargetName( ent, targetName )
-	DispatchSpawn( ent )
-	leviathan.Destroy()
 }
 
 void function StagingArea_MoveSkybox()
@@ -932,12 +1081,44 @@ void function NessyDamageCallback( entity ent, var damageInfo )
 #endif
 
 #if CLIENT
-void function OnLeviathanCreated( entity marker )
+
+
+void function OnLeviathanMarkerCreated( entity marker )
 {
-	bool stagingOnly = marker.GetTargetName() == "LeviathanStagingMarker"
+	string markerTargetName = marker.GetTargetName()
+	printt( "OnLeviathanMarkerCreated, targetName: " + markerTargetName  )
+	#if R5DEV
+		if ( IsValid( file.clientSideLeviathan1 ) && markerTargetName == CANYONLANDS_LEVIATHAN1_NAME )
+		{
+			printt( "Destroying clientSideLeviathan1 with markerName: " + markerTargetName  )
+			file.clientSideLeviathan1.Destroy()
+		}
+
+		if ( IsValid( file.clientSideLeviathan2 ) && markerTargetName == CANYONLANDS_LEVIATHAN2_NAME )
+		{
+			printt( "Destroying clientSideLeviathan2 with markerName: " +  markerTargetName )
+			file.clientSideLeviathan2.Destroy()
+		}
+
+	#endif
+
 	entity leviathan = CreateClientSidePropDynamic( marker.GetOrigin(), marker.GetAngles(), LEVIATHAN_MODEL )
+
+	if ( markerTargetName == CANYONLANDS_LEVIATHAN1_NAME )
+		file.clientSideLeviathan1 = leviathan
+	else if ( markerTargetName == CANYONLANDS_LEVIATHAN2_NAME )
+		file.clientSideLeviathan2 = leviathan
+
+	bool stagingOnly = markerTargetName == "leviathan_staging"
+	if ( stagingOnly  )
+		SetAnimateInStaticShadow( leviathan, true )
+	else
+		SetAnimateInStaticShadow( leviathan, true )
+
 	thread LeviathanThink( marker, leviathan, stagingOnly )
 }
+
+
 
 void function LeviathanThink( entity marker, entity leviathan, bool stagingOnly )
 {
@@ -954,8 +1135,31 @@ void function LeviathanThink( entity marker, entity leviathan, bool stagingOnly 
 		}
 	)
 
+	leviathan.Anim_Play( "ACT_IDLE"  )
+
 	int count = 0
 	int liftCount = RandomIntRange( 3, 10 )
+
+	// Prevent rare bug where leviathan anims sync up
+	const float CYCLE_BUFFER_DIST = 0.3
+	Assert( CYCLE_BUFFER_DIST < 0.5, "Warning! Impossible to get second leviathan random animation cycle if cycle buffer distance is 0.5 or greater!" )
+
+	float randCycle
+	if ( file.lastLevAnimCycleChosen < 0 )
+		randCycle = RandomFloat( 1.0 )
+	else
+	{
+		// Get the range that remains when the full buffer range is subtracted, then roll within that range.
+		// Add that roll to the buffer top end (last chosen val + buffer), use modulo to clamp within 0 - 1
+		float randomRoll = RandomFloat( 1.0 - ( CYCLE_BUFFER_DIST * 2 ) )
+		float adjustedRandCycle = ( file.lastLevAnimCycleChosen + CYCLE_BUFFER_DIST + randomRoll ) % 1.0
+		randCycle = adjustedRandCycle
+	}
+
+	file.lastLevAnimCycleChosen = randCycle
+
+	leviathan.SetCycle( randCycle )
+	WaitForever()
 
 	while ( 1 )
 	{
@@ -965,17 +1169,70 @@ void function LeviathanThink( entity marker, entity leviathan, bool stagingOnly 
 		if ( count < liftCount )
 		{
 			if ( CoinFlip() )
-				waitthread PlayAnim( leviathan, "lev_idle_noloop" )
+				waitthread PlayAnim( leviathan, "lev_idle_lookup_noloop_kingscanyon_preview" )
 			else
-				waitthread PlayAnim( leviathan, "leviathan_idle_short_noloop" )
+				waitthread PlayAnim( leviathan, "lev_idle_noloop_kingscanyon_preview_0" )
 			count++
 		}
 		else
 		{
-			waitthread PlayAnim( leviathan, "lev_idle_lookup_noloop" )
+			waitthread PlayAnim( leviathan, "lev_idle_lookup_noloop_kingscanyon_preview" )
 			count = 0
 			liftCount = RandomIntRange( 3, 10 )
 		}
 	}
+
+}
+
+array<entity> function GetClientSideLeviathans()
+{
+	return [ file.clientSideLeviathan1, file.clientSideLeviathan2  ]
+}
+
+entity function GetClientSideLeviathan1()
+{
+	return file.clientSideLeviathan1
+
+}
+
+entity function GetClientSideLeviathan2()
+{
+	return file.clientSideLeviathan2
+
+}
+#endif
+
+void function CodeCallback_PlayerEnterUpdraftTrigger( entity trigger, entity player )
+{
+	//float entZ = player.GetOrigin().z
+	//OnEnterUpdraftTrigger( trigger, player, entZ + 100 )
+}
+
+
+void function CodeCallback_PlayerLeaveUpdraftTrigger( entity trigger, entity player )
+{
+//	OnLeaveUpdraftTrigger( trigger, player )
+}
+#if CLIENT
+
+void function MinimapPackage_HoverTank( entity ent, var rui )
+{
+	#if DEV
+		printt( "Adding 'rui/hud/gametype_icons/survival/sur_hovertank_minimap' icon to minimap" )
+	#endif
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/survival/sur_hovertank_minimap" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+	RuiSetBool( rui, "useTeamColor", false )
+}
+
+
+void function MinimapPackage_HoverTankDestination( entity ent, var rui )
+{
+	#if DEV
+		printt( "Adding 'rui/hud/gametype_icons/survival/sur_hovertank_minimap_destination' icon to minimap" )
+	#endif
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/survival/sur_hovertank_minimap_destination" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"" )
+	RuiSetBool( rui, "useTeamColor", false )
 }
 #endif

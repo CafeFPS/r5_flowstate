@@ -51,14 +51,22 @@ struct
 
 void function AnimEvents_Init()
 {
+	RegisterSignal( "HideBodyGroupReliable" )
+	RegisterSignal( "HideReliable" )
+
 	RegisterImpactTable( "pilot_bodyslam" )
+	RegisterImpactTable( "pilot_bodyslam_small" )
+	RegisterImpactTable( "exp_medium" )
 	RegisterImpactTable( "default" )
 	RegisterImpactTable( "default_nosound" )
+	RegisterImpactTable( "bounce_small_nosound" )
 
 	AddGlobalAnimEvent( "hide", GlobalAnimEvent_Hide )
 	AddGlobalAnimEvent( "show", GlobalAnimEvent_Show )
 
 	AddGlobalAnimEvent( "hide_reliable", GlobalAnimEvent_HideReliable )
+	AddGlobalAnimEventTokenize( "hide_bodygroup_reliable", GlobalAnimEvent_HideBodygroupReliable )
+	AddGlobalAnimEventTokenize( "end_hide_bodygroup_reliable", GlobalAnimEvent_EndHideBodygroupReliable )
 
 	AddGlobalAnimEventTokenize( "set_skin", GlobalAnimEvent_SetSkin )
 	AddGlobalAnimEventTokenize( "fade_over_time", GlobalAnimEvent_FadeOverTime )
@@ -376,6 +384,41 @@ void function GlobalAnimEvent_Show( entity guy )
 	guy.Show()
 }
 
+void function GlobalAnimEvent_HideBodygroupReliable( entity ent, array<string> tokens )
+{
+	#if(CLIENT)
+		if ( !ent.IsClientOnly() )
+			return
+	#endif
+
+	int bodyGroupIndex = ent.FindBodygroup( tokens[1] )
+	int bodyGroupStateStart = int( tokens[2] )
+	int bodyGroupStateEnd = int( tokens[3] )
+
+	thread __ReliableCallbackThread( ent, ["HideBodyGroupReliable"],
+		void function( entity ent ) : ( bodyGroupIndex, bodyGroupStateStart )
+		{
+			if ( IsValid( ent ) )
+				ent.SetBodygroupModelByIndex( bodyGroupIndex, bodyGroupStateStart )
+		},
+		void function( entity ent ) : ( bodyGroupIndex, bodyGroupStateEnd )
+		{
+			if ( IsValid( ent ) )
+				ent.SetBodygroupModelByIndex( bodyGroupIndex, bodyGroupStateEnd )
+		} )
+}
+
+void function GlobalAnimEvent_EndHideBodygroupReliable( entity guy, array<string> tokens )
+{
+	#if(CLIENT)
+		if ( !guy.IsClientOnly() )
+			return
+	#endif
+
+	//
+	guy.Signal( "HideBodyGroupReliable" )
+}
+
 void function GlobalAnimEvent_HideReliable( entity ent )
 {
 	#if CLIENT
@@ -383,27 +426,36 @@ void function GlobalAnimEvent_HideReliable( entity ent )
 			return
 	#endif
 
-	thread HideReliable( ent )
+	thread __ReliableCallbackThread( ent, ["HideReliable"], HideEnt, ShowEnt )
 }
 
-void function HideReliable( entity ent )
+void function HideEnt( entity ent )
+{
+	ent.Hide()
+}
+
+void function ShowEnt( entity ent )
+{
+	if ( IsValid( ent ) )
+		ent.Show()
+}
+
+void function __ReliableCallbackThread( entity ent, array<string> endSignals, void functionref( entity ) startFunc, void functionref( entity ) endFunc )
 {
 	ent.Signal( "HideReliable" )
 	ent.EndSignal( "OnDestroy" )
 	ent.EndSignal( "ScriptAnimStop" )
-	ent.EndSignal( "HideReliable" )
+	foreach ( signal in endSignals )
+		ent.EndSignal( signal )
 
 	OnThreadEnd(
-		function() : ( ent )
+		function() : ( ent, endFunc )
 		{
-			if ( IsValid( ent ) )
-			{
-				ent.Show()
-			}
+			endFunc( ent )
 		}
 	)
 
-	ent.Hide()
+	startFunc( ent )
 
 	while ( ent.Anim_IsActive() )
 		WaitFrame()

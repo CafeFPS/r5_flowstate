@@ -1,0 +1,21 @@
+When: "SERVER"
+Scripts:
+[
+	mp/levels/mp_rr_desertlands_64k_x_64k_nx.nut
+	mp/levels/survival_preprocess/mp_rr_desertlands_64k_x_64k_nx.nut
+	mp/_lasermesh.gnut
+]
+When: "CLIENT"
+Scripts:
+[
+	mp/levels/cl_mp_rr_desertlands_64k_x_64k.nut
+	mp/cl_lasermesh.gnut
+]
+When: "SERVER || CLIENT"
+Scripts:
+[
+	sh_evac_ship_precache.nut
+	sh_loot_creeps.gnut
+	gamemodes/sh_gamemode_shadow_squad_precache.nut
+	mp/levels/mp_rr_desertlands_common.nut
+]

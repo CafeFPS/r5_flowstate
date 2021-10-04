@@ -97,7 +97,7 @@ int function LSTAR_Proto_TitanAttack( entity weapon, WeaponPrimaryAttackParams a
 }
 
 // note: called for both "blowoff" and "burnout" states, check charge frac to determine
-void function OnWeaponCooldown_weapon_lstar( entity weapon )
+void function OnWeaponCooldown_weapon_lstar( entity weapon, bool temp )
 {
 	// weapon overheated!
 	if ( weapon.GetWeaponChargeFraction() == 1.0 )  // only works if charge_cooldown_delay is > 0

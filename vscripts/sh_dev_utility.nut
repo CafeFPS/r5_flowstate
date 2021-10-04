@@ -38,6 +38,12 @@ void function ShDevUtility_Init()
 }
 #endif
 
+#if SERVER || CLIENT || UI
+void function ShDevConsole_Init()
+{
+	// "ToggleConsole" command callback
+}
+#endif
 
 #if SERVER || CLIENT
 entity function GEBI( int entIndex )
@@ -93,10 +99,16 @@ void function PrintEntArray( array<entity> arr )
 {
 	printf( "%s() - len:%d  %s", FUNC_NAME(), arr.len(), string( arr ) )
 	foreach( int index, entity ent in arr )
-		printf( " [%d] - %s", index, string( arr[index] ) )
+		printf( " [%d] - %s %s", index, string( ent ), string( ent.GetOrigin() ) )
 }
 #endif
 
+void function PrintStringArray( array<string> arr )
+{
+	printf( "%s() - len:%d  %s", FUNC_NAME(), arr.len(), string( arr ) )
+	foreach( int index, string str in arr )
+		printf( " [%d] - \"%s\"", index, str )
+}
 
 // short cut for the console
 // script gp()[0].Die( gp()[1] )
@@ -109,7 +121,7 @@ array<entity> function gp()
 
 
 #if SERVER || CLIENT
-/*entity function ge( int ornull index = null )
+entity function ge( int ornull index = null )
 {
 	if ( index != null )
 		return GetEntByIndex( expect int( index ) )
@@ -123,7 +135,7 @@ array<entity> function gp()
 	TraceResults results = TraceLine( traceStart, traceEnd, player )
 
 	return results.hitEnt
-}*/
+}
 #endif
 
 
@@ -402,7 +414,7 @@ bool ornull function DevRespawnGetPlayerEliminationOverride( entity player )
 
 void function DevRespawnPlayer( entity player, bool shouldForce, void functionref( entity, int ) devCallbackFunc = null, int devIndex = -1 )
 {
-	/*if ( shouldForce && IsAlive( player ) )
+	if ( shouldForce && IsAlive( player ) )
 	{
 		player.SetHealth( 0 )
 		wait 1.0
@@ -414,19 +426,12 @@ void function DevRespawnPlayer( entity player, bool shouldForce, void functionre
 		//player.p.hasMatchParticipationEnded = false // they're still going!
 		//player.p.lastDeathTime = -1.0
 		ClearPlayerEliminated( player )
-		if ( shouldForce )
-		{
-			//RespawnTitanPilot( player )
-		}
-		else
-		{
-			DecideRespawnPlayer( player )
-		}
+		DecideRespawnPlayer( player )
 	}
 	if ( devCallbackFunc != null )
 	{
 		devCallbackFunc( player, devIndex )
-	}*/
+	}
 }
 
 void function _DelayUnsetRespawnPodLanded( entity player )
@@ -578,12 +583,18 @@ void function DEV_RespawnAllPlayersAndPutThemInALineAndGiveRandomSurvivalStuff( 
 
 bool function ClientCommand_Respawn( entity commandPlayer, array<string> argList )
 {
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return true
+
 	thread DEV_RespawnPlayersBySpecifiers( argList, commandPlayer )
 	return true
 }
 
 bool function ClientCommand_SetRespawnOverride( entity commandPlayer, array<string> al )
 {
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return true
+
 	if ( al.len() != 1 || !(al[0] == "off" || al[0] == "allow" || al[0] == "deny" || al[0] == "bots") )
 	{
 		Dev_PrintMessage( commandPlayer, "Invalid usage of set_respawn_override", "Please pass one of: off, allow, deny, bots" )

@@ -1,0 +1,18 @@
+When: "SERVER"
+Scripts:
+[
+	mp/levels/mp_rr_canyonlands_mu1.nut
+	mp/levels/mp_rr_canyonlands_mu1_common.nut
+	mp/levels/survival_preprocess/mp_rr_canyonlands_mu1.nut
+]
+When: "CLIENT"
+Scripts:
+[
+	mp/levels/cl_mp_rr_canyonlands_mu1.nut
+]
+
+When: "SERVER || CLIENT"
+Scripts:
+[
+	mp/levels/mp_rr_canyonlands_common.nut
+]

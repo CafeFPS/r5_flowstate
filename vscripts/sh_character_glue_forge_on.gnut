@@ -1,0 +1,28 @@
+
+#if SERVER || CLIENT
+global function InitForgeAll
+global function IsDoingPullshot
+#endif //
+
+global const bool HAS_FORGE = false
+global const bool HAS_FORGE_ABILITIES = (HAS_FORGE && true)
+global const bool HAS_FORGE_ALT_SUPER = false
+
+
+
+#if SERVER || CLIENT
+void function InitForgeAll()
+{
+	if ( WhenBuildFlag( "Season4Chars" ) )
+		Assert( HAS_FORGE, "Build merge mismatch again" )
+
+	RegisterSignal( "GPoundFinished" )
+}
+bool function IsDoingPullshot( entity player )
+{
+unreachable
+
+}
+	#endif
+
+

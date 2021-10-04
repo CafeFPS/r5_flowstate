@@ -10,6 +10,7 @@ WeaponData
 	"description" 									"#WPN_RE45_AUTOPISTOL_DESC"
 	"longdesc" 										"#WPN_RE45_AUTOPISTOL_LONGDESC"
 
+	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"bullet"
 
 	"menu_icon"										"rui/weapon_icons/r5/weapon_r45"
@@ -39,6 +40,8 @@ WeaponData
 	"sound_zoom_in"									"Weapon_RE45Auto_ADS_In"
 	"sound_zoom_out"								"Weapon_RE45Auto_ADS_Out"
 
+	"chroma_color"									"1 .7 .4"
+
 	// Sound
 	"fire_sound_1"									"weapon_re45auto_shell"
 	"fire_sound_2_player_1p"						"Weapon_RE45Auto_secondshot_1P"
@@ -60,100 +63,52 @@ WeaponData
 
 	"low_ammo_sound_name_1"							"RE45Auto_LowAmmo_Shot1"
 
-	// Damage - When Used by Players
+	"ammo_clip_size"   								"16"
+    "ammo_default_total"							"200"
+    "ammo_stockpile_max"							"200"
+    "ammo_no_remove_from_stockpile"					"1"
+    "ammo_min_to_fire"								"1"
+
+    "projectile_launch_speed"						"19500"
+
 	"damage_type" 									"bullet"
 
-	"ammo_clip_size"   								"15"
+    // Damage - When Used by Players
+    "damage_near_value"   							"11"
+    "damage_far_value"								"11"
+    "damage_very_far_value"							"11"
+    "damage_near_value_titanarmor"					"11"
+    "damage_far_value_titanarmor" 					"11"
+    "damage_very_far_value_titanarmor" 				"11"
+    "damage_rodeo" 									"110"
 
-	"projectile_launch_speed"						"19500"
+    "damage_unshielded_scale"              			"1.0"
 
-	MP_BASE
-	{
-		"ammo_default_total"							"200"
-		"ammo_stockpile_max"							"200"
-		"ammo_no_remove_from_stockpile"					"1"
-		"ammo_min_to_fire"								"1"
+    // Damage - When Used by NPCs
+    "npc_damage_near_value"   						"10"
+    "npc_damage_far_value"							"7"
+    "npc_damage_near_value_titanarmor"				"<KEEP_DEFAULT>"
+    "npc_damage_far_value_titanarmor" 				"<KEEP_DEFAULT>"
+    "npc_damage_near_distance"						"<KEEP_DEFAULT>"
+    "npc_damage_far_distance" 						"<KEEP_DEFAULT>"
 
-		// Damage - When Used by Players
-		"damage_near_value"   							"11"
-		"damage_far_value"								"11"
-		"damage_very_far_value"							"11"
-		"damage_near_value_titanarmor"					"11"
-		"damage_far_value_titanarmor" 					"11"
-		"damage_very_far_value_titanarmor" 				"11"
-		"damage_rodeo" 									"110"
+    // NPC
+    "npc_min_engage_range"							"0"
+    "npc_max_engage_range"							"1400"
+    "npc_min_engage_range_heavy_armor"				"500"
+    "npc_max_engage_range_heavy_armor"				"3000"
+    "npc_min_range"   								"0"
+    "npc_max_range"   								"8000"
 
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"10"
-		"npc_damage_far_value"							"7"
-		"npc_damage_near_value_titanarmor"				"0"
-		"npc_damage_far_value_titanarmor" 				"0"
-		"npc_damage_near_distance"						"400"
-		"npc_damage_far_distance" 						"800"
-
-		// NPC
-		"npc_min_engage_range"							"0"
-		"npc_max_engage_range"							"1400"
-		"npc_min_engage_range_heavy_armor"				"500"
-		"npc_max_engage_range_heavy_armor"				"3000"
-		"npc_min_range"   								"0"
-		"npc_max_range"   								"8000"
-
-		"npc_min_burst"   								"5"
-		"npc_max_burst"   								"7"
-		"npc_rest_time_between_bursts_min"				"0.2"
-		"npc_rest_time_between_bursts_max"				"0.3"
-
-		"damage_heavyarmor_nontitan_scale"				"0.35"
-	}
-
-	SP_BASE
-	{
-		"ammo_default_total"							"100"
-		"ammo_stockpile_max"							"140"
-		"ammo_no_remove_from_stockpile"					"0"
-		"ammo_min_to_fire"								"1"
-
-		// Damage - When Used by Players
-		"damage_near_value"   							"16"
-		"damage_far_value"								"14"
-   	 	"damage_very_far_value"							"<KEEP_DEFAULT>"
-		"damage_near_value_titanarmor"					"25"
-		"damage_far_value_titanarmor" 					"15"
-		"damage_very_far_value_titanarmor" 				"15"
-		"damage_rodeo" 									"110"
-
-
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"10"
-		"npc_damage_far_value"							"7"
-		"npc_damage_near_value_titanarmor"				"<KEEP_DEFAULT>"
-		"npc_damage_far_value_titanarmor" 				"<KEEP_DEFAULT>"
-		"npc_damage_near_distance"						"<KEEP_DEFAULT>"
-		"npc_damage_far_distance" 						"<KEEP_DEFAULT>"
-
-		// NPC
-		"npc_min_engage_range"							"0"
-		"npc_max_engage_range"							"1400"
-		"npc_min_engage_range_heavy_armor"				"500"
-		"npc_max_engage_range_heavy_armor"				"3000"
-		"npc_min_range"   								"0"
-		"npc_max_range"   								"8000"
-
-		"npc_min_burst"   								"5"
-		"npc_max_burst"   								"7"
-		"npc_rest_time_between_bursts_min"				"0.2"
-		"npc_rest_time_between_bursts_max"				"0.3"
-
-		"damage_heavyarmor_nontitan_scale"				"1"
-	}
+    "npc_min_burst"   								"5"
+    "npc_max_burst"   								"7"
+    "npc_rest_time_between_bursts_min"				"0.2"
+    "npc_rest_time_between_bursts_max"				"0.3"
 
 	"proficiency_poor_spreadscale"					"3.33333"
 	"proficiency_average_spreadscale" 				"3.33333"
 	"proficiency_good_spreadscale"					"1.2"
 	"proficiency_very_good_spreadscale"   			"1.2"
-
-	//"viewmodel_offset_ads"							"0 0 .35"
 
 	"dof_zoom_nearDepthStart"						"0"
 	"dof_zoom_nearDepthEnd"							"0"
@@ -269,6 +224,10 @@ WeaponData
 
 	Mods
 	{
+	    gold
+	    {
+	    }
+
 		survival_finite_ammo
         {
             "ammo_default_total"							"0"
@@ -278,6 +237,25 @@ WeaponData
             "low_ammo_fraction" 							"0.3"
 
 	   		"uses_ammo_pool"								"1"
+        }
+
+        hopup_shield_breaker
+        {
+            "damage_shield_scale"      			"1.6"
+            "projectile_trail_effect_0"			"P_tracer_proj_smg_shield_breaker"
+            "impact_effect_table"				"shield_breaker_bullet"
+
+        	"burst_or_looping_fire_sound_start_1p"			"Weapon_RE45Auto_FirstShot_1P"
+			"burst_or_looping_fire_sound_middle_1p"			"Weapon_RE45Auto_FireLoop_ShieldBreaker_1P"
+			"burst_or_looping_fire_sound_end_1p"			"Weapon_RE45Auto_LoopEnd_ShieldBreaker_1P"
+
+			"burst_or_looping_fire_sound_start_3p"			""
+			"burst_or_looping_fire_sound_middle_3p"			"Weapon_RE45Auto_FireLoop_ShieldBreaker_3P"
+			"burst_or_looping_fire_sound_end_3p"			"weapon_re45auto_loopend_ShieldBreaker_3p"
+
+			"burst_or_looping_fire_sound_start_npc"			""
+			"burst_or_looping_fire_sound_middle_npc"		"Weapon_RE45Auto_Loop_3P_NPC_A"
+			"burst_or_looping_fire_sound_end_npc"			""
         }
 
         optic_cq_threat
@@ -290,15 +268,15 @@ WeaponData
 
         bullets_mag_l1
         {
-        	"ammo_clip_size"   					"18"
+        	"ammo_clip_size"   					"19"
         }
         bullets_mag_l2
         {
-        	"ammo_clip_size"   					"21"
+        	"ammo_clip_size"   					"22"
         }
 		bullets_mag_l3
 		{
-			"ammo_clip_size"   					"24"
+			"ammo_clip_size"   					"25"
 		}
 	}
 

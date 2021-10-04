@@ -36,10 +36,13 @@ global function GetEHISignalDummy
 global function WaitForEHISignalDummy
 global function EHI_IsConnected
 global function EHI_GetName
+global function EEH_GetTeam
 global function EHI_GetTeam
+global function EEH_GetTeamMemberIndex
 global function EHI_GetTeamMemberIndex
 global function GetPlayerEHIArrayOfTeam
 global function GetPlayerSquadSafe
+global function EEHHasValidScriptStruct
 #endif
 
 
@@ -65,6 +68,8 @@ global function UIToClient_UIVMIsShuttingDown
 global function UIToClient_UIVMJustStarted
 global function GetPlayerName
 global function GetKillerName
+global function GetPlayerRankScoreFromEHI
+global function GetPlayerLadderPosFromEHI
 #endif
 #if UI
 global function ShEHI_VMShutdown
@@ -112,13 +117,16 @@ FileStruct_LifetimeLevel& fileLevel
 void function ShEHI_LevelInit_Begin()
 {
 	#if CLIENT || UI
-		RegisterSignal( "LocalClientEHI" )
+		RegisterSignal( "OnLocalClientEHIValid" )
 		RegisterSignal( "EHISignalDummyCreated" )
 	#endif
 
 	#if UI
 		FileStruct_LifetimeLevel newFileLevel
 		fileLevel = newFileLevel
+
+		if ( !( uiGlobal.uiShutdownCallbacks.contains(ShEHI_VMShutdown) ) )
+			AddUICallback_UIShutdown( ShEHI_VMShutdown )
 	#endif
 
 	#if CLIENT
@@ -323,6 +331,13 @@ string function EHI_GetName( EHI ent )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+int function EEH_GetTeam( EncodedEHandle ent )
+{
+	Assert( ent != EncodedEHandle_null )
+	return GetEHIScriptStructFromEncodedEHandle( ent ).team
+}
+#endif
 
 #if SERVER || CLIENT || UI
 int function EHI_GetTeam( EHI ent )
@@ -337,6 +352,13 @@ int function EHI_GetTeam( EHI ent )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+int function EEH_GetTeamMemberIndex( EncodedEHandle ent )
+{
+	Assert( ent != EncodedEHandle_null )
+	return GetEHIScriptStructFromEncodedEHandle( ent ).teamMemberIndex
+}
+#endif
 
 #if SERVER || CLIENT || UI
 int function EHI_GetTeamMemberIndex( EHI ent )
@@ -351,8 +373,35 @@ int function EHI_GetTeamMemberIndex( EHI ent )
 }
 #endif
 
+#if SERVER || CLIENT || UI 
+int function EHI_GetRankScore( EHI ent )
+{
+	#if SERVER
+		Assert( IsValid( ent ) )
+		return GetPlayerRankScoreFromEHI( ent )
 
-#if SERVER || CLIENT || UI
+#elseif CLIENT || UI 
+		Assert( ent != EHI_null )
+		return GetEHIScriptStruct( ent ).rankScore
+	#endif
+}
+#endif
+
+#if SERVER || CLIENT || UI 
+int function EHI_GetRankedLadderPos( EHI ent )
+{
+	#if SERVER
+		Assert( IsValid( ent ) )
+		return GetPlayerLadderPosFromEHI( ent )
+
+#elseif CLIENT || UI 
+		Assert( ent != EHI_null )
+		return GetEHIScriptStruct( ent ).rankedLadderPosition
+	#endif
+}
+#endif
+
+#if SERVER || CLIENT || UI 
 array<EHI> function GetPlayerEHIArrayOfTeam( int team )
 {
 	#if SERVER
@@ -426,12 +475,15 @@ EHI function LocalClientEHI()
 #if CLIENT || UI
 EHI function WaitForLocalClientEHI()
 {
+	while ( !IsValidSignal( "OnLocalClientEHIValid" ) )
+		WaitFrame()
+
 	while ( fileLevel.localClientEHI == EHI_null )
 	{
 		#if CLIENT
-			WaitSignal( clGlobal.signalDummy, "LocalClientEHI" )
+			WaitSignal( clGlobal.signalDummy, "OnLocalClientEHIValid" )
 		#elseif UI
-			WaitSignal( uiGlobal.signalDummy, "LocalClientEHI" )
+			WaitSignal( uiGlobal.signalDummy, "OnLocalClientEHIValid" )
 		#endif
 	}
 	return fileLevel.localClientEHI
@@ -487,6 +539,7 @@ void function ShEHI_OnPlayerCreated( entity ent )
 	ehiss.ehi = ehi
 	ehiss.isPlayer = true
 	ehiss.isConnected = true
+	ehiss.name = ent.GetPlayerName()
 	ehiss.team = ent.GetTeam()
 	ehiss.teamMemberIndex = ent.GetTeamMemberIndex()
 	#if CLIENT
@@ -496,7 +549,7 @@ void function ShEHI_OnPlayerCreated( entity ent )
 		if ( fileLevel.localClientEHI == EHI_null && ehiss.isLocalClientPlayer )
 		{
 			fileLevel.localClientEHI = ehi
-			Signal( clGlobal.signalDummy, "LocalClientEHI" )
+			Signal( clGlobal.signalDummy, "OnLocalClientEHIValid" )
 		}
 
 		Signal( fileLevel.signalDummy, "EHISignalDummyCreated" )
@@ -541,12 +594,12 @@ void function ClientToUI_OnPlayerCreatedOrUpdated( EHI ehi,
 	if ( isLocalClientPlayer )
 	{
 		fileLevel.localClientEHI = ehi
-		Signal( uiGlobal.signalDummy, "LocalClientEHI" )
+		Signal( uiGlobal.signalDummy, "OnLocalClientEHIValid" )
 	}
 
 	Signal( fileLevel.signalDummy, "EHISignalDummyCreated" )
 
-	// callbacks
+	//
 	ShLoadouts_OnPlayerEHICreated( ehi )
 }
 #endif
@@ -679,5 +732,23 @@ string function GetPlayerName( EHI playerEHI )
 void function EHI_GameStatePlaying()
 {
 	fileLevel.obfuscatedNameMap.clear()
+}
+#endif
+
+#if SERVER || CLIENT
+int function GetPlayerRankScoreFromEHI( EHI playerEHI )
+{
+	int rankScore = EHI_GetRankScore( playerEHI )
+
+	return rankScore
+}
+#endif
+
+#if SERVER || CLIENT
+int function GetPlayerLadderPosFromEHI( EHI playerEHI )
+{
+	int rankScore = EHI_GetRankedLadderPos( playerEHI )
+
+	return rankScore
 }
 #endif

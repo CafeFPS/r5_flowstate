@@ -1,6 +1,8 @@
+untyped
+
 //=========================================================
 //	_mapspawn.nut
-//  Called on newgame or transitions, BEFORE entities have been created and initialized
+//	Called on newgame or transitions, BEFORE entities have been created and initialized
 //=========================================================
 
 global function CodeCallback_MapSpawn
@@ -14,7 +16,6 @@ global entity _sc = null
 // dumpsite for other files
 
 global const int TEAM_COUNT = 31
-
 
 // end dumpsite
 
@@ -44,13 +45,13 @@ global struct SvGlobals
 {
 	entity worldspawn
 
-	array<spawnCallbackFuncArray> 					spawnCallbackFuncs
-	array<spawnCallbackEditorClassFuncArray>		spawnCallbackEditorClassFuncs
-	array<spawnCallbackFuncArray_scriptNoteworthy>	spawnCallbackFuncs_scriptNoteworthy
+	array<spawnCallbackFuncArray>                   spawnCallbackFuncs
+	array<spawnCallbackEditorClassFuncArray>        spawnCallbackEditorClassFuncs
+	array<spawnCallbackFuncArray_scriptNoteworthy>  spawnCallbackFuncs_scriptNoteworthy
 
 	table<string, array<void functionref( entity )> > spawnCallbacks_scriptName
 
-	array<pilotEliminationDialogueCallbackType> 	pilotEliminationDialogueCallbacks
+	array<pilotEliminationDialogueCallbackType> pilotEliminationDialogueCallbacks
 	table<string, array<bool functionref( entity player, entity healthpack)> > onTouchHealthKitCallbacks
 	array<void functionref( entity )> onClientConnectedCallbacks
 	array<void functionref(entity)> onPlayerRespawnedCallbacks
@@ -77,7 +78,7 @@ global struct SvGlobals
 
 	float pilotRespawnDelay = 0.0
 
-	array<void functionref( entity, var )> 		soulDeathFuncs
+	array<void functionref( entity, var )> soulDeathFuncs
 
 	table<string, void functionref(entity)> globalAnimEventCallbacks
 
@@ -104,6 +105,7 @@ global struct SvGlobals
 	table<string, array<void functionref( entity ent )> >onEntityChangedTeamCallbacks
 
 	table<string, bool functionref( entity player, array<string>args )> clientCommandCallbacks
+	table<string, void functionref( entity player, array<string>args )> clientCommandCallbacksNew
 	array<void functionref()>[ eGameState._count_ ] gameStateEnterCallbacks
 
 	bool allowPointsOverLimit = false
@@ -113,9 +115,9 @@ global struct SvGlobals
 	entity levelEnt
 
 	//TODO: Get rid of these and use the new StartParticleEffectInWorld_ReturnEntity etc functions
-	entity fx_CP_color_enemy //Used for setting control points on FX
-	entity fx_CP_color_friendly //Used for setting control points on FX
-	entity fx_CP_color_neutral //Used for setting control points on FX
+	entity fx_CP_color_enemy        //Used for setting control points on FX
+	entity fx_CP_color_friendly     //Used for setting control points on FX
+	entity fx_CP_color_neutral      //Used for setting control points on FX
 
 	array<entity>[ TEAM_COUNT ] classicMPDropships
 	bool evacEnabled = false
@@ -139,21 +141,21 @@ global struct SvGlobals
 
 	array<void functionref( entity, entity )> onLeechedCustomCallbackFunc
 
-	bool forceSpawnAsTitan 						= false
-	bool forceSpawnIntoTitan 					= false
-	bool forceDisableTitanfalls 				= false
-	bool titanfallEnabled 						= true
+	bool forceSpawnAsTitan                      = false
+	bool forceSpawnIntoTitan                    = false
+	bool forceDisableTitanfalls                 = false
+	bool titanfallEnabled                       = true
 
 	//RoundWinningKillReplay related
-	entity roundWinningKillReplayViewEnt 		= null
-	entity roundWinningKillReplayVictim 		= null
-	int roundWinningKillReplayInflictorEHandle 	= -1
-	bool watchingRoundWinningKillReplay 		= false
+	entity roundWinningKillReplayViewEnt        = null
+	entity roundWinningKillReplayVictim         = null
+	int roundWinningKillReplayInflictorEHandle  = -1
+	bool watchingRoundWinningKillReplay         = false
 
-	bool forceNoFinalRoundDraws 				= false //Setting this to true will force a round based mode to keep playing rounds until a winner is determined. Game will not end on draw.
+	bool forceNoFinalRoundDraws                 = false //Setting this to true will force a round based mode to keep playing rounds until a winner is determined. Game will not end on draw.
 
-	bool roundBasedTeamScore_RoundReset 		= true //if true, reset team scores at the start of each round.
-	bool isInPilotGracePeriod 					= false // if true, all players will be allowed to switch loadouts
+	bool roundBasedTeamScore_RoundReset         = true  // if true, reset team scores at the start of each round.
+	bool isInPilotGracePeriod                   = false // if true, all players will be allowed to switch loadouts.
 	
 	table<string, void functionref(entity,array<string>)> globalAnimEventTokenizeCallbacks
 	array<bool functionref( entity player, entity zipline, vector ziplineClosestPoint )> canUseZiplineCallbacks
@@ -161,6 +163,9 @@ global struct SvGlobals
 	// r5 stuff
 	array<void functionref(entity, entity)> onPilotEmbarkingTitanCallbacks
 	array<void functionref(entity, entity)> onPlayerUsedOffhandCallbacks
+	array< void functionref( entity, entity, string, int, vector, vector ) > onWeaponAttackCallbacks
+	array< void functionref( entity ) > onPreClientDisconnectedCallbacks
+	array< void functionref( entity, entity, int ) > onDeathBoxSpawnedCallbacks
 }
 
 global SvGlobals svGlobal
@@ -171,6 +176,16 @@ void function CodeCallback_MapSpawn() // original script entry point
 	//seterrorhandler(void function() {})
 	ScriptCompilerTest()
 	LoadDiamond()
+	
+	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
+	RegisterSignal( "MirageSpotted" )
+	RegisterSignal( "forever" )
+	RegisterSignal( "UpdatePlayerStatusCounts" )
+	RegisterSignal( "BleedOut_OnReviveStart" )
+	RegisterSignal( "PlayerPlaneStatusChanged" )
+	RegisterSignal( "CancelTryRelinquishSquadLeaderOrBreakFromSquad" )
+	RegisterSignal( "GameStateChanged" )
+	RegisterSignal( "CleanupOutsideCircle" )
 
 	_cc = CreateEntity( "point_clientcommand" )
 	_sc = CreateEntity( "point_servercommand" )
@@ -188,46 +203,116 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/dev/empty_model.rmdl" )
 	PrecacheModel( $"mdl/error.rmdl" ) // model used when no model is provided
 
-	PrecacheModel( $"mdl/weapons/arms/pov_pilot_heavy_pathfinder.rmdl" )
-    PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
+	PrecacheModel( $"mdl/Humans/class/medium/combat_dummie_medium.rmdl" )
+	
+	//Charms - todo: find a better way
 
-    PrecacheWeapon( $"mp_weapon_sniper" )
-    PrecacheWeapon( $"mp_weapon_alternator_smg" )
-    PrecacheWeapon( $"mp_weapon_wraith_kunai_primary" )
-    PrecacheWeapon( $"mp_ability_grapple" )
-	PrecacheWeapon( $"mp_weapon_deployable_medic" )
-	PrecacheWeapon( $"mp_ability_gibraltar_shield" )
+	PrecacheModel( $"mdl/props/charm/charm_fireball.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_yeti.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_crow.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_rank_gold.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_rank_diamond.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_rank_predator.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_nessy.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_lifeline_drone.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_rank_platinum.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_pumpkin.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_gas_canister.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_jester.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_nessy_ghost.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_clown.rmdl" )
+	PrecacheModel( $"mdl/props/charm/charm_witch.rmdl" )
+	
+	PrecacheModel( $"mdl/robots/drone_frag/drone_frag.rmdl" )
+	PrecacheModel( $"mdl/vehicle/droppod_fireteam/droppod_fireteam.rmdl" )
+	PrecacheModel( $"mdl/vehicle/droppod_loot/droppod_loot_LL_holo.rmdl" )
+	PrecacheModel( $"mdl/robots/marvin/marvin_gladcard.rmdl" )
+	PrecacheModel( $"mdl/menu/xp_badge.rmdl" )
+	PrecacheModel( $"mdl/menu/coin.rmdl" )
+	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
+
+	PrecacheWeapon( $"mp_weapon_melee_survival" )
+	PrecacheWeapon( $"mp_weapon_mdlspawner" )
+	PrecacheWeapon( $"mp_weapon_alternator_smg" )
 	PrecacheWeapon( $"mp_weapon_bubble_bunker" )
+	PrecacheWeapon( $"mp_weapon_dmr" )
+	PrecacheWeapon( $"mp_weapon_doubletake" )
+	PrecacheWeapon( $"mp_weapon_energy_shotgun" )
+	PrecacheWeapon( $"mp_weapon_lmg" )
+	PrecacheWeapon( $"mp_weapon_lstar" )
+	PrecacheWeapon( $"mp_weapon_mastiff" )
+	PrecacheWeapon( $"mp_weapon_shotgun" )
+	PrecacheWeapon( $"mp_weapon_shotgun_pistol" )
+	PrecacheWeapon( $"mp_weapon_sniper" )
+	PrecacheWeapon( $"mp_weapon_r97" )
 	PrecacheWeapon( $"mp_ability_holopilot" )
-	PrecacheWeapon( $"mp_ability_phase_walk")
-	PrecacheWeapon( $"mp_ability_hunt_mode")
-	PrecacheWeapon( $"mp_weapon_frag_grenade")
-	PrecacheWeapon( $"mp_weapon_grenade_emp" )
+	PrecacheWeapon( $"mp_weapon_hemlok" )
+	PrecacheWeapon( $"mp_weapon_autopistol" )
+	PrecacheWeapon( $"mp_weapon_wingman" )
+	PrecacheWeapon( $"mp_weapon_thermite_grenade" )
+	PrecacheWeapon( $"mp_weapon_deployable_medic" )
+	PrecacheWeapon( $"mp_ability_grapple" )
+	PrecacheWeapon( $"mp_weapon_vinson" )
+	PrecacheWeapon( $"mp_weapon_pdw" )
+	PrecacheWeapon( $"mp_ability_phase_walk" )
+	PrecacheWeapon( $"mp_ability_3dash" )
+	PrecacheWeapon( $"mp_weapon_phase_tunnel" )
+	PrecacheWeapon( $"mp_weapon_zipline" )
+	PrecacheWeapon( $"mp_ability_area_sonar_scan" )
+	PrecacheWeapon( $"mp_ability_consumable" )
+	PrecacheWeapon( $"mp_weapon_g2" )
+	PrecacheWeapon( $"mp_weapon_grenade_bangalore" )
+	PrecacheWeapon( $"mp_weapon_incap_shield" )
+	PrecacheWeapon( $"mp_ability_care_package" )
+	PrecacheWeapon( $"mp_ability_hunt_mode" )
 	PrecacheWeapon( $"mp_weapon_dirty_bomb" )
+	PrecacheWeapon( $"mp_weapon_energy_ar" )
+	PrecacheWeapon( $"mp_weapon_esaw" )
+	PrecacheWeapon( $"mp_weapon_semipistol" )
+	PrecacheWeapon( $"mp_weapon_frag_grenade" )
+	PrecacheWeapon( $"mp_weapon_rspn101" )
+	PrecacheWeapon( $"mp_weapon_defender" )
+	PrecacheWeapon( $"mp_weapon_jump_pad" )
+	//PrecacheWeapon( $"mp_weapon_smart_pistol" ) //TODO: Fix This
+	PrecacheWeapon( $"mp_weapon_grenade_creeping_bombardment" )
+	PrecacheWeapon( $"mp_weapon_grenade_defensive_bombardment" )
+	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
+	PrecacheWeapon( $"mp_weapon_grenade_electric_smoke" )
+	PrecacheWeapon( $"mp_weapon_deployable_cover" )
+	PrecacheWeapon( $"melee_data_knife" )
 
-	RegisterSignal("forever")
 	printl( "Code Script: _mapspawn" )
 
-	//SPMP_MapSpawn_Init() // naw actually dont lol
 	SV_CL_Shared_Init()
+	ClientCommands_Init()
 }
-
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	printl( "############################" )
-	printl( "CodeCallback_ClientCommand() before" )
-	printl( "player = " + player )
-	printl( "args:" )
-	foreach( key, value in args )
-		printl( key + " : " + value )
-	printl( "############################" )
+
+	if( !Dev_CommandLineHasParm( "-nodebugprints" ) )
+	{
+		printl( "############################" )
+		printl( "CodeCallback_ClientCommand() before" )
+		printl( "player = " + player )
+		printl( "args:" )
+		foreach( key, value in args )
+			printl( key + " : " + value )
+		printl( "############################" )
+	}
+
 
 	string commandString = args.remove( 0 )
 
 	//TODO: Track down Why VModEnable is being called from code?
 
 	//Assert( commandString in svGlobal.clientCommandCallbacks )
+	if(commandString in svGlobal.clientCommandCallbacksNew)
+	{
+		printt("CodeCallback_ClientCommand", commandString)
+		svGlobal.clientCommandCallbacksNew[ commandString ]( player, args )
+		return true
+	}
 	if ( commandString in svGlobal.clientCommandCallbacks  )
 	{
 		return svGlobal.clientCommandCallbacks[ commandString ]( player, args )

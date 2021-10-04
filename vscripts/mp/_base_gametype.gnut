@@ -77,6 +77,7 @@ function BaseGametype_Init()
 	BaseGametype_Init_MPSP()
 
 	AddCallback_OnTitanBecomesPilot( OnTitanBecomesPilot_OutOfBoundsCheck )
+	AddDeathCallback( "player", PlayerOrNPCKilled )
 }
 
 void function BaseGametypeEntitiesDidLoad()
@@ -209,8 +210,8 @@ bool function IsProtectedFromFriendlyFire_MP( entity attacker, entity ent, var d
 	if ( attacker == ent )
 		return false
 
-	if ( attacker.GetTeam() != ent.GetTeam() )
-		return false
+	if ( attacker.GetTeam() == ent.GetTeam() )
+		return true
 
 	if ( DamageIgnoresFriendlyFire( damageInfo ) )
 		return false
@@ -289,14 +290,15 @@ bool function DamageIgnoresFriendlyFire( damageInfo )
 
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
-	// switch ( damageSourceID )
-	// {
-	// 	case eDamageSourceId.switchback_trap:
-	// 	case eDamageSourceId.suicideSpectreAoE:
-	// 	case eDamageSourceId.mp_titanweapon_stun_laser: // for energy transfer functionality. Preventing FF damage in the callback.
-	// 	case eDamageSourceId.mp_titanability_smoke: // For FD Vanguard Shield Upgrades. Preventing FF damage in the callback.
-	// 		return true
-	// }
+	switch ( damageSourceID )
+	{
+		// case eDamageSourceId.switchback_trap:
+		// case eDamageSourceId.suicideSpectreAoE:
+		// case eDamageSourceId.mp_titanweapon_stun_laser: // for energy transfer functionality. Preventing FF damage in the callback.
+		// case eDamageSourceId.mp_titanability_smoke: // For FD Vanguard Shield Upgrades. Preventing FF damage in the callback.
+		default:
+			return true
+	}
 
 	return false
 }
@@ -419,21 +421,7 @@ bool function ShouldPlayerTakeDamage( entity player, damageInfo )
 	}
 	else
 	{
-		//Rodeo cases
-		entity titanSoul = player.GetTitanSoulBeingRodeoed()
-		if ( IsValid( titanSoul ) )
-		{
-			entity titan = titanSoul.GetTitan()
-			//Stop being stepped on by the guy you are rodeoing
-			if ( IsTitanCrushDamage( damageInfo ) && ( titan == DamageInfo_GetAttacker( damageInfo ) ) )
-				return false
-			else
-				return true
-		}
-		else
-		{
-			return true
-		}
+		return true
 	}
 
 	unreachable
@@ -705,29 +693,30 @@ entity function GetLastAttacker( entity ent )
 	return ent.e.lastAttacker
 }
 
-bool function PlayerOrNPCKilled( entity ent, var damageInfo )
+void function PlayerOrNPCKilled( entity ent, var damageInfo )
 {
 	bool gamePlayingOrSuddenDeath = GamePlayingOrSuddenDeath() // Storing this off here, the game state can change in the callbacks below which may cause kills to not count
 
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 
 	if ( damageSourceID == eDamageSourceId.round_end )
-		return false
+		return //false
 
 	entity attacker = GetAttackerOrLastAttacker( ent, damageInfo )
 	if ( !IsValid( attacker ) )
-		return false
+		return //false
 
 	if ( ent.IsPlayer() )
 	{
 		LogPlayerMatchStat_Death( ent )
+		ent.p.lastDeathTime = Time()
 
 		if ( attacker.IsPlayer() && (attacker != ent) )
 			LogPlayerMatchStat_KilledAPilot( attacker )
 	}
 
 	if ( ent.IsNPC() && !IsValidNPCTarget( ent ) )
-		return false
+		return //false
 
 	if ( !attacker.IsPlayer() )
 	{
@@ -765,7 +754,7 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 		attacker = attackerInfo.player
 
 		if ( !IsValid( attacker ) )
-			return true
+			return //true
 
 		// Hack - attacker history isn't on client to calculate if a player should get credit for a kill when AI steals the final killing shot while a player is damaging them.
 		array<entity> playerArray = GetPlayerArray()
@@ -791,11 +780,11 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 
 	if ( ent.GetTeam() == attacker.GetTeam() )
 	{
-		return false
+		return //false
 	}
 
 	// Respawn Kill INFECTION!!
-	if ( ent.IsPlayer() && attacker.IsPlayer() )
+	if ( ent.IsPlayer() && attacker.IsPlayer() && !DEV_ShouldIgnorePersistence() )
 	{
 		if ( ent.GetPersistentVar( "respawnKillInfected" ) && !attacker.GetPersistentVar( "respawnKillInfected" ) )
 			attacker.SetPersistentVar( "respawnKillInfected", true )
@@ -828,7 +817,7 @@ bool function PlayerOrNPCKilled( entity ent, var damageInfo )
 		}
 	}
 
-	return true
+	return //true
 }
 
 // used to calculate build time credit in special cases. Cloak Drones and Suicide Spectres use it for now.
@@ -1074,6 +1063,9 @@ bool function GetPilotBotFlag()
 
 function DoRespawnPlayer( entity player, entity spawnPoint )
 {
+	if( IsAlive( player ) )
+		return
+
 	player.p.lastSpawnPoint = spawnPoint
 	player.RespawnPlayer( spawnPoint ) //This will send "OnRespawned" signal, killing the thread if started from PostDeathThread
 }
@@ -1539,7 +1531,7 @@ int function CodeCallback_GetWeaponDamageSourceId( entity weapon )
 {
 	string classname = weapon.GetWeaponClassName()
 
-	#if DEV
+	#if R5DEV
 		if ( ("devWeapons" in level) && classname in level.devWeapons )
 			return 0
 

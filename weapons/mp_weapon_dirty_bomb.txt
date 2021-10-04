@@ -14,6 +14,7 @@ WeaponData
 	"readymessage"              					"#HUD_BURNMETER_READY_BUBBLE_BUNKER"
 	"readyhint"                 					"#HUD_BURNMETER_READY_BUBBLE_BUNKER_HINT"
 
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"offhand_default_inventory_slot"				"1"
 	"minimap_reveal_distance"						"32000"
@@ -23,6 +24,7 @@ WeaponData
 	"offhand_holster_primary"	                    "1"
 
     "does_not_interrupt_cloak"						"1"
+    "trophy_system_ignore"                          "1"
 
 	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_weapon_dirty_bomb"
 
@@ -38,6 +40,7 @@ WeaponData
 
     "grenade_arc_indicator_show_from_hip"			"1"
     "grenade_arc_indicator_bounce_count"			"1"
+    "grenade_arc_indicator_ignore_base_velocity"	"1"
 	"grenade_arc_indicator_effect"					"P_arc_green_bounce"
 	"grenade_arc_indicator_effect_first"			"P_arc_green"
 	"grenade_arc_impact_indicator_effect"			"P_arc_green_end"
@@ -92,6 +95,7 @@ WeaponData
 	"stick_pilot"                                   "0"
 	"stick_titan"                                   "0"
 	"stick_npc"                                     "0"
+	"stick_drone"                                   "0"
 
 	"projectile_visible_to_smart_ammo"				"0"
 
@@ -168,13 +172,13 @@ WeaponData
 
 	MP_BASE
 	{
-		"ammo_clip_size"   								"270"
-		"ammo_default_total"							"270"
+		"ammo_clip_size"   								"300"
+		"ammo_default_total"							"300"
 		"ammo_display"									"count"
-		"ammo_min_to_fire"								"90"
-		"ammo_per_shot"									"90"
-		"ammo_stockpile_max"							"90"
-		"regen_ammo_refill_rate"						"3"
+		"ammo_min_to_fire"								"100"
+		"ammo_per_shot"									"100"
+		"ammo_stockpile_max"							"100"
+		"regen_ammo_refill_rate"						"4"
 		"regen_ammo_refill_start_delay"					"0.0"
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"

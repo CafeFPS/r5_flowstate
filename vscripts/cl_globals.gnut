@@ -42,6 +42,7 @@ global struct ClGlobals
 	array<void functionref( entity )> onPetTitanModeChangedCallbacks
 	array<void functionref( entity )> onPetTitanChangedCallbacks
 	array<void functionref( entity )> onPlayerClassChangedCallbacks
+	array<void functionref( entity )> onPlayerClassActuallyChangedCallbacks
 	array<void functionref( entity )> consumableInventoryChangedCallbacks
 
 	array<bool functionref( entity player, entity zipline, vector ziplineClosestPoint )> canUseZiplineCallbacks
@@ -85,6 +86,7 @@ global struct ClGlobals
 	var topoFullscreenHud
 	var topoFullscreenHudPermanent
 	var topoFullscreenFullMap
+	var topFullscreenTargetInfo
 	var topoMinimap
 	var topoTitanCockpitHud
 	var topoTitanCockpitLowerHud
@@ -121,6 +123,11 @@ global struct ClGlobals
 	bool isScoreboardShown = false
 
 	entity clientCamera
+
+
+	#if(true)
+		int PROTO_guidedMortarIncomingCount = 0
+	#endif
 }
 
 global ClGlobals clGlobal

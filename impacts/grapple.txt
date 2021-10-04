@@ -125,7 +125,7 @@ ImpactTable
 		"N" "Default.Grapple.Impact_3P_vs_3P"	// sand?
 		"O" "Default.Grapple.Impact_3P_vs_3P"
 		"P" "Android.Grapple.Impact_3P_vs_3P"
-
+		"Q" "Sand.Grapple.Impact_3P_vs_3P"
 		"R" "SolidMetal.Grapple.Impact_3P_vs_3P"
 		"S" "Default.Grapple.Impact_3P_vs_3P"
 		"T" "Default.Grapple.Impact_3P_vs_3P"
@@ -161,7 +161,7 @@ ImpactTable
 		"N" "Default.Grapple.Impact_1P_vs_3P"	// sand?
 		"O" "Default.Grapple.Impact_1P_vs_3P"
 		"P" "Android.Grapple.Impact_1P_vs_3P"
-
+		"Q" "Sand.Grapple.Impact_1P_vs_3P"
 		"R" "SolidMetal.Grapple.Impact_1P_vs_3P"
 		"S" "Default.Grapple.Impact_1P_vs_3P"
 		"T" "Default.Grapple.Impact_1P_vs_3P"
@@ -197,7 +197,7 @@ ImpactTable
 		"N" "Default.Grapple.Impact_3P_vs_3P"	// sand?
 		"O" "Default.Grapple.Impact_3P_vs_3P"
 		"P" "Android.Grapple.Impact_3P_vs_1P"
-
+		"Q" "Sand.Grapple.Impact_3P_vs_3P"
 		"R" "SolidMetal.Grapple.Impact_3P_vs_3P"
 		"S" "Default.Grapple.Impact_3P_vs_3P"
 		"T" "Default.Grapple.Impact_3P_vs_3P"

@@ -42,6 +42,8 @@ void function IntroQuipsPanel_OnHide( var panel )
 {
 	RemoveCallback_OnTopLevelCustomizeContextChanged( panel, IntroQuipsPanel_Update )
 	IntroQuipsPanel_Update( panel )
+	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
+	Hud_SetSelected( Hud_GetChild( scrollPanel, "GridButton0" ), true )
 }
 
 
@@ -69,7 +71,7 @@ void function IntroQuipsPanel_Update( var panel )
 		foreach ( int flavIdx, ItemFlavor flav in file.quipList )
 		{
 			var button = Hud_GetChild( scrollPanel, "GridButton" + flavIdx )
-			CustomizeButton_UpdateAndMarkForUpdating( button, entry, flav, PreviewQuip, CanEquipCanBuyCharacterItemCheck )
+			CustomizeButton_UpdateAndMarkForUpdating( button, [entry], flav, PreviewQuip, CanEquipCanBuyCharacterItemCheck )
 		}
 	}
 }

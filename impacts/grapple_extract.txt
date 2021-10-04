@@ -125,7 +125,7 @@ ImpactTable
 		"N" "Default.Grapple.Extract_3P_vs_3P"	// sand?
 		"O" "Default.Grapple.Extract_3P_vs_3P"
 		"P" "Android.Grapple.Extract_3P_vs_3P"
-
+		"Q" "Sand.Grapple.Extract_3P_vs_3P"
 		"R" "SolidMetal.Grapple.Extract_3P_vs_3P"
 		"S" "Default.Grapple.Extract_3P_vs_3P"
 		"T" "Default.Grapple.Extract_3P_vs_3P"
@@ -161,7 +161,7 @@ ImpactTable
 		"N" "Default.Grapple.Extract_1P_vs_3P"	// sand?
 		"O" "Default.Grapple.Extract_1P_vs_3P"
 		"P" "Android.Grapple.Extract_1P_vs_3P"
-
+		"Q" "Sand.Grapple.Extract_1P_vs_3P"
 		"R" "SolidMetal.Grapple.Extract_1P_vs_3P"
 		"S" "Default.Grapple.Extract_1P_vs_3P"
 		"T" "Default.Grapple.Extract_1P_vs_3P"
@@ -197,7 +197,7 @@ ImpactTable
 		"N" "Default.Grapple.Extract_3P_vs_3P"	// sand?
 		"O" "Default.Grapple.Extract_3P_vs_3P"
 		"P" "Android.Grapple.Extract_3P_vs_3P"
-
+		"Q" "Sand.Grapple.Extract_3P_vs_3P"
 		"R" "SolidMetal.Grapple.Extract_3P_vs_3P"
 		"S" "Default.Grapple.Extract_3P_vs_3P"
 		"T" "Default.Grapple.Extract_3P_vs_3P"

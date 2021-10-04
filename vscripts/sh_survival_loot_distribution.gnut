@@ -1,0 +1,139 @@
+global function SURVIVAL_LootDistribution_InitShared
+global function SURVIVAL_GetWeightedItemFromGroup
+global function SURVIVAL_GetMultipleWeightedItemsFromGroup
+
+struct LootDistro
+{
+    string ref
+    float chance
+}
+
+table< string, array<LootDistro> > LootDistribution //groupRef : array of EntryRef
+
+void function SURVIVAL_LootDistribution_InitShared()
+{
+    var dt = GetDataTable( $"datatable/survival_loot_groups_new.rpak" )
+    int numRows = GetDatatableRowCount( dt )
+    string currentGroupRef
+    array<LootDistro> distributions
+	for ( int i = 0; i < numRows; i++ )
+	{
+        string featureFlagRef = GetDataTableString( dt, i, GetDataTableColumnByName( dt, "featureFlag" ) )
+        
+        string groupRef = GetDataTableString( dt, i, GetDataTableColumnByName( dt, "groupRef" ) ).tolower()
+        string entryRef = GetDataTableString( dt, i, GetDataTableColumnByName( dt, "entryRef" ) ).tolower()
+        
+        if ( featureFlagRef != "" )
+		{
+			Assert( ForAssertingOnly_IsValidFeatureFlagString( featureFlagRef ),
+				format( "Reference to '%s %s' in 'survival_loot_groups_new.csv' is gated by unknown feature flag: %s", groupRef, entryRef, featureFlagRef ) )
+			if ( !GetFeatureFlagByString( featureFlagRef ) )
+			{
+				printf( "Skipping reference to '%s %s' in 'survival_loot_groups_new.csv' because feature flag %s is off.", groupRef, entryRef, featureFlagRef )
+				continue
+			}
+		}
+        
+        float entryDistribution = GetDataTableFloat( dt, i, GetDataTableColumnByName( dt, "entryDistribution" ) )
+        int groupTier = GetDataTableInt( dt, i, GetDataTableColumnByName( dt, "groupTier" ) )
+        
+        if(groupRef == "") //This is not a group header, this is content of a group
+        {
+            LootDistro ld = NewLootDistro(entryRef, entryDistribution)
+            distributions.push(ld)
+        }
+        if(groupRef != "") //Found a group header, accumulate anything so far into the previous group 
+        {
+            LootDistribution[ currentGroupRef ] <- clone distributions
+            distributions.clear()
+            currentGroupRef = groupRef
+        }
+    }
+}
+
+LootDistro function NewLootDistro(string ref, float chance)
+{
+    LootDistro ldPair
+    ldPair.ref = ref
+    ldPair.chance = chance
+
+    return ldPair
+}
+
+bool function IsPackedGroup(string groupRef)
+{
+    if(groupRef == "")
+        return false
+    return (groupRef in LootDistribution)
+}
+
+string function SURVIVAL_GetWeightedItemFromGroup(string groupRef)
+{
+    groupRef = groupRef.tolower()
+    if(!IsPackedGroup(groupRef))
+        return groupRef
+    array<LootDistro> groupDistro = LootDistribution[ groupRef ]
+    
+    //Get maximum probability
+    float maxRoll = 0
+    foreach(LootDistro distro in groupDistro)
+    {
+        maxRoll = maxRoll + distro.chance
+    }
+    
+    //Now roll
+    float lootRoll = RandomFloat(maxRoll)
+    
+    //Get the loot ref that was rolled
+    float accumulate = 0
+    string theRef = ""
+   
+    foreach(LootDistro distro in groupDistro)
+    {
+        if(accumulate <= lootRoll && accumulate + distro.chance > lootRoll)
+        {
+            if(!IsPackedGroup(distro.ref))
+                theRef = distro.ref
+            else
+                theRef = SURVIVAL_GetWeightedItemFromGroup(distro.ref)  
+            break
+        }
+        else
+            accumulate += distro.chance
+    }
+    return theRef
+}
+
+array<string> function SURVIVAL_GetMultipleWeightedItemsFromGroup( string lootGroup, int numLootItems )
+{
+	array<string> group
+    int numBlank = 0;
+    for(int i = 0; i < numLootItems; i++)
+    {
+        string ref = SURVIVAL_GetWeightedItemFromGroup(lootGroup);
+        group.append(ref)
+        if(ref == "blank")
+            numBlank++
+    }
+    if(numBlank == numLootItems) //If all are blank, always return at least one item.
+        return SURVIVAL_GetMultipleWeightedItemsFromGroup( lootGroup, 1)
+    else
+        return group
+
+    unreachable
+}
+
+
+array<LootDistro> function UnpackGroup(string groupRef)
+{
+    array<LootDistro> groupDistro = LootDistribution[ groupRef ]
+    array<LootDistro> unpackedDistro
+    foreach(LootDistro distro in groupDistro)
+    {
+        if(IsPackedGroup(distro.ref)) //If true we have nested group table, unpack
+            unpackedDistro.extend(UnpackGroup(distro.ref))
+        else
+            unpackedDistro.append(distro)
+    }   
+    return unpackedDistro
+}

@@ -1,8 +1,6 @@
-// stub script
-
 global function Lobby_Init
 
 void function Lobby_Init()
 {
-    
+  RegisterSignal( "GameStateChanged" )
 }

@@ -2,10 +2,10 @@ ImpactTable
 {
 	FX
 	{
-		"C" "impact_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
-		"D" "impact_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
-		"E" "impact_metal" // metal_titan
 
+		"C" "impact_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "impact_dirt" //Dirt, slippery, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
+		"E" "impact_metal" // metal_titan
 		"F" "impact_flesh" //flesh
 		"G" "impact_metal" //metalgrate, chainlink, chain
 		"H" "impact_alienflesh" //alienflesh
@@ -17,22 +17,20 @@ ImpactTable
 		"N" "P_impact_slime" //Slime
 		"O" "impact_leaves"  //Foliage
 		"P" "P_impact_metal_spectre" //metal_spectre
-
-		"R" "impact_brick" //metalpanel, grenade, canister
+		"Q" "P_impact_snow"  //Snow
+		"R" "P_impact_snow" //Ice
 		"S" "P_impact_water" //water
 		"T" "impact_tile" //tile
 		"U" "impact_glass" // glass_breakable
 		"V" "impact_metal" //Metal Vent
 		"W" "impact_wood"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
-
 		"X" "P_impact_xo_shield_cp" //xo_shield
-
 		"Y" "impact_glass" //glass, brokenglass, glassbottle, pottery
 		"Z" "impact_sand"  //sand
 
 //		"0" "openslot"
-//		"1" "openslot"
-//		"2" "openslot"
+		"1" "P_impact_lava_nodecal" //lava_flow
+		"2" "P_impact_lava" //lava_rock_hot
 //		"3" "openslot"
 //		"4" "openslot"
 //		"5" "openslot"
@@ -59,7 +57,6 @@ ImpactTable
 		"C" "none"
 		"D" "none"
 		"E" "none"
-
 		"F" "none"
 		"G" "none" // "ChainLink.BulletImpact"
 		"H" "none"
@@ -71,26 +68,40 @@ ImpactTable
 		"N" "none"	// sand?
 		"O" "none"
 		"P" "none"
-
+		"Q" "none"
 		"R" "none"
 		"S" "none"
 		"T" "none"
-
+		"U" "none"
 		"V" "none"
 		"W" "none"
 		"X"	"none" // Titan bubble shield
 		"Y" "none"
 		"Z" "none"
 
-		"splash" "none"
-		"slime_splash" "none"
+		"0" "none"
+		"1" "none" //lava_flow
+		"2" "none" //lava_rock_hot
+		"3" "none"
+		"4" "none"
+		"5" "none"
+		"6" "none"
+		"7" "none"
+		"8" "none"
+		"9" "none"
 
-		"airburst" "none"
+
+		"splash" "none" //brush water
+		"slime_splash" "none"
+		"airburst" "none"  //No Surface
 		"shieldhit" "none"
 		"holohit" "none"
+		"critical_hit" "none"
 
 		"headshot_flesh" "none"
 		"headshot_mechanical" "none"
+
+		"pass_through"	"none"
 	}
 
 	Sound_attacker
@@ -98,7 +109,6 @@ ImpactTable
 		"C" "none"
 		"D" "none"
 		"E" "none"
-
 		"F" "none"
 		"G" "none" // "ChainLink.BulletImpact"
 		"H" "none"
@@ -110,33 +120,99 @@ ImpactTable
 		"N" "none"	// sand?
 		"O" "none"
 		"P" "none"
-
+		"Q" "none"
 		"R" "none"
 		"S" "none"
 		"T" "none"
-
+		"U" "none"
 		"V" "none"
 		"W" "none"
 		"X"	"none" // Titan bubble shield
 		"Y" "none"
 		"Z" "none"
 
-		"splash" "none"
-		"slime_splash" "none"
+		"0" "none"
+		"1" "none" //lava_flow
+		"2" "none" //lava_rock_hot
+		"3" "none"
+		"4" "none"
+		"5" "none"
+		"6" "none"
+		"7" "none"
+		"8" "none"
+		"9" "none"
 
-		"airburst" "none"
+
+		"splash" "none" //brush water
+		"slime_splash" "none"
+		"airburst" "none"  //No Surface
 		"shieldhit" "none"
 		"holohit" "none"
+		"critical_hit" "none"
 
 		"headshot_flesh" "none"
 		"headshot_mechanical" "none"
+
+		"pass_through"	"none"
 	}
+
 	Sound_victim
+	{
+			"C" "none"
+		"D" "none"
+		"E" "none"
+		"F" "none"
+		"G" "none" // "ChainLink.BulletImpact"
+		"H" "none"
+
+		"J" "none"
+		"K" "none"  // mud?
+		"L" "none" // "Plastic_Box.BulletImpact"
+		"M" "none"	//"ArmorFlesh.BulletImpact"
+		"N" "none"	// sand?
+		"O" "none"
+		"P" "none"
+		"Q" "none"
+		"R" "none"
+		"S" "none"
+		"T" "none"
+		"U" "none"
+		"V" "none"
+		"W" "none"
+		"X"	"none" // Titan bubble shield
+		"Y" "none"
+		"Z" "none"
+
+		"0" "none"
+		"1" "none" //lava_flow
+		"2" "none" //lava_rock_hot
+		"3" "none"
+		"4" "none"
+		"5" "none"
+		"6" "none"
+		"7" "none"
+		"8" "none"
+		"9" "none"
+
+
+		"splash" "none" //brush water
+		"slime_splash" "none"
+		"airburst" "none"  //No Surface
+		"shieldhit" "none"
+		"holohit" "none"
+		"critical_hit" "none"
+
+		"headshot_flesh" "none"
+		"headshot_mechanical" "none"
+
+		"pass_through"	"none"
+	}
+
+	Sound_victim_from_AI
 	{
 		"C" "none"
 		"D" "none"
 		"E" "none"
-
 		"F" "none"
 		"G" "none" // "ChainLink.BulletImpact"
 		"H" "none"
@@ -148,31 +224,40 @@ ImpactTable
 		"N" "none"	// sand?
 		"O" "none"
 		"P" "none"
-
+		"Q" "none"
 		"R" "none"
 		"S" "none"
 		"T" "none"
-
+		"U" "none"
 		"V" "none"
 		"W" "none"
 		"X"	"none" // Titan bubble shield
 		"Y" "none"
 		"Z" "none"
 
-		"splash" "none"
-		"slime_splash" "none"
+		"0" "none"
+		"1" "none" //lava_flow
+		"2" "none" //lava_rock_hot
+		"3" "none"
+		"4" "none"
+		"5" "none"
+		"6" "none"
+		"7" "none"
+		"8" "none"
+		"9" "none"
 
-		"airburst" "none"
+
+		"splash" "none" //brush water
+		"slime_splash" "none"
+		"airburst" "none"  //No Surface
 		"shieldhit" "none"
 		"holohit" "none"
+		"critical_hit" "none"
 
 		"headshot_flesh" "none"
 		"headshot_mechanical" "none"
-	}
-	Sound_victim_from_AI
-	{
-		"F" "none"
-		"P" "none"
+
+		"pass_through"	"none"
 
 		// Victim headshot sounds taken care of in PlayVictimHeadshotConfirmation():
 		//"headshot_flesh" "Flesh.BulletImpact_3P_vs_1P"

@@ -15,7 +15,7 @@ struct
 } file
 
 
-void function InitInviteFriendsMenu()
+void function InitInviteFriendsMenu( var newMenuArg )
 {
 	var menu = GetMenu( "InviteFriendsMenu" )
 	file.menu = menu

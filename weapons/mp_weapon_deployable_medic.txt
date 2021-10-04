@@ -14,6 +14,7 @@ WeaponData
 	"readymessage"              					"#HUD_BURNMETER_READY_BUBBLE_BUNKER"
 	"readyhint"                 					"#HUD_BURNMETER_READY_BUBBLE_BUNKER_HINT"
 
+	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
 	"is_toss_weapon"								"1"
@@ -22,6 +23,7 @@ WeaponData
 	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
 
 	"does_not_interrupt_cloak"						"1"
+    "trophy_system_ignore"                          "1"
 
 	"OnWeaponAttemptOffhandSwitch"					"OnWeaponAttemptOffhandSwitch_weapon_deployable_medic"
 	"OnWeaponTossPrep"								"OnWeaponTossPrep_weapon_deployable_medic"
@@ -62,6 +64,7 @@ WeaponData
 	"stick_pilot"                                   "0"
 	"stick_titan"                                   "0"
 	"stick_npc"                                     "0"
+	"stick_drone"                                   "0"
 
 	"projectile_visible_to_smart_ammo"				"0"
 

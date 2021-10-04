@@ -11,7 +11,7 @@ struct
 {
 } s_settings
 
-void function InitMiscMenu()
+void function InitMiscMenu( var newMenuArg )
 {
 	var menu = GetMenu( "MiscMenu" )
 	file.menu = menu

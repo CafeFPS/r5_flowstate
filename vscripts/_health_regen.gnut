@@ -1,28 +1,34 @@
 
 global function HealthRegen_Init
 
-global function PilotHealthRegenThinkSP
+//global function PilotHealthRegenThinkSP
 global function PilotShieldHealthUpdate
 
 struct
 {
-	float healthRegenRate
+	int healthRegenRate
+	float healthRegenStartDelay
+	float healthRegenTickTime
 } file
 
 void function HealthRegen_Init()
 {
-	if ( IsSingleplayer() )
+/*	if ( IsSingleplayer() )
 	{
-		file.healthRegenRate = 1.0
+		file.healthRegenRate = 1
 	}
-	else
+	else*/
 	{
-		file.healthRegenRate = 6.0
+		file.healthRegenRate = 1 //6.0 ttf2
+		file.healthRegenTickTime = 2.0 // HEALTH_REGEN_TICK_TIME
+		file.healthRegenStartDelay = 5.0 // ttf2 value
 		AddCallback_PlayerClassChanged( HealthRegen_OnPlayerClassChangedMP )
+		AddCallback_OnPassiveChanged( ePassives.PAS_OCTANE, HealthRegen_OnPassiveChanged )
 		RegisterSignal( "PilotHealthRegenThink" )
 	}
 }
 
+/*
 void function PilotHealthRegenThinkSP( entity player )
 {
 	player.EndSignal( "OnDestroy" )
@@ -58,6 +64,7 @@ void function PilotHealthRegenThinkSP( entity player )
 		player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
 	}
 }
+*/
 
 bool function IsHealActive( entity player )
 {
@@ -69,15 +76,21 @@ void function PilotHealthRegenThinkMP( entity player )
 	player.EndSignal( "OnDestroy" )
 	player.Signal( "PilotHealthRegenThink" )
 	player.EndSignal( "PilotHealthRegenThink" )
+	
+	// There's a delay when you change legends, have to compensate
+	wait 1
+	
+	if(!HealthRegen_IsPlayerAllowed(player))	// Don't give it if they shouldn't have it
+		return
 
 	//float healthRegenStartDelay = player.GetPlayerSettingsField( "powerRegenRateOp" ) // seconds after we take damager to start regen
-	float healthRegenStartDelay = 5.0 //Needs to use GetPlayerSettingsField() instead of hard coding, waiting on Bug 129567
-	if ( PlayerHasPassive( player, ePassives.PAS_FAST_HEALTH_REGEN ) )
-		healthRegenStartDelay = 2.5
+//	float healthRegenStartDelay = 5.0 //Needs to use GetPlayerSettingsField() instead of hard coding, waiting on Bug 129567
+//	if ( PlayerHasPassive( player, ePassives.PAS_FAST_HEALTH_REGEN ) )
+//		healthRegenStartDelay = 2.5
 
 	while ( IsValid( player ) )
 	{
-		wait( HEALTH_REGEN_TICK_TIME )
+		wait( file.healthRegenTickTime /*HEALTH_REGEN_TICK_TIME*/ )
 
 		if ( !IsAlive( player ) )
 			continue
@@ -88,7 +101,7 @@ void function PilotHealthRegenThinkMP( entity player )
 		// if ( shGlobal.proto_pilotHealthRegenDisabled )
 		// 	continue
 
-		float healthRegenRate = file.healthRegenRate 	// health regen per tick
+		// float healthRegenRate = file.healthRegenRate 	// health regen per tick
 
 		if ( player.GetHealth() == player.GetMaxHealth() )
 			continue
@@ -99,28 +112,58 @@ void function PilotHealthRegenThinkMP( entity player )
 
 		if ( IsHealActive( player ) )
 		{
+			continue
 			// if ( Time() - player.p.lastDamageTime < min( ABILITY_STIM_REGEN_DELAY, healthRegenStartDelay ) )
 			// 	continue
 			// else
 			// 	healthRegenRate = healthRegenRate * ABILITY_STIM_REGEN_MOD
 		}
-		else if ( Time() - player.p.lastDamageTime < healthRegenStartDelay )
+		else if ( Time() - player.p.lastDamageTime < file.healthRegenStartDelay )
 		{
 			continue
 		}
 
-		player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + healthRegenRate ) )
+		player.SetHealth( min( player.GetMaxHealth(), player.GetHealth() + file.healthRegenRate ) )
 		if ( player.GetHealth() == player.GetMaxHealth() )
 		{
 			ClearRecentDamageHistory( player )
 			ClearLastAttacker( player )
 		}
+
+		// Green regen HUD bar
+		StatusEffect_AddTimed
+		(
+			player, 
+			eStatusEffect.target_health, // effect
+			float(player.GetHealth() + file.healthRegenRate*2) / player.GetMaxHealth(), // effect frac
+			file.healthRegenTickTime+0.1, // duration
+			0 // duration 2?
+		)
 	}
 }
 
-void function HealthRegen_OnPlayerClassChangedMP( entity player )
+bool function HealthRegen_IsPlayerAllowed( entity player )
 {
-	//thread PilotHealthRegenThinkMP( player )
+	string character = ItemFlavor_GetHumanReadableRef(  LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) )
+	
+    if(character == "character_octane")
+        return true
+	
+// TODO: Swapping some legends doesn't reset their passive, meaning they'll keep ePassives.PAS_OCTANE
+
+//	if(PlayerHasPassive( player, ePassives.PAS_OCTANE ))
+//		return true
+
+	return false
+}
+
+void function HealthRegen_OnPassiveChanged(entity player, int passive, bool didHave, bool nowHas )
+{
+	thread PilotHealthRegenThinkMP( player )
+}
+void function HealthRegen_OnPlayerClassChangedMP( entity player )
+{	
+	thread PilotHealthRegenThinkMP( player )
 }
 
 float function PilotShieldHealthUpdate( entity player, var damageInfo )
@@ -142,7 +185,7 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 		shieldDamage = PilotShieldModifyDamage( player, damageInfo )
 
 		if ( shieldDamage )
-			DamageInfo_SetDamage( damageInfo, 0 )
+			DamageInfo_SetDamage( damageInfo, shieldDamage )
 	}
 
 	return shieldDamage
@@ -163,7 +206,7 @@ float function PilotShieldModifyDamage( entity player, var damageInfo )
 
 	if ( shieldHealth && newShieldHealth <= 0 )
 	{
-		EmitSoundOnEntity( player, "titan_energyshield_down" )
+		// EmitSoundOnEntity( player, "titan_energyshield_down" )
 	}
 
 	DamageInfo_SetDamage( damageInfo, permanentDamage )

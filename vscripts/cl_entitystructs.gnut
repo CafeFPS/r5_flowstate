@@ -77,8 +77,21 @@ global struct ClientEntityStruct
 	bool isBusy
 
 	int __itemFlavorNetworkId
+	int charmItemFlavorNetworkId
+
+	//
+	void functionref( entity, entity, var ) Callback_VortexTriggerBulletHit
+	void functionref( entity, entity, entity, entity, vector ) Callback_VortexTriggerProjectileHit
+
+	#if(false)
+//
+//
+
+#endif //
 
 	bool canBeMeleed = true
+	bool gravityOrbInteraction
+	int cameraMaxRangeFXHandle = -1
 }
 
 
@@ -124,8 +137,10 @@ global struct ClientPlayerStruct
 	int lastSaidCommsAction
 	int lastCanceledCommsAction
 	table<int,float> commActionFlavorDebounceTimes
+	float commActionFlavorGlobalDebounceTime = -30.0
 
 	array<TitanCockpitRUI> titanCockpitRUIs
+	entity cryptoActiveCamera
 	bool isInExtendedUse = false
 	table<string,int> requiredLootTypes = {}
 
@@ -134,6 +149,9 @@ global struct ClientPlayerStruct
 	entity TEMP_lastMeleeInputWeapon = null
 
 	int mapPingTicketID = -1
+
+	array<int> freefallContrailFXHandles
+	int freefallWindEffectHandle = -1
 }
 
 
@@ -152,20 +170,34 @@ global struct ClientWeaponStruct
 	float startChargeTime = 0.0
 	bool wasCharged = false
 	bool initialized = false
+
 	entity guidedMissileTarget = null
+	entity guidedMissileLastFiredProj = null
 
 	entity weaponOwner
 	array<int> statusEffects
 	float lastFireTime
+
+	float PROTO_lastFireAttemptTime = -1.0
+	float PROTO_lastRandomSpreadUpdate = -1
+	vector PROTO_lastForwardAngle
+
+	bool useRapidHitbeep = false
 }
 
 
 // hooked up to entity.proj in code
 global struct ClientProjectileStruct
 {
+	vector savedOrigin
 	vector savedDir
 	float savedShotTime
 	int projectileBounceCount = 0
+	float detonateDist
+
+	vector PROTO_guidedMortarStartPos
+	vector PROTO_guidedMortarTarget
+	bool PROTO_guidedMortarStillGuidable
 }
 
 
@@ -197,6 +229,14 @@ global struct ClientPlayerWaypoint
 	bool haveConfirmed
 
 	entity highlightEnt
+
+#if(false)
+
+
+
+
+
+#endif //
 }
 
 global struct ClientFirstPersonProxyStruct

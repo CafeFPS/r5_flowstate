@@ -9,6 +9,7 @@ WeaponData
 	"menu_icon"										"rui/ordnance_icons/grenade_frag"
 	"hud_icon"										"rui/ordnance_icons/grenade_frag"
 
+	"weapon_type_flags"								"WPT_GRENADE"
 	"weaponClass"									"human"
 	"weaponType"									"anti_titan"
 	"is_toss_weapon"								"1"
@@ -45,7 +46,8 @@ WeaponData
 	MP_BASE
 	{
 		"viewmodel"										"mdl/weapons/grenades/ptpov_frag_grenade_held.rmdl"
-		"fire_mode"										"semiauto"
+		"fire_mode"   									"automatic"
+		"is_semi_auto"									"1"
 		"npc_explosion_damage"							"100"
 
 		"ammo_clip_size"   								"200"
@@ -59,7 +61,6 @@ WeaponData
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
 
-		"damage_heavyarmor_nontitan_scale"				"0.5"
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_1P"
 	}
 
@@ -67,7 +68,7 @@ WeaponData
 	{
 		"viewmodel"										"mdl/weapons/grenades/ptpov_frag_grenade.rmdl"
 		"fire_mode"										"offhand"
-
+		"is_semi_auto"									"<KEEP_DEFAULT>"
 		"npc_explosion_damage"							"32"
 
 		"ammo_clip_size"   								"4"
@@ -81,7 +82,6 @@ WeaponData
 
 		"enable_highlight_networking_on_creation"		"1"
 
-		"damage_heavyarmor_nontitan_scale"				"1"
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_SP"
 	}
 
@@ -308,7 +308,7 @@ WeaponData
 
         survival_finite_ordnance
         {
-            "ammo_clip_size"								"20"
+            "ammo_clip_size"								"100"
             "ammo_default_total"							"0"
             "ammo_display"									"count"
             "ammo_min_to_fire"								"1"

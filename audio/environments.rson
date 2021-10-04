@@ -110,7 +110,7 @@
 	{
 		ReverbSmall: 0.0
 		ReverbLarge: 0.0
-		ReverbOutdoor: 0.0
+		ReverbOutdoor: 100.0
 		1PTailVolume: 100
 		3PTailSwitch: 7
 	}
@@ -151,7 +151,7 @@
 	{
 		ReverbSmall: 0.0
 		ReverbLarge: 0.0
-		ReverbOutdoor: 0.0
+		ReverbOutdoor: 100.0
 		1PTailVolume: 30
 		3PTailSwitch: 0
 	}
@@ -172,7 +172,7 @@
 	{
 		ReverbSmall: 0.0
 		ReverbLarge: 0.0
-		ReverbOutdoor: 0.0
+		ReverbOutdoor: 100.0
 		1PTailVolume: 60
 		3PTailSwitch: 1
 	}
@@ -256,7 +256,7 @@
 	{
 		ReverbSmall: 0.0
 		ReverbLarge: 0.0
-		ReverbOutdoor: 0.0
+		ReverbOutdoor: 100.0
 		1PTailVolume: 30
 		3PTailSwitch: 4
 	}
@@ -277,7 +277,7 @@
 	{
 		ReverbSmall: 0.0
 		ReverbLarge: 0.0
-		ReverbOutdoor: 0.0
+		ReverbOutdoor: 100.0
 		1PTailVolume: 50
 		3PTailSwitch: 5
 	}
@@ -298,7 +298,7 @@
 	{
 		ReverbSmall: 0.0
 		ReverbLarge: 0.0
-		ReverbOutdoor: 0.0
+		ReverbOutdoor: 100.0
 		1PTailVolume: 30
 		3PTailSwitch: 6
 	}
@@ -359,7 +359,7 @@
 	emitter_controllers:
 	{
 		ReverbSmall: 100.0
-		ReverbLarge: 95
+		ReverbLarge: 70
 		ReverbOutdoor: 0.0
 		1PTailVolume: 0
 		3PTailSwitch: 2
@@ -380,7 +380,7 @@
 	emitter_controllers:
 	{
 		ReverbSmall: 100.0
-		ReverbLarge: 95
+		ReverbLarge: 70
 		ReverbOutdoor: 0.0
 		1PTailVolume: 60
 		3PTailSwitch: 2
@@ -587,7 +587,7 @@
 	emitter_controllers:
 	{
 		ReverbSmall: 100.0
-		ReverbLarge: 95
+		ReverbLarge: 70
 		ReverbOutdoor: 0.0
 		1PTailVolume: 40
 		3PTailSwitch: 3
@@ -608,7 +608,7 @@
 	emitter_controllers:
 	{
 		ReverbSmall: 100.0
-		ReverbLarge: 95
+		ReverbLarge: 70
 		ReverbOutdoor: 0.0
 		1PTailVolume: 40
 		3PTailSwitch: 3
@@ -629,7 +629,7 @@
 	emitter_controllers:
 	{
 		ReverbSmall: 75.0
-		ReverbLarge: 75.0
+		ReverbLarge: 65
 		ReverbOutdoor: 0.0
 		1PTailVolume: 60
 		3PTailSwitch: 3

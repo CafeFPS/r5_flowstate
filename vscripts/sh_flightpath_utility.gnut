@@ -17,34 +17,40 @@ struct AirdropBadPlace
 struct
 {
 	array<AirdropBadPlace> airdropBadPlaceArray
-	int airdropBadPlaceCount
+	int                    airdropBadPlaceCount
+
+	array<entity> airdropTraceIgnoreEntArray
 } file
 
 vector function GetOriginFromAttachPoint( AttachPoint point, vector origin, vector forward, vector right )
 {
-	origin += forward *  point.origin.x
-	origin += right *  -point.origin.y
-	origin += <0,0,point.origin.z>
+	origin += forward * point.origin.x
+	origin += right * -point.origin.y
+	origin += <0, 0, point.origin.z>
 	return origin
 }
 
+
 vector function GetOriginFromPoint( Point point, vector origin, vector forward, vector right )
 {
-	origin += forward *  point.origin.x
-	origin += right *  -point.origin.y
-	origin += <0,0,point.origin.z>
+	origin += forward * point.origin.x
+	origin += right * -point.origin.y
+	origin += <0, 0, point.origin.z>
 	return origin
 }
+
 
 vector function GetAnglesFromAttachPoint( AttachPoint point, vector angles )
 {
 	return AnglesCompose( angles, point.angles )
 }
 
+
 vector function GetAnglesFromPoint( Point point, vector angles )
 {
 	return AnglesCompose( angles, point.angles )
 }
+
 
 array<vector> function GetFlightPathPoints( FlightPath flightPath, vector origin, vector forward, vector right )
 {
@@ -900,8 +906,8 @@ bool function FlightPathHasNodeAndMatchesAINData( FlightPath flightPath )
 }
 #endif // SERVER
 
-const DEBUG_DROP_POINTS = false
-const DEBUG_DROP_POINTS_LINES = false
+const bool DEBUG_DROP_POINTS = false
+const bool DEBUG_DROP_POINTS_LINES = false
 const DEBUG_DRAW_TIME = 0.02
 const vector AIRDROP_MAXS = <80,80,256>
 const vector AIRDROP_MINS = <-80,-80,0>
@@ -912,6 +918,7 @@ bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePacka
 	const DOOR_UP_OFFSET = 64
 	const LEDGE_DOWN_OFFSET = 96
 	const EDGE_TRACE_HEIGHT = 48
+	const vector UP_VECTOR = <0, 0, 1>
 
 	int door_space_distance = isCarePackage ? 64 : 128
 	int edge_trace_dist = isCarePackage ? 64 : 96
@@ -927,6 +934,11 @@ bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePacka
 	vector forward = AnglesToForward( < 0, yaw, 0 > )
 	vector up = <0,0,1>
 
+    #if SERVER
+    if(IsPointOutOfBounds(baseOrigin))
+        return false
+    #endif
+    
 	//bigger than model to compensate for large effect and the fact that we want to be able to walk around it
 	vector maxs = !isCarePackage ? AIRDROP_MAXS : AIRDROP_MAXS * 0.65
 	vector mins = !isCarePackage ? AIRDROP_MINS : AIRDROP_MINS * 0.65
@@ -934,8 +946,8 @@ bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePacka
 	if ( IsNearAirdropBadPlace( baseOrigin, realmEnt ) )
 		failCode = failCode | 0x0040
 
-	TraceResults trace = TraceHull( startOrigin, endOrigin, mins, maxs, null, ( TRACE_MASK_PLAYERSOLID | TRACE_MASK_TITANSOLID | CONTENTS_NOAIRDROP ), TRACE_COLLISION_GROUP_NONE )
-	float dot = DotProduct( up, trace.surfaceNormal )
+	TraceResults trace = TraceHull( startOrigin, endOrigin, mins, maxs, file.airdropTraceIgnoreEntArray, (TRACE_MASK_PLAYERSOLID | TRACE_MASK_TITANSOLID | CONTENTS_NOAIRDROP), TRACE_COLLISION_GROUP_NONE, UP_VECTOR, realmEnt )
+	float dot          = DotProduct( up, trace.surfaceNormal )
 	// surface angle is to great
 	if ( dot != 0 && DotToAngle( dot ) > maxSurfaceAngle )
 	{
@@ -1111,6 +1123,25 @@ bool function VerifyAirdropPoint( vector baseOrigin, float yaw, bool isCarePacka
 	return true
 }
 
+
+void function AddAirdropTraceIgnoreEnt( entity ent )
+{
+	file.airdropTraceIgnoreEntArray.append( ent )
+	AddEntityDestroyedCallback( ent, RemoveAirdropTraceIgnoreEntOnDestroy )
+}
+
+
+void function RemoveAirdropTraceIgnoreEntOnDestroy( entity ent )
+{
+	file.airdropTraceIgnoreEntArray.fastremovebyvalue( ent )
+}
+
+array<entity> function GetAirDropTraceIgnoreEntArray()
+{
+	return file.airdropTraceIgnoreEntArray
+}
+
+
 #if SERVER
 
 Point function GetClosestEndZonePoint( vector baseOrigin )
@@ -1171,7 +1202,7 @@ Point function GetClosestDrop_Internal( vector baseOrigin, int dataIndex )
 Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float radius, array<vector> previousAirdrops )
 {
 	int numTries 			= 0
-	float minDistance 		= min( radius, 3000.0 )
+	float minDistance 		= min( radius, 10000.0 )
 	float angleDeviation 	= 10.0
 	int timesToTry 			= 20
 	float minScale 			= 0.5
@@ -1185,8 +1216,6 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 		if ( numTries >= timesToTry && minDistance > 0 )
 		{
 			minDistance -= 100
-			if ( angleDeviation < 90.0 )
-				angleDeviation += 10.0
 			if ( minScale > 0.0 )
 				minScale -= 0.1
 			numTries = 0
@@ -1194,7 +1223,8 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 		}
 
 		bool fail = false
-		vector startPos = GetRandomCenter( center, radius * minScale, radius, baseAngle - angleDeviation, baseAngle + angleDeviation )
+		vector startPos = GetRandomCenter( center, radius * minScale, radius, 0, 360 )
+        
 		foreach ( point in previousAirdrops )
 		{
 			if ( Distance2D( startPos, point ) < minDistance )
@@ -1203,8 +1233,8 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 				break
 			}
 		}
-
-		TraceResults trace = TraceHull( <startPos.x, startPos.y, 10000>, <startPos.x, startPos.y, -10000>, mins, maxs, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
+        
+		TraceResults trace = TraceHull( <startPos.x, startPos.y, 10000>, <startPos.x, startPos.y, 512>, mins, maxs, null, TRACE_MASK_TITANSOLID, TRACE_COLLISION_GROUP_NONE )
 		if ( trace.fraction == 1 )
 			fail = true	// didn't find any ground
 
@@ -1216,20 +1246,22 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 		}
 
 		vector groundPos = trace.endPos
-		airdropPoint = GetClosestAirdropPoint( groundPos )
-
+        //Can't use this because no navmesh
+		//airdropPoint = GetClosestAirdropPoint( groundPos )
+        
+        airdropPoint.origin = groundPos
+        airdropPoint.angles = trace.surfaceNormal
+        
 		float distToCenter = Distance2D( airdropPoint.origin, center )
 		if ( distToCenter > radius && !IsTestMap() )
 		{
-			printt( "airdrop distToCenter too great", airdropPoint.origin, center, distToCenter )
 			numTries++
 			WaitFrame()
 			continue
 		}
 
 		return airdropPoint
-	}
-
+    }
 	unreachable
 }
 
@@ -1397,7 +1429,7 @@ void function ServerCallback_DestroyAirdropBadPlace( int id )
 }
 #endif //CLIENT
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function AirdropTraceTest( entity player )
 {
 	vector startPosition = player.EyePosition() + <0,0,8>

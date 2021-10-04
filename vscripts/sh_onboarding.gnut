@@ -1,0 +1,623 @@
+/// =================== ///
+///		Onboarding		///
+/// =================== ///
+
+/*
+	Onboarding handles user interaction from joining until the enabled character selection outros have been completed.
+
+	Everything after that is gamemode-specific.
+	To handle onboarding completion in your gamemode code, use AddCallback_GameStateEnter for eGameState.Playing.
+
+	Onboarding is controlled by playlist vars, define them in the gamemode spec to control.
+	Available playlist vars:
+		General:
+			custom_onboarding							- Completely disable default onboarding sequences, leveraging onboarding on the gamemode.
+		Waiting for players:
+			waiting_for_players_min_wait 				- Minimal time to wait before checking for players.
+			waiting_for_players_timeout_seconds 		- Maximum time to wait for connecting players.
+			waiting_for_players_has_black_screen 		- Select whether the player should have a black background instead of a view of their current origin.
+			waiting_for_players_spawning_enabled		- Select whether the player should be spawned (partial spawn since at this stage no settings have been assigned).
+			waiting_for_players_countdown_seconds		- The countdown before the next onboarding stage.
+			charselect_intro_music_start_time			- The offset from character selection unlock when the character selection music should be started.
+		Character selection:
+			charselect_enabled							- Select whether the default character selection logic should be used. If false, random legends will be assigned.
+			charselect_intro_transition_duration		- The duration of transition from waiting for players to character selection.
+			charselect_intro_countdown_duration			- The duration of the pre legend selection countdown (You choose N'nd).
+			charselect_picking_delay_before_all 		- The duration of delay before the legend pick logic starts.
+			charselect_picking_delay_on_first			- The duration of delay after the first player has picked their legend.
+			character_select_time_min					- Minimal time for player to select their legend.
+			character_select_time_max					- Maximum time for player to select their legend.
+			charselect_picking_delay_after_each_lock	- The duration of delay after any player has picked their legend.
+			charselect_picking_delay_after_all			- The duration of delay after all players have picked their legend.
+			charselect_outro_scene_change_duration		- The duration of delay to switch the scene to next steps.
+		Player squad overview:
+			survival_enable_squad_intro					- Show player squad. If disabled, the player squad duration is skipped.
+			charselect_outro_squad_present_duration		- The duration of player squad data being present on screen.
+		Champion squad overview:
+			survival_enable_gladiator_intros			- Show champion squad. If disabled, the champion squad duration is skipped.
+			charselect_outro_champion_present_duration	- The duration of champion squad data being present on screen.
+		End:
+			charselect_outro_transition_duration		- The duration of transition from past steps to playing state.
+*/
+
+global function SV_CL_Onboarding_Init
+
+#if SERVER
+global function TakeLoadoutRelatedWeapons
+global function GiveLoadoutRelatedWeapons
+global function DecideRespawnPlayer
+
+global function PlayerStartSpectating
+global function PlayerStopSpectating
+
+global function UpdatePlayerCounts
+#endif
+
+global function PreGame_GetWaitingForPlayersHasBlackScreen
+global function PreGame_GetWaitingForPlayersSpawningEnabled
+global function PreGame_GetWaitingForPlayersDelayMin
+global function PreGame_GetWaitingForPlayersDelayMax
+global function PreGame_GetWaitingForPlayersCountdown
+
+global function CharSelect_GetIntroMusicStartTime
+global function CharSelect_GetIntroTransitionDuration
+global function CharSelect_GetIntroCountdownDuration
+
+global function CharSelect_GetPickingDelayBeforeAll
+global function CharSelect_GetPickingDelayOnFirst
+global function CharSelect_GetPickingSingleDurationMax
+global function CharSelect_GetPickingSingleDurationMin
+global function CharSelect_GetPickingDelayAfterEachLock
+global function CharSelect_GetPickingDelayAfterAll
+
+global function CharSelect_GetOutroSceneChangeDuration
+global function CharSelect_GetOutroSquadPresentDuration
+global function CharSelect_GetOutroChampionPresentDuration
+global function CharSelect_GetOutroTransitionDuration
+
+global function Survival_GetCharacterSelectDuration
+global function Survival_CharacterSelectEnabled
+
+void function SV_CL_Onboarding_Init()
+{
+#if SERVER
+	FlagInit( "MinPlayersReached", false )
+
+	AddCallback_OnPlayerKilled( OnPlayerKilled )
+	AddCallback_OnClientConnected( OnClientConnected )
+
+	AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnCharacterClassChanged )
+	foreach ( character in GetAllCharacters() )
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterSkin( character ), OnCharacterSkinChanged )
+
+	SetGameState( eGameState.WaitingForPlayers )
+
+	if ( OnboardingEnabled() )
+		thread Sequence_WaitingForPlayers()
+#endif
+}
+
+#if SERVER
+/*
+	███████╗███████╗ ██████╗ ██╗   ██╗███████╗███╗   ██╗ ██████╗███████╗███████╗
+	██╔════╝██╔════╝██╔═══██╗██║   ██║██╔════╝████╗  ██║██╔════╝██╔════╝██╔════╝
+	███████╗█████╗  ██║   ██║██║   ██║█████╗  ██╔██╗ ██║██║     █████╗  ███████╗
+	╚════██║██╔══╝  ██║▄▄ ██║██║   ██║██╔══╝  ██║╚██╗██║██║     ██╔══╝  ╚════██║
+	███████║███████╗╚██████╔╝╚██████╔╝███████╗██║ ╚████║╚██████╗███████╗███████║
+	╚══════╝╚══════╝ ╚══▀▀═╝  ╚═════╝ ╚══════╝╚═╝  ╚═══╝ ╚═════╝╚══════╝╚══════╝
+	
+	This part describes the onboarding sequences: threaded functions which control the onboarding.
+*/
+
+void function Sequence_WaitingForPlayers()
+{
+	// Wait the absolute minimum delay, if required (0 by default)
+	wait PreGame_GetWaitingForPlayersDelayMin()
+
+	// Start to wait for players.
+	// Countdown will be reached when the minimum amount of players join, or when the maximum delay is reached (if enabled).
+	float timeSpentWaitingForPlayers = 0.0
+	float maximumTimeToSpendToWaitForPlayers = PreGame_GetWaitingForPlayersDelayMax() - PreGame_GetWaitingForPlayersDelayMin()
+
+	bool shouldNotWaitForever = maximumTimeToSpendToWaitForPlayers > 0.0 && !PreGame_GetWaitingForPlayersWaitForeverEnabled()
+
+	while ( !Flag( "MinPlayersReached" ) )
+	{
+		const float LOOP_INTERVAL = 0.1
+
+		timeSpentWaitingForPlayers += LOOP_INTERVAL
+		wait LOOP_INTERVAL
+
+		int connectedPlayerCount = GetPlayerArray().len()
+
+		if ( shouldNotWaitForever 
+			&& timeSpentWaitingForPlayers >= maximumTimeToSpendToWaitForPlayers
+			&& connectedPlayerCount > 0
+			)
+			break
+	}
+
+	// Update to make client aware of the countdown
+	UpdateSequencedTimePoints( Time() )
+
+	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
+
+	wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
+
+	if ( !introCountdownEnabled )
+		PlayPickLoadoutMusic( false )
+
+	thread Sequence_PickLoadout()
+}
+
+void function Sequence_PickLoadout()
+{
+	if ( !Survival_CharacterSelectEnabled() ) 
+	{
+		foreach ( player in GetPlayerArray() )
+		{
+			ItemFlavor musicPack = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() )
+			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
+			StopMusicOnPlayer( player, skydiveMusicID )
+
+			CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) // No candidates to force it to pick a random legend.
+		}
+
+		thread Sequence_Prematch() 
+		return
+	}
+
+	// Assign character selection order to teams
+	AssignLockStepOrder()
+
+	ScreenCoverTransition_AllPlayers( Time() + CharSelect_GetIntroTransitionDuration() )
+	wait CharSelect_GetIntroTransitionDuration()
+
+	SetGameState( eGameState.PickLoadout )
+
+	// Update future time points now that the delays should be predictable
+	UpdateSequencedTimePoints( Time() )
+
+	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
+
+	// Signalize that character selection sequence should be started clientside
+	SetGlobalNetBool( "characterSelectionReady", true )
+
+	if ( introCountdownEnabled )
+	{
+		wait CharSelect_GetIntroCountdownDuration() + (CharSelect_GetIntroMusicStartTime() - CharSelect_GetIntroTransitionDuration())
+		PlayPickLoadoutMusic( true )
+	}
+
+	wait CharSelect_GetPickingDelayBeforeAll()
+
+	for ( int pickIndex = 0; pickIndex < MAX_TEAM_PLAYERS; pickIndex++ )
+	{
+		float startTime = Time()
+
+		float timeSpentOnSelection = Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
+		if ( pickIndex == 0 )
+			timeSpentOnSelection += CharSelect_GetPickingDelayOnFirst()
+
+		float endTime = startTime + timeSpentOnSelection
+
+		SetGlobalNetInt( "characterSelectLockstepIndex", pickIndex )
+		SetGlobalNetTime( "characterSelectLockstepStartTime", startTime )
+		SetGlobalNetTime( "characterSelectLockstepEndTime", endTime )
+
+		wait timeSpentOnSelection
+
+		foreach ( player in GetAllPlayersOfLockstepIndex( pickIndex ) )
+		{
+			ItemFlavor selectedCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+
+			if ( player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+				CharacterSelect_AssignCharacter( player, selectedCharacter )
+			else
+				CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [ 
+					player.GetPlayerNetInt( "characterSelectFocusIndex" ), // Last focused character
+					ItemFlavor_GetGUID( selectedCharacter ) // Currently selected loadout character
+				] )
+		}
+	}
+
+	// Reset selection step to lock all character selection loadout slots
+	SetGlobalNetInt( "characterSelectLockstepIndex", MAX_TEAM_PLAYERS )
+
+	foreach ( player in GetPlayerArray() )
+		if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
+			CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) // Joined too late, assign a random legend so everything runs fine
+
+	wait CharSelect_GetPickingDelayAfterAll()
+
+	wait CharSelect_GetOutroTransitionDuration()
+
+	if ( CharSelect_PlayerSquadIntroEnabled() ) {
+		if ( CharSelect_PostSelectionMusicEnabled() )
+			foreach ( player in GetPlayerArray() )
+			{
+				string skydiveMusicID = MusicPack_GetSkydiveMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
+				EmitSoundOnEntityOnlyToPlayer( player, player, skydiveMusicID )
+			}
+
+		wait CharSelect_GetOutroSquadPresentDuration()
+	}
+
+	thread Sequence_Prematch()
+}
+
+void function Sequence_Prematch()
+{
+	SetGameState( eGameState.Prematch )
+
+	// Update future time points now that the delays should be predictable
+	UpdateSequencedTimePoints( Time() )
+
+	if ( CharSelect_ChampionSquadIntroEnabled() )
+		wait CharSelect_GetOutroChampionPresentDuration()
+
+	// The gamemode handles everything past this point
+	SetGameState( eGameState.Playing )
+}
+
+// Custom logic for sequence orchestration
+void function UpdateSequencedTimePoints( float referenceTime, int gameStateOverride = -1 )
+{
+	SetGlobalNetInt( "gameState", GetGameState() )
+
+	switch ( gameStateOverride != -1 ? gameStateOverride : GetGameState() )
+	{
+		case eGameState.WaitingForPlayers:
+			SetGlobalNetTime( "PreGameStartTime", referenceTime + PreGame_GetWaitingForPlayersCountdown() )
+			SetGlobalNetTime( "pickLoadoutGamestateStartTime", referenceTime + PreGame_GetWaitingForPlayersCountdown() + CharSelect_GetIntroTransitionDuration() + CharSelect_GetIntroCountdownDuration() )
+			break
+		case eGameState.PickLoadout:
+			float timeBeforeCharacterSelection = CharSelect_GetIntroCountdownDuration() + CharSelect_GetPickingDelayBeforeAll()
+		
+			float timeToSelectAllCharacters = CharSelect_GetPickingDelayOnFirst()
+			for ( int pickIndex = 0; pickIndex < MAX_TEAM_PLAYERS; pickIndex++ )
+				timeToSelectAllCharacters += Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
+		
+			float timeAfterCharacterSelection = CharSelect_GetPickingDelayAfterAll() + CharSelect_GetOutroTransitionDuration()
+
+			float timeBeforeChampionPresentation = CharSelect_PlayerSquadIntroEnabled() ? CharSelect_GetOutroSquadPresentDuration() : 0.0
+			float timeAfterChampionPresentation = CharSelect_ChampionSquadIntroEnabled() ? CharSelect_GetOutroChampionPresentDuration() : 0.0
+				
+			SetGlobalNetTime( "squadPresentationStartTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection )
+			SetGlobalNetTime( "championSquadPresentationStartTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection + timeBeforeChampionPresentation )
+			SetGlobalNetTime( "pickLoadoutGamestateEndTime", referenceTime + timeBeforeCharacterSelection + timeToSelectAllCharacters + timeAfterCharacterSelection + timeBeforeChampionPresentation + timeAfterChampionPresentation )
+			break
+	}
+}
+
+void function PlayPickLoadoutMusic( bool introCountdownEnabled )
+{
+	if ( !Survival_CharacterSelectEnabled() )
+		return
+
+	foreach ( player in GetPlayerArray() )
+	{
+		string pickLoadoutMusicID = MusicPack_GetCharacterSelectMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
+		EmitSoundOnEntityOnlyToPlayer( player, player, pickLoadoutMusicID )
+	}
+
+	wait fabs( CharSelect_GetIntroMusicStartTime() )
+
+	if ( introCountdownEnabled )
+		wait CharSelect_GetIntroTransitionDuration()
+}
+#endif
+
+#if SERVER
+/*
+	██████╗  █████╗ ███████╗███████╗    ██████╗ ███████╗███████╗██████╗  █████╗ ██╗    ██╗███╗   ██╗
+	██╔══██╗██╔══██╗██╔════╝██╔════╝    ██╔══██╗██╔════╝██╔════╝██╔══██╗██╔══██╗██║    ██║████╗  ██║
+	██████╔╝███████║███████╗█████╗      ██████╔╝█████╗  ███████╗██████╔╝███████║██║ █╗ ██║██╔██╗ ██║
+	██╔══██╗██╔══██║╚════██║██╔══╝      ██╔══██╗██╔══╝  ╚════██║██╔═══╝ ██╔══██║██║███╗██║██║╚██╗██║
+	██████╔╝██║  ██║███████║███████╗    ██║  ██║███████╗███████║██║     ██║  ██║╚███╔███╔╝██║ ╚████║
+	╚═════╝ ╚═╝  ╚═╝╚══════╝╚══════╝    ╚═╝  ╚═╝╚══════╝╚══════╝╚═╝     ╚═╝  ╚═╝ ╚══╝╚══╝ ╚═╝  ╚═══╝
+
+	This part describes the base respawn (the bare minimum for a proper respawn) functions.
+*/
+
+void function TakeLoadoutRelatedWeapons( entity player )
+{
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+
+	// Shared
+	player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
+
+	// Loadout meleeskin
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.TakeOffhandWeapon( OFFHAND_MELEE )
+
+	// Character related
+	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+
+	ItemFlavor passiveAbility = CharacterClass_GetPassiveAbility( character )
+	TakePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
+}
+
+void function GiveLoadoutRelatedWeapons( entity player )
+{
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+
+	// Shared
+	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
+
+	// Loadout meleeskin
+	ItemFlavor meleeSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MeleeSkin( character ) )
+	player.GiveWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ), WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ), OFFHAND_MELEE, [] )
+
+	// Character related
+	ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( character )
+	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tacticalAbility ), OFFHAND_TACTICAL, [] )
+
+	ItemFlavor ultimateAbility = CharacterClass_GetUltimateAbility( character )
+	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultimateAbility ), OFFHAND_ULTIMATE, [] )
+
+	ItemFlavor passiveAbility = CharacterClass_GetPassiveAbility( character )
+	GivePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
+}
+
+void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
+{
+	if ( !IsValid( player ) ) return;
+	
+	if ( IsAlive( player ) )
+	 	TakeLoadoutRelatedWeapons( player )
+
+	table<string, string> possibleMods = {
+		survival_jumpkit_enabled = "enable_doublejump",
+		survival_wallrun_enabled = "enable_wallrun"
+	}
+
+	array<string> enabledMods = []
+	foreach ( playlistVar, modName in possibleMods )
+		if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
+			enabledMods.append( modName )
+
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+
+	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
+
+	DoRespawnPlayer( player, null )
+
+	PlayerStopSpectating( player )
+
+	ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
+	CharacterSkin_Apply( player, playerCharacterSkin )
+
+	if ( giveLoadoutWeapons )
+		GiveLoadoutRelatedWeapons( player )
+
+	Survival_SetInventoryEnabled( player, giveLoadoutWeapons )
+
+	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
+
+	player.SetPlayerNetBool( "pingEnabled", true )
+	player.SetHealth( 100 )
+}
+#endif
+
+#if SERVER
+/*
+	███████╗██████╗ ███████╗ ██████╗████████╗ █████╗ ████████╗██╗███╗   ██╗ ██████╗ 
+	██╔════╝██╔══██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██║████╗  ██║██╔════╝ 
+	███████╗██████╔╝█████╗  ██║        ██║   ███████║   ██║   ██║██╔██╗ ██║██║  ███╗
+	╚════██║██╔═══╝ ██╔══╝  ██║        ██║   ██╔══██║   ██║   ██║██║╚██╗██║██║   ██║
+	███████║██║     ███████╗╚██████╗   ██║   ██║  ██║   ██║   ██║██║ ╚████║╚██████╔╝
+	╚══════╝╚═╝     ╚══════╝ ╚═════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚═╝╚═╝  ╚═══╝ ╚═════╝ 
+
+	This part describes the spectator functions.
+*/
+
+void function PlayerStartSpectating( entity player, entity attacker )
+{
+	array<entity> clientTeam = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	clientTeam.fastremovebyvalue( player )
+
+	bool isAloneOrSquadEliminated = clientTeam.len() == 0
+	
+	entity specTarget = null
+
+	if ( Spectator_GetReplayIsEnabled() )
+	{
+		if ( attacker == player ) return;
+		if ( attacker == null ) return;
+		if ( !IsValid( attacker ) || !IsAlive( attacker ) ) return;
+		
+		specTarget = attacker;
+	}
+	else if ( isAloneOrSquadEliminated )
+	{
+		array<entity> alivePlayers = GetPlayerArray_Alive()
+		if ( alivePlayers.len() > 0 )
+			specTarget = alivePlayers.getrandom()
+		else
+			return // GG
+	}
+	else
+		specTarget = clientTeam.getrandom()
+
+	player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
+
+	// For CL HUD
+	// player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.PICKUP_DESTROYED )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
+
+	// player.StartObservingPlayerInFirstPerson( specTarget )
+
+	player.SetSpecReplayDelay( Spectator_GetReplayDelay() )
+	
+	player.StartObserverMode( OBS_MODE_IN_EYE )
+	player.SetObserverTarget( specTarget )
+}
+
+void function PlayerStopSpectating( entity player )
+{
+	player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+	
+	player.SetSpecReplayDelay( 0 )
+}
+#endif
+
+#if SERVER
+/*
+	██████╗	 █████╗ ██╗     ██╗     ██████╗  █████╗  ██████╗██╗  ██╗███████╗
+	██╔════╝██╔══██╗██║     ██║     ██╔══██╗██╔══██╗██╔════╝██║ ██╔╝██╔════╝
+	██║     ███████║██║     ██║     ██████╔╝███████║██║     █████╔╝ ███████╗
+	██║     ██╔══██║██║     ██║     ██╔══██╗██╔══██║██║     ██╔═██╗ ╚════██║
+	╚██████╗██║  ██║███████╗███████╗██████╔╝██║  ██║╚██████╗██║  ██╗███████║
+	 ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝╚═════╝ ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝╚══════╝
+
+	This part describes the onboarding/shared gamemode callbacks.
+*/
+
+void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	if ( !IsValid( victim ) || !IsValid( attacker ) )
+		return
+
+	UpdatePlayerCounts()
+
+	if ( attacker.IsPlayer() && victim.IsPlayer() )
+		attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
+}
+
+void function OnClientConnected( entity player )
+{
+	// Min players logic
+	int connectedPlayerCount = GetPlayerArray().len()
+
+	SetGlobalNetInt( "connectedPlayerCount", connectedPlayerCount )
+
+	int minPlayers = GetCurrentPlaylistVarInt( "min_players", 1 )
+	
+	if ( connectedPlayerCount >= minPlayers && !Flag( "MinPlayersReached" ) )
+		FlagSet( "MinPlayersReached" )
+	// Min players logic end
+
+	UpdatePlayerCounts()
+
+	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
+	int teamMemberIndex = playerTeam.len() - 1
+	player.SetTeamMemberIndex( teamMemberIndex )
+
+	switch ( GetGameState() )
+	{
+		case eGameState.WaitingForPlayers:
+		case eGameState.PickLoadout:
+			entity startEnt = GetEnt( "info_player_start" )
+
+			player.SetOrigin( startEnt.GetOrigin() )
+			player.SetAngles( startEnt.GetAngles() )
+
+			player.FreezeControlsOnServer()
+
+			if ( PreGame_GetWaitingForPlayersSpawningEnabled()
+				&& GetGameState() == eGameState.WaitingForPlayers )
+				DecideRespawnPlayer( player, false )
+
+			break
+	}
+}
+
+void function OnCharacterClassChanged( EHI playerEHI, ItemFlavor flavor )
+{
+	if ( GetGameState() < eGameState.Playing && !IsFiringRangeGameMode() )
+		return
+
+	entity player = FromEHI( playerEHI )
+	if ( IsAlive( player ) ) {	
+		CharacterSelect_AssignCharacter( player, flavor, false )
+		DecideRespawnPlayer( player )
+	}
+}
+
+void function OnCharacterSkinChanged( EHI playerEHI, ItemFlavor flavor )
+{
+	if ( GetGameState() < eGameState.Playing && !IsFiringRangeGameMode() )
+		return
+
+	entity player = FromEHI( playerEHI )
+
+	CharacterSkin_Apply( player, flavor )
+}
+
+void function UpdatePlayerCounts()
+{
+	SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
+	SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
+}
+#endif
+
+#if SERVER || CLIENT
+/*
+	██████╗	 ██████╗ ███╗   ██╗██████╗ ██╗████████╗██╗ ██████╗ ███╗   ██╗ █████╗ ██╗     ███████╗
+	██╔════╝██╔═══██╗████╗  ██║██╔══██╗██║╚══██╔══╝██║██╔═══██╗████╗  ██║██╔══██╗██║     ██╔════╝
+	██║     ██║   ██║██╔██╗ ██║██║  ██║██║   ██║   ██║██║   ██║██╔██╗ ██║███████║██║     ███████╗
+	██║     ██║   ██║██║╚██╗██║██║  ██║██║   ██║   ██║██║   ██║██║╚██╗██║██╔══██║██║     ╚════██║
+	╚██████╗╚██████╔╝██║ ╚████║██████╔╝██║   ██║   ██║╚██████╔╝██║ ╚████║██║  ██║███████╗███████║
+	 ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═════╝ ╚═╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚══════╝
+
+	This part describes customizable data which are used in sequence logic.
+	The conditional functions usually get the value from the current playlist.
+*/
+
+// General
+bool function OnboardingEnabled() 								{ return !GetCurrentPlaylistVarBool( "custom_onboarding", false ) }
+
+// Waiting for players
+bool function PreGame_GetWaitingForPlayersHasBlackScreen()		{ return GetCurrentPlaylistVarBool( "waiting_for_players_has_black_screen", false ) }
+bool function PreGame_GetWaitingForPlayersSpawningEnabled()		{ return GetCurrentPlaylistVarBool( "waiting_for_players_spawning_enabled", false ) }
+bool function PreGame_GetWaitingForPlayersWaitForeverEnabled() 	{ return GetCurrentPlaylistVarBool( "wait_for_players_forever", false ) }
+float function PreGame_GetWaitingForPlayersDelayMin()			{ return GetCurrentPlaylistVarFloat( "waiting_for_players_min_wait", 0.0 ) }
+float function PreGame_GetWaitingForPlayersDelayMax()			{ return GetCurrentPlaylistVarFloat( "waiting_for_players_timeout_seconds", 20.0 ) }
+float function PreGame_GetWaitingForPlayersCountdown()			{ return GetCurrentPlaylistVarFloat( "waiting_for_players_countdown_seconds", 8.0 ) }
+
+// Waiting for players -> character selection
+float function CharSelect_GetIntroMusicStartTime()		 		{ return GetCurrentPlaylistVarFloat( "charselect_intro_music_start_time", -0.8 ) }
+float function CharSelect_GetIntroTransitionDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_intro_transition_duration", 3.0 ) }
+float function CharSelect_GetIntroCountdownDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_intro_countdown_duration", 0.0 ) }
+
+// Character selection
+float function CharSelect_GetPickingDelayBeforeAll()			{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_before_all", 0.0 ) }
+float function CharSelect_GetPickingDelayOnFirst()				{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_on_first", 1.5 ) }
+float function CharSelect_GetPickingSingleDurationMax()			{ return GetCurrentPlaylistVarFloat( "character_select_time_max", 8.0 ) }
+float function CharSelect_GetPickingSingleDurationMin()			{ return GetCurrentPlaylistVarFloat( "character_select_time_min", 6.0 ) }
+float function CharSelect_GetPickingDelayAfterEachLock()		{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_after_each_lock", 0.5 ) }
+float function CharSelect_GetPickingDelayAfterAll()				{ return GetCurrentPlaylistVarFloat( "charselect_picking_delay_after_all", 1.5 ) }
+
+// Character selection -> player squad -> champion squad -> outro
+bool function CharSelect_PostSelectionMusicEnabled()			{ return GetCurrentPlaylistVarBool( "survival_enable_squad_intro_music", true ) }
+bool function CharSelect_PlayerSquadIntroEnabled()				{ return GetCurrentPlaylistVarBool( "survival_enable_squad_intro", true ) }
+bool function CharSelect_ChampionSquadIntroEnabled()			{ return GetCurrentPlaylistVarBool( "survival_enable_gladiator_intros", true ) }
+float function CharSelect_GetOutroSceneChangeDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_outro_scene_change_duration", 4.0 ) }
+float function CharSelect_GetOutroSquadPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_squad_present_duration", 6.0  ) }
+float function CharSelect_GetOutroChampionPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_champion_present_duration", 8.0 ) }
+float function CharSelect_GetOutroTransitionDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_outro_transition_duration", 3.0 ) }
+
+// Spectator
+bool function Spectator_GetReplayIsEnabled()                   { return GetCurrentPlaylistVarBool( "replay_enabled", false ) } 
+float function Spectator_GetReplayDelay()                      { return GetCurrentPlaylistVarFloat( "replay_delay", 1 ) } 
+
+// Custom logic
+float function Survival_GetCharacterSelectDuration( int pickIndex )
+{
+	float min = CharSelect_GetPickingSingleDurationMin()
+	float max = CharSelect_GetPickingSingleDurationMax()
+	return GraphCapped( pickIndex, 0, MAX_TEAM_PLAYERS - 1, max, min )
+}
+
+bool function Survival_CharacterSelectEnabled()
+{
+	if ( Survival_GetCharacterSelectDuration( 0 ) <= 0.0 )
+		return false
+
+	return GetCurrentPlaylistVarBool( "charselect_enabled", true )
+}
+#endif

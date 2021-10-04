@@ -131,29 +131,6 @@ array<string> function GetPrivateMatchMaps()
 	return mapsArray
 }
 
-
-
-array<string> function GetPlaylistMaps( string playlistName )
-{
-	array<string> mapsArray
-
-	int numModes = GetPlaylistGamemodesCount( playlistName )
-	for ( int modeIndex = 0; modeIndex < numModes; modeIndex++ )
-	{
-		int numMaps = GetPlaylistGamemodeByIndexMapsCount( playlistName, modeIndex )
-		for ( int mapIndex = 0; mapIndex < numMaps; mapIndex++ )
-		{
-			string mapName = GetPlaylistGamemodeByIndexMapByIndex( playlistName, modeIndex, mapIndex )
-			if ( mapsArray.contains( mapName ) )
-				continue
-
-			mapsArray.append( mapName )
-		}
-	}
-
-	return mapsArray
-}
-
 bool function MapSettings_SupportsTitans( string mapName )
 {
 	if ( mapName.find_olduntyped( "mp_lf_" ) != null )

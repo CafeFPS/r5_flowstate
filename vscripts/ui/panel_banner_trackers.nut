@@ -1,3 +1,4 @@
+/*
 global function InitCardTrackersPanel
 
 struct
@@ -40,6 +41,8 @@ void function CardTrackersPanel_OnHide( var panel )
 {
 	RemoveCallback_OnTopLevelCustomizeContextChanged( panel, CardTrackersPanel_Update )
 	CardTrackersPanel_Update( panel )
+	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
+	Hud_SetSelected( Hud_GetChild( scrollPanel, "GridButton0" ), true )
 }
 
 
@@ -142,3 +145,4 @@ bool function ShouldDisplayTracker( ItemFlavor tracker, table<ItemFlavor, int> e
 
 	return true
 }
+*/

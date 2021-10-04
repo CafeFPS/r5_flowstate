@@ -1,24 +1,24 @@
-global function ShSpectreChatter_MP_Init
+//global function ShSpectreChatter_MP_Init
 global function ShouldPlaySpectreChatterMPLine
 
 global const SPECTRE_CHATTER_MP_RANGE = 1000
 global const SPECTRE_CHATTER_MP_RANGE_SQUARED = SPECTRE_CHATTER_MP_RANGE * SPECTRE_CHATTER_MP_RANGE
 
-void function ShSpectreChatter_MP_Init()
-{
-	var dataTable = GetDataTable( $"datatable/spectre_chatter_mp.rpak" )
-	int numRows = GetDatatableRowCount( dataTable )
-	for ( int i = 0; i < numRows; i++ )
-	{
-		string conversationName = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "conversationname" ) )
-		int priority = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "priority" ) )
-		float debounce = GetDataTableFloat( dataTable, i, GetDataTableColumnByName( dataTable, "debounce" ) )
+// void function ShSpectreChatter_MP_Init()
+// {
+// 	var dataTable = GetDataTable( $"datatable/spectre_chatter_mp.rpak" )
+// 	int numRows = GetDatatableRowCount( dataTable )
+// 	for ( int i = 0; i < numRows; i++ )
+// 	{
+// 		string conversationName = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "conversationname" ) )
+// 		int priority = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "priority" ) )
+// 		float debounce = GetDataTableFloat( dataTable, i, GetDataTableColumnByName( dataTable, "debounce" ) )
 
-		Assert( !( DoesConversationExist( conversationName) ), "Already tried to register conversation: " + conversationName )
+// 		Assert( !( DoesConversationExist( conversationName) ), "Already tried to register conversation: " + conversationName )
 
-		RegisterConversation( conversationName, priority, debounce )
-	}
-}
+// 		RegisterConversation( conversationName, priority, debounce )
+// 	}
+// }
 
 bool function ShouldPlaySpectreChatterMPLine( string conversationType, entity player, entity spectre )
 {

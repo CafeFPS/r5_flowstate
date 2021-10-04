@@ -11,6 +11,8 @@ global function GetStatEntryByRef
 global function StatEntry_GetIndex
 global function StatEntry_GetRef
 global function StatEntry_GetType
+global function StatEntry_GetBehavior
+global function StatEntry_GetFlags
 global function DoesStatSatisfyValue
 
 global function RegisterAccumulatedStat_Bool
@@ -43,7 +45,7 @@ global function StatsInternals_UpdatePersistenceOnDisconnect
 global function StatsInternals_UpdatePersistenceOnPurchase
 #endif
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 global function DEV_IncrementStat_Int // only global in dev for console commands (stats should never be incremented any where other than in this file)
 #endif
 
@@ -66,12 +68,25 @@ global enum eStatType
 }
 global enum eStatBehavior
 {
-	CALCULATED, // no value is stored, a function calculates the value on demand
+	CALCULATED,  // no value is stored, a function calculates the value on demand
 	ACCUMULATED, // starts at zero, only ever increases
-	VARIABLE, // starts at zero, can be given any value
+	VARIABLE,    // starts at zero, can be given any value
+}
+global enum eStatFlags
+{
+	STORE_START_OF_PREVIOUS_MATCH = (1 << 0),
+	PERSISTENCE_WRITE_IMMEDIATELY = (1 << 1),
 }
 #endif
 
+#if SERVER || CLIENT || UI
+global enum eStatGetWhen
+{
+	CURRENT,
+	START_OF_CURRENT_MATCH,
+	START_OF_PREVIOUS_MATCH,
+}
+#endif
 
 #if SERVER || CLIENT || UI
 global typedef StatChangedCallbackType_Bool void functionref( entity player, bool oldValue, bool newValue )
@@ -85,18 +100,20 @@ global struct StatEntry
 {
 	int    index
 	int    indexWithinType
-	string persistenceFullKey
+	string persistenceFullKey_Current
+	string persistenceFullKey_StartOfPreviousMatch
 	int    type = eStatType.INVALID
 	int    behavior
+	int    flags = 0
 	bool   shouldCache // for calculated stats only
 
 	array<string> enumKeys
 
 	//StatCalcFuncInfo calcInfo // no cyclic type references...
 
-	bool functionref( entity player, array<StatEntry> sourceEntries, bool atStart )  calcFunc_Bool
-	int functionref( entity player, array<StatEntry> sourceEntries, bool atStart )   calcFunc_Int
-	float functionref( entity player, array<StatEntry> sourceEntries, bool atStart ) calcFunc_Float
+	bool functionref( entity player, array<StatEntry> sourceEntries, int when )      calcFunc_Bool
+	int functionref( entity player, array<StatEntry> sourceEntries, int when )       calcFunc_Int
+	float functionref( entity player, array<StatEntry> sourceEntries, int when )     calcFunc_Float
 	array<StatEntry>                                                                 calcSourceEntries
 
 	array<StatEntry> dependents
@@ -107,9 +124,9 @@ global struct StatEntry
 #if SERVER || CLIENT || UI
 global struct StatCalcFuncInfo
 {
-	bool functionref( entity player, array<StatEntry> sourceEntries, bool atStart )  calcFunc_Bool
-	int functionref( entity player, array<StatEntry> sourceEntries, bool atStart )   calcFunc_Int
-	float functionref( entity player, array<StatEntry> sourceEntries, bool atStart ) calcFunc_Float
+	bool functionref( entity player, array<StatEntry> sourceEntries, int when )  calcFunc_Bool
+	int functionref( entity player, array<StatEntry> sourceEntries, int when )   calcFunc_Int
+	float functionref( entity player, array<StatEntry> sourceEntries, int when ) calcFunc_Float
 
 	array<StatEntry> sourceEntries
 }
@@ -138,7 +155,7 @@ global struct StatEnumStruct
 
 	array<string> choices // the key choices for the tailing enum (e.g.: eWeaponFlavor -> r97, hemlok, alternator, ...)
 
-	#if DEV
+	#if R5DEV
 		string structName
 	#endif
 }
@@ -150,6 +167,7 @@ global struct StatTemplate
 {
 	StatEnumStruct ornull parentEnumStruct
 
+	int  flags = 0
 	int  type = eStatType.INVALID // bool, int, float
 	int  behavior // accumulated, calculated, variable
 	bool shouldCache = false // for calculated stats only
@@ -167,7 +185,7 @@ global struct StatTemplate
 #endif
 
 
-#if (SERVER || CLIENT || UI) && DEV
+#if SERVER || CLIENT || UI && R5DEV
 struct StatEnumStruct_Children
 {
 	array<StatEnumStruct> childEnumStructs
@@ -198,7 +216,7 @@ struct AdditionalStatsPlayerState
 struct FileStruct_LifetimeLevel
 {
 	#if SERVER || CLIENT || UI
-		#if DEV
+		#if R5DEV
 			StatEnumStruct_Children                        rootFieldsList // only for generating pdef file
 			table<StatEnumStruct, StatEnumStruct_Children> sesChildrenMap // hack
 		#endif
@@ -209,13 +227,16 @@ struct FileStruct_LifetimeLevel
 		array<StatEntry> stats_Float
 
 		array<StatEntry>         allStats
-		table<string, StatEntry> refStatMap
+		table<string, StatEntry> refStatEntryMap
 
 		table<EHI, AdditionalStatsPlayerState> playerStateMap = {}
 	#endif
 
 }
 FileStruct_LifetimeLevel& fileLevel
+
+const string STATS_PERSISTENCE_PREFIX_CURRENT = "stats"
+const string STATS_PERSISTENCE_PREFIX_START_OF_PREVIOUS_MATCH = "stats_sopm"
 
 
 /////////////////////////
@@ -231,7 +252,7 @@ void function ShStatsInternals_LevelInit()
 	fileLevel = newFileLevel
 
 	#if SERVER
-		#if DEV
+		#if R5DEV
 			AddCallback_GeneratePDef( GenerateGameStatsPDef )
 			AddClientCommandCallback( "stats_dump", ClientCommand_stats_dump )
 			AddClientCommandCallback( "stats_set", ClientCommand_stats_set )
@@ -251,75 +272,114 @@ void function ShStatsInternals_LevelInit()
 //////////////////////////
 
 #if SERVER || CLIENT || UI
-bool function GetStat_Bool( entity player, StatEntry entry, bool atStart = false )
+bool function GetStat_Bool( entity player, StatEntry entry, int when = eStatGetWhen.CURRENT )
 {
 	Assert( entry.type == eStatType.BOOL )
 	#if CLIENT || UI
-		Assert( IsLobby() || atStart, "Cannot get current stats in client or UI VM during a match (they could be out of date)." )
+		if ( !(entry.flags & eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY) )
+			Assert( when != eStatGetWhen.CURRENT || IsLobby(), "Cannot get current stats in client or UI VM during a match (they could be out of date)." )
 	#endif
 
 	if ( entry.behavior == eStatBehavior.CALCULATED && !entry.shouldCache )
-		return entry.calcFunc_Bool( player, entry.calcSourceEntries, atStart )
+		return entry.calcFunc_Bool( player, entry.calcSourceEntries, when )
 
 	#if SERVER
-		return (atStart ? player.p.statValuesAtStart_Bool : player.p.statValues_Bool)[entry.indexWithinType]
+	return (when ? player.p.statValuesAtStart_Bool : player.p.statValues_Bool)[entry.indexWithinType]
 	#elseif CLIENT || UI
-		#if DEV
+		#if R5DEV
 			//if ( GetConVarBool( "persistence_development_mode", false ) )
 			if ( DEV_ShouldIgnorePersistence() )
 				return false
 		#endif
-		return expect bool(player.GetPersistentVar( entry.persistenceFullKey ))
+
+		if ( when == eStatGetWhen.CURRENT || when == eStatGetWhen.START_OF_CURRENT_MATCH )
+		{
+			if ( !(entry.flags & eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY) )
+				Assert( when != eStatGetWhen.CURRENT || IsLobby() )
+			return expect bool(player.GetPersistentVar( entry.persistenceFullKey_Current ))
+		}
+		else if ( when == eStatGetWhen.START_OF_PREVIOUS_MATCH )
+		{
+			Assert( entry.flags & eStatFlags.STORE_START_OF_PREVIOUS_MATCH, "Tried to get with eStatGetWhen.START_OF_PREVIOUS_MATCH on a stat that does not have eStatFlags.STORE_START_OF_PREVIOUS_MATCH set." )
+			return expect bool(player.GetPersistentVar( entry.persistenceFullKey_StartOfPreviousMatch ))
+		}
+		unreachable
 	#endif
 }
 #endif
 
 
 #if SERVER || CLIENT || UI
-int function GetStat_Int( entity player, StatEntry entry, bool atStart = false )
+int function GetStat_Int( entity player, StatEntry entry, int when = eStatGetWhen.CURRENT )
 {
 	Assert( entry.type == eStatType.INT )
 	#if CLIENT || UI
-		Assert( IsLobby() || atStart, "Cannot get current stats in client or UI VM during a match (they could be out of date)." )
+		if ( !(entry.flags & eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY) )
+			Assert( when != eStatGetWhen.CURRENT || IsLobby(), "Cannot get current stats in client or UI VM during a match (they could be out of date)." )
+	#endif
+
+	if ( (when == eStatGetWhen.CURRENT || when == eStatGetWhen.START_OF_CURRENT_MATCH)
+			&& entry.behavior == eStatBehavior.CALCULATED && !entry.shouldCache )
+		return entry.calcFunc_Int( player, entry.calcSourceEntries, when )
+
+	#if SERVER
+	return (when ? player.p.statValuesAtStart_Int : player.p.statValues_Int)[entry.indexWithinType]
+	#elseif CLIENT || UI 
+		#if R5DEV
+			///if ( GetConVarBool( "persistence_development_mode", false ) )
+			if ( DEV_ShouldIgnorePersistence() )
+				return 0
+		#endif
+
+		if ( when == eStatGetWhen.CURRENT || when == eStatGetWhen.START_OF_CURRENT_MATCH )
+		{
+			if ( !(entry.flags & eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY) )
+				Assert( when != eStatGetWhen.CURRENT || IsLobby() )
+			return expect int(player.GetPersistentVar( entry.persistenceFullKey_Current ))
+		}
+		else if ( when == eStatGetWhen.START_OF_PREVIOUS_MATCH )
+		{
+			Assert( entry.flags & eStatFlags.STORE_START_OF_PREVIOUS_MATCH, "Tried to get with eStatGetWhen.START_OF_PREVIOUS_MATCH on a stat that does not have eStatFlags.STORE_START_OF_PREVIOUS_MATCH set." )
+			return expect int(player.GetPersistentVar( entry.persistenceFullKey_StartOfPreviousMatch ))
+		}
+		unreachable
+	#endif
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+float function GetStat_Float( entity player, StatEntry entry, int when = eStatGetWhen.CURRENT )
+{
+	Assert( entry.type == eStatType.FLOAT )
+	#if CLIENT || UI
+		if ( !(entry.flags & eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY) )
+			Assert( when != eStatGetWhen.CURRENT || IsLobby(), "Cannot get current stats in client or UI VM during a match (they could be out of date)." )
 	#endif
 
 	if ( entry.behavior == eStatBehavior.CALCULATED && !entry.shouldCache )
-		return entry.calcFunc_Int( player, entry.calcSourceEntries, atStart )
-
+		return entry.calcFunc_Float( player, entry.calcSourceEntries, when )
 	#if SERVER
-		return (atStart ? player.p.statValuesAtStart_Int : player.p.statValues_Int)[entry.indexWithinType]
+		return (when ? player.p.statValuesAtStart_Float : player.p.statValues_Float)[entry.indexWithinType]
 	#elseif CLIENT || UI
-		#if DEV
+		#if R5DEV
 			//if ( GetConVarBool( "persistence_development_mode", false ) )
 			if ( DEV_ShouldIgnorePersistence() )
 				return 0
 		#endif
-		return expect int(player.GetPersistentVar( entry.persistenceFullKey ))
-	#endif
-}
-#endif
 
-
-#if SERVER || CLIENT || UI
-float function GetStat_Float( entity player, StatEntry entry, bool atStart = false )
-{
-	Assert( entry.type == eStatType.FLOAT )
-	#if CLIENT || UI
-		Assert( IsLobby() || atStart, "Cannot get current stats in client or UI VM during a match (they could be out of date)." )
-	#endif
-
-	if ( entry.behavior == eStatBehavior.CALCULATED && !entry.shouldCache )
-		return entry.calcFunc_Float( player, entry.calcSourceEntries, atStart )
-
-	#if SERVER
-		return (atStart ? player.p.statValuesAtStart_Float : player.p.statValues_Float)[entry.indexWithinType]
-	#elseif CLIENT || UI
-		#if DEV
-			//if ( GetConVarBool( "persistence_development_mode", false ) )
-			if ( DEV_ShouldIgnorePersistence() )
-				return 0.0
-		#endif
-		return expect float(player.GetPersistentVar( entry.persistenceFullKey ))
+		if ( when == eStatGetWhen.CURRENT || when == eStatGetWhen.START_OF_CURRENT_MATCH )
+		{
+			if ( !(entry.flags & eStatFlags.PERSISTENCE_WRITE_IMMEDIATELY) )
+				Assert( when != eStatGetWhen.CURRENT || IsLobby() )
+			return expect float(player.GetPersistentVar( entry.persistenceFullKey_Current ))
+		}
+		else if ( when == eStatGetWhen.START_OF_PREVIOUS_MATCH )
+		{
+			Assert( entry.flags & eStatFlags.STORE_START_OF_PREVIOUS_MATCH, "Tried to get with eStatGetWhen.START_OF_PREVIOUS_MATCH on a stat that does not have eStatFlags.STORE_START_OF_PREVIOUS_MATCH set." )
+			return expect float(player.GetPersistentVar( entry.persistenceFullKey_StartOfPreviousMatch ))
+		}
+		unreachable
 	#endif
 }
 #endif
@@ -336,7 +396,7 @@ StatEntry function GetStatEntryByIndex( int index )
 #if SERVER || CLIENT || UI
 bool function IsValidStatEntryRef( string ref )
 {
-	return (ref in fileLevel.refStatMap)
+	return (ref in fileLevel.refStatEntryMap)
 }
 #endif
 
@@ -344,7 +404,7 @@ bool function IsValidStatEntryRef( string ref )
 #if SERVER || CLIENT || UI
 StatEntry function GetStatEntryByRef( string ref )
 {
-	return fileLevel.refStatMap[ref]
+	return fileLevel.refStatEntryMap[ref]
 }
 #endif
 
@@ -360,7 +420,7 @@ int function StatEntry_GetIndex( StatEntry entry )
 #if SERVER || CLIENT || UI
 string function StatEntry_GetRef( StatEntry entry )
 {
-	return entry.persistenceFullKey
+	return entry.persistenceFullKey_Current
 }
 #endif
 
@@ -372,26 +432,39 @@ int function StatEntry_GetType( StatEntry entry )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+
+int function StatEntry_GetBehavior( StatEntry entry )
+{
+	return entry.behavior
+}
+
+
+int function StatEntry_GetFlags( StatEntry entry )
+{
+	return entry.flags
+}
+#endif
 
 #if SERVER || CLIENT || UI
-bool function DoesStatSatisfyValue( entity player, StatEntry entry, float checkValue, bool atStart = false )
+bool function DoesStatSatisfyValue( entity player, StatEntry entry, float checkValue, int when = eStatGetWhen.CURRENT )
 {
 	if ( entry.type == eStatType.BOOL )
 	{
 		Assert( checkValue == 0.0 || checkValue == 1.0 )
-		bool value    = GetStat_Bool( player, entry, atStart )
+		bool value    = GetStat_Bool( player, entry, when )
 		bool wantTrue = (checkValue == 1.0)
 		return (value == wantTrue)
 	}
 	else if ( entry.type == eStatType.INT )
 	{
 		Assert( float(int(checkValue)) == checkValue )
-		int value = GetStat_Int( player, entry, atStart )
+		int value = GetStat_Int( player, entry, when )
 		return (value >= int(checkValue))
 	}
 	else if ( entry.type == eStatType.FLOAT )
 	{
-		float value = GetStat_Float( player, entry, atStart )
+		float value = GetStat_Float( player, entry, when )
 		return value >= checkValue
 	}
 	unreachable
@@ -492,7 +565,7 @@ void function OnPersistentDataReady( entity player )
 	player.p.statValues_Float.resize( fileLevel.stats_Float.len(), 0.0 )
 	player.p.statValuesAtStart_Float.resize( fileLevel.stats_Float.len(), 0.0 )
 
-	#if DEV
+	#if R5DEV
 		//if ( GetConVarBool( "persistence_development_mode", false ) )
 		if ( DEV_ShouldIgnorePersistence() )
 			return
@@ -509,7 +582,7 @@ void function OnPersistentDataReady( entity player )
 
 		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
 		{
-			player.p.statValues_Bool[index] = expect bool(player.GetPersistentVar( entry.persistenceFullKey ))
+			player.p.statValues_Bool[index] = expect bool(player.GetPersistentVar( entry.persistenceFullKey_Current ))
 			player.p.statValuesAtStart_Bool[index] = player.p.statValues_Bool[index]
 		}
 	}
@@ -523,7 +596,7 @@ void function OnPersistentDataReady( entity player )
 
 		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
 		{
-			player.p.statValues_Int[index] = expect int(player.GetPersistentVar( entry.persistenceFullKey ))
+			player.p.statValues_Int[index] = expect int(player.GetPersistentVar( entry.persistenceFullKey_Current ))
 			player.p.statValuesAtStart_Int[index] = player.p.statValues_Int[index]
 		}
 	}
@@ -537,7 +610,7 @@ void function OnPersistentDataReady( entity player )
 
 		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
 		{
-			player.p.statValues_Float[index] = expect float(player.GetPersistentVar( entry.persistenceFullKey ))
+			player.p.statValues_Float[index] = expect float(player.GetPersistentVar( entry.persistenceFullKey_Current ))
 			player.p.statValuesAtStart_Float[index] = player.p.statValues_Float[index]
 		}
 	}
@@ -565,7 +638,7 @@ void function StatsInternals_UpdatePersistenceOnPurchase( entity player )
 ///////////////////////
 ///////////////////////
 
-#if (SERVER || CLIENT || UI) && DEV
+#if SERVER || CLIENT || UI && R5DEV
 string function DEV_GetStatTemplateDebugName( StatTemplate template )
 {
 	//string out = ""
@@ -581,7 +654,7 @@ string function DEV_GetStatTemplateDebugName( StatTemplate template )
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function DEV_IncrementStat_Int( entity player, StatEntry entry, int incrementAmount )
 {
 	__IncrementStat_Int( player, entry, incrementAmount )
@@ -589,26 +662,26 @@ void function DEV_IncrementStat_Int( entity player, StatEntry entry, int increme
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 bool function ClientCommand_stats_dump( entity player, array<string> args )
 {
 	printt( "--", "stats dump for", player )
 
 	foreach ( int index, StatEntry entry in fileLevel.stats_Bool )
-		printt( "--", "", entry.persistenceFullKey, player.p.statValues_Bool[index] )
+		printt( "--", "", entry.persistenceFullKey_Current, player.p.statValues_Bool[index] )
 
 	foreach ( int index, StatEntry entry in fileLevel.stats_Int )
-		printt( "--", "", entry.persistenceFullKey, player.p.statValues_Int[index] )
+		printt( "--", "", entry.persistenceFullKey_Current, player.p.statValues_Int[index] )
 
 	foreach ( int index, StatEntry entry in fileLevel.stats_Float )
-		printt( "--", "", entry.persistenceFullKey, player.p.statValues_Float[index] )
+		printt( "--", "", entry.persistenceFullKey_Current, player.p.statValues_Float[index] )
 
 	return true
 }
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 bool function ClientCommand_stats_set( entity player, array<string> args )
 {
 	string statRef = args[0]
@@ -649,25 +722,26 @@ bool function ClientCommand_stats_set( entity player, array<string> args )
 #if SERVER
 void function __IncrementStat_Int( entity player, StatEntry entry, int incrementAmount )
 {
-	// TODOACTUAL: see if you can make this work without commenting the code
-	
-	// Assert( entry.type == eStatType.INT )
-	// Assert( entry.behavior == eStatBehavior.ACCUMULATED )
+	Assert( entry.type == eStatType.INT )
+	Assert( entry.behavior == eStatBehavior.ACCUMULATED )
 
-	// //player.p.statValues_Int[entry.indexWithinType] += incrementAmount
-	// int oldValue = player.p.statValues_Int[entry.indexWithinType]
-	// int newValue = oldValue + incrementAmount
-	// player.p.statValues_Int[entry.indexWithinType] = newValue
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
 
-	// if ( STATS_DEBUG_PRINT_SPAM )
-	// 	printt( "@@@@ STATS __IncrementStat_Int @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
+	//player.p.statValues_Int[entry.indexWithinType] += incrementAmount
+	int oldValue = player.p.statValues_Int[entry.indexWithinType]
+	int newValue = oldValue + incrementAmount
+	player.p.statValues_Int[entry.indexWithinType] = newValue
 
-	// if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
-	// 	foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
-	// 		cb( player, oldValue, newValue )
+	if ( STATS_DEBUG_PRINT_SPAM )
+		printt( "@@@@ STATS __IncrementStat_Int @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
 
-	// foreach( StatEntry dependent in entry.dependents )
-	// 	OnDependentStatDependencyChanged( player, dependent )
+	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
+		foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
+			cb( player, oldValue, newValue )
+
+	foreach( StatEntry dependent in entry.dependents )
+		OnDependentStatDependencyChanged( player, dependent )
 }
 #endif
 
@@ -678,16 +752,16 @@ void function __IncrementStat_Float( entity player, StatEntry entry, float incre
 	Assert( entry.type == eStatType.FLOAT )
 	Assert( entry.behavior == eStatBehavior.ACCUMULATED )
 
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
+
 	//player.p.statValues_Float[entry.indexWithinType] += incrementAmount
-    if ( player.p.statValues_Float.len() <= 0 )
-        return printt("!!! player.p.statValues_Float.len() <= 0 !!!")
-    
 	float oldValue = player.p.statValues_Float[entry.indexWithinType]
 	float newValue = oldValue + incrementAmount
 	player.p.statValues_Float[entry.indexWithinType] = newValue
 
 	if ( STATS_DEBUG_PRINT_SPAM )
-		printt( "@@@@ STATS __IncrementStat_Float @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
+		printt( "@@@@ STATS __IncrementStat_Float @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Float )
 		foreach( StatChangedCallbackType_Float cb in player.p.statEntryChangeCallbacks_Float[entry.indexWithinType] )
@@ -705,12 +779,15 @@ void function __SetStat_Bool( entity player, StatEntry entry, bool newValue, boo
 	Assert( entry.type == eStatType.BOOL )
 	Assert( entry.behavior == eStatBehavior.VARIABLE || (entry.type == eStatType.BOOL && entry.behavior == eStatBehavior.ACCUMULATED && newValue) || DEV_alwaysAllowSet, "Cannot set a bool to false unless its behavior is VARIABLE" )
 
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
+
 	//player.p.statValues_Bool[entry.indexWithinType] = newValue
 	bool oldValue = player.p.statValues_Bool[entry.indexWithinType]
 	player.p.statValues_Bool[entry.indexWithinType] = newValue
 
 	if ( STATS_DEBUG_PRINT_SPAM )
-		printt( "@@@@ STATS __SetStat_Bool @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
+		printt( "@@@@ STATS __SetStat_Bool @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Bool )
 		foreach( StatChangedCallbackType_Bool cb in player.p.statEntryChangeCallbacks_Bool[entry.indexWithinType] )
@@ -728,12 +805,15 @@ void function __SetStat_Int( entity player, StatEntry entry, int newValue, bool 
 	Assert( entry.type == eStatType.INT )
 	Assert( entry.behavior == eStatBehavior.VARIABLE || DEV_alwaysAllowSet )
 
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
+
 	//player.p.statValues_Int[entry.indexWithinType] = newValue
 	int oldValue = player.p.statValues_Int[entry.indexWithinType]
 	player.p.statValues_Int[entry.indexWithinType] = newValue
 
 	if ( STATS_DEBUG_PRINT_SPAM )
-		printt( "@@@@ STATS __SetStat_Int @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
+		printt( "@@@@ STATS __SetStat_Int @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Int )
 		foreach( StatChangedCallbackType_Int cb in player.p.statEntryChangeCallbacks_Int[entry.indexWithinType] )
@@ -751,12 +831,15 @@ void function __SetStat_Float( entity player, StatEntry entry, float newValue, b
 	Assert( entry.type == eStatType.FLOAT )
 	Assert( entry.behavior == eStatBehavior.VARIABLE || DEV_alwaysAllowSet )
 
+	if(player.p.statValues_Float.len() <= entry.indexWithinType)
+		return
+
 	//player.p.statValues_Float[entry.indexWithinType] = newValue
 	float oldValue = player.p.statValues_Float[entry.indexWithinType]
 	player.p.statValues_Float[entry.indexWithinType] = newValue
 
 	if ( STATS_DEBUG_PRINT_SPAM )
-		printt( "@@@@ STATS SetStat_Float @@@@", player, entry.persistenceFullKey, newValue, "(was " + oldValue + ")" )
+		printt( "@@@@ STATS SetStat_Float @@@@", player, entry.persistenceFullKey_Current, newValue, "(was " + oldValue + ")" )
 
 	if ( entry.indexWithinType in player.p.statEntryChangeCallbacks_Float )
 		foreach( StatChangedCallbackType_Float cb in player.p.statEntryChangeCallbacks_Float[entry.indexWithinType] )
@@ -769,39 +852,39 @@ void function __SetStat_Float( entity player, StatEntry entry, float newValue, b
 
 
 #if SERVER
-void function UpdateCalculatedStatCachedValue( entity player, StatEntry entry )
+void function UpdateCalculatedStatCachedValue( entity player, StatEntry entry, int when = eStatGetWhen.CURRENT )
 {
 	Assert( entry.behavior == eStatBehavior.CALCULATED && entry.shouldCache )
 
 	if ( entry.type == eStatType.BOOL )
 	{
-		bool value = entry.calcFunc_Bool( player, entry.calcSourceEntries, false )
+		bool value = entry.calcFunc_Bool( player, entry.calcSourceEntries, when )
 		player.p.statValues_Bool[entry.indexWithinType] = value
 		if ( IsLobby() )
-			player.SetPersistentVar( entry.persistenceFullKey, value )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
 		if ( STATS_DEBUG_PRINT_SPAM )
-			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey, value )
+			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
 	}
 	else if ( entry.type == eStatType.INT )
 	{
-		int value = entry.calcFunc_Int( player, entry.calcSourceEntries, false )
+		int value = entry.calcFunc_Int( player, entry.calcSourceEntries, when )
 		player.p.statValues_Int[entry.indexWithinType] = value
 		if ( IsLobby() )
-			player.SetPersistentVar( entry.persistenceFullKey, value )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
 		if ( STATS_DEBUG_PRINT_SPAM )
-			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey, value )
+			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
 	}
 	else if ( entry.type == eStatType.FLOAT )
 	{
-		float value = entry.calcFunc_Float( player, entry.calcSourceEntries, false )
+		float value = entry.calcFunc_Float( player, entry.calcSourceEntries, when )
 		player.p.statValues_Float[entry.indexWithinType] = value
 		if ( IsLobby() )
-			player.SetPersistentVar( entry.persistenceFullKey, value )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
 		if ( STATS_DEBUG_PRINT_SPAM )
-			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey, value )
+			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
 	}
 }
 #endif
@@ -878,7 +961,7 @@ StatEnumStruct function RegisterStatEnumStruct( StatEnumStruct ornull parentSESO
 	ses.enumName = enumName
 	ses.choices = choices
 
-	#if DEV
+	#if R5DEV
 		if ( parentSESOrNull == null )
 		{
 			fileLevel.rootFieldsList.childEnumStructs.append( ses )
@@ -901,27 +984,31 @@ StatEnumStruct function RegisterStatEnumStruct( StatEnumStruct ornull parentSESO
 
 
 #if SERVER || CLIENT || UI
-StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSESOrNull, string fieldName, int type, int behavior, bool shouldCache )
+StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSESOrNull, string fieldName, int type, int behavior, int flags, bool shouldCache )
 {
 	StatTemplate template
 	template.fieldName = fieldName
 	template.type = type
 	template.behavior = behavior
+	template.flags = flags
 	template.shouldCache = shouldCache
 	Assert( !shouldCache || template.behavior == eStatBehavior.CALCULATED )
 
 	if ( parentSESOrNull == null )
 	{
-		template.rootEntry.persistenceFullKey = "stats." + fieldName
+		template.rootEntry.type = template.type
+		template.rootEntry.behavior = template.behavior
+		template.rootEntry.flags = template.flags
+		template.rootEntry.shouldCache = template.shouldCache
+
+		template.rootEntry.persistenceFullKey_Current = STATS_PERSISTENCE_PREFIX_CURRENT + "." + fieldName
+		if ( (template.flags & eStatFlags.STORE_START_OF_PREVIOUS_MATCH) > 0 )
+			template.rootEntry.persistenceFullKey_StartOfPreviousMatch = STATS_PERSISTENCE_PREFIX_START_OF_PREVIOUS_MATCH + "." + fieldName
 
 		template.rootEntry.index = fileLevel.allStats.len()
 		fileLevel.allStats.append( template.rootEntry )
 
-		fileLevel.refStatMap[template.rootEntry.persistenceFullKey] <- template.rootEntry
-
-		template.rootEntry.type = template.type
-		template.rootEntry.behavior = template.behavior
-		template.rootEntry.shouldCache = template.shouldCache
+		fileLevel.refStatEntryMap[template.rootEntry.persistenceFullKey_Current] <- template.rootEntry
 
 		if ( template.type == eStatType.BOOL )
 		{
@@ -940,7 +1027,7 @@ StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSE
 			fileLevel.stats_Float.append( template.rootEntry )
 		}
 
-		#if DEV
+		#if R5DEV
 			fileLevel.rootFieldsList.childStatTemplates.append( template )
 		#endif
 
@@ -950,7 +1037,7 @@ StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSE
 	{
 		StatEnumStruct parentSES = expect StatEnumStruct(parentSESOrNull)
 
-		#if DEV
+		#if R5DEV
 			StatEnumStruct_Children sesChildren
 			if ( parentSES in fileLevel.sesChildrenMap )
 				sesChildren = fileLevel.sesChildrenMap[parentSES]
@@ -969,7 +1056,7 @@ StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSE
 		}
 
 		template.enumKeyCount = sesAncestorsReversed.len()
-		template.resolver = BuildStatTemplateEnumKeyResolversRecursive( template, 0, sesAncestorsReversed, template, "stats.", [] )
+		template.resolver = BuildStatTemplateEnumKeyResolversRecursive( template, 0, sesAncestorsReversed, template, "", [] )
 	}
 
 	return template
@@ -994,18 +1081,21 @@ StatTemplateEnumKeyResolver function BuildStatTemplateEnumKeyResolversRecursive(
 			grownEnumKeys.append( choice )
 
 			StatEntry entry
+			entry.type = template.type
+			entry.behavior = template.behavior
+			entry.flags = template.flags
+			entry.shouldCache = template.shouldCache
 
-			entry.persistenceFullKey = partialKey + ancestor.fieldName + "[" + choice + "]" + "." + stat.fieldName
+			string entryPersistencePartialKey = partialKey + ancestor.fieldName + "[" + choice + "]" + "." + stat.fieldName
+			entry.persistenceFullKey_Current = STATS_PERSISTENCE_PREFIX_CURRENT + "." + entryPersistencePartialKey
+			if ( (entry.flags & eStatFlags.STORE_START_OF_PREVIOUS_MATCH) > 0 )
+				entry.persistenceFullKey_StartOfPreviousMatch = STATS_PERSISTENCE_PREFIX_START_OF_PREVIOUS_MATCH + "." + entryPersistencePartialKey
 			entry.enumKeys = grownEnumKeys
 
 			entry.index = fileLevel.allStats.len()
 			fileLevel.allStats.append( entry )
 
-			fileLevel.refStatMap[entry.persistenceFullKey] <- entry
-
-			entry.type = template.type
-			entry.behavior = template.behavior
-			entry.shouldCache = template.shouldCache
+			fileLevel.refStatEntryMap[entry.persistenceFullKey_Current] <- entry
 
 			if ( template.type == eStatType.BOOL )
 			{
@@ -1048,51 +1138,51 @@ StatTemplateEnumKeyResolver function BuildStatTemplateEnumKeyResolversRecursive(
 
 
 #if SERVER || CLIENT || UI
-StatTemplate function RegisterAccumulatedStat_Bool( StatEnumStruct ornull enumStructOrNull, string fieldName )
+StatTemplate function RegisterAccumulatedStat_Bool( StatEnumStruct ornull enumStructOrNull, string fieldName, int flags = 0 )
 {
-	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.BOOL, eStatBehavior.ACCUMULATED, false )
+	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.BOOL, eStatBehavior.ACCUMULATED, flags, false )
 }
 #endif
 
 
 #if SERVER || CLIENT || UI
-StatTemplate function RegisterAccumulatedStat_Int( StatEnumStruct ornull enumStructOrNull, string fieldName )
+StatTemplate function RegisterAccumulatedStat_Int( StatEnumStruct ornull enumStructOrNull, string fieldName, int flags = 0 )
 {
-	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.INT, eStatBehavior.ACCUMULATED, false )
+	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.INT, eStatBehavior.ACCUMULATED, flags, false )
 }
 #endif
 
 
 #if SERVER || CLIENT || UI
-StatTemplate function RegisterAccumulatedStat_Float( StatEnumStruct ornull enumStructOrNull, string fieldName )
+StatTemplate function RegisterAccumulatedStat_Float( StatEnumStruct ornull enumStructOrNull, string fieldName, int flags = 0 )
 {
-	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.FLOAT, eStatBehavior.ACCUMULATED, false )
+	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.FLOAT, eStatBehavior.ACCUMULATED, flags, false )
 }
 #endif
 
 
 #if SERVER || CLIENT || UI
-StatTemplate function RegisterVariableStat_Int( StatEnumStruct ornull enumStructOrNull, string fieldName )
+StatTemplate function RegisterVariableStat_Int( StatEnumStruct ornull enumStructOrNull, string fieldName, int flags = 0 )
 {
-	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.INT, eStatBehavior.VARIABLE, false )
+	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.INT, eStatBehavior.VARIABLE, flags, false )
 }
 #endif
 
 #if SERVER || CLIENT || UI
-StatTemplate function RegisterVariableStat_Bool( StatEnumStruct ornull enumStructOrNull, string fieldName )
+StatTemplate function RegisterVariableStat_Bool( StatEnumStruct ornull enumStructOrNull, string fieldName, int flags = 0 )
 {
-	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.BOOL, eStatBehavior.VARIABLE, false )
+	return InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.BOOL, eStatBehavior.VARIABLE, flags, false )
 }
 #endif
 
 #if SERVER || CLIENT || UI
-StatTemplate function InternalRegisterCalculatedStatCommon( StatEnumStruct ornull enumStructOrNull, string fieldName, bool shouldCache,
+StatTemplate function InternalRegisterCalculatedStatCommon( StatEnumStruct ornull enumStructOrNull, string fieldName, int flags, bool shouldCache,
 		StatCalcFuncInfo functionref( StatEntry, array<StatTemplate> ) setupFunc, array<StatTemplate> sourceTemplates )
 {
-	StatTemplate stat = InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.INT, eStatBehavior.CALCULATED, shouldCache )
+	StatTemplate stat = InternalRegisterStatCommon( enumStructOrNull, fieldName, eStatType.INT, eStatBehavior.CALCULATED, flags, shouldCache )
 
-	foreach( StatTemplate sourceTemplate in sourceTemplates )
-		Assert( sourceTemplate.behavior != eStatBehavior.CALCULATED, "Cannot have a calculated stat depend on another calculated stat (yet)." )
+	//foreach( StatTemplate sourceTemplate in sourceTemplates )
+		//Assert( sourceTemplate.behavior != eStatBehavior.CALCULATED, "Cannot have a calculated stat depend on another calculated stat (yet)." )
 
 	foreach( StatEntry entry in stat.allEntries )
 	{
@@ -1112,19 +1202,19 @@ StatTemplate function InternalRegisterCalculatedStatCommon( StatEnumStruct ornul
 
 
 #if SERVER || CLIENT || UI
-StatTemplate function RegisterExpensiveCalculatedStat_Int( StatEnumStruct ornull enumStructOrNull, string fieldName,
-		StatCalcFuncInfo functionref( StatEntry, array<StatTemplate> ) setupFunc, array<StatTemplate> sourceTemplates )
+StatTemplate function RegisterExpensiveCalculatedStat_Int( StatEnumStruct ornull enumStructOrNull, string fieldName, int flags,
+	StatCalcFuncInfo functionref( StatEntry, array<StatTemplate> ) setupFunc, array<StatTemplate> sourceTemplates )
 {
-	return InternalRegisterCalculatedStatCommon( enumStructOrNull, fieldName, false, setupFunc, sourceTemplates )
+return InternalRegisterCalculatedStatCommon( enumStructOrNull, fieldName, flags, false, setupFunc, sourceTemplates )
 }
 #endif
 
 
 #if SERVER || CLIENT || UI
-StatTemplate function RegisterCachedCalculatedStat_Int( StatEnumStruct ornull enumStructOrNull, string fieldName,
-		StatCalcFuncInfo functionref( StatEntry, array<StatTemplate> ) setupFunc, array<StatTemplate> sourceTemplates )
+StatTemplate function RegisterCachedCalculatedStat_Int( StatEnumStruct ornull enumStructOrNull, string fieldName, int flags,
+	StatCalcFuncInfo functionref( StatEntry, array<StatTemplate> ) setupFunc, array<StatTemplate> sourceTemplates )
 {
-	return InternalRegisterCalculatedStatCommon( enumStructOrNull, fieldName, true, setupFunc, sourceTemplates )
+return InternalRegisterCalculatedStatCommon( enumStructOrNull, fieldName, flags, true, setupFunc, sourceTemplates )
 }
 #endif
 
@@ -1134,7 +1224,7 @@ void function Stats_Save( entity player )
 {
 	Assert( player.IsPlayer() )
 
-	#if DEV
+	#if R5DEV
 		//if ( GetConVarBool( "persistence_development_mode", false ) )
 		if ( DEV_ShouldIgnorePersistence() )
 			return
@@ -1144,8 +1234,8 @@ void function Stats_Save( entity player )
 	{
 		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
 		{
-			player.SetPersistentVar( entry.persistenceFullKey, player.p.statValues_Bool[index] )
-			//printt( "Stats_Save", player, entry.persistenceFullKey, player.p.statValues_Bool[index] )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, player.p.statValues_Bool[index] )
+			//printt( "Stats_Save", player, entry.persistenceFullKey_Current, player.p.statValues_Bool[index] )
 		}
 	}
 
@@ -1153,8 +1243,8 @@ void function Stats_Save( entity player )
 	{
 		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
 		{
-			player.SetPersistentVar( entry.persistenceFullKey, player.p.statValues_Int[index] )
-			//printt( "Stats_Save", player, entry.persistenceFullKey, player.p.statValues_Int[index] )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, player.p.statValues_Int[index] )
+			//printt( "Stats_Save", player, entry.persistenceFullKey_Current, player.p.statValues_Int[index] )
 		}
 	}
 
@@ -1162,15 +1252,15 @@ void function Stats_Save( entity player )
 	{
 		if ( entry.behavior != eStatBehavior.CALCULATED || entry.shouldCache )
 		{
-			player.SetPersistentVar( entry.persistenceFullKey, player.p.statValues_Float[index] )
-			//printt( "Stats_Save", player, entry.persistenceFullKey, player.p.statValues_Float[index] )
+			player.SetPersistentVar( entry.persistenceFullKey_Current, player.p.statValues_Float[index] )
+			//printt( "Stats_Save", player, entry.persistenceFullKey_Current, player.p.statValues_Float[index] )
 		}
 	}
 }
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function GenerateGameStatsPDef()
 {
 	array<string> allWeaponStatsCategories = []
@@ -1206,7 +1296,7 @@ void function GenerateGameStatsPDef()
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function GenerateGameStatsPDef_RegisterSESRecursive( StatEnumStruct ses, StatEnumStruct ornull parentSESOrNull )
 {
 	if ( parentSESOrNull == null )
@@ -1242,7 +1332,7 @@ void function GenerateGameStatsPDef_RegisterSESRecursive( StatEnumStruct ses, St
 #endif
 
 
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function GenerateGameStatsPDef_AddStatField( StatTemplate stat )
 {
 	if ( stat.behavior == eStatBehavior.CALCULATED && !stat.shouldCache )

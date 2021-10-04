@@ -16,5 +16,13 @@ WeaponData
 		{
 			"fire_rate" 	"*1.35"
 		}
+
+                         
+                 
+   
+                       
+                                
+   
+      
 	}
 }

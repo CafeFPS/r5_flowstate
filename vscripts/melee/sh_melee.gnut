@@ -1,7 +1,7 @@
-//
+//=========================================================
 // melee attack = regular melee punch/slash/kick/etc
 // synced melee = execution/finisher
-//
+//=========================================================
 
 #if SERVER || CLIENT || UI
 global function MeleeShared_Init
@@ -10,10 +10,10 @@ global function Loadout_MeleeSkin
 global function MeleeSkin_GetMainWeaponClassname
 global function MeleeSkin_GetOffhandWeaponClassname
 global function MeleeSkin_GetMenuModel
+global function MeleeSkin_GetMenuAnimSeq
+global function MeleeSkin_GetMenuModelRotation
 global function MeleeSkin_GetCharacterFlavor
 global function MeleeSkin_GetSortOrdinal
-//global function MeleeSkin_GetWorldModel
-//global function MeleeSkin_GetViewModel
 #endif
 
 
@@ -98,7 +98,7 @@ void function MeleeShared_Init()
 #if SERVER || CLIENT || UI
 void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 {
-	array<ItemFlavor> meleeSkinList = RegisterReferencedItemFlavorsFromArray( characterClass, "meleeSkins", "flavor" )
+	array<ItemFlavor> meleeSkinList = RegisterReferencedItemFlavorsFromArray( characterClass, "meleeSkins", "flavor", "featureFlag" )
 	foreach( ItemFlavor meleeSkin in meleeSkinList )
 	{
 		fileLevel.meleeSkinCharacterMap[meleeSkin] <- characterClass
@@ -107,14 +107,14 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 			//PrecacheModel( MeleeSkin_GetViewModel( meleeSkin ) )
 			
 			// commented for debugging
-			//PrecacheWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ) )
-			//PrecacheWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ) )
+			PrecacheWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ) )
+			PrecacheWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ) )
 		#endif
 	}
 
 	MakeItemFlavorSet( meleeSkinList, fileLevel.cosmeticFlavorSortOrdinalMap )
 
-	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "character_meleeskin_for_" + ItemFlavor_GetGUIDString( characterClass ) )
+	LoadoutEntry entry = RegisterLoadoutSlot( eLoadoutEntryType.ITEM_FLAVOR, "meleeskin", ItemFlavor_GetGUIDString( characterClass ) )
 	entry.DEV_category = "character_meleeskins"
 	entry.DEV_name = ItemFlavor_GetHumanReadableRef( characterClass ) + " Melee Skin"
 	entry.defaultItemFlavor = meleeSkinList[0]
@@ -126,7 +126,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 	entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
 	fileLevel.characterMeleeSkinLoadoutEntryMap[characterClass] <- entry
 
-	#if SERVER && DEV
+	#if SERVER && R5DEV
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( entry, void function( EHI playerEHI, ItemFlavor meleeSkin ) {
 			DEV_UpdatePlayerMeleeWeaponCosmetics( FromEHI( playerEHI ), meleeSkin )
 		} )
@@ -157,26 +157,6 @@ LoadoutEntry function Loadout_MeleeSkin( ItemFlavor character )
 	return fileLevel.characterMeleeSkinLoadoutEntryMap[character]
 }
 #endif
-
-
-//#if SERVER || CLIENT || UI
-//asset function MeleeSkin_GetWorldModel( ItemFlavor flavor )
-//{
-//	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
-//
-//	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "worldModel" )
-//}
-//#endif
-//
-//
-//#if SERVER || CLIENT || UI
-//asset function MeleeSkin_GetViewModel( ItemFlavor flavor )
-//{
-//	Assert( ItemFlavor_GetType( flavor ) == eItemType.weapon_skin )
-//
-//	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( flavor ), "viewModel" )
-//}
-//#endif
 
 
 #if SERVER || CLIENT || UI
@@ -211,14 +191,32 @@ asset function MeleeSkin_GetMenuModel( ItemFlavor meleeSkin )
 
 
 #if SERVER || CLIENT || UI
-ItemFlavor function MeleeSkin_GetCharacterFlavor( ItemFlavor character )
+asset function MeleeSkin_GetMenuAnimSeq( ItemFlavor meleeSkin )
 {
-	Assert( ItemFlavor_GetType( character ) == eItemType.melee_skin )
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
 
-	return fileLevel.meleeSkinCharacterMap[character]
+	return GetGlobalSettingsAsset( ItemFlavor_GetAsset( meleeSkin ), "menuAnimSeq" )
 }
 #endif
 
+#if SERVER || CLIENT || UI
+vector function MeleeSkin_GetMenuModelRotation( ItemFlavor meleeSkin )
+{
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
+
+	return GetGlobalSettingsVector( ItemFlavor_GetAsset( meleeSkin ), "menuMdlRot" )
+}
+#endif
+
+
+#if SERVER || CLIENT || UI
+ItemFlavor function MeleeSkin_GetCharacterFlavor( ItemFlavor meleeSkin )
+{
+	Assert( ItemFlavor_GetType( meleeSkin ) == eItemType.melee_skin )
+
+	return fileLevel.meleeSkinCharacterMap[meleeSkin]
+}
+#endif
 
 #if SERVER || CLIENT
 bool function DoesWeaponTriggerMeleeAttack( entity weapon )
@@ -241,6 +239,7 @@ bool function IsWeaponClassMelee( string weaponName )
 {
 	// (dw): meant to mimic weapon.IsWeaponMelee()
 	int fireMode = expect int(GetWeaponInfoFileKeyField_Global( weaponName, "fire_mode" ))
+	printt("IsWeaponClassMelee", weaponName, fireMode, eWeaponFireMode.offhandMelee, eWeaponFireMode.offhandMeleeHybrid)
 	return (fireMode == eWeaponFireMode.offhandMelee || fireMode == eWeaponFireMode.offhandMeleeHybrid)
 }
 #endif
@@ -279,12 +278,13 @@ entity function GetPlayerMeleeAttackWeapon( entity player )
 #if SERVER || CLIENT
 bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNull, entity attackWeapon, entity target )
 {
-	Assert( attacker != target )
+	if ( attacker == target )
+		return false
 
 	if ( target.IsBreakableGlass() )
-		return true // special case
+		return true //
 
-	if ( !IsAlive( target ) )
+	if ( !target.CanBeMeleed() )
 		return false
 
 	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
@@ -294,6 +294,9 @@ bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNul
 		return false
 
 	if ( IsValid( attackWeapon ) && !attackWeapon.GetMeleeCanHitHumanSized() && IsHumanSized( target ) )
+		return false
+
+	if ( target.IsPhaseShifted() )
 		return false
 
 	if ( target.IsPlayer() || target.IsNPC() )
@@ -343,6 +346,16 @@ bool function AttackerCanStartMelee( entity attacker, entity inputWeaponOrNull, 
 
 	//if ( PlayerIsInMeleeBlockingADS( attacker ) )
 	//	return false
+	
+	if ( attacker.IsPhaseShifted() )
+    {
+        return false
+    }
+	
+	if ( attacker.Player_IsFreefalling() )
+    {
+        return false
+    }
 
 	if ( attacker.Lunge_IsActive() )
 		return false
@@ -385,10 +398,16 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 	// DOOR BUSTING PROTOTYPE
 	// todo(dw): use better door detection logic
 	{
-		entity lungeTarget = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
+		bool isShadowSquad = false
+		#if(true)
+			isShadowSquad = IsPlayerShadowSquad( attacker )
+		#endif //
+
+		bool doorLungeEnabled = !isShadowSquad && GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_special_kick", true )
+		entity lungeTarget    = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
 
 		vector eyeTraceHitPos
-		if ( !IsValid( lungeTarget ) )
+		if ( doorLungeEnabled && !IsValid( lungeTarget ) )
 		{
 			TraceResults eyeTrace = TraceLine(
 				attacker.EyePosition(), attacker.EyePosition() + 150.0 * attacker.GetViewVector(),
@@ -398,11 +417,11 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 			eyeTraceHitPos = eyeTrace.endPos
 		}
 
-		if ( IsValid( lungeTarget ) && IsDoor( lungeTarget ) && GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_special_kick", true ) )
+		if ( doorLungeEnabled && IsValid( lungeTarget ) && IsDoor( lungeTarget ) && lungeTarget.e.canBeMeleed )
 		{
 			meleeAttackWeapon.AddMod( "proto_door_kick" )
 
-			attacker.Lunge_SetTargetPosition( <eyeTraceHitPos.x, eyeTraceHitPos.y, lungeTarget.GetWorldSpaceCenter().z> )
+			attacker.Lunge_SetTargetPosition( <eyeTraceHitPos.x, eyeTraceHitPos.y, lungeTarget.GetWorldSpaceCenter().z - 52 > ) //
 			attacker.Lunge_SetSmoothTime( 0.7 )
 			attacker.Lunge_EnableFlying()
 		}
@@ -468,7 +487,6 @@ void function CodeCallback_OnMeleeReleased( entity player, entity weapon )
 void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity meleeAttackWeapon )
 {
 	printt("CodeCallback_OnMeleeAttackAnimEvent")
-
 	Assert( IsValid( attacker ) )
 
 	if ( !attacker.PlayerMelee_IsAttackActive() )
@@ -496,23 +514,26 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	int codeDamageType    = expect int(legacyTraceResults.damageType)
 	vector startPosition  = expect vector(legacyTraceResults.startPosition)
 	vector hitNormal      = Normalize( startPosition - endPosition )
+	int meleeAttackWeaponImpactTableIndex = meleeAttackWeapon.GetImpactTableIndex()
 
 	// Early out if we didn't hit anything
 	if ( !IsValid( target ) )
 		return
 
 	// Impact effects
-	if ( SERVER == PlayerMelee_IsServerSideEffects() )
+	if ( !attacker.PlayerMelee_IsAttackActive() )
+		return
+		
+	// if ( SERVER == PlayerMelee_IsServerSideEffects() ) // TODO: FIX THIS!!!!! [N52A r5apex.exe+0101be8]
 	{
-		#if SERVER
-			impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
+	 	#if SERVER
+	 		impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
+			attacker.DispatchImpactEffects( target,
+	 		startPosition, endPosition, hitNormal,
+	 		surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
+	 		attacker, impactEffectFlags )
 		#endif
-
-		attacker.DispatchImpactEffects( target,
-			startPosition, endPosition, hitNormal,
-			surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
-			attacker, impactEffectFlags )
-	}
+	 }
 
 	// Melee state
 	attacker.PlayerMelee_SetAttackHitEntity( target )
@@ -598,8 +619,15 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		attacker.PlayerMelee_EndAttack()
 
 		vector attackerKnockBackVelocity = -pushBackVelocity
+		bool isAttackingGround           = endPosition.z <= attacker.GetOrigin().z
 		attackerKnockBackVelocity.z = 0.0
-		attacker.KnockBack( attackerKnockBackVelocity * 0.5, 0.25 )
+		attackerKnockBackVelocity *= 0.5
+		if ( LengthSqr( attackerKnockBackVelocity ) > 0.0 && !isAttackingGround )
+		{
+			attacker.KnockBack( attackerKnockBackVelocity, 0.25 )
+		}
+
+		attacker.GrappleDetach()
 	}
 }
 #endif
@@ -635,11 +663,13 @@ bool function ClientCodeCallback_ShowMeleePrompt( entity player )
 //// Dev functions ////
 ///////////////////////
 ///////////////////////
-#if SERVER && DEV
+#if SERVER && R5DEV
 void function DEV_UpdatePlayerMeleeWeaponCosmetics( entity player, ItemFlavor unused )
 {
-	if ( !IsLobby() )
-		SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
+	// TEMP COMMENT
+	
+	// if ( !IsLobby() )
+	// 	SURVIVAL_TryGivePlayerDefaultMeleeWeapons( player )
 }
 #endif // SERVER
 

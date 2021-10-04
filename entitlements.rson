@@ -73,7 +73,7 @@
 }
 {
 	enum: FOUNDERS_PACKAGE_BUNDLE
-	pc: "FOUNDER_PACK_BUNDLE"
+	pc: "FOUNDERS_PACK_BUNDLE"
 	ps4: FOUNBU0000000000
 	xb1: "FOUNDERS_PACK_BUNDLE"
 	pc_offer: ""
@@ -81,7 +81,7 @@
 }
 {
 	enum: FOUNDERS_PACKAGE_DURABLE
-	pc: "FOUNDER_PACK_DURABLE"
+	pc: "FOUNDERS_PACK_DURABLE"
 	ps4: FPACDU0000000000
 	xb1: "FOUNDERS_PACK_DURABLE"
 	pc_offer: ""
@@ -89,7 +89,7 @@
 }
 {
 	enum: FOUNDERS_PACKAGE_CONSUMABLE
-	pc: "FOUNDER_PACK_CONSUMABLE"
+	pc: "FOUNDERS_PACK_CONSUMABLE"
 	ps4: FPACCU0000000000
 	xb1: "FOUNDERS_PACK_CONSUMABLE"
 	pc_offer: ""
@@ -118,4 +118,132 @@
 	xb1: "STARTER_PACK_CONSUMABLE"
 	pc_offer: ""
 	xb1_offer: ""
+}
+{
+	enum: RETAIL_CURRENCY_10
+	pc: "R5_RETAIL_CURRENCY_10"
+	ps4: RETA100000000000
+	xb1: "RETAIL_CURRENCY_10"
+	pc_offer: "Origin.OFR.50.0003476"
+	xb1_offer: "328f7772-fb3b-4187-a8d0-a85735f1ba95"
+}
+{
+	enum: RETAIL_CURRENCY_20
+	pc: "R5_RETAIL_CURRENCY_20"
+	ps4: RETA200000000000
+	xb1: "RETAIL_CURRENCY_20"
+	pc_offer: "Origin.OFR.50.0003477"
+	xb1_offer: "ced9d8a1-b267-4fb5-8bf4-1a797cb1c0d1"
+}
+{
+	enum: RETAIL_CURRENCY_40
+	pc: "R5_RETAIL_CURRENCY_40"
+	ps4: RETA400000000000
+	xb1: "RETAIL_CURRENCY_40"
+	pc_offer: "Origin.OFR.50.0003478"
+	xb1_offer: "a9b32ea3-674d-454e-8045-b1923cc06c23"
+}
+{
+	enum: RETAIL_CURRENCY_60
+	pc: "R5_RETAIL_CURRENCY_60"
+	ps4: RETA600000000000
+	xb1: "RETAIL_CURRENCY_60"
+	pc_offer: "Origin.OFR.50.0003479"
+	xb1_offer: "626d70c0-9213-4bb9-814f-2d2db58708ec"
+}
+{
+	enum: RETAIL_CURRENCY_100
+	pc: "R5_RETAIL_CURRENCY_100"
+	ps4: RET1000000000000
+	xb1: "RETAIL_CURRENCY_100"
+	pc_offer: "Origin.OFR.50.0003480"
+	xb1_offer: "fe5b2514-56de-4f48-8a91-92c002fbc905"
+}
+{
+	enum: PSPLUS_PACK_02
+	pc: "PSPLUS_PACK_02"
+	ps4: PSPLST1000000000
+	xb1: "PSPLUS_PACK_02"
+	pc_offer: ""
+	xb1_offer: ""
+}
+{
+	enum: PSPLUS_PACK_03
+	pc: "PSPLUS_PACK_03"
+	ps4: PSPLS30000000000
+	xb1: "PSPLUS_PACK_03"
+	pc_offer: ""
+	xb1_offer: ""
+}
+{
+	enum: PSPLUS_PACK_04
+	pc: "PSPLUS_PACK_04"
+	ps4: PSPLS40000000000
+	xb1: "PSPLUS_PACK_04"
+	pc_offer: ""
+	xb1_offer: ""
+}
+{
+	enum: BLOODHOUND_SKU
+	pc: "BLOODHOUND_SKU"
+	ps4: BHRBOX0000000000
+	xb1: "BLOODHOUND_CONTENT_BUNDLE"
+	pc_offer: "Origin.OFR.50.0003699"
+	xb1_offer: "91bb89ec-48c5-4b07-8716-190249a55fd7"
+}
+{
+	enum: LIFELINE_SKU
+	pc: "LIFELINE_SKU"
+	ps4: LIFBOX0000000000
+	xb1: "LIFELINE_CONTENT_BUNDLE"
+	pc_offer: "Origin.OFR.50.0003700"
+	xb1_offer: "dc28b8f0-3f6c-4c8d-80e7-4ec925244dd2"
+}
+{
+	enum: BLOODHOUND_SKU_PACK
+	pc: "APEX_BLOODHOUND_CONTENT"
+	ps4: BHRSKU0000000000
+	xb1: "BLOODHOUND_EDITION_PACK"
+	pc_offer: "Origin.OFR.50.0003697"
+	xb1_offer: "efd61c2c-f56f-4151-8117-98b7197be451"
+}
+{
+	enum: LIFELINE_SKU_PACK
+	pc: "APEX_LIFELINE_CONTENT"
+	ps4: LIFSKU0000000000
+	xb1: "LIFELINE_EDITION_PACK"
+	pc_offer: "Origin.OFR.50.0003698"
+	xb1_offer: "e0888623-22e7-4329-b8df-34aff1fd95d2"
+}
+{
+    enum: BLOODHOUND_LIFELINE_PACK
+    pc: "ORIGIN_BUNDLE_OWNED"
+    ps4: BHLLBO0000000000
+    xb1: "BH_LL_BUNDLE"
+    pc_offer: "Origin.OFR.50.0003855"
+    xb1_offer: "68ceb554-9040-4428-a88d-6b54b691bdc0"
+}
+{
+    enum: MELTDOWN_PACK_CRYPTO
+    pc: "APEX_MELTDOWN_CONTENT"
+    ps4: MELDWN0000000000
+    xb1: "MELTDOWN_PACK_CRYPTO"
+    pc_offer: "Origin.OFR.50.0003902"
+    xb1_offer: "23055d0e-43c2-4edd-a69e-931dd7af0af6"
+}
+{
+    enum: RETAIL_CURRENCY_600
+    pc: "R5_PREMIUM_CURRENCY_6"
+    ps4: COI6000000000000
+    xb1: "RETAIL_CURRENCY_600"
+    pc_offer: "Origin.OFR.50.0003901"
+    xb1_offer: "928859e5-e741-42ed-be86-c8510a17177a"
+}
+{
+    enum: MELTDOWN_PACK_BUNDLE
+    pc: "MELTDOWN_PACK_BUNDLE"
+    ps4: MLTBUN0000000000
+    xb1: "MELTDOWN_PACK_BUNDLE"
+    pc_offer: "Origin.OFR.50.0003898"
+    xb1_offer: "5cd648ac-f139-4357-9b2a-8c6c0485b2d4"
 }

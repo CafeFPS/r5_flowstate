@@ -14,6 +14,7 @@ WeaponData
     "readymessage"                                  "BUG IT"
     "readyhint"                                     "BUG IT"
 
+	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhandHybrid"
 	"is_toss_weapon"                                "0"

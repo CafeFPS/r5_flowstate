@@ -110,9 +110,6 @@ WeaponData
     // Script - Callbacks
     "OnWeaponActivate"								"OnWeaponActivate_weapon_basic_bolt"
     "OnClientAnimEvent"								"OnClientAnimEvent_weapon_basic_bolt"
-    "OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_basic_bolt"
-    "OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_basic_bolt"
-    "OnProjectileCollision"							"OnProjectileCollision_weapon_basic_bolt"
 
     // Crosshair Spread
 	"spread_stand_hip"								"2.5"
@@ -157,12 +154,12 @@ WeaponData
 
     // Projectile - Bolt info
     "bolt_hitsize"									"0.0"
-	"bolt_hitsize_grow1_time"						"0.005"
-	"bolt_hitsize_grow1_size"						"0.2"
-	"bolt_hitsize_grow2_time"						"0.07"
-	"bolt_hitsize_grow2_size"						"0.2"
-	"bolt_hitsize_growfinal_lerptime"				"0.1"
-	"bolt_hitsize_growfinal_size"					"0.1"
+	//"bolt_hitsize_grow1_time"						"0.005"
+	//"bolt_hitsize_grow1_size"						"0.2"
+	//"bolt_hitsize_grow2_time"						"0.07"
+	//"bolt_hitsize_grow2_size"						"0.2"
+	//"bolt_hitsize_growfinal_lerptime"				"0.1"
+	//"bolt_hitsize_growfinal_size"					"0.1"
 
     "projectile_drag_coefficient"                   "0.0025"
 

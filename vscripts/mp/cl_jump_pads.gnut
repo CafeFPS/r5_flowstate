@@ -7,6 +7,12 @@ void function ClJumpPad_Init()
 
 void function OnJumpPadCreated( entity trigger )
 {
+	if ( trigger.GetTriggerType() != TT_JUMP_PAD )
+		return
+
+	if ( trigger.GetTargetName() == "geyser_trigger" )
+		return
+
 	trigger.SetClientEnterCallback( OnJumpPadAreaEnter )
 }
 
@@ -21,4 +27,6 @@ void function OnJumpPadAreaEnter( entity trigger, entity player )
 
 	EmitSoundOnEntity( player, "JumpPad_LaunchPlayer_1p" )
 	EmitSoundOnEntity( player, "JumpPad_Ascent_Windrush" )
+
+	Chroma_UsedJumpPad()
 }

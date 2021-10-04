@@ -1,0 +1,171 @@
+// "Gamematerial" "effect_name"
+
+
+ImpactTable
+{
+	FX
+	{
+		"C" "P_impact_exp_med_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_exp_med_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_exp_med_metal" // metal_titan
+
+		"F" "P_impact_exp_med_metal" //flesh
+		"G" "P_impact_exp_med_metal" //metalgrate, chainlink, chain
+		"H" "P_impact_exp_med_metal" //alienflesh
+
+		"J" "P_impact_exp_med_dirt" //grass
+		"K" "P_impact_exp_med_dirt"  //Mud
+		"L" "P_impact_exp_med_metal" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_exp_med_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_exp_med_slime" //Slime
+		"O" "P_impact_exp_med_dirt" //Foliage
+		"P" "P_impact_exp_med_metal" //Computer
+
+		"R" "P_impact_exp_med_metal" //metalpanel, grenade, canister
+		"S" "P_impact_exp_med_water" //water
+		"T" "P_impact_exp_med_concrete" //tile
+		"U" "P_impact_exp_med_metal" //glass_breakable
+
+		"V" "P_impact_exp_med_metal" //Metal Vent
+		"W" "P_impact_exp_med_metal" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_exp_med_xo_shield" //xo_shield
+
+		"Y" "P_impact_exp_med_metal" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_exp_med_sand"  //sand
+
+		"0" "P_impact_exp_med_metal"
+		"1" "P_impact_exp_med_metal"
+		"2" "P_impact_exp_med_metal"
+		"3" "P_impact_exp_med_metal"
+		"4" "P_impact_exp_med_metal"
+		"5" "P_impact_exp_med_metal"
+		"6" "P_impact_exp_med_metal"
+		"7" "P_impact_exp_med_metal"
+		"8" "P_impact_exp_med_metal"
+		"9" "P_impact_exp_med_metal" //puddle
+
+		"splash" "P_impact_exp_med_water" //brush water
+		"slime_splash" "P_impact_exp_med_slime"
+		"airburst" "P_impact_exp_med_air"  //No Surface
+		"shieldhit" "P_armor_impact"
+		"holohit" "P_holohit_impact"
+		"critical_hit" "P_impact_exp_med_metal"
+
+		//"headshot_flesh" "impact_metal"
+		//"headshot_mechanical" "P_armor_impact"
+
+		//"pass_through"	"P_impact_amped_shield"
+	}
+
+	Sound
+	{
+// Update these when custom explosions are created.
+		"C" "Weapon.Explosion_Med"
+		"D" "Weapon.Explosion_Med"
+		"E" "Weapon.Explosion_Med"
+
+		"F" "Weapon.Explosion_Med"
+		"G" "Weapon.Explosion_Med"
+		"H" "Weapon.Explosion_Med"
+
+		"J" "Weapon.Explosion_Med"
+		"K" "Weapon.Explosion_Med"  // mud?
+		"L" "Weapon.Explosion_Med"
+		"M" "Weapon.Explosion_Med"
+		"N" "Weapon.Explosion_Med"	// sand?
+		"O" "Weapon.Explosion_Med"
+		"P" "Weapon.Explosion_Med"
+
+		"R" "Weapon.Explosion_Med"
+		"S" "Weapon.Explosion_Med"
+		"T" "Weapon.Explosion_Med"
+		"U" "Weapon.Explosion_Med"
+
+		"V" "Weapon.Explosion_Med"
+		"W" "Weapon.Explosion_Med"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "Weapon.Explosion_Med"
+		"Z" "Weapon.Explosion_Med"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Weapon.Explosion_Med"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_3P"
+	}
+
+	Sound_attacker
+	{
+// Update these when custom explosions are created.
+		"C" "Weapon.Explosion_Med"
+		"D" "Weapon.Explosion_Med"
+		"E" "Weapon.Explosion_Med"
+
+		"F" "Weapon.Explosion_Med"
+		"G" "Weapon.Explosion_Med"
+		"H" "Weapon.Explosion_Med"
+
+		"J" "Weapon.Explosion_Med"
+		"K" "Weapon.Explosion_Med"  // mud?
+		"L" "Weapon.Explosion_Med"
+		"M" "Weapon.Explosion_Med"
+		"N" "Weapon.Explosion_Med"	// sand?
+		"O" "Weapon.Explosion_Med"
+		"P" "Weapon.Explosion_Med"
+
+		"R" "Weapon.Explosion_Med"
+		"S" "Weapon.Explosion_Med"
+		"T" "Weapon.Explosion_Med"
+		"U" "Weapon.Explosion_Med"
+
+		"V" "Weapon.Explosion_Med"
+		"W" "Weapon.Explosion_Med"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
+		"Y" "Weapon.Explosion_Med"
+		"Z" "Weapon.Explosion_Med"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Weapon.Explosion_Med"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_1P_vs_3P"
+	}
+
+	Sound_victim
+	{
+// Update these when custom explosions are created.
+		"C" "Weapon.Explosion_Med"
+		"D" "Weapon.Explosion_Med"
+		"E" "Titan.ARLRocket_Explosion_3P_vs_1P"
+
+		"F" "Weapon.Explosion_Med"
+		"G" "Weapon.Explosion_Med"
+		"H" "Weapon.Explosion_Med"
+
+		"J" "Weapon.Explosion_Med"
+		"K" "Weapon.Explosion_Med"  // mud?
+		"L" "Weapon.Explosion_Med"
+		"M" "Weapon.Explosion_Med"
+		"N" "Weapon.Explosion_Med"	// sand?
+		"O" "Weapon.Explosion_Med"
+		"P" "Weapon.Explosion_Med"
+
+		"R" "Weapon.Explosion_Med"
+		"S" "Weapon.Explosion_Med"
+		"T" "Weapon.Explosion_Med"
+		"U" "Weapon.Explosion_Med"
+
+		"V" "Weapon.Explosion_Med"
+		"W" "Weapon.Explosion_Med"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_1P_vs_3P"
+		"Y" "Weapon.Explosion_Med"
+		"Z" "Weapon.Explosion_Med"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Weapon.Explosion_Med"
+		"shieldhit" "TitanShield.ARLRocket.BulletImpact_3P_vs_1P" // Custom for ARL so rapid-fire shieldhit explos don't get overbearing
+	}
+}

@@ -39,6 +39,16 @@ global function AddClientCommandCallback
 global function AddPlayerDropScriptedItemsCallback
 global function AddCallback_OnPlayerInventoryChanged
 
+// r5 stuff
+global function AddCallback_OnWeaponAttack
+global function AddClientCommandCallbackNew
+global function AddCallback_OnPreClientDisconnected
+global function AddCallback_OnDeathBoxSpawned
+global function AddCallback_OnGetBestObserverTarget
+global function AddCallback_GameStatePostEnter
+global function AddCallback_OnThreatEventActivation
+global function AddCallback_OnThreatEventStateChange
+
 // Register functions are called when an entity spawns.
 global function RegisterForDamageDeathCallbacks
 global function CodeCallback_OnInventoryChanged
@@ -71,85 +81,70 @@ global function CodeCallback_OnPlayerBeginWallhang
 global function CodeCallback_OnPlayerEndWallhang
 global function CodeCallback_OnClientConnectionCompleted 
 
-// r5 stuff
-global function AddCallback_OnWeaponAttack
-global function AddClientCommandCallbackNew
-global function AddCallback_OnPreClientDisconnected
-global function AddCallback_OnDeathBoxSpawned
-global function AddCallback_OnGetBestObserverTarget
-global function AddCallback_GameStatePostEnter
-global function AddCallback_OnThreatEventActivation
-global function AddCallback_OnThreatEventStateChange
+global function CodeCallback_OnWeaponAttack
 
+#document("CodeCallback_OnClientConnectionCompleted", "Called when player finishes connecting to the server")
 void function CodeCallback_OnClientConnectionCompleted( entity player )
 {
-	//SetGameState(eGameState.PickLoadout)
+	player.p.activeGladiatorCardStatTrackerEntries = [0,0,0]
+	player.s.activeTrapArrayId <- 0
 
-	player.hasConnected = true
+	ShGRX_OnClientConnectionCompleted( player )
+
+	if ( !DEV_ShouldIgnorePersistence() )
+	{
+		SvPersistentData_OnClientConnectionCompleted( player )
+		ShEHI_OnClientConnectionCompleted( player )
+	}
 
 	ZiplineInit( player )
 
+	player.hasConnected = true
+
+	foreach ( cb in svGlobal.onClientConnectedCallbacks )
+		cb( player )
+
 	NotifyClientsOfConnection( player, 1 )
 
-	SetGameState(eGameState.Playing)
-	
-	CodeCallback_OnClientReloadConnectionCompleted(player)
-
-	player.SetPlayerSettingsWithMods( $"settings/player/mp/pilot_survival_grapple.rpak", [ "enable_wallrun", "enable_doublejump" ] )
-
-    // Respawn to get out of spectator?
-    DoRespawnPlayer( player, null )
-
-	vector origin = GetEnt( "info_player_start" ).GetOrigin()
-    player.SetOrigin( origin )
-    //thread RespawnPlayersInDropshipAtPoint(GetPlayerArray(), origin, <0, 90, 0>)
-
-    // Give weapons
-	player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_ANY )
-	player.GiveWeapon( "mp_weapon_sniper", WEAPON_INVENTORY_SLOT_ANY )
-	player.GiveWeapon( "mp_weapon_wraith_kunai_primary", WEAPON_INVENTORY_SLOT_ANY )
-	player.GiveOffhandWeapon( "mp_ability_grapple", OFFHAND_SPECIAL )
-	EnableOffhandWeapons( player )
+	// shouldn't this be called from code?
+	CodeCallback_OnClientReloadConnectionCompleted( player )
 }
 
-void function AddCallback_OnWeaponAttack( void functionref( entity, entity, string, int, vector, vector ) callback )
+void function CodeCallback_OnPlayerRespawned( entity player )
 {
-	printt("AddCallback_OnWeaponAttack")
+	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
+		cb( player )
 }
 
-void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
+/*{
+"725342087": "Bangalore",
+"898565421": "Bloodhound",
+"1111853120": "Caustic",
+"80232848": "Crypto",
+"182221730": "Gibraltar",
+"1409694078": "Lifeline",
+"2045656322": "Mirage",
+"843405508": "Octane",
+"1464849662": "Pathfinder",
+"187386164": "Wattson",
+"827049897": "Wraith",
+}*/
+
+void function DEV_PDataInitForPlayer( entity player )
 {
+	//player.SetPersistentVar( "loadouts.character_selection", 827049897 )
 
-}
-
-void function AddCallback_OnPreClientDisconnected( void functionref( entity player) callbackFunc )
-{
-
-}
-
-void function AddCallback_OnDeathBoxSpawned( void functionref( entity player, entity attacker, int damageSourceID ) callbackFunc )
-{
-
-}
-
-void function AddCallback_OnGetBestObserverTarget( entity functionref( entity player, bool reverse) callbackFunc )
-{
-	
-}
-
-void function AddCallback_GameStatePostEnter( int number, void functionref( ) callbackFunc )
-{
-
-}
-
-void function AddCallback_OnThreatEventActivation( entity player, int threat, void functionref( entity player, ThreatEventCallbackData data ) callbackFunc )
-{
-	
-}
-
-void function AddCallback_OnThreatEventStateChange( entity player, int threat, int watch, int view, void functionref( entity player, ThreatEventCallbackData data ) callbackFunc )
-{
-	
+	array< ItemFlavor > characters = GetAllCharacters()
+	foreach ( ItemFlavor character in characters )
+	{
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].execution", 0)
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].intro_quip", 0 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].meleeskin", 0 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].skin", 1644844869 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].gcard_badge_0", 0 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].gcard_badge_0_tier", 0 )
+		player.SetPersistentVar( "character_loadouts[" + ItemFlavor_GetGUIDString( character ) + "].gcard_badge_1", 97219464 )
+	}
 }
 
 struct
@@ -168,6 +163,14 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 		DamageInfo_SetDamage( damageInfo, 0 )
 		return
 	}
+
+	// if inflictor is trigger_hurt, set the identifier according to ent keyvalue
+	entity inflictor = DamageInfo_GetInflictor( damageInfo )
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.invalid 
+			&& inflictor != null 
+			&& inflictor.GetClassName() == "trigger_hurt" 
+			&& inflictor.HasKey( "damageSourceName" ) )
+		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
 
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "CodeCallback_DamageEntity() top:", DamageInfo_GetDamage( damageInfo ) )
@@ -233,6 +236,12 @@ void function CodeCallback_DamageEntity( entity ent, var damageInfo )
 	AddFlinch( ent, damageInfo )
 
 	UpdateAttackerInfo( ent, DamageInfo_GetAttacker( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
+}
+
+void function CodeCallback_OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector origin, vector dir )
+{
+	foreach ( callbackFunc in svGlobal.onWeaponAttackCallbacks )
+		callbackFunc( player, weapon, weaponName, ammoUsed, origin, dir )
 }
 
 bool function TrySpectreVirus( entity victim, var damageInfo )
@@ -367,6 +376,7 @@ void function AddDamageFinalCallback( string className, void functionref( entity
 
 	file.classDamageFinalCallbacks[className].append( callbackFunc )
 }
+
 void function RunClassDamageFinalCallbacks( entity ent, var damageInfo )
 {
 	string className = ent.GetClassName()
@@ -398,12 +408,12 @@ void function RunClassPostDamageCallbacks( entity ent, var damageInfo )
 
 	foreach ( callbackFunc in file.classPostDamageCallbacks[className] )
 	{
-		#if DEV
+		#if R5DEV
 		float damage = DamageInfo_GetDamage( damageInfo )
 		#endif
 		callbackFunc( ent, damageInfo )
 
-		#if DEV
+		#if R5DEV
 		Assert( damage == DamageInfo_GetDamage( damageInfo ), "Damage changed in a post damage callback" )
 		#endif
 	}
@@ -442,7 +452,7 @@ void function RemoveDeathCallback( string className, void functionref( entity, v
 
 void function AddSoulDeathCallback( void functionref( entity, var ) callbackFunc )
 {
-	#if DEV
+	#if R5DEV
 	foreach ( func in svGlobal.soulDeathFuncs )
 	{
 		Assert( func != callbackFunc , "Already added " + string( callbackFunc ) + " with AddSoulDeathCallback" )
@@ -589,6 +599,51 @@ void function AddPlayerDropScriptedItemsCallback( void functionref(entity player
 	svGlobal.onPlayerDropsScriptedItemsCallbacks.append( callbackFunc )
 }
 
+void function AddCallback_OnWeaponAttack( void functionref( entity, entity, string, int, vector, vector ) callbackFunc )
+{
+	Assert( !svGlobal.onWeaponAttackCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnWeaponAttack" )
+	svGlobal.onWeaponAttackCallbacks.append( callbackFunc )
+}
+
+void function AddClientCommandCallbackNew( string commandString, void functionref( entity player, array<string> args ) callbackFunc )
+{
+	//void function AddClientCommandCallback( string commandString, bool functionref( entity player, array<string> args ) callbackFunc )
+	Assert( !( commandString in svGlobal.clientCommandCallbacksNew ), "Already added " + commandString + " with AddClientCommandCallbackNew" )
+	svGlobal.clientCommandCallbacksNew[ commandString ] <- callbackFunc
+}
+
+void function AddCallback_OnPreClientDisconnected( void functionref( entity player ) callbackFunc )
+{
+	Assert( !svGlobal.onPreClientDisconnectedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnPreClientDisconnected" )
+	svGlobal.onPreClientDisconnectedCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnDeathBoxSpawned( void functionref( entity player, entity attacker, int damageSourceID ) callbackFunc )
+{
+	Assert( !svGlobal.onDeathBoxSpawnedCallbacks.contains( callbackFunc ), "Already added " + string( callbackFunc ) + " with AddCallback_OnDeathBoxSpawned" )
+	svGlobal.onDeathBoxSpawnedCallbacks.append( callbackFunc )
+}
+
+void function AddCallback_OnGetBestObserverTarget( entity functionref( entity player, bool reverse) callbackFunc )
+{
+	
+}
+
+void function AddCallback_GameStatePostEnter( int number, void functionref( ) callbackFunc )
+{
+
+}
+
+void function AddCallback_OnThreatEventActivation( entity player, int threat, void functionref( entity player, ThreatEventCallbackData data ) callbackFunc )
+{
+	
+}
+
+void function AddCallback_OnThreatEventStateChange( entity player, int threat, int watch, int view, void functionref( entity player, ThreatEventCallbackData data ) callbackFunc )
+{
+	
+}
+
 //=====================================================================================
 // Register functions are called when an entity spawns.
 //=====================================================================================
@@ -659,7 +714,7 @@ void function RemoveEntityCallback_OnPostDamaged( entity ent, void functionref( 
 
 void function AddEntityCallback_OnKilled( entity ent, void functionref( entity, var ) callbackFunc )
 {
-	#if DEV
+	#if R5DEV
 	foreach ( func in  ent.e.entKilledCallbacks )
 	{
 		Assert( func != callbackFunc , "Already added " + string( callbackFunc ) + " to entity" )
@@ -683,7 +738,7 @@ void function RemoveEntityCallback_OnKilled( entity ent, void functionref( entit
 
 void function AddEntityCallback_OnPostShieldDamage( entity ent, void functionref( entity, var, float ) callbackFunc )
 {
-	#if DEV
+	#if R5DEV
 	foreach ( func in  ent.e.entPostShieldDamageCallbacks )
 	{
 		Assert( func != callbackFunc , "Already added " + string( callbackFunc ) + " to entity" )

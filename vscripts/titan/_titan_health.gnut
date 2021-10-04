@@ -216,10 +216,10 @@ int function ShieldHealthUpdate( entity titan, var damageInfo, bool critHit )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
 		result = int( ShieldModifyDamage( titan, damageInfo ) )
 	}
-	else
-	{
-		TakeAwayFriendlyRodeoPlayerProtection( titan )
-	}
+	// else
+	// {
+	// 	TakeAwayFriendlyRodeoPlayerProtection( titan )
+	// }
 
 	return result
 }
@@ -248,7 +248,7 @@ void function PlayerOrNPCTitanTookDamage( entity titan, var damageInfo, bool cri
 	// health regen based on how much damage dealt to titan
 	float damage = DamageInfo_GetDamage( damageInfo )
 	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
-	bool rodeoDamage = ( ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_RODEO ) > 0 )
+	//bool rodeoDamage = ( ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_RODEO ) > 0 )
 
 	// if ( soul.e.forcedRegenTime <= Time() )
 	// 	soul.nextHealthRegenTime = CalculateNextRegenTime( damage, damageType, critHit || rodeoDamage, expect float( soul.nextHealthRegenTime ), GetHealthRegenDelay( soul ) )
@@ -392,8 +392,8 @@ bool function ShouldDoomTitan( entity ent, var damageInfo )
 	if ( soul.soul.skipDoomState )
 		return false
 
-	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIP_DAMAGE_PROT )
-		return doomedHealth > ( DamageInfo_GetDamage( damageInfo ) - ent.GetHealth() )
+	// if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIP_DAMAGE_PROT )
+	// 	return doomedHealth > ( DamageInfo_GetDamage( damageInfo ) - ent.GetHealth() )
 
 	bool skipDoom = ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SKIPS_DOOMED_STATE ) > 0
 	return !skipDoom

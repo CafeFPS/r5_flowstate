@@ -1,3 +1,4 @@
+/*
 global function InitCharacterCardsPanel
 //global function CardFrameButton_UpdateRui
 //global function CardPoseButton_UpdateRui
@@ -42,8 +43,6 @@ void function InitCharacterCardsPanel( var panel )
 
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, CharacterCardsPanel_OnShow )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_HIDE, CharacterCardsPanel_OnHide )
-	AddPanelEventHandler( panel, eUIEvent.PANEL_NAVUP, CharacterCardsPanel_OnNavUp )
-	AddPanelEventHandler( panel, eUIEvent.PANEL_NAVDOWN, CharacterCardsPanel_OnNavDown )
 
 	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_LEFT, false, "#TRIGGERS_CHANGE_LEGEND", "", CustomizeCharacterMenu_PrevButton_OnActivate )
 	//AddPanelFooterOption( panel, LEFT, BUTTON_DPAD_RIGHT, false, "", "", CustomizeCharacterMenu_NextButton_OnActivate )
@@ -352,3 +351,4 @@ void function ClearNewnessCallbacks()
 	Newness_RemoveCallback_OnRerverseQueryUpdated( NEWNESS_QUERIES.GCardTrackersSectionButton[expect ItemFlavor( file.lastNewnessCharacter )], OnNewnessQueryChangedUpdateButton, Hud_GetChild( file.panel, "SectionButton7" ) )
 	file.lastNewnessCharacter = null
 }
+*/

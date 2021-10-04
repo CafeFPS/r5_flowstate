@@ -9,6 +9,7 @@ global function GetDevNameForZoneId
 #if CLIENT
 global function SCB_OnPlayerEntersMapZone
 global function MapZones_ZoneIntroText
+global function MapZones_GetChromaBackgroundForZoneId
 #endif
 
 #if SERVER
@@ -32,10 +33,10 @@ global function MapZones_ForceRetouchForPlayer
 
 #endif // SERVER
 
-#if (SERVER && DEV)
+#if SERVER && R5DEV
 global function DEV_PrintMapZoneInfo
 global function DEV_MapZone_ToggleOverlay
-#endif // (SERVER && DEV)
+#endif // SERVER && R5DEV
 
 global struct ZonePopulationInfo
 {
@@ -54,13 +55,34 @@ global enum eZonePop
 
 #if SERVER
 const string SIGNAL_ZONES_PLAYER_ENTERED = "PlayerEnteredZone"
+const asset HOT_ZONE_POI_BEAM = $"P_ar_hot_zone_far"
 #endif // SERVER
+
+struct ZoneData
+{
+	entity     zoneTrigger
+	int		   zoneTier
+	array<int> neighborZoneIds
+
+	float boundsArea2D
+
+	int playersInside
+	int playersNearby
+
+	int zoneId
+	string zoneName
+}
+table<int, ZoneData> s_zoneDatas
+
+global entity hotZoneFx
 
 struct
 {
 	bool mapZonesInitialized = false
 	var mapZonesDataTable
 	table<int, int> calculatedZoneTiers
+    vector hotZoneOrigin
+    float hotZoneRadius
 } file
 
 const int INVALID_ZONE_ID = -1
@@ -111,29 +133,54 @@ string function GetZoneNameForZoneId( int zoneId )
 	return zoneName
 }
 
+string function MapZones_GetChromaBackgroundForZoneId( int zoneId )
+{
+	int column = GetDataTableColumnByName( file.mapZonesDataTable, "chroma" )
+	if ( column < 0 )
+		return ""
+
+	string chroma = GetDataTableString( file.mapZonesDataTable, zoneId, column )
+	return chroma
+}
+
 int function MapZones_GetZoneIdForTriggerName( string triggerName )
 {
 	int zoneId = GetDataTableRowMatchingStringValue( file.mapZonesDataTable, GetDataTableColumnByName( file.mapZonesDataTable, "triggerName" ), triggerName )
 	return zoneId
 }
 
+string function GetZoneGroupForZoneId( int zoneId )
+{
+	Assert( zoneId < GetDatatableRowCount( file.mapZonesDataTable ) )
+
+	string name = ""
+	int column = GetDataTableColumnByName( file.mapZonesDataTable, "zoneGroup" )
+	if ( column >= 0 )
+		name = GetDataTableString( file.mapZonesDataTable, zoneId, column )
+
+	if ( name.len() == 0 )
+		return GetZoneNameForZoneId( zoneId )
+	return name
+}
+
+string function MapZones_GetZoneStatsRef( int zoneId )
+{
+	if ( !file.mapZonesInitialized )
+		return ""
+
+	Assert( zoneId < GetDatatableRowCount( file.mapZonesDataTable ) )
+	if ( zoneId < 0 )
+		return ""
+
+	string statsRef = ""
+	int column = GetDataTableColumnByName( file.mapZonesDataTable, "statsRef" )
+	if ( column >= 0 )
+		statsRef = GetDataTableString( file.mapZonesDataTable, zoneId, column )
+
+	return statsRef
+}
 #if SERVER
 
-struct ZoneData
-{
-	entity     zoneTrigger
-	int		   zoneTier
-	array<int> neighborZoneIds
-
-	float boundsArea2D
-
-	int playersInside
-	int playersNearby
-
-	int zoneId
-	string zoneName
-}
-table<int, ZoneData> s_zoneDatas
 
 
 void function PlayerDeathCallback( entity player, var damageInfo )
@@ -152,7 +199,7 @@ void function OnClientDisconnected( entity player )
 
 void function EntitiesDidLoad()
 {
-#if DEV
+#if R5DEV
 	thread DebugFrameThread()
 #endif // DEV
 
@@ -168,24 +215,108 @@ void function EntitiesDidLoad()
 	thread GenerateZoneTiers()
 }
 
+
+void function HotZoneBeamThink(vector origin, float radius)
+{
+    //If we are pre deathfield, spawn hot zone beam
+    if( GetGlobalNetInt( "currentDeathFieldStage" ) == -1 )
+    {
+        //Spawn the beam
+        PrecacheParticleSystem( HOT_ZONE_POI_BEAM )
+        entity hotZoneBeam = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( HOT_ZONE_POI_BEAM ), origin, <90,0,0> )
+                
+        while (true)
+        {
+            if (SURVIVAL_GetCurrentDeathFieldStage() >= 0)
+            {
+                EffectStop(hotZoneBeam)
+                hotZoneBeam.Destroy()
+                return
+            }
+            wait 1 //Low prio - don't need to check every frame, can check every second. If we kill beam a second late it's acceptable.
+        }
+    }
+}
+
+void function HotZone_MinimapThink()
+{
+    //Create the minimap entity
+    entity hotZoneMapEnt = CreateEntity( "prop_script" )
+    hotZoneMapEnt.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+    hotZoneMapEnt.kv.fadedist = -1
+    hotZoneMapEnt.kv.renderamt = 255
+    hotZoneMapEnt.kv.rendercolor = "255 255 255"
+    hotZoneMapEnt.kv.solid = 6 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+    hotZoneMapEnt.SetOrigin( file.hotZoneOrigin )
+    hotZoneMapEnt.SetAngles( <0, 0, 0> )
+    hotZoneMapEnt.NotSolid()
+    hotZoneMapEnt.Hide()
+    hotZoneMapEnt.DisableHibernation()
+    hotZoneMapEnt.Minimap_SetObjectScale( file.hotZoneRadius / SURVIVAL_MINIMAP_RING_SCALE )
+    hotZoneMapEnt.Minimap_SetAlignUpright( true )
+    hotZoneMapEnt.Minimap_SetZOrder( 2 )
+    hotZoneMapEnt.Minimap_SetClampToEdge( true )
+    hotZoneMapEnt.Minimap_SetCustomState( eMinimapObject_prop_script.OBJECTIVE_AREA )
+    SetTargetName( hotZoneMapEnt, "hotZone" )
+    DispatchSpawn( hotZoneMapEnt )
+           
+    foreach ( player in GetPlayerArray() )
+    {
+        hotZoneMapEnt.Minimap_AlwaysShow( 0, player )
+    }
+    
+    while (true)
+    {
+        if (SURVIVAL_GetCurrentDeathFieldStage() >= 0)
+        {
+            foreach ( player in GetPlayerArray() )
+            {
+                hotZoneMapEnt.Minimap_Hide( 0, player )
+            }
+            return
+        }
+        wait 1 //Low prio - don't need to check every frame, can check every second. If we hide RUI a second late it's acceptable.
+    }
+}
+
 void function GenerateZoneTiers()
 {
 	array<LootZone> lootZones = GetAllLootZones()
-
+    LootZone hotZone = GetLootHotZone()
+    
+    float hotZoneRadius = hotZone.radius
+    vector hotZoneOrigin = hotZone.origin
+    
+    file.hotZoneRadius = hotZoneRadius
+    file.hotZoneOrigin = hotZoneOrigin
+    
+    if(hotZoneOrigin != <0, 0, 0>)
+    {
+        thread HotZoneBeamThink(hotZoneOrigin, hotZoneRadius)
+        AddCallback_GameStateEnter( 
+                eGameState.Playing,
+                void function()
+                {
+                    thread HotZone_MinimapThink()
+                }
+            )
+            
+    }
+    
 	foreach ( mapZoneData in s_zoneDatas )
 	{
 		foreach ( lootZone in lootZones )
 		{
 			if ( !mapZoneData.zoneTrigger.ContainsPoint( lootZone.origin ) )
 				continue
-
+            
 			int zoneTier = SURVIVAL_LootTierForLootGroup( lootZone.zoneClass )
+            
 			mapZoneData.zoneTier = maxint( zoneTier, mapZoneData.zoneTier )
 		}
-
-		//printt( mapZoneData.zoneName, mapZoneData.zoneTier )
-		WaitFrame()
 	}
+
+	SURVIVAL_PlaceGroundItems()
 }
 
 int function MapZones_GetZoneForOrigin( vector point )
@@ -398,6 +529,7 @@ void function RemovePlayerFromCurrentZone( entity player )
 {
 	if ( player.p.currentZoneId == INVALID_ZONE_ID )
 		return
+
 	if ( player.p.currentZoneId == 0 )
 		return
 
@@ -461,6 +593,9 @@ void function OnPlayerEntersZone( entity player, entity zoneTrigger )
 
 	int zoneId = zoneTrigger.e.triggerZoneId
 
+	if ( s_zoneDatas[zoneId].zoneTier > eLootTier.EPIC )
+		return
+
 	Remote_CallFunction_Replay( player, FUNCNAME_OnPlayerEntersZone, zoneId, s_zoneDatas[zoneId].zoneTier )
 
 	int newZone = zoneTrigger.e.triggerZoneId
@@ -488,6 +623,9 @@ int function MapZones_GetPopEnumForZone( int zoneId )
 var s_zoneIntroRui = null
 void function MapZones_ZoneIntroText( entity player, string zoneDisplayName, int zoneTier )
 {
+	if ( !GetGlobalNetBool( "displayMapzoneText" ) )
+		return
+
 	if ( s_zoneIntroRui != null )
 		RuiDestroyIfAlive( s_zoneIntroRui )
 
@@ -502,6 +640,8 @@ int s_lastZoneDisplayNameIndex = -1
 void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 {
 	entity player = GetLocalViewPlayer()
+
+	Chroma_SetPlayerZone( zoneId )
 
 	int ceFlags = player.GetCinematicEventFlags()
 	if ( ceFlags & (CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_INTRO) )
@@ -524,7 +664,7 @@ void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 
 
 
-#if (SERVER && DEV)
+#if SERVER && R5DEV
 string function GetZoneLineForPlayer( entity player )
 {
 	int zoneId = player.p.currentZoneId
@@ -618,4 +758,4 @@ void function DebugFrameThread()
 	}
 }
 
-#endif // #if (SERVER && DEV)
+#endif // #if SERVER && R5DEV

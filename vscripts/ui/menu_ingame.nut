@@ -35,7 +35,7 @@ struct
 	//var pilotEditButton
 } file
 
-void function InitInGameMPMenu()
+void function InitInGameMPMenu( var newMenuArg )
 {
 	var menu = GetMenu( "InGameMPMenu" )
 	file.menuMP = menu
@@ -80,7 +80,7 @@ void function InitInGameMPMenu()
 	var gameHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_GAME" )
 	var leaveButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#LEAVE_MATCH" )
 	Hud_AddEventHandler( leaveButton, UIE_CLICK, OnLeaveButton_Activate )
-	#if DEV
+	#if R5DEV
 		var devButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "Dev" )
 		Hud_AddEventHandler( devButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "DevMenu" ) ) )
 	#endif
@@ -224,29 +224,6 @@ void function UpdateLoadoutButtons()
 		else
 			Hud_Hide( file.loadoutHeaderTitan )
 	}
-	//
-	//entity player = GetUIPlayer()
-	//
-	//if ( GetAvailableTitanRefs( player ).len() > 1 )
-	//{
-	//	SetComboButtonHeaderTitle( file.menuMP, file.titanHeaderIndex, "#MENU_HEADER_TITAN" )
-	//	ComboButton_SetText( file.titanSelectButton, "#SELECT" )
-	//	Hud_Show( file.titanEditButton )
-	//}
-	//else if ( GetAvailableTitanRefs( player ).len() == 1 )
-	//{
-	//	TitanLoadoutDef loadout = GetCachedTitanLoadout( uiGlobal.titanSpawnLoadoutIndex )
-	//
-	//	SetComboButtonHeaderTitle( file.menuMP, file.titanHeaderIndex, GetTitanLoadoutName( loadout ) )
-	//	ComboButton_SetText( file.titanSelectButton, "#EDIT" )
-	//
-	//	Hud_Hide( file.titanEditButton )
-	//	ComboButtons_ResetColumnFocus( file.comboStruct )
-	//}
-	//else
-	//{
-	//	SetTitanSelectButtonVisibleState( true )
-	//}
 }
 
 //////////

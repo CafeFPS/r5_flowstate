@@ -1,3 +1,2 @@
-// stub script
-
+//stub script
 untyped

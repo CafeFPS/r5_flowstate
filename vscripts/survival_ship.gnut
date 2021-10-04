@@ -1,20 +1,312 @@
-// stub script
-
+global function SurvivalShip_Init
+global function Survival_IsPlayerEligibleForJumpmaster
 global function Survival_HasPlayerJumpedOutOfPlane
+global function Survival_CreatePlane
+global function Survival_GeneratePlaneFlightPath
+global function Survival_DropPlayerFromPlane_UseCallback
+global function Survival_DropPlayerFromPlane
+global function SURVIVAL_GetPlaneHeight
+global function SURVIVAL_GetAirburstHeight
 global function SURVIVAL_SetPlaneHeight
 global function SURVIVAL_SetAirburstHeight
+global function SURVIVAL_SetMapCenter
+global function SURVIVAL_SetMapDelta
+#if R5DEV
+global function GetDropshipClearance
+#endif
+
+const float MAX_DELTA = 5200.0
+struct {
+	float planeHeight = 0.0
+	float airburstHeight = 0.0
+
+	vector mapCenter = <0, 0, 0>
+    float maxDelta = MAX_DELTA
+
+	table<entity, bool> eligibleForJumpmasterTable = {}
+} file
+
+void function SurvivalShip_Init()
+{
+	AddClientCommandCallback( "Sur_MakeEligibleForJumpMaster", ClientCommand_MakeEligibleForJumpMaster )
+
+	AddClientCommandCallback( "Sur_RelinquishJumpMaster", ClientCommand_RelinquishJumpMaster )
+	AddClientCommandCallback( "Sur_RemoveFromSquad", ClientCommand_RemoveFromSquad )
+	AddClientCommandCallback( "Sur_ReturnToSquad", ClientCommand_ReturnToSquad )
+}
+
+bool function ClientCommand_MakeEligibleForJumpMaster( entity player, array<string> args )
+{
+	file.eligibleForJumpmasterTable[player] <- true
+
+	return true
+}
+
+bool function Survival_IsPlayerEligibleForJumpmaster( entity player )
+{
+	if ( !( player in file.eligibleForJumpmasterTable ) )
+		return false
+
+	return file.eligibleForJumpmasterTable[player]
+}
+
+entity ornull function ChangeJumpmasterInSquad( entity currentJumpmaster )
+{
+	array<entity> availableSquadMembers = GetPlayerArrayOfTeam( currentJumpmaster.GetTeam() )
+	
+	if ( availableSquadMembers.len() == 1 )
+		return null
+
+	currentJumpmaster.SetPlayerNetBool( "isJumpmaster", false )
+
+	availableSquadMembers.fastremovebyvalue( currentJumpmaster )
+
+	entity selectedMember = availableSquadMembers.getrandom()
+
+	selectedMember.SetPlayerNetBool( "isJumpmaster", true )
+
+	return selectedMember
+}
+
+float function GetDropshipClearance( vector origin )
+{
+	vector endOrigin = origin - < 0, 0, 50000 >
+	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+	vector endPos = traceResult.endPos
+	float zDelta = ( origin.z - endPos.z )
+
+	return zDelta
+}
+
+vector function TraceInBoundPoint( vector start, vector forward, float multiplier )
+{
+	vector result = start
+	float startClearance = GetDropshipClearance( start )
+
+	while ( GetDropshipClearance( result ) - startClearance < file.maxDelta )
+    {
+		result += forward * multiplier
+        if(result.x > REALBIG_CIRCLE_END_RADIUS || result.x < -REALBIG_CIRCLE_END_RADIUS || result.y > REALBIG_CIRCLE_END_RADIUS || result.y < -REALBIG_CIRCLE_END_RADIUS)
+            break
+    }    
+
+	return result
+}
+
+void function SURVIVAL_SetMapCenter( vector center )
+{
+	file.mapCenter = center
+}
+
+void function SURVIVAL_SetMapDelta( float maxDelta )
+{
+    file.maxDelta = maxDelta
+}
+
+// script gp()[0].SetOrigin(<gp()[0].GetOrigin().x,gp()[0].GetOrigin().y,SURVIVAL_GetPlaneHeight()>)
+// script printt(GetDropshipClearance(gp()[0].GetOrigin()))
+
+entity function Survival_CreatePlane( vector origin, vector angles )
+{
+	entity script_mover = CreateEntity( "script_mover_lightweight" )
+	script_mover.kv.solid = 0
+	script_mover.kv.fadedist = -1
+	script_mover.SetValueForModelKey( SURVIVAL_PLANE_MODEL )
+	script_mover.kv.SpawnAsPhysicsMover = 0
+	script_mover.SetOrigin( origin )
+	script_mover.SetAngles( angles )
+	DispatchSpawn( script_mover )	
+	return script_mover
+}
+
+// Why does this work?
+array<vector> function Survival_GeneratePlaneFlightPath()
+{
+	const float CENTER_DEVIATION = 2.0
+	const float POINT_FINDER_MULTIPLIER = 200
+
+	// Get a random point from map center within specified deviation
+	vector dropshipCenterPoint = GetRandomCenter( file.mapCenter, 0.0, CENTER_DEVIATION )
+	dropshipCenterPoint.z = SURVIVAL_GetPlaneHeight()
+
+	vector dropshipMovingAngle = <0, RandomFloatRange( 0.0, 360.0 ), 0>
+	vector dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
+
+	vector startPos = TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER )
+	vector endPos = TraceInBoundPoint( dropshipCenterPoint, dropshipMovingForward, POINT_FINDER_MULTIPLIER * -1.0 )
+
+    float DROP_TOTAL_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_duration", 45.0 )
+	float DROP_WAIT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_delay", 5.0 )
+	float DROP_TIMEOUT_TIME = GetCurrentPlaylistVarFloat( "survival_plane_jump_timeout", 5.0 )
+    
+    float velocity = Distance2D(endPos, startPos)/ (DROP_TOTAL_TIME + DROP_WAIT_TIME + DROP_TIMEOUT_TIME)
+	if ( CoinFlip() )
+	{
+		vector temp = startPos
+		startPos = endPos
+		endPos = temp
+	}
+    dropshipMovingAngle = VectorToAngles( endPos - startPos )
+    dropshipMovingForward = AnglesToForward( dropshipMovingAngle )
+
+    startPos = <startPos.x + (-dropshipMovingForward.x * velocity * DROP_WAIT_TIME), startPos.y + (-dropshipMovingForward.y * velocity * DROP_WAIT_TIME), startPos.z>
+    endPos = <endPos.x + (dropshipMovingForward.x * velocity * DROP_TIMEOUT_TIME), endPos.y + (dropshipMovingForward.y * velocity * DROP_TIMEOUT_TIME), endPos.z>
+	
+
+	// printt( "Survival_GeneratePlaneFlightPath: startPos", startPos )
+	// printt( "Survival_GeneratePlaneFlightPath: endPos", endPos )
+	// printt( "Survival_GeneratePlaneFlightPath: dropshipMovingAngle", dropshipMovingAngle )
+
+	return [ startPos, endPos, dropshipMovingAngle, dropshipCenterPoint ]
+}
+
+void function Survival_DropPlayerFromPlane_UseCallback( entity player )
+{
+	Survival_DropPlayerFromPlane( player, true )
+}
+
+bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback = false )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+	{
+		if ( fromUseCallback )
+		{
+			int ornull funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
+			if ( funcPos != null )
+				RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+		}
+
+		return false
+	}
+
+	if ( player.GetPlayerNetBool( "isJumpingWithSquad" ) && !player.GetPlayerNetBool( "isJumpmaster" ) )
+		return false
+
+	// Why is this required?	
+	player.SetAngles( player.CameraAngles() )
+
+	vector driverViewVector = player.GetViewVector()
+
+	player.ClearParent()
+
+	player.UnforceCrouch()
+
+	TakeAllWeapons( player )
+	DecideRespawnPlayer( player )
+
+	array<entity> squadPlayers = [ player ]
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		squadPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	
+	if ( fromUseCallback )
+	{
+		int ornull funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
+		if ( funcPos != null )
+			RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
+	}
+
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_podLeaderLaunch" )
+
+	foreach ( squadPlayer in squadPlayers )
+	{
+		if ( squadPlayer != player )
+		{
+			if ( !squadPlayer.GetPlayerNetBool( "isJumpingWithSquad" ) )
+			{
+				squadPlayers.fastremovebyvalue( squadPlayer )
+				continue
+			}
+
+			squadPlayer.ClearParent()
+		}
+
+		squadPlayer.Show()
+
+		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
+		squadPlayer.SetPlayerNetBool( "freefallIsFromPlane", true )
+
+		if ( GetValidPlayerSkydiveEmotes( squadPlayer ).len() > 0 )
+			squadPlayer.SetPlayerNetBool( "freefallEmoteAvailable", true )
+
+		thread PlayerSkyDive( squadPlayer, driverViewVector, squadPlayers, player, true, true )
+	}
+
+	return true
+}
 
 bool function Survival_HasPlayerJumpedOutOfPlane( entity player )
 {
-	return true
+	return !player.GetPlayerNetBool( "playerInPlane" )
+}
+
+float function SURVIVAL_GetPlaneHeight()
+{
+	return file.planeHeight
+}
+
+float function SURVIVAL_GetAirburstHeight()
+{
+	return file.airburstHeight
 }
 
 void function SURVIVAL_SetPlaneHeight( float height )
 {
-
+	file.planeHeight = height
 }
 
 void function SURVIVAL_SetAirburstHeight( float height )
 {
+	file.airburstHeight = height
+}
+
+bool function ClientCommand_RelinquishJumpMaster( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't relinquish when it's not/past time
+
+	if ( !player.GetPlayerNetBool( "isJumpmaster" ) )
+		return true // Can't relinquish what you don't have
+
+	if ( GetPlayerArrayOfTeam( player.GetTeam() ).len() == 1 )
+		return true // Can't relinquish from yourself to yourself
 	
+	entity ornull newJumpmaster = ChangeJumpmasterInSquad( player )
+	
+	if ( newJumpmaster != null )
+	{
+		expect entity( newJumpmaster )
+
+		MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RelinquishedJumpmaster, null, player, newJumpmaster.GetEncodedEHandle() )
+	}
+	
+	return true
+}
+
+bool function ClientCommand_RemoveFromSquad( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't remove when it's not/past time
+
+	if ( GetPlayerArrayOfTeam( player.GetTeam() ).len() == 1 )
+		return true // Can't remove yourself from yourself
+
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		ChangeJumpmasterInSquad( player )
+
+	player.SetPlayerNetBool( "isJumpingWithSquad", false )
+	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_DroppingSolo, null, player )
+
+	return true
+}
+
+bool function ClientCommand_ReturnToSquad( entity player, array<string> args )
+{
+	if ( !player.GetPlayerNetBool( "playerInPlane" ) )
+		return true // Can't return when it's not/past time
+
+	player.SetPlayerNetBool( "isJumpingWithSquad", true )
+	MessageToTeam( player.GetTeam(), eEventNotifications.SURVIVAL_RejoinedSquad, null, player )
+
+	return true
 }

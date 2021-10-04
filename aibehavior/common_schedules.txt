@@ -50,7 +50,7 @@ Schedule
 
 		Tasks
 			TASK_STOP_MOVING		2
-			TASK_FACE_ENEMY			5
+			//TASK_FACE_ENEMY			5
 			TASK_SET_IDLE_ACTIVITY	0
 			TASK_WAIT				1
 
@@ -673,7 +673,7 @@ Schedule
 			TASK_RELOAD						0.5
 			TASK_SCRIPTED_DIALOGUE			4		// script enum eCodeDialogueID.RELOADING
 			TASK_SET_IDLE_ACTIVITY			0
-			TASK_WAIT_FACE_ENEMY			1
+			TASK_WAIT						1
 
 		Interrupts
 			COND_IN_DANGER
@@ -793,7 +793,6 @@ Schedule
 
 		Tasks
 			TASK_STOP_MOVING		0
-			TASK_FACE_ENEMY_STRICT	1.5
 			TASK_ANNOUNCE_ATTACK	1	// 1 = primary attack
 			TASK_MELEE_ATTACK1		0
 
@@ -808,7 +807,6 @@ Schedule
 	SCHED_MELEE_CHARGE
 
 		Tasks
-			TASK_FACE_ENEMY			1.5
 			TASK_ANNOUNCE_ATTACK	2	// 2 = secondary attack
 			TASK_MELEE_CHARGE		0
 
@@ -824,12 +822,14 @@ Schedule
 	SCHED_MELEE_ATTACK_WAIT
 
 		Tasks
-			TASK_FACE_ENEMY_STRICT		3
-			TASK_SET_ACTIVITY			ACTIVITY:ACT_MELEE_ATTACK_WAIT
-			TASK_WAIT 					0.5
+			TASK_STOP_MOVING				2
+			TASK_FACE_ENEMY_STRICT			3
+			TASK_SET_ACTIVITY				ACTIVITY:ACT_MELEE_ATTACK_WAIT
+			TASK_WAIT_WHILE_FACING_ENEMY	1
 
 		Interrupts
 			COND_ANY_MELEE_ATTACK
+			COND_INSIDE_DANGEROUS_AREA
 End_Schedule
 
 
@@ -1521,7 +1521,6 @@ Schedule
 			TASK_GET_PATH_TO_NEXT_SEARCH_POINT	1500
  			TASK_WALK_PATH					0
  			TASK_WAIT_FOR_MOVEMENT			0
- 			TASK_RUN_VSCRIPT				0
 			TASK_RESERVE_NEXT_SEARCH_POINT	0
 
  		Interrupts
@@ -2286,6 +2285,28 @@ Schedule
 End_Schedule
 
 //=========================================================
+// > SCHED_MOVE_TO_BATTLE_LOCATION
+//=========================================================
+Schedule
+
+	SCHED_MOVE_TO_BATTLE_LOCATION
+
+		Tasks
+			TASK_GET_PATH_TO_BATTLE_LOCATION			0
+			TASK_RUN_PATH								0
+			TASK_WAIT_FOR_MOVEMENT						0
+			TASK_FACE_ENEMY								3
+
+		Interrupts
+			COND_ANY_MELEE_ATTACK
+			COND_INSIDE_DANGEROUS_AREA
+			COND_REACT_SURPRISED
+			COND_REACT_CLOAK
+			COND_REACT_JUMPED_OVER
+
+End_Schedule
+
+//=========================================================
 // > SCHED_GRAPPLED
 //=========================================================
 Schedule
@@ -2294,7 +2315,7 @@ Schedule
 
 		Tasks
 			 TASK_STOP_MOVING			0
-			 TASK_BIG_FLINCH			0
+			 //TASK_BIG_FLINCH			0
 
 		Interrupts
 

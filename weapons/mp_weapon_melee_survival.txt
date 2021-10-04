@@ -8,6 +8,8 @@ WeaponData
 	"description" 									"#DEFAULT_MELEE_WEAPON"
 	"longdesc"										"#DEFAULT_MELEE_WEAPON"
 
+	"weapon_type_flags"								"WPT_MELEE"
+	
     // UI/HUD
 	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
 	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
@@ -15,17 +17,22 @@ WeaponData
 	"weaponClass" 									"human"
 	// "weaponType"									"anti_titan"
 	"body_type"										"battle_rifle"
-	"fire_mode"   									"semiauto"
+	"fire_mode"   									"automatic"
+	"is_semi_auto"									"1"
 	//"never_drop"									"1"
 	"minimap_reveal_distance"						"1"
 	"attack_button_presses_melee"					"1"
 	"leveled_pickup"								"1"
+
+	"cycle_to_next_when_out_of_ammo"				"0"
 
 	"ammo_clip_size"   								"0"
 	"ammo_default_total"							"0"
 	"ammo_stockpile_max"							"0"
 
     "ads_dof_disable"	                            "1"
+    "dof_nearDepthStart"							"-0.5"
+	"dof_nearDepthEnd"							    "5.05"
     "zoom_fov"										"70"
     "zoom_effects"                                  "0"
 

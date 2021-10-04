@@ -64,9 +64,11 @@ void function Utility_Init()
 	RegisterSignal( "InventoryChanged" )
 
 	AddClientCommandCallback( "OnDevnetBugScreenshot", ClientCommand_OnDevnetBugScreenshot )
-	#if DEV
+	#if R5DEV
 		FlagInit( "AimAssistSwitchTest_Enabled" )
-		AddClientCommandCallback( "DoomTitan", ClientCommand_DoomTitan )
+		// AddClientCommandCallback( "DoomTitan", ClientCommand_DoomTitan )
+		AddClientCommandCallback( "toggleconsole", ClientCommand_ToggleConsole )
+		AddClientCommandCallback( "GoToMapPoint", ClientCommand_GoToMapPoint )
 	#endif
 }
 
@@ -99,8 +101,7 @@ void function GiveAllTitans()
 	}
 }
 
-#if DEV
-
+#if R5DEV
 void function KillAllBadguys()
 {
 	array<entity> npcs = GetNPCArrayOfEnemies( GetPlayerArray()[0].GetTeam() )
@@ -115,27 +116,54 @@ void function KillAllBadguys()
 	}
 }
 
-bool function ClientCommand_DoomTitan( entity player, array<string> args )
+bool function ClientCommand_GoToMapPoint( entity player, array<string> args )
 {
-	entity titan
-	if ( player.IsTitan() )
-		titan = player
-	else
-		titan = player.GetPetTitan()
-
-	if ( !IsAlive( titan ) )
+	if ( !IsValid( player ) )
 		return true
 
-	if ( GetDoomedState( titan ) )
-		return true
+	float x = float( args[0] )
+	float y = float( args[1] )
+	float z = float( args[2] )
 
-	entity soul = titan.GetTitanSoul()
-	soul.SetShieldHealth( 0 )
+	vector origin = <x, y, z>
 
-	titan.TakeDamage( titan.GetHealth(), null, null, { damageSourceId=damagedef_suicide, scriptType = DF_SKIP_DAMAGE_PROT } )
+	if ( z == 0 )
+	{
+		origin = OriginToGround( <x, y, 20000> )
+	}
+
+	player.SetOrigin( origin )
 
 	return true
 }
+
+bool function ClientCommand_ToggleConsole( entity player, array<string> args )
+{
+	ShDevConsole_Init()
+	return true
+}
+
+// bool function ClientCommand_DoomTitan( entity player, array<string> args )
+// {
+// 	entity titan
+// 	if ( player.IsTitan() )
+// 		titan = player
+// 	else
+// 		titan = player.GetPetTitan()
+
+// 	if ( !IsAlive( titan ) )
+// 		return true
+
+// 	if ( GetDoomedState( titan ) )
+// 		return true
+
+// 	entity soul = titan.GetTitanSoul()
+// 	soul.SetShieldHealth( 0 )
+
+// 	//titan.TakeDamage( titan.GetHealth(), null, null, { damageSourceId=damagedef_suicide, scriptType = DF_SKIP_DAMAGE_PROT } )
+
+// 	return true
+// }
 #endif
 
 void function PrintPlaylists()
@@ -317,7 +345,7 @@ entity function CreateExpensiveScriptMover( vector origin = <0.0, 0.0, 0.0>, vec
 {
 	entity script_mover = CreateEntity( "script_mover" )
 	script_mover.kv.solid = solidType
-	script_mover.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	script_mover.kv.SpawnAsPhysicsMover = 0
 	script_mover.SetOrigin( origin )
 	script_mover.SetAngles( angles )
@@ -336,6 +364,30 @@ entity function CreateScriptMover( vector origin = <0.0, 0.0, 0.0>, vector angle
 	script_mover.SetAngles( angles )
 	DispatchSpawn( script_mover )
 	return script_mover
+}
+
+void function SpawnDummyAtPlayerZero()
+{
+	entity p = GetPlayerArray()[0];
+	vector pos = p.GetAttachmentOrigin( p.LookupAttachment( "CHESTFOCUS" ) );
+	SpawnDummy(pos, <0,0,0>);
+}
+
+void function SpawnDummy(vector origin, vector angles)
+{
+	entity dummy = CreateEntity( "npc_dummie" )
+	SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
+	SetTargetName(dummy,  "DUMMIE's Revenge")
+	dummy.SetOrigin( origin )
+	dummy.SetAngles( angles )
+	SetTeam(dummy, 99)
+	DispatchSpawn( dummy )
+
+	dummy.SetSkin(RandomInt(6))
+
+	array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
+	string randomWeapon = weapons[RandomInt(weapons.len())]
+	dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
 }
 
 entity function CreateScriptMoverModel( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
@@ -368,7 +420,7 @@ entity function CreateOwnedScriptMover( entity owner )
 {
 	entity script_mover = CreateEntity( "script_mover" )
 	script_mover.kv.solid = 0
-	script_mover.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	script_mover.kv.SpawnAsPhysicsMover = 0
 	script_mover.SetOrigin( owner.GetOrigin() )
 	script_mover.SetAngles( owner.GetAngles() )
@@ -428,11 +480,6 @@ bool function IsThreadTop()
 string function ThisFunc()
 {
 	return expect string( expect table( getstackinfos( 2 ) )[ "func" ] )
-}
-
-entity function ge( int index ) // shorthand version for typing from console
-{
-	return GetEntByIndex( index )
 }
 
 entity function GetEnt( string name )
@@ -611,7 +658,7 @@ entity function SpawnRefEnt( entity ent )
 
 	entity ref = CreateEntity( "prop_dynamic" )
 	//ref.kv.SpawnAsPhysicsMover = 0
-	ref.SetValueForModelKey( $"models/dev/empty_model.mdl" )
+	ref.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
 	DispatchSpawn( ref )
 
 	ref.SetOrigin( origin )
@@ -1014,7 +1061,7 @@ enum eAttach
 void function LoadDiamond()
 {
     printl( " " )
-    printl( " " )
+	printl( "----------------------------" )
     printl( " " )
 
     // Draw a diamond of a random size and phase (of the moon) so it is easy to separate sections of logs.
@@ -1100,7 +1147,7 @@ void function LoadDiamond()
     }
 
     printl( " " )
-    printl( " " )
+	printl( "----------------------------" )
     printl( " " )
 }
 
@@ -1110,7 +1157,7 @@ void function ClearDroppedWeapons( float delayTime = 0.0 )
 	if ( delayTime > 0 )
 		wait delayTime
 
-	bool onlyNotOwnedWeapons = true  // don't get the ones in guys' hands
+	bool onlyNotOwnedWeapons = true // don't get the ones in guys' hands
 	array<entity> weapons = GetWeaponArray( onlyNotOwnedWeapons )
 
 	foreach ( weapon in weapons )
@@ -2503,7 +2550,7 @@ void function EmitSoundOnEntityToTeamExceptPlayer( entity ent, string sound, int
 	}
 }
 
-#if DEV
+#if R5DEV
 // DEV function to toggle player view between the skybox and the real world.
 void function ToggleSkyboxView( float scale = 0.001 )
 {
@@ -2829,7 +2876,7 @@ void function __SetSignalDelayedThread( entity ent, string signal, float delay )
 		Signal( ent, signal )
 }
 
-#if DEV
+#if R5DEV
 table function GetPlayerPos( entity player = null )
 {
 	if ( !player )
@@ -2870,6 +2917,31 @@ void function DistCheck()
 	float dist = Distance( here, svGlobal.distCheckTestPoint )
 	printt( "Distance:", dist, "units from", svGlobal.distCheckTestPoint )
 }
+
+void function ToggleHud()
+{
+	entity player = GetPlayerArray()[0]
+
+	if ( !( "hudVisible" in player.s ) )
+		player.s.hudVisible <- true
+
+	player.s.hudVisible = !player.s.hudVisible
+
+	array<int> flagsForHudVisibilityControl = [
+		CE_FLAG_HIDE_MAIN_HUD,
+		CE_FLAG_HIDE_PERMANENT_HUD
+	]
+
+	if ( player.s.hudVisible )
+	{
+		foreach ( flag in flagsForHudVisibilityControl )
+			RemoveCinematicFlag( player, flag )
+	} else
+	{
+		foreach ( flag in flagsForHudVisibilityControl )
+			AddCinematicFlag( player, flag )
+	}
+}
 #endif // DEV
 
 void function ClearChildren( entity parentEnt, bool b0 ) //Probably should have code give us a GetChildren() function that returns a list instead of having to iterate through NextMovePeer
@@ -2895,9 +2967,28 @@ void function ForceTimeLimitDone()
 	ServerCommand( "mp_enablematchending 1" )
 }
 
+
+void function UpdateBadRepPresent()
+{
+	array<entity> players = GetPlayerArray()
+	bool found = false
+/*	always set to false for now
+	foreach ( player in players )
+	{
+		if ( player.HasBadReputation() )
+		{
+			found = true
+			break
+		}
+	}
+*/
+	level.nv.badRepPresent = found
+	level.ui.badRepPresent = found
+}
+
 void function Dev_PrintMessage( entity player, string text, string subText = "", float duration = 7.0, string soundAlias = "" )
 {
-	#if DEV
+	#if R5DEV
 	// Build the message on the client
 	string sendMessage
 	for ( int textType = 0 ; textType < 2 ; textType++ )
@@ -3226,7 +3317,7 @@ void function ShowCrit( entity ent )
 }
 
 
-#if DEV
+#if R5DEV
 void function TeleportEnemyBotToView()
 {
 	entity player = gp()[0]
@@ -3477,8 +3568,9 @@ void function PushEntWithVelocity( entity ent, vector velocity )
 
 bool function IsPlayerFemale( entity player )
 {
-	return false; //TODOACTUAL: to do some research of this function
-	return player.Dev_GetPlayerSettingByKeyField( "raceOrSex" ) == "race_human_female"
+	if (player.IsNPC)
+		return true//player.Dev_GetAISettingByKeyField( "raceOrSex" ) == "race_human_female" // TODO: Fix this. Dev_GetPlayerSettingByKeyField does not exist in r5 server vm
+	return false
 }
 
 bool function IsPlayerMalePilot( entity player )
@@ -3831,11 +3923,6 @@ float function ShieldModifyDamage( entity ent, var damageInfo )
 			int damageType = DamageInfo_GetCustomDamageType( damageInfo )
 			int attackerEHandle = attacker.GetEncodedEHandle()
 			int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-
-			if ( attacker.IsPlayer() )
-				attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), damageType, shieldDamage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-			if ( ent.IsPlayer() )
-				Remote_CallFunction_Replay( ent, "ServerCallback_TitanTookDamage", shieldDamage, damageOrigin.x, damageOrigin.y, damageOrigin.z, damageType, damageSourceId, attackerEHandle, null, false, 0 )
 		}
 		DamageInfo_SetDamage( damageInfo, permanentDamage )
 	}
@@ -4122,7 +4209,7 @@ int function GameScore_GetWinningTeam_ThisRound()
 	return TEAM_UNASSIGNED
 }
 
-#if DEV
+#if R5DEV
 void function KillIMC()
 {
 	array<entity> enemies = GetNPCArrayOfTeam( TEAM_IMC )
@@ -4226,14 +4313,14 @@ bool function IsFastPilot( entity player )
 
 void function KillPlayer( entity player, int damageSource )
 {
-	#if DEV
+	#if R5DEV
 	printt( "Played Killed from script: " )
 	DumpStack()
 	#endif
 
 	Assert( IsAlive( player ) )
 	Assert( player.IsPlayer() )
-	player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = damageSource, scriptType=DF_SKIP_DAMAGE_PROT | DF_SKIPS_DOOMED_STATE } )
+	//player.Die( svGlobal.worldspawn, svGlobal.worldspawn, { damageSourceId = damageSource, scriptType=DF_SKIP_DAMAGE_PROT | DF_SKIPS_DOOMED_STATE } )
 }
 
 
@@ -4376,17 +4463,30 @@ void function DestroyAfterDelay( entity ent, float delay )
 // some of these might need a better place. i brought those here for quick stubbing
 void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapon )
 {
-	//stub
+	string weaponClassName = offhandWeapon.GetWeaponClassName()
+	var weaponBattleChatterEventOrNull = GetWeaponInfoFileKeyField_Global( weaponClassName, "battle_chatter_event" )
+
+	if ( weaponBattleChatterEventOrNull == null )
+		return // Field does not exist
+
+	expect string( weaponBattleChatterEventOrNull )
+
+	if ( weaponBattleChatterEventOrNull.len() == 0 )
+		return // Empty field value
+
+	PlayBattleChatterLineToSpeakerAndTeam( player, weaponBattleChatterEventOrNull )
 }
 
 void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound )
 {
-	//stub
+	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
+		thread PlayDialogueForPlayer( sound, teamMember, player )
 }
 
-void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, string sound, float num )
+void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, string sound, float delay )
 {
-	//stub
+	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
+		thread PlayDialogueForPlayer( sound, teamMember, player, delay )
 }
 
 void function AddToUltimateRealm( entity player, entity offhandWeapon )
@@ -4394,9 +4494,13 @@ void function AddToUltimateRealm( entity player, entity offhandWeapon )
 	//stub
 }
 
-void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string speaker )
+void function PlayBattleChatterLineToTeamButNotSpeaker ( entity player, string sound )
 {
-	//stub
+	array<entity> teamMembers = GetPlayerArrayOfTeam( player.GetTeam() )
+	teamMembers.fastremovebyvalue( player )
+
+	foreach ( teamMember in teamMembers )
+		thread PlayDialogueForPlayer( sound, teamMember, player )
 }
 
 void function UpdateDamageState( entity ent, var damageInfo )
@@ -4406,42 +4510,46 @@ void function UpdateDamageState( entity ent, var damageInfo )
 
 void function DisableMantle( entity player )
 {
-	//stub
+	player.DisableMantle()
 }
 
 void function LockWeaponsAndMelee( entity player )
 {
-	//stub
+	// HolsterViewModelAndDisableWeapons( player )
+	player.LockWeaponChange()
 }
 
 void function EnableMantle( entity player )
 {
-	//stub
+	player.EnableMantle()
 }
 
 void function UnlockWeaponsAndMelee( entity player )
 {
-	//stub
+	// DeployViewModelAndEnableWeapons( player )
+	player.UnlockWeaponChange()
 }
 
 void function DelayedDestroy( entity mover, float lifetime )
 {
-	//stub
+	wait( lifetime )
+	mover.Destroy()
 }
 
 void function SwapToLastEquippedPrimary( entity player )
 {
-	//stub
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, SURVIVAL_GetLastActiveWeapon( player ).GetClassName() )
 }
 
-void function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b0, int contents, int team, string scriptname )
+entity function CreateTraceBlockerVolume( vector fxOrigin, float something, bool b0, int contents, int team, string scriptname )
 {
-	//stub
+	entity traceBlocker
+	return traceBlocker
 }
 
 void function SetOutOfBoundsTimeLimit( float maxtime )
 {
-
+	//stub
 }
 
 array<entity> function GetEntityChainOfType( entity endNodes )
@@ -4455,10 +4563,43 @@ entity function GetLastLinkedEntOfType( entity endNodes )
 	entity temp
 	return temp
 }
-/////////////////////////////////////////////////////////////////////////////////
-table< int, array< entity > > function GetAllPlayersSortedByTeam()
+
+// Screen cover transition functions
+void function ScreenCoverTransition_Player( entity player, float endTime )
 {
-	table< int, array< entity > >  groupedPlayers
+	Remote_CallFunction_NonReplay( player, "ServerToClient_ScreenCoverTransition", endTime )
+}
+
+void function ScreenCoverTransition_AllPlayers( float endTime )
+{
+	foreach ( player in GetPlayerArray() )
+		ScreenCoverTransition_Player( player, endTime )
+}
+
+array<entity> function GetAllPlayersOfLockstepIndex( int index )
+{
+	array<entity> result = []
+
+	foreach ( player in GetPlayerArray() )
+		if ( player.GetPlayerNetInt( "characterSelectLockstepPlayerIndex" ) == index )
+			result.append( player )
+
+	return result
+}
+
+/////////////////////////////////////////////////////////////////////////////////
+table< int, array<entity> > function GetAllPlayersSortedByTeam()
+{
+	table< int, array<entity> > groupedPlayers
+	
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( !( player.GetTeam() in groupedPlayers ) )
+			groupedPlayers[player.GetTeam()] <- []
+		
+		groupedPlayers[player.GetTeam()].append( player )
+	}
+
 	return groupedPlayers
 }
 
@@ -4558,18 +4699,109 @@ entity function CreatePropDynamic_NoDispatchSpawn( asset model, vector ornull or
 	return prop_dynamic
 }
 
-// CreatePropShield( gs.model, gs.impacteffectcolorID, gs.parentEnt.GetAttachmentOrigin( idx ), AnglesCompose( gs.parentEnt.GetAttachmentAngles( idx ), gs.modelOverrideAngles ), 6 )
-entity function CreatePropShield( ... ) // epic stub
+entity function CreatePropShield( asset model, int colorID, vector ornull origin = null, vector ornull angles = null, var solidType = 0, float fadeDist = -1 )
 {
-	return null
+	entity prop_shield = CreateEntity( "prop_shield" )
+
+	prop_shield.SetValueForModelKey( model )
+
+	prop_shield.kv.fadedist = fadeDist
+	prop_shield.kv.renderamt = 255
+	prop_shield.kv.rendercolor = "255 255 255"
+	prop_shield.kv.solid = solidType // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	prop_shield.kv.impacteffectcolorid = colorID
+
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_shield.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_shield.SetAngles( expect vector( angles ) )
+	}
+
+	DispatchSpawn( prop_shield )
+
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_shield.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_shield.SetAngles( expect vector( angles ) )
+	}
+
+	return prop_shield
+}
+
+entity function CreatePropDeathBox_NoDispatchSpawn( asset model, vector ornull origin = null, vector ornull angles = null, var solidType = 0, float fadeDist = -1 )
+{
+	entity prop_death_box = CreateEntity( "prop_death_box" )
+	prop_death_box.SetValueForModelKey( model )
+	prop_death_box.kv.fadedist = fadeDist
+	prop_death_box.kv.renderamt = 255
+	prop_death_box.kv.rendercolor = "255 255 255"
+	prop_death_box.kv.solid = solidType // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+	if ( origin )
+	{
+		// hack: Setting origin twice. SetOrigin needs to happen before DispatchSpawn, otherwise the prop may not touch triggers
+		prop_death_box.SetOrigin( expect vector( origin ) )
+		if ( angles )
+			prop_death_box.SetAngles( expect vector( angles ) )
+	}
+	
+	return prop_death_box
 }
 
 void function RunClientCommandOnPlayer( entity player, string command )
 {
-	player.ClientCommand( command )
+	ClientCommand( player, command )
 }
 
 entity function CreatePropDoor( asset model, vector pos, vector ang )
 {
 	return CreatePropDynamic_NoDispatchSpawn( model, pos, ang )
+}
+
+void function summonplayers()
+{
+	entity player0 = GetPlayerArray()[0]
+
+	vector pos = player0.GetOrigin()
+	pos.z += 5
+
+	int i = 0
+	foreach ( player in GetPlayerArray() )
+	{
+		if ( player == player0 )
+			continue
+
+		// circle
+		float r = float(i) / float(GetPlayerArray().len()) * 2 * PI
+		player.SetOrigin( pos + 500.0 * <sin( r ), cos( r ), 0.0> )
+
+		DecideRespawnPlayer( player )
+
+		i++
+	}
+}
+
+bool function PlayerRespawnEnabled()
+{
+	return GetRespawnStyle() != eRespawnStyle.NONE
+}
+
+bool function PlayerRevivingEnabled()
+{
+	return GetCurrentPlaylistVarBool( "survival_revive_enabled", true )
+}
+
+void function SetRandomStagingPositionForPlayer( entity player )
+{
+	array<entity> allHumanSpawnPoints = GetEntArrayByClass_Expensive( "info_spawnpoint_human" )
+	if ( allHumanSpawnPoints.len() == 0 )
+		return
+
+	entity randomSpawnPoint = allHumanSpawnPoints.getrandom()
+
+	player.SetOrigin( randomSpawnPoint.GetOrigin() )
+	player.SetAngles( randomSpawnPoint.GetAngles() )
 }

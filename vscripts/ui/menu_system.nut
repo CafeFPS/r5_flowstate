@@ -5,6 +5,8 @@ global function UpdateSystemPanel
 
 global function OpenSystemMenu
 
+global function ShouldDisplayOptInOptions
+
 struct ButtonData
 {
 	string             label
@@ -25,9 +27,14 @@ struct
 	table<var, ButtonData > nullButtonData
 	table<var, ButtonData > leavePartyData
 	table<var, ButtonData > abandonMissionButtonData
+	table<var, ButtonData > changeCharacterButtonData
+	table<var, ButtonData > friendlyFireButtonData
+	table<var, ButtonData > thirdPersonButtonData
+
+	InputDef& qaFooter
 } file
 
-void function InitSystemMenu()
+void function InitSystemMenu( var newMenuArg ) //
 {
 	var menu = GetMenu( "SystemMenu" )
 	Hud_SetAboveBlur( menu, true )
@@ -43,14 +50,37 @@ void function InitSystemPanelMain( var panel )
 	InitSystemPanel( panel )
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
+	#if R5DEV
+		if ( Dev_CommandLineHasParm( "-showdevmenu" ) )
+			AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenDevMenu )
+	#endif
+	file.qaFooter = AddPanelFooterOption( panel, LEFT, BUTTON_X, true, "#X_BUTTON_QA", "QA", ToggleOptIn, ShouldDisplayOptInOptions )
 
 	#if CONSOLE_PROG
-	AddPanelFooterOption( panel, RIGHT, BUTTON_BACK, false, "#BUTTON_RETURN_TO_MAIN", "", ReturnToMain_OnActivate )
+		AddPanelFooterOption( panel, RIGHT, BUTTON_BACK, false, "#BUTTON_RETURN_TO_MAIN", "", ReturnToMain_OnActivate )
 	#endif
+	AddPanelFooterOption( panel, RIGHT, BUTTON_STICK_RIGHT, true, "#BUTTON_VIEW_CINEMATIC", "#VIEW_CINEMATIC", ViewCinematic, IsLobby )
+}
 
-	#if DEV
-		AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenDevMenu )
-	#endif
+void function ViewCinematic( var button )
+{
+	CloseActiveMenu()
+	thread PlayVideoMenu( false, "intro", "Apex_Opening_Movie", eVideoSkipRule.INSTANT )
+}
+
+void function TryChangeCharacters()
+{
+	RunClientScript( "UICallback_OpenCharacterSelectNewMenu" )
+}
+
+void function ToggleFriendlyFire()
+{
+	ClientCommand( "firingrange_toggle_friendlyfire" )
+}
+
+void function ToggleThirdPerson()
+{
+	ClientCommand( "ToggleThirdPerson" )
 }
 
 void function InitSystemPanel( var panel )
@@ -76,6 +106,9 @@ void function InitSystemPanel( var panel )
 	file.lobbyReturnButtonData[ panel ] <- clone data
 	file.leavePartyData[ panel ] <- clone data
 	file.abandonMissionButtonData[ panel ] <- clone data
+	file.changeCharacterButtonData[ panel ] <- clone data
+	file.friendlyFireButtonData[ panel ] <- clone data
+	file.thirdPersonButtonData[ panel ] <- clone data
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
@@ -95,6 +128,15 @@ void function InitSystemPanel( var panel )
 	file.abandonMissionButtonData[ panel ].label = "#ABANDON_MISSION"
 	file.abandonMissionButtonData[ panel ].activateFunc = LeaveDialog
 
+	file.changeCharacterButtonData[ panel ].label = "#BUTTON_CHARACTER_CHANGE"
+	file.changeCharacterButtonData[ panel ].activateFunc = TryChangeCharacters
+
+	file.friendlyFireButtonData[ panel ].label = "#BUTTON_FRIENDLY_FIRE_TOGGLE"
+	file.friendlyFireButtonData[ panel ].activateFunc = ToggleFriendlyFire
+	
+	file.thirdPersonButtonData[ panel ].label = "TOGGLE THIRD PERSON"
+	file.thirdPersonButtonData[ panel ].activateFunc = ToggleThirdPerson
+
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
 
@@ -107,6 +149,8 @@ void function OnSystemMenu_Open()
 {
 	SetBlurEnabled( true )
 	ShowPanel( Hud_GetChild( file.menu, "SystemPanel" ) )
+
+	UpdateOptInFooter()
 }
 
 
@@ -122,7 +166,21 @@ void function UpdateSystemPanel( var panel )
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
-		SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
+		{
+			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
+				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
+			else
+				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
+		}
+
+		if ( IsFiringRangeGameMode() )
+		{
+			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] )
+		//	SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
+
+			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
+				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
+		}
 	}
 	else
 	{
@@ -133,6 +191,23 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.exitButtonData[ panel ] )
 		#endif
 	}
+
+	const int maxNumButtons = 4;
+	for( int i = 0; i < maxNumButtons; i++ )
+	{
+		if( i > 0 && i < buttonIndex)
+			Hud_SetNavUp( file.buttons[ panel ][i], file.buttons[ panel ][i - 1] )
+		else
+			Hud_SetNavUp( file.buttons[ panel ][i], null )
+
+		if( i < (buttonIndex - 1) )
+			Hud_SetNavDown( file.buttons[ panel ][i], file.buttons[ panel ][i + 1] )
+		else
+			Hud_SetNavDown( file.buttons[ panel ][i], null )
+	}
+
+	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
+	Hud_SetText( dataCenterElem, Localize( "#SYSTEM_DATACENTER", GetDatacenterName(), GetDatacenterPing() ) )
 }
 
 void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
@@ -202,3 +277,43 @@ void function OnReturnToMainMenu( int result )
 		ClientCommand( "disconnect" )
 }
 #endif
+
+
+void function ToggleOptIn( var button )
+{
+	uiGlobal.isOptInEnabled = !uiGlobal.isOptInEnabled
+
+	if ( GetActiveMenu() == file.menu )
+		CloseActiveMenu()
+}
+
+
+bool function ShouldDisplayOptInOptions()
+{
+	if ( !IsFullyConnected() )
+		return false
+
+	// if ( GRX_IsInventoryReady() && (GRX_HasItem( GRX_DEV_ITEM ) || GRX_HasItem( GRX_QA_ITEM )) )
+		return true
+
+	return GetGlobalNetBool( "isOptInServer" )
+}
+
+
+void function UpdateOptInFooter()
+{
+	if ( uiGlobal.isOptInEnabled )
+	{
+		file.qaFooter.gamepadLabel = "#X_BUTTON_HIDE_OPT_IN"
+		file.qaFooter.mouseLabel = "#HIDE_OPT_IN"
+	}
+	else
+	{
+		file.qaFooter.gamepadLabel = "#X_BUTTON_SHOW_OPT_IN"
+		file.qaFooter.mouseLabel = "#SHOW_OPT_IN"
+	}
+
+	UpdateFooterOptions()
+}
+
+

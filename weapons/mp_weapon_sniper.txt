@@ -1,4 +1,5 @@
 #base "_base_sniper.txt"
+#base "_base_optics_ranged.txt"
 
 "WeaponData"
 {
@@ -9,6 +10,8 @@
 	"shortprintname"                           "#WPN_SNIPER_SHORT"
 	"description"                              "#WPN_SNIPER_DESC"
 	"longdesc"                                 "#WPN_SNIPER_LONGDESC"
+	
+	"weapon_type_flags"								"WPT_PRIMARY"
 
 	// UI - HUD
 	"hud_icon"                                 "rui/weapon_icons/r5/weapon_sniper"
@@ -24,13 +27,10 @@
 	"viewmodel"                                "mdl/weapons/at_rifle/ptpov_at_rifle.rmdl"
 	"playermodel"                              "mdl/weapons/at_rifle/w_at_rifle.rmdl"
 
-	// Script - Callbacks
-	"OnWeaponActivate"                         "OnWeaponActivate_weapon_basic_bolt"
-	"OnWeaponPrimaryAttack"                    "OnWeaponPrimaryAttack_weapon_basic_bolt"
-	"OnWeaponNpcPrimaryAttack"                 "OnWeaponNpcPrimaryAttack_weapon_basic_bolt"
-	"OnClientAnimEvent"                        "OnClientAnimEvent_weapon_sniper"
-	"OnProjectileCollision"                    "OnProjectileCollision_weapon_sniper"
+	"chroma_color"								"1 .6 .2"
 
+	// Script - Callbacks
+	"OnClientAnimEvent"                        "OnClientAnimEvent_weapon_sniper"
 
 	// Behavior - Firing
 	//
@@ -53,6 +53,8 @@
 	"viewmodel_offset_zoom_frac_start"         "0.1"
     "viewmodel_offset_zoom_frac_end"           "0.85"
 
+    zoomed_convar_sensitivity_index             4
+    zoomed_convar_toggle_sensitivity_index      6
 
 	// Behavior- Aim Assist
 	"aimassist_disable_hipfire"                "1"
@@ -65,21 +67,22 @@
 
 	// Damage
 	//
-	"damage_near_value"                        "125"
-	"damage_far_value"                         "125"
-	"damage_very_far_value"                    "125"
-	"damage_near_value_titanarmor"             "125"
-	"damage_far_value_titanarmor"              "125"
-	"damage_very_far_value_titanarmor"         "125"
+	"damage_near_value"                        "145"
+	"damage_far_value"                         "145"
+	"damage_very_far_value"                    "145"
+	"damage_near_value_titanarmor"             "145"
+	"damage_far_value_titanarmor"              "145"
+	"damage_very_far_value_titanarmor"         "145"
 
 	"damage_rodeo"                             "900"
 
 	// Damage - Behavior
-	"damage_flags"                             "DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
+	"damage_flags"                             "DF_SNIPER | DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
 	"pass_through_depth"                       "64"
 	"pass_through_damage_preserved_scale"      "0.8"
 
-	"damage_leg_scale"                          "0.76"
+    "damage_headshot_scale"                    "2.05"
+	"damage_leg_scale"                         "0.8"
 
 
 	// Viewmodel
@@ -91,19 +94,26 @@
 	// Projectile
 	"projectile_launch_speed"                  "29500"
 
+    "bolt_hitsize_grow1_time"				    "0.133"  //~100m
+    "bolt_hitsize_grow1_size"				    "0.33"
+    "bolt_hitsize_grow2_time"				    "0.267"  //~200m
+    "bolt_hitsize_grow2_size"				    "1.25"
+    "bolt_hitsize_growfinal_lerptime"		    "0.400"  //~300m
+    "bolt_hitsize_growfinal_size"               "2.0"
+
 
 	// Ammo
 	//
 	"ammo_clip_size"                           "4"
 	"ammo_stockpile_max"                       "8"
-	"ammo_default_total"                       "8"
+	"ammo_default_total"                       "12"
 	"ammo_min_to_fire"                         "1"
 	"ammo_no_remove_from_stockpile"            "1"
 	"reload_enabled"                           "1"
 
 	"reload_time"                              "3.2"
 	"reload_time_late1"                        "1.95"
-	"reload_time_late2"                        "0.81"
+	"reload_time_late2"                        "1.95"
 	"reloadempty_time"                         "4.3"
 	"reloadempty_time_late1"                   "3.13"
 	"reloadempty_time_late2"                   "2.08"
@@ -115,9 +125,9 @@
 	// Behavior - Animation
 	"deployfirst_time"                         "1.5"
 	"deploy_time"                              "1.2"
-	"holster_time"                             "0.7"
+	"holster_time"                             "0.8"
 	"lower_time"                               "0.55"
-	"raise_time"                               "1.0"
+	"raise_time"                               "0.8"
 
 	"disable_zoomed_rechamber"					"1"
 
@@ -182,6 +192,20 @@
 	"sound_zoom_in"                            "Weapon_Rangemaster_Kraber_ADS_In"
 	"sound_zoom_out"                           "Weapon_Rangemaster_Kraber_ADS_Out"
 
+               
+            
+  
+                              
+                              
+
+                                                  
+                                                  
+                                                  
+                                                  
+                                                  
+                                                  
+  
+      
 
 	// NPC
 	//
@@ -218,6 +242,7 @@
 	// FX - Projectile
 	"projectilemodel"                          "mdl/weapons/bullets/projectile_20mm.rmdl"
 
+    "mod_activity_modifier"	                   "default"
 
 	// Bodygroups
 	//
@@ -236,24 +261,54 @@
 	"clip_bodygroup_show_for_milestone_2"      "1"
 	"clip_bodygroup_show_for_milestone_3"      "1"
 
+	// HACK when "optic_toggle" mod is equipped, toggles between default and this optic
+	"script_optic_toggle_name"              "optic_ranged_aog_variable"
+
 	"Mods"
 	{
+	    crate
+	    {
+	    }
+
 		"survival_finite_ammo"
 		{
 			// ammo
 			"ammo_no_remove_from_stockpile" 	"0"
 			"uses_ammo_pool" 					"0"
+			"low_ammo_fraction"                 "0.25"
 		}
 
-		npc_sniper
+        // HACK must define "script_optic_toggle_name" for this to work
+		"optic_toggle"
 		{
-        	"projectile_trail_effect_0"     "P_tracer_proj_sniper_piercer"
-			"damage_near_value"                        "65"
-			"damage_far_value"                         "65"
-			"damage_very_far_value"                    "65"
-			"damage_near_value_titanarmor"             "65"
-			"damage_far_value_titanarmor"              "65"
-			"damage_very_far_value_titanarmor"         "65"
+		}
+
+               
+                                                                                                     
+              
+         
+                                                                                          
+         
+      
+
+		"optic_ranged_aog_variable"
+		{
+		    //"mod_activity_modifier"	    "default"
+		    "anim_alt_idleAttack"       "3"
+
+		    "bodygroup6_set"    "0"
+		    "ui1_enable"        "1"
+		    "ui7_enable"        "0"
+
+		    "bodygroup_ads_scope_set"       "0"
+
+		    "zoom_time_in"							"0.43"
+	        "zoom_time_out"   						"0.37"
+
+            "ads_fov_zoomfrac_start"                "0.2"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.2"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
 		}
 	}
 

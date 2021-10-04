@@ -11,13 +11,14 @@ WeaponData
 	"menu_icon"										"rui/pilot_loadout/ordnance/electric_smoke_menu"
 	"hud_icon"										"rui/hud/ultimate_icons/ultimate_caustic"
 
+	"weapon_type_flags"								"WPT_ULTIMATE"
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
 	"is_toss_weapon"								"1"
 	"minimap_reveal_distance"						"32000"
 	"leveled_pickup"								"1"
 	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
-	"offhand_default_inventory_slot"				"0"
+	"offhand_default_inventory_slot"				"4"
 	"offhand_interupts_weapon_anims"				"1"
 	"offhand_toss_activates_on_attack"              "1"
 	"offhand_toss_hold_is_resumable"                "1"
@@ -28,10 +29,9 @@ WeaponData
 	//"OnWeaponTossReleaseAnimEvent"					"Grenade_OnWeaponTossReleaseAnimEvent"
 	"OnWeaponTossReleaseAnimEvent"					"OnWeaponTossReleaseAnimEvent_weapon_greande_gas"
 	"OnWeaponTossPrep"								"Grenade_OnWeaponTossPrep"
-	"OnWeaponDeactivate"							"Grenade_OnWeaponDeactivate"
+	"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_grenade_gas"
 	"OnProjectileCollision"							"OnProjectileCollision_weapon_grenade_gas"
 	"OnWeaponReadyToFire"                           "OnWeaponReadyToFire_weapon_grenade_gas"
-	//"OnWeaponDeactivate"							"OnWeaponDeactivate_weapon_grenade_gas"
     "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
 
 	// Menu Stats
@@ -170,7 +170,7 @@ WeaponData
 	"toss_pullout_time"								"0.7"
 	"toss_time"										"0.5"
 	"toss_overhead_time"							"0.8"
-	"projectile_launch_speed"						"1100"
+	"projectile_launch_speed"						"1300"
 	"projectile_launch_pitch_offset"				"8"
 
 	"red_crosshair_range" 							"0"

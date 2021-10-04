@@ -5,12 +5,9 @@ global function Create_DamageIndicatorHUD
 global function GrenadeArrowThink
 global function RumbleForTitanDamage
 
-global function ServerCallback_TitanTookDamage
-global function ServerCallback_PilotTookDamage
+global function ServerCallback_PlayerTookDamage
 //global function ClientCodeCallback_OnMissileCreation
 global function ClientCodeCallback_CreateGrenadeIndicator
-
-global function DamageIndicatorRui
 
 global function ShowGrenadeArrow
 
@@ -25,6 +22,8 @@ const DAMAGEARROW_LARGE = 2
 const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME = 0.4
 const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME_LOWSPEED = 0.15
 const float DAMAGEHUD_GRENADE_DEBOUNCE_TIME_LOWSPEED_VELOCITYCUTOFF = 500.0
+
+const float GRENADE_INDICATOR_LIMIT = 128.0
 
 
 struct {
@@ -49,6 +48,7 @@ struct {
 	]
 
 	int damageIndicatorCount = 0
+	array<entity> liveGrenadeIndicators
 } file
 
 void function ClDamageIndicator_Init()
@@ -64,92 +64,6 @@ void function ClDamageIndicator_Init()
 
 	if ( !IsLobby() )
 		AddCallback_EntitiesDidLoad( InitDamageArrows )
-}
-
-void function ServerCallback_TitanTookDamage( float damage, float x, float y, float z, int damageType, int damageSourceId, attackerEHandle, int eModId, bool doomedNow, int doomedDamage )
-{
-	expect int( attackerEHandle )
-
-	if ( IsWatchingThirdPersonKillReplay() )
-		return
-
-	if ( DebugVictimClientDamageFeedbackIsEnabled() && (damage > 0.0) )
-	{
-		entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
-		entity localViewPlayer = GetLocalViewPlayer()
-		bool isHeadShot = (damageType & DF_HEADSHOT) ? true : false
-		bool isKillShot = (damageType & DF_KILLSHOT) ? true : false
-		bool isCritical = (damageType & DF_CRITICAL) ? true : false
-		bool isDoomProtected = (damageType & DF_DOOM_PROTECTED) ? true : false
-		bool isDoomFatality = (damageType & DF_DOOM_FATALITY) ? true : false
-
-		//local weaponMods = []
-		//if ( eModId != null && eModId in modNameStrings )
-		//	weaponMods.append( modNameStrings[eModId] )
-
-		string modDesc = (eModId != -1 && eModId in modNameStrings) ? modNameStrings[eModId] : ""
-		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, modDesc, isHeadShot, isKillShot, isCritical, doomedNow, doomedDamage, isDoomProtected, isDoomFatality )
-	}
-
-	// It appears to be faster here to create a new thread so other functions called can wait until the frame ends before running.
-	thread TitanTookDamageThread( damage, x, y, z, damageType, damageSourceId, attackerEHandle, eModId, doomedNow, doomedDamage )
-
-	vector damageOrigin = <x,y,z>
-	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
-
-	foreach ( callback in clGlobal.onLocalPlayerTookDamageCallback )
-		callback( damage, damageOrigin, damageType, damageSourceId, attacker )
-
-	if ( damageSourceId in clGlobal.onLocalPlayerTookDamageTypeCallback )
-	{
-		foreach ( callback in clGlobal.onLocalPlayerTookDamageTypeCallback[ damageSourceId ] )
-			callback( damage, damageOrigin, damageType, damageSourceId, attacker )
-	}
-}
-
-void function TitanTookDamageThread( float damage, x, y, z, int damageType, int damageSourceId, attackerEHandle, eModId, bool doomedNow, int doomedDamage )
-{
-	WaitEndFrame()
-
-	entity attacker = attackerEHandle ? GetHeavyWeightEntityFromEncodedEHandle( attackerEHandle ) : null
-	entity localViewPlayer = GetLocalViewPlayer()
-	entity cockpit = localViewPlayer.GetCockpit()
-
-	if ( cockpit && IsTitanCockpitModelName( cockpit.GetModelName() ) )
-		TitanCockpit_DamageFeedback( localViewPlayer, cockpit, damage, damageType, <x,y,z>, damageSourceId, doomedNow, doomedDamage )
-
-	if ( damage >= DAMAGE_BREAK_MELEE_ASSIST )
-		localViewPlayer.Lunge_ClearTarget()
-
-	array<string> weaponMods
-	if ( eModId != null && eModId in modNameStrings )
-		weaponMods.append( expect string( modNameStrings[ eModId ] ) )
-
-	if ( (damage > 0.0) || doomedDamage )
-	{
-		vector damageOrigin = <x,y,z>
-		DamageHistoryStruct damageHistory = StoreDamageHistoryAndUpdate( localViewPlayer, MAX_DAMAGE_HISTORY_TIME, damage, damageOrigin, damageType, damageSourceId, attacker, weaponMods )
-		DamageIndicators( damageHistory, true )
-	}
-
-	entity soul = localViewPlayer.GetTitanSoul()
-
-	if ( damageType & DF_CRITICAL )
-	{
-		localViewPlayer.Signal( "CriticalHitReceived" )
-		EmitSoundOnEntity( localViewPlayer, "titan_damage_crit_3p_vs_1p" )
-	}
-}
-
-bool function ShouldPlayAutoEjectAnim( entity player, entity titanSoul, bool doomedNow )
-{
-	if ( !titanSoul.IsDoomed() )
-		return false
-
-	if ( player.ContextAction_IsActive() && !player.ContextAction_IsBusy() ) //Some other context action, e.g. melee instead of eject. Then again
-		return false
-
-	return true
 }
 
 string function DevBuildAttackerDesc( entity localViewPlayer, entity ent )
@@ -171,7 +85,7 @@ string function DevBuildAttackerDesc( entity localViewPlayer, entity ent )
 	return (ownerString + debugName)
 }
 
-void function DebugTookDamagePrint( entity localViewPlayer, entity attacker, float damage, int damageSourceId, string modDesc, bool isHeadShot, bool isKillShot, bool isCritical, bool isDoomShot, int doomShotDamage, bool isDoomProtected, bool isDoomFatality )
+void function DebugTookDamagePrint( entity localViewPlayer, entity attacker, float damage, int damageSourceId, bool isHeadShot, bool isKillShot, bool isCritical )
 {
 	Assert( localViewPlayer )
 	string attackerDesc = DevBuildAttackerDesc( localViewPlayer, attacker )
@@ -181,11 +95,8 @@ void function DebugTookDamagePrint( entity localViewPlayer, entity attacker, flo
 						(isHeadShot ? " (headshot)" : "") +
 						(isCritical ? " (critical)" : "") +
 						(isKillShot ? " (KILLED)" : "") +
-						(isDoomShot ? " (DOOMED dmg:" + doomShotDamage + ")" : "") +
-						(isDoomProtected ? " (DOOM PROTECTION)" : "") +
-						(isDoomFatality ? " (DOOM FATALITY)" : "") +
 				"   " + attackerDesc +
-				"  w/ " + GetObitFromDamageSourceID( damageSourceId ) + modDesc
+				"  w/ " + GetObitFromDamageSourceID( damageSourceId )
 	)
 }
 
@@ -203,9 +114,11 @@ void function PlayVictimHeadshotConfirmation( bool isKillShot )
 
 void function RumbleForPilotDamage( float damageAmount, int damageType, int damageSourceId )
 {
-	if ( damageSourceId == eDamageSourceId.outOfBounds )
+	bool isDeathField = (damageSourceId == eDamageSourceId.deathField)
+
+	if ( isDeathField )
 	{
-		Rumble_Play( "out_of_bounds_pain", {} )
+		Rumble_Play( "death_field_pain", {} )
 		return
 	}
 
@@ -238,7 +151,9 @@ bool function ShouldShowMeleeFlashForDamage( float damage, int damageType, int d
 
 void function DoDamageFlashForDamageRecieved( entity player, float damage, int damageType, int damageSourceId )
 {
-	if ( damageSourceId == eDamageSourceId.outOfBounds )
+	bool isDeathField = (damageSourceId == eDamageSourceId.deathField)
+
+	if ( isDeathField )
 	{
 		ScreenFlash( 0.7, 0.5, 0.5, 0.1, 2.0 )
 		return
@@ -261,7 +176,7 @@ void function DoDamageFlashForDamageRecieved( entity player, float damage, int d
 	ScreenFlash( 2, 2, 2, holdTime, 0.2 )
 }
 
-void function ServerCallback_PilotTookDamage( float damage, float x, float y, float z, int damageType, int damageSourceId, attackerEHandle, int eModId )
+void function ServerCallback_PlayerTookDamage( float damage, float x, float y, float z, int damageType, int damageSourceId, attackerEHandle )
 {
 	if ( IsWatchingThirdPersonKillReplay() )
 		return
@@ -287,30 +202,27 @@ void function ServerCallback_PilotTookDamage( float damage, float x, float y, fl
 		localViewPlayer.Lunge_ClearTarget()
 	}
 
-	array<string> weaponMods
-	if ( eModId != -1 && eModId in modNameStrings )
-		weaponMods.append( modNameStrings[ eModId ] )
-
 	if ( DebugVictimClientDamageFeedbackIsEnabled() && !IsWatchingReplay() )
 	{
-		string modDesc = (weaponMods.len() > 0 ? (" +" + weaponMods[0]) : "")
 		bool isCritical = (damageType & DF_CRITICAL) ? true : false
 
-		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, modDesc, isHeadShot, isKillShot, isCritical, false, 0, false, false )
+		DebugTookDamagePrint( localViewPlayer, attacker, damage, damageSourceId, isHeadShot, isKillShot, isCritical )
 	}
 
 	RumbleForPilotDamage( damage, damageType, damageSourceId )
 
-	DamageHistoryStruct damageTable = StoreDamageHistoryAndUpdate( localViewPlayer, MAX_DAMAGE_HISTORY_TIME, damage, damageOrigin, damageType, damageSourceId, attacker, weaponMods )
-	DamageIndicators( damageTable, false )
+	DamageIndicators( damageOrigin, attacker, damageSourceId )
 
 	DoDamageFlashForDamageRecieved( localViewPlayer, damage, damageType, damageSourceId )
 
-	// Circle damage:
+	switch ( damageSourceId )
 	{
-	if ( damageSourceId == eDamageSourceId.outOfBounds )
-
-		EmitSoundOnEntity( localViewPlayer, "Survival_Circle_ElectricalDamage_1P" )
+		case eDamageSourceId.deathField: // Circle damage
+			EmitSoundOnEntity( localViewPlayer, "Survival_Circle_ElectricalDamage_1P" )
+			break
+		case eDamageSourceId.burn:
+			EmitSoundOnEntity( localViewPlayer, "flesh_fire_damage_1p" )
+			break
 	}
 
 /*
@@ -355,99 +267,49 @@ void function ClientCodeCallback_CreateGrenadeIndicator( entity missileEnt, stri
 	TryAddGrenadeIndicator( missileEnt )
 }
 
-void function DamageIndicators( DamageHistoryStruct damageHistory, bool playerIsTitan )
+
+void function DamageIndicators( vector origin, entity attacker, int damageSourceId )
 {
-	if ( damageHistory.damageType & DF_NO_INDICATOR )
-		return
 	if ( !level.clientScriptInitialized )
 		return
+
 	if ( IsWatchingThirdPersonKillReplay() )
 		return
 
-	if ( !ShouldShowDamageArrows( damageHistory.damageSourceId ) )
+	if ( !ShouldShowDamageArrows( damageSourceId ) )
 		return
 
 	entity localViewPlayer = GetLocalViewPlayer()
+	if ( !IsValid( localViewPlayer ) )
+		return
 
 	int arrowType = DAMAGEARROW_MEDIUM
-
-	if ( IsValid( damageHistory.attacker ) )
+	if ( IsValid( attacker ) )
 	{
-		if ( damageHistory.attacker == localViewPlayer )
+		if ( attacker == localViewPlayer )
 			return
 
-		if ( damageHistory.attacker.IsTitan() )
+		if ( attacker.IsTitan() )
 			arrowType = DAMAGEARROW_MEDIUM
-		else if ( damageHistory.attacker.IsPlayer() )
+		else if ( attacker.IsPlayer() )
 			arrowType = DAMAGEARROW_SMALL
 		else
 			arrowType = DAMAGEARROW_SMALL
-
-			//if ( damageHistory.attacker.IsTitan() )
-			//	arrowType = DAMAGEARROW_LARGE
-			//else if ( damageHistory.attacker.IsPlayer() )
-			//	arrowType = DAMAGEARROW_MEDIUM
-			//else
-			//	arrowType = DAMAGEARROW_SMALL
-	}
-
-	if ( playerIsTitan )
-	{
-		entity cockpit = localViewPlayer.GetCockpit()
-
-		if ( !cockpit )
-			return
-
-		vector dirToDamage = damageHistory.origin - localViewPlayer.GetOrigin()
-		dirToDamage.z = 0
-		dirToDamage = Normalize( dirToDamage )
-
-		vector playerViewForward = localViewPlayer.GetViewVector()
-		playerViewForward.z = 0.0
-		playerViewForward = Normalize( playerViewForward )
-
-		float damageFrontDot = DotProduct( dirToDamage, playerViewForward )
-
-		if ( damageFrontDot >= 0.707107 )
-			cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_TOP, damageHistory.damage )
-		else if ( damageFrontDot <= -0.707107 )
-			cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_BOTTOM, damageHistory.damage )
-		else
-		{
-			vector playerViewRight = localViewPlayer.GetViewRight()
-			playerViewRight.z = 0.0
-			playerViewRight = Normalize( playerViewRight )
-
-			float damageRightDot = DotProduct( dirToDamage, playerViewRight )
-
-			if ( damageRightDot >= 0.707107 )
-				cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_RIGHT, damageHistory.damage )
-			else
-				cockpit.AddToTitanHudDamageHistory( COCKPIT_PANEL_LEFT, damageHistory.damage )
-		}
-
-		if ( damageHistory.attacker && damageHistory.attacker.GetParent() == localViewPlayer )
-		{
-			damageHistory.rodeoDamage = true
-			return
-		}
 	}
 
 	const int DAMAGE_INDICATOR_STYLE_NONE = -1
 	const int DAMAGE_INDICATOR_STYLE_2D_ONLY = 0
 	const int DAMAGE_INDICATOR_STYLE_BOTH = 1
 	const int DAMAGE_INDICATOR_STYLE_3D_ONLY = 2
-
-	int styleSetting = GetConVarInt( playerIsTitan ? "damage_indicator_style_titan" : "damage_indicator_style_pilot" )
-
+	int styleSetting = (localViewPlayer.IsTitan() ? DAMAGE_INDICATOR_STYLE_2D_ONLY : GetConVarInt( "damage_indicator_style_pilot" ))
 	bool show2DIndicator = (styleSetting == DAMAGE_INDICATOR_STYLE_2D_ONLY || styleSetting == DAMAGE_INDICATOR_STYLE_BOTH)
 	bool show3DIndicator = (styleSetting == DAMAGE_INDICATOR_STYLE_3D_ONLY || styleSetting == DAMAGE_INDICATOR_STYLE_BOTH)
 
 	if ( show2DIndicator )
-		thread DamageIndicatorRui( damageHistory.origin, arrowType, playerIsTitan )
+		thread DamageIndicatorRui( origin, arrowType )
 
 	if ( show3DIndicator )
-		ShowDamageArrow( localViewPlayer, damageHistory.origin, arrowType, playerIsTitan, damageHistory.attacker )
+		ShowDamageArrow( localViewPlayer, origin, arrowType, attacker )
 }
 
 bool function ShouldShowDamageArrows( int damageSourceId )
@@ -455,7 +317,10 @@ bool function ShouldShowDamageArrows( int damageSourceId )
 	switch ( damageSourceId )
 	{
 		case eDamageSourceId.outOfBounds:
+		case eDamageSourceId.deathField:
 		case eDamageSourceId.damagedef_grenade_gas:
+		case eDamageSourceId.mp_weapon_tesla_trap:
+		case eDamageSourceId.burn:
 			return false
 	}
 
@@ -464,7 +329,7 @@ bool function ShouldShowDamageArrows( int damageSourceId )
 
 const float DAMAGE_INDICATOR_DURATION = 4.0
 
-void function DamageIndicatorRui( vector damageOrigin, int arrowType, bool playerIsTitan )
+void function DamageIndicatorRui( vector damageOrigin, int arrowType )
 {
 	clGlobal.levelEnt.EndSignal( "KillReplayStarted" )
 	clGlobal.levelEnt.EndSignal( "KillReplayEnded" )
@@ -514,7 +379,7 @@ void function AddThreatIndicator( entity waypoint )
 	float radius = waypoint.GetWaypointFloat( 0 )
 
 	entity player = GetLocalViewPlayer()
-	ShowGrenadeArrow( player, waypoint, 128, 0, false )
+	ShowGrenadeArrow( player, waypoint, radius, 0, false )
 }
 
 vector function GetRandomOriginWithinBounds( entity ent )
@@ -540,14 +405,25 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 
 	entity arrow = CreateClientSidePropDynamic( <0,0,0>, <0,0,0>, GRENADE_INDICATOR_ARROW_MODEL )
 	entity mdl = CreateClientSidePropDynamic( <0,0,0>, <0,0,0>, grenadeModel )
+	EndSignal( arrow, "OnDestroy")
+
+	if (file.liveGrenadeIndicators.len() + 1 > GRENADE_INDICATOR_LIMIT)
+		return
+
+	file.liveGrenadeIndicators.append(arrow)
 
 	OnThreadEnd(
 		function() : ( arrow, mdl )
 		{
 			if ( IsValid( arrow ) )
+			{
+				file.liveGrenadeIndicators.removebyvalue(arrow)
 				arrow.Destroy()
+			}
 			if ( IsValid( mdl ) )
+			{
 				mdl.Destroy()
+			}
 		}
 	)
 
@@ -587,6 +463,9 @@ void function GrenadeArrowThink( entity player, entity grenade, float damageRadi
 
 		if ( shouldBeVisible )
 		{
+			if ( grenade instanceof C_PlayerWaypoint )
+				damageRadius = grenade.GetWaypointFloat( 0 )
+
 			if ( Distance( player.GetOrigin(), grenade.GetOrigin() ) > damageRadius || !cockpit )
 			{
 				shouldBeVisible = false
@@ -663,6 +542,9 @@ asset function GetIndicatorModel( entity grenade )
 	else if ( grenade.GetTargetName() == "creeping_bombardment_projectile" )
 		return GRENADE_INDICATOR_BOMB
 
+    else if ( grenade.GetTargetName() == CARE_PACKAGE_PROXY )
+        return GRENADE_INDICATOR_GENERIC
+
 	if ( grenade instanceof C_PlayerWaypoint )
 	{
 		switch( grenade.GetWaypointInt( 0 ) )
@@ -708,7 +590,7 @@ void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int e
 	if ( !level.grenadeIndicatorEnabled )
 		return
 
-	#if DEV
+	#if R5DEV
 		if ( !level.clientScriptInitialized )
 			return
 	#endif
@@ -728,7 +610,7 @@ void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int e
 
 void function TryAddGrenadeIndicator( entity grenade )
 {
-	#if DEV
+	#if R5DEV
 		if ( !level.clientScriptInitialized )
 			return
 	#endif
@@ -840,7 +722,7 @@ void function DamageArrow_CockpitInit( entity cockpit )
 	thread UpdateDamageArrows( localViewPlayer, cockpit )
 }
 
-void function ShowDamageArrow( entity player, vector damageOrigin, int arrowType, bool playerIsTitan, entity attacker )
+void function ShowDamageArrow( entity player, vector damageOrigin, int arrowType, entity attacker )
 {
 	if ( file.damageArrows.len() == 0 ) // not yet initialized
 		return

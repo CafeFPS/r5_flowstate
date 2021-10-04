@@ -78,9 +78,9 @@ void function DebugDrawSphere( vector origin, float radius, int r, int g, int b,
 //this draws an actual arrow like this --->, the function below draws an x,y,z axis
 void function DebugDrawArrow( vector start, vector end, float arrowSize, int r, int g, int b, bool throughGeo, float time )
 {
-	DebugDrawLine( start, end, r, g, b, true, time )
+	DebugDrawLine( start, end, r, g, b, throughGeo, time )
 	vector angles = VectorToAngles( Normalize( end - start ) )
-	DebugDrawCircle( end, angles, arrowSize, r, g, b, true, time, 3 )
+	DebugDrawCircle( end, angles, arrowSize, r, g, b, throughGeo, time, 3 )
 }
 
 //this draws an x,y,z axis

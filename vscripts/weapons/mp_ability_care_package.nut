@@ -1,9 +1,52 @@
 global function OnWeaponPrimaryAttack_care_package_medic
 
+struct AirdropContents
+{
+	array<string> left
+	array<string> right
+	array<string> center
+}
+
+struct LootPool
+{
+	//
+	table< string, int > equipmentTable
+	table< string, int > attachmentTable
+
+	array<string> armorLootGroup
+	array<string> equipmentLootGroup
+	array<string> attachmentsLootGroup
+}
+
+enum eLootPoolType
+{
+	ARMOR
+	OTHER_EQUIPMENT
+	ATTACHMENTS
+	SMALL_CONSUMABLE
+	LARGE_CONSUMABLE
+
+	_count
+}
+
+struct
+{
+	array<string> validSlots = [
+		"armor",
+		"helmet",
+		"incapshield",
+		"backpack",
+	]
+
+} file
+
 var function OnWeaponPrimaryAttack_care_package_medic( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
 	Assert( ownerPlayer.IsPlayer() )
+
+	if ( ownerPlayer.IsPhaseShifted() )
+		return 0
 
 	CarePackagePlacementInfo placementInfo = GetCarePackagePlacementInfo( ownerPlayer )
 
@@ -14,10 +57,13 @@ var function OnWeaponPrimaryAttack_care_package_medic( entity weapon, WeaponPrim
 		vector origin = placementInfo.origin
 		vector angles = placementInfo.angles
 
+        //Start the ground circle particle
+		entity fx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( DROPPOD_SPAWN_FX ), origin, angles)
+
 		thread CreateCarePackageAirdrop(
 			origin, angles,
 			["medic_super", "medic_super_side", "top_tier_inventory" ],
-			null, "droppod_loot_drop_lifeline",
+			fx, "droppod_loot_drop_lifeline",
 			ownerPlayer, weapon.GetWeaponClassName()
 		)
 		PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )

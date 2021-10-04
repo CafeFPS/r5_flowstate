@@ -26,7 +26,7 @@ const string DIRTY_BOMB_WARNING_SOUND 	= "weapon_vortex_gun_explosivewarningbeep
 
 const float DIRTY_BOMB_GAS_RADIUS = 256.0
 const float DIRTY_BOMB_GAS_DURATION = 12.5
-const float DIRTY_BOMB_DETECTION_RADIUS = 125.0
+const float DIRTY_BOMB_DETECTION_RADIUS = 140.0
 
 const float DIRTY_BOMB_THROW_POWER = 1.0
 const float DIRTY_BOMB_GAS_FX_HEIGHT = 45.0
@@ -210,7 +210,6 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	vector angles = placementInfo.angles
 
 	owner.EndSignal( "OnDestroy" )
-	owner.EndSignal( "SquadEliminated" )
 
 	int team = owner.GetTeam()
 	entity canisterProxy = CreatePropScript( DIRTY_BOMB_CANISTER_MODEL, origin, angles, SOLID_CYLINDER )
@@ -228,9 +227,10 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	canisterProxy.SetBossPlayer( owner )
 	canisterProxy.e.isGasSource = true
 	canisterProxy.e.noOwnerFriendlyFire = false
+	canisterProxy.e.isBusy = false
 	canisterProxy.RemoveFromAllRealms()
 	canisterProxy.AddToOtherEntitysRealms( owner )
-	SetTeam( canisterProxy, team )
+//	SetTeam( canisterProxy, team )
 	canisterProxy.Minimap_SetCustomState( eMinimapObject_prop_script.DIRTY_BOMB )
 	canisterProxy.Minimap_AlwaysShow( team, null )
 	canisterProxy.Minimap_SetAlignUpright( true )
@@ -408,7 +408,7 @@ void function RemoveCanister( entity canisterProxy, entity mover )
 		float duration = canisterProxy.GetSequenceDuration( "prop_caustic_gastank_destroy" )
 		Highlight_ClearOwnedHighlight( canisterProxy )
 		Highlight_ClearFriendlyHighlight( canisterProxy )
-		thread PlayAnim( canisterProxy, "prop_caustic_gastank_destroy" )
+		thread PlayAnim( canisterProxy, "prop_caustic_gastank_destroy", mover)
 		//canisterProxy.Dissolve( ENTITY_DISSOLVE_CORE, <0,0,0>, 500 )
 		waitthread PROTO_FadeModelAlphaOverTime( canisterProxy, duration )
 	}
@@ -561,6 +561,9 @@ void function DirtyBombProximityActivationUpdate( entity trigger )
 
 void function OnDirtyBombCanisterDamaged( entity canisterProxy, var damageInfo )
 {
+	if(canisterProxy.e.isBusy)
+		return
+	
 	//HACK - Should use damage flags, but we might be capped?
 	int damageSourceID = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	switch ( damageSourceID )
@@ -583,6 +586,8 @@ void function OnDirtyBombCanisterDamaged( entity canisterProxy, var damageInfo )
 	entity attacker = DamageInfo_GetAttacker( damageInfo )
 	if( !IsValid( attacker ) )
 		return
+	
+	canisterProxy.e.isBusy = true
 
 	if ( hitBox > 0 ) //Normal Hit
 	{
@@ -631,6 +636,8 @@ void function DetonateDirtyBombCanister( entity canisterProxy )
 {
 	if ( !IsValid( canisterProxy ) )
 		return
+	
+	canisterProxy.e.isBusy = true
 
 	Assert( IsNewThread(), "Must be threaded off." )
 	canisterProxy.EndSignal( "OnDestroy" )

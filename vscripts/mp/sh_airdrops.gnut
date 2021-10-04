@@ -1,0 +1,173 @@
+global function Sh_Airdrops_Init
+
+#if SERVER
+global function AirdropSpawnThink
+#endif
+
+const bool DEBUG_DROP_POINTS = false
+
+const string SOUND_CARE_PACKAGE_MARKER = "Survival_LootPod_Beacon_Marker"
+const string SOUND_CARE_PACKAGE_STEAM = "Survival_LootPod_SteamSizzle"
+
+const string CARE_PACKAGE_ANIMATION = "droppod_loot_drop"
+global const asset DROPPOD_SPAWN_FX = $"P_ar_loot_drop_point"
+
+const float CARE_PACKAGE_OPEN_TIME = 6.0
+const float CARE_PACKAGE_LIFELINE_OPEN_TIME = 1.0
+
+global const float AIRDROP_ANGLE_DEVIATION = 180.0
+
+global struct AirdropData
+{
+	int           dropCircle
+	int           dropCount
+	float         preWait
+	array<vector> originArray
+	array<vector> anglesArray
+	string        type = "titan"
+	array< array<string> > contents
+	array< array<string> > functionref(int) optionalGetContentsFunc
+	float minDelayBetweenPods = 3.0
+	float maxDelayBetweenPods = 5.0
+	string animation = CARE_PACKAGE_ANIMATION
+}
+
+global array<AirdropData> calculatedAirdropData
+
+struct
+{
+	#if SERVER
+
+	#endif
+
+} file
+
+void function Sh_Airdrops_Init()
+{
+	RegisterSignal( "OpenDroppod" )
+	RegisterSignal( "DroppodRemoveLocationMarker" )
+
+	#if CLIENT
+		AddCreateCallback( "prop_dynamic", OnAirdropCreated )
+	#elseif SERVER
+        AddSpawnCallback( "prop_dynamic", OnAirdropCreated )
+    #endif
+    
+}
+
+#if SERVER
+void function AirdropSpawnThink()
+{
+    int curStage = SURVIVAL_GetCurrentDeathFieldStage()
+    int prevStage = curStage
+    while (true)
+    {
+        curStage = SURVIVAL_GetCurrentDeathFieldStage()
+        if(curStage > prevStage)
+        {
+            printt("Advanced Stage! ", curStage)
+            prevStage = curStage
+            printt("Total Data: ", calculatedAirdropData.len())
+            foreach(data in calculatedAirdropData)
+            {
+                if(data.dropCircle == curStage)
+                {
+                    printt("Matched a stage!")
+                    
+                    //Wait for ring to start shrinking
+                    while(!SURVIVAL_GetDeathFieldShrinking())
+                        WaitFrame()
+                        
+                    //Got data for this stage so let's start to spawn the airdrops
+                    int numAirdropsInData = data.dropCount
+                    
+                    //Must wait for preWait to expire before running spawns
+                    wait data.preWait
+                    
+                    //Play the announcement
+                    AddSurvivalCommentaryEvent(eSurvivalEventType.CARE_PACKAGE_DROPPING)
+                    
+                    for(int i = 0; i < numAirdropsInData; i++)
+                    {
+                        printt("Spawned an airdrop! (", i, ") This dropcircle is ", data.dropCircle, " and there are ", numAirdropsInData, " this round.")
+                        entity fx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( DROPPOD_SPAWN_FX ), data.originArray[i], data.anglesArray[i])
+
+                        thread AirdropItems( data.originArray[i], data.anglesArray[i], data.contents[i], fx, "droppod_loot_drop", null, 0, "" )
+                        if(numAirdropsInData > 1)
+                        {
+                            //If we have more than one pod spawning, wait between spawning the airdrops.
+                            wait RandomFloatRange( data.minDelayBetweenPods,  data.maxDelayBetweenPods )
+                        }
+                    }
+                }
+            }
+        }
+        WaitFrame()
+    }
+}
+#endif
+
+void function OnAirdropCreated( entity dropPod )
+{
+    #if CLIENT
+    if ( dropPod.GetTargetName() == CARE_PACKAGE_PROXY)
+    {
+        ShowGrenadeArrow( GetLocalViewPlayer(), dropPod, 192, 0, true )
+    }
+    #endif
+
+	if ( dropPod.GetTargetName() != CARE_PACKAGE_TARGETNAME && dropPod.GetTargetName() != CARE_PACKAGE_LIFELINE_TARGETNAME )
+		return
+
+	AddCallback_OnUseEntity( dropPod, OnAirdropUse )
+	#if CLIENT
+	AddEntityCallback_GetUseEntOverrideText( dropPod, ExtendedUseTextOverride )
+	#endif
+}
+
+void function OnAirdropUse( entity dropPod, entity player, int useInputFlags )
+{
+	if ( useInputFlags & USE_INPUT_DEFAULT )
+	{
+		#if SERVER
+
+		#endif
+	}
+    
+    dropPod.Signal( "OpenDroppod" )
+}
+
+void function AirdropUseThink( entity ent, entity playerUser )
+{
+	ExtendedUseSettings settings
+	#if CLIENT
+	settings.loopSound       = "survival_titan_linking_loop"
+	settings.successSound    = "ui_menu_store_purchase_success"
+	settings.displayRui      = $"ui/extended_use_hint.rpak"
+	settings.displayRuiFunc  = DefaultExtendedUseRui
+	settings.icon            = $""
+	settings.hint            = "#PROMPT_OPEN"
+	#elseif SERVER
+
+	#endif
+
+	settings.duration = ent.GetTargetName() == CARE_PACKAGE_TARGETNAME ? CARE_PACKAGE_OPEN_TIME : CARE_PACKAGE_LIFELINE_OPEN_TIME
+	settings.requireMatchingUseEnt = true
+
+	ent.EndSignal( "OnDestroy" )
+
+	waitthread ExtendedUse( ent, playerUser, settings )
+}
+
+void function SignalOpenAirdrop( entity ent, entity player, ExtendedUseSettings settings )
+{
+	ent.Signal( "OpenDroppod" )
+
+#if SERVER
+
+#endif
+}
+
+#if SERVER
+
+#endif

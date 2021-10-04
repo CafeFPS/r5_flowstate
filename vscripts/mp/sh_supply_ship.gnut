@@ -1,0 +1,98 @@
+global function SupplyShip_Init
+#if SERVER
+global function GetAllSupplyShips
+global function SupplyShip_OpenDoors
+
+
+
+
+
+#endif
+
+const asset MODEL_SHIP_PANEL                 = $"mdl/props/global_access_panel_button/global_access_panel_button_console_w_stand.rmdl"
+const string SUPPLY_SHIP_PANEL_SCRIPTNAME    = "supply_ship_panel"
+const float SUPPLY_SHIP_PANEL_ACTIVATE_TIME  = 6.0
+
+#if SERVER
+
+#endif
+
+struct
+{
+	#if SERVER
+	
+	#endif
+} file
+
+void function SupplyShip_Init()
+{
+	RegisterSignal( "OpenDoors" )
+	RegisterSignal( "DoorsOpen" )
+	PrecacheModel( MODEL_SHIP_PANEL )
+#if SERVER
+
+
+#elseif CLIENT
+	AddCreateCallback( "prop_dynamic", OnShipPanelSpawn )
+#endif
+}
+
+#if SERVER
+
+
+array<SupplyShip> function GetAllSupplyShips()
+{
+	array<SupplyShip> temp
+	return temp
+}
+
+void function SupplyShip_OpenDoors( SupplyShip ship )
+{
+	
+}
+
+#endif
+
+void function OnShipPanelSpawn( entity panel )
+{
+	if ( panel.GetScriptName() != SUPPLY_SHIP_PANEL_SCRIPTNAME )
+		return
+
+	#if SERVER
+
+	#elseif CLIENT
+	AddEntityCallback_GetUseEntOverrideText( panel, ExtendedUseTextOverride )
+	#endif
+
+	AddCallback_OnUseEntity( panel, OnShipPanelUse )
+}
+
+void function OnShipPanelUse( entity panel, entity player, int useInputFlags )
+{
+	if ( useInputFlags & USE_INPUT_LONG )
+	{
+		thread ShipPanelUseThink( panel, player )
+	}
+}
+
+void function ShipPanelUseThink( entity ent, entity playerUser )
+{
+	ExtendedUseSettings settings
+	#if CLIENT
+		settings.loopSound       = "survival_titan_linking_loop"
+		settings.successSound    = "ui_menu_store_purchase_success"
+		settings.displayRui      = $"ui/extended_use_hint.rpak"
+		settings.displayRuiFunc  = DefaultExtendedUseRui
+		settings.icon            = $""
+		settings.hint            = "#PROMPT_ACTIVATE"
+	#elseif SERVER
+
+	#endif
+
+	settings.duration = SUPPLY_SHIP_PANEL_ACTIVATE_TIME
+	settings.requireMatchingUseEnt = true
+
+	ent.EndSignal( "OnDestroy" )
+
+	waitthread ExtendedUse( ent, playerUser, settings )
+}

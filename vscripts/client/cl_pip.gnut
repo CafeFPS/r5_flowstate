@@ -9,11 +9,11 @@ global function PIPSlotState_GetSlotID
 global function ClientCodeCallback_MonitorSnapshotDone
 
 
-Assert( PIP_MONITOR_START_INDEX == 0 ) // todo(dw): temp
-Assert( PIP_NUM_MONITORS == 3 ) // todo(dw): temp
+Assert( PIP_MONITOR_START_INDEX == 0 )  // todo(dw): temp
+Assert( PIP_NUM_MONITORS == 3 )         // todo(dw): temp
 Assert( PIP_SNAPSHOT_START_INDEX == 0 ) // todo(dw): temp
-Assert( PIP_NUM_SNAPSHOTS == 10 ) // todo(dw): temp
-Assert( PIP_INVALID == -1 ) // todo(dw): temp
+Assert( PIP_NUM_SNAPSHOTS == 10 )       // todo(dw): temp
+Assert( PIP_INVALID == -1 )             // todo(dw): temp
 //const int PIP_TOTAL_SLOTS = maxint( PIP_MONITOR_START_INDEX + PIP_NUM_MONITORS, PIP_SNAPSHOT_START_INDEX + PIP_NUM_SNAPSHOTS )
 const int PIP_NUM_TOTAL = PIP_NUM_SNAPSHOTS
 

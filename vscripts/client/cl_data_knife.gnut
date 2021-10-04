@@ -40,8 +40,8 @@ struct DataKnifeTopoInfo
 
 	string 	attachName
 	int 	attachID
-	string 	targetAttachName = ""
-	int 	targetAttachID = -1
+	string 	targetAttachName  = ""
+	int 	targetAttachID    = -1
 	float 	targetMoveEndTime = -1
 }
 

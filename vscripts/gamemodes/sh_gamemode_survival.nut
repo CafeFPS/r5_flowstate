@@ -1,3 +1,6 @@
+//=========================================================
+//	sh_gamemode_survival.nut
+//=========================================================
 
 #if SERVER || CLIENT
 global function GamemodeSurvivalShared_Init
@@ -5,9 +8,6 @@ global function GamemodeSurvivalShared_Init
 global function Survival_CanUseHealthPack
 global function Survival_CanUseTitanItem
 global function Survival_PlayerCanDrop
-
-global function Survival_GetCharacterSelectDuration
-global function Survival_CharacterSelectEnabled
 
 global function Sur_SetPlaneCenterEnt
 global function Sur_SetPlaneEnt
@@ -18,31 +18,40 @@ global function GetVictorySequencePlatformModel
 global function PredictHealthPackUse
 
 global function Survival_GetCurrentRank
+#if CLIENT || UI 
+global function GetMusicForJump
+#endif
 global function CanWeaponInspect
 global function PositionIsInMapBounds
 global function Survival_IsPlayerHealing
 #endif
 
-const float MAX_MAP_BOUNDS = 48000.0
+
+//////////////////////
+//////////////////////
+//// Global Types ////
+//////////////////////
+//////////////////////
+const float MAX_MAP_BOUNDS = 61000.0
 
 global const string SURVIVAL_DEFAULT_TITAN_DEFENSE = "mp_titanability_arm_block"
 
-global const float CHARACTER_SELECT_OPEN_TRANSITION_DURATION = 3.0
-global const float CHARACTER_SELECT_CLOSE_TRANSITION_DURATION = 3.0
-global const float CHARACTER_SELECT_CHARACTER_LOCK_DURATION = 0.5
-global const float CHARACTER_SELECT_FINISHED_HOLD_DURATION = 2.5
+global const float CHARACTER_SELECT_OPEN_TRANSITION_DURATION    = 3.0
+global const float CHARACTER_SELECT_CLOSE_TRANSITION_DURATION   = 3.0
+global const float CHARACTER_SELECT_CHARACTER_LOCK_DURATION     = 0.5
+global const float CHARACTER_SELECT_FINISHED_HOLD_DURATION      = 2.5
 global const float CHARACTER_SELECT_PRE_PICK_COUNTDOWN_DURATION = 4.0
-global const float CHARACTER_SELECT_SCENE_ROTATE_DURATION = 4.0
+global const float CHARACTER_SELECT_SCENE_ROTATE_DURATION       = 4.0
 
-global const float SURVIVAL_MINIMAP_RING_SCALE = 65536
-global const SMALL_HEALTH_USE_TIME = 4.0
-global const MEDIUM_HEALTH_USE_TIME = 7.0
-global const LARGE_HEALTH_USE_TIME = 12.0
-global const SYRINGE_HEALTH_USE_TIME = 4.0
+global const float SURVIVAL_MINIMAP_RING_SCALE                  = 65536
+global const SMALL_HEALTH_USE_TIME                              = 4.0
+global const MEDIUM_HEALTH_USE_TIME                             = 7.0
+global const LARGE_HEALTH_USE_TIME                              = 12.0
+global const SYRINGE_HEALTH_USE_TIME                            = 4.0
 
 global const int SURVIVAL_MAP_GRIDSIZE = 7
 
-global const SURVIVAL_PLANE_MODEL = $"mdl/vehicles_r2/spacecraft/draconis/draconis_flying_small.rmdl"
+global const SURVIVAL_PLANE_MODEL         = $"mdl/vehicles_r2/spacecraft/draconis/draconis_flying_small.rmdl"
 global const SURVIVAL_SQUAD_SUMMARY_MODEL = $"mdl/levels_terrain/mp_lobby/mp_setting_menu.rmdl"
 
 const int USEHEALTHPACK_DENY_NONE = -1
@@ -101,30 +110,44 @@ global enum eSurvivalHints
 
 global struct VictoryPlatformModelData
 {
-	bool isSet = false
-	asset modelAsset
+	bool   isSet = false
+	asset  modelAsset
 	vector originOffset
 	vector modelAngles
 }
 
 struct
 {
-	entity planeCenterEnt
-	entity planeEnt
-	VictoryPlatformModelData &victorySequencePlatforData
+	entity                     planeCenterEnt
+	entity                     planeEnt
+	VictoryPlatformModelData & victorySequencePlatforData
 } file
+
+/////////////////////////
+/////////////////////////
+//// Internals       ////
+/////////////////////////
+/////////////////////////
+//
+
+/////////////////////////
+/////////////////////////
+//// Initialiszation ////
+/////////////////////////
+/////////////////////////
 
 #if SERVER || CLIENT
 void function GamemodeSurvivalShared_Init()
 {
-
+	
 	printt("GamemodeSurvivalShared_Init")
 	RegisterSignal("GameStateChanged")
-
+	
 	#if SERVER || CLIENT
 		BleedoutShared_Init()
 		ShApexScreens_Init()
 		Sh_RespawnBeacon_Init()
+		Sh_Airdrops_Init()
 
 		PrecacheImpactEffectTable( "dropship_dust" )
 		PrecacheModel( SURVIVAL_PLANE_MODEL )
@@ -133,6 +156,8 @@ void function GamemodeSurvivalShared_Init()
 		AddCallback_PlayerCanUseZipline( Sur_CanUseZipline )
 		MapZones_SharedInit()
 		ClientMusic_SharedInit()
+
+		
 
 		AddCallback_CanStartCustomWeaponActivity( ACT_VM_WEAPON_INSPECT, CanWeaponInspect )
 	#endif
@@ -143,6 +168,7 @@ void function GamemodeSurvivalShared_Init()
 	#elseif CLIENT
 		AddCreateCallback( "prop_dynamic", OnPropDynamicCreated )
 	#endif
+
 }
 #endif
 
@@ -236,23 +262,25 @@ bool function Survival_CanUseHealthPack( entity player, int itemType, bool check
 	}
 
 #if CLIENT
-	if ( printReason )
-	{
-		switch( canUseResult )
+		if ( printReason )
 		{
-			case eUseHealthKitResult.DENY_NONE:
-				// no announcement
-				break
-			case eUseHealthKitResult.DENY_NO_HEALTH_KIT:
-			case eUseHealthKitResult.DENY_NO_KITS:
-			case eUseHealthKitResult.DENY_NO_SHIELD_KIT:
-				player.ClientCommand( "ClientCommand_Quickchat " + eCommsAction.INVENTORY_NEED_HEALTH )
-				// falls through to announcement
-			default:
-				AnnouncementMessageRight( player, healthKitResultStrings[canUseResult] )
-				break
+			switch( canUseResult )
+			{
+				case eUseHealthKitResult.DENY_NONE:
+					//
+					break
+
+				case eUseHealthKitResult.DENY_NO_HEALTH_KIT:
+				case eUseHealthKitResult.DENY_NO_KITS:
+				case eUseHealthKitResult.DENY_NO_SHIELD_KIT:
+					player.ClientCommand( "ClientCommand_Quickchat " + eCommsAction.INVENTORY_NEED_HEALTH )
+					//
+
+				default:
+					AnnouncementMessageRight( player, healthKitResultStrings[canUseResult] )
+					break
+			}
 		}
-	}
 	#endif
 
 	return false
@@ -476,24 +504,11 @@ int function Survival_TryUseHealthPack( entity player, int itemType )
 #endif
 
 #if SERVER || CLIENT
-float function Survival_GetCharacterSelectDuration( int pickIndex )
-{
-	float min = GetCurrentPlaylistVarFloat( "character_select_time_min", 6.0 )
-	float max = GetCurrentPlaylistVarFloat( "character_select_time_max", 8.0 )
-	return GraphCapped( pickIndex, 0, MAX_TEAM_PLAYERS - 1, max, min )
-}
-#endif
-
-#if SERVER || CLIENT
-bool function Survival_CharacterSelectEnabled()
-{
-	return Survival_GetCharacterSelectDuration(0) > 0.0
-}
-#endif
-
-#if SERVER || CLIENT
 bool function Sur_CanUseZipline( entity player, entity zipline, vector ziplineClosestPoint )
 {
+	if ( player.IsGrapplingZipline() )
+		return true
+
 	if ( player.GetWeaponDisableFlags() == WEAPON_DISABLE_FLAGS_ALL )
 		return false
 
@@ -538,8 +553,36 @@ entity function Sur_GetPlaneEnt()
 #if !UI
 void function OnPropDynamicCreated( entity prop )
 {
-	//
+	#if SERVER
+		if ( prop.GetScriptName() == "VaultPanel" )
+			VaultPanelInit( prop )
+	#endif
 }
+
+#if(true)
+void function VaultPanelInit( entity panel )
+{
+	thread Delayed_VaultPanelInit( panel )
+}
+void function Delayed_VaultPanelInit( entity panel )
+{
+	panel.EndSignal( "OnDestroy" )
+	WaitEndFrame() //
+	ClearCallback_CanUseEntityCallback( panel )
+	SetCallback_CanUseEntityCallback( panel, VaultPanel_CanUseFunction )
+
+	#if(false)
+
+#endif
+}
+bool function VaultPanel_CanUseFunction( entity playerUser, entity controlPanel )
+{
+	if ( !playerUser.GetPlayerNetBool( "hasDataKnife" ) )
+		return false
+
+	return ControlPanel_CanUseFunction( playerUser, controlPanel )
+}
+#endif
 
 
 TargetKitHealthAmounts function PredictHealthPackUse( entity player, HealthPickup itemData )
@@ -630,8 +673,12 @@ VictoryPlatformModelData function GetVictorySequencePlatformModel()
 	return file.victorySequencePlatforData
 
 }
-
-
+#if CLIENT || UI 
+string function GetMusicForJump( entity player )
+{
+	return MusicPack_GetSkydiveMusic( GetMusicPackForPlayer( player ) )
+}
+#endif
 bool function PositionIsInMapBounds( vector pos )
 {
 	return ( fabs( pos.x ) < MAX_MAP_BOUNDS && fabs( pos.y ) < MAX_MAP_BOUNDS && fabs( pos.z ) < MAX_MAP_BOUNDS )

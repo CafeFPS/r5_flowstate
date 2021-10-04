@@ -83,10 +83,10 @@ void function CharacterExecutionsPanel_Update( var panel )
 		foreach ( int flavIdx, ItemFlavor flav in file.characterExecutionList )
 		{
 			var button = Hud_GetChild( scrollPanel, "GridButton" + flavIdx )
-			CustomizeButton_UpdateAndMarkForUpdating( button, entry, flav, PreviewCharacterExecution, CanEquipCanBuyCharacterItemCheck )
+			CustomizeButton_UpdateAndMarkForUpdating( button, [entry], flav, PreviewCharacterExecution, CanEquipCanBuyCharacterItemCheck )
 		}
 
-		RuiSetString( file.headerRui, "collected", CustomizeMenus_GetCollectedString( entry, file.characterExecutionList ) )
+		RuiSetString( file.headerRui, "collected", CustomizeMenus_GetCollectedString( entry, file.characterExecutionList, false ) )
 	}
 }
 

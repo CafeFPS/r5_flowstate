@@ -11,7 +11,7 @@ void function OnShowLegendPage( var panel )
 	SurvivalInventory_SetBGVisible( true )
 
 	var elem = Hud_GetChild( panel, "GCard" )
-	RunClientScript( "UICallback_PopulateClientGladCard", elem, null, null, null, 0, Time(), eGladCardPresentation.FRONT_CLEAN )
+	RunClientScript( "UICallback_PopulateClientGladCard", panel, elem, null, null, null, null, null, null, null, 0, Time(), eGladCardPresentation.FRONT_CLEAN )
 
 	ItemFlavor ornull character = null
 
@@ -34,6 +34,7 @@ void function OnShowLegendPage( var panel )
 	PopulateSkillElem( Hud_GetChild( panel, "Ultimate" ) , character )
 	PopulateSkillElem( Hud_GetChild( panel, "Passive" ) , character )
 	PopulateSkillElem( Hud_GetChild( panel, "Tactical" ) , character )
+	PopulateSkillElem( Hud_GetChild( panel, "SpecialPerk" ) , character )
 }
 
 void function OnHideLegendPage( var panel )
@@ -74,6 +75,45 @@ void function PopulateSkillElem( var elem, ItemFlavor character )
 			RuiSetColorAlpha( rui, "tintColor", SrgbToLinear( colorData.ultimateColor ), 1 )
 			RuiSetColorAlpha( rui, "tintColorHighlight", SrgbToLinear( colorData.ultimateColorHighlight ), 1 )
 			break
+		case "specialPerk":
+			float damageScale = CharacterClass_GetDamageScale( character )
+
+			if ( damageScale != 1.0 )
+			{
+				int percent = 0
+				string name = ""
+				string desc = ""
+				asset icon = $""
+				ItemFlavor passiveFlav
+
+				if ( damageScale < 1.0 )
+				{
+					passiveFlav = PAS_FORTIFIED_FLAV
+					percent = int( ((1.0 - damageScale)*100) + 0.5 )
+					name = ItemFlavor_GetShortName( PAS_FORTIFIED_FLAV )
+					desc = ItemFlavor_GetLongDescription( PAS_FORTIFIED_FLAV )
+					icon = ItemFlavor_GetIcon( PAS_FORTIFIED_FLAV )
+				}
+				else if ( damageScale > 1.0 )
+				{
+					passiveFlav = PAS_LOW_PROFILE_FLAV
+					percent = int( (fabs( 1.0 - damageScale ) * 100) + 0.5 )
+					name = ItemFlavor_GetShortName( PAS_LOW_PROFILE_FLAV )
+					desc = ItemFlavor_GetLongDescription( PAS_LOW_PROFILE_FLAV )
+					icon = ItemFlavor_GetIcon( PAS_LOW_PROFILE_FLAV )
+				}
+
+				string finalString = Localize( "#SPECIAL_PERK_N_N", Localize( name ), Localize( desc, percent ) )
+				RuiSetString( rui, "desc", finalString )
+				RuiSetImage( rui, "icon", icon )
+			}
+			else
+			{
+				RuiSetImage( rui, "icon", $"" )
+				RuiSetString( rui, "desc", "" )
+			}
+			RuiSetGameTime( rui, "initTime", Time() )
+			return
 	}
 
 	RuiSetBool( rui, "isUltimate", skillType == "ultimate" )

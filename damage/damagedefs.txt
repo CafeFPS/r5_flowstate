@@ -193,17 +193,12 @@ DamageDefs
 
 	damagedef_frag_drone_throwable_PLAYER
 	{
-		"damage" 					"200"	[$mp]
-		"damage" 					"130"	[$sp]
+		"damage" 					"160"
 		"damage_heavy_armor"		"300"
-		"inner_radius"				"200"	[$mp]
-		"inner_radius"				"180"	[$sp]
-		"radius"					"350"	[$mp]
-		"radius"					"300"	[$sp]
-		"impulse_force"				"2000" [$sp]
-		"impulse_force"				"2000" [$mp]
-		"impulse_force_explosions"	"50000" [$mp]
-		"impulse_force_explosions"	"2000" [$sp]
+		"inner_radius"				"200"
+		"radius"					"350"
+		"impulse_force"				"2000"
+		"impulse_force_explosions"	"50000"
 		"explosion_flags"			"SF_ENVEXPLOSION_MASK_BRUSHONLY"
 
 		"obituary"					"#DEATH_SUICIDE_SPECTRE"
@@ -212,12 +207,10 @@ DamageDefs
 
 	damagedef_frag_drone_throwable_NPC
 	{
-		"damage" 					"90"	[$mp]
-		"damage" 					"90"	[$sp]
-		"damage_heavy_armor"		"90"
-		"inner_radius"				"200"	[$mp]
-		"inner_radius"				"180"	[$sp]
-		"radius"					"300"
+		"damage" 					"40"
+		"damage_heavy_armor"		"40"
+		"inner_radius"				"180"
+		"radius"					"250"
 		"impulse_force"				"2000"
 		"explosion_flags"			"SF_ENVEXPLOSION_MASK_BRUSHONLY"
 
@@ -407,8 +400,8 @@ DamageDefs
 
     damagedef_creeping_bombardment_detcord_explosion
     {
-       	"damage" 					"20"
-       	"damage_heavy_armor"		"20"
+       	"damage" 					"40"
+       	"damage_heavy_armor"		"40"
        	"inner_radius"				"350"
        	"radius"					"350"
        	"impulse_force"				"25000"
@@ -431,5 +424,18 @@ DamageDefs
        	"obituary"					"#WPN_DEFENSIVE_BOMBARDMENT"
        	"damage_flags"				"DF_RAGDOLL | DF_EXPLOSION | DF_KNOCK_BACK"
        	"impact_effect_table"		"exp_artillery_plasma"
+    }
+    damagedef_loot_drone_explosion
+    {
+        "damage" 					"80"
+        "damage_heavy_armor"		"80"
+        "inner_radius"				"200"
+        "radius"					"350"
+        "impulse_force"				"2000"
+        "impulse_force_explosions"	"50000"
+        "explosion_flags"			"SF_ENVEXPLOSION_MASK_BRUSHONLY"
+
+        "obituary"					"#DEATH_LOOT_DRONE"
+        "damage_flags"				"DF_EXPLOSION | DF_GIB"
     }
 }

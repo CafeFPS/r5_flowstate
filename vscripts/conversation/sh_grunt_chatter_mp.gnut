@@ -1,4 +1,4 @@
-global function ShGruntChatter_MP_Init
+//global function ShGruntChatter_MP_Init
 global function ShouldPlayGruntChatterMPLine
 global function GetAliasFromConversation
 
@@ -15,34 +15,34 @@ struct {
 	table<string, array<AliasData> > conversationAliases
 } file
 
-void function ShGruntChatter_MP_Init()
-{
-	var dataTable = GetDataTable( $"datatable/grunt_chatter_mp.rpak" )
+// void function ShGruntChatter_MP_Init()
+// {
+// 	var dataTable = GetDataTable( $"datatable/grunt_chatter_mp.rpak" )
 
-	int numRows = GetDatatableRowCount( dataTable )
-	for ( int i = 0; i < numRows; i++ )
-	{
-		string conversationName = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "conversationname" ) )
-		string alias = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "alias" ) )
-		int priority = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "priority" ) )
-		float debounce = GetDataTableFloat( dataTable, i, GetDataTableColumnByName( dataTable, "debounce" ) )
+// 	int numRows = GetDatatableRowCount( dataTable )
+// 	for ( int i = 0; i < numRows; i++ )
+// 	{
+// 		string conversationName = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "conversationname" ) )
+// 		string alias = GetDataTableString( dataTable, i, GetDataTableColumnByName( dataTable, "alias" ) )
+// 		int priority = GetDataTableInt( dataTable, i, GetDataTableColumnByName( dataTable, "priority" ) )
+// 		float debounce = GetDataTableFloat( dataTable, i, GetDataTableColumnByName( dataTable, "debounce" ) )
 
-		if ( !( DoesConversationExist( conversationName ) ) )
-		{
-			RegisterConversation( conversationName, priority, debounce )
-		}
+// 		if ( !( DoesConversationExist( conversationName ) ) )
+// 		{
+// 			RegisterConversation( conversationName, priority, debounce )
+// 		}
 
-		if ( !( conversationName in file.conversationAliases ) )
-		{
-			file.conversationAliases[ conversationName ] <- []
-		}
+// 		if ( !( conversationName in file.conversationAliases ) )
+// 		{
+// 			file.conversationAliases[ conversationName ] <- []
+// 		}
 
-		AliasData a
-		a.alias = alias
-		file.conversationAliases[ conversationName ].append( a )
-		file.conversationAliases[ conversationName ].randomize()
-	}
-}
+// 		AliasData a
+// 		a.alias = alias
+// 		file.conversationAliases[ conversationName ].append( a )
+// 		file.conversationAliases[ conversationName ].randomize()
+// 	}
+// }
 
 bool function ShouldPlayGruntChatterMPLine( string conversationType, entity player, entity grunt )
 {

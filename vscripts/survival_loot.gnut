@@ -1,8 +1,8 @@
-// stub script
-
+global function SV_Survival_Loot_Init
+global function GetRandomLootArray
 global function LootTypeHasAnyChanceToSpawn
 global function SpawnLoot
-global function SURVIVAL_GetWeightedItemFromGroup
+global function SURVIVAL_PlaceGroundItems
 global function SURVIVAL_ThrowLootFromPoint
 global function SURVIVAL_PlayerPickedupItem
 global function EquipAttachments_Internal
@@ -15,18 +15,26 @@ global function GetThrowOrigin
 global function SpawnGenericLoot
 global function SetItemSpawnSource
 global function AddToDeathBox
+global function SURVIVAL_CreateDeathBox
 global function FakePhysicsThrow
 global function SURVIVAL_GivePlayerEquipment
 global function SpawnWeaponAndAmmo
 global function SpawnArmor
 global function SpawnNothing
+global function SpawnAllOptics
 global function SURVIVAL_DropMainWeapon
 global function SURVIVAL_DropBackpackItem
 global function Loot_AddCallback_OnPlayerLootPickup
 global function SURVIVAL_NumItemsInInventory
 global function ResetPlayerInventory
 global function GetAllLootZones
+global function GetLootHotZone
 global function SURVIVAL_LootTierForLootGroup
+global function InfiniteAmmoEnabled
+global function Survival_SetInventoryEnabled
+global function LootZones_GetRefForOrigin
+
+const int GIVE_FULL_AMMO_MARKER = 1337 // I hate this
 
 global const LOOT_TRACE = 10
 global const LOOT_COLLISION_GROUP = 1
@@ -36,45 +44,1108 @@ global enum eSpawnSource
 	PLAYER_DROP
 	DROPPOD
 }
-
-bool function LootTypeHasAnyChanceToSpawn( string ref )
+global enum eLootZoneClass
 {
+	ZONE_NONE,
+	ZONE_LOW,
+	ZONE_MEDIUM,
+	ZONE_HIGH,
+	ZONE_HOTZONE,
+	ZONE_LOOT_VAULT
+}
+
+struct {
+	array<LootZone> lootZones
+    LootZone hotZone
+    table<vector, array<string> > vaultLootSpawned
+} file
+
+bool function InfiniteAmmoEnabled()
+{
+	return GetCurrentPlaylistVarBool( "survival_infinite_ammo", false )
+}
+
+void function SV_Survival_Loot_Init()
+{
+	// AddSpawnCallbackEditorClass( "script_ref", "info_survival_weapon_location", OnGroundLootSpawned )
+
+	AddClientCommandCallback( "Sur_DropEquipment", ClientCommand_Sur_DropEquipment )
+	AddClientCommandCallback( "Sur_DropBackpackItem", ClientCommand_Sur_DropBackpackItem )
+
+	AddClientCommandCallback( "Sur_EquipAttachment", ClientCommand_Sur_EquipAttachment )
+	AddClientCommandCallback( "Sur_UnequipAttachment", ClientCommand_Sur_UnequipAttachment )
+
+	AddClientCommandCallback( "Sur_TransferAttachment", ClientCommand_Sur_TransferAttachment )
+
+	AddClientCommandCallback( "Sur_SwapPrimaryPositions", ClientCommand_Sur_SwapPrimaryPositions )
+
+	AddClientCommandCallback( "BackpackOpened", ClientCommand_BackpackOpened )
+	AddClientCommandCallback( "BackpackClosed", ClientCommand_BackpackClosed )
+	
+	AddClientCommandCallback( CMDNAME_PLAYER_SWITCHED_WEAPONS, ClientCommand_PlayerSwitchedWeapons )
+
+	AddClientCommandCallback( "Sur_SwitchToOrdnance", ClientCommand_Sur_SwitchToOrdnance )
+	AddClientCommandCallback( "Sur_SwapToNextOrdnance", ClientCommand_Sur_SwapToNextOrdnance )
+	AddClientCommandCallback( "Sur_EquipOrdnance", ClientCommand_Sur_EquipOrdnance )
+
+	AddClientCommandCallback( "PickupSurvivalItem", ClientCommand_PickupSurvivalItem )
+
+	SetCallback_OnPlayerReload( OnWeaponReload )
+	AddCallback_OnWeaponAttack( OnWeaponAttack_OrdnanceControl )
+
+	FlagInit( "Survival_LootSpawned", false )
+    FlagInit( "Survival_LootZonesLoaded", false)
+    
+    AddCallback_EntitiesDidLoad( LoadLootZonesForMap )
+	
+	RegisterSignal( "SwitchToOrdnance" )
+	RegisterSignal( "SwapToNextOrdnance" )
+
+	RegisterSignal( "OnItemPickup" )
+
+	AddPingCallbackForType( ePingType.LOOT, TryThankForLoot )
+
+	// file.lootDataTable = GetDataTable( $"datatable/survival_loot.rpak" )
+}
+
+void function LoadLootZonesForMap()
+{
+	array<entity> lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+
+	foreach( lzEnt in lzEnts )
+	{
+		if( GetEditorClass( lzEnt ) != "info_survival_loot_zone" )
+			continue
+		
+		LootZone zone
+		zone.origin = lzEnt.GetOrigin()
+        zone.radius = float(lzEnt.kv.script_radius)
+        zone.height = float(lzEnt.kv.script_height)
+        zone.ref = string(lzEnt.kv.zone_class)
+		switch( lzEnt.kv.zone_class )
+		{
+			case "zone_hotzone":
+				zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+				break
+			case "zone_high":
+				zone.zoneClass = eLootZoneClass.ZONE_HIGH
+				break
+			case "zone_medium":
+			case "Desertlands_Train_Station":
+				zone.zoneClass = eLootZoneClass.ZONE_MEDIUM
+				break
+			case "data_knife_vault":
+				zone.zoneClass = eLootZoneClass.ZONE_LOOT_VAULT
+				break
+			default:
+				zone.zoneClass = eLootZoneClass.ZONE_NONE
+		}
+		file.lootZones.append( zone )
+	}
+    
+    if(file.lootZones.len() == 0)
+    {
+        FlagSet( "Survival_LootZonesLoaded" )
+        return
+    }
+    
+    if ( !GetCurrentPlaylistVarBool( "ground_loot_enable", true ) || !GetCurrentPlaylistVarBool( "hot_zone_enable", true ) )
+    {
+        FlagSet( "Survival_LootZonesLoaded" )
+        return
+    }
+    array<LootZone> hotZones
+
+    lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
+    
+    foreach( lzEnt in lzEnts )
+	{
+		if( GetEditorClass( lzEnt ) != "info_survival_loot_hotzone" )
+			continue
+            
+        LootZone zone
+		zone.origin = lzEnt.GetOrigin()
+        zone.radius = float(lzEnt.kv.script_radius)
+        zone.height = float(lzEnt.kv.script_height)
+        zone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+
+        hotZones.append( zone )
+    }
+    
+    if(hotZones.len() == 0)
+    {
+        FlagSet( "Survival_LootZonesLoaded" )
+        return
+    }
+    
+    //The hotzone
+    LootZone hotZone = hotZones.getrandom()
+    
+    file.hotZone.origin = hotZone.origin
+    file.hotZone.radius = hotZone.radius
+    file.hotZone.height = hotZone.height
+    file.hotZone.zoneClass = eLootZoneClass.ZONE_HOTZONE
+    
+    FlagSet( "Survival_LootZonesLoaded" )
+    printt("Generated Loot Zones!", file.lootZones.len())
+}
+
+void function OnWeaponReload( entity player )
+{
+	entity weapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+
+	if ( RandomFloat( 1.0 ) >= 0.95 ) // 5% chance to say the reloading voice line
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_reload" )
+
+	if ( !InfiniteAmmoEnabled() )
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+		string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+	
+		int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+		int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+	
+		int requiredAmmo = maxAmmo - currentAmmo
+	
+		int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+	
+		int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
+	
+		// printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
+	
+		SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
+	}
+}
+
+string function GetNextOrdnance( entity player, string currentOrdnance = "" )
+{
+	array<string> allPlayerOrdnances = SURVIVAL_GetAllPlayerOrdnance( player )
+
+	if ( allPlayerOrdnances.len() == 0 )
+		return ""
+
+	int ornull currentOrdnancePos = 0
+	if ( currentOrdnance != "" )
+	{
+		currentOrdnancePos = allPlayerOrdnances.find( currentOrdnance )
+		if ( currentOrdnancePos == null )
+			currentOrdnancePos = 0
+	}
+
+	expect int( currentOrdnancePos )
+
+	int nextOrdnancePos = currentOrdnancePos + 1
+	if ( nextOrdnancePos >= allPlayerOrdnances.len() )
+		nextOrdnancePos = 0
+
+	return allPlayerOrdnances[nextOrdnancePos]
+}
+
+void function SwitchPlayerToOrdnance( entity player, string newOrdnance )
+{
+	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+	bool shouldSelect = false
+
+	if ( IsValid( heldOrdnance ) )
+	{
+		if ( heldOrdnance.GetWeaponClassName() == newOrdnance )
+			return // Already switched to it
+
+		shouldSelect = ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == heldOrdnance ) // Currently selected
+			|| ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) == null ) // Nothing selected
+
+		player.TakeWeaponByEntNow( heldOrdnance )
+		heldOrdnance = null
+	}
+
+	player.GiveWeapon( newOrdnance, WEAPON_INVENTORY_SLOT_ANTI_TITAN, ["survival_finite_ordnance"] )
+	entity ordnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+
+	AddRoundsToWeapon( player, ordnance, SURVIVAL_CountItemsInInventory( player, newOrdnance ) )
+
+	if ( shouldSelect )
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+}
+
+void function OnWeaponAttack_OrdnanceControl( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
+{
+	if ( !IsValid( player ) || !IsValid( weapon ) )
+		return
+
+	LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
+
+	if ( data.lootType == eLootType.ORDNANCE )
+	{
+		SURVIVAL_RemoveFromPlayerInventory( player, data.ref, 1 )
+		
+		if ( SURVIVAL_CountItemsInInventory( player, data.ref ) == 0 )
+		{
+			string nextOrdnance = GetNextOrdnance( player, data.ref )
+			if ( nextOrdnance != "" )
+				thread function () : ( player, nextOrdnance )
+				{
+					wait 1
+					SwitchPlayerToOrdnance( player, nextOrdnance )
+				}()
+		}
+	}
+}
+
+bool function ClientCommand_Sur_SwitchToOrdnance( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( args.len() < 1 )
+		return true
+
+	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
+		return true
+		
+	int ordnanceIdx = int( args[0] )
+
+	if ( ordnanceIdx == -1 )
+		return true
+
+	LootData ordnanceLootData = SURVIVAL_Loot_GetLootDataByIndex( ordnanceIdx )
+
+	if ( ordnanceLootData.lootType != eLootType.ORDNANCE )
+		return true
+
+	int ordnanceCount = SURVIVAL_CountItemsInInventory( player, ordnanceLootData.ref )
+
+	if ( ordnanceCount == 0 )
+		return true
+
+	SwitchPlayerToOrdnance( player, ordnanceLootData.ref )
+	player.Signal( "SwitchToOrdnance" )
+
 	return true
 }
 
-void function SpawnLoot( string name, vector pos, bool idk )
+bool function ClientCommand_Sur_EquipOrdnance( entity player, array<string> args )
 {
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
 
+	if ( args.len() < 1 )
+		return true
+
+	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
+		return true
+		
+	string ordnanceRef = args[0]
+
+	if ( !SURVIVAL_Loot_IsRefValid( ordnanceRef ) )
+		return true
+
+	LootData ordnanceLootData = SURVIVAL_Loot_GetLootDataByRef( ordnanceRef )
+
+	if ( ordnanceLootData.lootType != eLootType.ORDNANCE )
+		return true
+
+	int ordnanceCount = SURVIVAL_CountItemsInInventory( player, ordnanceLootData.ref )
+
+	if ( ordnanceCount == 0 )
+		return true
+
+	SwitchPlayerToOrdnance( player, ordnanceLootData.ref )
+
+	return true
 }
 
-string function SURVIVAL_GetWeightedItemFromGroup( string group )
+bool function ClientCommand_Sur_SwapToNextOrdnance( entity player, array<string> args )
 {
-	return group
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( !SURVIVAL_PlayerCanSwitchOrdnance( player ) )
+		return true
+
+	entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+	string currentOrdnance = ""
+	if ( IsValid( heldOrdnance ) )
+		currentOrdnance = heldOrdnance.GetWeaponClassName()
+
+	string nextOrdnance = GetNextOrdnance( player, currentOrdnance )
+	if ( nextOrdnance != "" )
+	{
+		SwitchPlayerToOrdnance( player, nextOrdnance )
+		player.Signal( "SwapToNextOrdnance" )
+	}
+
+	return true
+}
+
+bool function ClientCommand_PickupSurvivalItem( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( args.len() < 2 )
+		return true
+
+	int lootEntEEH = int( args[0] )
+	if ( lootEntEEH == -1 )
+		return true
+
+	int pickupFlags = int( args[1] )
+	if ( pickupFlags == -1 )
+		return true
+
+	entity lootEnt = GetEntityFromEncodedEHandle( lootEntEEH )
+	if ( !IsValid( lootEnt ) )
+		return true
+
+	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
+		return true
+
+	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) )
+		return true
+
+	entity deathBox = null
+	if ( args.len() > 2 )
+	{
+		int deathBoxEEH = int( args[2] )
+		if ( deathBoxEEH  == -1 )
+			return true
+	
+		deathBox = GetEntityFromEncodedEHandle( deathBoxEEH )
+		if ( !IsValid( deathBox ) )
+			return true
+
+		if ( deathBox.GetNetworkedClassName() != "prop_death_box" )
+			return true
+
+		if ( !deathBox.GetLinkEntArray().contains( lootEnt ) )
+			return true
+	}
+
+	Survival_PickupItem( lootEnt, player, pickupFlags, deathBox )
+
+	if ( deathBox.GetLinkEntArray().len() == 0 )
+		deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+	else
+		UpdateDeathBoxHighlight( deathBox )
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
+void function SURVIVAL_PlaceGroundItems()
+{
+	array<entity> itemEnts = GetEntArrayByClass_Expensive( "script_ref" )
+
+	if ( GetCurrentPlaylistVarBool( "ground_loot_enable", true ) )
+	{
+		foreach ( ent in itemEnts )
+		{
+			if ( GetEditorClass( ent ) != "info_survival_weapon_location" )
+				continue
+	
+			OnGroundLootSpawned( ent )
+		}
+	}
+
+	FlagSet( "Survival_LootSpawned" )
+}
+
+string function LootZones_GetRefForOrigin(vector origin)
+{
+    FlagWait("Survival_LootZonesLoaded")
+    
+    if(Distance2D(file.hotZone.origin, origin) <= file.hotZone.radius)
+        return "zone_hotzone"
+    
+    foreach(LootZone lz in file.lootZones)
+    {
+        if(Distance2D(lz.origin, origin) <= lz.radius)
+            return lz.ref
+    }
+    
+    return "zone_low" //fallback spawn low loot
+}
+
+vector function LootZones_GetParentForOrigin(vector origin)
+{
+    FlagWait("Survival_LootZonesLoaded")
+    
+    foreach(LootZone lz in file.lootZones)
+    {
+        if(Distance2D(lz.origin, origin) <= lz.radius)
+        {
+            return lz.origin
+        }
+    }
+    return <0, 0, 0>
+}
+
+void function OnGroundLootSpawned( entity ent )
+{
+	string zoneRef = LootZones_GetRefForOrigin( ent.GetOrigin() )
+    string itemRef
+    
+    //
+    if(zoneRef == "data_knife_vault")
+    {
+        vector zoneOrigin = LootZones_GetParentForOrigin(ent.GetOrigin())
+        array<string> alreadySpawnedLoot
+        if(zoneOrigin in file.vaultLootSpawned)
+            alreadySpawnedLoot = file.vaultLootSpawned[zoneOrigin]
+        else
+            file.vaultLootSpawned[zoneOrigin] <- alreadySpawnedLoot
+        itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+        while(alreadySpawnedLoot.contains(itemRef))
+        {
+            itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )     
+        }
+        printt("Added item to Loot Vault: ", itemRef)
+        alreadySpawnedLoot.push(itemRef)
+    }
+    else
+    {
+        itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
+    }
+        
+    
+    if(itemRef == "blank")
+        return
+	
+	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( itemRef )
+    LootTypeData lt = GetLootTypeData( itemData.lootType)
+
+	vector spawnOrigin = OriginToGround( ent.GetOrigin() )
+    
+    if(lt.specialCaseSpawnFunction != null)
+    {
+        lt.specialCaseSpawnFunction(itemRef, spawnOrigin)
+        return
+    }
+    
+	int angleZ = 0
+
+	if ( itemData.lootType == eLootType.ORDNANCE )
+	{
+		spawnOrigin.z += 1.5
+	}
+
+	SpawnGenericLoot( itemRef, spawnOrigin, <0, RandomFloatRange( -180.0, 180.0 ), angleZ>, itemData.countPerDrop )
+}
+
+array<string> function GetRandomLootArray( int min, int max = -1 )
+{
+	array<string> items
+
+	for( int i=0; i < RandomIntRange( min, max ); i++ )
+	{
+		items.append( GetRandomLootItem() )
+	}
+
+	return items
+}
+
+/*string function GetRandomLootItem()
+{
+	int numRows = GetDatatableRowCount( file.lootDataTable )
+
+	int i = RandomInt( numRows )
+
+	string itemRef = GetDataTableString( file.lootDataTable, i , GetDataTableColumnByName( file.lootDataTable, "ref" ) )
+	string featureFlagRef = GetDataTableString( file.lootDataTable, i, GetDataTableColumnByName( file.lootDataTable, "featureFlag" ) )
+
+	if ( itemRef == "blank" 
+		|| ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) ) 
+		|| !LootTypeHasAnyChanceToSpawn( itemRef ) )
+	{
+		return GetRandomLootItem()
+	}
+
+	return itemRef
+}*/
+
+table< int, array<string> > possibleItemsForTiers = {}
+
+array<string> function GetItemsOfTierOrGreater( int minTier )
+{
+	if ( !( minTier in possibleItemsForTiers ) )
+	{
+		possibleItemsForTiers[minTier] <- []
+
+		foreach ( string lootRef, LootData lootData in SURVIVAL_Loot_GetLootDataTable() )
+		{
+			if ( !LootTypeHasAnyChanceToSpawn( lootRef ) )
+				continue
+
+			if ( minTier == eLootTier.LEGENDARY 
+				&& lootData.lootType == eLootType.MAINWEAPON )
+				continue
+
+			if ( lootData.tier >= minTier )
+				possibleItemsForTiers[minTier].append( lootRef )
+		}
+	}
+
+	return possibleItemsForTiers[minTier]
+}
+
+string function GetRandomLootItem( int mapZone = -1 )
+{
+	int minLootTier = -1
+	int maxLootTier = ( mapZone != -1 ) ? MapZones_GetTierForZone( mapZone ) : eLootTier.LEGENDARY
+
+	if ( maxLootTier == eLootTier.NONE )
+		maxLootTier = eLootTier.COMMON // TEMP, I don't actually know how it works in retail
+
+	if ( mapZone != -1 && maxLootTier > eLootTier.EPIC )
+		minLootTier = maxLootTier
+
+	// printt(FUNC_NAME(), "call", mapZone, minLootTier, maxLootTier)
+	
+	if ( minLootTier > -1 )
+	{
+		// We HAVE to find a loot of this min tier, so anything goes.
+		array<string> possibleItems = GetItemsOfTierOrGreater( minLootTier )
+		return possibleItems.getrandom()
+	}
+	else
+	{
+		int randomSelectedLootType = RandomIntRange( MIN_LOOT_TIER, MAX_LOOT_TIER )
+		if ( randomSelectedLootType == eLootType.DATAKNIFE )
+			randomSelectedLootType = eLootType.AMMO
+
+		array<LootData> items = SURVIVAL_Loot_GetByType_InLevel( randomSelectedLootType, maxLootTier )
+
+		if ( items.len() == 0 ) { // Tough luck, let's try again and hope this doesn't get into a recursion loop...
+			printt( FUNC_NAME(), "No items! BUG THIS IF HAPPENS MORE THAN ONCE!", mapZone, minLootTier, maxLootTier, randomSelectedLootType )
+			return GetRandomLootItem( mapZone )
+		}
+		
+		return items.getrandom().ref
+	}
+
+	unreachable
+}
+
+bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
+{
+	if ( !IsValid( player ) )
+		return true
+	
+	if ( args.len() < 1 )
+		return true
+
+	string slotRef = args[0]
+
+	if ( !EquipmentSlot_IsValidEquipmentSlot( slotRef ) )
+		return true
+
+	EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( slotRef )
+
+	if ( es.weaponSlot != -1 )
+	{
+		vector origin = GetThrowOrigin( player )
+		vector fwd    = AnglesToForward( player.EyeAngles() )
+
+		int currentSlot = SURVIVAL_GetActiveWeaponSlot( player )
+
+		if ( !SURVIVAL_DropMainWeapon( player, slotRef, origin, fwd ) )
+			return true
+		
+		if ( currentSlot == es.weaponSlot )
+		{
+			string otherWeaponEsString = EquipmentSlot_GetOtherWeaponSlot( slotRef )
+			EquipmentSlot otherWeaponEs = Survival_GetEquipmentSlotDataByRef( otherWeaponEsString )
+			LootData otherWeaponData = EquipmentSlot_GetEquippedLootDataForSlot( player, otherWeaponEsString )
+
+			player.SetActiveWeaponBySlot( 
+				eActiveInventorySlot.mainHand, 
+				otherWeaponData.ref != ""
+					? otherWeaponEs.weaponSlot // Other weapon exists, switch to it
+					: WEAPON_INVENTORY_SLOT_PRIMARY_2 // No other weapon, switch to melee instead
+			)
+		}
+	}
+	else
+	{
+		// printt( FUNC_NAME(), "unknown item", slotRef )
+		LootData itemData = EquipmentSlot_GetEquippedLootDataForSlot( player, slotRef )
+
+		if ( itemData.ref == "" )
+			return true
+
+		entity spawnedItem = PlayerThrowLoot( player, itemData.ref )
+
+		if ( itemData.lootType == eLootType.ARMOR )
+			spawnedItem.SetSurvivalProperty( player.GetShieldHealth() )
+
+		Inventory_SetPlayerEquipment( player, "", slotRef )
+	}
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
+bool function ClientCommand_Sur_DropBackpackItem( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+	
+	if ( args.len() < 2 )
+		return true
+
+	string itemRef = args[0]
+	int count = int( args[1] )
+	entity deathBox = null
+
+	if ( args.len() > 2 )
+		deathBox = GetEntityFromEncodedEHandle( int( args[2] ) )
+
+	if ( deathBox != null )
+		printt( FUNC_NAME(), "deathBox not null! TODO" )
+	else
+	{
+		if ( count > SURVIVAL_CountItemsInInventory( player, itemRef ) )
+			return true
+
+		SURVIVAL_DropBackpackItem( player, itemRef, count )
+	}
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
+bool function ClientCommand_Sur_EquipAttachment( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( args.len() < 1 )
+		return true
+
+	string ref = args[0]
+	entity weapon = null
+
+	if ( args.len() > 1 )
+	{
+		int weaponSlot = int( args[1] )
+
+		if ( weaponSlot != WEAPON_INVENTORY_SLOT_PRIMARY_0 
+			&& weaponSlot != WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			return true
+
+		weapon = player.GetNormalWeapon( weaponSlot )
+
+		if ( !IsValid( weapon ) )
+			return true
+	}
+
+	if ( !SURVIVAL_Loot_IsRefValid( ref ) )
+		return true
+
+	if ( SURVIVAL_CountItemsInInventory( player, ref ) < 1 )
+		return true
+
+	if ( weapon == null )
+	{
+		array<entity> weapons = SURVIVAL_GetPrimaryWeaponsSorted( player )
+		foreach ( weaponCandidate in weapons )
+		{
+			if ( CanAttachToWeapon( ref, GetWeaponClassName( weaponCandidate ) ) )
+			{
+				weapon = weaponCandidate
+				break
+			}
+		}
+
+		if ( weapon == null ) // Still null?
+			return true // No suitable weapons for attachment
+	}
+
+	string modToRemove = SURVIVAL_GetModToRemoveForAttachment( player, weapon, ref )
+	if ( AttachToWeapon( player, weapon, ref, modToRemove, true, true, false, null ) )
+		SURVIVAL_RemoveFromPlayerInventory( player, ref, 1 )
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
+bool function ClientCommand_Sur_UnequipAttachment( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( args.len() < 3 )
+		return true
+
+	string ref = args[0]
+	int weaponSlot = int( args[1] )
+	bool removeToGround = args[2] == "true"
+
+	if ( weaponSlot != WEAPON_INVENTORY_SLOT_PRIMARY_0
+		&& weaponSlot != WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		return true
+	
+	if ( !SURVIVAL_Loot_IsRefValid( ref ) )
+		return true
+
+	entity weapon = player.GetNormalWeapon( weaponSlot )
+
+	if ( !IsValid( weapon ) )
+		return true
+
+	array<string> weaponMods = weapon.GetMods()
+	
+	if ( weapon.IsDiscarding() )
+		return false
+
+	if ( !weaponMods.contains( ref ) )
+		return true
+
+	EquipAttachments_Internal( player, weapon, "", ref, false, !removeToGround, false, false, null )
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
+bool function ClientCommand_Sur_TransferAttachment( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( args.len() < 2 )
+		return true
+
+	string ref = args[0]
+	int weaponFromSlot = int( args[1] )
+
+	if ( weaponFromSlot != WEAPON_INVENTORY_SLOT_PRIMARY_0
+		&& weaponFromSlot != WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		return true
+	
+	if ( !SURVIVAL_Loot_IsRefValid( ref ) )
+		return true
+
+	entity weaponFrom = player.GetNormalWeapon( weaponFromSlot )
+
+	if ( !IsValid( weaponFrom ) )
+		return true
+
+	array<string> weaponFromMods = weaponFrom.GetMods()
+	LootData weaponFromLootData = SURVIVAL_GetLootDataFromWeapon( weaponFrom )
+
+	int weaponToSlot = 
+		weaponFromSlot == WEAPON_INVENTORY_SLOT_PRIMARY_0 
+			? WEAPON_INVENTORY_SLOT_PRIMARY_1
+			: WEAPON_INVENTORY_SLOT_PRIMARY_0
+	entity weaponTo = player.GetNormalWeapon( weaponToSlot )
+
+	if ( !IsValid( weaponTo ) )
+		return true
+
+	array<string> weaponToMods = weaponTo.GetMods()
+	LootData weaponToLootData = SURVIVAL_GetLootDataFromWeapon( weaponTo )
+
+	if ( !weaponFromMods.contains( ref ) || weaponToMods.contains( ref ) )
+		return true
+
+	if ( !CanAttachToWeapon( ref, GetWeaponClassName( weaponTo ) ) )
+		return true // Unsupported attachment
+
+	if ( weaponFromLootData.baseMods.contains( ref ) )
+		return true // A default non-removable attachment
+
+	string refAttachPoint = GetAttachPointForAttachment( ref )
+	string toAttachPointAttachmentRef = GetInstalledWeaponAttachment( weaponTo, refAttachPoint )
+
+	if ( toAttachPointAttachmentRef != "" )
+	{
+		if ( weaponToLootData.baseMods.contains( toAttachPointAttachmentRef ) )
+			return true // Can't swap default attachments
+
+		if ( !CanAttachToWeapon( toAttachPointAttachmentRef, GetWeaponClassName( weaponFrom ) ) )
+			return true // Unsupported attachment
+
+		weaponTo.RemoveMod( toAttachPointAttachmentRef )
+	}
+
+	weaponFrom.RemoveMod( ref )
+	weaponTo.AddMod( ref )
+
+	if ( toAttachPointAttachmentRef != "" )
+		weaponFrom.AddMod( toAttachPointAttachmentRef )
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, "survival_loot_attach_pas_fast_swap" )
+
+	return true
+}
+
+bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( player.IsWeaponChangeLocked() )
+		return true
+
+	// This is horrendous.
+
+	int activeSlot = SURVIVAL_GetActiveWeaponSlot( player )
+
+	entity weapon0 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	string weapon0ClassName = IsValid( weapon0 ) ? GetWeaponClassName( weapon0 ) : ""
+	int weapon0Ammo =  ( IsValid( weapon0 ) && weapon0.UsesClipsForAmmo() ) ? weapon0.GetWeaponPrimaryClipCount() : 0
+	array<string> ornull weapon0Mods = IsValid( weapon0 ) ? weapon0.GetMods() : null
+
+	entity weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+	string weapon1ClassName =  IsValid( weapon1 ) ? GetWeaponClassName( weapon1 ) : ""
+	int weapon1Ammo =  ( IsValid( weapon1 ) && weapon1.UsesClipsForAmmo() ) ? weapon1.GetWeaponPrimaryClipCount() : 0
+	array<string> ornull weapon1Mods = IsValid( weapon1 ) ? weapon1.GetMods() : null
+
+	if ( IsValid( weapon0 ) )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+
+	if ( IsValid( weapon1 ) )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+
+	if ( weapon0ClassName != "" )
+	{
+		expect array<string>( weapon0Mods )
+
+		entity newWeapon1 = null
+
+		if ( activeSlot == 0 )
+			newWeapon1 = player.GiveWeapon( weapon0ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_1, weapon0Mods, false )
+		else
+			newWeapon1 = player.GiveWeapon_NoDeploy( weapon0ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_1, weapon0Mods, false )
+
+		if ( IsValid( newWeapon1 ) && weapon0Ammo > 0 )
+			newWeapon1.SetWeaponPrimaryClipCount( weapon0Ammo )
+	}
+
+	if ( weapon1ClassName != "" )
+	{
+		expect array<string>( weapon1Mods )
+
+		entity newWeapon0 = null
+
+		if ( activeSlot == 1 )
+			newWeapon0 = player.GiveWeapon( weapon1ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_0, weapon1Mods, false )
+		else
+			newWeapon0 = player.GiveWeapon_NoDeploy( weapon1ClassName, WEAPON_INVENTORY_SLOT_PRIMARY_0, weapon1Mods, false )
+	
+		if ( IsValid( newWeapon0 ) && weapon1Ammo > 0 )
+			newWeapon0.SetWeaponPrimaryClipCount( weapon1Ammo )
+	}
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
+bool function ClientCommand_PlayerSwitchedWeapons( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+	
+	if ( args.len() < 1 )
+		return true
+
+	int slot = int( args[0] )
+
+	if ( slot != WEAPON_INVENTORY_SLOT_PRIMARY_0 
+		&& slot != WEAPON_INVENTORY_SLOT_PRIMARY_1
+		&& slot != WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		return true
+
+	if ( player.IsWeaponChangeLocked() )
+		return true
+
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, slot )
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
+bool function ClientCommand_BackpackOpened( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	player.SetInventoryIsOpen()
+
+	return true
+}
+
+bool function ClientCommand_BackpackClosed( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	player.ClearInventoryIsOpen()
+
+	return true
+}
+
+bool function LootTypeHasAnyChanceToSpawn( string ref )
+{
+	if ( ref == "blank" )
+		return false
+
+	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	if ( itemData.lootType == eLootType.DATAKNIFE )
+		return false // DATAKNIFE - Vault Key
+
+	return true
+}
+
+void function SpawnLoot( string name, vector origin, bool idk )
+{
+	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( name )
+	SURVIVAL_ThrowLootFromPoint( origin, <0, 0, 0>, name, itemData.countPerDrop )
 }
 
 void function SURVIVAL_ThrowLootFromPoint( vector throwOrigin, vector forward, string ref, int count )
 {
-
+	entity loot = SpawnGenericLoot( ref, throwOrigin, <0, 0, 0>, count )
+	FakePhysicsThrow( null, loot, forward * 100, true )
 }
 
-void function SURVIVAL_PlayerPickedupItem( entity pikcup, entity player, int action, int pickupFlags, bool shouldKeepAlive = false )
+void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int action, int pickupFlags, bool shouldKeepAlive = false )
 {
+	//SURVIVAL_PlayerPickedupItem( pickup, player, as.action, pickupFlags, !shouldDestroy )
+	//printt("!!! SURVIVAL_PlayerPickedupItem !!!")
+	LootData pickupData = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
+	BroadcastItemPickup( player, pickupData.ref, action )
+
+	pickup.Signal( "OnItemPickup", { player = player } )
+
+	if (!shouldKeepAlive)
+	{
+		pickup.Destroy()
+	}
+}
+
+entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 0, 0>, int count = 1 )
+{
+	vector origin = GetThrowOrigin( player )
+	vector fwd    = AnglesToForward( player.EyeAngles() )
+
+	entity loot = SpawnGenericLoot( ref, origin, angles, count )
 	
+	SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
+	FakePhysicsThrow( player, loot, fwd * 100, true )
+
+	BroadcastItemDrop( player, ref )
+
+	return loot
 }
 
 void function EquipAttachments_Internal( entity player, entity weapon, string item, string modToRemove, bool takeFromInventory, bool returnToInventory, bool forceActive, bool idk, entity deathBox )
 {
+	if( !IsValid( player ) || !IsValid( weapon ) )
+		return
 
+	if ( takeFromInventory && item != "" )
+		if ( IsValid( deathBox ) )
+		{
+			foreach ( deathBoxItem in deathBox.GetLinkEntArray() )
+			{
+				if ( deathBoxItem.e.lootRef == item )
+				{
+					deathBoxItem.Destroy()
+					break
+				}
+			}
+		}
+		else
+			SURVIVAL_RemoveFromPlayerInventory( player, item, 1 )
+	
+	array<string> mods = clone weapon.GetMods()
+
+	if ( modToRemove != "" && mods.contains( modToRemove ) )
+	{
+		weapon.RemoveMod( modToRemove )
+
+		mods.fastremovebyvalue( modToRemove )
+
+		VerifyToggleMods( modToRemove, mods )
+
+		if ( returnToInventory )
+		{
+			if ( IsValid( deathBox ) )
+			{
+				entity modLoot = SpawnGenericLoot( modToRemove, deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
+				AddToDeathBox( modLoot, deathBox )
+			}
+			else
+				SURVIVAL_AddToPlayerInventory( player, modToRemove, 1 )
+		}
+		else
+			PlayerThrowLoot( player, modToRemove )
+	}
+
+	if ( item != "" )
+	{
+		LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( GetWeaponClassName( weapon ) )
+		LootData modData = SURVIVAL_Loot_GetLootDataByRef( item )
+
+		Remote_CallFunction_NonReplay( player, "ServerCallback_AttachedMod", weaponData.index, modData.index )
+
+		mods.append( item )
+
+		VerifyToggleMods( item, mods )
+
+		weapon.AddMod( item )
+
+		PlayPickupSound( player, item )
+	}
+
+	weapon.SetMods( mods )
+
+	int slot = -1
+	if ( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) == weapon )
+		slot = 0
+	else if ( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) == weapon )
+		slot = 1
+
+	if ( SURVIVAL_GetActiveWeaponSlot( player ) == slot || forceActive )
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, slot )
+	
+	Remote_CallFunction_Replay( player, "ServerCallback_UpdateHudWeaponData", weapon )
+
+	//printt("EquipAttachments_Internal", player.GetPlayerName(), "item", item, "modToRemove", modToRemove)
 }
 
 void function PlayPickupSound( entity player, string ref, int pickupFlags = 0 )
 {
-
+	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
+	EmitSoundOnEntityExceptToPlayer( player, player, itemData.pickupSound_3p )
 }
 
 void function AddRoundsToWeapon( entity player, entity weapon, int numRounds )
 {
+	if ( weapon.UsesClipsForAmmo() )
+		weapon.SetWeaponPrimaryClipCount( int( min( weapon.GetWeaponPrimaryClipCount() + numRounds, weapon.GetWeaponPrimaryClipCountMax() ) ) )
+	else {
+		int ammoType = weapon.GetWeaponAmmoPoolType()
 
+		player.AmmoPool_SetCapacity( 65535 )
+		player.AmmoPool_SetCount( ammoType, player.AmmoPool_GetCount( ammoType ) + numRounds )
+	}
+}
+
+void function Survival_SetInventoryEnabled( entity player, bool state )
+{
+	player.SetPlayerNetBool( "inventoryEnabled", state )
 }
 
 void function SURVIVAL_TryTakeDefaultMeleePrimary( entity player )
@@ -89,94 +1160,510 @@ void function TrackingVision_CreatePOIForPickedUpLoot( entity player, int lootTy
 
 void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity activeWeapon, bool dropCurrentWeapon, entity deathBox, bool doPickupPrint )
 {
+	//printt("!!! SURVIVAL_GiveMainWeapon !!!")
 
+	if( !IsValid( player ) )
+		return
+
+	if( !IsValid( pickup ) )
+		return
+
+	//if( !IsValid( activeWeapon ) )
+	//	return
+
+	if ( !IsWeaponInPrimarySlot( player, activeWeapon ) )
+	{
+		activeWeapon = SURVIVAL_GetLastActiveWeapon( player )
+	}
+
+	LootData newEquipData = SURVIVAL_Loot_GetLootDataByIndex( pickup.GetSurvivalInt() )
+	LootTypeData lt       = GetLootTypeData( newEquipData.lootType )
+
+	string newEquip     = newEquipData.ref
+
+	LootData oldEquipData
+
+	if ( IsValid( activeWeapon ) && SURVIVAL_Loot_IsRefValid( GetWeaponClassName( activeWeapon ) ) )
+	{
+		oldEquipData = SURVIVAL_GetLootDataFromWeapon( activeWeapon )
+	}
+
+	LootRef lootRef       = SURVIVAL_CreateLootRef( newEquipData, pickup )
+	LootActionStruct as   = lt.groundActionFunc( player, lootRef )
+
+	array<string> mods = clone newEquipData.baseMods
+
+	if ( dropCurrentWeapon && oldEquipData.ref != "" )
+	{
+		// printt("dropping current weapon", activeWeapon)
+
+		array<string> activeMods = activeWeapon.GetMods()
+
+		if ( !activeMods.contains( "gold" ) )
+		{
+			table<string, string> suitableAttachmentsFromWeapon = GetCompatibleAttachmentsFromWeapon( player, activeWeapon, newEquipData.baseWeapon )
+			foreach ( wepPoint, wepMod in suitableAttachmentsFromWeapon )
+			{
+				bool skipThisAttachment = false
+			
+				foreach ( baseMod in mods )
+				{
+					if ( !SURVIVAL_Loot_IsRefValid( baseMod ) || !IsValidAttachment( baseMod ) )
+						continue
+	
+					if ( GetAttachmentData( baseMod ).attachPoint == wepPoint )
+					{
+						skipThisAttachment = true
+						break
+					}
+				}
+				
+				if ( skipThisAttachment )
+					continue // There is already an installed attachment, don't install a second one
+				
+				activeWeapon.RemoveMod( wepMod )
+				mods.append( wepMod )
+			}
+		}
+
+		EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( "main_weapon" + SURVIVAL_GetActiveWeaponSlot( player ) )
+
+		// Create tracking event for players with tracking passive.
+		if ( es.trackingVisionExchangePOI != -1 )
+			TrackingVision_CreatePOI( es.trackingVisionExchangePOI, player, pickup.GetOrigin(), player.GetTeam(), player )
+
+		if ( IsValid( deathBox ) )
+		{
+			int weaponSlot = es.weaponSlot
+
+			if ( weaponSlot == -1 )
+				return
+
+			entity weaponToDrop = player.GetNormalWeapon( weaponSlot )
+
+			if ( !IsValid( weaponToDrop ) )
+				return
+
+			foreach ( loot in CreateEntitiesForDroppedWeaponAndAttachments( player, weaponToDrop, deathBox.GetOrigin() ) )
+				AddToDeathBox( loot, deathBox )
+		}
+		else
+		{
+			vector origin = GetThrowOrigin( player )
+			vector fwd    = AnglesToForward( player.EyeAngles() )
+	
+			if ( es.specialCaseDropFunc != null )
+				es.specialCaseDropFunc( player, es.ref, origin, fwd )
+			else
+				SURVIVAL_DropMainWeapon( player, es.ref, origin, fwd )
+		}
+	}
+	
+	if ( !InfiniteAmmoEnabled() )
+		mods.append( "survival_finite_ammo" )
+
+	foreach ( possibleHopupMod in newEquipData.baseMods )
+		ApplyDefaultToggledMods( newEquipData.baseWeapon, possibleHopupMod, mods )
+
+	// Auto-pickup suitable attachments from inventory
+	if ( !mods.contains( "gold" ) )
+	{
+		table<string, string> suitableAttachmentsFromInventory = GetCompatibleAttachmentsFromInventory( player, newEquipData.baseWeapon )
+		foreach ( point, mod in suitableAttachmentsFromInventory )
+		{
+			bool skipThisAttachment = false
+			
+			foreach ( baseMod in mods )
+			{
+				if ( !SURVIVAL_Loot_IsRefValid( baseMod ) || !IsValidAttachment( baseMod ) )
+					continue
+
+				if ( GetAttachmentData( baseMod ).attachPoint == point )
+				{
+					skipThisAttachment = true
+					break
+				}
+			}
+			
+			if ( skipThisAttachment )
+				continue // There is already an installed attachment, don't install a second one
+		
+			SURVIVAL_RemoveFromPlayerInventory( player, mod, 1 )
+			mods.append( mod )
+		}
+	}
+
+	entity weapon = player.GiveWeapon( newEquipData.baseWeapon, WEAPON_INVENTORY_SLOT_ANY, mods )
+	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, GetSlotForWeapon( player, weapon ) )
+
+	int clipCount = pickup.GetClipCount()
+	if ( clipCount > 0 )
+	{
+		int ammoType = weapon.GetWeaponAmmoPoolType()
+
+		int maxClipSize = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+		int ammoToGive = ( clipCount == GIVE_FULL_AMMO_MARKER ) ? maxClipSize : int( min( clipCount, maxClipSize ) )
+		
+		if ( weapon.UsesClipsForAmmo() )
+			weapon.SetWeaponPrimaryClipCount( ammoToGive )
+		else {
+			player.AmmoPool_SetCapacity( 65535 )
+			player.AmmoPool_SetCount( ammoType, player.AmmoPool_GetCount( ammoType ) + ammoToGive )
+		}
+	}
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 }
 
 vector function GetThrowOrigin( entity player )
 {
-	return player.GetOrigin()
+	return player.CameraPosition()
 }
 
 entity function SpawnGenericLoot( string ref, vector origin, vector angles, int count )
 {
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 
-	printt("SpawnGenericLoot", ref)
-
 	entity loot = CreateEntity( "prop_survival" )
 	loot.SetOrigin( origin )
 	loot.SetAngles( angles )
 
-	loot.kv.solid = 0
+	//loot.kv.solid = SOLID_VPHYSICS
 
 	loot.SetUsable()
-	loot.SetFadeDistance( 100000 )
+	loot.SetFadeDistance( 20000 )
 	loot.AddUsableValue( USABLE_CUSTOM_HINTS | USABLE_BY_OWNER | USABLE_BY_PILOTS | USABLE_BY_ENEMIES )
 	loot.SetUsablePriority( USABLE_PRIORITY_HIGH )
 	
 	//LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+
+	loot.e.lootRef = ref
 	
-	loot.SetSurvivalInt(data.index)
+	loot.SetSurvivalInt( data.index )
+
+	if ( data.lootType == eLootType.RESOURCE && count != data.countPerDrop )
+		count *= data.countPerDrop
+
 	loot.SetClipCount( count )
 
-	if (data.lootType == eLootType.MAINWEAPON) {
-		loot.SetWeaponName(data.baseWeapon)
-	}
+	if ( data.lootType == eLootType.MAINWEAPON )
+		loot.SetWeaponName( data.baseWeapon )
 
-	loot.SetValueForModelKey( data.model )
+	loot.e.spawnTime = Time()
 
-	loot.kv.fadedist = -1
+	loot.SetModel( data.model )
+	loot.SetSkin( 0 )
+
 	loot.kv.renderamt = 255
 	loot.kv.rendercolor = "255 255 255"
+
+	if ( data.skinOverride > 0 )
+		loot.SetSkin( data.skinOverride )
+
+	if ( count == data.countPerDrop )
+	{
+		if ( data.lootType == eLootType.MAINWEAPON )
+			loot.SetClipCount( GIVE_FULL_AMMO_MARKER )
+
+		if ( data.lootType == eLootType.ARMOR )
+			loot.SetSurvivalProperty( SURVIVAL_GetArmorShieldCapacity( data.tier ) )
+	}
 	
 	DispatchSpawn( loot )
 	
 	return loot
 }
 
-void function SetItemSpawnSource( entity drop, int spawnSource, entity player )
+void function SetItemSpawnSource( entity drop, int spawnSource, entity owner )
 {
-
+	drop.e.spawnSource = spawnSource
+	if ( spawnSource != eSpawnSource.PLAYER_DROP )
+		drop.SetParent( owner )
 }
 
 void function AddToDeathBox( entity drop, entity deathBox )
 {
+	drop.Hide()
+	drop.UnsetUsable()
 
+	drop.SetOrigin( deathBox.GetOrigin() )
+	drop.SetParent( deathBox )
+
+	deathBox.LinkToEnt( drop )
+}
+
+entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
+{
+	entity box = CreatePropDeathBox_NoDispatchSpawn( DEATH_BOX, player.GetOrigin(), <0, 45, 0>, 6 )
+	box.kv.fadedist = 10000
+	if ( hasCard )
+		SetTargetName( box, DEATH_BOX_TARGETNAME )
+
+	DispatchSpawn( box )
+
+	box.RemoveFromAllRealms()
+	box.AddToOtherEntitysRealms( player )
+
+	box.Solid()
+
+	box.SetUsable()
+	box.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
+	
+	box.SetOwner( player )
+	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
+
+	if ( hasCard )
+	{
+		box.SetNetBool( "overrideRUI", false )
+
+		// box.SetCustomOwnerName( player.GetPlayerName() )
+
+		// EHI playerEHI = ToEHI( player )
+
+		// LoadoutEntry characterLoadoutEntry = Loadout_CharacterClass()
+		// ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterLoadoutEntry )
+		// box.SetNetInt( "characterIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( characterLoadoutEntry, character ) )
+
+		// LoadoutEntry skinLoadoutEntry = Loadout_CharacterSkin( character )
+		// ItemFlavor characterSkin = LoadoutSlot_GetItemFlavor( playerEHI, skinLoadoutEntry )
+		// box.SetNetInt( "skinIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( skinLoadoutEntry, characterSkin ) )
+
+		// LoadoutEntry frameLoadoutEntry = Loadout_GladiatorCardFrame( character )
+		// ItemFlavor characterFrame = LoadoutSlot_GetItemFlavor( playerEHI, frameLoadoutEntry )
+		// box.SetNetInt( "frameIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( frameLoadoutEntry, characterFrame ) )
+
+		// LoadoutEntry stanceLoadoutEntry = Loadout_GladiatorCardStance( character )
+		// ItemFlavor characterStance = LoadoutSlot_GetItemFlavor( playerEHI, stanceLoadoutEntry )
+		// box.SetNetInt( "stanceIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( stanceLoadoutEntry, characterStance ) )
+
+		// LoadoutEntry firstBadgeLoadoutEntry = Loadout_GladiatorCardBadge( character, 0 )
+		// ItemFlavor characterFirstBadge = LoadoutSlot_GetItemFlavor( playerEHI, firstBadgeLoadoutEntry )
+		// box.SetNetInt( "firstBadgeIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( firstBadgeLoadoutEntry, characterFirstBadge ) )
+		// box.SetNetInt( "firstBadgeDataInt", GetPlayerBadgeDataInteger( playerEHI, characterFirstBadge, 0, character ) )
+
+		// LoadoutEntry secondBadgeLoadoutEntry = Loadout_GladiatorCardBadge( character, 1 )
+		// ItemFlavor characterSecondBadge = LoadoutSlot_GetItemFlavor( playerEHI, secondBadgeLoadoutEntry )
+		// box.SetNetInt( "secondBadgeIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( secondBadgeLoadoutEntry, characterSecondBadge ) )
+		// box.SetNetInt( "secondBadgeDataInt", GetPlayerBadgeDataInteger( playerEHI, characterSecondBadge, 1, character ) )
+
+		// LoadoutEntry thirdBadgeLoadoutEntry = Loadout_GladiatorCardBadge( character, 2 )
+		// ItemFlavor characterThirdBadge = LoadoutSlot_GetItemFlavor( playerEHI, thirdBadgeLoadoutEntry )
+		// box.SetNetInt( "thirdBadgeIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( thirdBadgeLoadoutEntry, characterThirdBadge ) )
+		// box.SetNetInt( "thirdBadgeDataInt", GetPlayerBadgeDataInteger( playerEHI, characterThirdBadge, 2, character ) )
+	}
+
+	if ( hasCard )
+	{
+		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
+		Highlight_ClearNeutralHighlight( box )
+
+		thread DeathBoxFakePhysics( box )
+	}
+
+	return box
+}
+
+void function DeathBoxFakePhysics( entity box )
+{
+	vector restPos = box.GetOrigin()
+	vector fallPos = restPos + < 0, 0, 54 >
+
+	entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
+	box.SetParent( mover, "", true )
+
+	mover.NonPhysicsMoveTo( fallPos, 0.5, 0.0, 0.5 )
+	wait 0.5
+	mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
+	wait 0.5
+	if ( IsValid( box ) )
+		box.ClearParent()
+	mover.Destroy()
 }
 
 void function FakePhysicsThrow( entity player, entity drop, vector forward, bool idk )
 {
+	entity physics = CreatePropPhysics( drop.GetModelName(), drop.GetOrigin(), drop.GetAngles() )
+	vector velocity = forward * 1000
 
+	drop.SetParent( physics )
+
+	physics.Hide()
+
+	physics.SetVelocity( forward )
+
+	thread function () : ( drop, physics )
+	{
+		wait 5.0
+	
+		if ( IsValid( drop ) )
+			drop.ClearParent()
+
+		if ( IsValid( physics ) )
+			physics.Destroy()
+	}()
 }
 
 void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value )
 {
+	// newEquip - ref
+	// Inventory_SetPlayerEquipment( entity player, string itemRef, string equipmentSlot, int propertyValue = 0 )
+	LootData data = SURVIVAL_Loot_GetLootDataByRef( newEquip )
+	string slot = ""
+	/*
+	ARMOR
+	INCAPSHIELD
+	JUMPKIT
+	ORDNANCE
+	ATTACHMENT
+	CUSTOMPICKUP
+	BACKPACK
+	HELMET
+	*/
 
+	//printt("SURVIVAL_GivePlayerEquipment", player, newEquip, value)
+
+	switch (data.lootType) {
+		case eLootType.BACKPACK:
+			slot = "backpack"
+			break
+		case eLootType.ARMOR:
+			slot = "armor"
+			break
+		case eLootType.HELMET:
+			slot = "helmet"
+			break
+		case eLootType.INCAPSHIELD:
+			slot = "incapshield"
+			break
+		default:
+			return
+		/*case eLootType.BACKPACK:
+			slot = "backpack"
+			break*/
+	}
+
+	Inventory_SetPlayerEquipment(player, newEquip, slot, value)
 }
 
 entity function SpawnWeaponAndAmmo( string ref, vector origin )
-{
-	return null
+{    
+   //printt( "SpawnWeaponAndAmmo", ref, origin )
+   
+    entity ent
+   
+    //Also spawn 2 ammo containers (as one because edict limit)
+    LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
+    string ammoType = itemData.ammoType
+    if ( SURVIVAL_Loot_IsRefValid( ammoType ) )
+    {
+        itemData = SURVIVAL_Loot_GetLootDataByRef( ammoType )
+        ent = SpawnGenericLoot(ammoType, origin + <RandomFloatRange( 25.0, 50.0 ), RandomFloatRange( 25.0, 50.0 ), 0>, <0, RandomFloatRange( -180.0, 180.0 ), 1>, itemData.countPerDrop * 2)
+    }
+    
+    ent = SpawnGenericLoot(ref, origin + <0, 0, 1>, <0, RandomFloatRange( -180.0, 180.0 ), 90>, 1)
+    return ent
 }
 
 entity function SpawnArmor( string ref, vector origin )
 {
+    return SpawnGenericLoot(ref, origin, <0, RandomFloatRange( -180.0, 180.0 ), 1>, 1)
+}
+
+entity function SpawnNothing( string ref, vector origin, vector angles )
+{
+	printt( "SpawnNothing", ref, origin )
 	return null
 }
 
-entity function SpawnNothing( string ref, vector origin )
+entity function SpawnAllOptics()
 {
+	printt( "SpawnAllOptics_STUB" )
 	return null
+}
+
+array<entity> function CreateEntitiesForDroppedWeaponAndAttachments( entity player, entity weaponToDrop, vector origin )
+{
+	LootData dropWeaponData = SURVIVAL_GetLootDataFromWeapon( weaponToDrop )
+
+	entity droppedWeapon = SpawnGenericLoot( dropWeaponData.ref, origin, <0, 0, 90>, 1 )
+	droppedWeapon.SetClipCount( weaponToDrop.GetWeaponPrimaryClipCount() )
+
+	BroadcastItemDrop( player, dropWeaponData.ref )
+
+	array<entity> lootToDrop = [ droppedWeapon ]
+
+	foreach ( esRef, mod in GetAllWeaponAttachments( weaponToDrop ) )
+	{
+		if ( !SURVIVAL_Loot_IsRefValid( mod ) )
+			continue
+		
+		if ( dropWeaponData.baseMods.contains( mod ) ) // Don't throw separate mods of legendary weapons, they are bundled
+			continue
+
+		entity droppedAttachment = SpawnGenericLoot( mod, origin, <0, 0, 0>, 1 )
+		lootToDrop.append( droppedAttachment )
+
+		BroadcastItemDrop( player, mod )
+	}
+
+	player.DropWeapon( weaponToDrop )
+	weaponToDrop.Destroy()
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return lootToDrop
 }
 
 bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin, vector velocity )
 {
-	return false
+	int weaponSlot = Survival_GetEquipmentSlotDataByRef( slot ).weaponSlot
+
+	if ( weaponSlot == -1 )
+		return false
+
+	entity weaponToDrop = player.GetNormalWeapon( weaponSlot )
+
+	if ( !IsValid( weaponToDrop ) )
+		return false
+
+	array<entity> lootToDrop = CreateEntitiesForDroppedWeaponAndAttachments( player, weaponToDrop, origin )
+
+	foreach ( loot in lootToDrop )
+	{
+		SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
+		FakePhysicsThrow( player, loot, velocity * 100, true )
+	}
+
+	return true
 }
 
 void function SURVIVAL_DropBackpackItem( entity player, string ref, int count )
 {
+	LootData itemData = SURVIVAL_Loot_GetLootDataByRef( ref )
+	
+	SURVIVAL_RemoveFromPlayerInventory( player, ref, count )
+	PlayerThrowLoot( player, ref, <0, 0, 0>, count )
 
+	if ( itemData.lootType == eLootType.AMMO )
+	{
+		int ammoType = AmmoType_GetTypeFromRef( ref )
+		player.AmmoPool_SetCapacity( 65535 )
+		player.AmmoPool_SetCount( ammoType, int( max( 0, player.AmmoPool_GetCount( ammoType ) - count ) ) )
+	}
+
+	if ( itemData.lootType == eLootType.ORDNANCE )
+	{
+		entity heldOrdnance = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_ANTI_TITAN )
+		if ( IsValid( heldOrdnance ) && heldOrdnance.GetWeaponClassName() == ref )
+		{
+			player.TakeWeaponByEntNow( heldOrdnance )
+			string nextOrdnance = GetNextOrdnance( player, ref )
+			if ( nextOrdnance != "" )
+				SwitchPlayerToOrdnance( player, nextOrdnance )
+		}
+	}
+
+	Remote_CallFunction_NonReplay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 }
 
 void function Loot_AddCallback_OnPlayerLootPickup( void functionref( entity user, entity lootPickup, string ref, bool willDestroy ) callback )
@@ -186,21 +1673,78 @@ void function Loot_AddCallback_OnPlayerLootPickup( void functionref( entity user
 
 int function SURVIVAL_NumItemsInInventory( entity player, string itemRef )
 {
-	return 0
+	return SURVIVAL_CountItemsInInventory( player, itemRef )
 }
 
 void function ResetPlayerInventory( entity player )
 {
+	// Normal and offhand weapons
+	TakeAllWeapons( player )
+	
+	// Inventory
+	SetPlayerInventory( player, [] )
 
+	// Clear all equipment slots
+	foreach ( slot, slotData in EquipmentSlot_GetAllEquipmentSlots() )
+		Inventory_SetPlayerEquipment( player, "", slot )
+}
+
+LootZone function GetLootHotZone()
+{
+    FlagWait("Survival_LootZonesLoaded")
+	return file.hotZone
 }
 
 array<LootZone> function GetAllLootZones()
 {
-	array<LootZone> lootZone
-	return lootZone
+    FlagWait("Survival_LootZonesLoaded")
+	return file.lootZones
 }
 
-int function SURVIVAL_LootTierForLootGroup( int zone )
+int function SURVIVAL_LootTierForLootGroup( int zoneClass )
 {
-	return 0
+	switch ( zoneClass )
+	{
+		case eLootZoneClass.ZONE_LOW:
+			return eLootTier.COMMON
+		case eLootZoneClass.ZONE_MEDIUM:
+			return eLootTier.RARE
+		case eLootZoneClass.ZONE_HIGH:
+		case eLootZoneClass.ZONE_HOTZONE:
+			return eLootTier.EPIC
+		case eLootZoneClass.ZONE_LOOT_VAULT:
+			return eLootTier.LEGENDARY
+		default:
+			return eLootTier.NONE
+	}
+
+	unreachable
+}
+
+bool function IsWeaponInPrimarySlot( entity player, entity weapon )
+{
+	entity weaponInSlot0 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	entity weaponInSlot1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+
+	bool isInPrimarySlot = IsValid( weapon ) && (weapon == weaponInSlot0 || weapon == weaponInSlot1)
+	return isInPrimarySlot
+}
+
+void function TryThankForLoot( entity player, entity wp, entity pingEnt, int pingType )
+{
+	if ( !IsValid( pingEnt ) )
+		return
+
+	if ( !GetCurrentPlaylistVarBool( "thank_for_loot_ping_enabled", true ) )
+		return
+
+	thread function() : ( player, wp, pingEnt )
+	{
+		entity pickedUpBy = expect entity( pingEnt.WaitSignal( "OnItemPickup" ).player )
+
+		if ( !IsValid( pickedUpBy ) || player == pickedUpBy || !IsValid( wp ) )
+			return
+
+		Remote_CallFunction_NonReplay( pickedUpBy, "ServerCallback_PromptSayThanks", player )
+	}()
 }

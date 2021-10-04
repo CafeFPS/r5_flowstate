@@ -1,0 +1,187 @@
+// "Gamematerial" "effect_name"
+
+// "B" bloodyflesh
+// "X" plastic box, wade, ladder, woodladdder,
+// "I" player_control_clip
+
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"Rockets.ArcherNearmiss"
+		"whizby_sound_from_AI"		"Rockets.ArcherNearmiss_AIGruntGenerated"
+		"whizby_maxDistancePilot"	"200"
+		"whizby_maxDistanceTitan"	"500"
+	}
+
+	FX
+	{
+		"C" "P_impact_exp_lrg_concrete" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_exp_lrg_dirt" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_impact_exp_lrg_metal" // metal_titan
+
+		"F" "P_impact_exp_lrg_metal" //flesh
+		"G" "P_impact_exp_lrg_metal" //metalgrate, chainlink, chain
+		"H" "P_impact_exp_lrg_metal" //alienflesh
+
+		"J" "P_impact_exp_lrg_dirt" //grass
+		"K" "P_impact_exp_lrg_dirt"  //Mud
+		"L" "P_impact_exp_lrg_metal" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_impact_exp_lrg_metal" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_exp_lrg_slime" //Slime
+		"O" "P_impact_exp_lrg_dirt" //Foliage
+		"P" "P_impact_exp_lrg_metal" //Computer
+
+		"R" "P_impact_exp_lrg_metal" //metalpanel, grenade, canister
+		"S" "P_impact_exp_lrg_water" //water, slime
+		"T" "P_impact_exp_lrg_concrete" //tile
+		"U" "P_impact_exp_lrg_metal" //glass_breakable
+
+		"V" "P_impact_exp_lrg_metal" //Metal Vent
+		"W" "P_impact_exp_lrg_metal" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_impact_exp_lrg_xo_shield" //xo_shield
+
+		"Y" "P_impact_exp_lrg_metal" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_impact_exp_lrg_sand"  //sand
+
+		"0" "P_impact_exp_lrg_sand"
+		"1" "P_impact_exp_lrg_sand"
+		"2" "P_impact_exp_lrg_sand"
+		"3" "P_impact_exp_lrg_sand"
+		"4" "P_impact_exp_lrg_sand"
+		"5" "P_impact_exp_lrg_sand"
+		"6" "P_impact_exp_lrg_sand"
+		"7" "P_impact_exp_lrg_sand"
+		"8" "P_impact_exp_lrg_sand"
+		"9" "P_impact_exp_lrg_sand" //puddle
+
+		"splash" "P_impact_exp_lrg_water"
+		"slime_splash" "P_impact_exp_lrg_water"
+
+		"airburst" "P_impact_exp_lrg_air"
+		"shieldhit" "P_impact_exp_lrg_metal"
+		"critical_hit" "P_impact_exp_lrg_metal"
+	}
+
+	///This is 2nd set of impacts for shield fx to play with explosion
+	FX
+	{
+		"shieldhit" "P_xo_armor_impact_EXP"
+	}
+
+	Sound
+	{
+		"C" "bangalore_ultimate_explosion_concrete"
+		"D" "bangalore_ultimate_explosion_dirt"
+		"E" "bangalore_ultimate_explosion_metal"
+
+		"F" "Explo_Archer_Impact_3P"
+		"G" "bangalore_ultimate_explosion_metal"
+		"H" "bangalore_ultimate_explosion_metal"
+
+		"J" "bangalore_ultimate_explosion_dirt"
+		"K" "bangalore_ultimate_explosion_dirt" // mud?
+		"L" "bangalore_ultimate_explosion_dirt"
+		"M" "bangalore_ultimate_explosion_metal"
+		"N" "bangalore_ultimate_explosion_water"// sand?
+		"O" "bangalore_ultimate_explosion_dirt"
+		"P" "bangalore_ultimate_explosion_metal"
+
+		"R" "bangalore_ultimate_explosion_metal"
+		"S" "bangalore_ultimate_explosion_water"
+		"T" "bangalore_ultimate_explosion_marble"
+		"U" "bangalore_ultimate_explosion_marble"//glass_breakable
+
+		"V" "bangalore_ultimate_explosion_metal"
+		"W" "bangalore_ultimate_explosion_wood"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "bangalore_ultimate_explosion_metal" //glass
+		"Z" "bangalore_ultimate_explosion_sand"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_Archer_Impact_3P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_1P"
+	}
+
+	Sound_attacker
+	{
+		"C" "bangalore_ultimate_explosion_concrete"
+		"D" "bangalore_ultimate_explosion_dirt"
+		"E" "bangalore_ultimate_explosion_metal"
+
+		"F" "Explo_Archer_Impact_3P"
+		"G" "bangalore_ultimate_explosion_metal"
+		"H" "bangalore_ultimate_explosion_metal"
+
+		"J" "bangalore_ultimate_explosion_dirt"
+		"K" "bangalore_ultimate_explosion_dirt" // mud?
+		"L" "bangalore_ultimate_explosion_dirt"
+		"M" "bangalore_ultimate_explosion_metal"
+		"N" "bangalore_ultimate_explosion_water"// sand?
+		"O" "bangalore_ultimate_explosion_dirt"
+		"P" "bangalore_ultimate_explosion_metal"
+
+		"R" "bangalore_ultimate_explosion_metal"
+		"S" "bangalore_ultimate_explosion_water"
+		"T" "bangalore_ultimate_explosion_marble"
+		"U" "bangalore_ultimate_explosion_marble"//glass_breakable
+
+		"V" "bangalore_ultimate_explosion_metal"
+		"W" "bangalore_ultimate_explosion_wood"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "bangalore_ultimate_explosion_metal" //glass
+		"Z" "bangalore_ultimate_explosion_sand"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_Archer_Impact_3P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_1P"
+	}
+
+	Sound_victim
+	{
+		"C" "bangalore_ultimate_explosion_concrete"
+		"D" "bangalore_ultimate_explosion_dirt"
+		"E" "bangalore_ultimate_explosion_metal"
+
+		"F" "Explo_Archer_Impact_3P"
+		"G" "bangalore_ultimate_explosion_metal"
+		"H" "bangalore_ultimate_explosion_metal"
+
+		"J" "bangalore_ultimate_explosion_dirt"
+		"K" "bangalore_ultimate_explosion_dirt" // mud?
+		"L" "bangalore_ultimate_explosion_dirt"
+		"M" "bangalore_ultimate_explosion_metal"
+		"N" "bangalore_ultimate_explosion_water"// sand?
+		"O" "bangalore_ultimate_explosion_dirt"
+		"P" "bangalore_ultimate_explosion_metal"
+
+		"R" "bangalore_ultimate_explosion_metal"
+		"S" "bangalore_ultimate_explosion_water"
+		"T" "bangalore_ultimate_explosion_marble"
+		"U" "bangalore_ultimate_explosion_marble"//glass_breakable
+
+		"V" "bangalore_ultimate_explosion_metal"
+		"W" "bangalore_ultimate_explosion_wood"
+		"X"	"TitanBubbleShield.Explosive.BulletImpact_3P_vs_3P"
+		"Y" "bangalore_ultimate_explosion_metal" //glass
+		"Z" "bangalore_ultimate_explosion_sand"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		"airburst" "Explo_Archer_Impact_3P"
+		"shieldhit" "TitanShield.Explosive.BulletImpact_3P_vs_1P"
+	}
+
+	Sound_victim_from_AI
+	{
+		"E" "Titan.Archer_Impact_3P_vs_1P"
+		"F" "Flesh.Shotgun.BulletImpact_AIGrunt3P_vs_1P"
+	}
+}
+

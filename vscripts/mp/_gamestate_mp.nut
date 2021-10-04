@@ -35,10 +35,10 @@ float function GetTimeLimit_ForGameMode()
 
 void function SetGameState( int newState )
 {
+	RegisterSignal( "GameStateChanged" )
 	level.nv.gameStateChangeTime = Time()
 	level.nv.gameState = newState
 	svGlobal.levelEnt.Signal( "GameStateChanged" )
-
 	SetServerVar( "gameState", newState )
 
 	// added in AddCallback_GameStateEnter

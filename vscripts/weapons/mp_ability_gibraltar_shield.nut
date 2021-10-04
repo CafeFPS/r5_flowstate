@@ -179,6 +179,9 @@ bool function OnWeaponAttemptOffhandSwitch_ability_gibraltar_shield( entity weap
 	if ( !player.IsPlayer() )
 		return false
 
+	if ( player.IsZiplining() )
+		return false
+
 	entity mainWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
 	if ( !WeaponAllowsShield( mainWeapon ) )
 		return false
