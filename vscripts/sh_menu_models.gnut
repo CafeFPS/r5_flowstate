@@ -1033,7 +1033,7 @@ void function InitMenuEntities()
 
 	Assert( MenuMapEntitiesExist() )
 
-	if ( IsLobbyFallLTM() )
+	//if ( IsLobbyFallLTM() )
 	{
 		ApplyEventPositioning()
 		SpawnShadowEyeEffects()
