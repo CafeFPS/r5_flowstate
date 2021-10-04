@@ -106,9 +106,9 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	}
 
 	// if inflictor is trigger_hurt, set the identifier according to ent keyvalue
-	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.invalid 
-			&& inflictor != null 
-			&& inflictor.GetClassName() == "trigger_hurt" 
+	if ( DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.invalid
+			&& inflictor != null
+			&& inflictor.GetClassName() == "trigger_hurt"
 			&& inflictor.HasKey( "damageSourceName" ) )
 		DamageInfo_SetDamageSourceIdentifier( damageInfo, eDamageSourceId[expect string( inflictor.kv.damageSourceName )] )
 
@@ -257,6 +257,19 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	}
 
 	float damageMultiplier = 1.0 + StatusEffect_GetSeverity( ent, eStatusEffect.damage_received_multiplier )
+
+	if (DamageInfo_GetWeapon(damageInfo) != null) {
+		if (ent.GetShieldHealth() == 0) {
+			float unshielded = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_unshielded_scale)
+
+			damageMultiplier = unshielded
+		} else {
+			float shielded = DamageInfo_GetWeapon(damageInfo).GetWeaponSettingFloat(eWeaponVar.damage_shield_scale)
+
+			damageMultiplier = shielded
+		}
+ 	}
+
 	if ( damageMultiplier != 1.0 )
 		DamageInfo_ScaleDamage( damageInfo, damageMultiplier )
 
@@ -300,7 +313,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	if ( entIsPlayer )
 	{
 		PlayerTookDamage( ent, damageInfo, attacker, inflictor, damageSourceId, titanDamage )
-		
+
 		if ( DamageInfo_GetDamage( damageInfo ) == 0 && entIsTitan )
 		{
 			EarnMeterDamageConversion( damageInfo, attacker, ent, 0, titanDamage )
@@ -418,8 +431,12 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 	RunClassPostDamageCallbacks( ent, damageInfo )
 
 	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SHIELD_DAMAGE )
-		DamageInfo_SetDamage( damageInfo, 0 ) // Do not damage the player, the damage value was only required for proper client display.
-
+	
+	{
+		if(ent.GetShieldHealth() > 0)
+			DamageInfo_SetDamage( damageInfo, 0 ) // Do not damage the player, the damage value was only required for proper client display.
+	}
+	
 	#if SERVER && MP
 		//Stats_OnPlayerDidDamage( ent, damageInfo )
 		PIN_DamageDone( attacker, ent, DamageInfo_GetDamage( damageInfo ) )
@@ -719,13 +736,14 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 
 	bool isTitan = player.IsTitan()
 
+	float shieldDamage = 0
 	if ( isTitan )
 		Titan_PlayerTookDamage( player, damageInfo, attacker, critHit, titanDamage )
 	else
-		Wallrun_PlayerTookDamage( player, damageInfo, attacker )
+		shieldDamage = expect float(Wallrun_PlayerTookDamage( player, damageInfo, attacker ))
 
 	float damageAmount = DamageInfo_GetDamage( damageInfo )
-	bool isKillShot = (damageAmount >= player.GetHealth())
+	bool isKillShot = (damageAmount >= player.GetHealth() + shieldDamage)
 	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
 	if ( isKillShot )
 		damageType = (damageType | DF_KILLSHOT)
@@ -771,13 +789,13 @@ function TellClientPlayerTookDamage( entity player, damageInfo, entity attacker,
 	local weaponEHandle = IsValid( DamageInfo_GetWeapon( damageInfo ) ) ? DamageInfo_GetWeapon( damageInfo ).GetEncodedEHandle() : null
 	local damageOrigin = GetDamageOrigin( damageInfo, player )
 
-	Remote_CallFunction_Replay( 
-		player, 
-		"ServerCallback_PlayerTookDamage", 
+	Remote_CallFunction_Replay(
+		player,
+		"ServerCallback_PlayerTookDamage",
 
-		DamageInfo_GetDamage( damageInfo ), 
-		
-		damageOrigin.x, 
+		DamageInfo_GetDamage( damageInfo ),
+
+		damageOrigin.x,
 		damageOrigin.y,
 		damageOrigin.z,
 
