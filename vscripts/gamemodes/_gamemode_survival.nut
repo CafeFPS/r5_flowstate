@@ -375,21 +375,32 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 	float damage = DamageInfo_GetDamage( damageInfo )
 
+	
 	int currentHealth = victim.GetHealth()
 	if ( !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
 		currentHealth += victim.GetShieldHealth()
 
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath(damageInfo) )
 	{
+		entity attacker = DamageInfo_GetAttacker( damageInfo )
+
 		// Supposed to be bleeding
 		Bleedout_StartPlayerBleedout( victim, DamageInfo_GetAttacker( damageInfo ) )
+
+		// Add the cool splashy blood and big red crosshair hitmarker
+		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+
+		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
+		attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
 
 		// Cancel the damage
 		DamageInfo_SetDamage( damageInfo, 0 )
 
+		// Delete any shield health remaining
+		victim.SetShieldHealth( 0 )
+
 		// Run client callback
 		int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
-		entity attacker = DamageInfo_GetAttacker( damageInfo )
 
 		foreach ( cbPlayer in GetPlayerArray() )
 			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, scriptDamageType, sourceId )

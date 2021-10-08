@@ -68,7 +68,7 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 		return shieldDamage
 	}
 
-	return
+	return 0.0
 }
 
 function AdjustDamageForRodeoPlayers( entity player, var damageInfo, entity attacker )
