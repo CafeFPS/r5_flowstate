@@ -209,7 +209,7 @@ float function PilotShieldModifyDamage( entity player, var damageInfo )
 
 	if ( shieldHealth && newShieldHealth <= 0 )
 	{
-		EmitSoundOnEntity( player, "humanshield_break_1p_vs_3p" )
+		// EmitSoundOnEntity( player, "humanshield_break_1p_vs_3p" )
 	}
 if(permanentDamage > 0)
 	{
