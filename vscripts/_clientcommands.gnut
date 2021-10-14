@@ -11,6 +11,7 @@ void function ClientCommands_Init()
 	AddClientCommandCallback( "noclip", ClientCommand_noclip )
 	AddClientCommandCallback( "infinite_ammo", ClientCommand_infinite_ammo )
 	AddClientCommandCallback( "ToggleThirdPerson", ClientCommand_ToggleThirdPerson )
+	AddClientCommandCallback( "ToggleHUD", ClientCommand_ToggleHUD )
 
 	#if R5DEV
 	AddClientCommandCallback( "script", ClientCommand_script )
@@ -40,6 +41,34 @@ bool function ClientCommand_ToggleThirdPerson( entity player, array<string> args
 	else
 		player.SetThirdPersonShoulderModeOn() 	
 			
+	return true
+}
+
+bool function ClientCommand_ToggleHUD( entity player, array<string> args )
+{
+	if( !IsValid( player ) )
+		return true
+
+	if ( !( "hudVisible" in player.s ) )
+		player.s.hudVisible <- true
+
+	player.s.hudVisible = !player.s.hudVisible
+
+	array<int> flagsForHudVisibilityControl = [
+		CE_FLAG_HIDE_MAIN_HUD_INSTANT,
+		CE_FLAG_HIDE_PERMANENT_HUD
+	]
+
+	if ( player.s.hudVisible )
+	{
+		foreach ( flag in flagsForHudVisibilityControl )
+			RemoveCinematicFlag( player, flag )
+	} else
+	{
+		foreach ( flag in flagsForHudVisibilityControl )
+			AddCinematicFlag( player, flag )
+	}
+
 	return true
 }
 

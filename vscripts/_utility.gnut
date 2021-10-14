@@ -2928,7 +2928,7 @@ void function ToggleHud()
 	player.s.hudVisible = !player.s.hudVisible
 
 	array<int> flagsForHudVisibilityControl = [
-		CE_FLAG_HIDE_MAIN_HUD,
+		CE_FLAG_HIDE_MAIN_HUD_INSTANT,
 		CE_FLAG_HIDE_PERMANENT_HUD
 	]
 

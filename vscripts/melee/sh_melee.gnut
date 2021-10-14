@@ -486,7 +486,6 @@ void function CodeCallback_OnMeleeReleased( entity player, entity weapon )
 #if SERVER || CLIENT
 void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity meleeAttackWeapon )
 {
-	printt("CodeCallback_OnMeleeAttackAnimEvent")
 	Assert( IsValid( attacker ) )
 
 	if ( !attacker.PlayerMelee_IsAttackActive() )
