@@ -356,10 +356,15 @@ void function SetupDefaultDevCommandsMP()
 	SetupDevCommand( "Disable God Mode", "script DisableDemigod( gp()[0] )" )
 	//SetupDevCommand( "Toggle Screen Alignment Tool", "script_client DEV_ToggleScreenAlignmentTool()" )
 
+	SetupDevCommand( "Toggle Third Person Mode", "ToggleThirdPerson" )
+
 	SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
 
-	foreach ( DevCommand cmd in file.levelSpecificCommands )
-		SetupDevCommand( cmd.label, cmd.command )
+	// This adds CAPTURE MODE every time you load a level. 
+	// Capture mode doesn't work, so I am commenting this out.
+	// Coded in sh_capturemode.nut 
+	// foreach ( DevCommand cmd in file.levelSpecificCommands )
+	// 	SetupDevCommand( cmd.label, cmd.command )
 }
 
 
