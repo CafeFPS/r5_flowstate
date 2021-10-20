@@ -33,9 +33,6 @@ bool function ClientCommand_noclip( entity player, array<string> args )
 
 bool function ClientCommand_ToggleThirdPerson( entity player, array<string> args )
 {
-	if ( !IsFiringRangeGameMode() )
-		return false
-
 	if ( player.IsThirdPersonShoulderModeOn() )
 		player.SetThirdPersonShoulderModeOff() 	
 	else
