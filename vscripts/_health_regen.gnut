@@ -170,13 +170,18 @@ void function HealthRegen_OnPlayerClassChangedMP( entity player )
 
 float function PilotShieldHealthUpdate( entity player, var damageInfo )
 {
+	int shieldHealth = player.GetShieldHealth()
+	float maxHealth = float(player.GetHealth()) + float(shieldHealth)
+	float damage = DamageInfo_GetDamage( damageInfo )
+	float damagefull = damage + float(shieldHealth)
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	if ( DamageInfo_GetForceKill( damageInfo ) )
 	{
+		attacker.p.playerDamageDealt += -damagefull + maxHealth
 		player.SetShieldHealth( 0 )
 		return 0.0
 	}
 
-	int shieldHealth = player.GetShieldHealth()
 
 	float shieldDamage = 0
 
@@ -189,33 +194,36 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 	//	if ( shieldDamage )
 		//	DamageInfo_SetDamage( damageInfo, shieldDamage )
 	}
+	
 
 	return shieldDamage
 }
 
-float function PilotShieldModifyDamage( entity player, var damageInfo )
+ float function PilotShieldModifyDamage( entity player, var damageInfo)
 {
+    entity attacker = DamageInfo_GetAttacker(damageInfo)
+    float shieldHealth = float( player.GetShieldHealth() )
+    float damage = DamageInfo_GetDamage( damageInfo )
+    float newShieldHealth = shieldHealth - damage
+    float permanentDamage = 0.0
 
-	float shieldHealth = float( player.GetShieldHealth() )
-	float damage = DamageInfo_GetDamage( damageInfo )
+    if ( newShieldHealth < 0 )
+        permanentDamage = fabs( newShieldHealth )
 
-	float newShieldHealth = shieldHealth - damage
-	float permanentDamage = 0.0
+    player.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
 
-	if ( newShieldHealth < 0 )
-		permanentDamage = fabs( newShieldHealth )
-
-	player.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
-
-	if ( shieldHealth && newShieldHealth <= 0 )
-	{
-		// EmitSoundOnEntity( player, "humanshield_break_1p_vs_3p" )
-	}
-if(permanentDamage > 0)
-	{
+    if ( shieldHealth && newShieldHealth <= 0 )
+    {
+        thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
+    }
+	if(permanentDamage > 0)
+    {
+		float damagefull = damage + shieldHealth
+		float maxHealth = float(player.GetHealth())
 		isPermanentDmg = true
-		sPermanentDmg = damage
-	DamageInfo_SetDamage( damageInfo, permanentDamage )
-}
-	return min( shieldHealth, damage )
-}
+        sPermanentDmg = damage
+    DamageInfo_SetDamage( damageInfo, permanentDamage )
+	attacker.p.playerDamageDealt += shieldHealth 
+	}
+    return min( shieldHealth, damage )
+} 
