@@ -394,7 +394,9 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
 
 		// Cancel the damage
-		DamageInfo_SetDamage( damageInfo, 0 )
+		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
+		// There might be a better way to do this, but this works well enough
+		DamageInfo_SetDamage( damageInfo, 1 )
 
 		// Delete any shield health remaining
 		victim.SetShieldHealth( 0 )
