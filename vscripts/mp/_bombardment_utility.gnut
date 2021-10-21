@@ -53,35 +53,40 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 	{		
 		wait 1.0/intensity
 		
-		if(weapon == null || !IsValid(weapon))
+		if (weapon == null || !IsValid(weapon))
 			return
 		
 		vector landRadiusOffset = <RandomFloatRange(-radius,radius)/2,RandomFloatRange(-radius,radius)/2,0>
 		
 		entity projectile = weapon.FireWeaponGrenade( fireGrenadeParams )
 		
-		if(isFirst)
+		if (isFirst)
 		{
 			EmitSoundOnEntity( projectile, fire_sound_1_player_3p )
 			isFirst = false
 		}
 		EmitSoundOnEntity( projectile, sound_incoming )
 		
-		/* TODO: Should start from the center and move toward the offset pos instead of linear vertical */
+		TraceResults trace = TraceLine( fireGrenadeParams.pos + landRadiusOffset, origin+landRadiusOffset - <0,0,8000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+		vector skyOriginToGround = trace.endPos - fireGrenadeParams.pos;
+		// The reason we are going from the sky to (sky + sky->ground + (norm(sky->ground) * 100)) is that if we just went to ground (trace.endPos), we would rarely get markers because it would 
+		// rarely actually "hit" the ground and instead just stop there, not hitting anything, not making a marker.
+		TraceResults trace2 = TraceLine (fireGrenadeParams.pos, fireGrenadeParams.pos + skyOriginToGround + (Normalize(skyOriginToGround) * 100), null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE)
+		vector groundPos2 = trace2.endPos
+
+		vector velocity = Normalize(trace2.endPos - fireGrenadeParams.pos) * projectile_launch_speed
+
 		projectile.SetAngles(<90,0,0>)
-		projectile.SetOrigin(fireGrenadeParams.pos + landRadiusOffset)
-		projectile.SetVelocity(<0,0,-projectile_launch_speed>)
-		
-		/* TODO: Should get the correct destination of the projectile*/	
-		TraceResults trace = TraceLine( projectile.GetOrigin(), origin+landRadiusOffset - <0,0,2000>, null, TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
-		if ( IsValid( trace.hitEnt ) )
+		projectile.SetOrigin(fireGrenadeParams.pos)
+		projectile.SetVelocity(velocity)
+		projectile.kv.gravity = 0
+
+		if ( IsValid( trace2.hitEnt ) )
 		{
-			entity marker = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effect ), trace.endPos, <0,0,0> )
+			entity marker = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( effect ), trace2.endPos, <0,0,0> )
 			AddToUltimateRealm( owner, marker )
 			EntFireByHandle( marker, "Kill", "", 2, null, null ) // kill after 2s
 		}
-		
-		
 	}
 }
 
@@ -91,7 +96,7 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 	
 	entity owner = weapon.GetOwner()
 	
-	if(!IsValid(owner))
+	if (!IsValid(owner))
 		return
 	
 	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
@@ -111,31 +116,31 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 	bool isFirst = true
 
 	float bombCount = width / perStep
+	vector missileOrigin = projectileOrigin + (direction * perStep * ((count / 2) + 1)) + <0, 0, 15000>
 	for (int cur = 0; cur < count; cur++) {
 		vector stepCenter = projectileOrigin + (direction * perStep * (cur + 1))
-		vector rot270 = <direction.y, -direction.x, direction.z>
-		rot270 = rot270 * (width / 2)
+		vector rot270 = <direction.y, -direction.x, direction.z> * (width / 2)
 		bool even = cur % 2 == 0;
 		vector lineStart = even ? (stepCenter - rot270) : (stepCenter + rot270)
-		vector reverse = <-1, -1, 1>
 		vector lineDirection = Normalize(rot270)
 		lineDirection = <-lineDirection.x, -lineDirection.y, lineDirection.z>
 		for (int curStep = 0 ; curStep < bombCount ; curStep++) {
 			wait (interval / (2 * bombCount))
-			vector targetPosition = even ? (lineStart - (lineDirection * perStep * curStep)) : (lineStart + (lineDirection * perStep * curStep))
+			vector targetPosition = even ? (lineStart - (lineDirection * perStep * curStep) - (lineDirection * (perStep / 2))) : (lineStart + (lineDirection * perStep * curStep) + (lineDirection * (perStep / 2)))
 			entity projectile = weapon.FireWeaponMissile( fireGrenadeParams )
 		
-			if(isFirst)
+			if (isFirst)
 			{
 				EmitSoundOnEntity( projectile, fire_sound_1_player_3p )
 				isFirst = false
 			}
 			// todo sounds for incoming warning EmitSoundOnEntity( projectile, sound_incoming )
 			
-			/* TODO: Should start from the center and move toward the offset pos instead of linear vertical */
 			projectile.SetAngles(<90,0,0>)
-			projectile.SetOrigin(targetPosition + <0, 0, 5000>)
-			projectile.SetVelocity(<0,0,-projectile_launch_speed>)
+			projectile.SetOrigin(missileOrigin)
+			vector velocity = Normalize(targetPosition - missileOrigin) * projectile_launch_speed
+			projectile.kv.gravity = 0
+			projectile.SetVelocity(velocity)
 		}
 	}
 }
