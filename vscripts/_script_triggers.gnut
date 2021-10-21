@@ -119,6 +119,7 @@ void function CylinderTriggerThink( entity triggerEnt )
 				entities = GetPlayerArray()
 				entities.extend( GetNPCArray() )
 				entities.extend( GetPlayerDecoyArray() )
+				entities.extend( GetAllPropDoors() )
 			}
 
 			foreach ( ent in entities )

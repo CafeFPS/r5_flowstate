@@ -395,7 +395,11 @@ global struct ServerEntityStruct
 
 	bool shouldSpawnLoot = true
 
+	array<BurnDamageStack> burnDamageStacks
+	bool isBurning
+
 	float lastGrappleTime
+
 }
 
 global struct MeritData

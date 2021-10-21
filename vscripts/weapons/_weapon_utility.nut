@@ -4516,9 +4516,11 @@ bool function EntityCanBurnOverTime( entity ent )
 	if ( !IsAlive( ent ) )
 		return false
 
-	if ( ent.IsPlayer() && !ent.IsPlayerDecoy() )
+	if ( IsDoor(ent) )
 		return true
 
+	if ( ent.IsPlayer() && !ent.IsPlayerDecoy() )
+		return true
 	else if ( ent.IsNPC() )
 		return true
 
@@ -4556,7 +4558,7 @@ bool function EntityCanAcceptNewBurnDamageStack( entity ent, BurnDamageSettings 
 
 void function AddEntityBurnDamageStack( entity ent, entity owner, entity inflictor, BurnDamageSettings burnSettings )
 {
-	Assert( ent.IsPlayer() || ent.IsNPC(), "Burn damage currently only supports players and NPCs." )
+	Assert( IsDoor(ent) || ent.IsPlayer() || ent.IsNPC() , "Burn damage currently only supports players, NPCs and doors." )
 
 	BurnDamageStack stack
 	stack.owner = owner
@@ -4568,7 +4570,9 @@ void function AddEntityBurnDamageStack( entity ent, entity owner, entity inflict
 	stack.damagePerTick = burnSettings.burnDamage / numIntervals
 	stack.burnSettings = burnSettings
 
-	if ( ent.IsPlayer() )
+	if ( IsDoor(ent) )
+		ent.e.burnDamageStacks.append( stack )
+	else if ( ent.IsPlayer() )
 		ent.p.burnDamageStacks.append( stack )
 	else if ( ent.IsNPC() )
 		ent.ai.burnDamageStacks.append( stack )
@@ -4586,9 +4590,11 @@ void function AddEntityBurnDamageStack( entity ent, entity owner, entity inflict
 
 void function RemoveEntityBurnDamageStack( entity ent, int stackIdx )
 {
-	if ( ent.IsPlayer() )
+	if ( IsDoor(ent) )
+		ent.e.burnDamageStacks.remove( stackIdx )
+	else if ( ent.IsPlayer() )
 		ent.p.burnDamageStacks.remove( stackIdx )
-	else
+	else if ( ent.IsNPC() )
 		ent.ai.burnDamageStacks.remove( stackIdx )
 
 	#if R5DEV && DEBUG_BURN_DAMAGE
@@ -4685,7 +4691,9 @@ bool function EntityHasMaxBurnDamageStacks( entity ent, BurnDamageSettings burnS
 
 array<BurnDamageStack> function GetEntityBurnDamageStacks( entity ent )
 {
-	if ( ent.IsPlayer() )
+	if ( IsDoor(ent) )
+		return ent.e.burnDamageStacks
+	else if ( ent.IsPlayer() )
 		return ent.p.burnDamageStacks
 
 	return ent.ai.burnDamageStacks
@@ -4693,7 +4701,12 @@ array<BurnDamageStack> function GetEntityBurnDamageStacks( entity ent )
 
 int function GetEntityBurnDamageStackCount( entity ent )
 {
-	if ( ent.IsPlayer() )
+	if ( !IsAlive(ent) )
+		return 0
+
+	if ( IsDoor(ent) )
+		return ent.e.burnDamageStacks.len()
+	else if ( ent.IsPlayer() )
 		return ent.p.burnDamageStacks.len()
 
 	return ent.ai.burnDamageStacks.len()
@@ -4701,7 +4714,9 @@ int function GetEntityBurnDamageStackCount( entity ent )
 
 bool function EntityIsBurning( entity ent )
 {
-	if ( ent.IsPlayer() )
+	if ( IsDoor(ent) )
+		return ent.e.isBurning
+	else if ( ent.IsPlayer() )
 		return ent.p.isBurning
 
 	return ent.ai.isBurning
@@ -4709,9 +4724,11 @@ bool function EntityIsBurning( entity ent )
 
 void function SetEntityIsBurning( entity ent, bool isBurning )
 {
-	if ( ent.IsPlayer() )
+	if ( IsDoor(ent) )
+		ent.e.isBurning = isBurning
+	else if ( ent.IsPlayer() )
 		ent.p.isBurning = isBurning
-	else
+	else 
 		ent.ai.isBurning = isBurning
 }
 
