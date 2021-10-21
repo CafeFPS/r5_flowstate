@@ -1,5 +1,6 @@
 # R5RMechanicsGrinding
-Mechanics grinding DM is  a script that has new features for r5r custom_tdm.
+Mechanics grinding DM is  a script that has new features for r5r custom_tdm. We also have bug fixes. 
+
 
 # v1.3 changelist:
 - Stability fix.
