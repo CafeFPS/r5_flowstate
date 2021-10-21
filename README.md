@@ -1,7 +1,6 @@
 # R5RMechanicsGrinding
 
 # v1.3 changelist:
-Pls go to releases tab for download our last stable version.
 - Stability fix.
 - UI text fixes.
 - Whitelisted weapons again in the file.
