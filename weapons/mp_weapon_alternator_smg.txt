@@ -53,15 +53,14 @@ WeaponData
 	"fx_shell_eject2_attach"						"shell_l"
 
 	// NOTE: Alternator has a special muzzle flash to look good with two barrels
-	"fx_muzzle_flash_view"							"P_wpn_muzzleflash_alternator_FP"
-	"fx_muzzle_flash_world"							"P_wpn_muzzleflash_alternator"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// NOTE: specifies muzzle flash for the second barrel
-	"fx_muzzle_flash2_view"							"P_wpn_muzzleflash_alternator_FP"
-	"fx_muzzle_flash2_world"						"P_wpn_muzzleflash_alternator"
+	"fx_muzzle_flash2_view"							""
+	"fx_muzzle_flash2_world"						""
 	"fx_muzzle_flash2_attach"						"muzzle_flash_l"
-
 
 	// Sound
 
@@ -74,17 +73,33 @@ WeaponData
 	"fire_sound_2_player_3p"						""
 	"fire_sound_2_npc"								"Weapon_Alternator_SecondShot_NPC"
 
-	"burst_or_looping_fire_sound_start_1p"					"Weapon_Alternator_FirstShot_1P"
-	"burst_or_looping_fire_sound_middle_1p"					"Weapon_Alternator_Loop_1P"
-	"burst_or_looping_fire_sound_end_1p"					"Weapon_Alternator_LoopEnd_1P"
+            "burst_or_looping_fire_sound_start_1p"		"Weapon_Alternator_FirstShot_1P"
+            "burst_or_looping_fire_sound_middle_1p"		"Weapon_Alternator_Loop_ShieldBreaker_1P"
+            "burst_or_looping_fire_sound_end_1p"		"Weapon_Alternator_LoopEnd_ShieldBreaker_1P"
 
-	"burst_or_looping_fire_sound_start_3p"					""
-	"burst_or_looping_fire_sound_middle_3p"					"Weapon_Alternator_Loop_3P"
-	"burst_or_looping_fire_sound_end_3p"					"Weapon_Alternator_LoopEnd_3P"
+            "burst_or_looping_fire_sound_start_3p"		""
+            "burst_or_looping_fire_sound_middle_3p"		"Weapon_Alternator_Loop_ShieldBreaker_3P"
+            "burst_or_looping_fire_sound_end_3p"		"Weapon_Alternator_LoopEnd_ShieldBreaker_3P"
 
-	"burst_or_looping_fire_sound_start_npc"					""
-	"burst_or_looping_fire_sound_middle_npc"				"Weapon_Alternator_Loop_3p_NPC_a"
-	"burst_or_looping_fire_sound_end_npc"					"Weapon_Alternator_LoopEnd_NPC"
+            "burst_or_looping_fire_sound_start_npc"		""
+            "burst_or_looping_fire_sound_middle_npc"	"Weapon_Alternator_Loop_3p_NPC_a"
+            "burst_or_looping_fire_sound_end_npc"		"Weapon_Alternator_LoopEnd_NPC"
+
+			"projectile_trail_effect_0"                 "P_tracer_proj_smg_shield_breaker"
+            "impact_effect_table" 				        "shield_breaker_bullet"
+
+
+
+
+
+"damage_shield_scale"                       "1.55"
+
+ // Sway
+    "sway_min_yaw_zoomed"							"-0.02"  //"-0.03"
+    "sway_max_yaw_zoomed"							"0.02"   //"0.03"
+    "sway_min_pitch_zoomed"  						"-0.0125"   //"-0.015"
+    "sway_max_pitch_zoomed"  						"0.0165"    //"0.025"
+
 
 	"low_ammo_sound_name_1"							"Alternator_LowAmmo_Shot1"
 
@@ -92,22 +107,22 @@ WeaponData
 	"fire_rate"   									"10"
 
 	// Ammo
-	"ammo_clip_size"   								"16"
+	"ammo_clip_size"   								"26"
 
     "ammo_default_total"							"100"
     "ammo_stockpile_max"							"100"
     "ammo_no_remove_from_stockpile"					"1"
     "ammo_min_to_fire"								"1"
-
+"low_ammo_fraction" 							"0.3"
 	"damage_type" 									"bullet"
 
     // Damage - When Used by Players
-    "damage_near_value"   							"15"
-    "damage_far_value"								"15"
-    "damage_very_far_value"							"15"
-    "damage_near_value_titanarmor"					"15"
-    "damage_far_value_titanarmor" 					"15"
-    "damage_very_far_value_titanarmor" 				"15"
+    "damage_near_value"   							"16"
+    "damage_far_value"								"16"
+    "damage_very_far_value"							"16"
+    "damage_near_value_titanarmor"					"16"
+    "damage_far_value_titanarmor" 					"16"
+    "damage_very_far_value_titanarmor" 				"16"
     "damage_rodeo" 									"90"
 
     "damage_unshielded_scale"              			"1.0"
@@ -318,16 +333,16 @@ WeaponData
 
 		bullets_mag_l1
 		{
-			"ammo_clip_size"   						"20"
+			"ammo_clip_size"   						"22"
 		}
 		bullets_mag_l2
 		{
-			"ammo_clip_size"   						"23"
+			"ammo_clip_size"   						"25"
 		}
 		bullets_mag_l3
 		{
 			//Extended Ammo
-			"ammo_clip_size"   						"26"
+			"ammo_clip_size"   						"27"
 		}
 
 
@@ -337,13 +352,15 @@ WeaponData
 			"viewkick_yaw_base" 				"*0.85"
 			"viewkick_yaw_random"   			"*0.8"
 
-			"fx_muzzle_flash_attach"			"muzzle_flash"
-			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+// NOTE: Alternator has a special muzzle flash to look good with two barrels
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
-			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
-			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+	// NOTE: specifies muzzle flash for the second barrel
+	"fx_muzzle_flash2_view"							""
+	"fx_muzzle_flash2_world"						""
+	"fx_muzzle_flash2_attach"						"muzzle_flash_l"
 		}
 
         barrel_stabilizer_l2
@@ -351,13 +368,15 @@ WeaponData
 			"viewkick_yaw_base" 				"*0.8"
 			"viewkick_yaw_random"   			"*0.75"
 
-			"fx_muzzle_flash_attach"			"muzzle_flash"
-			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+// NOTE: Alternator has a special muzzle flash to look good with two barrels
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
-			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
-			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+	// NOTE: specifies muzzle flash for the second barrel
+	"fx_muzzle_flash2_view"							""
+	"fx_muzzle_flash2_world"						""
+	"fx_muzzle_flash2_attach"						"muzzle_flash_l"
 		}
 
         barrel_stabilizer_l3
@@ -366,14 +385,15 @@ WeaponData
 			"viewkick_pitch_random"   			"*0.65"
 			"viewkick_yaw_base" 				"*0.75"
 			"viewkick_yaw_random"   			"*0.7"
+// NOTE: Alternator has a special muzzle flash to look good with two barrels
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
-			"fx_muzzle_flash_attach"			"muzzle_flash"
-			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
-
-			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
-			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+	// NOTE: specifies muzzle flash for the second barrel
+	"fx_muzzle_flash2_view"							""
+	"fx_muzzle_flash2_world"						""
+	"fx_muzzle_flash2_attach"						"muzzle_flash_l"
 		}
 
 		barrel_stabilizer_l4_flash_hider
@@ -383,13 +403,15 @@ WeaponData
 			"viewkick_yaw_base" 				"*0.75"
 			"viewkick_yaw_random"   			"*0.7"
 
-        	"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_sup_FP" //"P_wpn_muzzleflash_alternator_sup_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_smg_sup" //"P_wpn_muzzleflash_alternator_sup"
-			"fx_muzzle_flash_attach"			"muzzle_flash"
+// NOTE: Alternator has a special muzzle flash to look good with two barrels
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 
-			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_sup_FP" //"P_wpn_muzzleflash_alternator_sup_FP"
-			"fx_muzzle_flash2_world"			"wpn_muzzleflash_smg_sup" //"P_wpn_muzzleflash_alternator_sup"
-			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
+	// NOTE: specifies muzzle flash for the second barrel
+	"fx_muzzle_flash2_view"							""
+	"fx_muzzle_flash2_world"						""
+	"fx_muzzle_flash2_attach"						"muzzle_flash_l"
 		}
 	}
 

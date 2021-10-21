@@ -81,7 +81,7 @@
 	"pass_through_depth"                       "64"
 	"pass_through_damage_preserved_scale"      "0.8"
 
-    "damage_headshot_scale"                    "2.05"
+    "damage_headshot_scale"                    "3"
 	"damage_leg_scale"                         "0.8"
 
 
@@ -111,10 +111,10 @@
 	"ammo_no_remove_from_stockpile"            "1"
 	"reload_enabled"                           "1"
 
-	"reload_time"                              "3.2"
+	"reloadempty_time"                         "4.3"
 	"reload_time_late1"                        "1.95"
 	"reload_time_late2"                        "1.95"
-	"reloadempty_time"                         "4.3"
+	"reloadempty_time"                         "2"
 	"reloadempty_time_late1"                   "3.13"
 	"reloadempty_time_late2"                   "2.08"
 	"reloadempty_time_late3"                   "0.65"

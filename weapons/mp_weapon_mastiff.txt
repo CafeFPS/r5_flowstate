@@ -58,7 +58,7 @@ WeaponData
 	"blast_pattern"									"mastiff"
 	"blast_pattern_zero_distance"        			"512.0"
 	"blast_pattern_default_scale"        			"1.1"
-	"blast_pattern_ads_scale"                       "0.5"  // for players, scales pattern when ADS
+	"blast_pattern_ads_scale"                       "0.55"  // for players, scales pattern when ADS
 	"blast_pattern_npc_scale"            			"0.75"  // scales on top of the default
 
 	"sound_dryfire"									"shotgun_dryfire"
@@ -82,7 +82,7 @@ WeaponData
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// Ammo
-	"ammo_clip_size"   								"4"
+	"ammo_clip_size"   								"6"
 	"ammo_default_total"							"20"
 	"ammo_stockpile_max"							"20"
 	"ammo_no_remove_from_stockpile"					"1"
@@ -96,12 +96,12 @@ WeaponData
     "damage_near_distance"							"450"
     "damage_far_distance" 							"850"
 
-	"damage_near_value"   							"18"
-	"damage_far_value"								"18"
-	"damage_near_value_titanarmor"					"18"
-	"damage_far_value_titanarmor" 					"18"
+	"damage_near_value"   							"11"
+	"damage_far_value"								"11"
+	"damage_near_value_titanarmor"					"11"
+	"damage_far_value_titanarmor" 					"11"
 
-	"damage_headshot_scale"							"2.0"
+	"damage_headshot_scale"							"1.25"
 	"damage_leg_scale"                              "1.0"
 
     // NPC
@@ -137,17 +137,15 @@ WeaponData
 	"dof_nearDepthEnd"							    "0.0"
 
 
-	"bolt_hitsize"									"0.0"
-
-	"bolt_hitsize_grow1_time"						"0.025"
-	"bolt_hitsize_grow1_size"						"3.0"
-	"bolt_hitsize_grow2_time"						"0.18"
-	"bolt_hitsize_grow2_size"						"7.0"
-	"bolt_hitsize_growfinal_lerptime"				"0.18"
-	"bolt_hitsize_growfinal_size"					"7.0"
+    "bolt_hitsize_grow1_time"						"0.025"
+    "bolt_hitsize_grow1_size"						"0.75"
+    "bolt_hitsize_grow2_time"						"0.18"
+    "bolt_hitsize_grow2_size"						"1.25"
+    "bolt_hitsize_growfinal_lerptime"				"0.18"
+    "bolt_hitsize_growfinal_size"					"1.25"
 
 	// Behavior
-	"fire_rate"   									"1.3"
+	"fire_rate"   									"1.1"
 	"reload_time" 									"1.03"
 	"reloadempty_time"								"1.7"
 	"reloadsegment_time_loop"						"0.51"
@@ -217,6 +215,13 @@ WeaponData
 	"viewmodel_shake_forward"						"0.5"
 	"viewmodel_shake_up"							"0.2"
 	"viewmodel_shake_right"							"0.0"
+
+// Sway
+    "sway_min_yaw_zoomed"							"-0.0175"  //"-0.03"
+    "sway_max_yaw_zoomed"							"0.0175"  //"0.03"
+
+    "sway_min_pitch_zoomed"  						"-0.015"  //"-0.03"
+    "sway_max_pitch_zoomed"  						"0.015"  //"0.03"
 
 	"bodygroup1_name"	                    "mastiff_sight"
 	"bodygroup1_set"	                    "1"

@@ -46,12 +46,12 @@
 
 	// Damage
 	//
-	"damage_near_value"                        "55"
-	"damage_far_value"                         "55"
-	"damage_very_far_value"                    "55"
-	"damage_near_value_titanarmor"             "55"
-	"damage_far_value_titanarmor"              "55"
-	"damage_very_far_value_titanarmor"         "55"
+	"damage_near_value"                        "60"
+	"damage_far_value"                         "60"
+	"damage_very_far_value"                    "60"
+	"damage_near_value_titanarmor"             "60"
+	"damage_far_value_titanarmor"              "60"
+	"damage_very_far_value_titanarmor"         "60"
 
 	"damage_rodeo"                             "400"
 

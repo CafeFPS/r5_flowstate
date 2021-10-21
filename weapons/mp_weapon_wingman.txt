@@ -58,7 +58,7 @@ WeaponData
 
 	"damage_type" 									"bullet"
 
-	"ammo_clip_size"   								"4"
+	"ammo_clip_size"   								"6"
 
 	"dof_zoom_focusArea_horizontal"					"0.06"
 	"dof_zoom_focusArea_top"						"0.070"
@@ -84,7 +84,7 @@ WeaponData
       
 
                      
-    "damage_headshot_scale"                         "2.1"   //"2.15"
+    "damage_headshot_scale"                         "2.15"   //"2.15"
       
 
     "damage_near_distance"							"800"
@@ -129,10 +129,12 @@ WeaponData
 	"reloadempty_time"								"2.1"
 	"reloadempty_time_late1"						"1.75"
 	"reloadempty_time_late2"						"0.65"
-	"deploy_time" 									"0.45"
-	"holster_time"									"0.4"
-	"raise_time"  									"0.35"
-	"lower_time"  									"0.3"
+	"deploy_time" 									"0.4"   //"0.45" Quickdraw buff integration after removal. 10% faster handling from base
+	"holster_time"									"0.36"  //"0.4"
+	"raise_time"  									"0.315" //"0.35"
+	"lower_time"  									"0.27"  //"0.3"
+    "zoom_time_in"					            	"0.18"
+    "zoom_time_out"   				            	"0.16"
 
 	// Projectile
 	"projectile_launch_speed"                  		"18000"
@@ -197,7 +199,7 @@ WeaponData
 	"spread_stand_hip" 								"2.4"
 	"spread_stand_hip_run" 							"3.0"
 	"spread_stand_hip_sprint"						"4.0"
-	"spread_crouch_hip"								"0.5"
+	"spread_crouch_hip"								"1.5"
 	"spread_air_hip"	   							"6.0"
 
 	"spread_kick_on_fire_stand_hip"					"2.5"
@@ -218,6 +220,9 @@ WeaponData
 	"activitymodifier"								"pistol"
 	"holster_type"									"pistol"
 
+// Sway
+    "sway_min_pitch_zoomed"  						"-0.005"  //"-0.015"
+    "sway_max_pitch_zoomed"  						"0.015"  //"0.02"
 
     "clip_bodygroup"						"b3wing_magazine"
     "clip_bodygroup_index_shown"			"0"
@@ -255,7 +260,7 @@ WeaponData
 
         highcal_mag_l1
 		{
-			"ammo_clip_size"   							"6"
+			"ammo_clip_size"   							"7"
 		}
 		highcal_mag_l2
 		{
@@ -263,7 +268,7 @@ WeaponData
 		}
 		highcal_mag_l3
 		{
-			"ammo_clip_size"   							"10"
+			"ammo_clip_size"   							"9"
 		}
 	}
 

@@ -138,8 +138,8 @@ WeaponData
 
     "damage_shield_scale"                           "1"
 
-    "damage_headshot_scale"							"2.0"
-	"damage_leg_scale"                              "0.75"
+    "damage_headshot_scale"							"1.75"
+	"damage_leg_scale"                              "0.85"
 
 
 	MP_BASE
@@ -151,12 +151,12 @@ WeaponData
 
 		"aimassist_adspull_weaponclass"					"none"
 
-		"damage_near_value"   							"18"
-		"damage_far_value"								"18"
-		"damage_very_far_value"							"18"
-		"damage_near_value_titanarmor"					"18"
-		"damage_far_value_titanarmor" 					"18"
-		"damage_very_far_value_titanarmor" 				"18"
+		"damage_near_value"   							"19"
+		"damage_far_value"								"19"
+		"damage_very_far_value"							"19"
+		"damage_near_value_titanarmor"					"19"
+		"damage_far_value_titanarmor" 					"19"
+		"damage_very_far_value_titanarmor" 				"19"
 		"damage_rodeo" 									"200"
 
 		"damage_near_distance"							"1500"
@@ -254,11 +254,11 @@ WeaponData
 	"raise_time"  								    "0.55"
 	"lower_time"  								    "0.5"
 
-	"reload_time" 									"2.8"
-	"reload_time_late1"								"1.8"
-	"reloadempty_time"								"3.33"
-	"reloadempty_time_late1"						"2.33"
-	"reloadempty_time_late2"						"1.23"
+	"reload_time" 									"3.2"
+	"reload_time_late1"								"2.1"
+	"reloadempty_time"								"3.8"
+	"reloadempty_time_late1"						"2.8"
+	"reloadempty_time_late2"						"1.53"
 
 	"vortex_refire_behavior"  						"bullet"
 	"allow_empty_fire"								"0"
@@ -278,7 +278,7 @@ WeaponData
 
 	"sprint_fractional_anims"						"0"
 
-	// Hipfire Spread
+	Hipfire Spread
 	"spread_stand_hip"								"2.0"
     "spread_stand_hip_run"							"2.5"
     "spread_stand_hip_sprint"                       "3.5"
@@ -333,8 +333,8 @@ WeaponData
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
-	"viewkick_yaw_random_innerexclude"				"0.22"
-	"viewkick_yaw_softScale"  						"3.0"
+	"viewkick_yaw_random_innerexclude"				"0.12"  //"0.22"
+	"viewkick_yaw_softScale"  						"2.0"   //"2.2"
 	"viewkick_yaw_hardScale"  						"0.3"
 
 	"viewkick_roll_base"  							"-1.6"
@@ -380,8 +380,8 @@ WeaponData
 
 	// Bob_Zoomed
 	"bob_cycle_time_zoomed"  						"0.4"
-	"bob_vert_dist_zoomed"   						"0.04"
-	"bob_horz_dist_zoomed"   						"0.03"
+	"bob_vert_dist_zoomed"   						"0.0275"
+	"bob_horz_dist_zoomed"   						"0.0175"
 	"bob_max_speed_zoomed"   						"150"
 	//"bob_pitch_zoomed"   							"0.002"
 	//"bob_yaw_zoomed" 								"-.002"
@@ -400,8 +400,8 @@ WeaponData
 
 	"viewdrift_ads_stand_scale_pitch" 			"0.6"
 	"viewdrift_ads_stand_scale_yaw"   			"0.5"
-	"viewdrift_ads_crouch_scale_pitch"  		"0.5"
-	"viewdrift_ads_crouch_scale_yaw"			"0.4"
+	"viewdrift_ads_crouch_scale_pitch"  		"0.4"
+	"viewdrift_ads_crouch_scale_yaw"			"0.3"
 	"viewdrift_ads_air_scale_pitch"   			"0.8"
 	"viewdrift_ads_air_scale_yaw" 				"0.9"
 
@@ -455,8 +455,8 @@ WeaponData
 	"sway_rotate_attach_blend_time_zoomed"			"0.2"
 	"sway_rotate_gain_zoomed"						"5"
 
-	"sway_min_yaw_zoomed"							"-0.033"
-	"sway_max_yaw_zoomed"							"0.033"
+	"sway_min_yaw_zoomed"							"-0.0275"
+	"sway_max_yaw_zoomed"							"0.0275"
 	"sway_turn_left_rotate_yaw_zoomed"				"-0.085"
 	"sway_turn_right_rotate_yaw_zoomed"				"0.085"
 
@@ -468,8 +468,8 @@ WeaponData
 	"sway_move_right_rotate_roll_zoomed" 			"0.2"
 	"sway_move_left_rotate_roll_zoomed"  			"-0.2"
 
-	"sway_min_pitch_zoomed"  						"-0.02"
-	"sway_max_pitch_zoomed"  						"0.02"
+	"sway_min_pitch_zoomed"  						"-0.015"
+	"sway_max_pitch_zoomed"  						"0.015"
 	"sway_turn_up_rotate_pitch_zoomed"				"0.045"
 	"sway_turn_down_rotate_pitch_zoomed"			"-0.045"
 

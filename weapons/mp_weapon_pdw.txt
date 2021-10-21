@@ -149,7 +149,7 @@ WeaponData
 	// Behavior
 	"fire_rate"   									"21"
 	"burst_fire_count"								"5"
-	"burst_fire_delay"								"0.2"
+	"burst_fire_delay"								"0.24"
 
 	"reload_time" 									"2.0"
 	"reload_time_late1"								"1.67"
@@ -178,8 +178,8 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
-	"viewkick_pitch_softScale"						"3.0"
-	"viewkick_pitch_hardScale"						"0.5"
+"viewkick_pitch_softScale"						"2.3"   //"3.0"
+	"viewkick_pitch_hardScale"						"0.4"   //"0.5"
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
@@ -236,6 +236,14 @@ WeaponData
     "spread_max_kick_crouch_hip"  					"1.5"
     "spread_max_kick_air_hip" 						"3.0"
 
+    // Sway
+    "sway_min_yaw_zoomed"							"-0.024"
+    "sway_max_yaw_zoomed"							"0.024"
+
+    "sway_min_pitch_zoomed"  						"-0.01"
+    "sway_max_pitch_zoomed"  						"0.008"
+
+
 	//setting to "0" so it's tunable in Bakery
 	"sprintcycle_time"								"0"
 	"deployfirst_time"								"1.4"
@@ -274,60 +282,60 @@ WeaponData
         // autofire
         altfire
         {
-			"mod_activity_modifier"							"fire_select"
+			// "mod_activity_modifier"							"fire_select"
 
-			"fire_rate"   									"13.25"
+			// "fire_rate"   									"13.25"
 
-        	"is_semi_auto"									"0"
-        	"burst_fire_count"								"0"  // also have to do this to disable burstfire
+        	// "is_semi_auto"									"0"
+        	// "burst_fire_count"								"0"  // also have to do this to disable burstfire
 
-        	"viewkick_pattern"                              "pdw_auto_2"
+        	// "viewkick_pattern"                              "pdw_auto_2"
 
-        	"viewkick_spring_hot"                           "pdw_auto_vkp_hot"
-        	"viewkick_spring_cooldown_holdtime"             "0.08"
-            "viewkick_spring_cooldown_fadetime"             "0.05"
+        	// "viewkick_spring_hot"                           "pdw_auto_vkp_hot"
+        	// "viewkick_spring_cooldown_holdtime"             "0.08"
+            // "viewkick_spring_cooldown_fadetime"             "0.05"
 
-        	"viewmodel_spring_jolt"                          "autofire_viewmodel_jolt"
-        	"viewmodel_jolt_scale"                           "1.0"
-            "viewmodel_jolt_backwardPerShot"                 "-0.4"
-            "viewmodel_jolt_roll"                            "0 2.3 0.0"
-            "viewmodel_jolt_side"                            "0 0.045 0"
+        	// "viewmodel_spring_jolt"                          "autofire_viewmodel_jolt"
+        	// "viewmodel_jolt_scale"                           "1.0"
+            // "viewmodel_jolt_backwardPerShot"                 "-0.4"
+            // "viewmodel_jolt_roll"                            "0 2.3 0.0"
+            // "viewmodel_jolt_side"                            "0 0.045 0"
 
-        	"viewkick_pitch_softScale"						"1.2"
-        	"viewkick_pitch_hardScale"						"0.3"
+        	// "viewkick_pitch_softScale"						"1.2"
+        	// "viewkick_pitch_hardScale"						"0.3"
 
-            "viewkick_yaw_softScale"  						"1.5"
-            "viewkick_yaw_hardScale"  						"0.3"
+            // "viewkick_yaw_softScale"  						"1.5"
+            // "viewkick_yaw_hardScale"  						"0.3"
 
-            "viewkick_roll_base"  							"1.0"
-            "viewkick_roll_randomMin" 						"-0.3"
-            "viewkick_roll_randomMax" 						"0.3"
-            "viewkick_roll_softScale" 						"0.8"
-            "viewkick_roll_hardScale" 						"0.2"
+            // "viewkick_roll_base"  							"1.0"
+            // "viewkick_roll_randomMin" 						"-0.3"
+            // "viewkick_roll_randomMax" 						"0.3"
+            // "viewkick_roll_softScale" 						"0.8"
+            // "viewkick_roll_hardScale" 						"0.2"
 
-            "viewkick_scale_valueDecayDelay"  				"0.1"  // for autofire, match to fire rate
-            "viewkick_scale_valueDecayRate"   				"55"
+            // "viewkick_scale_valueDecayDelay"  				"0.1"  // for autofire, match to fire rate
+            // "viewkick_scale_valueDecayRate"   				"55"
 
-            // Audio
-			"fire_sound_1_player_1p"						"weapon_prowler_secondshot_1p"
-			"fire_sound_1_player_3p"						""
+            // // Audio
+			// "fire_sound_1_player_1p"						"weapon_prowler_secondshot_1p"
+			// "fire_sound_1_player_3p"						""
 
-        	"fire_sound_2_player_1p"						"Weapon_bulletCasings.Bounce"
-			"fire_sound_2_player_3p"						"Weapon_bulletCasings.Bounce"
+        	// "fire_sound_2_player_1p"						"Weapon_bulletCasings.Bounce"
+			// "fire_sound_2_player_3p"						"Weapon_bulletCasings.Bounce"
 
-			"looping_sounds"								"1"
+			// "looping_sounds"								"1"
 
-			"burst_or_looping_fire_sound_start_1p"			"weapon_prowler_firstshot_1p"
-			"burst_or_looping_fire_sound_middle_1p"			"weapon_prowler_loop_1p"
-			"burst_or_looping_fire_sound_end_1p"			""
+			// "burst_or_looping_fire_sound_start_1p"			"weapon_prowler_firstshot_1p"
+			// "burst_or_looping_fire_sound_middle_1p"			"weapon_prowler_loop_1p"
+			// "burst_or_looping_fire_sound_end_1p"			""
 
-			"burst_or_looping_fire_sound_start_3p"			""
-			"burst_or_looping_fire_sound_middle_3p"			"weapon_prowler_loop_3p"
-			"burst_or_looping_fire_sound_end_3p"			"weapon_prowler_loopend_3p"
+			// "burst_or_looping_fire_sound_start_3p"			""
+			// "burst_or_looping_fire_sound_middle_3p"			"weapon_prowler_loop_3p"
+			// "burst_or_looping_fire_sound_end_3p"			"weapon_prowler_loopend_3p"
 
-			"burst_or_looping_fire_sound_start_npc"			""
-			"burst_or_looping_fire_sound_middle_npc"		"weapon_prowler_loop_3p"
-			"burst_or_looping_fire_sound_end_npc"			""
+			// "burst_or_looping_fire_sound_start_npc"			""
+			// "burst_or_looping_fire_sound_middle_npc"		"weapon_prowler_loop_3p"
+			// "burst_or_looping_fire_sound_end_npc"			""
         }
 
 
@@ -384,15 +392,15 @@ WeaponData
 
 		highcal_mag_l1
 		{
-			"ammo_clip_size"   							"++5"
+			"ammo_clip_size"   							"25"
 		}
 		highcal_mag_l2
 		{
-			"ammo_clip_size"   							"++10"
+			"ammo_clip_size"   							"30"
 		}
 		highcal_mag_l3
 		{
-			"ammo_clip_size"   							"++15"
+			"ammo_clip_size"   							"35"
 		}
 
                

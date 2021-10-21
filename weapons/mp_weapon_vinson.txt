@@ -120,7 +120,7 @@ WeaponData
 	"dof_zoom_nearDepthEnd"							"7.9"
 	"dof_nearDepthStart"							"0.0"
 	"dof_nearDepthEnd"								"0.0"
-
+"sway_max_pitch_zoomed"  						"0.01"
 	// Behavior
 	"fire_rate"   									"10"
 	"reload_time" 									"2.4"

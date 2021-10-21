@@ -57,7 +57,7 @@ WeaponData
 
 	"blast_pattern"									"energy_shotgun"
 	"blast_pattern_zero_distance"        			"512.0"
-	"blast_pattern_default_scale"        			"1.5"
+	"blast_pattern_default_scale"        			"1.7"
 	"blast_pattern_npc_scale"            			"1.8"  // scales on top of the default
 
 	// Effects
@@ -121,22 +121,27 @@ WeaponData
 	dof_zoom_focusArea_bottom						-0.023
 
     // Ammo
-    "ammo_default_total"							"100"
-    "ammo_stockpile_max"							"100"
+   "ammo_clip_size"   								"5"
+    "ammo_default_total"							"20"
     "ammo_no_remove_from_stockpile"					"1"
-    "ammo_min_to_fire"								"1"
-    "ammo_clip_size"   								"6"
+    "uses_ammo_pool"								"1"
+      
+    "ammo_stockpile_max"							"20"
     "ammo_per_shot"                                 "1"
+    "ammo_min_to_fire"								"1"
+    "low_ammo_fraction" 							"0.3"
 
     // Damage - When Used by Players
-    "damage_near_value"   							"10"
-    "damage_far_value"								"10"
+    "damage_near_value"   							"9"
+    "damage_far_value"								"9"
 
-    "damage_near_value_titanarmor"					"10"
-    "damage_far_value_titanarmor" 					"10"
+    "damage_near_value_titanarmor"					"9"
+    "damage_far_value_titanarmor" 					"9"
     "damage_rodeo" 									"550"
     "damage_near_distance"							"100"
     "damage_far_distance" 							"750"
+    "damage_headshot_scale"							"1.25"
+    "damage_leg_scale"                              "0.75"
 
 	// NPC
 	"proficiency_poor_spreadscale"					"7.0"
@@ -223,10 +228,10 @@ WeaponData
 	// Crosshair Spread
 
 	// CUSTOM- choke spread fractions for each charge level
-	"projectile_spread_choke_frac_1" 				"1.0"
-	"projectile_spread_choke_frac_2" 				"0.65"
-	"projectile_spread_choke_frac_3" 				"0.45"
-	"projectile_spread_choke_frac_4" 				"0.15"
+"projectile_spread_choke_frac_1" 				"1.0"
+	"projectile_spread_choke_frac_2" 				"0.85"
+	"projectile_spread_choke_frac_3" 				"0.65"
+	"projectile_spread_choke_frac_4" 				"0.35"
 
 	// for projectile shotguns, set this to the size of the spread pattern at the intended engagement range
 	"spread_stand_hip"								"2.8"
@@ -293,8 +298,8 @@ WeaponData
 			"charge_levels"									"4"
 			"charge_level_base"								"1"
 
-			"charge_cooldown_time"							"1.5"
-	        "charge_cooldown_delay"   						"1.25"
+			"charge_cooldown_time"							"0.5"
+	        "charge_cooldown_delay"   						"0.1"
 
 	        "headshot_distance" 							"11828"  // 300m
 

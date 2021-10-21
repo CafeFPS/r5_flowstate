@@ -216,10 +216,10 @@ WeaponSprings
 		"hipfire_roll_springConstant"	"250.0"
 		"hipfire_roll_damping"			"15.0"
 
-		"ADS_pitch_springConstant"		"75.0"
-		"ADS_pitch_damping"				"20.0"
-		"ADS_yaw_springConstant"		"95.0"
-		"ADS_yaw_damping"				"20.0"
+"ADS_pitch_springConstant"		"55.0"
+		"ADS_pitch_damping"				"14.0"
+		"ADS_yaw_springConstant"		"65.0"
+		"ADS_yaw_damping"				"12.0"
 		"ADS_roll_springConstant"		"220.0"
 		"ADS_roll_damping"				"20.0"
 	}

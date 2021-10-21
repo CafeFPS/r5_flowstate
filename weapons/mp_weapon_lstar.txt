@@ -20,16 +20,25 @@ WeaponData
 	"leveled_pickup"								"1"
 
 	"cooldown_type"									"chargeFrac"
-    "cooldown_time"	                                "0.4" // actually, "blowoff animation time"
-    "charge_time"                                   "1.7"  // while holding trigger, time until weapon overheats
-    "charge_cooldown_time"                          "2.45"  // controls length of overheat anim (along with delay)
-    "charge_cooldown_delay"                         "0.05"
+    "cooldown_time"	                                "0.16" //"0.4" // actually, "blowoff animation time"
+                     
+    "charge_time"                                   "2.0" //"1.9"
+     
+                                                                                                                
+      
+    "charge_cooldown_time"                          "1.19"  // non-overheat
+    "charge_cooldown_delay"                         "0.08"   //
+	"charge_overheat_cooldown_time"                 "2.53"  // controls length of overheat anim (along with delay)
+	"charge_overheat_cooldown_time_late1"           "2.05"
+	"charge_overheat_cooldown_time_late2"           "1.57"
+	"charge_overheat_cooldown_time_late3"           "0.96"
+    "charge_overheat_cooldown_delay"                "0.06"
 	"charge_overheats_when_full"                    "1"
 	"charge_weapon_fires_while_charging"            "1"
 	"charge_remain_full_when_fired"                 "1"
 	"entity_color_from_charge"						"1"
 
-	"projectile_launch_speed"						"18000"
+	"projectile_launch_speed"						"22000"
 	"projectile_drag_coefficient" 					"0.0"
 	"projectile_gravity_scale"						"0.5"
 	"projectile_lifetime" 							"4.0"
@@ -120,12 +129,12 @@ WeaponData
 
 	"bolt_hitsize"									"0.0"
 
-	"bolt_hitsize_grow1_time"						"0.075"
-	"bolt_hitsize_grow1_size"						"5.0"
-	"bolt_hitsize_grow2_time"						"0.18"
-	"bolt_hitsize_grow2_size"						"7.0"
-	"bolt_hitsize_growfinal_lerptime"				"0.18"
-	"bolt_hitsize_growfinal_size"					"7.0"
+   "bolt_hitsize_grow1_time"						"0.03"
+	"bolt_hitsize_grow1_size"						"1.0"
+	"bolt_hitsize_grow2_time"						"0.065"
+	"bolt_hitsize_grow2_size"						"2.5"
+	"bolt_hitsize_growfinal_lerptime"				"0.14"
+	"bolt_hitsize_growfinal_size"					"3.5"
 
 
 
@@ -145,11 +154,11 @@ WeaponData
 	"npc_lead_projectiles"							"1"
 
     // Hipfire Spread
-    "spread_stand_hip"								"1.5"
-    "spread_stand_hip_run"							"2.0"
-    "spread_stand_hip_sprint"                       "3.0"
-    "spread_crouch_hip"   							"1.25"
-    "spread_air_hip"  								"4.0"
+   "spread_stand_hip"								"2.5"
+    "spread_stand_hip_run"							"3.0"
+    "spread_stand_hip_sprint"                       "4.0"
+    "spread_crouch_hip"   							"2.25"
+    "spread_air_hip"  								"5.0"
 
     "spread_kick_on_fire_stand_hip"   				"0.2"
     "spread_kick_on_fire_crouch_hip"  				"0.2"
@@ -251,8 +260,8 @@ WeaponData
 	"sway_rotate_attach_blend_time_zoomed"			"0.2"
 	"sway_rotate_gain_zoomed"						"5"
 
-	"sway_min_yaw_zoomed"							"-0.04"
-	"sway_max_yaw_zoomed"							"0.04"
+	"sway_min_yaw_zoomed"							"-0.03"
+	"sway_max_yaw_zoomed"							"0.03"
 	"sway_turn_left_rotate_yaw_zoomed"				"-0.085"
 	"sway_turn_right_rotate_yaw_zoomed"				"0.085"
 
@@ -264,8 +273,8 @@ WeaponData
 	"sway_move_right_rotate_roll_zoomed" 			"0.2"
 	"sway_move_left_rotate_roll_zoomed"  			"-0.2"
 
-	"sway_min_pitch_zoomed"  						"-0.03"
-	"sway_max_pitch_zoomed"  						"0.03"
+	"sway_min_pitch_zoomed"  						"-0.015"
+	"sway_max_pitch_zoomed"  						"0.015"
 	"sway_turn_up_rotate_pitch_zoomed"				"0.07"
 	"sway_turn_down_rotate_pitch_zoomed"			"-0.07"
 
@@ -279,7 +288,7 @@ WeaponData
     "viewkick_spring_hot"                           "lstar_vkp_hot"
 
     "viewkick_spring_heatpershot"                   "1.0"
-    "viewkick_spring_cooldown_holdtime"             "0.09"
+    "viewkick_spring_cooldown_holdtime"             "0.11"
     "viewkick_spring_cooldown_fadetime"             "0.05"
 
     "viewmodel_spring_jolt"                          "autofire_viewmodel_jolt"
@@ -290,13 +299,13 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
-	"viewkick_pitch_softScale"						"2.0"
+	"viewkick_pitch_softScale"						"2.6"
 	"viewkick_pitch_hardScale"						"0.4"
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
-	"viewkick_yaw_random_innerexclude"				"0.05"
-	"viewkick_yaw_softScale"  						"2.2"
+	
+	"viewkick_yaw_softScale"  						"2.1"
 	"viewkick_yaw_hardScale"  						"0.3"
 
 	"viewkick_roll_base"  							"-1.6"
@@ -321,8 +330,8 @@ WeaponData
 	"viewkick_scale_yaw_valueLerpStart"   			"5"
 	"viewkick_scale_pitch_valueLerpEnd" 			"0"
 	"viewkick_scale_yaw_valueLerpEnd" 				"5"
-	"viewkick_scale_valueDecayDelay"  				"0.1"
-    "viewkick_scale_valueDecayRate"   				"60"
+"viewkick_scale_valueDecayDelay"  				"0.55"     //"0.25"
+    "viewkick_scale_valueDecayRate"   				"160"
 
 	"viewkick_perm_pitch_base" 						"0"
 	"viewkick_perm_pitch_random"   					"0"
@@ -375,20 +384,20 @@ WeaponData
 
     "aimassist_adspull_weaponclass"					"none"
 
-    "damage_near_value"   							"19"
-    "damage_far_value"								"19"
-    "damage_very_far_value"							"19"
-    "damage_near_value_titanarmor"					"19"
-    "damage_far_value_titanarmor" 					"19"
-    "damage_very_far_value_titanarmor" 				"19"
+    "damage_near_value"   							"18"
+    "damage_far_value"								"18"
+    "damage_very_far_value"							"18"
+    "damage_near_value_titanarmor"					"18"
+    "damage_far_value_titanarmor" 					"18"
+    "damage_very_far_value_titanarmor" 				"18"
 
     "damage_rodeo" 									"100"
     "explosion_damage"								"30"
     "damage_near_distance"							"1500"
     "damage_far_distance" 							"2500"
     "damage_very_far_distance"						"5000"
-    "damage_headshot_scale"							"2.0"
-    "damage_leg_scale"	    						"0.8"
+    "damage_headshot_scale"							"1.75"
+    "damage_leg_scale"	    						"0.85"
     "critical_hit_damage_scale"						"1.5"
 
     "red_crosshair_range" 							"0"
@@ -429,7 +438,7 @@ WeaponData
 	"dof_nearDepthEnd"							    "0.0"
 
 	// Behavior
-	"fire_rate"   									"12.0"
+	"fire_rate"   									"10.0"
 
 	"zoom_time_in"                                  "0.34"
 	"zoom_time_out"                                 "0.3"
@@ -458,7 +467,7 @@ WeaponData
 	"allow_headshots" 								"1"
 	"headshot_distance" 							"2500"
 	"primary_fire_does_not_block_sprint"			"0"
-	"ads_move_speed_scale"							"0.5"
+	"ads_move_speed_scale"							"0.4"
 	"aimassist_disable_hipfire"						"0"
 	"aimassist_disable_ads"							"0"
 	"aimassist_disable_hipfire_titansonly"			"0"

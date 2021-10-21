@@ -71,21 +71,24 @@ WeaponData
 
 	// Ammo
 	"ammo_clip_size"   								"18"
-
+        	"fx_muzzle_flash_view"					"wpn_muzzleflash_smg_sup_FP"
+			"fx_muzzle_flash_world"					"wpn_muzzleflash_smg_sup"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
+	
 	MP_BASE
 	{
 		"ammo_default_total"							"150"
 		"ammo_stockpile_max"							"150"
 		"ammo_no_remove_from_stockpile"					"1"
 		"ammo_min_to_fire"								"1"
-
+"low_ammo_fraction" 					        "0.3"
 		// Damage - When Used by Players
-		"damage_near_value"   							"12"
-		"damage_far_value"								"12"
-   	 	"damage_very_far_value"							"12"
-		"damage_near_value_titanarmor"					"12"
-		"damage_far_value_titanarmor" 					"12"
-		"damage_very_far_value_titanarmor" 				"12"
+		"damage_near_value"   							"11"
+		"damage_far_value"								"11"
+   	 	"damage_very_far_value"							"11"
+		"damage_near_value_titanarmor"					"11"
+		"damage_far_value_titanarmor" 					"11"
+		"damage_very_far_value_titanarmor" 				"11"
 		"damage_rodeo" 									"110"
 
 		// Damage - When Used by NPCs
@@ -95,6 +98,8 @@ WeaponData
 		"npc_damage_far_value"							"7"
 
 		"npc_max_range"   								"2000"
+"fx_muzzle_flash_view"					"wpn_muzzleflash_smg_sup_FP"
+			"fx_muzzle_flash_world"					"wpn_muzzleflash_smg_sup"
 	}
 
 	SP_BASE
@@ -282,20 +287,6 @@ WeaponData
 			"bodygroup2_set" 						"0"
 			"ui2_enable" 							"0"
 		}
-
-                           
-                         
-         
-                                      
-                                   
-         
-
-                                 
-         
-                                      
-                                   
-         
-      
 
 		barrel_stabilizer_l4_flash_hider
         {

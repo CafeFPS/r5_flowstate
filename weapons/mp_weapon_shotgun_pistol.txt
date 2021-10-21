@@ -77,7 +77,7 @@ WeaponData
 
 	"damage_flags"									"DF_SHOTGUN | DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
 	"damage_type" 									"bullet"
-	"damage_headshot_scale"							"1.5"
+	"damage_headshot_scale"							"1.25"
 
 	"explosion_inner_radius"  						"16"
 	"explosionradius" 								"32"
@@ -85,7 +85,7 @@ WeaponData
 
 	"critical_hit_damage_scale"						"1"
 
-	"ammo_clip_size"   								"3"
+	"ammo_clip_size"   								"6"
 	"ammo_per_shot"									"1"
 
 	"ammo_no_remove_from_stockpile"					"1"
@@ -233,8 +233,8 @@ WeaponData
 
 	// Zoomed Sway
 
-	"sway_min_yaw_zoomed"							"-0.073"
-	"sway_max_yaw_zoomed"							"0.073"
+	"sway_min_yaw_zoomed"							"-0.0135"    //"-0.0225"
+	"sway_max_yaw_zoomed"							"0.0135"     //"0.0225"
 	"sway_turn_left_rotate_yaw_zoomed"				"-0.085"
 	"sway_turn_right_rotate_yaw_zoomed"				"0.085"
 
@@ -242,6 +242,9 @@ WeaponData
 	"sway_max_roll_zoomed"   						"4"
 	"sway_turn_left_rotate_roll_zoomed"   			"0"
 	"sway_turn_right_rotate_roll_zoomed"  			"0"
+
+	"sway_min_pitch_zoomed"  						"-0.01"  //"-0.015"
+    "sway_max_pitch_zoomed"  						"0.0185"  //"0.02"
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
 	"bob_tilt_angle"  								"0.5"
@@ -310,7 +313,7 @@ WeaponData
 
         hopup_unshielded_dmg
         {
-            "damage_unshielded_scale"   					"2.3"
+            "damage_unshielded_scale"   					"1"
 
             "projectile_trail_effect_0"     				"P_tracer_proj_smg_hammer_point"
             "impact_effect_table" 							"hammer_point_bullet"
