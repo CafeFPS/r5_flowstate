@@ -33,9 +33,6 @@ void function GrappleWeaponInit()
 
 #if SERVER
 	Bleedout_AddCallback_OnPlayerStartBleedout( Grapple_OnPlayerStartBleedout )
-#endif //
-
-#if SERVER
 	AddCallback_OnGrappled( GrappleNPCCallback )
 	RegisterSignal( "OnGrappled" )
 	//RegisterSignal( "OnGrappleDetach" )
@@ -95,12 +92,14 @@ var function OnWeaponPrimaryAttack_ability_grapple( entity weapon, WeaponPrimary
 			}
 		}
 	}
+
 	owner.Grapple( grappleDirection )
 
 	if ( owner.IsPlayer() && owner.IsGrappleActive() && grappleAutoAimTarget )
 	{
 		owner.SetGrappleAutoAimTarget( grappleAutoAimTarget )
 	}
+
 	if ( weapon.HasMod( "survival_finite_ordnance" ) )
 		return 0
 	else
@@ -168,13 +167,19 @@ void function DoGrappleImpactExplosion( entity player, entity grappleWeapon, ent
 
 void function CodeCallback_OnGrappleActivate( entity player )
 {
+	entity grappleWeapon = player.GetOffhandWeapon( OFFHAND_LEFT )
+	if ( !IsValid( grappleWeapon ) )
+		return
+	if ( !grappleWeapon.GetWeaponSettingBool( eWeaponVar.grapple_weapon ) )
+		return
+
+	grappleWeapon.e.lastGrappleTime = -1
 }
 
 void function CodeCallback_OnGrappleAttach( entity player, entity hitent, vector hitpos, vector hitNormal )
 {
 #if SERVER
 	PIN_PlayerAbility( player, "mp_ability_grapple", ABILITY_TYPE.TACTICAL, null, {pos = hitpos, attached = true} )
-
 	if ( IsValid( hitent ) )
 	{
 		// Added via AddEntityCallback_OnGrappled
@@ -208,6 +213,8 @@ void function CodeCallback_OnGrappleAttach( entity player, entity hitent, vector
 		if ( !grappleWeapon.GetWeaponSettingBool( eWeaponVar.grapple_weapon ) )
 			return
 
+		grappleWeapon.e.lastGrappleTime = Time()
+
 		if ( grappleWeapon.HasMod( "survival_finite_ordnance" ) )
 		{
 			int newAmmo = maxint( 0, grappleWeapon.GetWeaponPrimaryClipCount() - grappleWeapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire ) )
@@ -233,6 +240,20 @@ void function CodeCallback_OnGrappleDetach( entity player )
 		foreach ( callbackFunc in file.onGrappleDetachCallbacks )
 		{
 			thread callbackFunc( player )
+		}
+		
+		entity grappleWeapon = player.GetOffhandWeapon( OFFHAND_LEFT )
+		if ( !IsValid( grappleWeapon ) )
+			return
+		if ( !grappleWeapon.GetWeaponSettingBool( eWeaponVar.grapple_weapon ) )
+			return
+		
+		float reloadTime = float(grappleWeapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )) / 10
+
+		// If last grapple time was longer than cooldown, then reload tactical as grapple missed any object
+		if (Time() - grappleWeapon.e.lastGrappleTime >= reloadTime) {
+			int max = grappleWeapon.GetWeaponPrimaryClipCountMax()
+			grappleWeapon.SetWeaponPrimaryClipCount( max )
 		}
 
 		//Signal( player, "OnGrappleDetach" )

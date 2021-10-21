@@ -1165,14 +1165,14 @@ void function ReleaseHUDRui( var rui )
 
 var function CreateCockpitRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHud, RUI_DRAW_HUD, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHud, GetHudDrawGroup(), sortKey )
 	InitHUDRui( rui, RUI_PERMANENT )
 	return rui
 }
 
 var function CreateCockpitPostFXRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHud, RUI_DRAW_POSTEFFECTS, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHud, GetHudDrawGroup( RUI_DRAW_POSTEFFECTS ), sortKey )
 	InitHUDRui( rui, RUI_PERMANENT )
 	return rui
 }
@@ -1210,14 +1210,14 @@ var function CreateTransientCockpitRui( asset ruiAsset, int sortKey = 0 )
 
 var function CreatePermanentCockpitRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, RUI_DRAW_HUD, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, GetHudDrawGroup(), sortKey )
 	InitHUDRui( rui, RUI_PERMANENT )
 	return rui
 }
 
 var function CreatePermanentCockpitPostFXRui( asset ruiAsset, int sortKey = 0 )
 {
-	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, RUI_DRAW_POSTEFFECTS, sortKey )
+	var rui = RuiCreate( ruiAsset, clGlobal.topoFullscreenHudPermanent, GetHudDrawGroup( RUI_DRAW_POSTEFFECTS ), sortKey )
 	InitHUDRui( rui, RUI_PERMANENT )
 	return rui
 }

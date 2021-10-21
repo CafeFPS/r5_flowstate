@@ -51,34 +51,50 @@ void function SetupOverrideSpawnSurvivalCharacter()
 void function SetupWeapons()
 {
 	#if UI
-	SetupDevCommand( "Alternator SMG", "give mp_weapon_alternator_smg" )
-	SetupDevCommand( "RE45", "give mp_weapon_autopistol" )
-	SetupDevCommand( "Charge Rifle", "give mp_weapon_defender" )
-	SetupDevCommand( "Longbow DMR", "give mp_weapon_dmr" )
-	SetupDevCommand( "Triple Take", "give mp_weapon_doubletake" )
-	SetupDevCommand( "Havoc", "give mp_weapon_energy_ar" )
-	SetupDevCommand( "Peacekeeper", "give mp_weapon_energy_shotgun" )
-	SetupDevCommand( "Devotion", "give mp_weapon_esaw" )
-	SetupDevCommand( "G7 Rifle", "give mp_weapon_g2" )
-	SetupDevCommand( "Hemlok", "give mp_weapon_hemlok" )
-	SetupDevCommand( "M600 Spitfire", "give mp_weapon_lmg" )
-	SetupDevCommand( "L-Star", "give mp_weapon_lstar" )
-	SetupDevCommand( "Mastiff Shotgun", "give mp_weapon_mastiff" )
-	SetupDevCommand( "Dev Tool", "give mp_weapon_mdlspawner" )
-	SetupDevCommand( "Prowler SMG", "give mp_weapon_pdw" )
-	SetupDevCommand( "R99", "give mp_weapon_r97" )
-	SetupDevCommand( "R301", "give mp_weapon_rspn101" )
-	SetupDevCommand( "P2020 Pistol", "give mp_weapon_semipistol" )
-	SetupDevCommand( "EVA-8 Auto", "give mp_weapon_shotgun" )
-	SetupDevCommand( "Mozambique", "give mp_weapon_shotgun_pistol" )
-	SetupDevCommand( "Kraber", "give mp_weapon_sniper" )
-	SetupDevCommand( "Flatline", "give mp_weapon_vinson" )
-	SetupDevCommand( "Wingman", "give mp_weapon_wingman" )
-	SetupDevCommand( "Smart Pistol", "give mp_weapon_smart_pistol" )
-	SetupDevCommand( "Dev Cubemap ", "give weapon_cubemap" )
-	SetupDevCommand( "Thermite Grenade", "give mp_weapon_thermite_grenade" )
-	SetupDevCommand( "Frag Grenade", "give mp_weapon_frag_grenade" )
-	SetupDevCommand( "Arc Star", "give mp_weapon_grenade_emp" )
+	// Rifles
+	SetupDevCommand( "Rifle: Flatline", "give mp_weapon_vinson" )
+	SetupDevCommand( "Rifle: G7 Scout", "give mp_weapon_g2" )
+	SetupDevCommand( "Rifle: Havoc", "give mp_weapon_energy_ar" )
+	SetupDevCommand( "Rifle: Hemlok", "give mp_weapon_hemlok" )
+	SetupDevCommand( "Rifle: R-301", "give mp_weapon_rspn101" )
+	
+
+	// SMGs
+	SetupDevCommand( "SMG: Alternator", "give mp_weapon_alternator_smg" )
+	SetupDevCommand( "SMG: Prowler", "give mp_weapon_pdw" )
+	SetupDevCommand( "SMG: R-99", "give mp_weapon_r97" )
+
+	// LMGs
+	SetupDevCommand( "LMG: Devotion", "give mp_weapon_esaw" )
+	SetupDevCommand( "LMG: L-Star", "give mp_weapon_lstar" )
+	SetupDevCommand( "LMG: Spitfire", "give mp_weapon_lmg" )
+
+	// Snipers
+	SetupDevCommand( "Sniper: Charge Rifle", "give mp_weapon_defender" )
+	SetupDevCommand( "Sniper: Kraber", "give mp_weapon_sniper" )
+	SetupDevCommand( "Sniper: Longbow", "give mp_weapon_dmr" )
+	SetupDevCommand( "Sniper: Triple Take", "give mp_weapon_doubletake" )
+
+	// Shotguns
+	SetupDevCommand( "Shotgun: EVA-8 Auto", "give mp_weapon_shotgun" )
+	SetupDevCommand( "Shotgun: Mastiff", "give mp_weapon_mastiff" )
+	SetupDevCommand( "Shotgun: Mozambique", "give mp_weapon_shotgun_pistol" )
+	SetupDevCommand( "Shotgun: Peacekeeper", "give mp_weapon_energy_shotgun" )
+
+	// Pistols
+	SetupDevCommand( "Pistol: P2020", "give mp_weapon_semipistol" )
+	SetupDevCommand( "Pistol: RE-45", "give mp_weapon_autopistol" )
+	SetupDevCommand( "Pistol: Wingman", "give mp_weapon_wingman" )
+
+	// Grenades
+	SetupDevCommand( "Grenade: Arc Star", "give mp_weapon_grenade_emp" )
+	SetupDevCommand( "Grenade: Frag", "give mp_weapon_frag_grenade" )
+	SetupDevCommand( "Grenade: Thermite", "give mp_weapon_thermite_grenade" )
+
+	// Dev
+	//SetupDevCommand( "Dev: Dev Tool", "give mp_weapon_mdlspawner" )
+	SetupDevCommand( "Dev: Smart Pistol (disabled)", "give mp_weapon_smart_pistol" )
+	SetupDevCommand( "Dev: Dev Cubemap ", "give weapon_cubemap" )
 	#endif
 }
 
@@ -112,28 +128,30 @@ void function SetupSurvivalLoot( var categories )
 void function SetupAbilities()
 {
 	#if UI
+	SetupDevCommand( "Bangalore Tactical", "give mp_weapon_grenade_bangalore" )
+	SetupDevCommand( "Bangalore Ultimate", "give mp_weapon_grenade_creeping_bombardment" )
 	SetupDevCommand( "Bloodhound Tactical", "give mp_ability_area_sonar_scan" )
 	SetupDevCommand( "Bloodhound Ultimate", "give mp_ability_hunt_mode" )
-	SetupDevCommand( "Lifeline Tactical", "give mp_weapon_deployable_medic" )
-	SetupDevCommand( "Lifeline Ultimate", "give mp_ability_care_package" )
-	SetupDevCommand( "Pathfinder Tactical", "give mp_ability_grapple" )
-	SetupDevCommand( "Pathfinder Ultimate", "give mp_weapon_zipline" )
-	SetupDevCommand( "Octane Tactical", "give mp_ability_heal" )
-	SetupDevCommand( "Octane Ultimate", "give mp_weapon_jump_pad" )
-	SetupDevCommand( "Mirage Tactical", "give mp_ability_holopilot" )
-	SetupDevCommand( "Mirage Ultimate", "give mp_ability_mirage_ultimate" )
+	SetupDevCommand( "Caustic Tactical", "give mp_weapon_dirty_bomb" )
+	SetupDevCommand( "Caustic Ultimate", "give mp_weapon_grenade_gas" )
 	SetupDevCommand( "Crypto Tactical", "give mp_ability_crypto_drone" )
 	SetupDevCommand( "Crypto Ultimate", "give mp_ability_crypto_drone_emp" )
+	SetupDevCommand( "Gibraltar Tactical", "give mp_weapon_bubble_bunker" )
+	SetupDevCommand( "Gibraltar Ultimate", "give mp_weapon_grenade_defensive_bombardment" )
+	SetupDevCommand( "Lifeline Tactical", "give mp_weapon_deployable_medic" )
+	SetupDevCommand( "Lifeline Ultimate", "give mp_ability_care_package" )
+	SetupDevCommand( "Mirage Tactical", "give mp_ability_holopilot" )
+	SetupDevCommand( "Mirage Ultimate", "give mp_ability_mirage_ultimate" )
+	SetupDevCommand( " ", "give mp_ability_heal" ) // blank line so Octance is in the same column
+	SetupDevCommand( "Octane Tactical", "give mp_ability_heal" )
+	SetupDevCommand( "Octane Ultimate", "give mp_weapon_jump_pad" )
+	SetupDevCommand( "Pathfinder Tactical", "give mp_ability_grapple" )
+	SetupDevCommand( "Pathfinder Ultimate", "give mp_weapon_zipline" )
 	SetupDevCommand( "Wattson Tactical", "give mp_weapon_tesla_trap" )
 	SetupDevCommand( "Wattson Ultimate", "give mp_weapon_trophy_defense_system"  )
 	SetupDevCommand( "Wraith Tactical", "give mp_ability_phase_walk" )
 	SetupDevCommand( "Wraith Ultimate", "give mp_weapon_phase_tunnel" )
-	SetupDevCommand( "Gibraltar Tactical", "give mp_weapon_bubble_bunker" )
-	SetupDevCommand( "Gibraltar Ultimate", "give mp_weapon_grenade_defensive_bombardment" )
-	SetupDevCommand( "Bangalore Tactical", "give mp_weapon_grenade_bangalore" )
-	SetupDevCommand( "Bangalore Ultimate", "give mp_weapon_grenade_creeping_bombardment" )
-	SetupDevCommand( "Caustic Tactical", "give mp_weapon_dirty_bomb" )
-	SetupDevCommand( "Caustic Ultimate", "give mp_weapon_grenade_gas" )
+
 	SetupDevCommand( "3Dash Tactical", "give mp_ability_3dash" )
 	SetupDevCommand( "Pulse Blade", "give mp_weapon_grenade_sonar" )
 	SetupDevCommand( "Amped Wall", "give mp_weapon_deployable_cover" )

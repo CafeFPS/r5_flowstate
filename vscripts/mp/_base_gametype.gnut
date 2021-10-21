@@ -210,14 +210,14 @@ bool function IsProtectedFromFriendlyFire_MP( entity attacker, entity ent, var d
 	if ( attacker == ent )
 		return false
 
-	if ( attacker.GetTeam() == ent.GetTeam() )
-		return true
-
 	if ( DamageIgnoresFriendlyFire( damageInfo ) )
 		return false
 
-	if ( ent.GetOwner() != attacker && ent.GetBossPlayer() != attacker )
+	if ( attacker.GetTeam() == ent.GetTeam() )
 		return true
+
+	//if ( ent.GetOwner() != attacker && ent.GetBossPlayer() != attacker )
+	//	return true
 
 	if ( ent.e.noOwnerFriendlyFire == true )
 		return true
@@ -292,12 +292,14 @@ bool function DamageIgnoresFriendlyFire( damageInfo )
 
 	switch ( damageSourceID )
 	{
-		// case eDamageSourceId.switchback_trap:
+		case eDamageSourceId.damagedef_creeping_bombardment_detcord_explosion:
+		case eDamageSourceId.damagedef_defensive_bombardment:
+			return true
 		// case eDamageSourceId.suicideSpectreAoE:
 		// case eDamageSourceId.mp_titanweapon_stun_laser: // for energy transfer functionality. Preventing FF damage in the callback.
 		// case eDamageSourceId.mp_titanability_smoke: // For FD Vanguard Shield Upgrades. Preventing FF damage in the callback.
 		default:
-			return true
+			return false
 	}
 
 	return false
@@ -556,13 +558,15 @@ function PlayerDamageFeedback( entity ent, damageInfo, int num )
 	if ( IsMaxRangeShot( damageInfo ) )
 		customDamageType = customDamageType | DF_MAX_RANGE
 
-	if ( ent.GetHealth() - DamageInfo_GetDamage( damageInfo ) <= 0 )
+	if(isPermanentDmg)
 	{
-		if ( !ent.IsNPC() || ent.ai.killShotSound )
-			customDamageType = customDamageType | DF_KILLSHOT
+		attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, sPermanentDmg, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+		isPermanentDmg = false
 	}
-
-	attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+	else
+	{
+		attacker.NotifyDidDamage( ent, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), customDamageType, DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+	}
 }
 
 void function UpdateLastDamageTime( entity ent )

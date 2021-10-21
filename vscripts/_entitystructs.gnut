@@ -397,6 +397,9 @@ global struct ServerEntityStruct
 
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
+
+	float lastGrappleTime
+
 }
 
 global struct MeritData

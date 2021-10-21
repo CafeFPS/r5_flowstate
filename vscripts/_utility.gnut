@@ -368,26 +368,26 @@ entity function CreateScriptMover( vector origin = <0.0, 0.0, 0.0>, vector angle
 
 void function SpawnDummyAtPlayerZero()
 {
-    entity p = GetPlayerArray()[0];
-    vector pos = p.GetAttachmentOrigin( p.LookupAttachment( "CHESTFOCUS" ) );
-    SpawnDummy(pos, <0,0,0>);
+	entity p = GetPlayerArray()[0];
+	vector pos = p.GetAttachmentOrigin( p.LookupAttachment( "CHESTFOCUS" ) );
+	SpawnDummy(pos, <0,0,0>);
 }
 
 void function SpawnDummy(vector origin, vector angles)
 {
-    entity dummy = CreateEntity( "npc_dummie" )
-    SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
+	entity dummy = CreateEntity( "npc_dummie" )
+	SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 	SetTargetName(dummy,  "DUMMIE's Revenge")
-    dummy.SetOrigin( origin )
-    dummy.SetAngles( angles )
-    SetTeam(dummy, 99)
-    DispatchSpawn( dummy )
-    
-    dummy.SetSkin(RandomInt(6))
-    
-    array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
-    string randomWeapon = weapons[RandomInt(weapons.len())]
-    dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+	dummy.SetOrigin( origin )
+	dummy.SetAngles( angles )
+	SetTeam(dummy, 99)
+	DispatchSpawn( dummy )
+
+	dummy.SetSkin(RandomInt(6))
+
+	array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
+	string randomWeapon = weapons[RandomInt(weapons.len())]
+	dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
 }
 
 entity function CreateScriptMoverModel( asset model, vector origin = <0.0, 0.0, 0.0>, vector angles = <0.0, 0.0, 0.0>, int solidType = 0, float fadeDist = -1 )
@@ -2928,7 +2928,7 @@ void function ToggleHud()
 	player.s.hudVisible = !player.s.hudVisible
 
 	array<int> flagsForHudVisibilityControl = [
-		CE_FLAG_HIDE_MAIN_HUD,
+		CE_FLAG_HIDE_MAIN_HUD_INSTANT,
 		CE_FLAG_HIDE_PERMANENT_HUD
 	]
 

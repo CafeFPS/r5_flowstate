@@ -1,7 +1,11 @@
 // TODO: Reverse this
+// {
+// 	LocationScoringCriteria:
+// 	[
+// 		CommonShootWithLos
+// 	]
+// }
+
 {
-	LocationScoringCriteria:
-	[
-		CommonShootWithLos
-	]
+	name: "CommonShootWithLos"
 }

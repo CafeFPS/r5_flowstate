@@ -4,6 +4,8 @@ global function HealthRegen_Init
 //global function PilotHealthRegenThinkSP
 global function PilotShieldHealthUpdate
 
+global bool isPermanentDmg = false
+global float sPermanentDmg = 0.0
 struct
 {
 	int healthRegenRate
@@ -184,8 +186,8 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 
 		shieldDamage = PilotShieldModifyDamage( player, damageInfo )
 
-		if ( shieldDamage )
-			DamageInfo_SetDamage( damageInfo, shieldDamage )
+	//	if ( shieldDamage )
+		//	DamageInfo_SetDamage( damageInfo, shieldDamage )
 	}
 
 	return shieldDamage
@@ -193,6 +195,7 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 
 float function PilotShieldModifyDamage( entity player, var damageInfo )
 {
+
 	float shieldHealth = float( player.GetShieldHealth() )
 	float damage = DamageInfo_GetDamage( damageInfo )
 
@@ -206,10 +209,13 @@ float function PilotShieldModifyDamage( entity player, var damageInfo )
 
 	if ( shieldHealth && newShieldHealth <= 0 )
 	{
-		// EmitSoundOnEntity( player, "titan_energyshield_down" )
+		// EmitSoundOnEntity( player, "humanshield_break_1p_vs_3p" )
 	}
-
+if(permanentDamage > 0)
+	{
+		isPermanentDmg = true
+		sPermanentDmg = damage
 	DamageInfo_SetDamage( damageInfo, permanentDamage )
-
+}
 	return min( shieldHealth, damage )
 }

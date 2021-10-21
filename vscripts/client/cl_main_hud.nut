@@ -485,14 +485,13 @@ void function MainHud_TurnOn( entity vgui, float duration, float xWarp, float xS
 	vgui.s.enabledState = VGUI_OPEN
 }
 
-
 void function MainHud_TurnOn_RUI( bool instant = false )
 {
 	clGlobal.levelEnt.Signal( "MainHud_TurnOn" )
 	clGlobal.levelEnt.EndSignal( "MainHud_TurnOn" )
 	clGlobal.levelEnt.EndSignal( "MainHud_TurnOff" )
 
-	UpdateFullscreenTopology( clGlobal.topoFullscreenHud, true )
+	UpdateFullscreenTopology( clGlobal.topoFullscreenHud, true, true )
 }
 
 
@@ -586,7 +585,7 @@ void function HidePermanentHudTopo()
 
 void function ShowPermanentHudTopo()
 {
-	UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true )
+	UpdateFullscreenTopology( clGlobal.topoFullscreenHudPermanent, true, true )
 }
 
 void function HideTargetInfoHudTopo()
