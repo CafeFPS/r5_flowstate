@@ -1,4 +1,5 @@
 # R5RMechanicsGrinding
+Mechanics grinding DM is  a script that has new features for r5r custom_tdm.
 
 # v1.3 changelist:
 - Stability fix.
@@ -6,6 +7,13 @@
 - Whitelisted weapons again in the file.
 - Revenant spooky announcer cuz spooky month.
 - New announcer voices.
+
+
+# Name of the file/files modified: 
+1. /platform/scripts/vscripts/gamemodes/custom_tdm/_gamemode_custom_tdm.nut (actual script, server-side new features)
+2. /platform/scripts/vscripts/gamemodes/custom_tdm/cl_gamemode_custom_tdm.nut (client-side scoreboard, so u can know ur position everytime! this one gets bugged when someone dced and a new player comes in and take their team id. optional!! ) 
+3. /platform/scripts/vscripts/ _ health_regen.nut (Cracked shield fix, damage counter shield bleedtrhough fix)
+5. /platform/scripts/weapons / s10 weapons damage and recoil.
 ____________________________
 # README
 # 1. Simple Champion UI. Leaderboard from the server side.
@@ -37,9 +45,3 @@ Please make sure you have the last version of main scripts repo before using thi
 - s10 weapons: https://discord.com/channels/873158454850756638/876850330648842250/897520961006485535
 - Crack shield sound fix: https://discord.com/channels/873158454850756638/876850330648842250/896031055964954644
 - Our trello: https://trello.com/b/vXqhQwTB/todo-r5-mechanics-grinding-dm-caf%C3%A9decolombiafps-empathogenwarlord
-
-# Name of the file/files modified: 
-1. /platform/scripts/vscripts/gamemodes/custom_tdm/_gamemode_custom_tdm.nut (actual script, server-side new features)
-2. /platform/scripts/vscripts/gamemodes/custom_tdm/cl_gamemode_custom_tdm.nut (client-side scoreboard, so u can know ur position everytime! this one gets bugged when someone dced and a new player comes in and take their team id. optional!! ) 
-3. /platform/scripts/vscripts/ _ health_regen.nut (Cracked shield fix, damage counter shield bleedtrhough fix)
-5. Also s10 weapons in weapons folder.
