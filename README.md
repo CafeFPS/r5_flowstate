@@ -1,6 +1,26 @@
 # R5RMechanicsGrinding
 Mechanics grinding DM is  a script that has new features for r5r custom_tdm. We also have bug fixes. 
 
+# Mechanics Grinding v1.4 + Gungame!! Change list:
+
+- New feature for custom_tdm: Damage counter. This was achieved by reverse engineering the damage counter of the battle royale. It was hard work getting it to work, someone said I was going to have fun and I did. We still have a pending bug to fix but at this time it is 95% accurate and the result is shown as an integer.
+- Unrounded KD in scoreboard fixed
+- New term for a player if there’s one with more damage than the champion: the challenger.
+- Announcer voice line for First blood in each round. (Global counter of kills in each round)
+- If there’s a challenger when round ends (in most cases the most damage player is the same champion), the champion and the challenger will have unique announcer voicelines when killing each other in the next round.
+- Unique announcer voice lines for killing the kill leader of the round. (If this is different from the champion)
+- More UI text fixes.
+- More stability fixes.
+- More bug fixes.
+- Remember to edit hoster name in line 34.
+
+In the file you will find a gungame folder with a readme to configure the gungame!!  In the file you can find three gamemodes: Mechanics Grinding DM v1.4, MG Gungame v1.4, MG Gungame v1.4 without shields progression.
+
+# Name of the file/files modified: 
+1. /platform/scripts/vscripts/gamemodes/custom_tdm/_gamemode_custom_tdm.nut (actual script, server-side new features)
+2. /platform/scripts/vscripts/gamemodes/custom_tdm/cl_gamemode_custom_tdm.nut (client-side scoreboard, so u can know ur position everytime! this one gets bugged when someone dced and a new player comes in and take their team id. optional!! ) 
+3. /platform/scripts/vscripts/ _ health_regen.nut (Cracked shield fix, damage counter shield bleedtrhough fix)
+5. /platform/scripts/weapons / s10 weapons damage and recoil.
 
 # v1.3 changelist:
 - Stability fix.
@@ -9,12 +29,6 @@ Mechanics grinding DM is  a script that has new features for r5r custom_tdm. We 
 - Revenant spooky announcer cuz spooky month.
 - New announcer voices.
 
-
-# Name of the file/files modified: 
-1. /platform/scripts/vscripts/gamemodes/custom_tdm/_gamemode_custom_tdm.nut (actual script, server-side new features)
-2. /platform/scripts/vscripts/gamemodes/custom_tdm/cl_gamemode_custom_tdm.nut (client-side scoreboard, so u can know ur position everytime! this one gets bugged when someone dced and a new player comes in and take their team id. optional!! ) 
-3. /platform/scripts/vscripts/ _ health_regen.nut (Cracked shield fix, damage counter shield bleedtrhough fix)
-5. /platform/scripts/weapons / s10 weapons damage and recoil.
 ____________________________
 # README
 # 1. Simple Champion UI. Leaderboard from the server side.
