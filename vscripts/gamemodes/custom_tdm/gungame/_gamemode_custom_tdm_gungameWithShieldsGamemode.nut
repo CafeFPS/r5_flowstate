@@ -4,6 +4,10 @@
 //& michae\l/#1125
 ///////////////////////////////////////////////////////
 
+string WHITE_SHIELD = "armor_pickup_lv1"
+string BLUE_SHIELD = "armor_pickup_lv2"
+string PURPLE_SHIELD = "armor_pickup_lv3"
+
 global function _CustomTDM_Init
 global function _RegisterLocation
 table playersInfo
@@ -29,7 +33,7 @@ struct {
 	entity previousChallenger
 	int deathPlayersCounter=0
 	///////////TDM SETTINGS////////////
-	int RoundTime = 1200 // Round time!! It must be greater than 620 seconds!!
+	int RoundTime = 900 // Round time!! It must be greater than 620 seconds!!
 	string bubblecolor = "94 0 145" //Also this ^^ find in google "rgb color picker" and take the values, dont put commas.	
 	string Hoster = "-hoster-" //Also modify this. ^^
 	int PersonajeEscogido = 8 // Char select, char list below. You can use RandomInt(10) 
@@ -80,7 +84,7 @@ void function _CustomTDM_Init()
         AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
     }
     
-	// Whitelisted weapons
+	    // Whitelisted weapons
     for(int i = 0; GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
     {
         file.whitelistedWeapons.append(GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~"))
@@ -206,11 +210,12 @@ void function _OnPlayerConnected(entity player)
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
     if(!IsAlive(player))
     {
+		ResetPlayerStats(player)
         _HandleRespawn(player)
 		ClearInvincible(player)
     }
 	string nextlocation = file.selectedLocation.name
-	Message(player,"WELCOME TO TDM/FFA!", "\n            Hosted by " + file.Hoster + "\n \n Mechanics Grinding DM " + file.scriptversion + " by CaféDeColombiaFPS and empathogenwarlord.", 15)
+	Message(player,"WELCOME TO TDM/FFA!", "\n            Hosted by " + file.Hoster + "\n \n Mechanics Grinding DM " + file.scriptversion + " by CaféDeColombiaFPS.", 15)
 	GrantSpawnImmunity(player,2)
 	    switch(GetGameState())
     {
@@ -219,6 +224,7 @@ void function _OnPlayerConnected(entity player)
         {
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
+			UpgradeShields(player, true)
 			player.UnforceStand()  
 			player.UnfreezeControlsOnServer()
 		}
@@ -230,6 +236,7 @@ void function _OnPlayerConnected(entity player)
 	    if(IsValid(player))
         {
 		player.UnfreezeControlsOnServer();
+		UpgradeShields(player, true)
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 5, eTDMAnnounce.ROUND_START)
 		}
         break
@@ -303,6 +310,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
            
 			if(!IsValid(victim)) return
+			UpgradeShields(victim, true)
 			victim.p.storedWeapons = StoreWeapons(victim)
 			int reservedTime = 2
             wait reservedTime
@@ -342,10 +350,13 @@ wait 0.5
 			int score = GameRules_GetTeamScore(attacker.GetTeam());
             score++;
             GameRules_SetTeamScore(attacker.GetTeam(), score);
-			//Heal
-			PlayerRestoreHP(attacker, 100, Equipment_GetDefaultShieldHP())
+			//Gungame giveweapons
+			GiveWeapons(attacker)
 			//Autoreload on kill without animation //By CaféDeColombiaFPS
-            WpnAutoReloadOnKill(attacker)
+            //WpnAutoReloadOnKill(attacker)
+			//Heal
+			PlayerRestoreHP(attacker, 100)
+			UpgradeShields(attacker, false)
             }
 			} catch (e) {}
         }
@@ -417,8 +428,11 @@ void function _HandleRespawn(entity player, bool forceGive = false)
         {
 	TpPlayerToSpawnPoint(player)
 	MakeInvincible(player)
+	GiveWeapons(player)
+	GiveAbilities(player)
     SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-    PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+	PlayerRestoreHP(player, 100)
+	PlayerRestoreShields(player, player.GetShieldHealthMax())
 		}
 		} catch (e1) {}
 	WpnPulloutOnRespawn(player)
@@ -462,6 +476,106 @@ void function WpnPulloutOnRespawn(entity player)
 	wait 0.5
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 }}catch(e){}}
+
+
+void function GiveWeapons(entity player) {
+	int WeaponIndex = player.GetPlayerGameStat( PGS_KILLS )
+	int MaxWeapons = GetCurrentPlaylistVarInt("maxweapons", 0)
+		if (WeaponIndex > MaxWeapons) {
+        return
+		}
+	else {
+	string currentweapon = GetCurrentPlaylistVarString("weapon" + WeaponIndex, "")
+	entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	entity weapon
+	
+		if (currentweapon != "") {
+			array<string> attachments = []
+			
+			for(int i = 0; GetCurrentPlaylistVarString("weapon" + WeaponIndex + "_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
+			{
+				attachments.append(GetCurrentPlaylistVarString("weapon" + WeaponIndex + "_" + i.tostring(), "~~none~~"))
+			}
+			
+			if( IsValid( primary ) ) player.TakeWeaponByEntNow( primary )
+			player.GiveWeapon(currentweapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, attachments)
+	}
+
+	if( IsValid( weapon) && !weapon.IsWeaponOffhand() ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
+}
+}
+
+
+void function GiveAbilities(entity player) {
+	string ability0 = GetCurrentPlaylistVarString("tactical_ability", "")
+	string ability1 = GetCurrentPlaylistVarString("ultimate_ability", "")
+
+		if (ability0 != "") {
+			player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+			player.GiveOffhandWeapon(ability0, OFFHAND_TACTICAL)
+	}
+		if (ability1 != "") {
+			player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+			player.GiveOffhandWeapon(ability1, OFFHAND_ULTIMATE)
+	}
+}
+
+
+void function PlayerRestoreShields(entity player, int shields) {
+    if(IsValid(player) && IsAlive( player ))
+        player.SetShieldHealth(shielddd(shields, 0, player.GetShieldHealthMax()))
+}
+
+void function PlayerRestoreHP(entity player, int health) {
+    if(IsValid(player) && IsAlive( player ))
+        player.SetHealth( health )
+}
+
+int function shielddd(int value, int min, int max) {
+    if(value < min) return min
+    else if (value > max) return max
+    else return value
+
+    unreachable
+}
+
+
+void function UpgradeShields(entity player, bool died) {
+
+    if (!IsValid(player)) return
+
+    //If player to upgrade died, then dont do killstreak upgrade, just reset their shield
+    if (died) {
+        player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+        Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+    } else {
+        player.SetPlayerGameStat( PGS_TITAN_KILLS, player.GetPlayerGameStat( PGS_TITAN_KILLS ) + 1)
+
+        switch (player.GetPlayerGameStat( PGS_TITAN_KILLS )) {
+	    	case 1:
+                Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+                break
+            case 2:
+			     Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+                break
+            case 3:
+				Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+                break
+			case 4:
+				Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+			case 5:
+				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+            break
+            default:
+                Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+                break
+        }
+    }
+
+
+    PlayerRestoreShields(player, player.GetShieldHealthMax())
+    PlayerRestoreHP(player, 100)
+}
 
  // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████  
 // ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██ 
@@ -590,7 +704,7 @@ else{
 	foreach(player in GetPlayerArray())
     {
 		string nextlocation = file.selectedLocation.name
-		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           " + GetBestPlayerName() + " is the champion with " + GetBestPlayerScore() + " kills in the previous round. \n      " + PlayerWithMostDamageName() + " is the challenger with the most damage in previous round: " + GetDamageOfPlayerWithMostDamage(), 20, "diag_ap_aiNotify_circleTimerStartNext_02")
+		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           " + GetBestPlayerName() + " is the champion with " + GetBestPlayerScore() + " kills in the previous round. \n      " + PlayerWithMostDamageName() + " is the challenger with " + GetDamageOfPlayerWithMostDamage() + " of damage in the previous round.", 20, "diag_ap_aiNotify_circleTimerStartNext_02")
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -598,12 +712,18 @@ else{
 	}
 }
 } catch(e4){}
-
+ResetAllPlayerStats()
+try {
 foreach(player in GetPlayerArray())
     {
 player.p.playerDamageDealt = 0.0
+GiveAbilities(player)
+GiveWeapons(player)
+UpgradeShields(player, true)
+PlayerRestoreShields(player, player.GetShieldHealthMax())
+WpnPulloutOnRespawn(player)
 	}
-ResetAllPlayerStats()
+} catch(e5){}
 file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
 SimpleChampionUI()
 }
@@ -670,7 +790,8 @@ foreach(player in GetPlayerArray())
 try{       
 	   if(IsValid(player) && IsAlive(player))
         {
-			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+			PlayerRestoreHP(player, 100)
+			PlayerRestoreShields(player, player.GetShieldHealthMax())
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )				
 	}} catch (e) {}
@@ -684,7 +805,7 @@ foreach(player in GetPlayerArray())
 	  
 	 if(IsValid(player))
         {			
-		Message(player,"- CHAMPION DECIDED! -", "\n " + GetBestPlayerName() + " is the champion: number 1 in kills and damage \n with " + GetBestPlayerScore() + " kills and " + GetDamageOfPlayerWithMostDamage() + " of damage.  \n \n Champion is literally on fire! Weapons disabled! Please tbag.", 10, "UI_InGame_ChampionVictory")
+		Message(player,"- CHAMPION DECIDED! -", "\n " + GetBestPlayerName() + " is the champion: number 1 in kills and damage \n with " + GetBestPlayerScore() + " kills and " + GetDamageOfPlayerWithMostDamage() + " of damage.  \n \n        Champion is literally on fire! Weapons disabled! \n Please tbag.", 10, "UI_InGame_ChampionVictory")
 		}
 	}
 wait 1	
@@ -790,20 +911,20 @@ void function MonitorBubbleBoundary(entity bubbleShield, vector bubbleCenter, fl
     }
 }
 
-void function PlayerRestoreHP(entity player, float health, float shields)
-{
-    player.SetHealth( health )
-    // Inventory_SetPlayerEquipment(player, "helmet_pickup_lv4_abilities", "helmet")
-	// disabled cuz helmets not working :(
-    if(shields == 0) return;
-    else if(shields <= 50)
-        Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-    else if(shields <= 75)
-        Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
-    else if(shields <= 100)
-        Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-    player.SetShieldHealth( shields )
-}
+// void function PlayerRestoreHP(entity player, float health, float shields)
+// {
+    // player.SetHealth( health )
+    // // Inventory_SetPlayerEquipment(player, "helmet_pickup_lv4_abilities", "helmet")
+	// // disabled cuz helmets not working :(
+    // if(shields == 0) return;
+    // else if(shields <= 50)
+        // Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
+    // else if(shields <= 75)
+        // Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
+    // else if(shields <= 100)
+        // Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
+    // player.SetShieldHealth( shields )
+// }
 
  // ██████  ██████  ███████ ███    ███ ███████ ████████ ██  ██████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████ 
 // ██      ██    ██ ██      ████  ████ ██         ██    ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
@@ -841,6 +962,7 @@ file.characters = clone GetAllCharacters()
 ItemFlavor PersonajeEscogido = file.characters[file.PersonajeEscogido]
 array<ItemFlavor> characterSkins = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( PersonajeEscogido ) )
 CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+
 }
 
 
