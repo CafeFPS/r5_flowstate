@@ -1492,6 +1492,9 @@ void function BlockableDoor_OnDamage( entity door, var damageInfo )
 			thread FinishDoorExplosiveDamage( door, damageInfo )
 		}
 	}
+	else if (DamageInfo_GetDamageSourceIdentifier( damageInfo ) == eDamageSourceId.mp_weapon_thermite_grenade ) {
+		damageInflicted = DamageInfo_GetDamage( damageInfo )
+	}
 	else if ( !GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_normal_weapons", false ) )
 	{
 		DamageInfo_SetDamage( damageInfo, 0 )
