@@ -263,29 +263,29 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	}		
 	}
 
-	if(victim == challenger && attacker == champion)
-	{
-	foreach (player in GetPlayerArray())
-	{
-	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_championKilledChallenger_01" )
-	}		
-	}
+	// if(victim == challenger && attacker == champion)
+	// {
+	// foreach (player in GetPlayerArray())
+	// {
+	// thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_championKilledChallenger_01" )
+	// }		
+	// }
 	
-	if(victim == champion && attacker == challenger)
-	{
-	foreach (player in GetPlayerArray())
-	{
-	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_challengerKilledChampion_01" )
-	}		
-	}
+	// if(victim == champion && attacker == challenger)
+	// {
+	// foreach (player in GetPlayerArray())
+	// {
+	// thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_challengerKilledChampion_01" )
+	// }		
+	// }
 	
-	if (victim == killeader && victim == challenger)
-{
-		foreach (player in GetPlayerArray())
-	{
-	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderEliminated" )
-	}	
-	}
+	// if (victim == killeader && victim == challenger)
+// {
+		// foreach (player in GetPlayerArray())
+	// {
+	// thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderEliminated" )
+	// }	
+	// }
 	
 	if (victim == champion && victim == killeader)
 	{
