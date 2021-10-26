@@ -175,12 +175,18 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 	float damage = DamageInfo_GetDamage( damageInfo )
 	float damagefull = damage + float(shieldHealth)
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	try{
 	if ( DamageInfo_GetForceKill( damageInfo ) )
 	{
-		attacker.p.playerDamageDealt += -damagefull + maxHealth
+		// if(attacker.isPlayer()){
+		if(IsValidPlayer(attacker)){ // this function checks 1. IsValid(), 2. player.IsPlayer() 3. IsDisconnected()
+		attacker.p.playerDamageDealt += -damagefull + maxHealth}
+		// }
+		
 		player.SetShieldHealth( 0 )
 		return 0.0
 	}
+	}catch(e){}
 
 
 	float shieldDamage = 0
@@ -193,7 +199,7 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 
 	//	if ( shieldDamage )
 		//	DamageInfo_SetDamage( damageInfo, shieldDamage )
-	}} catch (e) {}
+	}} catch (e1) {}
 	
 
 	return shieldDamage
@@ -224,8 +230,10 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 		isPermanentDmg = true
         sPermanentDmg = damage
 		DamageInfo_SetDamage( damageInfo, permanentDamage )
-		attacker.p.playerDamageDealt += shieldHealth 
-	}} catch (e1) {}
+		if(IsValidPlayer(attacker)){
+		attacker.p.playerDamageDealt += shieldHealth }
+	}
+	} catch (e1) {}
 	
     return min( shieldHealth, damage )
 } 
