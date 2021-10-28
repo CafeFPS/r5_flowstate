@@ -20,6 +20,7 @@ struct PlayerInfo
 	string name
 	int team
 	int score
+	
 }
 
 global int maxTeam = 0;
@@ -45,8 +46,8 @@ void function MakeScoreRUI()
     clGlobal.levelEnt.EndSignal( "CloseScoreRUI" )
 
     UISize screenSize = GetScreenSize()
-    var screenAlignmentTopo = RuiTopology_CreatePlane( <( screenSize.width * 0.25),( screenSize.height * 0.0 ), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
-    var rui = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopo, RUI_DRAW_HUD, RUI_SORT_SCREENFADE + 1 )
+    var screenAlignmentTopo = RuiTopology_CreatePlane( <( screenSize.width * 0.48),( screenSize.height * -0.05 ), 0>, <float( screenSize.width )*0.7, 0, 0>, <0, float( screenSize.height )*0.7, 0>, false )
+    var rui = RuiCreate( $"ui/announcement_quick_right.rpak", screenAlignmentTopo, RUI_DRAW_HUD, 2000 )
     
     RuiSetGameTime( rui, "startTime", Time() )
       string msg = ""
@@ -55,9 +56,11 @@ void function MakeScoreRUI()
         msg = msg + player.GetPlayerName() + ": " + "0" + "\n"
     }
     RuiSetString( rui, "messageText", msg )
+
     RuiSetString( rui, "messageSubText", "Text 2")
     RuiSetFloat( rui, "duration", 9999999 )
     RuiSetFloat3( rui, "eventColor", SrgbToLinear( <255, 0, 0> ) )
+	// RuiSetFloat3( rui, "pos", <0, 0, 0> )
 	
     file.scoreRui = rui
     
@@ -186,7 +189,7 @@ void function ServerCallback_TDM_PlayerKilled()
             PlayerInfo p
             p.name = player.GetPlayerName()
             p.team = player.GetTeam()
-            p.score = GameRules_GetTeamScore(player.GetTeam())
+            p.score = player.GetPlayerNetInt( "kills" )
             playersInfo.append(p)
         }
         playersInfo.sort(ComparePlayerInfo)
@@ -197,6 +200,7 @@ void function ServerCallback_TDM_PlayerKilled()
             switch(i)
             {
                 case 0:
+                    // msg = msg + "1. " + p.name + ": " + p.score + "\n" + p.damage + "\n"
                      msg = msg + "1. " + p.name + ": " + p.score + "\n"
 					break
                 case 1:
