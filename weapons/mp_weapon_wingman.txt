@@ -78,14 +78,7 @@ WeaponData
     "damage_very_far_value_titanarmor" 				"45"
     "damage_rodeo" 									"350"
 
-    // this sucks. it should be an %else but I haven't had time to do it yet
-                    
-                                                           
-      
-
-                     
-    "damage_headshot_scale"                         "2.15"   //"2.15"
-      
+    "damage_headshot_scale"                         "2.15"
 
     "damage_near_distance"							"800"
     "damage_far_distance" 							"1300"
@@ -220,9 +213,10 @@ WeaponData
 	"activitymodifier"								"pistol"
 	"holster_type"									"pistol"
 
-// Sway
+	// Sway
     "sway_min_pitch_zoomed"  						"-0.005"  //"-0.015"
     "sway_max_pitch_zoomed"  						"0.015"  //"0.02"
+
 
     "clip_bodygroup"						"b3wing_magazine"
     "clip_bodygroup_index_shown"			"0"

@@ -1,15 +1,15 @@
 "WeaponBlastPatterns"
 {
-    "mastiff"
+    "mastiff_2"
     {
-        "bullet_0" "30.0 0.0 0 0"
-        "bullet_1" "15.0 0.0 0 0"
-        "bullet_2" "7.5 0.0 0 0"
+        "bullet_0" "35.0 0.0 0 0"
+        "bullet_1" "17.5 0.0 0 0"
+        "bullet_2" "10.0 0.0 0 0"
         "bullet_3" "3.75 0.0 0 0"
         "bullet_4" "-3.75 0.0  0 0"
-        "bullet_5" "-7.5 0.0  0 0"
-        "bullet_6" "-15.0 0.0  0 0"
-        "bullet_7" "-30.0 0.0  0 0"
+        "bullet_5" "-10.0 0.0  0 0"
+        "bullet_6" "-17.5 0.0  0 0"
+        "bullet_7" "-35.0 0.0  0 0"
     }
 
     "eva8"

@@ -18,6 +18,19 @@ WeaponData
 	        "viewdrift_ads_crouch_scale_yaw"	"*0.85"
 	        "viewdrift_ads_air_scale_pitch"   	"*0.85"
 	        "viewdrift_ads_air_scale_yaw" 		"*0.85"
+
+			"reload_time"						"*0.967"
+            "reload_time_late1"					"*0.967"
+            "reload_time_late2"					"*0.967"
+            "reload_time_late3"					"*0.967"
+            "reload_time_late4"					"*0.967"
+            "reload_time_late5"					"*0.967"
+            "reloadempty_time"					"*0.967"
+            "reloadempty_time_late1"			"*0.967"
+            "reloadempty_time_late2"			"*0.967"
+            "reloadempty_time_late3"			"*0.967"
+            "reloadempty_time_late4"			"*0.967"
+            "reloadempty_time_late5"			"*0.967"
 		}
 
 		"stock_tactical_l2"
@@ -36,6 +49,19 @@ WeaponData
 	        "viewdrift_ads_crouch_scale_yaw"	"*0.75"
 	        "viewdrift_ads_air_scale_pitch"   	"*0.75"
 	        "viewdrift_ads_air_scale_yaw" 		"*0.75"
+
+			"reload_time"						"*0.933"
+            "reload_time_late1"					"*0.933"
+            "reload_time_late2"					"*0.933"
+            "reload_time_late3"					"*0.933"
+            "reload_time_late4"					"*0.933"
+            "reload_time_late5"					"*0.933"
+            "reloadempty_time"					"*0.933"
+            "reloadempty_time_late1"			"*0.933"
+            "reloadempty_time_late2"			"*0.933"
+            "reloadempty_time_late3"			"*0.933"
+            "reloadempty_time_late4"			"*0.933"
+            "reloadempty_time_late5"			"*0.933"
 		}
 
 		"stock_tactical_l3"
@@ -54,6 +80,19 @@ WeaponData
 	        "viewdrift_ads_crouch_scale_yaw"	"*0.55"
 	        "viewdrift_ads_air_scale_pitch"   	"*0.55"
 	        "viewdrift_ads_air_scale_yaw" 		"*0.55"
+
+			"reload_time"						"*0.9"
+            "reload_time_late1"					"*0.9"
+            "reload_time_late2"					"*0.9"
+            "reload_time_late3"					"*0.9"
+            "reload_time_late4"					"*0.9"
+            "reload_time_late5"					"*0.9"
+            "reloadempty_time"					"*0.9"
+            "reloadempty_time_late1"			"*0.9"
+            "reloadempty_time_late2"			"*0.9"
+            "reloadempty_time_late3"			"*0.9"
+            "reloadempty_time_late4"			"*0.9"
+            "reloadempty_time_late5"			"*0.9"
 		}
 	}
 }

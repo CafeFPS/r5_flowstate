@@ -34,8 +34,9 @@
 
 	// Behavior - Firing
 	//
-	"fire_rate"                                "4"
+	"fire_rate"                                "4.0"
 	"impulse_force"                            "750"
+	"is_semi_auto"				                "1"
 
 	// Behavior - Animation
 	"deployfirst_time"                          "1.42"
@@ -51,15 +52,23 @@
 
 	// Damage
 	//
-	"damage_near_value"                        "34"
-	"damage_far_value"                         "34"
-	"damage_very_far_value"                    "34"
+	"damage_flags"                             "DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
+	"damage_near_value"                        "36"
+	"damage_far_value"                         "36"
+	"damage_very_far_value"                    "36"
 	"damage_rodeo"                             "220"
 
 	// Damage - Titan
-	"damage_near_value_titanarmor"             "34"
-	"damage_far_value_titanarmor"              "34"
-	"damage_very_far_value_titanarmor"         "34"
+                
+	"damage_near_value_titanarmor"             "38"
+    "damage_far_value_titanarmor"              "38"
+    "damage_very_far_value_titanarmor"         "38"
+     
+                                                
+                                                
+                                                
+      
+
 	"damage_headshot_scale"                    "1.75"
     "damage_leg_scale"                         "0.75"
 
@@ -68,25 +77,29 @@
 	"viewmodel_offset_ads"                     "0 -1.6 0"
 
 	// Projectile
-	"projectile_launch_speed"                  "30000"
+	"projectile_launch_speed"                  "30000"  //"31500"
 
-    // "bolt_hitsize_grow1_time"				    "0.123"  //~100m
-    // "bolt_hitsize_grow1_size"				    "0.33"
-    // "bolt_hitsize_grow2_time"				    "0.246"  //~200m
-    // "bolt_hitsize_grow2_size"				    "1.25"
-    // "bolt_hitsize_growfinal_lerptime"		    "0.369"  //~300m
-    // "bolt_hitsize_growfinal_size"               "2.0"
+    //"bolt_hitsize_grow1_time"				    "0.123"  //~100m
+    //"bolt_hitsize_grow1_size"				    "0.33"
+    //"bolt_hitsize_grow2_time"				    "0.246"  //~200m
+    //"bolt_hitsize_grow2_size"				    "1.25"
+    //"bolt_hitsize_growfinal_lerptime"		    "0.369"  //~300m
+    //"bolt_hitsize_growfinal_size"               "2.0"
+
+    "pass_through_depth"							"0"     //from AR
+    "pass_through_damage_preserved_scale"			"0.5"   //from AR
 
 	// Ammo
 	//
 	"ammo_pool_type"                           "bullet"
-	"ammo_clip_size"                           "10"
-	"ammo_stockpile_max"                       "70"
-	"ammo_default_total"                       "70"
+	"ammo_clip_size"                           "20"
+	"ammo_stockpile_max"                       "80"
+	"ammo_default_total"                       "100"
 	"ammo_min_to_fire"                         "1"
 	"ammo_no_remove_from_stockpile"            "1"
 	"reload_enabled"                           "1"
-"low_ammo_fraction"                        "0.3"
+	"low_ammo_fraction"                        "0.3"
+	
 	"reload_time"                              "2.4"
 	"reload_time_late1"                        "1.26"
 	"reload_time_late2"                        "0.64"
@@ -154,33 +167,6 @@
 	"viewkick_air_scale_ads"                   "1.0"
 
 	// Spread
-	//
-	// "spread_stand_hip"							"2.5"
-    // "spread_stand_hip_run"						"5.0"
-    // "spread_stand_hip_sprint"                   "5.5"
-    // "spread_crouch_hip"   						"2.0"
-    // "spread_air_hip"  							"6.0"
-
-    // "spread_kick_on_fire_stand_hip"   			"0.75"
-    // "spread_kick_on_fire_crouch_hip"  			"0.75"
-    // "spread_kick_on_fire_air_hip" 				"0.75"
-
-    // "spread_max_kick_stand_hip"   				"3.5"
-    // "spread_max_kick_crouch_hip"  				"3.0"
-    // "spread_max_kick_air_hip" 					"4.5"
-
-	// "spread_stand_ads"                         "0.0"
-	// "spread_crouch_ads"                        "0.0"
-	// "spread_air_ads"                           "0.0"
-
-	// "spread_kick_on_fire_stand_ads"            "0.0"
-	// "spread_kick_on_fire_crouch_ads"           "0.0"
-	// "spread_kick_on_fire_air_ads"              "0.0"
-
-	// "spread_max_kick_stand_ads"                "0.0"
-	// "spread_max_kick_crouch_ads"               "0.0"
-	// "spread_max_kick_air_ads"                  "0.0"
-
 	"spread_decay_rate"                        "6"
     "spread_decay_delay"                       "0.24"
 
@@ -286,35 +272,35 @@
 
 		altfire_double_tap
 		{
-		    // "mod_activity_modifier"						"fire_select"
+		    "mod_activity_modifier"						"fire_select"
 
-		    // "fire_rate"                                 "10.0"
-            // "burst_fire_count"                          "2"
-            // "burst_fire_delay"                          "0.425"   //was .22 from 4.5 RoF
+		    "fire_rate"                                 "10.0"
+            "burst_fire_count"                          "2"
+            "burst_fire_delay"                          "0.475"   //was .25 from 4.0 RoF
 
-            // "viewkick_pattern"                          "g2_double_tap"
+            "viewkick_pattern"                          "g2_double_tap"
 
-            // "viewkick_spring_hot"                       "g2_vkp_double_tap_hot"     //pulls in less than g2_vkp_hot
+            "viewkick_spring_hot"                       "g2_vkp_double_tap_hot"     //pulls in less than g2_vkp_hot
 
-            // "viewkick_spring_heatpershot"				"1.0"
-            // "viewkick_spring_cooldown_holdtime"         "0.34"
-            // "viewkick_spring_cooldown_fadetime"         "0.26"
+            "viewkick_spring_heatpershot"				"1.0"
+            "viewkick_spring_cooldown_holdtime"         "0.36"
+            "viewkick_spring_cooldown_fadetime"         "0.26"
 
-            // // Viewkick - Pitch
-            // "viewkick_pitch_base"                       "1.0"
-            // "viewkick_pitch_random"                     "1.0"
-            // "viewkick_pitch_softScale"                  "2.7"
-            // "viewkick_pitch_hardScale"                  "0.3"
+            // Viewkick - Pitch
+            "viewkick_pitch_base"                       "1.0"
+            "viewkick_pitch_random"                     "1.0"
+            "viewkick_pitch_softScale"                  "2.7"
+            "viewkick_pitch_hardScale"                  "0.3"
 
-            // // Viewkick - Yaw
-            // "viewkick_yaw_base"                         "1.0"
-            // "viewkick_yaw_random"                       "1.0"
-            // "viewkick_yaw_softScale"                    "1.3"
-            // "viewkick_yaw_hardScale"                    "0.3"
+            // Viewkick - Yaw
+            "viewkick_yaw_base"                         "1.0"
+            "viewkick_yaw_random"                       "1.0"
+            "viewkick_yaw_softScale"                    "1.3"
+            "viewkick_yaw_hardScale"                    "0.3"
 
-            // // Viewkick - Scale
-            // "viewkick_scale_valueDecayDelay"            "0.48"
-            // "viewkick_scale_valueDecayRate"             "200"
+            // Viewkick - Scale
+            "viewkick_scale_valueDecayDelay"            "0.53"
+            "viewkick_scale_valueDecayRate"             "200"
 		}
 // end HAS_DOUBLE_TAP
       
@@ -394,17 +380,17 @@
 
 		"bullets_mag_l1"
 		{
-			"ammo_clip_size"  "++5"
+			"ammo_clip_size"  "15"
 		}
 
 		"bullets_mag_l2"
 		{
-			"ammo_clip_size"  "++8"
+			"ammo_clip_size"  "18"
 		}
 
 		"bullets_mag_l3"
 		{
-			"ammo_clip_size"  "++10"
+			"ammo_clip_size"  "20"
 		}
 
                

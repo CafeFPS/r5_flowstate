@@ -41,8 +41,8 @@ WeaponData
 //	"playermodel"									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 	"projectilemodel"								"mdl/Weapons/grenades/w_bangalore_canister_gas_projectile.rmdl"
 
-    show_grenade_indicator                          0
-    grenade_show_indicator_to_owner                 0
+    "show_grenade_indicator"                        "0"
+    "show_grenade_indicator_to_owner"               "0"
 
     "zoom_effects"									"0"
 
@@ -160,6 +160,8 @@ WeaponData
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"0"
+
+	"grenade_touch_triggers_on_impact"				"1"
 	"grenade_bounce_vel_frac_shallow"				"0.53"
 	"grenade_bounce_vel_frac_sharp"					"0.32"
 	"grenade_bounce_vel_frac_along_normal"			"0.5"

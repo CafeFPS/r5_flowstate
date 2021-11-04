@@ -57,16 +57,14 @@ WeaponData
 	"explosionradius" 								"120"
 	"impulse_force"   								"1"
 
-	// Ammo
-	"cooldown_type"                                 "ammo_instant"
-	"ammo_display"									"count"
+			"ammo_display"									"bar"
+	"ammo_stockpile_max"							"100"
 	"ammo_clip_size"   								"100"
 	"ammo_default_total"							"100"
-	"ammo_min_to_fire"								"50"
-	"ammo_per_shot"									"50"
-	"ammo_stockpile_max"							"100"
-	"ammo_drains_to_empty_on_fire"					"0"
+	"ammo_per_shot"									"100"
+	"ammo_min_to_fire"								"100"
 	"ammo_no_remove_from_clip"						"0"
+	
 
     "charge_time"									"0.1"
     "charge_cooldown_time"							"0.2"
@@ -91,6 +89,14 @@ WeaponData
 		"damage_far_value"								"900"
 		"explosion_damage"								"100"
 		"explosion_damage_heavy_armor"					"250"
+		
+			"ammo_display"									"bar"
+	"ammo_stockpile_max"							"100"
+	"ammo_clip_size"   								"100"
+	"ammo_default_total"							"100"
+	"ammo_per_shot"									"100"
+	"ammo_min_to_fire"								"100"
+	"ammo_no_remove_from_clip"						"0"
 	}
 
 	SP_BASE

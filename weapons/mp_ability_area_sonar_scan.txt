@@ -77,9 +77,9 @@ WeaponData
         "ammo_per_shot"									"250"
         "ammo_min_to_fire"								"250"
 
-        // Regen Ammo
-        "regen_ammo_refill_rate"						"7"
-        "regen_ammo_refill_start_delay"					"0.0"
+    // Regen Ammo
+    "regen_ammo_refill_rate"						"10"
+    "regen_ammo_refill_start_delay"					"0.0"
 
         "enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
 
@@ -106,9 +106,9 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"1.25"
-	"fire_anim_rate"								"1.0"
-	"holster_time"									"0"
-	"deploy_time" 									"0.4"
+    "fire_anim_rate"								"1.0"
+    "holster_time"									"1.0"
+	"deploy_time" 									"0.8"
 	"lower_time"  									"0"
 	"raise_time"  									"0"
 	"allow_empty_fire"								"0"
@@ -132,6 +132,16 @@ WeaponData
 
 	Mods
 	{
+	    ult_active
+	    {
+                                        
+            regen_ammo_refill_rate                 30
+              
+            "fire_rate"                            1.25
+            "holster_time"                         0.5
+            "deploy_time"                          0.4
+	    }
+
 	    survival_armor_cooldown_mod
         {
             "regen_ammo_refill_rate"    "*1.25"

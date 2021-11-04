@@ -44,11 +44,11 @@ WeaponData
 	"sound_weapon_ready"							"Survival_UI_Ultimate_Ready"
 	"ammo_display"									"count"
 
-	"ammo_clip_size"   								"180"
+	"ammo_clip_size"   								"60"
 	"ammo_default_total"							"0"
-	"ammo_min_to_fire"								"180"
-	"ammo_per_shot"									"180"
-	"ammo_stockpile_max"							"180"
+	"ammo_min_to_fire"								"60"
+	"ammo_per_shot"									"60"
+	"ammo_stockpile_max"							"60"
 	"fire_rate"   									"1.0"
 
 	// Regen Ammo

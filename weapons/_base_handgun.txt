@@ -251,8 +251,8 @@ WeaponData
 	"sway_rotate_attach_blend_time_zoomed"			"0.2"
 	"sway_rotate_gain_zoomed"						"5"
 
-	"sway_min_yaw_zoomed"							"-0.04"
-	"sway_max_yaw_zoomed"							"0.04"
+	"sway_min_yaw_zoomed"							"-0.0225"
+	"sway_max_yaw_zoomed"							"0.0225"
 	"sway_turn_left_rotate_yaw_zoomed"				"-0.085"
 	"sway_turn_right_rotate_yaw_zoomed"				"0.085"
 
@@ -264,8 +264,8 @@ WeaponData
 	"sway_move_right_rotate_roll_zoomed" 			"0.2"
 	"sway_move_left_rotate_roll_zoomed"  			"-0.2"
 
-	"sway_min_pitch_zoomed"  						"-0.03"
-	"sway_max_pitch_zoomed"  						"0.03"
+	"sway_min_pitch_zoomed"  						"-0.015"
+	"sway_max_pitch_zoomed"  						"0.02"
 	"sway_turn_up_rotate_pitch_zoomed"				"0.07"
 	"sway_turn_down_rotate_pitch_zoomed"			"-0.07"
 

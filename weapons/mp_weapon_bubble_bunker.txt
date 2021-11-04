@@ -100,7 +100,7 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"10.0"
-	"fire_duration"									"18.0"
+	"fire_duration"									"12.0"
 	"deploy_time" 									"0.15"
 	"lower_time"  									"0.15"
 	"allow_empty_fire"								"0"
