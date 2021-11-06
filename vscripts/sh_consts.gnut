@@ -687,6 +687,22 @@ global const SKYSCALE_O2_DOOROPEN_MCOR_ACTOR			= 1.0
 global const SKYSCALE_O2_DOOROPEN_MCOR_SHIP				= 1.1
 global const SKYSCALE_O2_DOOROPEN_MCOR_PLAYER			= 0.9
 
+//--------------------------------------------------
+// 				DLIGHT TYPES
+//--------------------------------------------------
+
+// Base types
+global const DLIGHT_WHITE  = < 1, 1, 1 >
+global const DLIGHT_RED    = < 1, 0, 0 >
+global const DLIGHT_GREEN  = < 0, 1, 0 >
+global const DLIGHT_BLUE   = < 0, 0, 1 >
+global const DLIGHT_YELLOW = < 1, 1, 0 >
+global const DLIGHT_PURPLE = < 1, 0, 1 >
+
+// Green types
+global const DLIGHT_SEAGREEN   = < 0, 1, 1 >
+global const DLIGHT_LIGHTGREEN = < 0.3, 1, 1 >
+
 
 //--------------------------------------------------
 // 				PERFORMANCE

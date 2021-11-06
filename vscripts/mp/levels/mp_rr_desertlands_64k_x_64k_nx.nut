@@ -2,10 +2,6 @@
 global function CodeCallback_MapInit
 #endif //SERVER
 
-#if CLIENT
-global function CodeCallback_MapInit
-#endif //CLIENT
-
 #if SERVER
 void function CodeCallback_MapInit()
 {
@@ -22,16 +18,14 @@ void function ClientCodeCallback_MapInit()
 }
 #endif //CLIENT
 
-#if SERVER
-void function OnDeathFieldStopShrink_ShadowSquad( DeathFieldData deathFieldData )
-{
-	//LootCreepGarbageCollect() // Assets only exists in "mp_rr_canyonlands_mu1_night.rpak"
-}
-#endif //SERVER
-
 void function SharedInit()
 {
 	ShPrecacheShadowSquadAssets()
 	ShPrecacheEvacShipAssets()
 	//ShLootCreeps_Init() // Assets only exists in "mp_rr_canyonlands_mu1_night.rpak"
+}
+
+void function OnDeathFieldStopShrink_ShadowSquad( DeathFieldStageData deathFieldData )
+{
+	//LootCreepGarbageCollect() // Assets only exists in "mp_rr_canyonlands_mu1_night.rpak"
 }

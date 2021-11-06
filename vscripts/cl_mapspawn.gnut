@@ -97,6 +97,7 @@ void function ClientCodeCallback_MapSpawn()
 {
 	ScriptCompilerTest()
 	LevelVarInit()
+	DynamicLight_Init()
 
 	Hud = getroottable().Hud
 

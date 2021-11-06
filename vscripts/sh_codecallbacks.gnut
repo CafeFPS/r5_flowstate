@@ -309,7 +309,7 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		//player.ForceShadowVisible( newClass == "titan" )
 
 		UpdatePlayerStatusCounts()
-		TEMP_MapConVar_Init()
+		MapConVar_Init()
 
 		/*if ( IsWatchingReplay() )
 			UpdateKillReplayIconPosition()*/
