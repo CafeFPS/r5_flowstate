@@ -13,6 +13,8 @@ void function ClientCommands_Init()
 	AddClientCommandCallback( "ToggleThirdPerson", ClientCommand_ToggleThirdPerson )
 	AddClientCommandCallback( "ToggleHUD", ClientCommand_ToggleHUD )
 
+	AddClientCommandCallback( "recharge", ClientCommand_recharge )
+
 	#if R5DEV
 	AddClientCommandCallback( "script", ClientCommand_script )
 	#endif
@@ -69,10 +71,37 @@ bool function ClientCommand_ToggleHUD( entity player, array<string> args )
 	return true
 }
 
+// Gives a gun infinite reloads
 bool function ClientCommand_infinite_ammo( entity player, array<string> args )
 {
-    //soon
-	return false
+	if( !IsValid( player ) )
+		return false
+
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+
+	foreach(entity weapon in GetEntArrayByClass_Expensive("weaponx")) {
+		if(weapon.HasMod( "survival_finite_ammo" )) {
+			weapon.RemoveMod( "survival_finite_ammo" )
+		}
+	}
+	return true
+}
+
+// Instantly fills a player's abilities
+bool function ClientCommand_recharge( entity player, array<string> args )
+{
+	if( !IsValid( player ) )
+		return false
+
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+    
+	player.GetOffhandWeapon( OFFHAND_INVENTORY )
+		.SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
+	player.GetOffhandWeapon( OFFHAND_LEFT )
+		.SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
+	return true
 }
 
 #if R5DEV
