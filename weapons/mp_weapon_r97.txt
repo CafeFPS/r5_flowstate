@@ -35,7 +35,6 @@ WeaponData
 	// Models
 	"viewmodel"   									"mdl/weapons/r97/ptpov_r97.rmdl"
 	"playermodel" 									"mdl/weapons/r97/w_r97.rmdl"
-	"holster_offset"								"2 0 0"
 
 	//"tracer_effect"   							"weapon_tracers_shotgun"
 
@@ -71,32 +70,36 @@ WeaponData
 	"damage_type" 									"bullet"
 
 	// Ammo
-		"ammo_clip_size"   								"20"
-
+	"ammo_clip_size"   								"18"
+        	"fx_muzzle_flash_view"					"wpn_muzzleflash_smg_sup_FP"
+			"fx_muzzle_flash_world"					"wpn_muzzleflash_smg_sup"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
+	
 	MP_BASE
 	{
 		"ammo_default_total"							"150"
 		"ammo_stockpile_max"							"150"
 		"ammo_no_remove_from_stockpile"					"1"
 		"ammo_min_to_fire"								"1"
-
+"low_ammo_fraction" 					        "0.3"
 		// Damage - When Used by Players
-	   "damage_near_value"   							"11"
-    "damage_far_value"								"11"
-    "damage_very_far_value"							"11"
-    "damage_near_value_titanarmor"					"11"
-    "damage_far_value_titanarmor" 					"11"
-    "damage_very_far_value_titanarmor" 				"11"
-      
-    "damage_rodeo" 									"110"
+		"damage_near_value"   							"11"
+		"damage_far_value"								"11"
+   	 	"damage_very_far_value"							"11"
+		"damage_near_value_titanarmor"					"11"
+		"damage_far_value_titanarmor" 					"11"
+		"damage_very_far_value_titanarmor" 				"11"
+		"damage_rodeo" 									"110"
 
-	   // Damage - When Used by NPCs
-    "npc_damage_near_value_titanarmor"				"0"
-    "npc_damage_far_value_titanarmor" 				"0"
-    "npc_damage_near_value"   						"9"
-    "npc_damage_far_value"							"7"
+		// Damage - When Used by NPCs
+		"npc_damage_near_value_titanarmor"				"0"
+		"npc_damage_far_value_titanarmor" 				"0"
+		"npc_damage_near_value"   						"9"
+		"npc_damage_far_value"							"7"
 
-    "npc_max_range"   								"2000"
+		"npc_max_range"   								"2000"
+"fx_muzzle_flash_view"					"wpn_muzzleflash_smg_sup_FP"
+			"fx_muzzle_flash_world"					"wpn_muzzleflash_smg_sup"
 	}
 
 	SP_BASE
@@ -285,20 +288,6 @@ WeaponData
 			"ui2_enable" 							"0"
 		}
 
-                           
-                         
-         
-                                      
-                                   
-         
-
-                                 
-         
-                                      
-                                   
-         
-      
-
 		barrel_stabilizer_l4_flash_hider
         {
         	"fx_muzzle_flash_view"					"wpn_muzzleflash_smg_sup_FP"
@@ -307,11 +296,11 @@ WeaponData
 
 		bullets_mag_l1
 		{
-			"ammo_clip_size"   							"22"
+			"ammo_clip_size"   							"20"
 		}
 		bullets_mag_l2
 		{
-			"ammo_clip_size"   							"24"
+			"ammo_clip_size"   							"23"
 		}
 		bullets_mag_l3
 		{

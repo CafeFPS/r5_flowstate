@@ -22,8 +22,8 @@ WeaponData
 	"damage_flags"									"DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
 
     "headshot_distance" 							"11828"  // 300m
-    "damage_headshot_scale"							"1.75"
-    "damage_leg_scale"                              "0.75"
+	"damage_headshot_scale"							"2.0"
+	"damage_leg_scale"                              "0.75"
 
     "damage_shield_scale"                           "1"
 
@@ -65,11 +65,11 @@ WeaponData
 	"bob_yaw" 										"-1.7"
 	"bob_roll"										"1.2"
 
-    // Bob - ADS
-    "bob_cycle_time_zoomed"  						"0.4"
-    "bob_vert_dist_zoomed"   						"0.0275"
-    "bob_horz_dist_zoomed"   						"0.065"
-    "bob_max_speed_zoomed"   						"155"
+	// Bob - ADS
+	"bob_cycle_time_zoomed"  						"0.4"
+	"bob_vert_dist_zoomed"   						"0.045"
+	"bob_horz_dist_zoomed"   						"0.07"
+	"bob_max_speed_zoomed"   						"155"
 //	"bob_pitch_zoomed"   							"0.0"
 	"bob_yaw_zoomed" 								"-0.01"
 	"bob_roll_zoomed"								"0.25"
@@ -246,10 +246,10 @@ WeaponData
 	"sway_rotate_attach_blend_time_zoomed"			"0.2"
 	"sway_rotate_gain_zoomed"						"5"
 
-    "sway_min_yaw_zoomed"							"-0.0275"
-    "sway_max_yaw_zoomed"							"0.0275"
-    "sway_turn_left_rotate_yaw_zoomed"				"-0.085"
-    "sway_turn_right_rotate_yaw_zoomed"				"0.085"
+	"sway_min_yaw_zoomed"							"-0.04"
+	"sway_max_yaw_zoomed"							"0.04"
+	"sway_turn_left_rotate_yaw_zoomed"				"-0.085"
+	"sway_turn_right_rotate_yaw_zoomed"				"0.085"
 
 	"sway_min_roll_zoomed"   						"-1"
 	"sway_max_roll_zoomed"   						"1"
@@ -259,10 +259,10 @@ WeaponData
 	"sway_move_right_rotate_roll_zoomed" 			"0.2"
 	"sway_move_left_rotate_roll_zoomed"  			"-0.2"
 
-    "sway_min_pitch_zoomed"  						"-0.0065"
-    "sway_max_pitch_zoomed"  						"0.008"
-    "sway_turn_up_rotate_pitch_zoomed"				"0.07"
-    "sway_turn_down_rotate_pitch_zoomed"			"-0.07"
+	"sway_min_pitch_zoomed"  						"-0.02"
+	"sway_max_pitch_zoomed"  						"0.03"
+	"sway_turn_up_rotate_pitch_zoomed"				"0.07"
+	"sway_turn_down_rotate_pitch_zoomed"			"-0.07"
 
 	// Misc - Unused
 	"explosion_damage"								"0"

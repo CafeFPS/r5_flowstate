@@ -130,7 +130,7 @@ WeaponData
 	"critical_hit_damage_scale"						"1.5"
 
 	// Ammo
-	"ammo_clip_size"   								"55"
+	"ammo_clip_size"   								"35"
 	"ammo_clip_random_loss_on_npc_drop"				"0.6"
 
    "titanarmor_critical_hit_required"              "1"
@@ -144,21 +144,20 @@ WeaponData
 
 	MP_BASE
 	{
-	"ammo_clip_size"   								"55"
-    "ammo_stockpile_max"					        "245"
-    "ammo_default_total"					        "300"   //for crate weapons, default total should be clip size + stockpile max
+		"ammo_default_total"							"420"
+		"ammo_stockpile_max"							"420"
 		"ammo_no_remove_from_stockpile"					"1"
 		"ammo_min_to_fire"								"1"
 
 		"aimassist_adspull_weaponclass"					"none"
 
-	"damage_near_value"   							"19"
-	"damage_far_value"								"19"
-	"damage_very_far_value"							"19"
-	"damage_near_value_titanarmor"					"19"
-	"damage_far_value_titanarmor" 					"19"
-	"damage_very_far_value_titanarmor" 				"19"
-	"damage_rodeo" 									"200"
+		"damage_near_value"   							"19"
+		"damage_far_value"								"19"
+		"damage_very_far_value"							"19"
+		"damage_near_value_titanarmor"					"19"
+		"damage_far_value_titanarmor" 					"19"
+		"damage_very_far_value_titanarmor" 				"19"
+		"damage_rodeo" 									"200"
 
 		"damage_near_distance"							"1500"
 		"damage_far_distance" 							"2500"
@@ -270,10 +269,44 @@ WeaponData
 	"allow_headshots" 								"1"
 	"headshot_distance" 							"2500"
 	"ads_move_speed_scale"							"0.4"
+	"aimassist_disable_hipfire"						"0"
+	"aimassist_disable_ads"							"0"
+	"aimassist_disable_hipfire_titansonly"			"0"
+	"aimassist_disable_ads_titansonly"				"0"
 	"aimassist_adspull_zoomStart"					"0.2"
 	"aimassist_adspull_zoomEnd"						"0.6"
 
 	"sprint_fractional_anims"						"0"
+
+	Hipfire Spread
+	"spread_stand_hip"								"2.0"
+    "spread_stand_hip_run"							"2.5"
+    "spread_stand_hip_sprint"                       "3.5"
+    "spread_crouch_hip"   							"1.75"
+    "spread_air_hip"  								"5.0"
+
+    "spread_kick_on_fire_stand_hip"   				"0.25"
+    "spread_kick_on_fire_crouch_hip"  				"0.25"
+    "spread_kick_on_fire_air_hip" 					"0.25"
+
+    "spread_max_kick_stand_hip"   					"3.0"
+    "spread_max_kick_crouch_hip"  					"2.0"
+    "spread_max_kick_air_hip" 						"4.0"
+
+	"spread_stand_ads"  							"0.0"
+	"spread_crouch_ads"  							"0.0"
+	"spread_air_ads"								"6.0"
+
+	"spread_kick_on_fire_stand_ads"   				"0.0"
+	"spread_kick_on_fire_crouch_ads"  				"0.0"
+	"spread_kick_on_fire_air_ads" 					"0.0"
+
+	"spread_max_kick_stand_ads"   					"0.0"
+	"spread_max_kick_crouch_ads"  					"0.0"
+	"spread_max_kick_air_ads" 						"0.0"
+
+	"spread_decay_rate"   							"12"
+	"spread_decay_delay"  							".3"
 
 	"ammo_suck_behavior"							"primary_weapons"
 

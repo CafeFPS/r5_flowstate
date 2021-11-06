@@ -65,7 +65,7 @@ WeaponData
 		"ammo_no_remove_from_clip"						"0"
 		"ammo_per_shot"									"200"
 		"ammo_stockpile_max"							"200"
-		"regen_ammo_refill_rate"						"400"
+		"regen_ammo_refill_rate"						"100"
 		"fire_duration"									"1.8"
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"

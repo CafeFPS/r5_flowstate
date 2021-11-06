@@ -31,7 +31,6 @@ WeaponData
 	// Models
 	"viewmodel"   									"mdl/weapons/peacekeeper/ptpov_peacekeeper.rmdl"
 	"playermodel" 									"mdl/weapons/peacekeeper/w_peacekeeper.rmdl"
-	"holster_offset"								"8 0 2"
 
     "OnWeaponActivate"                              "OnWeaponActivate_weapon_energy_shotgun"
     "OnWeaponDeactivate"                            "OnWeaponDeactivate_weapon_energy_shotgun"
@@ -58,11 +57,7 @@ WeaponData
 
 	"blast_pattern"									"energy_shotgun"
 	"blast_pattern_zero_distance"        			"512.0"
-                         
-                                                 
-     
 	"blast_pattern_default_scale"        			"1.7"
-      
 	"blast_pattern_npc_scale"            			"1.8"  // scales on top of the default
 
 	// Effects
@@ -126,18 +121,10 @@ WeaponData
 	dof_zoom_focusArea_bottom						-0.023
 
     // Ammo
-
-                         
-                                                                                  
-                                  
-                                   
-                                           
-                               
-     
-    "ammo_clip_size"   								"5"
+   "ammo_clip_size"   								"5"
     "ammo_default_total"							"20"
     "ammo_no_remove_from_stockpile"					"1"
-    "ammo_pool_type"								"shotgun"
+    "uses_ammo_pool"								"1"
       
     "ammo_stockpile_max"							"20"
     "ammo_per_shot"                                 "1"
@@ -153,6 +140,8 @@ WeaponData
     "damage_rodeo" 									"550"
     "damage_near_distance"							"100"
     "damage_far_distance" 							"750"
+    "damage_headshot_scale"							"1.25"
+    "damage_leg_scale"                              "0.75"
 
 	// NPC
 	"proficiency_poor_spreadscale"					"7.0"
@@ -196,18 +185,10 @@ WeaponData
 	"deployfirst_time"								"1.4"
 
 	"headshot_distance" 							"3940" // 100m
-	"damage_headshot_scale"							"1.25"  // "1.5"
 
 	"sprint_fractional_anims"						"0"
 
 	"ammo_suck_behavior"							"primary_weapons"
-
-    "bolt_hitsize_grow1_time"						"0.025"
-    "bolt_hitsize_grow1_size"						"0.8"
-    "bolt_hitsize_grow2_time"						"0.18"
-    "bolt_hitsize_grow2_size"						"1.4"
-    "bolt_hitsize_growfinal_lerptime"				"0.18"
-    "bolt_hitsize_growfinal_size"					"1.4"
 
 	// View Kick
 	"viewkick_spring" 								"energy_shotgun"
@@ -247,22 +228,22 @@ WeaponData
 	// Crosshair Spread
 
 	// CUSTOM- choke spread fractions for each charge level
-	"projectile_spread_choke_frac_1" 				"1.0"
+"projectile_spread_choke_frac_1" 				"1.0"
 	"projectile_spread_choke_frac_2" 				"0.85"
 	"projectile_spread_choke_frac_3" 				"0.65"
 	"projectile_spread_choke_frac_4" 				"0.35"
 
 	// for projectile shotguns, set this to the size of the spread pattern at the intended engagement range
-	"spread_stand_hip"								"2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_stand_hip_run"							"2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_stand_hip_sprint"                       "2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_crouch_hip"   							"2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_air_hip"  								"2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_stand_ads"								"2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_crouch_ads"   							"2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_air_ads"  								"2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_wallrunning"  							"2.8"       //"3.173" @ 1.7 blast pattern
-	"spread_wallhanging"  							"2.8"       //"3.173" @ 1.7 blast pattern
+	"spread_stand_hip"								"2.8"
+	"spread_stand_hip_run"							"2.8"
+	"spread_stand_hip_sprint"                       "2.8"
+	"spread_crouch_hip"   							"2.8"
+	"spread_air_hip"  								"2.8"
+	"spread_stand_ads"								"2.8"
+	"spread_crouch_ads"   							"2.8"
+	"spread_air_ads"  								"2.8"
+	"spread_wallrunning"  							"2.8"
+	"spread_wallhanging"  							"2.8"
 
 	// movement based crosshair bloom
 	"spread_moving_increase_rate" 					"5.5"
@@ -313,12 +294,12 @@ WeaponData
 
         hopup_energy_choke
         {
-			"charge_time" 									"1.25"
+			"charge_time" 									"1.5"
 			"charge_levels"									"4"
 			"charge_level_base"								"1"
 
-            "charge_cooldown_time"							"0.75"
-            "charge_cooldown_delay"   						"0.35"
+			"charge_cooldown_time"							"0.5"
+	        "charge_cooldown_delay"   						"0.1"
 
 	        "headshot_distance" 							"11828"  // 300m
 

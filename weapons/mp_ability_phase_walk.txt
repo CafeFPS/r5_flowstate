@@ -61,18 +61,15 @@ WeaponData
 	// Ammo
 	"cooldown_type"                                 "ammo_instant"
 	"ammo_display"									"count"
-
-	"ammo_drains_to_empty_on_fire"					"0"
-	"ammo_no_remove_from_clip"						"0"
-
-    "ammo_clip_size"   								"250"
+	"ammo_clip_size"   								"250"
 	"ammo_default_total"							"250"
 	"ammo_min_to_fire"								"250"
 	"ammo_per_shot"									"250"
 	"ammo_stockpile_max"							"250"
+	"ammo_drains_to_empty_on_fire"					"0"
+	"ammo_no_remove_from_clip"						"0"
 
-	"charge_time"									"4.0"
-
+    "charge_time"									"3.0"
     "charge_cooldown_time"							"1.0"
     "charge_cooldown_delay"   						"0.5"
     "charge_end_forces_fire"  						"1"
@@ -81,9 +78,6 @@ WeaponData
     "charge_maintained_until_fired"					"1"
     "charge_allow_midway_charge"					"0"
     "charge_effect_show_during_drain"				"0"
-    "charge_finish_primary_attack_on_cancel"		"1"
-
-    "primary_fire_does_not_block_sprint"            "1"
 
 	//Regen Ammo
 	"regen_ammo_refill_rate"						"10"
@@ -118,9 +112,9 @@ WeaponData
 	"zoom_fov"										"50"
 	"reload_time" 									"0"
 	"holster_time"									"0.15"
-	"deploy_time" 								"1.25"  //want to be driven by animation
-	"lower_time"  									"0.0"
-	"raise_time"  									"0.0"
+	//"deploy_time" 								"0.75"  //want to be driven by animation
+	"lower_time"  									"0.5"
+	"raise_time"  									"0.5"
 	"vortex_refire_behavior"  						"rocket"
 	"allow_empty_fire"								"0"
 	"reload_enabled"  								"0"
@@ -262,7 +256,6 @@ WeaponData
 		ult_active
 		{
 			"offhand_active_slot"       "altHand"
-			"deploy_time"   			"0.4"
         }
 	}
 }

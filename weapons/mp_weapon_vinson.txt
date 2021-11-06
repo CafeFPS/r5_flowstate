@@ -120,9 +120,7 @@ WeaponData
 	"dof_zoom_nearDepthEnd"							"7.9"
 	"dof_nearDepthStart"							"0.0"
 	"dof_nearDepthEnd"								"0.0"
-
-	"sway_max_pitch_zoomed"  						"0.01"
-
+"sway_max_pitch_zoomed"  						"0.01"
 	// Behavior
 	"fire_rate"   									"10"
 	"reload_time" 									"2.4"
@@ -138,6 +136,10 @@ WeaponData
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"1"
 	"primary_fire_does_not_block_sprint"			"0"
+	"aimassist_disable_hipfire"						"0"
+	"aimassist_disable_ads"							"0"
+	"aimassist_disable_hipfire_titansonly"			"1"
+	"aimassist_disable_ads_titansonly"				"1"
 
 	// View Kick
 	"viewkick_pattern"                              "flatline_2"
@@ -269,7 +271,111 @@ WeaponData
 		// single shot empowered
 		altfire_highcal
 		{
-          
+            "mod_activity_modifier"							"fire_select"
+
+            "is_semi_auto"									"1"
+
+            // fx
+            "projectile_trail_effect_0"                     "P_tracer_proj_sniper_piercer"
+
+            // sounds
+            "fire_sound_1_player_1p"						"Vinson_shell"
+            "fire_sound_1_player_3p"						"Weapon_bulletCasings.Bounce"
+            "fire_sound_2_player_1p"						"Weapon_Vinson_SingleShot_1P"
+            "fire_sound_2_player_3p"						"Weapon_Vinson_SingleShot_3P"
+            "fire_sound_2_npc"								"Weapon_Vinson_SecondShot_NPC"
+
+            "burst_or_looping_fire_sound_start_1p"			""
+            "burst_or_looping_fire_sound_middle_1p"			""
+            "burst_or_looping_fire_sound_end_1p"			""
+
+            "burst_or_looping_fire_sound_start_3p"			""
+            "burst_or_looping_fire_sound_middle_3p"			""
+            "burst_or_looping_fire_sound_end_3p"			""
+
+            "burst_or_looping_fire_sound_start_npc"			""
+            "burst_or_looping_fire_sound_middle_npc"		""
+            "burst_or_looping_fire_sound_end_npc"			""
+
+            "looping_sounds"								"0"
+
+            "low_ammo_sound_name_1"                         "Vinson_LowAmmo_Shot1"
+            "low_ammo_sound_name_2"                         "Vinson_LowAmmo_Shot2"
+            "low_ammo_sound_name_3"                         "Vinson_LowAmmo_Shot3"
+            "low_ammo_sound_name_4"                         "Vinson_LowAmmo_Shot4"
+            "low_ammo_sound_name_5"                         "Vinson_LowAmmo_Shot5"
+            "low_ammo_sound_name_6"                         "Vinson_LowAmmo_Shot6"
+
+            // behavior
+            "fire_rate"                                     "2.9"   //10
+
+            "damage_near_value"   							"43"
+            "damage_far_value"								"43"
+            "damage_very_far_value"							"43"
+            "damage_near_value_titanarmor"					"43"
+            "damage_far_value_titanarmor" 					"43"
+            "damage_very_far_value_titanarmor" 				"43"
+
+            "damage_leg_scale"                              "0.9"
+
+            "ammo_per_shot" 				                "2"
+            "ammo_min_to_fire"				                "1"
+
+            // viewkick
+            "viewkick_pattern"                              "flatline_highcal"
+
+            "viewkick_spring" 						        "flatline_highcal_vkp"
+            "viewkick_spring_hot"                           "flatline_highcal_vkp_hot"
+            "viewkick_spring_cooldown_holdtime"             "0.28"
+            "viewkick_spring_cooldown_fadetime"             "0.22"
+
+            "viewkick_scale_valueDecayDelay"  				"0.58"
+            "viewkick_scale_valueDecayRate"   				"20"
+
+            "viewkick_pitch_base" 							"1.0"
+            "viewkick_pitch_random"   						"1.0"
+            "viewkick_pitch_softScale"						"3.25"
+            "viewkick_pitch_hardScale"						"0.4"
+
+            "viewkick_yaw_base"   							"1.0"
+            "viewkick_yaw_random" 							"1.0"
+            "viewkick_yaw_random_innerexclude"				"0.05"
+            "viewkick_yaw_softScale"  						"2.2"
+            "viewkick_yaw_hardScale"  						"0.3"
+
+            "viewkick_roll_base"  	                        "2.1"
+            "viewkick_roll_randomMin"                       "-0.2"
+            "viewkick_roll_randomMax"                       "0.2"
+            "viewkick_roll_softScale"                       "1.2"
+            "viewkick_roll_hardScale"                       "0.35"
+
+            "viewkick_hipfire_weaponFraction" 				"0.225" //0.1
+
+            "viewmodel_jolt_scale"                          "2.2"       //1.0
+            "viewmodel_jolt_backwardPerShot"                "-.75"      //"-0.5"
+            "viewmodel_jolt_roll"                           "0 3.8 0"   //"0 3.4 0.0"
+            "viewmodel_jolt_side"                           "0 0.041 0" //"0 0.038 0"
+
+            // spread
+            "spread_stand_hip"								"6.5"   //2.5
+            "spread_stand_hip_run"							"8.5"   //5.5
+            "spread_stand_hip_sprint"                       "9.5"   //7.0
+            "spread_crouch_hip"   							"5.0"   //2.0
+            "spread_air_hip"  								"9.5"   //7.0
+
+            "spread_moving_increase_rate" 					"20"    //3
+            "spread_moving_decay_rate" 						"25"    //10.5
+
+            "spread_kick_on_fire_stand_hip"   				"0.75"  //0.2
+            "spread_kick_on_fire_crouch_hip"  				"0.75"  //0.2
+            "spread_kick_on_fire_air_hip" 					"0.75"  //0.2
+
+            "spread_max_kick_stand_hip"   					"9.0"   //2.0
+            "spread_max_kick_crouch_hip"  					"6.0"   //1.5
+            "spread_max_kick_air_hip" 						"9.0"   //3.0
+
+            "spread_decay_delay"  							"0.325" //0.25
+            "spread_decay_rate"   							"12"    //10
 		}
 // end HAS_HIGHCAL_ROUNDS
       

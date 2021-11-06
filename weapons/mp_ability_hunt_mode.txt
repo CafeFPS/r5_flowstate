@@ -94,7 +94,7 @@ WeaponData
         "ammo_stockpile_max"							"0"
         "regen_ammo_refill_rate"						"1"
         "regen_ammo_refill_start_delay"					"0.0"
-        "fire_duration"									"30.0"
+        "fire_duration"									"35.0"
         "ammo_no_remove_from_stockpile"					"0"
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"

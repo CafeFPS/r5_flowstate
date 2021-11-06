@@ -56,19 +56,19 @@ WeaponData
 
 	MP_BASE
 	{
-   "ammo_default_total"							"0"
-    "ammo_stockpile_max"							"24"
+		"ammo_default_total"							"120"
+		"ammo_stockpile_max"							"120"
 		"ammo_no_remove_from_stockpile"					"1"
 		"ammo_min_to_fire"								"1"
 
-	// Damage - When Used by Players
+		// Damage - When Used by Players
 	"damage_near_value"   							"18"
 	"damage_far_value"								"18"
 	"damage_very_far_value"							"18"
 	"damage_near_value_titanarmor"					"18"
 	"damage_far_value_titanarmor" 					"18"
 	"damage_very_far_value_titanarmor" 				"18"
-	"damage_rodeo" 									"190"
+		"damage_rodeo" 									"190"
 
 		// Damage - When Used by NPCs
 		"npc_damage_near_value"   						"13"
@@ -137,7 +137,7 @@ WeaponData
 	"reloadempty_time"								"1.25"
 	"reloadempty_time_late1"						"1"
 
-	"deploy_time" 									"0.225" // Quickdraw buff integration after removal. 10% faster handling from base
+"deploy_time" 									"0.225" // Quickdraw buff integration after removal. 10% faster handling from base
     "holster_time"									"0.18"
     "raise_time"  									"0.225"
     "lower_time"  									"0.18"
@@ -171,6 +171,11 @@ WeaponData
 	"viewkick_hipfire_weaponFraction_vmScale" 		"0.0"
 	"viewkick_ads_weaponFraction" 					"0.2"
 	"viewkick_ads_weaponFraction_vmScale" 			"0.8"
+	"airburst_distance"                     "128.0"
+	"airburst_pellet_count"                 "7"
+	//"airburst_pellet_damage"                "7"
+	"airburst_pattern_scale"                "10.0"
+	"blast_pattern_default_scale"           "10.0"
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
 	//setting to "0" so it's tunable in Bakery
@@ -188,12 +193,12 @@ WeaponData
     "clip_bodygroup_show_for_milestone_1"	"0"
     "clip_bodygroup_show_for_milestone_2"	"1"
     "clip_bodygroup_show_for_milestone_3"	"1"
+	
+    "bodygroup26_name"	"suppressor_round_small"
+    "bodygroup26_set"	"0"
 
-	"airburst_distance"                     "128.0"
-	"airburst_pellet_count"                 "7"
-	//"airburst_pellet_damage"                "7"
-	"airburst_pattern_scale"                "10.0"
-	"blast_pattern_default_scale"           "10.0"
+    "bodygroup27_name"	"suppressor_square_small"
+    "bodygroup27_set"	"0"
 
 	Mods
 	{
@@ -232,7 +237,21 @@ WeaponData
 
         hopup_unshielded_dmg
         {
-         
+            "damage_unshielded_scale"      					"1"
+
+
+	"fire_sound_1"									"weapon_re45auto_shell"
+	"fire_sound_2_player_1p"						"Weapon_P2011_Fire_1P"
+	"fire_sound_2_player_3p"						"Weapon_P2011_Fire_3P"
+	"fire_sound_2_npc"								"Weapon_P2011_Fire_NPC"
+	"sound_zoom_in"									"Weapon_P2011_ADS_In"
+	"sound_zoom_out"								"Weapon_P2011_ADS_Out"
+
+	"low_ammo_sound_name_1"							"P2011_LowAmmo_Shot1"
+	"low_ammo_sound_name_2"							"P2011_LowAmmo_Shot2"
+	"low_ammo_sound_name_3"							"P2011_LowAmmo_Shot3"
+	"low_ammo_sound_name_4"							"P2011_LowAmmo_Shot4"
+	"low_ammo_sound_name_5"							"P2011_LowAmmo_Shot5"
         }
 
         optic_cq_hcog_classic

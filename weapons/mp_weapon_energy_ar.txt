@@ -98,9 +98,12 @@ WeaponData
 	"ammo_per_shot" 				                "1"
 	"ammo_min_to_fire"								"1"
 
-	"ammo_default_total"							"180"
-	"ammo_stockpile_max"							"180"
-	"ammo_no_remove_from_stockpile"					"1"
+	    "low_ammo_fraction" 							"0.4"
+
+	"ammo_default_total"							"0"
+	"ammo_stockpile_max"							"25"
+	"ammo_no_remove_from_stockpile"					"0"
+    "uses_ammo_pool"								"1"
 
 	// Damage - When Used by Players
 	"damage_near_value"   							"18"
@@ -201,7 +204,7 @@ WeaponData
     "viewmodel_offset_zoom_frac_end"        "0.8"
 
 	// View Kick
-	"viewkick_pattern"                              "energy_ar_3"
+	"viewkick_pattern"                              "energy_ar_2"
 
     "viewkick_spring" 								"energy_AR_vkp"
     "viewkick_spring_hot"                           "energy_AR_vkp_hot"
@@ -223,6 +226,7 @@ WeaponData
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
+	"viewkick_yaw_random_innerexclude" 				"0.0"
 	"viewkick_yaw_softScale"  						"1.1"  //"0.65"
 	"viewkick_yaw_hardScale"  						"0.3"
 
@@ -308,7 +312,92 @@ WeaponData
         // charge shot
         altfire
         {
-			
+			"mod_activity_modifier"			"fire_select"
+
+			"ballistic_type"                "hitscan"
+
+			"is_semi_auto"					"1"
+        	"ammo_per_shot" 				"4"
+        	"ammo_min_to_fire"				"4"
+
+        	"charge_time" 					"0.6"
+        	"charge_cooldown_time"			"0.35"
+			"charge_cooldown_delay"   		"0.3"
+			"fire_rate" 					"1.3"
+
+        	"charge_remain_full_when_fired" "0"
+
+        	"damage_near_value"   							"60"
+			"damage_far_value"								"50"
+			"damage_very_far_value"							"15"
+			"damage_near_value_titanarmor"					"60"
+			"damage_far_value_titanarmor" 					"50"
+			"damage_very_far_value_titanarmor" 				"15"
+			"damage_near_distance"							"2952"  // 75m
+			"damage_far_distance" 							"4921"  // 125m
+	    	"damage_very_far_distance"						"9842"  // 250m
+
+            "damage_leg_scale"                              "1.0"
+			"damage_headshot_scale"							"1.5"
+			"headshot_distance" 							"5905"  // 150m
+
+        	"damage_flags" 					                "DF_GIB | DF_DISMEMBERMENT"
+
+            // hipfire spread
+			"spread_stand_hip"								"5.0"
+
+            // don't use a pattern
+			"viewkick_pattern"                              ""
+
+        	"viewkick_pitch_base" 							"-4.5"
+			"viewkick_pitch_random"   						"1.0"
+			"viewkick_pitch_softScale"						"0.85"
+			"viewkick_pitch_hardScale"						"0.25"
+
+			"viewkick_yaw_base"   							"-2.5"
+			"viewkick_yaw_random" 							"2.0"
+			"viewkick_yaw_random_innerexclude" 				"0.0"
+			"viewkick_yaw_softScale"  						"0.6"
+
+			"viewkick_roll_base"  							"-0.25"
+            "viewkick_roll_randomMin" 						"-0.25"
+            "viewkick_roll_randomMax" 						"0.5"
+            "viewkick_roll_softScale" 						"0.4"
+            "viewkick_roll_hardScale" 						"0.6"
+
+			"viewkick_ads_weaponFraction"              		"0.575"
+			"viewkick_ads_weaponFraction_vmScale"      		"0.35"
+
+			"charge_rumble_min"				"10"
+			"charge_rumble_max"				"30"
+
+        	"charge_effect_1p"				"P_wpn_havok_charge_FP"
+			"charge_effect_3p"				"P_wpn_havok_charge"
+			"charge_effect2_3p"				"havok_charge_CH_dlight"
+
+			//"projectile_trail_effect_0" 	"P_tracer_proj_sniper_energy"
+
+			"tracer_effect"   				"P_wpn_havok_beam"
+			"tracer_effect_first_person"  	"P_wpn_havok_beam"
+			"impact_effect_table" 			"exp_energy_ar_charged"
+
+			"fx_muzzle_flash_view"			"P_wpn_havok_muzzleflash_FP"
+			"fx_muzzle_flash_world"			"P_wpn_havok_muzzleflash"
+			"fx_muzzle_flash_attach"		"muzzle_flash"
+
+			"looping_sounds"								"0"
+			"fire_sound_1_player_1p" 						"weapon_havoc_altfire_singleshot_1p"
+			"fire_sound_1_player_3p" 						"weapon_havoc_altfire_singleshot_3p"
+			"charge_sound_1p"								"Weapon_Havoc_Altfire_WindUp_1P"
+			"charge_sound_3p"								"weapon_havoc_altfire_windup_3p"
+			"charge_sound_stop_when_full"					"1"
+			"charge_sound_seek_to_charge_fraction"			"1"
+			"charge_drain_sound_1p"							"Weapon_Havoc_Altfire_WindDown_1P"
+			"charge_drain_sound_3p"							"weapon_havoc_altfire_winddown_3p"
+			"charge_drain_sound_stop_when_empty"			"1"
+			"charge_drain_sound_seek_to_charge_fraction"	"1"
+
+			rui_crosshair_index				"1"
         }
 
         optic_cq_hcog_classic

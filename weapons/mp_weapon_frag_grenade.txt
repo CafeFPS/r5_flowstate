@@ -167,8 +167,6 @@ WeaponData
 	"grenade_bounce_randomness"						"0.05"
 	"grenade_bounce_extra_vertical_randomness"		"0.05"
 	"grenade_roll_vel_frac_per_second"				"0.05"
-	"grenade_touch_triggers_on_impact"				"1"
-
 	"aimassist_disable_hipfire"						"1"
 	"aimassist_disable_ads"							"1"
 	"projectile_launch_speed"						"1300"

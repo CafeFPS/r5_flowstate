@@ -218,28 +218,6 @@ WeaponData
 			"ui1_enable"							"1"
         }
 
-		combo_heal_small
-        {
-            "viewmodel" 							"mdl/weapons/shield_battery/ptpov_shield_battery_held.rmdl"
-            "playermodel" 							"mdl/Weapons/shield_battery/w_shield_battery.rmdl"
-            "printname"                             "Small Pheonix"
-            "charge_time"                           "2.0"
-            "hud_icon"                              "rui/hud/loot/loot_stim_combo_full"
- 			"activitymodifier"						"shield_prop"
-
-			"charge_effect_1p"						"P_shield_battery_LRG_FP"
-			"charge_effect_3p"						""
-			"charge_effect_attachment"				"FX_CENTER"
-
-			"charge_effect2_1p"						"P_shield_battery_glow_FP"
-			"charge_effect2_3p"						"P_shield_battery_glow"
-			"charge_effect2_attachment"				"muzzle_flash"
-
-			"fx_muzzle_flash_view"					"P_shield_battery_flash_FP"
-			"fx_muzzle_flash_world"					"P_shield_battery_flash"
-			"fx_muzzle_flash_attach"				"muzzle_flash"
-        }
-
         ultimate_battery_supercharged_fx
         {
             "charge_effect_1p"						"P_watt_UA_charge"

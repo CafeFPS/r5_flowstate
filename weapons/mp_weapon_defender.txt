@@ -109,7 +109,6 @@ WeaponData
 	"reload_time" 									"4.0"
 	"reloadempty_time"								"5.1"
 
-    "deployfirst_time"                              "0.8"
 	"deploy_time" 									"0.8"
 	"holster_time"									"0.5"
 	"raise_time"  									"0.7" //"0.3"
@@ -275,7 +274,12 @@ WeaponData
     //"tracer_effect"   							"P_wpn_defender_beam_burn"
     //"tracer_effect_first_person"  				"P_wpn_defender_beam_burn"
 
-	"ammo_suck_behavior"							"primary_weapons"
+	"aimassist_disable_hipfire"						"0"
+	"aimassist_disable_ads"							"0"
+	"aimassist_disable_hipfire_humansonly"			"0"
+	"aimassist_disable_ads_humansonly"				"0"
+
+//	"ammo_suck_behavior"							"primary_weapons"
 
 
 

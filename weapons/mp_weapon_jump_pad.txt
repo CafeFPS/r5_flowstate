@@ -36,8 +36,6 @@ WeaponData
     "zoom_effects"                                  "0"
 
 	// Menu Stats
-	grenade_hull_mins                   "-3.0 -3.0 -0.0"
-	grenade_hull_maxs                   "3.0 3.0 0.0"
 
 	// Models
 	"viewmodel"										"mdl/weapons/octane_jump_pad/ptpov_octane_jump_pad_held.rmdl"
@@ -121,7 +119,7 @@ WeaponData
 	"toss_time"										"0.3"
 	"toss_overhead_time"							"0.4"
 
-	"grenade_touch_triggers_on_impact"				"1"
+
 	"grenade_bounce_vel_frac_shallow"				"0.5"
 	"grenade_bounce_vel_frac_sharp"					"0.3"
 	"grenade_bounce_vel_frac_along_normal"			"0.1"
@@ -132,7 +130,6 @@ WeaponData
 	"grenade_radius_horizontal"						"16.0"
 	"projectile_launch_pitch_offset"				"2"
 	"projectile_launch_speed"						"1000"
-	"grenade_view_launch_offset"					"15.0 0.0 0.0"
 
 	// Spread
 
@@ -145,15 +142,14 @@ WeaponData
 
 	MP_BASE
 	{
-    "ammo_clip_size"                                "90"
-    "ammo_default_total"                            "0"
-    "ammo_display"                                  "count"
-    "ammo_min_to_fire"                              "90"
-    "ammo_per_shot"                                 "90"
-    "ammo_stockpile_max"                            "0"
-    "regen_ammo_refill_start_delay"                 "0.0"
-    "ammo_no_remove_from_stockpile"                 "0"
-    "regen_ammo_refill_rate"                        "1"
+		"ammo_clip_size"   								"90"
+		"ammo_default_total"							"0"
+		"ammo_display"									"bar"
+		"ammo_min_to_fire"								"90"
+		"ammo_per_shot"									"90"
+		"ammo_stockpile_max"							"90"
+		"regen_ammo_refill_rate"						"1"
+		"regen_ammo_refill_start_delay"					"0.0"
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
 	}

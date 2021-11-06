@@ -115,8 +115,8 @@ WeaponData
 	"aimassist_disable_ads"							"1"
 	"grenade_inherit_owner_velocity"				"1"
 	"cooldown_type"									"ammo_timed"
-	"toss_pullout_time"								"0.25"
-	"toss_time"										"0.35"
+	"toss_pullout_time"								"0.5"
+	"toss_time"										"0.7"
 	"toss_overhead_time"							"0.55"
 
 
@@ -228,14 +228,15 @@ WeaponData
 
 	MP_BASE
 	{
-		"ammo_clip_size"   								"450"
-    "ammo_default_total"							"450"
-    "ammo_display"									"bar"
-    "ammo_min_to_fire"								"450"
-    "ammo_per_shot"									"450"
-    "ammo_stockpile_max"							"450"
-    "regen_ammo_refill_rate"						"10"
-    "regen_ammo_refill_start_delay"					"0.0"
+		"ammo_clip_size"   								"300"
+		"ammo_default_total"							"300"
+		"ammo_display"									"bar"
+		"ammo_min_to_fire"								"300"
+		"ammo_per_shot"									"300"
+		"ammo_stockpile_max"							"300"
+		"regen_ammo_refill_rate"						"5"
+		"regen_ammo_refill_start_delay"					"0.0"
+
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
 	}
 

@@ -29,11 +29,11 @@ WeaponData
     "OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
 
 	// Ammo
-	"ammo_clip_size"   								"300"
-	"ammo_min_to_fire"								"300"
-    "ammo_per_shot"									"300"
+	"ammo_clip_size"   								"360"
 	"ammo_default_total"							"0"
 	"ammo_display"									"count"
+	"ammo_min_to_fire"								"360"
+	"ammo_per_shot"									"360"
 	"ammo_stockpile_max"							"0"
 	"ammo_drains_to_empty_on_fire"					"0"
 	"ammo_no_remove_from_clip"						"0"
@@ -65,7 +65,7 @@ WeaponData
 	"holster_time"									"0.15"
 	"deploy_time" 									"0.25"
 	"lower_time"  									"0.25"
-	"raise_time"  									"0.4"
+	"raise_time"  									"0.2"
 	"allow_empty_fire"								"0"
 	"reload_enabled"								"0"
 	"empty_reload_only"   							"0"

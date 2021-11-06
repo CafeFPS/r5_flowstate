@@ -110,13 +110,8 @@ WeaponData
 	"grenade_inherit_owner_velocity"				"1"
 	"cooldown_type"									"ammo_instant"
 	"toss_pullout_time"								"0.1"
-      
-	"toss_time"										"1.3"
-	"toss_overhead_time"							"1.3"
-
-                                      
-                             
-     
+	"toss_time"										"2.1"
+	"toss_overhead_time"							"2.1"
 	"max_cook_time"									"0"
 
 	"grenade_bounce_vel_frac_shallow"				"0.5"

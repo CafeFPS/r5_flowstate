@@ -42,16 +42,13 @@ WeaponData
 	"projectilemodel"								"mdl/weapons/grenades/w_caustic_grenade_projectile.rmdl"
 
     "show_grenade_indicator"                        "0"
-    "show_grenade_indicator_to_owner"               "0"
+    "grenade_show_indicator_to_owner"               "0"
 
 	"grenade_arc_indicator_show_from_hip"			"0"
 	"grenade_arc_indicator_bounce_count"			"1"
 	"grenade_arc_indicator_effect"					"P_arc_green_bounce"
 	"grenade_arc_indicator_effect_first"			"P_arc_green"
 	"grenade_arc_impact_indicator_effect"			"P_arc_green_end"
-
-	"grenade_hull_mins"								"-3 -3 -5"
-	"grenade_hull_maxs"								"3 3 5"
 
     "zoom_effects"									"0"
 
@@ -99,11 +96,11 @@ WeaponData
 
 	MP_BASE
 	{
-		"ammo_clip_size"								"180"
+		"ammo_clip_size"								"150"
         "ammo_default_total"							"0"
         "ammo_display"									"count"
-        "ammo_min_to_fire"								"180"
-        "ammo_per_shot"									"180"
+        "ammo_min_to_fire"								"150"
+        "ammo_per_shot"									"150"
         "ammo_stockpile_max"							"0"
         "regen_ammo_refill_rate"						"1"
         "regen_ammo_refill_start_delay"					"0.0"
@@ -162,8 +159,6 @@ WeaponData
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"0"
-
-	"grenade_touch_triggers_on_impact"				"1"
 	"grenade_bounce_vel_frac_shallow"				"0.53"
 	"grenade_bounce_vel_frac_sharp"					"0.32"
 	"grenade_bounce_vel_frac_along_normal"			"0.5"
