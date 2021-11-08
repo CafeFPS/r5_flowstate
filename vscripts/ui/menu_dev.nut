@@ -305,6 +305,10 @@ void function SetupDefaultDevCommandsMP()
 
 
 	SetupDevCommand( "Toggle NoClip", "noclip" )
+
+	SetupDevCommand( "Recharge Abilities", "recharge" )
+	SetupDevCommand( "Infinite Ammo", "infinite_ammo" )
+
 	//SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
 	SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
 	SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
