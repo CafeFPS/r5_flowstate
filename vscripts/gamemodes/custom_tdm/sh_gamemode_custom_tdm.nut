@@ -3,9 +3,12 @@
 // @Shrugtal -- score ui
 // everyone else -- advice
 
+
+
 global function Sh_CustomTDM_Init
 global function NewLocationSettings
 global function NewLocPair
+// global function NewWeaponKit
 
 global function Spectator_GetReplayIsEnabled
 global function Spectator_GetReplayDelay
@@ -16,8 +19,7 @@ global function Deathmatch_GetVotingTime
 
 global function Deathmatch_GetIntroCutsceneNumSpawns           
 global function Deathmatch_GetIntroCutsceneSpawnDuration        
-global function Deathmatch_GetIntroSpawnSpeed        
-
+global function Deathmatch_GetIntroSpawnSpeed 
 
 #if SERVER
 global function Equipment_GetRespawnKitEnabled
@@ -26,7 +28,6 @@ global function Equipment_GetRespawnKit_SecondaryWeapon
 global function Equipment_GetRespawnKit_Tactical
 global function Equipment_GetRespawnKit_Ultimate
 #endif
-
 
 global const NO_CHOICES = 2
 global const SCORE_GOAL_TO_WIN = 100
@@ -59,7 +60,6 @@ struct {
     array choices
     array<LocationSettings> locationSettings
     var scoreRui
-
 } file;
 
 void function Sh_CustomTDM_Init() 
@@ -75,17 +75,119 @@ void function Sh_CustomTDM_Init()
             NewLocationSettings(
                 "Firing Range",
                 [
-                    NewLocPair(<33560, -8992, -29126>, <0, 90, 0>),
-					NewLocPair(<34525, -7996, -28242>, <0, 100, 0>),
-                    NewLocPair(<33507, -3754, -29165>, <0, -90, 0>),
-					NewLocPair(<34986, -3442, -28263>, <0, -113, 0>)
+                    //Top Floor
+                    NewLocPair(<29351, -8106, -15794>, <4, 45, 0>),
+                    NewLocPair(<32678, -8106, -15794>, <4, 135, 0>),
+                    NewLocPair(<29351, -4780, -15794>, <4, -45, 0>),
+                    NewLocPair(<32678, -4780, -15794>, <4, -135, 0>),
+
+                    //Bottom Floor
+                    NewLocPair(<29351, -8106, -16073>, <4, 45, 0>),
+                    NewLocPair(<32678, -8106, -16073>, <4, 135, 0>),
+                    NewLocPair(<29351, -4780, -16073>, <4, -45, 0>),
+                    NewLocPair(<32678, -4780, -16073>, <4, -135, 0>),
+
+                    //Other
+                    NewLocPair(<32682, -6574, -15794>, <0, 180, 0>),
+                    NewLocPair(<29340, -6318, -15794>, <0, 0, 0>),
+                    NewLocPair(<31138, -4778, -15794>, <0, -90, 0>),
+                    NewLocPair(<30882, -8116, -15794>, <0, 90, 0>),
                 ],
                 <0, 0, 3000>
             )
         )
+		
+		Shared_RegisterLocation(
+    NewLocationSettings(
+        "UnderWorld by Zer0Bytes",
+        [
+            //side a
+            NewLocPair( <31036,-2088,-32080>, <0,-90,0>),
+            NewLocPair( <31144,-2232,-32080>, <0,-90,0>),
+            NewLocPair( <31152,-2076,-32080>, <0,-90,0>),
+            NewLocPair( <31940,-3788,-32124>, <0,-90,0>),
+            NewLocPair( <32104,-4620,-32096>, <0,-90,0>),
+            NewLocPair( <31904,-5220,-32156>, <0,-90,0>),
+            NewLocPair( <30788,-3188,-32096>, <0,-90,0>),
+            NewLocPair( <31784,-3780,-32840>, <0,-90,0>),
+            NewLocPair( <31040,-4672,-32128>, <0,-90,0>),
+            NewLocPair( <32000,-5056,-32128>, <0,-90,0>),
+            NewLocPair( <31552,-6016,-32064>, <0,-90,0>),
+            NewLocPair( <31168,-5376,-32128>, <0,-90,0>),
+            NewLocPair( <30976,-5376,-32128>, <0,-90,0>),
+            NewLocPair( <31680,-6016,-32064>, <0,0,0> ),
+            NewLocPair( <31168,-4672,-32128>, <0,-90,0>),
+            NewLocPair( <31936,-4608,-32064>, <0,-90,0>),
+            NewLocPair( <31744,-3776,-32064>, <0,-90,0>),
+            NewLocPair( <31872,-3776,-32064>, <0,-90,0>),
+            NewLocPair( <30848,-3328,-32064>, <0,-90,0>),
+            NewLocPair( <30912,-3392,-32064>, <0,-90,0>),
+            
+            // side b
+            
+            NewLocPair( <31284,-8700,-32176>, <0,90,0>),
+            NewLocPair( <31112,-8652,-32152>, <0,90,0>),
+            NewLocPair( <31416,-8700,-32176>, <0,90,0>),
+            NewLocPair(  <32640,-8448,-32128>, <0,90,0>),
+            NewLocPair(  <32640,-8512,-32128>, <0,90,0>),
+            NewLocPair( <30380,-3320,-32128>, <0,0,0>),
+            NewLocPair( <32104,-4292,-32816>, <0,0,0>),
+            NewLocPair( <33576,-8952,-31956>, <0,90,0>),
+            NewLocPair( <33236,-8760,-32112>, <0,90,0>),
+            NewLocPair( <32860,-9284,-32096>, <0,180,0>),
+            NewLocPair( <32996,-9396,-32104>, <0,90,0>),
+            NewLocPair( <33100,-10196,-32080>, <0,90,0>),
+            NewLocPair( <33156,-10456,-32200>, <0,90,0>),
+            NewLocPair( <33080,-10468,-32240>, <0,90,0>),
+            NewLocPair( <33220,-10484,-32216>, <0,90,0>),
+            NewLocPair( <32100,-8044,-32148>, <0,90,0>),
+            NewLocPair( <31924,-8060,-32148>, <0,90,0>),
+            NewLocPair( <31092,-7908,-32112>, <0,90,0>),
+            NewLocPair( <30912,-7936,-32064>, <0,90,0>),
+            NewLocPair( <33088,-8704,-32128>, <0,90,0>),
+            NewLocPair( <33216,-9408,-32064>, <0,90,0>),
+            NewLocPair( <31936,-9216,-32128>, <0,90,0>),
+            NewLocPair( <31808,-9216,-32128>, <0,90,0>),
+            
+            
+            // underground
+            NewLocPair( <32796,-6088,-32880>, <0,180,0>),
+            NewLocPair( <32832,-6580,-32880>, <0,180,0>),
+            NewLocPair( <31400,-5672,-32884>, <0,-90,0>),
+            NewLocPair( <31232,-7104,-32832>, <0,0,0> ),
+            NewLocPair( <31456,-8428,-32832>, <0,0,0> )
+
+        ],
+        <0, 0, 1700>
+    )
+)
         break
 
 case "mp_rr_canyonlands_mu1":
+		Shared_RegisterLocation(
+            NewLocationSettings(
+                "Hillside Outspot",
+                [
+                    NewLocPair(<-20579, 6322, 2912>, <0, -100, 0>),
+                    NewLocPair(<-17075, 7502, 3206>, <0, -90, 0>),
+                    NewLocPair(<-14421, -405, 3315>, <0, 62, 0>),
+                    NewLocPair(<-18633, -1146, 3320>, <0, 114, 0>),
+					NewLocPair(<-22921, 3307, 3144>, <0, 6, 0>),
+					NewLocPair(<-16154, 3072, 3898>, <0, 86, 0>),
+					NewLocPair(<-19026, 3749, 4460>, <0, 2, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+				Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
+                    ],
+                    <0, 0, 6500>
+                )
+            )
 		Shared_RegisterLocation(
             NewLocationSettings(
                 "Skull Town",
@@ -334,6 +436,15 @@ case "mp_rr_canyonlands_64k_x_64k":
                 <0, 0, 3000>
             )
         )
+		Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
+                    ],
+                    <0, 0, 6500>
+                )
+            )
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Slum Lakes",
@@ -507,7 +618,28 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 3000>
                 )
             )
+					Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Skill trainer By Colombia",
+                    [
+                        NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
+                        NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
+                        NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
+                        NewLocPair(<14995, 33566, -680>, <16, -45, 0>),
+                    ],
+                    <0, 0, 3000>
+                )
+            )
 			Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
+                    ],
+                    <0, 0, 6500>
+                )
+            )
+					Shared_RegisterLocation(
                 NewLocationSettings(
                     "TTV Building 2",
                     [
@@ -560,7 +692,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
-			Shared_RegisterLocation(
+	Shared_RegisterLocation(
                 NewLocationSettings(
                     "Dome",
                     [
@@ -731,7 +863,7 @@ case "mp_rr_canyonlands_64k_x_64k":
             )
 			Shared_RegisterLocation(
                 NewLocationSettings(
-                    "Capitol City 20 players",
+                    "Capitol City",
                     [
                         NewLocPair(<8660, 5910, -4168>, <-13, 50, 0>),
                         NewLocPair(<2300, 6571, -4490>, <1.2, -96, 0>),
@@ -748,6 +880,18 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 3000>
                 )
             )
+			// Shared_RegisterLocation(
+                // NewLocationSettings(
+	                   // "ESPACIO ABIERTO",
+                    // [
+                        // NewLocPair(<-334, 34239, -2854>, <0, -46, 0>),
+                        // NewLocPair(<3470, 28739, -4242>, <0, 42, 0>),
+                        // NewLocPair(<9818, 26807, -3605>, <0, 135, 0>),
+						// NewLocPair(<12661, 36004, -4055>, <0, -129, 0>),
+                    // ],
+                    // <0, 0, 2000>
+                // )
+            // )
         default:
             Assert(false, "No TDM locations found for map!")
     }
@@ -776,6 +920,15 @@ LocationSettings function NewLocationSettings(string name, array<LocPair> spawns
     return locationSettings
 }
 
+// WeaponKit function NewWeaponKit(string weapon, array<string> mods)
+// {
+    // WeaponKit weaponKit
+    // weaponKit.weapon = weapon
+    // weaponKit.mods = mods
+    
+    // return weaponKit
+// }
+
 void function Shared_RegisterLocation(LocationSettings locationSettings)
 {
     #if SERVER
@@ -802,8 +955,10 @@ float function Deathmatch_GetRespawnDelay()                          { return Ge
 float function Equipment_GetDefaultShieldHP()                        { return GetCurrentPlaylistVarFloat("default_shield_hp", 100) }
 float function Deathmatch_GetOOBDamagePercent()                      { return GetCurrentPlaylistVarFloat("oob_damage_percent", 10) }
 float function Deathmatch_GetVotingTime()                            { return GetCurrentPlaylistVarFloat("voting_time", 5) }
-    
-#if SERVER      
+
+#if SERVER   
+
+
 bool function Equipment_GetRespawnKitEnabled()                       { return GetCurrentPlaylistVarBool("respawn_kit_enabled", false) }
 
 StoredWeapon function Equipment_GetRespawnKit_PrimaryWeapon()
@@ -855,4 +1010,5 @@ StoredWeapon function Equipment_GetRespawnKit_Weapon(string input, int type, int
 
     return weapon
 }
+
 #endif
