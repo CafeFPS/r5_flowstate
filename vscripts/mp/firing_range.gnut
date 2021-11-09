@@ -13,7 +13,7 @@ global const asset FIRINGRANGE_FLICK_TARGET_ASSET = $"mdl/fx/plasma_sphere_01.rm
 global const asset FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT = $"P_crypto_drone_explosion"
 global const string FIRINGRANGE_FLICK_TARGET_SOUND = "Player.Hitbeep_headshot.Human_3P_vs_1P"
 
-global const asset FIRINGRANGE_BLUE_TARGET_ASSET = $"mdl/barriers/shooting_range_target_02.rmdl"
+global const asset FIRINGRANGE_BLUE_TARGET_ASSET = $"mdl/humans/class/medium/combat_dummie_medium.rmdl"
 global const asset FIRINGRANGE_BLUE_STAND_ASSET = $"mdl/barriers/shooting_range_target_02_stand.rmdl"
 
 global const asset FIRINGRANGE_ITEM_RESPAWN_PARTICLE = $"P_impact_shieldbreaker_sparks"
@@ -66,8 +66,8 @@ struct {
 	array<RackGroup> rackSpawns
 
 	vector training_mov = <1,0,0>
-	vector trackingTraining_pos = <32000,-7853,-29033>
-	vector flickTraining_pos = <32000,-6720,-29033>
+	vector trackingTraining_pos = <32000,-7853,-29231>
+	vector flickTraining_pos = <32000,-6720,-29231>
 	vector flickTraining_ang = <0,-180,0>
 	float flickTraining_dist = 320
 	float trackingTraining_speed = 300
@@ -137,6 +137,37 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 }
 #endif //
 
+#if SERVER
+void function SpawnDummy(vector origin, vector angles)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+    entity dummy = CreateEntity( "npc_dummie" )
+    SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
+	SetTargetName(dummy,  "DUMMIE")
+    dummy.SetOrigin( origin )
+    dummy.SetAngles( angles )
+    SetTeam(dummy, 99)
+    DispatchSpawn( dummy )
+    dummy.SetSkin(1)
+	thread OnDummyKilled(dummy)
+}
+
+void function OnDummyKilled(entity dummy)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	vector pos = dummy.GetOrigin()
+	vector angles = dummy.GetAngles()
+	dummy.WaitSignal( "OnDeath" )
+	wait 3
+	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
+	thread SpawnDummy( pos, angles)
+}
+#endif
+
 void function OnEntitiesDidLoad()
 {
 	#if SERVER
@@ -167,6 +198,10 @@ void function OnEntitiesDidLoad()
 	SpawnOrdnance()
 	SpawnItems()
 	SpawnAmmo()
+
+	SpawnDummy(<31541,-7964,-29165>, <0,179,0>)
+	SpawnDummy(<31541,-6705,-29165>, <0,179,0>)
+	SpawnDummy(<31541,-5885,-29165>, <0,179,0>)
 
 	// Doors
 	SpawnDoors_Init()
@@ -222,9 +257,9 @@ void function OnPlayerRespawned(entity player)
 			return
 	}
 	
-	entity primary = player.GiveWeapon("mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "stock_tactical_l3"])
-	entity secondary = player.GiveWeapon("mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_threat"])
-	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_vinson" )
+	entity primary = player.GiveWeapon("mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "highcal_mag_l3"])
+	entity secondary = player.GiveWeapon("mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_hcog_classic","barrel_stabilizer_l4_flash_hider","stock_tactical_l3"])
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_wingman" )
 
 	FixWeapon(primary)
 	FixWeapon(secondary)
@@ -677,7 +712,7 @@ entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( en
 
 	entity target = CreateEntity( "script_mover" )
 	target.kv.solid = 6
-	target.SetValueForModelKey( FIRINGRANGE_FLICK_TARGET_ASSET )
+	target.SetValueForModelKey( FIRINGRANGE_BLUE_TARGET_ASSET )
 	target.kv.SpawnAsPhysicsMover = 0
 	target.SetOrigin( root.GetOrigin() )
 	target.SetAngles( root.GetAngles() )
@@ -688,7 +723,8 @@ entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( en
 
 	entity visual = CreatePropDynamic(FIRINGRANGE_BLUE_TARGET_ASSET, root.GetOrigin(), root.GetAngles(), 6, -1)
 	visual.SetParent(target)
-	visual.SetModelScale(0.45)
+	//visual.SetModelScale(0.45)
+	visual.kv.fadedist = 20000
 	visual.NotSolid()
 
     AddEntityCallback_OnDamaged(target, onDamaged)
