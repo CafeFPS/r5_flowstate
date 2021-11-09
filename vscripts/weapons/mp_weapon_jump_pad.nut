@@ -114,7 +114,12 @@ void function OnJumpPadPlanted( entity projectile )
 
 	thread TrapDestroyOnRoundEnd( owner, newProjectile )
 
-	if ( IsValid( traceResult.hitEnt ) )
+	// if ( IsValid( traceResult.hitEnt ) )
+	// {
+	// 	newProjectile.SetParent( traceResult.hitEnt )
+	// }
+	// else
+if ( IsValid( traceResult.hitEnt ) )
 	{
 		newProjectile.SetParent( traceResult.hitEnt )
 	}

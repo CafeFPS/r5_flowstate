@@ -20,9 +20,17 @@ void function OnWeaponActivate_ability_phase_walk( entity weapon )
 	#if SERVER
 		entity player = weapon.GetWeaponOwner()
 		EmitSoundOnEntityExceptToPlayer( player, player, "pilot_phaseshift_armraise_3p" )
-
+		float deploy_time = weapon.GetWeaponSettingFloat( eWeaponVar.deploy_time )
+		
 		if ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) != player.GetOffhandWeapon( OFFHAND_INVENTORY ) )
 			PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
+		
+			if ( !weapon.HasMod( "ult_active" ) )
+			{
+		StatusEffect_AddTimed( player, eStatusEffect.move_slow, 0.2, deploy_time, deploy_time )
+	}
+		
+		
 	#endif
 }
 
@@ -42,11 +50,13 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 {
 	entity player = weapon.GetWeaponOwner()
 	float chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
+	float amount = GetCurrentPlaylistVarFloat( "wraith_phase_walk_speed_boost_amount", 0.3 )
+	float easeOut = GetCurrentPlaylistVarFloat( "wraith_phase_walk_speed_boost_easeOutFrac", 0.3 )
+			
 	#if SERVER
 		LockWeaponsAndMelee( player )
 
-		if ( weapon.HasMod( "ult_active" ) )
-			weapon.w.statusEffects.append( StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.35, chargeTime, 0 ) )
+			weapon.w.statusEffects.append( StatusEffect_AddTimed( player, eStatusEffect.speed_boost, amount, chargeTime, chargeTime*easeOut ) )
 
 		thread PhaseWalkUnphaseTell( player, chargeTime )
 		PlayerUsedOffhand( player, weapon )
