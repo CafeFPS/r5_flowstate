@@ -59,7 +59,7 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"1.3"
-	"fire_duration"									"0.0"
+	"fire_duration"									"0.25"
 	//"fire_anim_rate"								"1.0"
 	"holster_time"									"0.15"
 	"deploy_time" 									"0.15"

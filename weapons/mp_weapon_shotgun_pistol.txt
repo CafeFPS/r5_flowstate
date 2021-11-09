@@ -107,9 +107,8 @@ WeaponData
 
 	MP_BASE
 	{
-	    "ammo_default_total"							"60"
-    	"ammo_stockpile_max"							"60"
-
+  "ammo_default_total"							"0"
+    "ammo_stockpile_max"							"12"
 		"aimassist_adspull_weaponclass"					"none"
 	}
 
@@ -180,7 +179,7 @@ WeaponData
 	"spread_air_hip"	   							"3.0"
 	"spread_air_ads"   								"3.0"
 
-//	"ammo_suck_behavior"							"primary_weapons"
+	"ammo_suck_behavior"							"primary_weapons"
 
 	// View Kick
 	"viewkick_spring" 								"shotgun_pistol"
@@ -313,15 +312,7 @@ WeaponData
 
         hopup_unshielded_dmg
         {
-            "damage_unshielded_scale"   					"1"
-
-            "projectile_trail_effect_0"     				"P_tracer_proj_smg_hammer_point"
-            "impact_effect_table" 							"hammer_point_bullet"
-
-            "fire_sound_1_player_1p"						"Weapon_ShotgunPistol_Fire_unshieldeddmg_1P"
-			"fire_sound_1_player_3p"						"Weapon_ShotgunPistol_Fire_unshieldeddmg_3P"
-			"fire_sound_1_npc"								"Weapon_ShotgunPistol_Fire_NPC"
-
+      
         }
 	}
 

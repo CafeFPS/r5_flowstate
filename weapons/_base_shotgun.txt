@@ -85,7 +85,14 @@ WeaponData
 	"projectile_gravity_scale" 						"1.0"
 	"bolt_zero_distance" 							"984.3" // 25m
 
-	"bolt_hitsize"									"1.0"
+    //"bolt_hitsize"									"1.0"
+    "bolt_hitsize"									"0.25"
+    "bolt_hitsize_grow1_time"						"0.025"
+    "bolt_hitsize_grow1_size"						"0.6"
+    "bolt_hitsize_grow2_time"						"0.1"
+    "bolt_hitsize_grow2_size"						"1.0"
+    "bolt_hitsize_growfinal_lerptime"				"0.1"
+    "bolt_hitsize_growfinal_size"					"1.0"
 
     // Bob
 	"bob_cycle_time"  								"0.4"

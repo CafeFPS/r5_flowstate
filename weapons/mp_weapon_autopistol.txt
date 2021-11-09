@@ -34,16 +34,6 @@ WeaponData
 	"activitymodifier"								"pistol"
 	"holster_type"									"pistol"
 
-	// NOTE: Alternator has a special muzzle flash to look good with two barrels
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						"muzzle_flash"
-
-	// NOTE: specifies muzzle flash for the second barrel
-	"fx_muzzle_flash2_view"							""
-	"fx_muzzle_flash2_world"						""
-	"fx_muzzle_flash2_attach"						"muzzle_flash_l"
-
 	"sound_dryfire"									"pistol_dryfire"
 	"sound_pickup"									"wpn_pickup_Pistol_1P"
 	"sound_trigger_release"							"Weapon_RE45Auto_TriggerOff"
@@ -74,7 +64,7 @@ WeaponData
 	"low_ammo_sound_name_1"							"RE45Auto_LowAmmo_Shot1"
 
 	"ammo_clip_size"   								"16"
-     "ammo_default_total"							"200"
+    "ammo_default_total"							"200"
     "ammo_stockpile_max"							"200"
     "ammo_no_remove_from_stockpile"					"1"
     "ammo_min_to_fire"								"1"
@@ -84,12 +74,12 @@ WeaponData
 	"damage_type" 									"bullet"
 
     // Damage - When Used by Players
-    "damage_near_value"   							"12"
-    "damage_far_value"								"12"
-    "damage_very_far_value"							"12"
-    "damage_near_value_titanarmor"					"12"
-    "damage_far_value_titanarmor" 					"12"
-    "damage_very_far_value_titanarmor" 				"12"
+    "damage_near_value"   							"12"        //"11"
+    "damage_far_value"								"12"        //"11"
+    "damage_very_far_value"							"12"        //"11"
+    "damage_near_value_titanarmor"					"12"        //"11"
+    "damage_far_value_titanarmor" 					"12"        //"11"
+    "damage_very_far_value_titanarmor" 				"12"        //"11"
     "damage_rodeo" 									"110"
 
     "damage_unshielded_scale"              			"1.0"
@@ -127,14 +117,13 @@ WeaponData
 
 	// Behavior
 	"fire_rate"   									"13"
-	"reload_time" 									"1.5"
+	"reload_time" 									"1.5"   //"1.74"
 	"reload_time_late1"								"1.2"
 	"reload_time_late2"								"0.65"
-	"reloadempty_time"								"1.95"
+	"reloadempty_time"								"1.95"  //"2.12"
 	"reloadempty_time_late1"						"1.58"
 	"reloadempty_time_late2"						"1.06"
 	"reloadempty_time_late3"						"0.74"
-
 	"deploy_time" 									"0.315"   //"0.35" Quickdraw buff integration after removal. 10% faster handling from base
 	"holster_time"									"0.27"    //"0.3"
 	"raise_time"  									"0.27"    //"0.3"
@@ -142,6 +131,7 @@ WeaponData
     "zoom_time_in"					            	"0.18"
     "zoom_time_out"   				            	"0.16"
 	"zoom_fov"										"70"
+
 	"ads_move_speed_scale"							"0.95"
 
 	// View Kick

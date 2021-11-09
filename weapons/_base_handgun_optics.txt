@@ -8,7 +8,7 @@ WeaponData
 	{
 	    optic_cq_hcog_classic
         {
-            "viewmodel_offset_ads"                  "0 16 0"
+            "viewmodel_offset_ads"                  "0 16 -0.15"
 
             "zoom_time_in"                          "0.22"
             "zoom_time_out"                         "0.2"

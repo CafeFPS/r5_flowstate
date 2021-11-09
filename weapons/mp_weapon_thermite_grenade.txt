@@ -90,7 +90,7 @@ WeaponData
 
 	// ----- Custom flame wall settings for thermite grenade (used by script)
 
-	"burn_segment_radius" 					"50.0"
+	"burn_segment_radius" 					"40.0"
 	"burn_segment_height" 					"48.0"
 	"burn_segments"							"4" 	// # of segments on either side of the center
 	"burn_segment_spacing_dist"				"80.0" 	// spacing between segments
@@ -217,10 +217,11 @@ WeaponData
 	// intentionally high, some terrain can cause many more bounces than one might expect!
 	"projectile_ricochet_max_count"                 "16"
 
+	"grenade_touch_triggers_on_impact"				"1"
 	"grenade_roll_vel_frac_per_second"				"0.05"
 	"grenade_bounce_vel_frac_shallow"				"0.6"
 	"grenade_bounce_vel_frac_sharp"					"0.4"
-	"grenade_bounce_vel_frac_along_normal"			"0.0"
+	"grenade_bounce_vel_frac_along_normal"			"0.2"
 	"grenade_bounce_randomness"						"0.1"
 	"grenade_bounce_extra_vertical_randomness"		"0.05"
 
@@ -233,6 +234,8 @@ WeaponData
 	"projectile_inherit_owner_velocity_scale"		"1.0"
 
 	"ammo_suck_behavior"							"offhand_weapons"
+
+	"trophy_system_ignores"                          "allowBounce"
 
 	// View Kick
 	"viewkick_spring"									"pistol"

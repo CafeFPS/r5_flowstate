@@ -46,8 +46,8 @@ WeaponData
 	"playermodel"									"mdl/Weapons/grenades/w_bangalore_canister.rmdl"
 	"projectilemodel"								"mdl/Weapons/grenades/w_bangalore_canister_flare_projectile.rmdl"
 
-    show_grenade_indicator                          0
-    grenade_show_indicator_to_owner                 0
+    "show_grenade_indicator"                        "0"
+    "show_grenade_indicator_to_owner"               "0"
 
     "zoom_effects"									"0"
 
@@ -63,7 +63,6 @@ WeaponData
 	"projectile_adjust_to_gun_barrel"				"0"
 	"projectile_adjust_to_hand"						"1"
 
-	"show_grenade_indicator"						"0"
 	"grenade_disc_throw"							"1"
 
 	//Grenade Arc
@@ -110,11 +109,11 @@ WeaponData
 
 	MP_BASE
 	{
-		"ammo_clip_size"   								"270"
-		"ammo_default_total"							"0"
-		"ammo_display"									"count"
-		"ammo_min_to_fire"								"270"
-		"ammo_per_shot"									"270"
+"ammo_clip_size"   								"180"
+	"ammo_default_total"							"0"
+	"ammo_display"									"count"
+	"ammo_min_to_fire"								"180"
+	"ammo_per_shot"									"180"
 		"ammo_stockpile_max"							"0"
 		"regen_ammo_refill_rate"						"1"
 		"regen_ammo_refill_start_delay"					"0.0"
@@ -173,6 +172,8 @@ WeaponData
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"0"
+
+	"grenade_touch_triggers_on_impact"				"1"
 	"grenade_bounce_vel_frac_shallow"				"0.53"
 	"grenade_bounce_vel_frac_sharp"					"0.32"
 	"grenade_bounce_vel_frac_along_normal"			"0.5"
