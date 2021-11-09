@@ -101,15 +101,6 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
-				Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Surf Purgatory",
-                    [
-                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
-                    ],
-                    <0, 0, 6500>
-                )
-            )
 		Shared_RegisterLocation(
             NewLocationSettings(
                 "Skull Town",
@@ -134,6 +125,15 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
+		Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
+                    ],
+                    <0, 0, 6500>
+                )
+            )
 				Shared_RegisterLocation(
             NewLocationSettings(
                 "Gaunlet",
@@ -358,15 +358,6 @@ case "mp_rr_canyonlands_64k_x_64k":
                 <0, 0, 3000>
             )
         )
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Surf Purgatory",
-                    [
-                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
-                    ],
-                    <0, 0, 6500>
-                )
-            )
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Slum Lakes",
@@ -405,7 +396,16 @@ case "mp_rr_canyonlands_64k_x_64k":
                 ],
                 <0, 0, 3000>
             )
-        )  
+        ) 
+		Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
+                    ],
+                    <0, 0, 6500>
+                )
+            )
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Market",
@@ -552,15 +552,6 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 3000>
                 )
             )
-			Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Surf Purgatory",
-                    [
-                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
-                    ],
-                    <0, 0, 6500>
-                )
-            )
 					Shared_RegisterLocation(
                 NewLocationSettings(
                     "TTV Building 2",
@@ -571,6 +562,15 @@ case "mp_rr_canyonlands_64k_x_64k":
                         NewLocPair(<1200, 4471, -4150>, <0, 50, 0>)
                     ],
                     <0, 0, 2000>
+                )
+            )
+Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
+                    ],
+                    <0, 0, 6500>
                 )
             )
 			Shared_RegisterLocation(
