@@ -1,7 +1,7 @@
 // Open this with a code viewer software
 
 //////////////////////////////////////////////////////
-//Mechanics Grinding DM v2.0 stable
+//Flow State DM v2.0 stable
 //By Retículo Endoplasmático#5955
 //& michae\l/#1125
 ///////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ enum eTDMState
 	bool QUICK_LOBBY = true // quick lobby.
 	bool SCOREBOARD_ENABLED = false // this setting toggles mid-round scoreboard + time remaining announcements. scoreboard will still display at end of game and through "scoreboard" console command.
 	bool LOCK_POI_ENABLED = false // if enabled, map level will never change on round end. specify which index of the map config to use in var "LOCKED_POI"
-	int LOCKED_POI = 0 // TTV (streamer) building in mechanics grinding map config
+	int LOCKED_POI = 0 // TTV (streamer) building in Flow State map config
 	bool ADMIN_TGIVE_ENABLED = false // enables "admintgive", tgive will be disabled for the users (clients). If false, it will take the value from cmd file
 	bool ALL_CHAT_ENABLED = true // enables "say" console command, which allows any player to send global announcements. working on real all chat :(
 	float ChatCooldown = 10 // GLOBAL cooldown for public chat (if another player sends a message, ALL players must wait). ALL_CHAT_ENABLED must be true for this feature to work.
@@ -385,7 +385,7 @@ void function _OnPlayerConnected(entity player)
 		}
     }
 	string nextlocation = file.selectedLocation.name
-		Message(player,"WELCOME TO TDM/FFA!", "\nHosted by " + getHoster() + "\n\nMechanics Grinding DM " + file.scriptversion + " by CaféDeColombiaFPS and empathogenwarlord." + helpMessage(), 15)
+		Message(player,"WELCOME TO TDM/FFA!", "\nHosted by " + getHoster() + "\n\nFlow State DM " + file.scriptversion + " by CaféDeColombiaFPS and empathogenwarlord." + helpMessage(), 15)
 	GrantSpawnImmunity(player,2)
 	    switch(GetGameState())
     {
@@ -1185,7 +1185,7 @@ foreach(player in GetPlayerArray())
 	try{
 	 if(IsValid(player)){
 	 AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Mechanics grinding " + file.scriptversion + " by CaféDeColombiaFPS and empathogenwarlord", 12, "UI_Menu_RoundSummary_Results")}
+	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flow State " + file.scriptversion + " by CaféDeColombiaFPS and empathogenwarlord", 12, "UI_Menu_RoundSummary_Results")}
 	}catch(e3){}
 	}
 wait 6
@@ -1724,7 +1724,7 @@ bool function ClientCommand_Help(entity player, array<string> args)
 {
 	if(IsValid(player)) {
 		try{
-		Message(player, "WELCOME TO MECHANICS GRINDING!", helpMessage(), 10)
+		Message(player, "WELCOME TO FLOW STATE!", helpMessage(), 10)
 		}catch(e) {}
 	}
 	return true
