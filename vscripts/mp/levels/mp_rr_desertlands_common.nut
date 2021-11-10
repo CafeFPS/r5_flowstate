@@ -107,31 +107,31 @@ void function EntitiesDidLoad()
 	int keyCount = GetPlaylistVarInt( currentPlaylist, "loot_drones_vault_key_count", NUM_LOOT_DRONES_WITH_VAULT_KEYS )
 	if ( file.isTrainEnabled )
 		thread DesertlandsTrain_Init()
-		
+		/*
 	// ------------------------------------------------------
 	//Obtenemos la información del loot.
 	//By Retículo Endoplasmático#5955 CaféDeColombiaFPS CaféDeColombiaFPS. Adaptado del firing range.
 
 	FillLootTable()
-	
+
 	// //Granadas-Grenades
 	SpawnGrenades(<19010,33300,-810>, <0, 0, 0>, 6, ["thermite", "frag", "arc"], 3)
 	SpawnGrenades(<18882,29908,-810>,<0, -90, 0>, 6, ["thermite", "frag", "arc"], 3)
 	SpawnGrenades(<15346,30084,-810>,<0, 90, 0>, 6, ["thermite", "frag", "arc"], 3)
 	SpawnGrenades(<15346,33540,-810>,<0, 90, 0>, 6, ["thermite", "frag", "arc"], 3)
-	
+
 	SpawnGrenades(<12099, 6976,-4330>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
 	SpawnGrenades(<11238, 4238,-4283>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
 	SpawnGrenades(<8443, 4459, -4283>,<0, 0, 0>, 10, ["thermite", "frag", "arc"], 1)
 	SpawnGrenades(<10293, 3890, -3948>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
-	
-	
+
+
 	// //Spawn de armas
 	SpawnWeapon( <17250,32500,2220>, <0, -90, 0>, 60, 2, 1)
 	SpawnWeapon( <17500,32500,2220>, <0, -90, 0>, 60, 0, 1)
 	SpawnWeapon( <17750,32500,2220>, <0, -90, 0>, 60, 1, 1)
 	// // ------------------------------------------------------
-	
+
 	//Custom Lobby box
 	CreateFloor(-26544, 2567, 1200, 10, 10)
 	CreateFloor(-26544, 2567, 2475, 10, 10)
@@ -210,7 +210,7 @@ void function EntitiesDidLoad()
     CreateEditorProp( $"mdl/foliage/lilypad_clusters_05_flowing.rmdl", <-25599.1,5120.43,1215.81>, <0,90,0>, true, 8000, -1 )
     CreateEditorProp( $"mdl/haven/haven_bamboo_tree_02.rmdl", <-25279,5055.94,1216.26>, <0,90,0>, true, 8000, -1 )
     CreateEditorProp( $"mdl/haven/haven_bamboo_tree_02.rmdl", <-24703,5184.29,1215.98>, <0,90,0>, true, 8000, -1 )
-	
+
 	SpawnDummyAAA( <-24004,2772,1216>, <0,-90,0>)
     SpawnDummyAAA(<-23956,2772,1216>, <0,180,0>)
     SpawnDummyAAA( <-23948,2692,1216>, <0,90,0>)
@@ -237,8 +237,8 @@ void function EntitiesDidLoad()
     CreateAnimatedLegend( $"mdl/humans/class/light/pilot_light_wattson.rmdl", <-24936,4980,1280>, <0,-90,0>, 6, 5.0)
     CreateAnimatedLegend( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl", <-24024,3880,1216>, <0,180,0>, 6, 5.0)
     CreateAnimatedLegend( $"mdl/humans/class/light/pilot_light_support.rmdl", <-25044,2832,1216>, <0,90,0>, 6, 5.0)
-	 
-	
+
+
 	// CreateAnimatedLegend( $"mdl/humans/class/medium/pilot_medium_holo.rmdl", <29428,-6736,-30896>, <0,-90,0>) // mirage
     // CreateAnimatedLegend( $"mdl/humans/class/medium/pilot_medium_holo.rmdl", <29424,-6768,-30896>, <0,90,0>) // mirage 2
     // CreateAnimatedLegend( $"mdl/humans/class/medium/pilot_medium_holo_legendary_01.rmdl", <29556,-7948,-30896>, <0,90,0>) //1
@@ -269,7 +269,7 @@ void function SpawnDummyAAA(vector origin, vector angles, string aiset = "npc_du
 	dummy.SetMaxHealth( 230 )
 	dummy.SetHealth( 230 )
 	dummy.EnableNPCFlag( NPC_AIM_DIRECT_AT_ENEMY )
-	
+
     dummy.SetOrigin( origin )
     dummy.SetAngles( angles )
     SetTeam(dummy, 99)
@@ -294,7 +294,7 @@ void function OnDummyKilled(entity dummy)
 #endif
 
 #if SERVER
-entity function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, 
+entity function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000,
 int realm = -1)
 {
     entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
@@ -375,7 +375,7 @@ void function CreateWall(int x, int y, int z, int length, int height, int angle,
 
             else if (angle == 0) CreateFRProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", <i, y, j>, <0,0,0>);
         }
-  }
+  } */
 }
 #endif
 
@@ -748,13 +748,13 @@ entity function SpawnBigTrainingTarget(vector pos, vector ang, void functionref(
 }
 #endif
 
-                           // 888                                .d888                            888    d8b                            
-                           // 888                               d88P"                             888    Y8P                            
-                           // 888                               888                               888                                   
- // .d8888b 888  888 .d8888b  888888 .d88b.  88888b.d88b.       888888 888  888 88888b.   .d8888b 888888 888  .d88b.  88888b.  .d8888b  
-// d88P"    888  888 88K      888   d88""88b 888 "888 "88b      888    888  888 888 "88b d88P"    888    888 d88""88b 888 "88b 88K      
-// 888      888  888 "Y8888b. 888   888  888 888  888  888      888    888  888 888  888 888      888    888 888  888 888  888 "Y8888b. 
-// Y88b.    Y88b 888      X88 Y88b. Y88..88P 888  888  888      888    Y88b 888 888  888 Y88b.    Y88b.  888 Y88..88P 888  888      X88 
+                           // 888                                .d888                            888    d8b
+                           // 888                               d88P"                             888    Y8P
+                           // 888                               888                               888
+ // .d8888b 888  888 .d8888b  888888 .d88b.  88888b.d88b.       888888 888  888 88888b.   .d8888b 888888 888  .d88b.  88888b.  .d8888b
+// d88P"    888  888 88K      888   d88""88b 888 "888 "88b      888    888  888 888 "88b d88P"    888    888 d88""88b 888 "88b 88K
+// 888      888  888 "Y8888b. 888   888  888 888  888  888      888    888  888 888  888 888      888    888 888  888 888  888 "Y8888b.
+// Y88b.    Y88b 888      X88 Y88b. Y88..88P 888  888  888      888    Y88b 888 888  888 Y88b.    Y88b.  888 Y88..88P 888  888      X88
  // "Y8888P  "Y88888  88888P'  "Y888 "Y88P"  888  888  888      888     "Y88888 888  888  "Y8888P  "Y888 888  "Y88P"  888  888  88888P'
 
 #if SERVER
@@ -783,7 +783,7 @@ void function FillLootTable()
 
 #if SERVER
 void function SpawnGrenades(vector pos, vector ang, int wait_time = 6, array which_nades = ["thermite", "frag", "arc"], int num_rows = 1)
-//By michae\l/#1125 & Retículo Endoplasmático#5955 
+//By michae\l/#1125 & Retículo Endoplasmático#5955
 {
     vector posfixed = pos
 	int i;
@@ -818,9 +818,8 @@ void function SpawnWeapon(vector pos, vector ang, int wait_time=5, int weapon=0,
 		{
 	LootData item
 	posfixed = posfixed + <30, 0, 0>
-	item = file.weapons[weapon]		
+	item = file.weapons[weapon]
 	entity loot = SpawnGenericLoot(item.ref, posfixed, ang, 1)
     thread RespawnItem(loot,item.ref, 1, wait_time)
 }}
 #endif
-
