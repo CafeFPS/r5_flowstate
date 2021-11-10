@@ -17,9 +17,9 @@ global function Equipment_GetDefaultShieldHP
 global function Deathmatch_GetOOBDamagePercent
 global function Deathmatch_GetVotingTime
 
-global function Deathmatch_GetIntroCutsceneNumSpawns           
-global function Deathmatch_GetIntroCutsceneSpawnDuration        
-global function Deathmatch_GetIntroSpawnSpeed 
+global function Deathmatch_GetIntroCutsceneNumSpawns
+global function Deathmatch_GetIntroCutsceneSpawnDuration
+global function Deathmatch_GetIntroSpawnSpeed
 
 #if SERVER
 global function Equipment_GetRespawnKitEnabled
@@ -48,7 +48,7 @@ global struct LocPair
     vector angles = <0, 0, 0>
 }
 
-global struct LocationSettings 
+global struct LocationSettings
 {
     string name
     array<LocPair> spawns
@@ -62,7 +62,7 @@ struct {
     var scoreRui
 } file;
 
-void function Sh_CustomTDM_Init() 
+void function Sh_CustomTDM_Init()
 {
 
 
@@ -125,15 +125,6 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Surf Purgatory",
-                    [
-                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
-                    ],
-                    <0, 0, 6500>
-                )
-            )
 				Shared_RegisterLocation(
             NewLocationSettings(
                 "Gaunlet",
@@ -187,8 +178,8 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
-		
-		Shared_RegisterLocation( 
+
+		Shared_RegisterLocation(
 			NewLocationSettings(
                 "Cage",
                 [
@@ -200,7 +191,7 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
-		
+
 		Shared_RegisterLocation(
             NewLocationSettings(
                 "Swamps",
@@ -239,7 +230,7 @@ case "mp_rr_canyonlands_mu1":
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Slum Lakes",
-                [                   
+                [
                     NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
                     NewLocPair(<-20245, 24475, 2810>, <0, -160, 0>),
                     NewLocPair(<-25650, 22025, 2270>, <0, 20, 0>),
@@ -263,8 +254,8 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
-		
-       
+
+
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Runoff",
@@ -361,7 +352,7 @@ case "mp_rr_canyonlands_64k_x_64k":
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Slum Lakes",
-                [                   
+                [
                     NewLocPair(<-20060, 23800, 2655>, <0, 110, 0>),
                     NewLocPair(<-20245, 24475, 2810>, <0, -160, 0>),
                     NewLocPair(<-25650, 22025, 2270>, <0, 20, 0>),
@@ -396,16 +387,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                 ],
                 <0, 0, 3000>
             )
-        ) 
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Surf Purgatory",
-                    [
-                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
-                    ],
-                    <0, 0, 6500>
-                )
-            )
+        )
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Market",
@@ -495,7 +477,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                 <0, 0, 3000>
             )
         )
-		
+
 		Shared_RegisterLocation(
             NewLocationSettings(
                 "Swamps",
@@ -587,7 +569,7 @@ Shared_RegisterLocation(
                 )
             )
 
-			
+
 			Shared_RegisterLocation(
                 NewLocationSettings(
                     "Lava Fissure",
@@ -678,7 +660,7 @@ Shared_RegisterLocation(
                     <0, 0, 2000>
                 )
             )
-			
+
 			Shared_RegisterLocation(
                 NewLocationSettings(
                     "Overlook",
@@ -691,7 +673,7 @@ Shared_RegisterLocation(
                     <0, 0, 2000>
                 )
             )
-			
+
 			Shared_RegisterLocation(
                 NewLocationSettings(
                     "Refinery",
@@ -704,7 +686,7 @@ Shared_RegisterLocation(
                         NewLocPair(<19495, 29283, -4821>, <0, -45, 0>),
                         NewLocPair(<18470, 28330, -4370>, <0, 135, 0>),
                         NewLocPair(<18461, 28405, -4199>, <0, 45, 0>),
-                        NewLocPair(<18284, 28492, -3992>, <0, -45, 0>), 
+                        NewLocPair(<18284, 28492, -3992>, <0, -45, 0>),
                         NewLocPair(<19428, 27190, -4140>, <0, -45, 0>),
                         NewLocPair(<20435, 26254, -4139>, <0, -175, 0>),
                         NewLocPair(<20222, 26549, -4316>, <0, 135, 0>),
@@ -739,7 +721,7 @@ Shared_RegisterLocation(
                     <0, 0, 3000>
                 )
             )
-			
+
             Shared_RegisterLocation(
                 NewLocationSettings(
                     "Lava City",
@@ -820,7 +802,7 @@ Shared_RegisterLocation(
 
     //Client Signals
     RegisterSignal( "CloseScoreRUI" )
-    
+
 }
 
 LocPair function NewLocPair(vector origin, vector angles)
@@ -847,7 +829,7 @@ LocationSettings function NewLocationSettings(string name, array<LocPair> spawns
     // WeaponKit weaponKit
     // weaponKit.weapon = weapon
     // weaponKit.mods = mods
-    
+
     // return weaponKit
 // }
 
@@ -871,28 +853,28 @@ void function Shared_RegisterLocation(LocationSettings locationSettings)
 float function Deathmatch_GetIntroCutsceneNumSpawns()                { return GetCurrentPlaylistVarFloat("intro_cutscene_num_spawns", 0)}
 float function Deathmatch_GetIntroCutsceneSpawnDuration()            { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_duration", 5)}
 float function Deathmatch_GetIntroSpawnSpeed()                       { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_speed", 40)}
-bool function Spectator_GetReplayIsEnabled()                         { return GetCurrentPlaylistVarBool("replay_enabled", false ) } 
-float function Spectator_GetReplayDelay()                            { return GetCurrentPlaylistVarFloat("replay_delay", 2 ) } 
+bool function Spectator_GetReplayIsEnabled()                         { return GetCurrentPlaylistVarBool("replay_enabled", false ) }
+float function Spectator_GetReplayDelay()                            { return GetCurrentPlaylistVarFloat("replay_delay", 2 ) }
 float function Deathmatch_GetRespawnDelay()                          { return GetCurrentPlaylistVarFloat("respawn_delay", 10) }
 float function Equipment_GetDefaultShieldHP()                        { return GetCurrentPlaylistVarFloat("default_shield_hp", 100) }
 float function Deathmatch_GetOOBDamagePercent()                      { return GetCurrentPlaylistVarFloat("oob_damage_percent", 10) }
 float function Deathmatch_GetVotingTime()                            { return GetCurrentPlaylistVarFloat("voting_time", 5) }
 
-#if SERVER   
+#if SERVER
 
 
 bool function Equipment_GetRespawnKitEnabled()                       { return GetCurrentPlaylistVarBool("respawn_kit_enabled", false) }
 
 StoredWeapon function Equipment_GetRespawnKit_PrimaryWeapon()
-{ 
+{
     return Equipment_GetRespawnKit_Weapon(
         GetCurrentPlaylistVarString("respawn_kit_primary_weapon", "~~none~~"),
         eStoredWeaponType.main,
         WEAPON_INVENTORY_SLOT_PRIMARY_0
-    ) 
+    )
 }
 StoredWeapon function Equipment_GetRespawnKit_SecondaryWeapon()
-{ 
+{
     return Equipment_GetRespawnKit_Weapon(
         GetCurrentPlaylistVarString("respawn_kit_secondary_weapon", "~~none~~"),
         eStoredWeaponType.main,
@@ -900,7 +882,7 @@ StoredWeapon function Equipment_GetRespawnKit_SecondaryWeapon()
     )
 }
 StoredWeapon function Equipment_GetRespawnKit_Tactical()
-{ 
+{
     return Equipment_GetRespawnKit_Weapon(
         GetCurrentPlaylistVarString("respawn_kit_tactical", "~~none~~"),
         eStoredWeaponType.offhand,
@@ -908,7 +890,7 @@ StoredWeapon function Equipment_GetRespawnKit_Tactical()
     )
 }
 StoredWeapon function Equipment_GetRespawnKit_Ultimate()
-{ 
+{
     return Equipment_GetRespawnKit_Weapon(
         GetCurrentPlaylistVarString("respawn_kit_ultimate", "~~none~~"),
         eStoredWeaponType.offhand,
