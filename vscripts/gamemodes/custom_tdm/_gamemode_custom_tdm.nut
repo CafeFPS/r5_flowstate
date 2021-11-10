@@ -27,7 +27,7 @@ enum eTDMState
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // MODIFY THESE VALUES TO YOUR LIKING. Please read each description.
 	struct {
-		
+
 	//1. MUST EDIT
 	string Hoster = "" // fill this string with whatever you want your host alias to be. otherwise, script will just grab your R5 username.
 	int RoundTime = 1200 // Round time (seconds)!! Now it can be any value!!! "next_round # now" is working. (# is the array index of the desired POI)
@@ -86,7 +86,7 @@ struct {
 	int maxTeams
 } file
 
-struct PlayerInfo 
+struct PlayerInfo
 {
 	string name
 	int team
@@ -96,12 +96,12 @@ struct PlayerInfo
 	int damage
 	int lastLatency
 }
-	
-// ██████   █████  ███████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████ 
-// ██   ██ ██   ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
-// ██████  ███████ ███████ █████       █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ 
-// ██   ██ ██   ██      ██ ██          ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
-// ██████  ██   ██ ███████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
+
+// ██████   █████  ███████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
+// ██   ██ ██   ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██
+// ██████  ███████ ███████ █████       █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████
+// ██   ██ ██   ██      ██ ██          ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██
+// ██████  ██   ██ ███████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
 bool function IsFFA()
 ///////////////////////////////////////////////////////
@@ -122,7 +122,7 @@ void function PrecacheCustomMapsProps()
 {
 if(GetMapName() == "mp_rr_desertlands_64k_x_64k"){
 
-//surf	
+//surf
 PrecacheModel( $"mdl/robots/marvin/marvin_gladcard.rmdl" )
 PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl" )
 PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl" )
@@ -238,15 +238,15 @@ PrecacheCustomMapsProps()
 	AddClientCommandCallback("sectoall",ClientCommand_GiveWeaponsToEveryone2)
 	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
 	AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
-	
+
 		if(userSettings.ALL_CHAT_ENABLED){
 		AddClientCommandCallback("say", ClientCommand_ClientMsg)
 	}
-	
+
 	if ( userSettings.ADMIN_TGIVE_ENABLED ){
 	AddClientCommandCallback("admintgive", ClientCommand_GiveWeapon)
 	} else {
-	
+
     if( CMD_GetTGiveEnabled() )
     {
         AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
@@ -257,7 +257,7 @@ PrecacheCustomMapsProps()
     {
         file.whitelistedWeapons.append(GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~"))
     }
-    
+
     thread RunTDM() //Go to Game Loop
     }
 
@@ -394,7 +394,7 @@ void function _OnPlayerConnected(entity player)
         {
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
-			player.UnforceStand()  
+			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
 		}
 		break
@@ -408,7 +408,7 @@ void function _OnPlayerConnected(entity player)
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		}
 	try{
-	if(file.locationSettings.name == "Surf Purgatory"){	
+	if(file.locationSettings.name == "Surf Purgatory"){
 	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
     player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
     TakeAllWeapons( player )
@@ -418,12 +418,12 @@ void function _OnPlayerConnected(entity player)
 	player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
 	}}catch(e){}
         break
-    default: 
+    default:
         break
     }
 }
 
-void function _OnPlayerDied(entity victim, entity attacker, var damageInfo) 
+void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
@@ -440,7 +440,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	foreach (player in GetPlayerArray())
 	{
 	thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
-	}		
+	}
 	}
 
 	if (victim == champion && victim != killeader)
@@ -448,7 +448,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		foreach (player in GetPlayerArray())
 	{
 	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_championEliminated_01" )
-	}	
+	}
 	}
 
 	if(Time() - file.lastKillTimer < doubleKillTime && attacker == file.lastKiller && attacker == killeader){
@@ -458,7 +458,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	}
 	file.SameKillerStoredKills++
 	}
-	
+
 	if(Time() - file.lastKillTimer < tripleKillTime && attacker == file.lastKiller && attacker == killeader && file.SameKillerStoredKills > 2){
 	file.SameKillerStoredKills = 0
 	wait 3
@@ -474,7 +474,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
     case eGameState.Playing:
         // Víctima
         void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-           
+
 			if(!IsValid(victim)) return
 			victim.p.storedWeapons = StoreWeapons(victim)
 			int reservedTime = 2
@@ -494,7 +494,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
                 Remote_CallFunction_NonReplay(attacker, "ServerCallback_TDM_PlayerKilled")
             }} catch (e1) {}
 			wait max(0, Deathmatch_GetRespawnDelay() - reservedTime)
-			try{       
+			try{
 			if(IsValid(victim) )
 			{
 				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
@@ -573,7 +573,7 @@ void function _HandleRespawn(entity player, bool forceGive = false)
                     player.GiveOffhandWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
             }
 		}
-        else 
+        else
         {
             if(!player.p.storedWeapons.len())
             {
@@ -598,7 +598,7 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 			CharSelect(player)}
                 GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
             }
-            
+
         }
     }
 
@@ -712,7 +712,7 @@ void function GrantSpawnImmunity(entity player, float duration)
     MakeInvincible(player)
     } catch (e) {}
 	wait duration
-    
+
 	try{
 	if(!IsValid(player)) return;
     ClearInvincible(player)
@@ -798,7 +798,7 @@ void function VotingPhase()
 {
     DestroyPlayerProps();
     SetGameState(eGameState.MapVoting)
-	
+
 wait 1
     foreach(player in GetPlayerArray())
 	{
@@ -806,7 +806,7 @@ wait 1
 			if(IsValid(player))
 			player.SetThirdPersonShoulderModeOn()
 			_HandleRespawn(player)
-			player.UnforceStand()  
+			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
 			HolsterAndDisableWeapons( player )
 			    }
@@ -822,7 +822,7 @@ foreach(player in GetPlayerArray())
 		Message(player,"- QUICK LOBBY IS ON -", "", 4, "Wraith_PhaseGate_Travel_1p")
 		ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )
 	}}
-if (!file.mapIndexChanged) 
+if (!file.mapIndexChanged)
     {
 			if (userSettings.LOCK_POI_ENABLED) {
 				file.nextMapIndex = userSettings.LOCKED_POI % file.locationSettings.len()
@@ -833,7 +833,7 @@ if (!file.mapIndexChanged)
 
     }
     int choice = file.nextMapIndex
-    file.mapIndexChanged = false	
+    file.mapIndexChanged = false
     file.selectedLocation = file.locationSettings[choice]
 
 	if(file.selectedLocation.name == "Surf Purgatory"){
@@ -843,7 +843,7 @@ if (!file.mapIndexChanged)
     SurfPurgatoryLoad()
 	}
 
-	if(file.selectedLocation.name == "Skill trainer"){
+	if(file.selectedLocation.name == "Skill trainer By Colombia"){
 	DestroyPlayerProps()
     wait 2
     SkillTrainerLoad()
@@ -851,7 +851,7 @@ if (!file.mapIndexChanged)
 
     foreach(player in GetPlayerArray())
     {
-	try {	
+	try {
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_SetSelectedLocation", choice)
     }
     catch(e){}
@@ -890,7 +890,7 @@ wait 5
 }}
 wait 5}
 
-if (!file.mapIndexChanged) 
+if (!file.mapIndexChanged)
     {
 			if (userSettings.LOCK_POI_ENABLED) {
 				file.nextMapIndex = userSettings.LOCKED_POI % file.locationSettings.len()
@@ -900,7 +900,7 @@ if (!file.mapIndexChanged)
 			}
     }
     int choice = file.nextMapIndex
-    file.mapIndexChanged = false	
+    file.mapIndexChanged = false
     file.selectedLocation = file.locationSettings[choice]
 
 	if(file.selectedLocation.name == "Surf Purgatory"){
@@ -910,15 +910,15 @@ if (!file.mapIndexChanged)
     SurfPurgatoryLoad()
 	}
 
-	if(file.selectedLocation.name == "Skill trainer"){
+	if(file.selectedLocation.name == "Skill trainer By Colombia"){
 	DestroyPlayerProps()
     wait 2
-    SkillTrainerLoad()	
+    SkillTrainerLoad()
 	}
 
     foreach(player in GetPlayerArray())
     {
-	try {	
+	try {
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_SetSelectedLocation", choice)
     }
     catch(e1){}
@@ -981,7 +981,7 @@ if(GetBestPlayer()==PlayerWithMostDamage())
     {
 		string nextlocation = file.selectedLocation.name
 		if(file.selectedLocation.name == "Surf Purgatory"){
-		Message(player, "WELCOME TO SURF PURGATORY", "Map by Zee#0134", 15, "diag_ap_aiNotify_circleTimerStartNext_02")	
+		Message(player, "WELCOME TO SURF PURGATORY", "Map by Zee#0134", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
 		player.Code_SetTeam( TEAM_IMC + 1 )
 		} else {
 		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           " + GetBestPlayerName() + " is the champion with " + GetBestPlayerScore() + " kills in the previous round. \n         The champion also got the most damage: " + GetDamageOfPlayerWithMostDamage() + helpMessage(), 15, "diag_ap_aiNotify_circleTimerStartNext_02")
@@ -997,7 +997,7 @@ else{
     {
 		string nextlocation = file.selectedLocation.name
 		if(file.selectedLocation.name == "Surf Purgatory"){
-		Message(player, "WELCOME TO SURF PURGATORY", "Map by Zee#0134", 15, "diag_ap_aiNotify_circleTimerStartNext_02")	
+		Message(player, "WELCOME TO SURF PURGATORY", "Map by Zee#0134", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
 		player.Code_SetTeam( TEAM_IMC + 1 )
 		} else {
 		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           " + GetBestPlayerName() + " is the champion with " + GetBestPlayerScore() + " kills in the previous round. \n      " + PlayerWithMostDamageName() + " is the challenger with " + GetDamageOfPlayerWithMostDamage() + " of damage in the previous round." + helpMessage(), 15, "diag_ap_aiNotify_circleTimerStartNext_02")
@@ -1017,7 +1017,7 @@ foreach(player in GetPlayerArray())
 		player.p.playerDamageDealt = 0.0}
 if (userSettings.RESET_GLOBAL_KILLS_EACH_ROUND && IsValidPlayer(player)) {
 	player.SetPlayerNetInt("kills", 0) //Reset for kills in top right counter
-}	
+}
 	}
 ResetAllPlayerStats()
 file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
@@ -1045,7 +1045,7 @@ while( Time() <= endTime )
 				{
 					Message(player,"15 MINUTES REMAINING!","\n Name:    K  |   D   |   KD   |   Damage dealt \n" + Scoreboard(), 5)
 				}
-			}	
+			}
 		}
 		if(Time() == endTime-600)
 		{
@@ -1055,7 +1055,7 @@ while( Time() <= endTime )
 				{
 					Message(player,"10 MINUTES REMAINING!","\n Name:    K  |   D   |   KD   |   Damage dealt \n" + Scoreboard(), 5)
 				}
-			}	
+			}
 		}
 		if(Time() == endTime-300)
 		{
@@ -1065,7 +1065,7 @@ while( Time() <= endTime )
 				{
 					Message(player,"5 MINUTES REMAINING!","\n Name:    K  |   D   |   KD   |   Damage dealt \n" + Scoreboard(), 5)
 				}
-			}	
+			}
 		}
 		if(Time() == endTime-120)
 		{
@@ -1075,7 +1075,7 @@ while( Time() <= endTime )
 				{
 					Message(player,"2 MINUTES REMAINING!","\n Name:    K  |   D   |   KD   |   Damage dealt \n" + Scoreboard(), 5)
 				}
-			}	
+			}
 		}
 		if(Time() == endTime-60)
 		{
@@ -1085,7 +1085,7 @@ while( Time() <= endTime )
 				{
 					Message(player,"1 MINUTE REMAINING!","\n Name:    K  |   D   |   KD   |   Damage dealt \n" + Scoreboard(), 5, "diag_ap_aiNotify_circleMoves60sec")
 				}
-			}	
+			}
 		}
 		if(Time() == endTime-30)
 		{
@@ -1095,7 +1095,7 @@ while( Time() <= endTime )
 				{
 					Message(player,"30 SECONDS REMAINING!", "\n Name:    K  |   D   |   KD   |   Damage dealt \n" + Scoreboard(), 5, "diag_ap_aiNotify_circleMoves30sec")
 				}
-			}	
+			}
 		}
 		if(Time() == endTime-10)
 		{
@@ -1105,7 +1105,7 @@ while( Time() <= endTime )
 				{
 					Message(player,"10 SECONDS REMAINING!", "\n The battle is almost over.", 8, "diag_ap_aiNotify_circleMoves10sec")
 				}
-			}	
+			}
 		}
 		if(file.tdmState == eTDMState.NEXT_ROUND_NOW) break
 		WaitFrame()
@@ -1113,19 +1113,19 @@ while( Time() <= endTime )
 }
 else{
 while( Time() <= endTime )
-	{	
+	{
 	if(file.tdmState == eTDMState.NEXT_ROUND_NOW) break
 		WaitFrame()
 	}
 }
 foreach(player in GetPlayerArray())
     {
-try{       
+try{
 	   if(IsValid(player) && IsAlive(player))
         {
 			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
 			player.SetThirdPersonShoulderModeOn()
-			HolsterAndDisableWeapons( player )				
+			HolsterAndDisableWeapons( player )
 	}} catch (e) {}
 	}
 foreach(player in GetPlayerArray())
@@ -1145,28 +1145,28 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 
 foreach(player in GetPlayerArray())
     {
-	  
+
 	 if(IsValid(player))
-        {			
+        {
 		Message(player,"- CHAMPION DECIDED! -", "\n " + GetBestPlayerName() + " is the champion: number 1 in kills and damage \n with " + GetBestPlayerScore() + " kills and " + GetDamageOfPlayerWithMostDamage() + " of damage.  \n \n Champion is literally on fire! Weapons disabled! Please tbag.", 10, "UI_InGame_ChampionVictory")
 		}
 	}
-wait 1	
+wait 1
 }
 else
 {
 foreach(player in GetPlayerArray())
     {
 	 if(IsValid(player))
-        {			
+        {
 		Message(player,"- CHAMPION DECIDED! -", "\n The champion is " + GetBestPlayerName() + " with " + GetBestPlayerScore() + " kills. Champion is literally on fire! \n \n The player with most damage was " + PlayerWithMostDamageName() + " with " + GetDamageOfPlayerWithMostDamage() + " and now is the CHALLENGER! \n\n          Weapons disabled! Please tbag.", 10, "UI_InGame_ChampionVictory")}
 	}
-wait 1	
+wait 1
 }
 } catch (e1) {}
 
 foreach(entity champion in GetPlayerArray())
-    {	
+    {
 		try {
 		if(GetBestPlayer() == champion) {
 				if(IsValid(champion))
@@ -1212,14 +1212,14 @@ file.bubbleBoundary.Destroy()
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
-// Making this scoreboard from the server side has made me very happy, it makes the game more competitive !! 
+// Making this scoreboard from the server side has made me very happy, it makes the game more competitive !!
 }
 
-// ██████  ██    ██ ██████  ██████  ██      ███████      ██ ██████  ██ ███    ██  ██████  ██  
-// ██   ██ ██    ██ ██   ██ ██   ██ ██      ██          ██  ██   ██ ██ ████   ██ ██        ██ 
-// ██████  ██    ██ ██████  ██████  ██      █████       ██  ██████  ██ ██ ██  ██ ██   ███  ██ 
-// ██   ██ ██    ██ ██   ██ ██   ██ ██      ██          ██  ██   ██ ██ ██  ██ ██ ██    ██  ██ 
-// ██████   ██████  ██████  ██████  ███████ ███████      ██ ██   ██ ██ ██   ████  ██████  ██  
+// ██████  ██    ██ ██████  ██████  ██      ███████      ██ ██████  ██ ███    ██  ██████  ██
+// ██   ██ ██    ██ ██   ██ ██   ██ ██      ██          ██  ██   ██ ██ ████   ██ ██        ██
+// ██████  ██    ██ ██████  ██████  ██      █████       ██  ██████  ██ ██ ██  ██ ██   ███  ██
+// ██   ██ ██    ██ ██   ██ ██   ██ ██      ██          ██  ██   ██ ██ ██  ██ ██ ██    ██  ██
+// ██████   ██████  ██████  ██████  ███████ ███████      ██ ██   ██ ██ ██   ████  ██████  ██
 
 entity function CreateBubbleBoundary(LocationSettings location)
 {
@@ -1280,12 +1280,12 @@ void function PlayerRestoreHP(entity player, float health, float shields)
     player.SetShieldHealth( shields )
 }
 
- // ██████  ██████  ███████ ███    ███ ███████ ████████ ██  ██████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████ 
-// ██      ██    ██ ██      ████  ████ ██         ██    ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██      
-// ██      ██    ██ ███████ ██ ████ ██ █████      ██    ██ ██      ███████     █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████ 
-// ██      ██    ██      ██ ██  ██  ██ ██         ██    ██ ██           ██     ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██ 
- // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████ 
- 
+ // ██████  ██████  ███████ ███    ███ ███████ ████████ ██  ██████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
+// ██      ██    ██ ██      ████  ████ ██         ██    ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██
+// ██      ██    ██ ███████ ██ ████ ██ █████      ██    ██ ██      ███████     █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████
+// ██      ██    ██      ██ ██  ██  ██ ██         ██    ██ ██           ██     ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██
+ // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
+
 void function PlayerTrail(entity player, int onoff)
 ///////////////////
 //Thanks Zee#0134//
@@ -1296,7 +1296,7 @@ void function PlayerTrail(entity player, int onoff)
         int smokeAttachID = player.LookupAttachment( "CHESTFOCUS" )
 	    vector smokeColor = <255,255,255>
 		entity smokeTrailFX = StartParticleEffectOnEntityWithPos_ReturnEntity( player, GetParticleSystemIndex( $"P_grenade_thermite_trail"), FX_PATTACH_ABSORIGIN_FOLLOW, smokeAttachID, <0,0,0>, VectorToAngles( <0,0,-1> ) )
-		
+
 		EffectSetControlPointVector( smokeTrailFX, 1, smokeColor )
         player.p.DEV_lastDroppedSurvivalWeaponProp = smokeTrailFX
     }
@@ -1324,11 +1324,11 @@ player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, 
 player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
 }
 
-// ███████  ██████  ██████  ██████  ███████ ██████   ██████   █████  ██████  ██████  
-// ██      ██      ██    ██ ██   ██ ██      ██   ██ ██    ██ ██   ██ ██   ██ ██   ██ 
-// ███████ ██      ██    ██ ██████  █████   ██████  ██    ██ ███████ ██████  ██   ██ 
-     // ██ ██      ██    ██ ██   ██ ██      ██   ██ ██    ██ ██   ██ ██   ██ ██   ██ 
-// ███████  ██████  ██████  ██   ██ ███████ ██████   ██████  ██   ██ ██   ██ ██████  
+// ███████  ██████  ██████  ██████  ███████ ██████   ██████   █████  ██████  ██████
+// ██      ██      ██    ██ ██   ██ ██      ██   ██ ██    ██ ██   ██ ██   ██ ██   ██
+// ███████ ██      ██    ██ ██████  █████   ██████  ██    ██ ███████ ██████  ██   ██
+     // ██ ██      ██    ██ ██   ██ ██      ██   ██ ██    ██ ██   ██ ██   ██ ██   ██
+// ███████  ██████  ██████  ██   ██ ███████ ██████   ██████  ██   ██ ██   ██ ██████
 
 void function Message( entity player, string text, string subText = "", float duration = 7.0, string sound = "" )
 ///////////////////////////////////////////////////////
@@ -1347,14 +1347,14 @@ void function Message( entity player, string text, string subText = "", float du
 	}
 	Remote_CallFunction_NonReplay( player, "Dev_PrintClientMessage", duration )
 	if ( sound != "" )
-		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )	
+		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
 }
 
-entity function PlayerWithMostDamage() 
+entity function PlayerWithMostDamage()
 //The challenger
 //Taken from Gungame Script
 {
-	
+
     int bestDamage = 0
 	entity bestPlayer
 
@@ -1363,13 +1363,13 @@ entity function PlayerWithMostDamage()
         if (int(player.p.playerDamageDealt) > bestDamage) {
             bestDamage = int(player.p.playerDamageDealt)
             bestPlayer = player
-			
+
         }
     }
     return bestPlayer
 }
 
-int function GetDamageOfPlayerWithMostDamage() 
+int function GetDamageOfPlayerWithMostDamage()
 //Challenger's score
 //Taken from Gungame Script
 {
@@ -1386,13 +1386,13 @@ string function PlayerWithMostDamageName()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-entity player = PlayerWithMostDamage() 
+entity player = PlayerWithMostDamage()
 if(!IsValid(player)) return "-still nobody-"
 string damagechampion = player.GetPlayerName()
 return damagechampion
 }
 
-entity function GetBestPlayer() 
+entity function GetBestPlayer()
 //The champion
 //Taken from Gungame Script
 {
@@ -1404,13 +1404,13 @@ entity function GetBestPlayer()
         if (player.GetPlayerGameStat( PGS_KILLS ) > bestScore) {
             bestScore = player.GetPlayerGameStat( PGS_KILLS )
             bestPlayer = player
-			
+
         }
     }
     return bestPlayer
 }
 
-int function GetBestPlayerScore() 
+int function GetBestPlayerScore()
 //Champion's score
 //Taken from Gungame Script
 {
@@ -1460,14 +1460,14 @@ array<PlayerInfo> playersInfo = []
 			p.deaths = player.GetPlayerGameStat( PGS_DEATHS )
 			p.kd = getkd(p.score,p.deaths)
 			p.damage = int(player.p.playerDamageDealt)
-			p.lastLatency = int(player.GetLatency()* 1000) 
+			p.lastLatency = int(player.GetLatency()* 1000)
             playersInfo.append(p)
         }
         playersInfo.sort(ComparePlayerInfo)
-		
+
 		string msg = ""
 		for(int i = 0; i < playersInfo.len(); i++)
-	    {	
+	    {
 		    PlayerInfo p = playersInfo[i]
             switch(i)
             {
@@ -1511,7 +1511,7 @@ array<PlayerInfo> spectators = []
         playersInfo.sort(ComparePlayerInfo)
 		string msg = ""
 		for(int i = 0; i < playersInfo.len(); i++)
-	    {	
+	    {
 		    PlayerInfo p = playersInfo[i]
             switch(i)
             {
@@ -1582,7 +1582,7 @@ int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
 {
 	if(a.score < b.score) return 1;
 	else if(a.score > b.score) return -1;
-	return 0; 
+	return 0;
 }
 
 void function ResetAllPlayerStats()
@@ -1594,7 +1594,7 @@ void function ResetAllPlayerStats()
     }
 }
 
-void function ResetPlayerStats(entity player) 
+void function ResetPlayerStats(entity player)
 // Taken from Gungame Script
 {
     player.SetPlayerGameStat( PGS_SCORE, 0 )
@@ -1608,11 +1608,11 @@ void function ResetPlayerStats(entity player)
     player.SetPlayerGameStat( PGS_ELIMINATED, 0)
 }
 
-//  ██████ ██      ██ ███████ ███    ██ ████████      ██████  ██████  ███    ███ ███    ███ ███    ███  █████  ███    ██ ██████  ███████ 
-// ██      ██      ██ ██      ████   ██    ██        ██      ██    ██ ████  ████ ████  ████ ████  ████ ██   ██ ████   ██ ██   ██ ██      
-// ██      ██      ██ █████   ██ ██  ██    ██        ██      ██    ██ ██ ████ ██ ██ ████ ██ ██ ████ ██ ███████ ██ ██  ██ ██   ██ ███████ 
-// ██      ██      ██ ██      ██  ██ ██    ██        ██      ██    ██ ██  ██  ██ ██  ██  ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██      ██ 
-//  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████ 
+//  ██████ ██      ██ ███████ ███    ██ ████████      ██████  ██████  ███    ███ ███    ███ ███    ███  █████  ███    ██ ██████  ███████
+// ██      ██      ██ ██      ████   ██    ██        ██      ██    ██ ████  ████ ████  ████ ████  ████ ██   ██ ████   ██ ██   ██ ██
+// ██      ██      ██ █████   ██ ██  ██    ██        ██      ██    ██ ██ ████ ██ ██ ████ ██ ██ ████ ██ ███████ ██ ██  ██ ██   ██ ███████
+// ██      ██      ██ ██      ██  ██ ██    ██        ██      ██    ██ ██  ██  ██ ██  ██  ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██      ██
+//  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████
 
 
 bool function ClientCommand_SetCharm(entity player, array<string> args)
@@ -1700,7 +1700,7 @@ bool function ClientCommand_AdminMsg(entity player, array<string> args)
 	string playerName = player.GetPlayerName()
 	string str = ""
 	foreach (s in args)
-		str += " " + s	
+		str += " " + s
 
     string sendMessage = str
 
@@ -1712,14 +1712,14 @@ Message( sPlayer, "Admin message", playerName + " says: "  + sendMessage, 6)
 }
 
 
-string function helpMessage() 
+string function helpMessage()
 //by michae\l/#1125
 {
 	return "\n\n          CONSOLE COMMANDS:\n1. 'kill_self': if you get stuck.\n2. 'scoreboard': displays full scoreboard to user. (Kills, deaths, KD ratio, damage)\n3. 'latency': displays ping of all players to user.\n4. 'say [MESSAGE]': send a public message! (" + userSettings.ChatCooldown.tostring() + "s global cooldown, admin disabled by default.)\n5.'spectate': spectate enemies! (beta) \n6. 'commands': display this message again."
 }
 
 
-bool function ClientCommand_Help(entity player, array<string> args) 
+bool function ClientCommand_Help(entity player, array<string> args)
 //by michae\l/#1125
 {
 	if(IsValid(player)) {
@@ -1744,7 +1744,7 @@ bool function ClientCommand_ClientMsg(entity player, array<string> args)
 	foreach (s in args)
 		str += " " + s
     string sendMessage = str
-    
+
 	switch(GetGameState())
     {
     case eGameState.MapVoting:
@@ -1838,10 +1838,10 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 	{
 		return false
 	}
-	
+
 	if(args.len() < 2) return false;
     bool foundMatch = false
-	
+
 	    foreach(weaponName in file.whitelistedWeapons)
     {
         if(args[1] == weaponName)
@@ -1852,14 +1852,14 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
     }
 
     if(file.whitelistedWeapons.find(args[1]) == -1 && file.whitelistedWeapons.len()) return false
-	
+
     entity weapon
     try {
         entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
         entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
         entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
         entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
-        switch(args[0]) 
+        switch(args[0])
         {
             case "p":
             case "primary":
@@ -1901,7 +1901,7 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
         }
     }
     if( IsValid(weapon) && !weapon.IsWeaponOffhand() ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, weapon))
-    return true  
+    return true
 }
 
 bool function ClientCommand_NextRound(entity player, array<string> args)
@@ -1914,9 +1914,9 @@ bool function ClientCommand_NextRound(entity player, array<string> args)
         } else {
             print("ERROR: only the host can switch rounds")
             return false;
-        } 
+        }
     }
-	
+
     if (args.len()) {
         try{
             int mapIndex = int(args[0])
@@ -1936,14 +1936,14 @@ bool function ClientCommand_NextRound(entity player, array<string> args)
             string now = args[1]
             if (now == "now")
             {
-               file.tdmState = eTDMState.NEXT_ROUND_NOW 
+               file.tdmState = eTDMState.NEXT_ROUND_NOW
             }
         } catch(e2) {}
-    } 
+    }
     return true
 }
 
-bool function ClientCommand_God(entity player, array<string> args) 
+bool function ClientCommand_God(entity player, array<string> args)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
@@ -1979,7 +1979,7 @@ bool function ClientCommand_CircleNow(entity player, array<string> args)
 	return true
 }
 
-bool function ClientCommand_UnGod(entity player, array<string> args) 
+bool function ClientCommand_UnGod(entity player, array<string> args)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
@@ -2018,7 +2018,7 @@ bool function ClientCommand_Scoreboard(entity player, array<string> args)
 
 array<entity> function shuffleArray(array<entity> arr)
 // O(n) Durstenfeld / Knuth shuffle (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
-//By michae\l/#1125. 
+//By michae\l/#1125.
 {
 	int i;
 	int j;
@@ -2053,7 +2053,7 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 	foreach (sPlayer in GetPlayerArray()){
 	Message(sPlayer, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
 	}
-      
+
 
     return true
 }
@@ -2295,7 +2295,7 @@ void function AnimationTiming( entity legend, float cycle )
 #if SERVER
 void function CreateAnimatedLegend(asset a, vector pos, vector ang , int solidtype = 0, float size = 1.0)  // solidtype 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
 //By Retículo Endoplasmático#5955 CaféDeColombiaFPS.
-{	
+{
 	entity Legend = CreatePropScript(a, pos, ang, solidtype)
 	Legend.kv.teamnumber = 99
 	Legend.kv.fadedist = 5000
@@ -5366,7 +5366,7 @@ void function SurfPurgatory()
     // CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", <-384,8960,18816>, <0,180,0>, false, 8000 )
     // CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", <-384,8960,18560>, <0,180,0>, false, 8000 )
     // CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", <-128,8960,18560>, <0,180,0>, false, 8000 )
- 
+
     // CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", <128,8960,18560>, <0,180,0>, false, 8000 )
     // CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", <384,8960,18560>, <0,180,0>, false, 8000 )
     // CreateEditorProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", <640,8960,18560>, <0,180,0>, false, 8000 )
