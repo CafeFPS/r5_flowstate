@@ -690,11 +690,6 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 		}
 		} catch (e1) {}
 	WpnPulloutOnRespawn(player)
-	try {
-	entity weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-weapon1.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
-	entity weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-weapon2.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")} catch (e2) {}
 }
 
 void function TpPlayerToSpawnPoint(entity player)
@@ -1615,32 +1610,6 @@ void function ResetPlayerStats(entity player)
 //  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████
 
 
-bool function ClientCommand_SetCharm(entity player, array<string> args)
-//by Retículo Endoplasmático#5955
-{
-// mdl/props/charm/charm_clown.rmdl
-// mdl/props/charm/charm_crow.rmdl
-// mdl/props/charm/charm_fireball.rmdl
-// mdl/props/charm/charm_gas_canister.rmdl
-// mdl/props/charm/charm_jester.rmdl
-// mdl/props/charm/charm_lifeline_drone.rmdl
-// mdl/props/charm/charm_nessy.rmdl
-// mdl/props/charm/charm_nessy_ghost.rmdl
-// mdl/props/charm/charm_pumpkin.rmdl
-// mdl/props/charm/charm_rank_diamond.rmdl
-// mdl/props/charm/charm_rank_gold.rmdl
-// mdl/props/charm/charm_rank_platinum.rmdl
-// mdl/props/charm/charm_rank_predator.rmdl
-// mdl/props/charm/charm_witch.rmdl
-// mdl/props/charm/charm_yeti.rmdl
-//todo: assets array lazy today
-
-try{entity weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-weapon1.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
-entity weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-weapon2.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")}catch(e){}
-return true
-}
 
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 //Thanks Zee#0134
