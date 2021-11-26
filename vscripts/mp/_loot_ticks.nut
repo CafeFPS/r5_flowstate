@@ -1,4 +1,6 @@
 global function LootTicks_Init
+global function SpawnLootTick
+global function SpawnLootTickAtCrosshair
 
 const asset LOOT_TICK_MODEL = $"mdl/robots/drone_frag/drone_frag_loot.rmdl"
 const asset FX_LOOT_TICK_DEATH = $"P_loot_tick_exp_CP"
@@ -212,3 +214,12 @@ array<string> function GetLootTickContents( entity tick )
 	return file.tickLootInside[ tick ]
 }
 
+void function SpawnLootTickAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	thread SpawnLootTick(origin, angles)
+}
