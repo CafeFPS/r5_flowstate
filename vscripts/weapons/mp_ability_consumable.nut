@@ -47,6 +47,8 @@ global enum eConsumableType
 	COMBO_FULL
 
 	ULTIMATE
+	
+	COMBO_FULL_SMALL
 
 	_count
 }
@@ -264,16 +266,33 @@ void function Consumable_Init()
 		file.consumableTypeToInfo[ eConsumableType.ULTIMATE ] <- ultimateBattery
 	}
 
+	{
+		// fuck you in particular.
+		ConsumableInfo smallPheonix
+		{
+			smallPheonix.ultimateAmount = 0.0
+			smallPheonix.healAmount = 50.0
+			smallPheonix.shieldAmount = 50.0
+			smallPheonix.lootData = SURVIVAL_Loot_GetLootDataByRef( "health_pickup_combo_full" )
+			smallPheonix.chargeSoundName = "Ult_Acc_Charge"
+			smallPheonix.cancelSoundName = ""
+			smallPheonix.modName = "combo_heal_small"
+		}
+		file.consumableTypeToInfo[ eConsumableType.COMBO_FULL_SMALL ] <- smallPheonix
+	}
+
 	file.modNameToConsumableType[ "health_small" ] <-        eConsumableType.HEALTH_SMALL
 	file.modNameToConsumableType[ "health_large" ] <-        eConsumableType.HEALTH_LARGE
 	file.modNameToConsumableType[ "shield_small" ] <-        eConsumableType.SHIELD_SMALL
 	file.modNameToConsumableType[ "shield_large" ] <-        eConsumableType.SHIELD_LARGE
 	file.modNameToConsumableType[ "phoenix_kit" ] <-        eConsumableType.COMBO_FULL
 	file.modNameToConsumableType[ "ultimate_battery" ] <-    eConsumableType.ULTIMATE
+	file.modNameToConsumableType[ "combo_heal_small" ] <-    eConsumableType.COMBO_FULL_SMALL
 
 	file.consumableUseOrder.append( eConsumableType.SHIELD_LARGE )
 	file.consumableUseOrder.append( eConsumableType.SHIELD_SMALL )
 	file.consumableUseOrder.append( eConsumableType.COMBO_FULL )
+	file.consumableUseOrder.append( eConsumableType.COMBO_FULL_SMALL )
 	file.consumableUseOrder.append( eConsumableType.HEALTH_LARGE )
 	file.consumableUseOrder.append( eConsumableType.HEALTH_SMALL )
 
@@ -317,7 +336,7 @@ void function OnClientConnected( entity player )
 
 void function OnWeaponOwnerChanged_Consumable( entity weapon, WeaponOwnerChangedParams changeParams )
 {
-	printt("OnWeaponOwnerChanged_Consumable")
+	//printt("OnWeaponOwnerChanged_Consumable")
 	#if SERVER
 		if ( !IsValid( changeParams.oldOwner ) )
 		{
@@ -865,6 +884,7 @@ void function Consumable_UseCurrentSelectedItem( entity player )
 
 void function Consumable_UseItemByRef( entity player, string itemName )
 {
+	print(itemName)
 	ConsumableInfo info = GetConsumableInfoFromRef( itemName )
 
 	thread AddModAndFireWeapon_Thread( player, info.modName )
@@ -891,6 +911,8 @@ void function Consumable_HandleConsumableUseCommand( entity player, string consu
 		consumableType = eConsumableType.SHIELD_LARGE
 	if ( consumableCommand == "PHOENIX_KIT" )
 		consumableType = eConsumableType.COMBO_FULL
+	if ( consumableCommand == "COMBO_FULL_SMALL" )
+		consumableType = eConsumableType.COMBO_FULL_SMALL
 
 	if ( consumableType == eConsumableType._count )
 		return
@@ -1364,6 +1386,10 @@ void function UltimatePackUse( entity player, ConsumableInfo info )
 		ultimateAbility.SetWeaponPrimaryClipCount( ammo )
 	else
 		ultimateAbility.SetWeaponPrimaryClipCount( maxAmmo )
+	// Gives Wattson full ult on ult accel
+	if( PlayerHasPassive( player, ePassives.PAS_BATTERY_POWERED )) {
+		ultimateAbility.SetWeaponPrimaryClipCount( maxAmmo )
+	}
 }
 
 void function ClientCallback_SetNextHealModType(string nextModName)
@@ -1407,6 +1433,7 @@ void function SetSelectedConsumableTypeNetInt( entity player, int consumableType
 		case eConsumableType.SHIELD_SMALL:
 		case eConsumableType.HEALTH_LARGE:
 		case eConsumableType.HEALTH_SMALL:
+		case eConsumableType.COMBO_FULL_SMALL:
 			player.SetPlayerNetInt( "selectedHealthPickupType", consumableType )
 			return
 
@@ -1479,6 +1506,7 @@ ConsumableInfo function Consumable_GetConsumableInfo( int consumableType )
 {
 	Assert( consumableType in file.consumableTypeToInfo, "Invalid ConsumableType \"" + consumableType + "\" not present in table." )
 
+	printt("Consumable Type:", consumableType, "name:", file.consumableTypeToInfo[ consumableType ].modName)
 	return file.consumableTypeToInfo[ consumableType ]
 }
 

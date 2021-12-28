@@ -740,7 +740,12 @@ void function PlayerTookDamage( entity player, var damageInfo, entity attacker, 
 	if ( isTitan )
 		Titan_PlayerTookDamage( player, damageInfo, attacker, critHit, titanDamage )
 	else
-		shieldDamage = expect float(Wallrun_PlayerTookDamage( player, damageInfo, attacker ))
+	{
+		var takenDamage = Wallrun_PlayerTookDamage( player, damageInfo, attacker )
+
+		if( takenDamage != null)
+			shieldDamage = expect float(takenDamage)
+	}
 
 	float damageAmount = DamageInfo_GetDamage( damageInfo )
 	bool isKillShot = (damageAmount >= player.GetHealth() + shieldDamage)
