@@ -916,12 +916,12 @@ void function Dev_BuildTextInfoPanel( Type, ... )
 	if ( Type == 0 )
 	{
 		for ( int i = 0; i < vargc; i++ )
-			dev_infoPanelTitleString += format("%s", vargv[i] )
+			dev_infoPanelTitleString += format("%c", vargv[i] )
 	}
 	else if ( Type == 1 )
 	{
 		for ( int i = 0; i < vargc; i++ )
-			dev_infoPanelTextString += format("%s", vargv[i] )
+			dev_infoPanelTextString += format("%c", vargv[i] )
 	}
 }
 
