@@ -81,7 +81,7 @@ WeaponData
 
     "damage_shield_scale"                           "1"
 
-   "ammo_default_total"							"0"
+   "ammo_default_total"							"100"
     "ammo_stockpile_max"							"18"
 	"ammo_no_remove_from_stockpile"					"1"
 	"ammo_min_to_fire"								"1"

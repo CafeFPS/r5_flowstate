@@ -120,12 +120,12 @@
 
 	"ammo_pool_type"                               "special"
 	"ammo_clip_size"   							    "18"
-    "ammo_default_total"							"100"
+    "ammo_default_total"							"999
 	"ammo_per_shot"                                "3"
 	"ammo_min_to_fire"                             "3"
 	//"ammo_clip_random_loss_on_npc_drop_chunksize"  "1"
 	"ammo_no_remove_from_stockpile"                "1"
-	//"reload_enabled"                               "1"
+	"reload_enabled"                               "1"
 	//"allow_empty_click"                            "1"
 	//"empty_reload_only"                            "0"
 

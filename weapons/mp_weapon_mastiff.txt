@@ -92,7 +92,7 @@ WeaponData
 
 	// Ammo
 	  "ammo_clip_size"                                "6"
-    "ammo_default_total"                            "0"
+    "ammo_default_total"                            "100"
 	"ammo_no_remove_from_stockpile"					"1"
 	"ammo_min_to_fire"								"1"
 	"reload_is_segmented"                           "1"
