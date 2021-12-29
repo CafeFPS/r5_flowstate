@@ -106,7 +106,7 @@ WeaponData
 	//"lower_time"  									"0.0"
 	//"raise_time"  									"0.1"	//raise time controlled by animation, "ready_to_fire" set in sequence
 	"allow_empty_fire"								"1"
-	"no_ammo_used_on_primary_attack"				"0"
+	"no_ammo_used_on_primary_attack"				"1"
 	"reload_enabled"  								"0"
 	"allow_empty_click"   							"0"
 	"empty_reload_only"   							"0"

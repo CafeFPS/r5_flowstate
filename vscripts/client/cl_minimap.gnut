@@ -211,7 +211,8 @@ void function ClMinimap_Init()
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_BATTERY_EXCHANGE, MINIMAP_OBJ_AREA_RUI, MinimapPackage_FDBatteryExchange )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.BOOST_STORE, MINIMAP_OBJ_AREA_RUI, MinimapPackage_BoostStore )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.ARC_TRAP, MINIMAP_ARC_TRAP_RUI, MinimapPackage_ArcTrap )
-	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TROPHY_SYSTEM, MINIMAP_OBJ_AREA_RUI, MinimapPackage_TrophySystem )
+
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TROPHY_SYSTEM, MINIMAP_OBJ_AREA_RUI, MinimapPackage_TrophySystem, FULLMAP_OBJECT_RUI, MinimapPackage_TrophySystem )
 
 
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.DIRTY_BOMB, MINIMAP_OBJECT_RUI, MinimapPackage_DirtyBomb, FULLMAP_OBJECT_RUI, MinimapPackage_DirtyBomb )
@@ -1073,9 +1074,14 @@ void function MinimapPackage_ArcTrap( entity ent, var rui )
 
 void function MinimapPackage_TrophySystem( entity ent, var rui )
 {
-	RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/survival/wattson_ult_map_icon" )
-	RuiSetImage( rui, "clampedImage", $"" )
-	RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+	// RuiSetImage( rui, "centerImage", $"rui/hud/gametype_icons/survival/wattson_ult_map_icon" )
+	// RuiSetImage( rui, "clampedImage", $"" )
+	// RuiTrackFloat( rui, "objectRadius", ent, RUI_TRACK_MINIMAP_SCALE )
+
+	RuiSetImage( rui, "defaultIcon", $"rui/hud/ultimate_icons/ultimate_wattson_in_world" )
+	RuiSetImage( rui, "clampedDefaultIcon", $"rui/hud/ultimate_icons/ultimate_wattson_in_world" )
+	RuiSetBool( rui, "useTeamColor", false )
+	RuiSetFloat( rui, "iconBlend", 0.0 )
 }
 
 

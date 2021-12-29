@@ -99,10 +99,23 @@ const int TROPHY_MAX_COUNT = 1
 const float TROPHY_REMINDER_TRIGGER_RADIUS = 300.0
 const float TROPHY_REMINDER_TRIGGER_DBOUNCE = 30.0
 
+// Animations, thanks @r-ex!
+const string CLOSE = "prop_trophy_close"
+const string EXPAND = "prop_trophy_expand"				// for placing
+const string IDLE_CLOSED = "prop_trophy_idle_closed"
+const string IDLE_OPEN = "prop_trophy_idle_open"		// actually makes it spin like in retail
+const string SPIN = "prop_trophy_idle_open_spin"		// slow spin
+
 // Debug
 const bool TROPHY_DEBUG_DRAW = false
 const bool TROPHY_DEBUG_DRAW_PLACEMENT = false
 const bool TROPHY_DEBUG_DRAW_INTERSECTION = false
+
+//Custom Stuff
+const bool TROPHY_DESTROY_FRIENDLY_PROJECTILES = true
+const bool SUPER_BUFF_THREATVISION = true
+const bool SUPER_BUFF_SPEEDBOOST = true
+const bool SUPER_BUFF_FASTHEAL = true
 
 
 #if CLIENT
@@ -117,17 +130,12 @@ struct TrophyPlacementInfo
 	bool success = false
 }
 
-#if SERVER
-
-
-
-
-#endif // SERVER
-
 
 struct
 {
 	#if SERVER
+	array<entity>	trophyDefenseSystems
+	int				numActiveTrophyDefenseSystems
 	#else
 	int tacticalChargeFXHandle
 	#endif
@@ -149,30 +157,21 @@ function MpWeaponTrophy_Init()
 
 	PrecacheModel( TROPHY_MODEL )
 
-	#if SERVER
-
-
-
-
-	#endif //
+	//Needs to be registered on the server and client
+	RegisterSignal( "EndTacticalShieldRepair" )
+	RegisterSignal( "Trophy_StopPlacementProxy" )
 
 	#if CLIENT
 		PrecacheParticleSystem( TACTICAL_CHARGE_FX )
 		PrecacheParticleSystem( TROPHY_PLACEMENT_RADIUS_FX )
+		PrecacheParticleSystem( TROPHY_PLAYER_SHIELD_CHARGE_FX )
 		StatusEffect_RegisterEnabledCallback( eStatusEffect.placing_trophy_system, Trophy_OnBeginPlacement)
 		StatusEffect_RegisterDisabledCallback( eStatusEffect.placing_trophy_system, Trophy_OnEndPlacement )
 		AddCreateCallback( "prop_script", Trophy_OnPropScriptCreated )
 
 		RegisterSignal( "Trophy_StopPlacementProxy" )
 		RegisterSignal( "EndTacticalChargeRepair" )
-		RegisterSignal( "EndTacticalShieldRepair" )
 		RegisterSignal( "UpdateShieldRepair" )
-
-		StatusEffect_RegisterEnabledCallback( eStatusEffect.trophy_tactical_charge, TacticalChargeVisualsEnabled)
-		StatusEffect_RegisterDisabledCallback( eStatusEffect.trophy_tactical_charge, TacticalChargeVisualsDisabled )
-
-		StatusEffect_RegisterEnabledCallback( eStatusEffect.trophy_shield_repair, ShieldRepairVisualsEnabled )
-		StatusEffect_RegisterDisabledCallback( eStatusEffect.trophy_shield_repair, ShieldRepairVisualsDisabled )
 
 		AddCallback_OnWeaponStatusUpdate( Trophy_OnWeaponStatusUpdate )
 	#endif // CLIENT
@@ -199,7 +198,8 @@ void function OnWeaponActivate_weapon_trophy_defense_system( entity weapon )
 	#endif
 
 	int statusEffect = eStatusEffect.placing_trophy_system
-	StatusEffect_AddEndless( ownerPlayer, statusEffect, 1.0 )
+	int fxId = StatusEffect_AddEndless( ownerPlayer, statusEffect, 1.0 )
+	printl("[pylon] add effect " + fxId)
 }
 
 void function OnWeaponDeactivate_weapon_trophy_defense_system( entity weapon )
@@ -211,7 +211,8 @@ void function OnWeaponDeactivate_weapon_trophy_defense_system( entity weapon )
 			return
 	#endif
 
-	StatusEffect_StopAllOfType( ownerPlayer, eStatusEffect.placing_trophy_system )
+	bool val = StatusEffect_Stop( ownerPlayer, eStatusEffect.placing_trophy_system )
+	printl("[pylon] stop effect " + val)
 }
 
 bool function OnWeaponAttemptOffhandSwitch_weapon_trophy_defense_system( entity weapon )
@@ -246,8 +247,11 @@ var function OnWeaponPrimaryAttack_weapon_trophy_defense_system( entity weapon, 
 		return 0
 
 	#if SERVER
-
+		printl("[pylon] server thing")
+		thread WeaponMakesDefenseSystem(weapon, model, placementInfo)
+		PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )
 	#endif
+	printl("[pylon] after placement")
 	StatusEffect_StopAllOfType( ownerPlayer, eStatusEffect.placing_trophy_system )
 	PlayerUsedOffhand( ownerPlayer, weapon, true, null, {pos = placementInfo.origin} )
 
@@ -427,7 +431,7 @@ entity function Trophy_CreateTrapPlacementProxy( asset modelName )
 	proxy.EnableRenderAlways()
 	proxy.kv.rendermode = 3
 	proxy.kv.renderamt = 1
-	proxy.Anim_PlayOnly( "prop_trophy_idle_closed" )
+	proxy.Anim_PlayOnly( IDLE_CLOSED )
 	proxy.Hide()
 
 	return proxy
@@ -438,7 +442,7 @@ void function Trophy_OnBeginPlacement( entity player, int statusEffect, bool act
 {
 	if ( player != GetLocalViewPlayer() )
 		return
-
+	printl("[pylon] beginning proxy")
 	EmitSoundOnEntity( player, TROPHY_PLACEMENT_ACTIVATE_SOUND )
 
 	asset model = TROPHY_MODEL
@@ -459,6 +463,7 @@ void function Trophy_OnEndPlacement( entity player, int statusEffect, bool actua
 void function Trophy_PlacementProxy( entity player, asset model )
 {
 	player.EndSignal( "Trophy_StopPlacementProxy" )
+	printl("[pylon] placing proxy")
 
 	entity proxy = Trophy_CreateTrapPlacementProxy( model )
 	proxy.EnableRenderAlways()
@@ -466,7 +471,8 @@ void function Trophy_PlacementProxy( entity player, asset model )
 	DeployableModelHighlight( proxy )
 
 	int fxHandle = StartParticleEffectOnEntity( proxy, GetParticleSystemIndex( TROPHY_PLACEMENT_RADIUS_FX ), FX_PATTACH_POINT_FOLLOW, proxy.LookupAttachment( "REF" ) )
-
+	printl("particle " + fxHandle)
+	
 	var placementRui        = CreateCockpitPostFXRui( $"ui/trophy_placement.rpak", RuiCalculateDistanceSortKey( player.EyePosition(), proxy.GetOrigin() ) )
 
 	int placementAttachment = proxy.LookupAttachment( "REF" )
@@ -549,8 +555,411 @@ void function SCB_WattsonRechargeHint()
 */
 
 #if SERVER
-#endif //
+// Primary function to place Wattson's ult
+void function WeaponMakesDefenseSystem( entity weapon, asset model, TrophyPlacementInfo placementInfo  ) {
+	printf("[pylon] Placing the pylon!")
 
+	entity owner = weapon.GetOwner()
+	owner.EndSignal( "OnDestroy" )
+
+	// realms cause it to crash on loading the map
+	//	trophy.RemoveFromAllRealms()
+	//	trophy.AddToOtherEntitysRealms( weapon )
+
+	// sets up the pylon and its information
+	entity pylon = CreatePropDynamic(model, placementInfo.origin, placementInfo.angles, 6)
+
+	pylon.SetMaxHealth( TROPHY_HEALTH_AMOUNT )
+	pylon.SetHealth( TROPHY_HEALTH_AMOUNT )
+	pylon.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
+	pylon.SetDamageNotifications( true )
+	pylon.SetCanBeMeleed( true )
+	pylon.SetOwner(owner)
+	pylon.e.pylonhealth = TROPHY_HEALTH_AMOUNT
+	pylon.EndSignal( "OnDestroy" )
+
+	// can be detected by sonar
+	pylon.Highlight_Enable()
+	AddSonarDetectionForPropScript( pylon )
+
+	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_ABILITY_TROPHY_SYSTEM, owner, pylon.GetOrigin(), owner.GetTeam(), owner )
+
+	TrophyDeathSetup( pylon )
+	
+	thread Trophy_Anims( pylon )
+	thread RadiusReminderFX( pylon )
+	waitthread Trophy_CreateTriggerArea( owner, pylon )
+
+}
+
+
+// spins and makes particles
+void function Trophy_Anims( entity pylon ) {
+	EndSignal( pylon, "OnDestroy" )
+
+	//Pylon Start FX and sound
+	EmitSoundOnEntity(pylon, TROPHY_EXPAND_SOUND)
+	StartParticleEffectOnEntity( pylon, GetParticleSystemIndex( TROPHY_START_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+	waitthread PlayAnim( pylon, EXPAND )
+
+	//Pylon Idle FX and sound
+	StartParticleEffectOnEntityWithPos( pylon, GetParticleSystemIndex( TROPHY_ELECTRICITY_FX ), FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 60>, <0, 0, 0> )
+	EmitSoundOnEntity( pylon, TROPHY_ELECTRIC_IDLE_SOUND )
+	thread PlayAnim( pylon, IDLE_OPEN )
+}
+
+// Creates the active area 
+// based on the code i'm copying (deployable_medic.nut), this is team agnostic
+// Intercepts projectiles, charges shields
+void function Trophy_CreateTriggerArea( entity owner, entity pylon ) {
+	printl("[pylon] Trigger area created")
+	Assert ( IsNewThread(), "Must be threaded" )
+	pylon.EndSignal( "OnDestroy" )
+
+	vector origin = pylon.GetOrigin()
+
+	// Creates a trigger for shields
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetOwner( pylon )
+	trigger.SetRadius( TROPHY_REMINDER_TRIGGER_RADIUS )
+	trigger.SetAboveHeight( TROPHY_REMINDER_TRIGGER_RADIUS )
+	trigger.SetBelowHeight( 48 )
+	trigger.SetOrigin( origin )
+	trigger.SetPhaseShiftCanTouch( false )
+	//	trigger.kv.triggerFilterPhaseShift = "nonphaseshift"
+	//	trigger.kv.triggerFilterNonCharacter = "0"
+	DispatchSpawn( trigger )
+
+	trigger.RemoveFromAllRealms()
+	trigger.AddToOtherEntitysRealms( pylon )
+
+	trigger.SetEnterCallback( OnTrophyShieldAreaEnter )
+	trigger.SetLeaveCallback( OnTrophyShieldAreaLeave )
+
+	trigger.SetOrigin( origin )
+
+	OnThreadEnd(
+		function() : ( trigger )
+		{
+			if ( IsValid( trigger ) )
+			{
+				trigger.Destroy()
+			}
+		}
+	)
+
+	thread ProjectileTrigger(pylon, trigger)
+
+	waitthread Trophy_ShieldUpdate( trigger, pylon )
+}
+
+void function OnTrophyShieldAreaEnter( entity trigger, entity ent )
+{
+	printl("[pylon] entered")
+	// this could be removed once the trigger no longer gets triggered by ents in different realms. bug R5DEV-46753
+	if ( !trigger.DoesShareRealms( ent ) )
+		return
+
+	if ( ent.IsPlayer() )
+	{
+		thread NewTacticalShieldRepairFXStart(ent)
+
+		EmitSoundOnEntity( ent, TROPHY_SHIELD_REPAIR_START )
+	}
+}
+
+void function OnTrophyShieldAreaLeave( entity trigger, entity ent )
+{
+	printl("[pylon] leaving")
+
+	EmitSoundOnEntity( ent, TROPHY_SHIELD_REPAIR_END)
+
+	//Kill Particals and FX from player once they leave the trigger
+	ent.Signal( "EndTacticalShieldRepair" )
+}
+
+//Regen shields function
+void function Trophy_ShieldUpdate( entity trigger, entity pylon )
+{
+	Assert ( IsNewThread(), "Must be threaded off." )
+	trigger.EndSignal( "OnDestroy" )
+	pylon.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( pylon )
+		{
+			if ( IsValid( pylon ) )
+			{
+				StopSoundOnEntity( pylon, TROPHY_SHIELD_REPAIR_START )
+			}
+		}
+	)
+
+	while(IsValid(trigger))
+    {
+
+        foreach(player in GetPlayerArray_Alive())
+        {
+            if(!IsValid(player)) continue
+            if(Distance(player.GetOrigin(), pylon.GetOrigin()) < TROPHY_REMINDER_TRIGGER_RADIUS)
+            {
+				if (player.GetShieldHealth() < player.GetShieldHealthMax())
+				{
+					int currentplayersheilds = player.GetShieldHealth()
+					int newplayersheilds = currentplayersheilds + TROPHY_SHIELD_REPAIR_AMOUNT
+					player.SetShieldHealth( newplayersheilds )
+				}
+            }
+        }
+		wait TROPHY_SHIELD_REPAIR_INTERVAL
+    }
+}
+
+//FX, sounds, and status effects function
+void function NewTacticalShieldRepairFXStart( entity player )
+{
+	player.Signal( "EndTacticalShieldRepair" )
+	player.EndSignal( "EndTacticalShieldRepair" )
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "OnDestroy" )
+
+	//Armor 3P Repair FX
+	int oldArmorTier = -1
+	int AttachID = player.LookupAttachment( "CHESTFOCUS" )
+	entity fxID = StartParticleEffectOnEntity_ReturnEntity( player, GetParticleSystemIndex( TROPHY_PLAYER_SHIELD_CHARGE_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, AttachID )
+
+	//Status Effects
+	StatusEffect_AddEndless( player, eStatusEffect.trophy_shield_repair, 1 )
+	if (SUPER_BUFF_THREATVISION) {	StatusEffect_AddEndless( player, eStatusEffect.threat_vision, 1 ) }
+	if (SUPER_BUFF_SPEEDBOOST) {	StatusEffect_AddEndless( player, eStatusEffect.speed_boost, 0.2 ) }
+	if (SUPER_BUFF_FASTHEAL) {	GiveExtraWeaponMod( player, "fast_heal" ) }
+
+	OnThreadEnd(
+		function() : ( fxID, player )
+		{
+			//Remove Status Effects
+			StatusEffect_Stop( player, eStatusEffect.trophy_shield_repair )
+			if (SUPER_BUFF_THREATVISION) { StatusEffect_StopAllOfType( player, eStatusEffect.threat_vision ) }
+			if (SUPER_BUFF_SPEEDBOOST) { StatusEffect_StopAllOfType( player, eStatusEffect.speed_boost ) }
+			if (SUPER_BUFF_FASTHEAL) { TakeExtraWeaponMod( player, "fast_heal" ) }
+
+			//Remove 3P Repair Effects
+			if (fxID != null)
+				fxID.Destroy()
+		}
+	)
+
+	//Dectect if player has changed armor levels
+	while( true )
+	{
+		int armorTier = EquipmentSlot_GetEquipmentTier( player, "armor" )
+		if ( armorTier != oldArmorTier )
+		{
+			vector shieldColor = GetFXRarityColorForTier( armorTier )
+			EffectSetControlPointVector( fxID, 2, shieldColor )
+		}
+		wait 1
+	}
+}
+
+//Radius reminder fx
+void function RadiusReminderFX( entity pylon )
+{
+	pylon.EndSignal( "OnDestroy" )
+
+	entity RadiusReminderEnt
+
+	OnThreadEnd(
+		function() : ( pylon, RadiusReminderEnt )
+		{
+			if ( IsValid( pylon ) )
+			{
+				if(RadiusReminderEnt != null)
+				{
+					RadiusReminderEnt.Destroy()
+				}
+			}
+		}
+	)
+
+	while(IsValid(pylon))
+    {
+        RadiusReminderEnt = StartParticleEffectOnEntity_ReturnEntity( pylon, GetParticleSystemIndex(TROPHY_RANGE_RADIUS_REMINDER_FX), FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+
+		wait 2
+    }
+}
+
+//Detects Projectiles
+void function ProjectileTrigger(entity pylon, entity trigger)
+{
+	//todo: work on this a bit more
+
+	pylon.EndSignal( "OnDestroy" )
+
+	OnThreadEnd(
+		function() : ( pylon )
+		{
+			if ( IsValid( pylon ) )
+			{
+				//Might need to do somthing here in the future
+			}
+		}
+	)
+
+	while(IsValid(pylon))
+    {
+		//get all projectiles that enter the radius
+		array<entity> projectilegrenades
+		projectilegrenades.extend( GetProjectileArrayEx( "grenade", TEAM_ANY, TEAM_ANY, pylon.GetOrigin(), TROPHY_INTERCEPT_PROJECTILE_RANGE ) )
+		
+		//Get pylon owner
+		entity pylonowner = pylon.GetOwner()
+
+		foreach( entity ent in projectilegrenades )
+		{
+			if( !IsValid( ent ) )
+				continue
+			
+			//If TROPHY_DESTROY_FRIENDLY_PROJECTILES is set to false dont destroy teammates projectiles
+			if(!TROPHY_DESTROY_FRIENDLY_PROJECTILES)
+			{
+				if( ent.GetTeam() == pylonowner.GetTeam() )
+					continue
+			}
+
+			//Check if the player threw the projectile in the trigger range
+			//If so dont zap this entity
+			entity player = ent.GetOwner()
+			if(trigger.IsTouching(player))
+			{
+				if (ent.GetOwner() == player)
+				{
+					continue
+				}
+			}
+
+			//Get weaponclassname from ent
+			string pclassname = ent.ProjectileGetWeaponClassName()
+
+			switch ( pclassname )
+			{
+				case "mp_weapon_grenade_gas":
+					//Reset ult to no charge if used
+					player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( 0 )
+				case "mp_weapon_grenade_defensive_bombardment":
+					//Reset ult to no charge if used
+					player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( 0 )
+				case "mp_weapon_grenade_creeping_bombardment":
+					//Reset ult to no charge if used
+					player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( 0 )
+				case "mp_weapon_grenade_emp":
+				case "mp_weapon_frag_grenade":
+				case "mp_weapon_thermite_grenade":
+				case "mp_weapon_dirty_bomb":
+				case "mp_weapon_grenade_bangalore":
+				case "mp_weapon_bubble_bunker":
+					//Sound for zap
+					EmitSoundOnEntity( pylon, TROPHY_INTERCEPT_SMALL )
+			
+					//Effects for zap
+					entity zap = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex( TROPHY_INTERCEPT_PROJECTILE_CLOSE_FX ), ent.GetOrigin(), ent.GetAngles() )
+					vector pyloncenter = pylon.GetOrigin() + <0, 0, 60>
+					EffectSetControlPointVector( zap, 1, pyloncenter )
+
+					//Destroy ent
+					ent.Destroy()
+					break
+				default:
+					break
+			}
+		}
+		wait 0.1
+    }
+}
+
+#endif //SERVER
+
+
+#if SERVER
+// Copied from sh_loot_creeps.gnut, sets this up to take damage and die
+void function TrophyDeathSetup( entity pylon )
+{
+	// todo: maybe find a better health system for the pylon
+
+	asset deathFx = TROPHY_DESTROY_FX
+
+	AddEntityCallback_OnDamaged( pylon,
+		void function ( entity pylon, var damageInfo ) : ( deathFx )
+		{
+			if ( !IsValid( pylon ) )
+				return
+
+			if ( pylon.e.isDisabled ) //already in the process of being killed
+				return
+
+			float damage = DamageInfo_GetDamage( damageInfo )
+			int damageSourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+			if ( !IsValid( damageSourceId ) )
+				return
+
+			switch( damageSourceId )
+			{
+				case eDamageSourceId.mp_weapon_frag_grenade:
+				case eDamageSourceId.mp_weapon_grenade_emp:
+					if ( damage < 40 )
+						return
+				break
+			}
+
+			entity attacker = DamageInfo_GetAttacker( damageInfo )
+
+			//printl("Damaged Pylon For " + damage + " Damage")
+
+			//subtract damage from current pylon health
+			pylon.e.pylonhealth = pylon.e.pylonhealth - damage
+			
+			// makes damage numbers appear
+			if ( attacker.IsPlayer() )
+			{
+				attacker.NotifyDidDamage
+				(
+					pylon,
+					DamageInfo_GetHitBox( damageInfo ),
+					DamageInfo_GetDamagePosition( damageInfo ), 
+					0,
+					DamageInfo_GetDamage( damageInfo ),
+					DamageInfo_GetDamageFlags( damageInfo ), 
+					DamageInfo_GetHitGroup( damageInfo ),
+					DamageInfo_GetWeapon( damageInfo ), 
+					DamageInfo_GetDistFromAttackOrigin( damageInfo )
+				)
+			}
+
+			if (pylon.e.pylonhealth > 0)
+			{
+				StartParticleEffectOnEntityWithPos( pylon, GetParticleSystemIndex( TROPHY_DAMAGE_SPARK_FX ), FX_PATTACH_CUSTOMORIGIN_FOLLOW, -1, <0, 0, 60>, <0, 0, 0> )
+			}
+			else if ( pylon.e.pylonhealth <= 0 )
+			{
+				StartParticleEffectInWorld( GetParticleSystemIndex( TROPHY_DESTROY_FX ), pylon.GetOrigin(), VectorToAngles( pylon.GetForwardVector() ) )
+								
+				pylon.e.isDisabled = true
+
+				EmitSoundAtPosition( TEAM_ANY, pylon.GetOrigin(), TROPHY_DESTROY_SOUND )
+
+				thread CreateAirShake( pylon.GetOrigin(), 2, 50, 1 )
+				int attach_id = pylon.LookupAttachment( "REF" )
+				vector effectOrigin = pylon.GetAttachmentOrigin( attach_id )
+				vector effectAngles = pylon.GetAttachmentAngles( attach_id )
+				
+				pylon.Destroy()
+			}
+		}
+	)
+}
+
+#endif
 
 #if CLIENT
 void function Trophy_OnWeaponStatusUpdate( entity player, var rui, int slot )
@@ -575,12 +984,10 @@ void function Trophy_OnWeaponStatusUpdate( entity player, var rui, int slot )
 #if CLIENT
 void function Trophy_OnPropScriptCreated( entity ent )
 {
-	switch ( ent.GetScriptName() )
-	{
-		case "trophy_system":
-			//
-			break
-	}
+	// not sure how to actually run / implement this
+	// printl("placing on map")
+	thread Trophy_CreateHUDMarker( ent )
+
 }
 
 void function Trophy_CreateHUDMarker( entity trophy )
@@ -614,38 +1021,19 @@ void function Trophy_CreateHUDMarker( entity trophy )
 
 bool function Trophy_ShouldShowIcon( entity localViewPlayer, entity trapProxy )
 {
-	if ( !IsValid( localViewPlayer ) )
+	entity owner = trapProxy.GetBossPlayer()
+
+	if ( !IsValid( owner ) )
 		return false
 
-	if ( localViewPlayer.GetTeam() != trapProxy.GetTeam() )
+	if ( localViewPlayer.GetTeam() != owner.GetTeam() )
 		return false
 
 	if ( !GamePlayingOrSuddenDeath() )
 		return false
 
+	printl("valid")
 	return true
-}
-
-void function TacticalChargeVisualsEnabled( entity ent, int statusEffect, bool actuallyChanged )
-{
-	if ( ent != GetLocalViewPlayer() )
-		return
-
-	entity player = ent
-
-	entity cockpit = player.GetCockpit()
-	if ( !IsValid( cockpit ) )
-		return
-
-	thread TacticalChargeFXThink( player, cockpit )
-}
-
-void function TacticalChargeVisualsDisabled( entity ent, int statusEffect, bool actuallyChanged )
-{
-	if ( ent != GetLocalViewPlayer() )
-		return
-
-	ent.Signal( "EndTacticalChargeRepair" )
 }
 
 void function TacticalChargeFXThink( entity player, entity cockpit )
@@ -687,63 +1075,6 @@ void function TacticalChargeFXThink( entity player, entity cockpit )
 		vector controlPoint = <1,1,1>
 		EffectSetControlPointVector( file.tacticalChargeFXHandle, 1, controlPoint )
 		WaitFrame()
-	}
-}
-
-
-void function ShieldRepairVisualsEnabled( entity player, int statusEffect, bool actuallyChanged )
-{
-	if ( player == GetLocalViewPlayer() )
-	{
-		EmitSoundOnEntity( player, TROPHY_SHIELD_REPAIR_START )
-		return
-	}
-
-	thread TacticalShieldRepairFXStart( player )
-}
-
-void function ShieldRepairVisualsDisabled( entity player, int statusEffect, bool actuallyChanged )
-{
-	if ( player == GetLocalViewPlayer() )
-	{
-		if ( player.GetShieldHealth() == player.GetShieldHealthMax() )
-			EmitSoundOnEntity( player, TROPHY_SHIELD_REPAIR_END )
-	}
-
-	player.Signal( "EndTacticalShieldRepair" )
-}
-
-void function TacticalShieldRepairFXStart( entity player )
-{
-	player.Signal( "EndTacticalShieldRepair" )
-	player.EndSignal( "EndTacticalShieldRepair" )
-	player.EndSignal( "OnDeath" )
-	player.EndSignal( "OnDestroy" )
-
-	int oldArmorTier = -1
-	int attachID         = player.LookupAttachment( "CHESTFOCUS" )
-	int shieldChargeFXID = GetParticleSystemIndex( TROPHY_PLAYER_SHIELD_CHARGE_FX )
-	int fxID = StartParticleEffectOnEntity( player, shieldChargeFXID, FX_PATTACH_POINT_FOLLOW, attachID )
-
-	OnThreadEnd(
-		function() : ( fxID )
-		{
-			if ( EffectDoesExist( fxID ) )
-				EffectStop( fxID, true, true )
-		}
-	)
-
-	while( true )
-	{
-		int armorTier = EquipmentSlot_GetEquipmentTier( player, "armor" )
-		if ( armorTier != oldArmorTier )
-		{
-			oldArmorTier = armorTier
-			vector shieldColor = GetFXRarityColorForTier( armorTier )
-			EffectSetControlPointVector( fxID, 2, shieldColor )
-		}
-
-		WaitSignal( player, "UpdateShieldRepair" )
 	}
 }
 

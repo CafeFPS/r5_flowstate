@@ -394,12 +394,12 @@ global struct ServerEntityStruct
 	bool gravityOrbInteraction
 
 	bool shouldSpawnLoot = true
-
+	float lastGrappleTime
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
-
-	float lastGrappleTime
-
+	
+	//Trophy Structs
+	float pylonhealth
 }
 
 global struct MeritData
