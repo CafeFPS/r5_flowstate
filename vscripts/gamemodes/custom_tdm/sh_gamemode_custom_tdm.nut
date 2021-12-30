@@ -547,14 +547,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                 )
             )
 Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Surf Purgatory",
-                    [
-                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
-                    ],
-                    <0, 0, 6500>
-                )
-            )
+
 			Shared_RegisterLocation(
                 NewLocationSettings(
                     "Epicenter",
