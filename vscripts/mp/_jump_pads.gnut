@@ -6,7 +6,7 @@ global function JumpPad_CreatedCallback
 // copied from r5-90 mp_rr_desertlands_common
 const float JUMP_PAD_PUSH_RADIUS = 45.0
 const float JUMP_PAD_PUSH_PROJECTILE_RADIUS = 32.0//98.0
-const float JUMP_PAD_PUSH_VELOCITY = 950.0
+const float JUMP_PAD_PUSH_VELOCITY = 1300
 const float JUMP_PAD_VIEW_PUNCH_SOFT = 25.0
 const float JUMP_PAD_VIEW_PUNCH_HARD = 4.0
 const float JUMP_PAD_VIEW_PUNCH_RAND = 4.0
@@ -26,8 +26,42 @@ const JUMP_PAD_DESTRUCTION = "jump_pad_destruction"
 void function JumpPad_Init()
 {
 	RegisterSignal("JumpPadStart")
+	RegisterSignal( "JumpPad_GiveDoubleJump" )
+  	AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_jumppad", JumpPad_CreatedCallback )
+}
 
-  AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_jumppad", JumpPad_CreatedCallback )
+void function JumpPad_GiveDoubleJump( entity player )
+{
+	Assert( player.IsPlayer() )
+
+	player.EndSignal( "OnDeath" )
+	player.EndSignal( "JumpPad_GiveDoubleJump" )
+
+	wait 0.1
+
+	if ( !player.IsOnGround() )
+	{
+		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+
+		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] )
+	}
+
+	OnThreadEnd( function() : ( player )
+	{
+		if ( IsValid( player ) )
+		{
+			ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+			asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+
+			player.SetPlayerSettingsWithMods( characterSetFile, [] )
+		}
+	})
+
+	while ( !player.IsOnGround() && !player.IsZiplining() && !Bleedout_IsBleedingOut( player ) )
+	{
+		WaitFrame()
+	}
 }
 
 void function JumpPad_CreatedCallback( entity jumpPad )
@@ -36,14 +70,13 @@ void function JumpPad_CreatedCallback( entity jumpPad )
   vector origin = jumpPad.GetOrigin() // should this allow weapon_jump_pad to be OriginToGround
 	vector angles = jumpPad.GetAngles()
 
-  entity mover = CreateScriptMover( origin, angles )
+entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
 
 	if( IsValid( jumpPad.GetParent() ) )
 	{
 		mover.SetParent( jumpPad.GetParent() )
 	}
-
-  jumpPad.SetParent( mover )
+	jumpPad.SetParent( mover )
 
   thread JumpPad_PlayAnims( jumpPad, mover )
 
@@ -114,37 +147,11 @@ void function OnJumpPadAreaEnter( entity trigger, entity ent )
 	JumpPadPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
 }
 
-void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector angles )
-{
-	if ( JumpPad_ShouldPushPlayerOrNPC( ent ) )
-	{
-		if ( ent.IsPlayer() )
-		{
-			entity jumpPad = trigger.GetOwner()
-			if ( IsValid( jumpPad ) )
-			{
-				int fxId = GetParticleSystemIndex( JUMP_PAD_LAUNCH_FX )
-				StartParticleEffectOnEntity( jumpPad, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
-			}
-			
-			thread JumpPadAirborne( ent )
-			// thread Geyser_JumpJetsWhileAirborne( ent ) // no
-		}
-		else
-		{
-			EmitSoundOnEntity( ent, "JumpPad_LaunchPlayer_3p" )
-			EmitSoundOnEntity( ent, "JumpPad_AirborneMvmt_3p" )
-		}
-	}
-}
-
 void function JumpPadAirborne( entity player ) {
 	if ( !IsPilot( player ) )
 		return
-
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_LaunchPlayer_3p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_AirborneMvmt_3p" )
-
 	OnThreadEnd(
 		function() : ( player )
 		{
@@ -154,14 +161,39 @@ void function JumpPadAirborne( entity player ) {
 			}
 		}
 	)
-
 	WaitFrame()
-
 	wait 0.1
-
 	while( !player.IsOnGround() )
 	{
 		WaitFrame()
+	}
+}
+
+void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector angles )
+{
+	if ( JumpPad_ShouldPushPlayerOrNPC( ent ) )
+	{
+		if ( ent.IsPlayer() )
+		{
+			entity jumpPad = trigger.GetOwner()
+			if ( IsValid( jumpPad ) )
+			{
+				if ( !Bleedout_IsBleedingOut( ent ) )
+				{
+					thread JumpPad_GiveDoubleJump( ent )
+				}
+				
+				int fxId = GetParticleSystemIndex( JUMP_PAD_LAUNCH_FX )
+				StartParticleEffectOnEntity( jumpPad, fxId, FX_PATTACH_ABSORIGIN_FOLLOW, 0 )
+			}
+			thread JumpPadAirborne( ent )
+			// thread Geyser_JumpJetsWhileAirborne( ent ) // no
+		}
+		else
+		{
+			EmitSoundOnEntity( ent, "JumpPad_LaunchPlayer_3p" )
+			EmitSoundOnEntity( ent, "JumpPad_AirborneMvmt_3p" )
+		}
 	}
 }
 
