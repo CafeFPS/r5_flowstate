@@ -546,7 +546,6 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
-Shared_RegisterLocation(
 
 			Shared_RegisterLocation(
                 NewLocationSettings(
