@@ -70,20 +70,20 @@ void function Sh_CustomTDM_Init()
 
     switch(GetMapName())
     {
-   case "mp_rr_canyonlands_staging":
-        Shared_RegisterLocation(
-            NewLocationSettings(
-                "Firing Range",
-                [
-                    NewLocPair(<33560, -8992, -29126>, <0, 90, 0>),
-					NewLocPair(<34525, -7996, -28242>, <0, 100, 0>),
-                    NewLocPair(<33507, -3754, -29165>, <0, -90, 0>),
-					NewLocPair(<34986, -3442, -28263>, <0, -113, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
-        break
+   // case "mp_rr_canyonlands_staging":
+        // Shared_RegisterLocation(
+            // NewLocationSettings(
+                // "Firing Range",
+                // [
+                    // NewLocPair(<33560, -8992, -29126>, <0, 90, 0>),
+					// NewLocPair(<34525, -7996, -28242>, <0, 100, 0>),
+                    // NewLocPair(<33507, -3754, -29165>, <0, -90, 0>),
+					// NewLocPair(<34986, -3442, -28263>, <0, -113, 0>)
+                // ],
+                // <0, 0, 3000>
+            // )
+        // )
+        // break
 
 case "mp_rr_canyonlands_mu1":
 		Shared_RegisterLocation(
@@ -209,24 +209,6 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
-		// Shared_RegisterLocation(
-            // NewLocationSettings(
-                // "Interstellar Relay",
-                // [
-                    // NewLocPair(<26420, 31700, 4790>, <0, -90, 0>),
-                    // NewLocPair(<29260, 26245, 4210>, <0, 45, 0>),
-                    // NewLocPair(<29255, 24360, 4210>, <0, 0, 0>),
-                    // NewLocPair(<24445, 28970, 4340>, <0, -90, 0>),
-                    // NewLocPair(<27735, 27880, 4370>, <0, 180, 0>),
-                    // NewLocPair(<25325, 25725, 4270>, <0, 0, 0>),
-                    // NewLocPair(<27675, 25745, 4370>, <0, 0, 0>),
-                    // NewLocPair(<24375, 27050, 4325>, <0, 180, 0>),
-                    // NewLocPair(<24000, 23650, 4050>, <0, 135, 0>),
-                    // NewLocPair(<23935, 22080, 4200>, <0, 15, 0>)
-                // ],
-                // <0, 0, 3000>
-            // )
-        // )
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Slum Lakes",
@@ -268,18 +250,7 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
-		Shared_RegisterLocation(
-            NewLocationSettings(
-                "Where there is always teamfight",
-                [
-                    NewLocPair(<11242, 8591, 4630>, <0, 0, 0>),
-                    NewLocPair(<6657, 12189, 5066>, <0, -90, 0>),
-                    NewLocPair(<7540, 8620, 5374>, <0, 89, 0>),
-                    NewLocPair(<13599, 7838, 4944>, <0, 150, 0>)
-                ],
-                <0, 0, 3000>
-            )
-        )
+
         Shared_RegisterLocation(
             NewLocationSettings(
                 "Thunderdome",
@@ -328,6 +299,36 @@ case "mp_rr_canyonlands_mu1":
                 <0, 0, 3000>
             )
         )
+				// Shared_RegisterLocation(
+            // NewLocationSettings(
+                // "Interstellar Relay",
+                // [
+                    // NewLocPair(<26420, 31700, 4790>, <0, -90, 0>),
+                    // NewLocPair(<29260, 26245, 4210>, <0, 45, 0>),
+                    // NewLocPair(<29255, 24360, 4210>, <0, 0, 0>),
+                    // NewLocPair(<24445, 28970, 4340>, <0, -90, 0>),
+                    // NewLocPair(<27735, 27880, 4370>, <0, 180, 0>),
+                    // NewLocPair(<25325, 25725, 4270>, <0, 0, 0>),
+                    // NewLocPair(<27675, 25745, 4370>, <0, 0, 0>),
+                    // NewLocPair(<24375, 27050, 4325>, <0, 180, 0>),
+                    // NewLocPair(<24000, 23650, 4050>, <0, 135, 0>),
+                    // NewLocPair(<23935, 22080, 4200>, <0, 15, 0>)
+                // ],
+                // <0, 0, 3000>
+            //  )
+        // )
+				// Shared_RegisterLocation(
+            // NewLocationSettings(
+                // "Where there is always teamfight",
+                // [
+                    // NewLocPair(<11242, 8591, 4630>, <0, 0, 0>),
+                    // NewLocPair(<6657, 12189, 5066>, <0, -90, 0>),
+                    // NewLocPair(<7540, 8620, 5374>, <0, 89, 0>),
+                    // NewLocPair(<13599, 7838, 4944>, <0, 150, 0>)
+                // ],
+                // <0, 0, 3000>
+            // )
+        // )
 break
 case "mp_rr_canyonlands_mu1_night":
 case "mp_rr_canyonlands_64k_x_64k":
@@ -546,35 +547,6 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
-
-			Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Epicenter",
-                    [
-                        NewLocPair(<8712, 23164, -3944>, <0, -49, 0>),
-                        NewLocPair(<14000, 21690, -3969>, <0, -130, 0>),
-                        NewLocPair(<10377, 17994, -4236>, <0, -120, 0>),
-						NewLocPair(<13100, 18138, -4856>, <0, 120, 0>)
-
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-
-
-			Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Lava Fissure",
-                    [
-                        NewLocPair(<-26550, 13746, -3048>, <0, -134, 0>),
-						NewLocPair(<-28877, 12943, -3109>, <0, -88.70, 0>),
-                        NewLocPair(<-29881, 9168, -2905>, <-1.87, -2.11, 0>),
-						NewLocPair(<-27590, 9279, -3109>, <0, 90, 0>)
-                    ],
-                    <0, 0, 2500>
-                )
-            )
-
 						Shared_RegisterLocation(
                 NewLocationSettings(
                     "Little Town 2",
@@ -617,19 +589,6 @@ case "mp_rr_canyonlands_64k_x_64k":
 
 			Shared_RegisterLocation(
                 NewLocationSettings(
-                    "Space Elevator",
-                    [
-                        NewLocPair(<-12286, 26037, -4012>, <0, -116, 0>),
-                        NewLocPair(<-12318, 28447, -3975>, <0, -122, 0>),
-                        NewLocPair(<-14373, 27785, -3961>, <0, -25, 0>),
-						NewLocPair(<-13858, 27985, -1958>, <0, -46, 0>),
-						NewLocPair(<-11638, 26123, -3983>, <0, 137, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
-			Shared_RegisterLocation(
-                NewLocationSettings(
                     "Capitol Buildings",
                     [
                         NewLocPair(<1714, 9650, -4019>, <0, 93, 0>),
@@ -668,29 +627,70 @@ case "mp_rr_canyonlands_64k_x_64k":
 
 			Shared_RegisterLocation(
                 NewLocationSettings(
-                    "Refinery",
+                    "Space Elevator",
                     [
-                        NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
-                        NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
-                        NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
-                        NewLocPair(<18285, 28602, -4200>, <0, -45, 0>),
-                        NewLocPair(<19228, 25592, -4821>, <0, 135, 0>),
-                        NewLocPair(<19495, 29283, -4821>, <0, -45, 0>),
-                        NewLocPair(<18470, 28330, -4370>, <0, 135, 0>),
-                        NewLocPair(<18461, 28405, -4199>, <0, 45, 0>),
-                        NewLocPair(<18284, 28492, -3992>, <0, -45, 0>),
-                        NewLocPair(<19428, 27190, -4140>, <0, -45, 0>),
-                        NewLocPair(<20435, 26254, -4139>, <0, -175, 0>),
-                        NewLocPair(<20222, 26549, -4316>, <0, 135, 0>),
-                        NewLocPair(<19444, 25605, -4602>, <0, 45, 0>),
-                        NewLocPair(<21751, 29980, -4226>, <0, -135, 0>),
-                        NewLocPair(<17570, 26915, -4637>, <0, -90, 0>),
-                        NewLocPair(<16382, 28296, -4588>, <0, -45, 0>),
-                        NewLocPair(<16618, 28848, -4451>, <0, 40, 0>)
+                        NewLocPair(<-12286, 26037, -4012>, <0, -116, 0>),
+                        NewLocPair(<-12318, 28447, -3975>, <0, -122, 0>),
+                        NewLocPair(<-14373, 27785, -3961>, <0, -25, 0>),
+						NewLocPair(<-13858, 27985, -1958>, <0, -46, 0>),
+						NewLocPair(<-11638, 26123, -3983>, <0, 137, 0>)
                     ],
-                    <0, 0, 6500>
+                    <0, 0, 2000>
                 )
             )
+			
+			// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Lava Fissure",
+                    // [
+                        // NewLocPair(<-26550, 13746, -3048>, <0, -134, 0>),
+						// NewLocPair(<-28877, 12943, -3109>, <0, -88.70, 0>),
+                        // NewLocPair(<-29881, 9168, -2905>, <-1.87, -2.11, 0>),
+						// NewLocPair(<-27590, 9279, -3109>, <0, 90, 0>)
+                    // ],
+                    // <0, 0, 2500>
+                // )
+            // )
+
+			// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Epicenter",
+                    // [
+                        // NewLocPair(<8712, 23164, -3944>, <0, -49, 0>),
+                        // NewLocPair(<14000, 21690, -3969>, <0, -130, 0>),
+                        // NewLocPair(<10377, 17994, -4236>, <0, -120, 0>),
+						// NewLocPair(<13100, 18138, -4856>, <0, 120, 0>)
+
+                    // ],
+                    // <0, 0, 2000>
+                // )
+            // )
+
+			// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Refinery",
+                    // [
+                        // NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
+                        // NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
+                        // NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
+                        // NewLocPair(<18285, 28602, -4200>, <0, -45, 0>),
+                        // NewLocPair(<19228, 25592, -4821>, <0, 135, 0>),
+                        // NewLocPair(<19495, 29283, -4821>, <0, -45, 0>),
+                        // NewLocPair(<18470, 28330, -4370>, <0, 135, 0>),
+                        // NewLocPair(<18461, 28405, -4199>, <0, 45, 0>),
+                        // NewLocPair(<18284, 28492, -3992>, <0, -45, 0>),
+                        // NewLocPair(<19428, 27190, -4140>, <0, -45, 0>),
+                        // NewLocPair(<20435, 26254, -4139>, <0, -175, 0>),
+                        // NewLocPair(<20222, 26549, -4316>, <0, 135, 0>),
+                        // NewLocPair(<19444, 25605, -4602>, <0, 45, 0>),
+                        // NewLocPair(<21751, 29980, -4226>, <0, -135, 0>),
+                        // NewLocPair(<17570, 26915, -4637>, <0, -90, 0>),
+                        // NewLocPair(<16382, 28296, -4588>, <0, -45, 0>),
+                        // NewLocPair(<16618, 28848, -4451>, <0, 40, 0>)
+                    // ],
+                    // <0, 0, 6500>
+                // )
+            // )
             Shared_RegisterLocation(
                 NewLocationSettings(
                     "Factory",
@@ -757,25 +757,25 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 11000>
                 )
             )
-			Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Capitol City",
-                    [
-                        NewLocPair(<8660, 5910, -4168>, <-13, 50, 0>),
-                        NewLocPair(<2300, 6571, -4490>, <1.2, -96, 0>),
-                        NewLocPair(<1200, 4471, -4150>, <-1.4, 50, 0>),
-                        NewLocPair(<12106, 1769, -3453>, <-1.4, 126, 0>),
-                        NewLocPair(<14047, 5915, -3903>, <-1.4, 174, 0>),
-                        NewLocPair(<11117, 10604, -4211>, <-1.4, -112, 0>),
-                        NewLocPair(<6630, 13856, -3935>, <-1.4, -90, 0>),
-                        NewLocPair(<1986, 12817, -3227>, <-1.4, -91, 0>),
-						NewLocPair(<5028, 10272, -3981>, <-1.4, -87, 0>),
-						NewLocPair(<5412, 5449, -4145>, <-1.4, -59, 0>),
-						NewLocPair(<11010, 3297, -4165>, <-1.4, 90, 0>),
-                    ],
-                    <0, 0, 3000>
-                )
-            )
+			// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Capitol City",
+                    // [
+                        // NewLocPair(<8660, 5910, -4168>, <-13, 50, 0>),
+                        // NewLocPair(<2300, 6571, -4490>, <1.2, -96, 0>),
+                        // NewLocPair(<1200, 4471, -4150>, <-1.4, 50, 0>),
+                        // NewLocPair(<12106, 1769, -3453>, <-1.4, 126, 0>),
+                        // NewLocPair(<14047, 5915, -3903>, <-1.4, 174, 0>),
+                        // NewLocPair(<11117, 10604, -4211>, <-1.4, -112, 0>),
+                        // NewLocPair(<6630, 13856, -3935>, <-1.4, -90, 0>),
+                        // NewLocPair(<1986, 12817, -3227>, <-1.4, -91, 0>),
+						// NewLocPair(<5028, 10272, -3981>, <-1.4, -87, 0>),
+						// NewLocPair(<5412, 5449, -4145>, <-1.4, -59, 0>),
+						// NewLocPair(<11010, 3297, -4165>, <-1.4, 90, 0>),
+                    // ],
+                    // <0, 0, 3000>
+                // )
+            // )
 			// Shared_RegisterLocation(
                 // NewLocationSettings(
 	                   // "ESPACIO ABIERTO",
@@ -845,8 +845,8 @@ void function Shared_RegisterLocation(LocationSettings locationSettings)
 float function Deathmatch_GetIntroCutsceneNumSpawns()                { return GetCurrentPlaylistVarFloat("intro_cutscene_num_spawns", 0)}
 float function Deathmatch_GetIntroCutsceneSpawnDuration()            { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_duration", 5)}
 float function Deathmatch_GetIntroSpawnSpeed()                       { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_speed", 40)}
-bool function Spectator_GetReplayIsEnabled()                         { return GetCurrentPlaylistVarBool("replay_enabled", false ) }
-float function Spectator_GetReplayDelay()                            { return GetCurrentPlaylistVarFloat("replay_delay", 2 ) }
+bool function Spectator_GetReplayIsEnabled()                         { return GetCurrentPlaylistVarBool("replay_enabled", true ) }
+float function Spectator_GetReplayDelay()                            { return GetCurrentPlaylistVarFloat("replay_delay", 5 ) }
 float function Deathmatch_GetRespawnDelay()                          { return GetCurrentPlaylistVarFloat("respawn_delay", 10) }
 float function Equipment_GetDefaultShieldHP()                        { return GetCurrentPlaylistVarFloat("default_shield_hp", 100) }
 float function Deathmatch_GetOOBDamagePercent()                      { return GetCurrentPlaylistVarFloat("oob_damage_percent", 10) }
