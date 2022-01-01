@@ -17,9 +17,31 @@ global function Equipment_GetDefaultShieldHP
 global function Deathmatch_GetOOBDamagePercent
 global function Deathmatch_GetVotingTime
 
-global function Deathmatch_GetIntroCutsceneNumSpawns
-global function Deathmatch_GetIntroCutsceneSpawnDuration
-global function Deathmatch_GetIntroSpawnSpeed
+global function FlowState_Hoster
+global function FlowState_Admin1
+global function FlowState_Admin2
+global function FlowState_Admin3
+global function FlowState_Admin4
+global function FlowState_RoundTime
+global function FlowState_BubbleColor
+global function FlowState_ResetKillsEachRound
+global function FlowState_Timer
+global function FlowState_LockPOI
+global function FlowState_LockedPOI
+global function FlowState_AdminTgive
+global function FlowState_AllChat
+global function FlowState_ChatCooldown 
+global function FlowState_ForceCharacter  
+global function FlowState_ChosenCharacter
+//global function FlowState_DummyOverride
+global function FlowState_AutoreloadOnKillPrimary 
+global function FlowState_AutoreloadOnKillSecondary 
+global function FlowState_RandomGuns
+global function FlowState_RandomGunsEverydie
+
+global function Deathmatch_GetIntroCutsceneNumSpawns           
+global function Deathmatch_GetIntroCutsceneSpawnDuration        
+global function Deathmatch_GetIntroSpawnSpeed 
 
 #if SERVER
 global function Equipment_GetRespawnKitEnabled
@@ -845,14 +867,36 @@ void function Shared_RegisterLocation(LocationSettings locationSettings)
 float function Deathmatch_GetIntroCutsceneNumSpawns()                { return GetCurrentPlaylistVarFloat("intro_cutscene_num_spawns", 0)}
 float function Deathmatch_GetIntroCutsceneSpawnDuration()            { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_duration", 5)}
 float function Deathmatch_GetIntroSpawnSpeed()                       { return GetCurrentPlaylistVarFloat("intro_cutscene_spawn_speed", 40)}
-bool function Spectator_GetReplayIsEnabled()                         { return GetCurrentPlaylistVarBool("replay_enabled", true ) }
-float function Spectator_GetReplayDelay()                            { return GetCurrentPlaylistVarFloat("replay_delay", 5 ) }
+bool function Spectator_GetReplayIsEnabled()                         { return GetCurrentPlaylistVarBool("replay_enabled", true ) } 
+float function Spectator_GetReplayDelay()                            { return GetCurrentPlaylistVarFloat("replay_delay", 2 ) } 
 float function Deathmatch_GetRespawnDelay()                          { return GetCurrentPlaylistVarFloat("respawn_delay", 10) }
 float function Equipment_GetDefaultShieldHP()                        { return GetCurrentPlaylistVarFloat("default_shield_hp", 100) }
 float function Deathmatch_GetOOBDamagePercent()                      { return GetCurrentPlaylistVarFloat("oob_damage_percent", 10) }
 float function Deathmatch_GetVotingTime()                            { return GetCurrentPlaylistVarFloat("voting_time", 5) }
 
-#if SERVER
+string function FlowState_Hoster() { return GetCurrentPlaylistVarString("flowstateHoster", "ColombiaFPS") }
+string function FlowState_Admin1() { return GetCurrentPlaylistVarString("flowstateAdmin1", "ColombiaFPS") }
+string function FlowState_Admin2() { return GetCurrentPlaylistVarString("flowstateAdmin2", "ColombiaFPS") }
+string function FlowState_Admin3() { return GetCurrentPlaylistVarString("flowstateAdmin3", "ColombiaFPS") }
+string function FlowState_Admin4() { return GetCurrentPlaylistVarString("flowstateAdmin4", "ColombiaFPS") }
+int function FlowState_RoundTime() { return GetCurrentPlaylistVarInt("flowstateRoundtime", 1800) }
+string function FlowState_BubbleColor() { return GetCurrentPlaylistVarString("flowstateBubble", "120, 26, 56") }
+bool function FlowState_ResetKillsEachRound()                         { return GetCurrentPlaylistVarBool("flowstateResetKills", true ) } 
+bool function FlowState_Timer()                         { return GetCurrentPlaylistVarBool("flowstateTimer", true ) } 
+bool function FlowState_LockPOI()                         { return GetCurrentPlaylistVarBool("flowstateLockPOI", true ) } 
+int function FlowState_LockedPOI() { return GetCurrentPlaylistVarInt("flowstateLockeedPOI", 0) }
+bool function FlowState_AdminTgive()                         { return GetCurrentPlaylistVarBool("flowstateAdminTgive", true ) } 
+bool function FlowState_AllChat()                         { return GetCurrentPlaylistVarBool("flowstateAllChat", true ) } 
+float function FlowState_ChatCooldown()                          { return GetCurrentPlaylistVarFloat("flowstateChatCd", 5) }
+bool function FlowState_ForceCharacter()                         { return GetCurrentPlaylistVarBool("flowstateForceCharacter", true ) } 
+int function FlowState_ChosenCharacter() { return GetCurrentPlaylistVarInt("flowstateChosenCharacter", 8) }
+//bool function FlowState_DummyOverride()                         { return GetCurrentPlaylistVarBool("flowstateDummyOverride", false ) } 
+bool function FlowState_AutoreloadOnKillPrimary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadPrimary", true ) } 
+bool function FlowState_AutoreloadOnKillSecondary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadSecondary", true ) } 
+bool function FlowState_RandomGuns()                         { return GetCurrentPlaylistVarBool("flowstateRandomGuns", true ) } //every round
+bool function FlowState_RandomGunsEverydie() { return GetCurrentPlaylistVarBool("flowstateRandomGunsEverydie", false ) }
+
+#if SERVER   
 
 
 bool function Equipment_GetRespawnKitEnabled()                       { return GetCurrentPlaylistVarBool("respawn_kit_enabled", false) }
