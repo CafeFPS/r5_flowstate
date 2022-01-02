@@ -1089,64 +1089,192 @@ foreach(spawn in spawns)
 	}
 	else
 	{
-		foreach(player in GetPlayerArray())
+		array<entity> IMCplayers = GetPlayerArrayOfTeam( TEAM_IMC )
+		int sizeofimcteam = -1
+
+		foreach(players in IMCplayers)
 		{
-        		if(IsValid(player))
-       			{
-					MakeInvincible(player)
-					player.ClearParent()
-					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-					player.SetThirdPersonShoulderModeOff()
-					_HandleRespawn(player)
+			sizeofimcteam++
+		}
 
-					ScreenFadeFromBlack( player, 1.0, 1.0 )
+		array<entity> IMCplayersShip1
+		array<entity> IMCplayersShip2
+		array<entity> IMCplayersShip3
+		array<entity> IMCplayersShip4
 
-					if(player.GetTeam() == TEAM_IMC)
-       				{
-						float randomrange1 = RandomFloatRange(-360.0, 360.0)
-                        vector finishedangles = spawns[0].angles + <0,randomrange1,0>
+		IMCplayersShip1.clear()
+		IMCplayersShip2.clear()
+		IMCplayersShip3.clear()
+		IMCplayersShip4.clear()
 
-                        if (finishedangles.x > 360.0)
-                        {
-                            finishedangles.x = 359.0
-                        }
+		//Ship1
+		if(sizeofimcteam >= 0)
+		{
+			IMCplayersShip1.append(IMCplayers[0])
+		}
+		if(sizeofimcteam >= 1)
+		{
+			IMCplayersShip1.append(IMCplayers[1])
+		}
+		if(sizeofimcteam >= 2)
+		{
+			IMCplayersShip1.append(IMCplayers[2])
+		}
 
-						if (finishedangles.y > 360.0)
-                        {
-                            finishedangles.y = 359.0
-                        }
+		//Ship2
+		if(sizeofimcteam >= 3)
+		{
+			IMCplayersShip2.append(IMCplayers[3])
+		}
+		if(sizeofimcteam >= 4)
+		{
+			IMCplayersShip2.append(IMCplayers[4])
+		}
+		if(sizeofimcteam >= 5)
+		{
+			IMCplayersShip2.append(IMCplayers[5])
+		}
 
-						if (finishedangles.z > 360.0)
-                        {
-                            finishedangles.z = 359.0
-                        }
+		//Ship3
+		if(sizeofimcteam >= 6)
+		{
+			IMCplayersShip3.append(IMCplayers[6])
+		}
+		if(sizeofimcteam >= 7)
+		{
+			IMCplayersShip3.append(IMCplayers[7])
+		}
+		if(sizeofimcteam >= 8)
+		{
+			IMCplayersShip3.append(IMCplayers[8])
+		}
 
+		//Ship4
+		if(sizeofimcteam >= 9)
+		{
+			IMCplayersShip4.append(IMCplayers[9])
+		}
+		if(sizeofimcteam >= 10)
+		{
+			IMCplayersShip4.append(IMCplayers[10])
+		}
+		if(sizeofimcteam >= 11)
+		{
+			IMCplayersShip4.append(IMCplayers[11])
+		}
 
-						thread RespawnPlayersInDropshipAtPoint2( player, spawns[0].origin + <0,0,500>, finishedangles )
-    				}
+		array<entity> MILITIAplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
 
-					if(player.GetTeam() == TEAM_MILITIA)
-       				{
-						float randomrange1 = RandomFloatRange(-360.0, 360.0)
-                        vector finishedangles = spawns[maxspawns].angles + <0,randomrange1,0>
+		int sizeofmilitiateam = -1
 
-                        if (finishedangles.x > 360.0)
-                        {
-                            finishedangles.x = 359.0
-                        }
+		foreach(players in MILITIAplayers)
+		{
+			sizeofmilitiateam++
+		}
 
-						if (finishedangles.y > 360.0)
-                        {
-                            finishedangles.y = 359.0
-                        }
+		array<entity> MILITIAplayersShip1
+		array<entity> MILITIAplayersShip2
+		array<entity> MILITIAplayersShip3
+		array<entity> MILITIAplayersShip4
 
-						if (finishedangles.z > 360.0)
-                        {
-                            finishedangles.z = 359.0
-                        }
-						thread RespawnPlayersInDropshipAtPoint2( player, spawns[maxspawns].origin + <0,0,500>, finishedangles )
-    				}
-    			}
+		MILITIAplayersShip1.clear()
+		MILITIAplayersShip2.clear()
+		MILITIAplayersShip3.clear()
+		MILITIAplayersShip4.clear()
+
+		//Ship1
+		if(sizeofmilitiateam >= 0)
+		{
+			MILITIAplayersShip1.append(MILITIAplayers[0])
+		}
+		if(sizeofmilitiateam >= 1)
+		{
+			MILITIAplayersShip1.append(MILITIAplayers[1])
+		}
+		if(sizeofmilitiateam >= 2)
+		{
+			MILITIAplayersShip1.append(MILITIAplayers[2])
+		}
+
+		//Ship2
+		if(sizeofmilitiateam >= 3)
+		{
+			MILITIAplayersShip2.append(MILITIAplayers[3])
+		}
+		if(sizeofmilitiateam >= 4)
+		{
+			MILITIAplayersShip2.append(MILITIAplayers[4])
+		}
+		if(sizeofmilitiateam >= 5)
+		{
+			MILITIAplayersShip2.append(MILITIAplayers[5])
+		}
+
+		//Ship3
+		if(sizeofmilitiateam >= 6)
+		{
+			MILITIAplayersShip3.append(MILITIAplayers[6])
+		}
+		if(sizeofmilitiateam >= 7)
+		{
+			MILITIAplayersShip3.append(MILITIAplayers[7])
+		}
+		if(sizeofmilitiateam >= 8)
+		{
+			MILITIAplayersShip3.append(MILITIAplayers[8])
+		}
+
+		//Ship4
+		if(sizeofmilitiateam >= 9)
+		{
+			MILITIAplayersShip4.append(MILITIAplayers[9])
+		}
+		if(sizeofmilitiateam >= 10)
+		{
+			MILITIAplayersShip4.append(MILITIAplayers[10])
+		}
+		if(sizeofmilitiateam >= 11)
+		{
+			MILITIAplayersShip4.append(MILITIAplayers[11])
+		}
+
+		float randomrange1 = RandomFloatRange(-360.0, 360.0)
+        vector finishedangles = spawns[0].angles + <0,randomrange1,0>
+
+		if (finishedangles.x > 360.0)
+        {
+            finishedangles.x = 359.0
+        }
+
+		if (finishedangles.y > 360.0)
+        {
+            finishedangles.y = 359.0
+        }
+
+		if (finishedangles.z > 360.0)
+        {
+            finishedangles.z = 359.0
+        }
+
+		thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip1, spawns[0].origin + <0,0,500>, AnglesCompose( spawns[0].angles, <0,0,0> ) )
+		thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip1, spawns[maxspawns].origin + <0,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,0,0> ) )
+		wait 1
+		if(sizeofmilitiateam >= 3 || sizeofimcteam >= 3)
+		{
+			thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip2, spawns[0].origin + <200,0,500>, AnglesCompose( spawns[0].angles, <0,30,0> ) )
+			thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip2, spawns[maxspawns].origin + <200,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,30,0> ) )
+		}
+		wait 1
+		if(sizeofmilitiateam >= 6 || sizeofimcteam >= 6)
+		{
+			thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip3, spawns[0].origin + <400,0,500>, AnglesCompose( spawns[0].angles, <0,60,0> ) )
+			thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip3, spawns[maxspawns].origin + <400,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,60,0> ) )
+		}
+		wait 1
+		if(sizeofmilitiateam >= 9 || sizeofimcteam >= 9)
+		{
+			thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip4, spawns[0].origin + <600,0,500>, AnglesCompose( spawns[0].angles, <0,90,0> ) )
+			thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip4, spawns[maxspawns].origin + <600,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,90,0> ) ) 
 		}
 		
 		foreach(player in GetPlayerArray())
