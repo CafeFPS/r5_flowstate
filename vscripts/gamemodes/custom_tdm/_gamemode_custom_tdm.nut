@@ -235,6 +235,11 @@ void function _CustomTDM_Init()
         file.whitelistedWeapons.append(GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~"))
     }
 
+	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		thread CreateShipRoomFallTriggers()
+	}
+
     thread RunTDM() //Go to Game Loop
     }
 
@@ -254,10 +259,10 @@ LocPair function _GetVotingLocation()
         case "mp_rr_canyonlands_staging":
              return NewLocPair(<26794, -6241, -27479>, <0, 0, 0>)
         case "mp_rr_canyonlands_64k_x_64k":
-			return NewLocPair(<-6252, -16500, 3296>, <0, 0, 0>)
+			return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
         case "mp_rr_canyonlands_mu1":
         case "mp_rr_canyonlands_mu1_night":
-		    return NewLocPair(<-19026, 3749, 4460>, <0, 2, 0>)
+		    return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
 			//return NewLocPair(<-8846, -30401, 2496>, <0, 60, 0>)
@@ -889,6 +894,57 @@ void function CreateDropShipTriggerArea()
 	}
 }
 
+void function CreateShipRoomFallTriggers()
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 2000 )
+	trigger.SetAboveHeight( 25 ) //Still not quite a sphere, will see if close enough
+	trigger.SetBelowHeight( 25 )
+
+	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	{
+		trigger.SetOrigin( <-19459, 2127, 5404> )
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		trigger.SetOrigin( <-19459, 2127, 17404> )
+	}
+
+	DispatchSpawn( trigger )
+
+	trigger.SearchForNewTouchingEntity()
+
+	OnThreadEnd(
+	function() : ( trigger )
+		{
+			trigger.Destroy()
+		}
+	)
+
+	bool enabled = true
+
+	while ( enabled )
+	{
+		array<entity> touchingEnts = trigger.GetTouchingEntities()
+
+		foreach( touchingEnt in touchingEnts  )
+		{
+			if( touchingEnt.IsPlayer() )
+			{
+				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+				{
+					touchingEnt.SetOrigin( <-19459, 2127, 6404> )
+				}
+				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+				{
+					touchingEnt.SetOrigin( <-19459, 2127, 18404> )
+				}
+			}
+		}
+		wait 0.01
+	}
+}
+
 
  // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
 // ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██
@@ -1003,25 +1059,20 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	}
 	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night")
 	{
-		//TODO - CREATE SHIP LOCATION
+
 		try {file.supercooldropship.Destroy()}catch(e69){}
-		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-18348,1663,4545>, <0,0,0>, true, 8000, -1 )
+		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,21450>, <0,0,0>, true, 8000, -1 )
 		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
-		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-18148,1663,6545>, <0,0,0>)
-		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-18148,1663,6545>, <0,0,0>)
+		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,18223>, <0,0,0>)
+		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,18223>, <0,0,0>)
 	}
 	else if(GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
-		//TODO - CREATE SHIP LOCATION
 		try {file.supercooldropship.Destroy()}catch(e69){}
-		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-18348,1663,4545>, <0,0,0>, true, 8000, -1 )
+		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,21450>, <0,0,0>, true, 8000, -1 )
 		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
-		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-18148,1663,6545>, <0,0,0>)
-		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-18148,1663,6545>, <0,0,0>)
-	}
-	else
-	{
-
+		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,18223>, <0,0,0>)
+		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,18223>, <0,0,0>)
 	}
 
 	foreach(player in GetPlayerArray())
@@ -1061,7 +1112,18 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	    }
     }
 	file.isshipalive = false
-	thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20600,2115,6223>, <0,0,0>)
+	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	{
+		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20600,2115,6223>, <0,0,0>)
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night")
+	{
+		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20650,2115,18223>, <0,0,0>)
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20650,2115,18223>, <0,0,0>)
+	}
 
 	wait 3
 
