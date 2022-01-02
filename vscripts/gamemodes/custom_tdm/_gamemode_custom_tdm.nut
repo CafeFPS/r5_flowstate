@@ -11,7 +11,9 @@ global function _CustomTDM_Init
 global function _RegisterLocation
 global function CreateAnimatedLegend
 table playersInfo
-
+const int chatLines = 3
+int currentChatLine = 0
+string currentChat = ""
 enum eTDMState
 {
 	IN_PROGRESS = 0
@@ -19,7 +21,7 @@ enum eTDMState
 }
 
 struct {
-	string scriptversion = "v2.2"
+	string scriptversion = "v2.3"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
 	bool mapIndexChanged = true
@@ -45,6 +47,10 @@ struct {
 	string admin2
 	string admin3
 	string admin4
+	
+	string tempBanned1
+	string tempBanned2
+	string tempBanned3
 	
 	int randomprimary
     int randomsecondary
@@ -209,6 +215,9 @@ void function _CustomTDM_Init()
 
 	if(FlowState_AllChat()){
 		AddClientCommandCallback("say", ClientCommand_ClientMsg)
+		//3 slots ingame chat temp-bans. Usage: sayban 1 ColombiaFPS. sayunban 1
+		AddClientCommandCallback("sayban", ClientCommand_ChatBan)
+		AddClientCommandCallback("sayunban", ClientCommand_ChatUnBan)
 	}
 
 	if ( FlowState_AdminTgive() ){
@@ -579,10 +588,10 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 	
 	if (FlowState_RandomGunsEverydie())
     {
-        file.randomprimary = RandomIntRange( 0, 4 )
-        file.randomsecondary = RandomIntRange( 0, 3 )
-        file.randomtac = RandomIntRange( 0, 2 )
-        file.randomult = RandomIntRange( 0, 3 )
+        file.randomprimary = RandomIntRange( 0, 9 )
+        file.randomsecondary = RandomIntRange( 0, 5 )
+        file.randomtac = RandomIntRange( 0, 5 )
+        file.randomult = RandomIntRange( 0, 5 )
 		TakeAllWeapons(player)
         GiveRandomPrimaryWeapon(file.randomprimary, player)
         GiveRandomSecondaryWeapon(file.randomsecondary, player)
@@ -904,17 +913,15 @@ void function VotingPhase()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-DestroyPlayerProps();
-SetGameState(eGameState.MapVoting)
-if (FlowState_RandomGuns())
-{
-    file.randomprimary = RandomIntRange( 0, 4 )
-    file.randomsecondary = RandomIntRange( 0, 3 )
-    file.randomtac = RandomIntRange( 0, 2 )
-    file.randomult = RandomIntRange( 0, 3 )
-}
-
-
+    DestroyPlayerProps();
+    SetGameState(eGameState.MapVoting)
+	if (FlowState_RandomGuns())
+    {
+        file.randomprimary = RandomIntRange( 0, 9 )
+        file.randomsecondary = RandomIntRange( 0, 5 )
+        file.randomtac = RandomIntRange( 0, 5 )
+        file.randomult = RandomIntRange( 0, 5 )
+    }
 wait 1
 
 
@@ -2136,21 +2143,106 @@ bool function ClientCommand_Help(entity player, array<string> args)
 	return true
 }
 
+bool function ClientCommand_ChatBan(entity player, array<string> args)
+{
+		string str = ""
+		foreach (s in args)
+		{
+			str += " " + s
+		}
+		str = str.slice(3)
+
+if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin1 || player.GetPlayerName() == file.admin2 || player.GetPlayerName() == file.admin3 || player.GetPlayerName() == file.admin4) {
+	try{
+		switch(args[0])
+        {
+            case "1":
+			file.tempBanned1 = str
+			Message(player, "banhammer", str + " is banned from chat in slot 1.", 3)
+			break
+			case "2":
+			file.tempBanned2 = str
+			Message(player, "banhammer", str + " is banned from chat in slot 2.", 3)
+			break
+			case "3":
+			file.tempBanned3 = str
+			Message(player, "banhammer", str + " is banned from chat in slot 3.", 3)
+			break
+		}
+		
+		}catch(e) {}
+		}
+
+	else {
+	return false
+	}
+	return true
+}
+
+bool function ClientCommand_ChatUnBan(entity player, array<string> args)
+{
+
+if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin1 || player.GetPlayerName() == file.admin2 || player.GetPlayerName() == file.admin3 || player.GetPlayerName() == file.admin4) {
+	try{
+		switch(args[0])
+        {
+            case "1":
+			Message(player, "banhammer", file.tempBanned1 + " is unbanned from chat in slot 1.", 3)
+			file.tempBanned1 = ""
+			break
+			case "2":
+			Message(player, "banhammer", file.tempBanned2 + " is unbanned from chat in slot 2.", 3)
+			file.tempBanned2 = ""
+			break
+			case "3":
+			Message(player, "banhammer", file.tempBanned3 + " is unbanned from chat in slot 3.", 3)
+			file.tempBanned3 = ""
+			break
+		}
+		}catch(e) {}
+		}
+
+	else {
+	return false
+	}
+	return true
+}
 
 bool function ClientCommand_ClientMsg(entity player, array<string> args)
 //by Retículo Endoplasmático#5955
 {
+	//ghetto bans XD
+	if (player.GetPlayerName() == file.tempBanned1 || player.GetPlayerName() == file.tempBanned2 || player.GetPlayerName() == file.tempBanned3 || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat1", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat2", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat3", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat4", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat5", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat6", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat7", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat8", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat9", "") || player.GetPlayerName() == GetCurrentPlaylistVarString("flowstateBannedFromChat10", "") )
+	{
+		Message( player, "Trollbox", "YOU ARE BANNED FROM FLOWSTATE GLOBAL MESSAGES.", 5)
+		return false
+	}
+	
     float cooldown = FlowState_ChatCooldown()
 	if( Time() - file.lastTimeChatUsage < cooldown )
     {
 		return false
 	}
-	string playerName = player.GetPlayerName()
 	string str = ""
 	foreach (s in args)
 		str += " " + s
-    string sendMessage = str
+		
+	string finalChat = player.GetPlayerName() + ": " + str + "\n"
 
+	if(currentChatLine < chatLines)
+	{
+		currentChat = currentChat + finalChat
+	}
+	else
+	{
+		currentChat =  finalChat
+		currentChatLine = 0
+	}
+
+	currentChatLine++
+	str = ""
+	
+	
 	switch(GetGameState())
     {
     case eGameState.MapVoting:
@@ -2162,7 +2254,7 @@ bool function ClientCommand_ClientMsg(entity player, array<string> args)
         {
 foreach(sPlayer in GetPlayerArray())
     {
-	Message( sPlayer, "Trollbox", playerName + " says: "  + sendMessage, 5)
+	Message( sPlayer, "Trollbox", currentChat, 5)
     }
 file.lastTimeChatUsage = Time()
 		}
@@ -2185,7 +2277,7 @@ return true
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 //Modified by Retículo Endoplasmático#5955 and michae\l/#1125
 {
-    if ( FlowState_AdminTgive() && !IsServer())
+    if ( FlowState_AdminTgive() )
 	{
 		return false
 	}
@@ -2354,7 +2446,7 @@ bool function ClientCommand_Scoreboard(entity player, array<string> args)
 	float ping = player.GetLatency() * 1000 - 40
 	if(IsValid(player)) {
 		try{
-		Message(player, "- CURRENT SCOREBOARD - ", "\n Name:    K  |   D   |   KD   |   Damage dealt \n" + ScoreboardFinal(true) + "\n\nYour ping: " + ping.tointeger() + "ms. \n\nHosted by: " + getHoster(), 4)
+		Message(player, "- CURRENT SCOREBOARD - ", "\n               CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n\n Name:    K  |   D   |   KD   |   Damage dealt \n" + ScoreboardFinal(true) + "\n\nYour ping: " + ping.tointeger() + "ms. \nHosted by: " + getHoster(), 4)
 		}catch(e) {}
 	}
 	return true
