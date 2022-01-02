@@ -76,15 +76,17 @@ void function KillReplayHud_Activate()
 	//var rui = CreateCockpitRui( $"ui/kill_replay_overlay.rpak", 0 )
 	file.killReplayOverlayRui = rui
 
-	RuiSetString( rui, "killReplayTitleText", "#KILL_REPLAY" )
+	//RuiSetString( rui, "killReplayTitleText", "#KILL_REPLAY" )
+RuiSetString( rui, "killReplayTitleText", "REPLAY" )
 
 	AttackerDisplayNameStruct nameOfLastKiller = clGlobal.nameOfLastKiller
-
+string attackerName = nameOfLastKiller.attackerName
+	printt("attackerName" + attackerName)
+	
 	if ( nameOfLastKiller.attackerName != "" /*|| nameOfLastKiller.attackerPetName != ""*/ )
 	{
 		entity player = GetLocalClientPlayer()
 
-		string attackerName = nameOfLastKiller.attackerName
 		string attackerPetName = nameOfLastKiller.attackerPetName
 		if ( attackerName != GetLocalClientPlayer().GetPlayerName() )
 		{

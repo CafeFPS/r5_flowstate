@@ -22,25 +22,48 @@ struct PlayerInfo
 	int score
 	
 }
-
+bool isFuncRegister = false
 global int maxTeam = 0;
 
 void function Cl_CustomTDM_Init()
 {
  printf("cl_customTDM_init")
+thread ChatEvent_Handler()
 }
 
 void function Cl_RegisterLocation(LocationSettings locationSettings)
 {
     file.locationSettings.append(locationSettings)
 }
+void function ChatEvent_Handler()
+{
+	while(true)
+	{
+		if(isChatShow && !isFuncRegister)
+		{
+			RegisterButtonPressedCallback(KEY_ENTER, SendChat);
+			isFuncRegister = true
+		}
+		else if(!isChatShow && isFuncRegister)
+		{
+			DeregisterButtonPressedCallback(KEY_ENTER, SendChat)
+			isFuncRegister = false
+		}
 
+		wait 0.5
+	}
+	
+}
+void function SendChat(var button)
+{
+	GetLocalClientPlayer().ClientCommand(chatText)
+}
 
 void function MakeScoreRUI()
 {
     if ( file.scoreRui != null)
-    {
         RuiSetString( file.scoreRui, "messageText", "Loading scoreboard..." )
+    {
         return
     }
     clGlobal.levelEnt.EndSignal( "CloseScoreRUI" )

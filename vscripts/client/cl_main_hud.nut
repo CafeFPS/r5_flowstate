@@ -27,6 +27,9 @@ global const VGUI_OPENING               = 3
 global const TEAM_ICON_IMC              = $"ui/scoreboard_imc_logo"
 global const TEAM_ICON_MILITIA          = $"ui/scoreboard_mcorp_logo"
 
+global bool isChatShow = false
+global string chatText = ""
+
 const float OFFHAND_ALERT_ICON_ANIMRATE = 0.35
 const float OFFHAND_ALERT_ICON_SCALE    = 4.5
 
@@ -982,12 +985,20 @@ void function UpdateChatHUDVisibility()
 	local chat = HudElement( "IngameTextChat" )
 
 	Hud_SetAboveBlur( chat, true )
+	var chatTextEntry = Hud_GetChild( Hud_GetChild( chat, "ChatInputLine" ), "ChatInputTextEntry" )
+chatText = Hud_GetUTF8Text(chatTextEntry) 
+
 
 	if ( IsLobby() || clGlobal.isMenuOpen )
+	{
 		chat.Hide()
+		isChatShow = false
+		}
 	else
+	{
 		chat.Show()
-
+		isChatShow = true
+		}
 	local hint = HudElement( "AccessibilityHint" )
 	if ( IsLobby() || clGlobal.isMenuOpen || !IsAccessibilityChatHintEnabled() || GetPlayerArrayOfTeam( GetLocalClientPlayer().GetTeam() ).len() < 2 )
 		hint.Hide()

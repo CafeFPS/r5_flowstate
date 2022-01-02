@@ -1425,7 +1425,7 @@ if(GetBestPlayer()==PlayerWithMostDamage())
     {
 		string nextlocation = file.selectedLocation.name
 
-		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           " + GetBestPlayerName() + " is the champion with " + GetBestPlayerScore() + " kills in the previous round. \n         The champion also got the most damage: " + GetDamageOfPlayerWithMostDamage() + helpMessage(), 15, "diag_ap_aiNotify_circleTimerStartNext_02")
+		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
 		
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
@@ -1439,7 +1439,7 @@ else{
 		int playerEHandle = player.GetEncodedEHandle()
 		string nextlocation = file.selectedLocation.name
 
-		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           " + GetBestPlayerName() + " is the champion with " + GetBestPlayerScore() + " kills in the previous round. \n      " + PlayerWithMostDamageName() + " is the challenger with " + GetDamageOfPlayerWithMostDamage() + " of damage in the previous round." + helpMessage(), 15, "diag_ap_aiNotify_circleTimerStartNext_02")
+		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
 		
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
