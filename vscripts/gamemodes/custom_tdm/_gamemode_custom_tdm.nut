@@ -52,6 +52,7 @@ struct {
     int randomtac
 
     entity supercooldropship
+	bool isshipalive = false
 	array<LocationSettings> droplocationSettings
     LocationSettings& dropselectedLocation
 } file
@@ -832,6 +833,46 @@ vector function ShipSpot()
 	return shipspot
 }
 
+void function CreateDropShipTriggerArea()
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 60 )
+	trigger.SetAboveHeight( 60 ) //Still not quite a sphere, will see if close enough
+	trigger.SetBelowHeight( 40 )
+	trigger.SetOrigin( file.supercooldropship.GetOrigin() )
+	trigger.SetParent( file.supercooldropship )
+	DispatchSpawn( trigger )
+
+	trigger.SearchForNewTouchingEntity()
+
+	OnThreadEnd(
+	function() : ( trigger )
+		{
+			trigger.Destroy()
+		}
+	)
+
+	while ( file.isshipalive )
+	{
+		array<entity> touchingEnts = trigger.GetTouchingEntities()
+
+		foreach( touchingEnt in touchingEnts  )
+		{
+			if( touchingEnt.IsPlayer() )
+			{
+				if(touchingEnt.GetParent() != file.supercooldropship)
+				{
+					touchingEnt.SetThirdPersonShoulderModeOff()
+					vector shipspot = ShipSpot()
+					touchingEnt.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
+					touchingEnt.SetParent(file.supercooldropship)
+				}
+			}
+		}
+		wait 1
+	}
+}
+
 
  // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
 // ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██
@@ -950,21 +991,28 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	    }
     }
 
-	wait 5
+	file.isshipalive = true
+	thread CreateDropShipTriggerArea()
+
+	wait 10
 
 	foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			player.SetThirdPersonShoulderModeOff()
-			vector shipspot = ShipSpot()
-			player.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
-			player.SetParent(file.supercooldropship)
+			if ( player.GetParent() != file.supercooldropship )
+			{
+
+				player.SetThirdPersonShoulderModeOff()
+				vector shipspot = ShipSpot()
+				player.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
+				player.SetParent(file.supercooldropship)
+			}
 		}
 	}
 
-	wait 5
-
+	wait 1
+	file.isshipalive = false
 	thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-18148,1663,6545>, <0,0,0>)
 
 	wait 3
@@ -1006,7 +1054,12 @@ foreach(spawn in spawns)
         		if(IsValid(player))
        			{
 					MakeInvincible(player)
-					player.ClearParent()
+
+					if (player.GetParent() == file.supercooldropship)
+					{
+						player.ClearParent()
+					}
+
 					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 					player.SetThirdPersonShoulderModeOff()
 					_HandleRespawn(player)
