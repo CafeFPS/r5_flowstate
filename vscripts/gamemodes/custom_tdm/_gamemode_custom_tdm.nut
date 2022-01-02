@@ -50,6 +50,10 @@ struct {
     int randomsecondary
     int randomult
     int randomtac
+
+    entity supercooldropship
+	array<LocationSettings> droplocationSettings
+    LocationSettings& dropselectedLocation
 } file
 
 struct PlayerInfo
@@ -220,6 +224,7 @@ void function _CustomTDM_Init()
 void function _RegisterLocation(LocationSettings locationSettings)
 {
     file.locationSettings.append(locationSettings)
+    file.droplocationSettings.append(locationSettings)
 }
 
 LocPair function _GetVotingLocation()
@@ -239,7 +244,7 @@ LocPair function _GetVotingLocation()
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
 			//return NewLocPair(<-8846, -30401, 2496>, <0, 60, 0>)
-			return NewLocPair(<-25789, 3246, 1798>, <0, 40, 0>)
+			return NewLocPair(<-19439, 1658, 6751>, <0, 40, 0>)
         default:
             Assert(false, "No voting location for the map!")
     }
@@ -773,6 +778,60 @@ void function GiveRandomUlt(int random, entity player )
     }
 }
 
+void function OnShipButtonUsed( entity panel, entity player, int useInputFlags )
+{
+	player.MakeInvisible()
+	player.StartObserverMode( OBS_MODE_CHASE )
+	player.SetObserverTarget( file.supercooldropship )
+}
+
+vector function ShipSpot()
+{
+	vector shipspot
+	int num = RandomIntRange(0,11)
+	switch(num)
+	{
+	case 0:
+		shipspot = <0,0,30>
+		break;
+	case 1:
+		shipspot = <35,0,30>
+		break;
+	case 2:
+		shipspot = <-35,0,30>
+		break;
+	case 3:
+		shipspot = <0,35,30>
+		break;
+	case 4:
+		shipspot = <35,35,30>
+		break;
+	case 5:
+		shipspot = <-35,35,30>
+		break;
+	case 6:
+		shipspot = <0,70,30>
+		break;
+	case 7:
+		shipspot = <35,70,30>
+		break;
+	case 8:
+		shipspot = <-35,70,30>
+		break;
+	case 9:
+		shipspot = <0,105,30>
+		break;
+	case 10:
+		shipspot = <35,105,30>
+		break;
+	case 11:
+		shipspot = <-35,105,30>
+		break;
+	}
+
+	return shipspot
+}
+
 
  // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
 // ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██
@@ -797,89 +856,251 @@ void function VotingPhase()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-    DestroyPlayerProps();
-    SetGameState(eGameState.MapVoting)
-	if (FlowState_RandomGuns())
-    {
-        file.randomprimary = RandomIntRange( 0, 4 )
-        file.randomsecondary = RandomIntRange( 0, 3 )
-        file.randomtac = RandomIntRange( 0, 2 )
-        file.randomult = RandomIntRange( 0, 3 )
-    }
+DestroyPlayerProps();
+SetGameState(eGameState.MapVoting)
+if (FlowState_RandomGuns())
+{
+    file.randomprimary = RandomIntRange( 0, 4 )
+    file.randomsecondary = RandomIntRange( 0, 3 )
+    file.randomtac = RandomIntRange( 0, 2 )
+    file.randomult = RandomIntRange( 0, 3 )
+}
+
+
 wait 1
-    foreach(player in GetPlayerArray())
-	{
-		try {
-			if(IsValid(player))
+
+
+foreach(player in GetPlayerArray())
+{
+    try {
+		if(IsValid(player))
+        {
 			player.SetThirdPersonShoulderModeOn()
 			_HandleRespawn(player)
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
 			HolsterAndDisableWeapons( player )
-			    }
-    catch(e){}
-    }
+        }
+	}catch(e){}
+}
+
+
 wait 5
 
-foreach(player in GetPlayerArray())
+
+if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) == false)
+{
+    foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-		Message(player,"Waiting for players", "", 4, "Wraith_PhaseGate_Travel_1p")
-		ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )
-	}}
-if (!file.mapIndexChanged)
-    {
-			if (FlowState_LockPOI()) {
-				file.nextMapIndex = FlowState_LockedPOI() % file.locationSettings.len()
-			}
-			else {
-				file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
-			}
-
+		    Message(player,"Waiting for players", "", 4, "Wraith_PhaseGate_Travel_1p")
+		    ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )
+	    }
     }
-    int choice = file.nextMapIndex
-    file.mapIndexChanged = false
-    file.selectedLocation = file.locationSettings[choice]
+}
 
-	if(file.selectedLocation.name == "Skill trainer By Colombia"){
-	DestroyPlayerProps()
+
+if (!file.mapIndexChanged)
+{
+	if (FlowState_LockPOI()) {
+		file.nextMapIndex = FlowState_LockedPOI() % file.locationSettings.len()
+	}
+	else 
+    {
+		file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
+	}
+}
+
+int choice = file.nextMapIndex
+file.mapIndexChanged = false
+file.selectedLocation = file.locationSettings[choice]
+file.dropselectedLocation = file.droplocationSettings[choice]
+
+if(file.selectedLocation.name == "Skill trainer By Colombia")
+{
+    DestroyPlayerProps()
     wait 2
     SkillTrainerLoad()
+}
+
+if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
+{
+    foreach(player in GetPlayerArray())
+    {
+        if(IsValidPlayer(player))
+        {
+		    Message(player, "Please Standby", "Dropship is on the way!", 4)
+	    }
+    }
+
+	wait 10
+
+	try {file.supercooldropship.Destroy()}catch(e69){}
+	file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-18348,1663,4545>, <0,0,0>, true, 8000, -1 )
+	EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
+	waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-18148,1663,6545>, <0,0,0>)
+	thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-18148,1663,6545>, <0,0,0>)
+
+	foreach(player in GetPlayerArray())
+    {
+        if(IsValidPlayer(player))
+        {
+		    Message(player, "Next Location: " + file.selectedLocation.name, "Dropship is ready, Get in!", 6)
+	    }
+    }
+
+	wait 5
+
+	foreach(player in GetPlayerArray())
+    {
+        if(IsValidPlayer(player))
+        {
+			player.SetThirdPersonShoulderModeOff()
+			vector shipspot = ShipSpot()
+			player.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
+			player.SetParent(file.supercooldropship)
+		}
 	}
 
-wait 4
+	wait 5
+
+	thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-18148,1663,6545>, <0,0,0>)
+
+	wait 3
+
+	foreach(player in GetPlayerArray())
+    {
+        if(IsValidPlayer(player))
+        {
+		    ScreenFadeToBlackForever(player, 1.7)
+	    }
+    }
+    wait 3
+}
+else
+{
+    wait 4
+}
 
 try {
-        PlayerTrail(GetBestPlayer(),0)
-    } catch(e2){}
+    PlayerTrail(GetBestPlayer(),0)
+} catch(e2){}
+
 SetGameState(eGameState.Playing)
 file.tdmState = eTDMState.IN_PROGRESS
-foreach(player in GetPlayerArray())
-    {
-	try {
-        if(IsValid(player))
-        {
-		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-		player.SetThirdPersonShoulderModeOff()
-		ClearInvincible(player)
-		DeployAndEnableWeapons(player)
-		_HandleRespawn(player)
 
-		ClearInvincible(player)
-		
-		DeployAndEnableWeapons(player)
-		Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
-		ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
-
-		// reload weapons when tp'ing to next location
-		entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-		try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
-    }
-	} catch(e3){}
+if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
+{
+int maxspawns = -1
+array<LocPair> spawns = file.dropselectedLocation.spawns
+foreach(spawn in spawns)
+{
+    maxspawns++
 }
+
+if (GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
+{
+	//false == FFA
+	if (GetCurrentPlaylistVarBool("flowstateffaortdm", false ) == true)
+	{
+		foreach(player in GetPlayerArray())
+		{
+        		if(IsValid(player))
+       			{
+					MakeInvincible(player)
+					player.ClearParent()
+					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+					player.SetThirdPersonShoulderModeOff()
+					_HandleRespawn(player)
+
+					ScreenFadeFromBlack( player, 1.0, 1.0 )
+
+					int rndnum = RandomIntRange(0, maxspawns)
+
+					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) )
+
+					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+
+					// reload weapons when tp'ing to next location
+					entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+					entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+					try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+					try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+    			}
+		}
+	}
+	else
+	{
+		foreach(player in GetPlayerArray())
+		{
+        		if(IsValid(player))
+       			{
+					MakeInvincible(player)
+					player.ClearParent()
+					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+					player.SetThirdPersonShoulderModeOff()
+					_HandleRespawn(player)
+
+					ScreenFadeFromBlack( player, 1.0, 1.0 )
+
+					if(player.GetTeam() == TEAM_IMC)
+       				{
+						float randomrange1 = RandomFloatRange(-300.0, 300.0)
+						thread RespawnPlayersInDropshipAtPoint2( player, spawns[0].origin + <0,0,500>, spawns[0].angles + <0,randomrange1,0> )
+    				}
+
+					if(player.GetTeam() == TEAM_MILITIA)
+       				{
+						float randomrange1 = RandomFloatRange(-300.0, 300.0)
+						thread RespawnPlayersInDropshipAtPoint2( player, spawns[maxspawns].origin + <0,0,500>, spawns[maxspawns].angles + <0,randomrange1,0> )
+    				}
+    			}
+		}
+		
+		foreach(player in GetPlayerArray())
+		{
+        	if(IsValid(player))
+       		{
+					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+
+					// reload weapons when tp'ing to next location
+					entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+					entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+					try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+					try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+    		}
+		}
+	}
+}
+else
+{
+    foreach(player in GetPlayerArray())
+    {
+        try {
+            if(IsValid(player))
+            {
+		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+		        player.SetThirdPersonShoulderModeOff()
+		        ClearInvincible(player)
+		        DeployAndEnableWeapons(player)
+		        _HandleRespawn(player)
+
+		        ClearInvincible(player)
+		
+		        DeployAndEnableWeapons(player)
+		        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
+
+		        // reload weapons when tp'ing to next location
+		        entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		        entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		        try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+		        try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+            }
+	    } catch(e3){}
+    }
+}   
 
 try {
 if(GetBestPlayer()==PlayerWithMostDamage())
@@ -921,9 +1142,13 @@ if (FlowState_ResetKillsEachRound() && IsValidPlayer(player)) {
 	player.SetPlayerNetInt("kills", 0) //Reset for kills in top right counter
 }
 	}
+
+try {file.supercooldropship.Destroy()}catch(e69){}
+
 ResetAllPlayerStats()
 file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
 WaitFrame()
+}
 }
 
 void function SimpleChampionUI(){
@@ -2132,6 +2357,27 @@ entity function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = 
 	if(mantle) e.AllowMantle()
     file.playerSpawnedProps.append(e)
 	return e
+}
+
+entity function CreateDropShipProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, int realm = -1)
+{
+    entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+    e.kv.fadedist = fade
+    if(mantle) e.AllowMantle()
+
+    if (realm > -1) {
+        e.RemoveFromAllRealms()
+        e.AddToRealm(realm)
+    }
+
+    string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
+    string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
+
+    e.SetScriptName("zoomship")
+    e.e.gameModeId = realm
+    printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
+
+    return e
 }
 #endif
 

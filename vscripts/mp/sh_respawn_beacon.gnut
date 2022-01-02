@@ -11,6 +11,7 @@ global function AddCallback_OnDNAPickupDestroyed
 #if R5DEV
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
+global function RespawnPlayersInDropshipAtPoint2
 #endif
 #endif
 
@@ -425,6 +426,36 @@ void function RespawnPlayersInDropshipAtPoint( array<entity> players, vector ori
 		}
 		i++
 	}
+
+	EndSignal( dropship, "OnDestroy" )
+
+	thread PlayAnim( dropship, "dropship_classic_mp_flyin_idle", origin, angles )
+	dropship.MakeInvisible()
+	waitthread __WarpInEffectShared( attachResult.position, attachResult.angle, "dropship_warpin", 0.0 )
+	dropship.MakeVisible()
+	waitthread PlayAnim( dropship, "dropship_classic_mp_flyin", origin, angles )
+	dropship.Destroy()
+}
+
+void function RespawnPlayersInDropshipAtPoint2( entity player, vector origin, vector angles )
+{
+	entity dropship = CreateEntity( "npc_dropship" )
+	SetSpawnOption_AISettings( dropship, "npc_dropship_respawn" )
+	SetTargetName( dropship, RESPAWN_DROPSHIP_TARGETNAME )
+	DispatchSpawn( dropship )
+	dropship.SetInvulnerable()
+	dropship.DisableHibernation()
+	//EmitSoundOnEntity( dropship, "goblin_imc_evac_hover" )
+	thread JetwashFX( dropship )
+
+	dropship.DisableGrappleAttachment()
+
+	dropship.SetOrigin( origin )
+	dropship.SetAngles( angles )
+	Attachment attachResult = dropship.Anim_GetAttachmentAtTime( "dropship_classic_mp_flyin", "ORIGIN", 0.0 )
+
+	int i=0
+	thread RespawnBeacon_PutPlayerInDropship2( player, dropship, i, attachResult.position )
 
 	EndSignal( dropship, "OnDestroy" )
 
@@ -1045,7 +1076,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	dummyEnt.Destroy()
 
 	player.p.respawnPod = ship
-	player.StartObserverMode( OBS_MODE_CHASE )
+	player.StartObserverMode( OBS_MODE_MENU )
 	player.SetObserverTarget( ship )
 
 	ScreenFadeFromBlack( player, 1.0, 1.0 )
@@ -1098,6 +1129,94 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	FallTempAirControl( player )
 
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_returnFromRespawn" )
+}
+
+void function RespawnBeacon_PutPlayerInDropship2( entity player, entity ship, int pos, vector teleportOrigin )
+{
+	ship.EndSignal( "OnDestroy" )
+	player.EndSignal( "OnDeath" )
+
+	dropshipAnimData animData = file.dropshipAnimDataList[ pos ]
+
+	FirstPersonSequenceStruct idleAnimSequence
+	idleAnimSequence.firstPersonAnim = animData.idlePOVAnim
+	idleAnimSequence.thirdPersonAnim = animData.idleAnim
+	idleAnimSequence.viewConeFunction = ViewCone360
+	idleAnimSequence.attachment = animData.attachment
+	idleAnimSequence.hideProxy = animData.hideProxy
+
+	FirstPersonSequenceStruct jumpAnimSequence
+	jumpAnimSequence.firstPersonAnim = animData.jumpPOVAnim
+	jumpAnimSequence.thirdPersonAnim = animData.jumpAnim
+	jumpAnimSequence.viewConeFunction = ViewConeTight
+	jumpAnimSequence.attachment = animData.attachment
+	jumpAnimSequence.hideProxy = animData.hideProxy
+
+	// player.Signal( "StopPostDeathLogic" )
+	AddCinematicFlag( player, CE_FLAG_INTRO )
+	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
+	AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
+	//AddCinematicFlag( player, CE_FLAG_EMBARK ) // DoF
+	entity dummyEnt = CreatePropDynamic( $"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl" ) // TODO: use generic model.  Can't use player settings here since they could be a spectator
+	float idleTime = dummyEnt.GetSequenceDuration( animData.idleAnim )
+	float jumpTime = dummyEnt.GetSequenceDuration( animData.jumpAnim )
+	float totalTime = idleTime + jumpTime
+	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.WAITING_FOR_DROPPOD )
+	
+	ScreenFadeFromBlack( player, 1.0, 1.0 )
+
+	table<string,bool> e
+	e[ "clearDof" ] <- true
+	e[ "didHolsterAndDisableWeapons" ] <- false
+
+	OnThreadEnd(
+		function () : ( player, e )
+		{
+			if ( IsValid( player ) )
+			{
+				RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
+				RemoveCinematicFlag( player, CE_FLAG_INTRO )
+				RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
+				RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD )
+
+				if ( e[ "clearDof" ] )
+					RemoveCinematicFlag( player, CE_FLAG_EMBARK )
+
+				if ( e[ "didHolsterAndDisableWeapons" ] )
+					DeployAndEnableWeapons( player )
+
+				player.SetPlayerNetInt( "respawnStatus", 0 )
+				player.p.respawnPod = null
+				player.p.respawnPodLanded = false
+				player.ClearParent()
+				ClearPlayerAnimViewEntity( player )
+				player.ClearInvulnerable()
+				ClearInvincible(player)
+
+			}
+		}
+	)
+
+	player.SetAbsOrigin( ship.GetOrigin() + <0,0,-58> )
+	player.SetParent(ship)
+	player.SetAngles(ship.GetAngles())
+	EmitSoundOnEntity( ship, "goblin_imc_evac_hover" )
+
+	//waitthread FirstPersonSequence( idleAnimSequence, player, ship )
+	wait idleTime
+	
+	if ( !IsAlive( player ) )
+		DecideRespawnPlayer( player )
+
+	EmitSoundOnEntityOnlyToPlayer( player, player, animData.firstPersonJumpOutSound )
+	HolsterAndDisableWeapons( player )
+	MakeInvincible(player)
+	waitthread FirstPersonSequence( jumpAnimSequence, player, ship )
+	DeployAndEnableWeapons( player )
+	DeployAndEnableWeapons( player )
+	ClearInvincible(player)
+	FallTempAirControl( player )
 }
 
 void function FadePlayerView( entity player, float duration, table<string,bool> e )
