@@ -836,9 +836,9 @@ vector function ShipSpot()
 void function CreateDropShipTriggerArea()
 {
 	entity trigger = CreateEntity( "trigger_cylinder" )
-	trigger.SetRadius( 60 )
-	trigger.SetAboveHeight( 60 ) //Still not quite a sphere, will see if close enough
-	trigger.SetBelowHeight( 40 )
+	trigger.SetRadius( 100 )
+	trigger.SetAboveHeight( 100 ) //Still not quite a sphere, will see if close enough
+	trigger.SetBelowHeight( 100 )
 	trigger.SetOrigin( file.supercooldropship.GetOrigin() )
 	trigger.SetParent( file.supercooldropship )
 	DispatchSpawn( trigger )
@@ -1089,6 +1089,25 @@ foreach(spawn in spawns)
 	}
 	else
 	{
+		foreach(player in GetPlayerArray())
+		{
+        		if(IsValid(player))
+       			{
+					MakeInvincible(player)
+
+					if (player.GetParent() == file.supercooldropship)
+					{
+						player.ClearParent()
+					}
+
+					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+					player.SetThirdPersonShoulderModeOff()
+					_HandleRespawn(player)
+
+					ScreenFadeFromBlack( player, 1.0, 1.0 )
+    			}
+		}
+
 		array<entity> IMCplayers = GetPlayerArrayOfTeam( TEAM_IMC )
 		int sizeofimcteam = -1
 
@@ -1279,8 +1298,8 @@ foreach(spawn in spawns)
 		
 		foreach(player in GetPlayerArray())
 		{
-        	if(IsValid(player))
-       		{
+        		if(IsValid(player))
+       			{
 					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 
 					// reload weapons when tp'ing to next location
@@ -1288,7 +1307,7 @@ foreach(spawn in spawns)
 					entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 					try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
 					try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
-    		}
+    			}
 		}
 	}
 }
