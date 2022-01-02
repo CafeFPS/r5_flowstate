@@ -1046,13 +1046,13 @@ if (GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 
 					if(player.GetTeam() == TEAM_IMC)
        				{
-						float randomrange1 = RandomFloatRange(-300.0, 300.0)
+						float randomrange1 = RandomFloatRange(0.0, 200.0)
 						thread RespawnPlayersInDropshipAtPoint2( player, spawns[0].origin + <0,0,500>, spawns[0].angles + <0,randomrange1,0> )
     				}
 
 					if(player.GetTeam() == TEAM_MILITIA)
        				{
-						float randomrange1 = RandomFloatRange(-300.0, 300.0)
+						float randomrange1 = RandomFloatRange(0.0, 200.0)
 						thread RespawnPlayersInDropshipAtPoint2( player, spawns[maxspawns].origin + <0,0,500>, spawns[maxspawns].angles + <0,randomrange1,0> )
     				}
     			}
