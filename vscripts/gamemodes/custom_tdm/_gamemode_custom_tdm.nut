@@ -1012,6 +1012,13 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	}
 
 	wait 1
+	foreach(player in GetPlayerArray())
+    {
+        if(IsValidPlayer(player))
+        {
+		    Message(player, "Heading To New Location", "Hold on tight!", 3)
+	    }
+    }
 	file.isshipalive = false
 	thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-18148,1663,6545>, <0,0,0>)
 
