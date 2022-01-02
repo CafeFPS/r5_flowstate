@@ -109,9 +109,6 @@ void function EntitiesDidLoad()
 	int keyCount = GetPlaylistVarInt( currentPlaylist, "loot_drones_vault_key_count", NUM_LOOT_DRONES_WITH_VAULT_KEYS )
 	if ( file.isTrainEnabled )
 		thread DesertlandsTrain_Init()
-		/*
-	// ------------------------------------------------------
-	//By Retículo Endoplasmático#5955 CaféDeColombiaFPS CaféDeColombiaFPS. Adaptado del firing range.
 
 	FillLootTable()
 
