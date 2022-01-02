@@ -1043,22 +1043,48 @@ foreach(spawn in spawns)
 
 					if(player.GetTeam() == TEAM_IMC)
        				{
-						float randomrange1 = RandomFloatRange(0.0, 360.0)
-                        if (randomrange1 > 360.0)
+						float randomrange1 = RandomFloatRange(-360.0, 360.0)
+                        vector finishedangles = spawns[0].angles + <0,randomrange1,0>
+
+                        if (finishedangles.x > 360.0)
                         {
-                            randomrange1 = 359.0
+                            finishedangles.x = 359.0
                         }
-						thread RespawnPlayersInDropshipAtPoint2( player, spawns[0].origin + <0,0,500>, spawns[0].angles + <0,randomrange1,0> )
+
+						if (finishedangles.y > 360.0)
+                        {
+                            finishedangles.y = 359.0
+                        }
+
+						if (finishedangles.z > 360.0)
+                        {
+                            finishedangles.z = 359.0
+                        }
+
+
+						thread RespawnPlayersInDropshipAtPoint2( player, spawns[0].origin + <0,0,500>, finishedangles )
     				}
 
 					if(player.GetTeam() == TEAM_MILITIA)
        				{
-						float randomrange1 = RandomFloatRange(0.0, 360.0)
-                        if (randomrange1 > 360.0)
+						float randomrange1 = RandomFloatRange(-360.0, 360.0)
+                        vector finishedangles = spawns[maxspawns].angles + <0,randomrange1,0>
+
+                        if (finishedangles.x > 360.0)
                         {
-                            randomrange1 = 359.0
+                            finishedangles.x = 359.0
                         }
-						thread RespawnPlayersInDropshipAtPoint2( player, spawns[maxspawns].origin + <0,0,500>, spawns[maxspawns].angles + <0,randomrange1,0> )
+
+						if (finishedangles.y > 360.0)
+                        {
+                            finishedangles.y = 359.0
+                        }
+
+						if (finishedangles.z > 360.0)
+                        {
+                            finishedangles.z = 359.0
+                        }
+						thread RespawnPlayersInDropshipAtPoint2( player, spawns[maxspawns].origin + <0,0,500>, finishedangles )
     				}
     			}
 		}
