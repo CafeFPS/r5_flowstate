@@ -998,9 +998,6 @@ foreach(spawn in spawns)
 {
     maxspawns++
 }
-
-if (GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
-{
 	//false == FFA
 	if (GetCurrentPlaylistVarBool("flowstateffaortdm", false ) == true)
 	{
@@ -1046,13 +1043,21 @@ if (GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 
 					if(player.GetTeam() == TEAM_IMC)
        				{
-						float randomrange1 = RandomFloatRange(0.0, 200.0)
+						float randomrange1 = RandomFloatRange(0.0, 360.0)
+                        if (randomrange1 > 360.0)
+                        {
+                            randomrange1 = 359.0
+                        }
 						thread RespawnPlayersInDropshipAtPoint2( player, spawns[0].origin + <0,0,500>, spawns[0].angles + <0,randomrange1,0> )
     				}
 
 					if(player.GetTeam() == TEAM_MILITIA)
        				{
-						float randomrange1 = RandomFloatRange(0.0, 200.0)
+						float randomrange1 = RandomFloatRange(0.0, 360.0)
+                        if (randomrange1 > 360.0)
+                        {
+                            randomrange1 = 359.0
+                        }
 						thread RespawnPlayersInDropshipAtPoint2( player, spawns[maxspawns].origin + <0,0,500>, spawns[maxspawns].angles + <0,randomrange1,0> )
     				}
     			}
@@ -1148,7 +1153,6 @@ try {file.supercooldropship.Destroy()}catch(e69){}
 ResetAllPlayerStats()
 file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
 WaitFrame()
-}
 }
 
 void function SimpleChampionUI(){
