@@ -12,6 +12,7 @@ global function AddCallback_OnDNAPickupDestroyed
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
 global function RespawnPlayersInDropshipAtPoint2
+global function RespawnPlayersInDropshipAtPointTDM
 #endif
 #endif
 
@@ -423,6 +424,43 @@ void function RespawnPlayersInDropshipAtPoint( array<entity> players, vector ori
 		if ( IsValid( player ) )
 		{
 			thread RespawnBeacon_PutPlayerInDropship( player, dropship, i, attachResult.position )
+		}
+		i++
+	}
+
+	EndSignal( dropship, "OnDestroy" )
+
+	thread PlayAnim( dropship, "dropship_classic_mp_flyin_idle", origin, angles )
+	dropship.MakeInvisible()
+	waitthread __WarpInEffectShared( attachResult.position, attachResult.angle, "dropship_warpin", 0.0 )
+	dropship.MakeVisible()
+	waitthread PlayAnim( dropship, "dropship_classic_mp_flyin", origin, angles )
+	dropship.Destroy()
+}
+
+void function RespawnPlayersInDropshipAtPointTDM( array<entity> players, vector origin, vector angles )
+{
+	entity dropship = CreateEntity( "npc_dropship" )
+	SetSpawnOption_AISettings( dropship, "npc_dropship_respawn" )
+	SetTargetName( dropship, RESPAWN_DROPSHIP_TARGETNAME )
+	DispatchSpawn( dropship )
+	dropship.SetInvulnerable()
+	dropship.DisableHibernation()
+	EmitSoundOnEntity( dropship, "goblin_imc_evac_hover" )
+	thread JetwashFX( dropship )
+
+	dropship.DisableGrappleAttachment()
+
+	dropship.SetOrigin( origin )
+	dropship.SetAngles( angles )
+	Attachment attachResult = dropship.Anim_GetAttachmentAtTime( "dropship_classic_mp_flyin", "ORIGIN", 0.0 )
+
+	int i=0
+	foreach ( player in players )
+	{
+		if ( IsValid( player ) )
+		{
+			thread RespawnBeacon_PutPlayerInDropship2 ( player, dropship, i, attachResult.position )
 		}
 		i++
 	}

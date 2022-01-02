@@ -77,10 +77,12 @@ struct PlayerInfo
 
 void function PrecacheCustomMapsProps()
 {
-if(GetMapName() == "mp_rr_desertlands_64k_x_64k"){	
+if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){	
 CreateAnimatedLegend($"mdl/humans/class/light/pilot_light_wraith.rmdl",<8443, 4459, -4293>,<0, 0, 0>, 0, 2)
 CreateAnimatedLegend($"mdl/humans/class/light/pilot_light_support.rmdl",<11238, 4238,-4293>,<0, -90, 0>, 0, 2)
 CreateAnimatedLegend($"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl",<12099, 6976,-4350>,<0, -90, 0>,  0, 2)
+
+Spawnwatingroomlegends()
 
 //surf
 PrecacheModel( $"mdl/robots/marvin/marvin_gladcard.rmdl" )
@@ -178,6 +180,11 @@ PrecacheModel( $"mdl/vehicle/dropship/dropship_afterburner.rmdl" )
 }
 }
 
+void function Spawnwatingroomlegends()
+{
+	CreateAnimatedLegend($"mdl/humans/class/light/pilot_light_support.rmdl", <-19715,1573,6480>, <0,77,0>)
+}
+
 
 void function _CustomTDM_Init()
 {
@@ -245,7 +252,7 @@ LocPair function _GetVotingLocation()
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
 			//return NewLocPair(<-8846, -30401, 2496>, <0, 60, 0>)
-			return NewLocPair(<-19439, 1658, 6751>, <0, 40, 0>)
+			return NewLocPair(<-19459, 2127, 6404>, <0, 180, 0>)
         default:
             Assert(false, "No voting location for the map!")
     }
@@ -967,6 +974,8 @@ if(file.selectedLocation.name == "Skill trainer By Colombia")
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
+	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
     foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
@@ -977,11 +986,36 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 
 	wait 10
 
-	try {file.supercooldropship.Destroy()}catch(e69){}
-	file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-18348,1663,4545>, <0,0,0>, true, 8000, -1 )
-	EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
-	waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-18148,1663,6545>, <0,0,0>)
-	thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-18148,1663,6545>, <0,0,0>)
+	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	{
+		try {file.supercooldropship.Destroy()}catch(e69){}
+		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,9450>, <0,0,0>, true, 8000, -1 )
+		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
+		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,6223>, <0,0,0>)
+		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,6223>, <0,0,0>)
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night")
+	{
+		//TODO - CREATE SHIP LOCATION
+		try {file.supercooldropship.Destroy()}catch(e69){}
+		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-18348,1663,4545>, <0,0,0>, true, 8000, -1 )
+		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
+		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-18148,1663,6545>, <0,0,0>)
+		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-18148,1663,6545>, <0,0,0>)
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		//TODO - CREATE SHIP LOCATION
+		try {file.supercooldropship.Destroy()}catch(e69){}
+		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-18348,1663,4545>, <0,0,0>, true, 8000, -1 )
+		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
+		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-18148,1663,6545>, <0,0,0>)
+		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-18148,1663,6545>, <0,0,0>)
+	}
+	else
+	{
+
+	}
 
 	foreach(player in GetPlayerArray())
     {
@@ -1020,7 +1054,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	    }
     }
 	file.isshipalive = false
-	thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-18148,1663,6545>, <0,0,0>)
+	thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20600,2115,6223>, <0,0,0>)
 
 	wait 3
 
@@ -1032,6 +1066,11 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	    }
     }
     wait 3
+	}
+	else
+	{
+		wait 3
+	}
 }
 else
 {
@@ -1047,12 +1086,15 @@ file.tdmState = eTDMState.IN_PROGRESS
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
-int maxspawns = -1
-array<LocPair> spawns = file.dropselectedLocation.spawns
-foreach(spawn in spawns)
-{
-    maxspawns++
-}
+	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		int maxspawns = -1
+		array<LocPair> spawns = file.dropselectedLocation.spawns
+		foreach(spawn in spawns)
+		{
+    		maxspawns++
+		}
+
 	//false == FFA
 	if (GetCurrentPlaylistVarBool("flowstateffaortdm", false ) == true)
 	{
@@ -1309,6 +1351,35 @@ foreach(spawn in spawns)
 					try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
     			}
 		}
+	}
+	}
+	else
+	{
+		foreach(player in GetPlayerArray())
+    	{
+        try {
+            if(IsValid(player))
+            {
+		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+		        player.SetThirdPersonShoulderModeOff()
+		        ClearInvincible(player)
+		        DeployAndEnableWeapons(player)
+		        _HandleRespawn(player)
+
+		        ClearInvincible(player)
+		
+		        DeployAndEnableWeapons(player)
+		        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
+
+		        // reload weapons when tp'ing to next location
+		        entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		        entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		        try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+		        try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+            }
+	    } catch(e3){}
+    	}
 	}
 }
 else
