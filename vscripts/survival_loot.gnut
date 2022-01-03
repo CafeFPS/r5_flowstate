@@ -144,16 +144,11 @@ void function LoadLootZonesForMap()
 	}
     
     if(file.lootZones.len() == 0)
-    {
-        FlagSet( "Survival_LootZonesLoaded" )
         return
-    }
     
     if ( !GetCurrentPlaylistVarBool( "ground_loot_enable", true ) || !GetCurrentPlaylistVarBool( "hot_zone_enable", true ) )
-    {
-        FlagSet( "Survival_LootZonesLoaded" )
         return
-    }
+    
     array<LootZone> hotZones
 
     lzEnts = GetEntArrayByClass_Expensive( "script_ref" )
@@ -173,10 +168,7 @@ void function LoadLootZonesForMap()
     }
     
     if(hotZones.len() == 0)
-    {
-        FlagSet( "Survival_LootZonesLoaded" )
         return
-    }
     
     //The hotzone
     LootZone hotZone = hotZones.getrandom()
@@ -282,10 +274,15 @@ void function OnWeaponAttack_OrdnanceControl( entity player, entity weapon, stri
 		{
 			string nextOrdnance = GetNextOrdnance( player, data.ref )
 			if ( nextOrdnance != "" )
-				thread function () : ( player, nextOrdnance )
+				thread function () : ( player, weapon, nextOrdnance )
 				{
-					wait 1
+					wait weapon.GetWeaponSettingFloat(eWeaponVar.toss_time)
 					SwitchPlayerToOrdnance( player, nextOrdnance )
+				}()
+			else thread function () : ( player, weapon, nextOrdnance )
+				{
+					wait weapon.GetWeaponSettingFloat(eWeaponVar.toss_time)
+					player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 				}()
 		}
 	}
@@ -1416,13 +1413,13 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 	{
 		box.SetNetBool( "overrideRUI", false )
 
-		// box.SetCustomOwnerName( player.GetPlayerName() )
+		box.SetCustomOwnerName( player.GetPlayerName() )
 
-		// EHI playerEHI = ToEHI( player )
+		 EHI playerEHI = ToEHI( player )
 
-		// LoadoutEntry characterLoadoutEntry = Loadout_CharacterClass()
-		// ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterLoadoutEntry )
-		// box.SetNetInt( "characterIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( characterLoadoutEntry, character ) )
+		 LoadoutEntry characterLoadoutEntry = Loadout_CharacterClass()
+		 ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterLoadoutEntry )
+		 box.SetNetInt( "characterIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( characterLoadoutEntry, character ) )
 
 		// LoadoutEntry skinLoadoutEntry = Loadout_CharacterSkin( character )
 		// ItemFlavor characterSkin = LoadoutSlot_GetItemFlavor( playerEHI, skinLoadoutEntry )
@@ -1458,10 +1455,18 @@ entity function SURVIVAL_CreateDeathBox( entity player, bool hasCard )
 		Highlight_ClearNeutralHighlight( box )
 
 		thread DeathBoxFakePhysics( box )
+		thread deathboxWatcher(box)
 	}
 
 	return box
 }
+
+void function deathboxWatcher(entity box)
+{
+	wait 10
+	box.Destroy()
+}
+
 
 void function DeathBoxFakePhysics( entity box )
 {
