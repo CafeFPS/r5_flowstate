@@ -462,6 +462,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			{
 				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
 				invscore++;
+
+				//Add a death to the victim
+                int invscore2 = victim.GetPlayerNetInt( "assists" )
+				invscore2++;
+				victim.SetPlayerNetInt( "assists", invscore2 )
+
 				victim.SetPlayerGameStat( PGS_DEATHS, invscore);
 				_HandleRespawn( victim )
 				ClearInvincible(victim)
@@ -477,6 +483,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			int score = GameRules_GetTeamScore(attacker.GetTeam());
             score++;
             GameRules_SetTeamScore(attacker.GetTeam(), score);
+
+			int invscore = attacker.GetPlayerNetInt( "kills" )
+			invscore++;
+			attacker.SetPlayerNetInt( "kills", invscore )
+			
 			//Heal
 			PlayerRestoreHP(attacker, 100, Equipment_GetDefaultShieldHP())
 			
@@ -890,7 +901,7 @@ void function CreateDropShipTriggerArea()
 				}
 			}
 		}
-		wait 1
+		wait 0.1
 	}
 }
 
@@ -1053,6 +1064,12 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	{
 		try {file.supercooldropship.Destroy()}catch(e69){}
 		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,9450>, <0,0,0>, true, 8000, -1 )
+
+		//Warp In DropShip
+		file.supercooldropship.Hide()
+		waitthread __WarpInEffectShared( <-27496,-188,9450>, <0,0,0>, "dropship_warpin", 0.0 )
+		file.supercooldropship.Show()
+
 		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
 		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,6223>, <0,0,0>)
 		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,6223>, <0,0,0>)
@@ -1131,7 +1148,8 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
     {
         if(IsValidPlayer(player))
         {
-		    ScreenFadeToBlackForever(player, 1.7)
+		    //ScreenFadeToBlackForever(player, 1.7)
+			Remote_CallFunction_Replay( player, "ServerCallback_PlayScreenFXWarpJump" )
 	    }
     }
     wait 3
@@ -1164,7 +1182,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
     		maxspawns++
 		}
 
-	//false == FFA
+	//true == FFA
 	if (GetCurrentPlaylistVarBool("flowstateffaortdm", false ) == true)
 	{
 		foreach(player in GetPlayerArray())
@@ -1182,7 +1200,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 					player.SetThirdPersonShoulderModeOff()
 					_HandleRespawn(player)
 
-					ScreenFadeFromBlack( player, 1.0, 1.0 )
+					//ScreenFadeFromBlack( player, 1.0, 1.0 )
 
 					int rndnum = RandomIntRange(0, maxspawns)
 
@@ -1515,10 +1533,12 @@ foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-		player.p.playerDamageDealt = 0.0}
-if (FlowState_ResetKillsEachRound() && IsValidPlayer(player)) {
-	player.SetPlayerNetInt("kills", 0) //Reset for kills in top right counter
-}
+			player.p.playerDamageDealt = 0.0}
+			if (FlowState_ResetKillsEachRound() && IsValidPlayer(player)) 
+			{
+				player.SetPlayerNetInt("kills", 0) //Reset for kills
+	    		player.SetPlayerNetInt("assists", 0) //Reset for deaths
+			}
 	}
 
 try {file.supercooldropship.Destroy()}catch(e69){}

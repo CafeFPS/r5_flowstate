@@ -1471,8 +1471,8 @@ void function PlayScreenFXWarpJump( entity clientPlayer )
 	)
 
 	wait 3.2
-	if ( IsValid( player.GetCockpit() ) )
-		thread TonemappingUpdateAfterWarpJump()
+	//if ( IsValid( player.GetCockpit() ) )
+		//thread TonemappingUpdateAfterWarpJump()
 }
 
 const EXPOSURE_RAMPDOWN_DURATION = 2.0
