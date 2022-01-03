@@ -399,6 +399,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
+	if (FlowState_RandomGunsEverydie())
+			{		
+	CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
+			}
+	
+	
 	entity champion = file.previousChampion
 	entity challenger = file.previousChallenger
 	entity killeader = GetBestPlayer()
@@ -1026,6 +1032,94 @@ void function CreateShipRoomFallTriggers()
 		}
 		wait 0.01
 	}
+}
+
+void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, var damageInfo )
+{
+	entity deathBox = FlowState_CreateDeathBox( victim, true )
+
+	foreach ( invItem in GetAllDroppableItems( victim ) )
+	{
+		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
+
+		entity loot = SpawnGenericLoot( data.ref, deathBox.GetOrigin(), deathBox.GetAngles(), invItem.count )
+		AddToDeathBox( loot, deathBox )
+	}
+
+	UpdateDeathBoxHighlight( deathBox )
+
+	foreach ( func in svGlobal.onDeathBoxSpawnedCallbacks )
+		func( deathBox, attacker, damageInfo != null ? DamageInfo_GetDamageSourceIdentifier( damageInfo ) : 0 )
+}
+
+
+entity function FlowState_CreateDeathBox( entity player, bool hasCard )
+{
+	entity box = CreatePropDeathBox_NoDispatchSpawn( DEATH_BOX, player.GetOrigin(), <0, 45, 0>, 6 )
+	box.kv.fadedist = 10000
+	if ( hasCard )
+		SetTargetName( box, DEATH_BOX_TARGETNAME )
+
+	DispatchSpawn( box )
+
+	box.RemoveFromAllRealms()
+	box.AddToOtherEntitysRealms( player )
+
+	box.Solid()
+
+	box.SetUsable()
+	box.SetUsableValue( USABLE_BY_ALL | USABLE_CUSTOM_HINTS )
+	
+	box.SetOwner( player )
+	box.SetNetInt( "ownerEHI", player.GetEncodedEHandle() )
+
+	if ( hasCard )
+	{
+		box.SetNetBool( "overrideRUI", false )
+
+		box.SetCustomOwnerName( player.GetPlayerName() )
+
+		 EHI playerEHI = ToEHI( player )
+
+		 LoadoutEntry characterLoadoutEntry = Loadout_CharacterClass()
+		 ItemFlavor character = LoadoutSlot_GetItemFlavor( playerEHI, characterLoadoutEntry )
+		 box.SetNetInt( "characterIndex", ConvertItemFlavorToLoadoutSlotContentsIndex( characterLoadoutEntry, character ) )
+	}
+
+	if ( hasCard )
+	{
+		Highlight_SetNeutralHighlight( box, "sp_objective_entity" )
+		Highlight_ClearNeutralHighlight( box )
+
+		thread FlowStateDeathBoxFakePhysics( box )
+		thread FlowStateDeathBoxWatcher(box)
+	}
+
+	return box
+}
+
+void function FlowStateDeathBoxWatcher(entity box)
+{
+	wait 7
+	box.Destroy()
+}
+
+
+void function FlowStateDeathBoxFakePhysics( entity box )
+{
+	vector restPos = box.GetOrigin()
+	vector fallPos = restPos + < 0, 0, 54 >
+
+	entity mover = CreateScriptMover( restPos, box.GetAngles(), 0 )
+	box.SetParent( mover, "", true )
+
+	mover.NonPhysicsMoveTo( fallPos, 0.5, 0.0, 0.5 )
+	wait 0.5
+	mover.NonPhysicsMoveTo( restPos, 0.5, 0.5, 0.0 )
+	wait 0.5
+	if ( IsValid( box ) )
+		box.ClearParent()
+	mover.Destroy()
 }
 
 
