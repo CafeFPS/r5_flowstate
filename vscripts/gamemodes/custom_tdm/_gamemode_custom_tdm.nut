@@ -1148,8 +1148,8 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
     {
         if(IsValidPlayer(player))
         {
-		    //ScreenFadeToBlackForever(player, 1.7)
-			Remote_CallFunction_Replay( player, "ServerCallback_PlayScreenFXWarpJump" )
+		    ScreenFadeToBlackForever(player, 1.7)
+			//Remote_CallFunction_Replay( player, "ServerCallback_PlayScreenFXWarpJump" )
 	    }
     }
     wait 3
@@ -1200,7 +1200,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 					player.SetThirdPersonShoulderModeOff()
 					_HandleRespawn(player)
 
-					//ScreenFadeFromBlack( player, 1.0, 1.0 )
+					ScreenFadeFromBlack( player, 1.0, 1.0 )
 
 					int rndnum = RandomIntRange(0, maxspawns)
 
