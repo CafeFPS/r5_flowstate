@@ -1054,7 +1054,7 @@ void function VotingPhase()
 {
     DestroyPlayerProps();
     SetGameState(eGameState.MapVoting)
-	if (FlowState_RandomGuns())
+	if (FlowState_RandomGuns() || FlowState_RandomGunsEverydie())
     {
         file.randomprimary = RandomIntRange( 0, 18 )
         file.randomsecondary = RandomIntRange( 0, 6 )
