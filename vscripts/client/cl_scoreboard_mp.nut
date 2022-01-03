@@ -92,6 +92,10 @@ void function ClScoreboardMp_Init()
 
 void function ScoreboardFocus( entity player )
 { 
+	if (GAMETYPE_TEXT[ GAMETYPE ] != "custom_tdm")
+	{
+		return
+	}
 	thread ShowScoreboardMP()
 	file.hasFocus = true
 }
@@ -283,7 +287,7 @@ void function ScoreboardFadeIn()
 	foreach ( elem in file.scoreboardElems )
 	{
 		RuiSetGameTime( Hud_GetRui( elem ), "fadeOutStartTime", RUI_BADGAMETIME )
-		RuiSetGameTime( Hud_GetRui( elem ), "fadeInStartTime", Time() )
+		RuiSetGameTime( Hud_GetRui( elem ), "fadeInStartTime", RUI_BADGAMETIME )
 	}
 
 	if ( file.scoreboardBg != null )
@@ -319,10 +323,6 @@ void function ShowScoreboardMP()
 	file.scoreboardOverlays = CreateScoreboardOverlays()
 
 	int myTeam = localPlayer.GetTeam()
-	if ( myTeam == TEAM_SPECTATOR ) //To handle demos
-	{
-		myTeam = GetDefaultNonSpectatorTeam()
-	}
 
 	array<int> enemyTeams = GetAllEnemyTeams( myTeam )
 
@@ -341,15 +341,8 @@ void function ShowScoreboardMP()
 	int numPlayersOnATeam = GetNumPlayersToDisplayAsATeam()
 	int totalTeamLogoOffset
 
-	if ( UseOnlyMyTeamScoreboard() || UseSingleTeamScoreboard() )
-	{
-		totalTeamLogoOffset = SCOREBOARD_TEAM_LOGO_OFFSET
-		numTeams = 1
-	}
-	else
-	{
-		totalTeamLogoOffset = SCOREBOARD_TEAM_LOGO_OFFSET * numTeams
-	}
+	totalTeamLogoOffset = SCOREBOARD_TEAM_LOGO_OFFSET
+	numTeams = 1
 
 	int teamHeight = SCOREBOARD_TEAM_LOGO_HEIGHT + SCOREBOARD_PLAYER_ROW_OFFSET + ( SCOREBOARD_PLAYER_ROW_HEIGHT + SCOREBOARD_PLAYER_ROW_SPACING ) * numPlayersOnATeam - SCOREBOARD_PLAYER_ROW_SPACING
 	int scoreboardHeight = SCOREBOARD_TITLE_HEIGHT + SCOREBOARD_SUBTITLE_HEIGHT + ( teamHeight * numTeams ) + totalTeamLogoOffset  + SCOREBOARD_FOOTER_HEIGHT
@@ -385,6 +378,8 @@ void function ShowScoreboardMP()
 	IntFromEntityCompare compareFunc = GetScoreboardCompareFunc()
 
 	file.scoreboard.Show()
+
+	//WHY THE FUCK DID THIS BREAK THE SCOREBOARD - AyeZeeBB
 	ScoreboardFadeIn()
 
 	int maxPlayerDisplaySlots = GetNumPlayersToDisplayAsATeam()
@@ -644,22 +639,34 @@ void function UpdateScoreboardForGamemode( entity player, var rowRui, var scoreH
 	{
 		case 4:
 			playerScore4Header = headers[ 3 ]
-			playerScore4 = player.GetPlayerGameStat( playerGameStats[ 3 ] )
+			if (IsValid( player ))
+			{
+				playerScore4 = player.GetPlayerGameStat( playerGameStats[ 3 ] )
+			}
 			playerScore4NumDigits = numDigits[ 3 ]
 
 		case 3:
 			playerScore3Header = headers[ 2 ]
-			playerScore3 = player.GetPlayerGameStat( playerGameStats[ 2 ] )
+			if (IsValid( player ))
+			{
+				playerScore3 = player.GetPlayerGameStat( playerGameStats[ 2 ] )
+			}
 			playerScore3NumDigits = numDigits[ 2 ]
 
 		case 2:
 			playerScore2Header = headers[ 1 ]
-			playerScore2 = player.GetPlayerNetInt( "assists" )
+			if (IsValid( player ))
+			{
+				playerScore2 = player.GetPlayerNetInt( "assists" )
+			}
 			playerScore2NumDigits = numDigits[ 1 ]
 
 		case 1:
 			playerScore1Header = headers[ 0 ]
-			playerScore1 = player.GetPlayerNetInt( "kills" )
+			if (IsValid( player ))
+			{
+				playerScore1 = player.GetPlayerNetInt( "kills" )
+			}
 			playerScore1NumDigits = numDigits[ 0 ]
 	}
 
@@ -711,8 +718,6 @@ void function HideScoreboardMP()
 	entity localPlayer = GetLocalClientPlayer()
 	int myTeam = localPlayer.GetTeam()
 	int enemyTeam = GetEnemyScoreboardTeam()
-
-	Signal( clGlobal.signalDummy, "OnHideScoreboard" )
 }
 
 bool function ScoreboardInputMP( int key )
