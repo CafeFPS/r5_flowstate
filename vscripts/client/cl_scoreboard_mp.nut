@@ -323,10 +323,6 @@ void function ShowScoreboardMP()
 	file.scoreboardOverlays = CreateScoreboardOverlays()
 
 	int myTeam = localPlayer.GetTeam()
-	if ( myTeam == TEAM_SPECTATOR ) //To handle demos
-	{
-		myTeam = GetDefaultNonSpectatorTeam()
-	}
 
 	array<int> enemyTeams = GetAllEnemyTeams( myTeam )
 
@@ -345,15 +341,8 @@ void function ShowScoreboardMP()
 	int numPlayersOnATeam = GetNumPlayersToDisplayAsATeam()
 	int totalTeamLogoOffset
 
-	if ( UseOnlyMyTeamScoreboard() || UseSingleTeamScoreboard() )
-	{
-		totalTeamLogoOffset = SCOREBOARD_TEAM_LOGO_OFFSET
-		numTeams = 1
-	}
-	else
-	{
-		totalTeamLogoOffset = SCOREBOARD_TEAM_LOGO_OFFSET * numTeams
-	}
+	totalTeamLogoOffset = SCOREBOARD_TEAM_LOGO_OFFSET
+	numTeams = 1
 
 	int teamHeight = SCOREBOARD_TEAM_LOGO_HEIGHT + SCOREBOARD_PLAYER_ROW_OFFSET + ( SCOREBOARD_PLAYER_ROW_HEIGHT + SCOREBOARD_PLAYER_ROW_SPACING ) * numPlayersOnATeam - SCOREBOARD_PLAYER_ROW_SPACING
 	int scoreboardHeight = SCOREBOARD_TITLE_HEIGHT + SCOREBOARD_SUBTITLE_HEIGHT + ( teamHeight * numTeams ) + totalTeamLogoOffset  + SCOREBOARD_FOOTER_HEIGHT
@@ -729,8 +718,6 @@ void function HideScoreboardMP()
 	entity localPlayer = GetLocalClientPlayer()
 	int myTeam = localPlayer.GetTeam()
 	int enemyTeam = GetEnemyScoreboardTeam()
-
-	Signal( clGlobal.signalDummy, "OnHideScoreboard" )
 }
 
 bool function ScoreboardInputMP( int key )
