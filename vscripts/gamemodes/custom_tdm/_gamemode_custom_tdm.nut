@@ -399,10 +399,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-	if (FlowState_RandomGunsEverydie())
-			{		
-	CreateSurvivalDeathBoxForPlayer(victim, attacker, damageInfo)
-			}
 	entity champion = file.previousChampion
 	entity challenger = file.previousChallenger
 	entity killeader = GetBestPlayer()
