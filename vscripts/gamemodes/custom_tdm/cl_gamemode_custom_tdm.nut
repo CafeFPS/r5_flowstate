@@ -7,6 +7,8 @@ global function ServerCallback_TDM_PlayerKilled
 
 global function Cl_RegisterLocation
 
+bool isFuncRegister = false
+
 struct {
 
     LocationSettings &selectedLocation
@@ -19,6 +21,7 @@ struct {
 
 void function Cl_CustomTDM_Init()
 {
+thread ChatEvent_Handler()
 }
 
 void function Cl_RegisterLocation(LocationSettings locationSettings)
@@ -26,6 +29,28 @@ void function Cl_RegisterLocation(LocationSettings locationSettings)
     file.locationSettings.append(locationSettings)
 }
 
+void function ChatEvent_Handler()
+{
+	while(true)
+	{
+		if(isChatShow && !isFuncRegister)
+		{
+			RegisterButtonPressedCallback(KEY_ENTER, SendChat);
+			isFuncRegister = true
+		}
+		else if(!isChatShow && isFuncRegister)
+		{
+			DeregisterButtonPressedCallback(KEY_ENTER, SendChat)
+			isFuncRegister = false
+		}
+		wait 0.5
+	}
+	
+}
+void function SendChat(var button)
+{
+	GetLocalClientPlayer().ClientCommand(chatText)
+}
 
 void function MakeScoreRUI()
 {
