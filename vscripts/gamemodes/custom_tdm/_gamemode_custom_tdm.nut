@@ -1034,11 +1034,76 @@ void function CreateShipRoomFallTriggers()
 	}
 }
 
+array<ConsumableInventoryItem> function FlowStateGetAllDroppableItems( entity player )
+{
+	array<ConsumableInventoryItem> final = []
+
+	// Consumable inventory
+	final.extend( SURVIVAL_GetPlayerInventory( player ) )
+
+	// Weapon related items
+	foreach ( weapon in SURVIVAL_GetPrimaryWeapons( player ) )
+	{
+		LootData data = SURVIVAL_GetLootDataFromWeapon( weapon )
+		if ( data.ref == "" )
+			continue
+
+		// Add the weapon
+		ConsumableInventoryItem item
+		
+		item.type = data.index
+		item.count = weapon.GetWeaponPrimaryClipCount()
+
+		final.append( item )
+
+		foreach ( esRef, mod in GetAllWeaponAttachments( weapon ) )
+		{
+			if ( !SURVIVAL_Loot_IsRefValid( mod ) )
+				continue
+			
+			if ( data.baseMods.contains( mod ) )
+				continue
+
+			LootData attachmentData = SURVIVAL_Loot_GetLootDataByRef( mod )
+
+			// Add the attachment
+			ConsumableInventoryItem attachmentItem
+			
+			attachmentItem.type = attachmentData.index
+			attachmentItem.count = 1
+
+			final.append( attachmentItem )
+		}
+	}
+
+	// Non-weapon equipment slots
+	foreach ( string ref, EquipmentSlot es in EquipmentSlot_GetAllEquipmentSlots() )
+	{
+		if ( EquipmentSlot_IsMainWeaponSlot( ref ) || EquipmentSlot_IsAttachmentSlot( ref ) )
+			continue
+
+		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, ref )
+		if ( data.ref == "" )
+			continue
+
+		// Add the equipped loot
+		ConsumableInventoryItem equippedItem
+
+		equippedItem.type = data.index
+		equippedItem.count = 1
+
+		final.append( equippedItem )
+	}
+
+	return final
+}
+
+
 void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, var damageInfo )
 {
 	entity deathBox = FlowState_CreateDeathBox( victim, true )
 
-	foreach ( invItem in GetAllDroppableItems( victim ) )
+	foreach ( invItem in FlowStateGetAllDroppableItems( victim ) )
 	{
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
 
