@@ -372,7 +372,7 @@ void function _OnPlayerConnected(entity player)
     if(!IsAlive(player))
     {
         _HandleRespawn(player)
-			ClearInvincible(player)
+		ClearInvincible(player)
     }
 	string nextlocation = file.selectedLocation.name
 		Message(player,"WELCOME TO FLOW STATE", helpMessage(), 15)
@@ -397,11 +397,23 @@ void function _OnPlayerConnected(entity player)
     case eGameState.Playing:
 	    if(IsValidPlayer(player))
         {
-		player.UnfreezeControlsOnServer();
-					if(FlowState_RandomGunsEverydie()){
-			UpgradeShields(player, true)
+			player.UnfreezeControlsOnServer();
+
+			if(FlowState_RandomGunsEverydie()){
+				UpgradeShields(player, true)
 			}
-        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+
+			if(GetCurrentPlaylistVarBool("droppodsenabled", false ) == false)
+			{
+				printl("player spawning in droppod")
+				array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+				array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
+				int spawni = RandomIntRange(0, 23)
+
+				thread AirDropFireteam( shuffledspawnes[spawni] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
+			}
+
+        	Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		}
         break
     default:
@@ -1459,7 +1471,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	    }
     }
 
-	wait 600
+	wait 10
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 	{
