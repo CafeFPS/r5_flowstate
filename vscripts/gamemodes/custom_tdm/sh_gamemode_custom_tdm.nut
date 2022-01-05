@@ -107,8 +107,22 @@ void function Sh_CustomTDM_Init()
             )
         )
         break
-
-case "mp_rr_canyonlands_mu1":
+    case "mp_rr_ashs_redemption":
+        Shared_RegisterLocation(
+            NewLocationSettings(
+                "Ash's Redemption",
+                [
+                    NewLocPair(<-22104, 6009, -26929>, <0, 0, 0>),
+					NewLocPair(<-21372, 3709, -26955>, <-5, 55, 0>),
+                    NewLocPair(<-19356, 6397, -26861>, <-4, -166, 0>),
+					NewLocPair(<-20713, 7409, -26742>, <-4, -114, 0>)
+                ],
+                <0, 0, 1000>
+            )
+        )
+        break
+		
+	case "mp_rr_canyonlands_mu1":
 		Shared_RegisterLocation(
             NewLocationSettings(
                 "Hillside Outspot",
