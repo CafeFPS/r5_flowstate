@@ -1393,7 +1393,7 @@ foreach(player in GetPlayerArray())
     try {
 		if(IsValid(player))
         {
-			//player.SetThirdPersonShoulderModeOn()
+			player.SetThirdPersonShoulderModeOn()
 			_HandleRespawn(player)
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
