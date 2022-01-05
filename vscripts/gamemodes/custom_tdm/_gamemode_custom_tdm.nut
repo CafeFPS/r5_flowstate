@@ -1605,12 +1605,13 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 
 					int rndnum = RandomIntRange(0, maxspawns)
 					
-					if (!FlowState_DummyOverride()) {
-					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) }
-					else {
-					DeployAndEnableWeapons(player)
-					ClearInvincible(player)
-					}
+					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) )
+					// if (!FlowState_DummyOverride()) {
+					// thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) }
+					// else {
+					// DeployAndEnableWeapons(player)
+					// ClearInvincible(player)
+					// }
 	
 					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 
