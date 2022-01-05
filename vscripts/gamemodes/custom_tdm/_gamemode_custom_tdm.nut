@@ -213,6 +213,9 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
 	AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
 
+	AddClientCommandCallback("droppodtesting", ClientCommand_DropPodTesting)
+
+
 	if(FlowState_AllChat()){
 		AddClientCommandCallback("say", ClientCommand_ClientMsg)
 		//3 slots ingame chat temp-bans. Usage: sayban 1 ColombiaFPS. sayunban 1
@@ -1234,7 +1237,7 @@ foreach(player in GetPlayerArray())
     try {
 		if(IsValid(player))
         {
-			player.SetThirdPersonShoulderModeOn()
+			//player.SetThirdPersonShoulderModeOn()
 			_HandleRespawn(player)
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
@@ -1295,7 +1298,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	    }
     }
 
-	wait 10
+	wait 600
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 	{
@@ -1353,6 +1356,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 				vector shipspot = ShipSpot()
 				player.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
 				player.SetParent(file.supercooldropship)
+				thread PlayAnim( player, "Classic_MP_flyin_exit_playerA_idle" )
 			}
 		}
 	}
@@ -2373,7 +2377,15 @@ void function ResetPlayerStats(entity player)
 // ██      ██      ██ ██      ██  ██ ██    ██        ██      ██    ██ ██  ██  ██ ██  ██  ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██      ██
 //  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████
 
+bool function ClientCommand_DropPodTesting(entity player, array<string> args)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	thread AirDropFireteam( player.GetOrigin() + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
 
+	return true
+}
 
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 //Thanks Zee#0134
