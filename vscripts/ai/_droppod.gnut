@@ -15,6 +15,7 @@ global const DP_COLL_MODEL = $"mdl/vehicle/droppod_loot/droppod_loot_animated.rm
 global const int AIR_DROP_BAD_PLACE_RADIUS = 1
 const FAR_SPAWN_FX = $"P_ar_loot_drop_point_far"
 global function AirdropItems
+global function AirDropFireteam
 
 struct
 {
@@ -53,10 +54,28 @@ void function AirdropItems( vector origin, vector angles, array<string> contents
 
 }
 
+void function AirDropFireteam( vector origin, vector angles, string animationName, int skin, string sourceWeaponClassName, entity player )
+{
+	entity dropPod = CreateDropPod( origin, angles, sourceWeaponClassName )
+	dropPod.SetSkin( skin )
+    
+    entity threatProxy = CreateDropPodThreatIndicator(origin, angles)
+
+	waitthread LaunchAnimDropPod2( dropPod, animationName, OriginToGround( origin ), angles, player )
+
+	//thread WaitForDropFX(dropPod, animationName, OriginToGround( origin ), angles) 
+
+    if(IsValid(threatProxy))
+        threatProxy.Destroy()
+
+	InitDropPod( dropPod )
+
+}
+
 void function WaitForDropFX(entity dropPod, string animationName, vector origin, vector angles)
 { 
-    float scaledTime = dropPod.GetSequenceDuration(animationName) * 0.95
-    wait scaledTime
+    //float scaledTime = dropPod.GetSequenceDuration(animationName) * 0.95
+   // wait scaledTime
     DropPodOnImpactFXAndShake(dropPod, origin, angles)
 }
 
@@ -373,6 +392,67 @@ function LaunchAnimDropPod( entity dropPod, string anim, vector targetOrigin, ve
 	WaitFrame()
 }
 
+function LaunchAnimDropPod2( entity dropPod, string anim, vector targetOrigin, vector targetAngles, entity player )
+{
+	dropPod.EndSignal( "OnDestroy" )
+
+	dropPod.s.launchAnim <- anim
+
+	int team = dropPod.GetTeam()
+
+	entity ref = CreateOwnedScriptMover( dropPod )
+	dropPod.SetParent(ref)
+    //ref.SetOrigin( targetOrigin )
+    ref.SetAngles( targetAngles )
+
+	EmitSoundOnEntity( dropPod, "spectre_drop_pod" )
+	player.SetParent(dropPod)
+	player.SetOrigin(dropPod.GetOrigin())
+	ScreenFadeFromBlack(player, 3, 3)
+	ref.Hide()
+
+	wait 3
+
+	ref.Show()
+
+	thread __WarpInDropPodEffectShared( dropPod.GetOrigin(), <0,0,90>, "droppod_warpin", 0.0 )
+
+	ref.MoveTo( targetOrigin, 2, 0, 0 )
+
+	OnThreadEnd(
+		function () : ( dropPod, ref )
+		{
+			if ( IsValid( dropPod ) )
+			{
+				dropPod.ClearParent()
+			}
+
+			if ( IsValid( ref ) )
+				ref.Kill_Deprecated_UseDestroyInstead()
+		}
+	)
+
+	local e = {}
+	e.targetOrigin <- targetOrigin
+	e.targetAngles <- targetAngles
+
+	FirstPersonSequenceStruct sequence
+	sequence.thirdPersonAnim 		= "Aim_body"
+
+	sequence.blendTime 			= 0.0
+	sequence.attachment 		= "ref"
+	sequence.useAnimatedRefAttachment		= true
+	//DrawArrow( ref.GetOrigin(), ref.GetAngles(), 5, 100 )
+	//waitthread FirstPersonSequence( sequence, player, ref )
+	wait 2
+	thread __WarpInDropPodEffectShared( dropPod.GetOrigin() + <0,0,100>, <90,0,0>, "droppod_warpin", 0.0 )
+	//CreateShake( player.GetOrigin(), 10, 105, 1.25, 768 )
+	wait 1
+	player.ClearParent()
+
+	dropPod.Destroy()
+}
+
 function CheckPlayersIntersectingPod( pod, targetOrigin )
 {
 	array<entity> playerList = GetPlayerArray()
@@ -436,11 +516,12 @@ entity function CreateDropPod( vector ornull origin = null, vector ornull angles
         SetTargetName(prop_dynamic, CARE_PACKAGE_TARGETNAME)
 	}
 
-	prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
+	//prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
 
 	prop_dynamic.kv.contents = int( prop_dynamic.kv.contents ) & ~CONTENTS_TITANCLIP
 	prop_dynamic.kv.fadedist = -1
 	prop_dynamic.kv.renderamt = 255
+	prop_dynamic.kv.rendermode = 0
 	prop_dynamic.kv.rendercolor = "255 255 255"
 	prop_dynamic.kv.solid = 6 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
 	if ( origin )
