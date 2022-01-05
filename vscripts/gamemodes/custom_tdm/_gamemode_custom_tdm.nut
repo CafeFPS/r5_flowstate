@@ -10,6 +10,10 @@
 global function _CustomTDM_Init
 global function _RegisterLocation
 global function CreateAnimatedLegend
+string WHITE_SHIELD = "armor_pickup_lv1"
+string BLUE_SHIELD = "armor_pickup_lv2"
+string PURPLE_SHIELD = "armor_pickup_lv3"
+
 table playersInfo
 const int chatLines = 3
 int currentChatLine = 0
@@ -378,6 +382,9 @@ void function _OnPlayerConnected(entity player)
         {
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
+						if(FlowState_RandomGunsEverydie()){
+			UpgradeShields(player, true)
+			}
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
 		}
@@ -389,6 +396,9 @@ void function _OnPlayerConnected(entity player)
 	    if(IsValidPlayer(player))
         {
 		player.UnfreezeControlsOnServer();
+					if(FlowState_RandomGunsEverydie()){
+			UpgradeShields(player, true)
+			}
         Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		}
         break
@@ -451,6 +461,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			victim.p.storedWeapons = StoreWeapons(victim)
 			int reservedTime = 2
             wait reservedTime
+			if(FlowState_RandomGunsEverydie()){
+			UpgradeShields(victim, true)
+			}
 			try{
 			if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker ))
             {
@@ -498,7 +511,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			attacker.SetPlayerNetInt( "kills", invscore )
 			
 			//Heal
+				if(FlowState_RandomGunsEverydie()){
+			PlayerRestoreHPFIESTA(attacker, 100)
+			UpgradeShields(attacker, false)
+			} else {
 			PlayerRestoreHP(attacker, 100, Equipment_GetDefaultShieldHP())
+			}
 			
 			//Autoreload on kill without animation //By CaféDeColombiaFPS
             WpnAutoReloadOnKill(attacker)
@@ -596,7 +614,12 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 	
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 	
+	if(FlowState_RandomGunsEverydie()){
+			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+			PlayerRestoreHPFIESTA(player, 100)
+			} else {
     PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+			}
 
 		}
 		} catch (e1) {}
@@ -622,10 +645,10 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 	
 	if (FlowState_RandomGunsEverydie())
     {
-        file.randomprimary = RandomIntRange( 0, 18 )
-        file.randomsecondary = RandomIntRange( 0, 6 )
+        file.randomprimary = RandomIntRange( 0, 28 )
+        file.randomsecondary = RandomIntRange( 0, 18 )
         file.randomtac = RandomIntRange( 0, 5 )
-        file.randomult = RandomIntRange( 0, 4 )
+        file.randomult = RandomIntRange( 0, 5 )
 		TakeAllWeapons(player)
         GiveRandomPrimaryWeapon(file.randomprimary, player)
         GiveRandomSecondaryWeapon(file.randomsecondary, player)
@@ -735,19 +758,19 @@ void function GiveRandomSecondaryWeaponMetagame(int random, entity player)
     switch(random)
     {
         case 0:
-            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic", "highcal_mag_l3"] )
+            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic", "highcal_mag_l2"] )
             break;
         case 1:
-            player.GiveWeapon( "mp_weapon_energy_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l3"] )
+            player.GiveWeapon( "mp_weapon_energy_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l2"] )
             break;
         case 2:
-            player.GiveWeapon( "mp_weapon_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l3"] )
+            player.GiveWeapon( "mp_weapon_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l2"] )
             break;
         case 3:
             player.GiveWeapon( "mp_weapon_mastiff", WEAPON_INVENTORY_SLOT_PRIMARY_1)
             break;
 		case 4:
-            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic", "highcal_mag_l3"] )
+            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic", "highcal_mag_l1"] )
             break;
     }
 }
@@ -757,25 +780,25 @@ void function GiveRandomPrimaryWeapon(int random, entity player)
     switch(random)
     {
         case 0:
-            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3", "bullets_mag_l3"] )
+            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3", "bullets_mag_l2"] )
             break;
         case 1:
-            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3", "bullets_mag_l3"] )
+            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3", "bullets_mag_l2"] )
             break;
         case 2:
             player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "stock_tactical_l3", "highcal_mag_l3"] )
             break;
         case 3:
-            player.GiveWeapon( "mp_weapon_hemlok", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "stock_tactical_l3", "highcal_mag_l3", "barrel_stabilizer_l4_flash_hider"] )
+            player.GiveWeapon( "mp_weapon_hemlok", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "stock_tactical_l3", "highcal_mag_l3", "barrel_stabilizer_l4_flash_hider"] )
             break;
         case 4:
             player.GiveWeapon( "mp_weapon_pdw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "stock_tactical_l3", "highcal_mag_l3"] )
             break;
 		case 5:
-			player.GiveWeapon( "mp_weapon_lmg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "highcal_mag_l1", "barrel_stabilizer_l1", "stock_tactical_l1" ] )
+			player.GiveWeapon( "mp_weapon_lmg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "highcal_mag_l3", "barrel_stabilizer_l3", "stock_tactical_l3" ] )
             break; 
 		case 6:
-            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3", "bullets_mag_l3"] )
+            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "stock_tactical_l1", "bullets_mag_l2"] )
             break;
 		case 7:
             player.GiveWeapon( "mp_weapon_energy_ar", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "energy_mag_l3", "stock_tactical_l3", "hopup_turbocharger"] )
@@ -796,23 +819,54 @@ void function GiveRandomPrimaryWeapon(int random, entity player)
             player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l1"] )
             break;
 		case 13:
-            player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_ranged_hcog", "stock_tactical_l1", "highcal_mag_l2"] )
+            player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["stock_tactical_l1", "highcal_mag_l2"] )
             break;
 		case 14:
-            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_threat", "bullets_mag_l2", "barrel_stabilizer_l2", "stock_tactical_l2"] )
+            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_threat", "bullets_mag_l1", "barrel_stabilizer_l3", "stock_tactical_l1"] )
             break;
 		case 15:
             player.GiveWeapon( "mp_weapon_dmr", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "highcal_mag_l2", "barrel_stabilizer_l2", "stock_sniper_l3"] )
             break;
 		case 16:
-            player.GiveWeapon( "mp_weapon_pdw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "stock_tactical_l1", "highcal_mag_l1"] )
+            player.GiveWeapon( "mp_weapon_pdw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["stock_tactical_l1", "highcal_mag_l1"] )
             break;
 		case 17:
-            player.GiveWeapon( "mp_weapon_esaw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "energy_mag_l3", "barrel_stabilizer_l4_flash_hider"] )
+            player.GiveWeapon( "mp_weapon_esaw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "energy_mag_l1", "barrel_stabilizer_l4_flash_hider"] )
             break;
 		case 18:
             player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "energy_mag_l1", "barrel_stabilizer_l2"] )
             break;
+		case 19:
+            player.GiveWeapon( "mp_weapon_sniper", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 20:
+            player.GiveWeapon( "mp_weapon_esaw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 21:
+            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 22:
+            player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 23:
+            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 24:
+            player.GiveWeapon( "mp_weapon_dmr", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 25:
+            player.GiveWeapon( "mp_weapon_pdw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;		
+		case 26:
+            player.GiveWeapon( "mp_weapon_energy_ar", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 27:
+            player.GiveWeapon( "mp_weapon_hemlok", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 28:
+            player.GiveWeapon( "mp_weapon_hemlok", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+			
     }
 }
 
@@ -821,25 +875,61 @@ void function GiveRandomSecondaryWeapon(int random, entity player)
     switch(random)
     {
         case 0:
-            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic", "highcal_mag_l3"] )
+            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic", "highcal_mag_l1"] )
             break;
         case 1:
-            player.GiveWeapon( "mp_weapon_energy_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l3"] )
+            player.GiveWeapon( "mp_weapon_energy_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l1"] )
             break;
         case 2:
-            player.GiveWeapon( "mp_weapon_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l3"] )
+            player.GiveWeapon( "mp_weapon_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l1"] )
             break;
         case 3:
             player.GiveWeapon( "mp_weapon_mastiff", WEAPON_INVENTORY_SLOT_PRIMARY_1)
             break;
 		case 4:
-            player.GiveWeapon( "mp_weapon_autopistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic", "bullets_mag_l3", "barrel_stabilizer_l4_flash_hider" ] )
+            player.GiveWeapon( "mp_weapon_autopistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic", "bullets_mag_l1"] )
             break;
 		case 5:
-            player.GiveWeapon( "mp_weapon_shotgun_pistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_cq_hcog_classic" "shotgun_bolt_l3"] )
+            player.GiveWeapon( "mp_weapon_shotgun_pistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["shotgun_bolt_l3"] )
             break;
 		case 6:
-            player.GiveWeapon( "mp_weapon_defender", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_ranged_hcog" "stock_sniper_l2"] )
+            player.GiveWeapon( "mp_weapon_defender", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_ranged_hcog", "stock_sniper_l2"] )
+            break;
+		case 7:
+            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_1)
+            break;
+        case 8:
+            player.GiveWeapon( "mp_weapon_energy_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1)
+            break;
+        case 9:
+            player.GiveWeapon( "mp_weapon_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_1)
+            break;
+        case 10:
+            player.GiveWeapon( "mp_weapon_mastiff", WEAPON_INVENTORY_SLOT_PRIMARY_1)
+            break;
+		case 11:
+            player.GiveWeapon( "mp_weapon_autopistol", WEAPON_INVENTORY_SLOT_PRIMARY_1)
+            break;
+		case 12:
+            player.GiveWeapon( "mp_weapon_shotgun_pistol", WEAPON_INVENTORY_SLOT_PRIMARY_1)
+            break;
+		case 13:
+            player.GiveWeapon( "mp_weapon_defender", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_sniper", "stock_sniper_l2"] )
+            break;
+		case 14:
+            player.GiveWeapon( "mp_weapon_double_take", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["energy_mag_l3"] )
+            break;
+		case 15:
+            player.GiveWeapon( "mp_weapon_g2", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_sniper_l3", "hopup_double_tap"] )
+            break;
+		case 16:
+            player.GiveWeapon( "mp_weapon_g2", WEAPON_INVENTORY_SLOT_PRIMARY_1)
+            break;
+		case 17:
+            player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l2", "hopup_unshielded_dmg"] )
+            break;
+		case 18:
+            player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_1)
             break;
     }
 }
@@ -866,6 +956,7 @@ void function GiveRandomTac(int random, entity player)
 		case 5:
             player.GiveOffhandWeapon("mp_ability_area_sonar_scan", OFFHAND_TACTICAL)
             break;
+			
     }
 }
 
@@ -887,6 +978,9 @@ void function GiveRandomUlt(int random, entity player )
             break;
 		case 4:
             player.GiveOffhandWeapon("mp_ability_hunt_mode", OFFHAND_ULTIMATE)
+            break;
+		case 5:
+            player.GiveOffhandWeapon("mp_weapon_grenade_defensive_bombardment", OFFHAND_ULTIMATE)
             break;
 			
     }
@@ -1168,7 +1262,7 @@ entity function FlowState_CreateDeathBox( entity player, bool hasCard )
 
 void function FlowStateDeathBoxWatcher(entity box)
 {
-	wait 7
+	wait 10
 	box.Destroy()
 }
 
@@ -1190,6 +1284,61 @@ void function FlowStateDeathBoxFakePhysics( entity box )
 	mover.Destroy()
 }
 
+void function PlayerRestoreShieldsFIESTA(entity player, int shields) {
+    if(IsValidPlayer(player) && IsAlive( player ))
+        player.SetShieldHealth(shielddd(shields, 0, player.GetShieldHealthMax()))
+}
+
+void function PlayerRestoreHPFIESTA(entity player, int health) {
+    if(IsValidPlayer(player) && IsAlive( player ))
+        player.SetHealth( health )
+}
+
+int function shielddd(int value, int min, int max) {
+    if(value < min) return min
+    else if (value > max) return max
+    else return value
+
+    unreachable
+}
+
+
+void function UpgradeShields(entity player, bool died) {
+
+    if (!IsValid(player)) return
+
+    //If player to upgrade died, then dont do killstreak upgrade, just reset their shield
+    if (died) {
+        player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+        Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+    } else {
+        player.SetPlayerGameStat( PGS_TITAN_KILLS, player.GetPlayerGameStat( PGS_TITAN_KILLS ) + 1)
+
+        switch (player.GetPlayerGameStat( PGS_TITAN_KILLS )) {
+	    	case 1:
+                Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+                break
+            case 2:
+			     Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+                break
+            case 3:
+				Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+                break
+			case 4:
+				Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+			case 5:
+				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+            break
+            default:
+                Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+                break
+        }
+    }
+
+
+    PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+    PlayerRestoreHPFIESTA(player, 100)
+}
 
  // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
 // ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██
@@ -1216,19 +1365,26 @@ void function VotingPhase()
 {
     DestroyPlayerProps();
     SetGameState(eGameState.MapVoting)
-	if (FlowState_RandomGuns() || FlowState_RandomGunsEverydie())
+	if (FlowState_RandomGuns() )
     {
-        file.randomprimary = RandomIntRange( 0, 18 )
+        file.randomprimary = RandomIntRange( 0, 15 )
         file.randomsecondary = RandomIntRange( 0, 6 )
         file.randomtac = RandomIntRange( 0, 5 )
-        file.randomult = RandomIntRange( 0, 4 )
+        file.randomult = RandomIntRange( 0, 5 )
     } else if (FlowState_RandomGunsMetagame())
 	{
 		file.randomprimary = RandomIntRange( 0, 3 )
         file.randomsecondary = RandomIntRange( 0, 4 )
         file.randomtac = RandomIntRange( 0, 5 )
         file.randomult = RandomIntRange( 0, 4 )
+	} else if (FlowState_RandomGunsEverydie())
+	{
+		file.randomprimary = RandomIntRange( 0, 28 )
+        file.randomsecondary = RandomIntRange( 0, 18 )
+        file.randomtac = RandomIntRange( 0, 5 )
+        file.randomult = RandomIntRange( 0, 5 )
 	}
+	
 wait 1
 
 
@@ -1343,7 +1499,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	file.isshipalive = true
 	thread CreateDropShipTriggerArea()
 
-	wait 10
+	wait 5
 
 	foreach(player in GetPlayerArray())
     {
@@ -1448,9 +1604,14 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 					ScreenFadeFromBlack( player, 1.0, 1.0 )
 
 					int rndnum = RandomIntRange(0, maxspawns)
-
-					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) )
-
+					
+					if (!FlowState_DummyOverride()) {
+					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) }
+					else {
+					DeployAndEnableWeapons(player)
+					ClearInvincible(player)
+					}
+	
 					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 
 					// reload weapons when tp'ing to next location
@@ -1460,7 +1621,6 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 					try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
     			}
 		}
-
 		spawni++
 	}
 	else
@@ -1786,6 +1946,10 @@ foreach(player in GetPlayerArray())
 				player.SetPlayerNetInt("kills", 0) //Reset for kills
 	    		player.SetPlayerNetInt("assists", 0) //Reset for deaths
 			}
+			if(FlowState_RandomGunsEverydie()){
+			UpgradeShields(player, true)
+			}
+			
 	}
 
 try {file.supercooldropship.Destroy()}catch(e69){}
@@ -1891,10 +2055,18 @@ foreach(player in GetPlayerArray())
 try{
 	   if(IsValid(player) && IsAlive(player))
         {
+			if(FlowState_RandomGunsEverydie()){
+			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+			PlayerRestoreHPFIESTA(player, 100)
+			player.SetThirdPersonShoulderModeOn()
+			HolsterAndDisableWeapons( player )
+			} else {
 			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
-	}} catch (e) {}
+			}
+	}
+	} catch (e) {}
 	}
 foreach(player in GetPlayerArray())
     {
@@ -2474,7 +2646,14 @@ bool function ClientCommand_Help(entity player, array<string> args)
 {
 	if(IsValid(player)) {
 		try{
-		Message(player, "WELCOME TO FLOW STATE DM", helpMessage(), 10)
+		if(FlowState_RandomGunsEverydie())
+		{
+		Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
+		else
+		{
+		Message(player, "WELCOME TO FLOW STATE: FFA", helpMessage(), 10)
+
+		}
 		}catch(e) {}
 	}
 	return true
