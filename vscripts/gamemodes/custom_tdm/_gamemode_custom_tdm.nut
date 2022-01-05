@@ -1386,7 +1386,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
         if(IsValidPlayer(player))
         {
 		    ScreenFadeToBlackForever(player, 1.7)
-			//Remote_CallFunction_Replay( player, "ServerCallback_PlayScreenFXWarpJump" )
+			Remote_CallFunction_Replay( player, "ServerCallback_PlayScreenFXWarpJump" )
 	    }
     }
     wait 3
@@ -1418,6 +1418,10 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 		{
     		maxspawns++
 		}
+
+		array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+		array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
+		int spawni = 0
 
 	//true == FFA
 	if (GetCurrentPlaylistVarBool("flowstateffaortdm", false ) == true)
@@ -1452,6 +1456,8 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 					try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
     			}
 		}
+
+		spawni++
 	}
 	else
 	{
@@ -2785,6 +2791,26 @@ array<entity> function shuffleArray(array<entity> arr)
 		arr[i] = arr[j]
 		arr[j] = tmp
 		}
+
+	return arr
+}
+
+array<vector> function shuffleDropShipArray(array<vector> arr, int ammount)
+//By AyeZeeBB#6969
+// michae\l/#1125's wasnt working for this
+{
+	int i;
+	int j;
+	int b;
+	vector tmp;
+
+	for (i = ammount; i > 0; i--) {
+		j = RandomIntRangeInclusive(0, arr.len() - 1)
+		b = RandomIntRangeInclusive(0, arr.len() - 1)
+		tmp = arr[b]
+		arr[b] = arr[j]
+		arr[j] = tmp
+	}
 
 	return arr
 }
