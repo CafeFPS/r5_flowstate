@@ -1204,10 +1204,13 @@ void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, 
 
 	foreach ( invItem in FlowStateGetAllDroppableItems( victim ) )
 	{
+		if( invItem.type == 53 || invItem.type == 54 || invItem.type == 55 || invItem.type == 56 ) { //don't add shields to deathboxes, debug this wasnt ez Colombia
+		continue}
+		else{
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
-
 		entity loot = SpawnGenericLoot( data.ref, deathBox.GetOrigin(), deathBox.GetAngles(), invItem.count )
 		AddToDeathBox( loot, deathBox )
+		}
 	}
 
 	UpdateDeathBoxHighlight( deathBox )
@@ -1264,7 +1267,7 @@ entity function FlowState_CreateDeathBox( entity player, bool hasCard )
 
 void function FlowStateDeathBoxWatcher(entity box)
 {
-	wait 10
+	wait 20
 	box.Destroy()
 }
 
