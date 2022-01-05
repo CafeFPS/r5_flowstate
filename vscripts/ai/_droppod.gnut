@@ -446,6 +446,7 @@ function LaunchAnimDropPod2( entity dropPod, string anim, vector targetOrigin, v
 	//waitthread FirstPersonSequence( sequence, player, ref )
 	wait 2
 	thread __WarpInDropPodEffectShared( dropPod.GetOrigin() + <0,0,100>, <90,0,0>, "droppod_warpin", 0.0 )
+
 	//CreateShake( player.GetOrigin(), 10, 105, 1.25, 768 )
 	wait 1
 	player.ClearParent()
