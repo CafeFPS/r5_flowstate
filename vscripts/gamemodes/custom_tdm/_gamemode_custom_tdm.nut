@@ -1210,7 +1210,7 @@ void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, 
 
 	foreach ( invItem in FlowStateGetAllDroppableItems( victim ) )
 	{
-		if( invItem.type == 53 || invItem.type == 54 || invItem.type == 55 || invItem.type == 56 ) { //don't add shields to deathboxes, debug this wasnt ez Colombia
+		if( invItem.type == 44 || invItem.type == 45 || invItem.type == 46 || invItem.type == 47 || invItem.type == 48 || invItem.type == 53 || invItem.type == 54 || invItem.type == 55 || invItem.type == 56 ) { //don't add shields and heal items to deathboxes, debug this wasnt ez Colombia
 		continue}
 		else{
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
