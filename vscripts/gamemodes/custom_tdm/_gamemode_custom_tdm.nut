@@ -670,7 +670,7 @@ void function _HandleRespawn(entity player, bool forceGive = false)
     {
         file.randomprimary = RandomIntRange( 0, 23 )
         file.randomsecondary = RandomIntRange( 0, 18 )
-        file.randomtac = RandomIntRange( 0, 5 )
+        file.randomtac = RandomIntRange( 0, 6 )
         file.randomult = RandomIntRange( 0, 5 )
 		TakeAllWeapons(player)
         GiveRandomPrimaryWeapon(file.randomprimary, player)
@@ -925,7 +925,7 @@ void function GiveRandomSecondaryWeapon(int random, entity player)
             player.GiveWeapon( "mp_weapon_defender", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["optic_sniper", "stock_sniper_l2"] )
             break;
 		case 14:
-            player.GiveWeapon( "mp_weapon_double_take", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["energy_mag_l3"] )
+            player.GiveWeapon( "mp_weapon_doubletake", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["energy_mag_l3"] )
             break;
 		case 15:
             player.GiveWeapon( "mp_weapon_g2", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_sniper_l3", "hopup_double_tap"] )
@@ -963,6 +963,9 @@ void function GiveRandomTac(int random, entity player)
             break;
 		case 5:
             player.GiveOffhandWeapon("mp_ability_area_sonar_scan", OFFHAND_TACTICAL)
+            break;
+		case 6:
+            player.GiveOffhandWeapon("mp_ability_holopilot", OFFHAND_TACTICAL)
             break;
 			
     }
@@ -1210,7 +1213,7 @@ void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, 
 
 	foreach ( invItem in FlowStateGetAllDroppableItems( victim ) )
 	{
-		if( invItem.type == 44 || invItem.type == 45 || invItem.type == 46 || invItem.type == 47 || invItem.type == 48 || invItem.type == 53 || invItem.type == 54 || invItem.type == 55 || invItem.type == 56 ) { //don't add shields and heal items to deathboxes, debug this wasnt ez Colombia
+		if( invItem.type == 44 || invItem.type == 45 || invItem.type == 46 || invItem.type == 47 || invItem.type == 48 || invItem.type == 53 || invItem.type == 54 || invItem.type == 55 || invItem.type == 56 ) { //don't add shields to deathboxes, debug this wasnt ez :p Colombia
 		continue}
 		else{
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( invItem.type )
@@ -1394,11 +1397,122 @@ void function UpgradeShields(entity player, bool died) {
 void function GiveFlowstateOvershield( entity player )
 {
 	#if SERVER
-	player.SetShieldHealthMax( 130 )
-	player.SetShieldHealth( 130 )
+	player.SetShieldHealthMax( 135 )
+	player.SetShieldHealth( 135 )
 	//DelayShieldDecayTime( soul, 1 )
 	#endif
 }
+
+
+#if SERVER
+float groundmedkit_respawn_time = 240
+float groundmedkit_heal_time = 0
+array<entity> fx_children
+
+void function CreateGroundMedKit(vector pos)
+{
+////////////////////////////////////////////////////////
+////// MADE BY Zer0Bytes#4428
+////////////////////////////////////////////////////////
+
+    entity medkit_model = CreateFRProp( $"mdl/weapons_r5/loot/_master/w_loot_cha_shield_upgrade_body_v1.rmdl", pos + <0,0,10> , ZERO_VECTOR, true, 50000)
+    medkit_model.SetModelScale( 3 )
+    medkit_model.kv.renderamt = 255
+    medkit_model.kv.rendermode = 3
+    medkit_model.kv.rendercolor = "19 207 69 255"
+    medkit_model.kv.solid = 0
+
+    medkit_model.NotSolid()
+    thread RotateFRLoop(medkit_model, 7.0 ,false)
+
+    for(int i = 0; i < 4; i++)
+    {
+        entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_LL_med_drone_jet_ctr_loop" ), medkit_model.GetOrigin(), <0,0 +  i * 90 ,0>)
+        trailFXHandle.SetParent(medkit_model)
+        fx_children.append(trailFXHandle)
+    }
+    EmitSoundOnEntity( medkit_model, $"survival_loot_pickup_Medkit_3P" )
+    wait 2
+    StopSoundOnEntity( medkit_model, $"survival_loot_pickup_Medkit_3P" )
+
+    entity medkit_proxy = CreateEntity( "trigger_cylinder" )
+    medkit_proxy.SetRadius( 50 );medkit_proxy.SetAboveHeight( 60 );medkit_proxy.SetBelowHeight( 0 );medkit_proxy.SetOrigin( pos )
+    DispatchSpawn( medkit_proxy )
+    medkit_proxy.SetParent(medkit_model)
+    thread MedKitHeal(medkit_proxy,medkit_model,pos)
+}
+
+void function MedKitHeal( entity medkit_proxy , entity medkit_model,vector pos)
+{ bool active = true
+    while (active)
+    {
+        if(IsValid(medkit_proxy))
+        {
+            foreach(player in GetPlayerArray())
+            {
+                if(medkit_proxy.IsTouching(player))
+                {
+                    StatusEffect_AddTimed( player, eStatusEffect.drone_healing, 1 , 3, 5 )
+
+                    EmitSoundOnEntityOnlyToPlayer( player, player, "Lifeline_Drone_Healing_1P" )
+                    medkit_model.kv.rendercolor = "255 255 255 30"
+
+                    wait groundmedkit_heal_time
+					Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+					GiveFlowstateOvershield(player)
+					Message(player,"YOU HAVE EXTRA SHIELD!", "", 4, "")
+
+                    StopSoundOnEntity( player, "Lifeline_Drone_Healing_1P" )
+                    thread OnMedkitPickup(medkit_proxy,medkit_model,pos)
+					wait 1
+                    for (int i = 0; i < fx_children.len(); i++)
+                    {
+                        try {fx_children[i].Destroy()}catch(e69){}
+                    }
+                    fx_children = []
+
+                   try {medkit_proxy.Destroy()}catch(e69){}
+                }
+            }
+
+        } else {active = false ; break}
+        wait 0.01
+    } 
+}
+
+void function OnMedkitPickup(entity medkit_proxy , entity medkit_model,vector pos)
+{
+    medkit_proxy.WaitSignal( "OnDestroy" )
+    wait groundmedkit_respawn_time
+    try {medkit_model.Destroy()}catch(e69){}
+	wait 1
+    CreateGroundMedKit( pos )
+		foreach(sPlayer in GetPlayerArray()){
+		Message(sPlayer, "EXTRA SHIELD AVAILABLE!", "", 4, "")
+				}
+}
+
+void function RotateFRLoop(entity ent,float speed,bool rightside)
+{
+	vector result
+	bool active = true
+	while (active)
+	{
+		if(IsValid(ent))
+		{
+		    if(rightside)
+		    {
+		       result =  ent.GetAngles() + <0,-speed,0>
+		    }
+		    else{
+		       result = ent.GetAngles()  + <0,speed,00>
+		    }
+		    ent.SetAngles( result ) // result
+	    } else {active = false ; break}
+		wait 0.01
+	}
+}
+#endif
 
  // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
 // ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██
@@ -1435,13 +1549,13 @@ void function VotingPhase()
 	{
 		file.randomprimary = RandomIntRange( 0, 3 )
         file.randomsecondary = RandomIntRange( 0, 4 )
-        file.randomtac = RandomIntRange( 0, 5 )
+        file.randomtac = RandomIntRange( 0, 3 )
         file.randomult = RandomIntRange( 0, 4 )
 	} else if (FlowState_RandomGunsEverydie())
 	{
 		file.randomprimary = RandomIntRange( 0, 23 )
         file.randomsecondary = RandomIntRange( 0, 18 )
-        file.randomtac = RandomIntRange( 0, 5 )
+        file.randomtac = RandomIntRange( 0, 6 )
         file.randomult = RandomIntRange( 0, 5 )
 	}
 	
@@ -1495,12 +1609,19 @@ file.mapIndexChanged = false
 file.selectedLocation = file.locationSettings[choice]
 file.dropselectedLocation = file.droplocationSettings[choice]
 
+
+if(file.selectedLocation.name == "TTV Building" && FlowState_RandomGunsEverydie())
+{
+thread CreateGroundMedKit(<10725, 5913,-4225>)
+}
 if(file.selectedLocation.name == "Skill trainer By Colombia")
 {
     DestroyPlayerProps()
     wait 2
+	thread CreateGroundMedKit(<17247,31823,-310>)
     SkillTrainerLoad()
 }
+//TODO MORE POIS
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
