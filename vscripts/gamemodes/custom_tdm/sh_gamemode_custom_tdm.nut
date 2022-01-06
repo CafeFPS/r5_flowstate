@@ -36,6 +36,7 @@ global function FlowState_ChosenCharacter
 //global function FlowState_DummyOverride
 global function FlowState_AutoreloadOnKillPrimary 
 global function FlowState_AutoreloadOnKillSecondary 
+global function FlowState_KillshotEnabled
 global function FlowState_RandomGuns
 global function FlowState_RandomGunsEverydie
 global function FlowState_RandomGunsMetagame
@@ -915,6 +916,8 @@ bool function FlowState_AutoreloadOnKillSecondary()                         { re
 bool function FlowState_RandomGuns()                         { return GetCurrentPlaylistVarBool("flowstateRandomGuns", true ) } //every round
 bool function FlowState_RandomGunsEverydie() { return GetCurrentPlaylistVarBool("flowstateRandomGunsEverydie", false ) }
 bool function FlowState_RandomGunsMetagame()                         { return GetCurrentPlaylistVarBool("flowstateRandomGunsMetagame", false ) } //every round
+bool function FlowState_KillshotEnabled()                         { return GetCurrentPlaylistVarBool("flowstateKillshotEnabled", true ) }
+
 
 #if SERVER   
 
