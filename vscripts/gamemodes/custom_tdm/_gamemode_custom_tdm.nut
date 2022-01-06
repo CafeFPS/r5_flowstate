@@ -25,7 +25,7 @@ enum eTDMState
 }
 
 struct {
-	string scriptversion = "v2.3"
+	string scriptversion = "v2.4"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
 	bool mapIndexChanged = true
@@ -267,7 +267,7 @@ LocPair function _GetVotingLocation()
              return NewLocPair(<26794, -6241, -27479>, <0, 0, 0>)
         case "mp_rr_canyonlands_64k_x_64k":
 			return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
-		case "mp_rr_ashs_redemption"://our first custom tdm map
+		case "mp_rr_ashs_redemption"://our second custom tdm map. FIRST WAS SKILL TRAINER
             return NewLocPair(<-20917, 5852, -26741>, <0, -90, 0>)
         case "mp_rr_canyonlands_mu1":
         case "mp_rr_canyonlands_mu1_night":
@@ -475,9 +475,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			victim.p.storedWeapons = StoreWeapons(victim)
 			int reservedTime = 2
             wait reservedTime
-			if(FlowState_RandomGunsEverydie()){
-			UpgradeShields(victim, true)
-			}
 			try{
 			if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker ))
             {
@@ -486,6 +483,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
 				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
             }
+			
+						if(FlowState_RandomGunsEverydie()){
+			UpgradeShields(victim, true)
+			}
+			
 			} catch (e) {}
 			try{
             if(IsValid(attacker) && attacker.IsPlayer())
@@ -516,6 +518,13 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
             try{
 			if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
             {
+			if(FlowState_KillshotEnabled()){
+			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+			int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
+			int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
+					foreach ( cbPlayer in GetPlayerArray() ){
+			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, scriptDamageType, sourceId )}}
+			
 			int score = GameRules_GetTeamScore(attacker.GetTeam());
             score++;
             GameRules_SetTeamScore(attacker.GetTeam(), score);
@@ -659,7 +668,7 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 	
 	if (FlowState_RandomGunsEverydie())
     {
-        file.randomprimary = RandomIntRange( 0, 28 )
+        file.randomprimary = RandomIntRange( 0, 23 )
         file.randomsecondary = RandomIntRange( 0, 18 )
         file.randomtac = RandomIntRange( 0, 5 )
         file.randomult = RandomIntRange( 0, 5 )
@@ -818,7 +827,7 @@ void function GiveRandomPrimaryWeapon(int random, entity player)
             player.GiveWeapon( "mp_weapon_energy_ar", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "energy_mag_l3", "stock_tactical_l3", "hopup_turbocharger"] )
             break;
 		case 8:
-            player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "bullets_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3"] )
+            player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "bullets_mag_l3", "stock_tactical_l3"] )
             break;
 		case 9:
             player.GiveWeapon( "mp_weapon_lstar", WEAPON_INVENTORY_SLOT_PRIMARY_0)
@@ -848,7 +857,7 @@ void function GiveRandomPrimaryWeapon(int random, entity player)
             player.GiveWeapon( "mp_weapon_esaw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "energy_mag_l1", "barrel_stabilizer_l4_flash_hider"] )
             break;
 		case 18:
-            player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "energy_mag_l1", "barrel_stabilizer_l2"] )
+            player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "barrel_stabilizer_l2"] )
             break;
 		case 19:
             player.GiveWeapon( "mp_weapon_sniper", WEAPON_INVENTORY_SLOT_PRIMARY_0)
@@ -860,27 +869,12 @@ void function GiveRandomPrimaryWeapon(int random, entity player)
             player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
             break;
 		case 22:
-            player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0)
             break;
 		case 23:
-            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0 )
             break;
-		case 24:
-            player.GiveWeapon( "mp_weapon_dmr", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
-            break;
-		case 25:
-            player.GiveWeapon( "mp_weapon_pdw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
-            break;		
-		case 26:
-            player.GiveWeapon( "mp_weapon_energy_ar", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
-            break;
-		case 27:
-            player.GiveWeapon( "mp_weapon_hemlok", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
-            break;
-		case 28:
-            player.GiveWeapon( "mp_weapon_hemlok", WEAPON_INVENTORY_SLOT_PRIMARY_0)
-            break;
-			
+
     }
 }
 
@@ -940,7 +934,7 @@ void function GiveRandomSecondaryWeapon(int random, entity player)
             player.GiveWeapon( "mp_weapon_g2", WEAPON_INVENTORY_SLOT_PRIMARY_1)
             break;
 		case 17:
-            player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l2", "hopup_unshielded_dmg"] )
+            player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l2"] )
             break;
 		case 18:
             player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_1)
@@ -1328,6 +1322,8 @@ void function UpgradeShields(entity player, bool died) {
     if (died) {
         player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
         Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
+		//player.SetShieldHealthMax( 75 )
+		//player.SetShieldHealth( 130 )
     } else {
         player.SetPlayerGameStat( PGS_TITAN_KILLS, player.GetPlayerGameStat( PGS_TITAN_KILLS ) + 1)
 
@@ -1345,16 +1341,63 @@ void function UpgradeShields(entity player, bool died) {
 				Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
 			case 5:
 				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+								foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
+				}
             break
-            default:
-                Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+            case 6:
+				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+            break
+			case 7:
+				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
+            break
+			case 10:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"OVERSHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and overshield!", 4, "")
+				}
+            break
+			case 20:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb!", 4, "")
+				}
+            break
+			case 25:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"LEGENDARY KILL STREAK", player.GetPlayerName() + " got 30 kill streak!", 4, "")
+				}
+            break
+			case 35:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 35 kill streak!", 4, "")
+				}
+            break
+			case 50:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"CHEATER DETECTED!", player.GetPlayerName() + " got 50 kill streak, report him!", 4, "")
+				}
+            break
+			default:
+                GiveFlowstateOvershield(player)
                 break
         }
     }
-
-
     PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
     PlayerRestoreHPFIESTA(player, 100)
+}
+
+
+void function GiveFlowstateOvershield( entity player )
+{
+	#if SERVER
+	player.SetShieldHealthMax( 130 )
+	player.SetShieldHealth( 130 )
+	//DelayShieldDecayTime( soul, 1 )
+	#endif
 }
 
  // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
@@ -1396,7 +1439,7 @@ void function VotingPhase()
         file.randomult = RandomIntRange( 0, 4 )
 	} else if (FlowState_RandomGunsEverydie())
 	{
-		file.randomprimary = RandomIntRange( 0, 28 )
+		file.randomprimary = RandomIntRange( 0, 23 )
         file.randomsecondary = RandomIntRange( 0, 18 )
         file.randomtac = RandomIntRange( 0, 5 )
         file.randomult = RandomIntRange( 0, 5 )
@@ -1410,7 +1453,7 @@ foreach(player in GetPlayerArray())
     try {
 		if(IsValid(player))
         {
-			//player.SetThirdPersonShoulderModeOn()
+			player.SetThirdPersonShoulderModeOn()
 			_HandleRespawn(player)
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
@@ -1471,7 +1514,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 	    }
     }
 
-	wait 10
+	wait 2
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 	{

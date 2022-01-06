@@ -171,6 +171,10 @@ void function HealthRegen_OnPlayerClassChangedMP( entity player )
 float function PilotShieldHealthUpdate( entity player, var damageInfo )
 {
 	int shieldHealth = player.GetShieldHealth()
+	if(shieldHealth > 100)
+	{
+		DamageInfo_AddCustomDamageType( damageInfo, DF_OVERSHIELD )
+	}
 	float maxHealth = float(player.GetHealth()) + float(shieldHealth)
 	float damage = DamageInfo_GetDamage( damageInfo )
 	float damagefull = damage + float(shieldHealth)
