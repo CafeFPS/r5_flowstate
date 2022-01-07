@@ -462,6 +462,117 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
     return dropshiplocations
 }
 
+
+#if SERVER
+float groundmedkit_respawn_time = 240
+float groundmedkit_heal_time = 0
+array<entity> fx_children
+
+void function CreateGroundMedKit(vector pos)
+{
+////////////////////////////////////////////////////////
+////// MADE BY Zer0Bytes#4428
+////////////////////////////////////////////////////////
+
+    entity medkit_model = CreateFRProp( $"mdl/weapons_r5/loot/_master/w_loot_cha_shield_upgrade_body_v1.rmdl", pos + <0,0,10> , ZERO_VECTOR, true, 50000)
+    medkit_model.SetModelScale( 3 )
+    medkit_model.kv.renderamt = 255
+    medkit_model.kv.rendermode = 3
+    medkit_model.kv.rendercolor = "19 207 69 255"
+    medkit_model.kv.solid = 0
+
+    medkit_model.NotSolid()
+    thread RotateFRLoop(medkit_model, 7.0 ,false)
+
+    for(int i = 0; i < 4; i++)
+    {
+        entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_LL_med_drone_jet_ctr_loop" ), medkit_model.GetOrigin(), <0,0 +  i * 90 ,0>)
+        trailFXHandle.SetParent(medkit_model)
+        fx_children.append(trailFXHandle)
+    }
+    EmitSoundOnEntity( medkit_model, $"survival_loot_pickup_Medkit_3P" )
+    wait 2
+    StopSoundOnEntity( medkit_model, $"survival_loot_pickup_Medkit_3P" )
+
+    entity medkit_proxy = CreateEntity( "trigger_cylinder" )
+    medkit_proxy.SetRadius( 50 );medkit_proxy.SetAboveHeight( 60 );medkit_proxy.SetBelowHeight( 0 );medkit_proxy.SetOrigin( pos )
+    DispatchSpawn( medkit_proxy )
+    medkit_proxy.SetParent(medkit_model)
+    thread MedKitHeal(medkit_proxy,medkit_model,pos)
+}
+
+void function MedKitHeal( entity medkit_proxy , entity medkit_model,vector pos)
+{ bool active = true
+    while (active)
+    {
+        if(IsValid(medkit_proxy))
+        {
+            foreach(player in GetPlayerArray())
+            {
+                if(medkit_proxy.IsTouching(player))
+                {
+                    StatusEffect_AddTimed( player, eStatusEffect.drone_healing, 1 , 3, 5 )
+
+                    EmitSoundOnEntityOnlyToPlayer( player, player, "Lifeline_Drone_Healing_1P" )
+                    medkit_model.kv.rendercolor = "255 255 255 30"
+
+                    wait groundmedkit_heal_time
+					Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
+					GiveFlowstateOvershield(player)
+					Message(player,"YOU HAVE EXTRA SHIELD!", "", 4, "")
+
+                    StopSoundOnEntity( player, "Lifeline_Drone_Healing_1P" )
+                    thread OnMedkitPickup(medkit_proxy,medkit_model,pos)
+					wait 1
+                    for (int i = 0; i < fx_children.len(); i++)
+                    {
+                        try {fx_children[i].Destroy()}catch(e69){}
+                    }
+                    fx_children = []
+
+                   try {medkit_proxy.Destroy()}catch(e69){}
+                }
+            }
+
+        } else {active = false ; break}
+        wait 0.01
+    } 
+}
+
+void function OnMedkitPickup(entity medkit_proxy , entity medkit_model,vector pos)
+{
+    medkit_proxy.WaitSignal( "OnDestroy" )
+    wait groundmedkit_respawn_time
+    try {medkit_model.Destroy()}catch(e69){}
+	wait 1
+    CreateGroundMedKit( pos )
+		foreach(sPlayer in GetPlayerArray()){
+		Message(sPlayer, "EXTRA SHIELD AVAILABLE!", "", 4, "")
+				}
+}
+
+void function RotateFRLoop(entity ent,float speed,bool rightside)
+{
+	vector result
+	bool active = true
+	while (active)
+	{
+		if(IsValid(ent))
+		{
+		    if(rightside)
+		    {
+		       result =  ent.GetAngles() + <0,-speed,0>
+		    }
+		    else{
+		       result = ent.GetAngles()  + <0,speed,00>
+		    }
+		    ent.SetAngles( result ) // result
+	    } else {active = false ; break}
+		wait 0.01
+	}
+}
+#endif
+
 // ███████ ██   ██ ██ ██      ██          ████████ ██████   █████  ██ ███    ██ ███████ ██████  
 // ██      ██  ██  ██ ██      ██             ██    ██   ██ ██   ██ ██ ████   ██ ██      ██   ██ 
 // ███████ █████   ██ ██      ██             ██    ██████  ███████ ██ ██ ██  ██ █████   ██████  
