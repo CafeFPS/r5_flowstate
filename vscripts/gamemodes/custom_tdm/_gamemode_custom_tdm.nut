@@ -2019,7 +2019,7 @@ else
             {
 		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		        player.SetThirdPersonShoulderModeOff()
-		        ClearInvincible(player)
+		        //ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
 		        _HandleRespawn(player)
 		if(file.selectedLocation.name != "Surf Purgatory"){
@@ -2047,7 +2047,7 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 		string nextlocation = file.selectedLocation.name
 		if(file.selectedLocation.name == "Surf Purgatory"){
 		Message(player, "WELCOME TO SURF PURGATORY", "", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
-		player.Code_SetTeam( TEAM_IMC + 1 )
+		player.Code_SetTeam( TEAM_IMC )
 		} else {
 		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
 		}
@@ -2064,7 +2064,7 @@ else{
 		string nextlocation = file.selectedLocation.name
 		if(file.selectedLocation.name == "Surf Purgatory"){
 		Message(player, "WELCOME TO SURF PURGATORY", "", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
-		player.Code_SetTeam( TEAM_IMC + 1 )
+		player.Code_SetTeam( TEAM_IMC )
 		} else {
 		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
 		}
