@@ -1357,31 +1357,31 @@ void function UpgradeShields(entity player, bool died) {
 			case 10:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray()){
-				Message(sPlayer,"OVERSHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and overshield!", 4, "")
+				Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and extra shield!", 5, "")
 				}
             break
 			case 20:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray()){
-				Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb!", 4, "")
+				Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb!", 5, "")
 				}
             break
 			case 25:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray()){
-				Message(sPlayer,"LEGENDARY KILL STREAK", player.GetPlayerName() + " got 30 kill streak!", 4, "")
+				Message(sPlayer,"LEGENDARY KILL STREAK", player.GetPlayerName() + " got 30 kill streak!", 5, "")
 				}
             break
 			case 35:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray()){
-				Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 35 kill streak!", 4, "")
+				Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 35 kill streak!", 5, "")
 				}
             break
 			case 50:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray()){
-				Message(sPlayer,"CHEATER DETECTED!", player.GetPlayerName() + " got 50 kill streak, report him!", 4, "")
+				Message(sPlayer,"CHEATER DETECTED!", player.GetPlayerName() + " got 50 kill streak, report him!", 5, "")
 				}
             break
 			default:
