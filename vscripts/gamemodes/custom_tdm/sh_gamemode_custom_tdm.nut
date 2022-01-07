@@ -602,7 +602,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
-
+			
 
 			Shared_RegisterLocation(
                 NewLocationSettings(
@@ -818,6 +818,15 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 3000>
                 )
             )
+			Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>),
+                    ],
+                    <0, 0, 6500>
+                )
+            )
 			// Shared_RegisterLocation(
                 // NewLocationSettings(
 	                   // "ESPACIO ABIERTO",
@@ -903,7 +912,7 @@ int function FlowState_RoundTime() { return GetCurrentPlaylistVarInt("flowstateR
 string function FlowState_BubbleColor() { return GetCurrentPlaylistVarString("flowstateBubble", "120, 26, 56") }
 bool function FlowState_ResetKillsEachRound()                         { return GetCurrentPlaylistVarBool("flowstateResetKills", true ) } 
 bool function FlowState_Timer()                         { return GetCurrentPlaylistVarBool("flowstateTimer", true ) } 
-bool function FlowState_LockPOI()                         { return GetCurrentPlaylistVarBool("flowstateLockPOI", true ) } 
+bool function FlowState_LockPOI()                         { return GetCurrentPlaylistVarBool("flowstateLockPOI", false ) } 
 int function FlowState_LockedPOI() { return GetCurrentPlaylistVarInt("flowstateLockeedPOI", 0) }
 bool function FlowState_AdminTgive()                         { return GetCurrentPlaylistVarBool("flowstateAdminTgive", true ) } 
 bool function FlowState_AllChat()                         { return GetCurrentPlaylistVarBool("flowstateAllChat", true ) } 

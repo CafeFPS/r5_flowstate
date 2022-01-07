@@ -19,6 +19,7 @@ string PURPLE_SHIELD = "armor_pickup_lv3"
 #if SERVER
 global function CreateCustomLight
 global function CreateEditorProp
+global function CreateEditorPropRamps
 global function GiveFlowstateOvershield
 #endif
 
@@ -43,7 +44,7 @@ struct {
 	float lastKillTimer
 	entity lastKiller
 	int SameKillerStoredKills=0
-	
+	bool surfEnded = false
 	array<string> whitelistedWeapons
 	array<LocationSettings> locationSettings
     LocationSettings& selectedLocation
@@ -218,9 +219,6 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
 	AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
 
-	AddClientCommandCallback("droppodtesting", ClientCommand_DropPodTesting)
-
-
 	if(FlowState_AllChat()){
 		AddClientCommandCallback("say", ClientCommand_ClientMsg)
 		//3 slots ingame chat temp-bans. Usage: sayban 1 ColombiaFPS. sayunban 1
@@ -373,7 +371,9 @@ void function _OnPlayerConnected(entity player)
     if(!IsAlive(player))
     {
         _HandleRespawn(player)
-		ClearInvincible(player)
+	if(file.selectedLocation.name != "Surf Purgatory"){
+			ClearInvincible(player)
+		}
     }
 	string nextlocation = file.selectedLocation.name
 		Message(player,"WELCOME TO FLOW STATE", helpMessage(), 15)
@@ -404,7 +404,7 @@ void function _OnPlayerConnected(entity player)
 				UpgradeShields(player, true)
 			}
 
-			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) == true)
+			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ))
 			{
 				printl("player spawning in droppod")
 				array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
@@ -416,6 +416,16 @@ void function _OnPlayerConnected(entity player)
 
         	Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		}
+	try{
+	if(file.locationSettings.name == "Surf Purgatory"){
+	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+    player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+    TakeAllWeapons( player )
+    SetPlayerSettings(player, SURF_SETTINGS)
+    MakeInvincible(player)
+	player.Code_SetTeam( TEAM_IMC + 1 )
+	player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
+	}}catch(e){}
         break
     default:
         break
@@ -437,7 +447,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	entity challenger = file.previousChallenger
 	entity killeader = GetBestPlayer()
 	float doubleKillTime = 5.0
-	float tripleKillTime = 9.0
+	float tripleKillTime = 8.5
 	file.deathPlayersCounter++
 	file.SameKillerStoredKills++
 	if(file.deathPlayersCounter == 1)
@@ -628,7 +638,61 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 
         }
     }
+	if(IsValid( player ) && file.selectedLocation.name == "Surf Purgatory" && file.surfEnded == false|| forceGive)
+    {
+        if(Equipment_GetRespawnKitEnabled())
+        {
+				DecideRespawnPlayer(player, true)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
+				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+				TakeAllWeapons( player )
+				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.TakeOffhandWeapon( OFFHAND_MELEE )
+				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+				MakeInvincible(player)
+        }
+        else
+        {
+            if(!player.p.storedWeapons.len())
+            {
+				DecideRespawnPlayer(player, true)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
+				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+				TakeAllWeapons( player )
+				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.TakeOffhandWeapon( OFFHAND_MELEE )
+				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+				MakeInvincible(player)
+            }
+            else
+            {
+				DecideRespawnPlayer(player, false)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
+				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+				TakeAllWeapons( player )
+				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.TakeOffhandWeapon( OFFHAND_MELEE )
+				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+				MakeInvincible(player)
+            }
 
+        }
+    }
 	
 	} catch (e) {}
 	try {
@@ -636,7 +700,12 @@ void function _HandleRespawn(entity player, bool forceGive = false)
         {
 	TpPlayerToSpawnPoint(player)
 	
+    if(file.selectedLocation.name == "Surf Purgatory"){
+	SetPlayerSettings(player, SURF_SETTINGS)
+	}
+	else {
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
+	}
 	
 	if(FlowState_RandomGunsEverydie()){
 			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
@@ -1470,6 +1539,35 @@ foreach(player in GetPlayerArray())
 
 wait 5
 
+if (FlowState_LockPOI()) {
+		file.nextMapIndex = FlowState_LockedPOI()
+	} else if (!file.mapIndexChanged)
+		{
+		file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
+		}
+
+int choice = file.nextMapIndex
+file.mapIndexChanged = false
+file.selectedLocation = file.locationSettings[choice]
+file.dropselectedLocation = file.droplocationSettings[choice]
+
+
+if(file.selectedLocation.name == "TTV Building" && FlowState_RandomGunsEverydie())
+{
+	thread CreateGroundMedKit(<10725, 5913,-4225>)
+} else if(file.selectedLocation.name == "Skill trainer By Colombia"){
+    DestroyPlayerProps()
+    wait 2
+	thread CreateGroundMedKit(<17247,31823,-310>)
+    SkillTrainerLoad()
+} else if(file.selectedLocation.name == "Surf Purgatory"){
+	file.surfEnded = false
+	DestroyPlayerProps()
+    wait 2
+    SurfPurgatoryLoad()
+	}
+//TODO MORE POIS
+
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) == false)
 {
@@ -1482,37 +1580,6 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) == false)
 	    }
     }
 }
-
-
-if (!file.mapIndexChanged)
-{
-	if (FlowState_LockPOI()) {
-		file.nextMapIndex = FlowState_LockedPOI() % file.locationSettings.len()
-	}
-	else 
-    {
-		file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
-	}
-}
-
-int choice = file.nextMapIndex
-file.mapIndexChanged = false
-file.selectedLocation = file.locationSettings[choice]
-file.dropselectedLocation = file.droplocationSettings[choice]
-
-
-if(file.selectedLocation.name == "TTV Building" && FlowState_RandomGunsEverydie())
-{
-thread CreateGroundMedKit(<10725, 5913,-4225>)
-}
-if(file.selectedLocation.name == "Skill trainer By Colombia")
-{
-    DestroyPlayerProps()
-    wait 2
-	thread CreateGroundMedKit(<17247,31823,-310>)
-    SkillTrainerLoad()
-}
-//TODO MORE POIS
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
@@ -1955,7 +2022,9 @@ else
 		        ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
 		        _HandleRespawn(player)
-		        ClearInvincible(player)
+		if(file.selectedLocation.name != "Surf Purgatory"){
+			ClearInvincible(player)
+		}
 		        DeployAndEnableWeapons(player)
 		        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
@@ -1976,9 +2045,12 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 	foreach(player in GetPlayerArray())
     {
 		string nextlocation = file.selectedLocation.name
-
+		if(file.selectedLocation.name == "Surf Purgatory"){
+		Message(player, "WELCOME TO SURF PURGATORY", "", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
+		player.Code_SetTeam( TEAM_IMC + 1 )
+		} else {
 		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
-		
+		}
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -1990,9 +2062,12 @@ else{
     {
 		int playerEHandle = player.GetEncodedEHandle()
 		string nextlocation = file.selectedLocation.name
-
+		if(file.selectedLocation.name == "Surf Purgatory"){
+		Message(player, "WELCOME TO SURF PURGATORY", "", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
+		player.Code_SetTeam( TEAM_IMC + 1 )
+		} else {
 		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
-		
+		}
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -2030,6 +2105,9 @@ void function SimpleChampionUI(){
 //////////////////////////////////////////////////////////////////////////////
 float endTime = Time() + FlowState_RoundTime()
 
+if(file.selectedLocation.name == "Surf Purgatory"){
+file.bubbleBoundary.Destroy()
+}
 
 if (FlowState_Timer()){
 while( Time() <= endTime )
@@ -2201,7 +2279,12 @@ foreach(player in GetPlayerArray())
 		ClearInvincible(player)
 		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		player.SetThirdPersonShoulderModeOff()
-
+	if(file.selectedLocation.name == "Surf Purgatory"){
+		file.surfEnded = true
+		ClearInvincible(player)
+		TakeAllWeapons(player)
+		player.TakeDamage(player.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
+		}
 	}}catch(e4){}}
 WaitFrame()
 
@@ -2613,16 +2696,6 @@ void function ResetPlayerStats(entity player)
 // ██      ██      ██ █████   ██ ██  ██    ██        ██      ██    ██ ██ ████ ██ ██ ████ ██ ██ ████ ██ ███████ ██ ██  ██ ██   ██ ███████
 // ██      ██      ██ ██      ██  ██ ██    ██        ██      ██    ██ ██  ██  ██ ██  ██  ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██      ██
 //  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████
-
-bool function ClientCommand_DropPodTesting(entity player, array<string> args)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	thread AirDropFireteam( player.GetOrigin() + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
-
-	return true
-}
 
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 //Thanks Zee#0134
@@ -3184,4 +3257,102 @@ entity function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = 
 	return e
 }
 
+void function SurfRampsHighlight( entity e )
+{
+	float rampr = RandomFloatRange( 0.0, 1.0 )
+       float rampg = RandomFloatRange( 0.0, 1.0 )
+       float rampb = RandomFloatRange( 0.0, 1.0 )
+    e.Highlight_ShowInside( 1.0 )
+	e.Highlight_ShowOutline( 1.0 )
+    e.Highlight_SetFunctions( 0, 136, false, 136, 8.0, 2, false )
+    e.Highlight_SetParam( 0, 0, <rampr, rampg, rampb> )
+}
+
+entity function CreateEditorPropRamps(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000)
+{
+	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+	e.kv.fadedist = fade
+    e.kv.renderamt = 255
+	e.kv.rendermode = 3
+	e.kv.rendercolor = "255 255 255 255"
+        SurfRampsHighlight(e)
+	if(mantle) e.AllowMantle()
+    file.playerSpawnedProps.append(e)
+	return e
+}
+
 #endif
+
+void function TeleportFRPlayerSurf(entity player, vector pos, vector ang)
+{
+    if(IsValid(player))
+    {
+	    player.SetOrigin(pos)
+	    player.SetAngles(ang)
+    }
+}
+
+void function SurfPurgatoryLoad()
+{
+    SurfPurgatory()
+    thread SurfPurgatoryTriggerSetup()
+}
+
+void function SurfPurgatoryTriggerSetup()
+{
+	entity fall = CreateEntity( "trigger_cylinder" )
+	fall.SetRadius( 100000 )
+	fall.SetAboveHeight( 25 )
+	fall.SetBelowHeight( 25 )
+	fall.SetOrigin( <3299,7941,16384> )
+	DispatchSpawn( fall )
+
+	fall.SetEnterCallback( SurfPurgatoryTrigger_OnAreaEnter )
+
+    entity finishdoor = CreateEntity( "trigger_cylinder" )
+	finishdoor.SetRadius( 20 )
+	finishdoor.SetAboveHeight( 25 )
+	finishdoor.SetBelowHeight( 25 )
+	finishdoor.SetOrigin( <2403, 15865, 17230> )
+	DispatchSpawn( finishdoor )
+
+	finishdoor.SetEnterCallback( SurfPurgatoryFinishDoor_OnAreaEnter )
+
+    entity finish = CreateEntity( "trigger_cylinder" )
+	finish.SetRadius( 1000 )
+	finish.SetAboveHeight( 300 )
+	finish.SetBelowHeight( 1 )
+    finish.SetAngles( <0, 90, 0> )
+	finish.SetOrigin( <2403, 15865, 17230> )
+	DispatchSpawn( finish )
+
+	finish.SetEnterCallback( SurfPurgatoryFinishFinished_OnAreaEnter )
+
+    file.playerSpawnedProps.append(fall)
+    file.playerSpawnedProps.append(finishdoor)
+    file.playerSpawnedProps.append(finish)
+
+	OnThreadEnd(
+		function() : ( fall )
+		{
+			fall.Destroy()
+		} )
+
+	WaitForever()
+}
+
+void function SurfPurgatoryTrigger_OnAreaEnter( entity trigger, entity player )
+{
+    TeleportFRPlayerSurf(player,<3225,9084,21476>,<0,-90,0>)
+}
+
+void function SurfPurgatoryFinishDoor_OnAreaEnter( entity trigger, entity player )
+{
+    TeleportFRPlayerSurf(player,<3225,9084,21476>,<0,-90,0>)
+}
+
+void function SurfPurgatoryFinishFinished_OnAreaEnter( entity trigger, entity player )
+{
+    Message( player, "Map Finished", "Congrats you finished surf_purgatory", 5.0 )
+}
+
