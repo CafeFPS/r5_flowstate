@@ -1579,12 +1579,10 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
         {
 			if ( player.GetParent() != file.supercooldropship )
 			{
-
 				player.SetThirdPersonShoulderModeOff()
 				vector shipspot = ShipSpot()
 				player.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
 				player.SetParent(file.supercooldropship)
-				thread PlayAnim( player, "Classic_MP_flyin_exit_playerA_idle" )
 			}
 		}
 	}
@@ -1683,9 +1681,8 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 					// DeployAndEnableWeapons(player)
 					// ClearInvincible(player)
 					// }
-	
+				
 					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
-
 					// reload weapons when tp'ing to next location
 					entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 					entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
@@ -1931,9 +1928,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 		        ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
 		        _HandleRespawn(player)
-
 		        ClearInvincible(player)
-		
 		        DeployAndEnableWeapons(player)
 		        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
@@ -1960,13 +1955,11 @@ else
 		        ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
 		        _HandleRespawn(player)
-
 		        ClearInvincible(player)
-		
 		        DeployAndEnableWeapons(player)
 		        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
-
+				
 		        // reload weapons when tp'ing to next location
 		        entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		        entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
