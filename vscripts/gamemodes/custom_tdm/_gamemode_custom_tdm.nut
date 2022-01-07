@@ -415,7 +415,6 @@ void function _OnPlayerConnected(entity player)
 			}
 
         	Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
-		}
 	try{
 	if(file.locationSettings.name == "Surf Purgatory"){
 	player.TakeOffhandWeapon(OFFHAND_TACTICAL)
@@ -423,9 +422,10 @@ void function _OnPlayerConnected(entity player)
     TakeAllWeapons( player )
     SetPlayerSettings(player, SURF_SETTINGS)
     MakeInvincible(player)
-	player.Code_SetTeam( TEAM_IMC + 1 )
+	player.Code_SetTeam( TEAM_IMC )
 	player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
 	}}catch(e){}
+	}
         break
     default:
         break
