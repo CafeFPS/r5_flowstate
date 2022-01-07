@@ -882,7 +882,7 @@ When: "SERVER"
 Scripts:
 [
 	gamemodes/custom_tdm/_gamemode_custom_tdm.nut
-	gamemodes/custom_tdm/_gamemode_custom_tdm_functions_dropship.nut
+	gamemodes/custom_tdm/_gamemode_custom_tdm_file2.nut
 ]
 
 When: "CLIENT"
