@@ -1,4 +1,5 @@
 global const table TDM_PLAYER_SETTINGS = {
+    ["landslowdownduration"] = 0,
     ["jumpheight"]=60,
     ["gravityscale"]=0.80,
     ["stepheight"]=18,

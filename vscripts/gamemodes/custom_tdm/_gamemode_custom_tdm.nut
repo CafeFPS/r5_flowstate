@@ -426,12 +426,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
             try{
 			if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
             {
+				
 			if(FlowState_KillshotEnabled()){
 			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
-			int scriptDamageType = DamageInfo_GetCustomDamageType( damageInfo )
-			int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
-					foreach ( cbPlayer in GetPlayerArray() ){
-			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, scriptDamageType, sourceId )}}
+			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
+			}
+			
 			
 			int score = GameRules_GetTeamScore(attacker.GetTeam());
             score++;
