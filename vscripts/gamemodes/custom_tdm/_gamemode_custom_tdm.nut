@@ -470,7 +470,7 @@ file.lastKillTimer = Time()
 file.lastKiller = attacker
 }
 
-void function _HandleRespawn(entity player, bool forceGive = false)
+void function _HandleRespawn(entity player)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 and michae\l/#1125 //
 ///////////////////////////////////////////////////////
@@ -482,7 +482,62 @@ void function _HandleRespawn(entity player, bool forceGive = false)
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 	try {
-	if(IsValid( player ) && !IsAlive(player) || forceGive)
+	
+	if(IsValid( player ) && file.selectedLocation.name == "Surf Purgatory" && file.surfEnded == false)
+    {
+        if(Equipment_GetRespawnKitEnabled())
+        {
+				DecideRespawnPlayer(player, true)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
+				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+				TakeAllWeapons( player )
+				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.TakeOffhandWeapon( OFFHAND_MELEE )
+				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+				MakeInvincible(player)
+        }
+        else
+        {
+            if(!player.p.storedWeapons.len())
+            {
+				DecideRespawnPlayer(player, true)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
+				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+				TakeAllWeapons( player )
+				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.TakeOffhandWeapon( OFFHAND_MELEE )
+				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+				MakeInvincible(player)
+            }
+            else
+            {
+				DecideRespawnPlayer(player, false)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
+				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+				TakeAllWeapons( player )
+				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.TakeOffhandWeapon( OFFHAND_MELEE )
+				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+				MakeInvincible(player)
+            }
+
+        }
+    }else if(IsValid( player ) && !IsAlive(player))
     {
         if(Equipment_GetRespawnKitEnabled())
         {
@@ -535,61 +590,6 @@ void function _HandleRespawn(entity player, bool forceGive = false)
 
         }
     }
-	if(IsValid( player ) && file.selectedLocation.name == "Surf Purgatory" && file.surfEnded == false|| forceGive)
-    {
-        if(Equipment_GetRespawnKitEnabled())
-        {
-				DecideRespawnPlayer(player, true)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
-				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-				TakeAllWeapons( player )
-				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-				MakeInvincible(player)
-        }
-        else
-        {
-            if(!player.p.storedWeapons.len())
-            {
-				DecideRespawnPlayer(player, true)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
-				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-				TakeAllWeapons( player )
-				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-				MakeInvincible(player)
-            }
-            else
-            {
-				DecideRespawnPlayer(player, false)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
-				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-				TakeAllWeapons( player )
-				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-				MakeInvincible(player)
-            }
-
-        }
-    }
 	
 	} catch (e) {}
 	try {
@@ -631,9 +631,7 @@ void function _HandleRespawn(entity player, bool forceGive = false)
         GiveRandomUlt(file.randomult, player)
         player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
         player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-	}
-	
-	if (FlowState_RandomGunsEverydie())
+	} else if(FlowState_RandomGunsEverydie())
     {
         file.randomprimary = RandomIntRange( 0, 23 )
         file.randomsecondary = RandomIntRange( 0, 18 )
@@ -2828,7 +2826,7 @@ return true
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 //Modified by Retículo Endoplasmático#5955 and michae\l/#1125
 {
-    if ( FlowState_AdminTgive() )
+    if ( FlowState_AdminTgive() && player.GetPlayerName() != file.Hoster )
 	{
 		return false
 	}
