@@ -1619,7 +1619,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 
 		// array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
 		// array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
-		// int spawni = 0
+		 int spawni = 0
 
 	//true == FFA
 	if (GetCurrentPlaylistVarBool("flowstateffaortdm", false ) == true)
