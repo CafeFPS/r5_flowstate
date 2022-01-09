@@ -123,13 +123,9 @@ void function EntitiesDidLoad()
 	SpawnGrenades(<8443, 4459, -4283>,<0, 0, 0>, 10, ["thermite", "frag", "arc"], 1)
 	SpawnGrenades(<10293, 3890, -3948>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
 
-
-	// //Spawn de armas
-	SpawnWeapon( <17250,32500,2220>, <0, -90, 0>, 60, 2, 1)
-	SpawnWeapon( <17500,32500,2220>, <0, -90, 0>, 60, 0, 1)
-	SpawnWeapon( <17750,32500,2220>, <0, -90, 0>, 60, 1, 1)
-	// // ------------------------------------------------------
-
+	CreateWeaponRackSkillTrainer(<17250,32500,2220>, <0,-90,0>, "mp_weapon_sniper")
+	CreateWeaponRackSkillTrainer(<17500,32500,2220>, <0,-90,0>, "mp_weapon_mastiff")
+	CreateWeaponRackSkillTrainer(<17750,32500,2220>, <0,-90,0>, "mp_weapon_lstar")
 }
 #endif
 
@@ -563,20 +559,6 @@ void function SpawnGrenades(vector pos, vector ang, int wait_time = 6, array whi
 #endif
 
 #if SERVER
-void function SpawnWeapon(vector pos, vector ang, int wait_time=5, int weapon=0, int qt=1)
-//By Retículo Endoplasmático#5955 CaféDeColombiaFPS.
-{
-	vector posfixed = pos
-	int i;
-	for (i = 0; i < qt; i++)
-		{
-	LootData item
-	posfixed = posfixed + <30, 0, 0>
-	item = file.weapons[weapon]
-	entity loot = SpawnGenericLoot(item.ref, posfixed, ang, 1)
-    thread RespawnItem(loot,item.ref, 1, wait_time)
-}}
-
 entity function CreateEditorPropLobby(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, int realm = -1)
 {
     entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)

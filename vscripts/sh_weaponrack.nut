@@ -4,6 +4,7 @@ global function ShWeaponRack_Init
 global function CreateWeaponRack
 global function SpawnWeaponOnRack
 global function GetWeaponFromRack
+global function CreateWeaponRackSkillTrainer
 #endif
 
 const asset WEAPONRACKMODEL = $"mdl/industrial/gun_rack_arm_down.rmdl"
@@ -28,6 +29,33 @@ void function testRack()
 	printl(GetWeaponFromRack(rack))
 }
 */
+void function RespawnWeaponOnRackST(entity item, string ref, int amount = 1, int wait_time=6)
+//By Retículo Endoplasmático#5955 CaféDeColombiaFPS. Tomado del firing range.
+{
+	vector pos = item.GetOrigin()
+	vector angles = item.GetAngles()
+	item.WaitSignal("OnItemPickup")
+	wait wait_time
+	StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), pos, angles )
+	thread RespawnWeaponOnRackST(SpawnGenericLoot(ref, pos, angles, amount), ref, amount)
+}
+
+entity function CreateWeaponRackSkillTrainer(vector origin, vector angles, string weaponName = "")
+{
+	entity rack = CreateEntity( "prop_dynamic" )
+	rack.SetScriptName( WEAPONRACK_SCRIPTNAME )
+	rack.SetValueForModelKey( WEAPONRACKMODEL )
+	rack.SetOrigin( origin )
+	rack.SetAngles( angles )
+	rack.kv.solid = SOLID_VPHYSICS
+	rack.AllowMantle()
+	DispatchSpawn( rack )
+	
+	entity loot = SpawnGenericLoot( weaponName, rack.GetOrigin()+WEAPONRACK_ORIGIN_OFFSET, rack.GetAngles()+WEAPONRACK_ANGLES_OFFSET, 1 )
+	thread RespawnWeaponOnRackST(loot,weaponName, 1, 15)
+	
+	return rack
+}
 
 entity function CreateWeaponRack(vector origin, vector angles, string weaponName = "")
 {
