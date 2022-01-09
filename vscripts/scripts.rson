@@ -883,6 +883,7 @@ Scripts:
 [
 	gamemodes/custom_tdm/_gamemode_custom_tdm.nut
 	gamemodes/custom_tdm/_gamemode_custom_tdm_file2.nut
+	gamemodes/custom_tdm/_gamemode_custom_tdm_file3.nut
 ]
 
 When: "CLIENT"
