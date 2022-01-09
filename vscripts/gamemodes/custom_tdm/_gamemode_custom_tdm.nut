@@ -301,7 +301,7 @@ void function _OnPlayerConnected(entity player)
 				UpgradeShields(player, true)
 			}
 
-			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ))
+			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Surf Purgatory")
 			{
 				printl("player spawning in droppod")
 				array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
