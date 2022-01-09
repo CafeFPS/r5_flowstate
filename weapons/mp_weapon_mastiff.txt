@@ -178,7 +178,7 @@ WeaponData
 
 	// Behavior
                        
-	"fire_rate"   									"1.1"
+	"fire_rate"   									"1.3"
      
                              
       
