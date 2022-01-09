@@ -346,6 +346,7 @@ void function PlayerSkydiveFromCurrentPosition( entity player )
 	player.Zipline_Stop()
 	SetPlayerIntroDropSettings( player )
 	waitthread PlayerSkyDive( player, player.GetViewVector(), [player], player, false, true )
+	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_skydive" )
 }
 
 void function PlayerSkydiveLandingFromCurrentPosition( entity player )

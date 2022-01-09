@@ -248,7 +248,7 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	//DisableTitanfallForLifetimeOfEntityNearOrigin( bubbleShield, origin, TITANHOTDROP_DISABLE_ENEMY_TITANFALL_RADIUS )
 	#endif
 
-	EmitSoundOnEntity( bubbleShield, "BubbleShield_Sustain_Loop" )
+	EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
 
 	thread CleanupBubbleShield( bubbleShield, bubbleShieldFXs, duration )
 	thread BubbleShieldDamageEnemies( bubbleShield, owner )
@@ -265,8 +265,8 @@ void function CleanupBubbleShield( entity bubbleShield, array<entity> bubbleShie
 		{
 			if ( IsValid_ThisFrame( bubbleShield ) )
 			{
-				StopSoundOnEntity( bubbleShield, "BubbleShield_Sustain_Loop" )
-				EmitSoundOnEntity( bubbleShield, "BubbleShield_End" )
+				StopSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
+				EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Ending" )
 				DestroyBubbleShield( bubbleShield )
 			}
 

@@ -97,6 +97,7 @@ struct PlayerInfo
 
 void function _CustomTDM_Init()
 {
+	SurvivalFreefall_Init()
 	file.Hoster = FlowState_Hoster()
 	file.admin1 = FlowState_Admin1()
 	file.admin2 = FlowState_Admin2()
@@ -621,14 +622,14 @@ void function _HandleRespawn(entity player)
 
 		}
 		} catch (e1) {}
-	if (FlowState_RandomGuns())
+	if (FlowState_RandomGuns() && !FlowState_Gungame())
     {
         TakeAllWeapons(player)
         GiveRandomPrimaryWeapon(file.randomprimary, player)
         GiveRandomSecondaryWeapon(file.randomsecondary, player)
         player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
         player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-    } else if(FlowState_RandomGunsMetagame())
+    } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame())
 	{
 		TakeAllWeapons(player)
         GiveRandomPrimaryWeaponMetagame(file.randomprimary, player)
@@ -641,9 +642,8 @@ void function _HandleRespawn(entity player)
 	} else if(FlowState_RandomUltimate())
 	{
         GiveRandomUlt(file.randomult, player)
-	}		
-	
-	else if(FlowState_RandomGunsEverydie())
+	}
+	else if(FlowState_RandomGunsEverydie() && !FlowState_Gungame()) //fiesta
     {
         file.randomprimary = RandomIntRange( 0, 23 )
         file.randomsecondary = RandomIntRange( 0, 18 )
@@ -1371,6 +1371,8 @@ void function UpgradeShields(entity player, bool died) {
     PlayerRestoreHPFIESTA(player, 100)
 }
 
+
+
 #if SERVER
 void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
 {
@@ -1450,11 +1452,18 @@ foreach(player in GetPlayerArray())
 
 wait 5
 
-if (FlowState_LockPOI()) {
+	if (FlowState_LockPOI()) {
 		file.nextMapIndex = FlowState_LockedPOI()
-	} else if (!file.mapIndexChanged)
+	} else if(FlowState_SURF()){
+		file.nextMapIndex = 12
+	}
+	else if (!file.mapIndexChanged)
 		{
-		file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
+			file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
+			if(file.nextMapIndex == 12 && GetMapName() == "mp_rr_desertlands_64k_x_64k" || file.nextMapIndex == 12 && GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" )
+			{
+			file.nextMapIndex = 0
+			}
 		}
 
 int choice = file.nextMapIndex
@@ -1656,13 +1665,12 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 
 					int rndnum = RandomIntRange(0, maxspawns)
 					
-					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) )
-					// if (!FlowState_DummyOverride()) {
-					// thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) }
-					// else {
-					// DeployAndEnableWeapons(player)
-					// ClearInvincible(player)
-					// }
+					if (!FlowState_DummyOverride()) {
+					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) }
+					else {
+					DeployAndEnableWeapons(player)
+					ClearInvincible(player)
+					}
 				
 					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 					// reload weapons when tp'ing to next location
@@ -2313,6 +2321,13 @@ void function CharSelect( entity player)
 file.characters = clone GetAllCharacters()
 ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
 CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+
+//Dummies
+if (FlowState_DummyOverride()) {
+	player.SetBodyModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
+	player.SetArmsModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
+	player.SetSkin(player.GetTeam())
+}
 
 //Data knife
 player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )

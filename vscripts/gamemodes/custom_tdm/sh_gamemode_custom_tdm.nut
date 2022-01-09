@@ -1,15 +1,6 @@
-// Credits
-// sal#3261 -- main
-// @Shrugtal -- score ui
-// everyone else -- advice
-
-
-
 global function Sh_CustomTDM_Init
 global function NewLocationSettings
 global function NewLocPair
-// global function NewWeaponKit
-
 global function Spectator_GetReplayIsEnabled
 global function Spectator_GetReplayDelay
 global function Deathmatch_GetRespawnDelay
@@ -33,7 +24,7 @@ global function FlowState_AllChat
 global function FlowState_ChatCooldown 
 global function FlowState_ForceCharacter  
 global function FlowState_ChosenCharacter
-//global function FlowState_DummyOverride
+global function FlowState_DummyOverride
 global function FlowState_AutoreloadOnKillPrimary 
 global function FlowState_AutoreloadOnKillSecondary 
 global function FlowState_KillshotEnabled
@@ -46,6 +37,8 @@ global function FlowState_Droppods
 global function FlowState_ExtrashieldsEnabled
 global function FlowState_ExtrashieldsSpawntime
 global function FlowState_ExtrashieldValue
+global function FlowState_Gungame
+global function FlowState_SURF
 
 global function Deathmatch_GetIntroCutsceneNumSpawns           
 global function Deathmatch_GetIntroCutsceneSpawnDuration        
@@ -176,9 +169,10 @@ void function Sh_CustomTDM_Init()
                     NewLocPair(<-21271, -15275, 2781>, <0, 90, 0>),
                     NewLocPair(<-22952, -13304, 2718>, <0, 5, 0>),
                     NewLocPair(<-22467, -9567, 2949>, <0, -85, 0>),
-                    NewLocPair(<-18494, -10427, 2825>, <0, -155, 0>)
+                    NewLocPair(<-18494, -10427, 2825>, <0, -155, 0>),
+					NewLocPair(<-22590, -7534, 3103>, <0, 0, 0>)
                 ],
-                <0, 0, 3000>
+                <0, 0, 4000>
             )
         )
 		 Shared_RegisterLocation(
@@ -912,7 +906,7 @@ bool function FlowState_AllChat()                         { return GetCurrentPla
 float function FlowState_ChatCooldown()                          { return GetCurrentPlaylistVarFloat("flowstateChatCd", 5) }
 bool function FlowState_ForceCharacter()                         { return GetCurrentPlaylistVarBool("flowstateForceCharacter", true ) } 
 int function FlowState_ChosenCharacter() { return GetCurrentPlaylistVarInt("flowstateChosenCharacter", 8) }
-//bool function FlowState_DummyOverride()                         { return GetCurrentPlaylistVarBool("flowstateDummyOverride", false ) } 
+bool function FlowState_DummyOverride()                         { return GetCurrentPlaylistVarBool("flowstateDummyOverride", false ) } 
 bool function FlowState_AutoreloadOnKillPrimary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadPrimary", true ) } 
 bool function FlowState_AutoreloadOnKillSecondary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadSecondary", true ) } 
 bool function FlowState_RandomGuns()                         { return GetCurrentPlaylistVarBool("flowstateRandomGuns", false ) } 
@@ -925,6 +919,9 @@ bool function FlowState_Droppods()                         { return GetCurrentPl
 bool function FlowState_ExtrashieldsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateExtrashieldsEnabled", true ) }
 float function FlowState_ExtrashieldsSpawntime()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldsSpawntime", 240 ) }
 float function FlowState_ExtrashieldValue()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldValue", 150 ) }
+bool function FlowState_Gungame()                         { return GetCurrentPlaylistVarBool("flowstateGungame", false ) }
+bool function FlowState_SURF()                         { return GetCurrentPlaylistVarBool("flowstateSurf", false ) }
+
 #if SERVER   
 
 

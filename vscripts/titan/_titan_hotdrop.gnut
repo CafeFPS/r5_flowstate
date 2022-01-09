@@ -47,7 +47,7 @@ function TitanHotdrop_Init()
 
 	PrecacheModel( $"mdl/fx/xo_shield_wall.rmdl" )
 	PrecacheModel( $"mdl/fx/xo_shield_wall.rmdl" )
-	BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX = 0//PrecacheParticleSystem( $"P_shield_hld_01_CP" ) // TODO: mdl/fx/xo_shield_p1.rmdl does not exist and is referenced by this particle system
+	BUBBLE_SHIELD_FX_PARTICLE_SYSTEM_INDEX = PrecacheParticleSystem( $"P_shield_hld_0" )
 
 	BubbleShield_Init()
 }
