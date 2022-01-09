@@ -106,13 +106,6 @@ entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
 
 	AddEntityCallback_OnDamaged( jumpPad, JumpPad_OnTakeDamage )
   AddEntityCallback_OnKilled( jumpPad, JumpPad_OnDeath )
-  thread JumpPadWatcher(jumpPad)
-}
-
-void function JumpPadWatcher(entity jumpPad)
-{
-wait 15
-jumpPad.Destroy()
 }
 
 void function JumpPad_OnDeath( entity ent, var damageInfo )
@@ -128,7 +121,7 @@ void function JumpPad_OnTakeDamage( entity ent, var damageInfo )
   printt("JumpPad_OnTakeDamage. HP", ent.GetHealth())
 	if ( IsValid( attacker ) && attacker.IsPlayer() )
 	{
-		PlayerDamageFeedback( ent, damageInfo, 0 )
+	PlayerDamageFeedback( ent, damageInfo, 0 )
     UpdateDamageState( ent, damageInfo )
 	}
 }

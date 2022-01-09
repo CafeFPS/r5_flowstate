@@ -38,9 +38,14 @@ global function FlowState_AutoreloadOnKillPrimary
 global function FlowState_AutoreloadOnKillSecondary 
 global function FlowState_KillshotEnabled
 global function FlowState_RandomGuns
+global function FlowState_RandomTactical
+global function FlowState_RandomUltimate
 global function FlowState_RandomGunsEverydie
 global function FlowState_RandomGunsMetagame
 global function FlowState_Droppods
+global function FlowState_ExtrashieldsEnabled
+global function FlowState_ExtrashieldsSpawntime
+global function FlowState_ExtrashieldValue
 
 global function Deathmatch_GetIntroCutsceneNumSpawns           
 global function Deathmatch_GetIntroCutsceneSpawnDuration        
@@ -550,7 +555,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                         NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
                         NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
                         NewLocPair(<8243, 4537, -4235>, <-13, 32, 0>),
-                        NewLocPair(<10176, 4245, -4300>, <0, 100, 0>),
+                        //NewLocPair(<10176, 4245, -4300>, <0, 100, 0>),
                         NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>),
                         NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
                         NewLocPair(<10058, 2071, -3827>, <0, -90, 0>),
@@ -910,11 +915,16 @@ int function FlowState_ChosenCharacter() { return GetCurrentPlaylistVarInt("flow
 //bool function FlowState_DummyOverride()                         { return GetCurrentPlaylistVarBool("flowstateDummyOverride", false ) } 
 bool function FlowState_AutoreloadOnKillPrimary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadPrimary", true ) } 
 bool function FlowState_AutoreloadOnKillSecondary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadSecondary", true ) } 
-bool function FlowState_RandomGuns()                         { return GetCurrentPlaylistVarBool("flowstateRandomGuns", false ) } //every round
-bool function FlowState_RandomGunsEverydie() { return GetCurrentPlaylistVarBool("flowstateRandomGunsEverydie", false ) }
-bool function FlowState_RandomGunsMetagame()                         { return GetCurrentPlaylistVarBool("flowstateRandomGunsMetagame", false ) } //every round
+bool function FlowState_RandomGuns()                         { return GetCurrentPlaylistVarBool("flowstateRandomGuns", false ) } 
+bool function FlowState_RandomTactical()                         { return GetCurrentPlaylistVarBool("flowstateRandomTactical", false ) } 
+bool function FlowState_RandomUltimate()                         { return GetCurrentPlaylistVarBool("flowstateRandomUltimate", false ) }
+bool function FlowState_RandomGunsEverydie() { return GetCurrentPlaylistVarBool("flowstateFiesta", false ) }
+bool function FlowState_RandomGunsMetagame()                         { return GetCurrentPlaylistVarBool("flowstateRandomGunsMetagame", false ) }
 bool function FlowState_KillshotEnabled()                         { return GetCurrentPlaylistVarBool("flowstateKillshotEnabled", true ) }
 bool function FlowState_Droppods()                         { return GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) }
+bool function FlowState_ExtrashieldsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateExtrashieldsEnabled", true ) }
+float function FlowState_ExtrashieldsSpawntime()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldsSpawntime", 240 ) }
+float function FlowState_ExtrashieldValue()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldValue", 150 ) }
 #if SERVER   
 
 

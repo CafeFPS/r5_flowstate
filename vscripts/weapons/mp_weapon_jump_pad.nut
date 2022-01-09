@@ -144,7 +144,21 @@ if ( IsValid( traceResult.hitEnt ) )
 	jumpPadProxy.Hide()
 	jumpPadProxy.SetParent( newProjectile )
 	jumpPadProxy.SetOwner( owner )
-
 	JumpPad_CreatedCallback( newProjectile )
+	
+
+	string gameMode = GameRules_GetGameMode()
+	if(gameMode == "custom_tdm"){
+	thread JumpPadWatcher(newProjectile)
+	}
+	
 	#endif
 }
+
+#if SERVER
+void function JumpPadWatcher(entity jumpPad)
+{
+wait 15
+jumpPad.Destroy()
+}
+#endif

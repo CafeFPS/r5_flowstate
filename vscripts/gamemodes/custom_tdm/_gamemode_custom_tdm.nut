@@ -626,8 +626,6 @@ void function _HandleRespawn(entity player)
         TakeAllWeapons(player)
         GiveRandomPrimaryWeapon(file.randomprimary, player)
         GiveRandomSecondaryWeapon(file.randomsecondary, player)
-        GiveRandomTac(file.randomtac, player)
-        GiveRandomUlt(file.randomult, player)
         player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
         player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
     } else if(FlowState_RandomGunsMetagame())
@@ -635,11 +633,17 @@ void function _HandleRespawn(entity player)
 		TakeAllWeapons(player)
         GiveRandomPrimaryWeaponMetagame(file.randomprimary, player)
         GiveRandomSecondaryWeaponMetagame(file.randomsecondary, player)
-        GiveRandomTac(file.randomtac, player)
-        GiveRandomUlt(file.randomult, player)
         player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
         player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-	} else if(FlowState_RandomGunsEverydie())
+	} else if(FlowState_RandomTactical())
+	{
+        GiveRandomTac(file.randomtac, player)
+	} else if(FlowState_RandomUltimate())
+	{
+        GiveRandomUlt(file.randomult, player)
+	}		
+	
+	else if(FlowState_RandomGunsEverydie())
     {
         file.randomprimary = RandomIntRange( 0, 23 )
         file.randomsecondary = RandomIntRange( 0, 18 )
@@ -742,9 +746,6 @@ void function GiveRandomPrimaryWeaponMetagame(int random, entity player)
             break;
         case 2:
             player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "stock_tactical_l3", "highcal_mag_l3"] )
-            break;
-		case 3:
-            player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "bullets_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3"] )
             break;
     }
 }
@@ -1289,7 +1290,6 @@ int function shielddd(int value, int min, int max) {
     unreachable
 }
 
-
 void function UpgradeShields(entity player, bool died) {
 
     if (!IsValid(player)) return
@@ -1327,12 +1327,17 @@ void function UpgradeShields(entity player, bool died) {
 			case 7:
 				Inventory_SetPlayerEquipment(player, PURPLE_SHIELD, "armor")
             break
-			case 10:
+			case 8:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray()){
-				Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and extra shield!", 5, "")
+				Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 8 kill streak and extra shield!", 5, "")
 				}
             break
+			case 15:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak!", 5, "")
+				}
 			case 20:
 				GiveFlowstateOvershield(player)
 				foreach(sPlayer in GetPlayerArray()){
@@ -1367,13 +1372,16 @@ void function UpgradeShields(entity player, bool died) {
 }
 
 #if SERVER
-void function GiveFlowstateOvershield( entity player )
+void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
 {
-	
-	player.SetShieldHealthMax( 135 )
-	player.SetShieldHealth( 135 )
+	player.SetShieldHealthMax( FlowState_ExtrashieldValue() )
+	player.SetShieldHealth( FlowState_ExtrashieldValue() )
 	//DelayShieldDecayTime( soul, 1 )
-	
+	if(isOvershieldFromGround){
+			foreach(sPlayer in GetPlayerArray()){
+			Message(sPlayer,"EXTRA SHIELD PROVIDED", player.GetPlayerName() + " has 50 extra shield.", 5, "")
+		}		
+	}
 }
 #endif
 
@@ -1406,20 +1414,20 @@ void function VotingPhase()
     {
         file.randomprimary = RandomIntRange( 0, 15 )
         file.randomsecondary = RandomIntRange( 0, 6 )
-        file.randomtac = RandomIntRange( 0, 5 )
-        file.randomult = RandomIntRange( 0, 5 )
     } else if (FlowState_RandomGunsMetagame())
 	{
 		file.randomprimary = RandomIntRange( 0, 3 )
         file.randomsecondary = RandomIntRange( 0, 4 )
-        file.randomtac = RandomIntRange( 0, 3 )
-        file.randomult = RandomIntRange( 0, 4 )
 	} else if (FlowState_RandomGunsEverydie())
 	{
 		file.randomprimary = RandomIntRange( 0, 23 )
         file.randomsecondary = RandomIntRange( 0, 18 )
-        file.randomtac = RandomIntRange( 0, 6 )
-        file.randomult = RandomIntRange( 0, 5 )
+	} else if (FlowState_RandomTactical())
+	{
+		file.randomtac = RandomIntRange( 0, 6 )
+	} else if (FlowState_RandomUltimate())
+	{
+		file.randomult = RandomIntRange( 0, 5 )
 	}
 	
 wait 1
@@ -1455,8 +1463,8 @@ file.selectedLocation = file.locationSettings[choice]
 file.dropselectedLocation = file.droplocationSettings[choice]
 
 
-if(file.selectedLocation.name == "TTV Building" && FlowState_RandomGunsEverydie())
-{
+if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
+	DestroyPlayerProps()
 	thread CreateGroundMedKit(<10725, 5913,-4225>)
 } else if(file.selectedLocation.name == "Skill trainer By Colombia"){
     DestroyPlayerProps()
@@ -1468,7 +1476,11 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_RandomGunsEverydie(
 	DestroyPlayerProps()
     wait 2
     SurfPurgatoryLoad()
+} else if(file.selectedLocation.name == "Gaunlet"){
+	DestroyPlayerProps()
+	thread CreateGroundMedKit(<-21289, -12030,3030>)
 	}
+
 //TODO MORE POIS
 
 

@@ -538,7 +538,6 @@ PrecacheModel( $"mdl/vehicle/dropship/dropship_afterburner.rmdl" )
 }
 
 #if SERVER
-float groundmedkit_respawn_time = 240
 float groundmedkit_heal_time = 0
 array<entity> fx_children
 
@@ -592,7 +591,7 @@ void function MedKitHeal( entity medkit_proxy , entity medkit_model,vector pos)
 
                     wait groundmedkit_heal_time
 					Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-					GiveFlowstateOvershield(player)
+					GiveFlowstateOvershield(player, true)
 					Message(player,"YOU HAVE EXTRA SHIELD!", "", 4, "")
 
                     StopSoundOnEntity( player, "Lifeline_Drone_Healing_1P" )
@@ -616,7 +615,7 @@ void function MedKitHeal( entity medkit_proxy , entity medkit_model,vector pos)
 void function OnMedkitPickup(entity medkit_proxy , entity medkit_model,vector pos)
 {
     medkit_proxy.WaitSignal( "OnDestroy" )
-    wait groundmedkit_respawn_time
+    wait FlowState_ExtrashieldsSpawntime()
     try {medkit_model.Destroy()}catch(e69){}
 	wait 1
     CreateGroundMedKit( pos )
