@@ -273,7 +273,14 @@ void function _OnPlayerConnected(entity player)
 		}
     }
 	string nextlocation = file.selectedLocation.name
-		Message(player,"WELCOME TO FLOW STATE", helpMessage(), 15)
+			if(FlowState_RandomGunsEverydie())
+			{
+			Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
+			else
+			{
+			Message(player, "WELCOME TO FLOW STATE: FFA/TDM", helpMessage(), 10)
+
+			}
 	GrantSpawnImmunity(player,2)
 	    switch(GetGameState())
     {
@@ -301,15 +308,15 @@ void function _OnPlayerConnected(entity player)
 				UpgradeShields(player, true)
 			}
 
-			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Surf Purgatory")
-			{
-				printl("player spawning in droppod")
-				array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
-				array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
-				int spawni = RandomIntRange(0, 23)
+			// if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Surf Purgatory")
+			// {
+				// printl("player spawning in droppod")
+				// array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+				// array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
+				// int spawni = RandomIntRange(0, 23)
 
-				thread AirDropFireteam( shuffledspawnes[spawni] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
-			}
+				// thread AirDropFireteam( shuffledspawnes[spawni] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
+			// }
 
         	Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 	try{
@@ -1610,9 +1617,9 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
     		maxspawns++
 		}
 
-		array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
-		array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
-		int spawni = 0
+		// array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+		// array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
+		// int spawni = 0
 
 	//true == FFA
 	if (GetCurrentPlaylistVarBool("flowstateffaortdm", false ) == true)

@@ -40,6 +40,7 @@ global function FlowState_KillshotEnabled
 global function FlowState_RandomGuns
 global function FlowState_RandomGunsEverydie
 global function FlowState_RandomGunsMetagame
+global function FlowState_Droppods
 
 global function Deathmatch_GetIntroCutsceneNumSpawns           
 global function Deathmatch_GetIntroCutsceneSpawnDuration        
@@ -913,6 +914,7 @@ bool function FlowState_RandomGuns()                         { return GetCurrent
 bool function FlowState_RandomGunsEverydie() { return GetCurrentPlaylistVarBool("flowstateRandomGunsEverydie", false ) }
 bool function FlowState_RandomGunsMetagame()                         { return GetCurrentPlaylistVarBool("flowstateRandomGunsMetagame", false ) } //every round
 bool function FlowState_KillshotEnabled()                         { return GetCurrentPlaylistVarBool("flowstateKillshotEnabled", true ) }
+bool function FlowState_Droppods()                         { return GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) }
 #if SERVER   
 
 
