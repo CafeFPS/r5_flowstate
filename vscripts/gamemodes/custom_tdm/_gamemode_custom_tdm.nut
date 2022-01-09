@@ -415,13 +415,14 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			{
 				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
 				invscore++;
-
+				victim.SetPlayerGameStat( PGS_DEATHS, invscore);
+				
 				//Add a death to the victim
                 int invscore2 = victim.GetPlayerNetInt( "assists" )
 				invscore2++;
 				victim.SetPlayerNetInt( "assists", invscore2 )
 
-				victim.SetPlayerGameStat( PGS_DEATHS, invscore);
+				
 				_HandleRespawn( victim )
 				ClearInvincible(victim)
 			}} catch (e2) {}
@@ -444,9 +445,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
             score++;
             GameRules_SetTeamScore(attacker.GetTeam(), score);
 
-			int invscore = attacker.GetPlayerNetInt( "kills" )
-			invscore++;
-			attacker.SetPlayerNetInt( "kills", invscore )
+			// int invscore = attacker.GetPlayerNetInt( "kills" )
+			// invscore++;
+			// attacker.SetPlayerNetInt( "kills", invscore )
 			
 			//Heal
 				if(FlowState_RandomGunsEverydie()){
