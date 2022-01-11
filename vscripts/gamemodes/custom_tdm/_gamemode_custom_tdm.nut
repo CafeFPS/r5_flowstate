@@ -34,7 +34,7 @@ enum eTDMState
 }
 
 struct {
-	string scriptversion = "v2.5"
+	string scriptversion = "v2.6"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
 	bool mapIndexChanged = true
@@ -277,10 +277,13 @@ void function _OnPlayerConnected(entity player)
 			if(FlowState_RandomGunsEverydie())
 			{
 			Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
-			else
+			else if (FlowState_Gungame())
 			{
-			Message(player, "WELCOME TO FLOW STATE: FFA/TDM", helpMessage(), 10)
+			Message(player, "WELCOME TO FLOW STATE: GUNGAME", helpMessage(), 10)
 
+			}
+			else { 
+			Message(player, "WELCOME TO FLOW STATE: FFA/TDM", helpMessage(), 10)
 			}
 	GrantSpawnImmunity(player,2)
 	    switch(GetGameState())
@@ -292,6 +295,9 @@ void function _OnPlayerConnected(entity player)
 			HolsterAndDisableWeapons( player )
 						if(FlowState_RandomGunsEverydie()){
 			UpgradeShields(player, true)
+			}
+						if(FlowState_Gungame()){
+				KillStreakAnnouncer(player, true)
 			}
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
@@ -309,6 +315,9 @@ void function _OnPlayerConnected(entity player)
 				UpgradeShields(player, true)
 			}
 
+			if(FlowState_Gungame()){
+				KillStreakAnnouncer(player, true)
+			}
 			// if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Surf Purgatory")
 			// {
 				// printl("player spawning in droppod")
@@ -329,7 +338,10 @@ void function _OnPlayerConnected(entity player)
     MakeInvincible(player)
 	player.Code_SetTeam( TEAM_IMC )
 	player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
-	}}catch(e){}
+	}else{
+	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
+	}
+	}catch(e){}
 	}
         break
     default:
@@ -342,7 +354,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-	if (FlowState_RandomGunsEverydie())
+	if (FlowState_RandomGunsEverydie() || FlowState_Gungame())
 			{		
 	CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
 			}
@@ -367,6 +379,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	foreach (player in GetPlayerArray())
 	{
 	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderDoubleKill" )
+
+	}
+	if(FlowState_ChosenCharacter() == 8)
+	{
+	thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "diag_mp_wraith_bc_iDownedMultiple_1p" )
 	}
 	file.SameKillerStoredKills++
 	}
@@ -402,6 +419,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			
 						if(FlowState_RandomGunsEverydie()){
 			UpgradeShields(victim, true)
+			}
+			
+			if(FlowState_Gungame())
+			{
+			KillStreakAnnouncer(victim, true)
 			}
 			
 			} catch (e) {}
@@ -440,8 +462,14 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
 			}
-			
-			
+			if(FlowState_Gungame())
+			{
+			GiveGungameWeapon(attacker)
+			KillStreakAnnouncer(attacker, false)
+			}		
+			//Autoreload on kill without animation //By CaféDeColombiaFPS
+            WpnAutoReloadOnKill(attacker)
+            
 			int score = GameRules_GetTeamScore(attacker.GetTeam());
             score++;
             GameRules_SetTeamScore(attacker.GetTeam(), score);
@@ -457,10 +485,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			} else {
 			PlayerRestoreHP(attacker, 100, Equipment_GetDefaultShieldHP())
 			}
-			
-			//Autoreload on kill without animation //By CaféDeColombiaFPS
-            WpnAutoReloadOnKill(attacker)
-            }
+			}
 			} catch (e) {}
         }
 		thread victimHandleFunc()
@@ -494,29 +519,10 @@ void function _HandleRespawn(entity player)
 	
 	if(IsValid( player ) && file.selectedLocation.name == "Surf Purgatory" && file.surfEnded == false)
     {
-        if(Equipment_GetRespawnKitEnabled())
-        {
-				DecideRespawnPlayer(player, true)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
-				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-				TakeAllWeapons( player )
-				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-				MakeInvincible(player)
-        }
-        else
-        {
+
             if(!player.p.storedWeapons.len())
             {
 				DecideRespawnPlayer(player, true)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
 				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
 				TakeAllWeapons( player )
@@ -531,8 +537,6 @@ void function _HandleRespawn(entity player)
             else
             {
 				DecideRespawnPlayer(player, false)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
 				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
 				TakeAllWeapons( player )
@@ -545,14 +549,11 @@ void function _HandleRespawn(entity player)
 				MakeInvincible(player)
             }
 
-        }
     }else if(IsValid( player ) && !IsAlive(player))
     {
-        if(Equipment_GetRespawnKitEnabled())
+        if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
         {
 			DecideRespawnPlayer(player, true)
-			if(FlowState_ForceCharacter()){
-			CharSelect(player)}
             player.TakeOffhandWeapon(OFFHAND_TACTICAL)
             player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
             array<StoredWeapon> weapons = [
@@ -576,24 +577,10 @@ void function _HandleRespawn(entity player)
             if(!player.p.storedWeapons.len())
             {
                 DecideRespawnPlayer(player, true)
-				if(FlowState_ForceCharacter()){
-			CharSelect(player)}
-			array<StoredWeapon> weapons = [
-                Equipment_GetRespawnKit_PrimaryWeapon(),
-                Equipment_GetRespawnKit_SecondaryWeapon(),
-            ]
-            foreach (storedWeapon in weapons)
-            {
-                player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
-
-            }
-
             }
             else
             {
 				DecideRespawnPlayer(player, false)
-				if(FlowState_ForceCharacter()){
-			CharSelect(player)}
                 GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
             }
 
@@ -604,6 +591,8 @@ void function _HandleRespawn(entity player)
 	try {
 	if( IsValidPlayer( player ) && IsAlive(player))
         {
+							if(FlowState_ForceCharacter()){
+			CharSelect(player)}
 	TpPlayerToSpawnPoint(player)
 	
     if(file.selectedLocation.name == "Surf Purgatory"){
@@ -636,19 +625,25 @@ void function _HandleRespawn(entity player)
         GiveRandomSecondaryWeaponMetagame(file.randomsecondary, player)
         player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
         player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-	} else if(FlowState_RandomTactical())
+	}
+	if(FlowState_RandomTactical() || FlowState_GungameRandomAbilities())
 	{
+		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		file.randomtac = RandomIntRangeInclusive( 0, 7 )
         GiveRandomTac(file.randomtac, player)
-	} else if(FlowState_RandomUltimate())
+	}
+	if(FlowState_RandomUltimate() || FlowState_GungameRandomAbilities())
 	{
+    player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+		file.randomult = RandomIntRangeInclusive( 0, 5 )
         GiveRandomUlt(file.randomult, player)
 	}
-	else if(FlowState_RandomGunsEverydie() && !FlowState_Gungame()) //fiesta
+	if(FlowState_RandomGunsEverydie() && !FlowState_Gungame()) //fiesta
     {
-        file.randomprimary = RandomIntRange( 0, 23 )
-        file.randomsecondary = RandomIntRange( 0, 18 )
-        file.randomtac = RandomIntRange( 0, 6 )
-        file.randomult = RandomIntRange( 0, 5 )
+        file.randomprimary = RandomIntRangeInclusive( 0, 23 )
+        file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
+        file.randomtac = RandomIntRangeInclusive( 0, 7 )
+        file.randomult = RandomIntRangeInclusive( 0, 5 )
 		TakeAllWeapons(player)
         GiveRandomPrimaryWeapon(file.randomprimary, player)
         GiveRandomSecondaryWeapon(file.randomsecondary, player)
@@ -656,7 +651,15 @@ void function _HandleRespawn(entity player)
         GiveRandomUlt(file.randomult, player)
         player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
         player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-    }
+    } 
+	if(FlowState_Gungame())
+	{
+		GiveGungameWeapon(player)
+		entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+		try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+	}
 
 	WpnPulloutOnRespawn(player)
 }
@@ -713,7 +716,7 @@ void function WpnPulloutOnRespawn(entity player)
 	if( IsValid( player ) && IsAlive(player))
         {
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
-	wait 0.5
+	wait 0.7
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 }}catch(e){}}
 
@@ -916,6 +919,143 @@ void function GiveRandomSecondaryWeapon(int random, entity player)
     }
 }
 
+void function GiveActualGungameWeapon(int index, entity player)
+{
+    switch(index)
+    {
+        case 0:
+            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3", "bullets_mag_l2"] )
+            break;
+        case 1:
+            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "highcal_mag_l1"] )
+            break;
+        case 2:
+            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "barrel_stabilizer_l4_flash_hider", "stock_tactical_l3", "bullets_mag_l2"] )
+            break;
+		case 3:
+            player.GiveWeapon( "mp_weapon_energy_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["shotgun_bolt_l1"] )
+            break;
+        case 4:
+            player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "stock_tactical_l3", "highcal_mag_l3"] )
+            break;
+        case 5:
+            player.GiveWeapon( "mp_weapon_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["shotgun_bolt_l1"] )
+            break;
+        case 6:
+            player.GiveWeapon( "mp_weapon_hemlok", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "stock_tactical_l3", "highcal_mag_l3", "barrel_stabilizer_l4_flash_hider"] )
+            break;
+        case 7:
+            player.GiveWeapon( "mp_weapon_mastiff", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+        case 8:
+            player.GiveWeapon( "mp_weapon_pdw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "stock_tactical_l3", "highcal_mag_l3"] )
+            break;
+		case 9:
+            player.GiveWeapon( "mp_weapon_autopistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "bullets_mag_l1"] )
+            break;
+		case 10:
+			player.GiveWeapon( "mp_weapon_lmg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "highcal_mag_l3", "barrel_stabilizer_l3", "stock_tactical_l3" ] )
+            break; 
+		case 11:
+            player.GiveWeapon( "mp_weapon_shotgun_pistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["shotgun_bolt_l3"] )
+            break;
+		case 12:
+            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "stock_tactical_l1", "bullets_mag_l2"] )
+            break;
+		case 13:
+            player.GiveWeapon( "mp_weapon_defender", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_ranged_hcog", "stock_sniper_l2"] )
+            break;
+		case 14:
+            player.GiveWeapon( "mp_weapon_energy_ar", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "energy_mag_l3", "stock_tactical_l3", "hopup_turbocharger"] )
+            break;
+		case 15:
+            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 16:
+            player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "bullets_mag_l3", "stock_tactical_l3"] )
+            break;
+		case 17:
+            player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 18:
+            player.GiveWeapon( "mp_weapon_lstar", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 19:
+            player.GiveWeapon( "mp_weapon_g2", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 20:
+            player.GiveWeapon( "mp_weapon_shotgun_pistol", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 21:
+            player.GiveWeapon( "mp_weapon_esaw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "energy_mag_l1", "barrel_stabilizer_l2"] )
+            break;
+		case 22:
+            player.GiveWeapon( "mp_weapon_doubletake", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["energy_mag_l3"] )
+            break;
+		case 23:
+            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "bullets_mag_l1", "barrel_stabilizer_l1", "stock_tactical_l1"] )
+            break;
+		case 24:
+            player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l1"] )
+            break;
+		case 25:
+            player.GiveWeapon( "mp_weapon_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+        case 26:
+            player.GiveWeapon( "mp_weapon_energy_shotgun", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 27:
+            player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["stock_tactical_l1", "highcal_mag_l2"] )
+            break;
+		case 28:
+            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_threat", "bullets_mag_l1", "barrel_stabilizer_l3", "stock_tactical_l1"] )
+            break;
+		case 29:
+            player.GiveWeapon( "mp_weapon_autopistol", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 30:
+            player.GiveWeapon( "mp_weapon_mastiff", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 31:
+            player.GiveWeapon( "mp_weapon_dmr", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_bruiser", "highcal_mag_l2", "barrel_stabilizer_l2", "stock_sniper_l3"] )
+            break;
+		case 32:
+            player.GiveWeapon( "mp_weapon_pdw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["stock_tactical_l1", "highcal_mag_l1"] )
+            break;
+		case 33:
+            player.GiveWeapon( "mp_weapon_esaw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "energy_mag_l1", "barrel_stabilizer_l4_flash_hider"] )
+            break;
+		case 34:
+            player.GiveWeapon( "mp_weapon_alternator_smg", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic", "barrel_stabilizer_l2"] )
+            break;
+		case 35:
+            player.GiveWeapon( "mp_weapon_sniper", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 36:
+            player.GiveWeapon( "mp_weapon_defender", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_sniper", "stock_sniper_l2"] )
+            break;
+		case 37:
+            player.GiveWeapon( "mp_weapon_esaw", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 38:
+            player.GiveWeapon( "mp_weapon_rspn101", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_holosight_variable"])
+            break;
+		case 39:
+            player.GiveWeapon( "mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0)
+            break;
+		case 40:
+            player.GiveWeapon( "mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+            break;
+		case 41:
+            player.GiveWeapon( "mp_weapon_g2", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["bullets_mag_l3", "barrel_stabilizer_l4_flash_hider", "stock_sniper_l3", "hopup_double_tap"] )
+            break;
+		case 42:
+            player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["bullets_mag_l2"] )
+            break;
+
+    }
+}
+
 void function GiveRandomTac(int random, entity player)
 {
     switch(random)
@@ -939,9 +1079,11 @@ void function GiveRandomTac(int random, entity player)
             player.GiveOffhandWeapon("mp_ability_area_sonar_scan", OFFHAND_TACTICAL)
             break;
 		case 6:
-            player.GiveOffhandWeapon("mp_ability_holopilot", OFFHAND_TACTICAL)
+            player.GiveOffhandWeapon("mp_weapon_grenade_sonar", OFFHAND_TACTICAL)
             break;
-			
+		case 7:
+            player.GiveOffhandWeapon("mp_weapon_deployable_cover", OFFHAND_TACTICAL)
+            break;			
     }
 }
 
@@ -1293,13 +1435,9 @@ int function shielddd(int value, int min, int max) {
 void function UpgradeShields(entity player, bool died) {
 
     if (!IsValid(player)) return
-
-    //If player to upgrade died, then dont do killstreak upgrade, just reset their shield
     if (died) {
         player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
         Inventory_SetPlayerEquipment(player, BLUE_SHIELD, "armor")
-		//player.SetShieldHealthMax( 75 )
-		//player.SetShieldHealth( 130 )
     } else {
         player.SetPlayerGameStat( PGS_TITAN_KILLS, player.GetPlayerGameStat( PGS_TITAN_KILLS ) + 1)
 
@@ -1371,7 +1509,47 @@ void function UpgradeShields(entity player, bool died) {
     PlayerRestoreHPFIESTA(player, 100)
 }
 
+void function KillStreakAnnouncer(entity player, bool died) {
 
+    if (!IsValid(player)) return
+    if (died) {
+        player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+    } else {
+		//is Custom Damageinfo Killshot adding a kill in pgs titan kills?
+        //player.SetPlayerGameStat( PGS_TITAN_KILLS, player.GetPlayerGameStat( PGS_TITAN_KILLS ) + 1)
+        switch (player.GetPlayerGameStat( PGS_TITAN_KILLS )) {
+			case 5:
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"KILL STREAK", player.GetPlayerName() + " got 5 kill streak!", 4, "")
+				}
+			case 10:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"EXTRA SHIELD KILL STREAK", player.GetPlayerName() + " got 10 kill streak and extra shield!", 5, "")
+				}
+            break
+			case 15:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"15 KILL STREAK", player.GetPlayerName() + " got 15 kill streak and extra shield!", 5, "")
+				}
+			case 20:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"20 BOMB KILL STREAK", player.GetPlayerName() + " got a 20 bomb and extra shield!", 5, "")
+				}
+            break
+			case 25:
+				GiveFlowstateOvershield(player)
+				foreach(sPlayer in GetPlayerArray()){
+				Message(sPlayer,"PREDATOR SUPREMACY", player.GetPlayerName() + " got 25 kill streak and extra shield!", 5, "")
+				}
+            break
+			default:
+                break
+        }
+    }
+}
 
 #if SERVER
 void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
@@ -1386,6 +1564,67 @@ void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGroun
 	}
 }
 #endif
+
+void function GiveGungameWeapon(entity player) {
+//By CaféDeColombiaFPS
+	int WeaponIndex = player.GetPlayerNetInt( "kills" )
+	int realweaponIndex = WeaponIndex
+	int MaxWeapons = 42
+		if (WeaponIndex > MaxWeapons) {
+        realweaponIndex = RandomInt(42)
+		}
+		
+	if(!FlowState_GungameRandomAbilities())
+	{
+		entity weapon
+		string tac = GetCurrentPlaylistVarString("flowstateGUNGAME_tactical", "~~none~~")
+		string ult = GetCurrentPlaylistVarString("flowstateGUNGAME_ultimate", "~~none~~")
+		
+		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+        entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+		try{
+		
+		float oldTacticalChargePercent = 0.0
+                if( IsValid( tactical ) ) {
+                    player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+                    oldTacticalChargePercent = float( tactical.GetWeaponPrimaryClipCount()) / float(tactical.GetWeaponPrimaryClipCountMax() )
+                }
+                weapon = player.GiveOffhandWeapon(tac, OFFHAND_TACTICAL)
+				entity newTactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+                newTactical.SetWeaponPrimaryClipCount( int( newTactical.GetWeaponPrimaryClipCountMax() * oldTacticalChargePercent ) )
+				}catch(e111){}
+				try{
+				                if( IsValid( ultimate ) ) player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+                weapon = player.GiveOffhandWeapon(ult, OFFHAND_ULTIMATE)
+		}catch(e112){}
+	}
+	try{
+	//give gungame weapon
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	GiveActualGungameWeapon(realweaponIndex, player)
+	//give secondary
+	string sec = GetCurrentPlaylistVarString("flowstateGUNGAMESecondary", "~~none~~")
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+	player.GiveWeapon( sec, WEAPON_INVENTORY_SLOT_PRIMARY_1)
+	
+	if (sec != "") {
+			array<string> attachments = []
+			
+			for(int i = 0; GetCurrentPlaylistVarString("flowstateGUNGAMESecondary" + "_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
+			{
+				if(GetCurrentPlaylistVarString("flowstateGUNGAMESecondary" + "_" + i.tostring(), "~~none~~") == ""){
+				continue
+				}
+				else{
+				attachments.append(GetCurrentPlaylistVarString("flowstateGUNGAMESecondary" + "_" + i.tostring(), "~~none~~"))}
+			}
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			player.GiveWeapon(sec, WEAPON_INVENTORY_SLOT_PRIMARY_1, attachments)
+	}
+	//entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	//if( IsValid( primary ) && !primary.IsWeaponOffhand() ) player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, GetSlotForWeapon(player, primary))
+		}catch(e113){}
+}
 
  // ██████   █████  ███    ███ ███████     ██       ██████   ██████  ██████
 // ██       ██   ██ ████  ████ ██          ██      ██    ██ ██    ██ ██   ██
@@ -1414,26 +1653,19 @@ void function VotingPhase()
     SetGameState(eGameState.MapVoting)
 	if (FlowState_RandomGuns() )
     {
-        file.randomprimary = RandomIntRange( 0, 15 )
-        file.randomsecondary = RandomIntRange( 0, 6 )
+        file.randomprimary = RandomIntRangeInclusive( 0, 15 )
+        file.randomsecondary = RandomIntRangeInclusive( 0, 6 )
     } else if (FlowState_RandomGunsMetagame())
 	{
-		file.randomprimary = RandomIntRange( 0, 3 )
-        file.randomsecondary = RandomIntRange( 0, 4 )
+		file.randomprimary = RandomIntRangeInclusive( 0, 3 )
+        file.randomsecondary = RandomIntRangeInclusive( 0, 4 )
 	} else if (FlowState_RandomGunsEverydie())
 	{
-		file.randomprimary = RandomIntRange( 0, 23 )
-        file.randomsecondary = RandomIntRange( 0, 18 )
-	} else if (FlowState_RandomTactical())
-	{
-		file.randomtac = RandomIntRange( 0, 6 )
-	} else if (FlowState_RandomUltimate())
-	{
-		file.randomult = RandomIntRange( 0, 5 )
+		file.randomprimary = RandomIntRangeInclusive( 0, 23 )
+        file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
 	}
 	
 wait 1
-
 
 foreach(player in GetPlayerArray())
 {
@@ -1442,6 +1674,10 @@ foreach(player in GetPlayerArray())
         {
 			player.SetThirdPersonShoulderModeOn()
 			_HandleRespawn(player)
+			if(FlowState_Gungame())
+{
+	GiveGungameWeapon(player)
+}
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
 			HolsterAndDisableWeapons( player )
@@ -1452,20 +1688,22 @@ foreach(player in GetPlayerArray())
 
 wait 5
 
+
 	if (FlowState_LockPOI()) {
 		file.nextMapIndex = FlowState_LockedPOI()
-	} else if(FlowState_SURF()){
-		file.nextMapIndex = 12
-	}
-	else if (!file.mapIndexChanged)
+	}else if (!file.mapIndexChanged)
 		{
 			file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
+			//surf will never be in normal playlist mode
 			if(file.nextMapIndex == 12 && GetMapName() == "mp_rr_desertlands_64k_x_64k" || file.nextMapIndex == 12 && GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" )
 			{
 			file.nextMapIndex = 0
 			}
 		}
-
+	
+	if(FlowState_SURF()){
+	file.nextMapIndex = 12}
+	
 int choice = file.nextMapIndex
 file.mapIndexChanged = false
 file.selectedLocation = file.locationSettings[choice]
@@ -1491,6 +1729,7 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	}
 
 //TODO MORE POIS
+
 
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) == false)
@@ -1916,7 +2155,6 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		        player.SetThirdPersonShoulderModeOff()
 		        ClearInvincible(player)
-		        DeployAndEnableWeapons(player)
 		        _HandleRespawn(player)
 		        ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
@@ -1942,8 +2180,6 @@ else
             {
 		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		        player.SetThirdPersonShoulderModeOff()
-		        //ClearInvincible(player)
-		        DeployAndEnableWeapons(player)
 		        _HandleRespawn(player)
 		if(file.selectedLocation.name != "Surf Purgatory"){
 			ClearInvincible(player)
@@ -2003,20 +2239,26 @@ foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			player.p.playerDamageDealt = 0.0}
+			player.p.playerDamageDealt = 0.0
 			if (FlowState_ResetKillsEachRound() && IsValidPlayer(player)) 
 			{
 				player.SetPlayerNetInt("kills", 0) //Reset for kills
 	    		player.SetPlayerNetInt("assists", 0) //Reset for deaths
 			}
-			if(FlowState_RandomGunsEverydie()){
-			UpgradeShields(player, true)
+			
+			if(FlowState_Gungame())
+			{
+			player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
+			KillStreakAnnouncer(player, true)
 			}
 			
+			if(FlowState_RandomGunsEverydie()){
+			player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
+			UpgradeShields(player, true)
+			} 
+		}
 	}
-
 try {file.supercooldropship.Destroy()}catch(e69){}
-
 ResetAllPlayerStats()
 file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
 WaitFrame()
@@ -2031,7 +2273,10 @@ float endTime = Time() + FlowState_RoundTime()
 if(file.selectedLocation.name == "Surf Purgatory"){
 file.bubbleBoundary.Destroy()
 }
-
+foreach(player in GetPlayerArray())
+    {
+WpnPulloutOnRespawn(player)
+	}
 if (FlowState_Timer()){
 while( Time() <= endTime )
 	{
@@ -2714,14 +2959,17 @@ bool function ClientCommand_Help(entity player, array<string> args)
 {
 	if(IsValid(player)) {
 		try{
-		if(FlowState_RandomGunsEverydie())
-		{
-		Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
-		else
-		{
-		Message(player, "WELCOME TO FLOW STATE: FFA", helpMessage(), 10)
+			if(FlowState_RandomGunsEverydie())
+			{
+			Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
+			else if (FlowState_Gungame())
+			{
+			Message(player, "WELCOME TO FLOW STATE: GUNGAME", helpMessage(), 10)
 
-		}
+			}
+			else { 
+			Message(player, "WELCOME TO FLOW STATE: FFA/TDM", helpMessage(), 10)
+			}
 		}catch(e) {}
 	}
 	return true
@@ -3078,7 +3326,7 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 //By michae\l/#1125 & Retículo Endoplasmático#5955.
 {
 if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin1 || player.GetPlayerName() == file.admin2 || player.GetPlayerName() == file.admin3 || player.GetPlayerName() == file.admin4) {
-    int currentTeam = 0 //2
+    int currentTeam = 2 //2
     int numTeams = int(args[0])
         int oldTeam = player.GetTeam()
     int i
@@ -3089,7 +3337,6 @@ if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin
         if (IsValid(p)) {p.Code_SetTeam(TEAM_IMC + 2 + (currentTeam % numTeams))}
                 currentTeam += 1
     }
-
 	foreach (sPlayer in GetPlayerArray()){
 	Message(sPlayer, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
 	}

@@ -38,6 +38,7 @@ global function FlowState_ExtrashieldsEnabled
 global function FlowState_ExtrashieldsSpawntime
 global function FlowState_ExtrashieldValue
 global function FlowState_Gungame
+global function FlowState_GungameRandomAbilities
 global function FlowState_SURF
 
 global function Deathmatch_GetIntroCutsceneNumSpawns           
@@ -544,19 +545,19 @@ case "mp_rr_canyonlands_64k_x_64k":
                         NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
                         NewLocPair(<7965.0, 5976.0, -4266.0>, <0, -135, 0>),
                         NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
-                        NewLocPair(<9862, 5561, -3832>, <0, 180, 0>),
-                        NewLocPair(<9800, 5347, -3507>, <0, 134, 0>),
+                        //NewLocPair(<9862, 5561, -3832>, <0, 180, 0>),
+                        //NewLocPair(<9800, 5347, -3507>, <0, 134, 0>),
                         NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
                         NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
                         NewLocPair(<8243, 4537, -4235>, <-13, 32, 0>),
                         //NewLocPair(<10176, 4245, -4300>, <0, 100, 0>),
                         NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>),
                         NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
-                        NewLocPair(<10058, 2071, -3827>, <0, -90, 0>),
+                        //NewLocPair(<10058, 2071, -3827>, <0, -90, 0>),
                         NewLocPair(<7299, 7471, -4222>, <0, -90, 0>),
-                        NewLocPair(<9976, 8539, -4207>, <0, -90, 0>),
+                        //NewLocPair(<9976, 8539, -4207>, <0, -90, 0>),
                         NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
-                        NewLocPair(<10107, 3843, -4000>, <0, 90, 0>),
+                        //NewLocPair(<10107, 3843, -4000>, <0, 90, 0>),
                         NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
                         NewLocPair(<12775, 4446, -4235>, <0, 150, 0>),
                         NewLocPair(<9012, 5386, -4242>, <0, 90, 0>),
@@ -920,6 +921,7 @@ bool function FlowState_ExtrashieldsEnabled()                         { return G
 float function FlowState_ExtrashieldsSpawntime()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldsSpawntime", 240 ) }
 float function FlowState_ExtrashieldValue()                         { return GetCurrentPlaylistVarFloat("flowstateExtrashieldValue", 150 ) }
 bool function FlowState_Gungame()                         { return GetCurrentPlaylistVarBool("flowstateGungame", false ) }
+bool function FlowState_GungameRandomAbilities()                         { return GetCurrentPlaylistVarBool("flowstateGUNGAMERandomAbilities", false ) }
 bool function FlowState_SURF()                         { return GetCurrentPlaylistVarBool("flowstateSurf", false ) }
 
 #if SERVER   
