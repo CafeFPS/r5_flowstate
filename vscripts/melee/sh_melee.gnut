@@ -623,7 +623,7 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 		attackerKnockBackVelocity *= 0.5
 		if ( LengthSqr( attackerKnockBackVelocity ) > 0.0 && !isAttackingGround )
 		{
-			attacker.KnockBack( attackerKnockBackVelocity, 0.25 )
+			attacker.KnockBack( attackerKnockBackVelocity + attacker.GetVelocity(), 0.25 )
 		}
 
 		attacker.GrappleDetach()
