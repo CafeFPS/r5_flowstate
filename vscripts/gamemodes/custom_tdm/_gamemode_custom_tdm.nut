@@ -354,7 +354,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-	if (FlowState_RandomGunsEverydie() || FlowState_Gungame())
+	if (FlowState_RandomGunsEverydie())
 			{		
 	CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
 			}
@@ -1725,7 +1725,7 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     SurfPurgatoryLoad()
 } else if(file.selectedLocation.name == "Gaunlet"){
 	DestroyPlayerProps()
-	thread CreateGroundMedKit(<-21289, -12030,3030>)
+	thread CreateGroundMedKit(<-21289, -12030, 3060>)
 	}
 
 //TODO MORE POIS
