@@ -427,11 +427,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			}
 			
 			} catch (e) {}
-			try{
-            if(IsValid(attacker) && attacker.IsPlayer())
-            {
-                Remote_CallFunction_NonReplay(attacker, "ServerCallback_TDM_PlayerKilled")
-            }} catch (e1) {}
+
 			wait max(0, Deathmatch_GetRespawnDelay() - reservedTime)
 			try{
 			if(IsValid(victim) )
@@ -491,11 +487,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		thread victimHandleFunc()
         thread attackerHandleFunc()
         foreach(player in GetPlayerArray()){
-		try {
-        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_PlayerKilled")
-		}
-    catch(exception){;}
-		}
+		try {Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_PlayerKilled")}
+    catch(exception){;}}
         break
     default:
     }
@@ -523,6 +516,8 @@ void function _HandleRespawn(entity player)
             if(!player.p.storedWeapons.len())
             {
 				DecideRespawnPlayer(player, true)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
 				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
 				TakeAllWeapons( player )
@@ -554,6 +549,8 @@ void function _HandleRespawn(entity player)
         if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
         {
 			DecideRespawnPlayer(player, true)
+			if(FlowState_ForceCharacter()){
+			CharSelect(player)}
             player.TakeOffhandWeapon(OFFHAND_TACTICAL)
             player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
             array<StoredWeapon> weapons = [
@@ -577,10 +574,14 @@ void function _HandleRespawn(entity player)
             if(!player.p.storedWeapons.len())
             {
                 DecideRespawnPlayer(player, true)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
             }
             else
             {
 				DecideRespawnPlayer(player, false)
+				if(FlowState_ForceCharacter()){
+				CharSelect(player)}
                 GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
             }
 
@@ -591,8 +592,6 @@ void function _HandleRespawn(entity player)
 	try {
 	if( IsValidPlayer( player ) && IsAlive(player))
         {
-							if(FlowState_ForceCharacter()){
-			CharSelect(player)}
 	TpPlayerToSpawnPoint(player)
 	
     if(file.selectedLocation.name == "Surf Purgatory"){
