@@ -62,14 +62,17 @@ void function AirDropFireteam( vector origin, vector angles, string animationNam
     entity threatProxy = CreateDropPodThreatIndicator(origin, angles)
 
 	waitthread LaunchAnimDropPod2( dropPod, animationName, OriginToGround( origin ), angles, player )
-
+	
 	//thread WaitForDropFX(dropPod, animationName, OriginToGround( origin ), angles) 
 
     if(IsValid(threatProxy))
         threatProxy.Destroy()
 
 	InitDropPod( dropPod )
-
+	wait 5
+	if(IsValidPlayer(player)){
+	player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0)	
+	}
 }
 
 void function WaitForDropFX(entity dropPod, string animationName, vector origin, vector angles)

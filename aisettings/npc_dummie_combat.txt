@@ -1,13 +1,13 @@
 npc_dummie_combat
 {
-	AIClass							dummie
+	AIClass							human
 	TraverseAnimType				spectre
 
-	title							DUMMIE
+	title							"             "
 	useSequenceBounds				1
 
 	aiEnemy_usePriorityDist			1300
-	aiEnemy_immediateThreatDist		94
+	aiEnemy_immediateThreatDist		800
 
 	AimAngularSpeed					7
 
@@ -17,30 +17,33 @@ npc_dummie_combat
 	BodyType						human
 
 	footstep_type					"human"
-	mechanical						1
+	mechanical						0
 
 	BehaviorSelector				"behavior_dummie_combat"
-	LocationScoringCriteria			"CommonShootWithLos"
+	//LocationScoringCriteria			"CommonShootWithLos"
 
-	chaseStopDist					300
-	chaseStopDistHeavyArmor			800
+	chaseStopDist					150
+	chaseStopDistHeavyArmor			160
 
 	allowCower						0
 	allowUseCover					1
+
 
 	traverseCostFactor				2.0
 	minGoalRadius					256
 
 	DefaultModelName				"mdl/humans/class/medium/combat_dummie_medium.rmdl"
 
-	DefaultWeapon					"mp_weapon_rspn101"
-	WeaponCapacity					"PilotMainWeapons"
+	DefaultWeapon					"mp_weapon_hemlok"
+	WeaponCapacity					"FromLoadout"
 
     //Precision
-    aimingPrecisionMin              0
+    aimingPrecisionMin              0.7
     aimingPrecisionMax              1
     aimingPrecisionIncreaseRate     0.175
     aimingPrecisionDecreaseRate     0.125
+
+	enemyAimAtMeWidth				100
 
 	longJumpCheckMinInterval		15
 	longJumpCheckMaxInterval		30
@@ -63,10 +66,10 @@ npc_dummie_combat
 	//GibSpeed						200
 	//GibAngularSpeed					20
 	//GibMaxDist						1600
-	//GibFX							"P_exp_spectre_death"
+	//GibFX							"P_exp_human_death"
 	//GibSound						"Explo_Spectre"
 
-	headshotFX 						"P_headshot_pilot_robot"
+	headshotFX 						"P_headshot_pilot"
 	landingImpactTable				"pilot_landing"
 	footstepImpactTable				"pilot_foostep"
 
@@ -126,7 +129,7 @@ npc_dummie_combat
 	MeleeDamageMax					25
 	MeleeDamageMin					25
 
-	Health							120
+	Health							215
 
 	PainOnHeavyDamageThreshold		9999 // 32
 	PainOnRepeatDamageThreshold		9999 // 70
@@ -147,11 +150,11 @@ npc_dummie_combat
 	//meleeImpactEffectTable		"melee_spectre"
 
 	MinForceWalkDist				0
-	MinStartMoveDist				100
+	MinStartMoveDist				10
 	MoveYawSpeed					12
 	//moveDeflectionLookAheadTime		0.5			[$sp]
 
-	//shootingCoverFightRadius 		600			[$sp]
+	shootingCoverFightRadius 		600
 
 	DrawEnemyHealthBar				0
 	DrawTargetHealthBar				0
@@ -173,7 +176,8 @@ npc_dummie_combat
 
 //////////////////////
 	chancetohit_spread_ontarget		15.0
-	disableMeleeExecution		1
+	disableMeleeExecution		0
+	
 //////////////////////
 
 }

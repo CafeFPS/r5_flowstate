@@ -20,7 +20,7 @@ npc_training_dummy
 	DefaultModelName				"mdl/humans/class/medium/pilot_medium_generic.rmdl"
 	DefaultWeapon					""
 
-	Health							10
+	Health							225
 
 	FOV_Vert_Offset					-10
     FOV_Near_Dist					150		// distance at which we transition between near and far FOV values

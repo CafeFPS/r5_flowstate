@@ -145,12 +145,12 @@ void function SpawnDummy(vector origin, vector angles)
 {
     entity dummy = CreateEntity( "npc_dummie" )
     SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
-	SetTargetName(dummy,  "DUMMIE")
+	SetTargetName(dummy,  "      ")
     dummy.SetOrigin( origin )
     dummy.SetAngles( angles )
     SetTeam(dummy, 99)
     DispatchSpawn( dummy )
-    dummy.SetSkin(1)
+    dummy.SetSkin(RandomInt(6))
 	thread OnDummyKilled(dummy)
 }
 
@@ -162,7 +162,7 @@ void function OnDummyKilled(entity dummy)
 	vector pos = dummy.GetOrigin()
 	vector angles = dummy.GetAngles()
 	dummy.WaitSignal( "OnDeath" )
-	wait 3
+	wait 1
 	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
 	thread SpawnDummy( pos, angles)
 }

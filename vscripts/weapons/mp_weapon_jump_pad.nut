@@ -59,6 +59,8 @@ void function OnWeaponTossPrep_weapon_jump_pad( entity weapon, WeaponTossPrepPar
 void function OnJumpPadPlanted( entity projectile )
 {
 	#if SERVER
+	string gameMode = GameRules_GetGameMode()
+
 	Assert( IsValid( projectile ) )
 
 	entity owner = projectile.GetOwner()
@@ -102,17 +104,25 @@ void function OnJumpPadPlanted( entity projectile )
 	projectile.Destroy()
 
 	newProjectile.kv.solid = 6
+
+	if(gameMode != "custom_tdm"){
 	newProjectile.SetTakeDamageType( DAMAGE_YES )
 	newProjectile.SetMaxHealth( 100 )
 	newProjectile.SetHealth( 100 )
+			} else {
+	newProjectile.SetTakeDamageType( DAMAGE_NO )			
+			}
 	SetVisibleEntitiesInConeQueriableEnabled( newProjectile, true )
 
 	newProjectile.SetOwner( owner )
 
 	//Dispatch the spawn after our settings are done
 	DispatchSpawn( newProjectile )
-
+	newProjectile.EndSignal( "OnDestroy" )
+	
+		if(gameMode != "custom_tdm"){
 	thread TrapDestroyOnRoundEnd( owner, newProjectile )
+	}
 
 	// if ( IsValid( traceResult.hitEnt ) )
 	// {
@@ -147,7 +157,6 @@ if ( IsValid( traceResult.hitEnt ) )
 	JumpPad_CreatedCallback( newProjectile )
 	
 
-	string gameMode = GameRules_GetGameMode()
 	if(gameMode == "custom_tdm"){
 	thread JumpPadWatcher(newProjectile)
 	}

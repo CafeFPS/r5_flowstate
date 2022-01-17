@@ -661,6 +661,7 @@ function ZiplineInit( entity player )
 
 function CreateZiplineJetEffects( entity player )
 {
+	try{
 	asset jumpJetEffectFriendlyName = $"hmn_imc_jump_jet_wallrun_full"
 	asset jumpJetEffectEnemyName = $"hmn_mcorps_jump_jet_wallrun_full"
 	int playerTeam = player.GetTeam()
@@ -741,6 +742,7 @@ function CreateZiplineJetEffects( entity player )
 
 	player.s.ziplineEffects.append( handSparks )
 	player.s.ziplineEffects.append( handSparks2 )
+}catch(e420){}
 }
 
 void function CodeCallback_ZiplineMount( entity player, entity zipline )

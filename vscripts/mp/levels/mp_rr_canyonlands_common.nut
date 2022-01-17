@@ -213,8 +213,10 @@ void function EntitiesDidLoad()
 
 void function __EntitiesDidLoad()
 {
+		if(GetMapName() != "mp_rr_canyonlands_staging"){
 	SpawnEditorProps()
-	if( GameRules_GetGameMode() != FREELANCE )
+	}
+		if( GameRules_GetGameMode() != FREELANCE )
 	{
 		waitthread FindHoverTankEndNodes()
 		SpawnHoverTanks()

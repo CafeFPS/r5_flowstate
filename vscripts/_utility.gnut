@@ -4419,6 +4419,7 @@ bool function TakeSidearmWeapon( entity player )
 
 void function TakeAllWeapons( entity ent )
 {
+try{
 	if ( ent.IsPlayer() )
 	{
 		ent.RemoveAllItems()
@@ -4440,6 +4441,7 @@ void function TakeAllWeapons( entity ent )
 		}
 		TakeWeaponsForArray( ent, weapons )
 	}
+	}catch(e){}
 }
 
 

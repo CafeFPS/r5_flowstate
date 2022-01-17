@@ -38,3 +38,27 @@ global const table SURF_SETTINGS = {
     ["mat_sun_color"] = "1.0 1.5 2.0 1.0"
 }
 
+global const table PROPHUNT_SETTINGS = {
+    ["landslowdownduration"] = 0,
+    ["jumpheight"]=60,
+    ["gravityscale"]=0.80,
+    ["stepheight"]=18,
+    ["ziplineSpeed"]=600,
+    ["wallrun"] = 1,
+    ["doublejump"] = 1,
+    ["superjumpMinHeight"]=60,
+    ["superjumpMaxHeight"]=60,
+    ["superjumpHorzSpeed"]=180,
+    ["wallrun_timeLimit"]=1.75,
+    ["wallrunJumpOutwardSpeed"]=205,
+    ["wallrunJumpUpSpeed"]=230,
+    ["wallrunJumpInputDirSpeed"]=80,
+    ["wallrunMaxSpeedVertical"]=225,
+    ["wallrunMaxSpeedHorizontal"]=420,
+    ["wallrunAccelerateVertical"]=360,
+    ["wallrunAccelerateHorizontal"]=1500,
+    ["leech_range"]=64,
+    ["impactSpeed"]=380,
+    ["slidedecel"]=50,
+    ["slidevelocitydecay"]=0.7
+}
