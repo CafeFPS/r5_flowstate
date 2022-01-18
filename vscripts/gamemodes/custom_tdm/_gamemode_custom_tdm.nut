@@ -2401,8 +2401,7 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 {
     DestroyPlayerProps()
     wait 1
-    SkillTrainerLoad()	
-}
+SkillTrainerLoad()	}
 } else if(file.selectedLocation.name == "Surf Purgatory"){
 	file.surfEnded = false
 	DestroyPlayerProps()
