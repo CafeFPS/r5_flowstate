@@ -388,7 +388,7 @@ void function _OnPlayerConnected(entity player)
 			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Surf Purgatory" || GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia")
 			{
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
-				thread AirDropFireteam( shuffledspawnes[spawni] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
+				thread AirDropFireteam( newdropshipspawns[spawni] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
 				_HandleRespawn(player, true)
 				player.SetAngles( <0,180,0> )
 				printl("player spawning in droppod")
@@ -2235,12 +2235,12 @@ void function GiveGungameWeapon(entity player) {
 	int realweaponIndex = WeaponIndex
 	int MaxWeapons = 42
 		if (WeaponIndex > MaxWeapons) {
-        file.tdmState == eTDMState.NEXT_ROUND_NOW
-			foreach (player in GetPlayerArray())
+        file.tdmState = eTDMState.NEXT_ROUND_NOW
+		foreach (sPlayer in GetPlayerArray())
 			{
-			player.SetPlayerNetInt("kills", 0) //Reset for kills
-	    	player.SetPlayerNetInt("assists", 0) //Reset for deaths
-			player.p.playerDamageDealt = 0.0
+			sPlayer.SetPlayerNetInt("kills", 0) //Reset for kills
+	    	sPlayer.SetPlayerNetInt("assists", 0) //Reset for deaths
+			sPlayer.p.playerDamageDealt = 0.0
 			}
 		}
 		
