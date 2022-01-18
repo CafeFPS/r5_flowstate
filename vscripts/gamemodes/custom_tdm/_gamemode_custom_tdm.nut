@@ -2397,11 +2397,11 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     wait 1
 	CreateGroundMedKit(<17247,31823,-310>)
     SkillTrainerLoad()
-} else if(file.selectedLocation.name == "Skill trainer By Colombia")
+} else if(file.selectedLocation.name == "Skill trainer By Colombia" )
 {
     DestroyPlayerProps()
     wait 1
-SkillTrainerLoad()	}
+    SkillTrainerLoad()	
 } else if(file.selectedLocation.name == "Surf Purgatory"){
 	file.surfEnded = false
 	DestroyPlayerProps()
