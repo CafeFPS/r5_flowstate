@@ -332,7 +332,7 @@ void function _OnPlayerConnected(entity player)
 			if(FlowState_ForceCharacter()){
 				CharSelect(player)}
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
-	string nextlocation = file.selectedLocation.name
+
 			if(FlowState_RandomGunsEverydie())
 			{
 			Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
@@ -382,16 +382,9 @@ void function _OnPlayerConnected(entity player)
         {
 			player.UnfreezeControlsOnServer();
 			array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
-			array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
-			int spawni = RandomIntRange(0, shuffledspawnes.len()-1)
-			if(FlowState_RandomGunsEverydie()){
-				UpgradeShields(player, true)
-			}
+			//array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
+			int spawni = RandomIntRangeInclusive(0, newdropshipspawns.len()-1)
 
-			if(FlowState_Gungame()){
-				KillStreakAnnouncer(player, true)
-			}
-	
 			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Surf Purgatory" || GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia")
 			{
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
@@ -406,7 +399,14 @@ void function _OnPlayerConnected(entity player)
 			if(file.selectedLocation.name != "Surf Purgatory"){
 					ClearInvincible(player)
 				}
+			if(FlowState_RandomGunsEverydie()){
+				UpgradeShields(player, true)
+			}
 
+			if(FlowState_Gungame()){
+				KillStreakAnnouncer(player, true)
+			}
+	
         	Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 			try{
 			if(file.locationSettings.name == "Surf Purgatory"){
@@ -2235,7 +2235,13 @@ void function GiveGungameWeapon(entity player) {
 	int realweaponIndex = WeaponIndex
 	int MaxWeapons = 42
 		if (WeaponIndex > MaxWeapons) {
-        realweaponIndex = RandomInt(42)
+        file.tdmState == eTDMState.NEXT_ROUND_NOW
+			foreach (player in GetPlayerArray())
+			{
+			player.SetPlayerNetInt("kills", 0) //Reset for kills
+	    	player.SetPlayerNetInt("assists", 0) //Reset for deaths
+			player.p.playerDamageDealt = 0.0
+			}
 		}
 		
 	if(!FlowState_GungameRandomAbilities())
@@ -2386,7 +2392,7 @@ file.dropselectedLocation = file.droplocationSettings[choice]
 if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
 	DestroyPlayerProps()
 	CreateGroundMedKit(<10725, 5913,-4225>)
-} else if(file.selectedLocation.name == "Skill trainer By Colombia"){
+} else if(file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled()){
     DestroyPlayerProps()
     wait 1
 	CreateGroundMedKit(<17247,31823,-310>)
@@ -2396,7 +2402,7 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	DestroyPlayerProps()
     wait 1
     SurfPurgatoryLoad()
-} else if(file.selectedLocation.name == "Gaunlet"){
+} else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
 	DestroyPlayerProps()
 	CreateGroundMedKit(<-21289, -12030, 3060>)
 	}
