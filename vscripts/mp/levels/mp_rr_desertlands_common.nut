@@ -111,8 +111,9 @@ void function EntitiesDidLoad()
 		thread DesertlandsTrain_Init()
 
 	FillLootTable()
-	if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false )){
+	if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) ){
 
+	if(!GetCurrentPlaylistVarBool("flowstateGrenadesDisabled", false )){
 	// //Granadas-Grenades
 	SpawnGrenades(<19010,33300,-810>, <0, 0, 0>, 6, ["thermite", "frag", "arc"], 3)
 	SpawnGrenades(<18882,29908,-810>,<0, -90, 0>, 6, ["thermite", "frag", "arc"], 3)
@@ -123,7 +124,7 @@ void function EntitiesDidLoad()
 	SpawnGrenades(<11238, 4238,-4283>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
 	SpawnGrenades(<8443, 4459, -4283>,<0, 0, 0>, 10, ["thermite", "frag", "arc"], 1)
 	SpawnGrenades(<10293, 3890, -3948>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
-
+	}
 	CreateWeaponRackSkillTrainer(<17250,32500,2220>, <0,-90,0>, "mp_weapon_sniper")
 	CreateWeaponRackSkillTrainer(<17500,32500,2220>, <0,-90,0>, "mp_weapon_mastiff")
 	CreateWeaponRackSkillTrainer(<17750,32500,2220>, <0,-90,0>, "mp_weapon_lstar")}

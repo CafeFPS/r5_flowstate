@@ -224,9 +224,10 @@ void function DeployAmpedWall( entity grenade, vector origin, vector angles )
 
 	OnThreadEnd(
 		function() : ( ampedWall, grenade, shieldFX )
-		{
+		{   
+			if (IsValid(grenade ) ){
 			StopSoundOnEntity( grenade, "Hardcover_Shield_Start_3P" )
-			EmitSoundOnEntity( grenade, "Hardcover_Shield_End_3P" )
+			EmitSoundOnEntity( grenade, "Hardcover_Shield_End_3P" )}
 
 			if ( IsValid( grenade ) )
 				grenade.GrenadeExplode( Vector( 0, 0, 0 ) )

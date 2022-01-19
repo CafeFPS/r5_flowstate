@@ -261,7 +261,6 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
 void function PrecacheCustomMapsProps()
 {
 if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){	
-CreateAnimatedLegend($"mdl/humans/class/light/pilot_light_wraith.rmdl",<8443, 4459, -4293>,<0, 0, 0>, 0, 2)
 
 //surf
 PrecacheModel( $"mdl/robots/marvin/marvin_gladcard.rmdl" )

@@ -32,6 +32,8 @@ global function FlowState_RandomGuns
 global function FlowState_RandomTactical
 global function FlowState_RandomUltimate
 global function FlowState_RandomGunsEverydie
+global function FlowState_FIESTAShieldsStreak
+global function FlowState_FIESTADeathboxes
 global function FlowState_RandomGunsMetagame
 global function FlowState_Droppods
 global function FlowState_ExtrashieldsEnabled
@@ -1262,6 +1264,8 @@ bool function FlowState_RandomGuns()                         { return GetCurrent
 bool function FlowState_RandomTactical()                         { return GetCurrentPlaylistVarBool("flowstateRandomTactical", false ) } 
 bool function FlowState_RandomUltimate()                         { return GetCurrentPlaylistVarBool("flowstateRandomUltimate", false ) }
 bool function FlowState_RandomGunsEverydie() { return GetCurrentPlaylistVarBool("flowstateFiesta", false ) }
+bool function FlowState_FIESTAShieldsStreak() { return GetCurrentPlaylistVarBool("flowstateFiestaShieldsUpgrade", true ) } 
+bool function FlowState_FIESTADeathboxes() { return GetCurrentPlaylistVarBool("flowstateFiestaDeathboxes", true ) } 
 bool function FlowState_RandomGunsMetagame()                         { return GetCurrentPlaylistVarBool("flowstateRandomGunsMetagame", false ) }
 bool function FlowState_KillshotEnabled()                         { return GetCurrentPlaylistVarBool("flowstateKillshotEnabled", true ) }
 bool function FlowState_Droppods()                         { return GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) }
