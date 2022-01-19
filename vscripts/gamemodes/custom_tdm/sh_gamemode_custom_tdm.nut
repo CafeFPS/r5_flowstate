@@ -1026,18 +1026,18 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Little Town 2",
-                    [
-                        NewLocPair(<-28224,-27264,-4224>, <0, 87, 0>),
-                        NewLocPair(<-28032,-24960,-4096>, <0, 122, 0>),
-                        NewLocPair(<-28096,-26304,-4288>, <0, 177, 0>),
-						NewLocPair(<-28160,-25856,-4544>, <0, 3, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
+		// RegisterLocationPROPHUNT(
+                // NewLocationSettings(
+                    // "Little Town 2",
+                    // [
+                        // NewLocPair(<-28224,-27264,-4224>, <0, 87, 0>),
+                        // NewLocPair(<-28032,-24960,-4096>, <0, 122, 0>),
+                        // NewLocPair(<-28096,-26304,-4288>, <0, 177, 0>),
+						// NewLocPair(<-28160,-25856,-4544>, <0, 3, 0>)
+                    // ],
+                    // <0, 0, 2000>
+                // )
+            // )
 		RegisterLocationPROPHUNT(
                 NewLocationSettings(
                     "Space Elevator",
@@ -1051,42 +1051,42 @@ case "mp_rr_canyonlands_64k_x_64k":
                 )
             )
 
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Little Town",
-                    [
-                        NewLocPair(<22857, 3449, -4050>, <0, -157, 0>),
-                        NewLocPair(<19559, 232, -4035>, <0, 33, 0>),
-                        NewLocPair(<19400, 4384, -4027>, <0, -35, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
+		// RegisterLocationPROPHUNT(
+                // NewLocationSettings(
+                    // "Little Town",
+                    // [
+                        // NewLocPair(<22857, 3449, -4050>, <0, -157, 0>),
+                        // NewLocPair(<19559, 232, -4035>, <0, 33, 0>),
+                        // NewLocPair(<19400, 4384, -4027>, <0, -35, 0>)
+                    // ],
+                    // <0, 0, 2000>
+                // )
+            // )
 
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Refinery",
-                    [
-                        NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
-                        NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
-                        NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
-                        NewLocPair(<18285, 28602, -4200>, <0, -45, 0>)
-                    ],
-                    <0, 0, 6500>
-                )
-            )
-         RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Lava City",
-                    [
-                        NewLocPair(<22912,-28992,-3392>, <0, 40, 0>),
-                        NewLocPair(<24256,-25664,-3520>, <0, 90, 0>),
-                        NewLocPair(<24256,-28288,-3328>, <0, -90, 0>),
-                        NewLocPair(<22656,-27584,-2688>, <0, 90, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
+		// RegisterLocationPROPHUNT(
+                // NewLocationSettings(
+                    // "Refinery",
+                    // [
+                        // NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
+                        // NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
+                        // NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
+                        // NewLocPair(<18285, 28602, -4200>, <0, -45, 0>)
+                    // ],
+                    // <0, 0, 6500>
+                // )
+            // )
+         // RegisterLocationPROPHUNT(
+                // NewLocationSettings(
+                    // "Lava City",
+                    // [
+                        // NewLocPair(<22912,-28992,-3392>, <0, 40, 0>),
+                        // NewLocPair(<24256,-25664,-3520>, <0, 90, 0>),
+                        // NewLocPair(<24256,-28288,-3328>, <0, -90, 0>),
+                        // NewLocPair(<22656,-27584,-2688>, <0, 90, 0>)
+                    // ],
+                    // <0, 0, 3000>
+                // )
+            // )
           RegisterLocationPROPHUNT(
                 NewLocationSettings(
                     "Thermal Station",

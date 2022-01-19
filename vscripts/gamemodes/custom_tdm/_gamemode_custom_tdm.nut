@@ -24,6 +24,7 @@ global function CreateEditorPropRamps
 global function GiveFlowstateOvershield
 #endif
 
+bool plsTripleAudio = false;
 table playersInfo
 const int chatLines = 3
 int currentChatLine = 0
@@ -45,7 +46,6 @@ struct {
 	float lastKillTimer
 	entity lastKiller
 	int SameKillerStoredKills=0
-	bool surfEnded = false
 	array<string> whitelistedWeapons
 	array<LocationSettings> locationSettings
     LocationSettings& selectedLocation
@@ -356,7 +356,7 @@ void function _OnPlayerConnected(entity player)
 			    if(!IsAlive(player))
 			{
 				_HandleRespawn(player)
-			if(file.selectedLocation.name != "Surf Purgatory"){
+			if(!FlowState_SURF()){
 					ClearInvincible(player)
 				}
 			}
@@ -369,14 +369,20 @@ void function _OnPlayerConnected(entity player)
 			}
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
+						if(FlowState_SURF()){
+			player.Code_SetTeam( 20 )
+			}
 		}
 		break
 	case eGameState.WaitingForPlayers:
 			if(!IsAlive(player))
 		{
 			_HandleRespawn(player)
-		if(file.selectedLocation.name != "Surf Purgatory"){
+		if(!FlowState_SURF()){
 				ClearInvincible(player)
+			}
+			if(FlowState_SURF()){
+			player.Code_SetTeam( 20 )
 			}
 		}
         player.UnfreezeControlsOnServer()
@@ -385,18 +391,41 @@ void function _OnPlayerConnected(entity player)
 	    if(IsValidPlayer(player))
         {
 			player.UnfreezeControlsOnServer();
-			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Surf Purgatory" || GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia")
+			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && !FlowState_SURF() && file.selectedLocation.name != "Skill trainer By Colombia")
 			{
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
 				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
 				_HandleRespawn(player, true)
 				player.SetAngles( <0,180,0> )
 				printl("player spawning in droppod")
+			} else if(FlowState_SURF()){
+				
+				if(FlowState_ForceCharacter()){CharSelect(player)}
+				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+				asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+				player.SetPlayerSettingsWithMods( characterSetFile, [] )
+				SetPlayerSettings(player, PROPHUNT_SETTINGS)
+				DoRespawnPlayer( player, null )
+				Survival_SetInventoryEnabled( player, true )
+				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
+				player.SetPlayerNetBool( "pingEnabled", true )
+				player.SetHealth( 100 )
+				player.SetOrigin(<3225,9084,21476>)
+				
+				player.Code_SetTeam( 20 )	
+				TakeAllWeapons( player )
+				SetPlayerSettings(player, SURF_SETTINGS)
+				MakeInvincible(player)
+				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
 			} else {
-			_HandleRespawn(player)				
+			_HandleRespawn(player)
+			SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
+			Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
 			}
 
-			if(file.selectedLocation.name != "Surf Purgatory"){
+			if(!FlowState_SURF()){
 					ClearInvincible(player)
 				}
 			if(FlowState_RandomGunsEverydie()){
@@ -405,17 +434,6 @@ void function _OnPlayerConnected(entity player)
 
 			if(FlowState_Gungame()){
 				KillStreakAnnouncer(player, true)
-			}
-	
-        	Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
-			
-			if(file.locationSettings.name == "Surf Purgatory"){
-			TakeAllWeapons( player )
-			SetPlayerSettings(player, SURF_SETTINGS)
-			MakeInvincible(player)
-			player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
-			}else{
-			SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			}
 			
 			}
@@ -434,24 +452,28 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			{		
 	CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
 			}
-	
-	
+
 	entity champion = file.previousChampion
 	entity challenger = file.previousChallenger
 	entity killeader = GetBestPlayer()
 	float doubleKillTime = 5.0
 	float tripleKillTime = 8.5
 	file.deathPlayersCounter++
-	file.SameKillerStoredKills++
-	if(file.deathPlayersCounter == 1)
+
+	if(file.deathPlayersCounter == 1 )
 	{
 	foreach (player in GetPlayerArray())
 	{
 	thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
 	}
 	}
-
-	if(Time() - file.lastKillTimer < doubleKillTime && attacker == file.lastKiller && attacker == killeader){
+	if(attacker == file.lastKiller && attacker == killeader && !plsTripleAudio){
+	file.SameKillerStoredKills = 2
+	} else if (attacker == file.lastKiller && attacker == killeader && plsTripleAudio)
+	{
+	file.SameKillerStoredKills = 3	
+	}
+	if(Time() - file.lastKillTimer < doubleKillTime && attacker == file.lastKiller && attacker == killeader && file.SameKillerStoredKills == 2){
 	foreach (player in GetPlayerArray())
 	{
 	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderDoubleKill" )
@@ -460,19 +482,21 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	{
 	thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "diag_mp_wraith_bc_iDownedMultiple_1p" )
 	}
-	file.SameKillerStoredKills++
+	plsTripleAudio = true;
 	}
 	
 	if(Time() - file.lastKillTimer < tripleKillTime && attacker == file.lastKiller && attacker == killeader && file.SameKillerStoredKills == 3){
 	file.SameKillerStoredKills = 0
-	wait 3
+	wait 1
 	foreach (player in GetPlayerArray())
 	{
 	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderTripleKill" )
 	}
-
+	plsTripleAudio = false;
 	}
-
+	if(Time() - file.lastKillTimer > tripleKillTime && attacker == file.lastKiller && attacker == killeader){
+	plsTripleAudio = false;	
+	}
 	switch(GetGameState())
     {
     case eGameState.Playing:
@@ -584,7 +608,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 
-	if(IsValid( player ) && file.selectedLocation.name == "Surf Purgatory" && file.surfEnded == false)
+	if(IsValid( player ) && FlowState_SURF() )
     {
 
             if(!player.p.storedWeapons.len())
@@ -669,7 +693,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if(!isDroppodSpawn){
 	TpPlayerToSpawnPoint(player)}
 	
-    if(file.selectedLocation.name == "Surf Purgatory"){
+    if(FlowState_SURF()){
 	SetPlayerSettings(player, SURF_SETTINGS)
 	}
 	else {
@@ -771,14 +795,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 			{
 						
 				//player has a team assigned already, we need to fix it before spawn
-				if (IMCplayers.len() == 0)
-				{
-				player.Code_SetTeam( TEAM_IMC )
-				}	
-				if (IMCplayers.len() == 1)
-				{
-				player.Code_SetTeam( TEAM_MILITIA )
-				}	
+				GiveTeamToProphuntPlayer(player)
 
 				if(GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
 				player.Code_SetTeam( TEAM_MILITIA )	
@@ -813,18 +830,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 					if(IsValidPlayer(player))
 			{
 								//player has a team assigned already, we need to fix it before spawn
-				if (IMCplayers.len() == 0)
-				{
-				player.Code_SetTeam( TEAM_IMC )
-				}	
-				if (IMCplayers.len() == 1)
-				{
-				player.Code_SetTeam( TEAM_MILITIA )
-				}	
-
-				if(GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
-				player.Code_SetTeam( TEAM_MILITIA )	
-				}
+				GiveTeamToProphuntPlayer(player)
 				
 				if(FlowState_ForceCharacter()){CharSelect(player)}
 				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
@@ -989,6 +995,7 @@ void function _HandleRespawnPROPHUNT(entity player)
 				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 				player.SetPlayerNetBool( "pingEnabled", true )
 				player.SetHealth( 100 )
+				TakeAllWeapons(player)
 			}
 
 	} catch (e) {}
@@ -1098,7 +1105,7 @@ void function EmitSoundOnSprintingProp()
 		array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
 			foreach(player in MILITIAplayers)
 			{
-				if(player.IsSprinting())
+				if(player.IsSprinting() && IsValid(player))
 				{
 				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
 				} 
@@ -1112,9 +1119,9 @@ void function ActualPROPHUNTGameLoop()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-entity bubbleBoundary = CreateBubbleBoundaryPROPHUNT(prophunt.selectedLocation)
-file.tdmState = eTDMState.IN_PROGRESS
 prophunt.InProgress = true
+file.tdmState = eTDMState.IN_PROGRESS
+entity bubbleBoundary = CreateBubbleBoundaryPROPHUNT(prophunt.selectedLocation)
 thread EmitSoundOnSprintingProp()
 SetGameState(eGameState.Playing)
 
@@ -1154,6 +1161,7 @@ foreach(player in GetPlayerArray())
 			player.SetThirdPersonShoulderModeOn()
 			player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 			player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+			DeployAndEnableWeapons(player)
 			} else if(player.GetTeam() == TEAM_IMC){
 			Message(player, "PROPS ARE HIDING", "Teleporting in 30 seconds.", 10)}
 		}
@@ -1261,13 +1269,15 @@ if(MILITIAplayersAlive.len() > 0){
 foreach(player in GetPlayerArray())
     {
 		Message(player, "PROPS TEAM WIN", "Props alive: " + MILITIAplayersAlive.len(), 5)
-		player.SetThirdPersonShoulderModeOn()		
+		player.SetThirdPersonShoulderModeOn()
+		HolsterAndDisableWeapons(player)
 	}
 } else {
 foreach(player in GetPlayerArray())
     {
 		Message(player, "ATTACKERS TEAM WIN", "All props are dead. ", 5)
-		player.SetThirdPersonShoulderModeOn()		
+		player.SetThirdPersonShoulderModeOn()	
+		HolsterAndDisableWeapons(player)		
 	}	
 }
 wait 5
@@ -1298,14 +1308,14 @@ foreach(player in GetPlayerArray())
 			player.MakeVisible()
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
-			GiveTeamToSpectator(player) //give team to player connected midgame
+			GiveTeamToProphuntPlayer(player) 
 			_HandleRespawnPROPHUNT(player)
 		}
 }
 WaitFrame()
 }
 
-void function GiveTeamToSpectator(entity player)
+void function GiveTeamToProphuntPlayer(entity player)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
@@ -2407,7 +2417,6 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     wait 1
     SkillTrainerLoad()	
 } else if(file.selectedLocation.name == "Surf Purgatory"){
-	file.surfEnded = false
 	DestroyPlayerProps()
     wait 1
     SurfPurgatoryLoad()
@@ -2869,9 +2878,6 @@ else
 		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		        player.SetThirdPersonShoulderModeOff()
 		        _HandleRespawn(player)
-		if(file.selectedLocation.name != "Surf Purgatory"){
-			ClearInvincible(player)
-		}
 		        DeployAndEnableWeapons(player)
 		        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
@@ -2892,7 +2898,7 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 	foreach(player in GetPlayerArray())
     {
 		string nextlocation = file.selectedLocation.name
-		if(file.selectedLocation.name == "Surf Purgatory"){
+		if(FlowState_SURF()){
 		Message(player, "WELCOME TO SURF PURGATORY", "", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
 		player.Code_SetTeam( TEAM_IMC )
 		} else {
@@ -2909,7 +2915,7 @@ else{
     {
 		int playerEHandle = player.GetEncodedEHandle()
 		string nextlocation = file.selectedLocation.name
-		if(file.selectedLocation.name == "Surf Purgatory"){
+		if(FlowState_SURF()){
 		Message(player, "WELCOME TO SURF PURGATORY", "", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
 		player.Code_SetTeam( TEAM_IMC )
 		} else {
@@ -2959,14 +2965,14 @@ void function SimpleChampionUI(){
 //////////////////////////////////////////////////////////////////////////////
 float endTime = Time() + FlowState_RoundTime()
 
-if(file.selectedLocation.name == "Surf Purgatory"){
+if(FlowState_SURF()){
 file.bubbleBoundary.Destroy()
 }
 foreach(player in GetPlayerArray())
     {
 WpnPulloutOnRespawn(player)
 	}
-if (FlowState_Timer()){
+if (FlowState_Timer() && !FlowState_SURF()){
 while( Time() <= endTime )
 	{
     if(Time() == endTime-900)
@@ -3043,13 +3049,20 @@ while( Time() <= endTime )
 		WaitFrame()
 	}
 }
-else{
+else if (!FlowState_Timer() &&!FlowState_SURF()){
 while( Time() <= endTime )
 	{
 	if(file.tdmState == eTDMState.NEXT_ROUND_NOW) break
 		WaitFrame()
 	}
+} else if (FlowState_SURF())
+{
+while( true )
+	{
+		WaitFrame()
+	}	
 }
+
 foreach(player in GetPlayerArray())
     {
 try{
@@ -3136,12 +3149,7 @@ foreach(player in GetPlayerArray())
 		ClearInvincible(player)
 		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		player.SetThirdPersonShoulderModeOff()
-	if(file.selectedLocation.name == "Surf Purgatory"){
-		file.surfEnded = true
-		ClearInvincible(player)
-		TakeAllWeapons(player)
-		player.TakeDamage(player.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
-		}
+
 	}}catch(e4){}}
 WaitFrame()
 
