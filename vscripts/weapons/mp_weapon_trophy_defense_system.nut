@@ -112,10 +112,10 @@ const bool TROPHY_DEBUG_DRAW_PLACEMENT = false
 const bool TROPHY_DEBUG_DRAW_INTERSECTION = false
 
 //Custom Stuff
-const bool TROPHY_DESTROY_FRIENDLY_PROJECTILES = true
-const bool SUPER_BUFF_THREATVISION = true
-const bool SUPER_BUFF_SPEEDBOOST = true
-const bool SUPER_BUFF_FASTHEAL = true
+const bool TROPHY_DESTROY_FRIENDLY_PROJECTILES = false
+const bool SUPER_BUFF_THREATVISION = false
+const bool SUPER_BUFF_SPEEDBOOST = false
+const bool SUPER_BUFF_FASTHEAL = false
 
 
 #if CLIENT
