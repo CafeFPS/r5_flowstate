@@ -29,7 +29,7 @@ void function OnMiscMenu_Open()
 {
 	if ( IsLobby() )
 		UI_SetPresentationType( ePresentationType.WEAPON_CATEGORY )
-	SetBlurEnabled( true )
+	SetBlurEnabled( false )
 
 	ShowPanel( Hud_GetChild( file.menu, "SettingsPanel" ) )
 

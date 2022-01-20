@@ -23,8 +23,13 @@ void function InitConfirmKeepVideoChangesDialog( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, ConfirmKeepVideoChangesDialog_OnClose )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, ConfirmKeepVideoChangesDialog_OnNavigateBack )
 
-	AddMenuFooterOption( menu, LEFT, BUTTON_A, true, "#A_BUTTON_YES", "#YES", Confirm )
-	AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_CANCEL", "#B_BUTTON_CANCEL" )
+	//AddMenuFooterOption( menu, LEFT, BUTTON_A, true, "#A_BUTTON_YES", "#YES", Confirm )
+	//AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_CANCEL", "#B_BUTTON_CANCEL" )
+
+	var keep = Hud_GetChild( menu, "KeepSettingsButton" )
+	Hud_AddEventHandler( keep, UIE_CLICK, Confirm )
+    var revert = Hud_GetChild( menu, "RevertSettingsButton" )
+	Hud_AddEventHandler( revert, UIE_CLICK, PCBackButton_Activate )
 }
 
 void function Confirm( var button )
@@ -77,7 +82,10 @@ void function VideoChangesCountdown()
 
 	while ( countdown > 0 )
 	{
-		RuiSetString( file.contentRui, "messageText", Localize( "#REVERTING_VIDEO_SETTINGS_TIMER", countdown ) )
+		//RuiSetString( file.contentRui, "messageText", Localize( "#REVERTING_VIDEO_SETTINGS_TIMER", countdown ) )
+		Hud_SetText(Hud_GetChild( file.menu, "DialogHeader" ), Localize( "#REVERTING_VIDEO_SETTINGS_TIMER", countdown ))
+		Hud_SetText(Hud_GetChild( file.menu, "BtnRevertSettings" ), "Revert Settings")
+		Hud_SetText(Hud_GetChild( file.menu, "BtnKeepSettings" ), "Keep Settings")
 
 		wait 1.0
 		countdown--
