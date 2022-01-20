@@ -12,15 +12,13 @@
 global function _CustomTDM_Init
 global function _RegisterLocation
 global function _RegisterLocationPROPHUNT
+global function CharSelect
 global function CreateAnimatedLegend
 global function Message
 string WHITE_SHIELD = "armor_pickup_lv1"
 string BLUE_SHIELD = "armor_pickup_lv2"
 string PURPLE_SHIELD = "armor_pickup_lv3"
 #if SERVER
-global function CreateCustomLight
-global function CreateEditorProp
-global function CreateEditorPropRamps
 global function GiveFlowstateOvershield
 #endif
 
@@ -94,6 +92,7 @@ struct PlayerInfo
 
 struct{
 float endTime = 0
+array<entity> playerSpawnedProps
 array<LocationSettings> locationSettings
 LocationSettings& selectedLocation
 int nextMapIndex = 0
@@ -101,6 +100,7 @@ bool mapIndexChanged = true
 bool cantUseChangeProp = false
 bool InProgress = false
 } prophunt
+
 
 const array<asset> prophuntAssetsWE =
 [
@@ -140,44 +140,60 @@ const array<asset> prophuntAssetsWE =
 void function _CustomTDM_Init()
 {
 	SurvivalFreefall_Init()
+	if(!FlowState_SURF()){
 	file.Hoster = FlowState_Hoster()
 	file.admin1 = FlowState_Admin1()
 	file.admin2 = FlowState_Admin2()
 	file.admin3 = FlowState_Admin3()
 	file.admin4 = FlowState_Admin4()
 	PrecacheCustomMapsProps()
+	}
+	//gamemodes selection
 	AddCallback_OnClientConnected( void function(entity player) { 
-	if(!FlowState_PROPHUNT()){
-	thread _OnPlayerConnected(player) 
-	} else {
+	
+	if(FlowState_PROPHUNT()){
 	thread _OnPlayerConnectedPROPHUNT(player)	
-	}
-	})
-	AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
-	if(!FlowState_PROPHUNT()){
-	thread _OnPlayerDied(victim, attacker, damageInfo)
+	} else if (FlowState_SURF()){
+	thread _OnPlayerConnectedSURF(player)		
 	} else {
-	thread _OnPlayerDiedPROPHUNT(victim, attacker, damageInfo)
+	thread _OnPlayerConnected(player) 
 	}
+	
+	})
+	
+	
+	AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
+	
+	if(FlowState_PROPHUNT()){
+	thread _OnPlayerDiedPROPHUNT(victim, attacker, damageInfo)
+	} else if (FlowState_SURF()){
+	thread _OnPlayerDiedSURF(victim, attacker, damageInfo)	
+	} else {
+	thread _OnPlayerDied(victim, attacker, damageInfo)
+	}
+	
 	})
 	
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	AddClientCommandCallback("adminsay", ClientCommand_AdminMsg)
 	AddClientCommandCallback("commands", ClientCommand_Help)
-	if(!FlowState_PROPHUNT()){
-	AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
+	if(FlowState_PROPHUNT()){
+	AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
+	AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
+	AddClientCommandCallback("prop", ClientCommand_ChangePropPROPHUNT)
+	} else if (FlowState_SURF()){
+	AddClientCommandCallback("spectate", ClientCommand_SpectateSURF) //todo fix this
+	AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
+	} else{
+		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
 	AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
 	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
 	AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
 	AddClientCommandCallback("god", ClientCommand_God)
 	AddClientCommandCallback("ungod", ClientCommand_UnGod)
 	AddClientCommandCallback("next_round", ClientCommand_NextRound)
-	} else {
-	AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
-	AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
-	AddClientCommandCallback("prop", ClientCommand_ChangePropPROPHUNT)
 	}
-	if(FlowState_AllChat()){
+	if(FlowState_AllChat() && !FlowState_SURF()){
 		AddClientCommandCallback("say", ClientCommand_ClientMsg)
 		//3 slots ingame chat temp-bans. Usage: sayban 1 ColombiaFPS. sayunban 1
 		AddClientCommandCallback("sayban", ClientCommand_ChatBan)
@@ -200,10 +216,12 @@ if(!FlowState_PROPHUNT()){
         file.whitelistedWeapons.append(GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~"))
     }
 
-    if(!FlowState_PROPHUNT()){
-	thread RunTDM() 
-	} else {
+    if(FlowState_PROPHUNT()){
 	thread RunPROPHUNT()
+	} else if(FlowState_SURF()){
+	thread RunSURF()	
+	}else {
+	thread RunTDM() 
 	}//Go to Game Loop
     }
 
@@ -248,6 +266,12 @@ void function _OnPropDynamicSpawned(entity prop)
 {
     file.playerSpawnedProps.append(prop)
 }
+
+void function _OnPropDynamicSpawnedPROPHUNT(entity prop)
+{
+    prophunt.playerSpawnedProps.append(prop)
+}
+
 
 LocPair function _GetAppropriateSpawnLocation(entity player)
 {
@@ -341,10 +365,7 @@ void function _OnPlayerConnected(entity player)
 			{
 			Message(player, "WELCOME TO FLOW STATE: GUNGAME", helpMessage(), 10)
 
-			} else if (FlowState_SURF())
-			{
-			Message(player, "WELCOME TO APEX SURF", "", 10)
-			}
+			} 
 			else { 
 			Message(player, "WELCOME TO FLOW STATE: FFA/TDM", helpMessage(), 10)
 			}
@@ -356,9 +377,8 @@ void function _OnPlayerConnected(entity player)
 			    if(!IsAlive(player))
 			{
 				_HandleRespawn(player)
-			if(!FlowState_SURF()){
 					ClearInvincible(player)
-				}
+
 			}
 			player.SetThirdPersonShoulderModeOn()
 						if(FlowState_RandomGunsEverydie()){
@@ -369,21 +389,14 @@ void function _OnPlayerConnected(entity player)
 			}
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
-						if(FlowState_SURF()){
-			player.Code_SetTeam( 20 )
-			}
+
 		}
 		break
 	case eGameState.WaitingForPlayers:
 			if(!IsAlive(player))
 		{
 			_HandleRespawn(player)
-		if(!FlowState_SURF()){
 				ClearInvincible(player)
-			}
-			if(FlowState_SURF()){
-			player.Code_SetTeam( 20 )
-			}
 		}
         player.UnfreezeControlsOnServer()
         break
@@ -391,43 +404,19 @@ void function _OnPlayerConnected(entity player)
 	    if(IsValidPlayer(player))
         {
 			player.UnfreezeControlsOnServer();
-			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && !FlowState_SURF() && file.selectedLocation.name != "Skill trainer By Colombia")
+			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia")
 			{
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
 				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
 				_HandleRespawn(player, true)
 				player.SetAngles( <0,180,0> )
 				printl("player spawning in droppod")
-			} else if(FlowState_SURF()){
-				
-				if(FlowState_ForceCharacter()){CharSelect(player)}
-				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-				asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-				player.SetPlayerSettingsWithMods( characterSetFile, [] )
-				SetPlayerSettings(player, PROPHUNT_SETTINGS)
-				DoRespawnPlayer( player, null )
-				Survival_SetInventoryEnabled( player, true )
-				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
-				player.SetPlayerNetBool( "pingEnabled", true )
-				player.SetHealth( 100 )
-				player.SetOrigin(<3225,9084,21476>)
-				
-				player.Code_SetTeam( 20 )	
-				TakeAllWeapons( player )
-				SetPlayerSettings(player, SURF_SETTINGS)
-				MakeInvincible(player)
-				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
 			} else {
 			_HandleRespawn(player)
 			SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
 			}
-
-			if(!FlowState_SURF()){
-					ClearInvincible(player)
-				}
+			ClearInvincible(player)
 			if(FlowState_RandomGunsEverydie()){
 				UpgradeShields(player, true)
 			}
@@ -608,41 +597,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 
-	if(IsValid( player ) && FlowState_SURF() )
-    {
-
-            if(!player.p.storedWeapons.len())
-            {
-				DecideRespawnPlayer(player, true)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
-				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-				TakeAllWeapons( player )
-				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-				MakeInvincible(player)
-            }
-            else
-            {
-				DecideRespawnPlayer(player, false)
-				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-				TakeAllWeapons( player )
-				player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.TakeOffhandWeapon( OFFHAND_MELEE )
-				player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-				MakeInvincible(player)
-            }
-
-    }else if(IsValid( player ) && !IsAlive(player))
+	if(IsValid( player ) && !IsAlive(player))
     {
         if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
         {
@@ -692,13 +647,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         {
 	if(!isDroppodSpawn){
 	TpPlayerToSpawnPoint(player)}
-	
-    if(FlowState_SURF()){
-	SetPlayerSettings(player, SURF_SETTINGS)
-	}
-	else {
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-	}
+
 	
 	if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
 			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
@@ -872,16 +822,13 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetPlayerNetBool( "pingEnabled", true )
 				player.SetHealth( 100 )
 				player.SetOrigin(prophuntSpawns[RandomInt(4)].origin)
-				player.kv.solid = 6
-				player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-				player.AllowMantle()
 				Message(player, "APEX PROPHUNT", "Game is in progress. You'll spawn in the next round. \n ", 10)
 				player.Code_SetTeam( 20 )
+				player.MakeInvisible()
 				player.SetObserverTarget( playersON[RandomInt(playersON.len()-1)] )
 				player.SetSpecReplayDelay( 2 )
                 player.StartObserverMode( OBS_MODE_IN_EYE )
 				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
-				player.MakeInvisible()
 				}catch(e){}
 			}
 			break
@@ -1008,7 +955,7 @@ void function RunPROPHUNT()
 ///////////////////////////////////////////////////////
 {
     WaitForGameState(eGameState.Playing)
-    AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+    AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawnedPROPHUNT)
     for(; ;)
     {
 	ActualPROPHUNTLobby()
@@ -2341,20 +2288,12 @@ void function VotingPhase()
 	if (!file.mapIndexChanged)
 		{
 			file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
-			//surf will never be in normal playlist mode
-			if(file.nextMapIndex == 12 && GetMapName() == "mp_rr_desertlands_64k_x_64k" || file.nextMapIndex == 12 && GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" )
-			{
-			file.nextMapIndex = 0
-			}
 		}
 		
 	if (FlowState_LockPOI()) {
 		file.nextMapIndex = FlowState_LockedPOI()
 	}
-		
-	if(FlowState_SURF()){
-	file.nextMapIndex = 12}
-	
+
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
 	file.selectedLocation = file.locationSettings[choice]
@@ -2416,10 +2355,6 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     DestroyPlayerProps()
     wait 1
     SkillTrainerLoad()	
-} else if(file.selectedLocation.name == "Surf Purgatory"){
-	DestroyPlayerProps()
-    wait 1
-    SurfPurgatoryLoad()
 } else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
 	DestroyPlayerProps()
 	CreateGroundMedKit(<-21289, -12030, 3060>)
@@ -2429,7 +2364,7 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 
 
 
-if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) == false && !FlowState_SURF())
+if(!GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
     foreach(player in GetPlayerArray())
     {
@@ -2441,7 +2376,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) == false && !Flo
     }
 }
 
-if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) && !FlowState_SURF())
+if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
@@ -2564,7 +2499,7 @@ try {
 SetGameState(eGameState.Playing)
 file.tdmState = eTDMState.IN_PROGRESS
 
-if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) && !FlowState_SURF())
+if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 {
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
@@ -2898,12 +2833,7 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 	foreach(player in GetPlayerArray())
     {
 		string nextlocation = file.selectedLocation.name
-		if(FlowState_SURF()){
-		Message(player, "WELCOME TO SURF PURGATORY", "", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
-		player.Code_SetTeam( TEAM_IMC )
-		} else {
 		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
-		}
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -2915,12 +2845,7 @@ else{
     {
 		int playerEHandle = player.GetEncodedEHandle()
 		string nextlocation = file.selectedLocation.name
-		if(FlowState_SURF()){
-		Message(player, "WELCOME TO SURF PURGATORY", "", 15, "diag_ap_aiNotify_circleTimerStartNext_02")
-		player.Code_SetTeam( TEAM_IMC )
-		} else {
 		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
-		}
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -2965,14 +2890,12 @@ void function SimpleChampionUI(){
 //////////////////////////////////////////////////////////////////////////////
 float endTime = Time() + FlowState_RoundTime()
 
-if(FlowState_SURF()){
-file.bubbleBoundary.Destroy()
-}
+
 foreach(player in GetPlayerArray())
     {
 WpnPulloutOnRespawn(player)
 	}
-if (FlowState_Timer() && !FlowState_SURF()){
+if (FlowState_Timer()){
 while( Time() <= endTime )
 	{
     if(Time() == endTime-900)
@@ -3049,19 +2972,14 @@ while( Time() <= endTime )
 		WaitFrame()
 	}
 }
-else if (!FlowState_Timer() &&!FlowState_SURF()){
+else if (!FlowState_Timer() ){
 while( Time() <= endTime )
 	{
 	if(file.tdmState == eTDMState.NEXT_ROUND_NOW) break
 		WaitFrame()
 	}
-} else if (FlowState_SURF())
-{
-while( true )
-	{
-		WaitFrame()
-	}	
-}
+} 
+
 
 foreach(player in GetPlayerArray())
     {
@@ -3701,6 +3619,57 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
     return true
 }
 
+bool function ClientCommand_SpectateSURF(entity player, array<string> args)
+//Thanks Zee#0134
+//Modified By CaféDeColombiaFPS
+{
+    if ( GetGameState() == eGameState.WaitingForPlayers ) {
+        return false
+    }
+
+    if ( GetGameState() == eGameState.MapVoting ) {
+        return false
+    }
+    array<entity> playersON = GetPlayerArray_Alive()
+	playersON.fastremovebyvalue( player )
+    if ( playersON.len() > 0 )
+    {
+        entity specTarget = playersON.getrandom()
+
+        if( specTarget.IsObserver())
+        {
+            printf("error: try again")
+            return false
+        }
+
+        if( player.GetPlayerNetInt( "spectatorTargetCount" ) > 0)
+        {
+            player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+	        player.SetSpecReplayDelay( 0 )
+            player.StopObserverMode()
+			if(IsValidPlayer(player))
+			TpPlayerToSpawnPoint(player)
+            printf("Respawned!")
+        }
+        else
+        {
+			TpPlayerToSpawnPoint(player)
+            player.SetPlayerNetInt( "spectatorTargetCount", playersON.len() )
+	        player.SetSpecReplayDelay( 2 )
+			try{
+	        player.StartObserverMode( OBS_MODE_IN_EYE )
+	        player.SetObserverTarget( specTarget )
+			}catch(e){}
+            printf("Spectating!")
+        }
+    }
+    else
+    {
+        print("There is no one to spectate!")
+    }
+    return true
+}
+
 bool function ClientCommand_AdminMsg(entity player, array<string> args)
 //by Retículo Endoplasmático#5955
 {
@@ -3748,9 +3717,6 @@ bool function ClientCommand_Help(entity player, array<string> args)
 			{
 			Message(player, "WELCOME TO FLOW STATE: GUNGAME", helpMessage(), 10)
 
-			} else if (FlowState_SURF())
-			{
-			Message(player, "WELCOME TO APEX SURF", "", 10)
 			} else if (FlowState_PROPHUNT())
 			{
 			Message(player, "WELCOME TO FLOW STATE: PROPHUNT", helpMessagePROPHUNT(), 10)	
@@ -3989,6 +3955,7 @@ if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin
             if (now == "now")
             {
                file.tdmState = eTDMState.NEXT_ROUND_NOW
+			   prophunt.mapIndexChanged = false;
             }
         } catch(e1) {}
 
@@ -4238,140 +4205,4 @@ entity function CreateDropShipProp(asset a, vector pos, vector ang, bool mantle 
 
     return e
 }
-
-entity function CreateCustomLight( vector origin, vector angles, string lightcolor, float scale )
-{
-
-	entity env_sprite = CreateEntity( "env_sprite" )
-	env_sprite.SetScriptName( UniqueString( "molotov_sprite" ) )
-	env_sprite.kv.rendermode = 5
-	env_sprite.kv.origin = origin
-	env_sprite.kv.angles = angles
-	env_sprite.kv.fadedist = -1
-	env_sprite.kv.rendercolor = lightcolor
-	env_sprite.kv.renderamt = 255
-	env_sprite.kv.framerate = "10.0"
-	env_sprite.SetValueForModelKey( $"sprites/glow_05.vmt" )
-	env_sprite.kv.scale = string( scale )
-	env_sprite.kv.spawnflags = 1
-	env_sprite.kv.GlowProxySize = 15.0
-	env_sprite.kv.HDRColorScale = 15.0
-	DispatchSpawn( env_sprite )
-	EntFireByHandle( env_sprite, "ShowSprite", "", 0, null, null )
-
-    file.playerSpawnedProps.append(env_sprite)
-
-	return env_sprite
-}
-
-entity function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000)
-{
-	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
-	e.kv.fadedist = fade
-    e.kv.renderamt = 255
-	e.kv.rendermode = 3
-	e.kv.rendercolor = "255 255 255 255"
-	if(mantle) e.AllowMantle()
-    file.playerSpawnedProps.append(e)
-	return e
-}
-
-void function SurfRampsHighlight( entity e )
-{
-	float rampr = RandomFloatRange( 0.0, 1.0 )
-       float rampg = RandomFloatRange( 0.0, 1.0 )
-       float rampb = RandomFloatRange( 0.0, 1.0 )
-    e.Highlight_ShowInside( 1.0 )
-	e.Highlight_ShowOutline( 1.0 )
-    e.Highlight_SetFunctions( 0, 136, false, 136, 8.0, 2, false )
-    e.Highlight_SetParam( 0, 0, <rampr, rampg, rampb> )
-}
-
-entity function CreateEditorPropRamps(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000)
-{
-	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
-	e.kv.fadedist = fade
-    e.kv.renderamt = 255
-	e.kv.rendermode = 3
-	e.kv.rendercolor = "255 255 255 255"
-        SurfRampsHighlight(e)
-	if(mantle) e.AllowMantle()
-    file.playerSpawnedProps.append(e)
-	return e
-}
-
 #endif
-
-void function TeleportFRPlayerSurf(entity player, vector pos, vector ang)
-{
-    if(IsValid(player))
-    {
-	    player.SetOrigin(pos)
-	    player.SetAngles(ang)
-    }
-}
-
-void function SurfPurgatoryLoad()
-{
-    SurfPurgatory()
-    thread SurfPurgatoryTriggerSetup()
-}
-
-void function SurfPurgatoryTriggerSetup()
-{
-	entity fall = CreateEntity( "trigger_cylinder" )
-	fall.SetRadius( 100000 )
-	fall.SetAboveHeight( 25 )
-	fall.SetBelowHeight( 25 )
-	fall.SetOrigin( <3299,7941,16384> )
-	DispatchSpawn( fall )
-
-	fall.SetEnterCallback( SurfPurgatoryTrigger_OnAreaEnter )
-
-    entity finishdoor = CreateEntity( "trigger_cylinder" )
-	finishdoor.SetRadius( 20 )
-	finishdoor.SetAboveHeight( 25 )
-	finishdoor.SetBelowHeight( 25 )
-	finishdoor.SetOrigin( <2403, 15865, 17230> )
-	DispatchSpawn( finishdoor )
-
-	finishdoor.SetEnterCallback( SurfPurgatoryFinishDoor_OnAreaEnter )
-
-    entity finish = CreateEntity( "trigger_cylinder" )
-	finish.SetRadius( 1000 )
-	finish.SetAboveHeight( 300 )
-	finish.SetBelowHeight( 1 )
-    finish.SetAngles( <0, 90, 0> )
-	finish.SetOrigin( <2403, 15865, 17230> )
-	DispatchSpawn( finish )
-
-	finish.SetEnterCallback( SurfPurgatoryFinishFinished_OnAreaEnter )
-
-    file.playerSpawnedProps.append(fall)
-    file.playerSpawnedProps.append(finishdoor)
-    file.playerSpawnedProps.append(finish)
-
-	OnThreadEnd(
-		function() : ( fall )
-		{
-			fall.Destroy()
-		} )
-
-	WaitForever()
-}
-
-void function SurfPurgatoryTrigger_OnAreaEnter( entity trigger, entity player )
-{
-    TeleportFRPlayerSurf(player,<3225,9084,21476>,<0,-90,0>)
-}
-
-void function SurfPurgatoryFinishDoor_OnAreaEnter( entity trigger, entity player )
-{
-    TeleportFRPlayerSurf(player,<3225,9084,21476>,<0,-90,0>)
-}
-
-void function SurfPurgatoryFinishFinished_OnAreaEnter( entity trigger, entity player )
-{
-    Message( player, "Map Finished", "Congrats you finished surf_purgatory", 5.0 )
-}
-

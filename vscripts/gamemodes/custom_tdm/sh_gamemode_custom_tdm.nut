@@ -1,60 +1,7 @@
-global function Sh_CustomTDM_Init
-global function NewLocationSettings
-global function NewLocPair
-global function Spectator_GetReplayIsEnabled
-global function Spectator_GetReplayDelay
-global function Deathmatch_GetRespawnDelay
-global function Equipment_GetDefaultShieldHP
-global function Deathmatch_GetOOBDamagePercent
-global function Deathmatch_GetVotingTime
-
-global function FlowState_Hoster
-global function FlowState_Admin1
-global function FlowState_Admin2
-global function FlowState_Admin3
-global function FlowState_Admin4
-global function FlowState_RoundTime
-global function FlowState_BubbleColor
-global function FlowState_ResetKillsEachRound
-global function FlowState_Timer
-global function FlowState_LockPOI
-global function FlowState_LockedPOI
-global function FlowState_AdminTgive
-global function FlowState_AllChat
-global function FlowState_ChatCooldown 
-global function FlowState_ForceCharacter  
-global function FlowState_ChosenCharacter
-global function FlowState_DummyOverride
-global function FlowState_AutoreloadOnKillPrimary 
-global function FlowState_AutoreloadOnKillSecondary 
-global function FlowState_KillshotEnabled
-global function FlowState_RandomGuns
-global function FlowState_RandomTactical
-global function FlowState_RandomUltimate
-global function FlowState_RandomGunsEverydie
-global function FlowState_FIESTAShieldsStreak
-global function FlowState_FIESTADeathboxes
-global function FlowState_RandomGunsMetagame
-global function FlowState_Droppods
-global function FlowState_ExtrashieldsEnabled
-global function FlowState_ExtrashieldsSpawntime
-global function FlowState_ExtrashieldValue
-global function FlowState_Gungame
-global function FlowState_GungameRandomAbilities
-global function FlowState_SURF
-global function FlowState_PROPHUNT
-
-global function Deathmatch_GetIntroCutsceneNumSpawns           
-global function Deathmatch_GetIntroCutsceneSpawnDuration        
-global function Deathmatch_GetIntroSpawnSpeed 
-
 #if SERVER
-global function Equipment_GetRespawnKitEnabled
-global function Equipment_GetRespawnKit_PrimaryWeapon
-global function Equipment_GetRespawnKit_SecondaryWeapon
-global function Equipment_GetRespawnKit_Tactical
-global function Equipment_GetRespawnKit_Ultimate
+globalize_all_functions
 #endif
+globalize_all_functions
 
 global const NO_CHOICES = 2
 global const SCORE_GOAL_TO_WIN = 100
@@ -762,6 +709,26 @@ case "mp_rr_canyonlands_64k_x_64k":
                 <0, 0, 3000>
             )
         )
+		
+		RegisterLocationSURF(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>)
+                    ],
+                    <0, 0, 3000>
+                )
+            )
+
+         RegisterLocationSURF(
+                NewLocationSettings(
+                    "Surf NoName",
+                    [
+                        NewLocPair(<7799, 11833, 24585>, <0, 180, 0>)
+                    ],
+                    <0, 0, 3000>
+                )
+            )
         break
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
@@ -1181,6 +1148,25 @@ case "mp_rr_canyonlands_64k_x_64k":
                     // <0, 0, 2000>
                 // )
             // )
+		RegisterLocationSURF(
+                NewLocationSettings(
+                    "Surf Purgatory",
+                    [
+                        NewLocPair(<3225,9084,21476>, <0, -90, 0>)
+                    ],
+                    <0, 0, 3000>
+                )
+            )
+
+         RegisterLocationSURF(
+                NewLocationSettings(
+                    "Surf NoName",
+                    [
+                        NewLocPair(<7799, 11833, 24585>, <0, 180, 0>)
+                    ],
+                    <0, 0, 3000>
+                )
+            )
         default:
             Assert(false, "No TDM locations found for map!")
     }
@@ -1229,6 +1215,13 @@ void function RegisterLocationPROPHUNT(LocationSettings locationSettings)
 
 }
 
+void function RegisterLocationSURF(LocationSettings locationSettings)
+{
+    #if SERVER
+    _RegisterLocationSURF(locationSettings)
+    #endif
+
+}
 // Playlist GET
 
 float function Deathmatch_GetIntroCutsceneNumSpawns()                { return GetCurrentPlaylistVarFloat("intro_cutscene_num_spawns", 0)}
@@ -1275,6 +1268,7 @@ float function FlowState_ExtrashieldValue()                         { return Get
 bool function FlowState_Gungame()                         { return GetCurrentPlaylistVarBool("flowstateGungame", false ) }
 bool function FlowState_GungameRandomAbilities()                         { return GetCurrentPlaylistVarBool("flowstateGUNGAMERandomAbilities", false ) }
 bool function FlowState_SURF()                         { return GetCurrentPlaylistVarBool("flowstateSurf", false ) }
+int function FlowState_SURFRoundTime() { return GetCurrentPlaylistVarInt("flowstateSURFRoundtime", 800) }
 bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
 
 #if SERVER   

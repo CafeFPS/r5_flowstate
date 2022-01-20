@@ -27,15 +27,7 @@ global const table SURF_SETTINGS = {
     ["wallrun"] = 0,
     ["airacceleration"] = 9000,
     ["landslowdownduration"] = 0,
-    ["automantle_enable"] = 0,
-    ["mat_autoexposure_max"] = 1.0,
-    ["mat_autoexposure_max_multiplier"] = 0.4,
-    ["mat_autoexposure_min"] = 0.1,
-    ["mat_autoexposure_min_multiplier"] = 1.0,
-    ["mat_sky_scale"] = 1.0,
-    ["mat_sky_color"] = "1.0 1.0 1.0 1.0",
-    ["mat_sun_scale"] = 1.0,
-    ["mat_sun_color"] = "1.0 1.5 2.0 1.0"
+    ["automantle_enable"] = 0
 }
 
 global const table PROPHUNT_SETTINGS = {
