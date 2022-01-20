@@ -1067,19 +1067,20 @@ if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
 		array<entity> playersON = GetPlayerArray_Alive()
 		if(playersON.len() == 1 || playersON.len() == 0)
 		{
-			wait 10
+			wait 15
 			foreach(player in GetPlayerArray())
 			{
-				Message(player, "APEX PROPHUNT", "Waiting another player to start, please be patient.", 5)
+				Message(player, "APEX PROPHUNT", "Waiting another player to start.", 5)
 			}	
 		} else {
 						foreach(player in GetPlayerArray())
 			{
 			Message(player, "APEX PROPHUNT", "We have enough players, starting now.", 5, "diag_ap_aiNotify_circleMoves10sec")
 			}
+			wait 5
 			break 
 		}
-		wait 5
+		wait 1
 	}
 }
 array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)

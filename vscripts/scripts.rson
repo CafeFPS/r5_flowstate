@@ -794,20 +794,6 @@ Scripts:
 	ui/menu_about_game_mode.nut
 	ui/menu_reward_ceremony.nut
 	ui/menu_loadscreen_preview.nut
-	
-	
-	//R5Reloaded Menus
-
-	ui/r5rmenus/r5r_menu.nut
-	ui/r5rmenus/r5r_createserver.nut
-	ui/r5rmenus/r5r_serverbrowser.nut
-
-	ui/r5rmenus/r5r_changemap.nut
-	ui/r5rmenus/r5r_changegamemode.nut
-	ui/r5rmenus/r5r_changevis.nut
-	ui/r5rmenus/r5r_connect.nut
-	ui/r5rmenus/r5r_connectprivate.nut
-	ui/r5rmenus/r5r_connectip.nut
 ]
 
 When: "SERVER && DEV || UI && DEV"

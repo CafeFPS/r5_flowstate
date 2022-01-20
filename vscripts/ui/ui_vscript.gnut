@@ -206,7 +206,7 @@ global struct ConfirmDialogData
 	string        messageText = "messageText"
 	array<string> okText = ["#B_BUTTON_CLOSE", "#B_BUTTON_CLOSE"]
 	array<string> yesText = ["#A_BUTTON_YES", "#YES"]
-	array<string> noText = ["#B_BUTTON_CANCEL", "#CANCEL"]
+	array<string> noText = ["#B_BUTTON_CANCEL", "#B_BUTTON_CANCEL"]
 	asset         contextImage = $""
 
 	float timerEndTime = -1.0
