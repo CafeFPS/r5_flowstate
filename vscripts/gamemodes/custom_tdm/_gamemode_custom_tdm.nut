@@ -34,7 +34,7 @@ enum eTDMState
 }
 
 struct {
-	string scriptversion = "v2.7"
+	string scriptversion = "v2.8"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
 	bool mapIndexChanged = true
@@ -354,8 +354,8 @@ void function _OnPlayerConnected(entity player)
 ///////////////////////////////////////////////////////
 {
     if(!IsValid(player)) return
-			// if(FlowState_ForceCharacter()){
-				// CharSelect(player)}
+			if(FlowState_ForceCharacter()){
+				CharSelect(player)}
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 
 			if(FlowState_RandomGunsEverydie())
@@ -732,12 +732,13 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 ///////////////////////////////////////////////////////
 {
 	UpdatePlayerCounts()
+	if(FlowState_ForceCharacter()){CharSelect(player)}
     if(!IsValid(player)) return
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
 	array<entity> playersON = GetPlayerArray_Alive()
-
+	playersON.fastremovebyvalue( player )
 	switch(GetGameState())
     {
 		case eGameState.WaitingForPlayers:
@@ -750,8 +751,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				if(GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
 				player.Code_SetTeam( TEAM_MILITIA )	
 				}			
-			
-						if(FlowState_ForceCharacter()){CharSelect(player)}
+
 				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 				player.SetPlayerSettingsWithMods( characterSetFile, [] )
@@ -781,8 +781,6 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 			{
 								//player has a team assigned already, we need to fix it before spawn
 				GiveTeamToProphuntPlayer(player)
-				
-				if(FlowState_ForceCharacter()){CharSelect(player)}
 				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 				player.SetPlayerSettingsWithMods( characterSetFile, [] )
@@ -811,7 +809,6 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 			{
 				array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 				try{
-					if(FlowState_ForceCharacter()){CharSelect(player)}
 				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 				player.SetPlayerSettingsWithMods( characterSetFile, [] )
@@ -821,11 +818,11 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 				player.SetPlayerNetBool( "pingEnabled", true )
 				player.SetHealth( 100 )
-				player.SetOrigin(prophuntSpawns[RandomInt(4)].origin)
+				player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
 				Message(player, "APEX PROPHUNT", "Game is in progress. You'll spawn in the next round. \n ", 10)
-				player.Code_SetTeam( 20 )
+				SetTeam(player, 20 )
 				player.MakeInvisible()
-				player.SetObserverTarget( playersON[RandomInt(playersON.len()-1)] )
+				player.SetObserverTarget( playersON[RandomIntRangeInclusive(0,playersON.len()-1)] )
 				player.SetSpecReplayDelay( 2 )
                 player.StartObserverMode( OBS_MODE_IN_EYE )
 				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
@@ -1272,18 +1269,18 @@ void function GiveTeamToProphuntPlayer(entity player)
 
 	if(IMCplayers.len() > MILITIAplayers.len())
 	{
-	player.Code_SetTeam( TEAM_MILITIA )
+	SetTeam(player, TEAM_MILITIA )
 	} else if (MILITIAplayers.len() > IMCplayers.len())
 	{
-	player.Code_SetTeam( TEAM_IMC )	
+	SetTeam(player, TEAM_IMC )
 	} else {
 		switch(RandomIntRangeInclusive(0,1))
 		{
 			case 0:
-				player.Code_SetTeam( TEAM_IMC )
+				SetTeam(player, TEAM_IMC )
 				break;
 			case 1:
-				player.Code_SetTeam( TEAM_MILITIA )
+				SetTeam(player, TEAM_MILITIA )
 				break;
 		}
 	}
@@ -2290,8 +2287,8 @@ void function VotingPhase()
 			file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
 		}
 		
-	if (FlowState_LockPOI()) {
-		file.nextMapIndex = FlowState_LockedPOI()
+	if (FlowState_SURFLockPOI()) {
+		file.nextMapIndex = FlowState_SURFLockedPOI()
 	}
 
 	int choice = file.nextMapIndex

@@ -322,6 +322,7 @@ void function Sh_CustomTDM_Init()
                 <0, 0, 3000>
             )
         )
+
 		// Shared_RegisterLocation(
             // NewLocationSettings(
                 // "Interstellar Relay",
@@ -710,25 +711,6 @@ case "mp_rr_canyonlands_64k_x_64k":
             )
         )
 		
-		RegisterLocationSURF(
-                NewLocationSettings(
-                    "Surf Purgatory",
-                    [
-                        NewLocPair(<3225,9084,21476>, <0, -90, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
-
-         RegisterLocationSURF(
-                NewLocationSettings(
-                    "Surf NoName",
-                    [
-                        NewLocPair(<7799, 11833, 24585>, <0, 180, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
         break
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
@@ -1269,6 +1251,8 @@ bool function FlowState_Gungame()                         { return GetCurrentPla
 bool function FlowState_GungameRandomAbilities()                         { return GetCurrentPlaylistVarBool("flowstateGUNGAMERandomAbilities", false ) }
 bool function FlowState_SURF()                         { return GetCurrentPlaylistVarBool("flowstateSurf", false ) }
 int function FlowState_SURFRoundTime() { return GetCurrentPlaylistVarInt("flowstateSURFRoundtime", 800) }
+bool function FlowState_SURFLockPOI()                         { return GetCurrentPlaylistVarBool("flowstateSURFLockPOI", false ) } 
+int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowstateSURFLockeedPOI", 0) }
 bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
 
 #if SERVER   

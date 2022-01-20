@@ -54,7 +54,10 @@ void function _OnPlayerConnectedSURF(entity player)
     if(!IsValid(player)) return
 	if(FlowState_ForceCharacter()){CharSelect(player)}
 	DecideRespawnPlayer( player)
-	Message(player, "WELCOME TO APEX SURF", "Surf maps by AyeZee \n Game mode implementation by Colombia", 10)
+	player.SetBodyModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
+	player.SetArmsModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
+	player.SetSkin(RandomInt(6))
+	Message(player, "WELCOME TO APEX SURF", "Surf maps by AyeZee - Game mode implementation by Colombia", 10)
     player.TakeOffhandWeapon(OFFHAND_TACTICAL)
     player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
     TakeAllWeapons( player )
@@ -172,11 +175,14 @@ void function ActualSURFLobby()
 	surf.admin3 = FlowState_Admin3()
 	surf.admin4 = FlowState_Admin4()
 	
-	    	if (!surf.mapIndexChanged)
+	if (!surf.mapIndexChanged)
 	{
-	surf.nextMapIndex = (surf.nextMapIndex + 1 ) % surf.locationSettings.len()
+	surf.nextMapIndex = (surf.nextMapIndex + 1) % surf.locationSettings.len()
 	}
-	
+	if (FlowState_SURFLockPOI()) {
+		surf.nextMapIndex = FlowState_SURFLockedPOI()
+	}
+
 	int choice = surf.nextMapIndex
 	surf.mapIndexChanged = false
 	surf.selectedLocation = surf.locationSettings[choice]
