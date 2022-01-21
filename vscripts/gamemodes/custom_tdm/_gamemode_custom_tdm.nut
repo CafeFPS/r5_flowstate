@@ -2992,6 +2992,10 @@ while( Time() <= endTime )
 foreach(player in GetPlayerArray())
     {
 try{
+		if( player.IsObserver() && IsValid(player))
+			{
+		player.StopObserverMode()
+			}
 	   if(IsValid(player) && IsAlive(player))
         {
 			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
