@@ -4059,6 +4059,7 @@ bool function ClientCommand_UnGod(entity player, array<string> args)
 		try{
 		player.MakeVisible()
 		ClearInvincible(player)
+		EnableOffhandWeapons( player )
 		DeployAndEnableWeapons(player)
 		// player.TakeDamage(player.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
 		}catch(e) {}
