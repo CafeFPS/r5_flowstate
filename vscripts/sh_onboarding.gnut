@@ -548,10 +548,30 @@ void function OnCharacterSkinChanged( EHI playerEHI, ItemFlavor flavor )
 	CharacterSkin_Apply( player, flavor )
 }
 
+array<int> function GetTeamsForPlayersFlowstate( array<entity> playersToUse )
+{
+	array<int> results
+	foreach ( player in playersToUse )
+	{
+		int team = player.GetTeam()
+		if ( !results.contains( team ) )
+			results.append( team )
+	}
+
+	return results
+}
+
 void function UpdatePlayerCounts()
 {
-	SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
-	SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
+	array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
+	string currGameMode = GameRules_GetGameMode()
+	if(currGameMode == "custom_tdm"){
+		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
+		SetGlobalNetInt( "squadsRemainingCount", GetTeamsForPlayersFlowstate(connectedPlayers).len() )
+	} else {
+		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
+		SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
+	}
 }
 #endif
 

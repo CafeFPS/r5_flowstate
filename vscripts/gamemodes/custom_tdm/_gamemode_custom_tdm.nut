@@ -37,7 +37,7 @@ struct {
 	string scriptversion = "v2.8"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
-	bool mapIndexChanged = true
+	bool mapIndexChanged = false
 	array<entity> playerSpawnedProps
 	array<ItemFlavor> characters
 	float lastTimeChatUsage
@@ -731,9 +731,9 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-	UpdatePlayerCounts()
+	if(!IsValid(player)) return
 	if(FlowState_ForceCharacter()){CharSelect(player)}
-    if(!IsValid(player)) return
+	UpdatePlayerCounts()
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
@@ -819,13 +819,14 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetPlayerNetBool( "pingEnabled", true )
 				player.SetHealth( 100 )
 				player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
-				Message(player, "APEX PROPHUNT", "Game is in progress. You'll spawn in the next round. \n ", 10)
-				SetTeam(player, 20 )
 				player.MakeInvisible()
+				SetTeam(player, 20 )
+				Message(player, "APEX PROPHUNT", "Game is in progress. You'll spawn in the next round. \n ", 10)
 				player.SetObserverTarget( playersON[RandomIntRangeInclusive(0,playersON.len()-1)] )
 				player.SetSpecReplayDelay( 2 )
                 player.StartObserverMode( OBS_MODE_IN_EYE )
 				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+				
 				}catch(e){}
 			}
 			break
@@ -2287,8 +2288,8 @@ void function VotingPhase()
 			file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
 		}
 		
-	if (FlowState_SURFLockPOI()) {
-		file.nextMapIndex = FlowState_SURFLockedPOI()
+	if (FlowState_LockPOI()) {
+		file.nextMapIndex = FlowState_LockedPOI()
 	}
 
 	int choice = file.nextMapIndex

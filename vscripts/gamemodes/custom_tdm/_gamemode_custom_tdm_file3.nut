@@ -89,8 +89,8 @@ void function _OnPlayerConnectedSURF(entity player)
     case eGameState.Playing:
         player.UnfreezeControlsOnServer();
 		
-		if(!IsAlive(player))
-		{
+		if(IsValid(player))
+		{	TpPlayerToSpawnPoint(player)
 			_HandleRespawnSURF(player)
 		}
 
@@ -123,7 +123,7 @@ void function _HandleRespawnSURF(entity player, bool forceGive = false)
         player.StopObserverMode()
     }
 
-    if(!IsAlive(player) || forceGive)
+    if(!IsAlive(player))
     {
 
                 DecideRespawnPlayer(player, false)
@@ -134,8 +134,6 @@ void function _HandleRespawnSURF(entity player, bool forceGive = false)
                 MakeInvincible(player)
                 player.GiveWeapon( "mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_ANY )
     }
-    
-    SetPlayerSettings(player, SURF_SETTINGS)
     player.SetHealth( 100 )
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
 	player.SetShieldHealth( 100 )
@@ -175,12 +173,29 @@ void function ActualSURFLobby()
 	surf.admin3 = FlowState_Admin3()
 	surf.admin4 = FlowState_Admin4()
 	
+	// if (!surf.mapIndexChanged)
+	// {
+	// surf.nextMapIndex = (surf.nextMapIndex + 1) % surf.locationSettings.len()
+	// }
+	
+	// if(surf.nextMapIndex == surf.locationSettings.len()-1 && surf.mapIndexChanged){
+	// surf.nextMapIndex = 0
+	// }
+	
+	// if (FlowState_SURFLockPOI()) {
+		// surf.nextMapIndex = FlowState_SURFLockedPOI()
+	// }
 	if (!surf.mapIndexChanged)
 	{
-	surf.nextMapIndex = (surf.nextMapIndex + 1) % surf.locationSettings.len()
+	
+	
+	if (surf.nextMapIndex == 1)
+	{
+		surf.nextMapIndex=0
+	} else if(surf.nextMapIndex == 0){
+		surf.nextMapIndex=1
 	}
-	if (FlowState_SURFLockPOI()) {
-		surf.nextMapIndex = FlowState_SURFLockedPOI()
+
 	}
 
 	int choice = surf.nextMapIndex
@@ -445,11 +460,6 @@ bool function ClientCommand_NextRoundSURF(entity player, array<string> args)
 if(player.GetPlayerName() == surf.Hoster || player.GetPlayerName() == surf.admin1 || player.GetPlayerName() == surf.admin2 || player.GetPlayerName() == surf.admin3 || player.GetPlayerName() == surf.admin4) {
 	
     if (args.len()) {
-        try{
-            int mapIndex = int(args[0])
-            surf.nextMapIndex = (((mapIndex >= 0 ) && (mapIndex < surf.locationSettings.len())) ? mapIndex : RandomIntRangeInclusive(0, surf.locationSettings.len() - 1))
-            surf.mapIndexChanged = true
-        } catch (e) {}
 
         try{
             string now = args[0]
@@ -457,8 +467,15 @@ if(player.GetPlayerName() == surf.Hoster || player.GetPlayerName() == surf.admin
             {
                surf.tdmState = eTDMState.NEXT_ROUND_NOW
 			   surf.mapIndexChanged = false
+			   return true
             }
         } catch(e1) {}
+
+        try{
+            int mapIndex = int(args[0])
+            surf.nextMapIndex = (((mapIndex >= 0 ) && (mapIndex < surf.locationSettings.len())) ? mapIndex : RandomIntRangeInclusive(0, surf.locationSettings.len() - 1))
+            surf.mapIndexChanged = true
+        } catch (e) {}
 
         try{
             string now = args[1]
