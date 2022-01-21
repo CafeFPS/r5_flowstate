@@ -37,7 +37,7 @@ struct {
 	string scriptversion = "v2.8"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
-	bool mapIndexChanged = false
+	bool mapIndexChanged = true
 	array<entity> playerSpawnedProps
 	array<ItemFlavor> characters
 	float lastTimeChatUsage
