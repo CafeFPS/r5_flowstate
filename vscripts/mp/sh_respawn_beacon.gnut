@@ -1136,7 +1136,8 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 
 				if ( e[ "didHolsterAndDisableWeapons" ] )
 					DeployAndEnableWeapons( player )
-
+					EnableOffhandWeapons( player )
+					
 				player.SetPlayerNetInt( "respawnStatus", 0 )
 				player.p.respawnPod = null
 				player.p.respawnPodLanded = false
@@ -1223,7 +1224,7 @@ void function RespawnBeacon_PutPlayerInDropship2( entity player, entity ship, in
 
 				if ( e[ "didHolsterAndDisableWeapons" ] )
 					DeployAndEnableWeapons( player )
-
+					EnableOffhandWeapons( player )
 				player.SetPlayerNetInt( "respawnStatus", 0 )
 				player.p.respawnPod = null
 				player.p.respawnPodLanded = false
@@ -1251,7 +1252,7 @@ void function RespawnBeacon_PutPlayerInDropship2( entity player, entity ship, in
 	HolsterAndDisableWeapons( player )
 	MakeInvincible(player)
 	waitthread FirstPersonSequence( jumpAnimSequence, player, ship )
-	DeployAndEnableWeapons( player )
+	EnableOffhandWeapons( player )
 	DeployAndEnableWeapons( player )
 	ClearInvincible(player)
 	FallTempAirControl( player )

@@ -388,7 +388,7 @@ void function _OnPlayerConnected(entity player)
 				KillStreakAnnouncer(player, true)
 			}
 			player.UnforceStand()
-			player.UnfreezeControlsOnServer()
+			player.FreezeControlsOnServer()
 
 		}
 		break
@@ -398,12 +398,12 @@ void function _OnPlayerConnected(entity player)
 			_HandleRespawn(player)
 				ClearInvincible(player)
 		}
-        player.UnfreezeControlsOnServer()
+        player.FreezeControlsOnServer()
         break
     case eGameState.Playing:
 	    if(IsValidPlayer(player))
         {
-			player.UnfreezeControlsOnServer();
+			player.UnfreezeControlsOnServer()
 			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia")
 			{
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
@@ -414,7 +414,7 @@ void function _OnPlayerConnected(entity player)
 			} else {
 			_HandleRespawn(player)
 			SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-			Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
+			//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
 			}
 			ClearInvincible(player)
 			if(FlowState_RandomGunsEverydie()){
@@ -629,7 +629,18 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
                 DecideRespawnPlayer(player, true)
 				if(FlowState_ForceCharacter()){
 				CharSelect(player)}
+            	array<StoredWeapon> weapons = [
+                Equipment_GetRespawnKit_PrimaryWeapon(),
+                Equipment_GetRespawnKit_SecondaryWeapon(),
+            ]
+            foreach (storedWeapon in weapons)
+            {
+                player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
+
             }
+
+            
+			}
             else
             {
 				DecideRespawnPlayer(player, false)
@@ -647,9 +658,9 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         {
 	if(!isDroppodSpawn){
 	TpPlayerToSpawnPoint(player)}
+	player.UnfreezeControlsOnServer()
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 
-	
 	if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
 			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
 			PlayerRestoreHPFIESTA(player, 100)
@@ -703,13 +714,13 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if(FlowState_Gungame())
 	{
 		GiveGungameWeapon(player)
-		entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-		try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
 	}
 
 	WpnPulloutOnRespawn(player)
+	try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+	try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+	// try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
+	// try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
 }
 
 
@@ -2337,8 +2348,12 @@ foreach(player in GetPlayerArray())
 //CreatePanelText( player, "test", "test", <-19459, 2127, 6404>, <0, 180, 0>, true, 2 )
 }
 
-
-wait 5
+if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
+{
+wait 5}
+else{
+wait 2	
+}
 
 if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
 	DestroyPlayerProps()
@@ -2359,20 +2374,6 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	}
 
 //TODO MORE POIS
-
-
-
-if(!GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
-{
-    foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-		    Message(player,"Starting match...", "", 4, "Wraith_PhaseGate_Travel_1p")
-		    ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )
-	    }
-    }
-}
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
@@ -2487,7 +2488,15 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 }
 else
 {
-    wait 4
+    foreach(player in GetPlayerArray())
+    {
+        if(IsValidPlayer(player))
+        {
+		    Message(player,"Starting match...", "", 4, "Wraith_PhaseGate_Travel_1p")
+		    ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )
+	    }
+    }
+	wait 4
 }
 
 try {
@@ -2513,7 +2522,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 		 int spawni = 0
 
 	//true == FFA
-	if (GetCurrentPlaylistVarBool("flowstateffaortdm", false ) == true)
+	if (GetCurrentPlaylistVarBool("flowstateffaortdm", true ))
 	{
 		foreach(player in GetPlayerArray())
 		{
@@ -2528,25 +2537,26 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 
 					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 					player.SetThirdPersonShoulderModeOff()
-					_HandleRespawn(player)
+					_HandleRespawn(player,true)
 
 					ScreenFadeFromBlack( player, 1.0, 1.0 )
 
 					int rndnum = RandomIntRange(0, maxspawns)
 					
 					if (!FlowState_DummyOverride()) {
-					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) }
+					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) 
+					EnableOffhandWeapons( player )}
 					else {
 					DeployAndEnableWeapons(player)
+					EnableOffhandWeapons( player )
 					ClearInvincible(player)
 					}
 				
-					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
-					// reload weapons when tp'ing to next location
-					entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-					entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-					try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-					try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+
+					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+					try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
+					try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
     			}
 		}
 		spawni++
@@ -2764,13 +2774,12 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 		{
         		if(IsValid(player))
        			{
-					Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+					//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 
-					// reload weapons when tp'ing to next location
-					entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-					entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-					try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-					try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+					try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
+					try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
     			}
 		}
 	}
@@ -2788,14 +2797,14 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 		        _HandleRespawn(player)
 		        ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
-		        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+				EnableOffhandWeapons( player )
+		        //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
 
-		        // reload weapons when tp'ing to next location
-		        entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		        entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		        try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-		        try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+				try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
+				try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
             }
 	    } catch(e3){}
     	}
@@ -2811,15 +2820,16 @@ else
 		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		        player.SetThirdPersonShoulderModeOff()
 		        _HandleRespawn(player)
+				ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
-		        Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+				EnableOffhandWeapons( player )
+		        //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
-				
-		        // reload weapons when tp'ing to next location
-		        entity w1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		        entity w2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		        try {w1.SetWeaponPrimaryClipCount(w1.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-		        try {w2.SetWeaponPrimaryClipCount(w2.GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+							
+				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+				try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
+				try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
             }
 	    } catch(e3){}
     }
@@ -2994,19 +3004,16 @@ try{
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
 			}
+	} else if(IsValid(player) && !IsAlive(player)){
+					_HandleRespawn(player)
+			ClearInvincible(player)
+			HolsterAndDisableWeapons( player )
 	}
+	
+	
 	} catch (e) {}
 	}
-foreach(player in GetPlayerArray())
-    {
-	try{
-	if(IsValid(player) && !IsAlive(player)){
-			_HandleRespawn(player)
-			ClearInvincible(player)
-			MakeInvincible( player )
-	}
-	} catch (e5) {}
-	}
+
 wait 1
 try{
 if(GetBestPlayer()==PlayerWithMostDamage())
