@@ -1546,7 +1546,7 @@ void function BlockableDoor_OnDamage( entity door, var damageInfo )
 		EmitSoundOnEntity( door, "Door_Impact_Breach" )
 		EmitSoundOnEntity( door, "tone_jog_stress_3p" )
 		//EmitSoundOnEntity( door, "door_stop" )
-		if ( GetCurrentPlaylistVarBool( "blockable_door_regen_enabled", false ) )
+		if ( GetCurrentPlaylistVarBool( "blockable_door_regen_enabled", false ) || GetCurrentPlaylistVarBool( "flowstateDoorsRegen", false ))
 			thread BlockableDoor_ThreadedRegen( door )
 
 		if ( newHealth < door.GetMaxHealth() * 0.5 )

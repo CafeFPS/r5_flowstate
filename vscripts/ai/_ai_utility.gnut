@@ -284,6 +284,817 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
 	// 	thread NPCTitanHotdrops( npc, false )
 }
 
+
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+
+// .88b  d88.  .d8b.  d8888b.                                                    
+// 88'YbdP`88 d8' `8b 88  `8D                                                    
+// 88  88  88 88ooo88 88oodD'                                                    
+// 88  88  88 88~~~88 88~~~                                                      
+// 88  88  88 88   88 88                                                         
+// YP  YP  YP YP   YP 88                                                         
+//                                                                               
+//                                                                               
+// d88888b db    db d8b   db  .o88b. d888888b d888888b  .d88b.  d8b   db .d8888. 
+// 88'     88    88 888o  88 d8P  Y8 `~~88~~'   `88'   .8P  Y8. 888o  88 88'  YP 
+// 88ooo   88    88 88V8o 88 8P         88       88    88    88 88V8o 88 `8bo.   
+// 88~~~   88    88 88 V8o88 8b         88       88    88    88 88 V8o88   `Y8b. 
+// 88      88b  d88 88  V888 Y8b  d8    88      .88.   `8b  d8' 88  V888 db   8D 
+// YP      ~Y8888P' VP   V8P  `Y88P'    YP    Y888888P  `Y88P'  VP   V8P `8888Y' 
+
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+
+
+
+
+#if SERVER
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    entity function CreateEditorPropZero(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1)
+    {
+		//########################################
+		//d8888b. d8888b.  .d88b.  d8888b. .d8888. 
+		//88  `8D 88  `8D .8P  Y8. 88  `8D 88'  YP 
+		//88oodD' 88oobY' 88    88 88oodD' `8bo.   
+		//88~~~   88`8b   88    88 88~~~     `Y8b. 
+		//88      88 `88. `8b  d8' 88      db   8D 
+		//88      88   YD  `Y88P'  88      `8888Y'
+		//######################################## 		
+    	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+    	e.kv.fadedist = fade
+		e.kv.rendermode = 0
+		e.kv.renderamt = 1
+		e.kv.solid = 6
+		e.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    	if(mantle) e.AllowMantle()
+    
+    	if (realm > -1) {
+    		e.RemoveFromAllRealms()
+    		e.AddToRealm(realm)
+    	}
+    	string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
+    	string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
+    
+    	e.SetScriptName("editor_placed_prop")
+    	e.e.gameModeId = realm
+    
+    	printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
+    
+    	return e
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    entity function CreateEditorEntity(asset entity_name, vector pos, vector ang)
+    {
+
+	  //####################################################################
+	  //d88888b d8b   db d888888b d888888b d888888b d888888b d88888b .d8888. 
+	  //88'     888o  88 `~~88~~'   `88'   `~~88~~'   `88'   88'     88'  YP 
+	  //88ooooo 88V8o 88    88       88       88       88    88ooooo `8bo.   
+	  //88~~~~~ 88 V8o88    88       88       88       88    88~~~~~   `Y8b. 
+	  //88.     88  V888    88      .88.      88      .88.   88.     db   8D 
+	  //Y88888P VP   V8P    YP    Y888888P    YP    Y888888P Y88888P `8888Y'  Written by Zer0Bytes#4428
+	  //####################################################################
+
+      array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"] 
+      string randomWeapon = weapons[RandomInt(weapons.len())]
+      entity result
+    
+      switch (string(entity_name))  // not the best way of doing this idk
+      {
+    
+        case "npc_dummie":
+        entity dummie = CreateDummy( TEAM_UNASSIGNED, pos, ang )
+        SetSpawnOption_Alert(dummie)
+    	DispatchSpawn( dummie )
+        dummie.SetSkin(RandomInt(6))
+        dummie.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+    	result = dummie
+        break
+    
+        case "npc_dummie_ignore":  // unkillable dummies
+        entity ent_npc = CreateEntity( "npc_dummie" )
+        SetSpawnOption_AISettings( ent_npc, "npc_dummie_combat" )
+        ent_npc.SetOrigin( pos )
+        ent_npc.SetAngles( ang )
+        SetTeam(ent_npc,TEAM_IMC | TEAM_MILITIA)
+        DispatchSpawn( ent_npc ) // spawn entity
+        ent_npc.SetDamageNotifications( false )
+        ent_npc.NotSolid()
+        ent_npc.EnableNPCFlag( NPC_IGNORE_ALL ) // to make them not give a shit
+        ent_npc.SetSkin(RandomInt(6))
+    	result = ent_npc
+        break
+    
+        case "ent_lootbin":
+        entity ent_lootbin = CreateLootBin(pos,ang)
+        SetTargetName( ent_lootbin, "LootBin" )
+        ent_lootbin.SetOrigin( pos )
+        ent_lootbin.SetAngles( ang )
+    	result = ent_lootbin
+        break
+    
+        case "ent_singleDoor": // single door
+    	entity singleDoor = CreateEntity("prop_door")
+    	singleDoor.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+    	singleDoor.SetOrigin( pos )
+    	singleDoor.SetAngles( ang - <0,90,0>)
+    	DispatchSpawn(singleDoor)
+        break
+    
+        case "ent_doubledoor": // double door
+        entity DoorLeft = CreateEntity("prop_door")
+    	DoorLeft.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+    	DoorLeft.SetAngles(ang - <0,90,0>)
+    	DoorLeft.SetOrigin(pos + DoorLeft.GetRightVector() * 60)
+    	DispatchSpawn(DoorLeft)
+    
+    	entity DoorRight = CreateEntity("prop_door")
+    	DoorRight.SetValueForModelKey(FIRINGRANGE_DOOR_ASSET)
+    	DoorRight.SetAngles(ang + <0,90,0>)
+    	DoorRight.SetOrigin(pos + DoorRight.GetRightVector() * 60)
+    	DoorRight.LinkToEnt( DoorRight )
+    	DispatchSpawn(DoorRight)
+        break
+    
+        default:
+        break
+      }
+      string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
+      string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
+    
+      printl("[Load0_Entity]" + string(entity_name) + ";" + positionSerialized + ";" + anglesSerialized + ";")
+      result.kv.fadedist = 2000
+    
+      return result
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    entity function CreateEditorPilot(asset entity_name,int model_select,int anim_select,vector pos, vector ang)
+    {
+        //###################################################      
+        //d8888b. d888888b db       .d88b.  d888888b .d8888. 
+        //88   8D    88'   88      .8P  Y8.  ~~88    88'  YP 
+        //88oodD'    88    88      88    88    88     8bo.   
+        //88~~~      88    88      88    88    88       Y8b. 
+        //88        .88.   88booo.  8b  d8'    88    db   8D 
+        //88      Y888888P Y88888P   Y88P'     YP     8888Y' 
+        //###################################################  Written by Zer0Bytes#4428                         
+                                                          
+        //defaults if nothing is selected
+        array <asset> model_array = [$"mdl/humans/class/medium/pilot_medium_holo.rmdl"]
+        array <string> anim_array = ["mirage_menu_lobby_center_laugh"] // can be pulled from legion and make sure to remove "_0" etc
+
+        Assert( model_select, "No Model Choosen Set to 1!" )
+		
+        switch (string(entity_name))  // not the best way of doing this idk
+        {
+	        case "pilot_mirage":
+	            model_array = [
+				    $"mdl/humans/class/medium/pilot_medium_holo.rmdl"
+			    ]
+	            anim_array = [
+	                "mirage_menu_lobby_center_beard",
+	                "mirage_menu_lobby_center_laugh",
+	                "mirage_menu_lobby_center_picture",
+	                "mirage_menu_lobby_center_magic",
+	                "pilot_freefall_emote_backflip",
+	                "pilot_freefall_emote_backflip"
+				]
+            break
+        
+            case "pilot_gibraltar":
+                model_array = [
+					$"mdl/humans/class/heavy/pilot_heavy_gibraltar.rmdl"
+				]
+                anim_array = ["gibraltar_menu_lobby_center_slap"]
+            break
+        
+            case "pilot_support":
+                model_array = [
+					$"mdl/humans/class/light/pilot_light_support.rmdl"
+				]
+                anim_array = ["lifeline_idle_UA_dance"]
+            break
+        
+            case "pilot_bloodhound":
+                model_array = [
+					$"mdl/humans/class/medium/pilot_medium_bloodhound.rmdl"
+				]
+                anim_array = ["bloodhound_menu_lobby_center_pet"]
+            break
+        
+            case "pilot_bangalore":
+                model_array =[
+					$"mdl/humans/class/medium/pilot_medium_bangalore.rmdl"
+				]
+                anim_array = ["bangalore_menu_lobby_center_hair"]
+            break
+        
+            case "pilot_wraith":
+                model_array = [
+					$"mdl/humans/class/light/pilot_light_wraith.rmdl"
+				]
+                anim_array = ["wraith_menu_lobby_center_voices"]
+            break
+        
+            case "pilot_pathfinder":
+                model_array = [
+					$"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl"
+				]
+                anim_array  = ["pathfinder_menu_lobby_center_hopping"]
+            break
+        
+            case "pilot_stim":
+                model_array = [
+					$"mdl/Humans/class/medium/pilot_medium_stim.rmdl"
+				]
+                anim_array = ["octane_menu_lobby_center_leg"]
+            break
+        
+            case "pilot_wattson":
+                model_array = [
+					$"mdl/humans/class/light/pilot_light_wattson.rmdl"
+				]
+                anim_array = ["wattson_menu_lobby_center_idle"]
+            break
+        
+            case "pilot_caustic":
+                model_array = [
+					$"mdl/humans/class/heavy/pilot_heavy_caustic.rmdl"
+				]
+                anim_array = ["caustic_menu_lobby_center_recorder"]
+            break
+        
+            case "pilot_crypto":
+                model_array = [
+					$"mdl/Humans/class/medium/pilot_medium_crypto.rmdl"
+				]
+                anim_array = ["crypto_menu_lobby_center_drone"]
+            break
+        
+		    case "npc_tick":
+                model_array = [
+				$"mdl/robots/drone_frag/drone_frag_loot.rmdl",
+			    $"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl",
+				$"mdl/robots/drone_frag/drone_frag_loot_halloween.rmdl",
+				$"mdl/robots/drone_frag/drone_frag_loot_halloween.rmdl"]
+
+				anim_array = [
+				"sd_search_idle",
+				"sd_angry_idle",
+				"sd_angry_idle",
+				"sp_suicide_spectre_explode_stand"]
+            break
+		    
+            default:
+            break
+        }
+        
+        asset model
+		for (int m;m < model_array.len();m++) // go trough array
+		{
+			if (model_select == m) // if is selected return anim
+			{
+				model = model_array[m]
+			}
+			else
+			{
+				model = model_array[model_select - 1]
+			}
+		}
+		
+
+        entity ent_prop = CreatePropDynamic(model,pos,ang,SOLID_VPHYSICS,30000)
+        ent_prop.kv.fadedist = 30000 // lower fading
+        ent_prop.e.gameModeId = -1
+        ent_prop.NotSolid() // make the ent's not solid
+        ent_prop.StopPhysics()
+        ent_prop.kv.fadedist = 2000
+        string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
+        string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
+        
+        if (anim_select != 0 )
+        {
+			string anim
+			for (int a;a < anim_array.len();a++) // go trough array
+			{
+				if (anim_select == a) // if is selected return anim
+				{
+					anim = anim_array[a]
+				}
+				else
+				{
+					anim = anim_array[anim_select - 1]
+				}
+			}
+
+			printl( "[Load0_Pilot]" + string(model) + ";" + anim + ";" + positionSerialized + ";" + anglesSerialized + ";")
+            float RotateLoopSpeed =  15
+            float smalltick = 0.5
+    		float bigtick = 2.5
+            switch (anim_select)
+            {
+    			//tick
+    			case 2: // big gold tick
+    			if (string(entity_name) == "npc_tick")
+    			{
+    				ent_prop.SetModelScale(bigtick)
+    			}
+    			thread PlayAnim( ent_prop, anim )
+                break
+    
+    			case 3: // small spook
+    			if (string(entity_name) == "npc_tick")
+    			{
+                    ent_prop.SetModelScale(smalltick)
+    			}
+    			thread PlayAnim( ent_prop, anim )
+                break
+    
+    			case 4: // small front flip spook
+    			if (string(entity_name) == "npc_tick")
+    			{
+                    ent_prop.SetModelScale(smalltick)
+    			}
+    			thread AnimationLoop( ent_prop, anim, RotateLoopSpeed)
+                break
+                //tick end 
+
+				case 5: // big boy
+				ent_prop.SetModelScale(7.0)
+				thread BigMirageRotateLoop(ent_prop,anim,RotateLoopSpeed * 8) // rotation
+				break
+	
+				case 6: // table smol mirages
+				ent_prop.SetModelScale(0.5)
+				thread PlayAnim( ent_prop, anim )
+				thread MiniMirageRotateLoop(ent_prop,RotateLoopSpeed) // rotation
+				break
+    
+                default:
+                thread PlayAnim( ent_prop, anim )
+                break
+            }
+        } else{  // 0 - no animation / t-pose
+            printl( "[Load0_Pilot]" + string(model) + ";" + positionSerialized + ";" + anglesSerialized + ";")
+    		
+    	}
+    
+    	return ent_prop
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    array<entity> function ent_ZipLine(vector startPos,vector endPos,bool pathfinder_model)
+    {
+		//##################################################################
+		//d88888D d888888b d8888b. db      d888888b d8b   db d88888b .d8888. 
+		//YP  d8'   `88'   88  `8D 88        `88'   888o  88 88'     88'  YP 
+		//   d8'     88    88oodD' 88         88    88V8o 88 88ooooo `8bo.   
+		//  d8'      88    88~~~   88         88    88 V8o88 88~~~~~   `Y8b. 
+		// d8' db   .88.   88      88booo.   .88.   88  V888 88.     db   8D 
+		//d88888P Y888888P 88      Y88888P Y888888P VP   V8P Y88888P `8888Y' 
+        //################################################################## Written by Zer0Bytes#4428
+
+		vector pathfinder_offset = <0,0,120>
+		asset PATHFINDER_ZIP_MODEL = $"mdl/props/pathfinder_zipline/pathfinder_zipline.rmdl"
+
+    	entity zipline_start = CreateEntity( "zipline" )
+		entity ent_model_start
+    	zipline_start.kv.Material = "cable/zipline.vmt"
+    	zipline_start.kv.ZiplineAutoDetachDistance = "160"
+		array<entity> ziplineEnts
+
+		if (pathfinder_model)
+		{
+			ent_model_start = CreateEditorPropZero( PATHFINDER_ZIP_MODEL, startPos, <0,0,0>, true, 50000, -1 )
+			zipline_start.SetOrigin( startPos + pathfinder_offset)
+			//ent_model_start.SetParent(zipline_start)
+		} else
+		{
+		    zipline_start.SetOrigin( startPos )
+		}
+
+    	entity zipline_end = CreateEntity( "zipline_end" )
+    	zipline_end.kv.ZiplineAutoDetachDistance = "160"
+		entity ent_model_end
+    	
+		if (pathfinder_model)
+		{
+			ent_model_end = CreateEditorPropZero( PATHFINDER_ZIP_MODEL, endPos, <0,0,0>, true, 50000, -1 )
+			zipline_end.SetOrigin( endPos + pathfinder_offset)
+			//ent_model_end.SetParent(zipline_end)
+		}else
+		{
+		    zipline_end.SetOrigin( endPos )
+		}
+
+    	zipline_start.LinkToEnt( zipline_end )
+    	DispatchSpawn( zipline_start )
+    	DispatchSpawn( zipline_end )
+    
+		if (pathfinder_model)
+		{
+			ziplineEnts = [ zipline_start, zipline_end ,ent_model_start,ent_model_end]
+		}else
+		{
+			ziplineEnts = [ zipline_start, zipline_end ]
+		}
+		    
+    	return ziplineEnts
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    entity function GenerateRings(asset ring_MODEL,vector origin,float rotate_speed,float ring_size)
+    {
+    	//Zer0Bytes#4428
+    
+        // #########################################
+        // d8888b. d888888b d8b   db  d888b  .d8888.
+        // 88   8D    88'   888o  88 88' Y8b 88'  YP
+        // 88oobY'    88    88V8o 88 88       8bo.  
+        // 88 8b      88    88 V8o88 88  ooo    Y8b.
+        // 88  88.   .88.   88  V888 88. ~8~ db   8D
+        // 88   YD Y888888P VP   V8P  Y888P   8888Y'
+        // ######################################### Written by Zer0Bytes#4428
+    
+        Assert( ring_MODEL != null, "No Ring Asset Selected" )
+        Assert( origin != null, "No Origin Set" )
+    	int amount_rings = 2 // the amount of rings
+    	int ring_size_scaling_begin = 0 // at what ring begin the scaling
+    	float ring_size_multiplier = 0.1
+    	entity ent_ring
+    	for (int i;i < amount_rings;i++) // top spinning rings
+    	{
+    		
+    		origin = origin + <0,0,2048 * i + ring_size_multiplier> // modify the y
+    
+            for (int j = 0;j < 4;j++) // side duplication
+    		{
+    			switch(j) 
+    			{
+    				case 0:  // 180
+    				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <0,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed, false)
+    				break
+    				case 1:  // 180
+    				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <180,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed,false)
+    				break
+    				case 2:  // 90
+    				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <90,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed, true)
+    				break
+    				case 3:  // 90
+    				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <-90,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed,false)
+    				break
+    				case 4: // 45
+    				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <45,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed, true)
+    				break
+    				case 5: // 45
+    				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <-45,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed,false)
+    				break
+    				case 6:  // 22
+    				ent_ring = CreateEditorPropZero( ring_MODEL , origin, <22,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed, true)
+    				break
+    				case 7:  // 22
+    				ent_ring = CreateEditorPropZero( ring_MODEL, origin, <-22,0,0>, true, -1, -1 )
+    			    thread vRotateLoop(ent_ring,rotate_speed,false)
+    				break
+    
+    			}
+    			ent_ring.NotSolid()
+
+    			for(int k;k < amount_rings;k++)
+    			{
+    				ent_ring.kv.renderamt = 255
+    				ent_ring.kv.rendermode = 3
+    				ent_ring.kv.rendercolor = "255 255 255 255"
+    				ent_ring.SetModelScale(ring_size * ring_size_multiplier * i)
+    			}
+    		}
+        }
+    	return ent_ring
+    }
+    
+    // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+    
+    vector wallz_oldorigin_y
+    void function CreateInvisibleWall(asset MODEL,vector origin,vector angles,int amount,float spacesize)
+    {
+        
+        // ##############################################
+        // db   d8b   db   d8b   db      db      d88888D 
+        // 88   I8I   88 d8   8b 88      88      YP  d8  
+        // 88   I8I   88 88ooo88 88      88         d8   
+        // Y8   I8I   88 88   88 88      88        d8    
+        //  8b d8'8b d8  88   88 88booo  88booo   d8  db 
+        //   8b8   8d8   YP   YP Y88888P Y88888P d88888P 
+        // ############################################## Written by Zer0Bytes#4428
+    
+    	Assert( MODEL != null, "No Asset Selected" )
+    
+        vector add_spacesize
+        vector origin_y
+        int check
+        origin = origin - <0,0,spacesize> 
+    
+        for (int i;i < amount;i++)
+        {
+            add_spacesize = <0,0,spacesize> 
+            
+            if(check != 0) // add to location
+            {
+                origin_y = origin_y + add_spacesize // next position
+            }
+            else{
+                origin_y = origin + add_spacesize // position
+                check = 1
+            }
+            entity ent_inviswall = CreateEditorPropZero( MODEL , origin_y, angles, true, 200, -1 )
+            
+            ent_inviswall.kv.renderamt = 255
+            ent_inviswall.kv.rendermode = 3
+            ent_inviswall.kv.rendercolor = "0 0 0 50"
+    	    ent_inviswall.kv.solid = 8 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+            ent_inviswall.kv.fadedist = 200
+            wallz_oldorigin_y = origin_y
+        }
+        //wait 0.3
+    }
+	void function CreateDownWall(asset MODEL,vector origin,vector angles,int amount,float spacesize)
+    {
+    	Assert( MODEL != null, "No Asset Selected" )
+        vector add_spacesize
+        vector origin_y
+        int check
+        origin = origin - <0,0,spacesize> 
+    
+        for (int i;i < amount;i++)
+        {
+            add_spacesize = <0,0,spacesize> 
+            
+            if(check != 0) // add to location
+            {
+                origin_y = origin_y - add_spacesize // next position
+            }
+            else{
+                origin_y = origin + add_spacesize // position
+                check = 1
+            }
+            entity ent_inviswall = CreateEditorPropZero( MODEL , origin_y, angles, true, 50000, -1 )
+        
+            wallz_oldorigin_y = origin_y
+        }
+        //wait 0.3
+    }
+
+#endif
+
+
+
+
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+
+// .o88b. db    db .d8888. d888888b  .d88b.  .88b  d88.                
+// d8P  Y8 88    88 88'  YP `~~88~~' .8P  Y8. 88'YbdP`88                    
+// 8P      88    88 `8bo.      88    88    88 88  88  88                         
+// 8b      88    88   `Y8b.    88    88    88 88  88  88                         
+// Y8b  d8 88b  d88 db   8D    88    `8b  d8' 88  88  88                         
+//  `Y88P' ~Y8888P' `8888Y'    YP     `Y88P'  YP  YP  YP                         
+//                                                                               
+//                                                              
+// d88888b db    db d8b   db  .o88b. d888888b d888888b  .d88b.  d8b   db .d8888. 
+// 88'     88    88 888o  88 d8P  Y8 `~~88~~'   `88'   .8P  Y8. 888o  88 88'  YP 
+// 88ooo   88    88 88V8o 88 8P         88       88    88    88 88V8o 88 `8bo.   
+// 88~~~   88    88 88 V8o88 8b         88       88    88    88 88 V8o88   `Y8b. 
+// 88      88b  d88 88  V888 Y8b  d8    88      .88.   `8b  d8' 88  V888 db   8D 
+// YP      ~Y8888P' VP   V8P  `Y88P'    YP    Y888888P  `Y88P'  VP   V8P `8888Y' 
+
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+
+
+
+
+#if SERVER
+
+    void function DEV_TeleportPlayers(vector pos, vector ang) 
+    {
+        int playersize = GetPlayerArray().len()
+        for (int i;i < playersize ;i++)
+    	{
+            entity player = GetPlayerArray()[i]
+    		if(IsValidPlayer(player))
+    		{
+    		   player.SetOrigin( pos )
+    		   player.SetAngles( ang )
+               printl("[DEV_Teleport]" + player.GetTargetName() + "["+ string(i) + "]" + ";" + string(pos) + ";" + string(ang)+ ";")
+    		}
+    	}
+    }
+    
+    void function DEV_ChargePlayers() 
+    {
+        int playersize = GetPlayerArray().len()
+        for (int i;i < playersize ;i++)
+    	{
+            entity player = GetPlayerArray()[i]
+    
+    		if(IsValidPlayer(player))
+    		{
+    			player.GetOffhandWeapon( OFFHAND_INVENTORY )
+    		    .SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
+    			player.GetOffhandWeapon( OFFHAND_LEFT )
+    			.SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
+                printl("[DEV_Charger]" + player.GetTargetName() + "["+ string(i) + "]" + ";")
+    		}
+    		
+    	}
+    }
+    
+    void function DEV_StatusPlayers()
+    {
+        int playersize = GetPlayerArray().len()
+        for (int i;i < playersize ;i++)
+    	{
+    		entity player = GetPlayerArray()[i]
+    		if(IsValidPlayer(player))
+    		{
+                
+    		    vector origin = GetPlayerCrosshairOrigin( player )
+
+                printl("["+ player.GetTargetName() + "] ["+ string(i)  + "]-----------------------------")
+    		    printl("[Entity]" + player.GetTargetName() + "["+ string(i) + "]" + ";" + string(player.GetOrigin()) + ";" + string(player.GetAngles()))
+    		    printl("[LookingAt]" + player.GetTargetName() + "["+ string(i) + "]" + ";" + string(origin))
+
+				printl("[DEV_StatusPlayers] // script DEV_TeleportPlayers(" + string(player.GetOrigin()) + "," + string(player.GetAngles()) + ")" )
+    		}
+    	}
+    }
+
+#endif
+
+
+
+
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+
+// db   db d88888b db      d8888b. d88888b d8888b.                               
+// 88   88 88'     88      88  `8D 88'     88  `8D                               
+// 88ooo88 88ooooo 88      88oodD' 88ooooo 88oobY'                               
+// 88~~~88 88~~~~~ 88      88~~~   88~~~~~ 88`8b                                 
+// 88   88 88.     88booo. 88      88.     88 `88.                               
+// YP   YP Y88888P Y88888P 88      Y88888P 88   YD                               
+//                                                                               
+//                                                                               
+// d88888b db    db d8b   db  .o88b. d888888b d888888b  .d88b.  d8b   db .d8888. 
+// 88'     88    88 888o  88 d8P  Y8 `~~88~~'   `88'   .8P  Y8. 888o  88 88'  YP 
+// 88ooo   88    88 88V8o 88 8P         88       88    88    88 88V8o 88 `8bo.   
+// 88~~~   88    88 88 V8o88 8b         88       88    88    88 88 V8o88   `Y8b. 
+// 88      88b  d88 88  V888 Y8b  d8    88      .88.   `8b  d8' 88  V888 db   8D 
+// YP      ~Y8888P' VP   V8P  `Y88P'    YP    Y888888P  `Y88P'  VP   V8P `8888Y' 
+
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+
+
+
+
+#if SERVER
+
+
+    // #########################################
+    // db       .d88b.   .d88b.  d8888b. .d8888. 
+    // 88      .8P  Y8. .8P  Y8. 88  `8D 88'  YP 
+    // 88      88    88 88    88 88oodD' `8bo.   
+    // 88      88    88 88    88 88~~~     `Y8b. 
+    // 88booo. `8b  d8' `8b  d8' 88      db   8D 
+    // Y88888P  `Y88P'   `Y88P'  88      `8888Y' 
+    // ######################################### Written by Zer0Bytes#4428
+
+    void function RotateLoop(entity ent,float speed,bool rightside)
+    {
+        vector result
+        for(;;)
+        {
+            if(rightside)
+            {
+               result =  ent.GetAngles() + <0,-speed,0>
+            }
+            else{
+               result = ent.GetAngles()  + <0,speed,00>
+            }
+    		ent.SetAngles( result ) // result
+          wait 0.00001
+        }
+    }
+    
+    void function vRotateLoop(entity ent,float speed,bool rightside)
+    {
+        vector result
+    	float sbase = 2
+        for(;;)
+        {
+            if(rightside)
+            {
+               result =  ent.GetAngles() -  <speed,-speed, 0>
+            }
+            else{
+               result = ent.GetAngles()  +  <-speed,speed, 0>
+            }
+    		ent.SetAngles( result ) // result
+          wait 0.00001
+        }
+    }
+    
+    void function AnimationLoop(entity decoy,string anim,float speed)
+    {
+        vector result
+        for(;;)
+        {
+          PlayAnim( decoy, anim )
+          wait 0.00001
+        }
+    }
+
+    void function BigMirageRotateLoop(entity decoy,string anim,float speed)
+    {
+        vector result
+        for(;;)
+        {
+            PlayAnim( decoy, anim )
+            if(RandomInt(1))
+            {
+               result =  decoy.GetAngles() + <speed,0,speed > - <0,speed,0>
+            }
+            else{
+               result = decoy.GetAngles() - <0,0,speed> + <speed,speed,0>
+            }
+          decoy.SetAngles( result ) // result
+          wait 0.00001
+        }
+    }
+    void function MiniMirageRotateLoop(entity decoy,float speed)
+    {
+        vector result
+        for(;;)
+        {
+            if(RandomInt(1))
+            {
+               result =  decoy.GetAngles() + <0,0,speed> - <0,speed,0>
+            }
+            else{
+               result = decoy.GetAngles() - <0,0,speed> + <0,speed,0>
+            }
+          decoy.SetAngles( result ) // result
+          wait 0.00001
+        }
+    }
+
+    // ################
+	// d88888b db    db
+	// 88'     `8b  d8'
+	// 88ooo    `8bd8' 
+	// 88~~~    .dPYb. 
+	// 88      .8P  Y8.
+	// YP      YP    YP    
+    // ################ Written by Zer0Bytes#4428
+	
+    entity function ApplyFX(asset FX,entity ent_prop)
+    {
+        entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( FX ), ent_prop.GetOrigin(), ent_prop.GetAngles())
+        trailFXHandle.SetParent(ent_prop)
+        ent_prop.kv.renderamt = 100
+        ent_prop.kv.rendermode = 3
+        //ent_prop.kv.rendercolor = "255 0 0 50"
+    	ent_prop.kv.solid = 0 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+    
+        trailFXHandle.FXEnableRenderAlways()
+        return trailFXHandle
+    }
+    
+    entity function CreateFX(asset FX,vector Origin,vector Angles)
+    {
+        entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( FX ), Origin, Angles)
+        trailFXHandle.FXEnableRenderAlways()
+        return trailFXHandle
+    }
+    
+#endif
+
+
+
+
+// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+
 void function DEV_SpawnDummyAtCrosshair()
 {
 	entity player = GetPlayerArray()[ 0 ]

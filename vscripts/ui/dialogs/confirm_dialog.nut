@@ -26,6 +26,7 @@ struct
 	var contentRui
 
 	ConfirmDialogData ornull showDialogData
+	table<var, bool> buttonEventHandlersAdded
 } file
 
 void function InitConfirmDialog( var newMenuArg )
@@ -114,11 +115,39 @@ void function Dialog_OnOpen()
 	{
 		AddMenuFooterOption( _confirmData().__menu, LEFT, BUTTON_A, true, _confirmData().yesText[0], _confirmData().yesText[1], ConfirmDialog_Yes )
 		AddMenuFooterOption( _confirmData().__menu, LEFT, BUTTON_B, true, _confirmData().noText[0], _confirmData().noText[1], ConfirmDialog_No )
+
+		var keep = Hud_GetChild( _confirmData().__menu, "KeepSettingsButton" )
+		try {
+			Hud_AddEventHandler( keep, UIE_CLICK, ConfirmDialog_Yes )
+		} catch (exception1){ }
+    	var revert = Hud_GetChild( _confirmData().__menu, "RevertSettingsButton" )
+		try {
+			Hud_AddEventHandler( revert, UIE_CLICK, ConfirmDialog_No )
+		} catch (exception2){ }
+
+		Hud_SetText(Hud_GetChild( _confirmData().__menu, "BtnKeepSettings" ), _confirmData().yesText[1])
+		Hud_SetText(Hud_GetChild( _confirmData().__menu, "BtnRevertSettings" ), _confirmData().noText[1])
+
+		Hud_SetText(Hud_GetChild( _confirmData().__menu, "DialogHeader" ), _confirmData().headerText)
 	}
 	else if ( _confirmData().dialogType == eDialogType.AB )
 	{
 		AddMenuFooterOption( _confirmData().__menu, LEFT, BUTTON_X, true, _confirmData().yesText[0], _confirmData().yesText[1], ConfirmDialog_Yes )
 		AddMenuFooterOption( _confirmData().__menu, LEFT, BUTTON_Y, true, _confirmData().noText[0], _confirmData().noText[1], ConfirmDialog_No )
+
+		var keep = Hud_GetChild( _confirmData().__menu, "KeepSettingsButton" )
+		try {
+			Hud_AddEventHandler( keep, UIE_CLICK, ConfirmDialog_Yes )
+		} catch (exception1){ }
+    	var revert = Hud_GetChild( _confirmData().__menu, "RevertSettingsButton" )
+		try {
+			Hud_AddEventHandler( revert, UIE_CLICK, ConfirmDialog_No )
+		} catch (exception2){ }
+
+		Hud_SetText(Hud_GetChild( _confirmData().__menu, "BtnKeepSettings" ), _confirmData().yesText[1])
+		Hud_SetText(Hud_GetChild( _confirmData().__menu, "BtnRevertSettings" ), _confirmData().noText[1])
+
+		Hud_SetText(Hud_GetChild( _confirmData().__menu, "DialogHeader" ), _confirmData().headerText)
 	}
 	else
 	{

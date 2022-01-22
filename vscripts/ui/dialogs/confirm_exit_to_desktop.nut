@@ -22,7 +22,12 @@ void function InitConfirmExitToDesktopDialog( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, ConfirmExitToDesktopDialog_OnNavigateBack )
 
 	AddMenuFooterOption( menu, LEFT, BUTTON_A, true, "#A_BUTTON_YES", "#YES", Confirm )
-	AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_CANCEL", "#B_BUTTON_CANCEL" )
+	AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_CANCEL", "#CANCEL" )
+
+	var keep = Hud_GetChild( menu, "KeepSettingsButton" )
+	Hud_AddEventHandler( keep, UIE_CLICK, Confirm )
+    var revert = Hud_GetChild( menu, "RevertSettingsButton" )
+	Hud_AddEventHandler( revert, UIE_CLICK, PCBackButton_Activate )
 }
 
 void function OpenConfirmExitToDesktopDialog()
@@ -39,6 +44,9 @@ void function ConfirmExitToDesktopDialog_OnOpen()
 {
 	RuiSetString( file.contentRui, "headerText", "#EXIT_TO_DESKTOP" )
 	RuiSetString( file.contentRui, "messageText", "#EXITING_TO_DESKTOP" )
+	Hud_SetText(Hud_GetChild( file.menu, "DialogHeader" ), "#EXIT_TO_DESKTOP")
+	Hud_SetText(Hud_GetChild( file.menu, "BtnRevertSettings" ), "#CANCEL")
+	Hud_SetText(Hud_GetChild( file.menu, "BtnKeepSettings" ), "#YES")
 }
 
 void function ConfirmExitToDesktopDialog_OnClose()

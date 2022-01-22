@@ -192,6 +192,7 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("god", ClientCommand_God)
 	AddClientCommandCallback("ungod", ClientCommand_UnGod)
 	AddClientCommandCallback("next_round", ClientCommand_NextRound)
+	AddClientCommandCallback("doors", ClientCommand_DoorsTest)
 	}
 	if(FlowState_AllChat() && !FlowState_SURF()){
 		AddClientCommandCallback("say", ClientCommand_ClientMsg)
@@ -1152,6 +1153,8 @@ if(player.GetTeam() == TEAM_IMC){
 					Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
 					player.SetOrigin(prophuntSpawns[RandomInt(4)].origin)
+					player.kv.rendermode = 0
+					player.kv.renderamt = 1
 					player.kv.solid = 6
 					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 					player.SetThirdPersonShoulderModeOff()
@@ -2368,7 +2371,31 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     DestroyPlayerProps()
     wait 1
     SkillTrainerLoad()	
-} else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
+} else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
+{
+    DestroyPlayerProps()
+	wait 1
+	WorldEntities()
+    BrightwaterLoad()
+	BrightwaterLoad2()
+	BrightwaterLoad3()
+	SpawninvisWalls()
+} else if(file.selectedLocation.name == "Cave By BlessedSeal" )
+{
+    DestroyPlayerProps()
+    wait 1
+    SpawnEditorPropsSeal()	
+} 
+// else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
+// {	
+	 // WorldEntitiesZER0()
+     // // thread SpawnEditorPropsZER0()
+     // // thread SpawnEditorProps2ZER0()
+     // // thread SpawnEditorProps3ZER0()
+     // // thread SpawninvisWallsZER0()
+		
+// } 
+else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
 	DestroyPlayerProps()
 	CreateGroundMedKit(<-21289, -12030, 3060>)
 	}
@@ -3576,6 +3603,12 @@ bool function ClientCommand_ChangePropPROPHUNT(entity player, array<string> args
 	return false}
 	return true
 }
+bool function ClientCommand_DoorsTest(entity player, array<string> args)
+{
+	ShDoors_Init()
+	return true
+}	
+	
 	
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 //Thanks Zee#0134

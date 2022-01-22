@@ -768,6 +768,20 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
+		if(FlowState_EnableCaveByBlessedSeal() ){
+			Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Cave By BlessedSeal",
+                    [
+						NewLocPair(<-8742, -11843, -3185>, <0, 40, 0>),
+                        NewLocPair(<-1897, -9707, -3841>, <0, 40, 0>),
+                        NewLocPair(<-5005, -11170, -213>, <0, -40, 0>),
+                        NewLocPair(<-1086, -9685, -3790>, <5, -120, 0>)
+                    ],
+                    <0, 0, 2000>
+                )
+            )
+		}
 		Shared_RegisterLocation(
                 NewLocationSettings(
                     "Little Town 2",
@@ -781,6 +795,92 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
+		if(FlowState_EnableBrightWaterByZero()){
+			Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Brightwater By Zer0bytes",
+                    [
+                        // SIde A
+                        NewLocPair(<-34368,35904,-3776>, <0,0,0>),
+                        NewLocPair(<-34496,35648,-3776>, <0,0,0>),
+                        NewLocPair(<-35392,35136,-3776>, <0,90,0>),
+                        NewLocPair(<-35456,35776,-3712>, <0,0,0>),
+                        NewLocPair(<-35456,36160,-3712>, <0,0,0>),
+                        NewLocPair(<-33088,37888,-3776>, <0,0,0>),
+                        NewLocPair(<-32960,37440,-3776>, <0,0,0>),
+                        NewLocPair(<-32576,35136,-3648>, <0,0,0>),
+                        NewLocPair(<-32576,34880,-3648>, <0,0,0>),
+                        NewLocPair(<-31488,34432,-3648>, <0,90,0>),
+                        NewLocPair(<-31296,34496,-3712>, <0,0,0>),
+                        NewLocPair(<-31232,34496,-3648>, <0,0,0>),
+                        NewLocPair(<-30976,34432,-3648>, <0,0,0>),
+                        NewLocPair(<-31232,35200,-3648>, <0,0,0>),
+                        NewLocPair(<-31424,35776,-3648>, <0,0,0>),
+                        NewLocPair(<-32384,37056,-3776>, <0,0,0>),
+                        NewLocPair(<-32000,36672,-3776>, <0,0,0>),
+                        NewLocPair(<-31680,38016,-3776>, <0,0,0>),
+                        NewLocPair(<-31104,37824,-3776>, <0,0,0>),
+                        NewLocPair(<-31680,39296,-3648>, <0,0,0>),
+                        NewLocPair(<-31680,39616,-3648>, <0,0,0>)
+
+                       // Side A
+                       NewLocPair(<-24640,40000,-3648>, <0,180,0>),
+                       NewLocPair(<-24640,39744,-3648>, <0,180,0>),
+                       NewLocPair(<-24941,39665,-3470>, <0,180,0>),
+                       NewLocPair(<-23936,37888,-3712>, <0,180,0>),
+                       NewLocPair(<-25088,37376,-3712>, <0,180,0>),
+                       NewLocPair(<-25600,40832,-3712>, <0,180,0>),
+                       NewLocPair(<-26752,39296,-3712>, <0,180,0>),
+                       NewLocPair(<-26880,37248,-3584>, <0,180,0>),
+                       NewLocPair(<-26880,37888,-3584>, <0,180,0>),
+                       NewLocPair(<-26880,38528,-3584>, <0,180,0>),
+                       NewLocPair(<-26368,35968,-3712>, <0,180,0>),
+                       NewLocPair(<-26496,35584,-3712>, <0,180,0>),
+                       NewLocPair(<-26368,36224,-3712>, <0,180,0>),
+                       NewLocPair(<-26752,35968,-3200>, <0,180,0>),
+                       NewLocPair(<-25728,40448,-3712>, <0,180,0>),
+                       NewLocPair(<-26496,40704,-3712>, <0,-90,0>),
+                       NewLocPair(<-27520,39808,-3840>, <0,180,0>),
+                       NewLocPair(<-24832,36480,-3712>, <0,180,0>),
+                       NewLocPair(<-23808,37504,-3712>, <0,180,0>),
+                       NewLocPair(<-23680,36992,-3584>, <0,180,0>),
+                       NewLocPair(<-25344,40704,-3584>, <0,180,0>),
+                       NewLocPair(<-25344,41344,-3584>, <0,180,0>),
+
+                       //others
+                       NewLocPair(<-27136,41920,1036>, <0,180,0>),
+                       NewLocPair(<-29364,42940,1040>, <0,180,0>),
+                       NewLocPair(<-31304,42044,1036>, <0,0,0>),
+                       NewLocPair(<-33520,42044,1204>, <0,0,0>),
+                       NewLocPair(<-33800,41756,1252>, <0,0,0>),
+                       NewLocPair(<-29268,41712,1084>, <0,0,0>),
+                       NewLocPair(<-25776,42168,1216>, <0,180,0>),
+                       NewLocPair(<-25724,41724,1204>, <0,180,0>),
+                       NewLocPair(<-28196,38564,-676>, <0,-90,0>),
+                       NewLocPair(<-26324,40476,-2756>, <0,180,0>),
+                       NewLocPair(<-31000,39452,-2752>, <0,0,0>), 
+                       NewLocPair(<-27192,35676,-3284>, <0,90,0>),
+                       NewLocPair(<-28108,35740,-3284>, <0,180,0>),
+                       NewLocPair(<-27376,35880,-2732>, <0,90,0>),
+                       NewLocPair(<-27204,35764,-3628>, <0,90,0>),
+                       NewLocPair(<-27908,36328,-3644>, <0,-90,0>),
+                       NewLocPair(<-28332,37500,-3676>, <0,0,0>), 
+                       NewLocPair(<-27828,37996,-3676>, <0,180,0>),
+                       NewLocPair(<-27960,37448,-3400>, <0,90,0>),
+                       NewLocPair(<-28396,38072,-3344>, <0,0,0>), 
+                       NewLocPair(<-27976,37960,2608>, <0,180,0>),
+                       NewLocPair(<-29348,39856,2668>, <0,-90,0>),
+                       NewLocPair(<-28936,39308,1916>, <0,0,0>),
+                       NewLocPair(<-27420,38688,2112>, <0,0,0>),
+                       NewLocPair(<-23648,35384,-3564>, <0,180,0>),
+                       NewLocPair(<-23972,35136,-3748>, <0,90,0>),
+                       NewLocPair(<-26220,35644,-3692>, <0,90,0>),
+                       NewLocPair(<-26320,36392,-3748>, <0,90,0>),
+                    ],
+                    <0, 0, 7450>
+                )
+		)}
+
 	    Shared_RegisterLocation(
                 NewLocationSettings(
                     "Dome",
@@ -1254,6 +1354,8 @@ int function FlowState_SURFRoundTime() { return GetCurrentPlaylistVarInt("flowst
 bool function FlowState_SURFLockPOI()                         { return GetCurrentPlaylistVarBool("flowstateSURFLockPOI", false ) } 
 int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowstateSURFLockeedPOI", 0) }
 bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
+bool function FlowState_EnableBrightWaterByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_BRIGHWATER_By_Zero", false ) }
+bool function FlowState_EnableCaveByBlessedSeal()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CAVE_By_BlessedSeal", false ) }
 
 #if SERVER   
 
