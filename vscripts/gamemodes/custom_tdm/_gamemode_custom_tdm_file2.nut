@@ -264,7 +264,8 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
 void function PrecacheCustomMapsProps()
 {
 if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){	
-
+PrecacheModel( $"mdl/rocks/sulfur_geyser_yellow_01.rmdl" )
+PrecacheModel( $"mdl/rocks/sulfur_geyser_yellow_02.rmdl" )
 PrecacheModel( $"mdl/rocks/sulfur_mound_yellow_02.rmdl" )
 PrecacheModel( $"mdl/rocks/sulfur_geyser_yellow_02.rmdl" )
 PrecacheModel( $"mdl/foliage/desertlands_alien_tree_02.rmdl" )
@@ -5497,6 +5498,7 @@ void function BrightwaterLoad3()
     }
 }
 
+
 void function WorldEntities()
 {
     printl( "########################################################################" )
@@ -5721,4 +5723,9 @@ void function SpawninvisWalls()
 }
 
 #endif
+
+
+
+
+
 

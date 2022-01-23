@@ -983,7 +983,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
     void function RotateLoop(entity ent,float speed,bool rightside)
     {
         vector result
-        for(;;)
+        while(isBrightWaterByZer0)
         {
             if(rightside)
             {
@@ -1001,7 +1001,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
     {
         vector result
     	float sbase = 2
-        for(;;)
+        while(isBrightWaterByZer0)
         {
             if(rightside)
             {
@@ -1018,7 +1018,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
     void function AnimationLoop(entity decoy,string anim,float speed)
     {
         vector result
-        for(;;)
+        while(isBrightWaterByZer0)
         {
           PlayAnim( decoy, anim )
           wait 0.00001
@@ -1028,7 +1028,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
     void function BigMirageRotateLoop(entity decoy,string anim,float speed)
     {
         vector result
-        for(;;)
+        while(isBrightWaterByZer0)
         {
             PlayAnim( decoy, anim )
             if(RandomInt(1))
@@ -1045,7 +1045,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
     void function MiniMirageRotateLoop(entity decoy,float speed)
     {
         vector result
-        for(;;)
+        while(isBrightWaterByZer0)
         {
             if(RandomInt(1))
             {

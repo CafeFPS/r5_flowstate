@@ -15,6 +15,8 @@ global function _RegisterLocationPROPHUNT
 global function CharSelect
 global function CreateAnimatedLegend
 global function Message
+global bool isBrightWaterByZer0 = false
+
 string WHITE_SHIELD = "armor_pickup_lv1"
 string BLUE_SHIELD = "armor_pickup_lv2"
 string PURPLE_SHIELD = "armor_pickup_lv3"
@@ -307,8 +309,8 @@ LocPair function _GetAppropriateSpawnLocation(entity player)
                 maxDistToEnemy = distToEnemy
                 selectedSpawn = spawn
             }
-        }
-		else
+			}
+			else
             {
                selectedSpawn = spawn
             }
@@ -316,6 +318,15 @@ LocPair function _GetAppropriateSpawnLocation(entity player)
         break
 
     }
+
+		int maxspawns = -1
+		array<LocPair> spawns = file.dropselectedLocation.spawns
+		foreach(spawn in spawns)
+		{
+    		maxspawns++
+		}
+					int rndnum = RandomIntRangeInclusive(0, maxspawns)
+
     return selectedSpawn
 }
 
@@ -2292,7 +2303,8 @@ void function VotingPhase()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-    DestroyPlayerProps();
+    DestroyPlayerProps()
+	isBrightWaterByZer0 = false
     SetGameState(eGameState.MapVoting)
 	file.FallTriggersEnabled = true
 	
@@ -2373,12 +2385,17 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     SkillTrainerLoad()	
 } else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
 {
+	isBrightWaterByZer0 = true
     DestroyPlayerProps()
 	wait 1
 	WorldEntities()
+	wait 0.5
     BrightwaterLoad()
+	wait 0.5
 	BrightwaterLoad2()
+	wait 0.5
 	BrightwaterLoad3()
+	wait 0.5
 	SpawninvisWalls()
 } else if(file.selectedLocation.name == "Cave By BlessedSeal" )
 {
@@ -2452,7 +2469,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
     {
         if(IsValidPlayer(player))
         {
-		    Message(player, "Next Location: " + file.selectedLocation.name, "Dropship is ready, Get in!", 6)
+		    Message(player, file.selectedLocation.name, "Dropship is ready, Get in!", 6)
 	    }
     }
 
@@ -2568,7 +2585,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 
 					ScreenFadeFromBlack( player, 1.0, 1.0 )
 
-					int rndnum = RandomIntRange(0, maxspawns)
+					int rndnum = RandomIntRangeInclusive(0, maxspawns)
 					
 					if (!FlowState_DummyOverride()) {
 					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) 
@@ -2868,7 +2885,7 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 	foreach(player in GetPlayerArray())
     {
 		string nextlocation = file.selectedLocation.name
-		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
+		Message(player, file.selectedLocation.name, "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -2880,7 +2897,7 @@ else{
     {
 		int playerEHandle = player.GetEncodedEHandle()
 		string nextlocation = file.selectedLocation.name
-		Message(player, file.selectedLocation.name + ": ROUND START!", "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
+		Message(player, file.selectedLocation.name, "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
