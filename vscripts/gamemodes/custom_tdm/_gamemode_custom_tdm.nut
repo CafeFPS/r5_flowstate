@@ -511,7 +511,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker ))
             {
                 victim.SetObserverTarget( attacker )
-                victim.SetSpecReplayDelay( 2 )
+                victim.SetSpecReplayDelay( 4 )
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
 				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
             }

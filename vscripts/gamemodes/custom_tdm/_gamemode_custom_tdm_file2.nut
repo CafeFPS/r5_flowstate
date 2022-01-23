@@ -126,6 +126,12 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
                 dropshiplocations.append(< -3906, 19557, 2733 > )
                 dropshiplocations.append(< -7291, 19547, 2978 > )
 				break;
+			case "Skull town":
+				dropshiplocations.append(< -9320, -13528, 3167 > )
+                dropshiplocations.append(< -7544, -13240, 3161 > )
+                dropshiplocations.append(< -10250, -18320, 3323 > )
+                dropshiplocations.append(< -13261, -18100, 3337 > )
+				break;
 			case "Gaunlet":
                 dropshiplocations.append(< -21271, -15275, 2781 > )
                 dropshiplocations.append(< -22952, -13304, 2718 > )
@@ -142,6 +148,8 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
             case "Cage":
                 dropshiplocations.append(< 15604, -1068, 5833 > )
                 dropshiplocations.append(< 18826, -4314, 5032 > )
+                dropshiplocations.append(< 12335, -1446, 3984 > )
+				dropshiplocations.append(< 18826, -4314, 5032 > )
                 dropshiplocations.append(< 12335, -1446, 3984 > )
 				break;
             case "Repulsor":

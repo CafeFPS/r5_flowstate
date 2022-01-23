@@ -278,8 +278,8 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 	if ( !IsValid( player ) )
 		return
 
-	if ( IsLobby() )
-		return
+	// if ( IsLobby() )
+		// return
 
 	player.Signal( "SettingsChanged" )
 	string newClass = player.GetPlayerClass()
@@ -289,7 +289,7 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		{
 			callbackFunc( player )
 		}
-		if ( IsAlive( player ) && !player.IsTitan() && GetCurrentPlaylistVarFloat( "pilot_health_multiplier", 0.0 ) != 0.0 )
+		if ( IsAlive( player ) && IsValid( player ) && GetCurrentPlaylistVarFloat( "pilot_health_multiplier", 0.0 ) != 0.0 )
 		{
 			float pilotHealthMultiplier = GetCurrentPlaylistVarFloat( "pilot_health_multiplier", 1.0 )
 			int pilotMaxHealth          = int( player.GetMaxHealth() * pilotHealthMultiplier )
@@ -314,9 +314,10 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		/*if ( IsWatchingReplay() )
 			UpdateKillReplayIconPosition()*/
 	#else
+		if(IsValid( player ) ){
 		player.kv.renderColor = "255 255 255 255"
 
-		InitDamageStates( player )
+		InitDamageStates( player )}
 	#endif
 
 	//if ( IsClient() && !player.IsTitan() )
@@ -326,7 +327,7 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 	//	thread PilotHardLandingThink( player )
 
 	#if SERVER
-		player.Signal( "OnChangedPlayerClass" )
+		//player.Signal( "OnChangedPlayerClass" )
 
 		UpdatePlayerMinimapMaterials( player )
 	#endif
