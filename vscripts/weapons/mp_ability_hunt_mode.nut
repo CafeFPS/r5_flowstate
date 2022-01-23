@@ -10,7 +10,7 @@ global function BurnMeter_HuntMode
 global function GetBloodhoundColorCorrectionID
 #endif //
 
-const float HUNT_MODE_DURATION = 35.0
+const float HUNT_MODE_DURATION = 30
 const asset HUNT_MODE_ACTIVATION_SCREEN_FX = $"P_hunt_screen"
 const asset HUNT_MODE_BODY_FX = $"P_hunt_body"
 
@@ -102,7 +102,7 @@ void function BurnMeter_HuntMode( entity player )
 void function HuntMode_Start( entity player )
 {
 	Assert( IsNewThread(), "Must be threaded off." )
-
+	player.EndSignal( "OnDeath" )
 	//EmitSoundOnEntityOnlyToPlayer( player, player, "beastofthehunt_activate_1P" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "beastofthehunt_activate_3P" )
 
@@ -113,6 +113,9 @@ void function HuntMode_Start( entity player )
 
 	thread HuntMode_PlayLoopingBodyFx( player )
 
+	
+	
+	
 	OnThreadEnd(
 	function() : ( player )
 		{
@@ -132,6 +135,7 @@ void function HuntMode_Start( entity player )
 void function HuntMode_PlayLoopingBodyFx( entity player )
 {
 	Assert ( IsNewThread(), "Must be threaded off." )
+	
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "OnDestroy" )
 	player.EndSignal( "HuntMode_ForceAbilityStop" )
@@ -295,6 +299,12 @@ void function HuntMode_PlayActivationScreenFX( entity clientPlayer )
 }
 
 #endif //CLIENT
+
+void function ForceStopBlackAndWhiteScreenPls()
+{
+		foreach ( player in GetPlayerArray() ){
+		player.Signal( "HuntMode_ForceAbilityStop" )}
+}
 
 void function StopHuntMode()
 {
