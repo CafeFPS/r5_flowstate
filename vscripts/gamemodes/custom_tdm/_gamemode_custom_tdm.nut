@@ -2389,13 +2389,13 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     DestroyPlayerProps()
 	wait 1
 	WorldEntities()
-	wait 0.5
+	wait 1
     BrightwaterLoad()
-	wait 0.5
+	wait 1
 	BrightwaterLoad2()
-	wait 0.5
+	wait 1
 	BrightwaterLoad3()
-	wait 0.5
+	wait 1
 	SpawninvisWalls()
 } else if(file.selectedLocation.name == "Cave By BlessedSeal" )
 {
@@ -3036,10 +3036,6 @@ while( Time() <= endTime )
 foreach(player in GetPlayerArray())
     {
 try{
-		if( player.IsObserver() && IsValid(player))
-			{
-		player.StopObserverMode()
-			}
 	   if(IsValid(player) && IsAlive(player))
         {
 			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
