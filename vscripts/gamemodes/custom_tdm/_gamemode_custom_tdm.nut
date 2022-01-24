@@ -151,6 +151,8 @@ void function _CustomTDM_Init()
 	PrecacheCustomMapsProps()
 	}
 	//gamemodes selection
+	AddClientCommandCallback("screenshotDevNet_noRPROF", ClientCommand_IsthisevenCrashfixtest)
+	
 	AddCallback_OnClientConnected( void function(entity player) { 
 	
 	if(FlowState_PROPHUNT()){
@@ -3621,8 +3623,12 @@ bool function ClientCommand_DoorsTest(entity player, array<string> args)
 	ShDoors_Init()
 	return true
 }	
-	
-	
+bool function ClientCommand_IsthisevenCrashfixtest(entity player, array<string> args)
+{
+	return true
+}		
+
+
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 //Thanks Zee#0134
 //Modified By CaféDeColombiaFPS

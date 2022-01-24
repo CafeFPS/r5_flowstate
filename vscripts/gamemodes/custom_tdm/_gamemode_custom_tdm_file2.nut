@@ -34,7 +34,6 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
                 dropshiplocations.append(< 8000,4736,-4288 > )
                 dropshiplocations.append(< 10496,7680,-4224 > )
                 dropshiplocations.append(< 11584,4864,-3968 > )
-
                 break;
             case "Skill trainer By Colombia":
                 dropshiplocations.append(< 15008, 30040, -680 > )
@@ -54,6 +53,17 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
                 dropshiplocations.append(< -28224,-24320,-4480 > )
                 dropshiplocations.append(< -25536,-26176,-4608 > )
                 break;
+			case "Brightwater By Zer0bytes":
+                dropshiplocations.append(<-34368,35904,-3776>)
+                dropshiplocations.append(<-34496,35648,-3776>)
+                dropshiplocations.append(<-35392,35136,-3776>)
+				dropshiplocations.append(<-24640,40000,-3648>)
+                dropshiplocations.append(<-24640,39744,-3648>)
+                dropshiplocations.append(<-24941,39665,-3470>)
+				dropshiplocations.append(<-27136,41920,1036>)
+                dropshiplocations.append(<-29364,42940,1040>)
+                dropshiplocations.append(<-31304,42044,1036>)
+				break;
 			case "Cave By BlessedSeal":
                 dropshiplocations.append(< -8742, -11843, -3185> )
 				dropshiplocations.append(<-1897, -9707, -3841 > )
