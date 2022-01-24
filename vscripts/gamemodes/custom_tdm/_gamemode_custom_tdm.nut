@@ -150,7 +150,19 @@ void function _CustomTDM_Init()
 	file.admin4 = FlowState_Admin4()
 	PrecacheCustomMapsProps()
 	}
-	//gamemodes selection
+	//gamemodes selection and callbacks. Colombia
+		if (GetMapName() == "mp_rr_canyonlands_staging")
+		{
+			AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
+		}
+		else
+		{
+			
+			return
+		}
+
+	AddCallback_OnClientDisconnected( void function(entity player) { UpdatePlayerCounts() } )
+	
 	AddCallback_OnClientConnected( void function(entity player) { 
 	
 	if(FlowState_PROPHUNT()){
@@ -227,6 +239,12 @@ if(!FlowState_PROPHUNT()){
 	thread RunTDM() 
 	}//Go to Game Loop
     }
+void function OnEntitiesDidLoadFR()
+{
+	#if SERVER
+	SpawnMapPropsFR()
+	#endif
+}
 
 void function _RegisterLocation(LocationSettings locationSettings)
 {
@@ -360,6 +378,7 @@ void function DestroyPlayerProps()
     file.playerSpawnedProps.clear()
 }
 
+
 void function _OnPlayerConnected(entity player)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -384,14 +403,10 @@ void function _OnPlayerConnected(entity player)
 	switch(GetGameState())
     {
     case eGameState.MapVoting:
-	    if(IsValidPlayer(player) )
+	    if(IsValid(player) )
         {
-			    if(!IsAlive(player))
-			{
-				_HandleRespawn(player)
-					ClearInvincible(player)
-
-			}
+			_HandleRespawn(player)
+			ClearInvincible(player)
 			player.SetThirdPersonShoulderModeOn()
 						if(FlowState_RandomGunsEverydie()){
 			UpgradeShields(player, true)
@@ -405,15 +420,12 @@ void function _OnPlayerConnected(entity player)
 		}
 		break
 	case eGameState.WaitingForPlayers:
-			if(!IsAlive(player))
-		{
-			_HandleRespawn(player)
-				ClearInvincible(player)
-		}
-        player.FreezeControlsOnServer()
+		_HandleRespawn(player)
+		ClearInvincible(player)
+        player.UnfreezeControlsOnServer()
         break
     case eGameState.Playing:
-	    if(IsValidPlayer(player))
+	    if(IsValid(player))
         {
 			player.UnfreezeControlsOnServer()
 			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia")
@@ -426,7 +438,6 @@ void function _OnPlayerConnected(entity player)
 			} else {
 			_HandleRespawn(player)
 			SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-			//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
 			}
 			ClearInvincible(player)
 			if(FlowState_RandomGunsEverydie()){
@@ -442,6 +453,7 @@ void function _OnPlayerConnected(entity player)
     default:
         break
     }
+UpdatePlayerCounts()
 }
 
 void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
@@ -2818,7 +2830,6 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 		{
         		if(IsValid(player))
        			{
-					//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 
 					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
 					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
@@ -2842,7 +2853,6 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 		        ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
 				EnableOffhandWeapons( player )
-		        //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
 
 				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
@@ -2867,7 +2877,6 @@ else
 				ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
 				EnableOffhandWeapons( player )
-		        //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
 							
 				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
@@ -3105,7 +3114,7 @@ foreach(player in GetPlayerArray())
 	try{
 	 if(IsValid(player)){
 	 AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flow State DM " + file.scriptversion + " by ColombiaFPS, empathogenwarlord & AyeZeeBB", 6, "UI_Menu_RoundSummary_Results")}
+	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flowstate " + file.scriptversion + " by ColombiaFPS.", 6, "UI_Menu_RoundSummary_Results")}
 	}catch(e3){}
 	}
 wait 6

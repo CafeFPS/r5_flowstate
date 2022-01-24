@@ -23,27 +23,10 @@ global const string FIRINGRANGE_BUTTON_SOUND = "UI_Menu_back"
 
 global const asset FIRINGRANGE_DOOR_ASSET = $"mdl/door/canyonlands_door_single_02.rmdl"
 
-global const asset FIRINGRANGE_128x128_ASSET = $"mdl/thunderdome/thunderdome_cage_floor_128x128_01.rmdl"
-global const asset FIRINGRANGE_256x128_ASSET = $"mdl/thunderdome/thunderdome_cage_wall_256x128_03.rmdl"
-global const asset FIRINGRANGE_256x256_ASSET = $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl"
-global const asset FIRINGRANGE_GRATE_ASSET = $"mdl/industrial/landing_mat_metal_02_large.rmdl"
-global const asset FIRINGRANGE_QUARRY_BLOCK_ASSET = $"mdl/rocks/thunderdome_quarry_block_01_orange.rmdl"
-
 #if SERVER
 // To be used outside if needed
 global int firingrange_infinite_ammo = 0
 #endif
-
-#if(false)
-
-
-
-
-
-
-
-//
-#endif //
 
 #if(CLIENT)
 global function SCB_BroadcastFriendlyFireChange
@@ -84,45 +67,21 @@ struct {
 
 void function FiringRangeGameMode_Init()
 {
-	if ( !IsFiringRangeGameMode() )
-		return
-
-	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
-
 	PrecacheModel( FIRINGRANGE_BLUE_STAND_ASSET )
 	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
 	PrecacheParticleSystem( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT )
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
 	
 	#if SERVER
-		AddCallback_EntitiesDidLoad( OnEntitiesDidLoad )
-		AddCallback_OnClientConnected( WaitForPlayerSpawn )
-		AddCallback_OnPlayerKilled( OnPlayerKilled )
-		AddCallback_OnWeaponAttack( OnWeaponAttack )
+		AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
+		AddCallback_OnClientConnected( _WaitForPlayerSpawnFR )
+		AddCallback_OnPlayerKilled( _OnPlayerKilledFR )
+		//AddCallback_OnWeaponAttack( OnWeaponAttack )
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
-
 		firingrange_infinite_ammo = GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) ? 1 : 2
+		SetGameState(eGameState.Playing)
 	#endif
-
-	#if(false)
-
-
-
-
-
-
-
-
-//
-
-
-	#endif //
-
-	#if(CLIENT)
-		//
-
-		IntroDisplayThread()
-	#endif //
+	
 }
 
 #if(CLIENT)
@@ -134,6 +93,7 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 	string subText = (IsValid( playerThatChanged ) ? Localize( "#NOTIFY_FRIENDLY_FIRE_SUBTEXT", playerThatChanged.GetPlayerName() ) : "")
 	vector titleColor = (isEnabled ? ENEMY_COLOR : FRIENDLY_COLOR)
 	AnnouncementMessage( localPlayer, mainText, subText, titleColor )
+	
 }
 #endif //
 
@@ -145,12 +105,12 @@ void function SpawnDummy(vector origin, vector angles)
 {
     entity dummy = CreateEntity( "npc_dummie" )
     SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
-	SetTargetName(dummy,  "      ")
     dummy.SetOrigin( origin )
     dummy.SetAngles( angles )
     SetTeam(dummy, 99)
     DispatchSpawn( dummy )
-    dummy.SetSkin(RandomInt(6))
+	//Inventory_SetPlayerEquipment(dummy, "armor_pickup_lv3", "armor")
+    dummy.SetSkin(1)
 	thread OnDummyKilled(dummy)
 }
 
@@ -168,7 +128,7 @@ void function OnDummyKilled(entity dummy)
 }
 #endif
 
-void function OnEntitiesDidLoad()
+void function OnEntitiesDidLoadFR()
 {
 	#if SERVER
 
@@ -229,33 +189,29 @@ void function OnEntitiesDidLoad()
 // ==================================================
 
 
-void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+void function _OnPlayerKilledFR( entity victim, entity attacker, var damageInfo )
 {
-	WaitForPlayerSpawn(victim)
+	thread _HandleRespawnFR(victim)
 }
 
-void function WaitForPlayerSpawn( entity player )
+void function _WaitForPlayerSpawnFR( entity player )
 {
-	thread WaitForPlayerSpawn_Thread(player)
+	thread _HandleRespawnFR(player)
 }
 
-void function WaitForPlayerSpawn_Thread(entity player)
+void function _HandleRespawnFR(entity player)
 {
-	while(IsValid(player) && !IsAlive(player))
+	if(IsValid(player) && !IsAlive(player)){
 		wait 0.5
-
-	OnPlayerRespawned(player)
-}
-
-void function OnPlayerRespawned(entity player)
-{
-	array<entity> weapons = player.GetMainWeapons()
-	foreach(entity weapon in weapons)
-	{
-		if(GetSlotForWeapon(player, weapon) == WEAPON_INVENTORY_SLOT_PRIMARY_0 ||
-		GetSlotForWeapon(player, weapon) == WEAPON_INVENTORY_SLOT_PRIMARY_1)
-			return
-	}
+DecideRespawnPlayer( player )}
+		
+	if(FlowState_ForceCharacter()){
+				CharSelect(player)}
+	SetRandomStagingPositionForPlayer( player )
+	
+	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )	
 	
 	entity primary = player.GiveWeapon("mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "highcal_mag_l3"])
 	entity secondary = player.GiveWeapon("mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_hcog_classic","barrel_stabilizer_l4_flash_hider","stock_tactical_l3"])
@@ -272,6 +228,28 @@ void function OnPlayerRespawned(entity player)
 		if(!Survival_PickupItem(loot, player))
 			loot.Destroy()
 	}
+	
+	
+	// switch(GetGameState())
+    // {
+    // case eGameState.Playing:
+        // // Víctima
+        // void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
+
+			// if(!IsValid(victim)) return
+			// wait 1
+			// //handlerespawn!
+			
+			
+			
+			// if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
+            // {
+			// DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+			// thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
+			// }
+			
+		// }
+	// }
 }
 
 
@@ -1122,281 +1100,3 @@ void function FixWeapon(entity weapon)
 	catch(error){}
 }
 #endif
-
-
-
-
-
-#if(false)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-//
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif //
-
-#if(CLIENT)
-
-void function IntroDisplayThread()
-{
-	thread function() : ()
-	{
-		FlagWait( "EntitiesDidLoad" )
-		wait 3.0
-
-		entity viewPlayer = GetLocalViewPlayer()
-		if ( IsValid( viewPlayer ) )
-			MapZones_ZoneIntroText( viewPlayer, ("#" + GetMapName()), -1 )
-	}()
-}
-#endif //
-
-
-#if(false)
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-//
-//
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif //
