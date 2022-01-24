@@ -151,16 +151,11 @@ void function _CustomTDM_Init()
 	PrecacheCustomMapsProps()
 	}
 	//gamemodes selection and callbacks. Colombia
-		if (GetMapName() == "mp_rr_canyonlands_staging")
+	if (GetMapName() == "mp_rr_canyonlands_staging")
 		{
 			AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
 		}
-		else
-		{
-			
-			return
-		}
-
+		
 	AddCallback_OnClientDisconnected( void function(entity player) { UpdatePlayerCounts() } )
 	
 	AddCallback_OnClientConnected( void function(entity player) { 
