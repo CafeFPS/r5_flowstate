@@ -47,25 +47,12 @@ void function Sh_CustomTDM_Init()
    case "mp_rr_canyonlands_staging":
         Shared_RegisterLocation(
             NewLocationSettings(
-                "Deathbox by Ayezee",
+                "Firing Range",
                 [
-                    //Top Floor
-                    NewLocPair(<29351, -8106, -15794>, <4, 45, 0>),
-                    NewLocPair(<32678, -8106, -15794>, <4, 135, 0>),
-                    NewLocPair(<29351, -4780, -15794>, <4, -45, 0>),
-                    NewLocPair(<32678, -4780, -15794>, <4, -135, 0>),
-
-                    //Bottom Floor
-                    NewLocPair(<29351, -8106, -16073>, <4, 45, 0>),
-                    NewLocPair(<32678, -8106, -16073>, <4, 135, 0>),
-                    NewLocPair(<29351, -4780, -16073>, <4, -45, 0>),
-                    NewLocPair(<32678, -4780, -16073>, <4, -135, 0>),
-
-                    //Other
-                    NewLocPair(<32682, -6574, -15794>, <0, 180, 0>),
-                    NewLocPair(<29340, -6318, -15794>, <0, 0, 0>),
-                    NewLocPair(<31138, -4778, -15794>, <0, -90, 0>),
-                    NewLocPair(<30882, -8116, -15794>, <0, 90, 0>)
+                    NewLocPair(<33560, -8992, -29126>, <0, 90, 0>),
+					NewLocPair(<34525, -7996, -28242>, <0, 100, 0>),
+                    NewLocPair(<33507, -3754, -29165>, <0, -90, 0>),
+					NewLocPair(<34986, -3442, -28263>, <0, -113, 0>)
                 ],
                 <0, 0, 3000>
             )

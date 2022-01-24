@@ -204,23 +204,6 @@ bool function CodeCallback_CanUseEntity( entity player, entity ent )
 const float ZIPLINE_MAX_USE_ANGLE = 35.0
 bool function CodeCallback_CanUseZipline( entity player, entity zipline, vector ziplineClosestPoint )
 {
-	//proper zipline limitation to three usages needs client function as well. Server side only works but it's not clean
-	
-	// #if SERVER
-	// if(IsValid(player)){
-	// int newscore = player.GetPlayerGameStat(PGS_DEFENSE_SCORE)+1
-	// player.SetPlayerGameStat( PGS_DEFENSE_SCORE, newscore)
-	
-	// Message( player, "DEBUG", (player.GetPlayerGameStat(PGS_DEFENSE_SCORE)).tostring(), 1)
-	// }
-	
-	// if(player.GetPlayerGameStat(PGS_DEFENSE_SCORE) > 3 && IsValid(player))
-	// {
-		// player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 0)
-		// return false
-	// }
-	// #endif
-	
 	if ( !player.IsHuman() )
 		return false
 
@@ -238,7 +221,6 @@ bool function CodeCallback_CanUseZipline( entity player, entity zipline, vector 
 		return false
 
 	#if SERVER
-		
 		foreach ( func in svGlobal.canUseZiplineCallbacks )
 		{
 			if ( !func( player, zipline, ziplineClosestPoint ) )
