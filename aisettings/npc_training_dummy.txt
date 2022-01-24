@@ -2,7 +2,7 @@ npc_training_dummy
 {
 	AIClass							dummie
 
-	title 							DUMMIE
+	title							"             "
 	ui_targetinfo					"ui/targetinfo_npc_trainingdummy"
 
 	HullType						"HULL_HUMAN"

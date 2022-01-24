@@ -150,9 +150,13 @@ void function _CustomTDM_Init()
 	file.admin4 = FlowState_Admin4()
 	PrecacheCustomMapsProps()
 	}
-	//gamemodes selection
+	//gamemodes selection and callbacks. Colombia
+	if (GetMapName() == "mp_rr_canyonlands_staging")
+		{
+			AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
+		}
 	AddClientCommandCallback("screenshotDevNet_noRPROF", ClientCommand_IsthisevenCrashfixtest)
-	
+	AddCallback_OnClientDisconnected( void function(entity player) { UpdatePlayerCounts() } )
 	AddCallback_OnClientConnected( void function(entity player) { 
 	
 	if(FlowState_PROPHUNT()){
@@ -229,7 +233,10 @@ if(!FlowState_PROPHUNT()){
 	thread RunTDM() 
 	}//Go to Game Loop
     }
-
+void function OnEntitiesDidLoadFR()
+{
+	SpawnMapPropsFR()
+}
 void function _RegisterLocation(LocationSettings locationSettings)
 {
     file.locationSettings.append(locationSettings)
@@ -386,20 +393,19 @@ void function _OnPlayerConnected(entity player)
 	switch(GetGameState())
     {
     case eGameState.MapVoting:
-	    if(IsValidPlayer(player) )
-        {
+			if(IsValidPlayer(player) )
+			{
 			    if(!IsAlive(player))
 			{
-				_HandleRespawn(player)
-					ClearInvincible(player)
-
+			_HandleRespawn(player)
+			ClearInvincible(player)
 			}
 			player.SetThirdPersonShoulderModeOn()
 						if(FlowState_RandomGunsEverydie()){
 			UpgradeShields(player, true)
 			}
 						if(FlowState_Gungame()){
-				KillStreakAnnouncer(player, true)
+			KillStreakAnnouncer(player, true)
 			}
 			player.UnforceStand()
 			player.FreezeControlsOnServer()
@@ -407,18 +413,18 @@ void function _OnPlayerConnected(entity player)
 		}
 		break
 	case eGameState.WaitingForPlayers:
-			if(!IsAlive(player))
+			if(IsValid(player))
 		{
 			_HandleRespawn(player)
-				ClearInvincible(player)
+			ClearInvincible(player)
 		}
-        player.FreezeControlsOnServer()
+        player.UnfreezeControlsOnServer()
         break
     case eGameState.Playing:
 	    if(IsValidPlayer(player))
         {
 			player.UnfreezeControlsOnServer()
-			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia")
+			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia" || GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Deathbox by Ayezee")
 			{
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
 				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )

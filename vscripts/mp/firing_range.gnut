@@ -13,7 +13,7 @@ global const asset FIRINGRANGE_FLICK_TARGET_ASSET = $"mdl/fx/plasma_sphere_01.rm
 global const asset FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT = $"P_crypto_drone_explosion"
 global const string FIRINGRANGE_FLICK_TARGET_SOUND = "Player.Hitbeep_headshot.Human_3P_vs_1P"
 
-global const asset FIRINGRANGE_BLUE_TARGET_ASSET = $"mdl/humans/class/medium/combat_dummie_medium.rmdl"
+global const asset FIRINGRANGE_BLUE_TARGET_ASSET = $"mdl/barriers/shooting_range_target_02.rmdl"
 global const asset FIRINGRANGE_BLUE_STAND_ASSET = $"mdl/barriers/shooting_range_target_02_stand.rmdl"
 
 global const asset FIRINGRANGE_ITEM_RESPAWN_PARTICLE = $"P_impact_shieldbreaker_sparks"
@@ -33,17 +33,6 @@ global const asset FIRINGRANGE_QUARRY_BLOCK_ASSET = $"mdl/rocks/thunderdome_quar
 // To be used outside if needed
 global int firingrange_infinite_ammo = 0
 #endif
-
-#if(false)
-
-
-
-
-
-
-
-//
-#endif //
 
 #if(CLIENT)
 global function SCB_BroadcastFriendlyFireChange
@@ -66,8 +55,8 @@ struct {
 	array<RackGroup> rackSpawns
 
 	vector training_mov = <1,0,0>
-	vector trackingTraining_pos = <32000,-7853,-29231>
-	vector flickTraining_pos = <32000,-6720,-29231>
+	vector trackingTraining_pos = <32000,-7853,-29033>
+	vector flickTraining_pos = <32000,-6720,-29033>
 	vector flickTraining_ang = <0,-180,0>
 	float flickTraining_dist = 320
 	float trackingTraining_speed = 300
@@ -84,10 +73,6 @@ struct {
 
 void function FiringRangeGameMode_Init()
 {
-	if ( !IsFiringRangeGameMode() )
-		return
-
-	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
 
 	PrecacheModel( FIRINGRANGE_BLUE_STAND_ASSET )
 	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
@@ -95,35 +80,20 @@ void function FiringRangeGameMode_Init()
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
 	
 	#if SERVER
-		AddCallback_EntitiesDidLoad( OnEntitiesDidLoad )
-		AddCallback_OnClientConnected( WaitForPlayerSpawn )
-		AddCallback_OnPlayerKilled( OnPlayerKilled )
+		if(GetMapName() != "mp_rr_canyonlands_staging") return
+		
+		AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
+		AddCallback_OnClientConnected( _WaitForPlayerSpawnFR )
+		AddCallback_OnPlayerKilled( _OnPlayerKilledFR )
 		AddCallback_OnWeaponAttack( OnWeaponAttack )
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
-
-		firingrange_infinite_ammo = GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) ? 1 : 2
+		AddClientCommandCallback("friendlyfire", ClientCommand_FriendlyFireFR)
+		SetGameState(eGameState.Playing)
 	#endif
-
-	#if(false)
-
-
-
-
-
-
-
-
-//
-
-
-	#endif //
-
-	#if(CLIENT)
-		//
-
-		IntroDisplayThread()
-	#endif //
+	
 }
+
+
 
 #if(CLIENT)
 void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
@@ -134,10 +104,17 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 	string subText = (IsValid( playerThatChanged ) ? Localize( "#NOTIFY_FRIENDLY_FIRE_SUBTEXT", playerThatChanged.GetPlayerName() ) : "")
 	vector titleColor = (isEnabled ? ENEMY_COLOR : FRIENDLY_COLOR)
 	AnnouncementMessage( localPlayer, mainText, subText, titleColor )
+	
 }
 #endif //
 
 #if SERVER
+bool function ClientCommand_FriendlyFireFR(entity player, array<string> args)
+{
+return true
+	
+}
+
 void function SpawnDummy(vector origin, vector angles)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -145,12 +122,12 @@ void function SpawnDummy(vector origin, vector angles)
 {
     entity dummy = CreateEntity( "npc_dummie" )
     SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
-	SetTargetName(dummy,  "      ")
     dummy.SetOrigin( origin )
     dummy.SetAngles( angles )
     SetTeam(dummy, 99)
     DispatchSpawn( dummy )
-    dummy.SetSkin(RandomInt(6))
+	//Inventory_SetPlayerEquipment(dummy, "armor_pickup_lv3", "armor")
+    dummy.SetSkin(1)
 	thread OnDummyKilled(dummy)
 }
 
@@ -168,7 +145,7 @@ void function OnDummyKilled(entity dummy)
 }
 #endif
 
-void function OnEntitiesDidLoad()
+void function OnEntitiesDidLoadFR()
 {
 	#if SERVER
 
@@ -229,33 +206,30 @@ void function OnEntitiesDidLoad()
 // ==================================================
 
 
-void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+void function _OnPlayerKilledFR( entity victim, entity attacker, var damageInfo )
 {
-	WaitForPlayerSpawn(victim)
+	thread _HandleRespawnFR(victim)
 }
 
-void function WaitForPlayerSpawn( entity player )
+void function _WaitForPlayerSpawnFR( entity player )
 {
-	thread WaitForPlayerSpawn_Thread(player)
+	thread _HandleRespawnFR(player)
+	Message(player, "R5R FIRING RANGE", "Type 'friendlyfire' to toggle friendly fire", 10)
 }
 
-void function WaitForPlayerSpawn_Thread(entity player)
+void function _HandleRespawnFR(entity player)
 {
-	while(IsValid(player) && !IsAlive(player))
+	if(IsValid(player) && !IsAlive(player)){
 		wait 0.5
-
-	OnPlayerRespawned(player)
-}
-
-void function OnPlayerRespawned(entity player)
-{
-	array<entity> weapons = player.GetMainWeapons()
-	foreach(entity weapon in weapons)
-	{
-		if(GetSlotForWeapon(player, weapon) == WEAPON_INVENTORY_SLOT_PRIMARY_0 ||
-		GetSlotForWeapon(player, weapon) == WEAPON_INVENTORY_SLOT_PRIMARY_1)
-			return
-	}
+DecideRespawnPlayer( player )}
+		
+	if(FlowState_ForceCharacter()){
+				CharSelect(player)}
+	SetRandomStagingPositionForPlayer( player )
+	
+	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )	
 	
 	entity primary = player.GiveWeapon("mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "highcal_mag_l3"])
 	entity secondary = player.GiveWeapon("mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_hcog_classic","barrel_stabilizer_l4_flash_hider","stock_tactical_l3"])
@@ -272,6 +246,7 @@ void function OnPlayerRespawned(entity player)
 		if(!Survival_PickupItem(loot, player))
 			loot.Destroy()
 	}
+	
 }
 
 
@@ -720,7 +695,6 @@ entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( en
 	target.Hide()
 	target.SetDamageNotifications( true )
 	target.SetParent(root)
-
 	entity visual = CreatePropDynamic(FIRINGRANGE_BLUE_TARGET_ASSET, root.GetOrigin(), root.GetAngles(), 6, -1)
 	visual.SetParent(target)
 	//visual.SetModelScale(0.45)
@@ -855,21 +829,21 @@ void function SpawnMapProps()
 				user.SetThirdPersonShoulderModeOn()	
 		})
 
-		entity ammo = CreateFRButton(<31457.6055, -4903.65918, -29222.959>, <0,-45,0>, GetInfiniteAmmoText(firingrange_infinite_ammo))
-		AddCallback_OnUseEntity( ammo, void function(entity panel, entity user, int input) 
-		{
-			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+		// entity ammo = CreateFRButton(<31457.6055, -4903.65918, -29222.959>, <0,-45,0>, GetInfiniteAmmoText(firingrange_infinite_ammo))
+		// AddCallback_OnUseEntity( ammo, void function(entity panel, entity user, int input) 
+		// {
+			// EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
 
-			if(firingrange_infinite_ammo == 0) firingrange_infinite_ammo = 1
-			else if(firingrange_infinite_ammo == 1) firingrange_infinite_ammo = 2
-			else firingrange_infinite_ammo = 0
+			// if(firingrange_infinite_ammo == 0) firingrange_infinite_ammo = 1
+			// else if(firingrange_infinite_ammo == 1) firingrange_infinite_ammo = 2
+			// else firingrange_infinite_ammo = 0
 
-			foreach(entity weapon in GetEntArrayByClass_Expensive("weaponx"))
-				FixWeapon(weapon)
+			// foreach(entity weapon in GetEntArrayByClass_Expensive("weaponx"))
+				// FixWeapon(weapon)
 
-			string prompt = GetInfiniteAmmoText(firingrange_infinite_ammo)
-			panel.SetUsePrompts(prompt,prompt)
-		})
+			// string prompt = GetInfiniteAmmoText(firingrange_infinite_ammo)
+			// panel.SetUsePrompts(prompt,prompt)
+		// })
 
 		entity target = CreateFRButton(<31446.1016, -7281.54932, -29235.9824>, <0,270,0>, GetTrainingTargetMovementText(file.training_mov))
 		AddCallback_OnUseEntity( target, void function(entity panel, entity user, int input) 
@@ -1122,281 +1096,3 @@ void function FixWeapon(entity weapon)
 	catch(error){}
 }
 #endif
-
-
-
-
-
-#if(false)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-//
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif //
-
-#if(CLIENT)
-
-void function IntroDisplayThread()
-{
-	thread function() : ()
-	{
-		FlagWait( "EntitiesDidLoad" )
-		wait 3.0
-
-		entity viewPlayer = GetLocalViewPlayer()
-		if ( IsValid( viewPlayer ) )
-			MapZones_ZoneIntroText( viewPlayer, ("#" + GetMapName()), -1 )
-	}()
-}
-#endif //
-
-
-#if(false)
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-//
-//
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#endif //

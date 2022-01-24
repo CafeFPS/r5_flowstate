@@ -35,7 +35,11 @@ void function GameModes_Init_SV_CL()
 
 	{
 		#if SERVER
+			// string gameMode2 = GameRules_GetGameMode()
+
+			if(GetMapName() != "mp_rr_canyonlands_staging"){
 			GameMode_AddServerInit( gameMode, GamemodeSurvival_Init )
+			}
 			GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 			GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 			GameMode_SetEvacEnabled( gameMode, false )
