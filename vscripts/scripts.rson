@@ -893,9 +893,12 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
-	gamemodes/custom_tdm/_gamemode_custom_tdm.nut
-	gamemodes/custom_tdm/_gamemode_custom_tdm_file2.nut
-	gamemodes/custom_tdm/_gamemode_custom_tdm_file3.nut
+	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate.nut
+	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file2.nut
+	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file3.nut
+	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file4.nut
+	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file5.nut
+	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file6.nut
 ]
 
 When: "CLIENT"

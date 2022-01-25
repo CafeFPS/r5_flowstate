@@ -15,6 +15,7 @@ global function _RegisterLocationPROPHUNT
 global function CharSelect
 global function CreateAnimatedLegend
 global function Message
+global function shuffleArray
 global bool isBrightWaterByZer0 = false
 
 string WHITE_SHIELD = "armor_pickup_lv1"
@@ -138,7 +139,6 @@ const array<asset> prophuntAssetsWE =
 // ██████  ██   ██ ███████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
 
-
 void function _CustomTDM_Init()
 {
 	SurvivalFreefall_Init()
@@ -156,7 +156,7 @@ void function _CustomTDM_Init()
 			AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
 		}
 	AddClientCommandCallback("screenshotDevNet_noRPROF", ClientCommand_IsthisevenCrashfixtest)
-	AddCallback_OnClientDisconnected( void function(entity player) { UpdatePlayerCounts() } )
+	
 	AddCallback_OnClientConnected( void function(entity player) { 
 	
 	if(FlowState_PROPHUNT()){
@@ -166,9 +166,10 @@ void function _CustomTDM_Init()
 	} else {
 	thread _OnPlayerConnected(player) 
 	}
-	
+	UpdatePlayerCounts()
 	})
 	
+	AddSpawnCallback( "prop_survival", DissolveItem )
 	
 	AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
 	
@@ -369,6 +370,23 @@ void function DestroyPlayerProps()
     file.playerSpawnedProps.clear()
 }
 
+
+void function DissolveItem(entity prop)
+{
+thread DissolveItem_Thread(prop)
+}
+void function DissolveItem_Thread(entity prop)
+{
+	wait 4
+	if(prop == null || !IsValid(prop))
+		return
+
+	entity par = prop.GetParent()
+	if(par && par.GetClassName() == "prop_physics")
+		try{
+		prop.Dissolve(ENTITY_DISSOLVE_CORE, <0,0,0>, 200)}catch(e420){}
+}
+
 void function _OnPlayerConnected(entity player)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -451,32 +469,15 @@ void function _OnPlayerConnected(entity player)
         break
     }
 }
-
-void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
+void function doubletriplekillaudio(entity victim, entity attacker)
 {
-	if (FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes())
-			{		
-	CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
-			}
-
 	entity champion = file.previousChampion
 	entity challenger = file.previousChallenger
 	entity killeader = GetBestPlayer()
 	float doubleKillTime = 5.0
 	float tripleKillTime = 8.5
-	file.deathPlayersCounter++
-
-	if(file.deathPlayersCounter == 1 )
-	{
-	foreach (player in GetPlayerArray())
-	{
-	thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
-	}
-	}
-	if(attacker == file.lastKiller && attacker == killeader && !plsTripleAudio){
+	
+		if(attacker == file.lastKiller && attacker == killeader && !plsTripleAudio){
 	file.SameKillerStoredKills = 2
 	} else if (attacker == file.lastKiller && attacker == killeader && plsTripleAudio)
 	{
@@ -506,6 +507,31 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	if(Time() - file.lastKillTimer > tripleKillTime && attacker == file.lastKiller && attacker == killeader){
 	plsTripleAudio = false;	
 	}
+}
+
+void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	if (FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes())
+			{		
+	CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
+			}
+
+
+	file.deathPlayersCounter++
+
+	if(file.deathPlayersCounter == 1 )
+	{
+	foreach (player in GetPlayerArray())
+	{
+	thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
+	}
+	}
+	
+	thread doubletriplekillaudio(victim,attacker)
+
 	switch(GetGameState())
     {
     case eGameState.Playing:
@@ -513,8 +539,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
 
 			if(!IsValid(victim)) return
+			wait 2
 			victim.p.storedWeapons = StoreWeapons(victim)
-			wait 1
 			try{
 			if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker ))
             {
@@ -523,7 +549,15 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
 				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
             }
-			
+			int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
+				invscore++;
+				victim.SetPlayerGameStat( PGS_DEATHS, invscore);
+				
+				//Add a death to the victim
+                int invscore2 = victim.GetPlayerNetInt( "assists" )
+				invscore2++;
+				victim.SetPlayerNetInt( "assists", invscore2 )
+
 						if(FlowState_RandomGunsEverydie()){
 			UpgradeShields(victim, true)
 			}
@@ -534,23 +568,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			}
 			
 			} catch (e) {}
-			wait 9
-			try{
+			wait 8
 			if(IsValid(victim) )
 			{
-				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
-				invscore++;
-				victim.SetPlayerGameStat( PGS_DEATHS, invscore);
-				
-				//Add a death to the victim
-                int invscore2 = victim.GetPlayerNetInt( "assists" )
-				invscore2++;
-				victim.SetPlayerNetInt( "assists", invscore2 )
-
-				
-				_HandleRespawn( victim )
-				ClearInvincible(victim)
-			}} catch (e2) {}
+			_HandleRespawn( victim )
+			ClearInvincible(victim)
+			}
 		}
 
         // Atacante
@@ -558,8 +581,15 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		{
             try{
 			if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
-            {
-				
+            {		
+			//Heal
+			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
+			PlayerRestoreHPFIESTA(attacker, 100)
+			UpgradeShields(attacker, false)
+			} else {
+			PlayerRestoreHP(attacker, 100, Equipment_GetDefaultShieldHP())
+			}
+			
 			if(FlowState_KillshotEnabled()){
 			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
@@ -576,31 +606,24 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
             score++;
             GameRules_SetTeamScore(attacker.GetTeam(), score);
 
-			// int invscore = attacker.GetPlayerNetInt( "kills" )
-			// invscore++;
-			// attacker.SetPlayerNetInt( "kills", invscore )
-			
-			//Heal
-				if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
-			PlayerRestoreHPFIESTA(attacker, 100)
-			UpgradeShields(attacker, false)
-			} else {
-			PlayerRestoreHP(attacker, 100, Equipment_GetDefaultShieldHP())
-			}
 			}
 			} catch (e) {}
         }
 		thread victimHandleFunc()
         thread attackerHandleFunc()
         foreach(player in GetPlayerArray()){
-		try {Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_PlayerKilled")}
-    catch(exception){;}}
+		Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_PlayerKilled")}
+		
         break
     default:
+		_HandleRespawn(victim)
+		break
     }
 
 file.lastKillTimer = Time()
 file.lastKiller = attacker
+
+UpdatePlayerCounts()
 }
 
 
@@ -2399,12 +2422,13 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	WorldEntities()
 	wait 1
     BrightwaterLoad()
-	wait 1
+	wait 1.5
 	BrightwaterLoad2()
-	wait 1
+	wait 1.5
 	BrightwaterLoad3()
-	wait 1
-	SpawninvisWalls()
+	wait 1.5
+	//SpawninvisWalls()
+	wait 3
 } else if(file.selectedLocation.name == "Cave By BlessedSeal" )
 {
     DestroyPlayerProps()
@@ -4212,7 +4236,7 @@ if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin
 
     foreach (p in randomizedPlayers)
     {
-        if (IsValid(p)) {p.Code_SetTeam(TEAM_IMC + 2 + (currentTeam % numTeams))}
+        if (IsValid(p)) {SetTeam(p,TEAM_IMC + 2 + (currentTeam % numTeams))}
                 currentTeam += 1
     }
 	foreach (sPlayer in GetPlayerArray()){

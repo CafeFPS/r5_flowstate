@@ -1,0 +1,6 @@
+flowstate all base functions.
+flowstate2 skill trainer map, more base functions.
+flowstate3 surf base functions.
+flowstate4 deathbox map FR
+flowstate5 Brightwater map
+flowstate6 more surf functions.

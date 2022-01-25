@@ -1430,8 +1430,8 @@ void function SetPlayerInventory( entity player, array<ConsumableInventoryItem> 
 	{
 		item.slot = index
 	}
-
-	player.ConsumableInventory_Set( playerInventory )
+	try{
+	player.ConsumableInventory_Set( playerInventory )}catch(e420){}
 
 	foreach( func in file.inventoryChangeCallbacks )
 		func( player, playerInventory )
