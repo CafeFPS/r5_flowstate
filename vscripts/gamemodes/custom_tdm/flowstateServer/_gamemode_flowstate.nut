@@ -79,6 +79,7 @@ struct {
     LocationSettings& dropselectedLocation
 		
 	bool FallTriggersEnabled = false
+	bool mapSkyToggle = false
 } file
 
 struct PlayerInfo
@@ -182,7 +183,7 @@ void function _CustomTDM_Init()
 	}
 	
 	})
-	
+	AddClientCommandCallback("mapsky", ClientCommand_ChangeMapSky)
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	AddClientCommandCallback("adminsay", ClientCommand_AdminMsg)
 	AddClientCommandCallback("commands", ClientCommand_Help)
@@ -2005,6 +2006,7 @@ void function CreateFlowStateDeathBoxForPlayer( entity victim, entity attacker, 
 
 	foreach ( invItem in FlowStateGetAllDroppableItems( victim ) )
 	{
+		//Message(victim,"DEBUG", invItem.type.tostring(), 10)
 		if( invItem.type == 44 || invItem.type == 45 || invItem.type == 46 || invItem.type == 47 || invItem.type == 48 || invItem.type == 53 || invItem.type == 54 || invItem.type == 55 || invItem.type == 56 ) { //don't add shields to deathboxes, debug this wasnt ez :p Colombia
 		continue}
 		else{
@@ -3632,6 +3634,33 @@ void function ResetPlayerStats(entity player)
 // ██      ██      ██ █████   ██ ██  ██    ██        ██      ██    ██ ██ ████ ██ ██ ████ ██ ██ ████ ██ ███████ ██ ██  ██ ██   ██ ███████
 // ██      ██      ██ ██      ██  ██ ██    ██        ██      ██    ██ ██  ██  ██ ██  ██  ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██      ██
 //  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████
+
+bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
+{
+	if(!file.mapSkyToggle) {
+			SetConVarFloat( "mat_autoexposure_max", 1.0 )
+			SetConVarFloat( "mat_autoexposure_max_multiplier", 0.4 )
+			SetConVarFloat( "mat_autoexposure_min", 0.1 )
+			SetConVarFloat( "mat_autoexposure_min_multiplier", 1.0 )
+			SetConVarFloat( "mat_sky_scale", 1.0 )
+			SetConVarString( "mat_sky_color", "1.0 1.0 1.0 1.0" )
+			SetConVarFloat( "mat_sun_scale", 1.0 )
+			SetConVarString( "mat_sun_color", "1.0 1.5 2.0 1.0" ) 
+			file.mapSkyToggle = true}
+			else {
+			SetConVarToDefault( "mat_autoexposure_max" )
+			SetConVarToDefault( "mat_autoexposure_max_multiplier" )
+			SetConVarToDefault( "mat_autoexposure_min" )
+			SetConVarToDefault( "mat_autoexposure_min_multiplier" )
+			SetConVarToDefault( "mat_sky_scale" )
+			SetConVarToDefault( "mat_sky_color" )
+			SetConVarToDefault( "mat_sun_scale" )
+			SetConVarToDefault( "mat_sun_color" )
+			file.mapSkyToggle = true	
+			}
+	return true
+}
+
 bool function ClientCommand_ChangePropPROPHUNT(entity player, array<string> args)
 {
 	if(prophunt.cantUseChangeProp || player.GetTeam() == TEAM_IMC){

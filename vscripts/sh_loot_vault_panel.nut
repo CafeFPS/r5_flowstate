@@ -617,7 +617,7 @@ bool function VaultPanel_HasPlayerDataKnife(entity player)
 
 	foreach ( invItem in playerInventory )
 	{
-		if(invItem.type == 120) // no clue what its const is called, 120 == dataknife/vaultkey
+		if(invItem.type == 106) // no clue what its const is called, 120 == dataknife/vaultkey
 			return true
 	}
 	return false
