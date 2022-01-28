@@ -540,10 +540,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
 
 			if(!IsValid(victim)) return
-			wait 2
-			victim.p.storedWeapons = StoreWeapons(victim)
 			try{
 			if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker ))
+			victim.p.storedWeapons = StoreWeapons(victim)
             {
                 victim.SetObserverTarget( attacker )
                 victim.SetSpecReplayDelay( 4 )
