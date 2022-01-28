@@ -282,6 +282,18 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
 void function PrecacheCustomMapsProps()
 {
 if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){	
+PrecacheModel( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl" )
+PrecacheModel( $"mdl/desertlands/desertlands_sign_01.rmdl" )
+PrecacheModel( $"mdl/desertlands/desertlands_lobby_couch_05.rmdl" )
+PrecacheModel( $"mdl/desertlands/research_station_shelf_02.rmdl" )
+PrecacheModel( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl" )
+PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_01.rmdl" )
+PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_02.rmdl" )
+PrecacheModel( $"mdl/desertlands/desertlands_lobby_side_table_01.rmdl" )
+PrecacheModel( $"mdl/furniture/couch_suede_brown_01.rmdl" )
+PrecacheModel( $"mdl/desertlands/desertlands_lobby_desk_01.rmdl" )
+PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl" )
+PrecacheModel( $"mdl/desertlands/railing_metal_dirty_64x24_01.rmdl" )
 PrecacheModel( $"mdl/rocks/sulfur_geyser_yellow_01.rmdl" )
 PrecacheModel( $"mdl/rocks/sulfur_geyser_yellow_02.rmdl" )
 PrecacheModel( $"mdl/rocks/sulfur_mound_yellow_02.rmdl" )

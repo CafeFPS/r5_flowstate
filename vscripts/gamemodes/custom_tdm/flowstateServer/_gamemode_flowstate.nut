@@ -157,7 +157,7 @@ void function _CustomTDM_Init()
 			AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
 		}
 	AddClientCommandCallback("screenshotDevNet_noRPROF", ClientCommand_IsthisevenCrashfixtest)
-	
+	AddClientCommandCallback("SetNextHealModType", ClientCommand_IsthisevenCrashfixtest)
 	AddCallback_OnClientConnected( void function(entity player) { 
 	
 	if(FlowState_PROPHUNT()){
@@ -185,6 +185,7 @@ void function _CustomTDM_Init()
 	})
 	AddClientCommandCallback("mapsky", ClientCommand_ChangeMapSky)
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
+	AddClientCommandCallback("adminnoclip", ClientCommand_adminnoclip)
 	AddClientCommandCallback("adminsay", ClientCommand_AdminMsg)
 	AddClientCommandCallback("commands", ClientCommand_Help)
 	if(FlowState_PROPHUNT()){
@@ -192,7 +193,7 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
 	AddClientCommandCallback("prop", ClientCommand_ChangePropPROPHUNT)
 	} else if (FlowState_SURF()){
-	AddClientCommandCallback("spectate", ClientCommand_SpectateSURF) //todo fix this
+	//AddClientCommandCallback("spectate", ClientCommand_SpectateSURF) //todo fix this
 	AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
 	} else{
 		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
@@ -221,6 +222,7 @@ if(!FlowState_PROPHUNT()){
         AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
     } }
 }
+
 	// Whitelisted weapons
     for(int i = 0; GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
     {
@@ -3636,6 +3638,7 @@ void function ResetPlayerStats(entity player)
 
 bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
 {
+	#if SERVER
 	if(!file.mapSkyToggle) {
 			SetConVarFloat( "mat_autoexposure_max", 1.0 )
 			SetConVarFloat( "mat_autoexposure_max_multiplier", 0.4 )
@@ -3658,6 +3661,8 @@ bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
 			file.mapSkyToggle = true	
 			}
 	return true
+	#endif
+	unreachable
 }
 
 bool function ClientCommand_ChangePropPROPHUNT(entity player, array<string> args)
@@ -4128,6 +4133,16 @@ if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin
 	}
 	else {
 	return false
+	}
+	return true
+}
+bool function ClientCommand_adminnoclip( entity player, array<string> args )
+{
+	if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin1 || player.GetPlayerName() == file.admin2 || player.GetPlayerName() == file.admin3 || player.GetPlayerName() == file.admin4) {
+
+	if ( player.IsNoclipping() ) player.SetPhysics( MOVETYPE_WALK )
+	else player.SetPhysics( MOVETYPE_NOCLIP )
+	return true
 	}
 	return true
 }

@@ -297,12 +297,13 @@ void function Consumable_Init()
 	file.consumableUseOrder.append( eConsumableType.HEALTH_SMALL )
 
 	#if SERVER
+		string currGameMode = GameRules_GetGameMode()
+		if(currGameMode != "custom_tdm"){
 		AddCallback_OnClientConnected( OnClientConnected )
-
 		AddClientCommandCallbackNew( "SetSelectedConsumableTypeNetInt", ClientCommand_SetSelectedConsumableTypeNetInt )
 		AddClientCommandCallbackNew( "SetNextHealModType", ClientCommand_SetNextHealModType  )
 
-		RegisterSignal( "StartHeal" )
+		RegisterSignal( "StartHeal" )}
 	#endif
 
 	#if CLIENT
