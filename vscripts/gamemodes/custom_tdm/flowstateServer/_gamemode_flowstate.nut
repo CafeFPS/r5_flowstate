@@ -759,7 +759,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		GiveGungameWeapon(player)
 	}
 
-	WpnPulloutOnRespawn(player)
+	thread WpnPulloutOnRespawn(player)
 	try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
 	try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
 	// try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
@@ -2978,7 +2978,7 @@ float endTime = Time() + FlowState_RoundTime()
 
 foreach(player in GetPlayerArray())
     {
-WpnPulloutOnRespawn(player)
+thread WpnPulloutOnRespawn(player)
 	}
 if (FlowState_Timer()){
 while( Time() <= endTime )

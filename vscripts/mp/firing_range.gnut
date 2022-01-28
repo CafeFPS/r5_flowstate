@@ -31,7 +31,7 @@ global const asset FIRINGRANGE_QUARRY_BLOCK_ASSET = $"mdl/rocks/thunderdome_quar
 
 #if SERVER
 // To be used outside if needed
-global int firingrange_infinite_ammo = 0
+global int firingrange_infinite_ammo = 2
 bool toggleFr = false
 float lasttimeToggleFriendlyFire = 0
 #endif
@@ -91,8 +91,9 @@ void function FiringRangeGameMode_Init()
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
 		AddClientCommandCallback("frfire", ClientCommand_FriendlyFireFR)
 		SetGameState(eGameState.Playing)
+		WaitForGameState(eGameState.Playing)
+		thread ThreadThatWatchesForWeaponsCuzWhenPlayerIsDedDoesntHaveWeaponsWtf()
 	#endif
-	
 }
 
 
@@ -216,8 +217,8 @@ void function OnEntitiesDidLoadFR()
 	SpawnAttachments()
 	SpawnEquipments()
 	SpawnOrdnance()
-	SpawnItems()
-	SpawnAmmo()
+	//SpawnItems()
+	//SpawnAmmo()
 
 	SpawnDummy(<31541,-7964,-29165>, <0,179,0>)
 	SpawnDummy(<31541,-6705,-29165>, <0,179,0>)
@@ -259,40 +260,103 @@ void function _WaitForPlayerSpawnFR( entity player )
 	int playerOldTeam = player.GetTeam()
 	
 	thread _HandleRespawnFR(player)
-	Message(player, "R5R FIRING RANGE", "'frfire' in console to toggle friendly fire (5s cooldown).", 10)
+	Message(player, "R5R FIRING RANGE", "'frfire' in console to toggle friendly fire (5s cooldown).", 15)
+}
+void function WpnPulloutOnRespawn(entity player)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 and michae\l/#1125 //
+///////////////////////////////////////////////////////
+{
+	try {
+	if( IsValid( player ) && IsAlive(player))
+        {
+	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
+	wait 0.7
+	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+}}catch(e){}}
+
+void function ThreadThatWatchesForWeaponsCuzWhenPlayerIsDedDoesntHaveWeaponsWtf()
+{
+	while(true)
+	{
+		foreach(player in GetPlayerArray())
+		{
+			if(IsValid(player) && IsAlive(player)){
+			player.p.storedWeapons = StoreWeapons(player)
+			}
+		}
+		wait 1
+	}
 }
 
 void function _HandleRespawnFR(entity player, bool respawnsameposition = false)
 {
+	//BY COLOMBIA
 	if(IsValid(player) && !IsAlive(player)){
-		wait 1
+			wait 1
+			
+		if(respawnsameposition){
+				vector lastPos = player.GetOrigin()
+				vector lastAng = player.GetAngles()
+				//THIS DOESNT WORK, WHEN PLAYER IS DEAD DOESNT HAVE WEAPONS ALREADY COLOMBIA, fixed with a thread ThreadThatWatchesForWeaponsCuzWhenPlayerIsDedDoesntHaveWeaponsWtf()
+				//player.p.storedWeapons = StoreWeapons(player)
+				array<ItemFlavor> characters = clone GetAllCharacters()
+				ItemFlavor PersonajeEscogido = characters[RandomInt(10)]
+				CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+				player.SetOrigin(lastPos)
+				player.SetAngles(lastAng)
+				DecideRespawnPlayer( player )
+				TakeAllWeapons( player )
+				GiveWeaponsFromStoredArray( player, player.p.storedWeapons )
+				player.p.storedWeapons.clear()
+				entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+						// int ammoType = weapon.GetWeaponAmmoPoolType()
+						
+					// string ammoRef = AmmoType_GetRefFromIndex( ammoType )
+				
+					// int currentAmmo = weapon.GetWeaponPrimaryClipCount()
+					// int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
+				
+					// int requiredAmmo = maxAmmo - currentAmmo
+				
+					// int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
+				
+					// int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
+				
+					// // printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
+				
+					// SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
+					
+					//weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_POOL, 999 )
+					
+					
+		//weapon.SetWeaponPrimaryAmmoCount( weapon.GetActiveAmmoSource(), 99 ) none of this shit works wtf
 		
-	if(respawnsameposition){
-			vector lastPos = player.GetOrigin()
-			vector lastAng = player.GetAngles()
-			DecideRespawnPlayer( player )
-			player.SetOrigin(lastPos)
-			player.SetAngles(lastAng)
-		} else { 
-			DecideRespawnPlayer( player )
-			SetRandomStagingPositionForPlayer( player )
-	}}
-		
-	array<ItemFlavor> characters = clone GetAllCharacters()
-	ItemFlavor PersonajeEscogido = characters[RandomInt(10)]
-	CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-	
-	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
-	TakeAllWeapons(player)
-	entity primary = player.GiveWeapon("mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "highcal_mag_l3"])
-	entity secondary = player.GiveWeapon("mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_hcog_classic","barrel_stabilizer_l4_flash_hider","stock_tactical_l3"])
-	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_wingman" )
-	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-	GiveRandomTac(player)
-	GiveRandomUlt(player)
-	FixWeapon(primary)
-	FixWeapon(secondary)
+			} else {
+				array<ItemFlavor> characters = clone GetAllCharacters()
+				ItemFlavor PersonajeEscogido = characters[RandomInt(10)]
+				CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+				DecideRespawnPlayer( player )
+				SetRandomStagingPositionForPlayer( player )
+				TakeAllWeapons(player)
+				entity primary = player.GiveWeapon("mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "highcal_mag_l3"])
+				entity secondary = player.GiveWeapon("mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_hcog_classic","barrel_stabilizer_l4_flash_hider","stock_tactical_l3"])
+				FixWeapon(primary)
+				FixWeapon(secondary)
+				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_wingman" )
+				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+		}
+		player.kv.solid = 6
+		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
+		player.SetShieldHealth( 50 )
+		player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+		player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+		GiveRandomTac(player)
+		GiveRandomUlt(player)
+		Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+	}
 }
 
 void function GiveRandomTac(entity player)
@@ -455,8 +519,8 @@ void function ExtendLootDataArrayIfMissing(array<LootData> from, array<LootData>
 // Spawn nades at the left of the racks
 void function SpawnOrdnance()
 {
-	const float cornerOffset = 32.0
-	const float itemOffsetX = 16.0
+	const float cornerOffset = 15.0
+	const float itemOffsetX = 20.0
 	const float itemOffsetY = 16.0
 	const float itemOffsetZ = 4.0
 	foreach(RackGroup rackGroup in file.rackSpawns)

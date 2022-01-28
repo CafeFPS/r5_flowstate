@@ -166,8 +166,8 @@ void function GiveWeaponsFromStoredArray( entity player, array<StoredWeapon> sto
 		{
 			case eStoredWeaponType.main:
 				weapon = player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
-				weapon.SetWeaponSkin( storedWeapon.skinIndex )
-				weapon.SetWeaponCamo( storedWeapon.camoIndex )
+				weapon.SetWeaponSkin( 1 )
+				weapon.SetWeaponCamo( 0 )
 				#if MP
 				// if ( storedWeapon.isProScreenOwner )
 				// {
