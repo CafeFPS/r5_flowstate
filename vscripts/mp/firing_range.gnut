@@ -218,7 +218,7 @@ void function OnEntitiesDidLoadFR()
 	SpawnEquipments()
 	SpawnOrdnance()
 	//SpawnItems()
-	//SpawnAmmo()
+	SpawnAmmo()
 
 	SpawnDummy(<31541,-7964,-29165>, <0,179,0>)
 	SpawnDummy(<31541,-6705,-29165>, <0,179,0>)
@@ -283,6 +283,7 @@ void function ThreadThatWatchesForWeaponsCuzWhenPlayerIsDedDoesntHaveWeaponsWtf(
 		{
 			if(IsValid(player) && IsAlive(player)){
 			player.p.storedWeapons = StoreWeapons(player)
+
 			}
 		}
 		wait 1
@@ -306,10 +307,15 @@ void function _HandleRespawnFR(entity player, bool respawnsameposition = false)
 				player.SetOrigin(lastPos)
 				player.SetAngles(lastAng)
 				DecideRespawnPlayer( player )
+				
 				TakeAllWeapons( player )
 				GiveWeaponsFromStoredArray( player, player.p.storedWeapons )
+							entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+			entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+			FixWeapon(primary)
+			FixWeapon(secondary)
 				player.p.storedWeapons.clear()
-				entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+
 						// int ammoType = weapon.GetWeaponAmmoPoolType()
 						
 					// string ammoRef = AmmoType_GetRefFromIndex( ammoType )
