@@ -1168,7 +1168,6 @@ foreach(player in GetPlayerArray())
 		}
 	}
 wait 25
-prophunt.InProgress = true
 foreach(player in GetPlayerArray())
     {
 if(player.GetTeam() == TEAM_IMC){
@@ -1190,16 +1189,15 @@ foreach(player in GetPlayerArray())
 		
 	}
 prophunt.cantUseChangeProp = true
-foreach(player in GetPlayerArray())
+foreach(player in IMCplayers)
     {
 		        if(IsValidPlayer(player))
         {
-if(player.GetTeam() == TEAM_IMC){
-					Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
-					player.SetOrigin(prophuntSpawns[RandomInt(4)].origin)
-					player.kv.rendermode = 0
-					player.kv.renderamt = 1
+					player.SetOrigin(prophuntSpawns[prophuntSpawns.len()-1].origin)
+					//player.kv.rendermode = 0
+					//player.kv.renderamt = 1
 					player.kv.solid = 6
 					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 					player.SetThirdPersonShoulderModeOff()
@@ -1212,9 +1210,10 @@ if(player.GetTeam() == TEAM_IMC){
 					//player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 					//player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
 					DeployAndEnableWeapons(player)
-			}
+		
+		}
 	}
-	}
+prophunt.InProgress = true
 
 while( Time() <= endTime )
 	{
