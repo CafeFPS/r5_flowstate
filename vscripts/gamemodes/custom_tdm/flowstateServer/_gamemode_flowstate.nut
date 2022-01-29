@@ -1120,7 +1120,7 @@ void function ActualPROPHUNTGameLoop()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-prophunt.InProgress = true
+
 file.tdmState = eTDMState.IN_PROGRESS
 entity bubbleBoundary = CreateBubbleBoundaryPROPHUNT(prophunt.selectedLocation)
 thread EmitSoundOnSprintingProp()
@@ -1168,6 +1168,7 @@ foreach(player in GetPlayerArray())
 		}
 	}
 wait 25
+prophunt.InProgress = true
 foreach(player in GetPlayerArray())
     {
 if(player.GetTeam() == TEAM_IMC){
