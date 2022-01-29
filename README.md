@@ -1,5 +1,7 @@
 # This Readme is not updated. 
 # Please get the playlist from Releases.
+You will need Detours 2.0beta, grab it from here: https://discord.com/channels/@me/898436449261748284/937004640090853377
+Replace scripts folder with this repo
 ____________________________________________
 
 # R5 Flow State 2.0
