@@ -1132,16 +1132,16 @@ float endTime = Time() + GetCurrentPlaylistVarFloat("flowstatePROPHUNTLimitTime"
 
 array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 
-//this is for debuggin, so I can changelevel and still have enemy(two instances of the game)
-if (IMCplayers.len() == 2 && MILITIAplayers.len() == 0 && GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false ))
-{
-entity playerNewTeam = IMCplayers[0]
-playerNewTeam.Code_SetTeam( TEAM_MILITIA )
-} else if (IMCplayers.len() == 0 && MILITIAplayers.len() == 2 && GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false ))
-{
-entity playerNewTeam = MILITIAplayers[0]
-playerNewTeam.Code_SetTeam( TEAM_IMC )	
-}
+// //this is for debuggin, so I can changelevel and still have enemy(two instances of the game)
+// if (IMCplayers.len() == 2 && MILITIAplayers.len() == 0 && GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false ))
+// {
+// entity playerNewTeam = IMCplayers[0]
+// playerNewTeam.Code_SetTeam( TEAM_MILITIA )
+// } else if (IMCplayers.len() == 0 && MILITIAplayers.len() == 2 && GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false ))
+// {
+// entity playerNewTeam = MILITIAplayers[0]
+// playerNewTeam.Code_SetTeam( TEAM_IMC )	
+// }
 
 		file.deathPlayersCounter = 0
 		prophunt.cantUseChangeProp = false
@@ -1149,7 +1149,7 @@ foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 			ClearInvincible(player)
 			player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0)
 			player.p.playerDamageDealt = 0.0
