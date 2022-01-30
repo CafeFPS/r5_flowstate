@@ -108,7 +108,7 @@ bool InProgress = false
 
 const array<asset> prophuntAssetsWE =
 [
-	$"mdl/industrial/traffic_cone_01.rmdl",
+	//$"mdl/industrial/traffic_cone_01.rmdl",
 	$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
 	$"mdl/eden/eden_electrical_transformer_01.rmdl",
 	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
@@ -119,7 +119,7 @@ const array<asset> prophuntAssetsWE =
 	$"mdl/angel_city/box_small_02.rmdl",
 	$"mdl/colony/antenna_05_colony.rmdl",
 	$"mdl/robots/marvin/marvin_gladcard.rmdl",
-	$"mdl/garbage/garbage_bag_plastic_a.rmdl",
+	//$"mdl/garbage/garbage_bag_plastic_a.rmdl",
 	$"mdl/garbage/trash_bin_single_wtrash_Blue.rmdl",
 	$"mdl/angel_city/box_small_01.rmdl",
 	$"mdl/garbage/dumpster_dirty_open_a_02.rmdl",
@@ -158,6 +158,7 @@ void function _CustomTDM_Init()
 		}
 	AddClientCommandCallback("screenshotDevNet_noRPROF", ClientCommand_IsthisevenCrashfixtest)
 	AddClientCommandCallback("SetNextHealModType", ClientCommand_IsthisevenCrashfixtest)
+	AddCallback_OnClientDisconnected( _OnPlayerDced )
 	AddCallback_OnClientConnected( void function(entity player) { 
 	
 	if(FlowState_PROPHUNT()){
@@ -445,7 +446,7 @@ void function _OnPlayerConnected(entity player)
 	    if(IsValidPlayer(player))
         {
 			player.UnfreezeControlsOnServer()
-			if(GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia" || GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Deathbox by Ayezee")
+			if(file.tdmState == eTDMState.IN_PROGRESS && GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia" || file.tdmState == eTDMState.IN_PROGRESS && GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Deathbox by Ayezee")
 			{
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
 				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
@@ -544,6 +545,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			if(!IsValid(victim)) return
 			try{
 			if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker ))
+			wait 0.5
 			victim.p.storedWeapons = StoreWeapons(victim)
             {
                 victim.SetObserverTarget( attacker )
@@ -883,12 +885,22 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
                 player.StartObserverMode( OBS_MODE_IN_EYE )
 				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
 				
+				foreach(sPlayer in playersON)
+				{
+				Message(player, "APEX PROPHUNT", "Player connected!" + player.GetPlayerName(), 10)	
+				}
+				
 				}catch(e){}
 			}
 			break
 		default:
 			break
 	}
+}
+
+void function _OnPlayerDced(entity player)
+{
+UpdatePlayerCounts()
 }
 
 void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageInfo)
@@ -898,9 +910,8 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 {
 
 	file.deathPlayersCounter++
-	array<entity> playersON = GetPlayerArray_Alive()
-	
-	if(file.deathPlayersCounter == 1 && playersON.len() > 2)
+
+	if(file.deathPlayersCounter == 1)
 	{
 	foreach (player in GetPlayerArray())
 	{
@@ -913,16 +924,25 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
     case eGameState.Playing:
         // Víctima
         void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-
+				array<entity> playersON = GetPlayerArray_Alive()
+				playersON.fastremovebyvalue( victim )
+	
 			if(!IsValid(victim)) return
 			try{
-			wait 1
+			wait 0.5
 			if(IsValid(victim))
             {
+				if(victim != attacker){
                 victim.SetObserverTarget( attacker )
 				victim.SetSpecReplayDelay( 2 )
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
+				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")}
+				else {
+				victim.SetObserverTarget( playersON[0] )
+				victim.SetSpecReplayDelay( 2 )
+                victim.StartObserverMode( OBS_MODE_IN_EYE )
 				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+				}
             }
 			
 				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
@@ -1018,6 +1038,7 @@ void function RunPROPHUNT()
     WaitForever()
 }
 
+
 void function ActualPROPHUNTLobby()
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -1066,22 +1087,22 @@ if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
 	while(true)
 	{
 		array<entity> playersON = GetPlayerArray_Alive()
-		if(playersON.len() == 1 || playersON.len() == 0)
+		if(playersON.len() > 1 )
 		{
-			wait 15
-			foreach(player in GetPlayerArray())
-			{
-				Message(player, "APEX PROPHUNT", "Waiting another player to start.", 5)
-			}	
-		} else {
-						foreach(player in GetPlayerArray())
+									foreach(player in GetPlayerArray())
 			{
 			Message(player, "APEX PROPHUNT", "We have enough players, starting now.", 5, "diag_ap_aiNotify_circleMoves10sec")
 			}
 			wait 5
-			break 
+			break
+		} else {
+			wait 5
+			foreach(player in GetPlayerArray())
+			{
+				Message(player, "APEX PROPHUNT", "Waiting another player to start.", 1)
+			}	
 		}
-		wait 1
+		wait 0.5
 	}
 }
 array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
@@ -1115,6 +1136,22 @@ void function EmitSoundOnSprintingProp()
 		}
 }
 
+void function CheckForPlayersPlaying()
+{
+	
+	while(prophunt.InProgress)
+	{
+		array<entity> playersON = GetPlayerArray_Alive()
+		if(playersON.len() == 1)
+		{
+		file.tdmState = eTDMState.NEXT_ROUND_NOW
+		foreach(player in GetPlayerArray()){
+		Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)}
+		}
+	wait 1	
+	}
+}
+
 void function ActualPROPHUNTGameLoop()
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -1123,7 +1160,6 @@ void function ActualPROPHUNTGameLoop()
 
 file.tdmState = eTDMState.IN_PROGRESS
 entity bubbleBoundary = CreateBubbleBoundaryPROPHUNT(prophunt.selectedLocation)
-thread EmitSoundOnSprintingProp()
 SetGameState(eGameState.Playing)
 
 float endTime = Time() + GetCurrentPlaylistVarFloat("flowstatePROPHUNTLimitTime", 300 )
@@ -1214,6 +1250,8 @@ foreach(player in IMCplayers)
 		}
 	}
 prophunt.InProgress = true
+thread EmitSoundOnSprintingProp()
+thread CheckForPlayersPlaying()
 
 while( Time() <= endTime )
 	{
@@ -1291,30 +1329,23 @@ foreach(player in GetPlayerArray())
 wait 5
 UpdatePlayerCounts()
 bubbleBoundary.Destroy()
-prophunt.InProgress = false
+
 foreach(player in GetPlayerArray())
     {	
-		TakeAllWeapons(player)
-		player.SetThirdPersonShoulderModeOn()
-		if(player.GetTeam() == TEAM_IMC){
-				player.Code_SetTeam( TEAM_MILITIA )
-				_HandleRespawnPROPHUNT(player)
-		} else if(player.GetTeam() == TEAM_MILITIA){
-				player.Code_SetTeam( TEAM_IMC )	
-				_HandleRespawnPROPHUNT(player)
-		} else {
-			if( player.IsObserver())
+				if( player.IsObserver())
 			{
 				player.StopObserverMode()
 				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 			}
-			player.MakeVisible()
-			player.UnforceStand()
-			player.UnfreezeControlsOnServer()
+			TakeAllWeapons(player)
+			player.SetThirdPersonShoulderModeOn()
 			GiveTeamToProphuntPlayer(player) 
 			_HandleRespawnPROPHUNT(player)
-		}
+			player.MakeVisible()
+			player.UnforceStand()
+			player.UnfreezeControlsOnServer()		
 }
+prophunt.InProgress = false
 WaitFrame()
 }
 
@@ -3086,6 +3117,7 @@ try{
 	} else if(IsValid(player) && !IsAlive(player)){
 					_HandleRespawn(player)
 			ClearInvincible(player)
+			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
 	}
 	
@@ -3309,10 +3341,12 @@ void function CharSelect( entity player)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
+if(!FlowState_PROPHUNT())
+{
 //Char select.
 file.characters = clone GetAllCharacters()
 ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
-CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )}
 
 //Dummies
 if (FlowState_DummyOverride()) {
@@ -3329,6 +3363,9 @@ player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, 
 player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
 if(FlowState_PROPHUNT())
 {
+file.characters = clone GetAllCharacters()
+ItemFlavor PersonajeEscogido = file.characters[RandomInt(9)]
+CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
 TakeAllWeapons(player)
 }
 }
