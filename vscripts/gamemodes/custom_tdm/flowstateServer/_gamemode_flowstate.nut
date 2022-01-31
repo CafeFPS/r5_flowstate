@@ -104,6 +104,7 @@ int nextMapIndex = 0
 bool mapIndexChanged = true
 bool cantUseChangeProp = false
 bool InProgress = false
+bool destroyCurrentProp = false
 } prophunt
 
 
@@ -191,6 +192,8 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("adminnoclip", ClientCommand_adminnoclip)
 	AddClientCommandCallback("adminsay", ClientCommand_AdminMsg)
 	AddClientCommandCallback("commands", ClientCommand_Help)
+	AddClientCommandCallback("debugprint", ClientCommand_DoorsTest)
+
 	if(FlowState_PROPHUNT()){
 	AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
 	AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
@@ -398,6 +401,7 @@ void function _OnPlayerConnected(entity player)
 ///////////////////////////////////////////////////////
 {
     if(!IsValid(player)) return
+
 			if(FlowState_ForceCharacter()){
 				CharSelect(player)}
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
@@ -449,11 +453,11 @@ void function _OnPlayerConnected(entity player)
 			player.UnfreezeControlsOnServer()
 			if(file.tdmState == eTDMState.IN_PROGRESS && GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia" || file.tdmState == eTDMState.IN_PROGRESS && GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Deathbox by Ayezee")
 			{
+				printt("Flowstate DEBUG - Trying to spawn a player in droppod", player)
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
 				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
 				_HandleRespawn(player, true)
 				player.SetAngles( <0,180,0> )
-				printl("player spawning in droppod")
 			} else {
 			_HandleRespawn(player)
 			SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
@@ -1164,7 +1168,7 @@ void function PropWatcher(entity prop)
 ///////////////////////////////////////////////////////
 {
 	
-	while(prophunt.InProgress)
+	while(prophunt.InProgress && !prophunt.destroyCurrentProp)
 	{
 	wait 0.1	
 	}
@@ -3753,23 +3757,43 @@ bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
 
 bool function ClientCommand_ChangePropPROPHUNT(entity player, array<string> args)
 {
-	// if(prophunt.cantUseChangeProp || player.GetTeam() == TEAM_IMC){
-		// return false
-	// }
-	// int newscore = player.GetPlayerGameStat(PGS_ASSAULT_SCORE) + 1 	
-	// player.SetPlayerGameStat( PGS_ASSAULT_SCORE, newscore)
+			// prophunt.destroyCurrentProp = true
+			// wait 0.5
+			
+			// if(player.GetTeam() == TEAM_MILITIA && IsValid(player)){
+			// //player.SetValueForModelKey( PROPHUNT_GiveRandomProp() )	
+						// entity prop = CreatePropDynamic(PROPHUNT_GiveRandomProp(), player.GetOrigin(), player.GetAngles(), 6, -1)
+			// prop.kv.solid = 6
+			// prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+			// prop.SetDamageNotifications( true )
+				
+				// DispatchSpawn( prop )
+			// prop.SetParent(player)
+			// prophunt.destroyCurrentProp = false
+			// thread PropWatcher(prop)
+			// return true
+			// }
 
-	// if (player.GetPlayerGameStat(PGS_ASSAULT_SCORE) <= 3){
-	// PROPHUNT_GiveRandomProp(player)	
-
-	// return true}
-	// else{
-	// return false}
+				
 	return true
 }
 bool function ClientCommand_DoorsTest(entity player, array<string> args)
 {
-	ShDoors_Init()
+		printl( "############################" )
+	printl("Flowstate DEBUG")
+	printl("Flowstate DEBUG")
+	printl("Flowstate DEBUG")
+	printl( "############################" )
+			printl( "############################" )
+	printf("Flowstate DEBUG")
+	printf("Flowstate DEBUG")
+	printf("Flowstate DEBUG")
+	printf( "############################" )
+			printt( "############################" )
+	printt("Flowstate DEBUG")
+	printt("Flowstate DEBUG")
+	printt("Flowstate DEBUG")
+	printt( "############################" )
 	return true
 }	
 bool function ClientCommand_IsthisevenCrashfixtest(entity player, array<string> args)

@@ -49,7 +49,7 @@ global function StatsInternals_UpdatePersistenceOnPurchase
 global function DEV_IncrementStat_Int // only global in dev for console commands (stats should never be incremented any where other than in this file)
 #endif
 
-const bool STATS_DEBUG_PRINT_SPAM = true
+const bool STATS_DEBUG_PRINT_SPAM = false
 
 
 //////////////////////
@@ -854,38 +854,38 @@ void function __SetStat_Float( entity player, StatEntry entry, float newValue, b
 #if SERVER
 void function UpdateCalculatedStatCachedValue( entity player, StatEntry entry, int when = eStatGetWhen.CURRENT )
 {
-	Assert( entry.behavior == eStatBehavior.CALCULATED && entry.shouldCache )
+	// Assert( entry.behavior == eStatBehavior.CALCULATED && entry.shouldCache )
 
-	if ( entry.type == eStatType.BOOL )
-	{
-		bool value = entry.calcFunc_Bool( player, entry.calcSourceEntries, when )
-		player.p.statValues_Bool[entry.indexWithinType] = value
-		if ( IsLobby() )
-			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
+	// if ( entry.type == eStatType.BOOL )
+	// {
+		// bool value = entry.calcFunc_Bool( player, entry.calcSourceEntries, when )
+		// player.p.statValues_Bool[entry.indexWithinType] = value
+		// if ( IsLobby() )
+			// player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
-		if ( STATS_DEBUG_PRINT_SPAM )
-			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
-	}
-	else if ( entry.type == eStatType.INT )
-	{
-		int value = entry.calcFunc_Int( player, entry.calcSourceEntries, when )
-		player.p.statValues_Int[entry.indexWithinType] = value
-		if ( IsLobby() )
-			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
+		// if ( STATS_DEBUG_PRINT_SPAM )
+			// printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
+	// }
+	// else if ( entry.type == eStatType.INT )
+	// {
+		// int value = entry.calcFunc_Int( player, entry.calcSourceEntries, when )
+		// player.p.statValues_Int[entry.indexWithinType] = value
+		// if ( IsLobby() )
+			// player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
-		if ( STATS_DEBUG_PRINT_SPAM )
-			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
-	}
-	else if ( entry.type == eStatType.FLOAT )
-	{
-		float value = entry.calcFunc_Float( player, entry.calcSourceEntries, when )
-		player.p.statValues_Float[entry.indexWithinType] = value
-		if ( IsLobby() )
-			player.SetPersistentVar( entry.persistenceFullKey_Current, value )
+		// if ( STATS_DEBUG_PRINT_SPAM )
+			// printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
+	// }
+	// else if ( entry.type == eStatType.FLOAT )
+	// {
+		// float value = entry.calcFunc_Float( player, entry.calcSourceEntries, when )
+		// player.p.statValues_Float[entry.indexWithinType] = value
+		// if ( IsLobby() )
+			// player.SetPersistentVar( entry.persistenceFullKey_Current, value )
 
-		if ( STATS_DEBUG_PRINT_SPAM )
-			printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
-	}
+		// if ( STATS_DEBUG_PRINT_SPAM )
+			// printt( "@@@@ STATS UpdateCalculatedStatCachedValue @@@@", player, entry.persistenceFullKey_Current, value )
+	// }
 }
 #endif
 

@@ -274,7 +274,7 @@ void function AddCallback_PlayerClassActuallyChanged( void functionref( entity )
 
 void function CodeCallback_PlayerClassChanged( entity player, bool actualSettingsFileChanged )
 {
-	printt(FUNC_NAME(), player, "actualSettingsFileChanged", actualSettingsFileChanged)
+	//printt(FUNC_NAME(), player, "actualSettingsFileChanged", actualSettingsFileChanged)
 	if ( !IsValid( player ) )
 		return
 
@@ -314,10 +314,10 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		/*if ( IsWatchingReplay() )
 			UpdateKillReplayIconPosition()*/
 	#else
-		if(IsValid( player ) ){
-		player.kv.renderColor = "255 255 255 255"
+		// if(IsValid( player ) ){
+		// player.kv.renderColor = "255 255 255 255"
 
-		InitDamageStates( player )}
+		//InitDamageStates( player )}
 	#endif
 
 	//if ( IsClient() && !player.IsTitan() )
@@ -329,7 +329,7 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 	#if SERVER
 		//player.Signal( "OnChangedPlayerClass" )
 
-		UpdatePlayerMinimapMaterials( player )
+		//UpdatePlayerMinimapMaterials( player )
 	#endif
 }
 

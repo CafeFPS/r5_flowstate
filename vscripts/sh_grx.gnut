@@ -139,7 +139,7 @@ const int GRX_SCRIPT_QUERY_IDENTIFIER_START_INDEX = 1
 const int GRX_SCRIPT_QUERY_IDENTIFIER_START_INDEX = INT_MIN
 #endif
 
-const bool GRX_DEBUG_PRINTS = true
+const bool GRX_DEBUG_PRINTS = false
 
 
 //////////////////////
