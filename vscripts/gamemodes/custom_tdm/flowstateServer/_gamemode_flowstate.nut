@@ -3,10 +3,11 @@
 // ██      ██      ██    ██ ██     ██     ██         ██    ██   ██    ██    ██      
 // █████   ██      ██    ██ ██  █  ██     ███████    ██    ███████    ██    █████   
 // ██      ██      ██    ██ ██ ███ ██          ██    ██    ██   ██    ██    ██      
-// ██      ███████  ██████   ███ ███      ███████    ██    ██   ██    ██    ███████                                                                                 
-// By Retículo Endoplasmático#5955
-// & michae\l/#1125
-// & AyeZee#6969
+// ██      ███████  ██████   ███ ███      ███████    ██    ██   ██    ██    ███████
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////                                                                                 
+// Colaborators: michae\l/#1125, AyeZee#6969
 ///////////////////////////////////////////////////////
 
 global function _CustomTDM_Init
@@ -186,6 +187,7 @@ void function _CustomTDM_Init()
 	})
 	AddClientCommandCallback("mapsky", ClientCommand_ChangeMapSky)
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
+	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("adminnoclip", ClientCommand_adminnoclip)
 	AddClientCommandCallback("adminsay", ClientCommand_AdminMsg)
 	AddClientCommandCallback("commands", ClientCommand_Help)
@@ -204,7 +206,6 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("god", ClientCommand_God)
 	AddClientCommandCallback("ungod", ClientCommand_UnGod)
 	AddClientCommandCallback("next_round", ClientCommand_NextRound)
-	AddClientCommandCallback("doors", ClientCommand_DoorsTest)
 	}
 	if(FlowState_AllChat() && !FlowState_SURF()){
 		AddClientCommandCallback("say", ClientCommand_ClientMsg)
@@ -771,7 +772,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 }
 
 
-void function PROPHUNT_GiveRandomProp(entity player)
+asset function PROPHUNT_GiveRandomProp()
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
@@ -779,9 +780,11 @@ void function PROPHUNT_GiveRandomProp(entity player)
     if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 	{
 	asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
-	player.SetBodyModelOverride( selectedModel )
-	player.SetArmsModelOverride( selectedModel )
+	return selectedModel
+	// player.SetBodyModelOverride( selectedModel )
+	// player.SetArmsModelOverride( selectedModel )
 	}
+	unreachable
 }
 
 void function _OnPlayerConnectedPROPHUNT(entity player)
@@ -1137,6 +1140,9 @@ void function EmitSoundOnSprintingProp()
 }
 
 void function CheckForPlayersPlaying()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
 	
 	while(prophunt.InProgress)
@@ -1152,6 +1158,18 @@ void function CheckForPlayersPlaying()
 	}
 }
 
+void function PropWatcher(entity prop)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	
+	while(prophunt.InProgress)
+	{
+	wait 0.1	
+	}
+	prop.Destroy()
+}
 void function ActualPROPHUNTGameLoop()
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -1181,20 +1199,31 @@ array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 
 		file.deathPlayersCounter = 0
 		prophunt.cantUseChangeProp = false
+prophunt.InProgress = true
+thread EmitSoundOnSprintingProp()
+
 foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+			Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 			ClearInvincible(player)
 			player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0)
 			player.p.playerDamageDealt = 0.0
 			if(player.GetTeam() == TEAM_MILITIA){
 			player.SetOrigin(prophuntSpawns[RandomInt(prophuntSpawns.len()-1)].origin)
-			player.SetAngles( <0,90,0> )
-			PROPHUNT_GiveRandomProp(player)
+			player.SetValueForModelKey( PROPHUNT_GiveRandomProp() )
 			player.kv.solid = 6
 			player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+			player.Hide()
+			entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
+			prop.kv.solid = 6
+			prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+			prop.SetDamageNotifications( true )
+			prop.SetParent(player)
+			
+				thread PropWatcher(prop)
+			
 			player.SetThirdPersonShoulderModeOn()
 			player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 			player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
@@ -1229,11 +1258,9 @@ foreach(player in IMCplayers)
     {
 		        if(IsValidPlayer(player))
         {
-					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+					Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
 					player.SetOrigin(prophuntSpawns[prophuntSpawns.len()-1].origin)
-					//player.kv.rendermode = 0
-					//player.kv.renderamt = 1
 					player.kv.solid = 6
 					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 					player.SetThirdPersonShoulderModeOff()
@@ -1249,8 +1276,7 @@ foreach(player in IMCplayers)
 		
 		}
 	}
-prophunt.InProgress = true
-thread EmitSoundOnSprintingProp()
+	
 thread CheckForPlayersPlaying()
 
 while( Time() <= endTime )
@@ -1332,6 +1358,9 @@ bubbleBoundary.Destroy()
 
 foreach(player in GetPlayerArray())
     {	
+			if(player.GetTeam() == TEAM_MILITIA){
+				player.Show()
+			}
 				if( player.IsObserver())
 			{
 				player.StopObserverMode()
@@ -1346,6 +1375,7 @@ foreach(player in GetPlayerArray())
 			player.UnfreezeControlsOnServer()		
 }
 prophunt.InProgress = false
+
 WaitFrame()
 }
 
@@ -2279,7 +2309,9 @@ void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGroun
 #endif
 
 void function GiveGungameWeapon(entity player) {
-//By CaféDeColombiaFPS
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 	int WeaponIndex = player.GetPlayerNetInt( "kills" )
 	int realweaponIndex = WeaponIndex
 	int MaxWeapons = 42
@@ -3326,7 +3358,7 @@ void function PlayerTrail(entity player, int onoff)
         int smokeAttachID = player.LookupAttachment( "CHESTFOCUS" )
 	    vector smokeColor = <255,255,255>
 		entity smokeTrailFX = StartParticleEffectOnEntityWithPos_ReturnEntity( player, GetParticleSystemIndex( $"P_grenade_thermite_trail"), FX_PATTACH_ABSORIGIN_FOLLOW, smokeAttachID, <0,0,0>, VectorToAngles( <0,0,-1> ) )
-
+		
 		EffectSetControlPointVector( smokeTrailFX, 1, smokeColor )
         player.p.DEV_lastDroppedSurvivalWeaponProp = smokeTrailFX
     }
@@ -3601,7 +3633,9 @@ array<PlayerInfo> spectators = []
 }
 
 string function LatencyBoard()
-//By Café
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
 array<PlayerInfo> playersInfo = []
         foreach(player in GetPlayerArray())
@@ -3645,7 +3679,7 @@ int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
 }
 
 void function ResetAllPlayerStats()
-// Taken from Gungame Script
+// Taken from Pebbers' Gungame Script
 {
     foreach(player in GetPlayerArray()) {
         if(!IsValid(player)) continue
@@ -3654,7 +3688,7 @@ void function ResetAllPlayerStats()
 }
 
 void function ResetPlayerStats(entity player)
-// Taken from Gungame Script
+// Taken from Pebbers' Gungame Script
 {
     player.SetPlayerGameStat( PGS_SCORE, 0 )
     player.SetPlayerGameStat( PGS_DEATHS, 0)
@@ -3672,6 +3706,21 @@ void function ResetPlayerStats(entity player)
 // ██      ██      ██ █████   ██ ██  ██    ██        ██      ██    ██ ██ ████ ██ ██ ████ ██ ██ ████ ██ ███████ ██ ██  ██ ██   ██ ███████
 // ██      ██      ██ ██      ██  ██ ██    ██        ██      ██    ██ ██  ██  ██ ██  ██  ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██      ██
 //  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████
+
+bool function ClientCommand_FlowstateKick(entity player, array<string> args)
+{
+	if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin1 || player.GetPlayerName() == file.admin2 || player.GetPlayerName() == file.admin3 || player.GetPlayerName() == file.admin4) {
+		foreach(sPlayer in GetPlayerArray()){
+				if(sPlayer.GetPlayerName() == args[0])
+				{
+				ClientCommand( sPlayer, "disconnect" )
+				return true
+				}
+		}
+		return false
+	}
+	return false		
+}
 
 bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
 {
@@ -3704,18 +3753,18 @@ bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
 
 bool function ClientCommand_ChangePropPROPHUNT(entity player, array<string> args)
 {
-	if(prophunt.cantUseChangeProp || player.GetTeam() == TEAM_IMC){
-		return false
-	}
-	int newscore = player.GetPlayerGameStat(PGS_ASSAULT_SCORE) + 1 	
-	player.SetPlayerGameStat( PGS_ASSAULT_SCORE, newscore)
+	// if(prophunt.cantUseChangeProp || player.GetTeam() == TEAM_IMC){
+		// return false
+	// }
+	// int newscore = player.GetPlayerGameStat(PGS_ASSAULT_SCORE) + 1 	
+	// player.SetPlayerGameStat( PGS_ASSAULT_SCORE, newscore)
 
-	if (player.GetPlayerGameStat(PGS_ASSAULT_SCORE) <= 3){
-	PROPHUNT_GiveRandomProp(player)	
+	// if (player.GetPlayerGameStat(PGS_ASSAULT_SCORE) <= 3){
+	// PROPHUNT_GiveRandomProp(player)	
 
-	return true}
-	else{
-	return false}
+	// return true}
+	// else{
+	// return false}
 	return true
 }
 bool function ClientCommand_DoorsTest(entity player, array<string> args)
@@ -3832,7 +3881,9 @@ bool function ClientCommand_SpectateSURF(entity player, array<string> args)
 }
 
 bool function ClientCommand_AdminMsg(entity player, array<string> args)
-//by Retículo Endoplasmático#5955
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
 	if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin1 || player.GetPlayerName() == file.admin2 || player.GetPlayerName() == file.admin3 || player.GetPlayerName() == file.admin4) {
 		
@@ -4017,7 +4068,9 @@ file.lastTimeChatUsage = Time()
 }
 
 bool function ClientCommand_ShowLatency(entity player, array<string> args)
-//by Retículo Endoplasmático#5955
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
 try{
 	Message(player,"Latency board", LatencyBoard(), 8)
@@ -4332,7 +4385,9 @@ if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin
 
 #if SERVER
 void function AnimationTiming( entity legend, float cycle )
-//By Retículo Endoplasmático#5955 CaféDeColombiaFPS.
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
 	array<string> animationStrings = ["ACT_MP_MENU_LOBBY_CENTER_IDLE", "ACT_MP_MENU_READYUP_INTRO", "ACT_MP_MENU_LOBBY_SELECT_IDLE", "ACT_VICTORY_DANCE"]
 	while( true )
@@ -4344,7 +4399,9 @@ void function AnimationTiming( entity legend, float cycle )
 }
 
 void function CreateAnimatedLegend(asset a, vector pos, vector ang , int solidtype = 0, float size = 1.0)  // solidtype 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
-//By Retículo Endoplasmático#5955 CaféDeColombiaFPS.
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
 	entity Legend = CreatePropScript(a, pos, ang, solidtype)
 	Legend.kv.teamnumber = 99
