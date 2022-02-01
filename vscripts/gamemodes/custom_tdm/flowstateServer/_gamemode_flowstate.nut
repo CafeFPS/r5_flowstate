@@ -478,7 +478,7 @@ void function _OnPlayerConnected(entity player)
 				// }
 			//SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
-			}
+			// }
 			ClearInvincible(player)
 			if(FlowState_RandomGunsEverydie()){
 				UpgradeShields(player, true)
