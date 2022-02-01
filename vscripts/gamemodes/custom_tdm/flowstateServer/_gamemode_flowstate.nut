@@ -402,7 +402,8 @@ void function _OnPlayerConnected(entity player)
 ///////////////////////////////////////////////////////
 {
     if(!IsValid(player)) return
-
+		printt("Flowstate DEBUG - New player connected.", player)
+	CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
 			if(FlowState_ForceCharacter()){
 				CharSelect(player)}
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
@@ -423,6 +424,7 @@ void function _OnPlayerConnected(entity player)
     case eGameState.MapVoting:
 			if(IsValidPlayer(player) )
 			{
+				printt("Flowstate DEBUG - Prophunt player connected mapvoting.", player)
 			    if(!IsAlive(player))
 			{
 			_HandleRespawn(player)
@@ -443,6 +445,7 @@ void function _OnPlayerConnected(entity player)
 	case eGameState.WaitingForPlayers:
 			if(IsValid(player))
 		{
+			printt("Flowstate DEBUG - Player connected waitingforplayers.", player)
 			_HandleRespawn(player)
 			ClearInvincible(player)
 		}
@@ -451,6 +454,7 @@ void function _OnPlayerConnected(entity player)
     case eGameState.Playing:
 	    if(IsValidPlayer(player))
         {
+			printt("Flowstate DEBUG - Prophunt player connected midround.", player)
 			player.UnfreezeControlsOnServer()
 			
 			
@@ -670,8 +674,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
         {
 			DecideRespawnPlayer(player, true)
-			if(FlowState_ForceCharacter()){
-			CharSelect(player)}
             player.TakeOffhandWeapon(OFFHAND_TACTICAL)
             player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
             array<StoredWeapon> weapons = [
@@ -695,8 +697,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
             if(!player.p.storedWeapons.len())
             {
                 DecideRespawnPlayer(player, true)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
             	array<StoredWeapon> weapons = [
                 Equipment_GetRespawnKit_PrimaryWeapon(),
                 Equipment_GetRespawnKit_SecondaryWeapon(),
@@ -712,8 +712,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
             else
             {
 				DecideRespawnPlayer(player, false)
-				if(FlowState_ForceCharacter()){
-				CharSelect(player)}
                 GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
             }
 
@@ -1912,7 +1910,7 @@ void function OnShipButtonUsed( entity panel, entity player, int useInputFlags )
 
 vector function ShipSpot()
 {
-	printt("Flowstate DEBUG - Retrieveng ship spot vector.")
+	printt("Flowstate DEBUG - Retrieveng ship spot vector for player.")
 	vector shipspot
 	int num = RandomIntRange(0,11)
 	switch(num)
@@ -2443,7 +2441,7 @@ void function RunTDM()
 		if(IsValid(door)){
 		door.Destroy()}
 	}
-	
+
     for(; ;)
     {
 	VotingPhase()
@@ -2497,7 +2495,7 @@ void function VotingPhase()
 				HolsterAndDisableWeapons( player )
 			}
 		}catch(e){}
-	//CreatePanelText( player, "test", "test", <-19459, 2127, 6404>, <0, 180, 0>, true, 2 )
+	
 	}
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
