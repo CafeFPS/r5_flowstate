@@ -1076,31 +1076,42 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
-		// RegisterLocationPROPHUNT(
-                // NewLocationSettings(
-                    // "Little Town 2",
-                    // [
-                        // NewLocPair(<-28224,-27264,-4224>, <0, 87, 0>),
-                        // NewLocPair(<-28032,-24960,-4096>, <0, 122, 0>),
-                        // NewLocPair(<-28096,-26304,-4288>, <0, 177, 0>),
-						// NewLocPair(<-28160,-25856,-4544>, <0, 3, 0>)
-                    // ],
-                    // <0, 0, 2000>
-                // )
-            // )
 		RegisterLocationPROPHUNT(
                 NewLocationSettings(
-                    "Space Elevator",
+                    "Train yard",
                     [
-                        NewLocPair(<-12286, 26037, -4012>, <0, -116, 0>),
-                        NewLocPair(<-12318, 28447, -3975>, <0, -122, 0>),
-                        NewLocPair(<-14373, 27785, -3961>, <0, -25, 0>),
-						NewLocPair(<-13858, 27985, -1958>, <0, -46, 0>)
+                        NewLocPair(<-11956,3021,-2988>, <0, 87, 0>),
+                        NewLocPair(<-13829,2836,-3037>, <0, 122, 0>),
+                        NewLocPair(<-12883,4502,-3340>, <0, 177, 0>),
+						NewLocPair(<-11412,3692,-3405>, <0, 3, 0>)
+                    ],
+                    <0, 0, 2000>
+                )
+            )
+		RegisterLocationPROPHUNT(
+                NewLocationSettings(
+                    "The Tree",
+                    [
+                        NewLocPair(<-6782, -27753, -3340>, <0, -116, 0>),
+                        NewLocPair(<-8043, -28700, -4232>, <0, -122, 0>),
+                        NewLocPair(<-6439, -30760, -3340>, <0, -25, 0>),
+						NewLocPair(<-9220, -29618, -3379>, <0, -46, 0>)
                     ],
                     <0, 0, 2000>
                 )
             )
 
+		RegisterLocationPROPHUNT(
+                NewLocationSettings(
+                    "Little Town",
+                    [
+                        NewLocPair(<-19481, 2840, -3680>, <0, -116, 0>),
+                        NewLocPair(<21012,1686,-4110>, <0, -122, 0>),
+                        NewLocPair(<19824, 1490, -4084>, <0, -25, 0>)
+                    ],
+                    <0, 0, 2000>
+                )
+            )
 		// RegisterLocationPROPHUNT(
                 // NewLocationSettings(
                     // "Little Town",

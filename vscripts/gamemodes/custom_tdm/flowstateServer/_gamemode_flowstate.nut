@@ -19,7 +19,7 @@ global function Message
 global function shuffleArray
 global function PROPHUNT_GiveAndManageRandomProp
 global bool isBrightWaterByZer0 = false
-
+global function returnPropBool
 string WHITE_SHIELD = "armor_pickup_lv1"
 string BLUE_SHIELD = "armor_pickup_lv2"
 string PURPLE_SHIELD = "armor_pickup_lv3"
@@ -105,7 +105,6 @@ int nextMapIndex = 0
 bool mapIndexChanged = true
 bool cantUseChangeProp = false
 bool InProgress = false
-bool destroyCurrentProp = false
 } prophunt
 
 
@@ -799,6 +798,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 ///////////////////////////////////////////////////////
 {
 	if(!IsValid(player)) return
+	CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
 	printt("Flowstate DEBUG - New player connected.", player)
 	if(FlowState_ForceCharacter()){CharSelect(player)}
 	UpdatePlayerCounts()
@@ -1006,7 +1006,7 @@ void function _HandleRespawnPROPHUNT(entity player)
 ///////////////////////////////////////////////////////
 {
 	if(!IsValid(player)) return
-										printt("Flowstate DEBUG - Tping prophunt player to Lobby.", player)
+	printt("Flowstate DEBUG - Tping prophunt player to Lobby.", player)
 
 	try {
 	if( player.IsObserver())
@@ -1091,13 +1091,14 @@ if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
 		try {
 			if(IsValid(player))
 			{
+				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10) //false
 				player.UnforceStand()
 				player.UnfreezeControlsOnServer()
-				Message(player, "APEX PROPHUNT", "    Made by Colombia. Game is starting. \n\n" + helpMessagePROPHUNT(), 10)
+				Message(player, "APEX PROPHUNT", "                     Made by Colombia. Game is starting.\n\n" + helpMessagePROPHUNT(), 15)
 			}
 		}catch(e){}
 	}
-	wait 10
+	wait 15
 
 if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
 	while(true)
@@ -1173,47 +1174,53 @@ void function CheckForPlayersPlaying()
 	printt("Flowstate DEBUG - Ending round cuz not enough players midround")
 }
 
-void function PropWatcher(entity prop)
+void function PropWatcher(entity prop, entity player)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-	
-	// for(;;){
-		// if(prophunt.InProgress && !prophunt.destroyCurrentProp) continue 
-		// else{break}
-		
-	// }
-	while(prophunt.InProgress && !prophunt.destroyCurrentProp) //playervar only todo
+	while(prophunt.InProgress && player.GetPlayerGameStat( PGS_DEFENSE_SCORE ) == 10) 
 	{
 	WaitFrame()}
 	prop.Destroy()
 }
 
-void function PROPHUNT_GiveAndManageRandomProp(entity player)
+void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah = false)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
 
-			prophunt.destroyCurrentProp = true
-			wait 0.3
-			asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
-			//if propwithoutangles TODO
-			player.SetValueForModelKey( selectedModel )
-			player.kv.solid = 6
-			player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-			player.Hide()
-			entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
-			prop.kv.solid = 6
-			prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-			prop.SetDamageNotifications( true )
-			prop.SetParent(player)
+			// Using gamestat as boolean Destroy prop
+			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)    true 
+			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)    false
+			player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)
 			
-			prophunt.destroyCurrentProp = false
-			wait 0.1
-			thread PropWatcher(prop) //destroys prop on end round and restores player model.
-
+			//prophunt.destroyCurrentProp = true
+			
+			if(!anglesornah && IsValid(player)){
+					wait 0.3
+					asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
+					player.SetValueForModelKey( selectedModel )
+					player.kv.solid = 6
+					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					player.Hide()
+					entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
+					prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					prop.SetDamageNotifications( true )
+					prop.SetParent(player)
+					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
+					wait 0.2
+					thread PropWatcher(prop, player) 
+			} else if(anglesornah && IsValid(player)){
+					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)
+					player.Show()
+					player.SetBodyModelOverride( player.GetValueForModelKey() )
+					player.SetArmsModelOverride( player.GetValueForModelKey() )
+					Message(player, "prophunt", "Your angles are locked. ", 1)
+					wait 0.1
+					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
+			}
 }
 
 void function ActualPROPHUNTGameLoop()
@@ -1232,17 +1239,6 @@ float endTime = Time() + GetCurrentPlaylistVarFloat("flowstatePROPHUNTLimitTime"
 
 array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 
-// //this is for debuggin, so I can changelevel and still have enemy(two instances of the game)
-// if (IMCplayers.len() == 2 && MILITIAplayers.len() == 0 && GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false ))
-// {
-// entity playerNewTeam = IMCplayers[0]
-// playerNewTeam.Code_SetTeam( TEAM_MILITIA )
-// } else if (IMCplayers.len() == 0 && MILITIAplayers.len() == 2 && GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false ))
-// {
-// entity playerNewTeam = MILITIAplayers[0]
-// playerNewTeam.Code_SetTeam( TEAM_IMC )	
-// }
-
 		file.deathPlayersCounter = 0
 		prophunt.cantUseChangeProp = false
 prophunt.InProgress = true
@@ -1252,33 +1248,33 @@ foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			
 			Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 			ClearInvincible(player)
-			player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0)
 			player.p.playerDamageDealt = 0.0
 			if(player.GetTeam() == TEAM_MILITIA){
-			player.SetOrigin(prophuntSpawns[RandomInt(prophuntSpawns.len()-1)].origin)
-			
-						
-			asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
-	
-			player.SetValueForModelKey( selectedModel )
-			player.kv.solid = 6
-			player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-			player.Hide()
-			entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
-			prop.kv.solid = 6
-			prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-			prop.SetDamageNotifications( true )
-			prop.SetParent(player)
-
-			thread PropWatcher(prop) //destroys prop on end round and restores player model.
-			
-			player.SetThirdPersonShoulderModeOn()
-			player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-			player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
-			DeployAndEnableWeapons(player)
+				player.SetOrigin(prophuntSpawns[RandomInt(prophuntSpawns.len()-1)].origin)
+				
+							
+				asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
+		
+				player.SetValueForModelKey( selectedModel )
+				player.kv.solid = 6
+				player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+				player.Hide()
+				entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
+				prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+				prop.SetDamageNotifications( true )
+				prop.SetParent(player)
+				
+				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
+				thread PropWatcher(prop, player) //destroys prop on end round and restores player model.
+				
+				player.SetThirdPersonShoulderModeOn()
+				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+				player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+				player.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_ULTIMATE)
+				DeployAndEnableWeapons(player)
 			} else if(player.GetTeam() == TEAM_IMC){
 			Message(player, "PROPS ARE HIDING", "Teleporting in 30 seconds. Please wait.", 10)}
 		}
@@ -1434,7 +1430,9 @@ prophunt.InProgress = false
 
 WaitFrame()
 }
-
+bool function returnPropBool(){
+	return prophunt.cantUseChangeProp
+}
 void function GiveTeamToProphuntPlayer(entity player)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -4000,7 +3998,7 @@ string function helpMessage()
 string function helpMessagePROPHUNT()
 //by michae\l/#1125
 {
-	return "           Prophunt console commands: \n\n 1. 'prop': change prop up to 3 times before attackers arrive. \n2. 'scoreboard': displays scoreboard to user. \n3. 'latency': displays ping of all players to user.\n4. 'say [MESSAGE]': send a public message! \n5. 'commands': display this message again."
+	return " Use your ULTIMATE to CHANGE PROP up to 3 times. \n Use your ULTIMATE to LOCK ANGLES as attackers arrive. "
 }
 
 bool function ClientCommand_Help(entity player, array<string> args)

@@ -37,6 +37,23 @@ void function OnWeaponActivate_ability_phase_walk( entity weapon )
 void function OnWeaponDeactivate_ability_phase_walk( entity weapon )
 {
 	#if SERVER
+	entity player = weapon.GetWeaponOwner()
+	if(returnPropBool() || player.GetTeam() == TEAM_IMC){
+		printt("Flowstate DEBUG - Change prop can't be used. You're not prop team, or the prop change window has passed.", player)
+		//now this ability will toggle the angles for props!
+		
+		thread PROPHUNT_GiveAndManageRandomProp(player, true)
+
+	} else {
+		int newscore = player.GetPlayerGameStat(PGS_ASSAULT_SCORE) + 1 	//using int as a boolean
+		player.SetPlayerGameStat( PGS_ASSAULT_SCORE, newscore)
+		if (player.GetPlayerGameStat(PGS_ASSAULT_SCORE) <= 3){
+			thread PROPHUNT_GiveAndManageRandomProp(player)
+			} else {
+			printt("Flowstate DEBUG - Change prop can't be used. The limit of 3 changes has been reached.", player)
+			Message(player, "prophunt", "Max amount of changes reached.", 1)
+			}
+	}
 	#endif
 }
 
