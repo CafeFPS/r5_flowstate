@@ -1357,6 +1357,7 @@ int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowst
 bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
 bool function FlowState_EnableBrightWaterByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_BRIGHWATER_By_Zero", false ) }
 bool function FlowState_EnableCaveByBlessedSeal()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CAVE_By_BlessedSeal", false ) }
+bool function Flowstate_DoorsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateDoorsEnabled", true ) }
 
 #if SERVER   
 

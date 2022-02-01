@@ -115,6 +115,7 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 bool function ClientCommand_FriendlyFireFR(entity player, array<string> args)
 //By michae\l/#1125 & Retículo Endoplasmático#5955.
 {
+printt("Flowstate DEBUG - A player has toggled friendly fire.", player)
 array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
 int playersON = connectedPlayers.len()
 array<entity> randomizedPlayers = shuffleArray(GetPlayerArray())
@@ -163,7 +164,10 @@ void function SpawnDummy(vector origin, vector angles)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
+
 {
+//printt("Flowstate DEBUG - Spawning FR dummy.")
+
     entity dummy = CreateEntity( "npc_dummie" )
     SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
     dummy.SetOrigin( origin )
@@ -180,6 +184,7 @@ void function OnDummyKilled(entity dummy)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
+	printt("Flowstate DEBUG - Dummy killed, spawning it.")
 	vector pos = dummy.GetOrigin()
 	vector angles = dummy.GetAngles()
 	dummy.WaitSignal( "OnDeath" )
@@ -192,7 +197,7 @@ void function OnDummyKilled(entity dummy)
 void function OnEntitiesDidLoadFR()
 {
 	#if SERVER
-
+	printt("Flowstate DEBUG - OnEntitiesDidLoadFR init.")
 	// Init
 	array<entity> lootbins = GetEntArrayByScriptName("staging_loot_bin")
 	array<entity> movers = GetEntArrayByScriptName("script_mover_lightweight")
@@ -252,6 +257,7 @@ void function OnEntitiesDidLoadFR()
 
 void function _OnPlayerKilledFR( entity victim, entity attacker, var damageInfo )
 {
+	printt("Flowstate DEBUG - PlayerKilledFR.", victim, attacker)
 	thread _HandleRespawnFR(victim, true)
 }
 
@@ -367,6 +373,7 @@ void function _HandleRespawnFR(entity player, bool respawnsameposition = false)
 
 void function GiveRandomTac(entity player)
 {
+	printt("Flowstate DEBUG - Giving random tactical to player", player)
     switch(RandomInt(7))
     {
         case 0:
@@ -398,6 +405,8 @@ void function GiveRandomTac(entity player)
 
 void function GiveRandomUlt(entity player)
 {
+		printt("Flowstate DEBUG - Giving random ultimate to player", player)
+
     switch(RandomInt(5))
     {
         case 0:
@@ -942,40 +951,40 @@ void function SpawnTargets()
 
 void function SpawnMapProps()
 {
-	// TELEPORTERS
-	{
-		entity upper = CreateFRButton(<31016.6934, -8667.74414, -29239.7441>, <0,180,0>, "%&use% GO TO UPPER LEVEL")
-		AddCallback_OnUseEntity( upper, void function(entity panel, entity user, int input) 
-		{
-			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-			TeleportFRPlayer(user,<30437.8281, -9880.22852, -25972.6387>,<0,0,0>)
-		})
+	// // TELEPORTERS
+	// {
+		// entity upper = CreateFRButton(<31016.6934, -8667.74414, -29239.7441>, <0,180,0>, "%&use% GO TO UPPER LEVEL")
+		// AddCallback_OnUseEntity( upper, void function(entity panel, entity user, int input) 
+		// {
+			// EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+			// TeleportFRPlayer(user,<30437.8281, -9880.22852, -25972.6387>,<0,0,0>)
+		// })
 
-		// Racks
-		{
-			/* LIGHT */ SpawnBigTrainingTarget(<29857, -8157, -28837>, <180,0,0>, void function(entity panel, var damageInfo)
-			{
-				printl(DamageInfo_GetCustomDamageType( damageInfo ))
-				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30806.7363, -8105.33838, -29163.9688>, <0,0,0>)
-			})
-			/* HEAVY */ SpawnBigTrainingTarget(<29769, -7342, -28760+26>, <180,0,0>, void function(entity panel, var damageInfo)
-			{
-				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30774.2598, -7389.46436, -29163.9688>, <0,0,0>)
-			})
-			/* ENERGY */ SpawnBigTrainingTarget(<29782, -6683, -28758>, <180,0,0>, void function(entity panel, var damageInfo)
-			{
-				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30760.7676, -6696.86914, -29163.9688>, <0,0,0>)
-			})
-			/* GOLD */ SpawnBigTrainingTarget(<29755, -5972, -28715>, <180,0,0>, void function(entity panel, var damageInfo)
-			{
-				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30767.2305, -5988.11426, -29163.9688>, <0,0,0>)
-			})
-			/* SHOTGUN */ SpawnBigTrainingTarget(<29840, -5230, -28758>, <180,0,0>, void function(entity panel, var damageInfo)
-			{
-				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30777.9258, -5282.96387, -29163.9688>, <0,0,0>)
-			})
-		}
-	}
+		// // Racks
+		// {
+			// /* LIGHT */ SpawnBigTrainingTarget(<29857, -8157, -28837>, <180,0,0>, void function(entity panel, var damageInfo)
+			// {
+				// printl(DamageInfo_GetCustomDamageType( damageInfo ))
+				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30806.7363, -8105.33838, -29163.9688>, <0,0,0>)
+			// })
+			// /* HEAVY */ SpawnBigTrainingTarget(<29769, -7342, -28760+26>, <180,0,0>, void function(entity panel, var damageInfo)
+			// {
+				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30774.2598, -7389.46436, -29163.9688>, <0,0,0>)
+			// })
+			// /* ENERGY */ SpawnBigTrainingTarget(<29782, -6683, -28758>, <180,0,0>, void function(entity panel, var damageInfo)
+			// {
+				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30760.7676, -6696.86914, -29163.9688>, <0,0,0>)
+			// })
+			// /* GOLD */ SpawnBigTrainingTarget(<29755, -5972, -28715>, <180,0,0>, void function(entity panel, var damageInfo)
+			// {
+				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30767.2305, -5988.11426, -29163.9688>, <0,0,0>)
+			// })
+			// /* SHOTGUN */ SpawnBigTrainingTarget(<29840, -5230, -28758>, <180,0,0>, void function(entity panel, var damageInfo)
+			// {
+				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30777.9258, -5282.96387, -29163.9688>, <0,0,0>)
+			// })
+		// }
+	// }
 
 	// BUTTONS
 	{

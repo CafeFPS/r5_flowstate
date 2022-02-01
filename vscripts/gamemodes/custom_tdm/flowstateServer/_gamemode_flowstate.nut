@@ -145,6 +145,7 @@ const array<asset> prophuntAssetsWE =
 void function _CustomTDM_Init()
 {
 	SurvivalFreefall_Init()
+
 	if(!FlowState_SURF()){
 	file.Hoster = FlowState_Hoster()
 	file.admin1 = FlowState_Admin1()
@@ -160,7 +161,7 @@ void function _CustomTDM_Init()
 		}
 	AddClientCommandCallback("screenshotDevNet_noRPROF", ClientCommand_IsthisevenCrashfixtest)
 	AddClientCommandCallback("SetNextHealModType", ClientCommand_IsthisevenCrashfixtest)
-	AddCallback_OnClientDisconnected( _OnPlayerDced )
+	//AddCallback_OnClientDisconnected( _OnPlayerDced )
 	AddCallback_OnClientConnected( void function(entity player) { 
 	
 	if(FlowState_PROPHUNT()){
@@ -192,7 +193,6 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("adminnoclip", ClientCommand_adminnoclip)
 	AddClientCommandCallback("adminsay", ClientCommand_AdminMsg)
 	AddClientCommandCallback("commands", ClientCommand_Help)
-	AddClientCommandCallback("debugprint", ClientCommand_DoorsTest)
 
 	if(FlowState_PROPHUNT()){
 	AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
@@ -241,7 +241,8 @@ if(!FlowState_PROPHUNT()){
 	}else {
 	thread RunTDM() 
 	}//Go to Game Loop
-    }
+
+}
 void function OnEntitiesDidLoadFR()
 {
 	SpawnMapPropsFR()
@@ -2435,6 +2436,14 @@ void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+	
+		if(!Flowstate_DoorsEnabled()){
+	array<entity> doors = GetAllPropDoors()
+	foreach(entity door in doors)
+		if(IsValid(door)){
+		door.Destroy()}
+	}
+	
     for(; ;)
     {
 	VotingPhase()
@@ -3111,7 +3120,7 @@ void function SimpleChampionUI(){
 float endTime = Time() + FlowState_RoundTime()
 printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
-
+		
 foreach(player in GetPlayerArray())
     {
 thread WpnPulloutOnRespawn(player)
@@ -3852,25 +3861,7 @@ bool function ClientCommand_ChangePropPROPHUNT(entity player, array<string> args
 				
 	return true
 }
-bool function ClientCommand_DoorsTest(entity player, array<string> args)
-{
-		printl( "############################" )
-	printl("Flowstate DEBUG")
-	printl("Flowstate DEBUG")
-	printl("Flowstate DEBUG")
-	printl( "############################" )
-			printl( "############################" )
-	printf("Flowstate DEBUG")
-	printf("Flowstate DEBUG")
-	printf("Flowstate DEBUG")
-	printf( "############################" )
-			printt( "############################" )
-	printt("Flowstate DEBUG")
-	printt("Flowstate DEBUG")
-	printt("Flowstate DEBUG")
-	printt( "############################" )
-	return true
-}	
+
 bool function ClientCommand_IsthisevenCrashfixtest(entity player, array<string> args)
 {
 	return true
