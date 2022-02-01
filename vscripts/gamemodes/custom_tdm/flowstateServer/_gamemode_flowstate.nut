@@ -451,16 +451,27 @@ void function _OnPlayerConnected(entity player)
 	    if(IsValidPlayer(player))
         {
 			player.UnfreezeControlsOnServer()
-			if(file.tdmState == eTDMState.IN_PROGRESS && GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Skill trainer By Colombia" || file.tdmState == eTDMState.IN_PROGRESS && GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) && file.selectedLocation.name != "Deathbox by Ayezee")
+			
+			
+			if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) )
 			{
-				printt("Flowstate DEBUG - Trying to spawn a player in droppod", player)
+	
+					printt("Flowstate DEBUG - Can't spawn player in droppod. Droppods disabled, or we are changing map. Spawning with normal mode", player)
+					_HandleRespawn(player)
+
+			} else {
+				
+				if(file.selectedLocation.name != "Deathbox by Ayezee" || file.selectedLocation.name != "Skill trainer By Colombia"){
+				
+				printt("Flowstate DEBUG - Spaning player in droppod", player)
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
 				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
 				_HandleRespawn(player, true)
-				player.SetAngles( <0,180,0> )
-			} else {
-			_HandleRespawn(player)
-			SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
+				player.SetAngles( <0,180,0> )} else {
+					printt("Flowstate DEBUG - Can't spawn player in droppod. Skill trainer or Deathbox detected. Trying normal mode.", player)
+					_HandleRespawn(player)
+				}
+			//SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
 			}
 			ClearInvincible(player)
@@ -475,6 +486,7 @@ void function _OnPlayerConnected(entity player)
 			}
         break
     default:
+			printt("Flowstate DEBUG - This is unreachable.", player)
         break
     }
 }
@@ -484,10 +496,11 @@ void function doubletriplekillaudio(entity victim, entity attacker)
 	entity challenger = file.previousChallenger
 	entity killeader = GetBestPlayer()
 	float doubleKillTime = 5.0
-	float tripleKillTime = 8.5
+	float tripleKillTime = 10
 	
 		if(attacker == file.lastKiller && attacker == killeader && !plsTripleAudio){
 	file.SameKillerStoredKills = 2
+	printt("Flowstate DEBUG - A player did a double kill.", attacker)
 	} else if (attacker == file.lastKiller && attacker == killeader && plsTripleAudio)
 	{
 	file.SameKillerStoredKills = 3	
@@ -507,6 +520,7 @@ void function doubletriplekillaudio(entity victim, entity attacker)
 	if(Time() - file.lastKillTimer < tripleKillTime && attacker == file.lastKiller && attacker == killeader && file.SameKillerStoredKills == 3){
 	file.SameKillerStoredKills = 0
 	wait 1
+	printt("Flowstate DEBUG - A player did a triple kill.", attacker)
 	foreach (player in GetPlayerArray())
 	{
 	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderTripleKill" )
@@ -527,7 +541,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 			{		
 	CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
 			}
-
+		printt("Flowstate DEBUG - A player has been killed.", victim, " by ", attacker)
 
 	file.deathPlayersCounter++
 
@@ -651,6 +665,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	if(IsValid( player ) && !IsAlive(player))
     {
+		
         if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
         {
 			DecideRespawnPlayer(player, true)
@@ -709,6 +724,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if( IsValidPlayer( player ) && IsAlive(player))
         {
 	if(!isDroppodSpawn){
+	printt("Flowstate DEBUG - TPing player to spawn point. Using _HandleRespawn", player)
 	TpPlayerToSpawnPoint(player)}
 	player.UnfreezeControlsOnServer()
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
@@ -783,6 +799,8 @@ asset function PROPHUNT_GiveRandomProp()
 {
     if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 	{
+	
+
 	asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
 	return selectedModel
 	// player.SetBodyModelOverride( selectedModel )
@@ -797,6 +815,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 ///////////////////////////////////////////////////////
 {
 	if(!IsValid(player)) return
+	printt("Flowstate DEBUG - New player connected.", player)
 	if(FlowState_ForceCharacter()){CharSelect(player)}
 	UpdatePlayerCounts()
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
@@ -809,7 +828,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 		case eGameState.WaitingForPlayers:
 					if(IsValidPlayer(player))
 			{
-						
+													printt("Flowstate DEBUG - Player connected waitingforplayers.", player)	
 				//player has a team assigned already, we need to fix it before spawn
 				GiveTeamToProphuntPlayer(player)
 
@@ -844,6 +863,8 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 		case eGameState.MapVoting:
 					if(IsValidPlayer(player))
 			{
+								printt("Flowstate DEBUG - Prophunt player connected mapvoting.", player)
+
 								//player has a team assigned already, we need to fix it before spawn
 				GiveTeamToProphuntPlayer(player)
 				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
@@ -872,6 +893,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 		case eGameState.Playing: //wait round ends, set new player to spectate random player
 			if(IsValidPlayer(player))
 			{
+				printt("Flowstate DEBUG - Prophunt player connected midround, setting spectator.", player)
 				array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 				try{
 				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
@@ -907,6 +929,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 
 void function _OnPlayerDced(entity player)
 {
+printt("Flowstate DEBUG - Player disconnected from flowstate server.", player)
 UpdatePlayerCounts()
 }
 
@@ -917,7 +940,7 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 {
 
 	file.deathPlayersCounter++
-
+									printt("Flowstate DEBUG - Prophunt player killed.", victim)
 	if(file.deathPlayersCounter == 1)
 	{
 	foreach (player in GetPlayerArray())
@@ -999,6 +1022,8 @@ void function _HandleRespawnPROPHUNT(entity player)
 ///////////////////////////////////////////////////////
 {
 	if(!IsValid(player)) return
+										printt("Flowstate DEBUG - Tping prophunt player to Lobby.", player)
+
 	try {
 	if( player.IsObserver())
     {
@@ -1156,10 +1181,12 @@ void function CheckForPlayersPlaying()
 		{
 		file.tdmState = eTDMState.NEXT_ROUND_NOW
 		foreach(player in GetPlayerArray()){
-		Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)}
+		Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)
+		}
 		}
 	wait 1	
 	}
+	printt("Flowstate DEBUG - Ending round cuz not enough players midround")
 }
 
 void function PropWatcher(entity prop)
@@ -1205,11 +1232,12 @@ array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 		prophunt.cantUseChangeProp = false
 prophunt.InProgress = true
 thread EmitSoundOnSprintingProp()
-
+printt("Flowstate DEBUG - Tping props team.")
 foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
+			
 			Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 			ClearInvincible(player)
 			player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0)
@@ -1226,7 +1254,7 @@ foreach(player in GetPlayerArray())
 			prop.SetDamageNotifications( true )
 			prop.SetParent(player)
 			
-				thread PropWatcher(prop)
+				thread PropWatcher(prop) //destroys prop on end round and restores player model.
 			
 			player.SetThirdPersonShoulderModeOn()
 			player.TakeOffhandWeapon(OFFHAND_TACTICAL)
@@ -1258,10 +1286,12 @@ foreach(player in GetPlayerArray())
 		
 	}
 prophunt.cantUseChangeProp = true
+printt("Flowstate DEBUG - Tping attackers team.")
 foreach(player in IMCplayers)
     {
 		        if(IsValidPlayer(player))
         {
+				
 					Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
 					player.SetOrigin(prophuntSpawns[prophuntSpawns.len()-1].origin)
@@ -1330,7 +1360,9 @@ while( Time() <= endTime )
 			}
 		}
 		if(file.tdmState == eTDMState.NEXT_ROUND_NOW)
-		{break}
+		{
+			printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+			break}
 		wait 0.01
 		WaitFrame()	
 	}
@@ -1359,7 +1391,7 @@ foreach(player in GetPlayerArray())
 wait 5
 UpdatePlayerCounts()
 bubbleBoundary.Destroy()
-
+printt("Flowstate DEBUG - Prophunt round finished Swapping teams.")
 foreach(player in GetPlayerArray())
     {	
 			if(player.GetTeam() == TEAM_MILITIA){
@@ -1390,7 +1422,7 @@ void function GiveTeamToProphuntPlayer(entity player)
 {
 	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-
+	
 	if(IMCplayers.len() > MILITIAplayers.len())
 	{
 	SetTeam(player, TEAM_MILITIA )
@@ -1408,6 +1440,7 @@ void function GiveTeamToProphuntPlayer(entity player)
 				break;
 		}
 	}
+	printt("Flowstate DEBUG - Giving team to player.", player, player.GetTeam())
 }
 
 void function TpPlayerToSpawnPoint(entity player)
@@ -1437,6 +1470,7 @@ void function WpnAutoReloadOnKill( entity player )
 //By Retículo Endoplasmático#5955 and michae\l/#1125 //
 ///////////////////////////////////////////////////////
 {
+	
 	entity primary = player.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )
 	entity sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 
@@ -1469,6 +1503,7 @@ void function WpnPulloutOnRespawn(entity player)
 
 void function SummonPlayersInACircle(entity player0)
 {
+		printt("Flowstate DEBUG - Circle fight invoked", player0)
 	vector pos = player0.GetOrigin()
 	pos.z += 5
 	int i = 0
@@ -1485,6 +1520,7 @@ void function SummonPlayersInACircle(entity player0)
 
 void function GiveRandomPrimaryWeaponMetagame(int random, entity player)
 {
+	printt("Flowstate DEBUG - Giving random primary weapon metagame.", player)
     switch(random)
     {
         case 0:
@@ -1501,6 +1537,7 @@ void function GiveRandomPrimaryWeaponMetagame(int random, entity player)
 
 void function GiveRandomSecondaryWeaponMetagame(int random, entity player)
 {
+	printt("Flowstate DEBUG - Giving random secondary weapon metagame.", player)	
     switch(random)
     {
         case 0:
@@ -1523,6 +1560,7 @@ void function GiveRandomSecondaryWeaponMetagame(int random, entity player)
 
 void function GiveRandomPrimaryWeapon(int random, entity player)
 {
+		printt("Flowstate DEBUG - Giving random primary weapon.", player)
     switch(random)
     {
         case 0:
@@ -1603,6 +1641,7 @@ void function GiveRandomPrimaryWeapon(int random, entity player)
 
 void function GiveRandomSecondaryWeapon(int random, entity player)
 {
+	printt("Flowstate DEBUG - Giving random secondary weapon.", player)
     switch(random)
     {
         case 0:
@@ -1667,6 +1706,7 @@ void function GiveRandomSecondaryWeapon(int random, entity player)
 
 void function GiveActualGungameWeapon(int index, entity player)
 {
+	printt("Flowstate DEBUG - Giving gungame weapon.", player, index)
     switch(index)
     {
         case 0:
@@ -1804,6 +1844,7 @@ void function GiveActualGungameWeapon(int index, entity player)
 
 void function GiveRandomTac(int random, entity player)
 {
+	printt("Flowstate DEBUG - Giving random tactical.", player)
     switch(random)
     {
         case 0:
@@ -1835,6 +1876,8 @@ void function GiveRandomTac(int random, entity player)
 
 void function GiveRandomUlt(int random, entity player )
 {
+		printt("Flowstate DEBUG - Giving random ultimate.", player)
+
     switch(random)
     {
         case 0:
@@ -1868,6 +1911,7 @@ void function OnShipButtonUsed( entity panel, entity player, int useInputFlags )
 
 vector function ShipSpot()
 {
+	printt("Flowstate DEBUG - Retrieveng ship spot vector.")
 	vector shipspot
 	int num = RandomIntRange(0,11)
 	switch(num)
@@ -2404,12 +2448,14 @@ void function VotingPhase()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
+	printt("Flowstate DEBUG - mapvoting is starting.")
     DestroyPlayerProps()
 	isBrightWaterByZer0 = false
     SetGameState(eGameState.MapVoting)
 	file.FallTriggersEnabled = true
 	
-	
+
+
 	if (!file.mapIndexChanged)
 		{
 			file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
@@ -2424,6 +2470,26 @@ void function VotingPhase()
 	file.selectedLocation = file.locationSettings[choice]
 	file.dropselectedLocation = file.droplocationSettings[choice]
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+
+		
+	foreach(player in GetPlayerArray())
+	{
+		try {
+			if(IsValid(player))
+			{
+				player.SetThirdPersonShoulderModeOn()
+				_HandleRespawn(player)
+				if(FlowState_Gungame())
+	{
+		GiveGungameWeapon(player)
+	}
+				player.UnforceStand()
+				player.UnfreezeControlsOnServer()
+				HolsterAndDisableWeapons( player )
+			}
+		}catch(e){}
+	//CreatePanelText( player, "test", "test", <-19459, 2127, 6404>, <0, 180, 0>, true, 2 )
+	}
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
@@ -2443,26 +2509,7 @@ void function VotingPhase()
         file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
 	}
 	
-wait 1
-
-foreach(player in GetPlayerArray())
-{
-    try {
-		if(IsValid(player))
-        {
-			player.SetThirdPersonShoulderModeOn()
-			_HandleRespawn(player)
-			if(FlowState_Gungame())
-{
-	GiveGungameWeapon(player)
-}
-			player.UnforceStand()
-			player.UnfreezeControlsOnServer()
-			HolsterAndDisableWeapons( player )
-        }
-	}catch(e){}
-//CreatePanelText( player, "test", "test", <-19459, 2127, 6404>, <0, 180, 0>, true, 2 )
-}
+	printt("Flowstate DEBUG - checking flowstateenabledropship.")
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
@@ -2481,11 +2528,15 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     SkillTrainerLoad()
 } else if(file.selectedLocation.name == "Skill trainer By Colombia" )
 {
+		printt("Flowstate DEBUG - creating props for Skill Trainer.")
+
     DestroyPlayerProps()
     wait 1
     SkillTrainerLoad()	
 } else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
 {
+		printt("Flowstate DEBUG - creating props for Brightwater.")
+
 	isBrightWaterByZer0 = true
     DestroyPlayerProps()
 	wait 1
@@ -2501,6 +2552,8 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	wait 3
 } else if(file.selectedLocation.name == "Cave By BlessedSeal" )
 {
+			printt("Flowstate DEBUG - creating props for Cave.")
+
     DestroyPlayerProps()
     wait 1
     SpawnEditorPropsSeal()	
@@ -2516,6 +2569,8 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 // } 
 else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
 	DestroyPlayerProps()
+				printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
+
 	CreateGroundMedKit(<-21289, -12030, 3060>)
 	}
 
@@ -2523,6 +2578,8 @@ else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
+					printt("Flowstate DEBUG - Dropships ON.")
+
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
     foreach(player in GetPlayerArray())
@@ -2634,6 +2691,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 }
 else
 {
+	printt("Flowstate DEBUG - Dropships OFF.")
     foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
@@ -2654,6 +2712,8 @@ file.tdmState = eTDMState.IN_PROGRESS
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 {
+	printt("Flowstate DEBUG - Tping players Dropships ON (traveling).")
+
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
 		int maxspawns = -1
@@ -2683,7 +2743,6 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 
 					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 					player.SetThirdPersonShoulderModeOff()
-					_HandleRespawn(player,true)
 
 					ScreenFadeFromBlack( player, 1.0, 1.0 )
 
@@ -2691,8 +2750,13 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 					
 					if (!FlowState_DummyOverride()) {
 					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) 
-					EnableOffhandWeapons( player )}
+					printt("Flowstate DEBUG - Dropships delivering players to map.")	
+					EnableOffhandWeapons( player )
+					_HandleRespawn(player,true)
+					}
 					else {
+					printt("Flowstate DEBUG - Can't use Dropships to arrive cuz we have dummies as character models.")	
+					_HandleRespawn(player)
 					DeployAndEnableWeapons(player)
 					EnableOffhandWeapons( player )
 					ClearInvincible(player)
@@ -2958,6 +3022,8 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 }
 else
 {
+			printt("Flowstate DEBUG - Tping players Dropships OFF.")
+
     foreach(player in GetPlayerArray())
     {
         try {
@@ -3007,7 +3073,7 @@ else{
 	}
 }
 } catch(e4){}
-
+printt("Flowstate DEBUG - Cleaning flowstate stats.")
 foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
@@ -3043,6 +3109,7 @@ void function SimpleChampionUI(){
 /////////////Retículo Endoplasmático#5955 CaféDeColombiaFPS///////////////////
 //////////////////////////////////////////////////////////////////////////////
 float endTime = Time() + FlowState_RoundTime()
+printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
 
 foreach(player in GetPlayerArray())
@@ -3122,15 +3189,20 @@ while( Time() <= endTime )
 				}
 			}
 		}
-		if(file.tdmState == eTDMState.NEXT_ROUND_NOW) break
-		WaitFrame()
+		if(file.tdmState == eTDMState.NEXT_ROUND_NOW){ 
+					printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+
+		break}
+		wait 0.5
 	}
 }
 else if (!FlowState_Timer() ){
 while( Time() <= endTime )
 	{
-	if(file.tdmState == eTDMState.NEXT_ROUND_NOW) break
-		WaitFrame()
+	if(file.tdmState == eTDMState.NEXT_ROUND_NOW) {
+		printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+	break}
+		wait 0.5
 	}
 } 
 
@@ -3713,10 +3785,12 @@ void function ResetPlayerStats(entity player)
 
 bool function ClientCommand_FlowstateKick(entity player, array<string> args)
 {
+	
 	if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin1 || player.GetPlayerName() == file.admin2 || player.GetPlayerName() == file.admin3 || player.GetPlayerName() == file.admin4) {
 		foreach(sPlayer in GetPlayerArray()){
 				if(sPlayer.GetPlayerName() == args[0])
 				{
+				printt("Flowstate DEBUG - Kicking player from flowstate.", sPlayer.GetPlayerName())
 				ClientCommand( sPlayer, "disconnect" )
 				return true
 				}
@@ -3728,6 +3802,7 @@ bool function ClientCommand_FlowstateKick(entity player, array<string> args)
 
 bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
 {
+	printt("Flowstate DEBUG - Changing sky color!")
 	#if SERVER
 	if(!file.mapSkyToggle) {
 			SetConVarFloat( "mat_autoexposure_max", 1.0 )

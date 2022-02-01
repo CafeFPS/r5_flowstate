@@ -339,7 +339,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
     	e.SetScriptName("editor_placed_prop")
     	e.e.gameModeId = realm
     
-    	printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
+    	//printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
     
     	return e
     }
@@ -425,7 +425,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
       string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
       string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
     
-      printl("[Load0_Entity]" + string(entity_name) + ";" + positionSerialized + ";" + anglesSerialized + ";")
+      //printl("[Load0_Entity]" + string(entity_name) + ";" + positionSerialized + ";" + anglesSerialized + ";")
       result.kv.fadedist = 2000
     
       return result
@@ -640,7 +640,7 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
                 break
             }
         } else{  // 0 - no animation / t-pose
-            printl( "[Load0_Pilot]" + string(model) + ";" + positionSerialized + ";" + anglesSerialized + ";")
+            //printl( "[Load0_Pilot]" + string(model) + ";" + positionSerialized + ";" + anglesSerialized + ";")
     		
     	}
     

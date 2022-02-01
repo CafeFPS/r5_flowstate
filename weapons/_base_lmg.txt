@@ -66,13 +66,14 @@ WeaponData
 
         elevator_shooter
         {
+		//this mod was intended for horizon's q.
            "viewkick_air_scale_ads"						"1.0"
 
-           "spread_air_hip"  								"2"
+           "spread_air_hip"  								"0"
 
            "spread_kick_on_fire_air_hip" 					"0.25"
 
-                                                       
+        }                                               
                                                        
          
       
