@@ -160,7 +160,7 @@ void function Sequence_PickLoadout()
 			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
 			StopMusicOnPlayer( player, skydiveMusicID )
 
-			CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) // No candidates to force it to pick a random legend.
+			if(GameRules_GetGameMode() != "custom_tdm"){CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) }// No candidates to force it to pick a random legend.
 		}
 
 		thread Sequence_Prematch() 

@@ -278,8 +278,8 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 	if ( !IsValid( player ) )
 		return
 
-	// if ( IsLobby() )
-		// return
+	if ( IsLobby() )
+		return
 
 	player.Signal( "SettingsChanged" )
 	string newClass = player.GetPlayerClass()
@@ -314,10 +314,10 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		/*if ( IsWatchingReplay() )
 			UpdateKillReplayIconPosition()*/
 	#else
-		// if(IsValid( player ) ){
-		// player.kv.renderColor = "255 255 255 255"
+		if(IsValid( player ) ){
+		player.kv.renderColor = "255 255 255 255"
 
-		//InitDamageStates( player )}
+		InitDamageStates( player )}
 	#endif
 
 	//if ( IsClient() && !player.IsTitan() )
@@ -327,9 +327,9 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 	//	thread PilotHardLandingThink( player )
 
 	#if SERVER
-		//player.Signal( "OnChangedPlayerClass" )
+		player.Signal( "OnChangedPlayerClass" )
 
-		//UpdatePlayerMinimapMaterials( player )
+		UpdatePlayerMinimapMaterials( player )
 	#endif
 }
 
