@@ -424,7 +424,7 @@ void function _OnPlayerConnected(entity player)
     case eGameState.MapVoting:
 			if(IsValidPlayer(player) )
 			{
-				printt("Flowstate DEBUG - Prophunt player connected mapvoting.", player)
+				printt("Flowstate DEBUG - Player connected mapvoting.", player)
 			    if(!IsAlive(player))
 			{
 			_HandleRespawn(player)
@@ -454,7 +454,7 @@ void function _OnPlayerConnected(entity player)
     case eGameState.Playing:
 	    if(IsValidPlayer(player))
         {
-			printt("Flowstate DEBUG - Prophunt player connected midround.", player)
+			printt("Flowstate DEBUG - Player connected midround.", player)
 			player.UnfreezeControlsOnServer()
 			
 			
@@ -468,7 +468,7 @@ void function _OnPlayerConnected(entity player)
 				
 				if(file.selectedLocation.name != "Deathbox by Ayezee" || file.selectedLocation.name != "Skill trainer By Colombia"){
 				
-				printt("Flowstate DEBUG - Spaning player in droppod", player)
+				printt("Flowstate DEBUG - Spawning player in droppod", player)
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
 				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
 				_HandleRespawn(player, true)
