@@ -457,25 +457,25 @@ void function _OnPlayerConnected(entity player)
 			printt("Flowstate DEBUG - Player connected midround.", player)
 			player.UnfreezeControlsOnServer()
 			
-			
-			if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) )
-			{
+			_HandleRespawn(player)
+			// if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) )
+			// {
 	
-					printt("Flowstate DEBUG - Can't spawn player in droppod. Droppods disabled, or we are changing map. Spawning with normal mode", player)
-					_HandleRespawn(player)
+					// printt("Flowstate DEBUG - Can't spawn player in droppod. Droppods disabled, or we are changing map. Spawning with normal mode", player)
+					// _HandleRespawn(player)
 
-			} else {
+			// } else {
 				
-				if(file.selectedLocation.name != "Deathbox by Ayezee" || file.selectedLocation.name != "Skill trainer By Colombia"){
+				// if(file.selectedLocation.name != "Deathbox by Ayezee" || file.selectedLocation.name != "Skill trainer By Colombia"){
 				
-				printt("Flowstate DEBUG - Spawning player in droppod", player)
-				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
-				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
-				_HandleRespawn(player, true)
-				player.SetAngles( <0,180,0> )} else {
-					printt("Flowstate DEBUG - Can't spawn player in droppod. Skill trainer or Deathbox detected. Trying normal mode.", player)
-					_HandleRespawn(player)
-				}
+				// printt("Flowstate DEBUG - Spawning player in droppod", player)
+				// player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
+				// thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
+				// _HandleRespawn(player, true)
+				// player.SetAngles( <0,180,0> )} else {
+					// printt("Flowstate DEBUG - Can't spawn player in droppod. Skill trainer or Deathbox detected. Trying normal mode.", player)
+					// _HandleRespawn(player)
+				// }
 			//SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
 			}
