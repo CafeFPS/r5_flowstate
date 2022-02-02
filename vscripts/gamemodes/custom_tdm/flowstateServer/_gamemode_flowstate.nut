@@ -2537,9 +2537,9 @@ void function VotingPhase()
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
-wait 5}
+wait 7}
 else{
-wait 2	
+wait 7	
 }
 
 if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
@@ -3217,7 +3217,7 @@ while( Time() <= endTime )
 					printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
 
 		break}
-		wait 0.5
+		WaitFrame()
 	}
 }
 else if (!FlowState_Timer() ){
@@ -3226,7 +3226,7 @@ while( Time() <= endTime )
 	if(file.tdmState == eTDMState.NEXT_ROUND_NOW) {
 		printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
 	break}
-		wait 0.5
+		WaitFrame()
 	}
 } 
 
@@ -3258,31 +3258,31 @@ try{
 	}
 
 wait 1
-try{
-if(GetBestPlayer()==PlayerWithMostDamage())
-{
+// try{
+// if(GetBestPlayer()==PlayerWithMostDamage())
+// {
 
-foreach(player in GetPlayerArray())
-    {
+// foreach(player in GetPlayerArray())
+    // {
 
-	 if(IsValid(player))
-        {
-		Message(player,"- CHAMPION DECIDED! -", "\n " + GetBestPlayerName() + " is the champion. " + GetBestPlayerScore() + " kills and " + GetDamageOfPlayerWithMostDamage() + " of damage.  \n \n        Champion is literally on fire! Weapons disabled! Please tbag.", 10, "UI_InGame_ChampionVictory")
-		}
-	}
-wait 1
-}
-else
-{
-foreach(player in GetPlayerArray())
-    {
-	 if(IsValid(player))
-        {
-		Message(player,"- CHAMPION DECIDED! -", "\n The champion is " + GetBestPlayerName() + " with " + GetBestPlayerScore() + " kills. Champion is literally on fire! \n \n The player with most damage was " + PlayerWithMostDamageName() + " with " + GetDamageOfPlayerWithMostDamage() + " and now is the CHALLENGER. \n\n          Weapons disabled! Please tbag.", 5, "UI_InGame_ChampionVictory")}
-	}
-wait 1
-}
-} catch (e1) {}
+	 // if(IsValid(player))
+        // {
+		// Message(player,"- CHAMPION DECIDED! -", "\n " + GetBestPlayerName() + " is the champion. " + GetBestPlayerScore() + " kills and " + GetDamageOfPlayerWithMostDamage() + " of damage.  \n \n        Champion is literally on fire! Weapons disabled! Please tbag.", 10, "UI_InGame_ChampionVictory")
+		// }
+	// }
+// wait 1
+// }
+// else
+// {
+// foreach(player in GetPlayerArray())
+    // {
+	 // if(IsValid(player))
+        // {
+		// Message(player,"- CHAMPION DECIDED! -", "\n The champion is " + GetBestPlayerName() + " with " + GetBestPlayerScore() + " kills. Champion is literally on fire! \n \n The player with most damage was " + PlayerWithMostDamageName() + " with " + GetDamageOfPlayerWithMostDamage() + " and now is the CHALLENGER. \n\n          Weapons disabled! Please tbag.", 5, "UI_InGame_ChampionVictory")}
+	// }
+// wait 1
+// }
+// } catch (e1) {}
 
 foreach(entity champion in GetPlayerArray())
     {
@@ -3298,7 +3298,7 @@ foreach(entity champion in GetPlayerArray())
 		}}
 	}catch(e2){}
 	}
-wait 5
+//wait 5
 foreach(player in GetPlayerArray())
     {
 	try{
@@ -3319,10 +3319,7 @@ foreach(player in GetPlayerArray())
 	}}catch(e4){}}
 WaitFrame()
 
-
-try{
 file.bubbleBoundary.Destroy()
-}catch(e5){}
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
