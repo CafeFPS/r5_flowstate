@@ -100,6 +100,7 @@ struct{
 float endTime = 0
 array<entity> playerSpawnedProps
 array<LocationSettings> locationSettings
+array<LocationSettings> locationsShuffled
 LocationSettings& selectedLocation
 int nextMapIndex = 0
 bool mapIndexChanged = true
@@ -108,32 +109,6 @@ bool InProgress = false
 } prophunt
 
 
-const array<asset> prophuntAssetsWE =
-[
-	//$"mdl/industrial/traffic_cone_01.rmdl",
-	$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
-	$"mdl/eden/eden_electrical_transformer_01.rmdl",
-	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
-	$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
-	$"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl",
-	$"mdl/angel_city/vending_machine.rmdl",
-	$"mdl/utilities/power_gen1.rmdl",
-	$"mdl/angel_city/box_small_02.rmdl",
-	$"mdl/colony/antenna_05_colony.rmdl",
-	$"mdl/robots/marvin/marvin_gladcard.rmdl",
-	//$"mdl/garbage/garbage_bag_plastic_a.rmdl",
-	$"mdl/garbage/trash_bin_single_wtrash_Blue.rmdl",
-	$"mdl/angel_city/box_small_01.rmdl",
-	$"mdl/garbage/dumpster_dirty_open_a_02.rmdl",
-	$"mdl/containers/slumcity_oxygen_tank_red.rmdl",
-	$"mdl/containers/box_shrinkwrapped.rmdl",
-	$"mdl/colony/farmland_fridge_01.rmdl",
-	$"mdl/furniture/chair_beanbag_01.rmdl",
-	$"mdl/colony/farmland_crate_plastic_01_red.rmdl",
-	$"mdl/IMC_base/generator_IMC_01.rmdl",
-	$"mdl/garbage/trash_can_metal_02_b.rmdl",
-	$"mdl/garbage/trash_bin_single_wtrash.rmdl"
-]
 
 // ██████   █████  ███████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
 // ██   ██ ██   ██ ██      ██          ██      ██    ██ ████   ██ ██         ██    ██ ██    ██ ████   ██ ██
@@ -198,10 +173,10 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
 	AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
 	} else if (FlowState_SURF()){
-	//AddClientCommandCallback("spectate", ClientCommand_SpectateSURF) //todo fix this
+	AddClientCommandCallback("spectate", ClientCommand_SpectateSURF) //todo fix this
 	AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
 	} else{
-		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
+	AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
 	AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
 	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
 	AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
@@ -406,20 +381,20 @@ void function _OnPlayerConnected(entity player)
 		if(FlowState_ForceCharacter()){
 				CharSelect(player)
 				player.SetPlayerNetBool( "hasLockedInCharacter", true)}
-	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
+	CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
 			
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			if(FlowState_RandomGunsEverydie())
 			{
-			Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
+			Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands.", 10)}
 			else if (FlowState_Gungame())
 			{
-			Message(player, "WELCOME TO FLOW STATE: GUNGAME", helpMessage(), 10)
+			Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands.", 10)
 
 			} 
 			else { 
-			Message(player, "WELCOME TO FLOW STATE: FFA/TDM", helpMessage(), 10)
+			Message(player, "FLOWSTATE: FFA/TDM", "Type 'commands' in console to see the available console commands.", 10)
 			}
 	switch(GetGameState())
     {
@@ -576,14 +551,14 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					invscore2++
 					victim.SetPlayerNetInt( "assists", invscore2 )
 
-							// if(FlowState_RandomGunsEverydie()){
-				// UpgradeShields(victim, true)
-				// }
-				
-				// if(FlowState_Gungame())
-				// {
-				// KillStreakAnnouncer(victim, true)
-				// }
+									if(FlowState_RandomGunsEverydie()){
+						UpgradeShields(victim, true)
+						}
+						
+						if(FlowState_Gungame())
+						{
+						KillStreakAnnouncer(victim, true)
+						}
 				
 				wait 8
 				if(IsValid(victim) )
@@ -610,11 +585,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 				thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
 				}
-				// if(FlowState_Gungame())
-				// {
-				// GiveGungameWeapon(attacker)
-				// KillStreakAnnouncer(attacker, false)
-				// }		
+				if(FlowState_Gungame())
+				{
+				GiveGungameWeapon(attacker)
+				KillStreakAnnouncer(attacker, false)
+				}		
 				//Autoreload on kill without animation //By CaféDeColombiaFPS
 				WpnAutoReloadOnKill(attacker)
 				
@@ -724,7 +699,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			TpPlayerToSpawnPoint(player)}
 			
 		player.UnfreezeControlsOnServer()
-		//SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 
 		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
 				PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
@@ -733,53 +707,59 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
 				}
 
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.TakeOffhandWeapon( OFFHAND_MELEE )
+		player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+
 		}
 		
-	// if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
-    // {
-        // TakeAllWeapons(player)
-        // GiveRandomPrimaryWeapon(file.randomprimary, player)
-        // GiveRandomSecondaryWeapon(file.randomsecondary, player)
-        // player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-        // player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-    // } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
-	// {
-		// TakeAllWeapons(player)
-        // GiveRandomPrimaryWeaponMetagame(file.randomprimary, player)
-        // GiveRandomSecondaryWeaponMetagame(file.randomsecondary, player)
-        // player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-        // player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-	// }
-	// if(FlowState_RandomTactical() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
-	// {
-		// player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-		// file.randomtac = RandomIntRangeInclusive( 0, 7 )
-        // GiveRandomTac(file.randomtac, player)
-	// }
-	// if(FlowState_RandomUltimate() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
-	// {
-    // player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-		// file.randomult = RandomIntRangeInclusive( 0, 5 )
-        // GiveRandomUlt(file.randomult, player)
-	// }
-	// if(FlowState_RandomGunsEverydie() && !FlowState_Gungame() && IsValid( player )) //fiesta
-    // {
-        // file.randomprimary = RandomIntRangeInclusive( 0, 23 )
-        // file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
-        // file.randomtac = RandomIntRangeInclusive( 0, 7 )
-        // file.randomult = RandomIntRangeInclusive( 0, 5 )
-		// TakeAllWeapons(player)
-        // GiveRandomPrimaryWeapon(file.randomprimary, player)
-        // GiveRandomSecondaryWeapon(file.randomsecondary, player)
-        // GiveRandomTac(file.randomtac, player)
-        // GiveRandomUlt(file.randomult, player)
-        // player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-        // player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-    // } 
-	// if(FlowState_Gungame() && IsValid( player ))
-	// {
-		// GiveGungameWeapon(player)
-	// }
+	if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
+    {
+        TakeAllWeapons(player)
+        GiveRandomPrimaryWeapon(file.randomprimary, player)
+        GiveRandomSecondaryWeapon(file.randomsecondary, player)
+        player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+        player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+    } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
+	{
+		TakeAllWeapons(player)
+        GiveRandomPrimaryWeaponMetagame(file.randomprimary, player)
+        GiveRandomSecondaryWeaponMetagame(file.randomsecondary, player)
+        player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+        player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+	}
+	if(FlowState_RandomTactical() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
+	{
+		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		file.randomtac = RandomIntRangeInclusive( 0, 7 )
+        GiveRandomTac(file.randomtac, player)
+	}
+	if(FlowState_RandomUltimate() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
+	{
+    player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+		file.randomult = RandomIntRangeInclusive( 0, 5 )
+        GiveRandomUlt(file.randomult, player)
+	}
+	if(FlowState_RandomGunsEverydie() && !FlowState_Gungame() && IsValid( player )) //fiesta
+    {
+        file.randomprimary = RandomIntRangeInclusive( 0, 23 )
+        file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
+        file.randomtac = RandomIntRangeInclusive( 0, 7 )
+        file.randomult = RandomIntRangeInclusive( 0, 5 )
+		TakeAllWeapons(player)
+        GiveRandomPrimaryWeapon(file.randomprimary, player)
+        GiveRandomSecondaryWeapon(file.randomsecondary, player)
+        GiveRandomTac(file.randomtac, player)
+        GiveRandomUlt(file.randomult, player)
+        player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+        player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+    } 
+	if(FlowState_Gungame() && IsValid( player ))
+	{
+		GiveGungameWeapon(player)
+	}
 	
 	thread WpnPulloutOnRespawn(player)
 	//try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
@@ -1044,6 +1024,9 @@ void function RunPROPHUNT()
 {
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawnedPROPHUNT)
+	
+	prophunt.locationsShuffled = shuffleLocationsArray(prophunt.locationSettings)
+	
     for(; ;)
     {
 	ActualPROPHUNTLobby()
@@ -1068,12 +1051,12 @@ if (FlowState_LockPOI()) {
 	prophunt.nextMapIndex = FlowState_LockedPOI()
 }else if (!prophunt.mapIndexChanged)
 	{
-	prophunt.nextMapIndex = (prophunt.nextMapIndex + 1 ) % prophunt.locationSettings.len()
+	prophunt.nextMapIndex = (prophunt.nextMapIndex + 1 ) % prophunt.locationsShuffled.len()
 	}
 	
 int choice = prophunt.nextMapIndex
 prophunt.mapIndexChanged = false
-prophunt.selectedLocation = prophunt.locationSettings[choice]
+prophunt.selectedLocation = prophunt.locationsShuffled[choice]
 	
 	
 if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
@@ -1183,6 +1166,56 @@ void function PropWatcher(entity prop, entity player)
 	prop.Destroy()
 }
 
+
+const array<asset> prophuntAssetsWE =
+[
+	//$"mdl/industrial/traffic_cone_01.rmdl",
+	$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
+	$"mdl/eden/eden_electrical_transformer_01.rmdl",
+	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
+	$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
+	$"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl",
+	$"mdl/angel_city/vending_machine.rmdl",
+	$"mdl/utilities/power_gen1.rmdl",
+	$"mdl/angel_city/box_small_02.rmdl",
+	$"mdl/colony/antenna_05_colony.rmdl",
+	$"mdl/robots/marvin/marvin_gladcard.rmdl",
+	//$"mdl/garbage/garbage_bag_plastic_a.rmdl",
+	$"mdl/garbage/trash_bin_single_wtrash_Blue.rmdl",
+	$"mdl/angel_city/box_small_01.rmdl",
+	$"mdl/garbage/dumpster_dirty_open_a_02.rmdl",
+	$"mdl/containers/slumcity_oxygen_tank_red.rmdl",
+	$"mdl/containers/box_shrinkwrapped.rmdl",
+	$"mdl/colony/farmland_fridge_01.rmdl",
+	$"mdl/furniture/chair_beanbag_01.rmdl",
+	$"mdl/colony/farmland_crate_plastic_01_red.rmdl",
+	$"mdl/IMC_base/generator_IMC_01.rmdl",
+	$"mdl/garbage/trash_can_metal_02_b.rmdl",
+	$"mdl/garbage/trash_bin_single_wtrash.rmdl"
+]
+
+
+
+array<LocationSettings> function shuffleLocationsArray(array<LocationSettings> arr)
+// O(n) Durstenfeld / Knuth shuffle (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
+//By michae\l/#1125.
+{
+	int i;
+	int j;
+	int b;
+	LocationSettings tmp;
+
+	for (i = arr.len() - 1; i > 0; i--) {
+		j = RandomIntRangeInclusive(1, i)
+		tmp = arr[b]
+		arr[b] = arr[j]
+		arr[j] = tmp
+	}
+
+	return arr
+}
+
+
 void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah = false)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -1220,6 +1253,7 @@ void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah =
 					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
 			}
 }
+
 
 void function ActualPROPHUNTGameLoop()
 ///////////////////////////////////////////////////////
@@ -2478,7 +2512,22 @@ void function VotingPhase()
     SetGameState(eGameState.MapVoting)
 	file.FallTriggersEnabled = true
 	
-
+	foreach(player in GetPlayerArray())
+	{
+			if(IsValid(player))
+			{
+				player.SetThirdPersonShoulderModeOn()
+				_HandleRespawn(player)
+					if(FlowState_Gungame())
+						{
+							GiveGungameWeapon(player)
+						}
+				player.UnforceStand()
+				player.UnfreezeControlsOnServer()
+				HolsterAndDisableWeapons( player )
+				wait 0.15
+			}
+	}
 
 	if (!file.mapIndexChanged)
 		{
@@ -2496,24 +2545,7 @@ void function VotingPhase()
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
 
 		
-	foreach(player in GetPlayerArray())
-	{
-		try {
-			if(IsValid(player))
-			{
-				player.SetThirdPersonShoulderModeOn()
-				_HandleRespawn(player)
-				if(FlowState_Gungame())
-	{
-		GiveGungameWeapon(player)
-	}
-				player.UnforceStand()
-				player.UnfreezeControlsOnServer()
-				HolsterAndDisableWeapons( player )
-			}
-		}catch(e){}
-	
-	}
+
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
@@ -2556,7 +2588,7 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 
     DestroyPlayerProps()
     wait 1
-    SkillTrainerLoad()	
+    thread SkillTrainerLoad()	
 } else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
 {
 		printt("Flowstate DEBUG - creating props for Brightwater.")
@@ -3301,22 +3333,22 @@ foreach(entity champion in GetPlayerArray())
 //wait 5
 foreach(player in GetPlayerArray())
     {
-	try{
+
 	 if(IsValid(player)){
 	 AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flow State DM " + file.scriptversion + " by ColombiaFPS, empathogenwarlord & AyeZeeBB", 6, "UI_Menu_RoundSummary_Results")}
-	}catch(e3){}
+	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flowstate " + file.scriptversion + " by ColombiaFPS, empathogenwarlord & AyeZeeBB", 7, "UI_Menu_RoundSummary_Results")}
+	wait 0.1
 	}
-wait 6
+wait 7
 foreach(player in GetPlayerArray())
     {
-        try{
+
 		if(IsValid(player)){
 		ClearInvincible(player)
 		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		player.SetThirdPersonShoulderModeOff()
-
-	}}catch(e4){}}
+		}
+	}
 WaitFrame()
 
 file.bubbleBoundary.Destroy()
@@ -3919,11 +3951,13 @@ bool function ClientCommand_SpectateSURF(entity player, array<string> args)
     if ( GetGameState() == eGameState.MapVoting ) {
         return false
     }
+	
     array<entity> playersON = GetPlayerArray_Alive()
 	playersON.fastremovebyvalue( player )
-    if ( playersON.len() > 0 )
+	
+    if ( playersON.len() > 1 && IsValid(player))
     {
-        entity specTarget = playersON.getrandom()
+        entity specTarget = playersON[0]
 
         if( specTarget.IsObserver())
         {
@@ -3934,9 +3968,8 @@ bool function ClientCommand_SpectateSURF(entity player, array<string> args)
         if( player.GetPlayerNetInt( "spectatorTargetCount" ) > 0)
         {
             player.SetPlayerNetInt( "spectatorTargetCount", 0 )
-	        player.SetSpecReplayDelay( 0 )
+	        //player.SetSpecReplayDelay( 2 )
             player.StopObserverMode()
-			if(IsValidPlayer(player))
 			TpPlayerToSpawnPoint(player)
             printf("Respawned!")
         }
@@ -3945,10 +3978,8 @@ bool function ClientCommand_SpectateSURF(entity player, array<string> args)
 			TpPlayerToSpawnPoint(player)
             player.SetPlayerNetInt( "spectatorTargetCount", playersON.len() )
 	        player.SetSpecReplayDelay( 2 )
-			try{
 	        player.StartObserverMode( OBS_MODE_IN_EYE )
 	        player.SetObserverTarget( specTarget )
-			}catch(e){}
             printf("Spectating!")
         }
     }
@@ -4003,16 +4034,19 @@ bool function ClientCommand_Help(entity player, array<string> args)
 		try{
 			if(FlowState_RandomGunsEverydie())
 			{
-			Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
+			Message(player, "WELCOME TO FLOWSTATE: FIESTA", helpMessage(), 10)}
 			else if (FlowState_Gungame())
 			{
-			Message(player, "WELCOME TO FLOW STATE: GUNGAME", helpMessage(), 10)
+			Message(player, "WELCOME TO FLOWSTATE: GUNGAME", helpMessage(), 10)
 
 			} else if (FlowState_PROPHUNT())
 			{
-			Message(player, "WELCOME TO FLOW STATE: PROPHUNT", helpMessagePROPHUNT(), 10)	
+			Message(player, "WELCOME TO FLOWSTATE: PROPHUNT", helpMessagePROPHUNT(), 10)	
+			} else if (FlowState_SURF())
+			{
+			Message(player, "Apex SURF", "", 5)	
 			} else{ 
-			Message(player, "WELCOME TO FLOW STATE: FFA/TDM", helpMessage(), 10)
+			Message(player, "WELCOME TO FLOWSTATE: FFA/TDM", helpMessage(), 10)
 			}
 		}catch(e) {}
 	}
