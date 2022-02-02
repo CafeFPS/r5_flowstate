@@ -1174,7 +1174,7 @@ const array<asset> prophuntAssetsWE =
 	$"mdl/eden/eden_electrical_transformer_01.rmdl",
 	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
 	$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
-	$"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl",
+	//$"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl",
 	$"mdl/angel_city/vending_machine.rmdl",
 	$"mdl/utilities/power_gen1.rmdl",
 	$"mdl/angel_city/box_small_02.rmdl",
