@@ -406,10 +406,10 @@ void function _OnPlayerConnected(entity player)
 		if(FlowState_ForceCharacter()){
 				CharSelect(player)
 				player.SetPlayerNetBool( "hasLockedInCharacter", true)}
-	CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
+	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
 			
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
-
+	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			if(FlowState_RandomGunsEverydie())
 			{
 			Message(player, "WELCOME TO FLOW STATE: FIESTA", helpMessage(), 10)}
@@ -558,11 +558,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
 
 				if(!IsValid(victim)) return
-
+				//victim.p.storedWeapons = StoreWeapons(victim)
 				if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker )){
-				wait 0.5
-				victim.p.storedWeapons = StoreWeapons(victim)
-				
+					wait 0.5
 					victim.SetObserverTarget( attacker )
 					victim.SetSpecReplayDelay( 4 )
 					victim.StartObserverMode( OBS_MODE_IN_EYE )
@@ -578,14 +576,14 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					invscore2++
 					victim.SetPlayerNetInt( "assists", invscore2 )
 
-							if(FlowState_RandomGunsEverydie()){
-				UpgradeShields(victim, true)
-				}
+							// if(FlowState_RandomGunsEverydie()){
+				// UpgradeShields(victim, true)
+				// }
 				
-				if(FlowState_Gungame())
-				{
-				KillStreakAnnouncer(victim, true)
-				}
+				// if(FlowState_Gungame())
+				// {
+				// KillStreakAnnouncer(victim, true)
+				// }
 				
 				wait 8
 				if(IsValid(victim) )
@@ -612,11 +610,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 				thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
 				}
-				if(FlowState_Gungame())
-				{
-				GiveGungameWeapon(attacker)
-				KillStreakAnnouncer(attacker, false)
-				}		
+				// if(FlowState_Gungame())
+				// {
+				// GiveGungameWeapon(attacker)
+				// KillStreakAnnouncer(attacker, false)
+				// }		
 				//Autoreload on kill without animation //By CaféDeColombiaFPS
 				WpnAutoReloadOnKill(attacker)
 				
@@ -637,22 +635,22 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		break
     }
 	
-	file.deathPlayersCounter++
+	// file.deathPlayersCounter++
 
-	if(file.deathPlayersCounter == 1 )
-	{
-	foreach (player in GetPlayerArray())
-	{
-	thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
-	}
-	}
+	// if(file.deathPlayersCounter == 1 )
+	// {
+	// foreach (player in GetPlayerArray())
+	// {
+	// thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
+	// }
+	// }
 	
-	thread doubletriplekillaudio(victim,attacker)
+	// thread doubletriplekillaudio(victim,attacker)
 
-file.lastKillTimer = Time()
-file.lastKiller = attacker
+// file.lastKillTimer = Time()
+// file.lastKiller = attacker
 
-UpdatePlayerCounts()
+// UpdatePlayerCounts()
 }
 
 
@@ -726,7 +724,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			TpPlayerToSpawnPoint(player)}
 			
 		player.UnfreezeControlsOnServer()
-		SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
+		//SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 
 		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
 				PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
@@ -737,55 +735,55 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 		}
 		
-	if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
-    {
-        TakeAllWeapons(player)
-        GiveRandomPrimaryWeapon(file.randomprimary, player)
-        GiveRandomSecondaryWeapon(file.randomsecondary, player)
-        player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-        player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-    } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
-	{
-		TakeAllWeapons(player)
-        GiveRandomPrimaryWeaponMetagame(file.randomprimary, player)
-        GiveRandomSecondaryWeaponMetagame(file.randomsecondary, player)
-        player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-        player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-	}
-	if(FlowState_RandomTactical() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
-	{
-		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-		file.randomtac = RandomIntRangeInclusive( 0, 7 )
-        GiveRandomTac(file.randomtac, player)
-	}
-	if(FlowState_RandomUltimate() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
-	{
-    player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-		file.randomult = RandomIntRangeInclusive( 0, 5 )
-        GiveRandomUlt(file.randomult, player)
-	}
-	if(FlowState_RandomGunsEverydie() && !FlowState_Gungame() && IsValid( player )) //fiesta
-    {
-        file.randomprimary = RandomIntRangeInclusive( 0, 23 )
-        file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
-        file.randomtac = RandomIntRangeInclusive( 0, 7 )
-        file.randomult = RandomIntRangeInclusive( 0, 5 )
-		TakeAllWeapons(player)
-        GiveRandomPrimaryWeapon(file.randomprimary, player)
-        GiveRandomSecondaryWeapon(file.randomsecondary, player)
-        GiveRandomTac(file.randomtac, player)
-        GiveRandomUlt(file.randomult, player)
-        player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-        player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-    } 
-	if(FlowState_Gungame() && IsValid( player ))
-	{
-		GiveGungameWeapon(player)
-	}
+	// if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
+    // {
+        // TakeAllWeapons(player)
+        // GiveRandomPrimaryWeapon(file.randomprimary, player)
+        // GiveRandomSecondaryWeapon(file.randomsecondary, player)
+        // player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+        // player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+    // } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
+	// {
+		// TakeAllWeapons(player)
+        // GiveRandomPrimaryWeaponMetagame(file.randomprimary, player)
+        // GiveRandomSecondaryWeaponMetagame(file.randomsecondary, player)
+        // player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+        // player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+	// }
+	// if(FlowState_RandomTactical() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
+	// {
+		// player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		// file.randomtac = RandomIntRangeInclusive( 0, 7 )
+        // GiveRandomTac(file.randomtac, player)
+	// }
+	// if(FlowState_RandomUltimate() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
+	// {
+    // player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+		// file.randomult = RandomIntRangeInclusive( 0, 5 )
+        // GiveRandomUlt(file.randomult, player)
+	// }
+	// if(FlowState_RandomGunsEverydie() && !FlowState_Gungame() && IsValid( player )) //fiesta
+    // {
+        // file.randomprimary = RandomIntRangeInclusive( 0, 23 )
+        // file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
+        // file.randomtac = RandomIntRangeInclusive( 0, 7 )
+        // file.randomult = RandomIntRangeInclusive( 0, 5 )
+		// TakeAllWeapons(player)
+        // GiveRandomPrimaryWeapon(file.randomprimary, player)
+        // GiveRandomSecondaryWeapon(file.randomsecondary, player)
+        // GiveRandomTac(file.randomtac, player)
+        // GiveRandomUlt(file.randomult, player)
+        // player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+        // player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+    // } 
+	// if(FlowState_Gungame() && IsValid( player ))
+	// {
+		// GiveGungameWeapon(player)
+	// }
 	
 	thread WpnPulloutOnRespawn(player)
-	try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-	try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+	//try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+	//try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
 	printt("Flowstate DEBUG - _HandleRespawn finished for player.", player)
 	// try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
 	// try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
