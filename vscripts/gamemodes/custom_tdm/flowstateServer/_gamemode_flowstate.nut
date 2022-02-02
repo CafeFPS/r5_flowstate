@@ -399,7 +399,7 @@ void function _OnPlayerConnected(entity player)
 	switch(GetGameState())
     {
     case eGameState.MapVoting:
-			if(IsValidPlayer(player) )
+			if(IsValid(player) )
 			{
 				printt("Flowstate DEBUG - Player connected mapvoting.", player)
 			    if(!IsAlive(player))
@@ -417,19 +417,19 @@ void function _OnPlayerConnected(entity player)
 			player.UnforceStand()
 			player.FreezeControlsOnServer()
 
-		}
+			}
 		break
 	case eGameState.WaitingForPlayers:
-			if(IsValid(player))
+		if(IsValid(player))
 		{
 			printt("Flowstate DEBUG - Player connected waitingforplayers.", player)
 			_HandleRespawn(player)
 			ClearInvincible(player)
+			player.UnfreezeControlsOnServer()
 		}
-        player.UnfreezeControlsOnServer()
         break
     case eGameState.Playing:
-	    if(IsValidPlayer(player))
+	    if(IsValid(player))
         {
 			printt("Flowstate DEBUG - Player connected midround.", player)
 			player.UnfreezeControlsOnServer()
@@ -1062,7 +1062,7 @@ prophunt.selectedLocation = prophunt.locationsShuffled[choice]
 if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
     DestroyPlayerProps()
     wait 2
-    SkillTrainerLoad()
+	thread SkillTrainerLoad()
 } else {
 	DestroyPlayerProps()
 }
@@ -2581,7 +2581,7 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
     DestroyPlayerProps()
     wait 1
 	CreateGroundMedKit(<17247,31823,-310>)
-    SkillTrainerLoad()
+    thread SkillTrainerLoad()
 } else if(file.selectedLocation.name == "Skill trainer By Colombia" )
 {
 		printt("Flowstate DEBUG - creating props for Skill Trainer.")
@@ -2596,13 +2596,13 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	isBrightWaterByZer0 = true
     DestroyPlayerProps()
 	wait 1
-	WorldEntities()
+	thread WorldEntities()
 	wait 1
-    BrightwaterLoad()
+    thread BrightwaterLoad()
 	wait 1.5
-	BrightwaterLoad2()
+	thread BrightwaterLoad2()
 	wait 1.5
-	BrightwaterLoad3()
+	thread BrightwaterLoad3()
 	wait 1.5
 	//SpawninvisWalls()
 	wait 3
@@ -2612,7 +2612,7 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 
     DestroyPlayerProps()
     wait 1
-    SpawnEditorPropsSeal()	
+    thread SpawnEditorPropsSeal()	
 } 
 // else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
 // {	
@@ -2772,63 +2772,63 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
-		int maxspawns = -1
-		array<LocPair> spawns = file.dropselectedLocation.spawns
-		foreach(spawn in spawns)
-		{
-    		maxspawns++
-		}
+				int maxspawns = -1
+				array<LocPair> spawns = file.dropselectedLocation.spawns
+				foreach(spawn in spawns)
+				{
+					maxspawns++
+				}
 
-		// array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
-		// array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
-		 int spawni = 0
+				// array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+				// array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
+				 int spawni = 0
 
-	//true == FFA
-	if (GetCurrentPlaylistVarBool("flowstateffaortdm", true ))
-	{
-		foreach(player in GetPlayerArray())
-		{
-        		if(IsValid(player))
-       			{
-					MakeInvincible(player)
+			//true == FFA
+			if (GetCurrentPlaylistVarBool("flowstateffaortdm", true ))
+			{
+				foreach(player in GetPlayerArray())
+				{
+						if(IsValid(player))
+						{
+							MakeInvincible(player)
 
-					if (player.GetParent() == file.supercooldropship)
-					{
-						player.ClearParent()
-					}
+							if (player.GetParent() == file.supercooldropship)
+							{
+								player.ClearParent()
+							}
 
-					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-					player.SetThirdPersonShoulderModeOff()
+							RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+							player.SetThirdPersonShoulderModeOff()
 
-					ScreenFadeFromBlack( player, 1.0, 1.0 )
+							ScreenFadeFromBlack( player, 1.0, 1.0 )
 
-					int rndnum = RandomIntRangeInclusive(0, maxspawns)
-					
-					if (!FlowState_DummyOverride()) {
-					thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) 
-					printt("Flowstate DEBUG - Dropships delivering players to map.")	
-					EnableOffhandWeapons( player )
-					_HandleRespawn(player,true)
-					}
-					else {
-					printt("Flowstate DEBUG - Can't use Dropships to arrive cuz we have dummies as character models.")	
-					_HandleRespawn(player)
-					DeployAndEnableWeapons(player)
-					EnableOffhandWeapons( player )
-					ClearInvincible(player)
-					}
-				
+							int rndnum = RandomIntRangeInclusive(0, maxspawns)
+							
+							if (!FlowState_DummyOverride()) {
+							thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) 
+							printt("Flowstate DEBUG - Dropships delivering players to map.")	
+							EnableOffhandWeapons( player )
+							_HandleRespawn(player,true)
+							}
+							else {
+							printt("Flowstate DEBUG - Can't use Dropships to arrive cuz we have dummies as character models.")	
+							_HandleRespawn(player)
+							DeployAndEnableWeapons(player)
+							EnableOffhandWeapons( player )
+							ClearInvincible(player)
+							}
+						
 
-					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
-					try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
-					try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
-    			}
-		}
-		spawni++
-	}
-	else
-	{
+							try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+							try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+							try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
+							try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
+						}
+				}
+				spawni++
+			}
+			else
+			{
 		foreach(player in GetPlayerArray())
 		{
         		if(IsValid(player))
@@ -3054,7 +3054,6 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 	{
 		foreach(player in GetPlayerArray())
     	{
-        try {
             if(IsValid(player))
             {
 		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
@@ -3072,7 +3071,6 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 				try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
 				try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
             }
-	    } catch(e3){}
     	}
 	}
 }
@@ -3157,6 +3155,7 @@ file.FallTriggersEnabled = false
 try {file.supercooldropship.Destroy()}catch(e69){}
 ResetAllPlayerStats()
 file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
+printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
 WaitFrame()
 }
 
@@ -3265,72 +3264,40 @@ while( Time() <= endTime )
 
 foreach(player in GetPlayerArray())
     {
-try{
-	   if(IsValid(player) && IsAlive(player))
-        {
-			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
-			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
-			PlayerRestoreHPFIESTA(player, 100)
-			player.SetThirdPersonShoulderModeOn()
-			HolsterAndDisableWeapons( player )
-			} else {
-			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
-			player.SetThirdPersonShoulderModeOn()
-			HolsterAndDisableWeapons( player )
-			}
-	} else if(IsValid(player) && !IsAlive(player)){
-					_HandleRespawn(player)
-			ClearInvincible(player)
-			player.SetThirdPersonShoulderModeOn()
-			HolsterAndDisableWeapons( player )
-	}
-	
-	
-	} catch (e) {}
-	}
+		if(IsValid(player) && !IsAlive(player)){
+				_HandleRespawn(player)
+				ClearInvincible(player)
+				player.SetThirdPersonShoulderModeOn()
+				HolsterAndDisableWeapons( player )
+		}else if(IsValid(player) && IsAlive(player))
+			{
+				if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
+				PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+				PlayerRestoreHPFIESTA(player, 100)
+				player.SetThirdPersonShoulderModeOn()
+				HolsterAndDisableWeapons( player )
+				} else {
+				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+				player.SetThirdPersonShoulderModeOn()
+				HolsterAndDisableWeapons( player )
+				}
+		} 
+}
 
 wait 1
-// try{
-// if(GetBestPlayer()==PlayerWithMostDamage())
-// {
-
-// foreach(player in GetPlayerArray())
-    // {
-
-	 // if(IsValid(player))
-        // {
-		// Message(player,"- CHAMPION DECIDED! -", "\n " + GetBestPlayerName() + " is the champion. " + GetBestPlayerScore() + " kills and " + GetDamageOfPlayerWithMostDamage() + " of damage.  \n \n        Champion is literally on fire! Weapons disabled! Please tbag.", 10, "UI_InGame_ChampionVictory")
-		// }
-	// }
-// wait 1
-// }
-// else
-// {
-// foreach(player in GetPlayerArray())
-    // {
-	 // if(IsValid(player))
-        // {
-		// Message(player,"- CHAMPION DECIDED! -", "\n The champion is " + GetBestPlayerName() + " with " + GetBestPlayerScore() + " kills. Champion is literally on fire! \n \n The player with most damage was " + PlayerWithMostDamageName() + " with " + GetDamageOfPlayerWithMostDamage() + " and now is the CHALLENGER. \n\n          Weapons disabled! Please tbag.", 5, "UI_InGame_ChampionVictory")}
-	// }
-// wait 1
-// }
-// } catch (e1) {}
-
 foreach(entity champion in GetPlayerArray())
     {
 		try {
 		if(GetBestPlayer() == champion) {
-				if(IsValid(champion))
+		if(IsValid(champion))
         {
 			 thread EmitSoundOnEntityOnlyToPlayer( champion, champion, "diag_ap_aiNotify_winnerFound_10" )
-			//thread EmitSoundOnEntityOnlyToPlayer( champion, champion, "diag_ap_nocNotify_victorySolo_04_3p" )
 			 thread EmitSoundOnEntityExceptToPlayer( champion, champion, "diag_ap_aiNotify_winnerFound" )
-			//thread EmitSoundOnEntityExceptToPlayer( champion, champion, "diag_ap_nocNotify_winnerDecided_01_02_3p" )
         PlayerTrail(champion,1)
 		}}
 	}catch(e2){}
 	}
-//wait 5
+
 foreach(player in GetPlayerArray())
     {
 
@@ -3342,7 +3309,6 @@ foreach(player in GetPlayerArray())
 wait 7
 foreach(player in GetPlayerArray())
     {
-
 		if(IsValid(player)){
 		ClearInvincible(player)
 		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
@@ -3736,16 +3702,16 @@ array<PlayerInfo> spectators = []
             switch(i)
             {
                 case 0:
-                     msg = msg + "1. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
+                     msg = msg + "    1. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
 					break
                 case 1:
-                    msg = msg + "2. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
+                    msg = msg + "     2. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
                     break
                 case 2:
-                    msg = msg + "3. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
+                    msg = msg + "     3. " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
                     break
                 default:
-					msg = msg + p.name + ":   " + p.score + " | " + p.deaths + "\n"
+					msg = msg + "     " + p.name + ":   " + p.score + " | " + p.deaths + "\n"
                     break
             }
         }
