@@ -381,7 +381,7 @@ void function _OnPlayerConnected(entity player)
 		if(FlowState_ForceCharacter()){
 				CharSelect(player)
 				player.SetPlayerNetBool( "hasLockedInCharacter", true)}
-	CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
+	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
 			
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
@@ -776,7 +776,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 ///////////////////////////////////////////////////////
 {
 	if(!IsValid(player)) return
-	CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
+	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
 	printt("Flowstate DEBUG - New player connected.", player)
 	if(FlowState_ForceCharacter()){CharSelect(player)}
 	UpdatePlayerCounts()
