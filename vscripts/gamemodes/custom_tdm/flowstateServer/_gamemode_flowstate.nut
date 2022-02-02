@@ -1072,6 +1072,7 @@ if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
 		try {
 			if(IsValid(player))
 			{
+				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0) //resetting prop changer ability
 				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10) //false
 				player.UnforceStand()
 				player.UnfreezeControlsOnServer()
@@ -1108,7 +1109,7 @@ array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
 	foreach(player in MILITIAplayers)
 	{
 		try {
-		Message(player, "ATTENTION", "You're a prop. Teleporting in 5 seconds!", 5)
+		Message(player, "ATTENTION", "You're a prop. Teleporting in 5 seconds! \n Use your ULTIMATE to CHANGE PROP up to 3 times. ", 5)
 		}catch(e){}
 	}
 wait 5
@@ -1150,7 +1151,7 @@ void function CheckForPlayersPlaying()
 		Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)
 		}
 		}
-	wait 1	
+	WaitFrame()	
 	}
 	printt("Flowstate DEBUG - Ending round cuz not enough players midround")
 }
@@ -1173,7 +1174,7 @@ const array<asset> prophuntAssetsWE =
 	$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
 	$"mdl/eden/eden_electrical_transformer_01.rmdl",
 	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
-	$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
+	//$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
 	//$"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl",
 	$"mdl/angel_city/vending_machine.rmdl",
 	$"mdl/utilities/power_gen1.rmdl",
@@ -1254,6 +1255,24 @@ void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah =
 			}
 }
 
+void function NotifyDamageOnProp(entity ent, var damageInfo)
+{
+	entity attacker = DamageInfo_GetAttacker(damageInfo);
+	//EmitSoundOnEntityOnlyToPlayer( attacker, attacker, FIRINGRANGE_FLICK_TARGET_SOUND )
+
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+}
 
 void function ActualPROPHUNTGameLoop()
 ///////////////////////////////////////////////////////
@@ -1280,7 +1299,7 @@ foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 			ClearInvincible(player)
 			player.p.playerDamageDealt = 0.0
 			if(player.GetTeam() == TEAM_MILITIA){
@@ -1297,6 +1316,8 @@ foreach(player in GetPlayerArray())
 				prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 				prop.SetDamageNotifications( true )
 				prop.SetParent(player)
+				
+				AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
 				
 				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
 				thread PropWatcher(prop, player) //destroys prop on end round and restores player model.
@@ -1324,7 +1345,7 @@ foreach(player in GetPlayerArray())
         if(IsValidPlayer(player))
         {
 		if (player.GetTeam() == TEAM_MILITIA){
-			Message(player, "ATTENTION", "The attackers have arrived.", 10) }
+			Message(player, "ATTENTION", "The attackers have arrived. Use your ULTIMATE to LOCK ANGLES.", 10) }
 			else if (player.GetTeam() == TEAM_IMC){
 			array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
 			Message(player, "ATTENTION", "Kill the props. Props alive: " + MILITIAplayersAlive.len(), 10)
@@ -1339,7 +1360,7 @@ foreach(player in IMCplayers)
 		        if(IsValidPlayer(player))
         {
 				
-					Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
 					player.SetOrigin(prophuntSpawns[prophuntSpawns.len()-1].origin)
 					player.kv.solid = 6
@@ -1411,10 +1432,10 @@ while( Time() <= endTime )
 		{
 			printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
 			break}
-		wait 0.01
 		WaitFrame()	
 	}
-
+prophunt.InProgress = false
+wait 0.1
 array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)	
 if(MILITIAplayersAlive.len() > 0){
 foreach(player in GetPlayerArray())
@@ -1442,23 +1463,44 @@ bubbleBoundary.Destroy()
 printt("Flowstate DEBUG - Prophunt round finished Swapping teams.")
 foreach(player in GetPlayerArray())
     {	
-			if(player.GetTeam() == TEAM_MILITIA){
-				player.Show()
-			}
+				if(player.GetTeam() == TEAM_MILITIA){
+					player.Show()
+					}
 				if( player.IsObserver())
-			{
-				player.StopObserverMode()
-				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+					
+				{
+						player.StopObserverMode()
+						Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+						TakeAllWeapons(player)
+						player.SetThirdPersonShoulderModeOn()
+									GiveTeamToProphuntPlayer(player) 
+									_HandleRespawnPROPHUNT(player)
+						player.MakeVisible()
+						player.UnforceStand()
+						player.UnfreezeControlsOnServer()
+				} else {
+				
+						if(player.GetTeam() == TEAM_IMC){
+						TakeAllWeapons(player)
+						player.SetThirdPersonShoulderModeOn()
+						SetTeam(player, TEAM_MILITIA )
+						_HandleRespawnPROPHUNT(player)
+						player.MakeVisible()
+						player.UnforceStand()
+						player.UnfreezeControlsOnServer()
+						
+						} else if(player.GetTeam() == TEAM_MILITIA){
+								TakeAllWeapons(player)
+								player.SetThirdPersonShoulderModeOn()
+								SetTeam(player, TEAM_IMC )
+								_HandleRespawnPROPHUNT(player)
+								player.MakeVisible()
+								player.UnforceStand()
+								player.UnfreezeControlsOnServer()
+						}
 			}
-			TakeAllWeapons(player)
-			player.SetThirdPersonShoulderModeOn()
-			GiveTeamToProphuntPlayer(player) 
-			_HandleRespawnPROPHUNT(player)
-			player.MakeVisible()
-			player.UnforceStand()
-			player.UnfreezeControlsOnServer()		
-}
-prophunt.InProgress = false
+	}
+
 
 WaitFrame()
 }
@@ -1472,6 +1514,8 @@ void function GiveTeamToProphuntPlayer(entity player)
 {
 	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+	
+
 	
 	if(IMCplayers.len() > MILITIAplayers.len())
 	{
