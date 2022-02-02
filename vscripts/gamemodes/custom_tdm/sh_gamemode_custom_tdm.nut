@@ -1052,18 +1052,18 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 3000>
                 )
             )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Skill trainer By Colombia",
-                    [
-                        NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
-                        NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
-                        NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
-                        NewLocPair(<14995, 33566, -680>, <16, -45, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
+		// RegisterLocationPROPHUNT(
+                // NewLocationSettings(
+                    // "Skill trainer By Colombia",
+                    // [
+                        // NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
+                        // NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
+                        // NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
+                        // NewLocPair(<14995, 33566, -680>, <16, -45, 0>)
+                    // ],
+                    // <0, 0, 3000>
+                // )
+            // )
 		RegisterLocationPROPHUNT(
                 NewLocationSettings(
                     "TTV Building 2",
@@ -1101,17 +1101,17 @@ case "mp_rr_canyonlands_64k_x_64k":
                 )
             )
 
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Little Town",
-                    [
-                        NewLocPair(<-19481, 2840, -3680>, <0, -116, 0>),
-                        NewLocPair(<21012,1686,-4110>, <0, -122, 0>),
-                        NewLocPair(<19824, 1490, -4084>, <0, -25, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
+		// RegisterLocationPROPHUNT(
+                // NewLocationSettings(
+                    // "Little Town",
+                    // [
+                        // NewLocPair(<-19481, 2840, -3680>, <0, -116, 0>),
+                        // NewLocPair(<21012,1686,-4110>, <0, -122, 0>),
+                        // NewLocPair(<19824, 1490, -4084>, <0, -25, 0>)
+                    // ],
+                    // <0, 0, 2000>
+                // )
+            // )
 		// RegisterLocationPROPHUNT(
                 // NewLocationSettings(
                     // "Little Town",
