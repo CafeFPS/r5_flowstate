@@ -864,6 +864,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
 	printt("Flowstate DEBUG - New player connected.", player)
 	if(FlowState_ForceCharacter()){CharSelect(player)}
+	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	UpdatePlayerCounts()
 	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
@@ -903,6 +904,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetThirdPersonShoulderModeOn()
 				player.UnforceStand()
 				player.UnfreezeControlsOnServer()
+				player.AllowMantle()
 				
 			}
 			break
@@ -958,6 +960,10 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetObserverTarget( playersON[RandomIntRangeInclusive(0,playersON.len()-1)] )
 				player.SetSpecReplayDelay( 2 )
                 player.StartObserverMode( OBS_MODE_IN_EYE )
+				player.kv.solid = 6
+				player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+				player.AllowMantle()
+				
 				//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
 				
 				// foreach(sPlayer in playersON)
@@ -977,7 +983,7 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-
+	UpdatePlayerCounts()
 	file.deathPlayersCounter++
 	printt("Flowstate DEBUG - Prophunt player killed.", victim)
 	if(file.deathPlayersCounter == 1)
@@ -1226,13 +1232,17 @@ void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah =
 					player.Hide()
 					entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
 					prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					prop.kv.solid = 6
 					prop.SetDamageNotifications( true )
 					prop.SetTakeDamageType( DAMAGE_YES )
+					prop.AllowMantle()
 					//prop.SetCanBeMeleed( true ) //esto funcionará cuando los jugadores ya bloqueen los ángulos?
 					//creep.SetBoundingBox( < -150, -75, 0 >, <150, 75, 100 >  ) // ???
 					prop.SetMaxHealth( 100 )
 					prop.SetHealth( 100 )
+					
 					prop.SetParent(player)
+					
 					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
 					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
 					wait 0.2
@@ -1388,7 +1398,7 @@ foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			try{TakePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(e420){}
+			//try{TakePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(e420){}
 			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor") //props dont like shields FX
 			ClearInvincible(player)
 			player.p.playerDamageDealt = 0.0
@@ -1400,10 +1410,12 @@ foreach(player in GetPlayerArray())
 				player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 				player.Hide()
 				entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
+				prop.kv.solid = 6
 				prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+				prop.AllowMantle()
 				prop.SetDamageNotifications( true )
 				prop.SetTakeDamageType( DAMAGE_YES )
-				prop.SetMaxHealth( 100 ) //this is a dummy health, Props are really not receiving even with DAMAGE_YES flag, Respawn said. Colombia
+				prop.SetMaxHealth( 100 ) //this is a dummy health, Props are really not receiving damage even with DAMAGE_YES flag, Respawn said. Colombia
 				prop.SetHealth( 100 )
 				prop.SetParent(player)
 					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
@@ -1432,10 +1444,10 @@ foreach(player in GetPlayerArray())
         if(IsValidPlayer(player))
         {
 		if (player.GetTeam() == TEAM_MILITIA){
-			Message(player, "ATTENTION", "The attackers have arrived. Use your ULTIMATE if you want to PLACE PROP (lock angles).", 10) }
+			Message(player, "ATTENTION", "The attackers have arrived. Use your ULTIMATE if you want to PLACE PROP (lock angles).", 20) }
 			else if (player.GetTeam() == TEAM_IMC){
 			array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-			Message(player, "ATTENTION", "Kill the props. Props alive: " + MILITIAplayersAlive.len(), 10)
+			Message(player, "ATTENTION", "Kill the props. Props alive: " + MILITIAplayersAlive.len(), 20)
 			}				
 		}
 		
@@ -1446,7 +1458,7 @@ foreach(player in IMCplayers)
     {
 		        if(IsValidPlayer(player))
         {
-					try{GivePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(e420){}
+
 					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
 					player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
@@ -1552,7 +1564,7 @@ printt("Flowstate DEBUG - Prophunt round finished Swapping teams.")
 
 foreach(player in GetPlayerArray())
     {	
-	if(IsValid(player)){
+		if(IsValid(player)){
 	
 				if(player.GetTeam() == TEAM_MILITIA){
 					player.Show()
@@ -1614,7 +1626,7 @@ foreach(player in GetPlayerArray())
 
 					}
 		}
-	wait 0.15
+	wait 0.1
 	}
 WaitFrame()
 }
