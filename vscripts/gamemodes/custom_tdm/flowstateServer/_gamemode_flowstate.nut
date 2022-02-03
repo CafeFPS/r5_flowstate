@@ -1421,7 +1421,7 @@ foreach(player in GetPlayerArray())
 wait 25
 foreach(player in GetPlayerArray())
     {
-if(player.GetTeam() == TEAM_IMC){
+if(player.GetTeam() == TEAM_IMC && IsValid(player)){
 ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )}
 	}
 wait 4
