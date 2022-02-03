@@ -9,7 +9,7 @@
 ///////////////////////////////////////////////////////                                                                                 
 // Colaborators: michae\l/#1125, AyeZee#6969
 ///////////////////////////////////////////////////////
-//
+
 global function _CustomTDM_Init
 global function _RegisterLocation
 global function _RegisterLocationPROPHUNT
@@ -384,6 +384,7 @@ void function _OnPlayerConnected(entity player)
 	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
 			
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+	
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			if(FlowState_RandomGunsEverydie())
 			{
@@ -770,6 +771,90 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 }
 
 
+void function _OnPlayerDced(entity player)
+{
+printt("Flowstate DEBUG - Player disconnected from flowstate server.", player)
+UpdatePlayerCounts()
+}
+
+
+//prophunt start. Colombia
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+const array<asset> prophuntAssetsWE =
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+[
+	//$"mdl/industrial/traffic_cone_01.rmdl",
+	//$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
+	$"mdl/eden/eden_electrical_transformer_01.rmdl",
+	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
+	//$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
+	//$"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl",
+	$"mdl/angel_city/vending_machine.rmdl",
+	$"mdl/utilities/power_gen1.rmdl",
+	$"mdl/angel_city/box_small_02.rmdl",
+	$"mdl/colony/antenna_05_colony.rmdl",
+	$"mdl/robots/marvin/marvin_gladcard.rmdl",
+	//$"mdl/garbage/garbage_bag_plastic_a.rmdl",
+	$"mdl/garbage/trash_bin_single_wtrash_Blue.rmdl",
+	$"mdl/angel_city/box_small_01.rmdl",
+	$"mdl/garbage/dumpster_dirty_open_a_02.rmdl",
+	$"mdl/containers/slumcity_oxygen_tank_red.rmdl",
+	$"mdl/containers/box_shrinkwrapped.rmdl",
+	$"mdl/colony/farmland_fridge_01.rmdl",
+	$"mdl/furniture/chair_beanbag_01.rmdl",
+	$"mdl/colony/farmland_crate_plastic_01_red.rmdl",
+	$"mdl/IMC_base/generator_IMC_01.rmdl",
+	$"mdl/garbage/trash_can_metal_02_b.rmdl",
+	$"mdl/garbage/trash_bin_single_wtrash.rmdl"
+]
+
+array<LocationSettings> function shuffleLocationsArray(array<LocationSettings> arr)
+// O(n) Durstenfeld / Knuth shuffle (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
+//By michae\l/#1125.
+{
+	int i;
+	int j;
+	int b;
+	LocationSettings tmp;
+
+	for (i = arr.len() - 1; i > 0; i--) {
+		j = RandomIntRangeInclusive(1, i)
+		tmp = arr[b]
+		arr[b] = arr[j]
+		arr[j] = tmp
+	}
+
+	return arr
+}
+
+void function RunPROPHUNT()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+    WaitForGameState(eGameState.Playing)
+    AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawnedPROPHUNT)
+	
+	prophunt.locationsShuffled = shuffleLocationsArray(prophunt.locationSettings)
+	
+    for(; ;)
+    {
+	ActualPROPHUNTLobby()
+	ActualPROPHUNTGameLoop()
+	}
+    WaitForever()
+}
+
 void function _OnPlayerConnectedPROPHUNT(entity player)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
@@ -788,9 +873,9 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 	switch(GetGameState())
     {
 		case eGameState.WaitingForPlayers:
-					if(IsValidPlayer(player))
+			if(IsValidPlayer(player))
 			{
-													printt("Flowstate DEBUG - Player connected waitingforplayers.", player)	
+				printt("Flowstate DEBUG - Player connected waitingforplayers.", player)	
 				//player has a team assigned already, we need to fix it before spawn
 				GiveTeamToProphuntPlayer(player)
 
@@ -807,7 +892,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 				player.SetPlayerNetBool( "pingEnabled", true )
 				player.SetHealth( 100 )
-								if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 					{
 					player.SetOrigin(<-19459, 2127, 6404>)}
 				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
@@ -823,11 +908,10 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 			}
 			break
 		case eGameState.MapVoting:
-					if(IsValidPlayer(player))
+			if(IsValidPlayer(player))
 			{
-								printt("Flowstate DEBUG - Prophunt player connected mapvoting.", player)
-
-								//player has a team assigned already, we need to fix it before spawn
+				printt("Flowstate DEBUG - Prophunt player connected mapvoting.", player)
+				//player has a team assigned already, we need to fix it before spawn
 				GiveTeamToProphuntPlayer(player)
 				ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 				asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
@@ -838,7 +922,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 				player.SetPlayerNetBool( "pingEnabled", true )
 				player.SetHealth( 100 )
-								if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 					{
 					player.SetOrigin(<-19459, 2127, 6404>)}
 				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
@@ -881,19 +965,12 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				// {
 				// Message(player, "APEX PROPHUNT", "Player connected!" + player.GetPlayerName(), 10)	
 				// }
-				
 				}catch(e){}
 			}
 			break
 		default:
 			break
 	}
-}
-
-void function _OnPlayerDced(entity player)
-{
-printt("Flowstate DEBUG - Player disconnected from flowstate server.", player)
-UpdatePlayerCounts()
 }
 
 void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageInfo)
@@ -903,7 +980,7 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 {
 
 	file.deathPlayersCounter++
-									printt("Flowstate DEBUG - Prophunt player killed.", victim)
+	printt("Flowstate DEBUG - Prophunt player killed.", victim)
 	if(file.deathPlayersCounter == 1)
 	{
 	foreach (player in GetPlayerArray())
@@ -930,7 +1007,6 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 				victim.SetSpecReplayDelay( 2 )
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
 				//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
-				
 				}
 				else {
 				victim.SetObserverTarget( playersON[0] )
@@ -938,7 +1014,6 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
 				//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
 				}
-           
 			
 				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
 				invscore++;
@@ -947,7 +1022,6 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
                 int invscore2 = victim.GetPlayerNetInt( "assists" )
 				invscore2++;
 				victim.SetPlayerNetInt( "assists", invscore2 )
-
 				victim.SetPlayerGameStat( PGS_ASSISTS, 50 )
 			 }
 		}
@@ -997,7 +1071,6 @@ void function _HandleRespawnPROPHUNT(entity player)
         //Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 	
-	
 	if(IsValid( player ))
 			{
 				if(FlowState_ForceCharacter()){CharSelect(player)}
@@ -1021,22 +1094,190 @@ void function _HandleRespawnPROPHUNT(entity player)
 	
 }
 
-void function RunPROPHUNT()
+bool function returnPropBool(){
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+	return prophunt.cantUseChangeProp
+}
+
+void function GiveTeamToProphuntPlayer(entity player)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-    WaitForGameState(eGameState.Playing)
-    AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawnedPROPHUNT)
+	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
+	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
 	
-	prophunt.locationsShuffled = shuffleLocationsArray(prophunt.locationSettings)
+
 	
-    for(; ;)
-    {
-	ActualPROPHUNTLobby()
-	ActualPROPHUNTGameLoop()
+	if(IMCplayers.len() > MILITIAplayers.len())
+	{
+	SetTeam(player, TEAM_MILITIA )
+	} else if (MILITIAplayers.len() > IMCplayers.len())
+	{
+	SetTeam(player, TEAM_IMC )
+	} else {
+		switch(RandomIntRangeInclusive(0,1))
+		{
+			case 0:
+				SetTeam(player, TEAM_IMC )
+				break;
+			case 1:
+				SetTeam(player, TEAM_MILITIA )
+				break;
+		}
 	}
-    WaitForever()
+	printt("Flowstate DEBUG - Giving team to player.", player, player.GetTeam())
+}
+
+
+void function EmitSoundOnSprintingProp()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+		while(prophunt.InProgress)
+		{
+		array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+			foreach(player in MILITIAplayers)
+			{
+				if(player.IsSprinting() && IsValid(player))
+				{
+				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
+				} 
+			}
+		wait 0.2
+		}
+}
+
+
+void function EmitWhistleOnProp()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+		while(prophunt.InProgress)
+		{
+		wait 20 //40 s COD original value: 20.
+		array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+			foreach(player in MILITIAplayers)
+			{
+				if(IsValid(player))
+				{
+				EmitSoundOnEntity( player, "arcgrenade_impacthard" )
+				} 
+			}
+		}
+}
+
+void function CheckForPlayersPlaying()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	
+	while(prophunt.InProgress)
+	{
+		array<entity> playersON = GetPlayerArray_Alive()
+			if(playersON.len() == 1)
+			{
+				file.tdmState = eTDMState.NEXT_ROUND_NOW
+				foreach(player in GetPlayerArray()){
+					Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)
+				}
+			}
+	WaitFrame()	
+	}
+	printt("Flowstate DEBUG - Ending round cuz not enough players midround")
+}
+
+void function PropWatcher(entity prop, entity player)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	while(prophunt.InProgress && player.GetPlayerGameStat( PGS_DEFENSE_SCORE ) == 10) 
+	{
+	WaitFrame()}
+	
+	try{prop.Destroy()}catch(e420){}
+}
+
+
+void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah = false)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+
+			// Using gamestat as boolean Destroy prop y otras cosas más
+			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)    true 
+			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)    false
+			player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)
+			
+			//prophunt.destroyCurrentProp = true
+			
+			if(!anglesornah && IsValid(player)){
+					wait 0.3
+					asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
+					player.SetValueForModelKey( selectedModel )
+					player.kv.solid = 6
+					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					player.Hide()
+					entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
+					prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					prop.SetDamageNotifications( true )
+					prop.SetTakeDamageType( DAMAGE_YES )
+					//prop.SetCanBeMeleed( true ) //esto funcionará cuando los jugadores ya bloqueen los ángulos?
+					//creep.SetBoundingBox( < -150, -75, 0 >, <150, 75, 100 >  ) // ???
+					prop.SetMaxHealth( 100 )
+					prop.SetHealth( 100 )
+					prop.SetParent(player)
+					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
+					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
+					wait 0.2
+					thread PropWatcher(prop, player) 
+			} else if(anglesornah && IsValid(player)){
+					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)
+					player.Show()
+					player.SetBodyModelOverride( player.GetValueForModelKey() )
+					player.SetArmsModelOverride( player.GetValueForModelKey() )
+					Message(player, "prophunt", "                Your prop is angles locked.\n You can observe the surroundings without rotating the prop.", 1)
+					wait 0.1
+					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
+			}
+}
+
+void function NotifyDamageOnProp(entity ent, var damageInfo)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+//props health bleedthrough
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	entity victim = ent.GetParent()
+	float damage = DamageInfo_GetDamage( damageInfo )
+	
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+	
+	float playerNextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	
+	if (playerNextHealth > 0){
+	victim.SetHealth(playerNextHealth)} else {
+	victim.SetHealth(0)
+	ent.Destroy()}
 }
 
 
@@ -1051,6 +1292,7 @@ void function ActualPROPHUNTLobby()
 	{
 		thread CreateShipRoomFallTriggers()
 	}
+	
 if (FlowState_LockPOI()) {
 	prophunt.nextMapIndex = FlowState_LockedPOI()
 }else if (!prophunt.mapIndexChanged)
@@ -1081,7 +1323,7 @@ if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
 				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10) //false
 				player.UnforceStand()
 				player.UnfreezeControlsOnServer()
-				Message(player, "APEX PROPHUNT", "                     Made by Colombia. Game is starting.\n\n" + helpMessagePROPHUNT(), 15)
+				Message(player, "APEX PROPHUNT", "                    Made by Colombia. Game is starting.\n\n" + helpMessagePROPHUNT(), 15)
 			}
 		}catch(e){}
 	}
@@ -1093,20 +1335,20 @@ if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
 		array<entity> playersON = GetPlayerArray_Alive()
 		if(playersON.len() > 1 )
 		{
-									foreach(player in GetPlayerArray())
+			foreach(player in GetPlayerArray())
 			{
 			Message(player, "APEX PROPHUNT", "We have enough players, starting now.", 5, "diag_ap_aiNotify_circleMoves10sec")
 			}
 			wait 5
 			break
 		} else {
-			wait 5
 			foreach(player in GetPlayerArray())
 			{
-				Message(player, "APEX PROPHUNT", "Waiting another player to start.", 1)
-			}	
+				Message(player, "APEX PROPHUNT", "Waiting another player to start. Please wait.", 1)
+			}
+			wait 5			
 		}
-		wait 0.5
+		WaitFrame()
 	}
 }
 array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
@@ -1114,172 +1356,11 @@ array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
 	foreach(player in MILITIAplayers)
 	{
 		try {
-		Message(player, "ATTENTION", "You're a prop. Teleporting in 5 seconds! \n Use your ULTIMATE to CHANGE PROP up to 3 times. ", 5)
+		Message(player, "ATTENTION", "            You're a prop. Teleporting in 5 seconds! \n Use your ULTIMATE to CHANGE PROP up to 3 times. ", 5)
 		}catch(e){}
 	}
 wait 5
 WaitFrame()
-}
-
-void function EmitSoundOnSprintingProp()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-		while(prophunt.InProgress)
-		{
-		array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-			foreach(player in MILITIAplayers)
-			{
-				if(player.IsSprinting() && IsValid(player))
-				{
-				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
-				} 
-			}
-		wait 0.2
-		}
-}
-
-void function CheckForPlayersPlaying()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	
-	while(prophunt.InProgress)
-	{
-		array<entity> playersON = GetPlayerArray_Alive()
-		if(playersON.len() == 1)
-		{
-		file.tdmState = eTDMState.NEXT_ROUND_NOW
-		foreach(player in GetPlayerArray()){
-		Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)
-		}
-		}
-	WaitFrame()	
-	}
-	printt("Flowstate DEBUG - Ending round cuz not enough players midround")
-}
-
-void function PropWatcher(entity prop, entity player)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	while(prophunt.InProgress && player.GetPlayerGameStat( PGS_DEFENSE_SCORE ) == 10) 
-	{
-	WaitFrame()}
-	prop.Destroy()
-}
-
-
-const array<asset> prophuntAssetsWE =
-[
-	//$"mdl/industrial/traffic_cone_01.rmdl",
-	//$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
-	$"mdl/eden/eden_electrical_transformer_01.rmdl",
-	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
-	//$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
-	//$"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl",
-	$"mdl/angel_city/vending_machine.rmdl",
-	$"mdl/utilities/power_gen1.rmdl",
-	$"mdl/angel_city/box_small_02.rmdl",
-	$"mdl/colony/antenna_05_colony.rmdl",
-	$"mdl/robots/marvin/marvin_gladcard.rmdl",
-	//$"mdl/garbage/garbage_bag_plastic_a.rmdl",
-	$"mdl/garbage/trash_bin_single_wtrash_Blue.rmdl",
-	$"mdl/angel_city/box_small_01.rmdl",
-	$"mdl/garbage/dumpster_dirty_open_a_02.rmdl",
-	$"mdl/containers/slumcity_oxygen_tank_red.rmdl",
-	$"mdl/containers/box_shrinkwrapped.rmdl",
-	$"mdl/colony/farmland_fridge_01.rmdl",
-	$"mdl/furniture/chair_beanbag_01.rmdl",
-	$"mdl/colony/farmland_crate_plastic_01_red.rmdl",
-	$"mdl/IMC_base/generator_IMC_01.rmdl",
-	$"mdl/garbage/trash_can_metal_02_b.rmdl",
-	$"mdl/garbage/trash_bin_single_wtrash.rmdl"
-]
-
-
-
-array<LocationSettings> function shuffleLocationsArray(array<LocationSettings> arr)
-// O(n) Durstenfeld / Knuth shuffle (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
-//By michae\l/#1125.
-{
-	int i;
-	int j;
-	int b;
-	LocationSettings tmp;
-
-	for (i = arr.len() - 1; i > 0; i--) {
-		j = RandomIntRangeInclusive(1, i)
-		tmp = arr[b]
-		arr[b] = arr[j]
-		arr[j] = tmp
-	}
-
-	return arr
-}
-
-
-void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah = false)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-
-			// Using gamestat as boolean Destroy prop
-			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)    true 
-			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)    false
-			player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)
-			
-			//prophunt.destroyCurrentProp = true
-			
-			if(!anglesornah && IsValid(player)){
-					wait 0.3
-					asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
-					player.SetValueForModelKey( selectedModel )
-					player.kv.solid = 6
-					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-					player.Hide()
-					entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
-					prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-					prop.SetDamageNotifications( true )
-					prop.SetParent(player)
-					
-					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
-			
-					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
-					wait 0.2
-					thread PropWatcher(prop, player) 
-			} else if(anglesornah && IsValid(player)){
-					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)
-					player.Show()
-					player.SetBodyModelOverride( player.GetValueForModelKey() )
-					player.SetArmsModelOverride( player.GetValueForModelKey() )
-					Message(player, "prophunt", "Your angles are locked. ", 1)
-					wait 0.1
-					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
-			}
-}
-
-void function NotifyDamageOnProp(entity ent, var damageInfo)
-{
-	entity attacker = DamageInfo_GetAttacker(damageInfo);
-	//EmitSoundOnEntityOnlyToPlayer( attacker, attacker, FIRINGRANGE_FLICK_TARGET_SOUND )
-
-	attacker.NotifyDidDamage
-	(
-		ent,
-		DamageInfo_GetHitBox( damageInfo ),
-		DamageInfo_GetDamagePosition( damageInfo ), 
-		DamageInfo_GetCustomDamageType( damageInfo ),
-		DamageInfo_GetDamage( damageInfo ),
-		DamageInfo_GetDamageFlags( damageInfo ), 
-		DamageInfo_GetHitGroup( damageInfo ),
-		DamageInfo_GetWeapon( damageInfo ), 
-		DamageInfo_GetDistFromAttackOrigin( damageInfo )
-	)
 }
 
 void function ActualPROPHUNTGameLoop()
@@ -1301,21 +1382,18 @@ array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 		file.deathPlayersCounter = 0
 		prophunt.cantUseChangeProp = false
 prophunt.InProgress = true
-thread EmitSoundOnSprintingProp()
+//thread EmitSoundOnSprintingProp()
 printt("Flowstate DEBUG - Tping props team.")
 foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor") //props dont like shields FX
 			ClearInvincible(player)
 			player.p.playerDamageDealt = 0.0
 			if(player.GetTeam() == TEAM_MILITIA){
-				player.SetOrigin(prophuntSpawns[RandomInt(prophuntSpawns.len()-1)].origin)
-				
-							
+				player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
 				asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
-		
 				player.SetValueForModelKey( selectedModel )
 				player.kv.solid = 6
 				player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
@@ -1323,16 +1401,13 @@ foreach(player in GetPlayerArray())
 				entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
 				prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 				prop.SetDamageNotifications( true )
+				prop.SetTakeDamageType( DAMAGE_YES )
+				prop.SetMaxHealth( 100 ) //this is a dummy health, Props are really not receiving even with DAMAGE_YES flag, Respawn said. Colombia
+				prop.SetHealth( 100 )
 				prop.SetParent(player)
-				
-				
-				AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
-				
-				
-				
+					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
 				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
-				thread PropWatcher(prop, player) //destroys prop on end round and restores player model.
-				
+					thread PropWatcher(prop, player) //destroys prop on end round and restores player model.
 				player.SetThirdPersonShoulderModeOn()
 				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
@@ -1356,7 +1431,7 @@ foreach(player in GetPlayerArray())
         if(IsValidPlayer(player))
         {
 		if (player.GetTeam() == TEAM_MILITIA){
-			Message(player, "ATTENTION", "The attackers have arrived. Use your ULTIMATE to LOCK ANGLES.", 10) }
+			Message(player, "ATTENTION", "The attackers have arrived. Use your ULTIMATE if you want to PLACE PROP (lock angles).", 10) }
 			else if (player.GetTeam() == TEAM_IMC){
 			array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
 			Message(player, "ATTENTION", "Kill the props. Props alive: " + MILITIAplayersAlive.len(), 10)
@@ -1373,7 +1448,7 @@ foreach(player in IMCplayers)
 				
 					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
-					player.SetOrigin(prophuntSpawns[prophuntSpawns.len()-1].origin)
+					player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
 					player.kv.solid = 6
 					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 					player.SetThirdPersonShoulderModeOff()
@@ -1391,7 +1466,10 @@ foreach(player in IMCplayers)
 	}
 
 if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){	
+
 thread CheckForPlayersPlaying()}
+thread EmitWhistleOnProp()
+
 
 while( Time() <= endTime )
 	{
@@ -1451,24 +1529,19 @@ array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
 if(MILITIAplayersAlive.len() > 0){
 foreach(player in GetPlayerArray())
     {
-		Message(player, "PROPS TEAM WIN", "Props alive: " + MILITIAplayersAlive.len(), 5)
+		Message(player, "PROPS TEAM WIN", "Props alive: " + MILITIAplayersAlive.len() + " Swapping teams.", 7, "diag_ap_aiNotify_winnerFound")
 		player.SetThirdPersonShoulderModeOn()
 		HolsterAndDisableWeapons(player)
 	}
 } else {
 foreach(player in GetPlayerArray())
     {
-		Message(player, "ATTACKERS TEAM WIN", "All props are dead. ", 5)
+		Message(player, "ATTACKERS TEAM WIN", "All props are dead. Swapping teams.", 7, "diag_ap_aiNotify_winnerFound")
 		player.SetThirdPersonShoulderModeOn()	
 		HolsterAndDisableWeapons(player)		
 	}	
 }
-wait 5
-foreach(player in GetPlayerArray())
-    {
-		Message(player, "SWAPPING TEAMS", "Next round is starting.", 5)
-		}
-wait 5
+wait 7
 UpdatePlayerCounts()
 bubbleBoundary.Destroy()
 printt("Flowstate DEBUG - Prophunt round finished Swapping teams.")
@@ -1482,23 +1555,21 @@ foreach(player in GetPlayerArray())
 					}
 					//for connected players spectators
 				if( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) != 50)
-					
 				{
 						player.StopObserverMode()
 						//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 						TakeAllWeapons(player)
 						player.SetThirdPersonShoulderModeOn()
-									GiveTeamToProphuntPlayer(player) 
-									_HandleRespawnPROPHUNT(player)
+						GiveTeamToProphuntPlayer(player) 
+						_HandleRespawnPROPHUNT(player)
 						player.MakeVisible()
 						player.UnforceStand()
 						player.UnfreezeControlsOnServer()
-						//for died players midround
+						
+						//for ded players midround
 				} else if ( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) == 50){
-					
 						player.StopObserverMode()
 						//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
-
 						if(player.GetTeam() == TEAM_IMC){
 								TakeAllWeapons(player)
 								player.SetThirdPersonShoulderModeOn()
@@ -1507,7 +1578,6 @@ foreach(player in GetPlayerArray())
 								player.MakeVisible()
 								player.UnforceStand()
 								player.UnfreezeControlsOnServer()
-						
 						} else if(player.GetTeam() == TEAM_MILITIA){
 								TakeAllWeapons(player)
 								player.SetThirdPersonShoulderModeOn()
@@ -1517,9 +1587,8 @@ foreach(player in GetPlayerArray())
 								player.UnforceStand()
 								player.UnfreezeControlsOnServer()
 						}
-					
 					} else {
-				 //for alive players
+				 //for alive players swap teams
 						if(player.GetTeam() == TEAM_IMC){
 								TakeAllWeapons(player)
 								player.SetThirdPersonShoulderModeOn()
@@ -1541,45 +1610,21 @@ foreach(player in GetPlayerArray())
 
 					}
 		}
-	
+	wait 0.15
 	}
-
-
 WaitFrame()
 }
 
-bool function returnPropBool(){
-	return prophunt.cantUseChangeProp
-}
-void function GiveTeamToProphuntPlayer(entity player)
+//prophunt end. Colombia
 ///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
-{
-	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
-	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-	
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
 
-	
-	if(IMCplayers.len() > MILITIAplayers.len())
-	{
-	SetTeam(player, TEAM_MILITIA )
-	} else if (MILITIAplayers.len() > IMCplayers.len())
-	{
-	SetTeam(player, TEAM_IMC )
-	} else {
-		switch(RandomIntRangeInclusive(0,1))
-		{
-			case 0:
-				SetTeam(player, TEAM_IMC )
-				break;
-			case 1:
-				SetTeam(player, TEAM_MILITIA )
-				break;
-		}
-	}
-	printt("Flowstate DEBUG - Giving team to player.", player, player.GetTeam())
-}
 
 void function TpPlayerToSpawnPoint(entity player)
 {

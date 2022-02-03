@@ -1068,14 +1068,15 @@ case "mp_rr_canyonlands_64k_x_64k":
                 NewLocationSettings(
                     "TTV Building 2",
                     [
-                        NewLocPair(<2300, 6571, -4490>, <0, -96, 0>),
+                        NewLocPair(<1313, 4450, -2990>, <0, 50, 0>),
                         NewLocPair(<2300, 6571, -4490>, <0, -96, 0>),
 						NewLocPair(<2617, 4668, -4250>, <0, 85, 0>),
-                        NewLocPair(<2617, 4668, -4250>, <0, 85, 0>)
+                        NewLocPair(<1200, 4471, -4150>, <0, 50, 0>)
                     ],
                     <0, 0, 2000>
                 )
             )
+			
 		RegisterLocationPROPHUNT(
                 NewLocationSettings(
                     "Train yard",
@@ -1088,18 +1089,18 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
-		RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "The Tree",
-                    [
-                        NewLocPair(<-6782, -27753, -3340>, <0, -116, 0>),
-                        NewLocPair(<-8043, -28700, -4232>, <0, -122, 0>),
-                        NewLocPair(<-6439, -30760, -3340>, <0, -25, 0>),
-						NewLocPair(<-9220, -29618, -3379>, <0, -46, 0>)
-                    ],
-                    <0, 0, 2000>
-                )
-            )
+				// RegisterLocationPROPHUNT(
+						// NewLocationSettings(
+							// "The Tree",
+							// [
+								// NewLocPair(<-6782, -27753, -3340>, <0, -116, 0>),
+								// NewLocPair(<-8043, -28700, -4232>, <0, -122, 0>),
+								// NewLocPair(<-6439, -30760, -3340>, <0, -25, 0>),
+								// NewLocPair(<-9220, -29618, -3379>, <0, -46, 0>)
+							// ],
+							// <0, 0, 2000>
+						// )
+					// )
 
 		// RegisterLocationPROPHUNT(
                 // NewLocationSettings(
@@ -1148,18 +1149,18 @@ case "mp_rr_canyonlands_64k_x_64k":
                     // <0, 0, 3000>
                 // )
             // )
-          RegisterLocationPROPHUNT(
-                NewLocationSettings(
-                    "Thermal Station",
-                    [
-                        NewLocPair(<-20091, -17683, -3984>, <0, -90, 0>),
-						NewLocPair(<-22919, -20528, -4010>, <0, 0, 0>),
-						NewLocPair(<-17140, -20710, -3973>, <0, -180, 0>),
-                        NewLocPair(<-21054, -23399, -3850>, <0, 90, 0>)
-                    ],
-                    <0, 0, 11000>
-                )
-            )
+          // RegisterLocationPROPHUNT(
+                // NewLocationSettings(
+                    // "Thermal Station",
+                    // [
+                        // NewLocPair(<-20091, -17683, -3984>, <0, -90, 0>),
+						// NewLocPair(<-22919, -20528, -4010>, <0, 0, 0>),
+						// NewLocPair(<-17140, -20710, -3973>, <0, -180, 0>),
+                        // NewLocPair(<-21054, -23399, -3850>, <0, 90, 0>)
+                    // ],
+                    // <0, 0, 11000>
+                // )
+            // )
 						// Shared_RegisterLocation(
                 // NewLocationSettings(
                     // "Capitol City",
