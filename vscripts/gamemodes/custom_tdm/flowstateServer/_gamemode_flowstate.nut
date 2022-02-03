@@ -865,7 +865,6 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 	printt("Flowstate DEBUG - New player connected.", player)
 	if(FlowState_ForceCharacter()){CharSelect(player)}
 	UpdatePlayerCounts()
-    GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
 	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
 	array<entity> playersON = GetPlayerArray_Alive()
@@ -1388,6 +1387,7 @@ foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
+			try{TakePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(){}
 			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor") //props dont like shields FX
 			ClearInvincible(player)
 			player.p.playerDamageDealt = 0.0
@@ -1445,7 +1445,7 @@ foreach(player in IMCplayers)
     {
 		        if(IsValidPlayer(player))
         {
-				
+					try{GivePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(){}
 					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
 					player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
