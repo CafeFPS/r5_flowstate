@@ -863,12 +863,13 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetPlayerSettingsWithMods( characterSetFile, [] )
 				SetPlayerSettings(player, PROPHUNT_SETTINGS)
 				DoRespawnPlayer( player, null )
-				Survival_SetInventoryEnabled( player, true )
+				Survival_SetInventoryEnabled( player, true )				
 				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 				player.SetPlayerNetBool( "pingEnabled", true )
 				player.SetHealth( 100 )
 				player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
 				player.MakeInvisible()
+				player.SetPlayerGameStat( PGS_ASSISTS, 0)
 				SetTeam(player, 20 )
 				Message(player, "APEX PROPHUNT", "Game is in progress. You'll spawn in the next round. \n 				Made by Colombia.", 10)
 				player.SetObserverTarget( playersON[RandomIntRangeInclusive(0,playersON.len()-1)] )
@@ -924,6 +925,7 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 			wait 0.5
 			if(IsValid(victim))
             {
+				victim.SetPlayerGameStat( PGS_ASSISTS, 50)
 				if(victim != attacker){
                 victim.SetObserverTarget( attacker )
 				victim.SetSpecReplayDelay( 2 )
@@ -1072,6 +1074,7 @@ if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
 		try {
 			if(IsValid(player))
 			{
+				player.SetPlayerGameStat( PGS_ASSISTS, 0) //resetting my thing! you don't know what this does ;)
 				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0) //resetting prop changer ability
 				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10) //false
 				player.UnforceStand()
@@ -1461,12 +1464,16 @@ wait 5
 UpdatePlayerCounts()
 bubbleBoundary.Destroy()
 printt("Flowstate DEBUG - Prophunt round finished Swapping teams.")
+
 foreach(player in GetPlayerArray())
     {	
+	if(IsValid(player)){
+	
 				if(player.GetTeam() == TEAM_MILITIA){
 					player.Show()
 					}
-				if( player.IsObserver())
+					//for connected players spectators
+				if( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) != 50)
 					
 				{
 						player.StopObserverMode()
@@ -1478,16 +1485,41 @@ foreach(player in GetPlayerArray())
 						player.MakeVisible()
 						player.UnforceStand()
 						player.UnfreezeControlsOnServer()
-				} else {
-				
+						//for died players midround
+				} else if ( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) == 50)
+						player.StopObserverMode()
+						Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+
 						if(player.GetTeam() == TEAM_IMC){
-						TakeAllWeapons(player)
-						player.SetThirdPersonShoulderModeOn()
-						SetTeam(player, TEAM_MILITIA )
-						_HandleRespawnPROPHUNT(player)
-						player.MakeVisible()
-						player.UnforceStand()
-						player.UnfreezeControlsOnServer()
+								TakeAllWeapons(player)
+								player.SetThirdPersonShoulderModeOn()
+								SetTeam(player, TEAM_MILITIA )
+								_HandleRespawnPROPHUNT(player)
+								player.MakeVisible()
+								player.UnforceStand()
+								player.UnfreezeControlsOnServer()
+						
+						} else if(player.GetTeam() == TEAM_MILITIA){
+								TakeAllWeapons(player)
+								player.SetThirdPersonShoulderModeOn()
+								SetTeam(player, TEAM_IMC )
+								_HandleRespawnPROPHUNT(player)
+								player.MakeVisible()
+								player.UnforceStand()
+								player.UnfreezeControlsOnServer()
+						}
+					
+				
+				{
+				 //for alive players
+						if(player.GetTeam() == TEAM_IMC){
+								TakeAllWeapons(player)
+								player.SetThirdPersonShoulderModeOn()
+								SetTeam(player, TEAM_MILITIA )
+								_HandleRespawnPROPHUNT(player)
+								player.MakeVisible()
+								player.UnforceStand()
+								player.UnfreezeControlsOnServer()
 						
 						} else if(player.GetTeam() == TEAM_MILITIA){
 								TakeAllWeapons(player)
@@ -1499,6 +1531,8 @@ foreach(player in GetPlayerArray())
 								player.UnfreezeControlsOnServer()
 						}
 			}
+		}
+	
 	}
 
 
