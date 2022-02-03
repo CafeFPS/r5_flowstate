@@ -921,11 +921,10 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
 				playersON.fastremovebyvalue( victim )
 	
 			if(!IsValid(victim)) return
-			try{
+			
 			wait 0.5
-			if(IsValid(victim))
-            {
-				victim.SetPlayerGameStat( PGS_ASSISTS, 50)
+			if(IsValid(victim)){
+				
 				if(victim != attacker){
                 victim.SetObserverTarget( attacker )
 				victim.SetSpecReplayDelay( 2 )
@@ -939,7 +938,7 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
 				//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
 				}
-            }
+           
 			
 				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
 				invscore++;
@@ -948,8 +947,9 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
                 int invscore2 = victim.GetPlayerNetInt( "assists" )
 				invscore2++;
 				victim.SetPlayerNetInt( "assists", invscore2 )
-			} catch (e) {}
-		
+
+				victim.SetPlayerGameStat( PGS_ASSISTS, 50 )
+			 }
 		}
 
         // Atacante
@@ -1176,7 +1176,7 @@ void function PropWatcher(entity prop, entity player)
 const array<asset> prophuntAssetsWE =
 [
 	//$"mdl/industrial/traffic_cone_01.rmdl",
-	$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
+	//$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
 	$"mdl/eden/eden_electrical_transformer_01.rmdl",
 	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
 	//$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
@@ -1246,6 +1246,9 @@ void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah =
 					prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 					prop.SetDamageNotifications( true )
 					prop.SetParent(player)
+					
+					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
+			
 					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
 					wait 0.2
 					thread PropWatcher(prop, player) 
@@ -1322,7 +1325,10 @@ foreach(player in GetPlayerArray())
 				prop.SetDamageNotifications( true )
 				prop.SetParent(player)
 				
+				
 				AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
+				
+				
 				
 				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
 				thread PropWatcher(prop, player) //destroys prop on end round and restores player model.
@@ -1488,7 +1494,8 @@ foreach(player in GetPlayerArray())
 						player.UnforceStand()
 						player.UnfreezeControlsOnServer()
 						//for died players midround
-				} else if ( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) == 50)
+				} else if ( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) == 50){
+					
 						player.StopObserverMode()
 						//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 
@@ -1511,8 +1518,7 @@ foreach(player in GetPlayerArray())
 								player.UnfreezeControlsOnServer()
 						}
 					
-				
-				{
+					} else {
 				 //for alive players
 						if(player.GetTeam() == TEAM_IMC){
 								TakeAllWeapons(player)
@@ -1532,7 +1538,8 @@ foreach(player in GetPlayerArray())
 								player.UnforceStand()
 								player.UnfreezeControlsOnServer()
 						}
-			}
+
+					}
 		}
 	
 	}
@@ -1540,6 +1547,7 @@ foreach(player in GetPlayerArray())
 
 WaitFrame()
 }
+
 bool function returnPropBool(){
 	return prophunt.cantUseChangeProp
 }
