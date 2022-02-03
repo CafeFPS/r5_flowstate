@@ -40,8 +40,6 @@ void function OnWeaponDeactivate_ability_phase_walk( entity weapon )
 	entity player = weapon.GetWeaponOwner()
 	if(returnPropBool() || player.GetTeam() == TEAM_IMC){
 		printt("Flowstate DEBUG - Change prop can't be used. You're not prop team, or the prop change window has passed.", player)
-		//now this ability will toggle the angles for props!
-		
 		thread PROPHUNT_GiveAndManageRandomProp(player, true)
 
 	} else {

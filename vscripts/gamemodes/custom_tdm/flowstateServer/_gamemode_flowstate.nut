@@ -875,7 +875,7 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 				player.SetObserverTarget( playersON[RandomIntRangeInclusive(0,playersON.len()-1)] )
 				player.SetSpecReplayDelay( 2 )
                 player.StartObserverMode( OBS_MODE_IN_EYE )
-				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+				//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
 				
 				// foreach(sPlayer in playersON)
 				// {
@@ -930,12 +930,14 @@ void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageIn
                 victim.SetObserverTarget( attacker )
 				victim.SetSpecReplayDelay( 2 )
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
-				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")}
+				//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+				
+				}
 				else {
 				victim.SetObserverTarget( playersON[0] )
 				victim.SetSpecReplayDelay( 2 )
                 victim.StartObserverMode( OBS_MODE_IN_EYE )
-				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+				//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
 				}
             }
 			
@@ -992,7 +994,7 @@ void function _HandleRespawnPROPHUNT(entity player)
 	if( player.IsObserver())
     {
 		player.StopObserverMode()
-        Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+        //Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 	
 	
@@ -1477,7 +1479,7 @@ foreach(player in GetPlayerArray())
 					
 				{
 						player.StopObserverMode()
-						Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+						//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 						TakeAllWeapons(player)
 						player.SetThirdPersonShoulderModeOn()
 									GiveTeamToProphuntPlayer(player) 
@@ -1488,7 +1490,7 @@ foreach(player in GetPlayerArray())
 						//for died players midround
 				} else if ( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) == 50)
 						player.StopObserverMode()
-						Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+						//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
 
 						if(player.GetTeam() == TEAM_IMC){
 								TakeAllWeapons(player)
