@@ -1452,10 +1452,13 @@ foreach(player in IMCplayers)
 					player.kv.solid = 6
 					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 					player.SetThirdPersonShoulderModeOff()
-					string sec = GetCurrentPlaylistVarString("flowstatePROPHUNTweapon", "~~none~~")
+					string pri = GetCurrentPlaylistVarString("flowstatePROPHUNTweapon1", "~~none~~")
+					string sec = GetCurrentPlaylistVarString("flowstatePROPHUNTweapon2", "~~none~~")
 					player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-					player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 					player.GiveWeapon( sec, WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+					player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+					player.GiveWeapon( sec, WEAPON_INVENTORY_SLOT_PRIMARY_1, [] )
+					player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 					player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
 					//if a player punch a prop, they will crash. This is a workaround. Colombia
 					//player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
