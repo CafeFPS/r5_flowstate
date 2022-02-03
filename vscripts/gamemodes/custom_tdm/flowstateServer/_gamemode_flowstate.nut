@@ -1387,7 +1387,7 @@ foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-			try{TakePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(){}
+			try{TakePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(e420){}
 			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor") //props dont like shields FX
 			ClearInvincible(player)
 			player.p.playerDamageDealt = 0.0
@@ -1445,7 +1445,7 @@ foreach(player in IMCplayers)
     {
 		        if(IsValidPlayer(player))
         {
-					try{GivePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(){}
+					try{GivePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(e420){}
 					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
 					ClearInvincible(player)
 					player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
