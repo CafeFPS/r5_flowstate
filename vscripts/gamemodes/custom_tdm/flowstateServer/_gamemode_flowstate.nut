@@ -794,7 +794,7 @@ const array<asset> prophuntAssetsWE =
 ///////////////////////////////////////////////////////
 [
 	//$"mdl/industrial/traffic_cone_01.rmdl",
-	//$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
+	$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
 	$"mdl/eden/eden_electrical_transformer_01.rmdl",
 	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
 	//$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",

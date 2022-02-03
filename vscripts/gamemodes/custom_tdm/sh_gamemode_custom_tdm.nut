@@ -1052,18 +1052,18 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 3000>
                 )
             )
-		// RegisterLocationPROPHUNT(
-                // NewLocationSettings(
-                    // "Skill trainer By Colombia",
-                    // [
-                        // NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
-                        // NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
-                        // NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
-                        // NewLocPair(<14995, 33566, -680>, <16, -45, 0>)
-                    // ],
-                    // <0, 0, 3000>
-                // )
-            // )
+		RegisterLocationPROPHUNT(
+                NewLocationSettings(
+                    "Skill trainer By Colombia",
+                    [
+                        NewLocPair(<15008, 30040, -680>, <20, 50, 0>),
+                        NewLocPair(<19265, 30022, -680>, <11, 132, 0>),
+                        NewLocPair(<19267, 33522, -680>, <10, -138, 0>),
+                        NewLocPair(<14995, 33566, -680>, <16, -45, 0>)
+                    ],
+                    <0, 0, 3000>
+                )
+            )
 		RegisterLocationPROPHUNT(
                 NewLocationSettings(
                     "TTV Building 2",
@@ -1076,6 +1076,18 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
+		Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Overlook",
+                    [
+                        NewLocPair(<32774, 6031, -3239>, <0, 117, 0>),
+                        NewLocPair(<28381, 8963, -3224>, <0, 48, 0>),
+                        NewLocPair(<26327, 11857, -2477>, <0, -43, 0>),
+						NewLocPair(<27303, 14528, -3047>, <0, -42, 0>)
+                    ],
+                    <0, 0, 2000>
+                )
+            )
 			
 		RegisterLocationPROPHUNT(
                 NewLocationSettings(
@@ -1084,7 +1096,8 @@ case "mp_rr_canyonlands_64k_x_64k":
                         NewLocPair(<-11956,3021,-2988>, <0, 87, 0>),
                         NewLocPair(<-13829,2836,-3037>, <0, 122, 0>),
                         NewLocPair(<-12883,4502,-3340>, <0, 177, 0>),
-						NewLocPair(<-11412,3692,-3405>, <0, 3, 0>)
+						NewLocPair(<-11412,3692,-3405>, <0, 3, 0>),
+						NewLocPair(<-14930,2065,-3140>, <0, 3, 0>)
                     ],
                     <0, 0, 2000>
                 )
