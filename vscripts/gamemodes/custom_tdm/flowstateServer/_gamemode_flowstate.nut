@@ -1381,7 +1381,8 @@ array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 		file.deathPlayersCounter = 0
 		prophunt.cantUseChangeProp = false
 prophunt.InProgress = true
-//thread EmitSoundOnSprintingProp()
+thread EmitSoundOnSprintingProp()
+
 printt("Flowstate DEBUG - Tping props team.")
 foreach(player in GetPlayerArray())
     {
