@@ -563,11 +563,19 @@ array<int> function GetTeamsForPlayersFlowstate( array<entity> playersToUse )
 
 void function UpdatePlayerCounts()
 {
-	array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
+
 	string currGameMode = GameRules_GetGameMode()
 	if(currGameMode == "custom_tdm"){
+		array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
+		
+		if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false )){
 		SetGlobalNetInt( "livingPlayerCount", connectedPlayers.len() )
-		SetGlobalNetInt( "squadsRemainingCount", GetTeamsForPlayersFlowstate(connectedPlayers).len() )
+		SetGlobalNetInt( "squadsRemainingCount", connectedPlayers.len() )}
+		else {
+		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray().len() )
+		SetGlobalNetInt( "squadsRemainingCount", GetPlayerArray().len() )
+		}
+	
 	} else {
 		SetGlobalNetInt( "livingPlayerCount", GetPlayerArray_AliveConnected().len() )
 		SetGlobalNetInt( "squadsRemainingCount", GetNumTeamsRemaining() )
