@@ -1170,7 +1170,11 @@ void function EmitWhistleOnProp()
 			{
 				if(IsValid(player))
 				{
-				EmitSoundOnEntity( player, "arcgrenade_impacthard" )
+				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
+				wait 0.1
+				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
+				//wait 0.1
+				//EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
 				} 
 			}
 		}
@@ -4397,7 +4401,8 @@ if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin
             if (now == "now")
             {
                file.tdmState = eTDMState.NEXT_ROUND_NOW
-			   prophunt.mapIndexChanged = false;
+			   prophunt.mapIndexChanged = false
+			   prophunt.InProgress = false
             }
         } catch(e1) {}
 
@@ -4406,6 +4411,7 @@ if(player.GetPlayerName() == file.Hoster || player.GetPlayerName() == file.admin
             if (now == "now")
             {
                file.tdmState = eTDMState.NEXT_ROUND_NOW
+			   prophunt.InProgress = false
             }
         } catch(e2) {}
     }
