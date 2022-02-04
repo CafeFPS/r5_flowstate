@@ -121,15 +121,16 @@ bool InProgress = false
 void function _CustomTDM_Init()
 {
 	SurvivalFreefall_Init()
-
+	PrecacheCustomMapsProps()
+	
 	if(!FlowState_SURF()){
 	file.Hoster = FlowState_Hoster()
 	file.admin1 = FlowState_Admin1()
 	file.admin2 = FlowState_Admin2()
 	file.admin3 = FlowState_Admin3()
 	file.admin4 = FlowState_Admin4()
-	PrecacheCustomMapsProps()
-	}
+	}	
+
 	//gamemodes selection and callbacks. Colombia
 	if (GetMapName() == "mp_rr_canyonlands_staging")
 		{
