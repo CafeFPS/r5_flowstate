@@ -1336,7 +1336,7 @@ if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
 				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10) //false
 				player.UnforceStand()
 				player.UnfreezeControlsOnServer()
-				Message(player, "APEX PROPHUNT", "                    Made by Colombia. Game is starting.\n\n" + helpMessagePROPHUNT(), 15)
+				Message(player, "APEX PROPHUNT v0.9beta", "                    Made by Colombia. Game is starting.\n\n" + helpMessagePROPHUNT(), 15)
 			}
 		}catch(e){}
 	}
