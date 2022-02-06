@@ -168,6 +168,7 @@ if ( IsValid( traceResult.hitEnt ) )
 void function JumpPadWatcher(entity jumpPad)
 {
 wait 15
-jumpPad.Destroy()
+if(IsValid(jumpPad)){
+jumpPad.Destroy()}
 }
 #endif

@@ -2653,8 +2653,8 @@ void function VotingPhase()
 				player.UnforceStand()
 				player.UnfreezeControlsOnServer()
 				HolsterAndDisableWeapons( player )
-				wait 0.15
 			}
+			wait 0.15
 	}
 
 	if (!file.mapIndexChanged)
@@ -2694,7 +2694,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
 wait 7}
 else{
-wait 7	
+wait 3	
 }
 
 if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
@@ -3549,6 +3549,7 @@ void function MonitorBubbleBoundaryPROPHUNT(entity bubbleShield, vector bubbleCe
 
 void function PlayerRestoreHP(entity player, float health, float shields)
 {
+	if(IsValid(player) && IsAlive( player )){
     player.SetHealth( health )
     // Inventory_SetPlayerEquipment(player, "helmet_pickup_lv4_abilities", "helmet")
 	// disabled cuz helmets not working :(
@@ -3559,7 +3560,7 @@ void function PlayerRestoreHP(entity player, float health, float shields)
         Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
     else if(shields <= 100)
         Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-    player.SetShieldHealth( shields )
+    player.SetShieldHealth( shields )}
 }
 
  // ██████  ██████  ███████ ███    ███ ███████ ████████ ██  ██████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
