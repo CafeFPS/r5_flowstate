@@ -475,17 +475,27 @@ void function _OnPlayerConnected(entity player)
 			printt("Flowstate DEBUG - This is unreachable.", player)
         break
     }
-				
+	//thread debugplayerlatency(player)			
 	thread checkforhighpingabuser(player)
 }
-
+// void function debugplayerlatency(entity player)
+// {
+		// int asd = 0
+				// while(true)
+				// {
+			
+				// printt("Flowstate DEBUG - Debug Latency: ", (int(player.GetLatency()* 1000) - 40))
+				// wait 1
+				// asd++
+				// if(asd == 10) break
+				// }
+// }
 void function checkforhighpingabuser(entity player)
 {
 				//kick players with high ping
-				wait 7			
+				wait 10		
 				if ((int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() && IsValid(player) && FlowState_KickHighPingPlayer()){
-					wait 3
-					if ((int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() && IsValid(player) && FlowState_KickHighPingPlayer()){
+
 					player.FreezeControlsOnServer()
 					player.ForceStand()
 					HolsterAndDisableWeapons( player )
@@ -494,7 +504,6 @@ void function checkforhighpingabuser(entity player)
 					printt("Flowstate DEBUG - Disconnecting a high ping abuser.", player)
 					ClientCommand( player, "disconnect" )
 					UpdatePlayerCounts()
-					}
 				}
 }
 
