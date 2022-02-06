@@ -482,7 +482,7 @@ void function _OnPlayerConnected(entity player)
 void function checkforhighpingabuser(entity player)
 {
 				//kick players with high ping
-				wait 2			
+				wait 7			
 				if ((int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() && IsValid(player) && FlowState_KickHighPingPlayer()){
 					wait 3
 					if ((int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() && IsValid(player) && FlowState_KickHighPingPlayer()){
