@@ -757,7 +757,32 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 3000>
                 )
             )
-		Shared_RegisterLocation(
+			Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Lava Fissure",
+                    [
+                        NewLocPair(<-26550, 13746, -3048>, <0, -134, 0>),
+						NewLocPair(<-28877, 12943, -3109>, <0, -88.70, 0>),
+                        NewLocPair(<-29881, 9168, -2905>, <-1.87, -2.11, 0>),
+						NewLocPair(<-27590, 9279, -3109>, <0, 90, 0>)
+                    ],
+                    <0, 0, 2500>
+                )
+            )
+					Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Space Elevator",
+                    [
+                        NewLocPair(<-12286, 26037, -4012>, <0, -116, 0>),
+                        NewLocPair(<-12318, 28447, -3975>, <0, -122, 0>),
+                        NewLocPair(<-14373, 27785, -3961>, <0, -25, 0>),
+						NewLocPair(<-13858, 27985, -1958>, <0, -46, 0>),
+						NewLocPair(<-11638, 26123, -3983>, <0, 137, 0>)
+                    ],
+                    <0, 0, 2000>
+                )
+            )
+					Shared_RegisterLocation(
                 NewLocationSettings(
                    "Skill trainer By Colombia",
                     [
@@ -769,6 +794,19 @@ case "mp_rr_canyonlands_64k_x_64k":
                    <0, 0, 3000>
                 )
             )
+			Shared_RegisterLocation(
+                NewLocationSettings(
+                    "Little Town",
+                    [
+                        NewLocPair(<22857, 3449, -4050>, <0, -157, 0>),
+                        NewLocPair(<19559, 232, -4035>, <0, 33, 0>),
+                        NewLocPair(<19400, 4384, -4027>, <0, -35, 0>)
+                    ],
+                    <0, 0, 2000>
+                )
+            )
+
+
 		Shared_RegisterLocation(
                 NewLocationSettings(
                     "TTV Building 2",
@@ -947,53 +985,53 @@ case "mp_rr_canyonlands_64k_x_64k":
                 )
             )
 
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Refinery",
-                    [
-                        NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
-                        NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
-                        NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
-                        NewLocPair(<18285, 28602, -4200>, <0, -45, 0>),
-                        NewLocPair(<19228, 25592, -4821>, <0, 135, 0>),
-                        NewLocPair(<19495, 29283, -4821>, <0, -45, 0>),
-                        NewLocPair(<18470, 28330, -4370>, <0, 135, 0>),
-                        NewLocPair(<18461, 28405, -4199>, <0, 45, 0>),
-                        NewLocPair(<18284, 28492, -3992>, <0, -45, 0>),
-                        NewLocPair(<19428, 27190, -4140>, <0, -45, 0>),
-                        NewLocPair(<20435, 26254, -4139>, <0, -175, 0>),
-                        NewLocPair(<20222, 26549, -4316>, <0, 135, 0>),
-                        NewLocPair(<19444, 25605, -4602>, <0, 45, 0>),
-                        NewLocPair(<21751, 29980, -4226>, <0, -135, 0>),
-                        NewLocPair(<17570, 26915, -4637>, <0, -90, 0>),
-                        NewLocPair(<16382, 28296, -4588>, <0, -45, 0>),
-                        NewLocPair(<16618, 28848, -4451>, <0, 40, 0>)
-                    ],
-                    <0, 0, 6500>
-                )
-            )
-        Shared_RegisterLocation(
-                NewLocationSettings(
-                    "Factory",
-                    [
-                        NewLocPair(<9213, -22942, -3571>, <0, -120, 0>),
-                        NewLocPair(<7825, -24577, -3547>, <0, -165, 0>),
-                        NewLocPair(<5846, -25513, -3523>, <0, 180, 0>),
-                        NewLocPair(<4422, -25937, -3571>, <0, 90, 0>),
-                        NewLocPair(<4056, -25017, -3571>, <0, -170, 0>),
-                        NewLocPair(<2050, -25267, -3650>, <-5, 45, 0>),
-                        NewLocPair(<2068, -25171, -3318>, <15, 45, 0>),
-                        NewLocPair(<2197, -22687, -3572>, <-3, -90, 0>),
-                        NewLocPair(<7081, -23051, -3667>, <0, 45, 0>),
-                        NewLocPair(<8922, -22135, -3119>, <0, 180, 0>),
-                        NewLocPair(<5436, -22436, -3188>, <0, 90, 0>),
-                        NewLocPair(<4254, -23031, -3522>, <0, 45, 0>),
-                        NewLocPair(<8211, -21413, -3700>, <0, -140, 0>),
-                        NewLocPair(<4277, -24101, -3571>, <0, -60, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
+		// Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Refinery",
+                    // [
+                        // NewLocPair(<22970, 27159, -4612>, <0, 135, 0>),
+                        // NewLocPair(<20430, 26481, -4200>, <0, 135, 0>),
+                        // NewLocPair(<19142, 30982, -4612>, <0, -45, 0>),
+                        // NewLocPair(<18285, 28602, -4200>, <0, -45, 0>),
+                        // NewLocPair(<19228, 25592, -4821>, <0, 135, 0>),
+                        // NewLocPair(<19495, 29283, -4821>, <0, -45, 0>),
+                        // NewLocPair(<18470, 28330, -4370>, <0, 135, 0>),
+                        // NewLocPair(<18461, 28405, -4199>, <0, 45, 0>),
+                        // NewLocPair(<18284, 28492, -3992>, <0, -45, 0>),
+                        // NewLocPair(<19428, 27190, -4140>, <0, -45, 0>),
+                        // NewLocPair(<20435, 26254, -4139>, <0, -175, 0>),
+                        // NewLocPair(<20222, 26549, -4316>, <0, 135, 0>),
+                        // NewLocPair(<19444, 25605, -4602>, <0, 45, 0>),
+                        // NewLocPair(<21751, 29980, -4226>, <0, -135, 0>),
+                        // NewLocPair(<17570, 26915, -4637>, <0, -90, 0>),
+                        // NewLocPair(<16382, 28296, -4588>, <0, -45, 0>),
+                        // NewLocPair(<16618, 28848, -4451>, <0, 40, 0>)
+                    // ],
+                    // <0, 0, 6500>
+                // )
+            // )
+        // Shared_RegisterLocation(
+                // NewLocationSettings(
+                    // "Factory",
+                    // [
+                        // NewLocPair(<9213, -22942, -3571>, <0, -120, 0>),
+                        // NewLocPair(<7825, -24577, -3547>, <0, -165, 0>),
+                        // NewLocPair(<5846, -25513, -3523>, <0, 180, 0>),
+                        // NewLocPair(<4422, -25937, -3571>, <0, 90, 0>),
+                        // NewLocPair(<4056, -25017, -3571>, <0, -170, 0>),
+                        // NewLocPair(<2050, -25267, -3650>, <-5, 45, 0>),
+                        // NewLocPair(<2068, -25171, -3318>, <15, 45, 0>),
+                        // NewLocPair(<2197, -22687, -3572>, <-3, -90, 0>),
+                        // NewLocPair(<7081, -23051, -3667>, <0, 45, 0>),
+                        // NewLocPair(<8922, -22135, -3119>, <0, 180, 0>),
+                        // NewLocPair(<5436, -22436, -3188>, <0, 90, 0>),
+                        // NewLocPair(<4254, -23031, -3522>, <0, 45, 0>),
+                        // NewLocPair(<8211, -21413, -3700>, <0, -140, 0>),
+                        // NewLocPair(<4277, -24101, -3571>, <0, -60, 0>)
+                    // ],
+                    // <0, 0, 3000>
+                // )
+            // )
 
             Shared_RegisterLocation(
                 NewLocationSettings(
@@ -1193,30 +1231,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                     // <0, 0, 3000>
                 // )
             // )
-					// Shared_RegisterLocation(
-                // NewLocationSettings(
-                    // "Space Elevator",
-                    // [
-                        // NewLocPair(<-12286, 26037, -4012>, <0, -116, 0>),
-                        // NewLocPair(<-12318, 28447, -3975>, <0, -122, 0>),
-                        // NewLocPair(<-14373, 27785, -3961>, <0, -25, 0>),
-						// NewLocPair(<-13858, 27985, -1958>, <0, -46, 0>),
-						// NewLocPair(<-11638, 26123, -3983>, <0, 137, 0>)
-                    // ],
-                    // <0, 0, 2000>
-                // )
-            // )
-			// Shared_RegisterLocation(
-                // NewLocationSettings(
-                    // "Little Town",
-                    // [
-                        // NewLocPair(<22857, 3449, -4050>, <0, -157, 0>),
-                        // NewLocPair(<19559, 232, -4035>, <0, 33, 0>),
-                        // NewLocPair(<19400, 4384, -4027>, <0, -35, 0>)
-                    // ],
-                    // <0, 0, 2000>
-                // )
-            // )
+
 			// Shared_RegisterLocation(
                 // NewLocationSettings(
                     // "Epicenter",
@@ -1230,20 +1245,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                     // <0, 0, 2000>
                 // )
             // )
-			
 
-			// Shared_RegisterLocation(
-                // NewLocationSettings(
-                    // "Lava Fissure",
-                    // [
-                        // NewLocPair(<-26550, 13746, -3048>, <0, -134, 0>),
-						// NewLocPair(<-28877, 12943, -3109>, <0, -88.70, 0>),
-                        // NewLocPair(<-29881, 9168, -2905>, <-1.87, -2.11, 0>),
-						// NewLocPair(<-27590, 9279, -3109>, <0, 90, 0>)
-                    // ],
-                    // <0, 0, 2500>
-                // )
-            // )
 			// Shared_RegisterLocation(
                 // NewLocationSettings(
 	                   // "ESPACIO ABIERTO",

@@ -2669,11 +2669,6 @@ void function VotingPhase()
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
 	file.selectedLocation = file.locationSettings[choice]
-	file.dropselectedLocation = file.droplocationSettings[choice]
-	file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
-
-		
-
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
@@ -2763,6 +2758,8 @@ else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
 					printt("Flowstate DEBUG - Dropships ON.")
+	file.dropselectedLocation = file.droplocationSettings[choice]
+	file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
