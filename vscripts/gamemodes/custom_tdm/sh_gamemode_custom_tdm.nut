@@ -1385,7 +1385,7 @@ bool function FlowState_PROPHUNT()                         { return GetCurrentPl
 bool function FlowState_EnableBrightWaterByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_BRIGHWATER_By_Zero", false ) }
 bool function FlowState_EnableCaveByBlessedSeal()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CAVE_By_BlessedSeal", false ) }
 bool function Flowstate_DoorsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateDoorsEnabled", true ) }
-int function FlowState_MaxPingAllowed() { return GetCurrentPlaylistVarInt("flowstateMaxPingAllowed", 190) }
+int function FlowState_MaxPingAllowed() { return GetCurrentPlaylistVarInt("flowstateMaxPingAllowed", 200) }
 bool function FlowState_KickHighPingPlayer()                         { return GetCurrentPlaylistVarBool("flowstateKickHighPingPlayer", true ) }
 
 #if SERVER   
