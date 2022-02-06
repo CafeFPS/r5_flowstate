@@ -40,7 +40,7 @@ enum eTDMState
 }
 
 struct {
-	string scriptversion = "v2.8"
+	string scriptversion = "v2.9"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
 	bool mapIndexChanged = true
