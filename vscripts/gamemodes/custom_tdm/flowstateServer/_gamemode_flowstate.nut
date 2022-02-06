@@ -2711,12 +2711,7 @@ void function VotingPhase()
 	
 	printt("Flowstate DEBUG - checking flowstateenabledropship.")
 
-if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
-{
-wait 7}
-else{
-wait 3	
-}
+wait 3
 
 if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
 	DestroyPlayerProps()
