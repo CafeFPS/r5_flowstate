@@ -482,16 +482,19 @@ void function _OnPlayerConnected(entity player)
 void function checkforhighpingabuser(entity player)
 {
 				//kick players with high ping
-				wait 1					
+				wait 2			
 				if ((int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() && IsValid(player) && FlowState_KickHighPingPlayer()){
-				player.FreezeControlsOnServer()
-				player.ForceStand()
-				HolsterAndDisableWeapons( player )
-				Message(player, "FLOWSTATE KICK", "Your ping is too high: " + (int(player.GetLatency()* 1000) - 40), 3)
-				wait 3
-				printt("Flowstate DEBUG - Disconnecting a high ping abuser.", player)
-				ClientCommand( player, "disconnect" )
-				UpdatePlayerCounts()
+					wait 3
+					if ((int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() && IsValid(player) && FlowState_KickHighPingPlayer()){
+					player.FreezeControlsOnServer()
+					player.ForceStand()
+					HolsterAndDisableWeapons( player )
+					Message(player, "FLOWSTATE KICK", "Your ping is too high: " + (int(player.GetLatency()* 1000) - 40), 3)
+					wait 3
+					printt("Flowstate DEBUG - Disconnecting a high ping abuser.", player)
+					ClientCommand( player, "disconnect" )
+					UpdatePlayerCounts()
+					}
 				}
 }
 
