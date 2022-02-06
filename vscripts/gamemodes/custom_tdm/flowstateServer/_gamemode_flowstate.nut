@@ -379,6 +379,7 @@ void function _OnPlayerConnected(entity player)
 ///////////////////////////////////////////////////////
 {
     if(!IsValid(player)) return
+
 		printt("Flowstate DEBUG - New player connected.", player)
 		if(FlowState_ForceCharacter()){
 				CharSelect(player)
@@ -399,6 +400,7 @@ void function _OnPlayerConnected(entity player)
 			else { 
 			Message(player, "FLOWSTATE: FFA/TDM", "Type 'commands' in console to see the available console commands.", 10)
 			}
+	
 	switch(GetGameState())
     {
     case eGameState.MapVoting:
@@ -419,7 +421,6 @@ void function _OnPlayerConnected(entity player)
 			}
 			player.UnforceStand()
 			player.FreezeControlsOnServer()
-
 			}
 		break
 	case eGameState.WaitingForPlayers:
@@ -467,14 +468,30 @@ void function _OnPlayerConnected(entity player)
 			if(FlowState_Gungame()){
 				KillStreakAnnouncer(player, true)
 			}
-			
+
 			}
         break
     default:
 			printt("Flowstate DEBUG - This is unreachable.", player)
         break
     }
+				
+	thread checkforhighpingabuser(player)
 }
+
+void function checkforhighpingabuser(entity player)
+{
+				//kick players with high ping
+				wait 5					
+				if ((int(player.GetLatency()* 1000) - 40) > 5 && IsValid(player) && FlowState_KickHighPingPlayer()){
+				Message(player, "FLOWSTATE KICK", "\nYou can't play on this server because your ping is too high, sorry.", 5)
+				wait 5
+				printt("Flowstate DEBUG - Disconnecting a high ping abuser.", player)
+				ClientCommand( player, "disconnect" )
+				UpdatePlayerCounts()
+				}
+}
+
 void function doubletriplekillaudio(entity victim, entity attacker)
 {
 	entity champion = file.previousChampion
@@ -954,7 +971,8 @@ void function _OnPlayerConnectedPROPHUNT(entity player)
 		default:
 			break
 	}
-		
+
+	
 }
 
 void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageInfo)
