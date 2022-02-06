@@ -483,7 +483,7 @@ void function checkforhighpingabuser(entity player)
 {
 				//kick players with high ping
 				wait 5					
-				if ((int(player.GetLatency()* 1000) - 40) > 5 && IsValid(player) && FlowState_KickHighPingPlayer()){
+				if ((int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() && IsValid(player) && FlowState_KickHighPingPlayer()){
 				Message(player, "FLOWSTATE KICK", "\nYou can't play on this server because your ping is too high, sorry.", 5)
 				wait 5
 				printt("Flowstate DEBUG - Disconnecting a high ping abuser.", player)
