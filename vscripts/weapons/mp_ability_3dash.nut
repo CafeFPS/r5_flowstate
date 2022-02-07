@@ -61,6 +61,7 @@ void function DashPlayer(entity player, float chargeTime)
 	// player.SetParent(mover, "REF", false)
 	// player.SetPredictionEnabled( false )
 
+	if ( GetMapName() == "mp_rr_ashs_redemption" ) return
 	vector yes
 	if(player.GetInputAxisForward() || player.GetInputAxisRight()) yes = Normalize(player.GetInputAxisForward() * player.GetViewForward() + player.GetInputAxisRight() * player.GetViewRight())
 	else yes = Normalize(player.GetVelocity())

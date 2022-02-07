@@ -501,7 +501,7 @@ void function checkforhighpingabuser(entity player)
 					HolsterAndDisableWeapons( player )
 					Message(player, "FLOWSTATE KICK", "Your ping is too high: " + (int(player.GetLatency()* 1000) - 40), 3)
 					wait 3
-					printt("Flowstate DEBUG - Disconnecting a high ping abuser.", player)
+					printt("Flowstate DEBUG - Disconnecting a high ping abuser: ", player)
 					ClientCommand( player, "disconnect" )
 					UpdatePlayerCounts()
 				}
