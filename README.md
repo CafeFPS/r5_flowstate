@@ -1,7 +1,13 @@
-# This Readme is not updated. 
-# Please get the playlist from Releases.
-You will need Detours 2.0beta, grab it from here: https://discord.com/channels/@me/898436449261748284/937004640090853377
-Replace scripts folder with this repo
+# This Readme will be updated soon.
+Current version: Flowstate 3.0beta
+Please get the Required files from Releases!
+
+To run correctly Flowstate scripts you will need:
+ 1. Playlist file. /r5reloaded/platform/
+ 2. Flyers edited vpks for three maps. (KC, KCMU1, KCNIGHT) put the content in /r5reloaded/vpk
+ 3. (Optional) Fancy frontend video for the new menu by Zee! Updated Frontend BIK, download the two parts: background fancy video, put it in /r5reloaded/media/
+ 4. FLOWSTATE IS ONLY COMPATIBLE WITH DETOURS 2.0BETA, GRAB IT FROM UPDATES CHANNEL IN R5R DISCORD!
+
 ____________________________________________
 
 # R5 Flow State 2.0
