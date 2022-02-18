@@ -1,1184 +1,223 @@
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 untyped
 
 global function ShFlyers_Init
-
-global function IsFlyerThatStillHasDeathBox
-global function GetDeathBoxFromFlyer
-
-
+global function IsCagedFlyer
 global const FLYER_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-const FLYER_1000X_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-const FLYER_500X_MODEL = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-const FLYER_MODEL_STATIC = $"mdl/Creatures/flyer/flyer_kingscanyon_animated.rmdl"
-const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
-
-const TIME_BEFORE_FLYER_DROPS_LOOT = 3.0
-const TIME_FOR_CAGED_FLYER_DAMAGED_STATE_TRANSITIONS = 10.0
-const TIME_FOR_CAGED_FLYER_TRIGGER_VACATED_STATE_TRANSITIONS = 10.0
-float TIME_FOR_CAGED_FLYER_STAY_IN_CAUTIOUS_STATE = 5.0 //
-const TIME_FOR_CAGED_FLYER_STAY_IN_ANGRY_STATE = 10.0
-const DIST_THRESHOLD_FOR_ANGRY_CAGED_FLYER = 275
-
-global int FLYER_WITH_DEATHBOX_COUNT_TO_SPAWN = 0 //
-const bool FLYER_WITH_DEATHBOX_FLYING_IDLE_ALWAYS = false
-const float FLYER_WITH_DEATHBOX_FLYING_IDLE_RADIUS = 1500
-const int FLYER_WITH_DEATHBOX_HEALTH = 250
-const int CAGED_FLYER_HEALTH = 100
-
-
-const float FLYER_LOOT_LEGENDARY_TIER_PROBABILTY = 0.02
-const float FLYER_LOOT_EPIC_TIER_PROBABILITY = 0.38
-const int FLYER_LOOT_CAP_ON_EPIC_OR_HIGHER_ITEM_COUNT = 3
-
-const float FLYER_LOOT_TIER_OVERRIDE = -1.0
-const int FLYER_PERCHED_APPROACH_DISTANCE_THRESHOLD = 1024
-const int FLYER_FLYING_APPROACH_DISTANCE_THRESHOLD = 450
-
-const int FLYER_LOOT_ITEMS_FLOOR = 5
-const int FLYER_LOOT_ITEMS_CEILING = 10
-
-global const string DEATHBOX_FLYER_SCRIPT_NAME = "deathboxFlyer"
-global const string CAGED_FLYER_SCRIPT_NAME = "cagedFlyer"
-
-global function CreateFlyerSequence
-//global function AddFlyersToSequence
-global function DevFlyerPrintCount
-global function GetCirclingFlyers
-//global function GetFlyerPickupAnimations
-
-#if SERVER
-global function CreateServerFlyer
-global function FlyerTakeOff
-global function FlyerCrawl
-global function GetPickupAnimation
-global function CreatePerchedFlyer
-global function FlyersAttackDropship
-global function NextDropshipAttackedByFlyers
-#elseif CLIENT
-//	global function FlyerFlyToPath
-//	global function ServerCallback_PlayLootRarityFXOnDeathboxDrop
-#endif
+global const asset DEATHBOX_DROP_FX = $"P_loot_flyer"
+global const asset FX_FLYER_GLOW2 = $"P_flyer_glow"
 
 #if CLIENT
 global function ServerCallback_PlayLootRarityFXOnDeathboxDrop
-
 const asset FX_FLYER_GLOW = $"P_flyer_glow"
 #endif
 
-//////////////////////
-//////////////////////
-//// Global Types ////
-//////////////////////
-//////////////////////
-
-#if R5DEV
-struct TestFlyerSpawnDataStruct
-{
-	vector origin
-	vector angles
-	bool   startsInFlight
-}
-#endif
-
-global struct FlyerAnim
-{
- 	string name
- 	string flyer
- 	string npc
- 	string spectre
- 	FlightPath flightPath
- 	bool hasAnalysis
-}
-
-global function IsFlyer
-global function IsCagedFlyer
-global function IsDeathboxFlyer
-
-///////////////////////
-///////////////////////
-//// Private Types ////
-///////////////////////
-///////////////////////
-
-enum perchedFlyerState
-{
-	idle,
-	takeOff,
-}
-
-struct DeathBoxFlyerDataStruct
-{
-	bool   isPerched = false
-	float  timeTakeoffStarted = -1.0
-	bool   droppedLoot = false
-	entity deathBox
-	entity scriptMoverParent
-	bool   startsFlying = false
-}
-
-
-enum flyerState
-{
-	IDLE,
-	CAUTIOUS_TO_ANGRY,
-	CAUTIOUS_TO_IDLE,
-	ANGRY,
-	INVALID,
-}
-
-struct CagedFlyerDataStruct
-{
-	float  timeLastDamaged = -1.0
-	float  timeTriggerLastVacated = -1.0
-	float  timeLastBecameCautious = -1.0
-	float  timeLastBecameAngry = -1.0
-	entity linkedTrigger
-}
-
 struct
 {
-	array< entity >                          deathBoxFlyerNodes
-	table< entity, DeathBoxFlyerDataStruct > deathBoxFlyerToDataStructTable //
-	table< entity, CagedFlyerDataStruct >    cagedFlyerToDataStructTable //
-	
-	array<FlyerAnim> flyerPickupAnimations
-	array< entity > flyerWithCorpseNodes
-	
-	int devFlyerCountReal = 0
-	int devFlyerCountCheap = 0
-	int devFlyerCountStatic = 0
-	
-	int flyerCheapMixCount = 0
-	
-	int fliersToSpawn = 0
-
-	#if(DEV)
-		int                               currentTestFlyerSpawnIndex = -1 //
-		array< TestFlyerSpawnDataStruct > testflyerSpawnData
-		bool flyerSpawnDataSorted = false
-	#endif
+array< entity > cagedFlyers 
 } file
 
 void function ShFlyers_Init()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
-	//PrecacheModel( FLYER_PATH_MODEL )
-	//PrecacheModel( FLYER_PATH_500X_MODEL )
-	//PrecacheModel( FLYER_PATH_1000X_MODEL )
-	PrecacheModel( FLYER_MODEL_STATIC )
 	PrecacheModel( FLYER_MODEL )
-	PrecacheModel( FLYER_500X_MODEL )
-	PrecacheModel( FLYER_1000X_MODEL )
-	//PrecacheModel( $"mdl/creatures/flyer/r2_flyer.rmdl" )
-
 	PrecacheParticleSystem( DEATHBOX_DROP_FX )
-
-	//
-
-
-	RegisterSignal( "FlyerStopThink" )
-	RegisterSignal( "FlyerDeath" )
-	RegisterSignal( "StopFlyerIdle" )
-	RegisterSignal( "RecalculateFlyerState" )
-	RegisterSignal( "CagedFlyerSetPainParameter"  )
-	RegisterSignal( "KillFlyer" )
-
-
-	level.circlingFlyers		<- {}
-
-	level.XWING_GROUP_ANIM_VARIATIONS <- []
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "a" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "b" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "c" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "d" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "e" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "f" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "g" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "h" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "i" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "j" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "k" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "l" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "m" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "n" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "o" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "p" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "q" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "r" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "s" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "t" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "u" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "v" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "w" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "x" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "y" )
-	level.XWING_GROUP_ANIM_VARIATIONS.append( "z" )
-
-	level.XWING_FLYING_ANIMS <- []
-	level.XWING_FLYING_ANIMS.append( { anim = "fly2", repeat = 6 } )
-	level.XWING_FLYING_ANIMS.append( { anim = "flap", repeat = 3 } )
-	level.XWING_FLYING_ANIMS.append( { anim = "glide", repeat = 1 } )
-
-	{
-		FlyerAnim flyerAnim
-	 	flyerAnim.name = "normalDive"
-	 	flyerAnim.flyer = "flyer_PicksUp_Soldier"
-	 	flyerAnim.npc = "pt_flyer_PicksUp_Soldier"
-	 	flyerAnim.spectre = "pt_flyer_PicksUp_Spectre"
-		file.flyerPickupAnimations.append( flyerAnim )
-	}
-	{
-		FlyerAnim flyerAnim
-	 	flyerAnim.name = "steepDive"
-	 	flyerAnim.flyer = "flyer_PickingUp_Soldier_dive"
-	 	flyerAnim.npc = "pt_flyer_pickingup_soldier_dive"
-	 	flyerAnim.spectre = "pt_flyer_pickingup_spectre_dive"
-	 	flyerAnim.hasAnalysis = true
-		file.flyerPickupAnimations.append( flyerAnim )
-	}
-	{
-		FlyerAnim flyerAnim
-	 	flyerAnim.name = "intro"
-	 	flyerAnim.flyer = "flyer_PicksUp_Soldier_intro"
-	 	flyerAnim.npc = "pt_flyer_PicksUp_Soldier_intro"
-	 	flyerAnim.spectre = "pt_flyer_PicksUp_Soldier_intro"
-		file.flyerPickupAnimations.append( flyerAnim )
-	}
-
-	level.FlyerPickupNodes 	<- {}
-
-	level.dropshipAttackAnims <- {}
-	level.dropshipAttackAnims[ DROPSHIP_STRAFE ] <- {
-														shipAnim = DROPSHIP_FLYER_ATTACK_ANIM
-														flyerArray = [ "flyer_dropshipattack_top", "flyer_dropshipattack_right", "flyer_dropshipattack_cockpit" ]
-													}
-	level.dropshipAttackAnims[ DROPSHIP_VERTICAL ] <- {
-														shipAnim = DROPSHIP_FLYER_ATTACK_ANIM_VERTICAL
-														flyerArray = [ "flyer_dropshipattack_vertical_top", "flyer_dropshipattack_vertical_right", "flyer_dropshipattack_vertical_cockpit" ]
-													}
+	PrecacheParticleSystem( FX_FLYER_GLOW2 )
 
 	#if SERVER
-
-		AddDamageCallback( "script_mover", Flyer_TookDamage )
 		AddSpawnCallbackEditorClass( "prop_dynamic", "script_survival_flyer_with_corpse", SVFlyerCreationCallback )
-
-		// used to replace the animation used for dropships dropping off soldiers by zipline
-		// only works with RunDropshipDropoff( ... ) in _goblin_dropship.nut
-		level.nextDropshipAttackedByFlyers <- false
-	#endif
-	
-	#if(CLIENT)
-		AddCreateCallback( "script_mover", FlyerCreationCallback )
-		
-		if ( EvilFlyersEnabled() )
-		{
-			#if(true)
-				AddCreateCallback( "prop_dynamic", OnEvilFlyerCreated )
-				PrecacheParticleSystem( FX_FLYER_GLOW )
-				//
-			#endif
-		}
+		AddSpawnCallback_ScriptName( "cagedFlyerpf184256", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf185661", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf185657", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf184256", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf149993", SVCagedFlyerCreationCallback )
+		AddSpawnCallback_ScriptName( "cagedFlyerpf149990", SVCagedFlyerCreationCallback )
 	#endif
 }
 
 #if SERVER
-void function SVFlyerCreationCallback( entity flyer )
+void function CagedFlyerAnimation(entity flyer) //idle
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
-	if( flyer.GetModelName().tolower() == FLYER_MODEL.tolower() )
-	{
+	float idleLength = flyer.GetSequenceDuration( "fl_perched_idle" )
+	float idleLookLength = flyer.GetSequenceDuration( "fl_perched_idle_look" )
+		while( true )
+		{
+			if(IsValid(flyer)) flyer.Anim_Play( "fl_perched_idle" )
+			wait idleLength
+			if(IsValid(flyer)) {flyer.Anim_Stop()
+			flyer.Anim_Play( "fl_perched_idle_look" )}
+			wait idleLookLength
+			if(IsValid(flyer)) flyer.Anim_Stop()	
+		}
+}
+
+
+void function CagedFlyerAudios(entity flyer)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	if(IsValid(flyer)){
+	entity entity2 = CreateScriptMover( flyer.GetOrigin() )
+	entity2.SetParent(flyer)
+	entity2.DisableHibernation()
+
+	if(IsValid(flyer)) flyer.Anim_Play( "fl_perched_scream" )
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_MediumScream" )
+	wait 0.5 
+	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_Vocal_QuickScream" )
+	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_Slam" )
+	wait 0.5 
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_MediumScream" )
+	wait 0.8 
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_LongScream" )
+	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_JumpLand" )
+	wait 1.2
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_HeadShake" )
+	wait 0.5 
+	if(IsValid(flyer)) EmitSoundOnEntity( flyer, "Flyer_Cage_Vocal_Breath" )
+	wait 0.5 
+	if(IsValid(entity2)) EmitSoundOnEntity( entity2, "Flyer_Cage_BiteBars" )}
+}
+
+void function CreateCagedFlyerTrigger(entity flyer)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( 370 )
+	trigger.SetAboveHeight( 50 )
+	trigger.SetBelowHeight( 50 )
+	trigger.SetOrigin( flyer.GetOrigin() )
+	DispatchSpawn( trigger )
+	trigger.SearchForNewTouchingEntity()
+		while ( IsValid(flyer) )
+		{
+			array<entity> touchingEnts = trigger.GetTouchingEntities()
+			foreach( touchingEnt in touchingEnts  )
+			{
+				if( touchingEnt.IsPlayer() )
+				{
+					printt("Flyers DEBUG - Caged flyer trigger is being touched")
+					thread CagedFlyerAudios(flyer)
+					wait 6
+				}
+			}
+			wait 0.01
+		}
+	trigger.Destroy()
+}
+void function SVCagedFlyerCreationCallback( entity flyer )
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+		flyer.SetOrigin(flyer.GetOrigin() + < 0, 0, 0> )
 		flyer.kv.fadedist = 14000
 		flyer.kv.rendercolor = "255 255 255"
 		flyer.kv.modelscale = 1
-		flyer.kv.solid = SOLID_BBOX
+		flyer.kv.solid = 6
+		flyer.SetValueForModelKey( FLYER_MODEL.tolower() )
+		flyer.SetMaxHealth( 100 )
+		flyer.SetHealth( 100 )
+		flyer.SetDamageNotifications( true )
+		flyer.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
+		AddEntityCallback_OnDamaged( flyer, CagedFlyer_OnDamaged) 
+		thread CagedFlyerAnimation(flyer)
+		thread CreateCagedFlyerTrigger (flyer)
+}
+void function CagedFlyer_OnDamaged(entity ent, var damageInfo)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	float damage = DamageInfo_GetDamage( damageInfo )
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+	float flyerNextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	if (flyerNextHealth > 0 && IsValid(ent)){
+		ent.SetHealth(flyerNextHealth)
+	} else if (IsValid(ent)){
+	thread PlayDyingFlyerAnim(ent)
+	ent.SetTakeDamageType( DAMAGE_NO )
+	ent.kv.solid = 0
+	ent.SetOwner( attacker )
+	ent.kv.teamnumber = attacker.GetTeam()
 	}
+}
+
+void function PlayDyingFlyerAnim(entity flyer)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	float deathLength = flyer.GetSequenceDuration( "fl_perched_death" )
+	if(IsValid(flyer)){
+		flyer.Anim_Play( "fl_perched_death" )
+		flyer.Signal("OnDeath")
+		}
+	wait deathLength
+	if(IsValid(flyer)){
+		flyer.Anim_Stop()
+		flyer.Destroy()
+		}
+}
+
+void function SVFlyerCreationCallback( entity flyer )
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	flyer.Destroy() //Removes t-posing flyers on all maps (except caged ones)
 }
 #endif
 
-bool function EvilFlyersEnabled()
+bool function IsCagedFlyer( entity ent )
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+/////////////////////////////////////////////////////// hack!
 {
-	#if(true)
-		if ( GetCurrentPlaylistVarBool( "evil_flyers", false ) )
-			return true
-	#endif
-
+	if ( ent.GetModelName().tolower() != FLYER_MODEL.tolower() )
+		 return false
+	
+	if(IsValid(ent)){
+		switch(ent.GetScriptName()){
+			case "cagedFlyerpf184256":
+				return true
+			case "cagedFlyerpf185661":
+				return true
+			case "cagedFlyerpf185657":
+				return true
+			case "cagedFlyerpf149993":
+				return true
+			case "cagedFlyerpf149990":
+				return true
+			default: 
+				return false
+		}
+	}
 	return false
 }
 
-
-/****************************************************************************************************\
-/*
-|*										FLIGHT PATHS
-\*
-\****************************************************************************************************/
-
-/*
-array<FlyerAnim> function GetFlyerPickupAnimations()
-{
-	return file.flyerPickupAnimations
-}
-
-function AddFlyersToSequence( sequence, count = 1, spacing = 0 )
-{
-	sequence.ref.Signal( "EndAddToSequence" )
-	sequence.ref.EndSignal( "EndAddToSequence" )
-
-	entity ref = expect entity( sequence.ref )
-	int currentCount = expect int( sequence.numFlyers )
-	local xanim
-
-	Assert( sequence.singleAnimName || sequence.groupAnimName )
-
-	for ( int i = 0; i < sequence.groupAnimMax; i++ )
-	{
-		if ( sequence.numFlyers >= sequence.num )
-			break
-
-		if ( sequence.groupAnimName )
-		{
-			if ( sequence.invalidArray.contains( level.XWING_GROUP_ANIM_VARIATIONS[ i ] ) )
-				continue
-
-			xanim = sequence.groupAnimName + level.XWING_GROUP_ANIM_VARIATIONS[ i ]
-			if ( xanim in sequence.pathsInUse )
-				continue
-		}
-		else
-		{
-			xanim = sequence.singleAnimName
-		}
-
-		count--
-		if ( count < 0 )
-			break
-
-		sequence.pathsInUse[ xanim ] <- true
-		thread _FlyerSingleAnim( sequence, xanim, ref )
-		wait spacing
-	}
-
-	return sequence.groupAnimMax - sequence.numFlyers
-}
-
-function _FlyerSingleAnim( sequence, xanim, entity ref )
-{
-	//increment flyers on the ref
-	sequence.numFlyers++
-
-	// Spawn path
-	entity path = _CreatePath( sequence )
-
-	//spawn flyer
-	entity flyer = _CreateProperFlyer( sequence, path, ref )
-
-	flyer.EndSignal( "OnBreak" )
-	flyer.EndSignal( "OnDestroy" )
-	flyer.EndSignal( "OnDeath" )
-	flyer.EndSignal( "KillFlyer" )
-
-	flyer.Hide()
-
-	delaythread( 0.2 ) ShowEnt( flyer )
-
-	flyer.s.endFunc <- sequence.endFunc
-	flyer.s.xanim <- xanim
-
-	flyer.s.initialPathTime <- -1.0
-	if ( sequence.startDirection )
-		flyer.s.initialPathTime = GetBestStartTimeForDirection( path, xanim, sequence.startDirection )
-
-	//want this flyer to run a special func?
-	if ( sequence.runFunc )
-	{
-		if ( sequence.runFuncOptionalVar != null )
-			waitthread sequence.runFunc( flyer, sequence.runFuncOptionalVar )
-		else
-			waitthread sequence.runFunc( flyer )
-	}
-
-	//play the flapping wing animation on the animation path
-	thread _LoopFlyerAnimOnPath( flyer, path )
-
-	if ( flyer.s.initialPathTime > 0.0 )
-		PlayAnimTeleport( path, xanim, ref, "ref", flyer.s.initialPathTime )
-	else
-		PlayAnimTeleport( path, xanim, ref, "ref" )
-
-	flyer.Signal( "KillFlyer" )
-}
-
-function _LoopFlyerAnimOnPath( flyer, path )
-{
-	flyer.Signal( "FlyerNewPath" )
-
-	flyer.EndSignal( "FlyerNewPath" )
-	flyer.EndSignal( "OnBreak" )
-	flyer.EndSignal( "OnDestroy" )
-	flyer.EndSignal( "OnDeath" )
-
-	local id = path.LookupAttachment( "ATTACH" )
-	local origin = path.GetAttachmentOrigin( id )
-	local angles = path.GetAttachmentAngles( id )
-
-	// seems like flyer_static_flying doesn't have a REF attachment so SetPartent doesn't move it.
-	flyer.SetOrigin( origin )
-	flyer.SetAngles( angles )
-
-	flyer.SetParent( path, "ATTACH" )
-
-	if ( flyer.s.flyerType == eFlyerType.Static )
-		return
-
-	thread PlayAnim( flyer, "glide", path, "ATTACH", 0 )
-
-	wait RandomFloat( 1.0 )
-
-	while ( 1 )
-	{
-		local Table = level.XWING_FLYING_ANIMS.getrandom()
-		int repeat = RandomIntRangeInclusive( Table.repeat, ( Table.repeat * 2 ) )
-		for ( int i = 0; i < repeat; i++ )
-			PlayAnim( flyer, Table.anim, path, "ATTACH", 0.5 )
-	}
-}
-
-function DrawPath( entity ent, string xanim )
-{
-	int id = ent.LookupAttachment( "ATTACH" )
-	float duration = ent.GetSequenceDuration( xanim )
-	float time = 0.0
-	vector color = <RandomIntRange( 0, 8 ) * 30, RandomIntRange( 0, 8 ) * 30, RandomIntRange( 0, 8 ) * 30>
-	Attachment prev = ent.Anim_GetAttachmentAtTime( xanim, "ATTACH", 0.0 )
-	DebugDrawLine( ent.GetOrigin(), prev.position, color.x, color.y, color.z, false, 100.0 )
-
-	while ( time < duration )
-	{
-		time += 0.5
-		Attachment current = ent.Anim_GetAttachmentAtTime( xanim, "ATTACH", time )
-		DebugDrawLine( current.position, prev.position, color.x, color.y, color.z, false, 100.0 )
-		prev = current
-	}
-}
-
-float function GetVelocityOfAnim( ent, anim, tag )
-{
-	expect entity( ent )
-	expect string( anim )
-	expect string( tag )
-	int id = ent.LookupAttachment( tag )
-	Attachment first = ent.Anim_GetAttachmentAtTime( anim, tag, 0.0 )
-	Attachment second = ent.Anim_GetAttachmentAtTime( anim, tag, 1.0 )
-
-	float dist = Distance( first.position, second.position )
-	return dist
-}
-
-function GetBestStartTimeForDirection( ent, xanim, start_direction )
-{
-	expect entity( ent )
-	expect string( xanim )
-	int id = ent.LookupAttachment( "ATTACH" )
-	float duration = ent.GetSequenceDuration( xanim )
-	float time = 0.0
-	Attachment prev = ent.Anim_GetAttachmentAtTime( xanim, "ATTACH", 0.0 )
-	local bestDot = -1.0
-	float bestTime = 0.0
-
-	start_direction = Normalize( start_direction )
-
-	while ( time < duration )
-	{
-		time += 1.0
-		Attachment current = ent.Anim_GetAttachmentAtTime( xanim, "ATTACH", time )
-
-		local diff = Normalize( current.position - prev.position )
-
-		float dot = DotProduct( start_direction, diff )
-		if ( dot > bestDot )
-		{
-			bestDot = dot
-			bestTime = time
-
-			if ( dot > 0.95 )
-			{
-				//DebugDrawLine( current.position, current.position + start_direction * 5.0, 255,255,255, false, 999.0 )
-				return time
-			}
-		}
-
-		prev = current
-	}
-
-	return time
-}
-*/
-#if CLIENT
-/*
-function FlyerFlyToPath( flyer, start_offset = <-12000,0,4000> )
-{
-	expect entity( flyer )
-
-	local path = flyer.s.path
-	local ref = flyer.s.sequence.ref
-	local xanim = flyer.s.xanim
-
-	expect entity( path )
-	expect entity( ref )
-	expect string( xanim )
-
-	//DrawPath( path, xanim )
-
-	flyer.EndSignal( "KillFlyer" )
-	flyer.EndSignal( "OnDestroy" )
-	local animStart = null
-
-	if ( flyer.s.initialPathTime > 0.0 )
-	{
-		Attachment attachmentAtTime = path.Anim_GetAttachmentAtTime( xanim, "ATTACH", expect float( flyer.s.initialPathTime ) )
-		animStart = { origin = attachmentAtTime.position, angles = attachmentAtTime.angle }
-	}
-	else
-	{
-		animStart = path.Anim_GetStartForRefEntity_Old( xanim, ref, "ref" )
-	}
-
-	vector animStartOrg = expect vector( animStart.origin )
-	vector animStartAng = expect vector( animStart.angles )
-	vector animStartForward = AnglesToForward( animStartAng )
-
-	vector flyerStartOrg = animStartOrg + ( animStartForward * expect float( start_offset.x ) ) + <0, 0, start_offset.z>
-	flyerStartOrg = ClampToWorldspace( flyerStartOrg )
-
-	float dist = Distance( flyerStartOrg, animStartOrg )
-	float speed = GetVelocityOfAnim( path, xanim, "ATTACH" )
-	float moveTime = dist / speed
-
-	entity mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", flyerStartOrg, animStartAng )
-	mover.Hide()
-
-	OnThreadEnd(
-		function() : ( flyer, mover )
-		{
-			vector origin
-			if ( IsValid( flyer ) )
-			{
-				if ( GetBugReproNum() != 54905 )
-					origin = flyer.GetOrigin()
-				flyer.ClearParent()
-			}
-
-			if ( IsValid( mover ) )
-				mover.Destroy()
-
-			if ( IsValid( flyer ) )
-			{
-				if ( GetBugReproNum() != 54905 )
-					flyer.SetOrigin( origin )
-			}
-		}
-	)
-
-	if ( flyer.s.flyerType != eFlyerType.Static )
-	{
-		// don't animate if flyerType is eFlyerType.Static
-		flyer.Anim_Play( "fly2_loop" )
-		flyer.Anim_SetInitialTime( flyer.GetSequenceDuration( "fly2_loop" ) * RandomFloat( 1.0 ) )
-	}
-
-	flyer.SetOrigin( flyerStartOrg )
-	flyer.SetAngles( animStartAng )
-
-	flyer.SetParent( mover, "ref" )
-
-	mover.NonPhysicsMoveTo( animStartOrg, moveTime, 0, 0 )
-
-	wait moveTime
-}
-*/
-#endif
-
-/****************************************************************************************************\
-/*
-|*											SPAWNING
-\*
-\****************************************************************************************************/
-/*
-entity function _CreatePath( sequence )
-{
-	asset modelname = FLYER_PATH_MODEL
-	if ( sequence.animPaths == eFlyerPathScale.x500 )
-	{
-		modelname = FLYER_PATH_500X_MODEL
-	}
-	else if ( sequence.animPaths == eFlyerPathScale.x1000 )
-	{
-		modelname = FLYER_PATH_1000X_MODEL
-	}
-	entity path = CreatePropDynamic( modelname, expect vector( sequence.origin ), expect vector( sequence.angles ) )
-
-	path.Hide()
-	#if SERVER
-		path.NotSolid()
-	#endif
-
-	//**********		CODE FEATURE		***********
-	//path.kv.spawnflags = 64 //use hitboxes as renderbox
-
-	return path
-}
-*/
-
-entity function _CreateProperFlyer( table sequence, entity path, entity ref )
-{
-	entity flyer
-	int flyerType = expect int( sequence.flyerType )
-
-	switch ( flyerType )
-	{
-		case eFlyerType.Real:
-			break
-		case eFlyerType.Cheap:
-			break
-		case eFlyerType.Static:
-			break
-		case eFlyerType.CheapMix:
-			// all odd flyers should be static
-			if ( file.flyerCheapMixCount % 2 )
-				flyerType = eFlyerType.Static
-			else
-				flyerType = eFlyerType.Cheap
-			file.flyerCheapMixCount++
-			break
-	}
-
-	flyer = _CreateFlyer( flyerType, path, ref )
-
-	//ANIM STUFF
-	flyer.s.sequence	<- sequence
-	flyer.s.flyerType	<- flyerType
-	flyer.s.path 		<- path
-
-	level.circlingFlyers[ flyer ] <- flyer
-
-	return flyer
-}
-
-entity function _CreateFlyer( int flyerType, entity path, entity ref )
-{
-	asset modelname	= $""
-
-	switch ( flyerType )
-	{
-		case eFlyerType.Real:
-			modelname =  FLYER_MODEL
-			file.devFlyerCountReal++
-			break
-		case eFlyerType.Cheap:
-			modelname =  FLYER_MODEL
-			//removed by request from animation. Should we need it we'll re add it later.
-			//modelname =  $"mdl/creatures/flyer/r2_flyer.rmdl"
-			file.devFlyerCountCheap++
-			break
-		case eFlyerType.Static:
-			modelname =  FLYER_MODEL_STATIC
-			file.devFlyerCountStatic++
-			break
-		case eFlyerType.Cheap500x:
-			modelname = FLYER_500X_MODEL
-			file.devFlyerCountCheap++
-			break
-		case eFlyerType.Cheap1000x:
-			modelname = FLYER_1000X_MODEL
-			file.devFlyerCountCheap++
-			break
-	}
-
-	entity flyer = CreatePropDynamic( modelname, path.GetOrigin(), path.GetAngles() )
-
-	float modelscale = RandomFloatRange( 0.85, 1.1 )
-	int r = RandomIntRange( 215, 256 )
-	int g = RandomIntRange( 215, 256 )
-	int b = RandomIntRange( 215, 256 )
-
-
-	//**********		CODE FEATURE		***********
-	flyer.kv.fadedist = 14000
-	flyer.kv.rendercolor = "" + r + " " + g + " " + b//"255 255 255"
-	flyer.kv.modelscale = modelscale
-	flyer.kv.solid = SOLID_BBOX
-
-	#if SERVER
-		flyer.SetHealth( CONSTFLYERHEALTHZERO + CONSTFLYERHEALTH )
-	#endif
-	//else
-	//if ( IsClient() )
-	//	flyer.SetHealth( CONSTFLYERHEALTHZERO + CONSTFLYERHEALTH )
-
-	//CLEANUP
-	thread _Death( flyer )
-	thread _FlyerCleanUp( flyer )
-
-	return flyer
-}
-
-table function GetCirclingFlyers()
-{
-	return expect table( level.circlingFlyers )
-}
-
-#if SERVER
-
-
-/****************************************************************************************************\
-/*
-|*										FLYER PICKS UP NPC
-\*
-\****************************************************************************************************/
-FlyerAnim function GetPickupAnimation( string name )
-{
-	foreach ( animation in file.flyerPickupAnimations )
-	{
-		if ( animation.name == name )
-			return animation
-	}
-	Assert( false, "The pickup animation you where looking for didn't exist!" )
-	unreachable
-}
-
-
-
-/****************************************************************************************************\
-/*
-|*										CREATE FLYER FUNC
-\*
-\****************************************************************************************************/
-
-// Mo wrote a create function that does a ton of extra stuff I don't need yet.
-// Might merge them eventually.
-entity function CreateServerFlyer( vector origin, vector angles, float health = 100, float fadeDist = 7000 )
-{
-	Assert( IsServer() )
-
-	entity flyer = CreateEntity( "script_mover" )
-	flyer.kv.SpawnAsPhysicsMover = false
-	flyer.SetValueForModelKey( FLYER_MODEL )
-	flyer.kv.solid = SOLID_HITBOXES
-	flyer.kv.DisableBoneFollowers = 1
-	flyer.kv.fadedist = fadeDist
-	DispatchSpawn( flyer )
-
-	flyer.SetOrigin( origin )
-	flyer.SetAngles( angles )
-
-	flyer.s.isFlyer <- true
-	flyer.s.health <- health
-	flyer.s.startHealth <- flyer.s.health
-
-	SetVisibleEntitiesInConeQueriableEnabled( flyer, true )
-	return flyer
-}
-
-void function Flyer_TookDamage( entity flyer, var damageInfo )
-{
-	thread Flyer_TookDamageThread( flyer, damageInfo )
-}
-
-void function Flyer_TookDamageThread( entity flyer, var damageInfo )
-{
-	if ( !( "isFlyer" in flyer.s ) )
-		return
-
-	if ( flyer.s.health <= 0 )
-		return
-
-	float damageAmount = DamageInfo_GetDamage( damageInfo )
-	entity attacker = DamageInfo_GetAttacker( damageInfo )
-
-	// adjust damage
-	if ( damageAmount >= 500 )
-		damageAmount = float( flyer.s.health )
-	else if ( attacker && attacker.IsTitan() )
-		damageAmount *= 2.5
-
-	if ( IsValid( attacker ) && attacker.IsPlayer() && IsAlive( attacker ) )
-		attacker.NotifyDidDamage( flyer, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), damageAmount, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-
-	flyer.s.health -= damageAmount
-
-	// return if flyer is still alive
-	if ( flyer.s.health > 0 )
-		return
-
-	#if HAS_STATS
-	// Give points to player for killing it
-	if ( IsValid( attacker ) && attacker.IsPlayer() )
-	{
-		AddPlayerScore( attacker, "FlyerKill", flyer )
-		//UpdatePlayerStat( attacker, "kills_stats", "flyers", 1 )
-	}
-	#endif
-
-	flyer.Anim_Stop()
-	flyer.Signal( "FlyerDeath" )
-
-	if ( attacker && attacker.IsTitan() && damageAmount > 150 )
-	{
-		// Gib
-		vector forceVec = attacker.GetOrigin() - flyer.GetOrigin()
-		forceVec.Norm()
-		forceVec *= 50.0 // seems like a good number
-
-		// .Gib() doesn't work since the flyers were updated
-		EmitSoundAtPosition( TEAM_ANY, flyer.GetOrigin(), "death.pinkmist" )
-		flyer.Dissolve( ENTITY_DISSOLVE_PINKMIST, <0,0,0>, 500 )
-		//flyer.Gib( forceVec )
-	}
-	else
-	{
-		flyer.Anim_Stop()
-		flyer.ClearParent()
-		if ( "perched" in flyer.s && flyer.s.perched )
-		{
-			float duration = flyer.GetSequenceDuration( "fl_perched_death" )
-			thread PlayAnim( flyer, "fl_perched_death" )
-			wait duration - 0.2
-		}
-		else
-		{
-			float duration = flyer.GetSequenceDuration( "fl_fly_death" )
-			thread PlayAnim( flyer, "fl_fly_death" )
-			wait duration - 0.2
-		}
-		//if ( IsValid( flyer) )
-			//flyer.BecomeRagdoll( flyer.GetVelocity(), false )
-	}
-}
-
-/****************************************************************************************************\
-/*
-|*										FLYER ATTACK DROPSHIP
-\*
-\****************************************************************************************************/
-
-// only works with RunDropshipDropoff( ... ) in _goblin_dropship.nut
-void function NextDropshipAttackedByFlyers( int countOverride = 3 )
-{
-	level.nextDropshipAttackedByFlyers = countOverride
-}
-
-string function FlyersAttackDropship( entity ref, string animation )
-{
-	if ( !( animation in level.dropshipAttackAnims ) )
-		return animation
-
-	table animTable = expect table( level.dropshipAttackAnims[ animation ] )
-
-	int count = expect int( level.nextDropshipAttackedByFlyers )
-	level.nextDropshipAttackedByFlyers = false
-	thread FlyersAttackDropshipInternal( ref, count, animTable )
-
-	return expect string( animTable.shipAnim )
-}
-
-void function FlyersAttackDropshipInternal( entity ref, int flyerCount, table animTable )
-{
-	ref.EndSignal( "OnDestroy" )
-
-	// wait for dropship to warp in.
-	ref.WaitSignal( "WarpedIn" )
-	WaitFrame()	// have to wait a frame for the animations to line up.
-
-	local animArray = animTable.flyerArray
-	array<entity> flyerArray
-
-	for ( int i = 0; i < flyerCount; i++ )
-	{
-		flyerArray.append( CreateServerFlyer( <0,0,0>, <0,0,0>, 100000 ) )
-	}
-
-	if ( CoinFlip() && flyerCount < 3 )
-		animArray[ 1 ] = "flyer_dropshipattack_cockpit"
-
-	OnThreadEnd(
-		function() : ( flyerArray )
-		{
-			foreach ( flyer in flyerArray )
-			{
-				if ( IsValid( flyer ) )
-					flyer.Gib( <0,0,0> )
-			}
-		}
-	)
-
-	for ( int i = 0; i < flyerCount; i++ )
-	{
-		thread PlayAnimTeleport( flyerArray[ i ], expect string( animArray[ i ] ), ref )
-	}
-
-	WaittillAnimDone( flyerArray[0] )
-}
-
-/****************************************************************************************************\
-/*
-|*										FLYER CRAWL
-\*
-\****************************************************************************************************/
-
-void function FlyerCrawl( entity flyer, array<vector> path, float debugTime = 0.0 )
-{
-	Assert( IsServer() )
-	Assert( path.len() > 1 )
-	flyer.EndSignal( "FlyerDeath" )
-	flyer.EndSignal( "OnDestroy" )
-
-	int speed = 100		// units per second
-	float moveTime = 0.5 	// 0.2
-
-	flyer.SetOrigin( path[0] )
-	flyer.SetAngles( ( path[1] - path[0] ).GetAngles() )
-	flyer.Anim_Play( "walk_low" )
-
-	vector angles = flyer.GetAngles()
-
-	for ( int i = 1; i < path.len(); i++ )
-	{
-		float dist = Distance( path[ i - 1 ], path[ i ] )
-		vector forward = AnglesToForward( angles )
-		vector midPoint = path[ i - 1 ] + forward * dist * 0.5
-
-		dist = Distance( path[ i - 1 ], midPoint )
-		dist += Distance( midPoint, path[ i ] )
-
-		if ( debugTime )
-		{
-			DebugDrawLine( path[ i ], path[ i ] + <0,0,50>, 255, 0, 255, true, debugTime )
-			DebugDrawLine( midPoint, midPoint + <0,0,50>, 0, 255, 255, true, debugTime )
-		}
-
-		int steps = int( dist / ( speed * moveTime ) )
-
-		array<vector> points = [ path[ i - 1 ], midPoint, path[ i ] ]
-		array<vector> curvePoints = GetAllPointsOnBezier( points, steps, debugTime )
-
-		for ( int cpIndex = 1; cpIndex < curvePoints.len(); cpIndex++ )
-		{
-			angles = VectorToAngles( curvePoints[ cpIndex ] - curvePoints[ cpIndex - 1 ] )
-			if ( debugTime )
-				DebugDrawLine( curvePoints[ cpIndex -1 ], curvePoints[ cpIndex ], 250, 0, 0, true, debugTime )
-
-			flyer.MoveTo( curvePoints[ cpIndex ], moveTime + 0.1, 0, 0 )
-			flyer.RotateTo( angles, moveTime + 0.1, 0, 0 )
-
-			wait moveTime
-		}
-	}
-
-	flyer.BecomeRagdoll( <0,0,0>, false )
-}
-
-/****************************************************************************************************\
-/*
-|*										FLYER LAND AND PERCH
-\*
-\****************************************************************************************************/
-
-
-entity function CreatePerchedFlyer( vector origin, vector angles, bool land = true, bool scream = true )
-{
-	entity flyer = CreateServerFlyer( origin, angles )
-	flyer.s.perched <- false
-
-	thread FlyerPerchedThink( flyer, land, scream )
-	return flyer
-}
-
-void function FlyerPerchedThink( entity flyer, bool land, bool scream )
-{
-	flyer.EndSignal( "FlyerStopThink" )
-	flyer.EndSignal( "FlyerDeath" )
-	flyer.EndSignal( "OnDestroy" )
-
-	if ( land )
-		waitthread FlyerLand( flyer, flyer.GetOrigin(), flyer.GetAngles() )
-	else
-		flyer.s.perched = true
-
-	flyer.s.lastScream <- 0
-	int prevState
-	int state = -1
-
-	while ( true )
-	{
-		prevState = state
-		state = CalcFlyerState( flyer )
-
-		switch ( state )
-		{
-			case flyerState.takeOff:
-				// flyer flies away
-				thread FlyerTakeOff( flyer, false )
-				flyer.s.perched = false
-				return	// think ends
-			case flyerState.takeOffFast:
-				// flyer flies away
-				thread FlyerTakeOff( flyer, true )
-				flyer.s.perched = false
-				return	// think ends
-			case flyerState.idle:
-				flyer.s.perched = true
-				if ( prevState != flyerState.idle )
-					thread FlyerPerchedIdle( flyer, scream )
-				// wait here when the flyer is idling
-				waitthread PerchedFlyerWait( flyer, 1.0 )
-				WaitEndFrame()	// insures Flyer_TookDamage is run before we loop
-				break
-		}
-	}
-}
-
-void function PerchedFlyerWait( entity flyer, float waitTime )
-{
-	flyer.EndSignal( "OnDamaged" )
-	wait waitTime
-}
-
-int function CalcFlyerState( entity flyer )
-{
-	array<entity> players = GetPlayerArray()
-	int reactionDistSqr = 1024 * 1024
-	int reactionDistFastSqr = 512 * 512
-
-	if ( flyer.s.health != flyer.s.startHealth )
-		return flyerState.takeOffFast
-
-	foreach ( player in players )
-	{
-		float distSqr = DistanceSqr( flyer.GetOrigin(), player.GetOrigin() )
-
-		if ( distSqr < reactionDistFastSqr )
-			return flyerState.takeOffFast
-
-		if ( distSqr < reactionDistSqr )
-			return flyerState.takeOff
-	}
-
-	return flyerState.idle
-}
-
-void function FlyerLand( entity flyer, vector origin, vector angles )
-{
-	flyer.EndSignal( "FlyerDeath" )
-	flyer.EndSignal( "OnDestroy" )
-
-	entity animEnt = CreateScriptRef( origin, angles )
-
-	OnThreadEnd(
-		function() : ( animEnt )
-		{
-			// clean up
-			IsValid( animEnt )
-				animEnt.Destroy()
-		}
-	)
-
-	//waitthread PlayAnimTeleport( flyer, "land_flat", animEnt )
-	waitthread PlayAnimTeleport( flyer, "fl_land_flat", animEnt )
-}
-
-void function FlyerPerchedIdle( entity flyer, bool scream )
-{
-	flyer.EndSignal( "FlyerDeath" )
-	flyer.EndSignal( "OnDestroy" )
-	flyer.EndSignal( "StopPerchedIdle" )
-
-	OnThreadEnd(
-		function() : ( flyer )
-		{
-			// clean up
-			IsValid( flyer )
-				flyer.Anim_Stop()
-		}
-	)
-
-	array<table> idleArray
-	idleArray.append( { anim = "fl_perched_idle",	 weight = 4 } )
-	idleArray.append( { anim = "fl_perched_idle_look", weight = 2 } )
-	if ( scream )
-		idleArray.append( { anim = "fl_perched_scream",	 weight = 3 } )
-
-	TraceResults result = TraceLine( flyer.GetOrigin() + <0,0,32>, flyer.GetOrigin() + <0,0,-32>, flyer, TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_NONE )
-	if ( result.surfaceName == "flesh" )
-		idleArray.append( { anim = "fl_perched_feed", weight = 3 } )
-
-	int totalWeight = 0
-	foreach ( idle in idleArray )
-		totalWeight += expect int( idle.weight )
-
-	string anim = ""
-	float roll = 0.0	// start with flyer_perched_idle
-	Assert( IsValid( flyer ) )
-	float animLength = flyer.GetSequenceDuration( "fl_perched_idle" )
-	float initialTime = RandomFloatRange( 0, animLength - 0.2 ) //randomly start each flyer at a different point in their base idle
-				 //PlayAnim( guy, 	animation_name, reference = null, optionalTag = null, blendTime = DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME, initialTime = -1.0 )
-		waitthread PlayAnim( flyer, "fl_perched_idle", 			flyer, 				"", 				1.0, 				initialTime )
-
-	while ( IsValid( flyer ) )
-	{
-		int weight = 0
-
-		foreach ( idle in idleArray )
-		{
-			weight += expect int( idle.weight )
-			if ( roll > ( float( weight ) / totalWeight ) )
-				continue
-
-			anim = expect string( idle.anim )
-			break
-		}
-
-		Assert( anim != "" )
-
-				 //PlayAnim( guy, 	animation_name, reference = null, optionalTag = null, blendTime = DEFAULT_SCRIPTED_ANIMATION_BLEND_TIME, initialTime = -1.0 )
-		waitthread PlayAnim( flyer, anim, 			flyer, 				"", 				1.0 )
-		roll = RandomFloat( 1.0 )
-	}
-}
-
-void function FlyerTakeOff( entity flyer, bool fast = false )
-{
-	if ( !flyer.s.perched )
-		return
-
-	flyer.Signal( "StopPerchedIdle" )
-	flyer.EndSignal( "FlyerDeath" )
-	flyer.EndSignal( "OnDestroy" )
-
-	string takeoffAnim = "fl_perched_takeoff"
-	if ( fast )
-		takeoffAnim = "fl_perched_takeoff_attacked"
-
-	OnThreadEnd(
-		function() : ( flyer )
-		{
-			// clean up
-			if ( IsValid( flyer ) && flyer.s.health > 0 )
-			{
-				flyer.Destroy()
-			}
-		}
-	)
-
-	waitthread PlayAnim( flyer, takeoffAnim, flyer, "", 1.0 )
-}
-
-
-#endif
-
-void function FlyerCreationCallback( entity ent )
-{
-	Assert( IsClient() )
-
-	if ( ent.GetModelName() == FLYER_MODEL )
-		ent.s.gibDist <- 5120
-}
 #if(CLIENT)
 void function ServerCallback_PlayLootRarityFXOnDeathboxDrop( entity deathBox  )
 {
@@ -1209,242 +248,4 @@ void function PlayLootRarityFXOnDeathboxDrop_threaded( entity deathBox  )
 	wait 1.0
 
 }
-
-
-#if(true)
-void function OnEvilFlyerCreated( entity ent )
-{
-	asset modelAsset = ent.GetModelName().tolower()
-
-	switch( modelAsset )
-	{
-		case FLYER_MODEL.tolower():
-		case FLYER_1000X_MODEL.tolower():
-		case FLYER_500X_MODEL.tolower():
-		case FLYER_MODEL_STATIC.tolower():
-			break
-		default:
-			return
-	}
-
-	//
-	//
-	//
-
-	entity flyer = ent
-	array <string> bodyGlowAttachments
-	bodyGlowAttachments.append( "CHESTFOCUS" )
-	//
-	int fxIndex = GetParticleSystemIndex( FX_FLYER_GLOW )
-	foreach( eyeGlowAttachment in bodyGlowAttachments )
-		StartParticleEffectOnEntity( flyer, fxIndex, FX_PATTACH_POINT_FOLLOW, flyer.LookupAttachment( eyeGlowAttachment ) )
-
-
-}
-#endif //
-
-
-
-
-#endif //
-
-
-//
-bool function IsFlyerThatStillHasDeathBox( entity flyer )
-{
-	if ( !IsValid( flyer ) )
-		return false
-
-	if ( !(flyer in file.deathBoxFlyerToDataStructTable) )
-		return false
-
-	return IsValid( file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox )
-}
-
-
-entity function GetDeathBoxFromFlyer( entity flyer )
-{
-	if ( !IsValid( flyer ) )
-		return null
-
-	if ( !(flyer in file.deathBoxFlyerToDataStructTable) )
-		return null
-
-	if ( !IsValid( file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox ) )
-		return null
-
-	return file.deathBoxFlyerToDataStructTable[ flyer  ].deathBox
-
-}
-
-
-bool function IsFlyer( entity ent )
-{
-	#if SERVER
-
-
-	#elseif CLIENT
-		if ( !(ent instanceof C_DynamicProp) )
-			return false
-	#endif
-
-	if ( ent.GetModelName().tolower() != FLYER_MODEL.tolower() ) //
-		return false
-
-	return true
-
-}
-bool function IsDeathboxFlyer( entity ent  )
-{
-	if ( !IsFlyer( ent ) )
-		return false
-
-	return ent.GetScriptName() == DEATHBOX_FLYER_SCRIPT_NAME
-
-}
-
-bool function IsCagedFlyer( entity ent )
-{
-	if ( !IsFlyer( ent ) )
-		return false
-
-	return ent.GetScriptName() == CAGED_FLYER_SCRIPT_NAME
-}
-
-
-/****************************************************************************************************\
-/*
-|*											DEATH / CLEANUP
-\*
-\****************************************************************************************************/
-void function _Death( entity flyer )
-{
-	flyer.EndSignal( "OnDeath" )
-	flyer.EndSignal( "OnDestroy" )
-	flyer.WaitSignal( "OnBreak" )
-
-	//flyer.BecomeRagdoll( <0,0,0>, false )
-
-	flyer.Signal( "KillFlyer" )
-}
-
-void function _FlyerCleanUp( entity flyer )
-{
-	flyer.EndSignal( "OnDeath" )
-	flyer.EndSignal( "OnDestroy" )
-	flyer.WaitSignal( "KillFlyer" )
-
-	local sequence = flyer.s.sequence
-
-	// release path for this sequence
-	delete sequence.pathsInUse[ flyer.s.xanim ]
-
-	// remove flyer from table
-	delete level.circlingFlyers[ flyer ]
-
-	// need two get origin here for some strange reason.
-	if ( GetBugReproNum() != 54905 )
-	{
-		flyer.GetOrigin()
-		flyer.GetOrigin()
-	}
-
-	if ( flyer.Anim_IsActive() )
-		flyer.Anim_Stop()
-
-	if ( flyer.s.path )
-		flyer.s.path.Anim_Stop()
-
-	flyer.ClearParent()
-
-	if ( flyer.s.path )
-		flyer.s.path.Destroy()
-
-	sequence.numFlyers--
-	Assert( sequence.numFlyers >= 0 )
-
-	switch ( sequence.flyerType )
-	{
-		case eFlyerType.Real:
-			file.devFlyerCountReal--
-			break
-		case eFlyerType.Cheap:
-			file.devFlyerCountCheap--
-			break
-		case eFlyerType.Static:
-			file.devFlyerCountStatic--
-			break
-		case eFlyerType.CheapMix:
-			file.flyerCheapMixCount--
-			break
-	}
-
-
-	if ( flyer.s.endFunc )
-		waitthread flyer.s.endFunc( flyer )
-
-	flyer.Destroy()
-}
-
-
-/****************************************************************************************************\
-/*
-|*											UTILITY
-\*
-\****************************************************************************************************/
-table function CreateFlyerSequence( vector origin, vector angles )
-{
-	table sequence
-	sequence.num					<- 22
-	sequence.groupAnimName			<- null
-	sequence.invalidArray			<- []
-	sequence.singleAnimName			<- null
-	sequence.flyerType				<- null
-	sequence.runFunc 				<- null
-	sequence.runFuncOptionalVar		<- null
-	sequence.runFuncOptionalVar2	<- null
-	sequence.endFunc 				<- null
-	sequence.origin 				<- origin
-	sequence.angles 				<- angles
-	sequence.groupAnimMax			<- 22
-	sequence.pathsInUse				<- {}
-	sequence.ref 					<- CreateRef( origin, angles )
-	sequence.numFlyers				<- 0
-	sequence.animPaths 				<- eFlyerPathScale.x1
-	sequence.startDirection			<- null
-
-	return sequence
-}
-
-entity function CreateRef( vector origin, vector angles )
-{
-	asset modelname = $"mdl/dev/empty_model.rmdl"
-	entity ref = CreatePropDynamic( modelname, origin, angles )
-
-	ref.Hide()
-	#if SERVER
-		ref.NotSolid()
-	#endif
-
-	return ref
-}
-
-void function ShowEnt( entity model )
-{
-	if ( !IsValid_ThisFrame( model ) )
-		return
-
-	model.Show()
-}
-
-void function DevFlyerPrintCount()
-{
-	int total
-
-	while ( 1 )
-	{
-		total = file.devFlyerCountReal + file.devFlyerCountCheap + file.devFlyerCountStatic
-		printl( "Flyers [T]: " + total + ", [R]: " + file.devFlyerCountReal + ", [C]: " + file.devFlyerCountCheap + ", [S]: " + file.devFlyerCountStatic )
-		wait 1
-	}
-}
+#endif
