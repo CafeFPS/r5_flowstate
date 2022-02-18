@@ -15,6 +15,7 @@ global function Highlight_SetEnemyHighlight
 global function Highlight_SetOwnedHighlight
 global function Highlight_SetDeathRecapHighlight
 global function Highlight_SetCausticThreatHighlight
+global function Highlight_SetFlyerDeathboxHighlight
 
 global function Highlight_SetEnemyHighlightWithParam0
 global function Highlight_SetEnemyHighlightWithParam1
@@ -336,7 +337,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
 	highlight.colorID = COLORID_LOOT_TIER1
 
 	highlight = RegisterHighlight( "survival_item_rare" )
@@ -349,7 +350,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
 	highlight.colorID = COLORID_LOOT_TIER2
 
 	highlight = RegisterHighlight( "survival_item_epic" )
@@ -362,7 +363,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
 	highlight.colorID = COLORID_LOOT_TIER3
 
 	highlight = RegisterHighlight( "survival_item_legendary" )
@@ -375,7 +376,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
 	highlight.colorID = COLORID_LOOT_TIER4
 
 	highlight = RegisterHighlight( "survival_item_heirloom" )
@@ -388,7 +389,72 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	highlight.colorID = COLORID_LOOT_TIER5
+	
+		highlight = RegisterHighlight( "survival_item_common_cargobot" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_DEFAULT )
+	HighlightContext_SetOutlineFocused( highlight, HIGHLIGHT_OUTLINE_LOOT_FOCUSED )
+	HighlightContext_SetParam( highlight, 0, <.55, .55, .5> )
+	HighlightContext_SetParam( highlight, 1, <0.2, 0, 0> )
+	HighlightContext_SetRadius( highlight, 1 )
+	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_LOOT_DEFAULT )
+	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
+	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	highlight.colorID = COLORID_LOOT_TIER1
+
+	highlight = RegisterHighlight( "survival_item_rare_cargobot" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_DEFAULT )
+	HighlightContext_SetOutlineFocused( highlight, HIGHLIGHT_OUTLINE_LOOT_FOCUSED )
+	HighlightContext_SetParam( highlight, 0, <0.11, 0.56, 1> )
+	HighlightContext_SetParam( highlight, 1, <0.2, 0, 0> )
+	HighlightContext_SetRadius( highlight, 1 )
+	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_LOOT_DEFAULT )
+	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
+	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	highlight.colorID = COLORID_LOOT_TIER2
+
+	highlight = RegisterHighlight( "survival_item_epic_cargobot" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_DEFAULT )
+	HighlightContext_SetOutlineFocused( highlight, HIGHLIGHT_OUTLINE_LOOT_FOCUSED )
+	HighlightContext_SetParam( highlight, 0, <0.34, 0, 0.7> )
+	HighlightContext_SetParam( highlight, 1, <0.2, 0, 0> )
+	HighlightContext_SetRadius( highlight, 1 )
+	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_LOOT_DEFAULT )
+	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
+	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	highlight.colorID = COLORID_LOOT_TIER3
+
+	highlight = RegisterHighlight( "survival_item_legendary_cargobot" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_DEFAULT )
+	HighlightContext_SetOutlineFocused( highlight, HIGHLIGHT_OUTLINE_LOOT_FOCUSED )
+	HighlightContext_SetParam( highlight, 0, <0.98, 0.78, 0> ) // 249 198 0
+	HighlightContext_SetParam( highlight, 1, <0.2, 0, 0> )
+	HighlightContext_SetRadius( highlight, 1 )
+	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_LOOT_DEFAULT )
+	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
+	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	highlight.colorID = COLORID_LOOT_TIER4
+
+	highlight = RegisterHighlight( "survival_item_heirloom_cargobot" )
+	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_DEFAULT )
+	HighlightContext_SetOutlineFocused( highlight, HIGHLIGHT_OUTLINE_LOOT_FOCUSED )
+	HighlightContext_SetParam( highlight, 0, <0.98, 0.78, 0> ) //
+	HighlightContext_SetParam( highlight, 1, <0.2, 0, 0> )
+	HighlightContext_SetRadius( highlight, 1 )
+	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_LOOT_DEFAULT )
+	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
+	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
+	HighlightContext_SetADSFade( highlight, false )
+	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
 	highlight.colorID = COLORID_LOOT_TIER5
 
 	highlight = RegisterHighlight( "survival_item_common_longerHighlightDist" )
@@ -866,9 +932,21 @@ void function Highlight_SetEnemyHighlightWithParams( entity ent, string assetNam
 void function Highlight_SetNeutralHighlight( entity ent, string assetName )
 {
 	HighlightContext highlight = GetHighlight( assetName )
+	
 	__SetEntityContextHighlight( ent, HIGHLIGHT_CONTEXT_NEUTRAL, highlight )
+	ent.e.enemyHighlight = assetName
 }
 
+void function Highlight_SetFlyerDeathboxHighlight( entity ent, string assetName )
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	HighlightContext highlight = GetHighlight( assetName )
+	
+	__SetEntityContextHighlight( ent, HIGHLIGHT_CONTEXT_NEUTRAL, highlight )
+	ent.e.enemyHighlight = assetName //Saving the tierloot //Colombia!!
+}
 
 void function Highlight_SetOwnedHighlight( entity ent, string assetName )
 {
