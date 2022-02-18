@@ -63,7 +63,7 @@ void function Utility_Init()
 	RegisterSignal( "WaitDeadTimeOut" )
 	RegisterSignal( "InventoryChanged" )
 
-	AddClientCommandCallback( "OnDevnetBugScreenshot", ClientCommand_OnDevnetBugScreenshot )
+	//AddClientCommandCallback( "OnDevnetBugScreenshot", ClientCommand_OnDevnetBugScreenshot )
 	#if R5DEV
 		FlagInit( "AimAssistSwitchTest_Enabled" )
 		// AddClientCommandCallback( "DoomTitan", ClientCommand_DoomTitan )
@@ -2548,6 +2548,12 @@ void function EmitSoundOnEntityToTeamExceptPlayer( entity ent, string sound, int
 
 		EmitSoundOnEntityOnlyToPlayer( ent, player, sound )
 	}
+}
+
+void function EmitSoundOnEntityOnlyToPlayerAfterDelay( entity ent, entity player, string sound, float delay )
+{
+	wait delay
+	EmitSoundOnEntityOnlyToPlayer( ent, player, sound )
 }
 
 #if R5DEV
