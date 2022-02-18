@@ -11,5 +11,6 @@ bool function ClientCommandCallback_LeaveMatch( entity player, array<string> arg
 {
     // Maybe save persistent data here.
     ClientCommand( player, "disconnect" )
+	UpdatePlayerCounts()
     return true
 }
