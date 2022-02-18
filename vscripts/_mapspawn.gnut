@@ -174,7 +174,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 {
 	ShWeapons_LevelInit()
 	//seterrorhandler(void function() {})
-	ScriptCompilerTest()
+	//ScriptCompilerTest()
 	LoadDiamond()
 	
 	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
@@ -290,18 +290,12 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-
-	if( !Dev_CommandLineHasParm( "-nodebugprints" ) )
-	{
-		printl( "############################" )
-		printl( "CodeCallback_ClientCommand() before" )
-		printl( "player = " + player )
-		printl( "args:" )
+		printl( "############ ClientCommand Code Callback" )
+		printl( "Player:" + player )
+		printl( "Args:" )
 		foreach( key, value in args )
 			printl( key + " : " + value )
-		printl( "############################" )
-	}
-
+		printl( "############ ClientCommand Code Callback" )
 
 	string commandString = args.remove( 0 )
 
@@ -320,9 +314,7 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	}
 	else
 	{
-		printl( "############################" )
-		printl( "CommandString: " + commandString  + " was not added via AddClientCommandCallback but is being called in CodeCallback_ClientCommand" )
-		printl( "############################" )
+		printl( "ALERT: " + commandString  + " isn't a command but is being called in CodeCallback_ClientCommand." )
 		return false
 	}
 }
