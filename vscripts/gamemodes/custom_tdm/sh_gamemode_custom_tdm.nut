@@ -1477,7 +1477,7 @@ int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowst
 bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
 
 bool function FlowState_EnableSkillTrainerByColombia()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_SKILLTRAINER_By_Colombia", true ) }
-bool function FlowState_EnableCustomMapByBiscutz()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CUSTOMMAP_By_Biscutz", true ) }
+bool function FlowState_EnableCustomMapByBiscutz()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CUSTOMMAP_By_Biscutz", false ) }
 bool function FlowState_EnableWhiteForestByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_WHITEFOREST_By_Zero", true ) }
 bool function FlowState_EnableBrightWaterByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_BRIGHWATER_By_Zero", false ) }
 bool function FlowState_EnableCaveByBlessedSeal()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CAVE_By_BlessedSeal", false ) }
