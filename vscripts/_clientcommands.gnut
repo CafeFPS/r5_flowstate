@@ -35,6 +35,9 @@ bool function ClientCommand_noclip( entity player, array<string> args )
 
 bool function ClientCommand_ToggleThirdPerson( entity player, array<string> args )
 {
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return true
+	
 	if ( player.IsThirdPersonShoulderModeOn() )
 		player.SetThirdPersonShoulderModeOff() 	
 	else
@@ -74,6 +77,7 @@ bool function ClientCommand_ToggleHUD( entity player, array<string> args )
 // Gives a gun infinite reloads
 bool function ClientCommand_infinite_ammo( entity player, array<string> args )
 {
+
 	if( !IsValid( player ) )
 		return false
 
