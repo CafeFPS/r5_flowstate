@@ -81,8 +81,8 @@ function AiSoldiers_Init()
 
 	AddCallback_OnClientConnecting( AiSoldiers_InitPlayer )
 
-	if ( GetDeveloperLevel() > 0 )
-		AddClientCommandCallback( "SpawnViewGrunt", ClientCommand_SpawnViewGrunt )
+	//if ( GetDeveloperLevel() > 0 )
+		//AddClientCommandCallback( "SpawnViewGrunt", ClientCommand_SpawnViewGrunt )
 
 }
 
