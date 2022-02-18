@@ -575,6 +575,7 @@ PrecacheModel( $"mdl/IMC_base/cargo_container_imc_01_blue.rmdl" )
 PrecacheModel( $"mdl/pipes/slum_pipe_large_blue_512_01.rmdl" )
 PrecacheModel( $"mdl/thaw/thaw_rock_horizontal_01.rmdl" )
 PrecacheModel( $"mdl/vehicle/dropship/dropship_afterburner.rmdl" )
+PrecacheModel( $"mdl/rocks/sulfur_geyser_brown_02.rmdl" )
 }
 }
 

@@ -1260,7 +1260,7 @@ case "mp_rr_canyonlands_64k_x_64k":
             // )
 		RegisterLocationSURF(
                 NewLocationSettings(
-                    "Surf Purgatory",
+                    "surf_purgatory",
                     [
                         NewLocPair(<3225,9084,21476>, <0, -90, 0>)
                     ],
@@ -1270,9 +1270,18 @@ case "mp_rr_canyonlands_64k_x_64k":
 
          RegisterLocationSURF(
                 NewLocationSettings(
-                    "Surf NoName",
+                    "surf_noname",
                     [
                         NewLocPair(<7799, 11833, 24585>, <0, 180, 0>)
+                    ],
+                    <0, 0, 3000>
+                )
+            )
+         RegisterLocationSURF(
+                NewLocationSettings(
+                    "surf_kitsune",
+                    [
+                        NewLocPair(<14724, 25241, 17271>, <0, 180, 0>)
                     ],
                     <0, 0, 3000>
                 )

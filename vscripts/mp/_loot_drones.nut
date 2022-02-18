@@ -386,7 +386,7 @@ void function CreateFlowStateDeathBoxForPlayer2( entity victim, vector origin, v
 					entity loot4 = SpawnGenericLoot( data4.ref, deathBox.GetOrigin(), deathBox.GetAngles(), 1 )
 					AddToDeathBox( loot4, deathBox )}
 				break
-			case "survival_item_heirloom":
+			case "survival_item_heirloom": //TODO add vault key and test red glow Colombia
 				break
 		}
 
