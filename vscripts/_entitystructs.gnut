@@ -665,6 +665,24 @@ global struct ServerPlayerStruct
 	float playerDamageDealt
 	int respawnsGiven
 	int revivesGiven
+		
+	//FLOWSTATE
+	bool isPlayerSpawningInDroppod = false
+	float lastKillTimer
+	
+	//PROPHUNT
+	int PROPHUNT_Max3changes
+	bool PROPHUNT_isSpectatorDiedMidRound = false
+	bool PROPHUNT_DestroyProp = false
+	asset PROPHUNT_LastModel
+	
+	// This is for Octane's ability chatter
+	bool isSaidChatterOnStim = false
+	bool isSaidChatterOnJumpPad = false
+
+	// Amount of player downed enemy at one time
+	int downedEnemyAtOneTime = 0
+	bool isDownedEnemyRecently = false
 }
 
 global struct ServerPlayerWaypoint
