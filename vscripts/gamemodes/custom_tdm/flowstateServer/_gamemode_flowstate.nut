@@ -1909,6 +1909,17 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	DestroyPlayerProps()
 	printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
 	CreateGroundMedKit(<-21289, -12030, 3060>)
+	} else if (file.selectedLocation.name == "White Forest By Zer0Bytes"){
+	DestroyPlayerProps()
+	printt("Flowstate DEBUG - creating props for White Forest.")
+	WaitFrame()
+	thread SpawnWhiteForestProps()
+	} else if (file.selectedLocation.name == "Custom map by Biscutz"){
+	DestroyPlayerProps()
+	printt("Flowstate DEBUG - creating props for Map by Biscutz.")
+	WaitFrame()
+	thread LoadMapByBiscutz1()
+	thread LoadMapByBiscutz2()
 	}
 
 //TODO MORE POIS

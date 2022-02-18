@@ -458,7 +458,91 @@ void function Sh_CustomTDM_Init()
 break
 case "mp_rr_canyonlands_mu1_night":
 case "mp_rr_canyonlands_64k_x_64k":
-        Shared_RegisterLocation(
+    
+	if(FlowState_EnableCustomMapByBiscutz()){
+	Shared_RegisterLocation(
+            NewLocationSettings(
+                "Custom map by Biscutz",
+                [
+                    NewLocPair(<-6208.22,15871.3,6655.27>, <0, 110, 0>),
+                    NewLocPair(<-6208.22,15871.3,6655.27>, <0, -160, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+	}	
+		
+	if(FlowState_EnableWhiteForestByZero()){
+	Shared_RegisterLocation(
+        NewLocationSettings(
+            "White Forest By Zer0Bytes",
+            [
+                //Side A
+                NewLocPair( <-33024,17408,3328>, <0,90,0>),
+                NewLocPair( <-33024,16960,3328>, <0,90,0>),
+                NewLocPair( <-33280,16128,3264>, <0,90,0>),
+                NewLocPair( <-32448,16256,3328>, <0,90,0>),
+                NewLocPair( <-32192,16960,3328>, <0,90,0>),
+                NewLocPair( <-32256,16256,3328>, <0,90,0>),
+                NewLocPair( <-32128,17536,3328>, <0,90,0>),
+                NewLocPair( <-32512,17536,3328>, <0,90,0>),
+                NewLocPair( <-32960,17600,3328>, <0,90,0>),
+                NewLocPair( <-33536,17600,3328>, <0,90,0>),
+                NewLocPair( <-33728,17088,3328>, <0,90,0>),
+                NewLocPair( <-33856,16896,3200>, <0,90,0>),
+                NewLocPair( <-33920,17600,3200>, <0,90,0>),
+                NewLocPair( <-34368,18048,3072>, <0,0,0>),
+                NewLocPair( <-34352,18038,3151>, <0,0,0>),
+                NewLocPair( <-36696,19010,3021>, <0,0,0>),
+                NewLocPair( <-37079,19432,3120>, <0,90,0>),
+                NewLocPair( <-37335,19812,3053>, <0,0,0>),
+                NewLocPair( <-37371,19308,3033>, <0,0,0>),
+                NewLocPair( <-37106,19616,3152>, <0,0,0>),
+
+
+                // side B
+                NewLocPair( <-35442,24433,4112>, <0,-90,0>),
+                NewLocPair( <-35467,24668,4112>, <0,-90,0>),
+                NewLocPair( <-35454,24954,4135>, <0,-90,0>),
+                NewLocPair( <-34738,24934,4145>, <0,-90,0>),
+                NewLocPair( <-33453,24955,4152>, <0,-90,0>),
+                NewLocPair( <-33380,24704,4173>, <0,-90,0>),
+                NewLocPair( <-33498,24455,4148>, <0,-90,0>),
+                NewLocPair( <-34195,24456,4128>, <0,-90,0>),
+                NewLocPair( <-33745,24188,4093>, <0,-90,0>),
+                NewLocPair( <-33319,24002,3955>, <0,-90,0>),
+                NewLocPair( <-32764,23897,3382>, <0,-90,0>),
+                NewLocPair( <-32317,23278,2779>, <0,-90,0>),
+                NewLocPair( <-32100,22750,2647>, <0,180,0>),
+                NewLocPair( <-35148,24427,4147>, <0,-90,0>),
+
+                //forest
+                NewLocPair( <-33511,22657,2239>, <0,-90,0>),
+                NewLocPair( <-33813,21797,2178>, <0,-90,0>),
+                NewLocPair( <-34937,22312,2195>, <0,-90,0>),
+                NewLocPair( <-35843,23339,2172>, <0,0,0> ),
+                NewLocPair( <-36700,23252,2237>, <0,0,0> ),
+                NewLocPair( <-36374,21910,2204>, <0,0,0> ),
+                NewLocPair( <-35239,22024,2154>, <0,180,0>),
+                NewLocPair( <-34463,20783,2182>, <0,90,0>),
+                NewLocPair( <-32753,20853,2085>, <0,90,0>),
+                NewLocPair( <-31809,21230,2015>, <0,-90,0>),
+                NewLocPair( <-33549,18878,2129>, <0,90,0>),
+                NewLocPair( <-34726,19371,2106>, <0,90,0>),
+                NewLocPair( <-34295,20018,2134>, <0,90,0>),
+                NewLocPair( <-31263,21107,2019>, <0,180,0>),
+                NewLocPair( <-36806,22295,2261>, <0,0,0> ),
+                NewLocPair( <-36226,20102,2105>, <0,0,0>),
+                NewLocPair( <-32764,19415,2048>, <0,180,0>),
+                NewLocPair( <-32402,22605,2328>, <0,-90,0>),
+                NewLocPair( <-33082,23773,2363>, <0,-90,0>)
+
+            ],
+            <0, 0, 3000>
+        )
+    )  
+	}	
+	   Shared_RegisterLocation(
             NewLocationSettings(
                 "Interstellar Relay",
                 [
@@ -1391,6 +1475,10 @@ int function FlowState_SURFRoundTime() { return GetCurrentPlaylistVarInt("flowst
 bool function FlowState_SURFLockPOI()                         { return GetCurrentPlaylistVarBool("flowstateSURFLockPOI", false ) } 
 int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowstateSURFLockeedPOI", 0) }
 bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
+
+bool function FlowState_EnableSkillTrainerByColombia()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_SKILLTRAINER_By_Colombia", true ) }
+bool function FlowState_EnableCustomMapByBiscutz()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CUSTOMMAP_By_Biscutz", true ) }
+bool function FlowState_EnableWhiteForestByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_WHITEFOREST_By_Zero", true ) }
 bool function FlowState_EnableBrightWaterByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_BRIGHWATER_By_Zero", false ) }
 bool function FlowState_EnableCaveByBlessedSeal()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CAVE_By_BlessedSeal", false ) }
 bool function Flowstate_DoorsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateDoorsEnabled", true ) }
