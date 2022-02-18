@@ -425,8 +425,8 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 
 			vector ammoColor  = SrgbToLinear( <0.5, 0.5, 0.5> )
 			asset ammoIcon = weaponData.fakeAmmoIcon == $"" ? $"rui/hud/gametype_icons/survival/sur_ammo_unique" : weaponData.fakeAmmoIcon
-			bool isLegendary = weaponData.tier >= 4
-
+			bool isLegendary = weaponData.tier == 4
+			bool isCPWeapon = weaponData.tier >= 5
 			if ( weaponData.ammoType != "" )
 			{
 				LootData ammoData = SURVIVAL_Loot_GetLootDataByRef( weaponData.ammoType )
@@ -443,7 +443,13 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 			{
 				ammoColor = SrgbToLinear( AMMO_LEGENDARY_COLOR )
 			}
-
+			
+			if ( isCPWeapon )
+			{
+				ammoColor = SrgbToLinear( <255, 10, 10> / 255.0 )
+				ammoIcon = $""
+			}
+			
 			RuiSetFloat3( rui, "ammoColorTab" + tabIndex, ammoColor )
 			if ( selected )
 			{
