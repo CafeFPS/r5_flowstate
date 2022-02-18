@@ -1707,15 +1707,13 @@ entity function GetFlyerForHitEnt( entity hitEnt )
 	if ( !IsValid( hitEnt ) )
 		return null
 
-	if ( IsFlyer( hitEnt ) )
+	if ( hitEnt.GetModelName().tolower() == FLYER_MODEL.tolower() )
 		return hitEnt
 
 	return null
 
 }
 #endif //
-
-
 
 
 
