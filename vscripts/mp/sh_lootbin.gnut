@@ -73,7 +73,7 @@ void function ShLootBin_Init()
 	#if SERVER
 		AddSpawnCallback_ScriptName( LOOT_BIN_MARKER_SCRIPTNAME, InitLootBinFromMap )
 
-		AddClientCommandCallback( "dev_spawn_lootbin", ClientCommand_spawn_lootbin )
+		//AddClientCommandCallback( "dev_spawn_lootbin", ClientCommand_spawn_lootbin )
 
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	#endif
