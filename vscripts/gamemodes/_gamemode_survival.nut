@@ -50,8 +50,7 @@ void function GamemodeSurvival_Init()
 	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
-		
-		
+	
 	AddCallback_GameStateEnter( 
 		eGameState.Playing,
 		void function()

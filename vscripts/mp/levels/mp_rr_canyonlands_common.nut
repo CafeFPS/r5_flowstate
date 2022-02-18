@@ -207,7 +207,11 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-
+	if(GetMapName() != "mp_rr_canyonlands_staging" && GetCurrentPlaylistVarBool( "flowstateFlyersAndDronesEnabled", true )){
+		InitLootDrones() //flyers
+		InitLootRollers() //flyers
+		InitLootDronePaths() //flyers
+		SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 40 ))} //flyers
 	thread __EntitiesDidLoad()
 }
 
@@ -1258,7 +1262,7 @@ entity function CreateEditorPropKCLobby(asset a, vector pos, vector ang, bool ma
 
     e.SetScriptName("editor_placed_prop")
     e.e.gameModeId = realm
-    printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
+    //printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
 
     return e
 }

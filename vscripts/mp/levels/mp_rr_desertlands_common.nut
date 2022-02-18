@@ -64,13 +64,7 @@ void function Desertlands_MapInit_Common()
 	SetVictorySequencePlatformModel( $"mdl/rocks/desertlands_victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
 	#if SERVER
-		//%if HAS_LOOT_DRONES && HAS_LOOT_ROLLERS
-		InitLootDrones()
-		InitLootRollers()
-		//%endif
-
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
-
 		SURVIVAL_SetPlaneHeight( 15250 )
 		SURVIVAL_SetAirburstHeight( 2500 )
 		SURVIVAL_SetMapCenter( <0, 0, 0> )
@@ -97,6 +91,11 @@ void function Desertlands_MapInit_Common()
 #if SERVER
 void function EntitiesDidLoad()
 {
+	if(GetCurrentPlaylistVarBool( "flowstateFlyersAndDronesEnabled", true )){
+		InitLootDrones()
+		InitLootRollers()
+		InitLootDronePaths()
+		SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 40 ))}
 	#if SERVER && DEV
 	test_runmapchecks()
 	#endif
@@ -104,7 +103,6 @@ void function EntitiesDidLoad()
 	SpawnEditorProps()
 	GeyserInit()
 	Updrafts_Init()
-	InitLootDronePaths()
 	string currentPlaylist = GetCurrentPlaylistName()
 	int keyCount = GetPlaylistVarInt( currentPlaylist, "loot_drones_vault_key_count", NUM_LOOT_DRONES_WITH_VAULT_KEYS )
 	if ( file.isTrainEnabled )
@@ -577,7 +575,7 @@ entity function CreateEditorPropLobby(asset a, vector pos, vector ang, bool mant
 
     e.SetScriptName("editor_placed_prop")
     e.e.gameModeId = realm
-    printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
+   // printl("[editor]" + string(a) + ";" + positionSerialized + ";" + anglesSerialized + ";" + realm)
 
     return e
 }
@@ -820,6 +818,7 @@ void function SpawnEditorProps()
     CreateEditorPropLobby( $"mdl/barriers/concrete/concrete_barrier_01.rmdl", <-18251.7,1815.41,6223.27>, <0,0,0>, true, 8000, -1 )
 
     CreateEditorPropLobby( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-18604,2115.18,6223.43>, <0,0,0>, true, 8000, -1 )
+
     //CreateEditorPropLobby( $"mdl/vehicles_r5/land_med/msc_freight_tortus_mod/veh_land_msc_freight_tortus_mod_cargo_holder_v1_static.rmdl", <-20600.9,2115.91,6223.55>, <0,-90,0>, true, 8000, -1 )
     
 	CreateEditorPropLobby( $"mdl/vehicles_r5/land/msc_forklift_imc_v2/veh_land_msc_forklift_imc_v2_static.rmdl", <-18668,2536.64,6223.23>, <0,180,0>, true, 8000, -1 )

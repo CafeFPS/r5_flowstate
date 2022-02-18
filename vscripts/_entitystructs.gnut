@@ -400,6 +400,8 @@ global struct ServerEntityStruct
 	
 	//Trophy Structs
 	float pylonhealth
+	
+	entity ParentedPlayerToFlyer
 }
 
 global struct MeritData
@@ -666,16 +668,20 @@ global struct ServerPlayerStruct
 	int respawnsGiven
 	int revivesGiven
 		
-	//FLOWSTATE
+	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
 	float lastKillTimer
 	
-	//PROPHUNT
+	//Flyers Easteregg by Colombia
+	bool isParentedToFlyer = false
+	entity ParentedFlyer
+	//Prophunt by Colombia
 	int PROPHUNT_Max3changes
 	bool PROPHUNT_isSpectatorDiedMidRound = false
 	bool PROPHUNT_DestroyProp = false
 	asset PROPHUNT_LastModel
 	
+	//By Endergreen
 	// This is for Octane's ability chatter
 	bool isSaidChatterOnStim = false
 	bool isSaidChatterOnJumpPad = false
