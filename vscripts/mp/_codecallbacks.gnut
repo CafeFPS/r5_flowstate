@@ -45,15 +45,19 @@ void function CodeCallback_Init()
 	file.ShouldGiveTimerCreditGameModeRules = ShouldGiveTimerCredit_Default
 	file.earnMeterOnDamageGameModeRulesCallback = GameModeRulesEarnMeterOnDamage_Default
 	RegisterSignal( "DamagedPlayerOrNPC" )
-	RegisterSignal( "UpdateAccumulatedDamageAfterDelay" )
+	//RegisterSignal( "UpdateAccumulatedDamageAfterDelay" )
 
 	AddCallback_OnClientConnected( OnClientConnected )
 }
 
 void function OnClientConnected( entity player )
 {
-	AccumulatedDamageData damageData
-	file.playerAccumulatedDamageData[player] <- damageData
+	printt("Flowstate DEBUG - New player connected. Base codecallback OnPlayerConnected.", player)
+	printt("Flowstate DEBUG - The gamemode running is: " + GameRules_GetGameMode())
+	//Wraith Q fix. Colombia
+	player.SetForceVisibleInPhaseShift(true)
+	// AccumulatedDamageData damageData
+	// file.playerAccumulatedDamageData[player] <- damageData
 }
 
 // TODO: Get an equivalent callback happening on the client, so we can stop using ServerCallback_PlayerTookDamage which is always out of date to some degree.
