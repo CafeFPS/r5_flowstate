@@ -3,13 +3,13 @@
 //=========================================================
 
 global function ShLootRollers_Init
+global function ShFlyersDeathboxes_Init
 global function IsLootRoller
 
 #if CLIENT
 global function ServerCallback_SetLootRollerLootTierFX
 global function ServerCallback_StopLootRollerFX
 #endif // CLIENT
-
 
 //////////////////////
 //////////////////////
@@ -21,7 +21,6 @@ global const asset LOOT_ROLLER_EYE_FX             = $"P_loot_ball_flash_CP"
 global const int NUM_LOOT_ROLLER_FX_ATTACH_POINTS = 12
 global const string FX_ATTACH_ROOT_NAME           = "fx_glow_"
 global const asset FX_LOOT_ROLLER_EXPLOSION       = $"P_ball_tick_exp_CP"
-
 
 ///////////////////////
 ///////////////////////
@@ -41,11 +40,8 @@ struct LootRollerClientData
 struct
 {
 	array< entity > allLootRollers
-	//
-
 	table< entity, array< void functionref( entity, var ) > > Callbacks_OnLootRollerDamaged
 	table< entity, array< void functionref( entity, var ) > > Callbacks_OnLootRollerKilled
-
 	#if CLIENT
 		table<entity, LootRollerClientData> rollerToClientData
 	#endif
@@ -62,7 +58,7 @@ void function ShLootRollers_Init()
 	#if SERVER
 	AddSpawnCallback( "prop_physics", LootRollerSpawned )
 	AddSpawnCallback( "prop_dynamic", LootRollerSpawned )
-  #endif
+	#endif
 
 	#if CLIENT
 	AddCreateCallback( "prop_physics", LootRollerSpawned )
@@ -70,12 +66,24 @@ void function ShLootRollers_Init()
 	#endif
 }
 
+void function ShFlyersDeathboxes_Init()
+{
+	#if SERVER
+	AddSpawnCallback( "prop_physics", DeathboxSpawned )
+	AddSpawnCallback( "prop_dynamic", DeathboxSpawned )
+	#endif
+}
 
 /////////////////////////
 /////////////////////////
 //// Internals       ////
 /////////////////////////
 /////////////////////////
+void function DeathboxSpawned(entity ent)
+{
+	
+}
+
 void function LootRollerSpawned( entity ent )
 {
 	if ( ent.GetModelName().tolower() != LOOT_ROLLER_MODEL.tolower() )
@@ -96,7 +104,6 @@ void function LootRollerSpawned( entity ent )
 	{
 		int suffixIdx = i + 1
 		string attachSuffix = string( suffixIdx )
-
 		int attachIdx = ent.LookupAttachment( FX_ATTACH_ROOT_NAME + attachSuffix )
 		int newFx = StartParticleEffectOnEntity( ent, fxIdx, FX_PATTACH_POINT_FOLLOW, attachIdx )
 		data.eyeFXEnts.append( newFx )
@@ -153,7 +160,6 @@ LootRollerClientData function GetLootRollerClientDataFromEnt( entity ent )
 
 	return file.rollerToClientData[ ent ]
 }
-
 
 //////////////////////////
 //////////////////////////

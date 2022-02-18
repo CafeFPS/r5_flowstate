@@ -1,7 +1,6 @@
 //=========================================================
 //	sh_loot_drones.nut
 //=========================================================
-
 global function ShLootDrones_Init
 global function IsValidLootDrone
 global function IsValidLootDroneMover
@@ -13,48 +12,38 @@ global function ServerCallback_ClearLootDroneTrailFXType
 global function ServerCallback_ClearAllLootDroneFX
 #endif
 
-
 //////////////////////
 //////////////////////
 //// Global Types ////
 //////////////////////
 //////////////////////
 global const asset LOOT_DRONE_MODEL = $"mdl/props/loot_drone/loot_drone.rmdl" //
-
 global const float LOOT_DRONE_START_FALL_HEALTH_FRAC = 0.95
 global const float LOOT_DRONE_HEALTH_MAX             = 1.0
-
 global const string LOOT_DRONE_FX_ATTACH_NAME   = "fx_center"
 global const asset LOOT_DRONE_FX_EXPLOSION      = $"P_loot_drone_explosion"
 global const asset LOOT_DRONE_FX_TRAIL          = $"P_loot_drone_exhaust"
 global const asset LOOT_DRONE_FX_TRAIL_PANIC    = $"P_loot_drone_exhaust_afterburn"
 global const asset LOOT_DRONE_FX_TRAIL_FALL     = $"p_loot_drone_body_trail"
 global const asset LOOT_DRONE_FX_FALL_EXPLOSION = $"P_loot_drone_explosion_air"
-
 global const string LOOT_DRONE_LIVING_SOUND     = "LootDrone_Mvmt_Flying"
 global const string LOOT_DRONE_DEATH_SOUND      = "LootDrone_KillShot"
 global const string LOOT_DRONE_CRASHING_SOUND   = "LootDrone_Mvmt_Crashing"
 global const string LOOT_DRONE_CRASHED_SOUND    = "LootDrone_Explo"
-
 global const string LOOT_DRONE_DAMAGE_VO        = "bc_cargoBotDamaged"
-
-global const float LOOT_DRONE_FLIGHT_SPEED_MAX   = 175.0
-global const float LOOT_DRONE_FLIGHT_ACCEL       = 100.0
+global const float LOOT_DRONE_FLIGHT_SPEED_MAX   = 300.0
+global const float LOOT_DRONE_FLIGHT_ACCEL       = 300.0
 global const float LOOT_DRONE_FLIGHT_SPEED_PANIC = 500.0
 global const float LOOT_DRONE_PANIC_DURATION     = 5.0
-
 global const float LOOT_DRONE_FALLING_SPEED_MAX        = 800.0
 global const float LOOT_DRONE_FALLING_ACCEL            = 300.0
 global const float LOOT_DRONE_FALLING_GRAVITY          = 350.0
 global const float LOOT_DRONE_FALL_TRACE_DIST          = 1024.0
 global const float LOOT_DRONE_MIN_FALL_DIST_TO_SURFACE = 32.0
-
 global const float LOOT_DRONE_RAND_TOSS_MIN            = 700.0
 global const float LOOT_DRONE_RAND_TOSS_MAX            = 700.0
-
 global const string SIGNAL_LOOT_DRONE_FALL_START  = "signalLootDroneSpiral"
 global const string SIGNAL_LOOT_DRONE_STOP_PANIC  = "lootDroneStopPanicking"
-
 global const string LOOT_DRONE_MODEL_SCRIPTNAME   = "LootDroneModel"
 global const string LOOT_DRONE_MOVER_SCRIPTNAME   = "LootDroneMover"
 global const string LOOT_DRONE_ROTATOR_SCRIPTNAME = "LootDroneRotator"
@@ -73,6 +62,10 @@ global struct LootDroneData
 	entity model
 	entity mover
 	entity rotator
+	entity glow
+	bool stoploottier = false
+	int rgbInt = 0
+	string rgbId
 	array<entity> path
 	array<vector> pathVec
 	entity roller
@@ -86,6 +79,7 @@ global struct LootDroneData
 	float __panicSpeed  = LOOT_DRONE_FLIGHT_SPEED_PANIC
 	bool isPanicking
 	float lastPanicTime = 0.0
+	int id
 }
 
 #if CLIENT
@@ -119,6 +113,7 @@ struct
 /////////////////////////
 void function ShLootDrones_Init()
 {
+	PrecacheModel( FLYER_MODEL )
 	PrecacheModel( LOOT_DRONE_MODEL )
 	PrecacheParticleSystem( LOOT_DRONE_FX_TRAIL )
 	PrecacheParticleSystem( LOOT_DRONE_FX_TRAIL_PANIC )
