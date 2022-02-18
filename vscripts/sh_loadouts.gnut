@@ -1098,8 +1098,8 @@ void function ValidatePlayerLoadout( entity player, bool isInitialValidation )
 	//if ( ehiss.hasBeenValidated )
 	//	return
 
-	bool doWarnings    = !ehiss.shouldConsiderAsUpgrading
-	bool forceReset    = false
+	bool doWarnings    = false
+	bool forceReset    = true
 	bool resetToRandom = false
 
 	ValidateAndFixAllLoadoutSlots( ToEHI( player ), isInitialValidation, doWarnings, forceReset, resetToRandom )
