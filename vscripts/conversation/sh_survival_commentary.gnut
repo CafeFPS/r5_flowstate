@@ -99,6 +99,10 @@ global enum eSurvivalEventType
 
 	NO_KILLS_FOR_TIME,
 
+	CHAMPION_ELIMINATED,
+	KILL_LEADER_ELIMINATED,
+	YOU_ARE_NEW_KILL_LEADER,
+
 	_count
 }
 
