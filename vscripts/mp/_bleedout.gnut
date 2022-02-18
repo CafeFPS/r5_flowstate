@@ -104,6 +104,13 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	player.SetHealth( 100 )
 
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_imDown" )
+	if( attacker.IsPlayer() && IsValid( attacker ) )
+	{
+		if( player != attacker && attacker.p.downedEnemyAtOneTime <= 0 )
+			thread DownedEnemy( attacker, 1.5 )
+
+		attacker.p.downedEnemyAtOneTime += 1
+	}
 
 	if ( IsValid( file.Callback_OnPlayerStartBleedout ) && !file.isBleeding[ player ] )
 		file.Callback_OnPlayerStartBleedout( player, attacker, null )
@@ -118,6 +125,37 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 
 	if ( Bleedout_GetDeathOnTeamBleedout( player ) )
 		CheckForTeamBleedout( player.GetTeam() )
+}
+
+
+entity function GetPlayerDummy( entity player )
+{
+	entity dummy = CreatePropDynamic( player.GetModelName(), player.GetOrigin(), player.GetAngles(), SOLID_BBOX, 99999 )
+	dummy.Solid()
+	dummy.SetParent(player)
+	SetTeam( dummy, player.GetTeam() )
+	
+return dummy
+}
+
+string function returnpseudoanim(entity player){
+	
+	ItemFlavor toResCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset toResPlayerSettings = CharacterClass_GetSetFile( toResCharacter )
+	string toResRigWeight = GetGlobalSettingsString( toResPlayerSettings, "bodyModelRigWeight" )
+	string doomedAnimation = "mp_pt_" + toResRigWeight + "_doomed_idle"
+	
+return doomedAnimation
+}
+
+void function playAnimsIdk(entity player)
+{
+	entity dummy = GetPlayerDummy(player)	
+	CreatePlayAnimationEntityBlocker( player, false )
+	player.Hide()
+	if(IsValid(player))
+	player.MovementEnable()
+	player.Anim_PlayOnly(returnpseudoanim(player)) //player can't move
 }
 
 void function PlayerDying( entity player )
@@ -140,6 +178,18 @@ void function PlayerDying( entity player )
 	file.isBleeding[ player ] = true
 
 	player.ForceCrouch()
+	//player.Hide()
+	//thread playAnimsIdk(player) TODO: Fix this
+	// array<ItemFlavor> characters = clone GetAllCharacters()
+	// foreach(character in characters)
+	// {
+	// asset toResPlayerSettings = CharacterClass_GetSetFile( character )
+	// string toResRigWeight = GetGlobalSettingsString( toResPlayerSettings, "bodyModelRigWeight" )
+	// string charName = ItemFlavor_GetHumanReadableRef( character )
+
+	// printt("Flowstate DEBUG: ", toResRigWeight, charName)
+	// }
+	
 	player.SetOneHandedWeaponUsageOn()
 
 	BleedoutState_SetPlayerBleedoutState( player, BS_BLEEDING_OUT )
@@ -357,7 +407,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	if ( selfRes )
 		healerAnimation = "mp_pt_" + toResRigWeight + "_self_revive_crouch"
 
-	float firstAidTime = playerToRes.GetSequenceDuration( toResAnimation ) // playerHealer == playerToRes ? Bleedout_GetFirstAidTimeSelf( playerHealer ) : Bleedout_GetFirstAidTime( playerHealer )
+	float firstAidTime = playerToRes.GetSequenceDuration( healerAnimation )
 	float firstAidHealPercent = Bleedout_GetFirstAidHealPercent( playerHealer )
 
 	float endTime = Time() + firstAidTime
@@ -534,6 +584,30 @@ void function CheckForTeamBleedout( int team )
 			PlayerDiesFromBleedout( teamPlayer, file.lastAttacker[ teamPlayer ] )
 	}
 }
+
+void function DownedEnemy( entity player, float time )
+{
+	wait time
+	if( player.p.downedEnemyAtOneTime > 1 && !player.p.isDownedEnemyRecently )
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iDownedMultiple" )
+	else if( player.p.downedEnemyAtOneTime == 1 && !player.p.isDownedEnemyRecently )
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iDownedAnEnemy" )
+	else if( player.p.isDownedEnemyRecently )
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iDownedAnotherEnemy" )
+
+	player.p.downedEnemyAtOneTime = 0
+	if( !player.p.isDownedEnemyRecently )
+		thread RecentlyDownedEnemy( player, 15.0 )
+
+}
+
+void function RecentlyDownedEnemy( entity player, float time )
+{
+	player.p.isDownedEnemyRecently = true
+	wait time
+	player.p.isDownedEnemyRecently = false
+}
+
 
 bool function Bleedout_ShouldAIMissBleedingPlayer( entity player )
 {
