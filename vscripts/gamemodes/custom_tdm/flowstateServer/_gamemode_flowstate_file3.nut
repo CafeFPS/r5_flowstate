@@ -17,6 +17,7 @@ float endTime = 0
 array<LocationSettings> locationSettings
 LocationSettings& selectedLocation
 int nextMapIndex = 0
+bool disableTrigger = false
 bool mapIndexChanged = true
 	string Hoster
 	string admin1
@@ -203,7 +204,7 @@ void function ActualSURFLobby()
 	int choice = surf.nextMapIndex
 	surf.mapIndexChanged = false
 	surf.selectedLocation = surf.locationSettings[choice]
-
+	surf.disableTrigger = false
     foreach(player in GetPlayerArray()) 
     {
         if(!IsValid(player)) continue;
@@ -323,11 +324,12 @@ while( Time() <= endTime )
 			}
 		}
 		if(surf.tdmState == eTDMState.NEXT_ROUND_NOW)
-		{break}
+		{
+		surf.disableTrigger = true	
+		break}
 		WaitFrame()	
 	}
 
-WaitFrame()
 }
 
 #if SERVER
@@ -446,13 +448,13 @@ void function SurfPurgatoryTriggerSetup()
     surf.playerSpawnedProps.append(finishdoor)
     surf.playerSpawnedProps.append(finish)
 
-	OnThreadEnd(
-		function() : ( fall )
-		{
-			fall.Destroy()
-		} )
-
-	WaitForever()
+	while(true)
+	{
+		if(surf.disableTrigger == true) {
+		if(IsValid(fall)) fall.Destroy()
+		break}
+		WaitFrame()
+	}
 }
 
 void function SurfPurgatoryTrigger_OnAreaEnter( entity trigger, entity player )
@@ -470,7 +472,7 @@ void function SurfPurgatoryFinishFinished_OnAreaEnter( entity trigger, entity pl
     Message( player, "Map Finished", "Congrats you finished surf_purgatory", 5.0 )
 }
 
-//////////////////SURF KITSUNE
+//////////////////SURF KITSUNE BY ECKO
 
 void function SurfKitsuneTriggerSetup()
 {
@@ -506,13 +508,13 @@ void function SurfKitsuneTriggerSetup()
     surf.playerSpawnedProps.append(finishdoor)
     surf.playerSpawnedProps.append(finish)
 
-	OnThreadEnd(
-		function() : ( fall )
-		{
-			fall.Destroy()
-		} )
-
-	WaitForever()
+	while(true)
+	{
+		if(surf.disableTrigger == true) {
+		if(IsValid(fall)) fall.Destroy()
+		break}
+		WaitFrame()
+	}
 }
 
 void function SurfKitsuneTrigger_OnAreaEnter( entity trigger, entity player )
@@ -571,17 +573,7 @@ if(player.GetPlayerName() == surf.Hoster || player.GetPlayerName() == surf.admin
 }
 
 
-/////////////////////////////////////////////////
-//
-//
-//
-//
-//              DOSNT HAVE NAME YET
-//
-//
-//
-//
-/////////////////////////////////////////////////
+//////SURF NONAME BY ZEE
 
 void function SurfNoNameLoad()
 {
@@ -682,11 +674,13 @@ void function SurfNoNameTriggerSetup()
     surf.playerSpawnedProps.append(tp6)
     surf.playerSpawnedProps.append(tp7)
 
-	OnThreadEnd(
-		function() : ( fall1 )
-		{
-			fall1.Destroy()
-		} )
+	while(true)
+	{
+		if(surf.disableTrigger == true) {
+		if(IsValid(fall1)) fall1.Destroy()
+		break}
+		WaitFrame()
+	}
 
 	WaitForever()
 }
