@@ -237,7 +237,7 @@ void function Sequence_PickLoadout()
 			foreach ( player in GetPlayerArray() )
 			{
 				string skydiveMusicID = MusicPack_GetSkydiveMusic( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MusicPack() ) )
-				EmitSoundOnEntityOnlyToPlayer( player, player, skydiveMusicID )
+				thread EmitSoundOnEntityOnlyToPlayerAfterDelay( player, player, skydiveMusicID, 1.3 )
 			}
 
 		wait CharSelect_GetOutroSquadPresentDuration()
