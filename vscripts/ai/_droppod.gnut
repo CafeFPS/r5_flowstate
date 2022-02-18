@@ -68,10 +68,10 @@ void function AirDropFireteam( vector origin, vector angles, string animationNam
     if(IsValid(threatProxy))
         threatProxy.Destroy()
 
-	InitDropPod( dropPod )
+	//InitDropPod( dropPod )
 	wait 5
 	if(IsValidPlayer(player)){
-	player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0)	
+	player.p.isPlayerSpawningInDroppod = false
 	}
 }
 
@@ -398,28 +398,20 @@ function LaunchAnimDropPod( entity dropPod, string anim, vector targetOrigin, ve
 function LaunchAnimDropPod2( entity dropPod, string anim, vector targetOrigin, vector targetAngles, entity player )
 {
 	dropPod.EndSignal( "OnDestroy" )
-
 	dropPod.s.launchAnim <- anim
-
 	int team = dropPod.GetTeam()
-
 	entity ref = CreateOwnedScriptMover( dropPod )
 	dropPod.SetParent(ref)
-    //ref.SetOrigin( targetOrigin )
     ref.SetAngles( targetAngles )
-
-	EmitSoundOnEntity( dropPod, "spectre_drop_pod" )
+	if(IsValid(player)){
 	player.SetParent(dropPod)
 	player.SetOrigin(dropPod.GetOrigin())
-	ScreenFadeFromBlack(player, 3, 3)
+	//ScreenFadeFromBlack(player, 3, 3)
+	EmitSoundOnEntity( dropPod, "spectre_drop_pod" )}
 	ref.Hide()
-
-	wait 3
-
+	WaitFrame()
 	ref.Show()
-
 	thread __WarpInDropPodEffectShared( dropPod.GetOrigin(), <0,0,90>, "droppod_warpin", 0.0 )
-
 	ref.MoveTo( targetOrigin, 2, 0, 0 )
 
 	OnThreadEnd(
@@ -452,7 +444,7 @@ function LaunchAnimDropPod2( entity dropPod, string anim, vector targetOrigin, v
 
 	//CreateShake( player.GetOrigin(), 10, 105, 1.25, 768 )
 	wait 1
-	player.ClearParent()
+	if(IsValid(player)) player.ClearParent()
 
 	dropPod.Destroy()
 }
