@@ -112,7 +112,24 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
                 dropshiplocations.append(< 23040,-28096,-2880 > )
                 dropshiplocations.append(< 26304,-26816,-2816 > )
                 break;
-            case "Thermal Station":
+            case "Lava Fissure":
+                dropshiplocations.append(< -26550, 13746, -3048 > )
+                dropshiplocations.append(< -28877, 12943, -3109 > )
+                dropshiplocations.append(< -29881, 9168, -2905 > )
+                dropshiplocations.append(< -27590, 9279, -3109 > )
+                break;
+			case "Space Elevator":
+                dropshiplocations.append(< -12286, 26037, -4012 > )
+                dropshiplocations.append(< -12318, 28447, -3975 > )
+                dropshiplocations.append(< -14373, 27785, -3961 > )
+                dropshiplocations.append(< -13858, 27985, -1958> )
+                break;
+			case "Little Town":
+                dropshiplocations.append(< 22857, 3449, -4050 > )
+                dropshiplocations.append(< 19559, 232, -4035 > )
+                dropshiplocations.append(< 19400, 4384, -4027 > )
+                break;
+			case "Thermal Station":
                 dropshiplocations.append(< -20032,-23232,-4288 > )
                 dropshiplocations.append(< -21056,-23360,-3904 > )
                 dropshiplocations.append(< -20096,-17792,-4032 > )

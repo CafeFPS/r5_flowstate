@@ -2506,8 +2506,7 @@ void function BrightwaterLoad3()
 
 void function WorldEntities()
 {
-    printl( "########################################################################" ) // Zer0Bytes#4428
-
+	// Zer0Bytes#4428
     ///////////////////////////////////////////////////////////////// ZIPS
     vector removeheight = <0,0,20>
     ent_ZipLine(<-26804.0098, 40258, -2159.9375>,    <-28190, 38700,  -565>,false)
@@ -2540,7 +2539,6 @@ void function WorldEntities()
 	float size_multiplier = 5
     thread GenerateRings($"mdl/desertlands/desertlands_large_liquid_tank_ring_01.rmdl",<-28671.8,38912.3,3070>,0.1 + speed_multiplier,50 + size_multiplier) // tower spinning rings
     entity spike = GenerateRings($"mdl/foliage/plant_desert_yucca_01.rmdl",<-28671.8,38912.3,3070>,4 + speed_multiplier ,300 + size_multiplier) // spikes
-
     ///////////////////////////////////////////////////////////////// FX
 
     if(GetMapName() == "mp_rr_desertlands_64k_x_64k_nx") // light for night time

@@ -20,6 +20,13 @@ global function shuffleArray
 global function PROPHUNT_GiveAndManageRandomProp
 global bool isBrightWaterByZer0 = false
 global function returnPropBool
+global function checkforhighpingabuser
+global function ClientCommand_ClientMsg
+global function	ClientCommand_DispayChatHistory
+global function	ClientCommand_RebalanceTeams
+global function	ClientCommand_FlowstateKick
+global function	ClientCommand_ShowLatency
+
 string WHITE_SHIELD = "armor_pickup_lv1"
 string BLUE_SHIELD = "armor_pickup_lv2"
 string PURPLE_SHIELD = "armor_pickup_lv3"
@@ -80,7 +87,7 @@ struct {
 	bool isshipalive = false
 	array<LocationSettings> droplocationSettings
     LocationSettings& dropselectedLocation
-		
+	
 	bool FallTriggersEnabled = false
 	bool mapSkyToggle = false
 } file
@@ -95,7 +102,6 @@ struct PlayerInfo
 	int damage
 	int lastLatency
 }
-
 
 struct{
 float endTime = 0
@@ -117,38 +123,37 @@ bool InProgress = false
 // ██   ██ ██   ██      ██ ██          ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██
 // ██████  ██   ██ ███████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
-
 void function _CustomTDM_Init()
 {
-	SurvivalFreefall_Init()
+	printt("Flowstate DEBUG - Executing _CustomTDM_Init")
+	SurvivalFreefall_Init() //Enables freefall/skydive
 	PrecacheCustomMapsProps()
 	
 	if(!FlowState_SURF()){
-	file.Hoster = FlowState_Hoster()
-	file.admin1 = FlowState_Admin1()
-	file.admin2 = FlowState_Admin2()
-	file.admin3 = FlowState_Admin3()
-	file.admin4 = FlowState_Admin4()
+		file.Hoster = FlowState_Hoster()
+		file.admin1 = FlowState_Admin1()
+		file.admin2 = FlowState_Admin2()
+		file.admin3 = FlowState_Admin3()
+		file.admin4 = FlowState_Admin4()
 	}	
 
 	//gamemodes selection and callbacks. Colombia
 	if (GetMapName() == "mp_rr_canyonlands_staging")
 		{
-			AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
+		AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
 		}
 	AddClientCommandCallback("screenshotDevNet_noRPROF", ClientCommand_IsthisevenCrashfixtest)
 	AddClientCommandCallback("SetNextHealModType", ClientCommand_IsthisevenCrashfixtest)
-	//AddCallback_OnClientDisconnected( _OnPlayerDced )
 	AddCallback_OnClientConnected( void function(entity player) { 
 	
 	if(FlowState_PROPHUNT()){
-	thread _OnPlayerConnectedPROPHUNT(player)	
+		thread _OnPlayerConnectedPROPHUNT(player)	
 	} else if (FlowState_SURF()){
-	thread _OnPlayerConnectedSURF(player)		
+		thread _OnPlayerConnectedSURF(player)		
 	} else {
-	thread _OnPlayerConnected(player) 
+		thread _OnPlayerConnected(player) 
 	}
-	UpdatePlayerCounts()
+		UpdatePlayerCounts()
 	})
 	
 	AddSpawnCallback( "prop_survival", DissolveItem )
@@ -156,11 +161,11 @@ void function _CustomTDM_Init()
 	AddCallback_OnPlayerKilled(void function(entity victim, entity attacker, var damageInfo) {
 	
 	if(FlowState_PROPHUNT()){
-	thread _OnPlayerDiedPROPHUNT(victim, attacker, damageInfo)
+		thread _OnPlayerDiedPROPHUNT(victim, attacker, damageInfo)
 	} else if (FlowState_SURF()){
-	thread _OnPlayerDiedSURF(victim, attacker, damageInfo)	
+		thread _OnPlayerDiedSURF(victim, attacker, damageInfo)	
 	} else {
-	thread _OnPlayerDied(victim, attacker, damageInfo)
+		thread _OnPlayerDied(victim, attacker, damageInfo)
 	}
 	
 	})
@@ -172,37 +177,38 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("commands", ClientCommand_Help)
 
 	if(FlowState_PROPHUNT()){
-	AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
-	AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
+		AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
+		AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
 	} else if (FlowState_SURF()){
-	AddClientCommandCallback("spectate", ClientCommand_SpectateSURF) //todo fix this
-	AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
+		AddClientCommandCallback("spectate", ClientCommand_SpectateSURF) //todo fix this
+		AddClientCommandCallback("next_round", ClientCommand_NextRoundSURF)
 	} else{
-	AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
-	AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
-	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
-	AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
-	AddClientCommandCallback("god", ClientCommand_God)
-	AddClientCommandCallback("ungod", ClientCommand_UnGod)
-	AddClientCommandCallback("next_round", ClientCommand_NextRound)
+		AddClientCommandCallback("scoreboard", ClientCommand_Scoreboard)
+		AddClientCommandCallback("spectate", ClientCommand_SpectateEnemies)
+		AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
+		AddClientCommandCallback("circlenow", ClientCommand_CircleNow)
+		AddClientCommandCallback("god", ClientCommand_God)
+		AddClientCommandCallback("ungod", ClientCommand_UnGod)
+		AddClientCommandCallback("next_round", ClientCommand_NextRound)
 	}
 	if(FlowState_AllChat() && !FlowState_SURF()){
 		AddClientCommandCallback("say", ClientCommand_ClientMsg)
+		AddClientCommandCallback("sayhistory", ClientCommand_DispayChatHistory)
 		//3 slots ingame chat temp-bans. Usage: sayban 1 ColombiaFPS. sayunban 1
 		AddClientCommandCallback("sayban", ClientCommand_ChatBan)
 		AddClientCommandCallback("sayunban", ClientCommand_ChatUnBan)
 	}
 	
-if(!FlowState_PROPHUNT()){
-	if ( FlowState_AdminTgive() ){
-	AddClientCommandCallback("admintgive", ClientCommand_GiveWeapon)
-	} else {
+	if(!FlowState_PROPHUNT()){
+		if ( FlowState_AdminTgive() ){
+			AddClientCommandCallback("admintgive", ClientCommand_GiveWeapon)
+		} else {
 
-    if( CMD_GetTGiveEnabled() )
-    {
-        AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
-    } }
-}
+		if( CMD_GetTGiveEnabled() )
+		{
+			AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
+		} }
+	}
 
 	// Whitelisted weapons
     for(int i = 0; GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
@@ -211,14 +217,15 @@ if(!FlowState_PROPHUNT()){
     }
 
     if(FlowState_PROPHUNT()){
-	thread RunPROPHUNT()
+		thread RunPROPHUNT()
 	} else if(FlowState_SURF()){
-	thread RunSURF()	
+		thread RunSURF()	
 	}else {
-	thread RunTDM() 
-	}//Go to Game Loop
-
+		thread RunTDM()}
+	
+	printt("Flowstate DEBUG - _CustomTDM_Init: All callbacks added, running gamemode thread.")
 }
+
 void function OnEntitiesDidLoadFR()
 {
 	SpawnMapPropsFR()
@@ -245,14 +252,13 @@ LocPair function _GetVotingLocation()
              return NewLocPair(<26794, -6241, -27479>, <0, 0, 0>)
         case "mp_rr_canyonlands_64k_x_64k":
 			return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
-		case "mp_rr_ashs_redemption"://our second custom tdm map. FIRST WAS SKILL TRAINER
+		case "mp_rr_ashs_redemption":
             return NewLocPair(<-20917, 5852, -26741>, <0, -90, 0>)
         case "mp_rr_canyonlands_mu1":
         case "mp_rr_canyonlands_mu1_night":
 		    return NewLocPair(<-19459, 2127, 18404>, <0, 180, 0>)
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
-			//return NewLocPair(<-8846, -30401, 2496>, <0, 60, 0>)
 			return NewLocPair(<-19459, 2127, 6404>, <0, 180, 0>)
         default:
             Assert(false, "No voting location for the map!")
@@ -314,15 +320,6 @@ LocPair function _GetAppropriateSpawnLocation(entity player)
         break
 
     }
-
-		// int maxspawns = -1
-		// array<LocPair> spawns = file.dropselectedLocation.spawns
-		// foreach(spawn in spawns)
-		// {
-    		// maxspawns++
-		// }
-					// int rndnum = RandomIntRangeInclusive(0, maxspawns)
-
     return selectedSpawn
 }
 
@@ -356,11 +353,16 @@ void function DestroyPlayerProps()
     file.playerSpawnedProps.clear()
 }
 
+// void function Flowstate_Stats_Save( entity player )
+// {
+
+// }
 
 void function DissolveItem(entity prop)
 {
 thread DissolveItem_Thread(prop)
 }
+
 void function DissolveItem_Thread(entity prop)
 {
 	wait 4
@@ -380,25 +382,24 @@ void function _OnPlayerConnected(entity player)
 {
     if(!IsValid(player)) return
 
-		printt("Flowstate DEBUG - New player connected.", player)
+		printt("Flowstate DEBUG - New player connected. This is called from Custom_TDM flowstate script.", player)
 		if(FlowState_ForceCharacter()){
+				player.SetPlayerNetBool( "hasLockedInCharacter", true)
 				CharSelect(player)
-				player.SetPlayerNetBool( "hasLockedInCharacter", true)}
+				}
 	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
-			
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
-	
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			if(FlowState_RandomGunsEverydie())
 			{
-			Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands.", 10)}
+			Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands. ", 10)}
 			else if (FlowState_Gungame())
 			{
-			Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands.", 10)
+			Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands. ", 10)
 
 			} 
 			else { 
-			Message(player, "FLOWSTATE: FFA/TDM", "Type 'commands' in console to see the available console commands.", 10)
+			Message(player, "FLOWSTATE: FFA/TDM", "Type 'commands' in console to see the available console commands. ", 10)
 			}
 	
 	switch(GetGameState())
@@ -439,27 +440,22 @@ void function _OnPlayerConnected(entity player)
 			player.UnfreezeControlsOnServer()
 			
 			_HandleRespawn(player)
-			// if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) )
-			// {
+			if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) || GetMapName() == "mp_rr_canyonlands_staging" || file.selectedLocation.name == "Skill trainer By Colombia" )
+			{
 	
-					// printt("Flowstate DEBUG - Can't spawn player in droppod. Droppods disabled, or we are changing map. Spawning with normal mode", player)
-					// _HandleRespawn(player)
+					printt("Flowstate DEBUG - Can't spawn player in droppod. Droppods disabled, or we are changing map. Spawning with normal mode", player)
+					_HandleRespawn(player)
 
-			// } else {
+			} else {
 				
-				// if(file.selectedLocation.name != "Deathbox by Ayezee" || file.selectedLocation.name != "Skill trainer By Colombia"){
-				
-				// printt("Flowstate DEBUG - Spawning player in droppod", player)
-				// player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 2) //Using gamestat as bool lmao. 
-				// thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
-				// _HandleRespawn(player, true)
-				// player.SetAngles( <0,180,0> )} else {
-					// printt("Flowstate DEBUG - Can't spawn player in droppod. Skill trainer or Deathbox detected. Trying normal mode.", player)
-					// _HandleRespawn(player)
-				// }
-			//SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
-			//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)	
-			// }
+				printt("Flowstate DEBUG: Map index:" + file.nextMapIndex + "end")
+				printt("Flowstate DEBUG: Map index:" + file.selectedLocation.name + "end")
+				printt("Flowstate DEBUG - Spawning player in droppod", player)
+				player.p.isPlayerSpawningInDroppod = true
+				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
+				_HandleRespawn(player, true)
+				player.SetAngles( <0,180,0> )
+			}
 			ClearInvincible(player)
 			if(FlowState_RandomGunsEverydie()){
 				UpgradeShields(player, true)
@@ -476,24 +472,22 @@ void function _OnPlayerConnected(entity player)
         break
     }
 	//thread debugplayerlatency(player)			
+		
+				// player.SetPersistentVar( "FlowstateSTATS[1].eHandle", player.GetEncodedEHandle() )
+				// player.SetPersistentVar( "FlowstateSTATS[1].kills", 9999999 )
+				//printt("Flowstate DEBUG - SAVED KIILS FOR THIS USER: ", player.GetPlayerName(), player.GetPersistentVarAsInt( "FlowstateSTATS[1].kills"))
+				// info.uid = player.GetPlatformUID()
+				// info.hardware = player.GetHardware()
+				
+				
 	thread checkforhighpingabuser(player)
 }
-// void function debugplayerlatency(entity player)
-// {
-		// int asd = 0
-				// while(true)
-				// {
-			
-				// printt("Flowstate DEBUG - Debug Latency: ", (int(player.GetLatency()* 1000) - 40))
-				// wait 1
-				// asd++
-				// if(asd == 10) break
-				// }
-// }
+
 void function checkforhighpingabuser(entity player)
 {
 				//kick players with high ping
-				wait 10		
+				wait 12		
+				if(!IsValid(player)) return
 				if ((int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() && IsValid(player) && FlowState_KickHighPingPlayer()){
 
 					player.FreezeControlsOnServer()
@@ -501,9 +495,11 @@ void function checkforhighpingabuser(entity player)
 					HolsterAndDisableWeapons( player )
 					Message(player, "FLOWSTATE KICK", "Your ping is too high: " + (int(player.GetLatency()* 1000) - 40), 3)
 					wait 3
-					printt("Flowstate DEBUG - Disconnecting a high ping abuser: ", player)
-					ClientCommand( player, "disconnect" )
+					if(IsValid(player)) printt("Flowstate DEBUG - Disconnecting a high ping abuser: ", player)
+					if(IsValid(player)) ClientCommand( player, "disconnect" )
 					UpdatePlayerCounts()
+				} else if(IsValid(player) && GameRules_GetGameMode() == "custom_tdm"){
+					Message(player, "APEX FLOWSTATE", "             Enjoy your stay, " + player.GetPlayerName() + "\n Your latency: " + (int(player.GetLatency()* 1000) - 40) + " - Your OriginID: " + player.GetPlatformUID() + ".", 5)
 				}
 }
 
@@ -513,39 +509,38 @@ void function doubletriplekillaudio(entity victim, entity attacker)
 	entity challenger = file.previousChallenger
 	entity killeader = GetBestPlayer()
 	float doubleKillTime = 5.0
-	float tripleKillTime = 10
+	float tripleKillTime = 8.0
 	
-		if(attacker == file.lastKiller && attacker == killeader && !plsTripleAudio){
-	file.SameKillerStoredKills = 2
-	printt("Flowstate DEBUG - A player did a DOUBLE kill.", attacker)
+	if(!IsValid(attacker)) return
+	
+	if(attacker == file.lastKiller && attacker == killeader && !plsTripleAudio){
+		attacker.p.downedEnemyAtOneTime = 2
+		printt("Flowstate DEBUG - A player did a DOUBLE kill.", attacker)
 	} else if (attacker == file.lastKiller && attacker == killeader && plsTripleAudio)
 	{
-	file.SameKillerStoredKills = 3	
+		attacker.p.downedEnemyAtOneTime = 3	
 	}
-	if(Time() - file.lastKillTimer < doubleKillTime && attacker == file.lastKiller && attacker == killeader && file.SameKillerStoredKills == 2){
-	foreach (player in GetPlayerArray())
-	{
-	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderDoubleKill" )
-	}
-	if(FlowState_ChosenCharacter() == 8)
-	{
-	thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "diag_mp_wraith_bc_iDownedMultiple_1p" )
-	}
-	plsTripleAudio = true;
+	if((Time() - attacker.p.lastKillTimer) < doubleKillTime && attacker == file.lastKiller && attacker == killeader && attacker.p.downedEnemyAtOneTime == 2){
+		foreach (player in GetPlayerArray())
+		{
+		thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderDoubleKill" )
+		}
+		if(FlowState_ChosenCharacter() == 8)
+		{
+			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "diag_mp_wraith_bc_iDownedMultiple_1p" )
+		}
+		plsTripleAudio = true;
 	}
 	
-	if(Time() - file.lastKillTimer < tripleKillTime && attacker == file.lastKiller && attacker == killeader && file.SameKillerStoredKills == 3){
-	file.SameKillerStoredKills = 0
-	wait 1
-	printt("Flowstate DEBUG - A player did a TRIPLE kill.", attacker)
-	foreach (player in GetPlayerArray())
-	{
-	thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderTripleKill" )
-	}
-	plsTripleAudio = false;
-	}
-	if(Time() - file.lastKillTimer > tripleKillTime && attacker == file.lastKiller && attacker == killeader){
-	plsTripleAudio = false;	
+	if((Time() - attacker.p.lastKillTimer) < tripleKillTime && attacker == file.lastKiller && attacker == killeader && attacker.p.downedEnemyAtOneTime == 3){
+		attacker.p.downedEnemyAtOneTime = 0
+		wait 1
+		printt("Flowstate DEBUG - A player did a TRIPLE kill.", attacker)
+		foreach (player in GetPlayerArray())
+		{
+		thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderTripleKill" )
+		}
+		plsTripleAudio = false;
 	}
 }
 
@@ -556,25 +551,24 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 {
 	if (FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes())
 			{		
-	CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
+			CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
 			}
-		printt("Flowstate DEBUG - A player has been killed.", victim, " - by -", attacker)
-
-
+		printt("Flowstate DEBUG - _OnPlayerDied. ", victim, " - by - ", attacker)
+		
 	switch(GetGameState())
     {
     case eGameState.Playing:
         // Víctima
         void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-
+				wait 1
 				if(!IsValid(victim)) return
-				//victim.p.storedWeapons = StoreWeapons(victim)
-				if(Spectator_GetReplayIsEnabled() && IsValid(victim) && ShouldSetObserverTarget( attacker )){
-					wait 0.5
-					victim.SetObserverTarget( attacker )
-					victim.SetSpecReplayDelay( 4 )
-					victim.StartObserverMode( OBS_MODE_IN_EYE )
-					Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+				if(file.tdmState != eTDMState.NEXT_ROUND_NOW){
+					if(Spectator_GetReplayIsEnabled() && IsValid(victim) && IsValid(attacker) && ShouldSetObserverTarget( attacker )){
+						victim.SetObserverTarget( attacker )
+						victim.SetSpecReplayDelay( 4 )
+						victim.StartObserverMode( OBS_MODE_IN_EYE )
+						Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+					}
 				}
 				
 				int invscore = victim.GetPlayerGameStat( PGS_DEATHS )
@@ -594,8 +588,10 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 						{
 						KillStreakAnnouncer(victim, true)
 						}
+						
+				if(file.tdmState != eTDMState.NEXT_ROUND_NOW){
+				wait 8 }
 				
-				wait 8
 				if(IsValid(victim) )
 				{
 				_HandleRespawn( victim )
@@ -631,13 +627,12 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				int score = GameRules_GetTeamScore(attacker.GetTeam());
 				score++;
 				GameRules_SetTeamScore(attacker.GetTeam(), score);
-
+				
+				if(attacker.IsPlayer()) attacker.p.lastKillTimer = Time()
 			}
         }
 		thread victimHandleFunc()
         thread attackerHandleFunc()
-        // foreach(player in GetPlayerArray()){
-		// Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_PlayerKilled")}
 		
         break
     default:
@@ -645,22 +640,20 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		break
     }
 	
-	// file.deathPlayersCounter++
-
-	// if(file.deathPlayersCounter == 1 )
-	// {
-	// foreach (player in GetPlayerArray())
-	// {
-	// thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
-	// }
-	// }
+	file.deathPlayersCounter++
+	if(file.deathPlayersCounter == 1 )
+	{
+			foreach (player in GetPlayerArray())
+			{
+				thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
+			}
+	}
 	
-	// thread doubletriplekillaudio(victim,attacker)
-
-// file.lastKillTimer = Time()
-// file.lastKiller = attacker
-
-// UpdatePlayerCounts()
+	if(attacker.IsPlayer()) {
+	thread doubletriplekillaudio(victim,attacker)
+	file.lastKiller = attacker
+	}
+	UpdatePlayerCounts()
 }
 
 
@@ -713,24 +706,20 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 				foreach (storedWeapon in weapons)
 				{
 					player.GiveWeapon( storedWeapon.name, storedWeapon.inventoryIndex, storedWeapon.mods )
-
 				}
-
-            
 			}
             else
             {
 				DecideRespawnPlayer(player, false)
                 GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
             }
-
         }
     }
 	
 	if( IsValid( player ) && IsAlive(player)){
 		
 			if(!isDroppodSpawn){
-			printt("Flowstate DEBUG - TPing player to spawn point. Using _HandleRespawn", player)
+			printt("Flowstate DEBUG - TPing player to spawn point from _HandleRespawn", player)
 			TpPlayerToSpawnPoint(player)}
 			
 		player.UnfreezeControlsOnServer()
@@ -804,856 +793,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	// try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
 }
 
-
-void function _OnPlayerDced(entity player)
-{
-printt("Flowstate DEBUG - Player disconnected from flowstate server.", player)
-UpdatePlayerCounts()
-}
-
-
-//prophunt start. Colombia
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-
-const array<asset> prophuntAssetsWE =
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-[
-	//$"mdl/industrial/traffic_cone_01.rmdl",
-	$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
-	$"mdl/eden/eden_electrical_transformer_01.rmdl",
-	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
-	//$"mdl/rocks/rock_lava_small_moss_desertlands_03.rmdl",
-	//$"mdl/barriers/concrete/concrete_barrier_fence_tarp_128.rmdl",
-	$"mdl/angel_city/vending_machine.rmdl",
-	$"mdl/utilities/power_gen1.rmdl",
-	$"mdl/angel_city/box_small_02.rmdl",
-	$"mdl/colony/antenna_05_colony.rmdl",
-	$"mdl/robots/marvin/marvin_gladcard.rmdl",
-	//$"mdl/garbage/garbage_bag_plastic_a.rmdl",
-	$"mdl/garbage/trash_bin_single_wtrash_Blue.rmdl",
-	$"mdl/angel_city/box_small_01.rmdl",
-	$"mdl/garbage/dumpster_dirty_open_a_02.rmdl",
-	$"mdl/containers/slumcity_oxygen_tank_red.rmdl",
-	$"mdl/containers/box_shrinkwrapped.rmdl",
-	$"mdl/colony/farmland_fridge_01.rmdl",
-	$"mdl/furniture/chair_beanbag_01.rmdl",
-	$"mdl/colony/farmland_crate_plastic_01_red.rmdl",
-	$"mdl/IMC_base/generator_IMC_01.rmdl",
-	$"mdl/garbage/trash_can_metal_02_b.rmdl",
-	$"mdl/garbage/trash_bin_single_wtrash.rmdl"
-]
-
-array<LocationSettings> function shuffleLocationsArray(array<LocationSettings> arr)
-// O(n) Durstenfeld / Knuth shuffle (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
-//By michae\l/#1125.
-{
-	int i;
-	int j;
-	int b;
-	LocationSettings tmp;
-
-	for (i = arr.len() - 1; i > 0; i--) {
-		j = RandomIntRangeInclusive(1, i)
-		tmp = arr[b]
-		arr[b] = arr[j]
-		arr[j] = tmp
-	}
-
-	return arr
-}
-
-void function RunPROPHUNT()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-    WaitForGameState(eGameState.Playing)
-    AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawnedPROPHUNT)
-	
-	prophunt.locationsShuffled = shuffleLocationsArray(prophunt.locationSettings)
-	
-    for(; ;)
-    {
-	ActualPROPHUNTLobby()
-	ActualPROPHUNTGameLoop()
-	}
-    WaitForever()
-}
-
-void function _OnPlayerConnectedPROPHUNT(entity player)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	if(!IsValid(player)) return
-	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
-	printt("Flowstate DEBUG - New player connected.", player)
-	if(FlowState_ForceCharacter()){CharSelect(player)}
-	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
-	UpdatePlayerCounts()
-	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
-	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-	array<entity> playersON = GetPlayerArray_Alive()
-	playersON.fastremovebyvalue( player )
-	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-	player.SetPlayerSettingsWithMods( characterSetFile, [] )
-	SetPlayerSettings(player, PROPHUNT_SETTINGS)
-	DoRespawnPlayer( player, null )
-	Survival_SetInventoryEnabled( player, true )				
-	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
-	player.SetPlayerNetBool( "pingEnabled", true )
-	player.SetHealth( 100 )
-	player.kv.solid = 6
-	player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-	player.AllowMantle()
-			
-	switch(GetGameState())
-    {
-		case eGameState.WaitingForPlayers:
-			if(IsValidPlayer(player))
-			{
-				printt("Flowstate DEBUG - Player connected waitingforplayers.", player)	
-				//player has a team assigned already, we need to fix it before spawn
-				GiveTeamToProphuntPlayer(player)
-
-				if(GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
-					SetTeam( player, TEAM_MILITIA )	
-				}
-
-				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-					{
-					player.SetOrigin(<-19459, 2127, 6404>)}
-				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-					{
-					player.SetOrigin(<-19459, 2127, 18404>)}
-				player.SetThirdPersonShoulderModeOn()
-				player.UnforceStand()
-				player.UnfreezeControlsOnServer()
-			}
-			break
-		case eGameState.MapVoting:
-			if(IsValidPlayer(player))
-			{
-				printt("Flowstate DEBUG - Prophunt player connected mapvoting.", player)
-				//player has a team assigned already, we need to fix it before spawn
-				GiveTeamToProphuntPlayer(player)
-
-				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-					{
-					player.SetOrigin(<-19459, 2127, 6404>)}
-				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-					{
-					player.SetOrigin(<-19459, 2127, 18404>)}
-
-				player.SetThirdPersonShoulderModeOn()
-				player.UnforceStand()
-				player.UnfreezeControlsOnServer()
-			}
-			break
-		case eGameState.Playing: //wait round ends, set new player to spectate random player
-			if(IsValidPlayer(player))
-			{
-				printt("Flowstate DEBUG - Prophunt player connected midround, setting spectator.", player)
-				array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
-				try{
-				player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
-				player.MakeInvisible()
-				player.SetPlayerGameStat( PGS_ASSISTS, 0)
-				SetTeam(player, 20 )
-				Message(player, "APEX PROPHUNT", "\n    Game is in progress, you'll spawn in the next round.\n       Change spectate target with mouse click.", 10)
-				player.SetObserverTarget( playersON[RandomIntRangeInclusive(0,playersON.len()-1)] )
-				player.SetSpecReplayDelay( 2 )
-                player.StartObserverMode( OBS_MODE_IN_EYE )
-				//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
-				
-				// foreach(sPlayer in playersON)
-				// {
-				// Message(player, "APEX PROPHUNT", "Player connected! He/she is going to spawn next round." + player.GetPlayerName(), 10)	
-				// }
-				}catch(e){}
-			}
-			break
-		default:
-			break
-	}
-
-	
-}
-
-void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageInfo)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	UpdatePlayerCounts()
-	printt("Flowstate DEBUG - Prophunt player killed.", victim, " -by- ", attacker)
-
-	switch(GetGameState())
-    {
-    case eGameState.Playing:
-        // Víctima
-        void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-				array<entity> playersON = GetPlayerArray_Alive()
-				playersON.fastremovebyvalue( victim )
-	
-			if(!IsValid(victim)) return
-			
-			wait 0.5
-			if(IsValid(victim)){
-				
-				if(victim != attacker){
-                victim.SetObserverTarget( attacker )
-				victim.SetSpecReplayDelay( 2 )
-                victim.StartObserverMode( OBS_MODE_IN_EYE )
-				//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
-				}
-				else {
-				victim.SetObserverTarget( playersON[0] )
-				victim.SetSpecReplayDelay( 2 )
-                victim.StartObserverMode( OBS_MODE_IN_EYE )
-				//Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
-				}
-			
-				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
-				invscore++;
-				victim.SetPlayerGameStat( PGS_DEATHS, invscore);
-				//Add a death to the victim
-                int invscore2 = victim.GetPlayerNetInt( "assists" )
-				invscore2++;
-				victim.SetPlayerNetInt( "assists", invscore2 )
-				victim.SetPlayerGameStat( PGS_ASSISTS, 50 )
-			 }
-		}
-
-        // Atacante
-        void functionref() attackerHandleFunc = void function() : (victim, attacker, damageInfo)
-		{
-            try{
-			if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
-            {
-			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
-			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )		
-			//Autoreload on kill without animation //By CaféDeColombiaFPS
-            WpnAutoReloadOnKill(attacker)
-			int score = GameRules_GetTeamScore(TEAM_IMC);
-            score++;
-            GameRules_SetTeamScore(TEAM_IMC, score);
-			}
-			array<entity> teamMILITIAplayersalive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
-			if ( teamMILITIAplayersalive.len() == 0 )
-			{
-				file.tdmState = eTDMState.NEXT_ROUND_NOW
-				SetGameState(eGameState.MapVoting)				
-			}
-			} catch (e) {}
-		}
-thread victimHandleFunc()
-thread attackerHandleFunc()
-        break
-    default:
-		break
-    }
-}
-
-void function _HandleRespawnPROPHUNT(entity player)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	if(!IsValid(player)) return
-	printt("Flowstate DEBUG - Tping prophunt player to Lobby.", player)
-
-	if( player.IsObserver())
-    {
-		player.StopObserverMode()
-        //Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
-    }
-	
-	if(IsValid( player ))
-			{
-				if(FlowState_ForceCharacter()){CharSelect(player)}
-				if(!IsAlive(player)) {DoRespawnPlayer( player, null )}
-				
-				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-					{
-					player.SetOrigin(<-19459, 2127, 6404>)}
-				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-					{
-					player.SetOrigin(<-19459, 2127, 18404>)}
-				player.SetThirdPersonShoulderModeOn()
-				Survival_SetInventoryEnabled( player, true )
-				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
-				player.SetPlayerNetBool( "pingEnabled", true )
-				player.SetHealth( 100 )
-				TakeAllWeapons(player)
-			}
-	
-}
-
-bool function returnPropBool(){
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-	return prophunt.cantUseChangeProp
-}
-
-void function GiveTeamToProphuntPlayer(entity player)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
-	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-	
-
-	
-	if(IMCplayers.len() > MILITIAplayers.len())
-	{
-	SetTeam(player, TEAM_MILITIA )
-	} else if (MILITIAplayers.len() > IMCplayers.len())
-	{
-	SetTeam(player, TEAM_IMC )
-	} else {
-		switch(RandomIntRangeInclusive(0,1))
-		{
-			case 0:
-				SetTeam(player, TEAM_IMC )
-				break;
-			case 1:
-				SetTeam(player, TEAM_MILITIA )
-				break;
-		}
-	}
-	printt("Flowstate DEBUG - Giving team to player.", player, player.GetTeam())
-}
-
-
-void function EmitSoundOnSprintingProp()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-		while(prophunt.InProgress)
-		{
-		array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-			foreach(player in MILITIAplayers)
-			{
-				if(player.IsSprinting() && IsValid(player))
-				{
-				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
-				} 
-			}
-		wait 0.2
-		}
-}
-
-
-void function EmitWhistleOnProp()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-		while(prophunt.InProgress)
-		{
-		wait 30 //40 s COD original value: 20.
-		array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-			foreach(player in MILITIAplayers)
-			{
-				if(IsValid(player))
-				{
-				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
-				EmitSoundOnEntity( player, "concrete_bulletimpact_1p_vs_3p" )
-				} 
-			}
-		}
-}
-
-void function CheckForPlayersPlaying()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	
-	while(prophunt.InProgress)
-	{
-			if(GetPlayerArray().len() == 1)
-			{
-				file.tdmState = eTDMState.NEXT_ROUND_NOW
-				foreach(player in GetPlayerArray()){
-					Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)
-				}
-			}
-	WaitFrame()	
-	}
-	printt("Flowstate DEBUG - Ending round cuz not enough players midround")
-}
-
-void function PropWatcher(entity prop, entity player)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	while(prophunt.InProgress && player.GetPlayerGameStat( PGS_DEFENSE_SCORE ) == 10) 
-	{
-	WaitFrame()}
-	
-	try{prop.Destroy()}catch(e420){}
-}
-
-void function DestroyPlayerPropsPROPHUNT()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-    foreach(prop in prophunt.playerSpawnedProps)
-    {
-        if(IsValid(prop))
-            prop.Destroy()
-    }
-    prophunt.playerSpawnedProps.clear()
-}
-
-
-void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah = false)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-			// Using gamestat as boolean Destroy prop y otras cosas más
-			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)    true 
-			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)    false
-			player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)
-			if(!anglesornah && IsValid(player)){
-					wait 0.3
-					asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
-					player.SetValueForModelKey( selectedModel )
-					player.kv.solid = 6
-					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-					player.Hide()
-					entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
-					prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-					prop.kv.solid = 6
-					prop.SetDamageNotifications( true )
-					prop.SetTakeDamageType( DAMAGE_YES )
-					prop.AllowMantle()
-					//prop.SetCanBeMeleed( true ) //esto funcionará cuando los jugadores ya bloqueen los ángulos?
-					//creep.SetBoundingBox( < -150, -75, 0 >, <150, 75, 100 >  ) // ???
-					prop.SetMaxHealth( 100 )
-					prop.SetHealth( 100 )
-					prop.SetParent(player)
-					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
-					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
-					wait 0.2
-					thread PropWatcher(prop, player) 
-			} else if(anglesornah && IsValid(player)){
-					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)
-					player.Show()
-					player.SetBodyModelOverride( player.GetValueForModelKey() )
-					player.SetArmsModelOverride( player.GetValueForModelKey() )
-					Message(player, "prophunt", "                Your prop is angles locked.\n You can observe the surroundings without rotating the prop.", 1)
-					wait 0.1
-					player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
-			}
-}
-
-void function NotifyDamageOnProp(entity ent, var damageInfo)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-//props health bleedthrough
-	entity attacker = DamageInfo_GetAttacker(damageInfo)
-	entity victim = ent.GetParent()
-	float damage = DamageInfo_GetDamage( damageInfo )
-	
-	attacker.NotifyDidDamage
-	(
-		ent,
-		DamageInfo_GetHitBox( damageInfo ),
-		DamageInfo_GetDamagePosition( damageInfo ), 
-		DamageInfo_GetCustomDamageType( damageInfo ),
-		DamageInfo_GetDamage( damageInfo ),
-		DamageInfo_GetDamageFlags( damageInfo ), 
-		DamageInfo_GetHitGroup( damageInfo ),
-		DamageInfo_GetWeapon( damageInfo ), 
-		DamageInfo_GetDistFromAttackOrigin( damageInfo )
-	)
-	
-	float playerNextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
-	
-	if (playerNextHealth > 0 && IsValid(victim)){
-	victim.SetHealth(playerNextHealth)} else {
-	victim.SetHealth(0)
-	ent.Destroy()}
-}
-
-
-void function ActualPROPHUNTLobby()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	DestroyPlayerPropsPROPHUNT()
-	SetGameState(eGameState.MapVoting)
-	file.FallTriggersEnabled = true
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-	{
-		thread CreateShipRoomFallTriggers()
-	}
-	printt("Flowstate DEBUG - Fall triggers created.")
-
-if (FlowState_LockPOI()) {
-	prophunt.nextMapIndex = FlowState_LockedPOI()
-}else if (!prophunt.mapIndexChanged)
-	{
-	prophunt.nextMapIndex = (prophunt.nextMapIndex + 1 ) % prophunt.locationsShuffled.len()
-	}
-	
-int choice = prophunt.nextMapIndex
-prophunt.mapIndexChanged = false
-prophunt.selectedLocation = prophunt.locationsShuffled[choice]
-	printt("Flowstate DEBUG - Next location selected: ", prophunt.selectedLocation.name)
-	
-if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
-    DestroyPlayerPropsPROPHUNT()
-    wait 2
-	thread SkillTrainerLoad()
-	printt("Flowstate DEBUG - Skill trainer loading.")
-}
-	foreach(player in GetPlayerArray())
-	{
-			if(IsValid(player))
-			{
-				player.SetPlayerGameStat( PGS_ASSISTS, 0) //resetting my thing! you don't know what this does ;)
-				player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0) //resetting prop changer ability
-				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10) //false
-				player.UnforceStand()
-				player.UnfreezeControlsOnServer()
-				Message(player, "APEX PROPHUNT", "                Made by Colombia. Game is starting.\n\n" + helpMessagePROPHUNT(), 10)
-			}
-	wait 0.01
-	}
-	wait 10
-
-if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
-	while(true)
-	{
-		array<entity> playersON = GetPlayerArray_Alive()
-		if(playersON.len() > 1 )
-		{
-			foreach(player in GetPlayerArray())
-			{
-			Message(player, "APEX PROPHUNT", "We have enough players, starting now.", 5, "diag_ap_aiNotify_circleMoves10sec")
-			}
-			wait 5
-			break
-		} else {
-			foreach(player in GetPlayerArray())
-			{
-				Message(player, "APEX PROPHUNT", "Waiting another player to start. Please wait.", 1)
-			}
-			wait 5			
-		}
-		WaitFrame()
-	}
-}
-array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
-array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-	foreach(player in MILITIAplayers)
-	{
-		try {
-		Message(player, "ATTENTION", "            You're a prop. Teleporting in 5 seconds! \n Use your ULTIMATE to CHANGE PROP up to 3 times. ", 5)
-		}catch(e){}
-	}
-wait 5
-}
-
-void function ActualPROPHUNTGameLoop()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-file.tdmState = eTDMState.IN_PROGRESS
-printt("Flowstate DEBUG - tdmState is eTDMState.IN_PROGRESS Starting round.")
-entity bubbleBoundary = CreateBubbleBoundaryPROPHUNT(prophunt.selectedLocation)
-SetGameState(eGameState.Playing)
-
-float endTime = Time() + GetCurrentPlaylistVarFloat("flowstatePROPHUNTLimitTime", 300 )
-	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
-	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
-
-array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
-
-file.deathPlayersCounter = 0
-prophunt.cantUseChangeProp = false
-prophunt.InProgress = true
-thread EmitSoundOnSprintingProp()
-
-printt("Flowstate DEBUG - Tping props team.")
-foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-			//try{TakePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(e420){}
-			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor") //props dont like shields FX
-			ClearInvincible(player)
-			player.p.playerDamageDealt = 0.0
-			if(player.GetTeam() == TEAM_MILITIA){
-				vector lastPosForCoolParticles = player.GetOrigin()
-				vector lastAngForCoolParticles = player.GetAngles()
-				StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), lastPosForCoolParticles, lastAngForCoolParticles )
-				StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), lastPosForCoolParticles, lastAngForCoolParticles )
-				EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
-				EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
-				player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
-				asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
-				player.SetValueForModelKey( selectedModel )
-				player.kv.solid = 6
-				player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-				player.Hide()
-				entity prop = CreatePropDynamic(player.GetValueForModelKey(), player.GetOrigin(), player.GetAngles(), 6, -1)
-				prop.kv.solid = 6
-				prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-				prop.AllowMantle()
-				prop.SetDamageNotifications( true )
-				prop.SetTakeDamageType( DAMAGE_YES )
-				prop.SetMaxHealth( 100 ) //this is a dummy health, Props are really not receiving damage even with DAMAGE_YES flag, Respawn said. Colombia
-				prop.SetHealth( 100 )
-				prop.SetParent(player)
-					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
-				player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)
-					thread PropWatcher(prop, player) //destroys prop on end round and restores player model.
-				player.SetThirdPersonShoulderModeOn()
-				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-				player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
-				player.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_ULTIMATE)
-				DeployAndEnableWeapons(player)
-			} else if(player.GetTeam() == TEAM_IMC){
-			Message(player, "PROPS ARE HIDING", "Teleporting in 30 seconds. Please wait.", 10)}
-		}
-	wait 0.2
-	}
-wait 25
-foreach(player in GetPlayerArray())
-    {
-if(player.GetTeam() == TEAM_IMC && IsValid(player)){
-ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )}
-	}
-wait 4
-file.FallTriggersEnabled = false
-foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-		if (player.GetTeam() == TEAM_MILITIA){
-			Message(player, "ATTENTION", "              The attackers have arrived. \n Use your ULTIMATE if you want to PLACE PROP (lock angles).", 20, "Survival_UI_Ultimate_Ready") }
-			else if (player.GetTeam() == TEAM_IMC){
-			array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-			Message(player, "ATTENTION", "Kill the props. Props alive: " + MILITIAplayersAlive.len(), 20)
-			}				
-		}
-		
-	}
-prophunt.cantUseChangeProp = true
-printt("Flowstate DEBUG - Tping attackers team.")
-foreach(player in IMCplayers)
-    {
-		if(IsValidPlayer(player))
-        {
-					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
-					ClearInvincible(player)
-					EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
-					EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
-					player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
-					player.kv.solid = 6
-					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
-					player.SetThirdPersonShoulderModeOff()
-					string pri = GetCurrentPlaylistVarString("flowstatePROPHUNTweapon1", "~~none~~")
-					string sec = GetCurrentPlaylistVarString("flowstatePROPHUNTweapon2", "~~none~~")
-					player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-					player.GiveWeapon( pri, WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-					player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-					player.GiveWeapon( sec, WEAPON_INVENTORY_SLOT_PRIMARY_1, [] )
-					player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-					player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
-					//if a player punch a prop, he/she will crash. This is a workaround. Colombia
-					//player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-					//player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-					DeployAndEnableWeapons(player)
-		
-		}
-	}
-
-if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){	
-
-thread CheckForPlayersPlaying()}
-thread EmitWhistleOnProp()
-
-while( Time() <= endTime )
-	{
-		if(Time() == endTime-120)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-					Message(player,"2 MINUTES REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5)
-				}
-			}
-		}
-		if(Time() == endTime-60)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-					Message(player,"1 MINUTE REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves60sec")
-				}
-			}
-		}
-		if(Time() == endTime-30)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-					Message(player,"30 SECONDS REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves30sec")
-				}
-			}
-		}
-		if(Time() == endTime-10)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
-					Message(player,"10 SECONDS REMAINING!",  "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves10sec")
-				}
-			}
-		}
-		if(file.tdmState == eTDMState.NEXT_ROUND_NOW)
-		{
-			printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
-			break}
-		WaitFrame()	
-	}
-prophunt.InProgress = false
-array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)	
-if(MILITIAplayersAlive.len() > 0){
-foreach(player in GetPlayerArray())
-    {
-		Message(player, "PROPS TEAM WIN", "Props alive: " + MILITIAplayersAlive.len() + " Swapping teams.", 7, "diag_ap_aiNotify_winnerFound")
-		player.SetThirdPersonShoulderModeOn()
-		HolsterAndDisableWeapons(player)
-	}
-} else {
-foreach(player in GetPlayerArray())
-    {
-		Message(player, "ATTACKERS TEAM WIN", "All props are dead. Swapping teams.", 7, "diag_ap_aiNotify_winnerFound")
-		player.SetThirdPersonShoulderModeOn()	
-		HolsterAndDisableWeapons(player)		
-	}	
-}
-wait 7
-UpdatePlayerCounts()
-bubbleBoundary.Destroy()
-printt("Flowstate DEBUG - Prophunt round finished Swapping teams.")
-
-foreach(player in GetPlayerArray())
-    {	
-		if(IsValid(player)){
-	
-				if(player.GetTeam() == TEAM_MILITIA){
-					player.Show()
-					}
-					//for connected players spectators
-				if( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) != 50)
-				{
-						player.StopObserverMode()
-						//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
-						TakeAllWeapons(player)
-						player.SetThirdPersonShoulderModeOn()
-						GiveTeamToProphuntPlayer(player) 
-						_HandleRespawnPROPHUNT(player)
-						player.MakeVisible()
-						player.UnforceStand()
-						player.UnfreezeControlsOnServer()
-						
-						//for ded players midround
-				} else if ( player.IsObserver() && player.GetPlayerGameStat( PGS_ASSISTS) == 50){
-						player.StopObserverMode()
-						//Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
-						if(player.GetTeam() == TEAM_IMC){
-								TakeAllWeapons(player)
-								player.SetThirdPersonShoulderModeOn()
-								SetTeam(player, TEAM_MILITIA )
-								_HandleRespawnPROPHUNT(player)
-								player.MakeVisible()
-								player.UnforceStand()
-								player.UnfreezeControlsOnServer()
-						} else if(player.GetTeam() == TEAM_MILITIA){
-								TakeAllWeapons(player)
-								player.SetThirdPersonShoulderModeOn()
-								SetTeam(player, TEAM_IMC )
-								_HandleRespawnPROPHUNT(player)
-								player.MakeVisible()
-								player.UnforceStand()
-								player.UnfreezeControlsOnServer()
-						}
-					} else {
-				 //for alive players swap teams
-						if(player.GetTeam() == TEAM_IMC){
-								TakeAllWeapons(player)
-								player.SetThirdPersonShoulderModeOn()
-								SetTeam(player, TEAM_MILITIA )
-								_HandleRespawnPROPHUNT(player)
-								player.MakeVisible()
-								player.UnforceStand()
-								player.UnfreezeControlsOnServer()
-						
-						} else if(player.GetTeam() == TEAM_MILITIA){
-								TakeAllWeapons(player)
-								player.SetThirdPersonShoulderModeOn()
-								SetTeam(player, TEAM_IMC )
-								_HandleRespawnPROPHUNT(player)
-								player.MakeVisible()
-								player.UnforceStand()
-								player.UnfreezeControlsOnServer()
-						}
-
-					}
-		}
-	wait 0.1
-	}
-WaitFrame()
-}
-
-//prophunt end. Colombia
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-///////////////////////////////////////////////////////
-
-
 void function TpPlayerToSpawnPoint(entity player)
 {
 	LocPair loc = _GetAppropriateSpawnLocation(player)
@@ -1714,7 +853,7 @@ void function WpnPulloutOnRespawn(entity player)
 
 void function SummonPlayersInACircle(entity player0)
 {
-		printt("Flowstate DEBUG - Circle fight invoked", player0)
+	printt("Flowstate DEBUG - Circle fight invoked.", player0)
 	vector pos = player0.GetOrigin()
 	pos.z += 5
 	int i = 0
@@ -2204,7 +1343,7 @@ void function CreateDropShipTriggerArea()
 				}
 			}
 		}
-		wait 0.1
+		wait 0.01
 	}
 }
 
@@ -2555,10 +1694,12 @@ void function KillStreakAnnouncer(entity player, bool died) {
 
 #if SERVER
 void function GiveFlowstateOvershield( entity player, bool isOvershieldFromGround = false)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
 	player.SetShieldHealthMax( FlowState_ExtrashieldValue() )
 	player.SetShieldHealth( FlowState_ExtrashieldValue() )
-	//DelayShieldDecayTime( soul, 1 )
 	if(isOvershieldFromGround){
 			foreach(sPlayer in GetPlayerArray()){
 			Message(sPlayer,"EXTRA SHIELD PROVIDED", player.GetPlayerName() + " has 50 extra shield.", 5, "")
@@ -2643,6 +1784,9 @@ void function GiveGungameWeapon(entity player) {
  // ██████  ██   ██ ██      ██ ███████     ███████  ██████   ██████  ██
 
 void function RunTDM()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
 {
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
@@ -2666,6 +1810,7 @@ void function VotingPhase()
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
+//Huge thanks to -AyeZee- for dropships and droppods.
 {
 	printt("Flowstate DEBUG - mapvoting is starting.")
     DestroyPlayerProps()
@@ -2687,7 +1832,7 @@ void function VotingPhase()
 				player.UnfreezeControlsOnServer()
 				HolsterAndDisableWeapons( player )
 			}
-			wait 0.15
+			WaitFrame()
 	}
 
 	if (!file.mapIndexChanged)
@@ -2702,6 +1847,9 @@ void function VotingPhase()
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
 	file.selectedLocation = file.locationSettings[choice]
+	WaitFrame()
+	file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+	printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
@@ -2730,23 +1878,21 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	CreateGroundMedKit(<10725, 5913,-4225>)
 } else if(file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled()){
     DestroyPlayerProps()
-    wait 1
+    WaitFrame()
 	CreateGroundMedKit(<17247,31823,-310>)
     thread SkillTrainerLoad()
 } else if(file.selectedLocation.name == "Skill trainer By Colombia" )
 {
-		printt("Flowstate DEBUG - creating props for Skill Trainer.")
-
+	printt("Flowstate DEBUG - creating props for Skill Trainer.")
     DestroyPlayerProps()
-    wait 1
+    WaitFrame()
     thread SkillTrainerLoad()	
 } else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
 {
-		printt("Flowstate DEBUG - creating props for Brightwater.")
-
+	printt("Flowstate DEBUG - creating props for Brightwater.")
 	isBrightWaterByZer0 = true
     DestroyPlayerProps()
-	wait 1
+	WaitFrame()
 	thread WorldEntities()
 	wait 1
     thread BrightwaterLoad()
@@ -2754,30 +1900,14 @@ if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled
 	thread BrightwaterLoad2()
 	wait 1.5
 	thread BrightwaterLoad3()
-	wait 1.5
-	//SpawninvisWalls()
-	wait 3
-} else if(file.selectedLocation.name == "Cave By BlessedSeal" )
-{
-			printt("Flowstate DEBUG - creating props for Cave.")
-
+} else if(file.selectedLocation.name == "Cave By BlessedSeal" ){
+	printt("Flowstate DEBUG - creating props for Cave.")
     DestroyPlayerProps()
-    wait 1
+    WaitFrame()
     thread SpawnEditorPropsSeal()	
-} 
-// else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
-// {	
-	 // WorldEntitiesZER0()
-     // // thread SpawnEditorPropsZER0()
-     // // thread SpawnEditorProps2ZER0()
-     // // thread SpawnEditorProps3ZER0()
-     // // thread SpawninvisWallsZER0()
-		
-// } 
-else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
+} else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
 	DestroyPlayerProps()
-				printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
-
+	printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
 	CreateGroundMedKit(<-21289, -12030, 3060>)
 	}
 
@@ -2785,17 +1915,15 @@ else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled
 
 if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
 {
-					printt("Flowstate DEBUG - Dropships ON.")
+	printt("Flowstate DEBUG - Dropships ON.")
 	file.dropselectedLocation = file.droplocationSettings[choice]
-	file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
-
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
     foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
         {
-		    Message(player, "Please Standby", "Dropship is on the way!", 4)
+		    Message(player, "Please standby", "Dropship is on the way!", 4)
 	    }
     }
 
@@ -2837,7 +1965,7 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
     {
         if(IsValidPlayer(player))
         {
-		    Message(player, file.selectedLocation.name, "Dropship is ready, Get in!", 6)
+		    Message(player, file.selectedLocation.name, "Dropship is ready, get in!", 5)
 	    }
     }
 
@@ -3280,7 +2408,7 @@ else{
 	}
 }
 } catch(e4){}
-printt("Flowstate DEBUG - Cleaning flowstate stats.")
+printt("Flowstate DEBUG - Clearing last round stats.")
 foreach(player in GetPlayerArray())
     {
         if(IsValidPlayer(player))
@@ -3518,7 +2646,7 @@ void function MonitorBubbleBoundary(entity bubbleShield, vector bubbleCenter, fl
         {
 			
             if(!IsValid(player)) continue
-            if(Distance(player.GetOrigin(), bubbleCenter) > bubbleRadius && player.GetPlayerGameStat( PGS_ASSAULT_SCORE ) != 2)
+            if(Distance(player.GetOrigin(), bubbleCenter) > bubbleRadius && player.p.isPlayerSpawningInDroppod == false)
             {
 				Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
                 player.TakeDamage( int( Deathmatch_GetOOBDamagePercent() / 100 * float( player.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
@@ -4271,20 +3399,6 @@ bool function ClientCommand_ClientMsg(entity player, array<string> args)
 
 	currentChatLine++
 	str = ""
-	
-	if(!FlowState_PROPHUNT()){
-	
-
-	    if(IsValidPlayer(player))
-        {
-foreach(sPlayer in GetPlayerArray())
-    {
-	Message( sPlayer, "Trollbox", currentChat, 5)
-    }
-file.lastTimeChatUsage = Time()
-		}
-       
-    } else {
 
 if(IsValidPlayer(player))
         {
@@ -4295,10 +3409,26 @@ foreach(sPlayer in GetPlayerArray())
 file.lastTimeChatUsage = Time()
 		}
 
-	}
 
 	return true
 }
+
+bool function ClientCommand_DispayChatHistory(entity player, array<string> args)
+//by Retículo Endoplasmático#5955
+{
+if(IsValidPlayer(player))
+        {
+foreach(sPlayer in GetPlayerArray())
+    {
+	Message( sPlayer, "TROLLBOX HISTORY", currentChat, 5)
+    }
+file.lastTimeChatUsage = Time()
+		}
+
+
+	return true
+}
+
 
 bool function ClientCommand_ShowLatency(entity player, array<string> args)
 ///////////////////////////////////////////////////////
@@ -4671,3 +3801,878 @@ entity function CreateDropShipProp(asset a, vector pos, vector ang, bool mantle 
     return e
 }
 #endif
+
+
+//prophunt start. Colombia
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
+const array<asset> prophuntAssetsWE =
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+[
+	$"mdl/barriers/concrete/concrete_barrier_01.rmdl",
+	$"mdl/vehicles_r5/land/msc_truck_samson_v2/veh_land_msc_truck_samson_v2.rmdl",
+	$"mdl/angel_city/vending_machine.rmdl",
+	$"mdl/utilities/power_gen1.rmdl",
+	$"mdl/angel_city/box_small_02.rmdl",
+	$"mdl/colony/antenna_05_colony.rmdl",
+	$"mdl/robots/marvin/marvin_gladcard.rmdl",
+	$"mdl/garbage/trash_bin_single_wtrash_Blue.rmdl",
+	$"mdl/angel_city/box_small_01.rmdl",
+	$"mdl/garbage/dumpster_dirty_open_a_02.rmdl",
+	$"mdl/containers/slumcity_oxygen_tank_red.rmdl",
+	$"mdl/containers/box_shrinkwrapped.rmdl",
+	$"mdl/colony/farmland_fridge_01.rmdl",
+	$"mdl/furniture/chair_beanbag_01.rmdl",
+	$"mdl/colony/farmland_crate_plastic_01_red.rmdl",
+	$"mdl/IMC_base/generator_IMC_01.rmdl",
+	$"mdl/garbage/trash_can_metal_02_b.rmdl",
+	$"mdl/garbage/trash_bin_single_wtrash.rmdl"
+]
+
+array<LocationSettings> function shuffleLocationsArray(array<LocationSettings> arr)
+// O(n) Durstenfeld / Knuth shuffle (https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle)
+//By michae\l/#1125.
+{
+	int i;
+	int j;
+	int b;
+	LocationSettings tmp;
+
+	for (i = arr.len() - 1; i > 0; i--) {
+		j = RandomIntRangeInclusive(1, i)
+		tmp = arr[b]
+		arr[b] = arr[j]
+		arr[j] = tmp
+	}
+
+	return arr
+}
+
+void function RunPROPHUNT()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+    WaitForGameState(eGameState.Playing)
+    AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawnedPROPHUNT)
+	
+	prophunt.locationsShuffled = shuffleLocationsArray(prophunt.locationSettings)
+	
+    for(; ;)
+    {
+	ActualPROPHUNTLobby()
+	ActualPROPHUNTGameLoop()
+	}
+    WaitForever()
+}
+
+void function _OnPlayerConnectedPROPHUNT(entity player)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	if(!IsValid(player)) return
+	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
+	printt("Flowstate DEBUG - New player connected.", player)
+	if(FlowState_ForceCharacter()){CharSelect(player)}
+	GivePassive(player, ePassives.PAS_PILOT_BLOOD)
+	UpdatePlayerCounts()
+	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
+	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+	array<entity> playersON = GetPlayerArray_Alive()
+	playersON.fastremovebyvalue( player )
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	player.SetPlayerSettingsWithMods( characterSetFile, [] )
+	SetPlayerSettings(player, PROPHUNT_SETTINGS)
+	DoRespawnPlayer( player, null )
+	Survival_SetInventoryEnabled( player, true )				
+	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
+	player.SetPlayerNetBool( "pingEnabled", true )
+	player.SetHealth( 100 )
+	player.kv.solid = 6
+	player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+	player.AllowMantle()
+			
+	switch(GetGameState())
+    {
+		case eGameState.WaitingForPlayers:
+			if(IsValidPlayer(player))
+			{
+				printt("Flowstate DEBUG - Player connected waitingforplayers.", player)	
+				//player has a team assigned already, we need to fix it before spawn
+				GiveTeamToProphuntPlayer(player)
+
+				if(GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
+					SetTeam( player, TEAM_MILITIA )	
+				}
+
+				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+					{
+					player.SetOrigin(<-19459, 2127, 6404>)}
+				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+					{
+					player.SetOrigin(<-19459, 2127, 18404>)}
+				player.SetThirdPersonShoulderModeOn()
+				player.UnforceStand()
+				player.UnfreezeControlsOnServer()
+			}
+			break
+		case eGameState.MapVoting:
+			if(IsValidPlayer(player))
+			{
+				printt("Flowstate DEBUG - Prophunt player connected mapvoting.", player)
+				//player has a team assigned already, we need to fix it before spawn
+				GiveTeamToProphuntPlayer(player)
+
+				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+					{
+					player.SetOrigin(<-19459, 2127, 6404>)}
+				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+					{
+					player.SetOrigin(<-19459, 2127, 18404>)}
+
+				player.SetThirdPersonShoulderModeOn()
+				player.UnforceStand()
+				player.UnfreezeControlsOnServer()
+			}
+			break
+		case eGameState.Playing: //wait round ends, set new player to spectate random player
+			if(IsValidPlayer(player))
+			{
+				printt("Flowstate DEBUG - Prophunt player connected midround, setting spectator.", player)
+				array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
+				try{
+				player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
+				player.MakeInvisible()
+				player.p.PROPHUNT_isSpectatorDiedMidRound = false
+				SetTeam(player, 20 )
+				Message(player, "APEX PROPHUNT", "    Game is in progress, you'll spawn in the next round.\n       Change spectate target with mouse click.", 10)
+				player.SetObserverTarget( playersON[RandomIntRangeInclusive(0,playersON.len()-1)] )
+				player.SetSpecReplayDelay( 2 )
+                player.StartObserverMode( OBS_MODE_IN_EYE )
+				Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Activate")
+				
+				// foreach(sPlayer in playersON)
+				// {
+				// Message(player, "APEX PROPHUNT", "Player connected! He/she is going to spawn next round." + player.GetPlayerName(), 10)	
+				// }
+				}catch(e){}
+			}
+			break
+		default:
+			break
+	}
+
+	
+}
+
+void function _OnPlayerDiedPROPHUNT(entity victim, entity attacker, var damageInfo)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	UpdatePlayerCounts()
+	printt("Flowstate DEBUG - Prophunt player killed.", victim, " -by- ", attacker)
+
+	switch(GetGameState())
+    {
+    case eGameState.Playing:
+        // Víctima
+        void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
+				victim.Hide()
+				entity effect = StartParticleEffectInWorld_ReturnEntity( GetParticleSystemIndex($"P_ball_tick_exp_CP"), victim.GetOrigin(), <0, 0, 0> )
+				EntFireByHandle( effect, "Kill", "", 2, null, null )
+
+				array<entity> playersON = GetPlayerArray_Alive()
+				playersON.fastremovebyvalue( victim )
+	
+			if(!IsValid(victim)) return
+			
+			wait 0.5
+			if(IsValid(victim)){
+				
+				if(victim != attacker){
+                victim.SetObserverTarget( attacker )
+				victim.SetSpecReplayDelay( 2 )
+                victim.StartObserverMode( OBS_MODE_IN_EYE )
+				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+				}
+				else {
+				victim.SetObserverTarget( playersON[0] )
+				victim.SetSpecReplayDelay( 2 )
+                victim.StartObserverMode( OBS_MODE_IN_EYE )
+				Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
+				}
+			
+				int invscore = victim.GetPlayerGameStat( PGS_DEATHS );
+				invscore++;
+				victim.SetPlayerGameStat( PGS_DEATHS, invscore);
+				//Add a death to the victim
+                int invscore2 = victim.GetPlayerNetInt( "assists" )
+				invscore2++;
+				victim.SetPlayerNetInt( "assists", invscore2 )
+				victim.p.PROPHUNT_isSpectatorDiedMidRound = true
+			 }
+		}
+
+        // Atacante
+        void functionref() attackerHandleFunc = void function() : (victim, attacker, damageInfo)
+		{
+            try{
+			if(IsValid(attacker) && attacker.IsPlayer() && IsAlive(attacker) && attacker != victim)
+            {
+			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )		
+			//Autoreload on kill without animation //By CaféDeColombiaFPS
+            WpnAutoReloadOnKill(attacker)
+			int score = GameRules_GetTeamScore(TEAM_IMC);
+            score++;
+            GameRules_SetTeamScore(TEAM_IMC, score);
+			}
+			array<entity> teamMILITIAplayersalive = GetPlayerArrayOfTeam_Alive( TEAM_MILITIA )
+			if ( teamMILITIAplayersalive.len() == 0 )
+			{
+				file.tdmState = eTDMState.NEXT_ROUND_NOW
+				SetGameState(eGameState.MapVoting)				
+			}
+			} catch (e) {}
+		}
+thread victimHandleFunc()
+thread attackerHandleFunc()
+        break
+    default:
+		break
+    }
+}
+
+void function _HandleRespawnPROPHUNT(entity player)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	if(!IsValid(player)) return
+	printt("Flowstate DEBUG - Tping prophunt player to Lobby.", player)
+	
+	if(IsValid( player ))
+			{
+				if(FlowState_ForceCharacter()){CharSelect(player)}
+				if(!IsAlive(player)) {DoRespawnPlayer( player, null )}
+				
+				if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+					{
+					player.SetOrigin(<-19459, 2127, 6404>)}
+				else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+					{
+					player.SetOrigin(<-19459, 2127, 18404>)}
+				player.SetThirdPersonShoulderModeOn()
+				Survival_SetInventoryEnabled( player, true )
+				player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
+				player.SetPlayerNetBool( "pingEnabled", true )
+				player.SetHealth( 100 )
+				TakeAllWeapons(player)
+			}
+	
+}
+
+bool function returnPropBool(){
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+	return prophunt.cantUseChangeProp
+}
+
+void function GiveTeamToProphuntPlayer(entity player)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
+	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+	
+
+	
+	if(IMCplayers.len() > MILITIAplayers.len())
+	{
+	SetTeam(player, TEAM_MILITIA )
+	} else if (MILITIAplayers.len() > IMCplayers.len())
+	{
+	SetTeam(player, TEAM_IMC )
+	} else {
+		switch(RandomIntRangeInclusive(0,1))
+		{
+			case 0:
+				SetTeam(player, TEAM_IMC )
+				break;
+			case 1:
+				SetTeam(player, TEAM_MILITIA )
+				break;
+		}
+	}
+	printt("Flowstate DEBUG - Giving team to player.", player, player.GetTeam())
+}
+
+
+void function EmitSoundOnSprintingProp()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+		while(prophunt.InProgress)
+		{
+		array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+			foreach(player in MILITIAplayers)
+			{
+				if(player.IsSprinting() && IsValid(player))
+				{
+				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
+				} 
+			}
+		wait 0.2
+		}
+}
+
+
+void function EmitWhistleOnProp()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+		while(prophunt.InProgress)
+		{
+		wait 30 //40 s COD original value: 20.
+		array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+			foreach(player in MILITIAplayers)
+			{
+				if(IsValid(player))
+				{
+				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
+				EmitSoundOnEntity( player, "concrete_bulletimpact_1p_vs_3p" )
+				EmitSoundOnEntity( player, "husaria_sprint_default_3p" )
+				} 
+			}
+		}
+}
+
+void function CheckForPlayersPlaying()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	
+	while(prophunt.InProgress)
+	{
+			if(GetPlayerArray().len() == 1)
+			{
+				file.tdmState = eTDMState.NEXT_ROUND_NOW
+				foreach(player in GetPlayerArray()){
+					Message(player, "ATTENTION", "Not enough players. Round is ending.", 5)
+				}
+			}
+	WaitFrame()	
+	}
+	printt("Flowstate DEBUG - Ending round cuz not enough players midround")
+}
+
+void function PropWatcher(entity prop, entity player)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	while(prophunt.InProgress && !player.p.PROPHUNT_DestroyProp) 
+	{
+	WaitFrame()}
+	
+	try{prop.Destroy()}catch(e420){}
+}
+
+void function DestroyPlayerPropsPROPHUNT()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+    foreach(prop in prophunt.playerSpawnedProps)
+    {
+        if(IsValid(prop))
+            prop.Destroy()
+    }
+    prophunt.playerSpawnedProps.clear()
+}
+
+
+void function PROPHUNT_GiveAndManageRandomProp(entity player, bool anglesornah = false)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+			// Using gamestat as boolean Destroy prop y otras cosas más
+			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 20)    true 
+			//  player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 10)    false
+			player.p.PROPHUNT_DestroyProp = true
+			if(!anglesornah && IsValid(player)){
+					WaitFrame()
+					asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
+					player.p.PROPHUNT_LastModel = selectedModel
+					player.kv.solid = 6
+					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					entity prop = CreatePropDynamic(selectedModel, player.GetOrigin(), player.GetAngles(), 6, -1)
+					prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					prop.kv.solid = 6
+					prop.SetDamageNotifications( true )
+					prop.SetTakeDamageType( DAMAGE_YES )
+					prop.AllowMantle()
+					prop.SetCanBeMeleed( true )
+					prop.SetBoundingBox( < -150, -75, 0 >, <150, 75, 100 >  )
+					prop.SetMaxHealth( 100 )
+					prop.SetHealth( 100 )
+					prop.SetParent(player)
+					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
+					player.p.PROPHUNT_DestroyProp = false
+					WaitFrame()
+					thread PropWatcher(prop, player) 
+			} else if(anglesornah && IsValid(player)){
+					player.p.PROPHUNT_DestroyProp = true
+					player.Show()
+					player.SetBodyModelOverride( player.p.PROPHUNT_LastModel )
+					player.SetArmsModelOverride( player.p.PROPHUNT_LastModel )
+					Message(player, "prophunt", "Angles locked.", 1)
+					player.kv.solid = SOLID_BBOX
+					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					player.AllowMantle()
+					player.SetDamageNotifications( true )
+					player.SetTakeDamageType( DAMAGE_YES )
+			}
+}
+
+
+void function PlayerwithLockedAngles_OnDamaged(entity ent, var damageInfo)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	float damage = DamageInfo_GetDamage( damageInfo )
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+	float NextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	if (NextHealth > 0 && IsValid(ent)){
+		ent.SetHealth(NextHealth)
+	} else if (IsValid(ent)){
+	ent.SetTakeDamageType( DAMAGE_NO )
+	ent.SetHealth(0)
+	ent.kv.solid = 0
+	// ent.SetOwner( attacker )
+	// ent.kv.teamnumber = attacker.GetTeam()
+	}
+}
+
+void function NotifyDamageOnProp(entity ent, var damageInfo)
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+//props health bleedthrough
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	entity victim = ent.GetParent()
+	float damage = DamageInfo_GetDamage( damageInfo )
+	
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+	
+	float playerNextHealth = ent.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	
+	if (playerNextHealth > 0 && IsValid(victim) && IsAlive(victim)){
+	victim.SetHealth(playerNextHealth)} else {
+	ent.ClearParent()
+	victim.SetHealth(0)
+	ent.Destroy()}
+}
+
+
+void function ActualPROPHUNTLobby()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+	WaitFrame()
+	DestroyPlayerPropsPROPHUNT()
+	SetGameState(eGameState.MapVoting)
+	file.FallTriggersEnabled = true
+	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		thread CreateShipRoomFallTriggers()
+	}
+	printt("Flowstate DEBUG - Fall triggers created.")
+
+if (FlowState_LockPOI()) {
+	prophunt.nextMapIndex = FlowState_LockedPOI()
+}else if (!prophunt.mapIndexChanged)
+	{
+	prophunt.nextMapIndex = (prophunt.nextMapIndex + 1 ) % prophunt.locationsShuffled.len()
+	}
+	
+int choice = prophunt.nextMapIndex
+prophunt.mapIndexChanged = false
+prophunt.selectedLocation = prophunt.locationsShuffled[choice]
+	printt("Flowstate DEBUG - Next location selected: ", prophunt.selectedLocation.name)
+	
+if(prophunt.selectedLocation.name == "Skill trainer By Colombia"){
+    DestroyPlayerPropsPROPHUNT()
+    wait 2
+	thread SkillTrainerLoad()
+	printt("Flowstate DEBUG - Skill trainer loading.")
+}
+	foreach(player in GetPlayerArray())
+	{
+			if(IsValid(player))
+			{
+				player.p.PROPHUNT_isSpectatorDiedMidRound = false
+				player.p.PROPHUNT_Max3changes = 0
+				player.p.PROPHUNT_DestroyProp = false
+				player.UnforceStand()
+				player.UnfreezeControlsOnServer()
+				Message(player, "APEX PROPHUNT", "                Made by Colombia. Game is starting.\n\n" + helpMessagePROPHUNT(), 10)
+			}
+	WaitFrame()
+	}
+	wait 10
+
+if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
+	while(true)
+	{
+		array<entity> playersON = GetPlayerArray_Alive()
+		if(playersON.len() > 1 )
+		{
+			foreach(player in GetPlayerArray())
+			{
+			Message(player, "APEX PROPHUNT", "We have enough players, starting now.", 5, "diag_ap_aiNotify_circleMoves10sec")
+			}
+			wait 5
+			break
+		} else {
+			foreach(player in GetPlayerArray())
+			{
+				Message(player, "APEX PROPHUNT", "Waiting another player to start. Please wait.", 1)
+			}
+			wait 5			
+		}
+		WaitFrame()
+	}
+}
+array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
+array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+	foreach(player in MILITIAplayers)
+	{
+		try {
+		Message(player, "ATTENTION", "            You're a prop. Teleporting in 5 seconds! \n Use your ULTIMATE to CHANGE PROP up to 3 times. ", 5)
+		}catch(e){}
+	}
+wait 5
+}
+
+void function ActualPROPHUNTGameLoop()
+///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+///////////////////////////////////////////////////////
+{
+file.tdmState = eTDMState.IN_PROGRESS
+printt("Flowstate DEBUG - tdmState is eTDMState.IN_PROGRESS Starting round.")
+entity bubbleBoundary = CreateBubbleBoundaryPROPHUNT(prophunt.selectedLocation)
+SetGameState(eGameState.Playing)
+
+float endTime = Time() + GetCurrentPlaylistVarFloat("flowstatePROPHUNTLimitTime", 300 )
+	array<entity> IMCplayers = GetPlayerArrayOfTeam(TEAM_IMC)
+	array<entity> MILITIAplayers = GetPlayerArrayOfTeam(TEAM_MILITIA)
+
+array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
+
+file.deathPlayersCounter = 0
+prophunt.cantUseChangeProp = false
+prophunt.InProgress = true
+thread EmitSoundOnSprintingProp()
+
+printt("Flowstate DEBUG - Tping props team.")
+foreach(player in GetPlayerArray())
+    {
+        if(IsValidPlayer(player))
+        {
+			//try{TakePassive(player, ePassives.PAS_PILOT_BLOOD)}catch(e420){}
+			//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor") //props dont like shields FX
+			ClearInvincible(player)
+			player.p.playerDamageDealt = 0.0
+			if(player.GetTeam() == TEAM_MILITIA){
+				vector lastPosForCoolParticles = player.GetOrigin()
+				vector lastAngForCoolParticles = player.GetAngles()
+				StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), lastPosForCoolParticles, lastAngForCoolParticles )
+				StartParticleEffectInWorld( GetParticleSystemIndex( $"P_impact_shieldbreaker_sparks" ), lastPosForCoolParticles, lastAngForCoolParticles )
+				EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+				EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+				player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
+				asset selectedModel = prophuntAssetsWE[RandomIntRangeInclusive(0,(prophuntAssetsWE.len()-1))]
+				player.p.PROPHUNT_LastModel = selectedModel
+				player.kv.solid = 6
+				player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+				player.Hide()
+				entity prop = CreatePropDynamic(selectedModel, player.GetOrigin(), player.GetAngles(), 6, -1)
+				prop.kv.solid = 6
+				prop.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+				prop.AllowMantle()
+				prop.SetDamageNotifications( true )
+				prop.SetTakeDamageType( DAMAGE_YES )
+				prop.SetMaxHealth( 100 )	
+				prop.SetHealth( 100 )
+				prop.SetParent(player)
+					AddEntityCallback_OnDamaged(prop, NotifyDamageOnProp)
+				player.p.PROPHUNT_DestroyProp = false
+					thread PropWatcher(prop, player) //destroys prop on end round and restores player model.
+				player.SetThirdPersonShoulderModeOn()
+				player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+				player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+				player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+				player.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_ULTIMATE)
+				DeployAndEnableWeapons(player)
+			} else if(player.GetTeam() == TEAM_IMC){
+			Message(player, "PROPS ARE HIDING", "Teleporting in 30 seconds. Please wait.", 10)}
+		}
+	wait 0.2
+	}
+if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){
+wait 25} else {wait 2}
+foreach(player in GetPlayerArray())
+    {
+if(player.GetTeam() == TEAM_IMC && IsValid(player)){
+ScreenFade( player, 0, 0, 0, 255, 4.0, 1, FFADE_OUT | FFADE_PURGE )}
+	}
+wait 4
+file.FallTriggersEnabled = false
+foreach(player in GetPlayerArray())
+    {
+        if(IsValidPlayer(player))
+        {
+		if (player.GetTeam() == TEAM_MILITIA){
+			Message(player, "ATTENTION", "The attackers have arrived. Use your ULTIMATE to PLACE PROP (lock angles).", 20, "Survival_UI_Ultimate_Ready") }
+			else if (player.GetTeam() == TEAM_IMC){
+			array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
+			Message(player, "ATTENTION", "Kill the props. Props alive: " + MILITIAplayersAlive.len(), 20)
+			}				
+		}
+		
+	}
+prophunt.cantUseChangeProp = true
+printt("Flowstate DEBUG - Tping attackers team.")
+foreach(player in IMCplayers)
+    {
+		if(IsValidPlayer(player))
+        {
+					//Inventory_SetPlayerEquipment(player, WHITE_SHIELD, "armor")
+					ClearInvincible(player)
+					EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+					EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+					player.SetOrigin(prophuntSpawns[RandomIntRangeInclusive(0,prophuntSpawns.len()-1)].origin)
+					player.kv.solid = 6
+					player.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+					player.SetThirdPersonShoulderModeOff()
+					string pri = GetCurrentPlaylistVarString("flowstatePROPHUNTweapon1", "~~none~~")
+					string sec = GetCurrentPlaylistVarString("flowstatePROPHUNTweapon2", "~~none~~")
+					player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+					player.GiveWeapon( pri, WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+					player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+					player.GiveWeapon( sec, WEAPON_INVENTORY_SLOT_PRIMARY_1, [] )
+					player.TakeOffhandWeapon(OFFHAND_TACTICAL)
+					player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
+					//if a player punch a prop, he/she will crash. This is a workaround. Colombia
+					//player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+					//player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+					DeployAndEnableWeapons(player)
+		
+		}
+	}
+
+if(!GetCurrentPlaylistVarBool("flowstatePROPHUNTDebug", false )){	
+
+thread CheckForPlayersPlaying()}
+thread EmitWhistleOnProp()
+
+while( Time() <= endTime )
+	{
+		if(Time() == endTime-120)
+		{
+			foreach(player in GetPlayerArray())
+			{
+				if(IsValid(player))
+				{
+					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
+					Message(player,"2 MINUTES REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5)
+				}
+			}
+		}
+		if(Time() == endTime-60)
+		{
+			foreach(player in GetPlayerArray())
+			{
+				if(IsValid(player))
+				{
+					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
+					Message(player,"1 MINUTE REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves60sec")
+				}
+			}
+		}
+		if(Time() == endTime-30)
+		{
+			foreach(player in GetPlayerArray())
+			{
+				if(IsValid(player))
+				{
+					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
+					Message(player,"30 SECONDS REMAINING!", "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves30sec")
+				}
+			}
+		}
+		if(Time() == endTime-10)
+		{
+			foreach(player in GetPlayerArray())
+			{
+				if(IsValid(player))
+				{
+					array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)
+					Message(player,"10 SECONDS REMAINING!",  "Props alive: " + MILITIAplayersAlive.len(), 5, "diag_ap_aiNotify_circleMoves10sec")
+				}
+			}
+		}
+		if(file.tdmState == eTDMState.NEXT_ROUND_NOW)
+		{
+			printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+			break}
+		WaitFrame()	
+	}
+prophunt.InProgress = false
+array<entity> MILITIAplayersAlive = GetPlayerArrayOfTeam_Alive(TEAM_MILITIA)	
+if(MILITIAplayersAlive.len() > 0){
+foreach(player in GetPlayerArray())
+    {
+		Message(player, "PROPS TEAM WIN", "Props alive: " + MILITIAplayersAlive.len() + ". Swapping teams.", 7, "diag_ap_aiNotify_winnerFound")
+		player.SetThirdPersonShoulderModeOn()
+		HolsterAndDisableWeapons(player)
+	}
+} else {
+foreach(player in GetPlayerArray())
+    {
+		Message(player, "ATTACKERS TEAM WIN", "All props are dead. Swapping teams.", 7, "diag_ap_aiNotify_winnerFound")
+		player.SetThirdPersonShoulderModeOn()	
+		HolsterAndDisableWeapons(player)		
+	}	
+}
+wait 7
+UpdatePlayerCounts()
+bubbleBoundary.Destroy()
+printt("Flowstate DEBUG - Prophunt round finished Swapping teams.")
+
+foreach(player in GetPlayerArray())
+    {	
+		if(IsValid(player)){
+					player.Show()
+					//for connected players spectators
+				if( player.IsObserver() && !player.p.PROPHUNT_isSpectatorDiedMidRound)
+				{
+						player.StopObserverMode()
+						Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+						TakeAllWeapons(player)
+						player.SetThirdPersonShoulderModeOn()
+						player.MakeVisible()
+						GiveTeamToProphuntPlayer(player)
+						WaitFrame()
+						_HandleRespawnPROPHUNT(player)
+						player.UnforceStand()
+						player.UnfreezeControlsOnServer()
+						
+						//for ded players midround
+				} else if ( player.IsObserver() && player.p.PROPHUNT_isSpectatorDiedMidRound){
+						player.StopObserverMode()
+						Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+						if(player.GetTeam() == TEAM_IMC){
+								TakeAllWeapons(player)
+								player.SetThirdPersonShoulderModeOn()
+								SetTeam(player, TEAM_MILITIA )
+								WaitFrame()
+								_HandleRespawnPROPHUNT(player)
+								player.MakeVisible()
+								player.UnforceStand()
+								player.UnfreezeControlsOnServer()
+						} else if(player.GetTeam() == TEAM_MILITIA){
+								TakeAllWeapons(player)
+								player.SetThirdPersonShoulderModeOn()
+								SetTeam(player, TEAM_IMC )
+								WaitFrame()
+								_HandleRespawnPROPHUNT(player)
+								player.MakeVisible()
+								player.UnforceStand()
+								player.UnfreezeControlsOnServer()
+						}
+					} else {
+				 //for alive players swap teams
+						if(player.GetTeam() == TEAM_IMC){
+								TakeAllWeapons(player)
+								player.SetThirdPersonShoulderModeOn()
+								SetTeam(player, TEAM_MILITIA )
+								WaitFrame()
+								_HandleRespawnPROPHUNT(player)
+								player.MakeVisible()
+								player.UnforceStand()
+								player.UnfreezeControlsOnServer()
+						
+						} else if(player.GetTeam() == TEAM_MILITIA){
+								TakeAllWeapons(player)
+								player.SetThirdPersonShoulderModeOn()
+								SetTeam(player, TEAM_IMC )
+								WaitFrame()
+								_HandleRespawnPROPHUNT(player)
+								player.MakeVisible()
+								player.UnforceStand()
+								player.UnfreezeControlsOnServer()
+						}
+
+					}
+		WaitFrame()
+	}
+	}
+}
+
+//prophunt end. Colombia
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+///////////////////////////////////////////////////////
+
