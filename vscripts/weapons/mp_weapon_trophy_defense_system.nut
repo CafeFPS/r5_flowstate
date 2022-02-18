@@ -1021,19 +1021,7 @@ void function Trophy_CreateHUDMarker( entity trophy )
 
 bool function Trophy_ShouldShowIcon( entity localViewPlayer, entity trapProxy )
 {
-	entity owner = trapProxy.GetBossPlayer()
-
-	if ( !IsValid( owner ) )
-		return false
-
-	if ( localViewPlayer.GetTeam() != owner.GetTeam() )
-		return false
-
-	if ( !GamePlayingOrSuddenDeath() )
-		return false
-
-	printl("valid")
-	return true
+	return false
 }
 
 void function TacticalChargeFXThink( entity player, entity cockpit )
