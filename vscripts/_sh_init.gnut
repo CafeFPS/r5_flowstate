@@ -167,7 +167,11 @@ void function SV_CL_Init()
 
 	ShLootDrones_Init()
 
+	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" ){
 	ShLootRollers_Init()
+	} else if (GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k"){
+	ShFlyersDeathboxes_Init()
+	}	
 
 
 	CharacterSelectNewMenu_Init()
@@ -299,8 +303,8 @@ void function Server_Init()
 	Bombardment_Init()
 	ThreatDetection_Init()
 	Staging_Area_Init()
-
-	SurvivalCommentary_Init()
+	if(GameRules_GetGameMode() != "custom_tdm"){
+	SurvivalCommentary_Init()}
 
 	GameMode_RunServerInits()
 
