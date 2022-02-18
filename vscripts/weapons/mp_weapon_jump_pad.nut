@@ -30,7 +30,10 @@ var function OnWeaponTossReleaseAnimEvent_weapon_jump_pad( entity weapon, Weapon
 	{
 		entity player = weapon.GetWeaponOwner()
 		PlayerUsedOffhand( player, weapon, true, deployable )
-
+			#if SERVER
+			PlayBattleChatterLineToSpeakerAndTeam( player, "bc_super" )
+		#endif
+		
 		#if false
 
 
