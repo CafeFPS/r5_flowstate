@@ -45,7 +45,13 @@ void function GamemodeSurvival_Init()
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
-
+	AddClientCommandCallback("say", ClientCommand_ClientMsg)
+	AddClientCommandCallback("sayhistory", ClientCommand_DispayChatHistory)
+	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
+	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
+	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
+		
+		
 	AddCallback_GameStateEnter( 
 		eGameState.Playing,
 		void function()
@@ -440,8 +446,11 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
-		attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
-
+		if( attacker.IsPlayer() && IsValid( attacker ) )
+		{
+			// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
+			attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+		}
 		// Cancel the damage
 		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
 		// There might be a better way to do this, but this works well enough
@@ -565,17 +574,24 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	array<entity> victimTeam = GetPlayerArrayOfTeam_Alive( victimTeamNumber )
 	bool teamEliminated = victimTeam.len() == 0
 
+	bool canPlayerBeRespawned = PlayerRespawnEnabled() && !teamEliminated
+
+	// PlayerFullyDoomed MUST be called before HandleSquadElimination
+	// HandleSquadElimination accesses player.p.respawnChanceExpiryTime which is set by PlayerFullyDoomed
+	// if it isn't called in this order, the survivalTime will be 0
+	if ( !canPlayerBeRespawned )
+		PlayerFullyDoomed( victim )
+	
 	if ( teamEliminated )
 		HandleSquadElimination( victim.GetTeam() )
 
-	bool canPlayerBeRespawned = PlayerRespawnEnabled() && !teamEliminated
 	int droppableItems = GetAllDroppableItems( victim ).len()
 
 	if ( canPlayerBeRespawned || droppableItems > 0 )
 		CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
-	
-	if ( !canPlayerBeRespawned )
-		PlayerFullyDoomed( victim )
+		
+	if( RandomInt( 100 ) >= 50 )
+		thread PlayBattleChatterLineDelayedToSpeakerAndTeam( attacker, "bc_iKilledAnEnemy", 2.0 )
 }
 
 void function OnClientConnected( entity player )
