@@ -82,7 +82,7 @@ void function FiringRangeGameMode_Init()
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
 	
 	#if SERVER
-		if(GetMapName() != "mp_rr_canyonlands_staging") return
+		if(GetMapName() != "mp_rr_canyonlands_staging" || GameRules_GetGameMode() == "custom_tdm") return
 		
 		AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
 		AddCallback_OnClientConnected( _WaitForPlayerSpawnFR )
@@ -305,7 +305,6 @@ void function _HandleRespawnFR(entity player, bool respawnsameposition = false)
 		if(respawnsameposition){
 				vector lastPos = player.GetOrigin()
 				vector lastAng = player.GetAngles()
-				//THIS DOESNT WORK, WHEN PLAYER IS DEAD DOESNT HAVE WEAPONS ALREADY COLOMBIA, fixed with a thread ThreadThatWatchesForWeaponsCuzWhenPlayerIsDedDoesntHaveWeaponsWtf()
 				//player.p.storedWeapons = StoreWeapons(player)
 				array<ItemFlavor> characters = clone GetAllCharacters()
 				ItemFlavor PersonajeEscogido = characters[RandomInt(10)]
@@ -320,29 +319,7 @@ void function _HandleRespawnFR(entity player, bool respawnsameposition = false)
 			entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 			FixWeapon(primary)
 			FixWeapon(secondary)
-				player.p.storedWeapons.clear()
-
-						// int ammoType = weapon.GetWeaponAmmoPoolType()
-						
-					// string ammoRef = AmmoType_GetRefFromIndex( ammoType )
-				
-					// int currentAmmo = weapon.GetWeaponPrimaryClipCount()
-					// int maxAmmo = weapon.UsesClipsForAmmo() ? weapon.GetWeaponSettingInt( eWeaponVar.ammo_clip_size ) : weapon.GetWeaponPrimaryAmmoCountMax( weapon.GetActiveAmmoSource() )
-				
-					// int requiredAmmo = maxAmmo - currentAmmo
-				
-					// int ammoInInventory = SURVIVAL_CountItemsInInventory( player, ammoRef )
-				
-					// int ammoToRemove = int( min( requiredAmmo, ammoInInventory ) )
-				
-					// // printt("!!! Survival.OnWeaponReload", ammoRef, currentAmmo, maxAmmo, requiredAmmo, ammoInInventory, ammoToRemove )
-				
-					// SURVIVAL_RemoveFromPlayerInventory( player, ammoRef, ammoToRemove )
-					
-					//weapon.SetWeaponPrimaryAmmoCount( AMMOSOURCE_POOL, 999 )
-					
-					
-		//weapon.SetWeaponPrimaryAmmoCount( weapon.GetActiveAmmoSource(), 99 ) none of this shit works wtf
+			player.p.storedWeapons.clear()
 		
 			} else {
 				array<ItemFlavor> characters = clone GetAllCharacters()
