@@ -163,7 +163,7 @@ void function OnWeaponActivate_incap_shield( entity weapon )
 void function CreateIncapShield( entity player, entity weapon )
 {
 	thread IncapShieldThink( player, weapon )
-	weapon.w.statusEffects.append( StatusEffect_AddEndless( weapon.GetWeaponOwner(), eStatusEffect.move_slow, 0.65 ) )
+	weapon.w.statusEffects.append( StatusEffect_AddEndless( weapon.GetWeaponOwner(), eStatusEffect.move_slow, 0.55 ) )
 }
 
 void function IncapShieldThink( entity player, entity vortexWeapon )
