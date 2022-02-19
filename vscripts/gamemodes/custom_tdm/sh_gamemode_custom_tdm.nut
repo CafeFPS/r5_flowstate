@@ -464,8 +464,13 @@ case "mp_rr_canyonlands_64k_x_64k":
             NewLocationSettings(
                 "Custom map by Biscutz",
                 [
-                    NewLocPair(<-6208.22,15871.3,6655.27>, <0, 110, 0>),
-                    NewLocPair(<-6208.22,15871.3,6655.27>, <0, -160, 0>)
+                    NewLocPair(<-2768,15163,6469>, <0, -180, 0>),
+                    NewLocPair(<-5800,16008,6706>, <0, -48, 0>),
+					NewLocPair(<-5297,13404,6040>, <0, 0, 0>),
+                    NewLocPair(<-2348,11823,6194>, <0, 0, 0>),
+					NewLocPair(<-5256,14392,5800>, <0, 0, 0>),
+                    NewLocPair(<-3659,13700,6600>, <0, 0, 0>),
+					NewLocPair(<-1514,11165,7730>, <0, 0, 0>)
                 ],
                 <0, 0, 3000>
             )
@@ -866,6 +871,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                     <0, 0, 2000>
                 )
             )
+			if(FlowState_EnableSkillTrainerByColombia()){
 					Shared_RegisterLocation(
                 NewLocationSettings(
                    "Skill trainer By Colombia",
@@ -878,6 +884,7 @@ case "mp_rr_canyonlands_64k_x_64k":
                    <0, 0, 3000>
                 )
             )
+			}
 			Shared_RegisterLocation(
                 NewLocationSettings(
                     "Little Town",

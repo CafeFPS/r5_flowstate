@@ -440,7 +440,7 @@ void function _OnPlayerConnected(entity player)
 			player.UnfreezeControlsOnServer()
 			
 			_HandleRespawn(player)
-			if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) || GetMapName() == "mp_rr_canyonlands_staging" || file.selectedLocation.name == "Skill trainer By Colombia" )
+			if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) || GetMapName() == "mp_rr_canyonlands_staging" || file.selectedLocation.name == "Skill trainer By Colombia" || file.selectedLocation.name == "Custom map by Biscutz" || file.selectedLocation.name == "White Forest By Zer0Bytes" || file.selectedLocation.name == "Brightwater By Zer0bytes" )
 			{
 	
 					printt("Flowstate DEBUG - Can't spawn player in droppod. Droppods disabled, or we are changing map. Spawning with normal mode", player)
