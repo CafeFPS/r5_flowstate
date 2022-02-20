@@ -459,12 +459,12 @@ void function SurfPurgatoryTriggerSetup()
 
 void function SurfPurgatoryTrigger_OnAreaEnter( entity trigger, entity player )
 {
-	TeleportFRPlayer(player,<3225,9084,21476>,<0,-90,0>)
+	TeleportFRPlayerSurf(player,<3225,9084,21476>,<0,-90,0>)
 }
 
 void function SurfPurgatoryFinishDoor_OnAreaEnter( entity trigger, entity player )
 {
-    TeleportFRPlayer(player,<3225,9084,21476>,<0,-90,0>)
+    TeleportFRPlayerSurf(player,<3225,9084,21476>,<0,-90,0>)
 }
 
 void function SurfPurgatoryFinishFinished_OnAreaEnter( entity trigger, entity player )
@@ -519,12 +519,12 @@ void function SurfKitsuneTriggerSetup()
 
 void function SurfKitsuneTrigger_OnAreaEnter( entity trigger, entity player )
 {
-	TeleportFRPlayer(player,<14724, 25241, 17271>,<0,-90,0>)
+	TeleportFRPlayerSurf(player,<14724, 25241, 17271>,<0,-90,0>)
 }
 
 void function SurfKitsuneFinishDoor_OnAreaEnter( entity trigger, entity player )
 {
-    TeleportFRPlayer(player,<14724, 25241, 17271>,<0,-90,0>)
+    TeleportFRPlayerSurf(player,<14724, 25241, 17271>,<0,-90,0>)
 }
 
 void function SurfKitsuneFinishFinished_OnAreaEnter( entity trigger, entity player )
