@@ -47,7 +47,7 @@ enum eTDMState
 }
 
 struct {
-	string scriptversion = "v2.9"
+	string scriptversion = "v3.0"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
 	bool mapIndexChanged = true
@@ -650,7 +650,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	}
 	
 	if(attacker.IsPlayer()) {
-	thread doubletriplekillaudio(victim,attacker)
+	//thread doubletriplekillaudio(victim,attacker)
 	file.lastKiller = attacker
 	}
 	UpdatePlayerCounts()
