@@ -167,6 +167,7 @@ void function ActualSURFLobby()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
+	printt("Flowstate DEBUG - Starting Lobby")
 	DestroyPlayerPropsSURF()
 	SetGameState(eGameState.MapVoting)
 	surf.Hoster = FlowState_Hoster()
@@ -224,18 +225,21 @@ void function ActualSURFLobby()
 		case "surf_purgatory":
             DestroyPlayerPropsSURF()
             wait 1
-            SurfPurgatoryLoad()
+            thread SurfPurgatoryLoad()
+			printt("Flowstate DEBUG - Loading purgatory")
 			break
 		case "surf_noname":
             DestroyPlayerPropsSURF()
             wait 1
             thread SurfNoNameLoad()
+			printt("Flowstate DEBUG - Loading noname")
 			break
 		case "surf_kitsune":
 			DestroyPlayerPropsSURF()
 			wait 1
 			thread surfkitsuneLoad1()
 			thread SurfKitsuneTriggerSetup()
+			printt("Flowstate DEBUG - Loading kitsune")
 		default:
 		break
 	}
@@ -248,6 +252,7 @@ void function ActualSURFGameLoop()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
+printt("Flowstate DEBUG - Surf map and game started.")
 surf.tdmState = eTDMState.IN_PROGRESS
 SetGameState(eGameState.Playing)
 float endTime = Time() + FlowState_SURFRoundTime()
@@ -326,6 +331,7 @@ while( Time() <= endTime )
 		if(surf.tdmState == eTDMState.NEXT_ROUND_NOW)
 		{
 		surf.disableTrigger = true	
+		printt("Flowstate DEBUG - Breaking game while loop to change map.")
 		break}
 		WaitFrame()	
 	}
@@ -400,6 +406,7 @@ void function TeleportFRPlayerSurf(entity player, vector pos, vector ang)
 {
     if(IsValid(player))
     {
+		printt("Flowstate DEBUG - Tping player with TeleportFRPlayerSurf - " + player.GetPlayerName())
 	    player.SetOrigin(pos)
 	    player.SetAngles(ang)
     }
@@ -448,13 +455,6 @@ void function SurfPurgatoryTriggerSetup()
     surf.playerSpawnedProps.append(finishdoor)
     surf.playerSpawnedProps.append(finish)
 
-	while(true)
-	{
-		if(surf.disableTrigger == true) {
-		if(IsValid(fall)) fall.Destroy()
-		break}
-		WaitFrame()
-	}
 }
 
 void function SurfPurgatoryTrigger_OnAreaEnter( entity trigger, entity player )
@@ -508,13 +508,6 @@ void function SurfKitsuneTriggerSetup()
     surf.playerSpawnedProps.append(finishdoor)
     surf.playerSpawnedProps.append(finish)
 
-	while(true)
-	{
-		if(surf.disableTrigger == true) {
-		if(IsValid(fall)) fall.Destroy()
-		break}
-		WaitFrame()
-	}
 }
 
 void function SurfKitsuneTrigger_OnAreaEnter( entity trigger, entity player )
@@ -673,16 +666,6 @@ void function SurfNoNameTriggerSetup()
     surf.playerSpawnedProps.append(tp5)
     surf.playerSpawnedProps.append(tp6)
     surf.playerSpawnedProps.append(tp7)
-
-	while(true)
-	{
-		if(surf.disableTrigger == true) {
-		if(IsValid(fall1)) fall1.Destroy()
-		break}
-		WaitFrame()
-	}
-
-	WaitForever()
 }
 
 void function SurfNoNameTrigger_OnAreaEnter( entity trigger, entity player )
