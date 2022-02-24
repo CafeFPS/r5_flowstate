@@ -206,7 +206,7 @@ void function SurvivalFreefall_Init()
 		AddClientCommandCallback( "StopFreefallFollowMode", ClientCommand_StopFreefallFollowMode )
 
 		AddClientCommandCallback( "SkydiveEmote", ClientCommand_SkydiveEmote )
-
+		AddClientCommandCallback( "SkydiveEmoteNext", ClientCommand_SkydiveEmoteNext )
 		file.skydiveSmokeColors.randomize()
 	#endif
 
@@ -1345,6 +1345,36 @@ bool function ClientCommand_StopFreefallFollowMode( entity player, array<string>
 		player.Skydive_StopFollowing()
 	}
 	
+	return true
+}
+
+bool function ClientCommand_SkydiveEmoteNext( entity player, array<string> args )
+{
+	table<int, ItemFlavor> availableSkydiveEmotes = GetValidPlayerSkydiveEmotes( player )
+
+	if ( availableSkydiveEmotes.len() == 0 )
+		return true
+
+	int emoteIndex = RandomIntRangeInclusive(0,availableSkydiveEmotes.len())
+
+	if ( emoteIndex < 0 || emoteIndex >= availableSkydiveEmotes.len() )
+		return true
+
+	ItemFlavor selectedEmote = availableSkydiveEmotes[emoteIndex]
+
+	player.SetPlayerNetBool( "freefallEmoteAvailable", false )
+	thread function() : ( player, selectedEmote )
+	{
+		asset animSeq = CharacterSkydiveEmote_GetAnimSeq( selectedEmote )
+
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_skydive" )
+		
+		player.Anim_Play( animSeq )
+		wait player.GetSequenceDuration( animSeq )
+
+		player.SetPlayerNetBool( "freefallEmoteAvailable", true )
+	}()
+
 	return true
 }
 
