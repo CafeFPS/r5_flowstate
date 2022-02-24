@@ -191,6 +191,7 @@ void function SurvivalFreefall_Init()
 		PrecacheParticleSystem( JUMPJET_FRIENDLY_SKYDIVE )
 		PrecacheParticleSystem( JUMPJET_ENEMY_SKYDIVE )
 		PrecacheParticleSystem( JUMPJET_LAND_FX )
+		PrecacheParticleSystem( $"P_skydive_jumpjet_team_rank_AP" )
 		PrecacheModel( CLOUD_MODEL )
 		PrecacheImpactEffectTable( "human_land_jetwash" )
 
@@ -571,6 +572,7 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 		EmitSoundOnEntityExceptToPlayer( player, player, "Survival_InGameFlight_Travel_3P" )
 	}
 
+	Remote_CallFunction_NonReplay( player, "ServerCallback_SkydiveTrailStart", player )
 	waitthread SkyDiveMovement( player, skydiveData, driverViewVector, launchOffset, planeVelocity, leaderPlayer, jumpingFromPlane, freefallEnabled )
 }
 
@@ -695,6 +697,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 			
 			RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD )
 			PlayerMatchState_Set( player, ePlayerMatchState.NORMAL )
+			Remote_CallFunction_NonReplay( player, "ServerCallback_SkydiveTrailEnd", player )
 		}
 	)
 
