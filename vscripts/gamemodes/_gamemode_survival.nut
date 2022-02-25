@@ -88,7 +88,7 @@ void function RespawnPlayerInDropship( entity player )
 	player.SetParent( dropship )
 
 	player.SetOrigin( dropshipPlayerOrigin )
-	player.SetAngles( dropship.GetAngles() )
+	player.SetAngles( dropship.GetAngles() + <35, 0, 0>)
 
 	player.UnfreezeControlsOnServer()
 	
