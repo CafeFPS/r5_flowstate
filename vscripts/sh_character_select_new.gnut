@@ -354,7 +354,8 @@ void function PanAwayCharacterSelect()
 	float outroSceneChangeDuration = CharSelect_GetOutroSceneChangeDuration()
 	fileLevel.characterNodeMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", fileLevel.camera.GetOrigin(), fileLevel.camera.GetAngles() )
 	fileLevel.characterNode.SetParent( fileLevel.characterNodeMover, "", true )
-	//fileLevel.characterNodeMover.NonPhysicsRotateTo( fileLevel.characterNodeMover.GetAngles() + <0, 135, 0>, outroSceneChangeDuration, 1.0, 1.0 )
+	if (!GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
+	fileLevel.characterNodeMover.NonPhysicsRotateTo( fileLevel.characterNodeMover.GetAngles() + <0, 135, 0>, outroSceneChangeDuration, 1.0, 1.0 )}
 
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_LegendPanLeft" )
 
