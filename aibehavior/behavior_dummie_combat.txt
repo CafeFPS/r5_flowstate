@@ -1,27 +1,33 @@
 Selector Common
 
+	SelectSchedule_Flinch
+	SelectSchedule_ReactSurprised
 	SelectSchedule_LayeredBehavior
-
+	SelectSchedule_ReactJumpedOver
 Selector_End
 
 
 Selector Idle
-
 	SelectSchedule_Idle
-
 Selector_End
 
 
 Selector Alert
-
 	SelectSchedule_Alert
-
 Selector_End
 
 
 Selector Combat
-
-	SelectSchedule_ChaseEnemy
+	SelectSchedule_MissileDodge
+	SelectSchedule_StrafeDodge
+	SelectSchedule_ForwardDodge
+	SelectSchedule_MeleeAttack
+	SelectSchedule_SpecialAttack
+	SelectSchedule_RangeAttack
+	SelectSchedule_WeaponBlocked
+	SelectSchedule_CantSeeEnemy
+	SelectSchedule_EngagementDistMax
 	SelectSchedule_CombatFace
-
+	SelectSchedule_EnemyTooClose
+	SelectSchedule_ChaseEnemy
 Selector_End

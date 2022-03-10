@@ -766,20 +766,23 @@ void function OnPropSurvivalSpawned_Thread(entity prop)
 void function PlayTrainingTargetReaction(entity ent, var damageInfo)
 {
 	entity attacker = DamageInfo_GetAttacker(damageInfo);
-	EmitSoundOnEntityOnlyToPlayer( attacker, attacker, FIRINGRANGE_FLICK_TARGET_SOUND )
+	if (IsValid(attacker) && attacker.IsPlayer())
+	{
+		EmitSoundOnEntityOnlyToPlayer( attacker, attacker, FIRINGRANGE_FLICK_TARGET_SOUND )
 
-	attacker.NotifyDidDamage
-	(
-		ent,
-		DamageInfo_GetHitBox( damageInfo ),
-		DamageInfo_GetDamagePosition( damageInfo ), 
-		DamageInfo_GetCustomDamageType( damageInfo ),
-		DamageInfo_GetDamage( damageInfo ),
-		DamageInfo_GetDamageFlags( damageInfo ), 
-		DamageInfo_GetHitGroup( damageInfo ),
-		DamageInfo_GetWeapon( damageInfo ), 
-		DamageInfo_GetDistFromAttackOrigin( damageInfo )
-	)
+		attacker.NotifyDidDamage
+		(
+			ent,
+			DamageInfo_GetHitBox( damageInfo ),
+			DamageInfo_GetDamagePosition( damageInfo ), 
+			DamageInfo_GetCustomDamageType( damageInfo ),
+			DamageInfo_GetDamage( damageInfo ),
+			DamageInfo_GetDamageFlags( damageInfo ), 
+			DamageInfo_GetHitGroup( damageInfo ),
+			DamageInfo_GetWeapon( damageInfo ), 
+			DamageInfo_GetDistFromAttackOrigin( damageInfo )
+		)
+	}
 }
 
 void function MoveTrainingTargetAround(entity ent)
@@ -1153,10 +1156,13 @@ string function GetInfiniteAmmoText(int number)
 
 void function TeleportFRPlayer(entity player, vector pos, vector ang)
 {
-	player.SetOrigin(pos)
-	player.SetAngles(ang)
-	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
-	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+	if (IsValid(player) && IsAlive(player) && player.IsPlayer())
+	{
+		player.SetOrigin(pos)
+		player.SetAngles(ang)
+		EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+		EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+	}
 }
 
 entity function CreateFRProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000)

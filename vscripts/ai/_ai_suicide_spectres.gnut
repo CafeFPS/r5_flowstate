@@ -261,8 +261,9 @@ void function SuicideSpectre_WaittillNearEnemyOrExploding( entity spectre )
 
 	bool pursuitSoundPlaying = false
 
-	int minScale = expect int( spectre.Dev_GetAISettingByKeyField( "minSpeedScale" ) )
-	int maxScale = expect int( spectre.Dev_GetAISettingByKeyField( "maxSpeedScale" ) )
+    // We expect float since GraphCapped uses it.
+	float minScale = expect float( spectre.Dev_GetAISettingByKeyField( "minSpeedScale" ) )
+	float maxScale = expect float( spectre.Dev_GetAISettingByKeyField( "maxSpeedScale" ) )
 
 	while ( true )
 	{

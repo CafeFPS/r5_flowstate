@@ -1113,6 +1113,19 @@ void function DEV_SpawnDummyAtCrosshair()
     dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
 }
 
+void function DEV_SpawnExplosiveTickAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity tick = CreateFragDrone( 99, origin, angles )
+
+	DispatchSpawn( tick )
+	tick.SetSkin(RandomInt(2))
+}
+
 void function DEV_SpawnAllNPCsWithTeam( int team )
 {
 	printt( "script thread DEV_SpawnAllNPCsWithTeam( " + team + " )" )

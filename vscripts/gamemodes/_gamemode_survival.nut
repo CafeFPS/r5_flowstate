@@ -445,7 +445,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
-		if( attacker.IsPlayer() && IsValid( attacker ) )
+		if( attacker.IsPlayer() && !IsWorldSpawn(attacker) )
 		{
 			// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
 			attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), DamageInfo_GetDamagePosition( damageInfo ), DamageInfo_GetCustomDamageType( damageInfo ), DamageInfo_GetDamage( damageInfo ), DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )

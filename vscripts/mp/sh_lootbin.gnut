@@ -418,7 +418,6 @@ void function SpawnLootInLootBin( entity lootbin, string ref, int lootI, int loo
 {
 	Point p       = GetLootBinSpawnLocation( lootbin, lootI, lootCount )
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
-	printt("K0k", ref, data.netInt)
 	entity loot   = SpawnGenericLoot( ref, p.origin, p.angles, data.countPerDrop )
 	loot.RemoveFromAllRealms()
 	loot.AddToOtherEntitysRealms( lootbin )
