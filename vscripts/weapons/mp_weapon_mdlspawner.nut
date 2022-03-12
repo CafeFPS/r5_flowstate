@@ -27,7 +27,7 @@ void function MDLSpawner_Init()
 {
 	#if SERVER && R5DEV
 	printt("adding mdlspawner ccc")
-	AddClientCommandCallback( "SetMDLSpawnerModel", ClientCommand_SetMDLSpawnerModel )
+	AddClientCommandCallback( "setmdl", ClientCommand_SetMDLSpawnerModel )
 	#endif
 }
 
