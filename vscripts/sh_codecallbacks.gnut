@@ -100,6 +100,7 @@ void function CodeCallbacksShared_Init()
 	#if CLIENT
 		RegisterConCommandTriggeredCallback( "-useAndReload", CancelDisembark )
 		RegisterConCommandTriggeredCallback( "-use", CancelDisembark )
+		RegisterConCommandTriggeredCallback( "+offhand4", CheckForAccelerants )
 	#endif
 
 	#if SERVER
@@ -429,6 +430,40 @@ void function CancelDisembark( entity player )
 		file.disembarkRUI = null
 	}
 }
+
+void function CheckForAccelerants( entity player )
+{
+printt("Flowstate DEBUG - Trying to use ultimate.")
+entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if ( !IsValid( ultimateAbility ) )
+		return
+
+int ammoNow = ultimateAbility.GetWeaponPrimaryClipCount()
+int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
+	if ( ammoNow < ammoMax )
+	{
+		//check for accelerants here
+		printt("Flowstate DEBUG - Check for accelerants here.")
+		array<ConsumableInventoryItem> playerInventory = SURVIVAL_GetPlayerInventory( player )
+
+		foreach ( invItem in playerInventory )
+		{	
+			if(invItem.type == 43)
+			{
+				Consumable_UseItemByType(player, 5)
+				SURVIVAL_RemoveFromPlayerInventory(player, "health_pickup_ultimate", 1)
+				printt("Flowstate DEBUG - Ultimate accelerant found! Recharging ultimate and removing item from inventory...")
+			} else {
+				printt("Flowstate DEBUG - Ultimate accelerant not found!")	
+			}
+		}
+
+	} else if ( ammoNow >= ammoMax )
+	{
+		printt("Flowstate DEBUG - Ultimate is ready we can't use accelerants.")
+	}
+}
+
 #endif
 
 /*
