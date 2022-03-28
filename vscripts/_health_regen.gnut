@@ -224,6 +224,7 @@ float function PilotShieldHealthUpdate( entity player, var damageInfo )
 
     if ( shieldHealth && newShieldHealth <= 0 )
     {
+		if( IsValid( attacker ) )
         thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
     }
 	try{

@@ -115,7 +115,7 @@ void function RemoteFunctions_Init_Begin()
 	RegisterNetworkedVariable( "attackingTeam", SNDC_GLOBAL, SNVT_INT, TEAM_UNASSIGNED )
 
 	//
-	RegisterServerVar( "minimapState", null )
+	RegisterServerVar( "minimapState", -1 )
 
 	RegisterNetworkedVariable( "indicatorId", SNDC_PLAYER_EXCLUSIVE, SNVT_INT, 0 )
 

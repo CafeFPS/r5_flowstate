@@ -1,8 +1,7 @@
 {
     "rpak":
     [
-        "mp_rr_canyonlands_staging",
-        "mp_rr_canyonlands_mu1"
+        "mp_rr_canyonlands_staging"
     ],
     "stbsp": "mp_rr_canyonlands_staging"
 }
