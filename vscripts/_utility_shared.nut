@@ -131,6 +131,7 @@ void function InitWeaponScripts()
 	MpWeaponDefender_Init()
 	MpWeaponDmr_Init()
 	MpWeaponSmartPistol_Init()
+	//MpWeaponGuidedMissile_Init()
 	SonarGrenade_Init()
 	MpWeaponSniper_Init()
 	MpWeaponLSTAR_Init()
@@ -1397,6 +1398,11 @@ bool function GamePlayingOrSuddenDeath()
 {
 	int gameState = GetGameState()
 	return gameState == eGameState.Playing || gameState == eGameState.SuddenDeath
+}
+
+int function Riff_MinimapState()
+{
+	return expect int( GetServerVar( "minimapState" ) )
 }
 
 vector function VectorReflectionAcrossNormal( vector vec, vector normal )
