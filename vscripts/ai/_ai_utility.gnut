@@ -258,6 +258,44 @@ vector function GetPlayerCrosshairOrigin( entity player )
 	return (GetPlayerCrosshairOriginRaw( player ) + Vector( 0, 0, CROSSHAIR_VERT_OFFSET ))
 }
 
+void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
+{
+	thread function() : ( delay, loglevel )
+	{
+		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
+		printt( ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> DEBUGGING AI NODEGRAPH DATA <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" )
+		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
+		for( int cIndex = 0; cIndex < NavMeshNode_GetNodeCount(); cIndex++ )
+		{
+			wait delay
+			vector cOrigin = NavMeshNode_GetNodePos( cIndex )
+
+			GetPlayerArray()[0].SetOrigin( cOrigin )
+
+			if ( loglevel == 1 )
+			{
+				printt( "Index: " + cIndex )
+			}
+			else if ( loglevel > 1 )
+			{
+				int nIndex =  NavMeshNode_GetNearestNodeToPos( OriginToGround( cOrigin ) )
+				vector nOrigin
+				if ( nIndex != -1 )
+				{
+					nOrigin = NavMeshNode_GetNodePos( nIndex )
+				}
+				printt( "<<<<<***********************************************************>>>>>" )
+				printt( "Current index    : " + cIndex )
+				printt( "Current position : " + cOrigin )
+				printt( "Nearest index    : " + nIndex )
+				printt( "Nearest position : " + nOrigin )
+			}
+		}
+		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
+		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
+	}()
+}
+
 void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
 {
 	// DisablePrecacheErrors()
@@ -1072,10 +1110,10 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
     {
         entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( FX ), ent_prop.GetOrigin(), ent_prop.GetAngles())
         trailFXHandle.SetParent(ent_prop)
-        ent_prop.kv.renderamt = 100
-        ent_prop.kv.rendermode = 3
+        //ent_prop.kv.renderamt = 100
+        //ent_prop.kv.rendermode = 3
         //ent_prop.kv.rendercolor = "255 0 0 50"
-    	ent_prop.kv.solid = 0 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
+    	//ent_prop.kv.solid = 0 // 0 = no collision, 2 = bounding box, 6 = use vPhysics, 8 = hitboxes only
     
         trailFXHandle.FXEnableRenderAlways()
         return trailFXHandle
