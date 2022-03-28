@@ -57,11 +57,12 @@ void function JumpPad_GiveDoubleJump( entity player )
 			player.SetPlayerSettingsWithMods( characterSetFile, [] )
 		}
 	})
+
 	while ( !player.IsOnGround() && !player.IsZiplining() && !Bleedout_IsBleedingOut( player ) )
 	{
 		WaitFrame()
 	}
-} 
+}
 
 void function JumpPad_CreatedCallback( entity jumpPad )
 {
@@ -89,6 +90,7 @@ entity mover = CreateScriptMover( jumpPad.GetOrigin(), angles )
 	trigger.SetOrigin( origin )
 	trigger.SetAngles( angles )
 	trigger.SetTriggerType( TT_JUMP_PAD )
+	trigger.SetLaunchScaleValues( JUMP_PAD_PUSH_VELOCITY, 1.25 )
 	trigger.SetViewPunchValues( JUMP_PAD_VIEW_PUNCH_SOFT, JUMP_PAD_VIEW_PUNCH_HARD, JUMP_PAD_VIEW_PUNCH_RAND )
 	//trigger.SetLaunchDir( <0.0, 0.0, 1.0> )
 	trigger.UsePointCollision()
@@ -142,11 +144,6 @@ void function JumpPad_PlayLaunchAnim( entity trigger )
 void function OnJumpPadAreaEnter( entity trigger, entity ent )
 {
 	thread JumpPad_PlayLaunchAnim( trigger )
-	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( ent ), Loadout_CharacterClass() )
-	string charRef = ItemFlavor_GetHumanReadableRef( character )
-	if( charRef == "character_octane" && !ent.p.isSaidChatterOnJumpPad )
-		thread SayBattleChatter( ent, "diag_mp_octane_bc_jumpPadLaunch_1p", 20.0 )
-	
 	JumpPadPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
 }
 
@@ -164,6 +161,7 @@ void function JumpPadAirborne( entity player ) {
 			}
 		}
 	)
+	WaitFrame()
 	wait 0.1
 	while( !player.IsOnGround() )
 	{
@@ -177,14 +175,6 @@ void function JumpPadPushEnt( entity trigger, entity ent, vector origin, vector 
 	{
 		if ( ent.IsPlayer() )
 		{
-			if( ent.IsPlayer() ){
-				if(ent.IsSliding() || ent.IsCrouched() ){
-					trigger.SetLaunchScaleValues( 1100, 1.1 )
-					printt("Jumppad DEBUG - " + ent + " entered jumppad crouched or sliding.")}
-				else{
-					trigger.SetLaunchScaleValues( 1100, 1.85 )
-					printt("Jumppad DEBUG - " + ent + " entered jumppad normal.")}
-				}
 			entity jumpPad = trigger.GetOwner()
 			if ( IsValid( jumpPad ) )
 			{
@@ -222,14 +212,4 @@ bool function JumpPad_ShouldPushPlayerOrNPC( entity target )
 		return false
 
 	return true
-}
-
-var function SayBattleChatter( entity player, string chatter, float time )
-{
-	#if SERVER
-	player.p.isSaidChatterOnJumpPad = true
-	EmitSoundOnEntityOnlyToPlayer( player, player, chatter )
-	wait time
-	player.p.isSaidChatterOnJumpPad = false
-	#endif
 }
