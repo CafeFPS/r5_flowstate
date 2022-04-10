@@ -741,26 +741,34 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		
 	if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
     {
-        TakeAllWeapons(player)
+		try{
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+        player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
         GiveRandomPrimaryWeapon(file.randomprimary, player)
         GiveRandomSecondaryWeapon(file.randomsecondary, player)
         player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
         player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+		} catch (e) {}
     } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
 	{
-		TakeAllWeapons(player)
+		try{
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
         GiveRandomPrimaryWeaponMetagame(file.randomprimary, player)
         GiveRandomSecondaryWeaponMetagame(file.randomsecondary, player)
         player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
         player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+		} catch (e) {}
 	}
-	if(FlowState_RandomTactical() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
+	if(FlowState_RandomTactical() && IsValid( player ) || FlowState_GungameRandomAbilities() && IsValid( player ))
 	{
 		player.TakeOffhandWeapon(OFFHAND_TACTICAL)
 		file.randomtac = RandomIntRangeInclusive( 0, 7 )
         GiveRandomTac(file.randomtac, player)
 	}
-	if(FlowState_RandomUltimate() && IsValid( player )|| FlowState_GungameRandomAbilities() && IsValid( player ))
+	if(FlowState_RandomUltimate() && IsValid( player ) || FlowState_GungameRandomAbilities() && IsValid( player ))
 	{
     player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
 		file.randomult = RandomIntRangeInclusive( 0, 5 )
@@ -870,7 +878,7 @@ void function SummonPlayersInACircle(entity player0)
 
 void function GiveRandomPrimaryWeaponMetagame(int random, entity player)
 {
-	printt("Flowstate DEBUG - Giving random primary weapon metagame.", player)
+	printt("Flowstate DEBUG - Giving random primary weapon metagame. Index " + random)
     switch(random)
     {
         case 0:
@@ -1861,7 +1869,7 @@ void function VotingPhase()
         file.randomsecondary = RandomIntRangeInclusive( 0, 6 )
     } else if (FlowState_RandomGunsMetagame())
 	{
-		file.randomprimary = RandomIntRangeInclusive( 0, 3 )
+		file.randomprimary = RandomIntRangeInclusive( 0, 2 )
         file.randomsecondary = RandomIntRangeInclusive( 0, 4 )
 	} else if (FlowState_RandomGunsEverydie())
 	{
