@@ -92,10 +92,6 @@ void function ClScoreboardMp_Init()
 
 void function ScoreboardFocus( entity player )
 { 
-	if (GAMETYPE_TEXT[ GAMETYPE ] != "custom_tdm")
-	{
-		return
-	}
 	thread ShowScoreboardMP()
 	file.hasFocus = true
 }
@@ -314,6 +310,12 @@ void function ScoreboardFadeOut()
 
 void function ShowScoreboardMP()
 {
+	// only allow the r2 scoreboard ui to show if the playlist var is enabled
+	if( !GetCurrentPlaylistVarBool( "scoreboard_enabled", false ) )
+		return
+
+	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
+	
 	foreach( void functionref() callbackFunc in file.scoreboardCallbacks_OnShowing)
 		callbackFunc()
 
