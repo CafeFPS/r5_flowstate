@@ -1182,7 +1182,7 @@ void function FirstPersonSequence( FirstPersonSequenceStruct sequence, entity pl
 			}
 		}
 
-		if ( !doFirstPersonAnim || !sequence.playerPushable )
+		if ( !doFirstPersonAnim && !sequence.playerPushable )
 		{
 			player.SnapFeetToEyes()
 		}
