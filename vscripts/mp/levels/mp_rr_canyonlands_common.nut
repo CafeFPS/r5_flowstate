@@ -311,6 +311,9 @@ void function FindHoverTankEndNodes()
 
 void function SpawnHoverTanks()
 {
+	if( !GetCurrentPlaylistVarBool( "bad_hover_tank_enabled", false ) )
+		return
+		
 	// Spawn hover tanks at level load, even though they don't fly in yet, so they exist when loot is spawned.
 	if ( file.numHoverTanksIntro == 0 && file.numHoverTanksMid == 0 )
 		return

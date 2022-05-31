@@ -1560,16 +1560,22 @@ void function DynamicLight_Init()
 			// ASH'S REDEMPTION
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			float brightness_ash = 500.0
-			entity dlight_ash_1 = CreateClientSideDynamicLight( <-22704, 7304, -26547>, <-88, -56, 0>, DLIGHT_WHITE, 350 )
-			dlight_ash_1.SetLightExponent( 1 )
-			entity dlight_ash_2 = CreateClientSideDynamicLight( <-20871, 5693, -25439>, <-88, -56, 0>, DLIGHT_WHITE, 3000 )
-			dlight_ash_2.SetLightExponent( 1.5 )
-			entity dlight_ash_3 = CreateClientSideDynamicLight( <-20582, 3919, -26576>, <-88, -56, 0>, DLIGHT_WHITE, 1200 )
-			dlight_ash_3.SetLightExponent( 0.2 )
-			entity dlight_ash_4 = CreateClientSideDynamicLight( <-19959, 3723, -26726>, <-88, -56, 0>, DLIGHT_WHITE, 1200 )
-			dlight_ash_4.SetLightExponent( 0.2 )
-			entity dlight_ash_5 = CreateClientSideDynamicLight( <-22564, 7535, -26579>, <-88, -56, 0>, DLIGHT_WHITE, 350 )
-			dlight_ash_5.SetLightExponent( 1 )
+			 entity dlight_ash_0 = CreateClientSideDynamicLight( <-19876, 3616, -26740>, angle, DLIGHT_RICH_BROWN, 1000 )
+			 dlight_ash_0.SetLightExponent( 0.5 )
+			 entity dlight_ash_1 = CreateClientSideDynamicLight( <-20903, 3768, -26740>, angle, DLIGHT_RICH_BROWN, 1000 )
+			 dlight_ash_1.SetLightExponent( 0.5 )
+			 entity dlight_ash_2 = CreateClientSideDynamicLight( <-19271, 6402, -27025>, angle, DLIGHT_RICH_BROWN, brightness_ash )
+			 dlight_ash_2.SetLightExponent( 0.5 )
+			 entity dlight_ash_3 = CreateClientSideDynamicLight( <-22710, 7344, -26585>, angle, DLIGHT_RICH_BROWN, brightness_ash )
+			 dlight_ash_3.SetLightExponent( 0.5 )
+			 entity dlight_ash_4 = CreateClientSideDynamicLight( <-22611, 6364, -26774>, angle, DLIGHT_RICH_BROWN, brightness_ash )
+			 dlight_ash_4.SetLightExponent( 0.5 )
+			 entity dlight_ash_5 = CreateClientSideDynamicLight( <-22611, 5638, -26774>, angle, DLIGHT_RICH_BROWN, brightness_ash )
+			 dlight_ash_5.SetLightExponent( 0.5 )
+			 entity dlight_ash_6 = CreateClientSideDynamicLight( <-22611, 4964, -26774>, angle, DLIGHT_RICH_BROWN, brightness_ash )
+			 dlight_ash_6.SetLightExponent( 0.5 )
+			 entity dlight_ash_7 = CreateClientSideDynamicLight( <-21695, 7478, -26784>, angle, DLIGHT_RICH_BROWN, brightness_ash )
+			 dlight_ash_7.SetLightExponent( 0.5 )
 			break
 		case "mp_rr_desertlands_64k_x_64k_nx":
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

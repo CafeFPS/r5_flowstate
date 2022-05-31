@@ -702,7 +702,7 @@ global const DLIGHT_PURPLE = < 1, 0, 1 >
 // Green types
 global const DLIGHT_SEAGREEN   = < 0, 1, 1 >
 global const DLIGHT_LIGHTGREEN = < 0.3, 1, 1 >
-
+global const DLIGHT_RICH_BROWN  = < 0.8, 0.3, 0.1 >
 
 //--------------------------------------------------
 // 				PERFORMANCE
