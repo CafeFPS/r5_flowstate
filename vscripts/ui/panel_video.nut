@@ -24,8 +24,7 @@ struct
 void function InitVideoPanelForCode( var panel )
 {
 	#if PC_PROG
-		//asset resFile = $"resource/ui/menus/panels/video.res"
-		asset resFile = $"scripts/resource/ui/menus/panels/r5rvideo.res"
+		asset resFile = $"resource/ui/menus/panels/video.res"
 	#elseif CONSOLE_PROG
 		asset resFile = $"resource/ui/menus/panels/video_console.res"
 	#endif
