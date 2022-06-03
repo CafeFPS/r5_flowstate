@@ -16,15 +16,22 @@ void function RemoteFunctions_Init_Begin()
 	Remote_BeginRegisteringFunctions()
 	_RegisteringFunctions = true
 	
-	// if(GetCurrentPlaylistVarBool( "customModsRemoteFunctions", false ))
-	// {
-		// // Ringflare
-		// Remote_RegisterClientFunction( "EnterTriggerRF", "entity")
-		// Remote_RegisterClientFunction( "ExitTriggerRF", "entity")
+	if(GetCurrentPlaylistVarBool( "customModsRemoteFunctions", false ))
+	{
+		// Ringflare
+		Remote_RegisterClientFunction( "EnterTriggerRF", "entity")
+		Remote_RegisterClientFunction( "ExitTriggerRF", "entity")
 		
-		// // Needler
-		// Remote_RegisterClientFunction( "ShowDamageFlyout", "entity", "float", 0.0, 256.0, 32 )
-	// }
+		// Needler
+		Remote_RegisterClientFunction( "ShowDamageFlyout", "entity", "float", 0.0, 256.0, 32 )
+
+		
+		//Fade
+		Remote_RegisterClientFunction( "ServerCallback_SonarPhaseChamber", "entity", "entity", "float", 0.0, 32000.0, 32 )
+		
+		//Lifeline Epic Drone Buff
+		Remote_RegisterClientFunction( "ServerCallback_DocDroneHighlight", "entity", "entity", "float", 0.0, 32000.0, 32 )
+	}
 	
 	// Custom
 	Remote_RegisterClientFunction("ServerCallback_TDM_DoAnnouncement", "float", 0.0, 256.0, 32, "int", 0, 255)
@@ -144,30 +151,30 @@ void function RemoteFunctions_Init_Begin()
 
 	switch ( GameRules_GetGameMode() )
 	{
-		// case CUSTOM_CTF:
-			// // CTF: Server to Client
-			// Remote_RegisterClientFunction( "ServerCallback_CTF_AddPointIcon", "entity", "entity", "int", 0, 255)
-			// Remote_RegisterClientFunction( "ServerCallback_CTF_RecaptureFlag", "int", 0, 999, "float", 0.0, 999.0, 32, "float", 0.0, 999.0, 32)
-			// Remote_RegisterClientFunction( "ServerCallback_CTF_EnemyCaptured", "entity" )
-			// Remote_RegisterClientFunction( "ServerCallback_CTF_TeamCaptured", "entity" )
-			// Remote_RegisterClientFunction( "ServerCallback_CTF_CustomMessages", "entity", "int", 0, 255 )
-			// Remote_RegisterClientFunction( "ServerCallback_CTF_TeamWon", "int", 0, 999 )
-			// Remote_RegisterClientFunction( "ServerCallback_CTF_SetSelectedLocation", "int", 0, 255)
-			// Remote_RegisterClientFunction( "ServerCallback_CTF_SetPointIconHint", "int", 0, 255, "int", 0, 255 )
-			// Remote_RegisterClientFunction("ServerCallback_CTF_DoAnnouncement", "float", 0.0, 256.0, 32, "int", 0, 255)
-			// Remote_RegisterClientFunction("ServerCallback_CTF_PlayerDied", "vector", -32000.0, 32000.0, 32, "int", 0, 255, "int", 0, 255, "entity")
-			// Remote_RegisterClientFunction("ServerCallback_CTF_OpenCTFRespawnMenu", "vector", -32000.0, 32000.0, 32, "int", 0, 255, "int", 0, 255, "entity")
-			// Remote_RegisterClientFunction("ServerCallback_CTF_UpdateDamage", "int", 0, 255, "float", 0.0, 9999.0, 32)
-			// Remote_RegisterClientFunction("ServerCallback_CTF_PlayerSpawning")
-			// Remote_RegisterClientFunction("ServerCallback_CTF_SetObjectiveText", "int", 0, 255)
-			// Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_EndRecaptureFlag" )
-			// Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_ResetFlagIcons" )
-			// Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_PointCaptured" )
-			// Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_TeamText" )
+		case CUSTOM_CTF:
+			// CTF: Server to Client
+			Remote_RegisterClientFunction( "ServerCallback_CTF_AddPointIcon", "entity", "entity", "int", 0, 255)
+			Remote_RegisterClientFunction( "ServerCallback_CTF_RecaptureFlag", "int", 0, 999, "float", 0.0, 999.0, 32, "float", 0.0, 999.0, 32)
+			Remote_RegisterClientFunction( "ServerCallback_CTF_EnemyCaptured", "entity" )
+			Remote_RegisterClientFunction( "ServerCallback_CTF_TeamCaptured", "entity" )
+			Remote_RegisterClientFunction( "ServerCallback_CTF_CustomMessages", "entity", "int", 0, 255 )
+			Remote_RegisterClientFunction( "ServerCallback_CTF_TeamWon", "int", 0, 999 )
+			Remote_RegisterClientFunction( "ServerCallback_CTF_SetSelectedLocation", "int", 0, 255)
+			Remote_RegisterClientFunction( "ServerCallback_CTF_SetPointIconHint", "int", 0, 255, "int", 0, 255 )
+			Remote_RegisterClientFunction("ServerCallback_CTF_DoAnnouncement", "float", 0.0, 256.0, 32, "int", 0, 255)
+			Remote_RegisterClientFunction("ServerCallback_CTF_PlayerDied", "vector", -32000.0, 32000.0, 32, "int", 0, 255, "int", 0, 255, "entity")
+			Remote_RegisterClientFunction("ServerCallback_CTF_OpenCTFRespawnMenu", "vector", -32000.0, 32000.0, 32, "int", 0, 255, "int", 0, 255, "entity")
+			Remote_RegisterClientFunction("ServerCallback_CTF_UpdateDamage", "int", 0, 255, "float", 0.0, 9999.0, 32)
+			Remote_RegisterClientFunction("ServerCallback_CTF_PlayerSpawning")
+			Remote_RegisterClientFunction("ServerCallback_CTF_SetObjectiveText", "int", 0, 255)
+			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_EndRecaptureFlag" )
+			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_ResetFlagIcons" )
+			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_PointCaptured" )
+			Remote_RegisterUntypedFunction_deprecated( "ServerCallback_CTF_TeamText" )
 
-			// // CTF: Server to UI
-			// Remote_RegisterUIFunction( "OpenCTFRespawnMenu" )
-			// Remote_RegisterUIFunction( "CloseCTFRespawnMenu" )
+			// CTF: Server to UI
+			Remote_RegisterUIFunction( "OpenCTFRespawnMenu" )
+			Remote_RegisterUIFunction( "CloseCTFRespawnMenu" )
 			
 			// END CTF
 		case CUSTOM_TDM:
