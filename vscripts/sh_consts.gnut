@@ -97,6 +97,7 @@ global const TEAM_DEATHMATCH            = "tdm"
 global const SURVIVAL                   = "survival"
 global const FREELANCE                  = "freelance"
 global const CUSTOM_TDM                 = "custom_tdm"
+global const CUSTOM_CTF                 = "custom_ctf"
 
 global const FREELANCE_ENABLED          = false
 
