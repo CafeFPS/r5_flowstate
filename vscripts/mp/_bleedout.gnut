@@ -14,6 +14,10 @@ const bool LIFELINE_RGB_SHIELD = false
 
 const asset FX_BLOODTRAIL = $"skit_blood_decal_LG"
 const float BLEEDOUT_MAX_USE_DIST2_MOD = 64 * 64
+const FX_DRONE_MEDIC_OPEN				= $"P_LL_med_drone_open"
+const FX_DRONE_MEDIC_JET_CTR			= $"P_LL_med_drone_jet_ctr_loop"
+const FX_DRONE_MEDIC_EYE				= $"P_LL_med_drone_eye"
+const FX_DRONE_MEDIC_JET_LOOP			= $"P_LL_med_drone_jet_loop"
 
 // r5 stuff
 global function Bleedout_SetBleedoutEffects
