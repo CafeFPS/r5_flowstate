@@ -16,22 +16,22 @@ void function RemoteFunctions_Init_Begin()
 	Remote_BeginRegisteringFunctions()
 	_RegisteringFunctions = true
 	
-	if(GetCurrentPlaylistVarBool( "customModsRemoteFunctions", false ))
-	{
-		// Ringflare
-		Remote_RegisterClientFunction( "EnterTriggerRF", "entity")
-		Remote_RegisterClientFunction( "ExitTriggerRF", "entity")
+	// if(GetCurrentPlaylistVarBool( "customModsRemoteFunctions", false ))
+	// {
+		// // Ringflare
+		// Remote_RegisterClientFunction( "EnterTriggerRF", "entity")
+		// Remote_RegisterClientFunction( "ExitTriggerRF", "entity")
 		
-		// Needler
-		Remote_RegisterClientFunction( "ShowDamageFlyout", "entity", "float", 0.0, 256.0, 32 )
+		// // Needler
+		// Remote_RegisterClientFunction( "ShowDamageFlyout", "entity", "float", 0.0, 256.0, 32 )
 
 		
-		//Fade
-		Remote_RegisterClientFunction( "ServerCallback_SonarPhaseChamber", "entity", "entity", "float", 0.0, 32000.0, 32 )
+		// //Fade
+		// Remote_RegisterClientFunction( "ServerCallback_SonarPhaseChamber", "entity", "entity", "float", 0.0, 32000.0, 32 )
 		
-		//Lifeline Epic Drone Buff
-		Remote_RegisterClientFunction( "ServerCallback_DocDroneHighlight", "entity", "entity", "float", 0.0, 32000.0, 32 )
-	}
+		// //Lifeline Epic Drone Buff
+		// Remote_RegisterClientFunction( "ServerCallback_DocDroneHighlight", "entity", "entity", "float", 0.0, 32000.0, 32 )
+	// }
 	
 	// Custom
 	Remote_RegisterClientFunction("ServerCallback_TDM_DoAnnouncement", "float", 0.0, 256.0, 32, "int", 0, 255)
