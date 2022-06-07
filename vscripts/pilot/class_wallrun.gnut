@@ -56,13 +56,29 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 	}
 
 	AdjustDamageForRodeoPlayers( player, damageInfo, attacker )
-
-	#if VERBOSE_DAMAGE_PRINTOUTS
-		printt( "    After Wallrun_PlayerTookDamage:", DamageInfo_GetDamage( damageInfo ) )
-	#endif
-
-	if ( player.GetShieldHealthMax() > 0
-		&& !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
+	
+	//Helmets fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+	if(IsValidHeadShot(damageInfo, player) && player.IsPlayer() && IsValid(player) && EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" ).ref != "") {
+		float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
+		float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
+		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "helmet" )
+		switch(data.ref){
+			case "helmet_pickup_lv4_abilities":
+				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
+				break
+			case "helmet_pickup_lv3":
+				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv3", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv3", 0.65 ))*headshotMultiplier))
+				break
+			case "helmet_pickup_lv2":
+				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv2", 0.5 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv2", 0.5 ))*headshotMultiplier))
+				break
+			case "helmet_pickup_lv1":				
+				DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv1", 0.2 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv1", 0.2 ))*headshotMultiplier))
+				break
+		}
+	}
+	
+	if ( player.GetShieldHealthMax() > 0 && !( DamageInfo_GetCustomDamageType( damageInfo ) & DF_BYPASS_SHIELD ) )
 	{
 		local shieldDamage = PilotShieldHealthUpdate( player, damageInfo )
 		return shieldDamage
