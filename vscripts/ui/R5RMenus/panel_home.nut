@@ -1,5 +1,5 @@
 global function InitR5RHomePanel
-global function SetUIPlayerName
+global function SetUIVersion
 
 struct
 {
@@ -16,11 +16,8 @@ void function InitR5RHomePanel( var panel )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "R5RPicBox" ) ), "basicImage", $"rui/menu/home/bg" )
 }
 
-void function SetUIPlayerName()
+void function SetUIVersion()
 {
-	//Set playername text
-	Hud_SetText(Hud_GetChild( file.panel, "PlayerName" ), GetPlayerName())
-
 	//Set SDK version text
 	Hud_SetText( Hud_GetChild( file.panel, "VersionNumber" ), GetSDKVersion() )
 }

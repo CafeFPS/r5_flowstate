@@ -6,14 +6,8 @@ struct
 	var menu
 	var panel
 
-	table<var, string> buttonmap
+	table<var, string> map_button_table
 } file
-
-//Maps to be removed from the ui
-array<string> removedmaps = [
-	"mp_lobby",
-	"mp_npe"
-]
 
 void function InitR5RMapPanel( var panel )
 {
@@ -23,27 +17,27 @@ void function InitR5RMapPanel( var panel )
 
 void function RefreshUIMaps()
 {
+	//Reset all map ui
+	ResetMapsUI()
+
 	//Get maps array
-	array<string> availablemaps = GetMaps()
+	array<string> m_vMaps = GetPlaylistMaps(ServerSettings.svPlaylist)
 
 	//Get number of maps
-	int number_of_maps = availablemaps.len()
+	int m_vMaps_count = m_vMaps.len()
 
 	//Currently supports upto 16 maps
 	//Amos and I talked and will setup a page system for maps when needed
-	if(number_of_maps > 16)
-		number_of_maps = 16
-
-	//Intial row and width
-	int current_row_items = 0
-	int map_bg_width = 330
-
-	for( int i=0; i < number_of_maps; i++ ) {
+	//Also note that all maps wont always be shown depending on the playlist selected
+	if(m_vMaps_count > 16)
+		m_vMaps_count = 16
+	
+	for( int i=0; i < m_vMaps_count; i++ ) {
 		//Set Map Text
-		Hud_SetText( Hud_GetChild( file.panel, "MapText" + i ), GetUIMapName(availablemaps[i]))
+		Hud_SetText( Hud_GetChild( file.panel, "MapText" + i ), GetUIMapName(m_vMaps[i]))
 
 		//Set Map Asset
-		RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "MapImg" + i ) ), "loadscreenImage", GetUIMapAsset(availablemaps[i]) )
+		RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "MapImg" + i ) ), "loadscreenImage", GetUIMapAsset(m_vMaps[i]) )
 
 		//Set the map ui visibility to true
 		Hud_SetVisible( Hud_GetChild( file.panel, "MapText" + i ), true )
@@ -52,62 +46,33 @@ void function RefreshUIMaps()
 
 		//If button already has a evenhandler remove it
 		var button = Hud_GetChild( file.panel, "MapBtn" + i )
-		if ( button in file.buttonmap )
-		{
+		if ( button in file.map_button_table ) {
 			Hud_RemoveEventHandler( button, UIE_CLICK, SelectServerMap )
-			delete file.buttonmap[button]
+			delete file.map_button_table[button]
 		}
 
 		//Add the Even handler for the button
 		Hud_AddEventHandler( Hud_GetChild( file.panel, "MapBtn" + i ), UIE_CLICK, SelectServerMap )
 
 		//Add the button and map to a table
-		file.buttonmap[Hud_GetChild( file.panel, "MapBtn" + i )] <- availablemaps[i]
-
-		//For calculating map selection background width
-		if(current_row_items > 3) {
-			map_bg_width += 325
-			current_row_items = 0
-		}
-
-		current_row_items++
+		file.map_button_table[Hud_GetChild( file.panel, "MapBtn" + i )] <- m_vMaps[i]
 	}
-
-	//Set the map selection background width
-	Hud_SetWidth( Hud_GetChild( file.panel, "PanelBG" ), map_bg_width )
-	Hud_SetWidth( Hud_GetChild( file.panel, "PanelTopBG" ), map_bg_width )
 }
 
-array<string> function GetMaps()
+void function ResetMapsUI()
 {
-	//Get all available maps
-	array<string> allmaps = GetAvailableMaps()
-	array<string> availablemaps
-
-	//Setup available maps array
-	foreach( string map in allmaps) {
-		//If is a lobby map dont add
-		if(!IsValidMap(map))
-			continue
-
-		//Add map to the array
-		availablemaps.append(map)
+	//Reset all map ui
+	for( int i=0; i < 16; i++ ) {
+		Hud_SetText( Hud_GetChild( file.panel, "MapText" + i ), "")
+		RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "MapImg" + i ) ), "loadscreenImage", $"" )
+		Hud_SetVisible( Hud_GetChild( file.panel, "MapText" + i ), false )
+		Hud_SetVisible( Hud_GetChild( file.panel, "MapImg" + i ), false )
+		Hud_SetVisible( Hud_GetChild( file.panel, "MapBtn" + i ), false )
 	}
-
-	return availablemaps
-}
-
-bool function IsValidMap(string map)
-{
-	//Dont show these maps in the map selection
-	if( removedmaps.contains(map) )
-		return false
-
-	return true
 }
 
 void function SelectServerMap( var button )
 {
-	//printf("Debug Map Selected: " + file.buttonmap[button])
-	SetSelectedServerMap(file.buttonmap[button])
+	//Set selected server map
+	SetSelectedServerMap(file.map_button_table[button])
 }

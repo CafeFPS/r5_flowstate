@@ -135,25 +135,6 @@ resource/ui/menus/main.menu
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        SignInDisplay
-        {
-            ControlName				Label
-            xpos                    %-5
-            ypos                    %-5
-            auto_wide_tocontents 	1
-            auto_tall_tocontents 	1
-            labelText				""
-            font					"DefaultRegularFont"
-            ruiDefaultHeight        36
-            fontHeight              32
-            visible					1
-            fgcolor_override 		"32 32 32 255"
-
-            pin_to_sibling			Screen
-            pin_corner_to_sibling	TOP_RIGHT
-            pin_to_sibling_corner	TOP_RIGHT
-        }
-
 		FooterButtons
 		{
 			ControlName				CNestedPanel

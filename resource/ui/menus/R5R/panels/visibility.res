@@ -18,10 +18,10 @@
 	{
 		"ControlName"			"Label"
 		"xpos"					"0"
-		"ypos"					"0"
+		"ypos"					"-250"
 		"zpos"					"0"
 		"wide"					"490"
-		"tall"					"935"
+		"tall"					"145"
 		"labelText"				""
 		"bgcolor_override"		"50 50 50 100"
 		"visible"				"1"
@@ -41,7 +41,7 @@
 		"wide"					"490"
 		"tall"					"40"
 		"labelText"				""
-		"bgcolor_override"		"30 30 30 150"
+		"bgcolor_override"		"195 29 38 200"
 		"visible"				"1"
 		"paintbackground"		"1"
 
@@ -128,8 +128,6 @@
 		"zpos" 					"6"
 		"visible" 				"0"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"VisPanel0"
 		"pin_corner_to_sibling" "CENTER"
@@ -147,8 +145,6 @@
 		"zpos" 					"6"
 		"visible" 				"0"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"VisPanel1"
 		"pin_corner_to_sibling" "CENTER"
@@ -166,8 +162,6 @@
 		"zpos" 					"6"
 		"visible" 				"0"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"VisPanel2"
 		"pin_corner_to_sibling" "CENTER"

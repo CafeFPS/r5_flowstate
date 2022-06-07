@@ -18,9 +18,9 @@
 	{
 		"ControlName"			"Label"
 		"xpos"					"0"
-		"ypos"					"0"
+		"ypos"					"50"
 		"zpos"					"0"
-		"wide"					"30"
+		"wide"					"1305"
 		"tall"					"745"
 		"labelText"				""
 		"bgcolor_override"		"50 50 50 100"
@@ -38,10 +38,10 @@
 		"xpos"					"1"
 		"ypos"					"0"
 		"zpos"					"0"
-		"wide"					"490"
+		"wide"					"1305"
 		"tall"					"40"
 		"labelText"				""
-		"bgcolor_override"		"30 30 30 150"
+		"bgcolor_override"		"195 29 38 200"
 		"visible"				"1"
 		"paintbackground"		"1"
 
@@ -354,8 +354,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg0"
 		"pin_corner_to_sibling" "CENTER"
@@ -374,8 +372,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg1"
 		"pin_corner_to_sibling" "CENTER"
@@ -394,8 +390,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg2"
 		"pin_corner_to_sibling" "CENTER"
@@ -414,8 +408,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg3"
 		"pin_corner_to_sibling" "CENTER"
@@ -434,8 +426,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg4"
 		"pin_corner_to_sibling" "CENTER"
@@ -454,8 +444,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg5"
 		"pin_corner_to_sibling" "CENTER"
@@ -474,8 +462,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg6"
 		"pin_corner_to_sibling" "CENTER"
@@ -494,8 +480,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg7"
 		"pin_corner_to_sibling" "CENTER"
@@ -514,8 +498,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg8"
 		"pin_corner_to_sibling" "CENTER"
@@ -534,8 +516,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg9"
 		"pin_corner_to_sibling" "CENTER"
@@ -554,8 +534,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg10"
 		"pin_corner_to_sibling" "CENTER"
@@ -574,8 +552,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg11"
 		"pin_corner_to_sibling" "CENTER"
@@ -594,8 +570,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg12"
 		"pin_corner_to_sibling" "CENTER"
@@ -614,8 +588,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg13"
 		"pin_corner_to_sibling" "CENTER"
@@ -634,8 +606,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg14"
 		"pin_corner_to_sibling" "CENTER"
@@ -654,8 +624,6 @@
 		"visible"				"0"
 		"classname"				"mapbuttons"
 
-		"image" 				"vgui/hud/white"
-		"drawColor" 			"255 255 255 128"
 
 		"pin_to_sibling" 		"MapImg15"
 		"pin_corner_to_sibling" "CENTER"

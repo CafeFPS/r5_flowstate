@@ -5,7 +5,7 @@ struct
 	var menu
 	var panel
 
-	table<var, int> buttonvis
+	table<var, int> vis_button_table
 } file
 
 array<int> visibility = [
@@ -18,9 +18,6 @@ void function InitR5RVisPanel( var panel )
 {
 	file.panel = panel
 	file.menu = GetParentMenu( file.panel )
-
-	//Initial panel height
-	int height = 10
 
 	for( int i=0; i < visibility.len(); i++ ) {
 		//Set vis name
@@ -35,18 +32,12 @@ void function InitR5RVisPanel( var panel )
 		Hud_AddEventHandler( Hud_GetChild( file.panel, "VisBtn" + i ), UIE_CLICK, SelectServerVis )
 
 		//Add the button and map to a table
-		file.buttonvis[Hud_GetChild( file.panel, "VisBtn" + i )] <- visibility[i]
-
-		//Add height
-		height += 45
+		file.vis_button_table[Hud_GetChild( file.panel, "VisBtn" + i )] <- visibility[i]
 	}
-
-	//Set final panel height
-	Hud_SetHeight( Hud_GetChild( file.panel, "PanelBG" ), height )
 }
 
 void function SelectServerVis( var button )
 {
-	//printf("Debug Vis Selected: " + file.buttonplaylist[button])
-	SetSelectedServerVis(file.buttonvis[button])
+	//Set selected server vis
+	SetSelectedServerVis(file.vis_button_table[button])
 }

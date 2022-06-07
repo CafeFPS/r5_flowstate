@@ -35,7 +35,7 @@
 		{
             "ControlName"				"ImagePanel"
 			"wide"						"f0"
-			"tall"						"125"
+			"tall"						"83"
 			"visible"					"1"
             "scaleImage"				"1"
 			"zpos"						"0"
@@ -47,10 +47,60 @@
 			"pin_to_sibling_corner"		"TOP"
 		}
 
+		"Logo"
+        {
+            "ControlName"				"RuiPanel"
+			"InheritProperties"       	"Logo"
+
+            "pin_to_sibling"			"MainButtonsFrame"
+            "pin_corner_to_sibling"		"TOP_LEFT"
+            "pin_to_sibling_corner"		"TOP_LEFT"
+        }
+
+		"WelcomeBack"
+		{
+			"ControlName"			"Label"
+			"xpos"                  "-10"
+			"ypos"					"-15"
+			"wide"					"300"
+			"tall"					"30"
+			"visible"				"1"
+			"fontHeight"			"30"
+			"labelText"				"Welcome back"
+			"font"					"DefaultBold_41"
+			"allcaps"				"0"
+			"fgcolor_override"		"255 255 255 255"
+			"textAlignment"			"east"
+
+			"pin_to_sibling"		"MainButtonsFrame"
+			"pin_corner_to_sibling"	"RIGHT"
+			"pin_to_sibling_corner"	"RIGHT"
+		}
+
+		"PlayerName"
+		{
+			"ControlName"			"Label"
+			"xpos"                  "0"
+			"ypos"					"0"
+			"wide"					"300"
+			"tall"					"30"
+			"visible"				"1"
+			"fontHeight"			"30"
+			"labelText"				"PlayerName"
+			"font"					"DefaultBold_41"
+			"allcaps"				"0"
+			"fgcolor_override"		"255 100 100 255"
+			"textAlignment"			"east"
+
+			"pin_to_sibling"		"WelcomeBack"
+			"pin_corner_to_sibling"	"TOP"
+			"pin_to_sibling_corner"	"BOTTOM"
+		}
+
 		"R5Reloaded"
 		{
 			"ControlName"				"Label"
-			"xpos"                    	"-150"
+			"xpos"                    	"-180"
 			"ypos"						"0"
 			"auto_wide_tocontents"		"1"
 			"tall"						"40"
@@ -66,32 +116,13 @@
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"TitleLine"
-		{
-            "ControlName"				"ImagePanel"
-			"wide"						"373"
-			"tall"						"2"
-			"visible"					"1"
-            "scaleImage"				"1"
-			"zpos"						"0"
-			"ypos"						20
-            "fillColor"					"255 255 255 255"
-            "drawColor"					"255 255 255 255"
-
-			"pin_to_sibling"			"MainButtonsFrame"
-			"pin_corner_to_sibling"		"LEFT"
-			"pin_to_sibling_corner"		"LEFT"
-		}
-
 		"HomeBtn"
 		{
 			"ControlName"				"RuiButton"
-			"InheritProperties"			"TabButtonStore"
+			"InheritProperties"			"TabButtonSettings"
 			"classname" 				"TopButtons"
 			"zpos"						"3"
-			"xpos"                    	"-900"
-			"wide"						"240"
-			"tall"						"50"
+			"xpos"                    	"-1200"
 			"scriptID"					"0"
 
 			ruiArgs
@@ -101,19 +132,17 @@
 			}
 
 			"pin_to_sibling"			"MainButtonsFrame"
-			"pin_corner_to_sibling"		"BOTTOM_RIGHT"
-			"pin_to_sibling_corner"		"BOTTOM_RIGHT"
+			"pin_corner_to_sibling"		"RIGHT"
+			"pin_to_sibling_corner"		"RIGHT"
 		}
 
 		"CreateServerBtn"
 		{
 			"ControlName"				"RuiButton"
-			"InheritProperties"			"TabButtonStore"
+			"InheritProperties"			"TabButtonSettings"
 			"classname" 				"TopButtons"
 			"zpos"						"3"
-			"xpos"                    	"-35"
-			"wide"						"240"
-			"tall"						"50"
+			"xpos"                    	"-80"
 			"scriptID"					"1"
 
 			ruiArgs
@@ -130,12 +159,10 @@
 		"ServerBrowserBtn"
 		{
 			"ControlName"				"RuiButton"
-			"InheritProperties"			"TabButtonStore"
+			"InheritProperties"			"TabButtonSettings"
 			"classname" 				"TopButtons"
 			"zpos"						"3"
-			"xpos"                    	"-35"
-			"wide"						"240"
-			"tall"						"50"
+			"xpos"                    	"-80"
 			"scriptID"					"2"
 
 			ruiArgs
@@ -152,11 +179,9 @@
 		"SettingsBtn"
 		{
 			"ControlName"				"RuiButton"
-			"InheritProperties"			"TabButtonStore"
+			"InheritProperties"			"TabButtonSettings"
 			"zpos"						"3"
-			"xpos"                    	"-35"
-			"wide"						"240"
-			"tall"						"50"
+			"xpos"                    	"-80"
 			
 			ruiArgs
 			{
@@ -172,11 +197,9 @@
 		"QuitBtn"
 		{
 			"ControlName"				"RuiButton"
-			"InheritProperties"			"TabButtonStore"
+			"InheritProperties"			"TabButtonSettings"
 			"zpos"						"3"
-			"xpos"                    	"-35"
-			"wide"						"240"
-			"tall"						"50"
+			"xpos"                    	"-80"
 			
 			ruiArgs
 			{
@@ -194,7 +217,7 @@
     	    "ControlName"				"CNestedPanel"
     	    "ypos"						"20"
     	    "wide"						"f0"
-			"tall"						"960"
+			"tall"						"940"
 			"visible"					"0"
     	    "controlSettingsFile"		"scripts/resource/ui/menus/R5R/panels/home.res"
     	    "proportionalToParent"    	"1"

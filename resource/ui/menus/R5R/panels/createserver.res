@@ -13,6 +13,50 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		paintbackground			1
 	}
 
+	"CreateServerBG"
+	{
+		ControlName				ImagePanel
+		ypos 			-642
+		xpos			-20
+		wide			490
+		tall            350
+		fillColor		"30 30 30 100"
+        drawColor		"30 30 30 100"
+		visible					1
+		zpos					0
+		pin_to_sibling				DarkenBackground
+		pin_corner_to_sibling		BOTTOM_LEFT
+		pin_to_sibling_corner		BOTTOM_LEFT
+	}
+
+	"CreateServerBGTopLine"
+	{
+		ControlName				ImagePanel
+		wide			490
+		tall            3
+		fillColor		"195 29 38 200"
+        drawColor		"195 29 38 200"
+		visible					1
+		zpos					0
+		pin_to_sibling				CreateServerBG
+		pin_corner_to_sibling		TOP
+		pin_to_sibling_corner		BOTTOM
+	}
+
+	"CreateServerBGBottomLine"
+	{
+		ControlName				ImagePanel
+		wide			490
+		tall            3
+		fillColor		"195 29 38 200"
+        drawColor		"195 29 38 200"
+		visible					1
+		zpos					0
+		pin_to_sibling				CreateServerBG
+		pin_corner_to_sibling		BOTTOM
+		pin_to_sibling_corner		TOP
+	}
+
 	ServerMapImg
 	{
 		ControlName		RuiPanel
@@ -20,13 +64,41 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		tall            270
 		visible			1
 		rui           	"ui/custom_loadscreen_image.rpak"
-		ypos 			-355
+		ypos 			-215
 		xpos			-25
 		zpos 4
 
 		pin_to_sibling				DarkenBackground
 		pin_corner_to_sibling		BOTTOM_LEFT
 		pin_to_sibling_corner		BOTTOM_LEFT
+	}
+
+	"ServerMapImgTopLine"
+	{
+		ControlName				ImagePanel
+		wide			480
+		tall            3
+		fillColor		"195 29 38 200"
+        drawColor		"195 29 38 200"
+		visible					1
+		zpos					0
+		pin_to_sibling				ServerMapImg
+		pin_corner_to_sibling		TOP
+		pin_to_sibling_corner		BOTTOM
+	}
+
+	"ServerMapImgBottomLine"
+	{
+		ControlName				ImagePanel
+		wide			480
+		tall            3
+		fillColor		"195 29 38 200"
+        drawColor		"195 29 38 200"
+		visible					1
+		zpos					0
+		pin_to_sibling				ServerMapImg
+		pin_corner_to_sibling		BOTTOM
+		pin_to_sibling_corner		TOP
 	}
 
 	PlaylistNameBG
@@ -109,7 +181,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		wide 480
 		tall 50
 		xpos 0
-		ypos 15
+		ypos 165
 
 		rui "ui/control_options_description.rpak"
 
@@ -131,8 +203,6 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		ypos 0
 		zpos 6
 
-		image "vgui/hud/white"
-		drawColor "255 255 255 128"
 
 		pin_to_sibling StartGamePanel
 		pin_corner_to_sibling CENTER
@@ -163,7 +233,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		wide 480
 		tall 50
 		xpos 0
-		ypos 15
+		ypos 5
 
 		rui "ui/control_options_description.rpak"
 
@@ -187,8 +257,6 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		classname			"createserverbuttons"
 		"scriptID"					"1"
 
-		image "vgui/hud/white"
-		drawColor "255 255 255 128"
 
 		pin_to_sibling PlaylistPanel
 		pin_corner_to_sibling CENTER
@@ -219,7 +287,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		wide 480
 		tall 50
 		xpos 0
-		ypos 15
+		ypos 50
 
 		rui "ui/control_options_description.rpak"
 
@@ -243,8 +311,6 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		classname			"createserverbuttons"
 		"scriptID"					"2"
 
-		image "vgui/hud/white"
-		drawColor "255 255 255 128"
 
 		pin_to_sibling VisPanel
 		pin_corner_to_sibling CENTER
@@ -275,7 +341,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		wide 480
 		tall 50
 		xpos 0
-		ypos 15
+		ypos 5
 
 		rui "ui/control_options_description.rpak"
 
@@ -299,8 +365,6 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		classname			"createserverbuttons"
 		"scriptID"					"0"
 
-		image "vgui/hud/white"
-		drawColor "255 255 255 128"
 
 		pin_to_sibling MapPanel
 		pin_corner_to_sibling CENTER
@@ -332,7 +396,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		wide					480
 		tall					50
 		xpos					0
-		ypos					15
+		ypos					5
 		allowRightClickMenu		0
 		allowSpecialCharacters	0
 		unicode					0
@@ -359,38 +423,20 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 	CreateServerTxT
 	{
 		ControlName				Label
-		labelText				"Create Server"
+		labelText				"Server Name:"
 		"font"					"DefaultBold_41"
 		"allcaps"				"1"
-		tall					40
+		tall					20
 		auto_wide_tocontents	1
 		zpos 					3
-		fontHeight				45
+		fontHeight				20
 		xpos					0
-		ypos					15
+		ypos					2
 		"fgcolor_override"		"255 255 255 255"
 
 		pin_to_sibling BtnServerName
-		pin_corner_to_sibling	BOTTOM
-		pin_to_sibling_corner	TOP
-	}
-
-	Line
-	{
-		ControlName				ImagePanel
-		xpos					0
-		ypos					0
-		tall					2
-		wide 					400
-		fillColor		"255 255 255 200"
-        drawColor		"255 255 255 200"
-		wrap					1
-		visible					1
-		zpos					3
-
-		pin_to_sibling				CreateServerTxT
-		pin_corner_to_sibling		TOP
-		pin_to_sibling_corner		BOTTOM
+		pin_corner_to_sibling	BOTTOM_LEFT
+		pin_to_sibling_corner	TOP_LEFT
 	}
 
 	"R5RPlaylistPanel"

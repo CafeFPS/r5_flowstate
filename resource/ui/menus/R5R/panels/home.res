@@ -13,23 +13,7 @@
 		"visible"				"1"
 		"paintbackground"		"1"
 	}
-
-    "HomeBackground"
-	{
-        "ControlName"			"ImagePanel"
-		"wide"					"f0"
-		"tall"					"f0"
-		"visible"				"1"
-        "scaleImage"			"1"
-		"zpos"					"0"
-        "fillColor"				"30 30 30 0"
-        "drawColor"				"30 30 30 0"
-
-		"pin_to_sibling"		"DarkenBackground"
-		"pin_corner_to_sibling"	"TOP"
-		"pin_to_sibling_corner"	"TOP"
-	}
-
+	
 	"HomeBackground"
 	{
         "ControlName"			"ImagePanel"
@@ -37,8 +21,8 @@
 		"tall"					"870"
 		"visible"				"1"
         "scaleImage"			"1"
-		"xpos"					"-45"
-		"ypos"					"-20"
+		"xpos"					"-30"
+		"ypos"					"-40"
 		"zpos"					"0"
         "fillColor"				"30 30 30 200"
         "drawColor"				"30 30 30 200"
@@ -46,62 +30,6 @@
 		"pin_to_sibling"		"DarkenBackground"
 		"pin_corner_to_sibling"	"TOP_LEFT"
 		"pin_to_sibling_corner"	"TOP_LEFT"
-	}
-
-	"NameBackground"
-	{
-        "ControlName"			"ImagePanel"
-		"wide"					"400"
-		"tall"					"75"
-		"visible"				"1"
-        "scaleImage"			"1"
-		"xpos"					"-45"
-		"ypos"					"-20"
-		"zpos"					"0"
-        "fillColor"				"30 30 30 200"
-        "drawColor"				"30 30 30 200"
-
-		"pin_to_sibling"		"DarkenBackground"
-		"pin_corner_to_sibling"	"TOP_RIGHT"
-		"pin_to_sibling_corner"	"TOP_RIGHT"
-	}
-
-	"WelcomeBack"
-	{
-        "ControlName"			"Label"
-		"xpos"                  "0"
-		"ypos"					"-5"
-		"auto_wide_tocontents"	"1"
-		"tall"					"30"
-		"visible"				"1"
-		"fontHeight"			"30"
-		"labelText"				"Welcome back"
-		"font"					"DefaultBold_41"
-		"allcaps"				"0"
-		"fgcolor_override"		"255 255 255 255"
-
-		"pin_to_sibling"		"NameBackground"
-		"pin_corner_to_sibling"	"TOP"
-		"pin_to_sibling_corner"	"TOP"
-	}
-
-	"PlayerName"
-	{
-        "ControlName"			"Label"
-		"xpos"                  "0"
-		"ypos"					"0"
-		"auto_wide_tocontents"	"1"
-		"tall"					"30"
-		"visible"				"1"
-		"fontHeight"			"30"
-		"labelText"				"PlayerName"
-		"font"					"DefaultBold_41"
-		"allcaps"				"0"
-		"fgcolor_override"		"255 100 100 255"
-
-		"pin_to_sibling"		"WelcomeBack"
-		"pin_corner_to_sibling"	"TOP"
-		"pin_to_sibling_corner"	"BOTTOM"
 	}
 
 	"R5RPicBox"
