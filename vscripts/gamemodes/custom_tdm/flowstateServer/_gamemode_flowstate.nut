@@ -2110,11 +2110,19 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 							ClearInvincible(player)
 							}
 						
-
-							try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-							try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
-							try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
-							try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
+							entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+							entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+							entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+							entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
+							
+							if(IsValid(primary))
+								primary.SetWeaponPrimaryClipCount( primary.GetWeaponPrimaryClipCountMax())
+							if(IsValid(secondary))
+								secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
+							if(IsValid(tactical))
+								tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+							if(IsValid(ultimate))
+								ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
 						}
 				}
 				spawni++
@@ -2358,10 +2366,19 @@ if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
 		        //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
 
-				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
-				try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
-				try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
+				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+				entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+				entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
+				
+				if(IsValid(primary))
+					primary.SetWeaponPrimaryClipCount( primary.GetWeaponPrimaryClipCountMax())
+				if(IsValid(secondary))
+					secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
+				if(IsValid(tactical))
+					tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+				if(IsValid(ultimate))
+					ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
             }
     	}
 	}
@@ -2383,12 +2400,21 @@ else
 				EnableOffhandWeapons( player )
 		        //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
 		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
+				
+				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+				entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+				entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
 							
-				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-				try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
-				try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
-				try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
-            }
+				if(IsValid(primary))
+					primary.SetWeaponPrimaryClipCount( primary.GetWeaponPrimaryClipCountMax())
+				if(IsValid(secondary))
+					secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
+				if(IsValid(tactical))
+					tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+				if(IsValid(ultimate))
+					ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )			
+			}
 	    } catch(e3){}
     }
 }   
@@ -2632,7 +2658,7 @@ entity function CreateBubbleBoundary(LocationSettings location)
         if(Distance(spawn.origin, bubbleCenter) > bubbleRadius)
         bubbleRadius = Distance(spawn.origin, bubbleCenter)
     }
-    bubbleRadius += GetCurrentPlaylistVarFloat("bubble_radius_padding", 730)
+    bubbleRadius += GetCurrentPlaylistVarFloat("bubble_radius_padding", 200)
     entity bubbleShield = CreateEntity( "prop_dynamic" )
 	bubbleShield.SetValueForModelKey( BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
     bubbleShield.SetOrigin(bubbleCenter)
@@ -2712,17 +2738,17 @@ void function MonitorBubbleBoundaryPROPHUNT(entity bubbleShield, vector bubbleCe
 void function PlayerRestoreHP(entity player, float health, float shields)
 {
 	if(IsValid(player) && IsAlive( player )){
-    player.SetHealth( health )
-    // Inventory_SetPlayerEquipment(player, "helmet_pickup_lv4_abilities", "helmet")
-	// disabled cuz helmets not working :(
-    if(shields == 0) return;
-    else if(shields <= 50)
-        Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-    else if(shields <= 75)
-        Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
-    else if(shields <= 100)
-        Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-    player.SetShieldHealth( shields )}
+		player.SetHealth( health )
+		Inventory_SetPlayerEquipment(player, "helmet_pickup_lv3", "helmet")
+		if(shields == 0) return
+		else if(shields <= 50)
+			Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
+		else if(shields <= 75)
+			Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
+		else if(shields <= 100)
+			Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
+		player.SetShieldHealth( shields )
+	}
 }
 
  // ██████  ██████  ███████ ███    ███ ███████ ████████ ██  ██████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
@@ -2732,9 +2758,7 @@ void function PlayerRestoreHP(entity player, float health, float shields)
  // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
 void function PlayerTrail(entity player, int onoff)
-///////////////////
 //Thanks Zee#0134//
-///////////////////
 {
     if (onoff == 1 )
     {
@@ -2754,33 +2778,33 @@ void function PlayerTrail(entity player, int onoff)
 void function CharSelect( entity player)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 {
-if(!FlowState_PROPHUNT())
-{
-//Char select.
-file.characters = clone GetAllCharacters()
-ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
-CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )}
+	if(!FlowState_PROPHUNT())
+	{
+	//Char select.
+	file.characters = clone GetAllCharacters()
+	ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
+	CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )}
 
-//Dummies
-if (FlowState_DummyOverride()) {
-	player.SetBodyModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
-	player.SetArmsModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
-	player.SetSkin(player.GetTeam())
-}
+	//Dummies
+	if (FlowState_DummyOverride()) {
+		player.SetBodyModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
+		player.SetArmsModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
+		player.SetSkin(player.GetTeam())
+	}
 
-//Data knife
-player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-player.TakeOffhandWeapon( OFFHAND_MELEE )
-player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-if(FlowState_PROPHUNT())
-{
-file.characters = clone GetAllCharacters()
-ItemFlavor PersonajeEscogido = file.characters[RandomInt(9)]
-CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-TakeAllWeapons(player)
-}
+	//Data knife
+	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.TakeOffhandWeapon( OFFHAND_MELEE )
+	player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+	if(FlowState_PROPHUNT())
+	{
+	file.characters = clone GetAllCharacters()
+	ItemFlavor PersonajeEscogido = file.characters[RandomInt(9)]
+	CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+	TakeAllWeapons(player)
+	}
 }
 
 // ███████  ██████  ██████  ██████  ███████ ██████   ██████   █████  ██████  ██████
