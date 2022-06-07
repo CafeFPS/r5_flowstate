@@ -295,57 +295,6 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
 		printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
 	}()
 }
-
-void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
-{
-	// DisablePrecacheErrors()
-	// wait 0.2
-	// entity player = GetPlayerArray()[ 0 ]
-
-	// entity pet_titan = player.GetPetTitan()
-	// if ( IsValid(pet_titan) )
-	// 	pet_titan.Destroy()
-
-	// vector origin = GetPlayerCrosshairOrigin( player )
-	// vector angles = Vector( 0, 0, 0 )
-
-	// TitanLoadoutDef loadout = GetTitanLoadoutForCurrentMap()
-	// entity npc = CreateAutoTitanForPlayer_FromTitanLoadout( player, loadout, origin, angles )
-
-	// SetSpawnOption_AISettings( npc, "npc_titan_buddy" )
-
-	// DispatchSpawn( npc )
-
-	// SetPlayerPetTitan( player, npc )
-
-	// if ( hotdrop )
-	// 	thread NPCTitanHotdrops( npc, false )
-}
-
-
-// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-
-// .88b  d88.  .d8b.  d8888b.                                                    
-// 88'YbdP`88 d8' `8b 88  `8D                                                    
-// 88  88  88 88ooo88 88oodD'                                                    
-// 88  88  88 88~~~88 88~~~                                                      
-// 88  88  88 88   88 88                                                         
-// YP  YP  YP YP   YP 88                                                         
-//                                                                               
-//                                                                               
-// d88888b db    db d8b   db  .o88b. d888888b d888888b  .d88b.  d8b   db .d8888. 
-// 88'     88    88 888o  88 d8P  Y8 `~~88~~'   `88'   .8P  Y8. 888o  88 88'  YP 
-// 88ooo   88    88 88V8o 88 8P         88       88    88    88 88V8o 88 `8bo.   
-// 88~~~   88    88 88 V8o88 8b         88       88    88    88 88 V8o88   `Y8b. 
-// 88      88b  d88 88  V888 Y8b  d8    88      .88.   `8b  d8' 88  V888 db   8D 
-// YP      ~Y8888P' VP   V8P  `Y88P'    YP    Y888888P  `Y88P'  VP   V8P `8888Y' 
-
-// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-
-
-
-
-#if SERVER
     
     // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
     
@@ -896,35 +845,6 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
         //wait 0.3
     }
 
-#endif
-
-
-
-
-// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-
-// .o88b. db    db .d8888. d888888b  .d88b.  .88b  d88.                
-// d8P  Y8 88    88 88'  YP `~~88~~' .8P  Y8. 88'YbdP`88                    
-// 8P      88    88 `8bo.      88    88    88 88  88  88                         
-// 8b      88    88   `Y8b.    88    88    88 88  88  88                         
-// Y8b  d8 88b  d88 db   8D    88    `8b  d8' 88  88  88                         
-//  `Y88P' ~Y8888P' `8888Y'    YP     `Y88P'  YP  YP  YP                         
-//                                                                               
-//                                                              
-// d88888b db    db d8b   db  .o88b. d888888b d888888b  .d88b.  d8b   db .d8888. 
-// 88'     88    88 888o  88 d8P  Y8 `~~88~~'   `88'   .8P  Y8. 888o  88 88'  YP 
-// 88ooo   88    88 88V8o 88 8P         88       88    88    88 88V8o 88 `8bo.   
-// 88~~~   88    88 88 V8o88 8b         88       88    88    88 88 V8o88   `Y8b. 
-// 88      88b  d88 88  V888 Y8b  d8    88      .88.   `8b  d8' 88  V888 db   8D 
-// YP      ~Y8888P' VP   V8P  `Y88P'    YP    Y888888P  `Y88P'  VP   V8P `8888Y' 
-
-// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-
-
-
-
-#if SERVER
-
     void function DEV_TeleportPlayers(vector pos, vector ang) 
     {
         int playersize = GetPlayerArray().len()
@@ -978,36 +898,6 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
     		}
     	}
     }
-
-#endif
-
-
-
-
-// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-
-// db   db d88888b db      d8888b. d88888b d8888b.                               
-// 88   88 88'     88      88  `8D 88'     88  `8D                               
-// 88ooo88 88ooooo 88      88oodD' 88ooooo 88oobY'                               
-// 88~~~88 88~~~~~ 88      88~~~   88~~~~~ 88`8b                                 
-// 88   88 88.     88booo. 88      88.     88 `88.                               
-// YP   YP Y88888P Y88888P 88      Y88888P 88   YD                               
-//                                                                               
-//                                                                               
-// d88888b db    db d8b   db  .o88b. d888888b d888888b  .d88b.  d8b   db .d8888. 
-// 88'     88    88 888o  88 d8P  Y8 `~~88~~'   `88'   .8P  Y8. 888o  88 88'  YP 
-// 88ooo   88    88 88V8o 88 8P         88       88    88    88 88V8o 88 `8bo.   
-// 88~~~   88    88 88 V8o88 8b         88       88    88    88 88 V8o88   `Y8b. 
-// 88      88b  d88 88  V888 Y8b  d8    88      .88.   `8b  d8' 88  V888 db   8D 
-// YP      ~Y8888P' VP   V8P  `Y88P'    YP    Y888888P  `Y88P'  VP   V8P `8888Y' 
-
-// C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
-
-
-
-
-#if SERVER
-
 
     // #########################################
     // db       .d88b.   .d88b.  d8888b. .d8888. 
@@ -1126,29 +1016,96 @@ void function DEV_SpawnBTAtCrosshair( bool hotdrop = false )
         return trailFXHandle
     }
     
-#endif
-
-
-
-
 // C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D C8888D 
+void function DEV_SpawnLootBinAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	
+	vector org1 = origin
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - org1
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+
+	entity ent_lootbin = CreateCustomLootBin(origin,angles1, ["mp_weapon_sniper", "mp_weapon_sniper","mp_weapon_sniper"])
+	SetTargetName( ent_lootbin, "LootBin" )
+	ent_lootbin.SetOrigin( origin )
+	ent_lootbin.SetAngles( angles1 )	
+}
 
 void function DEV_SpawnDummyAtCrosshair()
 {
 	entity player = GetPlayerArray()[ 0 ]
 
 	vector origin = GetPlayerCrosshairOrigin( player )
-	vector angles = Vector( 0, 0, 0 )
-
-	entity dummy = CreateDummy( 99, origin, angles )
-
-	DispatchSpawn( dummy )
 	
-    dummy.SetSkin(RandomInt(6))
-    
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - origin
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+
+	entity dummy = CreateDummy( 99, origin, angles1 )
+	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
+	else 
+		SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
+	
+	int randomShield
+	
+	if(GetCurrentPlaylistVarBool( "dummies_have_random_shields", true ))
+		switch(RandomIntRangeInclusive(1,4)){
+			case 1:
+				randomShield = 50
+				break
+			case 2:
+				randomShield = 75	
+				break
+			case 3:
+				randomShield = 100	
+				break
+			case 4:
+				randomShield = 130
+				break
+		}
+	else
+		randomShield = 75
+
+	DispatchSpawn( dummy )	
+	dummy.SetOrigin(origin)
+	dummy.SetShieldHealthMax( randomShield )
+	dummy.SetShieldHealth( randomShield )
+	dummy.SetMaxHealth( 100 )
+	dummy.SetHealth( 100 )
+	dummy.SetTakeDamageType( DAMAGE_YES )
+	dummy.SetDamageNotifications( true )
+	dummy.SetDeathNotifications( true )
+	dummy.SetValidHealthBarTarget( true )
+	SetObjectCanBeMeleed( dummy, true )
+	dummy.SetSkin(RandomInt(6))
+	dummy.DisableHibernation()
+	dummy.SetAngles(angles1)
+	
+	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+		thread PlayAnimOnTrainingDummy(dummy)
+	
     array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
     string randomWeapon = weapons[RandomInt(weapons.len())]
     dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+}
+
+void function PlayAnimOnTrainingDummy(entity dummy)
+{
+WaitFrame()
+while(IsValid(dummy))
+	{
+		float duration = dummy.GetSequenceDuration("bloodhound_idle_rifle_firingrangedummy")
+		float empezoen = RandomFloatRange(0, duration)
+		dummy.Anim_PlayOnly("bloodhound_idle_rifle_firingrangedummy")
+		dummy.Anim_SetStartTime(empezoen)
+		wait duration-empezoen
+	}
 }
 
 void function DEV_SpawnExplosiveTickAtCrosshair()
@@ -1193,37 +1150,6 @@ void function DEV_SpawnAllNPCsWithTeam( int team )
 	}
 }
 
-void function DEV_SpawnNPCWithWeaponAtCrosshair( string baseClass, string aiSettings, int team, string weaponName = "" )
-{
-	// printt( "script thread DEV_SpawnNPCWithWeaponAtCrosshair( \"" + baseClass + "\", \"" + aiSettings + "\", " + team + ", \"" + weaponName + "\")" )
-	// Assert( IsNewThread(), "Must be threaded off due to precache issues" )
-	// bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
-	// entity npc = DEV_SpawnNPCWithWeaponAtCrosshairStart( restoreHostThreadMode, baseClass, aiSettings, team, weaponName )
-	// DispatchSpawn( npc )
-	// DEV_SpawnNPCWithWeaponAtCrosshairEnd( restoreHostThreadMode )
-}
-
-void function DEV_SpawnMercTitanAtCrosshair( string mercName )
-{
-	// printt( "script thread DEV_SpawnMercTitanAtCrosshair( \"" + mercName + "\")" )
-	// Assert( IsNewThread(), "Must be threaded off due to precache issues" )
-	// TitanLoadoutDef ornull loadout = GetTitanLoadoutForBossCharacter( mercName )
-	// if ( loadout == null )
-	// 	return
-	// expect TitanLoadoutDef( loadout )
-	// string baseClass = "npc_titan"
-	// string aiSettings = GetNPCSettingsFileForTitanPlayerSetFile( loadout.setFile )
-
-	// bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
-	// entity npc = DEV_SpawnNPCWithWeaponAtCrosshairStart( restoreHostThreadMode, baseClass, aiSettings, TEAM_IMC )
-	// SetSpawnOption_NPCTitan( npc, TITAN_MERC )
-	// SetSpawnOption_TitanLoadout( npc, loadout )
-	// npc.ai.bossTitanPlayIntro = false
-
-	// DispatchSpawn( npc )
-	// DEV_SpawnNPCWithWeaponAtCrosshairEnd( restoreHostThreadMode )
-}
-
 void function DEV_SpawnWeaponAtCrosshair( string weaponName )
 {
 	printt( "script thread DEV_SpawnWeaponAtCrosshair( \"" + weaponName + "\")" )
@@ -1242,93 +1168,7 @@ void function DEV_SpawnWeaponAtCrosshair( string weaponName )
 	if ( isTitanWeapon )
 		thread TitanLoadoutWaitsForPickup( weapon, SPTitanLoadoutPickup )
 #endif
-
 }
-
-// string function GetAISettingsFromPlayerSetFile( string playerSetfile )
-// {
-// 	TitanLoadoutDef ornull loadout = GetTitanLoadoutForColumn( "setFile", playerSetfile )
-// 	Assert( loadout != null, "Couldn't find loadout with set file " + playerSetfile )
-// 	expect TitanLoadoutDef( loadout )
-
-// 	return expect string( Dev_GetAISettingByKeyField_Global( playerSetfile, GetAISettingsStringForMode() ) )
-// }
-
-
-void function DEV_SpawnBossTitanAtCrosshair( string playerSetfile )
-{
-// 	string aiSettings = GetAISettingsFromPlayerSetFile( playerSetfile )
-// 	printt( "script thread DEV_SpawnBossTitanAtCrosshair( \"" + aiSettings + "\")" )
-// 	Assert( IsNewThread(), "Must be threaded off due to precache issues" )
-
-// 	string baseClass = "npc_titan"
-// 	bool restoreHostThreadMode = GetConVarInt( "host_thread_mode" ) != 0
-// 	entity npc = DEV_SpawnNPCWithWeaponAtCrosshairStart( restoreHostThreadMode, baseClass, aiSettings, TEAM_IMC )
-// 	SetSpawnOption_NPCTitan( npc, TITAN_BOSS )
-// //	SetSpawnOption_TitanLoadout( npc, loadout )
-
-// 	string builtInLoadout = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
-// //	SetTitanSettings( npc.ai.titanSettings, builtInLoadout )
-// 	npc.ai.titanSpawnLoadout.setFile = builtInLoadout
-// 	//OverwriteLoadoutWithDefaultsForSetFile( npc.ai.titanSpawnLoadout ) // get the entire loadout, including defensive and tactical
-
-// 	DispatchSpawn( npc )
-// 	DEV_SpawnNPCWithWeaponAtCrosshairEnd( restoreHostThreadMode )
-}
-
-// entity function DEV_SpawnNPCWithWeaponAtCrosshairStart( bool restoreHostThreadMode, string baseClass, string aiSettings, int team, string weaponName = "" )
-// {
-// 	if ( restoreHostThreadMode )
-// 	{
-// 		DisablePrecacheErrors()
-// 		wait 0.5
-// 	}
-
-// 	float time = Time()
-// 	for ( ;; )
-// 	{
-// 		if ( Time() > time )
-// 			break
-// 		WaitFrame()
-// 	}
-// 	entity player = GetPlayerArray()[ 0 ]
-// 	if ( !IsValid( player ) )
-// 		return
-
-// 	vector origin = GetPlayerCrosshairOrigin( player )
-// 	vector angles = Vector( 0, 0, 0 )
-
-// 	entity npc = CreateNPC( baseClass, team, origin, angles )
-// 	if ( IsTurret( npc ) )
-// 		npc.kv.origin -= Vector( 0, 0, CROSSHAIR_VERT_OFFSET )
-// 	SetSpawnOption_AISettings( npc, aiSettings )
-
-// 	if ( npc.GetClassName() == "npc_soldier" || npc.GetClassName() == "npc_spectre" )
-// 		npc.kv.squadname = "crosshairSpawnSquad_team_" + team + "_" + baseClass + "_" + aiSettings
-
-// 	if ( weaponName != "" )
-// 		SetSpawnOption_Weapon( npc, weaponName )
-
-// 	if ( npc.GetClassName() == "npc_titan" )
-// 	{
-// 		string builtInLoadout = expect string( Dev_GetAISettingByKeyField_Global( aiSettings, "npc_titan_player_settings" ) )
-// 		SetTitanSettings( npc.ai.titanSettings, builtInLoadout )
-// 		npc.ai.titanSpawnLoadout.setFile = builtInLoadout
-// 		//OverwriteLoadoutWithDefaultsForSetFile( npc.ai.titanSpawnLoadout ) // get the entire loadout, including defensive and tactical
-// 	}
-
-// 	return npc
-// }
-
-void function DEV_SpawnNPCWithWeaponAtCrosshairEnd( bool restoreHostThreadMode )
-{
-	if ( restoreHostThreadMode )
-	{
-		wait 0.2
-		RestorePrecacheErrors()
-	}
-}
-
 
 function SetAISettingsWrapper( entity npc, string settings )
 {
@@ -1352,87 +1192,4 @@ bool function WithinEngagementRange( entity npc, vector origin )
 		return false
 
 	return dist <= weapon.GetWeaponInfoFileKeyField( "npc_max_engage_range" )
-}
-
-
-function DEV_AITitanDuel()
-{
-	thread DEV_AITitanDuelThread()
-}
-
-entity function DEV_AITitanDuelSpawn( entity player, int team, vector origin, vector angles, aiSetting )
-{
-	entity titan = CreateNPC( "npc_titan", team, origin, angles )
-	SetSpawnOption_AISettings( titan, aiSetting )
-	DispatchSpawn( titan )
-
-	vector ornull clampedPos = NavMesh_ClampPointForAI( origin, titan )
-	if ( clampedPos != null )
-	{
-		titan.SetOrigin( expect vector( clampedPos ) )
-	}
-	else
-	{
-		array<entity> spawnpoints = SpawnPoints_GetTitan()
-		if ( spawnpoints.len() )
-		{
-			entity spawnpoint = GetClosest( spawnpoints, origin )
-			titan.SetOrigin( spawnpoint.GetOrigin() )
-		}
-	}
-
-	return titan
-}
-
-function DEV_AITitanDuelThread()
-{
-	DisablePrecacheErrors()
-	wait 0.5
-
-	array<string> aiSettings = GetAllowedTitanAISettings()
-
-	aiSettings.randomize()
-
-	entity player = GetPlayerArray()[ 0 ]
-
-	entity imcTitan = null
-	entity militiaTitan = null
-
-	int currentSetting = 0
-
-
-	while ( 1 )
-	{
-		if ( !IsValid( imcTitan ) )
-		{
-			vector origin = GetPlayerCrosshairOrigin( player ) + < -300, -300, 0 >
-			vector angles = Vector( 0, 0, 0 )
-
-			imcTitan = DEV_AITitanDuelSpawn( player, TEAM_IMC, origin, angles, aiSettings[currentSetting] )
-			currentSetting = (currentSetting + 1) % aiSettings.len()
-
-			if ( IsValid( militiaTitan ) )
-			{
-				imcTitan.SetEnemyLKP( militiaTitan, militiaTitan.GetOrigin() )
-				militiaTitan.SetEnemyLKP( imcTitan, imcTitan.GetOrigin() )
-			}
-		}
-
-		if ( !IsValid( militiaTitan ) )
-		{
-			vector origin = GetPlayerCrosshairOrigin( player ) + < 300, 300, 0 >
-			vector angles = Vector( 0, 180, 0 )
-
-			militiaTitan = DEV_AITitanDuelSpawn( player, TEAM_MILITIA, origin, angles, aiSettings[currentSetting] )
-			currentSetting = (currentSetting + 1) % aiSettings.len()
-
-			if ( IsValid( imcTitan ) )
-			{
-				militiaTitan.SetEnemyLKP( imcTitan, imcTitan.GetOrigin() )
-				imcTitan.SetEnemyLKP( militiaTitan, militiaTitan.GetOrigin() )
-			}
-		}
-
-		wait 2
-	}
 }
