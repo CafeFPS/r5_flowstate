@@ -331,38 +331,63 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		if ( !entIsTitan )
 			ent.SetCloakFlicker( 0.5, 0.65 )
 	}
-	else
+
+	if ( entIsNPC && attackerIsPlayer)
 	{
-		Assert( entIsNPC )
-		bool clearedDamage
-		if ( ent.ai.buddhaMode )
+		//AI bleedthrough fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
+		if(ent.GetShieldHealth() > 0)
 		{
-			float currentDamage = DamageInfo_GetDamage( damageInfo )
-			int remainingHealth = ent.GetHealth()
 
-			if ( currentDamage >= remainingHealth - ( DOOMED_MIN_HEALTH + 1 ) )
-			{
-				currentDamage = max( remainingHealth - ( DOOMED_MIN_HEALTH + 1 ), 0 )
-				DamageInfo_SetDamage( damageInfo, currentDamage )
-				clearedDamage = currentDamage == 0
-			}
-		}
+				DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+		
+					float shieldHealth = float( ent.GetShieldHealth() )
+					if (shieldHealth){
+						
+						DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+					
+						if(DamageInfo_GetDamage( damageInfo ) > ent.GetShieldHealth())
+						{
+							float passDamage = DamageInfo_GetDamage( damageInfo ) - ent.GetShieldHealth()
+							ent.SetHealth( maxint(0, int(ent.GetHealth() - passDamage)) )
+						}
+					}
+					float newShieldHealth = shieldHealth - DamageInfo_GetDamage( damageInfo )
 
-		if ( !clearedDamage )
+					if(IsValid(ent))
+						ent.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
+
+					if ( shieldHealth && newShieldHealth <= 0 )
+					{
+						DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )
+						
+						if( IsValid( attacker ) )
+						thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
+					}
+
+				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
+				
+				if(GetCurrentPlaylistVarBool( "register_damage_to_ai", false ))
+					attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
+				
+				DamageInfo_SetDamage( damageInfo, 0) //hack, the damage value was only required for proper client display. Colombia
+		} else
 		{
-			if ( entIsTitan )
-			{
-				Titan_NPCTookDamage( ent, damageInfo, titanDamage )
-				savedDamage = DamageInfo_GetDamage( damageInfo )
-			}
-			else
-			{
-				Generic_NPCTookDamage( ent, damageInfo, titanDamage )
-			}
+				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
+				if(GetCurrentPlaylistVarBool( "register_damage_to_ai", false ))
+					attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
 		}
-
-		if ( attackerIsPlayer )
-			PlayerDamageFeedback( ent, damageInfo, 0 )
+		
+		float damageAmount = DamageInfo_GetDamage( damageInfo )
+		bool isKillShot = (damageAmount >= ent.GetHealth() + ent.GetShieldHealth() )
+	
+		if ( isKillShot )
+			{
+				DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+				thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
+				if(GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ))
+					attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
+				UpdatePlayerCounts()
+			}
 	}
 
 	#if VERBOSE_DAMAGE_PRINTOUTS
@@ -434,7 +459,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 	RunClassPostDamageCallbacks( ent, damageInfo )
 
-	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SHIELD_DAMAGE )
+	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_SHIELD_DAMAGE && entIsPlayer)
 	
 	{
 		if(ent.GetShieldHealth() > 0)
