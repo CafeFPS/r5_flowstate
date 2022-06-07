@@ -1098,6 +1098,9 @@ void function DEV_SpawnDummyAtCrosshair()
 void function PlayAnimOnTrainingDummy(entity dummy)
 {
 WaitFrame()
+
+EndSignal(dummy, "OnDeath")
+
 while(IsValid(dummy))
 	{
 		float duration = dummy.GetSequenceDuration("bloodhound_idle_rifle_firingrangedummy")
