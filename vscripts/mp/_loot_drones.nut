@@ -79,6 +79,12 @@ void function InitLootDronePaths()
 
 	//DEBUG
 	// PrintEntArray( file.dronePaths[0] )
+	// int i = 0
+	// foreach(entPath in file.dronePaths[0])
+	// {
+		// printt("GetLinkEnt " + i + " " + entPath.GetLinkEnt())
+		// i++
+	// }
 	// PrintEntArray( file.dronePaths[1] )
 	// PrintEntArray( file.dronePaths[2] )
 	// PrintEntArray( file.dronePaths[3] )
@@ -124,16 +130,10 @@ array<LootDroneData> function SpawnLootDrones( int numToSpawn )
 void function FlyerAnimation(entity flyer)
 ///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-/////////////////////////////////////////////////////// hack!
+///////////////////////////////////////////////////////
 {
-		while( true )
-		{
-			if(IsValid(flyer)){
-			flyer.Anim_Play( "fl_perched_takeoff_attacked" )
-			flyer.Anim_SetInitialTime( 4 )}
-			wait 6
-			if(IsValid(flyer)) flyer.Anim_Stop()
-		}
+	if(IsValid(flyer))
+		flyer.Anim_Play( "fl_flap_cycle" )
 }
 
 array<entity> function LootDrones_GetRandomPath()
@@ -515,7 +515,7 @@ void function Flyers_OnDamaged(entity ent, var damageInfo)
 ///////////////////////////////////////////////////////
 {
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
-	
+	if(!attacker.IsPlayer()) return
 	if(GetCurrentPlaylistVarBool( "flowstateFlyersEasterEgg", false ) && attacker.p.isParentedToFlyer == false){
 		//doing the funny things?
 		attacker.SetParent(ent)
