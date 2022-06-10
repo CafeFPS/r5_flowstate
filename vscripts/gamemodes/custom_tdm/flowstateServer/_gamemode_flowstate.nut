@@ -827,11 +827,11 @@ void function WpnAutoReloadOnKill( entity player )
 		sec = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	}
 
-	if (FlowState_AutoreloadOnKillPrimary() && IsValid(primary)) {
+	if (FlowState_AutoreloadOnKillPrimary() && IsValid(primary) && primary.GetWeaponClassName() != "mp_weapon_melee_survival") {
 		primary.SetWeaponPrimaryClipCount(primary.GetWeaponPrimaryClipCountMax())
 	}
 
-	if (FlowState_AutoreloadOnKillSecondary() && IsValid(primary)) {
+	if (FlowState_AutoreloadOnKillSecondary() && IsValid(sec)) {
 		sec.SetWeaponPrimaryClipCount(sec.GetWeaponPrimaryClipCountMax())
 	}
 }
