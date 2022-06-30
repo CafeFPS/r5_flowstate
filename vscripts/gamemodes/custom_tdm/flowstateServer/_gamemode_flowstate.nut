@@ -1746,12 +1746,16 @@ void function GiveGungameWeapon(entity player) {
                     player.TakeOffhandWeapon( OFFHAND_TACTICAL )
                     oldTacticalChargePercent = float( tactical.GetWeaponPrimaryClipCount()) / float(tactical.GetWeaponPrimaryClipCountMax() )
                 }
-                player.GiveOffhandWeapon(tac, OFFHAND_TACTICAL)
+				if(tac != "~~none~~" && tac != "")
+					player.GiveOffhandWeapon(tac, OFFHAND_TACTICAL)
+				
 				entity newTactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 				if(IsValid(newTactical))
 					newTactical.SetWeaponPrimaryClipCount( int( newTactical.GetWeaponPrimaryClipCountMax() * oldTacticalChargePercent ) )
 
 				if( IsValid( ultimate ) ) player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+				
+				if(ult != "~~none~~" && ult != "")
 					player.GiveOffhandWeapon(ult, OFFHAND_ULTIMATE)
 	}
 	try{
@@ -2619,7 +2623,7 @@ foreach(player in GetPlayerArray())
 
 	 if(IsValid(player)){
 	 AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flowstate " + file.scriptversion + " by ColombiaFPS, empathogenwarlord & AyeZeeBB", 7, "UI_Menu_RoundSummary_Results")}
+	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flowstate " + file.scriptversion + " by CaféDeColombiaFPS!", 7, "UI_Menu_RoundSummary_Results")}
 	wait 0.1
 	}
 wait 7
@@ -2737,18 +2741,19 @@ void function MonitorBubbleBoundaryPROPHUNT(entity bubbleShield, vector bubbleCe
 
 void function PlayerRestoreHP(entity player, float health, float shields)
 {
-	if(IsValid(player) && IsAlive( player )){
-		player.SetHealth( health )
-		Inventory_SetPlayerEquipment(player, "helmet_pickup_lv3", "helmet")
-		if(shields == 0) return
-		else if(shields <= 50)
-			Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-		else if(shields <= 75)
-			Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
-		else if(shields <= 100)
-			Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-		player.SetShieldHealth( shields )
-	}
+	if(IsValid(player)) return
+	if(IsAlive( player)) return
+	
+	player.SetHealth( health )
+	Inventory_SetPlayerEquipment(player, "helmet_pickup_lv3", "helmet")
+	if(shields == 0) return
+	else if(shields <= 50)
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
+	else if(shields <= 75)
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv2", "armor")
+	else if(shields <= 100)
+		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
+	player.SetShieldHealth( shields )
 }
 
  // ██████  ██████  ███████ ███    ███ ███████ ████████ ██  ██████ ███████     ███████ ██    ██ ███    ██  ██████ ████████ ██  ██████  ███    ██ ███████
@@ -2833,7 +2838,6 @@ void function Message( entity player, string text, string subText = "", float du
 
 entity function PlayerWithMostDamage()
 //The challenger
-//Taken from Gungame Script
 {
 
     int bestDamage = 0
@@ -2852,7 +2856,6 @@ entity function PlayerWithMostDamage()
 
 int function GetDamageOfPlayerWithMostDamage()
 //Challenger's score
-//Taken from Gungame Script
 {
     int bestDamage = 0
     foreach(player in GetPlayerArray()) {
@@ -2863,9 +2866,7 @@ int function GetDamageOfPlayerWithMostDamage()
 }
 
 string function PlayerWithMostDamageName()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
 {
 entity player = PlayerWithMostDamage()
 if(!IsValid(player)) return "-still nobody-"
@@ -2875,7 +2876,6 @@ return damagechampion
 
 entity function GetBestPlayer()
 //The champion
-//Taken from Gungame Script
 {
     int bestScore = 0
 	entity bestPlayer
@@ -2893,7 +2893,6 @@ entity function GetBestPlayer()
 
 int function GetBestPlayerScore()
 //Champion's score
-//Taken from Gungame Script
 {
     int bestScore = 0
     foreach(player in GetPlayerArray()) {
@@ -2904,9 +2903,7 @@ int function GetBestPlayerScore()
 }
 
 string function GetBestPlayerName()
-///////////////////////////////////////////////////////
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 entity player = GetBestPlayer()
 if(!IsValid(player)) return "-still nobody-"
@@ -3072,7 +3069,6 @@ array<PlayerInfo> playersInfo = []
 }
 
 int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
-//Thanks marumaru（vesslanG）#3285
 {
 	if(a.score < b.score) return 1;
 	else if(a.score > b.score) return -1;
@@ -3080,7 +3076,6 @@ int function ComparePlayerInfo(PlayerInfo a, PlayerInfo b)
 }
 
 void function ResetAllPlayerStats()
-// Taken from Pebbers' Gungame Script
 {
     foreach(player in GetPlayerArray()) {
         if(!IsValid(player)) continue
@@ -3089,7 +3084,6 @@ void function ResetAllPlayerStats()
 }
 
 void function ResetPlayerStats(entity player)
-// Taken from Pebbers' Gungame Script
 {
     player.SetPlayerGameStat( PGS_SCORE, 0 )
     player.SetPlayerGameStat( PGS_DEATHS, 0)
