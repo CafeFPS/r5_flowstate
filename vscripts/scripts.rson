@@ -297,7 +297,6 @@ Scripts:
 	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
-
 ]
 
 When: "SERVER || CLIENT"
@@ -902,6 +901,7 @@ Scripts:
 	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file5.nut
 	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file6.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
+	gamemodes/custom_prophunt/_gamemode_prophunt.nut
 ]
 
 When: "CLIENT"
