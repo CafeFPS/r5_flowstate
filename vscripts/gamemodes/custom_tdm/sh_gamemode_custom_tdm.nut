@@ -44,6 +44,22 @@ void function Sh_CustomTDM_Init()
 
     switch(GetMapName())
     {
+   case "mp_rr_aqueduct":
+   case "mp_rr_aqueduct_night":
+        Shared_RegisterLocation(
+            NewLocationSettings(
+               "Overflow",
+                [
+                    NewLocPair(<3863.79321, -3262.95703, 282.03125>, <0, -135.066055, 0>),
+                    NewLocPair(<4169.18262, -5555.22119, 410.03125>, <0, 146.240646, 0>),
+                    NewLocPair(<-620.375977, -6611.72803, 410.03125>, <0, 29.9391613, 0>),
+                    NewLocPair(<-1859.04651, -3355.55103, 282.03125>, <0, -51.3485374, 0>),
+                    NewLocPair(<817.221375, -3503.38354, 482.03125>, <0, 44.7887459, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+        break
    case "mp_rr_canyonlands_staging":
         Shared_RegisterLocation(
             NewLocationSettings(

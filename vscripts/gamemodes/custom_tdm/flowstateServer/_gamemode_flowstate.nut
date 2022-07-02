@@ -234,6 +234,9 @@ LocPair function _GetVotingLocation()
 {
      switch(GetMapName())
     {
+		case "mp_rr_aqueduct_night":
+        case "mp_rr_aqueduct":
+             return NewLocPair(<4885, -4076, 400>, <0, -157, 0>)
         case "mp_rr_canyonlands_staging":
              return NewLocPair(<26794, -6241, -27479>, <0, 0, 0>)
         case "mp_rr_canyonlands_64k_x_64k":
