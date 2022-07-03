@@ -2697,8 +2697,8 @@ void function MonitorBubbleBoundary(entity bubbleShield, vector bubbleCenter, fl
 
 void function PlayerRestoreHP(entity player, float health, float shields)
 {
-	if(IsValid(player)) return
-	if(IsAlive( player)) return
+	if(!IsValid(player)) return
+	if(!IsAlive( player)) return
 	
 	player.SetHealth( health )
 	Inventory_SetPlayerEquipment(player, "helmet_pickup_lv3", "helmet")
