@@ -353,6 +353,7 @@ void function DestroyPlayerProps()
             prop.Destroy()
     }
     file.playerSpawnedProps.clear()
+	WaitFrame()
 }
 
 // void function Flowstate_Stats_Save( entity player )
@@ -386,7 +387,13 @@ void function _OnPlayerConnected(entity player)
 				player.SetPlayerNetBool( "hasLockedInCharacter", true)
 				CharSelect(player)
 				}
-	//CreatePanelText( player, "Flowstate", "", <-19766, 2111, 6541>, <0, 180, 0>, false, 2 )
+				
+	if(GetMapName() == "mp_rr_aqueduct")
+		if(IsValid(player)) {
+			CreatePanelText( player, "Flowstate", "", <3705.10547, -4487.96484, 470.03302>, <0, 190, 0>, false, 2 )
+			CreatePanelText( player, "Flowstate", "", <1111.36584, -5447.26221, 655.479858>, <0, -90, 0>, false, 2 )
+		}
+		
     GivePassive(player, ePassives.PAS_PILOT_BLOOD)
 	SetPlayerSettings(player, TDM_PLAYER_SETTINGS)
 			if(FlowState_RandomGunsEverydie())
@@ -403,82 +410,74 @@ void function _OnPlayerConnected(entity player)
 	
 	switch(GetGameState())
     {
-    case eGameState.MapVoting:
-			if(IsValid(player) )
-			{
-				printt("Flowstate DEBUG - Player connected mapvoting.", player)
-			    if(!IsAlive(player))
-			{
-			_HandleRespawn(player)
-			ClearInvincible(player)
-			}
-			player.SetThirdPersonShoulderModeOn()
-						if(FlowState_RandomGunsEverydie()){
-			UpgradeShields(player, true)
-			}
-						if(FlowState_Gungame()){
-			KillStreakAnnouncer(player, true)
-			}
-			player.UnforceStand()
-			player.FreezeControlsOnServer()
-			}
-		break
-	case eGameState.WaitingForPlayers:
-		if(IsValid(player))
-		{
-			printt("Flowstate DEBUG - Player connected waitingforplayers.", player)
-			_HandleRespawn(player)
-			ClearInvincible(player)
-			player.UnfreezeControlsOnServer()
-		}
-        break
-    case eGameState.Playing:
-	    if(IsValid(player))
-        {
-			printt("Flowstate DEBUG - Player connected midround.", player)
-			player.UnfreezeControlsOnServer()
-			
-			_HandleRespawn(player)
-			if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) || GetMapName() == "mp_rr_canyonlands_staging" || file.selectedLocation.name == "Skill trainer By Colombia" || file.selectedLocation.name == "Custom map by Biscutz" || file.selectedLocation.name == "White Forest By Zer0Bytes" || file.selectedLocation.name == "Brightwater By Zer0bytes" )
-			{
-	
-					printt("Flowstate DEBUG - Can't spawn player in droppod. Droppods disabled, or we are changing map. Spawning with normal mode", player)
-					_HandleRespawn(player)
-
-			} else {
-				
-				printt("Flowstate DEBUG: Map index:" + file.nextMapIndex + "end")
-				printt("Flowstate DEBUG: Map index:" + file.selectedLocation.name + "end")
-				printt("Flowstate DEBUG - Spawning player in droppod", player)
-				player.p.isPlayerSpawningInDroppod = true
-				thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
-				_HandleRespawn(player, true)
-				player.SetAngles( <0,180,0> )
-			}
-			ClearInvincible(player)
-			if(FlowState_RandomGunsEverydie()){
+		case eGameState.MapVoting:
+				if(IsValid(player) )
+				{
+					printt("Flowstate DEBUG - Player connected mapvoting.", player)
+					if(!IsAlive(player))
+				{
+				_HandleRespawn(player)
+				ClearInvincible(player)
+				}
+				player.SetThirdPersonShoulderModeOn()
+							if(FlowState_RandomGunsEverydie()){
 				UpgradeShields(player, true)
-			}
-
-			if(FlowState_Gungame()){
+				}
+							if(FlowState_Gungame()){
 				KillStreakAnnouncer(player, true)
+				}
+				player.UnforceStand()
+				player.FreezeControlsOnServer()
+				}
+			break
+		case eGameState.WaitingForPlayers:
+			if(IsValid(player))
+			{
+				printt("Flowstate DEBUG - Player connected waitingforplayers.", player)
+				_HandleRespawn(player)
+				ClearInvincible(player)
+				player.UnfreezeControlsOnServer()
 			}
+			break
+		case eGameState.Playing:
+			if(IsValid(player))
+			{
+				printt("Flowstate DEBUG - Player connected midround.", player)
+				player.UnfreezeControlsOnServer()
+				
+				_HandleRespawn(player)
+				if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false ) || GetMapName() == "mp_rr_canyonlands_staging" || file.selectedLocation.name == "Skill trainer By Colombia" || file.selectedLocation.name == "Custom map by Biscutz" || file.selectedLocation.name == "White Forest By Zer0Bytes" || file.selectedLocation.name == "Brightwater By Zer0bytes" )
+				{
+		
+						printt("Flowstate DEBUG - Can't spawn player in droppod. Droppods disabled, or we are changing map. Spawning with normal mode", player)
+						_HandleRespawn(player)
+
+				} else {
+					
+					printt("Flowstate DEBUG: Map index:" + file.nextMapIndex + "end")
+					printt("Flowstate DEBUG: Map index:" + file.selectedLocation.name + "end")
+					printt("Flowstate DEBUG - Spawning player in droppod", player)
+					player.p.isPlayerSpawningInDroppod = true
+					thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
+					_HandleRespawn(player, true)
+					player.SetAngles( <0,180,0> )
+				}
+				ClearInvincible(player)
+				if(FlowState_RandomGunsEverydie()){
+					UpgradeShields(player, true)
+				}
+
+				if(FlowState_Gungame()){
+					KillStreakAnnouncer(player, true)
+				}
 
 			}
-        break
-    default:
-			printt("Flowstate DEBUG - This is unreachable.", player)
-        break
+			break
+		default:
+				printt("Flowstate DEBUG - This is unreachable.", player)
+			break
     }
-	//thread debugplayerlatency(player)			
-		
-				// player.SetPersistentVar( "FlowstateSTATS[1].eHandle", player.GetEncodedEHandle() )
-				// player.SetPersistentVar( "FlowstateSTATS[1].kills", 9999999 )
-				//printt("Flowstate DEBUG - SAVED KIILS FOR THIS USER: ", player.GetPlayerName(), player.GetPersistentVarAsInt( "FlowstateSTATS[1].kills"))
-				// info.uid = player.GetPlatformUID()
-				// info.hardware = player.GetHardware()
-				
-				
+
 	thread checkforhighpingabuser(player)
 }
 
@@ -498,7 +497,7 @@ void function checkforhighpingabuser(entity player)
 					if(IsValid(player)) ClientCommand( player, "disconnect" )
 					UpdatePlayerCounts()
 				} else if(IsValid(player) && GameRules_GetGameMode() == "custom_tdm"){
-					Message(player, "APEX FLOWSTATE", "             Enjoy your stay, " + player.GetPlayerName() + "\n Your latency: " + (int(player.GetLatency()* 1000) - 40) + " - Your OriginID: " + player.GetPlatformUID() + ".", 5)
+					Message(player, "FLOWSTATE", "    Enjoy your stay, " + player.GetPlayerName() + " Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 5)
 				}
 }
 
@@ -1800,36 +1799,619 @@ void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
-	
-		if(!Flowstate_DoorsEnabled()){
-	array<entity> doors = GetAllPropDoors()
-	foreach(entity door in doors)
-		if(IsValid(door)){
-		door.Destroy()}
+
+	if(!Flowstate_DoorsEnabled()){
+		array<entity> doors = GetAllPropDoors()
+		
+		foreach(entity door in doors)
+			if(IsValid(door))
+				door.Destroy()
 	}
 
-    for(; ;)
-    {
-	VotingPhase()
-	SimpleChampionUI()
+    while(true)
+	{
+		//VotingPhase()
+		SimpleChampionUI()
+		WaitFrame()
 	}
     WaitForever()
 }
 
-void function VotingPhase()
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+// void function VotingPhase()
+// //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+// {
+	// printt("Flowstate DEBUG - mapvoting is starting.")
+    // DestroyPlayerProps()
+	// isBrightWaterByZer0 = false
+    // SetGameState(eGameState.MapVoting)
+	// file.FallTriggersEnabled = true
+	
+	// foreach(player in GetPlayerArray())
+	// {
+			// if(IsValid(player))
+			// {
+				// player.SetThirdPersonShoulderModeOn()
+				// _HandleRespawn(player)
+					// if(FlowState_Gungame())
+						// {
+							// GiveGungameWeapon(player)
+						// }
+				// player.UnforceStand()
+				// player.UnfreezeControlsOnServer()
+				// HolsterAndDisableWeapons( player )
+			// }
+			// WaitFrame()
+	// }
+
+	// if (!file.mapIndexChanged)
+		// {
+			// file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
+		// }
+		
+	// if (FlowState_LockPOI()) {
+		// file.nextMapIndex = FlowState_LockedPOI()
+	// }
+
+	// int choice = file.nextMapIndex
+	// file.mapIndexChanged = false
+	// file.selectedLocation = file.locationSettings[choice]
+	// WaitFrame()
+	// file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+	// printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
+
+	// if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	// {
+		// thread CreateShipRoomFallTriggers()
+	// }
+	// if (FlowState_RandomGuns() )
+    // {
+        // file.randomprimary = RandomIntRangeInclusive( 0, 15 )
+        // file.randomsecondary = RandomIntRangeInclusive( 0, 6 )
+    // } else if (FlowState_RandomGunsMetagame())
+	// {
+		// file.randomprimary = RandomIntRangeInclusive( 0, 2 )
+        // file.randomsecondary = RandomIntRangeInclusive( 0, 4 )
+	// } else if (FlowState_RandomGunsEverydie())
+	// {
+		// file.randomprimary = RandomIntRangeInclusive( 0, 23 )
+        // file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
+	// }
+	
+	// printt("Flowstate DEBUG - checking flowstateenabledropship.")
+
+// wait 3
+
+// if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
+	// DestroyPlayerProps()
+	// CreateGroundMedKit(<10725, 5913,-4225>)
+// } else if(file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled()){
+    // DestroyPlayerProps()
+    // WaitFrame()
+	// CreateGroundMedKit(<17247,31823,-310>)
+    // thread SkillTrainerLoad()
+// } else if(file.selectedLocation.name == "Skill trainer By Colombia" )
+// {
+	// printt("Flowstate DEBUG - creating props for Skill Trainer.")
+    // DestroyPlayerProps()
+    // WaitFrame()
+    // thread SkillTrainerLoad()	
+// } else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
+// {
+	// printt("Flowstate DEBUG - creating props for Brightwater.")
+	// isBrightWaterByZer0 = true
+    // DestroyPlayerProps()
+	// WaitFrame()
+	// thread WorldEntities()
+	// wait 1
+    // thread BrightwaterLoad()
+	// wait 1.5
+	// thread BrightwaterLoad2()
+	// wait 1.5
+	// thread BrightwaterLoad3()
+// } else if(file.selectedLocation.name == "Cave By BlessedSeal" ){
+	// printt("Flowstate DEBUG - creating props for Cave.")
+    // DestroyPlayerProps()
+    // WaitFrame()
+    // thread SpawnEditorPropsSeal()	
+// } else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
+	// DestroyPlayerProps()
+	// printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
+	// CreateGroundMedKit(<-21289, -12030, 3060>)
+// } else if (file.selectedLocation.name == "White Forest By Zer0Bytes"){
+	// DestroyPlayerProps()
+	// printt("Flowstate DEBUG - creating props for White Forest.")
+	// WaitFrame()
+	// thread SpawnWhiteForestProps()
+// } else if (file.selectedLocation.name == "Custom map by Biscutz"){
+	// DestroyPlayerProps()
+	// printt("Flowstate DEBUG - creating props for Map by Biscutz.")
+	// WaitFrame()
+	// thread LoadMapByBiscutz1()
+	// thread LoadMapByBiscutz2()
+// }
+
+// //TODO MORE POIS
+
+// if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
+// {
+	// printt("Flowstate DEBUG - Dropships ON.")
+	// file.dropselectedLocation = file.droplocationSettings[choice]
+	// if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	// {
+    // foreach(player in GetPlayerArray())
+    // {
+        // if(IsValidPlayer(player))
+        // {
+		    // Message(player, "Please standby", "Dropship is on the way!", 4)
+	    // }
+    // }
+
+	// wait 2
+
+	// if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	// {
+		// try {file.supercooldropship.Destroy()}catch(e69){}
+		// file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,9450>, <0,0,0>, true, 8000, -1 )
+
+		// //Warp In DropShip
+		// file.supercooldropship.Hide()
+		// waitthread __WarpInEffectShared( <-27496,-188,9450>, <0,0,0>, "dropship_warpin", 0.0 )
+		// file.supercooldropship.Show()
+
+		// EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
+		// waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,6223>, <0,0,0>)
+		// thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,6223>, <0,0,0>)
+	// }
+	// else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night")
+	// {
+
+		// try {file.supercooldropship.Destroy()}catch(e69){}
+		// file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,21450>, <0,0,0>, true, 8000, -1 )
+		// EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
+		// waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,18223>, <0,0,0>)
+		// thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,18223>, <0,0,0>)
+	// }
+	// else if(GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	// {
+		// try {file.supercooldropship.Destroy()}catch(e69){}
+		// file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,21450>, <0,0,0>, true, 8000, -1 )
+		// EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
+		// waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,18223>, <0,0,0>)
+		// thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,18223>, <0,0,0>)
+	// }
+
+	// foreach(player in GetPlayerArray())
+    // {
+        // if(IsValidPlayer(player))
+        // {
+		    // Message(player, file.selectedLocation.name, "Dropship is ready, get in!", 5)
+	    // }
+    // }
+
+	// file.isshipalive = true
+	// thread CreateDropShipTriggerArea()
+
+	// wait 5
+
+	// foreach(player in GetPlayerArray())
+    // {
+        // if(IsValidPlayer(player))
+        // {
+			// if ( player.GetParent() != file.supercooldropship )
+			// {
+				// player.SetThirdPersonShoulderModeOff()
+				// vector shipspot = ShipSpot()
+				// player.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
+				// player.SetParent(file.supercooldropship)
+			// }
+		// }
+	// }
+
+	// foreach(player in GetPlayerArray())
+    // {
+        // if(IsValidPlayer(player))
+        // {
+		    // Message(player, "Heading To New Location", "Hold on tight!", 3)
+	    // }
+    // }
+	// file.isshipalive = false
+	// if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	// {
+		// thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20600,2115,6223>, <0,0,0>)
+	// }
+	// else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night")
+	// {
+		// thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20650,2115,18223>, <0,0,0>)
+	// }
+	// else if(GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	// {
+		// thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20650,2115,18223>, <0,0,0>)
+	// }
+
+	// wait 3
+
+	// foreach(player in GetPlayerArray())
+    // {
+        // if(IsValidPlayer(player))
+        // {
+		    // ScreenFadeToBlackForever(player, 1.7)
+			// Remote_CallFunction_Replay( player, "ServerCallback_PlayScreenFXWarpJump" )
+	    // }
+    // }
+    // wait 3
+	// }
+	// else
+	// {
+		// wait 3
+	// }
+// }
+// else
+// {
+	// printt("Flowstate DEBUG - Dropships OFF.")
+    // foreach(player in GetPlayerArray())
+    // {
+        // if(IsValidPlayer(player))
+        // {
+		    // Message(player,"Starting match...", "", 4, "Wraith_PhaseGate_Travel_1p")
+		    // ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )
+	    // }
+    // }
+	// wait 4
+// }
+
+// try {
+    // PlayerTrail(GetBestPlayer(),0)
+// } catch(e2){}
+
+// SetGameState(eGameState.Playing)
+// file.tdmState = eTDMState.IN_PROGRESS
+
+// if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
+// {
+	// printt("Flowstate DEBUG - Tping players Dropships ON (traveling).")
+
+	// if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	// {
+				// int maxspawns = -1
+				// array<LocPair> spawns = file.dropselectedLocation.spawns
+				// foreach(spawn in spawns)
+				// {
+					// maxspawns++
+				// }
+
+				// // array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+				// // array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
+				 // int spawni = 0
+
+			// //true == FFA
+			// if (GetCurrentPlaylistVarBool("flowstateffaortdm", true ))
+			// {
+				// foreach(player in GetPlayerArray())
+				// {
+						// if(IsValid(player))
+						// {
+							// MakeInvincible(player)
+
+							// if (player.GetParent() == file.supercooldropship)
+							// {
+								// player.ClearParent()
+							// }
+
+							// RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+							// player.SetThirdPersonShoulderModeOff()
+
+							// ScreenFadeFromBlack( player, 1.0, 1.0 )
+
+							// int rndnum = RandomIntRangeInclusive(0, maxspawns)
+							
+							// if (!FlowState_DummyOverride()) {
+							// thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) 
+							// printt("Flowstate DEBUG - Dropships delivering players to map.")	
+							// EnableOffhandWeapons( player )
+							// _HandleRespawn(player,true)
+							// }
+							// else {
+							// printt("Flowstate DEBUG - Can't use Dropships to arrive cuz we have dummies as character models.")	
+							// _HandleRespawn(player)
+							// DeployAndEnableWeapons(player)
+							// EnableOffhandWeapons( player )
+							// ClearInvincible(player)
+							// }
+						
+							// entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+							// entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+							// entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+							// entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
+							
+							// if(IsValid(primary))
+								// primary.SetWeaponPrimaryClipCount( primary.GetWeaponPrimaryClipCountMax())
+							// if(IsValid(secondary))
+								// secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
+							// if(IsValid(tactical))
+								// tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+							// if(IsValid(ultimate))
+								// ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
+						// }
+				// }
+				// spawni++
+			// }
+			// else
+			// {
+		// foreach(player in GetPlayerArray())
+		// {
+        		// if(IsValid(player))
+       			// {
+					// MakeInvincible(player)
+
+					// if (player.GetParent() == file.supercooldropship)
+					// {
+						// player.ClearParent()
+					// }
+
+					// RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+					// player.SetThirdPersonShoulderModeOff()
+					// _HandleRespawn(player)
+
+					// ScreenFadeFromBlack( player, 1.0, 1.0 )
+    			// }
+		// }
+
+		// array<entity> IMCplayers = GetPlayerArrayOfTeam( TEAM_IMC )
+		// int sizeofimcteam = -1
+
+		// foreach(players in IMCplayers)
+		// {
+			// sizeofimcteam++
+		// }
+
+		// array<entity> IMCplayersShip1
+		// array<entity> IMCplayersShip2
+		// array<entity> IMCplayersShip3
+		// array<entity> IMCplayersShip4
+
+		// IMCplayersShip1.clear()
+		// IMCplayersShip2.clear()
+		// IMCplayersShip3.clear()
+		// IMCplayersShip4.clear()
+
+		// //Ship1
+		// if(sizeofimcteam >= 0)
+		// {
+			// IMCplayersShip1.append(IMCplayers[0])
+		// }
+		// if(sizeofimcteam >= 1)
+		// {
+			// IMCplayersShip1.append(IMCplayers[1])
+		// }
+		// if(sizeofimcteam >= 2)
+		// {
+			// IMCplayersShip1.append(IMCplayers[2])
+		// }
+
+		// //Ship2
+		// if(sizeofimcteam >= 3)
+		// {
+			// IMCplayersShip2.append(IMCplayers[3])
+		// }
+		// if(sizeofimcteam >= 4)
+		// {
+			// IMCplayersShip2.append(IMCplayers[4])
+		// }
+		// if(sizeofimcteam >= 5)
+		// {
+			// IMCplayersShip2.append(IMCplayers[5])
+		// }
+
+		// //Ship3
+		// if(sizeofimcteam >= 6)
+		// {
+			// IMCplayersShip3.append(IMCplayers[6])
+		// }
+		// if(sizeofimcteam >= 7)
+		// {
+			// IMCplayersShip3.append(IMCplayers[7])
+		// }
+		// if(sizeofimcteam >= 8)
+		// {
+			// IMCplayersShip3.append(IMCplayers[8])
+		// }
+
+		// //Ship4
+		// if(sizeofimcteam >= 9)
+		// {
+			// IMCplayersShip4.append(IMCplayers[9])
+		// }
+		// if(sizeofimcteam >= 10)
+		// {
+			// IMCplayersShip4.append(IMCplayers[10])
+		// }
+		// if(sizeofimcteam >= 11)
+		// {
+			// IMCplayersShip4.append(IMCplayers[11])
+		// }
+
+		// array<entity> MILITIAplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
+
+		// int sizeofmilitiateam = -1
+
+		// foreach(players in MILITIAplayers)
+		// {
+			// sizeofmilitiateam++
+		// }
+
+		// array<entity> MILITIAplayersShip1
+		// array<entity> MILITIAplayersShip2
+		// array<entity> MILITIAplayersShip3
+		// array<entity> MILITIAplayersShip4
+
+		// MILITIAplayersShip1.clear()
+		// MILITIAplayersShip2.clear()
+		// MILITIAplayersShip3.clear()
+		// MILITIAplayersShip4.clear()
+
+		// //Ship1
+		// if(sizeofmilitiateam >= 0)
+		// {
+			// MILITIAplayersShip1.append(MILITIAplayers[0])
+		// }
+		// if(sizeofmilitiateam >= 1)
+		// {
+			// MILITIAplayersShip1.append(MILITIAplayers[1])
+		// }
+		// if(sizeofmilitiateam >= 2)
+		// {
+			// MILITIAplayersShip1.append(MILITIAplayers[2])
+		// }
+
+		// //Ship2
+		// if(sizeofmilitiateam >= 3)
+		// {
+			// MILITIAplayersShip2.append(MILITIAplayers[3])
+		// }
+		// if(sizeofmilitiateam >= 4)
+		// {
+			// MILITIAplayersShip2.append(MILITIAplayers[4])
+		// }
+		// if(sizeofmilitiateam >= 5)
+		// {
+			// MILITIAplayersShip2.append(MILITIAplayers[5])
+		// }
+
+		// //Ship3
+		// if(sizeofmilitiateam >= 6)
+		// {
+			// MILITIAplayersShip3.append(MILITIAplayers[6])
+		// }
+		// if(sizeofmilitiateam >= 7)
+		// {
+			// MILITIAplayersShip3.append(MILITIAplayers[7])
+		// }
+		// if(sizeofmilitiateam >= 8)
+		// {
+			// MILITIAplayersShip3.append(MILITIAplayers[8])
+		// }
+
+		// //Ship4
+		// if(sizeofmilitiateam >= 9)
+		// {
+			// MILITIAplayersShip4.append(MILITIAplayers[9])
+		// }
+		// if(sizeofmilitiateam >= 10)
+		// {
+			// MILITIAplayersShip4.append(MILITIAplayers[10])
+		// }
+		// if(sizeofmilitiateam >= 11)
+		// {
+			// MILITIAplayersShip4.append(MILITIAplayers[11])
+		// }
+
+		// float randomrange1 = RandomFloatRange(-360.0, 360.0)
+        // vector finishedangles = spawns[0].angles + <0,randomrange1,0>
+
+		// if (finishedangles.x > 360.0)
+        // {
+            // finishedangles.x = 359.0
+        // }
+
+		// if (finishedangles.y > 360.0)
+        // {
+            // finishedangles.y = 359.0
+        // }
+
+		// if (finishedangles.z > 360.0)
+        // {
+            // finishedangles.z = 359.0
+        // }
+
+		// thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip1, spawns[0].origin + <0,0,500>, AnglesCompose( spawns[0].angles, <0,0,0> ) )
+		// thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip1, spawns[maxspawns].origin + <0,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,0,0> ) )
+		// wait 1
+		// if(sizeofmilitiateam >= 3 || sizeofimcteam >= 3)
+		// {
+			// thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip2, spawns[0].origin + <200,0,500>, AnglesCompose( spawns[0].angles, <0,30,0> ) )
+			// thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip2, spawns[maxspawns].origin + <200,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,30,0> ) )
+		// }
+		// wait 1
+		// if(sizeofmilitiateam >= 6 || sizeofimcteam >= 6)
+		// {
+			// thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip3, spawns[0].origin + <400,0,500>, AnglesCompose( spawns[0].angles, <0,60,0> ) )
+			// thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip3, spawns[maxspawns].origin + <400,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,60,0> ) )
+		// }
+		// wait 1
+		// if(sizeofmilitiateam >= 9 || sizeofimcteam >= 9)
+		// {
+			// thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip4, spawns[0].origin + <600,0,500>, AnglesCompose( spawns[0].angles, <0,90,0> ) )
+			// thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip4, spawns[maxspawns].origin + <600,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,90,0> ) ) 
+		// }
+		
+		// foreach(player in GetPlayerArray())
+		// {
+        		// if(IsValid(player))
+       			// {
+					// //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+
+					// try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
+					// try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
+					// try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
+					// try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
+    			// }
+		// }
+	// }
+	// }
+	// else
+	// {
+		// foreach(player in GetPlayerArray())
+    	// {
+            // if(IsValid(player))
+            // {
+		        // RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+		        // player.SetThirdPersonShoulderModeOff()
+		        // ClearInvincible(player)
+		        // _HandleRespawn(player)
+		        // ClearInvincible(player)
+		        // DeployAndEnableWeapons(player)
+				// EnableOffhandWeapons( player )
+		        // //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
+		        // ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
+
+				// entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+				// entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+				// entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+				// entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
+				
+				// if(IsValid(primary))
+					// primary.SetWeaponPrimaryClipCount( primary.GetWeaponPrimaryClipCountMax())
+				// if(IsValid(secondary))
+					// secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
+				// if(IsValid(tactical))
+					// tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+				// if(IsValid(ultimate))
+					// ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
+            // }
+    	// }
+	// }
+// }
+//else
+
+
+void function SimpleChampionUI(){
+/////////////Retículo Endoplasmático#5955 CaféDeColombiaFPS///////////////////
 {
-	printt("Flowstate DEBUG - mapvoting is starting.")
+	printt("Flowstate DEBUG - Game is starting.")
+	
+	foreach(player in GetPlayerArray())
+		if(IsValid(player)) ScreenFade( player, 0, 0, 0, 255, 1.5, 1.5, FFADE_IN | FFADE_PURGE ) //let's do this before destroy player props so it looks good in custom maps
+	
     DestroyPlayerProps()
 	isBrightWaterByZer0 = false
-    SetGameState(eGameState.MapVoting)
+	SetGameState(eGameState.Playing)
+	file.tdmState = eTDMState.IN_PROGRESS
 	file.FallTriggersEnabled = true
 	
 	foreach(player in GetPlayerArray())
 	{
 			if(IsValid(player))
 			{
-				player.SetThirdPersonShoulderModeOn()
 				_HandleRespawn(player)
 					if(FlowState_Gungame())
 						{
@@ -1839,7 +2421,6 @@ void function VotingPhase()
 				player.UnfreezeControlsOnServer()
 				HolsterAndDisableWeapons( player )
 			}
-			WaitFrame()
 	}
 
 	if (!file.mapIndexChanged)
@@ -1854,7 +2435,6 @@ void function VotingPhase()
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
 	file.selectedLocation = file.locationSettings[choice]
-	WaitFrame()
 	file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
 	printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
 
@@ -1875,525 +2455,49 @@ void function VotingPhase()
 		file.randomprimary = RandomIntRangeInclusive( 0, 23 )
         file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
 	}
-	
-	printt("Flowstate DEBUG - checking flowstateenabledropship.")
 
-wait 3
-
-if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
-	DestroyPlayerProps()
-	CreateGroundMedKit(<10725, 5913,-4225>)
-} else if(file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled()){
-    DestroyPlayerProps()
-    WaitFrame()
-	CreateGroundMedKit(<17247,31823,-310>)
-    thread SkillTrainerLoad()
-} else if(file.selectedLocation.name == "Skill trainer By Colombia" )
-{
-	printt("Flowstate DEBUG - creating props for Skill Trainer.")
-    DestroyPlayerProps()
-    WaitFrame()
-    thread SkillTrainerLoad()	
-} else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
-{
-	printt("Flowstate DEBUG - creating props for Brightwater.")
-	isBrightWaterByZer0 = true
-    DestroyPlayerProps()
-	WaitFrame()
-	thread WorldEntities()
-	wait 1
-    thread BrightwaterLoad()
-	wait 1.5
-	thread BrightwaterLoad2()
-	wait 1.5
-	thread BrightwaterLoad3()
-} else if(file.selectedLocation.name == "Cave By BlessedSeal" ){
-	printt("Flowstate DEBUG - creating props for Cave.")
-    DestroyPlayerProps()
-    WaitFrame()
-    thread SpawnEditorPropsSeal()	
-} else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
-	DestroyPlayerProps()
-	printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
-	CreateGroundMedKit(<-21289, -12030, 3060>)
-} else if (file.selectedLocation.name == "White Forest By Zer0Bytes"){
-	DestroyPlayerProps()
-	printt("Flowstate DEBUG - creating props for White Forest.")
-	WaitFrame()
-	thread SpawnWhiteForestProps()
-} else if (file.selectedLocation.name == "Custom map by Biscutz"){
-	DestroyPlayerProps()
-	printt("Flowstate DEBUG - creating props for Map by Biscutz.")
-	WaitFrame()
-	thread LoadMapByBiscutz1()
-	thread LoadMapByBiscutz2()
-}
-
-//TODO MORE POIS
-
-if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ))
-{
-	printt("Flowstate DEBUG - Dropships ON.")
-	file.dropselectedLocation = file.droplocationSettings[choice]
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
+		DestroyPlayerProps()
+		CreateGroundMedKit(<10725, 5913,-4225>)
+	} else if(file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled()){
+		DestroyPlayerProps()
+		CreateGroundMedKit(<17247,31823,-310>)
+		thread SkillTrainerLoad()
+	} else if(file.selectedLocation.name == "Skill trainer By Colombia" )
 	{
-    foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-		    Message(player, "Please standby", "Dropship is on the way!", 4)
-	    }
-    }
-
-	wait 2
-
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+		printt("Flowstate DEBUG - creating props for Skill Trainer.")
+		DestroyPlayerProps()
+		thread SkillTrainerLoad()	
+	} else if(file.selectedLocation.name == "Brightwater By Zer0bytes" )
 	{
-		try {file.supercooldropship.Destroy()}catch(e69){}
-		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,9450>, <0,0,0>, true, 8000, -1 )
-
-		//Warp In DropShip
-		file.supercooldropship.Hide()
-		waitthread __WarpInEffectShared( <-27496,-188,9450>, <0,0,0>, "dropship_warpin", 0.0 )
-		file.supercooldropship.Show()
-
-		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
-		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,6223>, <0,0,0>)
-		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,6223>, <0,0,0>)
-	}
-	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night")
-	{
-
-		try {file.supercooldropship.Destroy()}catch(e69){}
-		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,21450>, <0,0,0>, true, 8000, -1 )
-		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
-		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,18223>, <0,0,0>)
-		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,18223>, <0,0,0>)
-	}
-	else if(GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-	{
-		try {file.supercooldropship.Destroy()}catch(e69){}
-		file.supercooldropship = CreateDropShipProp( $"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl", <-27496,-188,21450>, <0,0,0>, true, 8000, -1 )
-		EmitSoundOnEntity( file.supercooldropship, "goblin_imc_evac_hover" )
-		waitthread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_start", <-20650,2115,18223>, <0,0,0>)
-		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_idle", <-20650,2115,18223>, <0,0,0>)
-	}
-
-	foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-		    Message(player, file.selectedLocation.name, "Dropship is ready, get in!", 5)
-	    }
-    }
-
-	file.isshipalive = true
-	thread CreateDropShipTriggerArea()
-
-	wait 5
-
-	foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-			if ( player.GetParent() != file.supercooldropship )
-			{
-				player.SetThirdPersonShoulderModeOff()
-				vector shipspot = ShipSpot()
-				player.SetAbsOrigin( file.supercooldropship.GetOrigin() + shipspot )
-				player.SetParent(file.supercooldropship)
-			}
-		}
-	}
-
-	foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-		    Message(player, "Heading To New Location", "Hold on tight!", 3)
-	    }
-    }
-	file.isshipalive = false
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-	{
-		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20600,2115,6223>, <0,0,0>)
-	}
-	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night")
-	{
-		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20650,2115,18223>, <0,0,0>)
-	}
-	else if(GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-	{
-		thread PlayAnim( file.supercooldropship, "dropship_VTOL_evac_end", <-20650,2115,18223>, <0,0,0>)
-	}
-
-	wait 3
-
-	foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-		    ScreenFadeToBlackForever(player, 1.7)
-			Remote_CallFunction_Replay( player, "ServerCallback_PlayScreenFXWarpJump" )
-	    }
-    }
-    wait 3
-	}
-	else
-	{
-		wait 3
-	}
-}
-else
-{
-	printt("Flowstate DEBUG - Dropships OFF.")
-    foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-		    Message(player,"Starting match...", "", 4, "Wraith_PhaseGate_Travel_1p")
-		    ScreenFade( player, 0, 0, 0, 255, 4.0, 4.0, FFADE_OUT | FFADE_PURGE )
-	    }
-    }
-	wait 4
-}
-
-try {
-    PlayerTrail(GetBestPlayer(),0)
-} catch(e2){}
-
-SetGameState(eGameState.Playing)
-file.tdmState = eTDMState.IN_PROGRESS
-
-if(GetCurrentPlaylistVarBool("flowstateenabledropship", false ) )
-{
-	printt("Flowstate DEBUG - Tping players Dropships ON (traveling).")
-
-	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-	{
-				int maxspawns = -1
-				array<LocPair> spawns = file.dropselectedLocation.spawns
-				foreach(spawn in spawns)
-				{
-					maxspawns++
-				}
-
-				// array<vector> newdropshipspawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
-				// array<vector> shuffledspawnes = shuffleDropShipArray(newdropshipspawns, 50)
-				 int spawni = 0
-
-			//true == FFA
-			if (GetCurrentPlaylistVarBool("flowstateffaortdm", true ))
-			{
-				foreach(player in GetPlayerArray())
-				{
-						if(IsValid(player))
-						{
-							MakeInvincible(player)
-
-							if (player.GetParent() == file.supercooldropship)
-							{
-								player.ClearParent()
-							}
-
-							RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-							player.SetThirdPersonShoulderModeOff()
-
-							ScreenFadeFromBlack( player, 1.0, 1.0 )
-
-							int rndnum = RandomIntRangeInclusive(0, maxspawns)
-							
-							if (!FlowState_DummyOverride()) {
-							thread RespawnPlayersInDropshipAtPoint2( player, spawns[rndnum].origin + <0,0,500>, AnglesCompose( spawns[rndnum].angles, <0,0,0> ) ) 
-							printt("Flowstate DEBUG - Dropships delivering players to map.")	
-							EnableOffhandWeapons( player )
-							_HandleRespawn(player,true)
-							}
-							else {
-							printt("Flowstate DEBUG - Can't use Dropships to arrive cuz we have dummies as character models.")	
-							_HandleRespawn(player)
-							DeployAndEnableWeapons(player)
-							EnableOffhandWeapons( player )
-							ClearInvincible(player)
-							}
-						
-							entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-							entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-							entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-							entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
-							
-							if(IsValid(primary))
-								primary.SetWeaponPrimaryClipCount( primary.GetWeaponPrimaryClipCountMax())
-							if(IsValid(secondary))
-								secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
-							if(IsValid(tactical))
-								tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
-							if(IsValid(ultimate))
-								ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
-						}
-				}
-				spawni++
-			}
-			else
-			{
-		foreach(player in GetPlayerArray())
-		{
-        		if(IsValid(player))
-       			{
-					MakeInvincible(player)
-
-					if (player.GetParent() == file.supercooldropship)
-					{
-						player.ClearParent()
-					}
-
-					RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-					player.SetThirdPersonShoulderModeOff()
-					_HandleRespawn(player)
-
-					ScreenFadeFromBlack( player, 1.0, 1.0 )
-    			}
-		}
-
-		array<entity> IMCplayers = GetPlayerArrayOfTeam( TEAM_IMC )
-		int sizeofimcteam = -1
-
-		foreach(players in IMCplayers)
-		{
-			sizeofimcteam++
-		}
-
-		array<entity> IMCplayersShip1
-		array<entity> IMCplayersShip2
-		array<entity> IMCplayersShip3
-		array<entity> IMCplayersShip4
-
-		IMCplayersShip1.clear()
-		IMCplayersShip2.clear()
-		IMCplayersShip3.clear()
-		IMCplayersShip4.clear()
-
-		//Ship1
-		if(sizeofimcteam >= 0)
-		{
-			IMCplayersShip1.append(IMCplayers[0])
-		}
-		if(sizeofimcteam >= 1)
-		{
-			IMCplayersShip1.append(IMCplayers[1])
-		}
-		if(sizeofimcteam >= 2)
-		{
-			IMCplayersShip1.append(IMCplayers[2])
-		}
-
-		//Ship2
-		if(sizeofimcteam >= 3)
-		{
-			IMCplayersShip2.append(IMCplayers[3])
-		}
-		if(sizeofimcteam >= 4)
-		{
-			IMCplayersShip2.append(IMCplayers[4])
-		}
-		if(sizeofimcteam >= 5)
-		{
-			IMCplayersShip2.append(IMCplayers[5])
-		}
-
-		//Ship3
-		if(sizeofimcteam >= 6)
-		{
-			IMCplayersShip3.append(IMCplayers[6])
-		}
-		if(sizeofimcteam >= 7)
-		{
-			IMCplayersShip3.append(IMCplayers[7])
-		}
-		if(sizeofimcteam >= 8)
-		{
-			IMCplayersShip3.append(IMCplayers[8])
-		}
-
-		//Ship4
-		if(sizeofimcteam >= 9)
-		{
-			IMCplayersShip4.append(IMCplayers[9])
-		}
-		if(sizeofimcteam >= 10)
-		{
-			IMCplayersShip4.append(IMCplayers[10])
-		}
-		if(sizeofimcteam >= 11)
-		{
-			IMCplayersShip4.append(IMCplayers[11])
-		}
-
-		array<entity> MILITIAplayers = GetPlayerArrayOfTeam( TEAM_MILITIA )
-
-		int sizeofmilitiateam = -1
-
-		foreach(players in MILITIAplayers)
-		{
-			sizeofmilitiateam++
-		}
-
-		array<entity> MILITIAplayersShip1
-		array<entity> MILITIAplayersShip2
-		array<entity> MILITIAplayersShip3
-		array<entity> MILITIAplayersShip4
-
-		MILITIAplayersShip1.clear()
-		MILITIAplayersShip2.clear()
-		MILITIAplayersShip3.clear()
-		MILITIAplayersShip4.clear()
-
-		//Ship1
-		if(sizeofmilitiateam >= 0)
-		{
-			MILITIAplayersShip1.append(MILITIAplayers[0])
-		}
-		if(sizeofmilitiateam >= 1)
-		{
-			MILITIAplayersShip1.append(MILITIAplayers[1])
-		}
-		if(sizeofmilitiateam >= 2)
-		{
-			MILITIAplayersShip1.append(MILITIAplayers[2])
-		}
-
-		//Ship2
-		if(sizeofmilitiateam >= 3)
-		{
-			MILITIAplayersShip2.append(MILITIAplayers[3])
-		}
-		if(sizeofmilitiateam >= 4)
-		{
-			MILITIAplayersShip2.append(MILITIAplayers[4])
-		}
-		if(sizeofmilitiateam >= 5)
-		{
-			MILITIAplayersShip2.append(MILITIAplayers[5])
-		}
-
-		//Ship3
-		if(sizeofmilitiateam >= 6)
-		{
-			MILITIAplayersShip3.append(MILITIAplayers[6])
-		}
-		if(sizeofmilitiateam >= 7)
-		{
-			MILITIAplayersShip3.append(MILITIAplayers[7])
-		}
-		if(sizeofmilitiateam >= 8)
-		{
-			MILITIAplayersShip3.append(MILITIAplayers[8])
-		}
-
-		//Ship4
-		if(sizeofmilitiateam >= 9)
-		{
-			MILITIAplayersShip4.append(MILITIAplayers[9])
-		}
-		if(sizeofmilitiateam >= 10)
-		{
-			MILITIAplayersShip4.append(MILITIAplayers[10])
-		}
-		if(sizeofmilitiateam >= 11)
-		{
-			MILITIAplayersShip4.append(MILITIAplayers[11])
-		}
-
-		float randomrange1 = RandomFloatRange(-360.0, 360.0)
-        vector finishedangles = spawns[0].angles + <0,randomrange1,0>
-
-		if (finishedangles.x > 360.0)
-        {
-            finishedangles.x = 359.0
-        }
-
-		if (finishedangles.y > 360.0)
-        {
-            finishedangles.y = 359.0
-        }
-
-		if (finishedangles.z > 360.0)
-        {
-            finishedangles.z = 359.0
-        }
-
-		thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip1, spawns[0].origin + <0,0,500>, AnglesCompose( spawns[0].angles, <0,0,0> ) )
-		thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip1, spawns[maxspawns].origin + <0,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,0,0> ) )
+		printt("Flowstate DEBUG - creating props for Brightwater.")
+		isBrightWaterByZer0 = true
+		DestroyPlayerProps()
+		thread WorldEntities()
 		wait 1
-		if(sizeofmilitiateam >= 3 || sizeofimcteam >= 3)
-		{
-			thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip2, spawns[0].origin + <200,0,500>, AnglesCompose( spawns[0].angles, <0,30,0> ) )
-			thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip2, spawns[maxspawns].origin + <200,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,30,0> ) )
-		}
-		wait 1
-		if(sizeofmilitiateam >= 6 || sizeofimcteam >= 6)
-		{
-			thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip3, spawns[0].origin + <400,0,500>, AnglesCompose( spawns[0].angles, <0,60,0> ) )
-			thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip3, spawns[maxspawns].origin + <400,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,60,0> ) )
-		}
-		wait 1
-		if(sizeofmilitiateam >= 9 || sizeofimcteam >= 9)
-		{
-			thread RespawnPlayersInDropshipAtPointTDM( IMCplayersShip4, spawns[0].origin + <600,0,500>, AnglesCompose( spawns[0].angles, <0,90,0> ) )
-			thread RespawnPlayersInDropshipAtPointTDM( MILITIAplayersShip4, spawns[maxspawns].origin + <600,0,500>, AnglesCompose( spawns[maxspawns].angles, <0,90,0> ) ) 
-		}
-		
-		foreach(player in GetPlayerArray())
-		{
-        		if(IsValid(player))
-       			{
-					//Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
-
-					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch){}
-					try { player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponPrimaryClipCount( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponPrimaryClipCountMax())} catch(this_is_a_unique_string_dont_crash_u_bitch2){}
-					try { player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch3){}
-					try { player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )} catch(this_is_a_unique_string_dont_crash_u_bitch4){}
-    			}
-		}
+		thread BrightwaterLoad()
+		wait 1.5
+		thread BrightwaterLoad2()
+		wait 1.5
+		thread BrightwaterLoad3()
+	} else if(file.selectedLocation.name == "Cave By BlessedSeal" ){
+		printt("Flowstate DEBUG - creating props for Cave.")
+		DestroyPlayerProps()
+		thread SpawnEditorPropsSeal()	
+	} else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
+		DestroyPlayerProps()
+		printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
+		CreateGroundMedKit(<-21289, -12030, 3060>)
+	} else if (file.selectedLocation.name == "White Forest By Zer0Bytes"){
+		DestroyPlayerProps()
+		printt("Flowstate DEBUG - creating props for White Forest.")
+		thread SpawnWhiteForestProps()
+	} else if (file.selectedLocation.name == "Custom map by Biscutz"){
+		DestroyPlayerProps()
+		printt("Flowstate DEBUG - creating props for Map by Biscutz.")
+		thread LoadMapByBiscutz1()
+		thread LoadMapByBiscutz2()
 	}
-	}
-	else
-	{
-		foreach(player in GetPlayerArray())
-    	{
-            if(IsValid(player))
-            {
-		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-		        player.SetThirdPersonShoulderModeOff()
-		        ClearInvincible(player)
-		        _HandleRespawn(player)
-		        ClearInvincible(player)
-		        DeployAndEnableWeapons(player)
-				EnableOffhandWeapons( player )
-		        //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
-		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
-
-				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-				entity tactical = player.GetOffhandWeapon( OFFHAND_INVENTORY )
-				entity ultimate = player.GetOffhandWeapon( OFFHAND_LEFT )
-				
-				if(IsValid(primary))
-					primary.SetWeaponPrimaryClipCount( primary.GetWeaponPrimaryClipCountMax())
-				if(IsValid(secondary))
-					secondary.SetWeaponPrimaryClipCount( secondary.GetWeaponPrimaryClipCountMax())
-				if(IsValid(tactical))
-					tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
-				if(IsValid(ultimate))
-					ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
-            }
-    	}
-	}
-}
-else
-{
-			printt("Flowstate DEBUG - Tping players Dropships OFF.")
-
     foreach(player in GetPlayerArray())
     {
         try {
@@ -2405,8 +2509,6 @@ else
 				ClearInvincible(player)
 		        DeployAndEnableWeapons(player)
 				EnableOffhandWeapons( player )
-		        //Remote_CallFunction_NonReplay(player, "ServerCallback_TDM_DoAnnouncement", 1, eTDMAnnounce.ROUND_START)
-		        ScreenFade( player, 0, 0, 0, 255, 1.0, 1.0, FFADE_IN | FFADE_PURGE )
 				
 				entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 				entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
@@ -2432,7 +2534,11 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 	foreach(player in GetPlayerArray())
     {
 		string nextlocation = file.selectedLocation.name
-		Message(player, file.selectedLocation.name, "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
+		string subtext
+		if(GetBestPlayerName() != "-still nobody-")
+			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
+		else subtext = ""
+			Message(player, file.selectedLocation.name, subtext, 25, "diag_ap_aiNotify_circleTimerStartNext_02")
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -2442,9 +2548,12 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 else{
 	foreach(player in GetPlayerArray())
     {
-		int playerEHandle = player.GetEncodedEHandle()
 		string nextlocation = file.selectedLocation.name
-		Message(player, file.selectedLocation.name, "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage.", 25, "diag_ap_aiNotify_circleTimerStartNext_02")
+		string subtext
+		if(GetBestPlayerName() != "-still nobody-")
+			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
+		else subtext = ""
+			Message(player, file.selectedLocation.name, subtext, 25, "diag_ap_aiNotify_circleTimerStartNext_02")
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -2476,16 +2585,10 @@ foreach(player in GetPlayerArray())
 			} 
 		}
 	}
-file.FallTriggersEnabled = false
-try {file.supercooldropship.Destroy()}catch(e69){}
 ResetAllPlayerStats()
 file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
 printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
-WaitFrame()
-}
 
-void function SimpleChampionUI(){
-/////////////Retículo Endoplasmático#5955 CaféDeColombiaFPS///////////////////
 float endTime = Time() + FlowState_RoundTime()
 printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
@@ -2591,7 +2694,6 @@ else if (!FlowState_Timer() ){
 		}
 } 
 
-
 foreach(player in GetPlayerArray())
     {
 		if(IsValid(player) && !IsAlive(player)){
@@ -2632,7 +2734,7 @@ foreach(player in GetPlayerArray())
 
 	 if(IsValid(player)){
 	 AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flowstate " + file.scriptversion + " by CaféDeColombiaFPS!", 7, "UI_Menu_RoundSummary_Results")}
+	 Message(player,"- ROUND SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flowstate " + file.scriptversion + " by CaféDeColombiaFPS!", 7, "UI_Menu_RoundSummary_Results")}
 	wait 0.1
 	}
 	
@@ -2646,8 +2748,6 @@ foreach(player in GetPlayerArray())
 		player.SetThirdPersonShoulderModeOff()
 		}
 	}
-WaitFrame()
-
 file.bubbleBoundary.Destroy()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 }
