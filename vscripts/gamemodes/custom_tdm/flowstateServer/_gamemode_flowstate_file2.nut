@@ -939,8 +939,8 @@ void function TeleportFRPlayer(entity player, vector pos, vector ang)
 {
 	player.SetOrigin(pos)
 	player.SetAngles(ang)
-	//EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
-	//EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
 }
 
 entity function CreateFRButton(vector pos, vector ang, string prompt)

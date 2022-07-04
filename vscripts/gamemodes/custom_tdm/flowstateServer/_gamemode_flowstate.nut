@@ -2489,99 +2489,106 @@ void function SimpleChampionUI(){
 float endTime = Time() + FlowState_RoundTime()
 printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
-		
 foreach(player in GetPlayerArray())
     {
-thread WpnPulloutOnRespawn(player)
+	thread WpnPulloutOnRespawn(player)
 	}
-if (FlowState_Timer()){
-while( Time() <= endTime )
+	
+if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
+{
+	while(true)
 	{
-    if(Time() == endTime-900)
-	{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					Message(player,"15 MINUTES REMAINING!","", 5)
-				}
-			}
-		}
-		if(Time() == endTime-600)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					Message(player,"10 MINUTES REMAINING!","", 5)
-				}
-			}
-		}
-		if(Time() == endTime-300)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					Message(player,"5 MINUTES REMAINING!","", 5)
-				}
-			}
-		}
-		if(Time() == endTime-120)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					Message(player,"2 MINUTES REMAINING!","", 5)
-				}
-			}
-		}
-		if(Time() == endTime-60)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					Message(player,"1 MINUTE REMAINING!","", 5, "diag_ap_aiNotify_circleMoves60sec")
-				}
-			}
-		}
-		if(Time() == endTime-30)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					Message(player,"30 SECONDS REMAINING!","", 5, "diag_ap_aiNotify_circleMoves30sec")
-				}
-			}
-		}
-		if(Time() == endTime-10)
-		{
-			foreach(player in GetPlayerArray())
-			{
-				if(IsValid(player))
-				{
-					Message(player,"10 SECONDS REMAINING!", "\n The battle is over.", 8, "diag_ap_aiNotify_circleMoves10sec")
-				}
-			}
-		}
-		if(file.tdmState == eTDMState.NEXT_ROUND_NOW){ 
-					printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
-
-		break}
 		WaitFrame()
 	}
 }
-else if (!FlowState_Timer() ){
+
+if (FlowState_Timer()){
 while( Time() <= endTime )
 	{
-	if(file.tdmState == eTDMState.NEXT_ROUND_NOW) {
-		printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
-	break}
-		WaitFrame()
-	}
+		if(Time() == endTime-900)
+		{
+				foreach(player in GetPlayerArray())
+				{
+					if(IsValid(player))
+					{
+						Message(player,"15 MINUTES REMAINING!","", 5)
+					}
+				}
+			}
+			if(Time() == endTime-600)
+			{
+				foreach(player in GetPlayerArray())
+				{
+					if(IsValid(player))
+					{
+						Message(player,"10 MINUTES REMAINING!","", 5)
+					}
+				}
+			}
+			if(Time() == endTime-300)
+			{
+				foreach(player in GetPlayerArray())
+				{
+					if(IsValid(player))
+					{
+						Message(player,"5 MINUTES REMAINING!","", 5)
+					}
+				}
+			}
+			if(Time() == endTime-120)
+			{
+				foreach(player in GetPlayerArray())
+				{
+					if(IsValid(player))
+					{
+						Message(player,"2 MINUTES REMAINING!","", 5)
+					}
+				}
+			}
+			if(Time() == endTime-60)
+			{
+				foreach(player in GetPlayerArray())
+				{
+					if(IsValid(player))
+					{
+						Message(player,"1 MINUTE REMAINING!","", 5, "diag_ap_aiNotify_circleMoves60sec")
+					}
+				}
+			}
+			if(Time() == endTime-30)
+			{
+				foreach(player in GetPlayerArray())
+				{
+					if(IsValid(player))
+					{
+						Message(player,"30 SECONDS REMAINING!","", 5, "diag_ap_aiNotify_circleMoves30sec")
+					}
+				}
+			}
+			if(Time() == endTime-10)
+			{
+				foreach(player in GetPlayerArray())
+				{
+					if(IsValid(player))
+					{
+						Message(player,"10 SECONDS REMAINING!", "\n The battle is over.", 8, "diag_ap_aiNotify_circleMoves10sec")
+					}
+				}
+			}
+			if(file.tdmState == eTDMState.NEXT_ROUND_NOW){ 
+				printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+				break}
+			WaitFrame()
+		}
+}
+else if (!FlowState_Timer() ){
+	while( Time() <= endTime )
+		{
+		if(file.tdmState == eTDMState.NEXT_ROUND_NOW) {
+			printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+			break}
+			WaitFrame()
+		}
 } 
 
 
@@ -2605,7 +2612,7 @@ foreach(player in GetPlayerArray())
 				HolsterAndDisableWeapons( player )
 				}
 		} 
-}
+	}
 
 wait 1
 foreach(entity champion in GetPlayerArray())
@@ -2620,7 +2627,6 @@ foreach(entity champion in GetPlayerArray())
 		}}
 	}catch(e2){}
 	}
-
 foreach(player in GetPlayerArray())
     {
 
@@ -2629,7 +2635,9 @@ foreach(player in GetPlayerArray())
 	 Message(player,"- FINAL SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flowstate " + file.scriptversion + " by CaféDeColombiaFPS!", 7, "UI_Menu_RoundSummary_Results")}
 	wait 0.1
 	}
+	
 wait 7
+
 foreach(player in GetPlayerArray())
     {
 		if(IsValid(player)){
