@@ -38,6 +38,7 @@ global table<string, asset> maptoasset = {
 global table<string, string> maptoname = {
 	[ "mp_rr_canyonlands_staging" ] = "Firing Range",
 	[ "mp_rr_aqueduct" ] = "Overflow",
+	[ "mp_rr_aqueduct_night" ] = "Overflow After Dark",
 	[ "mp_rr_ashs_redemption" ] = "Ash's Redemption",
 	[ "mp_rr_canyonlands_64k_x_64k" ] = "Kings Canyon S1",
 	[ "mp_rr_canyonlands_mu1" ] = "Kings Canyon S2",
@@ -48,24 +49,16 @@ global table<string, string> maptoname = {
 
 //Playlist to readable name
 global table<string, string> playlisttoname = {
-	[ "survival_staging_baseline" ] = "Survival Staging Baseline",
-	[ "sutvival_training" ] = "Survival Training",
-	[ "survival_firingrange" ] = "Firing Range",
+	[ "firingrange" ] = "Firing Range",
 	[ "survival" ] = "Survival",
-	[ "defaults" ] = "Defaults",
-	[ "ranked" ] = "Ranked",
-	[ "FallLTM" ] = "ShadowFall",
-	[ "duos" ] = "Duos",
-	[ "iron_crown" ] = "Iron Crown",
-	[ "elite" ] = "Elite",
-	[ "armed_and_dangerous" ] = "Armed and Dangerous",
-	[ "wead" ] = "wead",
-	[ "custom_tdm" ] = "Team Deathmatch",
-	[ "custom_ctf" ] = "Capture The Flag",
-	[ "tdm_gg" ] = "Gun Game",
-	[ "tdm_gg_double" ] = "Team Gun Game",
 	[ "survival_dev" ] = "Survival Dev",
-	[ "dev_default" ] = "Dev Default"
+	[ "FallLTM" ] = "ShadowFall",
+	[ "custom_tdm" ] = "Team Deathmatch",
+	[ "custom_tdm_fiesta" ] = "Team Deathmatch Fiesta",
+	[ "custom_tdm_gungame" ] = "Team Deathmatch Gungame",
+	[ "custom_ctf" ] = "Capture The Flag",
+	[ "custom_surf" ] = "Surf",
+	[ "custom_prophunt" ] = "Prophunt"
 }
 
 //Vis to readable name
