@@ -134,25 +134,27 @@ WeaponData
                                            
                                
      
-    "ammo_clip_size"   								"5"
-    "ammo_default_total"							"20"
+    "ammo_clip_size"   								"6"
+    "ammo_default_total"							"100"
     "ammo_no_remove_from_stockpile"					"1"
     "ammo_pool_type"								"shotgun"
       
-    "ammo_stockpile_max"							"20"
+    "ammo_stockpile_max"							"100"
     "ammo_per_shot"                                 "1"
     "ammo_min_to_fire"								"1"
     "low_ammo_fraction" 							"0.3"
 
     // Damage - When Used by Players
-    "damage_near_value"   							"9"
-    "damage_far_value"								"9"
+    "damage_near_value"   							"10"
+    "damage_far_value"								"10"
 
-    "damage_near_value_titanarmor"					"9"
-    "damage_far_value_titanarmor" 					"9"
+    "damage_near_value_titanarmor"					"10"
+    "damage_far_value_titanarmor" 					"10"
     "damage_rodeo" 									"550"
     "damage_near_distance"							"100"
     "damage_far_distance" 							"750"
+
+    "damage_heavyarmor_nontitan_scale"				"0.35"
 
 	// NPC
 	"proficiency_poor_spreadscale"					"7.0"
@@ -202,13 +204,6 @@ WeaponData
 
 	"ammo_suck_behavior"							"primary_weapons"
 
-    "bolt_hitsize_grow1_time"						"0.025"
-    "bolt_hitsize_grow1_size"						"0.8"
-    "bolt_hitsize_grow2_time"						"0.18"
-    "bolt_hitsize_grow2_size"						"1.4"
-    "bolt_hitsize_growfinal_lerptime"				"0.18"
-    "bolt_hitsize_growfinal_size"					"1.4"
-
 	// View Kick
 	"viewkick_spring" 								"energy_shotgun"
 
@@ -246,11 +241,15 @@ WeaponData
 
 	// Crosshair Spread
 
+	"projectile_blast_pattern_zero_distance"        "512.0"
+	"projectile_blast_pattern_default_scale"        "1.5"
+	"projectile_blast_pattern_npc_scale"            "1.8"  // scales on top of the default
+
 	// CUSTOM- choke spread fractions for each charge level
 	"projectile_spread_choke_frac_1" 				"1.0"
-	"projectile_spread_choke_frac_2" 				"0.85"
-	"projectile_spread_choke_frac_3" 				"0.65"
-	"projectile_spread_choke_frac_4" 				"0.35"
+	"projectile_spread_choke_frac_2" 				"0.65"
+	"projectile_spread_choke_frac_3" 				"0.45"
+	"projectile_spread_choke_frac_4" 				"0.15"
 
 	// for projectile shotguns, set this to the size of the spread pattern at the intended engagement range
 	"spread_stand_hip"								"2.8"       //"3.173" @ 1.7 blast pattern
@@ -313,12 +312,12 @@ WeaponData
 
         hopup_energy_choke
         {
-			"charge_time" 									"1.25"
+			"charge_time" 									"1.5"
 			"charge_levels"									"4"
 			"charge_level_base"								"1"
 
-            "charge_cooldown_time"							"0.75"
-            "charge_cooldown_delay"   						"0.35"
+			"charge_cooldown_time"							"1.5"
+	        "charge_cooldown_delay"   						"1.25"
 
 	        "headshot_distance" 							"11828"  // 300m
 
