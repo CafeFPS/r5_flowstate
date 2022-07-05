@@ -2404,6 +2404,9 @@ void function SimpleChampionUI(){
 	
     DestroyPlayerProps()
 	isBrightWaterByZer0 = false
+
+    PlayerTrail(GetBestPlayer(),0)
+
 	SetGameState(eGameState.Playing)
 	file.tdmState = eTDMState.IN_PROGRESS
 	file.FallTriggersEnabled = true
@@ -2719,15 +2722,14 @@ foreach(player in GetPlayerArray())
 wait 1
 foreach(entity champion in GetPlayerArray())
     {
-		try {
 		if(GetBestPlayer() == champion) {
 		if(IsValid(champion))
-        {
-			 thread EmitSoundOnEntityOnlyToPlayer( champion, champion, "diag_ap_aiNotify_winnerFound_10" )
-			 thread EmitSoundOnEntityExceptToPlayer( champion, champion, "diag_ap_aiNotify_winnerFound" )
-        PlayerTrail(champion,1)
-		}}
-	}catch(e2){}
+			{
+				 thread EmitSoundOnEntityOnlyToPlayer( champion, champion, "diag_ap_aiNotify_winnerFound_10" )
+				 thread EmitSoundOnEntityExceptToPlayer( champion, champion, "diag_ap_aiNotify_winnerFound" )
+				PlayerTrail(champion,1)
+			}
+		}
 	}
 foreach(player in GetPlayerArray())
     {
@@ -2911,6 +2913,7 @@ void function PlayerRestoreHP(entity player, float health, float shields)
 void function PlayerTrail(entity player, int onoff)
 //Thanks Zee#0134//
 {
+	if(!IsValid(player)) return
     if (onoff == 1 )
     {
         int smokeAttachID = player.LookupAttachment( "CHESTFOCUS" )
