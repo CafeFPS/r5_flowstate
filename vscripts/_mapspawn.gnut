@@ -204,6 +204,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/error.rmdl" ) // model used when no model is provided
 
 	PrecacheModel( $"mdl/Humans/class/medium/combat_dummie_medium.rmdl" )
+	PrecacheModel($"mdl/fx/ar_survival_radius_1x100.rmdl")
 	
 	//Charms - todo: find a better way
 
@@ -273,7 +274,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_rspn101" )
 	PrecacheWeapon( $"mp_weapon_defender" )
 	PrecacheWeapon( $"mp_weapon_jump_pad" )
-	//PrecacheWeapon( $"mp_weapon_smart_pistol" ) //TODO: Fix This
+	PrecacheWeapon( $"mp_weapon_smart_pistol" ) //TODO: Fix This
 	PrecacheWeapon( $"mp_weapon_grenade_creeping_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_defensive_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
@@ -283,13 +284,17 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
 
 	printl( "Code Script: _mapspawn" )
-
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
 }
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
+	if(args[0] == "bhit") {
+		printl( "Player weapon hit" ) //avoid showing full shit for bhit
+		return false
+	}
+	
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
 		printl( "Args:" )
@@ -314,7 +319,7 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 	}
 	else
 	{
-		printl( "ALERT: " + commandString  + " isn't a command but is being called in CodeCallback_ClientCommand." )
+		printl( "ALERT: " + commandString  + " isn't a client command but is being called in CodeCallback_ClientCommand." )
 		return false
 	}
 }
