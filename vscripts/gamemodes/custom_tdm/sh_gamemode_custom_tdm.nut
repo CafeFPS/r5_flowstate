@@ -114,7 +114,7 @@ void function Sh_CustomTDM_Init()
             )
         )
         break
-		
+	case "mp_rr_canyonlands_mu1_night":		
 	case "mp_rr_canyonlands_mu1":
 		Shared_RegisterLocation(
             NewLocationSettings(
@@ -472,7 +472,6 @@ void function Sh_CustomTDM_Init()
             // )
         // )
 break
-case "mp_rr_canyonlands_mu1_night":
 case "mp_rr_canyonlands_64k_x_64k":
     
 	if(FlowState_EnableCustomMapByBiscutz()){
