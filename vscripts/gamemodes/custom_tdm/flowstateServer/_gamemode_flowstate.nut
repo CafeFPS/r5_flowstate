@@ -97,6 +97,8 @@ struct {
 	
 	bool FallTriggersEnabled = false
 	bool mapSkyToggle = false
+	entity ringfx
+	float ringradius
 } file
 
 struct PlayerInfo
@@ -2779,14 +2781,16 @@ entity function CreateRingBoundary(LocationSettings location)
     }
 
     ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
-
+	file.ringradius = ringRadius
 	//We watch the ring fx with this entity in the threads
 	entity circle = CreateEntity( "prop_script" )
-	circle.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	circle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
 	circle.kv.fadedist = -1
+	circle.kv.modelscale = ringRadius
 	circle.kv.renderamt = 255
-	circle.kv.rendercolor = "255, 255, 255"
+	circle.kv.rendercolor = FlowState_RingColor()
 	circle.kv.solid = 0
+	circle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_EVERYONE
 	circle.SetOrigin( ringCenter )
 	circle.SetAngles( <0, 0, 0> )
 	circle.NotSolid()
@@ -2806,10 +2810,6 @@ entity function CreateRingBoundary(LocationSettings location)
 	
 	SetDeathFieldParams( ringCenter, ringRadius, ringRadius, 90000, 99999 ) // This function from the API allows client to read ringRadius from server so we can use visual effects in shared function. Colombia
 
-	thread CreateRingFx(circle, ringRadius)
-
-    StatsHook_SetSafeZone( ringCenter, ringRadius )
-	
 	//Audio thread for ring
 	foreach(sPlayer in GetPlayerArray())
 		thread AudioThread(circle, sPlayer, ringRadius)
@@ -2818,15 +2818,6 @@ entity function CreateRingBoundary(LocationSettings location)
 	thread RingDamage(circle, ringRadius)
 	
     return circle
-}
-
-void function CreateRingFx(entity circle, float radius)
-{
-	//Actual deathfield fx
-	entity ringfx = StartParticleEffectOnEntity_ReturnEntity(circle, GetParticleSystemIndex( $"P_survival_radius_CP_1x100" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
-	ringfx.SetParent(circle)
-	WaitFrame()
-	EffectSetControlPointVector( ringfx, 1, <radius, 0, 0> )
 }
 
 void function AudioThread(entity circle, entity player, float radius)
