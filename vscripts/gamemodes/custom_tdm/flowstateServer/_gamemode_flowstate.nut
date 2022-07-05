@@ -68,7 +68,7 @@ struct {
 	array<LocationSettings> locationSettings
     LocationSettings& selectedLocation
 	array<vector> thisroundDroppodSpawns
-    entity bubbleBoundary
+    entity ringBoundary
 	entity previousChampion
 	entity previousChallenger
 	int deathPlayersCounter=0
@@ -2586,7 +2586,7 @@ foreach(player in GetPlayerArray())
 		}
 	}
 ResetAllPlayerStats()
-file.bubbleBoundary = CreateBubbleBoundary(file.selectedLocation)
+file.ringBoundary = CreateRingBoundary(file.selectedLocation)
 printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
 
 float endTime = Time() + FlowState_RoundTime()
@@ -2748,59 +2748,153 @@ foreach(player in GetPlayerArray())
 		player.SetThirdPersonShoulderModeOff()
 		}
 	}
-file.bubbleBoundary.Destroy()
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+file.ringBoundary.Destroy()
 }
 
-// ██████  ██    ██ ██████  ██████  ██      ███████      ██ ██████  ██ ███    ██  ██████  ██
-// ██   ██ ██    ██ ██   ██ ██   ██ ██      ██          ██  ██   ██ ██ ████   ██ ██        ██
-// ██████  ██    ██ ██████  ██████  ██      █████       ██  ██████  ██ ██ ██  ██ ██   ███  ██
-// ██   ██ ██    ██ ██   ██ ██   ██ ██      ██          ██  ██   ██ ██ ██  ██ ██ ██    ██  ██
-// ██████   ██████  ██████  ██████  ███████ ███████      ██ ██   ██ ██ ██   ████  ██████  ██
-
-entity function CreateBubbleBoundary(LocationSettings location)
+//       ██ ██████  ██ ███    ██  ██████  ██
+//      ██  ██   ██ ██ ████   ██ ██        ██
+//      ██  ██████  ██ ██ ██  ██ ██   ███  ██
+//      ██  ██   ██ ██ ██  ██ ██ ██    ██  ██
+//       ██ ██   ██ ██ ██   ████  ██████  ██
+// Purpose: Create The RingBoundary
+entity function CreateRingBoundary(LocationSettings location)
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 {
     array<LocPair> spawns = location.spawns
-    vector bubbleCenter
-    foreach(spawn in spawns)
+
+    vector ringCenter
+    foreach( spawn in spawns )
     {
-        bubbleCenter += spawn.origin
+        ringCenter += spawn.origin
     }
-    bubbleCenter /= spawns.len()
-    float bubbleRadius = 0
-    foreach(LocPair spawn in spawns)
+
+    ringCenter /= spawns.len()
+
+    float ringRadius = 0
+
+    foreach( LocPair spawn in spawns )
     {
-        if(Distance(spawn.origin, bubbleCenter) > bubbleRadius)
-        bubbleRadius = Distance(spawn.origin, bubbleCenter)
+        if( Distance( spawn.origin, ringCenter ) > ringRadius )
+            ringRadius = Distance(spawn.origin, ringCenter)
     }
-    bubbleRadius += GetCurrentPlaylistVarFloat("bubble_radius_padding", 200)
-    entity bubbleShield = CreateEntity( "prop_dynamic" )
-	bubbleShield.SetValueForModelKey( BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
-    bubbleShield.SetOrigin(bubbleCenter)
-    bubbleShield.SetModelScale(bubbleRadius / 235)
-    bubbleShield.kv.CollisionGroup = 0
-    bubbleShield.kv.rendercolor = FlowState_BubbleColor()
-    DispatchSpawn( bubbleShield )
-    thread MonitorBubbleBoundary(bubbleShield, bubbleCenter, bubbleRadius)
-    return bubbleShield
+
+    ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
+
+	//We watch the ring fx with this entity in the threads
+	entity circle = CreateEntity( "prop_script" )
+	circle.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	circle.kv.fadedist = -1
+	circle.kv.renderamt = 255
+	circle.kv.rendercolor = "255, 255, 255"
+	circle.kv.solid = 0
+	circle.SetOrigin( ringCenter )
+	circle.SetAngles( <0, 0, 0> )
+	circle.NotSolid()
+	circle.DisableHibernation()
+    circle.Minimap_SetObjectScale( ringRadius / SURVIVAL_MINIMAP_RING_SCALE )
+    circle.Minimap_SetAlignUpright( true )
+    circle.Minimap_SetZOrder( 2 )
+    circle.Minimap_SetClampToEdge( true )
+    circle.Minimap_SetCustomState( eMinimapObject_prop_script.OBJECTIVE_AREA )
+	SetTargetName( circle, "hotZone" )
+	DispatchSpawn(circle)
+
+    foreach ( player in GetPlayerArray() )
+    {
+        circle.Minimap_AlwaysShow( 0, player )
+    }
+	
+	SetDeathFieldParams( ringCenter, ringRadius, ringRadius, 90000, 99999 ) // This function from the API allows client to read ringRadius from server so we can use visual effects in shared function. Colombia
+
+	thread CreateRingFx(circle, ringRadius)
+
+    StatsHook_SetSafeZone( ringCenter, ringRadius )
+	
+	//Audio thread for ring
+	foreach(sPlayer in GetPlayerArray())
+		thread AudioThread(circle, sPlayer, ringRadius)
+	
+	//Damage thread for ring
+	thread RingDamage(circle, ringRadius)
+	
+    return circle
 }
 
-void function MonitorBubbleBoundary(entity bubbleShield, vector bubbleCenter, float bubbleRadius)
+void function CreateRingFx(entity circle, float radius)
 {
-    while(IsValid(bubbleShield))
-    {
-        foreach(player in GetPlayerArray_Alive())
-        {
+	//Actual deathfield fx
+	entity ringfx = StartParticleEffectOnEntity_ReturnEntity(circle, GetParticleSystemIndex( $"P_survival_radius_CP_1x100" ), FX_PATTACH_ABSORIGIN_FOLLOW, -1 )
+	ringfx.SetParent(circle)
+	WaitFrame()
+	EffectSetControlPointVector( ringfx, 1, <radius, 0, 0> )
+}
+
+void function AudioThread(entity circle, entity player, float radius)
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+	WaitFrame()
+	entity audio
+	string soundToPlay = "Survival_Circle_Edge_Small"
+	OnThreadEnd(
+		function() : ( soundToPlay, audio)
+		{
 			
-            if(!IsValid(player)) continue
-            if(Distance(player.GetOrigin(), bubbleCenter) > bubbleRadius && player.p.isPlayerSpawningInDroppod == false)
-            {
+			if(IsValid(audio)) audio.Destroy()
+		}
+	)
+	audio = CreateScriptMover()
+	audio.SetOrigin( circle.GetOrigin() )
+	audio.SetAngles( <0, 0, 0> )
+	EmitSoundOnEntity( audio, soundToPlay )
+	
+	while(IsValid(circle)){
+			vector fwdToPlayer   = Normalize( <player.GetOrigin().x, player.GetOrigin().y, 0> - <circle.GetOrigin().x, circle.GetOrigin().y, 0> )
+			vector circleEdgePos = circle.GetOrigin() + (fwdToPlayer * radius)
+			circleEdgePos.z = player.EyePosition().z
+			if ( fabs( circleEdgePos.x ) < 61000 && fabs( circleEdgePos.y ) < 61000 && fabs( circleEdgePos.z ) < 61000 )
+			{
+				audio.SetOrigin( circleEdgePos )
+			}
+		WaitFrame()
+	}
+	
+	StopSoundOnEntity(audio, soundToPlay)
+}
+
+void function RingDamage( entity circle, float currentRadius)
+//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
+{
+	WaitFrame()
+	const float DAMAGE_CHECK_STEP_TIME = 1.5
+
+	while ( IsValid(circle) )
+	{
+		foreach ( dummy in GetNPCArray() )
+		{
+			if ( dummy.IsPhaseShifted() )
+				continue
+
+			float playerDist = Distance2D( dummy.GetOrigin(), circle.GetOrigin() )
+			if ( playerDist > currentRadius )
+			{
+				dummy.TakeDamage( int( Deathmatch_GetOOBDamagePercent() / 100 * float( dummy.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+			}
+		}
+		
+		foreach ( player in GetPlayerArray_Alive() )
+		{
+			if ( player.IsPhaseShifted() )
+				continue
+
+			float playerDist = Distance2D( player.GetOrigin(), circle.GetOrigin() )
+			if ( playerDist > currentRadius )
+			{
 				Remote_CallFunction_Replay( player, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
-                player.TakeDamage( int( Deathmatch_GetOOBDamagePercent() / 100 * float( player.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
-            }
-        }
-        wait 1
-    }
+				player.TakeDamage( int( Deathmatch_GetOOBDamagePercent() / 100 * float( player.GetMaxHealth() ) ), null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+			}
+		}
+		wait DAMAGE_CHECK_STEP_TIME
+	}
 }
 
 void function PlayerRestoreHP(entity player, float health, float shields)
