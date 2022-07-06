@@ -297,6 +297,7 @@ Scripts:
 	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
+
 ]
 
 When: "SERVER || CLIENT"
@@ -894,14 +895,17 @@ Scripts:
 When: "SERVER"
 Scripts:
 [
-	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate.nut
-	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file2.nut
-	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file3.nut
-	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file4.nut
-	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file5.nut
-	gamemodes/custom_tdm/flowstateServer/_gamemode_flowstate_file6.nut
+	//gamemodes
+	gamemodes/custom_tdm/_gamemode_flowstate.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
 	gamemodes/custom_prophunt/_gamemode_prophunt.nut
+	gamemodes/custom_surf/_gamemode_surf.nut
+	gamemodes/custom_surf/_gamemode_surf2.nut
+	
+	//maps
+	custom_maps/_custom_maps_1.nut
+	custom_maps/_custom_maps_2.nut
+	custom_maps/_custom_maps_3.nut
 ]
 
 When: "CLIENT"

@@ -180,27 +180,10 @@ void function ActualSURFLobby()
 	{
 	surf.nextMapIndex = (surf.nextMapIndex + 1) % surf.locationSettings.len()
 	}
-	
-	// if(surf.nextMapIndex == surf.locationSettings.len()-1 && surf.mapIndexChanged){
-	// surf.nextMapIndex = 0
-	// }
-	
+
 	if (FlowState_SURFLockPOI()) {
 		surf.nextMapIndex = FlowState_SURFLockedPOI()
 	}
-	
-	// if (!surf.mapIndexChanged)
-	// {
-	
-	
-	// if (surf.nextMapIndex == 1)
-	// {
-		// surf.nextMapIndex=0
-	// } else if(surf.nextMapIndex == 0){
-		// surf.nextMapIndex=1
-	// }
-
-	// }
 
 	int choice = surf.nextMapIndex
 	surf.mapIndexChanged = false
