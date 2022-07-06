@@ -38,8 +38,8 @@ void function JumpPad_GiveDoubleJump( entity player )
 	player.EndSignal( "JumpPad_GiveDoubleJump" )
 
 	wait 0.1
-
-	if ( !player.IsOnGround() )
+	
+	if ( IsValid(player) && !player.IsOnGround() )
 	{
 		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
@@ -58,7 +58,7 @@ void function JumpPad_GiveDoubleJump( entity player )
 		}
 	})
 
-	while ( !player.IsOnGround() && !player.IsZiplining() && !Bleedout_IsBleedingOut( player ) )
+	while ( IsValid(player) && !player.IsOnGround() && !player.IsZiplining() && !Bleedout_IsBleedingOut( player ) )
 	{
 		WaitFrame()
 	}
