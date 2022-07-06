@@ -2822,7 +2822,7 @@ entity function CreateRingBoundary(LocationSettings location)
 void function AudioThread(entity circle, entity player, float radius)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 {
-	WaitFrame()
+	EndSignal(player, "OnDestroy")
 	entity audio
 	string soundToPlay = "Survival_Circle_Edge_Small"
 	OnThreadEnd(
@@ -2837,7 +2837,8 @@ void function AudioThread(entity circle, entity player, float radius)
 	audio.SetAngles( <0, 0, 0> )
 	EmitSoundOnEntity( audio, soundToPlay )
 	
-	while(IsValid(circle) && IsValid(player)){
+	while(IsValid(circle)){
+			if(!IsValid(player)) continue
 			vector fwdToPlayer   = Normalize( <player.GetOrigin().x, player.GetOrigin().y, 0> - <circle.GetOrigin().x, circle.GetOrigin().y, 0> )
 			vector circleEdgePos = circle.GetOrigin() + (fwdToPlayer * radius)
 			circleEdgePos.z = player.EyePosition().z
