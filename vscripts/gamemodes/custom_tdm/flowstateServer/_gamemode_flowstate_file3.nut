@@ -404,6 +404,8 @@ entity function CreateEditorPropRamps(asset a, vector pos, vector ang, bool mant
 
 void function TeleportFRPlayerSurf(entity player, vector pos, vector ang)
 {
+	if(!player.IsPlayer()) return
+	
     if(IsValid(player))
     {
 		printt("Flowstate DEBUG - Tping player with TeleportFRPlayerSurf - " + player.GetPlayerName())
