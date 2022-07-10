@@ -16,10 +16,10 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 	"CreateServerBG"
 	{
 		ControlName				ImagePanel
-		ypos 			-642
+		ypos 			-676
 		xpos			-20
 		wide			490
-		tall            350
+		tall            280
 		fillColor		"30 30 30 100"
         drawColor		"30 30 30 100"
 		visible					1
@@ -47,7 +47,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 	{
 		ControlName				ImagePanel
 		wide			490
-		tall            3
+		tall            40
 		fillColor		"195 29 38 200"
         drawColor		"195 29 38 200"
 		visible					1
@@ -99,6 +99,24 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		pin_to_sibling				ServerMapImg
 		pin_corner_to_sibling		BOTTOM
 		pin_to_sibling_corner		TOP
+	}
+
+	ServerSettingsText
+	{
+		ControlName				Label
+		labelText				"Server Settings"
+		"font"					"DefaultBold_41"
+		"allcaps"				"1"
+		auto_wide_tocontents	1
+		zpos 					10
+		fontHeight				25
+		xpos					0
+		ypos					0
+		"fgcolor_override"		"255 255 255 255"
+
+		pin_to_sibling CreateServerBGBottomLine
+		pin_corner_to_sibling CENTER
+		pin_to_sibling_corner CENTER
 	}
 
 	PlaylistNameBG
@@ -181,7 +199,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		wide 480
 		tall 50
 		xpos 0
-		ypos 165
+		ypos 10
 
 		rui "ui/control_options_description.rpak"
 
@@ -287,7 +305,7 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		wide 480
 		tall 50
 		xpos 0
-		ypos 50
+		ypos 135
 
 		rui "ui/control_options_description.rpak"
 
@@ -389,54 +407,112 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		pin_to_sibling_corner CENTER
 	}
 
-	BtnServerName
+	ServerNamePanel
 	{
-		ControlName				TextEntry
-		zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
-		wide					480
-		tall					50
-		xpos					0
-		ypos					5
-		allowRightClickMenu		0
-		allowSpecialCharacters	0
-		unicode					0
+		ControlName RuiPanel
+		wide 480
+		tall 50
+		xpos 0
+		ypos 5
 
-		keyboardTitle			"Enter Server Name"
-		keyboardDescription		"Enter Server Name"
+		rui "ui/control_options_description.rpak"
 
-		visible					1
-		enabled					1
-		textHidden				0
-		editable				1
-		maxchars				100
-		textAlignment			"center"
-		ruiFont                 TitleRegularFont
-		ruiFontHeight           22
-		ruiMinFontHeight        16
-		bgcolor_override		"30 30 30 200"
+		visible 1
+		zpos 0
 
-		pin_to_sibling MapPanel
-		pin_corner_to_sibling	BOTTOM
-		pin_to_sibling_corner	TOP
-	}
-
-	CreateServerTxT
-	{
-		ControlName				Label
-		labelText				"Server Name:"
-		"font"					"DefaultBold_41"
-		"allcaps"				"1"
-		tall					20
-		auto_wide_tocontents	1
-		zpos 					3
-		fontHeight				20
-		xpos					0
-		ypos					2
-		"fgcolor_override"		"255 255 255 255"
-
-		pin_to_sibling BtnServerName
+		pin_to_sibling			BtnServerDesc
 		pin_corner_to_sibling	BOTTOM_LEFT
 		pin_to_sibling_corner	TOP_LEFT
+	}
+
+	BtnServerName
+	{
+		ControlName RuiButton
+		InheritProperties RuiSmallButton
+		wide 480
+		tall 50
+		xpos 0
+		ypos 0
+		zpos 6
+		classname			"createserverbuttons"
+		"scriptID"					"3"
+
+
+		pin_to_sibling ServerNamePanel
+		pin_corner_to_sibling CENTER
+		pin_to_sibling_corner CENTER
+	}
+
+	BtnServerNameTxT
+	{
+		ControlName				Label
+		labelText				"Server Name"
+		"font"					"DefaultBold_41"
+		"allcaps"				"1"
+		auto_wide_tocontents	1
+		zpos 					3
+		fontHeight				25
+		xpos					0
+		ypos					0
+		"fgcolor_override"		"255 255 255 255"
+
+		pin_to_sibling ServerNamePanel
+		pin_corner_to_sibling CENTER
+		pin_to_sibling_corner CENTER
+	}
+
+	ServerDescPanel
+	{
+		ControlName RuiPanel
+		wide 480
+		tall 50
+		xpos 0
+		ypos 5
+
+		rui "ui/control_options_description.rpak"
+
+		visible 1
+		zpos 0
+
+		pin_to_sibling			MapPanel
+		pin_corner_to_sibling	BOTTOM_LEFT
+		pin_to_sibling_corner	TOP_LEFT
+	}
+
+	BtnServerDesc
+	{
+		ControlName RuiButton
+		InheritProperties RuiSmallButton
+		wide 480
+		tall 50
+		xpos 0
+		ypos 0
+		zpos 6
+		classname			"createserverbuttons"
+		"scriptID"					"4"
+
+
+		pin_to_sibling ServerDescPanel
+		pin_corner_to_sibling CENTER
+		pin_to_sibling_corner CENTER
+	}
+
+	BtnServerDescTxT
+	{
+		ControlName				Label
+		labelText				"Server Description"
+		"font"					"DefaultBold_41"
+		"allcaps"				"1"
+		auto_wide_tocontents	1
+		zpos 					3
+		fontHeight				25
+		xpos					0
+		ypos					0
+		"fgcolor_override"		"255 255 255 255"
+
+		pin_to_sibling ServerDescPanel
+		pin_corner_to_sibling CENTER
+		pin_to_sibling_corner CENTER
 	}
 
 	"R5RPlaylistPanel"

@@ -1,0 +1,211 @@
+resource/ui/menus/confirm_dialog.menu
+{
+	menu
+	{
+		ControlName				Frame
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+		disableDpad             1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/screen_blur.rpak"
+			visible					1
+		}
+
+		DarkenBackground
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+            ruiArgs
+            {
+                basicImageColor     "0 0 0"
+                basicImageAlpha     0.65
+            }
+		}
+
+        DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					%100
+			tall					480
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		ImgTopBar2
+		{
+			ControlName		ImagePanel
+			wide					%100
+			tall					2
+            visible			1
+            scaleImage		1
+			proportionalToParent    0
+            fillColor		"255 255 255 200"
+            drawColor		"255 255 255 200"
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		ImgTopBar3
+		{
+			ControlName		ImagePanel
+			wide					%100
+			tall					2
+            visible			1
+            scaleImage		1
+			proportionalToParent    0
+            fillColor		"255 255 255 200"
+            drawColor		"255 255 255 200"
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+        ContentRui
+        {
+            ControlName				RuiPanel
+            classname               "MenuButton"
+            wide					%100
+            tall					480
+            visible				    0
+            rui                     "ui/dialog_content.rpak"
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+        }
+
+		ErrorImage
+		{
+			ControlName				RuiPanel
+			ypos 			-180
+			xpos			0
+			zpos 			4
+			wide			75
+			tall            75
+			visible			1
+			rui                     "ui/basic_image.rpak"
+
+            pin_to_sibling				DialogFrame
+			pin_corner_to_sibling		CENTER
+			pin_to_sibling_corner		CENTER
+		}
+
+		ErrorHeader
+		{
+			ControlName				Label
+			labelText				"#CONTINUE"
+			auto_wide_tocontents 1
+			tall 30
+			ypos -115
+			xpos 0
+			fontHeight 40
+			zpos 3
+			interactive 		false
+			textAlignment		center
+
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		ErrorMessage
+		{
+			ControlName				Label
+			textAlignment			center
+			labelText				""
+			wide 1000
+			tall 200
+			ypos 15
+			wrap 1
+			xpos 0
+			fontHeight 30
+			zpos 3
+
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+		FooterButtons
+		{
+			ControlName				CNestedPanel
+			InheritProperties       DialogFooterButtons
+			xpos                    0
+            wide					200
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+
+		ContinueButton
+		{
+			ControlName				RuiButton
+			InheritProperties		RuiSmallButton
+			classname 				ServerButton
+			scriptID				0
+			wide 					230
+			xpos					0 // include n pixels for the combo button inset
+			ypos					170
+			tall					60
+			visible					1
+			zpos 					6
+
+			pin_to_sibling			DialogFrame
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		BtnContinueButton
+		{
+			ControlName				Label
+			labelText				"#CONTINUE"
+			textAlignment	west
+			classname ServerName
+			auto_wide_tocontents 1
+			tall 30
+			ypos 0
+			xpos 0
+			fontHeight 40
+			zpos 3
+			interactive 		false
+
+
+			pin_to_sibling			ContinueButton
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	}
+}

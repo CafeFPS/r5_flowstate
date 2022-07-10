@@ -1518,6 +1518,8 @@ void function InitMenus()
 
 	var r5rlobbymenu = AddMenu( "R5RLobbyMenu", $"scripts/resource/ui/menus/R5R/lobbymenu.res", InitR5RLobbyMenu )
 	AddPanel( r5rlobbymenu, "R5RHomePanel", InitR5RHomePanel )
+	AddPanel( r5rlobbymenu, "R5RNamePanel", InitR5RNamePanel )
+	AddPanel( r5rlobbymenu, "R5RDescPanel", InitR5RDescPanel )
 	var createserverpanel = AddPanel( r5rlobbymenu, "R5RCreateServerPanel", InitR5RCreateServerPanel )
 	AddPanel( r5rlobbymenu, "R5RServerBrowserPanel", InitR5RServerBrowserPanel )
 	AddPanel( createserverpanel, "R5RPlaylistPanel", InitR5RPlaylistPanel )
@@ -1528,7 +1530,11 @@ void function InitMenus()
 	//CTF UI
 	var controlmenu = AddMenu( "CTFRespawnMenu", $"scripts/resource/ui/menus/CTF/ctfrespawnmenu.menu", InitCTFRespawnMenu )
 	////////
-
+	
+	//Firing Range Challenges UI
+	//AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/frchallenges.menu", InitFRChallengesMenu )
+	////////
+	
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )
 	AddPanel( lobbyMenu, "PlayPanel", InitPlayPanel )
 	AddPanel( lobbyMenu, "CharactersPanel", InitCharactersPanel )

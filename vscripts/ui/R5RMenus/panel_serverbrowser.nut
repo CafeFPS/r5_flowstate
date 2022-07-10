@@ -259,7 +259,7 @@ array<ServerListing> function GetServerArray(int svServerCount)
 	// Add each server to the array
 	for( int i=0; i < svServerCount; i++ ) {
 		//Add Server to array
-		AddServerToArray(i, GetServerName(i), GetServerPlaylist(i), GetServerMap(i), "Server description coming soon.", 32, 0, ServerList)
+		AddServerToArray(i, GetServerName(i), GetServerPlaylist(i), GetServerMap(i), GetServerDescription(i), GetServerMaxPlayers(i), GetServerCurrentPlayers(i), ServerList)
 
 		// If server is on final row add a new page
 		if(m_vCurrentRow == SB_MAX_SERVER_PER_PAGE) {
