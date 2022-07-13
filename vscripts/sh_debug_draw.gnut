@@ -1,6 +1,30 @@
 
 globalize_all_functions
 
+void function DebugDrawCapsule( vector origin, vector angles, float radius, float height, int r, int g, int b, bool throughGeo, float time )
+{
+	int numSides = 4
+	float deg = 360.0 / float( numSides )
+	array<vector> points
+	vector up = AnglesToUp( angles )
+
+	for ( int i = 0; i < numSides; i++ )
+	{
+		vector angles2 = AnglesCompose( angles, <0, deg * i, 0> )
+		vector forward = AnglesToForward( angles2 )
+		points.append( origin + ( forward * radius ) )
+	}
+
+	for ( int i = 0; i < numSides; i++ )
+	{
+		vector start = points[i]
+		vector end = i == 0 ? points[numSides - 1] : points[i - 1]
+		DebugDrawLine( start, start + (up * height), r, g, b, throughGeo, time )
+	}
+	DebugDrawHemiSphere( origin + (up * height), angles, radius, r, g, b, throughGeo, time )
+	DebugDrawHemiSphere( origin, AnglesCompose(angles, <180, 180, 0>), radius, r, g, b, throughGeo, time )
+}
+
 void function DebugDrawCylinder( vector origin, vector angles, float radius, float height, int r, int g, int b, bool throughGeo, float time )
 {
 	int numSides = 16
@@ -72,6 +96,66 @@ void function DebugDrawSphere( vector origin, float radius, int r, int g, int b,
 	{
 		DebugDrawCircle( origin, <0, 0, degrees * i>, radius, r, g, b, throughGeo, time, segments )
 		DebugDrawCircle( origin, <degrees * i, 0, 0>, radius, r, g, b, throughGeo, time, segments )
+	}
+}
+
+void function DebugDrawHemiSphere( vector origin, vector angles, float radius, int r, int g, int b, bool throughGeo, float time, int segments = 16 )
+{
+	bool firstLoop = true
+
+	vector start1
+	vector start2
+	vector start3
+	vector start4
+
+	vector end1
+	vector end2
+	vector end3
+	vector end4
+
+	vector angles1
+	vector angles2
+	vector angles3
+	vector angles4
+
+	vector forward1
+	vector forward2
+	vector forward3
+	vector forward4
+
+	float degrees =  360.0 / float( segments )
+
+	for ( int i = 0; i < (segments / 2 + 1); i++ )
+	{
+		angles1 = AnglesCompose( angles, < -degrees * i, 0, 0> )
+		angles2 = AnglesCompose( angles, <0, degrees * i - 90, 0> )
+		angles3 = AnglesCompose( angles, < degrees * i + 180, 90, 0> )
+		angles4 = AnglesCompose( angles, <0, degrees * i + 90, 0> )
+
+		forward1 = AnglesToForward( angles1 )
+		forward2 = AnglesToForward( angles2 )
+		forward3 = AnglesToForward( angles3 )
+		forward4 = AnglesToForward( angles4 )
+
+		end1 = origin + ( forward1 * radius )
+		end2 = origin + ( forward2 * radius )
+		end3 = origin + ( forward3 * radius )
+		end4 = origin + ( forward4 * radius )
+
+		if ( !firstLoop )
+		{
+			DebugDrawLine( start1, end1, r, g, b, throughGeo, time )
+			DebugDrawLine( start2, end2, r, g, b, throughGeo, time )
+			DebugDrawLine( start3, end3, r, g, b, throughGeo, time )
+			DebugDrawLine( start4, end4, r, g, b, throughGeo, time )
+		}
+
+		start1 = end1
+		start2 = end2
+		start3 = end3
+		start4 = end4
+
+		firstLoop = false
 	}
 }
 
