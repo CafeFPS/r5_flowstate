@@ -627,6 +627,8 @@ void function OnClientDisconnected( entity player )
 {
 	if ( player in file.currentPlayerTeamMap )
 		delete file.currentPlayerTeamMap[player]
+
+	UpdatePlayerCounts()
 }
 
 void function OnPlayerEntityChangedTeam( entity player )
