@@ -20,23 +20,23 @@ void function InitArenasBuyPanel4( var panel )
 
 	var p2020 = Hud_GetChild( menu, "Volt" )
 	RuiSetImage( Hud_GetRui( p2020 ), "basicImage", $"rui/weapon_icons/r5/weapon_volt" )
-	AddEventHandlerToButton( menu, "VoltButton", UIE_CLICK, BuyP2020 )
+	AddEventHandlerToButton( menu, "VoltButton", UIE_CLICK, BuyVolt )
 	file.weaponButtons.append(Hud_GetChild( menu, "VoltButton" ))
 
 	var mozam = Hud_GetChild( menu, "Rampage" )
 	RuiSetImage( Hud_GetRui( mozam ), "basicImage", $"rui/weapon_icons/r5/weapon_spitfire" )
-	AddEventHandlerToButton( menu, "RampageButton", UIE_CLICK, BuyMozam )
+	AddEventHandlerToButton( menu, "RampageButton", UIE_CLICK, BuySpitfire )
 	file.weaponButtons.append(Hud_GetChild( menu, "RampageButton" ))
 
 	var wingman = Hud_GetChild( menu, "Car" )
 	RuiSetImage( Hud_GetRui( wingman ), "basicImage", $"rui/weapon_icons/r5/weapon_r97" )
-	AddEventHandlerToButton( menu, "CarButton", UIE_CLICK, BuyWingman )
+	AddEventHandlerToButton( menu, "CarButton", UIE_CLICK, BuyCar )
 	file.weaponButtons.append(Hud_GetChild( menu, "CarButton" ))
 
-	// var re45 = Hud_GetChild( menu, "RE45" )
+	var re45 = Hud_GetChild( menu, "ClickWeapon" )
 	// RuiSetImage( Hud_GetRui( re45 ), "basicImage", $"rui/weapon_icons/r5/weapon_r45" )
-	// AddEventHandlerToButton( menu, "RE45Button", UIE_CLICK, BuyRE45 )
-	// file.weaponButtons.append(Hud_GetChild( menu, "RE45Button" ))
+	AddEventHandlerToButton( menu, "ClickWeaponButton", UIE_CLICK, BuyClickWeapon )
+	file.weaponButtons.append(Hud_GetChild( menu, "ClickWeaponButton" ))
 
 	// var alternator = Hud_GetChild( menu, "Alternator" )
 	// RuiSetImage( Hud_GetRui( alternator ), "basicImage", $"rui/weapon_icons/r5/weapon_alternator" )
@@ -82,65 +82,30 @@ void function OnR5RSB_Hide(var panel)
 void function OnR5RSB_Show(var panel)
 {
 }
-void function BuyP2020(var button)
+void function BuyVolt(var button)
 {
 	CleanAllButtons()
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_volt_smg" )
 }
 
-void function BuyMozam(var button)
+void function BuySpitfire(var button)
 {
 	CleanAllButtons()
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_lmg" )
 }
 
-void function BuyWingman(var button)
+void function BuyCar(var button)
 {
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_r97" )
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_car" )
 }
 
-void function BuyRE45(var button)
+void function BuyClickWeapon(var button)
 {
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_autopistol" )
-}
-
-void function BuyAlternator(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_alternator_smg" )
-}
-
-void function BuyR99(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_r97" )
-}
-
-void function BuyEva8(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_shotgun" )
-}
-
-void function BuyMastiff(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_mastiff" )
-}
-
-void function BuyPeacekeeper(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_energy_shotgun" )
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_clickweapon" )
 }
