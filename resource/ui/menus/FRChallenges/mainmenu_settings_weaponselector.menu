@@ -1,0 +1,249 @@
+scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/invisible.rpak"
+			visible					1
+			drawColor				"0 0 0 50"
+		}	
+
+		Title
+		{
+			ControlName				Label
+			xpos                    -30
+			ypos					-30
+			auto_wide_tocontents	1
+			tall					50
+			visible					1
+			fontHeight				60
+			labelText				"APEX AIM TRAINER"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"191 13 13 255"
+			pin_to_sibling			ScreenBlur
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
+		
+		MadeBy
+		{
+			ControlName				Label
+			xpos                    -40
+			ypos					-60
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"v0.7 | Made by CaféDeColombia @CafeFPS"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			ScreenBlur
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		MadeBy2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					20
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"Powered by R5Reloaded"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			MadeBy
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		WeaponSelectorFrame
+		{
+			ControlName				RuiPanel
+			wide					%70//%70
+			xpos                    %15//%15
+			ypos 					%15
+			zpos 0
+			tall					%70
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+            ruiArgs
+            {
+                basicImageColor     "0 0 0"
+                basicImageAlpha     0.9
+            }
+		}
+
+		TitleWeaponSelector
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-15
+			zpos 1
+			auto_wide_tocontents	1
+			tall					50
+			visible					1
+			fontHeight				40
+			labelText				"WEAPON SELECTOR"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"252 198 3 255"
+			pin_to_sibling			WeaponSelectorFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		TabsCommon
+		{
+			ControlName				CNestedPanel
+			classname				"TabsCommonClass"
+			ypos                    20
+			xpos                    0
+			zpos					10
+			wide					f0
+			tall					160
+			visible					1
+			controlSettingsFile		"scripts/resource/ui/menus/panels/tabs_buymenu.res"
+
+			pin_to_sibling			WeaponSelectorFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+
+		BuyMenu1
+        {
+            ControlName				CNestedPanel
+            wide			        %100
+            tall			        %100
+            xpos                    0
+            ypos                    20
+            zpos                    10
+            visible                 0
+            enabled                 1
+            controlSettingsFile		"scripts/resource/ui/menus/panels/buymenu1.res"
+
+            xcounterscroll			0.075
+            ycounterscroll			0.075
+        }
+
+		BuyMenu2
+        {
+            ControlName				CNestedPanel
+            wide			        %100
+            tall			        %100
+            xpos                    0
+            ypos                    20
+            zpos                    10
+            visible                 0
+            enabled                 1
+            controlSettingsFile		"scripts/resource/ui/menus/panels/buymenu2.res"
+
+            xcounterscroll			0.075
+            ycounterscroll			0.075
+        }
+
+		BuyMenu3
+        {
+            ControlName				CNestedPanel
+            wide			        %100
+            tall			        %100
+            xpos                    0
+            ypos                    20
+            zpos                    10
+            visible                 0
+            enabled                 1
+            controlSettingsFile		"scripts/resource/ui/menus/panels/buymenu3.res"
+
+            xcounterscroll			0.075
+            ycounterscroll			0.075
+        }
+		BuyMenu4
+        {
+            ControlName				CNestedPanel
+            wide			        %100
+            tall			        %100
+            xpos                    0
+            ypos                    20
+            zpos                    10
+            visible                 0
+            enabled                 1
+            controlSettingsFile		"scripts/resource/ui/menus/panels/buymenu4.res"
+
+            xcounterscroll			0.075
+            ycounterscroll			0.075
+        }
+
+		GoBackButton
+		{
+			ControlName		"RuiButton"
+			rui					"ui/tab_button.rpak"
+			wide					92
+			tall					40
+		    visible				"1"
+			sound_focus           "UI_Menu_Focus"
+			sound_accept          "UI_Menu_Accept"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText ""
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			
+			
+			xpos                    -15
+			ypos                    -15
+			zpos                    15
+            visible 1
+
+			pin_to_sibling          WeaponSelectorFrame
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+
+		GoBackText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"BACK"
+			visible                 1
+			zpos 0
+			tall					40
+			fontHeight				30
+			font					TitleBoldFont
+			fgcolor_override		"255 255 255 255"
+		
+			ypos                    0
+			xpos					-10
+			pin_to_sibling          GoBackButton
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}				
+	}
+}

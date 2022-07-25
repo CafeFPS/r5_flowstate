@@ -153,6 +153,13 @@ global struct ClientPlayerStruct
 
 	array<int> freefallContrailFXHandles
 	int freefallWindEffectHandle = -1
+	
+	float delayeddamage
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	
+	bool onetimetimer = false
+	float lasttime
 }
 
 
@@ -161,6 +168,10 @@ global struct ClientPlayerStruct
 global struct ClientAIStruct
 {
 	int gruntVoiceIndex = 0
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	bool firsttime = true
+	int shieldTier
 }
 
 

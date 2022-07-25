@@ -30,7 +30,7 @@ struct
 	table<var, ButtonData > changeCharacterButtonData
 	table<var, ButtonData > friendlyFireButtonData
 	table<var, ButtonData > thirdPersonButtonData
-
+	table<var, ButtonData > ExitChallengeButtonData
 	InputDef& qaFooter
 } file
 
@@ -83,6 +83,11 @@ void function ToggleThirdPerson()
 	ClientCommand( "ToggleThirdPerson" )
 }
 
+void function SignalExitChallenge()
+{
+	RunClientScript("ExitChallengeClient")
+}
+
 void function InitSystemPanel( var panel )
 {
 	var menu = Hud_GetParent( panel )
@@ -109,6 +114,10 @@ void function InitSystemPanel( var panel )
 	file.changeCharacterButtonData[ panel ] <- clone data
 	file.friendlyFireButtonData[ panel ] <- clone data
 	file.thirdPersonButtonData[ panel ] <- clone data
+	file.ExitChallengeButtonData[ panel ] <- clone data
+	
+	file.ExitChallengeButtonData[ panel ].label = "EXIT CHALLENGE"
+	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
@@ -164,16 +173,20 @@ void function UpdateSystemPanel( var panel )
 	{
 		UISize screenSize = GetScreenSize()
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
-
+		
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
+		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
-			else
+			else	
 				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
 		}
-
-		if ( IsFiringRangeGameMode() )
+		
+		if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+			SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
+		
+		if ( IsFiringRangeGameMode() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] )
 		//	SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
@@ -207,7 +220,10 @@ void function UpdateSystemPanel( var panel )
 	}
 
 	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
-	Hud_SetText( dataCenterElem, Localize( "#SYSTEM_DATACENTER", GetDatacenterName(), GetDatacenterPing() ) )
+	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer v1.0 by @CafeFPS")
+	else
+		Hud_SetText( dataCenterElem, Localize( "#SYSTEM_DATACENTER", GetDatacenterName(), GetDatacenterPing() ) )
 }
 
 void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )

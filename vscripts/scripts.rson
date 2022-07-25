@@ -297,7 +297,29 @@ Scripts:
 	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
-
+	
+	//CUSTOM BY COLOMBIA
+	// weapons/mp_weapon_portalgun.nut
+	// weapons/mp_weapon_ringflare.nut
+	// weapons/mp_weapon_needler.nut
+	// weapons/mp_weapon_turret.nut 
+	// weapons/mp_weapon_guidedmissile.nut
+	// weapons/mp_weapon_leviathangun.nut
+	// weapons/mp_ability_ironmanunibeam.nut
+	// weapons/mp_weapon_fanatic.nut
+	// weapons/mp_weapon_heatwave.nut
+	// weapons/mp_ability_phase_rewind.nut
+	// weapons/mp_ability_phase_chamber.nut
+	// weapons/mp_ability_mobile_respawn_beacon.nut
+	// weapons/mp_weapon_energysword.nut
+	// weapons/mp_ability_birds.nut
+	// weapons/mp_weapon_jumppadsweapon.nut
+	// weapons/mp_weapon_ziplinesweapon.nut
+	// weapons/mp_weapon_grenade_decoyaudio.nut
+	// weapons/mp_weapon_grenade_cryonade.nut
+	// weapons/mp_ability_gravitylift.nut
+	
+	weapons/mp_weapon_clickweapon.nut
 ]
 
 When: "SERVER || CLIENT"
@@ -794,7 +816,18 @@ Scripts:
 	
 	//CTF
 	ui/CTFMenus/menu_ctf_respawn.nut
-
+	
+	//FR Challenges
+	ui/FRChallenges/menu_frchallenges.nut
+	ui/FRChallenges/mainmenu_challenges.nut
+	ui/FRChallenges/mainmenu_settings.nut
+	ui/FRChallenges/mainmenu_settings_weaponselector.nut
+	ui/FRChallenges/panel_buymenu1.nut
+	ui/FRChallenges/panel_buymenu2.nut
+	ui/FRChallenges/panel_buymenu3.nut
+	ui/FRChallenges/panel_buymenu4.nut
+	ui/FRChallenges/optics_smg.nut
+	
 	//R5RUI
 	ui/R5RMenus/menu_main.nut
 	ui/R5RMenus/menu_lobby.nut
@@ -890,6 +923,7 @@ Scripts:
 	gamemodes/custom_tdm/custom_tdm_settings.nut
 	gamemodes/custom_ctf/sh_gamemode_custom_ctf.nut
 	gamemodes/custom_ctf/custom_ctf_settings.nut
+	gamemodes/custom_aimtrainer/sh_aimtrainer.nut
 ]
 
 When: "SERVER"
@@ -901,7 +935,7 @@ Scripts:
 	gamemodes/custom_prophunt/_gamemode_prophunt.nut
 	gamemodes/custom_surf/_gamemode_surf.nut
 	gamemodes/custom_surf/_gamemode_surf2.nut
-	
+	gamemodes/custom_aimtrainer/_aimtrainer.nut
 	//maps
 	custom_maps/_custom_maps_1.nut
 	custom_maps/_custom_maps_2.nut
@@ -913,6 +947,7 @@ Scripts:
 [
 	gamemodes/custom_tdm/cl_gamemode_custom_tdm.nut
 	gamemodes/custom_ctf/cl_gamemode_custom_ctf.nut
+	gamemodes/custom_aimtrainer/cl_aimtrainer.nut
 ]
 
 

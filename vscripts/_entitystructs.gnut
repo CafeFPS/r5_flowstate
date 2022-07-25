@@ -338,6 +338,7 @@ global struct ServerEntityStruct
 	/////////
 
 	array<entity> sonarTriggers
+	
 
 	string enemyHighlight = ""
 	string burnReward = ""
@@ -401,7 +402,30 @@ global struct ServerEntityStruct
 	//Trophy Structs
 	float pylonhealth
 	
+	//Flyers easteregg
 	entity ParentedPlayerToFlyer
+	
+	//Arthur's revenge
+	array<entity> birdsFromThisCluster
+		
+	//Turret
+	entity turretoldlockedent
+	entity turretlockedent
+	entity turretowner
+	entity turretweapon = null
+	entity turrettrigger
+	bool stoppls = false
+	bool onlyonetime = false
+	bool islockedent = false
+	bool stopTurretWeapon = false
+	array<entity> turretparts
+	
+	//portal gun
+	bool isplayercomingfromportal1 = false
+	bool isplayercomingfromportal2 = false
+	
+	bool alreadyPingedUltraDecoy = false
+	bool isBeingAttackedByDroneMedic = false
 }
 
 global struct MeritData
@@ -689,6 +713,30 @@ global struct ServerPlayerStruct
 	// Amount of player downed enemy at one time
 	int downedEnemyAtOneTime = 0
 	bool isDownedEnemyRecently = false
+	
+	vector guidedLaserPoint
+	
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	array<entity> proplist
+	entity particleonbody
+	
+	entity lastDecoy
+	
+	entity lastdocdrone
+	
+	//Strafer dummy challenge
+	int challengeName = 0
+	bool isChallengeActivated
+	int straferDummyKilledCount
+	int straferChallengeDamage
+	int straferCriticalShots
+	int straferShotsHit
+	int straferTotalShots
+	float straferAccuracy
+	int straferShotsHitRecord = 0
+	int totalPossibleDamage
+	bool isNewBestScore = false
 }
 
 global struct ServerPlayerWaypoint
@@ -782,6 +830,15 @@ global struct ServerAIStruct
 	// r5 stuff
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
+	
+	int needles = 0
+	bool ongoingneedlesexplode = false
+	array<entity> proplist
+	entity particleonbody
+	
+	entity decoyOwner
+	string lastSchedule
+	string lastAnim
 }
 
 
@@ -791,6 +848,7 @@ global struct ServerWeaponStruct
 	float startChargeTime = 0.0
 	bool wasCharged = false
 	bool initialized = false
+
 	entity lastProjectileFired
 	array<VortexImpact> vortexImpactData
 
@@ -802,6 +860,7 @@ global struct ServerWeaponStruct
 	array<entity> salvoMissileArray
 
 	entity weaponOwner
+	
 	entity bubbleShield
 	array<int> statusEffects
 	array<entity> fxHandles
@@ -817,8 +876,25 @@ global struct ServerWeaponStruct
 	bool ziplineGrenadeCollided
 	entity ziplineStartModel
 	var ziplineStartPos
-}
 
+	//portal gun
+	entity portal1root = null
+	entity portal2root = null
+	entity trigger1 = null
+	entity trigger2 = null
+	vector startpos
+	vector endpos
+	bool issecondportalshot = false
+	vector portal1savedNormalAngle
+	vector portal2savedNormalAngle
+	vector portal1savedNormal
+	vector portal2savedNormal
+	vector portal1savedSurfaceAngle
+	vector portal2savedSurfaceAngle
+	
+	vector portal1RefAngles
+	vector portal2RefAngles
+}
 
 global struct RemoteTurretSettings
 {
@@ -876,6 +952,9 @@ global struct ServerProjectileStruct
 	vector ownerLocationDebug
 	vector savedSurfaceNormal
 	float lastTeleportTime
+	
+	bool dontbouncethistime = false
+	entity weapon
 }
 
 // hooked up to entity.soul in code
@@ -906,6 +985,10 @@ global struct ServerPlayerDecoyStruct
 {
 	array< entity > fxHandles
 	array< string > loopingSounds
+	asset characterSetFile 
+	asset modelName
+	bool F_or_B_CoinFlip
+	entity owner
 }
 
 // hooked up to entity.sp in code

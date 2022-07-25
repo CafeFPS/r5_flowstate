@@ -94,7 +94,7 @@ global function SetNextCircleDisplayCustomClosing
 global function SetNextCircleDisplayCustomClear
 
 global function SetChampionScreenRuiAsset
-
+global function InitSurvivalHealthBar
 #if R5DEV
 global function Dev_ShowVictorySequence
 global function Dev_AdjustVictorySequence
@@ -616,6 +616,7 @@ void function Cl_Survival_AddClient( entity player )
 
 	Fullmap_AddRui( rui )
 
+	
 	file.dpadMenuRui = CreateCockpitPostFXRui( SURVIVAL_HUD_DPAD_RUI, HUD_Z_BASE )
 	RuiTrackFloat( file.dpadMenuRui, "reviveEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
 
@@ -634,14 +635,6 @@ void function Cl_Survival_AddClient( entity player )
 	RuiSetBool( file.pilotRui, "isVisible", GetHudDefaultVisibility() )
 	RuiSetBool( file.pilotRui, "useShields", true )
 
-	#if(false)
-
-
-
-
-
-#endif
-
 	file.compassRui = CreatePermanentCockpitRui( $"ui/compass_flat.rpak", HUD_Z_BASE )
 	RuiTrackFloat3( file.compassRui, "playerAngles", player, RUI_TRACK_CAMANGLES_FOLLOW )
 	RuiTrackInt( file.compassRui, "gameState", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "gameState" ) )
@@ -653,11 +646,12 @@ void function Cl_Survival_AddClient( entity player )
 
 	SetConVarFloat( "dof_variable_blur", 0.0 )
 
-	#if(false)
-
-#endif //
-
 	WaitingForPlayersOverlay_Setup( player )
+	
+	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	{
+		RuiTrackInt( file.compassRui, "gameState", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, 0 )
+	}
 }
 
 
@@ -695,14 +689,34 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 			SURVIVAL_GetArmorShieldCapacity( 1 ) / 100.0,
 			SURVIVAL_GetArmorShieldCapacity( 2 ) / 100.0 >
 
-	RuiSetColorAlpha( rui, "shieldFrac", shieldFrac, float( SURVIVAL_GetArmorShieldCapacity( 3 ) ) )
+	RuiSetColorAlpha( rui, "shieldFrac", shieldFrac, float( SURVIVAL_GetArmorShieldCapacity( 5 ) ) )
 	RuiTrackFloat( rui, "playerTargetShieldFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.target_shields )
 	RuiTrackFloat( rui, "playerTargetHealthFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.target_health )
 	RuiTrackFloat( rui, "playerTargetHealthFracTemp", player, RUI_TRACK_HEAL_TARGET )
 
 	OverwriteWithCustomPlayerInfoTreatment( player, rui )
+	
+	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	{
+		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <53, 222, 47> / 255.0 ), 1.0 )
+		RuiSetBool( rui, "useCustomCharacterColor", true )
+	}
+	if(RGB_HUD)
+		thread RGBRui(rui)
 }
 
+void function RGBRui(var rui)
+{
+	entity player = GetLocalClientPlayer()
+	while(RGB_HUD)
+	{
+		int randomr = RandomInt(255)
+		int randomg = RandomInt(255) 
+		int randomb = RandomInt(255)	
+		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <randomr, randomg, randomb> / 255.0 ), 1.0 )	
+		wait 0.1
+	}
+}
 
 void function OverwriteWithCustomPlayerInfoTreatment( entity player, var rui )
 {
@@ -1005,7 +1019,7 @@ void function MinimapPackage_ObjectiveAreaInit( entity ent, var rui )
 //
 
 
-
+	
 
 
 
@@ -1043,13 +1057,8 @@ void function ScorebarInitTracking( entity player, var statusRui )
 	RuiTrackFloat( statusRui, "deathfieldDistance", player, RUI_TRACK_DEATHFIELD_DISTANCE )
 	RuiTrackInt( statusRui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 
-	#if(false)
-
-#endif //
-
 	if ( GetCurrentPlaylistVarBool( "second_scorebar_enabled", false ) == true )
 	{
-		//
 		RuiTrackInt( statusRui, "squadsRemainingCount", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingPlayerCount" ) )
 		RuiTrackInt( statusRui, "squadsRemainingCount2", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "livingShadowPlayerCount" ) )
 	}
@@ -1065,8 +1074,9 @@ void function OnHealthPickupTypeChanged( entity player, int oldKitType, int kitT
 
 	if ( !IsLocalViewPlayer( player ) )
 		return
-
-	UpdateDpadHud( player )
+	
+	if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		UpdateDpadHud( player )
 }
 
 
@@ -1392,42 +1402,72 @@ void function EquipmentChanged( entity player, string equipSlot, int new )
 	int tier              = 0
 	EquipmentSlot es      = Survival_GetEquipmentSlotDataByRef( equipSlot )
 	asset hudIcon         = es.emptyImage
-	bool isEvolvingShield = false
-	int evolvingKillCount = 0
-
+	int armorCapacity = -1
+	
+	bool isEvo   = false
+	int evoCount = 0
+	
 	if ( new > -1 )
 	{
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( new )
 		tier = data.tier
 		hudIcon = data.hudIcon
 
+		if ( data.lootType == eLootType.ARMOR )
+		{
+			armorCapacity = player.GetShieldHealthMax()
+		}
+		
 		if ( es.attachmentPoint != "" )
 		{
 			string attachmentStyle = GetAttachmentPointStyle( es.attachmentPoint, data.ref )
 			hudIcon = emptyAttachmentSlotImages[attachmentStyle]
 		}
 	}
-
-	#if(false)
-
-
-
-
-
-
-#endif
-
+	
+	
+	// if ( data.lootType == eLootType.ARMOR && EvolvingArmor_IsEquipmentEvolvingArmor( data.ref ) )
+		// {
+			// isEvo = true
+			// evoCount = EvolvingArmor_GetRequirementForEvolution( data.tier )
+		// }
+		
 	if ( player == GetLocalViewPlayer() )
 	{
-		RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
-		RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
+		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" )
+		// if(player.GetShieldHealthMax() > 100 && es.unitFrameTierVar != "")
+			// RuiSetInt( file.pilotRui, es.unitFrameTierVar, 5 )
+		// else if(es.unitFrameTierVar != "")
+			// RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
+		
+		// RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
+		if ( es.unitFrameTierVar != "" )
+			RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
+		if ( es.unitFrameImageVar != "" )
+			RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
 
-		#if(false)
-
-
-#endif
-
+		if ( armorCapacity > 100 )
+		{
+			//RuiSetInt( file.pilotRui, "armorShieldCapacity", armorCapacity )
+			RuiSetInt( file.pilotRui, es.unitFrameTierVar, 5 )
+		}	
 		UpdateActiveLootPings()
+	} else {
+		// LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" )
+		
+		// if ( es.unitFrameTierVar != "" )
+			// RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
+		// if ( es.unitFrameImageVar != "" )
+			// RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
+		
+		// armorCapacity = player.GetShieldHealthMax()
+		
+		// if ( armorCapacity > 100 )
+		// {
+			// //RuiSetInt( file.pilotRui, "armorShieldCapacity", armorCapacity )
+			// RuiSetInt( file.pilotRui, es.unitFrameTierVar, 5 )
+		// }
+		// UpdateActiveLootPings()
 	}
 
 	if ( player == GetLocalClientPlayer() )
@@ -3125,7 +3165,10 @@ void function OnGamestatePrematch()
 
 void function SetDpadMenuVisible()
 {
-	RuiSetBool( file.dpadMenuRui, "isVisible", GetHudDefaultVisibility() )
+	if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		RuiSetBool( file.dpadMenuRui, "isVisible", GetHudDefaultVisibility() )
+	else
+		RuiSetBool( file.dpadMenuRui, "isVisible", false )
 }
 
 

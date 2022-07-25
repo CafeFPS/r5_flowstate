@@ -111,7 +111,15 @@ void function ClGameState_Init()
 
 void function CreateScoreRUI()
 {
-	var rui = CreatePermanentCockpitPostFXRui( GetGameStateAsset(), MINIMAP_Z_BASE - 1 )
+	var rui
+	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	{	
+		UISize screenSize = GetScreenSize()
+		var screenAlignmentTopo = RuiTopology_CreatePlane( <( screenSize.width * 0.51),( screenSize.height*0), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
+		rui = RuiCreate( GetGameStateAsset(), screenAlignmentTopo, RUI_DRAW_HUD, 0 )
+	}
+	else
+		rui = CreatePermanentCockpitPostFXRui( GetGameStateAsset(), MINIMAP_Z_BASE - 1 )
 
 	RuiTrackFloat( rui, "jumpEndTime", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL, GetNetworkedVariableIndex( "PlaneDoorsOpenTime" ) )
 
@@ -127,7 +135,7 @@ void function CreateScoreRUI()
 	file.gamestateRui = rui
 	file.gameStateRuiCreated = true
 
-	SetCommonScoreRUIVars( rui )
+	//SetCommonScoreRUIVars( rui )
 
 	if ( file.gameModeScoreBarUpdateRules == null )
 		SetGameModeScoreBarUpdateRules( GameModeScoreBarUpdateRules_Default )
@@ -161,6 +169,15 @@ void function SetCommonScoreRUIVars( var rui )
 		RuiSetString( rui, "squadsRemainingTextSingular", "PLAYERS ONLINE" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "PLAYERS ONLINE" )
 	}
+	else if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false )){
+		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+		RuiSetString( rui, "squadsRemainingTextSingular", "DUMMIES REMAINING" )
+		RuiSetString( rui, "squadsRemainingTextPlural", "DUMMIES REMAINING" )
+	}
+	else if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	{
+		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
+	}
 	else
 	{
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", true )
@@ -180,11 +197,10 @@ void function UpdateGamestateRuiTracking( entity player )
 void function UpdateCommonScoreRuiTracking( var rui, entity player )
 {
 	RuiTrackInt( rui, "killCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
+	RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 	RuiTrackInt( rui, "playerObservedCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "playerObservedCount" ) )
 	RuiTrackBool( rui, "hasDeathFieldImmunity", player, RUI_TRACK_SCRIPT_NETWORK_VAR_BOOL, GetNetworkedVariableIndex( "hasDeathFieldImmunity" ) )
-
-	if ( IsRankedGame() )
-		RuiTrackInt( rui, "assistCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "assists" ) )
+	RuiTrackInt( rui, "assistCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "assists" ) )
 
 }
 

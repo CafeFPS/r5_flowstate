@@ -1532,7 +1532,21 @@ void function InitMenus()
 	////////
 	
 	//Firing Range Challenges UI
-	//AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/frchallenges.menu", InitFRChallengesMenu )
+	AddMenu( "FRChallengesMainMenu", $"scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu", InitFRChallengesMainMenu )
+	AddMenu( "FRChallengesSettings", $"scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu", InitFRChallengesSettings )
+	
+	//wpn selector
+	var weaponselector = AddMenu( "FRChallengesSettingsWpnSelector", $"scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu", InitFRChallengesSettingsWpnSelector )
+	AddPanel( weaponselector, "BuyMenu1", InitArenasBuyPanel1 )
+	AddPanel( weaponselector, "BuyMenu2", InitArenasBuyPanel2 )
+	AddPanel( weaponselector, "BuyMenu3", InitArenasBuyPanel3 )
+	AddPanel( weaponselector, "BuyMenu4", InitArenasBuyPanel4 )
+
+	//optics test
+	AddMenu( "FRChallengesOpticsSMG", $"scripts/resource/ui/menus/FRChallenges/optics_smg.menu", InitSMGOptics ) //smg
+	// AddPanel( weaponselector, "BuyMenu1", InitArenasBuyPanel1 ) //smg
+	
+	AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/frchallenges.menu", InitFRChallengesResultsMenu ) //results
 	////////
 	
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )

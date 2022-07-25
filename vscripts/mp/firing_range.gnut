@@ -15,6 +15,7 @@ global const string FIRINGRANGE_FLICK_TARGET_SOUND = "Player.Hitbeep_headshot.Hu
 
 global const asset FIRINGRANGE_BLUE_TARGET_ASSET = $"mdl/barriers/shooting_range_target_02.rmdl"
 global const asset FIRINGRANGE_BLUE_STAND_ASSET = $"mdl/barriers/shooting_range_target_02_stand.rmdl"
+global const asset FIRINGRANGE_ANIMATED_TARGET_ASSET = $"mdl/barriers/shooting_range_target_01_animated.rmdl"
 
 global const asset FIRINGRANGE_ITEM_RESPAWN_PARTICLE = $"P_impact_shieldbreaker_sparks"
 
@@ -80,19 +81,23 @@ void function FiringRangeGameMode_Init()
 	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
 	PrecacheParticleSystem( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT )
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
-	
+	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		RegisterSignal("ChallengeTimeOver")
 	#if SERVER
 		if(GetMapName() != "mp_rr_canyonlands_staging" || GameRules_GetGameMode() == "custom_tdm") return
 		
 		AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
 		AddCallback_OnClientConnected( _WaitForPlayerSpawnFR )
 		AddCallback_OnPlayerKilled( _OnPlayerKilledFR )
-		AddCallback_OnWeaponAttack( OnWeaponAttack )
+	
+		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+			AddCallback_OnWeaponAttack( OnWeaponAttack )
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
 		AddClientCommandCallback("frfire", ClientCommand_FriendlyFireFR)
 		SetGameState(eGameState.Playing)
 		WaitForGameState(eGameState.Playing)
-		thread ThreadThatWatchesForWeaponsCuzWhenPlayerIsDedDoesntHaveWeaponsWtf()
+		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+			thread ThreadThatWatchesForWeaponsCuzWhenPlayerIsDedDoesntHaveWeaponsWtf()
 	#endif
 }
 
@@ -166,16 +171,24 @@ void function SpawnDummy(vector origin, vector angles)
 ///////////////////////////////////////////////////////
 
 {
-//printt("Flowstate DEBUG - Spawning FR dummy.")
-
     entity dummy = CreateEntity( "npc_dummie" )
     SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
     dummy.SetOrigin( origin )
     dummy.SetAngles( angles )
+	DispatchSpawn( dummy )
+	dummy.SetShieldHealthMax( 125 )
+	dummy.SetShieldHealth( 125 )
+	dummy.SetMaxHealth( 100 )
+	dummy.SetHealth( 100 )
+	dummy.SetTakeDamageType( DAMAGE_YES )
+	dummy.SetDamageNotifications( true )
+	dummy.SetDeathNotifications( true )
+	dummy.SetValidHealthBarTarget( true )
+	SetObjectCanBeMeleed( dummy, true )
+	dummy.SetSkin(RandomInt(6))
+	dummy.DisableHibernation()
     SetTeam(dummy, 99)
-    DispatchSpawn( dummy )
-	//Inventory_SetPlayerEquipment(dummy, "armor_pickup_lv3", "armor")
-    dummy.SetSkin(1)
+
 	thread OnDummyKilled(dummy)
 }
 
@@ -266,7 +279,9 @@ void function _WaitForPlayerSpawnFR( entity player )
 	int playerOldTeam = player.GetTeam()
 	
 	thread _HandleRespawnFR(player)
-	Message(player, "R5R FIRING RANGE", "'frfire' in console to toggle friendly fire (5s cooldown).", 15)
+	
+	if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		Message(player, "R5R FIRING RANGE", "'frfire' in console to toggle friendly fire (5s cooldown).", 15)
 }
 void function WpnPulloutOnRespawn(entity player)
 ///////////////////////////////////////////////////////
@@ -345,6 +360,11 @@ void function _HandleRespawnFR(entity player, bool respawnsameposition = false)
 		GiveRandomTac(player)
 		GiveRandomUlt(player)
 		Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+		
+		if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		{
+			StartFRChallenges(player)
+		}
 	}
 }
 
@@ -923,14 +943,15 @@ void function SpawnTargets()
 	SpawnTarget(<31240.9922, -10316.9521, -27762.9805>, <0,90,0> )
 }
 
-
-
 // ==================================================
 //					MAP PROPS
 // ==================================================
 
 void function SpawnMapProps()
 {
+	//Strafe challenge by CaféDeColombiaFPS
+	//CreateStrafeChallengeButton()
+	
 	// // TELEPORTERS
 	// {
 		// entity upper = CreateFRButton(<31016.6934, -8667.74414, -29239.7441>, <0,180,0>, "%&use% GO TO UPPER LEVEL")
@@ -1079,18 +1100,6 @@ void function SpawnMapProps()
 		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<192,0,0>, <90,270,0>, true)
 	}
 
-	// FIRING RANGE CONNECTORS
-	{
-		foreach(entity e in GetEntArrayByScriptName("weapon_racks"))
-		{
-			vector pos = e.GetOrigin()
-			vector rght = e.GetRightVector()
-			vector fwd = e.GetForwardVector()
-			vector up = e.GetUpVector()
-			CreateFRProp( FIRINGRANGE_GRATE_ASSET, pos+rght*-208+fwd*-96+up*-3, <0,0,0>)
-		}
-	}
-
 	// DUCT TAPE WALLS
 	{
 		/*BACK FAR AWAY*/
@@ -1235,11 +1244,6 @@ void function SpawnDoors()
 	file.doors.append(ddr)
 }
 
-void function OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
-{
-	FixWeapon(weapon)
-}
-
 void function FixWeapon(entity weapon)
 {
 	try
@@ -1257,5 +1261,9 @@ void function FixWeapon(entity weapon)
 		}
 	}
 	catch(error){}
+}
+void function OnWeaponAttack( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
+{
+	FixWeapon(weapon)
 }
 #endif

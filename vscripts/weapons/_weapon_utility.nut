@@ -128,7 +128,7 @@ global function AddWeaponModChangedCallback
 global function TryApplyingBurnDamage
 global function AddEntityBurnDamageStack
 global function ApplyBurnDamageTick
-
+global function TimedCustomHighlight
 #if R5DEV
 global function ToggleZeroingMode
 #endif
@@ -302,8 +302,13 @@ void function WeaponUtility_Init()
 	PrecacheImpactEffectTable( CLUSTER_ROCKET_FX_TABLE )
 
 	#if SERVER
-		AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, EMP_DamagedPlayerOrNPC )
-		AddDamageCallbackSourceID( eDamageSourceId.damagedef_ticky_arc_blast, EMP_DamagedPlayerOrNPC )
+		//AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_cryonade, Cryonade_DamagedPlayerOrNPC )
+		
+		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		{
+			AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, EMP_DamagedPlayerOrNPC )
+			AddDamageCallbackSourceID( eDamageSourceId.damagedef_ticky_arc_blast, EMP_DamagedPlayerOrNPC )
+		}
 		AddCallback_OnPlayerRespawned( PROTO_TrackedProjectile_OnPlayerRespawned )
 		AddCallback_OnPlayerKilled( PAS_CooldownReduction_OnKill )
 		AddCallback_OnPlayerGetsNewPilotLoadout( OnPlayerGetsNewPilotLoadout )
@@ -418,6 +423,7 @@ int function Fire_EnergyChargeWeapon( entity weapon, WeaponPrimaryAttackParams a
 	patternScale *= spreadChokeFrac
 
 	float speedScale = 1.0
+	
 	weapon.FireWeapon_Default( attackParams.pos, attackParams.dir, speedScale, patternScale, ignoreSpread )
 
 	if ( weapon.IsChargeWeapon() )
@@ -4919,6 +4925,15 @@ void function ReportOffhandWeaponRegenEnded( entity weapon )
 	else if ( owner.GetOffhandWeapon( OFFHAND_ULTIMATE ) == weapon )
 		PIN_PlayerAbilityReady( owner, ABILITY_TYPE.ULTIMATE )
 }
+
+void function TimedCustomHighlight(entity player, entity hitEnt, float scanTime = 4)
+//Thx pogass
+{
+    //SonarStartGrenade( hitEnt, hitEnt.GetOrigin(), player.GetTeam(), player )
+    wait scanTime
+    //SonarEndGrenadeGrenade( hitEnt, player.GetTeam(), true)
+}
+
 #endif
 void function PlayDelayedShellEject( entity weapon, float time, int count = 1, bool persistent = false )
 {

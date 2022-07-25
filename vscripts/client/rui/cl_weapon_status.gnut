@@ -449,7 +449,11 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 				ammoColor = SrgbToLinear( <255, 10, 10> / 255.0 )
 				ammoIcon = $""
 			}
-			
+			// if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+			// {
+				// ammoColor = SrgbToLinear( <53, 222, 47> / 255.0 )
+				// ammoIcon = $""				
+			// }
 			RuiSetFloat3( rui, "ammoColorTab" + tabIndex, ammoColor )
 			if ( selected )
 			{
@@ -457,6 +461,8 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 				RuiSetImage( rui, "ammoIcon", ammoIcon )
 				RuiSetBool( rui, "isLegendary", isLegendary )
 			}
+			if(weapon.GetWeaponClassName() == "mp_weapon_grenade_emp")
+				RuiSetImage( rui, "ammoIcon", $"" )
 		}
 	}
 	else
@@ -469,8 +475,24 @@ void function UpdateRUIWeaponData( entity player, var rui, entity weapon, int ta
 			RuiSetFloat3( rui, "ammoColor", <0.0, 0.0, 0.0> )
 		}
 	}
+	if(RGB_HUD)
+		thread RGBRui(rui)
 }
 
+void function RGBRui(var rui)
+{
+	entity player = GetLocalClientPlayer()
+	while(RGB_HUD)
+	{
+		int randomr = RandomInt(255)
+		int randomg = RandomInt(255) 
+		int randomb = RandomInt(255)	
+		RuiSetFloat3( rui, "ammoColor", SrgbToLinear( <randomr, randomg, randomb> / 255.0 ))
+		RuiSetFloat3( rui, "ammoColorTab0", SrgbToLinear( <randomr, randomg, randomb> / 255.0 ))
+		RuiSetFloat3( rui, "ammoColorTab1", SrgbToLinear( <randomr, randomg, randomb> / 255.0 ))
+		wait 0.1
+	}
+}
 
 void function PrimaryWeapon_UpdateFireSelectHUD( entity weapon )
 {
@@ -679,7 +701,7 @@ bool function WeaponIsUsingAltFireMode( entity weapon )
 		return IsModActive( weapon, "altfire_highcal" )
 	else if ( DoesModExist( weapon, "hopup_double_tap" ) && IsModActive( weapon, "hopup_double_tap" ) )
 		return IsModActive( weapon, "altfire_double_tap" )
-	if ( DoesModExist( weapon, "altfire" ) )
+	else ( DoesModExist( weapon, "altfire" ) )
 		return IsModActive( weapon, "altfire" )
 	return false
 }
@@ -708,8 +730,14 @@ void function UpdateFireSelectHint( entity player, entity weapon, string mod )
 	else if ( IsWeaponInAutomaticMode( weapon ) )
 		message = "#FIRE_MODE_AUTO"
 
-	if ( message != "" )
+	if ( message != "" && weapon.GetWeaponClassName() != "mp_weapon_heatwave")
 		AnnouncementMessageRight( player, Localize( "#FIRE_MODE_COLON", Localize( message ) ), "", <1, 1, 1>, $"", 1.0 )
+	else if( message != "" && weapon.GetWeaponClassName() == "mp_weapon_heatwave"){
+		if(IsModActive( weapon, "altfire" ))
+		AnnouncementMessageRight( player, "Heatwave mode: VERTICAL", "", <1, 1, 1>, $"", 1.0 )
+		else
+		AnnouncementMessageRight( player, "Heatwave mode: HORIZONTAL", "", <1, 1, 1>, $"", 1.0 )
+	}
 }
 
 

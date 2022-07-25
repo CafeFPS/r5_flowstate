@@ -205,7 +205,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 	PrecacheModel( $"mdl/Humans/class/medium/combat_dummie_medium.rmdl" )
 	PrecacheModel($"mdl/fx/ar_survival_radius_1x100.rmdl")
-	
 	//Charms - todo: find a better way
 
 	PrecacheModel( $"mdl/props/charm/charm_fireball.rmdl" )
@@ -232,6 +231,17 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
 
+	PrecacheModel( $"mdl/robotics_r2/turret_plasma/plasma_turret_pc_1.rmdl" )
+	PrecacheModel( $"mdl/robotics_r2/turret_plasma/plasma_turret_pc_2.rmdl" )
+	PrecacheModel( $"mdl/robotics_r2/turret_plasma/plasma_turret_pc_3.rmdl" )
+	
+	
+	PrecacheModel($"mdl/desertlands/building_ice_b2t_10.rmdl")
+	
+	PrecacheParticleSystem($"P_melee_ice")
+	PrecacheParticleSystem($"P_impact_exp_FRAG_ice")
+	
+	
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
 	PrecacheWeapon( $"mp_weapon_mdlspawner" )
 	PrecacheWeapon( $"mp_weapon_alternator_smg" )
@@ -282,7 +292,36 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_deployable_cover" )
 	PrecacheWeapon( $"melee_data_knife" )
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
+	
+	
+	//CUSTOM WEAPONS
+	// PrecacheWeapon( $"mp_weapon_fanatic")
+	// PrecacheWeapon( $"mp_weapon_guidedmissile")
+	// PrecacheWeapon( $"mp_weapon_ironmanrepulsor")
+	// PrecacheWeapon( $"mp_weapon_leviathangun")
+	// PrecacheWeapon( $"mp_weapon_nuke_launcher" )
+	// PrecacheWeapon( $"mp_weapon_portalgun" )
+	// PrecacheWeapon( $"mp_weapon_ringflare")
+	// PrecacheWeapon( $"mp_weapon_heatwave")
+	// PrecacheWeapon( $"mp_weapon_voltturret")
+	// PrecacheWeapon( $"mp_weapon_energysword")
+	// PrecacheWeapon( $"mp_weapon_jumppadsweapon")	
+	// PrecacheWeapon( $"mp_weapon_ziplinesweapon")
+	PrecacheWeapon( $"mp_weapon_clickweapon")
+	
+	//CUSTOM ABILITIES
+	// PrecacheWeapon( $"mp_ability_birds" )
+	// PrecacheWeapon( $"mp_weapon_turret" )
+	// PrecacheWeapon( $"mp_ability_ironmanunibeam")
+	// PrecacheWeapon( $"mp_ability_phase_chamber")
+	// PrecacheWeapon( $"mp_ability_phase_rewind")
+	// PrecacheWeapon( $"mp_ability_mobile_respawn_beacon")
+	// PrecacheWeapon( $"mp_ability_gravitylift")
 
+	//CUSTOM GRENADES
+	// PrecacheWeapon( $"mp_weapon_grenade_cryonade")
+	// PrecacheWeapon( $"mp_weapon_grenade_decoyaudio")
+	
 	printl( "Code Script: _mapspawn" )
 	SV_CL_Shared_Init()
 	ClientCommands_Init()

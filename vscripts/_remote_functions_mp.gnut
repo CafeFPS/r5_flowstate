@@ -174,11 +174,43 @@ void function RemoteFunctions_Init_Begin()
 
 			// CTF: Server to UI
 			Remote_RegisterUIFunction( "OpenCTFRespawnMenu" )
-			Remote_RegisterUIFunction( "CloseCTFRespawnMenu" )
+			Remote_RegisterUIFunction( "CloseCTFRespawnMenu" )			
 			
 			// END CTF
+		case CUSTOM_AIMTRAINER:
+			//FR Challenges
+			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesMenu","int", 0, 999999, "int", 0, 999999, "int", 0, 999999, "float", 0.0, 1.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999, "bool")
+			Remote_RegisterUIFunction( "OpenFRChallengesMenu" )
+			Remote_RegisterUIFunction( "CloseFRChallengesMenu" )
+			
+			
+			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesMainMenu", "int", 0, 999999 )
+			Remote_RegisterUIFunction( "OpenFRChallengesMainMenu", "int", 0, 999999 )
+			Remote_RegisterUIFunction( "CloseFRChallengesMainMenu")
+			
+			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesSettings")
+			Remote_RegisterUIFunction( "OpenFRChallengesSettings" )
+			Remote_RegisterUIFunction( "CloseFRChallengesSettings" )
+		
+			Remote_RegisterUIFunction( "OpenFRChallengesSettingsWpnSelector" )
+			Remote_RegisterUIFunction( "CloseFRChallengesSettingsWpnSelector" )
+
+			Remote_RegisterUIFunction( "OpenSMGOptics" )
+			Remote_RegisterUIFunction( "CloseSMGOptics" )
+			
+			Remote_RegisterClientFunction("ServerCallback_CoolCameraOnMenu")
+			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIDummiesKilled", "int", 0, 999999)
+			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIAccuracyViaTotalShots", "int", 0, 999999)
+			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIAccuracyViaShotsHits")
+			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIDamageViaWeaponAttack", "int", 0, 999999, "float", 0.0, 999999.0, 32)
+			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIDamageViaDummieDamaged", "int", 0, 999999)
+			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIHeadshot", "int", 0, 999999)
+			Remote_RegisterClientFunction("ServerCallback_ResetLiveStatsUI")
+			Remote_RegisterClientFunction("ServerCallback_SetDefaultMenuSettings")
+			//End Challenges by Colombia			
 		case CUSTOM_TDM:
 		case SURVIVAL:
+			
 			RegisterNetworkedVariable( "isPlayerShadowForm", SNDC_PLAYER_GLOBAL, SNVT_BOOL, false )
 			RegisterNetworkedVariable( "hasDeathFieldImmunity", SNDC_PLAYER_EXCLUSIVE, SNVT_BOOL, false )
 			RegisterNetworkedVariable( "displayMapzoneText", SNDC_GLOBAL, SNVT_BOOL, true )
