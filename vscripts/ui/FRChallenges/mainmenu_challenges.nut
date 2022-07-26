@@ -8,12 +8,17 @@ struct
 } file
 
 global string PlayerKillsForChallengesUI = ""
+global string PlayerCurrentWeapon = ""
 
 void function OpenFRChallengesMainMenu(int dummiesKilled)
 {
 	CloseAllMenus()
 	PlayerKillsForChallengesUI = dummiesKilled.tostring()
 	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledCounter"), "Dummies killed this session: " + dummiesKilled.tostring())
+	if(PlayerCurrentWeapon == "") 
+		Hud_SetText(Hud_GetChild( file.menu, "CurrentWeapon"), "Current weapon: Wingman")
+	else
+		Hud_SetText(Hud_GetChild( file.menu, "CurrentWeapon"), "Current weapon: " + PlayerCurrentWeapon)
 	EmitUISound("UI_Menu_SelectMode_Extend")
 	AdvanceMenu( file.menu )
 }

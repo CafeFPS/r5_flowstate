@@ -167,11 +167,11 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			xpos                    0
-			ypos					-50
+			ypos					-90
 			auto_wide_tocontents	1
 			tall					60
 			visible					1
-			fontHeight				35
+			fontHeight				30
 			labelText				"Dummies killed this session: 0"
 			font					Default
 			allcaps					0
@@ -181,6 +181,23 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	BOTTOM
 		}
 		
+		CurrentWeapon
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-50
+			auto_wide_tocontents	1
+			tall					60
+			visible					1
+			fontHeight				30
+			labelText				"Current weapon: "
+			font					Default
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}		
 		MadeBy
 		{
 			ControlName				Label

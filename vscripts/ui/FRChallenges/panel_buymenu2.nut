@@ -604,6 +604,7 @@ void function BuyWeaponWithAttachments(var button)
 		Hud_SetVisible(element, false)
 	EnableAllButtons()
 	printt("DEBUG: desiredOptic: " + file.desiredOptic, " desiredBarrel: " + file.desiredBarrel, " desiredStock: " + file.desiredStock, " weapon type: " + file.weapontype)
+	PlayerCurrentWeapon = GetWeaponNameForUI(file.desiredweapon)
 	RunClientScript( "UIToClient_MenuGiveWeaponWithAttachments", file.desiredweapon, file.desiredOptic, file.desiredBarrel, file.desiredStock, file.desiredSniperStock, file.weapontype )
 }
 
@@ -612,6 +613,7 @@ void function BuyHavoc(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_energy_ar" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_energy_ar")
 }
 
 void function BuyLStar(var button)
@@ -619,6 +621,7 @@ void function BuyLStar(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_lstar" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_lstar")
 }
 
 void function BuyDevotion(var button)
@@ -626,6 +629,7 @@ void function BuyDevotion(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_esaw" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_esaw")
 }
 
 void function BuyHemlok(var button)
@@ -633,6 +637,7 @@ void function BuyHemlok(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_hemlok" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_hemlok")
 }
 
 void function BuyFlatline(var button)
@@ -640,6 +645,7 @@ void function BuyFlatline(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_vinson" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_vinson")
 }
 
 void function BuySpitfire(var button)
@@ -647,6 +653,7 @@ void function BuySpitfire(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_lmg" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_lmg")
 }
 
 void function BuyR301(var button)
@@ -654,4 +661,5 @@ void function BuyR301(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_rspn101" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_rspn101")
 }

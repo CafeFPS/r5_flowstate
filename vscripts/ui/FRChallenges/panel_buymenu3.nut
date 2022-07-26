@@ -642,6 +642,7 @@ void function BuyWeaponWithAttachments(var button)
 		Hud_SetVisible(element, false)
 	EnableAllButtons()
 	printt("DEBUG: desiredOptic: " + file.desiredOptic, " desiredBarrel: " + file.desiredBarrel, " desiredStock: " + file.desiredStock, " weapon type: " + file.weapontype)
+	PlayerCurrentWeapon = GetWeaponNameForUI(file.desiredweapon)
 	RunClientScript( "UIToClient_MenuGiveWeaponWithAttachments", file.desiredweapon, file.desiredOptic, file.desiredBarrel, file.desiredStock, file.desiredSniperStock, file.weapontype )
 }
 
@@ -650,6 +651,7 @@ void function BuyG7(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_g2" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_g2")
 }
 
 void function BuyLongbow(var button)
@@ -657,6 +659,7 @@ void function BuyLongbow(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_dmr" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_dmr")
 }
 
 void function BuyTripleTake(var button)
@@ -664,6 +667,7 @@ void function BuyTripleTake(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_doubletake" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_doubletake")
 }
 
 void function BuyChargeRifle(var button)
@@ -671,6 +675,7 @@ void function BuyChargeRifle(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_defender" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_defender")
 }
 
 void function BuyKraber(var button)
@@ -678,4 +683,5 @@ void function BuyKraber(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_sniper" )
+	PlayerCurrentWeapon = "mp_weapon_sniper"
 }

@@ -87,6 +87,7 @@ void function BuyVolt(var button)
 	CleanAllButtons()
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_volt_smg" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_volt_smg")
 }
 
 void function BuyRampage(var button)
@@ -94,6 +95,7 @@ void function BuyRampage(var button)
 	CleanAllButtons()
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_rampage" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_rampage")
 }
 
 void function BuyCar(var button)
@@ -101,6 +103,7 @@ void function BuyCar(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_car" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_car")
 }
 
 void function BuyClickWeapon(var button)
@@ -108,4 +111,5 @@ void function BuyClickWeapon(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_clickweapon" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_clickweapon")
 }

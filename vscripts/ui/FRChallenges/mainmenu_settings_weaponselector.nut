@@ -1,9 +1,9 @@
 global function InitFRChallengesSettingsWpnSelector
 global function OpenFRChallengesSettingsWpnSelector
 global function CloseFRChallengesSettingsWpnSelector
-global function GetWeaponClassByName
 global function EnableBuyWeaponsMenuTabs
 global function DisableBuyWeaponsMenuTabs
+global function GetWeaponNameForUI
 
 struct
 {
@@ -99,156 +99,6 @@ void function OnR5RSB_NavigateBack()
 	RunClientScript("ServerCallback_OpenFRChallengesSettings")	
 }
 
-
-string function GetWeaponClassByName(string weapon)
-{
-	string finalClass
-
-	switch(weapon)
-    {
-        case "mp_weapon_semipistol":
-            finalClass = "pistol"
-            break
-        case "mp_weapon_shotgun_pistol":
-            finalClass = "shotgun"
-            break
-        case "mp_weapon_wingman":
-            finalClass = "pistol"
-            break
-        case "mp_weapon_autopistol":
-            finalClass = "pistol"
-            break
-        case "mp_weapon_alternator_smg":
-            finalClass = "smg"
-            break
-        case "mp_weapon_r97":
-            finalClass = "smg"
-            break
-        case "mp_weapon_shotgun":
-            finalClass = "shotgun"
-            break
-        case "mp_weapon_mastiff":
-            finalClass = "shotgun"
-            break
-        case "mp_weapon_energy_shotgun":
-            finalClass = "shotgun"
-            break
-        case "mp_weapon_energy_ar":
-            finalClass = "ar"
-            break
-        case "mp_weapon_lstar":
-            finalClass = "ar"
-            break
-        case "mp_weapon_esaw":
-            finalClass = "lmg"
-            break
-        case "mp_weapon_hemlok":
-            finalClass = "ar"
-            break
-        case "mp_weapon_vinson":
-            finalClass = "ar"
-            break
-        case "mp_weapon_lmg":
-            finalClass = "lmg"
-            break
-        case "mp_weapon_rspn101":
-            finalClass = "ar"
-            break
-        case "mp_weapon_g2":
-            finalClass = "marksman"
-            break
-        case "mp_weapon_dmr":
-            finalClass = "sniper"
-            break
-        case "mp_weapon_doubletake":
-            finalClass = "marksman"
-            break
-        case "mp_weapon_defender":
-            finalClass = "sniper"
-            break
-        case "mp_weapon_sniper":
-            finalClass = "sniper"
-            break
-		default:
-			finalClass = ""
-    }
-
-	return finalClass
-}
-
-asset function GetWeaponAssetFromName(string weapon)
-{
-	asset weaponasset
-
-	switch(weapon)
-    {
-        case "mp_weapon_semipistol":
-            weaponasset = $"rui/weapon_icons/r5/weapon_p2020"
-            break
-        case "mp_weapon_shotgun_pistol":
-            weaponasset = $"rui/weapon_icons/r5/weapon_mozambique"
-            break
-        case "mp_weapon_wingman":
-            weaponasset = $"rui/weapon_icons/r5/weapon_wingman"
-            break
-        case "mp_weapon_autopistol":
-            weaponasset = $"rui/weapon_icons/r5/weapon_r45"
-            break
-        case "mp_weapon_alternator_smg":
-            weaponasset = $"rui/weapon_icons/r5/weapon_alternator"
-            break
-        case "mp_weapon_r97":
-            weaponasset = $"rui/weapon_icons/r5/weapon_r97"
-            break
-        case "mp_weapon_shotgun":
-            weaponasset = $"rui/weapon_icons/r5/weapon_eva8"
-            break
-        case "mp_weapon_mastiff":
-            weaponasset = $"rui/weapon_icons/r5/weapon_mastiff"
-            break
-        case "mp_weapon_energy_shotgun":
-            weaponasset = $"rui/weapon_icons/r5/weapon_peacekeeper"
-            break
-        case "mp_weapon_energy_ar":
-            weaponasset = $"rui/weapon_icons/r5/weapon_energy_ar"
-            break
-        case "mp_weapon_lstar":
-            weaponasset = $"rui/weapon_icons/r5/weapon_lstar"
-            break
-        case "mp_weapon_esaw":
-            weaponasset = $"rui/weapon_icons/r5/weapon_devotion"
-            break
-        case "mp_weapon_hemlok":
-            weaponasset = $"rui/weapon_icons/r5/weapon_hemlock"
-            break
-        case "mp_weapon_vinson":
-            weaponasset = $"rui/weapon_icons/r5/weapon_flatline"
-            break
-        case "mp_weapon_lmg":
-            weaponasset = $"rui/weapon_icons/r5/weapon_spitfire"
-            break
-        case "mp_weapon_rspn101":
-            weaponasset = $"rui/weapon_icons/r5/weapon_r301"
-            break
-        case "mp_weapon_g2":
-            weaponasset = $"rui/weapon_icons/r5/weapon_g7"
-            break
-        case "mp_weapon_dmr":
-            weaponasset = $"rui/weapon_icons/r5/weapon_longbow"
-            break
-        case "mp_weapon_doubletake":
-            weaponasset = $"rui/weapon_icons/r5/weapon_triple_take"
-            break
-        case "mp_weapon_defender":
-            weaponasset = $"rui/weapon_icons/r5/weapon_charge_rifle"
-            break
-		default:
-			weaponasset = $""
-    }
-
-	return weaponasset
-}
-
 string function GetWeaponNameForUI(string weapon)
 {
 	string weaponname
@@ -315,6 +165,21 @@ string function GetWeaponNameForUI(string weapon)
         case "mp_weapon_defender":
             weaponname = "Charge Rifle"
             break
+		case "mp_weapon_sniper":
+			weaponname = "Kraker"
+			break
+		case "mp_weapon_volt_smg":
+			weaponname = "Volt"
+			break
+		case "mp_weapon_rampage":
+			weaponname = "Rampage"
+			break
+		case "mp_weapon_car":
+			weaponname = "Car"
+			break
+		case "mp_weapon_clickweapon":
+			weaponname = "Click Weapon"
+			break
 		default:
 			weaponname = ""
     }
