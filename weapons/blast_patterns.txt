@@ -40,11 +40,11 @@
         "bullet_10" "4.35 -4.35 0 0"
     }
 
-    "shotgun_pistol"
+    "shotgun_pistol_2"
     {
         "bullet_0" "0.0 8.0 0 0"
-        "bullet_1" "-6.0 -6.0 0 0"
-        "bullet_2" "6.0 -6.0 0 0"
+        "bullet_1" "-4.0 -6.0 0 0"
+        "bullet_2" "4.0 -6.0 0 0"
     }
 
     "doubletake"

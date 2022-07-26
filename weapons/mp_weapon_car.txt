@@ -1,10 +1,8 @@
 #base "_base_smg.txt"
-#base "_base_mags_light.txt"
+#base "_base_mags_heavy.txt"
 #base "_base_barrels.txt"
 
 WeaponData
-//Car SMG by Retículo Endoplasmático#5955 - CaféDeColombiaFPS. 
-//Taken from s11 weapon settings scripts.
 {
 	// General
 	"printname"   									"#WPN_CAR"

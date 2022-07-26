@@ -50,12 +50,9 @@ WeaponData
 
 	"damage_type" 									"bullet"
 
-	"ammo_clip_size"   								"10"
+	"ammo_clip_size"   								"14"
 
 	"projectile_launch_speed"						"18500"
-
-	MP_BASE
-	{
    "ammo_default_total"							"30"
     "ammo_stockpile_max"							"24"
 		"ammo_no_remove_from_stockpile"					"1"
@@ -70,39 +67,13 @@ WeaponData
 	"damage_very_far_value_titanarmor" 				"18"
 	"damage_rodeo" 									"190"
 
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"13"
-		"npc_damage_far_value"							"10"
-		"npc_damage_near_value_titanarmor"				"0"
-		"npc_damage_far_value_titanarmor" 				"0"
-		"npc_damage_near_distance"						"800"
-		"npc_damage_far_distance" 						"1000"
-	}
-
-	SP_BASE
-	{
-		"ammo_default_total"							"60"
-		"ammo_stockpile_max"							"60"
-		"ammo_no_remove_from_stockpile"					"0"
-		"ammo_min_to_fire"								"1"
-
-		// Damage - When Used by Players
-		"damage_near_value"   							"40"
-		"damage_far_value"								"28"
-		"damage_near_value_titanarmor"					"60"
-		"damage_far_value_titanarmor" 					"46"
-		"damage_very_far_value_titanarmor" 				"46"
-		"damage_rodeo" 									"190"
-   	 	"damage_very_far_value"							"28"
-
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"15"
-		"npc_damage_far_value"							"7"
-		"npc_damage_near_value_titanarmor"				"<KEEP_DEFAULT>"
-		"npc_damage_far_value_titanarmor" 				"<KEEP_DEFAULT>"
-		"npc_damage_near_distance"						"<KEEP_DEFAULT>"
-		"npc_damage_far_distance" 						"<KEEP_DEFAULT>"
-	}
+	// Damage - When Used by NPCs
+	"npc_damage_near_value"   						"13"
+	"npc_damage_far_value"							"10"
+	"npc_damage_near_value_titanarmor"				"0"
+	"npc_damage_far_value_titanarmor" 				"0"
+	"npc_damage_near_distance"						"800"
+	"npc_damage_far_distance" 						"1000"
 
 	// NPC
 	"npc_min_engage_range"							"0"
@@ -171,6 +142,21 @@ WeaponData
 	"viewkick_hipfire_weaponFraction_vmScale" 		"0.0"
 	"viewkick_ads_weaponFraction" 					"0.2"
 	"viewkick_ads_weaponFraction_vmScale" 			"0.8"
+
+
+                         
+                                
+                                    
+                                                       
+                                   
+                                 
+     
+	"spread_stand_hip"								"2.2"
+	"spread_stand_hip_run"							"5.0"
+	"spread_stand_hip_sprint"                       "6.5"
+	"spread_crouch_hip"   							"1.5"
+	"spread_air_hip"  								"8.0"
+      
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
 	//setting to "0" so it's tunable in Bakery

@@ -140,10 +140,6 @@ WeaponData
 
     "damage_headshot_scale"							"1.50"
 	"damage_leg_scale"                              "0.85"
-
-
-	MP_BASE
-	{
 	"ammo_clip_size"   								"35"
     "ammo_stockpile_max"					        "245"
     "ammo_default_total"					        "300"   //for crate weapons, default total should be clip size + stockpile max
@@ -187,52 +183,7 @@ WeaponData
 		"npc_rest_time_between_bursts_max"				"6.0"
 
 		"enable_highlight_networking_on_creation"		"<KEEP_DEFAULT>"
-	}
 
-	SP_BASE
-	{
-		"ammo_default_total"							"160"
-		"ammo_stockpile_max"							"240"
-		"ammo_no_remove_from_stockpile"					"0"
-		"ammo_min_to_fire"								"1"
-
-		"aimassist_adspull_weaponclass"					"precise_sp"
-
-		"damage_near_value"   							"25"
-		"damage_far_value"								"18"
-		"damage_very_far_value"							"18"
-		"damage_near_value_titanarmor"					"40"
-		"damage_far_value_titanarmor" 					"25"
-		"damage_very_far_value_titanarmor" 				"25"
-		"damage_rodeo" 									"200"
-		"damage_near_distance"							"1800"
-		"damage_far_distance" 							"2000"
-		"damage_very_far_distance" 						"2000"
-
-		"red_crosshair_range" 							"1800"
-
-		// Damage - When Used by NPCs
-		"npc_damage_near_value"   						"10"
-		"npc_damage_far_value"							"10"
-		"npc_damage_near_value_titanarmor"				"30"
-		"npc_damage_far_value_titanarmor" 				"30"
-		"npc_damage_near_distance"						"<KEEP_DEFAULT>"
-		"npc_damage_far_distance" 						"<KEEP_DEFAULT>"
-
-		"npc_min_engage_range"							"100"
-		"npc_max_engage_range"							"1500"
-		"npc_min_engage_range_heavy_armor"				"500"
-		"npc_max_engage_range_heavy_armor"				"3000"
-		"npc_min_range"   								"0"
-		"npc_max_range"   								"3000"
-
-		"npc_min_burst"   								"5"
-		"npc_max_burst"   								"8"
-		"npc_rest_time_between_bursts_min"				"2.0"
-		"npc_rest_time_between_bursts_max"				"3.0"
-
-		"enable_highlight_networking_on_creation"		"1"
-	}
 
     "viewmodel_offset_hip"							"0 1.4 0.4"
 	"viewmodel_offset_ads"							"0 1.3 0"

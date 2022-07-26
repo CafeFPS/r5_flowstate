@@ -51,7 +51,7 @@ WeaponData
 
 	"projectiles_per_shot"							"3"
 
-	"blast_pattern"									"shotgun_pistol"
+	"blast_pattern"									"shotgun_pistol_2"
 	"blast_pattern_zero_distance"        			"512.0"
 	"blast_pattern_default_scale"        			"1.65"
 	"blast_pattern_ads_scale"                       "0.5"  // for players, scales pattern when ADS
@@ -100,25 +100,14 @@ WeaponData
     "damage_near_value_titanarmor"					"15"
     "damage_far_value_titanarmor" 					"15"
     "damage_very_far_value_titanarmor" 				"15"
+	"damage_leg_scale"                              "1.0"
 
     "damage_near_distance"							"500"
     "damage_far_distance" 							"1000"
     "damage_very_far_distance" 						"1500"
 
-	MP_BASE
-	{
-  "ammo_default_total"							"20"
+    "ammo_default_total"							"20"
     "ammo_stockpile_max"							"12"
-		"aimassist_adspull_weaponclass"					"none"
-	}
-
-	SP_BASE
-	{
-		"ammo_default_total"							"20"
-		"ammo_stockpile_max"							"32"
-
-		"aimassist_adspull_weaponclass"					"broad_sp"
-	}
 
 	// Damage - When Used by NPCs
     "npc_damage_near_value"   						"11"
