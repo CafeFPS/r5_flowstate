@@ -1284,6 +1284,8 @@ void function Minimap_SetBlankBackground( bool doBlank )
 
 void function Minimap_SetSizeScale( float scale )
 {
+	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )) return
+	
 	file.minimapSizeScale = scale
 
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", scale )

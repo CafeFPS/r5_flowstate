@@ -56,6 +56,9 @@ void function _ChallengesByColombia_Init()
 	AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, Arcstar_OnStick )
 	PrecacheParticleSystem($"P_enemy_jump_jet_ON_trails")
 	PrecacheModel($"mdl/imc_interior/imc_int_fusebox_01.rmdl")
+	
+	//Some challenges can kill player
+	AddDeathCallback( "player", OnPlayerDeathCallback )
 }
 
 struct{
@@ -1436,6 +1439,32 @@ void function Arcstar_OnStick2( entity ent, var damageInfo )
 	if(IsValid(ent)) ent.Destroy()
 }
 //UTILITY
+void function OnPlayerDeathCallback(entity player, var damageInfo)
+{
+thread OnPlayerDeathCallbackThread(player)
+}
+
+void function OnPlayerDeathCallbackThread(entity player)
+{
+	entity weapon = player.GetNormalWeapon(WEAPON_INVENTORY_SLOT_PRIMARY_0)
+	array<string> mods = weapon.GetMods()
+	string weaponname = weapon.GetWeaponClassName()
+
+	wait 1
+
+	Signal(player, "ChallengeTimeOver")
+	vector lastPos = player.GetOrigin()
+	vector lastAng = player.GetAngles()
+	player.SetOrigin(lastPos)
+	player.SetAngles(lastAng)
+	DecideRespawnPlayer( player )
+	TakeAllWeapons(player)
+    player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+    player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+	player.GiveWeapon( weaponname, WEAPON_INVENTORY_SLOT_PRIMARY_0, mods )
+	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+}
+
 int function ReturnShieldAmountForDesiredLevel()
 {
 	switch(AimTrainer_AI_SHIELDS_LEVEL){

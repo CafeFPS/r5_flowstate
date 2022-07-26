@@ -88,7 +88,8 @@ void function FiringRangeGameMode_Init()
 		
 		AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
 		AddCallback_OnClientConnected( _WaitForPlayerSpawnFR )
-		AddCallback_OnPlayerKilled( _OnPlayerKilledFR )
+		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+			AddCallback_OnPlayerKilled( _OnPlayerKilledFR )
 	
 		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 			AddCallback_OnWeaponAttack( OnWeaponAttack )
