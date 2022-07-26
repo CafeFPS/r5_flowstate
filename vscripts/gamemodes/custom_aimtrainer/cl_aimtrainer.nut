@@ -409,7 +409,7 @@ void function StartChallenge1Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Hit the dummies to get points.")
+	thread CreateDescriptionRUI("Hit the strafing dummy to get points.")
 	thread CreateTimerRUI()	
 	player.ClientCommand("CC_StartChallenge1")
 }
@@ -418,7 +418,7 @@ void function StartChallenge2Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Low health dummies, hit them to get points.")
+	thread CreateDescriptionRUI("Low health dummies. Hit the dummies to get points.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge2")
 }
@@ -427,7 +427,7 @@ void function StartChallenge3Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Don't let dummie touch ground to get streak points.")
+	thread CreateDescriptionRUI("Don't let dummy touch ground to get streak points.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge3")
 }
@@ -436,7 +436,7 @@ void function StartChallenge4Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Track the dummies.")
+	thread CreateDescriptionRUI("Tracking practice. Hit the dummies to get points.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge4")
 }
@@ -445,7 +445,7 @@ void function StartChallenge5Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Track the dummies.")
+	thread CreateDescriptionRUI("Hit as many targets as possible.")
 	thread CreateTimerRUI(true)
 	player.ClientCommand("CC_StartChallenge5")
 }
@@ -453,7 +453,7 @@ void function StartChallenge6Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Track the dummies.")
+	thread CreateDescriptionRUI("TODO")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge6")
 }
@@ -461,7 +461,7 @@ void function StartChallenge1NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Kill the dummies.")
+	thread CreateDescriptionRUI("Avoid death by killing dummy.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge1NewC")
 }
@@ -470,7 +470,7 @@ void function StartChallenge2NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Only sticks count, shields are disabled. Challenge start!")
+	thread CreateDescriptionRUI("Only sticks count, shields are disabled.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge2NewC")
 }
@@ -486,7 +486,7 @@ void function StartChallenge4NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Targets go straight up. Valk ultimate/Balloons simulation. Challenge start!")
+	thread CreateDescriptionRUI("Tracking practice. Valk ultimate/Balloons simulation.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge4NewC")
 }
@@ -495,7 +495,7 @@ void function StartChallenge5NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("asd")
+	thread CreateDescriptionRUI("Tracking practice. Horizon's lift simulation.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge5NewC")
 }
@@ -504,7 +504,7 @@ void function StartChallenge6NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("asd")
+	thread CreateDescriptionRUI("TODO")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge6NewC")
 }
