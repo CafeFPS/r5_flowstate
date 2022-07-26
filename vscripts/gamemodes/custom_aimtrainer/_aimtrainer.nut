@@ -550,9 +550,9 @@ void function StartStraightUpChallenge(entity player)
 			OnChallengeEnd(player, restart)
 		}
 	)
-	entity shield = CreatePropDynamic( $"mdl/fx/bb_shield.rmdl", player.GetOrigin() + AnglesToForward(player.GetAngles())*400, Vector(0,0,0) )
-	shield.kv.rendercolor = TEAM_COLOR_ENEMY
-	ChallengesStruct.props.append(shield)
+	// entity shield = CreatePropDynamic( $"mdl/fx/bb_shield.rmdl", player.GetOrigin() + AnglesToForward(player.GetAngles())*400, Vector(0,0,0) )
+	// shield.kv.rendercolor = TEAM_COLOR_ENEMY
+	// ChallengesStruct.props.append(shield)
 	
 	thread ChallengeWatcherThread(endtime, player)
 	
@@ -561,18 +561,17 @@ void function StartStraightUpChallenge(entity player)
 			if(Time() > endtime) break	
 		
 		if(ChallengesStruct.dummies.len()<1){
-				thread CreateDummyStraightUpChallenge(player, shield)
+				thread CreateDummyStraightUpChallenge(player)
 			}
 			WaitFrame()
 	}
 }
 
-void function CreateDummyStraightUpChallenge(entity player, entity shield)
+void function CreateDummyStraightUpChallenge(entity player)//, entity shield)
 {
-	entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(player.GetAngles())*400, Vector(0,90,0) )
-	shield.SetOrigin(dummy.GetOrigin())
-	dummy.SetOrigin(dummy.GetOrigin()+Vector(0,0,150))
-	
+	entity dummy = CreateDummy( 99, floorCenterForPlayer-Vector(0,0,200) + AnglesToForward(Vector(0,-90,0))*600, Vector(0,90,0) )
+	// shield.SetOrigin(dummy.GetOrigin())
+
 	EndSignal(dummy, "OnDeath")
 	EndSignal(player, "ChallengeTimeOver")
 	
@@ -619,13 +618,13 @@ void function CreateDummyStraightUpChallenge(entity player, entity shield)
 		}
 		
 	int idk = 150 //from retail??
-	float chargingTime = Time() + 2
-	while( Time() <= chargingTime )
-		{
+	// float chargingTime = Time() + 2
+	// while( Time() <= chargingTime )
+		// {
 
-			dummy.SetVelocity( <dummy.GetVelocity().x, dummy.GetVelocity().y, idk> )
-			WaitFrame()
-		}
+			// dummy.SetVelocity( <dummy.GetVelocity().x, dummy.GetVelocity().y, idk> )
+			// WaitFrame()
+		// }
 	float flyingTime = Time() + 5
 	while( Time() <= flyingTime )
 		{
