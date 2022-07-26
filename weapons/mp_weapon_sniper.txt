@@ -53,8 +53,6 @@
 	"viewmodel_offset_zoom_frac_start"         "0.1"
     "viewmodel_offset_zoom_frac_end"           "0.85"
 
-	ads_force_firstperson						1
-
     zoomed_convar_sensitivity_index             4
     zoomed_convar_toggle_sensitivity_index      6
 

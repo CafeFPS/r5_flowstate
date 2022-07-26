@@ -97,6 +97,7 @@ WeaponData
 	"ammo_clip_size"   								"24"
 	"ammo_per_shot" 				                "1"
 	"ammo_min_to_fire"								"1"
+    "low_ammo_fraction" 							"0.4"
 
 	"ammo_default_total"							"180"
 	"ammo_stockpile_max"							"180"

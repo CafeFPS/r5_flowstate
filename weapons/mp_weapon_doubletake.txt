@@ -54,7 +54,8 @@
 
 	// Behavior - Firing
 	//
-	"fire_rate"                                    "1.3"
+	"fire_rate"                                    "1.2"
+	"is_semi_auto"								   "1"
 	"impulse_force"                                "1000"
 
 	// Behavior - ADS (tied to animation)
@@ -66,15 +67,16 @@
 
 	// Damage
 	//
-	"damage_near_value"                            "23"
-	"damage_far_value"                             "23"
-	"damage_very_far_value"                        "23"
-	"damage_near_value_titanarmor"                 "23"
-	"damage_far_value_titanarmor"                  "23"
-	"damage_very_far_value_titanarmor"             "23"
+	"damage_near_value"                            "21"
+	"damage_far_value"                             "21"
+	"damage_very_far_value"                        "21"
+	"damage_near_value_titanarmor"                 "21"
+	"damage_far_value_titanarmor"                  "21"
+	"damage_very_far_value_titanarmor"             "21"
+
 	"damage_rodeo"                                 "80"
 	"critical_hit_damage_scale"                    "2.0"
-	"damage_headshot_scale"						   "2.0"
+	"damage_headshot_scale"						   "1.75"
 	"damage_leg_scale"                             "0.9"
 
 	// Damage - Behavior
@@ -99,14 +101,14 @@
 	// energy weapons have less drop
 	"projectile_drag_coefficient" 					"0.0"
 
-	"bolt_hitsize"									"0.25"
+	"bolt_hitsize"									"0.0"
 
-    "bolt_hitsize_grow1_time"				        "0.123"  //~100m
-    "bolt_hitsize_grow1_size"				        "0.33"
-    "bolt_hitsize_grow2_time"				        "0.246"  //~200m
-    "bolt_hitsize_grow2_size"				        "1.25"
-    "bolt_hitsize_growfinal_lerptime"		        "0.369"  //~300m
-    "bolt_hitsize_growfinal_size"                   "2.0"
+    //"bolt_hitsize_grow1_time"				        "0.123"  //~100m
+    //"bolt_hitsize_grow1_size"				        "0.33"
+    //"bolt_hitsize_grow2_time"				        "0.246"  //~200m
+    //"bolt_hitsize_grow2_size"				        "1.25"
+    //"bolt_hitsize_growfinal_lerptime"		        "0.369"  //~300m
+    //"bolt_hitsize_growfinal_size"                   "2.0"
 
 	// CUSTOM- choke spread fractions for each charge level
 	"projectile_spread_choke_frac_1" 				"1.0"
@@ -128,7 +130,9 @@
 	"reload_enabled"                               "1"
 	"allow_empty_click"                            "1"
 	"empty_reload_only"                            "0"
-"low_ammo_fraction"              "0.3"
+
+    "low_ammo_fraction"              "0.3"
+
 	"reload_time"                                  "2.6"
 	"reload_time_late1"                            "1.32"
 	"reloadempty_time"                             "3.4"
@@ -192,9 +196,9 @@
     "spread_crouch_ads"   					    "0"
     "spread_air_ads"  						    "4.0"
 
-	"spread_kick_on_fire_stand_hip"            "1"
-	"spread_kick_on_fire_crouch_hip"           "1"
-	"spread_kick_on_fire_air_hip"              "1"
+	//"spread_kick_on_fire_stand_hip"            "1"
+	//"spread_kick_on_fire_crouch_hip"           "1"
+	//"spread_kick_on_fire_air_hip"              "1"
 
 	"spread_max_kick_stand_hip"                "7.0"
 	"spread_max_kick_crouch_hip"               "5.0"
@@ -337,25 +341,136 @@
 
 		"hopup_energy_choke"
 		{
-		    "charge_time" 					"1.1"
-			"charge_levels"					"4"
-			"charge_level_base"				"1"
+			"mod_activity_modifier"			"fire_select"
 
+                        
+                                    
+                                           
+                                              
+     
+			"charge_time" 					"1.1"
 			"charge_cooldown_time"			"0.1"
-	        "charge_cooldown_delay"   		"0.1"
+            "charge_cooldown_delay"   		"0.1"
+      
+            "charge_levels"					"4"
+            "charge_level_base"				"1"
 
-			// Enable Hopup RUIs
-			"ui20_enable"					"1"
-			"ui21_enable"					"1"
-			"ui22_enable"					"1"
-			"ui23_enable"					"1"
-			"ui24_enable"					"1"
-			"ui25_enable"					"1"
-			"ui26_enable"					"1"
-			"ui27_enable"					"1"
-			"ui28_enable"					"1"
-			"ui29_enable"					"1"
+            "rui_crosshair_index"			"1"
+
+            // Enable Hopup RUIs
+            "ui20_enable"					"1"
+            "ui21_enable"					"1"
+            "ui22_enable"					"1"
+            "ui23_enable"					"1"
+            "ui24_enable"					"1"
+            "ui25_enable"					"1"
+            "ui26_enable"					"1"
+            //"ui27_enable"					"1"
+            //"ui28_enable"					"1"
+            //"ui29_enable"					"1"
 		}
+
+        "stock_sniper_l1"
+        {
+            "zoom_time_in"					    "*0.9"
+            "zoom_time_out"   				    "*0.9"
+
+            "deploy_time" 						"*0.85"
+            "holster_time"						"*0.85"
+
+            "raise_time" 						"*0.9"
+            "lower_time"						"*0.9"
+
+             "viewdrift_ads_stand_scale_pitch" 	            "*0.8"
+             "viewdrift_ads_stand_scale_yaw"   	            "*0.8"
+             "viewdrift_ads_crouch_scale_pitch"             "*0.8"
+             "viewdrift_ads_crouch_scale_yaw"	            "*0.8"
+             "viewdrift_ads_air_scale_pitch"   	            "*0.8"
+             "viewdrift_ads_air_scale_yaw" 		            "*0.8"
+             "viewdrift_ads_speed_pitch"   	                "*0.9"
+             "viewdrift_ads_speed_yaw" 		                "*0.9"
+
+             "reload_time"						"*0.967"
+             "reload_time_late1"				"*0.967"
+             "reload_time_late2"				"*0.967"
+             "reload_time_late3"				"*0.967"
+             "reload_time_late4"				"*0.967"
+             "reload_time_late5"				"*0.967"
+             "reloadempty_time"					"*0.967"
+             "reloadempty_time_late1"			"*0.967"
+             "reloadempty_time_late2"			"*0.967"
+             "reloadempty_time_late3"			"*0.967"
+             "reloadempty_time_late4"			"*0.967"
+             "reloadempty_time_late5"			"*0.967"
+        }
+        "stock_sniper_l2"
+        {
+
+            "zoom_time_in"					    "*0.85"
+            "zoom_time_out"   				    "*0.85"
+
+            "deploy_time" 						"*0.8"
+            "holster_time"						"*0.8"
+
+            "raise_time" 						"*0.85"
+            "lower_time"						"*0.85"
+
+            "viewdrift_ads_stand_scale_pitch" 	            "*0.6"
+            "viewdrift_ads_stand_scale_yaw"   	            "*0.6"
+            "viewdrift_ads_crouch_scale_pitch"              "*0.6"
+            "viewdrift_ads_crouch_scale_yaw"	            "*0.6"
+            "viewdrift_ads_air_scale_pitch"   	            "*0.6"
+            "viewdrift_ads_air_scale_yaw" 		            "*0.6"
+            "viewdrift_ads_speed_pitch"   	                "*0.8"
+            "viewdrift_ads_speed_yaw" 		                "*0.8"
+
+            "reload_time"						"*0.933"
+            "reload_time_late1"					"*0.933"
+            "reload_time_late2"					"*0.933"
+            "reload_time_late3"					"*0.933"
+            "reload_time_late4"					"*0.933"
+            "reload_time_late5"					"*0.933"
+            "reloadempty_time"					"*0.933"
+            "reloadempty_time_late1"			"*0.933"
+            "reloadempty_time_late2"			"*0.933"
+            "reloadempty_time_late3"			"*0.933"
+            "reloadempty_time_late4"			"*0.933"
+            "reloadempty_time_late5"			"*0.933"
+        }
+        "stock_sniper_l3"
+        {
+
+            "zoom_time_in"					    "*0.8"
+            "zoom_time_out"   				    "*0.8"
+
+            "deploy_time" 						"*0.75"
+            "holster_time"						"*0.75"
+
+            "raise_time" 						"*0.8"
+            "lower_time"						"*0.8"
+
+            "viewdrift_ads_stand_scale_pitch" 	            "*0.35"
+            "viewdrift_ads_stand_scale_yaw"   	            "*0.35"
+            "viewdrift_ads_crouch_scale_pitch"              "*0.35"
+            "viewdrift_ads_crouch_scale_yaw"	            "*0.35"
+            "viewdrift_ads_air_scale_pitch"   	            "*0.35"
+            "viewdrift_ads_air_scale_yaw" 		            "*0.35"
+            "viewdrift_ads_speed_pitch"   	                "*0.75"
+            "viewdrift_ads_speed_yaw" 		                "*0.75"
+
+            "reload_time"						"*0.9"
+            "reload_time_late1"					"*0.9"
+            "reload_time_late2"					"*0.9"
+            "reload_time_late3"					"*0.9"
+            "reload_time_late4"					"*0.9"
+            "reload_time_late5"					"*0.9"
+            "reloadempty_time"					"*0.9"
+            "reloadempty_time_late1"			"*0.9"
+            "reloadempty_time_late2"			"*0.9"
+            "reloadempty_time_late3"			"*0.9"
+            "reloadempty_time_late4"			"*0.9"
+            "reloadempty_time_late5"			"*0.9"
+        }
 
                          
                          
@@ -412,51 +527,6 @@
 			"custom_int_0"		"6"
         }
 
-		"optic_sniper"
-		{
-		    "viewkick_ads_weaponFraction"              "0.5"
-			"viewkick_ads_weaponFraction_vmScale"      "0.5"
-
-			"bodygroup3_set"	"1"
-
-			// Disable Ammo Counter while in ADS mode
-			"custom_float_0"	"0"
-
-			// Enable Sniper Hopup RUI
-			"custom_int_0"		"7"
-		}
-
-		"optic_sniper_variable"
-		{
-		    "viewkick_ads_weaponFraction"              "0.5"
-			"viewkick_ads_weaponFraction_vmScale"      "0.5"
-
-			"bodygroup3_set"	"1"
-
-			// Disable Ammo Counter while in ADS mode
-			"custom_float_0"	"0"
-
-			// Enable Sniper Variable Hopup RUI
-			"custom_int_0"		"8"
-		}
-
-		"optic_sniper_threat"
-		{
-		    "viewkick_ads_weaponFraction"              "0.5"
-			"viewkick_ads_weaponFraction_vmScale"      "0.5"
-
-			"bodygroup3_set"	"1"
-
-			"viewmodel_offset_hip"  "0 0 -1.0"
-
-			// Disable Ammo Counter while in ADS mode
-			"custom_float_0"	"0"
-
-			// Enable Sniper Threat Hopup RUI
-			"custom_int_0"		"9"
-		}
-
-                   
 		energy_mag_l1
 		{
 			"ammo_clip_size"   					"21"
@@ -698,8 +768,10 @@
 			Args
 			{
 				//isFiring				weapon_is_firing
+				charge					player_chargeFrac
 			}
 		}
+
 	}
 }
 

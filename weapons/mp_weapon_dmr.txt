@@ -183,6 +183,12 @@
 	"clip_bodygroup_show_for_milestone_2"      "1"
 	"clip_bodygroup_show_for_milestone_3"      "1"
 
+	"projectile_gravity_scale_time_2"				"1.0"//"0.1"
+	"projectile_gravity_scale_2"					"3.0"
+	"projectile_gravity_scale_time_final"			"0.2"
+	"projectile_gravity_scale_final"				"6.0"
+
+	"projectile_drag_coefficient"					"0.0"
 	"Mods"
 	{
 	    gold

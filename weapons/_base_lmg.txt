@@ -11,6 +11,11 @@ WeaponData
     "weapon_type_flags"								"WPT_PRIMARY"
     "secondary_ammo_pool_type"                      ""
 
+	"deployfirst_time"								"1.45"   //"1.45"
+	"deploy_time" 								    "0.8"    //"0.7"
+    "holster_time"								    "0.75"   //"0.65"
+	"raise_time"  								    "0.65"   //"0.55"
+	"lower_time"  								    "0.60"   //"0.5"
 
 	"spread_stand_hip"								"2.5"
     "spread_stand_hip_run"							"3.0"
@@ -66,15 +71,26 @@ WeaponData
 
         elevator_shooter
         {
-		//this mod was intended for horizon's q.
            "viewkick_air_scale_ads"						"1.0"
 
-           "spread_air_hip"  								"0"
+           "spread_air_hip"  								"2"
 
            "spread_kick_on_fire_air_hip" 					"0.25"
 
-        }                                               
-                                                       
+           "spread_max_kick_air_hip" 						"3.0"
+
+           "spread_air_ads"  								"0"
+
+           "spread_kick_on_fire_air_ads" 					"0"
+
+           "spread_max_kick_air_ads" 						"0"
+
+            "viewdrift_ads_air_scale_pitch"   			"0.8"
+            "viewdrift_ads_air_scale_yaw" 				"0.9"
+
+            "viewdrift_hipfire_air_scale_pitch"	            "0.0"
+            "viewdrift_hipfire_air_scale_yaw"               "0.0"
+        }                                     
          
       
     }

@@ -28,12 +28,8 @@ WeaponData
 			"zoom_angle_shift_yaw"      "0.0"
 
             // Behavior- Aim Assist
-            "aimassist_disable_hipfire"                "1"
-			"aimassist_disable_ads"                    "1"
-			"aimassist_disable_hipfire_titansonly"     "1"
-			"aimassist_disable_ads_titansonly"         "1"
 			"aimassist_adspull_weaponclass"            "none"
-			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
+
 
             zoomed_convar_sensitivity_index         4
 		}
@@ -65,12 +61,7 @@ WeaponData
 			"zoom_angle_shift_pitch"    "0.0"
 			"zoom_angle_shift_yaw"      "0.0"
 
-            "aimassist_disable_hipfire"                "1"
-			"aimassist_disable_ads"                    "1"
-			"aimassist_disable_hipfire_titansonly"     "1"
-			"aimassist_disable_ads_titansonly"         "1"
 			"aimassist_adspull_weaponclass"            "none"
-			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
 
             zoomed_convar_sensitivity_index         3
             zoomed_convar_toggle_sensitivity_index  5
@@ -109,12 +100,7 @@ WeaponData
 			"zoom_angle_shift_pitch"    "0.0"
 			"zoom_angle_shift_yaw"      "0.0"
 
-            "aimassist_disable_hipfire"                "1"
-			"aimassist_disable_ads"                    "1"
-			"aimassist_disable_hipfire_titansonly"     "1"
-			"aimassist_disable_ads_titansonly"         "1"
 			"aimassist_adspull_weaponclass"            "none"
-			"gamepad_use_yaw_speed_for_pitch_ads"      "1"
 
             zoomed_convar_sensitivity_index         3
             zoomed_convar_toggle_sensitivity_index  6
@@ -140,14 +126,11 @@ WeaponData
 		Args
 		{
 			vis					player_zoomfrac
-			ammo				weapon_ammo
-			clipSize			weapon_clipSize
 			crossDist			distance_to_crosshair_target
             zoomFOV         	weapon_zoom_fov
 			varSightOffsets		variable_sights_offsets
 			eyeAngles			player_eye_angles
 			ammo				weapon_ammo
-			clipSize			weapon_clipSize
 			clipCount			weapon_ammoClipCount
 		}
 	}
@@ -166,14 +149,11 @@ WeaponData
 		Args
 		{
 			vis					player_zoomfrac
-			ammo				weapon_ammo
-			clipSize			weapon_clipSize
 			crossDist			distance_to_crosshair_target
             zoomFOV         	weapon_zoom_fov
 			varSightOffsets		variable_sights_offsets
 			eyeAngles			player_eye_angles
 			ammo				weapon_ammo
-			clipSize			weapon_clipSize
 			clipCount			weapon_ammoClipCount
 		}
 	}
@@ -192,14 +172,11 @@ WeaponData
 		Args
 		{
 			vis					player_zoomfrac
-			ammo				weapon_ammo
-			clipSize			weapon_clipSize
 			crossDist			distance_to_crosshair_target
 			zoomFOV         	weapon_zoom_fov
 			varSightOffsets		variable_sights_offsets
 			eyeAngles			player_eye_angles
 			ammo				weapon_ammo
-			clipSize			weapon_clipSize
 			clipCount			weapon_ammoClipCount
 		}
 	}

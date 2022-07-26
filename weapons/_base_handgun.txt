@@ -286,4 +286,30 @@ WeaponData
 
 	//	"viewdrift_ads_delay"							"1"
 	//	"viewdrift_ads_delay_debounce_time"				"3"
+	Mods
+	{
+        elevator_shooter
+        {
+           "viewkick_air_scale_ads"						"1.0"
+
+           // Hipfire Spread
+           "spread_air_hip"  								"2.2"
+
+           "spread_kick_on_fire_air_hip" 					"0.0"
+
+           "spread_max_kick_air_hip" 						"3.5"
+
+           "spread_air_ads"  								"0"
+
+           "spread_kick_on_fire_air_ads" 					"0"
+
+           "spread_max_kick_air_ads" 						"0"
+
+            "viewdrift_ads_air_scale_pitch"   			"0.8"
+            "viewdrift_ads_air_scale_yaw" 				"0.6"
+
+            "viewdrift_hipfire_air_scale_pitch"	            "0.0"
+            "viewdrift_hipfire_air_scale_yaw"               "0.0"
+        }
+    }
 }
