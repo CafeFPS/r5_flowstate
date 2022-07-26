@@ -123,7 +123,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			"sound_accept"				"ui_rankedsummary_circletick_reached"
 			"sound_focus"				"UI_Menu_Focus_Small"
 			xpos                    -100
-			ypos                    -12
+			ypos                    -10
 			zpos                    5
 
 			pin_to_sibling          DialogFrame
@@ -263,9 +263,9 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			"sound_accept"				"ui_rankedsummary_circletick_reached"
 			"sound_focus"				"UI_Menu_Focus_Small"
 			xpos                    0
-			ypos                    60
+			ypos                    10
 			zpos                    5
-			pin_to_sibling          P2020
+			pin_to_sibling          VoltButton
 			pin_corner_to_sibling   TOP
 			pin_to_sibling_corner   BOTTOM
 			visible                 0
@@ -280,7 +280,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			xpos                    0
 			ypos                    -10
 			zpos                    9
-			pin_to_sibling          RE45Button
+			pin_to_sibling          ClickWeaponButton
 			pin_corner_to_sibling   CENTER
 			pin_to_sibling_corner   CENTER
 			
@@ -291,14 +291,14 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"RE45"
+			labelText				"ClickWeapon"
 			visible                 1
-			zpos 9
+			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					100
+			xpos					70
 			fontHeight				35
-			pin_to_sibling          RE45
+			pin_to_sibling          ClickWeapon
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 			

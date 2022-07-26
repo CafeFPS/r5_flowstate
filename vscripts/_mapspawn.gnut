@@ -294,7 +294,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
 	PrecacheWeapon( $"mp_weapon_car" )
 	PrecacheWeapon( $"mp_weapon_clickweapon")
-
+	PrecacheWeapon( $"mp_weapon_rampage" )
 	printl( "Code Script: _mapspawn" )
 	SV_CL_Shared_Init()
 	ClientCommands_Init()

@@ -25,7 +25,7 @@ void function InitArenasBuyPanel4( var panel )
 
 	var mozam = Hud_GetChild( menu, "Rampage" )
 	RuiSetImage( Hud_GetRui( mozam ), "basicImage", $"rui/weapon_icons/r5/weapon_spitfire" )
-	AddEventHandlerToButton( menu, "RampageButton", UIE_CLICK, BuySpitfire )
+	AddEventHandlerToButton( menu, "RampageButton", UIE_CLICK, BuyRampage )
 	file.weaponButtons.append(Hud_GetChild( menu, "RampageButton" ))
 
 	var wingman = Hud_GetChild( menu, "Car" )
@@ -89,11 +89,11 @@ void function BuyVolt(var button)
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_volt_smg" )
 }
 
-void function BuySpitfire(var button)
+void function BuyRampage(var button)
 {
 	CleanAllButtons()
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_lmg" )
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_rampage" )
 }
 
 void function BuyCar(var button)

@@ -144,7 +144,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			"sound_accept"				"ui_rankedsummary_circletick_reached"
 			"sound_focus"				"UI_Menu_Focus_Small"
 			xpos                    -100
-			ypos                    -12
+			ypos                    -10
 			zpos                    5
 			rightClickEvents        1
 			pin_to_sibling          DialogFrame

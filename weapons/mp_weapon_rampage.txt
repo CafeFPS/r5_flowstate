@@ -37,6 +37,7 @@ WeaponData
 	"stat_accuracy"   								"39"
 	"stat_rof"										"47"
 
+
 	dof_zoom_focusArea_horizontal					0.023
 	dof_zoom_focusArea_top							0.052
 	dof_zoom_focusArea_bottom						-0.018
@@ -55,14 +56,14 @@ WeaponData
 	"OnWeaponActivate"								"OnWeaponActivate_weapon_basic_bolt"
 	"OnClientAnimEvent"								"OnClientAnimEvent_weapon_basic_bolt"
 
-		// Bolt info
+    // Bolt info
 	"bolt_hitsize"									"0.0"
-	//"bolt_hitsize_grow1_time"						"0.005"
-	//"bolt_hitsize_grow1_size"						"0.1"
-	//"bolt_hitsize_grow2_time"						"0.07"
-	//"bolt_hitsize_grow2_size"						"0.1"
-	//"bolt_hitsize_growfinal_lerptime"				"0.1"
-	//"bolt_hitsize_growfinal_size"					"0.1"
+	"bolt_hitsize_grow1_time"						"0.005"
+	"bolt_hitsize_grow1_size"						"0.1"
+	"bolt_hitsize_grow2_time"						"0.07"
+	"bolt_hitsize_grow2_size"						"0.1"
+	"bolt_hitsize_growfinal_lerptime"				"0.1"
+	"bolt_hitsize_growfinal_size"					"0.1"
 
 	"projectile_drag_coefficient"                   "0.0033"
 
@@ -73,7 +74,7 @@ WeaponData
 	"pass_through_depth"							"0"
 	"pass_through_damage_preserved_scale"			"1"
 
-	"projectile_launch_speed"						"27500"
+	"projectile_launch_speed"						"26500"
 	"projectile_lifetime" 							"5.0"
 
 	"vortex_impact_effect"							"P_impact_xo_shield_cp"
@@ -130,37 +131,34 @@ WeaponData
 	"critical_hit_damage_scale"						"1.5"
 
 	// Ammo
-	"ammo_clip_size"   								"55"
-	"ammo_clip_random_loss_on_npc_drop"				"0.6"
-
    "titanarmor_critical_hit_required"              "1"
 	"critical_hit"									"1"
 
     "damage_shield_scale"                           "1"
 
-    "damage_headshot_scale"							"1.50"
+    "damage_headshot_scale"							"1.5"
 	"damage_leg_scale"                              "0.85"
-	"ammo_clip_size"   								"35"
+
+	"ammo_clip_size"   								"28"
     "ammo_stockpile_max"					        "245"
     "ammo_default_total"					        "300"   //for crate weapons, default total should be clip size + stockpile max
 		"ammo_no_remove_from_stockpile"					"1"
 		"ammo_min_to_fire"								"1"
 
 		"aimassist_adspull_weaponclass"					"none"
-
-	"damage_near_value"   							"18"
-	"damage_far_value"								"18"
-	"damage_very_far_value"							"18"
-	"damage_near_value_titanarmor"					"18"
-	"damage_far_value_titanarmor" 					"18"
-	"damage_very_far_value_titanarmor" 				"18"
+	"damage_near_value"   							"26"
+	"damage_far_value"								"26"
+	"damage_very_far_value"							"26"
+	"damage_near_value_titanarmor"					"26"
+	"damage_far_value_titanarmor" 					"26"
+	"damage_very_far_value_titanarmor" 				"26"
 	"damage_rodeo" 									"200"
 
-		"damage_near_distance"							"1500"
-		"damage_far_distance" 							"2500"
-	    "damage_very_far_distance"						"4000"
+	"damage_near_distance"							"1500"
+	"damage_far_distance" 							"2500"
+    "damage_very_far_distance"						"4000"
 
-		"red_crosshair_range" 							"0"
+	"red_crosshair_range" 							"0"
 
 		// Damage - When Used by NPCs
 		"npc_damage_near_value"   						"2"
@@ -182,28 +180,29 @@ WeaponData
 		"npc_rest_time_between_bursts_min"				"5.0"
 		"npc_rest_time_between_bursts_max"				"6.0"
 
-		"enable_highlight_networking_on_creation"		"0"
+	"enable_highlight_networking_on_creation"		"0"
 
 
-    "viewmodel_offset_hip"							"0 1.4 0.4"
-	"viewmodel_offset_ads"							"0 1.3 0"
+    "viewmodel_offset_hip"							"0.5 0.0 -0.5"
+	"viewmodel_offset_ads"							"0.0 0.0 0.0"
 
 	"dof_zoom_nearDepthStart"						"1.0"
-	"dof_zoom_nearDepthEnd"							"7.45"
+	"dof_zoom_nearDepthEnd"							"3.0"
 	"dof_nearDepthStart"							"0.0"
 	"dof_nearDepthEnd"								"0.0"
 
 	// Behavior
-	"fire_rate"   									"9.0"
+	"fire_rate"   									"5"
 	"zoom_time_in"                                  "0.34"
 	"zoom_time_out"                                 "0.3"
 	"zoom_fov"										"55"
 
-	"reload_time" 									"3.4"
-	"reload_time_late1"								"2.4"
-	"reloadempty_time"								"4.2"
-	"reloadempty_time_late1"						"3.0"
-	"reloadempty_time_late2"						"1.83"
+
+	"reload_time" 									"3.1"
+	"reload_time_late1"								"2.0"
+	"reloadempty_time"								"4.0"
+	"reloadempty_time_late1"						"2.73"
+	"reloadempty_time_late2"						"1.43"
 
 	"vortex_refire_behavior"  						"bullet"
 	"allow_empty_fire"								"0"
@@ -212,7 +211,7 @@ WeaponData
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"1"
-	"headshot_distance" 							"2250" //57m
+	"headshot_distance" 							"2500" // 64m
 	"ads_move_speed_scale"							"0.4"
 	"aimassist_adspull_zoomStart"					"0.2"
 	"aimassist_adspull_zoomEnd"						"0.6"
@@ -220,185 +219,183 @@ WeaponData
 	"sprint_fractional_anims"						"0"
 
 	"ammo_suck_behavior"							"primary_weapons"
-
-                      
-                                     
-     
-	//spread
-    "spread_stand_hip"								"4.5"
-    "spread_stand_hip_run"							"6.5"
-    "spread_stand_hip_sprint"                       "7.5"
-    "spread_crouch_hip"   							"2.75"
-    "spread_air_hip"                            	"7.5"
-      
-
 	// View Kick
-	"viewkick_pattern"                              "lmg_2"
+    "viewkick_pattern"                              "dragon_lmg"
 
-    "viewkick_spring" 								"lmg_vkp"
-    "viewkick_spring_hot"                           "lmg_vkp_hot"
+    "viewkick_spring" 								"dragon_lmg_vkp"
+    "viewkick_spring_hot"                           "dragon_lmg_vkp_hot"
 
     "viewkick_spring_heatpershot"                   "1.0"
-    "viewkick_spring_cooldown_holdtime"             "0.12"
-    "viewkick_spring_cooldown_fadetime"             "0.05"
+    "viewkick_spring_cooldown_holdtime"             "0.22"
+    "viewkick_spring_cooldown_fadetime"             "0.16"
 
     "viewmodel_spring_jolt"                          "autofire_viewmodel_jolt"
     "viewmodel_jolt_scale"                           "1.0"
-    "viewmodel_jolt_backwardPerShot"                 "-0.5"
-    "viewmodel_jolt_roll"                            "0 3.4 0.0"
-    "viewmodel_jolt_side"                            "0 0.038 0"
+    "viewmodel_jolt_backwardPerShot"                 "-0.2"
+    "viewmodel_jolt_roll"                            "0 2.5 0.0"
+    "viewmodel_jolt_side"                            "0 0.035 0"
 
-	"viewkick_pitch_base" 							"1.0"
-	"viewkick_pitch_random"   						"1.0"
-	"viewkick_pitch_softScale"						"2.0"
-	"viewkick_pitch_hardScale"						"0.3"
+    "viewkick_pitch_base" 							"1.0"
+    "viewkick_pitch_random"   						"1.0"
+    "viewkick_pitch_softScale"						"1.65"
+    "viewkick_pitch_hardScale"						"0.32"
 
-	"viewkick_yaw_base"   							"1.0"
-	"viewkick_yaw_random" 							"1.0"
-	"viewkick_yaw_random_innerexclude"				"0.12"  //"0.22"
-	"viewkick_yaw_softScale"  						"2.0"   //"2.2"
-	"viewkick_yaw_hardScale"  						"0.3"
 
-	"viewkick_roll_base"  							"-1.6"
+    "viewkick_yaw_base"   							"1.0"
+    "viewkick_yaw_random" 							"1.0"
+    "viewkick_yaw_random_innerexclude" 				"0.0"
+    "viewkick_yaw_softScale"  						"1.75"
+    "viewkick_yaw_hardScale"						"0.20"
+
+    "viewkick_roll_base"  							"-1.6"
     "viewkick_roll_randomMin" 						"-0.35"
     "viewkick_roll_randomMax" 						"0.35"
     "viewkick_roll_softScale" 						"0.8"
     "viewkick_roll_hardScale" 						"0.3"
 
-	"viewkick_hipfire_weaponFraction" 				"0.2"
-	"viewkick_hipfire_weaponFraction_vmScale" 		"1.0"
-	"viewkick_ads_weaponFraction" 					"0.0"
-	"viewkick_ads_weaponFraction_vmScale" 			"1.0"
+    "viewkick_hipfire_weaponFraction" 				"0.45"
+    "viewkick_hipfire_weaponFraction_vmScale" 		"1.0"
+    "viewkick_ads_weaponFraction" 					"0.0"
+    "viewkick_ads_weaponFraction_vmScale" 			"1.0"
 
-	"viewkick_scale_firstshot_hipfire"				"1.1"
-	"viewkick_scale_min_hipfire"  					"1.0"
-	"viewkick_scale_max_hipfire"  					"1.0"
-	"viewkick_scale_firstshot_ads"					"1.0"
-	"viewkick_scale_min_ads"  						"1.0"
-	"viewkick_scale_max_ads"  						"1.0"
-	"viewkick_scale_valuePerShot" 					"1"
-	"viewkick_scale_pitch_valueLerpStart"   		"2"
-	"viewkick_scale_pitch_valueLerpEnd" 			"11"
-	"viewkick_scale_yaw_valueLerpStart"   			"2"
-	"viewkick_scale_yaw_valueLerpEnd" 				"11"
-	"viewkick_scale_valueDecayDelay"  				"0.15"
-    "viewkick_scale_valueDecayRate"   				"80"
+    "viewkick_scale_firstshot_ads"					"1.0"
+    "viewkick_scale_firstshot_hipfire"				"1.0"
+    "viewkick_scale_min_hipfire"  					"1.1"
+    "viewkick_scale_max_hipfire"  					"1.0"
+    "viewkick_scale_min_ads"  						"1.0"
+    "viewkick_scale_max_ads"  						"1.0"
+    "viewkick_scale_valuePerShot" 					"1.0"
+    "viewkick_scale_pitch_valueLerpStart"   		"0"
+    "viewkick_scale_pitch_valueLerpEnd" 			"40"
+    "viewkick_scale_yaw_valueLerpStart"   			"0"
+    "viewkick_scale_yaw_valueLerpEnd" 				"40"
+    "viewkick_scale_valueDecayDelay"  				"0.3"
+    "viewkick_scale_valueDecayRate"   				"150"
 
-	"viewkick_duck_scale"							"0.9"
+    "viewkick_perm_pitch_base"						"0.0"
+    "viewkick_perm_pitch_random"  				 	"0.0"
+    "viewkick_perm_yaw_base"						"0.0"
+    "viewkick_perm_yaw_random"						"0.0"
 
-	//
-	"viewmodel_shake_forward"						"0.0"
-	"viewmodel_shake_up"							"0.0"
-	"viewmodel_shake_right"							"0.0"
+    "viewkick_duck_scale"							"0.8"
 
-	// Bob
-	"bob_cycle_time"  								"0.4"
-	"bob_vert_dist"   								"0.19"
-	"bob_horz_dist"   								"0.1"
-	"bob_max_speed"   								"150"
-	"bob_pitch"   									"0.75"
-	"bob_yaw" 										"-1.7"
-	"bob_roll"										"1.2"
-
-	// Bob_Zoomed
-	"bob_cycle_time_zoomed"  						"0.4"
-	"bob_vert_dist_zoomed"   						"0.0275"
-	"bob_horz_dist_zoomed"   						"0.0175"
-	"bob_max_speed_zoomed"   						"150"
-	//"bob_pitch_zoomed"   							"0.002"
-	//"bob_yaw_zoomed" 								"-.002"
-	//"bob_roll_zoomed"								".002"
+    //
+    "viewmodel_shake_forward"						"0.15"
+    "viewmodel_shake_up"							"0.0"
+    "viewmodel_shake_right"							"0.0"
 
 
-	// Rumble
-	"fire_rumble"									"rumble_lmg"
+    // Bob
+    "bob_cycle_time"  								"0.4"
+    "bob_vert_dist"   								"0.19"
+    "bob_horz_dist"   								"0.1"
+    "bob_max_speed"   								"150"
+    "bob_pitch"   									"0.75"
+    "bob_yaw" 										"-1.7"
+    "bob_roll"										"1.2"
 
-	// Viewdrift - ADS
-	"viewdrift_ads_delay"                      "0.8"
-	"viewdrift_ads_delay_debounce_time"        "0.4"
+    // Bob_Zoomed
+    "bob_cycle_time_zoomed"  						"0.4"
+    "bob_vert_dist_zoomed"   						"0.01"
+    "bob_horz_dist_zoomed"   						"0.01"
+    "bob_max_speed_zoomed"   						"150"
+    //"bob_pitch_zoomed"   							"0.002"
+    //"bob_yaw_zoomed" 								"-.002"
+    //"bob_roll_zoomed"								".002"
 
-	"viewdrift_ads_speed_pitch"   				"0.6"
-	"viewdrift_ads_speed_yaw" 					"0.6"
+    // Rumble
+    "fire_rumble"									"rumble_lmg"
 
-	"viewdrift_ads_stand_scale_pitch" 			"0.6"
-	"viewdrift_ads_stand_scale_yaw"   			"0.5"
-                      
-                                            
-                                         
-     
-	"viewdrift_ads_crouch_scale_pitch"  		"0.5"
-	"viewdrift_ads_crouch_scale_yaw"			"0.4"
-      
-	"viewdrift_ads_air_scale_pitch"   			"0.8"
-	"viewdrift_ads_air_scale_yaw" 				"0.9"
+    // View Drift
+    // Viewdrift - ADS
+    "viewdrift_ads_delay"                      "0.8"
+    "viewdrift_ads_delay_debounce_time"        "0.4"
 
-	// Sway
-	"sway_rotate_attach"  							"SWAY_ROTATE"
-	"sway_min_x"  									"-0.5"
-	"sway_min_y"  									"-0.5"
-	"sway_min_z"  									"-0.6"
-	"sway_max_x"  									"0.5"
-	"sway_max_y"  									"0.5"
-	"sway_max_z"  									"0.6"
-	"sway_min_pitch"  								"-3"
-	"sway_min_yaw"									"-2.5"
-	"sway_min_roll"   								"-4"
-	"sway_max_pitch"  								"3"
-	"sway_max_yaw"									"2.5"
-	"sway_max_roll"   								"4"
-	"sway_translate_gain" 							"2.5"
-	"sway_rotate_gain"								"7"
-	"sway_move_forward_translate_x"   				"-0.1"
-	"sway_move_forward_translate_z"   				"-0.5"
-	"sway_move_back_translate_x"  					"0.2"
-	"sway_move_back_translate_z"  					"-0.2"
-	"sway_move_left_translate_y"  					"-1"
-	"sway_move_left_translate_z"  					"-0.5"
-	"sway_move_left_rotate_roll"  					"-4"
-	"sway_move_right_translate_y" 					"1"
-	"sway_move_right_translate_z" 					"-0.5"
-	"sway_move_right_rotate_roll" 					"4"
-	"sway_move_up_translate_z"						"-1"
-	"sway_move_down_translate_z"  					"1"
-	"sway_turn_left_rotate_yaw"   					"-2.5"
-	"sway_turn_right_rotate_yaw"  					"2.5"
+    "viewdrift_ads_speed_pitch"   				"0.6"
+    "viewdrift_ads_speed_yaw" 					"0.6"
 
-	"sway_turn_left_translate_y"  					".5"
-	"sway_turn_right_translate_y"  					"-.5"
-	"sway_turn_up_translate_z"  					".2"
-	"sway_turn_down_translate_z"  					"-.2"
-	"sway_turn_up_translate_x"  					".1"
-	"sway_turn_down_translate_x"  					"-.1"
+    "viewdrift_ads_stand_scale_pitch" 			"0.6"
+    "viewdrift_ads_stand_scale_yaw"   			"0.5"
+    "viewdrift_ads_crouch_scale_pitch"  		"0.5"
+    "viewdrift_ads_crouch_scale_yaw"			"0.4"
+    "viewdrift_ads_air_scale_pitch"   			"0.8"
+    "viewdrift_ads_air_scale_yaw" 				"0.9"
 
-	"sway_turn_left_rotate_roll"   					"4"
-	"sway_turn_right_rotate_roll"  					"-4"
-	"sway_turn_up_rotate_pitch"   					"3"
-	"sway_turn_down_rotate_pitch" 					"-3"
-	"sway_turn_up_rotate_roll"   					"-0.8"
-	"sway_turn_down_rotate_roll" 					"0.8"
 
-	// Zoomed Sway
-	"sway_rotate_attach_zoomed"						"SWAY_ROTATE_ZOOMED"
-	"sway_rotate_attach_blend_time_zoomed"			"0.2"
-	"sway_rotate_gain_zoomed"						"5"
+    // Sway
+    "sway_rotate_attach"  							"SWAY_ROTATE"
+    "sway_min_x"  									"-0.5"
+    "sway_min_y"  									"-0.5"
+    "sway_min_z"  									"-0.6"
+    "sway_max_x"  									"0.5"
+    "sway_max_y"  									"0.5"
+    "sway_max_z"  									"0.6"
+    "sway_min_pitch"  								"-3"
+    "sway_min_yaw"									"-2.5"
+    "sway_min_roll"   								"-4"
+    "sway_max_pitch"  								"3"
+    "sway_max_yaw"									"2.5"
+    "sway_max_roll"   								"4"
+    "sway_translate_gain" 							"2.5"
+    "sway_rotate_gain"								"7"
+    "sway_move_forward_translate_x"   				"-0.1"
+    "sway_move_forward_translate_z"   				"-0.5"
+    "sway_move_back_translate_x"  					"0.2"
+    "sway_move_back_translate_z"  					"-0.2"
+    "sway_move_left_translate_y"  					"-1"
+    "sway_move_left_translate_z"  					"-0.5"
+    "sway_move_left_rotate_roll"  					"-4"
+    "sway_move_right_translate_y" 					"1"
+    "sway_move_right_translate_z" 					"-0.5"
+    "sway_move_right_rotate_roll" 					"4"
+    "sway_move_up_translate_z"						"-1"
+    "sway_move_down_translate_z"  					"1"
+    "sway_turn_left_rotate_yaw"   					"-2.5"
+    "sway_turn_right_rotate_yaw"  					"2.5"
 
-	"sway_min_yaw_zoomed"							"-0.0275"
-	"sway_max_yaw_zoomed"							"0.0275"
-	"sway_turn_left_rotate_yaw_zoomed"				"-0.085"
-	"sway_turn_right_rotate_yaw_zoomed"				"0.085"
+    "sway_turn_left_translate_y"  					".5"
+    "sway_turn_right_translate_y"  					"-.5"
+    "sway_turn_up_translate_z"  					".2"
+    "sway_turn_down_translate_z"  					"-.2"
+    "sway_turn_up_translate_x"  					".1"
+    "sway_turn_down_translate_x"  					"-.1"
 
-	"sway_min_roll_zoomed"   						"-1"
-	"sway_max_roll_zoomed"   						"1"
-	"sway_turn_left_rotate_roll_zoomed"   			"-1"
-	"sway_turn_right_rotate_roll_zoomed"  			"1"
+    "sway_turn_left_rotate_roll"   					"4"
+    "sway_turn_right_rotate_roll"  					"-4"
+    "sway_turn_up_rotate_pitch"   					"3"
+    "sway_turn_down_rotate_pitch" 					"-3"
+    "sway_turn_up_rotate_roll"   					"-0.8"
+    "sway_turn_down_rotate_roll" 					"0.8"
 
-	"sway_move_right_rotate_roll_zoomed" 			"0.2"
-	"sway_move_left_rotate_roll_zoomed"  			"-0.2"
+    // Zoomed Sway
+    "sway_rotate_attach_zoomed"						"SWAY_ROTATE_ZOOMED"
+    "sway_rotate_attach_blend_time_zoomed"			"0.2"
+    "sway_rotate_gain_zoomed"						"5"
 
-	"sway_min_pitch_zoomed"  						"-0.015"
-	"sway_max_pitch_zoomed"  						"0.015"
-	"sway_turn_up_rotate_pitch_zoomed"				"0.045"
-	"sway_turn_down_rotate_pitch_zoomed"			"-0.045"
+    "sway_min_yaw_zoomed"							"-0.0275"
+    "sway_max_yaw_zoomed"							"0.0275"
+    "sway_turn_left_rotate_yaw_zoomed"				"-0.085"
+    "sway_turn_right_rotate_yaw_zoomed"				"0.085"
+
+    "sway_min_roll_zoomed"   						"-1"
+    "sway_max_roll_zoomed"   						"1"
+    "sway_turn_left_rotate_roll_zoomed"   			"-1"
+    "sway_turn_right_rotate_roll_zoomed"  			"1"
+
+    "sway_move_right_rotate_roll_zoomed" 			"0.2"
+    "sway_move_left_rotate_roll_zoomed"  			"-0.2"
+
+    "sway_min_pitch_zoomed"  						"-0.015"
+    "sway_max_pitch_zoomed"  						"0.015"
+    "sway_turn_up_rotate_pitch_zoomed"				"0.045"
+    "sway_turn_down_rotate_pitch_zoomed"			"-0.045"
+
+	//spread
+	"spread_stand_hip"								"2.5"
+    "spread_stand_hip_run"							"3.0"
+    "spread_stand_hip_sprint"                       "3.5"
+    "spread_crouch_hip"   							"1.75"
+    "spread_air_hip"  								"5.0"
 
 	// WeaponED Unhandled Key/Values and custom script Key/Values
 	//setting to "0" so it's tunable in Bakery
