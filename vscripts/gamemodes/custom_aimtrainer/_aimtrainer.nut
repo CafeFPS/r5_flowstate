@@ -193,29 +193,32 @@ void function StrafeFunct(entity ai, entity player)
 	//ai.UseSequenceBounds( true )
 	while(IsValid(ai))
 	{
-		int random = RandomIntRangeInclusive(1,9)
+		int random = RandomIntRangeInclusive(1,10)
 		if(random == 1 || random == 2 || random == 3 || random == 4){
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 ) //Ok this looks easy, but have you seen Activity modifiers being used this way in the code before? ;)
-			wait RandomFloatRange(0.025,0.5)
+			wait RandomFloatRange(0.04,0.5)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
-			wait RandomFloatRange(0.025,0.5)
+			wait RandomFloatRange(0.04,0.5)
 		}
 		else if(random == 5|| random == 6|| random == 7|| random == 8){
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
-			wait RandomFloatRange(0.025,0.5)
+			wait RandomFloatRange(0.04,0.5)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
-			wait RandomFloatRange(0.025,0.5)
+			wait RandomFloatRange(0.04,0.5)
 		}
-		else if (random == 9){
-		//a d strafe
-			ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_LEFT", true, 0.1 )
-			wait RandomFloatRange(0.05,0.2)
-			ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_RIGHT", true, 0.1 )
-			wait RandomFloatRange(0.05,0.2)
+		else if (random == 9 || random == 10){
+			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
+			wait RandomFloatRange(0.05,0.25)
 		}
-
+		// else if (random == 9){
+		// //a d strafe
+			// ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_LEFT", true, 0.1 )
+			// wait RandomFloatRange(0.05,0.2)
+			// ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_RIGHT", true, 0.1 )
+			// wait RandomFloatRange(0.05,0.2)
+		// }
 		// else if (random == 10){
 		// //circle strafe?
 			// ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
@@ -435,7 +438,7 @@ void function StartPopcornChallenge(entity player)
 void function CreateDummyPopcornChallenge(entity player)
 {
 	float r = float(RandomInt(6)) / float(6) * 2 * PI
-	vector origin2 = player.GetOrigin() + 300 * <sin( r ), cos( r ), 0.0>
+	vector origin2 = player.GetOrigin() + 400 * <sin( r ), cos( r ), 0.0>
 
 	entity dummy = CreateDummy( 99, origin2, <0,90,0> )
 	
@@ -516,7 +519,7 @@ void function CreateDummyPopcornChallenge(entity player)
 			if(random2 == 1 || random2 == 2 || random2 == 3) //75% prob jumping around the player randomly right or left
 				ai.SetVelocity((AnglesToRight( angles2 ) * RandomFloatRange(128,256) * random ) + AnglesToUp(angles2)*RandomFloatRange(512,1024))
 			else if(random2 == 4) //25% of chance going to player location and repositioning 
-				ai.SetVelocity((AnglesToForward( angles2 ) * RandomFloatRange(128,256)) + AnglesToUp(angles2)*RandomFloatRange(512,1024))
+				ai.SetVelocity(AnglesToForward( angles2 ) * 128 + AnglesToUp(angles2)*RandomFloatRange(512,1024))
 			
 			EmitSoundOnEntity( ai, "JumpPad_LaunchPlayer_3p" )
 
@@ -684,6 +687,7 @@ void function StartBubblefightChallenge(entity player)
 			dummy.SetSkin(RandomIntRange(1,5))
 			dummy.DisableHibernation()
 			ChallengesStruct.dummies.append(dummy)
+			SetTargetName(dummy, "BubbleFightDummy")
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 			AddEntityCallback_OnKilled(dummy, OnDummyKilled)
 			thread BubbleFightStrafe(dummy, player, shield)
@@ -1327,12 +1331,7 @@ void function OnFloatingDummyDamaged( entity dummy, var damageInfo )
 void function OnTilePropDamaged( entity dummy, var damageInfo )
 {
 	entity ent = dummy
-	
-	// //let's put dummies a fake helmet
-	// float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
-	// float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
-	// if(IsValidHeadShot( damageInfo, ent )) DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
-	
+
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	float damage = DamageInfo_GetDamage( damageInfo )
 	
@@ -1363,9 +1362,6 @@ void function OnTilePropDamaged( entity dummy, var damageInfo )
 	
 	//infinite ammo
 	if(AimTrainer_INFINITE_AMMO) attacker.RefillAllAmmo()
-		
-	// //Inmortal target
-	// if(AimTrainer_INMORTAL_TARGETS) dummy.SetHealth(dummy.GetMaxHealth())
 
 	//add 1 hit
 	attacker.p.straferShotsHit++
@@ -1378,15 +1374,7 @@ void function OnTilePropDamaged( entity dummy, var damageInfo )
 	attacker.p.straferDummyKilledCount++
 	Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
 	ChallengesStruct.dummies.removebyvalue(ent)
-	
-	// //was critical?
-	// bool isValidHeadShot = IsValidHeadShot( damageInfo, dummy )
-	// if(isValidHeadShot) 
-	// {
-		// attacker.p.straferCriticalShots++
-		// Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIHeadshot", attacker.p.straferCriticalShots)
-	// }
-	
+
 	ent.Destroy()
 	ChallengesStruct.props.removebyvalue(ent)
 }
@@ -1396,6 +1384,7 @@ void function OnDummyKilled(entity ent, var damageInfo)
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	if ( IsValidHeadShot( damageInfo, ent )) return
 	if(!attacker.IsPlayer() ) return
+	if(ent.GetTargetName() == "BubbleFightDummy") attacker.SetHealth(min(attacker.GetHealth() + 20, attacker.GetMaxHealth()))
 	attacker.p.straferDummyKilledCount++
 	Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
 	ChallengesStruct.dummies.removebyvalue(ent)
