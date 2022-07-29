@@ -262,12 +262,12 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 
 	if ( !victim.IsPlayer() && isShieldShot) //ai shield bleedtrough visuals
 	{
-		entity mover 
-		try{
-		mover = victim.GetParent()}catch(e420){}
+		// entity mover 
+		// try{
+		// mover = victim.GetParent()}catch(e420){}
 		
-		if(IsValid(mover))		
-			victim = mover.GetParent()
+		// if(IsValid(mover))		
+			// victim = mover.GetParent()
 		
 		if(victim.ai.firsttime){			
 			if( victim.GetShieldHealth() <= 50 ){
