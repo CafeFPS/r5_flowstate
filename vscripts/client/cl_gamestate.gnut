@@ -115,7 +115,8 @@ void function CreateScoreRUI()
 	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 	{	
 		UISize screenSize = GetScreenSize()
-		var screenAlignmentTopo = RuiTopology_CreatePlane( <( screenSize.width * 0.51),( screenSize.height*0), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
+		//just sending it really far on the screen lool
+		var screenAlignmentTopo = RuiTopology_CreatePlane( <( screenSize.width * 20),( screenSize.height*20), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
 		rui = RuiCreate( GetGameStateAsset(), screenAlignmentTopo, RUI_DRAW_HUD, 0 )
 	}
 	else
@@ -135,7 +136,8 @@ void function CreateScoreRUI()
 	file.gamestateRui = rui
 	file.gameStateRuiCreated = true
 
-	//SetCommonScoreRUIVars( rui )
+	if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		SetCommonScoreRUIVars( rui )
 
 	if ( file.gameModeScoreBarUpdateRules == null )
 		SetGameModeScoreBarUpdateRules( GameModeScoreBarUpdateRules_Default )

@@ -361,11 +361,6 @@ void function _HandleRespawnFR(entity player, bool respawnsameposition = false)
 		GiveRandomTac(player)
 		GiveRandomUlt(player)
 		Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
-		
-		if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-		{
-			StartFRChallenges(player)
-		}
 	}
 }
 

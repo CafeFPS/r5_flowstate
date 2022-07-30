@@ -227,11 +227,29 @@ void function CoolCameraOnMenu()
 	player.EndSignal("ChallengeStartRemoveCameras")
 	array<CameraLocationPair> cutsceneSpawns
 	
-	cutsceneSpawns.append(NewCameraPair(AimTrainer_startPos, AimTrainer_startAngs)) 
-	cutsceneSpawns.append(NewCameraPair(<49180.1055, -6836.14502, -23461.8379>, <0, -55.7723808, 0>)) 
-	cutsceneSpawns.append(NewCameraPair(<43552.3203, -1023.86182, -25270.9766>, <0, 20.9528542, 0>))
-	cutsceneSpawns.append(NewCameraPair(<30038.0254, -1036.81982, -23369.6035>, <55, -24.2035522, 0>))
     if(!IsValid(player)) return
+	
+	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	{
+		cutsceneSpawns.append(NewCameraPair(<10881.2295, 5903.09863, -3176.7959>, <0, -143.321213, 0>)) 
+		cutsceneSpawns.append(NewCameraPair(<9586.79199, 24404.5898, -2019.6366>, <0, -52.6216431, 0>)) 
+		cutsceneSpawns.append(NewCameraPair(<-22333.625, -15142.3359, 634.326172>, <0, -46.2498436, 0>))
+		cutsceneSpawns.append(NewCameraPair(<21524.0859, -11396.7852, -2646.92944>, <0, 116.187294, 0>))
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_staging")
+	{
+		cutsceneSpawns.append(NewCameraPair(<32645.04,-9575.77,-25911.94>, <7.71,91.67,0.00>)) 
+		cutsceneSpawns.append(NewCameraPair(<49180.1055, -6836.14502, -23461.8379>, <0, -55.7723808, 0>)) 
+		cutsceneSpawns.append(NewCameraPair(<43552.3203, -1023.86182, -25270.9766>, <0, 20.9528542, 0>))
+		cutsceneSpawns.append(NewCameraPair(<30038.0254, -1036.81982, -23369.6035>, <55, -24.2035522, 0>))
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		cutsceneSpawns.append(NewCameraPair(<22771.2344, -16147.1143, 12773.626>, <0, 160.513199, 0>)) 
+		cutsceneSpawns.append(NewCameraPair(<-7984.68408, -16770.2031, 3972.28271>, <0, -158.605301, 0>)) 
+		cutsceneSpawns.append(NewCameraPair(<-19691.1621, 5229.45264, 4238.53125>, <0, -54.6054993, 0>))
+		cutsceneSpawns.append(NewCameraPair(<13270.0576, -20413.9023, 2999.29468>, <0, 98.6180649, 0>))
+	}
 
     //EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
 
@@ -445,7 +463,7 @@ void function StartChallenge5Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Hit as many targets as possible.")
+	thread CreateDescriptionRUI("Click weapon is recommended. Hit as many targets as possible.")
 	thread CreateTimerRUI(true)
 	player.ClientCommand("CC_StartChallenge5")
 }

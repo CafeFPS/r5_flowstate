@@ -251,7 +251,7 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
 
 	thread CleanupBubbleShield( bubbleShield, bubbleShieldFXs, duration )
-	thread BubbleShieldDamageEnemies( bubbleShield, owner )
+	//thread BubbleShieldDamageEnemies( bubbleShield, owner )
 
 	return bubbleShield
 }

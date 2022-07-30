@@ -616,7 +616,6 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		}		
 
 		//actual loot
-		
 		//optics
 		SMGOptics1
 		{
@@ -967,7 +966,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			tall					40
 			fontHeight				20
 			font					TitleBoldFont
-			fgcolor_override		"252 198 3 255"
+			fgcolor_override		"255 255 255 255"
 		
 			ypos                    0
 			xpos					0
@@ -991,7 +990,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			tall					40
 			fontHeight				20
 			font					TitleBoldFont
-			fgcolor_override		"252 198 3 255"
+			fgcolor_override		"255 255 255 255"
 		
 			ypos                    0
 			xpos					0
@@ -1015,7 +1014,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			tall					40
 			fontHeight				20
 			font					TitleBoldFont
-			fgcolor_override		"252 198 3 255"
+			fgcolor_override		"255 255 255 255"
 		
 			ypos                    0
 			xpos					0
@@ -1039,7 +1038,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			tall					40
 			fontHeight				20
 			font					TitleBoldFont
-			fgcolor_override		"252 198 3 255"
+			fgcolor_override		"255 255 255 255"
 		
 			ypos                    0
 			xpos					0
@@ -1065,21 +1064,4 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			zpos 26
 			visible 0
 		}
-		// OpticsFrame2
-		// {
-            // ControlName		ImagePanel
-			// wide					400
-			// tall					100
-            // xpos                    0
-			// ypos					0
-			// zpos 20
-			// visible			0
-            // scaleImage		1
-            // fillColor		"30 30 30 200"
-            // drawColor		"30 30 30 200"
-
-			// pin_corner_to_sibling	CENTER
-			// pin_to_sibling_corner	TOP
-		// }
-		
 }

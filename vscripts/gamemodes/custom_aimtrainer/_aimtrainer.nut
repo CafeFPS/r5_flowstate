@@ -7,23 +7,26 @@
 global function  _ChallengesByColombia_Init
 global function StartFRChallenges
 
-const vector floorLocation = <35306.2344, -16956.5098, -27010.2539>
-const vector floorCenterForPlayer = <floorLocation.x+3840, floorLocation.y+3840, floorLocation.z+200>
-const vector floorCenterForButton = <floorLocation.x+3840+200, floorLocation.y+3840, floorLocation.z+18>
-const vector shipLocationPos = <41334.5469, -21997.4844, -26820.8828>
-const vector shipLocationAngs = <0, -3.29812288, 0>
-const vector onGroundLocationPos = <33946,-6511,-28859>
-const vector onGroundLocationAngs = <0,-90,0>
+vector floorLocation
+vector floorCenterForPlayer
+vector floorCenterForButton
+vector onGroundLocationPos
+vector onGroundLocationAngs
+vector onGroundDummyPos 
+vector AimTrainer_startPos
+vector AimTrainer_startAngs
+
+struct{
+	array<entity> floor
+	array<entity> dummies
+	array<entity> props
+} ChallengesStruct
 
 void function _ChallengesByColombia_Init()
 {
-	//so we can calculate stats
-	AddCallback_OnWeaponAttack( OnWeaponAttackChallenges )
-	
 	//skip button callback
 	AddClientCommandCallback("ChallengesSkipButton", CC_ChallengesSkipButton)
 	
-	//UI buttons callbacks
 	//first column
 	AddClientCommandCallback("CC_StartChallenge1", CC_StartChallenge1)
 	AddClientCommandCallback("CC_StartChallenge2", CC_StartChallenge2)
@@ -51,21 +54,50 @@ void function _ChallengesByColombia_Init()
 	AddClientCommandCallback("CC_AimTrainer_USER_WANNA_BE_A_DUMMY", CC_AimTrainer_USER_WANNA_BE_A_DUMMY)
 	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon) 
 	AddClientCommandCallback("CC_ExitChallenge", CC_ExitChallenge) 
-	
+
+	//so we can calculate stats
+	AddCallback_OnWeaponAttack( OnWeaponAttackChallenges )
+		
+	///arcstars damage callback for challenge
 	AddDamageCallbackSourceID( eDamageSourceId.damagedef_ticky_arc_blast, Arcstar_OnStick )
 	AddDamageCallbackSourceID( eDamageSourceId.mp_weapon_grenade_emp, Arcstar_OnStick )
+	
+	//required assets
 	PrecacheParticleSystem($"P_enemy_jump_jet_ON_trails")
 	PrecacheModel($"mdl/imc_interior/imc_int_fusebox_01.rmdl")
+	PrecacheModel($"mdl/barriers/shooting_range_target_02.rmdl")
 	
 	//Some challenges can kill player
 	AddDeathCallback( "player", OnPlayerDeathCallback )
+	
+	//add locations
+	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	{
+		floorLocation = <-10020.1543, -8643.02832, 5189.92578>
+		onGroundLocationPos = <28408.8984, 22075.5156, -4255.12988>
+		onGroundLocationAngs = <0, 97.8994675, 0>
+		AimTrainer_startPos = <10623.7773, 4953.48975, -4303.92041>
+		AimTrainer_startAngs = <0, 143.031052, 0>			
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_staging")
+	{
+		floorLocation = <35306.2344, -16956.5098, -27010.2539>
+		onGroundLocationPos = <33946,-6511,-28859>
+		onGroundLocationAngs = <0,-90,0>
+		AimTrainer_startPos = <32645.04,-9575.77,-25911.94>
+		AimTrainer_startAngs = <7.71,91.67,0.00>		
+	}
+	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+	{
+		floorLocation = <-11964.7803, -8858.25098, 17252.25>
+		onGroundLocationPos = <-14599.2178, -7073.89551, 2703.93286>
+		onGroundLocationAngs = <0,90,0>
+		AimTrainer_startPos = <-16613.873, -487.12088, 3312.10791>
+		AimTrainer_startAngs = <0, 144.184357, 0>
+	}
+	floorCenterForPlayer = <floorLocation.x+3840, floorLocation.y+3840, floorLocation.z+200>
+	floorCenterForButton = <floorLocation.x+3840+200, floorLocation.y+3840, floorLocation.z+18>
 }
-
-struct{
-	array<entity> floor
-	array<entity> dummies
-	array<entity> props
-} ChallengesStruct
 
 void function StartFRChallenges(entity player)
 {
@@ -87,19 +119,6 @@ void function StartFRChallenges(entity player)
 	HolsterAndDisableWeapons(player)
 	Remote_CallFunction_NonReplay(player, "ServerCallback_CoolCameraOnMenu")
 	Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMainMenu", 0)	
-}
-
-entity function CreateCancelChallengeButton()
-{
-	entity strafe = CreateFRButton(Vector(33816.3633, -6702.79883, -28886.3398), Vector(0,90,0), "Press %use% to exit challenge")
-	AddCallback_OnUseEntity( strafe, void function(entity panel, entity user, int input) 
-		{
-			if(!user.IsPlayer()) return
-			
-			Signal(user, "ChallengeTimeOver")
-			panel.SetSkin(1)
-		})
-	return strafe
 }
 
 void function ResetChallengeStats(entity player)
@@ -129,6 +148,7 @@ void function StartStraferDummyChallenge(entity player)
 	
 	player.SetOrigin(onGroundLocationPos)
 	player.SetAngles(onGroundLocationAngs)
+	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
 	wait AimTrainer_PRE_START_TIME
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
@@ -137,11 +157,10 @@ void function StartStraferDummyChallenge(entity player)
 	
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	
-	entity restart = CreateCancelChallengeButton()
 	OnThreadEnd(
-		function() : ( player, restart )
+		function() : ( player)
 		{
-			OnChallengeEnd(player, restart)
+			OnChallengeEnd(player)
 		}
 	)
 	
@@ -150,7 +169,7 @@ void function StartStraferDummyChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE) 
 			if(Time() > endtime) break
-		entity dummy = CreateDummy( 99, Vector(33948, -6949, -28859), <0,90,0> )
+		entity dummy = CreateDummy( 99, onGroundDummyPos, onGroundLocationAngs*-1 )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
@@ -197,16 +216,16 @@ void function StrafeFunct(entity ai, entity player)
 		if(random == 1 || random == 2 || random == 3 || random == 4){
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 ) //Ok this looks easy, but have you seen Activity modifiers being used this way in the code before? ;)
-			wait RandomFloatRange(0.04,0.5)
+			wait RandomFloatRange(0.05,0.5)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
-			wait RandomFloatRange(0.04,0.5)
+			wait RandomFloatRange(0.05,0.5)
 		}
 		else if(random == 5|| random == 6|| random == 7|| random == 8){
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
-			wait RandomFloatRange(0.04,0.5)
+			wait RandomFloatRange(0.05,0.5)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
-			wait RandomFloatRange(0.04,0.5)
+			wait RandomFloatRange(0.05,0.5)
 		}
 		else if (random == 9 || random == 10){
 			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
@@ -238,8 +257,9 @@ void function StartSwapFocusDummyChallenge(entity player)
 {
 	if(!IsValid(player)) return
 	
-	player.SetOrigin(Vector(33946,-6511,-28859))
-	player.SetAngles(Vector(0,-90,0))
+	player.SetOrigin(onGroundLocationPos)
+	player.SetAngles(onGroundLocationAngs)
+	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
 	wait AimTrainer_PRE_START_TIME
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
@@ -248,11 +268,10 @@ void function StartSwapFocusDummyChallenge(entity player)
 	
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	
-	entity restart = CreateCancelChallengeButton()
 	OnThreadEnd(
-		function() : ( player, restart )
+		function() : ( player)
 		{
-			OnChallengeEnd(player, restart)
+			OnChallengeEnd(player)
 		}
 	)
 	
@@ -262,7 +281,7 @@ void function StartSwapFocusDummyChallenge(entity player)
 		if(!AimTrainer_INFINITE_CHALLENGE) 
 			if(Time() > endtime) break		
 		while(ChallengesStruct.dummies.len()<3){
-			entity dummy = CreateDummy( 99, Vector(33948 + RandomInt(512), -6949 + RandomInt(256), -28859), <0,90,0> )
+			entity dummy = CreateDummy( 99, onGroundDummyPos + Vector(RandomInt(400), RandomInt(200), 0) , onGroundLocationAngs*-1 )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
@@ -346,14 +365,11 @@ void function StartFloatingTargetChallenge(entity player)
 	
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	
-	entity restart = CreateCancelChallengeButton()
-	restart.SetOrigin(floorCenterForButton)
-	restart.SetAngles(Vector(0,-90,0))
-	
+
 	OnThreadEnd(
-		function() : ( player, restart )
+		function() : ( player)
 		{
-		OnChallengeEnd(player, restart)
+		OnChallengeEnd(player)
 		}
 	)
 	
@@ -413,13 +429,10 @@ void function StartPopcornChallenge(entity player)
 	
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	
-	entity restart = CreateCancelChallengeButton()
-	restart.SetOrigin(floorCenterForButton)
-	restart.SetAngles(Vector(0,-90,0))
 	OnThreadEnd(
-		function() : ( player, restart)
+		function() : ( player)
 		{
-			OnChallengeEnd(player, restart)
+			OnChallengeEnd(player)
 		}
 	)
 	
@@ -543,14 +556,11 @@ void function StartStraightUpChallenge(entity player)
 	EndSignal(player, "ChallengeTimeOver")
 	
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
-	entity restart = CreateCancelChallengeButton()
-	restart.SetOrigin(floorCenterForButton)
-	restart.SetAngles(Vector(0,-90,0))
+
 	OnThreadEnd(
-		function() : ( player, restart)
+		function() : ( player)
 		{
-			OnChallengeEnd(player, restart)
+			OnChallengeEnd(player)
 		}
 	)
 	// entity shield = CreatePropDynamic( $"mdl/fx/bb_shield.rmdl", player.GetOrigin() + AnglesToForward(player.GetAngles())*400, Vector(0,0,0) )
@@ -563,16 +573,22 @@ void function StartStraightUpChallenge(entity player)
 		if(!AimTrainer_INFINITE_CHALLENGE) 
 			if(Time() > endtime) break	
 		
-		if(ChallengesStruct.dummies.len()<1){
+		if(ChallengesStruct.dummies.len()<4){
 				thread CreateDummyStraightUpChallenge(player)
+				wait 1
 			}
 			WaitFrame()
 	}
 }
 
-void function CreateDummyStraightUpChallenge(entity player)//, entity shield)
+void function CreateDummyStraightUpChallenge(entity player)
 {
-	entity dummy = CreateDummy( 99, floorCenterForPlayer-Vector(0,0,200) + AnglesToForward(Vector(0,-90,0))*600, Vector(0,90,0) )
+	int random
+	if(CoinFlip())
+		random = -1
+	else random = 1
+	
+	entity dummy = CreateDummy( 99, floorCenterForPlayer-Vector(0,0,200) + AnglesToForward(Vector(0,-90,0))*600 + Vector(RandomInt(500),RandomInt(100),0)*random, Vector(0,90,0) )
 	// shield.SetOrigin(dummy.GetOrigin())
 
 	EndSignal(dummy, "OnDeath")
@@ -606,11 +622,11 @@ void function CreateDummyStraightUpChallenge(entity player)//, entity shield)
 	AddEntityCallback_OnKilled(dummy, OnDummyKilled)
 	ChallengesStruct.dummies.append(dummy)
 	
-	int random					
-	if(CoinFlip())
-		random = 1
-	else
-		random = -1
+	// int random					
+	// if(CoinFlip())
+		// random = 1
+	// else
+		// random = -1
 	
 	entity ai = dummy				
 	array<string> attachments = [ "vent_left", "vent_right" ]
@@ -640,8 +656,9 @@ void function StartBubblefightChallenge(entity player)
 {
 	if(!IsValid(player)) return
 	
-	player.SetOrigin(Vector(33946,-6511,-28859))
-	player.SetAngles(Vector(0,-90,0))
+	player.SetOrigin(onGroundLocationPos)
+	player.SetAngles(onGroundLocationAngs)
+	// onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*225
 	wait AimTrainer_PRE_START_TIME
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
@@ -649,16 +666,15 @@ void function StartBubblefightChallenge(entity player)
 	EndSignal(player, "ChallengeTimeOver")
 	
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
-	entity restart = CreateCancelChallengeButton()
+
 	OnThreadEnd(
-		function() : ( player, restart )
+		function() : ( player)
 		{
-			OnChallengeEnd(player, restart)
+			OnChallengeEnd(player)
 		}
 	)
 
-	entity shield = CreateBubbleShieldWithSettings( player.GetTeam(), player.GetOrigin() + AnglesToForward(player.GetAngles())*500+Normalize(player.GetRightVector())*225, <0,90,0>, player, 999, false, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
+	entity shield = CreateBubbleShieldWithSettings( player.GetTeam(), player.GetOrigin() + AnglesToForward(player.GetAngles())*500+Normalize(player.GetRightVector())*225, onGroundLocationAngs*-1, player, 999, false, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
 	shield.SetCollisionDetailHigh()
 	shield.kv.rendercolor = TEAM_COLOR_ENEMY
 	ChallengesStruct.props.append(shield)
@@ -756,9 +772,12 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 void function StartArcstarsChallenge(entity player)
 {
 	if(!IsValid(player)) return
-	player.SetOrigin(Vector(33946,-6511,-28859))
-	player.SetAngles(Vector(0,-90,0))
+	
+	player.SetOrigin(onGroundLocationPos)
+	player.SetAngles(onGroundLocationAngs)
+	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
 	EndSignal(player, "ChallengeTimeOver")
+	
 	TakeAllWeapons(player)
 	player.GiveWeapon( "mp_weapon_grenade_emp", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["challenges_infinite_arcstars"] )
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
@@ -769,13 +788,12 @@ void function StartArcstarsChallenge(entity player)
 	
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	
-	entity restart = CreateCancelChallengeButton()
 	OnThreadEnd(
-		function() : ( player, restart)
+		function() : ( player)
 		{
 			TakeAllWeapons(player)
 			GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
-			OnChallengeEnd(player, restart)	
+			OnChallengeEnd(player)
 		}
 	)
 
@@ -785,7 +803,7 @@ void function StartArcstarsChallenge(entity player)
 		if(!AimTrainer_INFINITE_CHALLENGE) 
 			if(Time() > endtime) break		
 		if(ChallengesStruct.dummies.len()<2){
-			entity dummy = CreateDummy( 99, Vector(33948, -6949, -28859), <0,90,0> )
+			entity dummy = CreateDummy( 99, onGroundDummyPos, onGroundLocationAngs*-1)
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
@@ -846,8 +864,9 @@ void function ArcstarsChallengeMovementThink(entity ai, entity player)
 void function StartLiftUpChallenge(entity player)
 {
 	if(!IsValid(player)) return
-	player.SetOrigin(Vector(33946,-6511,-28859))
-	player.SetAngles(Vector(0,-90,0))
+	player.SetOrigin(onGroundLocationPos)
+	player.SetAngles(onGroundLocationAngs)
+	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
 	EndSignal(player, "ChallengeTimeOver")
 	wait AimTrainer_PRE_START_TIME
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
@@ -862,13 +881,12 @@ void function StartLiftUpChallenge(entity player)
 	mods.append( "elevator_shooter" )
 	try{weapon.SetMods( mods )} catch(e42069){printt(weapon.GetWeaponClassName() + " failed to put elevator_shooter mod. DEBUG THIS.")}
 	
-	entity restart = CreateCancelChallengeButton()
 	OnThreadEnd(
-		function() : ( player, restart, mods, weapon)
+		function() : ( player, mods, weapon)
 		{
 			mods.removebyvalue("elevator_shooter")
 			try{weapon.SetMods( mods )} catch(e42069){printt(weapon.GetWeaponClassName() + " failed to remove elevator_shooter mod. DEBUG THIS.")}
-			OnChallengeEnd(player, restart)
+			OnChallengeEnd(player)
 		}
 	)
 
@@ -878,8 +896,8 @@ void function StartLiftUpChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE) 
 			if(Time() > endtime) break		
-		if(ChallengesStruct.dummies.len()<2){
-			entity dummy = CreateDummy( 99, Vector(33948, -6949, -28859), <0,90,0> )
+		if(ChallengesStruct.dummies.len()<3){
+			entity dummy = CreateDummy( 99, onGroundDummyPos, onGroundLocationAngs*-1 )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
@@ -996,9 +1014,10 @@ void function ForceToBeInLiftForChallenge( entity player )
 	if(!player.IsPlayer()) return
 	while(IsValid(player))
 	{
+		player.SetVelocity(Vector(0,0,0))
 		wait 4
 		player.SetVelocity(Vector(0,0,0))
-		player.SetOrigin(Vector(33946,-6511,-28859))
+		player.SetOrigin(onGroundLocationPos)
 	}
 }
 
@@ -1049,17 +1068,16 @@ void function StartTileFrenzyChallenge(entity player)
 	
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	
-	TakeAllWeapons(player)
-	player.GiveWeapon( "mp_weapon_clickweapon", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+	// TakeAllWeapons(player)
+	// player.GiveWeapon( "mp_weapon_clickweapon", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
+	// player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 
-	entity restart = CreateCancelChallengeButton()
 	OnThreadEnd(
-		function() : ( player, restart)//, mods, weapon)
+		function() : ( player)//, mods, weapon)
 		{
-			TakeAllWeapons(player)
-			GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
-			OnChallengeEnd(player, restart)
+			// TakeAllWeapons(player)
+			// GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
+			OnChallengeEnd(player)
 		}
 	)
 
@@ -1121,7 +1139,7 @@ void function StartTileFrenzyChallenge(entity player)
 }
 
 //Challenges related end functions
-void function OnChallengeEnd(entity player, entity restart)
+void function OnChallengeEnd(entity player)
 {
 	if(!IsValid(player)) return
 	
@@ -1143,7 +1161,6 @@ void function OnChallengeEnd(entity player, entity restart)
 		printt("Crit. shots: " + player.p.straferCriticalShots)
 		printt("---------------------------------------")
 
-	if(IsValid(restart)) restart.Destroy()
 	Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, player.p.straferShotsHit,player.p.straferDummyKilledCount,player.p.straferAccuracy,player.p.straferChallengeDamage,player.p.straferCriticalShots,player.p.straferShotsHitRecord,player.p.isNewBestScore)
 	thread ChallengesStartAgain(player)
 }

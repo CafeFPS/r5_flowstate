@@ -15,8 +15,6 @@ global bool AimTrainer_INMORTAL_TARGETS = false
 global bool AimTrainer_USER_WANNA_BE_A_DUMMY = false
 global bool ENABLE_HIT_DOT = false
 
-global const vector AimTrainer_startPos = <32645.04,-9575.77,-25911.94> //menu
-global const vector AimTrainer_startAngs = <7.71,91.67,0.00>
 global const int AimTrainer_RESULTS_TIME = 10
 global const float AimTrainer_PRE_START_TIME = 2.5 //description time
 

@@ -598,5 +598,23 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			pin_corner_to_sibling	RIGHT
 			pin_to_sibling_corner	RIGHT
 		}
+		Hint
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"For challenges that support it."
+				visible                 1
+				zpos 0
+				tall					60
+				fontHeight				25
+				font					Default
+				fgcolor_override		"255 255 255 255"
+			
+				ypos                    -10
+				xpos					-15
+				pin_to_sibling          DarkenBackground
+				pin_corner_to_sibling   BOTTOM_RIGHT
+				pin_to_sibling_corner   BOTTOM_RIGHT
+		}	
 	}
 }
