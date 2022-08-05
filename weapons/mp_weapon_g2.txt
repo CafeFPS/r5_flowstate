@@ -192,7 +192,10 @@
 	"sound_zoom_out"                           "Weapon_G2A4_ADS_Out"
 	"sound_trigger_pull"                       "assault_rifle_dryfire"
 	"sound_trigger_release"                    "assault_rifle_dryfire"
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	// NPC
 	//
@@ -377,8 +380,9 @@
 
 		"barrel_stabilizer_l4_flash_hider"
 		{
-			"fx_muzzle_flash_view"				"wpn_muzzleflash_snp_sup_hmn_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_snp_sup_hmn"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 
 		"bullets_mag_l1"

@@ -33,9 +33,9 @@ WeaponData
 	"playermodel" 									"mdl/weapons/b3wing/w_b3wing.rmdl"
 
     // FX - Muzzle Flash
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_wingman_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_pistol"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 
 	// FX - Shell Eject

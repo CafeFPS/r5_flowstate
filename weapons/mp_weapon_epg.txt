@@ -64,9 +64,9 @@ WeaponData
 	"explosion_shake_frequency"						"35"
 	"explosion_shake_duration"						"0.5"
 
-	"fx_muzzle_flash_view"							"P_wpn_muzzleflash_epg_FP"
-	"fx_muzzle_flash_world"							"P_wpn_muzzleflash_epg"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	// Sound
 	"projectile_flight_sound"						"weapon_epg_projectile_loop"

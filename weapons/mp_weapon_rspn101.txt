@@ -71,7 +71,11 @@ WeaponData
 	"sound_dryfire"									"assault_rifle_dryfire"
 	"sound_zoom_in"									"Weapon_r101_ADS_In"
 	"sound_zoom_out"								"Weapon_r101_ADS_Out"
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
+	
     "ammo_clip_size"   								"18"
   "ammo_default_total"							"100"
     "ammo_stockpile_max"							"44"
@@ -289,8 +293,9 @@ WeaponData
 
 		barrel_stabilizer_l4_flash_hider
 		{
-			"fx_muzzle_flash_view"		"wpn_muzzleflash_assault_sup_FP"
-			"fx_muzzle_flash_world"		"wpn_muzzleflash_assault_sup"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 
 		bullets_mag_l1

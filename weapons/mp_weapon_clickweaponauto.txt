@@ -2,17 +2,17 @@ WeaponData
 {
 	// General
 	
-	"printname"   									"HITSCAN"
-	"shortprintname"   								"HITSCAN"
-	"description" 									"HITSCAN"
-	"longdesc"										"HITSCAN"
+	"printname"   									"HITSCAN AUTO"
+	"shortprintname"   								"HITSCAN AUTO"
+	"description" 									"HITSCAN AUTO"
+	"longdesc"										"HITSCAN AUTO"
 
 	"weapon_type_flags"								"WPT_PRIMARY"
 
 	"menu_icon"										""
 	"hud_icon"										""
 
-	"is_semi_auto"									"1"
+	"is_semi_auto"									"0"
 	"ballistic_type"								"hitscan"
 	"ammo_pool_type"								"special"
 	"fire_mode"   									"automatic"
@@ -51,7 +51,7 @@ WeaponData
 	"uses_ammo_pool"                				"0"
 	
 	// Regen Ammo
-	"regen_ammo_refill_rate"						"5"
+	"regen_ammo_refill_rate"						"10"
 	"regen_ammo_refill_start_delay"					"0.0"
 	"fire_rate"   									"5"
 	

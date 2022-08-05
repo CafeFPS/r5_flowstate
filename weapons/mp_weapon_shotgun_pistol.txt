@@ -71,9 +71,9 @@ WeaponData
 	"fx_shell_eject_world"							""
 	"fx_shell_eject_attach"							""
 
-	"fx_muzzle_flash_view"							"P_mozambique_base_FP_FULL"
-	"fx_muzzle_flash_world"							"P_mozambique_base_FULL"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	"damage_flags"									"DF_SHOTGUN | DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
 	"damage_type" 									"bullet"

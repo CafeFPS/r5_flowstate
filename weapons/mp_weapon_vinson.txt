@@ -36,7 +36,11 @@ WeaponData
 	"chroma_color"									"1 .8 1"
 
     "projectile_launch_speed"						"24000"
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
+	
 	//Sounds
 	"sound_dryfire"									"Weapon_Vinson_Trigger"
 	"sound_pickup"									"wpn_pickup_Rifle_1P"

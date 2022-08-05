@@ -155,7 +155,11 @@ WeaponData
 
 	// View Kick
 	"viewkick_pattern"                              "hemlok_2"
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
+	
 	"viewkick_spring" 								"hemlok_vkp"
     "viewkick_spring_hot"                           "hemlok_vkp_hot"
 
@@ -311,8 +315,9 @@ WeaponData
 
 		barrel_stabilizer_l4_flash_hider
 		{
-			"fx_muzzle_flash_view"				"wpn_muzzleflash_assault_sup_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_assault_sup"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""	
 		}
 
 		highcal_mag_l1

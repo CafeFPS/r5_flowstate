@@ -847,6 +847,7 @@ string function GetWeaponInfoFileKeyField_GlobalString( string ref, string varia
 {
 	var val = GetWeaponInfoFileKeyField_Global( ref, variable )
 	Assert( val != null, "Weapon key \"" + variable + "\" does not exist in weapon \"" + ref + "\" !" )
+	if(val == null) return ""
 	return expect string( val )
 }
 

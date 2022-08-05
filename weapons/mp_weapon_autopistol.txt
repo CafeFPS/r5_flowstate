@@ -27,7 +27,10 @@ WeaponData
 	"stat_range"  									"30"
 	"stat_accuracy"   								"44"
 	"stat_rof"										"69"
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 	// Models
 	"viewmodel"   									"mdl/weapons/p2011_auto/ptpov_p2011_auto.rmdl"
 	"playermodel" 									"mdl/weapons/p2011_auto/w_p2011_auto.rmdl"

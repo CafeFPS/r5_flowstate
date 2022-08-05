@@ -55,7 +55,11 @@
 
     zoomed_convar_sensitivity_index             4
     zoomed_convar_toggle_sensitivity_index      6
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
+	
 	// Behavior- Aim Assist
 	"aimassist_adspull_weaponclass"            "none"
 

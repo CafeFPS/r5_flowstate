@@ -142,7 +142,7 @@ string function GetWeaponNameForUI(string weapon)
             weaponname = "Devotion"
             break
         case "mp_weapon_hemlok":
-            weaponname = "Hemlock"
+            weaponname = "Hemlok"
             break
         case "mp_weapon_vinson":
             weaponname = "Flatline"
@@ -166,7 +166,7 @@ string function GetWeaponNameForUI(string weapon)
             weaponname = "Charge Rifle"
             break
 		case "mp_weapon_sniper":
-			weaponname = "Kraker"
+			weaponname = "Kraber"
 			break
 		case "mp_weapon_volt_smg":
 			weaponname = "Volt"
@@ -178,7 +178,10 @@ string function GetWeaponNameForUI(string weapon)
 			weaponname = "Car"
 			break
 		case "mp_weapon_clickweapon":
-			weaponname = "Click Weapon"
+			weaponname = "Hitscan"
+			break
+		case "mp_weapon_clickweaponauto":
+			weaponname = "Hitscan Auto"
 			break
 		default:
 			weaponname = ""

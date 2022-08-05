@@ -100,9 +100,9 @@ WeaponData
 	"fx_shell_eject_world"							"wpn_shelleject_rifle_assault"
 	"fx_shell_eject_attach"							"shell"
 
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_pulse_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_pulse"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	"looping_sounds"								"1"
 

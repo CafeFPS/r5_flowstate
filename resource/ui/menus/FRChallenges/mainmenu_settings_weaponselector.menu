@@ -37,7 +37,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			tall					50
 			visible					1
 			fontHeight				60
-			labelText				"APEX AIM TRAINER"
+			labelText				"FLOWSTATE AIM TRAINER"
 			font					"TitleBoldFont"
 			allcaps					1
 			fgcolor_override		"191 13 13 255"
@@ -55,7 +55,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v0.7 | Made by CaféDeColombia @CafeFPS"
+			labelText				"v0.8 | Made by CaféDeColombia @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"

@@ -46,6 +46,8 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 	AddEventHandlerToButton( menu, "Challenge4", UIE_CLICK, Challenge4Funct )
 	AddEventHandlerToButton( menu, "Challenge5", UIE_CLICK, Challenge5Funct )
 	AddEventHandlerToButton( menu, "Challenge6", UIE_CLICK, Challenge6Funct )
+	AddEventHandlerToButton( menu, "Challenge7", UIE_CLICK, Challenge7Funct )
+	AddEventHandlerToButton( menu, "Challenge8", UIE_CLICK, Challenge8Funct )
 	//Second column
 	AddEventHandlerToButton( menu, "Challenge1NewC", UIE_CLICK, Challenge1NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge2NewC", UIE_CLICK, Challenge2NewCFunct )
@@ -53,6 +55,8 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 	AddEventHandlerToButton( menu, "Challenge4NewC", UIE_CLICK, Challenge4NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge5NewC", UIE_CLICK, Challenge5NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge6NewC", UIE_CLICK, Challenge6NewCFunct )
+	AddEventHandlerToButton( menu, "Challenge7NewC", UIE_CLICK, Challenge7NewCFunct )
+	AddEventHandlerToButton( menu, "Challenge8NewC", UIE_CLICK, Challenge8NewCFunct )
 }
 
 bool function ShouldShowBackButton()
@@ -107,6 +111,18 @@ void function Challenge6Funct(var button)
 	EmitUISound("UI_Menu_SelectMode_Close")
 	RunClientScript("StartChallenge6Client")
 }
+void function Challenge7Funct(var button)
+{
+	CloseAllMenus()
+	EmitUISound("UI_Menu_SelectMode_Close")
+	RunClientScript("StartChallenge7Client")
+}
+void function Challenge8Funct(var button)
+{
+	CloseAllMenus()
+	EmitUISound("UI_Menu_SelectMode_Close")
+	RunClientScript("StartChallenge8Client")
+}
 void function Challenge1NewCFunct(var button)
 {
 	CloseAllMenus()
@@ -141,6 +157,7 @@ void function Challenge5NewCFunct(var button)
 	EmitUISound("UI_Menu_SelectMode_Close")
 	RunClientScript("StartChallenge5NewCClient")
 }
+
 void function Challenge6NewCFunct(var button)
 {
 	CloseAllMenus()
@@ -148,6 +165,19 @@ void function Challenge6NewCFunct(var button)
 	RunClientScript("StartChallenge6NewCClient")
 }
 
+void function Challenge7NewCFunct(var button)
+{
+	CloseAllMenus()
+	EmitUISound("UI_Menu_SelectMode_Close")
+	RunClientScript("StartChallenge7NewCClient")
+}
+
+void function Challenge8NewCFunct(var button)
+{
+	CloseAllMenus()
+	EmitUISound("UI_Menu_SelectMode_Close")
+	RunClientScript("StartChallenge8NewCClient")
+}
 void function OnR5RSB_Show()
 {
     //

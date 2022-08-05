@@ -57,9 +57,9 @@ WeaponData
 	"sound_zoom_in"									"weapon_havoc_ads_in"
 	"sound_zoom_out"								"weapon_havoc_ads_out"
 
-	"fx_muzzle_flash_view"							"p_mflash_pulse_lmg_FP"
-	"fx_muzzle_flash_world"							"P_mflash_pulse_LMG"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	// no shell ejects for this weapon
 	"fx_shell_eject_view"							""

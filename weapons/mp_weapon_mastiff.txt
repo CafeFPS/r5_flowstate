@@ -56,7 +56,11 @@ WeaponData
 	"holster_type"									"rifle"
 
 	"chroma_color"									"1 .6 .1"
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
+	
 	// Effects
 	"tracer_effect"   								"weapon_tracers_shotgun"
 	"impact_effect_table" 							"bullet_mastiff"

@@ -39,9 +39,9 @@ WeaponData
 
     //Effects
     "projectile_trail_effect_0" 					"P_projectile_lstar_burn"
-    "fx_muzzle_flash_view"							"P_muz_lstar_FP_burn"
-    "fx_muzzle_flash_world"							"P_muz_lstar_burn"
-    "fx_muzzle_flash_attach"						"muzzle_flash"
+    "fx_muzzle_flash_view"							""
+    "fx_muzzle_flash_world"							""
+    "fx_muzzle_flash_attach"						""
 	"impact_effect_table" 							"lstar"
 	"projectile_adjust_to_gun_barrel"				"1"
 

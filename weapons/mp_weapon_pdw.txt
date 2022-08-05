@@ -39,7 +39,11 @@ WeaponData
 	"sound_pickup"									"wpn_pickup_SMG_1P"
 
     "projectile_launch_speed"						"18000"
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
+	
 	//Sounds
 	"fire_sound_1_player_1p" 						"weapon_prowler_burst_secondshot_1p"
 	"fire_sound_1_player_3p" 						""

@@ -33,10 +33,12 @@ void function InitArenasBuyPanel4( var panel )
 	AddEventHandlerToButton( menu, "CarButton", UIE_CLICK, BuyCar )
 	file.weaponButtons.append(Hud_GetChild( menu, "CarButton" ))
 
-	var re45 = Hud_GetChild( menu, "ClickWeapon" )
-	// RuiSetImage( Hud_GetRui( re45 ), "basicImage", $"rui/weapon_icons/r5/weapon_r45" )
 	AddEventHandlerToButton( menu, "ClickWeaponButton", UIE_CLICK, BuyClickWeapon )
 	file.weaponButtons.append(Hud_GetChild( menu, "ClickWeaponButton" ))
+
+	AddEventHandlerToButton( menu, "HitscanAutoButton", UIE_CLICK, BuyClickWeaponAuto )
+	file.weaponButtons.append(Hud_GetChild( menu, "HitscanAutoButton" ))
+
 
 	// var alternator = Hud_GetChild( menu, "Alternator" )
 	// RuiSetImage( Hud_GetRui( alternator ), "basicImage", $"rui/weapon_icons/r5/weapon_alternator" )
@@ -112,4 +114,12 @@ void function BuyClickWeapon(var button)
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_clickweapon" )
 	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_clickweapon")
+}
+
+void function BuyClickWeaponAuto(var button)
+{
+	CleanAllButtons()	
+	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_clickweaponauto" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_clickweaponauto")
 }

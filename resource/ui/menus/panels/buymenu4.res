@@ -271,39 +271,85 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			visible                 0
 		}
 		
-		ClickWeapon
+		// ClickWeapon
+		// {
+			// ControlName 				 RuiPanel 
+			// rui 						 ui/basic_image.rpak 
+			// wide 						 160 
+			// tall 						 75 
+			// xpos                    0
+			// ypos                    -10
+			// zpos                    9
+			// pin_to_sibling          ClickWeaponButton
+			// pin_corner_to_sibling   CENTER
+			// pin_to_sibling_corner   CENTER
+			
+			// visible                 0
+		// }
+
+		ClickWeapon_Name
 		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    9
+			ControlName				Label
+			wide                    224
+			labelText				"Hitscan"
+			visible                 1
+			zpos 5
+			fgcolor_override		"2 252 240 255"
+			ypos                    0
+			xpos					65
+			fontHeight				35
 			pin_to_sibling          ClickWeaponButton
 			pin_corner_to_sibling   CENTER
 			pin_to_sibling_corner   CENTER
 			
 			visible                 0
 		}
+		HitscanAutoButton
+		{
+			"ControlName"				"RuiButton"
+			"rui"						"ui/generic_friend_button.rpak"
+			wide					200
+			tall					150
+			"visible"					"1"
+			"sound_accept"				"ui_rankedsummary_circletick_reached"
+			"sound_focus"				"UI_Menu_Focus_Small"
+			xpos                    100
+			ypos                    0
+			zpos                    5
+			pin_to_sibling          ClickWeaponButton
+			pin_corner_to_sibling   TOP_LEFT
+			pin_to_sibling_corner   TOP_RIGHT
+		}
+		
+		// HitscanAuto
+		// {
+			// ControlName 				 RuiPanel 
+			// rui 						 ui/basic_image.rpak 
+			// wide 						 160 
+			// tall 						 75 
+			// xpos                    0
+			// ypos                    -10
+			// zpos                    5
+			// pin_to_sibling          HitscanAutoButton
+			// pin_corner_to_sibling   CENTER
+			// pin_to_sibling_corner   CENTER
+		// }
 
-		ClickWeapon_Name
+		HitscanAuto_Name
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"ClickWeapon"
+			labelText				"Hitscan Auto"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					70
+			xpos					40
+			ypos                    0
 			fontHeight				35
-			pin_to_sibling          ClickWeapon
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-			
-			visible                 0
-		}	
+			pin_to_sibling          HitscanAutoButton
+			pin_corner_to_sibling   CENTER
+			pin_to_sibling_corner   CENTER
+		}
 		// RE45Button
 		// {
 			// "ControlName"				"RuiButton"

@@ -53,7 +53,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			tall					50
 			visible					1
 			fontHeight				60
-			labelText				"APEX AIM TRAINER"
+			labelText				"FLOWSTATE AIM TRAINER"
 			font					"TitleBoldFont"
 			allcaps					1
 			fgcolor_override		"191 13 13 255"
@@ -207,7 +207,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v0.7 | Made by CaféDeColombia @CafeFPS"
+			labelText				"v0.8 | Made by CaféDeColombia @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -292,70 +292,6 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	CENTER
 		}
 
-		// Challenge1Line1
-		// {
-			// ControlName		ImagePanel
-			// wide					233
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge1DialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge1Line2
-		// {
-			// ControlName		ImagePanel
-			// wide					233
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge1DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge1Line3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge1DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge1Line4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge1DialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }	
-		//MORE BUTTONS
 		Challenge2
 		{
 			"ControlName"			"RuiButton"
@@ -415,69 +351,6 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	CENTER
 		}
 
-		// Challenge2Line1
-		// {
-			// ControlName		ImagePanel
-			// wide					215
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge2DialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge2Line2
-		// {
-			// ControlName		ImagePanel
-			// wide					215
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge2DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge2Line3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge2DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge2Line4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge2DialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }	
 		Challenge3
 		{
 			"ControlName"			"RuiButton"
@@ -537,69 +410,6 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	CENTER
 		}
 
-		// Challenge3Line1
-		// {
-			// ControlName		ImagePanel
-			// wide					200
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge3DialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge3Line2
-		// {
-			// ControlName		ImagePanel
-			// wide					200
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge3DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge3Line3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge3DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge3Line4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge3DialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }
 		Challenge4
 		{
 			"ControlName"			"RuiButton"
@@ -659,69 +469,6 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	CENTER
 		}
 
-		// Challenge4Line1
-		// {
-			// ControlName		ImagePanel
-			// wide					210
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge4DialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge4Line2
-		// {
-			// ControlName		ImagePanel
-			// wide					210
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge4DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge4Line3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge4DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge4Line4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge4DialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }
 		Challenge5
 		{
 			"ControlName"			"RuiButton"
@@ -781,73 +528,10 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	CENTER
 		}
 
-		// Challenge5Line1
-		// {
-			// ControlName		ImagePanel
-			// wide					210
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge5DialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge5Line2
-		// {
-			// ControlName		ImagePanel
-			// wide					210
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge5DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge5Line3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge5DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge5Line4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge5DialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }
 	Challenge6
 		{
 			"ControlName"			"RuiButton"
-			wide					210
+			wide					225
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -870,7 +554,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"TODO"
+			labelText				"Close fast strafes"
 			visible                 1
 			zpos 3
 			tall					55
@@ -888,7 +572,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		Challenge6DialogFrame
 		{
             ControlName		ImagePanel
-			wide					210
+			wide					225
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -902,71 +586,122 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_corner_to_sibling	CENTER
 			pin_to_sibling_corner	CENTER
 		}
+	Challenge7
+		{
+			"ControlName"			"RuiButton"
+			wide					235
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
 
-		// Challenge6Line1
-		// {
-			// ControlName		ImagePanel
-			// wide					210
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
+			xpos                    0
+			ypos                    %7
+			zpos                    3
+            visible 1
 
-			// pin_to_sibling			Challenge6DialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
+			pin_to_sibling          Challenge6
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge7Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Jumps fast strafes"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
 
-		// Challenge6Line2
-		// {
-			// ControlName		ImagePanel
-			// wide					210
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge7
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge7DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					235
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
 
-			// pin_to_sibling			Challenge6DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
+			pin_to_sibling			Challenge7
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	Challenge8
+		{
+			"ControlName"			"RuiButton"
+			wide					155
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
 
-		// Challenge6Line3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
+			xpos                    0
+			ypos                    %7
+			zpos                    3
+            visible 1
 
-			// pin_to_sibling			Challenge6DialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
+			pin_to_sibling          Challenge7
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge8Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Smoothbot"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
 
-		// Challenge6Line4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge8
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge8DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					155
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
 
-			// pin_to_sibling			Challenge6DialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }
-	//}		
+			pin_to_sibling			Challenge8
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
 	//NEW COLUMN
 	Challenge1NewC
 		{
@@ -1027,70 +762,6 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	CENTER
 		}
 
-		// Challenge1NewCLine1
-		// {
-			// ControlName		ImagePanel
-			// wide					260
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge1NewCDialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge1NewCLine2
-		// {
-			// ControlName		ImagePanel
-			// wide					260
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge1NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge1NewCLine3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge1NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge1NewCLine4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge1NewCDialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }
-
 	Challenge2NewC
 		{
 			"ControlName"			"RuiButton"
@@ -1149,69 +820,6 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	CENTER
 		}
 
-		// Challenge2NewCLine1
-		// {
-			// ControlName		ImagePanel
-			// wide					220
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge2NewCDialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge2NewCLine2
-		// {
-			// ControlName		ImagePanel
-			// wide					220
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge2NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge2NewCLine3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge2NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge2NewCLine4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge2NewCDialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }
 	Challenge3NewC
 		{
 			"ControlName"			"RuiButton"
@@ -1271,69 +879,6 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_to_sibling_corner	CENTER
 		}
 
-		// Challenge3NewCLine1
-		// {
-			// ControlName		ImagePanel
-			// wide					235
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge3NewCDialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge3NewCLine2
-		// {
-			// ControlName		ImagePanel
-			// wide					235
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge3NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge3NewCLine3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge3NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge3NewCLine4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge3NewCDialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }	
 	Challenge4NewC
 		{
 			"ControlName"			"RuiButton"
@@ -1360,7 +905,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Shooting valk's ult"
+			labelText				"Shooting Valk's ult"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1392,75 +937,11 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_corner_to_sibling	CENTER
 			pin_to_sibling_corner	CENTER
 		}
-
-		// Challenge4NewCLine1
-		// {
-			// ControlName		ImagePanel
-			// wide					180
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge4NewCDialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge4NewCLine2
-		// {
-			// ControlName		ImagePanel
-			// wide					180
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge4NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge4NewCLine3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge4NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge4NewCLine4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge4NewCDialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }	
-
+		
 	Challenge5NewC
 		{
 			"ControlName"			"RuiButton"
-			wide					270
+			wide					240
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -1483,7 +964,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Lift up beaming down"
+			labelText				"Shooting from Lift"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1501,7 +982,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		Challenge5NewCDialogFrame
 		{
             ControlName		ImagePanel
-			wide					270
+			wide					240
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -1515,75 +996,11 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_corner_to_sibling	CENTER
 			pin_to_sibling_corner	CENTER
 		}
-
-		// Challenge5NewCLine1
-		// {
-			// ControlName		ImagePanel
-			// wide					220
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge5NewCDialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
-
-		// Challenge5NewCLine2
-		// {
-			// ControlName		ImagePanel
-			// wide					220
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge5NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge5NewCLine3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge5NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge5NewCLine4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge5NewCDialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }	
-
+		
 	Challenge6NewC
 		{
 			"ControlName"			"RuiButton"
-			wide					220
+			wide					235
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -1606,7 +1023,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"TODO"
+			labelText				"Skydiving targets"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1624,7 +1041,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		Challenge6NewCDialogFrame
 		{
             ControlName		ImagePanel
-			wide					220
+			wide					235
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -1638,94 +1055,121 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			pin_corner_to_sibling	CENTER
 			pin_to_sibling_corner	CENTER
 		}
+	Challenge7NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					220
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
 
-		// Challenge6NewCLine1
-		// {
-			// ControlName		ImagePanel
-			// wide					220
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
+			xpos                    0
+			ypos                    %7
+			zpos                    3
+            visible 1
+			
+			pin_to_sibling          Challenge6NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge7NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Running targets"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
 
-			// pin_to_sibling			Challenge6NewCDialogFrame
-			// pin_corner_to_sibling	BOTTOM_LEFT
-			// pin_to_sibling_corner	BOTTOM_LEFT
-		// }
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge7NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge7NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					220
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
 
-		// Challenge6NewCLine2
-		// {
-			// ControlName		ImagePanel
-			// wide					220
-			// tall					2
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
+			pin_to_sibling			Challenge7NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	Challenge8NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					260
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
 
-			// pin_to_sibling			Challenge6NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
+			xpos                    0
+			ypos                    %7
+			zpos                    3
+            visible 1
+			
+			pin_to_sibling          Challenge7NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge8NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"High ground practice"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
 
-		// Challenge6NewCLine3
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge8NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge8NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					260
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
 
-			// pin_to_sibling			Challenge6NewCDialogFrame
-			// pin_corner_to_sibling	TOP_LEFT
-			// pin_to_sibling_corner	TOP_LEFT
-		// }
-
-		// Challenge6NewCLine4
-		// {
-			// ControlName		ImagePanel
-			// wide					2
-			// tall					55
-            // visible			1
-            // scaleImage		1
-			// proportionalToParent    0
-            // fillColor		"255 255 255 200"
-            // drawColor		"255 255 255 200"
-
-			// pin_to_sibling			Challenge6NewCDialogFrame
-			// pin_corner_to_sibling	TOP_RIGHT
-			// pin_to_sibling_corner	TOP_RIGHT
-		// }	
-
-		// FooterButtons
-		// {
-			// ControlName				CNestedPanel
-			// InheritProperties       FooterButtons
-			// ypos					r180
-			// labelText				"Exit"
-		// }
-        // FooterHelpTxt
-        // {
-            // ControlName				Label
-            // InheritProperties		R2_ContentDescription
-			// classname				FooterHelpTxt
-            // font					Default_30
-            // labelText				""
-            // fgcolor_override		"192 215 192 255"
-            // allcaps					0
-            // wide 					850
-			// tall					30
-            // xpos					-160
-
-            // pin_to_sibling			FooterButtons
-            // pin_corner_to_sibling	TOP_LEFT
-            // pin_to_sibling_corner	BOTTOM_LEFT
-        // }
+			pin_to_sibling			Challenge8NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
 	}
 }

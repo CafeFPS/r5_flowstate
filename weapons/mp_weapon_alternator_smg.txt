@@ -53,14 +53,14 @@ WeaponData
 	"fx_shell_eject2_attach"						"shell_l"
 
 	// NOTE: Alternator has a special muzzle flash to look good with two barrels
-	"fx_muzzle_flash_view"							"P_wpn_muzzleflash_alternator_FP"
-	"fx_muzzle_flash_world"							"P_wpn_muzzleflash_alternator"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	// NOTE: specifies muzzle flash for the second barrel
-	"fx_muzzle_flash2_view"							"P_wpn_muzzleflash_alternator_FP"
-	"fx_muzzle_flash2_world"						"P_wpn_muzzleflash_alternator"
-	"fx_muzzle_flash2_attach"						"muzzle_flash_l"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 
 	// Sound
@@ -316,13 +316,9 @@ WeaponData
 			"viewkick_yaw_base" 				"*0.85"
 			"viewkick_yaw_random"   			"*0.8"
 
-			"fx_muzzle_flash_attach"			"muzzle_flash"
-			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
-
-			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
-			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 
 		barrel_stabilizer_l2
@@ -330,13 +326,9 @@ WeaponData
 			"viewkick_yaw_base" 				"*0.8"
 			"viewkick_yaw_random"   			"*0.75"
 
-			"fx_muzzle_flash_attach"			"muzzle_flash"
-			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
-
-			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
-			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 
 		barrel_stabilizer_l3
@@ -346,13 +338,9 @@ WeaponData
 			"viewkick_yaw_base" 				"*0.75"
 			"viewkick_yaw_random"   			"*0.7"
 
-			"fx_muzzle_flash_attach"			"muzzle_flash"
-			"fx_muzzle_flash_world"				"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_FP_stab"
-
-			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
-			"fx_muzzle_flash2_world"			"P_wpn_muzzleflash_alternator_stab"
-			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_FP_stab"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 
 		barrel_stabilizer_l4_flash_hider
@@ -362,13 +350,9 @@ WeaponData
 			"viewkick_yaw_base" 				"*0.75"
 			"viewkick_yaw_random"   			"*0.7"
 
-			"fx_muzzle_flash_view"				"P_wpn_muzzleflash_alternator_sup_FP" //"P_wpn_muzzleflash_alternator_sup_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_smg_sup" //"P_wpn_muzzleflash_alternator_sup"
-			"fx_muzzle_flash_attach"			"muzzle_flash"
-
-			"fx_muzzle_flash2_view"				"P_wpn_muzzleflash_alternator_sup_FP" //"P_wpn_muzzleflash_alternator_sup_FP"
-			"fx_muzzle_flash2_world"			"wpn_muzzleflash_smg_sup" //"P_wpn_muzzleflash_alternator_sup"
-			"fx_muzzle_flash2_attach"			"muzzle_flash_l"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 	}
 

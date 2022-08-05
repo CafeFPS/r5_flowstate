@@ -303,6 +303,20 @@ WeaponData
 
 	Mods
 	{
+		challenges_infinite_grenades
+		{
+			"ammo_stockpile_max"							"1"
+			"ammo_clip_size"   								"1"
+			"ammo_default_total"							"1"
+			"ammo_per_shot"									"1"
+			"ammo_min_to_fire"								"1"
+
+			// Regen Ammo
+			"regen_ammo_refill_rate"						"2"
+			"regen_ammo_refill_start_delay"					"0.0"
+			"fire_rate"   									"2"
+		}
+		
 		sp_disable_arc_indicator
 		{
 			grenade_arc_indicator_bounce_count				"0"

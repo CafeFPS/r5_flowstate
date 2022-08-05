@@ -71,9 +71,9 @@ WeaponData
 	"impact_effect_table" 							"lstar"
 	"projectile_adjust_to_gun_barrel"				"1"
 
-	"fx_muzzle_flash_view"							"P_muz_lstar_FP"
-	"fx_muzzle_flash_world"							"P_muz_lstar"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	//Sounds
 	"fire_sound_1_player_1p"						"Weapon_LSTAR_Fire_1P"

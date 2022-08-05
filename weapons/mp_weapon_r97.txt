@@ -106,7 +106,11 @@ WeaponData
 	"npc_max_engage_range"							"1100"
 	"npc_min_engage_range_heavy_armor"				"500"
 	"npc_max_engage_range_heavy_armor"				"2000"
-
+	
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
+	
 	"npc_min_burst"   								"4"
 	"npc_max_burst"   								"7"
 	"npc_rest_time_between_bursts_min"				"0.5"
@@ -258,8 +262,9 @@ WeaponData
 
 		barrel_stabilizer_l4_flash_hider
         {
-        	"fx_muzzle_flash_view"					"wpn_muzzleflash_smg_sup_FP"
-			"fx_muzzle_flash_world"					"wpn_muzzleflash_smg_sup"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 
 		bullets_mag_l1

@@ -71,9 +71,9 @@ WeaponData
 	"fx_shell_eject_attach"							"shell"
 
     // FX - Muzzle Flash
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_smg_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_smg"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	// Audio
 	"looping_sounds"								"1"
@@ -327,8 +327,9 @@ WeaponData
 
 		barrel_stabilizer_l4_flash_hider
         {
-        	"fx_muzzle_flash_view"					"wpn_muzzleflash_smg_sup_FP"
-			"fx_muzzle_flash_world"					"wpn_muzzleflash_smg_sup"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 
 		bullets_mag_l1

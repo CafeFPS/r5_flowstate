@@ -683,5 +683,5 @@ void function BuyKraber(var button)
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_sniper" )
-	PlayerCurrentWeapon = "mp_weapon_sniper"
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_sniper")
 }

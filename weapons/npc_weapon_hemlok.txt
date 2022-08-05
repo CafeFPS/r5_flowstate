@@ -58,9 +58,9 @@ WeaponData
     "projectile_adjust_to_gun_barrel"				"1"
 
     // FX - Muzzle Flash
-    "fx_muzzle_flash_view"							"wpn_muzzleflash_assault_FP"
-    "fx_muzzle_flash_world"							"wpn_muzzleflash_assault"
-    "fx_muzzle_flash_attach"						"muzzle_flash"
+    "fx_muzzle_flash_view"							""
+    "fx_muzzle_flash_world"							""
+    "fx_muzzle_flash_attach"						""
 
     // FX - Shell Eject
     "fx_shell_eject_view"							"wpn_shelleject_rifle_assault_FP"

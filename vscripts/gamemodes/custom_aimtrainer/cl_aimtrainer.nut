@@ -1,8 +1,16 @@
-//Flowstate Aim Trainer my beloved
-//Credits: 
-//CaféDeColombiaFPS (Retículo Endoplasmático#5955 - @CafeFPS) -- dev
-//Zee#6969 -- gave me weapons menu example
-//Skeptation#4002 -- main advices and relevant feedback
+/* 
+Flowstate Aim Trainer my beloved
+
+- CaféDeColombiaFPS (Retículo Endoplasmático#5955 - Twitter @CafeFPS) -- developer: ui, client, server.
+- Zee#6969 -- gave me weapons menu example
+
+Main advices, relevant feedback and being nice with me:
+- Skeptation#4002
+- Rego#2848
+- michae\l/#1125
+- James9950#5567
+- (--__GimmYnkia__--)#2995 
+*/
 
 global function  Cl_ChallengesByColombia_Init
 //Main menu and results UI
@@ -28,12 +36,16 @@ global function StartChallenge3Client
 global function StartChallenge4Client
 global function StartChallenge5Client
 global function StartChallenge6Client
+global function StartChallenge7Client
+global function StartChallenge8Client
 global function StartChallenge1NewCClient
 global function StartChallenge2NewCClient
 global function StartChallenge3NewCClient
 global function StartChallenge4NewCClient
 global function StartChallenge5NewCClient
 global function StartChallenge6NewCClient
+global function StartChallenge7NewCClient
+global function StartChallenge8NewCClient
 global function SkipButtonResultsClient
 
 //Settings
@@ -115,9 +127,6 @@ string function ReturnChallengeName(int index)
 		case 4:
 			final = "POPCORN TARGETS"
 			break
-		case 5:
-			final = "STRAIGHT UP"
-			break
 		case 6:
 			final = "BUBBLEFIGHT PRACTICE"
 			break
@@ -125,13 +134,34 @@ string function ReturnChallengeName(int index)
 			final = "ARCSTARS PRACTICE"
 			break
 		case 8:
-			final = "LIFT UP PRACTICE"
+			final = "SHOOTING FROM LIFT"
 			break
 		case 9:
 			final = "SHOOTING VALK'S ULT"
 			break
 		case 10:
 			final = "TILE FRENZY"
+			break
+		case 11:
+			final = "CLOSE FAST STRAFES"
+			break
+		case 12:
+			final = "JUMPS FAST STRAFES"
+			break
+		case 13:
+			final = "SMOOTHBOT"
+			break
+		case 14:
+			final = "GRENADES PRACTICE"
+			break
+		case 15:
+			final = "SKYDIVING TARGETS"
+			break
+		case 16:
+			final = "RUNNING TARGETS"
+			break
+		case 17:
+			final = "HIGH GROUND PRACTICE"
 			break
 		case 0:
 		default: 
@@ -463,17 +493,33 @@ void function StartChallenge5Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Click weapon is recommended. Hit as many targets as possible.")
-	thread CreateTimerRUI(true)
+	thread CreateDescriptionRUI("Hitscan weapon recommended. Hit as many targets as possible.")
+	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge5")
 }
 void function StartChallenge6Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("TODO")
+	thread CreateDescriptionRUI("Track the dummy.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge6")
+}
+void function StartChallenge7Client()
+{
+	entity player = GetLocalClientPlayer()
+	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
+	thread CreateDescriptionRUI("Shields are disabled, hit the dummies to get points.")
+	thread CreateTimerRUI()
+	player.ClientCommand("CC_StartChallenge7")
+}
+void function StartChallenge8Client()
+{
+	entity player = GetLocalClientPlayer()
+	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
+	thread CreateDescriptionRUI("Hit the dummies to get points.")
+	thread CreateTimerRUI()
+	player.ClientCommand("CC_StartChallenge8")
 }
 void function StartChallenge1NewCClient()
 {
@@ -495,16 +541,18 @@ void function StartChallenge2NewCClient()
 
 void function StartChallenge3NewCClient()
 {
-	// entity player = GetLocalClientPlayer()
-	// ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	// player.ClientCommand("CC_StartChallenge3NewC")
+	entity player = GetLocalClientPlayer()
+	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
+	thread CreateDescriptionRUI("Vertical grenades practice.")
+	thread CreateTimerRUI()
+	player.ClientCommand("CC_StartChallenge3NewC")
 }
 
 void function StartChallenge4NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Tracking practice. Valk ultimate/Balloons simulation.")
+	thread CreateDescriptionRUI("Valk ultimate tracking simulation.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge4NewC")
 }
@@ -513,7 +561,7 @@ void function StartChallenge5NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Tracking practice. Horizon's lift simulation.")
+	thread CreateDescriptionRUI("Tracking from gravity lift simulation.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge5NewC")
 }
@@ -522,9 +570,27 @@ void function StartChallenge6NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("TODO")
+	thread CreateDescriptionRUI("Hit the skydiving dummies to get points.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge6NewC")
+}
+
+void function StartChallenge7NewCClient()
+{
+	entity player = GetLocalClientPlayer()
+	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
+	thread CreateDescriptionRUI("Hit the running dummies to get points.")
+	thread CreateTimerRUI()
+	player.ClientCommand("CC_StartChallenge7NewC")
+}
+
+void function StartChallenge8NewCClient()
+{
+	entity player = GetLocalClientPlayer()
+	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
+	thread CreateDescriptionRUI("NOT IMPLEMENTED, RESTART THE LEVEL")
+	thread CreateTimerRUI()
+	player.ClientCommand("CC_StartChallenge8NewC")
 }
 
 void function SkipButtonResultsClient()

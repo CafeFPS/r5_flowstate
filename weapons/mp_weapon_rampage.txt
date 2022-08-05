@@ -84,9 +84,9 @@ WeaponData
 	"vortex_absorb_sound_1P_VS_3P"					"Vortex_Shield_AbsorbBulletSmall_1P_VS_3P"
 	"projectile_adjust_to_gun_barrel"				"1"
 
-	"fx_muzzle_flash_view"							"wpn_muzzleflash_lmg_FP"
-	"fx_muzzle_flash_world"							"wpn_muzzleflash_lmg"
-	"fx_muzzle_flash_attach"						"muzzle_flash"
+	"fx_muzzle_flash_view"							""
+	"fx_muzzle_flash_world"							""
+	"fx_muzzle_flash_attach"						""
 
 	"chroma_color"									".6 1 .6"
 
@@ -490,8 +490,9 @@ WeaponData
 
 		"barrel_stabilizer_l4_flash_hider"
 		{
-			"fx_muzzle_flash_view"				"wpn_muzzleflash_lmg_sup_FP"
-			"fx_muzzle_flash_world"				"wpn_muzzleflash_lmg_sup"
+			"fx_muzzle_flash_view"							""
+			"fx_muzzle_flash_world"							""
+			"fx_muzzle_flash_attach"						""
 		}
 
 		npc_stalker
