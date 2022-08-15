@@ -113,17 +113,17 @@ WeaponData
 
     // Crosshair Spread
                          
+    "spread_stand_hip"								"2.0"
+    "spread_stand_hip_run"							"3.0"
+    "spread_stand_hip_sprint"                       "5.0"
+    "spread_crouch_hip"   							"1.6"
+    "spread_air_hip"  								"7.0"
+     
                                    
                                       
                                                          
                                       
                                    
-     
-    "spread_stand_hip"								"1.0"
-    "spread_stand_hip_run"							"1.5"
-    "spread_stand_hip_sprint"                       "2.5"
-    "spread_crouch_hip"   							"0.8"
-    "spread_air_hip"  								"3.5"
       
 
 	"spread_stand_ads"								"0.35"

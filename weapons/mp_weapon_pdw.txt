@@ -1,6 +1,7 @@
 #base "_base_smg.txt"
 #base "_base_mags_heavy.txt"
 #base "_base_stocks_tactical.txt"
+#base "_base_laser_sights.txt"
 
 WeaponData
 {

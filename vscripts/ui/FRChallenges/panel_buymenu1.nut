@@ -563,22 +563,30 @@ void function SMGBarrels(var button)
 	Hud_SetSelected(file.barrelsbutton, true)
 	
 	Hud_SetVisible(file.SMGBarrels[0], true)
-	Hud_SetPos( file.SMGBarrels[0], file.xstep+file.screenPos.x+file.ancho, file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGBarrels[0]), "iconImage", $"rui/pilot_loadout/mods/barrel_stabilizer" )
+	Hud_SetPos( file.SMGBarrels[0], file.xstep+file.screenPos.x+file.ancho/2, file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGBarrels[0]), "iconImage", $"rui/pilot_loadout/mods/empty_laser_sight" )
 	RuiSetInt( Hud_GetRui(file.SMGBarrels[0]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGBarrels[0])
 	
+	UIPos refPos = REPLACEHud_GetPos( file.SMGBarrels[0] )
+	
 	Hud_SetVisible(file.SMGBarrels[1], true)
-	Hud_SetPos( file.SMGBarrels[1], file.xstep+file.screenPos.x+(file.ancho*2), file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGBarrels[1]), "iconImage", $"rui/pilot_loadout/mods/barrel_stabilizer" )
-	RuiSetInt( Hud_GetRui(file.SMGBarrels[1]), "lootTier", 2 )
+	Hud_SetPos( file.SMGBarrels[1], refPos.x + file.ancho, file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGBarrels[1]), "iconImage", $"rui/pilot_loadout/mods/laser_sight" )
+	RuiSetInt( Hud_GetRui(file.SMGBarrels[1]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGBarrels[1])
 	
 	Hud_SetVisible(file.SMGBarrels[2], true)
-	Hud_SetPos( file.SMGBarrels[2], file.xstep+file.screenPos.x+(file.ancho*3), file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGBarrels[2]), "iconImage", $"rui/pilot_loadout/mods/barrel_stabilizer" )	
-	RuiSetInt( Hud_GetRui(file.SMGBarrels[2]), "lootTier", 3 )
+	Hud_SetPos( file.SMGBarrels[2], refPos.x + file.ancho*2, file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGBarrels[2]), "iconImage", $"rui/pilot_loadout/mods/laser_sight" )
+	RuiSetInt( Hud_GetRui(file.SMGBarrels[2]), "lootTier", 2 )
 	file.visibleAttachmentsBoxElements.append(file.SMGBarrels[2])
+	
+	Hud_SetVisible(file.SMGBarrels[3], true)
+	Hud_SetPos( file.SMGBarrels[3], refPos.x + file.ancho*3, file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGBarrels[3]), "iconImage", $"rui/pilot_loadout/mods/laser_sight" )	
+	RuiSetInt( Hud_GetRui(file.SMGBarrels[3]), "lootTier", 3 )
+	file.visibleAttachmentsBoxElements.append(file.SMGBarrels[3])
 }
 
 void function ShotgunBolts(var button)

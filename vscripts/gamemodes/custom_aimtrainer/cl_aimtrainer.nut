@@ -28,6 +28,7 @@ global function ServerCallback_LiveStatsUIDamageViaDummieDamaged
 global function ServerCallback_LiveStatsUIHeadshot
 global function ServerCallback_ResetLiveStatsUI
 global function ServerCallback_CoolCameraOnMenu
+global function ServerCallback_SetLaserSightsOnSMGWeapon
 
 //Main menu buttons
 global function StartChallenge1Client
@@ -78,16 +79,29 @@ global struct CameraLocationPair
 
 void function Cl_ChallengesByColombia_Init()
 {
+	//I don't want these things in user screen
 	SetConVarBool( "cl_showpos", false )
 	SetConVarBool( "cl_showfps", false )
 	SetConVarBool( "cl_showgpustats", false )
+	SetConVarBool( "cl_showsimstats", false )
+	SetConVarBool( "cl_showhoststats", false )
 	
-	RegisterSignal("ChallengeStartRemoveCameras")	
+	RegisterSignal("ChallengeStartRemoveCameras")
+	//laser sight particle
+	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue") 
+	//for custom ui/textures
+	PakHandle AimTrainerRpak = RequestPakFile( "aimtrainer" )
 }
 
 void function ServerCallback_SetDefaultMenuSettings()
 {
 	thread ActuallyPutDefaultSettings()
+}
+
+void function ServerCallback_SetLaserSightsOnSMGWeapon(entity weapon)
+{
+	weapon.PlayWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"", "muzzle_flash" )
+	printt("laser sight ON")
 }
 
 void function ActuallyPutDefaultSettings()
@@ -263,8 +277,9 @@ void function CoolCameraOnMenu()
 	{
 		cutsceneSpawns.append(NewCameraPair(<10881.2295, 5903.09863, -3176.7959>, <0, -143.321213, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<9586.79199, 24404.5898, -2019.6366>, <0, -52.6216431, 0>)) 
-		cutsceneSpawns.append(NewCameraPair(<-22333.625, -15142.3359, 634.326172>, <0, -46.2498436, 0>))
-		cutsceneSpawns.append(NewCameraPair(<21524.0859, -11396.7852, -2646.92944>, <0, 116.187294, 0>))
+		cutsceneSpawns.append(NewCameraPair(<630.249573, 13375.9219, -2736.71948>, <0, -43.2706299, 0>))
+		cutsceneSpawns.append(NewCameraPair(<16346.3076, -34468.9492, -1109.32153>, <0, -44.3879509, 0>))
+		cutsceneSpawns.append(NewCameraPair(<1133.25562, -20102.9648, -2488.08252>, <0, -24.9140873, 0>))
 	}
 	else if(GetMapName() == "mp_rr_canyonlands_staging")
 	{
@@ -275,10 +290,10 @@ void function CoolCameraOnMenu()
 	}
 	else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 	{
-		cutsceneSpawns.append(NewCameraPair(<22771.2344, -16147.1143, 12773.626>, <0, 160.513199, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-7984.68408, -16770.2031, 3972.28271>, <0, -158.605301, 0>)) 
 		cutsceneSpawns.append(NewCameraPair(<-19691.1621, 5229.45264, 4238.53125>, <0, -54.6054993, 0>))
 		cutsceneSpawns.append(NewCameraPair(<13270.0576, -20413.9023, 2999.29468>, <0, 98.6180649, 0>))
+		cutsceneSpawns.append(NewCameraPair(<-25250.0391, -723.554199, 3427.51831>, <0, -55.5126762, 0>))
 	}
 
     //EmitSoundOnEntity( player, "music_skyway_04_smartpistolrun" )
@@ -317,7 +332,6 @@ void function CoolCameraOnMenu()
 	
 	while(true){
 		if(locationindex == cutsceneSpawns.len()){
-
 			locationindex = 0
 		}	
 	    randomcameraPos = cutsceneSpawns[locationindex].origin
@@ -328,8 +342,7 @@ void function CoolCameraOnMenu()
 		camera.SetOrigin(randomcameraPos)
 		camera.SetAngles(randomcameraAng)
 		cutsceneMover.NonPhysicsMoveTo(randomcameraPos + AnglesToRight(randomcameraAng) * 700, 15, 0, 0)
-		//cutsceneMover.NonPhysicsRotateTo( )
-		wait 15 
+		wait 6 
 	}
 }
 void function DisableLiveStatsUI()
@@ -501,7 +514,7 @@ void function StartChallenge6Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Track the dummy.")
+	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Hit the dummies to get points.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge6")
 }
@@ -509,7 +522,7 @@ void function StartChallenge7Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Shields are disabled, hit the dummies to get points.")
+	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Shields are disabled, hit the dummies to get points.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge7")
 }
@@ -517,7 +530,7 @@ void function StartChallenge8Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Hit the dummies to get points.")
+	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Hit the dummies to get points.")
 	thread CreateTimerRUI()
 	player.ClientCommand("CC_StartChallenge8")
 }

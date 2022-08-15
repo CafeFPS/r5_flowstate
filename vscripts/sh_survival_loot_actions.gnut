@@ -159,6 +159,7 @@ bool function TryAttachItem( int action, entity pickup, entity player, int picku
 		return false
 
 	string modToRemove = SURVIVAL_GetModToRemoveForAttachment( player, weapon, attachment )
+	
 	return AttachToWeapon( player, weapon, attachment, modToRemove, false, false, isPlayerSwitching, deathBox )
 }
 
@@ -278,7 +279,6 @@ bool function AttachToWeapon( entity player, entity weapon, string item, string 
 		EquipAttachments_Internal( player, weapon, item, modToRemove, takeFromInventory, returnToInventory, forceActive, false, deathBox )
 	}
 #endif
-
 	return allowedToAdd
 }
 

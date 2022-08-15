@@ -1361,8 +1361,7 @@ void function DummyTapyDuckStrafeMovement(entity dummy, entity player)
 {
 	EndSignal(dummy, "OnDeath")
 
-	vector vec2 = player.GetOrigin() - dummy.GetOrigin()
-	vector angles2 = VectorToAngles( vec2 )
+	vector angles2 = VectorToAngles( player.GetOrigin() - dummy.GetOrigin() )
 
 	array<vector> circleLocations
 
@@ -1430,9 +1429,10 @@ void function DummyTapyDuckStrafeMovement(entity dummy, entity player)
 				else if(locationindex >= circleLocations.len())
 					locationindex =	locationindex - (circleLocations.len()-1)
 
-				script_mover.NonPhysicsMoveTo( circleLocations[locationindex], 0.35, 0.0, 0.0 )
+				script_mover.NonPhysicsMoveTo( circleLocations[locationindex], 0.15, 0.0, 0.0 )
 				if(oldLocationindex >= locationindex) dummy.Anim_PlayOnly( "ACT_RUN_RIGHT")
 				else if(oldLocationindex < locationindex) dummy.Anim_PlayOnly( "ACT_RUN_LEFT")
+				dummy.Anim_DisableUpdatePosition()
 				wait 0.12
 				dummy.Anim_Stop()
 				script_mover.NonPhysicsStop()
@@ -1443,7 +1443,7 @@ void function DummyTapyDuckStrafeMovement(entity dummy, entity player)
 			int morerandomness2 = 1
 			if(CoinFlip()) morerandomness2 = -1
 						
-			// printt("Ras strafing")
+			// printt("Ras strafing??")
 			thread DummyJumpAnimThreaded(dummy)
 			float startTime = Time()
 			float endTime = startTime + 0.28
@@ -1475,10 +1475,9 @@ void function DummyTapyDuckStrafeMovement(entity dummy, entity player)
 				WaitFrame()
 			}				
 			script_mover.NonPhysicsStop()
-			// printt("Ras strafing END")
+			// printt("Ras strafing?? END")
 		}
-		vec2 = player.GetOrigin() - dummy.GetOrigin()
-		angles2 = VectorToAngles( vec2 )
+		angles2 = VectorToAngles( player.GetOrigin() - dummy.GetOrigin() )
 		script_mover.SetAngles(angles2)
 		dummy.SetAngles(angles2)
 	}
@@ -1610,6 +1609,7 @@ void function DummySmoothbotMovement(entity dummy, entity player)
 	bool lowerpasses
 	int nottoorandom = 1
 	if(CoinFlip()) nottoorandom = -1
+	int togroundcounter = 0
 	while(true)
 	{
 		dummy.Anim_Stop()
@@ -1622,19 +1622,21 @@ void function DummySmoothbotMovement(entity dummy, entity player)
 		
 		if(viniendodeavance)
 		{
-			if(CoinFlip())
+			if(CoinFlip() || togroundcounter == 1)
 			{
 				lowerpasses = false
 				waitthread CoolScriptMoverMovement(player, script_mover, circleLocations[locationindex], nottoorandom, viniendodeavance, lowerpasses) //to sky
+				togroundcounter = 0
 			}
 			else 
 			{
+				togroundcounter++
 				lowerpasses = true
 				waitthread CoolScriptMoverMovement(player, script_mover, circleLocations2[locationindex], nottoorandom, viniendodeavance, lowerpasses) //to ground
 			}
 			
 			viniendodeavance = false			
-			locationindex += RandomIntRange(1,15)*morerandomness
+			locationindex += RandomIntRange(5,10)*morerandomness
 			
 			if(locationindex < 0)
 				locationindex =	(circleLocations.len()-1) + locationindex
@@ -1665,7 +1667,7 @@ void function CoolScriptMoverMovement(entity player, entity script_mover, vector
 	if(viniendodeavance)
 		moveTo = endLocation
 	
-	float moveXFrom = moveTo.x+1000*nottoorandom
+	float moveXFrom = moveTo.x+RandomFloatRange(500,1000)*nottoorandom
 	float moveZFrom = moveTo.z
 	if(!lowerpasses && viniendodeavance) moveZFrom += 1000
 	while(Time() < endTime)
@@ -1675,9 +1677,13 @@ void function CoolScriptMoverMovement(entity player, entity script_mover, vector
 		vector moveToFinal = Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z ))
 		script_mover.NonPhysicsMoveTo( moveToFinal, endTime-Time(), 0.0, 0.0 )
 		int random = RandomIntRangeInclusive(1,100)
-		if(Distance(script_mover.GetOrigin(), moveTo) > 300.0 && random >= 1 && random <= 3 && !lowerpasses) 
-			break //3% chance to break movement each frame because yes
-		if(Distance(script_mover.GetOrigin(), moveTo) < 230.0) {
+		vector vel = script_mover.GetVelocity()
+		printt(vel.Length())
+		if(Distance(script_mover.GetOrigin(), moveTo) < 230.0) { //avoid to speed up too much
+			script_mover.NonPhysicsStop()
+			break
+		}
+		if( vel.Length() >= 500.0) { //avoid to speed up too much 2
 			script_mover.NonPhysicsStop()
 			break
 		}
@@ -2566,10 +2572,18 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 			switch(args[5])
 			{
 				case "smg":
-					player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, [args[1], args[2], args[3]] )
+					{
+					entity smg = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, [args[1], args[2], args[3]] )
+					if(args[2] == "barrel_stabilizer_l1" || args[2] == "barrel_stabilizer_l2" || args[2] == "barrel_stabilizer_l3" )
+						Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", smg)
+					}
 					break
 				case "pistol":
-					player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, [args[1], args[2]])
+					{
+					entity pistol = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, [args[1], args[2]])
+					if(weapon == "mp_weapon_autopistol")
+						Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", pistol)
+					}
 					break
 				case "pistol2":
 					player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, [args[1]])

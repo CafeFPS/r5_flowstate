@@ -95,7 +95,6 @@ UISize function GetScaledVirtualScreenSize( UISize virtualScreenSize, UISize scr
 
 void function ClientCodeCallback_MapSpawn()
 {
-	ScriptCompilerTest()
 	LevelVarInit()
 	DynamicLight_Init()
 
@@ -126,13 +125,6 @@ void function ClientCodeCallback_MapSpawn()
 	CreateHUDRuiTopologies()
 
 	SV_CL_Shared_Init()
-
-	if ( IsLobby() )
-	{
-		//PakHandle unusedHandle1 = RequestPakFile( "lobby" ) // Contains images for promo dialogue and store.
-		// (dw): The pak request is cleaned up when the lobby client VM is destroyed, so there is no need for script
-		// to keep the handle around.
-	}
 }
 
 

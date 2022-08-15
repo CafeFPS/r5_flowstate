@@ -206,7 +206,8 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIDamageViaDummieDamaged", "int", 0, 999999)
 			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIHeadshot", "int", 0, 999999)
 			Remote_RegisterClientFunction("ServerCallback_ResetLiveStatsUI")
-			Remote_RegisterClientFunction("ServerCallback_SetDefaultMenuSettings")
+			Remote_RegisterClientFunction("ServerCallback_SetDefaultMenuSettings")			
+			Remote_RegisterClientFunction("ServerCallback_SetLaserSightsOnSMGWeapon", "entity")
 			//End Challenges by Colombia			
 		case CUSTOM_TDM:
 		case SURVIVAL:

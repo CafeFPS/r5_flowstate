@@ -984,7 +984,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"BARRELS"
+			labelText				"LASER"
 			visible                 0
 			zpos 25
 			tall					40

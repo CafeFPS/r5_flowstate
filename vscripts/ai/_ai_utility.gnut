@@ -2,6 +2,57 @@ untyped
 
 globalize_all_functions
 
+struct{
+	array<var> recordingAnims
+}file
+
+void function RecordingAnimationTest()
+{
+	entity player = gp()[0]
+	vector initialpos = player.GetOrigin()
+	vector initialang = player.GetAngles()
+	player.StartRecordingAnimation(initialpos, initialang)
+	Message(player, "RECORDING MOVEMENT", "", 1.5)
+	wait 5
+	file.recordingAnims.append( player.StopRecordingAnimation() )
+	var anim = file.recordingAnims[file.recordingAnims.len()-1]
+	asset playermodel = player.GetModelName()
+	WaitFrame()
+	Message(player, "PLAYING MOVEMENT", "", 1.5)
+	printt(anim) //userdata
+	while(true)
+	{
+		entity dummy = CreatePropDynamic( playermodel, initialpos, initialang, SOLID_BBOX, 99999 )
+		dummy.PlayRecordedAnimation( anim, initialpos, initialang, 0.5 )
+		//dummy.SetRecordedAnimationPlaybackRate(1.5) //spedup lol
+		wait GetRecordedAnimationDuration( anim )
+		if(IsValid(dummy))
+		dummy.Destroy()
+	}
+}
+
+void function StartFightAgainsYourselfChallenge()
+{
+	entity player = gp()[0]
+	entity decoy = player.CreateMimicPlayerDecoy( 180 )
+	decoy.SetOrigin(player.GetOrigin() + player.GetForwardVector()*200)
+	decoy.SetFriendlyFire( true )
+	decoy.SetMaxHealth( 100 )
+	decoy.SetHealth( 100 )
+	SetObjectCanBeMeleed( decoy, true )
+	//newDecoy.SetPlayerOneHits( true )
+	//SetTargetName(newDecoy, "UltraDecoy")
+	// AddEntityCallback_OnPostDamaged( newDecoy, void function( entity newDecoy, var damageInfo ) : ( owner ) {
+		// if ( IsValid( owner ) )
+			// HoloPiliot_OnDecoyDamaged( newDecoy, owner, damageInfo )
+	// }
+}
+
+void function PlayRecordedAnim()
+{
+	
+}
+
 function AiUtility_Init()
 {
 	RegisterSignal( "OnNewOwner" )

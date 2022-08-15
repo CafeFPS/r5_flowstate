@@ -319,7 +319,7 @@ void function UICodeCallback_UIInit()
 {
 	PIN_Init()
 
-	ScriptCompilerTest()
+	//ScriptCompilerTest()
 
 	ShUtilityAll_Init()
 	LevelVarInit()
