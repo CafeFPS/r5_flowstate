@@ -53,23 +53,27 @@
 	// Damage
 	//
 	"damage_flags"                             "DF_BULLET | DF_KNOCK_BACK | DF_DISMEMBERMENT"
-	"damage_near_value"                        "36"
-	"damage_far_value"                         "36"
-	"damage_very_far_value"                    "36"
+
 	"damage_rodeo"                             "220"
 
 	// Damage - Titan
                 
-	"damage_near_value_titanarmor"             "38"
-    "damage_far_value_titanarmor"              "38"
-    "damage_very_far_value_titanarmor"         "38"
+                                                
+                                                
+                                                
+                                                
+                                                   
+                                                   
+                                                  
      
-                                                
-                                                
-                                                
+	"damage_near_value"                        "34"
+	"damage_far_value"                         "34"
+	"damage_very_far_value"                    "34"
+	"damage_near_value_titanarmor"             "34"
+	"damage_far_value_titanarmor"              "34"
+	"damage_very_far_value_titanarmor"         "34"
       
 
-	"damage_headshot_scale"                    "2.0"
     "damage_leg_scale"                         "0.75"
 
 
@@ -279,14 +283,12 @@
 
 		    "fire_rate"                                 "10.0"
             "burst_fire_count"                          "2"
-            "burst_fire_delay"                          "0.475"   //was .25 from 4.0 RoF
 
             "viewkick_pattern"                          "g2_double_tap"
 
             "viewkick_spring_hot"                       "g2_vkp_double_tap_hot"     //pulls in less than g2_vkp_hot
 
-                        
-            "burst_fire_delay"                          "0.375"   //was .25 from 4.0 RoF
+            "burst_fire_delay"                          "0.40"   //was .25 from 4.0 RoF
 
             "viewkick_spring_heatpershot"				"1.0"
             "viewkick_spring_cooldown_holdtime"         "0.24"

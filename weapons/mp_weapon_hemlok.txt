@@ -221,11 +221,19 @@ WeaponData
 	"viewmodel_shake_right"							"0.0"
 
 	// Hipfire Spread
-	"spread_stand_hip"								"3.0"
-    "spread_stand_hip_run"							"3.5"
-    "spread_stand_hip_sprint"                       "4.5"
-    "spread_crouch_hip"   							"2.75"
-    "spread_air_hip"  								"7.0"
+                         
+	"spread_stand_hip"								"3.6" //"3.0"
+    "spread_stand_hip_run"							"7.15" //"3.5"
+    "spread_stand_hip_sprint"                       "8.4" //"4.5"
+    "spread_crouch_hip"   							"3.0" //"2.75"
+    "spread_air_hip"  								"8.4" //"7.0"
+     
+                                
+                                      
+                                                         
+                                       
+                                   
+      
 
     "spread_kick_on_fire_stand_hip"   				"0.45"
     "spread_kick_on_fire_crouch_hip"  				"0.45"

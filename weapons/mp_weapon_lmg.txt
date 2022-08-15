@@ -250,13 +250,21 @@ WeaponData
 
 	"viewkick_pitch_base" 							"1.0"
 	"viewkick_pitch_random"   						"1.0"
-	"viewkick_pitch_softScale"						"2.0"
+                      
+	"viewkick_pitch_softScale"						"3.2"
+     
+                                      
+      
 	"viewkick_pitch_hardScale"						"0.3"
 
 	"viewkick_yaw_base"   							"1.0"
 	"viewkick_yaw_random" 							"1.0"
 	"viewkick_yaw_random_innerexclude"				"0.12"  //"0.22"
-	"viewkick_yaw_softScale"  						"2.0"   //"2.2"
+                      
+	"viewkick_yaw_softScale"  						"2.4"   //"2.2"
+     
+                                                
+      
 	"viewkick_yaw_hardScale"  						"0.3"
 
 	"viewkick_roll_base"  							"-1.6"
