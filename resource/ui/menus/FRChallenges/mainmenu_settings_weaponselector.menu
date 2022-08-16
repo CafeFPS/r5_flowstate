@@ -73,7 +73,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"Powered by R5Reloaded"
+			labelText				"Powered by R5Reloaded | © Respawn Entertainment"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -85,8 +85,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 		WeaponSelectorFrame
 		{
 			ControlName				RuiPanel
-			wide					%70//%70
-			xpos                    %15//%15
+			wide					%90//%70
+			xpos                    %5//%15
 			ypos 					%15
 			zpos 0
 			tall					%70
@@ -142,7 +142,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
             wide			        %100
             tall			        %100
             xpos                    0
-            ypos                    20
+            ypos                    35
             zpos                    10
             visible                 0
             enabled                 1
@@ -158,7 +158,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
             wide			        %100
             tall			        %100
             xpos                    0
-            ypos                    20
+            ypos                    35
             zpos                    10
             visible                 0
             enabled                 1
@@ -174,7 +174,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
             wide			        %100
             tall			        %100
             xpos                    0
-            ypos                    20
+            ypos                    35
             zpos                    10
             visible                 0
             enabled                 1
@@ -189,11 +189,27 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
             wide			        %100
             tall			        %100
             xpos                    0
-            ypos                    20
+            ypos                    35
             zpos                    10
             visible                 0
             enabled                 1
             controlSettingsFile		"scripts/resource/ui/menus/panels/buymenu4.res"
+
+            xcounterscroll			0.075
+            ycounterscroll			0.075
+        }
+		
+		BuyMenu5
+        {
+            ControlName				CNestedPanel
+            wide			        %100
+            tall			        %100
+            xpos                    0
+            ypos                    35
+            zpos                    10
+            visible                 0
+            enabled                 1
+            controlSettingsFile		"scripts/resource/ui/menus/panels/buymenu5.res"
 
             xcounterscroll			0.075
             ycounterscroll			0.075
@@ -252,7 +268,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Right click to change attachments. (Beta)"
+			labelText				""
 			visible                 1
 			zpos 15
 			tall					40

@@ -1,4 +1,4 @@
-scripts/resource/ui/menus/panels/buymenu2.res
+scripts/resource/ui/menus/panels/buymenu1.res
 {
 	PanelFrame
 	{
@@ -15,91 +15,91 @@ scripts/resource/ui/menus/panels/buymenu2.res
 	}
 
     DialogFrame
-		{
-            ControlName		ImagePanel
-			wide					1015
-			tall					500
-            xpos                    0
-			visible			1
-            scaleImage		1
-            fillColor		"30 30 30 200"
-            drawColor		"30 30 30 200"
+	{
+		ControlName		ImagePanel
+		wide					1015
+		tall					500
+		xpos                    0
+		visible			1
+		scaleImage		1
+		fillColor		"30 30 30 200"
+		drawColor		"30 30 30 200"
 
-			pin_to_sibling			PanelFrame
-			pin_corner_to_sibling	CENTER
-			pin_to_sibling_corner	CENTER
-		}
-		
+		pin_to_sibling			PanelFrame
+		pin_corner_to_sibling	CENTER
+		pin_to_sibling_corner	CENTER
+	}
+	
 	InvisibleExitButton
-		{
-			"ControlName"			"RuiButton"
-			wide					1015
-			tall					500
-			"rui"                   "ui/invisible.rpak"
-			"labelText"             ""
-			sound_focus           ""
-			"sound_accept"          ""
-			"cursorPriority"        "-1"
+	{
+		"ControlName"			"RuiButton"
+		wide					1015
+		tall					500
+		"rui"                   "ui/invisible.rpak"
+		"labelText"             ""
+		sound_focus           ""
+		"sound_accept"          ""
+		"cursorPriority"        "-1"
 
-			xpos                   	0
-			ypos                    0
-			zpos                    20
-			rightClickEvents        1
-            visible 0
-			pin_to_sibling			PanelFrame
-			pin_corner_to_sibling	CENTER
-			pin_to_sibling_corner	CENTER
-		}
-		
-		ImgTopBar2
-		{
-			ControlName		ImagePanel
-			wide					1015
-			tall					2
-            visible			1
-            scaleImage		1
-			proportionalToParent    0
-            fillColor		"255 255 255 200"
-            drawColor		"255 255 255 200"
+		xpos                   	0
+		ypos                    0
+		zpos                    20
+		rightClickEvents        1
+		visible 0
+		pin_to_sibling			PanelFrame
+		pin_corner_to_sibling	CENTER
+		pin_to_sibling_corner	CENTER
+	}
+	
+	ImgTopBar2
+	{
+		ControlName		ImagePanel
+		wide					1015
+		tall					2
+		visible			1
+		scaleImage		1
+		proportionalToParent    0
+		fillColor		"255 255 255 200"
+		drawColor		"255 255 255 200"
 
-			pin_to_sibling			DialogFrame
-			pin_corner_to_sibling	BOTTOM_LEFT
-			pin_to_sibling_corner	BOTTOM_LEFT
-		}
+		pin_to_sibling			DialogFrame
+		pin_corner_to_sibling	BOTTOM_LEFT
+		pin_to_sibling_corner	BOTTOM_LEFT
+	}
 
-		ImgTopBar3
-		{
-			ControlName		ImagePanel
-			wide					1015
-			tall					2
-            visible			1
-            scaleImage		1
-			proportionalToParent    0
-            fillColor		"255 255 255 200"
-            drawColor		"255 255 255 200"
+	ImgTopBar3
+	{
+		ControlName		ImagePanel
+		wide					1015
+		tall					2
+		visible			1
+		scaleImage		1
+		proportionalToParent    0
+		fillColor		"255 255 255 200"
+		drawColor		"255 255 255 200"
 
-			pin_to_sibling			DialogFrame
-			pin_corner_to_sibling	TOP_LEFT
-			pin_to_sibling_corner	TOP_LEFT
-		}
+		pin_to_sibling			DialogFrame
+		pin_corner_to_sibling	TOP_LEFT
+		pin_to_sibling_corner	TOP_LEFT
+	}
 
-		ImgTopBar4
-		{
-			ControlName		ImagePanel
-			wide					2
-			tall					500
-            visible			1
-            scaleImage		1
-			proportionalToParent    0
-            fillColor		"255 255 255 200"
-            drawColor		"255 255 255 200"
+	ImgTopBar4
+	{
+		ControlName		ImagePanel
+		wide					2
+		tall					500
+		visible			1
+		scaleImage		1
+		proportionalToParent    0
+		fillColor		"255 255 255 200"
+		drawColor		"255 255 255 200"
 
-			pin_to_sibling			DialogFrame
-			pin_corner_to_sibling	TOP_LEFT
-			pin_to_sibling_corner	TOP_LEFT
-		}
+		pin_to_sibling			DialogFrame
+		pin_corner_to_sibling	TOP_LEFT
+		pin_to_sibling_corner	TOP_LEFT
+	}
 
-		ImgTopBar5
+	ImgTopBar5
 		{
 			ControlName		ImagePanel
 			wide					2
@@ -115,7 +115,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			pin_to_sibling_corner	TOP_RIGHT
 		}
 
-		DialogHeader
+	DialogHeader
 		{
 			ControlName				Label
 			xpos					-15
@@ -124,7 +124,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			tall					30
 			visible					0
 			fontHeight				30
-			labelText				"Assault Rifles & LMGs"
+			labelText				"Pistols, Shotguns & SMGs"
 			font					DefaultBold_41
 			allcaps					1
 			fgcolor_override		"255 255 255 255"
@@ -133,7 +133,8 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			pin_corner_to_sibling	TOP_LEFT
 			pin_to_sibling_corner	TOP_LEFT
 		}
-		HavocButton
+
+		VoltButton
 		{
 			"ControlName"				"RuiButton"
 			"rui"						"ui/generic_friend_button.rpak"
@@ -151,7 +152,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			pin_to_sibling_corner   TOP_LEFT
 		}
 		
-		Havoc
+		Volt
 		{
 			ControlName 				 RuiPanel 
 			rui 						 ui/basic_image.rpak 
@@ -160,27 +161,27 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			xpos                    0
 			ypos                    -10
 			zpos                    5
-			pin_to_sibling          HavocButton
+			pin_to_sibling          VoltButton
 			pin_corner_to_sibling   CENTER
 			pin_to_sibling_corner   CENTER
 		}
 
-		Havoc_Name
+		Volt_Name
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"Havoc"
+			labelText				"Volt"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					100
+			xpos					120
 			fontHeight				35
-			pin_to_sibling          Havoc
+			pin_to_sibling          Volt
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-		LStarButton
+		R99Button
 		{
 			"ControlName"				"RuiButton"
 			"rui"						"ui/generic_friend_button.rpak"
@@ -193,12 +194,12 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			ypos                    0
 			zpos                    5
 			rightClickEvents        1
-			pin_to_sibling          HavocButton
+			pin_to_sibling          VoltButton
 			pin_corner_to_sibling   TOP_LEFT
 			pin_to_sibling_corner   TOP_RIGHT
 		}
 		
-		LStar
+		R99
 		{
 			ControlName 				 RuiPanel 
 			rui 						 ui/basic_image.rpak 
@@ -207,27 +208,27 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			xpos                    0
 			ypos                    -10
 			zpos                    5
-			pin_to_sibling          LStarButton
+			pin_to_sibling          R99Button
 			pin_corner_to_sibling   CENTER
 			pin_to_sibling_corner   CENTER
 		}
 
-		LStar_Name
+		R99_Name
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"L-Star"
+			labelText				"R-99"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					100
+			xpos					120
 			fontHeight				35
-			pin_to_sibling          LStar
+			pin_to_sibling          R99
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-		DevotionButton
+		CarButton
 		{
 			"ControlName"				"RuiButton"
 			"rui"						"ui/generic_friend_button.rpak"
@@ -240,12 +241,12 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			ypos                    0
 			zpos                    5
 			rightClickEvents        1
-			pin_to_sibling          LStarButton
+			pin_to_sibling          R99Button
 			pin_corner_to_sibling   TOP_LEFT
 			pin_to_sibling_corner   TOP_RIGHT
 		}
 		
-		Devotion
+		Car
 		{
 			ControlName 				 RuiPanel 
 			rui 						 ui/basic_image.rpak 
@@ -254,28 +255,28 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			xpos                    0
 			ypos                    -10
 			zpos                    5
-			pin_to_sibling          DevotionButton
+			pin_to_sibling          CarButton
 			pin_corner_to_sibling   CENTER
 			pin_to_sibling_corner   CENTER
 		}
 
-		Devotion_Name
+		Car_Name
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"Devotion"
+			labelText				"Car"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					100
+			xpos					120
 			fontHeight				35
-			pin_to_sibling          Devotion
+			pin_to_sibling          Car
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
 	
-		HemlokButton
+		ProwlerButton
 		{
 			"ControlName"				"RuiButton"
 			"rui"						"ui/generic_friend_button.rpak"
@@ -285,15 +286,16 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			"sound_accept"				"ui_rankedsummary_circletick_reached"
 			"sound_focus"				"UI_Menu_Focus_Small"
 			xpos                    0
-			ypos                    60
+			ypos                    10
 			zpos                    5
 			rightClickEvents        1
-			pin_to_sibling          Havoc
+			pin_to_sibling          VoltButton
 			pin_corner_to_sibling   TOP
 			pin_to_sibling_corner   BOTTOM
+			visible                 0
 		}
 		
-		Hemlok
+		Prowler
 		{
 			ControlName 				 RuiPanel 
 			rui 						 ui/basic_image.rpak 
@@ -302,28 +304,27 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			xpos                    0
 			ypos                    -10
 			zpos                    5
-			pin_to_sibling          HemlokButton
+			pin_to_sibling          ProwlerButton
 			pin_corner_to_sibling   CENTER
 			pin_to_sibling_corner   CENTER
 		}
 
-		Hemlok_Name
+		Prowler_Name
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"Hemlok"
+			labelText				"Prowler"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					100
+			xpos					110
 			fontHeight				35
-			pin_to_sibling          Hemlok
+			pin_to_sibling          Prowler
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-
-		FlatlineButton
+		AlternatorButton
 		{
 			"ControlName"				"RuiButton"
 			"rui"						"ui/generic_friend_button.rpak"
@@ -336,12 +337,12 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			ypos                    0
 			zpos                    5
 			rightClickEvents        1
-			pin_to_sibling          HemlokButton
+			pin_to_sibling          ProwlerButton
 			pin_corner_to_sibling   TOP_LEFT
 			pin_to_sibling_corner   TOP_RIGHT
 		}
 		
-		Flatline
+		Alternator
 		{
 			ControlName 				 RuiPanel 
 			rui 						 ui/basic_image.rpak 
@@ -350,176 +351,84 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			xpos                    0
 			ypos                    -10
 			zpos                    5
-			pin_to_sibling          FlatlineButton
+			pin_to_sibling          AlternatorButton
 			pin_corner_to_sibling   CENTER
 			pin_to_sibling_corner   CENTER
 		}
 
-		Flatline_Name
+		Alternator_Name
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"Flatline"
+			labelText				"Alternator"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					100
+			xpos					90
 			fontHeight				35
-			pin_to_sibling          Flatline
+			pin_to_sibling          Alternator
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-
-		SpitfireButton
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    100
-			ypos                    0
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          FlatlineButton
-			pin_corner_to_sibling   TOP_LEFT
-			pin_to_sibling_corner   TOP_RIGHT
-		}
+		// RE45Button
+		// {
+			// "ControlName"				"RuiButton"
+			// "rui"						"ui/generic_friend_button.rpak"
+			// wide					200
+			// tall					150
+			// "visible"					"1"
+			// "sound_accept"				"ui_rankedsummary_circletick_reached"
+			// "sound_focus"				"UI_Menu_Focus_Small"
+			// xpos                    0
+			// ypos                    60
+			// zpos                    5
+			// pin_to_sibling          P2020
+			// pin_corner_to_sibling   TOP
+			// pin_to_sibling_corner   BOTTOM
+			// visible                 0
+		// }
 		
-		Spitfire
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          SpitfireButton
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
+		// RE45
+		// {
+			// ControlName 				 RuiPanel 
+			// rui 						 ui/basic_image.rpak 
+			// wide 						 160 
+			// tall 						 75 
+			// xpos                    0
+			// ypos                    -10
+			// zpos                    9
+			// pin_to_sibling          RE45Button
+			// pin_corner_to_sibling   CENTER
+			// pin_to_sibling_corner   CENTER
+			
+			// visible                 0
+		// }
 
-		Spitfire_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"Spitfire"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					100
-			fontHeight				35
-			pin_to_sibling          Spitfire
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
-		////////////////////////////////////////////////////////
-		R301Button
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    0
-			ypos                    60
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          Hemlok
-			pin_corner_to_sibling   TOP
-			pin_to_sibling_corner   BOTTOM
-		}
-		
-		R301
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          R301Button
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
-
-		R301_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"R-301"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					100
-			fontHeight				35
-			pin_to_sibling          R301
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
-		RampageButton
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    100
-			ypos                    0
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          R301Button
-			pin_corner_to_sibling   TOP_LEFT
-			pin_to_sibling_corner   TOP_RIGHT
-		}
-		
-		Rampage
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          RampageButton
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
-
-		Rampage_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"Rampage"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					95
-			fontHeight				35
-			pin_to_sibling          Rampage
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
-		//attachments box
+		// RE45_Name
+		// {
+			// ControlName				Label
+			// wide                    224
+			// labelText				"RE45"
+			// visible                 1
+			// zpos 9
+			// fgcolor_override		"2 252 240 255"
+			// ypos                                       20
+			// xpos					100
+			// fontHeight				35
+			// pin_to_sibling          RE45
+			// pin_corner_to_sibling   BOTTOM_RIGHT
+			// pin_to_sibling_corner   BOTTOM_RIGHT
+			
+			// visible                 0
+		// }
+//attachments box
 	
 
         SMGLootFrame
 		{
             ControlName		ImagePanel
-			wide					%25
+			wide					%30
 			tall					%24
             xpos                    0
 			ypos					0
@@ -532,7 +441,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		ScreenBlur
 		{
 			ControlName				RuiPanel
-			wide					%25
+			wide					%30
 			tall					%24
 			zpos 25
 			rui                     "ui/tabs_background.rpak"
@@ -542,7 +451,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
         SMGLootFrame2
 		{
             ControlName		ImagePanel
-			wide					%25
+			wide					%30
 			tall					%5
             xpos                    0
 			ypos					0
@@ -555,7 +464,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
         SMGLootFrame3
 		{
             ControlName		ImagePanel
-			wide					%25
+			wide					%30
 			tall					%5
             xpos                    0
 			ypos					0
@@ -564,12 +473,12 @@ scripts/resource/ui/menus/panels/buymenu2.res
             scaleImage		0
             fillColor		"30 30 30 255"
             drawColor		"30 30 30 255"
-		}		
-
+		}
+		
 		Line1
 		{
 			ControlName		ImagePanel
-			wide					%25
+			wide					%30
 			tall					2
             visible			0
             scaleImage		1
@@ -586,7 +495,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		Line2
 		{
 			ControlName		ImagePanel
-			wide					%25
+			wide					%30
 			tall					2
             visible			0
             scaleImage		1
@@ -634,7 +543,6 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			pin_to_sibling_corner	TOP_RIGHT
 		}
 		//actual loot
-		
 		//optics
 		SMGOptics1
 		{
@@ -749,44 +657,6 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			zpos					25
 			visible 0
 		}
-		
-		SMGOptics7
-		{
-			sound_accept            "UI_Menu_Accept"
-			
-			ControlName             RuiButton
-			InheritProperties       SurvivalInventoryGridButton
-
-			classname               "SurvivalEquipment"
-			scriptID                "armor"
-
-			wide                    75
-			tall                    75
-
-			xpos                    0
-			ypos                    0
-			zpos					25
-			visible 0
-		}
-		
-		SMGOptics8
-		{
-			sound_accept            "UI_Menu_Accept"
-			
-			ControlName             RuiButton
-			InheritProperties       SurvivalInventoryGridButton
-
-			classname               "SurvivalEquipment"
-			scriptID                "armor"
-
-			wide                    75
-			tall                    75
-
-			xpos                    0
-			ypos                    0
-			zpos					25
-			visible 0
-		}
 		//barrels
 		SMGBarrels1
 		{
@@ -863,6 +733,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			zpos					25
 			visible 0
 		}
+
 		//stocks
 		SMGStocks1
 		{
@@ -958,8 +829,27 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			zpos					25
 			visible 0
 		}
+		
+		SMGStocks6
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
+
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
 		//shotgun bolts!
-		SniperStock1
+		ShotgunBolt1
 		{
 			sound_accept            "UI_Menu_Accept"
 			
@@ -978,7 +868,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			visible 0
 		}
 		
-		SniperStock2
+		ShotgunBolt2
 		{
 			sound_accept            "UI_Menu_Accept"
 			
@@ -997,7 +887,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			visible 0
 		}
 		
-		SniperStock3
+		ShotgunBolt3
 		{
 			sound_accept            "UI_Menu_Accept"
 			
@@ -1015,8 +905,25 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			zpos					25
 			visible 0
 		}
+		
+		ShotgunBolt4
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
 
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
 
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
 
 		//Attachments box header
 		OpticsButton
@@ -1058,7 +965,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"BARRELS"
+			labelText				"LASER"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1069,7 +976,7 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			ypos                    0
 			xpos					0
 		}
-		SniperStocksButton
+		BoltsButton
 		{
 			ControlName				RuiButton
 			InheritProperties		TabButton
@@ -1078,11 +985,11 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			zpos 26
 			visible 0
 		}
-		SniperStocksText
+		BoltsText
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"HOPUP"
+			labelText				"BOLTS"
 			visible                 0
 			zpos 25
 			tall					40
@@ -1138,21 +1045,4 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			zpos 26
 			visible 0
 		}
-		// OpticsFrame2
-		// {
-            // ControlName		ImagePanel
-			// wide					400
-			// tall					100
-            // xpos                    0
-			// ypos					0
-			// zpos 20
-			// visible			0
-            // scaleImage		1
-            // fillColor		"30 30 30 200"
-            // drawColor		"30 30 30 200"
-
-			// pin_corner_to_sibling	CENTER
-			// pin_to_sibling_corner	TOP
-		// }
-		
 }

@@ -1,5 +1,6 @@
 global function InitArenasBuyPanel3
 global function returnWeaponButtons3
+global function returnVisibleAttachmentsBox3
 
 struct
 {
@@ -19,6 +20,10 @@ struct
 	var frame2
 	var frame3
 	var frame4
+	var line1
+	var line2
+	var line3
+	var line4
 	var invisibleExitButton
 	var closebutton
 	var savebutton
@@ -59,7 +64,10 @@ void function InitArenasBuyPanel3( var panel )
 	file.frame2 = Hud_GetChild( file.menu, "SMGLootFrame" )
 	file.frame3 = Hud_GetChild( file.menu, "SMGLootFrame2" )
 	file.frame4 = Hud_GetChild( file.menu, "SMGLootFrame3" )
-
+	file.line1 = Hud_GetChild( file.menu, "Line1" )	
+	file.line2 = Hud_GetChild( file.menu, "Line2" )	
+	file.line3 = Hud_GetChild( file.menu, "Line3" )	
+	file.line4 = Hud_GetChild( file.menu, "Line4" )	
 	file.relevantdata = Hud_GetWidth(file.frame1)
 	file.relevantdata2 = Hud_GetHeight(file.frame1)
 	//footer
@@ -85,6 +93,7 @@ void function InitArenasBuyPanel3( var panel )
 	AddEventHandlerToButton( file.menu, "StocksButton", UIE_CLICK, SMGStocks )
 	AddEventHandlerToButton( file.menu, "SniperStocksButton", UIE_CLICK, SniperStocks )
 	//SMG Optics Loadout
+	file.SMGOptics.append( Hud_GetChild( file.menu, "SMGOptics10" ) )
 	file.SMGOptics.append( Hud_GetChild( file.menu, "SMGOptics1" ) )
 	file.SMGOptics.append( Hud_GetChild( file.menu, "SMGOptics2" ) )
 	file.SMGOptics.append( Hud_GetChild( file.menu, "SMGOptics3" ) )
@@ -101,9 +110,10 @@ void function InitArenasBuyPanel3( var panel )
 	file.SMGBarrels.append( Hud_GetChild( file.menu, "SMGBarrels3" ) )
 	file.SMGBarrels.append( Hud_GetChild( file.menu, "SMGBarrels4" ) )
 	//SMG Stocks
+	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks4" ) )
 	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks1" ) )
 	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks2" ) )
-	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks3" ) )
+	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks3" ) )	
 	//SniperStocks
 	file.SniperStocks.append( Hud_GetChild( file.menu, "SniperStock1" ) )
 	file.SniperStocks.append( Hud_GetChild( file.menu, "SniperStock2" ) )
@@ -125,6 +135,7 @@ void function InitArenasBuyPanel3( var panel )
 	AddEventHandlerToButton( file.menu, "SMGOptics7", UIE_CLICK, SetSMGOpticsAttachmentSelected )
 	AddEventHandlerToButton( file.menu, "SMGOptics8", UIE_CLICK, SetSMGOpticsAttachmentSelected )
 	AddEventHandlerToButton( file.menu, "SMGOptics9", UIE_CLICK, SetSMGOpticsAttachmentSelected )
+	AddEventHandlerToButton( file.menu, "SMGOptics10", UIE_CLICK, SetSMGOpticsAttachmentSelected )
 	
 	AddEventHandlerToButton( file.menu, "SMGBarrels1", UIE_CLICK, SetSMGBarrelsAttachmentSelected )	
 	AddEventHandlerToButton( file.menu, "SMGBarrels2", UIE_CLICK, SetSMGBarrelsAttachmentSelected )	
@@ -134,6 +145,7 @@ void function InitArenasBuyPanel3( var panel )
 	AddEventHandlerToButton( file.menu, "SMGStocks1", UIE_CLICK, SetSMGStocksAttachmentSelected )	
 	AddEventHandlerToButton( file.menu, "SMGStocks2", UIE_CLICK, SetSMGStocksAttachmentSelected )	
 	AddEventHandlerToButton( file.menu, "SMGStocks3", UIE_CLICK, SetSMGStocksAttachmentSelected )	
+	AddEventHandlerToButton( file.menu, "SMGStocks4", UIE_CLICK, SetSMGStocksAttachmentSelected )
 
 	AddEventHandlerToButton( file.menu, "SniperStock1", UIE_CLICK, SetSniperStockAttachmentSelected )	
 	AddEventHandlerToButton( file.menu, "SniperStock2", UIE_CLICK, SetSniperStockAttachmentSelected )
@@ -143,26 +155,26 @@ void function InitArenasBuyPanel3( var panel )
 
 	var g7 = Hud_GetChild( menu, "G7" )
 	RuiSetImage( Hud_GetRui( g7 ), "basicImage", $"rui/weapon_icons/r5/weapon_g7" )
-	AddEventHandlerToButton( menu, "G7Button", UIE_CLICK, BuyG7 )	
-	AddEventHandlerToButton( menu, "G7Button", UIE_CLICKRIGHT, OpenAttachmentsBox )
+	//AddEventHandlerToButton( menu, "G7Button", UIE_CLICK, BuyG7 )	
+	AddEventHandlerToButton( menu, "G7Button", UIE_CLICK, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "G7Button" ))
 
 	var longbow = Hud_GetChild( menu, "Longbow" )
 	RuiSetImage( Hud_GetRui( longbow ), "basicImage", $"rui/weapon_icons/r5/weapon_longbow" )
-	AddEventHandlerToButton( menu, "LongbowButton", UIE_CLICK, BuyLongbow )	
-	AddEventHandlerToButton( menu, "LongbowButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
+	//AddEventHandlerToButton( menu, "LongbowButton", UIE_CLICK, BuyLongbow )	
+	AddEventHandlerToButton( menu, "LongbowButton", UIE_CLICK, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "LongbowButton" ))
 
 	var tripletake = Hud_GetChild( menu, "TripleTake" )
 	RuiSetImage( Hud_GetRui( tripletake ), "basicImage", $"rui/weapon_icons/r5/weapon_triple_take" )
-	AddEventHandlerToButton( menu, "TripleTakeButton", UIE_CLICK, BuyTripleTake )	
-	AddEventHandlerToButton( menu, "TripleTakeButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
+	//AddEventHandlerToButton( menu, "TripleTakeButton", UIE_CLICK, BuyTripleTake )	
+	AddEventHandlerToButton( menu, "TripleTakeButton", UIE_CLICK, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "TripleTakeButton" ))
 	
 	var chargerifle = Hud_GetChild( menu, "ChargeRifle" )
 	RuiSetImage( Hud_GetRui( chargerifle ), "basicImage", $"rui/weapon_icons/r5/weapon_charge_rifle" )
-	AddEventHandlerToButton( menu, "ChargeRifleButton", UIE_CLICK, BuyChargeRifle )	
-	AddEventHandlerToButton( menu, "ChargeRifleButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
+	//AddEventHandlerToButton( menu, "ChargeRifleButton", UIE_CLICK, BuyChargeRifle )	
+	AddEventHandlerToButton( menu, "ChargeRifleButton", UIE_CLICK, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "ChargeRifleButton" ))
 	
 	var kraber = Hud_GetChild( menu, "Kraber" )
@@ -178,6 +190,11 @@ array<var> function returnWeaponButtons3()
 	return file.weaponButtons
 }
 
+array<var> function returnVisibleAttachmentsBox3()
+{
+	return file.visibleAttachmentsBoxElements
+}
+
 void function OnR5RSB_Hide(var panel)
 {
 }
@@ -188,7 +205,7 @@ void function OnR5RSB_Show(var panel)
 
 void function OpenAttachmentsBox( var button )
 {
-	// DisableBuyWeaponsMenuTabs()
+	CloseAllAttachmentsBoxes()
 	
 	bool smg = false
 	bool pistol = false
@@ -255,10 +272,12 @@ void function OpenAttachmentsBox( var button )
 		buttonsDesiredWidthTop = (file.relevantdata*1.2)/4
 	}
 	
-	Hud_SetWidth(file.frame1, file.relevantdata*1.2)
-	Hud_SetWidth(file.frame2, file.relevantdata*1.2)
-	Hud_SetWidth(file.frame3, file.relevantdata*1.2)
-	Hud_SetWidth(file.frame4, file.relevantdata*1.2)
+	Hud_SetWidth(file.frame1, file.relevantdata*1.36)
+	Hud_SetWidth(file.frame2, file.relevantdata*1.36)
+	Hud_SetWidth(file.frame3, file.relevantdata*1.36)
+	Hud_SetWidth(file.frame4, file.relevantdata*1.36)
+	Hud_SetWidth(file.line1, file.relevantdata*1.36)
+	Hud_SetWidth(file.line2, file.relevantdata*1.36)	
 	if(file.desiredweapon == "mp_weapon_defender" || file.desiredweapon == "mp_weapon_dmr") 
 	{
 		attachmentsBoxAlto = (screenSize.height * 0.24)*1.25
@@ -266,11 +285,15 @@ void function OpenAttachmentsBox( var button )
 		Hud_SetHeight(file.frame2, file.relevantdata2*1.25)
 		Hud_SetHeight(file.frame3, file.relevantdata2*1.25)
 		Hud_SetHeight(file.frame4, file.relevantdata2*1.25)
+		Hud_SetHeight(file.line3, file.relevantdata2*1.25)
+		Hud_SetHeight(file.line4, file.relevantdata2*1.25)
 	} else {
 		Hud_SetHeight(file.frame1, file.relevantdata2)
 		Hud_SetHeight(file.frame2, file.relevantdata2)
 		Hud_SetHeight(file.frame3, file.relevantdata2)
-		Hud_SetHeight(file.frame4, file.relevantdata2)	
+		Hud_SetHeight(file.frame4, file.relevantdata2)
+		Hud_SetHeight(file.line3, file.relevantdata2)
+		Hud_SetHeight(file.line4, file.relevantdata2)
 	}
 	
 	Hud_SetWidth(file.closebutton, buttonsDesiredWidth)
@@ -299,7 +322,14 @@ void function OpenAttachmentsBox( var button )
 	file.visibleAttachmentsBoxElements.append(file.frame3)
 	Hud_SetVisible(file.frame4, true)
 	file.visibleAttachmentsBoxElements.append(file.frame4)
-
+	Hud_SetVisible(file.line1, true)
+	file.visibleAttachmentsBoxElements.append(file.line1)
+	Hud_SetVisible(file.line2, true)
+	file.visibleAttachmentsBoxElements.append(file.line2)
+	Hud_SetVisible(file.line3, true)
+	file.visibleAttachmentsBoxElements.append(file.line3)
+	Hud_SetVisible(file.line4, true)
+	file.visibleAttachmentsBoxElements.append(file.line4)
 	//visibility for top
 
 	Hud_SetVisible(file.opticsbutton, true)
@@ -486,62 +516,70 @@ void function SMGOptics(var button)
 	SetOtherTabsContentInvisible()
 	SetButtonsOnTopUnselected()
 	Hud_SetSelected(file.opticsbutton, true)
-	
+
 	Hud_SetVisible(file.SMGOptics[0], true)
 	Hud_SetPos( file.SMGOptics[0], file.xstep+file.screenPos.x, file.screenPos.y+file.ystep-10 )
-	RuiSetImage( Hud_GetRui(file.SMGOptics[0]), "iconImage", $"rui/weapon_icons/attachments/hcog" )
+	RuiSetImage( Hud_GetRui(file.SMGOptics[0]), "iconImage", $"rui/pilot_loadout/mods/empty_sight" )
 	RuiSetInt( Hud_GetRui(file.SMGOptics[0]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGOptics[0])
 	
+	UIPos refPos = REPLACEHud_GetPos( file.SMGOptics[0] )
+	
 	Hud_SetVisible(file.SMGOptics[1], true)
-	Hud_SetPos( file.SMGOptics[1], file.xstep+file.screenPos.x+file.ancho, file.screenPos.y+file.ystep-10 )
-	RuiSetImage( Hud_GetRui(file.SMGOptics[1]), "iconImage", $"rui/weapon_icons/attachments/holosight" )
+	Hud_SetPos( file.SMGOptics[1], refPos.x+file.ancho, file.screenPos.y+file.ystep-10 )
+	RuiSetImage( Hud_GetRui(file.SMGOptics[1]), "iconImage", $"rui/weapon_icons/attachments/hcog" )
 	RuiSetInt( Hud_GetRui(file.SMGOptics[1]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGOptics[1])
 	
 	Hud_SetVisible(file.SMGOptics[2], true)
-	Hud_SetPos( file.SMGOptics[2], file.xstep+file.screenPos.x+(file.ancho*2), file.screenPos.y+file.ystep-10 )
-	RuiSetImage( Hud_GetRui(file.SMGOptics[2]), "iconImage", $"rui/weapon_icons/attachments/1x_2x_variable_holosight" )	
-	RuiSetInt( Hud_GetRui(file.SMGOptics[2]), "lootTier", 2 )
+	Hud_SetPos( file.SMGOptics[2], refPos.x+(file.ancho*2), file.screenPos.y+file.ystep-10 )
+	RuiSetImage( Hud_GetRui(file.SMGOptics[2]), "iconImage", $"rui/weapon_icons/attachments/holosight" )
+	RuiSetInt( Hud_GetRui(file.SMGOptics[2]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGOptics[2])
 	
 	Hud_SetVisible(file.SMGOptics[3], true)
-	Hud_SetPos( file.SMGOptics[3], file.xstep+file.screenPos.x+(file.ancho*3), file.screenPos.y+file.ystep-10 )
-	RuiSetImage( Hud_GetRui(file.SMGOptics[3]), "iconImage", $"rui/weapon_icons/attachments/hcog_bruiser")	
+	Hud_SetPos( file.SMGOptics[3], refPos.x+(file.ancho*3), file.screenPos.y+file.ystep-10 )
+	RuiSetImage( Hud_GetRui(file.SMGOptics[3]), "iconImage", $"rui/weapon_icons/attachments/1x_2x_variable_holosight" )	
 	RuiSetInt( Hud_GetRui(file.SMGOptics[3]), "lootTier", 2 )
 	file.visibleAttachmentsBoxElements.append(file.SMGOptics[3])
 	
 	Hud_SetVisible(file.SMGOptics[4], true)
-	Hud_SetPos( file.SMGOptics[4], file.xstep+file.screenPos.x+(file.ancho*4), file.screenPos.y+file.ystep-10 )
-	RuiSetImage( Hud_GetRui(file.SMGOptics[4]), "iconImage", $"rui/weapon_icons/attachments/hcog_ranged" )
-	RuiSetInt( Hud_GetRui(file.SMGOptics[4]), "lootTier", 3 )
+	Hud_SetPos( file.SMGOptics[4], refPos.x+(file.ancho*4), file.screenPos.y+file.ystep-10 )
+	RuiSetImage( Hud_GetRui(file.SMGOptics[4]), "iconImage", $"rui/weapon_icons/attachments/hcog_bruiser")	
+	RuiSetInt( Hud_GetRui(file.SMGOptics[4]), "lootTier", 2 )
 	file.visibleAttachmentsBoxElements.append(file.SMGOptics[4])
-
+	
 	Hud_SetVisible(file.SMGOptics[5], true)
-	Hud_SetPos( file.SMGOptics[5], file.xstep+file.screenPos.x+(file.ancho*5), file.screenPos.y+file.ystep-10 )
-	RuiSetImage( Hud_GetRui(file.SMGOptics[5]), "iconImage", $"rui/weapon_icons/attachments/2x_4x_variable_aog" )
+	Hud_SetPos( file.SMGOptics[5], refPos.x+(file.ancho*5), file.screenPos.y+file.ystep-10 )
+	RuiSetImage( Hud_GetRui(file.SMGOptics[5]), "iconImage", $"rui/weapon_icons/attachments/hcog_ranged" )
 	RuiSetInt( Hud_GetRui(file.SMGOptics[5]), "lootTier", 3 )
 	file.visibleAttachmentsBoxElements.append(file.SMGOptics[5])
 
+	Hud_SetVisible(file.SMGOptics[6], true)
+	Hud_SetPos( file.SMGOptics[6], refPos.x+(file.ancho*6), file.screenPos.y+file.ystep-10 )
+	RuiSetImage( Hud_GetRui(file.SMGOptics[6]), "iconImage", $"rui/weapon_icons/attachments/2x_4x_variable_aog" )
+	RuiSetInt( Hud_GetRui(file.SMGOptics[6]), "lootTier", 3 )
+	file.visibleAttachmentsBoxElements.append(file.SMGOptics[6])
+
 	if(file.desiredweapon == "mp_weapon_defender" || file.desiredweapon == "mp_weapon_dmr") 
 	{
-		Hud_SetVisible(file.SMGOptics[6], true)
-		Hud_SetPos( file.SMGOptics[6], file.xstep+file.screenPos.x+file.ancho+(file.ancho/2), file.screenPos.y+file.ystep+75 )
-		RuiSetImage( Hud_GetRui(file.SMGOptics[6]), "iconImage", $"rui/weapon_icons/attachments/4x_sniper" )
-		RuiSetInt( Hud_GetRui(file.SMGOptics[6]), "lootTier", 3 )
-		file.visibleAttachmentsBoxElements.append(file.SMGOptics[6])
-		
 		Hud_SetVisible(file.SMGOptics[7], true)
-		Hud_SetPos( file.SMGOptics[7], file.xstep+file.screenPos.x+file.ancho*2+(file.ancho/2), file.screenPos.y+file.ystep+75 )
-		RuiSetImage( Hud_GetRui(file.SMGOptics[7]), "iconImage", $"rui/weapon_icons/attachments/4x_8x_variable_sniper" )
+		Hud_SetPos( file.SMGOptics[7], file.xstep+file.screenPos.x+file.ancho+(file.ancho), file.screenPos.y+file.ystep+75 )
+		RuiSetImage( Hud_GetRui(file.SMGOptics[7]), "iconImage", $"rui/weapon_icons/attachments/4x_sniper" )
 		RuiSetInt( Hud_GetRui(file.SMGOptics[7]), "lootTier", 3 )
 		file.visibleAttachmentsBoxElements.append(file.SMGOptics[7])
-
+		
 		Hud_SetVisible(file.SMGOptics[8], true)
-		Hud_SetPos( file.SMGOptics[8], file.xstep+file.screenPos.x+file.ancho*3+(file.ancho/2), file.screenPos.y+file.ystep+75 )
-		RuiSetImage( Hud_GetRui(file.SMGOptics[8]), "iconImage", $"rui/weapon_icons/attachments/8x_threat_sniper" )
-		RuiSetInt( Hud_GetRui(file.SMGOptics[8]), "lootTier", 4 )
+		Hud_SetPos( file.SMGOptics[8], file.xstep+file.screenPos.x+file.ancho*2+(file.ancho), file.screenPos.y+file.ystep+75 )
+		RuiSetImage( Hud_GetRui(file.SMGOptics[8]), "iconImage", $"rui/weapon_icons/attachments/4x_8x_variable_sniper" )
+		RuiSetInt( Hud_GetRui(file.SMGOptics[8]), "lootTier", 3 )
 		file.visibleAttachmentsBoxElements.append(file.SMGOptics[8])
+
+		Hud_SetVisible(file.SMGOptics[9], true)
+		Hud_SetPos( file.SMGOptics[9], file.xstep+file.screenPos.x+file.ancho*3+(file.ancho), file.screenPos.y+file.ystep+75 )
+		RuiSetImage( Hud_GetRui(file.SMGOptics[9]), "iconImage", $"rui/weapon_icons/attachments/8x_threat_sniper" )
+		RuiSetInt( Hud_GetRui(file.SMGOptics[9]), "lootTier", 4 )
+		file.visibleAttachmentsBoxElements.append(file.SMGOptics[9])
 	}
 }
 
@@ -553,26 +591,36 @@ void function SMGBarrels(var button)
 	
 	Hud_SetVisible(file.SMGBarrels[0], true)
 	Hud_SetPos( file.SMGBarrels[0], file.xstep+file.screenPos.x+file.ancho+(file.ancho/2), file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGBarrels[0]), "iconImage", $"rui/pilot_loadout/mods/barrel_stabilizer" )
+	RuiSetImage( Hud_GetRui(file.SMGBarrels[0]), "iconImage", $"rui/pilot_loadout/mods/empty_barrel_stabilizer" )
 	RuiSetInt( Hud_GetRui(file.SMGBarrels[0]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGBarrels[0])
 	
+	UIPos refPos = REPLACEHud_GetPos( file.SMGBarrels[0] )
+	
 	Hud_SetVisible(file.SMGBarrels[1], true)
-	Hud_SetPos( file.SMGBarrels[1], file.xstep+file.screenPos.x+(file.ancho*2)+(file.ancho/2), file.screenPos.y+file.ystep )
+	Hud_SetPos( file.SMGBarrels[1], refPos.x+file.ancho, file.screenPos.y+file.ystep )
 	RuiSetImage( Hud_GetRui(file.SMGBarrels[1]), "iconImage", $"rui/pilot_loadout/mods/barrel_stabilizer" )
-	RuiSetInt( Hud_GetRui(file.SMGBarrels[1]), "lootTier", 2 )
+	RuiSetInt( Hud_GetRui(file.SMGBarrels[1]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGBarrels[1])
 	
 	Hud_SetVisible(file.SMGBarrels[2], true)
-	Hud_SetPos( file.SMGBarrels[2], file.xstep+file.screenPos.x+(file.ancho*3)+(file.ancho/2), file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGBarrels[2]), "iconImage", $"rui/pilot_loadout/mods/barrel_stabilizer" )	
-	RuiSetInt( Hud_GetRui(file.SMGBarrels[2]), "lootTier", 3 )
+	Hud_SetPos( file.SMGBarrels[2], refPos.x+(file.ancho*2), file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGBarrels[2]), "iconImage", $"rui/pilot_loadout/mods/barrel_stabilizer" )
+	RuiSetInt( Hud_GetRui(file.SMGBarrels[2]), "lootTier", 2 )
 	file.visibleAttachmentsBoxElements.append(file.SMGBarrels[2])
+	
+	Hud_SetVisible(file.SMGBarrels[3], true)
+	Hud_SetPos( file.SMGBarrels[3], refPos.x+(file.ancho*3), file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGBarrels[3]), "iconImage", $"rui/pilot_loadout/mods/barrel_stabilizer" )	
+	RuiSetInt( Hud_GetRui(file.SMGBarrels[3]), "lootTier", 3 )
+	file.visibleAttachmentsBoxElements.append(file.SMGBarrels[3])
 	if(file.desiredweapon == "mp_weapon_dmr") 
 	{
 		Hud_SetPos( file.SMGBarrels[0], file.xstep+file.screenPos.x+file.ancho+(file.ancho/2), file.screenPos.y+file.ystep+17 )
-		Hud_SetPos( file.SMGBarrels[1], file.xstep+file.screenPos.x+(file.ancho*2)+(file.ancho/2), file.screenPos.y+file.ystep+17 )
-		Hud_SetPos( file.SMGBarrels[2], file.xstep+file.screenPos.x+(file.ancho*3)+(file.ancho/2), file.screenPos.y+file.ystep+17 )
+		refPos = REPLACEHud_GetPos( file.SMGBarrels[0] )
+		Hud_SetPos( file.SMGBarrels[1], refPos.x+file.ancho, file.screenPos.y+file.ystep+17 )
+		Hud_SetPos( file.SMGBarrels[2], refPos.x+(file.ancho*2), file.screenPos.y+file.ystep+17 )
+		Hud_SetPos( file.SMGBarrels[3], refPos.x+(file.ancho*3), file.screenPos.y+file.ystep+17 )
 	}
 }
 
@@ -583,7 +631,7 @@ void function SniperStocks(var button)
 	Hud_SetSelected(file.hopupsbutton, true)
 	
 	Hud_SetVisible(file.SniperStocks[0], true)
-	Hud_SetPos( file.SniperStocks[0], file.xstep+file.screenPos.x+(file.ancho*2), file.screenPos.y+file.ystep )
+	Hud_SetPos( file.SniperStocks[0], file.xstep+file.screenPos.x+(file.ancho*2.5), file.screenPos.y+file.ystep )
 	if(file.desiredweapon == "mp_weapon_g2")
 		RuiSetImage( Hud_GetRui(file.SniperStocks[0]), "iconImage", $"rui/pilot_loadout/mods/empty_hopup_doubletap" )
 	else if (file.desiredweapon == "mp_weapon_doubletake")
@@ -592,7 +640,7 @@ void function SniperStocks(var button)
 	file.visibleAttachmentsBoxElements.append(file.SniperStocks[0])
 	
 	Hud_SetVisible(file.SniperStocks[1], true)
-	Hud_SetPos( file.SniperStocks[1], file.xstep+file.screenPos.x+(file.ancho*3), file.screenPos.y+file.ystep )
+	Hud_SetPos( file.SniperStocks[1], file.xstep+file.screenPos.x+(file.ancho*3.5), file.screenPos.y+file.ystep )
 	if(file.desiredweapon == "mp_weapon_g2")
 		RuiSetImage( Hud_GetRui(file.SniperStocks[1]), "iconImage", $"rui/pilot_loadout/mods/hopup_doubletap" )
 	else if (file.desiredweapon == "mp_weapon_doubletake")
@@ -609,27 +657,36 @@ void function SMGStocks(var button)
 	
 	Hud_SetVisible(file.SMGStocks[0], true)
 	Hud_SetPos( file.SMGStocks[0], file.xstep+file.screenPos.x+file.ancho+(file.ancho/2), file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGStocks[0]), "iconImage", $"rui/pilot_loadout/mods/sniper_stock" )
+	RuiSetImage( Hud_GetRui(file.SMGStocks[0]), "iconImage", $"rui/pilot_loadout/mods/empty_stock_sniper" )
 	RuiSetInt( Hud_GetRui(file.SMGStocks[0]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGStocks[0])
 	
+	UIPos refPos = REPLACEHud_GetPos( file.SMGStocks[0] )
+		
 	Hud_SetVisible(file.SMGStocks[1], true)
-	Hud_SetPos( file.SMGStocks[1], file.xstep+file.screenPos.x+(file.ancho*2)+(file.ancho/2), file.screenPos.y+file.ystep )
+	Hud_SetPos( file.SMGStocks[1], refPos.x+file.ancho, file.screenPos.y+file.ystep )
 	RuiSetImage( Hud_GetRui(file.SMGStocks[1]), "iconImage", $"rui/pilot_loadout/mods/sniper_stock" )
-	RuiSetInt( Hud_GetRui(file.SMGStocks[1]), "lootTier", 2 )
+	RuiSetInt( Hud_GetRui(file.SMGStocks[1]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGStocks[1])
 	
 	Hud_SetVisible(file.SMGStocks[2], true)
-	Hud_SetPos( file.SMGStocks[2], file.xstep+file.screenPos.x+(file.ancho*3)+(file.ancho/2), file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGStocks[2]), "iconImage", $"rui/pilot_loadout/mods/sniper_stock" )	
-	RuiSetInt( Hud_GetRui(file.SMGStocks[2]), "lootTier", 3 )
+	Hud_SetPos( file.SMGStocks[2], refPos.x+(file.ancho*2), file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGStocks[2]), "iconImage", $"rui/pilot_loadout/mods/sniper_stock" )
+	RuiSetInt( Hud_GetRui(file.SMGStocks[2]), "lootTier", 2 )
 	file.visibleAttachmentsBoxElements.append(file.SMGStocks[2])
+	
+	Hud_SetVisible(file.SMGStocks[3], true)
+	Hud_SetPos( file.SMGStocks[3], refPos.x+(file.ancho*3), file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGStocks[3]), "iconImage", $"rui/pilot_loadout/mods/sniper_stock" )	
+	RuiSetInt( Hud_GetRui(file.SMGStocks[3]), "lootTier", 3 )
+	file.visibleAttachmentsBoxElements.append(file.SMGStocks[3])
 	
 	if(file.desiredweapon == "mp_weapon_defender" || file.desiredweapon == "mp_weapon_dmr") 
 	{
 	Hud_SetPos( file.SMGStocks[0], file.xstep+file.screenPos.x+file.ancho+(file.ancho/2), file.screenPos.y+file.ystep+17 )	
-	Hud_SetPos( file.SMGStocks[1], file.xstep+file.screenPos.x+(file.ancho*2)+(file.ancho/2), file.screenPos.y+file.ystep+17 )
-	Hud_SetPos( file.SMGStocks[2], file.xstep+file.screenPos.x+(file.ancho*3)+(file.ancho/2), file.screenPos.y+file.ystep+17 )
+	Hud_SetPos( file.SMGStocks[1], refPos.x+file.ancho, file.screenPos.y+file.ystep+17 )
+	Hud_SetPos( file.SMGStocks[2], refPos.x+(file.ancho*2), file.screenPos.y+file.ystep+17 )
+	Hud_SetPos( file.SMGStocks[3], refPos.x+(file.ancho*3), file.screenPos.y+file.ystep+17 )
 	}
 }
 

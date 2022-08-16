@@ -12,6 +12,7 @@ struct
 	var buymenu2
 	var buymenu3
 	var buymenu4
+	var buymenu5
 } file
 
 void function OpenFRChallengesSettingsWpnSelector()
@@ -44,14 +45,17 @@ void function InitFRChallengesSettingsWpnSelector( var newMenuArg )
 	file.buymenu2 = GetPanel( "BuyMenu2" )
 	file.buymenu3 = GetPanel( "BuyMenu3" )
 	file.buymenu4 = GetPanel( "BuyMenu4" )
+	file.buymenu5 = GetPanel( "BuyMenu5" )
 	
 	TabData tabData = GetTabDataForPanel( file.menu )
 	tabData.centerTabs = true
-	AddTab( file.menu, file.buymenu1, "Pistols, Shotguns & SMGs" )
+	
+	AddTab( file.menu, file.buymenu1, "Pistols & Shotguns" )
+	AddTab( file.menu, file.buymenu5, "SMGs" )
 	AddTab( file.menu, file.buymenu2, "Assault Rifles & LMGs" )
 	AddTab( file.menu, file.buymenu3, "Marksman & Snipers" )
-	AddTab( file.menu, file.buymenu4, "Custom weapons" )
-
+	AddTab( file.menu, file.buymenu4, "Hitscan Weapons" )
+	
 	SetTabNavigationEnabled( file.menu, true )
 	EmitUISound( "UI_InGame_Inventory_Open" )
 
@@ -71,6 +75,7 @@ void function EnableBuyWeaponsMenuTabs()
 
 void function GoBackButtonFunct(var button)
 {
+	CloseAllAttachmentsBoxes()
 	CloseAllMenus()
 	RunClientScript("CloseFRChallengesSettingsWpnSelector")
 	RunClientScript("ServerCallback_OpenFRChallengesSettings")	
@@ -94,6 +99,7 @@ void function OnR5RSB_Close()
 
 void function OnR5RSB_NavigateBack()
 {
+	CloseAllAttachmentsBoxes()
 	CloseAllMenus()
 	RunClientScript("CloseFRChallengesSettingsWpnSelector")
 	RunClientScript("ServerCallback_OpenFRChallengesSettings")	

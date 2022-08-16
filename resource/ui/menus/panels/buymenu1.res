@@ -312,19 +312,19 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				Label
 			wide                    224
-			labelText				"RE45"
+			labelText				"RE-45"
 			visible                 1
 			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					100
+			xpos					110
 			fontHeight				35
 			pin_to_sibling          RE45
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
 
-		AlternatorButton
+		EVA8Button
 		{
 			"ControlName"				"RuiButton"
 			"rui"						"ui/generic_friend_button.rpak"
@@ -340,101 +340,6 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			pin_to_sibling          RE45Button
 			pin_corner_to_sibling   TOP_LEFT
 			pin_to_sibling_corner   TOP_RIGHT
-		}
-		
-		Alternator
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          AlternatorButton
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
-
-		Alternator_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"Alternator"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					100
-			fontHeight				35
-			pin_to_sibling          Alternator
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
-
-		R99Button
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    100
-			ypos                    0
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          AlternatorButton
-			pin_corner_to_sibling   TOP_LEFT
-			pin_to_sibling_corner   TOP_RIGHT
-		}
-		
-		R99
-		{
-			ControlName 				 RuiPanel 
-			rui 						 ui/basic_image.rpak 
-			wide 						 160 
-			tall 						 75 
-			xpos                    0
-			ypos                    -10
-			zpos                    5
-			pin_to_sibling          R99Button
-			pin_corner_to_sibling   CENTER
-			pin_to_sibling_corner   CENTER
-		}
-
-		R99_Name
-		{
-			ControlName				Label
-			wide                    224
-			labelText				"R99"
-			visible                 1
-			zpos 5
-			fgcolor_override		"2 252 240 255"
-			ypos                                       20
-			xpos					120
-			fontHeight				35
-			pin_to_sibling          R99
-			pin_corner_to_sibling   BOTTOM_RIGHT
-			pin_to_sibling_corner   BOTTOM_RIGHT
-		}
-		EVA8Button
-		{
-			"ControlName"				"RuiButton"
-			"rui"						"ui/generic_friend_button.rpak"
-			wide					200
-			tall					150
-			"visible"					"1"
-			"sound_accept"				"ui_rankedsummary_circletick_reached"
-			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    0
-			ypos                    60
-			zpos                    5
-			rightClickEvents        1
-			pin_to_sibling          RE45
-			pin_corner_to_sibling   TOP
-			pin_to_sibling_corner   BOTTOM
 		}
 		
 		EVA8
@@ -466,7 +371,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-	
+
 		MastiffButton
 		{
 			"ControlName"				"RuiButton"
@@ -508,13 +413,13 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			zpos 5
 			fgcolor_override		"2 252 240 255"
 			ypos                                       20
-			xpos					100
+			xpos					105
 			fontHeight				35
 			pin_to_sibling          Mastiff
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
-
+		
 		PeacekeeperButton
 		{
 			"ControlName"				"RuiButton"
@@ -524,13 +429,13 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			"visible"					"1"
 			"sound_accept"				"ui_rankedsummary_circletick_reached"
 			"sound_focus"				"UI_Menu_Focus_Small"
-			xpos                    100
-			ypos                    0
+			xpos                    0
+			ypos                    60
 			zpos                    5
 			rightClickEvents        1
-			pin_to_sibling          MastiffButton
-			pin_corner_to_sibling   TOP_LEFT
-			pin_to_sibling_corner   TOP_RIGHT
+			pin_to_sibling          RE45
+			pin_corner_to_sibling   TOP
+			pin_to_sibling_corner   BOTTOM
 		}
 		
 		Peacekeeper
@@ -562,13 +467,109 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			pin_corner_to_sibling   BOTTOM_RIGHT
 			pin_to_sibling_corner   BOTTOM_RIGHT
 		}
+	
+		// MastiffButton
+		// {
+			// "ControlName"				"RuiButton"
+			// "rui"						"ui/generic_friend_button.rpak"
+			// wide					200
+			// tall					150
+			// "visible"					"1"
+			// "sound_accept"				"ui_rankedsummary_circletick_reached"
+			// "sound_focus"				"UI_Menu_Focus_Small"
+			// xpos                    100
+			// ypos                    0
+			// zpos                    5
+			// rightClickEvents        1
+			// pin_to_sibling          EVA8Button
+			// pin_corner_to_sibling   TOP_LEFT
+			// pin_to_sibling_corner   TOP_RIGHT
+		// }
+		
+		// Mastiff
+		// {
+			// ControlName 				 RuiPanel 
+			// rui 						 ui/basic_image.rpak 
+			// wide 						 160 
+			// tall 						 75 
+			// xpos                    0
+			// ypos                    -10
+			// zpos                    5
+			// pin_to_sibling          MastiffButton
+			// pin_corner_to_sibling   CENTER
+			// pin_to_sibling_corner   CENTER
+		// }
+
+		// Mastiff_Name
+		// {
+			// ControlName				Label
+			// wide                    224
+			// labelText				"Mastiff"
+			// visible                 1
+			// zpos 5
+			// fgcolor_override		"2 252 240 255"
+			// ypos                                       20
+			// xpos					100
+			// fontHeight				35
+			// pin_to_sibling          Mastiff
+			// pin_corner_to_sibling   BOTTOM_RIGHT
+			// pin_to_sibling_corner   BOTTOM_RIGHT
+		// }
+
+		// PeacekeeperButton
+		// {
+			// "ControlName"				"RuiButton"
+			// "rui"						"ui/generic_friend_button.rpak"
+			// wide					200
+			// tall					150
+			// "visible"					"1"
+			// "sound_accept"				"ui_rankedsummary_circletick_reached"
+			// "sound_focus"				"UI_Menu_Focus_Small"
+			// xpos                    100
+			// ypos                    0
+			// zpos                    5
+			// rightClickEvents        1
+			// pin_to_sibling          MastiffButton
+			// pin_corner_to_sibling   TOP_LEFT
+			// pin_to_sibling_corner   TOP_RIGHT
+		// }
+		
+		// Peacekeeper
+		// {
+			// ControlName 				 RuiPanel 
+			// rui 						 ui/basic_image.rpak 
+			// wide 						 160 
+			// tall 						 75 
+			// xpos                    0
+			// ypos                    -10
+			// zpos                    5
+			// pin_to_sibling          PeacekeeperButton
+			// pin_corner_to_sibling   CENTER
+			// pin_to_sibling_corner   CENTER
+		// }
+
+		// Peacekeeper_Name
+		// {
+			// ControlName				Label
+			// wide                    224
+			// labelText				"Peacekeeper"
+			// visible                 1
+			// zpos 5
+			// fgcolor_override		"2 252 240 255"
+			// ypos                                       20
+			// xpos					75
+			// fontHeight				35
+			// pin_to_sibling          Peacekeeper
+			// pin_corner_to_sibling   BOTTOM_RIGHT
+			// pin_to_sibling_corner   BOTTOM_RIGHT
+		// }
 	//attachments box
 	
 
         SMGLootFrame
 		{
             ControlName		ImagePanel
-			wide					%25
+			wide					%30
 			tall					%24
             xpos                    0
 			ypos					0
@@ -581,7 +582,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		ScreenBlur
 		{
 			ControlName				RuiPanel
-			wide					%25
+			wide					%30
 			tall					%24
 			zpos 25
 			rui                     "ui/tabs_background.rpak"
@@ -591,7 +592,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
         SMGLootFrame2
 		{
             ControlName		ImagePanel
-			wide					%25
+			wide					%30
 			tall					%5
             xpos                    0
 			ypos					0
@@ -604,7 +605,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
         SMGLootFrame3
 		{
             ControlName		ImagePanel
-			wide					%25
+			wide					%30
 			tall					%5
             xpos                    0
 			ypos					0
@@ -615,6 +616,73 @@ scripts/resource/ui/menus/panels/buymenu1.res
             drawColor		"30 30 30 255"
 		}		
 
+		Line1
+		{
+			ControlName		ImagePanel
+			wide					%30
+			tall					2
+            visible			0
+            scaleImage		1
+			zpos 30
+			proportionalToParent    0
+            fillColor		"99 99 99 200"
+            drawColor		"99 99 99 200"
+
+			pin_to_sibling			SMGLootFrame
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		Line2
+		{
+			ControlName		ImagePanel
+			wide					%30
+			tall					2
+            visible			0
+            scaleImage		1
+			zpos 30
+			proportionalToParent    0
+            fillColor		"99 99 99 200"
+            drawColor		"99 99 99 200"
+
+			pin_to_sibling			SMGLootFrame
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Line3
+		{
+			ControlName		ImagePanel
+			wide					2
+			tall					%24
+            visible			0
+            scaleImage		1
+			zpos 30
+			proportionalToParent    0
+            fillColor		"99 99 99 200"
+            drawColor		"99 99 99 200"
+
+			pin_to_sibling			SMGLootFrame
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Line4
+		{
+			ControlName		ImagePanel
+			wide					2
+			tall					%24
+            visible			0
+            scaleImage		1
+			zpos 30
+			proportionalToParent    0
+            fillColor		"99 99 99 200"
+            drawColor		"99 99 99 200"
+
+			pin_to_sibling			SMGLootFrame
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
 		//actual loot
 		//optics
 		SMGOptics1
@@ -711,7 +779,25 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			zpos					25
 			visible 0
 		}
+		
+		SMGOptics6
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
 
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
+
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
 		//barrels
 		SMGBarrels1
 		{
@@ -941,7 +1027,25 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			zpos					25
 			visible 0
 		}
+		
+		ShotgunBolt4
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
 
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
+
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
 
 
 		//Attachments box header

@@ -194,9 +194,6 @@ void function RemoteFunctions_Init_Begin()
 		
 			Remote_RegisterUIFunction( "OpenFRChallengesSettingsWpnSelector" )
 			Remote_RegisterUIFunction( "CloseFRChallengesSettingsWpnSelector" )
-
-			Remote_RegisterUIFunction( "OpenSMGOptics" )
-			Remote_RegisterUIFunction( "CloseSMGOptics" )
 			
 			Remote_RegisterClientFunction("ServerCallback_CoolCameraOnMenu")
 			Remote_RegisterClientFunction("ServerCallback_LiveStatsUIDummiesKilled", "int", 0, 999999)
@@ -208,6 +205,7 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_ResetLiveStatsUI")
 			Remote_RegisterClientFunction("ServerCallback_SetDefaultMenuSettings")			
 			Remote_RegisterClientFunction("ServerCallback_SetLaserSightsOnSMGWeapon", "entity")
+			Remote_RegisterClientFunction("ServerCallback_StopLaserSightsOnSMGWeapon", "entity")
 			//End Challenges by Colombia			
 		case CUSTOM_TDM:
 		case SURVIVAL:

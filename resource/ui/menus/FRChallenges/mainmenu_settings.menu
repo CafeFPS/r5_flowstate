@@ -170,7 +170,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"Powered by R5Reloaded"
+			labelText				"Powered by R5Reloaded | © Respawn Entertainment"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"

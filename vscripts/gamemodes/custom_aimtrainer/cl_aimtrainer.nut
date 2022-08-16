@@ -1,15 +1,21 @@
 /* 
-Flowstate Aim Trainer my beloved
-
-- CaféDeColombiaFPS (Retículo Endoplasmático#5955 - Twitter @CafeFPS) -- developer: ui, client, server.
-- Zee#6969 -- gave me weapons menu example
-
-Main advices, relevant feedback and being nice with me:
-- Skeptation#4002
-- Rego#2848
-- michae\l/#1125
-- James9950#5567
-- (--__GimmYnkia__--)#2995 
+Apex Legends Aim Trainer
+Made by CaféDeColombiaFPS (server, client, ui)
+Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
+Donations: https://ko-fi.com/r5r_colombia
+----------------------------------------------
+More credits!
+- Zee#6969 -- gave me weapons buy menu example
+- Skeptation#4002 -- beta tester
+- Rego#2848 -- beta tester
+- michae\l/#1125 -- beta tester
+- James9950#5567 -- beta tester
+- (--__GimmYnkia__--)#2995 -- beta tester
+- oliver#1375 -- beta tester
+- Rin 暗#5862 -- beta tester
+----------------------------------------------
+I know all the code can be masivelly improved. I'm still learning so if you have any feedback I'll really appreciate it. ^^
+Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends. :)
 */
 
 global function  Cl_ChallengesByColombia_Init
@@ -29,6 +35,7 @@ global function ServerCallback_LiveStatsUIHeadshot
 global function ServerCallback_ResetLiveStatsUI
 global function ServerCallback_CoolCameraOnMenu
 global function ServerCallback_SetLaserSightsOnSMGWeapon
+global function ServerCallback_StopLaserSightsOnSMGWeapon
 
 //Main menu buttons
 global function StartChallenge1Client
@@ -62,7 +69,7 @@ global function UIToClient_MenuGiveWeaponWithAttachments
 global function OpenFRChallengesSettingsWpnSelector
 global function CloseFRChallengesSettingsWpnSelector
 global function ExitChallengeClient
-global function OpenSMGOptics
+global function RestartChallengeClient
 
 struct{
 	int totalShots
@@ -100,8 +107,13 @@ void function ServerCallback_SetDefaultMenuSettings()
 
 void function ServerCallback_SetLaserSightsOnSMGWeapon(entity weapon)
 {
+	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
 	weapon.PlayWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"", "muzzle_flash" )
-	printt("laser sight ON")
+}
+
+void function ServerCallback_StopLaserSightsOnSMGWeapon(entity weapon)
+{
+	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
 }
 
 void function ActuallyPutDefaultSettings()
@@ -114,7 +126,7 @@ void function ActuallyPutDefaultSettings()
 	SetConVarInt( "hud_setting_showMeter", 0)
 	SetConVarInt( "hud_setting_showMedals", 0)
 	SetConVarInt( "hud_setting_showLevelUp", 2)
-	WaitFrame()
+	WaitFrame() //idk?
 	//set default settings
 	player.ClientCommand("CC_AimTrainer_AI_SHIELDS_LEVEL " + GetConVarInt("hud_setting_minimapRotate").tostring())
 	player.ClientCommand("CC_RGB_HUD " + GetConVarInt("hud_setting_showMeter").tostring())
@@ -145,7 +157,7 @@ string function ReturnChallengeName(int index)
 			final = "BUBBLEFIGHT PRACTICE"
 			break
 		case 7:
-			final = "ARCSTARS PRACTICE"
+			final = "ARC STARS PRACTICE"
 			break
 		case 8:
 			final = "SHOOTING FROM LIFT"
@@ -160,7 +172,7 @@ string function ReturnChallengeName(int index)
 			final = "CLOSE FAST STRAFES"
 			break
 		case 12:
-			final = "JUMPS FAST STRAFES"
+			final = "FAST JUMPS STRAFES"
 			break
 		case 13:
 			final = "SMOOTHBOT"
@@ -191,7 +203,7 @@ void function ServerCallback_OpenFRChallengesMenu(int challengeName, int shothit
     RunUIScript( "UpdateResultsData", actualChallengeName, shothits, dummieskilled, accuracy, damagedone, criticalshots, shotshitrecord, isNewRecord )
 	RunUIScript( "OpenFRChallengesMenu" )
 
-    thread UpdateUIRespawnTimer()
+    // thread UpdateUIRespawnTimer()
 }
 
 void function ServerCallback_OpenFRChallengesMainMenu(int dummiesKilled)
@@ -265,7 +277,7 @@ CameraLocationPair function NewCameraPair(vector origin, vector angles)
 }
 
 void function CoolCameraOnMenu()
-//took from tdm
+//based on sal's tdm
 {
     entity player = GetLocalClientPlayer()
 	player.EndSignal("ChallengeStartRemoveCameras")
@@ -393,19 +405,29 @@ void function CreateDescriptionRUI(string description)
 {
 	entity player = GetLocalClientPlayer()
 	player.Signal("ChallengeStartRemoveCameras")
-	wait 0.5	
+	EndSignal(player, "ForceResultsEnd_SkipButton")
+	EndSignal(player, "ChallengeTimeOver")
+	WaitFrame()	
 	UISize screenSize = GetScreenSize()
     var topo = RuiTopology_CreatePlane( <( screenSize.width * 0),( screenSize.height * -0.1 ), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
 	var rui = RuiCreate( $"ui/id_dev_text.rpak", topo, RUI_DRAW_HUD, 0 )
 	
+	OnThreadEnd(
+		function() : (rui)
+		{
+			RuiDestroyIfAlive( rui )
+		}
+	)	
+	
 	RuiSetFloat( rui, "startTime", Time() )
 	RuiSetString( rui, "speaker","")
 	RuiSetString( rui, "text", description )
-	RuiSetFloat( rui, "duration", AimTrainer_PRE_START_TIME-0.5 )
-	RuiSetResolutionToScreenSize( rui )	
+	RuiSetFloat( rui, "duration", AimTrainer_PRE_START_TIME-0.01 )
+	RuiSetResolutionToScreenSize( rui )
+	wait AimTrainer_PRE_START_TIME-0.01
 }
 
-void function CreateTimerRUI(bool crosshair = false) //and stats
+void function CreateTimerRUIandSTATS(bool crosshair = false) //and stats
 {
 	entity player = GetLocalClientPlayer()
 	int time = AimTrainer_CHALLENGE_DURATION
@@ -444,7 +466,7 @@ void function CreateTimerRUI(bool crosshair = false) //and stats
 	Hud_SetVisible(HudElement( "CountdownFrame" ), true)
 	Hud_SetText( HudElement( "Countdown" ), AimTrainer_CHALLENGE_DURATION.tostring())}
 	
-	while(time > -1)
+	while(true)
     {
 		if(!AimTrainer_INFINITE_CHALLENGE)
 			Hud_SetText( HudElement( "Countdown" ), time.tostring())
@@ -471,7 +493,7 @@ void function StartChallenge1Client()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Hit the strafing dummy to get points.")
-	thread CreateTimerRUI()	
+	thread CreateTimerRUIandSTATS()	
 	player.ClientCommand("CC_StartChallenge1")
 }
 
@@ -480,7 +502,7 @@ void function StartChallenge2Client()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Low health dummies. Hit the dummies to get points.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge2")
 }
 
@@ -489,7 +511,7 @@ void function StartChallenge3Client()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Don't let dummy touch ground to get streak points.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge3")
 }
 
@@ -498,7 +520,7 @@ void function StartChallenge4Client()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Tracking practice. Hit the dummies to get points.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge4")
 }
 
@@ -507,7 +529,7 @@ void function StartChallenge5Client()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Hitscan weapon recommended. Hit as many targets as possible.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge5")
 }
 void function StartChallenge6Client()
@@ -515,7 +537,7 @@ void function StartChallenge6Client()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Hit the dummies to get points.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge6")
 }
 void function StartChallenge7Client()
@@ -523,7 +545,7 @@ void function StartChallenge7Client()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Shields are disabled, hit the dummies to get points.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge7")
 }
 void function StartChallenge8Client()
@@ -531,7 +553,7 @@ void function StartChallenge8Client()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Hit the dummies to get points.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge8")
 }
 void function StartChallenge1NewCClient()
@@ -539,7 +561,7 @@ void function StartChallenge1NewCClient()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Avoid death by killing dummy.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge1NewC")
 }
 
@@ -548,7 +570,7 @@ void function StartChallenge2NewCClient()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Only sticks count, shields are disabled.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge2NewC")
 }
 
@@ -557,7 +579,7 @@ void function StartChallenge3NewCClient()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Vertical grenades practice.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge3NewC")
 }
 
@@ -566,7 +588,7 @@ void function StartChallenge4NewCClient()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Valk ultimate tracking simulation.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge4NewC")
 }
 
@@ -575,7 +597,7 @@ void function StartChallenge5NewCClient()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Tracking from gravity lift simulation.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge5NewC")
 }
 	
@@ -584,7 +606,7 @@ void function StartChallenge6NewCClient()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Hit the skydiving dummies to get points.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge6NewC")
 }
 
@@ -593,7 +615,7 @@ void function StartChallenge7NewCClient()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("Hit the running dummies to get points.")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge7NewC")
 }
 
@@ -602,7 +624,7 @@ void function StartChallenge8NewCClient()
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
 	thread CreateDescriptionRUI("NOT IMPLEMENTED, RESTART THE LEVEL")
-	thread CreateTimerRUI()
+	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge8NewC")
 }
 
@@ -698,42 +720,51 @@ void function UIToClient_MenuGiveWeaponWithAttachments( string weapon, int desir
 
 	switch(desiredoptic){
 		case 0:
-			optic = "optic_cq_hcog_classic"
+			optic = "none"
 			break
 		case 1:
-			optic = "optic_cq_holosight"
+			optic = "optic_cq_hcog_classic"
 			break
 		case 2:
-			optic = "optic_cq_threat"
+			optic = "optic_cq_holosight"
 			break
 		case 3:
+			optic = "optic_cq_threat"
+			break
+		case 4:
 			optic = "optic_cq_holosight_variable"
 			break
-		case 4:	
+		case 5:	
 			optic = "optic_cq_hcog_bruiser"
 			break
 	}
 	
 	switch(desiredbarrel){
 		case 0:
-			barrel = "barrel_stabilizer_l1"
+			barrel = "none"
 			break
 		case 1:
-			barrel = "barrel_stabilizer_l2"
+			barrel = "barrel_stabilizer_l1"
 			break
 		case 2:
+			barrel = "barrel_stabilizer_l2"
+			break
+		case 3:
 			barrel = "barrel_stabilizer_l3"
 			break
 	}
 
 	switch(desiredstock){
 			case 0:
-				stock = "stock_tactical_l1"
+				stock = "none"
 				break
 			case 1:
-				stock = "stock_tactical_l2"
+				stock = "stock_tactical_l1"
 				break
 			case 2:
+				stock = "stock_tactical_l2"
+				break
+			case 3:
 				stock = "stock_tactical_l3"
 				break
 		}
@@ -741,24 +772,30 @@ void function UIToClient_MenuGiveWeaponWithAttachments( string weapon, int desir
 	if( weapontype == "sniper" || weapontype == "sniper2" || weapontype == "marksman" || weapontype == "marksman2")
 		switch(desiredstock){
 			case 0:
-				stock = "stock_sniper_l1"
+				stock = "none"
 				break
 			case 1:
-				stock = "stock_sniper_l2"
+				stock = "stock_sniper_l1"
 				break
 			case 2:
+				stock = "stock_sniper_l2"
+				break
+			case 3:
 				stock = "stock_sniper_l3"
 				break
 		}		
 	
 	switch(desiredshotgunbolt){
 			case 0:
-				shotgunbolt = "shotgun_bolt_l1"
+				shotgunbolt = "none"
 				break
 			case 1:
-				shotgunbolt = "shotgun_bolt_l2"
+				shotgunbolt = "shotgun_bolt_l1"
 				break
 			case 2:
+				shotgunbolt = "shotgun_bolt_l2"
+				break
+			case 3:
 				shotgunbolt = "shotgun_bolt_l3"
 				break
 		}
@@ -798,30 +835,33 @@ void function UIToClient_MenuGiveWeaponWithAttachments( string weapon, int desir
 	if(weapontype == "ar" || weapontype == "ar2" || weapontype == "lmg" || weapontype == "lmg2" || weapontype == "sniper" || weapontype == "sniper2" || weapontype == "marksman" || weapontype == "marksman2")
 	switch(desiredoptic){
 		case 0:
-			optic = "optic_cq_hcog_classic"
+			optic = "none"
 			break
 		case 1:
-			optic = "optic_cq_holosight"
+			optic = "optic_cq_hcog_classic"
 			break
 		case 2:
-			optic = "optic_cq_holosight_variable"
+			optic = "optic_cq_holosight"
 			break
 		case 3:
+			optic = "optic_cq_holosight_variable"
+			break
+		case 4:
 			optic = "optic_cq_hcog_bruiser"
 			break
-		case 4:	
+		case 5:	
 			optic = "optic_ranged_hcog"
 			break
-		case 5:	
+		case 6:	
 			optic = "optic_ranged_aog_variable"
 			break
-		case 6:	
+		case 7:	
 			optic = "optic_sniper"
 			break
-		case 7:	
+		case 8:	
 			optic = "optic_sniper_variable"
 			break
-		case 8:	
+		case 9:	
 			optic = "optic_sniper_threat"
 			break
 	}
@@ -850,16 +890,15 @@ void function CloseFRChallengesSettingsWpnSelector()
 void function ExitChallengeClient()
 {
 	entity player = GetLocalClientPlayer()
+	Signal(player, "ChallengeTimeOver")
     player.ClientCommand("CC_ExitChallenge")
 }
 
-void function OpenSMGOptics()
+void function RestartChallengeClient()
 {
 	entity player = GetLocalClientPlayer()
-    //player.ClientCommand("CC_Weapon_Selector_Open")
-	//player.Signal("ChallengeStartRemoveCameras")
-	//DoF_SetFarDepth( 1, 300 )
-	RunUIScript("OpenSMGOptics")
+	Signal(player, "ChallengeTimeOver")
+    player.ClientCommand("CC_RestartChallenge")
 }
 
 string function ClientLocalizeAndShortenNumber_Float( float number, int maxDisplayIntegral = 3, int maxDisplayDecimal = 0 )

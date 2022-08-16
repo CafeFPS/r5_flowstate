@@ -1,15 +1,21 @@
 /* 
-Flowstate Aim Trainer my beloved
-
-- CaféDeColombiaFPS (Retículo Endoplasmático#5955 - Twitter @CafeFPS) -- developer: ui, client, server.
-- Zee#6969 -- gave me weapons menu example
-
-Main advices, relevant feedback and being nice with me:
-- Skeptation#4002
-- Rego#2848
-- michae\l/#1125
-- James9950#5567
-- (--__GimmYnkia__--)#2995 
+Apex Legends Aim Trainer
+Made by CaféDeColombiaFPS (server, client, ui)
+Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
+Donations: https://ko-fi.com/r5r_colombia
+----------------------------------------------
+More credits!
+- Zee#6969 -- gave me weapons buy menu example
+- Skeptation#4002 -- beta tester
+- Rego#2848 -- beta tester
+- michae\l/#1125 -- beta tester
+- James9950#5567 -- beta tester
+- (--__GimmYnkia__--)#2995 -- beta tester
+- oliver#1375 -- beta tester
+- Rin 暗#5862 -- beta tester
+----------------------------------------------
+I know all the code can be masivelly improved. I'm still learning so if you have any feedback I'll really appreciate it. ^^
+Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends. :)
 */
 
 global function Sh_ChallengesByColombia_Init

@@ -421,6 +421,73 @@ scripts/resource/ui/menus/panels/buymenu3.res
             drawColor		"30 30 30 255"
 		}		
 
+		Line1
+		{
+			ControlName		ImagePanel
+			wide					%30
+			tall					2
+            visible			0
+            scaleImage		1
+			zpos 30
+			proportionalToParent    0
+            fillColor		"99 99 99 200"
+            drawColor		"99 99 99 200"
+
+			pin_to_sibling			SMGLootFrame
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		Line2
+		{
+			ControlName		ImagePanel
+			wide					%30
+			tall					2
+            visible			0
+            scaleImage		1
+			zpos 30
+			proportionalToParent    0
+            fillColor		"99 99 99 200"
+            drawColor		"99 99 99 200"
+
+			pin_to_sibling			SMGLootFrame
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Line3
+		{
+			ControlName		ImagePanel
+			wide					2
+			tall					%24
+            visible			0
+            scaleImage		1
+			zpos 30
+			proportionalToParent    0
+            fillColor		"99 99 99 200"
+            drawColor		"99 99 99 200"
+
+			pin_to_sibling			SMGLootFrame
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+
+		Line4
+		{
+			ControlName		ImagePanel
+			wide					2
+			tall					%24
+            visible			0
+            scaleImage		1
+			zpos 30
+			proportionalToParent    0
+            fillColor		"99 99 99 200"
+            drawColor		"99 99 99 200"
+
+			pin_to_sibling			SMGLootFrame
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
 		//actual loot
 		
 		//optics
@@ -594,7 +661,25 @@ scripts/resource/ui/menus/panels/buymenu3.res
 			zpos					25
 			visible 0
 		}
+		
+		SMGOptics10
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
 
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
+
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
 		//barrels
 		SMGBarrels1
 		{

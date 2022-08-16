@@ -1,10 +1,6 @@
-global function InitArenasBuyPanel1
-global function returnWeaponButtons1
-global function CleanAllButtons
-global function DisableAllButtons
-global function EnableAllButtons
-global function returnVisibleAttachmentsBox1
-global function CloseAllAttachmentsBoxes
+global function InitArenasBuyPanel5
+global function returnWeaponButtons5
+global function returnVisibleAttachmentsBox5
 
 struct
 {
@@ -55,11 +51,11 @@ struct
 	array<var> ShotgunBolts
 } file
 
-void function InitArenasBuyPanel1( var panel )
+void function InitArenasBuyPanel5( var panel )
 {
+	file.menu = panel
 	var menu = panel
-	file.menu = menu
-
+	
 	//attachments box setup
 	//background
 	file.frame1 = Hud_GetChild( file.menu, "ScreenBlur" )
@@ -69,7 +65,7 @@ void function InitArenasBuyPanel1( var panel )
 	file.line1 = Hud_GetChild( file.menu, "Line1" )	
 	file.line2 = Hud_GetChild( file.menu, "Line2" )	
 	file.line3 = Hud_GetChild( file.menu, "Line3" )	
-	file.line4 = Hud_GetChild( file.menu, "Line4" )	
+	file.line4 = Hud_GetChild( file.menu, "Line4" )		
 	//footer
 	file.invisibleExitButton = Hud_GetChild( file.menu, "InvisibleExitButton" )
 	AddEventHandlerToButton( menu, "InvisibleExitButton", UIE_CLICK, CloseButtonAttachmentsBox )
@@ -105,6 +101,7 @@ void function InitArenasBuyPanel1( var panel )
 	file.SMGBarrels.append( Hud_GetChild( file.menu, "SMGBarrels3" ) )
 	file.SMGBarrels.append( Hud_GetChild( file.menu, "SMGBarrels4" ) )
 	//SMG Stocks
+	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks6" ) )
 	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks1" ) )
 	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks2" ) )
 	file.SMGStocks.append( Hud_GetChild( file.menu, "SMGStocks3" ) )
@@ -136,7 +133,8 @@ void function InitArenasBuyPanel1( var panel )
 	AddEventHandlerToButton( file.menu, "SMGStocks1", UIE_CLICK, SetSMGStocksAttachmentSelected )	
 	AddEventHandlerToButton( file.menu, "SMGStocks2", UIE_CLICK, SetSMGStocksAttachmentSelected )	
 	AddEventHandlerToButton( file.menu, "SMGStocks3", UIE_CLICK, SetSMGStocksAttachmentSelected )	
-
+	AddEventHandlerToButton( file.menu, "SMGStocks6", UIE_CLICK, SetSMGStocksAttachmentSelected )
+	
 	AddEventHandlerToButton( file.menu, "ShotgunBolt1", UIE_CLICK, SetShotgunBoltAttachmentSelected )	
 	AddEventHandlerToButton( file.menu, "ShotgunBolt2", UIE_CLICK, SetShotgunBoltAttachmentSelected )	
 	AddEventHandlerToButton( file.menu, "ShotgunBolt3", UIE_CLICK, SetShotgunBoltAttachmentSelected )
@@ -145,72 +143,48 @@ void function InitArenasBuyPanel1( var panel )
     AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, OnR5RSB_Show )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_HIDE, OnR5RSB_Hide )
 
-	var p2020 = Hud_GetChild( menu, "P2020" )
-	RuiSetImage( Hud_GetRui( p2020 ), "basicImage", $"rui/weapon_icons/r5/weapon_p2020" )
-	//AddEventHandlerToButton( menu, "P2020Button", UIE_CLICK, BuyP2020 )
-	AddEventHandlerToButton( menu, "P2020Button", UIE_CLICK, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "P2020Button" ))
+	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "Volt" ) ), "basicImage", $"rui/weapon_icons/r5/weapon_volt" )
+	//AddEventHandlerToButton( menu, "VoltButton", UIE_CLICK, BuyVolt )
+	AddEventHandlerToButton( menu, "VoltButton", UIE_CLICK, OpenAttachmentsBox )
+	file.weaponButtons.append(Hud_GetChild( menu, "VoltButton" ))
 
-	var mozam = Hud_GetChild( menu, "Mozambique" )
-	RuiSetImage( Hud_GetRui( mozam ), "basicImage", $"rui/weapon_icons/r5/weapon_mozambique" )
-	//AddEventHandlerToButton( menu, "MozambiqueButton", UIE_CLICK, BuyMozam )
-	AddEventHandlerToButton( menu, "MozambiqueButton", UIE_CLICK, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "MozambiqueButton" ))
+	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "R99" ) ), "basicImage", $"rui/weapon_icons/r5/weapon_r97" )
+	//AddEventHandlerToButton( menu, "R99Button", UIE_CLICK, BuyR99 )
+	AddEventHandlerToButton( menu, "R99Button", UIE_CLICK, OpenAttachmentsBox )
+	file.weaponButtons.append(Hud_GetChild( menu, "R99Button" ))
 
-	var wingman = Hud_GetChild( menu, "Wingman" )
-	RuiSetImage( Hud_GetRui( wingman ), "basicImage", $"rui/weapon_icons/r5/weapon_wingman" )
-	//AddEventHandlerToButton( menu, "WingmanButton", UIE_CLICK, BuyWingman )
-	AddEventHandlerToButton( menu, "WingmanButton", UIE_CLICK, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "WingmanButton" ))
+	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "Car" ) ), "basicImage", $"rui/weapon_icons/r5/weapon_r97" )
+	//AddEventHandlerToButton( menu, "CarButton", UIE_CLICK, BuyCar )
+	AddEventHandlerToButton( menu, "CarButton", UIE_CLICK, OpenAttachmentsBox )
+	file.weaponButtons.append(Hud_GetChild( menu, "CarButton" ))
 
-	var re45 = Hud_GetChild( menu, "RE45" )
-	RuiSetImage( Hud_GetRui( re45 ), "basicImage", $"rui/weapon_icons/r5/weapon_r45" )
-	//AddEventHandlerToButton( menu, "RE45Button", UIE_CLICK, BuyRE45 )
-	AddEventHandlerToButton( menu, "RE45Button", UIE_CLICK, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "RE45Button" ))
+	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "Prowler" ) ), "basicImage", $"rui/weapon_icons/r5/weapon_prowler" )
+	//AddEventHandlerToButton( menu, "ProwlerButton", UIE_CLICK, BuyProwler )
+	AddEventHandlerToButton( menu, "ProwlerButton", UIE_CLICK, OpenAttachmentsBox )
+	file.weaponButtons.append(Hud_GetChild( menu, "ProwlerButton" ))
 
-	// var alternator = Hud_GetChild( menu, "Alternator" )
-	// RuiSetImage( Hud_GetRui( alternator ), "basicImage", $"rui/weapon_icons/r5/weapon_alternator" )
-	// AddEventHandlerToButton( menu, "AlternatorButton", UIE_CLICK, BuyAlternator )
-	// AddEventHandlerToButton( menu, "AlternatorButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
-	// file.weaponButtons.append(Hud_GetChild( menu, "AlternatorButton" ))
+	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "Alternator" ) ), "basicImage", $"rui/weapon_icons/r5/weapon_alternator" )
+	//AddEventHandlerToButton( menu, "AlternatorButton", UIE_CLICK, BuyAlternator )
+	AddEventHandlerToButton( menu, "AlternatorButton", UIE_CLICK, OpenAttachmentsBox )
+	file.weaponButtons.append(Hud_GetChild( menu, "AlternatorButton" ))
 
-	// var r99 = Hud_GetChild( menu, "R99" )
-	// RuiSetImage( Hud_GetRui( r99 ), "basicImage", $"rui/weapon_icons/r5/weapon_r97" )
-	// AddEventHandlerToButton( menu, "R99Button", UIE_CLICK, BuyR99 )
-	// AddEventHandlerToButton( menu, "R99Button", UIE_CLICKRIGHT, OpenAttachmentsBox )
-	// file.weaponButtons.append(Hud_GetChild( menu, "R99Button" ))
-
-	var eva8 = Hud_GetChild( menu, "EVA8" )
-	RuiSetImage( Hud_GetRui( eva8 ), "basicImage", $"rui/weapon_icons/r5/weapon_eva8" )
-	//AddEventHandlerToButton( menu, "EVA8Button", UIE_CLICK, BuyEva8 )
-	AddEventHandlerToButton( menu, "EVA8Button", UIE_CLICK, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "EVA8Button" ))
-	
-	var mastiff = Hud_GetChild( menu, "Mastiff" )
-	RuiSetImage( Hud_GetRui( mastiff ), "basicImage", $"rui/weapon_icons/r5/weapon_mastiff" )
-	//AddEventHandlerToButton( menu, "MastiffButton", UIE_CLICK, BuyMastiff )
-	AddEventHandlerToButton( menu, "MastiffButton", UIE_CLICK, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "MastiffButton" ))
-	
-	var peacekeeper = Hud_GetChild( menu, "Peacekeeper" )
-	RuiSetImage( Hud_GetRui( peacekeeper ), "basicImage", $"rui/weapon_icons/r5/weapon_peacekeeper" )
-	//AddEventHandlerToButton( menu, "PeacekeeperButton", UIE_CLICK, BuyPeacekeeper )
-	AddEventHandlerToButton( menu, "PeacekeeperButton", UIE_CLICK, OpenAttachmentsBox )
-	file.weaponButtons.append(Hud_GetChild( menu, "PeacekeeperButton" ))
-	
 	CleanAllButtons()
 }
 
-array<var> function returnWeaponButtons1()
+array<var> function returnWeaponButtons5()
 {
 	return file.weaponButtons
 }
 
-array<var> function returnVisibleAttachmentsBox1()
+array<var> function returnVisibleAttachmentsBox5()
 {
 	return file.visibleAttachmentsBoxElements
 }
+
+// array<var> function ReturnVisibleAttachmentsBoxElements4()
+// {
+	// return file.visibleAttachmentsBoxElements
+// }
 
 void function OnR5RSB_Hide(var panel)
 {
@@ -218,105 +192,6 @@ void function OnR5RSB_Hide(var panel)
 
 void function OnR5RSB_Show(var panel)
 {
-}
-void function CleanAllButtons()
-{
-	foreach(var rui in returnWeaponButtons1())
-	{
-		RuiSetInt( Hud_GetRui(rui), "status", eFriendStatus.OFFLINE )	
-	}
-	foreach(var rui in returnWeaponButtons2())
-	{
-		RuiSetInt( Hud_GetRui(rui), "status", eFriendStatus.OFFLINE )	
-	}
-	foreach(var rui in returnWeaponButtons3())
-	{
-		RuiSetInt( Hud_GetRui(rui), "status", eFriendStatus.OFFLINE )	
-	}
-	foreach(var rui in returnWeaponButtons4())
-	{
-		RuiSetInt( Hud_GetRui(rui), "status", eFriendStatus.OFFLINE )	
-	}
-	foreach(var rui in returnWeaponButtons5())
-	{
-		RuiSetInt( Hud_GetRui(rui), "status", eFriendStatus.OFFLINE )	
-	}	
-}
-
-void function DisableAllButtons()
-{
-	foreach(var rui in returnWeaponButtons1())
-	{
-		Hud_SetEnabled( rui, false )
-	}
-	foreach(var rui in returnWeaponButtons2())
-	{
-		Hud_SetEnabled( rui, false )
-	}
-	foreach(var rui in returnWeaponButtons3())
-	{
-		Hud_SetEnabled( rui, false )
-	}
-	foreach(var rui in returnWeaponButtons4())
-	{
-		Hud_SetEnabled( rui, false )
-	}
-	foreach(var rui in returnWeaponButtons5())
-	{
-		Hud_SetEnabled( rui, false )
-	}	
-}
-
-void function EnableAllButtons()
-{
-	foreach(var rui in returnWeaponButtons1())
-	{
-		Hud_SetEnabled( rui, true )
-	}
-	foreach(var rui in returnWeaponButtons2())
-	{
-		Hud_SetEnabled( rui, true )
-	}
-	foreach(var rui in returnWeaponButtons3())
-	{
-		Hud_SetEnabled( rui, true )
-	}
-	foreach(var rui in returnWeaponButtons4())
-	{
-		Hud_SetEnabled( rui, true )
-	}
-	foreach(var rui in returnWeaponButtons5())
-	{
-		Hud_SetEnabled( rui, true )
-	}	
-}
-
-void function CloseAllAttachmentsBoxes()
-{
-	EnableBuyWeaponsMenuTabs()
-	
-	foreach(var rui in returnVisibleAttachmentsBox1())
-	{
-		Hud_SetVisible(rui, false)
-	}
-	foreach(var rui in returnVisibleAttachmentsBox2())
-	{
-		Hud_SetVisible(rui, false)
-	}
-	foreach(var rui in returnVisibleAttachmentsBox3())
-	{
-		Hud_SetVisible(rui, false)
-	}
-	foreach(var rui in returnVisibleAttachmentsBox4())
-	{
-		Hud_SetVisible(rui, false)
-	}
-	foreach(var rui in returnVisibleAttachmentsBox5())
-	{
-		Hud_SetVisible(rui, false)
-	}	
-	
-	EnableAllButtons()
 }
 
 void function OpenAttachmentsBox( var button )
@@ -330,48 +205,36 @@ void function OpenAttachmentsBox( var button )
 	bool sniper = false
 	bool pistol2 = false
 	
-	if(button == Hud_GetChild( file.menu, "P2020Button" ))
+	if(button == Hud_GetChild( file.menu, "VoltButton" ))
+	{	
+		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "VoltButton" )
+		file.desiredweapon = "mp_weapon_volt_smg"
+		smg = true
+		file.weapontype = "smg"
+	}else if(button == Hud_GetChild( file.menu, "R99Button" ))
 	{
-		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "P2020Button" )
-		file.desiredweapon = "mp_weapon_semipistol"
-		pistol2 = true
-		file.weapontype = "pistol2"
-	}else if(button == Hud_GetChild( file.menu, "MozambiqueButton" ))
+		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "R99Button" )
+		file.desiredweapon = "mp_weapon_r97"
+		smg = true
+		file.weapontype = "smg"
+	}else if(button == Hud_GetChild( file.menu, "CarButton" ))
 	{
-		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "MozambiqueButton" )
-		file.desiredweapon = "mp_weapon_shotgun_pistol"
-		shotgun = true
-		file.weapontype = "shotgun"
-	}else if(button == Hud_GetChild( file.menu, "WingmanButton" ))
+		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "CarButton" )
+		file.desiredweapon = "mp_weapon_car"
+		smg = true
+		file.weapontype = "smg"
+	}else if(button == Hud_GetChild( file.menu, "ProwlerButton" ))
 	{
-		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "WingmanButton" )
-		file.desiredweapon = "mp_weapon_wingman"
-		pistol2 = true
-		file.weapontype = "pistol2"
-	}else if(button == Hud_GetChild( file.menu, "RE45Button" ))
+		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "ProwlerButton" )
+		file.desiredweapon = "mp_weapon_pdw"
+		smg = true
+		file.weapontype = "smg"
+	}else if(button == Hud_GetChild( file.menu, "AlternatorButton" ))
 	{
-		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "RE45Button" )
-		file.desiredweapon = "mp_weapon_autopistol"
-		pistol = true
-		file.weapontype = "pistol"
-	}else if(button == Hud_GetChild( file.menu, "EVA8Button" ))
-	{
-		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "EVA8Button" )
-		file.desiredweapon = "mp_weapon_shotgun"
-		shotgun = true
-		file.weapontype = "shotgun"
-	}else if(button == Hud_GetChild( file.menu, "MastiffButton" ))
-	{
-		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "MastiffButton" )
-		file.desiredweapon = "mp_weapon_mastiff"
-		shotgun = true
-		file.weapontype = "shotgun"
-	}else if(button == Hud_GetChild( file.menu, "PeacekeeperButton" ))
-	{
-		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "PeacekeeperButton" )
-		file.desiredweapon = "mp_weapon_energy_shotgun"
-		shotgun = true
-		file.weapontype = "shotgun"
+		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "AlternatorButton" )
+		file.desiredweapon = "mp_weapon_alternator_smg"
+		smg = true
+		file.weapontype = "smg"
 	}
 	
 	vector mousePos = GetCursorPosition()
@@ -413,7 +276,6 @@ void function OpenAttachmentsBox( var button )
 	file.visibleAttachmentsBoxElements.append(file.line3)
 	Hud_SetVisible(file.line4, true)
 	file.visibleAttachmentsBoxElements.append(file.line4)
-
 	//visibility for top
 
 	Hud_SetVisible(file.opticsbutton, true)
@@ -660,11 +522,11 @@ void function ShotgunBolts(var button)
 	
 	Hud_SetVisible(file.ShotgunBolts[0], true)
 	Hud_SetPos( file.ShotgunBolts[0], file.xstep+file.screenPos.x+file.ancho, file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.ShotgunBolts[0]), "iconImage", $"rui/pilot_loadout/mods/empty_mag_shotgun" )
+	RuiSetImage( Hud_GetRui(file.ShotgunBolts[0]), "iconImage", $"rui/pilot_loadout/mods/shotgun_mag" )
 	RuiSetInt( Hud_GetRui(file.ShotgunBolts[0]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.ShotgunBolts[0])	
 	
-	UIPos refPos = REPLACEHud_GetPos( file.ShotgunBolts[0] )
+	UIPos refPos = REPLACEHud_GetPos( file.SMGBarrels[0] )
 	
 	Hud_SetVisible(file.ShotgunBolts[1], true)
 	Hud_SetPos( file.ShotgunBolts[1], refPos.x+file.ancho, file.screenPos.y+file.ystep )
@@ -693,21 +555,29 @@ void function SMGStocks(var button)
 	
 	Hud_SetVisible(file.SMGStocks[0], true)
 	Hud_SetPos( file.SMGStocks[0], file.xstep+file.screenPos.x+file.ancho, file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGStocks[0]), "iconImage", $"rui/pilot_loadout/mods/tactical_stock" )
+	RuiSetImage( Hud_GetRui(file.SMGStocks[0]), "iconImage", $"rui/pilot_loadout/mods/empty_stock_tactical" )
 	RuiSetInt( Hud_GetRui(file.SMGStocks[0]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGStocks[0])
 	
+	UIPos refPos = REPLACEHud_GetPos( file.SMGStocks[0] )
+		
 	Hud_SetVisible(file.SMGStocks[1], true)
-	Hud_SetPos( file.SMGStocks[1], file.xstep+file.screenPos.x+(file.ancho*2), file.screenPos.y+file.ystep )
+	Hud_SetPos( file.SMGStocks[1], refPos.x+file.ancho, file.screenPos.y+file.ystep )
 	RuiSetImage( Hud_GetRui(file.SMGStocks[1]), "iconImage", $"rui/pilot_loadout/mods/tactical_stock" )
-	RuiSetInt( Hud_GetRui(file.SMGStocks[1]), "lootTier", 2 )
+	RuiSetInt( Hud_GetRui(file.SMGStocks[1]), "lootTier", 1 )
 	file.visibleAttachmentsBoxElements.append(file.SMGStocks[1])
 	
 	Hud_SetVisible(file.SMGStocks[2], true)
-	Hud_SetPos( file.SMGStocks[2], file.xstep+file.screenPos.x+(file.ancho*3), file.screenPos.y+file.ystep )
-	RuiSetImage( Hud_GetRui(file.SMGStocks[2]), "iconImage", $"rui/pilot_loadout/mods/tactical_stock" )	
-	RuiSetInt( Hud_GetRui(file.SMGStocks[2]), "lootTier", 3 )
+	Hud_SetPos( file.SMGStocks[2], refPos.x+(file.ancho*2), file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGStocks[2]), "iconImage", $"rui/pilot_loadout/mods/tactical_stock" )
+	RuiSetInt( Hud_GetRui(file.SMGStocks[2]), "lootTier", 2 )
 	file.visibleAttachmentsBoxElements.append(file.SMGStocks[2])
+	
+	Hud_SetVisible(file.SMGStocks[3], true)
+	Hud_SetPos( file.SMGStocks[3], refPos.x+(file.ancho*3), file.screenPos.y+file.ystep )
+	RuiSetImage( Hud_GetRui(file.SMGStocks[3]), "iconImage", $"rui/pilot_loadout/mods/tactical_stock" )	
+	RuiSetInt( Hud_GetRui(file.SMGStocks[3]), "lootTier", 3 )
+	file.visibleAttachmentsBoxElements.append(file.SMGStocks[3])
 }
 
 void function BuyWeaponWithAttachments(var button)
@@ -723,36 +593,36 @@ void function BuyWeaponWithAttachments(var button)
 	RunClientScript( "UIToClient_MenuGiveWeaponWithAttachments", file.desiredweapon, file.desiredOptic, file.desiredBarrel, file.desiredStock, file.desiredShotgunbolt, file.weapontype )
 }
 
-void function BuyP2020(var button)
+void function BuyVolt(var button)
 {
 	CleanAllButtons()
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_semipistol" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_semipistol")
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_volt_smg" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_volt_smg")
 }
 
-void function BuyMozam(var button)
+void function BuyR99(var button)
 {
 	CleanAllButtons()
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_shotgun_pistol" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_shotgun_pistol")
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_r97" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_r97")
 }
 
-void function BuyWingman(var button)
+void function BuyCar(var button)
 {
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_wingman" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_wingman")
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_car" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_car")
 }
 
-void function BuyRE45(var button)
+void function BuyProwler(var button)
 {
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_autopistol" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_autopistol")
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_pdw" )
+	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_pdw")
 }
 
 void function BuyAlternator(var button)
@@ -761,36 +631,4 @@ void function BuyAlternator(var button)
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
 	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_alternator_smg" )
 	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_alternator_smg")
-}
-
-void function BuyR99(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_r97" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_r97")
-}
-
-void function BuyEva8(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_shotgun" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_shotgun")
-}
-
-void function BuyMastiff(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_mastiff" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_mastiff")
-}
-
-void function BuyPeacekeeper(var button)
-{
-	CleanAllButtons()	
-	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_energy_shotgun" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_energy_shotgun")
 }

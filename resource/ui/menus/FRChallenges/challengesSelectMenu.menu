@@ -224,7 +224,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"Powered by R5Reloaded"
+			labelText				"Powered by R5Reloaded | © Respawn Entertainment"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"
@@ -259,7 +259,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Strafing dummy"
+			labelText				"Strafing Dummy"
 			visible                 1
 			zpos 3
 			tall					60
@@ -318,7 +318,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Target switching"
+			labelText				"Target Switching"
 			visible                 1
 			zpos 3
 			tall					55
@@ -377,7 +377,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Floating target"
+			labelText				"Floating Target"
 			visible                 1
 			zpos 3
 			tall					55
@@ -436,7 +436,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Popcorn targets"
+			labelText				"Popcorn Targets"
 			visible                 1
 			zpos 3
 			tall					55
@@ -554,7 +554,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Close fast strafes"
+			labelText				"Close Fast Strafes"
 			visible                 1
 			zpos 3
 			tall					55
@@ -612,7 +612,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Jumps fast strafes"
+			labelText				"Fast Jumps Strafes"
 			visible                 1
 			zpos 3
 			tall					55
@@ -729,7 +729,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Bubblefight practice"
+			labelText				"Bubblefight Practice"
 			visible                 1
 			zpos 3
 			tall					55
@@ -787,7 +787,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Arcstars practice"
+			labelText				"Arc Stars Practice"
 			visible                 1
 			zpos 3
 			tall					55
@@ -846,7 +846,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Grenades practice"
+			labelText				"Grenades Practice"
 			visible                 1
 			zpos 3
 			tall					55
@@ -905,7 +905,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Shooting Valk's ult"
+			labelText				"Shooting Valk's Ult"
 			visible                 1
 			zpos 3
 			tall					55
@@ -964,7 +964,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Shooting from Lift"
+			labelText				"Shooting From Lift"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1023,7 +1023,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Skydiving targets"
+			labelText				"Skydiving Targets"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1081,7 +1081,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Running targets"
+			labelText				"Running Targets"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1139,7 +1139,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"High ground practice"
+			labelText				"High Ground Practice"
 			visible                 1
 			zpos 3
 			tall					55
