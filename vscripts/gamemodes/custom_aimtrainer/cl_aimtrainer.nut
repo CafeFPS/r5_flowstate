@@ -86,16 +86,19 @@ global struct CameraLocationPair
 
 void function Cl_ChallengesByColombia_Init()
 {
-	//I don't want these things in user screen
+	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )
 	SetConVarBool( "cl_showfps", false )
 	SetConVarBool( "cl_showgpustats", false )
 	SetConVarBool( "cl_showsimstats", false )
 	SetConVarBool( "cl_showhoststats", false )
 	
+	//main menu cameras thread end signal
 	RegisterSignal("ChallengeStartRemoveCameras")
+	
 	//laser sight particle
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue") 
+	
 	//for custom ui/textures
 	PakHandle AimTrainerRpak = RequestPakFile( "aimtrainer" )
 }
@@ -109,11 +112,31 @@ void function ServerCallback_SetLaserSightsOnSMGWeapon(entity weapon)
 {
 	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
 	weapon.PlayWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"", "muzzle_flash" )
+	thread DisableLaserInADS()
 }
 
 void function ServerCallback_StopLaserSightsOnSMGWeapon(entity weapon)
 {
 	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
+}
+
+void function DisableLaserInADS()
+{
+	entity player = GetLocalClientPlayer()
+	entity activeWeapon = player.GetActiveWeapon( eActiveInventorySlot.mainHand )
+	while(IsValid(activeWeapon)){
+		if(activeWeapon.IsWeaponAdsButtonPressed()){
+			activeWeapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )			
+			while(IsValid(activeWeapon)){
+				if(!activeWeapon.IsWeaponAdsButtonPressed()){
+					activeWeapon.PlayWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"", "muzzle_flash" )					
+					break
+				}
+				WaitFrame()
+			}
+		}
+		WaitFrame()
+	}
 }
 
 void function ActuallyPutDefaultSettings()
@@ -122,7 +145,7 @@ void function ActuallyPutDefaultSettings()
 	//Hack, reusing convars for this sp gamemode. Default settings for the menu declared here.
 	SetConVarInt( "hud_setting_minimapRotate", 1 )
 	SetConVarInt( "hud_setting_streamerMode", 0)
-	SetConVarInt( "hud_setting_showTips",  	1 )
+	SetConVarInt( "hud_setting_showTips",  	0 )
 	SetConVarInt( "hud_setting_showMeter", 0)
 	SetConVarInt( "hud_setting_showMedals", 0)
 	SetConVarInt( "hud_setting_showLevelUp", 2)
@@ -708,14 +731,15 @@ void function UIToClient_MenuGiveWeapon( string weapon)
     player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon)
 }
 
-void function UIToClient_MenuGiveWeaponWithAttachments( string weapon, int desiredoptic, int desiredbarrel, int desiredstock, int desiredshotgunbolt, string weapontype)
+void function UIToClient_MenuGiveWeaponWithAttachments( string weapon, int desiredoptic, int desiredbarrel, int desiredstock, int desiredshotgunbolt, string weapontype, int desiredMag, string ammotype)
 {
 	entity player = GetLocalClientPlayer()
-	string optic
-	string barrel
-	string stock
-	string shotgunbolt
-	
+	string optic = "none"
+	string barrel = "none"
+	string stock = "none"
+	string shotgunbolt = "none"
+	string mag = "none"
+
 	printt("DEBUG: desiredOptic: " + desiredoptic, " desiredBarrel: " + desiredbarrel, " desiredStock: " + desiredstock)
 
 	switch(desiredoptic){
@@ -866,8 +890,37 @@ void function UIToClient_MenuGiveWeaponWithAttachments( string weapon, int desir
 			break
 	}
 	
+	switch(desiredMag){
+			case 0:
+				mag = "none"
+				break
+			case 1:
+				if(ammotype == "bullet")
+					mag = "bullets_mag_l1"
+				else if(ammotype == "highcal")
+					mag = "highcal_mag_l1"
+				else if(ammotype == "special")
+					mag = "energy_mag_l1"
+				break
+			case 2:
+				if(ammotype == "bullet")
+					mag = "bullets_mag_l2"
+				else if(ammotype == "highcal")
+					mag = "highcal_mag_l2"
+				else if(ammotype == "special")
+					mag = "energy_mag_l2"
+				break
+			case 3:
+				if(ammotype == "bullet")
+					mag = "bullets_mag_l3"
+				else if(ammotype == "highcal")
+					mag = "highcal_mag_l3"
+				else if(ammotype == "special")
+					mag = "energy_mag_l3"
+				break
+		}
 	
-    player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon + " " + optic + " " + barrel + " " + stock + " " + shotgunbolt + " " + weapontype)
+    player.ClientCommand("CC_MenuGiveAimTrainerWeapon " + weapon + " " + optic + " " + barrel + " " + stock + " " + shotgunbolt + " " + weapontype + " " + mag)
 }
 
 void function OpenFRChallengesSettingsWpnSelector()

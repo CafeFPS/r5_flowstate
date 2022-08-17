@@ -1046,7 +1046,82 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			zpos					25
 			visible 0
 		}
+		//shotgun bolts!
+		Mags1
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
 
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
+
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
+		
+		Mags2
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
+
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
+		
+		Mags3
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
+
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
+		
+		Mags4
+		{
+			sound_accept            "UI_Menu_Accept"
+			
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+
+			classname               "SurvivalEquipment"
+			scriptID                "armor"
+
+			wide                    75
+			tall                    75
+
+			xpos                    0
+			ypos                    0
+			zpos					25
+			visible 0
+		}
 
 		//Attachments box header
 		OpticsButton
@@ -1147,13 +1222,36 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			ypos                    0
 			xpos					0
 		}
+		MagsButton
+		{
+			ControlName				RuiButton
+			InheritProperties		TabButton
+			wide %8.33
+			xpos                    0
+			zpos 26
+			visible 0
+		}
+		MagsText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"MAGS"
+			visible                 0
+			zpos 25
+			tall					40
+			fontHeight				20
+			font					TitleBoldFont
+			fgcolor_override		"255 255 255 255"
 		
+			ypos                    0
+			xpos					0
+		}		
 		//attachments box footer
 		CloseButton
 		{
 			ControlName				RuiButton
 			InheritProperties		TabButton
-			wide %12.5
+			wide %15
 			xpos                    0
 			ypos 0
 			zpos 26
@@ -1163,7 +1261,7 @@ scripts/resource/ui/menus/panels/buymenu1.res
 		{
 			ControlName				RuiButton
 			InheritProperties		TabButton
-			wide %12.5
+			wide %15
 			xpos                    0
 			zpos 26
 			visible 0

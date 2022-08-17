@@ -49,6 +49,12 @@ struct
 	array<var> SMGBarrels
 	array<var> SMGStocks
 	array<var> ShotgunBolts
+
+	var magstext
+	var magsbutton	
+	int desiredMag = 0
+	string desiredAmmoType = ""
+	array<var> Mags
 } file
 
 void function InitArenasBuyPanel5( var panel )
@@ -83,11 +89,14 @@ void function InitArenasBuyPanel5( var panel )
 	file.stocksbutton = Hud_GetChild( file.menu, "StocksButton" )
 	file.stockstext = Hud_GetChild( file.menu, "StocksText" )
 	file.boltstext = Hud_GetChild( file.menu, "BoltsText" )
+	file.magsbutton = Hud_GetChild( file.menu, "MagsButton" )
+	file.magstext = Hud_GetChild( file.menu, "MagsText" )
 	//buttons for header
 	AddEventHandlerToButton( file.menu, "OpticsButton", UIE_CLICK, SMGOptics )
 	AddEventHandlerToButton( file.menu, "BarrelsButton", UIE_CLICK, SMGBarrels )
 	AddEventHandlerToButton( file.menu, "StocksButton", UIE_CLICK, SMGStocks )
 	AddEventHandlerToButton( file.menu, "BoltsButton", UIE_CLICK, ShotgunBolts )
+	AddEventHandlerToButton( file.menu, "MagsButton", UIE_CLICK, Mags )
 	//SMG Optics Loadout
 	file.SMGOptics.append( Hud_GetChild( file.menu, "SMGOptics6" ) )
 	file.SMGOptics.append( Hud_GetChild( file.menu, "SMGOptics1" ) )
@@ -110,12 +119,18 @@ void function InitArenasBuyPanel5( var panel )
 	file.ShotgunBolts.append( Hud_GetChild( file.menu, "ShotgunBolt2" ) )
 	file.ShotgunBolts.append( Hud_GetChild( file.menu, "ShotgunBolt3" ) )
 	file.ShotgunBolts.append( Hud_GetChild( file.menu, "ShotgunBolt4" ) )
-	
+	//Mags
+	file.Mags.append( Hud_GetChild( file.menu, "Mags1" ) )
+	file.Mags.append( Hud_GetChild( file.menu, "Mags2" ) )
+	file.Mags.append( Hud_GetChild( file.menu, "Mags3" ) )
+	file.Mags.append( Hud_GetChild( file.menu, "Mags4" ) )
+		
 	//Optics default
 	Hud_SetSelected( file.SMGOptics[0], true )
 	Hud_SetSelected( file.SMGBarrels[0], true )
 	Hud_SetSelected( file.SMGStocks[0], true )
 	Hud_SetSelected( file.ShotgunBolts[0], true )
+	Hud_SetSelected( file.Mags[0], true )
 	
 	//Optics buttons
 	AddEventHandlerToButton( file.menu, "SMGOptics1", UIE_CLICK, SetSMGOpticsAttachmentSelected )	
@@ -140,6 +155,11 @@ void function InitArenasBuyPanel5( var panel )
 	AddEventHandlerToButton( file.menu, "ShotgunBolt3", UIE_CLICK, SetShotgunBoltAttachmentSelected )
 	AddEventHandlerToButton( file.menu, "ShotgunBolt4", UIE_CLICK, SetShotgunBoltAttachmentSelected )
 	
+	AddEventHandlerToButton( file.menu, "Mags1", UIE_CLICK, SetMagAttachmentSelected )	
+	AddEventHandlerToButton( file.menu, "Mags2", UIE_CLICK, SetMagAttachmentSelected )	
+	AddEventHandlerToButton( file.menu, "Mags3", UIE_CLICK, SetMagAttachmentSelected )
+	AddEventHandlerToButton( file.menu, "Mags4", UIE_CLICK, SetMagAttachmentSelected )
+			
     AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, OnR5RSB_Show )
 	AddPanelEventHandler( panel, eUIEvent.PANEL_HIDE, OnR5RSB_Hide )
 
@@ -247,8 +267,8 @@ void function OpenAttachmentsBox( var button )
 	file.ancho = 75 *  (screenSize.width / 1920.0) + file.xstep
 	float attachmentsBoxancho = screenSize.width * 0.25
 	float attachmentsBoxAlto = screenSize.height * 0.24
-	float buttonsOffset = screenSize.width*0.125
-	float buttonsOffsetTop = screenSize.width*0.0833
+	float buttonsOffset = screenSize.width*0.15
+	float buttonsOffsetTop = screenSize.width*0.075
 	float buttonsOnTopCenter = buttonsOffsetTop/2
 	float TextButtonsOnTopOffset = 27 * (screenSize.width / 1920.0)
 	
@@ -303,7 +323,12 @@ void function OpenAttachmentsBox( var button )
 		file.visibleAttachmentsBoxElements.append(file.boltsbutton)
 		file.visibleAttachmentsBoxElements.append(file.boltstext)
 	}
-
+	
+	Hud_SetVisible(file.magsbutton, true)
+	Hud_SetVisible(file.magstext, true)
+	file.visibleAttachmentsBoxElements.append(file.magsbutton)
+	file.visibleAttachmentsBoxElements.append(file.magstext)
+	
 	//visibility for bottom
 	Hud_SetVisible(file.invisibleExitButton, true)
 	file.visibleAttachmentsBoxElements.append(file.invisibleExitButton)	
@@ -328,11 +353,11 @@ void function OpenAttachmentsBox( var button )
 	Hud_SetPos( file.opticsbutton, file.screenPos.x, file.screenPos.y )	
 	Hud_SetSelected( file.opticsbutton, true )
 	SetButtonRuiText( file.opticsbutton, "" )
-	Hud_SetPos( file.opticstext, file.screenPos.x+buttonsOnTopCenter-TextButtonsOnTopOffset, file.screenPos.y )	
+	Hud_SetPos( file.opticstext, file.screenPos.x+(buttonsOnTopCenter*0.95)-TextButtonsOnTopOffset, file.screenPos.y )	
 	
 	Hud_SetPos( file.barrelsbutton, file.screenPos.x+buttonsOffsetTop, file.screenPos.y )	
 	SetButtonRuiText( file.barrelsbutton, "" )
-	Hud_SetPos( file.barrelstext, file.screenPos.x+(buttonsOnTopCenter*3)-TextButtonsOnTopOffset-(10* (screenSize.width / 1920.0)), file.screenPos.y )//with additional offset
+	Hud_SetPos( file.barrelstext, file.screenPos.x+(buttonsOnTopCenter*3.1)-TextButtonsOnTopOffset-(10* (screenSize.width / 1920.0)), file.screenPos.y )//with additional offset
 	
 	Hud_SetPos( file.boltsbutton, file.screenPos.x+buttonsOffsetTop, file.screenPos.y )	
 	SetButtonRuiText( file.boltsbutton, "" )
@@ -342,6 +367,10 @@ void function OpenAttachmentsBox( var button )
 	SetButtonRuiText( file.stocksbutton, "" )
 	Hud_SetPos( file.stockstext, file.screenPos.x+(buttonsOnTopCenter*5)-TextButtonsOnTopOffset-(5* (screenSize.width / 1920.0)), file.screenPos.y )
 	
+	Hud_SetPos( file.magsbutton, file.screenPos.x+(buttonsOffsetTop*3), file.screenPos.y )	
+	SetButtonRuiText( file.magsbutton, "" )
+	Hud_SetPos( file.magstext, file.screenPos.x+(buttonsOnTopCenter*7.1)-TextButtonsOnTopOffset-(5* (screenSize.width / 1920.0)), file.screenPos.y )
+		
 	if(smg || pistol || shotgun || pistol2)
 		SMGOptics(button)
 }
@@ -404,12 +433,25 @@ void function SetSMGStocksAttachmentSelected(var button)
 	Hud_SetSelected(button, true)
 }
 
+void function SetMagAttachmentSelected(var button)
+{
+	for(int i=0; i<file.Mags.len(); i++){
+		var element = file.Mags[i]
+		if(element != button)
+			Hud_SetSelected(element, false)
+		else
+			file.desiredMag = i
+	}
+	Hud_SetSelected(button, true)
+}
+
 void function SetButtonsOnTopUnselected()
 {
 	Hud_SetSelected(file.opticsbutton, false)
 	Hud_SetSelected(file.barrelsbutton, false)
 	Hud_SetSelected(file.boltsbutton, false)
 	Hud_SetSelected(file.stocksbutton, false)
+	Hud_SetSelected(file.magsbutton, false)
 }
 
 void function SetOtherTabsContentInvisible()
@@ -430,6 +472,11 @@ void function SetOtherTabsContentInvisible()
 		file.visibleAttachmentsBoxElements.removebyvalue(element)
 	}
 	foreach(var element in file.SMGStocks)
+	{
+		Hud_SetVisible(element, false)
+		file.visibleAttachmentsBoxElements.removebyvalue(element)
+	}
+	foreach(var element in file.Mags)
 	{
 		Hud_SetVisible(element, false)
 		file.visibleAttachmentsBoxElements.removebyvalue(element)
@@ -479,6 +526,9 @@ void function SMGOptics(var button)
 	RuiSetImage( Hud_GetRui(file.SMGOptics[5]), "iconImage", $"rui/weapon_icons/attachments/hcog_bruiser" )
 	RuiSetInt( Hud_GetRui(file.SMGOptics[5]), "lootTier", 2 )
 	file.visibleAttachmentsBoxElements.append(file.SMGOptics[5])
+	
+	string ammoType = GetWeaponInfoFileKeyField_GlobalString( file.desiredweapon, "ammo_pool_type" )
+	file.desiredAmmoType = ammoType
 }
 
 void function SMGBarrels(var button)
@@ -580,6 +630,55 @@ void function SMGStocks(var button)
 	file.visibleAttachmentsBoxElements.append(file.SMGStocks[3])
 }
 
+void function Mags(var button)
+{
+	SetOtherTabsContentInvisible()
+	SetButtonsOnTopUnselected()
+	Hud_SetSelected(file.magsbutton, true)
+	
+	Hud_SetVisible(file.Mags[0], true)
+	Hud_SetPos( file.Mags[0], file.xstep+file.screenPos.x+file.ancho, file.screenPos.y+file.ystep )
+	RuiSetInt( Hud_GetRui(file.Mags[0]), "lootTier", 1 )
+	file.visibleAttachmentsBoxElements.append(file.Mags[0])	
+	
+	UIPos refPos = REPLACEHud_GetPos( file.Mags[0] )
+	
+	Hud_SetVisible(file.Mags[1], true)
+	Hud_SetPos( file.Mags[1], refPos.x+file.ancho, file.screenPos.y+file.ystep )
+	RuiSetInt( Hud_GetRui(file.Mags[1]), "lootTier", 1 )
+	file.visibleAttachmentsBoxElements.append(file.Mags[1])
+	
+	Hud_SetVisible(file.Mags[2], true)
+	Hud_SetPos( file.Mags[2], refPos.x+(file.ancho*2), file.screenPos.y+file.ystep )
+	RuiSetInt( Hud_GetRui(file.Mags[2]), "lootTier", 2 )
+	file.visibleAttachmentsBoxElements.append(file.Mags[2])
+	
+	Hud_SetVisible(file.Mags[3], true)
+	Hud_SetPos( file.Mags[3], refPos.x+(file.ancho*3), file.screenPos.y+file.ystep )
+	RuiSetInt( Hud_GetRui(file.Mags[3]), "lootTier", 3 )
+	file.visibleAttachmentsBoxElements.append(file.Mags[3])
+
+	if(file.desiredAmmoType == "bullet")
+	{
+		RuiSetImage( Hud_GetRui(file.Mags[0]), "iconImage", $"rui/pilot_loadout/mods/empty_mag_straight" )
+		RuiSetImage( Hud_GetRui(file.Mags[1]), "iconImage", $"rui/pilot_loadout/mods/light_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[2]), "iconImage", $"rui/pilot_loadout/mods/light_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/light_mag" )	
+	} else if (file.desiredAmmoType == "highcal")
+	{
+		RuiSetImage( Hud_GetRui(file.Mags[0]), "iconImage", $"rui/pilot_loadout/mods/empty_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[1]), "iconImage", $"rui/pilot_loadout/mods/heavy_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[2]), "iconImage", $"rui/pilot_loadout/mods/heavy_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/heavy_mag" )			
+	} else if (file.desiredAmmoType == "special")
+	{
+		RuiSetImage( Hud_GetRui(file.Mags[0]), "iconImage", $"rui/pilot_loadout/mods/empty_energy_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[1]), "iconImage", $"rui/pilot_loadout/mods/energy_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[2]), "iconImage", $"rui/pilot_loadout/mods/energy_mag" )
+		RuiSetImage( Hud_GetRui(file.Mags[3]), "iconImage", $"rui/pilot_loadout/mods/energy_mag" )			
+	}
+}
+
 void function BuyWeaponWithAttachments(var button)
 {
 	CleanAllButtons()
@@ -590,7 +689,7 @@ void function BuyWeaponWithAttachments(var button)
 	EnableAllButtons()
 	printt("DEBUG: desiredOptic: " + file.desiredOptic, " desiredBarrel: " + file.desiredBarrel, " desiredStock: " + file.desiredStock, " weapon type: " + file.weapontype)
 	PlayerCurrentWeapon = GetWeaponNameForUI(file.desiredweapon)
-	RunClientScript( "UIToClient_MenuGiveWeaponWithAttachments", file.desiredweapon, file.desiredOptic, file.desiredBarrel, file.desiredStock, file.desiredShotgunbolt, file.weapontype )
+	RunClientScript( "UIToClient_MenuGiveWeaponWithAttachments", file.desiredweapon, file.desiredOptic, file.desiredBarrel, file.desiredStock, file.desiredShotgunbolt, file.weapontype, file.desiredMag, file.desiredAmmoType )
 }
 
 void function BuyVolt(var button)

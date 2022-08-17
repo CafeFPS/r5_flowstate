@@ -29,8 +29,8 @@ WeaponData
 	"stat_rof"										"27"
 
 	// Models
-	"viewmodel"   									"mdl/weapons/b3wing/ptpov_b3wing.rmdl"
-	"playermodel" 									"mdl/weapons/b3wing/w_b3wing.rmdl"
+	"viewmodel"   									"mdl/Weapons/b3wing/ptpov_b3wing_legendary_02.rmdl"
+	"playermodel" 									"mdl/Weapons/b3wing/w_b3wing_legendary_02.rmdl"
 
     // FX - Muzzle Flash
 	"fx_muzzle_flash_view"							""

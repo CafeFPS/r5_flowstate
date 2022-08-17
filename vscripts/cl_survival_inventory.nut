@@ -493,6 +493,7 @@ void function Survival_UnequipAttachment( string ref, int weaponSlot, bool remov
 		return
 
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
+	printt(data.hudIcon)
 	GetLocalViewPlayer().ClientCommand( "Sur_UnequipAttachment " + ref + " " + weaponSlot + " " + removeToGround )
 }
 

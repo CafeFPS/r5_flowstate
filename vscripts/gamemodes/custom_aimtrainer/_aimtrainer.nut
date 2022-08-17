@@ -187,7 +187,6 @@ void function StartStraferDummyChallenge(entity player)
 	player.UnfreezeControlsOnServer()
 
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
@@ -273,7 +272,6 @@ void function StartSwapFocusDummyChallenge(entity player)
 
 	EndSignal(player, "ChallengeTimeOver")
 	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	
 	OnThreadEnd(
 		function() : ( player)
@@ -286,7 +284,8 @@ void function StartSwapFocusDummyChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
-	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
@@ -371,8 +370,7 @@ void function StartFloatingTargetChallenge(entity player)
 	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	EndSignal(player, "ChallengeTimeOver")
 	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
+
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -384,7 +382,8 @@ void function StartFloatingTargetChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
-	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION	
 	thread ChallengeWatcherThread(endtime, player)
 	
 	while(true){
@@ -435,8 +434,6 @@ void function StartPopcornChallenge(entity player)
 
 	EndSignal(player, "ChallengeTimeOver")
 	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -447,7 +444,8 @@ void function StartPopcornChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
-	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 	
 	while(true){
@@ -539,8 +537,6 @@ void function StartStraightUpChallenge(entity player)
 	
 	EndSignal(player, "ChallengeTimeOver")
 	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -552,7 +548,8 @@ void function StartStraightUpChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
-	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION	
 	thread ChallengeWatcherThread(endtime, player)
 	
 	while(true){
@@ -632,8 +629,6 @@ void function StartBubblefightChallenge(entity player)
 
 	EndSignal(player, "ChallengeTimeOver")
 	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -650,7 +645,8 @@ void function StartBubblefightChallenge(entity player)
 	shield.SetCollisionDetailHigh()
 	shield.kv.rendercolor = TEAM_COLOR_ENEMY
 	ChallengesStruct.props.append(shield)
-		
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION	
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
@@ -752,9 +748,6 @@ void function StartArcstarsChallenge(entity player)
 	player.GiveWeapon( "mp_weapon_grenade_emp", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["challenges_infinite_arcstars"] )
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 
-	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -768,7 +761,8 @@ void function StartArcstarsChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
-	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
@@ -846,9 +840,6 @@ void function StartVerticalGrenadesChallenge(entity player)
 	player.GiveWeapon( "mp_weapon_frag_grenade", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["challenges_infinite_grenades"] )
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 
-	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -865,7 +856,9 @@ void function StartVerticalGrenadesChallenge(entity player)
 	player.MovementDisable()
 	player.UnfreezeControlsOnServer()
 	
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
+
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		if(ChallengesStruct.dummies.len()<3){
@@ -919,8 +912,7 @@ void function StartLiftUpChallenge(entity player)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
 	EndSignal(player, "ChallengeTimeOver")
 
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
+
 	entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	array<string> mods = weapon.GetMods()
 	mods.append( "elevator_shooter" )
@@ -938,8 +930,10 @@ void function StartLiftUpChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
-	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION	
 	thread ChallengeWatcherThread(endtime, player)
+
 	CreateLiftForChallenge(player.GetOrigin(), player)
 	player.SetOrigin(player.GetOrigin()+Normalize(player.GetForwardVector())*0.01) //workaround, so we execute onentertrigger callback instantly
 	
@@ -1158,8 +1152,6 @@ void function StartTileFrenzyChallenge(entity player)
 	PutEntityInSafeSpot( player, null, null, player.GetOrigin() + player.GetUpVector()*128, player.GetOrigin() )
 	locationsForTiles.randomize() //shuffle array
 	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-
 	OnThreadEnd(
 		function() : ( player)//, mods, weapon)
 		{
@@ -1176,8 +1168,10 @@ void function StartTileFrenzyChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.MovementDisable()
 	player.UnfreezeControlsOnServer()
-	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
+
 	int locationindex = 1
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
@@ -1228,8 +1222,6 @@ void function StartCloseFastStrafesChallenge(entity player)
 
 	EndSignal(player, "ChallengeTimeOver")
 	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -1243,7 +1235,8 @@ void function StartCloseFastStrafesChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
-	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
@@ -1329,8 +1322,6 @@ void function StartTapyDuckStrafesChallenge(entity player)
 
 	EndSignal(player, "ChallengeTimeOver")
 	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -1341,6 +1332,8 @@ void function StartTapyDuckStrafesChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
@@ -1527,9 +1520,7 @@ void function StartSmoothbotChallenge(entity player)
 	// player.MovementDisable()
 
 	EndSignal(player, "ChallengeTimeOver")
-	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
+
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -1542,7 +1533,9 @@ void function StartSmoothbotChallenge(entity player)
 	wait AimTrainer_PRE_START_TIME
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
-	player.UnfreezeControlsOnServer()	
+	player.UnfreezeControlsOnServer()
+	
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
@@ -1717,9 +1710,7 @@ void function StartSkyDiveChallenge(entity player)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(Vector(0,-90,0))*400
 
 	EndSignal(player, "ChallengeTimeOver")
-	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-	
+		
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -1730,6 +1721,8 @@ void function StartSkyDiveChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()	
+
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
@@ -1899,9 +1892,6 @@ void function StartRunningTargetsChallenge(entity player)
 	player.SetAngles(onGroundLocationAngs)
 	EndSignal(player, "ChallengeTimeOver")
 
-	
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
-
 	OnThreadEnd(
 		function() : ( player)
 		{
@@ -1915,7 +1905,9 @@ void function StartRunningTargetsChallenge(entity player)
 	
 	array<vector> circleLocations = NavMesh_RandomPositions( player.GetOrigin(), HULL_HUMAN, 40, 1600, 1800 )
 
+	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
+
 	WaitFrame()
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
@@ -2586,14 +2578,14 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	string weapon = args[0]
     entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
     
-	if (primary != null)
+	if (IsValid(primary))
 		player.TakeWeaponByEntNow( primary )
 	
 	entity weaponent
 	bool shouldPutLaser = false
 	if (args.len() > 1) //from attachments buy box
 		{
-			//printt("DEBUG: " + args[1], args[2], args[3], args[4], args[5])
+			printt("DEBUG: " + args[1], args[2], args[3], args[4], args[5], args[6])
 			array<string> finalargs
 
 			switch(args[5])
@@ -2608,6 +2600,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 							shouldPutLaser = true
 					}
 					if(args[3] != "none") finalargs.append(args[3])
+					if(args[6] != "none") finalargs.append(args[6])	
 						
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 				
@@ -2625,12 +2618,17 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 						if(weapon == "mp_weapon_autopistol")
 							shouldPutLaser = true
 					}
+					if(args[6] != "none") finalargs.append(args[6])
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 					if(shouldPutLaser)
 						Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", weaponent)
+					else
+						Remote_CallFunction_NonReplay(player, "ServerCallback_StopLaserSightsOnSMGWeapon", weaponent)
+					
 					break
 				case "pistol2":
-					if(args[1] != "none") finalargs.append(args[1])						
+					if(args[1] != "none") finalargs.append(args[1])
+					if(args[6] != "none") finalargs.append(args[6])
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 					break
 				case "shotgun":
@@ -2644,14 +2642,16 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 					if(args[2] != "none") finalargs.append(args[2])
 					if(args[3] != "none") finalargs.append(args[3])
 					if(args[4] != "." && weapon == "mp_weapon_esaw") finalargs.append(args[4])
-		
+					if(args[6] != "none") finalargs.append(args[6])
+						
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 					break
 				case "ar2":
 					if(args[1] != "none") finalargs.append(args[1])
 					if(args[3] != "none") finalargs.append(args[3])
 					if(args[4] != "." && weapon == "mp_weapon_energy_ar") finalargs.append(args[4])
-
+					if(args[6] != "none") finalargs.append(args[6])
+					
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)					
 					break
 				case "marksman":
@@ -2659,27 +2659,30 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 					if(args[2] != "none") finalargs.append(args[2])
 					if(args[3] != "none") finalargs.append(args[3])
 					if(args[4] != "." ) finalargs.append(args[4])
-
+					if(args[6] != "none") finalargs.append(args[6])
+					
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 					break
 				case "marksman2":
 					if(args[1] != "none") finalargs.append(args[1])
 					if(args[3] != "none") finalargs.append(args[3])
 					if(args[4] != "." ) finalargs.append(args[4])
-
+					if(args[6] != "none") finalargs.append(args[6])
+						
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 					break
 				case "sniper":
 					if(args[1] != "none") finalargs.append(args[1])
 					if(args[2] != "none") finalargs.append(args[2])
 					if(args[3] != "none") finalargs.append(args[3])
+					if(args[6] != "none") finalargs.append(args[6])
 						
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 					break
 				case "sniper2":
 					if(args[1] != "none") finalargs.append(args[1])
 					if(args[3] != "none") finalargs.append(args[3])
-						
+					
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 					break
 				case "sniper3":
@@ -2692,7 +2695,15 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		Remote_CallFunction_NonReplay(player, "ServerCallback_StopLaserSightsOnSMGWeapon", weaponent)
 	}
-	
+	if(IsValid(weaponent) && weaponent.GetWeaponClassName() != "mp_weapon_volt_smg" && weaponent.GetWeaponClassName() != "mp_weapon_wingman") 
+	{
+		weaponent.SetSkin(1) 
+		weaponent.SetCamo(0)
+	}
+    if(IsValid(weaponent) && weaponent.GetWeaponClassName() == "mp_weapon_wingman")
+	{
+		weaponent.SetSkin(RandomIntRangeInclusive(1, 2)) 
+	}
 	thread PlayAnimsOnGiveWeapon(weaponent)
 	return false
 }
@@ -2716,6 +2727,9 @@ bool function CC_Weapon_Selector_Open( entity player, array<string> args )
 }
 bool function CC_Weapon_Selector_Close( entity player, array<string> args )
 {
+	entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+    if(weapon.IsInCustomActivity())
+		weapon.StopCustomActivity()
 	HolsterAndDisableWeapons(player)
 	return false
 }
