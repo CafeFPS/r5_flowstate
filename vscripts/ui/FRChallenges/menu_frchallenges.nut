@@ -31,6 +31,7 @@ void function InitFRChallengesResultsMenu( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnR5RSB_NavigateBack )
 	
 	AddEventHandlerToButton( file.menu, "SkipButton", UIE_CLICK, SkipButtonFunct )
+	AddEventHandlerToButton( file.menu, "RestartButton", UIE_CLICK, RestartButtonFunct )
 }
 
 void function UpdateResultsData(string challengeName, int shothits, int dummieskilled, float accuracy, int damagedone, int criticalshots, int shotshitrecord, bool isNewRecord)
@@ -78,6 +79,12 @@ void function SkipButtonFunct(var button)
 	RunClientScript("SkipButtonResultsClient")
 }
 
+void function RestartButtonFunct(var button)
+{
+	EmitUISound("UI_Menu_SelectMode_Close")
+	RunClientScript("RestartButtonResultsClient")
+}
+
 void function OnR5RSB_Show()
 {
 }
@@ -92,4 +99,6 @@ void function OnR5RSB_Close()
 
 void function OnR5RSB_NavigateBack()
 {
+	EmitUISound("UI_Menu_SelectMode_Close")
+	RunClientScript("SkipButtonResultsClient")
 }

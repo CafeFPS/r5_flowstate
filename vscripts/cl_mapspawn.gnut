@@ -112,7 +112,10 @@ void function ClientCodeCallback_MapSpawn()
 
 	RegisterSignal( "forever" )
 	RegisterSignal( "UpdatePlayerStatusCounts" )
-
+	
+	//main menu cameras thread end signal
+	RegisterSignal("ChallengeStartRemoveCameras")
+	
 	FlagInit( "ClientInitComplete" )
 	FlagInit( "EntitiesDidLoad" )
 

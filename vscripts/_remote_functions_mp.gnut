@@ -180,9 +180,10 @@ void function RemoteFunctions_Init_Begin()
 		case CUSTOM_AIMTRAINER:
 			//FR Challenges
 			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesMenu","int", 0, 999999, "int", 0, 999999, "int", 0, 999999, "float", 0.0, 1.0, 32, "int", 0, 999999, "int", 0, 999999, "int", 0, 999999, "bool")
+			Remote_RegisterClientFunction("ServerCallback_CloseFRChallengesResults")
 			Remote_RegisterUIFunction( "OpenFRChallengesMenu" )
 			Remote_RegisterUIFunction( "CloseFRChallengesMenu" )
-			
+			Remote_RegisterClientFunction("ServerCallback_RestartChallenge", "int", 0, 30)
 			
 			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesMainMenu", "int", 0, 999999 )
 			Remote_RegisterUIFunction( "OpenFRChallengesMainMenu", "int", 0, 999999 )

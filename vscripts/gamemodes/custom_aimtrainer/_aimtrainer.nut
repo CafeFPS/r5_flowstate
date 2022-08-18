@@ -1,5 +1,4 @@
-/* 
-Apex Legends Aim Trainer
+/*
 Made by CaféDeColombiaFPS (server, client, ui)
 Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
 Donations: https://ko-fi.com/r5r_colombia
@@ -14,7 +13,7 @@ More credits!
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
 ----------------------------------------------
-I know all the code can be masivelly improved. I'm still learning so if you have any feedback I'll really appreciate it. ^^
+I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue, I'm still learning so if you have any feedback I'll really appreciate it. ^^
 Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends. :)
 */
 
@@ -34,7 +33,7 @@ struct{
 	array<entity> floor
 	array<entity> dummies
 	array<entity> props
-} ChallengesStruct
+} ChallengesEntities
 
 void function _ChallengesByColombia_Init()
 {
@@ -69,10 +68,10 @@ void function _ChallengesByColombia_Init()
 	AddClientCommandCallback("CC_AimTrainer_USER_WANNA_BE_A_DUMMY", CC_AimTrainer_USER_WANNA_BE_A_DUMMY)
 	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon) 
 	AddClientCommandCallback("CC_ExitChallenge", CC_ExitChallenge)
-	AddClientCommandCallback("CC_RestartChallenge", CC_RestartChallenge)
 	
-	//results menu skip button callback
+	//results menu skip and restart button callback
 	AddClientCommandCallback("ChallengesSkipButton", CC_ChallengesSkipButton)
+	AddClientCommandCallback("CC_RestartChallenge", CC_RestartChallenge)
 	
 	//on weapon attack callback so we can calculate stats for live stats and results menu
 	AddCallback_OnWeaponAttack( OnWeaponAttackChallenges )
@@ -148,12 +147,13 @@ void function ResetChallengeStats(entity player)
 {
 	if(!player.IsPlayer()) return
 	
-	ChallengesStruct.dummies = []
-	ChallengesStruct.floor = []
-	ChallengesStruct.props = []
+	ChallengesEntities.dummies = []
+	ChallengesEntities.floor = []
+	ChallengesEntities.props = []
 	
 	player.p.storedWeapons.clear()
-	player.p.challengeName = 0
+	if(!player.p.isRestartingLevel)
+		player.p.challengeName = 0
 	player.p.straferDummyKilledCount = 0
 	player.p.straferAccuracy = 0
 	player.p.straferShotsHit = 0
@@ -162,6 +162,17 @@ void function ResetChallengeStats(entity player)
 	player.p.straferCriticalShots = 0
 	player.p.isChallengeActivated = false
 	player.p.isNewBestScore = false
+}
+
+void function SetCommonDummyLines(entity dummy)
+{
+	dummy.SetTakeDamageType( DAMAGE_YES )
+	dummy.SetDamageNotifications( true )
+	dummy.SetDeathNotifications( true )
+	dummy.SetValidHealthBarTarget( true )
+	SetObjectCanBeMeleed( dummy, true )
+	dummy.SetSkin(RandomIntRange(1,5))
+	dummy.DisableHibernation()
 }
 
 //CHALLENGE "Strafing dummies"
@@ -201,15 +212,7 @@ void function StartStraferDummyChallenge(entity player)
 		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
-		dummy.SetTakeDamageType( DAMAGE_YES )
-		dummy.SetDamageNotifications( true )
-		dummy.SetDeathNotifications( true )
-		dummy.SetValidHealthBarTarget( true )
-		SetObjectCanBeMeleed( dummy, true )
-		dummy.SetSkin(RandomIntRange(1,5))
-		dummy.DisableHibernation()
-		// SetTargetName(dummy, "straferDummy")
-		
+		SetCommonDummyLines(dummy)
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 		AddEntityCallback_OnKilled(dummy, OnDummyKilled)
 		
@@ -227,7 +230,7 @@ void function StrafeMovement(entity ai, entity player)
 		function() : ( ai )
 		{
 			if(IsValid(ai)) ai.Destroy()
-			ChallengesStruct.dummies.removebyvalue(dummy)
+			ChallengesEntities.dummies.removebyvalue(dummy)
 		}
 	)
 
@@ -290,7 +293,7 @@ void function StartSwapFocusDummyChallenge(entity player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break		
-		if(ChallengesStruct.dummies.len()<3){
+		if(ChallengesEntities.dummies.len()<3){
 			entity dummy = CreateDummy( 99, onGroundDummyPos + Vector(RandomInt(400), RandomInt(200), 0) , onGroundLocationAngs*-1 )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
@@ -302,14 +305,8 @@ void function StartSwapFocusDummyChallenge(entity player)
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( 30 )
 			dummy.SetHealth( 30 )
-			dummy.SetTakeDamageType( DAMAGE_YES )
-			dummy.SetDamageNotifications( true )
-			dummy.SetDeathNotifications( true )
-			dummy.SetValidHealthBarTarget( true )
-			SetObjectCanBeMeleed( dummy, true )
-			dummy.SetSkin(RandomIntRange(1,5))
-			dummy.DisableHibernation()
-			ChallengesStruct.dummies.append(dummy)
+			SetCommonDummyLines(dummy)
+			ChallengesEntities.dummies.append(dummy)
 			
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 			AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -329,7 +326,7 @@ void function TargetSwitcthingWatcher(entity ai, entity player)
 		function() : ( ai )
 		{
 			if(IsValid(ai)) ai.Destroy()
-			ChallengesStruct.dummies.removebyvalue(ai)
+			ChallengesEntities.dummies.removebyvalue(ai)
 		}
 	)
 	
@@ -367,7 +364,7 @@ void function StartFloatingTargetChallenge(entity player)
 	
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,-90,0))
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	EndSignal(player, "ChallengeTimeOver")
 	
 
@@ -398,18 +395,12 @@ void function StartFloatingTargetChallenge(entity player)
 		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
-		dummy.SetTakeDamageType( DAMAGE_YES )
-		dummy.SetDamageNotifications( true )
-		dummy.SetDeathNotifications( true )
-		dummy.SetValidHealthBarTarget( true )
-		SetObjectCanBeMeleed( dummy, true )
-		dummy.SetSkin(RandomIntRange(1,5))
-		dummy.DisableHibernation()
+		SetCommonDummyLines(dummy)
 		// SetTargetName(dummy, "straferDummy")
 		
 		AddEntityCallback_OnDamaged(dummy, OnFloatingDummyDamaged)
 		AddEntityCallback_OnKilled(dummy, OnDummyKilled)
-		ChallengesStruct.dummies.append(dummy)
+		ChallengesEntities.dummies.append(dummy)
 		
 		array<string> attachments = [ "vent_left", "vent_right" ]
 		foreach ( attachment in attachments )
@@ -430,7 +421,7 @@ void function StartPopcornChallenge(entity player)
 	
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,-90,0))
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 
 	EndSignal(player, "ChallengeTimeOver")
 	
@@ -450,7 +441,7 @@ void function StartPopcornChallenge(entity player)
 	
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		if(ChallengesStruct.dummies.len()<4){
+		if(ChallengesEntities.dummies.len()<4){
 				thread CreateDummyPopcornChallenge(player)
 			}
 			WaitFrame()
@@ -475,16 +466,10 @@ void function CreateDummyPopcornChallenge(entity player)
 	dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 	dummy.SetMaxHealth( 100 )
 	dummy.SetHealth( 100 )
-	dummy.SetTakeDamageType( DAMAGE_YES )
-	dummy.SetDamageNotifications( true )
-	dummy.SetDeathNotifications( true )
-	dummy.SetValidHealthBarTarget( true )
-	SetObjectCanBeMeleed( dummy, true )
-	dummy.SetSkin(RandomIntRange(1,5))
-	dummy.DisableHibernation()
+	SetCommonDummyLines(dummy)
 	AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 	AddEntityCallback_OnKilled(dummy, OnDummyKilled)
-	ChallengesStruct.dummies.append(dummy)
+	ChallengesEntities.dummies.append(dummy)
 	
 	int random = 1				
 	if(CoinFlip()) random = -1
@@ -531,7 +516,7 @@ void function StartStraightUpChallenge(entity player)
 {
 	if(!IsValid(player)) return
 	
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,180,0))
 	
@@ -555,7 +540,7 @@ void function StartStraightUpChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		
-		if(ChallengesStruct.dummies.len()<4){
+		if(ChallengesEntities.dummies.len()<4){
 				thread CreateDummyStraightUpChallenge(player)
 				wait 4.55
 			}
@@ -577,7 +562,7 @@ void function CreateDummyStraightUpChallenge(entity player)
 		function() : ( dummy )
 		{
 			if(IsValid(dummy)) dummy.Destroy()
-			ChallengesStruct.dummies.removebyvalue(dummy)
+			ChallengesEntities.dummies.removebyvalue(dummy)
 		}
 	)
 	
@@ -590,16 +575,10 @@ void function CreateDummyStraightUpChallenge(entity player)
 	dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 	dummy.SetMaxHealth( 100 )
 	dummy.SetHealth( 100 )
-	dummy.SetTakeDamageType( DAMAGE_YES )
-	dummy.SetDamageNotifications( true )
-	dummy.SetDeathNotifications( true )
-	dummy.SetValidHealthBarTarget( true )
-	SetObjectCanBeMeleed( dummy, true )
-	dummy.SetSkin(RandomIntRange(1,5))
-	dummy.DisableHibernation()
+	SetCommonDummyLines(dummy)
 	AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 	AddEntityCallback_OnKilled(dummy, OnDummyKilled)
-	ChallengesStruct.dummies.append(dummy)
+	ChallengesEntities.dummies.append(dummy)
 	
 	entity ai = dummy				
 	array<string> attachments = [ "vent_left", "vent_right" ]
@@ -644,14 +623,14 @@ void function StartBubblefightChallenge(entity player)
 	entity shield = CreateBubbleShieldWithSettings( player.GetTeam(), player.GetOrigin() + AnglesToForward(player.GetAngles())*500+Normalize(player.GetRightVector())*225, onGroundLocationAngs*-1, player, 999, false, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
 	shield.SetCollisionDetailHigh()
 	shield.kv.rendercolor = TEAM_COLOR_ENEMY
-	ChallengesStruct.props.append(shield)
+	ChallengesEntities.props.append(shield)
 
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION	
 	thread ChallengeWatcherThread(endtime, player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		if(ChallengesStruct.dummies.len()<1){
+		if(ChallengesEntities.dummies.len()<1){
 			entity dummy = CreateDummy( 99, shield.GetOrigin()+Normalize(shield.GetRightVector())*225, <0,90,0> )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
@@ -662,14 +641,8 @@ void function StartBubblefightChallenge(entity player)
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( 100 )
 			dummy.SetHealth( 100 )
-			dummy.SetTakeDamageType( DAMAGE_YES )
-			dummy.SetDamageNotifications( true )
-			dummy.SetDeathNotifications( true )
-			dummy.SetValidHealthBarTarget( true )
-			SetObjectCanBeMeleed( dummy, true )
-			dummy.SetSkin(RandomIntRange(1,5))
-			dummy.DisableHibernation()
-			ChallengesStruct.dummies.append(dummy)
+			SetCommonDummyLines(dummy)
+			ChallengesEntities.dummies.append(dummy)
 			SetTargetName(dummy, "BubbleFightDummy")
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 			AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -691,7 +664,7 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 		function() : ( ai )
 		{
 			if(IsValid(ai)) ai.Destroy()
-			ChallengesStruct.dummies.removebyvalue(ai)
+			ChallengesEntities.dummies.removebyvalue(ai)
 		}
 	)
 				
@@ -767,7 +740,7 @@ void function StartArcstarsChallenge(entity player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		if(ChallengesStruct.dummies.len()<2){
+		if(ChallengesEntities.dummies.len()<2){
 			entity dummy = CreateDummy( 99, onGroundDummyPos, onGroundLocationAngs*-1)
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
@@ -778,15 +751,9 @@ void function StartArcstarsChallenge(entity player)
 			//dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( 100 )
 			dummy.SetHealth( 100 )
-			dummy.SetTakeDamageType( DAMAGE_YES )
-			dummy.SetDamageNotifications( true )
-			dummy.SetDeathNotifications( true )
-			dummy.SetValidHealthBarTarget( true )
-			SetObjectCanBeMeleed( dummy, true )
-			dummy.SetSkin(RandomIntRange(1,5))
-			dummy.DisableHibernation()
+			SetCommonDummyLines(dummy)
 			SetTargetName(dummy, "arcstarChallengeDummy")
-			ChallengesStruct.dummies.append(dummy)
+			ChallengesEntities.dummies.append(dummy)
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 			thread ArcstarsChallengeMovementThink(dummy, player)
 		}
@@ -806,7 +773,7 @@ void function ArcstarsChallengeMovementThink(entity ai, entity player)
 		function() : ( ai )
 		{
 			if(IsValid(ai)) ai.Destroy()
-			ChallengesStruct.dummies.removebyvalue(ai)
+			ChallengesEntities.dummies.removebyvalue(ai)
 		}
 	)
 	ai.SetAngles(Vector(ai.GetAngles().x,RandomIntRangeInclusive(-90,90), ai.GetAngles().z))
@@ -830,7 +797,7 @@ void function StartVerticalGrenadesChallenge(entity player)
 {
 	if(!IsValid(player)) return
 	
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,180,0))
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(Vector(0,180,0))*400
@@ -861,7 +828,7 @@ void function StartVerticalGrenadesChallenge(entity player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		if(ChallengesStruct.dummies.len()<3){
+		if(ChallengesEntities.dummies.len()<3){
 			entity dummy = CreateDummy( 99, onGroundDummyPos + player.GetRightVector()*RandomIntRange(-800,800) + player.GetForwardVector()*RandomIntRange(100,800), onGroundLocationAngs*-1)
 			vector vec2 = player.GetOrigin() - dummy.GetOrigin()
 			vector angles2 = VectorToAngles( vec2 )
@@ -879,23 +846,17 @@ void function StartVerticalGrenadesChallenge(entity player)
 			//dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( 100 )
 			dummy.SetHealth( 100 )
-			dummy.SetTakeDamageType( DAMAGE_YES )
-			dummy.SetDamageNotifications( true )
-			dummy.SetDeathNotifications( true )
-			dummy.SetValidHealthBarTarget( true )
-			SetObjectCanBeMeleed( dummy, true )
-			dummy.SetSkin(RandomIntRange(1,5))
-			dummy.DisableHibernation()
+			SetCommonDummyLines(dummy)
 			SetTargetName(dummy, "GrenadesChallengeDummy")
-			ChallengesStruct.dummies.append(dummy)
+			ChallengesEntities.dummies.append(dummy)
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 		} 
 		else
 			while(true)
 			{
-				foreach(entity dummy in ChallengesStruct.dummies)
-					if(!IsAlive(dummy)) ChallengesStruct.dummies.removebyvalue(dummy)
-				if(ChallengesStruct.dummies.len() == 0)
+				foreach(entity dummy in ChallengesEntities.dummies)
+					if(!IsAlive(dummy)) ChallengesEntities.dummies.removebyvalue(dummy)
+				if(ChallengesEntities.dummies.len() == 0)
 					break
 				WaitFrame()
 			}
@@ -947,7 +908,7 @@ void function StartLiftUpChallenge(entity player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
-		if(ChallengesStruct.dummies.len()<4){
+		if(ChallengesEntities.dummies.len()<4){
 			entity dummy = CreateDummy( 99, circleLocations.getrandom(), onGroundLocationAngs*-1 )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
@@ -958,14 +919,8 @@ void function StartLiftUpChallenge(entity player)
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( 100 )
 			dummy.SetHealth( 100 )
-			dummy.SetTakeDamageType( DAMAGE_YES )
-			dummy.SetDamageNotifications( true )
-			dummy.SetDeathNotifications( true )
-			dummy.SetValidHealthBarTarget( true )
-			SetObjectCanBeMeleed( dummy, true )
-			dummy.SetSkin(RandomIntRange(1,5))
-			dummy.DisableHibernation()
-			ChallengesStruct.dummies.append(dummy)
+			SetCommonDummyLines(dummy)
+			ChallengesEntities.dummies.append(dummy)
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 			AddEntityCallback_OnKilled(dummy, OnDummyKilled)
 			thread LiftUpDummyMovementThink(dummy, player)
@@ -986,7 +941,7 @@ void function LiftUpDummyMovementThink(entity ai, entity player)
 		function() : ( ai )
 		{
 			if(IsValid(ai)) ai.Destroy()
-			ChallengesStruct.dummies.removebyvalue(ai)
+			ChallengesEntities.dummies.removebyvalue(ai)
 		}
 	)
 	ai.SetAngles(Vector(ai.GetAngles().x,RandomIntRangeInclusive(-90,90), ai.GetAngles().z))
@@ -1025,8 +980,8 @@ void function CreateLiftForChallenge(vector pos, entity player){
 	thread LiftPlayerUp(bottom, top, pos, player)
 	thread liftVisualsCreator(pos)
 	
-	ChallengesStruct.props.append(bottom)
-	ChallengesStruct.props.append(top)
+	ChallengesEntities.props.append(bottom)
+	ChallengesEntities.props.append(top)
 }
 
 void function liftVisualsCreator(vector pos)
@@ -1044,7 +999,7 @@ void function liftVisualsCreator(vector pos)
 	circle.NotSolid()
 	DispatchSpawn(circle)
 	
-	ChallengesStruct.props.append(circle)
+	ChallengesEntities.props.append(circle)
 }
 
 void function BottomTriggerLeave( entity trigger, entity ent )
@@ -1067,9 +1022,9 @@ void function ForceToBeInLiftForChallenge( entity player )
 	{
 		player.SetVelocity(Vector(0,0,0))
 		wait 4
-		foreach(entity dummy in ChallengesStruct.dummies)
+		foreach(entity dummy in ChallengesEntities.dummies)
 			if(IsValid(dummy)) dummy.Destroy()
-		ChallengesStruct.dummies.clear()
+		ChallengesEntities.dummies.clear()
 		player.SetVelocity(Vector(0,0,0))
 		player.SetOrigin(onGroundLocationPos)
 	}
@@ -1117,27 +1072,27 @@ void function StartTileFrenzyChallenge(entity player)
 	// player.GiveWeapon( "mp_weapon_clickweapon", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
 	// player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	// player.MovementDisable()
-
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	WaitFrame()
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	EndSignal(player, "ChallengeTimeOver")
-	array<entity> Wall = CreateWallAtOrigin(player.GetOrigin()-Vector(0,0,200) + AnglesToForward(player.GetAngles())*405 - AnglesToRight(player.GetAngles())*512, 4, 2, 0)
+	array<entity> Wall = CreateWallAtOrigin(player.GetOrigin()-Vector(0,0,200) + AnglesToForward(player.GetAngles())*540 - AnglesToRight(player.GetAngles())*512, 4, 2, 0)
 	foreach(entity wallprop in Wall)
 	{
-		ChallengesStruct.floor.append(wallprop)
+		ChallengesEntities.floor.append(wallprop)
 	}
 	
 	WaitFrame()
 	//5x5?
 	int ancho = 5
 	int alto = 5
-	vector pos = player.GetOrigin() + AnglesToForward(player.GetAngles())*400 - AnglesToRight(player.GetAngles())*100
+	vector pos = player.GetOrigin() + AnglesToForward(player.GetAngles())*530 - AnglesToRight(player.GetAngles())*100
 
 	int x = int(pos.x)
 	int y = int(pos.y)
-	int z = int(pos.z+100)
+	int z = int(pos.z+50)
 	float modelscale = 0.2
 	int offset = 0
-	int step = int((offset+256)*modelscale)
+	int step = int((offset+300)*modelscale)
 	array<vector> locationsForTiles
 	
 	for(int i = z; i < z + (ancho * step); i += step)
@@ -1148,7 +1103,7 @@ void function StartTileFrenzyChallenge(entity player)
 		}
 	}
 	player.SetOrigin(player.GetOrigin() + Vector(0,0,100))
-	ChallengesStruct.props.append(CreateFRProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", player.GetOrigin(), <0,0,0>) )
+	ChallengesEntities.props.append(CreateFRProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", player.GetOrigin(), <0,0,0>) )
 	PutEntityInSafeSpot( player, null, null, player.GetOrigin() + player.GetUpVector()*128, player.GetOrigin() )
 	locationsForTiles.randomize() //shuffle array
 	
@@ -1180,7 +1135,7 @@ void function StartTileFrenzyChallenge(entity player)
 			locationsForTiles.randomize()
 			locationindex = 1
 		}			
-		if(ChallengesStruct.props.len() < 4){
+		if(ChallengesEntities.props.len() < 4){
 				
 				entity target = CreateEntity( "script_mover" )
 				target.kv.solid = 6
@@ -1199,7 +1154,7 @@ void function StartTileFrenzyChallenge(entity player)
 				visual.NotSolid()
 				
 				AddEntityCallback_OnDamaged(target, OnTilePropDamaged)
-				ChallengesStruct.props.append(target)
+				ChallengesEntities.props.append(target)
 		}
 		WaitFrame()
 	}
@@ -1211,7 +1166,7 @@ void function StartCloseFastStrafesChallenge(entity player)
 	if(!IsValid(player)) return
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,90,0))
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
 	
 	// TakeAllWeapons(player)
@@ -1253,13 +1208,7 @@ void function StartCloseFastStrafesChallenge(entity player)
 		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
-		dummy.SetTakeDamageType( DAMAGE_YES )
-		dummy.SetDamageNotifications( true )
-		dummy.SetDeathNotifications( true )
-		dummy.SetValidHealthBarTarget( true )
-		SetObjectCanBeMeleed( dummy, true )
-		dummy.SetSkin(RandomIntRange(1,5))
-		dummy.DisableHibernation()
+		SetCommonDummyLines(dummy)
 		// SetTargetName(dummy, "CloseFastDummy") //invincible
 		
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
@@ -1293,7 +1242,7 @@ void function DummyFastCloseStrafeMovement(entity dummy, entity player)
 			dummy.ClearParent()
 			if(IsValid(script_mover)) script_mover.Destroy()
 			if(IsValid(dummy)) dummy.Destroy()
-			ChallengesStruct.dummies.removebyvalue(dummy)			
+			ChallengesEntities.dummies.removebyvalue(dummy)			
 		}
 	)	
 	
@@ -1304,7 +1253,7 @@ void function DummyFastCloseStrafeMovement(entity dummy, entity player)
 		int morerandomness = 1
 		if(CoinFlip()) morerandomness = -1
 		
-		script_mover.NonPhysicsMoveTo( player.GetOrigin() + Normalize(player.GetRightVector())*RandomIntRange(50,80)*morerandomness + Normalize(player.GetForwardVector())*RandomIntRange(20,100), 0.6, 0.0, 0.0 )
+		script_mover.NonPhysicsMoveTo( player.GetOrigin() + Normalize(player.GetRightVector())*RandomIntRange(50,80)*morerandomness + Normalize(player.GetForwardVector())*RandomIntRange(20,150), 0.6, 0.0, 0.0 )
 		script_mover.SetAngles(angles2)
 		dummy.SetAngles(angles2)
 		wait 0.25
@@ -1317,7 +1266,7 @@ void function StartTapyDuckStrafesChallenge(entity player)
 	if(!IsValid(player)) return
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,90,0))
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(Vector(0,-90,0))*400
 
 	EndSignal(player, "ChallengeTimeOver")
@@ -1350,13 +1299,7 @@ void function StartTapyDuckStrafesChallenge(entity player)
 		// dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
-		dummy.SetTakeDamageType( DAMAGE_YES )
-		dummy.SetDamageNotifications( true )
-		dummy.SetDeathNotifications( true )
-		dummy.SetValidHealthBarTarget( true )
-		SetObjectCanBeMeleed( dummy, true )
-		dummy.SetSkin(RandomIntRange(1,5))
-		dummy.DisableHibernation()
+		SetCommonDummyLines(dummy)
 		// SetTargetName(dummy, "CloseFastDummy") //invincible
 		
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
@@ -1401,7 +1344,7 @@ void function DummyTapyDuckStrafeMovement(entity dummy, entity player)
 			if(IsValid(script_mover)) script_mover.Destroy()
 			if(IsValid(dummy)) dummy.Destroy()
 			circleLocations.clear()
-			ChallengesStruct.dummies.removebyvalue(dummy)			
+			ChallengesEntities.dummies.removebyvalue(dummy)			
 		}
 	)	
 	
@@ -1511,7 +1454,7 @@ void function StartSmoothbotChallenge(entity player)
 	if(!IsValid(player)) return
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(-25,90,0))
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
 	
 	// TakeAllWeapons(player)
@@ -1552,13 +1495,7 @@ void function StartSmoothbotChallenge(entity player)
 		// dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
-		dummy.SetTakeDamageType( DAMAGE_YES )
-		dummy.SetDamageNotifications( true )
-		dummy.SetDeathNotifications( true )
-		dummy.SetValidHealthBarTarget( true )
-		SetObjectCanBeMeleed( dummy, true )
-		dummy.SetSkin(RandomIntRange(1,5))
-		dummy.DisableHibernation()
+		SetCommonDummyLines(dummy)
 		SetTargetName(dummy, "CloseFastDummy")
 		
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
@@ -1610,7 +1547,7 @@ void function DummySmoothbotMovement(entity dummy, entity player)
 			if(IsValid(dummy)) dummy.Destroy()
 			circleLocations.clear()
 			circleLocations2.clear()
-			ChallengesStruct.dummies.removebyvalue(dummy)			
+			ChallengesEntities.dummies.removebyvalue(dummy)			
 		}
 	)	
 
@@ -1706,7 +1643,7 @@ void function StartSkyDiveChallenge(entity player)
 	if(!IsValid(player)) return
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,90,0))
-	ChallengesStruct.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
+	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(Vector(0,-90,0))*400
 
 	EndSignal(player, "ChallengeTimeOver")
@@ -1728,7 +1665,7 @@ void function StartSkyDiveChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		
-		if(ChallengesStruct.dummies.len()<4){	
+		if(ChallengesEntities.dummies.len()<4){	
 			entity dummy = CreateDummy( 99, onGroundDummyPos, onGroundLocationAngs )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
@@ -1738,15 +1675,9 @@ void function StartSkyDiveChallenge(entity player)
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( 100 )
 			dummy.SetHealth( 100 )
-			dummy.SetTakeDamageType( DAMAGE_YES )
-			dummy.SetDamageNotifications( true )
-			dummy.SetDeathNotifications( true )
-			dummy.SetValidHealthBarTarget( true )
-			SetObjectCanBeMeleed( dummy, true )
-			dummy.SetSkin(RandomIntRange(1,5))
-			dummy.EnableHibernation()
+			SetCommonDummyLines(dummy)
 			dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_NEW_ENEMY_FROM_SOUND )
-			ChallengesStruct.dummies.append(dummy)
+			ChallengesEntities.dummies.append(dummy)
 			array<string> attachments = [ "vent_left", "vent_right" ]
 			
 			foreach ( attachment in attachments )
@@ -1758,7 +1689,7 @@ void function StartSkyDiveChallenge(entity player)
 			// const array<vector> skydiveSmokeColors = [ <178,184,244>, <143,222,95>, <255,134,26>, <255,251,130>, <255,202,254> ]	
 			// entity skydiveFx = StartParticleEffectOnEntity_ReturnEntity( dummy, GetParticleSystemIndex( $"P_skydive_trail_CP" ), FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( "CHESTFOCUS" ) )
 			// EffectSetControlPointVector( skydiveFx, 1, skydiveSmokeColors.getrandom())
-			// ChallengesStruct.props.append(skydiveFx)
+			// ChallengesEntities.props.append(skydiveFx)
 			
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 			AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -1814,7 +1745,7 @@ void function DummySkyDiveMovement(entity dummy, entity player)
 			if(IsValid(script_mover)) script_mover.Destroy()
 			if(IsValid(dummy)) dummy.Destroy()
 			circleLocations.clear()
-			ChallengesStruct.dummies.removebyvalue(dummy)			
+			ChallengesEntities.dummies.removebyvalue(dummy)			
 		}
 	)
 	
@@ -1911,7 +1842,7 @@ void function StartRunningTargetsChallenge(entity player)
 	WaitFrame()
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
-		if(ChallengesStruct.dummies.len()<25){
+		if(ChallengesEntities.dummies.len()<25){
 			vector org1 = player.GetOrigin()
 			int locationindex = RandomInt(circleLocations.len())
 			vector org2 = circleLocations[locationindex]
@@ -1926,14 +1857,8 @@ void function StartRunningTargetsChallenge(entity player)
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( 100 )
 			dummy.SetHealth( 100 )
-			dummy.SetTakeDamageType( DAMAGE_YES )
-			dummy.SetDamageNotifications( true )
-			dummy.SetDeathNotifications( true )
-			dummy.SetValidHealthBarTarget( true )
-			SetObjectCanBeMeleed( dummy, true )
-			dummy.SetSkin(RandomIntRange(1,5))
-			dummy.DisableHibernation()
-			ChallengesStruct.dummies.append(dummy)
+			SetCommonDummyLines(dummy)
+			ChallengesEntities.dummies.append(dummy)
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 			AddEntityCallback_OnKilled(dummy, OnDummyKilled)
 			
@@ -1956,7 +1881,7 @@ void function DummyRunningTargetsMovement(entity ai, entity player)
 		function() : ( ai )
 		{
 			if(IsValid(ai)) ai.Destroy()
-			ChallengesStruct.dummies.removebyvalue(ai)
+			ChallengesEntities.dummies.removebyvalue(ai)
 		}
 	)
 
@@ -1989,13 +1914,15 @@ void function OnChallengeEnd(entity player)
 	if(!IsValid(player)) return
 	
 	player.p.isChallengeActivated = false
-	player.p.straferAccuracy = float(player.p.straferShotsHit) / float(player.p.straferTotalShots)
 	
-	if(player.p.straferShotsHit > player.p.straferShotsHitRecord) 
-	{
-		player.p.straferShotsHitRecord = player.p.straferShotsHit
-		player.p.isNewBestScore = true
-	}
+	if(!player.p.isRestartingLevel){
+		player.p.straferAccuracy = float(player.p.straferShotsHit) / float(player.p.straferTotalShots)
+		
+		if(player.p.straferShotsHit > player.p.straferShotsHitRecord) 
+		{
+			player.p.straferShotsHitRecord = player.p.straferShotsHit
+			player.p.isNewBestScore = true
+		}
 
 		printt("===========================================")
 		printt("FLOWSTATE AIM TRAINER CHALLENGE RESULTS:")
@@ -2006,7 +1933,8 @@ void function OnChallengeEnd(entity player)
 		printt(" -Crit. shots: " + player.p.straferCriticalShots)
 		printt("===========================================")
 
-	Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, player.p.straferShotsHit,player.p.straferDummyKilledCount,player.p.straferAccuracy,player.p.straferChallengeDamage,player.p.straferCriticalShots,player.p.straferShotsHitRecord,player.p.isNewBestScore)
+		Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, player.p.straferShotsHit,player.p.straferDummyKilledCount,player.p.straferAccuracy,player.p.straferChallengeDamage,player.p.straferCriticalShots,player.p.straferShotsHitRecord,player.p.isNewBestScore)
+	}
 	thread ChallengesStartAgain(player)
 }
 
@@ -2021,38 +1949,52 @@ void function ChallengesStartAgain(entity player)
 			{
 				player.FreezeControlsOnServer()
 				player.SetVelocity(Vector(0,0,0))
-				player.SetOrigin(AimTrainer_startPos)
+				if(!player.p.isRestartingLevel)
+					player.SetOrigin(AimTrainer_startPos)
 				player.SetVelocity(Vector(0,0,0))
-				player.SetAngles(AimTrainer_startAngs)
+				if(!player.p.isRestartingLevel)
+					player.SetAngles(AimTrainer_startAngs)
 				HolsterAndDisableWeapons(player)
 				
-				foreach(entity floor in ChallengesStruct.floor)
+				foreach(entity floor in ChallengesEntities.floor)
 					if(IsValid(floor))
 						floor.Destroy()
 					
-				foreach(entity dummie in ChallengesStruct.dummies)
+				foreach(entity dummie in ChallengesEntities.dummies)
 					if(IsValid(dummie))
 						dummie.Destroy()
 				
-				foreach(entity prop2 in ChallengesStruct.props)
+				foreach(entity prop2 in ChallengesEntities.props)
 					if(IsValid(prop2))			
 						prop2.Destroy()
 				
 				ResetChallengeStats(player)
 				
 				Remote_CallFunction_NonReplay(player, "ServerCallback_ResetLiveStatsUI")
-				Remote_CallFunction_NonReplay(player, "ServerCallback_CoolCameraOnMenu")
-				Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMainMenu", player.GetPlayerNetInt( "kills" ))
+				
+				if(!player.p.isRestartingLevel){
+					Remote_CallFunction_NonReplay(player, "ServerCallback_CoolCameraOnMenu")
+					Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMainMenu", player.GetPlayerNetInt( "kills" ))
+				} else				
+					Remote_CallFunction_NonReplay(player, "ServerCallback_CloseFRChallengesResults")
 				
 				//reload
 				entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 				if (weapon.UsesClipsForAmmo() && IsValid(weapon) && weapon.GetWeaponClassName() != "mp_weapon_melee_survival")
 					weapon.SetWeaponPrimaryClipCount(weapon.GetWeaponPrimaryClipCountMax())
+				
+				if(player.p.isRestartingLevel)
+				{
+					player.p.isRestartingLevel = false
+					Remote_CallFunction_NonReplay(player, "ServerCallback_RestartChallenge", player.p.challengeName)
+				}
 			}
 		}
 	)
 	//wait AimTrainer_RESULTS_TIME //should be the same as the while loop in CreateTimerRUI in cl file.
-	WaitForever()
+	if(!player.p.isRestartingLevel){
+		WaitForever()
+	}
 }
 
 void function ChallengeWatcherThread(float endtime, entity player)
@@ -2096,13 +2038,13 @@ void function OnStraferDummyDamaged( entity dummy, var damageInfo )
 			OnDummyKilled(dummy, damageInfo)
 			attacker.p.straferDummyKilledCount++
 			Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
-			ChallengesStruct.dummies.removebyvalue(ent)
+			ChallengesEntities.dummies.removebyvalue(ent)
 		}
 	} else if (damage > dummy.GetHealth() + dummy.GetShieldHealth() && dummy.GetShieldHealth() > 0)
 	{
 		attacker.p.straferDummyKilledCount++
 		Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
-		ChallengesStruct.dummies.removebyvalue(ent)		
+		ChallengesEntities.dummies.removebyvalue(ent)		
 	}
 	
 	if(!attacker.IsPlayer() ) return
@@ -2230,10 +2172,10 @@ void function OnTilePropDamaged( entity dummy, var damageInfo )
 	
 	attacker.p.straferDummyKilledCount++
 	Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
-	ChallengesStruct.dummies.removebyvalue(ent)
+	ChallengesEntities.dummies.removebyvalue(ent)
 
 	ent.Destroy()
-	ChallengesStruct.props.removebyvalue(ent)
+	ChallengesEntities.props.removebyvalue(ent)
 }
 
 void function OnDummyKilled(entity ent, var damageInfo)
@@ -2244,7 +2186,7 @@ void function OnDummyKilled(entity ent, var damageInfo)
 	if(ent.GetTargetName() == "BubbleFightDummy") attacker.SetHealth(min(attacker.GetHealth() + 10, attacker.GetMaxHealth()))
 	attacker.p.straferDummyKilledCount++
 	Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
-	if(ent.GetTargetName() != "GrenadesChallengeDummy") ChallengesStruct.dummies.removebyvalue(ent)
+	if(ent.GetTargetName() != "GrenadesChallengeDummy") ChallengesEntities.dummies.removebyvalue(ent)
 }
 
 void function OnWeaponAttackChallenges( entity player, entity weapon, string weaponName, int ammoUsed, vector attackOrigin, vector attackDir )
@@ -2279,7 +2221,7 @@ void function Arcstar_OnStick2( entity ent, var damageInfo )
 	if(!IsValid(player)) return
 	printt("Stick! +1 point.")
 	EmitSoundOnEntity(player, "UI_PostGame_TitanPointIncrease")
-	ChallengesStruct.dummies.removebyvalue(ent)
+	ChallengesEntities.dummies.removebyvalue(ent)
 	WaitFrame()
 	if(IsValid(ent)) ent.Destroy()
 }
@@ -2378,6 +2320,9 @@ void function PreChallengeStart(entity player, int challenge)
 	player.p.challengeName = challenge
 	player.p.isChallengeActivated = true
 	DeployAndEnableWeapons(player)
+	entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+    if(weapon.IsInCustomActivity())
+		weapon.StopCustomActivity()
 }
 
 bool function CC_StartChallenge1( entity player, array<string> args )
@@ -2619,7 +2564,9 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 							shouldPutLaser = true
 					}
 					if(args[6] != "none") finalargs.append(args[6])
+						
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
+					
 					if(shouldPutLaser)
 						Remote_CallFunction_NonReplay(player, "ServerCallback_SetLaserSightsOnSMGWeapon", weaponent)
 					else
@@ -2704,18 +2651,18 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	{
 		weaponent.SetSkin(RandomIntRangeInclusive(1, 2)) 
 	}
-	thread PlayAnimsOnGiveWeapon(weaponent)
+	thread PlayAnimsOnGiveWeapon(weaponent, player)
 	return false
 }
 
-void function PlayAnimsOnGiveWeapon(entity weaponent)
+void function PlayAnimsOnGiveWeapon(entity weaponent, entity player)
 {
 	if (IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_RELOADEMPTY" ) )
 	{
 		float duration = weaponent.GetSequenceDuration( "ACT_VM_RELOADEMPTY" )
 		wait duration-1			
 	}
-	if(IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_WEAPON_INSPECT" ) )
+	if(IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_WEAPON_INSPECT" ) && !player.p.isChallengeActivated )
 		weaponent.StartCustomActivity("ACT_VM_WEAPON_INSPECT", 0)
 }
 
@@ -2742,6 +2689,7 @@ bool function CC_ExitChallenge( entity player, array<string> args )
 
 bool function CC_RestartChallenge( entity player, array<string> args )
 {
-	Signal(player, "ChallengeTimeOver")
+	player.p.isRestartingLevel = true
+	OnChallengeEnd(player)
 	return false
 }

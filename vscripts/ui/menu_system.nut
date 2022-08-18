@@ -158,7 +158,6 @@ void function OnSystemMenu_Open()
 {
 	SetBlurEnabled( true )
 	ShowPanel( Hud_GetChild( file.menu, "SystemPanel" ) )
-
 	UpdateOptInFooter()
 }
 

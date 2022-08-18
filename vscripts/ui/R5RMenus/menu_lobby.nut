@@ -65,7 +65,8 @@ global table<string, string> playlisttoname = {
 	[ "tdm_gg" ] = "Gun Game",
 	[ "tdm_gg_double" ] = "Team Gun Game",
 	[ "survival_dev" ] = "Survival Dev",
-	[ "dev_default" ] = "Dev Default"
+	[ "dev_default" ] = "Dev Default",
+	[ "custom_aimtrainer" ] = "Aim Trainer"
 }
 
 //Vis to readable name

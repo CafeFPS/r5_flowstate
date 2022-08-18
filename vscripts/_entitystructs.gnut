@@ -737,6 +737,7 @@ global struct ServerPlayerStruct
 	int straferShotsHitRecord = 0
 	int totalPossibleDamage
 	bool isNewBestScore = false
+	bool isRestartingLevel = false
 }
 
 global struct ServerPlayerWaypoint

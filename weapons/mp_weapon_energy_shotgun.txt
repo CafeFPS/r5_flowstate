@@ -41,11 +41,24 @@ WeaponData
 	"OnWeaponChargeBegin"					        "EnergyChargeWeapon_OnWeaponChargeBegin"
 	"OnWeaponChargeEnd"					            "OnWeaponChargeEnd_weapon_energy_shotgun"
 
-	"charge_time" 									"0.0"
-	"charge_levels"									"0"
-	"charge_level_base"								"0"
-	"charge_cooldown_time"							"1.0"
-	"charge_cooldown_delay"   						"0.0"
+	"charge_time" 									"1.25"
+	"charge_levels"									"4"
+	"charge_level_base"								"1"
+
+	"charge_cooldown_time"							"0.75"
+	"charge_cooldown_delay"   						"0.35"
+
+	"headshot_distance" 							"11828"  // 300m
+
+	"rui_crosshair_index"							"1"
+
+	"ui20_enable"									"1"
+	"ui21_enable"									"1"
+	"ui22_enable"									"1"
+	"ui23_enable"									"1"
+	"ui24_enable"									"1"
+	"ui25_enable"									"1"
+			
 	"charge_is_triggered_by_ADS"					"1"
 	"charge_fraction_scales_anim_rate"				"1"
 	"charge_end_forces_fire"						"0"

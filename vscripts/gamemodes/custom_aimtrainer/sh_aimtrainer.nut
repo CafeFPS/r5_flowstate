@@ -1,5 +1,4 @@
-/* 
-Apex Legends Aim Trainer
+/*
 Made by CaféDeColombiaFPS (server, client, ui)
 Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
 Donations: https://ko-fi.com/r5r_colombia
@@ -14,9 +13,10 @@ More credits!
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
 ----------------------------------------------
-I know all the code can be masivelly improved. I'm still learning so if you have any feedback I'll really appreciate it. ^^
+I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue, I'm still learning so if you have any feedback I'll really appreciate it. ^^
 Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends. :)
 */
+
 
 global function Sh_ChallengesByColombia_Init
 

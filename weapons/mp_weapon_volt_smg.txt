@@ -1,7 +1,7 @@
 #base "_base_smg.txt"
 #base "_base_smg_optics.txt"
 #base "_base_stocks_tactical.txt"
-#base "_base_barrels.txt"
+#base "_base_laser_sights.txt"
 #base "_base_mags_energy.txt"
 
 

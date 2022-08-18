@@ -1,5 +1,4 @@
-/* 
-Apex Legends Aim Trainer
+/*
 Made by CaféDeColombiaFPS (server, client, ui)
 Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
 Donations: https://ko-fi.com/r5r_colombia
@@ -14,9 +13,10 @@ More credits!
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
 ----------------------------------------------
-I know all the code can be masivelly improved. I'm still learning so if you have any feedback I'll really appreciate it. ^^
+I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue, I'm still learning so if you have any feedback I'll really appreciate it. ^^
 Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends. :)
 */
+
 
 global function  Cl_ChallengesByColombia_Init
 //Main menu and results UI
@@ -24,6 +24,7 @@ global function ServerCallback_SetDefaultMenuSettings
 global function ServerCallback_OpenFRChallengesMenu
 global function ServerCallback_OpenFRChallengesSettings // needed? revisit this
 global function ServerCallback_OpenFRChallengesMainMenu
+global function ServerCallback_CloseFRChallengesResults
 
 //Stats UI
 global function ServerCallback_LiveStatsUIDummiesKilled
@@ -36,6 +37,7 @@ global function ServerCallback_ResetLiveStatsUI
 global function ServerCallback_CoolCameraOnMenu
 global function ServerCallback_SetLaserSightsOnSMGWeapon
 global function ServerCallback_StopLaserSightsOnSMGWeapon
+global function ServerCallback_RestartChallenge
 
 //Main menu buttons
 global function StartChallenge1Client
@@ -55,6 +57,7 @@ global function StartChallenge6NewCClient
 global function StartChallenge7NewCClient
 global function StartChallenge8NewCClient
 global function SkipButtonResultsClient
+global function RestartButtonResultsClient
 
 //Settings
 global function ChangeChallengeDurationClient
@@ -145,7 +148,7 @@ void function ActuallyPutDefaultSettings()
 	//Hack, reusing convars for this sp gamemode. Default settings for the menu declared here.
 	SetConVarInt( "hud_setting_minimapRotate", 1 )
 	SetConVarInt( "hud_setting_streamerMode", 0)
-	SetConVarInt( "hud_setting_showTips",  	0 )
+	SetConVarInt( "hud_setting_showTips",  	1 )
 	SetConVarInt( "hud_setting_showMeter", 0)
 	SetConVarInt( "hud_setting_showMedals", 0)
 	SetConVarInt( "hud_setting_showLevelUp", 2)
@@ -238,6 +241,11 @@ void function ServerCallback_OpenFRChallengesMainMenu(int dummiesKilled)
 void function ServerCallback_OpenFRChallengesSettings()
 {
 	RunUIScript( "OpenFRChallengesSettings" )
+}
+
+void function ServerCallback_CloseFRChallengesResults()
+{
+	RunUIScript( "CloseFRChallengesMainMenu" )
 }
 
 void function ServerCallback_LiveStatsUIDummiesKilled(int dummieskilled)
@@ -511,6 +519,63 @@ void function RefreshHUD()
 	InitSurvivalHealthBar()
 }
 
+void function ServerCallback_RestartChallenge(int challenge)
+{
+	challenge-=1
+	printt(challenge)
+	switch(challenge)
+	{
+		case 0:
+			StartChallenge1Client()
+			break
+		case 1:
+			StartChallenge2Client()
+			break
+		case 2:
+			StartChallenge3Client()
+			break
+		case 3:
+			StartChallenge4Client()
+			break
+		case 4:
+			StartChallenge5Client()
+			break
+		case 5:
+			StartChallenge6Client()
+			break
+		case 6:
+			StartChallenge7Client()
+			break
+		case 7:
+			StartChallenge8Client()
+			break
+		case 8:
+			StartChallenge1NewCClient()
+			break
+		case 9:
+			StartChallenge2NewCClient()
+			break
+		case 10:
+			StartChallenge3NewCClient()
+			break
+		case 11:
+			StartChallenge4NewCClient()
+			break
+		case 12:
+			StartChallenge5NewCClient()
+			break
+		case 13:
+			StartChallenge6NewCClient()
+			break
+		case 14:
+			StartChallenge7NewCClient()
+			break
+		case 15:
+			StartChallenge8NewCClient()
+			break		
+	}
+}
+
 void function StartChallenge1Client()
 {
 	entity player = GetLocalClientPlayer()
@@ -658,6 +723,11 @@ void function SkipButtonResultsClient()
 	player.ClientCommand("ChallengesSkipButton")
 }
 
+void function RestartButtonResultsClient()
+{
+	entity player = GetLocalClientPlayer()
+	player.ClientCommand("CC_RestartChallenge")
+}
 //settings
 void function ChangeChallengeDurationClient(string time)
 {

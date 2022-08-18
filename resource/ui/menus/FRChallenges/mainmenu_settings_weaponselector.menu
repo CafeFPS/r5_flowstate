@@ -268,9 +268,9 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				""
+			labelText				"Select the combination of attachments for your weapon then press 'Get Loadout'."
 			visible                 1
-			zpos 15
+			zpos 1
 			tall					40
 			fontHeight				30
 			font					Default
