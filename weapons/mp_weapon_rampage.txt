@@ -7,10 +7,10 @@
 WeaponData
 {
 	// General
-	"printname"   									"#WPN_LMG"
-	"shortprintname"								"#WPN_LMG_SHORT"
-	"description" 									"#WPN_LMG_DESC"
-	"longdesc"										"#WPN_LMG_LONGDESC"
+	"printname"   									"RAMPAGE"
+	"shortprintname"								"RAMPAGE"
+	"description" 									"RAMPAGE"
+	"longdesc"										"RAMPAGE"
 
 	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"highcal"
@@ -91,27 +91,27 @@ WeaponData
 	"chroma_color"									".6 1 .6"
 
 	//Sounds
-	"fire_sound_1_player_1p"						"LMG_shell"
-	"fire_sound_1_player_3p"						"LMG_shell"
-	"fire_sound_2_player_1p"						"Weapon_LMG_SecondShot_1P"
-	"fire_sound_2_player_3p"						""
-	"fire_sound_2_npc"								"Weapon_LMG_SecondShot_npc"
+	"fire_sound_1_player_1p"						"weapon_xo16_single_1p"
+	"fire_sound_1_player_3p"						"weapon_xo16_single_3p"
+	"fire_sound_2_player_1p"						"weapon_lmg_firstshot_1p_int"
+	"fire_sound_2_player_3p"						 "weapon_r97_fire_first_3p"
+	"fire_sound_2_npc"								"Weapon_RE45Auto_secondshot_npc"
 	"sound_zoom_in"									"Weapon_LMG_ADS_In"
 	"sound_zoom_out"								"Weapon_LMG_ADS_Out"
 
-	"looping_sounds"								"1"
+	// "looping_sounds"								"1"
 
-	"burst_or_looping_fire_sound_start_1p"			"Weapon_LMG_FirstShot_1P"
-	"burst_or_looping_fire_sound_middle_1p"			"Weapon_LMG_Loop_1P"
-	"burst_or_looping_fire_sound_end_1p"			"Weapon_LMG_LoopEnd_1P"
+	// "burst_or_looping_fire_sound_start_1p"			"Weapon_LMG_FirstShot_1P"
+	// "burst_or_looping_fire_sound_middle_1p"			"Weapon_LMG_Loop_1P"
+	// "burst_or_looping_fire_sound_end_1p"			"Weapon_LMG_LoopEnd_1P"
 
-	"burst_or_looping_fire_sound_start_3p"			""
-	"burst_or_looping_fire_sound_middle_3p"			"Weapon_LMG_Loop_3P"
-	"burst_or_looping_fire_sound_end_3p"			"Weapon_LMG_LoopEnd_3P"
+	// "burst_or_looping_fire_sound_start_3p"			""
+	// "burst_or_looping_fire_sound_middle_3p"			"Weapon_LMG_Loop_3P"
+	// "burst_or_looping_fire_sound_end_3p"			"Weapon_LMG_LoopEnd_3P"
 
-	"burst_or_looping_fire_sound_start_npc"			""
-	"burst_or_looping_fire_sound_middle_npc"		"Weapon_LMG_Loop_3P_NPC_A"
-	"burst_or_looping_fire_sound_end_npc"			""
+	// "burst_or_looping_fire_sound_start_npc"			""
+	// "burst_or_looping_fire_sound_middle_npc"		"Weapon_LMG_Loop_3P_NPC_A"
+	// "burst_or_looping_fire_sound_end_npc"			""
 
 	"low_ammo_sound_name_1"							"lmg_LowAmmo_Shot1"
 

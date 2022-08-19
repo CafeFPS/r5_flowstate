@@ -319,7 +319,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 				pin_corner_to_sibling   BOTTOM
 				pin_to_sibling_corner   BOTTOM
 		}
-		ShieldSelectorButton // mat_setvideomode 1280 720 1 0
+		ShieldSelectorButton
 		{
 			ControlName				RuiButton
 			InheritProperties		SwitchButton
@@ -328,15 +328,13 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			xpos 400
 			wide 360
 			ConVar "hud_setting_minimapRotate"
-			//navUp					SwchAspectRatio
 			list{
-				"Level 1 (White)"      0
-				"Level 2 (Blue)"  1
-				"Level 3 (Purple)"      2
-				"Level 4 (Red)"  3
+				"No shields"      0
+				"Level 1 (White)"      1
+				"Level 2 (Blue)"  2
+				"Level 3 (Purple)"      3
+				"Level 4 (Red)"  4
 			}
-			//navDown					SldBrightness
-			// list is populated by code
 			childGroupAlways        MultiChoiceButtonAlways
 			pin_to_sibling			ShieldSelectorButtonText
 			pin_corner_to_sibling	RIGHT
@@ -356,7 +354,6 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 				fgcolor_override		"255 255 255 255"
 			
 				ypos                    80
-				//xpos					60
 				pin_to_sibling          ShieldSelectorButtonText
 				pin_corner_to_sibling   BOTTOM_RIGHT
 				pin_to_sibling_corner   BOTTOM_RIGHT

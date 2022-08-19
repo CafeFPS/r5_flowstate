@@ -747,8 +747,8 @@ void function StartArcstarsChallenge(entity player)
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )	
-			//dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
-			//dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
+			// dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
+			// dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( 100 )
 			dummy.SetHealth( 100 )
 			SetCommonDummyLines(dummy)
@@ -1295,8 +1295,8 @@ void function StartTapyDuckStrafesChallenge(entity player)
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 		DispatchSpawn( dummy )
 		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
-		// dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
-		// dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
+		dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
+		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
 		SetCommonDummyLines(dummy)
@@ -1491,8 +1491,8 @@ void function StartSmoothbotChallenge(entity player)
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 		DispatchSpawn( dummy )
 		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
-		// dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
-		// dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
+		dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
+		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
 		SetCommonDummyLines(dummy)
@@ -1608,7 +1608,7 @@ void function CoolScriptMoverMovement(entity player, entity script_mover, vector
 	if(CoinFlip()) morerandomness2 = -1		
 	
 	float startTime = Time()
-	float endTime = startTime + 3.5
+	float endTime = startTime + 4
 	vector moveTo = player.GetOrigin() + player.GetForwardVector()*100 + player.GetRightVector()*RandomInt(150)*morerandomness2 + player.GetUpVector()*RandomInt(50)
 	if(viniendodeavance)
 		moveTo = endLocation
@@ -1629,10 +1629,10 @@ void function CoolScriptMoverMovement(entity player, entity script_mover, vector
 			script_mover.NonPhysicsStop()
 			break
 		}
-		if( vel.Length() >= 500.0) { //avoid to speed up too much 2
-			script_mover.NonPhysicsStop()
-			break
-		}
+		// if( vel.Length() >= 500.0) { //avoid to speed up too much 2
+			// script_mover.NonPhysicsStop()
+			// break
+		// }
 		WaitFrame()
 	}
 }
@@ -2256,12 +2256,14 @@ int function ReturnShieldAmountForDesiredLevel()
 {
 	switch(AimTrainer_AI_SHIELDS_LEVEL){
 		case 0:
-			return 50
+			return 0
 		case 1:
-			return 75
+			return 50
 		case 2:
-			return 100
+			return 75
 		case 3:
+			return 100
+		case 4:
 			return 125
 	}
 	unreachable
@@ -2660,6 +2662,7 @@ void function PlayAnimsOnGiveWeapon(entity weaponent, entity player)
 	if (IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_RELOADEMPTY" ) )
 	{
 		float duration = weaponent.GetSequenceDuration( "ACT_VM_RELOADEMPTY" )
+		weaponent.StartCustomActivity("ACT_VM_RELOADEMPTY", 0)
 		wait duration-1			
 	}
 	if(IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_WEAPON_INSPECT" ) && !player.p.isChallengeActivated )

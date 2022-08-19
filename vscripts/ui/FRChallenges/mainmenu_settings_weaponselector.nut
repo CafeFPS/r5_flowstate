@@ -136,7 +136,7 @@ string function GetWeaponNameForUI(string weapon)
             weaponname = "Mastiff"
             break
         case "mp_weapon_energy_shotgun":
-            weaponname = "PeaceKeeper"
+            weaponname = "Peacekeeper"
             break
         case "mp_weapon_energy_ar":
             weaponname = "Havoc"
