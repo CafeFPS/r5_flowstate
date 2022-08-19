@@ -84,8 +84,8 @@ void function InitArenasBuyPanel1( var panel )
 	AddEventHandlerToButton( menu, "InvisibleExitButton", UIE_CLICKRIGHT, CloseButtonAttachmentsBox )
 	file.closebutton = Hud_GetChild( file.menu, "CloseButton" )
 	AddEventHandlerToButton( menu, "CloseButton", UIE_CLICK, CloseButtonAttachmentsBox )
-	file.savebutton = Hud_GetChild( file.menu, "SaveButton" )
-	AddEventHandlerToButton( menu, "SaveButton", UIE_CLICK, BuyWeaponWithAttachments )
+	// file.savebutton = Hud_GetChild( file.menu, "SaveButton" )
+	// AddEventHandlerToButton( menu, "SaveButton", UIE_CLICK, BuyWeaponWithAttachments )
 	//header
 	file.opticsbutton = Hud_GetChild( file.menu, "OpticsButton" )
 	file.opticstext = Hud_GetChild( file.menu, "OpticsText" )
@@ -495,8 +495,8 @@ void function OpenAttachmentsBox( var button )
 	file.visibleAttachmentsBoxElements.append(file.invisibleExitButton)	
 	Hud_SetVisible(file.closebutton, true)
 	file.visibleAttachmentsBoxElements.append(file.closebutton)
-	Hud_SetVisible(file.savebutton, true)
-	file.visibleAttachmentsBoxElements.append(file.savebutton)
+	// Hud_SetVisible(file.savebutton, true)
+	// file.visibleAttachmentsBoxElements.append(file.savebutton)
 	
 	//Position Frames
 	Hud_SetPos( file.frame1, file.screenPos.x, file.screenPos.y )	
@@ -507,8 +507,8 @@ void function OpenAttachmentsBox( var button )
 	//bottom
 	Hud_SetPos( file.closebutton, file.screenPos.x+buttonsOffset, file.screenPos.y+attachmentsBoxAlto-BottomButtonsHeight )
 	SetButtonRuiText(file.closebutton, "Close" )
-	Hud_SetPos( file.savebutton, file.screenPos.x, file.screenPos.y+attachmentsBoxAlto-BottomButtonsHeight )
-	SetButtonRuiText( file.savebutton, "Get Loadout" )	
+	// Hud_SetPos( file.savebutton, file.screenPos.x, file.screenPos.y+attachmentsBoxAlto-BottomButtonsHeight )
+	// SetButtonRuiText( file.savebutton, "Get Loadout" )	
 	
 	//top
 	Hud_SetPos( file.opticsbutton, file.screenPos.x, file.screenPos.y )	
@@ -561,6 +561,7 @@ void function SetSMGOpticsAttachmentSelected(var button)
 			file.desiredOptic = i
 	}
 	Hud_SetSelected(button, true)
+	BuyWeaponWithAttachments2()
 }
 
 void function SetShotgunBoltAttachmentSelected(var button)
@@ -573,6 +574,7 @@ void function SetShotgunBoltAttachmentSelected(var button)
 			file.desiredShotgunbolt = i
 	}
 	Hud_SetSelected(button, true)
+	BuyWeaponWithAttachments2()
 }
 
 void function SetSMGBarrelsAttachmentSelected(var button)
@@ -585,6 +587,7 @@ void function SetSMGBarrelsAttachmentSelected(var button)
 			file.desiredBarrel = i
 	}
 	Hud_SetSelected(button, true)
+	BuyWeaponWithAttachments2()
 }
 
 void function SetSMGStocksAttachmentSelected(var button)
@@ -597,6 +600,7 @@ void function SetSMGStocksAttachmentSelected(var button)
 			file.desiredStock = i
 	}
 	Hud_SetSelected(button, true)
+	BuyWeaponWithAttachments2()
 }
 
 void function SetMagAttachmentSelected(var button)
@@ -609,6 +613,7 @@ void function SetMagAttachmentSelected(var button)
 			file.desiredMag = i
 	}
 	Hud_SetSelected(button, true)
+	BuyWeaponWithAttachments2()
 }
 
 void function SetButtonsOnTopUnselected()
@@ -846,6 +851,18 @@ void function BuyWeaponWithAttachments(var button)
 		Hud_SetVisible(element, false)
 	EnableAllButtons()
 	printt("DEBUG: desiredOptic: " + file.desiredOptic, " desiredBarrel: " + file.desiredBarrel, " desiredStock: " + file.desiredStock, " weapon type: " + file.weapontype)
+	PlayerCurrentWeapon = GetWeaponNameForUI(file.desiredweapon)
+	RunClientScript( "UIToClient_MenuGiveWeaponWithAttachments", file.desiredweapon, file.desiredOptic, file.desiredBarrel, file.desiredStock, file.desiredShotgunbolt, file.weapontype, file.desiredMag, file.desiredAmmoType )
+}
+
+void function BuyWeaponWithAttachments2()
+{
+	CleanAllButtons()
+	EnableBuyWeaponsMenuTabs()
+	RuiSetInt( Hud_GetRui( file.desiredWeaponButtonToMark ), "status", eFriendStatus.ONLINE_INGAME )
+	// foreach(var element in file.visibleAttachmentsBoxElements)
+		// Hud_SetVisible(element, false)
+	EnableAllButtons()
 	PlayerCurrentWeapon = GetWeaponNameForUI(file.desiredweapon)
 	RunClientScript( "UIToClient_MenuGiveWeaponWithAttachments", file.desiredweapon, file.desiredOptic, file.desiredBarrel, file.desiredStock, file.desiredShotgunbolt, file.weapontype, file.desiredMag, file.desiredAmmoType )
 }

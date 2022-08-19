@@ -1226,30 +1226,4 @@ scripts/resource/ui/menus/panels/buymenu2.res
 			zpos 26
 			visible 0
 		}
-		SaveButton
-		{
-			ControlName				RuiButton
-			InheritProperties		TabButton
-			wide %12.5
-			xpos                    0
-			zpos 26
-			visible 0
-		}
-		// OpticsFrame2
-		// {
-            // ControlName		ImagePanel
-			// wide					400
-			// tall					100
-            // xpos                    0
-			// ypos					0
-			// zpos 20
-			// visible			0
-            // scaleImage		1
-            // fillColor		"30 30 30 200"
-            // drawColor		"30 30 30 200"
-
-			// pin_corner_to_sibling	CENTER
-			// pin_to_sibling_corner	TOP
-		// }
-		
 }

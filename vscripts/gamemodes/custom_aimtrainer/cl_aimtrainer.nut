@@ -1,10 +1,19 @@
 /*
-Made by CaféDeColombiaFPS (server, client, ui)
+Flowstate Aim Trainer v1.0 - Made by CaféDeColombiaFPS (server, client, ui)
 Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
-Donations: https://ko-fi.com/r5r_colombia
-----------------------------------------------
+Aim trainer repo to grab updates: https://github.com/ColombianGuy/r5_aimtrainer
+
+I'm from Colombia and I don't have a job other than modding Apex, in this country 1 dollar is a lot. 
+If you enjoy the mod and want to support me, please consider a donation: https://ko-fi.com/r5r_colombia ^^
+
+I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue,
+I'm still learning so if you have any feedback about code or challenges improvements, or new ideas in general I'll really appreciate it, 
+feel free leave me a dm in discord.
+Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends.
+
 More credits!
 - Zee#6969 -- gave me weapons buy menu example
+- rexx#1287 -- repak tool https://github.com/r-ex/RePak
 - Skeptation#4002 -- beta tester
 - Rego#2848 -- beta tester
 - michae\l/#1125 -- beta tester
@@ -12,17 +21,15 @@ More credits!
 - (--__GimmYnkia__--)#2995 -- beta tester
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
-----------------------------------------------
-I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue, I'm still learning so if you have any feedback I'll really appreciate it. ^^
-Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends. :)
 */
 
 
 global function  Cl_ChallengesByColombia_Init
+
 //Main menu and results UI
 global function ServerCallback_SetDefaultMenuSettings
 global function ServerCallback_OpenFRChallengesMenu
-global function ServerCallback_OpenFRChallengesSettings // needed? revisit this
+global function ServerCallback_OpenFRChallengesSettings
 global function ServerCallback_OpenFRChallengesMainMenu
 global function ServerCallback_CloseFRChallengesResults
 
@@ -521,56 +528,55 @@ void function RefreshHUD()
 
 void function ServerCallback_RestartChallenge(int challenge)
 {
-	challenge-=1
 	printt(challenge)
 	switch(challenge)
 	{
-		case 0:
+		case 1:
 			StartChallenge1Client()
 			break
-		case 1:
+		case 2:
 			StartChallenge2Client()
 			break
-		case 2:
+		case 3:
 			StartChallenge3Client()
 			break
-		case 3:
+		case 4:
 			StartChallenge4Client()
 			break
-		case 4:
+		case 10:
 			StartChallenge5Client()
 			break
-		case 5:
+		case 11:
 			StartChallenge6Client()
 			break
-		case 6:
+		case 12:
 			StartChallenge7Client()
 			break
-		case 7:
+		case 13:
 			StartChallenge8Client()
 			break
-		case 8:
+		case 6:
 			StartChallenge1NewCClient()
 			break
-		case 9:
+		case 7:
 			StartChallenge2NewCClient()
 			break
-		case 10:
+		case 14:
 			StartChallenge3NewCClient()
 			break
-		case 11:
+		case 9:
 			StartChallenge4NewCClient()
 			break
-		case 12:
+		case 8:
 			StartChallenge5NewCClient()
 			break
-		case 13:
+		case 15:
 			StartChallenge6NewCClient()
 			break
-		case 14:
+		case 16:
 			StartChallenge7NewCClient()
 			break
-		case 15:
+		case 17:
 			StartChallenge8NewCClient()
 			break		
 	}
@@ -589,7 +595,7 @@ void function StartChallenge2Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Low health dummies. Hit the dummies to get points.")
+	thread CreateDescriptionRUI("Transfers practice. Low health and easy strafe.")
 	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge2")
 }

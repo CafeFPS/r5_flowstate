@@ -1,10 +1,19 @@
 /*
-Made by CaféDeColombiaFPS (server, client, ui)
+Flowstate Aim Trainer v1.0 - Made by CaféDeColombiaFPS (server, client, ui)
 Discord: Retículo Endoplasmático#5955 | Twitter: @CafeFPS
-Donations: https://ko-fi.com/r5r_colombia
-----------------------------------------------
+Aim trainer repo to grab updates: https://github.com/ColombianGuy/r5_aimtrainer
+
+I'm from Colombia and I don't have a job other than modding Apex, in this country 1 dollar is a lot. 
+If you enjoy the mod and want to support me, please consider a donation: https://ko-fi.com/r5r_colombia ^^
+
+I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue,
+I'm still learning so if you have any feedback about code or challenges improvements, or new ideas in general I'll really appreciate it, 
+feel free to leave me a dm in discord.
+Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends.
+
 More credits!
 - Zee#6969 -- gave me weapons buy menu example
+- rexx#1287 -- repak tool https://github.com/r-ex/RePak
 - Skeptation#4002 -- beta tester
 - Rego#2848 -- beta tester
 - michae\l/#1125 -- beta tester
@@ -12,9 +21,6 @@ More credits!
 - (--__GimmYnkia__--)#2995 -- beta tester
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
-----------------------------------------------
-I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue, I'm still learning so if you have any feedback I'll really appreciate it. ^^
-Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends. :)
 */
 
 global function  _ChallengesByColombia_Init
@@ -92,7 +98,7 @@ void function _ChallengesByColombia_Init()
 	AddDeathCallback( "player", OnPlayerDeathCallback )
 	
 	//add basic aim trainer locations for maps //todo: move this to a datatable
-	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx") //move this to a datatable?
+	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 	{
 		floorLocation = <-10020.1543, -8643.02832, 5189.92578>
 		onGroundLocationPos = <12891.2783, -2391.77124, -3121.60132>
@@ -236,10 +242,7 @@ void function StrafeMovement(entity ai, entity player)
 
 	while(IsValid(ai))
 	{
-		vector org1 = player.GetOrigin()
-		vector org2 = ai.GetOrigin()
-		vector vec2 = org1 - org2
-		vector angles2 = VectorToAngles( vec2 )
+		vector angles2 = VectorToAngles( player.GetOrigin() - ai.GetOrigin())
 		ai.SetAngles(angles2)
 			
 		int random = RandomIntRangeInclusive(1,10)
@@ -291,10 +294,15 @@ void function StartSwapFocusDummyChallenge(entity player)
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
+	int random = 1
+
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break		
-		if(ChallengesEntities.dummies.len()<3){
-			entity dummy = CreateDummy( 99, onGroundDummyPos + Vector(RandomInt(400), RandomInt(200), 0) , onGroundLocationAngs*-1 )
+		if(ChallengesEntities.dummies.len()<2){
+			if( random == -1 ) random = 1
+			else random = -1
+			
+			entity dummy = CreateDummy( 99, onGroundDummyPos  + Vector(0, RandomIntRange(-100,200), 0) + player.GetRightVector()*RandomIntRange(70, 120)*random, onGroundLocationAngs*-1 )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
@@ -303,8 +311,8 @@ void function StartSwapFocusDummyChallenge(entity player)
 			PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + <0,0,128>, dummy.GetOrigin() )
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetMaxHealth( 30 )
-			dummy.SetHealth( 30 )
+			dummy.SetMaxHealth( 20 )
+			dummy.SetHealth( 20 )
 			SetCommonDummyLines(dummy)
 			ChallengesEntities.dummies.append(dummy)
 			
@@ -332,27 +340,30 @@ void function TargetSwitcthingWatcher(entity ai, entity player)
 	
 	while(IsValid(ai))
     {
+		vector angles2 = VectorToAngles( player.GetOrigin() - ai.GetOrigin())
+		ai.SetAngles(angles2)
+		
         int random = RandomIntRangeInclusive(1,6)
-        if(random == 1 || random == 2 || random == 3 || random == 4){
-        //a d strafe
-            ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
-            wait RandomFloatRange(0.2,0.9)
-            ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
-            wait RandomFloatRange(0.2,0.9)
-        }
-        else if(random == 5){
-        //a d strafe
+        if(random == 1 || random == 2 || random == 3){
+        //w s strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
-            wait RandomFloatRange(0.15,0.7)
+            wait 0.4
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
-            wait RandomFloatRange(0.15,0.7)
+            wait 0.4
+        }
+        else if(random == 4 || random == 5){
+        //a d strafe
+            ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
+            wait 0.4
+            ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_BACKWARD", true, 0.1 )
+            wait 0.4
         }
         else if (random == 6){
-        //a d strafe
+        //a d small crouch strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_LEFT", true, 0.1 )
-            wait RandomFloatRange(0.15,0.3)
+            wait 0.4
             ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_RIGHT", true, 0.1 )
-            wait RandomFloatRange(0.15,0.3)
+            wait 0.4
         }
     }
 }
@@ -487,10 +498,7 @@ void function CreateDummyPopcornChallenge(entity player)
 		distance = ai.GetOrigin().z - floorLocation.z //Tracking the distance dummy is to the ground, forcing it jump instantly. IsOnGround check is trash and sometimes stops dummy and it's annoying
 		if( distance < 50)
 		{
-			vector org1 = player.GetOrigin()
-			vector org2 = ai.GetOrigin()
-			vector vec2 = org1 - org2
-			vector angles2 = VectorToAngles( vec2 )
+			vector angles2 = VectorToAngles( player.GetOrigin() - ai.GetOrigin())
 			ai.SetAngles(angles2)
 			
 			if(CoinFlip())
@@ -1516,14 +1524,14 @@ void function DummySmoothbotMovement(entity dummy, entity player)
 	for(int i = 0; i < 100; i ++)
 	{
 		float r = float(i) / float(100) * 2 * PI
-		vector origin2 = Vector(0,0,500) + player.GetOrigin() + 1200 * <sin( r ), cos( r ), 0.0>
+		vector origin2 = Vector(0,0,500) + player.GetOrigin() + 1000 * <sin( r ), cos( r ), 0.0>
 		circleLocations.append(origin2)
 	}
 	
 	for(int i = 0; i < 100; i ++)
 	{
 		float r = float(i) / float(100) * 2 * PI
-		vector origin2 = Vector(0,0,0) + player.GetOrigin() + 700 * <sin( r ), cos( r ), 0.0>
+		vector origin2 = Vector(0,0,0) + player.GetOrigin() + 500 * <sin( r ), cos( r ), 0.0>
 		circleLocations2.append(origin2)
 	}
 
@@ -1582,7 +1590,7 @@ void function DummySmoothbotMovement(entity dummy, entity player)
 			}
 			
 			viniendodeavance = false			
-			locationindex += RandomIntRange(5,10)*morerandomness
+			locationindex += RandomIntRange(1,5)*morerandomness
 			
 			if(locationindex < 0)
 				locationindex =	(circleLocations.len()-1) + locationindex
@@ -1608,31 +1616,25 @@ void function CoolScriptMoverMovement(entity player, entity script_mover, vector
 	if(CoinFlip()) morerandomness2 = -1		
 	
 	float startTime = Time()
-	float endTime = startTime + 4
+	float endTime = startTime + 3
 	vector moveTo = player.GetOrigin() + player.GetForwardVector()*100 + player.GetRightVector()*RandomInt(150)*morerandomness2 + player.GetUpVector()*RandomInt(50)
 	if(viniendodeavance)
 		moveTo = endLocation
 	
-	float moveXFrom = moveTo.x+RandomFloatRange(500,1000)*nottoorandom
+	float moveXFrom = moveTo.x+RandomFloatRange(200,500)*nottoorandom
 	float moveZFrom = moveTo.z
-	if(!lowerpasses && viniendodeavance) moveZFrom += 1000
+	if(!lowerpasses && viniendodeavance) moveZFrom += 300
 	while(Time() < endTime)
 	{	
 		vector angles2 = VectorToAngles( player.GetOrigin() - script_mover.GetOrigin() )
 		script_mover.SetAngles(Vector(script_mover.GetAngles().x, angles2.y, script_mover.GetAngles().z))
 		vector moveToFinal = Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z ))
 		script_mover.NonPhysicsMoveTo( moveToFinal, endTime-Time(), 0.0, 0.0 )
-		int random = RandomIntRangeInclusive(1,100)
 		vector vel = script_mover.GetVelocity()
-		printt(vel.Length())
-		if(Distance(script_mover.GetOrigin(), moveTo) < 230.0) { //avoid to speed up too much
+		if(Distance(script_mover.GetOrigin(), moveTo) < 150.0) { //avoid to speed up too much
 			script_mover.NonPhysicsStop()
 			break
 		}
-		// if( vel.Length() >= 500.0) { //avoid to speed up too much 2
-			// script_mover.NonPhysicsStop()
-			// break
-		// }
 		WaitFrame()
 	}
 }
@@ -1915,7 +1917,8 @@ void function OnChallengeEnd(entity player)
 	
 	player.p.isChallengeActivated = false
 	
-	if(!player.p.isRestartingLevel){
+	if(!player.p.isRestartingLevel)
+	{
 		player.p.straferAccuracy = float(player.p.straferShotsHit) / float(player.p.straferTotalShots)
 		
 		if(player.p.straferShotsHit > player.p.straferShotsHitRecord) 
@@ -1972,7 +1975,8 @@ void function ChallengesStartAgain(entity player)
 				
 				Remote_CallFunction_NonReplay(player, "ServerCallback_ResetLiveStatsUI")
 				
-				if(!player.p.isRestartingLevel){
+				if(!player.p.isRestartingLevel)
+				{
 					Remote_CallFunction_NonReplay(player, "ServerCallback_CoolCameraOnMenu")
 					Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMainMenu", player.GetPlayerNetInt( "kills" ))
 				} else				
@@ -2663,7 +2667,7 @@ void function PlayAnimsOnGiveWeapon(entity weaponent, entity player)
 	{
 		float duration = weaponent.GetSequenceDuration( "ACT_VM_RELOADEMPTY" )
 		weaponent.StartCustomActivity("ACT_VM_RELOADEMPTY", 0)
-		wait duration-1			
+		wait duration			
 	}
 	if(IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_WEAPON_INSPECT" ) && !player.p.isChallengeActivated )
 		weaponent.StartCustomActivity("ACT_VM_WEAPON_INSPECT", 0)

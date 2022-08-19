@@ -1257,13 +1257,4 @@ scripts/resource/ui/menus/panels/buymenu1.res
 			zpos 26
 			visible 0
 		}
-		SaveButton
-		{
-			ControlName				RuiButton
-			InheritProperties		TabButton
-			wide %15
-			xpos                    0
-			zpos 26
-			visible 0
-		}
 }
