@@ -12,9 +12,10 @@ feel free to leave me a dm in discord.
 Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends.
 
 More credits!
-- Zee#6969 -- gave me weapons buy menu example
+- Amos#1368 -- sdk developer https://github.com/Mauler125/r5sdk/tree/indev
 - rexx#1287 -- repak tool https://github.com/r-ex/RePak
-- Skeptation#4002 -- beta tester
+- Skeptation#4002 -- beta tester and coworker https://www.youtube.com/c/Skeptation
+- Zee#6969 -- gave me weapons buy menu example
 - Rego#2848 -- beta tester
 - michae\l/#1125 -- beta tester
 - James9950#5567 -- beta tester
@@ -963,7 +964,7 @@ void function LiftUpDummyMovementThink(entity ai, entity player)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
 		else 
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
-	wait 4
+	wait 6
 	
 	if(!IsValid(ai)) return
 }
@@ -971,7 +972,7 @@ void function LiftUpDummyMovementThink(entity ai, entity player)
 void function CreateLiftForChallenge(vector pos, entity player){
 
 	entity bottom = CreateEntity( "trigger_cylinder" )
-	bottom.SetRadius( 25 )
+	bottom.SetRadius( 300 )
 	bottom.SetAboveHeight( 1200 )
 	bottom.SetBelowHeight( 10 )
 	bottom.SetOrigin( pos )
@@ -1029,7 +1030,7 @@ void function ForceToBeInLiftForChallenge( entity player )
 	while(IsValid(player))
 	{
 		player.SetVelocity(Vector(0,0,0))
-		wait 4
+		wait 6
 		foreach(entity dummy in ChallengesEntities.dummies)
 			if(IsValid(dummy)) dummy.Destroy()
 		ChallengesEntities.dummies.clear()
@@ -1045,6 +1046,34 @@ void function LiftPlayerUp( entity bottom, entity top, vector pos, entity player
 	thread ForceToBeInLiftForChallenge(player)
 	float testtime = Time()
 
+	float PULL_RANGE = 300
+	float PULL_STRENGTH_MAX = 50
+	float UPVELOCITY = 340
+	float HORIZ_SPEED = 170
+
+//fix range
+//fix top trigger
+
+
+//retail values
+// const float SPACEELEVATOR_TUNING_RADIUS = 70
+// const int SPACEELEVATOR_TUNING_HEIGHT = 1200
+// const float SPACEELEVATOR_TUNING_UP_SPEED = 340
+// const float SPACEELEVATOR_TUNING_HORIZ_SPEED = 170
+// const float SPACEELEVATOR_TUNING_HORIZ_ACCEL = 2000
+// const float SPACEELEVATOR_TUNING_TO_CENTER_SPEED = 50
+// const float SPACEELEVATOR_TUNING_TO_CENTER_ACCEL = 0
+// const float SPACEELEVATOR_TUNING_INPUT_THRESHOLD = 0.2
+// const float SPACEELEVATOR_TUNING_EJECT_UP_SPEED = 450
+// const float SPACEELEVATOR_TUNING_EJECT_HORIZ_SPEED = 400
+// const float SPACEELEVATOR_TUNING_MAX_EJECT_TIME = 0.5
+// const float SPACEELEVATOR_TUNING_MAX_HOVER_TIME = 2.0
+// const float SPACEELEVATOR_TUNING_PLAYER_VIEWPOINT_OFFSET = 33
+// const float SPACEELEVATOR_TUNING_AWAY_FROM_CENTER_DIST = 40
+// const float SPACEELEVATOR_TUNING_HOVER_HEIGHT_PCT = 0.9
+// const float SPACEELEVATOR_TUNING_LIFETIME = 10
+// const float SPACEELEVATOR_TUNING_KEEP_ALIVE_MAX_TIME = 5
+
 	while( true )
 	{
 			if(top.IsTouching(player))
@@ -1052,23 +1081,37 @@ void function LiftPlayerUp( entity bottom, entity top, vector pos, entity player
 				vector enemyOrigin = player.GetOrigin()
 				vector dir = Normalize( pos - player.GetOrigin() )
 				float dist = Distance( enemyOrigin, pos )
-				vector newVelocity = player.GetVelocity() * GraphCapped( dist, 25, 300.0, 0, 1 ) + dir * GraphCapped( dist, 25, 300.0, 0, 100.0 )
+				vector newVelocity = player.GetVelocity() * GraphCapped( dist, 50, PULL_RANGE, 0, 1 ) + dir * GraphCapped( dist, 50, PULL_RANGE, 0, PULL_STRENGTH_MAX )
 				newVelocity.z = 25
 				player.SetVelocity( newVelocity )
 			}
 			else if(bottom.IsTouching(player))
 			{
+				vector newVelocity
+				if(player.IsInputCommandHeld( IN_MOVERIGHT )) 
+				{
+					printt("strafe right")
+					newVelocity = AnglesToRight(player.GetAngles())*HORIZ_SPEED
+					newVelocity.z = UPVELOCITY
+				} else if(player.IsInputCommandHeld( IN_MOVELEFT ))
+				{
+					printt("strafe right")
+					newVelocity = AnglesToRight(player.GetAngles())*-HORIZ_SPEED
+					newVelocity.z = UPVELOCITY
+				} else {
 				vector enemyOrigin = player.GetOrigin()
 				vector dir = Normalize( pos - player.GetOrigin() )
 				float dist = Distance( enemyOrigin, pos )
-				vector newVelocity = player.GetVelocity() * GraphCapped( dist, 25, 300.0, 0, 1 ) + dir * GraphCapped( dist, 25, 300.0, 0, 100.0 )
-				newVelocity.z = 360
+				newVelocity = dir * GraphCapped( dist, 50, PULL_RANGE, 0, PULL_STRENGTH_MAX )
+				newVelocity.z = UPVELOCITY
+				}
+				
 				player.SetVelocity( newVelocity )
 			}
 		WaitFrame()
 	}
-
 }
+
 //CHALLENGE "Tile Frenzy"
 void function StartTileFrenzyChallenge(entity player)
 {
