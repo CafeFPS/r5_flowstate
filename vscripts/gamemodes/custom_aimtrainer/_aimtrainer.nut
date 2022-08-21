@@ -953,24 +953,25 @@ void function LiftUpDummyMovementThink(entity ai, entity player)
 			ChallengesEntities.dummies.removebyvalue(ai)
 		}
 	)
-	ai.SetAngles(Vector(ai.GetAngles().x,RandomIntRangeInclusive(-90,90), ai.GetAngles().z))
-	if(CoinFlip())
-		if(CoinFlip())
-			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_BACKWARD", true, 0.1 )
-		else 
-			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
-	else
-		if(CoinFlip())
-			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
-		else 
-			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
-	wait 6
-	
-	if(!IsValid(ai)) return
+
+	ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
+	wait 0.5
+	while(IsValid(ai)){
+		float distance = Distance(ai.GetOrigin(), player.GetOrigin()) //Tracking the distance dummy is to the player
+		int random = RandomIntRangeInclusive(1,10)
+		if(random == 1 || random == 2)
+		{
+			int randomangle = RandomIntRange(-45,45)
+			if(CoinFlip()) randomangle = RandomIntRange(-90,90)
+			vector angles = ai.GetAngles() + Vector(0,randomangle,0)
+			ai.SetAngles(Vector(0,angles.y,0) )
+		}
+		WaitFrame()
+	}
 }
 
-void function CreateLiftForChallenge(vector pos, entity player){
-
+void function CreateLiftForChallenge(vector pos, entity player)
+{
 	entity bottom = CreateEntity( "trigger_cylinder" )
 	bottom.SetRadius( 70 )
 	bottom.SetAboveHeight( 1200 )
@@ -1968,7 +1969,7 @@ void function DummyRunningTargetsMovement(entity ai, entity player)
 	while(IsValid(ai)){
 		float distance = Distance(ai.GetOrigin(), player.GetOrigin()) //Tracking the distance dummy is to the player
 		int random = RandomIntRangeInclusive(1,5)
-		if(random == 1 && distance >= 500 || random == 2 && distance >= 500) //20% chance
+		if(random == 1 && distance >= 500 || random == 2 && distance >= 500)
 		{
 			int randomangle = RandomIntRange(-45,45)
 			if(CoinFlip()) randomangle = RandomIntRange(-90,90)
