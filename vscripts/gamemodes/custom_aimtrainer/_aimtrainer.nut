@@ -972,7 +972,7 @@ void function LiftUpDummyMovementThink(entity ai, entity player)
 void function CreateLiftForChallenge(vector pos, entity player){
 
 	entity bottom = CreateEntity( "trigger_cylinder" )
-	bottom.SetRadius( 300 )
+	bottom.SetRadius( 70 )
 	bottom.SetAboveHeight( 1200 )
 	bottom.SetBelowHeight( 10 )
 	bottom.SetOrigin( pos )
@@ -980,7 +980,7 @@ void function CreateLiftForChallenge(vector pos, entity player){
 	DispatchSpawn( bottom )
 
 	entity top = CreateEntity( "trigger_cylinder" )
-	top.SetRadius( 30 )
+	top.SetRadius( 100 )
 	top.SetAboveHeight( 1 )
 	top.SetBelowHeight( 24 )
 	top.SetOrigin( pos + <0, 0, 1200> )
@@ -1048,7 +1048,7 @@ void function LiftPlayerUp( entity bottom, entity top, vector pos, entity player
 
 	float PULL_RANGE = 300
 	float PULL_STRENGTH_MAX = 50
-	float UPVELOCITY = 340
+	float UPVELOCITY
 	float HORIZ_SPEED = 170
 
 //fix range
@@ -1073,41 +1073,74 @@ void function LiftPlayerUp( entity bottom, entity top, vector pos, entity player
 // const float SPACEELEVATOR_TUNING_HOVER_HEIGHT_PCT = 0.9
 // const float SPACEELEVATOR_TUNING_LIFETIME = 10
 // const float SPACEELEVATOR_TUNING_KEEP_ALIVE_MAX_TIME = 5
-
+	
 	while( true )
 	{
-			if(top.IsTouching(player))
+		vector newVelocity
+		if(top.IsTouching(player))
+		{
+			UPVELOCITY = 25
+			if(player.IsInputCommandHeld( IN_MOVERIGHT )) 
 			{
-				vector enemyOrigin = player.GetOrigin()
-				vector dir = Normalize( pos - player.GetOrigin() )
-				float dist = Distance( enemyOrigin, pos )
-				vector newVelocity = player.GetVelocity() * GraphCapped( dist, 50, PULL_RANGE, 0, 1 ) + dir * GraphCapped( dist, 50, PULL_RANGE, 0, PULL_STRENGTH_MAX )
-				newVelocity.z = 25
-				player.SetVelocity( newVelocity )
-			}
-			else if(bottom.IsTouching(player))
-			{
-				vector newVelocity
-				if(player.IsInputCommandHeld( IN_MOVERIGHT )) 
-				{
-					printt("strafe right")
-					newVelocity = AnglesToRight(player.GetAngles())*HORIZ_SPEED
-					newVelocity.z = UPVELOCITY
-				} else if(player.IsInputCommandHeld( IN_MOVELEFT ))
-				{
-					printt("strafe right")
-					newVelocity = AnglesToRight(player.GetAngles())*-HORIZ_SPEED
-					newVelocity.z = UPVELOCITY
-				} else {
-				vector enemyOrigin = player.GetOrigin()
-				vector dir = Normalize( pos - player.GetOrigin() )
-				float dist = Distance( enemyOrigin, pos )
-				newVelocity = dir * GraphCapped( dist, 50, PULL_RANGE, 0, PULL_STRENGTH_MAX )
+				printt("lift move right")
+				newVelocity = AnglesToRight(player.GetAngles())*HORIZ_SPEED
 				newVelocity.z = UPVELOCITY
-				}
-				
-				player.SetVelocity( newVelocity )
+			} else if(player.IsInputCommandHeld( IN_MOVELEFT ))
+			{
+				printt("lift move left")
+				newVelocity = AnglesToRight(player.GetAngles())*-HORIZ_SPEED
+				newVelocity.z = UPVELOCITY
+			} else if(player.IsInputCommandHeld( IN_FORWARD ))
+			{
+				printt("lift move backward")
+				newVelocity = AnglesToForward(player.GetAngles())*HORIZ_SPEED
+				newVelocity.z = UPVELOCITY					
+			} else if(player.IsInputCommandHeld( IN_BACK ))
+			{
+				printt("lift move forward")
+				newVelocity = AnglesToForward(player.GetAngles())*-HORIZ_SPEED
+				newVelocity.z = UPVELOCITY					
+			} else {
+			vector enemyOrigin = player.GetOrigin()
+			vector dir = Normalize( pos - player.GetOrigin() )
+			float dist = Distance( enemyOrigin, pos )
+			newVelocity = dir * GraphCapped( dist, 50, PULL_RANGE, 0, PULL_STRENGTH_MAX )
+			newVelocity.z = UPVELOCITY
 			}
+			player.SetVelocity( newVelocity )
+		}
+		else if(bottom.IsTouching(player))
+		{
+			UPVELOCITY = 340
+			if(player.IsInputCommandHeld( IN_MOVERIGHT )) 
+			{
+				printt("lift move right")
+				newVelocity = AnglesToRight(player.GetAngles())*HORIZ_SPEED
+				newVelocity.z = UPVELOCITY
+			} else if(player.IsInputCommandHeld( IN_MOVELEFT ))
+			{
+				printt("lift move left")
+				newVelocity = AnglesToRight(player.GetAngles())*-HORIZ_SPEED
+				newVelocity.z = UPVELOCITY
+			} else if(player.IsInputCommandHeld( IN_FORWARD ))
+			{
+				printt("lift move backward")
+				newVelocity = AnglesToForward(player.GetAngles())*HORIZ_SPEED
+				newVelocity.z = UPVELOCITY					
+			} else if(player.IsInputCommandHeld( IN_BACK ))
+			{
+				printt("lift move forward")
+				newVelocity = AnglesToForward(player.GetAngles())*-HORIZ_SPEED
+				newVelocity.z = UPVELOCITY					
+			} else {
+			vector enemyOrigin = player.GetOrigin()
+			vector dir = Normalize( pos - player.GetOrigin() )
+			float dist = Distance( enemyOrigin, pos )
+			newVelocity = dir * GraphCapped( dist, 50, PULL_RANGE, 0, PULL_STRENGTH_MAX )
+			newVelocity.z = UPVELOCITY
+			}
+			player.SetVelocity( newVelocity )
+		}
 		WaitFrame()
 	}
 }
