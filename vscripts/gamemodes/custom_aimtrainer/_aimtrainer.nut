@@ -957,7 +957,6 @@ void function LiftUpDummyMovementThink(entity ai, entity player)
 	ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
 	wait 0.5
 	while(IsValid(ai)){
-		float distance = Distance(ai.GetOrigin(), player.GetOrigin()) //Tracking the distance dummy is to the player
 		int random = RandomIntRangeInclusive(1,10)
 		if(random == 1 || random == 2)
 		{
@@ -973,7 +972,7 @@ void function LiftUpDummyMovementThink(entity ai, entity player)
 void function CreateLiftForChallenge(vector pos, entity player)
 {
 	entity bottom = CreateEntity( "trigger_cylinder" )
-	bottom.SetRadius( 70 )
+	bottom.SetRadius( 30 )
 	bottom.SetAboveHeight( 1200 )
 	bottom.SetBelowHeight( 10 )
 	bottom.SetOrigin( pos )
@@ -1014,7 +1013,7 @@ void function liftVisualsCreator(vector pos)
 
 void function BottomTriggerLeave( entity trigger, entity ent )
 {
-	if ( !ent.IsPlayer() )
+	if ( !ent.IsPlayer() || ent.IsPlayer() && ent.p.isRestartingLevel)
 		return
 		
 	vector forward = AnglesToForward( ent.GetAngles() )
@@ -1028,15 +1027,18 @@ void function ForceToBeInLiftForChallenge( entity player )
 {
 	EndSignal(player, "ChallengeTimeOver")
 	if(!player.IsPlayer()) return
-	while(IsValid(player))
+	while(IsValid(player) && !player.p.isRestartingLevel)
 	{
 		player.SetVelocity(Vector(0,0,0))
 		wait 6
 		foreach(entity dummy in ChallengesEntities.dummies)
 			if(IsValid(dummy)) dummy.Destroy()
 		ChallengesEntities.dummies.clear()
-		player.SetVelocity(Vector(0,0,0))
-		player.SetOrigin(onGroundLocationPos)
+		if(IsValid(player))
+		{
+			player.SetVelocity(Vector(0,0,0))
+			player.SetOrigin(onGroundLocationPos)
+		}
 	}
 }
 
@@ -2036,6 +2038,7 @@ void function ChallengesStartAgain(entity player)
 					player.SetAngles(AimTrainer_startAngs)
 				HolsterAndDisableWeapons(player)
 				
+				//entities cleanup
 				foreach(entity floor in ChallengesEntities.floor)
 					if(IsValid(floor))
 						floor.Destroy()
