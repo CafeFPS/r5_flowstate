@@ -79,7 +79,6 @@ global function UIToClient_MenuGiveWeaponWithAttachments
 global function OpenFRChallengesSettingsWpnSelector
 global function CloseFRChallengesSettingsWpnSelector
 global function ExitChallengeClient
-global function RestartChallengeClient
 
 struct{
 	int totalShots
@@ -166,7 +165,7 @@ void function ActuallyPutDefaultSettings()
 	player.ClientCommand("CC_AimTrainer_INFINITE_CHALLENGE " + GetConVarInt("hud_setting_showMedals").tostring())
 	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO " + GetConVarInt("hud_setting_showTips").tostring())
 	player.ClientCommand("CC_AimTrainer_INMORTAL_TARGETS " + GetConVarInt("hud_setting_streamerMode").tostring())
-	player.ClientCommand("CC_AimTrainer_USER_WANNA_BE_A_DUMMY " + GetConVarInt("hud_setting_showLevelUp").tostring())		
+	player.ClientCommand("CC_AimTrainer_USER_WANNA_BE_A_DUMMY " + GetConVarInt("hud_setting_showLevelUp").tostring())
 }
 
 
@@ -732,6 +731,7 @@ void function SkipButtonResultsClient()
 void function RestartButtonResultsClient()
 {
 	entity player = GetLocalClientPlayer()
+	Signal(player, "ChallengeTimeOver")
 	player.ClientCommand("CC_RestartChallenge")
 }
 //settings
@@ -1021,13 +1021,6 @@ void function ExitChallengeClient()
 	entity player = GetLocalClientPlayer()
 	Signal(player, "ChallengeTimeOver")
     player.ClientCommand("CC_ExitChallenge")
-}
-
-void function RestartChallengeClient()
-{
-	entity player = GetLocalClientPlayer()
-	Signal(player, "ChallengeTimeOver")
-    player.ClientCommand("CC_RestartChallenge")
 }
 
 string function ClientLocalizeAndShortenNumber_Float( float number, int maxDisplayIntegral = 3, int maxDisplayDecimal = 0 )

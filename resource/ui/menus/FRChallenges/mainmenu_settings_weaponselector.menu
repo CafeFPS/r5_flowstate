@@ -268,12 +268,12 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				""
+			labelText				"RIGHT CLICK TO CHANGE ATTACHMENTS"
 			visible                 1
 			zpos 1
 			tall					40
 			fontHeight				30
-			font					Default
+			font					TitleBoldFont
 			fgcolor_override		"255 255 255 255"
 		
 			xpos                    -15

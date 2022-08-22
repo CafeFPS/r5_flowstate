@@ -1139,7 +1139,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"High Ground Practice"
+			labelText				"Record movement"
 			visible                 1
 			zpos 3
 			tall					55
