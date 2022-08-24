@@ -1001,7 +1001,7 @@ void function StartLiftUpChallenge(entity player)
 	OnThreadEnd(
 		function() : ( player, mods, weapon)
 		{
-			// SetConVarToDefault( "sv_gravity" ) //hack
+			SetConVarToDefault( "sv_gravity" ) //hack
 			mods.removebyvalue("elevator_shooter")
 			try{weapon.SetMods( mods )} catch(e42069){printt(weapon.GetWeaponClassName() + " failed to remove elevator_shooter mod. DEBUG THIS.")}
 			OnChallengeEnd(player)
@@ -1090,9 +1090,9 @@ void function CreateLiftForChallenge(vector pos, entity player)
 	DispatchSpawn( bottom )
 
 	entity top = CreateEntity( "trigger_cylinder" )
-	top.SetRadius( 100 )
-	top.SetAboveHeight( 150 )
-	top.SetBelowHeight( 50 )
+	top.SetRadius( 70 )
+	top.SetAboveHeight( 250 )
+	top.SetBelowHeight( 0 )
 	top.SetOrigin( pos + <0, 0, 1200> )
 	DispatchSpawn( top )
 
@@ -1125,9 +1125,9 @@ void function liftVisualsCreator(vector pos)
 
 void function BottomTriggerLeave( entity trigger, entity ent )
 {
-	if ( !ent.IsPlayer() || ent.IsPlayer() && ent.p.isRestartingLevel)
+	if ( !ent.IsPlayer() || ent.IsPlayer() && ent.p.isRestartingLevel && !ent.p.touchingTopTrigger)
 		return
-	// SetConVarToDefault( "sv_gravity" ) //hack
+	SetConVarToDefault( "sv_gravity" ) //hack
 	vector forward = AnglesToForward( ent.GetAngles() )
 	vector up = AnglesToUp( ent.GetAngles() )
 	vector velocity = ent.GetVelocity()
@@ -1142,7 +1142,7 @@ void function ForceToBeInLiftForChallenge( entity player )
 	while(IsValid(player) && !player.p.isRestartingLevel)
 	{
 		player.SetVelocity(Vector(0,0,0))
-		wait 6
+		wait 5
 		foreach(entity dummy in ChallengesEntities.dummies)
 			if(IsValid(dummy)) dummy.Destroy()
 		ChallengesEntities.dummies.clear()
@@ -1152,6 +1152,7 @@ void function ForceToBeInLiftForChallenge( entity player )
 			player.SetVelocity(Vector(0,0,0))
 			player.SetOrigin(onGroundLocationPos)
 		}
+	player.p.touchingTopTrigger = false
 	}
 }
 
@@ -1170,7 +1171,8 @@ void function LiftPlayerUp( entity bottom, entity top, vector pos, entity player
 		vector newVelocity
 		if(top.IsTouching(player))
 		{
-			// SetConVarFloat( "sv_gravity", 0.0 ) //hack	
+			player.p.touchingTopTrigger = true
+			SetConVarFloat( "sv_gravity", 0.01 ) //hack	
 			UPVELOCITY = 25
 			if(player.IsInputCommandHeld( IN_MOVERIGHT )) 
 			{
@@ -1201,9 +1203,9 @@ void function LiftPlayerUp( entity bottom, entity top, vector pos, entity player
 			}
 			player.SetVelocity( newVelocity )
 		}
-		else if(bottom.IsTouching(player))
+		else if(bottom.IsTouching(player) && !player.p.touchingTopTrigger)
 		{
-			// SetConVarFloat( "sv_gravity", 0.0 ) //hack
+			SetConVarFloat( "sv_gravity", 0.01 ) //hack
 			UPVELOCITY = 340
 			if(player.IsInputCommandHeld( IN_MOVERIGHT )) 
 			{
