@@ -68,9 +68,11 @@ void function _ChallengesByColombia_Init()
 	AddClientCommandCallback("CC_Weapon_Selector_Close", CC_Weapon_Selector_Close)
 	AddClientCommandCallback("CC_ChangeChallengeDuration", CC_ChangeChallengeDuration)
 	AddClientCommandCallback("CC_AimTrainer_AI_SHIELDS_LEVEL", CC_AimTrainer_AI_SHIELDS_LEVEL)
+	AddClientCommandCallback("CC_AimTrainer_STRAFING_SPEED", CC_AimTrainer_STRAFING_SPEED)
 	AddClientCommandCallback("CC_RGB_HUD", CC_RGB_HUD)
 	AddClientCommandCallback("CC_AimTrainer_INFINITE_CHALLENGE", CC_AimTrainer_INFINITE_CHALLENGE)
 	AddClientCommandCallback("CC_AimTrainer_INFINITE_AMMO", CC_AimTrainer_INFINITE_AMMO)
+	AddClientCommandCallback("CC_AimTrainer_INFINITE_AMMO2", CC_AimTrainer_INFINITE_AMMO2)
 	AddClientCommandCallback("CC_AimTrainer_INMORTAL_TARGETS", CC_AimTrainer_INMORTAL_TARGETS)
 	AddClientCommandCallback("CC_AimTrainer_USER_WANNA_BE_A_DUMMY", CC_AimTrainer_USER_WANNA_BE_A_DUMMY)
 	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon) 
@@ -251,19 +253,24 @@ void function StrafeMovement(entity ai, entity player)
 		if(random == 1 || random == 2 || random == 3 || random == 4){
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.5)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.5)
 		}
 		else if(random == 5|| random == 6|| random == 7|| random == 8){
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.5)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.5)
 		}
 		else if (random == 9 || random == 10){
 			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.25)
 		}
 	}
@@ -389,22 +396,28 @@ void function TargetSwitcthingWatcher(entity ai, entity player)
         if(random == 1 || random == 2 || random == 3){
         //w s strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
             wait 0.4
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
             wait 0.4
         }
         else if(random == 4 || random == 5){
         //a d strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
             wait 0.4
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_BACKWARD", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
             wait 0.4
         }
         else if (random == 6){
         //a d small crouch strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_LEFT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
             wait 0.4
             ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_RIGHT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
             wait 0.4
         }
     }
@@ -724,9 +737,15 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 	
 	//So distance is not 0 and we can start the while loop
 	if(CoinFlip())
+	{
 		ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
+		ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
+	}
 	else
+	{
 		ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
+		ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
+	}
 	wait RandomFloatRange(0.2,0.25)
 	
 	if(!IsValid(ai)) return
@@ -740,10 +759,12 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 		if(random == 1 || random == 2 || random == 3){			
 			if(distance <= -5){
 				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
+				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 				wait RandomFloatRange(0.2,0.25)
 				weapon.FireWeapon_Default( player.GetOrigin()+Vector(0,0,60)+(Normalize(player.GetRightVector())*30), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )}
 			else if(distance > 5){
 				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
+				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 				wait RandomFloatRange(0.18,0.22)
 				weapon.FireWeapon_Default( player.GetOrigin()+Vector(0,0,60)+(Normalize(player.GetRightVector())*30), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
 				}
@@ -846,18 +867,28 @@ void function ArcstarsChallengeMovementThink(entity ai, entity player)
 	if(random == 1)
 	{
 		if(CoinFlip())
+		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
+		}
 		else 
+		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
+		}
 	}
 	else
 	{
 		random = RandomIntRangeInclusive(1,10)
 		if(random == 1)
+		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_BACKWARD", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
+		}
 		else 
 		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
+			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			thread ArcstarDummyChangeAngles(ai, player)
 		}
 	}
@@ -1065,6 +1096,7 @@ void function LiftUpDummyMovementThink(entity ai, entity player)
 	)
 	
 	ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
+	ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 	wait 0.5
 	while(IsValid(ai)){
 		int random = RandomIntRangeInclusive(1,10)
@@ -2060,6 +2092,7 @@ void function DummyRunningTargetsMovement(entity ai, entity player)
 	)
 
 	ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
+	ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 	wait 0.5
 	while(IsValid(ai)){
 		float distance = Distance(ai.GetOrigin(), player.GetOrigin()) //Tracking the distance dummy is to the player
@@ -2362,6 +2395,7 @@ void function OnDummyKilled(entity ent, var damageInfo)
 	if ( IsValidHeadShot( damageInfo, ent )) return
 	if(!attacker.IsPlayer() ) return
 	if(ent.GetTargetName() == "BubbleFightDummy") attacker.SetHealth(min(attacker.GetHealth() + 10, attacker.GetMaxHealth()))
+	if(AimTrainer_INFINITE_AMMO2) attacker.RefillAllAmmo()
 	attacker.p.straferDummyKilledCount++
 	Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
 	ChallengesEntities.dummies.removebyvalue(ent)
@@ -2658,6 +2692,13 @@ bool function CC_AimTrainer_AI_SHIELDS_LEVEL( entity player, array<string> args 
 	return false
 }
 
+bool function CC_AimTrainer_STRAFING_SPEED( entity player, array<string> args )
+{
+	float desiredSpeed = float(args[0])
+	AimTrainer_STRAFING_SPEED = desiredSpeed
+	return false
+}
+
 bool function CC_RGB_HUD( entity player, array<string> args )
 {
 	if(args[0] == "0")
@@ -2684,6 +2725,16 @@ bool function CC_AimTrainer_INFINITE_AMMO( entity player, array<string> args )
 		AimTrainer_INFINITE_AMMO = false
 	else if(args[0] == "1")
 		AimTrainer_INFINITE_AMMO = true
+
+	return false
+}
+
+bool function CC_AimTrainer_INFINITE_AMMO2( entity player, array<string> args )
+{
+	if(args[0] == "0")
+		AimTrainer_INFINITE_AMMO2 = false
+	else if(args[0] == "1")
+		AimTrainer_INFINITE_AMMO2 = true
 
 	return false
 }

@@ -70,9 +70,11 @@ global function RestartButtonResultsClient
 //Settings
 global function ChangeChallengeDurationClient
 global function ChangeAimTrainer_AI_SHIELDS_LEVELClient
+global function ChangeAimTrainer_STRAFING_SPEEDClient
 global function ChangeRGB_HUDClient
 global function ChangeAimTrainer_INFINITE_CHALLENGEClient
 global function ChangeAimTrainer_INFINITE_AMMOClient
+global function ChangeAimTrainer_INFINITE_AMMO2Client
 global function ChangeAimTrainer_INMORTAL_TARGETSClient
 global function ChangeAimTrainer_USER_WANNA_BE_A_DUMMYClient
 global function UIToClient_MenuGiveWeapon
@@ -154,17 +156,21 @@ void function ActuallyPutDefaultSettings()
 	entity player = GetLocalClientPlayer()
 	//Hack, reusing convars for this sp gamemode. Default settings for the menu declared here.
 	SetConVarInt( "hud_setting_minimapRotate", 1 )
+	SetConVarInt( "hud_setting_accessibleChat", 1 )
 	SetConVarInt( "hud_setting_streamerMode", 0)
 	SetConVarInt( "hud_setting_showTips",  	1 )
+	SetConVarInt( "hud_setting_compactOverHeadNames", 0 )
 	SetConVarInt( "hud_setting_showMeter", 0)
 	SetConVarInt( "hud_setting_showMedals", 0)
 	SetConVarInt( "hud_setting_showLevelUp", 2)
 	WaitFrame() //idk?
 	//set default settings
 	player.ClientCommand("CC_AimTrainer_AI_SHIELDS_LEVEL " + GetConVarInt("hud_setting_minimapRotate").tostring())
+	player.ClientCommand("CC_AimTrainer_STRAFING_SPEED " + GetConVarInt("hud_setting_accessibleChat").tostring())
 	player.ClientCommand("CC_RGB_HUD " + GetConVarInt("hud_setting_showMeter").tostring())
 	player.ClientCommand("CC_AimTrainer_INFINITE_CHALLENGE " + GetConVarInt("hud_setting_showMedals").tostring())
 	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO " + GetConVarInt("hud_setting_showTips").tostring())
+	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO2 " + GetConVarInt("hud_setting_compactOverHeadNames").tostring())	
 	player.ClientCommand("CC_AimTrainer_INMORTAL_TARGETS " + GetConVarInt("hud_setting_streamerMode").tostring())
 	player.ClientCommand("CC_AimTrainer_USER_WANNA_BE_A_DUMMY " + GetConVarInt("hud_setting_showLevelUp").tostring())
 }
@@ -750,6 +756,31 @@ void function ChangeAimTrainer_AI_SHIELDS_LEVELClient(string desiredShieldLevel)
 	player.ClientCommand("CC_AimTrainer_AI_SHIELDS_LEVEL " + desiredShieldLevel)
 }
 
+void function ChangeAimTrainer_STRAFING_SPEEDClient(string desiredSpeed)
+{
+	entity player = GetLocalClientPlayer()
+	
+	float speed
+	
+	switch(int(desiredSpeed)){
+	case 0:
+		speed = 0.5
+		break
+	case 1:
+		speed = 1
+		break
+	case 2:
+		speed = 1.5
+		break
+	case 3:
+		speed = 2
+		break
+	}
+	
+	AimTrainer_STRAFING_SPEED = speed
+	player.ClientCommand("CC_AimTrainer_STRAFING_SPEED " + speed)	
+}
+
 void function ChangeRGB_HUDClient(string isabool)
 {
 	entity player = GetLocalClientPlayer()
@@ -761,6 +792,7 @@ void function ChangeRGB_HUDClient(string isabool)
 	thread RefreshHUD()
 	player.ClientCommand("CC_RGB_HUD " + isabool)
 }
+
 void function ChangeAimTrainer_INFINITE_CHALLENGEClient(string isabool)
 {
 	entity player = GetLocalClientPlayer()
@@ -771,6 +803,7 @@ void function ChangeAimTrainer_INFINITE_CHALLENGEClient(string isabool)
 	
 	player.ClientCommand("CC_AimTrainer_INFINITE_CHALLENGE " + isabool)
 }
+
 void function ChangeAimTrainer_INFINITE_AMMOClient(string isabool)
 {
 	entity player = GetLocalClientPlayer()
@@ -781,6 +814,18 @@ void function ChangeAimTrainer_INFINITE_AMMOClient(string isabool)
 	
 	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO " + isabool)
 }
+
+void function ChangeAimTrainer_INFINITE_AMMO2Client(string isabool)
+{
+	entity player = GetLocalClientPlayer()
+	if(isabool == "0")
+		AimTrainer_INFINITE_AMMO2 = false
+	else if(isabool == "1")
+		AimTrainer_INFINITE_AMMO2 = true
+	
+	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO2 " + isabool)
+}
+
 void function ChangeAimTrainer_INMORTAL_TARGETSClient(string isabool)
 {
 	entity player = GetLocalClientPlayer()
@@ -791,6 +836,7 @@ void function ChangeAimTrainer_INMORTAL_TARGETSClient(string isabool)
 	
 	player.ClientCommand("CC_AimTrainer_INMORTAL_TARGETS " + isabool)
 }
+
 void function ChangeAimTrainer_USER_WANNA_BE_A_DUMMYClient(string isabool)
 {
 	entity player = GetLocalClientPlayer()

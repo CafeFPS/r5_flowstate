@@ -36,8 +36,10 @@ void function InitFRChallengesSettings( var newMenuArg )
 	//RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "StatusDetails" ) ), "details", "Test" )
 	Hud_SetText( Hud_GetChild( file.menu, "DurationText" ), "60" )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "ShieldSelectorButton"), UIE_CHANGE, ShieldSelectorButton )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SpeedTargetsButton"), UIE_CHANGE, SpeedTargetsButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InmortalTargetsButton"), UIE_CHANGE, InmortalTargetsButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InfiniteAmmoButton"), UIE_CHANGE, InfiniteAmmoButton )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "InfiniteAmmo2Button"), UIE_CHANGE, InfiniteAmmoButton2 )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "RGBHudButton"), UIE_CHANGE, RGBHudButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InfiniteTrainingButton"), UIE_CHANGE, InfiniteTrainingButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "UseDummyModelButton"), UIE_CHANGE, UseDummyModelButton)
@@ -50,6 +52,12 @@ void function ShieldSelectorButton(var button)
 	RunClientScript("ChangeAimTrainer_AI_SHIELDS_LEVELClient", desiredVar.tostring())
 }
 
+void function SpeedTargetsButton(var button)
+{
+	int desiredVar = GetConVarInt("hud_setting_accessibleChat")
+	RunClientScript("ChangeAimTrainer_STRAFING_SPEEDClient", desiredVar.tostring())	
+}
+
 void function InmortalTargetsButton(var button)
 {
 	int desiredVar = GetConVarInt("hud_setting_streamerMode")
@@ -60,6 +68,12 @@ void function InfiniteAmmoButton(var button)
 {
 	int desiredVar = GetConVarInt("hud_setting_showTips")
 	RunClientScript("ChangeAimTrainer_INFINITE_AMMOClient", desiredVar.tostring())
+}
+
+void function InfiniteAmmoButton2(var button)
+{
+	int desiredVar = GetConVarInt("hud_setting_compactOverHeadNames")
+	RunClientScript("ChangeAimTrainer_INFINITE_AMMO2Client", desiredVar.tostring())
 }
 
 void function RGBHudButton(var button)

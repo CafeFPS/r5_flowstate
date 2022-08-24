@@ -28,9 +28,11 @@ global function Sh_ChallengesByColombia_Init
 
 global int AimTrainer_CHALLENGE_DURATION = 60
 global int AimTrainer_AI_SHIELDS_LEVEL = 0
+global float AimTrainer_STRAFING_SPEED = 1
 global bool RGB_HUD = false
 global bool AimTrainer_INFINITE_CHALLENGE = false
 global bool AimTrainer_INFINITE_AMMO = true
+global bool AimTrainer_INFINITE_AMMO2 = false
 global bool AimTrainer_INMORTAL_TARGETS = false
 global bool AimTrainer_USER_WANNA_BE_A_DUMMY = false
 global bool ENABLE_HIT_DOT = false
