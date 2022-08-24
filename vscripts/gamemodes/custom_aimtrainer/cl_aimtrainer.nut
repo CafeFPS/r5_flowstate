@@ -45,6 +45,7 @@ global function ServerCallback_CoolCameraOnMenu
 global function ServerCallback_SetLaserSightsOnSMGWeapon
 global function ServerCallback_StopLaserSightsOnSMGWeapon
 global function ServerCallback_RestartChallenge
+global function ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies
 
 //Main menu buttons
 global function StartChallenge1Client
@@ -1028,7 +1029,7 @@ string function ClientLocalizeAndShortenNumber_Float( float number, int maxDispl
 	if ( number == 0.0 )
 		return "0"
 
-	string thousandsSeparator = ","
+	string thousandsSeparator = ""
 	string decimalSeparator = "."
 	string integralString = ""
 	string integralSuffix = ""
@@ -1117,4 +1118,13 @@ string function ClientLocalizeAndShortenNumber_Float( float number, int maxDispl
 	}
 
 	return finalDisplayNumber
+}
+
+void function ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies(entity dummy, entity player)
+{
+	var rui = AddOverheadIcon( dummy, $"", true, $"ui/overhead_icon_generic.rpak" )
+	RuiSetFloat2( rui, "iconSize", <10,10,0> )
+	RuiSetFloat( rui, "distanceFade", 9000 )
+	RuiSetBool( rui, "adsFade", false )
+	RuiSetString( rui, "hint", ClientLocalizeAndShortenNumber_Float(Distance(dummy.GetOrigin(), player.GetOrigin()), 4, 0) + "m" )
 }

@@ -739,6 +739,7 @@ global struct ServerPlayerStruct
 	bool isNewBestScore = false
 	bool isRestartingLevel = false
 	int dummieKilled = 0
+	bool liftResetWorkaround = false
 }
 
 global struct ServerPlayerWaypoint

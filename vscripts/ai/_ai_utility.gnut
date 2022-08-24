@@ -44,26 +44,19 @@ void function CreateGravitationalForce( )
 	// point_push.Fire( "Kill", "", 0.2 )
 }
 
-void function StartFightAgainsYourselfChallenge()
+void function ClippingAIFixTEST()
 {
 	entity player = gp()[0]
-	entity decoy = player.CreateMimicPlayerDecoy( 180 )
-	decoy.SetOrigin(player.GetOrigin() + player.GetForwardVector()*200)
-	decoy.SetFriendlyFire( true )
-	decoy.SetMaxHealth( 100 )
-	decoy.SetHealth( 100 )
-	SetObjectCanBeMeleed( decoy, true )
-	//newDecoy.SetPlayerOneHits( true )
-	//SetTargetName(newDecoy, "UltraDecoy")
-	// AddEntityCallback_OnPostDamaged( newDecoy, void function( entity newDecoy, var damageInfo ) : ( owner ) {
-		// if ( IsValid( owner ) )
-			// HoloPiliot_OnDecoyDamaged( newDecoy, owner, damageInfo )
-	// }
-}
-
-void function PlayRecordedAnim()
-{
-	
+	while(true)
+	{
+		vector traceStart = player.EyePosition()
+		vector traceDir   = player.GetViewVector()
+		vector traceEnd   = traceStart + (traceDir * 50000)
+		TraceResults results = TraceLine( traceStart, traceEnd, player )
+		
+		printt(Distance(gp()[0].GetOrigin(), results.endPos))
+		WaitFrame()
+	}
 }
 
 function AiUtility_Init()
