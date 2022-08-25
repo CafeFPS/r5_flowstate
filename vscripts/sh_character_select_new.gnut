@@ -43,6 +43,7 @@ global function DoChampionSquadCardsPresentation
 global function _OpenCharacterSelectNewMenu
 global function _OpenCharacterSelectNewMenu_AimTrainer
 global function CloseCharacterSelectNewMenu
+global function CloseCharacterSelectNewMenu_AimTrainer
 global function OnCharacterSelectNewMenuClosed_RemoveCallbacks
 global function UpdateMenuElementHandles
 global function Client_TryUnlockCharacter
@@ -353,7 +354,7 @@ void function UI_RunCharacterSelect_AimTrainer( bool isBrowseMode, bool menuEnts
 		return
 
 	RunClientScript( "_OpenCharacterSelectNewMenu_AimTrainer", fileForever.menu )
-
+	SetBlurEnabled( false )
 	FlashGameWindow()
 	AdvanceMenu( fileForever.menu )
 }
@@ -362,12 +363,6 @@ void function UI_RunCharacterSelect_AimTrainer( bool isBrowseMode, bool menuEnts
 #if CLIENT
 void function _OpenCharacterSelectNewMenu_AimTrainer( var menu )
 {
-	RemoveCallback_OnPlayerDisconnected( OnPlayerDisconnected )
-	AddCallback_OnPlayerDisconnected( OnPlayerDisconnected )
-
-	RemoveDestroyCallback( "player", OnPlayerDestroyed )
-	AddDestroyCallback( "player", OnPlayerDestroyed )
-
 	UpdateMenuElementHandles_AimTrainer( menu )
 
 	// thread FlashScreenWhite()
@@ -381,8 +376,9 @@ void function _OpenCharacterSelectNewMenu_AimTrainer( var menu )
 	fileLevel.menuEntsReady = true
 
 	UpdateMenuButtons()
-	thread UpdateSceneThink_AimTrainer()
 
+	thread UpdateSceneThink_AimTrainer()
+	
 	fileLevel.desiredCharacterOrNull = LoadoutSlot_GetItemFlavor( LocalClientEHI(), Loadout_CharacterClass() )
 	SetMenuState( eNewCharacterSelectMenuState.LOCKED )
 	
@@ -941,14 +937,14 @@ void function UI_OnCharacterSelectMenu_NavBack()
 	// Don't close the menu during loadout selection
 	if ( fileLevel.isBrowseMode )
 	{
-		RunClientScript( "CloseCharacterSelectNewMenu" )
 		CloseAllMenus()
+		RunClientScript("CloseCharacterSelectNewMenu_AimTrainer" )
+		RunClientScript("ServerCallback_OpenFRChallengesSettings")
 		RunClientScript("ServerCallback_CoolCameraOnMenu")
-		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)	
 		return
-	}
-
-	RunClientScript( "Client_TryUnlockCharacter" )
+	} 
+	else 
+		RunClientScript( "Client_TryUnlockCharacter" )
 }
 
 void function UI_CloseCharacterSelect()
@@ -1030,6 +1026,52 @@ void function CloseCharacterSelectNewMenu()
 	OnCharacterSelectNewMenuClosed_RemoveCallbacks()
 }
 
+void function CloseCharacterSelectNewMenu_AimTrainer()
+{
+	Signal( fileLevel.signalDummy, "CharacterSelectClosing" )
+
+	RunUIScript( "UI_CloseCharacterSelect" )
+
+	// foreach( func in file.Callbacks_OnCharacterMenuClosed )
+		// func()
+
+	// Reset camera, DOF, color correction, and fog
+	if ( IsValid( fileLevel.camera ) )
+	{
+		if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
+		fileLevel.camera.SetFOV( CAMERA_FOV )} else {
+		fileLevel.camera.SetFOV( CAMERA_FOV_LEGACY )}
+	}
+	GetLocalClientPlayer().ClearMenuCameraEntity()
+	DoF_SetNearDepthToDefault()
+	DoF_SetFarDepthToDefault()
+	DoFSetDilateInfocus( false )
+	ColorCorrection_SetWeight( fileLevel.colorCorrection, 0.0 )
+	ColorCorrection_SetExclusive( fileLevel.colorCorrection, false )
+	SetMapSetting_FogEnabled( true )
+
+	// Delete menu entities
+	DeleteMenuEntities()
+
+	if ( fileLevel.lightEntsExist )
+	{
+		fileLevel.keyLight.SetTweakLightRealtimeShadows( false )
+		fileLevel.keyLight.SetTweakLightUpdateShadowsEveryFrame( false )
+
+		fileLevel.fillLight.SetTweakLightRealtimeShadows( false )
+		fileLevel.fillLight.SetTweakLightUpdateShadowsEveryFrame( false )
+
+		fileLevel.rimLightL.SetTweakLightRealtimeShadows( false )
+		fileLevel.rimLightL.SetTweakLightUpdateShadowsEveryFrame( false )
+
+		fileLevel.rimLightR.SetTweakLightRealtimeShadows( false )
+		fileLevel.rimLightR.SetTweakLightUpdateShadowsEveryFrame( false )
+	}
+
+	fileLevel.menuEntsReady = false
+
+	// OnCharacterSelectNewMenuClosed_RemoveCallbacks()
+}
 void function OnCharacterSelectNewMenuClosed_RemoveCallbacks()
 {
 	RemoveCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnTeammateLoadoutSelectionChanged, false )
@@ -1054,17 +1096,11 @@ void function CreateCharacterSelectClientEnts()
 			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 			{
 				targetCamera = GetEntByScriptName( CAMERA_ENT_NAME )
-				fileLevel.camera = CreateClientSidePointCamera( <1958, 26647, 14422>, <47, -65, 0	>, 100 )
+				fileLevel.camera = CreateClientSidePointCamera( <1958, 26647, 14422>, <47, -65, 0>, 100 )
 				targetPilot = GetEntByScriptName( CHARACTER_ENT_NAME )
 				fileLevel.characterNode = CreateScriptRef( targetPilot.GetOrigin(), targetPilot.GetAngles() )
 				asset defaultModel = GetGlobalSettingsAsset( DEFAULT_PILOT_SETTINGS, "bodyModel" )
 				CreateNewCharacterModel( defaultModel )
-				
-				fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( <-70, 0, -5>, <0, 0, 0>, BACKGROUND_GEO_MODEL )
-				fileLevel.backgroundModelGeo.kv.solid = 6
-				fileLevel.backgroundModelGeo.kv.disableshadows = 1
-				fileLevel.backgroundModelGeo.kv.fadedist = -1
-				fileLevel.backgroundModelGeo.MakeSafeForUIScriptHack()
 			}
 			else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 			{
@@ -1074,12 +1110,6 @@ void function CreateCharacterSelectClientEnts()
 				fileLevel.characterNode = CreateScriptRef( targetPilot.GetOrigin(), targetPilot.GetAngles() )
 				asset defaultModel = GetGlobalSettingsAsset( DEFAULT_PILOT_SETTINGS, "bodyModel" )
 				CreateNewCharacterModel( defaultModel )
-				
-				fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( <-70, 0, 0>, <0, 0, 0>, BACKGROUND_GEO_MODEL_KC )
-				fileLevel.backgroundModelGeo.kv.solid = 6
-				fileLevel.backgroundModelGeo.kv.disableshadows = 1
-				fileLevel.backgroundModelGeo.kv.fadedist = -1
-				fileLevel.backgroundModelGeo.MakeSafeForUIScriptHack()
 			}
 
 		fileLevel.dontdestroy = false
@@ -1114,11 +1144,11 @@ void function CreateCharacterSelectClientEnts()
 			
 			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 			{
-			r5reloadedOrigin = fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 120) + <40, 0, 0>
+			r5reloadedOrigin = fileLevel.camera.GetOrigin() + fileLevel.camera.GetForwardVector() * 120 + fileLevel.camera.GetRightVector() * 40
 			}
 			else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 			{
-			r5reloadedOrigin = fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 120) + <-40, 0, 0>
+			r5reloadedOrigin = fileLevel.camera.GetOrigin() + fileLevel.camera.GetForwardVector() * 120 - fileLevel.camera.GetRightVector() * 40
 			}
 			
 		if ( !fileLevel.isBrowseMode )
@@ -1246,7 +1276,8 @@ void function UpdateCamera()
 	ColorCorrection_SetExclusive( fileLevel.colorCorrection, true )
 	ColorCorrection_SetWeight( fileLevel.colorCorrection, 1.0 )
 	SetMapSetting_FogEnabled( false )
-
+	DoF_SetNearDepthToDefault()
+	DoF_SetFarDepthToDefault()
 	//DoF_SetNearDepth( MAIN_DOF_NEAR_START, MAIN_DOF_NEAR_END )
 	//DoF_SetFarDepth( MAIN_DOF_FAR_START, MAIN_DOF_FAR_END )
 	//DoFSetDilateInfocus( true ) // We want to reduce DoF aliasing around bright edges in the menus
@@ -1549,13 +1580,14 @@ void function LockCharacter()
 	if ( !IsValid( localClientPlayer ) )
 		return
 
-	localClientPlayer.ClientCommand( "Sur_UpdateCharacterLock 1" )
-
 	EmitSoundOnEntity( localClientPlayer, "UI_Survival_Intro_LegendSelect" )
-
 	thread FlashScreenWhite( 0.1, 0.3 )
 
-	localClientPlayer.ClientCommand( "Sur_MakeEligibleForJumpMaster" )
+	if(!fileLevel.isBrowseMode)
+	{
+		localClientPlayer.ClientCommand( "Sur_UpdateCharacterLock 1" )
+		localClientPlayer.ClientCommand( "Sur_MakeEligibleForJumpMaster" )
+	}
 }
 
 void function Client_TryUnlockCharacter()
@@ -2184,13 +2216,20 @@ void function UpdateSceneThink_AimTrainer()
 	ItemFlavor ornull currentCharacterOrNull = fileLevel.desiredCharacterOrNull
 	bool playedPickingAnimForCharacter       = false
 	bool playedReadyAnimForCharacter         = false
-
+	
+	OnThreadEnd(
+		function() : ()
+		{
+			printt("exit UpdateScene thread")
+		}
+	)
+	
 	while( true )
 	{
 		WaitSignal( fileLevel.signalDummy, "UpdateScene" )
-		WaitFrame()
-		// if ( fileLevel.desiredMenuState == -1 || fileLevel.desiredCharacterOrNull == null )
-			// continue
+	
+		if ( fileLevel.desiredMenuState == -1 || fileLevel.desiredCharacterOrNull == null )
+			continue
 
 		bool shouldUpdateModel = true
 		bool shouldUpdateAnim  = true
@@ -2222,15 +2261,6 @@ void function UpdateSceneThink_AimTrainer()
 			shouldUpdateAnim = true
 			shouldUpdateModel = true
 		}
-
-		// Don't play a 'picking' anim on a model that already played the 'ready' anim
-		if ( currentMenuState == eNewCharacterSelectMenuState.PICKING && playedReadyAnimForCharacter )
-		{
-			shouldUpdateAnim = false
-		}
-
-		//if ( shouldUpdateModel )
-		//	shouldUpdateAnim = true
 
 		printt( "| -------- UpdateScene --------" )
 		printt( "| shouldUpdateModel:", shouldUpdateModel )
@@ -2269,7 +2299,7 @@ void function UpdateSceneThink()
 	ItemFlavor ornull currentCharacterOrNull = null
 	bool playedPickingAnimForCharacter       = false
 	bool playedReadyAnimForCharacter         = false
-
+	
 	while( true )
 	{
 		WaitSignal( fileLevel.signalDummy, "UpdateScene" )
@@ -2585,7 +2615,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 		
 		int ThisRoundAnim = RandomIntRangeInclusive(0,GetAllGoodAnimsFromGladcardStancesForCharacter(character).len()-1)
 		array<ItemFlavor> animsforthischaracter = GetAllGoodAnimsFromGladcardStancesForCharacter(character)
-		printt("Flowstate LEGEND SELECT ANIM DEBUG: This anim: " + ThisRoundAnim)		
+		// printt("Flowstate LEGEND SELECT ANIM DEBUG: This anim: " + ThisRoundAnim)		
 		Signal( fileLevel.signalDummy, "UpdatingAnim" )
 		EndSignal( fileLevel.signalDummy, "UpdatingAnim" )
 		EndSignal( fileLevel.signalDummy, "CharacterSelectClosing" )
@@ -2599,35 +2629,30 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 					fileLevel.characterModel.SetLocalOrigin( <8000, -10000, 5000> )
 				}
 		
-		if (fileLevel.dontdestroy) fileLevel.backgroundModelGeo.Destroy()
-		fileLevel.dontdestroy = true
+		if (IsValid(fileLevel.backgroundModelGeo)) 
+			fileLevel.backgroundModelGeo.Destroy()
 
 		if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 		{
-			fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetOrigin() - <0, 0, 5>, fileLevel.characterModel.GetAngles(), BACKGROUND_GEO_MODEL )
+			fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetLocalOrigin() - <0, 0, 5>, fileLevel.characterModel.GetAngles(), BACKGROUND_GEO_MODEL )
 			fileLevel.backgroundModelGeo.kv.solid = 6
 			fileLevel.backgroundModelGeo.kv.disableshadows = 1
 			fileLevel.backgroundModelGeo.kv.fadedist = -1
-			fileLevel.backgroundModelGeo.MakeSafeForUIScriptHack()
+			// fileLevel.backgroundModelGeo.MakeSafeForUIScriptHack()
 			fileLevel.characterNode.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin())
 			fileLevel.camera.SetParent( fileLevel.characterModel, "VDU", false )
-			fileLevel.camera.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin() + <60, -10, 0>)
-			printt("Camera location DEBUG: " + fileLevel.camera.GetOrigin())
-			printt("Character location DEBUG: " + fileLevel.characterModel.GetOrigin())
+			fileLevel.camera.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin() + <60, -10, 10>)
 		}
 		else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
 		{
-			fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetLocalOrigin() - <0, 0, 5>, fileLevel.characterModel.GetLocalAngles(), BACKGROUND_GEO_MODEL_KC )
+			fileLevel.backgroundModelGeo = CreateClientSidePropDynamic( fileLevel.characterModel.GetLocalOrigin() - <0, 0, 5>, fileLevel.characterModel.GetAngles(), BACKGROUND_GEO_MODEL_KC )
 			fileLevel.backgroundModelGeo.kv.solid = 6
 			fileLevel.backgroundModelGeo.kv.disableshadows = 1
 			fileLevel.backgroundModelGeo.kv.fadedist = -1
-			fileLevel.backgroundModelGeo.MakeSafeForUIScriptHack()
+			// fileLevel.backgroundModelGeo.MakeSafeForUIScriptHack()
 			fileLevel.characterNode.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin())
 			fileLevel.camera.SetParent( fileLevel.characterModel, "VDU", false )
 			fileLevel.camera.SetOrigin(fileLevel.characterModel.GetOrigin() + <-30, 40, 60>)
-			//fileLevel.camera.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin() + <0, -10, 0>)
-			printt("Camera location DEBUG: " + fileLevel.camera.GetOrigin())
-			printt("Character location DEBUG: " + fileLevel.characterModel.GetOrigin())
 		}
 		
 		if ( currentMenuState == eNewCharacterSelectMenuState.PICKING )
@@ -2637,11 +2662,12 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
 
-			try{
-			RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
-			RuiDestroyIfAlive(fileLevel.backgroundRui)} catch(e420){}
+			if ( fileLevel.backgroundRuiTopo != null )
+				RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
+			if ( fileLevel.backgroundRui != null )
+				RuiDestroyIfAlive(fileLevel.backgroundRui)
 
-			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 200) + <30, 0, 35>, fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
+			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 200) + (fileLevel.camera.GetRightVector() * 15) + (fileLevel.camera.GetUpVector() * 15 ), fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", nameRuiTopo, RUI_DRAW_WORLD, 0 )
 			
 			RuiSetString( fileLevel.backgroundRui, "nameString", Localize( ItemFlavor_GetLongName( character ) ) )
@@ -2659,11 +2685,12 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
 			
-			try{
-			RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
-			RuiDestroyIfAlive(fileLevel.backgroundRui)} catch(e420){}
+			if ( fileLevel.backgroundRuiTopo != null )
+				RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
+			if ( fileLevel.backgroundRui != null )
+				RuiDestroyIfAlive(fileLevel.backgroundRui)
 
-			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 250) + <30, 0, 35>, fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
+			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 200) + (fileLevel.camera.GetRightVector() * 10) + (fileLevel.camera.GetUpVector() * 15 ), fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", nameRuiTopo, RUI_DRAW_WORLD, 0 )
 			
 			RuiSetString( fileLevel.backgroundRui, "nameString", Localize( ItemFlavor_GetLongName( character ) ) )
