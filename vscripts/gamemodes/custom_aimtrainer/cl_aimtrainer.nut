@@ -764,13 +764,13 @@ void function ChangeAimTrainer_STRAFING_SPEEDClient(string desiredSpeed)
 	
 	switch(int(desiredSpeed)){
 	case 0:
-		speed = 0.9
+		speed = 0.85
 		break
 	case 1:
-		speed = 1.15
+		speed = 1
 		break
 	case 2:
-		speed = 1.4
+		speed = 1.35
 		break
 	case 3:
 		speed = 1.8
