@@ -682,22 +682,31 @@ void function StartBubblefightChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
+	//give shield again
+	Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
+	player.SetShieldHealthMax(50)
+	player.SetShieldHealth(50)
 	
-	entity shield = CreateBubbleShieldWithSettings( player.GetTeam(), player.GetOrigin() + AnglesToForward(player.GetAngles())*500+Normalize(player.GetRightVector())*225, onGroundLocationAngs*-1, player, 999, false, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
+	entity shield = CreateBubbleShieldWithSettings( player.GetTeam(), player.GetOrigin() + player.GetForwardVector()*500 + player.GetRightVector()*225, onGroundLocationAngs*-1, player, 999, false, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
 	shield.SetCollisionDetailHigh()
 	shield.kv.rendercolor = TEAM_COLOR_ENEMY
 	ChallengesEntities.props.append(shield)
 
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION	
 	thread ChallengeWatcherThread(endtime, player)
-
+	bool onlyfirsttime = false
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		if(ChallengesEntities.dummies.len()<1){
-			entity dummy = CreateDummy( 99, shield.GetOrigin()+Normalize(shield.GetRightVector())*225, <0,90,0> )
-			vector pos = dummy.GetOrigin()
-			vector angles = dummy.GetAngles()
-			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
+			entity dummy
+			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+			{
+				dummy = CreateDummy( 99, shield.GetOrigin()+shield.GetRightVector()*-225, <0,140,0> )
+			}else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
+			{
+				dummy = CreateDummy( 99, shield.GetOrigin()+shield.GetRightVector()*225, <0,90,0> )
+			}
+			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )	
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
@@ -709,12 +718,38 @@ void function StartBubblefightChallenge(entity player)
 			SetTargetName(dummy, "BubbleFightDummy")
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 			AddEntityCallback_OnKilled(dummy, OnDummyKilled)
+			
+			if(!onlyfirsttime)
+			{
+				if (GetMapName() != "mp_rr_canyonlands_staging" )
+				{
+					player.SetOrigin(dummy.GetOrigin() + dummy.GetForwardVector()*150)
+					vector angles2 = VectorToAngles( dummy.GetOrigin() - player.GetOrigin() )
+					player.SetAngles(angles2)
+				}
+				onlyfirsttime = true
+			}
 			thread BubbleFightStrafe(dummy, player, shield)
 			dummy.SetBehaviorSelector( "behavior_dummy_empty" )
 			dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_NEW_ENEMY_FROM_SOUND )
-		
+			thread DamagePlayerOverTime(player, dummy)
 		}
 		WaitFrame()
+	}
+}
+void function DamagePlayerOverTime(entity player, entity dummy)
+{
+	dummy.EndSignal("OnDeath")
+	player.EndSignal("ChallengeTimeOver")
+	
+	while(IsValid(player) && IsValid(dummy))
+	{
+		if(player.GetShieldHealth() > 0)
+			player.SetShieldHealth(max(0,player.GetShieldHealth()-10))
+		else
+			player.TakeDamage( 10, dummy, null, { damageSourceId = eDamageSourceId.bubble_shield } )
+		
+		wait 2
 	}
 }
 
@@ -731,7 +766,7 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 		}
 	)
 				
-	array<string> weapons = ["mp_weapon_hemlok"]
+	array<string> weapons = ["mp_weapon_hemlok", "mp_weapon_lstar", "mp_weapon_vinson"]
 	string randomWeapon = weapons[RandomInt(weapons.len())]
 	entity weapon = ai.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
 	
@@ -752,27 +787,37 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 	
 	while(true)
 	{
-		float distance = (ai.GetOrigin() - (shield.GetOrigin()+Normalize(shield.GetRightVector())*225 )).x //Tracking the distance dummy is to the border of the bubble, forcing it to move that way
+		float distance
 		
+		if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+			distance = (ai.GetOrigin() - (shield.GetOrigin()+shield.GetRightVector()*-225 )).x //Tracking the distance dummy is to the border of the bubble, forcing it to move that way
+		else
+			distance = (ai.GetOrigin() - (shield.GetOrigin()+shield.GetRightVector()*225 )).x //Tracking the distance dummy is to the border of the bubble, forcing it to move that way
+			
 		int random = RandomIntRangeInclusive(1,4)
 
-		if(random == 1 || random == 2 || random == 3){			
-			if(distance <= -5){
+		if(random == 1 || random == 2 || random == 3)
+		{			
+			if(distance <= -5)
+			{
 				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 				wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED)
-				weapon.FireWeapon_Default( player.GetOrigin()+Vector(0,0,60)+(Normalize(player.GetRightVector())*30), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )}
-			else if(distance > 5){
+				// weapon.FireWeapon_Default( player.GetOrigin(), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
+			}
+			else if(distance > 5)
+			{
 				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 				wait RandomFloatRange(0.18,0.22)*(1/AimTrainer_STRAFING_SPEED)
-				weapon.FireWeapon_Default( player.GetOrigin()+Vector(0,0,60)+(Normalize(player.GetRightVector())*30), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
-				}
+				// weapon.FireWeapon_Default( player.GetOrigin(), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
+			}
 		} else if( random == 4 && distance > 22 || random == 4 && distance < -15  )
 		{
 			ai.Anim_Stop()
+			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
 			wait RandomFloatRange(0.15,0.3)
-			weapon.FireWeapon_Default(player.GetOrigin()+Vector(0,0,60)+(Normalize(player.GetRightVector())*30), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
+			// weapon.FireWeapon_Default(player.GetOrigin()+Vector(0,0,60)+player.GetRightVector()*30, ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
 		}
 		WaitFrame()
 	}
@@ -2192,6 +2237,8 @@ void function ChallengesStartAgain(entity player)
 				
 				//give shield again
 				Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
+				player.SetShieldHealthMax(50)
+				player.SetShieldHealth(50)
 				
 				//reload
 				entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -2394,7 +2441,15 @@ void function OnDummyKilled(entity ent, var damageInfo)
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	if ( IsValidHeadShot( damageInfo, ent )) return
 	if(!attacker.IsPlayer() ) return
-	if(ent.GetTargetName() == "BubbleFightDummy") attacker.SetHealth(min(attacker.GetHealth() + 10, attacker.GetMaxHealth()))
+	if(ent.GetTargetName() == "BubbleFightDummy") 
+	{
+		entity player = attacker
+		if(player.GetHealth() < player.GetMaxHealth() && IsValid(player))
+			player.SetHealth(min(player.GetHealth() + 10, player.GetMaxHealth()))
+		else if(player.GetShieldHealth() < player.GetShieldHealthMax() && player.GetHealth() == player.GetMaxHealth() && IsValid(player))
+			player.SetShieldHealth(min(player.GetShieldHealthMax(),player.GetShieldHealth()+10))
+		
+	}
 	if(AimTrainer_INFINITE_AMMO2) attacker.RefillAllAmmo()
 	attacker.p.straferDummyKilledCount++
 	Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
