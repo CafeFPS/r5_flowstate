@@ -2655,9 +2655,9 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			fileLevel.backgroundModelGeo.kv.fadedist = -1
 			fileLevel.characterNode.SetLocalOrigin(fileLevel.characterModel.GetLocalOrigin())
 			fileLevel.camera.SetParent( fileLevel.characterModel, "VDU", false )
-			fileLevel.camera.SetOrigin(fileLevel.characterModel.GetOrigin() + <-30, 40, 60>)
+			fileLevel.camera.SetOrigin(fileLevel.characterModel.GetOrigin() + <-10, 40, 60>)
 			if(GetMapName() == "mp_rr_canyonlands_staging")
-				fileLevel.camera.SetOrigin(fileLevel.camera.GetOrigin() - fileLevel.camera.GetRightVector()*20 + <0, 0, 20>)
+				fileLevel.camera.SetOrigin(fileLevel.camera.GetOrigin() + <0, 0, 20>)
 		}
 		
 		if ( currentMenuState == eNewCharacterSelectMenuState.PICKING )
