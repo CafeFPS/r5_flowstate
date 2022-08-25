@@ -32,7 +32,7 @@ void function InitFRChallengesSettings( var newMenuArg )
 	
 	AddEventHandlerToButton( menu, "Challenges", UIE_CLICK, ChallengesButtonFunct )
 	AddEventHandlerToButton( menu, "WeaponSelector", UIE_CLICK, WeaponSelectorOpenMenu )
-	
+	AddEventHandlerToButton( menu, "CharacterSelector", UIE_CLICK, LegendSelectOpen )
 	//RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "StatusDetails" ) ), "details", "Test" )
 	Hud_SetText( Hud_GetChild( file.menu, "DurationText" ), "60" )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "ShieldSelectorButton"), UIE_CHANGE, ShieldSelectorButton )
@@ -97,6 +97,11 @@ void function UseDummyModelButton(var button)
 void function WeaponSelectorOpenMenu(var button)
 {
 	RunClientScript("OpenFRChallengesSettingsWpnSelector")
+}
+
+void function LegendSelectOpen(var button)
+{
+	RunClientScript("OpenCharacterSelectAimTrainer", true)
 }
 
 void function UpdateChallengeDuration(var button)

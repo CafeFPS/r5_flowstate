@@ -30,15 +30,18 @@ global function CharacterSelect_AssignCharacter
 #if UI
 global function UI_InitCharacterSelectNewMenu
 global function UI_RunCharacterSelect
+global function UI_RunCharacterSelect_AimTrainer
 global function UI_CloseCharacterSelect
 global function ClientToUI_UpdateSquadMute
 #endif
 
 #if CLIENT
 global function OpenCharacterSelectNewMenu
+global function OpenCharacterSelectAimTrainer
 global function DoSquadCardsPresentation
 global function DoChampionSquadCardsPresentation
 global function _OpenCharacterSelectNewMenu
+global function _OpenCharacterSelectNewMenu_AimTrainer
 global function CloseCharacterSelectNewMenu
 global function OnCharacterSelectNewMenuClosed_RemoveCallbacks
 global function UpdateMenuElementHandles
@@ -62,7 +65,7 @@ const string LIGHT_FILL_NAME = "char_sel_light_fill"
 const string LIGHT_RIML_NAME = "char_sel_light_rim_l"
 const string LIGHT_RIMR_NAME = "char_sel_light_rim_r"
 
-const CAMERA_FOV = 60
+const CAMERA_FOV = 50
 const CAMERA_FOV_LEGACY = 35.5
 const CAMERA_TRANSITION_DURATION = 0.25
 const MAIN_DOF_NEAR_START = 7.5
@@ -220,6 +223,8 @@ bool function UI_ShouldShowToggleMuteFooter()
 
 void function UI_OnLoadoutButton_Enter( var button )
 {
+	if(fileLevel.isBrowseMode) return
+		
 	var chatbox = Hud_GetChild( fileForever.menu, "LobbyChatBox" )
 
 	if ( !HudChat_HasAnyMessageModeStoppedRecently() )
@@ -318,6 +323,84 @@ void function OpenCharacterSelectNewMenu( bool isBrowseMode = false )
 
 	foreach ( func in file.Callbacks_OnCharacterMenuOpened )
 		func()
+}
+
+void function OpenCharacterSelectAimTrainer( bool isBrowseMode = false )
+{
+	fileLevel.isBrowseMode = isBrowseMode
+	fileLevel.isBrowseModeStartTime = Time()
+
+	fileLevel.menuEntsExist = true
+	fileLevel.lightEntsExist = DoMenuLightsExist()
+	fileLevel.detailsPanelVisible = false
+
+	RunUIScript( "UI_RunCharacterSelect_AimTrainer", fileLevel.isBrowseMode, fileLevel.menuEntsExist )
+	
+	foreach ( func in file.Callbacks_OnCharacterMenuOpened )
+		func()
+}
+#endif
+
+#if UI
+void function UI_RunCharacterSelect_AimTrainer( bool isBrowseMode, bool menuEntsExist )
+{
+	CloseAllMenus()
+
+	fileLevel.isBrowseMode = isBrowseMode
+	fileLevel.isBrowseModeStartTime = Time()
+	
+	if ( !CanRunClientScript() )
+		return
+
+	RunClientScript( "_OpenCharacterSelectNewMenu_AimTrainer", fileForever.menu )
+
+	FlashGameWindow()
+	AdvanceMenu( fileForever.menu )
+}
+#endif
+
+#if CLIENT
+void function _OpenCharacterSelectNewMenu_AimTrainer( var menu )
+{
+	RemoveCallback_OnPlayerDisconnected( OnPlayerDisconnected )
+	AddCallback_OnPlayerDisconnected( OnPlayerDisconnected )
+
+	RemoveDestroyCallback( "player", OnPlayerDestroyed )
+	AddDestroyCallback( "player", OnPlayerDestroyed )
+
+	UpdateMenuElementHandles_AimTrainer( menu )
+
+	// thread FlashScreenWhite()
+	// thread DoIntroAimTrainer()
+	
+	fileLevel.localClientLockstepIndex = GetLocalClientPlayer().GetPlayerNetInt( "characterSelectLockstepPlayerIndex" )
+
+	CreateCharacterSelectClientEnts()
+	UpdateCamera()
+
+	fileLevel.menuEntsReady = true
+
+	UpdateMenuButtons()
+	thread UpdateSceneThink_AimTrainer()
+
+	fileLevel.desiredCharacterOrNull = LoadoutSlot_GetItemFlavor( LocalClientEHI(), Loadout_CharacterClass() )
+	SetMenuState( eNewCharacterSelectMenuState.LOCKED )
+	
+	if ( fileLevel.isBrowseMode )
+	{
+		ItemFlavor character = LoadoutSlot_GetItemFlavor( LocalClientEHI(), Loadout_CharacterClass() )
+		int buttonIndex = GetButtonIndexForCharacter( character )
+		if ( buttonIndex >= 0)
+		{
+			EmitSoundOnEntity( GetLocalClientPlayer(), "ui_menu_focus_legendselectscreen" )
+			UpdateForFocusOnButtonIndex( buttonIndex )
+		}
+	}
+}
+
+void function DoIntroAimTrainer()
+{
+	wait ScreenCoverTransition( Time() + 1 )	
 }
 
 void function AddCallback_OnCharacterSelectMenuOpened( void functionref() callbackFunc )
@@ -725,6 +808,53 @@ void function UpdateMenuElementHandles( var menu )
 	}
 }
 
+void function UpdateMenuElementHandles_AimTrainer( var menu )
+{
+	fileLevel.menu = menu
+	fileLevel.whiteFlash = Hud_GetChild( menu, "WhiteFlash" )
+	fileLevel.portraitsPanel = Hud_GetChild( menu, "PortraitsPanel" )
+	fileLevel.detailsPanel = Hud_GetChild( menu, "DetailsRuiPanel" )
+	fileLevel.buttonHintPanel = Hud_GetChild( menu, "ButtonHintRuiPanel" )
+
+	fileLevel.characterButtons = []
+	fileLevel.characterButtonRuis = []
+	fileLevel.detailsRui = Hud_GetRui( fileLevel.detailsPanel )
+	fileLevel.buttonHintRui = Hud_GetRui( fileLevel.buttonHintPanel )
+
+	for ( int i = 0; i < NUM_CHARACTER_SELECT_BUTTONS; i++ )
+	{
+		// Get the button
+		var button = Hud_GetChild( fileLevel.portraitsPanel, "Button" + i )
+		fileLevel.characterButtons.append( button )
+
+		var buttonRui = Hud_GetRui( button )
+		fileLevel.characterButtonRuis.append( buttonRui )
+
+		// Add button callbacks
+		if ( button in fileLevel.buttonEventHandlersAdded_Click )
+		{
+			Hud_RemoveEventHandler( button, UIE_CLICK, OnLoadoutButton_Activate_AimTrainer )
+			delete fileLevel.buttonEventHandlersAdded_Click[ button ]
+		}
+		Hud_AddEventHandler( button, UIE_CLICK, OnLoadoutButton_Activate_AimTrainer )
+		fileLevel.buttonEventHandlersAdded_Click[ button ] <- true
+
+		if ( button in fileLevel.buttonEventHandlersAdded_Focus )
+		{
+			Hud_RemoveEventHandler( button, UIE_GET_FOCUS, OnLoadoutButton_Focused_AimTrainer )
+			delete fileLevel.buttonEventHandlersAdded_Focus[ button ]
+		}
+		Hud_AddEventHandler( button, UIE_GET_FOCUS, OnLoadoutButton_Focused_AimTrainer )
+		fileLevel.buttonEventHandlersAdded_Focus[ button ] <- true
+
+		//Hud_RemoveEventHandler( button, UIE_LOSE_FOCUS, OnLoadoutButton_LostFocus )
+
+		//Hud_AddEventHandler( button, UIE_LOSE_FOCUS, OnLoadoutButton_LostFocus )
+
+		Hud_SetVisible( button, false )
+	}
+}
+
 void function UpdateMenuButtons()
 {
 	array<ItemFlavor> shippingCharacters
@@ -812,6 +942,9 @@ void function UI_OnCharacterSelectMenu_NavBack()
 	if ( fileLevel.isBrowseMode )
 	{
 		RunClientScript( "CloseCharacterSelectNewMenu" )
+		CloseAllMenus()
+		RunClientScript("ServerCallback_CoolCameraOnMenu")
+		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)	
 		return
 	}
 
@@ -909,9 +1042,6 @@ void function OnCharacterSelectNewMenuClosed_RemoveCallbacks()
 
 void function CreateCharacterSelectClientEnts()
 {
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 	if (GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){ 
 		if ( !fileLevel.menuEntsExist )
 			return
@@ -974,12 +1104,14 @@ void function CreateCharacterSelectClientEnts()
 		}
 
 		// In-World RUI for name
-		vector backgroundRuiOrigin = cameraOrigin + (targetCamera.GetForwardVector() * 200)
-		vector backgroundRuiAngles = targetPilot.GetAngles()
-		fileLevel.backgroundRuiTopo = CreateRUITopology_Worldspace( backgroundRuiOrigin, backgroundRuiAngles * -1, RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
-		fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", fileLevel.backgroundRuiTopo, RUI_DRAW_WORLD, 0 )
-		Chroma_BeginCharacterSelect()
-		vector r5reloadedOrigin
+
+			vector backgroundRuiOrigin = cameraOrigin + (targetCamera.GetForwardVector() * 200)
+			vector backgroundRuiAngles = targetPilot.GetAngles()
+			fileLevel.backgroundRuiTopo = CreateRUITopology_Worldspace( backgroundRuiOrigin, backgroundRuiAngles * -1, RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
+			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", fileLevel.backgroundRuiTopo, RUI_DRAW_WORLD, 0 )
+			Chroma_BeginCharacterSelect()
+			vector r5reloadedOrigin
+			
 			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 			{
 			r5reloadedOrigin = fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 120) + <40, 0, 0>
@@ -988,16 +1120,18 @@ void function CreateCharacterSelectClientEnts()
 			{
 			r5reloadedOrigin = fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 120) + <-40, 0, 0>
 			}
+			
 		if ( !fileLevel.isBrowseMode )
-		{
+		{	
 			var countdownRuiTopo = CreateRUITopology_Worldspace(r5reloadedOrigin, fileLevel.camera.GetAngles() + <0, 0, 0>, RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.countdownRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", countdownRuiTopo, RUI_DRAW_WORLD, 0 )
 			RuiSetString( fileLevel.countdownRui, "nameString", "R5 RELOADED" )
 			RuiSetString( fileLevel.countdownRui, "footnoteString", "Modded Apex - Unofficial" )
 			thread CountdownTimerSounds()
 		}
-	} else {
-			if ( !fileLevel.menuEntsExist )
+	} else 
+	{
+		if ( !fileLevel.menuEntsExist )
 			return
 
 		entity targetCamera = GetEntByScriptName( CAMERA_ENT_NAME )
@@ -1310,6 +1444,15 @@ void function OnLoadoutButton_Focused( var button )
 	UpdateForFocusOnButtonIndex( index )
 }
 
+void function OnLoadoutButton_Focused_AimTrainer( var button )
+{
+	// if ( fileLevel.isBrowseMode && ((Time() - fileLevel.isBrowseModeStartTime) < 0.1) )
+		// return
+
+	int index = fileLevel.characterButtons.find( button )
+	UpdateForFocusOnButtonIndex( index )
+}
+
 void function DoBrowseModeCharacterSelectEffects()
 {
 	//
@@ -1323,6 +1466,25 @@ void function DoBrowseModeCharacterSelectEffects()
 		if ( IsAlive( player ) )
 			PlayClientDialogueOnEntity( GetAnyAliasIdForName( "bc_returnFromRespawn" ), 0, player )
 	}()
+}
+
+void function OnLoadoutButton_Activate_AimTrainer( var button )
+{
+	int buttonIndex      = fileLevel.characterButtons.find( button )
+	ItemFlavor character = fileLevel.buttonIndexCharacterMap[ buttonIndex ]
+
+	// // Request this character
+	RequestSetItemFlavorLoadoutSlot( LocalClientEHI(), Loadout_CharacterClass(), character )
+
+	// Tell the server you want to lock this class
+	LockCharacter()
+
+	foreach( func in file.Callbacks_OnCharacterLocked )
+		func( character )
+
+	// Update Scene
+	fileLevel.desiredCharacterOrNull = character
+	SetMenuState( eNewCharacterSelectMenuState.LOCKED )
 }
 
 void function OnLoadoutButton_Activate( var button )
@@ -2014,6 +2176,91 @@ void function SetMenuState( int state )
 	Signal( fileLevel.signalDummy, "UpdateScene" )
 }
 
+void function UpdateSceneThink_AimTrainer()
+{
+	EndSignal( fileLevel.signalDummy, "CharacterSelectClosing" )
+
+	int currentMenuState                     = -1 // eNewCharacterSelectMenuState.PICKING
+	ItemFlavor ornull currentCharacterOrNull = fileLevel.desiredCharacterOrNull
+	bool playedPickingAnimForCharacter       = false
+	bool playedReadyAnimForCharacter         = false
+
+	while( true )
+	{
+		WaitSignal( fileLevel.signalDummy, "UpdateScene" )
+		WaitFrame()
+		// if ( fileLevel.desiredMenuState == -1 || fileLevel.desiredCharacterOrNull == null )
+			// continue
+
+		bool shouldUpdateModel = true
+		bool shouldUpdateAnim  = true
+		int currentPickIndex   = GetGlobalNetInt( "characterSelectLockstepIndex" )
+
+		bool menuStateChanged = fileLevel.desiredMenuState != currentMenuState
+		if ( menuStateChanged )
+			currentMenuState = fileLevel.desiredMenuState
+
+		// New character was selected, we want to update the model and animation
+		if ( fileLevel.desiredCharacterOrNull != currentCharacterOrNull )
+		{
+			shouldUpdateModel = true
+			shouldUpdateAnim = true
+			currentCharacterOrNull = fileLevel.desiredCharacterOrNull
+		}
+
+		// Don't update the model or animation if we are seeing a lock-in sequence
+		if ( currentPickIndex != fileLevel.localClientLockstepIndex && fileLevel.lastLockedPlayer != GetTeammateForPickingIndex( currentPickIndex ) && Time() - fileLevel.lockSequenceAnimTime < READY_ANIM_MIN_DURATION )
+		{
+			shouldUpdateAnim = false
+			shouldUpdateModel = false
+		}
+
+
+		// A character was just locked in
+		if ( menuStateChanged && currentMenuState == eNewCharacterSelectMenuState.LOCKED )
+		{
+			shouldUpdateAnim = true
+			shouldUpdateModel = true
+		}
+
+		// Don't play a 'picking' anim on a model that already played the 'ready' anim
+		if ( currentMenuState == eNewCharacterSelectMenuState.PICKING && playedReadyAnimForCharacter )
+		{
+			shouldUpdateAnim = false
+		}
+
+		//if ( shouldUpdateModel )
+		//	shouldUpdateAnim = true
+
+		printt( "| -------- UpdateScene --------" )
+		printt( "| shouldUpdateModel:", shouldUpdateModel )
+		printt( "| shouldUpdateAnim:", shouldUpdateAnim )
+		printt( "| -----------------------------" )
+
+		if ( shouldUpdateModel )
+		{
+			// if we change the model we need to update the anim as well
+			shouldUpdateAnim = true
+			playedPickingAnimForCharacter = false
+			playedReadyAnimForCharacter = false
+
+			// Update the model
+			thread UpdatePlayerModel( expect ItemFlavor(currentCharacterOrNull) )
+		}
+
+		if ( shouldUpdateAnim )
+		{
+			// Update the anim
+
+			if ( currentMenuState == eNewCharacterSelectMenuState.PICKING )
+				playedPickingAnimForCharacter = true
+			if ( currentMenuState == eNewCharacterSelectMenuState.LOCKED )
+				playedReadyAnimForCharacter = true
+
+			thread UpdatePlayerAnim( expect ItemFlavor(currentCharacterOrNull), currentMenuState )
+		}
+	}
+}
 void function UpdateSceneThink()
 {
 	EndSignal( fileLevel.signalDummy, "CharacterSelectClosing" )
@@ -2390,8 +2637,9 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
 
+			try{
 			RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
-			RuiDestroyIfAlive(fileLevel.backgroundRui)
+			RuiDestroyIfAlive(fileLevel.backgroundRui)} catch(e420){}
 
 			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 200) + <30, 0, 35>, fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", nameRuiTopo, RUI_DRAW_WORLD, 0 )
@@ -2406,13 +2654,14 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			Chroma_AddOverlay( CHROMALOOP_SMOKE, CHROMAWAVE_FLASH, {[0.0] = <1, 1, 1>}, 2.0 )
 			thread PlayCharacterReadyUpLine( character )
 			fileLevel.lockSequenceAnimTime = Time()
-							
+			
 			ItemFlavor anim = animsforthischaracter[ThisRoundAnim]
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
 			
+			try{
 			RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
-			RuiDestroyIfAlive(fileLevel.backgroundRui)
+			RuiDestroyIfAlive(fileLevel.backgroundRui)} catch(e420){}
 
 			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 250) + <30, 0, 35>, fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", nameRuiTopo, RUI_DRAW_WORLD, 0 )
