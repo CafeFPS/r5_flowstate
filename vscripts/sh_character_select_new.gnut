@@ -2662,11 +2662,11 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
 
-			if ( fileLevel.backgroundRuiTopo != null )
+			try{
 				RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
-			if ( fileLevel.backgroundRui != null )
 				RuiDestroyIfAlive(fileLevel.backgroundRui)
-
+				}catch(e420){}
+				
 			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 200) + (fileLevel.camera.GetRightVector() * 15) + (fileLevel.camera.GetUpVector() * 15 ), fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", nameRuiTopo, RUI_DRAW_WORLD, 0 )
 			
@@ -2685,10 +2685,10 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
 			
-			if ( fileLevel.backgroundRuiTopo != null )
+			try{
 				RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
-			if ( fileLevel.backgroundRui != null )
 				RuiDestroyIfAlive(fileLevel.backgroundRui)
+				}catch(e420){}
 
 			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 200) + (fileLevel.camera.GetRightVector() * 10) + (fileLevel.camera.GetUpVector() * 15 ), fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", nameRuiTopo, RUI_DRAW_WORLD, 0 )
