@@ -2657,7 +2657,7 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			fileLevel.camera.SetParent( fileLevel.characterModel, "VDU", false )
 			fileLevel.camera.SetOrigin(fileLevel.characterModel.GetOrigin() + <-30, 40, 60>)
 			if(GetMapName() == "mp_rr_canyonlands_staging")
-				fileLevel.camera.SetOrigin(fileLevel.camera.GetOrigin() + <0, 0, 15>)
+				fileLevel.camera.SetOrigin(fileLevel.camera.GetOrigin() - fileLevel.camera.GetRightVector()*20 + <0, 0, 20>)
 		}
 		
 		if ( currentMenuState == eNewCharacterSelectMenuState.PICKING )
@@ -2667,11 +2667,17 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
 
-			try{
-				RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
-				RuiDestroyIfAlive(fileLevel.backgroundRui)
-				}catch(e420){}
-				
+			if ( fileLevel.backgroundRui != null )
+			{
+				RuiDestroyIfAlive( fileLevel.backgroundRui )
+				fileLevel.backgroundRui = null
+			}
+			if ( fileLevel.backgroundRuiTopo != null )
+			{
+				RuiTopology_Destroy( fileLevel.backgroundRuiTopo )
+				fileLevel.backgroundRuiTopo = null
+			}
+
 			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 200) + (fileLevel.camera.GetRightVector() * 15) + (fileLevel.camera.GetUpVector() * 15 ), fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", nameRuiTopo, RUI_DRAW_WORLD, 0 )
 			
@@ -2690,10 +2696,16 @@ void function UpdatePlayerAnim( ItemFlavor character, int currentMenuState )
 			asset animtoplay = GetGlobalSettingsAsset( ItemFlavor_GetAsset( anim ), "movingAnimSeq" )		
 			thread PlayAnim( fileLevel.characterModel, animtoplay, fileLevel.characterNode )
 			
-			try{
-				RuiDestroyIfAlive(fileLevel.backgroundRuiTopo)
-				RuiDestroyIfAlive(fileLevel.backgroundRui)
-				}catch(e420){}
+			if ( fileLevel.backgroundRui != null )
+			{
+				RuiDestroyIfAlive( fileLevel.backgroundRui )
+				fileLevel.backgroundRui = null
+			}
+			if ( fileLevel.backgroundRuiTopo != null )
+			{
+				RuiTopology_Destroy( fileLevel.backgroundRuiTopo )
+				fileLevel.backgroundRuiTopo = null
+			}
 
 			var nameRuiTopo = CreateRUITopology_Worldspace( fileLevel.camera.GetOrigin() + (fileLevel.camera.GetForwardVector() * 200) + (fileLevel.camera.GetRightVector() * 10) + (fileLevel.camera.GetUpVector() * 15 ), fileLevel.camera.GetAngles(), RUI_NAME_PLATE_WIDTH, RUI_NAME_PLATE_HEIGHT )
 			fileLevel.backgroundRui = RuiCreate( $"ui/character_select_name_plate_new.rpak", nameRuiTopo, RUI_DRAW_WORLD, 0 )
