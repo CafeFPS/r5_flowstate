@@ -254,24 +254,24 @@ void function StrafeMovement(entity ai, entity player)
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED)
 		}
 		else if(random == 5|| random == 6|| random == 7|| random == 8){
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED)
 		}
 		else if (random == 9 || random == 10){
 			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.25)
+			wait RandomFloatRange(0.05,0.25)*(1/AimTrainer_STRAFING_SPEED)
 		}
 	}
 }
@@ -397,28 +397,28 @@ void function TargetSwitcthingWatcher(entity ai, entity player)
         //w s strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
         }
         else if(random == 4 || random == 5){
         //a d strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_BACKWARD", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
         }
         else if (random == 6){
         //a d small crouch strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
             ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
         }
     }
 }
@@ -746,7 +746,7 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 		ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 		ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 	}
-	wait RandomFloatRange(0.2,0.25)
+	wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED)
 	
 	if(!IsValid(ai)) return
 	
@@ -760,12 +760,12 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 			if(distance <= -5){
 				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-				wait RandomFloatRange(0.2,0.25)
+				wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED)
 				weapon.FireWeapon_Default( player.GetOrigin()+Vector(0,0,60)+(Normalize(player.GetRightVector())*30), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )}
 			else if(distance > 5){
 				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-				wait RandomFloatRange(0.18,0.22)
+				wait RandomFloatRange(0.18,0.22)*(1/AimTrainer_STRAFING_SPEED)
 				weapon.FireWeapon_Default( player.GetOrigin()+Vector(0,0,60)+(Normalize(player.GetRightVector())*30), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
 				}
 		} else if( random == 4 && distance > 22 || random == 4 && distance < -15  )
@@ -885,7 +885,7 @@ void function ArcstarsChallengeMovementThink(entity ai, entity player)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_BACKWARD", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 		}
-		else 
+		else //this will happen most likely
 		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
