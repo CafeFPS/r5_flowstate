@@ -2439,8 +2439,9 @@ void function OnTilePropDamaged( entity dummy, var damageInfo )
 void function OnDummyKilled(entity ent, var damageInfo)
 {
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
-	if ( IsValidHeadShot( damageInfo, ent )) return
 	if(!attacker.IsPlayer() ) return
+	if(AimTrainer_INFINITE_AMMO2) attacker.RefillAllAmmo()
+	if ( IsValidHeadShot( damageInfo, ent )) return
 	if(ent.GetTargetName() == "BubbleFightDummy") 
 	{
 		entity player = attacker
@@ -2450,7 +2451,6 @@ void function OnDummyKilled(entity ent, var damageInfo)
 			player.SetShieldHealth(min(player.GetShieldHealthMax(),player.GetShieldHealth()+10))
 		
 	}
-	if(AimTrainer_INFINITE_AMMO2) attacker.RefillAllAmmo()
 	attacker.p.straferDummyKilledCount++
 	Remote_CallFunction_NonReplay(attacker, "ServerCallback_LiveStatsUIDummiesKilled", attacker.p.straferDummyKilledCount)
 	ChallengesEntities.dummies.removebyvalue(ent)
