@@ -356,7 +356,7 @@ void function OnRespawnChamberSpawned( entity ent )
 	// spawn a new one with the correct targetname
 	entity respawnChamber = CreatePropScript_NoDispatchSpawn( model, origin, angles, 6 )
 	SetTargetName( respawnChamber, RESPAWN_CHAMBER_TARGETNAME )
-
+	respawnChamber.SetScriptName("script_survival_revival_chamber")
 	DispatchSpawn( respawnChamber )
 
 	if ( IsValid( link ) )

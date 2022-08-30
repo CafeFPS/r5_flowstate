@@ -532,7 +532,7 @@ void function EnergyChargeWeapon_StopCharge( entity weapon, EnergyChargeWeaponDa
 		}
 	#elseif SERVER
 		entity owner = weapon.GetWeaponOwner()
-		if ( IsValid( owner ) )
+		if ( IsValid( owner ) && owner.IsPlayer())
 		{
 			EmitSoundOnEntityExceptToPlayer( weapon, owner, expect string( weapon.GetWeaponInfoFileKeyField( "sound_energy_charge_end_3p" ) ) )
 		}

@@ -210,6 +210,7 @@ void function StartStraferDummyChallenge(entity player)
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
+	
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		entity dummy = CreateDummy( 99, onGroundDummyPos, Vector(0,0,0) )
@@ -236,10 +237,19 @@ void function StrafeMovement(entity ai, entity player)
 	ai.EndSignal("OnDeath")
 	player.EndSignal("ChallengeTimeOver")
 	
+	entity script_mover = CreateEntity( "script_mover" )
+	script_mover.kv.solid = 0
+	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	script_mover.kv.SpawnAsPhysicsMover = 0	
+	script_mover.SetOrigin( ai.GetOrigin() )
+	script_mover.SetAngles( ai.GetAngles() )
+	DispatchSpawn( script_mover )
+			
 	OnThreadEnd(
-		function() : ( ai )
+		function() : ( ai, script_mover)
 		{
 			if(IsValid(ai)) ai.Destroy()
+			if(IsValid(script_mover)) script_mover.Destroy()
 			ChallengesEntities.dummies.removebyvalue(dummy)
 		}
 	)
@@ -254,28 +264,97 @@ void function StrafeMovement(entity ai, entity player)
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 		}
 		else if(random == 5|| random == 6|| random == 7|| random == 8){
 		//a d strafe
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 		}
-		else if (random == 9 || random == 10){
+		//crouch
+		else if (random == 9){
 			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.25)*(1/AimTrainer_STRAFING_SPEED)
+			wait RandomFloatRange(0.05,0.25)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+		}
+		//jump by me 
+		else if (random == 10 && AimTrainer_STRAFING_SPEED != 1.8){
+			script_mover.SetOrigin( ai.GetOrigin() )
+			script_mover.SetAngles( ai.GetAngles() )
+			ai.SetParent(script_mover)
+
+			int randomness = 1
+			if(CoinFlip()) randomness = -1		
+			
+			//Jumping with movement (tap strafe / ras strafe)
+			float startTime = Time()
+			float endTimeNumber = 0.28*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+			float endTime = startTime + endTimeNumber
+			vector moveTo = ai.GetOrigin()
+			ai.Anim_Stop()
+			thread JumpAnim(ai, player)
+
+			int curvedamount = 50
+			float moveXFrom = moveTo.x+curvedamount*randomness
+			float moveZFrom = moveTo.z+30
+			printt("jump START")
+			while(true)
+			{
+				if(endTime-Time() <= 0) 
+				{
+					script_mover.NonPhysicsStop()
+					moveZFrom = moveTo.z				
+					while(endTime-Time() > 0)
+					{
+						if(IsValid(script_mover)) script_mover.NonPhysicsMoveTo( Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z )), endTime-Time(), 0.0, 0.0 )
+						//printt("jump loop 2 ")
+						WaitFrame()
+					}
+					if(IsValid(script_mover)) script_mover.NonPhysicsStop()
+					break
+				}
+				//printt("jump loop 1")
+				if(IsValid(script_mover)) script_mover.NonPhysicsMoveTo( Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z )), endTime-Time(), 0.0, 0.0 )
+				WaitFrame()
+			}
+			
+			if(IsValid(dummy))			
+				ai.ClearParent()
+			printt("jump END")
 		}
 	}
 }
 
+void function JumpAnim(entity dummy, entity player)
+{
+	dummy.EndSignal("OnDeath")
+	player.EndSignal("ChallengeTimeOver")
+	
+	if(IsValid(dummy))
+	{
+		dummy.Anim_ScriptedPlayActivityByName( "ACT_MP_JUMP_START", true, 0.1 )
+		dummy.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
+	}
+	wait 0.2*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+	if(IsValid(dummy))
+	{
+		dummy.Anim_ScriptedPlayActivityByName( "ACT_MP_JUMP_FLOAT", true, 0.1 )
+		dummy.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)		
+	}
+	wait 0.08*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+	if(IsValid(dummy))
+	{
+		dummy.Anim_ScriptedPlayActivityByName( "ACT_MP_JUMP_LAND", true, 0.1 )
+		dummy.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)		
+	}		
+}
 //CHALLENGE "Switching targets"
 void function StartSwapFocusDummyChallenge(entity player)
 {
@@ -397,28 +476,28 @@ void function TargetSwitcthingWatcher(entity ai, entity player)
         //w s strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
         }
         else if(random == 4 || random == 5){
         //a d strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
             ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_BACKWARD", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
         }
         else if (random == 6){
         //a d small crouch strafe
             ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
             ai.Anim_ScriptedPlayActivityByName( "ACT_STRAFE_TO_CROUCH_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-            wait 0.4*(1/AimTrainer_STRAFING_SPEED)
+            wait 0.4*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
         }
     }
 }
@@ -781,7 +860,7 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 		ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 		ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 	}
-	wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED)
+	wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 	
 	if(!IsValid(ai)) return
 	
@@ -802,21 +881,21 @@ void function BubbleFightStrafe(entity ai, entity player, entity shield)
 			{
 				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-				wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED)
+				wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 				// weapon.FireWeapon_Default( player.GetOrigin(), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
 			}
 			else if(distance > 5)
 			{
 				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-				wait RandomFloatRange(0.18,0.22)*(1/AimTrainer_STRAFING_SPEED)
+				wait RandomFloatRange(0.18,0.22)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 				// weapon.FireWeapon_Default( player.GetOrigin(), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
 			}
 		} else if( random == 4 && distance > 22 || random == 4 && distance < -15  )
 		{
 			ai.Anim_Stop()
 			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
-			wait RandomFloatRange(0.15,0.3)
+			wait RandomFloatRange(0.15,0.3)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 			// weapon.FireWeapon_Default(player.GetOrigin()+Vector(0,0,60)+player.GetRightVector()*30, ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
 		}
 		WaitFrame()
@@ -2659,20 +2738,20 @@ bool function CC_StartChallenge6( entity player, array<string> args )
 bool function CC_StartChallenge7( entity player, array<string> args )
 {
 	PreChallengeStart(player, 12)
-	thread StartTapyDuckStrafesChallenge(player)
+	thread StartSmoothbotChallenge(player)
 	return false
 }
 
 bool function CC_StartChallenge8( entity player, array<string> args )
 {
 	PreChallengeStart(player, 13)
-	thread StartSmoothbotChallenge(player)
+	// thread StartTapyDuckStrafesChallenge(player)
 	return false
 }
 bool function CC_StartChallenge1NewC( entity player, array<string> args )
 {
 	PreChallengeStart(player, 6)
-	thread StartBubblefightChallenge(player)
+	// thread StartBubblefightChallenge(player)
 	return false
 }
 

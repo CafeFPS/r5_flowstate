@@ -193,7 +193,7 @@ string function ReturnChallengeName(int index)
 			final = "POPCORN TARGETS"
 			break
 		case 6:
-			final = "BUBBLEFIGHT PRACTICE"
+			final = "RECORD MOVEMENT"
 			break
 		case 7:
 			final = "ARC STARS PRACTICE"
@@ -211,10 +211,10 @@ string function ReturnChallengeName(int index)
 			final = "CLOSE FAST STRAFES"
 			break
 		case 12:
-			final = "FAST JUMPS STRAFES"
+			final = "SMOOTHBOT"
 			break
 		case 13:
-			final = "SMOOTHBOT"
+			final = "TODO"
 			break
 		case 14:
 			final = "GRENADES PRACTICE"
@@ -226,7 +226,7 @@ string function ReturnChallengeName(int index)
 			final = "RUNNING TARGETS"
 			break
 		case 17:
-			final = "HIGH GROUND PRACTICE"
+			final = "TODO"
 			break
 		case 0:
 		default: 
@@ -778,6 +778,10 @@ void function ChangeAimTrainer_STRAFING_SPEEDClient(string desiredSpeed)
 	}
 	
 	AimTrainer_STRAFING_SPEED = speed
+	if(AimTrainer_STRAFING_SPEED != 1.8)
+		AimTrainer_STRAFING_SPEED_WAITTIME = speed
+	else
+		AimTrainer_STRAFING_SPEED_WAITTIME = 1
 	player.ClientCommand("CC_AimTrainer_STRAFING_SPEED " + speed)	
 }
 

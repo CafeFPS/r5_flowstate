@@ -612,7 +612,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Fast Jumps Strafes"
+			labelText				"Smoothbot"
 			visible                 1
 			zpos 3
 			tall					55
@@ -670,7 +670,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Smoothbot"
+			labelText				"Dummies Horde"
 			visible                 1
 			zpos 3
 			tall					55
@@ -729,7 +729,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Bubblefight Practice"
+			labelText				"Record Movement"
 			visible                 1
 			zpos 3
 			tall					55
@@ -1139,7 +1139,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Record movement"
+			labelText				"Dummies Survival"
 			visible                 1
 			zpos 3
 			tall					55

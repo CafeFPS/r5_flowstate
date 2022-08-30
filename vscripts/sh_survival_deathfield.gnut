@@ -401,6 +401,10 @@ void function SURVIVAL_RunArenaDeathField()
 
 	DeathFieldData data = file.deathFieldData
 	vector lastCenter   = file.deathFieldStages[file.deathFieldStartStage].endPos
+	
+	if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false ))
+		lastCenter   = <gp()[0].GetOrigin().x, gp()[0].GetOrigin().y, 0>
+	
 	data.center = lastCenter
 	data.nextCenter = lastCenter
 
@@ -588,7 +592,10 @@ void function SURVIVAL_RunArenaDeathField()
 		{
 			DeathFieldStageData nextStage = file.deathFieldStages[deathFieldStage + 1]
 			float frac                    = 1.0 - (nextStage.endRadius / stage.endRadius)
-			data.nextCenter = nextStage.endPos // GetRandomCenter( data.center, 0, data.currentRadius * frac )
+			if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false ))
+				data.nextCenter = GetRandomCenter( data.center, 0, data.currentRadius * frac )
+			else
+				data.nextCenter = nextStage.endPos // GetRandomCenter( data.center, 0, data.currentRadius * frac )
 		}
 
 		if ( data.currentRadius < 600 )
