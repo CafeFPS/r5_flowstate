@@ -659,7 +659,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			xpos                    0
 			ypos                    %7
 			zpos                    3
-            visible 1
+            visible 0
 
 			pin_to_sibling          Challenge7
 			pin_corner_to_sibling   BOTTOM
@@ -671,7 +671,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			ControlName				Label
 			auto_wide_tocontents    1
 			labelText				"Dummies Horde"
-			visible                 1
+			visible                 0
 			zpos 3
 			tall					55
 			fontHeight				30
@@ -693,7 +693,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			xpos                    0
 			ypos                    0
 			zpos                    1
-			visible			1
+			visible			0
             scaleImage		1
             fillColor		"30 30 30 200"
             drawColor		"30 30 30 200"
@@ -1128,7 +1128,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			xpos                    0
 			ypos                    %7
 			zpos                    3
-            visible 1
+            visible 0
 			
 			pin_to_sibling          Challenge7NewC
 			pin_corner_to_sibling   BOTTOM
@@ -1140,7 +1140,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			ControlName				Label
 			auto_wide_tocontents    1
 			labelText				"Dummies Survival"
-			visible                 1
+			visible                 0
 			zpos 3
 			tall					55
 			fontHeight				30
@@ -1162,7 +1162,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			xpos                    0
 			ypos                    0
 			zpos                    1
-			visible			1
+			visible			0
             scaleImage		1
             fillColor		"30 30 30 200"
             drawColor		"30 30 30 200"
