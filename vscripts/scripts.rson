@@ -820,6 +820,7 @@ Scripts:
 	//FR Challenges
 	ui/FRChallenges/menu_frchallenges.nut
 	ui/FRChallenges/mainmenu_challenges.nut
+	ui/FRChallenges/mainmenu_history.nut
 	ui/FRChallenges/mainmenu_settings.nut
 	ui/FRChallenges/mainmenu_settings_weaponselector.nut
 	ui/FRChallenges/panel_buymenu1.nut

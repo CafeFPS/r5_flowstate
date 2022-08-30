@@ -31,6 +31,7 @@ global function ServerCallback_SetDefaultMenuSettings
 global function ServerCallback_OpenFRChallengesMenu
 global function ServerCallback_OpenFRChallengesSettings
 global function ServerCallback_OpenFRChallengesMainMenu
+global function ServerCallback_OpenFRChallengesHistory
 global function ServerCallback_CloseFRChallengesResults
 
 //Stats UI
@@ -249,6 +250,12 @@ void function ServerCallback_OpenFRChallengesMainMenu(int dummiesKilled)
 {
 	entity player = GetLocalClientPlayer()
 	RunUIScript( "OpenFRChallengesMainMenu", dummiesKilled)
+}
+
+void function ServerCallback_OpenFRChallengesHistory(int dummiesKilled)
+{
+	entity player = GetLocalClientPlayer()
+	RunUIScript( "OpenFRChallengesHistory", dummiesKilled)
 }
 
 void function ServerCallback_OpenFRChallengesSettings()

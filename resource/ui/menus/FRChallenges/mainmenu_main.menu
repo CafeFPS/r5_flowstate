@@ -1,0 +1,1194 @@
+scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+
+		ScreenBlur
+		{
+			ControlName				RuiPanel
+			wide					%100
+			tall					%100
+			rui                     "ui/invisible.rpak"
+			visible					1
+			drawColor				"0 0 0 50"
+		}	
+
+		DarkenBackground
+		{
+			ControlName				RuiPanel
+			wide					%50//%70
+			xpos                    0//%15
+			tall					%100
+			visible					1
+			rui                     "ui/basic_image.rpak"
+
+            ruiArgs
+            {
+                basicImageColor     "0 0 0"
+                basicImageAlpha     0.9
+            }
+		}
+
+		Title
+		{
+			ControlName				Label
+			xpos                    -30
+			ypos					-30
+			auto_wide_tocontents	1
+			tall					50
+			visible					1
+			fontHeight				60
+			labelText				"FLOWSTATE AIM TRAINER"
+			font					"TitleBoldFont"
+			allcaps					1
+			fgcolor_override		"191 13 13 255"
+			pin_to_sibling			ScreenBlur
+			pin_corner_to_sibling	TOP_RIGHT
+			pin_to_sibling_corner	TOP_RIGHT
+		}
+		
+		Line
+		{
+			ControlName				ImagePanel
+			wide			660
+			tall            2
+			fillColor		"52 255 41 200"
+			drawColor		"52 255 41 200"
+			visible					0
+			ypos					0
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	TOP_LEFT
+			pin_to_sibling_corner	TOP_LEFT
+		}
+		
+		Background
+		{
+			ControlName				RuiPanel
+			wide					%50
+			tall					85
+			xpos					0
+			visible					1
+			enabled					1
+			proportionalToParent    1
+			rui 					"ui/tabs_background.rpak"
+			
+			pin_to_sibling				Line
+		}
+
+		Challenges
+		{
+			"ControlName"				"RuiButton"
+			"InheritProperties"			"TabButtonSettings"
+			"classname" 				"TopButtons"
+			"zpos"						"0"
+			"xpos"                    	"%-1.5"
+			"ypos"						"0"
+			"scriptID"					"0"
+			"ypos" "-1"
+			ruiArgs
+			{
+				isSelected 1
+				buttonText "CHALLENGES"
+			}
+
+			"pin_to_sibling"			"Line"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		History
+		{
+			"ControlName"				"RuiButton"
+			"InheritProperties"			"TabButtonSettings"
+			"classname" 				"TopButtons"
+			"zpos"						"0"
+			"xpos"                    	"205"
+			"scriptID"					"0"
+			"ypos" "0"
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "HISTORY"
+			}
+
+			"pin_to_sibling"			"Challenges"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		Settings
+		{
+			"ControlName"				"RuiButton"
+			"InheritProperties"			"TabButtonSettings"
+			"classname" 				"TopButtons"
+			"zpos"						"0"
+			"xpos"                    	"205"
+			"scriptID"					"0"
+			"ypos" "0"
+			ruiArgs
+			{
+				isSelected 0
+				buttonText "SETTINGS"
+			}
+
+			"pin_to_sibling"			"History"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		
+		Logo
+        {
+            ControlName					RuiPanel
+			InheritProperties       	Logo
+			ypos -1
+			xpos -50
+			wide 110
+			tall 132
+            pin_to_sibling				Line
+            pin_corner_to_sibling		TOP_LEFT
+            pin_to_sibling_corner		TOP_LEFT
+        }		
+				
+		Description
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					140
+			auto_wide_tocontents	1
+			tall					60
+			visible					1
+			fontHeight				32
+			labelText				"SELECT A CHALLENGE TO START"
+			font					TitleBoldFont
+			allcaps					1
+			fgcolor_override		"252 198 3 255"
+			pin_to_sibling			Background
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+		
+		DummiesKilledCounter
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-90
+			auto_wide_tocontents	1
+			tall					60
+			visible					1
+			fontHeight				30
+			labelText				"Dummies killed this session: 0"
+			font					Default
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+		
+		CurrentWeapon
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-50
+			auto_wide_tocontents	1
+			tall					60
+			visible					1
+			fontHeight				30
+			labelText				"Current weapon: "
+			font					Default
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			DarkenBackground
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}		
+		MadeBy
+		{
+			ControlName				Label
+			xpos                    -40
+			ypos					-60
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"v0.9 | Made by @CafeFPS"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			ScreenBlur
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		MadeBy2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					20
+			auto_wide_tocontents	1
+			tall					25
+			visible					1
+			fontHeight				25
+			labelText				"Powered by R5Reloaded - ©Respawn Entertainment"
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			MadeBy
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+
+		Challenge1
+		{
+			"ControlName"			"RuiButton"
+			wide					220
+			tall					60
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                   	80
+			ypos                    115
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Description
+			pin_corner_to_sibling   LEFT
+			pin_to_sibling_corner   LEFT
+		}
+	
+		Challenge1Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Strafing Dummy"
+			visible                 1
+			zpos 3
+			tall					60
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12.6
+			pin_to_sibling          Challenge1
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge1DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					233
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge1
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		Challenge2
+		{
+			"ControlName"			"RuiButton"
+			wide					215
+			tall					60
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Challenge1
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge2Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Target Switching"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge2
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge2DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					215
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge2
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		Challenge3
+		{
+			"ControlName"			"RuiButton"
+			wide					200
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Challenge2
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge3Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Floating Target"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge3
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge3DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					200
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge3
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		Challenge4
+		{
+			"ControlName"			"RuiButton"
+			wide					210
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Challenge3
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge4Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Popcorn Targets"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge4
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge4DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					210
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge4
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+		Challenge5
+		{
+			"ControlName"			"RuiButton"
+			wide					165
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Challenge4
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge5Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Tile Frenzy"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge5
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge5DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					165
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge5
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+	Challenge6
+		{
+			"ControlName"			"RuiButton"
+			wide					225
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Challenge5
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge6Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Close Fast Strafes"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge6
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge6DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					225
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge6
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	Challenge7
+		{
+			"ControlName"			"RuiButton"
+			wide					235
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Challenge6
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge7Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Smoothbot"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge7
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge7DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					235
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge7
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	Challenge8
+		{
+			"ControlName"			"RuiButton"
+			wide					155
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 0
+
+			pin_to_sibling          Challenge7
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge8Text
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Dummies Horde"
+			visible                 0
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge8
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge8DialogFrame
+		{
+            ControlName		ImagePanel
+			wide					155
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			0
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge8
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	//NEW COLUMN
+	Challenge1NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					265
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    340
+			ypos                    0
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Challenge1
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+		}
+	
+		Challenge1NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Record Movement"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge1NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge1NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					260
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge1NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+	Challenge2NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					220
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+
+			pin_to_sibling          Challenge1NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge2NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Arc Stars Practice"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge2NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge2NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					220
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge2NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+	Challenge3NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					235
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+			
+			pin_to_sibling          Challenge2NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge3NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Grenades Practice"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge3NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge3NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					235
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge3NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+
+	Challenge4NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					240
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+			
+			pin_to_sibling          Challenge3NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge4NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Shooting Valk's Ult"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge4NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge4NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					240
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge4NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+	Challenge5NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					240
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+			
+			pin_to_sibling          Challenge4NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge5NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Shooting From Lift"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge5NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge5NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					240
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge5NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+		
+	Challenge6NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					235
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+			
+			pin_to_sibling          Challenge5NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge6NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Skydiving Targets"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge6NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge6NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					235
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge6NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	Challenge7NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					220
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 1
+			
+			pin_to_sibling          Challenge6NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge7NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Running Targets"
+			visible                 1
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge7NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge7NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					220
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge7NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	Challenge8NewC
+		{
+			"ControlName"			"RuiButton"
+			wide					260
+			tall					55
+			"rui"                   "ui/invisible.rpak"
+			"labelText"             ""
+			"visible"				"1"
+			sound_focus           "UI_Menu_Focus"
+			"sound_accept"          "UI_Menu_Accept"
+			"cursorPriority"        "-1"
+
+			xpos                    0
+			ypos                    %7.5
+			zpos                    3
+            visible 0
+			
+			pin_to_sibling          Challenge7NewC
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+	
+		Challenge8NewCText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"Dummies Survival"
+			visible                 0
+			zpos 3
+			tall					55
+			fontHeight				30
+			font					Default
+			fgcolor_override		"255 255 255 255"
+
+			ypos                    0
+			xpos					-12
+			pin_to_sibling          Challenge8NewC
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}
+		
+		Challenge8NewCDialogFrame
+		{
+            ControlName		ImagePanel
+			wide					260
+			tall					55
+			xpos                    0
+			ypos                    0
+			zpos                    1
+			visible			0
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_to_sibling			Challenge8NewC
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	CENTER
+		}
+	}
+}

@@ -1,0 +1,527 @@
+scripts/resource/ui/menus/FRChallenges/frchallenges.menu
+{
+	menu
+	{
+		ControlName				Frame
+		xpos					0
+		ypos					0
+		zpos					3
+		wide					f0
+		tall					f0
+		autoResize				0
+		pinCorner				0
+		visible					1
+		enabled					1
+		tabPosition				0
+		PaintBackgroundType		0
+		infocus_bgcolor_override	"0 0 0 0"
+		outoffocus_bgcolor_override	"0 0 0 0"
+		modal					1
+
+        ChallengeResultsFrame
+		{
+            ControlName		ImagePanel
+			wide					%40
+			tall					%50
+            xpos                    %30
+			ypos					0
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	TOP
+		}
+		
+        ChallengeResultsTitleExtraFrame
+		{
+            ControlName		ImagePanel
+			wide					%40
+			tall					%11
+            xpos                    %30
+			ypos					0
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_corner_to_sibling	CENTER
+			pin_to_sibling_corner	TOP
+		}
+		
+        ChallengeResultsTitleExtraFrame2
+		{
+            ControlName		ImagePanel
+			wide					%40
+			tall					%3.5
+            xpos                    %30
+			ypos					%46.5
+			visible			1
+            scaleImage		1
+            fillColor		"30 30 30 200"
+            drawColor		"30 30 30 200"
+
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+				
+		Title
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					-40
+			auto_wide_tocontents	1
+			tall					50
+			visible					1
+			fontHeight				60
+			labelText				"CHALLENGE RESULTS"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			pin_to_sibling			ChallengeResultsFrame
+			pin_corner_to_sibling	TOP
+			pin_to_sibling_corner	TOP
+		}
+		
+		PersonalBestData
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					%3
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				""
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"196 201 44 255"
+			pin_to_sibling			Title
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+
+		WasNewPersonalBest
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					%38
+			auto_wide_tocontents	1
+			tall					70
+			visible					1
+			fontHeight				50
+			labelText				""
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"50 168 82 255"
+			pin_to_sibling			Title
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+
+		WasNotNewPersonalBest
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					%38
+			auto_wide_tocontents	1
+			tall					70
+			visible					1
+			fontHeight				50
+			labelText				""
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"217 31 22 255"
+			pin_to_sibling			Title
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+				
+		ShotsHitResultFinal
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					%12
+			auto_wide_tocontents	1
+			tall					70
+			visible					1
+			fontHeight				90
+			labelText				""
+			font					DefaultBold_17
+			allcaps					0
+			fgcolor_override		"50 168 82 255"
+
+			pin_to_sibling			Title
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+		
+		ShotsHitResultFinal2
+		{
+			ControlName				Label
+			xpos                    %2.5
+			ypos					%1.3
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				""
+			font					DefaultBold_17
+			allcaps					0
+			fgcolor_override		"50 168 82 255"
+
+			pin_to_sibling			ShotsHitResultFinal
+			pin_corner_to_sibling	RIGHT
+			pin_to_sibling_corner	RIGHT
+		}	
+		
+		ShotsHitResultFinalWasNotNew
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					%12
+			auto_wide_tocontents	1
+			tall					70
+			visible					1
+			fontHeight				90
+			labelText				""
+			font					DefaultBold_17
+			allcaps					0
+			fgcolor_override		"217 31 22 255"
+
+			pin_to_sibling			Title
+			pin_corner_to_sibling	BOTTOM
+			pin_to_sibling_corner	BOTTOM
+		}
+		
+		ShotsHitResultFinal2WasNotNew
+		{
+			ControlName				Label
+			xpos                    %2.5
+			ypos					%1.3
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				""
+			font					DefaultBold_17
+			allcaps					0
+			fgcolor_override		"217 31 22 255"
+
+			pin_to_sibling			ShotsHitResultFinalWasNotNew
+			pin_corner_to_sibling	RIGHT
+			pin_to_sibling_corner	RIGHT
+		}
+		
+		TimerText
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					0
+			auto_wide_tocontents	1
+			tall					40
+			visible					1
+			fontHeight				50
+			labelText				""
+			font					DefaultBold_41
+			allcaps					0
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			ChallengeResultsFrame
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		
+		ResultsText
+		{
+			ControlName				Label
+			xpos                    %-3
+			ypos					%-3
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"DUMMIES KILLED"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+			
+			//bgcolor_override		"0 0 0 100"
+			//paintbackground			1
+			//PaintBackgroundType		0
+
+			pin_to_sibling			ChallengeResultsFrame
+			pin_corner_to_sibling	LEFT
+			pin_to_sibling_corner	LEFT
+		}
+		
+		DummiesKilledResult
+		{
+			ControlName				Label
+			xpos                    %25
+			ypos					0
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"TEST0"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			ResultsText
+			pin_corner_to_sibling	RIGHT
+			pin_to_sibling_corner	RIGHT
+		}
+		
+		ResultsText2
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					35
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"ACCURACY"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			ResultsText
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		AccuracyResult
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					35
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"TEST0"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			DummiesKilledResult
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		
+		ResultsText3
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					35
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"SHOTS HIT"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			ResultsText2
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		ShotsHitResult
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					35
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"TEST0"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			AccuracyResult
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		
+		ResultsText4
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					35
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"DAMAGE DONE"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			ResultsText3
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+		DamageDoneResult
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					35
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"TEST0"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			ShotsHitResult
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		
+		ResultsText5
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					35
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"CRITICAL SHOTS"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			ResultsText4
+			pin_corner_to_sibling	BOTTOM_LEFT
+			pin_to_sibling_corner	BOTTOM_LEFT
+		}
+		
+		CriticalShotsResult
+		{
+			ControlName				Label
+			xpos                    0
+			ypos					35
+			auto_wide_tocontents	1
+			tall					30
+			visible					1
+			fontHeight				30
+			labelText				"TEST0"
+			font					DefaultBold_41
+			allcaps					1
+			fgcolor_override		"255 255 255 255"
+
+			pin_to_sibling			DamageDoneResult
+			pin_corner_to_sibling	BOTTOM_RIGHT
+			pin_to_sibling_corner	BOTTOM_RIGHT
+		}
+		
+		SkipButton
+		{
+			ControlName		"RuiButton"
+			rui					"ui/tab_button.rpak"
+			wide					75
+			tall					30
+		    visible				"1"
+			sound_focus           "UI_Menu_Focus"
+			sound_accept          "UI_Menu_Accept"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText ""
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			
+			
+			xpos                    %5.5
+			ypos                    %-0.5
+			zpos                    1
+            visible 1
+
+			pin_to_sibling          ChallengeResultsFrame
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+
+		SkipText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"EXIT"
+			visible                 1
+			zpos 0
+			tall					30
+			fontHeight				25
+			font					Default
+			fgcolor_override		"255 255 255 255"
+		
+			ypos                    0
+			xpos					-10
+			pin_to_sibling          SkipButton
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}	
+		RestartButton
+		{
+			ControlName		"RuiButton"
+			rui					"ui/tab_button.rpak"
+			wide					115
+			tall					30
+		    visible				"1"
+			sound_focus           "UI_Menu_Focus"
+			sound_accept          "UI_Menu_Accept"
+			cursorPriority        "-1"	
+			
+			ruiArgs
+			{
+				isSelected 0
+				buttonText ""
+				basicImageColor     "255 255 255"
+                basicImageAlpha     1
+			}
+			
+			
+			xpos                    %-5
+			ypos                    %-0.5
+			zpos                    1
+            visible 1
+
+			pin_to_sibling          ChallengeResultsFrame
+			pin_corner_to_sibling   BOTTOM
+			pin_to_sibling_corner   BOTTOM
+		}
+
+		RestartText
+		{
+			ControlName				Label
+			auto_wide_tocontents    1
+			labelText				"RESTART"
+			visible                 1
+			zpos 0
+			tall					30
+			fontHeight				25
+			font					Default
+			fgcolor_override		"255 255 255 255"
+		
+			ypos                    0
+			xpos					-10
+			pin_to_sibling          RestartButton
+			pin_corner_to_sibling   BOTTOM_LEFT
+			pin_to_sibling_corner   BOTTOM_LEFT
+		}		
+	}
+}

@@ -37,6 +37,7 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnR5RSB_Close )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnR5RSB_NavigateBack )
 	
+	AddEventHandlerToButton( menu, "History", UIE_CLICK, HistoryButtonFunct )
 	AddEventHandlerToButton( menu, "Settings", UIE_CLICK, SettingsButtonFunct )
 	//var Challenge1 = Hud_GetChild( menu, "Challenge1" )
 	//First column
@@ -62,6 +63,12 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 bool function ShouldShowBackButton()
 {
 	return true
+}
+
+void function HistoryButtonFunct(var button)
+{
+	CloseAllMenus()
+	RunClientScript("ServerCallback_OpenFRChallengesHistory", PlayerKillsForChallengesUI)
 }
 
 void function SettingsButtonFunct(var button)

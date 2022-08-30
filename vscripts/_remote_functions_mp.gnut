@@ -186,6 +186,7 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_RestartChallenge", "int", 0, 30)
 			
 			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesMainMenu", "int", 0, 999999 )
+			Remote_RegisterClientFunction("ServerCallback_OpenFRChallengesHistory", "int", 0, 999999 )
 			Remote_RegisterUIFunction( "OpenFRChallengesMainMenu", "int", 0, 999999 )
 			Remote_RegisterUIFunction( "CloseFRChallengesMainMenu")
 			

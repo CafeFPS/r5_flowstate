@@ -31,6 +31,8 @@ void function InitFRChallengesSettings( var newMenuArg )
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, OnR5RSB_NavigateBack )
 	
 	AddEventHandlerToButton( menu, "Challenges", UIE_CLICK, ChallengesButtonFunct )
+	AddEventHandlerToButton( menu, "History", UIE_CLICK, HistoryButtonFunct )
+	
 	AddEventHandlerToButton( menu, "WeaponSelector", UIE_CLICK, WeaponSelectorOpenMenu )
 	AddEventHandlerToButton( menu, "CharacterSelector", UIE_CLICK, LegendSelectOpen )
 	//RuiSetString( Hud_GetRui( Hud_GetChild( file.menu, "StatusDetails" ) ), "details", "Test" )
@@ -108,6 +110,12 @@ void function UpdateChallengeDuration(var button)
 {
 	string desiredTime = Hud_GetUTF8Text( Hud_GetChild( file.menu, "DurationText" ) )
 	RunClientScript("ChangeChallengeDurationClient", desiredTime)
+}
+
+void function HistoryButtonFunct(var button)
+{
+	CloseAllMenus()
+	RunClientScript("ServerCallback_OpenFRChallengesHistory", PlayerKillsForChallengesUI)
 }
 
 void function ChallengesButtonFunct(var button)

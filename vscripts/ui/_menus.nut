@@ -1533,8 +1533,13 @@ void function InitMenus()
 	
 	//AIM TRAINER
 	//Main Menu
-	AddMenu( "FRChallengesMainMenu", $"scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu", InitFRChallengesMainMenu )
+	AddMenu( "FRChallengesMainMenu", $"scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu", InitFRChallengesMainMenu )
+	
+	//Settings
 	AddMenu( "FRChallengesSettings", $"scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu", InitFRChallengesSettings )
+	
+	//History
+	AddMenu( "FRChallengesHistory", $"scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu", InitChallengesHistory )
 	
 	//Weapon Selector
 	var weaponselector = AddMenu( "FRChallengesSettingsWpnSelector", $"scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu", InitFRChallengesSettingsWpnSelector )
@@ -1545,7 +1550,7 @@ void function InitMenus()
 	AddPanel( weaponselector, "BuyMenu5", InitArenasBuyPanel5 )
 
 	//results
-	AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/frchallenges.menu", InitFRChallengesResultsMenu ) //results
+	AddMenu( "FRChallengesMenu", $"scripts/resource/ui/menus/FRChallenges/challenges_results.menu", InitFRChallengesResultsMenu ) //results
 	////////
 	
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )
