@@ -33,7 +33,7 @@ void function OpenFRChallengesHistory(int dummiesKilled)
 		ShowNoChallengesPlayed(true)
 	else
 		ShowNoChallengesPlayed(false)
-	
+
 	for( int i=0; i < ChallengesHistory.len(); i++ )
 	{	
 		Hud_SetText( Hud_GetChild( file.menu, "ChallengeName" + i ), ChallengesHistory[i].ChallengeName )
@@ -41,7 +41,6 @@ void function OpenFRChallengesHistory(int dummiesKilled)
 		Hud_SetText( Hud_GetChild( file.menu, "Score" + i ), ChallengesHistory[i].ShotsHit.tostring() )		
 		Hud_SetText( Hud_GetChild( file.menu, "ChallengeWeapon" + i ), ChallengesHistory[i].ChallengeWeapon )
 		Hud_SetText( Hud_GetChild( file.menu, "ChallengeAccuracy" + i ), ChallengesHistory[i].ChallengeAccuracy.tostring() )
-		// Hud_AddEventHandler( elem, UIE_CLICK, SelectServer )
 	}	
 }
 
@@ -87,20 +86,13 @@ void function HistoryUI_AddNewChallenge(string Name, int ShotsHit, string Weapon
 	ChallengesHistory.reverse()
 }
 
-array<ResultsHistory> function GetChallengesArray()
-{
-	//Create array for servers to be returned
-	array<ResultsHistory> ServerList
-
-	return ServerList
-}
-
 void function ShowNoChallengesPlayed(bool show)
 {
 	//Set no servers found ui based on bool
 	Hud_SetVisible(Hud_GetChild( file.menu, "NameLine" ), !show )
 	Hud_SetVisible(Hud_GetChild( file.menu, "ScoreLine" ), !show )
 	Hud_SetVisible(Hud_GetChild( file.menu, "WeaponLine" ), !show )
+	Hud_SetVisible(Hud_GetChild( file.menu, "ShotshitLine" ), !show )
 	Hud_SetVisible(Hud_GetChild( file.menu, "AccuracyLine" ), !show )
 	Hud_SetVisible(Hud_GetChild( file.menu, "NoChallengesLbl" ), show )
 }

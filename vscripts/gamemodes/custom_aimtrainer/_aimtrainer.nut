@@ -310,7 +310,10 @@ void function StrafeMovement(entity ai, entity player)
 				if(endTime-Time() <= 0) 
 				{
 					script_mover.NonPhysicsStop()
-					moveZFrom = moveTo.z				
+					startTime = Time()
+					endTime = startTime + endTimeNumber
+					moveXFrom = moveTo.x+curvedamount*-randomness
+					moveZFrom = moveTo.z					
 					while(endTime-Time() > 0)
 					{
 						if(IsValid(script_mover)) script_mover.NonPhysicsMoveTo( Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z )), endTime-Time(), 0.0, 0.0 )
