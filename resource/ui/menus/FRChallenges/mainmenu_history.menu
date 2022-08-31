@@ -262,22 +262,22 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"	"CENTER"
 		}
 
-		"ServerNameLbl"
+		"ChallengeNameLbl"
 		{
 			"ControlName"			"Label"
 			"labelText"				"Challenge Name"
-			"xpos"					"-15"
-			"ypos"					"-15"
+			"xpos"					"-50"
+			"ypos"					"0"
 			"auto_wide_tocontents"	"1"
 			"zpos" 					"4"
 			"fontHeight"			"30"
 
 			"pin_to_sibling"		"ServerBrowserBG"
-			"pin_corner_to_sibling"	"TOP_LEFT"
-			"pin_to_sibling_corner"	"TOP_LEFT"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
 		}
 
-		"PlayerCountLbl"
+		"ChallengeScoreLbl"
 		{
 			"ControlName"			"Label"
 			"labelText"				"Score"
@@ -294,7 +294,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"	"LEFT"
 		}
 
-		"PlaylistLbl"
+		"ChallengeWeaponLbl"
 		{
 			"ControlName"			"Label"
 			"labelText"				"Weapon"
@@ -310,7 +310,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"	"LEFT"
 		}
 
-		"MapLbl"
+		"ChallengeTimeLbl"
 		{
 			"ControlName"			"Label"
 			"labelText"				"Time"
@@ -333,8 +333,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"ypos"					"0"
 			"tall"					"760"
 			"wide" 					"2"
-			"fillColor"				"155 155 155 200"
-			"drawColor"				"155 155 155 200"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
 			"visible"				"1"
 			"zpos"					"3"
@@ -351,8 +351,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"ypos"					"0"
 			"tall"					"760"
 			"wide" 					"2"
-			"fillColor"				"155 155 155 200"
-			"drawColor"				"155 155 155 200"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
 			"visible"				"1"
 			"zpos"					"3"
@@ -369,8 +369,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"ypos"					"0"
 			"tall"					"760"
 			"wide" 					"2"
-			"fillColor"				"155 155 155 200"
-			"drawColor"				"155 155 155 200"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
 			"visible"				"1"
 			"zpos"					"3"
@@ -387,8 +387,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"ypos"					"0"
 			"tall"					"760"
 			"wide" 					"2"
-			"fillColor"				"155 155 155 200"
-			"drawColor"				"155 155 155 200"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
 			"visible"				"1"
 			"zpos"					"3"
@@ -405,8 +405,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"ypos"					"0"
 			"tall"					"760"
 			"wide" 					"2"
-			"fillColor"				"155 155 155 200"
-			"drawColor"				"155 155 155 200"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
 			"visible"				"1"
 			"zpos"					"3"
@@ -423,8 +423,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"ypos"					"0"
 			"tall"					"2"
 			"wide" 					"700"
-			"fillColor"				"155 155 155 200"
-			"drawColor"				"155 155 155 200"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
 			"visible"				"1"
 			"zpos"					"3"
@@ -441,8 +441,8 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"ypos"					"0"
 			"tall"					"2"
 			"wide" 					"700"
-			"fillColor"				"155 155 155 200"
-			"drawColor"				"155 155 155 200"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
 			"visible"				"1"
 			"zpos"					"3"
@@ -455,7 +455,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton0"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -476,7 +476,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton1"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -496,7 +496,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton2"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -516,7 +516,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton3"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -536,7 +536,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton4"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -556,7 +556,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton5"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -576,7 +576,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton6"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -596,7 +596,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton7"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -616,7 +616,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton8"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -636,7 +636,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton9"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -656,7 +656,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton10"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -676,7 +676,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton11"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -696,7 +696,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton12"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -716,7 +716,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton13"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -736,7 +736,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton14"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -756,7 +756,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton15"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -776,7 +776,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton16"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -796,7 +796,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton17"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -816,7 +816,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerButton18"
 		{
 			"ControlName"				"RuiButton"
-			"classname"					"ServBtn"
+			"classname"					"ChallengeBtn"
 			"wide"						"700"
 			"tall"						"40"
 			"visible"					"1"
@@ -833,7 +833,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"BOTTOM_LEFT"
 		}
 
-		"ServerName0"
+		"ChallengeName0"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -850,7 +850,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName1"
+		"ChallengeName1"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -867,7 +867,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName2"
+		"ChallengeName2"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -884,7 +884,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName3"
+		"ChallengeName3"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -901,7 +901,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName4"
+		"ChallengeName4"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -918,7 +918,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName5"
+		"ChallengeName5"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -935,7 +935,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName6"
+		"ChallengeName6"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -952,7 +952,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName7"
+		"ChallengeName7"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -969,7 +969,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName8"
+		"ChallengeName8"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -986,7 +986,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName9"
+		"ChallengeName9"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1003,7 +1003,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName10"
+		"ChallengeName10"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1020,7 +1020,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName11"
+		"ChallengeName11"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1037,7 +1037,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName12"
+		"ChallengeName12"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1054,7 +1054,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName13"
+		"ChallengeName13"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1071,7 +1071,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName14"
+		"ChallengeName14"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1088,7 +1088,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName15"
+		"ChallengeName15"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1105,7 +1105,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName16"
+		"ChallengeName16"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1122,7 +1122,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName17"
+		"ChallengeName17"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1139,7 +1139,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ServerName18"
+		"ChallengeName18"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
@@ -1156,11 +1156,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist0"
+		"Score0"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textAlignment"				"center"
@@ -1174,11 +1174,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist1"
+		"Score1"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1192,11 +1192,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist2"
+		"Score2"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1210,11 +1210,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist3"
+		"Score3"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1228,11 +1228,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist4"
+		"Score4"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1246,11 +1246,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist5"
+		"Score5"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1264,11 +1264,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist6"
+		"Score6"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1282,11 +1282,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist7"
+		"Score7"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1300,11 +1300,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist8"
+		"Score8"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1318,11 +1318,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist9"
+		"Score9"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1336,11 +1336,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist10"
+		"Score10"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1354,11 +1354,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist11"
+		"Score11"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1372,11 +1372,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist12"
+		"Score12"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1390,11 +1390,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist13"
+		"Score13"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1408,11 +1408,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist14"
+		"Score14"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1426,11 +1426,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist15"
+		"Score15"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1444,11 +1444,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist16"
+		"Score16"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1462,11 +1462,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist17"
+		"Score17"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1480,11 +1480,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"Playlist18"
+		"Score18"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-800"
+			"xpos"					"-175"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1498,11 +1498,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount0"
+		"ChallengeWeapon0"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textAlignment"				"center"
@@ -1516,11 +1516,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount1"
+		"ChallengeWeapon1"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1534,11 +1534,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount2"
+		"ChallengeWeapon2"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1552,11 +1552,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount3"
+		"ChallengeWeapon3"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1570,11 +1570,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount4"
+		"ChallengeWeapon4"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1588,11 +1588,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount5"
+		"ChallengeWeapon5"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1606,11 +1606,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount6"
+		"ChallengeWeapon6"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1624,11 +1624,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount7"
+		"ChallengeWeapon7"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1642,11 +1642,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount8"
+		"ChallengeWeapon8"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1660,11 +1660,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount9"
+		"ChallengeWeapon9"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1678,11 +1678,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount10"
+		"ChallengeWeapon10"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1696,11 +1696,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount11"
+		"ChallengeWeapon11"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1714,11 +1714,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount12"
+		"ChallengeWeapon12"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1732,11 +1732,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount13"
+		"ChallengeWeapon13"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1750,11 +1750,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount14"
+		"ChallengeWeapon14"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1768,11 +1768,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount15"
+		"ChallengeWeapon15"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1786,11 +1786,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount16"
+		"ChallengeWeapon16"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1804,11 +1804,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount17"
+		"ChallengeWeapon17"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1822,11 +1822,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"PlayerCount18"
+		"ChallengeWeapon18"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-670"
+			"xpos"						"-380"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1840,5 +1840,346 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
+		"ChallengeTime0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime10"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton10"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime11"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton11"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime12"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton12"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime13"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton13"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime14"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton14"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime15"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton15"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime16"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton16"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime17"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton17"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"ChallengeTime18"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"						"-530"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"110"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton18"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
 	}
 }

@@ -34,9 +34,19 @@ void function InitChallengesHistory( var newMenuArg )
 	AddEventHandlerToButton( menu, "Challenges", UIE_CLICK, ChallengesButtonFunct )
 	AddEventHandlerToButton( menu, "Settings", UIE_CLICK, SettingsButtonFunct )
 	
-	array<var> serverbuttons = GetElementsByClassname( file.menu, "ServBtn" )
-	foreach ( var elem in serverbuttons ) {
+	array<var> challengesRows = GetElementsByClassname( file.menu, "ChallengeBtn" )
+	
+	foreach ( var elem in challengesRows ) {
 		RuiSetString( Hud_GetRui( elem ), "buttonText", "")
+		Hud_SetEnabled( elem, false )
+	}
+	
+	for( int i=0; i < challengesRows.len(); i++ )
+	{
+		Hud_SetText( Hud_GetChild( file.menu, "ChallengeName" + i ), "test")
+		Hud_SetText( Hud_GetChild( file.menu, "Score" + i ), "test")		
+		Hud_SetText( Hud_GetChild( file.menu, "ChallengeWeapon" + i ), "test")
+		Hud_SetText( Hud_GetChild( file.menu, "ChallengeTime" + i ), "test")
 		// Hud_AddEventHandler( elem, UIE_CLICK, SelectServer )
 	}
 }

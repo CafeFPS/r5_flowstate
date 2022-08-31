@@ -734,7 +734,7 @@ scripts/resource/ui/menus/FRChallenges/challengesSelectMenu.menu
 			"sound_accept"          "UI_Menu_Accept"
 			"cursorPriority"        "-1"
 
-			xpos                    340
+			xpos                    380
 			ypos                    0
 			zpos                    3
             visible 1
