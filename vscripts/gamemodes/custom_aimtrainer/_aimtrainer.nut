@@ -2245,7 +2245,7 @@ void function OnChallengeEnd(entity player)
 	if(!IsValid(player)) return
 	
 	player.p.isChallengeActivated = false
-	
+
 	if(!player.p.isRestartingLevel)
 	{
 		player.p.straferAccuracy = float(player.p.straferShotsHit) / float(player.p.straferTotalShots)
@@ -2264,7 +2264,8 @@ void function OnChallengeEnd(entity player)
 		printt(" -Damage done: " + player.p.straferChallengeDamage)
 		printt(" -Crit. shots: " + player.p.straferCriticalShots)
 		printt("===========================================")
-
+		
+		Remote_CallFunction_NonReplay(player, "ServerCallback_HistoryUIAddNewChallenge", player.p.challengeName, player.p.straferShotsHit, player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ), player.p.straferAccuracy, player.p.straferDummyKilledCount, player.p.straferChallengeDamage, player.p.isNewBestScore)//, player.p.straferChallengeDamage, player.p.straferCriticalShots,player.p.straferShotsHitRecord,player.p.isNewBestScore)
 		Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, player.p.straferShotsHit,player.p.straferDummyKilledCount,player.p.straferAccuracy,player.p.straferChallengeDamage,player.p.straferCriticalShots,player.p.straferShotsHitRecord,player.p.isNewBestScore)
 	}
 	thread ChallengesStartAgain(player)

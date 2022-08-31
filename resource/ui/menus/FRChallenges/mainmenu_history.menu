@@ -214,10 +214,10 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		"ServerBrowserBG"
 		{
 			"ControlName"			"ImagePanel"
-			"xpos"					"-120"
+			"xpos"					"-60"
 			"ypos"					"120"
 			"tall"					"50"
-			"wide" 					"700"
+			"wide" 					"830"
 			"fillColor"				"34 34 34 200"
 			"drawColor"				"30 30 30 200"
 			"wrap"					"1"
@@ -235,7 +235,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"xpos"					"0"
 			"ypos"					"0"
 			"tall"					"760"
-			"wide" 					"700"
+			"wide" 					"830"
 			"fillColor"				"30 30 30 120"
 			"drawColor"				"30 30 30 120"
 			"wrap"					"1"
@@ -247,7 +247,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"	"BOTTOM_LEFT"
 		}
 
-		"NoServersLbl"
+		"NoChallengesLbl"
 		{
 			"ControlName"			"Label"
 			"labelText"				"No Challenges Played"
@@ -276,12 +276,29 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_corner_to_sibling"	"LEFT"
 			"pin_to_sibling_corner"	"LEFT"
 		}
+		
+		"DummiesKilledLbl"
+		{
+			"ControlName"			"Label"
+			"labelText"				"Kills"
+			"xpos"					"-250"
+			"ypos"					"0"
+			"zpos"					"6"
+			"textalignment"			"center"
+			"wide"					"150"
+			"zpos" 					"4"
+			"fontHeight"			"30"
 
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
 		"ChallengeScoreLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Score"
-			"xpos"					"-250"
+			"labelText"				"Shots Hit"
+			"xpos"					"-400"
 			"ypos"					"0"
 			"zpos"					"6"
 			"textalignment"			"center"
@@ -298,7 +315,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"			"Label"
 			"labelText"				"Weapon"
-			"xpos"					"-400"
+			"xpos"					"-540"
 			"ypos"					"0"
 			"zpos"					"6"
 			"textalignment"			"center"
@@ -310,11 +327,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"	"LEFT"
 		}
 
-		"ChallengeTimeLbl"
+		"ChallengeAccuracyLbl"
 		{
 			"ControlName"			"Label"
-			"labelText"				"Time"
-			"xpos"					"-550"
+			"labelText"				"Accuracy"
+			"xpos"					"-685"
 			"ypos"					"0"
 			"zpos"					"6"
 			"textalignment"			"center"
@@ -362,10 +379,10 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"	"BOTTOM_LEFT"
 		}
 
-		"PlaylistLine"
+		"ShotshitLine"
 		{
 			"ControlName"			"ImagePanel"
-			"xpos"					"-400"
+			"xpos"					"-395"
 			"ypos"					"0"
 			"tall"					"760"
 			"wide" 					"2"
@@ -379,11 +396,10 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_corner_to_sibling"	"TOP_LEFT"
 			"pin_to_sibling_corner"	"BOTTOM_LEFT"
 		}
-
-		"MapLine"
+		"WeaponLine"
 		{
 			"ControlName"			"ImagePanel"
-			"xpos"					"-550"
+			"xpos"					"-540"
 			"ypos"					"0"
 			"tall"					"760"
 			"wide" 					"2"
@@ -397,7 +413,42 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_corner_to_sibling"	"TOP_LEFT"
 			"pin_to_sibling_corner"	"BOTTOM_LEFT"
 		}
+		"AccuracyLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"-685"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
 
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
+		"LeftLine"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"0"
+			"tall"					"760"
+			"wide" 					"2"
+			"fillColor"				"84 84 84 200"
+			"drawColor"				"84 84 84 200"
+			"wrap"					"1"
+			"visible"				"1"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP_LEFT"
+			"pin_to_sibling_corner"	"BOTTOM_LEFT"
+		}
+		
 		"RightLine"
 		{
 			"ControlName"			"ImagePanel"
@@ -422,7 +473,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"xpos"					"0"
 			"ypos"					"0"
 			"tall"					"2"
-			"wide" 					"700"
+			"wide" 					"830"
 			"fillColor"				"84 84 84 200"
 			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
@@ -440,7 +491,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"xpos"					"0"
 			"ypos"					"0"
 			"tall"					"2"
-			"wide" 					"700"
+			"wide" 					"830"
 			"fillColor"				"84 84 84 200"
 			"drawColor"				"84 84 84 200"
 			"wrap"					"1"
@@ -1156,11 +1207,353 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
+		"Kills0"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-210"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textAlignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton0"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills1"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills2"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills3"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills4"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills5"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton5"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills6"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton6"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills7"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton7"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills8"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton8"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills9"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton9"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills10"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton10"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills11"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton11"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills12"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton12"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills13"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton13"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills14"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton14"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills15"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton15"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills16"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton16"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills17"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton17"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+
+		"Kills18"
+		{
+			"ControlName"				"Label"
+			"labelText"					""
+			"xpos"					"-215"
+			"ypos"						"0"
+			"zpos"						"0"
+			"textalignment"				"center"
+			"wide"						"230"
+			"zpos" 						"4"
+			"fontHeight"				"30"
+			"classname"					"ServerLabels"
+
+			"pin_to_sibling"			"ServerButton18"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
+		}
+		
 		"Score0"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textAlignment"				"center"
@@ -1178,7 +1571,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1196,7 +1589,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1214,7 +1607,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1232,7 +1625,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1250,7 +1643,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1268,7 +1661,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1286,7 +1679,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1304,7 +1697,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1322,7 +1715,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1340,7 +1733,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1358,7 +1751,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1376,7 +1769,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1394,7 +1787,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1412,7 +1805,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1430,7 +1823,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1448,7 +1841,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1466,7 +1859,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1484,7 +1877,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"					"-175"
+			"xpos"					"-355"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1502,7 +1895,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textAlignment"				"center"
@@ -1520,7 +1913,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1538,7 +1931,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1556,7 +1949,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1574,7 +1967,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1592,7 +1985,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1610,7 +2003,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1628,7 +2021,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1646,7 +2039,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1664,7 +2057,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1682,7 +2075,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1700,7 +2093,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1718,7 +2111,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1736,7 +2129,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1754,7 +2147,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1772,7 +2165,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1790,7 +2183,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1808,7 +2201,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1826,7 +2219,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-380"
+			"xpos"						"-560"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1840,11 +2233,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime0"
+		"ChallengeAccuracy0"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textAlignment"				"center"
@@ -1858,11 +2251,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime1"
+		"ChallengeAccuracy1"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1876,11 +2269,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime2"
+		"ChallengeAccuracy2"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1894,11 +2287,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime3"
+		"ChallengeAccuracy3"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1912,11 +2305,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime4"
+		"ChallengeAccuracy4"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1930,11 +2323,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime5"
+		"ChallengeAccuracy5"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1948,11 +2341,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime6"
+		"ChallengeAccuracy6"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1966,11 +2359,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime7"
+		"ChallengeAccuracy7"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -1984,11 +2377,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime8"
+		"ChallengeAccuracy8"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2002,11 +2395,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime9"
+		"ChallengeAccuracy9"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2020,11 +2413,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime10"
+		"ChallengeAccuracy10"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2038,11 +2431,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime11"
+		"ChallengeAccuracy11"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2056,11 +2449,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime12"
+		"ChallengeAccuracy12"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2074,11 +2467,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime13"
+		"ChallengeAccuracy13"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2092,11 +2485,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime14"
+		"ChallengeAccuracy14"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2110,11 +2503,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime15"
+		"ChallengeAccuracy15"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2128,11 +2521,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime16"
+		"ChallengeAccuracy16"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2146,11 +2539,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime17"
+		"ChallengeAccuracy17"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"
@@ -2164,11 +2557,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"		"LEFT"
 		}
 
-		"ChallengeTime18"
+		"ChallengeAccuracy18"
 		{
 			"ControlName"				"Label"
 			"labelText"					""
-			"xpos"						"-530"
+			"xpos"						"-700"
 			"ypos"						"0"
 			"zpos"						"0"
 			"textalignment"				"center"

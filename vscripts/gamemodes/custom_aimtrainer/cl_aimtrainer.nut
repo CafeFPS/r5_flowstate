@@ -34,6 +34,9 @@ global function ServerCallback_OpenFRChallengesMainMenu
 global function ServerCallback_OpenFRChallengesHistory
 global function ServerCallback_CloseFRChallengesResults
 
+//History
+global function ServerCallback_HistoryUIAddNewChallenge
+
 //Stats UI
 global function ServerCallback_LiveStatsUIDummiesKilled
 global function ServerCallback_LiveStatsUIAccuracyViaTotalShots
@@ -266,6 +269,11 @@ void function ServerCallback_OpenFRChallengesSettings()
 void function ServerCallback_CloseFRChallengesResults()
 {
 	RunUIScript( "CloseFRChallengesMainMenu" )
+}
+
+void function ServerCallback_HistoryUIAddNewChallenge(int NameInt, int Score, entity Weapon, float Accuracy, int dummiesKilled, int Damage, bool wasNewScore)
+{
+	RunUIScript( "HistoryUI_AddNewChallenge", ReturnChallengeName(NameInt), Score, Weapon.GetWeaponClassName(), Accuracy, dummiesKilled, Damage, wasNewScore)
 }
 
 void function ServerCallback_LiveStatsUIDummiesKilled(int dummieskilled)
