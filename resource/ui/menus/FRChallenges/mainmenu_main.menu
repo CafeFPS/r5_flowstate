@@ -314,7 +314,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge2
 		{
 			"ControlName"			"RuiButton"
-			wide					215
+			wide					217
 			tall					60
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -355,7 +355,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge2DialogFrame
 		{
             ControlName		ImagePanel
-			wide					215
+			wide					217
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -432,7 +432,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge4
 		{
 			"ControlName"			"RuiButton"
-			wide					210
+			wide					215
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -473,7 +473,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge4DialogFrame
 		{
             ControlName		ImagePanel
-			wide					210
+			wide					215
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -550,7 +550,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 	Challenge6
 		{
 			"ControlName"			"RuiButton"
-			wide					225
+			wide					233
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -591,7 +591,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge6DialogFrame
 		{
             ControlName		ImagePanel
-			wide					225
+			wide					233
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -608,7 +608,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 	Challenge7
 		{
 			"ControlName"			"RuiButton"
-			wide					235
+			wide					160
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -649,7 +649,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge7DialogFrame
 		{
             ControlName		ImagePanel
-			wide					235
+			wide					160
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -725,7 +725,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 	Challenge1NewC
 		{
 			"ControlName"			"RuiButton"
-			wide					265
+			wide					245
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -748,7 +748,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"Record Movement"
+			labelText				"Fast Jumps Strafes"
 			visible                 1
 			zpos 3
 			tall					55
@@ -766,7 +766,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge1NewCDialogFrame
 		{
             ControlName		ImagePanel
-			wide					260
+			wide					245
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -784,7 +784,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 	Challenge2NewC
 		{
 			"ControlName"			"RuiButton"
-			wide					220
+			wide					225
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -824,7 +824,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge2NewCDialogFrame
 		{
             ControlName		ImagePanel
-			wide					220
+			wide					225
 			tall					55
 			xpos                    0
 			ypos                    0
@@ -842,7 +842,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 	Challenge3NewC
 		{
 			"ControlName"			"RuiButton"
-			wide					235
+			wide					237
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -883,7 +883,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge3NewCDialogFrame
 		{
             ControlName		ImagePanel
-			wide					235
+			wide					237
 			tall					55
 			xpos                    0
 			ypos                    0

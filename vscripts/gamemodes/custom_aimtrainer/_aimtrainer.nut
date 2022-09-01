@@ -260,17 +260,14 @@ void function StrafeMovement(entity ai, entity player)
 		ai.SetAngles(angles2)
 			
 		int random = RandomIntRangeInclusive(1,10)
-		if(random == 1 || random == 2 || random == 3 || random == 4){
-		//a d strafe
-			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
+		//crouch
+		if (random == 9 || random == 10){
+			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
-			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+			wait RandomFloatRange(0.05,0.25)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 		}
-		else if(random == 5|| random == 6|| random == 7|| random == 8){
-		//a d strafe
+		else
+		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
@@ -278,86 +275,9 @@ void function StrafeMovement(entity ai, entity player)
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 		}
-		//crouch
-		else if (random == 9){
-			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
-			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.25)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-		}
-		//jump by me 
-		else if (random == 10 && AimTrainer_STRAFING_SPEED != 1.8){
-			script_mover.SetOrigin( ai.GetOrigin() )
-			script_mover.SetAngles( ai.GetAngles() )
-			ai.SetParent(script_mover)
-
-			int randomness = 1
-			if(CoinFlip()) randomness = -1		
-			
-			//Jumping with movement (tap strafe / ras strafe)
-			float startTime = Time()
-			float endTimeNumber = 0.28*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-			float endTime = startTime + endTimeNumber
-			vector moveTo = ai.GetOrigin()
-			ai.Anim_Stop()
-			thread JumpAnim(ai, player)
-
-			int curvedamount = 50
-			float moveXFrom = moveTo.x+curvedamount*randomness
-			float moveZFrom = moveTo.z+30
-			printt("jump START")
-			while(true)
-			{
-				if(endTime-Time() <= 0) 
-				{
-					script_mover.NonPhysicsStop()
-					startTime = Time()
-					endTime = startTime + endTimeNumber
-					moveXFrom = moveTo.x+curvedamount*-randomness
-					moveZFrom = moveTo.z					
-					while(endTime-Time() > 0)
-					{
-						if(IsValid(script_mover)) script_mover.NonPhysicsMoveTo( Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z )), endTime-Time(), 0.0, 0.0 )
-						//printt("jump loop 2 ")
-						WaitFrame()
-					}
-					if(IsValid(script_mover)) script_mover.NonPhysicsStop()
-					break
-				}
-				//printt("jump loop 1")
-				if(IsValid(script_mover)) script_mover.NonPhysicsMoveTo( Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z )), endTime-Time(), 0.0, 0.0 )
-				WaitFrame()
-			}
-			
-			if(IsValid(dummy))			
-				ai.ClearParent()
-			printt("jump END")
-		}
 	}
 }
 
-void function JumpAnim(entity dummy, entity player)
-{
-	dummy.EndSignal("OnDeath")
-	player.EndSignal("ChallengeTimeOver")
-	
-	if(IsValid(dummy))
-	{
-		dummy.Anim_ScriptedPlayActivityByName( "ACT_MP_JUMP_START", true, 0.1 )
-		dummy.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-	}
-	wait 0.2*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-	if(IsValid(dummy))
-	{
-		dummy.Anim_ScriptedPlayActivityByName( "ACT_MP_JUMP_FLOAT", true, 0.1 )
-		dummy.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)		
-	}
-	wait 0.08*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-	if(IsValid(dummy))
-	{
-		dummy.Anim_ScriptedPlayActivityByName( "ACT_MP_JUMP_LAND", true, 0.1 )
-		dummy.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)		
-	}		
-}
 //CHALLENGE "Switching targets"
 void function StartSwapFocusDummyChallenge(entity player)
 {
@@ -742,6 +662,60 @@ void function CreateDummyStraightUpChallenge(entity player)
 		WaitFrame()
 	}
 }
+
+void function OnPropDamaged( entity ent, var damageInfo )
+//By Colombia
+{
+	if(ent.GetClassName() != "prop_dynamic") return
+	
+	entity attacker = DamageInfo_GetAttacker(damageInfo)
+	float damage = DamageInfo_GetDamage( damageInfo )
+	
+	// entity mover = ent.GetParent()
+	entity dummy = ent
+	
+	if(!attacker.IsPlayer() ) return
+	
+	attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
+	
+	float NextShieldHealth = dummy.GetShieldHealth() - DamageInfo_GetDamage( damageInfo )
+	float NextHealth = dummy.GetHealth() - DamageInfo_GetDamage( damageInfo )
+	float shieldHealth = float( ent.GetShieldHealth() )
+	
+	if (dummy.GetShieldHealth() > 0 && IsValid(dummy)){
+		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+		
+		dummy.SetShieldHealth( maxint( 0, int( NextShieldHealth ) ) )
+		if ( shieldHealth && NextShieldHealth <= 0 )
+			{	
+			DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )	
+			if( IsValid( attacker ) )
+				thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
+			}
+	}
+	else if (NextHealth > 0 && IsValid(dummy)){
+		dummy.SetHealth(NextHealth)
+	}
+
+	//PilotShieldHealthUpdate( dummy, damageInfo)
+	
+	attacker.NotifyDidDamage
+	(
+		ent,
+		DamageInfo_GetHitBox( damageInfo ),
+		DamageInfo_GetDamagePosition( damageInfo ), 
+		DamageInfo_GetCustomDamageType( damageInfo ),
+		DamageInfo_GetDamage( damageInfo ),
+		DamageInfo_GetDamageFlags( damageInfo ), 
+		DamageInfo_GetHitGroup( damageInfo ),
+		DamageInfo_GetWeapon( damageInfo ), 
+		DamageInfo_GetDistFromAttackOrigin( damageInfo )
+	)
+	
+	if (NextHealth < 0 && IsValid(dummy)){
+		OnDummieKilled(dummy, damageInfo)
+	}
+}
 //CHALLENGE "Bubble Fight"
 void function StartBubblefightChallenge(entity player)
 {
@@ -1109,10 +1083,10 @@ void function StartVerticalGrenadesChallenge(entity player)
 			vector angles2 = VectorToAngles( vec2 )
 			dummy.SetAngles(angles2)
 			i++
-			entity pipe = CreatePropDynamic($"mdl/pipes/slum_pipe_large_yellow_256_02.rmdl", dummy.GetOrigin()-Vector(0,0,190), Vector(0,0,0), 6, -1)
-			pipe.kv.rendermode = 4
-			pipe.kv.renderamt = 150
-			pipe.SetParent(dummy)
+			// entity pipe = CreatePropDynamic($"mdl/pipes/slum_pipe_large_yellow_256_02.rmdl", dummy.GetOrigin()-Vector(0,0,190), Vector(0,0,0), 6, -1)
+			// pipe.kv.rendermode = 4
+			// pipe.kv.renderamt = 150
+			// pipe.SetParent(dummy)
 			dummy.SetBehaviorSelector( "behavior_dummy_empty" )
 			dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_NEW_ENEMY_FROM_SOUND )
 			//dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
@@ -1693,19 +1667,18 @@ void function DummyTapyDuckStrafeMovement(entity dummy, entity player)
 		if(CoinFlip()) morerandomness = -1
 
 		int morerandomness3 = RandomIntRangeInclusive(1,10)
-		int morerandomness4 = RandomIntRangeInclusive(1,4)
+		int morerandomness4 = RandomIntRangeInclusive(1,5)
 		vector dummyoldorigin = dummy.GetOrigin()
-		if(morerandomness3 >= 1 && morerandomness3 <= 7) //75% chance
+		if(morerandomness3 >= 1 && morerandomness3 <= 9) //75% chance
 		{
-			if(morerandomness4 == 4) //25% chance
+			if(morerandomness4 == 5) //25% chance
 			{
-				// printt("Crouching")
 				dummy.Anim_Stop()
 				script_mover.NonPhysicsStop()						
 				dummy.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
 				wait 0.15
 			}
-			else if(morerandomness4 >= 1 && morerandomness3 <= 3)//75% chance
+			else if(morerandomness4 >= 1 && morerandomness3 <= 4)//75% chance
 			{
 				oldLocationindex = locationindex
 		
@@ -1728,7 +1701,7 @@ void function DummyTapyDuckStrafeMovement(entity dummy, entity player)
 				script_mover.NonPhysicsStop()
 			}
 		}
-		else if (morerandomness3 == 9 || morerandomness3 == 10) //20% chance
+		else if (morerandomness3 == 10)
 		{
 			int morerandomness2 = 1
 			if(CoinFlip()) morerandomness2 = -1
@@ -2268,9 +2241,9 @@ void function OnChallengeEnd(entity player)
 		printt(" -Crit. shots: " + player.p.straferCriticalShots)
 		printt("===========================================")
 		
-		Remote_CallFunction_NonReplay(player, "ServerCallback_HistoryUIAddNewChallenge", player.p.challengeName, player.p.straferShotsHit, player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ), player.p.straferAccuracy, player.p.straferDummyKilledCount, player.p.straferChallengeDamage, player.p.isNewBestScore)//, player.p.straferChallengeDamage, player.p.straferCriticalShots,player.p.straferShotsHitRecord,player.p.isNewBestScore)
 		Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, player.p.straferShotsHit,player.p.straferDummyKilledCount,player.p.straferAccuracy,player.p.straferChallengeDamage,player.p.straferCriticalShots,player.p.straferShotsHitRecord,player.p.isNewBestScore)
 	}
+	Remote_CallFunction_NonReplay(player, "ServerCallback_HistoryUIAddNewChallenge", player.p.challengeName, player.p.straferShotsHit, player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ), player.p.straferAccuracy, player.p.straferDummyKilledCount, player.p.straferChallengeDamage, player.p.isNewBestScore)
 	thread ChallengesStartAgain(player)
 }
 
@@ -2755,7 +2728,7 @@ bool function CC_StartChallenge8( entity player, array<string> args )
 bool function CC_StartChallenge1NewC( entity player, array<string> args )
 {
 	PreChallengeStart(player, 6)
-	// thread StartBubblefightChallenge(player)
+	thread StartTapyDuckStrafesChallenge(player)
 	return false
 }
 

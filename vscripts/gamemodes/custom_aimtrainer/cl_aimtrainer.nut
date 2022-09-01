@@ -197,7 +197,7 @@ string function ReturnChallengeName(int index)
 			final = "POPCORN TARGETS"
 			break
 		case 6:
-			final = "RECORD MOVEMENT"
+			final = "FAST JUMPS STRAFES"
 			break
 		case 7:
 			final = "ARC STARS PRACTICE"

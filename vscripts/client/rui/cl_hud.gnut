@@ -260,30 +260,23 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		//
 	}
 
-	if ( !victim.IsPlayer() && isShieldShot) //ai shield bleedtrough visuals
+	if ( !victim.IsPlayer() && isShieldShot) //props shield bleedtrough visuals
 	{
-		// entity mover 
-		// try{
-		// mover = victim.GetParent()}catch(e420){}
-		
-		// if(IsValid(mover))		
-			// victim = mover.GetParent()
-		
-		if(victim.ai.firsttime){			
+		if(victim.e.firsttime){			
 			if( victim.GetShieldHealth() <= 50 ){
-			victim.ai.shieldTier = 1
+			victim.e.shieldTier = 1
 			}
 			else if( victim.GetShieldHealth() > 50 && victim.GetShieldHealth() <= 75 ) {
-			victim.ai.shieldTier = 2
+			victim.e.shieldTier = 2
 			} else if( victim.GetShieldHealth() > 75 && victim.GetShieldHealth() <= 100  ) {
-			victim.ai.shieldTier = 3
+			victim.e.shieldTier = 3
 			} else if( victim.GetShieldHealth() > 100 ) {
-			victim.ai.shieldTier = 5
+			victim.e.shieldTier = 5
 			}
-			victim.ai.firsttime = false
+			victim.e.firsttime = false
 		}
 		shieldIcon = $"rui/hud/loot/loot_armor_3"
-		shieldLevel = victim.ai.shieldTier
+		shieldLevel = victim.e.shieldTier
 	}
 	
 	if ( !victim.IsPlayer() && victim.GetShieldHealth() == 0)
