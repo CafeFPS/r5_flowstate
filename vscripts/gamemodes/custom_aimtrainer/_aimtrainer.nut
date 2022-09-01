@@ -42,6 +42,9 @@ struct{
 	array<entity> props
 } ChallengesEntities
 
+table<int, array<ChallengeScore> > ChallengesData
+table<int, int > ChallengesBestScores
+
 void function _ChallengesByColombia_Init()
 {
 	//first challenges select menu column
@@ -127,6 +130,12 @@ void function _ChallengesByColombia_Init()
 	}
 	floorCenterForPlayer = <floorLocation.x+3840, floorLocation.y+3840, floorLocation.z+200>
 	floorCenterForButton = <floorLocation.x+3840+200, floorLocation.y+3840, floorLocation.z+18>
+	
+	for(int i = 0; i<20; i++)
+	{
+		ChallengesData[i] <- []
+		ChallengesBestScores[i] <- 0
+	}	
 }
 
 void function StartFRChallenges(entity player)
@@ -2228,10 +2237,22 @@ void function OnChallengeEnd(entity player)
 	if(!player.p.isRestartingLevel)
 	{
 		player.p.straferAccuracy = float(player.p.straferShotsHit) / float(player.p.straferTotalShots)
+
+	ChallengeScore ThisChallengeData
+	ThisChallengeData.straferDummyKilledCount = player.p.straferDummyKilledCount
+	ThisChallengeData.straferChallengeDamage = player.p.straferChallengeDamage
+	ThisChallengeData.straferCriticalShots = player.p.straferCriticalShots
+	ThisChallengeData.straferShotsHit = player.p.straferShotsHit
+	ThisChallengeData.straferTotalShots = player.p.straferTotalShots
+	ThisChallengeData.straferAccuracy = player.p.straferAccuracy
+	ThisChallengeData.straferShotsHitRecord = player.p.straferShotsHitRecord
+	
+	ChallengesData[player.p.challengeName].append(ThisChallengeData)
 		
-		if(player.p.straferShotsHit > player.p.straferShotsHitRecord) 
+	foreach(challenge in ChallengesData[player.p.challengeName])
+		if(challenge.straferShotsHit > ChallengesBestScores[player.p.challengeName]) 
 		{
-			player.p.straferShotsHitRecord = player.p.straferShotsHit
+			ChallengesBestScores[player.p.challengeName] = challenge.straferShotsHit
 			player.p.isNewBestScore = true
 		}
 
@@ -2244,7 +2265,7 @@ void function OnChallengeEnd(entity player)
 		printt(" -Crit. shots: " + player.p.straferCriticalShots)
 		printt("===========================================")
 		
-		Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, player.p.straferShotsHit,player.p.straferDummyKilledCount,player.p.straferAccuracy,player.p.straferChallengeDamage,player.p.straferCriticalShots,player.p.straferShotsHitRecord,player.p.isNewBestScore)
+		Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, player.p.straferShotsHit,player.p.straferDummyKilledCount,player.p.straferAccuracy,player.p.straferChallengeDamage,player.p.straferCriticalShots,ChallengesBestScores[player.p.challengeName],player.p.isNewBestScore)
 	}
 	Remote_CallFunction_NonReplay(player, "ServerCallback_HistoryUIAddNewChallenge", player.p.challengeName, player.p.straferShotsHit, player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ), player.p.straferAccuracy, player.p.straferDummyKilledCount, player.p.straferChallengeDamage, player.p.isNewBestScore)
 	thread ChallengesStartAgain(player)
@@ -2666,6 +2687,7 @@ void function PreChallengeStart(entity player, int challenge)
 	AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	AddCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.p.challengeName = challenge
+
 	player.p.isChallengeActivated = true
 	DeployAndEnableWeapons(player)
 	entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )

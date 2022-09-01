@@ -728,6 +728,7 @@ global struct ServerPlayerStruct
 	//Strafer dummy challenge
 	int challengeName = 0
 	bool isChallengeActivated
+	//temp challenges data
 	int straferDummyKilledCount
 	int straferChallengeDamage
 	int straferCriticalShots
@@ -740,6 +741,17 @@ global struct ServerPlayerStruct
 	bool isRestartingLevel = false
 	int dummieKilled = 0
 	bool touchingTopTrigger = false
+}
+
+global struct ChallengeScore
+{
+	int straferDummyKilledCount
+	int straferChallengeDamage
+	int straferCriticalShots
+	int straferShotsHit
+	int straferTotalShots
+	float straferAccuracy
+	int straferShotsHitRecord = 0
 }
 
 global struct ServerPlayerWaypoint
