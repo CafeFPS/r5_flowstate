@@ -491,7 +491,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge5
 		{
 			"ControlName"			"RuiButton"
-			wide					165
+			wide					160
 			tall					55
 			"rui"                   "ui/invisible.rpak"
 			"labelText"             ""
@@ -532,7 +532,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge5DialogFrame
 		{
             ControlName		ImagePanel
-			wide					165
+			wide					160
 			tall					55
 			xpos                    0
 			ypos                    0

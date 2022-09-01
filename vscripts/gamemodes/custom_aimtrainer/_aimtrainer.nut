@@ -607,7 +607,7 @@ void function StartStraightUpChallenge(entity player)
 		
 		if(ChallengesEntities.dummies.len()<4){
 				thread CreateDummyStraightUpChallenge(player)
-				wait 4.55
+				wait 2
 			}
 			WaitFrame()
 	}
@@ -618,7 +618,10 @@ void function CreateDummyStraightUpChallenge(entity player)
 	int random = 1
 	if(CoinFlip()) random = -1
 	
-	entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(player.GetAngles())*RandomIntRange(600,900), Vector(0,180,0) )
+	int random2 = 1
+	if(CoinFlip()) random2 = -1	
+	
+	entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(player.GetAngles())*RandomIntRange(100,900)*random + AnglesToRight(player.GetAngles())*RandomIntRange(100,900)*random2, Vector(0,180,0) )
 
 	EndSignal(dummy, "OnDeath")
 	EndSignal(player, "ChallengeTimeOver")
@@ -654,11 +657,11 @@ void function CreateDummyStraightUpChallenge(entity player)
 		}
 	EmitSoundOnEntity(dummy, "jumpjet_freefall_body_3p_enemy_OLD")
 	
-	int idk = 150 //from retail??
+	int idk = 140 //from retail??
 	float flyingTime = Time() + 4.6
 	while( Time() <= flyingTime )
 	{
-		dummy.SetVelocity( <dummy.GetVelocity().x, dummy.GetVelocity().y, idk*10> )
+		dummy.SetVelocity( <dummy.GetVelocity().x, dummy.GetVelocity().y, idk*9> )
 		WaitFrame()
 	}
 }
