@@ -43,7 +43,7 @@ struct{
 } ChallengesEntities
 
 table<int, array<ChallengeScore> > ChallengesData
-table<int, int > ChallengesBestScores
+table<int, int> ChallengesBestScores
 
 void function _ChallengesByColombia_Init()
 {
@@ -174,7 +174,6 @@ void function ResetChallengeStats(entity player)
 	if(!player.p.isRestartingLevel)
 		player.p.challengeName = 0
 	player.p.straferDummyKilledCount = 0
-	player.p.straferAccuracy = 0
 	player.p.straferShotsHit = 0
 	player.p.straferTotalShots = 0
 	player.p.straferChallengeDamage = 0
@@ -2233,41 +2232,39 @@ void function OnChallengeEnd(entity player)
 	if(!IsValid(player)) return
 	
 	player.p.isChallengeActivated = false
-
-	if(!player.p.isRestartingLevel)
-	{
-		player.p.straferAccuracy = float(player.p.straferShotsHit) / float(player.p.straferTotalShots)
-
+	
 	ChallengeScore ThisChallengeData
 	ThisChallengeData.straferDummyKilledCount = player.p.straferDummyKilledCount
 	ThisChallengeData.straferChallengeDamage = player.p.straferChallengeDamage
 	ThisChallengeData.straferCriticalShots = player.p.straferCriticalShots
 	ThisChallengeData.straferShotsHit = player.p.straferShotsHit
 	ThisChallengeData.straferTotalShots = player.p.straferTotalShots
-	ThisChallengeData.straferAccuracy = player.p.straferAccuracy
+	ThisChallengeData.straferAccuracy = float(player.p.straferShotsHit) / float(player.p.straferTotalShots)
 	ThisChallengeData.straferShotsHitRecord = player.p.straferShotsHitRecord
-	
 	ChallengesData[player.p.challengeName].append(ThisChallengeData)
-		
-	foreach(challenge in ChallengesData[player.p.challengeName])
-		if(challenge.straferShotsHit > ChallengesBestScores[player.p.challengeName]) 
-		{
-			ChallengesBestScores[player.p.challengeName] = challenge.straferShotsHit
-			player.p.isNewBestScore = true
-		}
 
-		printt("===========================================")
-		printt("FLOWSTATE AIM TRAINER CHALLENGE RESULTS:")
-		printt(" -Killed dummies: " + player.p.straferDummyKilledCount)
-		printt(" -Accuracy: " + player.p.straferAccuracy)
-		printt(" -Shots hit: " + player.p.straferShotsHit)
-		printt(" -Damage done: " + player.p.straferChallengeDamage)
-		printt(" -Crit. shots: " + player.p.straferCriticalShots)
-		printt("===========================================")
+	printt("===========================================")
+	printt("FLOWSTATE AIM TRAINER CHALLENGE RESULTS:")
+	printt(" -Killed dummies: " + ThisChallengeData.straferDummyKilledCount)
+	printt(" -Accuracy: " + ThisChallengeData.straferAccuracy)
+	printt(" -Shots hit: " + ThisChallengeData.straferShotsHit)
+	printt(" -Damage done: " + ThisChallengeData.straferChallengeDamage)
+	printt(" -Crit. shots: " + ThisChallengeData.straferCriticalShots)
+	printt("===========================================")
+	
+	if(ThisChallengeData.straferShotsHit > ChallengesBestScores[player.p.challengeName]) 
+	{
+		Assert(ThisChallengeData.straferShotsHit > ChallengesBestScores[player.p.challengeName])
 		
-		Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, player.p.straferShotsHit,player.p.straferDummyKilledCount,player.p.straferAccuracy,player.p.straferChallengeDamage,player.p.straferCriticalShots,ChallengesBestScores[player.p.challengeName],player.p.isNewBestScore)
-	}
-	Remote_CallFunction_NonReplay(player, "ServerCallback_HistoryUIAddNewChallenge", player.p.challengeName, player.p.straferShotsHit, player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ), player.p.straferAccuracy, player.p.straferDummyKilledCount, player.p.straferChallengeDamage, player.p.isNewBestScore)
+		ChallengesBestScores[player.p.challengeName] = ThisChallengeData.straferShotsHit
+		player.p.isNewBestScore = true
+	} else
+		player.p.isNewBestScore = false
+		
+	if(!player.p.isRestartingLevel)
+		Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, ThisChallengeData.straferShotsHit, ThisChallengeData.straferDummyKilledCount, ThisChallengeData.straferAccuracy, ThisChallengeData.straferChallengeDamage, ThisChallengeData.straferCriticalShots,ChallengesBestScores[player.p.challengeName], player.p.isNewBestScore)
+	
+	Remote_CallFunction_NonReplay(player, "ServerCallback_HistoryUIAddNewChallenge", player.p.challengeName, ThisChallengeData.straferShotsHit, player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ), ThisChallengeData.straferAccuracy, ThisChallengeData.straferDummyKilledCount, ThisChallengeData.straferChallengeDamage, player.p.isNewBestScore)
 	thread ChallengesStartAgain(player)
 }
 

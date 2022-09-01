@@ -734,7 +734,6 @@ global struct ServerPlayerStruct
 	int straferCriticalShots
 	int straferShotsHit
 	int straferTotalShots
-	float straferAccuracy
 	int straferShotsHitRecord = 0
 	int totalPossibleDamage
 	bool isNewBestScore = false
