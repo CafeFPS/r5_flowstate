@@ -16,6 +16,7 @@ More credits!
 - Amos#1368 & contributors -- sdk https://github.com/Mauler125/r5sdk/tree/indev
 - rexx#1287 & contributors -- repak tool https://github.com/r-ex/RePak
 - Zee#6969 -- weapons buy menu example
+- Darkes#8647 -- beta tester
 - Rego#2848 -- beta tester
 - michae\l/#1125 -- beta tester
 - James9950#5567 -- beta tester
@@ -197,7 +198,6 @@ void function SetCommonDummyLines(entity dummy)
 void function StartStraferDummyChallenge(entity player)
 {
 	if(!IsValid(player)) return
-	
 	player.SetOrigin(onGroundLocationPos)
 	player.SetAngles(onGroundLocationAngs)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
@@ -214,11 +214,9 @@ void function StartStraferDummyChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
-
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
-	
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		entity dummy = CreateDummy( 99, onGroundDummyPos, Vector(0,0,0) )
@@ -670,222 +668,6 @@ void function CreateDummyStraightUpChallenge(entity player)
 	while( Time() <= flyingTime )
 	{
 		dummy.SetVelocity( <dummy.GetVelocity().x, dummy.GetVelocity().y, idk*9> )
-		WaitFrame()
-	}
-}
-
-void function OnPropDamaged( entity ent, var damageInfo )
-//By Colombia
-{
-	if(ent.GetClassName() != "prop_dynamic") return
-	
-	entity attacker = DamageInfo_GetAttacker(damageInfo)
-	float damage = DamageInfo_GetDamage( damageInfo )
-	
-	// entity mover = ent.GetParent()
-	entity dummy = ent
-	
-	if(!attacker.IsPlayer() ) return
-	
-	attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
-	
-	float NextShieldHealth = dummy.GetShieldHealth() - DamageInfo_GetDamage( damageInfo )
-	float NextHealth = dummy.GetHealth() - DamageInfo_GetDamage( damageInfo )
-	float shieldHealth = float( ent.GetShieldHealth() )
-	
-	if (dummy.GetShieldHealth() > 0 && IsValid(dummy)){
-		DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
-		
-		dummy.SetShieldHealth( maxint( 0, int( NextShieldHealth ) ) )
-		if ( shieldHealth && NextShieldHealth <= 0 )
-			{	
-			DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )	
-			if( IsValid( attacker ) )
-				thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
-			}
-	}
-	else if (NextHealth > 0 && IsValid(dummy)){
-		dummy.SetHealth(NextHealth)
-	}
-
-	//PilotShieldHealthUpdate( dummy, damageInfo)
-	
-	attacker.NotifyDidDamage
-	(
-		ent,
-		DamageInfo_GetHitBox( damageInfo ),
-		DamageInfo_GetDamagePosition( damageInfo ), 
-		DamageInfo_GetCustomDamageType( damageInfo ),
-		DamageInfo_GetDamage( damageInfo ),
-		DamageInfo_GetDamageFlags( damageInfo ), 
-		DamageInfo_GetHitGroup( damageInfo ),
-		DamageInfo_GetWeapon( damageInfo ), 
-		DamageInfo_GetDistFromAttackOrigin( damageInfo )
-	)
-	
-	if (NextHealth < 0 && IsValid(dummy)){
-		OnDummieKilled(dummy, damageInfo)
-	}
-}
-//CHALLENGE "Bubble Fight"
-void function StartBubblefightChallenge(entity player)
-{
-	if(!IsValid(player)) return
-	
-	player.SetOrigin(onGroundLocationPos)
-	player.SetAngles(onGroundLocationAngs)
-	// onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*225
-
-	EndSignal(player, "ChallengeTimeOver")
-	
-	OnThreadEnd(
-		function() : ( player)
-		{
-			OnChallengeEnd(player)
-		}
-	)
-	
-	wait AimTrainer_PRE_START_TIME
-	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
-	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
-	player.UnfreezeControlsOnServer()
-	//give shield again
-	Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-	player.SetShieldHealthMax(50)
-	player.SetShieldHealth(50)
-	
-	entity shield = CreateBubbleShieldWithSettings( player.GetTeam(), player.GetOrigin() + player.GetForwardVector()*500 + player.GetRightVector()*225, onGroundLocationAngs*-1, player, 999, false, BUBBLE_BUNKER_SHIELD_FX, BUBBLE_BUNKER_SHIELD_COLLISION_MODEL )
-	shield.SetCollisionDetailHigh()
-	shield.kv.rendercolor = TEAM_COLOR_ENEMY
-	ChallengesEntities.props.append(shield)
-
-	float endtime = Time() + AimTrainer_CHALLENGE_DURATION	
-	thread ChallengeWatcherThread(endtime, player)
-	bool onlyfirsttime = false
-	while(true){
-		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		if(ChallengesEntities.dummies.len()<1){
-			entity dummy
-			if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-			{
-				dummy = CreateDummy( 99, shield.GetOrigin()+shield.GetRightVector()*-225, <0,140,0> )
-			}else if(GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-			{
-				dummy = CreateDummy( 99, shield.GetOrigin()+shield.GetRightVector()*225, <0,90,0> )
-			}
-			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
-			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
-			DispatchSpawn( dummy )	
-			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetMaxHealth( 100 )
-			dummy.SetHealth( 100 )
-			SetCommonDummyLines(dummy)
-			ChallengesEntities.dummies.append(dummy)
-			SetTargetName(dummy, "BubbleFightDummy")
-			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
-			AddEntityCallback_OnKilled(dummy, OnDummyKilled)
-			
-			if(!onlyfirsttime)
-			{
-				if (GetMapName() != "mp_rr_canyonlands_staging" )
-				{
-					player.SetOrigin(dummy.GetOrigin() + dummy.GetForwardVector()*150)
-					vector angles2 = VectorToAngles( dummy.GetOrigin() - player.GetOrigin() )
-					player.SetAngles(angles2)
-				}
-				onlyfirsttime = true
-			}
-			thread BubbleFightStrafe(dummy, player, shield)
-			dummy.SetBehaviorSelector( "behavior_dummy_empty" )
-			dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_NEW_ENEMY_FROM_SOUND )
-			thread DamagePlayerOverTime(player, dummy)
-		}
-		WaitFrame()
-	}
-}
-void function DamagePlayerOverTime(entity player, entity dummy)
-{
-	dummy.EndSignal("OnDeath")
-	player.EndSignal("ChallengeTimeOver")
-	
-	while(IsValid(player) && IsValid(dummy))
-	{
-		if(player.GetShieldHealth() > 0)
-			player.SetShieldHealth(max(0,player.GetShieldHealth()-10))
-		else
-			player.TakeDamage( 10, dummy, null, { damageSourceId = eDamageSourceId.bubble_shield } )
-		
-		wait 2
-	}
-}
-
-void function BubbleFightStrafe(entity ai, entity player, entity shield)
-{
-	ai.EndSignal("OnDeath")
-	player.EndSignal("ChallengeTimeOver")
-	
-	OnThreadEnd(
-		function() : ( ai )
-		{
-			if(IsValid(ai)) ai.Destroy()
-			ChallengesEntities.dummies.removebyvalue(ai)
-		}
-	)
-				
-	array<string> weapons = ["mp_weapon_hemlok", "mp_weapon_lstar", "mp_weapon_vinson"]
-	string randomWeapon = weapons[RandomInt(weapons.len())]
-	entity weapon = ai.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
-	
-	//So distance is not 0 and we can start the while loop
-	if(CoinFlip())
-	{
-		ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
-		ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-	}
-	else
-	{
-		ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
-		ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-	}
-	wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-	
-	if(!IsValid(ai)) return
-	
-	while(true)
-	{
-		float distance
-		
-		if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
-			distance = (ai.GetOrigin() - (shield.GetOrigin()+shield.GetRightVector()*-225 )).x //Tracking the distance dummy is to the border of the bubble, forcing it to move that way
-		else
-			distance = (ai.GetOrigin() - (shield.GetOrigin()+shield.GetRightVector()*225 )).x //Tracking the distance dummy is to the border of the bubble, forcing it to move that way
-			
-		int random = RandomIntRangeInclusive(1,4)
-
-		if(random == 1 || random == 2 || random == 3)
-		{			
-			if(distance <= -5)
-			{
-				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
-				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-				wait RandomFloatRange(0.2,0.25)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-				// weapon.FireWeapon_Default( player.GetOrigin(), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
-			}
-			else if(distance > 5)
-			{
-				ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
-				ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-				wait RandomFloatRange(0.18,0.22)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-				// weapon.FireWeapon_Default( player.GetOrigin(), ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
-			}
-		} else if( random == 4 && distance > 22 || random == 4 && distance < -15  )
-		{
-			ai.Anim_Stop()
-			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
-			wait RandomFloatRange(0.15,0.3)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-			// weapon.FireWeapon_Default(player.GetOrigin()+Vector(0,0,60)+player.GetRightVector()*30, ai.GetOrigin()+Vector(0,0,50), 1.0, 1.0, false )
-		}
 		WaitFrame()
 	}
 }
@@ -1396,15 +1178,15 @@ void function StartTileFrenzyChallenge(entity player)
 	// player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	// player.MovementDisable()
 	WaitFrame()
+	WaitFrame()
 	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	EndSignal(player, "ChallengeTimeOver")
-	array<entity> Wall = CreateWallAtOrigin(player.GetOrigin()-Vector(0,0,200) + AnglesToForward(player.GetAngles())*540 - AnglesToRight(player.GetAngles())*512, 4, 2, 0)
+	array<entity> Wall = CreateWallAtOrigin(player.GetOrigin()-Vector(0,0,200) + AnglesToForward(player.GetAngles())*580 - AnglesToRight(player.GetAngles())*512, 4, 2, 0)
 	foreach(entity wallprop in Wall)
 	{
 		ChallengesEntities.floor.append(wallprop)
 	}
 	
-	WaitFrame()
 	//5x5?
 	int ancho = 5
 	int alto = 5
