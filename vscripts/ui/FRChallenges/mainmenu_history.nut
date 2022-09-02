@@ -3,7 +3,7 @@ global function OpenFRChallengesHistory
 global function CloseFRChallengesHistory
 global function HistoryUI_AddNewChallenge
 
-global const AIMTRAINER_HISTORYUI_SERVERS_PER_PAGE = 18
+global const AIMTRAINER_HISTORYUI_SERVERS_PER_PAGE = 19
 
 struct
 {
@@ -209,7 +209,7 @@ void function HistoryUI_AddNewChallenge(string Name, int ShotsHit, string Weapon
 	newChallenge.ChallengeName = Name
 	newChallenge.Kills = dummiesKilled
 	newChallenge.ShotsHit = ShotsHit
-	newChallenge.ChallengeWeapon = GetWeaponNameForUI(Weapon).toupper()
+	newChallenge.ChallengeWeapon = GetWeaponNameForUI(Weapon)//.toupper()
 	newChallenge.ChallengeAccuracy = AccuracyShort
 
 	ChallengesHistory.push(newChallenge)

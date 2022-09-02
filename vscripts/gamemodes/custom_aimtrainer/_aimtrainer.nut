@@ -15,7 +15,7 @@ More credits!
 - Skeptation#4002 -- beta tester and coworker https://www.youtube.com/c/Skeptation
 - Amos#1368 & contributors -- sdk https://github.com/Mauler125/r5sdk/tree/indev
 - rexx#1287 & contributors -- repak tool https://github.com/r-ex/RePak
-- Zee#6969 -- weapons buy menu example
+- Zee#6969 -- weapons buy menu example, history ui pages
 - Darkes#8647 -- beta tester
 - Rego#2848 -- beta tester
 - michae\l/#1125 -- beta tester
