@@ -96,9 +96,9 @@ WeaponData
 	"sound_zoom_in"									"Weapon_Hemlok_ADS_In"
 	"sound_zoom_out"								"Weapon_Hemlok_ADS_Out"
 
-	"fx_shell_eject_view"							"wpn_shelleject_rifle_assault_FP"
-	"fx_shell_eject_world"							"wpn_shelleject_rifle_assault"
-	"fx_shell_eject_attach"							"shell"
+	"fx_shell_eject_view"							""
+	"fx_shell_eject_world"							""
+	"fx_shell_eject_attach"							""
 
 	"fx_muzzle_flash_view"							""
 	"fx_muzzle_flash_world"							""

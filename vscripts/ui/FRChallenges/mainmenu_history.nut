@@ -50,6 +50,7 @@ void function OpenFRChallengesHistory(int dummiesKilled)
 		Hud_SetVisible( Hud_GetChild( file.menu, "BtnServerListRightArrow"), false )		
 		Hud_SetVisible( Hud_GetChild( file.menu, "BtnServerListLeftArrow"), false )
 		Hud_SetVisible( Hud_GetChild( file.menu, "Pages"), false )
+		Hud_SetVisible( Hud_GetChild( file.menu, "PrintToConsole"), false )
 		m_vPages.pAmount = 0
 	}
 	else
@@ -61,6 +62,7 @@ void function OpenFRChallengesHistory(int dummiesKilled)
 		Hud_SetVisible( Hud_GetChild( file.menu, "BtnServerListLeftArrow"), true )
 		Hud_SetVisible( Hud_GetChild( file.menu, "Pages"), true )
 		Hud_SetText (Hud_GetChild( file.menu, "Pages" ), "  Page: 1/" + (m_vPages.pAmount + 1) + "  ")
+		Hud_SetVisible( Hud_GetChild( file.menu, "PrintToConsole"), true )
 		
 		for( int i=0; i < ChallengesHistory.len() && i < AIMTRAINER_HISTORYUI_SERVERS_PER_PAGE; i++ )
 		{	
