@@ -611,7 +611,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			{
 				buttonText "Fast Jumps Strafes"
 			}		
-			wide					273
+			wide					275
 			tall					50
 			"labelText"             ""
 			"visible"				"1"
@@ -632,7 +632,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge1NewCDialogFrame
 		{
             ControlName		ImagePanel
-			wide					273
+			wide					275
 			tall					50
 			xpos                    0
 			ypos                    0
@@ -655,7 +655,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			{
 				buttonText "Arc Stars Practice"
 			}		
-			wide					257
+			wide					259
 			tall					50
 			"labelText"             ""
 			"visible"				"1"
@@ -675,7 +675,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge2NewCDialogFrame
 		{
             ControlName		ImagePanel
-			wide					257
+			wide					259
 			tall					50
 			xpos                    0
 			ypos                    0
@@ -698,7 +698,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			{
 				buttonText "Grenades Practice"
 			}	
-			wide					255
+			wide					260
 			tall					50
 			"labelText"             ""
 			"visible"				"1"
@@ -719,7 +719,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 		Challenge3NewCDialogFrame
 		{
             ControlName		ImagePanel
-			wide					255
+			wide					260
 			tall					50
 			xpos                    0
 			ypos                    0

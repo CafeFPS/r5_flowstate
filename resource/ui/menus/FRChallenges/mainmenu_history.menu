@@ -240,7 +240,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"xpos"					"0"
 			"ypos"					"750"
 			"tall"					"70"
-			"wide" 					"1395"
+			"wide" 					"830"
 			"fillColor"				"30 30 30 200"
 			"drawColor"				"30 30 30 200"
 			"wrap"					"1"
