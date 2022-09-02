@@ -312,6 +312,26 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"	"LEFT"
 		}
 		
+		"PrintToConsole"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			"wide" 					"180"
+			"tall" 					"35"
+			"xpos" 					"0"
+			"ypos" 					"0"
+			"zpos" 					"6"
+
+			ruiArgs
+			{
+				buttonText "Print to console"
+			}
+
+			"pin_to_sibling"		"ServerBrowserBGBottom"
+			"pin_corner_to_sibling"	"RIGHT"
+			"pin_to_sibling_corner"	"RIGHT"
+		}
+		
 		"NoChallengesLbl"
 		{
 			"ControlName"			"Label"

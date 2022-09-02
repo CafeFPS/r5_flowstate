@@ -717,7 +717,6 @@ global struct ChallengeScore
 	int straferShotsHit
 	int straferTotalShots
 	float straferAccuracy
-	int straferShotsHitRecord = 0
 }
 
 global struct ServerPlayerWaypoint

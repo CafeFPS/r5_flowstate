@@ -29,6 +29,10 @@ struct ResultsHistory
 	int ShotsHit
 	string ChallengeWeapon
 	string ChallengeAccuracy
+	int Damage
+	int CriticalShots
+	int TotalShots
+	int RoundTime
 }
 
 array<ResultsHistory> ChallengesHistory
@@ -191,6 +195,7 @@ void function InitChallengesHistory( var newMenuArg )
 	//Setup Page Nav Buttons
 	Hud_AddEventHandler( Hud_GetChild( file.menu, "BtnServerListRightArrow" ), UIE_CLICK, NextPage )
 	Hud_AddEventHandler( Hud_GetChild( file.menu, "BtnServerListLeftArrow" ), UIE_CLICK, PrevPage )
+	Hud_AddEventHandler( Hud_GetChild( file.menu, "PrintToConsole" ), UIE_CLICK, PrintToConsole )
 	
 	array<var> challengesRows = GetElementsByClassname( file.menu, "ChallengeBtn" )
 	foreach ( var elem in challengesRows ) 
@@ -200,7 +205,7 @@ void function InitChallengesHistory( var newMenuArg )
 	}
 }
 
-void function HistoryUI_AddNewChallenge(string Name, int ShotsHit, string Weapon, float Accuracy, int dummiesKilled, int Damage, bool wasNewScore)
+void function HistoryUI_AddNewChallenge(string Name, int ShotsHit, string Weapon, float Accuracy, int dummiesKilled, int Damage, int totalshots, int criticalshots, int roundtime)
 {
 	string AccuracyShort = LocalizeAndShortenNumber_Float(Accuracy, 1, 2)
 	if(AccuracyShort == "-na,n(i,nd).-n" || AccuracyShort == "-nan(ind)" || AccuracyShort == "-na.n(i.nd),-n") AccuracyShort = "0"
@@ -211,7 +216,11 @@ void function HistoryUI_AddNewChallenge(string Name, int ShotsHit, string Weapon
 	newChallenge.ShotsHit = ShotsHit
 	newChallenge.ChallengeWeapon = GetWeaponNameForUI(Weapon)//.toupper()
 	newChallenge.ChallengeAccuracy = AccuracyShort
-
+	newChallenge.Damage = Damage
+	newChallenge.CriticalShots = criticalshots
+	newChallenge.TotalShots = totalshots
+	newChallenge.RoundTime = roundtime
+	
 	ChallengesHistory.push(newChallenge)
 	ChallengesHistory.reverse()
 }
@@ -225,6 +234,25 @@ void function ShowNoChallengesPlayed(bool show)
 	Hud_SetVisible(Hud_GetChild( file.menu, "ShotshitLine" ), !show )
 	Hud_SetVisible(Hud_GetChild( file.menu, "AccuracyLine" ), !show )
 	Hud_SetVisible(Hud_GetChild( file.menu, "NoChallengesLbl" ), show )
+}
+
+void function PrintToConsole(var button)
+{
+	Warning("=== AIMTRAINER HISTORY UI CSV DUMP ===")
+	printt("ChallengeName, ShotsHit, Kills, Weapon, Accuracy, Damage, CriticalShots, TotalShots, Roundtime")
+
+	foreach(challenge in ChallengesHistory)
+			printt( challenge.ChallengeName
+					+", "+challenge.ShotsHit
+					+", "+challenge.Kills
+					+", "+challenge.ChallengeWeapon
+					+", "+challenge.ChallengeAccuracy
+					+", "+challenge.Damage
+					+", "+challenge.CriticalShots
+					+", "+challenge.TotalShots
+					+", "+challenge.RoundTime )
+	
+	Warning("=== DUMP END ===")
 }
 
 void function ChallengesButtonFunct(var button)

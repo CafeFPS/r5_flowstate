@@ -2022,7 +2022,6 @@ void function OnChallengeEnd(entity player)
 	ThisChallengeData.straferShotsHit = player.p.straferShotsHit
 	ThisChallengeData.straferTotalShots = player.p.straferTotalShots
 	ThisChallengeData.straferAccuracy = float(player.p.straferShotsHit) / float(player.p.straferTotalShots)
-	ThisChallengeData.straferShotsHitRecord = player.p.straferShotsHitRecord
 	ChallengesData[player.p.challengeName].append(ThisChallengeData)
 
 	printt("===========================================")
@@ -2035,9 +2034,7 @@ void function OnChallengeEnd(entity player)
 	printt("===========================================")
 	
 	if(ThisChallengeData.straferShotsHit > ChallengesBestScores[player.p.challengeName]) 
-	{
-		Assert(ThisChallengeData.straferShotsHit > ChallengesBestScores[player.p.challengeName])
-		
+	{		
 		ChallengesBestScores[player.p.challengeName] = ThisChallengeData.straferShotsHit
 		player.p.isNewBestScore = true
 	} else
@@ -2046,7 +2043,7 @@ void function OnChallengeEnd(entity player)
 	if(!player.p.isRestartingLevel)
 		Remote_CallFunction_NonReplay(player, "ServerCallback_OpenFRChallengesMenu", player.p.challengeName, ThisChallengeData.straferShotsHit, ThisChallengeData.straferDummyKilledCount, ThisChallengeData.straferAccuracy, ThisChallengeData.straferChallengeDamage, ThisChallengeData.straferCriticalShots,ChallengesBestScores[player.p.challengeName], player.p.isNewBestScore)
 	
-	Remote_CallFunction_NonReplay(player, "ServerCallback_HistoryUIAddNewChallenge", player.p.challengeName, ThisChallengeData.straferShotsHit, player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ), ThisChallengeData.straferAccuracy, ThisChallengeData.straferDummyKilledCount, ThisChallengeData.straferChallengeDamage, player.p.isNewBestScore)
+	Remote_CallFunction_NonReplay(player, "ServerCallback_HistoryUIAddNewChallenge", player.p.challengeName, ThisChallengeData.straferShotsHit, player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ), ThisChallengeData.straferAccuracy, ThisChallengeData.straferDummyKilledCount, ThisChallengeData.straferChallengeDamage, ThisChallengeData.straferTotalShots, ThisChallengeData.straferCriticalShots)
 	thread ChallengesStartAgain(player)
 }
 
