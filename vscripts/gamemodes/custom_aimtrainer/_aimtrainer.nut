@@ -1171,17 +1171,12 @@ void function StartTileFrenzyChallenge(entity player)
 {
 	if(!IsValid(player)) return
 	player.SetOrigin(floorCenterForPlayer)
-	player.SetAngles(Vector(0,90,0))
-	
-	// TakeAllWeapons(player)
-	// player.GiveWeapon( "mp_weapon_clickweapon", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-	// player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-	// player.MovementDisable()
-	WaitFrame()
+	player.SetAngles(Vector(0,0,0))
+
 	WaitFrame()
 	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	EndSignal(player, "ChallengeTimeOver")
-	array<entity> Wall = CreateWallAtOrigin(player.GetOrigin()-Vector(0,0,200) + AnglesToForward(player.GetAngles())*580 - AnglesToRight(player.GetAngles())*512, 4, 2, 0)
+	array<entity> Wall = CreateWallAtOrigin(player.GetOrigin()-Vector(0,0,200) + AnglesToForward(player.GetAngles())*580 + AnglesToRight(player.GetAngles())*512, 4, 2, 90)
 	foreach(entity wallprop in Wall)
 	{
 		ChallengesEntities.floor.append(wallprop)
@@ -1190,7 +1185,7 @@ void function StartTileFrenzyChallenge(entity player)
 	//5x5?
 	int ancho = 5
 	int alto = 5
-	vector pos = player.GetOrigin() + AnglesToForward(player.GetAngles())*530 - AnglesToRight(player.GetAngles())*100
+	vector pos = player.GetOrigin() + AnglesToForward(player.GetAngles())*450 + AnglesToRight(player.GetAngles())*100
 
 	int x = int(pos.x)
 	int y = int(pos.y)
@@ -1199,24 +1194,23 @@ void function StartTileFrenzyChallenge(entity player)
 	int offset = 0
 	int step = int((offset+300)*modelscale)
 	array<vector> locationsForTiles
-	
-	for(int i = z; i < z + (ancho * step); i += step)
+
+	for(int i = y; i < y + (ancho * step); i += step)
 	{
-		for(int j = x; j < x + (alto * step); j += step)
+		for(int j = z; j < z + (alto * step); j += step)
 		{
-		locationsForTiles.append(Vector(j, y, i))
+		locationsForTiles.append(<x, i, j>)
 		}
 	}
+	WaitFrame()
 	player.SetOrigin(player.GetOrigin() + Vector(0,0,100))
 	ChallengesEntities.props.append(CreateFRProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", player.GetOrigin(), <0,0,0>) )
 	PutEntityInSafeSpot( player, null, null, player.GetOrigin() + player.GetUpVector()*128, player.GetOrigin() )
-	locationsForTiles.randomize() //shuffle array
+	locationsForTiles.randomize()
 	
 	OnThreadEnd(
-		function() : ( player)//, mods, weapon)
+		function() : ( player)
 		{
-			// TakeAllWeapons(player)
-			// GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
 			player.MovementEnable()
 			OnChallengeEnd(player)
 		}
@@ -1240,18 +1234,20 @@ void function StartTileFrenzyChallenge(entity player)
 			locationindex = 1
 		}			
 		if(ChallengesEntities.props.len() < 4){
-				
+					
 				entity target = CreateEntity( "script_mover" )
 				target.kv.solid = 6
 				target.SetValueForModelKey( FIRINGRANGE_FLICK_TARGET_ASSET )
 				target.kv.SpawnAsPhysicsMover = 0
-				target.SetOrigin( locationsForTiles[locationindex] )
+				target.SetOrigin( locationsForTiles[locationindex] )				
+				vector vec2 = player.GetOrigin() -  locationsForTiles[locationindex]
 				locationindex++
-				target.SetAngles( Vector(0,-90,0) )
+				vector angles2 = VectorToAngles( vec2 )	
+				target.SetAngles( angles2 )
 				DispatchSpawn( target )
 				target.Hide()
 				target.SetDamageNotifications( true )
-
+				
 				entity visual = CreatePropDynamic(FIRINGRANGE_BLUE_TARGET_ASSET, target.GetOrigin(), target.GetAngles(), 6, -1)
 				visual.SetParent(target)
 				visual.SetModelScale(0.45)
@@ -1272,21 +1268,12 @@ void function StartCloseFastStrafesChallenge(entity player)
 	player.SetAngles(Vector(0,90,0))
 	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
-	
-	// TakeAllWeapons(player)
-	// player.GiveWeapon( "mp_weapon_clickweaponauto", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-	// player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-	// player.MovementDisable()
-
 
 	EndSignal(player, "ChallengeTimeOver")
 	
 	OnThreadEnd(
 		function() : ( player)
 		{
-			// player.MovementEnable()
-			// TakeAllWeapons(player)
-			// GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
 			OnChallengeEnd(player)
 		}
 	)
@@ -1313,7 +1300,6 @@ void function StartCloseFastStrafesChallenge(entity player)
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
 		SetCommonDummyLines(dummy)
-		// SetTargetName(dummy, "CloseFastDummy") //invincible
 		
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 		AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -1404,7 +1390,6 @@ void function StartTapyDuckStrafesChallenge(entity player)
 		dummy.SetMaxHealth( 100 )
 		dummy.SetHealth( 100 )
 		SetCommonDummyLines(dummy)
-		// SetTargetName(dummy, "CloseFastDummy") //invincible
 		
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 		AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -1559,20 +1544,12 @@ void function StartSmoothbotChallenge(entity player)
 	player.SetAngles(Vector(-25,90,0))
 	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
 	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
-	
-	// TakeAllWeapons(player)
-	// player.GiveWeapon( "mp_weapon_clickweaponauto", WEAPON_INVENTORY_SLOT_PRIMARY_0, [] )
-	// player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-	// player.MovementDisable()
 
 	EndSignal(player, "ChallengeTimeOver")
 
 	OnThreadEnd(
 		function() : ( player)
 		{
-			// player.MovementEnable()
-			// TakeAllWeapons(player)
-			// GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
 			OnChallengeEnd(player)
 		}
 	)
@@ -1882,17 +1859,7 @@ void function PlaySkyDiveAnims(entity dummy, array<vector> ground, int locationi
 		dummy.Anim_PlayOnly( "animseq/humans/class/medium/pilot_medium_bloodhound/mp_pilot_freefall_dive.rseq")
 		
 		float distance = dummy.GetOrigin().z - locationEnd.z //Tracking the distance dummy is to the ground
-		
-		// if( distance > 900 && distance <= 910)
-		// {
-			// int randomness = RandomIntRangeInclusive(1,4)
-			// if(randomness == 4)
-			// {
-				// locationindex = RandomInt(ground.len())
-				// script_mover.NonPhysicsMoveTo( ground[locationindex], movingTime-Time(), 0.0, 0.0 )
-			// }
-		// }
-		
+
 		if( distance > 500 && distance <= 750)
 		{		
 			dummy.Anim_ScriptedPlayActivityByName( "ACT_MP_FREEFALL_TRANSITION_TO_ANTICIPATE", true, 0.1 )
