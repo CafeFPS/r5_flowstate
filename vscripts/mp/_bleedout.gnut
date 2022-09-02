@@ -428,7 +428,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 			vector angles = AnglesCompose( playerHealer.GetAngles(), <0,180,0> )
 			medicWall = CreatePropDynamic( $"mdl/fx/medic_shield_wall.rmdl", playerHealer.GetOrigin() + <0,0,0> + playerHealer.GetForwardVector()*20 + playerHealer.GetRightVector()*30 , angles, SOLID_VPHYSICS )
 			medicWall.kv.contents = (CONTENTS_WINDOW)
-			medicWall.kv.rendercolor = TEAM_COLOR_FRIENDLY
+			medicWall.kv.rendercolor = "64 248 250 255"//Should look same color to all players
 			if(LIFELINE_RGB_SHIELD)
 				thread ShieldRGB(medicWall)
 			medicWall.kv.modelscale = 1

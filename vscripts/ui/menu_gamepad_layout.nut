@@ -21,20 +21,20 @@ struct ButtonVars
 
 struct ButtonData
 {
-	int    buttonEnum
-	int    buttonIndex
+	int buttonEnum
+	int buttonIndex
 	string ruiArg
-	bool   isLeft
+	bool isLeft
 }
 
 struct
 {
-	var                menu
-	var                gamepadButtonLayoutBG
+	var menu
+	var gamepadButtonLayoutBG
 	table<int, string> buttonToRuiArg
-	array<ButtonData>  buttonData
+	array<ButtonData> buttonData
 
-	var        customBackgroundPilot
+	var customBackgroundPilot
 	array<var> customBindButtonsPilot
 
 	int pilotBindFocusIndex
@@ -46,12 +46,10 @@ struct
 	var description
 } file
 
-
 void function MenuGamepadLayout_Init()
 {
 	AddUICallback_InputModeChanged( OnInputModeChanged )
 }
-
 
 string function GetGamepadButtonLayoutName()
 {
@@ -68,7 +66,6 @@ string function GetGamepadButtonLayoutName()
 	return "unk_gamepad_button_layout"
 }
 
-
 int function GetGamepadButtonLayoutIndex()
 {
 	int id = GetConVarInt( "gamepad_button_layout" )
@@ -76,7 +73,6 @@ int function GetGamepadButtonLayoutIndex()
 		id = 0
 	return id
 }
-
 
 int function GetGamepadStickLayout()
 {
@@ -86,7 +82,6 @@ int function GetGamepadStickLayout()
 	return id
 }
 
-
 string function GetButtonStance()
 {
 	string stance = "orthodox"
@@ -95,7 +90,6 @@ string function GetButtonStance()
 
 	return stance
 }
-
 
 void function ExecCurrentGamepadButtonConfig()
 {

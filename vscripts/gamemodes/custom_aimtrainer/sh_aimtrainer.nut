@@ -43,6 +43,8 @@ global const float AimTrainer_PRE_START_TIME = 3.0 //description time
 
 void function Sh_ChallengesByColombia_Init()
 {
+	//Time Over signal
+	RegisterSignal("ChallengeTimeOver")
 	RegisterSignal("ForceResultsEnd_SkipButton")
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue")
 }

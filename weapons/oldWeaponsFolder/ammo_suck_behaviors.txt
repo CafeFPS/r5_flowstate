@@ -1,0 +1,50 @@
+WeaponAmmoSuckBehaviors
+{
+	primary_weapons
+	{
+		rifle					"1"
+		pistol					"1"
+		anti-titan				"1"
+		FORCE_SAME_WEAPON		"1"
+	}
+
+	special_weapons
+	{
+		special 	"1"
+		FORCE_SAME_WEAPON		"1"
+	}
+
+	offhand_weapons
+	{
+		ordnance 	"1"
+		tactical	"0"
+		FORCE_SAME_WEAPON		"1"
+	}
+
+	melee_weapons
+	{
+		melee 		"0"
+		FORCE_SAME_WEAPON		"1"
+	}
+
+	disabled
+	{
+		FORCE_NO_SUCK	"1"
+	}
+}
+
+// Example ammo suck behavior
+// If 2 behaviors have rifle then a weapon with one of those behaviors can suck ammo up from other weapon with a behavior that has rifle in it
+// Behavior with rifle, pistol, anti-titan can pick up any ammo from any weapon with a behavior that has any of those sub types
+
+// The ammo suck types you can have in a behavior
+//"FORCE_NO_SUCK" // This forces a weapon with this in its behavior to not suck up ammo
+//"rifle"
+//"pistol"
+//"anti-titan"
+//"special"
+//"core"
+//"ordnance"
+//"tactical"
+//"melee"
+//"FORCE_SAME_WEAPON" // This forces a weapon with this in its behavior to only be able to suck ammo from a gun with the same name

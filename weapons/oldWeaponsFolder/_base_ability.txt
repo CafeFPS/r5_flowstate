@@ -1,0 +1,15 @@
+WeaponData
+{
+	Mods
+	{
+		survival_ammo_regen_paused
+		{
+			regen_ammo_refill_rate "*0.0"
+		}
+
+		survival_ammo_regen_staging
+        {
+            regen_ammo_refill_rate "*5.0"
+        }
+	}
+}

@@ -1,0 +1,35 @@
+#base "_base_barrels.txt"
+
+WeaponData
+{
+	Mods
+	{
+		barrel_stabilizer_l1
+		{
+		    "fx_muzzle_flash_attach"	"muzzle_flash_suppressor_medium"
+		}
+
+		barrel_stabilizer_l2
+		{
+		    "fx_muzzle_flash_attach"	"muzzle_flash_suppressor_medium"
+		}
+
+		barrel_stabilizer_l3
+		{
+			"fx_muzzle_flash_attach"	"muzzle_flash_suppressor_medium"
+		}
+
+		barrel_stabilizer_l4_flash_hider
+		{
+            "fx_muzzle_flash_attach"	"muzzle_flash_suppressor_medium"
+		}
+	}
+
+	// --- BODYGROUPS AND UIDATA ---
+
+    // flash hider
+    "bodygroup26_name"	"suppressor_round_medium"
+
+    // barrel_stabilizer
+    "bodygroup27_name"	"suppressor_square_medium"
+}

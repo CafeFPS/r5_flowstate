@@ -1,0 +1,81 @@
+#base "_base_optics.txt"
+#base "_base_optics_cq.txt"
+#base "_base_optics_ranged.txt"
+
+WeaponData
+{
+	Mods
+	{
+	    optic_cq_hcog_classic
+	    {
+	        "zoom_time_in"                          "0.36"
+	        "zoom_time_out"                         "0.32"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+	    }
+
+        optic_cq_hcog_bruiser
+        {
+            "zoom_time_in"                          "0.36"
+	        "zoom_time_out"                         "0.32"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.75"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.75"
+        }
+
+        optic_cq_holosight
+        {
+            "zoom_time_in"                          "0.36"
+	        "zoom_time_out"                         "0.32"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.65"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.65"
+        }
+
+        optic_cq_holosight_variable
+        {
+            "zoom_time_in"                          "0.36"
+	        "zoom_time_out"                         "0.32"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_ranged_hcog
+        {
+            "zoom_time_in"							"0.42"
+	        "zoom_time_out"   						"0.36"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.1"
+            "ads_fov_zoomfrac_end"                  "0.8"
+            "viewmodel_offset_zoom_frac_start"      "0.1"
+            "viewmodel_offset_zoom_frac_end"        "0.8"
+        }
+
+        optic_ranged_aog_variable
+        {
+            "zoom_time_in"							"0.42"
+	        "zoom_time_out"   						"0.36"
+
+            "anim_alt_idleAttack"                   "1"
+            "ads_fov_zoomfrac_start"                "0.2"
+            "ads_fov_zoomfrac_end"                  "0.6"
+            "viewmodel_offset_zoom_frac_start"      "0.2"
+            "viewmodel_offset_zoom_frac_end"        "0.6"
+        }
+	}
+}

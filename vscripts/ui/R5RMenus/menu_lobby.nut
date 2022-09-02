@@ -22,28 +22,34 @@ global enum eServerVisibility
 	PUBLIC
 }
 
+global int CurrentPresentationType = ePresentationType.PLAY
+
 //Map to asset
 global table<string, asset> maptoasset = {
 	[ "mp_rr_canyonlands_staging" ] = $"rui/menu/maps/mp_rr_canyonlands_staging",
 	[ "mp_rr_aqueduct" ] = $"rui/menu/maps/mp_rr_aqueduct",
+	[ "mp_rr_aqueduct_night" ] = $"rui/menu/maps/mp_rr_aqueduct_night",
 	[ "mp_rr_ashs_redemption" ] = $"rui/menu/maps/mp_rr_ashs_redemption",
 	[ "mp_rr_canyonlands_64k_x_64k" ] = $"rui/menu/maps/mp_rr_canyonlands_64k_x_64k",
 	[ "mp_rr_canyonlands_mu1" ] = $"rui/menu/maps/mp_rr_canyonlands_mu1",
 	[ "mp_rr_canyonlands_mu1_night" ] = $"rui/menu/maps/mp_rr_canyonlands_mu1_night",
 	[ "mp_rr_desertlands_64k_x_64k" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k",
-	[ "mp_rr_desertlands_64k_x_64k_nx" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k_nx"
+	[ "mp_rr_desertlands_64k_x_64k_nx" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k_nx",
+	[ "mp_rr_arena_composite" ] = $"rui/menu/maps/mp_rr_arena_composite"
 }
 
 //Map to readable name
 global table<string, string> maptoname = {
 	[ "mp_rr_canyonlands_staging" ] = "Firing Range",
 	[ "mp_rr_aqueduct" ] = "Overflow",
+	[ "mp_rr_aqueduct_night" ] = "Overflow After Dark",
 	[ "mp_rr_ashs_redemption" ] = "Ash's Redemption",
 	[ "mp_rr_canyonlands_64k_x_64k" ] = "Kings Canyon S1",
 	[ "mp_rr_canyonlands_mu1" ] = "Kings Canyon S2",
 	[ "mp_rr_canyonlands_mu1_night" ] = "Kings Canyon S2 After Dark",
 	[ "mp_rr_desertlands_64k_x_64k" ] = "Worlds Edge",
-	[ "mp_rr_desertlands_64k_x_64k_nx" ] = "Worlds Edge After Dark"
+	[ "mp_rr_desertlands_64k_x_64k_nx" ] = "Worlds Edge After Dark",
+	[ "mp_rr_arena_composite" ] = "Drop Off"
 }
 
 //Playlist to readable name
@@ -65,8 +71,7 @@ global table<string, string> playlisttoname = {
 	[ "tdm_gg" ] = "Gun Game",
 	[ "tdm_gg_double" ] = "Team Gun Game",
 	[ "survival_dev" ] = "Survival Dev",
-	[ "dev_default" ] = "Dev Default",
-	[ "custom_aimtrainer" ] = "Aim Trainer"
+	[ "dev_default" ] = "Dev Default"
 }
 
 //Vis to readable name
@@ -114,6 +119,23 @@ void function OpenSelectedPanel(var button)
 	int scriptid = Hud_GetScriptID( button ).tointeger()
 	ShowSelectedPanel( file.panels[scriptid], button )
 
+	switch(scriptid)
+	{
+		case 0:
+			UI_SetPresentationType( ePresentationType.PLAY )
+			CurrentPresentationType = ePresentationType.PLAY
+			break;
+		case 1:
+			UI_SetPresentationType( ePresentationType.CHARACTER_SELECT )
+			CurrentPresentationType = ePresentationType.CHARACTER_SELECT
+			HideAllCreateServerPanels()
+			break;
+		case 2:
+			UI_SetPresentationType( ePresentationType.COLLECTION_EVENT )
+			CurrentPresentationType = ePresentationType.COLLECTION_EVENT
+			break;
+	}
+
 	//If create server button is pressed, hide all panels for that panel
 	if(scriptid == 1)
 		HideAllCreateServerPanels()
@@ -141,13 +163,13 @@ void function OnR5RLobby_Open()
 	RefreshUIMaps()
 
 	//Set back to default for next time
-	AtMainMenu = false
+	g_isAtMainMenu = false
 }
 
 void function SetupLobby()
 {
 	//Setup Lobby Stuff
-	UI_SetPresentationType( ePresentationType.PLAY )
+	UI_SetPresentationType( CurrentPresentationType )
 	thread TryRunDialogFlowThread()
 
 	//Set playername

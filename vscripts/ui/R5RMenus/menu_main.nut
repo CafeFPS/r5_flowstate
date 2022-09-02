@@ -1,7 +1,7 @@
 global function InitR5RMainMenu
 global function SetMainMenuBlackScreenVisible
 
-global bool AtMainMenu = false
+global bool g_isAtMainMenu = false
 
 struct
 {
@@ -62,7 +62,7 @@ void function OnR5RSB_Show()
 void function SetAtMainMenu()
 {
 	//You are at the main menu
-	AtMainMenu = true
+	g_isAtMainMenu = true
 
 	//Wait a extra 1.5 before showing the main menu
 	wait 1.5
@@ -71,7 +71,7 @@ void function SetAtMainMenu()
 	SetMainMenuBlackScreenVisible(false)
 
 	//Refresh Server Browser
-	RefreshServerListing()
+	RefreshServerListing(false)
 }
 
 void function SetMainMenuBlackScreenVisible(bool show)

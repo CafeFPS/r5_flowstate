@@ -60,6 +60,10 @@ global struct EHIScriptStruct
 
 	int rankScore            = 0
 	int rankedLadderPosition = 9999
+
+	//CTF Stuff
+	int CTFCaptures = 0
+	int CTFKills = 0
 }
 #endif
 

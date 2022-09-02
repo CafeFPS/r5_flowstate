@@ -1,0 +1,64 @@
+WeaponData
+{
+	Mods
+	{
+		barrel_stabilizer_l1
+		{
+		    "bodygroup27_set"                   "1"
+
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+
+            "viewkick_pitch_base" 				"*0.95"
+			"viewkick_pitch_random"   			"*0.8"
+			"viewkick_yaw_base" 				"*0.95"
+			"viewkick_yaw_random"   			"*0.9"
+		}
+
+		barrel_stabilizer_l2
+		{
+		    "bodygroup27_set"	                "1"
+
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+
+			"viewkick_pitch_base" 				"*0.9"
+			"viewkick_pitch_random"   			"*0.75"
+			"viewkick_yaw_base" 				"*0.9"
+			"viewkick_yaw_random"   			"*0.85"
+		}
+
+		barrel_stabilizer_l3
+		{
+		    "bodygroup27_set"	                "1"
+
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+
+			"viewkick_pitch_base" 				"*0.85"
+			"viewkick_pitch_random"   			"*0.7"
+			"viewkick_yaw_base" 				"*0.85"
+			"viewkick_yaw_random"   			"*0.8"
+		}
+
+		barrel_stabilizer_l4_flash_hider
+		{
+		    "bodygroup26_set"                   "1"
+
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+
+			"fx_muzzle_flash_view"		        "wpn_muzzleflash_pistol_sup_FP"
+			"fx_muzzle_flash_world"		        "wpn_muzzleflash_pistol_sup"
+
+			"viewkick_pitch_base" 				"*0.85"
+			"viewkick_pitch_random"   			"*0.7"
+			"viewkick_yaw_base" 				"*0.85"
+			"viewkick_yaw_random"   			"*0.8"
+		}
+	}
+
+	// --- BODYGROUPS AND UIDATA ---
+
+    "bodygroup26_name"	"suppressor_round_small"
+    "bodygroup26_set"	"0"
+
+    "bodygroup27_name"	"suppressor_square_small"
+    "bodygroup27_set"	"0"
+}

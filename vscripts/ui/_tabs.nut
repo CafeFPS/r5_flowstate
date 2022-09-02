@@ -303,9 +303,7 @@ void function ShowPanel( var panel )
 
 	if ( IsMenuVisible( panel ) )
 		return
-	
-	//if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )) 
-		CloseAllAttachmentsBoxes()
+	CloseAllAttachmentsBoxes()
 	ShowPanelInternal( panel )
 }
 

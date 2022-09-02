@@ -1,36 +1,27 @@
 npc_training_dummy
 {
-	AIClass							human
-	TraverseAnimType				spectre
+	AIClass							dummie
 
 	title							"             "
-	useSequenceBounds				1
-	
-	showFriendlyIcon				0
-	showTitle						0
+	ui_targetinfo					"ui/targetinfo_npc_trainingdummy"
 
-	ui_targetinfo					"ui/targetinfo_npc_simple"
-
-	// HullType						"HULL_HUMAN"
-	BaseClass						"npc_dummie"
+	HullType						"HULL_HUMAN"
 	BodyType						human
-
-	footstep_type					"human"
 
 	BehaviorSelector				"behavior_training_dummy"
 
 	//mechanical						1
 	nonCombatAI						1
 
-	ArmorType						normal
+	BaseClass						"npc_dummie"
+
 	footstep_type					"human"
 
 	DefaultModelName				"mdl/humans/class/medium/pilot_medium_generic.rmdl"
 	DefaultWeapon					""
 
-	Health							100
-	DrawEnemyHealthBar				0
-	DrawTargetHealthBar				0
+	Health							225
+
 	FOV_Vert_Offset					-10
     FOV_Near_Dist					150		// distance at which we transition between near and far FOV values
 	FOV_Far_Dist					1000	// use far values after this distance, interpolate horizontal in between, use far for vertical

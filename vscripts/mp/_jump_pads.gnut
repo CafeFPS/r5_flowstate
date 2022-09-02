@@ -163,7 +163,7 @@ void function JumpPadAirborne( entity player ) {
 	)
 	WaitFrame()
 	wait 0.1
-	while( !player.IsOnGround() )
+	while( IsValid(player) && !player.IsOnGround() )
 	{
 		WaitFrame()
 	}

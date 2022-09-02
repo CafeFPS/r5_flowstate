@@ -210,6 +210,7 @@ void function DEV_DamageFlyout( entity victim )
 	DamageFlyout( 15, victim.GetWorldSpaceCenter(), victim, eHitType.NORMAL )
 }
 
+
 const GIBRALTAR_PASSIVE_ICON = $"rui/hud/character_abilities/gibraltar_passive_transparent"
 void function DamageFlyout( float damageAmount, vector damagePosition, entity victim, int hitType, int damageFlags = 0, int damageType = 0, entity weapon = null )
 {
@@ -341,7 +342,7 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		var hitDotRui = RuiCreate( $"ui/projectile_hit_dot.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 		RuiSetResolutionToScreenSize( hitDotRui )
 		RuiSetGameTime( hitDotRui, "startTime", Time() )
-		RuiSetFloat3( hitDotRui, "pos", damagePosition)
+		RuiSetFloat3( hitDotRui, "pos", damagePosition )
 		RuiSetBool( hitDotRui, "isCrit", isHeadShot || isCritShot )
 	}
 

@@ -592,14 +592,14 @@ void function PlotKDPointsOnGraph( var menu, int graphIndex, array<float> values
 
 float function GetXScale()
 {
-	float xScale = float( GetMenu( "MainMenu" ).GetWidth() ) / 1920.0
+	float xScale = float( GetMenu( "R5RMainMenu" ).GetWidth() ) / 1920.0
 	return xScale
 }
 
 
 float function GetYScale()
 {
-	float yScale = float( GetMenu( "MainMenu" ).GetHeight() ) / 1080.0
+	float yScale = float( GetMenu( "R5RMainMenu" ).GetHeight() ) / 1080.0
 	return yScale
 }
 

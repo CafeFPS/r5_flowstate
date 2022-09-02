@@ -66,7 +66,10 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 
 void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	AddPlayerScore( attacker, "KillPilot", victim )
+	if( GetGameState() >= eGameState.Playing )
+		AddPlayerScore( attacker, "EliminatePilot", victim )
+	else
+		AddPlayerScore( attacker, "KillPilot", victim )
 	
 	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_HEADSHOT )
 		AddPlayerScore( attacker, "Headshot", victim )

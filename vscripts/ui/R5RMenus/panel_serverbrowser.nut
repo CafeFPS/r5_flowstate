@@ -81,7 +81,10 @@ void function InitR5RServerBrowserPanel( var panel )
 	// Set servercount, playercount, pages to none
 	Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "Players: 0")
 	Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "Servers: 0")
-	Hud_SetText (Hud_GetChild( file.panel, "Pages" ), "Page: 0/0")
+	Hud_SetText (Hud_GetChild( file.panel, "Pages" ), "  Page: 0/0  ")
+
+	Hud_SetText(Hud_GetChild( file.panel, "ServerCurrentPlaylist" ), "" )
+	Hud_SetText(Hud_GetChild( file.panel, "ServerCurrentMap" ), "" )
 }
 
 void function RefreshServersClick(var button)
@@ -97,8 +100,8 @@ void function ConnectToServer(var button)
 		return
 
 	//Connect to server
-	thread StartServerConnection()
-	printf("Debug (Server ID: " + m_vSelectedServer.svServerID + " | Server Name: " + m_vSelectedServer.svServerName + " | Map: " + m_vSelectedServer.svMapName + " | Playlist: " + m_vSelectedServer.svPlaylist + ")")
+	printf("Connecting to server: (Server ID: " + m_vSelectedServer.svServerID + " | Server Name: " + m_vSelectedServer.svServerName + " | Map: " + m_vSelectedServer.svMapName + " | Playlist: " + m_vSelectedServer.svPlaylist + ")")
+	SetEncKeyAndConnect(m_vSelectedServer.svServerID)
 }
 
 void function SelectServer(var button)
@@ -109,8 +112,11 @@ void function SelectServer(var button)
 	SetSelectedServer(finalid, m_vServerList[finalid].svServerName, m_vServerList[finalid].svMapName, m_vServerList[finalid].svPlaylist, m_vServerList[finalid].svDescription)
 }
 
-void function RefreshServerListing()
+void function RefreshServerListing(bool refresh = true)
 {
+	if (refresh)
+		RefreshServerList()
+
 	//Clear Server List Text, Hide no servers found ui, Reset pages
 	ResetServerLabels()
 	ShowNoServersFound(false)
@@ -130,7 +136,7 @@ void function RefreshServerListing()
 		// Set servercount, playercount, pages to none
 		Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "Players: 0")
 		Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "Servers: 0")
-		Hud_SetText (Hud_GetChild( file.panel, "Pages" ), "Page: 0/0")
+		Hud_SetText (Hud_GetChild( file.panel, "Pages" ), "  Page: 0/0  ")
 
 		// Return as it dosnt need togo past this if no servers are found
 		return
@@ -155,7 +161,7 @@ void function RefreshServerListing()
 	// Set UI Labels
 	Hud_SetText( Hud_GetChild( file.panel, "PlayersCount"), "Players: " + m_vAllPlayers)
 	Hud_SetText( Hud_GetChild( file.panel, "ServersCount"), "Servers: " + svServerCount)
-	Hud_SetText (Hud_GetChild( file.panel, "Pages" ), "Page: 1/" + (m_vPages.pAmount + 1))
+	Hud_SetText (Hud_GetChild( file.panel, "Pages" ), "  Page: 1/" + (m_vPages.pAmount + 1) + "  ")
 }
 
 void function NextPage(var button)
@@ -185,7 +191,7 @@ void function NextPage(var button)
 		m_vPages.pEnd = m_vServerList.len()
 
 	// Set current page ui
-	Hud_SetText(Hud_GetChild( file.panel, "Pages" ), "Page: " + (m_vPages.pCurrent + 1) + "/" + (m_vPages.pAmount + 1))
+	Hud_SetText(Hud_GetChild( file.panel, "Pages" ), "  Page:" + (m_vPages.pCurrent + 1) + "/" + (m_vPages.pAmount + 1) + "  ")
 
 	// "id" is diffrent from "i" and is used for setting UI elements
 	// "i" is used for server id
@@ -227,7 +233,7 @@ void function PrevPage(var button)
 		m_vPages.pEnd = m_vServerList.len()
 
 	// Set current page ui
-	Hud_SetText(Hud_GetChild( file.panel, "Pages" ), "Page: " + (m_vPages.pCurrent + 1) + "/" + (m_vPages.pAmount + 1))
+	Hud_SetText(Hud_GetChild( file.panel, "Pages" ), "  Page:" + (m_vPages.pCurrent + 1) + "/" + (m_vPages.pAmount + 1) + "  ")
 
 	// "id" is diffrent from "i" and is used for setting UI elements
 	// "i" is used for server id
@@ -328,28 +334,12 @@ void function SetSelectedServer(int id, string name, string map, string playlist
 	m_vSelectedServer.svDescription = desc
 
 	//Set selected server ui
+	Hud_SetText(Hud_GetChild( file.panel, "ServerCurrentPlaylist" ), "Current Playlist" )
+	Hud_SetText(Hud_GetChild( file.panel, "ServerCurrentMap" ), "Current Map" )
+
 	Hud_SetText(Hud_GetChild( file.panel, "ServerNameInfoEdit" ), name )
+	Hud_SetText(Hud_GetChild( file.panel, "ServerCurrentMapEdit" ), GetUIMapName(map) )
 	Hud_SetText(Hud_GetChild( file.panel, "PlaylistInfoEdit" ), GetUIPlaylistName(playlist) )
 	Hud_SetText(Hud_GetChild( file.panel, "ServerDesc" ), desc )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "ServerMapImg" ) ), "loadscreenImage", GetUIMapAsset(map) )
-}
-
-void function StartServerConnection()
-{
-	//Shutdown the lobby vm
-	ShutdownHostGame()
-
-	//Set the main menus blackscreen visibility to true
-	SetMainMenuBlackScreenVisible(true)
-
-	//wait for lobby vm to be actually shut down and back at the main menu
-	while(!AtMainMenu) {
-		WaitFrame()
-	}
-
-	//Connect to server
-	SetEncKeyAndConnect(m_vSelectedServer.svServerID)
-
-	//No longer at main menu
-	AtMainMenu = false
 }

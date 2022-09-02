@@ -113,10 +113,7 @@ void function GameModes_Init_SV_CL()
 	GameMode_AddClientInit(gameMode, Cl_CustomCTF_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
-	
-	#if DEVSCRIPTS
-		Dev_GameModes_Init_SV_CL()
-	#endif
+
 	//////////////////////////////////////
 	//                                  //
 	//       Custom AIMTRAINER       	//

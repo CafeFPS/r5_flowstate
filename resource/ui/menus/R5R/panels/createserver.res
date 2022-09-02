@@ -156,6 +156,43 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		pin_to_sibling_corner		RIGHT
 	}
 
+	MapServerNameBG
+	{
+		ControlName				ImagePanel
+		xpos 0
+		ypos -15
+		tall					30
+		wide 					480
+		fillColor		"30 30 30 200"
+        drawColor		"30 30 30 200"
+		wrap					1
+		visible					1
+		zpos					6
+		pin_to_sibling				ServerMapImg
+		pin_corner_to_sibling		TOP_LEFT
+		pin_to_sibling_corner		TOP_LEFT
+	}
+
+	MapServerNameInfoEdit
+	{
+		ControlName				Label
+		labelText				"Some Server Name"
+		font					Default_27_Outline
+		"allcaps"				"1"
+		wide					480
+		zpos 					7
+		fontHeight				25
+		textAlignment			"center"
+		xpos					0
+		ypos					0
+		fgcolor_override		"240 240 240 255"
+		bgcolor_override		"0 0 0 255"
+
+		pin_to_sibling				MapServerNameBG
+		pin_corner_to_sibling		LEFT
+		pin_to_sibling_corner		LEFT
+	}
+
 	VisBG
 	{
 		ControlName				ImagePanel
@@ -169,8 +206,8 @@ scripts/resource/ui/menus/R5R/panels/createserver.res
 		visible					1
 		zpos					6
 		pin_to_sibling				ServerMapImg
-		pin_corner_to_sibling		TOP_LEFT
-		pin_to_sibling_corner		TOP_LEFT
+		pin_corner_to_sibling		BOTTOM_LEFT
+		pin_to_sibling_corner		BOTTOM_LEFT
 	}
 
 	VisInfoEdit

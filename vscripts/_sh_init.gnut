@@ -83,9 +83,7 @@ void function SV_CL_Init()
 	IonEnergy_Init()
 	Decoy_Init()
 	ShEHI_LevelInit_End()
- 	// MpBirdsTactical_Init()
-	// MpUltimatePhaseChamber_Init()
-	
+
 	ClientSidePickups_Init()
 	GrappleWeaponInit()
 	ShInfoCords_Init()
@@ -159,14 +157,6 @@ void function SV_CL_Init()
 	ShGas_Init()
 	ShShellShock_Init()
 	ShCarePackage_Init()
-	
-	// MpWeaponRingFlare_Init()
-	
-	// MpWeaponEnergySword_Init()
-	
-	// MpWeaponHeatwave_Init()
-	// MpWeaponPortalGun_Init()
-	
 	ShWeaponInspect_Init()
 	Consumable_Init()
 
@@ -333,8 +323,6 @@ void function Server_Init()
 	#if R5DEV
 		SmokeTest_Init()
 	#endif // DEV
-	
-	// TurretPlasma_Init()
 }
 #endif // SERVER
 

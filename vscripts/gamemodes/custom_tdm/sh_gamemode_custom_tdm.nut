@@ -114,6 +114,22 @@ void function Sh_CustomTDM_Init()
             )
         )
         break
+    case "mp_rr_arena_composite":
+        Shared_RegisterLocation(
+            NewLocationSettings(
+                "Drop-Off",
+                [
+					NewLocPair(<-3592, 1081, 258>, <0, 37, 0>),
+					NewLocPair(<3592, 1081, 258>, <0, 142, 0>),
+					NewLocPair(<-1315, 4113, 71>, <0, -43, 0>),
+					NewLocPair(<1315, 4113, 71>, <0, -136, 0>),
+					NewLocPair(<-1374, 1, 259>, <0, 35, 0>),
+					NewLocPair(<1374, 1, 259>, <0, 140, 0>)
+                ],
+                <0, 0, 1000>
+            )
+        )
+        break
 	case "mp_rr_canyonlands_mu1_night":		
 	case "mp_rr_canyonlands_mu1":
 		Shared_RegisterLocation(

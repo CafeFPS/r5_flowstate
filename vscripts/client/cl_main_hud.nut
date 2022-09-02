@@ -35,7 +35,7 @@ const float OFFHAND_ALERT_ICON_SCALE    = 4.5
 
 const bool ALWAYS_SHOW_BOOST_MOBILITY_BAR = true
 
-
+global string CHAT_TEXT
 struct HudVisibilityStatus
 {
 	bool mainHud
@@ -984,21 +984,18 @@ void function UpdateChatHUDVisibility()
 {
 	local chat = HudElement( "IngameTextChat" )
 
-	Hud_SetAboveBlur( chat, true )
+	//Saves what you typed to a global string
+	//used for all chat if they want to implement it into their gamemode
 	var chatTextEntry = Hud_GetChild( Hud_GetChild( chat, "ChatInputLine" ), "ChatInputTextEntry" )
-chatText = Hud_GetUTF8Text(chatTextEntry) 
+    CHAT_TEXT = Hud_GetUTF8Text(chatTextEntry)
 
+	Hud_SetAboveBlur( chat, true )
 
 	if ( IsLobby() || clGlobal.isMenuOpen )
-	{
 		chat.Hide()
-		isChatShow = false
-		}
 	else
-	{
 		chat.Show()
-		isChatShow = true
-		}
+
 	local hint = HudElement( "AccessibilityHint" )
 	if ( IsLobby() || clGlobal.isMenuOpen || !IsAccessibilityChatHintEnabled() || GetPlayerArrayOfTeam( GetLocalClientPlayer().GetTeam() ).len() < 2 )
 		hint.Hide()

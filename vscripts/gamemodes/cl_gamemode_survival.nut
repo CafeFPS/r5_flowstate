@@ -616,7 +616,6 @@ void function Cl_Survival_AddClient( entity player )
 
 	Fullmap_AddRui( rui )
 
-	
 	file.dpadMenuRui = CreateCockpitPostFXRui( SURVIVAL_HUD_DPAD_RUI, HUD_Z_BASE )
 	RuiTrackFloat( file.dpadMenuRui, "reviveEndTime", player, RUI_TRACK_SCRIPT_NETWORK_VAR, GetNetworkedVariableIndex( "reviveEndTime" ) )
 
@@ -634,6 +633,14 @@ void function Cl_Survival_AddClient( entity player )
 
 	RuiSetBool( file.pilotRui, "isVisible", GetHudDefaultVisibility() )
 	RuiSetBool( file.pilotRui, "useShields", true )
+
+	#if(false)
+
+
+
+
+
+#endif
 
 	file.compassRui = CreatePermanentCockpitRui( $"ui/compass_flat.rpak", HUD_Z_BASE )
 	RuiTrackFloat3( file.compassRui, "playerAngles", player, RUI_TRACK_CAMANGLES_FOLLOW )
@@ -689,7 +696,7 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 			SURVIVAL_GetArmorShieldCapacity( 1 ) / 100.0,
 			SURVIVAL_GetArmorShieldCapacity( 2 ) / 100.0 >
 
-	RuiSetColorAlpha( rui, "shieldFrac", shieldFrac, float( SURVIVAL_GetArmorShieldCapacity( 5 ) ) )
+	RuiSetColorAlpha( rui, "shieldFrac", shieldFrac, float( SURVIVAL_GetArmorShieldCapacity( 3 ) ) )
 	RuiTrackFloat( rui, "playerTargetShieldFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.target_shields )
 	RuiTrackFloat( rui, "playerTargetHealthFrac", player, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.target_health )
 	RuiTrackFloat( rui, "playerTargetHealthFracTemp", player, RUI_TRACK_HEAL_TARGET )
@@ -1019,7 +1026,7 @@ void function MinimapPackage_ObjectiveAreaInit( entity ent, var rui )
 //
 
 
-	
+
 
 
 
@@ -1402,72 +1409,42 @@ void function EquipmentChanged( entity player, string equipSlot, int new )
 	int tier              = 0
 	EquipmentSlot es      = Survival_GetEquipmentSlotDataByRef( equipSlot )
 	asset hudIcon         = es.emptyImage
-	int armorCapacity = -1
-	
-	bool isEvo   = false
-	int evoCount = 0
-	
+	bool isEvolvingShield = false
+	int evolvingKillCount = 0
+
 	if ( new > -1 )
 	{
 		LootData data = SURVIVAL_Loot_GetLootDataByIndex( new )
 		tier = data.tier
 		hudIcon = data.hudIcon
 
-		if ( data.lootType == eLootType.ARMOR )
-		{
-			armorCapacity = player.GetShieldHealthMax()
-		}
-		
 		if ( es.attachmentPoint != "" )
 		{
 			string attachmentStyle = GetAttachmentPointStyle( es.attachmentPoint, data.ref )
 			hudIcon = emptyAttachmentSlotImages[attachmentStyle]
 		}
 	}
-	
-	
-	// if ( data.lootType == eLootType.ARMOR && EvolvingArmor_IsEquipmentEvolvingArmor( data.ref ) )
-		// {
-			// isEvo = true
-			// evoCount = EvolvingArmor_GetRequirementForEvolution( data.tier )
-		// }
-		
+
+	#if(false)
+
+
+
+
+
+
+#endif
+
 	if ( player == GetLocalViewPlayer() )
 	{
-		LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" )
-		// if(player.GetShieldHealthMax() > 100 && es.unitFrameTierVar != "")
-			// RuiSetInt( file.pilotRui, es.unitFrameTierVar, 5 )
-		// else if(es.unitFrameTierVar != "")
-			// RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
-		
-		// RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
-		if ( es.unitFrameTierVar != "" )
-			RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
-		if ( es.unitFrameImageVar != "" )
-			RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
+		RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
+		RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
 
-		if ( armorCapacity > 100 )
-		{
-			//RuiSetInt( file.pilotRui, "armorShieldCapacity", armorCapacity )
-			RuiSetInt( file.pilotRui, es.unitFrameTierVar, 5 )
-		}	
+		#if(false)
+
+
+#endif
+
 		UpdateActiveLootPings()
-	} else {
-		// LootData data = EquipmentSlot_GetEquippedLootDataForSlot( player, "armor" )
-		
-		// if ( es.unitFrameTierVar != "" )
-			// RuiSetInt( file.pilotRui, es.unitFrameTierVar, tier )
-		// if ( es.unitFrameImageVar != "" )
-			// RuiSetImage( file.pilotRui, es.unitFrameImageVar, hudIcon )
-		
-		// armorCapacity = player.GetShieldHealthMax()
-		
-		// if ( armorCapacity > 100 )
-		// {
-			// //RuiSetInt( file.pilotRui, "armorShieldCapacity", armorCapacity )
-			// RuiSetInt( file.pilotRui, es.unitFrameTierVar, 5 )
-		// }
-		// UpdateActiveLootPings()
 	}
 
 	if ( player == GetLocalClientPlayer() )

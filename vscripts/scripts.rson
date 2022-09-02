@@ -297,29 +297,8 @@ Scripts:
 	weapons/sh_stim.gnut
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
-	
-	//CUSTOM BY COLOMBIA
-	// weapons/mp_weapon_portalgun.nut
-	// weapons/mp_weapon_ringflare.nut
-	// weapons/mp_weapon_needler.nut
-	// weapons/mp_weapon_turret.nut 
-	// weapons/mp_weapon_guidedmissile.nut
-	// weapons/mp_weapon_leviathangun.nut
-	// weapons/mp_ability_ironmanunibeam.nut
-	// weapons/mp_weapon_fanatic.nut
-	// weapons/mp_weapon_heatwave.nut
-	// weapons/mp_ability_phase_rewind.nut
-	// weapons/mp_ability_phase_chamber.nut
-	// weapons/mp_ability_mobile_respawn_beacon.nut
-	// weapons/mp_weapon_energysword.nut
-	// weapons/mp_ability_birds.nut
-	// weapons/mp_weapon_jumppadsweapon.nut
-	// weapons/mp_weapon_ziplinesweapon.nut
-	// weapons/mp_weapon_grenade_decoyaudio.nut
-	// weapons/mp_weapon_grenade_cryonade.nut
-	// weapons/mp_ability_gravitylift.nut
-	
 	weapons/mp_weapon_clickweapon.nut
+
 ]
 
 When: "SERVER || CLIENT"
@@ -816,7 +795,6 @@ Scripts:
 	
 	//CTF
 	ui/CTFMenus/menu_ctf_respawn.nut
-	
 	//FR Challenges
 	ui/FRChallenges/menu_frchallenges.nut
 	ui/FRChallenges/mainmenu_challenges.nut
@@ -828,6 +806,9 @@ Scripts:
 	ui/FRChallenges/panel_buymenu3.nut
 	ui/FRChallenges/panel_buymenu4.nut
 	ui/FRChallenges/panel_buymenu5.nut
+
+	//KillReplay
+	ui/KillReplay/menu_killreplay.nut
 	
 	//R5RUI
 	ui/R5RMenus/menu_main.nut
@@ -839,6 +820,7 @@ Scripts:
 	ui/R5RMenus/panel_playlist.nut
 	ui/R5RMenus/panel_map.nut
 	ui/R5RMenus/panel_visibility.nut
+	ui/CTFMenus/menu_ctf_vote.nut
 ]
 
 When: "SERVER && DEV || UI && DEV"

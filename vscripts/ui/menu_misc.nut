@@ -67,5 +67,8 @@ void function OnMiscMenu_NavigateBack()
 	}
 
 	CloseActiveMenu()
+
+	if ( IsLobby() )
+		UI_SetPresentationType( CurrentPresentationType )
 }
 

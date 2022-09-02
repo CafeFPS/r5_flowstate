@@ -44,20 +44,6 @@ void function CreateGravitationalForce( )
 	// point_push.Fire( "Kill", "", 0.2 )
 }
 
-void function ClippingAIFixTEST()
-{
-	entity player = gp()[0]
-	while(true)
-	{
-		vector traceStart = player.EyePosition()
-		vector traceDir   = player.GetViewVector()
-		vector traceEnd   = traceStart + (traceDir * 50000)
-		TraceResults results = TraceLine( traceStart, traceEnd, player )
-		
-		printt(Distance(gp()[0].GetOrigin(), results.endPos))
-		WaitFrame()
-	}
-}
 
 function AiUtility_Init()
 {
@@ -67,7 +53,6 @@ function AiUtility_Init()
 	RegisterSignal( "OnStunned" )
 
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 // Cloaks npc forever (to be used by anim events)
 function NpcCloakOn( npc )
@@ -1144,32 +1129,28 @@ void function DEV_SpawnDummyAtCrosshair()
 	dummy.SetSkin(RandomInt(6))
 	dummy.DisableHibernation()
 	dummy.SetAngles(angles1)
-
+	
+	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+		thread PlayAnimOnTrainingDummy(dummy)
+	
     array<string> weapons = ["mp_weapon_vinson", "mp_weapon_mastiff", "mp_weapon_energy_shotgun", "mp_weapon_lstar"]
     string randomWeapon = weapons[RandomInt(weapons.len())]
     dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
 }
 
-void function InfiniteJumpTest()
+void function PlayAnimOnTrainingDummy(entity dummy)
 {
-	entity player = gp()[0]
-	player.EndSignal("OnDeath")
+WaitFrame()
 
-	while(true){
-		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] )
+EndSignal(dummy, "OnDeath")
 
-		while(true){
-			if(player.IsDoubleJumping())
-			{
-				player.SetPlayerSettingsWithMods( characterSetFile, [] )
-				player.TouchGround()
-				break
-			}
-			WaitFrame()
-		}
-		WaitFrame()
+while(IsValid(dummy))
+	{
+		float duration = dummy.GetSequenceDuration("bloodhound_idle_rifle_firingrangedummy")
+		float empezoen = RandomFloatRange(0, duration)
+		dummy.Anim_PlayOnly("bloodhound_idle_rifle_firingrangedummy")
+		dummy.Anim_SetStartTime(empezoen)
+		wait duration-empezoen
 	}
 }
 

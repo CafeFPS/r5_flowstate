@@ -332,7 +332,7 @@ void function Init_ClientScripts( entity player )
 		clGlobal.initScoreboardFunc()
 		MainHud_AddClient( player )
 		InitCrosshair()
-		player.ClientCommand( "ClientStatus " + (IsPartyMember( player ) ? "1" : "0") )
+		//player.ClientCommand( "ClientStatus " + (IsPartyMember( player ) ? "1" : "0") )
 	}
 
 	// Added via AddCallback_OnClientScriptInit

@@ -1,0 +1,9 @@
+WeaponData
+{
+	// Projectile Ricochet
+    "projectile_ricochet_max_count"					"0"
+	"bolt_bounce_frac"								"0.44" //"0.49"
+    "projectile_bounce_damage_reduction_scale"		"0.5"
+    "projectile_speed_reduction_factor"	 			"0.72"
+	"projectile_damages_owner"						"0"
+}

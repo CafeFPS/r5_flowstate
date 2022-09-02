@@ -41,6 +41,7 @@ global struct RUIWorldCoordinates // this isn't specific to RUI, it generally re
 struct
 {
 	table<int,array<var> > textPanels
+	table<int,array<var> > worldRUI
 	int showButtonHintsInt = 1
 } file
 
@@ -1560,7 +1561,7 @@ void function DynamicLight_Init()
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			// ASH'S REDEMPTION
 			//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-			float brightness_ash = 500.0
+			 float brightness_ash = 500.0
 			 entity dlight_ash_0 = CreateClientSideDynamicLight( <-19876, 3616, -26740>, angle, DLIGHT_RICH_BROWN, 1000 )
 			 dlight_ash_0.SetLightExponent( 0.5 )
 			 entity dlight_ash_1 = CreateClientSideDynamicLight( <-20903, 3768, -26740>, angle, DLIGHT_RICH_BROWN, 1000 )
@@ -1732,3 +1733,34 @@ void function DynamicLight_Init()
 //#endif
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void function Dev_BuildWorldImageRUI(asset image, vector org, vector ang, float width, float height, int RUIID = -1)
+{
+	vector origin = org
+	vector angles = ang
+
+	origin += (AnglesToUp( angles )*-1) * (height*0.5)  // instead of pinning from center, pin from top center
+	var topo = CreateRUITopology_Worldspace( origin, angles, width, height )
+
+	var rui = RuiCreate( $"ui/basic_image.rpak", topo, RUI_DRAW_WORLD, 32767 )
+    RuiSetImage( rui, "basicImage", image)
+
+	if ( RUIID != -1 )
+	{
+		if ( !( RUIID in file.worldRUI ) )
+			file.worldRUI[ RUIID ] <- []
+
+		file.worldRUI[ RUIID ].append( rui )
+	}
+}
+
+void function Dev_DestroyWorldRUIWithID( int RUIID )
+{
+	if ( !( RUIID in file.worldRUI ) )
+		return
+
+	foreach ( rui in file.worldRUI[ RUIID ] )
+		RuiDestroyIfAlive( rui )
+
+	file.worldRUI[ RUIID ].clear()
+}

@@ -1,0 +1,48 @@
+WeaponData
+{
+	Mods
+	{
+		// NOTE: many weapons will override the default ammo_clip_size upgrade in their settings
+
+		bullets_mag_l1
+		{
+			"ammo_clip_size"   					"*1.25"
+		}
+
+		bullets_mag_l2
+		{
+		    "reload_time"						"*0.95"
+			"reload_time_late1"					"*0.95"
+			"reload_time_late2"					"*0.95"
+			"reload_time_late3"					"*0.95"
+			"reload_time_late4"					"*0.95"
+			"reload_time_late5"					"*0.95"
+			"reloadempty_time"					"*0.95"
+			"reloadempty_time_late1"			"*0.95"
+			"reloadempty_time_late2"			"*0.95"
+			"reloadempty_time_late3"			"*0.95"
+			"reloadempty_time_late4"			"*0.95"
+			"reloadempty_time_late5"			"*0.95"
+
+			"ammo_clip_size"   					"*1.5"
+		}
+
+		bullets_mag_l3
+		{
+		    "reload_time"						"*0.9"
+			"reload_time_late1"					"*0.9"
+			"reload_time_late2"					"*0.9"
+			"reload_time_late3"					"*0.9"
+			"reload_time_late4"					"*0.9"
+			"reload_time_late5"					"*0.9"
+			"reloadempty_time"					"*0.9"
+			"reloadempty_time_late1"			"*0.9"
+			"reloadempty_time_late2"			"*0.9"
+			"reloadempty_time_late3"			"*0.9"
+			"reloadempty_time_late4"			"*0.9"
+			"reloadempty_time_late5"			"*0.9"
+
+			"ammo_clip_size"   					"*2"
+		}
+	}
+}

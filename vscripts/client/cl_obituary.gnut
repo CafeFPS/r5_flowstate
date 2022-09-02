@@ -238,6 +238,40 @@ void function Obituary( entity attacker, string attackerClass, entity victim, in
 		Obituary_Print_Localized( localizedObit, attackerInfo.displayColor, victimInfo.displayColor, <255,255,255>, <0, 0, 0>, 0 )
 	else
 		Obituary_Print_PlayerDeath( attackerString, weaponIcon, modifierIcon, victimString, attackerInfo.displayColor, victimInfo.displayColor, <255, 255, 255>, isMainWeapon )
+
+	if ( GetCurrentPlaylistVarBool( "enabled_killstreak_obituary", false ) )
+		ShowKillStreakObituary(attacker, victim, attackerInfo, victimInfo)
+}
+
+void function ShowKillStreakObituary(entity attacker, entity victim, ObitEntityInfo attackerInfo, ObitEntityInfo victimInfo)
+{
+	//Killstreak
+	if(attacker.IsPlayer() && attackerInfo.displayName != "")
+	{
+		attacker.p.killstreak++
+
+		if(attacker.p.killstreak >= 5)
+			attacker.p.isonkillstreak = true
+
+		if(attacker.p.killstreak == 5 || attacker.p.killstreak == 10 || attacker.p.killstreak == 15 || attacker.p.killstreak == 20 || attacker.p.killstreak == 25 || attacker.p.killstreak == 30|| attacker.p.killstreak == 35|| attacker.p.killstreak == 40|| attacker.p.killstreak == 45|| attacker.p.killstreak == 50)
+			Obituary_Print_Localized( Localize( "#PLAYER_KILLSTREAK", attackerInfo.displayName , attacker.p.killstreak), <255,100,100>, <255,100,100>, <255,255,255>, <0, 0, 0>, 0 )
+	}
+	
+	//Death Check
+	if(victim.p.isonkillstreak)
+	{
+		if(attacker.IsPlayer() && attackerInfo.displayName != "")
+			Obituary_Print_Localized( Localize( "#PLAYER_ENDED_KILLSTREAK", attackerInfo.displayName , victimInfo.displayName), <255,100,100>, <255,100,100>, <255,255,255>, <0, 0, 0>, 0 )
+		else
+			Obituary_Print_Localized( Localize( "#PLAYER_ENDED_OWN_KILLSTREAK", victimInfo.displayName), <255,100,100>, <255,100,100>, <255,255,255>, <0, 0, 0>, 0 )
+	}
+
+	//Reset victim
+	if(victim.IsPlayer() && victimInfo.displayName != "")
+	{
+		victim.p.killstreak = 0
+		victim.p.isonkillstreak = false
+	}
 }
 
 

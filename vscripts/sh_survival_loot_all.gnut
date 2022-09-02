@@ -219,8 +219,8 @@ void function SURVIVAL_Loot_All_InitShared()
 		string featureFlagRef = GetLootTableString( data.ref, dt, i, "featureFlag" )
 		if ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) )
 		{
-			printf( "Skipping loot ref %s because feature flag %s is off.", data.ref, featureFlagRef )
-			printf( "Loot ref %s: feature flag %s is off", data.ref, featureFlagRef )
+			// printf( "Skipping loot ref %s because feature flag %s is off.", data.ref, featureFlagRef )
+			// printf( "Loot ref %s: feature flag %s is off", data.ref, featureFlagRef )
 			continue
 		}
 

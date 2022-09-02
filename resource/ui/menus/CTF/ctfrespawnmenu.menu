@@ -1,434 +1,1045 @@
-scripts/resource/ui/menus/CTF/ctfrespawnmenu.menu
+"scripts/resource/ui/menus/CTF/ctfrespawnmenu.menu"
 {
-	menu
+	"menu"
 	{
-		ControlName				Frame
-		xpos					0
-		ypos					0
-		zpos					3
-		wide					f0
-		tall					f0
-		autoResize				0
-		pinCorner				0
-		visible					1
-		enabled					1
-		tabPosition				0
-		PaintBackgroundType		0
-		infocus_bgcolor_override	"0 0 0 0"
-		outoffocus_bgcolor_override	"0 0 0 0"
-		modal					1
-
-		DarkenBackground
+		"ControlName"						"Frame"
+		"xpos"								"0"
+		"ypos"								"0"
+		"zpos"								"3"
+		"wide"								"f0"
+		"tall"								"f0"
+		"autoResize"						"0"
+		"pinCorner"							"0"
+		"visible"							"1"
+		"enabled"							"1"
+		"tabPosition"						"0"
+		"PaintBackgroundType"				"0"
+		"infocus_bgcolor_override"			"0 0 0 0"
+		"outoffocus_bgcolor_override"		"0 0 0 0"
+		"modal"								"1"
+		"DarkenBackground"
 		{
-			ControlName				Label
-			xpos					0
-			ypos					0
-			wide					%100
-			tall					%100
-			labelText				""
-			bgcolor_override		"0 0 0 100"
-			visible					1
-			paintbackground			1
+			"ControlName"			"Label"
+			"xpos"					"0"
+			"ypos"					"0"
+			"wide"					"%100"
+			"tall"					"%100"
+			"labelText"				""
+			"bgcolor_override"		"0 0 0 100"
+			"visible"				"1"
+			"paintbackground"		"1"
 		}
-
-        CTFBottomFrame
+		"CTFBottomFrame"
 		{
-            ControlName		ImagePanel
-			wide					f0
-			tall					125
-            xpos                    0
-			ypos					0
-			visible			1
-            scaleImage		1
-            fillColor		"30 30 30 200"
-            drawColor		"30 30 30 200"
-
-			pin_to_sibling			DarkenBackground
-			pin_corner_to_sibling	BOTTOM
-			pin_to_sibling_corner	BOTTOM
+			"ControlName"				"ImagePanel"
+			"wide"						"f0"
+			"tall"						"125"
+			"xpos"						"0"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"30 30 30 200"
+			"drawColor"					"30 30 30 200"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"BOTTOM"
 		}
-
-        ObjectiveText
+		"ObjectiveText"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-5
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				50
-			labelText				"Capture 5 Flags To Win!"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 255 255 255"
-
-			pin_to_sibling			CTFBottomFrame
-			pin_corner_to_sibling	CENTER
-			pin_to_sibling_corner	CENTER
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-5"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"0"
+			"fontHeight"				"50"
+			"labelText"					"Capture 5 Flags To Win!"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"CTFBottomFrame"
+			"pin_corner_to_sibling"		"CENTER"
+			"pin_to_sibling_corner"		"CENTER"
 		}
-
-        TimerFrame
+		"IMCScoreBarBG"
 		{
-            ControlName		ImagePanel
-			wide					f0
-			tall					125
-            xpos                    0
-			ypos					0
-			visible			1
-            scaleImage		1
-            fillColor		"30 30 30 200"
-            drawColor		"30 30 30 200"
-
-			pin_to_sibling			DarkenBackground
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	TOP
+			"ControlName"				"ImagePanel"
+			"wide"						"400"
+			"tall"						"10"
+			"xpos"						"-210"
+			"ypos"						"-100"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"30 30 30 230"
+			"drawColor"					"30 30 30 230"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
 		}
-
-		TimerText2
+		"IMCScoreBar"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-15
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				50
-			labelText				"Respawning In"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 255 255 255"
-
-			pin_to_sibling			TimerFrame
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	TOP
+			"ControlName"				"ImagePanel"
+			"wide"						"0"
+			"tall"						"10"
+			"xpos"						"0"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"100 100 255 255"
+			"drawColor"					"100 100 255 255"
+			"pin_to_sibling"			"IMCScoreBarBG"
+			"pin_corner_to_sibling"		"RIGHT"
+			"pin_to_sibling_corner"		"RIGHT"
 		}
-
-		TimerText
+		"MilScoreBarBG"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					15
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				50
-			labelText				""
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 255 255 255"
-
-			pin_to_sibling			TimerText2
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	BOTTOM
+			"ControlName"				"ImagePanel"
+			"wide"						"400"
+			"tall"						"10"
+			"xpos"						"210"
+			"ypos"						"-100"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"30 30 30 230"
+			"drawColor"					"30 30 30 230"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
 		}
-
-        KilledBy
+		"MilScoreBar"
 		{
-            ControlName		ImagePanel
-			wide					400
-			tall					100
-            xpos                    0
-			ypos					-200
-			visible			1
-            scaleImage		1
-            fillColor		"30 30 30 200"
-            drawColor		"30 30 30 200"
-
-			pin_to_sibling			DarkenBackground
-			pin_corner_to_sibling	TOP_RIGHT
-			pin_to_sibling_corner	TOP_RIGHT
+			"ControlName"				"ImagePanel"
+			"wide"						"0"
+			"tall"						"10"
+			"xpos"						"0"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"255 100 100 255"
+			"drawColor"					"255 100 100 255"
+			"pin_to_sibling"			"MilScoreBarBG"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
 		}
-
-		KilledByText1
+		"IMCScoreText"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-15
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"> Killed By <"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 255 255 255"
-
-			pin_to_sibling			KilledBy
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	TOP
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"IMC"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"100 100 255 255"
+			"pin_to_sibling"			"IMCScoreBarBG"
+			"pin_corner_to_sibling"		"BOTTOM_RIGHT"
+			"pin_to_sibling_corner"		"TOP_RIGHT"
 		}
-
-		KilledByText
+		"IMCScoreInt"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-5
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"PlaceHolder Name"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 100 100 255"
-
-			pin_to_sibling			KilledByText1
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	BOTTOM
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"0 Captures"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"100 100 255 255"
+			"pin_to_sibling"			"IMCScoreBarBG"
+			"pin_corner_to_sibling"		"BOTTOM_LEFT"
+			"pin_to_sibling_corner"		"TOP_LEFT"
 		}
-
-        KilledByDamage
+		"MilScoreText"
 		{
-            ControlName		ImagePanel
-			wide					400
-			tall					100
-            xpos                    0
-			ypos					-320
-			visible			1
-            scaleImage		1
-            fillColor		"30 30 30 200"
-            drawColor		"30 30 30 200"
-
-			pin_to_sibling			DarkenBackground
-			pin_corner_to_sibling	TOP_RIGHT
-			pin_to_sibling_corner	TOP_RIGHT
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"MILITIA"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 100 100 255"
+			"pin_to_sibling"			"MilScoreBarBG"
+			"pin_corner_to_sibling"		"BOTTOM_LEFT"
+			"pin_to_sibling_corner"		"TOP_LEFT"
 		}
-
-		KilledByDamageByText1
+		"MilScoreInt"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-15
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"> Damage Taken <"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 255 255 255"
-
-			pin_to_sibling			KilledByDamage
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	TOP
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"0 Captures"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 100 100 255"
+			"pin_to_sibling"			"MilScoreBarBG"
+			"pin_corner_to_sibling"		"BOTTOM_RIGHT"
+			"pin_to_sibling_corner"		"TOP_RIGHT"
 		}
-
-		KilledByDamageText
+		"GameTime"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-5
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"0"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 100 100 255"
-
-			pin_to_sibling			KilledByDamageByText1
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	BOTTOM
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-105"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"30"
+			"labelText"					""
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
 		}
-
-		GivenDamage
+		"Class1"
 		{
-            ControlName		ImagePanel
-			wide					400
-			tall					100
-            xpos                    0
-			ypos					-440
-			visible			1
-            scaleImage		1
-            fillColor		"30 30 30 200"
-            drawColor		"30 30 30 200"
-
-			pin_to_sibling			DarkenBackground
-			pin_corner_to_sibling	TOP_RIGHT
-			pin_to_sibling_corner	TOP_RIGHT
+			"ControlName"				"RuiButton"
+			"rui"						"ui/generic_friend_button.rpak"
+			"wide"						"250"
+			"tall"						"50"
+			"xpos"						"-540"
+			"ypos"						"10"
+			"visible"					"1"
+			"zpos"						"6"
+			"sound_accept"				"ui_rankedsummary_circletick_reached"
+			"sound_focus"				"UI_Menu_Focus_Small"
+			"pin_to_sibling"			"CTFBottomFrame"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+			"scriptID"					"0"
 		}
-
-		GivenDamageText1
+		"Class2"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-15
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"> Damage Given <"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 255 255 255"
-
-			pin_to_sibling			GivenDamage
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	TOP
+			"ControlName"				"RuiButton"
+			"rui"						"ui/generic_friend_button.rpak"
+			"wide"						"250"
+			"tall"						"50"
+			"xpos"						"20"
+			"ypos"						"0"
+			"visible"					"1"
+			"zpos"						"6"
+			"sound_accept"				"ui_rankedsummary_circletick_reached"
+			"sound_focus"				"UI_Menu_Focus_Small"
+			"pin_to_sibling"			"Class1"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+			"scriptID"					"1"
 		}
-
-		GivenDamageText
+		"Class3"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-5
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"0"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"100 100 255 255"
-
-			pin_to_sibling			GivenDamageText1
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	BOTTOM
+			"ControlName"				"RuiButton"
+			"rui"						"ui/generic_friend_button.rpak"
+			"wide"						"250"
+			"tall"						"50"
+			"xpos"						"20"
+			"ypos"						"0"
+			"visible"					"1"
+			"zpos"						"6"
+			"sound_accept"				"ui_rankedsummary_circletick_reached"
+			"sound_focus"				"UI_Menu_Focus_Small"
+			"pin_to_sibling"			"Class2"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+			"scriptID"					"2"
 		}
-
-        TeamScore
+		"Class4"
 		{
-            ControlName		ImagePanel
-			wide					400
-			tall					100
-            xpos                    0
-			ypos					-200
-			visible			1
-            scaleImage		1
-            fillColor		"30 30 30 200"
-            drawColor		"30 30 30 200"
-
-			pin_to_sibling			DarkenBackground
-			pin_corner_to_sibling	TOP_LEFT
-			pin_to_sibling_corner	TOP_LEFT
+			"ControlName"				"RuiButton"
+			"rui"						"ui/generic_friend_button.rpak"
+			"wide"						"250"
+			"tall"						"50"
+			"xpos"						"20"
+			"ypos"						"0"
+			"visible"					"1"
+			"zpos"						"6"
+			"sound_accept"				"ui_rankedsummary_circletick_reached"
+			"sound_focus"				"UI_Menu_Focus_Small"
+			"pin_to_sibling"			"Class3"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+			"scriptID"					"3"
 		}
-
-		TeamScoreText1
+		"Class5"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-15
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"> Teams Score <"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 255 255 255"
-
-			pin_to_sibling			TeamScore
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	TOP
+			"ControlName"				"RuiButton"
+			"rui"						"ui/generic_friend_button.rpak"
+			"wide"						"250"
+			"tall"						"50"
+			"xpos"						"20"
+			"ypos"						"0"
+			"visible"					"1"
+			"zpos"						"6"
+			"sound_accept"				"ui_rankedsummary_circletick_reached"
+			"sound_focus"				"UI_Menu_Focus_Small"
+			"pin_to_sibling"			"Class4"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+			"scriptID"					"4"
 		}
-
-		TeamScoreText
+		"PlayerBackground"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-5
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"0 Captures"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"100 100 255 255"
-
-			pin_to_sibling			TeamScoreText1
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	BOTTOM
+			"ControlName"				"ImagePanel"
+			"wide"						"350"
+			"tall"						"125"
+			"xpos"						"-200"
+			"ypos"						"1"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"42 128 232 155"
+			"drawColor"					"42 128 232 155"
+			"pin_to_sibling"			"CTFBottomFrame"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"LEFT"
 		}
-
-        EnemyScore
+		"DeployBackground"
 		{
-            ControlName		ImagePanel
-			wide					400
-			tall					100
-            xpos                    0
-			ypos					-320
-			visible			1
-            scaleImage		1
-            fillColor		"30 30 30 200"
-            drawColor		"30 30 30 200"
-
-			pin_to_sibling			DarkenBackground
-			pin_corner_to_sibling	TOP_LEFT
-			pin_to_sibling_corner	TOP_LEFT
+			"ControlName"				"ImagePanel"
+			"wide"						"250"
+			"tall"						"125"
+			"xpos"						"0"
+			"ypos"						"1"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"42 128 232 155"
+			"drawColor"					"42 128 232 155"
+			"pin_to_sibling"			"CTFBottomFrame"
+			"pin_corner_to_sibling"		"RIGHT"
+			"pin_to_sibling_corner"		"RIGHT"
 		}
-
-		EnemyScoreText1
+		"TimerText2"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-15
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"> Enemy Score <"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 255 255 255"
-
-			pin_to_sibling			EnemyScore
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	TOP
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"30"
+			"labelText"					"Respawning In"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"DeployBackground"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"TOP"
 		}
-
-		EnemyScoreText
+		"TimerText"
 		{
-			ControlName				Label
-			xpos                    0
-			ypos					-5
-			auto_wide_tocontents	1
-			tall					40
-			visible					1
-			fontHeight				30
-			labelText				"0 Captures"
-			font					DefaultBold_41
-			allcaps					1
-			fgcolor_override		"255 100 100 255"
-
-			pin_to_sibling			EnemyScoreText1
-			pin_corner_to_sibling	TOP
-			pin_to_sibling_corner	BOTTOM
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"15"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"30"
+			"labelText"					""
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"TimerText2"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"BOTTOM"
 		}
-
-        SelectLegend
+		"ClassesFrame"
 		{
-			ControlName             RuiButton
-			InheritProperties       SurvivalWeaponButtonWide
-
-			wide					200
-			tall					75
-			xpos                    -10
-			ypos                    -130
-			zpos                    1
-            visible 0
-
-			pin_to_sibling          DarkenBackground
-			pin_corner_to_sibling   BOTTOM_LEFT
-			pin_to_sibling_corner   BOTTOM_LEFT
+			"ControlName"				"ImagePanel"
+			"wide"						"250"
+			"tall"						"50"
+			"xpos"						"0"
+			"ypos"						"75"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"30 30 30 200"
+			"drawColor"					"30 30 30 200"
+			"pin_to_sibling"			"CTFBottomFrame"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
 		}
-
-		SelectLegendText
+		"ClassText"
 		{
-			ControlName				Label
-			auto_wide_tocontents    1
-			labelText				"Change Legend"
-			visible                 0
-			zpos 0
-			fgcolor_override		"255 255 255 255"
-
-			ypos                    0
-			xpos					-10
-			pin_to_sibling          SelectLegend
-			pin_corner_to_sibling   BOTTOM_LEFT
-			pin_to_sibling_corner   BOTTOM_LEFT
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"0"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"30"
+			"labelText"					"Class Selection"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"ClassesFrame"
+			"pin_corner_to_sibling"		"CENTER"
+			"pin_to_sibling_corner"		"CENTER"
 		}
-
+		"PlayerImage"
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"200"
+			"tall"						"125"
+			"xpos"						"0"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"CTFBottomFrame"
+			"pin_corner_to_sibling"		"BOTTOM_LEFT"
+			"pin_to_sibling_corner"		"BOTTOM_LEFT"
+		}
+		"ChangeLegend"
+		{
+			"ControlName"				"RuiButton"
+			"rui"						"ui/generic_friend_button.rpak"
+			"wide"						"200"
+			"tall"						"50"
+			"xpos"						"0"
+			"ypos"						"10"
+			"visible"					"1"
+			"zpos"						"6"
+			"sound_accept"				"ui_rankedsummary_circletick_reached"
+			"sound_focus"				"UI_Menu_Focus_Small"
+			"pin_to_sibling"			"PlayerImage"
+			"pin_corner_to_sibling"		"BOTTOM_LEFT"
+			"pin_to_sibling_corner"		"TOP_LEFT"
+		}
+		"Ability1Img"
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"75"
+			"tall"						"75"
+			"xpos"						"50"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"PlayerImage"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+		}
+		"Ability1Title"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"Tactical"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"Ability1Img"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		"Ability1Text"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-5"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"1"
+			"fontHeight"				"15"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"Ability1Img"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+		"Ability2Img"
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"75"
+			"tall"						"75"
+			"xpos"						"100"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"Ability1Img"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+		}
+		"Ability2Title"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"Ultimate"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"Ability2Img"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		"Ability2Text"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-5"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"1"
+			"fontHeight"				"15"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"Ability2Img"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+		"Weapon1Img"
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"150"
+			"tall"						"75"
+			"xpos"						"100"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"Ability2Img"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+		}
+		"Weapon1Title"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"Primary"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"Weapon1Img"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		"Weapon1Text"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-5"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"1"
+			"fontHeight"				"15"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"Weapon1Img"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+		"Weapon2Img"
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"150"
+			"tall"						"75"
+			"xpos"						"50"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"Weapon1Img"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+		}
+		"Weapon2Title"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"Secondary"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"Weapon2Img"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		"Weapon2Text"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-5"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"1"
+			"fontHeight"				"15"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"Weapon2Img"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+		"ShieldImg"
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"150"
+			"tall"						"75"
+			"xpos"						"50"
+			"ypos"						"0"
+			"visible"					"0"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"Weapon2Img"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+		}
+		"ShieldTitle"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"0"
+			"fontHeight"				"20"
+			"labelText"					"Shield"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"ShieldImg"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		"ShieldText"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-5"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"0"
+			"fontHeight"				"15"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"ShieldImg"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+		"HelmImg"
+		{
+			"ControlName"				"RuiPanel"
+			"rui"						"ui/basic_image.rpak"
+			"wide"						"150"
+			"tall"						"75"
+			"xpos"						"50"
+			"ypos"						"0"
+			"visible"					"0"
+			"scaleImage"				"1"
+			"pin_to_sibling"			"ShieldImg"
+			"pin_corner_to_sibling"		"LEFT"
+			"pin_to_sibling_corner"		"RIGHT"
+		}
+		"HelmTitle"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-10"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"0"
+			"fontHeight"				"20"
+			"labelText"					"Helmet"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"HelmImg"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		"HelmText"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"-5"
+			"auto_wide_tocontents"		"1"
+			"tall"						"35"
+			"visible"					"0"
+			"fontHeight"				"15"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"HelmImg"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+		"KilledBy"
+		{
+			"ControlName"				"ImagePanel"
+			"wide"						"300"
+			"tall"						"25"
+			"xpos"						"0"
+			"ypos"						"-200"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"42 128 232 155"
+			"drawColor"					"42 128 232 155"
+			"pin_to_sibling"			"DarkenBackground"
+			"pin_corner_to_sibling"		"TOP_RIGHT"
+			"pin_to_sibling_corner"		"TOP_RIGHT"
+		}
+		"KilledBy2"
+		{
+			"ControlName"				"ImagePanel"
+			"wide"						"300"
+			"tall"						"75"
+			"xpos"						"0"
+			"ypos"						"0"
+			"visible"					"1"
+			"scaleImage"				"1"
+			"fillColor"					"30 30 30 200"
+			"drawColor"					"30 30 30 200"
+			"pin_to_sibling"			"KilledBy"
+			"pin_corner_to_sibling"		"TOP"
+			"pin_to_sibling_corner"		"BOTTOM"
+		}
+		"KilledByText1"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"0"
+			"auto_wide_tocontents"		"1"
+			"tall"						"25"
+			"visible"					"1"
+			"fontHeight"				"25"
+			"labelText"					"Killed By"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"KilledBy"
+			"pin_corner_to_sibling"		"CENTER"
+			"pin_to_sibling_corner"		"CENTER"
+		}
+		"KilledByText"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"0"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"1"
+			"fontHeight"				"20"
+			"labelText"					"PlaceHolder Name"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"KilledBy2"
+			"pin_corner_to_sibling"		"CENTER"
+			"pin_to_sibling_corner"		"CENTER"
+		}
+		"LegendsFrame"
+		{
+			"ControlName"				"ImagePanel"
+			"wide"						"f0"
+			"tall"						"80"
+			"xpos"						"0"
+			"ypos"						"150"
+			"visible"					"0"
+			"scaleImage"				"1"
+			"fillColor"					"30 30 30 200"
+			"drawColor"					"30 30 30 200"
+			"pin_to_sibling"			"CTFBottomFrame"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		"LegendsFrameText"
+		{
+			"ControlName"				"ImagePanel"
+			"wide"						"230"
+			"tall"						"40"
+			"xpos"						"0"
+			"ypos"						"0"
+			"visible"					"0"
+			"scaleImage"				"1"
+			"fillColor"					"42 128 232 155"
+			"drawColor"					"42 128 232 155"
+			"pin_to_sibling"			"LegendsFrame"
+			"pin_corner_to_sibling"		"BOTTOM"
+			"pin_to_sibling_corner"		"TOP"
+		}
+		"LegendsText"
+		{
+			"ControlName"				"Label"
+			"xpos"						"0"
+			"ypos"						"0"
+			"auto_wide_tocontents"		"1"
+			"tall"						"40"
+			"visible"					"0"
+			"fontHeight"				"30"
+			"labelText"					"Select Legend"
+			"font"						"DefaultBold_41"
+			"allcaps"					"1"
+			"fgcolor_override"			"255 255 255 255"
+			"pin_to_sibling"			"LegendsFrameText"
+			"pin_corner_to_sibling"		"CENTER"
+			"pin_to_sibling_corner"		"CENTER"
+		}
+		"CharButton0"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-410"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"LegendsFrame"
+			"pin_corner_to_sibling"			"CENTER"
+			"pin_to_sibling_corner"			"CENTER"
+		}
+		"CharButton1"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton0"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton2"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton1"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton3"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton2"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton4"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton3"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton5"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton4"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton6"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton5"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton7"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton6"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton8"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton7"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton9"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton8"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
+		"CharButton10"
+		{
+			"ControlName"					"RuiButton"
+			"zpos"							"10"
+			"wide"							"120"
+			"tall"							"70"
+			"xpos"							"-35"
+			"visible"						"0"
+			"enabled"						"1"
+			"rui"							"ui/character_select_class_button_new.rpak"
+			"labelText"						""
+			"style"							"RuiButton"
+			"polyShape"						"0.375 0.0 1.0 0.0 0.625 1.0 0.0 1.0"
+			"rightClickEvents"				"1"
+			"sound_accept"					"ui_rankedsummary_circletick_reached"
+			"sound_focus"					"UI_Menu_Focus_Small"
+			"cursorVelocityModifier"		"0.7"
+			"pin_to_sibling"				"CharButton9"
+			"pin_corner_to_sibling"			"LEFT"
+			"pin_to_sibling_corner"			"RIGHT"
+		}
 	}
 }

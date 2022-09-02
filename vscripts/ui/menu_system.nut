@@ -158,6 +158,7 @@ void function OnSystemMenu_Open()
 {
 	SetBlurEnabled( true )
 	ShowPanel( Hud_GetChild( file.menu, "SystemPanel" ) )
+
 	UpdateOptInFooter()
 }
 
@@ -172,13 +173,13 @@ void function UpdateSystemPanel( var panel )
 	{
 		UISize screenSize = GetScreenSize()
 		SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
-		
+
 		SetButtonData( panel, buttonIndex++, file.settingsButtonData[ panel ] )
 		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		{
 			if ( IsSurvivalTraining() || IsFiringRangeGameMode() )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
-			else	
+			else
 				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
 		}
 		
@@ -220,7 +221,7 @@ void function UpdateSystemPanel( var panel )
 
 	var dataCenterElem = Hud_GetChild( panel, "DataCenter" )
 	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer v1.0 by @CafeFPS")
+		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
 		Hud_SetText( dataCenterElem, Localize( "#SYSTEM_DATACENTER", GetDatacenterName(), GetDatacenterPing() ) )
 }

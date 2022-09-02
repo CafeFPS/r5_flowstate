@@ -1,4 +1,4 @@
-#if CLIENT || UI 
+#if CLIENT || UI
 global function ShPassPanel_LevelInit
 #endif
 
@@ -153,7 +153,7 @@ const int REWARDS_PER_PAGE = 9
 //
 //
 //
-#if CLIENT || UI 
+#if CLIENT || UI
 void function ShPassPanel_LevelInit()
 {
 	#if CLIENT

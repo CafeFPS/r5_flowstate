@@ -105,5 +105,33 @@
 		"pin_corner_to_sibling"	"BOTTOM_RIGHT"
 		"pin_to_sibling_corner"	"BOTTOM_RIGHT"
 	}
+
+	SelfButton
+    {
+        ControlName				RuiButton
+        wide					340
+        tall					88
+        xpos                    0
+        ypos                    -70
+        rui                     "ui/lobby_friend_button.rpak"
+        labelText               ""
+        visible					1
+        cursorVelocityModifier  0.7
+        scriptID                -1
+        rightClickEvents		0
+        tabPosition             1
+
+        proportionalToParent    1
+
+		ruiArgs
+		{
+			canViewStats 0
+			isLeader 1
+		}
+
+        pin_to_sibling			DarkenBackground
+        pin_corner_to_sibling	TOP
+        pin_to_sibling_corner	TOP
+    }
 }
 

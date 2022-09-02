@@ -1,8 +1,5 @@
-//
-
 global function InitLoadscreenPreviewMenu
 global function LoadscreenPreviewMenu_SetLoadscreenToPreview
-
 
 struct
 {
@@ -10,7 +7,6 @@ struct
 
 	ItemFlavor ornull loadscreenToPreview
 } file
-
 
 void function InitLoadscreenPreviewMenu( var newMenuArg ) //
 {
@@ -24,12 +20,10 @@ void function InitLoadscreenPreviewMenu( var newMenuArg ) //
 	AddMenuFooterOption( menu, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
 }
 
-
 void function LoadscreenPreviewMenu_SetLoadscreenToPreview( ItemFlavor loadscreen )
 {
 	file.loadscreenToPreview = loadscreen
 }
-
 
 void function LoadscreenPreviewMenu_OnOpen()
 {

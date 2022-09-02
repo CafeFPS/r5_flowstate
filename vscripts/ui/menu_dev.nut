@@ -270,7 +270,7 @@ void function SetupDefaultDevCommandsMP()
 {
 	SetupDevMenu( "Abilities", SetDevMenu_Abilities )
 	SetupDevMenu( "Equip Weapon", SetDevMenu_Weapons )
-    SetupDevMenu( "TDM Weapon", SetDevMenu_TDMWeapons )
+	SetupDevMenu( "TDM Weapon", SetDevMenu_TDMWeapons )
 	//SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
 
 	if ( IsSurvivalMenuEnabled() )
@@ -286,10 +286,8 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevMenu( "Survival Incap Shield", SetDevMenu_SurvivalLoot, "incapshield" )
 		//SetupDevMenu( "Survival Incap Shield Debugging", SetDevMenu_SurvivalIncapShieldBots )
 
-		string itemsString = "ordnance ammo health custom_pickup"
-		#if(true)
-			itemsString += " data_knife"
-		#endif
+		string itemsString = "ordnance ammo health custom_pickup data_knife"
+
 		SetupDevMenu( "Survival Items", SetDevMenu_SurvivalLoot, itemsString )
 
 		//SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
@@ -364,9 +362,9 @@ void function SetupDefaultDevCommandsMP()
 
 	SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
 
-	// This adds CAPTURE MODE every time you load a level. 
+	// This adds CAPTURE MODE every time you load a level.
 	// Capture mode doesn't work, so I am commenting this out.
-	// Coded in sh_capturemode.nut 
+	// Coded in sh_capturemode.nut
 	// foreach ( DevCommand cmd in file.levelSpecificCommands )
 	// 	SetupDevCommand( cmd.label, cmd.command )
 }
