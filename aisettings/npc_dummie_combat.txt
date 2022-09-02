@@ -3,7 +3,7 @@ npc_dummie_combat
 	AIClass							human
 	TraverseAnimType				spectre
 
-	title							"             "
+	title							"im cool"
 	useSequenceBounds				1
 
 	aiEnemy_usePriorityDist			1300
@@ -22,17 +22,17 @@ npc_dummie_combat
 	BehaviorSelector				"behavior_dummie_combat"
 	//LocationScoringCriteria			"CommonShootWithLos"
 
-	chaseStopDist					150
-	chaseStopDistHeavyArmor			160
+	chaseStopDist					2000
+	chaseStopDistHeavyArmor			2000
 
 	allowCower						0
 	allowUseCover					1
 
 
 	traverseCostFactor				2.0
-	minGoalRadius					256
+	minGoalRadius					2000
 
-	DefaultModelName				"mdl/humans/class/medium/combat_dummie_medium.rmdl"
+	DefaultModelName				"mdl/Humans/class/medium/combat_dummie_medium.rmdl"
 
 	DefaultWeapon					"mp_weapon_hemlok"
 	WeaponCapacity					"FromLoadout"
@@ -129,7 +129,7 @@ npc_dummie_combat
 	MeleeDamageMax					25
 	MeleeDamageMin					25
 
-	Health							215
+	Health							100
 
 	PainOnHeavyDamageThreshold		9999 // 32
 	PainOnRepeatDamageThreshold		9999 // 70
@@ -163,9 +163,9 @@ npc_dummie_combat
 	restrictAimGunToValidSequences	1
 
 	showFriendlyIcon				1
-	showTitle						1
+	showTitle						0
 
-	ui_targetinfo					"ui/targetinfo_npc_simple"
+	ui_targetinfo					""
 
 	smartAmmoLockAttachmentName0	HEADFOCUS
 	waitBetweenWeaponBurst			1
