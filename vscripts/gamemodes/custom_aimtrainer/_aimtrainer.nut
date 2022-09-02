@@ -43,7 +43,7 @@ struct{
 	array<entity> props
 } ChallengesEntities
 
-table<int, array<ChallengeScore> > ChallengesData
+table<int, array<ChallengeScore> > ChallengesData //implement this
 table<int, int> ChallengesBestScores
 
 void function _ChallengesByColombia_Init()

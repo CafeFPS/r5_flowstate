@@ -198,19 +198,6 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			pin_to_sibling_corner	BOTTOM_RIGHT
 		}
 
-		// "DarkenBackground"
-		// {
-			// "ControlName"			"Label"
-			// "xpos"					"0"
-			// "ypos"					"0"
-			// "wide"					"%100"
-			// "tall"					"%100"
-			// "labelText"				""
-			// "bgcolor_override"		"0 0 0 0"
-			// "visible"				"1"
-			// "paintbackground"		"1"
-		// }
-
 		"ServerBrowserBG"
 		{
 			"ControlName"			"ImagePanel"
@@ -247,6 +234,84 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			"pin_to_sibling_corner"	"BOTTOM_LEFT"
 		}
 
+		"ServerBrowserBGBottom"
+		{
+			"ControlName"			"ImagePanel"
+			"xpos"					"0"
+			"ypos"					"750"
+			"tall"					"70"
+			"wide" 					"1395"
+			"fillColor"				"30 30 30 200"
+			"drawColor"				"30 30 30 200"
+			"wrap"					"1"
+			"visible"				"0"
+			"zpos"					"3"
+
+			"pin_to_sibling"		"ServerBrowserBG"
+			"pin_corner_to_sibling"	"TOP"
+			"pin_to_sibling_corner"	"BOTTOM"
+		}
+		
+		"BtnServerListRightArrow"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			"wide" 					"100"
+			"tall" 					"35"
+			"xpos" 					"0"
+			"ypos" 					"0"
+			"zpos" 					"6"
+
+			ruiArgs
+			{
+				buttonText ">>>"
+			}
+
+			"pin_to_sibling"		"Pages"
+			"pin_corner_to_sibling"	"LEFT"
+			"pin_to_sibling_corner"	"RIGHT"
+		}
+
+		"Pages"
+		{
+			"ControlName"			"Label"
+			"labelText"				"  Page: 1/1  "
+			"font"					"DefaultBold_41"
+			"allcaps"				"1"
+			"wide"					"120"
+			"zpos" 					"7"
+			"fontHeight"			"25"
+			"xpos"					"25"
+			"ypos"					"0"
+			"fgcolor_override"		"255 255 255 255"
+			"textalignment"			"center"
+			"auto_wide_tocontents"  "1"
+
+			"pin_to_sibling"		"ServerBrowserBGBottom"
+			"pin_corner_to_sibling"	"CENTER"
+			"pin_to_sibling_corner"	"CENTER"
+		}
+
+		"BtnServerListLeftArrow"
+		{
+			"ControlName" 			"RuiButton"
+			"rui"					"ui/footer_button.rpak"
+			"wide" 					"100"
+			"tall" 					"35"
+			"xpos" 					"0"
+			"ypos" 					"0"
+			"zpos" 					"6"
+
+			ruiArgs
+			{
+				buttonText "<<<"
+			}
+
+			"pin_to_sibling"		"Pages"
+			"pin_corner_to_sibling"	"RIGHT"
+			"pin_to_sibling_corner"	"LEFT"
+		}
+		
 		"NoChallengesLbl"
 		{
 			"ControlName"			"Label"

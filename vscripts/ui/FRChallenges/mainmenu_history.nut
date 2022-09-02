@@ -3,12 +3,24 @@ global function OpenFRChallengesHistory
 global function CloseFRChallengesHistory
 global function HistoryUI_AddNewChallenge
 
+global const AIMTRAINER_HISTORYUI_SERVERS_PER_PAGE = 19
+
 struct
 {
 	var menu
 	bool wpnselectorToggle = false
 	
 } file
+
+//Struct for page system
+struct
+{
+	int pAmount
+	int pCurrent
+	int pOffset
+	int pStart
+	int pEnd
+} m_vPages
 
 //Struct for results data
 struct ResultsHistory
