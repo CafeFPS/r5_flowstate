@@ -48,7 +48,7 @@ You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Traine
 1. Choose playlist. "custom_aimtrainer" (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
 2. Select a map. It works with all Kings Canyon and World's Edge maps, Firing Range map is NOT recommended.
 3. Start the server!
-4. Change weapon, characters, attachments and more using a user friendly UI. Start to challenge yourself!
+4. Change weapon, character, attachments and more using a user friendly UI. Start to challenge yourself!
 
 # Support and credits
 Hola, soy Café. I'm an Apex Legends nerd and full time modder, I'm from Colombia and I don't have a job other than modding Apex, in this country 1 dollar is a lot. 
