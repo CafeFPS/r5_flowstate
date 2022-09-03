@@ -260,8 +260,7 @@ void function DiscardVideoSettingsDialog( var panel, int desiredTabIndex = -1 )
 				if ( desiredTabIndex <= 0 )
 				{
 					if ( GetActiveMenu() == GetMenu( "MiscMenu" ) )
-						CloseActiveMenu()
-				
+
 					return
 				}
 
