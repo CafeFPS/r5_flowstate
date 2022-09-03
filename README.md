@@ -5,9 +5,9 @@ Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
 - Season 14 weapon data
 - Laser sights implemented
 - User friendly UI
-- "Exit challenge" buton when Escape is pressed.
 - Results UI, displays the challenge data at the end.
 - History UI, saves challenges data, useful to see your performance over time.
+	- Print to console button. Use Insert key to open the console.
 - Classic Aim Trainer weapon available, this weapon is hitscan with no spread, no recoil and no delay. (Tile Frenzy, Smoothbot and other challenges are interesting to play with this weapon!)
 - Settings UI, exclusive settings menu for the Aim Trainer.
 	- Weapon Selector UI featuring Attachments Box UI using right click.
@@ -41,7 +41,8 @@ Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
 Maybe in a future: Advanced Movement recorded animations.
 
 # How to install
-1. Get the last SDK version for your Apex S3 to run these scripts correctly (Min version required is 2.1): https://github.com/Mauler125/r5sdk/releases
+Follow the steps in order.
+1. Get the last SDK version for your Apex S3 to run these scripts correctly (Min version required is 2.1 beta): https://github.com/Mauler125/r5sdk/releases
 2. Get the 3 required files to run these scripts from releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases.
 3. Get the scripts from this repo and place them in /platform/scripts/. Replace all the content.
 
