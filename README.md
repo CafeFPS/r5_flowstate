@@ -4,6 +4,7 @@
 - Season 14 weapon data
 - Laser sights implemented
 - User friendly UI
+- "Exit challenge" buton when Escape is pressed.
 - Results UI, displays the challenge data at the end.
 - History UI, saves challenges data, useful to see your performance over time.
 - Classic Aim Trainer weapon available, this weapon is hitscan with no spread, no recoil and no delay. (Tile Frenzy, Smoothbot and other challenges are interesting to play with this weapon!)
