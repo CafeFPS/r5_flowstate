@@ -50,7 +50,6 @@ void function OnMiscMenu_Open()
 void function OnMiscMenu_Close()
 {
 	HidePanel( Hud_GetChild( file.menu, "SettingsPanel" ) )
-
 	RefreshCustomGamepadBinds_UI()
 	//TabData tabData = GetTabDataForPanel( file.menu )
 	//DeactivateTab( tabData )
@@ -70,5 +69,10 @@ void function OnMiscMenu_NavigateBack()
 
 	if ( IsLobby() )
 		UI_SetPresentationType( CurrentPresentationType )
+
+	if(ISAIMTRAINER){
+		CloseAllMenus()
+		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
+	}
 }
 

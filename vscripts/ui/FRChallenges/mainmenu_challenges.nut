@@ -1,6 +1,7 @@
 global function InitFRChallengesMainMenu
 global function OpenFRChallengesMainMenu
 global function CloseFRChallengesMainMenu
+global function SetAimTrainerSessionEnabled
 
 struct
 {
@@ -9,10 +10,12 @@ struct
 
 global string PlayerKillsForChallengesUI = ""
 global string PlayerCurrentWeapon = ""
+global bool ISAIMTRAINER = false //check if its in aim trainer main menu to change behavior of global settings menu.
 
 void function OpenFRChallengesMainMenu(int dummiesKilled)
 {
 	CloseAllMenus()
+	ISAIMTRAINER = true
 	PlayerKillsForChallengesUI = dummiesKilled.tostring()
 	Hud_SetText(Hud_GetChild( file.menu, "DummiesKilledCounter"), "Dummies killed this session: " + dummiesKilled.tostring())
 	if(PlayerCurrentWeapon == "") 
@@ -23,8 +26,15 @@ void function OpenFRChallengesMainMenu(int dummiesKilled)
 	AdvanceMenu( file.menu )
 }
 
+void function SetAimTrainerSessionEnabled(bool activated)
+{
+	if(!activated) ISAIMTRAINER = true
+	else ISAIMTRAINER = false
+}
+
 void function CloseFRChallengesMainMenu()
 {
+	ISAIMTRAINER = false
 	CloseAllMenus()
 }
 
@@ -58,6 +68,9 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 	AddEventHandlerToButton( menu, "Challenge6NewC", UIE_CLICK, Challenge6NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge7NewC", UIE_CLICK, Challenge7NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge8NewC", UIE_CLICK, Challenge8NewCFunct )
+	
+	if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		RunClientScript("RefreshChallengeActivated")
 }
 
 bool function ShouldShowBackButton()
@@ -203,5 +216,6 @@ void function OnR5RSB_Close()
 
 void function OnR5RSB_NavigateBack()
 {
-    //
+    CloseAllMenus()
+	AdvanceMenu( GetMenu( "MiscMenu" ) )
 }

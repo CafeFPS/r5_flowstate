@@ -260,7 +260,6 @@ void function DiscardVideoSettingsDialog( var panel, int desiredTabIndex = -1 )
 				if ( desiredTabIndex <= 0 )
 				{
 					if ( GetActiveMenu() == GetMenu( "MiscMenu" ) )
-						CloseActiveMenu()
 
 					return
 				}
@@ -277,15 +276,17 @@ void function DiscardVideoSettingsDialog( var panel, int desiredTabIndex = -1 )
 
 void function UICodeCallback_ResolutionChanged( bool askForConfirmation )
 {
-	if ( askForConfirmation )
-	{
-		CloseAllDialogs() // Promo could be open. To avoid this workaround, menu opening caused by resolution change should be distinguishable from a normal lobby load.
-		AdvanceMenu( GetMenu( "ConfirmKeepVideoChangesDialog" ) )
-	}
-	else
-	{
-		foreach ( func in uiGlobal.resolutionChangedCallbacks )
+	CloseAllDialogs() // Promo could be open. To avoid this workaround, menu opening caused by resolution change should be distinguishable from a normal lobby load.
+
+	foreach ( func in uiGlobal.resolutionChangedCallbacks )
 			func()
+
+	if(ISAIMTRAINER){
+		CloseAllMenus()
+		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
+	} else {
+		CloseAllMenus()
+		AdvanceMenu( GetMenu( "MiscMenu" ) )
 	}
 }
 
@@ -305,6 +306,10 @@ void function RevertVideoSettingsThread()
 	WaitFrame()
 	VideoOptions_FillInCurrent( file.videoPanel )
 	uiGlobal.videoSettingsChanged = false
+	if(ISAIMTRAINER){
+		CloseAllMenus()
+		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
+	}
 }
 
 

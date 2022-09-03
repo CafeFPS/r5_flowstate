@@ -181,6 +181,7 @@ void function ResetChallengeStats(entity player)
 	player.p.straferChallengeDamage = 0
 	player.p.straferCriticalShots = 0
 	player.p.isChallengeActivated = false
+	Remote_CallFunction_NonReplay(player, "ServerCallback_SetChallengeActivated", false)
 	player.p.isNewBestScore = false
 }
 
@@ -1973,6 +1974,7 @@ void function OnChallengeEnd(entity player)
 	if(!IsValid(player)) return
 	
 	player.p.isChallengeActivated = false
+	Remote_CallFunction_NonReplay(player, "ServerCallback_SetChallengeActivated", false)
 	
 	ChallengeScore ThisChallengeData
 	ThisChallengeData.straferDummyKilledCount = player.p.straferDummyKilledCount
@@ -2424,6 +2426,7 @@ void function PreChallengeStart(entity player, int challenge)
 	player.p.challengeName = challenge
 
 	player.p.isChallengeActivated = true
+	Remote_CallFunction_NonReplay(player, "ServerCallback_SetChallengeActivated", true)
 	DeployAndEnableWeapons(player)
 	entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
     if(weapon.IsInCustomActivity())

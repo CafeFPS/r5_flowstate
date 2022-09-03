@@ -52,6 +52,8 @@ global function ServerCallback_StopLaserSightsOnSMGWeapon
 global function ServerCallback_RestartChallenge
 global function ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies
 global function ServerCallback_ToggleDotForHitscanWeapons
+global function ServerCallback_SetChallengeActivated
+global function RefreshChallengeActivated
 
 //Main menu buttons
 global function StartChallenge1Client
@@ -95,6 +97,7 @@ struct{
 	int damageDone
 	int damagePossible
 	var dot
+	bool challengeActivatedLastValue = false
 } ChallengesClientStruct
 
 global struct CameraLocationPair
@@ -142,7 +145,7 @@ void function ServerCallback_StopLaserSightsOnSMGWeapon(entity weapon)
 {
 	weapon.StopWeaponEffect( $"P_wpn_lasercannon_aim_short_blue", $"" )
 }
-
+	
 void function DisableLaserInADS()
 {
 	entity player = GetLocalClientPlayer()
@@ -503,6 +506,17 @@ void function ServerCallback_ToggleDotForHitscanWeapons(bool visible)
 		RuiDestroyIfAlive( ChallengesClientStruct.dot )
 		ChallengesClientStruct.dot = null
 	}
+}
+
+void function ServerCallback_SetChallengeActivated(bool activated)
+{
+	RunUIScript("SetAimTrainerSessionEnabled", activated)
+	ChallengesClientStruct.challengeActivatedLastValue = activated
+}
+
+void function RefreshChallengeActivated()
+{
+	RunUIScript("SetAimTrainerSessionEnabled", ChallengesClientStruct.challengeActivatedLastValue)
 }
 
 void function CreateTimerRUIandSTATS(bool crosshair = false) //and stats
