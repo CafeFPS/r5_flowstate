@@ -1,6 +1,7 @@
 global function SURVIVAL_LootDistribution_InitShared
 global function SURVIVAL_GetWeightedItemFromGroup
 global function SURVIVAL_GetMultipleWeightedItemsFromGroup
+global function AddCustomItemToLootPool
 
 struct LootDistro
 {
@@ -44,7 +45,12 @@ void function SURVIVAL_LootDistribution_InitShared()
         }
         if(groupRef != "") //Found a group header, accumulate anything so far into the previous group 
         {
-            LootDistribution[ currentGroupRef ] <- clone distributions
+            // Checks if the group has already been overriden by AddCustomItemToLootPool.
+            // If so, extend the group instead of replacing it.
+            if (currentGroupRef in LootDistribution)
+                LootDistribution[currentGroupRef].extend(clone distributions)
+            else LootDistribution[ currentGroupRef ] <- clone distributions
+
             distributions.clear()
             currentGroupRef = groupRef
         }
@@ -136,4 +142,17 @@ array<LootDistro> function UnpackGroup(string groupRef)
             unpackedDistro.append(distro)
     }   
     return unpackedDistro
+}
+
+// Custom function to allow adding custom weapons to loot pool.
+// Used automatically by the custom weapon framework to add in custom wepaons and attachments.
+// Also makes it easier to modify the loot pool for everyone else.
+void function AddCustomItemToLootPool(string itemRef, string groupRef, float chance)
+{
+    LootDistro ld = NewLootDistro(itemRef, chance)
+
+    // Checks if the group is in the loot pool, if so,
+    // append the item to the group instead of replacing it completely.
+    if (groupRef in LootDistribution) LootDistribution[groupRef].append(ld)
+    else LootDistribution[groupRef] <- [ld]
 }

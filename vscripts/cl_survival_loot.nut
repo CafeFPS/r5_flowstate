@@ -12,6 +12,7 @@ global function AttachmentTags
 global function UpdateLootRuiWithData
 global function LootGoesInPack
 global function SetupSurvivalLoot
+global function SetupCustomLoot
 global function SURVIVAL_Loot_QuickSwap
 global function SURVIVAL_Loot_UpdateRuiLastUseTime
 
@@ -1605,12 +1606,41 @@ void function SetupSurvivalLoot( var categories )
 
 		if ( !catTypes.contains( data.lootType ) )
 			continue
+		
+		if (data.lootType == eLootType.ATTACHMENT && IsCustomAttachment(data)) continue
+		if (data.lootType == eLootType.MAINWEAPON && IsCustomWeapon(data)) continue
 
 		string displayString = CreateLootDisplayString( data )
 		RunUIScript( "SetupDevCommand", displayString, "script SpawnGenericLoot( \"" + data.ref + "\", gp()[0].GetOrigin(), <-1,-1,-1>, " + data.countPerDrop + " )" )
 	}
 }
 
+void function SetupCustomLoot( var categories )
+{
+	string cats              = expect string( categories )
+	array<string> stringCats = split( cats, " " )
+
+	// turn menu strings into real category enums
+	array<int> catTypes
+	foreach( string cat in stringCats )
+		catTypes.append( SURVIVAL_Loot_GetLootTypeFromString( cat ) )
+
+	// flip thru all the loot and find the ones that match the cats we want to display
+	foreach ( ref, data in SURVIVAL_Loot_GetLootDataTable() )
+	{
+		if ( !IsLootTypeValid( data.lootType ) )
+			continue
+
+		if ( !catTypes.contains( data.lootType ) )
+			continue
+		
+		if (data.lootType == eLootType.ATTACHMENT && !IsCustomAttachment(data)) continue
+		if (data.lootType == eLootType.MAINWEAPON && !IsCustomWeapon(data)) continue
+
+		string displayString = CreateLootDisplayString( data )
+		RunUIScript( "SetupDevCommand", displayString, "script SpawnGenericLoot( \"" + data.ref + "\", gp()[0].GetOrigin(), <-1,-1,-1>, " + data.countPerDrop + " )" )
+	}
+}
 
 string function CreateLootDisplayString( LootData data )
 {

@@ -1103,7 +1103,7 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 		LootData weaponData = SURVIVAL_Loot_GetLootDataByRef( GetWeaponClassName( weapon ) )
 		LootData modData = SURVIVAL_Loot_GetLootDataByRef( item )
 
-		Remote_CallFunction_NonReplay( player, "ServerCallback_AttachedMod", weaponData.index, modData.index )
+		//Remote_CallFunction_NonReplay( player, "ServerCallback_AttachedMod", weaponData.index, modData.index )
 
 		mods.append( item )
 

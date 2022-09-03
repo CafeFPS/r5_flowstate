@@ -68,6 +68,7 @@ global function UICallback_DisableTriggerStrafing
 global function UpdateHealHint
 global function GroundListUpdateNextFrame
 global function GetCountForLootType
+global function RegisterUseFunctionForItem
 
 global enum eGroundListBehavior
 {
@@ -234,6 +235,10 @@ void function Survival_DropInventoryItem( string ref, int num )
 	ResetInventoryMenu( player )
 }
 
+void function RegisterUseFunctionForItem( string ref, void functionref(entity, string) func )
+{
+	file.itemUseFunctions[ ref ] <- func
+}
 
 void function Survival_DropEquipment( string ref )
 {

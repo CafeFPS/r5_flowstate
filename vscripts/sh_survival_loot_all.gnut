@@ -11,6 +11,7 @@ global function SURVIVAL_Loot_GetLootTypeFromString
 global function SURVIVAL_Loot_GetByTier
 
 global function SURVIVAL_Loot_IsUniqueAmmoWeapon
+global function GetCustomHopupArray
 
 #if CLIENT
 global function GetRarityColor
@@ -23,6 +24,8 @@ global function DiffKeyColors
 
 global function GetFXRarityColorForTier // use this for in game loot
 global function GetFXRarityColorForUnlockable
+global function IsCustomAttachment
+global function IsCustomWeapon
 
 global enum eLootTier
 {
@@ -34,6 +37,20 @@ global enum eLootTier
 	HEIRLOOM
 
 	_count
+}
+
+global struct CustomHopupData
+{
+	string className,
+	string displayName,
+	string desc,
+	int tier,
+	asset icon,
+	asset model = $"mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl",
+	string attachmentSlot = "hopup",
+	float lowWeight = 5.0,
+	float medWeight = 10.0,
+	float highWeight = 25.0
 }
 
 global struct LootData
@@ -141,6 +158,7 @@ struct
 	bool                      initialized
 	array<string>             disabledRefs
 	array<string>             uniqueAmmoWeaponRefs
+	array<CustomHopupData>	  customHopups = []
 
 	#if(true)
 		table<EHI, array< OverrideDeathBoxRUI_NetworkOptimizedStruct > > EHIToOverrideDeathBoxRUIProfilesTable
@@ -157,8 +175,22 @@ struct
 } file
 
 
+struct CustomGrenadeData
+{
+	string className,
+	int countPerDrop,
+	int stackSize,
+	int tier,
+	float chance,
+	float carePackageChance
+}
+
 array<string> attachmentSortOrder = ["barrel", "mag", "sight", "grip", "hopup"]
 
+array<CustomHopupData> function GetCustomHopupArray()
+{
+	return file.customHopups
+} 
 
 string function GetLootTableString( string ref, var datatable, int rowIndex, string columnName )
 {
@@ -200,7 +232,6 @@ void function SURVIVAL_Loot_All_InitShared()
 	#if(!UI)
 		//
 	#endif
-
 	var dt = GetDataTable( $"datatable/survival_loot.rpak" )
 	file.lootIndexToString.clear()
 	file.lootData.clear()
@@ -211,6 +242,7 @@ void function SURVIVAL_Loot_All_InitShared()
 	string disabledRefs = GetCurrentPlaylistVarString( "survival_disabled_loot", " " )
 	file.disabledRefs = split( disabledRefs, " " )
 
+	array<string> icons = []
 	int numRows = GetDatatableRowCount( dt )
 	for ( int i = 0; i < numRows; i++ )
 	{
@@ -219,8 +251,8 @@ void function SURVIVAL_Loot_All_InitShared()
 		string featureFlagRef = GetLootTableString( data.ref, dt, i, "featureFlag" )
 		if ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) )
 		{
-			// printf( "Skipping loot ref %s because feature flag %s is off.", data.ref, featureFlagRef )
-			// printf( "Loot ref %s: feature flag %s is off", data.ref, featureFlagRef )
+			printf( "Skipping loot ref %s because feature flag %s is off.", data.ref, featureFlagRef )
+			printf( "Loot ref %s: feature flag %s is off", data.ref, featureFlagRef )
 			continue
 		}
 
@@ -240,6 +272,7 @@ void function SURVIVAL_Loot_All_InitShared()
 		}
 
 		data.fakeAmmoIcon = GetLootTableAsset( data.ref, dt, i, "fakeAmmoIcon" )
+		if (data.fakeAmmoIcon != "") printt("Fake ammo icon for", data.ref, "-", data.fakeAmmoIcon)
 
 		data.baseMods = split( GetLootTableString( data.ref, dt, i, "baseMods" ), " " )
 
@@ -278,6 +311,7 @@ void function SURVIVAL_Loot_All_InitShared()
 		)
 		data.supportedAttachments = supportedAttachments
 
+		printt(data.ref, "| model:", string(GetLootTableAsset( data.ref, dt, i, "pickupModel" )))
 		data.lootTags = split( GetLootTableString( data.ref, dt, i, "lootTags" ), " " )
 
 		data.lootType = SURVIVAL_Loot_GetLootTypeFromString( lootType )
@@ -313,6 +347,7 @@ void function SURVIVAL_Loot_All_InitShared()
 		{
 			case eLootType.MAINWEAPON:
 				RegisterWeaponForUse( data.baseWeapon )
+				RegisterCustomAttachments(GetCustomHopupsForWeapon(data.baseWeapon))
 				data.pickupString = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "printName" )
 				data.desc = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "description" )
 				data.hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "hud_icon" )
@@ -397,7 +432,11 @@ void function SURVIVAL_Loot_All_InitShared()
 		#endif
 	}
 
+	foreach(string icon in icons)
+	{
 
+	}
+	RegisterCustomWeapons()
 
 	#if(UI)
 		RegisterSignal( "GatherFriendInfo" )
@@ -406,8 +445,378 @@ void function SURVIVAL_Loot_All_InitShared()
 	#endif
 
 	file.initialized = true
-    
-}  
+}
+
+struct CustomWeaponData
+{
+	string className,
+	int tier,
+	array<string> baseMods,
+	array<string> supportedAttachments,
+	string pickupSound1p,
+	string pickupSound3p,
+	string weaponType,
+	float lowWeaponChance,
+	float medWeaponChance,
+	float highWeaponChance,
+	bool isCP
+}
+
+void function RegisterCustomWeapons()
+{
+	array<string> customWeaponClassNames = split(GetCurrentPlaylistVarString("custom_weapon_list", ""), " ")
+	foreach (string className in customWeaponClassNames)
+	{
+		CustomWeaponData data
+		// Class name - the file name of the weapon, excluding extension
+		data.className = className
+		// Tier - the displayed rarity of the weapon
+		data.tier = GetCurrentPlaylistVarInt(className + "_tier", 1)
+		// equip these mods on pickup.
+		data.baseMods = split(GetCurrentPlaylistVarString(className + "_base_mods", ""), " ")
+		// what attachments does the weapon support
+		data.supportedAttachments = split(GetCurrentPlaylistVarString(className + "_attachments", "barrel mag sight grip"), " ")
+		// pickup sounds
+		data.pickupSound1p = GetCurrentPlaylistVarString(className + "_pickup_sound_1p", "survival_loot_pickup_weapon_rspn101")
+		data.pickupSound3p = GetCurrentPlaylistVarString(className + "_pickup_sound_3p", "survival_loot_pickup_3p_weapon_rspn101")
+		// weapon type - used for attachments.
+		// weaponTypes: assault, smg, lmg, sniper, shotgun, pistol
+		data.weaponType = GetCurrentPlaylistVarString(className + "_class", "assault")
+		// weights for weapon to appear on ground.
+		// the game sets the chances to a sum of 100 normally.
+		// the actual chance is dependent on all other weapons.
+		data.lowWeaponChance = GetCurrentPlaylistVarFloat(className + "_low_chance", 5.0)
+		data.medWeaponChance = GetCurrentPlaylistVarFloat(className + "_med_chance", 10.0)
+		data.highWeaponChance = GetCurrentPlaylistVarFloat(className + "_high_chance", 25.0)
+
+		data.isCP = GetCurrentPlaylistVarBool(className + "_cp_weapon", false)
+		RegisterWeapon(data)
+		RegisterCustomAttachments(GetCustomHopupsForWeapon(className))
+	}
+	
+	array<string> customGrenadeClassNames = split(GetCurrentPlaylistVarString("custom_grenade_list", ""), " ")
+	foreach(string className in customGrenadeClassNames)
+	{
+		CustomGrenadeData data
+		data.className = className
+		data.countPerDrop = GetCurrentPlaylistVarInt(className + "_count_per_drop", 1)
+		data.stackSize = GetCurrentPlaylistVarInt(className + "_stack_size", 2)
+		data.tier = GetCurrentPlaylistVarInt(className + "_tier", 1)
+		data.chance = GetCurrentPlaylistVarFloat(className + "_chance", 0)
+		data.carePackageChance = GetCurrentPlaylistVarFloat(className + "_cp_chance", 0)
+		RegisterCustomGrenade(data)
+	}
+
+	array<string> customConsumableClassNames = split(GetCurrentPlaylistVarString("custom_consumable_list", ""), " ")
+	foreach(string className in customConsumableClassNames)
+	{
+		printt("CLASS NAME:", className)
+		CustomGrenadeData data
+		data.className = className
+		data.countPerDrop = GetCurrentPlaylistVarInt(className + "_count_per_drop", 1)
+		data.stackSize = GetCurrentPlaylistVarInt(className + "_stack_size", 2)
+		data.tier = GetCurrentPlaylistVarInt(className + "_tier", 1)
+		data.chance = GetCurrentPlaylistVarFloat(className + "_chance", 0)
+		data.carePackageChance = GetCurrentPlaylistVarFloat(className + "_cp_chance", 0)
+		RegisterCustomConsumable(data)
+	}
+	
+	#if SERVER
+		AddClientCommandCallback( "SetNextCustomConsumable", ClientCallback_SetNextCustomConsumable )
+	#endif
+}
+
+bool function IsCustomAttachment(LootData data)
+{
+	printt(data.ref)
+	foreach (CustomHopupData d in file.customHopups)
+	{
+		if (d.className == data.ref) return true
+	}
+	return false
+}
+
+bool function IsCustomWeapon(LootData data)
+{
+	var weaponMatrix = GetDataTable( $"datatable/weapon_attachment_matrix.rpak" )
+
+	int col = GetDataTableColumnByName( weaponMatrix, data.baseWeapon )
+
+	return col == -1
+}
+
+void function RegisterCustomAttachments(array<string> refs)
+{
+	foreach(string className in refs){
+		CustomHopupData data
+		// class name - the name of the mod to be added to a weapon once this hopup is equipped.
+		data.className = className
+		// display name - the name displayed on pop-ups of this hop-up.
+		data.displayName = GetCurrentPlaylistVarString(className + "_name", "Custom Hopup")
+		// description.
+		data.desc = GetCurrentPlaylistVarString(className + "_desc", "Hop up desc")
+		// Tier - the displayed rarity of the hop-up
+		data.tier = GetCurrentPlaylistVarInt(className + "_tier", 1)
+		// icon - the icon of the hop-up. defaults to the Choke Hop-up Icon.
+		#if !UI
+		data.icon = CastStringToAsset(GetCurrentPlaylistVarString(className + "_icon", "rui/pilot_loadout/mods/hopup_em_choke"))
+		// model - the appearance of the hop-up on the ground.
+		data.model = CastStringToAsset(GetCurrentPlaylistVarString(className + "_model", "mdl/weapons_r5/loot/_master/w_loot_wep_mods_chip.rmdl"))
+		#endif
+		// The weight of the hop-up in Basic Tier Loot areas
+		data.lowWeight = GetCurrentPlaylistVarFloat(className + "_low_chance", 5.0)
+		// The weight of the hop-up in Mid Tier Loot areas
+		data.medWeight = GetCurrentPlaylistVarFloat(className + "_med_chance", 10.0)
+		// The weight of the hop-up in High Tier Loot areas
+		data.highWeight = GetCurrentPlaylistVarFloat(className + "_high_chance", 25.0)
+		// slot
+		data.attachmentSlot = GetCurrentPlaylistVarString(className + "_slot", "hopup")
+		// create the hopup...
+		CreateCustomHopup(data)
+	}
+}
+
+array<string> function GetCustomHopupsForWeapon(string className)
+{
+	array<string> result = []
+	foreach(string mod in GetWeaponMods_Global(className))
+	{
+		if (SURVIVAL_Loot_IsRefValid(mod)) continue;
+
+		if (GetCurrentPlaylistVarString(mod + "_slot", "") == "") continue;
+		result.append(mod)
+	}
+	return result
+}
+
+void function RegisterCustomGrenade(CustomGrenadeData grenadeData) {
+	LootData data
+	data.ref = grenadeData.className
+	data.baseWeapon = grenadeData.className
+	#if !UI
+	PrecacheWeapon( data.baseWeapon )
+	#endif
+	data.pickupString = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "printName" )
+	data.desc = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "description" )
+	data.hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "hud_icon" )
+	data.model = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "playermodel" )
+	data.tier = grenadeData.tier
+	data.countPerDrop = grenadeData.countPerDrop
+	data.inventorySlotCount = grenadeData.stackSize
+	data.lootType = eLootType.ORDNANCE
+	data.pickupSound_1p = "survival_loot_pickup_ordanance"
+	data.pickupSound_3p = "survival_loot_pickup_3p_ordanance"
+
+	data.index = file.lootIndexToString.len()
+	file.lootIndexToString.append( data.ref )
+	file.lootData[ data.ref ] <- data
+
+	#if !UI
+	AddCustomItemToLootPool( data.ref, "ordnance", grenadeData.chance)
+	AddCustomItemToLootPool( data.ref, "ordnance_drops", grenadeData.carePackageChance)
+	#endif
+}
+
+void function RegisterCustomConsumable(CustomGrenadeData grenadeData)
+{
+	LootData data
+	data.ref = grenadeData.className
+	data.baseWeapon = grenadeData.className
+	#if !UI
+		PrecacheWeapon( data.baseWeapon )
+	#endif
+	data.pickupString = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "printName" )
+	data.desc = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "description" )
+	data.hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "hud_icon" )
+	// this is so playermodel can still be empty handed if we choose so.
+	data.model = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "pickupmodel" )
+	data.tier = grenadeData.tier
+	data.countPerDrop = grenadeData.countPerDrop
+	data.inventorySlotCount = grenadeData.stackSize
+	data.lootType = eLootType.CUSTOMPICKUP
+	data.pickupSound_1p = "survival_loot_pickup_ordanance"
+	data.pickupSound_3p = "survival_loot_pickup_3p_ordanance"
+
+	data.index = file.lootIndexToString.len()
+	file.lootIndexToString.append( data.ref )
+	file.lootData[ data.ref ] <- data
+	#if CLIENT
+		RegisterUseFunctionForItem( data.ref, FireCustomConsumable )
+	#endif
+
+	#if !UI
+	AddCustomItemToLootPool( data.ref, "ordnance", grenadeData.chance)
+	AddCustomItemToLootPool( data.ref, "ordnance_drops", grenadeData.carePackageChance)
+	#endif
+}
+
+#if CLIENT
+void function FireCustomConsumable(entity player, string ref)
+{
+	player.ClientCommand( "SetNextCustomConsumable " + ref )
+	ActivateOffhandWeaponByIndex(OFFHAND_EQUIPMENT)
+}
+#endif
+
+#if SERVER
+bool function ClientCallback_SetNextCustomConsumable( entity player, array<string> args )
+{
+	if (!SURVIVAL_Loot_IsRefValid(args[0])) return true
+	if (SURVIVAL_CountItemsInInventory(player, args[0]) <= 0) return true
+
+	printt("setting next consumable: ", args[0])
+	
+	if (IsValid(player.GetOffhandWeapon(OFFHAND_EQUIPMENT)) && player.GetOffhandWeapon(OFFHAND_EQUIPMENT).GetWeaponClassName() != args[0])
+	{
+		player.TakeOffhandWeapon( OFFHAND_EQUIPMENT )
+		player.GiveOffhandWeapon( args[0], OFFHAND_EQUIPMENT )
+	}
+	else if (!IsValid(player.GetOffhandWeapon(OFFHAND_EQUIPMENT))) 
+	{
+		player.GiveOffhandWeapon( args[0], OFFHAND_EQUIPMENT )
+	}
+	return true
+}
+#endif
+
+#if !UI
+// used for conversion shit
+asset function CastStringToAsset( string val )
+{
+	return GetKeyValueAsAsset( { kn = val }, "kn" )
+}
+#endif
+
+void function RegisterWeapon( CustomWeaponData weaponData )
+{
+	LootData data
+	
+	data.ref = weaponData.className
+	// have no idea why we do this, but it's needed.
+	data.baseWeapon = weaponData.className
+
+	// We don't use this as custom weapons don't have an eDamageSourceId.
+	// This means that kills with the weapon will show up as
+	// Attacker [Killed] Victim.
+	// This would be nice if changed, but it's good as is for now,
+	// as the game is not fully functioning yet.
+	//RegisterWeaponForUse( data.baseWeapon )
+
+	// precache the weapon, obviously.
+	#if !UI
+		PrecacheWeapon(weaponData.className)
+		//RegisterCustomWeaponDamageSource(weaponData.className)
+	#endif
+	// rarity
+	data.tier = weaponData.tier
+	// Copy pasted from SURVIVAL_Loot_All_InitShared
+	data.pickupString = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "printName" )
+	data.desc = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "description" )
+	data.hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "hud_icon" )
+	data.model = GetWeaponInfoFileKeyFieldAsset_Global( data.baseWeapon, "playermodel" )
+	data.countPerDrop = 1
+
+	// Pickup sounds. 
+	data.pickupSound_3p = weaponData.pickupSound3p
+	data.pickupSound_1p = weaponData.pickupSound1p
+	// Ammo type - also will FINALLY show up on HUD when you equip the weapon :D
+	if ( GetWeaponInfoFileKeyField_Global( data.baseWeapon, "ammo_pool_type" ) != null )
+		data.ammoType = GetWeaponInfoFileKeyField_GlobalString( data.baseWeapon, "ammo_pool_type" )
+
+	// loot tags is just weapon type in disguise.
+	data.lootTags = [ weaponData.weaponType ]
+	data.lootType = eLootType.MAINWEAPON
+	
+	// sort the attachments so it appears like vanilla and not messed up
+	// if it's typed incorrectly in playlists
+	weaponData.supportedAttachments.sort(
+		int function( string attachmentA, string attachmentB ) : ()
+		{
+			int aIndex = attachmentSortOrder.find( attachmentA )
+			int bIndex = attachmentSortOrder.find( attachmentB )
+			if ( aIndex > bIndex )
+				return 1
+			else if ( aIndex < bIndex )
+				return -1
+			return 0
+		}
+	)
+	
+
+
+	data.supportedAttachments = weaponData.supportedAttachments
+	// base mods, come with the weapon.
+	data.baseMods = weaponData.baseMods
+	
+	// index goes above 100 with custom items, this is why we extended the remote function.
+	data.index = file.lootIndexToString.len()
+	file.lootIndexToString.append( data.ref )
+	file.lootData[ data.ref ] <- data
+
+	#if SERVER
+		SURVIVAL_AddSpawnPointGroup( data.ref )
+	#endif
+	
+	#if !UI
+		if ( data.model != $"" )
+			PrecacheModel( data.model )
+		// Add the item to the loot pool
+		if (!weaponData.isCP)
+		{
+			AddCustomItemToLootPool(data.ref, "weapon_low", weaponData.lowWeaponChance)
+			AddCustomItemToLootPool(data.ref, "weapon_medium", weaponData.medWeaponChance)
+			AddCustomItemToLootPool(data.ref, "weapon_high", weaponData.highWeaponChance)
+		}
+		else 
+		{
+			AddCustomItemToLootPool(data.ref, "crate_weapons_earlygame", weaponData.lowWeaponChance)
+			AddCustomItemToLootPool(data.ref, "crate_weapons_midgame", weaponData.medWeaponChance)
+			AddCustomItemToLootPool(data.ref, "crate_weapons_lategame", weaponData.highWeaponChance)
+		}
+	#endif
+	// Not needed to appear in the dev menu.
+	//#if CLIENT
+	//RunUIScript( "SetupDevCommand", "Spawn " + data.pickupString, "script SpawnGenericLoot( \"" + data.ref + "\", gp()[0].GetOrigin(), <-1,-1,-1>, 1 )" )
+	//#endif
+}
+
+void function CreateCustomHopup(CustomHopupData hopupData)
+{
+	LootData data
+
+	data.ref = hopupData.className
+	data.pickupString = hopupData.displayName
+	data.desc = hopupData.desc
+	data.hudIcon = hopupData.icon
+	data.model = hopupData.model
+	data.tier = hopupData.tier
+
+	// can be hardcoded since this is an attachment, no need for custom pickup sounds.
+	data.pickupSound_1p = "survival_loot_pickup_attachments"
+	data.pickupSound_3p = "survival_loot_pickup_3p_attachments"
+
+	// needs to be setup, otherwise you won't be able to pick up the attachment
+	data.countPerDrop = 1
+	data.inventorySlotCount = 1
+	data.attachmentStyle = "hopup"
+
+	data.lootTags = []
+	data.lootType = eLootType.ATTACHMENT
+
+
+	// index goes above 100 with custom items, this is why we extended the remote function.
+	data.index = file.lootIndexToString.len()
+	file.lootIndexToString.append( data.ref )
+	file.lootData[ data.ref ] <- data
+
+	#if !UI
+		// add custom item to loot pool.
+		AddCustomItemToLootPool(data.ref, "attachment_low", hopupData.lowWeight)
+		AddCustomItemToLootPool(data.ref, "attachment_medium", hopupData.medWeight)
+		AddCustomItemToLootPool(data.ref, "attachment_high", hopupData.highWeight)
+	#endif
+	file.customHopups.append(hopupData)
+}
 
 table< string, LootData > function SURVIVAL_Loot_GetLootDataTable()
 {
@@ -533,7 +942,23 @@ int function SURVIVAL_Loot_GetLootTypeFromString( string lootTypeString )
 
 LootData function SURVIVAL_Loot_GetLootDataByIndex( int index )
 {
+	#if CLIENT
+	try
+	{
+		return file.lootData[ file.lootIndexToString[ index ] ]
+	}
+	catch (error)
+	{
+		RunUIScript("OpenErrorDialog", "Client loot table out of sync (code:items)\n\nMake sure you have the custom weapon framework installed and your weapon files match.")
+		GetLocalClientPlayer().ClientCommand("disconnect")
+		printt(error)
+		return file.lootData[ file.lootIndexToString[0] ]
+	}
+	unreachable
+	#else
+	// Server is always right, therefore this must exist.
 	return file.lootData[ file.lootIndexToString[ index ] ]
+	#endif
 }
 bool function SURVIVAL_Loot_IsLootIndexValid( int index )
 {
@@ -590,7 +1015,7 @@ const vector LOOT_COLOR_HEIRLOOM = <255, 0, 0>
 vector function GetFXRarityColorForTier( int tier )
 {
 #if SERVER
-    //Warning( "Server is attempting to get a loot rarity color. This does not support accessibility features such as color blind mode." )
+	//Warning( "Server is attempting to get a loot rarity color. This does not support accessibility features such as color blind mode." )
 	switch ( tier )
 	{
 		case eLootTier.NONE:
