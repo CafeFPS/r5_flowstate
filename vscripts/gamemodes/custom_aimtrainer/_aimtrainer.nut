@@ -2772,10 +2772,6 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 	if(weaponent.GetWeaponClassName() == "mp_weapon_car")
 		weaponent.SetSkin( weaponent.GetSkinIndexByName( "charm_preview_black" ) )
-	else if(weaponent.GetWeaponClassName() == "mp_weapon_rampage")
-	{
-		weaponent.SetSkin(1)
-	}
 	else if(weaponent.GetWeaponClassName() == "mp_weapon_wingman")
 	{
 		weaponent.SetLegendaryModelIndex(2)
@@ -2786,13 +2782,13 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		weaponent.SetLegendaryModelIndex(2)
 		weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
 	}
-	else
-	{
-		if(CoinFlip())
-			weaponent.SetLegendaryModelIndex(RandomInt(4))
-		weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
-	}
-	printt("Skin codename: " + weaponent.GetSkinNameByIndex(weaponent.GetSkin()))
+	// else
+	// {
+		// if(CoinFlip())
+			// weaponent.SetLegendaryModelIndex(RandomInt(4))
+		// weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
+	// }
+	// printt("Skin codename: " + weaponent.GetSkinNameByIndex(weaponent.GetSkin()))
 	
 	return false
 }
