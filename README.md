@@ -1,4 +1,5 @@
 # Flowstate Aim Trainer v1.0
+Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
 
 # Features
 - Season 14 weapon data
