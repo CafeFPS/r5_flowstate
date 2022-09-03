@@ -57,7 +57,6 @@ void function ShieldSelectorButton(var button)
 
 void function SupportTheDev(var button)
 {
-	printt("test")
 	LaunchExternalWebBrowser( "https://ko-fi.com/r5r_colombia", WEBBROWSER_FLAG_NONE )
 }
 

@@ -274,10 +274,10 @@ void function StrafeMovement(entity ai, entity player)
 		}
 		else
 		{
-			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_RIGHT", true, 0.1 )
+			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
-			ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_LEFT", true, 0.1 )
+			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 		}
