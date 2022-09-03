@@ -8,13 +8,15 @@ If you enjoy the mod and want to support me, please consider a donation: https:/
 
 I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue,
 I'm still learning so if you have any feedback about code or challenges improvements, or new ideas in general I'll really appreciate it, 
-feel free leave me a dm in discord.
+feel free to leave me a dm in discord.
 Hecho en Colombia con amor y mucha dedicación para toda la comunidad de Apex Legends.
 
 More credits!
-- Zee#6969 -- gave me weapons buy menu example
-- rexx#1287 -- repak tool https://github.com/r-ex/RePak
-- Skeptation#4002 -- beta tester
+- Skeptation#4002 -- beta tester and coworker https://www.youtube.com/c/Skeptation
+- Amos#1368 & contributors -- sdk https://github.com/Mauler125/r5sdk/tree/indev
+- rexx#1287 & contributors -- repak tool https://github.com/r-ex/RePak
+- Zee#6969 -- weapons buy menu example, history ui pages
+- Darkes#8647 -- beta tester
 - Rego#2848 -- beta tester
 - michae\l/#1125 -- beta tester
 - James9950#5567 -- beta tester
@@ -22,7 +24,6 @@ More credits!
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
 */
-
 
 global function Sh_ChallengesByColombia_Init
 

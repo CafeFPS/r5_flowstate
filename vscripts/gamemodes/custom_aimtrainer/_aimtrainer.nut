@@ -48,6 +48,7 @@ table<int, int> ChallengesBestScores
 
 void function _ChallengesByColombia_Init()
 {
+	//Todo: create only one cc for this
 	//first challenges select menu column
 	AddClientCommandCallback("CC_StartChallenge1", CC_StartChallenge1)
 	AddClientCommandCallback("CC_StartChallenge2", CC_StartChallenge2)
@@ -2100,7 +2101,7 @@ void function OnStraferDummyDamaged( entity dummy, var damageInfo )
 	
 	float damage = DamageInfo_GetDamage( damageInfo )
 	
-	//let's put dummies a fake helmet
+	//fake helmet
 	float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 	float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
 	
@@ -2160,7 +2161,7 @@ void function OnStraferDummyDamaged( entity dummy, var damageInfo )
 
 void function OnFloatingDummyDamaged( entity dummy, var damageInfo )
 {
-	//let's put dummies a fake helmet
+	//fake helmet
 	float headshotMultiplier = GetHeadshotDamageMultiplierFromDamageInfo(damageInfo)
 	float basedamage = DamageInfo_GetDamage(damageInfo)/headshotMultiplier
 	if(IsValidHeadShot( damageInfo, dummy )) DamageInfo_SetDamage( damageInfo, basedamage*(GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 )+(1-GetCurrentPlaylistVarFloat( "helmet_lv4", 0.65 ))*headshotMultiplier))
@@ -2763,16 +2764,36 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		Remote_CallFunction_NonReplay(player, "ServerCallback_StopLaserSightsOnSMGWeapon", weaponent)
 	}
-	if(IsValid(weaponent) && weaponent.GetWeaponClassName() != "mp_weapon_volt_smg" && weaponent.GetWeaponClassName() != "mp_weapon_wingman") 
-	{
-		weaponent.SetSkin(1) 
-		weaponent.SetCamo(0)
-	}
-    if(IsValid(weaponent) && weaponent.GetWeaponClassName() == "mp_weapon_wingman")
-	{
-		weaponent.SetSkin(RandomIntRangeInclusive(1, 2)) 
-	}
+	if(!IsValid(weaponent)) return false
+	
 	thread PlayAnimsOnGiveWeapon(weaponent, player)
+	
+	if(!GetCurrentPlaylistVarBool( "aimtrainer_enableSkins", false )) return false
+
+	if(weaponent.GetWeaponClassName() == "mp_weapon_car")
+		weaponent.SetSkin( weaponent.GetSkinIndexByName( "charm_preview_black" ) )
+	else if(weaponent.GetWeaponClassName() == "mp_weapon_rampage")
+	{
+		weaponent.SetSkin(1)
+	}
+	else if(weaponent.GetWeaponClassName() == "mp_weapon_wingman")
+	{
+		weaponent.SetLegendaryModelIndex(2)
+		weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
+	}
+	else if(weaponent.GetWeaponClassName() == "mp_weapon_r97")
+	{
+		weaponent.SetLegendaryModelIndex(2)
+		weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
+	}
+	else
+	{
+		if(CoinFlip())
+			weaponent.SetLegendaryModelIndex(RandomInt(4))
+		weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
+	}
+	printt("Skin codename: " + weaponent.GetSkinNameByIndex(weaponent.GetSkin()))
+	
 	return false
 }
 
