@@ -427,12 +427,12 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 	}
 
 	Survival_PickupItem( lootEnt, player, pickupFlags, deathBox )
-	if(IsValid(deathBox)){
+
 	if ( deathBox.GetLinkEntArray().len() == 0 )
 		deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
 	else
 		UpdateDeathBoxHighlight( deathBox )
-	}
+
 	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
 	return true

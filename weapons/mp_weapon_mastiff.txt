@@ -12,6 +12,7 @@ WeaponData
 	"longdesc"										"#WPN_MASTIFF_LONGDESC"
 
 	"weapon_type_flags"								"WPT_PRIMARY"
+	"ammo_pool_type"								"shotgun"
 	
 	"menu_icon"										"rui/weapon_icons/r5/weapon_mastiff"
 	"hud_icon"										"rui/weapon_icons/r5/weapon_mastiff"
@@ -21,26 +22,6 @@ WeaponData
 
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_mastiff"
 	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_mastiff"
-	//"OnProjectileCollision"                         "MastiffProjectileCollision"
-	
-	//Fire mastiff mod
-	//Custom flame wall settings for thermite grenade
-	"burn_segment_radius" 					"40.0"
-	"burn_segment_height" 					"48.0"
-	"burn_segments"							"1" 	// # of segments on either side of the center
-	"burn_segment_spacing_dist"				"80.0" 	// spacing between segments
-	"sound_burn_segment_start" 				"thermitegrenade_flamewall_flame_burn_front"
-	"sound_burn_segment_middle" 			"thermitegrenade_flamewall_flame_burn_middle"
-	"sound_burn_segment_end" 				"thermitegrenade_flamewall_flame_burn_end"
-	"preburn_duration" 						"0.5"
-	"burn_duration" 						"8.0"
-	//Players that touch/ stay in the flames get tagged with a damage stack that is delivered over time
-	"burn_damage" 							"25"  	// total damage per stack
-	"burn_time" 							"2.8"  	// time it takes to deliver the damage
-	"burn_stacks_max" 						"4"  	// max active stacks of burn dsdamage per target
-	"burn_stack_debounce" 					"0.7" 	// wait this long before trying to apply another stack
-	"burn_tick_rate" 						"1.2"  	// how often we deliver part of the damage
-	"sound_burn_damage_tick_1p" 			"flesh_fire_damage_1p"
 
 	// Menu
 	"menu_category"                                 "shotgun"
@@ -85,13 +66,13 @@ WeaponData
 	"projectile_flight_sound"                       "weapon_mastiff_projectile_crackle"
 
                        
-	"blast_pattern"									"mastiff_2"
-	"blast_pattern_default_scale"        			"1.1"
-	"blast_pattern_ads_scale"                       "0.55"  // for players, scales pattern when ADS
-     
-                                  
+                                    
                                               
-                                                                                               
+                                                                                                
+     
+	"blast_pattern"									"mastiff"
+	"blast_pattern_default_scale"        			"1.1"
+	"blast_pattern_ads_scale"                       "0.5"  // for players, scales pattern when ADS
       
 	"blast_pattern_zero_distance"        			"512.0"
 	"blast_pattern_npc_scale"            			"0.75"  // scales on top of the default
@@ -117,7 +98,7 @@ WeaponData
 	"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	// Ammo
-	  "ammo_clip_size"                                "6"
+	  "ammo_clip_size"                                "4"
 	  
 	  	"ammo_per_shot"									"1"
 
