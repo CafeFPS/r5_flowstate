@@ -2,9 +2,9 @@
 Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
 
 # Features
-- Season 14 weapon data
-- Laser sights implemented
-- User friendly UI
+- Season 14 weapon data.
+- Laser sights implemented.
+- User friendly UI.
 - Results UI, displays the challenge data at the end.
 - History UI, saves challenges data, useful to see your performance over time.
 	- Print to console button. Use Insert key to open the console.
@@ -20,7 +20,7 @@ Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
 	- Button to enable/disable infinite challenge.
 	- Button to change challenge duration.
 	- Button to enable a cool and useless rbg hud.
-	- Button to play as a dummy
+	- Button to play as a dummy.
 	
 # Initial release Challenges
 1. Strafing Dummy
@@ -42,9 +42,9 @@ Maybe in a future: Advanced Movement recorded animations.
 
 # How to install
 Follow the steps in order.
-1. Get the last SDK version for your Apex S3 to run these scripts correctly (Min version required is 2.1 beta): https://github.com/Mauler125/r5sdk/releases
-2. Get the 3 required files to run these scripts from releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases.
-3. Get the scripts from this repo and place them in /platform/scripts/. Replace all the content.
+1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded) (Min version required is 2.1 beta): https://github.com/Mauler125/r5sdk/releases. Download depot.zip and replace all the content into your Apex S3 main folder.
+2. Get the 3 required files to run these scripts from this repo releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases.
+3. Get the content from this repo and place it in /platform/scripts/. Replace all the content.
 
 # How to run
 You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Trainer session.
