@@ -3,17 +3,16 @@ Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
 
 # Features
 - Season 14 weapon data.
-- Laser sights implemented.
-- User friendly UI.
-- Results UI, displays the challenge data at the end.
+- Laser sights.
+- Results UI, displays the results data at the end of the challenge.
 - History UI, saves challenges data, useful to see your performance over time.
-	- Print to console button. Use Insert key to open the console.
-- Classic Aim Trainer weapon available, this weapon is hitscan with no spread, no recoil and no delay. (Tile Frenzy, Smoothbot and other challenges are interesting to play with this weapon!)
+	- Print to console button so you can copy paste and analyze your data. Use Insert key to open the console.
+- Classic aim trainer weapon available, this weapon is hitscan with no spread, no recoil and no delay. (Tile Frenzy, Smoothbot and other challenges are interesting to play with this weapon!)
 - Settings UI, exclusive settings menu for the Aim Trainer.
-	- Weapon Selector UI featuring Attachments Box UI using right click.
+	- Weapon Selector UI featuring Attachments Box UI.
 	- Legend select button featuring my mod: https://www.youtube.com/watch?v=Bm0sIN15n5Y
 	- Button to change dummies shields.
-	- Button to change dummies strafing speed. (Only compatible with the following challenges: Strafing dummie, Target Switching, Arc Stars pratice, Shooting from Lift and Running Targets)
+	- Button to change dummies strafing speed. (Only compatible with the following challenges: Strafing Dummy, Target Switching, Arc Stars Pratice, Shooting From Lift and Running Targets)
 	- Button to set the targets invincible.
 	- Button to enable/disable autoreload weapon on hit.
 	- Button to enable/disable autoreload weapon on kill.
@@ -51,11 +50,11 @@ You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Traine
 1. Choose playlist. "custom_aimtrainer" (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
 2. Select a map. It works with all Kings Canyon and World's Edge maps, Firing Range map is NOT recommended.
 3. Start the server!
-4. Change weapon, character, attachments and more using a user friendly UI. Start to challenge yourself!
+4. Change character, weapon, attachments (use right click to change attachments) and a lot more! Start to challenge yourself!
 
 # Support and credits
 Hola, soy Café. I'm an Apex Legends nerd and full time modder, I'm from Colombia and I don't have a job other than modding Apex, in this country 1 dollar is a lot. 
-If you enjoy my mods  and want to support me, please consider a donation: 
+If you enjoy my mods and want to support me, please consider a donation: 
 - https://ko-fi.com/r5r_colombia
 - LTC: ltc1qrxjkq0gfyraa94p3fc9mqx7j0d7qcwdtd9h23w
 - ETH: 0xe975b5D5fa624Da7E52A340071fC6689759b7639
