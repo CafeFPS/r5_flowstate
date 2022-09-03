@@ -241,21 +241,13 @@ void function StartStraferDummyChallenge(entity player)
 void function StrafeMovement(entity ai, entity player)
 {
 	ai.EndSignal("OnDeath")
+
 	player.EndSignal("ChallengeTimeOver")
 	
-	entity script_mover = CreateEntity( "script_mover" )
-	script_mover.kv.solid = 0
-	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
-	script_mover.kv.SpawnAsPhysicsMover = 0	
-	script_mover.SetOrigin( ai.GetOrigin() )
-	script_mover.SetAngles( ai.GetAngles() )
-	DispatchSpawn( script_mover )
-			
 	OnThreadEnd(
-		function() : ( ai, script_mover)
+		function() : ( ai )
 		{
 			if(IsValid(ai)) ai.Destroy()
-			if(IsValid(script_mover)) script_mover.Destroy()
 			ChallengesEntities.dummies.removebyvalue(dummy)
 		}
 	)
@@ -266,7 +258,6 @@ void function StrafeMovement(entity ai, entity player)
 		ai.SetAngles(angles2)
 			
 		int random = RandomIntRangeInclusive(1,10)
-		//crouch
 		if (random == 9 || random == 10){
 			ai.Anim_ScriptedPlayActivityByName( "ACT_STAND", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
