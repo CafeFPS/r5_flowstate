@@ -39,9 +39,9 @@
 Maybe in a future: Advanced Movement recorded animations.
 
 # How to install
-Get the last SDK version for your Apex S3 to run these scripts correctly (Min version required is 2.1): https://github.com/Mauler125/r5sdk/releases
-Get the 3 required files to run these scripts from releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases.
-Get the scripts from this repo and place them in /platform/scripts/. Replace all the content.
+1. Get the last SDK version for your Apex S3 to run these scripts correctly (Min version required is 2.1): https://github.com/Mauler125/r5sdk/releases
+2. Get the 3 required files to run these scripts from releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases.
+3. Get the scripts from this repo and place them in /platform/scripts/. Replace all the content.
 
 # How to run
 You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Trainer session.
