@@ -1,24 +1,78 @@
 # Flowstate Aim Trainer v1.0
-Please get the 3 required files to run these scripts from releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases
-Please get last SDK version for your Apex S3 to run these scripts correctly (Min version 2.1): https://github.com/Mauler125/r5sdk/releases
-This is a single player gamemode.
 
-# How to run:
-Choose playlist. "custom_aimtrainer" (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
-Select a map. It works with all Kings Canyon and World's Edge maps, Firing Range map is NOT recommended.
-Start the server!
+# Features
+- Season 14 weapon data
+- Laser sights implemented
+- User friendly UI
+- Results UI, displays the challenge data at the end.
+- History UI, saves challenges data, useful to see your performance over time.
+- Classic Aim Trainer weapon available, this weapon is hitscan with no spread, no recoil and no delay. (Tile Frenzy, Smoothbot and other challenges are interesting to play with this weapon!)
+- Settings UI, exclusive settings menu for the Aim Trainer.
+	- Weapon Selector UI featuring Attachments Box UI using right click.
+	- Legend select button featuring my mod: https://www.youtube.com/watch?v=Bm0sIN15n5Y
+	- Button to change dummies shields.
+	- Button to change dummies strafing speed. (Only compatible with the following challenges: Strafing dummie, Target Switching, Arc Stars pratice, Shooting from Lift and Running Targets)
+	- Button to set the targets invincible.
+	- Button to enable/disable autoreload weapon on hit.
+	- Button to enable/disable autoreload weapon on kill.
+	- Button to enable/disable infinite challenge.
+	- Button to change challenge duration.
+	- Button to enable a cool and useless rbg hud.
+	- Button to play as a dummy
+	
+# Initial release Challenges
+1. Strafing Dummy
+2. Target Switching
+3. Floating Target
+4. Popcorn Targets
+5. Tile Frenzy
+6. Close Fast Strafes
+7. Smoothbot
+8. Fast Jumps Strafes
+9. Arc Stars Practice
+10. Grenades Practice
+11. Shooting Valk's Ult
+12. Shooting From Lift
+13. Skydiving Targets
+14. Running Targets
 
-Change settings, weapon, attachments, characters and start to challenge yourself!
+Maybe in a future: Advanced Movement recorded animations.
 
-# About me and this project
-I'm an Apex Legends nerd and full time modder. I also create content for Skeptation's YouTube channel.
+# How to install
+Get the last SDK version for your Apex S3 to run these scripts correctly (Min version required is 2.1): https://github.com/Mauler125/r5sdk/releases
+Get the 3 required files to run these scripts from releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases.
+Get the scripts from this repo and place them in /platform/scripts/. Replace all the content.
 
-I'm from Colombia and I don't have a job other than modding Apex, in this country 1 dollar is a lot. 
-If you enjoy the mod and want to support me, please consider a donation: https://ko-fi.com/r5r_colombia
+# How to run
+You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Trainer session.
+1. Choose playlist. "custom_aimtrainer" (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
+2. Select a map. It works with all Kings Canyon and World's Edge maps, Firing Range map is NOT recommended.
+3. Start the server!
+4. Change weapon, characters, attachments and more using a user friendly UI. Start to challenge yourself!
+
+# Support and credits
+Hola, soy Café. I'm an Apex Legends nerd and full time modder, I'm from Colombia and I don't have a job other than modding Apex, in this country 1 dollar is a lot. 
+If you enjoy my mods  and want to support me, please consider a donation: 
+- https://ko-fi.com/r5r_colombia
+- LTC: ltc1qrxjkq0gfyraa94p3fc9mqx7j0d7qcwdtd9h23w
+- ETH: 0xe975b5D5fa624Da7E52A340071fC6689759b7639
 
 I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue, I'm still learning so if you have any feedback about code, challenges improvements, or new ideas in general, I'll really appreciate it. Feel free to leave me a dm in discord.
 
-Discord: Retículo Endoplasmático#5955
-Twitter: https://twitter.com/CafeFps
+- Discord: Retículo Endoplasmático#5955
+- Twitter: https://twitter.com/CafeFps
 
-Hecho en Colombia con mucho amor y dedicación para toda la comunidad de Apex Legends.
+More credits:
+- Amos#1368 & contributors -- sdk https://github.com/Mauler125/r5sdk/tree/indev
+- rexx#1287 & contributors -- repak tool https://github.com/r-ex/RePak
+- Skeptation#4002 -- beta tester and coworker https://www.youtube.com/c/Skeptation
+- Zee#6969 -- weapons buy menu example, history ui pages logic
+- Darkes#8647 -- beta tester
+- Rego#2848 -- beta tester
+- michae\l/#1125 -- beta tester
+- James9950#5567 -- beta tester
+- (--__GimmYnkia__--)#2995 -- beta tester
+- oliver#1375 -- beta tester
+- Rin 暗#5862 -- beta tester
+
+# Hecho en Colombia con mucho amor y dedicación para toda la comunidad de Apex Legends.
