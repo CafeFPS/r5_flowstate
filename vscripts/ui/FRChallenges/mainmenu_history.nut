@@ -199,6 +199,14 @@ void function InitChallengesHistory( var newMenuArg )
 	Hud_AddEventHandler( Hud_GetChild( file.menu, "BtnServerListLeftArrow" ), UIE_CLICK, PrevPage )
 	Hud_AddEventHandler( Hud_GetChild( file.menu, "PrintToConsole" ), UIE_CLICK, PrintToConsole )
 	
+	var gameMenuButton = Hud_GetChild( menu, "GameMenuButton" )
+	ToolTipData gameMenuToolTip
+	gameMenuToolTip.descText = "Global Settings"
+	Hud_SetToolTipData( gameMenuButton, gameMenuToolTip )
+	HudElem_SetRuiArg( gameMenuButton, "icon", $"rui/menu/lobby/settings_icon" )
+	HudElem_SetRuiArg( gameMenuButton, "shortcutText", "Global Settings" )
+	Hud_AddEventHandler( gameMenuButton, UIE_CLICK, OpenGlobalSettings )
+	
 	array<var> challengesRows = GetElementsByClassname( file.menu, "ChallengeBtn" )
 	foreach ( var elem in challengesRows ) 
 	{
@@ -290,4 +298,10 @@ void function OnR5RSB_NavigateBack()
 {
 	CloseAllMenus()
 	RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)	
+}
+
+void function OpenGlobalSettings(var button)
+{
+    CloseAllMenus()
+	AdvanceMenu( GetMenu( "SystemMenu" ) )	
 }

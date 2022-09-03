@@ -116,19 +116,22 @@ void function InitSystemPanel( var panel )
 	file.thirdPersonButtonData[ panel ] <- clone data
 	file.ExitChallengeButtonData[ panel ] <- clone data
 	
-	file.ExitChallengeButtonData[ panel ].label = "EXIT CHALLENGE"
+	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
 
 	file.settingsButtonData[ panel ].label = "#SETTINGS"
 	file.settingsButtonData[ panel ].activateFunc = OpenSettingsMenu
-
+	
 	file.leaveMatchButtonData[ panel ].label = "#LEAVE_MATCH"
 	file.leaveMatchButtonData[ panel ].activateFunc = LeaveDialog
 
 	file.exitButtonData[ panel ].label = "#EXIT_TO_DESKTOP"
 	file.exitButtonData[ panel ].activateFunc = OpenConfirmExitToDesktopDialog
-
-	file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
+	
+	if(IsConnected() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
+	else if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
 	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
 	file.leavePartyData[ panel ].label = "#LEAVE_PARTY"
@@ -181,11 +184,13 @@ void function UpdateSystemPanel( var panel )
 				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
 			else
 				SetButtonData( panel, buttonIndex++, file.leaveMatchButtonData[ panel ] )
+		} else
+		{
+			if(ISAIMTRAINER)
+				SetButtonData( panel, buttonIndex++, file.lobbyReturnButtonData[ panel ] )
+			else
+				SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
 		}
-		
-		if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-			SetButtonData( panel, buttonIndex++, file.ExitChallengeButtonData[ panel ] )
-		
 		if ( IsFiringRangeGameMode() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] )
@@ -242,6 +247,10 @@ void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
 
 void function OnSystemMenu_Close()
 {
+	if(ISAIMTRAINER){
+		CloseAllMenus()
+		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
+	}
 }
 
 
@@ -249,6 +258,10 @@ void function OnSystemMenu_NavigateBack()
 {
 	Assert( GetActiveMenu() == file.menu )
 	CloseActiveMenu()
+	if(ISAIMTRAINER){
+		CloseAllMenus()
+		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
+	}
 }
 
 

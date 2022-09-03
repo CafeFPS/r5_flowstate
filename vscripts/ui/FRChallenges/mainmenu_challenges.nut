@@ -69,6 +69,14 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 	AddEventHandlerToButton( menu, "Challenge7NewC", UIE_CLICK, Challenge7NewCFunct )
 	AddEventHandlerToButton( menu, "Challenge8NewC", UIE_CLICK, Challenge8NewCFunct )
 	
+	var gameMenuButton = Hud_GetChild( menu, "GameMenuButton" )
+	ToolTipData gameMenuToolTip
+	gameMenuToolTip.descText = "Global Settings"
+	Hud_SetToolTipData( gameMenuButton, gameMenuToolTip )
+	HudElem_SetRuiArg( gameMenuButton, "icon", $"rui/menu/lobby/settings_icon" )
+	HudElem_SetRuiArg( gameMenuButton, "shortcutText", "Global Settings" )
+	Hud_AddEventHandler( gameMenuButton, UIE_CLICK, OpenGlobalSettings )
+
 	if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		RunClientScript("RefreshChallengeActivated")
 }
@@ -217,5 +225,11 @@ void function OnR5RSB_Close()
 void function OnR5RSB_NavigateBack()
 {
     CloseAllMenus()
-	AdvanceMenu( GetMenu( "MiscMenu" ) )
+	AdvanceMenu( GetMenu( "SystemMenu" ) )	
+}
+
+void function OpenGlobalSettings(var button)
+{
+    CloseAllMenus()
+	AdvanceMenu( GetMenu( "SystemMenu" ) )	
 }

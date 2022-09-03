@@ -251,7 +251,18 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_main.menu
 			pin_corner_to_sibling	BOTTOM_RIGHT
 			pin_to_sibling_corner	BOTTOM_RIGHT
 		}
-
+		
+        GameMenuButton
+        {
+            ControlName				RuiButton
+            InheritProperties		CornerButton
+            zpos                    5
+			ypos					70
+            pin_to_sibling			MadeBy
+            pin_corner_to_sibling	TOP_RIGHT
+            pin_to_sibling_corner	TOP_RIGHT
+        }
+		
 		Challenge1
 		{
 			"ControlName" 			"RuiButton"

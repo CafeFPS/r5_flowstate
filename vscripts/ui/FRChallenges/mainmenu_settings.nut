@@ -47,6 +47,14 @@ void function InitFRChallengesSettings( var newMenuArg )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "UseDummyModelButton"), UIE_CHANGE, UseDummyModelButton)
 	AddButtonEventHandler( Hud_GetChild( file.menu, "DurationText"), UIE_CHANGE, UpdateChallengeDuration )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "SupportTheDev"), UIE_CLICK, SupportTheDev)
+	
+	var gameMenuButton = Hud_GetChild( menu, "GameMenuButton" )
+	ToolTipData gameMenuToolTip
+	gameMenuToolTip.descText = "Global Settings"
+	Hud_SetToolTipData( gameMenuButton, gameMenuToolTip )
+	HudElem_SetRuiArg( gameMenuButton, "icon", $"rui/menu/lobby/settings_icon" )
+	HudElem_SetRuiArg( gameMenuButton, "shortcutText", "Global Settings" )
+	Hud_AddEventHandler( gameMenuButton, UIE_CLICK, OpenGlobalSettings )
 }
 
 void function ShieldSelectorButton(var button)
@@ -150,4 +158,10 @@ void function OnR5RSB_NavigateBack()
 {
 	CloseAllMenus()
 	RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)	
+}
+
+void function OpenGlobalSettings(var button)
+{
+    CloseAllMenus()
+	AdvanceMenu( GetMenu( "SystemMenu" ) )	
 }
