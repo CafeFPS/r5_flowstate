@@ -2764,6 +2764,11 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		Remote_CallFunction_NonReplay(player, "ServerCallback_StopLaserSightsOnSMGWeapon", weaponent)
 	}
+	if ( weapon == "mp_weapon_clickweapon" || weapon == "mp_weapon_clickweaponauto" )
+		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleDotForHitscanWeapons", true)
+	else
+		Remote_CallFunction_NonReplay(player, "ServerCallback_ToggleDotForHitscanWeapons", false)
+	
 	if(!IsValid(weaponent)) return false
 	
 	thread PlayAnimsOnGiveWeapon(weaponent, player)

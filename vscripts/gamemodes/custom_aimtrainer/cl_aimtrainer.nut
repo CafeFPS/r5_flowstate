@@ -51,6 +51,7 @@ global function ServerCallback_SetLaserSightsOnSMGWeapon
 global function ServerCallback_StopLaserSightsOnSMGWeapon
 global function ServerCallback_RestartChallenge
 global function ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies
+global function ServerCallback_ToggleDotForHitscanWeapons
 
 //Main menu buttons
 global function StartChallenge1Client
@@ -93,6 +94,7 @@ struct{
 	int ShotsHits
 	int damageDone
 	int damagePossible
+	var dot
 } ChallengesClientStruct
 
 global struct CameraLocationPair
@@ -491,6 +493,18 @@ void function CreateDescriptionRUI(string description)
 	wait AimTrainer_PRE_START_TIME-0.01
 }
 
+void function ServerCallback_ToggleDotForHitscanWeapons(bool visible)
+{
+	entity player = GetLocalClientPlayer()
+	if(visible && ChallengesClientStruct.dot == null)
+		ChallengesClientStruct.dot = RuiCreate( $"ui/crosshair_dot.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+	else if (!visible && ChallengesClientStruct.dot != null)
+	{
+		RuiDestroyIfAlive( ChallengesClientStruct.dot )
+		ChallengesClientStruct.dot = null
+	}
+}
+
 void function CreateTimerRUIandSTATS(bool crosshair = false) //and stats
 {
 	entity player = GetLocalClientPlayer()
@@ -500,15 +514,9 @@ void function CreateTimerRUIandSTATS(bool crosshair = false) //and stats
 
 	wait AimTrainer_PRE_START_TIME
 	
-	var rui2
-	if(crosshair)
-		rui2 = RuiCreate( $"ui/crosshair_dot.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
-
 	OnThreadEnd(
-		function() : (crosshair, rui2)
+		function() : ( crosshair )
 		{
-		if(crosshair)	
-			RuiDestroyIfAlive( rui2 )
 		DisableLiveStatsUI()
 		}
 	)
