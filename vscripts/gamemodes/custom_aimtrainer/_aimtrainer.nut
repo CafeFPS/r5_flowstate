@@ -1095,14 +1095,14 @@ void function StartTileFrenzyChallenge(entity player)
 	EndSignal(player, "ChallengeTimeOver")
 	WaitFrame()
 	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
-	array<entity> Wall = CreateWallAtOrigin(player.GetOrigin()-Vector(0,0,200) + AnglesToForward(player.GetAngles())*580 + AnglesToRight(player.GetAngles())*512, 4, 2, 90)
+	array<entity> Wall = CreateWallAtOrigin(player.GetOrigin()-Vector(0,0,200) + AnglesToForward(player.GetAngles())*580 + AnglesToRight(player.GetAngles())*1180, 9, 5, 90)
 	foreach(entity wallprop in Wall)
 		ChallengesEntities.floor.append(wallprop)
 	
 	//5x5?
 	int ancho = 5
 	int alto = 5
-	vector pos = player.GetOrigin() + AnglesToForward(player.GetAngles())*450 + AnglesToRight(player.GetAngles())*100
+	vector pos = player.GetOrigin() + AnglesToForward(player.GetAngles())*400 + AnglesToRight(player.GetAngles())*100
 
 	int x = int(pos.x)
 	int y = int(pos.y)
