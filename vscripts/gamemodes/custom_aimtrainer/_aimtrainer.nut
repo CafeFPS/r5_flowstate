@@ -324,7 +324,7 @@ void function StartSwapFocusDummyChallenge(entity player)
 		circleLocations.randomize()
 		
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break		
-		if(ChallengesEntities.dummies.len()<8){
+		if(ChallengesEntities.dummies.len()<5){
 
 			vector circleoriginfordummy = circleLocations.getrandom()
 			entity dummy = CreateDummy( 99, circleoriginfordummy, onGroundLocationAngs*-1 )
