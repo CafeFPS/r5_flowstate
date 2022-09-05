@@ -17,7 +17,7 @@ You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Traine
 Please read trello before complaining
 - Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
 
-Let me know if you find new issues, my discord is in the section below.
+Let me know if you find new issues, my discord is in the last section.
 
 # Features
 - Season 14 weapon data.
