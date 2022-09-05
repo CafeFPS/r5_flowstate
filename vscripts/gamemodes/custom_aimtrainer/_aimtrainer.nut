@@ -2128,10 +2128,10 @@ void function OnFloatingDummyDamaged( entity dummy, var damageInfo )
 	vector vec2 = org1 - org2
 	vector angles2 = VectorToAngles( vec2 )
 
-	int random2 = RandomIntRangeInclusive(1,4)
+	int random2 = RandomIntRangeInclusive(1,5)
 	if(random2 == 1 || random2 == 2 || random2 == 3)
 		dummy.SetVelocity((AnglesToRight(angles2 ) * RandomFloatRange(128,425) * side ) + <0, 0, RandomFloatRange(250,425) + DamageInfo_GetDamage(damageInfo) * 3>)
-	else if(random2 == 4)
+	else
 		dummy.SetVelocity((AnglesToForward(angles2) * RandomFloatRange(128,256)) + <0, 0, RandomFloatRange(250,425) + DamageInfo_GetDamage(damageInfo) * 3>)
 
 	// dummy.SetAngles(angles2)
