@@ -16,7 +16,7 @@ struct ButtonData
 struct
 {
 	var                    menu
-
+	var						panel
 	table<var, array<var> >            buttons
 	table<var, array<ButtonData> > buttonDatas
 
@@ -127,12 +127,6 @@ void function InitSystemPanel( var panel )
 
 	file.exitButtonData[ panel ].label = "#EXIT_TO_DESKTOP"
 	file.exitButtonData[ panel ].activateFunc = OpenConfirmExitToDesktopDialog
-	
-	if(IsConnected() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
-	else if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
-	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
 
 	file.leavePartyData[ panel ].label = "#LEAVE_PARTY"
 	file.leavePartyData[ panel ].activateFunc = LeavePartyDialog
@@ -168,6 +162,13 @@ void function OnSystemMenu_Open()
 
 void function UpdateSystemPanel( var panel )
 {
+	//temp workaround, not the best place for this tbh
+	if(IsConnected() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		file.lobbyReturnButtonData[ panel ].label = "#RETURN_TO_LOBBY"
+	else if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		file.lobbyReturnButtonData[ panel ].label = "EXIT AIM TRAINER"
+	file.lobbyReturnButtonData[ panel ].activateFunc = LeaveDialog
+
 	foreach ( index, button in file.buttons[ panel ] )
 		SetButtonData( panel, index, file.nullButtonData[ panel ] )
 

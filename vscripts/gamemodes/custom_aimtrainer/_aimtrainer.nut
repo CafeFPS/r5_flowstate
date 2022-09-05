@@ -234,7 +234,6 @@ void function StartStraferDummyChallenge(entity player)
 void function StrafeMovement(entity ai, entity player)
 {
 	ai.EndSignal("OnDeath")
-
 	player.EndSignal("ChallengeTimeOver")
 	
 	OnThreadEnd(

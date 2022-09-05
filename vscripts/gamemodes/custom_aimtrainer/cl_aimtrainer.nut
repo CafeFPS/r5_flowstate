@@ -712,7 +712,7 @@ void function StartChallenge3NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Vertical grenades practice.")
+	thread CreateDescriptionRUI("This challenge is in beta version. Vertical grenades practice.")
 	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge3NewC")
 }
@@ -739,7 +739,7 @@ void function StartChallenge6NewCClient()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Hit the skydiving dummies to get points.")
+	thread CreateDescriptionRUI("This challenge is in beta version. Hit the skydiving dummies to get points.")
 	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge6NewC")
 }
@@ -1210,5 +1210,5 @@ void function ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies(ent
 	RuiSetFloat2( rui, "iconSize", <10,10,0> )
 	RuiSetFloat( rui, "distanceFade", 9000 )
 	RuiSetBool( rui, "adsFade", false )
-	RuiSetString( rui, "hint", ClientLocalizeAndShortenNumber_Float(Distance(dummy.GetOrigin(), player.GetOrigin()), 4, 0) + "m" )
+	RuiSetString( rui, "hint", ClientLocalizeAndShortenNumber_Float(Distance(dummy.GetOrigin(), player.GetOrigin())*0.03, 4, 0) + "m" )
 }
