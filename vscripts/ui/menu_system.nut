@@ -248,7 +248,7 @@ void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
 
 void function OnSystemMenu_Close()
 {
-	if(ISAIMTRAINER){
+	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}
@@ -259,7 +259,7 @@ void function OnSystemMenu_NavigateBack()
 {
 	Assert( GetActiveMenu() == file.menu )
 	CloseActiveMenu()
-	if(ISAIMTRAINER){
+	if(ISAIMTRAINER && IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )){
 		CloseAllMenus()
 		RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 	}

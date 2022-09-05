@@ -678,7 +678,7 @@ void function StartChallenge7Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Shields are disabled, hit the dummies to get points.")
+	thread CreateDescriptionRUI("Hitscan auto weapon recommended. Hit the dummies to get points.")
 	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge7")
 }
