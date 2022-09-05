@@ -1,5 +1,4 @@
-# Flowstate Aim Trainer v1.0
-Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
+# Welcome to Flowstate Aim Trainer
 
 # Features
 - Season 14 weapon data.
@@ -52,6 +51,12 @@ You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Traine
 2. Select a map. It works with all Kings Canyon and World's Edge maps, Firing Range map is NOT recommended.
 3. Start the server!
 4. Change character, weapon, attachments (use right click to change attachments) and a lot more! Start to challenge yourself!
+
+# Bugs
+Please read trello before complaining
+- Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
+
+Let me know if you find new issues, my discord is in the section below.
 
 # Support and credits
 Hola, soy Café. I'm an Apex Legends nerd and full time modder, I'm from Colombia and I don't have a job other than modding Apex, in this country 1 dollar is a lot. 
