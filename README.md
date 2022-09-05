@@ -1,4 +1,5 @@
 # Welcome to Flowstate Aim Trainer
+Join r5 reloaded discord: https://discord.com/invite/r5reloaded
 
 # How to install
 Follow the steps in order.
