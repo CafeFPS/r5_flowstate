@@ -20,7 +20,8 @@ Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
 	- Button to change challenge duration.
 	- Button to enable a cool and useless rbg hud.
 	- Button to play as a dummy.
-	
+- No controller support atm because I don't have one to test lol
+
 # Initial release Challenges
 1. Strafing Dummy
 2. Target Switching
