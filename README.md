@@ -1,5 +1,24 @@
 # Welcome to Flowstate Aim Trainer
 
+# How to install
+Follow the steps in order.
+1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded) (Min version required is 2.1 beta): https://github.com/Mauler125/r5sdk/releases. Download depot.zip and replace all the content into your Apex S3 main folder.
+2. Get the 3 required files to run these scripts from this repo releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases.
+3. Get the content from this repo and place it in /platform/scripts/. Replace all the content.
+
+# How to run
+You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Trainer session.
+1. Choose playlist. "custom_aimtrainer" (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
+2. Select a map. It works with all Kings Canyon and World's Edge maps, Firing Range map is NOT recommended.
+3. Start the server!
+4. Change character, weapon, attachments (use right click to change attachments) and a lot more! Start to challenge yourself!
+
+# Bugs
+Please read trello before complaining
+- Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
+
+Let me know if you find new issues, my discord is in the section below.
+
 # Features
 - Season 14 weapon data.
 - Laser sights.
@@ -38,25 +57,6 @@
 14. Running Targets
 
 Maybe in a future: Advanced Movement recorded animations.
-
-# How to install
-Follow the steps in order.
-1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded) (Min version required is 2.1 beta): https://github.com/Mauler125/r5sdk/releases. Download depot.zip and replace all the content into your Apex S3 main folder.
-2. Get the 3 required files to run these scripts from this repo releases, if you don't place them correctly you can't run the aim trainer: https://github.com/ColombianGuy/r5_aimtrainer/releases.
-3. Get the content from this repo and place it in /platform/scripts/. Replace all the content.
-
-# How to run
-You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Trainer session.
-1. Choose playlist. "custom_aimtrainer" (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
-2. Select a map. It works with all Kings Canyon and World's Edge maps, Firing Range map is NOT recommended.
-3. Start the server!
-4. Change character, weapon, attachments (use right click to change attachments) and a lot more! Start to challenge yourself!
-
-# Bugs
-Please read trello before complaining
-- Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
-
-Let me know if you find new issues, my discord is in the section below.
 
 # Support and credits
 Hola, soy Café. I'm an Apex Legends nerd and full time modder, I'm from Colombia and I don't have a job other than modding Apex, in this country 1 dollar is a lot. 
