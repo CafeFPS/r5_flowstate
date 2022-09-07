@@ -254,6 +254,7 @@ void function SetFallTriggersStatus(bool status){
 void function ResetDeathPlayersCounterForFirstBloodAnnouncer(){
 	file.deathPlayersCounter=0
 }
+
 LocPair function _GetAppropriateSpawnLocation(entity player)
 {
     bool needSelectRespawn = true
@@ -266,21 +267,22 @@ LocPair function _GetAppropriateSpawnLocation(entity player)
     {
         case eGameState.MapVoting: selectedSpawn = _GetVotingLocation(); break
         case eGameState.Playing:
-            float maxDistToEnemy = 0
-            foreach(spawn in file.selectedLocation.spawns)
-            {
-	    		if (needSelectRespawn)
-                {
-                    vector enemyOrigin = GetClosestEnemyToOrigin(spawn.origin, player.GetTeam())
-                    float distToEnemy = Distance(spawn.origin, enemyOrigin)
+			if(file.selectedLocation.spawns.len() > 0)
+				selectedSpawn = file.selectedLocation.spawns.getrandom()
+            // foreach(spawn in file.selectedLocation.spawns)
+            // {
+	    		// if (needSelectRespawn)
+                // {
+                    // vector enemyOrigin = GetClosestEnemyToOrigin(spawn.origin, player.GetTeam())
+                    // float distToEnemy = Distance(spawn.origin, enemyOrigin)
 
-                    if(distToEnemy > maxDistToEnemy)
-                    {
-                        maxDistToEnemy = distToEnemy
-                        selectedSpawn = spawn
-                    }
-	    		} else selectedSpawn = spawn
-            }
+                    // if(distToEnemy > maxDistToEnemy)
+                    // {
+                        // maxDistToEnemy = distToEnemy
+                        // selectedSpawn = spawn
+                    // }
+	    		// } else selectedSpawn = spawn
+            // }
         break
     }
     return selectedSpawn
@@ -402,14 +404,18 @@ void function _OnPlayerConnected(entity player)
 					bool DropPodOnSpawn = GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false )
 					bool IsStaging = InValidMaps.find( GetMapName() ) != -1
 					bool IsMapValid = InValidMaps.find(file.selectedLocation.name) != -1
-					if(file.tdmState == eTDMState.NEXT_ROUND_NOW || DropPodOnSpawn || IsStaging || IsMapValid )
+					if(file.tdmState == eTDMState.NEXT_ROUND_NOW || !DropPodOnSpawn || IsStaging || IsMapValid )
 						_HandleRespawn(player)
 					else
 					{
-						player.p.isPlayerSpawningInDroppod = true
-						thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
-						_HandleRespawn(player, true)
-						player.SetAngles( <0,180,0> )
+						if(file.thisroundDroppodSpawns.len() > 0){
+							player.p.isPlayerSpawningInDroppod = true
+							thread AirDropFireteam( file.thisroundDroppodSpawns[RandomIntRangeInclusive(0, file.thisroundDroppodSpawns.len()-1)] + <0,0,15000>, <0,180,0>, "idle", 0, "droppod_fireteam", player )
+							_HandleRespawn(player, true)
+							player.SetAngles( <0,180,0> )
+						}
+						else
+							_HandleRespawn(player)
 					}
 
 					ClearInvincible(player)

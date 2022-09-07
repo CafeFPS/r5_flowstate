@@ -415,15 +415,10 @@ function LaunchAnimDropPod2( entity dropPod, string anim, vector targetOrigin, v
 	ref.MoveTo( targetOrigin, 2, 0, 0 )
 
 	OnThreadEnd(
-		function () : ( dropPod, ref )
+		function () : ( ref )
 		{
-			if ( IsValid( dropPod ) )
-			{
-				dropPod.ClearParent()
-			}
-
 			if ( IsValid( ref ) )
-				ref.Kill_Deprecated_UseDestroyInstead()
+				ref.Destroy()
 		}
 	)
 
@@ -445,7 +440,8 @@ function LaunchAnimDropPod2( entity dropPod, string anim, vector targetOrigin, v
 	//CreateShake( player.GetOrigin(), 10, 105, 1.25, 768 )
 	wait 1
 	if(IsValid(player)) player.ClearParent()
-
+	if ( !IsValid( dropPod ) ) return
+	dropPod.ClearParent()	
 	dropPod.Destroy()
 }
 
