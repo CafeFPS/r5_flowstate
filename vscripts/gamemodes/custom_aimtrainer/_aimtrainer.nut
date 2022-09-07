@@ -1032,12 +1032,12 @@ void function LiftPlayerUp( entity bottom, entity top, vector pos, entity player
 				newVelocity.z = UPVELOCITY
 			} else if(player.IsInputCommandHeld( IN_FORWARD ))
 			{
-				printt("lift top move backward")
+				printt("lift top move forward")
 				newVelocity = AnglesToForward(player.GetAngles())*HORIZ_SPEED
 				newVelocity.z = UPVELOCITY					
 			} else if(player.IsInputCommandHeld( IN_BACK ))
 			{
-				printt("lift top move forward")
+				printt("lift top move backward")
 				newVelocity = AnglesToForward(player.GetAngles())*-HORIZ_SPEED
 				newVelocity.z = UPVELOCITY					
 			} else {
@@ -1065,12 +1065,12 @@ void function LiftPlayerUp( entity bottom, entity top, vector pos, entity player
 				newVelocity.z = UPVELOCITY
 			} else if(player.IsInputCommandHeld( IN_FORWARD ))
 			{
-				printt("lift move backward")
+				printt("lift move forward")
 				newVelocity = AnglesToForward(player.GetAngles())*HORIZ_SPEED
 				newVelocity.z = UPVELOCITY					
 			} else if(player.IsInputCommandHeld( IN_BACK ))
 			{
-				printt("lift move forward")
+				printt("lift move backward")
 				newVelocity = AnglesToForward(player.GetAngles())*-HORIZ_SPEED
 				newVelocity.z = UPVELOCITY					
 			} else {

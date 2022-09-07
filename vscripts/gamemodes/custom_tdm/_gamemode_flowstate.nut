@@ -394,7 +394,9 @@ void function _OnPlayerConnected(entity player)
 						"Skill trainer By Colombia",
 						"Custom map by Biscutz",
 						"White Forest By Zer0Bytes",
-						"Brightwater By Zer0bytes"
+						"Brightwater By Zer0bytes",
+						"Overflow",
+						"Drop-Off"
 					]
 
 					bool DropPodOnSpawn = GetCurrentPlaylistVarBool("flowstateDroppodsOnPlayerConnected", false )
@@ -527,9 +529,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW)
 	    		    wait 8
-
-	    		_HandleRespawn( victim )
-	    		ClearInvincible(victim)
+				
+				if(IsValid(victim)) {
+					_HandleRespawn( victim )
+					ClearInvincible(victim)
+				}
 	    	}
 
             // Attacker
@@ -573,7 +577,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	if(file.deathPlayersCounter == 1 )
 	{
 		foreach (player in GetPlayerArray())
-			thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
+			if(IsValid(player))
+				thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
 	}
 
 	if(attacker.IsPlayer())
@@ -764,14 +769,11 @@ void function WpnAutoReloadOnKill( entity player )
 
 void function WpnPulloutOnRespawn(entity player)
 {
-	if( IsValid( player ) && IsAlive(player))
-    {
-	    if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) ))
-	    	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
-	    wait 0.7
-	    if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) ))
-	    	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-	}
+	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
+	wait 0.7
+	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 }
 
 
@@ -2863,7 +2865,8 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
                     currentTeam += 1
             Message(p, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
         }
-	} else return false
+	} else 
+		return false
 	unreachable
 }
 

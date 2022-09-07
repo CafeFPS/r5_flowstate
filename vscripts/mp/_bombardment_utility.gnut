@@ -24,6 +24,9 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 {
 	wait delay
 	
+	if(!IsValid(weapon))
+		return
+		
 	entity owner = weapon.GetOwner()
 	
 	if(!IsValid(owner))
