@@ -79,6 +79,33 @@ WeaponData
                 "spread_kick_on_fire_crouch_hip"  				"*0.40"
                 "spread_kick_on_fire_air_hip" 					"*0.40"
 		}
+		
+		barrel_stabilizer_l4_flash_hider
+		{
+				"bodygroup27_set"	                "1"
+				"fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+
+                "spread_stand_hip"								"*0.40"
+                "spread_stand_hip_run"							"*0.40"
+                "spread_stand_hip_sprint"                       "*0.40"
+                "spread_crouch_hip"   							"*0.40"
+                "spread_air_hip"  								"*0.40"
+
+                // movement based crosshair bloom
+                "spread_moving_increase_rate" 					"*0.80"
+                "spread_moving_decay_rate" 						"*1.20"
+
+                // firing based crosshair bloom
+                "spread_decay_rate"   							"*1.30"
+                "spread_decay_delay"  							"*0.70"
+
+                "spread_max_kick_stand_hip"						"*0.40"
+                "spread_max_kick_crouch_hip"					"*0.40"
+                "spread_max_kick_air_hip"						"*0.40"
+                "spread_kick_on_fire_stand_hip"   				"*0.40"
+                "spread_kick_on_fire_crouch_hip"  				"*0.40"
+                "spread_kick_on_fire_air_hip" 					"*0.40"
+		}
 	}
 
 	// --- BODYGROUPS AND UIDATA ---
