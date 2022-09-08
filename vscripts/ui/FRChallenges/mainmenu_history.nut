@@ -266,7 +266,6 @@ void function PrintToConsole(var button)
 	DevP4Checkout( "AimTrainer_Results_" + GetUnixTimestamp() + ".txt" )
 	DevTextBufferDumpToFile( "AimTrainer_Results_" + GetUnixTimestamp() + ".txt" )
 	
-	printt()
 	Warning("[!] CSV RESULTS SAVED IN /r5reloaded/r2/ === ")
 }
 

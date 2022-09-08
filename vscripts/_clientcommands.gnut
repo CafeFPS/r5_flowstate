@@ -16,7 +16,7 @@ void function ClientCommands_Init()
 	AddClientCommandCallback( "recharge", ClientCommand_recharge )
 
 	#if R5DEV
-	AddClientCommandCallback( "script", ClientCommand_script )
+	//AddClientCommandCallback( "script", ClientCommand_script )
 	#endif
 }
 

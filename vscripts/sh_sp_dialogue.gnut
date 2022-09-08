@@ -661,7 +661,7 @@ void function PlayDialogue_Internal( int aliasID, int dialogueFlags, entity play
 	else
 	{
 		vector pos = (speaker == svGlobal.worldspawn) ? player.EyePosition() : speaker.GetOrigin()
-		Remote_CallFunction_NonReplay( player, FUNCNAME_PlayDialogueAtPosition, aliasID, dialogueFlags, pos.x, pos.y, pos.z)
+		Remote_CallFunction_NonReplay( player, FUNCNAME_PlayDialogueAtPosition, aliasID, dialogueFlags, pos)
 	}
 }
 

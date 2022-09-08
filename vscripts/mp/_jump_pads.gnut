@@ -37,24 +37,31 @@ void function JumpPad_GiveDoubleJump( entity player )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "JumpPad_GiveDoubleJump" )
 
-	wait 0.1
+	wait 0.05
 	
-	if ( IsValid(player) && !player.IsOnGround() )
+	if(!IsValid(player)) return
+	
+	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+			
+	if ( !player.IsOnGround() )
 	{
-		ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-		asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-
-		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] )
+		int health = player.GetHealth() //old health
+		int shield = player.GetShieldHealth() //old shieldhealth
+		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] ) //for some reason this set health to 100 (new character set file apparently)
+		player.SetHealth(health) //set old health
+		player.SetShieldHealth(shield) //set old shieldhealth
 	}
 
-	OnThreadEnd( function() : ( player )
+	OnThreadEnd( function() : ( player, characterSetFile )
 	{
 		if ( IsValid( player ) )
 		{
-			ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-			asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
-
-			player.SetPlayerSettingsWithMods( characterSetFile, [] )
+			int health = player.GetHealth() //old health
+			int shield = player.GetShieldHealth() //old shieldhealth
+			player.SetPlayerSettingsWithMods( characterSetFile, [] ) //for some reason this set health to 100 (new character set file apparently)
+			player.SetHealth(health) //set old health
+			player.SetShieldHealth(shield) //set old shieldhealth
 		}
 	})
 

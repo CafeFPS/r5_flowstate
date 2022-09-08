@@ -105,13 +105,15 @@ void function OnJumpPadPlanted( entity projectile )
 
 	newProjectile.kv.solid = 6
 
-	if(gameMode != "custom_tdm"){
-	newProjectile.SetTakeDamageType( DAMAGE_YES )
-	newProjectile.SetMaxHealth( 100 )
-	newProjectile.SetHealth( 100 )
-			} else {
-	newProjectile.SetTakeDamageType( DAMAGE_NO )			
-			}
+	if(gameMode != "custom_tdm")
+	{
+		newProjectile.SetTakeDamageType( DAMAGE_YES )
+		newProjectile.SetMaxHealth( 100 )
+		newProjectile.SetHealth( 100 )
+	} 
+	else
+		newProjectile.SetTakeDamageType( DAMAGE_NO )			
+	
 	SetVisibleEntitiesInConeQueriableEnabled( newProjectile, true )
 
 	newProjectile.SetOwner( owner )
@@ -120,16 +122,10 @@ void function OnJumpPadPlanted( entity projectile )
 	DispatchSpawn( newProjectile )
 	newProjectile.EndSignal( "OnDestroy" )
 	
-		if(gameMode != "custom_tdm"){
-	thread TrapDestroyOnRoundEnd( owner, newProjectile )
-	}
+	if(gameMode != "custom_tdm")
+		thread TrapDestroyOnRoundEnd( owner, newProjectile )
 
-	// if ( IsValid( traceResult.hitEnt ) )
-	// {
-	// 	newProjectile.SetParent( traceResult.hitEnt )
-	// }
-	// else
-if ( IsValid( traceResult.hitEnt ) )
+	if ( IsValid( traceResult.hitEnt ) )
 	{
 		newProjectile.SetParent( traceResult.hitEnt )
 	}
