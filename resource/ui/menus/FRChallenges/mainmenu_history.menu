@@ -337,7 +337,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 
 			ruiArgs
 			{
-				buttonText "Print to console"
+				buttonText "Export to .txt"
 			}
 
 			"pin_to_sibling"		"ServerBrowserBGBottom"

@@ -415,10 +415,15 @@ function LaunchAnimDropPod2( entity dropPod, string anim, vector targetOrigin, v
 	ref.MoveTo( targetOrigin, 2, 0, 0 )
 
 	OnThreadEnd(
-		function () : ( ref )
+		function () : ( dropPod, player, ref )
 		{
-			if ( IsValid( ref ) )
-				ref.Destroy()
+			if(IsValid(player)) player.ClearParent()
+			if(IsValid(dropPod))
+			{
+				dropPod.ClearParent()	
+				dropPod.Destroy()
+			}
+			if(IsValid(ref)) ref.Destroy()
 		}
 	)
 
@@ -432,17 +437,10 @@ function LaunchAnimDropPod2( entity dropPod, string anim, vector targetOrigin, v
 	sequence.blendTime 			= 0.0
 	sequence.attachment 		= "ref"
 	sequence.useAnimatedRefAttachment		= true
-	//DrawArrow( ref.GetOrigin(), ref.GetAngles(), 5, 100 )
-	//waitthread FirstPersonSequence( sequence, player, ref )
+
 	wait 2
 	thread __WarpInDropPodEffectShared( dropPod.GetOrigin() + <0,0,100>, <90,0,0>, "droppod_warpin", 0.0 )
-
-	//CreateShake( player.GetOrigin(), 10, 105, 1.25, 768 )
 	wait 1
-	if(IsValid(player)) player.ClearParent()
-	if ( !IsValid( dropPod ) ) return
-	dropPod.ClearParent()	
-	dropPod.Destroy()
 }
 
 function CheckPlayersIntersectingPod( pod, targetOrigin )

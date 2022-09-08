@@ -248,11 +248,12 @@ void function ShowNoChallengesPlayed(bool show)
 
 void function PrintToConsole(var button)
 {
-	Warning("=== AIMTRAINER HISTORY UI CSV DUMP ===")
-	printt("ChallengeName, ShotsHit, Kills, Weapon, Accuracy, Damage, CriticalShots, TotalShots, Roundtime")
+	DevTextBufferClear()
+	DevTextBufferWrite("=== Aim Trainer v1.0 CSV Results Dump - Made by CaféDeColombiaFPS @CafeFPS === \n\n")
+	DevTextBufferWrite("ChallengeName, ShotsHit, Kills, Weapon, Accuracy, Damage, CriticalShots, TotalShots, Roundtime \n")
 
 	foreach(challenge in ChallengesHistory)
-			printt( challenge.ChallengeName
+			DevTextBufferWrite( challenge.ChallengeName
 					+", "+challenge.ShotsHit
 					+", "+challenge.Kills
 					+", "+challenge.ChallengeWeapon
@@ -260,9 +261,13 @@ void function PrintToConsole(var button)
 					+", "+challenge.Damage
 					+", "+challenge.CriticalShots
 					+", "+challenge.TotalShots
-					+", "+challenge.RoundTime )
+					+", "+challenge.RoundTime + "\n")
+					
+	DevP4Checkout( "AimTrainer_Results_" + GetUnixTimestamp() + ".txt" )
+	DevTextBufferDumpToFile( "AimTrainer_Results_" + GetUnixTimestamp() + ".txt" )
 	
-	Warning("=== DUMP END ===")
+	printt()
+	Warning("[!] CSV RESULTS SAVED IN /r5reloaded/r2/ === ")
 }
 
 void function ChallengesButtonFunct(var button)
