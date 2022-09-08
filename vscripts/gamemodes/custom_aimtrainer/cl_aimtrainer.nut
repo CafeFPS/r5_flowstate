@@ -119,6 +119,21 @@ void function Cl_ChallengesByColombia_Init()
 	
 	//for custom ui/textures
 	PakHandle AimTrainerRpak = RequestPakFile( "aimtrainer" )
+	
+	AddCallback_EntitiesDidLoad( AimTrainer_OnEntitiesDidLoad )
+}
+
+void function AimTrainer_OnEntitiesDidLoad()
+{
+	//Disables Sun Flare
+	array<entity> fxEnts = GetClientEntArrayBySignifier( "info_particle_system" )
+	foreach ( fxEnt in fxEnts )
+	{
+		if ( fxEnt.HasKey( "in_skybox" ) && fxEnt.GetValueForKey("in_skybox") == "0" )
+			continue
+
+		fxEnt.Destroy()
+	}	
 }
 
 void function ServerCallback_SetDefaultMenuSettings()
