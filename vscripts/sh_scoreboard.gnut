@@ -118,6 +118,8 @@ void function OnScoreboardButtonPressed( entity localPlayer )
 #if CLIENT
 void function ClientToUI_ToggleScoreboard()
 {
+	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )) return
+	
 	if ( IsSurvivalTraining() )
 	{
 		printf( "%s() - Aborting, because we're in Training.", FUNC_NAME() )
