@@ -433,13 +433,16 @@ void function CancelDisembark( entity player )
 
 void function CheckForAccelerants( entity player )
 {
-printt("Flowstate DEBUG - Trying to use ultimate.")
-entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
+	if(player != GetLocalClientPlayer()) return
+		
+	printt("Flowstate DEBUG - Trying to use ultimate.")
+	entity ultimateAbility = player.GetOffhandWeapon( OFFHAND_INVENTORY )
 	if ( !IsValid( ultimateAbility ) )
 		return
 
-int ammoNow = ultimateAbility.GetWeaponPrimaryClipCount()
-int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
+	int ammoNow = ultimateAbility.GetWeaponPrimaryClipCount()
+	int ammoMax = ultimateAbility.GetWeaponPrimaryClipCountMax()
+	
 	if ( ammoNow < ammoMax )
 	{
 		//check for accelerants here
