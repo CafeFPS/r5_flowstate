@@ -2763,16 +2763,12 @@ bool function ClientCommand_NextRound(entity player, array<string> args)
 }
 bool function ClientCommand_adminnoclip( entity player, array<string> args )
 {
-	if(!IsValid(player)) return false
+	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) return false
 
-	if(IsAdmin( player)) {
-		if ( player.IsNoclipping() )
-			player.SetPhysics( MOVETYPE_WALK )
-		else
-			player.SetPhysics( MOVETYPE_NOCLIP )
-		return true
-	}
-
+	if ( player.IsNoclipping() )
+		player.SetPhysics( MOVETYPE_WALK )
+	else
+		player.SetPhysics( MOVETYPE_NOCLIP )
 	return true
 }
 
@@ -2788,7 +2784,7 @@ bool function ClientCommand_CircleNow(entity player, array<string> args)
 
 bool function ClientCommand_God(entity player, array<string> args)
 {
-	if( !IsValid(player) && !IsAdmin(player) ) return false
+	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) return false
 
 	player.MakeInvisible()
 	MakeInvincible(player)
@@ -2800,7 +2796,7 @@ bool function ClientCommand_God(entity player, array<string> args)
 
 bool function ClientCommand_UnGod(entity player, array<string> args)
 {
-	if( !IsValid(player) && !IsAdmin(player) ) return false
+	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) return false
 
 	player.MakeVisible()
 	ClearInvincible(player)
