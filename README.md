@@ -25,7 +25,7 @@ Let me know if you find new issues, my discord is in the last section.
 - Laser sights.
 - Results UI, displays the results data at the end of the challenge.
 - History UI, saves challenges data, useful to see your performance over time.
-	- Print to console button so you can copy paste and analyze your data. Use Insert key to open the console.
+	- Export to .txt button so you can copy-paste and analyze your data. Exported to `/r5reloaded/r2/`
 - Classic aim trainer weapon available, this weapon is hitscan with no spread, no recoil and no delay. (Tile Frenzy, Smoothbot and other challenges are interesting to play with this weapon!)
 - Settings UI, exclusive settings menu for the Aim Trainer.
 	- Weapon Selector UI featuring Attachments Box UI.
