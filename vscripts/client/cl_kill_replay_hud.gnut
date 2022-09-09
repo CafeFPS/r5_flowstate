@@ -59,16 +59,10 @@ string function GetRefFromDamageSourceId( int damageSourceId )
 }
 
 void function ServerCallback_KillReplayHud_Activate() {	
-	if ( !GetCurrentPlaylistVarBool( "replay_new_ui", false ) )
-		KillReplayHud_Activate()
-	else
 		Custom_KillReplayHud_Activate()
 }
 
 void function ServerCallback_KillReplayHud_Deactivate() {
-	if ( !GetCurrentPlaylistVarBool( "replay_new_ui", false ) )
-		KillReplayHud_Deactivate()
-	else
 		Custom_KillReplayHud_Deactivate()
 }
 
