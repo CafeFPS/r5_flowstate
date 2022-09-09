@@ -1,6 +1,5 @@
 global function InitChallengesHistory
 global function OpenFRChallengesHistory
-global function CloseFRChallengesHistory
 global function HistoryUI_AddNewChallenge
 
 global const AIMTRAINER_HISTORYUI_SERVERS_PER_PAGE = 19
@@ -43,7 +42,7 @@ void function OpenFRChallengesHistory(int dummiesKilled)
 	CloseAllMenus()
 	EmitUISound("UI_Menu_SelectMode_Extend")
 	AdvanceMenu( file.menu )
-
+	
 	if(ChallengesHistory.len() == 0)
 	{
 		ShowNoChallengesPlayed(true)
@@ -55,6 +54,7 @@ void function OpenFRChallengesHistory(int dummiesKilled)
 	}
 	else
 	{
+		ChallengesHistory.reverse()
 		m_vPages.pAmount = ChallengesHistory.len()/AIMTRAINER_HISTORYUI_SERVERS_PER_PAGE
 		
 		ShowNoChallengesPlayed(false)
@@ -176,11 +176,6 @@ void function ResetChallengesLabels()
 	}
 }
 
-void function CloseFRChallengesHistory()
-{
-	CloseAllMenus()
-}
-
 void function InitChallengesHistory( var newMenuArg )
 {
 	var menu = GetMenu( "FRChallengesHistory" )
@@ -232,7 +227,6 @@ void function HistoryUI_AddNewChallenge(string Name, int ShotsHit, string Weapon
 	newChallenge.RoundTime = roundtime
 	
 	ChallengesHistory.push(newChallenge)
-	ChallengesHistory.reverse()
 }
 
 void function ShowNoChallengesPlayed(bool show)
@@ -272,12 +266,14 @@ void function PrintToConsole(var button)
 void function ChallengesButtonFunct(var button)
 {
 	CloseAllMenus()
+	ChallengesHistory.reverse()
 	RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 }
 
 void function SettingsButtonFunct(var button)
 {
 	CloseAllMenus()
+	ChallengesHistory.reverse()
 	EmitUISound("UI_Menu_SelectMode_Close")
 	RunClientScript("ServerCallback_OpenFRChallengesSettings")
 }
@@ -301,11 +297,13 @@ void function OnR5RSB_Close()
 void function OnR5RSB_NavigateBack()
 {
 	CloseAllMenus()
-	RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)	
+	ChallengesHistory.reverse()
+	RunClientScript("ServerCallback_OpenFRChallengesMainMenu", PlayerKillsForChallengesUI)
 }
 
 void function OpenGlobalSettings(var button)
 {
     CloseAllMenus()
+	ChallengesHistory.reverse()
 	AdvanceMenu( GetMenu( "SystemMenu" ) )	
 }

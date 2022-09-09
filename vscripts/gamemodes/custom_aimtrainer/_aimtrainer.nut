@@ -2000,13 +2000,7 @@ void function ChallengeWatcherThread(float endtime, entity player)
 {
 	EndSignal(player, "ForceResultsEnd_SkipButton")
 	EndSignal(player, "ChallengeTimeOver")
-	
-	OnThreadEnd(
-		function() : ( player )
-		{
-			Signal(player, "ChallengeTimeOver") // idk
-		}
-	)
+
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE) 
 			if(Time() > endtime) break
@@ -2694,6 +2688,9 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	thread PlayAnimsOnGiveWeapon(weaponent, player)
 	
+	if(weapon == "mp_weapon_volt_smg")
+		thread WatchesVoltParticles(weaponent)
+	
 	if(!GetCurrentPlaylistVarBool( "aimtrainer_enableSkins", false )) return false
 
 	if(weaponent.GetWeaponClassName() == "mp_weapon_car")
@@ -2730,6 +2727,19 @@ void function PlayAnimsOnGiveWeapon(entity weaponent, entity player)
 	if(IsValid(weaponent) && weaponent.Anim_HasActivity( "ACT_VM_WEAPON_INSPECT" ) && !player.p.isChallengeActivated )
 		weaponent.StartCustomActivity("ACT_VM_WEAPON_INSPECT", 0)
 }
+
+void function WatchesVoltParticles(entity weapon)
+{
+	array<entity> fxEnts
+	
+	while(IsValid(weapon))
+	{
+		fxEnts = GetEntArrayByClass_Expensive( "info_particle_system" )
+		printt("Volt-SMG DEBUG: " + fxEnts.len() + " particles. ")
+		WaitFrame()
+	}
+}
+
 
 bool function CC_Weapon_Selector_Open( entity player, array<string> args )
 {
