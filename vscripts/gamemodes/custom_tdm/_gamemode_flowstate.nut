@@ -1670,7 +1670,7 @@ if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
 	{
 		WaitFrame()
 	}
-} else
+} else if(Flowstate_EnableAutoChangeLevel())
 	thread AutoChangeLevelThread(endTime)
 
 if (FlowState_Timer()){
@@ -1822,7 +1822,7 @@ file.ringBoundary.Destroy()
 
 void function AutoChangeLevelThread(float endTime)
 {
-	endTime = endTime*2 + 10
+	endTime = endTime*Flowstate_AutoChangeLevelRounds() + 10
 	OnThreadEnd(
 		function() : ( )
 		{
