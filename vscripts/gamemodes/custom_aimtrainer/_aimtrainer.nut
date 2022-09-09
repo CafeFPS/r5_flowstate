@@ -2000,7 +2000,14 @@ void function ChallengeWatcherThread(float endtime, entity player)
 {
 	EndSignal(player, "ForceResultsEnd_SkipButton")
 	EndSignal(player, "ChallengeTimeOver")
-
+	
+	OnThreadEnd(
+		function() : ( player )
+		{
+			Signal(player, "ChallengeTimeOver")
+		}
+	)
+	
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE) 
 			if(Time() > endtime) break
