@@ -49,6 +49,7 @@ void function JumpPad_GiveDoubleJump( entity player )
 		int health = player.GetHealth() //old health
 		int shield = player.GetShieldHealth() //old shieldhealth
 		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] ) //for some reason this set health to 100 (new character set file apparently)
+		if(!IsAlive(player)) return
 		player.SetHealth(health) //set old health
 		player.SetShieldHealth(shield) //set old shieldhealth
 	}
@@ -60,6 +61,7 @@ void function JumpPad_GiveDoubleJump( entity player )
 			int health = player.GetHealth() //old health
 			int shield = player.GetShieldHealth() //old shieldhealth
 			player.SetPlayerSettingsWithMods( characterSetFile, [] ) //for some reason this set health to 100 (new character set file apparently)
+			if(!IsAlive(player)) return
 			player.SetHealth(health) //set old health
 			player.SetShieldHealth(shield) //set old shieldhealth
 		}
