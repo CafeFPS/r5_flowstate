@@ -1,0 +1,9 @@
+{
+    "rpak":
+    [
+        "mp_rr_desertlands_64k_x_64k",
+        "mp_rr_canyonlands_mu1",
+		"mp_rr_canyonlands_mu1_night"
+    ],
+    "stbsp": "mp_rr_desertlands_64k_x_64k"
+}

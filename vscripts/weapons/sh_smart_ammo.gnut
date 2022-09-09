@@ -84,8 +84,6 @@ FireWeaponCallback function GetFireWeaponCallbackForWeaponType( int wt )
 
 void function SmartAmmo_Init()
 {
-#if SERVER
-#endif
 }
 
 /******************************************/

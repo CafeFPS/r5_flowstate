@@ -64,6 +64,8 @@ void function Desertlands_MapInit_Common()
 	SetVictorySequencePlatformModel( $"mdl/rocks/desertlands_victory_platform.rmdl", < 0, 0, -10 >, < 0, 0, 0 > )
 
 	#if SERVER
+		if ( GetMapName() == "mp_rr_desertlands_64k_x_64k_tt" )
+			thread MirageVoyageSetup()
 		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 		SURVIVAL_SetPlaneHeight( 15250 )
 		SURVIVAL_SetAirburstHeight( 2500 )
@@ -482,6 +484,99 @@ void function FullmapPackage_Train( entity ent, var rui )
 #endif
 
 #if SERVER
+void function MirageVoyageSetup()
+{
+	thread MirageVoyageModels()
+	thread MirageVoyageButton()
+	thread MiragePhone()
+}
+
+void function MirageVoyageModels()
+{
+	entity BigDesk = CreatePropDynamic( $"mdl/desertlands/desertlands_lobby_desk_01.rmdl", <-23890,-5151,-2330>, <0,56,0>, SOLID_VPHYSICS )
+	entity CornerPlatform = CreatePropDynamic( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl", <-25738,-4338,-2181>, <0,190,0>, SOLID_VPHYSICS )
+	entity FixProp1 = CreatePropDynamic( $"mdl/containers/underbelly_cargo_container_128_blue_01.rmdl", <-24362,-5245,-2325>, <0,56,90>, SOLID_VPHYSICS )
+	entity FixProp2 = CreatePropDynamic( $"mdl/containers/underbelly_cargo_container_128_blue_01.rmdl", <-23980,-4670,-2325>, <0,56,90>, SOLID_VPHYSICS )
+	entity FixHole1 = CreatePropDynamic( $"mdl/pipes/airduct_l_turn_long_side.rmdl", <-25255,-4042,-2220>, <0,-70,0>, SOLID_VPHYSICS )
+	entity FixHole2 = CreatePropDynamic( $"mdl/pipes/airduct_l_turn_long_side.rmdl", <-25410,-4275,-2220>, <0,-70,0>, SOLID_VPHYSICS )
+	entity Table1 = CreatePropDynamic( $"mdl/domestic/glass_coffee_table.rmdl", <-26122,-4686,-2520>, <0,56,0>, SOLID_VPHYSICS )
+	entity Table2 = CreatePropDynamic( $"mdl/domestic/glass_coffee_table.rmdl", <-26300,-4570,-2520>, <0,56,0>, SOLID_VPHYSICS )
+}
+
+void function MirageVoyageButton()
+{
+	entity musicbutton = CreateFRButton(<-24990.9, -4413.94, -2208.57>, <0,-123.675,0>, "Press %&use% To Party")
+	AddCallback_OnUseEntity( musicbutton, void function(entity panel, entity user, int input)
+		foreach ( player in GetPlayerArray() )
+		{
+			EmitSoundOnEntity( panel, "Music_TT_Mirage_PartyTrackButtonPress" )
+			thread SetButtonSettings( panel )
+		}
+	)
+}
+
+void function MiragePhone()
+{
+	entity MiragePhone = CreateFRButton(<-23554, -6324, -2929.17>, <40.962, -55.506, 17.1326>, "%&use% PLAY AUDIO LOG")
+	MiragePhone.SetModel( $"mdl/Weapons/ultimate_accelerant/w_ultimate_accelerant.rmdl" )
+	AddCallback_OnUseEntity( MiragePhone, void function(entity panel, entity user, int input)
+		foreach ( player in GetPlayerArray() )
+		{
+			EmitSoundOnEntity( panel, "diag_mp_mirage_tt_01_3p" )
+			thread SetPhoneSettings( panel )
+		}
+	)
+}
+
+void function SetButtonSettings( entity panel )
+{
+	thread MirageAnnouncerVoiceLines( panel )
+	EmitSoundOnEntity( panel, "Desertlands_Mirage_TT_PartySwitch_On" )
+	EmitSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_Streamer" )
+	EmitSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_SkyBurst" )
+	EmitSoundOnEntity( panel, "Desertlands_Mirage_TT_LootBall_Launcher" )
+	EmitSoundOnEntity( panel, "diag_mp_mirage_exp_partyBoatButton_3p" )
+	panel.UnsetUsable()
+	panel.SetSkin(1)
+	wait 0.01
+	StartParticleEffectInWorld( PrecacheParticleSystem( $"P_xo_exp_nuke_3P" ), <-24279,-4883,-2015>, <0,0,0> )
+	
+	wait 21
+	
+	EmitSoundOnEntity( panel, "Desertlands_Mirage_TT_PartySwitch_Off" )
+	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_Streamer" )
+	StopSoundOnEntity( panel, "Desertlands_Mirage_TT_Firework_SkyBurst" )
+	
+	if ( GameRules_GetGameMode() == "custom_tdm" )
+		WaitForever()
+	else
+		wait 2
+	panel.SetUsable()
+	panel.SetSkin(2)
+}
+
+void function MirageAnnouncerVoiceLines( entity panel )
+{
+	array <string> dialogueChoices
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_01_3p" )
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_02_3p" )
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_03_3p" )
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_04_3p" )
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_05_3p" )
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_06_3p" )
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_07_3p" )
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_08_3p" )
+		dialogueChoices.append( "diag_mp_mirage_exp_seasonsGreetings_01_09_3p" )
+		dialogueChoices.randomize()
+		thread EmitSoundOnEntity( panel, dialogueChoices.getrandom() )
+}
+
+void function SetPhoneSettings( entity panel )
+{
+	panel.UnsetUsable()
+	wait 50
+	panel.SetUsable()
+}
 entity function SpawnBigTrainingTarget(vector pos, vector ang, void functionref( entity, var ) onDamaged )
 {
 	entity target = CreateEntity( "prop_dynamic" )

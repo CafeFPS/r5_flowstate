@@ -52,7 +52,24 @@ void function SetKillLeader( entity killLeader, int numKills )
 	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", killLeader, numKills )
 
-	thread AddSurvivalCommentaryEvent( eSurvivalEventType.YOU_ARE_NEW_KILL_LEADER, killLeader )
+	int maxTeams = GetCurrentPlaylistVarInt( "max_teams", MAX_TEAMS )
+	for ( int i = TEAM_MULTITEAM_FIRST; i < TEAM_MULTITEAM_FIRST + maxTeams; ++i )
+	{
+		if ( i == killLeaderTeam )
+			continue
+
+		entity speakingPlayer = TryFindSpeakingPlayerOnTeam( i )
+		if ( speakingPlayer != null )
+			PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, "bc_killLeaderNew" )
+	}
+
+	thread PlayDialogueForPlayer( "bc_iBecomeKillLeader", killLeader, killLeader )
+
+	array<entity> teamMembers = GetPlayerArrayOfTeam( killLeaderTeam )
+	teamMembers.fastremovebyvalue( killLeader )
+
+	foreach ( teamMember in teamMembers )
+		thread PlayDialogueForPlayer( "bc_squadmateBecomesKillLeader", teamMember, teamMember )
 }
 
 int function GetMinKillsForKillLeader()

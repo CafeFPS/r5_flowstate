@@ -50,23 +50,9 @@ global struct HackPanelAnims
 //////////////////////////////////////////////////////////////////////
 function ControlPanel_Init()
 {
-	//if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_canyonlands_mu1") // TODO: This asset does not exist in some maps
-	//	PrecacheModel( $"mdl/communication/terminal_usable_imc_01.rmdl" )
-
 	PrecacheParticleSystem( INCOMING_SPAWN_FX )
 
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_disabled/console_disabled" )
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_f_deploy/console_f_deploy" )
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_f_search/console_f_search" )
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_f_active/console_f_active" )
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_f_repair/console_f_repair" )
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_e_deploy/console_e_deploy" )
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_e_search/console_e_search" )
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_e_active/console_e_active" )
-	//PrecacheMaterial( $"vgui/hud/control_panel/console_e_repair/console_e_repair" )
-
-	AddSpawnCallback( "prop_control_panel", 			OnPanelSpawn )
-
+	//AddSpawnCallback( "prop_control_panel", OnPanelSpawn )//We don't want old IMC Panel from titanfall
 
 	RegisterSignal( "PanelReprogrammed" )
 	RegisterSignal( "PanelReprogram_Success" )
@@ -108,9 +94,9 @@ function GameModeRemovePanel( ent )
 //////////////////////////////////////////////////////////////////////
 void function OnPanelSpawn( entity panel )
 {
-	Assert( panel.GetModelName() == $"mdl/communication/terminal_usable_imc_01.rmdl" )
+	Assert( panel.GetModelName() == $"mdl/props/pathfinder_beacon_radar/pathfinder_beacon_radar_animated.rmdl" )
 
-	//thread OnPanelSpawn_Internal( panel ) // TODO: FIX
+	thread OnPanelSpawn_Internal( panel )
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -249,8 +235,7 @@ void function PanelUpdateUsability( entity panel )
 
 	//Default, set it usable by everyone
 	panel.SetUsableByGroup( "pilot" )
-	panel.SetUsePrompts( "#DEFAULT_HACK_HOLD_PROMPT", "#DEFAULT_HACK_PRESS_PROMPT" )
-
+	panel.SetUsePrompts( "#SURVEY_BEACON_HOLD_PROMPT", "#SURVEY_BEACON_PRESS_PROMPT" )
 	if ( !panel.HasKey( "scr_flagRequired" ) )
 		return
 
@@ -345,10 +330,10 @@ function RunPanelUseFunctions( panel, player )
 
 	foreach ( useFuncTable in clone panel.s.useFuncArray )
 	{
-		if ( useFuncTable.useEnt == null )
-			useFuncTable.useFunc( panel, player )
-		else
-			useFuncTable.useFunc( panel, player, useFuncTable.useEnt )
+		//if ( useFuncTable.useEnt == null )
+		//	useFuncTable.useFunc( panel, player )
+		//else
+		//	useFuncTable.useFunc( panel, player, useFuncTable.useEnt )
 	}
 }
 
@@ -373,17 +358,17 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 
 	local action =
 	{
-		playerAnimation1pStart = "ptpov_data_knife_console_leech_start"
-		playerAnimation1pIdle = "ptpov_data_knife_console_leech_idle"
-		playerAnimation1pEnd = "ptpov_data_knife_console_leech_end"
+		playerAnimation1pStart = "ptpov_pathfinder_antenna_hack_start"
+		playerAnimation1pIdle = "ptpov_pathfinder_antenna_hack_mid"
+		playerAnimation1pEnd = "ptpov_pathfinder_antenna_hack_end"
 
-		playerAnimation3pStart = "pt_data_knife_console_leech_start"
-		playerAnimation3pIdle = "pt_data_knife_console_leech_idle"
-		playerAnimation3pEnd = "pt_data_knife_console_leech_end"
+		playerAnimation3pStart = "mp_pt_pathfinder_antenna_hack_start"
+		playerAnimation3pIdle = "mp_pt_pathfinder_antenna_hack_mid"
+		playerAnimation3pEnd = "mp_pt_pathfinder_antenna_hack_end"
 
-		panelAnimation3pStart = "tm_data_knife_console_leech_start"
-		panelAnimation3pIdle = "tm_data_knife_console_leech_idle"
-		panelAnimation3pEnd = "tm_data_knife_console_leech_end"
+		panelAnimation3pStart = "antenna_pathfinder_antenna_hack_start"
+		panelAnimation3pIdle = "antenna_pathfinder_antenna_hack_mid"
+		panelAnimation3pEnd = "antenna_pathfinder_antenna_hack_end"
 
 		direction = Vector( -1, 0, 0 )
 	}
@@ -534,9 +519,6 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 
 	local leechTime = panel.s.leechTimeNormal
 
-	if ( PlayerHasPassive( player, ePassives.PAS_FAST_HACK ) )
-		leechTime = panel.s.leechTimeFast
-
 	local totalTime = leechTime + player.GetSequenceDuration( action.playerAnimation3pStart )
 
 	thread TrackContinuousUse( player, totalTime, e.doRequireUseButtonHeld )
@@ -563,10 +545,10 @@ void function PlayerProgramsControlPanel( entity panel, entity player, string ha
 	if ( e.success )
 	{
 		thread DataKnifeSuccessSounds( player )
+		Pathfinder_SurveySuccess( panel, player )
 	}
 	else
 	{
-		DataKnifeCanceledSounds( player )
 		Remote_CallFunction_Replay( player, "ServerCallback_DataKnifeCancelLeech" )
 	}
 
@@ -702,7 +684,7 @@ function AddControlPanelUseFuncTable( panel, Table )
 	// a table that contains
 	//1. a function to be called when the control panel is used
 	//2. an entity that the function refers to, e.g. the turret to be created
-	//panel.s.useFuncArray.append( Table ) // TODO: investigate where this belongs.
+	panel.s.useFuncArray.append( Table )
 }
 
 function SetControlPanelPrompts( ent, func )

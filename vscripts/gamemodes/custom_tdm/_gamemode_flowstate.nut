@@ -12,14 +12,12 @@
 // Zer0Bytes#4428 -- rewrite
 // everyone else -- advice
 
-
 global function _CustomTDM_Init
 global function _RegisterLocation
 global function CharSelect
 global function CreateAnimatedLegend
 global function Message
 global function shuffleArray
-global bool isBrightWaterByZer0 = false
 global function WpnAutoReloadOnKill
 global function GetTDMState
 global function SetTdmStateToNextRound
@@ -28,6 +26,7 @@ global function SetFallTriggersStatus
 global function ResetDeathPlayersCounterForFirstBloodAnnouncer
 global function CreateShipRoomFallTriggers
 global function AutoChangeLevelThread
+global function GiveFlowstateOvershield
 
 global function ClientCommand_ClientMsg
 global function	ClientCommand_DispayChatHistory
@@ -39,10 +38,7 @@ const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
 
-#if SERVER
-global function GiveFlowstateOvershield
-#endif
-
+global bool isBrightWaterByZer0 = false
 bool plsTripleAudio = false;
 table playersInfo
 const int chatLines = 3
@@ -56,7 +52,7 @@ enum eTDMState
 }
 
 struct {
-	string scriptversion = "v3.1"
+	string scriptversion = "v3.2"
     int tdmState = eTDMState.IN_PROGRESS
     int nextMapIndex = 0
 	bool mapIndexChanged = true
@@ -776,10 +772,16 @@ void function WpnAutoReloadOnKill( entity player )
 void function WpnPulloutOnRespawn(entity player)
 {
 	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+	{
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
+		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+	}
 	wait 0.7
 	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+	{
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+	}
 }
 
 
@@ -1785,6 +1787,8 @@ foreach(player in GetPlayerArray())
 wait 1
 foreach(entity champion in GetPlayerArray())
     {
+		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( champion ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( champion ), Loadout_CharacterClass() ) ) )
+		CharacterSkin_Apply( champion, characterSkinsA[0])
 		if(GetBestPlayer() == champion) {
 		if(IsValid(champion))
 			{
@@ -1989,17 +1993,17 @@ void function PlayerRestoreHP(entity player, float health, float shields)
  // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
 
 void function PlayerTrail(entity player, int onoff)
-//Thanks Zee#0134//
 {
 	if(!IsValid(player)) return
-    if (onoff == 1 )
+	if (onoff == 1 )
     {
         int smokeAttachID = player.LookupAttachment( "CHESTFOCUS" )
 	    vector smokeColor = <255,255,255>
 		entity smokeTrailFX = StartParticleEffectOnEntityWithPos_ReturnEntity( player, GetParticleSystemIndex( $"P_grenade_thermite_trail"), FX_PATTACH_ABSORIGIN_FOLLOW, smokeAttachID, <0,0,0>, VectorToAngles( <0,0,-1> ) )
-
 		EffectSetControlPointVector( smokeTrailFX, 1, smokeColor )
         player.p.DEV_lastDroppedSurvivalWeaponProp = smokeTrailFX
+		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
+		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
     }
 	else
     {
@@ -2177,7 +2181,7 @@ string function ScoreboardFinal(bool fromConsole = false)
 	}
 	playersInfo.sort(ComparePlayerInfo)
 	string msg = ""
-	for(int i = 0; i < playersInfo.len(); i++)
+	for(int i = 0; i < min(15, playersInfo.len()); i++)
 	{
 		PlayerInfo p = playersInfo[i]
 		switch(i)

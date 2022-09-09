@@ -1522,7 +1522,8 @@ int function FlowState_SURFRoundTime() { return GetCurrentPlaylistVarInt("flowst
 bool function FlowState_SURFLockPOI()                         { return GetCurrentPlaylistVarBool("flowstateSURFLockPOI", false ) } 
 int function FlowState_SURFLockedPOI() { return GetCurrentPlaylistVarInt("flowstateSURFLockeedPOI", 0) }
 bool function FlowState_PROPHUNT()                         { return GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) }
-
+bool function Flowstate_EnableAutoChangeLevel() { return GetCurrentPlaylistVarBool("flowstateAutoChangeLevelEnable", true ) }
+int function Flowstate_AutoChangeLevelRounds() { return GetCurrentPlaylistVarInt("flowstateRoundsBeforeChangeLevel", 0 ) }
 bool function FlowState_EnableSkillTrainerByColombia()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_SKILLTRAINER_By_Colombia", true ) }
 bool function FlowState_EnableCustomMapByBiscutz()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_CUSTOMMAP_By_Biscutz", false ) }
 bool function FlowState_EnableWhiteForestByZero()                         { return GetCurrentPlaylistVarBool("flowstate_Enable_WHITEFOREST_By_Zero", true ) }
