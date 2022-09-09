@@ -2022,6 +2022,15 @@ void function OnStraferDummyDamaged( entity dummy, var damageInfo )
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	if(!attacker.IsPlayer()) return
 	
+	if(dummy.GetTargetName() == "GrenadesChallengeDummy" )
+	{
+		// Damage from the grenade explosion does not register as a weapon, so we can assume this damage should not be registered
+		if(DamageInfo_GetWeapon(damageInfo) != null)
+		{
+			return
+		}
+	}
+
 	float damage = DamageInfo_GetDamage( damageInfo )
 	
 	//fake helmet
