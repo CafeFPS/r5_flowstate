@@ -460,41 +460,42 @@ void function __HighPingCheck(entity player)
 	}
 }
 
+
 void function doubletriplekillaudio(entity victim, entity attacker)
 {
-	entity champion = file.previousChampion
-	entity challenger = file.previousChallenger
-	entity killeader = GetBestPlayer()
-	float doubleKillTime = 5.0
-	float tripleKillTime = 8.0
+	if (!IsValid(attacker))
+		return
 
-	if(!IsValid(attacker)) return
+    entity champion = file.previousChampion
+    entity challenger = file.previousChallenger
+    entity killeader = GetBestPlayer()
+    float doubleKillTime = 5.0
+    float tripleKillTime = 8.0
 
-	bool ReqCheck = attacker == file.lastKiller && attacker == killeader
-	if(ReqCheck)
-	{
-		if(!plsTripleAudio)
-			attacker.p.downedEnemyAtOneTime = 2
-		else if (plsTripleAudio)
-			attacker.p.downedEnemyAtOneTime = 3
-	}
+    bool ReqCheck = attacker == file.lastKiller && attacker == killeader
+    if (ReqCheck) {
+        if (!plsTripleAudio)
+            attacker.p.downedEnemyAtOneTime = 2
+        else if (plsTripleAudio)
+            attacker.p.downedEnemyAtOneTime = 3
+    }
 
-	if((Time() - attacker.p.lastKillTimer) < doubleKillTime && ReqCheck && attacker.p.downedEnemyAtOneTime == 2){
-		foreach (player in GetPlayerArray())
-		    thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderDoubleKill" )
+    if ((Time() - attacker.p.lastKillTimer) < doubleKillTime && ReqCheck && attacker.p.downedEnemyAtOneTime == 2) {
+        foreach(player in GetPlayerArray())
+        thread EmitSoundOnEntityOnlyToPlayer(player, player, "diag_ap_aiNotify_killLeaderDoubleKill")
 
-		if(FlowState_ChosenCharacter() == 8)
-			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "diag_mp_wraith_bc_iDownedMultiple_1p" )
-		plsTripleAudio = true;
-	}
+        if (FlowState_ChosenCharacter() == 8)
+            thread EmitSoundOnEntityOnlyToPlayer(attacker, attacker, "diag_mp_wraith_bc_iDownedMultiple_1p")
+        plsTripleAudio = true;
+    }
 
-	if((Time() - attacker.p.lastKillTimer) < tripleKillTime && ReqCheck && attacker.p.downedEnemyAtOneTime == 3){
-		attacker.p.downedEnemyAtOneTime = 0
-		wait 1
-		foreach (player in GetPlayerArray())
-		    thread EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_killLeaderTripleKill" )
-		plsTripleAudio = false;
-	}
+    if ((Time() - attacker.p.lastKillTimer) < tripleKillTime && ReqCheck && attacker.p.downedEnemyAtOneTime == 3) {
+        attacker.p.downedEnemyAtOneTime = 0
+        wait 1
+        foreach(player in GetPlayerArray())
+        thread EmitSoundOnEntityOnlyToPlayer(player, player, "diag_ap_aiNotify_killLeaderTripleKill")
+        plsTripleAudio = false;
+    }
 }
 
 void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
@@ -799,7 +800,7 @@ void function SummonPlayersInACircle(entity player0)
 	}
 }
 
-void function __GiveWeapon( entity player, array<string> WeaponData, int slot, int select)
+void function __GiveWeapon( entity player, array<string> WeaponData, int slot, int select, bool isGungame = false)
 {
 	array<string> Data = split(WeaponData[select], " ")
 	string weaponclass = Data[0]
@@ -813,6 +814,8 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 
 	if(IsValid(player))
 	    player.GiveWeapon( weaponclass , slot, Mods )
+	else if(IsValid(player) && isGungame)
+		player.ReplaceActiveWeapon(slot, weaponclass, Mods)
 }
 
 void function GiveRandomPrimaryWeaponMetagame(entity player)
@@ -909,7 +912,6 @@ void function GiveActualGungameWeapon(int index, entity player)
 		"mp_weapon_wingman",
 		"mp_weapon_alternator_smg optic_cq_hcog_classic bullets_mag_l3 stock_tactical_l3",
 		"mp_weapon_semipistol",
-		"mp_weapon_lstar",
 		"mp_weapon_g2",
 		"mp_weapon_shotgun_pistol",
 		"mp_weapon_esaw optic_cq_hcog_bruiser energy_mag_l1 barrel_stabilizer_l2",
@@ -936,7 +938,7 @@ void function GiveActualGungameWeapon(int index, entity player)
 		"mp_weapon_semipistol bullets_mag_l2",
 	]
 
-	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
+	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ), true)
 }
 
 
@@ -1361,7 +1363,7 @@ void function GiveGungameWeapon(entity player) {
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 	int WeaponIndex = player.GetPlayerNetInt( "kills" )
 	int realweaponIndex = WeaponIndex
-	int MaxWeapons = 42
+	int MaxWeapons = 41
 		if (WeaponIndex > MaxWeapons) {
         file.tdmState = eTDMState.NEXT_ROUND_NOW
 		foreach (sPlayer in GetPlayerArray())
@@ -2154,55 +2156,58 @@ string function ScoreboardFinal(bool fromConsole = false)
 //Este muestra el scoreboard completo
 //Thanks marumaru（vesslanG）#3285
 {
-array<PlayerInfo> playersInfo = []
-array<PlayerInfo> spectators = []
-        foreach(player in GetPlayerArray())
-        {
-          PlayerInfo p
-          p.name = player.GetPlayerName()
-          p.team = player.GetTeam()
-					p.score = player.GetPlayerGameStat( PGS_KILLS )
-					p.deaths = player.GetPlayerGameStat( PGS_DEATHS )
-					p.kd = getkd(p.score,p.deaths)
-					p.damage = int(player.p.playerDamageDealt)
-					p.lastLatency = int(player.GetLatency()* 1000)
+	array<PlayerInfo> playersInfo = []
+	array<PlayerInfo> spectators = []
 
-					if (fromConsole && player.IsObserver() && IsAlive(player)) {spectators.append(p)}
-					else {playersInfo.append(p)}
+	foreach(player in GetPlayerArray())
+	{
+		PlayerInfo p
+		p.name = player.GetPlayerName()
+		// p.team = player.GetTeam()
+		p.score = player.GetPlayerGameStat( PGS_KILLS )
+		p.deaths = player.GetPlayerGameStat( PGS_DEATHS )
+		p.kd = getkd(p.score,p.deaths)
+		p.damage = int(player.p.playerDamageDealt)
+		// p.lastLatency = int(player.GetLatency()* 1000)
 
-        }
-        playersInfo.sort(ComparePlayerInfo)
-		string msg = ""
-		for(int i = 0; i < playersInfo.len(); i++)
-	    {
-		    PlayerInfo p = playersInfo[i]
-            switch(i)
-            {
-                case 0:
-                     msg = msg + "1. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
-					break
-                case 1:
-                    msg = msg + "2. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
-                    break
-                case 2:
-                    msg = msg + "3. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
-                    break
-                default:
-					msg = msg + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
-                    break
-            }
-        }
-
-		if (fromConsole && spectators.len() > 0) {
-			msg += "\n\nSpectating Players:\n"
-			for(int i = 0; i < spectators.len(); i++)
-		  {
-			    PlayerInfo p = spectators[i]
-					msg += p.name + "\n"
-			}
+		if (fromConsole && player.IsObserver() && IsAlive(player)) 
+			spectators.append(p)
+		else 
+			playersInfo.append(p)
+	}
+	playersInfo.sort(ComparePlayerInfo)
+	string msg = ""
+	for(int i = 0; i < playersInfo.len(); i++)
+	{
+		PlayerInfo p = playersInfo[i]
+		switch(i)
+		{
+			case 0:
+				 msg = msg + "1. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				break
+			case 1:
+				msg = msg + "2. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				break
+			case 2:
+				msg = msg + "3. " + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				break
+			default:
+				msg = msg + p.name + ":   " + p.score + " | " + p.deaths + " | " + p.kd + " | " + p.damage + "\n"
+				break
 		}
+	}
+
+	if (fromConsole && spectators.len() > 0) {
+		msg += "\n\nSpectating Players:\n"
+		for(int i = 0; i < spectators.len(); i++)
+		{
+			PlayerInfo p = spectators[i]
+				msg += p.name + "\n"
+		}
+	}
 	return msg
 }
+
 
 string function ScoreboardFinalPROPHUNT(bool fromConsole = false)
 //Este muestra el scoreboard completo
@@ -2384,29 +2389,24 @@ bool function IsAdmin( entity player )
     return file.mAdmins.find(player.GetPlayerName()) != -1
 }
 
-bool function ClientCommand_FlowstateKick(entity player, array<string> args)
-{
-	if(IsAdmin( player ))
-	    return false
+bool function ClientCommand_FlowstateKick(entity player, array < string > args) {
+    if (!IsAdmin(player))
+        return false
 
-	foreach(sPlayer in GetPlayerArray())
-    {
-		if(sPlayer.GetPlayerName() == args[0])
-		{
-			#if SERVER
-			printl("[Flowstate] -> Kicking " + sPlayer.GetPlayerName() + " from flowstate.")
-			ServerCommand( "kick " + sPlayer.GetPlayerName() )
-			#endif
-			return true
-		}
-	}
-	return false
+    foreach(sPlayer in GetPlayerArray()) {
+        if (sPlayer.GetPlayerName() == args[0]) {
+            printl("[Flowstate] -> Kicking " + sPlayer.GetPlayerName() + " from flowstate.")
+            ServerCommand("sv_kick " + sPlayer.GetPlayerName())
+            return true
+        }
+    }
+    return false
 }
 
 bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
 {
 	printt("[Flowstate] -> Changing sky color!")
-	#if SERVER
+
 	if(!file.mapSkyToggle) {
 		SetConVarFloat( "mat_autoexposure_max", 1.0 )
 		SetConVarFloat( "mat_autoexposure_max_multiplier", 0.4 )
@@ -2429,15 +2429,9 @@ bool function ClientCommand_ChangeMapSky(entity player, array<string> args)
 		file.mapSkyToggle = true
 	}
 	return true
-	#endif
+
 	unreachable
 }
-
-bool function ClientCommand_IsthisevenCrashfixtest(entity player, array<string> args)
-{
-	return true
-}
-
 
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 {
@@ -2537,7 +2531,8 @@ bool function ClientCommand_AdminMsg(entity player, array<string> args)
         {
             Message( sPlayer, "Admin message", playerName + " says: "  + str, 6)
         }
-	} else return false
+	} else 
+		return false
 
 	return true
 }
@@ -2580,10 +2575,7 @@ bool function ClientCommand_Help(entity player, array<string> args)
 bool function ClientCommand_ChatBanList(entity player, array<string> args)
 {
     if( !IsAdmin( player ) )
-	{
-		Message(player, "Admin Only Command", "", 3)
 		return false
-	}
 
     ChatGetBanned(player)
 	return true
@@ -2771,7 +2763,8 @@ bool function ClientCommand_NextRound(entity player, array<string> args)
 	    	if (args[1] == "now")
 	    	   file.tdmState = eTDMState.NEXT_ROUND_NOW
 	    }
-	} else return false
+	} else 
+		return false
 
 	return true
 }
@@ -2788,10 +2781,9 @@ bool function ClientCommand_adminnoclip( entity player, array<string> args )
 
 bool function ClientCommand_CircleNow(entity player, array<string> args)
 {
-	if(!IsValid(player)) return false
+	if( IsValid(player) && !IsAdmin( player)) return false
 
-	if(IsAdmin( player))
-		SummonPlayersInACircle(player)
+	SummonPlayersInACircle(player)
 
 	return true
 }
@@ -2822,34 +2814,35 @@ bool function ClientCommand_UnGod(entity player, array<string> args)
 
 bool function ClientCommand_Scoreboard(entity player, array<string> args)
 {
+	if(!IsValid(player)) return false
+	
 	float ping = player.GetLatency() * 1000 - 40
 
-	if(IsValid(player)) {
-		Message(player,
-        "- CURRENT SCOREBOARD - ",
-        "\n               CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills.\n" +
-        "\n Name:    K  |   D   |   KD   |   Damage dealt\n" +
-        ScoreboardFinal(true) + "\n" +
-        "\nYour ping: " + ping.tointeger() + "ms.\n" +
-        "Hosted by: " + GetOwnerName()
-        , 4)
-	}
+	Message(player,
+	"- CURRENT SCOREBOARD - ",
+	"\n               CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills.\n" +
+	"\n Name:    K  |   D   |   KD   |   Damage dealt\n" +
+	ScoreboardFinal(true) + "\n" +
+	"\nYour ping: " + ping.tointeger() + "ms.\n" +
+	"Hosted by: " + GetOwnerName()
+	, 4)
+
 	return true
 }
 
 bool function ClientCommand_ScoreboardPROPHUNT(entity player, array<string> args)
 {
+	if(!IsValid(player)) return false
+	
 	float ping = player.GetLatency() * 1000 - 40
-    if(IsValid(player))
-    {
-        Message(player,
-        "- PROPHUNT SCOREBOARD - ",
-        "Name:    K  |   D   \n" +
-        ScoreboardFinalPROPHUNT(true) + "\n" +
-        "Your ping: " + ping + "ms. \n" +
-        "Hosted by: " + GetOwnerName()
-        , 5)
-    }
+	
+	Message(player,
+	"- PROPHUNT SCOREBOARD - ",
+	"Name:    K  |   D   \n" +
+	ScoreboardFinalPROPHUNT(true) + "\n" +
+	"Your ping: " + ping.tointeger() + "ms. \n" +
+	"Hosted by: " + GetOwnerName()
+	, 5)
 
 	return true
 }
@@ -2874,13 +2867,16 @@ bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
     if(IsAdmin(player)) {
         int currentTeam = 2
         int numTeams = int(args[0])
-
-        foreach (p in shuffleArray(GetPlayerArray()))
+		array<entity> allplayers = GetPlayerArray()
+		allplayers.randomize()
+        foreach (p in allplayers)
         {
-            if (IsValid(p)) {SetTeam(p,TEAM_IMC + 2 + (currentTeam % numTeams))}
-                    currentTeam += 1
+            if (!IsValid(p)) continue
+			SetTeam(p,TEAM_IMC + 2 + (currentTeam % numTeams))
+            currentTeam += 1
             Message(p, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
         }
+		return true
 	} else 
 		return false
 	unreachable
