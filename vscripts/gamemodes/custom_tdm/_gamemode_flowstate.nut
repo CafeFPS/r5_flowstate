@@ -27,6 +27,7 @@ global function SetTdmStateToInProgress
 global function SetFallTriggersStatus
 global function ResetDeathPlayersCounterForFirstBloodAnnouncer
 global function CreateShipRoomFallTriggers
+global function AutoChangeLevelThread
 
 global function ClientCommand_ClientMsg
 global function	ClientCommand_DispayChatHistory
@@ -441,22 +442,20 @@ void function __HighPingCheck(entity player)
 
 	if ( FlowState_KickHighPingPlayer() && (int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() )
 	{
-		player.FreezeControlsOnServer() ; player.ForceStand() ; HolsterAndDisableWeapons( player )
+		player.FreezeControlsOnServer()
+		player.ForceStand()
+		HolsterAndDisableWeapons( player )
 
-		Message(player, "FLOWSTATE KICK", "Your ping is too high: " + (int(player.GetLatency()* 1000) - 40), 3)
+		Message(player, "FLOWSTATE KICK", "Admin has enabled a ping limit: " + FlowState_MaxPingAllowed() + " ms. \n Your ping is too high: " + (int(player.GetLatency()* 1000) - 40) + " ms.", 3)
 
 		wait 3
-
-		#if SERVER
+		
+		if(!IsValid(player)) return
 		printl("[Flowstate] -> Kicking " + player.GetPlayerName() + " -> [High Ping]")
-		ServerCommand( "kick " + player.GetPlayerName() )
-		#endif
-
+		ServerCommand( "sv_kick " + player.GetPlayerName() )
 		UpdatePlayerCounts()
 	} else if(GameRules_GetGameMode() == "custom_tdm"){
-		Message(player, "FLOWSTATE",
-		"    Enjoy your stay, " + player.GetPlayerName() +
-		" Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms."
+		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms."
 		, 5)
 	}
 }
@@ -1667,7 +1666,8 @@ if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
 	{
 		WaitFrame()
 	}
-}
+} else
+	thread AutoChangeLevelThread(endTime)
 
 if (FlowState_Timer()){
 while( Time() <= endTime )
@@ -1812,6 +1812,20 @@ foreach(player in GetPlayerArray())
 		}
 	}
 file.ringBoundary.Destroy()
+}
+
+void function AutoChangeLevelThread(float endTime)
+{
+	endTime = endTime*2 + 10
+	OnThreadEnd(
+		function() : ( )
+		{
+			GameRules_ChangeMap(GetMapName(), GameRules_GetGameMode())
+		}
+	)
+	
+	while(Time() <= endTime)
+		WaitFrame()
 }
 
 //       ██ ██████  ██ ███    ██  ██████  ██
