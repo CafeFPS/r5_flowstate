@@ -1500,6 +1500,8 @@ bool function FlowState_AllChat()                         { return GetCurrentPla
 float function FlowState_ChatCooldown()                          { return GetCurrentPlaylistVarFloat("flowstateChatCd", 5) }
 bool function FlowState_ForceCharacter()                         { return GetCurrentPlaylistVarBool("flowstateForceCharacter", true ) } 
 int function FlowState_ChosenCharacter() { return GetCurrentPlaylistVarInt("flowstateChosenCharacter", 8) }
+bool function FlowState_ForceAdminCharacter()                         { return GetCurrentPlaylistVarBool("flowstateForceAdminCharacter", true ) } 
+int function FlowState_ChosenAdminCharacter() { return GetCurrentPlaylistVarInt("flowstateChosenAdminCharacter", 8) }
 bool function FlowState_DummyOverride()                         { return GetCurrentPlaylistVarBool("flowstateDummyOverride", false ) } 
 bool function FlowState_AutoreloadOnKillPrimary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadPrimary", true ) } 
 bool function FlowState_AutoreloadOnKillSecondary()                         { return GetCurrentPlaylistVarBool("flowstateAutoreloadSecondary", true ) } 

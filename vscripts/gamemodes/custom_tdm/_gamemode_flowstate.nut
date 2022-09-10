@@ -2017,10 +2017,18 @@ void function CharSelect( entity player)
 {
 	if(!FlowState_PROPHUNT())
 	{
-	//Char select.
-	file.characters = clone GetAllCharacters()
-	ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
-	CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )}
+		//Char select.
+		file.characters = clone GetAllCharacters()
+		if(FlowState_ForceAdminCharacter() && IsAdmin(player))
+		{
+			ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenAdminCharacter()]
+			CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+		} else
+		{
+			ItemFlavor PersonajeEscogido = file.characters[FlowState_ChosenCharacter()]
+			CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+		}
+	}
 
 	//Dummies
 	if (FlowState_DummyOverride()) {
@@ -2037,10 +2045,10 @@ void function CharSelect( entity player)
 	player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
 	if(FlowState_PROPHUNT())
 	{
-	file.characters = clone GetAllCharacters()
-	ItemFlavor PersonajeEscogido = file.characters[RandomInt(9)]
-	CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-	TakeAllWeapons(player)
+		file.characters = clone GetAllCharacters()
+		ItemFlavor PersonajeEscogido = file.characters[RandomInt(9)]
+		CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
+		TakeAllWeapons(player)
 	}
 }
 

@@ -1839,7 +1839,10 @@ void function StartRunningTargetsChallenge(entity player)
 			entity dummy = CreateDummy( 99, OriginToGround( <circleoriginfordummy.x, circleoriginfordummy.y, 10000> ), Vector(0,angles2.y,0) )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )
-			PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetForwardVector()*200 + <0,0,128>, dummy.GetOrigin() )
+			
+			if(PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() ))
+				dummy.SetVelocity(AnglesToUp(dummy.GetAngles())*200 + AnglesToForward(dummy.GetAngles())*200)
+		
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
