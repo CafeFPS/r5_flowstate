@@ -348,6 +348,9 @@ void function SetupDefaultDevCommandsMP()
 
 	SetupDevCommand( "Toggle Skybox View", "script thread ToggleSkyboxView()" )
 	SetupDevCommand( "Toggle HUD", "ToggleHUD" )
+
+	SetupDevCommand( "Equip Custom Heirloom", "script thread SetupHeirloom()" )
+	SetupDevCommand( "Equip Custom Heirloom (All Players)", "script thread SetupHeirloom( true )" )
 	//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
 	//SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
 	//SetupDevCommand( "Toggle Pain Death sound debug", "script TogglePainDeathDebug()" )

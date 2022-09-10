@@ -38,6 +38,38 @@ void function ShDevUtility_Init()
 }
 #endif
 
+#if SERVER
+void function SetupHeirloom( bool allplayers = false)
+{
+	if ( allplayers )
+	{
+		foreach( entity player in GetPlayerArray() )
+		{
+			if ( !IsValid( player ) )
+				return
+
+			player.TakeOffhandWeapon(OFFHAND_MELEE)
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE )
+			Dev_PrintMessage( player, "R5RELOADED CUSTOM HEIRLOOM", "Ported by @KralRindo, Textured by @Aetheon_ & @KralRindo. Powered by REPAK", 4, "LootCeremony_LootHologram_Appear_Heirloom" )
+		}
+	}
+	else
+	{
+		entity player = gp()[0]
+		if ( !IsValid( player ) )
+			return
+
+		player.TakeOffhandWeapon(OFFHAND_MELEE)
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE )
+		Dev_PrintMessage( player, "R5RELOADED CUSTOM HEIRLOOM", "Ported by @KralRindo, Textured by @Aetheon_ & @KralRindo. Powered by REPAK", 4, "LootCeremony_LootHologram_Appear_Heirloom" )
+	}
+}
+#endif
+
 #if SERVER || CLIENT || UI
 void function ShDevConsole_Init()
 {
