@@ -656,8 +656,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 		player.TakeOffhandWeapon( OFFHAND_MELEE )
 		player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 	}
 
 	if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
@@ -670,8 +670,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		GiveRandomPrimaryWeapon(player)
 		GiveRandomSecondaryWeapon(player)
 
-            player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-            player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+            player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+            player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 		} catch (e) {}
     } else if(FlowState_RandomGunsMetagame() && !FlowState_Gungame() && IsValid( player ))
 	{
@@ -682,8 +682,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 			GiveRandomPrimaryWeaponMetagame(player)
 			GiveRandomSecondaryWeaponMetagame(player)
 
-            player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-            player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+            player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+            player.GiveOffhandWeapon( "melee_bolo_sworde", OFFHAND_MELEE, [] )
 		} catch (e) {}
 	}
 
@@ -710,8 +710,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         GiveRandomSecondaryWeapon( player)
         GiveRandomTac(player)
         GiveRandomUlt(player)
-        player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-        player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+        player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+        player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
     }
 	if(FlowState_Gungame() && IsValid( player ))
 		GiveGungameWeapon(player)
@@ -2041,8 +2041,8 @@ void function CharSelect( entity player)
 	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 	player.TakeOffhandWeapon( OFFHAND_MELEE )
 	player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 	if(FlowState_PROPHUNT())
 	{
 		file.characters = clone GetAllCharacters()
