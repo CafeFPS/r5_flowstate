@@ -2456,7 +2456,7 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
     {
         entity specTarget = enemiesArray.getrandom()
 
-        if( specTarget.IsObserver())
+        if( specTarget.IsObserver() || !IsValid(specTarget))
         {
             printf("error: try again")
             return false

@@ -62,7 +62,7 @@ void function Bombardment_MortarBarrageFocused( entity weapon, asset effect, vec
 		vector landRadiusOffset = <RandomFloatRange(-radius,radius)/2,RandomFloatRange(-radius,radius)/2,0>
 		
 		entity projectile = weapon.FireWeaponGrenade( fireGrenadeParams )
-		
+		if(!IsValid(projectile)) return
 		if (isFirst)
 		{
 			EmitSoundOnEntity( projectile, fire_sound_1_player_3p )
