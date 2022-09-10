@@ -145,8 +145,8 @@ void function StartFRChallenges(entity player)
 	player.FreezeControlsOnServer()
 	TakeAllWeapons(player)
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-    player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-    player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+    player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 	
 	player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic"] )
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
@@ -190,6 +190,14 @@ void function SetCommonDummyLines(entity dummy)
 	dummy.DisableHibernation()
 }
 
+vector function AimTrainerOriginToGround( vector origin )
+{
+	vector endOrigin         = <origin.x, origin.y, -MAX_WORLD_COORD_BUFFER >
+	TraceResults traceResult = TraceLine( origin, endOrigin, [], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE )
+
+	return traceResult.endPos
+}
+
 //CHALLENGE "Strafing dummies"
 void function StartStraferDummyChallenge(entity player)
 {
@@ -214,15 +222,16 @@ void function StartStraferDummyChallenge(entity player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE, Vector(0,0,0) )
+		vector dummypos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE
+		entity dummy = CreateDummy( 99, AimTrainerOriginToGround( dummypos + Vector(0,0,10000)), Vector(0,0,0) )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 		DispatchSpawn( dummy )
+		dummy.SetOrigin(dummy.GetOrigin() + Vector(0,0,1))
 		
-		if(PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() ))
-			dummy.SetVelocity(AnglesToUp(dummy.GetAngles())*200 + AnglesToForward(dummy.GetAngles())*200)
+		//PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() )
 		
 		dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
@@ -264,10 +273,10 @@ void function StrafeMovement(entity ai, entity player)
 		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.06,0.6)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.06,0.6)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 		}
 	}
 }
@@ -327,16 +336,16 @@ void function StartSwapFocusDummyChallenge(entity player)
 		if(ChallengesEntities.dummies.len()<5){
 
 			vector circleoriginfordummy = circleLocations.getrandom()
-			entity dummy = CreateDummy( 99, circleoriginfordummy, onGroundLocationAngs*-1 )
+			entity dummy = CreateDummy( 99, AimTrainerOriginToGround(circleoriginfordummy + <0, 0, 10000> ) , onGroundLocationAngs*-1 )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )	
+			dummy.SetOrigin(dummy.GetOrigin() + Vector(0,0,5))
 			
-			if(PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() ))
-				dummy.SetVelocity(AnglesToUp(dummy.GetAngles())*200 + AnglesToForward(dummy.GetAngles())*200)
-			
+			//PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() )
+	
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
@@ -663,13 +672,13 @@ void function StartArcstarsChallenge(entity player)
 			
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		if(ChallengesEntities.dummies.len()<5){
-			entity dummy = CreateDummy( 99, circleLocations.getrandom(), onGroundLocationAngs*-1)
+			vector circleoriginfordummy = circleLocations.getrandom()
+			entity dummy = CreateDummy( 99, AimTrainerOriginToGround( <circleoriginfordummy.x, circleoriginfordummy.y, 10000> ), onGroundLocationAngs*-1)
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )
 			
-			if(PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() ))
-				dummy.SetVelocity(AnglesToUp(dummy.GetAngles())*200 + AnglesToForward(dummy.GetAngles())*200)			
+			//PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() )
 
 			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
 			dummy.SetHealth( AimTrainer_AI_HEALTH )
@@ -877,7 +886,8 @@ void function StartLiftUpChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
 		if(ChallengesEntities.dummies.len()<6){
-			entity dummy = CreateDummy( 99, circleLocations.getrandom(), onGroundLocationAngs*-1 )
+			vector circleoriginfordummy = circleLocations.getrandom()
+			entity dummy = CreateDummy( 99, AimTrainerOriginToGround( <circleoriginfordummy.x, circleoriginfordummy.y, 10000> ), onGroundLocationAngs*-1 )
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )
@@ -1832,12 +1842,12 @@ void function StartRunningTargetsChallenge(entity player)
 			int random = 1
 			if(CoinFlip()) random = -1
 			vector angles2 = AnglesToRight(VectorToAngles(vec2))*90*random
-			entity dummy = CreateDummy( 99, circleLocations[locationindex], Vector(0,angles2.y,0) )
+			vector circleoriginfordummy = circleLocations[locationindex]
+			entity dummy = CreateDummy( 99, AimTrainerOriginToGround( <circleoriginfordummy.x, circleoriginfordummy.y, 10000> ), Vector(0,angles2.y,0) )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )
 			
-			if(PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() ))
-				dummy.SetVelocity(AnglesToUp(dummy.GetAngles())*200 + AnglesToForward(dummy.GetAngles())*200)
+			// PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() )
 		
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
@@ -2263,8 +2273,8 @@ void function OnPlayerDeathCallbackThread(entity player)
 	player.SetAngles(lastAng)
 	DecideRespawnPlayer( player )
 	TakeAllWeapons(player)
-    player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-    player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+    player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 	player.GiveWeapon( weaponname, WEAPON_INVENTORY_SLOT_PRIMARY_0, mods )
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 }
