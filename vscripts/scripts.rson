@@ -278,9 +278,7 @@ Scripts:
 	weapons/mp_weapon_lifeline_baton_primary.nut
 	weapons/melee_lifeline_baton.nut
 	
-	weapons/mp_weapon_bolo_sword_primary.nut
-	weapons/melee_bolo_sword.nut
-
+	
 	weapons/mp_weapon_shadow_squad_hands_primary.nut
 	weapons/melee_shadowsquad_hands.nut
 	

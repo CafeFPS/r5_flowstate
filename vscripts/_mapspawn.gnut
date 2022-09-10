@@ -235,7 +235,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 	
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
-	PrecacheWeapon( $"melee_bolo_sword" )
 	PrecacheWeapon( $"mp_weapon_mdlspawner" )
 	PrecacheWeapon( $"mp_weapon_alternator_smg" )
 	PrecacheWeapon( $"mp_weapon_bubble_bunker" )
@@ -285,7 +284,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_deployable_cover" )
 	PrecacheWeapon( $"melee_data_knife" )
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
-	PrecacheWeapon( $"mp_weapon_bolo_sword_primary" )
 	PrecacheWeapon( $"mp_weapon_car" )
 	PrecacheWeapon( $"mp_weapon_rampage" )
 	PrecacheWeapon( $"mp_weapon_clickweapon")
