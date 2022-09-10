@@ -530,7 +530,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    		    KillStreakAnnouncer(victim, true)
 
 	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW)
-	    		    wait 8
+	    		    wait Deathmatch_GetRespawnDelay()
 				
 				if(IsValid(victim)) {
 					_HandleRespawn( victim )
