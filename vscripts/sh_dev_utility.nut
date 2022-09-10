@@ -24,6 +24,7 @@ void function ShDevUtility_Init()
 
 	#if SERVER || CLIENT
 		PrecacheModel( $"mdl/Humans/class/medium/pilot_medium_empty.rmdl" ) // for spectator players
+		Remote_RegisterClientFunction( "R5RHeirloomCredit", "entity" )
 	#endif
 
 	#if SERVER
@@ -35,6 +36,45 @@ void function ShDevUtility_Init()
 		RegisterSignal( "DEV_PreviewScreenRUI" )
 		RegisterSignal( "DEV_PreviewWorldRUI" )
 	#endif
+}
+#endif
+
+#if SERVER
+void function SetupHeirloom( bool allplayers = false)
+{
+	if ( allplayers )
+	{
+		foreach( entity player in GetPlayerArray() )
+		{
+			if ( !IsValid( player ) )
+				return
+
+			player.TakeOffhandWeapon(OFFHAND_MELEE)
+			player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+			player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE )
+			Remote_CallFunction_NonReplay( player, "R5RHeirloomCredit", player )
+		}
+	}
+	else
+	{
+		entity player = gp()[0]
+		if ( !IsValid( player ) )
+			return
+
+		player.TakeOffhandWeapon(OFFHAND_MELEE)
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE )
+		Remote_CallFunction_NonReplay( player, "R5RHeirloomCredit", player )
+	}
+}
+#endif
+
+#if CLIENT
+void function R5RHeirloomCredit(entity player)
+{
+	AnnouncementMessage( player, "R5RELOADED CUSTOM HEIRLOOM", "Ported by @KralRindo, Textured by @Aetheon_ & @KralRindo. Powered by REPAK", FRIENDLY_COLOR )
 }
 #endif
 

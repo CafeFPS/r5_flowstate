@@ -114,6 +114,9 @@ global enum eDamageSourceId
 
 	melee_wraith_kunai
 	mp_weapon_wraith_kunai_primary
+	
+	melee_bolo_sword
+	mp_weapon_bolo_sword_primary
 
 	melee_bloodhound_axe
 	mp_weapon_bloodhound_axe_primary
@@ -546,6 +549,8 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.melee_titan_sword_aoe ]					= "#DEATH_TITAN_SWORD",
 		[ eDamageSourceId.melee_wraith_kunai ] 						= "#DEATH_MELEE_WRAITH_KUNAI",
 		[ eDamageSourceId.mp_weapon_wraith_kunai_primary ] 			= "#DEATH_MELEE_WRAITH_KUNAI",
+		[ eDamageSourceId.melee_bolo_sword ] 						= "Bolo Sword Melee",
+		[ eDamageSourceId.mp_weapon_bolo_sword_primary ] 			= "Bolo Sword Melee",
 		[ eDamageSourceId.mp_weapon_volt_smg ] 						= "#WPN_VOLT_SMG",
 		[ eDamageSourceId.mp_ability_octane_stim ] 					= "#WPN_OCTANE_STIM_SHORT",
 
