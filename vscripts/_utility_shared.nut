@@ -930,6 +930,9 @@ bool function ControlPanel_CanUseFunction( entity playerUser, entity controlPane
 {
 	if ( Bleedout_IsBleedingOut( playerUser ) )
 		return false
+		
+	if ( !IsValid( playerUser ) )
+		return false
 
 	entity activeWeapon = playerUser.GetActiveWeapon( eActiveInventorySlot.mainHand )
 	if ( IsValid( activeWeapon ) && activeWeapon.IsWeaponOffhand() )

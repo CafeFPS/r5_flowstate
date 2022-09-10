@@ -318,7 +318,9 @@ void function CodeCallback_PlayerClassChanged( entity player, bool actualSetting
 		if(IsValid( player ) ){
 		player.kv.renderColor = "255 255 255 255"
 
-		InitDamageStates( player )}
+		InitDamageStates( player )
+		if ( GameRules_GetGameMode() == "survival" )// Survey Beacon Minimap Icon
+			thread SetSurveyBaconMinimapVisibility( player )}
 	#endif
 
 	//if ( IsClient() && !player.IsTitan() )
