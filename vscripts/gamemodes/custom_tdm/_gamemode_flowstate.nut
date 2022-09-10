@@ -2189,7 +2189,7 @@ string function ScoreboardFinal(bool fromConsole = false)
 	}
 	playersInfo.sort(ComparePlayerInfo)
 	string msg = ""
-	for(int i = 0; i < min(15, playersInfo.len()); i++)
+	for(int i = 0; i < min(6, playersInfo.len()); i++)
 	{
 		PlayerInfo p = playersInfo[i]
 		switch(i)

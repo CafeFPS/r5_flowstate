@@ -21,8 +21,11 @@
 #if SERVER
 void function CodeCallback_MapInit()
 {
-	SharedInit()
-	SURVIVAL_AddCallback_OnDeathFieldStopShrink( OnDeathFieldStopShrink_ShadowSquad)
+	if ( IsFallLTM() )
+	{
+		SharedInit()
+		SURVIVAL_AddCallback_OnDeathFieldStopShrink( OnDeathFieldStopShrink_ShadowSquad )
+	}
 	//mp_rr_canyonlands_mu1_night_SurvivalPreprocess()
 
 	Canyonlands_MU1_CommonMapInit()
@@ -38,7 +41,8 @@ void function CodeCallback_MapInit()
 #if CLIENT
 void function ClientCodeCallback_MapInit()
 {
-	SharedInit()
+	if ( IsFallLTM() )
+		SharedInit()
 	Canyonlands_MapInit_Common()
 	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_canyonlands_mu1_night.rpak" )
 	MinimapLabelsCanyonlandsNight()
