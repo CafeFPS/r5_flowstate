@@ -214,7 +214,8 @@ void function StartStraferDummyChallenge(entity player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE, Vector(0,0,0) )
+		vector dummypos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE
+		entity dummy = CreateDummy( 99, OriginToGround( <dummypos.x, dummypos.y, 20000> ), Vector(0,0,0) )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
@@ -327,7 +328,7 @@ void function StartSwapFocusDummyChallenge(entity player)
 		if(ChallengesEntities.dummies.len()<5){
 
 			vector circleoriginfordummy = circleLocations.getrandom()
-			entity dummy = CreateDummy( 99, circleoriginfordummy, onGroundLocationAngs*-1 )
+			entity dummy = CreateDummy( 99, OriginToGround( <circleoriginfordummy.x, circleoriginfordummy.y, 10000> ) , onGroundLocationAngs*-1 )
 			vector pos = dummy.GetOrigin()
 			vector angles = dummy.GetAngles()
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
@@ -663,7 +664,8 @@ void function StartArcstarsChallenge(entity player)
 			
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
 		if(ChallengesEntities.dummies.len()<5){
-			entity dummy = CreateDummy( 99, circleLocations.getrandom(), onGroundLocationAngs*-1)
+			vector circleoriginfordummy = circleLocations.getrandom()
+			entity dummy = CreateDummy( 99, OriginToGround( <circleoriginfordummy.x, circleoriginfordummy.y, 10000> ), onGroundLocationAngs*-1)
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )
@@ -877,7 +879,8 @@ void function StartLiftUpChallenge(entity player)
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
 		if(ChallengesEntities.dummies.len()<6){
-			entity dummy = CreateDummy( 99, circleLocations.getrandom(), onGroundLocationAngs*-1 )
+			vector circleoriginfordummy = circleLocations.getrandom()
+			entity dummy = CreateDummy( 99, OriginToGround( <circleoriginfordummy.x, circleoriginfordummy.y, 10000> ), onGroundLocationAngs*-1 )
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )
@@ -1832,7 +1835,8 @@ void function StartRunningTargetsChallenge(entity player)
 			int random = 1
 			if(CoinFlip()) random = -1
 			vector angles2 = AnglesToRight(VectorToAngles(vec2))*90*random
-			entity dummy = CreateDummy( 99, circleLocations[locationindex], Vector(0,angles2.y,0) )
+			vector circleoriginfordummy = circleLocations[locationindex]
+			entity dummy = CreateDummy( 99, OriginToGround( <circleoriginfordummy.x, circleoriginfordummy.y, 10000> ), Vector(0,angles2.y,0) )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )
 			PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetForwardVector()*200 + <0,0,128>, dummy.GetOrigin() )
