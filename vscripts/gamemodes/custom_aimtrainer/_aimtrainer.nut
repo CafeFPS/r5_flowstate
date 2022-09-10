@@ -25,7 +25,7 @@ vector floorCenterForPlayer
 vector floorCenterForButton
 vector onGroundLocationPos
 vector onGroundLocationAngs
-vector onGroundDummyPos 
+vector onGroundDummyPos
 vector AimTrainer_startPos
 vector AimTrainer_startAngs
 
@@ -66,6 +66,8 @@ void function _ChallengesByColombia_Init()
 	AddClientCommandCallback("CC_ChangeChallengeDuration", CC_ChangeChallengeDuration)
 	AddClientCommandCallback("CC_AimTrainer_AI_SHIELDS_LEVEL", CC_AimTrainer_AI_SHIELDS_LEVEL)
 	AddClientCommandCallback("CC_AimTrainer_STRAFING_SPEED", CC_AimTrainer_STRAFING_SPEED)
+	AddClientCommandCallback("CC_AimTrainer_SPAWN_DISTANCE", CC_AimTrainer_SPAWN_DISTANCE)
+	AddClientCommandCallback("CC_AimTrainer_AI_HEALTH", CC_AimTrainer_AI_HEALTH)
 	AddClientCommandCallback("CC_RGB_HUD", CC_RGB_HUD)
 	AddClientCommandCallback("CC_AimTrainer_INFINITE_CHALLENGE", CC_AimTrainer_INFINITE_CHALLENGE)
 	AddClientCommandCallback("CC_AimTrainer_INFINITE_AMMO", CC_AimTrainer_INFINITE_AMMO)
@@ -212,16 +214,20 @@ void function StartStraferDummyChallenge(entity player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break
-		entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400, Vector(0,0,0) )
+		entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE, Vector(0,0,0) )
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
-		DispatchSpawn( dummy )	
+		DispatchSpawn( dummy )
+		
+		if(PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() ))
+			dummy.SetVelocity(AnglesToUp(dummy.GetAngles())*200 + AnglesToForward(dummy.GetAngles())*200)
+		
 		dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-		dummy.SetMaxHealth( 100 )
-		dummy.SetHealth( 100 )
+		dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+		dummy.SetHealth( AimTrainer_AI_HEALTH )
 		SetCommonDummyLines(dummy)
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 		AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -258,10 +264,10 @@ void function StrafeMovement(entity ai, entity player)
 		{
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_RIGHT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+			wait RandomFloatRange(0.06,0.6)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 			ai.Anim_ScriptedPlayActivityByName( "ACT_RUN_LEFT", true, 0.1 )
 			ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
-			wait RandomFloatRange(0.05,0.5)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
+			wait RandomFloatRange(0.06,0.6)*(1/AimTrainer_STRAFING_SPEED_WAITTIME)
 		}
 	}
 }
@@ -283,13 +289,7 @@ void function StartSwapFocusDummyChallenge(entity player)
 	)
 	
 	array<vector> circleLocations
-	for(int i = 0; i < 10; i ++)
-		{
-			float r = float(i) / float(10) * 2 * PI
-			vector origin2 = Vector(0,0,0) + player.GetOrigin() + 400 * <sin( r ), cos( r ), 0.0>
-			circleLocations.append(origin2)
-		}
-	circleLocations.randomize()
+
 	wait AimTrainer_PRE_START_TIME
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD_INSTANT )
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
@@ -302,7 +302,7 @@ void function StartSwapFocusDummyChallenge(entity player)
 		for(int i = 0; i < 20; i ++)
 			{
 				float r = float(i) / float(20) * 2 * PI
-				vector origin2 = Vector(0,0,0) + player.GetOrigin() + 550 * <sin( r ), cos( r ), 0.0>
+				vector origin2 = Vector(0,0,0) + player.GetOrigin() + 100 * AimTrainer_SPAWN_DISTANCE * <sin( r ), cos( r ), 0.0>
 				circleLocations.append(origin2)
 				
 				foreach(dummy in GetNPCArray())
@@ -317,7 +317,7 @@ void function StartSwapFocusDummyChallenge(entity player)
 			for(int i = 0; i < 20; i ++)
 				{
 					float r = float(i) / float(20) * 2 * PI
-					vector origin2 = Vector(0,0,0) + player.GetOrigin() + 550 * <sin( r ), cos( r ), 0.0>
+					vector origin2 = Vector(0,0,0) + player.GetOrigin() + 100 * AimTrainer_SPAWN_DISTANCE * <sin( r ), cos( r ), 0.0>
 					circleLocations.append(origin2)
 				}
 		}
@@ -333,11 +333,14 @@ void function StartSwapFocusDummyChallenge(entity player)
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )	
-			PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetForwardVector()*200 + <0,0,128>, dummy.GetOrigin() )
+			
+			if(PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() ))
+				dummy.SetVelocity(AnglesToUp(dummy.GetAngles())*200 + AnglesToForward(dummy.GetAngles())*200)
+			
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetMaxHealth( 20 )
-			dummy.SetHealth( 20 )
+			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+			dummy.SetHealth( AimTrainer_AI_HEALTH )
 			SetCommonDummyLines(dummy)
 			ChallengesEntities.dummies.append(dummy)
 			
@@ -424,7 +427,7 @@ void function StartFloatingTargetChallenge(entity player)
 
 	while(true){
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
-		entity dummy = CreateDummy(99, player.GetOrigin() + AnglesToForward(player.GetAngles())*300, Vector(0,90,0))
+		entity dummy = CreateDummy(99, player.GetOrigin() + AnglesToForward(player.GetAngles())* 100 * AimTrainer_SPAWN_DISTANCE, Vector(0,90,0))
 		vector pos = dummy.GetOrigin()
 		vector angles = dummy.GetAngles()
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
@@ -432,8 +435,8 @@ void function StartFloatingTargetChallenge(entity player)
 		DispatchSpawn( dummy )	
 		dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-		dummy.SetMaxHealth( 100 )
-		dummy.SetHealth( 100 )
+		dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+		dummy.SetHealth( AimTrainer_AI_HEALTH )
 		SetCommonDummyLines(dummy)
 		AddEntityCallback_OnDamaged(dummy, OnFloatingDummyDamaged)
 		AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -486,7 +489,7 @@ void function StartPopcornChallenge(entity player)
 void function CreateDummyPopcornChallenge(entity player)
 {
 	float r = float(RandomInt(6)) / float(6) * 2 * PI
-	entity dummy = CreateDummy( 99, player.GetOrigin() + 400 * <sin( r ), cos( r ), 0.0>, <0,90,0> )
+	entity dummy = CreateDummy( 99, player.GetOrigin() + 100 * AimTrainer_SPAWN_DISTANCE * <sin( r ), cos( r ), 0.0>, <0,90,0> )
 	EndSignal(dummy, "OnDeath")
 
 	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
@@ -494,8 +497,8 @@ void function CreateDummyPopcornChallenge(entity player)
 	DispatchSpawn( dummy )	
 	dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 	dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-	dummy.SetMaxHealth( 100 )
-	dummy.SetHealth( 100 )
+	dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+	dummy.SetHealth( AimTrainer_AI_HEALTH )
 	SetCommonDummyLines(dummy)
 	AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 	AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -523,12 +526,12 @@ void function CreateDummyPopcornChallenge(entity player)
 			else
 				random = -1
 
-			int random2 = RandomIntRangeInclusive(1,4)
-			if(random2 == 1 || random2 == 2 || random2 == 3) //75% prob jumping around the player randomly right or left
-				ai.SetVelocity((AnglesToRight( angles2 ) * RandomFloatRange(128,256) * random ) + AnglesToUp(angles2)*RandomFloatRange(512,1024))
-			else if(random2 == 4) //25% of chance going to player location and repositioning 
+			int random2 = RandomIntRangeInclusive(1,5)
+			if(random2 == 5)
 				ai.SetVelocity(AnglesToForward( angles2 ) * 128 + AnglesToUp(angles2)*RandomFloatRange(512,1024))
-			
+			else
+				ai.SetVelocity((AnglesToRight( angles2 ) * RandomFloatRange(128,256) * random ) + AnglesToUp(angles2)*RandomFloatRange(512,1024))
+				
 			EmitSoundOnEntity( ai, "JumpPad_LaunchPlayer_3p" )
 		}
 		WaitFrame()
@@ -578,7 +581,7 @@ void function CreateDummyStraightUpChallenge(entity player)
 	int random2 = 1
 	if(CoinFlip()) random2 = -1	
 	
-	entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(player.GetAngles())*RandomIntRange(100,900)*random + AnglesToRight(player.GetAngles())*RandomIntRange(100,900)*random2, Vector(0,180,0) )
+	entity dummy = CreateDummy( 99, player.GetOrigin() + AnglesToForward(player.GetAngles()) * RandomIntRange(100,500)* random * AimTrainer_SPAWN_DISTANCE + AnglesToRight(player.GetAngles())*RandomIntRange(100,900)*random2, Vector(0,180,0) )
 	EndSignal(dummy, "OnDeath")
 	EndSignal(player, "ChallengeTimeOver")
 	
@@ -595,8 +598,8 @@ void function CreateDummyStraightUpChallenge(entity player)
 	DispatchSpawn( dummy )	
 	dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 	dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-	dummy.SetMaxHealth( 100 )
-	dummy.SetHealth( 100 )
+	dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+	dummy.SetHealth( AimTrainer_AI_HEALTH )
 	SetCommonDummyLines(dummy)
 	AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
 	AddEntityCallback_OnKilled(dummy, OnDummyKilled)
@@ -654,7 +657,7 @@ void function StartArcstarsChallenge(entity player)
 		for(int i = 0; i < 15; i ++)
 			{
 				float r = float(i) / float(15) * 2 * PI
-				vector origin2 = Vector(0,0,0) + player.GetOrigin() + RandomIntRange(200,400) * <sin( r ), cos( r ), 0.0>
+				vector origin2 = Vector(0,0,0) + player.GetOrigin() + 100 * AimTrainer_SPAWN_DISTANCE * <sin( r ), cos( r ), 0.0>
 				circleLocations.append(origin2)
 			}
 			
@@ -664,11 +667,12 @@ void function StartArcstarsChallenge(entity player)
 			StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), dummy.GetOrigin(), dummy.GetAngles() )
 			SetSpawnOption_AISettings( dummy, "npc_dummie_combat" )
 			DispatchSpawn( dummy )
-			PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetForwardVector()*200 + <0,0,128>, dummy.GetOrigin() )			
-			// dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
-			// dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetMaxHealth( 100 )
-			dummy.SetHealth( 100 )
+			
+			if(PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetUpVector()*2048 + dummy.GetForwardVector()*2048 , dummy.GetOrigin() ))
+				dummy.SetVelocity(AnglesToUp(dummy.GetAngles())*200 + AnglesToForward(dummy.GetAngles())*200)			
+
+			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+			dummy.SetHealth( AimTrainer_AI_HEALTH )
 			SetCommonDummyLines(dummy)
 			SetTargetName(dummy, "arcstarChallengeDummy")
 			ChallengesEntities.dummies.append(dummy)
@@ -823,8 +827,8 @@ void function StartVerticalGrenadesChallenge(entity player)
 			dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_NEW_ENEMY_FROM_SOUND )
 			//dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			//dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetMaxHealth( 100 )
-			dummy.SetHealth( 100 )
+			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+			dummy.SetHealth( AimTrainer_AI_HEALTH )
 			SetCommonDummyLines(dummy)
 			SetTargetName(dummy, "GrenadesChallengeDummy")
 			Remote_CallFunction_NonReplay(player, "ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies", dummy, player)
@@ -880,8 +884,8 @@ void function StartLiftUpChallenge(entity player)
 			dummy.UseSequenceBounds( false )
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetMaxHealth( 100 )
-			dummy.SetHealth( 100 )
+			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+			dummy.SetHealth( AimTrainer_AI_HEALTH )
 			SetCommonDummyLines(dummy)
 			ChallengesEntities.dummies.append(dummy)
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
@@ -1184,7 +1188,7 @@ void function StartCloseFastStrafesChallenge(entity player)
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,90,0))
 	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
-	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*400
+	onGroundDummyPos = player.GetOrigin() + AnglesToForward(onGroundLocationAngs)*100*AimTrainer_SPAWN_DISTANCE
 
 	EndSignal(player, "ChallengeTimeOver")
 	
@@ -1212,8 +1216,8 @@ void function StartCloseFastStrafesChallenge(entity player)
 		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
 		dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-		dummy.SetMaxHealth( 100 )
-		dummy.SetHealth( 100 )
+		dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+		dummy.SetHealth( AimTrainer_AI_HEALTH )
 		SetCommonDummyLines(dummy)
 		
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
@@ -1230,7 +1234,7 @@ void function DummyFastCloseStrafeMovement(entity dummy, entity player)
 
 	vector angles2 = VectorToAngles( player.GetOrigin() - dummy.GetOrigin() )
 
-	dummy.SetOrigin(player.GetOrigin() + AnglesToForward(player.GetAngles())*100)
+	dummy.SetOrigin(player.GetOrigin() + AnglesToForward(player.GetAngles())*100*AimTrainer_SPAWN_DISTANCE)
 
 	entity script_mover = CreateEntity( "script_mover" )
 	script_mover.kv.solid = 0
@@ -1258,7 +1262,7 @@ void function DummyFastCloseStrafeMovement(entity dummy, entity player)
 		int morerandomness = 1
 		if(CoinFlip()) morerandomness = -1
 		
-		script_mover.NonPhysicsMoveTo( player.GetOrigin() + Normalize(player.GetRightVector())*RandomIntRange(50,80)*morerandomness + Normalize(player.GetForwardVector())*RandomIntRange(20,150), 0.6, 0.0, 0.0 )
+		script_mover.NonPhysicsMoveTo( player.GetOrigin() + Normalize(player.GetRightVector())*RandomIntRange(50,80)*morerandomness*AimTrainer_SPAWN_DISTANCE + Normalize(player.GetForwardVector())*RandomIntRange(20,150)*AimTrainer_SPAWN_DISTANCE, 0.6*AimTrainer_SPAWN_DISTANCE, 0.0, 0.0 )
 		script_mover.SetAngles(angles2)
 		dummy.SetAngles(angles2)
 		wait 0.25
@@ -1302,8 +1306,8 @@ void function StartTapyDuckStrafesChallenge(entity player)
 		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
 		dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 		dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-		dummy.SetMaxHealth( 100 )
-		dummy.SetHealth( 100 )
+		dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+		dummy.SetHealth( AimTrainer_AI_HEALTH )
 		SetCommonDummyLines(dummy)
 		
 		AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
@@ -1488,8 +1492,8 @@ void function StartSmoothbotChallenge(entity player)
 		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
 		// dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 		// dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-		dummy.SetMaxHealth( 100 )
-		dummy.SetHealth( 100 )
+		dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+		dummy.SetHealth( AimTrainer_AI_HEALTH )
 		SetCommonDummyLines(dummy)
 		SetTargetName(dummy, "CloseFastDummy")
 		
@@ -1633,7 +1637,7 @@ void function StartSkyDiveChallenge(entity player)
 	player.SetOrigin(floorCenterForPlayer)
 	player.SetAngles(Vector(0,90,0))
 	ChallengesEntities.floor = CreateFloorAtOrigin(floorLocation, 30, 30)
-	onGroundDummyPos = player.GetOrigin() + AnglesToForward(Vector(0,-90,0))*400
+	onGroundDummyPos = player.GetOrigin() + AnglesToForward(Vector(0,-90,0))*100*AimTrainer_SPAWN_DISTANCE 
 
 	EndSignal(player, "ChallengeTimeOver")
 		
@@ -1660,8 +1664,8 @@ void function StartSkyDiveChallenge(entity player)
 			DispatchSpawn( dummy )	
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetMaxHealth( 100 )
-			dummy.SetHealth( 100 )
+			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+			dummy.SetHealth( AimTrainer_AI_HEALTH )
 			SetCommonDummyLines(dummy)
 			dummy.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE | NPC_NEW_ENEMY_FROM_SOUND )
 			ChallengesEntities.dummies.append(dummy)
@@ -1698,13 +1702,13 @@ void function DummySkyDiveMovement(entity dummy, entity player)
 	for(int i = 0; i < 50; i ++)
 	{
 		float r = float(i) / float(50) * 2 * PI
-		vector origin2 = Vector(0,0,3000) + player.GetOrigin() + 900 * <sin( r ), cos( r ), 0.0>
+		vector origin2 = Vector(0,0,3000) + player.GetOrigin() + 200 * AimTrainer_SPAWN_DISTANCE  * <sin( r ), cos( r ), 0.0>
 		circleLocations.append(origin2)
 	}
 	for(int i = 0; i < 50; i ++)
 	{
 		float r = float(i) / float(50) * 2 * PI
-		vector origin2 = player.GetOrigin() + 1500 * <sin( r ), cos( r ), 0.0>
+		vector origin2 = player.GetOrigin() + 400*AimTrainer_SPAWN_DISTANCE  * <sin( r ), cos( r ), 0.0>
 		circleLocationsOnGround.append(origin2)
 	}
 	int locationindex = RandomInt(circleLocations.len())
@@ -1811,13 +1815,14 @@ void function StartRunningTargetsChallenge(entity player)
 	RemoveCinematicFlag( player, CE_FLAG_HIDE_PERMANENT_HUD)
 	player.UnfreezeControlsOnServer()
 	
-	array<vector> circleLocations = NavMesh_RandomPositions( player.GetOrigin(), HULL_HUMAN, 40, 1600, 1800 )
+	array<vector> circleLocations = NavMesh_RandomPositions( player.GetOrigin(), HULL_HUMAN, 40, 200*AimTrainer_SPAWN_DISTANCE, 300*AimTrainer_SPAWN_DISTANCE  )
 
 	float endtime = Time() + AimTrainer_CHALLENGE_DURATION
 	thread ChallengeWatcherThread(endtime, player)
 
 	WaitFrame()
 	while(true){
+		circleLocations = NavMesh_RandomPositions( player.GetOrigin(), HULL_HUMAN, 40, 200*AimTrainer_SPAWN_DISTANCE, 300*AimTrainer_SPAWN_DISTANCE  )
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
 		if(ChallengesEntities.dummies.len()<25){
 			vector org1 = player.GetOrigin()
@@ -1833,8 +1838,8 @@ void function StartRunningTargetsChallenge(entity player)
 			PutEntityInSafeSpot( dummy, null, null, dummy.GetOrigin() + dummy.GetForwardVector()*200 + <0,0,128>, dummy.GetOrigin() )
 			dummy.SetShieldHealthMax( ReturnShieldAmountForDesiredLevel() )
 			dummy.SetShieldHealth( ReturnShieldAmountForDesiredLevel() )
-			dummy.SetMaxHealth( 100 )
-			dummy.SetHealth( 100 )
+			dummy.SetMaxHealth( AimTrainer_AI_HEALTH )
+			dummy.SetHealth( AimTrainer_AI_HEALTH )
 			SetCommonDummyLines(dummy)
 			ChallengesEntities.dummies.append(dummy)
 			AddEntityCallback_OnDamaged(dummy, OnStraferDummyDamaged)
@@ -1877,12 +1882,16 @@ void function DummyRunningTargetsMovement(entity ai, entity player)
 			vector angles = ai.GetAngles() + Vector(0,randomangle,0)
 			ai.SetAngles(Vector(0,angles.y,0) )
 		}
-		if(distance <= 400) //avoid being too close to player
+		if(distance <= 100*AimTrainer_SPAWN_DISTANCE) //avoid being too close to player
 		{ 
 			vector vec = player.GetOrigin() - ai.GetOrigin()
 			vector angles2 = VectorToAngles( vec )
 			ai.SetAngles(Vector(0,angles2.y*-1,0) )
 			wait 0.5
+		}
+		else if(distance >= 3000)
+		{ 
+			if(IsValid(ai)) ai.Destroy()
 		}
 		WaitFrame()
 	}
@@ -2489,6 +2498,20 @@ bool function CC_AimTrainer_STRAFING_SPEED( entity player, array<string> args )
 {
 	float desiredSpeed = float(args[0])
 	AimTrainer_STRAFING_SPEED = desiredSpeed
+	return false
+}
+
+bool function CC_AimTrainer_SPAWN_DISTANCE( entity player, array<string> args )
+{
+	float desiredDistance = float(args[0])
+	AimTrainer_SPAWN_DISTANCE = desiredDistance
+	return false
+}
+
+bool function CC_AimTrainer_AI_HEALTH( entity player, array<string> args )
+{
+	int desiredHealth = int(args[0])
+	AimTrainer_AI_HEALTH = desiredHealth
 	return false
 }
 

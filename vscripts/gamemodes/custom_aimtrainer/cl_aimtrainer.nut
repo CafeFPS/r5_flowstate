@@ -71,6 +71,8 @@ global function RestartButtonResultsClient
 global function ChangeChallengeDurationClient
 global function ChangeAimTrainer_AI_SHIELDS_LEVELClient
 global function ChangeAimTrainer_STRAFING_SPEEDClient
+global function ChangeAimTrainer_AI_HEALTH
+global function ChangeAimTrainer_AI_SPAWN_DISTANCE
 global function ChangeRGB_HUDClient
 global function ChangeAimTrainer_INFINITE_CHALLENGEClient
 global function ChangeAimTrainer_INFINITE_AMMOClient
@@ -184,6 +186,8 @@ void function ActuallyPutDefaultSettings()
 	SetConVarInt( "hud_setting_showMeter", 0)
 	SetConVarInt( "hud_setting_showMedals", 0)
 	SetConVarInt( "hud_setting_showLevelUp", 2)
+	SetConVarInt( "net_minimumPacketLossDC", 4)
+	SetConVarInt( "net_wifi", 100)
 	WaitFrame() //idk?
 	//set default settings
 	player.ClientCommand("CC_AimTrainer_AI_SHIELDS_LEVEL " + GetConVarInt("hud_setting_minimapRotate").tostring())
@@ -194,6 +198,8 @@ void function ActuallyPutDefaultSettings()
 	player.ClientCommand("CC_AimTrainer_INFINITE_AMMO2 " + GetConVarInt("hud_setting_compactOverHeadNames").tostring())	
 	player.ClientCommand("CC_AimTrainer_INMORTAL_TARGETS " + GetConVarInt("hud_setting_streamerMode").tostring())
 	player.ClientCommand("CC_AimTrainer_USER_WANNA_BE_A_DUMMY " + GetConVarInt("hud_setting_showLevelUp").tostring())
+	player.ClientCommand("CC_AimTrainer_SPAWN_DISTANCE " + GetConVarInt("net_minimumPacketLossDC").tostring())		
+	player.ClientCommand("CC_AimTrainer_AI_HEALTH " + GetConVarInt("net_wifi").tostring())
 }
 
 
@@ -650,7 +656,7 @@ void function StartChallenge2Client()
 {
 	entity player = GetLocalClientPlayer()
 	ScreenFade( player, 0, 0, 0, 255, 1, 1, FFADE_IN | FFADE_PURGE )
-	thread CreateDescriptionRUI("Transfers practice. Low health and easy strafe.")
+	thread CreateDescriptionRUI("Transfers practice with easy strafe.")
 	thread CreateTimerRUIandSTATS()
 	player.ClientCommand("CC_StartChallenge2")
 }
@@ -832,6 +838,18 @@ void function ChangeAimTrainer_STRAFING_SPEEDClient(string desiredSpeed)
 	else
 		AimTrainer_STRAFING_SPEED_WAITTIME = 1
 	player.ClientCommand("CC_AimTrainer_STRAFING_SPEED " + speed)	
+}
+
+void function ChangeAimTrainer_AI_SPAWN_DISTANCE(string desiredSpawnDistance)
+{
+	entity player = GetLocalClientPlayer()	
+	player.ClientCommand("CC_AimTrainer_SPAWN_DISTANCE " + desiredSpawnDistance)		
+}
+
+void function ChangeAimTrainer_AI_HEALTH(string desiredHealth)
+{
+	entity player = GetLocalClientPlayer()	
+	player.ClientCommand("CC_AimTrainer_AI_HEALTH " + desiredHealth)		
 }
 
 void function ChangeRGB_HUDClient(string isabool)

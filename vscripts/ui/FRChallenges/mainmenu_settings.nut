@@ -39,6 +39,9 @@ void function InitFRChallengesSettings( var newMenuArg )
 	Hud_SetText( Hud_GetChild( file.menu, "DurationText" ), "60" )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "ShieldSelectorButton"), UIE_CHANGE, ShieldSelectorButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "SpeedTargetsButton"), UIE_CHANGE, SpeedTargetsButton )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SpawnDistanceButton"), UIE_CHANGE, UpdateSpawnDistance )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "HealthButton"), UIE_CHANGE, UpdateAIHealth )
+	
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InmortalTargetsButton"), UIE_CHANGE, InmortalTargetsButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InfiniteAmmoButton"), UIE_CHANGE, InfiniteAmmoButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InfiniteAmmo2Button"), UIE_CHANGE, InfiniteAmmoButton2 )
@@ -47,6 +50,8 @@ void function InitFRChallengesSettings( var newMenuArg )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "UseDummyModelButton"), UIE_CHANGE, UseDummyModelButton)
 	AddButtonEventHandler( Hud_GetChild( file.menu, "DurationText"), UIE_CHANGE, UpdateChallengeDuration )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "SupportTheDev"), UIE_CLICK, SupportTheDev)
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerListLeftArrow"), UIE_CLICK, firstpage)
+	AddButtonEventHandler( Hud_GetChild( file.menu, "BtnServerListRightArrow"), UIE_CLICK, secondpage)
 	
 	var gameMenuButton = Hud_GetChild( menu, "GameMenuButton" )
 	ToolTipData gameMenuToolTip
@@ -63,9 +68,39 @@ void function ShieldSelectorButton(var button)
 	RunClientScript("ChangeAimTrainer_AI_SHIELDS_LEVELClient", desiredVar.tostring())
 }
 
+void function firstpage(var button)
+{
+	Hud_SetText( Hud_GetChild( file.menu, "Pages" ), "  Page: 1/2  " )
+	array<var> challengesRows = GetElementsByClassname( file.menu, "SettingsBtn2" )
+	foreach ( var elem in challengesRows )
+	{
+		Hud_SetVisible( elem, false )
+	}
+	array<var> challengesRows2 = GetElementsByClassname( file.menu, "SettingsBtn" )
+	foreach ( var elem in challengesRows2 ) 
+	{
+		Hud_SetVisible( elem, true )
+	}
+}
+
+void function secondpage(var button)
+{
+	Hud_SetText( Hud_GetChild( file.menu, "Pages" ), "  Page: 2/2  " )
+	array<var> challengesRows = GetElementsByClassname( file.menu, "SettingsBtn" )
+	foreach ( var elem in challengesRows ) 
+	{
+		Hud_SetVisible( elem, false )
+	}
+	array<var> challengesRows2 = GetElementsByClassname( file.menu, "SettingsBtn2" )
+	foreach ( var elem in challengesRows2 ) 
+	{
+		Hud_SetVisible( elem, true )
+	}
+}
+
 void function SupportTheDev(var button)
 {
-	LaunchExternalWebBrowser( "https://ko-fi.com/r5r_colombia", WEBBROWSER_FLAG_NONE )
+	LaunchExternalWebBrowser( "https://pastebin.com/pxm4UBVz", WEBBROWSER_FLAG_NONE )
 }
 
 void function SpeedTargetsButton(var button)
@@ -124,6 +159,18 @@ void function UpdateChallengeDuration(var button)
 {
 	string desiredTime = Hud_GetUTF8Text( Hud_GetChild( file.menu, "DurationText" ) )
 	RunClientScript("ChangeChallengeDurationClient", desiredTime)
+}
+
+void function UpdateSpawnDistance(var button)
+{
+	float desiredDistance = GetConVarFloat("net_minimumPacketLossDC")
+	RunClientScript("ChangeAimTrainer_AI_SPAWN_DISTANCE", desiredDistance)
+}
+
+void function UpdateAIHealth(var button)
+{
+	float desiredHealth = GetConVarFloat("net_wifi")
+	RunClientScript("ChangeAimTrainer_AI_HEALTH", desiredHealth)
 }
 
 void function HistoryButtonFunct(var button)
