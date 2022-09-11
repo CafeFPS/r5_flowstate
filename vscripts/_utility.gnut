@@ -2550,12 +2550,6 @@ void function EmitSoundOnEntityToTeamExceptPlayer( entity ent, string sound, int
 	}
 }
 
-void function EmitSoundOnEntityOnlyToPlayerAfterDelay( entity ent, entity player, string sound, float delay )
-{
-	wait delay
-	EmitSoundOnEntityOnlyToPlayer( ent, player, sound )
-}
-
 #if R5DEV
 // DEV function to toggle player view between the skybox and the real world.
 void function ToggleSkyboxView( float scale = 0.001 )
