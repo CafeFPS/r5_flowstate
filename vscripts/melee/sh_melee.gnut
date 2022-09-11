@@ -399,9 +399,8 @@ void function CodeCallback_OnMeleePressed( entity attacker, entity meleeInputWea
 	// todo(dw): use better door detection logic
 	{
 		bool isShadowSquad = false
-		#if(true)
+		if ( IsFallLTM() )
 			isShadowSquad = IsPlayerShadowSquad( attacker )
-		#endif //
 
 		bool doorLungeEnabled = !isShadowSquad && GetCurrentPlaylistVarBool( "blockable_door_can_be_hurt_by_special_kick", true )
 		entity lungeTarget    = GetMeleeAttackLungeTarget( attacker, meleeAttackWeapon )
@@ -523,17 +522,13 @@ void function CodeCallback_OnMeleeAttackAnimEvent( entity attacker, entity melee
 	if ( !attacker.PlayerMelee_IsAttackActive() )
 		return
 		
-	// if ( SERVER == PlayerMelee_IsServerSideEffects() ) // TODO: FIX THIS!!!!! [N52A r5apex.exe+0101be8]
-	{
-	 	#if SERVER
-	 		impactEffectFlags = impactEffectFlags | IEF_SERVER_SIDE_EFFECT
-			attacker.DispatchImpactEffects( target,
-	 		startPosition, endPosition, hitNormal,
-	 		surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
-	 		attacker, impactEffectFlags )
-		#endif
-	 }
+	impactEffectFlags = impactEffectFlags
 
+	attacker.DispatchImpactEffects( target,
+	startPosition, endPosition, hitNormal,
+	surfaceProp, staticPropID, codeDamageType, meleeAttackWeapon.GetImpactTableIndex(),
+	attacker, impactEffectFlags )
+	
 	// Melee state
 	attacker.PlayerMelee_SetAttackHitEntity( target )
 	if ( !target.IsWorld() )

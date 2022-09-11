@@ -3008,7 +3008,7 @@ void function Dev_PrintMessage( entity player, string text, string subText = "",
 	}
 	Remote_CallFunction_NonReplay( player, "Dev_PrintClientMessage", duration )
 	if ( soundAlias != "" )
-		EmitSoundOnEntity( player, soundAlias )
+		EmitSoundOnEntityOnlyToPlayer( player, player, soundAlias )
 	#endif
 }
 

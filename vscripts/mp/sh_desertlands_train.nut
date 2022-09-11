@@ -1,6 +1,8 @@
 //=========================================================
 //	sh_desertlands_train.nut
 //=========================================================
+//
+// TODO: implement train stopping and the announcer
 
 #if CLIENT
 global function DesertlandsTrainAnnouncer_Init
@@ -8,11 +10,8 @@ global function ServerCallback_SetDesertlandsTrainAtStation
 global function SCB_DLandsTrain_SetCustomSpeakerIdx
 #endif
 
-
 global function IsDesertlandsTrainAtStation
 global function DesertlandsTrain_PreMapInit
-
-
 
 #if SERVER
 global function DesertlandsTrain_Init
@@ -31,26 +30,16 @@ global function DesertlandsTrain_ThreadCheckJuncs
 const string TRAIN_MOVER_NAME = "desertlands_train_mover"
 const int TRAIN_CAR_COUNT = 6
 
-
 #if SERVER
-const int TRAIN_ACCELERATION = 50;	
+const int TRAIN_ACCELERATION = 50;
 const int TRAIN_INIT_SPEED = 500;	// Has to be the same or we could get an offset because of the junction thread delay
 const int TRAIN_MAX_SPEED = 500;
 const int TRAIN_CAR_OFFSET = 850;	// Original seems to be 840, +10 to fix clipping on angles
 const asset TRAIN_POI_BEAM = $"P_ar_hot_zone_far"
-#endif //
-
-
-#if SERVER
-
-#endif //
+#endif // SERVER
 
 struct
 {
-	#if SERVER
-    #endif
-
-
 		bool trainStoppedAtStation = false
 		int  true_trainCarCount = TRAIN_CAR_COUNT
 
@@ -89,7 +78,7 @@ void function InitTrainClientEnts()
 
 void function DesertlandsTrain_PreMapInit()
 {
-	AddCallback_OnNetworkRegistration( DesertlandsTrain_OnNetworkRegistration )	
+	AddCallback_OnNetworkRegistration( DesertlandsTrain_OnNetworkRegistration )
 }
 
 void function DesertlandsTrain_OnNetworkRegistration()
@@ -97,15 +86,14 @@ void function DesertlandsTrain_OnNetworkRegistration()
 	Remote_RegisterClientFunction( "SCB_DLandsTrain_SetCustomSpeakerIdx", "int", 0 )
 }
 
-#if(CLIENT)
+#if CLIENT
+// S2C - set speaker idx
 void function SCB_DLandsTrain_SetCustomSpeakerIdx( int speakerIdx )
 {
 	file.customQueueIdx = speakerIdx
 	InitAnnouncerEnts()
 }
-#endif
 
-#if CLIENT
 void function InitAnnouncerEnts()
 {
 	int numTrainCars = GetCurrentPlaylistVarInt( "desertlands_script_train_car_count", TRAIN_CAR_COUNT )
@@ -129,16 +117,13 @@ void function InitAnnouncerEnts()
 		customSpeakers1.append( announcerTarget4 )
 	}
 }
-#endif
 
-
-#if CLIENT
 void function TrainOnFullUpdate()
 {
 	if ( !Desertlands_IsTrainEnabled() )
 		return
 }
-#endif
+#endif // #if CLIENT
 
 
 #if SERVER
@@ -150,17 +135,17 @@ void function DesertlandsTrain_Dev_TpPlayerZeroToTrain()
 		printl("THERE IS NO TRAIN!")
 		return
 	}
-	
+
 	entity p = GetPlayerArray()[0];
 	p.SetOrigin(trainhead.GetOrigin() + <0,0,256>)
 }
 
 void function DesertlandsTrain_ThreadCheckJuncs(array<entity> cars)
-{	
+{
 	entity lastJunction = null;
 	string nextDirection = ["left","right"].getrandom();
 	// ^ at some point it'll have to be global to the scope to be controlled
-	
+
 	// Not a big fan of the constant check, it's messy.
 	// In theory if we're on a _inward, there's another _inward after it, and the first one isn't connected to a junc
 	// We can use this info to find the next one, and run this just in time
@@ -172,16 +157,16 @@ void function DesertlandsTrain_ThreadCheckJuncs(array<entity> cars)
 		foreach(entity car in cars)
 		{
 			entity cur = car.Train_GetLastNode()
-			
+
 			if(expect string(cur.kv.script_name).find("_inward") > 0) // Merging, always has only one next node
 			{
 				entity nextNode = DesertlandsTrain_GetJunctionNext(car, cur)
 				if(!nextNode) continue // Not a junction then
-				
+
 				car.Train_MoveToTrainNode(nextNode, TRAIN_MAX_SPEED, TRAIN_ACCELERATION)
 			}
 			else if(expect string(cur.kv.script_name).find("_outward") > 0) // Forking, chooses one between left and right
-			{				
+			{
 				if(lastJunction != cur)
 				{
 					nextDirection = ["left","right"].getrandom()	// not random on live?
@@ -209,30 +194,30 @@ entity function DesertlandsTrain_GetJunctionNext(entity car, entity node, string
 				break
 			}
 		}
-		
+
 		if(!isOurJunc)
 			continue
-		
+
 		foreach(entity link in links)
 		{
 			if(link == node)
 				continue;
-			
-			if(link.GetClassName() == "script_mover_train_node")	
+
+			if(link.GetClassName() == "script_mover_train_node")
 			{
-				if(	link.HasKey("script_name") && 
+				if(	link.HasKey("script_name") &&
 					(expect string(link.kv.script_name).find("_outward") > 0 ||
 					expect string(link.kv.script_name).find("_inward") > 0)
 				)
 					continue
-				
+
 				if(noteworthy != "")
 				{
 					if(link.HasKey("script_noteworthy") && expect string(link.kv.script_noteworthy) == noteworthy)
 						return link;
 					continue
 				}
-				
+
 				return link
 			}
 		}
@@ -241,19 +226,19 @@ entity function DesertlandsTrain_GetJunctionNext(entity car, entity node, string
 }
 
 void function DesertlandsTrain_Init()
-{	
+{
 	entity station = GetEntArrayByScriptName( "train_track_node_station" ).getrandom()
-	
-	printl("        |////////|       |/////////|       |//////L")	
-	printl("  _____ |////////| _____ TRAIN  INIT _____ |////////>")	
-	printl("------------------------------------------------------")	
-	printl(" ")	
-	printl("  - - - TRAIN SPAWNING AT: "+station.kv.script_noteworthy + " - - -")	
-	printl(" ")	
-	printl("        |////////|       |/////////|       |//////L")	
-	printl("  _____ |////////| _____ TRAIN  INIT _____ |////////>")	
-	printl("------------------------------------------------------")	
-	
+
+	printl("        |////////|       |/////////|       |//////L")
+	printl("  _____ |////////| _____ TRAIN  INIT _____ |////////>")
+	printl("------------------------------------------------------")
+	printl(" ")
+	printl("  - - - TRAIN SPAWNING AT: "+station.kv.script_noteworthy + " - - -")
+	printl(" ")
+	printl("        |////////|       |/////////|       |//////L")
+	printl("  _____ |////////| _____ TRAIN  INIT _____ |////////>")
+	printl("------------------------------------------------------")
+
 	// Get all cars
 	array<entity> cars = [];
 	for ( int idx = file.true_trainCarCount; idx > -1 ; idx-- )
@@ -262,15 +247,15 @@ void function DesertlandsTrain_Init()
 		if(movers.len() == 1)
 			cars.append(movers[0])
 	}
-	
+
 	// Deleted Button: while we don't know about it
 	// TODO: Hook the button to stop and start the train instead
-	GetEntByScriptName( "train_stop_panel" ).Destroy()	
-	
+	//GetEntByScriptName( "train_stop_panel" ).Destroy()
+
 	// Parent loot bins
 	array<entity> lootBins = GetEntArrayByClass_Expensive( "prop_dynamic" )
 	array<entity> survivalItems = GetEntArrayByClass_Expensive( "prop_survival" )
-	
+
     int j = 0
 	foreach(entity car in cars)
 	{
@@ -279,22 +264,17 @@ void function DesertlandsTrain_Init()
 		{
 			if(bin.GetModelName().find("loot_bin_0") <= 0)
 				continue
-			
+
 			float distance = Distance(car.GetOrigin(),bin.GetOrigin())
 			if(distance > 300)
 				continue
-			
-            j++ //Spawn really good loot in the last car
-            
-            if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true)
-            {   
-                ClearLootBinContents( bin )
-                if(j != 2)
-                    AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "Desertlands_Train", 4 ) )
-                else
-                    AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 4 ) )
-            }
-			
+
+			if( GetCurrentPlaylistVarBool("lootbin_loot_enable", true) == true)
+			{
+				ClearLootBinContents( bin )
+					AddMultipleLootItemsToLootBin( bin, SURVIVAL_GetMultipleWeightedItemsFromGroup( "POI_Ultra", 4 ) )
+			}
+
 			entity parentPoint = CreateEntity( "script_mover_lightweight" )
 			parentPoint.kv.solid = 0
 			parentPoint.SetValueForModelKey( bin.GetModelName() )
@@ -304,7 +284,7 @@ void function DesertlandsTrain_Init()
 			DispatchSpawn( parentPoint )
 			parentPoint.SetParent( car )
 			parentPoint.Hide()
-			
+
 			bin.SetParent(parentPoint)
 		}
 		foreach(entity item in survivalItems)	// No survival items on the ground at this time, fix here if doesn't work
@@ -312,148 +292,28 @@ void function DesertlandsTrain_Init()
 			float distance = Distance(car.GetOrigin(),item.GetOrigin())
 			if(distance > 320)
 				continue
-			
+
 			item.SetParent(car)
 		}
 	}
-	
-	
+
+
 	// Spawn Highlight Beam
 	PrecacheParticleSystem( TRAIN_POI_BEAM )
 	entity trainBeam =  StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( TRAIN_POI_BEAM ), cars[cars.len()-1].GetOrigin(), <90,0,0> )
 	trainBeam.SetParent(cars[cars.len()-1])
-	
-	
+
+
 	// Start the train
 	for(int i = 0; i<file.true_trainCarCount; i++)
 	{
 		cars[i].Hide()
 		cars[i].Train_MoveToTrainNodeEx(station, i*TRAIN_CAR_OFFSET, TRAIN_INIT_SPEED, TRAIN_MAX_SPEED, TRAIN_ACCELERATION)
 	}
-	
+
 	thread DesertlandsTrain_ThreadCheckJuncs(cars)
 }
-#endif //
-
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-#if SERVER
-
-#endif //
-
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-#if SERVER
-
-#endif //
-
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-#if SERVER
-
-#endif //
-
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-#if SERVER
-
-#endif //
-
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-
-
-#if SERVER
-
-#endif //
+#endif // #if SERVER
 
 
 #if CLIENT
@@ -486,14 +346,7 @@ void function ServerCallback_SetDesertlandsTrainAtStation( bool isAtStation )
 }
 #endif
 
-
-
 bool function IsDesertlandsTrainAtStation()
 {
 	return file.trainStoppedAtStation
 }
-
-
-#if SERVER
-
-#endif //

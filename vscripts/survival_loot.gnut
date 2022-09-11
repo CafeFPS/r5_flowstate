@@ -956,6 +956,9 @@ bool function ClientCommand_Sur_SwapPrimaryPositions( entity player, array<strin
 
 bool function ClientCommand_PlayerSwitchedWeapons( entity player, array<string> args )
 {
+	if ( player.PlayerMelee_IsAttackActive() )
+		return false
+			
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 	

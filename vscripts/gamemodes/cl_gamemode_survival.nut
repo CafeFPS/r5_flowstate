@@ -2030,6 +2030,13 @@ void function AddInWorldMinimapObject_WhenValid( entity ent )
 			if ( IsFriendlyTeam( ent.GetTeam(), GetLocalViewPlayer().GetTeam() ) )
 				thread AddInWorldMinimapTeslaTrap( ent, file.mapTopo )
 			return
+		case "ctf_flag_mil":
+				thread AddInWorldMinimapObjectInternal( ent, file.mapTopo, $"rui/gamemodes/capture_the_flag/mil_flag", $"rui/gamemodes/capture_the_flag/mil_flag" )
+			return
+
+		case "ctf_flag_imc":
+				thread AddInWorldMinimapObjectInternal( ent, file.mapTopo, $"rui/gamemodes/capture_the_flag/imc_flag", $"rui/gamemodes/capture_the_flag/imc_flag" )
+			return
 	}
 
 	if ( !ent.IsPlayer() && !ent.IsTitan() )
