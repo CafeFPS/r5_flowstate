@@ -63,6 +63,7 @@ struct {
 	entity lastKiller
 	int SameKillerStoredKills=0
 	array<string> whitelistedWeapons
+	array<string> whitelistedAbilities
 	array<LocationSettings> locationSettings
     LocationSettings& selectedLocation
 	array<vector> thisroundDroppodSpawns
@@ -169,6 +170,11 @@ void function _CustomTDM_Init()
 	for(int i = 0; GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
 	{
 		file.whitelistedWeapons.append(GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~"))
+	}
+
+	for(int i = 0; GetCurrentPlaylistVarString("whitelisted_ability_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
+	{
+		file.whitelistedAbilities.append(GetCurrentPlaylistVarString("whitelisted_ability_" + i.tostring(), "~~none~~"))
 	}
 
 	if(FlowState_PROPHUNT()){
@@ -830,6 +836,14 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3"
 	]
 
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.whitelistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}	
+
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
 
@@ -844,7 +858,15 @@ void function GiveRandomSecondaryWeaponMetagame(entity player)
 		"mp_weapon_mastiff",
 		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l1",
 	]
-
+	
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.whitelistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+	
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
 
@@ -867,7 +889,15 @@ void function GiveRandomPrimaryWeapon(entity player)
         "mp_weapon_esaw optic_cq_hcog_classic energy_mag_l1 barrel_stabilizer_l4_flash_hider",
         "mp_weapon_sniper",
 	]
-
+	
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.whitelistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+	
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
 
@@ -887,7 +917,15 @@ void function GiveRandomSecondaryWeapon( entity player)
 		"mp_weapon_g2 bullets_mag_l3 barrel_stabilizer_l4_flash_hider stock_sniper_l3 hopup_double_tap",
 		"mp_weapon_semipistol bullets_mag_l2",
 	]
-
+	
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.whitelistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
+	
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ) )
 }
 
@@ -939,10 +977,17 @@ void function GiveActualGungameWeapon(int index, entity player)
 		"mp_weapon_g2 bullets_mag_l3 barrel_stabilizer_l4_flash_hider stock_sniper_l3 hopup_double_tap",
 		"mp_weapon_semipistol bullets_mag_l2",
 	]
+	
+	foreach(weapon in Weapons)
+	{
+		array<string> weaponfullstring = split( weapon , " ")
+		string weaponName = weaponfullstring[0]
+		if(file.whitelistedWeapons.find(weaponName) != -1)
+				Weapons.removebyvalue(weapon)
+	}
 
 	__GiveWeapon( player, Weapons, slot, RandomIntRange( 0, Weapons.len() ), true)
 }
-
 
 void function GiveRandomTac(entity player)
 {
@@ -956,6 +1001,9 @@ void function GiveRandomTac(entity player)
 		"mp_weapon_grenade_sonar",
 		"mp_weapon_deployable_cover"
 	]
+
+	foreach(ability in file.whitelistedAbilities)
+		Weapons.removebyvalue(ability)
 
 	if(IsValid(player))
 	    player.GiveOffhandWeapon(Weapons[ RandomIntRange( 0, Weapons.len()) ], OFFHAND_TACTICAL)
@@ -971,7 +1019,10 @@ void function GiveRandomUlt(entity player )
 		"mp_ability_hunt_mode",
 		"mp_weapon_grenade_defensive_bombardment",
 	]
-
+	
+	foreach(ability in file.whitelistedAbilities)
+		Weapons.removebyvalue(ability)
+		
 	if(IsValid(player))
 	    player.GiveOffhandWeapon(Weapons[ RandomIntRange( 0, Weapons.len()) ],  OFFHAND_ULTIMATE)
 }
@@ -2689,16 +2740,22 @@ bool function ClientCommand_ShowLatency(entity player, array<string> args)
 
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 {
-	bool CanGive = GetCurrentPlaylistVarBool("tgive_enabled", true)
-
-    if ( CanGive || !IsAdmin( player ) || args.len() < 2)
+    if ( FlowState_AdminTgive() && !IsAdmin(player) )
 		return false
 
-    bool foundMatch = false
-	foundMatch = file.whitelistedWeapons.find(args[1]) != -1
+	if(args.len() < 2) return false
 
-    if(file.whitelistedWeapons.find(args[1]) == -1 && file.whitelistedWeapons.len())
-	    return false
+    if(file.whitelistedWeapons.len() && file.whitelistedWeapons.find(args[1]) != -1) 
+	{
+		Message(player, "WEAPON WHITELISTED")
+		return false
+	}
+	
+	if( file.whitelistedAbilities.len() && file.whitelistedAbilities.find(args[1]) != -1 )
+	{	
+		Message(player, "ABILITY WHITELISTED")
+		return false
+	}
 
 	entity weapon
 
