@@ -19,6 +19,6 @@ WeaponData
 	"viewmodel"   									"mdl/weapons/bolo_sword/ptpov_bolo_sword_ash.rmdl"
 	"playermodel" 									"mdl/weapons/combat_knife/w_combat_knife.rmdl"
 	
-	"OnWeaponActivate"							"OnWeaponActivate_melee_bolo_sword_primary"
-	"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bolo_sword_primary"
+	//"OnWeaponActivate"							"OnWeaponActivate_melee_bolo_sword_primary"
+	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bolo_sword_primary"
 }

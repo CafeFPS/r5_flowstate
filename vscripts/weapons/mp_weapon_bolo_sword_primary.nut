@@ -14,10 +14,10 @@ void function MpWeaponPoloSwordPrimary_Init()
 
 void function OnWeaponActivate_melee_bolo_sword_primary( entity weapon )
 {
-	//weapon.PlayWeaponEffect( SWORD_FX_GLOW_FP, $"", "muzzle_flash" )
+	weapon.PlayWeaponEffect( SWORD_FX_GLOW_FP, $"", "muzzle_flash" )
 }
 
 void function OnWeaponDeactivate_melee_bolo_sword_primary( entity weapon )
 {
-	//weapon.StopWeaponEffect( SWORD_FX_GLOW_FP, SWORD_FX_GLOW_3P )
+	weapon.StopWeaponEffect( SWORD_FX_GLOW_FP, SWORD_FX_GLOW_3P )
 }
