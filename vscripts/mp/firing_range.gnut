@@ -76,6 +76,8 @@ struct {
 
 void function FiringRangeGameMode_Init()
 {
+	if ( !IsFiringRangeGameMode() )
+		return
 
 	PrecacheModel( FIRINGRANGE_BLUE_STAND_ASSET )
 	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
@@ -83,6 +85,7 @@ void function FiringRangeGameMode_Init()
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
 	
 	#if SERVER
+			firingrange_infinite_ammo = GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) ? 1 : 2
 		if(GetMapName() != "mp_rr_canyonlands_staging" || GameRules_GetGameMode() == "custom_tdm") return
 		
 		AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
@@ -237,7 +240,7 @@ void function OnEntitiesDidLoadFR()
 	SpawnAttachments()
 	SpawnEquipments()
 	SpawnOrdnance()
-	//SpawnItems()
+	SpawnItems()
 	SpawnAmmo()
 
 	SpawnDummy(<31541,-7964,-29165>, <0,179,0>)
@@ -1006,21 +1009,21 @@ void function SpawnMapProps()
 				user.SetThirdPersonShoulderModeOn()	
 		})
 
-		// entity ammo = CreateFRButton(<31457.6055, -4903.65918, -29222.959>, <0,-45,0>, GetInfiniteAmmoText(firingrange_infinite_ammo))
-		// AddCallback_OnUseEntity( ammo, void function(entity panel, entity user, int input) 
-		// {
-			// EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+		entity ammo = CreateFRButton(<31457.6055, -4903.65918, -29222.959>, <0,-45,0>, GetInfiniteAmmoText(firingrange_infinite_ammo))
+		AddCallback_OnUseEntity( ammo, void function(entity panel, entity user, int input)
+		{
+			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
 
-			// if(firingrange_infinite_ammo == 0) firingrange_infinite_ammo = 1
-			// else if(firingrange_infinite_ammo == 1) firingrange_infinite_ammo = 2
-			// else firingrange_infinite_ammo = 0
+			if(firingrange_infinite_ammo == 0) firingrange_infinite_ammo = 1
+			else if(firingrange_infinite_ammo == 1) firingrange_infinite_ammo = 2
+			else firingrange_infinite_ammo = 0
 
-			// foreach(entity weapon in GetEntArrayByClass_Expensive("weaponx"))
-				// FixWeapon(weapon)
+			foreach(entity weapon in GetEntArrayByClass_Expensive("weaponx"))
+				FixWeapon(weapon)
 
-			// string prompt = GetInfiniteAmmoText(firingrange_infinite_ammo)
-			// panel.SetUsePrompts(prompt,prompt)
-		// })
+			string prompt = GetInfiniteAmmoText(firingrange_infinite_ammo)
+			panel.SetUsePrompts(prompt,prompt)
+		})
 
 		entity target = CreateFRButton(<31446.1016, -7281.54932, -29235.9824>, <0,270,0>, GetTrainingTargetMovementText(file.training_mov))
 		AddCallback_OnUseEntity( target, void function(entity panel, entity user, int input) 
