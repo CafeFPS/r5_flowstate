@@ -723,7 +723,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		GiveGungameWeapon(player)
 
 	thread WpnPulloutOnRespawn(player)
-	thread GrantSpawnImmunity(player, 2)
+	thread GrantSpawnImmunity(player, 2.5)
 }
 
 void function TpPlayerToSpawnPoint(entity player)
@@ -745,7 +745,7 @@ void function GrantSpawnImmunity(entity player, float duration)
 		}
 	)
 
-	float endTime = Time() + 2.5
+	float endTime = Time() + duration
 	MakeInvincible(player)
 
 	while(Time() <= endTime && IsValid(player)){
