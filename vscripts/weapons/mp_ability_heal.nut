@@ -17,10 +17,14 @@ bool function OnWeaponChargeBegin_ability_heal( entity weapon )
 	#if SERVER
 	int stimDamage = int(weapon.GetWeaponSettingFloat( eWeaponVar.damage_near_distance ))
 	player.SetHealth( player.GetHealth() - stimDamage < 1 ? 1 : player.GetHealth() - stimDamage )
-	if( !player.p.isSaidChatterOnStim )
-		thread SayBattleChatter( player, "bc_tactical", 30.0 )
+
+	if( Time() - player.p.lastStimChatterTime >= 30 )
+	{
+		player.p.lastStimChatterTime = Time()
+		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_tactical" )
+	}
+
 	#endif
-	
 	return true
 }
 
@@ -64,13 +68,3 @@ bool function OnWeaponAttemptOffhandSwitch_ability_heal( entity weapon )
 
 	return true
 }
-
-var function SayBattleChatter( entity player, string chatter, float time )
-{
-	#if SERVER
-	player.p.isSaidChatterOnStim = true
-	PlayBattleChatterLineToSpeakerAndTeam( player, chatter )
-	wait time
-	player.p.isSaidChatterOnStim = false
-	#endif
-} 
