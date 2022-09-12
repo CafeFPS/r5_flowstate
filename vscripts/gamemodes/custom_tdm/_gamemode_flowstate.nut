@@ -749,8 +749,8 @@ void function GrantSpawnImmunity(entity player, float duration)
 	MakeInvincible(player)
 
 	while(Time() <= endTime && IsValid(player)){
-		player.SetCloakDuration( 0, 0.25-CLOAK_FADE_OUT, CLOAK_FADE_OUT )
-		wait 0.25
+		player.SetCloakDuration( 0, 0.25, 0.05 )
+		wait 0.3
 	}
 }
 
