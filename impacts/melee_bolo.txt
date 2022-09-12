@@ -4,10 +4,10 @@ ImpactTable
 	{
 		"C" "P_stab_impact_robot" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
 		"D" "P_stab_impact_robot" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup, lava_rock
-		"E" "P_stab_impact_robot" // metal_titan
+		"E" "P_xo_punch_spark" // metal_titan
 
 		"F" "P_stab_impact_flesh" //flesh
-		"G" "P_stab_impact_robot" //metalgrate, chainlink, chain
+		"G" "P_xo_punch_spark" //metalgrate, chainlink, chain
 		"H" "P_stab_impact_flesh" //alienflesh
 
 		"J" "P_stab_impact_robot" //grass
@@ -16,14 +16,14 @@ ImpactTable
 		"M" "P_stab_impact_robot" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
 		"N" "P_stab_impact_robot" //slime
 		"O" "P_stab_impact_robot" //Foliage
-		"P" "P_stab_impact_robot" //metal_spectre
+		"P" "P_xo_punch_spark" //metal_spectre
 
 		"Q" "P_stab_impact_robot" //metalpanel, grenade, canister
 		"R" "P_stab_impact_robot" //metalpanel, grenade, canister
 		"S" "P_stab_impact_robot" //water, slime
 		"T" "P_stab_impact_robot" //tile
 		"U" "P_stab_impact_robot" // glass_breakable
-		"V" "P_stab_impact_robot" //Metal Vent
+		"V" "P_xo_punch_spark" //Metal Vent
 		"W" "P_stab_impact_robot"//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
 
 		"X" "P_stab_impact_robot" //xo_shield
@@ -217,7 +217,7 @@ ImpactTable
 		"O" "ronin_sword_impact_foilage_1p_vs_3p"
 		"P" "ronin_sword_impact_flesh_1p_vs_3p"
 
-		"R" "ronin_sword_impact_metal_1p_vs_3p"
+		"R" "ronin_sword_impact_glass_1p_vs_3p"
 		"S" "ronin_sword_impact_water_1p_vs_3p"
 		"T" "ronin_sword_impact_tile_1p_vs_3p"
 		"U" "ronin_sword_impact_glass_1p_vs_3p"

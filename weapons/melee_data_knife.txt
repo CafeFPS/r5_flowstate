@@ -46,5 +46,28 @@ WeaponData
 			"viewmodel"   									"mdl/weapons/empty_handed/ptpov_emptyhand.rmdl"
 			"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
 		}
+		ctf_knife
+		{
+			"viewmodel"   									"mdl/weapons/data_knife/ptpov_data_knife.rmdl"
+			"melee_attack_animtime"							"1"
+			"damage_flags"									"DF_BULLET"
+			"melee_damage"									"75"
+
+			"viewkick_pitch_base" 							"-0.5"
+			"viewkick_pitch_random"   						"0.75"
+			"viewkick_pitch_softScale"						"1.3"
+			"viewkick_pitch_hardScale"						"1.5"
+
+			"viewkick_yaw_base"   							"0.5"
+			"viewkick_yaw_random" 							"0.38"
+			"viewkick_yaw_softScale"  						"2.38"
+			"viewkick_yaw_hardScale"  						"2.5"
+
+			"viewkick_roll_base"  							"0"
+			"viewkick_roll_randomMin" 						"0.6"
+			"viewkick_roll_randomMax" 						"0.8"
+			"viewkick_roll_softScale" 						"7.2"
+			"viewkick_roll_hardScale" 						"7.75"
+		}
 	}
 }
