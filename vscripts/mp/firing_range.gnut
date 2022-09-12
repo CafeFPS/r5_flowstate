@@ -1,5 +1,6 @@
 global function FiringRangeGameMode_Init
 
+global const float FIRINGRANGE_DISSOLVE_TIME = 5.0
 global const float FIRINGRANGE_RACK_RESPAWN_TIME = 0.5
 global const float FIRINGRANGE_RACK_OFFSET = 32
 
@@ -7,7 +8,6 @@ global const int FIRINGRANGE_ATTACHMENTS_MAX_COLUMNS = 6
 global const int FIRINGRANGE_ITEMS_MAX_COLUMNS = 2
 global const int FIRINGRANGE_ORDNANCE_MAX_COLUMNS = 2
 global const int FIRINGRANGE_AMMO_ROWS = 2
-global const int FIRINGRANGE_AMMO_COLUMNS = 2
 
 global const asset FIRINGRANGE_FLICK_TARGET_ASSET = $"mdl/fx/plasma_sphere_01.rmdl"
 global const asset FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT = $"P_crypto_drone_explosion"
@@ -15,7 +15,6 @@ global const string FIRINGRANGE_FLICK_TARGET_SOUND = "Player.Hitbeep_headshot.Hu
 
 global const asset FIRINGRANGE_BLUE_TARGET_ASSET = $"mdl/barriers/shooting_range_target_02.rmdl"
 global const asset FIRINGRANGE_BLUE_STAND_ASSET = $"mdl/barriers/shooting_range_target_02_stand.rmdl"
-global const asset FIRINGRANGE_ANIMATED_TARGET_ASSET = $"mdl/barriers/shooting_range_target_01_animated.rmdl"
 
 global const asset FIRINGRANGE_ITEM_RESPAWN_PARTICLE = $"P_impact_shieldbreaker_sparks"
 
@@ -32,21 +31,19 @@ global const asset FIRINGRANGE_QUARRY_BLOCK_ASSET = $"mdl/rocks/thunderdome_quar
 
 #if SERVER
 // To be used outside if needed
-global int firingrange_infinite_ammo = 2
-bool toggleFr = false
-float lasttimeToggleFriendlyFire = 0
+global int firingrange_infinite_ammo = 0
 #endif
 
-#if(CLIENT)
+#if CLIENT
 global function SCB_BroadcastFriendlyFireChange
-#endif //
+#endif // CLIENT
 
 struct RackGroup
 {
 	entity point = null
 	string ammoType = ""
 	array<entity> racks = []
-} 
+}
 
 struct {
 	table<string, array<LootData> > weaponsPerAmmoType
@@ -79,32 +76,43 @@ void function FiringRangeGameMode_Init()
 	if ( !IsFiringRangeGameMode() )
 		return
 
+	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
+
 	PrecacheModel( FIRINGRANGE_BLUE_STAND_ASSET )
 	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
 	PrecacheParticleSystem( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT )
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
-	
+
 	#if SERVER
-			firingrange_infinite_ammo = GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) ? 1 : 2
-		if(GetMapName() != "mp_rr_canyonlands_staging" || GameRules_GetGameMode() == "custom_tdm") return
-		
-		AddCallback_EntitiesDidLoad( OnEntitiesDidLoadFR )
-		AddCallback_OnClientConnected( _WaitForPlayerSpawnFR )
-		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-			AddCallback_OnPlayerKilled( _OnPlayerKilledFR )
-	
-		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-			AddCallback_OnWeaponAttack( OnWeaponAttack )
+		AddCallback_EntitiesDidLoad( OnEntitiesDidLoad )
+		AddCallback_OnClientConnected( WaitForPlayerSpawn )
+		AddCallback_OnPlayerKilled( OnPlayerKilled )
+		AddCallback_OnWeaponAttack( OnWeaponAttack )
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
-		AddClientCommandCallback("frfire", ClientCommand_FriendlyFireFR)
-		SetGameState(eGameState.Playing)
-		WaitForGameState(eGameState.Playing)
-		if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-			thread WeaponsWatcher()
+
+		firingrange_infinite_ammo = GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) ? 1 : 2
 	#endif
+
+	#if(false)
+
+
+
+
+
+
+
+
+//
+
+
+	#endif //
+
+	#if(CLIENT)
+		//
+
+		IntroDisplayThread()
+	#endif //
 }
-
-
 
 #if(CLIENT)
 void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
@@ -115,111 +123,17 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 	string subText = (IsValid( playerThatChanged ) ? Localize( "#NOTIFY_FRIENDLY_FIRE_SUBTEXT", playerThatChanged.GetPlayerName() ) : "")
 	vector titleColor = (isEnabled ? ENEMY_COLOR : FRIENDLY_COLOR)
 	AnnouncementMessage( localPlayer, mainText, subText, titleColor )
-	
 }
 #endif //
 
-#if SERVER
-bool function ClientCommand_FriendlyFireFR(entity player, array<string> args)
-//By michae\l/#1125 & Retículo Endoplasmático#5955.
-{
-printt("Flowstate DEBUG - A player has toggled friendly fire.", player)
-array<entity> connectedPlayers = GetPlayerArray_ConnectedNotSpectatorTeam()
-int playersON = connectedPlayers.len()
-array<entity> randomizedPlayers = shuffleArray(GetPlayerArray())
-	
-float cooldown = 5
-if( Time() - lasttimeToggleFriendlyFire < cooldown )
-    {
-		return false
-	}
-	
-if(!toggleFr) {
-		int currentTeam = 2 //2
-		int numTeams = playersON
-
-
-		foreach (p in randomizedPlayers)
-		{
-			if (IsValid(p)) {SetTeam(p,TEAM_IMC + 1 + (currentTeam % playersON))}
-							currentTeam += 1
-		}
-		foreach (sPlayer in GetPlayerArray()){
-				Message(sPlayer, "FRIENDLY FIRE: ON", "Changed by: " + player.GetPlayerName(), 0.5)
-				}
-				lasttimeToggleFriendlyFire = Time()
-				toggleFr = true
-			return true 
-	}else {
-		
-			foreach (p in randomizedPlayers)
-			{
-				if (IsValid(p)) SetTeam(p,TEAM_IMC)
-			}
-		
-				foreach (sPlayer in GetPlayerArray()){
-				Message(sPlayer, "FRIENDLY FIRE: OFF", "Changed by: " + player.GetPlayerName(), 0.5)
-				}
-		lasttimeToggleFriendlyFire = Time()
-		toggleFr = false
-		return true 
-	}
-		return true
-}
-
-
-void function SpawnDummy(vector origin, vector angles)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-
-{
-//printt("Flowstate DEBUG - Spawning FR dummy.")
-
-    entity dummy = CreateEntity( "npc_dummie" )
-    SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
-    dummy.SetOrigin( origin )
-    dummy.SetAngles( angles )
-	DispatchSpawn( dummy )
-	dummy.SetShieldHealthMax( 125 )
-	dummy.SetShieldHealth( 125 )
-	dummy.SetMaxHealth( 100 )
-	dummy.SetHealth( 100 )
-	dummy.SetTakeDamageType( DAMAGE_YES )
-	dummy.SetDamageNotifications( true )
-	dummy.SetDeathNotifications( true )
-	dummy.SetValidHealthBarTarget( true )
-	SetObjectCanBeMeleed( dummy, true )
-	dummy.SetSkin(RandomInt(6))
-	dummy.DisableHibernation()
-    SetTeam(dummy, 99)
-
-	thread OnDummyKilled(dummy)
-}
-
-void function OnDummyKilled(entity dummy)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
-{
-	printt("Flowstate DEBUG - Dummy killed, spawning it.")
-	vector pos = dummy.GetOrigin()
-	vector angles = dummy.GetAngles()
-	dummy.WaitSignal( "OnDeath" )
-	wait 1
-	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
-	thread SpawnDummy( pos, angles)
-}
-#endif
-
-void function OnEntitiesDidLoadFR()
+void function OnEntitiesDidLoad()
 {
 	#if SERVER
-	printt("Flowstate DEBUG - OnEntitiesDidLoadFR init.")
+
 	// Init
 	array<entity> lootbins = GetEntArrayByScriptName("staging_loot_bin")
 	array<entity> movers = GetEntArrayByScriptName("script_mover_lightweight")
-	
+
 	foreach(entity lootbin in lootbins)
 		lootbin.Destroy()
 
@@ -242,10 +156,6 @@ void function OnEntitiesDidLoadFR()
 	SpawnOrdnance()
 	SpawnItems()
 	SpawnAmmo()
-
-	SpawnDummy(<31541,-7964,-29165>, <0,179,0>)
-	SpawnDummy(<31541,-6705,-29165>, <0,179,0>)
-	SpawnDummy(<31541,-5885,-29165>, <0,179,0>)
 
 	// Doors
 	SpawnDoors_Init()
@@ -273,160 +183,52 @@ void function OnEntitiesDidLoadFR()
 // ==================================================
 
 
-void function _OnPlayerKilledFR( entity victim, entity attacker, var damageInfo )
+void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	printt("Flowstate DEBUG - PlayerKilledFR.", victim, attacker)
-	thread _HandleRespawnFR(victim, true)
+	WaitForPlayerSpawn(victim)
 }
 
-void function _WaitForPlayerSpawnFR( entity player )
+void function WaitForPlayerSpawn( entity player )
 {
-	int playerOldTeam = player.GetTeam()
-	
-	thread _HandleRespawnFR(player)
-	
-	if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-		Message(player, "R5R FIRING RANGE", "'frfire' in console to toggle friendly fire (5s cooldown).", 15)
+	thread WaitForPlayerSpawn_Thread(player)
 }
-void function WpnPulloutOnRespawn(entity player)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 and michae\l/#1125 //
-///////////////////////////////////////////////////////
-{
-	try {
-	if( IsValid( player ) && IsAlive(player))
-        {
-	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
-	wait 0.7
-	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-}}catch(e){}}
 
-void function WeaponsWatcher()
+void function WaitForPlayerSpawn_Thread(entity player)
 {
-	while(true)
+	while(IsValid(player) && !IsAlive(player))
+		wait 0.5
+
+	OnPlayerRespawned(player)
+}
+
+void function OnPlayerRespawned(entity player)
+{
+	array<entity> weapons = player.GetMainWeapons()
+	foreach(entity weapon in weapons)
 	{
-		foreach(player in GetPlayerArray())
-		{
-			if(IsValid(player) && IsAlive(player)){
-			player.p.storedWeapons = StoreWeapons(player)
+		if(GetSlotForWeapon(player, weapon) == WEAPON_INVENTORY_SLOT_PRIMARY_0 ||
+		GetSlotForWeapon(player, weapon) == WEAPON_INVENTORY_SLOT_PRIMARY_1)
+			return
+	}
 
-			}
-		}
-		wait 1
+	entity primary = player.GiveWeapon("mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "stock_tactical_l3"])
+	entity secondary = player.GiveWeapon("mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_threat"])
+	player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_vinson" )
+
+	FixWeapon(primary)
+	FixWeapon(secondary)
+
+	foreach(string ammo in ["highcal","bullet"])
+	{
+		entity loot = SpawnGenericLoot( ammo, player.GetOrigin(), player.GetAngles(),
+			60-SURVIVAL_CountItemsInInventory( player, ammo ) )
+
+		if(!Survival_PickupItem(loot, player))
+			loot.Destroy()
 	}
 }
 
-void function _HandleRespawnFR(entity player, bool respawnsameposition = false)
-{
-	//BY COLOMBIA
-	if(IsValid(player) && !IsAlive(player)){
-			wait 1
-			
-		if(respawnsameposition){
-				vector lastPos = player.GetOrigin()
-				vector lastAng = player.GetAngles()
-				//player.p.storedWeapons = StoreWeapons(player)
-				array<ItemFlavor> characters = clone GetAllCharacters()
-				ItemFlavor PersonajeEscogido = characters[RandomInt(10)]
-				CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-				player.SetOrigin(lastPos)
-				player.SetAngles(lastAng)
-				DecideRespawnPlayer( player )
-				
-				TakeAllWeapons( player )
-				GiveWeaponsFromStoredArray( player, player.p.storedWeapons )
-							entity primary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-			entity secondary = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-			FixWeapon(primary)
-			FixWeapon(secondary)
-			player.p.storedWeapons.clear()
-		
-			} else {
-				array<ItemFlavor> characters = clone GetAllCharacters()
-				ItemFlavor PersonajeEscogido = characters[RandomInt(10)]
-				CharacterSelect_AssignCharacter( ToEHI( player ), PersonajeEscogido )
-				DecideRespawnPlayer( player )
-				SetRandomStagingPositionForPlayer( player )
-				TakeAllWeapons(player)
-				entity primary = player.GiveWeapon("mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "highcal_mag_l3"])
-				entity secondary = player.GiveWeapon("mp_weapon_r97", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_hcog_classic","barrel_stabilizer_l4_flash_hider","stock_tactical_l3"])
-				FixWeapon(primary)
-				FixWeapon(secondary)
-				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_wingman" )
-				player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-				player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
-		}
-		player.kv.solid = 6
-		GivePassive(player, ePassives.PAS_PILOT_BLOOD)
-		Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-		player.SetShieldHealth( 50 )
-		player.TakeOffhandWeapon( OFFHAND_TACTICAL )
-		player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
-		GiveRandomTac(player)
-		GiveRandomUlt(player)
-		Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
-	}
-}
 
-void function GiveRandomTac(entity player)
-{
-	printt("Flowstate DEBUG - Giving random tactical to player", player)
-    switch(RandomInt(7))
-    {
-        case 0:
-            player.GiveOffhandWeapon("mp_ability_grapple", OFFHAND_TACTICAL)
-            break;
-        case 1:
-            player.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
-            break;
-        case 2:
-            player.GiveOffhandWeapon("mp_ability_heal", OFFHAND_TACTICAL)
-            break;
-		case 3:
-            player.GiveOffhandWeapon("mp_weapon_bubble_bunker", OFFHAND_TACTICAL)
-            break;
-		case 4:
-            player.GiveOffhandWeapon("mp_weapon_grenade_bangalore", OFFHAND_TACTICAL)
-            break;
-		case 5:
-            player.GiveOffhandWeapon("mp_ability_area_sonar_scan", OFFHAND_TACTICAL)
-            break;
-		case 6:
-            player.GiveOffhandWeapon("mp_weapon_grenade_sonar", OFFHAND_TACTICAL)
-            break;
-		case 7:
-            player.GiveOffhandWeapon("mp_weapon_deployable_cover", OFFHAND_TACTICAL)
-            break;			
-    }
-}
-
-void function GiveRandomUlt(entity player)
-{
-		printt("Flowstate DEBUG - Giving random ultimate to player", player)
-
-    switch(RandomInt(5))
-    {
-        case 0:
-            player.GiveOffhandWeapon("mp_weapon_grenade_gas", OFFHAND_ULTIMATE)
-            break;
-        case 1:
-            player.GiveOffhandWeapon("mp_weapon_jump_pad", OFFHAND_ULTIMATE)
-            break;
-        case 2:
-            player.GiveOffhandWeapon("mp_weapon_phase_tunnel", OFFHAND_ULTIMATE)
-            break;
-		case 3:
-            player.GiveOffhandWeapon("mp_ability_3dash", OFFHAND_ULTIMATE)
-            break;
-		case 4:
-            player.GiveOffhandWeapon("mp_ability_hunt_mode", OFFHAND_ULTIMATE)
-            break;
-		case 5:
-            player.GiveOffhandWeapon("mp_weapon_grenade_defensive_bombardment", OFFHAND_ULTIMATE)
-            break;
-			
-    }
-}
 // ==================================================
 //					ITEM SPAWNING
 // ==================================================
@@ -497,7 +299,7 @@ void function FillEquipmentTable()
 	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.ARMOR ))
 	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.HELMET ))
 	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.INCAPSHIELD ))
-	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.BACKPACK ))		
+	file.equipmentsPerIndex.append(SURVIVAL_Loot_GetByType( eLootType.BACKPACK ))
 }
 
 // Append all items
@@ -531,8 +333,8 @@ void function ExtendLootDataArrayIfMissing(array<LootData> from, array<LootData>
 // Spawn nades at the left of the racks
 void function SpawnOrdnance()
 {
-	const float cornerOffset = 15.0
-	const float itemOffsetX = 20.0
+	const float cornerOffset = 32.0
+	const float itemOffsetX = 16.0
 	const float itemOffsetY = 16.0
 	const float itemOffsetZ = 4.0
 	foreach(RackGroup rackGroup in file.rackSpawns)
@@ -543,9 +345,9 @@ void function SpawnOrdnance()
 		vector up = rack.GetUpVector()
 
 		vector firstPos = rack.GetOrigin() + (rght*rackGroup.racks.len()*FIRINGRANGE_RACK_OFFSET)/2 + rack.GetRightVector()*cornerOffset
-		
-		int col = 0 
-		int row = 0 
+
+		int col = 0
+		int row = 0
 		for(int i = 0; i<file.ordnance.len(); i++)
 		{
 			// Double it
@@ -562,7 +364,7 @@ void function SpawnOrdnance()
 
 				entity loot = SpawnGenericLoot(item.ref, pos, <0,90,0>, 1)
 				thread OnPickupGenericThread(loot, item.ref)
-				
+
 				col++
 			}
 		}
@@ -573,7 +375,7 @@ void function SpawnOrdnance()
 void function SpawnAmmo()
 {
 	const float cornerOffset = -4
-	const float itemOffsetX = 9.0
+	const float itemOffsetX = 12.0
 	const float itemOffsetY = 20.0
 
 	foreach(RackGroup rackGroup in file.rackSpawns)
@@ -590,7 +392,7 @@ void function SpawnAmmo()
 
 		int ammoStack = SURVIVAL_Loot_GetLootDataByRef( rackGroup.ammoType ).countPerDrop * 2
 
-		for(int i = 0; i<FIRINGRANGE_AMMO_COLUMNS; i++)
+		for(int i = 0; i<2; i++)
 		{
 			for(int j = 0; j<FIRINGRANGE_AMMO_ROWS; j++)
 			{
@@ -617,9 +419,9 @@ void function SpawnItems()
 		vector fwd = rack.GetForwardVector()
 
 		vector firstPos = rack.GetOrigin() + fwd*otherSideOffset + rght*cornerOffset
-		
-		int col = 0 
-		int row = 0 
+
+		int col = 0
+		int row = 0
 		for(int i = 0; i<file.items.len(); i++)
 		{
 			if(col >= FIRINGRANGE_ITEMS_MAX_COLUMNS)
@@ -633,7 +435,7 @@ void function SpawnItems()
 
 			entity loot = SpawnGenericLoot(item.ref, pos, <0,90,0>, 1)
 			thread OnPickupGenericThread(loot, item.ref)
-			
+
 			col++
 		}
 	}
@@ -653,7 +455,7 @@ void function SpawnEquipments()
 		vector fwd = rack.GetForwardVector()
 
 		vector firstPos = rack.GetOrigin() + fwd*otherSideOffset - rght*cornerOffset
-		
+
 		for(int i = 0; i<file.equipmentsPerIndex.len(); i++)
 		{
 			array<LootData> group = file.equipmentsPerIndex[i]
@@ -712,7 +514,7 @@ void function CreateRackGroups()
 {
 	int ammoIndex = 0
 	foreach ( string ammoType, array<LootData> arr in file.weaponsPerAmmoType)
-	{ 
+	{
 		if(ammoIndex >= file.rackSpawns.len() )
 			break
 
@@ -768,8 +570,8 @@ void function OnPropSurvivalSpawned(entity prop)
 }
 void function OnPropSurvivalSpawned_Thread(entity prop)
 {
-	wait 1
-	if(prop == null || !IsValid(prop))
+	wait FIRINGRANGE_DISSOLVE_TIME
+	if(prop == null || IsValid(prop) == false)
 		return
 
 	entity par = prop.GetParent()
@@ -794,12 +596,12 @@ void function PlayTrainingTargetReaction(entity ent, var damageInfo)
 		(
 			ent,
 			DamageInfo_GetHitBox( damageInfo ),
-			DamageInfo_GetDamagePosition( damageInfo ), 
+			DamageInfo_GetDamagePosition( damageInfo ),
 			DamageInfo_GetCustomDamageType( damageInfo ),
 			DamageInfo_GetDamage( damageInfo ),
-			DamageInfo_GetDamageFlags( damageInfo ), 
+			DamageInfo_GetDamageFlags( damageInfo ),
 			DamageInfo_GetHitGroup( damageInfo ),
-			DamageInfo_GetWeapon( damageInfo ), 
+			DamageInfo_GetWeapon( damageInfo ),
 			DamageInfo_GetDistFromAttackOrigin( damageInfo )
 		)
 	}
@@ -812,20 +614,20 @@ void function MoveTrainingTargetAround(entity ent)
 	while(IsValid(ent))
 	{
 		vector next
-		
+
 		int tries = 0
 		while(Distance(ent.GetOrigin(),next) < 30 || Distance(ent.GetOrigin(),next) > dist*0.7)
 		{
 			if(tries>20)
 				break
 
-			next = o.GetOrigin() + 
-				RandomFloatRange(-dist,dist)*o.GetUpVector()*0.75*file.training_mov.y + 
+			next = o.GetOrigin() +
+				RandomFloatRange(-dist,dist)*o.GetUpVector()*0.75*file.training_mov.y +
 				RandomFloatRange(-dist,dist)*o.GetRightVector()*file.training_mov.x;
 
 			tries++
 		}
-		
+
 		float t = Distance(ent.GetOrigin(),next) / (file.trackingTraining_speedRand ? RandomFloatRange(260,450) : file.trackingTraining_speed)
 		ent.NonPhysicsMoveTo(next, t, 0, 0 )
 		wait t
@@ -833,18 +635,18 @@ void function MoveTrainingTargetAround(entity ent)
 }
 
 void function OnTrainingTargetDamagedNothing(entity ent, var damageInfo)
-{	
+{
 	PlayTrainingTargetReaction(ent, damageInfo)
 }
 
 void function OnTrainingTargetDamagedReposition(entity ent, var damageInfo)
-{	
+{
 	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT ), ent.GetOrigin(), ent.GetAngles() )
 	PlayTrainingTargetReaction(ent, damageInfo)
 
 	entity root = ent.GetParent()
-	vector newPos = root.GetOrigin() + 
-					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetUpVector()*0.5*file.training_mov.y + 
+	vector newPos = root.GetOrigin() +
+					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetUpVector()*0.5*file.training_mov.y +
 					RandomFloatRange(-file.flickTraining_dist,file.flickTraining_dist)*root.GetRightVector()*file.training_mov.x;
 
 	ent.SetOrigin(newPos)
@@ -867,7 +669,7 @@ entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( en
 
 	entity target = CreateEntity( "script_mover" )
 	target.kv.solid = 6
-	target.SetValueForModelKey( FIRINGRANGE_BLUE_TARGET_ASSET )
+	target.SetValueForModelKey( FIRINGRANGE_FLICK_TARGET_ASSET )
 	target.kv.SpawnAsPhysicsMover = 0
 	target.SetOrigin( root.GetOrigin() )
 	target.SetAngles( root.GetAngles() )
@@ -875,10 +677,10 @@ entity function SpawnTrainingTarget(vector pos, vector ang, void functionref( en
 	target.Hide()
 	target.SetDamageNotifications( true )
 	target.SetParent(root)
+
 	entity visual = CreatePropDynamic(FIRINGRANGE_BLUE_TARGET_ASSET, root.GetOrigin(), root.GetAngles(), 6, -1)
 	visual.SetParent(target)
-	//visual.SetModelScale(0.45)
-	visual.kv.fadedist = 20000
+	visual.SetModelScale(0.45)
 	visual.NotSolid()
 
     AddEntityCallback_OnDamaged(target, onDamaged)
@@ -936,7 +738,7 @@ void function SpawnTargets()
 		// Skip if they're moving targets, they're useless
 		if(t.GetLinkEntArray().len() > 0)
 			continue
-			
+
 		SpawnTarget(t.GetOrigin(), t.GetAngles() )
 	}
 	SpawnTarget(<35819.4961, -6457.02588, -26410.3125>, <0,180,0> )
@@ -951,45 +753,45 @@ void function SpawnTargets()
 
 void function SpawnMapProps()
 {
-	// // TELEPORTERS
-	// {
-		// entity upper = CreateFRButton(<31016.6934, -8667.74414, -29239.7441>, <0,180,0>, "%&use% GO TO UPPER LEVEL")
-		// AddCallback_OnUseEntity( upper, void function(entity panel, entity user, int input) 
-		// {
-			// EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-			// TeleportFRPlayer(user,<30437.8281, -9880.22852, -25972.6387>,<0,0,0>)
-		// })
+	// TELEPORTERS
+	{
+		entity upper = CreateFRButton(<31016.6934, -8667.74414, -29239.7441>, <0,180,0>, "%&use% GO TO UPPER LEVEL")
+		AddCallback_OnUseEntity( upper, void function(entity panel, entity user, int input)
+		{
+			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+			TeleportFRPlayer(user,<30437.8281, -9880.22852, -25972.6387>,<0,0,0>)
+		})
 
-		// // Racks
-		// {
-			// /* LIGHT */ SpawnBigTrainingTarget(<29857, -8157, -28837>, <180,0,0>, void function(entity panel, var damageInfo)
-			// {
-				// printl(DamageInfo_GetCustomDamageType( damageInfo ))
-				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30806.7363, -8105.33838, -29163.9688>, <0,0,0>)
-			// })
-			// /* HEAVY */ SpawnBigTrainingTarget(<29769, -7342, -28760+26>, <180,0,0>, void function(entity panel, var damageInfo)
-			// {
-				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30774.2598, -7389.46436, -29163.9688>, <0,0,0>)
-			// })
-			// /* ENERGY */ SpawnBigTrainingTarget(<29782, -6683, -28758>, <180,0,0>, void function(entity panel, var damageInfo)
-			// {
-				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30760.7676, -6696.86914, -29163.9688>, <0,0,0>)
-			// })
-			// /* GOLD */ SpawnBigTrainingTarget(<29755, -5972, -28715>, <180,0,0>, void function(entity panel, var damageInfo)
-			// {
-				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30767.2305, -5988.11426, -29163.9688>, <0,0,0>)
-			// })
-			// /* SHOTGUN */ SpawnBigTrainingTarget(<29840, -5230, -28758>, <180,0,0>, void function(entity panel, var damageInfo)
-			// {
-				// TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30777.9258, -5282.96387, -29163.9688>, <0,0,0>)
-			// })
-		// }
-	// }
+		// Racks
+		{
+			/* LIGHT */ SpawnBigTrainingTarget(<29857, -8157, -28837>, <180,0,0>, void function(entity panel, var damageInfo)
+			{
+				printl(DamageInfo_GetCustomDamageType( damageInfo ))
+				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30806.7363, -8105.33838, -29163.9688>, <0,0,0>)
+			})
+			/* HEAVY */ SpawnBigTrainingTarget(<29769, -7342, -28760+26>, <180,0,0>, void function(entity panel, var damageInfo)
+			{
+				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30774.2598, -7389.46436, -29163.9688>, <0,0,0>)
+			})
+			/* ENERGY */ SpawnBigTrainingTarget(<29782, -6683, -28758>, <180,0,0>, void function(entity panel, var damageInfo)
+			{
+				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30760.7676, -6696.86914, -29163.9688>, <0,0,0>)
+			})
+			/* GOLD */ SpawnBigTrainingTarget(<29755, -5972, -28715>, <180,0,0>, void function(entity panel, var damageInfo)
+			{
+				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30767.2305, -5988.11426, -29163.9688>, <0,0,0>)
+			})
+			/* SHOTGUN */ SpawnBigTrainingTarget(<29840, -5230, -28758>, <180,0,0>, void function(entity panel, var damageInfo)
+			{
+				TeleportFRPlayer(DamageInfo_GetAttacker(damageInfo), <30777.9258, -5282.96387, -29163.9688>, <0,0,0>)
+			})
+		}
+	}
 
 	// BUTTONS
 	{
 		entity charger = CreateFRButton(<30575.1016, -4631.76025, -29112.3125>, <0,0,0>, "%&use% CHARGE ABILITIES")
-		AddCallback_OnUseEntity( charger, void function(entity panel, entity user, int input) 
+		AddCallback_OnUseEntity( charger, void function(entity panel, entity user, int input)
 		{
 			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
 			user.GetOffhandWeapon( OFFHAND_INVENTORY )
@@ -999,14 +801,14 @@ void function SpawnMapProps()
 		})
 
 		entity third = CreateFRButton(<35757.1289, -7238.68506, -28342.2422>, <0,270,0>, "%&use% TOGGLE THIRDPERSON")
-		AddCallback_OnUseEntity( third, void function(entity panel, entity user, int input) 
+		AddCallback_OnUseEntity( third, void function(entity panel, entity user, int input)
 		{
 			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
-			
+
 			if ( user.IsThirdPersonShoulderModeOn() )
-				user.SetThirdPersonShoulderModeOff() 	
+				user.SetThirdPersonShoulderModeOff()
 			else
-				user.SetThirdPersonShoulderModeOn()	
+				user.SetThirdPersonShoulderModeOn()
 		})
 
 		entity ammo = CreateFRButton(<31457.6055, -4903.65918, -29222.959>, <0,-45,0>, GetInfiniteAmmoText(firingrange_infinite_ammo))
@@ -1026,7 +828,7 @@ void function SpawnMapProps()
 		})
 
 		entity target = CreateFRButton(<31446.1016, -7281.54932, -29235.9824>, <0,270,0>, GetTrainingTargetMovementText(file.training_mov))
-		AddCallback_OnUseEntity( target, void function(entity panel, entity user, int input) 
+		AddCallback_OnUseEntity( target, void function(entity panel, entity user, int input)
 		{
 			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
 			if(file.training_mov == <1,1,0>)
@@ -1035,13 +837,13 @@ void function SpawnMapProps()
 				file.training_mov = <0,1,0>
 			else
 				file.training_mov = <1,1,0>
-			
+
 			string prompt = GetTrainingTargetMovementText(file.training_mov)
 			panel.SetUsePrompts(prompt,prompt)
 		})
 
 		entity speed = CreateFRButton(<31672.3145, -8201.04395, -29235.9824>, <0,270,0>, "%&use% Speed: ("+file.trackingTraining_speed+")")
-		AddCallback_OnUseEntity( speed, void function(entity panel, entity user, int input) 
+		AddCallback_OnUseEntity( speed, void function(entity panel, entity user, int input)
 		{
 			EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
 			if(file.trackingTraining_speed == -1)
@@ -1060,7 +862,7 @@ void function SpawnMapProps()
 				file.trackingTraining_speedRand = true
 				file.trackingTraining_speed = -1
 			}
-			
+
 			string prompt = "%&use% Speed: ("+(file.trackingTraining_speedRand ? "RAND" : string(file.trackingTraining_speed))+")"
 			panel.SetUsePrompts(prompt,prompt)
 		})
@@ -1084,32 +886,32 @@ void function SpawnMapProps()
 		for(int i = 0; i<4; i++){
 		CreateFRProp( FIRINGRANGE_256x128_ASSET, corner+<1024+i*16,640,16>, <0,90,0>, true, 1000)
 		CreateFRProp( FIRINGRANGE_256x128_ASSET, corner+<512+i*16,640,-32>, <0,90,0>, true, 1000)}
-		
-		
+
+
 	}
 
 	// UPPER DOORS
 	{
 		// Walls
-		entity dbdoorWall = 
+		entity dbdoorWall =
 		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorDouble_pos + <-128,-8,64>, <90,90,0>, true)
 		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<256,0,0>, <90,90,0>, true)
-		dbdoorWall = 
+		dbdoorWall =
 		CreateFRProp( FIRINGRANGE_128x128_ASSET, file.doorSingle_pos + <-124,8,64>, <90,270,0>, true)
 		CreateFRProp( FIRINGRANGE_128x128_ASSET, dbdoorWall.GetOrigin()+<192,0,0>, <90,270,0>, true)
 	}
 
-	// FIRING RANGE CONNECTORS
-	{
-		foreach(entity e in GetEntArrayByScriptName("weapon_racks"))
-		{
-			vector pos = e.GetOrigin()
-			vector rght = e.GetRightVector()
-			vector fwd = e.GetForwardVector()
-			vector up = e.GetUpVector()
-			CreateFRProp( FIRINGRANGE_GRATE_ASSET, pos+rght*-208+fwd*-96+up*-3, <0,0,0>)
-		}
-	}
+	// // FIRING RANGE CONNECTORS
+	// {
+		// foreach(entity e in GetEntArrayByScriptName("weapon_racks"))
+		// {
+			// vector pos = e.GetOrigin()
+			// vector rght = e.GetRightVector()
+			// vector fwd = e.GetForwardVector()
+			// vector up = e.GetUpVector()
+			// CreateFRProp( FIRINGRANGE_GRATE_ASSET, pos+rght*-208+fwd*-96+up*-3, <0,0,0>)
+		// }
+	// }
 
 	// DUCT TAPE WALLS
 	{
@@ -1122,11 +924,11 @@ void function SpawnMapProps()
 			for(int i = 0; i<2; i++)for(int j = 0; j<2; j++)
 				CreateFRProp( FIRINGRANGE_QUARRY_BLOCK_ASSET, <32970, -6891+yO*i, -28780+zO*j>, <0,90,0>, true, 8000)
 			for(int i = 0; i<2; i++)for(int j = 0; j<2; j++)
-				CreateFRProp( FIRINGRANGE_QUARRY_BLOCK_ASSET, <32970, -5812+yO*i, -28780+zO*j>, <0,90,0>, true, 8000)	
+				CreateFRProp( FIRINGRANGE_QUARRY_BLOCK_ASSET, <32970, -5812+yO*i, -28780+zO*j>, <0,90,0>, true, 8000)
 			for(int i = 0; i<2; i++)for(int j = 0; j<2; j++)
 				CreateFRProp( FIRINGRANGE_QUARRY_BLOCK_ASSET, <32970, -4695+yO*i, -28780+zO*j>, <0,90,0>, true, 8000)
 		}
-		
+
 		{
 			float zO = 90
 			/*SMALL LEFT LEFT*/
@@ -1193,25 +995,11 @@ entity function CreateFRProp(asset a, vector pos, vector ang, bool mantle = fals
 	if(mantle) e.AllowMantle()
 	return e
 }
-entity function CreateFRButton(vector pos, vector ang, string prompt)
-{
-	entity button = CreateEntity("prop_dynamic")
-	button.kv.solid = 6
-	button.SetValueForModelKey(FIRINGRANGE_BUTTON_ASSET)
-	button.SetOrigin(pos)
-	button.SetAngles(ang)
-	DispatchSpawn(button)
-
-	button.SetUsable()
-	button.SetUsableByGroup("pilot")
-	button.SetUsePrompts(prompt, prompt)
-	return button
-}
 
 void function SpawnDoors_Init()
 {
 	entity button = CreateFRButton(file.doorResetButton_pos, file.doorResetButton_ang, "%&use% RESPAWN DOORS")
-	AddCallback_OnUseEntity( button, void function(entity panel, entity user, int input) 
+	AddCallback_OnUseEntity( button, void function(entity panel, entity user, int input)
 	{
 		EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
 		SpawnDoors()
@@ -1279,3 +1067,281 @@ void function FixWeapon(entity weapon)
 	catch(error){}
 }
 #endif
+
+
+
+
+
+#if(false)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+//
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif //
+
+#if(CLIENT)
+
+void function IntroDisplayThread()
+{
+	thread function() : ()
+	{
+		FlagWait( "EntitiesDidLoad" )
+		wait 3.0
+
+		entity viewPlayer = GetLocalViewPlayer()
+		if ( IsValid( viewPlayer ) )
+			MapZones_ZoneIntroText( viewPlayer, ("#" + GetMapName()), -1 )
+	}()
+}
+#endif //
+
+
+#if(false)
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+//
+//
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif //
