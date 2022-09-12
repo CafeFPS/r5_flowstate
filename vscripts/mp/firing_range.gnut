@@ -73,7 +73,7 @@ struct {
 
 void function FiringRangeGameMode_Init()
 {
-	if ( !IsFiringRangeGameMode() )
+	if ( !IsFiringRangeGameMode() || GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		return
 
 	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
