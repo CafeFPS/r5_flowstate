@@ -674,6 +674,7 @@ global struct ServerPlayerStruct
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
 	float lastKillTimer
+	int downedEnemyAtOneTime = 0
 	
 	//Flyers Easteregg by Colombia
 	bool isParentedToFlyer = false
@@ -686,12 +687,8 @@ global struct ServerPlayerStruct
 	
 	//By Endergreen
 	// This is for Octane's ability chatter
-	bool isSaidChatterOnStim = false
-	bool isSaidChatterOnJumpPad = false
-
-	// Amount of player downed enemy at one time
-	int downedEnemyAtOneTime = 0
-	bool isDownedEnemyRecently = false
+	float lastStimChatterTime = -30
+	
 	//Strafer dummy challenge
 	int challengeName = 0
 	bool isChallengeActivated

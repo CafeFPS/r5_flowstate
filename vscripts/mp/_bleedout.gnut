@@ -119,13 +119,6 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	thread Bleedout_DeathProtection( player )
 	
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_imDown" )
-	if( attacker.IsPlayer() && IsValid( attacker ) )
-	{
-		if( player != attacker && attacker.p.downedEnemyAtOneTime <= 0 )
-			thread DownedEnemy( attacker, 1.5 )
-
-		attacker.p.downedEnemyAtOneTime += 1
-	}
 
 	if ( IsValid( file.Callback_OnPlayerStartBleedout ) && !file.isBleeding[ player ] )
 		file.Callback_OnPlayerStartBleedout( player, attacker, null )
@@ -658,7 +651,7 @@ void function CheckForTeamBleedout( int team )
 	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
 	foreach ( entity teamPlayer in teamPlayers )
 	{
-		if ( IsAlive( teamPlayer ) && !file.isBleeding[ teamPlayer ] )
+		if ( IsAlive( teamPlayer ) && !file.isBleeding[ teamPlayer ] || Bleedout_GetSelfResEnabled( teamPlayer ) )
 			return
 	}
 
@@ -669,29 +662,6 @@ void function CheckForTeamBleedout( int team )
 			PlayerDiesFromBleedout( teamPlayer, file.lastAttacker[ teamPlayer ] )
 	}
 }
-
-void function DownedEnemy( entity player, float time )
-{
-	wait time
-	if( player.p.downedEnemyAtOneTime > 1 && !player.p.isDownedEnemyRecently )
-		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iDownedMultiple" )
-	else if( player.p.downedEnemyAtOneTime == 1 && !player.p.isDownedEnemyRecently )
-		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iDownedAnEnemy" )
-	else if( player.p.isDownedEnemyRecently )
-		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iDownedAnotherEnemy" )
-
-	player.p.downedEnemyAtOneTime = 0
-	if( !player.p.isDownedEnemyRecently )
-		thread RecentlyDownedEnemy( player, 15.0 )
-}
-
-void function RecentlyDownedEnemy( entity player, float time )
-{
-	player.p.isDownedEnemyRecently = true
-	wait time
-	player.p.isDownedEnemyRecently = false
-}
-
 
 bool function Bleedout_ShouldAIMissBleedingPlayer( entity player )
 {
