@@ -81,7 +81,8 @@ global table<string, string> playlisttoname = {
 	[ "custom_tdm_gungame" ] = "Team Deathmatch Gungame",
 	[ "custom_prophunt" ] = "Hide&Seek Prophunt",
 	[ "custom_surf" ] = "Apex SURF",
-	[ "custom_aimtrainer" ] = "Flowstate Aim Trainer"
+	[ "custom_aimtrainer" ] = "Flowstate Aim Trainer",
+	[ "firingrange" ] = "Firing Range"
 }
 
 //Vis to readable name

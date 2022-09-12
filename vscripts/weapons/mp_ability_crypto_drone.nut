@@ -643,6 +643,12 @@ void function OnScanTriggerEnter( entity trigger, entity ent )
 	if ( ent.e.sonarTriggers.contains( trigger ) )
 		return
 
+	if ( !IsValid( trigger ) )
+		return
+
+	if ( !IsValid( ent ) )
+		return
+		
 	ent.e.sonarTriggers.append( trigger )
 	SonarStartGrenade( ent, trigger.GetOrigin(), trigger.GetTeam(), trigger.GetOwner() )
 }
