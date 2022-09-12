@@ -2164,6 +2164,9 @@ void function Waypoint_ClearPlayerSimilarPingsForReply( entity player, entity wp
 	{
 		if ( wp == wpEnt )
 			continue
+			
+		if ( !IsValid( wp ) )
+			return
 
 		int wpPingType = Waypoint_GetPingTypeForWaypoint( wp )
 		if ( (wpPingType == pingType) )
