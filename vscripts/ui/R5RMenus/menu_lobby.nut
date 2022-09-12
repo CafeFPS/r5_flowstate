@@ -2,6 +2,7 @@ global function InitR5RLobbyMenu
 global function GetUIPlaylistName
 global function GetUIMapName
 global function GetUIMapAsset
+global function InPlayersLobby
 
 struct
 {
@@ -35,7 +36,8 @@ global table<string, asset> maptoasset = {
 	[ "mp_rr_canyonlands_mu1_night" ] = $"rui/menu/maps/mp_rr_canyonlands_mu1_night",
 	[ "mp_rr_desertlands_64k_x_64k" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k",
 	[ "mp_rr_desertlands_64k_x_64k_nx" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k_nx",
-	[ "mp_rr_arena_composite" ] = $"rui/menu/maps/mp_rr_arena_composite"
+	[ "mp_rr_arena_composite" ] = $"rui/menu/maps/mp_rr_arena_composite",
+	[ "mp_lobby" ] = $"rui/menu/maps/mp_lobby"
 }
 
 //Map to readable name
@@ -49,7 +51,8 @@ global table<string, string> maptoname = {
 	[ "mp_rr_canyonlands_mu1_night" ] = "Kings Canyon S2 After Dark",
 	[ "mp_rr_desertlands_64k_x_64k" ] = "Worlds Edge",
 	[ "mp_rr_desertlands_64k_x_64k_nx" ] = "Worlds Edge After Dark",
-	[ "mp_rr_arena_composite" ] = "Drop Off"
+	[ "mp_rr_arena_composite" ] = "Drop Off",
+	[ "mp_lobby" ] = "Lobby"
 }
 
 //Playlist to readable name
@@ -66,17 +69,19 @@ global table<string, string> playlisttoname = {
 	[ "elite" ] = "Elite",
 	[ "armed_and_dangerous" ] = "Armed and Dangerous",
 	[ "wead" ] = "wead",
-	[ "custom_aimtrainer" ] = "Flowstate Aim Trainer",
 	[ "custom_tdm" ] = "Team Deathmatch",
-	[ "custom_tdm_fiesta" ] = "Team Deathmatch Fiesta",
-	[ "custom_tdm_gungame" ] = "Team Deathmatch Gungame",
-	[ "custom_prophunt" ] = "Hide&Seek Prophunt",
-	[ "custom_surf" ] = "Apex SURF",
 	[ "custom_ctf" ] = "Capture The Flag",
 	[ "tdm_gg" ] = "Gun Game",
 	[ "tdm_gg_double" ] = "Team Gun Game",
 	[ "survival_dev" ] = "Survival Dev",
-	[ "dev_default" ] = "Dev Default"
+	[ "dev_default" ] = "Dev Default",
+	[ "menufall" ] = "Lobby",
+	//flowstate
+	[ "custom_tdm_fiesta" ] = "Team Deathmatch Fiesta",
+	[ "custom_tdm_gungame" ] = "Team Deathmatch Gungame",
+	[ "custom_prophunt" ] = "Hide&Seek Prophunt",
+	[ "custom_surf" ] = "Apex SURF",
+	[ "custom_aimtrainer" ] = "Flowstate Aim Trainer"
 }
 
 //Vis to readable name
@@ -106,16 +111,13 @@ void function InitR5RLobbyMenu( var newMenuArg )
 
 	//Setup panel array
 	file.panels.append(Hud_GetChild(menu, "R5RHomePanel"))
-	file.panels.append(Hud_GetChild(menu, "R5RCreateServerPanel"))
+	file.panels.append(Hud_GetChild(menu, "R5RPrivateMatchPanel"))
 	file.panels.append(Hud_GetChild(menu, "R5RServerBrowserPanel"))
 
 	//Setup Button Vars
 	file.buttons.append(Hud_GetChild(menu, "HomeBtn"))
 	file.buttons.append(Hud_GetChild(menu, "CreateServerBtn"))
 	file.buttons.append(Hud_GetChild(menu, "ServerBrowserBtn"))
-
-	//Show Home Panel
-	ShowSelectedPanel( file.panels[0], file.buttons[0] )
 }
 
 void function OpenSelectedPanel(var button)
@@ -131,19 +133,16 @@ void function OpenSelectedPanel(var button)
 			CurrentPresentationType = ePresentationType.PLAY
 			break;
 		case 1:
+			PrivateMatchMenuOpened()
 			UI_SetPresentationType( ePresentationType.CHARACTER_SELECT )
 			CurrentPresentationType = ePresentationType.CHARACTER_SELECT
-			HideAllCreateServerPanels()
 			break;
 		case 2:
+			//thread RefreshServersForEveryone()
 			UI_SetPresentationType( ePresentationType.COLLECTION_EVENT )
 			CurrentPresentationType = ePresentationType.COLLECTION_EVENT
 			break;
 	}
-
-	//If create server button is pressed, hide all panels for that panel
-	if(scriptid == 1)
-		HideAllCreateServerPanels()
 }
 
 void function SettingsPressed(var button)
@@ -163,12 +162,17 @@ void function OnR5RLobby_Open()
 	//needed on both show and open
 	SetupLobby()
 
-	//Load Create Server maps and playlists
-	RefreshUIPlaylists()
-	RefreshUIMaps()
+	//Show Home Panel
+	ShowSelectedPanel( file.panels[0], file.buttons[0] )
+	UI_SetPresentationType( ePresentationType.PLAY )
+	CurrentPresentationType = ePresentationType.PLAY
 
 	//Set back to default for next time
 	g_isAtMainMenu = false
+
+	server_host_name = ""
+
+	RunClientScript("UICallback_SetHostName", GetPlayerName() + "'s Lobby")
 }
 
 void function SetupLobby()
@@ -176,9 +180,6 @@ void function SetupLobby()
 	//Setup Lobby Stuff
 	UI_SetPresentationType( CurrentPresentationType )
 	thread TryRunDialogFlowThread()
-
-	//Set playername
-	Hud_SetText(Hud_GetChild( file.menu, "PlayerName" ), GetPlayerName())
 
 	//Set Version
 	SetUIVersion()
@@ -248,5 +249,28 @@ asset function GetUIMapAsset(string map)
 
 void function OnR5RLobby_Back()
 {
-	// Do nothing so it dosnt hide the menu
+	if(PMMenusOpen.maps_open || PMMenusOpen.playlists_open || PMMenusOpen.vis_open || PMMenusOpen.name_open || PMMenusOpen.desc_open || PMMenusOpen.kick_open)
+    {
+		var pmpanel = GetPanel( "R5RPrivateMatchPanel" )
+        Hud_SetVisible( Hud_GetChild(pmpanel, "R5RMapPanel"), false )
+        Hud_SetVisible( Hud_GetChild(pmpanel, "R5RPlaylistPanel"), false )
+        Hud_SetVisible( Hud_GetChild(pmpanel, "R5RVisPanel"), false )
+        Hud_SetVisible( Hud_GetChild(file.menu, "R5RNamePanel"), false )
+        Hud_SetVisible( Hud_GetChild(file.menu, "R5RDescPanel"), false )
+        Hud_SetVisible( Hud_GetChild(file.menu, "R5RKickPanel"), false )
+
+        PMMenusOpen.maps_open = false
+        PMMenusOpen.playlists_open = false
+        PMMenusOpen.vis_open = false
+        PMMenusOpen.name_open = false
+        PMMenusOpen.desc_open = false
+        PMMenusOpen.kick_open = false
+    }
+}
+
+void function InPlayersLobby(bool show, string host)
+{
+	Hud_SetVisible( Hud_GetChild(GetPanel( "R5RHomePanel" ), "InPlayersLobby"), show )
+    Hud_SetVisible( Hud_GetChild(GetPanel( "R5RHomePanel" ), "InPlayersLobbyText"), show )
+	Hud_SetText( Hud_GetChild(GetPanel( "R5RHomePanel" ), "InPlayersLobbyText"), "You are in " + host + "'s lobby" )
 }

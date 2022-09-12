@@ -93,8 +93,6 @@ void function OpenSelectedPanel( var button )
 
 	if(Hud_GetScriptID( button ).tointeger() == 3 || Hud_GetScriptID( button ).tointeger() == 4)
 	{
-		Hud_SetVisible( Hud_GetChild(file.menu, "FadeBackground"), true )
-
 		Hud_SetText( Hud_GetChild( file.namepanel, "BtnServerName" ), ServerSettings.svServerName )
 		Hud_SetText( Hud_GetChild( file.descpanel, "BtnServerDesc" ), ServerSettings.svServerDesc )
 	}
@@ -184,7 +182,6 @@ void function UpdateServerName( var button )
     ServerSettings.svServerName = file.tempservername
 
 	Hud_SetVisible( file.namepanel, false )
-	Hud_SetVisible( Hud_GetChild(file.menu, "FadeBackground"), false )
 
 	Hud_SetText(Hud_GetChild( file.panel, "MapServerNameInfoEdit" ), ServerSettings.svServerName)
 }
@@ -199,7 +196,6 @@ void function UpdateServerDesc( var button )
     ServerSettings.svServerDesc = file.tempserverdesc
 
 	Hud_SetVisible( file.descpanel, false )
-	Hud_SetVisible( Hud_GetChild(file.menu, "FadeBackground"), false )
 }
 
 void function TempSaveDescChanges( var button )

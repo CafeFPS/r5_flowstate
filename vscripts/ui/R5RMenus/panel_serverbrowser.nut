@@ -1,15 +1,21 @@
 global function InitR5RServerBrowserPanel
+global function InitR5RConnectingPanel
+
+global function EnableRefreshButton
 global function RefreshServerListing
+global function ServerBrowser_JoinServer
+global function RefreshServersForEveryone
 
 //Used for max items for page
 //Changing this requires a bit of work to get more to show correctly
 //So keep at 19
-global const SB_MAX_SERVER_PER_PAGE = 19
+const SB_MAX_SERVER_PER_PAGE = 19
 
 struct
 {
 	var menu
 	var panel
+	var connectingpanel
 } file
 
 //Struct for page system
@@ -51,6 +57,11 @@ SelectedServerInfo m_vSelectedServer
 //Used for all player count
 int m_vAllPlayers
 
+void function InitR5RConnectingPanel( var panel )
+{
+	file.connectingpanel = panel
+}
+
 void function InitR5RServerBrowserPanel( var panel )
 {
 	file.panel = panel
@@ -87,10 +98,20 @@ void function InitR5RServerBrowserPanel( var panel )
 	Hud_SetText(Hud_GetChild( file.panel, "ServerCurrentMap" ), "" )
 }
 
+void function EnableRefreshButton( bool show)
+{
+	Hud_SetVisible(Hud_GetChild( file.panel, "RefreshServers" ), show)
+	Hud_SetVisible(Hud_GetChild( file.panel, "RefreshServersText" ), show)
+}
+
 void function RefreshServersClick(var button)
 {
-	//Refresh Server Browser
-	RefreshServerListing()
+	RunClientScript("UICallback_RefreshServer")
+}
+
+void function RefreshServersForEveryone()
+{
+	RunClientScript("UICallback_RefreshServer")
 }
 
 void function ConnectToServer(var button)
@@ -101,7 +122,8 @@ void function ConnectToServer(var button)
 
 	//Connect to server
 	printf("Connecting to server: (Server ID: " + m_vSelectedServer.svServerID + " | Server Name: " + m_vSelectedServer.svServerName + " | Map: " + m_vSelectedServer.svMapName + " | Playlist: " + m_vSelectedServer.svPlaylist + ")")
-	SetEncKeyAndConnect(m_vSelectedServer.svServerID)
+	//SetEncKeyAndConnect(m_vSelectedServer.svServerID)
+	RunClientScript("UICallback_ServerBrowserJoinServer", m_vSelectedServer.svServerID)
 }
 
 void function SelectServer(var button)
@@ -342,4 +364,21 @@ void function SetSelectedServer(int id, string name, string map, string playlist
 	Hud_SetText(Hud_GetChild( file.panel, "PlaylistInfoEdit" ), GetUIPlaylistName(playlist) )
 	Hud_SetText(Hud_GetChild( file.panel, "ServerDesc" ), desc )
 	RuiSetImage( Hud_GetRui( Hud_GetChild( file.panel, "ServerMapImg" ) ), "loadscreenImage", GetUIMapAsset(map) )
+}
+
+void function ServerBrowser_JoinServer(int id)
+{
+	thread StartServerConnection(id)
+}
+
+void function StartServerConnection(int id)
+{
+	Hud_SetVisible(Hud_GetChild( file.menu, "R5RConnectingPanel"), true)
+	Hud_SetText(Hud_GetChild( GetPanel( "R5RConnectingPanel" ), "ServerName" ), m_vServerList[id].svServerName )
+
+	wait 2
+
+	Hud_SetVisible(Hud_GetChild( file.menu, "R5RConnectingPanel"), false)
+
+	SetEncKeyAndConnect(id)
 }

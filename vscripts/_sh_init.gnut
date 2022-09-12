@@ -187,15 +187,9 @@ void function SV_CL_Init()
 
 	ShTutorial_Init()
 	Sh_PassiveVoices_Init()
-	#if(false)
-
-	#endif
-	#if(false)
-
-	#endif
 
 	#if CLIENT
-		Cl_DeathScreen_Init() //
+		Cl_DeathScreen_Init()
 	#endif
 
 	Sh_PersistentDamageLayer_Init()
@@ -488,12 +482,15 @@ void function Shared_Lobby_Init()
 		Client_Lobby_Init()
 	#endif
 
+	Sh_LobbyVM_Init()
+
 	RemoteFunctions_Init_Finish()
 }
 
 #if SERVER
 void function Server_Lobby_Init()
 {
+	_LobbyVM_Init()
 	UIVars_Init()
 	MenuCallbacks_Init()
 	Lobby_Init()
@@ -514,5 +511,6 @@ void function Client_Lobby_Init()
 	ShPassPanel_LevelInit()
 	ClLoadscreensInit()
 	ClImagePakLoadInit()
+	Cl_LobbyVM_Init()
 }
 #endif // CLIENT

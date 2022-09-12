@@ -32,6 +32,43 @@
 		"pin_to_sibling_corner"	"TOP_LEFT"
 	}
 
+	"InPlayersLobby"
+	{
+        "ControlName"			"ImagePanel"
+		"wide"					"350"
+		"tall"					"75"
+		"visible"				"1"
+        "scaleImage"			"1"
+		"xpos"					"0"
+		"ypos"					"-40"
+		"zpos"					"0"
+        "fillColor"				"30 30 30 200"
+        "drawColor"				"30 30 30 200"
+
+		"pin_to_sibling"		"DarkenBackground"
+		"pin_corner_to_sibling"	"TOP_RIGHT"
+		"pin_to_sibling_corner"	"TOP_RIGHT"
+	}
+
+	"InPlayersLobbyText"
+	{
+        "ControlName"			"Label"
+		"xpos"                  "0"
+		"ypos"					"0"
+		"auto_wide_tocontents"	"1"
+		"tall"					"40"
+		"visible"				"1"
+		"fontHeight"			"30"
+		"labelText"				"You are in <players> lobby"
+		"font"					"DefaultBold_41"
+		"allcaps"				"0"
+		"fgcolor_override"		"255 100 100 255"
+
+		"pin_to_sibling"		"InPlayersLobby"
+		"pin_corner_to_sibling"	"CENTER"
+		"pin_to_sibling_corner"	"CENTER"
+	}
+
 	"R5RPicBox"
 	{
 		"ControlName"			"RuiPanel"

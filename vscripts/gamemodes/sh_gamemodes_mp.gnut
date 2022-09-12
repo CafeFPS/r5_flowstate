@@ -7,6 +7,22 @@ void function GameModes_Init_SV_CL()
 
 	////////////////////////////
 	//                        //
+	//        Menufall        //
+	//                        //
+	////////////////////////////
+
+	gameMode = MENUFALL
+	#if SERVER || CLIENT
+		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
+	#endif
+	#if SERVER
+	GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
+	GameMode_SetEvacEnabled( gameMode, false )
+	#endif
+
+	////////////////////////////
+	//                        //
 	//          TDM           //
 	//                        //
 	////////////////////////////
@@ -35,10 +51,7 @@ void function GameModes_Init_SV_CL()
 
 	{
 		#if SERVER
-
-			if(GetMapName() != "mp_rr_canyonlands_staging"){
 			GameMode_AddServerInit( gameMode, GamemodeSurvival_Init )
-			}
 			GameMode_SetPilotSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 			GameMode_SetTitanSpawnpointsRatingFunc( gameMode, RateSpawnpoints_Generic )
 			GameMode_SetEvacEnabled( gameMode, false )
@@ -92,7 +105,7 @@ void function GameModes_Init_SV_CL()
 	GameMode_AddClientInit(gameMode, Cl_CustomTDM_Init)
 	//GameMode_AddClientInit( gameMode, ClGamemodeSurvival_Init )
 	#endif
-	
+
 	////////////////////////////
 	//                        //
 	//       Custom CTF       //

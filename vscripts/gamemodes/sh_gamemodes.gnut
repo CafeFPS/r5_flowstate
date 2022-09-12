@@ -119,6 +119,14 @@ void function GameModes_Init()
 {
 	string gameMode
 
+	gameMode = MENUFALL
+	GameMode_Create( gameMode )
+	GameMode_SetName( gameMode, "menufall" )
+	GameMode_SetGameModeAnnouncement( gameMode, "phunt_modeDesc" )
+	GameMode_SetDesc( gameMode, "#PL_pilot_hunter_hint" )
+	GameMode_SetIcon( gameMode, $"ui/menu/playlist/tdm" )
+	GameMode_SetColor( gameMode, [212, 83, 152, 255] )
+
 	gameMode = TEAM_DEATHMATCH
 	GameMode_Create( gameMode )
 	GameMode_SetName( gameMode, "#PL_pilot_hunter" )

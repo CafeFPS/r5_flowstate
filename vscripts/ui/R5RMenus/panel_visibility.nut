@@ -4,6 +4,7 @@ struct
 {
 	var menu
 	var panel
+	var listPanel
 
 	table<var, int> vis_button_table
 } file
@@ -17,27 +18,46 @@ array<int> visibility = [
 void function InitR5RVisPanel( var panel )
 {
 	file.panel = panel
-	file.menu = GetParentMenu( file.panel )
+	file.menu = GetPanel( "R5RPrivateMatchPanel" )
 
-	for( int i=0; i < visibility.len(); i++ ) {
-		//Set vis name
-		Hud_SetText( Hud_GetChild( file.panel, "VisText" + i ), vistoname[visibility[i]])
+	file.listPanel = Hud_GetChild( panel, "VisList" )
 
-		//Set the map ui visibility to true
-		Hud_SetVisible( Hud_GetChild( file.panel, "VisText" + i ), true )
-		Hud_SetVisible( Hud_GetChild( file.panel, "VisBtn" + i ), true )
-		Hud_SetVisible( Hud_GetChild( file.panel, "VisPanel" + i ), true )
+	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
+
+	int m_vis_count = visibility.len()
+
+	Hud_InitGridButtons( file.listPanel, m_vis_count )
+
+	foreach ( int id, int vis in visibility )
+	{
+		var button = Hud_GetChild( scrollPanel, "GridButton" + id )
+        var rui = Hud_GetRui( button )
+	    RuiSetString( rui, "buttonText", vistoname[vis] )
 
 		//Add the Even handler for the button
-		Hud_AddEventHandler( Hud_GetChild( file.panel, "VisBtn" + i ), UIE_CLICK, SelectServerVis )
+		Hud_AddEventHandler( button, UIE_CLICK, SelectServerVis )
+		Hud_AddEventHandler( button, UIE_GET_FOCUS, OnVisHover )
+		Hud_AddEventHandler( button, UIE_LOSE_FOCUS, OnVisUnHover )
 
 		//Add the button and map to a table
-		file.vis_button_table[Hud_GetChild( file.panel, "VisBtn" + i )] <- visibility[i]
+		file.vis_button_table[button] <- vis
 	}
 }
 
 void function SelectServerVis( var button )
 {
+	EmitUISound( "menu_accept" )
+	
 	//Set selected server vis
 	SetSelectedServerVis(file.vis_button_table[button])
+}
+
+void function OnVisHover( var button )
+{
+	Hud_SetText(Hud_GetChild( file.menu, "VisInfoEdit" ), vistoname[file.vis_button_table[button]])
+}
+
+void function OnVisUnHover( var button )
+{
+	Hud_SetText(Hud_GetChild( file.menu, "VisInfoEdit" ), vistoname[ServerSettings.svVisibility])
 }

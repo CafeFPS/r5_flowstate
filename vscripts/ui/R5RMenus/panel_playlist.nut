@@ -5,6 +5,7 @@ struct
 {
 	var menu
 	var panel
+	var listPanel
 
 	table<var, string> playlist_button_table
 } file
@@ -12,9 +13,12 @@ struct
 void function InitR5RPlaylistPanel( var panel )
 {
 	file.panel = panel
-	file.menu = GetParentMenu( file.panel )
+	file.menu = GetPanel( "R5RPrivateMatchPanel" )
+
+	file.listPanel = Hud_GetChild( panel, "PlaylistList" )
 }
 
+table<var, void functionref(var)> WORKAROUND_PlaylistButtonToClickHandlerMap = {}
 void function RefreshUIPlaylists()
 {
 	//Get Playlists Array
@@ -23,34 +27,34 @@ void function RefreshUIPlaylists()
 	//Get Number Of Playlists
 	int m_vPlaylists_count = m_vPlaylists.len()
 
-	//Currently supports upto 18 playlists
-	//Amos and I talked and will setup a page system or somthing else when needed
-	if(m_vPlaylists_count > 18)
-		m_vPlaylists_count = 18
+	var scrollPanel = Hud_GetChild( file.listPanel, "ScrollPanel" )
 
-	for( int i=0; i < m_vPlaylists_count; i++ ) {
+	Hud_InitGridButtons( file.listPanel, m_vPlaylists_count )
 
-		//Set playlist text
-		Hud_SetText( Hud_GetChild( file.panel, "PlaylistText" + i ), GetUIPlaylistName(m_vPlaylists[i]))
+	foreach ( int id, string playlist in m_vPlaylists )
+	{
+		var button = Hud_GetChild( scrollPanel, "GridButton" + id )
+        var rui = Hud_GetRui( button )
+	    RuiSetString( rui, "buttonText", GetUIPlaylistName(playlist) )
 
-		//Set the playlist ui visibility to true
-		Hud_SetVisible( Hud_GetChild( file.panel, "PlaylistText" + i ), true )
-		Hud_SetVisible( Hud_GetChild( file.panel, "PlaylistBtn" + i ), true )
-		Hud_SetVisible( Hud_GetChild( file.panel, "PlaylistPanel" + i ), true )
-
-		//If button already has a evenhandler remove it
-		var button = Hud_GetChild( file.panel, "PlaylistBtn" + i )
+        //If button already has a evenhandler remove it
 		if ( button in file.playlist_button_table ) {
 			Hud_RemoveEventHandler( button, UIE_CLICK, SelectServerPlaylist )
+			Hud_RemoveEventHandler( button, UIE_GET_FOCUS, OnPlaylistHover )
+			Hud_RemoveEventHandler( button, UIE_LOSE_FOCUS, OnPlaylistUnHover )
 			delete file.playlist_button_table[button]
 		}
 
 		//Add the Even handler for the button
-		Hud_AddEventHandler( Hud_GetChild( file.panel, "PlaylistBtn" + i ), UIE_CLICK, SelectServerPlaylist )
+		Hud_AddEventHandler( button, UIE_CLICK, SelectServerPlaylist )
+		Hud_AddEventHandler( button, UIE_GET_FOCUS, OnPlaylistHover )
+		Hud_AddEventHandler( button, UIE_LOSE_FOCUS, OnPlaylistUnHover )
 
 		//Add the button and playlist to a table
-		file.playlist_button_table[Hud_GetChild( file.panel, "PlaylistBtn" + i )] <- m_vPlaylists[i]
+		file.playlist_button_table[button] <- playlist
 	}
+
+	Hud_SetHeight(Hud_GetChild(file.panel, "PanelBG"), Hud_GetHeight(file.listPanel) + 1)
 }
 
 array<string> function GetPlaylists()
@@ -73,6 +77,18 @@ array<string> function GetPlaylists()
 
 void function SelectServerPlaylist( var button )
 {
+	EmitUISound( "menu_accept" )
+	
 	//Set selected server playlist
 	thread SetSelectedServerPlaylist(file.playlist_button_table[button])
+}
+
+void function OnPlaylistHover( var button )
+{
+	Hud_SetText(Hud_GetChild( file.menu, "PlaylistInfoEdit" ), GetUIPlaylistName( file.playlist_button_table[button] ) )
+}
+
+void function OnPlaylistUnHover( var button )
+{
+	Hud_SetText(Hud_GetChild( file.menu, "PlaylistInfoEdit" ), GetUIPlaylistName( ServerSettings.svPlaylist ) )
 }

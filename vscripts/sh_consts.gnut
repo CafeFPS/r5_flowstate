@@ -92,7 +92,7 @@ global const NPC_TITAN_PILOT_PROTOTYPE  = 0
 global const HAS_TASKLIST_SYSTEM        = false
 global const HAS_MISSIONINFO_SYSTEM     = false
 
-
+global const MENUFALL                   = "menufall"
 global const TEAM_DEATHMATCH            = "tdm"
 global const SURVIVAL                   = "survival"
 global const FREELANCE                  = "freelance"

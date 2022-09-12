@@ -815,8 +815,8 @@ Scripts:
 	//R5RUI
 	ui/R5RMenus/menu_main.nut
 	ui/R5RMenus/menu_lobby.nut
+	ui/R5RMenus/menu_private_match.nut
 	ui/R5RMenus/panel_home.nut
-	ui/R5RMenus/panel_createserver.nut
 	ui/R5RMenus/panel_serverbrowser.nut
 	ui/R5RMenus/panel_mainmenu.nut
 	ui/R5RMenus/panel_playlist.nut
@@ -909,6 +909,7 @@ Scripts:
 	gamemodes/custom_ctf/sh_gamemode_custom_ctf.nut
 	gamemodes/custom_ctf/custom_ctf_settings.nut
 	gamemodes/custom_aimtrainer/sh_aimtrainer.nut
+	lobby/lobbyvm/sh_lobbyvm.nut
 ]
 
 When: "SERVER"
@@ -921,6 +922,7 @@ Scripts:
 	gamemodes/custom_surf/_gamemode_surf.nut
 	gamemodes/custom_surf/_gamemode_surf2.nut
 	gamemodes/custom_aimtrainer/_aimtrainer.nut
+	lobby/lobbyvm/_lobbyvm.nut
 	//maps
 	custom_maps/_custom_maps_1.nut
 	custom_maps/_custom_maps_2.nut
@@ -933,6 +935,7 @@ Scripts:
 	gamemodes/custom_tdm/cl_gamemode_custom_tdm.nut
 	gamemodes/custom_ctf/cl_gamemode_custom_ctf.nut
 	gamemodes/custom_aimtrainer/cl_aimtrainer.nut
+	lobby/lobbyvm/cl_lobbyvm.nut
 ]
 
 

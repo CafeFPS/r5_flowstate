@@ -8,9 +8,9 @@
 		"zpos"					"50"
 		"wide"					"f0"
 		"tall"					"f0"
-		"bgcolor_override"		"0 0 0 200"
+		"bgcolor_override"		"50 50 50 200"
 		"labelText"				""
-		"visible"				"0"
+		"visible"				"1"
 		"paintbackground"		"1"
 	}
 
