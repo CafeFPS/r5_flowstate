@@ -340,6 +340,7 @@ void function MapTriggers_Init()
 		case "mp_rr_aqueduct":
 		{
 			CreateWallTrigger( <425, -1590, -1689> , 30000 , true)
+			CreateWallTrigger( <732, -4456, 840>  , 6000 , false, true )
 			CreateWallTrigger( <774, -6394, 2067>  )
 			break
 		}
@@ -361,7 +362,7 @@ void function MapTriggers_Init()
 	}
 }
 
-entity function CreateWallTrigger( vector origin , float radius = 30000 , bool killzone = false , bool debugdraw = false)
+entity function CreateWallTrigger( vector origin , float radius = 30000 , bool killzone = false , bool oob_timer = false, bool debugdraw = false)
 {
 	// Set up the trigger
     entity trigger = CreateEntity( "trigger_cylinder" )
@@ -376,6 +377,12 @@ entity function CreateWallTrigger( vector origin , float radius = 30000 , bool k
 	{
 		trigger.SetScriptName("WallTrigger_Killzone")
 		trigger.SetAboveHeight( 350 )
+	}
+	
+    if (oob_timer)
+	{
+		trigger.SetScriptName("WallTrigger_oob_timer")
+		trigger.SetAboveHeight( 2350 )
 	}
 
 	if (debugdraw) // draw trigger bounds if needed
@@ -396,13 +403,19 @@ void function WallTriggerEnter( entity trigger , entity ent )
 	{
 		if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // noclip players are not affected by the trigger
 		{
-			ent.Zipline_Stop()
-
-			if (trigger.GetScriptName() != "WallTrigger_Killzone") // check if its a killzone
+			if (trigger.GetScriptName() == "WallTrigger_Killzone") // Check if it's a killzone
+			{
+				ent.TakeDamage(ent.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
+			} 
+			else if (trigger.GetScriptName() == "WallTrigger_oob_timer") // Check if it's only out of bounds timer
+			{
+				EntityOutOfBounds( trigger, ent, null, null )
+			}
+			else 
 			{
 				EntityOutOfBounds( trigger, ent, null, null )
 				ent.DisableWeapon()
-
+				ent.Zipline_Stop()
 				StatusEffect_AddEndless( ent, eStatusEffect.hunt_mode_visuals, 100 )
 				StatusEffect_AddEndless( ent, eStatusEffect.minimap_jammed, 100 )
 				StatusEffect_AddEndless( ent, eStatusEffect.move_slow, 0.2 )
@@ -418,10 +431,6 @@ void function WallTriggerEnter( entity trigger , entity ent )
 				}
 
 				ent.SetVelocity(newdir * 15)
-			} 
-			else 
-			{
-				ent.TakeDamage(ent.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
 			}
 		}
 	}

@@ -1799,7 +1799,14 @@ void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var 
 
 		dataStruct.timeLeftBeforeDyingFromOutOfBounds = deadTime
 
-		ent.SetOutOfBoundsDeadTime( Time() + deadTime )
+		if ( GetMapName() == "mp_rr_aqueduct" || GetMapName() == "mp_rr_aqueduct_night" )
+		{
+			ent.SetOutOfBoundsDeadTime( Time() + 5 )
+		}
+		else
+		{
+			ent.SetOutOfBoundsDeadTime( Time() + deadTime )
+		}
 
 		thread KillEntityOutOfBounds( ent, trigger )
 	}
