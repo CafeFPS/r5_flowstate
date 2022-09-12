@@ -22,6 +22,7 @@ global function Sh_ChallengesByColombia_Init
 global int AimTrainer_CHALLENGE_DURATION = 60
 global int AimTrainer_AI_HEALTH = 100
 global int AimTrainer_AI_SHIELDS_LEVEL = 0
+global int AimTrainer_AI_COLOR = 5
 global float AimTrainer_STRAFING_SPEED = 1
 global float AimTrainer_STRAFING_SPEED_WAITTIME = 1
 global float AimTrainer_SPAWN_DISTANCE = 1

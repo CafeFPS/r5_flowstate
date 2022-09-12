@@ -821,6 +821,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			"pin_corner_to_sibling"	"RIGHT"
 			"pin_to_sibling_corner"	"LEFT"
 		}
+
 		RGBHudText
 		{
 				ControlName				Label
@@ -865,7 +866,49 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			pin_to_sibling_corner   RIGHT
 			childGroupAlways        ChoiceButtonAlways
 		}
-		
+		DummiesColorText
+		{
+				ControlName				Label
+				auto_wide_tocontents    1
+				labelText				"Dummies color"
+				visible                 0
+				zpos 0
+				tall					60
+				fontHeight				30
+				font					Default
+				fgcolor_override		"255 255 255 255"
+				"classname"					"SettingsBtn2"		
+				ypos                    80
+				pin_to_sibling          RGBHudText
+				pin_corner_to_sibling   BOTTOM_RIGHT
+				pin_to_sibling_corner   BOTTOM_RIGHT
+		}	
+
+		DummiesColorButton
+		{
+			ControlName				RuiButton
+			InheritProperties		SwitchButton
+			style					DialogListButton
+			classname					"SettingsBtn2"
+			xpos 400
+			wide 360
+			visible 0
+			ConVar "noise_filter_scale"				
+			list
+			{
+				"Grey"      0
+				"Red"      1
+				"Green"  2
+				"Blue"      3
+				"Yellow"      4
+				"Random"	5
+			}
+
+			pin_to_sibling          DummiesColorText
+			pin_corner_to_sibling   RIGHT
+			pin_to_sibling_corner   RIGHT
+			childGroupAlways        MultiChoiceButtonAlways
+		}		
 		UseDummyModelText
 		{
 				ControlName				Label
@@ -880,7 +923,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 				"classname"					"SettingsBtn2"			
 				ypos                    80
 				//xpos					60
-				pin_to_sibling          RGBHudText
+				pin_to_sibling          DummiesColorText
 				pin_corner_to_sibling   BOTTOM_RIGHT
 				pin_to_sibling_corner   BOTTOM_RIGHT
 		}

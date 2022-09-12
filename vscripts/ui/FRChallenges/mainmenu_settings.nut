@@ -46,6 +46,7 @@ void function InitFRChallengesSettings( var newMenuArg )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InfiniteAmmoButton"), UIE_CHANGE, InfiniteAmmoButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InfiniteAmmo2Button"), UIE_CHANGE, InfiniteAmmoButton2 )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "RGBHudButton"), UIE_CHANGE, RGBHudButton )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "DummiesColorButton"), UIE_CHANGE, DummiesColorButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "InfiniteTrainingButton"), UIE_CHANGE, InfiniteTrainingButton )
 	AddButtonEventHandler( Hud_GetChild( file.menu, "UseDummyModelButton"), UIE_CHANGE, UseDummyModelButton)
 	AddButtonEventHandler( Hud_GetChild( file.menu, "DurationText"), UIE_CHANGE, UpdateChallengeDuration )
@@ -131,6 +132,12 @@ void function RGBHudButton(var button)
 {
 	int desiredVar = GetConVarInt("hud_setting_showMeter")
 	RunClientScript("ChangeRGB_HUDClient", desiredVar.tostring())
+}
+
+void function DummiesColorButton(var button)
+{
+	int desiredVar = GetConVarInt("noise_filter_scale")
+	RunClientScript("ChangeAimTrainer_AI_DUMMIES_COLORClient", desiredVar.tostring())
 }
 
 void function InfiniteTrainingButton(var button)

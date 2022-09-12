@@ -73,6 +73,7 @@ void function _ChallengesByColombia_Init()
 	AddClientCommandCallback("CC_AimTrainer_INFINITE_AMMO", CC_AimTrainer_INFINITE_AMMO)
 	AddClientCommandCallback("CC_AimTrainer_INFINITE_AMMO2", CC_AimTrainer_INFINITE_AMMO2)
 	AddClientCommandCallback("CC_AimTrainer_INMORTAL_TARGETS", CC_AimTrainer_INMORTAL_TARGETS)
+	AddClientCommandCallback("CC_AimTrainer_DUMMIES_COLOR", CC_AimTrainer_DUMMIES_COLOR)
 	AddClientCommandCallback("CC_AimTrainer_USER_WANNA_BE_A_DUMMY", CC_AimTrainer_USER_WANNA_BE_A_DUMMY)
 	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon) 
 	AddClientCommandCallback("CC_ExitChallenge", CC_ExitChallenge)
@@ -186,7 +187,10 @@ void function SetCommonDummyLines(entity dummy)
 	dummy.SetDeathNotifications( true )
 	dummy.SetValidHealthBarTarget( true )
 	SetObjectCanBeMeleed( dummy, true )
-	dummy.SetSkin(RandomIntRange(1,5))
+	if(AimTrainer_AI_COLOR == 5)
+		dummy.SetSkin(RandomIntRangeInclusive(1,4))
+	else
+		dummy.SetSkin(AimTrainer_AI_COLOR)
 	dummy.DisableHibernation()
 }
 
@@ -2602,6 +2606,13 @@ bool function CC_AimTrainer_USER_WANNA_BE_A_DUMMY( entity player, array<string> 
 		player.SetArmsModelOverride( $"mdl/humans/class/medium/pilot_medium_generic.rmdl" )
 		player.SetSkin(RandomIntRange(1,5))
 	}
+	return false
+}
+
+bool function CC_AimTrainer_DUMMIES_COLOR( entity player, array<string> args )
+{
+	int desiredColor = int(args[0])
+	AimTrainer_AI_COLOR = desiredColor
 	return false
 }
 

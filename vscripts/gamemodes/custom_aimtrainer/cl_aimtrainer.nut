@@ -70,6 +70,7 @@ global function RestartButtonResultsClient
 //Settings
 global function ChangeChallengeDurationClient
 global function ChangeAimTrainer_AI_SHIELDS_LEVELClient
+global function ChangeAimTrainer_AI_DUMMIES_COLORClient
 global function ChangeAimTrainer_STRAFING_SPEEDClient
 global function ChangeAimTrainer_AI_HEALTH
 global function ChangeAimTrainer_AI_SPAWN_DISTANCE
@@ -188,6 +189,7 @@ void function ActuallyPutDefaultSettings()
 	SetConVarInt( "hud_setting_showLevelUp", 2)
 	SetConVarInt( "net_minimumPacketLossDC", 4)
 	SetConVarInt( "net_wifi", 100)
+	SetConVarInt( "noise_filter_scale", 5)
 	WaitFrame() //idk?
 	//set default settings
 	player.ClientCommand("CC_AimTrainer_AI_SHIELDS_LEVEL " + GetConVarInt("hud_setting_minimapRotate").tostring())
@@ -200,6 +202,7 @@ void function ActuallyPutDefaultSettings()
 	player.ClientCommand("CC_AimTrainer_USER_WANNA_BE_A_DUMMY " + GetConVarInt("hud_setting_showLevelUp").tostring())
 	player.ClientCommand("CC_AimTrainer_SPAWN_DISTANCE " + GetConVarInt("net_minimumPacketLossDC").tostring())		
 	player.ClientCommand("CC_AimTrainer_AI_HEALTH " + GetConVarInt("net_wifi").tostring())
+	player.ClientCommand("CC_AimTrainer_DUMMIES_COLOR " + GetConVarInt("noise_filter_scale").tostring())
 }
 
 
@@ -804,11 +807,19 @@ void function ChangeChallengeDurationClient(string time)
 	AimTrainer_CHALLENGE_DURATION = int(time)
 	player.ClientCommand("CC_ChangeChallengeDuration " + time)
 }
+
 void function ChangeAimTrainer_AI_SHIELDS_LEVELClient(string desiredShieldLevel)
 {
 	entity player = GetLocalClientPlayer()
 	AimTrainer_AI_SHIELDS_LEVEL = int(desiredShieldLevel)
 	player.ClientCommand("CC_AimTrainer_AI_SHIELDS_LEVEL " + desiredShieldLevel)
+}
+
+void function ChangeAimTrainer_AI_DUMMIES_COLORClient(string desiredColor)
+{
+	entity player = GetLocalClientPlayer()
+	AimTrainer_AI_COLOR = int(desiredColor)
+	player.ClientCommand("CC_AimTrainer_DUMMIES_COLOR " + desiredColor)
 }
 
 void function ChangeAimTrainer_STRAFING_SPEEDClient(string desiredSpeed)
