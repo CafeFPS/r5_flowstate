@@ -101,7 +101,7 @@ void function secondpage(var button)
 
 void function SupportTheDev(var button)
 {
-	LaunchExternalWebBrowser( "https://pastebin.com/pxm4UBVz", WEBBROWSER_FLAG_NONE )
+	LaunchExternalWebBrowser( "https://ko-fi.com/r5r_colombia", WEBBROWSER_FLAG_NONE )
 }
 
 void function SpeedTargetsButton(var button)
