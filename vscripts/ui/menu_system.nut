@@ -300,7 +300,7 @@ void function OpenSettingsMenu()
 
 void function HostEndMatch()
 {
-	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.HIDDEN)
+	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
 }
 
 #if CONSOLE_PROG

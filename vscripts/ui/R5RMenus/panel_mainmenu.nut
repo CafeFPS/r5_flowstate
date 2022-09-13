@@ -34,7 +34,7 @@ void function LaunchButton_OnActivate( var button )
 		return
 
 	//Launch lobby
-	CreateServer("Lobby", "", "mp_lobby", "menufall", eServerVisibility.HIDDEN)
+	CreateServer("Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
 }
 
 void function SetupRUI()
