@@ -265,7 +265,6 @@ void function EnablePlayerRes( entity player )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "BleedOut_OnStartDying" )
 	player.EndSignal( "BleedOut_OnRevive" )
-	player.EndSignal( "InterruptSyncedMelee" )
 	
 	//Highlight_SetFriendlyHighlight( player, "interact_object_los_line" )
 
