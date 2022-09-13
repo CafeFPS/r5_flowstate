@@ -675,7 +675,7 @@ global struct ServerPlayerStruct
 	bool isPlayerSpawningInDroppod = false
 	float lastKillTimer
 	int downedEnemyAtOneTime = 0
-	
+	float last3dashtime = 0
 	//Flyers Easteregg by Colombia
 	bool isParentedToFlyer = false
 	entity ParentedFlyer
