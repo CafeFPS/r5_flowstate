@@ -16,19 +16,12 @@ struct
 
 void function HealthRegen_Init()
 {
-/*	if ( IsSingleplayer() )
-	{
-		file.healthRegenRate = 1
-	}
-	else*/
-	{
 		file.healthRegenRate = 1 //6.0 ttf2
 		file.healthRegenTickTime = 2.0 // HEALTH_REGEN_TICK_TIME
 		file.healthRegenStartDelay = 5.0 // ttf2 value
 		AddCallback_PlayerClassChanged( HealthRegen_OnPlayerClassChangedMP )
 		AddCallback_OnPassiveChanged( ePassives.PAS_OCTANE, HealthRegen_OnPassiveChanged )
 		RegisterSignal( "PilotHealthRegenThink" )
-	}
 }
 
 /*

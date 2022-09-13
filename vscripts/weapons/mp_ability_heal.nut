@@ -11,10 +11,10 @@ bool function OnWeaponChargeBegin_ability_heal( entity weapon )
 
 	weapon.EmitWeaponSound_1p3p( "octane_stimpack_loop_1P", "octane_stimpack_loop_3P" )
 	PlayerUsedOffhand( player, weapon )
-	thread StimEnd(weapon)
-	//Rumble_Play( "rumble_stim_activate", {} )
-	
+	thread StimEnd(weapon, duration)
+
 	#if SERVER
+	player.p.lastDamageTime = Time()
 	int stimDamage = int(weapon.GetWeaponSettingFloat( eWeaponVar.damage_near_distance ))
 	player.SetHealth( player.GetHealth() - stimDamage < 1 ? 1 : player.GetHealth() - stimDamage )
 
@@ -28,16 +28,13 @@ bool function OnWeaponChargeBegin_ability_heal( entity weapon )
 	return true
 }
 
-void function StimEnd( entity weapon )
+void function StimEnd( entity weapon, float duration)
 {
 	entity player = weapon.GetWeaponOwner()
-	wait 4
+	wait duration-2
 	if ( !IsValid( weapon ) )
 		return
 	weapon.EmitWeaponSound_1p3p( "octane_stimpack_deactivate_1P", "octane_stimpack_deactivate_3P" )
-	#if SERVER
-	player.p.lastDamageTime = Time()
-	#endif
 }
 
 void function OnWeaponChargeEnd_ability_heal( entity weapon )
