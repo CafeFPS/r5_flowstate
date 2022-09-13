@@ -726,7 +726,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		GiveGungameWeapon(player)
 
 	thread WpnPulloutOnRespawn(player)
-	thread GrantSpawnImmunity(player, 2.5)
+	thread GrantSpawnImmunity(player, 2)
 }
 
 void function TpPlayerToSpawnPoint(entity player)
