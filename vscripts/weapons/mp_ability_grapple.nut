@@ -292,7 +292,6 @@ void function GrappleDecreaseAmmo( entity player, entity grappleWeapon )
 	bool playerWasOnZipline = player.IsZiplining()
 	while ( player.IsGrappleActive() || Length( player.GetVelocity() ) > 500.0 )
 	{
-		printt("test")
 		grappleWeapon.SetWeaponPrimaryClipCount( 0 )
 
 		d[ "distanceTraveled" ] += Distance2D( e[ "lastPos" ], player.GetOrigin() )

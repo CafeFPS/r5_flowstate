@@ -123,7 +123,8 @@ void function _CustomTDM_Init()
             _OnPlayerConnectedPROPHUNT(player)
         else if (FlowState_SURF())
             _OnPlayerConnectedSURF(player)
-        else _OnPlayerConnected(player)
+        else 
+			thread _OnPlayerConnected(player)
 
         UpdatePlayerCounts()
     })
@@ -334,6 +335,8 @@ void function DissolveItem(entity prop)
 
 void function _OnPlayerConnected(entity player)
 {
+	while(IsDisconnected( player )) WaitFrame()
+	
     if(!IsValid(player)) return
 
 	if(FlowState_ForceCharacter()){
