@@ -73,15 +73,15 @@ struct {
 
 void function FiringRangeGameMode_Init()
 {
-	if ( !IsFiringRangeGameMode() || GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-		return
-
-	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
-
 	PrecacheModel( FIRINGRANGE_BLUE_STAND_ASSET )
 	PrecacheModel( FIRINGRANGE_FLICK_TARGET_ASSET )
 	PrecacheParticleSystem( FIRINGRANGE_FLICK_TARGET_PARTICLE_HIT )
 	PrecacheParticleSystem( FIRINGRANGE_ITEM_RESPAWN_PARTICLE )
+
+	if ( !IsFiringRangeGameMode() || GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+		return
+
+	Remote_RegisterClientFunction( "SCB_BroadcastFriendlyFireChange", "entity" )
 
 	#if SERVER
 		AddCallback_EntitiesDidLoad( OnEntitiesDidLoad )
