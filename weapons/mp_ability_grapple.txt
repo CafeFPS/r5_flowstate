@@ -221,5 +221,10 @@ WeaponData
         {
 
         }
+
+        grapple_regen_stop
+        {
+            "regen_ammo_refill_rate"						"0"
+        }
 	}
 }

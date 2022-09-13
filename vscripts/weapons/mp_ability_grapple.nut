@@ -22,6 +22,11 @@ struct
 	int grappleExplodeImpactTable
 	array<void functionref( entity player, entity hitent, vector hitpos, vector hitNormal )> onGrappledCallbacks
 	array<void functionref( entity player )> onGrappleDetachCallbacks
+
+	int grappleDrainBaseCost = 100
+	float grappleDrainMinDist = 300
+	float grappleDrainMaxDist = 2800
+	float grappleDrainMaxDist_Zscalar = 0.5
 } file
 
 const int GRAPPLEFLAG_CHARGED	= (1<<0)
@@ -30,6 +35,13 @@ const int CHANCE_TO_COMMENT_GRAPPLE = 33
 void function GrappleWeaponInit()
 {
 	file.grappleExplodeImpactTable = PrecacheImpactEffectTable( "exp_rocket_archer" )
+
+	RegisterSignal( "Grapple_OnTouchGround" )
+
+	file.grappleDrainBaseCost = GetCurrentPlaylistVarInt( "pathfinder_grapple_drain_base_cost", 100 )
+	file.grappleDrainMinDist = GetCurrentPlaylistVarFloat( "pathfinder_grapple_drain_min_dist", 300 )
+	file.grappleDrainMaxDist = GetCurrentPlaylistVarFloat( "pathfinder_grapple_drain_max_dist", 4500 )
+	file.grappleDrainMaxDist_Zscalar = GetCurrentPlaylistVarFloat( "pathfinder_grapple_drain_z_scalar", 0.5 )
 
 #if SERVER
 	Bleedout_AddCallback_OnPlayerStartBleedout( Grapple_OnPlayerStartBleedout )
@@ -48,7 +60,6 @@ void function OnWeaponActivate_ability_grapple( entity weapon )
 	else
 		weapon.SetScriptTime0( 0.0 )
 
-	// clear "charged-up" flag:
 	{
 		int oldFlags = weapon.GetScriptFlags0()
 		weapon.SetScriptFlags0( oldFlags & ~GRAPPLEFLAG_CHARGED )
@@ -103,7 +114,7 @@ var function OnWeaponPrimaryAttack_ability_grapple( entity weapon, WeaponPrimary
 	if ( weapon.HasMod( "survival_finite_ordnance" ) )
 		return 0
 	else
-		return weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+		return 0 // weapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire ) 
 }
 
 #if SERVER
@@ -143,7 +154,7 @@ void function DoGrappleImpactExplosion( entity player, entity grappleWeapon, ent
 #if CLIENT
 	if ( !grappleWeapon.ShouldPredictProjectiles() )
 		return
-#endif //
+#endif
 
 	vector origin = hitpos + hitNormal * 16.0
 	int damageType = (DF_RAGDOLL | DF_EXPLOSION | DF_ELECTRICAL)
@@ -178,7 +189,7 @@ void function CodeCallback_OnGrappleActivate( entity player )
 
 void function CodeCallback_OnGrappleAttach( entity player, entity hitent, vector hitpos, vector hitNormal )
 {
-#if SERVER
+#if SERVER	
 	PIN_PlayerAbility( player, "mp_ability_grapple", ABILITY_TYPE.TACTICAL, null, {pos = hitpos, attached = true} )
 	if ( IsValid( hitent ) )
 	{
@@ -215,11 +226,7 @@ void function CodeCallback_OnGrappleAttach( entity player, entity hitent, vector
 
 		grappleWeapon.e.lastGrappleTime = Time()
 
-		if ( grappleWeapon.HasMod( "survival_finite_ordnance" ) )
-		{
-			int newAmmo = maxint( 0, grappleWeapon.GetWeaponPrimaryClipCount() - grappleWeapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire ) )
-			grappleWeapon.SetWeaponPrimaryClipCount( newAmmo )
-		}
+		thread GrappleDecreaseAmmo( player, grappleWeapon )
 
 		int flags = grappleWeapon.GetScriptFlags0()
 		if ( ! (flags & GRAPPLEFLAG_CHARGED) )
@@ -233,6 +240,102 @@ void function CodeCallback_OnGrappleAttach( entity player, entity hitent, vector
 	}
 }
 
+void function GrappleDecreaseAmmo( entity player, entity grappleWeapon )
+{
+	#if CLIENT
+		if ( !InPrediction() )
+			return
+	#endif
+	player.EndSignal( "OnDeath" )
+	grappleWeapon.EndSignal( "OnDestroy" )
+
+	vector startPos = player.GetOrigin()
+
+	table<string , float> d
+	table<string , vector> e
+	e[ "startPos" ] <- startPos
+	e[ "lastPos" ] <- startPos
+	d[ "distanceTraveled" ] <- 0.0
+	d[ "distanceTraveled_z" ] <- 0.0
+
+	float startTime = Time()
+	float fireDuration = grappleWeapon.GetWeaponSettingFloat( eWeaponVar.fire_duration )
+
+	int maxAmmo = grappleWeapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )
+	int startAmmo = grappleWeapon.GetWeaponPrimaryClipCount()
+
+	{
+		int amountToReduce = file.grappleDrainBaseCost
+
+		int newAmmo = maxint( 0, grappleWeapon.GetWeaponPrimaryClipCount() - amountToReduce )
+		grappleWeapon.SetWeaponPrimaryClipCount( 0 )
+		grappleWeapon.AddMod( "grapple_regen_stop" )
+		grappleWeapon.RegenerateAmmoReset()
+	}
+
+	OnThreadEnd(
+		function() : ( player, e, d, startAmmo, maxAmmo, grappleWeapon )
+		{
+			if ( IsValid( player ) )
+			{
+				if ( IsValid( grappleWeapon ) )
+				{
+					d[ "distanceTraveled" ] += Distance2D( e[ "lastPos" ], player.GetOrigin() )
+					d[ "distanceTraveled_z" ] = max( d[ "distanceTraveled_z" ], fabs( player.GetOrigin().z - e[ "startPos" ].z ) )
+					float distanceTraveled = max( max( d[ "distanceTraveled" ], Distance( e[ "startPos" ], player.GetOrigin() ) ), d[ "distanceTraveled_z" ] * file.grappleDrainMaxDist_Zscalar )
+					ReduceAmmoBasedOnDistance( grappleWeapon, d[ "distanceTraveled" ], startAmmo, maxAmmo )
+				}
+			}
+		}
+	)
+
+	bool playerWasOnZipline = player.IsZiplining()
+	while ( player.IsGrappleActive() || Length( player.GetVelocity() ) > 500.0 )
+	{
+		printt("test")
+		grappleWeapon.SetWeaponPrimaryClipCount( 0 )
+
+		d[ "distanceTraveled" ] += Distance2D( e[ "lastPos" ], player.GetOrigin() )
+		d[ "distanceTraveled_z" ] = max( d[ "distanceTraveled_z" ], fabs( player.GetOrigin().z - e[ "startPos" ].z ) )
+		float distanceTraveled = max( max( d[ "distanceTraveled" ], Distance( e[ "startPos" ], player.GetOrigin() ) ), d[ "distanceTraveled_z" ] * file.grappleDrainMaxDist_Zscalar )
+		e[ "lastPos" ] <- player.GetOrigin()
+
+		if ( player.IsZiplining() && !playerWasOnZipline )
+			break
+
+		if ( !player.IsZiplining() )
+			playerWasOnZipline =  false
+
+		if ((Time() - startTime) > 5)
+			break
+		
+		wait 0.1
+	}
+}
+
+void function ReduceAmmoBasedOnDistance( entity grappleWeapon, float distanceTraveled, int startAmmo, int maxAmmo )
+{
+	#if CLIENT
+		if ( !InPrediction() )
+			return
+	#endif
+
+	if ( !IsValid( grappleWeapon.GetWeaponOwner() ) )
+		return
+
+	float XYScalar = GraphCapped( distanceTraveled, file.grappleDrainMinDist, file.grappleDrainMaxDist, 0, 1.0 )
+
+	int amountToReduce = int( GraphCapped( XYScalar, 0, 1.0, 0, maxAmmo ) )                                                                                                          
+	amountToReduce += file.grappleDrainBaseCost
+
+	int newAmmo = minint( maxAmmo, maxint( 0, startAmmo - amountToReduce ) )
+
+	grappleWeapon.SetWeaponPrimaryClipCount( newAmmo )
+	if ( grappleWeapon.HasMod( "grapple_regen_stop" ) )
+		grappleWeapon.RemoveMod( "grapple_regen_stop" )
+
+	grappleWeapon.RegenerateAmmoReset()
+}
 void function CodeCallback_OnGrappleDetach( entity player )
 {
 	#if SERVER
@@ -242,20 +345,6 @@ void function CodeCallback_OnGrappleDetach( entity player )
 			thread callbackFunc( player )
 		}
 		
-		entity grappleWeapon = player.GetOffhandWeapon( OFFHAND_LEFT )
-		if ( !IsValid( grappleWeapon ) )
-			return
-		if ( !grappleWeapon.GetWeaponSettingBool( eWeaponVar.grapple_weapon ) )
-			return
-		
-		float reloadTime = float(grappleWeapon.GetWeaponSettingInt( eWeaponVar.ammo_min_to_fire )) / 10
-
-		// If last grapple time was longer than cooldown, then reload tactical as grapple missed any object
-		if (Time() - grappleWeapon.e.lastGrappleTime >= reloadTime) {
-			int max = grappleWeapon.GetWeaponPrimaryClipCountMax()
-			grappleWeapon.SetWeaponPrimaryClipCount( max )
-		}
-
 		//Signal( player, "OnGrappleDetach" )
 	#endif
 }
