@@ -281,7 +281,7 @@ void function ForcedSkydiveTriggerThink_EnterCallback( entity trigger, entity pl
 	if ( player.IsNoclipping() )
 		return
 	
-	if ( Time() - player.p.last3dashtime < 1 )
+	if ( Time() - player.p.last3dashtime < 1.1 )
 		return
 	
 	thread PlayerSkydiveFromCurrentPosition( player )

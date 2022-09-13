@@ -742,15 +742,16 @@ void function GrantSpawnImmunity(entity player, float duration)
 			if(!IsValid(player)) return	
 			player.SetCloakDuration( 0, 0, 0.1 )			
 			ClearInvincible(player)
+			EnableOffhandWeapons(player)
 		}
 	)
 
 	float endTime = Time() + duration
 	MakeInvincible(player)
-
+	DisableOffhandWeapons(player)
 	while(Time() <= endTime && IsValid(player)){
-		player.SetCloakDuration( 0, 0.25, 0.05 )
-		wait 0.3
+		player.SetCloakDuration( 0, 0.15, 0.35 )
+		wait 0.5
 	}
 }
 
