@@ -327,22 +327,31 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 
 	// Shared
-	player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )))
+		player.TakeOffhandWeapon( OFFHAND_SLOT_FOR_CONSUMABLES )
 
 	// Loadout meleeskin
-	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.TakeOffhandWeapon( OFFHAND_MELEE )
+	if(IsValid(player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )))
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
+	
+	if(IsValid(player.GetOffhandWeapon( FFHAND_SLOT_FOR_CONSUMABLES )))
+		player.TakeOffhandWeapon( OFFHAND_MELEE )
 
 	// Character related
-	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
-	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_TACTICAL )))
+		player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_ULTIMATE )))
+		player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
 
 	ItemFlavor passiveAbility = CharacterClass_GetPassiveAbility( character )
-	TakePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
+	if(GameRules_GetGameMode() == SURVIVAL)
+		TakePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
 }
 
 void function GiveLoadoutRelatedWeapons( entity player )
 {
+	TakeLoadoutRelatedWeapons(player)
+	
 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	ItemFlavor tactical = CharacterClass_GetTacticalAbility( character )
 	ItemFlavor ultimate = CharacterClass_GetUltimateAbility( character )
@@ -355,11 +364,18 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	if(GameRules_GetGameMode() == SURVIVAL)
 		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
 	
-	// player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	// player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+	if(GetCurrentPlaylistVarBool( "enable_bolo_heirloom", true ))
+	{
+		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	}
+	else
+	{
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+	}
 	
-	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	
 }
 
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
