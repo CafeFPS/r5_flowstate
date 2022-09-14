@@ -344,24 +344,22 @@ void function TakeLoadoutRelatedWeapons( entity player )
 void function GiveLoadoutRelatedWeapons( entity player )
 {
 	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
-
-	// Shared
+	ItemFlavor tactical = CharacterClass_GetTacticalAbility( character )
+	ItemFlavor ultimate = CharacterClass_GetUltimateAbility( character )
+	ItemFlavor passive = CharacterClass_GetPassiveAbility( character )
+	
 	player.GiveOffhandWeapon( CONSUMABLE_WEAPON_NAME, OFFHAND_SLOT_FOR_CONSUMABLES, [] )
-
-	// Loadout meleeskin
-	ItemFlavor meleeSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MeleeSkin( character ) )
-	player.GiveWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ), WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ), OFFHAND_MELEE, [] )
-
-	// Character related
-	ItemFlavor tacticalAbility = CharacterClass_GetTacticalAbility( character )
-	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tacticalAbility ), OFFHAND_TACTICAL, [] )
-
-	ItemFlavor ultimateAbility = CharacterClass_GetUltimateAbility( character )
-	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultimateAbility ), OFFHAND_ULTIMATE, [] )
-
-	ItemFlavor passiveAbility = CharacterClass_GetPassiveAbility( character )
-	GivePassive( player, CharacterAbility_GetPassiveIndex( passiveAbility ) )
+	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( tactical ), OFFHAND_TACTICAL, [] )
+	player.GiveOffhandWeapon( CharacterAbility_GetWeaponClassname( ultimate ), OFFHAND_ULTIMATE, [] )
+	
+	if(GameRules_GetGameMode() == SURVIVAL)
+		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
+	
+	// player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	// player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+	
+	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 }
 
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
@@ -380,20 +378,20 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	foreach ( playlistVar, modName in possibleMods )
 		if ( GetCurrentPlaylistVarBool( playlistVar, false ) )
 			enabledMods.append( modName )
-
+		
+	DoRespawnPlayer( player, null )
+	
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
 
 	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
 
-	DoRespawnPlayer( player, null )
-
 	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
 
 	PlayerStopSpectating( player )
 
-	ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
-	CharacterSkin_Apply( player, playerCharacterSkin )
+	// ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
+	// CharacterSkin_Apply( player, playerCharacterSkin )
 
 	if ( giveLoadoutWeapons )
 		GiveLoadoutRelatedWeapons( player )
