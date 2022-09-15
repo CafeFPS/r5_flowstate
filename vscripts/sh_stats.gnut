@@ -864,16 +864,7 @@ bool function ShouldGatherStats( entity player )
 {
 	Assert( IsValid( player ) )
 
-	#if R5DEV
-		if ( !GetCurrentPlaylistVarBool( "enable_stats", true ) )
-			return false
-	#endif
-
-	// todo(dw): optimize this to just return the state of a file-level flag
-	if ( GameRules_GetGameMode() == SURVIVAL && !Survival_HasPlayerJumpedOutOfPlane( player ) )
-		return false
-
-	return true
+	return false
 }
 #endif
 
