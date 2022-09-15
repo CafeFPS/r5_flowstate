@@ -184,10 +184,17 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 	// Why is this required?	
 	player.SetAngles( player.CameraAngles() )
+
 	vector driverViewVector = player.GetViewVector()
+
 	player.ClearParent()
+
 	player.UnforceCrouch()
 
+	array<entity> squadPlayers = [ player ]
+	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
+		squadPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
+	
 	if ( fromUseCallback )
 	{
 		int funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
@@ -198,35 +205,34 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_podLeaderLaunch" )
 
-	if ( !player.GetPlayerNetBool( "isJumpingWithSquad" ) )
+	foreach ( squadPlayer in squadPlayers )
 	{
-		CommonPlayerDropLines(player)
-		thread PlayerSkyDive( player, driverViewVector, [], player, true, true )
-		return true
-	} else
-	{	
-		array<entity> squad = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
-		
-		foreach ( squadPlayer in squad )
+		if ( squadPlayer != player )
+		{
 			if ( !squadPlayer.GetPlayerNetBool( "isJumpingWithSquad" ) )
-				squad.fastremovebyvalue( squadPlayer )
-		
-		CommonPlayerDropLines(player)
-		thread PlayerSkyDive( player, driverViewVector, squad, player, true, true )
+			{
+				squadPlayers.fastremovebyvalue( squadPlayer )
+				continue
+			}
+
+			squadPlayer.ClearParent()
+		}
+
+		TakeAllWeapons( squadPlayer )
+		DecideRespawnPlayer( squadPlayer )
+
+		squadPlayer.Show()
+
+		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
+		squadPlayer.SetPlayerNetBool( "freefallIsFromPlane", true )
+
+		if ( GetValidPlayerSkydiveEmotes( squadPlayer ).len() > 0 )
+			squadPlayer.SetPlayerNetBool( "freefallEmoteAvailable", true )
+
+		thread PlayerSkyDive( squadPlayer, driverViewVector, squadPlayers, player, true, true )
 	}
 
 	return true
-}
-
-void function CommonPlayerDropLines(entity player)
-{
-	TakeAllWeapons( player )
-	DecideRespawnPlayer( player )
-	player.Show()
-	player.SetPlayerNetBool( "playerInPlane", false )
-	player.SetPlayerNetBool( "freefallIsFromPlane", true )
-	if ( GetValidPlayerSkydiveEmotes( player ).len() > 0 )
-		player.SetPlayerNetBool( "freefallEmoteAvailable", true )	
 }
 
 bool function Survival_HasPlayerJumpedOutOfPlane( entity player )
