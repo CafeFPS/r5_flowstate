@@ -287,6 +287,9 @@ bool function IsValidMeleeAttackTarget( entity attacker, entity inputWeaponOrNul
 	if ( !target.CanBeMeleed() )
 		return false
 
+	if ( IsFriendlyTeam( attacker.GetTeam(), target.GetTeam() ) )
+		return true
+
 	if ( !attacker.DoesShareRealms( target ) )
 		return false
 

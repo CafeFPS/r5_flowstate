@@ -247,8 +247,10 @@ void function ServerCallback_SyncedMeleeDone()
 void function DoSyncedMelee_Thread( entity attacker, entity target )
 {
 	bool targetWasBleedingOut = (target.IsPlayer() && Bleedout_IsBleedingOut( target ))
+	
+	if(!targetWasBleedingOut) return
 
-	OnThreadEnd( function() : ( attacker, target, targetWasBleedingOut) {
+	OnThreadEnd( function() : ( attacker, target) {
 		if ( IsValid( attacker ) )
 		{
 			RemoveCinematicFlag( attacker, CE_FLAG_TITAN_3P_CAM | CE_FLAG_EXECUTION )
@@ -286,10 +288,7 @@ void function DoSyncedMelee_Thread( entity attacker, entity target )
 				if ( IsAlive( target ) )
 				{
 					Bleedout_SetBleedoutEffects( target )
-					if ( targetWasBleedingOut )
-						Bleedout_SetBleedoutEffects( target )
-					else
-						target.DeployWeapon()
+					target.ForceCrouch()
 						
 					if ( target.e.markedForExecutionDeath && IsValid(attacker) && IsAlive(attacker))
 					{
