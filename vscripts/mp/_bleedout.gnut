@@ -9,6 +9,8 @@ global function Bleedout_AddCallback_OnPlayerGotFirstAid // dump
 global function Bleedout_GetBleedoutAttacker
 global function Bleedout_GetBleedoutDamageInfo
 
+global table<string, string> EliminatedPlayers = {}
+
 //CONFIGS
 const bool LIFELINE_RGB_SHIELD = false
 
@@ -115,6 +117,8 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	file.lastAttacker[ player ] = attacker
 
 	player.SetPlayerNetInt( "bleedoutType", EquipmentSlot_GetEquipmentTier( player, "incapshield" ) )
+	
+	SetPlayerEliminated( player )
 	
 	thread Bleedout_DeathProtection( player )
 	
@@ -265,11 +269,6 @@ void function EnablePlayerRes( entity player )
 	player.EndSignal( "OnDeath" )
 	player.EndSignal( "BleedOut_OnStartDying" )
 	player.EndSignal( "BleedOut_OnRevive" )
-	
-	//Highlight_SetFriendlyHighlight( player, "interact_object_los_line" )
-
-	if ( IsPilotEliminationBased() )
-		SetPlayerEliminated( player )
 
 	OnThreadEnd(
 	function() : ( player )
@@ -645,11 +644,6 @@ void function PlayerDiesFromBleedout( entity player, entity attacker )
 //If all the players are dead/bleeding out, it kills the surviving team players.
 void function CheckForTeamBleedout( int team )
 {
-#if R5DEV
-	if ( !GetCurrentPlaylistVarBool( "match_ending_enabled", true ) )
-		return
-#endif
-
 	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
 	foreach ( entity teamPlayer in teamPlayers )
 	{

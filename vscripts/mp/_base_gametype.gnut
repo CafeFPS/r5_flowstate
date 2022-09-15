@@ -2014,7 +2014,8 @@ function ClearRespawnAvailable( entity player )
 
 void function SetPlayerEliminated( entity player )
 {
-	player.SetPlayerGameStat( PGS_ELIMINATED, 1 )
+	EliminatedPlayers[player.GetPlayerName()] <- player.GetPlatformUID()
+	printt("PLAYER ELIMINATED ADDED TO TABLE. " + player.GetPlayerName() + " - " + player.GetPlatformUID())
 }
 
 void function SetPlayerIntroDropSettings( entity player )
@@ -2034,12 +2035,22 @@ void function ClearPlayerPlaneViewMode( entity player )
 
 void function ClearPlayerEliminated( entity player )
 {
-	player.SetPlayerGameStat( PGS_ELIMINATED, 0 )
+	if(player.GetPlayerName() in EliminatedPlayers)
+	{
+		printt("CLEARING ELIMINATED STATE FOR PLAYER " + player.GetPlayerName() + " - " + player.GetPlatformUID())
+		delete EliminatedPlayers[player.GetPlayerName()]
+	}
 }
 
 bool function IsPlayerEliminated( entity player )
 {
-	return (player.GetPlayerGameStat( PGS_ELIMINATED ) > 0)
+	printt("CHECKING IF PLAYER IS ELIMINATED " + player.GetPlayerName() + " - " + player.GetPlatformUID())
+	foreach(playername, id in EliminatedPlayers)
+		if(player.GetPlayerName() == playername || id == player.GetPlatformUID())
+			return true
+		else
+			return false
+	return false
 }
 
 bool function IsTeamEliminated( int team )
