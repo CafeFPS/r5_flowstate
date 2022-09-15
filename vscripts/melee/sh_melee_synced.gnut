@@ -248,9 +248,7 @@ void function DoSyncedMelee_Thread( entity attacker, entity target )
 {
 	bool targetWasBleedingOut = (target.IsPlayer() && Bleedout_IsBleedingOut( target ))
 
-	if(!targetWasBleedingOut) return
-
-	OnThreadEnd( function() : ( attacker, target ) {
+	OnThreadEnd( function() : ( attacker, target, targetWasBleedingOut) {
 		if ( IsValid( attacker ) )
 		{
 			RemoveCinematicFlag( attacker, CE_FLAG_TITAN_3P_CAM | CE_FLAG_EXECUTION )
@@ -288,7 +286,11 @@ void function DoSyncedMelee_Thread( entity attacker, entity target )
 				if ( IsAlive( target ) )
 				{
 					Bleedout_SetBleedoutEffects( target )
-					
+					if ( targetWasBleedingOut )
+						Bleedout_SetBleedoutEffects( target )
+					else
+						target.DeployWeapon()
+						
 					if ( target.e.markedForExecutionDeath && IsValid(attacker) && IsAlive(attacker))
 					{
 						entity killCreditAttacker = null //If the attacker disconnected, we don't have a player to give credit to, that's fine. Script will not error

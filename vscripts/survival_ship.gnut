@@ -171,8 +171,8 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	{
 		if ( fromUseCallback )
 		{
-			int ornull funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
-			if ( funcPos != null )
+			int funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
+			if ( funcPos != -1 )
 				RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 		}
 
@@ -190,8 +190,8 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 	if ( fromUseCallback )
 	{
-		int ornull funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
-		if ( funcPos != null )
+		int funcPos = player.e.onPlayerUseButtonPressed.find( Survival_DropPlayerFromPlane_UseCallback )
+		if ( funcPos != -1 )
 			RemoveCallback_OnUseButtonPressed( player, Survival_DropPlayerFromPlane_UseCallback )
 	}
 

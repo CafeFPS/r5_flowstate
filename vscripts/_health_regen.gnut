@@ -140,16 +140,9 @@ void function PilotHealthRegenThinkMP( entity player )
 
 bool function HealthRegen_IsPlayerAllowed( entity player )
 {
-	string character = ItemFlavor_GetHumanReadableRef(  LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) )
-	
-    if(character == "character_octane")
-        return true
-	
-// TODO: Swapping some legends doesn't reset their passive, meaning they'll keep ePassives.PAS_OCTANE
-
-//	if(PlayerHasPassive( player, ePassives.PAS_OCTANE ))
-//		return true
-
+	if(PlayerHasPassive( player, ePassives.PAS_OCTANE ))
+		return true
+		
 	return false
 }
 
