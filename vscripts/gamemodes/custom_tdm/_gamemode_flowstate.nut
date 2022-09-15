@@ -725,7 +725,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if(FlowState_Gungame() && IsValid( player ))
 		GiveGungameWeapon(player)
 
-	thread WpnPulloutOnRespawn(player)
 	thread GrantSpawnImmunity(player, 2)
 }
 
@@ -743,14 +742,12 @@ void function GrantSpawnImmunity(entity player, float duration)
 	function() : ( player )
 		{
 			if(!IsValid(player)) return	
-			player.SetCloakDuration( 0, 0, 0.1 )
-			DeployAndEnableWeapons( player )
+			player.SetCloakDuration( 0, 0, 0.1 )			
 			ClearInvincible(player)
 		}
 	)
-
+	thread WpnPulloutOnRespawn(player, duration)
 	float endTime = Time() + duration
-	HolsterAndDisableWeapons( player )
 	while(Time() <= endTime && IsValid(player)){
 		player.SetCloakDuration( 0, 0.15, 0.35 )
 		MakeInvincible(player) //??
@@ -759,6 +756,28 @@ void function GrantSpawnImmunity(entity player, float duration)
 			ClearInvincible(player) //??
 	}
 }
+
+void function WpnPulloutOnRespawn(entity player, float duration)
+{
+	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+	{
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
+		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+	}
+	wait 0.7
+	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+	{
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+		
+	}
+	wait 0.5
+	if(IsValid(player)) player.DisableWeapon()
+	wait duration-1.2
+	if(IsValid(player))
+		player.EnableWeapon()
+}
+
 
 void function WpnAutoReloadOnKill( entity player )
 {
@@ -792,22 +811,6 @@ void function WpnAutoReloadOnKill( entity player )
 		}
 	}
 }
-
-void function WpnPulloutOnRespawn(entity player)
-{
-	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
-	{
-		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
-		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
-	}
-	wait 0.7
-	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
-	{
-		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
-	}
-}
-
 
 void function SummonPlayersInACircle(entity player0)
 {
@@ -1733,7 +1736,7 @@ printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
 foreach(player in GetPlayerArray())
     {
-	thread WpnPulloutOnRespawn(player)
+	thread GrantSpawnImmunity(player, 2)
 	}
 
 if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
