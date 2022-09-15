@@ -116,11 +116,17 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 
 	file.lastAttacker[ player ] = attacker
 
-	player.SetPlayerNetInt( "bleedoutType", EquipmentSlot_GetEquipmentTier( player, "incapshield" ) )
-	
-	SetPlayerEliminated( player )
 	
 	thread Bleedout_DeathProtection( player )
+	SetPlayerEliminated( player )
+	player.SetPlayerNetInt( "bleedoutType", EquipmentSlot_GetEquipmentTier( player, "incapshield" ) )
+	player.SetHealth( 100 )
+	
+	if( attacker.IsPlayer() && attacker != null )
+		EmitSoundOnEntityExceptToPlayer( player, attacker, "flesh_bulletimpact_downedshot_3p_vs_3p" )
+	else
+		EmitSoundOnEntity( player, "flesh_bulletimpact_downedshot_3p_vs_3p" )
+
 	
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_imDown" )
 
@@ -153,8 +159,7 @@ void function PlayerDying( entity player )
 	player.EndSignal( "BleedOut_OnRevive" )
 	player.EndSignal( "BleedOut_OnStartDying" )
 
-	//float bleedoutTime = Bleedout_GetBleedoutTime( player )
-	float bleedoutTime = 99999999
+	float bleedoutTime = Bleedout_GetBleedoutTime( player )
 	bool forceHolster = Bleedout_GetForceWeaponHolster( player )
 
 	array<int> ids = []

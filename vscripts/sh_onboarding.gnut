@@ -232,8 +232,8 @@ void function Sequence_PickLoadout()
 
 	wait CharSelect_GetPickingDelayAfterAll()
 
-	wait CharSelect_GetOutroTransitionDuration() + CharSelect_GetOutroSceneChangeDuration() / 3.5 - CharSelect_GetPickingDelayAfterEachLock() * MAX_TEAM_PLAYERS
-
+	wait CharSelect_GetOutroSquadPresentDuration() - CharSelect_GetOutroSceneChangeDuration() / 3.5
+	
 	if ( CharSelect_PlayerSquadIntroEnabled() ) {
 		if ( CharSelect_PostSelectionMusicEnabled() )
 			foreach ( player in GetPlayerArray() )
@@ -242,7 +242,7 @@ void function Sequence_PickLoadout()
 				EmitSoundOnEntityOnlyToPlayer( player, player, skydiveMusicID )
 			}
 
-		wait CharSelect_GetOutroSquadPresentDuration() - CharSelect_GetOutroSceneChangeDuration() / 3.5
+		wait CharSelect_GetOutroSquadPresentDuration()
 	}
 
 	thread Sequence_Prematch()
@@ -402,7 +402,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
 
-	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
+	//Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
 
 	PlayerStopSpectating( player )
 
