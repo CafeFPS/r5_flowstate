@@ -191,9 +191,6 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 	player.UnforceCrouch()
 
-	TakeAllWeapons( player )
-	DecideRespawnPlayer( player )
-
 	array<entity> squadPlayers = [ player ]
 	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
 		squadPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
@@ -220,6 +217,9 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 			squadPlayer.ClearParent()
 		}
+
+		TakeAllWeapons( squadPlayer )
+		DecideRespawnPlayer( squadPlayer )
 
 		squadPlayer.Show()
 
