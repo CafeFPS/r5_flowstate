@@ -44,7 +44,6 @@ global function DisplaySpectatorCardSidePane
 
 global function AddCallback_ShouldShowDeathScreen
 
-//
 global function UpdateRespawnStatus
 global function DeathScreen_UpdateRespawnTime
 
@@ -284,12 +283,8 @@ void function DeathScreen_BleedoutEnded( entity player )
 
 void function DeathScreen_SpectatorTargetChanged( entity player, entity previousTarget, entity currentTarget )
 {
-	#if R5DEV
-		//
-	#endif
 	Assert( player == GetLocalClientPlayer() )
 
-	//
 	RunUIScript( "UI_SetShouldShowSkip", false )
 
 	if ( ShouldSwitchToSummary() )
@@ -498,11 +493,6 @@ void function DeathScreenUpdateHeader( var headerElem )
 			animateBanner = !file.hasShownSquadSummary
 			break
 	}
-
-	#if R5DEV
-		//
-		//
-	#endif
 
 	var headerRui = Hud_GetRui( headerElem )
 	if ( file.deathScreenHeaderRui != headerRui )
@@ -1167,9 +1157,6 @@ bool function CanShowGladCard()
 	if ( currentObserverTarget.GetObserverMode() == OBS_MODE_DEATHCAM )
 		return false
 
-	//
-	//
-
 	return true
 }
 
@@ -1288,26 +1275,10 @@ bool function IsViewingDeathScreen()
 	return GetCurrentTabIndex() != eDeathScreenPanel.NONE
 }
 
-
-
-
-
-
-
-//
-//
-//
-//
-//
-//
-//
-
 void function DeathRecapShow( var recapElem )
 {
-	//
-
 	entity player = GetLocalClientPlayer()
-	if ( !IsValid( player ) )    //
+	if ( !IsValid( player ) )
 		return
 
 	EndSignal( player, "OnDestroy" )
@@ -1324,13 +1295,9 @@ void function DeathRecapShow( var recapElem )
 	RuiSetBool( recapRui, "tempSwapUseImage", false )
 	RuiSetBool( recapRui, "display", false )
 
-	//
 	if ( !file.deathRecapDataUpdated )
 		WaitSignal( player, "DeathRecapDataUpdated" )
 
-	//
-
-	//
 	Assert( file.deathRecapDamageBlocks.len() > 0, "This shouldn't happen, figure out why" )
 
 	RuiSetBool( recapRui, "display", true )
@@ -1339,18 +1306,14 @@ void function DeathRecapShow( var recapElem )
 	if ( file.deathRecapDamageBlocks[0].damageType & DF_KNOCKDOWN )
 		knockdown = true
 
-	//
-
 	Assert( file.recapGladCardDataTable.len() == 0, "recapGladCardDataTable wasn't empty " + file.recapGladCardDataTable.len() )
 
-	//
 	RuiDestroyNestedIfAlive( recapRui, "cardSlot0" )
 	RuiDestroyNestedIfAlive( recapRui, "cardSlot1" )
 	RuiDestroyNestedIfAlive( recapRui, "cardSlot2" )
 	RuiDestroyNestedIfAlive( recapRui, "cardSlot3" )
 	RuiDestroyNestedIfAlive( recapRui, "cardSlot4" )
 
-	//
 	EncodedEHandle playerEHandle               = ToEHI( player )
 	NestedGladiatorCardHandle playerCardHandle = CreateNestedGladiatorCard( recapRui, "cardSlot0", eGladCardDisplaySituation.APEX_SCREEN_STILL, eGladCardPresentation.FULL_BOX )
 	ChangeNestedGladiatorCardOwner( playerCardHandle, playerEHandle )
@@ -1363,8 +1326,6 @@ void function DeathRecapShow( var recapElem )
 	playerCardData.lastShownTime = Time()
 	file.recapGladCardDataTable[ playerEHandle ] <- playerCardData
 
-
-	//
 	array<EncodedEHandle> attackerArray = GetRecapPlayerEHIArray( playerEHandle )
 	foreach( attackerEHandle in attackerArray )
 	{
@@ -1374,7 +1335,6 @@ void function DeathRecapShow( var recapElem )
 
 		string cardArgName = "cardSlot" + cardSlotIndex
 
-		//
 		NestedGladiatorCardHandle cardHandle = CreateNestedGladiatorCard( recapRui, cardArgName, eGladCardDisplaySituation.APEX_SCREEN_STILL, eGladCardPresentation.FULL_BOX )
 		ChangeNestedGladiatorCardOwner( cardHandle, attackerEHandle )
 		SetNestedGladiatorCardDisableBlur( cardHandle, true )
@@ -1387,7 +1347,6 @@ void function DeathRecapShow( var recapElem )
 		file.recapGladCardDataTable[ attackerEHandle ] <- cardData
 	}
 
-	//
 	if ( shouldDoRecapHeaderAnimation )
 	{
 		RuiSetFloat( recapRui, "animStartTime", Time() )
@@ -1398,7 +1357,6 @@ void function DeathRecapShow( var recapElem )
 		RuiSetBool( recapRui, "doAnim", false )
 	}
 
-	//
 	float additionalActivationDelay = file.deathRecapDamageBlocks.len() < 3 ? 0.5 : 0.0
 
 	int dataSize        = file.deathRecapDamageBlocks.len()
@@ -1409,14 +1367,11 @@ void function DeathRecapShow( var recapElem )
 	else
 		file.recapBlockReadyTime = 0
 
-
-	//
 	for ( int index = file.damageBlockElementArray.len() - 1; index >= 0; index-- )
 	{
 		var blockRui = Hud_GetRui( file.damageBlockElementArray[ index ] )
 		if ( index >= file.deathRecapDamageBlocks.len() )
 		{
-			//
 			RuiSetBool( blockRui, "display", false )
 			Hud_Hide( file.damageBlockElementArray[ index ] )
 			continue
@@ -1435,8 +1390,6 @@ void function DeathRecapShow( var recapElem )
 
 		bool isMainWeapon = ShouldUseWideImage( damageBlock.damageSourceID )
 		asset weaponIcon  = GetObitImageFromDamageSourceID( damageBlock.damageSourceID )
-		//
-		//
 
 		RuiSetImage( blockRui, "weaponIcon", weaponIcon )
 		RuiSetBool( blockRui, "mainWeapon", isMainWeapon )
@@ -1451,22 +1404,18 @@ void function DeathRecapShow( var recapElem )
 		RuiSetString( blockRui, "playerName", damageDealt ? victimName : attackerNamer )
 		RuiSetBool( blockRui, "dealt", damageDealt )
 
-		//
 		if ( index == 0 )
 			RuiSetBool( blockRui, "knockdown", knockdown )
 
-		//
 		if ( shouldDoRecapHeaderAnimation )
 		{
 			float activationDelay = MIN_ACTIVATION_DELAY + additionalActivationDelay + float( activationIndex++ ) * ACTIVATION_INTERVAL
 			RuiSetFloat( blockRui, "activationDelay", activationDelay )
 			RuiSetFloat( blockRui, "updateTime", Time() )
 
-			//
 		}
 		else
 		{
-			//
 			RuiSetFloat( blockRui, "activationDelay", -100 ) //
 			RuiSetFloat( blockRui, "updateTime", Time() )
 		}
@@ -1506,12 +1455,10 @@ void function PlayRecapAnimSounds( entity player )
 		}
 	)
 
-	//
 	EmitSoundOnEntity( player, SFX_DEATH_REACP_APPEAR )
 
 	wait GLADCARD_SPLIT_DELAY
 
-	//
 	EmitSoundOnEntity( player, SFX_DEATH_REACP_BANNER_MOVE )
 
 	Assert( (MIN_ACTIVATION_DELAY - GLADCARD_SPLIT_DELAY > 0) )
@@ -1528,8 +1475,6 @@ void function PlayRecapAnimSounds( entity player )
 		else
 			EmitSoundOnEntity( player, SFX_DEATH_REACP_DAMAGE_BLOCK_TAKEN )
 
-		//
-
 		wait ACTIVATION_INTERVAL
 	}
 }
@@ -1544,17 +1489,6 @@ bool function ShouldUseWideImage( int damageSourceID )
 		LootData lootData = SURVIVAL_Loot_GetLootDataByRef( damageRef )
 		return lootData.lootType == eLootType.MAINWEAPON
 	}
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
-	//
 
 	return false
 }
@@ -1594,13 +1528,6 @@ array<int> function GetRecapPlayerEHIArray( EncodedEHandle playerEHandle )
 
 void function UpdateSelectedRecapBlock( int blockIndex )
 {
-	//
-
-
-	//
-	//
-	//
-
 	Assert( file.damageBlockElementArray.len() > blockIndex )
 
 	int currentBlockIndex = file.selectedRecapBlock != -1 ? file.selectedRecapBlock : blockIndex
@@ -1619,7 +1546,6 @@ void function UpdateSelectedRecapBlock( int blockIndex )
 
 void function SetAttackerCard( int nextBlockIndex, int currentBlockIndex )
 {
-	//
 	Assert( file.deathScreenRecapRui )
 
 	entity localClientPlayer = GetLocalClientPlayer()
@@ -1642,13 +1568,10 @@ void function SetAttackerCard( int nextBlockIndex, int currentBlockIndex )
 		swapSlot = file.recapGladCardDataTable[ oldEHandle ].cardSlotIndex
 	}
 
-	//
 	if ( EHIHasValidScriptStruct( newEHandle ) )
 	{
-		//
 		if ( !(newEHandle in file.recapGladCardDataTable) )
 		{
-			//
 			UpdateGladCardDataTable( newEHandle, oldEHandle )
 		}
 
@@ -1671,8 +1594,6 @@ void function SetAttackerCard( int nextBlockIndex, int currentBlockIndex )
 		RuiSetBool( file.deathScreenRecapRui, "attackerUseImage", true )
 	}
 
-
-	//
 	if ( EHIHasValidScriptStruct( oldEHandle ) )
 	{
 		RuiSetBool( file.deathScreenRecapRui, "tempSwapUseImage", false )
@@ -1684,10 +1605,7 @@ void function SetAttackerCard( int nextBlockIndex, int currentBlockIndex )
 		RuiSetImage( file.deathScreenRecapRui, "tempSwapImage", image )
 		RuiSetBool( file.deathScreenRecapRui, "tempSwapUseImage", true )
 	}
-
-	//
-	//
-
+	
 	RuiSetInt( file.deathScreenRecapRui, "activeSlot", activeSlot )
 	RuiSetInt( file.deathScreenRecapRui, "swapSlot", swapSlot )
 
@@ -1698,7 +1616,6 @@ void function SetAttackerCard( int nextBlockIndex, int currentBlockIndex )
 	file.currentDamageSourceID = nextDamageSourceID
 
 	bool shouldSwap = file.selectedRecapBlock == -1 ? false : gladCardSwapped || imageSwapped
-	//
 
 	if ( shouldSwap )
 		RuiSetFloat( file.deathScreenRecapRui, "swapTime", Time() )
@@ -1707,35 +1624,23 @@ void function SetAttackerCard( int nextBlockIndex, int currentBlockIndex )
 
 void function UpdateGladCardDataTable( EncodedEHandle newEHandle, EncodedEHandle oldEHandle )
 {
-	//
-
 	RecapAttackerGladCardData selectedCardData
 	foreach( eHandle, cardData in file.recapGladCardDataTable )
 	{
-		//
-		//
-		//
-		//
-		//
-
-		//
 		if ( cardData.cardSlotIndex == 0 )
 			continue
 
-		//
 		if ( cardData.encodedEHandle == oldEHandle )
 			continue
 
 		if ( selectedCardData.lastShownTime == 0 || cardData.lastShownTime < selectedCardData.lastShownTime )
 		{
-			//
 			selectedCardData = cardData
 		}
 	}
 
 	CleanupNestedGladiatorCard( selectedCardData.cardHandle )
 
-	//
 	if ( selectedCardData.encodedEHandle in file.recapGladCardDataTable )
 		delete file.recapGladCardDataTable[ selectedCardData.encodedEHandle ]
 
@@ -1786,19 +1691,13 @@ asset function GetGladCardReplacementImageForDamageSourceID( int damageSourceID 
 
 void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victimEHandle, int damageSourceID, int damageType, int totalDamage, int hitCount, int headShotBits, float healthFrac, float shieldFrac, float blockTime )
 {
-	//
-
 	if ( file.deathRecapDataUpdated )
 	{
-		//
 		file.deathRecapDataUpdated = false
 		file.deathRecapDamageBlocks.clear()
 	}
 
-
-
 	DeathRecapDamageData damageBlock
-
 	damageBlock.attackerEHandle = attackerEHandle
 	damageBlock.victimEHandle = victimEHandle
 	damageBlock.damageSourceID = damageSourceID
@@ -1816,8 +1715,6 @@ void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victim
 
 void function ServerCallback_DeathRecapDataUpdated( bool gotKnockedDown, EncodedEHandle killerEHandle )
 {
-	//
-
 	Assert( file.deathRecapDamageBlocks.len() > 0 )
 
 	file.deathRecapDataUpdated = true
@@ -1829,7 +1726,6 @@ void function ServerCallback_DeathRecapDataUpdated( bool gotKnockedDown, Encoded
 	entity clientPlayer = GetLocalClientPlayer()
 	Signal( clientPlayer, "DeathRecapDataUpdated" )
 
-	//
 	if ( GetGameState() < eGameState.WinnerDetermined )
 		EnableDeathScreenTab( eDeathScreenPanel.DEATH_RECAP, true )
 
@@ -1837,54 +1733,11 @@ void function ServerCallback_DeathRecapDataUpdated( bool gotKnockedDown, Encoded
 	if ( file.deathRecapDamageBlocks[0].damageType & DF_KNOCKDOWN )
 		knockdown = true
 
-#if R5DEV
-	/*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-*/
-#endif
-
 	Assert( gotKnockedDown == knockdown, "damage history didn't match the server with regards to if the player got knockdown or not." )
 }
 
 void function DeathScreen_UpdateRespawnTime( float startTime, float endTime )
 {
-	//
-
 	file.bkupRespawnStartTime = startTime
 	file.bkupRespawnEndTime = endTime
 

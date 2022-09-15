@@ -469,10 +469,7 @@ void function PlayerStartSpectating( entity player, entity attacker )
 	// player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.PICKUP_DESTROYED )
 	Remote_CallFunction_NonReplay( player, "ServerCallback_ShowDeathScreen" )
 
-	// player.StartObservingPlayerInFirstPerson( specTarget )
-
 	player.SetSpecReplayDelay( Spectator_GetReplayDelay() )
-	
 	player.StartObserverMode( OBS_MODE_IN_EYE )
 	player.SetObserverTarget( specTarget )
 }
