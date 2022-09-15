@@ -195,7 +195,7 @@ void function Sequence_PickLoadout()
 	{
 		float startTime = Time()
 
-		float timeSpentOnSelection = Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
+		float timeSpentOnSelection = Survival_GetCharacterSelectDuration( pickIndex )
 		if ( pickIndex == 0 )
 			timeSpentOnSelection += CharSelect_GetPickingDelayOnFirst()
 

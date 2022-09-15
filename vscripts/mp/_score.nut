@@ -64,24 +64,12 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 	}
 }
 
-void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damageInfo )
+void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damageInfo, bool downed = false)
 {
-	if( GetGameState() >= eGameState.Playing )
+	if ( downed && GetGameState() >= eGameState.Playing)
+		AddPlayerScore( attacker, "Sur_DownedPilot", victim )
+	else if( !downed && GetGameState() >= eGameState.Playing )
 		AddPlayerScore( attacker, "EliminatePilot", victim )
-	else
-		AddPlayerScore( attacker, "KillPilot", victim )
-	
-	if ( DamageInfo_GetCustomDamageType( damageInfo ) & DF_HEADSHOT )
-		AddPlayerScore( attacker, "Headshot", victim )
-		
-	if ( !file.firstStrikeDone )
-	{
-		file.firstStrikeDone = true
-		AddPlayerScore( attacker, "FirstStrike", attacker )
-	}
-	
-	if ( victim.IsTitan() )
-		ScoreEvent_TitanKilled( victim, attacker, damageInfo )
 }
 
 void function ScoreEvent_TitanDoomed( entity titan, entity attacker, var damageInfo )
