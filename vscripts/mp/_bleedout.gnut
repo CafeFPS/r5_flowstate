@@ -554,7 +554,7 @@ void function PlayerAttemptRes( entity playerHealer, entity playerToRes )
 	reviverSequence.useAnimatedRefAttachment = false
 	reviverSequence.thirdPersonCameraAttachments = ["VDU"]
 	reviverSequence.thirdPersonCameraVisibilityChecks = true
-	reviverSequence.playerPushable = true
+	reviverSequence.playerPushable = false
 	reviverSequence.snapPlayerFeetToEyes = false
 	
 	FirstPersonSequenceStruct toResSequence

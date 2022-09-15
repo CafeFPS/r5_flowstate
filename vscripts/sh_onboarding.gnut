@@ -402,7 +402,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	player.SetPlayerSettingsWithMods( characterSetFile, enabledMods )
 
-	//Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
+	Remote_CallFunction_NonReplay( player, "ServerCallback_YouRespawned" )
 
 	PlayerStopSpectating( player )
 
@@ -417,7 +417,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.NONE )
 
 	player.SetPlayerNetBool( "pingEnabled", true )
-	player.SetHealth( 100 )
+	player.SetHealth( player.GetMaxHealth() )
 
 	UpdatePlayerCounts()
 }

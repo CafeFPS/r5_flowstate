@@ -209,13 +209,12 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 	{
 		if ( squadPlayer != player )
 		{
+			squadPlayer.ClearParent()
 			if ( !squadPlayer.GetPlayerNetBool( "isJumpingWithSquad" ) )
 			{
 				squadPlayers.fastremovebyvalue( squadPlayer )
 				continue
 			}
-
-			squadPlayer.ClearParent()
 		}
 
 		TakeAllWeapons( squadPlayer )
