@@ -995,12 +995,6 @@ void function UpdateChatHUDVisibility()
 		chat.Hide()
 	else
 		chat.Show()
-
-	local hint = HudElement( "AccessibilityHint" )
-	if ( IsLobby() || clGlobal.isMenuOpen || !IsAccessibilityChatHintEnabled() || GetPlayerArrayOfTeam( GetLocalClientPlayer().GetTeam() ).len() < 2 )
-		hint.Hide()
-	else
-		hint.Show()
 }
 
 bool function IsWatchingReplay()
