@@ -187,10 +187,6 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 
 	vector driverViewVector = player.GetViewVector()
 
-	player.ClearParent()
-
-	player.UnforceCrouch()
-
 	array<entity> squadPlayers = [ player ]
 	if ( player.GetPlayerNetBool( "isJumpmaster" ) )
 		squadPlayers = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
@@ -217,11 +213,14 @@ bool function Survival_DropPlayerFromPlane( entity player, bool fromUseCallback 
 			}
 		}
 
+		squadPlayer.ClearParent()
+		squadPlayer.UnforceCrouch()
+
 		TakeAllWeapons( squadPlayer )
 		DecideRespawnPlayer( squadPlayer )
 
 		squadPlayer.Show()
-
+		squadPlayer.Solid()
 		squadPlayer.SetPlayerNetBool( "playerInPlane", false )
 		squadPlayer.SetPlayerNetBool( "freefallIsFromPlane", true )
 
