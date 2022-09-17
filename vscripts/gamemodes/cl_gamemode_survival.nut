@@ -4558,9 +4558,7 @@ void function UICallback_OpenCharacterSelectNewMenu()
 void function UICallback_QueryPlayerCanBeRespawned()
 {
 	entity player             = GetLocalClientPlayer()
-	int rStatus               = player.GetPlayerNetInt( "respawnStatus" )
-	bool playerCanBeRespawned = rStatus == eRespawnStatus.WAITING_FOR_DELIVERY || rStatus == eRespawnStatus.WAITING_FOR_PICKUP
-	playerCanBeRespawned = playerCanBeRespawned && GetGameState() == eGameState.Playing
+	bool playerCanBeRespawned = (PlayerIsMarkedAsCanBeRespawned( player ) && (GetGameState() == eGameState.Playing))
 
 	bool penaltyMayBeActive
 	if ( IsRankedGame() )
