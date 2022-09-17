@@ -231,7 +231,7 @@ void function RespawnStatusChanged( entity player, int old, int new, bool actual
 	if ( !IsValid( viewPlayer ) )
 		return
 
-	bool waitingToBeRespawned = TeammatesWaitingToBeRespawned( viewPlayer.GetTeam() )
+	bool waitingToBeRespawned = HasTeammatesToRespawn( viewPlayer.GetTeam() )
 
 	foreach ( rui in file.respawnChamberRuis )
 	{
@@ -240,7 +240,9 @@ void function RespawnStatusChanged( entity player, int old, int new, bool actual
 
 	ArrayRemoveInvalid( file.allStations )
 
-	int fxId = GetParticleSystemIndex( RESPAWN_BEACON_BEAM_FX )
+	if ( GetRespawnStyle() != eRespawnStyle.NONE )
+	{
+		int fxId = GetParticleSystemIndex( RESPAWN_BEACON_BEAM_FX )
 
 	foreach ( ent in file.allStations )
 	{
@@ -258,11 +260,12 @@ void function RespawnStatusChanged( entity player, int old, int new, bool actual
 				EffectStop( file.chamberToBeamFX[ ent ], true, true )
 			}
 
-			file.chamberToBeamFX[ ent ] = -1
+				file.chamberToBeamFX[ ent ] = -1
+			}
 		}
 	}
 
-	//
+	                                                                                                          
 	DeathScreen_RespawnStatusChanged( player, old, new, actuallyChanged )
 }
 
@@ -561,7 +564,7 @@ void function ManageRespawnChamberData( entity ent, var rui )
 	file.respawnChamberRuis.append( rui )
 	ent.EndSignal( "OnDestroy" )
 
-	UpdateRespawnChamberRuis( rui, TeammatesWaitingToBeRespawned( GetLocalViewPlayer().GetTeam() ) )
+	UpdateRespawnChamberRuis( rui, HasTeammatesToRespawn( GetLocalViewPlayer().GetTeam() ) )
 
 	OnThreadEnd(
 		function() : ( ent, rui )
@@ -651,7 +654,7 @@ string function RespawnChamber_TextOverride( entity ent )
 	entity player = GetLocalViewPlayer()
 	int team = player.GetTeam()
 	if ( GetPlayerArrayOfTeam( team ).len() == GetPlayerArrayOfTeam_Alive( team ).len() ||
-			!TeammatesWaitingToBeRespawned( team ) )
+			!HasTeammatesToRespawn( team ) )
 	{
 		//return "Respawn Teammates Here"
 		//if ( !TeammatesWaitingToBeRespawned( team ) )
@@ -672,23 +675,6 @@ string function RespawnDNA_TextOverride( entity ent )
 
 float function GetRespawnStationUseTime( entity ent )
 {
-	switch( ent.GetTargetName() )
-	{
-#if(false)
-
-
-#endif //
-
-#if(false)
-
-
-
-#endif //
-
-		default:
-			return RESPAWN_BEACON_RESPAWN_TIME
-	}
-
 	return RESPAWN_BEACON_RESPAWN_TIME
 }
 
@@ -697,8 +683,11 @@ void function RespawnChamberOnUse( entity pickup, entity player, int pickupFlags
 {
 	if ( !(pickupFlags & USE_INPUT_LONG ) )
 		return
-
-	if ( !TeammatesWaitingToBeRespawned( player.GetTeam() ) )
+                   
+                                                                                                                                                                
+        
+     
+	if ( !HasTeammatesToRespawn( player.GetTeam() ) )
 		return
 
 	#if CLIENT
@@ -748,7 +737,7 @@ void function DisplayRuiForRespawnChamber_Internal( var rui, asset icon, float s
 #if SERVER
 void function RespawnUserTeam( entity ent, entity playerUser, ExtendedUseSettings settings )
 {
-	if ( !TeammatesWaitingToBeRespawned( playerUser.GetTeam() ) )
+	if ( !HasTeammatesToRespawn( playerUser.GetTeam() ) )
 		return
 
 	int fxId = GetParticleSystemIndex( RESPAWN_BEACON_SCAN_FX )
@@ -787,18 +776,23 @@ void function RespawnTeamPlayers( entity ent, int team, entity respawnCaller )
 ----- UTILITY -----
 */
 
-bool function TeammatesWaitingToBeRespawned( int team )
+int function CountTeammatesWaitingToBeRespawned( int team )
 {
+	int count = 0
 	foreach ( player in GetPlayerArrayOfTeam( team ) )
 	{
 		if ( !IsAlive( player ) )
 		{
 			if ( player.GetPlayerNetInt( "respawnStatus" ) == eRespawnStatus.WAITING_FOR_DELIVERY )
-				return true
+				count++
 		}
 	}
+	return count
+}
 
-	return false
+bool function HasTeammatesToRespawn( int team )
+{
+	return CountTeammatesWaitingToBeRespawned( team ) > 0
 }
 
 #if CLIENT
@@ -818,6 +812,7 @@ string function RespawnBeacon_TextOverride( entity ent )
 
 	return Localize( "%use% Destroy Respawn Beacon" )
 }
+#endif
 
 int function GetRespawnStatus( entity player )
 {
@@ -826,7 +821,7 @@ int function GetRespawnStatus( entity player )
 
 	return player.GetPlayerNetInt( "respawnStatus" )
 }
-#endif
+
 
 int function GetRespawnStyle()
 {
@@ -886,7 +881,6 @@ void function DisplayWaitingForRespawnThread( entity ent, float startTime, float
 	OnThreadEnd(
 		function() : ()
 		{
-			DeathScreen_UpdateRespawnTime( RUI_BADGAMETIME, RUI_BADGAMETIME )
 		}
 	)
 
@@ -941,7 +935,7 @@ void function ReviveRuiThread( float endTime )
 	OnThreadEnd(
 		function() : ()
 		{
-			DeathScreen_UpdateRespawnTime( RUI_BADGAMETIME, RUI_BADGAMETIME )
+			Chroma_RespawnComplete()
 		}
 	)
 
@@ -966,8 +960,7 @@ void function RespawnBeacons_OnSquadEliminated( int team )
 		if ( IsValid( player.p.respawnBeacon ) )
 			player.p.respawnBeacon.Destroy()
 
-		if ( GetRespawnStyle() == eRespawnStyle.RESPAWN_CHAMBERS )
-			player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.SQUAD_ELIMINATED )
+		player.SetPlayerNetInt( "respawnStatus", eRespawnStatus.SQUAD_ELIMINATED )
 	}
 }
 
@@ -1384,8 +1377,7 @@ void function TryPingRespawnItem( entity player )
 
 	entity viewPlayer = GetLocalViewPlayer()
 
-	if ( player.GetPlayerNetInt( "respawnStatus" ) == eRespawnStatus.WAITING_FOR_PICKUP ||
-		player.GetPlayerNetInt( "respawnStatus" ) == eRespawnStatus.WAITING_FOR_DELIVERY )
+	if ( PlayerIsMarkedAsCanBeRespawned( player ) )
 	{
 		vector org = viewPlayer.GetOrigin()
 		player.ClientCommand( "PingNearestRespawn " + org.x + " " + org.y + " " + org.z )
