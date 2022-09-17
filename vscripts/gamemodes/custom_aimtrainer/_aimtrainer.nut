@@ -1836,7 +1836,12 @@ void function StartRunningTargetsChallenge(entity player)
 
 	WaitFrame()
 	while(true){
-		circleLocations = NavMesh_RandomPositions( player.GetOrigin(), HULL_HUMAN, 40, 200*AimTrainer_SPAWN_DISTANCE, 300*AimTrainer_SPAWN_DISTANCE  )
+		array<vector> NewcircleLocations = NavMesh_RandomPositions( AimTrainerOriginToGround( <player.GetOrigin().x, player.GetOrigin().y, 10000> ), HULL_HUMAN, 40, 200*AimTrainer_SPAWN_DISTANCE, 300*AimTrainer_SPAWN_DISTANCE  )
+		if(NewcircleLocations.len() > 0 ) 
+		{
+			circleLocations.clear()
+			circleLocations = NewcircleLocations
+		}
 		if(!AimTrainer_INFINITE_CHALLENGE && Time() > endtime) break	
 		if(ChallengesEntities.dummies.len()<25){
 			vector org1 = player.GetOrigin()
