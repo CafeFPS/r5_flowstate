@@ -261,35 +261,45 @@ void function ResetDeathPlayersCounterForFirstBloodAnnouncer(){
 
 LocPair function _GetAppropriateSpawnLocation(entity player)
 {
-    bool needSelectRespawn = true
-    if(!IsValid(player))
-        needSelectRespawn = false
-
-    LocPair selectedSpawn = _GetVotingLocation()
-
 	switch(GetGameState())
     {
-        case eGameState.MapVoting: selectedSpawn = _GetVotingLocation(); break
+        case eGameState.MapVoting: 
+			return _GetVotingLocation()
         case eGameState.Playing:
-			if(file.selectedLocation.spawns.len() > 0)
-				selectedSpawn = file.selectedLocation.spawns.getrandom()
-            // foreach(spawn in file.selectedLocation.spawns)
-            // {
-	    		// if (needSelectRespawn)
-                // {
-                    // vector enemyOrigin = GetClosestEnemyToOrigin(spawn.origin, player.GetTeam())
-                    // float distToEnemy = Distance(spawn.origin, enemyOrigin)
-
-                    // if(distToEnemy > maxDistToEnemy)
-                    // {
-                        // maxDistToEnemy = distToEnemy
-                        // selectedSpawn = spawn
-                    // }
-	    		// } else selectedSpawn = spawn
-            // }
-        break
+		
+			if(IsFFAGame()) 
+				return Flowstate_GetBestSpawnPointFFA()
+			else
+				return Flowstate_GetBestSpawnPointFFA() // !FIXME
     }
-    return selectedSpawn
+	return _GetVotingLocation() //this should be unreachable
+}
+
+LocPair function Flowstate_GetBestSpawnPointFFA()
+{
+	if(file.selectedLocation.spawns.len() == 0) return _GetVotingLocation()
+	table<LocPair, float> SpawnsAndNearestEnemy = {}
+	
+	foreach(spawn in file.selectedLocation.spawns)
+    {
+		array<float> AllPlayersDistancesForThisSpawnPoint
+		foreach(player in GetPlayerArray_Alive())
+			AllPlayersDistancesForThisSpawnPoint.append(Distance(player.GetOrigin(), spawn.origin))
+		AllPlayersDistancesForThisSpawnPoint.sort()
+		SpawnsAndNearestEnemy[spawn] <- AllPlayersDistancesForThisSpawnPoint[0] //grab nearest player distance for each spawn point
+	}
+
+	LocPair finalLoc
+	float compareDis = -1
+	foreach(loc, dis in SpawnsAndNearestEnemy)
+	{
+		if(dis > compareDis)
+		{
+			finalLoc = loc
+			compareDis = dis
+		}
+	}
+    return finalLoc
 }
 
 vector function GetClosestEnemyToOrigin(vector origin, int ourTeam)
@@ -731,7 +741,10 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 void function TpPlayerToSpawnPoint(entity player)
 {
 	LocPair loc = _GetAppropriateSpawnLocation(player)
-    player.SetOrigin(loc.origin) ; player.SetAngles(loc.angles)
+
+	if(!IsValid(player)) return
+    player.SetOrigin(loc.origin)
+	player.SetAngles(loc.angles)
 }
 
 void function GrantSpawnImmunity(entity player, float duration)
@@ -1567,6 +1580,7 @@ void function SimpleChampionUI(){
 				player.UnfreezeControlsOnServer()
 				HolsterAndDisableWeapons( player )
 			}
+		WaitFrame()
 	}
 
 	if (!file.mapIndexChanged)
@@ -1671,7 +1685,8 @@ void function SimpleChampionUI(){
 					ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
 			}
 	    } catch(e3){}
-    }
+		WaitFrame()
+	}
 }
 
 try {
@@ -1846,21 +1861,18 @@ foreach(player in GetPlayerArray())
 		if(IsValid(player) && !IsAlive(player)){
 				_HandleRespawn(player)
 				ClearInvincible(player)
-				player.SetThirdPersonShoulderModeOn()
-				HolsterAndDisableWeapons( player )
 		}else if(IsValid(player) && IsAlive(player))
 			{
 				if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
 				PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
 				PlayerRestoreHPFIESTA(player, 100)
-				player.SetThirdPersonShoulderModeOn()
-				HolsterAndDisableWeapons( player )
 				} else {
 				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
-				player.SetThirdPersonShoulderModeOn()
-				HolsterAndDisableWeapons( player )
 				}
 		}
+		player.SetThirdPersonShoulderModeOn()
+		HolsterAndDisableWeapons( player )
+		WaitFrame()
 	}
 
 wait 1
