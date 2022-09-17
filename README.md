@@ -74,6 +74,7 @@ I know all the code can be masivelly improved and there are a lot of things that
 More credits:
 - Amos#1368 & contributors -- sdk https://github.com/Mauler125/r5sdk/tree/indev
 - rexx#1287 & contributors -- repak tool https://github.com/r-ex/RePak
+- JustANormalUser#6809 -- custom weapons framework
 - Skeptation#4002 -- beta tester and coworker https://www.youtube.com/c/Skeptation
 - Zee#6969 -- weapons buy menu example, history ui pages logic
 - Darkes#8647 -- beta tester
