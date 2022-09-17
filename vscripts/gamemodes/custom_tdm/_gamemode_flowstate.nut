@@ -747,6 +747,10 @@ void function GrantSpawnImmunity(entity player, float duration)
 		}
 	)
 	thread WpnPulloutOnRespawn(player, duration)
+	
+	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
+	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+	
 	float endTime = Time() + duration
 	while(Time() <= endTime && IsValid(player)){
 		player.SetCloakDuration( 0, 0.15, 0.35 )
