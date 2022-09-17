@@ -1863,20 +1863,22 @@ else if (!FlowState_Timer() ){
 
 foreach(player in GetPlayerArray())
     {
-		if(IsValid(player) && !IsAlive(player)){
+		if(IsValid(player) && !IsAlive(player))
+		{
 				_HandleRespawn(player)
 				ClearInvincible(player)
-		}else if(IsValid(player) && IsAlive(player))
+		} else if(IsValid(player) && IsAlive(player))
+		{
+			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
 			{
-				if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak()){
 				PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
 				PlayerRestoreHPFIESTA(player, 100)
-				} else {
+			} else 
 				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
-				}
+				
+			player.SetThirdPersonShoulderModeOn()
+			HolsterAndDisableWeapons( player )	
 		}
-		player.SetThirdPersonShoulderModeOn()
-		HolsterAndDisableWeapons( player )
 		WaitFrame()
 	}
 
@@ -1907,10 +1909,11 @@ wait 7
 
 foreach(player in GetPlayerArray())
     {
-		if(IsValid(player)){
-		ClearInvincible(player)
-		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-		player.SetThirdPersonShoulderModeOff()
+		if(IsValid(player))
+		{
+			ClearInvincible(player)
+			RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+			player.SetThirdPersonShoulderModeOff()
 		}
 	}
 file.ringBoundary.Destroy()
