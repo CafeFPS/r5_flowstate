@@ -25,16 +25,12 @@ global function DeathScreenUpdateCursor
 
 global function InitDeathScreenPanelFooter
 
-#if R5DEV
-global function ShowBanner
-#endif
-
 struct
 {
 	var       menu
 	bool      tabsInitialized
 	float     menuOpenTime
-	bool      isGladCardShowing = true	//
+	bool      isGladCardShowing = true
 	bool      canShowGladCard
 	bool      canReportPlayer
 	bool      shouldShowSkip
@@ -45,7 +41,7 @@ struct
 } file
 
 
-void function InitDeathScreenMenu( var newMenuArg ) //
+void function InitDeathScreenMenu( var newMenuArg )
 {
 	var menu = GetMenu( "DeathScreenMenu" )
 	file.menu = menu
@@ -71,34 +67,22 @@ void function InitDeathScreenMenu( var newMenuArg ) //
 
 void function InitDeathScreenPanelFooter( var panel, int panelID )
 {
-	//
 	AddPanelFooterOption( panel, RIGHT, BUTTON_START, true, "#BUTTON_OPEN_MENU", "#BUTTON_OPEN_MENU", DeathScreenTryOpenSystemMenu, DeathScreenShowMenuButton )
 	AddPanelFooterOption( panel, RIGHT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK", null, DeathScreenShowNavBack )
 
-
-	//
 	AddPanelFooterOption( panel, RIGHT, KEY_SPACE, true, "#BUTTON_LOBBY_RETURN", "#BUTTON_LOBBY_RETURN", DeathScreenLeaveGameDialog, DeathScreenShowLobbyButton )
 	AddPanelFooterOption( panel, RIGHT, KEY_SPACE, true, "", "#SPACE_LOBBY_RETURN", DeathScreenLeaveGameDialog, DeathScreenShowLobbySpace )
+	AddPanelFooterOption( panel, RIGHT, KEY_ENTER, false, "", "", UI_OnLoadoutButton_Enter )
 
-	#if(PC_PROG)
-		//
-		AddPanelFooterOption( panel, RIGHT, KEY_ENTER, false, "", "", UI_OnLoadoutButton_Enter )
-	#endif
 
-	//
 	switch( panelID )
 	{
 		case eDeathScreenPanel.DEATH_RECAP:
-			AddPanelFooterOption( panel, RIGHT, BUTTON_STICK_RIGHT, true, "#BUTTON_REPORT_PLAYER", "#BUTTON_REPORT_PLAYER", DeathScreenOnReportButtonClick, DeathScreenCanReportPlayer )
 			break
 
 		case eDeathScreenPanel.SPECTATE:
-			AddPanelFooterOption( panel, RIGHT, BUTTON_STICK_RIGHT, true, "#BUTTON_REPORT_PLAYER", "#BUTTON_REPORT_PLAYER", DeathScreenOnReportButtonClick, CanReportPlayer )
-
-			//
 			AddPanelFooterOption( panel, LEFT, BUTTON_X, true, "#DEATH_SCREEN_NEXT_SPECTATE", "#DEATH_SCREEN_NEXT_SPECTATE", DeathScreenSpectateNext, DeathScreenCanChangeSpectateTarget )
 
-			//
 			string gladCardMessageString = "#SPECTATE_HIDE_BANNER"
 			if ( !IsGladCardShowing() )
 				gladCardMessageString = "#SPECTATE_SHOW_BANNER"
@@ -122,8 +106,6 @@ void function InitDeathScreenPanelFooter( var panel, int panelID )
 
 void function DeathScreenMenuOnOpen()
 {
-	//
-
 	if ( !file.tabsInitialized )
 	{
 		TabData tabData = GetTabDataForPanel( file.menu )
@@ -142,33 +124,24 @@ void function DeathScreenMenuOnOpen()
 	spectateTab.title = "#DEATH_SCREEN_SPECTATE"
 	UpdateMenuTabs()
 
-	//
-	SetTabDefEnabled( recapTab, false )
-	SetTabDefEnabled( spectateTab, false )
-	SetTabDefEnabled( squadSummaryTab, false )
-
+	SetTabDefEnabled( recapTab, true )
+	SetTabDefEnabled( squadSummaryTab, true )
+	SetTabDefEnabled( spectateTab, true )
+	
 	SetTabNavigationEnabled( file.menu, true )
 
 	var screenBlur = Hud_GetChild( file.menu, "ScreenBlur" )
-	HudElem_SetRuiArg( screenBlur, "startTime", Time(), eRuiArgType.GAMETIME )    //
-
-//
+	HudElem_SetRuiArg( screenBlur, "startTime", Time(), eRuiArgType.GAMETIME )
 
 	file.menuOpenTime = Time()
-	//
 	file.respawnStatus = 0
 	file.spectateTargetCount = 0
-	file.shouldShowSkip = true //
+	file.shouldShowSkip = true
 
 	UISize screenSize = GetScreenSize()
 	SetCursorPosition( <1920.0 * 0.5, 1080.0 * 0.5, 0> )
 
-	//
 	RunClientScript( "UICallback_ToggleGladCard", file.isGladCardShowing )
-
-	#if R5DEV
-		RegisterButtonPressedCallback( KEY_PAD_ENTER, DevExit )
-	#endif
 
 	UpdateFooterOptions()
 }
@@ -178,10 +151,6 @@ void function DeathScreenMenuOnClose()
 	TabData tabData = GetTabDataForPanel( file.menu )
 	DeactivateTab( tabData )
 
-	#if R5DEV
-		DeregisterButtonPressedCallback( KEY_PAD_ENTER, DevExit )
-	#endif
-
 	if ( IsFullyConnected() )
 		RunClientScript( "UICallback_CloseDeathScreenMenu" )
 }
@@ -189,19 +158,15 @@ void function DeathScreenMenuOnClose()
 
 void function UI_OpenDeathScreenMenu( int tabIndex )
 {
-	//
-	//
 	CloseAllMenus()
 
 	if ( !IsMenuInMenuStack( file.menu ) )
 	{
 		AdvanceMenu( file.menu )
-		//
 	}
 
 	EnableDeathScreenTab_Internal( tabIndex, true )
 
-	//
 	TabData tabData = GetTabDataForPanel( file.menu )
 	ActivateTab( tabData, tabIndex )
 }
@@ -209,8 +174,6 @@ void function UI_OpenDeathScreenMenu( int tabIndex )
 
 void function UI_CloseDeathScreenMenu()
 {
-	//
-
 	if ( GetActiveMenu() == file.menu )
 	{
 		CloseActiveMenu()
@@ -219,12 +182,10 @@ void function UI_CloseDeathScreenMenu()
 	{
 		if( IsDialog( GetActiveMenu() ) )
 		{
-			//
 			CloseAllMenus()
 		}
 		else
 		{
-			//
 			RemoveFromMenuStack( file.menu )
 			DeathScreenMenuOnClose()
 		}
@@ -235,7 +196,6 @@ void function UI_CloseDeathScreenMenu()
 
 void function UI_EnableDeathScreenTab( int tabIndex, bool enable )
 {
-	//
 	EnableDeathScreenTab_Internal( tabIndex, enable )
 }
 
@@ -265,8 +225,6 @@ void function EnableDeathScreenTab_Internal( int tabIndex, bool enable )
 			break
 	}
 
-	//
-
 
 	TabData tabData        = GetTabDataForPanel( file.menu )
 	TabDef squadSummaryTab = Tab_GetTabDefByBodyName( tabData, panelName )
@@ -274,7 +232,6 @@ void function EnableDeathScreenTab_Internal( int tabIndex, bool enable )
 
 	if ( !enable && tabData.activeTabIdx == tabIndex )
 	{
-		//
 		DeactivateTab( tabData )
 	}
 }
@@ -282,8 +239,6 @@ void function EnableDeathScreenTab_Internal( int tabIndex, bool enable )
 
 void function UI_SwitchToDeathScreenTab( int tabIndex )
 {
-	//
-
 	if ( !IsMenuInMenuStack( file.menu ) )
 		return
 
@@ -291,20 +246,14 @@ void function UI_SwitchToDeathScreenTab( int tabIndex )
 
 	TabData tabData = GetTabDataForPanel( file.menu )
 
-	//
-
 	if ( tabData.activeTabIdx != tabIndex )
 		ActivateTab( tabData, tabIndex )
-	//
-	//
 }
 
 
 void function UI_DeathScreenFadeInBlur( bool fadeInBlur )
 {
 	float startTime = fadeInBlur ? Time() : 0.0
-
-	//
 
 	var screenBlur = Hud_GetChild( file.menu, "ScreenBlur" )
 	HudElem_SetRuiArg( screenBlur, "startTime", startTime, eRuiArgType.GAMETIME )
@@ -313,10 +262,8 @@ void function UI_DeathScreenFadeInBlur( bool fadeInBlur )
 
 void function UI_SetDeathScreenTabTitle( int tabIndex, string title )
 {
-	//
 	if ( !IsMenuInMenuStack( file.menu ) )
 	{
-		//
 		return
 	}
 
@@ -350,8 +297,6 @@ void function UI_SetDeathScreenTabTitle( int tabIndex, string title )
 
 void function UI_SetCanShowGladCard( bool canShowGladCard )
 {
-	//
-
 	if ( file.canShowGladCard == canShowGladCard )
 		return
 
@@ -362,7 +307,6 @@ void function UI_SetCanShowGladCard( bool canShowGladCard )
 
 void function UI_SetShouldShowSkip( bool shouldShowSkip )
 {
-	//
 	file.shouldShowSkip = shouldShowSkip
 	UpdateFooterOptions()
 }
@@ -370,7 +314,6 @@ void function UI_SetShouldShowSkip( bool shouldShowSkip )
 
 void function UI_SetIsEliminiated( bool isEliminated)
 {
-	//
 	file.isEliminated = isEliminated
 	UpdateFooterOptions()
 }
@@ -389,27 +332,20 @@ void function UI_DeathScreenSetSpectateTargetCount( int targetCount )
 	UpdateFooterOptions()
 }
 
-
 void function UI_DeathScreenSetCanReportPlayer( bool canReportPlayer )
 {
 	file.canReportPlayer = canReportPlayer
 	UpdateFooterOptions()
 }
 
-
 void function UI_DeathScreenUpdateHeader()
 {
-	//
-
 	var headerElement = Hud_GetChild( file.menu, "Header" )
 	RunClientScript( "UICallback_UpdateHeader", headerElement )
 }
 
-
 void function UI_OnLoadoutButton_Enter( var button )
 {
-	//
-
 	var panel   = _GetActiveTabPanel( file.menu )
 	var chatbox = Hud_GetChild( panel, "LobbyChatBox" )
 
@@ -419,11 +355,9 @@ void function UI_OnLoadoutButton_Enter( var button )
 	Hud_SetVisible( chatbox, true )
 }
 
-
 void function OnSurvivalInventory_OnInputModeChange()
 {
 }
-
 
 void function DeathScreenMenu_OnResolutionChanged()
 {
@@ -696,19 +630,3 @@ bool function DeathScreenIsOpen()
 		return true
 	return false
 }
-
-
-#if R5DEV
-void function DevExit( var button )
-{
-	CloseActiveMenu()
-}
-
-void function ShowBanner()
-{
-	//
-
-	var headerElement = Hud_GetChild( file.menu, "Header" )
-	RunClientScript( "DEV_UICallback_UpdateHeader", headerElement )
-}
-#endif
