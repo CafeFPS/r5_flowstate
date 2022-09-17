@@ -46,7 +46,7 @@ void function OnOpenPanel( var panel )
 	RegisterButtonPressedCallback( BUTTON_DPAD_DOWN, DeathScreenNextDamageLog )
 	RegisterButtonPressedCallback( MOUSE_WHEEL_UP, DeathScreenPrevDamageLog )
 	RegisterButtonPressedCallback( BUTTON_DPAD_UP, DeathScreenPrevDamageLog )
-	RegisterButtonPressedCallback( KEY_R, DeathScreenOnReportButtonClick )
+	//RegisterButtonPressedCallback( KEY_R, DeathScreenOnReportButtonClick )
 
 	DeathScreenUpdateCursor()
 
@@ -63,7 +63,7 @@ void function OnClosePanel( var panel )
 	DeregisterButtonPressedCallback( BUTTON_DPAD_DOWN, DeathScreenNextDamageLog )
 	DeregisterButtonPressedCallback( MOUSE_WHEEL_UP, DeathScreenPrevDamageLog )
 	DeregisterButtonPressedCallback( BUTTON_DPAD_UP, DeathScreenPrevDamageLog )
-	DeregisterButtonPressedCallback( KEY_R, DeathScreenOnReportButtonClick )
+	//DeregisterButtonPressedCallback( KEY_R, DeathScreenOnReportButtonClick )
 
 	RunClientScript( "UICallback_CloseDeathRecap" )
 }
