@@ -28,6 +28,7 @@ global function CreateShipRoomFallTriggers
 global function AutoChangeLevelThread
 global function GiveFlowstateOvershield
 
+
 global function ClientCommand_ClientMsg
 global function	ClientCommand_DispayChatHistory
 global function	ClientCommand_RebalanceTeams
@@ -291,7 +292,7 @@ LocPair function Flowstate_GetBestSpawnPointFFA()
 
 	LocPair finalLoc
 	float compareDis = -1
-	foreach(loc, dis in SpawnsAndNearestEnemy)
+	foreach(loc, dis in SpawnsAndNearestEnemy) //calculate the best spawn point which is the one with the furthest enemy of the nearest
 	{
 		if(dis > compareDis)
 		{
@@ -735,7 +736,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if(FlowState_Gungame() && IsValid( player ))
 		GiveGungameWeapon(player)
 
-	thread GrantSpawnImmunity(player, 2)
+	thread Flowstate_GrantSpawnImmunity(player, 2)
 }
 
 void function TpPlayerToSpawnPoint(entity player)
@@ -747,7 +748,7 @@ void function TpPlayerToSpawnPoint(entity player)
 	player.SetAngles(loc.angles)
 }
 
-void function GrantSpawnImmunity(entity player, float duration)
+void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 {
 	if(!IsValid(player)) return
 
@@ -755,44 +756,47 @@ void function GrantSpawnImmunity(entity player, float duration)
 	function() : ( player )
 		{
 			if(!IsValid(player)) return	
-			player.SetCloakDuration( 0, 0, 0.1 )			
-			ClearInvincible(player)
+			player.ClearInvulnerable()
+			player.MakeVisible()
+			Highlight_ClearEnemyHighlight( player )
 		}
 	)
 	thread WpnPulloutOnRespawn(player, duration)
 	
 	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
+	player.SetInvulnerable()
+	Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
 	
 	float endTime = Time() + duration
 	while(Time() <= endTime && IsValid(player)){
-		player.SetCloakDuration( 0, 0.15, 0.35 )
-		MakeInvincible(player) //??
-		wait 0.5
-		if(IsValid(player))
-			ClearInvincible(player) //??
+		player.MakeVisible()
+		wait 0.3
+		player.MakeInvisible()
+		wait 0.3
 	}
 }
 
 void function WpnPulloutOnRespawn(entity player, float duration)
 {
-	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+	if(!IsValid( player ) || !IsAlive(player) ) return
+	
+	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
 	{
-		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_1)
-		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
+		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
 	}
-	wait 0.7
-	if(IsValid( player ) && IsAlive(player) && IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
 	{
+		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		weapon.SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-		player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).SetWeaponCharm( $"mdl/props/charm/charm_nessy.rmdl", "CHARM")
-		
 	}
-	wait 0.5
-	if(IsValid(player)) player.DisableWeapon()
-	wait duration-1.2
+	player.ClearFirstDeployForAllWeapons()
+	HolsterAndDisableWeapons(player)
+	wait duration
 	if(IsValid(player))
-		player.EnableWeapon()
+		DeployAndEnableWeapons(player)
 }
 
 
@@ -1755,7 +1759,7 @@ printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
 foreach(player in GetPlayerArray())
     {
-	thread GrantSpawnImmunity(player, 2)
+	thread Flowstate_GrantSpawnImmunity(player, 2)
 	}
 
 if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
@@ -2741,7 +2745,10 @@ bool function ClientCommand_ClientMsg(entity player, array<string> args)
 	if(currentChatLine < chatLines)
 		currentChat = currentChat + finalChat
 	else
-		currentChat =  finalChat ; currentChatLine = 0
+	{
+		currentChat =  finalChat
+		currentChatLine = 0
+	}
 
 	currentChatLine++
 
