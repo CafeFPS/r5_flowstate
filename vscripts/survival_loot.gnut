@@ -89,6 +89,7 @@ void function SV_Survival_Loot_Init()
 	AddClientCommandCallback( "Sur_EquipOrdnance", ClientCommand_Sur_EquipOrdnance )
 
 	AddClientCommandCallback( "PickupSurvivalItem", ClientCommand_PickupSurvivalItem )
+	AddClientCommandCallback( "SwapSurvivalItem", ClientCommand_SwapSurvivalItem )
 
 	SetCallback_OnPlayerReload( OnWeaponReload )
 	AddCallback_OnWeaponAttack( OnWeaponAttack_OrdnanceControl )
@@ -279,20 +280,15 @@ void function OnWeaponAttack_OrdnanceControl( entity player, entity weapon, stri
 	if ( data.lootType == eLootType.ORDNANCE )
 	{
 		SURVIVAL_RemoveFromPlayerInventory( player, data.ref, 1 )
-		
+
 		if ( SURVIVAL_CountItemsInInventory( player, data.ref ) == 0 )
 		{
 			string nextOrdnance = GetNextOrdnance( player, data.ref )
 			if ( nextOrdnance != "" )
-				thread function () : ( player, weapon, nextOrdnance )
+				thread function () : ( player, nextOrdnance )
 				{
-					wait weapon.GetWeaponSettingFloat(eWeaponVar.toss_time)
+					wait 1
 					SwitchPlayerToOrdnance( player, nextOrdnance )
-				}()
-			else thread function () : ( player, weapon, nextOrdnance )
-				{
-					wait weapon.GetWeaponSettingFloat(eWeaponVar.toss_time)
-					player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 				}()
 		}
 	}
@@ -430,19 +426,107 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 
 	Survival_PickupItem( lootEnt, player, pickupFlags, deathBox )
 
-	if ( deathBox.GetLinkEntArray().len() == 0 )
+	if ( deathBox != null )
 	{
-		deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
-
-		thread function() : ( deathBox )
+		if ( deathBox.GetLinkEntArray().len() == 0 )
 		{
-			wait 3.0
-			if ( IsValid( deathBox ) )
-				deathBox.Destroy()
-		}()
+			deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+
+			thread function() : ( deathBox )
+			{
+				wait 3.0
+				if ( IsValid( deathBox ) )
+					deathBox.Destroy()
+			}()
+		}
+		else
+			UpdateDeathBoxHighlight( deathBox )
+	}
+
+	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
+
+	return true
+}
+
+bool function ClientCommand_SwapSurvivalItem( entity player, array<string> args )
+{
+	if ( !IsValid( player ) || !IsAlive( player ) )
+		return true
+
+	if ( args.len() < 2 )
+		return true
+
+	int backpackSlot = int( args[0] )
+	if ( backpackSlot < 0 )
+		return true
+
+	array<ConsumableInventoryItem> playerInventory = player.ConsumableInventory_Get()
+	if ( playerInventory.len() <= backpackSlot )
+		return true
+
+	ConsumableInventoryItem itemToThrow = playerInventory[backpackSlot]
+	LootData itemToThrowData = SURVIVAL_Loot_GetLootDataByIndex( itemToThrow.type )
+
+	int lootEntEEH = int( args[1] )
+	if ( lootEntEEH == -1 )
+		return true
+
+	entity lootEnt = GetEntityFromEncodedEHandle( lootEntEEH )
+	if ( !IsValid( lootEnt ) )
+		return true
+
+	if ( lootEnt.GetNetworkedClassName() != "prop_survival" )
+		return true
+
+	if ( !SURVIVAL_CanPlayerPickup( player, lootEnt ) )
+		return true
+
+	entity deathBox = null
+	if ( args.len() > 2 )
+	{
+		int deathBoxEEH = int( args[2] )
+		if ( deathBoxEEH  == -1 )
+			return true
+
+		deathBox = GetEntityFromEncodedEHandle( deathBoxEEH )
+		if ( !IsValid( deathBox ) )
+			return true
+
+		if ( deathBox.GetNetworkedClassName() != "prop_death_box" )
+			return true
+
+		if ( !deathBox.GetLinkEntArray().contains( lootEnt ) )
+			return true
+	}
+
+	if ( deathBox != null )
+	{
+		SURVIVAL_RemoveFromPlayerInventory( player, itemToThrowData.ref, itemToThrow.count )
+
+		entity modLoot = SpawnGenericLoot( itemToThrowData.ref, deathBox.GetOrigin(), deathBox.GetAngles(), itemToThrow.count )
+		AddToDeathBox( modLoot, deathBox )
 	}
 	else
-		UpdateDeathBoxHighlight( deathBox )
+		SURVIVAL_DropBackpackItem( player, itemToThrowData.ref, itemToThrow.count )
+
+	Survival_PickupItem( lootEnt, player, 0, deathBox )
+
+	if ( deathBox != null )
+	{
+		if ( deathBox.GetLinkEntArray().len() == 0 )
+		{
+			deathBox.Dissolve( ENTITY_DISSOLVE_CORE, <0, 0, 0>, 500 )
+
+			thread function() : ( deathBox )
+			{
+				wait 3.0
+				if ( IsValid( deathBox ) )
+					deathBox.Destroy()
+			}()
+		}
+		else
+			UpdateDeathBoxHighlight( deathBox )
+	}
 
 	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
@@ -779,8 +863,7 @@ bool function ClientCommand_Sur_EquipAttachment( entity player, array<string> ar
 	}
 
 	string modToRemove = SURVIVAL_GetModToRemoveForAttachment( player, weapon, ref )
-	if ( AttachToWeapon( player, weapon, ref, modToRemove, true, true, false, null ) )
-		SURVIVAL_RemoveFromPlayerInventory( player, ref, 1 )
+	AttachToWeapon( player, weapon, ref, modToRemove, true, true, false, null )
 
 	Remote_CallFunction_Replay( player, "ServerCallback_RefreshInventoryAndWeaponInfo" )
 
@@ -1104,7 +1187,11 @@ void function EquipAttachments_Internal( entity player, entity weapon, string it
 				AddToDeathBox( modLoot, deathBox )
 			}
 			else
-				SURVIVAL_AddToPlayerInventory( player, modToRemove, 1 )
+			{
+				bool isInventoryFull = SURVIVAL_AddToPlayerInventory( player, modToRemove, 1 ) == 0
+				if ( isInventoryFull )
+					PlayerThrowLoot( player, modToRemove )
+			}
 		}
 		else
 			PlayerThrowLoot( player, modToRemove )
