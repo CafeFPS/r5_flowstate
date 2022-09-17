@@ -390,8 +390,6 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 				thread DisableSkydiveThirdPerson( player )
 
-				Highlight_ClearEnemyHighlight( player )
-
 				// This track started when we entered the plane, stopping it again (second time) will trigger a fadeout
 				StopMusicOnPlayer( player, skydiveMusicID )
 
@@ -522,9 +520,6 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 
 	//player.NotSolid()
 	player.ForceStand()
-
-	Highlight_SetFriendlyHighlight( player, "survival_friendly_skydiving" )
-	// Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
 
 	// Jump Jet FX (Last entire jump duration)
 	vector smokeColor = GetSkydiveSmokeColorForTeam( player.GetTeam() )
