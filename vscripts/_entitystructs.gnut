@@ -673,9 +673,16 @@ global struct ServerPlayerStruct
 		
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
-	float lastKillTimer
+	float lastKillTimer = 0
 	int downedEnemyAtOneTime = 0
 	float last3dashtime = 0
+	
+	//DeathRecap
+	DeathRecapDamageData DeathRecap_DataToSend
+	entity DeathRecap_PreviousShotWeapon = null
+	entity DeathRecap_PreviousShotEnemyPlayer = null
+	float DeathRecap_BlockTime = 0
+	
 	//Flyers Easteregg by Colombia
 	bool isParentedToFlyer = false
 	entity ParentedFlyer
