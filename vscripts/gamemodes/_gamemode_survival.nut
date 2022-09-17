@@ -501,14 +501,6 @@ void function HandleDeathRecapData(entity victim, var damageInfo)
 		attacker.p.DeathRecap_DataToSend.shieldFrac += healthFrac
 		attacker.p.DeathRecap_DataToSend.blockTime = attacker.p.DeathRecap_BlockTime
 	}
-	
-	// int victimForVictimIdk = victim.p.DeathRecap_DataToSend.victimEHandle
-
-	// if(victimEHandle != -1 && victimForVictimIdk != -1 && victim.p.DeathRecap_DataToSend.totalDamage > 0)
-	// {
-		// Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, victimForVictimIdk, victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
-		// ResetDeathRecapBlock(victim)				
-	// }
 }
 
 void function ResetDeathRecapBlock(entity attacker)
