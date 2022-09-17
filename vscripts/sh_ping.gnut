@@ -532,7 +532,7 @@ PingTraceResults function DoPingTrace( entity player )
 	else
 	{
 		result.player = player
-		result.endPos = tr.endPos
+		result.endPos = SanitizePingTraceEndPos( tr.endPos )
 		result.surfaceNormal = tr.surfaceNormal
 		result.hitDist = (tr.fraction * PING_TRACE_DISTANCE)
 		result.hitEnt = tr.hitEnt
@@ -547,6 +547,17 @@ PingTraceResults function DoPingTrace( entity player )
 	return result
 }
 #endif
+
+#if SERVER || CLIENT
+vector function SanitizePingTraceEndPos(vector endPos)
+{
+	float posX = Clamp( endPos.x, -64000, 64000  )                                                                                                                                                                     
+	float posY = Clamp( endPos.y, -64000, 64000  )                                                                                                                                                                     
+	float posZ = Clamp( endPos.z, -64000, 64000  )                                                                                                                                                                     
+	return <posX, posY, posZ>
+}
+#endif
+
 ///////////////////////////
 
 asset function PingFlavor_GetInnerIcon( ItemFlavor flavor )
