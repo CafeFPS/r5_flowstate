@@ -772,7 +772,8 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	while(Time() <= endTime && IsValid(player)){
 		player.MakeVisible()
 		wait 0.3
-		player.MakeInvisible()
+		if(IsValid(player))
+			player.MakeInvisible()
 		wait 0.3
 	}
 }
