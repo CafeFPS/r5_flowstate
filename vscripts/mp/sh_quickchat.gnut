@@ -782,36 +782,43 @@ bool function ClientCommand_Quickchat( entity player, array<string> args )
 {
 	if ( args.len() < 1 )
 		return true
+
 	int index = int( args[0] )
 	if ( index < 0 || !(index in file.actions) )
 		return true
 
 	entity subject = null
+	int flags = eCommsFlags.NONE
 	if ( args.len() > 1 )
 	{
-		string equipSlot = args[1]
-		if ( equipSlot in EquipmentSlot_GetAllEquipmentSlots() )
-		{
-			if ( EquipmentSlot_IsAttachmentSlot( equipSlot ) )
-				equipSlot = EquipmentSlot_GetAttachmentWeaponSlot( equipSlot )
-
-			if ( EquipmentSlot_IsMainWeaponSlot( equipSlot ) )
-			{
-				EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipSlot )
-				subject = player.GetNormalWeapon( es.weaponSlot )
-			}
-		}
+		flags = int( args[1] )
 
 		if ( args.len() > 2 )
 		{
-			subject = GetEntityFromEncodedEHandle( int( args[2] ) )
-
-			if ( !IsValid( subject ) )
-				return true
+			string equipSlot = args[2]
+			if ( equipSlot in EquipmentSlot_GetAllEquipmentSlots() )
+			{
+				if ( EquipmentSlot_IsAttachmentSlot( equipSlot ) )
+					equipSlot = EquipmentSlot_GetAttachmentWeaponSlot( equipSlot )
+	
+				if ( EquipmentSlot_IsMainWeaponSlot( equipSlot ) )
+				{
+					EquipmentSlot es = Survival_GetEquipmentSlotDataByRef( equipSlot )
+					subject = player.GetNormalWeapon( es.weaponSlot )
+				}
+			}
+	
+			if ( args.len() > 3 )
+			{
+				subject = GetEntityFromEncodedEHandle( int( args[3] ) )
+	
+				if ( !IsValid( subject ) )
+					return true
+			}
 		}
 	}
 
-	HandleBroadcastCommsAction( player, index, subject, player.GetOrigin(), eCommsFlags.NONE )
+	HandleBroadcastCommsAction( player, index, subject, player.GetOrigin(), flags )
 	return true
 }
 
