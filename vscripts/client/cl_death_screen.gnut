@@ -86,11 +86,13 @@ struct
 	bool   hasSpectated = false
 	bool   hasShownSquadSummary = false
 	bool   hasShownDeathRecap = false
+	bool   skipDeathRecapAnimation = false
 	bool   didGameOverAnimation = false
 	bool   didSquadEliminatedAnimation = false
+	bool   clearDeathRecapOnClose = true
 	int    currentTabIndex = eDeathScreenPanel.NONE
 	entity deathScreenMenuCamera
-	entity deathScreenMenuBackgroundModel
+	entity deathScreenMenuBackgroundModel = null
 
 	var            sidePaneRui
 	bool           showGladCard = true
@@ -101,6 +103,7 @@ struct
 	var deathScreenHeaderDataRui
 	var deathScreenHeaderDataNestedRui
 	var deathScreenRecapRui
+	bool deathScreenBannerDisabled
 
 	float bkupRespawnStartTime
 	float bkupRespawnEndTime
@@ -120,7 +123,6 @@ struct
 	EncodedEHandle                                     killerEHandle = 0
 
 	bool functionref()            shouldShowDeathScreenCallback
-
 } file
 
 
@@ -132,6 +134,7 @@ void function Cl_DeathScreen_Init()
 	AddOnSpectatorTargetChangedCallback( DeathScreen_SpectatorTargetChanged )
 	AddCallback_OnBleedoutEnded( DeathScreen_BleedoutEnded )
 	RegisterServerVarChangeCallback( "gameState", DeathScreen_OnGamestateChanged )
+	AddCallback_GameStateEnter( eGameState.Playing, DeathScreen_OnPlaying )
 	AddCallback_GameStateEnter( eGameState.Epilogue, DeathScreen_OnGamestateChanged )
 
 	RegisterNetworkedVariableChangeCallback_int( "spectatorTargetCount", DeathScreen_SpectatorTargetCountChanged )
@@ -183,12 +186,15 @@ void function ServerCallback_ShowDeathScreen()
 {
 	entity player = GetLocalClientPlayer()
 
-	int tabIndex = eDeathScreenPanel.SPECTATE
-
 	if ( ShouldShowDeathScreen() )
-		ShowDeathScreen( tabIndex )
-}
+		ShowDeathScreen( eDeathScreenPanel.SPECTATE )
 
+	if ( GetGameState() < eGameState.WinnerDetermined )
+		EnableDeathScreenTab( eDeathScreenPanel.SQUAD_SUMMARY, true )
+	
+	// if( GetGameState() < eGameState.WinnerDetermined )
+		// SwitchDeathScreenTab(eDeathScreenPanel.DEATH_RECAP)
+}
 
 void function ServerCallback_SquadEliminated( int eliminiatedTeam )
 {
@@ -203,13 +209,39 @@ void function ServerCallback_SquadEliminated( int eliminiatedTeam )
 		if ( ShouldShowDeathScreen() )
 			ShowDeathScreen( eDeathScreenPanel.SPECTATE )
 	}
-
+	
 	if ( GetGameState() < eGameState.WinnerDetermined )
 		EnableDeathScreenTab( eDeathScreenPanel.SQUAD_SUMMARY, true )
 
 	FlagSet( "SquadEliminated" )
 }
 
+
+void function ShowDeathScreen( int tabIndex )
+{
+	entity player = GetLocalClientPlayer()
+	if ( !IsValid( player ) )
+		return
+
+	if ( GetCurrentTabIndex() != eDeathScreenPanel.NONE )
+		return
+	
+	SetBigMapZoomScale( 1.0 )
+
+	file.playerDeathTime = Time()
+	CreateMenuBackground()
+	UpdateMainHudVisibility( GetLocalViewPlayer() )
+	Hud_SetAboveBlur( HudElement( "IngameTextChat" ), true )
+	Signal( player, "Bleedout_StopBleedoutEffects" )
+	
+	RunUIScript( "UI_DeathScreenSetRespawnStatus", player.GetPlayerNetInt( "respawnStatus" ) )
+	RunUIScript( "UI_DeathScreenSetSpectateTargetCount", player.GetPlayerNetInt( "spectatorTargetCount" ) )
+	RunUIScript( "UI_SetShouldShowSkip", false )
+	RunUIScript( "UI_OpenDeathScreenMenu", tabIndex )
+	
+	UpdateMenuBackground()
+	UpdateEnabledTabs()
+}
 
 void function DeathScreen_OnPlayerLifeStateChanged( entity player, int oldState, int newState )
 {
@@ -238,7 +270,7 @@ void function DeathScreen_OnPlayerLifeStateChanged( entity player, int oldState,
 	if ( player != clientPlayer )
 		return
 
-	if ( newState == LIFE_ALIVE )
+	if ( newState == LIFE_ALIVE && !IsWatchingSpecReplay() )
 	{
 		if ( file.blackBarRui != null )
 		{
@@ -256,6 +288,16 @@ void function DeathScreen_OnPlayerLifeStateChanged( entity player, int oldState,
 }
 
 
+void function DeathScreen_OnPlaying()
+{
+	file.didGameOverAnimation = false
+
+	                                                                                             
+	file.deathRecapDataUpdated = false
+	file.deathRecapDamageBlocks.clear()
+	SetCurrentAttackerEHandle( EncodedEHandle_null )
+	file.currentDamageSourceID = eDamageSourceId.invalid
+}
 void function DeathScreen_OnGamestateChanged()
 {
 	thread UpdateMenuFooter()
@@ -359,46 +401,18 @@ void function DeathScreen_RespawnStatusChanged( entity player, int old, int new,
 	RunUIScript( "UI_DeathScreenSetRespawnStatus", new )
 }
 
-
-void function ShowDeathScreen( int tabIndex )
-{
-	entity player = GetLocalClientPlayer()
-	if ( !IsValid( player ) )
-		return
-
-	if ( GetCurrentTabIndex() != eDeathScreenPanel.NONE )
-	{
-		return
-	}
-
-	SetBigMapZoomScale( 1.0 )
-
-	file.playerDeathTime = Time()
-
-	CreateMenuBackground()
-
-	UpdateMainHudVisibility( GetLocalViewPlayer() )
-	Hud_SetAboveBlur( HudElement( "IngameTextChat" ), true )
-
-	Signal( player, "Bleedout_StopBleedoutEffects" )
-
-	RunUIScript( "UI_OpenDeathScreenMenu", tabIndex )
-	UpdateMenuBackground()
-	UpdateEnabledTabs()
-}
-
-
-void function UpdateEnabledTabs()
+void function UpdateEnabledTabs() 
 {
 	entity clientPlayer = GetLocalClientPlayer()
 
-	//
+	
 	if ( file.deathRecapDataUpdated )
 		EnableDeathScreenTab( eDeathScreenPanel.DEATH_RECAP, true )
 
-	//
+	
 	if ( !IsAlive( clientPlayer ) )
 		EnableDeathScreenTab( eDeathScreenPanel.SPECTATE, true )
+
 }
 
 
@@ -434,7 +448,7 @@ void function SetDeathScreenTabTitle( int tabIndex, string title )
 
 void function DeathScreenUpdate()
 {
-	if ( GetCurrentTabIndex() == eDeathScreenPanel.SPECTATE )
+	if ( GetCurrentTabIndex() == eDeathScreenPanel.SPECTATE  )
 		RunUIScript( "UI_DeathScreenUpdateHeader" )
 
 	if ( GetCurrentTabIndex() == eDeathScreenPanel.SQUAD_SUMMARY )
@@ -451,21 +465,26 @@ void function DeathScreenUpdate()
 void function DeathScreenUpdateHeader( var headerElem )
 {
 	entity clientPlayer = GetLocalClientPlayer()
+
 	if ( !IsValid( clientPlayer ) )
 		return
 
-	int respawnStyle  = GetRespawnStyle()
-	int respawnStatus = GetRespawnStatus( clientPlayer )
+	int respawnStyle  = GetRespawnStyle()//!FIXME
+	int respawnStatus = GetRespawnStatus( clientPlayer )//!FIXME
+	//printt("CLIENT NET INT DEBUG RESPAWN STYLE STATUS: " + respawnStyle + " - " + respawnStatus)
+	
 	bool display      = true
 	int gameState     = GetGameState()
 	bool isWinner     = GetWinningTeam() == clientPlayer.GetTeam()
 
+	if ( file.deathScreenBannerDisabled )
+		display = false                                                                         
 	bool animateBanner   = false
 	bool animateGameOver = false
 	switch ( GetCurrentTabIndex() )
 	{
 		case eDeathScreenPanel.DEATH_RECAP:
-			animateBanner = !HasShownDeathRecap()
+			animateBanner = !file.skipDeathRecapAnimation && !HasShownDeathRecap()
 			break
 
 		case eDeathScreenPanel.SPECTATE:
@@ -547,6 +566,118 @@ void function DeathScreenUpdateHeader( var headerElem )
 		file.didGameOverAnimation = true
 }
 
+
+void function DeathScreenUpdateHeaderDR( var headerElem, var recapElem )
+{
+	entity clientPlayer = GetLocalClientPlayer()
+
+	if ( !IsValid( clientPlayer ) )
+		return
+
+	int respawnStyle  = GetRespawnStyle()//!FIXME
+	int respawnStatus = GetRespawnStatus( clientPlayer )//!FIXME
+	//printt("CLIENT NET INT DEBUG RESPAWN STYLE STATUS: " + respawnStyle + " - " + respawnStatus)
+	
+	bool display      = true
+	int gameState     = GetGameState()
+	bool isWinner     = GetWinningTeam() == clientPlayer.GetTeam()
+
+	if ( file.deathScreenBannerDisabled )
+		display = false                                                                         
+	bool animateBanner   = false
+	bool animateGameOver = false
+	switch ( GetCurrentTabIndex() )
+	{
+		case eDeathScreenPanel.DEATH_RECAP:
+			animateBanner = !file.skipDeathRecapAnimation && !HasShownDeathRecap()
+			break
+
+		case eDeathScreenPanel.SPECTATE:
+			if ( gameState == eGameState.WinnerDetermined )
+			{
+				if ( isWinner )
+					display = false
+				else
+					animateGameOver = !file.didGameOverAnimation
+			}
+
+			if ( respawnStatus == eRespawnStatus.SQUAD_ELIMINATED && !file.hasShownSquadSummary && !file.didSquadEliminatedAnimation )
+			{
+				animateBanner = true
+				file.didSquadEliminatedAnimation = true
+			}
+			else
+			{
+				animateBanner = !file.hasSpectated
+			}
+
+			break
+
+		case eDeathScreenPanel.SQUAD_SUMMARY:
+			animateBanner = !file.hasShownSquadSummary
+			break
+	}
+
+	var headerRui = Hud_GetRui( headerElem )
+	if ( file.deathScreenHeaderRui != headerRui )
+	{
+		file.deathScreenHeaderRui = headerRui
+	}
+
+	DeathScreen_UpdateRespawnTime( file.bkupRespawnStartTime, file.bkupRespawnEndTime )
+
+	RuiSetInt( headerRui, "respawnStyle", respawnStyle )
+	RuiSetInt( headerRui, "respawnStatus", respawnStatus )
+	RuiSetInt( headerRui, "tabIndex", GetCurrentTabIndex() )
+	RuiSetInt( headerRui, "gameState", gameState )
+	RuiSetBool( headerRui, "display", display )
+	RuiSetBool( headerRui, "playerIsAlive", IsAlive( clientPlayer ) )
+	RuiSetBool( headerRui, "isWinner", isWinner )
+
+
+	if ( animateBanner )
+		RuiSetFloat( headerRui, "bannerAnimStartTime", Time() )
+	if ( animateGameOver )
+		RuiSetFloat( headerRui, "gameOverAnimStartTime", Time() )
+
+	RuiSetBool( headerRui, "animateBanner", animateBanner )
+
+
+	entity viewPlayer = GetLocalViewPlayer()
+	if ( IsAlive( viewPlayer ) && viewPlayer != clientPlayer )
+	{
+		EHI playerEHI = ToEHI( viewPlayer )
+		if ( playerEHI == GetKillerEnum() )
+			RuiSetString( headerRui, "spectateName", GetKillerName( playerEHI ) )
+		else
+			RuiSetString( headerRui, "spectateName", GetPlayerName( playerEHI ) )
+		RuiSetBool( headerRui, "spectatingEnemy", IsEnemyTeam( viewPlayer.GetTeam(), clientPlayer.GetTeam() ) )
+		RuiSetInt( headerRui, "teamMemberIndex", EEH_GetTeamMemberIndex( playerEHI ) )
+	}
+	else
+	{
+		RuiSetString( headerRui, "spectateName", "" )
+		RuiSetInt( headerRui, "teamMemberIndex", -1 )
+	}
+
+	if ( IsFallLTM() )
+	{
+		RuiSetBool( headerRui, "shadowMode", true )
+		RuiSetBool( headerRui, "shadowModeCanRespawnAsShadow", PlayerCanRespawnAsShadow( clientPlayer ) )
+		RuiSetBool( headerRui, "playerIsShadowSquad", IsPlayerShadowSquad( clientPlayer ) )
+	}
+
+	if ( gameState >= eGameState.WinnerDetermined )
+		file.didGameOverAnimation = true
+	
+	var recapRui = Hud_GetRui( recapElem )
+	RuiSetBool( recapRui, "display", false )
+	
+	if(!file.hasShownDeathRecap)
+		wait 4
+	
+	DeathRecapShow( recapElem )
+}
 
 void function UICallback_ShowSquadSummary( var headerElem, var headerDataElem )
 {
@@ -704,12 +835,14 @@ void function UICallback_ShowDeathRecap( var headerElem, var recapElem, var b0, 
 		return
 
 	Signal( clientPlayer, "SwitchedTab" )
-
+	
 	int oldTabIndex = GetCurrentTabIndex()
 	SetCurrentTabIndex( eDeathScreenPanel.DEATH_RECAP )
 
 	UpdateMenuBackground()
-	DeathScreenUpdateHeader( headerElem )
+	
+	thread DeathScreenUpdateHeaderDR( headerElem, recapElem)
+
 	UpdateGladCardVisibility()
 	UpdateMainHudVisibility( GetLocalViewPlayer() )
 
@@ -719,15 +852,12 @@ void function UICallback_ShowDeathRecap( var headerElem, var recapElem, var b0, 
 	file.selectedRecapBlock = -1
 
 	file.damageBlockElementArray = [b0, b1, b2, b3, b4, b5, b6, b7, b8, b9]
-	thread DeathRecapShow( recapElem )
 
 	bool shouldFadeInBlur = !file.hasShownDeathRecap && oldTabIndex == eDeathScreenPanel.SPECTATE
-
 	RunUIScript( "UI_DeathScreenFadeInBlur", shouldFadeInBlur )
 
-	file.hasShownDeathRecap = true
+	file.hasShownDeathRecap = true	
 }
-
 
 void function UICallback_CloseDeathRecap()
 {
@@ -737,8 +867,11 @@ void function UICallback_CloseDeathRecap()
 		RuiSetBool( blockRui, "display", false )
 	}
 
-	SetCurrentAttackerEHandle( EncodedEHandle_null )
-	file.currentDamageSourceID = eDamageSourceId.invalid
+	if( file.clearDeathRecapOnClose )
+	{
+		SetCurrentAttackerEHandle( EncodedEHandle_null )
+		file.currentDamageSourceID = eDamageSourceId.invalid
+	}
 
 	foreach( cardData in file.recapGladCardDataTable )
 	{
@@ -817,16 +950,27 @@ void function UICallback_CloseDeathScreenMenu()
 		Signal( clientPlayer, "DeathScreenMenuClosed" )
 
 	SetCurrentTabIndex( eDeathScreenPanel.NONE )
-	file.hasSpectated = false
-	file.hasShownSquadSummary = false
-	file.hasShownDeathRecap = false
-	file.didSquadEliminatedAnimation = false
-	file.deathScreenHeaderRui = null
-	file.deathScreenHeaderDataRui = null
+	file.hasSpectated                   = false
+	file.hasShownSquadSummary           = false
+	file.hasShownDeathRecap             = false
+	file.skipDeathRecapAnimation        = false
+	file.didSquadEliminatedAnimation    = false
+	file.deathScreenHeaderRui           = null
+	file.deathScreenHeaderDataRui       = null
 	file.deathScreenHeaderDataNestedRui = null
 
-	file.deathRecapDataUpdated = false
-	file.deathRecapDamageBlocks.clear()
+	                         
+	if( file.clearDeathRecapOnClose )
+	{
+		file.deathRecapDataUpdated = false
+		file.deathRecapDamageBlocks.clear()
+	}
+
+	if ( file.deathScreenMenuBackgroundModel != null )
+	{
+		file.deathScreenMenuBackgroundModel.Destroy()
+		file.deathScreenMenuBackgroundModel = null
+	}
 
 	UpdateMainHudVisibility( GetLocalViewPlayer() )
 
@@ -906,7 +1050,7 @@ void function UICallback_OnResolutionChange()
 
 	int tabIndex = GetCurrentTabIndex()
 	if ( tabIndex == eDeathScreenPanel.NONE )
-		return
+		tabIndex = eDeathScreenPanel.SPECTATE
 
 	file.damageBlockElementArray.clear()
 	SetCurrentAttackerEHandle( EncodedEHandle_null )
@@ -958,13 +1102,13 @@ int function GetCurrentTabIndex()
 
 void function SetCurrentAttackerEHandle( EncodedEHandle attackerEHandle )
 {
-	file.currentAttackerEHandle = attackerEHandle
+	// file.currentAttackerEHandle = attackerEHandle
 
-	entity clientPlayer          = GetLocalClientPlayer()
-	EncodedEHandle clientEHandle = clientPlayer.GetEncodedEHandle()
-	bool canReport               = attackerEHandle != EncodedEHandle_null && attackerEHandle != clientEHandle
+	// entity clientPlayer          = GetLocalClientPlayer()
+	// EncodedEHandle clientEHandle = clientPlayer.GetEncodedEHandle()
+	// bool canReport               = attackerEHandle != EncodedEHandle_null && attackerEHandle != clientEHandle
 
-	RunUIScript( "UI_DeathScreenSetCanReportPlayer", canReport )
+	// RunUIScript( "UI_DeathScreenSetCanReportPlayer", canReport )
 }
 
 
@@ -988,6 +1132,8 @@ void function CreateMenuBackground()
 	if ( !hasMenuEnts )
 	{
 		file.deathScreenMenuBackgroundModel = CreateClientSidePropDynamic( cameraOrigin - <0, 0, 80>, cameraAngles, SURVIVAL_SQUAD_SUMMARY_MODEL )
+		file.deathScreenMenuBackgroundModel.MakeSafeForUIScriptHack()
+		file.deathScreenMenuBackgroundModel.Hide()
 	}
 
 	file.deathScreenMenuCamera.SetTargetFOV( camera_fov, true, EASING_CUBIC_INOUT, 0.0 )
@@ -1002,7 +1148,13 @@ void function UpdateMenuBackground()
 	entity clientPlayer = GetLocalClientPlayer()
 
 	if ( GetGameState() >= eGameState.Epilogue && !IsShowingVictorySequence() )
+	{
 		clientPlayer.SetMenuCameraEntityWithAudio( file.deathScreenMenuCamera )
+		if ( file.deathScreenMenuBackgroundModel != null )
+		{
+			file.deathScreenMenuBackgroundModel.Show()
+		}
+	}
 }
 
 
@@ -1203,10 +1355,10 @@ void function DeathScreenCreateNonMenuBlackBars()
 void function UpdateBlackBarRui()
 {
 	if ( file.blackBarRui == null )
-	{
 		return
-	}
-	else if ( GetGameState() == eGameState.Epilogue )
+	
+	
+	if ( GetGameState() == eGameState.Epilogue )
 	{
 		RuiDestroyIfAlive( file.blackBarRui )
 		file.blackBarRui = null
@@ -1252,6 +1404,12 @@ bool function HasShownDeathRecap()
 }
 
 
+void function DeathScreen_SetSkipDeathRecapAnimation( bool skip )
+{
+	file.skipDeathRecapAnimation = skip
+}
+
+
 bool function IsViewingSquadSummary()
 {
 	return GetCurrentTabIndex() == eDeathScreenPanel.SQUAD_SUMMARY
@@ -1278,16 +1436,21 @@ bool function IsViewingDeathScreen()
 void function DeathRecapShow( var recapElem )
 {
 	entity player = GetLocalClientPlayer()
+	
 	if ( !IsValid( player ) )
+		return
+
+	if( file.deathRecapDamageBlocks.len() == 0 )
 		return
 
 	EndSignal( player, "OnDestroy" )
 
-	bool shouldDoRecapHeaderAnimation = !file.hasShownDeathRecap
+	bool shouldDoRecapHeaderAnimation = !file.skipDeathRecapAnimation && !file.hasShownDeathRecap
 	if ( GetGameState() >= eGameState.WinnerDetermined )
 		shouldDoRecapHeaderAnimation = false
 
 	var recapRui = Hud_GetRui( recapElem )
+
 	if ( file.deathScreenRecapRui != recapRui )
 		file.deathScreenRecapRui = recapRui
 
@@ -1295,14 +1458,7 @@ void function DeathRecapShow( var recapElem )
 	RuiSetBool( recapRui, "tempSwapUseImage", false )
 	RuiSetBool( recapRui, "display", false )
 
-	if ( !file.deathRecapDataUpdated )
-		WaitSignal( player, "DeathRecapDataUpdated" )
-
-	Assert( file.deathRecapDamageBlocks.len() > 0, "This shouldn't happen, figure out why" )
-
-	RuiSetBool( recapRui, "display", true )
-
-	bool knockdown
+	bool knockdown = false
 	if ( file.deathRecapDamageBlocks[0].damageType & DF_KNOCKDOWN )
 		knockdown = true
 
@@ -1346,7 +1502,7 @@ void function DeathRecapShow( var recapElem )
 		cardData.lastShownTime = Time()
 		file.recapGladCardDataTable[ attackerEHandle ] <- cardData
 	}
-
+	
 	if ( shouldDoRecapHeaderAnimation )
 	{
 		RuiSetFloat( recapRui, "animStartTime", Time() )
@@ -1357,15 +1513,12 @@ void function DeathRecapShow( var recapElem )
 		RuiSetBool( recapRui, "doAnim", false )
 	}
 
+	RuiSetBool( recapRui, "display", true )
+
 	float additionalActivationDelay = file.deathRecapDamageBlocks.len() < 3 ? 0.5 : 0.0
 
 	int dataSize        = file.deathRecapDamageBlocks.len()
 	int activationIndex = 0
-
-	if ( shouldDoRecapHeaderAnimation )
-		file.recapBlockReadyTime = Time() + MIN_ACTIVATION_DELAY + additionalActivationDelay + (ACTIVATION_INTERVAL * file.deathRecapDamageBlocks.len())
-	else
-		file.recapBlockReadyTime = 0
 
 	for ( int index = file.damageBlockElementArray.len() - 1; index >= 0; index-- )
 	{
@@ -1674,6 +1827,7 @@ asset function GetGladCardReplacementImageForDamageSourceID( int damageSourceID 
 
 		case eDamageSourceId.damagedef_crush:
 		case eDamageSourceId.crushed:
+		case eDamageSourceId.damagedef_loot_drone_explosion:
 			return $"rui/death_recap/icon_deathrecap_specialcase_crush"
 
 		case eDamageSourceId.burn:
@@ -1712,23 +1866,21 @@ void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victim
 	file.deathRecapDamageBlocks.append( damageBlock )
 }
 
-
 void function ServerCallback_DeathRecapDataUpdated( bool gotKnockedDown, EncodedEHandle killerEHandle )
 {
-	Assert( file.deathRecapDamageBlocks.len() > 0 )
-
-	file.deathRecapDataUpdated = true
+	if ( file.deathRecapDamageBlocks.len() == 0 )
+		return
 
 	file.killerEHandle = killerEHandle
 	if ( !EHIHasValidScriptStruct( killerEHandle ) )
 		file.killerEHandle = EncodedEHandle_null
 
-	entity clientPlayer = GetLocalClientPlayer()
-	Signal( clientPlayer, "DeathRecapDataUpdated" )
+	thread SignalUpdate()
+	
+	EnableDeathScreenTab( eDeathScreenPanel.DEATH_RECAP, true )
 
-	if ( GetGameState() < eGameState.WinnerDetermined )
-		EnableDeathScreenTab( eDeathScreenPanel.DEATH_RECAP, true )
-
+	file.deathRecapDamageBlocks.reverse()
+	
 	bool knockdown
 	if ( file.deathRecapDamageBlocks[0].damageType & DF_KNOCKDOWN )
 		knockdown = true
@@ -1748,14 +1900,6 @@ void function DeathScreen_UpdateRespawnTime( float startTime, float endTime )
 	RuiSetGameTime( file.deathScreenHeaderRui, "respawnEndTime", endTime )
 	RuiSetGameTime( file.deathScreenHeaderRui, "respawnCurrentTime", Time() )
 }
-
-
-
-
-
-
-
-
 
 EncodedEHandle function GetKillerFromRecapData( entity player )
 {
