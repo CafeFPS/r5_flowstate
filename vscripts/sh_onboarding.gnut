@@ -195,7 +195,7 @@ void function Sequence_PickLoadout()
 	{
 		float startTime = Time()
 
-		float timeSpentOnSelection = Survival_GetCharacterSelectDuration( pickIndex )
+		float timeSpentOnSelection = Survival_GetCharacterSelectDuration( pickIndex ) + CharSelect_GetPickingDelayAfterEachLock()
 		if ( pickIndex == 0 )
 			timeSpentOnSelection += CharSelect_GetPickingDelayOnFirst()
 
@@ -232,8 +232,8 @@ void function Sequence_PickLoadout()
 
 	wait CharSelect_GetPickingDelayAfterAll()
 
-	wait CharSelect_GetOutroSquadPresentDuration() - CharSelect_GetOutroSceneChangeDuration() / 3.5
-	
+	wait CharSelect_GetOutroTransitionDuration() + CharSelect_GetOutroSceneChangeDuration() / 3.5 - CharSelect_GetPickingDelayAfterEachLock() * MAX_TEAM_PLAYERS
+
 	if ( CharSelect_PlayerSquadIntroEnabled() ) {
 		if ( CharSelect_PostSelectionMusicEnabled() )
 			foreach ( player in GetPlayerArray() )
@@ -242,7 +242,7 @@ void function Sequence_PickLoadout()
 				EmitSoundOnEntityOnlyToPlayer( player, player, skydiveMusicID )
 			}
 
-		wait CharSelect_GetOutroSquadPresentDuration()
+		wait CharSelect_GetOutroSquadPresentDuration() - CharSelect_GetOutroSceneChangeDuration() / 3.5
 	}
 
 	thread Sequence_Prematch()
