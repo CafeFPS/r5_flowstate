@@ -28,7 +28,6 @@ global function CreateShipRoomFallTriggers
 global function AutoChangeLevelThread
 global function GiveFlowstateOvershield
 
-
 global function ClientCommand_ClientMsg
 global function	ClientCommand_DispayChatHistory
 global function	ClientCommand_RebalanceTeams
@@ -468,7 +467,7 @@ void function __HighPingCheck(entity player)
 		
 		if(!IsValid(player)) return
 		printl("[Flowstate] -> Kicking " + player.GetPlayerName() + " -> [High Ping]")
-		ServerCommand( "sv_kick " + player.GetPlayerName() )
+		ClientCommand( player, "disconnect" )
 		UpdatePlayerCounts()
 	} else if(GameRules_GetGameMode() == "custom_tdm"){
 		Message(player, "FLOWSTATE", "Your latency: " + (int(player.GetLatency()* 1000) - 40) + " ms."
