@@ -177,7 +177,7 @@ string function GetWeaponNameForUI(string weapon)
 		case "mp_weapon_volt_smg":
 			weaponname = "Volt"
 			break
-		case "mp_weapon_rampage":
+		case "mp_weapon_dragon_lmg":
 			weaponname = "Rampage"
 			break
 		case "mp_weapon_car":

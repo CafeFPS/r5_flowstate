@@ -96,6 +96,8 @@ void function SetupWeapons()
 	SetupDevCommand( "Dev: Smart Pistol (disabled)", "give mp_weapon_smart_pistol" )
 	SetupDevCommand( "Dev: Dev Cubemap ", "give weapon_cubemap" )
 	SetupDevCommand( "Dev: Volt SMG", "give mp_weapon_volt_smg" )
+	SetupDevCommand( "Dev: Car SMG", "give mp_weapon_car" )
+	SetupDevCommand( "Dev: Rampage LMG", "give mp_weapon_dragon_lmg" )
 	#endif
 }
 

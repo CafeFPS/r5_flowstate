@@ -10,7 +10,7 @@ WeaponData
 	"body_type"										"light"
 	"fire_mode"   									"automatic"
 	"is_semi_auto"									"1"
-    "weapon_type_flags"								"WPT_PRIMARY"
+	"weapon_type_flags"								"WPT_PRIMARY"
 
 	// Models
 	"playermodel" 									"mdl/weapons/peacekeeper/w_peacekeeper.rmdl"
@@ -33,17 +33,17 @@ WeaponData
 	"charge_effect_3p"								"P_mflash_nrg_shot_charge"
 	"charge_effect_attachment"						"muzzle_flash"
 
-    "projectilemodel" 								"mdl/dev/empty_model.rmdl"
-    "projectile_lifetime" 							"1.0"
-    "projectile_inherit_owner_velocity_scale"		"0.0"
-    "projectile_drag_coefficient"                   "0.001"
+	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
+	"projectile_lifetime" 							"1.0"
+	"projectile_inherit_owner_velocity_scale"		"0.0"
+	"projectile_drag_coefficient"                   "0.001"
 	"projectiles_per_shot" 							"5"
 
 	"projectile_launch_speed"						"7000"
 
 	"bolt_gravity_enabled"							"0"
 
-    "bolt_hitsize"									"1.0"
+	"bolt_hitsize"									"1.0"
 
 	// Effects
 	"tracer_effect"   								""
@@ -59,39 +59,43 @@ WeaponData
 
 	"fire_sound_1_npc"								"Weapon_Peacekeeper_Fire_3P"
 
-    "sound_energy_charge_leveltick_1"               ""
-    "sound_energy_charge_leveltick_1_3p"            ""
+	"sound_energy_charge_leveltick_1"               ""
+	"sound_energy_charge_leveltick_1_3p"            ""
 	"sound_energy_charge_leveltick_2"               "weapon_peacekeeper_leveltick_1"
-    "sound_energy_charge_leveltick_2_3p"            "weapon_peacekeeper_leveltick_1_3p"
-    "sound_energy_charge_leveltick_3"               "weapon_peacekeeper_leveltick_2"
-    "sound_energy_charge_leveltick_3_3p"            "weapon_peacekeeper_leveltick_2_3p"
-    "sound_energy_charge_leveltick_final"           "weapon_peacekeeper_leveltick_final"
-    "sound_energy_charge_leveltick_final_3p"        "weapon_peacekeeper_leveltick_final_3p"
+	"sound_energy_charge_leveltick_2_3p"            "weapon_peacekeeper_leveltick_1_3p"
+	"sound_energy_charge_leveltick_3"               "weapon_peacekeeper_leveltick_2"
+	"sound_energy_charge_leveltick_3_3p"            "weapon_peacekeeper_leveltick_2_3p"
+	"sound_energy_charge_leveltick_final"           "weapon_peacekeeper_leveltick_final"
+	"sound_energy_charge_leveltick_final_3p"        "weapon_peacekeeper_leveltick_final_3p"
 
-    "sound_energy_charge_start"                     "weapon_peacekeeper_chargedshot_chargestart"
-    "sound_energy_charge_start_3p"                  "weapon_peacekeeper_chargedshot_chargestart_3p"
-    "sound_energy_charge_loop"                      "weapon_peacekeeper_chargedshot_loop"
-    "sound_energy_charge_loop_3p"                   "weapon_peacekeeper_chargedshot_loop_3p"
-    "sound_energy_charge_end"                       "weapon_peacekeeper_1p_chargedshot_chargeend"
-    "sound_energy_charge_end_3p"                    "weapon_peacekeeper_chargedshot_chargeend_3p"
+	"sound_energy_charge_start"                     "weapon_peacekeeper_chargedshot_chargestart"
+	"sound_energy_charge_start_3p"                  "weapon_peacekeeper_chargedshot_chargestart_3p"
+	"sound_energy_charge_loop"                      "weapon_peacekeeper_chargedshot_loop"
+	"sound_energy_charge_loop_3p"                   "weapon_peacekeeper_chargedshot_loop_3p"
+	"sound_energy_charge_end"                       "weapon_peacekeeper_1p_chargedshot_chargeend"
+	"sound_energy_charge_end_3p"                    "weapon_peacekeeper_chargedshot_chargeend_3p"
 
 	//"fx_shell_eject_view"							"wpn_shelleject_shotshell_FP"
 	//"fx_shell_eject_world"						"wpn_shelleject_shotshell"
 	//"fx_shell_eject_attach"						"shell"
 
-	"fx_muzzle_flash_view"							""
-	"fx_muzzle_flash_world"							""
-	"fx_muzzle_flash_attach"						""
+	"fx_muzzle_flash_view"							"P_mflash_nrg_shotgun_FP"
+	"fx_muzzle_flash_world"							"P_mflash_nrg_shotgun"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
+
+	//"fx_muzzle_flash_view"						"P_mflash_pulse_LMG_FP"
+	//"fx_muzzle_flash_world"						"P_mflash_pulse_LMG"
+	//"fx_muzzle_flash_attach"						"muzzle_flash"
 
 	"impulse_force"   								"20"
 
-    // Ammo
-    "ammo_default_total"							"100"
-    "ammo_stockpile_max"							"100"
-    "ammo_no_remove_from_stockpile"					"1"
-    "ammo_min_to_fire"								"1"
-    "ammo_clip_size"   								"8"
-    "ammo_per_shot"                                 "1"
+	// Ammo
+	"ammo_default_total"							"100"
+	"ammo_stockpile_max"							"100"
+	"ammo_no_remove_from_stockpile"					"1"
+	"ammo_min_to_fire"								"1"
+	"ammo_clip_size"   								"8"
+	"ammo_per_shot"                                 "1"
 
 	// NPC
 	"proficiency_poor_spreadscale"					"7.0"
@@ -104,7 +108,7 @@ WeaponData
 	"npc_damage_near_value_titanarmor"				"15"
 	"npc_damage_far_value_titanarmor" 				"15"
 	"npc_damage_near_distance"						"600"
-    "npc_damage_far_distance" 						"1200"
+	"npc_damage_far_distance" 						"1200"
 
 	"npc_min_engage_range"							"0"
 	"npc_max_engage_range"							"550"
@@ -113,26 +117,26 @@ WeaponData
 	"npc_min_range"   								"0"
 	"npc_max_range"   								"800"
 
-    //shot geometry
-    "npc_burst_radius_min_precision"                "25.0"
-    "npc_burst_radius_max_precision"                "5.0"
+	//shot geometry
+	"npc_burst_radius_min_precision"                "25.0"
+	"npc_burst_radius_max_precision"                "5.0"
 
-    "npc_burst_radius_distribution_bias_min_precision"  "-0.25"
-    "npc_burst_radius_distribution_bias_max_precision"  "1.0"
+	"npc_burst_radius_distribution_bias_min_precision"  "-0.25"
+	"npc_burst_radius_distribution_bias_max_precision"  "1.0"
 
-    "npc_spread_cone_min_precision"                 "0"
-    "npc_spread_cone_max_precision"                 "0"
+	"npc_spread_cone_min_precision"                 "0"
+	"npc_spread_cone_max_precision"                 "0"
 
 	"blast_pattern"									"energy_shotgun"
 	"blast_pattern_zero_distance"        			"512.0"
 	"blast_pattern_default_scale"        			"1.5"
 	"blast_pattern_npc_scale"            			"1.8"  // scales on top of the default
 
-    //shot cadence
-    "npc_min_burst_min_precision"   				"1"
-    "npc_max_burst_min_precision"                   "1"
-    "npc_min_burst_max_precision"                   "1"
-    "npc_max_burst_max_precision"                   "1"
+	//shot cadence
+	"npc_min_burst_min_precision"   				"1"
+	"npc_max_burst_min_precision"                   "1"
+	"npc_min_burst_max_precision"                   "1"
+	"npc_max_burst_max_precision"                   "1"
 
 	"npc_min_rest_time_between_bursts_min_precision" "2.25"
 	"npc_max_rest_time_between_bursts_min_precision" "2.75"
@@ -169,22 +173,22 @@ WeaponData
 	"projectile_spread_choke_frac_4" 				"0.15"
 
 	"spread_stand_hip"								"5.0"
-    "spread_stand_hip_run"							"5.0"
-    "spread_stand_hip_sprint"                       "5.0"
-    "spread_crouch_hip"   							"5.0"
-    "spread_air_hip"  								"5.0"
-    "spread_stand_ads"								"5.0"
-    "spread_crouch_ads"   							"5.0"
-    "spread_air_ads"  								"5.0"
-    "spread_wallrunning"  							"5.0"
-    "spread_wallhanging"  							"5.0"
+	"spread_stand_hip_run"							"5.0"
+	"spread_stand_hip_sprint"                       "5.0"
+	"spread_crouch_hip"   							"5.0"
+	"spread_air_hip"  								"5.0"
+	"spread_stand_ads"								"5.0"
+	"spread_crouch_ads"   							"5.0"
+	"spread_air_ads"  								"5.0"
+	"spread_wallrunning"  							"5.0"
+	"spread_wallhanging"  							"5.0"
 
 
-    "clip_bodygroup"						"peacekeeper_magazine"
-    "clip_bodygroup_index_shown"			"0"
-    "clip_bodygroup_index_hidden"			"1"
-    "clip_bodygroup_show_for_milestone_0"	"1"
-    "clip_bodygroup_show_for_milestone_1"	"0"
-    "clip_bodygroup_show_for_milestone_2"	"1"
-    "clip_bodygroup_show_for_milestone_3"	"1"
+	"clip_bodygroup"						"peacekeeper_magazine"
+	"clip_bodygroup_index_shown"			"0"
+	"clip_bodygroup_index_hidden"			"1"
+	"clip_bodygroup_show_for_milestone_0"	"1"
+	"clip_bodygroup_show_for_milestone_1"	"0"
+	"clip_bodygroup_show_for_milestone_2"	"1"
+	"clip_bodygroup_show_for_milestone_3"	"1"
 }

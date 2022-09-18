@@ -292,7 +292,7 @@ void function OpenAttachmentsBox( var button )
 	}else if(button == Hud_GetChild( file.menu, "RampageButton" ))
 	{
 		file.desiredWeaponButtonToMark = Hud_GetChild( file.menu, "RampageButton" )
-		file.desiredweapon = "mp_weapon_rampage"
+		file.desiredweapon = "mp_weapon_dragon_lmg"
 		lmg2 = true
 		file.weapontype = "lmg2"
 	}
@@ -858,6 +858,6 @@ void function BuyRampage(var button)
 {
 	CleanAllButtons()	
 	RuiSetInt( Hud_GetRui( button ), "status", eFriendStatus.ONLINE_INGAME )
-	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_rampage" )
-	PlayerCurrentWeapon = GetWeaponNameForUI("mp_weapon_rampage")
+	RunClientScript( "UIToClient_MenuGiveWeapon", "mp_weapon_dragon_lmg" )
+	PlayerCurrentWeapon = GetWeaponNameForUI( "mp_weapon_dragon_lmg" )
 }

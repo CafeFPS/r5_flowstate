@@ -173,7 +173,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_history.menu
 			tall					25
 			visible					1
 			fontHeight				25
-			labelText				"v1.1 | Made by @CafeFPS"
+			labelText				"v1.25 | Made by @CafeFPS"
 			font					DefaultBold_41
 			allcaps					0
 			fgcolor_override		"255 255 255 255"

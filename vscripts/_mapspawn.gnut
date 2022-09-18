@@ -224,7 +224,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/props/charm/charm_nessy_ghost.rmdl" )
 	PrecacheModel( $"mdl/props/charm/charm_clown.rmdl" )
 	PrecacheModel( $"mdl/props/charm/charm_witch.rmdl" )
-	
+
+	//Lobby Models
+
 	PrecacheModel( $"mdl/robots/drone_frag/drone_frag.rmdl" )
 	PrecacheModel( $"mdl/vehicle/droppod_fireteam/droppod_fireteam.rmdl" )
 	PrecacheModel( $"mdl/vehicle/droppod_loot/droppod_loot_LL_holo.rmdl" )
@@ -233,7 +235,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
 
-	
+	//Weapons
+
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
 	PrecacheWeapon( $"mp_weapon_mdlspawner" )
 	PrecacheWeapon( $"mp_weapon_alternator_smg" )
@@ -265,6 +268,11 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_ability_consumable" )
 	PrecacheWeapon( $"mp_weapon_g2" )
 	PrecacheWeapon( $"mp_weapon_grenade_bangalore" )
+	PrecacheWeapon( $"mp_weapon_car" )
+		
+	if(GameRules_GetGameMode() != "custom_tdm") //This will cause issues for players joining FLOWSTATE SERVERS guaranteed, so I disable it for now. TEMP TEMP
+		PrecacheWeapon( $"mp_weapon_dragon_lmg" )
+	
 	PrecacheWeapon( $"mp_weapon_incap_shield" )
 	PrecacheWeapon( $"mp_ability_care_package" )
 	PrecacheWeapon( $"mp_ability_hunt_mode" )
@@ -276,7 +284,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_rspn101" )
 	PrecacheWeapon( $"mp_weapon_defender" )
 	PrecacheWeapon( $"mp_weapon_jump_pad" )
-	PrecacheWeapon( $"mp_weapon_smart_pistol" ) //TODO: Fix This
 	PrecacheWeapon( $"mp_weapon_grenade_creeping_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_defensive_bombardment" )
 	PrecacheWeapon( $"mp_weapon_grenade_sonar" )
@@ -286,10 +293,17 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"melee_bolo_sword" )
 	PrecacheWeapon( $"mp_weapon_bolo_sword_primary" )
 	PrecacheWeapon( $"mp_weapon_volt_smg" )
-	PrecacheWeapon( $"mp_weapon_car" )
-	PrecacheWeapon( $"mp_weapon_rampage" )
-	PrecacheWeapon( $"mp_weapon_clickweapon")
-	PrecacheWeapon( $"mp_weapon_clickweaponauto")
+	PrecacheWeapon( $"mp_weapon_frag_drone" )
+	PrecacheWeapon( $"npc_weapon_energy_shotgun" )
+	PrecacheWeapon( $"npc_weapon_hemlok" )
+	PrecacheWeapon( $"npc_weapon_lstar" )
+	
+	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	{
+		PrecacheWeapon( $"mp_weapon_clickweapon")
+		PrecacheWeapon( $"mp_weapon_clickweaponauto")
+	}
+
 	printl( "Code Script: _mapspawn" )
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
@@ -298,11 +312,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if(args[0] == "bhit") {
-		printl( "Player weapon hit" ) //avoid showing full shit for bhit
-		return false
-	}
-	
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
 		printl( "Args:" )
@@ -401,7 +410,7 @@ void function WallTriggerEnter( entity trigger , entity ent )
 {
     if (IsValid(ent)) // ensure the entity is valid
 	{
-		if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // noclip players are not affected by the trigger
+		if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
 		{
 			if (trigger.GetScriptName() == "WallTrigger_Killzone") // Check if it's a killzone
 			{

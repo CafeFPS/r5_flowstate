@@ -1589,6 +1589,12 @@ void function SetupSurvivalLoot( var categories )
 	string cats              = expect string( categories )
 	array<string> stringCats = split( cats, " " )
 
+	if (stringCats.contains("attachment_custom"))
+	{
+		SetupCustomLoot( "attachment" )
+		return	
+	}
+
 	// turn menu strings into real category enums
 	array<int> catTypes
 	foreach( string cat in stringCats )

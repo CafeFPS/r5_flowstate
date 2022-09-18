@@ -9,19 +9,19 @@ WeaponData
 	"weaponClass" 									"human"
 	"body_type"										"stalker"
 	"fire_mode"   									"automatic"
-    "weapon_type_flags"								"WPT_PRIMARY"
+	"weapon_type_flags"								"WPT_PRIMARY"
 
 	"cooldown_type"									"chargeFrac"
-    "cooldown_time"	                                "0.4" // actually, "blowoff animation time"
-    "charge_time"                                   "2.4"  // while holding trigger, time until weapon overheats
-    "charge_cooldown_time"                          "2.45"  // controls length of overheat anim (along with delay)
-    "charge_cooldown_delay"                         "0.05"
+	"cooldown_time"	                                "0.4" // actually, "blowoff animation time"
+	"charge_time"                                   "2.4"  // while holding trigger, time until weapon overheats
+	"charge_cooldown_time"                          "2.45"  // controls length of overheat anim (along with delay)
+	"charge_cooldown_delay"                         "0.05"
 	"charge_overheats_when_full"                    "1"
 	"charge_weapon_fires_while_charging"            "1"
 	"charge_remain_full_when_fired"                 "1"
 
-    "projectile_launch_speed"						"1500"
-    "projectile_gravity_scale"						"0.05"
+	"projectile_launch_speed"						"1500"
+	"projectile_gravity_scale"						"0.05"
 	"projectile_drag_coefficient" 					"0.0"
 	"projectile_lifetime" 							"4.0"
 
@@ -37,11 +37,11 @@ WeaponData
 	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
 	"holster_type"									"rifle"
 
-    //Effects
-    "projectile_trail_effect_0" 					"P_projectile_lstar_burn"
-    "fx_muzzle_flash_view"							""
-    "fx_muzzle_flash_world"							""
-    "fx_muzzle_flash_attach"						""
+	//Effects
+	"projectile_trail_effect_0" 					"P_projectile_lstar_burn"
+	"fx_muzzle_flash_view"							"P_muz_lstar_FP_burn"
+	"fx_muzzle_flash_world"							"P_muz_lstar_burn"
+	"fx_muzzle_flash_attach"						"muzzle_flash"
 	"impact_effect_table" 							"lstar"
 	"projectile_adjust_to_gun_barrel"				"1"
 
@@ -58,7 +58,7 @@ WeaponData
 	"burst_or_looping_fire_sound_end_npc"			"Weapon_LSTAR_LoopEnd_3P_npc_a"
 	"fire_sound_2_npc"								"weapon_lstar_secondshot_3p_npc_a"
 
-    "bolt_hitsize"									"0.75"
+	"bolt_hitsize"									"0.75"
 
 	"bolt_gravity_enabled"							"1"
 
@@ -67,54 +67,52 @@ WeaponData
 	"ammo_clip_size"   								"60"
 	"ammo_clip_reload_max"							"60"
 	"ammo_min_to_fire"								"1"
-    "ammo_no_remove_from_clip"						"1"
-    "ammo_no_remove_from_stockpile"					"1"
+	"ammo_no_remove_from_clip"						"1"
+	"ammo_no_remove_from_stockpile"					"1"
 	"chance_for_bonus_last_shot_in_clip"			"0"
 	"critical_hit"									"1"
 
-    "reload_alt_anim"								"0"
-
+	"reload_alt_anim"								"0"
 
 	// NPC
-    "npc_damage_near_value"   						"15"
-    "npc_damage_far_value"							"15"
-    "npc_damage_near_value_titanarmor"				"15"
-    "npc_damage_far_value_titanarmor" 				"15"
-    "npc_damage_near_distance"						"850"
-    "npc_damage_far_distance" 						"1750"
+	"npc_damage_near_value"   						"15"
+	"npc_damage_far_value"							"15"
+	"npc_damage_near_value_titanarmor"				"15"
+	"npc_damage_far_value_titanarmor" 				"15"
+	"npc_damage_near_distance"						"850"
+	"npc_damage_far_distance" 						"1750"
 
-    "npc_min_engage_range"							"100"
-    "npc_max_engage_range"							"1200"
-    "npc_min_engage_range_heavy_armor"				"500"
-    "npc_max_engage_range_heavy_armor"				"1750"
-    "npc_min_range"   								"0"
-    "npc_max_range"   								"1750"
+	"npc_min_engage_range"							"100"
+	"npc_max_engage_range"							"1200"
+	"npc_min_engage_range_heavy_armor"				"500"
+	"npc_max_engage_range_heavy_armor"				"1750"
+	"npc_min_range"   								"0"
+	"npc_max_range"   								"1750"
 
-    //shot geometry
-    "npc_burst_radius_min_precision"                "15.0"
-    "npc_burst_radius_max_precision"                "5.0"
+	//shot geometry
+	"npc_burst_radius_min_precision"                "15.0"
+	"npc_burst_radius_max_precision"                "5.0"
 
-    "npc_spread_cone_min_precision"                 "2.0"
-    "npc_spread_cone_max_precision"                 "1.25"
+	"npc_spread_cone_min_precision"                 "2.0"
+	"npc_spread_cone_max_precision"                 "1.25"
 
-    "npc_burst_radius_distribution_bias_min_precision"  "-0.5"
-    "npc_burst_radius_distribution_bias_max_precision"  ".5"
+	"npc_burst_radius_distribution_bias_min_precision"  "-0.5"
+	"npc_burst_radius_distribution_bias_max_precision"  ".5"
 
-    "npc_lead_projectiles"                          "1"
-    "npc_lead_projectiles_fraction_min_precision"   "0.3"
-    "npc_lead_projectiles_fraction_max_precision"   "0.9"
+	"npc_lead_projectiles"                          "1"
+	"npc_lead_projectiles_fraction_min_precision"   "0.3"
+	"npc_lead_projectiles_fraction_max_precision"   "0.9"
 
-    //shot cadence
-    "npc_min_burst_min_precision"   				"8"
-    "npc_max_burst_min_precision"                   "9"
-    "npc_min_burst_max_precision"                   "10"
-    "npc_max_burst_max_precision"                   "12"
+	//shot cadence
+	"npc_min_burst_min_precision"   				"8"
+	"npc_max_burst_min_precision"                   "9"
+	"npc_min_burst_max_precision"                   "10"
+	"npc_max_burst_max_precision"                   "12"
 
-    "npc_min_rest_time_between_bursts_min_precision" "2.0"
-    "npc_max_rest_time_between_bursts_min_precision" "3.0"
-    "npc_min_rest_time_between_bursts_max_precision" "1.25"
-    "npc_max_rest_time_between_bursts_max_precision" "2"
-
+	"npc_min_rest_time_between_bursts_min_precision" "2.0"
+	"npc_max_rest_time_between_bursts_min_precision" "3.0"
+	"npc_min_rest_time_between_bursts_max_precision" "1.25"
+	"npc_max_rest_time_between_bursts_max_precision" "2"
 
 	"proficiency_poor_spreadscale"					"6.0"
 	"proficiency_average_bias"						"0.3"
@@ -160,11 +158,11 @@ WeaponData
 
 	Mods
 	{
-        death_spectre
-        {
-		    "projectile_launch_speed"			"3000"
+		death_spectre
+		{
+			"projectile_launch_speed"			"3000"
 			"fire_rate"   						"30.0"
-		    "bolt_hitsize"						"0.5"
+			"bolt_hitsize"						"0.5"
 
 			"projectile_trail_effect_0" 		"P_plasma_proj_SM"
 			"projectile_trail_effect_1" 		"P_plasma_proj_SM"
@@ -210,6 +208,6 @@ WeaponData
 			"npc_max_engage_range_heavy_armor"				"2000"
 			"npc_min_range"   								"0"
 			"npc_max_range"   								"2000"
-        }
+		}
 	}
 }

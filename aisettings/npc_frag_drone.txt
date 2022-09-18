@@ -67,10 +67,10 @@ npc_frag_drone
 	meleeable						0
 	leechMaxDist					0
 
-	MinStartMoveDist				100
-	MaxArrivalDist					150
-	MinForceWalkDist				0
-	moveDeflectionLookAheadTime		0.5
+	MaxArrivalDist			170
+	MinForceWalkDist		150
+	MinStartMoveDist		100
+	MoveYawSpeed			12
 
 	allowPatrol				1
 	allowInvestigate		1
@@ -80,7 +80,7 @@ npc_frag_drone
 
 	shootableByFriendlyPlayer		1
 	showFriendlyIcon				1
-	ui_targetinfo					"" [$mp]
+	ui_targetinfo					"ui/targetinfo_npc_basic" [$mp]
 	ui_targetinfo					"" [$sp]
 
 	aiEnemy_usePriorityDist			1300
