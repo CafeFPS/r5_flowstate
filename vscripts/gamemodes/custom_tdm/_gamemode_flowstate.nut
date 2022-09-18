@@ -102,6 +102,7 @@ struct PlayerInfo
 
 void function _CustomTDM_Init()
 {
+	SetConVarBool("sv_forceChatToTeamOnly", false) //enables global chat
 	printt("[Flowstate] -> _CustomTDM_Init")
 	SurvivalFreefall_Init() //Enables freefall/skydive
 	PrecacheCustomMapsProps()
@@ -2445,6 +2446,8 @@ string function GetOwnerName()
 		return file.mAdmins[0]
 	else 
 		return ""
+	
+	unreachable
 }
 
 bool function IsAdminStr( string playername )
