@@ -224,13 +224,9 @@ void function SurvivalFreefall_Init()
 	#endif
 }
 
-vector function GetSkydiveSmokeColorForTeam( int team ) //
+vector function GetSkydiveSmokeColorForTeam( int team )
 {
-	#if(false)
-
-
-#endif //
-	return skydiveSmokeColors[ team % skydiveSmokeColors.len() ]
+		return skydiveSmokeColors[ team % skydiveSmokeColors.len() ]
 }
 
 SkyDiveTrailPackage function GetSkyDiveTrailPackageForPlayerWithOverrides( entity player ) //
@@ -362,6 +358,15 @@ void function PlayerSkydiveLandingFromCurrentPosition( entity player )
 	player.Zipline_Stop()
 	SetPlayerIntroDropSettings( player )
 	waitthread PlayerSkyDive( player, player.GetViewVector(), [player], player, false, false )
+}
+
+void function RGB_Skydive(entity fx)
+{
+	while(IsValid(fx))
+	{
+		EffectSetControlPointVector( fx, 1, Vector(RandomInt(255), RandomInt(255), RandomInt(255)) )
+		wait 0.25
+	}
 }
 
 void function PlayerSkyDive( entity player, vector driverViewVector, array<entity> squadPlayers, entity leaderPlayer, bool jumpingFromPlane = true, bool freefallEnabled = true )
@@ -539,8 +544,12 @@ void function PlayerSkyDive( entity player, vector driverViewVector, array<entit
 		enemyFX.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY
 		EffectSetControlPointVector( enemyFX, 1, smokeColor * ENEMY_SMOKE_COLOR_MULT )
 		jumpJetFX.append( enemyFX )
+		
+		if(GetCurrentPlaylistVarBool( "rgb_skydive", false ))
+			thread RGB_Skydive(friendlyFX)
 	}
 
+	
 	//#################
 
 	if ( jumpingFromPlane )
@@ -664,6 +673,8 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 	vector smokeColor = GetSkydiveSmokeColorForTeam( player.GetTeam() )
 	entity smokeTrailFX = StartParticleEffectOnEntityWithPos_ReturnEntity( player, GetParticleSystemIndex( SKYDIVE_SMOKE_COLOR_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, smokeAttachID, <0,0,0>, VectorToAngles( <0,0,-1> ) )
 	EffectSetControlPointVector( smokeTrailFX, 1, smokeColor )
+	if(GetCurrentPlaylistVarBool( "rgb_skydive", false ))
+		thread RGB_Skydive(smokeTrailFX)
 	smokeFX.append( smokeTrailFX )
 
 	OnThreadEnd(
