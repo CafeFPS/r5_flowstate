@@ -1,3 +1,4 @@
+# Original and updated repository for Flowstate mod made by @CafeFPS
 # Welcome to Flowstate Aim Trainer
 Join r5 reloaded discord: https://discord.com/invite/r5reloaded
 
