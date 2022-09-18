@@ -400,7 +400,7 @@ void function UI_SetServerInfo( int type, string text )
             break;
         case 3:
                 ServerSettings.svVisibility = text.tointeger()
-	            Hud_SetText(Hud_GetChild( file.menu, "VisInfoEdit" ), vistoname[text.tointeger()])
+	            Hud_SetText(Hud_GetChild( file.menu, "VisInfoEdit" ), GetUIVisibilityName(text.tointeger()))
             break;
     }
 }

@@ -31,6 +31,50 @@ scripts/resource/ui/menus/R5R/panels/serverbrowser.res
 		"pin_to_sibling_corner"	"TOP"
 	}
 
+	BtnFilterServers
+	{
+		ControlName				TextEntry
+		zpos					100 // This works around input weirdness when the control is constructed by code instead of VGUI blackbox.
+		wide					1000
+		tall					40
+		xpos					0
+		ypos					5
+		zpos					70
+		allowRightClickMenu		0
+		allowSpecialCharacters	0
+		unicode					0
+
+		visible					1
+		enabled					1
+		textHidden				0
+		editable				1
+		maxchars				100
+		textAlignment			"center"
+		ruiFont                 TitleRegularFont
+		ruiFontHeight           22
+		ruiMinFontHeight        16
+		bgcolor_override		"30 30 30 200"
+
+		pin_to_sibling ServerBrowserBG
+		pin_corner_to_sibling	BOTTOM_RIGHT
+		pin_to_sibling_corner	TOP_RIGHT
+	}
+
+	"FilterLbl"
+	{
+		"ControlName"			"Label"
+		"labelText"				"Search :"
+		"xpos"					"5"
+		"ypos"					"0"
+		"auto_wide_tocontents"	"1"
+		"zpos" 					"10"
+		"fontHeight"			"40"
+
+		"pin_to_sibling"		"BtnFilterServers"
+		"pin_corner_to_sibling"	"RIGHT"
+		"pin_to_sibling_corner"	"LEFT"
+	}
+
 	"ServersBG"
 	{
 		"ControlName"			"ImagePanel"
@@ -210,7 +254,7 @@ scripts/resource/ui/menus/R5R/panels/serverbrowser.res
 		"allcaps"				"1"
 		"auto_wide_tocontents"	"1"
 		"zpos" 					"7"
-		"visible"				"0"
+		"visible"				"1"
 		"fontHeight"			"25"
 		"xpos"					"30"
 		"ypos"					"0"

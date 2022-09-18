@@ -93,7 +93,7 @@ void function UICallback_ServerBrowserJoinServer(int id)
 
 void function ServerCallback_ServerBrowser_RefreshServers()
 {
-    RunUIScript( "RefreshServerListing")
+    RunUIScript( "ServerBrowser_RefreshServerListing")
 }
 
 void function ServerCallback_ServerBrowser_JoinServer(int id)
@@ -131,7 +131,7 @@ void function ServerCallback_LobbyVM_UpdateUI()
 
     RunUIScript( "UpdatePlayersList" )
 
-    RunUIScript( "EnableRefreshButton", gp()[0] == GetLocalClientPlayer() )
+    RunUIScript( "ServerBrowser_EnableRefreshButton", gp()[0] == GetLocalClientPlayer() )
 
     RunUIScript( "InPlayersLobby" , gp()[0] != GetLocalClientPlayer() && GetPlayerArray().len() > 1, gp()[0].GetPlayerName())
 }

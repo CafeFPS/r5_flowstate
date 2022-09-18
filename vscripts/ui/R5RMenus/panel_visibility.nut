@@ -32,7 +32,7 @@ void function InitR5RVisPanel( var panel )
 	{
 		var button = Hud_GetChild( scrollPanel, "GridButton" + id )
         var rui = Hud_GetRui( button )
-	    RuiSetString( rui, "buttonText", vistoname[vis] )
+	    RuiSetString( rui, "buttonText", GetUIVisibilityName(vis) )
 
 		//Add the Even handler for the button
 		Hud_AddEventHandler( button, UIE_CLICK, SelectServerVis )
@@ -54,10 +54,10 @@ void function SelectServerVis( var button )
 
 void function OnVisHover( var button )
 {
-	Hud_SetText(Hud_GetChild( file.menu, "VisInfoEdit" ), vistoname[file.vis_button_table[button]])
+	Hud_SetText(Hud_GetChild( file.menu, "VisInfoEdit" ), GetUIVisibilityName(file.vis_button_table[button]))
 }
 
 void function OnVisUnHover( var button )
 {
-	Hud_SetText(Hud_GetChild( file.menu, "VisInfoEdit" ), vistoname[ServerSettings.svVisibility])
+	Hud_SetText(Hud_GetChild( file.menu, "VisInfoEdit" ), GetUIVisibilityName(ServerSettings.svVisibility))
 }
