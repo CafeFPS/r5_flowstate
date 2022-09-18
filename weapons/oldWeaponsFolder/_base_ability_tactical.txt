@@ -1,9 +1,0 @@
-#base "_base_ability.txt"
-
-WeaponData
-{
-	Mods
-	{
-		//
-	}
-}
