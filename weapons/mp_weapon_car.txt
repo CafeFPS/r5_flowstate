@@ -11,8 +11,8 @@ WeaponData
 	"longdesc"										"#WPN_CAR_LONGDESC"
 	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"bullet"
-	"menu_icon"										"rui/weapon_icons/r5/weapon_hemlock" //it's a car, believe me
-	"hud_icon"										"rui/weapon_icons/r5/weapon_hemlock"
+	"menu_icon"										"rui/weapon_icons/r5/weapon_car"
+	"hud_icon"										"rui/weapon_icons/r5/weapon_car"
 	"fire_mode"   									"automatic"
 	"weaponClass" 									"human"
 	"body_type"										"medium"

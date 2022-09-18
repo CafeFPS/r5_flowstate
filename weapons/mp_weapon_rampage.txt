@@ -15,8 +15,8 @@ WeaponData
 	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"highcal"
 
-	"menu_icon"										"rui/weapon_icons/r5/weapon_spitfire"
-	"hud_icon"										"rui/weapon_icons/r5/weapon_spitfire"
+	"menu_icon"										"rui/weapon_icons/r5/weapon_dragon"
+	"hud_icon"										"rui/weapon_icons/r5/weapon_dragon"
 
 	"weaponClass" 									"human"
 	"weaponSubClass" 								"lmg"
