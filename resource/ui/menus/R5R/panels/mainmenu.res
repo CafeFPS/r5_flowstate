@@ -30,7 +30,7 @@
     "Status"
 	{
 		"ControlName"			"RuiPanel"
-		"ypos"                  "400"
+		"ypos"                  "190"
 		"wide"                  "600"
 		"tall"					"92"
 		"visible"			    "1"

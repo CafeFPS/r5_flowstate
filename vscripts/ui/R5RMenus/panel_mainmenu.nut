@@ -1,53 +1,52 @@
-
 global function InitR5RMainMenuPanel
 
 struct
 {
-	var                menu
-	var                panel
-
-	bool			   isworking = false
+	var menu
+	var panel
+	var launchButton
 } file
 
 void function InitR5RMainMenuPanel( var panel )
 {
 	file.panel = GetPanel( "R5RMainMenuPanel" )
 	file.menu = GetParentMenu( file.panel )
+	file.launchButton = Hud_GetChild( panel, "LaunchButton" )
 
-	//Setup panel event handlers
+	// mainmenu handler
 	AddPanelEventHandler( file.panel, eUIEvent.PANEL_SHOW, OnMainMenuPanel_Show )
 
-	//Setup button event handlers
-	Hud_AddEventHandler( Hud_GetChild( panel, "LaunchButton" ), UIE_CLICK, LaunchButton_OnActivate )
+	// launchbutton handler
+	Hud_AddEventHandler( file.launchButton, UIE_CLICK, LaunchButton_OnActivate )
 }
 
 void function OnMainMenuPanel_Show( var panel )
 {
-	//Setup rui
 	SetupRUI()
 }
 
 void function LaunchButton_OnActivate( var button )
 {
-	//return if is already working
-	if(file.isworking)
-		return
-
-	//Launch lobby
+	// create local lobby server
 	CreateServer("Lobby", "", "mp_lobby", "menufall", eServerVisibility.HIDDEN)
 }
 
 void function SetupRUI()
 {
-	file.isworking = false
-	
-	//Setup StatusDetails ui
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "StatusDetails" ) ), "details", "Press Enter to continue" )
-	RuiSetBool( Hud_GetRui( Hud_GetChild( file.panel, "StatusDetails" ) ), "isVisible", true )
-	RuiSetGameTime( Hud_GetRui( Hud_GetChild( file.panel, "StatusDetails" ) ), "initTime", Time() )
+	var statusDetailsRui = Hud_GetRui( Hud_GetChild( file.panel, "StatusDetails" ) )
+	var statusRui = Hud_GetRui( Hud_GetChild( file.panel, "Status" ) )
 
-	//Setup Status ui
-	RuiSetString( Hud_GetRui( Hud_GetChild( file.panel, "Status" ) ), "prompt", "" )
-	RuiSetBool( Hud_GetRui( Hud_GetChild( file.panel, "Status" ) ), "showPrompt", false )
-	RuiSetBool( Hud_GetRui( Hud_GetChild( file.panel, "Status" ) ), "showSpinner", false )
+	// setup StatusDetails ui
+	// RuiSetString( statusDetailsRui, "details", "Press Enter to continue" )
+	// RuiSetBool( statusDetailsRui, "isVisible", true )
+	RuiSetGameTime( statusDetailsRui, "initTime", Time() )
+
+	// setup Status ui
+	RuiSetString( statusRui, "prompt", Localize("#MAINMENU_CONTINUE") )
+	RuiSetBool( statusRui, "showPrompt", true )
+	RuiSetBool( statusRui, "showSpinner", false )
+
+	// setup launch button
+	Hud_SetVisible( file.launchButton, true )
+
 }
