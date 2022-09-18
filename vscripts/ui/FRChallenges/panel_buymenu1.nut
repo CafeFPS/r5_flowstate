@@ -212,7 +212,7 @@ void function InitArenasBuyPanel1( var panel )
 	var mastiff = Hud_GetChild( menu, "Mastiff" )
 	RuiSetImage( Hud_GetRui( mastiff ), "basicImage", $"rui/weapon_icons/r5/weapon_mastiff" )
 	AddEventHandlerToButton( menu, "MastiffButton", UIE_CLICK, BuyMastiff )
-	AddEventHandlerToButton( menu, "MastiffButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
+	//AddEventHandlerToButton( menu, "MastiffButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "MastiffButton" ))
 	
 	var peacekeeper = Hud_GetChild( menu, "Peacekeeper" )
