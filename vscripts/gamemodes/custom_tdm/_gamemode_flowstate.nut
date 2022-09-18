@@ -2441,7 +2441,10 @@ void function __InitAdmins()
 
 string function GetOwnerName()
 {
-    return file.mAdmins[0]
+	if(file.mAdmins.len() != 0)
+		return file.mAdmins[0]
+	else 
+		return ""
 }
 
 bool function IsAdminStr( string playername )
