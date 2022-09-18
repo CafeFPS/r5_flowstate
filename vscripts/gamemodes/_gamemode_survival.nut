@@ -604,23 +604,26 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 	
-	int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
-	int victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
-		
-	if(victimEHandle != -1  && victim.p.DeathRecap_PreviousShotEnemyPlayer != null && victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+	if( attacker.IsPlayer() )
 	{
-		Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
-		ResetDeathRecapBlock(victim)
-	}
-	if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
-	{
-		Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
-		ResetDeathRecapBlock(attacker)		
-	}
+		int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
+		int victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
+			
+		if(victimEHandle != -1  && victim.p.DeathRecap_PreviousShotEnemyPlayer != null && victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+		{
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
+			ResetDeathRecapBlock(victim)
+		}
+		if(attackerEHandle != -1 && victimEHandle != -1 && attacker.p.DeathRecap_DataToSend.totalDamage > 0)
+		{
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", attackerEHandle, victimEHandle, attacker.p.DeathRecap_DataToSend.damageSourceID, attacker.p.DeathRecap_DataToSend.damageType, attacker.p.DeathRecap_DataToSend.totalDamage, attacker.p.DeathRecap_DataToSend.hitCount, attacker.p.DeathRecap_DataToSend.headShotBits, attacker.p.DeathRecap_DataToSend.healthFrac, attacker.p.DeathRecap_DataToSend.shieldFrac, attacker.p.DeathRecap_DataToSend.blockTime )
+			ResetDeathRecapBlock(attacker)		
+		}
 
-	if(attackerEHandle != -1)
-		Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)	
-	
+		if(attackerEHandle != -1)
+			Remote_CallFunction_NonReplay( victim, "ServerCallback_DeathRecapDataUpdated", true, attackerEHandle)	
+		
+	}
 	SetPlayerEliminated( victim )
 
 	if ( IsFiringRangeGameMode() )
@@ -668,14 +671,13 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 void function OnClientConnected( entity player )
 {
 	array<entity> playerTeam = GetPlayerArrayOfTeam( player.GetTeam() )
+	
 	bool isAlone = playerTeam.len() <= 1
 
 	playerTeam.fastremovebyvalue( player )
-
 	player.p.squadRank = 0
 
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
-
 	switch ( GetGameState() )
 	{
 		// case eGameState.WaitingForPlayers:
@@ -710,17 +712,37 @@ void function OnClientConnected( entity player )
 					thread PlayerStartSpectating( player, null, false, 0, true)
 				else
 				{
-					array<entity> respawnCandidates = isAlone ? GetPlayerArray_AliveConnected() : playerTeam
+					
+					array<entity> beacons
+					
+					foreach(prop in GetEntArrayByClass_Expensive( "prop_dynamic" ))
+						if(prop.GetTargetName() == RESPAWN_CHAMBER_TARGETNAME)
+							beacons.append(prop)
+		
+					foreach(beacon in beacons)
+						if(!SURVIVAL_PosInsideDeathField(beacon.GetOrigin()))
+							beacons.fastremovebyvalue(beacon)
+					
+					if(beacons.len() == 0)
+					{
+						beacons.clear()
+						beacons = GetPlayerArray_AliveConnected()
+					}
+					
+					array<entity> respawnCandidates = isAlone ? beacons : playerTeam
 					respawnCandidates.fastremovebyvalue( player )
 
 					if ( respawnCandidates.len() == 0 )
+					{
+						Message(player, "NO SPAWN POINTS :(")
 						break
-
+					}
 					vector origin = respawnCandidates.getrandom().GetOrigin()
 
 					DecideRespawnPlayer( player )
 
 					player.SetOrigin( origin )
+					PutEntityInSafeSpot( player, null, null, player.GetOrigin() + <0,0,256>, origin )
 				}
 			}
 
