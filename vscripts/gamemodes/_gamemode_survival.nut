@@ -42,10 +42,6 @@ void function GamemodeSurvival_Init()
 
 	AddCallback_OnPlayerKilled( OnPlayerKilled )
 	AddCallback_OnClientConnected( OnClientConnected )
-	AddClientCommandCallback("say", ClientCommand_ClientMsg)
-	AddClientCommandCallback("sayhistory", ClientCommand_DispayChatHistory)
-	AddClientCommandCallback("teambal", ClientCommand_RebalanceTeams)
-	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	AddCallback_GameStateEnter(
 		eGameState.Playing,

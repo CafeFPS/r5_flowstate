@@ -28,8 +28,6 @@ global function CreateShipRoomFallTriggers
 global function AutoChangeLevelThread
 global function GiveFlowstateOvershield
 
-global function ClientCommand_ClientMsg
-global function	ClientCommand_DispayChatHistory
 global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
 global function	ClientCommand_ShowLatency
@@ -41,9 +39,6 @@ const string PURPLE_SHIELD = "armor_pickup_lv3"
 global bool isBrightWaterByZer0 = false
 bool plsTripleAudio = false;
 table playersInfo
-const int chatLines = 3
-int currentChatLine = 0
-string currentChat = ""
 
 enum eTDMState
 {
@@ -58,7 +53,6 @@ struct {
 	bool mapIndexChanged = true
 	array<entity> playerSpawnedProps
 	array<ItemFlavor> characters
-	float lastTimeChatUsage
 	float lastKillTimer
 	entity lastKiller
 	int SameKillerStoredKills=0
@@ -75,8 +69,6 @@ struct {
 	int maxTeams
 
 	array<string> mAdmins
-	array<string> mChatBanned
-
 	int randomprimary
     int randomsecondary
     int randomult
@@ -155,17 +147,9 @@ void function _CustomTDM_Init()
 		AddClientCommandCallback("next_round", ClientCommand_NextRound)
 		AddClientCommandCallback("tgive", ClientCommand_GiveWeapon)
 	}
-	if(FlowState_AllChat() && !FlowState_SURF()){
-		AddClientCommandCallback("say", ClientCommand_ClientMsg)
-		AddClientCommandCallback("sayhistory", ClientCommand_DispayChatHistory)
-		AddClientCommandCallback("sayban", ClientCommand_ChatBan)
-		AddClientCommandCallback("sayunban", ClientCommand_ChatUnBan)
-		AddClientCommandCallback("saylist", ClientCommand_ChatBanList)
-
-	}
+	
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
-	AddClientCommandCallback("adminsay", ClientCommand_AdminMsg)
 	AddClientCommandCallback("commands", ClientCommand_Help)
 	
 	for(int i = 0; GetCurrentPlaylistVarString("whitelisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
@@ -2443,35 +2427,6 @@ void function ResetPlayerStats(entity player)
 // ██      ██      ██ ██      ██  ██ ██    ██        ██      ██    ██ ██  ██  ██ ██  ██  ██ ██  ██  ██ ██   ██ ██  ██ ██ ██   ██      ██
 //  ██████ ███████ ██ ███████ ██   ████    ██         ██████  ██████  ██      ██ ██      ██ ██      ██ ██   ██ ██   ████ ██████  ███████
 
-bool function ChatSetBan( entity enforcer ,string playername, bool ban = true)
-{
-    if(file.mAdmins.find(playername) != -1)
-	    return false
-    int index = file.mChatBanned.find(playername)
-    if(index != -1 && ban)
-	    file.mChatBanned.remove(index)
-    else if (index == -1 && !ban)
-	    file.mChatBanned.append(playername)
-    return true
-}
-
-bool function IsChatBanned( entity player )
-{
-    return file.mChatBanned.find(player.GetPlayerName()) != -1
-}
-
-bool function ChatGetBanned( entity enforcer)
-{
-	foreach(string pname in file.mChatBanned)
-	{
-        printl("[Banned] -> "+ pname)
-
-	}
-
-    return true
-}
-
-
 void function __InitAdmins()
 {
 	array<string> Split = split( GetCurrentPlaylistVarString("Admins", "" ) , " ")
@@ -2629,32 +2584,12 @@ bool function ClientCommand_SpectateSURF(entity player, array<string> args)
     return true
 }
 
-bool function ClientCommand_AdminMsg(entity player, array<string> args)
-{
-	if(IsAdmin( player )) {
-	    string playerName = player.GetPlayerName()
-	    string str = ""
-	    foreach (s in args)
-	    	str += " " + s
-
-        foreach(sPlayer in GetPlayerArray())
-        {
-            Message( sPlayer, "Admin message", playerName + " says: "  + str, 6)
-        }
-	} else 
-		return false
-
-	return true
-}
-
-
 string function helpMessage()
 {
 	return "\n\n           CONSOLE COMMANDS:\n\n " +
 	"1. 'kill_self': if you get stuck.\n" +
 	"2. 'scoreboard': displays scoreboard to user.\n" +
 	"3. 'latency': displays ping of all players to user.\n" +
-	"4. 'say [MESSAGE]': send a public message! (" + FlowState_ChatCooldown().tostring() + "s global cooldown)\n" +
 	"5. 'spectate': spectate enemies!\n" +
 	"6. 'commands': display this message again."
 }
@@ -2679,103 +2614,6 @@ bool function ClientCommand_Help(entity player, array<string> args)
 			Message(player, "WELCOME TO FLOWSTATE: FFA/TDM", helpMessage(), 10)
 		}
 	}
-	return true
-}
-
-bool function ClientCommand_ChatBanList(entity player, array<string> args)
-{
-    if( !IsAdmin( player ) )
-		return false
-
-    ChatGetBanned(player)
-	return true
-}
-
-bool function ClientCommand_ChatBan(entity player, array<string> args)
-{
-    if( !IsAdmin( player ) )
-	{
-		Message(player, "Admin Only Command", "", 3)
-		return false
-	}
-
-	if(args.len() == 0)
-	    return false
-
-    if(ChatSetBan( player, args[0] , true))
-		Message(player, "BanHammer -> Player [", args[0] + "] is banned from chat", 3)
-	else return false
-
-	return true
-}
-
-bool function ClientCommand_ChatUnBan(entity player, array<string> args)
-{
-    if( !IsAdmin( player ) )
-	{
-		Message(player, "Admin Only Command", "", 3)
-		return false
-	}
-
-	if(args.len() == 0)
-	    return false
-
-    if(ChatSetBan( player, args[0] , false))
-		Message(player, "BanHammer -> Player [", args[0] + "] is unbanned from chat", 3)
-	else return false
-
-	return true
-}
-
-bool function ClientCommand_ClientMsg(entity player, array<string> args)
-{
-	if (IsChatBanned( player ))
-	{
-		Message( player, "Trollbox", "YOU ARE BANNED FROM FLOWSTATE GLOBAL MESSAGES.", 5)
-		return false
-	}
-
-    float cooldown = FlowState_ChatCooldown()
-	if( Time() - file.lastTimeChatUsage < cooldown )
-		return false
-
-	string str = ""
-	foreach (s in args)
-		str += " " + s
-
-	string finalChat = player.GetPlayerName() + ": " + str + "\n"
-
-	if(currentChatLine < chatLines)
-		currentChat = currentChat + finalChat
-	else
-	{
-		currentChat =  finalChat
-		currentChatLine = 0
-	}
-
-	currentChatLine++
-
-    if(IsValidPlayer(player))
-    {
-        foreach(sPlayer in GetPlayerArray())
-        {
-            Message( sPlayer, "Trollbox", currentChat, 5)
-        }
-        file.lastTimeChatUsage = Time()
-	}
-	return true
-}
-
-bool function ClientCommand_DispayChatHistory(entity player, array<string> args)
-{
-    if(IsValidPlayer(player) && IsAdmin( player ))
-    {
-        foreach(sPlayer in GetPlayerArray())
-        {
-            Message( sPlayer, "TROLLBOX HISTORY", currentChat, 5)
-        }
-        file.lastTimeChatUsage = Time()
-    }
 	return true
 }
 
