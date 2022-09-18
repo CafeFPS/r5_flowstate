@@ -9,7 +9,7 @@ WeaponData
 	"longdesc"										"#WPN_3DASH_LONGDESC"
 
 	"menu_icon"										"rui/pilot_loadout/suit/light"
-    "hud_icon"										"rui/hud/tactical_icons/tactical_wraith"
+	"hud_icon" 										"rui/hud/tactical_icons/pilot_tactical_3dash"
 
 	"weaponClass" 									"human"
 	//"weaponType"									"tactical"

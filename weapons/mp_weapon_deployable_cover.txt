@@ -10,7 +10,7 @@ WeaponData
 	"longdesc" 										"#WPN_DEPLOYABLE_COVER_LONGDESC"
 
 	"menu_icon"										"rui/pilot_loadout/suit/hardcover"
-	"hud_icon"										"rui/hud/tactical_icons/tactical_gibraltar"
+	"hud_icon" 										"rui/hud/tactical_icons/pilot_tactical_particle_wall"
 
 	"readymessage"              					"#HUD_BURNMETER_READY_BUBBLE_BUNKER"
 	"readyhint"                 					"#HUD_BURNMETER_READY_BUBBLE_BUNKER_HINT"
