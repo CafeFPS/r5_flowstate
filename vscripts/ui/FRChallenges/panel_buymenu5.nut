@@ -173,7 +173,7 @@ void function InitArenasBuyPanel5( var panel )
 	AddEventHandlerToButton( menu, "R99Button", UIE_CLICKRIGHT, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "R99Button" ))
 
-	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "Car" ) ), "basicImage", $"rui/weapon_icons/r5/weapon_r97" )
+	RuiSetImage( Hud_GetRui( Hud_GetChild( menu, "Car" ) ), "basicImage", $"rui/weapon_icons/r5/weapon_car" )
 	AddEventHandlerToButton( menu, "CarButton", UIE_CLICK, BuyCar )
 	AddEventHandlerToButton( menu, "CarButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "CarButton" ))

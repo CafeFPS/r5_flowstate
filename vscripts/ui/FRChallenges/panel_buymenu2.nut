@@ -207,7 +207,7 @@ void function InitArenasBuyPanel2( var panel )
 	file.weaponButtons.append(Hud_GetChild( menu, "R301Button" ))
 
 	var rampage = Hud_GetChild( menu, "Rampage" )
-	RuiSetImage( Hud_GetRui( rampage ), "basicImage", $"rui/weapon_icons/r5/weapon_spitfire" )
+	RuiSetImage( Hud_GetRui( rampage ), "basicImage", $"rui/weapon_icons/r5/weapon_dragon" )
 	AddEventHandlerToButton( menu, "RampageButton", UIE_CLICK, BuyRampage )
 	AddEventHandlerToButton( menu, "RampageButton", UIE_CLICKRIGHT, OpenAttachmentsBox )
 	file.weaponButtons.append(Hud_GetChild( menu, "RampageButton" ))
