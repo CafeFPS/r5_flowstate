@@ -655,18 +655,25 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		    TpPlayerToSpawnPoint(player)
 
 		player.UnfreezeControlsOnServer()
-
+		
 		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
 		{
 			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
 			PlayerRestoreHPFIESTA(player, 100)
-		} else PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+		} else 
+			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
 
 		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 		player.TakeOffhandWeapon( OFFHAND_MELEE )
 		player.TakeOffhandWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+		
+		SetPlayerInventory( player, [] )
+		Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
+		array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
+		foreach(optic in optics)
+			SURVIVAL_AddToPlayerInventory(player, optic)
 	}
 
 	if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
@@ -725,7 +732,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if(FlowState_Gungame() && IsValid( player ))
 		GiveGungameWeapon(player)
 
-	thread Flowstate_GrantSpawnImmunity(player, 2)
+	thread Flowstate_GrantSpawnImmunity(player, 2.5)
 }
 
 void function TpPlayerToSpawnPoint(entity player)
@@ -744,9 +751,11 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	OnThreadEnd(
 	function() : ( player )
 		{
-			if(!IsValid(player)) return	
-			player.ClearInvulnerable()
+			if(!IsValid(player)) return
+			
 			player.MakeVisible()
+			player.ClearInvulnerable()
+			player.SetTakeDamageType( DAMAGE_YES )
 			Highlight_ClearEnemyHighlight( player )
 		}
 	)
@@ -754,16 +763,23 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	
 	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "PhaseGate_Enter_3p" )
-	player.SetInvulnerable()
+	
+	StatusEffect_AddTimed( player, eStatusEffect.adrenaline_visuals, 1.0, duration, duration )
+	StatusEffect_AddTimed( player, eStatusEffect.speed_boost, 0.3, duration, duration )
+	StatusEffect_AddTimed( player, eStatusEffect.drone_healing, 1.0, duration, duration )
+	StatusEffect_AddTimed( player, eStatusEffect.stim_visual_effect, 1.0, duration, duration )
+	
+	player.SetTakeDamageType( DAMAGE_NO )
 	Highlight_SetEnemyHighlight( player, "survival_enemy_skydiving" )
+	player.SetInvulnerable()
 	
 	float endTime = Time() + duration
 	while(Time() <= endTime && IsValid(player)){
-		player.MakeVisible()
-		wait 0.3
+		player.MakeInvisible()
+		wait 0.5
 		if(IsValid(player))
-			player.MakeInvisible()
-		wait 0.3
+			player.MakeVisible()
+		wait 0.5
 	}
 }
 
@@ -1749,7 +1765,7 @@ printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
 
 foreach(player in GetPlayerArray())
     {
-	thread Flowstate_GrantSpawnImmunity(player, 2)
+	thread Flowstate_GrantSpawnImmunity(player, 2.5)
 	}
 
 if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
