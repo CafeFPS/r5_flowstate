@@ -640,6 +640,7 @@ void function BloodTrail( entity player )
 void function DownedEnemy( entity player, float time )
 {
 	wait time
+	if(!IsValid(player)) return
 	if( player.p.downedEnemyAtOneTime > 1 && !player.p.isDownedEnemyRecently )
 		PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iDownedMultiple" )
 	else if( player.p.downedEnemyAtOneTime == 1 && !player.p.isDownedEnemyRecently )
@@ -650,14 +651,13 @@ void function DownedEnemy( entity player, float time )
 	player.p.downedEnemyAtOneTime = 0
 	if( !player.p.isDownedEnemyRecently )
 		thread RecentlyDownedEnemy( player, 15.0 )
-
 }
 
 void function RecentlyDownedEnemy( entity player, float time )
 {
 	player.p.isDownedEnemyRecently = true
 	wait time
-	player.p.isDownedEnemyRecently = false
+	if(IsValid(player)) player.p.isDownedEnemyRecently = false
 }
 
 void function PlayerDiesFromBleedout( entity player, entity attacker )
