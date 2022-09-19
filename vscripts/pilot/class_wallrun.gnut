@@ -14,11 +14,6 @@ function ClassWallrun_Init()
 
 	// Make weapons less effective when playing at higher difficulty.
 	level.lethalityMods <- {}
-	
-	if(GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false )){
-		PrecacheParticleSystem( $"P_impact_exp_xo_shield_med_CP" )
-		PrecacheParticleSystem( $"P_plasma_exp_SM" )
-	}
 }
 
 function Wallrun_AddPlayer( player )
@@ -67,12 +62,7 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 	{
 		if( IsValid( attacker ) )
 			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
-		
-		entity fx1 = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_impact_exp_xo_shield_med_CP" ), player.GetOrigin(), <RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180)>)
-		EffectSetControlPointVector( fx1, 1, <97, 50, 168> )
-		entity fx2 = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_plasma_exp_SM" ), player.GetOrigin(), <RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180), RandomIntRangeInclusive(-180,180)>)
-		EffectSetControlPointVector( fx2, 1, <97, 50, 168> )
-		
+
 		DamageInfo_SetDamage( damageInfo, 420.0)
 		return 0.0
 	}
