@@ -6,6 +6,8 @@ global function AddSurvivalCommentaryEvent
 global function SurvivalCommentary_InitThreatChatterForPlayer
 global function SurvivalCommentary_OnThreatActivationBombardment
 global function SurvivalCommentary_OnThreatActivationGrenade
+global function SetKillLeader
+global function GetKillLeader
 
 struct {
 	int currentKillLeaderKillAmount = 0
@@ -28,6 +30,14 @@ int function SurvivalCommentary_GetKillLeaderEEH()
 		return EncodedEHandle_null
 
 	return file.currentKillLeader.GetEncodedEHandle()
+}
+
+entity function GetKillLeader()
+{
+	if ( !IsValid( file.currentKillLeader ) )
+		return null
+
+	return file.currentKillLeader
 }
 
 int function SurvivalCommentary_GetChampionTeam()
