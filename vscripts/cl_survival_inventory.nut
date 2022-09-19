@@ -946,7 +946,7 @@ void function UICallback_UpdateEquipmentButton( var button )
 			if ( IsValidItemFlavorNetworkIndex_DEPRECATED( weapon.GetGrade(), eValidation.DONT_ASSERT ) )
 			{
 				ItemFlavor weaponSkin = GetItemFlavorByNetworkIndex_DEPRECATED( weapon.GetGrade() )
-				ItemFlavor weaponCharm = GetItemFlavorByNetworkIndex_DEPRECATED( weapon.GetWeaponCharmIndex() )
+				ItemFlavor weaponCharm = GetItemFlavorByNetworkIndex_DEPRECATED( weapon.GetGrade() )//TODO: FIX THIS!!!! weapon.GetWeaponCharmIndex()
 				RuiSetString( rui, "skinName", ItemFlavor_GetLongName( weaponSkin ) )
 				if ( ItemFlavor_HasQuality( weaponSkin ) )
 					RuiSetInt( rui, "skinTier", ItemFlavor_GetQuality( weaponSkin ) + 1 )

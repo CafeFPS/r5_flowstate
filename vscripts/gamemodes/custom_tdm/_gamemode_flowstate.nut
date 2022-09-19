@@ -54,7 +54,6 @@ struct {
 	array<entity> playerSpawnedProps
 	array<ItemFlavor> characters
 	float lastKillTimer
-	entity lastKiller
 	int SameKillerStoredKills=0
 	array<string> whitelistedWeapons
 	array<string> whitelistedAbilities
@@ -471,13 +470,11 @@ void function doubletriplekillaudio(entity victim, entity attacker)
 	if (!IsValid(attacker))
 		return
 
-    entity champion = file.previousChampion
-    entity challenger = file.previousChallenger
-    entity killeader = GetBestPlayer()
+    entity killeader = GetKillLeader()
     float doubleKillTime = 5.0
     float tripleKillTime = 8.0
 
-    bool ReqCheck = attacker == file.lastKiller && attacker == killeader
+    bool ReqCheck = attacker == killeader
     if (ReqCheck) {
         if (!plsTripleAudio)
             attacker.p.downedEnemyAtOneTime = 2
@@ -513,9 +510,18 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         case eGameState.Playing:
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
+
+				if ( IsValid(victim) && victim == GetKillLeader() )
+				{
+					victim.FreezeControlsOnServer()
+					AddSurvivalCommentaryEvent( eSurvivalEventType.KILL_LEADER_ELIMINATED, attacker )
+
+					foreach ( player in GetPlayerArray() )
+						Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
+				}
 	    		wait 1
 	    		if(!IsValid(victim)) return
-
+				
 	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker )){
 	    			victim.SetObserverTarget( attacker )
 	    			victim.SetSpecReplayDelay( 4 )
@@ -573,7 +579,17 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	    			WpnAutoReloadOnKill(attacker)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
-	    			if(attacker.IsPlayer()) attacker.p.lastKillTimer = Time()
+	    			attacker.p.lastKillTimer = Time()
+					
+					int attackerKills = attacker.GetPlayerNetInt( "kills" )
+					if(	!IsValid(GetKillLeader()) && attackerKills == 2)
+					{
+						thread SetKillLeader( attacker, attackerKills )
+						return
+					}
+					
+					if ( IsValid(GetKillLeader()) && attackerKills > GetKillLeader().GetPlayerNetInt( "kills" ) && attacker != GetKillLeader())
+						thread SetKillLeader( attacker, attackerKills )
 	    		}
             }
 	    	thread victimHandleFunc()
@@ -586,14 +602,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	file.deathPlayersCounter++
 	if(file.deathPlayersCounter == 1 )
-	{
-		foreach (player in GetPlayerArray())
-			if(IsValid(player))
-				thread EmitSoundOnEntityExceptToPlayer( player, player, "diag_ap_aiNotify_diedFirst" )
-	}
+		AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
 
-	if(attacker.IsPlayer())
-	    file.lastKiller = attacker
 	UpdatePlayerCounts()
 }
 

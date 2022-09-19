@@ -143,6 +143,9 @@ void function Sequence_WaitingForPlayers()
 	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
 
 	wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
+	
+	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
+		SetChampion( GetPlayerArray().getrandom() )
 
 	if ( !introCountdownEnabled )
 		PlayPickLoadoutMusic( false )
@@ -160,7 +163,7 @@ void function Sequence_PickLoadout()
 			string skydiveMusicID = MusicPack_GetSkydiveMusic( musicPack )
 			StopMusicOnPlayer( player, skydiveMusicID )
 
-			if(GameRules_GetGameMode() != "custom_tdm"){CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] ) }// No candidates to force it to pick a random legend.
+			CharacterSelect_TryAssignCharacterCandidatesToPlayer( player, [] )// No candidates to force it to pick a random legend.
 		}
 
 		thread Sequence_Prematch() 
@@ -519,7 +522,10 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		return
 
 	UpdatePlayerCounts()
-
+	
+	if( victim == attacker )
+		return
+		
 	if ( attacker.IsPlayer() && victim.IsPlayer() && attacker != victim )
 		attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 
@@ -661,7 +667,7 @@ float function CharSelect_GetPickingDelayAfterAll()				{ return GetCurrentPlayli
 // Character selection -> player squad -> champion squad -> outro
 bool function CharSelect_PostSelectionMusicEnabled()			{ return GetCurrentPlaylistVarBool( "survival_enable_squad_intro_music", true ) }
 bool function CharSelect_PlayerSquadIntroEnabled()				{ return GetCurrentPlaylistVarBool( "survival_enable_squad_intro", true ) }
-bool function CharSelect_ChampionSquadIntroEnabled()			{ return GetCurrentPlaylistVarBool( "survival_enable_gladiator_intros", true ) }
+bool function CharSelect_ChampionSquadIntroEnabled()			{ return true }
 float function CharSelect_GetOutroSceneChangeDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_outro_scene_change_duration", 4.0 ) }
 float function CharSelect_GetOutroSquadPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_squad_present_duration", 6.0  ) }
 float function CharSelect_GetOutroChampionPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_champion_present_duration", 8.0 ) }

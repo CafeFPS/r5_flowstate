@@ -297,8 +297,7 @@ void function Server_Init()
 	Bombardment_Init()
 	ThreatDetection_Init()
 	Staging_Area_Init()
-	if(GameRules_GetGameMode() != "custom_tdm"){
-	SurvivalCommentary_Init()}
+	SurvivalCommentary_Init()
 
 	GameMode_RunServerInits()
 

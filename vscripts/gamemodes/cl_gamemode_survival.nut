@@ -506,6 +506,13 @@ void function OnPlayerCreated( entity player )
 		//
 		if ( IsSquadMuted() )
 			SetSquadMuteState( IsSquadMuted() )
+		if( IsFiringRangeGameMode() )
+		{
+			ItemFlavor musicPack = GetMusicPackForPlayer( player )
+			string desiredMusicTrack = MusicPack_GetLobbyMusic( musicPack )
+
+			EmitSoundOnEntity( player, desiredMusicTrack )
+		}
 	}
 }
 
@@ -4642,6 +4649,8 @@ void function OnPlayerKilled( entity player )
 	{
 		EmitSoundOnEntity( viewPlayer, SOUND_UI_TEAMMATE_KILLED )
 	}
+	if( player == viewPlayer )
+			thread PlayLocal1PDeathSoundALittle()
 }
 
 

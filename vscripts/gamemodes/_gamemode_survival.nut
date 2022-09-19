@@ -414,7 +414,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		Bleedout_StartPlayerBleedout( victim, attacker )
 
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
-		if (attacker.IsPlayer() && !IsWorldSpawn( attacker ))
+		if (attacker.IsPlayer() && IsValid( attacker ))
         {
             attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
         }
@@ -600,6 +600,8 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 	
+	victim.FreezeControlsOnServer()
+	
 	if( attacker.IsPlayer() )
 	{
 		int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
@@ -662,6 +664,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	if ( canPlayerBeRespawned || droppableItems > 0 )
 		CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
+		
+	if( RandomInt( 100 ) >= 50 && attacker != victim )	
+		thread PlayBattleChatterLineDelayedToSpeakerAndTeam( attacker, "bc_iKilledAnEnemy", 2.0 )
 }
 
 void function OnClientConnected( entity player )
