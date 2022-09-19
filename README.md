@@ -67,7 +67,7 @@ If you enjoy my mods and want to support me, please consider a donation:
 - LTC: ltc1qrxjkq0gfyraa94p3fc9mqx7j0d7qcwdtd9h23w
 - ETH: 0xe975b5D5fa624Da7E52A340071fC6689759b7639
 
-I know all the code can be masivelly improved and there are a lot of things that are working with tape and glue, I'm still learning so if you have any feedback about code, challenges improvements, or new ideas in general, I'll really appreciate it. Feel free to leave me a dm in discord.
+I know all the code can be massively improved and there are a lot of things that are working with tape and glue, I'm still learning so if you have any feedback about code, challenges improvements, or new ideas in general, I'll really appreciate it. Feel free to leave me a dm in discord.
 
 - Discord: Retículo Endoplasmático#5955
 - Twitter: https://twitter.com/CafeFps
