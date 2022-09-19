@@ -964,7 +964,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
                result = ent.GetAngles()  + <0,speed,00>
             }
     		ent.SetAngles( result ) // result
-          wait 0.00001
+        WaitFrame()
         }
     }
     

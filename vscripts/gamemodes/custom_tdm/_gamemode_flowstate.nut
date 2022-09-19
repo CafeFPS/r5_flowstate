@@ -2516,26 +2516,25 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 
     array<entity> enemiesArray = GetPlayerArray_Alive()
 	enemiesArray.fastremovebyvalue( player )
-    if ( IsValid( player ) && enemiesArray.len() > 0 )
+    if ( enemiesArray.len() > 0 )
     {
         entity specTarget = enemiesArray.getrandom()
 
-        if( specTarget.IsObserver() || !IsValid(specTarget))
+        if( !IsValid(specTarget) || specTarget.IsObserver())
         {
             printf("error: try again")
             return false
         }
 
-        if( player.GetPlayerNetInt( "spectatorTargetCount" ) > 0)
+        if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) > 0 )
         {
             player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 	        player.SetSpecReplayDelay( 0 )
             player.StopObserverMode()
-			if(IsValidPlayer(player))
 			player.TakeDamage(player.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
             printf("Respawned!")
         }
-        else
+        else if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) == 0 && IsValid(specTarget))
         {
 			player.MakeInvisible()
             player.SetPlayerNetInt( "spectatorTargetCount", enemiesArray.len() )
@@ -2556,21 +2555,23 @@ bool function ClientCommand_SpectateSURF(entity player, array<string> args)
 {
     if ( GetGameState() == eGameState.MapVoting || GetGameState() == eGameState.WaitingForPlayers)
         return false
-
+	
+	if(!IsValid(player)) return
+	
     array<entity> playersON = GetPlayerArray_Alive()
 	playersON.fastremovebyvalue( player )
 
-    if ( playersON.len() > 1 && IsValid(player))
+    if ( playersON.len() > 1 )
     {
         entity specTarget = playersON[0]
 
-        if( specTarget.IsObserver())
+        if( !IsValid(specTarget) || specTarget.IsObserver())
         {
             printf("error: try again")
             return false
         }
-
-        if( player.GetPlayerNetInt( "spectatorTargetCount" ) > 0)
+		
+        if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) > 0 )
         {
             player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 	        //player.SetSpecReplayDelay( 2 )
@@ -2578,7 +2579,7 @@ bool function ClientCommand_SpectateSURF(entity player, array<string> args)
 			TpPlayerToSpawnPoint(player)
             printf("Respawned!")
         }
-        else
+        else if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) == 0 && IsValid(specTarget))
         {
 			TpPlayerToSpawnPoint(player)
             player.SetPlayerNetInt( "spectatorTargetCount", playersON.len() )
