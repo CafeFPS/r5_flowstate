@@ -2556,7 +2556,7 @@ bool function ClientCommand_SpectateSURF(entity player, array<string> args)
     if ( GetGameState() == eGameState.MapVoting || GetGameState() == eGameState.WaitingForPlayers)
         return false
 	
-	if(!IsValid(player)) return
+	if(!IsValid(player)) return false
 	
     array<entity> playersON = GetPlayerArray_Alive()
 	playersON.fastremovebyvalue( player )
