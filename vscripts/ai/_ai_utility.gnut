@@ -954,7 +954,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     void function RotateLoop(entity ent,float speed,bool rightside)
     {
         vector result
-        while(isBrightWaterByZer0)
+        while(isBrightWaterByZer0 && IsValid(ent))
         {
             if(rightside)
             {
