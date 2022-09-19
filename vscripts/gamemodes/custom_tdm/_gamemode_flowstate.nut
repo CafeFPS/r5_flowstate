@@ -102,7 +102,12 @@ struct PlayerInfo
 
 void function _CustomTDM_Init()
 {
-	SetConVarBool("sv_forceChatToTeamOnly", false) //enables global chat
+	
+	if(GetCurrentPlaylistVarBool("enable_global_chat", true))
+		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
+	else	
+		SetConVarBool("sv_forceChatToTeamOnly", true)
+		
 	printt("[Flowstate] -> _CustomTDM_Init")
 	SurvivalFreefall_Init() //Enables freefall/skydive
 	PrecacheCustomMapsProps()
