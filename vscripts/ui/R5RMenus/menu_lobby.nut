@@ -58,6 +58,23 @@ global table<string, string> MapNames = {
 	[ "mp_lobby" ] = "Lobby"
 }
 
+//Playlist to readable name
+global table<string, string> playlisttoname = {
+	[ "firingrange" ] = "Firing Range (Beta)",
+	[ "survival" ] = "Battle Royale (Beta)",
+	[ "FallLTM" ] = "ShadowFall",
+	[ "duos" ] = "Duos (Beta)",
+	[ "custom_tdm" ] = "Flowstate TDM/FFA",
+	[ "custom_ctf" ] = "Capture The Flag",
+	[ "survival_dev" ] = "Survival Dev",
+	[ "custom_tdm_fiesta" ] = "Flowstate Fiesta",
+	[ "custom_tdm_gungame" ] = "Flowstate Gungame (Beta)",
+	[ "custom_surf" ] = "Flowstate Prophunt (Beta)",
+	[ "custom_prophunt" ] = "Firing Range",
+	[ "custom_aimtrainer" ] = "Flowstate Aim Trainer",
+	[ "dev_default" ] = "Dev Default"
+}
+
 //Vis to readable name
 global table<int, string> VisibilityNames = {
 	[ eServerVisibility.OFFLINE ] = "Offline",
@@ -184,10 +201,15 @@ void function ShowSelectedPanel(var panel, var button)
 
 string function GetUIPlaylistName(string playlist)
 {
-	if(!IsLobby() || !IsConnected())
-		return ""
+	//Set default playlist string
+	string playlistname = playlist
 
-	return GetPlaylistVarString( playlist, "name", playlist )
+	//If playlist in the table set it to the readable name
+	if(playlist in playlisttoname)
+		playlistname = playlisttoname[playlist]
+
+	//return the playlist name
+	return playlistname
 }
 
 string function GetUIMapName(string map)

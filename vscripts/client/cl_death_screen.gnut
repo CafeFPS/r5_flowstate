@@ -1050,7 +1050,7 @@ void function UICallback_OnResolutionChange()
 
 	int tabIndex = GetCurrentTabIndex()
 	if ( tabIndex == eDeathScreenPanel.NONE )
-		tabIndex = eDeathScreenPanel.SPECTATE
+		return
 
 	file.damageBlockElementArray.clear()
 	SetCurrentAttackerEHandle( EncodedEHandle_null )
