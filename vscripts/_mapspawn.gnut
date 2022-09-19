@@ -270,8 +270,11 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_grenade_bangalore" )
 	PrecacheWeapon( $"mp_weapon_car" )
 		
-	if(GameRules_GetGameMode() != "custom_tdm") //This will cause issues for players joining FLOWSTATE SERVERS guaranteed, so I disable it for now. TEMP TEMP
+	if(GameRules_GetGameMode() != "custom_tdm") //This will cause issues for players joining FLOWSTATE SERVERS guaranteed, so I disable it for now. TEMP TEMP, enable when next sdk releases
+	{
 		PrecacheWeapon( $"mp_weapon_dragon_lmg" )
+		PrecacheWeapon( $"mp_weapon_3030" )
+	}
 	
 	PrecacheWeapon( $"mp_weapon_incap_shield" )
 	PrecacheWeapon( $"mp_ability_care_package" )

@@ -98,6 +98,8 @@ void function SetupWeapons()
 	SetupDevCommand( "Dev: Volt SMG", "give mp_weapon_volt_smg" )
 	SetupDevCommand( "Dev: Car SMG", "give mp_weapon_car" )
 	SetupDevCommand( "Dev: Rampage LMG", "give mp_weapon_dragon_lmg" )
+	SetupDevCommand( "Dev: 30-30 Repeater", "give mp_weapon_3030" )
+	
 	#endif
 }
 

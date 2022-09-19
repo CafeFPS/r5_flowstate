@@ -101,7 +101,7 @@ void function _ChallengesByColombia_Init()
 	AddDeathCallback( "player", OnPlayerDeathCallback )
 	
 	//add basic aim trainer locations for maps //todo: move this to a datatable
-	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
+	if (GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_desertlands_64k_x_64k_tt" )
 	{
 		floorLocation = <-10020.1543, -8643.02832, 5189.92578>
 		onGroundLocationPos = <12891.2783, -2391.77124, -3121.60132>
@@ -146,8 +146,17 @@ void function StartFRChallenges(entity player)
 	player.FreezeControlsOnServer()
 	TakeAllWeapons(player)
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
-    player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+ 
+	if(GetCurrentPlaylistVarBool( "enable_bolo_heirloom", true ))
+	{
+		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	}
+	else//Letting player choose if they want heirloom or not, don't force this
+	{
+		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	}
 	
 	player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic"] )
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
@@ -2721,6 +2730,13 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 					if(args[4] != "." ) finalargs.append(args[4])
 					if(args[6] != "none") finalargs.append(args[6])
 						
+					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
+					break
+				case "marksman3":
+					if(args[1] != "none") finalargs.append(args[1])
+					if(args[3] != "none") finalargs.append(args[3])
+					if(args[6] != "none") finalargs.append(args[6])	
+					
 					weaponent = player.GiveWeapon( weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, finalargs)
 					break
 				case "sniper":
