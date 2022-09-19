@@ -1978,7 +1978,7 @@ entity function CreateRingBoundary(LocationSettings location)
             ringRadius = Distance(spawn.origin, ringCenter)
     }
 
-    ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 0)
+    ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
 	//We watch the ring fx with this entity in the threads
 	entity circle = CreateEntity( "prop_script" )
 	circle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
