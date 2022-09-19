@@ -972,7 +972,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
     {
         vector result
     	float sbase = 2
-        while(isBrightWaterByZer0)
+        while(isBrightWaterByZer0 && IsValid(ent))
         {
             if(rightside)
             {
@@ -982,7 +982,7 @@ void function DEV_MoveToAllAINodes( float delay = 0.0, int loglevel = 0 )
                result = ent.GetAngles()  +  <-speed,speed, 0>
             }
     		ent.SetAngles( result ) // result
-          wait 0.00001
+        WaitFrame()
         }
     }
     
