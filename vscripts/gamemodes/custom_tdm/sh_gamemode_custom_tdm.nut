@@ -855,36 +855,74 @@ case "mp_rr_canyonlands_64k_x_64k":
         break
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
-		Shared_RegisterLocation(
-                NewLocationSettings(
-                    "TTV Building",
-                    [
-                        NewLocPair(<11393, 5477, -4289>, <0, 90, 0>),
-                        NewLocPair(<12027, 7121, -4290>, <0, -120, 0>),
-                        NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
-                        //NewLocPair(<7965.0, 5976.0, -4266.0>, <0, -135, 0>),
-                        NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
-                        //NewLocPair(<9862, 5561, -3832>, <0, 180, 0>),
-                        //NewLocPair(<9800, 5347, -3507>, <0, 134, 0>),
-                        NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
-                        NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
-                        NewLocPair(<8243, 4537, -4235>, <-13, 32, 0>),
-                        //NewLocPair(<10176, 4245, -4300>, <0, 100, 0>),
-                        NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>),
-                        NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
-                        //NewLocPair(<10058, 2071, -3827>, <0, -90, 0>),
-                        //NewLocPair(<7299, 7471, -4222>, <0, -90, 0>),
-                        //NewLocPair(<9976, 8539, -4207>, <0, -90, 0>),
-                        NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
-                        //NewLocPair(<10107, 3843, -4000>, <0, 90, 0>),
-                        NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
-                        NewLocPair(<12775, 4446, -4235>, <0, 150, 0>),
-                        NewLocPair(<9012, 5386, -4242>, <0, 90, 0>),
-                        //NewLocPair(<7372, 3885, -4219>, <0, 55, 0>)
-                    ],
-                    <0, 0, 3000>
-                )
-            )
+		if(!GetCurrentPlaylistVarBool("flowstateCapitolCityReplacesTTVLocation", false ))
+		{
+			Shared_RegisterLocation(
+					NewLocationSettings(
+						"TTV Building",
+						[
+							NewLocPair(<11393, 5477, -4289>, <0, 90, 0>),
+							NewLocPair(<12027, 7121, -4290>, <0, -120, 0>),
+							NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
+							NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
+							NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
+							NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
+							NewLocPair(<8243, 4537, -4235>, <-13, 32, 0>),
+							NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>),
+							NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
+							NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
+							NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
+							NewLocPair(<12775, 4446, -4235>, <0, 150, 0>),
+							NewLocPair(<9012, 5386, -4242>, <0, 90, 0>)
+						],
+						<0, 0, 3000>
+					)
+				)
+		}
+			else{
+				Shared_RegisterLocation(
+					NewLocationSettings(
+						"Capitol City",
+						[
+							NewLocPair(<1142, 5067, -3351>, <16, 18, 0>),
+							NewLocPair(<1155, 5460, -3552>, <5, -62, 0>),
+							NewLocPair(<1552, 5547, -3151>, <20, -166, 0>),
+							NewLocPair(<1168, 4657, -4167>, <9, 58, 0>),
+							NewLocPair(<1233, 5027, -3152>, <13, 55, 0>),
+							NewLocPair(<2196, 3038, -4083>, <1, 1, 0>),
+							NewLocPair(<2262, 4710, -3552>, <12, 60, 0>),
+							NewLocPair(<2364, 5634, -3967>, <20, 171, 0>),
+							NewLocPair(<2911, 9488, -3863>, <11, 50, 0>),
+							NewLocPair(<5258, 12129, -4024>, <8, 16, 0>),
+							NewLocPair(<5316, 3324, -3848>, <10, 125, 0>),
+							NewLocPair(<5897, 10028, -4015>, <10, 60, 0>),
+							NewLocPair(<6756, 4952, -3448>, <8, 7, 0>),
+							NewLocPair(<7299, 7471, -4222>, <0, -90, 0>),
+							NewLocPair(<7307, 6964, -4503>, <2, 88, 0>),
+							NewLocPair(<7372, 3885, -4219>, <0, 55, 0>)
+							NewLocPair(<7825, 3225, -4239>, <0, 6, 0>),
+							NewLocPair(<7965, 5976, -4266>, <0, -135, 0>),
+							NewLocPair(<8105, 6156, -4300>, <0, -45, 0>),
+							NewLocPair(<8186, 5513, -3828>, <0, 0, 0>),
+							NewLocPair(<8277, 6304, -3940>, <0, 0, 0>),
+							NewLocPair(<9012, 5386, -4242>, <0, 90, 0>),
+							NewLocPair(<9043, 5866, -4171>, <0, 90, 0>),
+							NewLocPair(<9420, 5528, -4236>, <0, 90, 0>),
+							NewLocPair(<9800, 5347, -3507>, <0, 134, 0>),
+							NewLocPair(<9862, 5561, -3832>, <0, 180, 0>),
+							NewLocPair(<9976, 8539, -4207>, <0, -90, 0>),
+							NewLocPair(<10058, 2071, -3827>, <0, -90, 0>),
+							NewLocPair(<10107, 3843, -4000>, <0, 90, 0>),
+							NewLocPair(<10176, 4245, -4300>, <0, 100, 0>),
+							NewLocPair(<11181, 5862, -3900>, <0, -180, 0>),
+							NewLocPair(<11210, 4164, -4235>, <0, 90, 0>),
+							NewLocPair(<11700, 6207, -4435>, <-10, 90, 0>)
+						],
+						<0, 0, 3000>
+					)
+				)
+			}
+			
 			Shared_RegisterLocation(
                 NewLocationSettings(
                     "Lava Fissure",
@@ -1340,25 +1378,6 @@ case "mp_rr_canyonlands_64k_x_64k":
                         // NewLocPair(<-21054, -23399, -3850>, <0, 90, 0>)
                     // ],
                     // <0, 0, 11000>
-                // )
-            // )
-						// Shared_RegisterLocation(
-                // NewLocationSettings(
-                    // "Capitol City",
-                    // [
-                        // NewLocPair(<8660, 5910, -4168>, <-13, 50, 0>),
-                        // NewLocPair(<2300, 6571, -4490>, <1.2, -96, 0>),
-                        // NewLocPair(<1200, 4471, -4150>, <-1.4, 50, 0>),
-                        // NewLocPair(<12106, 1769, -3453>, <-1.4, 126, 0>),
-                        // NewLocPair(<14047, 5915, -3903>, <-1.4, 174, 0>),
-                        // NewLocPair(<11117, 10604, -4211>, <-1.4, -112, 0>),
-                        // NewLocPair(<6630, 13856, -3935>, <-1.4, -90, 0>),
-                        // NewLocPair(<1986, 12817, -3227>, <-1.4, -91, 0>),
-						// NewLocPair(<5028, 10272, -3981>, <-1.4, -87, 0>),
-						// NewLocPair(<5412, 5449, -4145>, <-1.4, -59, 0>),
-						// NewLocPair(<11010, 3297, -4165>, <-1.4, 90, 0>),
-                    // ],
-                    // <0, 0, 3000>
                 // )
             // )
 

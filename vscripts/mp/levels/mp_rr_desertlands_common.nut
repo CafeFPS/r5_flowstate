@@ -101,7 +101,10 @@ void function EntitiesDidLoad()
 	#if SERVER && DEV
 	test_runmapchecks()
 	#endif
-
+	
+	if( GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) )
+		return
+		
 	SpawnEditorProps()
 	GeyserInit()
 	Updrafts_Init()

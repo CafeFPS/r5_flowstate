@@ -47,7 +47,7 @@ entity function GetKillLeader()
 int function SurvivalCommentary_GetChampionTeam()
 {
 	entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
-	if( !champion.IsPlayer() || !IsValid( champion ) )
+	if( !IsValid( champion ) || !champion.IsPlayer() )
 		return -1
 
 	return champion.GetTeam()
@@ -56,7 +56,7 @@ int function SurvivalCommentary_GetChampionTeam()
 int function SurvivalCommentary_GetChampionEEH()
 {
 	entity champion = GetEntityFromEncodedEHandle( GetGlobalNetInt( "championEEH" ) )
-	if ( !champion.IsPlayer() || !IsValid( champion ) )
+	if ( !IsValid( champion ) || !champion.IsPlayer()  )
 		return EncodedEHandle_null
 
 	return GetGlobalNetInt( "championEEH" )

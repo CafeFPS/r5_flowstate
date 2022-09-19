@@ -143,6 +143,12 @@ void function Sequence_WaitingForPlayers()
 	bool introCountdownEnabled = CharSelect_GetIntroCountdownDuration() > 0.0
 
 	wait PreGame_GetWaitingForPlayersCountdown() + (introCountdownEnabled ? 0.0 : CharSelect_GetIntroMusicStartTime())
+		
+	if(GameRules_GetGameMode() == "custom_tdm")
+	{	
+		SetGameState( eGameState.Playing )
+		return	
+	}
 	
 	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
 		SetChampion( GetPlayerArray().getrandom() )

@@ -936,19 +936,16 @@ void function GiveRandomPrimaryWeapon(entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
 
     array<string> Weapons = [
-		"mp_weapon_r97 optic_cq_hcog_classic barrel_stabilizer_l4_flash_hider stock_tactical_l3 bullets_mag_l2",
-		"mp_weapon_rspn101 optic_cq_hcog_bruiser barrel_stabilizer_l4_flash_hider stock_tactical_l3 bullets_mag_l2",
-		"mp_weapon_vinson optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3",
-		"mp_weapon_hemlok optic_cq_hcog_bruiser stock_tactical_l3 highcal_mag_l3 barrel_stabilizer_l4_flash_hider",
-		"mp_weapon_pdw optic_cq_hcog_classic stock_tactical_l3 highcal_mag_l3",
-		"mp_weapon_lmg optic_cq_hcog_bruiser highcal_mag_l3 barrel_stabilizer_l3 stock_tactical_l3",
-        "mp_weapon_energy_ar optic_cq_hcog_bruiser energy_mag_l3 stock_tactical_l3 hopup_turbocharger",
-        "mp_weapon_alternator_smg optic_cq_hcog_classic bullets_mag_l3 stock_tactical_l3",
-        "mp_weapon_lstar",
-        "mp_weapon_wingman highcal_mag_l1",
-        "mp_weapon_dmr optic_cq_hcog_bruiser highcal_mag_l2 barrel_stabilizer_l2 stock_sniper_l3",
-        "mp_weapon_esaw optic_cq_hcog_classic energy_mag_l1 barrel_stabilizer_l4_flash_hider",
-        "mp_weapon_sniper",
+		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l2",
+		"mp_weapon_r97 optic_cq_threat bullets_mag_l2 stock_tactical_l2 barrel_stabilizer_l1",
+		"mp_weapon_pdw optic_cq_threat highcal_mag_l3 stock_tactical_l3",
+		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3",
+		"mp_weapon_vinson stock_tactical_l2 highcal_mag_l3",
+		"mp_weapon_hemlok optic_cq_hcog_classic stock_tactical_l2 highcal_mag_l2 barrel_stabilizer_l2",
+		"mp_weapon_lmg barrel_stabilizer_l1 stock_tactical_l3",
+        "mp_weapon_energy_ar energy_mag_l2 stock_tactical_l3",
+        "mp_weapon_alternator_smg bullets_mag_l3 stock_tactical_l3 barrel_stabilizer_l3",
+        "mp_weapon_rspn101 stock_tactical_l2 bullets_mag_l2 barrel_stabilizer_l1"
 	]
 	
 	foreach(weapon in Weapons)
@@ -967,16 +964,18 @@ void function GiveRandomSecondaryWeapon( entity player)
 	int slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 
     array<string> Weapons = [
-		"mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l1",
-		"mp_weapon_energy_shotgun shotgun_bolt_l1",
-		"mp_weapon_shotgun shotgun_bolt_l1 ",
-		"mp_weapon_mastiff",
-		"mp_weapon_autopistol optic_cq_hcog_classic bullets_mag_l1",
-		"mp_weapon_shotgun_pistol shotgun_bolt_l3",
-		"mp_weapon_defender optic_sniper stock_sniper_l2",
-		"mp_weapon_doubletake energy_mag_l3",
-		"mp_weapon_g2 bullets_mag_l3 barrel_stabilizer_l4_flash_hider stock_sniper_l3 hopup_double_tap",
-		"mp_weapon_semipistol bullets_mag_l2",
+		"mp_weapon_r97 optic_cq_holosight bullets_mag_l2 stock_tactical_l3 barrel_stabilizer_l4_flash_hider",
+		"mp_weapon_energy_shotgun shotgun_bolt_l2",
+		"mp_weapon_pdw highcal_mag_l3 stock_tactical_l2",
+		"mp_weapon_mastiff shotgun_bolt_l3",
+		"mp_weapon_autopistol bullets_mag_l2",
+		"mp_weapon_alternator_smg optic_cq_holosight bullets_mag_l3 stock_tactical_l3 barrel_stabilizer_l3",
+		"mp_weapon_energy_ar energy_mag_l1 stock_tactical_l3 hopup_turbocharger",
+		"mp_weapon_doubletake optic_ranged_hcog energy_mag_l3 stock_sniper_l3",
+		"mp_weapon_vinson stock_tactical_l3 highcal_mag_l3",
+		"mp_weapon_rspn101 stock_tactical_l1 bullets_mag_l3 barrel_stabilizer_l2"
+		"mp_weapon_car optic_cq_holosight stock_tactical_l1 bullets_mag_l3"
+		"mp_weapon_volt_smg energy_mag_l2 stock_tactical_l3"
 	]
 	
 	foreach(weapon in Weapons)
@@ -1060,7 +1059,8 @@ void function GiveRandomTac(entity player)
 		"mp_weapon_grenade_bangalore",
 		"mp_ability_area_sonar_scan",
 		"mp_weapon_grenade_sonar",
-		"mp_weapon_deployable_cover"
+		"mp_weapon_deployable_cover",
+		"mp_ability_holopilot"
 	]
 
 	foreach(ability in file.whitelistedAbilities)
@@ -1078,7 +1078,8 @@ void function GiveRandomUlt(entity player )
 		"mp_weapon_phase_tunnel",
 		"mp_ability_3dash",
 		"mp_ability_hunt_mode",
-		"mp_weapon_grenade_defensive_bombardment",
+		"mp_weapon_grenade_creeping_bombardment",
+		"mp_weapon_grenade_defensive_bombardment"
 	]
 	
 	foreach(ability in file.whitelistedAbilities)
@@ -1975,7 +1976,7 @@ entity function CreateRingBoundary(LocationSettings location)
             ringRadius = Distance(spawn.origin, ringCenter)
     }
 
-    ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
+    ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 0)
 	//We watch the ring fx with this entity in the threads
 	entity circle = CreateEntity( "prop_script" )
 	circle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
