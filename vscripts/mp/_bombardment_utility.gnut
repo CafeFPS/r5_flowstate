@@ -133,8 +133,10 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 		for (int curStep = 0 ; curStep < bombCount ; curStep++) {
 			wait (interval / (2 * bombCount))
 			vector targetPosition = even ? (lineStart - (lineDirection * perStep * curStep) - (lineDirection * (perStep / 2))) : (lineStart + (lineDirection * perStep * curStep) + (lineDirection * (perStep / 2)))
+			
 			if(!IsValid(weapon)) return
 			entity projectile = weapon.FireWeaponMissile( fireGrenadeParams )
+			
 			if(!IsValid(projectile)) return
 			if (isFirst)
 			{

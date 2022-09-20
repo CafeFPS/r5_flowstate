@@ -78,11 +78,14 @@ struct
 
 void function Canyonlands_MapInit_Common()
 {
+	if(GameRules_GetGameMode() == "custom_aimtrainer")
+	return
+	
 	#if SERVER
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	#endif
 	
-	if(GameRules_GetGameMode() == "custom_tdm" || GameRules_GetGameMode() == "custom_aimtrainer")
+	if(GameRules_GetGameMode() == "custom_tdm" )
 	return
 
 	printt( "Canyonlands_MapInit_Common" )
