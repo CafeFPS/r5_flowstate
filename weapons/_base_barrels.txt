@@ -44,8 +44,8 @@ WeaponData
 
 		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
 
-			"fx_muzzle_flash_view"		        "wpn_muzzleflash_pistol_sup_FP"
-			"fx_muzzle_flash_world"		        "wpn_muzzleflash_pistol_sup"
+			"fx_muzzle_flash_view"		        ""
+			"fx_muzzle_flash_world"		        ""
 
 			"viewkick_pitch_base" 				"*0.85"
 			"viewkick_pitch_random"   			"*0.7"

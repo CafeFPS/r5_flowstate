@@ -1,6 +1,5 @@
 #base "_base_smg.txt"
 #base "_base_mags_heavy.txt"
-#base "_base_barrels.txt"
 
 WeaponData
 {
@@ -60,7 +59,7 @@ WeaponData
     "pass_through_damage_preserved_scale"			"1"
     "projectile_launch_speed"						"18500"
 	"sound_dryfire"									"assault_rifle_dryfire"
-	"sound_pickup"									"survival_loot_pickup_weapon_car"
+	"sound_pickup"									"wpn_pickup_SMG_1P"
 	"sound_trigger_pull"							"Weapon_Hemlok_Trigger"
 	"sound_zoom_in"									"Weapon_Car_ADS_In"
 	"sound_zoom_out"								"Weapon_Car_ADS_Out"
@@ -77,21 +76,22 @@ WeaponData
 
 	// Audio
 	"looping_sounds"								"1"
-    "fire_sound_1_player_1p"						"weapon_car_secondshot_1p"
-    "fire_sound_1_player_3p"						"weapon_car_secondshot_3p"
+
+    "fire_sound_1_player_1p"						"Weapon_Car_FirstShot_1P"
+    "fire_sound_1_player_3p"						"weapon_car_firstshot_3p_enemy"
     "fire_sound_1_npc"								"Weapon_Car_SecondShot_NPC"
 	"sound_zoom_in"									"Weapon_Car_ADS_In"
 	"sound_zoom_out"								"Weapon_Car_ADS_Out"
-	"fire_sound_2_player_1p" 						"Weapon_Car_SecondShot_1P"
-	"fire_sound_2_player_3p" 						"weapon_car_secondshot_3p"
-	"fire_sound_2_npc"								"Weapon_Car_SecondShot_NPC"
-    "burst_or_looping_fire_sound_start_1p"			"Weapon_Car_FirstShot_1P"
-    "burst_or_looping_fire_sound_middle_1p"			"Weapon_Car_Loop_1P"
-    "burst_or_looping_fire_sound_end_1p"			"weapon_car_loopend_1p"
-    "burst_or_looping_fire_sound_start_3p"			"weapon_car_firstshot_3p_enemy"
-    "burst_or_looping_fire_sound_middle_3p"			"Weapon_Car_Loop_3P"
-    "burst_or_looping_fire_sound_end_3p"			"Weapon_Car_LoopEnd_3P"
-    "burst_or_looping_fire_sound_start_npc"			"weapon_car_firstshot_npc_BU1"
+	"fire_sound_2_player_1p" 						""
+	"fire_sound_2_player_3p" 						""
+
+    "burst_or_looping_fire_sound_start_1p"			""
+    "burst_or_looping_fire_sound_middle_1p"			""
+    "burst_or_looping_fire_sound_end_1p"			""
+    "burst_or_looping_fire_sound_start_3p"			""
+    "burst_or_looping_fire_sound_middle_3p"			""
+    "burst_or_looping_fire_sound_end_3p"			""
+    "burst_or_looping_fire_sound_start_npc"			""
     "burst_or_looping_fire_sound_middle_npc"		"Weapon_Car_Loop_3P_NPC_A"
     "burst_or_looping_fire_sound_end_npc"			"Weapon_Car_LoopEnd_NPC"
 	"low_ammo_sound_name_1"							"car_LowAmmo_Shot1"
@@ -295,24 +295,13 @@ WeaponData
 
 
 	// Bodygroups:
-	"bodygroup1_name"	"car101_sight_on"
-	"bodygroup1_set"	"1"
-	"bodygroup2_name"	"sight_acgs"
-	"bodygroup2_set"	"0"
-	"bodygroup3_name"	"sight_cro"
-	"bodygroup3_set"	"0"
-	"bodygroup4_name"	"sight_holo"
-	"bodygroup4_set"	"0"
-	// "bodygroup6_name"	"suppressor_sq_med"
-	// "bodygroup6_set"	"0"
-
-    "clip_bodygroup"						"car101_magazine"
-    "clip_bodygroup_index_shown"			"0"
-    "clip_bodygroup_index_hidden"			"1"
-    "clip_bodygroup_show_for_milestone_0"	"1"
-    "clip_bodygroup_show_for_milestone_1"	"0"
-    "clip_bodygroup_show_for_milestone_2"	"1"
-    "clip_bodygroup_show_for_milestone_3"	"1"
+	"clip_bodygroup"						"clip"
+	"clip_bodygroup_index_shown"			"0"
+	"clip_bodygroup_index_hidden"			"1"
+	"clip_bodygroup_show_for_milestone_0"	"1"
+	"clip_bodygroup_show_for_milestone_1"	"0"
+	"clip_bodygroup_show_for_milestone_2"	"1"
+	"clip_bodygroup_show_for_milestone_3"	"1"
 
 	Mods
 	{
@@ -331,6 +320,31 @@ WeaponData
 			"fx_muzzle_flash_world"							""
 			"fx_muzzle_flash_attach"						""
 		}
+		optic_cq_hcog_classic
+		{
+			"bodygroup2_set" 						"0"
+			"ui2_enable" 							"0"
+		}
+		optic_cq_hcog_bruiser
+		{
+			"bodygroup2_set" 						"0"
+			"ui2_enable" 							"0"
+		}
+		optic_cq_holosight
+		{
+			"bodygroup2_set" 						"0"
+			"ui2_enable" 							"0"
+		}
+		optic_cq_holosight_variable
+		{
+			"bodygroup2_set" 						"0"
+			"ui2_enable" 							"0"
+		}
+		optic_cq_threat
+		{
+			"bodygroup2_set" 						"0"
+			"ui2_enable" 							"0"
+		}
 
 		bullets_mag_l1
 		{
@@ -344,6 +358,34 @@ WeaponData
 		{
 			"ammo_clip_size"   							"27"
 		}
+		barrel_stabilizer_l1 //flowstate things
+		{
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+			"fx_muzzle_flash_view"		        ""
+			"fx_muzzle_flash_world"		        ""
+		}
+
+		barrel_stabilizer_l2
+		{
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+			"fx_muzzle_flash_view"		        ""
+			"fx_muzzle_flash_world"		        ""
+		}
+
+		barrel_stabilizer_l3
+		{
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+			"fx_muzzle_flash_view"		        ""
+			"fx_muzzle_flash_world"		        ""
+		}
+
+		barrel_stabilizer_l4_flash_hider
+		{
+		    "fx_muzzle_flash_attach"	        "muzzle_flash_suppressor_small"
+			"fx_muzzle_flash_view"		        ""
+			"fx_muzzle_flash_world"		        ""
+		}
+	}
 }
 	"ui1_enable"		"1"
 	"ui1_draw_cloaked"	"1"
