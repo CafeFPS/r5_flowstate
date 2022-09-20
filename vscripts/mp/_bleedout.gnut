@@ -124,7 +124,7 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	player.SetPlayerNetInt( "bleedoutType", EquipmentSlot_GetEquipmentTier( player, "incapshield" ) )
 	player.SetHealth( 100 )
 	
-	if( attacker.IsPlayer() && IsValid( attacker ) )
+	if( IsValid( attacker ) && attacker.IsPlayer() )
 		EmitSoundOnEntityExceptToPlayer( player, attacker, "flesh_bulletimpact_downedshot_3p_vs_3p" )
 	else
 		EmitSoundOnEntity( player, "flesh_bulletimpact_downedshot_3p_vs_3p" )

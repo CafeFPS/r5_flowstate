@@ -101,7 +101,7 @@ struct PlayerInfo
 
 void function _CustomTDM_Init()
 {
-	
+	RegisterSignal("NewKillOnPlayerStreak")
 	if(GetCurrentPlaylistVarBool("enable_global_chat", true))
 		SetConVarBool("sv_forceChatToTeamOnly", false) //thanks rexx
 	else	
@@ -464,40 +464,22 @@ void function __HighPingCheck(entity player)
 	}
 }
 
-
-void function doubletriplekillaudio(entity victim, entity attacker)
+void function DoubleAndTripleKillAudio(entity attacker)
 {
-	if (!IsValid(attacker))
+	if (!IsValid(attacker) || !attacker.p.isDownedEnemyRecently || attacker != GetKillLeader())
 		return
-
-    entity killeader = GetKillLeader()
-    float doubleKillTime = 5.0
-    float tripleKillTime = 8.0
-
-    bool ReqCheck = attacker == killeader
-    if (ReqCheck) {
-        if (!plsTripleAudio)
-            attacker.p.downedEnemyAtOneTime = 2
-        else if (plsTripleAudio)
-            attacker.p.downedEnemyAtOneTime = 3
-    }
-
-    if ((Time() - attacker.p.lastKillTimer) < doubleKillTime && ReqCheck && attacker.p.downedEnemyAtOneTime == 2) {
-        foreach(player in GetPlayerArray())
-        thread EmitSoundOnEntityOnlyToPlayer(player, player, "diag_ap_aiNotify_killLeaderDoubleKill")
-
-        if (FlowState_ChosenCharacter() == 8)
-            thread EmitSoundOnEntityOnlyToPlayer(attacker, attacker, "diag_mp_wraith_bc_iDownedMultiple_1p")
-        plsTripleAudio = true;
-    }
-
-    if ((Time() - attacker.p.lastKillTimer) < tripleKillTime && ReqCheck && attacker.p.downedEnemyAtOneTime == 3) {
-        attacker.p.downedEnemyAtOneTime = 0
-        wait 1
-        foreach(player in GetPlayerArray())
-        thread EmitSoundOnEntityOnlyToPlayer(player, player, "diag_ap_aiNotify_killLeaderTripleKill")
-        plsTripleAudio = false;
-    }
+	
+	if( attacker.p.downedEnemyAtOneTime == 2 )
+	{
+		foreach(player in GetPlayerArray())
+			thread EmitSoundOnEntityOnlyToPlayer(player, player, "diag_ap_aiNotify_killLeaderDoubleKill")
+	}
+	
+	if( attacker.p.downedEnemyAtOneTime == 3)
+	{
+		foreach(player in GetPlayerArray())
+			thread EmitSoundOnEntityOnlyToPlayer(player, player, "diag_ap_aiNotify_killLeaderTripleKill")
+	}
 }
 
 void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
@@ -582,14 +564,24 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    			attacker.p.lastKillTimer = Time()
 					
 					int attackerKills = attacker.GetPlayerNetInt( "kills" )
-					if(	!IsValid(GetKillLeader()) && attackerKills == 2)
+				
+					if(	!IsValid( GetKillLeader() ) && attackerKills == 2)
 					{
 						thread SetKillLeader( attacker, attackerKills )
 						return
 					}
 					
-					if ( IsValid(GetKillLeader()) && attackerKills > GetKillLeader().GetPlayerNetInt( "kills" ) && attacker != GetKillLeader())
+					if ( IsValid( GetKillLeader() ) && attackerKills > GetKillLeader().GetPlayerNetInt( "kills" ) && attacker != GetKillLeader())
+					{				
 						thread SetKillLeader( attacker, attackerKills )
+					}
+					
+					if ( IsValid( GetKillLeader() ) && attacker == GetKillLeader() && attacker.p.downedEnemyAtOneTime < 3)
+					{
+						attacker.p.downedEnemyAtOneTime += 1						
+						Signal(attacker, "NewKillOnPlayerStreak")
+						thread RecentlyDownedEnemy(attacker, 5)
+					}
 	    		}
             }
 	    	thread victimHandleFunc()
@@ -607,6 +599,18 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	UpdatePlayerCounts()
 }
 
+void function RecentlyDownedEnemy( entity attacker, float time )
+{
+	EndSignal(attacker, "NewKillOnPlayerStreak")
+	attacker.p.isDownedEnemyRecently = true
+	DoubleAndTripleKillAudio(attacker)
+	
+	wait time
+	
+	if(!IsValid(attacker)) return 
+	attacker.p.isDownedEnemyRecently = false
+	attacker.p.downedEnemyAtOneTime = 0
+}
 
 void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 {
