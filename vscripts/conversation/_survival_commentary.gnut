@@ -30,7 +30,7 @@ void function SurvivalCommentary_Init()
 
 int function SurvivalCommentary_GetKillLeaderEEH()
 {
-	if ( file.currentKillLeader == null || !IsValid( file.currentKillLeader ) )
+	if ( !IsValid( file.currentKillLeader ))
 		return EncodedEHandle_null
 
 	return file.currentKillLeader.GetEncodedEHandle()
@@ -54,18 +54,20 @@ int function SurvivalCommentary_GetChampionEEH()
 	return GetGlobalNetInt( "championEEH" )
 }
 
-void function SetKillLeader( entity killLeader, int numKills )
+void function SetKillLeader( entity killLeader, int numKills, bool isCustom_TDM = false )
 {
 	file.currentKillLeader = killLeader
 	file.currentKillLeaderKillAmount = numKills
-
-	wait 1.0
+	
+	if(!isCustom_TDM)
+		wait 1.0
 	
 	if(!IsValid(killLeader)) return
 	
 	int killLeaderTeam = killLeader.GetTeam()
-
-	wait 1.0
+	
+	if(!isCustom_TDM)
+		wait 1.0
 	
 	if(!IsValid(killLeader)) return
 	

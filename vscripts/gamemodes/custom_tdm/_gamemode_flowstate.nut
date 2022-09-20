@@ -567,13 +567,13 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				
 					if(	!IsValid( GetKillLeader() ) && attackerKills == 2)
 					{
-						thread SetKillLeader( attacker, attackerKills )
+						thread SetKillLeader( attacker, attackerKills, true )
 						return
 					}
 					
 					if ( IsValid( GetKillLeader() ) && attackerKills > GetKillLeader().GetPlayerNetInt( "kills" ) && attacker != GetKillLeader())
 					{				
-						thread SetKillLeader( attacker, attackerKills )
+						thread SetKillLeader( attacker, attackerKills, true)
 					}
 					
 					if ( IsValid( GetKillLeader() ) && attacker == GetKillLeader() && attacker.p.downedEnemyAtOneTime < 3)

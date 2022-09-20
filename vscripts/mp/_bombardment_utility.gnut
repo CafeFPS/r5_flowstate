@@ -97,9 +97,12 @@ void function Bombardment_MortarBarrageDetCord( entity weapon, asset effect, vec
 {
 	wait delay
 	
+	if( !IsValid(weapon) )
+		return
+		
 	entity owner = weapon.GetOwner()
 	
-	if (!IsValid(owner) || !IsValid(weapon))
+	if ( !IsValid(owner) )
 		return
 	
 	string fire_sound_1_player_3p = GetWeaponInfoFileKeyField_GlobalString(weapon.GetWeaponClassName(), "fire_sound_1_player_3p")
