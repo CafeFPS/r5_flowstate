@@ -308,7 +308,7 @@ bool function PickupAmmo( entity ammoPickup, entity player, int pickupFlags = 0,
 	int poolCount = player.AmmoPool_GetCount( ammoType )
 
 	bool autopickup = (pickupFlags & PICKUP_FLAG_AUTO) > 0
-	
+
 	//printt("PickupAmmo", autopickup, SURVIVAL_GetCountToFillStack( player, data.ref ), data.inventorySlotCount)
 
 	if ( autopickup && SURVIVAL_GetCountToFillStack( player, data.ref ) == data.inventorySlotCount )
@@ -600,7 +600,7 @@ bool function EquipEquipment( entity pickup, entity player, string equipSlot, en
 		}
 		else
 		{
-			FakePhysicsThrow( player, drop, fwd * 100, true )
+			FakePhysicsThrow( player, drop, fwd * 100 )
 		}
 	}
 	else

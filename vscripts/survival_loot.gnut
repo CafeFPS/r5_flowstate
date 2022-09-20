@@ -1116,7 +1116,7 @@ void function SpawnLoot( string name, vector origin, bool idk )
 void function SURVIVAL_ThrowLootFromPoint( vector throwOrigin, vector forward, string ref, int count )
 {
 	entity loot = SpawnGenericLoot( ref, throwOrigin, <0, 0, 0>, count )
-	FakePhysicsThrow( null, loot, forward * 100, true )
+	FakePhysicsThrow( null, loot, forward * 100 )
 }
 
 void function SURVIVAL_PlayerPickedupItem( entity pickup, entity player, int action, int pickupFlags, bool shouldKeepAlive = false )
@@ -1142,7 +1142,7 @@ entity function PlayerThrowLoot( entity player, string ref, vector angles = <0, 
 	entity loot = SpawnGenericLoot( ref, origin, angles, count )
 
 	SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
-	FakePhysicsThrow( player, loot, fwd * 100, true )
+	FakePhysicsThrow( player, loot, fwd * 100 )
 
 	BroadcastItemDrop( player, ref )
 
@@ -1586,7 +1586,7 @@ void function DeathBoxFakePhysics( entity box )
 	mover.Destroy()
 }
 
-void function FakePhysicsThrow( entity player, entity drop, vector forward, bool idk )
+void function FakePhysicsThrow( entity player, entity drop, vector forward, float DestroyTimer = -1 )
 {
 	entity physics = CreatePropPhysics( drop.GetModelName(), drop.GetOrigin(), drop.GetAngles() )
 	vector velocity = forward * 1000
@@ -1600,16 +1600,19 @@ void function FakePhysicsThrow( entity player, entity drop, vector forward, bool
 
 	physics.SetVelocity( forward )
 
-	/*thread function () : ( drop, physics )
+    if(DestroyTimer < 0)
+	    return
+
+	thread function () : ( drop, physics , DestroyTimer)
 	{
-		wait 2.0
+		wait DestroyTimer
 
 		if ( IsValid( drop ) )
 			drop.ClearParent()
 
 		if ( IsValid( physics ) )
 			physics.Destroy()
-	}()*/
+	}()
 }
 
 void function SURVIVAL_GivePlayerEquipment( entity player, string newEquip, int value )
@@ -1740,7 +1743,7 @@ bool function SURVIVAL_DropMainWeapon( entity player, string slot, vector origin
 	foreach ( loot in lootToDrop )
 	{
 		SetItemSpawnSource( loot, eSpawnSource.PLAYER_DROP, player )
-		FakePhysicsThrow( player, loot, velocity * 100, true )
+		FakePhysicsThrow( player, loot, velocity * 100 )
 	}
 
 	return true

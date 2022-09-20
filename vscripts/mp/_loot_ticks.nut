@@ -18,33 +18,33 @@ void function LootTicks_Init()
     PrecacheParticleSystem(FX_LOOT_TICK_DEATH)
     PrecacheParticleSystem(FX_LOOT_TICK_IDLE)
 
+    #if SERVER
     if(GetCurrentPlaylistVarBool("loot_ticks_enabled", true))
         AddCallback_EntitiesDidLoad( SpawnMultipleLootTicksForMap )
+    #endif
 }
 
 void function SpawnMultipleLootTicksForMap()
 {
-    array<entity> lzEnts = GetEntArrayByClass_Expensive( "info_target" )
     array<entity> tickSpawns
-        
-    foreach( lzEnt in lzEnts )
+
+    foreach( lzEnt in GetEntArrayByClass_Expensive( "info_target" ) )
     {
-        if( lzEnt.GetScriptName() != "static_loot_tick_spawn" )
-            continue
-        
-        tickSpawns.push(lzEnt)
+        if( lzEnt.GetScriptName() == "static_loot_tick_spawn" )
+            tickSpawns.push(lzEnt)
+        else continue
     }
-    
+
     int maxTicksToSpawn = MAX_LOOT_TICKS_TO_SPAWN
-    
+
     if(tickSpawns.len() == 0)
         return
-        
+
     if(tickSpawns.len() < maxTicksToSpawn)
         maxTicksToSpawn = tickSpawns.len()
-        
+
     tickSpawns.randomize()
-    
+
     for(int i = 0; i < maxTicksToSpawn; i++)
     {
         entity lzEnt = tickSpawns[i]
@@ -52,63 +52,59 @@ void function SpawnMultipleLootTicksForMap()
     }
 }
 
-void function SpawnLootTick(vector origin, vector angles)
+entity function SpawnLootTick(vector origin, vector angles, array<string> Lootpool = ["loottick_static_01", "loottick_static_02", "loottick_static_03"])
 {
     entity lootTick = CreateEntity( "npc_frag_drone" )
-    SetSpawnOption_AISettings( lootTick, "npc_frag_drone_treasure_tick" )
-    lootTick.SetOrigin( origin )
-    lootTick.SetAngles( angles )
-    lootTick.SetDamageNotifications( false )
-    AddEntityCallback_OnDamaged(lootTick, OnLootTickDamaged)
-    AddEntityCallback_OnKilled(lootTick, OnLootTickKilled)
-    SetTeam(lootTick, TEAM_UNASSIGNED)
-    file.tickLootInside[lootTick] <- []
-    AddMultipleLootItemsToLootTick(lootTick, ["loottick_static_01", "loottick_static_02", "loottick_static_03"])
-    DispatchSpawn( lootTick )   
+    {
+        SetSpawnOption_AISettings( lootTick, "npc_frag_drone_treasure_tick" )
+        lootTick.SetOrigin( origin )
+        lootTick.SetAngles( angles )
+        lootTick.SetDamageNotifications( false )
+        SetTeam( lootTick, TEAM_UNASSIGNED)
+
+        AddEntityCallback_OnDamaged( lootTick, OnLootTickDamaged )
+        AddEntityCallback_OnKilled( lootTick, OnLootTickKilled )
+
+        file.tickLootInside[lootTick] <- []
+        AddMultipleLootItemsToLootTick( lootTick, Lootpool )
+
+        DispatchSpawn( lootTick )
+    }
+
     thread PlayAnim( lootTick, "sd_closed_to_open" )
-    thread LootTickParticleThink(lootTick)
-	thread LootTickSoundThink(lootTick)
+    thread LootTickParticleThink( lootTick )
+	thread LootTickSoundThink( lootTick )
+    return lootTick
 }
 
-void function LootTickSoundThink(entity ent)
+void function LootTickSoundThink( entity tick )
 {
-    ent.EndSignal( "OnDeath" )
-    ent.EndSignal( "OnDestroy" )
-    
-    while(true)
-    {
-        int soundIndex = RandomInt( 4 )
-        string tickChirp
+    tick.EndSignal( "OnDeath" )
+    tick.EndSignal( "OnDestroy" )
 
-        switch(soundIndex)
-        {
-            case 0:
-                tickChirp = "LootTick_Vocal_Generic"
-                break
-            case 1:
-                tickChirp = "LootTick_Vocal_Cheerful"
-                break
-            case 2:
-                tickChirp = "LootTick_Vocal_Concerned"
-                break
-            case 3: 
-                tickChirp = "LootTick_Vocal_Curious"
-                break
-            case 4:
-                tickChirp = "LootTick_Vocal_Fleeing"
-                break
-        }
-        EmitSoundOnEntity( ent, tickChirp )
+    while( IsValid( tick ) )
+    {
+        array<string> ChirpSounds = [
+            "LootTick_Vocal_Generic",
+            "LootTick_Vocal_Cheerful",
+            "LootTick_Vocal_Concerned",
+            "LootTick_Vocal_Curious",
+            "LootTick_Vocal_Fleeing"
+        ]
+        string RandomChirp = ChirpSounds[ RandomInt( ChirpSounds.len() ) ]
+
+        EmitSoundOnEntity( tick, RandomChirp )
+
         wait RandomFloatRange(2, 6)
     }
 }
 
-int function GetLootTickRarity(entity ent)
+int function GetLootTickRarity( entity tick )
 {
-    if(!IsValid(ent))
+    if( !IsValid(tick) )
         return 0
-    
-    array<string> lootToSpawn = GetLootTickContents( ent )
+
+    array<string> lootToSpawn = GetLootTickContents( tick )
     int lootTier  = 0
     foreach ( ref in lootToSpawn )
     {
@@ -119,77 +115,65 @@ int function GetLootTickRarity(entity ent)
     return lootTier
 }
 
-void function LootTickParticleThink(entity ent)
+void function LootTickParticleThink( entity tick )
 {
-    ent.EndSignal( "OnDeath" )
-    ent.EndSignal( "OnDestroy" )
-    
-    int lootTier = GetLootTickRarity(ent)
-    while(true)
+    tick.EndSignal( "OnDeath" )
+    tick.EndSignal( "OnDestroy" )
+
+    int lootTier = GetLootTickRarity(tick)
+    float ParticleDuration = 0.5
+    while( IsValid( tick ) )
     {
-        int attachID = ent.LookupAttachment( "FX_L_EYE" )
-        entity newFxL = StartParticleEffectOnEntity_ReturnEntity( ent, GetParticleSystemIndex( $"P_loot_tick_beam_idle_flash" ), FX_PATTACH_POINT_FOLLOW, attachID )
-        EffectSetControlPointVector( newFxL, 1, GetFXRarityColorForTier(lootTier) )
-        
-        attachID = ent.LookupAttachment( "FX_C_EYE" )
-        entity newFxC = StartParticleEffectOnEntity_ReturnEntity( ent, GetParticleSystemIndex( $"P_loot_tick_beam_idle_flash" ), FX_PATTACH_POINT_FOLLOW, attachID )
-        EffectSetControlPointVector( newFxC, 1, GetFXRarityColorForTier(lootTier) )
-        
-        attachID = ent.LookupAttachment( "FX_R_EYE" )
-           
-        entity newFxR = StartParticleEffectOnEntity_ReturnEntity( ent, GetParticleSystemIndex( $"P_loot_tick_beam_idle_flash" ), FX_PATTACH_POINT_FOLLOW, attachID )
-        EffectSetControlPointVector( newFxR, 1, GetFXRarityColorForTier(lootTier) )
-        wait 0.5
-        
-        if ( IsValid( newFxL ) )
-			newFxL.Destroy()
-        if ( IsValid( newFxC ) )
-			newFxC.Destroy()
-        if ( IsValid( newFxR ) )
-			newFxR.Destroy()
+        array<entity> FxHandles = [
+            PlayFXOnEntity( $"P_loot_tick_beam_idle_flash", tick, "FX_L_EYE" ), // left eye
+            PlayFXOnEntity( $"P_loot_tick_beam_idle_flash", tick, "FX_C_EYE" ), // center eye
+            PlayFXOnEntity( $"P_loot_tick_beam_idle_flash", tick, "FX_R_EYE" )  // right eye
+        ]
+
+        foreach(entity FxHandle in FxHandles)
+        {
+            EffectSetControlPointVector( FxHandle, 1, GetFXRarityColorForTier(lootTier) )
+            EntFireByHandle( FxHandle, "Kill", "", ParticleDuration, null, null )
+        }
+
+        wait ParticleDuration
     }
 }
 
-void function OnLootTickDamaged(entity ent, var damageInfo)
+void function OnLootTickDamaged( entity tick, var damageInfo )
 {
     DamageInfo_SetDamage( damageInfo, 0 )
-    ent.Die()
+    tick.Die()
 }
 
-void function OnLootTickKilled(entity ent, var damageInfo)
+void function OnLootTickKilled( entity tick, var damageInfo )
 {
-	int expFX = GetParticleSystemIndex( FX_LOOT_TICK_DEATH )
-    
-    vector pos = ent.GetOrigin()
-    int tagID = ent.LookupAttachment( "CHESTFOCUS" )
-	vector fxOrg = ent.GetAttachmentOrigin( tagID )
-    
-	EmitSoundAtPosition( TEAM_ANY, pos, "LootTick_Explosion" )
-	CreateShake( pos, 10, 105, 1.25, 768 )
-	entity newFx = StartParticleEffectInWorld_ReturnEntity( expFX, fxOrg, <0, 0, 0> )
-    EffectSetControlPointVector( newFx, 1, GetFXRarityColorForTier(GetLootTickRarity(ent)) )
-    EmitSoundOnEntity( ent, "LootTick_Vocal_Death" )
-    
-    //Spawn loot
-    array<string> lootToSpawn = GetLootTickContents( ent )
-    foreach ( ref in lootToSpawn )
+    EmitSoundOnEntity( tick, "LootTick_Vocal_Death" )
+
+	EmitSoundAtPosition( TEAM_ANY, tick.GetOrigin(), "LootTick_Explosion" )
+	CreateShake( tick.GetOrigin(), 10, 105, 1.25, 768 )
+
+    entity FxHandle = PlayFX( FX_LOOT_TICK_DEATH, tick.GetWorldSpaceCenter() )
     {
-        SpawnLootTickLoot( ent, ref )
+        EffectSetControlPointVector( FxHandle, 1, GetFXRarityColorForTier (GetLootTickRarity(tick) ) )
+        EntFireByHandle( FxHandle, "Kill", "", 5, null, null )
     }
-    
-	ent.Gib( <0, 0, 100> ) //Used to do .Destroy() on the frag drones immediately, but this meant you can't display the obiturary correctly. Instead, since it's dead already just hide it
+
+    //Spawn loot
+    foreach ( ref in GetLootTickContents( tick ) )
+        SpawnLootTickLoot( tick, ref )
+
+    //Used to do .Destroy() on the frag drones immediately, but this meant you can't display the obiturary correctly. Instead, since it's dead already just hide it
+    tick.Gib( <0, 0, 100> )
 }
 
-void function SpawnLootTickLoot(entity ent, string ref)
+void function SpawnLootTickLoot( entity tick, string ref )
 {
-    vector origin       = ent.GetOrigin() + <0, 0, 10>
-    vector angles = ent.GetAngles()
 	LootData data = SURVIVAL_Loot_GetLootDataByRef( ref )
 
-	entity loot   = SpawnGenericLoot( ref, origin, angles, data.countPerDrop )
-    FakePhysicsThrow( null, loot, <RandomFloatRange(0, 360), RandomFloatRange(0, 360), RandomFloatRange(0, 360)>, true )
+	entity loot = SpawnGenericLoot( ref, tick.GetOrigin() + <0, 0, 10>, tick.GetAngles(), data.countPerDrop )
+    FakePhysicsThrow( null, loot, <RandomFloatRange(0, 360), RandomFloatRange(0, 360), RandomFloatRange(0, 360)>, 5 )
 }
-
 
 void function AddMultipleLootItemsToLootTick( entity tick, array<string> refs )
 {
@@ -216,10 +200,5 @@ array<string> function GetLootTickContents( entity tick )
 
 void function SpawnLootTickAtCrosshair()
 {
-	entity player = GetPlayerArray()[ 0 ]
-
-	vector origin = GetPlayerCrosshairOrigin( player )
-	vector angles = Vector( 0, 0, 0 )
-
-	thread SpawnLootTick(origin, angles)
+	thread SpawnLootTick( GetPlayerCrosshairOrigin(GetPlayerArray()[ 0 ]) , <0,0,0>)
 }

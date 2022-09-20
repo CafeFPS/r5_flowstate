@@ -178,6 +178,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	//ScriptCompilerTest()
 	LoadDiamond()
 	MapTriggers_Init()
+	LootTicks_Init()
 
 	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
 	RegisterSignal( "MirageSpotted" )
