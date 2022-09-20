@@ -215,11 +215,11 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-	if(GetMapName() != "mp_rr_canyonlands_staging" && GetCurrentPlaylistVarBool( "flowstateFlyersAndDronesEnabled", false )){
-		InitLootDrones() //flyers
-		InitLootRollers() //flyers
-		InitLootDronePaths() //flyers
-		SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 40 ))} //flyers
+	// if(GetMapName() != "mp_rr_canyonlands_staging" && GetCurrentPlaylistVarBool( "flowstateFlyersAndDronesEnabled", false )){
+		// InitLootDrones() //flyers
+		// InitLootRollers() //flyers
+		// InitLootDronePaths() //flyers
+		// SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 40 ))} //flyers
 	thread __EntitiesDidLoad()
 }
 

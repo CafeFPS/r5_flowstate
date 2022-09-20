@@ -35,9 +35,6 @@ void function InitLootDrones()
 }
 
 void function InitLootDronePaths()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	file.ItemsTier1 = SURVIVAL_Loot_GetByTier(1)
 	file.ItemsTier2 = SURVIVAL_Loot_GetByTier(2)
@@ -128,9 +125,6 @@ array<LootDroneData> function SpawnLootDrones( int numToSpawn )
 //////////////////////////
 //////////////////////////
 void function FlyerAnimation(entity flyer)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	if(IsValid(flyer))
 		flyer.Anim_Play( "fl_flap_cycle" )
@@ -143,9 +137,6 @@ array<entity> function LootDrones_GetRandomPath()
 }
 
 LootDroneData function LootDrones_SpawnLootDroneAtRandomPath()
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	LootDroneData data
 	array<entity> path = LootDrones_GetRandomPath()
@@ -246,9 +237,6 @@ LootDroneData function LootDrones_SpawnLootDroneAtRandomPath()
 }
 
 void function serversideColorTiers(LootDroneData data)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	while (true)
 	{
@@ -280,9 +268,6 @@ void function serversideColorTiers(LootDroneData data)
 }
 
 string function returnRgbColorInOrder(LootDroneData data)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 int index = data.rgbInt
 if (index == 0 && !data.stoploottier) {
@@ -329,9 +314,6 @@ entity ornull function LootDrones_GetAvailableStartNodeFromPath( array<entity> p
 }
 
 void function CreateFlowStateDeathBoxForPlayer2( entity victim, vector origin, vector angles, string lootTier)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 		entity deathBox = FlowState_CreateDeathBox2( victim, true , origin, angles)
 		StartParticleEffectOnEntityWithPos_ReturnEntity( deathBox, GetParticleSystemIndex( DEATHBOX_DROP_FX ), FX_PATTACH_ABSORIGIN_FOLLOW, deathBox.LookupAttachment( "CHESTFOCUS" ), <0,0,0>, VectorToAngles( <0,0,-1> ) )
@@ -410,9 +392,6 @@ void function CreateFlowStateDeathBoxForPlayer2( entity victim, vector origin, v
 }
 
 entity function FlowState_CreateDeathBox2( entity player, bool hasCard, vector origin, vector angles)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	entity box = CreatePropDeathBox_NoDispatchSpawn( DEATH_BOX, origin, angles, 6 )
 	
@@ -444,9 +423,6 @@ entity function FlowState_CreateDeathBox2( entity player, bool hasCard, vector o
 }
 
 void function updateDeathbox(LootDroneData data)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	entity player = file.lastattacker 
 	if(IsValid(player)){
@@ -470,9 +446,6 @@ void function updateDeathbox(LootDroneData data)
 }
 
 void function FlyerMove( LootDroneData data )
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	Assert( IsNewThread(), "Must be threaded off" )
 	Assert( data.path.len() > 0, "Path must have at least one node" )
@@ -494,9 +467,6 @@ void function FlyerMove( LootDroneData data )
 }
 
 void function PlayDyingFlyerAnimAndReleaseDeathbox(entity flyer)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	if(IsValid(flyer)){
 		flyer.Anim_Play( "fl_fly_death" )
@@ -510,9 +480,6 @@ void function PlayDyingFlyerAnimAndReleaseDeathbox(entity flyer)
 		}
 }
 void function Flyers_OnDamaged(entity ent, var damageInfo)
-///////////////////////////////////////////////////////
-//By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
-///////////////////////////////////////////////////////
 {
 	entity attacker = DamageInfo_GetAttacker(damageInfo)
 	if(!attacker.IsPlayer()) return

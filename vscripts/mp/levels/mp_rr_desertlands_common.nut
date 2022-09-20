@@ -93,18 +93,10 @@ void function Desertlands_MapInit_Common()
 #if SERVER
 void function EntitiesDidLoad()
 {
-	if(GetCurrentPlaylistVarBool( "flowstateFlyersAndDronesEnabled", true )){
-		InitLootDrones()
-		InitLootRollers()
-		InitLootDronePaths()
-		SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 40 ))}
-	#if SERVER && DEV
-	test_runmapchecks()
-	#endif
 	
 	if( GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) )
 		return
-		
+
 	SpawnEditorProps()
 	GeyserInit()
 	Updrafts_Init()
@@ -114,23 +106,32 @@ void function EntitiesDidLoad()
 		thread DesertlandsTrain_Init()
 
 	FillLootTable()
-	if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) ){
-
-	if(!GetCurrentPlaylistVarBool("flowstateGrenadesDisabled", false )){
-	// //Granadas-Grenades
-	SpawnGrenades(<19010,33300,-810>, <0, 0, 0>, 6, ["thermite", "frag", "arc"], 3)
-	SpawnGrenades(<18882,29908,-810>,<0, -90, 0>, 6, ["thermite", "frag", "arc"], 3)
-	SpawnGrenades(<15346,30084,-810>,<0, 90, 0>, 6, ["thermite", "frag", "arc"], 3)
-	SpawnGrenades(<15346,33540,-810>,<0, 90, 0>, 6, ["thermite", "frag", "arc"], 3)
-
-	SpawnGrenades(<12099, 6976,-4330>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
-	SpawnGrenades(<11238, 4238,-4283>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
-	SpawnGrenades(<8443, 4459, -4283>,<0, 0, 0>, 10, ["thermite", "frag", "arc"], 1)
-	SpawnGrenades(<10293, 3890, -3948>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
+	
+	if(GameRules_GetGameMode() != "custom_tdm" )
+	{
+		InitLootDrones()
+		InitLootRollers()
+		InitLootDronePaths()
+		SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 20 ))
 	}
-	CreateWeaponRackSkillTrainer(<17250,32500,2220>, <0,-90,0>, "mp_weapon_sniper")
-	CreateWeaponRackSkillTrainer(<17500,32500,2220>, <0,-90,0>, "mp_weapon_mastiff")
-	CreateWeaponRackSkillTrainer(<17750,32500,2220>, <0,-90,0>, "mp_weapon_lstar")}
+	else{
+		if(!GetCurrentPlaylistVarBool("flowstatePROPHUNT", false ) && !GetCurrentPlaylistVarBool("flowstateGrenadesDisabled", false ))
+		{
+			//Granadas-Grenades
+			SpawnGrenades(<19010,33300,-810>, <0, 0, 0>, 6, ["thermite", "frag", "arc"], 3)
+			SpawnGrenades(<18882,29908,-810>,<0, -90, 0>, 6, ["thermite", "frag", "arc"], 3)
+			SpawnGrenades(<15346,30084,-810>,<0, 90, 0>, 6, ["thermite", "frag", "arc"], 3)
+			SpawnGrenades(<15346,33540,-810>,<0, 90, 0>, 6, ["thermite", "frag", "arc"], 3)
+
+			SpawnGrenades(<12099, 6976,-4330>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
+			SpawnGrenades(<11238, 4238,-4283>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
+			SpawnGrenades(<8443, 4459, -4283>,<0, 0, 0>, 10, ["thermite", "frag", "arc"], 1)
+			SpawnGrenades(<10293, 3890, -3948>,<0, -90, 0>, 10, ["thermite", "frag", "arc"], 1)
+		}
+		CreateWeaponRackSkillTrainer(<17250,32500,2220>, <0,-90,0>, "mp_weapon_sniper")
+		CreateWeaponRackSkillTrainer(<17500,32500,2220>, <0,-90,0>, "mp_weapon_mastiff")
+		CreateWeaponRackSkillTrainer(<17750,32500,2220>, <0,-90,0>, "mp_weapon_lstar")
+	}
 }
 #endif
 
