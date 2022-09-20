@@ -95,6 +95,7 @@ void function _ChallengesByColombia_Init()
 	PrecacheModel($"mdl/imc_interior/imc_int_fusebox_01.rmdl")
 	PrecacheModel($"mdl/barriers/shooting_range_target_02.rmdl")
 	PrecacheModel($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl")
+	PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl")
 	PrecacheModel( $"mdl/pipes/slum_pipe_large_yellow_256_02.rmdl" )
 	
 	//death callback for player because some challenges can kill player
