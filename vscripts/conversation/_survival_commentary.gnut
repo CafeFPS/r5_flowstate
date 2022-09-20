@@ -235,8 +235,8 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 					return
 
 				wait 5.8
-				
-				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weTookFirstBlood" )
+				if(!IsValid(player)) break
+					PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weTookFirstBlood" )
 				break
             case eSurvivalEventType.CARE_PACKAGE_DROPPING:
                 thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_droppingCarePack_01_01_3p")
@@ -248,7 +248,7 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 					return
 
 				wait 4.0
-
+				if(!IsValid(player)) break
 				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weKilledChampion" )
 				break;
 			case eSurvivalEventType.KILL_LEADER_ELIMINATED:
@@ -258,7 +258,7 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 					return
 
 				wait 5.8
-
+				if(!IsValid(player)) break
 				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weKilledKillLeader" )
 				break;
 			case eSurvivalEventType.YOU_ARE_NEW_KILL_LEADER:
@@ -266,7 +266,7 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_killLeaderNew_01_01_3p" )
 
 				wait 5.5
-
+				if(!IsValid(player)) break
 				int killLeaderTeam = player.GetTeam()
 				array<entity> teamMembers = GetPlayerArrayOfTeam( killLeaderTeam )
 				teamMembers.fastremovebyvalue( player )
@@ -321,7 +321,7 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 					return
 
 				wait 4.0
-				
+				if(!IsValid(player)) break
 				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weTookFirstBlood" )
 				break;
 			case eSurvivalEventType.CHAMPION_ELIMINATED:
@@ -331,7 +331,7 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 					return
 
 				wait 4.8
-
+				if(!IsValid(player)) break
 				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weKilledChampion" )
 				break;
 			case eSurvivalEventType.KILL_LEADER_ELIMINATED:
@@ -341,7 +341,7 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 					return
 
 				wait 4.8
-
+				if(!IsValid(player)) break
 				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weKilledKillLeader" )
 				break;
 			case eSurvivalEventType.YOU_ARE_NEW_KILL_LEADER:
@@ -349,7 +349,7 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderNew_02" )
 
 				wait 4.5
-
+				if(!IsValid(player)) break
 				int killLeaderTeam = player.GetTeam()
 				array<entity> teamMembers = GetPlayerArrayOfTeam( killLeaderTeam )
 				teamMembers.fastremovebyvalue( player )
@@ -400,7 +400,8 @@ void function SurvivalCommentary_PlaySoundForAllPlayers( string sound )
 
 	foreach( entity player in GetPlayerArray() )
 	{
-		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
+		if(IsValid(player))
+			thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
 	}
 }
 
