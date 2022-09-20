@@ -165,7 +165,7 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
                 dropshiplocations.append(< -22467, -9567, 2949 > )
                 dropshiplocations.append(< -18494, -10427, 2825 > )
 				dropshiplocations.append(< -22590, -7534, 3103 > )
-				break;				
+				break;
             case "Labs":
                 dropshiplocations.append(< 28818, 2590, 3798 > )
                 dropshiplocations.append(< 25924, 2161, 3848 > )
@@ -201,7 +201,7 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
 				dropshiplocations.append(< 704,-11520,3392 > )
                 dropshiplocations.append(< -768,-10944,2880 > )
 				break;
-				
+
 		}
 	} else if(mapname == "mp_rr_canyonlands_64k_x_64k" )
     {
@@ -277,7 +277,7 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
                 dropshiplocations.append(< -9856,-17856,4416 > )
                 dropshiplocations.append(< -10368,-13760,4288 > )
 				dropshiplocations.append(< -13056,-17920,3392 > )
-				break;				
+				break;
             case "Market":
                 dropshiplocations.append(< 3904,-11456,3392 > )
                 dropshiplocations.append(< 3520,-9920,3456 > )
@@ -285,7 +285,7 @@ array<vector> function GetNewFFADropShipLocations(string locationname, string ma
                 dropshiplocations.append(< 896,-10560,3328 > )
 				dropshiplocations.append(< 704,-11520,3392 > )
                 dropshiplocations.append(< -768,-10944,2880 > )
-				break;				
+				break;
 		}
 	}
 
@@ -472,7 +472,7 @@ PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x128_03.rmdl")
 PrecacheModel( $"mdl/thunderdome/thunderdome_cage_frame_256_01.rmdl")
 
 }
-if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){	
+if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx"){
 PrecacheModel( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl" )
 PrecacheModel( $"mdl/desertlands/desertlands_sign_01.rmdl" )
 PrecacheModel( $"mdl/desertlands/desertlands_lobby_couch_05.rmdl" )
@@ -754,87 +754,109 @@ PrecacheModel( $"mdl/rocks/sulfur_geyser_brown_02.rmdl" )
 }
 
 #if SERVER
-float groundmedkit_heal_time = 0
-array<entity> fx_children
+const asset  MEDKITMDL = $"mdl/weapons_r5/loot/w_loot_wep_iso_health_main_large.rmdl"
+const asset  MEDKITFX  = $"survival_loot_pickup_Medkit_3P"
+const string MEDKITSFX  = "Lifeline_Drone_Healing_1P"
 
-void function CreateGroundMedKit(vector pos)
+struct MedkitData
 {
-////////////////////////////////////////////////////////
-////// MADE BY Zer0Bytes#4428
-////////////////////////////////////////////////////////
+   float healh_time
+   float respawn_time
+}
+table< entity, MedkitData > MedkitObjects
 
-    entity medkit_model = CreateFRProp( $"mdl/weapons_r5/loot/_master/w_loot_cha_shield_upgrade_body_v1.rmdl", pos + <0,0,10> , ZERO_VECTOR, true, 50000)
-    medkit_model.SetModelScale( 3 )
-    medkit_model.kv.renderamt = 255
-    medkit_model.kv.rendermode = 3
-    medkit_model.kv.rendercolor = "19 207 69 255"
-    medkit_model.kv.solid = 0
+void function CreateFlowStateGroundMedKit( vector Origin , vector Angles = ZERO_VECTOR , float healh_time = 3, float respawn_time = 10) {
 
-    medkit_model.NotSolid()
-    thread RotateFRLoop(medkit_model, 7.0 ,false)
-
-    for(int i = 0; i < 4; i++)
+    entity proxy = CreatePropDynamic( MEDKITMDL , Origin, Angles , SOLID_VPHYSICS, 15000)
     {
-        entity trailFXHandle = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( $"P_LL_med_drone_jet_ctr_loop" ), medkit_model.GetOrigin(), <0,0 +  i * 90 ,0>)
-        trailFXHandle.SetParent(medkit_model)
-        fx_children.append(trailFXHandle)
+        proxy.SetModel( MEDKITMDL )
+        proxy.kv.renderamt = 255
+        proxy.kv.rendermode = 3
+        proxy.kv.rendercolor = "255 255 255 200"
+        proxy.NotSolid()
     }
-    EmitSoundOnEntity( medkit_model, $"survival_loot_pickup_Medkit_3P" )
-    entity medkit_proxy = CreateEntity( "trigger_cylinder" )
-    medkit_proxy.SetRadius( 50 );medkit_proxy.SetAboveHeight( 60 );medkit_proxy.SetBelowHeight( 0 );medkit_proxy.SetOrigin( pos )
-    DispatchSpawn( medkit_proxy )
-    medkit_proxy.SetParent(medkit_model)
-    thread MedKitHeal(medkit_proxy,medkit_model,pos)
+
+    MedkitData structdata // init struct
+    MedkitObjects[proxy] <- structdata
+    MedkitObjects[proxy].healh_time = healh_time
+    MedkitObjects[proxy].respawn_time = respawn_time
+
+    for (int i = 0; i < 4; i++) {
+        entity trailFXHandle = PlayLoopFXOnEntity( $"P_LL_med_drone_jet_ctr_loop" , proxy , "" )
+        trailFXHandle.SetAngles( < 0, 0 + i * 90, 0 > )
+        trailFXHandle.SetParent( proxy )
+    }
+
+    EmitSoundOnEntity( proxy , $"survival_loot_pickup_Medkit_3P")
+
+    entity trigger = CreateEntity("trigger_cylinder")
+    {
+        trigger.SetOrigin( Origin )
+        trigger.SetRadius(50)
+        trigger.SetAboveHeight(60)
+        trigger.SetBelowHeight(10)
+        trigger.SetEnterCallback( FlowstateMedkitTriggerEnter )
+        DispatchSpawn( trigger )
+        trigger.SetParent( proxy )
+    }
+
+    proxy.SetScriptName( "MedKit_Active" )
+
+    float turnspeed = -4
+    while( IsValid( proxy ) )
+    {
+        if(proxy.GetAngles().y == -360)
+            proxy.SetAngles( <0,0,0> )
+        else
+            proxy.SetAngles( proxy.GetAngles() + <0,turnspeed,0> )
+        WaitFrame()
+    }
 }
 
-void function MedKitHeal( entity medkit_proxy , entity medkit_model,vector pos)
-{ bool active = true
-    while (active)
+void function FlowstateMedkitTriggerEnter(entity trigger, entity ent)
+{
+    if(IsValid( ent ) && ent.IsPlayer() && trigger.GetParent().GetScriptName() != "MedKit_Disabled")
     {
-        if(IsValid(medkit_proxy))
+        thread(void function() : ( trigger, ent )
         {
-            foreach(player in GetPlayerArray())
+            entity medkit = trigger.GetParent()
             {
-                if(medkit_proxy.IsTouching(player))
-                {
-                    StatusEffect_AddTimed( player, eStatusEffect.drone_healing, 1 , 3, 5 )
-
-                    EmitSoundOnEntityOnlyToPlayer( player, player, "Lifeline_Drone_Healing_1P" )
-                    medkit_model.kv.rendercolor = "255 255 255 30"
-
-                    wait groundmedkit_heal_time
-					Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
-					GiveFlowstateOvershield(player, true)
-					Message(player,"YOU HAVE EXTRA SHIELD!", "", 4, "")
-
-                    StopSoundOnEntity( player, "Lifeline_Drone_Healing_1P" )
-                    thread OnMedkitPickup(medkit_proxy,medkit_model,pos)
-					wait 1
-                    for (int i = 0; i < fx_children.len(); i++)
-                    {
-                        try {fx_children[i].Destroy()}catch(e69){}
-                    }
-                    fx_children = []
-
-                   try {medkit_proxy.Destroy()}catch(e69){}
-                }
+                medkit.kv.rendercolor = "255 255 255 50"
+                medkit.SetScriptName( "MedKit_Disabled" )
             }
 
-        } else {active = false ; break}
-        wait 0.01
-    } 
+            StatusEffect_AddTimed( ent , eStatusEffect.drone_healing, 1, 3, 5)
+            EmitSoundOnEntity( ent , "Lifeline_Drone_Healing_1P")
+
+            wait MedkitObjects[medkit].healh_time
+
+            ent.SetHealth( ent.GetMaxHealth() )
+
+            if (EquipmentSlot_GetLootRefForSlot( ent , "armor") != "")
+                ent.SetShieldHealth( ent.GetShieldHealthMax() )
+            else
+            {
+                Inventory_SetPlayerEquipment( ent, "armor_pickup_lv3", "armor")
+                GiveFlowstateOvershield( ent, true )
+                Message( ent,"YOU HAVE EXTRA SHIELD!", "", 4, "" )
+            }
+
+            StopSoundOnEntity( ent , "Lifeline_Drone_Healing_1P")
+
+            wait MedkitObjects[medkit].respawn_time
+
+            array<vector> SpawnData = [ medkit.GetOrigin() , medkit.GetAngles() ]
+
+            foreach( p in GetPlayerArray() )
+                Message( p, "EXTRA SHIELD AVAILABLE!", "", 4, "")
+
+            CreateFlowStateGroundMedKit( SpawnData[0] , SpawnData[1] , MedkitObjects[medkit].healh_time, MedkitObjects[medkit].respawn_time)
+
+            medkit.Destroy()
+        }())
+    }
 }
 
-void function OnMedkitPickup(entity medkit_proxy , entity medkit_model,vector pos)
-{
-    medkit_proxy.WaitSignal( "OnDestroy" )
-	try {medkit_model.Destroy()}catch(e69){}
-    wait FlowState_ExtrashieldsSpawntime()
-    CreateGroundMedKit( pos )
-		foreach(sPlayer in GetPlayerArray()){
-		Message(sPlayer, "EXTRA SHIELD AVAILABLE!", "", 4, "")
-				}
-}
 
 void function RotateFRLoop(entity ent,float speed,bool rightside)
 {
@@ -858,11 +880,11 @@ void function RotateFRLoop(entity ent,float speed,bool rightside)
 }
 
 
-// ███████ ██   ██ ██ ██      ██          ████████ ██████   █████  ██ ███    ██ ███████ ██████  
-// ██      ██  ██  ██ ██      ██             ██    ██   ██ ██   ██ ██ ████   ██ ██      ██   ██ 
-// ███████ █████   ██ ██      ██             ██    ██████  ███████ ██ ██ ██  ██ █████   ██████  
-     // ██ ██  ██  ██ ██      ██             ██    ██   ██ ██   ██ ██ ██  ██ ██ ██      ██   ██ 
-// ███████ ██   ██ ██ ███████ ███████        ██    ██   ██ ██   ██ ██ ██   ████ ███████ ██   ██ 
+// ███████ ██   ██ ██ ██      ██          ████████ ██████   █████  ██ ███    ██ ███████ ██████
+// ██      ██  ██  ██ ██      ██             ██    ██   ██ ██   ██ ██ ████   ██ ██      ██   ██
+// ███████ █████   ██ ██      ██             ██    ██████  ███████ ██ ██ ██  ██ █████   ██████
+     // ██ ██  ██  ██ ██      ██             ██    ██   ██ ██   ██ ██ ██  ██ ██ ██      ██   ██
+// ███████ ██   ██ ██ ███████ ███████        ██    ██   ██ ██   ██ ██ ██   ████ ███████ ██   ██
 
 
 void function CreateFloor(int x, int y, int z, int width, int length)
@@ -989,7 +1011,7 @@ void function CreateZiplineAAA( vector startPos, vector endPos )
 {
 	local subdivisions = 8 // 25
 	local slack = 100 // 25
-	
+
 	string startpointName = UniqueString( "rope_startpoint" )
 	string endpointName = UniqueString( "rope_endpoint" )
 	entity rope_start = CreateEntity( "move_rope" )
@@ -1022,7 +1044,7 @@ void function CreateZiplineAAA( vector startPos, vector endPos )
 	rope_end.SetOrigin( endPos )
 	DispatchSpawn( rope_start )
 	DispatchSpawn( rope_end )
-	
+
 }
 
 void function SetTargetNameAAA( entity ent, string name )
@@ -2289,9 +2311,9 @@ void function SpawnWhiteForestProps()
             CreateEditorPropZero( $"mdl/foliage/tree_green_forest_med_01.rmdl", <-31105.4,21147.8,2044.53>, <0,180,0>, true, 50000, -1 ),
             CreateEditorPropZero( $"mdl/foliage/tree_green_forest_med_01.rmdl", <-32542.3,22515.4,2328.45>, <0,90,0>, true, 50000, -1 ),
             CreateEditorPropZero( $"mdl/foliage/tree_green_forest_med_01.rmdl", <-31993.4,22155.7,2285.82>, <0,180,0>, true, 50000, -1 )
-        ]     
+        ]
 
-		
+
         for(int i;i < treez.len();i++)
         {
             treez[i].SetModelScale(3)
