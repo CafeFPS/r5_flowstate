@@ -4481,14 +4481,20 @@ void function TryPlayWeaponBattleChatterLine( entity player, entity offhandWeapo
 
 void function PlayBattleChatterLineToSpeakerAndTeam( entity player, string sound )
 {
+	if(!IsValid(player)) return
+	
 	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
-		thread PlayDialogueForPlayer( sound, teamMember, player )
+		if(IsValid(teamMember))
+			thread PlayDialogueForPlayer( sound, teamMember, player )
 }
 
 void function PlayBattleChatterLineDelayedToSpeakerAndTeam( entity player, string sound, float delay )
 {
+	if(!IsValid(player)) return
+	
 	foreach ( teamMember in GetPlayerArrayOfTeam( player.GetTeam() ) )
-		thread PlayDialogueForPlayer( sound, teamMember, player, delay )
+		if(IsValid(teamMember))
+			thread PlayDialogueForPlayer( sound, teamMember, player, delay )
 }
 
 void function AddToUltimateRealm( entity player, entity offhandWeapon )
