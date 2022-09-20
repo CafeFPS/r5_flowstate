@@ -679,7 +679,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 		
-		if(GetCurrentPlaylistVarBool("flowstateGiveAllOpticsToPlayer", true )){
+		if(GetCurrentPlaylistVarBool("flowstateGiveAllOpticsToPlayer", false )){
 			SetPlayerInventory( player, [] )
 			Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
 			array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
