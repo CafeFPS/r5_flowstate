@@ -208,6 +208,7 @@ entity function CreateBubbleShieldWithSettings( int team, vector origin, vector 
 	bubbleShield.SetOrigin( origin )
 	bubbleShield.SetAngles( angles )
      // Blocks bullets, projectiles but not players and not AI
+	bubbleShield.SetScriptName("domeOfProtection")
 	bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
 	bubbleShield.SetBlocksRadiusDamage( true )
 	DispatchSpawn( bubbleShield )

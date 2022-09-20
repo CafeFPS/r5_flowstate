@@ -575,6 +575,7 @@ void function WeaponMakesDefenseSystem( entity weapon, asset model, TrophyPlacem
 	pylon.SetOwner(owner)
 	pylon.e.pylonhealth = TROPHY_HEALTH_AMOUNT
 	pylon.EndSignal( "OnDestroy" )
+	pylon.SetScriptName("pylon")
 
 	// can be detected by sonar
 	pylon.Highlight_Enable()

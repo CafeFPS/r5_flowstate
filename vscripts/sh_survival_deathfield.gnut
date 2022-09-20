@@ -938,9 +938,9 @@ vector function GetFinalDeathFieldLocation()
         }
 			
 	}
-	vector lootLocation  = SURVIVAL_GetClosestValidCircleEndLocation( endPoint )
+	vector finalLocation  = SURVIVAL_GetClosestValidCircleEndLocation( endPoint )
 	//DebugDrawLine( <endPoint.x, endPoint.y, 0>, <lootLocation.x, lootLocation.y, 0>, 0,255,0, true, 100.0 )
-	vector finalLocation = GetClosestEndZonePoint( lootLocation ).origin
+	//vector finalLocation = GetClosestEndZonePoint( lootLocation ).origin
     //TODO: Needs more testing
 	//DebugDrawLine( <lootLocation.x, lootLocation.y, 0>, <finalLocation.x, finalLocation.y, 0>, 0,0,255, true, 100.0 )
 	return finalLocation

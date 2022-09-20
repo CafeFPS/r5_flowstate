@@ -120,19 +120,20 @@ void function SVCagedFlyerCreationCallback( entity flyer )
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 ///////////////////////////////////////////////////////
 {
-		flyer.SetOrigin(flyer.GetOrigin() + < 0, 0, 0> )
-		flyer.kv.fadedist = 14000
-		flyer.kv.rendercolor = "255 255 255"
-		flyer.kv.modelscale = 1
-		flyer.kv.solid = 6
-		flyer.SetValueForModelKey( FLYER_MODEL.tolower() )
-		flyer.SetMaxHealth( 100 )
-		flyer.SetHealth( 100 )
-		flyer.SetDamageNotifications( true )
-		flyer.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
-		AddEntityCallback_OnDamaged( flyer, CagedFlyer_OnDamaged) 
-		thread CagedFlyerAnimation(flyer)
-		thread CreateCagedFlyerTrigger (flyer)
+		if(IsValid(flyer)) flyer.Destroy()
+		// flyer.SetOrigin(flyer.GetOrigin() + < 0, 0, 0> )
+		// flyer.kv.fadedist = 14000
+		// flyer.kv.rendercolor = "255 255 255"
+		// flyer.kv.modelscale = 1
+		// flyer.kv.solid = 6
+		// flyer.SetValueForModelKey( FLYER_MODEL.tolower() )
+		// flyer.SetMaxHealth( 100 )
+		// flyer.SetHealth( 100 )
+		// flyer.SetDamageNotifications( true )
+		// flyer.SetTakeDamageType( DAMAGE_EVENTS_ONLY )
+		// AddEntityCallback_OnDamaged( flyer, CagedFlyer_OnDamaged) 
+		// thread CagedFlyerAnimation(flyer)
+		// thread CreateCagedFlyerTrigger (flyer)
 }
 void function CagedFlyer_OnDamaged(entity ent, var damageInfo)
 ///////////////////////////////////////////////////////

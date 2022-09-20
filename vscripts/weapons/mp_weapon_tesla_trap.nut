@@ -2008,6 +2008,7 @@ bool function TeslaTrap_IsLinkAngleTooSteep( vector proxyTestPos, entity otherTr
 void function WeaponMakesTeslaTrap( entity weapon, asset model, TeslaTrapPlacementInfo placementInfo ) {
 	printf("Placing a node")
 	entity trap = CreatePropDynamic(model, placementInfo.origin, placementInfo.angles, 0)
+	trap.SetScriptName("fence_node")
 
 }
 #endif

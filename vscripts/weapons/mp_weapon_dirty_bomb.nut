@@ -238,6 +238,7 @@ void function DeployCausticTrap( entity owner, DirtyBombPlacementInfo placementI
 	canisterProxy.SetTakeDamageType( DAMAGE_NO )
 	canisterProxy.NotSolid()
 	canisterProxy.SetPhysics( MOVETYPE_FLY ) // doesn't actually make it move, but allows pushers to interact with it
+	canisterProxy.SetScriptName("gas_trap")
 	Highlight_SetOwnedHighlight( canisterProxy, "sp_friendly_hero" )
 	Highlight_SetFriendlyHighlight( canisterProxy, "sp_friendly_hero" )
 
