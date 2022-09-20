@@ -82,7 +82,7 @@ void function SV_Survival_Loot_Init()
 	AddClientCommandCallback( "BackpackOpened", ClientCommand_BackpackOpened )
 	AddClientCommandCallback( "BackpackClosed", ClientCommand_BackpackClosed )
 
-	AddClientCommandCallback( CMDNAME_PLAYER_SWITCHED_WEAPONS, ClientCommand_PlayerSwitchedWeapons )
+	//AddClientCommandCallback( CMDNAME_PLAYER_SWITCHED_WEAPONS, ClientCommand_PlayerSwitchedWeapons )
 
 	AddClientCommandCallback( "Sur_SwitchToOrdnance", ClientCommand_Sur_SwitchToOrdnance )
 	AddClientCommandCallback( "Sur_SwapToNextOrdnance", ClientCommand_Sur_SwapToNextOrdnance )

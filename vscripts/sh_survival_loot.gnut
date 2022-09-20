@@ -67,7 +67,7 @@ global function SURVIVAL_GetCharacterShieldHealthMaxForArmor
 
 #endif //
 
-global const string CMDNAME_PLAYER_SWITCHED_WEAPONS = "PlayerSwitchedWeapons"
+//global const string CMDNAME_PLAYER_SWITCHED_WEAPONS = "PlayerSwitchedWeapons"
 
 global function SURVIVAL_IsLootIrrelevant
 global function SURVIVAL_IsLootAnUpgrade

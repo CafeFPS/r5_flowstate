@@ -1833,17 +1833,17 @@ void function ExtendedTryHolster( entity ent, entity player, ExtendedUseSettings
 
 void function OnPlayerSwitchesToWeapon00( entity player )
 {
-	player.ClientCommand( CMDNAME_PLAYER_SWITCHED_WEAPONS + " " + "0" )
+	//player.ClientCommand( CMDNAME_PLAYER_SWITCHED_WEAPONS + " " + "0" )
 }
 
 void function OnPlayerSwitchesToWeapon01( entity player )
 {
-	player.ClientCommand( CMDNAME_PLAYER_SWITCHED_WEAPONS + " " + "1" )
+	//player.ClientCommand( CMDNAME_PLAYER_SWITCHED_WEAPONS + " " + "1" )
 }
 
 void function OnPlayerSwitchesWeapons( entity player )
 {
-	player.ClientCommand( CMDNAME_PLAYER_SWITCHED_WEAPONS + " " + "-1" )
+	//player.ClientCommand( CMDNAME_PLAYER_SWITCHED_WEAPONS + " " + "-1" )
 }
 
 
