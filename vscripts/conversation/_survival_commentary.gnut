@@ -60,10 +60,14 @@ void function SetKillLeader( entity killLeader, int numKills )
 	file.currentKillLeaderKillAmount = numKills
 
 	wait 1.0
-
+	
+	if(!IsValid(killLeader)) return
+	
 	int killLeaderTeam = killLeader.GetTeam()
 
 	wait 1.0
+	
+	if(!IsValid(killLeader)) return
 	
 	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", killLeader, numKills )
