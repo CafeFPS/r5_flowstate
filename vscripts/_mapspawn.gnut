@@ -275,6 +275,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	{
 		PrecacheWeapon( $"mp_weapon_dragon_lmg" )
 		PrecacheWeapon( $"mp_weapon_3030" )
+		PrecacheWeapon( $"mp_ability_cloak")
 	}
 	
 	PrecacheWeapon( $"mp_weapon_incap_shield" )
