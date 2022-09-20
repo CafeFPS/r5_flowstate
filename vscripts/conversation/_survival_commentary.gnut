@@ -126,7 +126,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	{
 		if ( victim == file.currentKillLeader )
 		{
-			AddSurvivalCommentaryEvent( eSurvivalEventType.KILL_LEADER_ELIMINATED, attacker )
+			thread AddSurvivalCommentaryEvent( eSurvivalEventType.KILL_LEADER_ELIMINATED, attacker )
 
 			foreach ( player in GetPlayerArray() )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
@@ -157,7 +157,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
 		{
 			FlagSet( "SurvivalCommentary_FirstBloodReached" )
-			AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
+			thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
 		}
 	}
 }
