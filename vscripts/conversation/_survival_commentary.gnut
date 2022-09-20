@@ -46,19 +46,11 @@ entity function GetKillLeader()
 
 int function SurvivalCommentary_GetChampionTeam()
 {
-	entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
-	if( !IsValid( champion ) || !champion.IsPlayer() )
-		return -1
-
-	return champion.GetTeam()
+	return GetEntityFromEncodedEHandle( GetGlobalNetInt( "championEEH" ) ).GetTeam()
 }
 
 int function SurvivalCommentary_GetChampionEEH()
 {
-	entity champion = GetEntityFromEncodedEHandle( GetGlobalNetInt( "championEEH" ) )
-	if ( !IsValid( champion ) || !champion.IsPlayer()  )
-		return EncodedEHandle_null
-
 	return GetGlobalNetInt( "championEEH" )
 }
 
@@ -66,6 +58,8 @@ void function SetKillLeader( entity killLeader, int numKills )
 {
 	file.currentKillLeader = killLeader
 	file.currentKillLeaderKillAmount = numKills
+
+	wait 1.0
 
 	int killLeaderTeam = killLeader.GetTeam()
 
