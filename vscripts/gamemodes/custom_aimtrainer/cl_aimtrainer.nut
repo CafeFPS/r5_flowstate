@@ -589,7 +589,7 @@ void function RefreshHUD()
 	UpdateHudDataForMainWeapons( player, weapon )
 	
 	//refresh
-	InitSurvivalHealthBar()
+	thread InitSurvivalHealthBar()
 }
 
 void function ServerCallback_RestartChallenge(int challenge)

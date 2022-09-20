@@ -314,12 +314,6 @@ WeaponData
 	   		"uses_ammo_pool"						"1"
         }
 
-		barrel_stabilizer_l4_flash_hider
-        {
-			"fx_muzzle_flash_view"							""
-			"fx_muzzle_flash_world"							""
-			"fx_muzzle_flash_attach"						""
-		}
 		optic_cq_hcog_classic
 		{
 			"bodygroup2_set" 						"0"
@@ -386,7 +380,7 @@ WeaponData
 			"fx_muzzle_flash_world"		        ""
 		}
 	}
-}
+
 	"ui1_enable"		"1"
 	"ui1_draw_cloaked"	"1"
 	UiData1

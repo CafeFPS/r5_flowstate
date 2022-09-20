@@ -671,10 +671,20 @@ void function Cl_Survival_AddClient( entity player )
 
 void function InitSurvivalHealthBar()
 {
-	Assert( IsNewThread(), "Must be threaded off" )
-
 	entity player = GetLocalViewPlayer()
-	SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
+	
+	OnThreadEnd(
+		function() : ( player )
+		{
+			if(IsValid(player))
+				SURVIVAL_PopulatePlayerInfoRui( player, file.pilotRui )
+		}
+	)
+	
+	while(IsValid(player) && !LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() ))
+		WaitFrame()
+
+
 }
 
 
@@ -682,9 +692,7 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 {
 	Assert( IsValid( player ) )
 
-	#if !MP_PVEMODE
-		RuiTrackInt( rui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
-	#endif
+	RuiTrackInt( rui, "teamMemberIndex", player, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
 	RuiTrackString( rui, "name", player, RUI_TRACK_PLAYER_NAME_STRING )
 	RuiTrackInt( rui, "micStatus", player, RUI_TRACK_MIC_STATUS )
 
@@ -2500,11 +2508,8 @@ void function Survival_OnPlayerClassChanged( entity player )
 			ResetInventoryMenu( player )
 		}
 
-		bool isReady = LoadoutSlot_IsReady( ToEHI( player ), Loadout_CharacterClass() )
-		if ( isReady )
-		{
-			thread InitSurvivalHealthBar()
-		}
+
+		thread InitSurvivalHealthBar()
 	}
 
 	if ( player == GetLocalClientPlayer() )

@@ -78,6 +78,13 @@ struct
 
 void function Canyonlands_MapInit_Common()
 {
+	#if SERVER
+	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
+	#endif
+	
+	if(GameRules_GetGameMode() == "custom_tdm" || GameRules_GetGameMode() == "custom_aimtrainer")
+	return
+
 	printt( "Canyonlands_MapInit_Common" )
 
 	PrecacheModel( LEVIATHAN_MODEL )
@@ -125,7 +132,6 @@ void function Canyonlands_MapInit_Common()
 
 		//SURVIVAL_AddOverrideCircleLocation_Nitro( <24744, 24462, 3980>, 2048 )
 
-		AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 		AddCallback_AINFileBuilt( HoverTank_DebugFlightPaths )
 
 		AddCallback_GameStateEnter( eGameState.Playing, HoverTanksOnGamestatePlaying )
@@ -207,7 +213,7 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-	if(GetMapName() != "mp_rr_canyonlands_staging" && GetCurrentPlaylistVarBool( "flowstateFlyersAndDronesEnabled", true )){
+	if(GetMapName() != "mp_rr_canyonlands_staging" && GetCurrentPlaylistVarBool( "flowstateFlyersAndDronesEnabled", false )){
 		InitLootDrones() //flyers
 		InitLootRollers() //flyers
 		InitLootDronePaths() //flyers
@@ -217,10 +223,11 @@ void function EntitiesDidLoad()
 
 void function __EntitiesDidLoad()
 {
-		if(GetMapName() != "mp_rr_canyonlands_staging"){
+	if(GetMapName() != "mp_rr_canyonlands_staging"){
 	SpawnEditorProps()
 	}
-		if( GameRules_GetGameMode() != FREELANCE )
+	
+	if( GameRules_GetGameMode() != FREELANCE || GameRules_GetGameMode() != "custom_tdm")
 	{
 		waitthread FindHoverTankEndNodes()
 		SpawnHoverTanks()
