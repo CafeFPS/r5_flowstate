@@ -2558,8 +2558,9 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
             return false
         }
 
-        if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) > 0 )
+        if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) > 0 && player.IsObserver())
         {
+			player.MakeVisible()
             player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 	        player.SetSpecReplayDelay( 0 )
             player.StopObserverMode()
@@ -2568,12 +2569,14 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
         }
         else if( IsValid(player) && player.GetPlayerNetInt( "spectatorTargetCount" ) == 0 && IsValid(specTarget))
         {
-			player.MakeInvisible()
-            player.SetPlayerNetInt( "spectatorTargetCount", enemiesArray.len() )
-	        player.SetSpecReplayDelay( Spectator_GetReplayDelay() )
-	        player.StartObserverMode( OBS_MODE_IN_EYE )
-	        player.SetObserverTarget( specTarget )
-            printf("Spectating!")
+			try{
+				player.MakeInvisible()
+				player.SetPlayerNetInt( "spectatorTargetCount", enemiesArray.len() )
+				player.SetSpecReplayDelay( 2 )
+				player.StartObserverMode( OBS_MODE_IN_EYE )
+				player.SetObserverTarget( specTarget )
+				printf("Spectating!")
+			} catch(e420){}
         }
     }
     else
