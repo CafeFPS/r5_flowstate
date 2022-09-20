@@ -33,9 +33,6 @@ void function Cl_RegisterLocation(LocationSettings locationSettings)
 void function TDM_OnPlayerKilled( entity player )
 {
 	entity viewPlayer = GetLocalViewPlayer()
-
-    if( player == viewPlayer )
-		thread PlayLocal1PDeathSoundALittle()
 }
 
 void function ChatEvent_Handler()

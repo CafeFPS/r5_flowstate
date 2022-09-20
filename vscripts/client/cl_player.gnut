@@ -23,7 +23,6 @@ global function PlayShieldActivateEffect
 global function OnClientPlayerAlive
 global function OnClientPlayerDying
 global function PlayLocal1PDeathSound
-global function PlayLocal1PDeathSoundALittle
 global function StopLocal1PDeathSound
 
 global function ServerCallback_HideNextSpawnMessage
@@ -1702,14 +1701,6 @@ string function GetPlayerDeathSound1P()
 void function PlayLocal1PDeathSound()
 {
 	EmitSoundOnEntity( GetLocalClientPlayer(), GetPlayerDeathSound1P() )
-}
-
-void function PlayLocal1PDeathSoundALittle()
-{
-	EmitSoundOnEntity( GetLocalClientPlayer(), GetPlayerDeathSound1P() )
-	wait 0.5
-	if(IsValid(GetLocalClientPlayer()))
-		StopSoundOnEntity( GetLocalClientPlayer(), GetPlayerDeathSound1P() )
 }
 
 void function StopLocal1PDeathSound()

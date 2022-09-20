@@ -1764,17 +1764,8 @@ void function ExtendedTryOpenGroundList( entity ent, entity player, ExtendedUseS
 
 EHI ornull function GetEHIForDeathBox( entity box )
 {
-	EHI eHandle
-	try
-	{
-		eHandle = box.GetNetInt( "ownerEHI" )
-	}
-	catch( error )
-	{
-		printl( "An error has occoured while getting EHI for deathbox. Instead of use local player's EHI.\nError: " + error )
-		entity player = GetLocalViewPlayer()
-		eHandle = ToEHI( player )
-	}
+	EHI eHandle = box.GetNetInt( "ownerEHI" )
+	
 	if ( eHandle == -1  )
 		return null
 

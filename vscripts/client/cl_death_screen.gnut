@@ -732,7 +732,7 @@ void function UICallback_ShowSquadSummary( var headerElem, var headerDataElem )
 	bool shouldFadeInData = !file.hasShownSquadSummary
 	bool shouldFadeInBlur = !file.hasShownSquadSummary && oldTabIndex == eDeathScreenPanel.SPECTATE
 
-	//RunUIScript( "UI_DeathScreenFadeInBlur", shouldFadeInBlur )
+	RunUIScript( "UI_DeathScreenFadeInBlur", shouldFadeInBlur )
 
 	if ( shouldFadeInData )
 	{
@@ -854,7 +854,7 @@ void function UICallback_ShowDeathRecap( var headerElem, var recapElem, var b0, 
 	file.damageBlockElementArray = [b0, b1, b2, b3, b4, b5, b6, b7, b8, b9]
 
 	bool shouldFadeInBlur = !file.hasShownDeathRecap && oldTabIndex == eDeathScreenPanel.SPECTATE
-	//RunUIScript( "UI_DeathScreenFadeInBlur", shouldFadeInBlur )
+	RunUIScript( "UI_DeathScreenFadeInBlur", shouldFadeInBlur )
 
 	file.hasShownDeathRecap = true	
 }
