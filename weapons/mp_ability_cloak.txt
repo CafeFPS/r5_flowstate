@@ -11,66 +11,50 @@ WeaponData
 	"menu_icon"										"rui/pilot_loadout/suit/stalker"
 	"hud_icon"										"rui/pilot_loadout/tactical/pilot_tactical_cloak"
 
-	"weapon_type_flags"								"WPT_ULTIMATE"
-	"weaponClass" 									"human"
-	"weaponType"									"tactical"
-	"fire_mode"   									"offhand"
-	"offhand_active_slot"                           "altHand"
-	"offhand_default_inventory_slot"				"1"
-	"offhand_keep_primary_in_hand"					"0"
-	"offhand_holster_primary"						"1"
-    "hide_holstered_sidearm_when_active"			"1"
+	// Models
+
+	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_bloodhound_huntmode.rmdl"
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl"
+
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_cloak"
 	"OnWeaponRegenEnd"                              "OnWeaponRegenEndGeneric"
-    "zoom_effects"                                  "0"
+
+	"weapon_type_flags"								"WPT_TACTICAL"
+	"weaponClass" 									"human"
+	"fire_mode"   									"offhand"
+	"leveled_pickup"								"1"
+	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
+	"offhand_default_inventory_slot"				"1"
+	"offhand_keep_primary_in_hand"					"1"
+
+	"does_not_interrupt_cloak"						"1"
+	"instant_swap_to"								"0"
 
 	"play_offhand_charging_anim"  					"0"
 	"play_offhand_start_end_anim"					"0"
 
-	// Models
-	"viewmodel"   									"mdl/weapons/empty_handed/ptpov_mirage_disguise.rmdl"
-	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_mirage.rmdl"
+    "zoom_effects"                                  "0"
+
 	//"projectilemodel" 							"mdl/dev/empty_model.rmdl"
-	"leveled_pickup"								"1"
-	"dev_menu_type"									"offhand" // fire_mode isn't readable from script
-	
-	"bone_merge_world_model"						"1"
+	"bone_merge_world_model"						"0"
 	"ammo_suck_behavior"							"offhand_weapons"
 
 	"sound_weapon_ready"							"survival_ui_tactical_ready"
 	"ammo_display"									"count"
 
-	MP_BASE
-	{
-		"ammo_clip_size"   								"200"
-		"ammo_default_total"							"200"
-		"ammo_display"									"bar"
-		"ammo_drains_to_empty_on_fire"					"1"
-		"ammo_min_to_fire"								"200"
-		"ammo_no_remove_from_clip"						"1"
-		"ammo_per_shot"									"200"
-		"ammo_stockpile_max"							"200"
-		"fire_duration"									"4.0" // duration of the cloak
-		"regen_ammo_refill_rate"						"10"
-	}
-
-	SP_BASE
-	{
-		"ammo_clip_size"   								"200"
-		"ammo_default_total"							"200"
-		"ammo_display"									"bar"
-		"ammo_drains_to_empty_on_fire"					"1"
-		"ammo_min_to_fire"								"200"
-		"ammo_no_remove_from_clip"						"1"
-		"ammo_per_shot"									"200"
-		"ammo_stockpile_max"							"200"
-		"fire_duration"									"4.0"
-		"regen_ammo_refill_rate"						"15"
-	}
-
+	"ammo_clip_size"   								"210"
+	"ammo_default_total"							"210"
+	"ammo_display"									"bar"
+	"ammo_drains_to_empty_on_fire"					"1"
+	"ammo_min_to_fire"								"210"
+	"ammo_no_remove_from_clip"						"1"
+	"ammo_per_shot"									"210"
+	"ammo_stockpile_max"							"210"
+	"fire_duration"									"7.0" // duration of the cloak
+	"regen_ammo_refill_rate"						"7"
 
 	// Regen Ammo
-	"regen_ammo_refill_start_delay"					"0.0"
+	"regen_ammo_refill_start_delay"					"0.1"
 
 	// Damage
 	"damage_type" 									"none"

@@ -9,12 +9,6 @@ var function OnWeaponPrimaryAttack_cloak( entity weapon, WeaponPrimaryAttackPara
 
 	if ( IsValid( ownerPlayer ) && ownerPlayer.IsPlayer() )
 	{
-		if ( ownerPlayer.GetCinematicEventFlags() & CE_FLAG_CLASSIC_MP_SPAWNING )
-			return false
-
-		if ( ownerPlayer.GetCinematicEventFlags() & CE_FLAG_INTRO )
-			return false
-
 		if ( weapon.HasMod( "survival_finite_ordnance" ) )
 		{
 			entity activeWeapon = ownerPlayer.GetActiveWeapon( weapon.GetWeaponSettingEnum( eWeaponVar.offhand_active_slot, eActiveInventorySlot ) )
@@ -28,6 +22,18 @@ var function OnWeaponPrimaryAttack_cloak( entity weapon, WeaponPrimaryAttackPara
 	#if SERVER
 		float duration = weapon.GetWeaponSettingFloat( eWeaponVar.fire_duration )
 		EnableCloak( ownerPlayer, duration )
+
+		thread(void function() : ( ownerPlayer )
+		{
+			while( IsValid( ownerPlayer ) && IsCloaked( ownerPlayer ) )
+			{
+				if( ownerPlayer.GetVelocity() != <0,0,0> && IsCloaked( ownerPlayer ) )
+					ownerPlayer.SetCloakFlicker( 0.5, 0.1 )
+
+				WaitFrame()
+			}
+		}())
+
 		#if BATTLECHATTER_ENABLED
 			TryPlayWeaponBattleChatterLine( ownerPlayer, weapon )
 		#endif
