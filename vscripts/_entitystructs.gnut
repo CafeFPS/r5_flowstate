@@ -673,7 +673,6 @@ global struct ServerPlayerStruct
 		
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
-	float lastKillTimer = 0
 	// Amount of player downed enemy at one time
 	int downedEnemyAtOneTime = 0
 	bool isDownedEnemyRecently = false

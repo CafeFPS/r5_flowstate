@@ -53,7 +53,6 @@ struct {
 	bool mapIndexChanged = true
 	array<entity> playerSpawnedProps
 	array<ItemFlavor> characters
-	float lastKillTimer
 	int SameKillerStoredKills=0
 	array<string> whitelistedWeapons
 	array<string> whitelistedAbilities
@@ -492,19 +491,20 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         case eGameState.Playing:
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-
-				if ( IsValid(victim) && victim == GetKillLeader() )
+	    		wait 1
+	    		if(!IsValid(victim)) return
+				
+				if ( victim == GetKillLeader() )
 				{
-					victim.FreezeControlsOnServer()
-					AddSurvivalCommentaryEvent( eSurvivalEventType.KILL_LEADER_ELIMINATED, attacker )
+					thread AddSurvivalCommentaryEvent( eSurvivalEventType.KILL_LEADER_ELIMINATED, attacker )
 
 					foreach ( player in GetPlayerArray() )
 						Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
 				}
-	    		wait 1
-	    		if(!IsValid(victim)) return
 				
-	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker )){
+	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ))
+				{
+					victim.FreezeControlsOnServer()	
 	    			victim.SetObserverTarget( attacker )
 	    			victim.SetSpecReplayDelay( 4 )
 	    			victim.StartObserverMode( OBS_MODE_IN_EYE )
@@ -561,8 +561,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	    			WpnAutoReloadOnKill(attacker)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
-	    			attacker.p.lastKillTimer = Time()
-					
+
 					int attackerKills = attacker.GetPlayerNetInt( "kills" )
 				
 					if(	!IsValid( GetKillLeader() ) && attackerKills == 2)
@@ -594,7 +593,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	file.deathPlayersCounter++
 	if(file.deathPlayersCounter == 1 )
-		AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
+		thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
 
 	UpdatePlayerCounts()
 }
