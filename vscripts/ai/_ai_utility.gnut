@@ -1095,25 +1095,29 @@ void function DEV_SpawnDummyAtCrosshair()
 	else 
 		SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
 	
-	int randomShield
+	int randomShield = 75
+	int shieldskin = 1
 	
 	if(GetCurrentPlaylistVarBool( "dummies_have_random_shields", true ))
 		switch(RandomIntRangeInclusive(1,4)){
 			case 1:
 				randomShield = 50
+				shieldskin = 5
 				break
 			case 2:
-				randomShield = 75	
+				randomShield = 75
+				shieldskin = 3
 				break
 			case 3:
-				randomShield = 100	
+				randomShield = 100
+				shieldskin = 6
 				break
 			case 4:
 				randomShield = 130
+				shieldskin = 1
 				break
 		}
-	else
-		randomShield = 75
+
 
 	DispatchSpawn( dummy )	
 	dummy.SetOrigin(origin)
@@ -1126,7 +1130,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	dummy.SetDeathNotifications( true )
 	dummy.SetValidHealthBarTarget( true )
 	SetObjectCanBeMeleed( dummy, true )
-	dummy.SetSkin(RandomInt(6))
+	dummy.SetSkin(shieldskin)
 	dummy.DisableHibernation()
 	dummy.SetAngles(angles1)
 	
