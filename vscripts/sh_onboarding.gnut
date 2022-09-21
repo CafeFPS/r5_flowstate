@@ -680,7 +680,7 @@ float function CharSelect_GetPickingDelayAfterAll()				{ return GetCurrentPlayli
 // Character selection -> player squad -> champion squad -> outro
 bool function CharSelect_PostSelectionMusicEnabled()			{ return GetCurrentPlaylistVarBool( "survival_enable_squad_intro_music", true ) }
 bool function CharSelect_PlayerSquadIntroEnabled()				{ return GetCurrentPlaylistVarBool( "survival_enable_squad_intro", true ) }
-bool function CharSelect_ChampionSquadIntroEnabled()			{ return true }
+bool function CharSelect_ChampionSquadIntroEnabled()			{ return GetCurrentPlaylistVarBool( "survival_enable_gladiator_intros", true ) }
 float function CharSelect_GetOutroSceneChangeDuration()			{ return GetCurrentPlaylistVarFloat( "charselect_outro_scene_change_duration", 4.0 ) }
 float function CharSelect_GetOutroSquadPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_squad_present_duration", 6.0  ) }
 float function CharSelect_GetOutroChampionPresentDuration()		{ return GetCurrentPlaylistVarFloat( "charselect_outro_champion_present_duration", 8.0 ) }
