@@ -679,14 +679,6 @@ bool function ClientCallback_SetNextCustomConsumable( entity player, array<strin
 }
 #endif
 
-#if !UI
-// used for conversion shit
-asset function CastStringToAsset( string val )
-{
-	return GetKeyValueAsAsset( { kn = val }, "kn" )
-}
-#endif
-
 void function RegisterWeapon( CustomWeaponData weaponData )
 {
 	LootData data

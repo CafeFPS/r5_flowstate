@@ -49,6 +49,7 @@ Scripts:
 	_threads.nut
 	_settings.nut
 	sh_utility_all.gnut
+	sh_assets.nut
 	sh_playlists.gnut
 	sh_networkvars.gnut
 	sh_items.gnut
@@ -300,6 +301,7 @@ Scripts:
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
 	weapons/mp_weapon_clickweapon.nut
+	weapons/mp_weapon_editor.nut
 
 ]
 
@@ -685,6 +687,7 @@ Scripts:
 	ui/userinfo.nut
 	ui/newness.gnut
 	ui/customize_common.gnut
+	ui/customize_model.nut
 	ui/mini_promo.nut
 	ui/menu_action_blocks.nut
 	ui/menu_dev.nut
@@ -770,8 +773,10 @@ Scripts:
 	ui/panel_quip_kill.nut
 
 	ui/menu_customize_weapon.nut
+	ui/menu_customize_model.nut
 	ui/menu_misc_customize.nut
 	ui/panel_weapon_skins.nut
+	ui/panel_models.nut
 
 	ui/menu_main.nut
 	ui/panel_mainmenu.nut
@@ -927,6 +932,8 @@ Scripts:
 	custom_maps/_custom_maps_1.nut
 	custom_maps/_custom_maps_2.nut
 	custom_maps/_custom_maps_3.nut
+	//map editor props
+	_place_map_editor_props_here.nut
 ]
 
 When: "CLIENT"
@@ -945,3 +952,11 @@ Scripts:
 [
 	freelance/_freelance.gnut
 ]
+// SalEditor
+When: "SERVER || CLIENT"
+Scripts:
+[
+	weapons/editor_modes/editor_mode_place.nut
+	weapons/editor_modes/editor_mode_delete.nut
+	weapons/editor_modes/editor_mode_toys.nut
+] 

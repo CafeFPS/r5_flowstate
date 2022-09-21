@@ -428,7 +428,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	// ItemFlavor playerCharacterSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterSkin( playerCharacter ) )
 	// CharacterSkin_Apply( player, playerCharacterSkin )
 
-	if ( giveLoadoutWeapons )
+	if ( giveLoadoutWeapons || GameRules_GetGameMode() == "map_editor")
 		GiveLoadoutRelatedWeapons( player )
 
 	Survival_SetInventoryEnabled( player, giveLoadoutWeapons )
@@ -439,6 +439,22 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	player.SetHealth( player.GetMaxHealth() )
 
 	UpdatePlayerCounts()
+	
+	if(GameRules_GetGameMode() == "map_editor")
+		thread (void function() : ( player )
+		{
+			if(IsValid(player.GetOffhandWeapon( OFFHAND_TACTICAL )))
+			{
+				player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+				player.GiveOffhandWeapon( "mp_weapon_editor", OFFHAND_TACTICAL, [] )
+				player.SetActiveWeaponByName( eActiveInventorySlot.mainHand, "mp_weapon_editor" )
+			}
+			if(IsValid(player.GetOffhandWeapon( OFFHAND_ULTIMATE )))
+				player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+			
+			wait 1
+			Message(player, "PROP DYNAMIC MAP EDITOR", "Made by Sal, Fireproof, Pebbers & JustANormalUser. Misc fixes by CaféFPS.", 8)
+		})()
 }
 #endif
 
@@ -568,6 +584,8 @@ void function OnClientConnected( entity player )
 	{
 		case eGameState.WaitingForPlayers:
 		case eGameState.PickLoadout:
+			if(GameRules_GetGameMode() == "custom_tdm") break
+		
 			entity startEnt = GetEnt( "info_player_start" )
 
 			player.SetOrigin( startEnt.GetOrigin() )
@@ -575,6 +593,9 @@ void function OnClientConnected( entity player )
 
 			player.FreezeControlsOnServer()
 
+			if( GameRules_GetGameMode() == "map_editor")
+				DecideRespawnPlayer( player )
+			
 			if ( PreGame_GetWaitingForPlayersSpawningEnabled()
 				&& GetGameState() == eGameState.WaitingForPlayers )
 				DecideRespawnPlayer( player, false )

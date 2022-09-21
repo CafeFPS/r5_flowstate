@@ -78,7 +78,7 @@ struct
 
 void function Canyonlands_MapInit_Common()
 {
-	if(GameRules_GetGameMode() == "custom_aimtrainer")
+	if(GameRules_GetGameMode() == "custom_aimtrainer" || GameRules_GetGameMode() == "map_editor")
 	return
 
 	#if SERVER
@@ -86,7 +86,7 @@ void function Canyonlands_MapInit_Common()
 	#endif
 
 	if(GameRules_GetGameMode() == "custom_tdm" )
-	return
+		return
 
 	printt( "Canyonlands_MapInit_Common" )
 

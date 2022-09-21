@@ -152,6 +152,8 @@ global function OpenXboxHelp
 global function OpenDevMenu
 #endif // R5DEV
 
+global function OpenModelMenu
+
 struct
 {
 	array<void functionref()>                   partyUpdatedCallbacks
@@ -509,6 +511,7 @@ void function UICodeCallback_FullyConnected( string levelname )
 	ShGRX_LevelInit()
 	Entitlements_LevelInit()
 	CustomizeCommon_Init()
+	CustomizeModel_Init()
 	ShLoadouts_LevelInit_Begin()
 	ShCharacters_LevelInit()
 	ShPassives_Init()
@@ -1155,6 +1158,9 @@ bool function TryDialogFlowPersistenceQuery( string persistenceVar )
 
 void function DialogFlow()
 {
+	if ( !IsPlayPanelCurrentlyTopLevel() )
+		return
+
 	bool persistenceAvailable   = IsPersistenceAvailable()
 	string earliestRankedPeriod = Ranked_EarliestRankedPeriodWithRewardsNotAcknowledged()
 
@@ -1607,6 +1613,13 @@ void function InitMenus()
 	AddPanel( quipsPanel, "QuipsPanel", InitQuipsPanel )
 
 	AddPanel( customizeCharacterMenu, "CharacterExecutionsPanel", InitCharacterExecutionsPanel )
+
+	var customizeModelMenu = AddMenu( "CustomizeModelMenu", $"resource/ui/menus/customize_weapon.menu", InitCustomizeModelMenu )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel0", InitModelsPanel )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel1", InitModelsPanel )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel2", InitModelsPanel )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel3", InitModelsPanel )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel4", InitModelsPanel )
 
 	var customizeWeaponMenu = AddMenu( "CustomizeWeaponMenu", $"resource/ui/menus/customize_weapon.menu", InitCustomizeWeaponMenu )
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel0", InitWeaponSkinsPanel )
@@ -2529,6 +2542,13 @@ void function OpenDevMenu( var button )
 	AdvanceMenu( GetMenu( "DevMenu" ) )
 }
 #endif //R5DEV
+
+void function OpenModelMenu (string equipped) {
+	
+	SetTopLevelCustomizeContext(GetAllWeaponCategories()[0])
+	CustomizeModelMenus_Equip(equipped)
+	AdvanceMenu( GetMenu( "CustomizeModelMenu" ) )
+}
 
 void function SetDialog( var menu, bool val )
 {

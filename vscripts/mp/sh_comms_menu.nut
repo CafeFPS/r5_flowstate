@@ -39,11 +39,13 @@ global enum eCommsMenuStyle
 	ORDNANCE_MENU,
 	SKYDIVE_EMOTE_MENU,
 
+	EDITOR_MODES_MENU,
+
 	_assertion_marker,
 
 	_count
 }
-Assert( eCommsMenuStyle._assertion_marker == 6 )    //
+Assert( eCommsMenuStyle._assertion_marker == 7 )    //
 
 global enum eChatPage
 {
@@ -67,6 +69,8 @@ global enum eChatPage
 	ORDNANCE_LIST,
 
 	SKYDIVE_EMOTES,
+
+	EDITOR_MODES,
 
 	_count
 }
@@ -367,6 +371,8 @@ enum eOptionType
 	SKYDIVE_EMOTE,
 	HEALTHITEM_USE,
 	ORDNANCE_EQUIP,
+
+	EDITOR_MODE_ACTIVATE
 }
 
 struct CommsMenuOptionData
@@ -447,6 +453,15 @@ CommsMenuOptionData function MakeOption_Ping( int pingType )
 	CommsMenuOptionData op
 	op.optionType = eOptionType.NEW_PING
 	op.pingType = pingType
+	return op
+}
+
+CommsMenuOptionData function MakeOption_EditorMode( int index )
+{
+	CommsMenuOptionData op
+	op.optionType = eOptionType.EDITOR_MODE_ACTIVATE
+	op.healType = index
+
 	return op
 }
 
@@ -605,6 +620,14 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 				results.append( MakeOption_PingReply( pingReply ) )
 			}
 		}
+
+		case eChatPage.EDITOR_MODES:
+		{
+			foreach(idx, mode in GetEditorModes())
+			{
+				results.append( MakeOption_EditorMode( idx ) )
+			}
+		}
 			break
 	}
 
@@ -665,6 +688,13 @@ string[2] function GetPromptsForMenuOption( int index )
 				promptTexts[0] = data.pickupString
 				promptTexts[1] = data.desc
 			}
+			break
+		}
+		case eOptionType.EDITOR_MODE_ACTIVATE:
+		{
+			EditorMode mode = GetEditorModes()[op.healType]
+			promptTexts[0] = mode.displayName
+			promptTexts[1] = mode.description
 			break
 		}
 	}
@@ -731,6 +761,11 @@ asset function GetIconForMenuOption( int index )
 
 			LootData data = SURVIVAL_Loot_GetLootDataByIndex( op.healType )
 			return data.hudIcon
+		}
+
+		case eOptionType.EDITOR_MODE_ACTIVATE:
+		{
+			return $"rui/hud/tactical_icons/tactical_crypto"
 		}
 	}
 
@@ -881,6 +916,7 @@ bool function MenuStyleIsFastFadeIn( int menuStyle )
 	{
 		case eCommsMenuStyle.CHAT_MENU:
 		case eCommsMenuStyle.INVENTORY_HEALTH_MENU:
+		case eCommsMenuStyle.EDITOR_MODES_MENU:
 			return true
 	}
 	return false
@@ -1058,6 +1094,22 @@ void function ShowCommsMenu( int chatPage )
 						tier = 0
 					RuiSetInt( rui, ("optionTier" + idx), tier )
 					RuiSetBool( rui, ("optionEnabled" + idx), itemCount > 0 )
+				}
+			}
+		}
+		else if (chatPage == eChatPage.EDITOR_MODES)
+		{
+			if ( idx < s_currentMenuOptions.len() )
+			{
+				int index = options[idx].healType
+
+				if ( index != -1 )
+				{
+					EditorMode mode = GetEditorModes()[index]
+					
+					RuiSetString( rui, ("optionText" + idx), mode.displayName )
+					RuiSetInt( rui, ("optionTier" + idx), index % 5 + 1 )
+					RuiSetBool( rui, ("optionEnabled" + idx), true )
 				}
 			}
 		}
@@ -1521,6 +1573,12 @@ bool function MakeCommMenuSelection( int choice, int wheelInputType )
 			HandleOrdnanceSelection( op.healType )
 			return true
 		}
+
+		case eOptionType.EDITOR_MODE_ACTIVATE:
+		{
+			HandleEditorModeSelection( op.healType )
+			return true
+		}
 	}
 
 	return false
@@ -1611,6 +1669,12 @@ void function HandleOrdnanceSelection( int ordnanceIndex )
 		player.ClientCommand( "Sur_SwitchToOrdnance " + ordnanceIndex + " 1" )
 	else
 		player.ClientCommand( "Sur_SwitchToOrdnance " + ordnanceIndex )
+}
+
+void function HandleEditorModeSelection( int editorIndex )
+{
+	entity player = GetLocalViewPlayer()
+	player.ClientCommand("SetEditorMode "+ editorIndex.tostring())
 }
 
 void function OnDeathCallback( entity player )

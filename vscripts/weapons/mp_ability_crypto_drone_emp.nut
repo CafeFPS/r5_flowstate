@@ -192,8 +192,8 @@ void function DroneFireEMP_Thread( entity weapon, entity camera, array<entity> t
 		if (target.GetScriptName() == "jump_pad")
 			target.Signal("OnDestroy")
 
-		if (!(target.GetScriptName() == "gas_trap" || target.GetScriptName() == "deployable_medic" || target.GetScriptName() == "domeOfProtection"))
-			target.Destroy()
+		if (target.GetScriptName() == "pylon" || target.GetScriptName() == "fence_node")
+			target.TakeDamage( target.GetMaxHealth() + 1, owner, weapon, { damageSourceId=eDamageSourceId.mp_ability_crypto_drone_emp } )
 	}
 
 	camera.Anim_Play( "drone_active_twitch" )

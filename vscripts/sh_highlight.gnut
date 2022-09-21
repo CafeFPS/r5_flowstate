@@ -51,6 +51,7 @@ global function SonarViewModelHighlight
 global function SonarViewModelClearHighlight
 global function SonarPlayerCloneHighlight
 global function DeployableModelHighlight
+global function DeployableModelWarningHighlight
 global function DeployableModelInvalidHighlight
 global function PingViewModelHighlight
 global function PingViewModelClearHighlight
@@ -337,7 +338,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
 	highlight.colorID = COLORID_LOOT_TIER1
 
 	highlight = RegisterHighlight( "survival_item_rare" )
@@ -350,7 +351,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
 	highlight.colorID = COLORID_LOOT_TIER2
 
 	highlight = RegisterHighlight( "survival_item_epic" )
@@ -363,7 +364,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
 	highlight.colorID = COLORID_LOOT_TIER3
 
 	highlight = RegisterHighlight( "survival_item_legendary" )
@@ -376,7 +377,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
 	highlight.colorID = COLORID_LOOT_TIER4
 
 	highlight = RegisterHighlight( "survival_item_heirloom" )
@@ -1681,6 +1682,18 @@ void function DeployableModelHighlight( entity viewModelEntity )
 	int highlightId = viewModelEntity.Highlight_GetState( HIGHLIGHT_CONTEXT_NEUTRAL )
 	viewModelEntity.Highlight_SetFunctions( HIGHLIGHT_CONTEXT_NEUTRAL, HIGHLIGHT_FILL_VM_CUSTOM_COLOR, true, HIGHLIGHT_OUTLINE_VM_CUSTOM_COLOR, 8.0, highlightId, false )
 	viewModelEntity.Highlight_SetParam( HIGHLIGHT_CONTEXT_NEUTRAL, 0, HIGHLIGHT_COLOR_INTERACT )
+	//viewModelEntity.Highlight_SetFadeInTime( 0.25 )
+	//viewModelEntity.Highlight_SetFadeOutTime( 0.25 )
+	viewModelEntity.Highlight_StartOn()
+}
+
+void function DeployableModelWarningHighlight( entity viewModelEntity )
+{
+	viewModelEntity.Highlight_SetVisibilityType( HIGHLIGHT_VIS_ALWAYS )
+	viewModelEntity.Highlight_SetCurrentContext( HIGHLIGHT_CONTEXT_NEUTRAL )
+	int highlightId = viewModelEntity.Highlight_GetState( HIGHLIGHT_CONTEXT_NEUTRAL )
+	viewModelEntity.Highlight_SetFunctions( HIGHLIGHT_CONTEXT_NEUTRAL, HIGHLIGHT_FILL_VM_CUSTOM_COLOR, true, HIGHLIGHT_OUTLINE_VM_CUSTOM_COLOR, 8.0, highlightId, false )
+	viewModelEntity.Highlight_SetParam( HIGHLIGHT_CONTEXT_NEUTRAL, 0, <1, 1, 0> )
 	//viewModelEntity.Highlight_SetFadeInTime( 0.25 )
 	//viewModelEntity.Highlight_SetFadeOutTime( 0.25 )
 	viewModelEntity.Highlight_StartOn()

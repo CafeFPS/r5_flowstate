@@ -712,6 +712,13 @@ global struct ServerPlayerStruct
 	bool isRestartingLevel = false
 	int dummieKilled = 0
 	bool touchingTopTrigger = false
+	
+	//Map editor
+	PropInfo& selectedProp
+	entity currentPropEntity
+
+	EditorMode& selectedEditorMode
+	EditorMode ornull lastEditorMode
 }
 
 global struct ChallengeScore

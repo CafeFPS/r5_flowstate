@@ -73,3 +73,25 @@ global typedef EHISignalDummy entity
 #elseif CLIENT || UI
 global typedef EHISignalDummy EHIScriptStruct
 #endif
+
+#if SERVER || CLIENT
+global struct PropInfo
+{
+	// advanced models
+	string section
+	int index
+}
+
+global struct EditorMode
+{
+    string displayName
+	string description
+	
+	bool crosshairActive = false
+    
+    void functionref(entity player) onActivationCallback
+    void functionref(entity player) onDeactivationCallback
+    void functionref(entity player) onAttackCallback
+
+}
+#endif

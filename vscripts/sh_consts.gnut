@@ -99,6 +99,7 @@ global const FREELANCE                  = "freelance"
 global const CUSTOM_TDM                 = "custom_tdm"
 global const CUSTOM_CTF                 = "custom_ctf"
 global const CUSTOM_AIMTRAINER			= "custom_aimtrainer"
+global const MAP_EDITOR					= "map_editor"
 
 global const FREELANCE_ENABLED          = false
 
@@ -1285,6 +1286,7 @@ global enum ePresentationType
 	BATTLE_PASS,
 	BATTLE_PASS_3,
 	COLLECTION_EVENT,
+	MODEL
 	
 	COUNT
 }

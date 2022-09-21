@@ -35,6 +35,10 @@ global function DEV_ToggleFloatyBitsPrototype
 const bool HAS_FLOATING_BITS_PROTOTYPE = false
 #endif // CLIENT
 
+#if CLIENT || SERVER
+global function CastStringToAsset
+#endif
+
 const float APEX_SCREEN_TRANSITION_IN_DURATION = 0.7 // must stay in sync with apex_screens.rui
 
 const float APEX_SCREEN_RANDOM_TINT_INTENSITY_MIN = 0.4
@@ -284,12 +288,14 @@ void function ShApexScreens_Init()
 #endif
 
 
-#if CLIENT
+#if CLIENT || SERVER
 asset function CastStringToAsset( string val )
 {
 	return GetKeyValueAsAsset( { kn = val }, "kn" )
 }
+#endif
 
+#if CLIENT
 asset function GetCurrentPlaylistVarAsset( string varName, asset defaultAsset = $"" )
 {
 	string assetRaw = GetCurrentPlaylistVarString( varName, "" )

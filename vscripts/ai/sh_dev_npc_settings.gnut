@@ -6,6 +6,7 @@ global function SetupSurvivalLoot
 global function SetupSurvivalIncapShieldBot
 global function SetupAbilities
 global function SetupWeapons
+global function SetupEditor
 
 void function SetupChangeSurvivalCharacterClass()
 {
@@ -185,5 +186,13 @@ void function SetupSurvivalIncapShieldBot()
 	SetupDevCommand( "Spawn Bot with Lv 3 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 3 )" )
 	SetupDevCommand( "Spawn Bot with Lv 4 Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( 4 )" )
 	SetupDevCommand( "Spawn Bot with a Random Incap Shield", "script Dev_SpawnBotWithIncapShieldToView( -1 )" )
+	#endif
+}
+
+void function SetupEditor()
+{
+	#if UI
+	SetupDevCommand( "Start Editing", "give mp_weapon_editor" )
+	SetupDevCommand( "Zipline", "give mp_weapon_zipline" )
 	#endif
 }

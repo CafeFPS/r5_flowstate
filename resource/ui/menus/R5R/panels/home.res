@@ -92,7 +92,7 @@
 		"tall"					"40"
 		"visible"				"1"
 		"fontHeight"			"30"
-		"labelText"				"Welcome to R5Reloaded!"
+		"labelText"				"Welcome to R5Reloaded"
 		"font"					"DefaultBold_41"
 		"allcaps"				"0"
 		"fgcolor_override"		"255 100 100 255"
@@ -108,17 +108,57 @@
 		"xpos"                  "0"
 		"ypos"					"20"
 		"wide"					"450"
-		"tall"					"400"
+		"tall"					"200"
 		"visible"				"1"
 		"wrap"					"1"
 		"fontHeight"			"25"
 		"textAlignment"			"north-west"
-		"labelText"				"This project allows you to run APEX Legends with mods, by running the embedded server and loading custom scripts/global compile lists into the scripting VM. This allows you to create custom gamemodes, levels, weapons and more."
+		"labelText"				"This project allows you to run APEX Legends with mods, by running the embedded server and loading custom scripts/global compile lists into the scripting VM. This allows you to create custom gamemodes, levels, weapons and more. "
 		"font"					"DefaultBold_41"
 		"allcaps"				"0"
 		"fgcolor_override"		"200 200 200 255"
 
 		"pin_to_sibling"		"Welcome"
+		"pin_corner_to_sibling"	"TOP_LEFT"
+		"pin_to_sibling_corner"	"BOTTOM_LEFT"
+	}
+	
+	"Welcome2"
+	{
+        "ControlName"			"Label"
+		"xpos"                  "0"
+		"ypos"					"45"
+		"auto_wide_tocontents"	"1"
+		"tall"					"40"
+		"visible"				"1"
+		"fontHeight"			"30"
+		"labelText"				"You're using Flowstate scripts!"
+		"font"					"DefaultBold_41"
+		"allcaps"				"0"
+		"fgcolor_override"		"255 100 100 255"
+
+		"pin_to_sibling"		"Info2"
+		"pin_corner_to_sibling"	"TOP_LEFT"
+		"pin_to_sibling_corner"	"TOP_LEFT"
+	}
+	
+	"Info2"
+	{
+        "ControlName"			"Label"
+		"xpos"                  "0"
+		"ypos"					"5"
+		"wide"					"450"
+		"tall"					"300"
+		"visible"				"1"
+		"wrap"					"1"
+		"fontHeight"			"25"
+		"textAlignment"			"north-west"
+		"labelText"				"Flowstate is a package of scripts that includes a large number of bugs fixes and new features compared to default modded s3 scripts, it also includes exclusive and updated gamemodes made by the community: flowstate aim trainer, flowstate ffa/tdm-gungame-fiesta, hide&seek prophunt, battle royale, csgo-like apex surf, capture the flag and a prop dynamic map editor!" 
+		"font"					"DefaultBold_41"
+		"allcaps"				"0"
+		"fgcolor_override"		"200 200 200 255"
+
+		"pin_to_sibling"		"Info"
 		"pin_corner_to_sibling"	"TOP_LEFT"
 		"pin_to_sibling_corner"	"BOTTOM_LEFT"
 	}
@@ -137,6 +177,7 @@
 		"textAlignment"			"east"
 		"fgcolor_override"		"240 240 240 255"
 		"bgcolor_override"		"0 0 0 255"
+		visible 0
 
 		"pin_to_sibling"		"HomeBackground"
 		"pin_corner_to_sibling"	"BOTTOM_RIGHT"

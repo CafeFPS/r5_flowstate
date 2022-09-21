@@ -83,6 +83,8 @@ global struct ClientEntityStruct
 	void functionref( entity, entity, var ) Callback_VortexTriggerBulletHit
 	void functionref( entity, entity, entity, entity, vector ) Callback_VortexTriggerProjectileHit
 
+	// for clientside clones to know abt their server counterpart
+	entity svCounterpart
 	#if(false)
 //
 //
@@ -157,6 +159,12 @@ global struct ClientPlayerStruct
 	int freefallWindEffectHandle = -1
 	int killstreak = 0
 	bool isonkillstreak = false
+
+	PropInfo& selectedProp
+	entity currentPropEntity
+	
+	EditorMode& selectedEditorMode
+	EditorMode ornull lastEditorMode
 }
 
 
@@ -166,7 +174,8 @@ global struct ClientAIStruct
 {
 	int gruntVoiceIndex = 0
 	bool firsttime = true
-	int shieldTier}
+	int shieldTier
+}
 
 
 

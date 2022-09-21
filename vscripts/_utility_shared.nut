@@ -175,6 +175,8 @@ void function InitWeaponScripts()
 	MpWeaponTrophy_Init()
 
 	MpWeaponBasicBolt_Init()
+	if(GameRules_GetGameMode() == "map_editor")
+		MpWeaponEditor_Init()
 
 	#if SERVER
 		//BallLightning_Init()

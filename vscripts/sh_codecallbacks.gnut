@@ -100,6 +100,7 @@ void function CodeCallbacksShared_Init()
 	#if CLIENT
 		RegisterConCommandTriggeredCallback( "-useAndReload", CancelDisembark )
 		RegisterConCommandTriggeredCallback( "-use", CancelDisembark )
+	if(GameRules_GetGameMode() == SURVIVAL)
 		RegisterConCommandTriggeredCallback( "+offhand4", CheckForAccelerants )
 	#endif
 
