@@ -108,11 +108,6 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 	// shouldn't this be called from code?
 	CodeCallback_OnClientReloadConnectionCompleted( player )
-
-	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-	{
-		thread StartFRChallenges(player)
-	}
 }
 
 void function CodeCallback_OnPlayerRespawned( entity player )

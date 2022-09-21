@@ -84,6 +84,8 @@ void function _ChallengesByColombia_Init()
 	
 	//on weapon attack callback so we can calculate stats for live stats and results menu
 	AddCallback_OnWeaponAttack( OnWeaponAttackChallenges )
+
+	AddCallback_OnClientConnected( StartFRChallenges )
 		
 	//arc stars on damage callback for arc stars practice challenge
 	AddDamageCallbackSourceID( eDamageSourceId.damagedef_ticky_arc_blast, Arcstar_OnStick )
@@ -138,8 +140,8 @@ void function _ChallengesByColombia_Init()
 
 void function StartFRChallenges(entity player)
 {
-	wait 1
-	if(!IsValid(player)) return
+	while( !IsValid( player ) )
+		WaitFrame()
 
 	Remote_CallFunction_NonReplay(player, "ServerCallback_SetDefaultMenuSettings")
 	Survival_SetInventoryEnabled( player, false )
