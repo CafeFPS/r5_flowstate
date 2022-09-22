@@ -319,7 +319,7 @@ void function PlaceProp(entity player)
 
     string positionSerialized = myOrigin.x.tostring() + "," + myOrigin.y.tostring() + "," + myOrigin.z.tostring()
 	string anglesSerialized = myAngles.x.tostring() + "," + myAngles.y.tostring() + "," + myAngles.z.tostring()
-    printl("CreateEditorProp( $\""+ GetAssetFromPlayer(player) + "\",<" + positionSerialized + ">,<" + anglesSerialized + ">, true, 8000)")
+    printl("[editor]" + string(GetAssetFromPlayer(player)) + ";" + positionSerialized + ";" + anglesSerialized)
 
     #elseif CLIENT
     if(player != GetLocalClientPlayer()) return;
