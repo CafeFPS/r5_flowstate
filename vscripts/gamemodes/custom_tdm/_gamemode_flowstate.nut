@@ -802,6 +802,18 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 {
 	if(!IsValid( player ) || !IsAlive(player) ) return
 
+	
+	if(GetCurrentPlaylistVarBool("flowstateReloadUltimateOnRespawn", false ))
+	{
+		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+		tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
+	}
+	if(GetCurrentPlaylistVarBool("flowstateReloadTacticalOnRespawn", false ))
+	{	
+		entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+		ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
+	}
+	
 	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
 	{
 		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
