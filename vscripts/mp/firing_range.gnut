@@ -226,6 +226,8 @@ void function OnPlayerRespawned(entity player)
 		if(!Survival_PickupItem(loot, player))
 			loot.Destroy()
 	}
+
+	player.SetShieldHealth( player.GetShieldHealthMax() )
 }
 
 
