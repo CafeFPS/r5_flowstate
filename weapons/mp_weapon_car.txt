@@ -75,22 +75,23 @@ WeaponData
 	"fx_muzzle_flash_attach"						""
 
 	// Audio
-	"looping_sounds"								"1"
+	"looping_sounds"								"0"
 
     "fire_sound_1_player_1p"						"Weapon_Car_FirstShot_1P"
-    "fire_sound_1_player_3p"						"weapon_car_firstshot_3p_enemy"
+    "fire_sound_1_player_3p"						"Weapon_Car_SecondShot_NPC"
     "fire_sound_1_npc"								"Weapon_Car_SecondShot_NPC"
-	"sound_zoom_in"									"Weapon_Car_ADS_In"
-	"sound_zoom_out"								"Weapon_Car_ADS_Out"
-	"fire_sound_2_player_1p" 						""
-	"fire_sound_2_player_3p" 						""
 
-    "burst_or_looping_fire_sound_start_1p"			""
-    "burst_or_looping_fire_sound_middle_1p"			""
+	"fire_sound_2_player_1p" 						""
+	"fire_sound_2_player_3p" 						"Weapon_Car_SecondShot_NPC"
+
+    "burst_or_looping_fire_sound_start_1p"			"Weapon_Car_FirstShot_1P"
+    "burst_or_looping_fire_sound_middle_1p"			"Weapon_Car_Loop_1P"
     "burst_or_looping_fire_sound_end_1p"			""
+
     "burst_or_looping_fire_sound_start_3p"			""
-    "burst_or_looping_fire_sound_middle_3p"			""
-    "burst_or_looping_fire_sound_end_3p"			""
+    "burst_or_looping_fire_sound_middle_3p"			"Weapon_Car_Loop_3P"
+    "burst_or_looping_fire_sound_end_3p"			"Weapon_Car_LoopEnd_3P"
+
     "burst_or_looping_fire_sound_start_npc"			""
     "burst_or_looping_fire_sound_middle_npc"		"Weapon_Car_Loop_3P_NPC_A"
     "burst_or_looping_fire_sound_end_npc"			"Weapon_Car_LoopEnd_NPC"
