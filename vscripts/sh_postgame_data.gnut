@@ -40,7 +40,7 @@ global enum eGameType
 
 bool function GetPersistentLastGameTypeFlag( entity player, int flag )
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEV_ShouldIgnorePersistence() )
 			return false
 	#endif

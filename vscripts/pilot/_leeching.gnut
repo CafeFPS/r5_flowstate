@@ -179,7 +179,7 @@ void function DoLeech( entity self, entity leecher )
 			OnSonarTriggerLeaveInternal( trigger, self )
 		}
 
-		#if R5DEV
+		#if DEVELOPER
 		// if crosshair spawned, switch squad so he isn't mixed in a squad with opposing team spectres
 		string squadname = expect string( self.kv.squadname )
 		// if ( squadname.find( "crosshairSpawnSquad" ) != null ) // throws an error because squadname.find returns an int and you can't compare that to null

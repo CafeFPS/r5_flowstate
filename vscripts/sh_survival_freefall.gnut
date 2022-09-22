@@ -608,7 +608,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 	if ( jumpingFromPlane )
 	{
 		entity planeEnt = Sur_GetPlaneEnt()
-		#if !R5DEV
+		#if !DEVELOPER
 			Assert( IsValid( planeEnt ), "Tried to skydive but there is no plane entity" )
 		#endif
 		if ( IsValid( planeEnt ) )
@@ -712,7 +712,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 
 	float currentYaw = player.GetAngles().y
 
-	#if R5DEV
+	#if DEVELOPER
 		float botLastForwardInputTime = 0.0
 		float botNextForwardInputTime = 0.0
 		float botLastForwardInput = 0.0
@@ -759,7 +759,7 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 			}
 		}
 
-		#if R5DEV
+		#if DEVELOPER
 		// Bots fly random paths, turning, speeding up and slowing down
 		if ( player == leaderPlayer && player.IsBot() )
 		{

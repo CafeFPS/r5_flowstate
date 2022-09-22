@@ -149,7 +149,7 @@ void function FirstPersonEnded_UpdateTitanHealthFX( entity spectatingPlayer, ent
 	if ( !IsValid( titanSoul ) )
 		return
 
-	#if R5DEV
+	#if DEVELOPER
 	if ( !ModelHasFXGroup( spectatorTarget.GetModelName() ) )
 		return
 	#endif

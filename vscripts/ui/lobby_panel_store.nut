@@ -12,7 +12,7 @@ global function JumpToStoreCharacter
 global function JumpToStoreSkin
 global function JumpToThemedShop
 
-#if R5DEV
+#if DEVELOPER
 global function DEV_OffersPanel_DoFakeOffers
 #endif
 
@@ -41,7 +41,7 @@ struct
 	var  tabBar
 	bool openDLCStoreCallbackCalled = false
 
-	#if R5DEV
+	#if DEVELOPER
 		string DEV_fakeOffers_itemRef      = ""
 		string DEV_fakeOffers_seasonTag    = ""
 		int[5] DEV_fakeOffers_columnCounts = [1, 1, 1, 1, 1]
@@ -1188,7 +1188,7 @@ void function InitOffers()
 	{
 		array<GRXScriptOffer> columnOffers = GRX_GetStoreOfferColumn( col )
 
-		#if R5DEV
+		#if DEVELOPER
 			if ( file.DEV_fakeOffers_itemRef != "" )
 			{
 				array<GRXScriptOffer> fakeOffers
@@ -1376,7 +1376,7 @@ void function ClearOffers()
 }
 
 
-#if R5DEV
+#if DEVELOPER
 void function DEV_OffersPanel_DoFakeOffers( bool doIt = false, string itemRef = "character_skin_caustic_legendary_04", string seasonTag = "", int col0 = 2, int col1 = 1, int col2 = 1, int col3 = 1, int col4 = 1 )
 {
 	if ( !doIt )

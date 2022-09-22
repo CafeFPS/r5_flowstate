@@ -1,7 +1,7 @@
 untyped
 
 global function InitDevMenu
-#if R5DEV
+#if DEVELOPER
 global function DEV_InitLoadoutDevSubMenu
 global function SetupDevCommand // for dev
 global function SetupDevFunc // for dev
@@ -72,7 +72,7 @@ function Dummy_Untyped( param )
 
 void function InitDevMenu( var newMenuArg )
 {
-	#if R5DEV
+	#if DEVELOPER
 		var menu = GetMenu( "DevMenu" )
 
 		AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnOpenDevMenu )
@@ -105,7 +105,7 @@ void function InitDevMenu( var newMenuArg )
 
 void function AddLevelDevCommand( string label, string command )
 {
-	#if R5DEV
+	#if DEVELOPER
 		string codeDevMenuAlias = DEV_MENU_NAME + "/" + label
 		DevMenu_Alias_DEV( codeDevMenuAlias, command )
 
@@ -116,7 +116,7 @@ void function AddLevelDevCommand( string label, string command )
 	#endif
 }
 
-#if R5DEV
+#if DEVELOPER
 void function OnOpenDevMenu()
 {
 	file.pageHistory.clear()

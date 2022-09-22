@@ -10,7 +10,7 @@ global function GetDownloadedImageAsset
 global function UISetRpakLoadStatus
 #endif
 
-#if R5DEV && CLIENT 
+#if DEVELOPER && CLIENT 
 global function DEV_CopyRpakLoadStatuses
 #endif
 
@@ -64,7 +64,7 @@ void function ClImagePakLoadInit()
 {
 	RegisterSignal( "RequestDownloadedImagePakLoad" )
 
-#if R5DEV
+#if DEVELOPER
 	AddCallback_UIScriptReset( DEV_CopyRpakLoadStatuses )
 #endif
 }
@@ -143,7 +143,7 @@ void function SetRpakLoadStatus( string rpakName, int status )
 }
 #endif
 
-#if R5DEV && CLIENT 
+#if DEVELOPER && CLIENT 
 void function DEV_CopyRpakLoadStatuses()
 {
 	//

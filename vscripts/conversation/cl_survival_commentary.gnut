@@ -20,9 +20,9 @@ global function SurvivalCommentary_ClearCurrentSpeakerPrefix
 global function SurvivalCommentary_IsEnabled
 global function GetBattleChatterAlias1P3P
 
-#if R5DEV
+#if DEVELOPER
 global function GetBattleChatterAlias1P3PWithTempVoice
-#endif //R5DEV
+#endif // DEVELOPER
 
 global function ServerCallback_Survival_PlayCrowdEvent
 global function ServerCallback_Survival_NewKillLeader
@@ -581,7 +581,7 @@ string function GetBattleChatterAlias1P3P( entity player, string aliasSubname, b
 	return result
 }
 
-#if R5DEV
+#if DEVELOPER
 string function GetBattleChatterAlias1P3PWithTempVoice( string aliasSubname, bool firstPerson )
 {
 	string voice = TEMP_VOICE

@@ -120,7 +120,7 @@ void function UpdateActiveUserInfoPanels()
 
 		if ( isReady )
 		{
-			#if R5DEV
+			#if DEVELOPER
 				RuiSetBool( rui, "hasUnknownItems", GetConVarBool( "grx_hasUnknownItems" ) )
 			#endif
 			RuiSetInt( rui, "count1", premiumBalance )

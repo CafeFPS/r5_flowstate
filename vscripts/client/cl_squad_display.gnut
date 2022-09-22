@@ -670,7 +670,7 @@ void function _PopulatePlayerStatsRui( var cardElem, int index, bool connected )
 	{
 		//
 		Hud_Hide( cardElem )
-		#if R5DEV
+		#if DEVELOPER
 			printt( "ClearPlayerStatsRui", index )
 		#endif
 		ClearPlayerStatsRui( Hud_GetRui( cardElem ) )

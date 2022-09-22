@@ -2,7 +2,7 @@ global function InitEliteIntroMenu
 global function OpenEliteIntroMenu
 global function OpenEliteIntroMenuNonAnimated
 
-#if R5DEV
+#if DEVELOPER
 global function TestEliteIntroMenu
 #endif
 

@@ -1,4 +1,4 @@
-#if R5DEV
+#if DEVELOPER
 untyped
 #endif
 
@@ -6,7 +6,7 @@ global function ServerCallback_MVUpdateModelBounds
 global function ServerCallback_MVEnable
 global function ServerCallback_MVDisable
 
-#if R5DEV
+#if DEVELOPER
 global function ClModelViewInit
 global function ModelViewerSpawnModel
 global function SelectNextModel
@@ -236,11 +236,11 @@ void function RefreshHudLabels()
 		file.hudDPad.SetText( "Move X/Y" )
 	}
 }
-#endif // DEV
+#endif // DEVELOPER
 
 void function ServerCallback_MVUpdateModelBounds( int index, float minX, float minY, float minZ, float maxX, float maxY, float maxZ )
 {
-	#if R5DEV
+	#if DEVELOPER
 		table<string, vector> tab = { mins = <minX,minY,minZ>, maxs = <maxX,maxY,maxZ> }
 
 		if ( index < file.modelBounds.len() )
@@ -256,12 +256,12 @@ void function ServerCallback_MVUpdateModelBounds( int index, float minX, float m
 
 			file.modelBounds.append( tab )
 		}
-	#endif // DEV
+	#endif // DEVELOPER
 }
 
 void function ServerCallback_MVEnable()
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( !SetModelViewerMode( MODELVIEWERMODE_GAMEPAD ) )
 			return
 
@@ -310,12 +310,12 @@ void function ServerCallback_MVEnable()
 		GetLocalClientPlayer().ClientCommand( "mp_enabletimelimit 0" )
 
 		ModelViewerModeEnabled()
-	#endif // DEV
+	#endif // DEVELOPER
 }
 
 void function ServerCallback_MVDisable()
 {
-	#if R5DEV
+	#if DEVELOPER
 		file.modelViewerMode = MODELVIEWERMODE_INACTIVE
 
 		UpdateMainHudVisibility( GetLocalViewPlayer() )
@@ -356,10 +356,10 @@ void function ServerCallback_MVDisable()
 
 		GetLocalClientPlayer().ClientCommand( "mp_enablematchending " + file.lastEnablematchending )
 		GetLocalClientPlayer().ClientCommand( "mp_enabletimelimit " + file.lastEnabletimelimit )
-	#endif // DEV
+	#endif // DEVELOPER
 }
 
-#if R5DEV
+#if DEVELOPER
 void function ReloadShared()
 {
 	file.modelViewerModels = GetModelViewerList()
@@ -1619,4 +1619,4 @@ void function ClientCodeCallback_LevelEd_ClearPreviewEntity()
 	file.hlmv_modelData = {}
 	file.hlmv_lastModel = $""
 }
-#endif // DEV
+#endif // DEVELOPER

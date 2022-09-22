@@ -74,14 +74,14 @@ global function Ranked_IsPlayerAbandoning
 #if SERVER
 #endif
 
-#if CLIENT && R5DEV 
+#if CLIENT && DEVELOPER 
 global function Ranked_ForceClientError
 #endif
 
 #if CLIENT
 global function ShRanked_RegisterNetworkFunctions
 
-#if R5DEV
+#if DEVELOPER
 global function SetRankedIcon
 #endif
 
@@ -699,7 +699,7 @@ bool function Ranked_IsMatchOverForPlayer( entity player ) //
 
 var function GetRankedPersistenceData( entity player, string persistenceField )
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEV_ShouldIgnorePersistence() )
 			return null
 	#endif
@@ -1127,7 +1127,7 @@ void function RuiFillInRankedLadderPos( var rui, int ladderPosition )
 
 #endif //
 
-#if CLIENT && R5DEV 
+#if CLIENT && DEVELOPER 
 void function Ranked_ForceClientError()
 {
 	thread Ranked_AssertFalse()

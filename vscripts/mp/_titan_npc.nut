@@ -465,7 +465,7 @@ function NPCTitanFollowPilotInit( npcTitan, player )
 //////////////////////////////////////////////////////////
 function NPCTitanGuardModeInit( npcTitan )
 {
-#if R5DEV // Bug 110047
+#if DEVELOPER // Bug 110047
 	Assert( IsValid( npcTitan ) )
 	if ( !npcTitan.IsTitan() && !npcTitan.IsNPC() )
 		printl( "npcTitan is " + npcTitan.GetClassName() )

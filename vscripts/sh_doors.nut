@@ -14,7 +14,7 @@ global function IsCodeDoor
 global function IsDoorOpen
 global function GetAllPropDoors
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 global function DEV_RestartAllDoorThinks
 #endif
 
@@ -45,7 +45,7 @@ struct DoorData
 
 struct
 {
-	#if SERVER && R5DEV
+	#if SERVER && DEVELOPER
 		table<entity, int> allDoors
 	#endif
 
@@ -80,7 +80,7 @@ void function ShDoors_Init()
 
 		file.propDoorArrayIndex = CreateScriptManagedEntArray()
 
-		#if R5DEV
+		#if DEVELOPER
 			RegisterSignal( "HaltDoorThink" )
 			AddClientCommandCallback( "dev_spawn_blockable_door", ClientCommand_dev_spawn_blockable_door )
 		#endif
@@ -145,7 +145,7 @@ array<entity> function GetAllPropDoors()
 	#endif //CLIENT
 }
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 bool function ClientCommand_dev_spawn_blockable_door( entity player, array<string> args )
 {
 	TraceResults tr = TraceLine(
@@ -165,7 +165,7 @@ bool function ClientCommand_dev_spawn_blockable_door( entity player, array<strin
 }
 #endif
 
-//#if SERVER && R5DEV
+//#if SERVER && DEVELOPER
 //void function CreateDoor( vector hingeEdgeBottomPos, vector angleToGap, entity existingEnt = null )
 //{
 //	//
@@ -488,13 +488,13 @@ void function OnDoorSpawned( entity door )
 		}
 	}
 
-	#if R5DEV
+	#if DEVELOPER
 		file.allDoors[door] <- doorType
 	#endif
 }
 #endif
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function DEV_RestartAllDoorThinks()
 {
 	foreach( entity door, int doorType in file.allDoors )
@@ -632,7 +632,7 @@ void function SurvivalDoorThink( entity door, int doorType )
 	vector defaultAngles = door.GetAngles() //not used by SurvivalDoorPlainThink_Internal
 
 	door.EndSignal( "OnDestroy" )
-	#if R5DEV
+	#if DEVELOPER
 		door.EndSignal( "HaltDoorThink" )
 	#endif
 	OnThreadEnd( function() : ( door, doorType, defaultAngles ) {
@@ -965,7 +965,7 @@ void function OnCodeDoorUsed( entity door, entity player, int useInputFlags )
 void function BlockableDoorThink( entity door )
 {
 	door.EndSignal( "OnDestroy" )
-	#if R5DEV
+	#if DEVELOPER
 		door.EndSignal( "HaltDoorThink" )
 	#endif
 	OnThreadEnd( function() : ( door ) {
@@ -1225,7 +1225,7 @@ void function OperateBlockableDoor( entity door, int goalNotch, entity operator,
 {
 	door.EndSignal( "OnDestroy" )
 	door.EndSignal( "DoorOperating" )
-	#if R5DEV
+	#if DEVELOPER
 		door.EndSignal( "HaltDoorThink" )
 	#endif
 
@@ -1739,7 +1739,7 @@ void function SurvivalDoorSliding_PlayAnimationAndResetSkin( entity doorModel, s
 #if SERVER
 void function SurvivalDoorSlidingThink( entity doorModel )
 {
-	#if R5DEV
+	#if DEVELOPER
 		doorModel.EndSignal( "HaltDoorThink" )
 	#endif
 
@@ -1907,7 +1907,7 @@ void function OnPlayerLeaveSlidingTrigger( entity trigger, entity ent )
 #if SERVER
 void function SurvivalDoorSlidingTriggerEnterThink( entity doorModel, entity trigger, int doorDataIndex )
 {
-	#if R5DEV
+	#if DEVELOPER
 		doorModel.EndSignal( "HaltDoorThink" )
 	#endif
 	trigger.EndSignal( "OnDeath" )
@@ -1935,7 +1935,7 @@ void function SurvivalDoorSlidingTriggerEnterThink( entity doorModel, entity tri
 #if SERVER
 void function SurvivalDoorSlidingTriggerLeaveThink( entity doorModel, entity trigger, int doorDataIndex )
 {
-	#if R5DEV
+	#if DEVELOPER
 		doorModel.EndSignal( "HaltDoorThink" )
 	#endif
 	trigger.EndSignal( "OnDeath" )

@@ -107,7 +107,7 @@ void function DeathHints_Init()
 		string locString = GetDataTableString( dataTable, i, locStringColumn )
 		string mapName = GetDataTableString( dataTable, i, mapNameColumn )
 
-		#if R5DEV
+		#if DEVELOPER
 		if ( !( sourceName in eHints ) )
 		{
 			Warning( "Unhandled death hint source " + sourceName )

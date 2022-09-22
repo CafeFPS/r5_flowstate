@@ -517,7 +517,7 @@ void function ScriptCallback_UnlockAchievement( int achievementID )
 {
 	Assert( achievementID >= 0 && achievementID < achievements.MAX_ACHIVEMENTS, "Tried to unlock achievement with invalid enum value" )
 
-	#if R5DEV
+	#if DEVELOPER
 		string ref
 		foreach ( string _ref, int val in achievements )
 		{
@@ -529,7 +529,7 @@ void function ScriptCallback_UnlockAchievement( int achievementID )
 		printt( "#############################################" )
 		printt( "UNLOCKED ACHIEVEMENT:", ref, "(" + achievementID + ")" )
 		printt( "#############################################" )
-	#endif //R5DEV
+	#endif // DEVELOPER
 
 	Plat_UnlockAchievementByID( achievementID )
 }

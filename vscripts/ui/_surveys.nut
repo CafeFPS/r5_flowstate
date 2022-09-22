@@ -57,7 +57,7 @@ void function OpenSurveyByRef( string surveyRef, float sampleRate )
 	{
 		string answerText = result == eDialogResult.YES ? aAnswerText : bAnswerText
 
-		#if R5DEV
+		#if DEVELOPER
 			if ( !("mid" in uiGlobal.matchPinData) )
 			{
 				uiGlobal.matchPinData["mid"] <- "[fe80::78dc:e7ef:e13b:68e]:0:37015:1562712876"

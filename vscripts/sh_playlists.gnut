@@ -20,7 +20,7 @@ global function CanPlaylistFitPartySize
 global function GetModeEmblemImage
 #endif
 
-#if CLIENT || UI && R5DEV
+#if CLIENT || UI && DEVELOPER
 global function PrintPlaylists
 #endif
 
@@ -334,7 +334,7 @@ array<int> function GetEmblemColor( string playlistName )
 }
 #endif
 
-#if CLIENT || UI && R5DEV
+#if CLIENT || UI && DEVELOPER
 void function PrintPlaylists()
 {
 	printt( "=== PLAYLIST NAMES: ===" )

@@ -590,7 +590,7 @@ void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int e
 	if ( !level.grenadeIndicatorEnabled )
 		return
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( !level.clientScriptInitialized )
 			return
 	#endif
@@ -610,7 +610,7 @@ void function SCB_AddGrenadeIndicatorForEntity( int team, int ownerHandle, int e
 
 void function TryAddGrenadeIndicator( entity grenade )
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( !level.clientScriptInitialized )
 			return
 	#endif

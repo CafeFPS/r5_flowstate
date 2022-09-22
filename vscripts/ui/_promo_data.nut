@@ -10,7 +10,7 @@ global function GetMiniPromoRpakName
 
 global function UICodeCallback_MainMenuPromosUpdated
 
-#if R5DEV
+#if DEVELOPER
 global function DEV_PrintPromoData
 #endif //
 
@@ -51,7 +51,7 @@ void function InitPromoData()
 
 void function UpdatePromoData()
 {
-	#if R5DEV
+	#if DEVELOPER
 		//if ( GetConVarBool( "mainMenuPromos_scriptUpdateDisabled" ) || GetCurrentPlaylistVarBool( "mainMenuPromos_scriptUpdateDisabled", false ) )
 		//	return
 	#endif //
@@ -63,7 +63,7 @@ void function UICodeCallback_MainMenuPromosUpdated()
 {
 	printt( "Promos updated" )
 
-	#if R5DEV
+	#if DEVELOPER
 		//if ( GetConVarInt( "mainMenuPromos_preview" ) == 1 ) // ConVar is not registered in R5Launch
 			//UpdatePromoData()
 	#endif //
@@ -101,7 +101,7 @@ asset function GetPromoImage( string identifier )
 	return image
 }
 
-#if R5DEV
+#if DEVELOPER
 void function DEV_PrintPromoData()
 {
 	printt( "protocol:      ", file.promoData.prot )

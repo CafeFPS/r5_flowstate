@@ -25,13 +25,13 @@ struct {
 
 void function MDLSpawner_Init()
 {
-	#if SERVER && R5DEV
+	#if SERVER && DEVELOPER
 	printt("adding mdlspawner ccc")
 	AddClientCommandCallback( "setmdl", ClientCommand_SetMDLSpawnerModel )
 	#endif
 }
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 bool function ClientCommand_SetMDLSpawnerModel( entity player, array<string> args )
 {
 	if(args.len() == 0)

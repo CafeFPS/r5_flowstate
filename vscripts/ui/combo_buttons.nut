@@ -16,7 +16,7 @@ global function SetComboButtonHeaderTint
 
 global function ComboButtons_ResetColumnFocus
 
-#if R5DEV
+#if DEVELOPER
 global function DEV_GetComboStruct
 #endif
 
@@ -387,7 +387,7 @@ var function AddComboButton( ComboStruct comboStruct, int rowIndex, int colIndex
 	return button
 }
 
-#if R5DEV
+#if DEVELOPER
 ComboStruct function DEV_GetComboStruct( string menuName )
 {
 	ComboStruct comboStruct = file.comboMenuData[menuName]

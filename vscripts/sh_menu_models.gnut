@@ -196,11 +196,11 @@ struct
 
 		array<entity> dimmedEnts
 
-		#if R5DEV
+		#if DEVELOPER
 			bool   DEV_previewSelfAsParty = false
 			string DEV_characterOffsetCharacter = ""
 			vector DEV_characterOffset = <0, 0, 0>
-		#endif // DEV
+		#endif // DEVELOPER
 		int transitionTest = 3
 	#endif // CLIENT
 
@@ -272,7 +272,7 @@ global function GetAttachmentOriginOffset
 
 global function ShMenuModels_ClientToUI_OnMouseWheel
 
-#if R5DEV
+#if DEVELOPER
 global function DEV_TweakPlayCamera
 global function DEV_TweakCharacterCamera
 global function DEV_TweakWeaponCamera
@@ -280,7 +280,7 @@ global function DEV_TogglePreviewParty
 global function DEV_TransitionTest
 global function DEV_ScaleModel
 global function DEV_TweakCharacterOffset
-#endif // DEV
+#endif // DEVELOPER
 
 global function UIToClient_PROTO_UpdateClientWithLocalClientUID
 
@@ -1125,7 +1125,7 @@ void function EnableLobbyMenuCameraZoom()
 
 void function InitMenuEntities()
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( BuildingCubeMaps() )
 			return
 	#endif
@@ -1327,7 +1327,7 @@ void function UpdateMenuCharacterModelInternal( int overrideCharacterFlavorNetwo
 		entity refEnt = ModelData_GetPoseEntity( expect MenuModelData( file.presentationData[ file.currentPresentationType ].modelData ) )
 		vector base   = refEnt.GetOrigin()
 		vector offset = CharacterClass_GetGalleryModelOffset( character )
-		#if R5DEV
+		#if DEVELOPER
 			if ( ItemFlavor_GetHumanReadableRef( character ) == file.DEV_characterOffsetCharacter )
 				offset = file.DEV_characterOffset
 		#endif //
@@ -1478,7 +1478,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 		//Assert( party.amIInThis )
 		string localClientUid = PROTO_GetLocalClientUIDFromUIVM()
 
-		#if R5DEV
+		#if DEVELOPER
 			if ( file.DEV_previewSelfAsParty )
 			{
 				party.members.clear()
@@ -1491,7 +1491,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 					party.members.append( fakeMember )
 				}
 			}
-		#endif // DEV
+		#endif // DEVELOPER
 
 		foreach( PartyMember partyMemberInfo in party.members )
 		{
@@ -1549,7 +1549,7 @@ void function TrackPartyMembersAndDisplayModelsThread()
 				shouldCreateModel = true
 
 				ItemFlavor ornull characterOrNull = null
-				#if R5DEV
+				#if DEVELOPER
 					if ( file.DEV_previewSelfAsParty )
 						characterOrNull = LoadoutSlot_GetItemFlavor( LocalClientEHI(), Loadout_CharacterClass() )
 				#endif
@@ -2594,7 +2594,7 @@ void function TransitionTest( entity model, vector color, bool doTransitionFX, b
 	}
 }
 
-#if R5DEV
+#if DEVELOPER
 void function DEV_TweakPlayCamera( vector origin, vector angles, float fov )
 {
 	file.playCameraTarget.SetOrigin( origin )
@@ -2649,7 +2649,7 @@ void function DEV_TweakCharacterOffset( string character, vector offset )
 	file.DEV_characterOffsetCharacter = character
 	file.DEV_characterOffset = offset
 }
-#endif // DEV
+#endif // DEVELOPER
 #endif // CLIENT
 
 #if UI
@@ -3069,7 +3069,7 @@ void function SpawnShadowEyeEffects()
 }
 
 
-#if R5DEV
+#if DEVELOPER
 void function DrawLightDebug( vector origin, vector angles, vector color, float dist )
 {
 	vector endOrigin = origin + AnglesToForward( angles ) * dist

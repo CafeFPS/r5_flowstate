@@ -7,7 +7,7 @@ global function CodeCallback_RegisterClass_CBaseEntity
 // Properties and methods added here can be accessed on all script entities
 //=========================================================
 
-#if R5DEV
+#if DEVELOPER
 table __scriptVarDelegate = {}
 #endif
 
@@ -36,7 +36,7 @@ function CodeCallback_RegisterClass_CBaseEntity()
 
 	function CBaseEntity::constructor()
 	{
-		#if R5DEV
+		#if DEVELOPER
 			this.s = delegate __scriptVarDelegate : {}
 		#else
 			this.s = {}
@@ -47,7 +47,7 @@ function CodeCallback_RegisterClass_CBaseEntity()
 		this.funcsByString = {}
 	}
 
-	#if R5DEV
+	#if DEVELOPER
 		function __scriptVarDelegate::_typeof()
 		{
 			return "ScriptVariableTable"

@@ -542,7 +542,7 @@ PingTraceResults function DoPingTrace( entity player )
 	}
 	result.tr = tr
 
-	#if R5DEV
+	#if DEVELOPER
 		printf( "PING (%s) -  Dist:%.1f, %s, pos:%s, norm:%s, contents:0x%x", (IsServer() ? "SERVER" : "CLIENT"), result.hitDist, (IsValid( result.hitEnt ) ? ("[" + result.hitEnt + "]   '" + result.hitEnt.GetScriptName() + "'") : ""), string( tr.endPos ), string( tr.surfaceNormal ), tr.contents )
 	#endif
 

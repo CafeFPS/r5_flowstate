@@ -470,7 +470,7 @@ bool function ShouldShowProjectileHitDot( int damageType, entity weapon )
 	if ( !IsValid( weapon ) )
 		return false
 
-	#if R5DEV
+	#if DEVELOPER
 		// disables hit dots for video capture
 		if ( GetCurrentPlaylistVarBool( "hud_projectile_hit_dots_disabled", false ) )
 			return false

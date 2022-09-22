@@ -2,7 +2,7 @@ global function Canyonlands_MapInit_Common
 global function CodeCallback_PlayerEnterUpdraftTrigger
 global function CodeCallback_PlayerLeaveUpdraftTrigger
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 	global function HoverTankTestPositions
 
 #endif
@@ -939,7 +939,7 @@ void function HoverTank_DebugFlightPaths_Thread()
 	printt( "++++--------------------------------------------------------------------------------------------------------------------------++++" )
 }
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function HoverTankTestPositions()
 {
 	entity player = GetPlayerArray()[0]
@@ -1106,7 +1106,7 @@ void function OnLeviathanMarkerCreated( entity marker )
 {
 	string markerTargetName = marker.GetTargetName()
 	printt( "OnLeviathanMarkerCreated, targetName: " + markerTargetName  )
-	#if R5DEV
+	#if DEVELOPER
 		if ( IsValid( file.clientSideLeviathan1 ) && markerTargetName == CANYONLANDS_LEVIATHAN1_NAME )
 		{
 			printt( "Destroying clientSideLeviathan1 with markerName: " + markerTargetName  )
