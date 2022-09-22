@@ -30,7 +30,7 @@ global function GRX_PurchaseItem
 global function GRXPack_IsExpectedToContainSingleItemWithCurrency
 global function GRXPack_GetTickModel
 global function GRXPack_GetTickModelSkin
-#if CLIENT || UI && DEVELOPER 
+#if DEVELOPER && ( CLIENT || UI )
 global function GetItemFlavorByGRXRef
 #endif
 #endif
@@ -552,7 +552,7 @@ ItemFlavor function GetItemFlavorByGRXIndex( int index )
 #endif
 
 
-#if CLIENT || UI && DEVELOPER 
+#if DEVELOPER && ( CLIENT || UI )
 ItemFlavor function GetItemFlavorByGRXRef( string grxRef )
 {
 	//

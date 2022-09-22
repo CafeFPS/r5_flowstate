@@ -1842,6 +1842,12 @@ asset function GetGladCardReplacementImageForDamageSourceID( int damageSourceID 
 	return $""
 }
 
+void function SignalUpdate()
+{
+	wait 0.1
+	file.deathRecapDataUpdated = true
+	Signal( GetLocalClientPlayer(), "DeathRecapDataUpdated" )
+}
 
 void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victimEHandle, int damageSourceID, int damageType, int totalDamage, int hitCount, int headShotBits, float healthFrac, float shieldFrac, float blockTime )
 {
@@ -1956,13 +1962,6 @@ void function DEV_TestDeathScreenMenu()
 	//
 
 	thread SignalUpdate()
-}
-
-void function SignalUpdate()
-{
-	wait 0.1
-	file.deathRecapDataUpdated = true
-	Signal( GetLocalClientPlayer(), "DeathRecapDataUpdated" )
 }
 
 array<DeathRecapDamageData> function CreateFakeRecapData( entity victim, array<entity> enemyArray )

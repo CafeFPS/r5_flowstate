@@ -406,7 +406,7 @@ void function SURVIVAL_RunArenaDeathField()
 	vector lastCenter   = file.deathFieldStages[file.deathFieldStartStage].endPos
 	
 	if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false ))
-		lastCenter   = <gp()[0].GetOrigin().x, gp()[0].GetOrigin().y, 0>
+		lastCenter   = <GetPlayerArray()[0].GetOrigin().x, GetPlayerArray()[0].GetOrigin().y, 0>
 	
 	data.center = lastCenter
 	data.nextCenter = lastCenter
