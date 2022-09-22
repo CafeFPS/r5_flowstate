@@ -149,18 +149,7 @@ void function StartFRChallenges(entity player)
 	player.FreezeControlsOnServer()
 	TakeAllWeapons(player)
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")
- 
-	if(GetCurrentPlaylistVarBool( "enable_bolo_heirloom", true ))
-	{
-		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	}
-	else//Letting player choose if they want heirloom or not, don't force this
-	{
-		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
-	}
-	
+
 	player.GiveWeapon( "mp_weapon_wingman", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["optic_cq_hcog_classic"] )
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	
