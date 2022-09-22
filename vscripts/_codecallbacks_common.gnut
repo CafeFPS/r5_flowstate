@@ -846,7 +846,14 @@ void function RemovePlayerMovementEventCallback( entity player, int playerMoveme
 	table<int, array<void functionref( entity )> > callbackTable = player.p.playerMovementEventCallbacks
 
 	Assert( playerMovementEvent in callbackTable )
-
+	
+	if ( callbackTable.len() == 0 )
+	{
+		//printt( "No more playerMovementEventCallbacks for player : " + player + ", make player not get movementcallbacks anymore." )
+		player.SetSendMovementCallbacks( false )
+		return
+	}
+	
 	callbackTable[ playerMovementEvent ].fastremovebyvalue( callbackFunc )
 
 	if ( callbackTable[ playerMovementEvent ].len() == 0 )
@@ -855,11 +862,7 @@ void function RemovePlayerMovementEventCallback( entity player, int playerMoveme
 		delete callbackTable[ playerMovementEvent ]
 	}
 
-	if ( callbackTable.len() == 0 )
-	{
-		//printt( "No more playerMovementEventCallbacks for player : " + player + ", make player not get movementcallbacks anymore." )
-		player.SetSendMovementCallbacks( false )
-	}
+
 }
 
 void function CodeCallback_OnPlayerJump( entity player )
