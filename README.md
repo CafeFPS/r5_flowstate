@@ -4,7 +4,7 @@ Join r5 reloaded discord: https://discord.com/invite/r5reloaded
 
 # How to install
 Follow the steps in order.
-1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded) Min SDK version required is: v2.1.8 Release Candidate: https://github.com/Mauler125/r5sdk/releases. Download depot.zip and replace all the content into your Apex S3 main folder.
+1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded) Min SDK version required is: v2.1.9 Release Candidate: https://github.com/Mauler125/r5sdk/releases. Download depot.zip and replace all the content into your Apex S3 main folder.
 2. Get the required files to run these scripts from this repo releases: https://github.com/ColombianGuy/r5_aimtrainer/releases. Drag and drop all the content.
 3. Get the content from this repo and place it in /platform/scripts/. Replace all the content.
 
