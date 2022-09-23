@@ -17,12 +17,10 @@ bool function ClientCommand_KillSelf(entity player, array<string> args)
     if( !IsAlive( player ) )  return false
     if( Time() - player.p.lastDeathTime < CMD_GetKillSelfCooldown() ) 
     {
-        print(Time())
-        print(player.p.lastDeathTime)
         return false
     }
 
-    player.TakeDamage(player.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
+    player.SetHealth(0)
     return true
 }
 // PLAYLIST GET
