@@ -1,5 +1,5 @@
-# Original and updated repository for Flowstate mod made by @CafeFPS
-# Welcome to Flowstate
+# Original and updated repository for Flowstate mod
+
 Flowstate is a package of scripts for R5 Reloaded (Modded Apex Legends) that includes a large number of bugs fixes and new features. It also includes exclusive content made by the community like abilities, gamemodes or maps! 
 
 Gamemodes: 
