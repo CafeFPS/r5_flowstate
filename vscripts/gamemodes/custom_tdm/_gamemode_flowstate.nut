@@ -1077,7 +1077,10 @@ void function GiveRandomTac(entity player)
 		"mp_ability_area_sonar_scan",
 		"mp_weapon_grenade_sonar",
 		"mp_weapon_deployable_cover",
-		"mp_ability_holopilot"
+		"mp_ability_holopilot",
+		"mp_ability_cloak",
+		//"mp_ability_space_elevator_tac",
+		"mp_ability_phase_rewind"
 	]
 
 	foreach(ability in file.whitelistedAbilities)
