@@ -56,6 +56,8 @@ void function OnClientConnected( entity player )
 	printt("Flowstate DEBUG - The gamemode running is: " + GameRules_GetGameMode())
 	//Wraith Q fix. Colombia
 	player.SetForceVisibleInPhaseShift(true)
+	
+	thread RecordPositions(player)
 	// AccumulatedDamageData damageData
 	// file.playerAccumulatedDamageData[player] <- damageData
 }

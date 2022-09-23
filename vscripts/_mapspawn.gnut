@@ -325,7 +325,9 @@ void function CodeCallback_MapSpawn() // original script entry point
 				LoadMovementMap()
 			PrecacheWeapon( $"mp_weapon_dragon_lmg" )
 			PrecacheWeapon( $"mp_weapon_3030" )
-			PrecacheWeapon( $"mp_ability_cloak")
+			PrecacheWeapon( $"mp_ability_cloak" )
+			//PrecacheWeapon( $"mp_ability_space_elevator_tac" )
+			PrecacheWeapon( $"mp_ability_phase_rewind" )
 			break
 	}
 	

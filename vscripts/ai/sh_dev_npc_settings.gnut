@@ -162,6 +162,9 @@ void function SetupAbilities()
 	SetupDevCommand( "Pulse Blade", "give mp_weapon_grenade_sonar" )
 	SetupDevCommand( "Amped Wall", "give mp_weapon_deployable_cover" )
 	SetupDevCommand( "Electric Smoke", "give mp_weapon_grenade_electric_smoke" )
+	SetupDevCommand( "Cloak", "give mp_ability_cloak" )
+	//SetupDevCommand( "Gravity Lift", "give mp_ability_space_elevator_tac" )
+	SetupDevCommand( "Phase Rewind", "give mp_ability_phase_rewind" )
 	#endif
 }
 

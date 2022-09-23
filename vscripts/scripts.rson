@@ -841,6 +841,8 @@ Scripts:
 When: "SERVER || CLIENT"
 Scripts:
 [
+	weapons/mp_ability_phase_rewind.nut
+	//weapons/mp_ability_space_elevator_tac.nut
 	weapons/mp_weapon_bubble_bunker.nut
 	weapons/mp_weapon_grenade_defensive_bombardment.nut
 	weapons/mp_ability_mirage_ultimate.nut
