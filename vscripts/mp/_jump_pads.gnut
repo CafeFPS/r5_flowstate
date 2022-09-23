@@ -154,6 +154,19 @@ void function OnJumpPadAreaEnter( entity trigger, entity ent )
 {
 	thread JumpPad_PlayLaunchAnim( trigger )
 	JumpPadPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
+
+	if( !IsValid( ent ) || !ent.IsPlayer() )
+		return
+
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( ent ), Loadout_CharacterClass() )
+	string charRef = ItemFlavor_GetHumanReadableRef( character )
+
+	if( charRef == "character_octane" && Time() - ent.p.lastJumpPadChatterTime >= 30 )
+	{
+		EmitSoundOnEntityOnlyToPlayer( ent, ent, "diag_mp_octane_bc_jumpPadLaunch_1p" )
+		EmitSoundOnEntityExceptToPlayer( ent, ent, "diag_mp_octane_bc_jumpPadLaunch_3p" )
+		ent.p.lastJumpPadChatterTime = Time()
+	}
 }
 
 void function JumpPadAirborne( entity player ) {

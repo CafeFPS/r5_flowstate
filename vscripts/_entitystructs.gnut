@@ -696,6 +696,7 @@ global struct ServerPlayerStruct
 	//By Endergreen
 	// This is for Octane's ability chatter
 	float lastStimChatterTime = -30
+	float lastJumpPadChatterTime = -30
 	
 	//Strafer dummy challenge
 	int challengeName = 0
