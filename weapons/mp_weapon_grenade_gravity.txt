@@ -107,7 +107,7 @@ WeaponData
 		"grenade_arc_indicator_bounce_count"			"<KEEP_DEFAULT>"
 		"grenade_arc_indicator_effect"					"<KEEP_DEFAULT>"
 
-		"damage_heavyarmor_nontitan_scale"				"0.5"
+		//"damage_heavyarmor_nontitan_scale"				"0.5"
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_1P"
 	}
 
@@ -142,7 +142,7 @@ WeaponData
 		"grenade_arc_indicator_bounce_count"			"1"
 		"grenade_arc_indicator_effect"					"P_grenade_arc_proto"
 
-		"damage_heavyarmor_nontitan_scale"				"1"
+		//"damage_heavyarmor_nontitan_scale"				"1"
 		"sound_weapon_ready"							"HUD_ordinance_meter_replenished_SP"
 	}
 
