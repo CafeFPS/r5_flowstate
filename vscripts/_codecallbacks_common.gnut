@@ -312,7 +312,7 @@ void function SendEntityKilledEvent( entity ent, var damageInfo )
 	{
 		string attackerClassname = attacker.GetClassName()
 
-		if ( attackerClassname == "trigger_hurt" || attackerClassname == "trigger_multiple" )
+		if ( attackerClassname == "trigger_hurt" || attackerClassname == "trigger_multiple" || attackerClassname == "crossbow_bolt" )
 			attacker = GetEntByIndex( 0 ) // worldspawn
 	}
 
