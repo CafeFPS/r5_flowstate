@@ -314,6 +314,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 		case "custom_aimtrainer":
 			PrecacheWeapon( $"mp_weapon_clickweapon")
 			PrecacheWeapon( $"mp_weapon_clickweaponauto")
+			PrecacheWeapon( $"mp_weapon_3030" )
 			break
 		case "map_editor":
 			PrecacheWeapon( $"mp_weapon_editor" )
