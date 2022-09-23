@@ -82,6 +82,8 @@ void function Canyonlands_MapInit_Common()
 	return
 
 	#if SERVER
+	RegisterSignal( "NessyDamaged" )
+	PrecacheModel( NESSY_MODEL )
 	AddCallback_EntitiesDidLoad( EntitiesDidLoad )
 	#endif
 
@@ -126,11 +128,10 @@ void function Canyonlands_MapInit_Common()
 
 		svGlobal.evacEnabled = false //Need to disable this on a map level if it doesn't support it at all
 
-		RegisterSignal( "NessyDamaged" )
+		
 		RegisterSignal( SIGNAL_HOVERTANK_AT_ENDPOINT )
 		RegisterSignal( "PathFinished" )
 
-		PrecacheModel( NESSY_MODEL )
 
 		//SURVIVAL_AddOverrideCircleLocation_Nitro( <24744, 24462, 3980>, 2048 )
 
@@ -233,7 +234,7 @@ void function __EntitiesDidLoad()
 	{
 		waitthread FindHoverTankEndNodes()
 		SpawnHoverTanks()
-		if ( GetCurrentPlaylistVarInt( "enable_nessies", 1 ) == 1 )
+		if ( GetCurrentPlaylistVarBool( "enable_nessies", false ) )
 			Nessies()
 	}
 }
