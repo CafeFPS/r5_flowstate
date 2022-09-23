@@ -153,7 +153,7 @@
 		"wrap"					"1"
 		"fontHeight"			"25"
 		"textAlignment"			"north-west"
-		"labelText"				"Flowstate is a package of scripts that includes a large number of bugs fixes and new features compared to default modded s3 scripts, it also includes exclusive and updated gamemodes made by the community: flowstate aim trainer, flowstate ffa/tdm-gungame-fiesta, hide&seek prophunt, battle royale, csgo-like apex surf, capture the flag and a prop dynamic map editor!" 
+		"labelText"				"Flowstate is a package of scripts for R5 Reloaded (Modded Apex Legends) that includes a large number of bugs fixes and new features. It also includes exclusive content made by the community like abilities, gamemodes or maps!" 
 		"font"					"DefaultBold_41"
 		"allcaps"				"0"
 		"fgcolor_override"		"200 200 200 255"
