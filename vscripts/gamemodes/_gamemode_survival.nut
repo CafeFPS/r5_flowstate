@@ -601,10 +601,6 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		return
 	
 	victim.FreezeControlsOnServer()
-
-	victim.BecomeRagdoll( victim.GetOrigin(), false )
-	
-	victim.StartObserverMode( OBS_MODE_DEATHCAM )
 	
 	if( attacker.IsPlayer() )
 	{
