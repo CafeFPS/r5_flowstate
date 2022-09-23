@@ -119,10 +119,7 @@ void function Cl_ChallengesByColombia_Init()
 	
 	//laser sight particle
 	PrecacheParticleSystem($"P_wpn_lasercannon_aim_short_blue") 
-	
-	//for custom ui/textures
-	PakHandle AimTrainerRpak = RequestPakFile( "aimtrainer" )
-	
+
 	AddCallback_EntitiesDidLoad( AimTrainer_OnEntitiesDidLoad )
 }
 
