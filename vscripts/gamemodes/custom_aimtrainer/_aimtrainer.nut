@@ -2280,8 +2280,15 @@ thread OnPlayerDeathCallbackThread(player)
 void function OnPlayerDeathCallbackThread(entity player)
 {
 	entity weapon = player.GetNormalWeapon(WEAPON_INVENTORY_SLOT_PRIMARY_0)
-	array<string> mods = weapon.GetMods()
-	string weaponname = weapon.GetWeaponClassName()
+	array<string> mods
+	string weaponname
+	if( IsValid( weapon ) )
+	{
+		mods = weapon.GetMods()
+		weaponname = weapon.GetWeaponClassName()
+	} else {
+		weaponname = "mp_weapon_wingman"
+	}
 
 	wait 1
 
