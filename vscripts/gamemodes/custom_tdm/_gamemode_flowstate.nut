@@ -486,6 +486,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	if (FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes())
 		CreateFlowStateDeathBoxForPlayer(victim, attacker, damageInfo)
 
+	victim.StartObserverMode( OBS_MODE_DEATHCAM )
+
 	switch(GetGameState())
     {
         case eGameState.Playing:
