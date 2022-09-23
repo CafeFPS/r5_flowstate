@@ -37,7 +37,7 @@ global function IsPlayerDisembarking
 	//global function ClientCommand_TitanDisembark
 #endif
 
-#if R5DEV
+#if DEVELOPER
 	global function SetEmbarkDebugPrint
 #endif
 
@@ -720,7 +720,7 @@ void function TitanEmbarkFailsafe( entity player, entity titan, entity groundEnt
 	if ( GetCurrentPlaylistVarInt( "player_embark_in_solid_checks", 1 ) != 1 )
 		return
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( file.embarkDebugPrint )
 		{
 			if ( IsValid( titan ) )
@@ -733,7 +733,7 @@ void function TitanEmbarkFailsafe( entity player, entity titan, entity groundEnt
 	if ( !PutEntityInSafeSpot( player, titan, groundEnt, startOrigin, player.GetOrigin() ) )
 		player.SetOrigin( startOrigin )
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( file.embarkDebugPrint )
 		{
 			if ( IsValid( titan ) )
@@ -1353,7 +1353,7 @@ void function TitanEmbark_TitanEmbarks( entity player, entity titan, table e )
 //			     TraceLineSimple( titanOrigin + <0,0,200>, clampedPos + <0,0,0>, titan ) == 1.0 ||
 //			     TraceLineSimple( titanOrigin + <0,0,200>, clampedPos + <0,0,128>, titan ) == 1.0 )
 //			{
-//				#if R5DEV
+//				#if DEVELOPER
 //					if ( file.embarkDebugPrint )
 //					{
 //						printt( "PlayerDisembarksTitanWithSequenceFuncs, player origin: " + player.GetOrigin()+ ", titan origin: " + titan.GetOrigin() + ", clampedPos: " + clampedPos )
@@ -1366,7 +1366,7 @@ void function TitanEmbark_TitanEmbarks( entity player, entity titan, table e )
 //	}
 //	else
 //	{
-//		#if R5DEV
+//		#if DEVELOPER
 //			if ( file.embarkDebugPrint )
 //			{
 //				printt( "PlayerIsFarOffGround() returned true, skip doing NavMesh_ClampPointForAIWithExtents checks" )
@@ -1561,7 +1561,7 @@ void function DelayedSafePlayerLocationForDisembark( entity player, entity titan
 		safeStartPoint = player.GetOrigin()
 	}
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( file.embarkDebugPrint )
 			printt( "DelayedSafePlayerLocationForDisembark, before PutEntityInSafeSpot: player origin: " + player.GetOrigin() + ", titan origin: " + titan.GetOrigin() + " safeStartPoint: " + safeStartPoint )
 	#endif
@@ -1571,7 +1571,7 @@ void function DelayedSafePlayerLocationForDisembark( entity player, entity titan
 	if ( !PutEntityInSafeSpot( player, titan, null, safeStartPoint, player.GetOrigin() ) )
 		player.SetOrigin( safeStartPoint )
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( file.embarkDebugPrint )
 			printt( "DelayedSafePlayerLocationForDisembark, after PutEntityInSafeSpot: player origin: " + player.GetOrigin() + ", titan origin: " + titan.GetOrigin() + " safeStartPoint: " + safeStartPoint )
 	#endif
@@ -2105,12 +2105,12 @@ void function SetLargeDisembarkFailSafeTeleportVector( vector value ) //TODO: Re
 }
 #endif // SERVER
 
-#if R5DEV
+#if DEVELOPER
 void function SetEmbarkDebugPrint( bool value )
 {
 	file.embarkDebugPrint = value
 }
-#endif // DEV
+#endif // DEVELOPER
 
 bool function PlayerHasFastEmbark( entity player )
 {

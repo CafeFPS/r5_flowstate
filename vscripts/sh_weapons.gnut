@@ -57,11 +57,11 @@ void function ShWeapons_LevelInit()
 	FileStruct_LifetimeLevel newFileLevel
 	fileLevel = newFileLevel
 
-	#if SERVER && R5DEV
+	#if SERVER && DEVELOPER
 		AddCallback_GeneratePDef( GenerateWeaponsPDef )
 	#endif
 
-	#if (SERVER || CLIENT) //&& R5DEV // (dw): needs to be precached even in non-DEV to support DEV clients connecting to non-DEV servers
+	#if (SERVER || CLIENT) //&& DEVELOPER // (dw): needs to be precached even in non-DEV to support DEV clients connecting to non-DEV servers
 		PrecacheWeapon( $"weapon_cubemap" )
 	#endif
 
@@ -274,7 +274,7 @@ void function ShowDefaultBodygroupsOnFakeWeapon( entity ent, string weaponClassN
 //// Internals ////
 ///////////////////
 ///////////////////
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function GenerateWeaponsPDef()
 {
 	// this persistent data enum is required by sh_xp.gnut

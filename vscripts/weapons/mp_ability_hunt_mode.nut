@@ -6,7 +6,7 @@ global function OnWeaponDeactivate_hunt_mode
 #if SERVER
 global function BurnMeter_HuntMode
 #endif //SERVER
-#if R5DEV && CLIENT 
+#if DEVELOPER && CLIENT 
 global function GetBloodhoundColorCorrectionID
 #endif //
 
@@ -318,7 +318,7 @@ void function StopHuntMode()
 	#endif
 }
 
-#if R5DEV && CLIENT 
+#if DEVELOPER && CLIENT 
 int function GetBloodhoundColorCorrectionID()
 {
 	return file.colorCorrection

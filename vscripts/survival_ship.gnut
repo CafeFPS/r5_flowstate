@@ -11,7 +11,7 @@ global function SURVIVAL_SetPlaneHeight
 global function SURVIVAL_SetAirburstHeight
 global function SURVIVAL_SetMapCenter
 global function SURVIVAL_SetMapDelta
-#if R5DEV
+#if DEVELOPER
 global function GetDropshipClearance
 #endif
 

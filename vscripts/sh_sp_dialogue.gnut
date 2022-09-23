@@ -61,9 +61,9 @@ global function CustomSpeakers1ListInit
 #endif //CLIENT
 
 
-#if R5DEV
+#if DEVELOPER
 global function ShouldTryToReplaceMissingVoiceWithTempVoice
-#endif //R5DEV
+#endif // DEVELOPERELOPER
 
 
 //////////////////////
@@ -134,9 +134,9 @@ global const PRIORITY_LOW       = 5
 global const PRIORITY_LOWEST    = 1
 
 
-#if R5DEV
+#if DEVELOPER
 global const string TEMP_VOICE  = "playerM1"
-#endif //R5DEV
+#endif // DEVELOPERELOPER
 
 
 ///////////////////////
@@ -205,9 +205,9 @@ struct
 
 	array<string> validVoices
 
-	#if R5DEV
+	#if DEVELOPER
 		array<string> validPerspectives = ["", "solo", "radio"] // blank perspective means 1p and 3p, solo means additional to-self perspective on top of 1p and 3p
-	#endif //R5DEV
+	#endif // DEVELOPERELOPER
 
 	#if CLIENT
 		var                                devTextDialogueRUI
@@ -246,7 +246,7 @@ void function SPDialogueInit()
 	AddClientCommandCallback( "DialogueFinishedForID", ClientCommand_DialogueFinishedForID )
 	AddClientCommandCallback( "AllDialogueFinished", ClientCommand_AllDialogueFinished )
 
-	#if R5DEV
+	#if DEVELOPER
 		// When a character is loaded from bakery, add their currently registered voice value
 		// to the list of voices to be verified by VerifyExistenceOfNongenericAliases
 		AddCallback_OnItemFlavorRegistered( eItemType.character, OnCharacterRegistered )
@@ -302,7 +302,7 @@ DialogueData function GetDataForAliasId( int index )
 }
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function OnCharacterRegistered( ItemFlavor flavor )
 {
 	var block    = GetSettingsBlockForAsset( CharacterClass_GetSetFile( flavor ) )
@@ -311,7 +311,7 @@ void function OnCharacterRegistered( ItemFlavor flavor )
 	if ( !file.validVoices.contains( voice ) )
 		file.validVoices.append( voice )
 }
-#endif //SERVER && R5DEV
+#endif //SERVER && DEVELOPER
 
 
 #if(CLIENT)
@@ -324,7 +324,7 @@ int function GetAnyAliasIdForName( string dialogueName )
 }
 #endif //
 
-#if CLIENT || !R5DEV
+#if CLIENT || !DEVELOPER
 void function OnCharacterRegistered( ItemFlavor flavor )
 {
 	var block    = GetSettingsBlockForAsset( CharacterClass_GetSetFile( flavor ) )
@@ -424,7 +424,7 @@ void function RegisterCSVDialogue( asset dt )
 
 		string extraPerspective = ((optionalColumnPerspective > -1) ? GetDataTableString( dataTable, i, optionalColumnPerspective ) : "")
 
-		#if SERVER && R5DEV
+		#if SERVER && DEVELOPER
 		Assert( file.validPerspectives.contains( extraPerspective ), "Dialogue name " + name + " has a perspective field, but an invalid perspective. Check the perspective column in the CSV against file.validPerspectives in sh_sp_dialogue.gnut" )
 		#endif
 
@@ -459,7 +459,7 @@ void function RegisterDialogueLine( string name, string alias, int priority, str
 	if ( vduVideo != $"" )
 		Assert( radioDisplayName != "", "Dialogue alias " + name + " specifies a vdu bink without setting radioDisplayName as well." )
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 	if ( alias != "" && !DoesAliasExist( alias ) )
 	{
 		if ( alias.find( "%" ) >= 0 )
@@ -467,7 +467,7 @@ void function RegisterDialogueLine( string name, string alias, int priority, str
 		else
 			Warning( "Error: Dialogue '" + name + "': alias '" + alias + "' can't be registered because the alias does not exist" )
 	}
-#endif // SERVER && R5DEV
+#endif // SERVER && DEVELOPER
 
 	DialogueData data
 	data.alias = alias
@@ -503,7 +503,7 @@ void function RegisterDialogueLine( string name, string alias, int priority, str
 	s_prevNameRegistered = name
 }
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function VerifyExistenceOfNongenericAliases( string alias, string extraPerspective )
 {
 	array<string> specifiedPerspectiveAliases = []
@@ -545,7 +545,7 @@ void function IssueWarningIfAliasMissing( string alias )
 	if( !DoesAliasExist( alias ) )
 		Warning( "Error: Dialogue alias '" + alias + "' can't be registered because the alias does not exist. Most likely missing a Miles event." )
 }
-#endif // SERVER && R5DEV
+#endif // SERVER && DEVELOPER
 
 int function GetLinePriority( int aliasID )
 {
@@ -1392,7 +1392,7 @@ string function SpecifyAliasFromGeneric( DialogueData data, entity speaker )
 
 	if ( milesAlias.find( "%perspective%" ) >= 0 )
 	{
-		#if R5DEV
+		#if DEVELOPER
 			Assert( specifiedPerspective != "", "Dialogue with generic perspective specified in CSV alias without specifying intended perspective!" )
 		#endif //
 
@@ -1405,7 +1405,7 @@ string function SpecifyAliasFromGeneric( DialogueData data, entity speaker )
 	if ( milesAlias.find( "%voice%" ) >= 0 )
 		milesAlias = StringReplace( milesAlias, "%voice%", voice )
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( ShouldTryToReplaceMissingVoiceWithTempVoice() )
 		{
 			if ( !DoesAliasExist( milesAlias ) )
@@ -1496,7 +1496,7 @@ void function SetUseDialogueVDU( bool useVDU )
 #endif //
 
 
-#if R5DEV
+#if DEVELOPER
 bool function ShouldTryToReplaceMissingVoiceWithTempVoice()
 {
 	return (GetCurrentPlaylistVarInt( "vo_fallback_to_temp", 0 ) == 1)

@@ -41,7 +41,7 @@ struct
 
 void function Flags_Init()
 {
-	#if R5DEV
+	#if DEVELOPER
 		//level.flagHistory <- {}
 	#endif
 
@@ -67,7 +67,7 @@ void function FlagSet( string msg )
 {
 	Assert( msg in shFile.flags, "flag " + msg + " not initialized yet" )
 
-	#if R5DEV
+	#if DEVELOPER
 		//if ( !Flag( msg ) )
 		//	level.flagHistory[ msg ] <- true
 	#endif

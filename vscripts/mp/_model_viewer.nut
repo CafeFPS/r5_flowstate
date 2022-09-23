@@ -7,7 +7,7 @@ global function ToggleModelViewer
 
 global modelViewerModels = []
 
-#if R5DEV
+#if DEVELOPER
 struct
 {
 	bool initialized
@@ -19,11 +19,11 @@ struct
 	bool dpadDownPressed = true
 	var lastTitanAvailability
 } file
-#endif // DEV
+#endif // DEVELOPER
 
 function ModelViewer_Init()
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( reloadingScripts )
 			return
 		AddClientCommandCallback( "ModelViewer", ClientCommand_ModelViewer )
@@ -32,7 +32,7 @@ function ModelViewer_Init()
 
 function ToggleModelViewer()
 {
-	#if R5DEV
+	#if DEVELOPER
 		entity player = GetPlayerArray()[ 0 ]
 		if ( !file.active )
 		{
@@ -74,7 +74,7 @@ function ToggleModelViewer()
 	#endif
 }
 
-#if R5DEV
+#if DEVELOPER
 function ModelViewerDisableConflicts()
 {
 	disable_npcs() //Just disable_npcs() for now, will probably add things later
@@ -177,4 +177,4 @@ function WeaponsRestore()
 	}
 }
 
-#endif // DEV
+#endif // DEVELOPER

@@ -662,7 +662,7 @@ void function ServerCallback_PlayerChangedTeams( entity player, int oldTeam, int
 	foreach( void functionref(entity, int, int) callbackFunc in s_callbacksOnPlayerChangedTeam )
 		callbackFunc( player, oldTeam, newTeam )
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( oldTeam == TEAM_INVALID || newTeam == TEAM_INVALID )
 			return
 

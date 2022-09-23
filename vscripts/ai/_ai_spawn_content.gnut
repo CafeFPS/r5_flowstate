@@ -20,7 +20,7 @@ function AiSpawnContent_Init()
 	if ( IsMultiplayer() )
 		file.pilotAntiTitanWeapons = [ "mp_weapon_rocket_launcher" ]
 
-	// #if R5DEV
+	// #if DEVELOPER
 	// if ( IsSingleplayer() )
 	// {
 	// 	array<string> aiSettings = GetAllowedTitanAISettings()
@@ -411,7 +411,7 @@ function CommonNPCOnSpawned( entity npc )
 	thread AssaultLinkedMoveTarget( npc )
 
 	FixupTitle( npc )
-	#if R5DEV
+	#if DEVELOPER
 	// stop all the wandering in sp_enemies.
 	if ( GetMapName() == "sp_enemies" )
 		npc.DisableNPCFlag( NPC_ALLOW_PATROL | NPC_ALLOW_INVESTIGATE )

@@ -32,7 +32,7 @@ global function ShouldShowLastGameRankedAbandonForgivenessDialog
 global function ShowLastGameRankedAbandonForgivenessDialog
 global function PulseModeButton
 
-#if R5DEV
+#if DEVELOPER
 global function DEV_PrintPartyInfo
 global function DEV_PrintUserInfo
 global function Lobby_MovePopupMessage
@@ -1821,7 +1821,7 @@ var function GetPartyMemberButton( string uid )
 	return null
 }
 
-#if R5DEV
+#if DEVELOPER
 void function DEV_PrintPartyInfo()
 {
 	Party party = GetParty()

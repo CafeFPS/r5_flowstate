@@ -2392,7 +2392,7 @@ entity function AssertLocalOrServerValidPlayer( entity player )
 
 bool function IsEverythingUnlocked()
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( GetCurrentPlaylistVarBool( "dev_force_everything_unlocked", false ) )
 			return true
 	#endif

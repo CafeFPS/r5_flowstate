@@ -15,7 +15,7 @@ void function ClientCommands_Init()
 
 	AddClientCommandCallback( "recharge", ClientCommand_recharge )
 
-	#if R5DEV
+	#if DEVELOPER
 	//AddClientCommandCallback( "script", ClientCommand_script )
 	#endif
 }
@@ -111,7 +111,7 @@ bool function ClientCommand_recharge( entity player, array<string> args )
 	return true
 }
 
-#if R5DEV
+#if DEVELOPER
 bool function ClientCommand_script( entity player, array<string> args )
 {
 	if( !IsValid( player ) )

@@ -8,8 +8,8 @@ void function CodeCallback_MatchIsOver()
 	else
 		SetUIVar( level, "putPlayerInMatchmakingAfterDelay", false )
 
-#if R5DEV
+#if DEVELOPER
 	if ( !IsMatchmakingServer() )
 		GameRules_ChangeMap( "mp_lobby", GAMETYPE )
-#endif // #if R5DEV
+#endif // #if DEVELOPER
 }

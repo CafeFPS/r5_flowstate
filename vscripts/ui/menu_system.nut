@@ -51,7 +51,7 @@ void function InitSystemPanelMain( var panel )
 	InitSystemPanel( panel )
 
 	AddPanelFooterOption( panel, LEFT, BUTTON_B, true, "#B_BUTTON_BACK", "#B_BUTTON_BACK" )
-	#if R5DEV
+	#if DEVELOPER
 	if ( Dev_CommandLineHasParm( "-showdevmenu" ) )
 		AddPanelFooterOption( panel, LEFT, BUTTON_Y, true, "#Y_BUTTON_DEV_MENU", "#DEV_MENU", OpenDevMenu, ShouldShowDevMenu )
 	#endif

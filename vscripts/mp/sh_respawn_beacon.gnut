@@ -8,7 +8,7 @@ global function GetRespawnStyle
 global function RespawnBeacons_OnSquadEliminated
 global function RespawnBeacon_PutPlayerInDropship
 global function AddCallback_OnDNAPickupDestroyed
-#if R5DEV
+#if DEVELOPER
 global function RespawnPlayersInDropship
 global function RespawnPlayersInDropshipAtPoint
 global function RespawnPlayersInDropshipAtPoint2

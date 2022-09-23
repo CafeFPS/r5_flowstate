@@ -1534,7 +1534,7 @@ int function CodeCallback_GetWeaponDamageSourceId( entity weapon )
 {
 	string classname = weapon.GetWeaponClassName()
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( ("devWeapons" in level) && classname in level.devWeapons )
 			return 0
 

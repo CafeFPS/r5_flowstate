@@ -3,7 +3,7 @@ global function GetDeathFieldStage
 global function GetDeathfieldFinalCenter
 global function SURVIVAL_GetDeathField
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 global function DEV_DrawCircleLocations
 global function DEV_SimulateFinalLocations
 global function DEV_ResetSurveyZones
@@ -350,7 +350,7 @@ void function SURVIVAL_AddCallback_OnDeathFieldStopShrink( void functionref( Dea
 
 void function DeathFieldCircleWait( float waitTime )
 {
-	#if R5DEV
+	#if DEVELOPER
 		svGlobal.levelEnt.EndSignal( "DeathField_ShrinkNow" )
 	#endif
 
@@ -360,7 +360,7 @@ void function DeathFieldCircleWait( float waitTime )
 
 void function DeathFieldShrinkThink( DeathFieldData data, entity deathField )
 {
-	#if R5DEV
+	#if DEVELOPER
 		svGlobal.levelEnt.EndSignal( "DeathField_ShrinkNow" )
 	#endif
 
@@ -406,7 +406,7 @@ void function SURVIVAL_RunArenaDeathField()
 	vector lastCenter   = file.deathFieldStages[file.deathFieldStartStage].endPos
 	
 	if(GetCurrentPlaylistVarBool( "dummies_horde_enabled", false ))
-		lastCenter   = <gp()[0].GetOrigin().x, gp()[0].GetOrigin().y, 0>
+		lastCenter   = <GetPlayerArray()[0].GetOrigin().x, GetPlayerArray()[0].GetOrigin().y, 0>
 	
 	data.center = lastCenter
 	data.nextCenter = lastCenter
@@ -517,7 +517,7 @@ void function SURVIVAL_RunArenaDeathField()
 			waitthread DeathFieldCircleWait( stage.preShrinkDuration )
 
 			// only change these settings if we dev-skipped the previous circle since it will send an unwated message
-			#if R5DEV
+			#if DEVELOPER
 				if ( fabs( Time() + MARGIN_WAIT_TIME - data.startTime ) > 1.0 )
 				{
 					printt( "reset net time" )
@@ -582,7 +582,7 @@ void function SURVIVAL_RunArenaDeathField()
 		data.center = mover.GetOrigin()
 
 		// only change these settings if we dev-skipped the previous circle since it will send an unwated message
-		#if R5DEV
+		#if DEVELOPER
 			if ( Time() < GetGlobalNetTime( "nextCircleStartTime" ) + MARGIN_WAIT_TIME + stage.shrinkDuration - 1.0 )
 			{
 				SetGlobalNetTime( "nextCircleStartTime", Time() - (stage.shrinkDuration + stage.preShrinkDuration) )
@@ -760,7 +760,7 @@ bool function ClientCommand_UpdateCirclePos( entity player, array<string> args )
 	float argY    = float( args[1] )
 	vector newPos = <argX, argY, 0>
 
-	#if R5DEV
+	#if DEVELOPER
 		thread DEV_ForceDeathFieldPosition( newPos )
 		return true
 	#endif
@@ -768,7 +768,7 @@ bool function ClientCommand_UpdateCirclePos( entity player, array<string> args )
 	return false
 }
 
-#if R5DEV
+#if DEVELOPER
 void function DEV_ForceDeathFieldPosition( vector endPos )
 {
 	if ( !SURVIVAL_IsValidCircleLocation( endPos ) )
@@ -818,7 +818,7 @@ void function DEV_ResetSurveyZones()
 
 void function SURVIVAL_AddOverrideCircleLocation( vector origin, float radius )
 {
-	#if R5DEV
+	#if DEVELOPER
 		file.overrideCircleEndPos[ origin ] <- radius
 	#endif
 }

@@ -23,7 +23,7 @@ global function ClientToUI_OnItemFlavorBecameNew
 global function Newness_TEMP_MarkItemAsNewAndInformServer
 #endif
 
-#if UI && R5DEV
+#if UI && DEVELOPER
 global function DEV_Newness_ReverseQueryTest
 #endif
 
@@ -80,7 +80,7 @@ void function ShItemPerPlayerState_LevelInit()
 	fileLevel = newFileLevel
 
 	#if SERVER
-		#if R5DEV
+		#if DEVELOPER
 			AddCallback_GeneratePDef( GenerateItemStatePDef )
 		#endif
 		AddClientCommandCallback( "newness_clear", ClientCommand_newness_clear )
@@ -118,7 +118,7 @@ void function Newness_MarkItemFlavorsAsNewForPlayer( entity player, array<ItemFl
 		if ( storedGuid == 0 )
 			continue // empty slot
 
-		#if R5DEV
+		#if DEVELOPER
 			foreach( SettingsAssetGUID otherGuid in guidList )
 			{
 				if ( storedGuid == otherGuid )
@@ -269,7 +269,7 @@ void function Newness_ReverseQuery_Setup(
 #if UI
 void function Newness_AddCallbackAndCallNow_OnRerverseQueryUpdated( Newness_ReverseQuery rq, OnNewnessReverseQueryUpdatedCallbackType cb, var optionalArg = null )
 {
-	#if R5DEV
+	#if DEVELOPER
 		int foundIndex = -1
 		foreach ( int index, OnNewnessReverseQueryUpdatedCallbackStruct cbs in rq.onChangeCallbackList )
 		{
@@ -423,7 +423,7 @@ void function UpdateReverseQueryDependents( array<Newness_ReverseQuery> dependen
 #if UI
 void function OnPersistentDataReady( entity _unused )
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEV_ShouldIgnorePersistence() )
 			return
 	#endif
@@ -483,7 +483,7 @@ void function ClientToUI_OnItemFlavorBecameNew( int guid, bool isNew )
 #endif
 
 
-#if SERVER && R5DEV && !SP
+#if SERVER && DEVELOPER && !SP
 void function GenerateItemStatePDef()
 {
 	DEV_PDefGen_BeginFieldGroup( "item state" )
@@ -493,7 +493,7 @@ void function GenerateItemStatePDef()
 #endif
 
 
-#if UI && R5DEV
+#if UI && DEVELOPER
 void function DEV_Newness_ReverseQueryTest()
 {
 	Newness_ReverseQuery charactersRQ

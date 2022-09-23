@@ -86,7 +86,7 @@ void function EntitiesDidLoad()
 		Assert( room.tweakLights.len() == SCENE_CAPTURE_EXPECTED_TWEAK_LIGHT_COUNT, "Scene capture room does not have the expected four tweak lights" )
 	}
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( !didHaveRooms )
 			DEV_AddDevCaptureRooms()
 	#endif
@@ -105,7 +105,7 @@ void function ClSceneCapture_PROTO_AddCaptureRoom( vector center )
 }
 #endif
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DEV_AddDevCaptureRooms()
 {
 	ClSceneCapture_PROTO_AddCaptureRoom( <0, 0, 10000> )
@@ -131,7 +131,7 @@ bool function IsCaptureRoomAvailable()
 #if CLIENT
 CaptureRoom function ReserveCaptureRoom()
 {
-	//#if R5DEV
+	//#if DEVELOPER
 	//	DEV_AddDevCaptureRooms()
 	//#endif
 	foreach( int roomIndex, CaptureRoom room in file.roomList )
@@ -153,7 +153,7 @@ CaptureRoom function ReserveCaptureRoom()
 #if CLIENT
 CaptureRoom function WaitForReserveCaptureRoom()
 {
-	//#if R5DEV
+	//#if DEVELOPER
 	//	DEV_AddDevCaptureRooms()
 	//#endif
 	while( true )
@@ -180,7 +180,7 @@ void function ReleaseCaptureRoom( CaptureRoom room )
 {
 	Assert( room.inUse, "Attempted to end release a Scene capture room that was not in use." )
 
-	#if R5DEV
+	#if DEVELOPER
 		foreach( entity light in room.tweakLights )
 			Assert( IsValid( light ), "Something deleted a scene capture tweak light!" )
 	#endif

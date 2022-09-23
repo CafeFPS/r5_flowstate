@@ -13,7 +13,7 @@ global function LowPop_SetRankedDatacenter
 
 global function ToRelativeTimeString
 
-#if R5DEV
+#if DEVELOPER
 global function DisplayLowPopWarning
 
 const bool DEBUG_LOW_POP = false
@@ -29,7 +29,7 @@ struct
 	void functionref(int) onButtonClickCallback
 	table<var, MatchmakingDatacenterETA> buttonToDatacenter
 
-#if R5DEV
+#if DEVELOPER
 	array<MatchmakingDatacenterETA> fakeDatacenters
 	int fakeHomeDatacenter = 0
 	int fakeRankedDatacenter = 0
@@ -64,7 +64,7 @@ void function InitLowPopDialog( var newMenuArg ) //
 	AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnLowPopMenuOpen )
 	AddMenuEventHandler( menu, eUIEvent.MENU_CLOSE, OnLowPopMenuClose )
 
-	#if R5DEV
+	#if DEVELOPER
 	GenerateFakeDatacenter( "australia", 150 , 300 )
 	GenerateFakeDatacenter( "japan", 150 , 100 )
 	GenerateFakeDatacenter( "west us", 200 , 50 )
@@ -73,7 +73,7 @@ void function InitLowPopDialog( var newMenuArg ) //
 	#endif
 }
 
-#if R5DEV
+#if DEVELOPER
 void function GenerateFakeDatacenter( string name, int latency, int etaSeconds )
 {
 	MatchmakingDatacenterETA fakeData
@@ -195,7 +195,7 @@ array<MatchmakingDatacenterETA> function GetValidMatchmakingDatacenterETASorted(
 {
 	array< MatchmakingDatacenterETA > datas = GetMatchmakingDatacenterETAs( playlistName )
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEBUG_LOW_POP )
 		{
 			datas = clone file.fakeDatacenters
@@ -233,7 +233,7 @@ array<MatchmakingDatacenterETA> function GetValidMatchmakingDatacenterETASorted(
 
 MatchmakingDatacenterETA function GetCurrentRankedMatchmakingDatacenterETA( string playlistName )
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEBUG_LOW_POP )
 		{
 			return file.fakeDatacenters[ file.fakeRankedDatacenter ]
@@ -249,7 +249,7 @@ MatchmakingDatacenterETA function GetCurrentRankedMatchmakingDatacenterETA( stri
 
 MatchmakingDatacenterETA function GetCurrentMatchmakingDatacenterETA( string playlistName )
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEBUG_LOW_POP )
 		{
 			return file.fakeDatacenters[ file.fakeHomeDatacenter ]
@@ -441,7 +441,7 @@ string function ToRelativeTimeString( int timestamp, int minsCap = 0 )
 void function LowPop_SetRankedDatacenter( int datacenterIdx )
 {
 	SetRankedDatacenter( datacenterIdx )
-	#if R5DEV
+	#if DEVELOPER
 		file.fakeRankedDatacenter = datacenterIdx
 	#endif
 }

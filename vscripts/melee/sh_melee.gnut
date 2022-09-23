@@ -126,7 +126,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 	entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
 	fileLevel.characterMeleeSkinLoadoutEntryMap[characterClass] <- entry
 
-	#if SERVER && R5DEV
+	#if SERVER && DEVELOPER
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( entry, void function( EHI playerEHI, ItemFlavor meleeSkin ) {
 			DEV_UpdatePlayerMeleeWeaponCosmetics( FromEHI( playerEHI ), meleeSkin )
 		} )
@@ -657,7 +657,7 @@ bool function ClientCodeCallback_ShowMeleePrompt( entity player )
 //// Dev functions ////
 ///////////////////////
 ///////////////////////
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function DEV_UpdatePlayerMeleeWeaponCosmetics( entity player, ItemFlavor unused )
 {
 	// TEMP COMMENT

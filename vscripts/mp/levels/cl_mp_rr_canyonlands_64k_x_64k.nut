@@ -73,7 +73,7 @@ void function OnLeviathanMarkerCreated( entity marker )
 {
 	string markerTargetName = marker.GetTargetName()
 	printt( "OnLeviathanMarkerCreated, targetName: " + markerTargetName  )
-	#if R5DEV
+	#if DEVELOPER
 		if ( IsValid( file.clientSideLeviathan1 ) && markerTargetName == CANYONLANDS_LEVIATHAN1_NAME )
 		{
 			printt( "Destroying clientSideLeviathan1 with markerName: " + markerTargetName  )

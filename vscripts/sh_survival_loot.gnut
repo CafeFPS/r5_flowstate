@@ -90,7 +90,7 @@ global function Dev_SpawnAllLootTypes
 global function SURVIVAL_Loot_GetByType_InLevel
 global function SURVIVAL_Loot_DisableNetworkDistanceCullingManaged
 global function SURVIVAL_Loot_EnableNetworkDistanceCullingManaged
-#if R5DEV
+#if DEVELOPER
 global function Dev_GetNextBotLootWeapon
 global function Dev_SpawnBotWithIncapShieldToView
 #endif
@@ -2771,7 +2771,7 @@ void function Dev_SpawnAllLootTypes( vector startPos, vector diffPosCol, vector 
 }
 #endif // SERVER
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 int Dev_botWeaponIndex = -1
 string function Dev_GetNextBotLootWeapon()
 {

@@ -6,7 +6,7 @@ global function MDLSpawner_Init
 #if SERVER
 global function OnWeaponNpcPrimaryAttack_weapon_mdlspawner
 global function ClientCommand_SetMDLSpawnerModel
-#endif // #if SERVER
+#endif // SERVER
 
 const MASTIFF_BLAST_PATTERN_LEN = 1
 
@@ -25,13 +25,13 @@ struct {
 
 void function MDLSpawner_Init()
 {
-	#if SERVER && R5DEV
+	#if SERVER
 	printt("adding mdlspawner ccc")
 	AddClientCommandCallback( "setmdl", ClientCommand_SetMDLSpawnerModel )
-	#endif
+	#endif // SERVER
 }
 
-#if SERVER && R5DEV
+#if SERVER
 bool function ClientCommand_SetMDLSpawnerModel( entity player, array<string> args )
 {
 	if(args.len() == 0)
@@ -55,7 +55,7 @@ var function OnWeaponNpcPrimaryAttack_weapon_mdlspawner( entity weapon, WeaponPr
 {
 	return FireMastiff( attackParams, false, weapon )
 }
-#endif // #if SERVER
+#endif // SERVER
 
 int function FireMastiff( WeaponPrimaryAttackParams attackParams, bool playerFired, entity weapon )
 {
@@ -119,7 +119,7 @@ int function FireMastiff( WeaponPrimaryAttackParams attackParams, bool playerFir
 void function MDLSpawner_SpawnModel( )
 {
 	#if SERVER
-	entity player = gp()[0]
+	entity player = GetPlayerArray()[0]
 	TraceResults tr = TraceLine(
 		player.EyePosition(), player.EyePosition() + 300.0 * player.GetViewVector(),
 		[ player ], TRACE_MASK_NPCWORLDSTATIC, TRACE_COLLISION_GROUP_NONE
@@ -137,5 +137,5 @@ void function MDLSpawner_SpawnModel( )
 	ent.kv.solid = SOLID_VPHYSICS
 	ent.Solid()
 	DispatchSpawn( ent )
-	#endif
+	#endif // SERVER
 }

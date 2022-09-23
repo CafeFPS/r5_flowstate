@@ -330,7 +330,7 @@ bool function GetPlayerTrace( entity enemy, vector playerViewOrigin, vector enem
 
 	expect TraceResults( trace )
 
-	#if R5DEV
+	#if DEVELOPER
 	if ( file.debugMode )
 	{
 		DebugDrawLine( playerViewOrigin, trace.endPos, 0, 255, 0, false, 0.1 )
@@ -396,7 +396,7 @@ void function GetDesiredFarDistFromEnemies( AdsVars vars, AdsInternalVars adsInt
 		if ( !npcTraceFunc( enemy, playerViewOrigin, enemyOrigin ) )
 			continue
 
-		#if R5DEV
+		#if DEVELOPER
 		if ( file.debugMode )
 		{
 			vector offset = <3,3,3>

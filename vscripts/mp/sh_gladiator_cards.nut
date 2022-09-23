@@ -53,7 +53,7 @@ global function GladCardDebug
 #endif
 #endif
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 global function DEV_DumpCharacterCaptures
 global function DEV_GladiatorCards_ToggleForceMoving
 global function DEV_GladiatorCards_ToggleShowSafeAreaOverlay
@@ -233,7 +233,7 @@ global struct CharacterCaptureState
 	void functionref() cleanupSceneFunc
 
 	table<OnStancePIPSlotReadyFuncType, bool> onPIPSlotReadyFuncSet
-	#if R5DEV
+	#if DEVELOPER
 		PakHandle ornull DEV_framePakHandleOrNull = null
 		array<string>    DEV_culprits
 		var              DEV_bgTopo = null
@@ -305,7 +305,7 @@ global struct NestedGladiatorCardHandle
 
 	OnStancePIPSlotReadyFuncType onStancePIPSlotReadyFunc = null
 
-	#if R5DEV
+	#if DEVELOPER
 		string DEV_culprit = ""
 	#endif
 }
@@ -378,7 +378,7 @@ struct FileStruct_LifetimeLevel
 
 		EHI situationPlayer
 
-		#if(R5DEV)
+		#if(DEVELOPER)
 			bool DEV_forceMoving = false
 			bool DEV_showSafeAreaOverlay = false
 			bool DEV_disableCameraAlpha = false
@@ -387,7 +387,7 @@ struct FileStruct_LifetimeLevel
 		array<MenuGladCardPreviewCommand> menuGladCardPreviewCommandQueue
 	#endif
 
-	#if R5DEV
+	#if DEVELOPER
 		bool DEV_forceEnabled = false
 	#endif
 }
@@ -465,7 +465,7 @@ void function ShGladiatorCards_LevelShutdown()
 #if SERVER || CLIENT || UI
 bool function AreGladiatorCardsEnabled()
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( fileLevel.DEV_forceEnabled )
 			return true
 	#endif
@@ -485,7 +485,7 @@ NestedGladiatorCardHandle function CreateNestedGladiatorCard( var parentRui, str
 	handle.situation = situation
 	handle.isMoving = eGladCardDisplaySituation_IS_MOVING[situation]
 	//fileLevel.nestedCards.append( handle )
-	#if R5DEV
+	#if DEVELOPER
 		handle.DEV_culprit = expect string(expect table(getstackinfos( 2 )).func)
 	#endif
 
@@ -1074,7 +1074,7 @@ void function UIToClient_HandleMenuGladCardPreviewString( int previewType, int i
 //// Dev functions ////
 ///////////////////////
 ///////////////////////
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DEV_DumpCharacterCaptures()
 {
 	foreach( string key, CharacterCaptureState ccs in fileLevel.ccsMap )
@@ -1087,7 +1087,7 @@ void function DEV_DumpCharacterCaptures()
 #endif
 
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DEV_GladiatorCards_ToggleForceMoving( bool ornull forceTo = null )
 {
 	fileLevel.DEV_forceMoving = (forceTo != null ? expect bool(forceTo) : !fileLevel.DEV_forceMoving)
@@ -1095,7 +1095,7 @@ void function DEV_GladiatorCards_ToggleForceMoving( bool ornull forceTo = null )
 #endif
 
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DEV_GladiatorCards_ToggleShowSafeAreaOverlay( bool ornull forceTo = null )
 {
 	fileLevel.DEV_showSafeAreaOverlay = (forceTo != null ? expect bool(forceTo) : !fileLevel.DEV_showSafeAreaOverlay)
@@ -1111,7 +1111,7 @@ void function DEV_GladiatorCards_ToggleShowSafeAreaOverlay( bool ornull forceTo 
 #endif
 
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DEV_GladiatorCards_ToggleCameraAlpha( bool ornull forceTo = null )
 {
 	fileLevel.DEV_disableCameraAlpha = (forceTo != null ? expect bool(forceTo) : !fileLevel.DEV_disableCameraAlpha)
@@ -1119,7 +1119,7 @@ void function DEV_GladiatorCards_ToggleCameraAlpha( bool ornull forceTo = null )
 #endif
 
 
-#if R5DEV
+#if DEVELOPER
 void function DEV_ForceEnableGladiatorCards()
 {
 	fileLevel.DEV_forceEnabled = true
@@ -1201,7 +1201,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 		fileLevel.badgeCharacterMap[badge] <- characterClass
 	}
 
-	#if SERVER && R5DEV
+	#if SERVER && DEVELOPER
 		AddCallback_EntitiesDidLoad( void function() : ( badgeList ) {
 			// these checks need to be done after script init
 			foreach ( ItemFlavor badge in badgeList )
@@ -1288,7 +1288,7 @@ void function OnItemFlavorRegistered_Character( ItemFlavor characterClass )
 		fileLevel.trackerCharacterMap[tracker] <- characterClass
 	}
 
-	#if SERVER && R5DEV
+	#if SERVER && DEVELOPER
 		AddCallback_EntitiesDidLoad( void function() : ( trackerList, characterClass ) {
 			// these checks need to be done after script init
 			foreach ( ItemFlavor tracker in trackerList )
@@ -1740,7 +1740,7 @@ void function ActualUpdateNestedGladiatorCard( NestedGladiatorCardHandle handle 
 		{
 			Assert( handle.parentRui != null )
 			RuiSetBool( handle.cardRui, "isAlive", isAlive || IsLobby() )
-			#if R5DEV
+			#if DEVELOPER
 				RuiSetBool( handle.cardRui, "devShowSafeAreaOverlay", fileLevel.DEV_showSafeAreaOverlay )
 			#endif
 
@@ -1893,7 +1893,7 @@ void function ManageCharacterCaptureStateForNestedCard( NestedGladiatorCardHandl
 			delete ccs.onPIPSlotReadyFuncSet[handle.onStancePIPSlotReadyFunc]
 
 		ReleaseCharacterCapture( ccs )
-		#if R5DEV
+		#if DEVELOPER
 			ccs.DEV_culprits.fastremovebyvalue( string(handle) + " " + handle.DEV_culprit )
 		#endif
 		handle.characterCaptureStateOrNull = null
@@ -1902,7 +1902,7 @@ void function ManageCharacterCaptureStateForNestedCard( NestedGladiatorCardHandl
 	{
 		Assert( handle.characterCaptureStateOrNull == null )
 		handle.characterCaptureStateOrNull = GetOrStartCharacterCapture( handle, handle.startTime + 0.5, handle.currentOwnerEHI, handle.isMoving, expect ItemFlavor(characterOrNull), expect ItemFlavor(skinOrNull), frameOrNull, expect ItemFlavor(stanceOrNull) )
-		#if R5DEV
+		#if DEVELOPER
 			CharacterCaptureState ccs = expect CharacterCaptureState(handle.characterCaptureStateOrNull)
 			ccs.DEV_culprits.append( string(handle) + " " + handle.DEV_culprit )
 		#endif
@@ -1972,7 +1972,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 	EndSignal( ccs, "StopGladiatorCardCharacterCapture" )
 
 	bool doMoving = ccs.isMoving && GladiatorCardStance_HasMovingAnimSeq( ccs.stance )
-	#if R5DEV
+	#if DEVELOPER
 		if ( fileLevel.DEV_forceMoving )
 		{
 			doMoving = true
@@ -2019,7 +2019,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 	FlagWait( "EntitiesDidLoad" )
 	WaitEndFrame() // this wait is important so the nested gladcard handle can add its onStancePIPSlotReadyFunc
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( fileLevel.DEV_disableCameraAlpha && ccs.frameOrNull != null )
 		{
 			string frameRpakPath     = ItemFlavor_GetHumanReadableRef( expect ItemFlavor( ccs.frameOrNull ) )
@@ -2076,7 +2076,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 			light.SetTweakLightDistance( 2.0 ) // make distance small to reduce impact of light
 		}
 
-		#if R5DEV
+		#if DEVELOPER
 			if ( ccs.DEV_bgRui != null )
 				RuiDestroyIfAlive( ccs.DEV_bgRui )
 			if ( ccs.DEV_bgTopo != null )
@@ -2085,7 +2085,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 
 		if ( ccs.colorCorrectionLayer != -1 )
 		{
-			#if(R5DEV)
+			#if(DEVELOPER)
 				Assert( ccs.colorCorrectionLayer != GetBloodhoundColorCorrectionID(), "gladiator cards tried to release bloodhounds color correction. Related to bug R5DEV-75937. Assign bug to Roger A please." )
 			#endif
 			ColorCorrection_Release( ccs.colorCorrectionLayer )
@@ -2177,7 +2177,7 @@ void function DoGladiatorCardCharacterCapture( CharacterCaptureState ccs )
 
 	float farZ = 642.0
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( fileLevel.DEV_disableCameraAlpha && ccs.frameOrNull != null )
 		{
 			float ruiWidth       = 528.0
@@ -2624,7 +2624,7 @@ void function OnPlayerLifestateChanged( entity player, int oldLifeState, int new
 {
 	TriggerUpdateOfNestedGladiatorCardsForPlayer( player )
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( GetLocalClientPlayer() == player && !AreGladiatorCardsEnabled() )
 			player.ClientCommand( "devmenu_alias \"features/GladCards/Force enable (if disabled)\"   \"script_client DEV_ForceEnableGladiatorCards()\"" )
 	#endif
@@ -3278,7 +3278,7 @@ string function GladiatorCardStatTracker_GetFormattedValueText( entity player, I
 #if CLIENT
 void function ShGladiatorCards_OnDevnetBugScreenshot()
 {
-	#if R5DEV
+	#if DEVELOPER
 		DEV_DumpCharacterCaptures()
 	#endif
 }

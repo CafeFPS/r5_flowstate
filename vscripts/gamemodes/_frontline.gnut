@@ -46,7 +46,7 @@ Frontline function GetFrontline( int team )
 void function AddCalculateFrontlineCallback( void functionref( int ) callbackFunc )
 {
 	// Check if this function has already been added
-	#if R5DEV
+	#if DEVELOPER
 		foreach ( func in file.calculateFrontlineCallbacks )
 		{
 			Assert( func != callbackFunc )
@@ -58,7 +58,7 @@ void function AddCalculateFrontlineCallback( void functionref( int ) callbackFun
 
 void function CalculateFrontline( int team )
 {
-	#if R5DEV
+	#if DEVELOPER
 		float debugTime = 0.2
 	#endif
 
@@ -81,7 +81,7 @@ void function CalculateFrontline( int team )
 		file.frontline.combatDir = Normalize( militiaCenter - imcCenter ) // combatDir is for TEAM_IMC by default
 		file.frontline.line = CrossProduct( file.frontline.combatDir, <0,0,1> )
 
-		#if R5DEV
+		#if DEVELOPER
 			if ( DEBUG_FRONTLINE )
 			{
 				DrawBox( militiaCenter, <-8,-8,-8>, <8,8,8>, 255, 102, 0, true, debugTime )
@@ -91,7 +91,7 @@ void function CalculateFrontline( int team )
 		#endif
 	}
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEBUG_FRONTLINE )
 		{
 			DrawBox( file.frontline.origin, <-32,-32,-32>, <32,32,32>, 255, 0, 0, true, debugTime )

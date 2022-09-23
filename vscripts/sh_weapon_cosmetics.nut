@@ -27,7 +27,7 @@ global function AddCallback_UpdatePlayerWeaponCosmetics
 global function WeaponSkin_Apply
 global function WeaponCosmetics_Apply
 #endif
-#if R5DEV && CLIENT
+#if DEVELOPER && CLIENT
 global function DEV_TestWeaponSkinData
 global function DEV_GetCharmForCurrentWeapon
 global function DEV_SetCharmForCurrentWeapon
@@ -132,7 +132,7 @@ void function OnItemFlavorRegistered_LootMainWeapon( ItemFlavor weaponFlavor )
 			return !IsLobby()
 		}
 		entry.networkTo = eLoadoutNetworking.PLAYER_EXCLUSIVE
-		#if SERVER && R5DEV
+		#if SERVER && DEVELOPER
 			entry.isCurrentlyRelevant = bool function( EHI playerEHI ) : ( weaponFlavor ) {
 				entity player          = FromEHI( playerEHI )
 				string weaponClassName = WeaponItemFlavor_GetClassname( weaponFlavor )
@@ -320,7 +320,7 @@ int function WeaponSkin_GetSortOrdinal( ItemFlavor flavor )
 	return fileLevel.cosmeticFlavorSortOrdinalMap[flavor]
 }
 
-#if R5DEV && CLIENT 
+#if DEVELOPER && CLIENT 
 void function DEV_SetCharmForCurrentWeapon( asset charmModel, string attachmentName )
 {
 	entity player = GetLocalClientPlayer()
@@ -416,7 +416,7 @@ void function WeaponSkin_Apply( entity ent, ItemFlavor skin )
 #if SERVER
 void function UpdatePlayerWeaponCosmetics( entity player, ItemFlavor weaponFlavor, ItemFlavor skin )
 {
-	#if R5DEV
+	#if DEVELOPER
 		string weaponClassName = WeaponItemFlavor_GetClassname( weaponFlavor )
 
 		foreach( entity weapon in player.GetMainWeapons() )
@@ -766,7 +766,7 @@ void function DestroyCharmForWeaponEntity( entity weapEnt )
 #endif
 
 
-#if R5DEV && CLIENT
+#if DEVELOPER && CLIENT
 void function DEV_TestWeaponSkinData()
 {
 	entity model = CreateClientSidePropDynamic( <0, 0, 0>, <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
@@ -784,4 +784,4 @@ void function DEV_TestWeaponSkinData()
 
 	model.Destroy()
 }
-#endif // DEV && CLIENT
+#endif // DEVELOPER && CLIENT

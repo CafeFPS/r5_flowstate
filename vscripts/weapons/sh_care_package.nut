@@ -208,7 +208,7 @@ int function GetSkinForCarePackageModel( entity player )
 {
 	LoadoutEntry characterSlot = Loadout_CharacterClass()
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( !LoadoutSlot_IsReady( ToEHI( player ), characterSlot ) )
 			printt( "Need to get character for player, but the data is not available" )
 	#endif
@@ -216,7 +216,7 @@ int function GetSkinForCarePackageModel( entity player )
 	ItemFlavor character = LoadoutSlot_WaitForItemFlavor( ToEHI( player ), characterSlot ) // this sometimes waits forever
 	string characterRef = ItemFlavor_GetHumanReadableRef( character )
 
-	#if R5DEV
+	#if DEVELOPER
 		printt( "got character", characterRef )
 	#endif
 

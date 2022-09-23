@@ -11,7 +11,7 @@ global function InitOctaneTownTakeover
 global function PlaceOctaneTownTakeoverLoot
 global function CreateOctaneTTRingOfFireStatsTrigger
 
-#if R5DEV
+#if DEVELOPER
 global function LeviathanTeleportBug
 
 global function TestZone6LeviathanFootStomp
@@ -21,7 +21,7 @@ global function DEV_LeviathanAllowRoar
 
 global function TeleportPlayerZeroIntoLeviathanFoot
 global function RecreateLeviathanDeathTriggers
-#endif // R5DEV
+#endif // DEVELOPER
 #endif // SERVER
 
 //global const asset MU1_LEVIATHAN_MODEL = $"mdl/Creatures/leviathan/leviathan_kingscanyon_animated.rmdl"
@@ -1694,7 +1694,7 @@ bool function RelayRockFixEnabled()
 	return GetCurrentPlaylistVarInt( "relay_rock_fix_enabled", 0 ) == 1
 }
 
-#if R5DEV
+#if DEVELOPER
 
 void function LeviathanTeleportBug()
 {
@@ -1904,5 +1904,5 @@ void function RecreateLeviathanDeathTriggers()
 
 
 }
-#endif // if R5DEV
+#endif // DEVELOPER
 #endif // SERVER

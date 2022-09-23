@@ -20,7 +20,7 @@ global function NotifyReloadAttemptButNoReserveAmmo
 
 global function UpdateWeaponStatusOnBindingChange
 
-#if R5DEV
+#if DEVELOPER
 global function DEV_TestUltimateStates
 global function GetUltimateWeaponState
 #endif //DEV
@@ -48,7 +48,7 @@ struct
 	array<void functionref( entity, var, int )> weaponStatusUpdateCallbacks
 	array<void functionref( entity, var )>      primaryWeaponStatusUpdateCallbacks
 
-	#if R5DEV
+	#if DEVELOPER
 		bool devTestingUltimateStates
 	#endif //DEV
 } file
@@ -997,7 +997,7 @@ void function UltimateWeaponStatusUpdate( entity player, var rui, int slot )
 	// and one callback when the weapon becomes ready to fire. Though that seems to happen at odd moments.
 	// It's unfortunate that it's so hard to get the state that an weapon is in. :-(
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( file.devTestingUltimateStates )
 			return
 	#endif //DEV
@@ -1080,7 +1080,7 @@ void function UltimateReadyVideoFinished( int channel )
 	Signal( clGlobal.levelEnt, "ultimate_video_finished" )
 }
 
-#if R5DEV
+#if DEVELOPER
 void function DEV_TestUltimateStates()
 {
 	thread DEV_TestUltimateStatesThread()

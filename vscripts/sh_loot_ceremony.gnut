@@ -29,7 +29,7 @@ global function ModelIntroHighlightEffect
 #endif
 
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 global function DEV_ShouldShowCustomLootRewards
 global function DEV_SetCustomLootRewardsToDisplay
 #endif
@@ -232,7 +232,7 @@ struct FileLevelStruct
 		array<PakHandle> pakHandles
 	#endif
 
-	#if CLIENT && R5DEV
+	#if CLIENT && DEVELOPER
 		bool           debugShowCustomRewards = false
 		array< asset > debugCustomRewardAssets = [
 			$"settings/itemflav/character_skin/wraith/legendary_01.rpak",
@@ -473,7 +473,7 @@ void function UIToClient_OnGRXPackOpeningResultsAvailable()
 	GRXPackOpened_ErrorHandling( error )
 
 	// populate dev item variables
-	#if R5DEV
+	#if DEVELOPER
 		if ( fileLevel.debugShowCustomRewards )
 		{
 			array< ItemFlavor > debugItems
@@ -710,7 +710,7 @@ void function GRXPackOpened_ErrorHandling( int packError )
 
 	RunUIScript( "OpenConfirmGrxErrorDialog", message )
 
-	#if R5DEV
+	#if DEVELOPER
 		Warning( warningText )
 	#endif
 }
@@ -2729,14 +2729,14 @@ void function ShowRewards_FX( int animAttachID, int rarity, vector rarityColor, 
 #endif
 
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DEV_ShouldShowCustomLootRewards( bool shouldShow )
 {
 	fileLevel.debugShowCustomRewards = shouldShow
 }
 #endif
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DEV_SetCustomLootRewardsToDisplay( string itemRef0 = "", string itemRef1 = "", string itemRef2 = "" )
 {
 	DEV_ShouldShowCustomLootRewards( true )
@@ -2875,7 +2875,7 @@ void function UIToClient_RewardInspectNavBack()
 #if CLIENT
 void function UIToClient_RewardEquipOnClick()
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( fileLevel.debugShowCustomRewards )
 		{
 			Warning( "Trying to equip a reward you may not actually own. You should disable custom rewards." )

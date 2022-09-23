@@ -45,7 +45,7 @@ global function StatsInternals_UpdatePersistenceOnDisconnect
 global function StatsInternals_UpdatePersistenceOnPurchase
 #endif
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 global function DEV_IncrementStat_Int // only global in dev for console commands (stats should never be incremented any where other than in this file)
 #endif
 
@@ -155,7 +155,7 @@ global struct StatEnumStruct
 
 	array<string> choices // the key choices for the tailing enum (e.g.: eWeaponFlavor -> r97, hemlok, alternator, ...)
 
-	#if R5DEV
+	#if DEVELOPER
 		string structName
 	#endif
 }
@@ -185,7 +185,7 @@ global struct StatTemplate
 #endif
 
 
-#if SERVER || CLIENT || UI && R5DEV
+#if SERVER || CLIENT || UI && DEVELOPER
 struct StatEnumStruct_Children
 {
 	array<StatEnumStruct> childEnumStructs
@@ -216,7 +216,7 @@ struct AdditionalStatsPlayerState
 struct FileStruct_LifetimeLevel
 {
 	#if SERVER || CLIENT || UI
-		#if R5DEV
+		#if DEVELOPER
 			StatEnumStruct_Children                        rootFieldsList // only for generating pdef file
 			table<StatEnumStruct, StatEnumStruct_Children> sesChildrenMap // hack
 		#endif
@@ -252,7 +252,7 @@ void function ShStatsInternals_LevelInit()
 	fileLevel = newFileLevel
 
 	#if SERVER
-		#if R5DEV
+		#if DEVELOPER
 			AddCallback_GeneratePDef( GenerateGameStatsPDef )
 			AddClientCommandCallback( "stats_dump", ClientCommand_stats_dump )
 			AddClientCommandCallback( "stats_set", ClientCommand_stats_set )
@@ -286,7 +286,7 @@ bool function GetStat_Bool( entity player, StatEntry entry, int when = eStatGetW
 	#if SERVER
 	return (when ? player.p.statValuesAtStart_Bool : player.p.statValues_Bool)[entry.indexWithinType]
 	#elseif CLIENT || UI
-		#if R5DEV
+		#if DEVELOPER
 			//if ( GetConVarBool( "persistence_development_mode", false ) )
 			if ( DEV_ShouldIgnorePersistence() )
 				return false
@@ -325,7 +325,7 @@ int function GetStat_Int( entity player, StatEntry entry, int when = eStatGetWhe
 	#if SERVER
 	return (when ? player.p.statValuesAtStart_Int : player.p.statValues_Int)[entry.indexWithinType]
 	#elseif CLIENT || UI 
-		#if R5DEV
+		#if DEVELOPER
 			///if ( GetConVarBool( "persistence_development_mode", false ) )
 			if ( DEV_ShouldIgnorePersistence() )
 				return 0
@@ -362,7 +362,7 @@ float function GetStat_Float( entity player, StatEntry entry, int when = eStatGe
 	#if SERVER
 		return (when ? player.p.statValuesAtStart_Float : player.p.statValues_Float)[entry.indexWithinType]
 	#elseif CLIENT || UI
-		#if R5DEV
+		#if DEVELOPER
 			//if ( GetConVarBool( "persistence_development_mode", false ) )
 			if ( DEV_ShouldIgnorePersistence() )
 				return 0
@@ -565,7 +565,7 @@ void function OnPersistentDataReady( entity player )
 	player.p.statValues_Float.resize( fileLevel.stats_Float.len(), 0.0 )
 	player.p.statValuesAtStart_Float.resize( fileLevel.stats_Float.len(), 0.0 )
 
-	#if R5DEV
+	#if DEVELOPER
 		//if ( GetConVarBool( "persistence_development_mode", false ) )
 		if ( DEV_ShouldIgnorePersistence() )
 			return
@@ -638,7 +638,7 @@ void function StatsInternals_UpdatePersistenceOnPurchase( entity player )
 ///////////////////////
 ///////////////////////
 
-#if SERVER || CLIENT || UI && R5DEV
+#if SERVER || CLIENT || UI && DEVELOPER
 string function DEV_GetStatTemplateDebugName( StatTemplate template )
 {
 	//string out = ""
@@ -654,7 +654,7 @@ string function DEV_GetStatTemplateDebugName( StatTemplate template )
 #endif
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function DEV_IncrementStat_Int( entity player, StatEntry entry, int incrementAmount )
 {
 	__IncrementStat_Int( player, entry, incrementAmount )
@@ -662,7 +662,7 @@ void function DEV_IncrementStat_Int( entity player, StatEntry entry, int increme
 #endif
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 bool function ClientCommand_stats_dump( entity player, array<string> args )
 {
 	printt( "--", "stats dump for", player )
@@ -681,7 +681,7 @@ bool function ClientCommand_stats_dump( entity player, array<string> args )
 #endif
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 bool function ClientCommand_stats_set( entity player, array<string> args )
 {
 	string statRef = args[0]
@@ -961,7 +961,7 @@ StatEnumStruct function RegisterStatEnumStruct( StatEnumStruct ornull parentSESO
 	ses.enumName = enumName
 	ses.choices = choices
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( parentSESOrNull == null )
 		{
 			fileLevel.rootFieldsList.childEnumStructs.append( ses )
@@ -1027,7 +1027,7 @@ StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSE
 			fileLevel.stats_Float.append( template.rootEntry )
 		}
 
-		#if R5DEV
+		#if DEVELOPER
 			fileLevel.rootFieldsList.childStatTemplates.append( template )
 		#endif
 
@@ -1037,7 +1037,7 @@ StatTemplate function InternalRegisterStatCommon( StatEnumStruct ornull parentSE
 	{
 		StatEnumStruct parentSES = expect StatEnumStruct(parentSESOrNull)
 
-		#if R5DEV
+		#if DEVELOPER
 			StatEnumStruct_Children sesChildren
 			if ( parentSES in fileLevel.sesChildrenMap )
 				sesChildren = fileLevel.sesChildrenMap[parentSES]
@@ -1224,7 +1224,7 @@ void function Stats_Save( entity player )
 {
 	Assert( player.IsPlayer() )
 
-	#if R5DEV
+	#if DEVELOPER
 		//if ( GetConVarBool( "persistence_development_mode", false ) )
 		if ( DEV_ShouldIgnorePersistence() )
 			return
@@ -1260,7 +1260,7 @@ void function Stats_Save( entity player )
 #endif
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function GenerateGameStatsPDef()
 {
 	array<string> allWeaponStatsCategories = []
@@ -1296,7 +1296,7 @@ void function GenerateGameStatsPDef()
 #endif
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function GenerateGameStatsPDef_RegisterSESRecursive( StatEnumStruct ses, StatEnumStruct ornull parentSESOrNull )
 {
 	if ( parentSESOrNull == null )
@@ -1332,7 +1332,7 @@ void function GenerateGameStatsPDef_RegisterSESRecursive( StatEnumStruct ses, St
 #endif
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function GenerateGameStatsPDef_AddStatField( StatTemplate stat )
 {
 	if ( stat.behavior == eStatBehavior.CALCULATED && !stat.shouldCache )

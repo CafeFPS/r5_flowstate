@@ -64,7 +64,7 @@ void function Utility_Init()
 	RegisterSignal( "InventoryChanged" )
 
 	//AddClientCommandCallback( "OnDevnetBugScreenshot", ClientCommand_OnDevnetBugScreenshot )
-	#if R5DEV
+	#if DEVELOPER
 		FlagInit( "AimAssistSwitchTest_Enabled" )
 		// AddClientCommandCallback( "DoomTitan", ClientCommand_DoomTitan )
 		AddClientCommandCallback( "toggleconsole", ClientCommand_ToggleConsole )
@@ -101,7 +101,7 @@ void function GiveAllTitans()
 	}
 }
 
-#if R5DEV
+#if DEVELOPER
 void function KillAllBadguys()
 {
 	array<entity> npcs = GetNPCArrayOfEnemies( GetPlayerArray()[0].GetTeam() )
@@ -2550,7 +2550,7 @@ void function EmitSoundOnEntityToTeamExceptPlayer( entity ent, string sound, int
 	}
 }
 
-#if R5DEV
+#if DEVELOPER
 // DEV function to toggle player view between the skybox and the real world.
 void function ToggleSkyboxView( float scale = 0.001 )
 {
@@ -2631,7 +2631,7 @@ void function DamageRange( float value, float headShotMultiplier, int playerHeal
 	printt( format( "%i             %i              %i", numHeadshots, 0, numHeadshots ) )
 }
 
-#endif // DEV
+#endif // DEVELOPER
 
 void function MuteAll( entity player, int fadeOutTime = 2 )
 {
@@ -2876,7 +2876,7 @@ void function __SetSignalDelayedThread( entity ent, string signal, float delay )
 		Signal( ent, signal )
 }
 
-#if R5DEV
+#if DEVELOPER
 table function GetPlayerPos( entity player = null )
 {
 	if ( !player )
@@ -2942,7 +2942,7 @@ void function ToggleHud()
 			AddCinematicFlag( player, flag )
 	}
 }
-#endif // DEV
+#endif // DEVELOPER
 
 void function ClearChildren( entity parentEnt, bool b0 ) //Probably should have code give us a GetChildren() function that returns a list instead of having to iterate through NextMovePeer
 {
@@ -2988,7 +2988,7 @@ void function UpdateBadRepPresent()
 
 void function Dev_PrintMessage( entity player, string text, string subText = "", float duration = 7.0, string soundAlias = "" )
 {
-	#if R5DEV
+	#if DEVELOPER
 	// Build the message on the client
 	string sendMessage
 	for ( int textType = 0 ; textType < 2 ; textType++ )
@@ -3317,7 +3317,7 @@ void function ShowCrit( entity ent )
 }
 
 
-#if R5DEV
+#if DEVELOPER
 void function TeleportEnemyBotToView()
 {
 	entity player = gp()[0]
@@ -4209,7 +4209,7 @@ int function GameScore_GetWinningTeam_ThisRound()
 	return TEAM_UNASSIGNED
 }
 
-#if R5DEV
+#if DEVELOPER
 void function KillIMC()
 {
 	array<entity> enemies = GetNPCArrayOfTeam( TEAM_IMC )
@@ -4313,7 +4313,7 @@ bool function IsFastPilot( entity player )
 
 void function KillPlayer( entity player, int damageSource )
 {
-	#if R5DEV
+	#if DEVELOPER
 	printt( "Played Killed from script: " )
 	DumpStack()
 	#endif

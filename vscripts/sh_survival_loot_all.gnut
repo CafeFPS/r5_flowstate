@@ -17,7 +17,7 @@ global function GetCustomHopupArray
 global function GetRarityColor
 #endif
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 global function DumpModdedKeyColors
 global function DiffKeyColors
 #endif
@@ -1074,7 +1074,7 @@ vector function GetFXRarityColorForUnlockable( int tier )
 	unreachable
 }
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DumpModdedKeyColors( int colorID, float modVal )
 {
 	for ( int index = 0; index < 6; index++ )
@@ -1089,7 +1089,7 @@ void function DumpModdedKeyColors( int colorID, float modVal )
 }
 #endif
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function DiffKeyColors( int baseColorID, int colorID )
 {
 	var datatable = GetDataTable( $"datatable/colorpalette_table.rpak" )

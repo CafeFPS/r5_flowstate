@@ -15,11 +15,11 @@ global function IsPersistenceBitSet
 global function IsAnyPersistenceBitSet
 #endif
 
-#if SERVER || CLIENT || UI && R5DEV
+#if SERVER || CLIENT || UI && DEVELOPER
 global function DEV_ShouldIgnorePersistence
 #endif
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 global function AddCallback_GeneratePDef
 global function DEV_GeneratePersistentDataDefinitionAutogenSection
 global function DEV_PDefGen_AddEnum
@@ -60,7 +60,7 @@ global function ClientToUI_OnPersistentDataReady
 
 #if SERVER
 global typedef UpgradePlayerPersistentDataCallbackType void functionref( entity player, int oldVersion, int newVersion )
-#if R5DEV
+#if DEVELOPER
 global typedef GeneratePDefCallbackType void functionref()
 #endif
 #endif
@@ -81,7 +81,7 @@ struct FileStruct_LifetimeLevel
 {
 	#if SERVER
 		array<UpgradePlayerPersistentDataCallbackType> upgradePlayerPersistentDataCallbacks
-		#if R5DEV
+		#if DEVELOPER
 			array<GeneratePDefCallbackType> generatePDefCallbacks
 		#endif
 	#endif
@@ -104,7 +104,7 @@ void function ShPersistentData_LevelInit_Begin()
 	fileLevel = newFileLevel
 
 	#if SERVER
-		#if R5DEV
+		#if DEVELOPER
 			AddCallback_GeneratePDef( GenerateBasicPDef )
 			AddClientCommandCallback( "dev_generate_pdef", ClientCommand_dev_generate_pdef )
 		#endif
@@ -119,13 +119,13 @@ void function ShPersistentData_LevelInit_Begin()
 
 void function ShPersistentData_LevelInit_Finish()
 {
-	#if SERVER && R5DEV
+	#if SERVER && DEVELOPER
 		DEV_CheckAndSaveDevPersistentPlayerDataDefinitionAutogenSection( false )
 	#endif
 }
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function GenerateBasicPDef()
 {
 	// Stuff like this should not use PDefGen because it's not dynamic
@@ -155,7 +155,7 @@ void function UpgradeBasicPlayerPersistentData( entity player, int oldVersion, i
 ///////////////////////
 ///////////////////////
 
-#if SERVER || CLIENT || UI && R5DEV
+#if SERVER || CLIENT || UI && DEVELOPER
 bool function DEV_ShouldIgnorePersistence()
 {
 	// return GetConVarBool( "loadouts_ignore_persistence" )
@@ -166,7 +166,7 @@ bool function DEV_ShouldIgnorePersistence()
 #endif
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 void function AddCallback_GeneratePDef( GeneratePDefCallbackType cb )
 {
 	Assert( !fileLevel.generatePDefCallbacks.contains( cb ), "Callback already registered" )
@@ -507,7 +507,7 @@ void function DEV_PDefGen_AddField_StructArray_EnumKey( string structName, strin
 	Assert( structName in DEV_PDefGen_structMap, "Field references non-existant struct '" + structName + "'" )
 	DEV_PDefGen_AddField_Internal( structName, name, "[" + keyEnumName + "]", comment )
 }
-#endif // SERVER && R5DEV
+#endif // SERVER && DEVELOPER
 
 
 

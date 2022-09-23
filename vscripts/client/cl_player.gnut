@@ -49,7 +49,7 @@ global function ClientPlayerClassChanged
 global function GetHideCrosshairHitIndicatorOverride
 global function SetHideCrosshairHitIndicatorOverride
 
-#if R5DEV
+#if DEVELOPER
 global function BloodSprayDecals_Toggle
 #endif
 
@@ -260,7 +260,7 @@ function Pressed_RequestTitanfall( entity player )
 	if ( !IsTitanAvailable( player ) )
 		return
 
-	#if R5DEV
+	#if DEVELOPER
 		printt( player.GetEntIndex(), "Requested replacement Titan from eye pos " + player.EyePosition() + " view angles " + player.EyeAngles() + " player origin " + player.GetOrigin() + " map " + GetMapName() )
 	#endif
 
@@ -1022,7 +1022,7 @@ BloodDecalParams function BloodDecal_GetParams( float damageAmount, bool isHeadS
 	return params
 }
 
-#if R5DEV
+#if DEVELOPER
 string function BloodSprayDecals_Toggle()
 {
 	string returnStr = ""

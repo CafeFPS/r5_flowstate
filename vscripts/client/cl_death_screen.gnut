@@ -35,7 +35,7 @@ global function IsViewingDeathRecap
 global function IsViewingDeathScreen
 global function DeathScreenSummaryShouldFadeIn
 
-#if R5DEV
+#if DEVELOPER
 global function GetRecapPlayerEHIArray
 global function DEV_TestDeathScreenMenu
 global function GetKeyFromEnum
@@ -1835,13 +1835,19 @@ asset function GetGladCardReplacementImageForDamageSourceID( int damageSourceID 
 
 	}
 
-	#if R5DEV
+	#if DEVELOPER
 		Warning( "GetGladCardReplacementImageForDamageSourceID doesn't handle damageSourceID: " + damageSourceID )
 	#endif
 
 	return $""
 }
 
+void function SignalUpdate()
+{
+	wait 0.1
+	file.deathRecapDataUpdated = true
+	Signal( GetLocalClientPlayer(), "DeathRecapDataUpdated" )
+}
 
 void function ServerCallback_SendDeathRecapData( int attackerEHandle, int victimEHandle, int damageSourceID, int damageType, int totalDamage, int hitCount, int headShotBits, float healthFrac, float shieldFrac, float blockTime )
 {
@@ -1927,7 +1933,7 @@ EncodedEHandle function GetKillerEnum()
 }
 
 
-#if R5DEV
+#if DEVELOPER
 void function DEV_TestDeathScreenMenu()
 {
 	array<entity> playerArray = GetPlayerArray_Alive()
@@ -1956,13 +1962,6 @@ void function DEV_TestDeathScreenMenu()
 	//
 
 	thread SignalUpdate()
-}
-
-void function SignalUpdate()
-{
-	wait 0.1
-	file.deathRecapDataUpdated = true
-	Signal( GetLocalClientPlayer(), "DeathRecapDataUpdated" )
 }
 
 array<DeathRecapDamageData> function CreateFakeRecapData( entity victim, array<entity> enemyArray )

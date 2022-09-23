@@ -20,7 +20,7 @@ global function Challenge_GetProgressValue
 global function Challenge_GetSource
 global function Challenge_GetStatRefs
 global function Challenge_GetTimeSpan
-#if R5DEV
+#if DEVELOPER
 global function Challenge_GetTierDataBlock
 global function Challenge_GetCharacterItemFlavors
 #endif
@@ -43,7 +43,7 @@ global function RegisterChallengeFromAsset
 #if SERVER
 #endif
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 global function PrintAllChallenges
 #endif
 
@@ -240,7 +240,7 @@ ItemFlavor ornull function RegisterChallengeFromAsset( asset challengeAsset )
 #if SERVER || CLIENT || UI
 void function ShChallenges_LevelInit_PostStats()
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEV_ShouldIgnorePersistence() )
 			return
 	#endif
@@ -558,7 +558,7 @@ PlayerChallengesState function GetPlayerChallengesState( entity player = null )
 #if SERVER || CLIENT || UI
 void function InitPlayerChallengesStateFromPersistence( entity player, PlayerChallengesState pcs )
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEV_ShouldIgnorePersistence() )
 			return
 	#endif
@@ -639,7 +639,7 @@ void function InitPlayerChallengesStateFromPersistence( entity player, PlayerCha
 #endif
 
 
-#if CLIENT && R5DEV
+#if CLIENT && DEVELOPER
 void function PrintAllChallenges()
 {
 	array<ItemFlavor> allChallenges = GetAllChallenges()
@@ -1285,7 +1285,7 @@ array<ItemFlavor> function GetAllChallengesOfTimespan( int timeSpan, int weekInd
 #if SERVER || CLIENT || UI
 int function Challenge_GetCurrentTier( entity player, ItemFlavor flavor )
 {
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEV_ShouldIgnorePersistence() )
 			return 0
 	#endif
@@ -1528,7 +1528,7 @@ int function Challenge_GetProgressValue( entity player, ItemFlavor challengeFlav
 	Assert( ItemFlavor_GetType( challengeFlav ) == eItemType.challenge )
 	Assert( tier >= 0 && tier < Challenge_GetTierCount( challengeFlav ) )
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEV_ShouldIgnorePersistence() )
 			return 0
 	#endif

@@ -165,7 +165,7 @@ void function AddCreateCallback( string className, void functionref( entity ) ca
 	if ( !( className in clGlobal.onCreateCallbacks ) )
 		clGlobal.onCreateCallbacks[ className ] <- []
 
-#if R5DEV
+#if DEVELOPER
 	foreach ( func in clGlobal.onCreateCallbacks[ className ] )
 	{
 		Assert( func != callbackFunc )
@@ -180,7 +180,7 @@ void function AddTargetNameCreateCallback( string targetName, void functionref( 
 	if ( !( targetName in clGlobal.onTargetNameCreateCallbacks ) )
 		clGlobal.onTargetNameCreateCallbacks[ targetName ] <- []
 
-#if R5DEV
+#if DEVELOPER
 	foreach ( func in clGlobal.onTargetNameCreateCallbacks[ targetName ] )
 	{
 		Assert( func != callbackFunc )
@@ -687,7 +687,7 @@ float function GetNextRespawnTime( entity player )
 	return expect float( player.nv.nextRespawnTime - 0.0 ) // - 0.0 to force this to be a float
 }
 
-#if R5DEV
+#if DEVELOPER
 void function TwoPinTest()
 {
 	entity player = gp()[0]
@@ -1088,7 +1088,7 @@ bool function ShouldShowWeakpoints( entity ent )
 			return false
 	}
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( Dev_CommandLineHasParm( "-noweakpoints" ) )
 			return false
 	#endif
@@ -1314,7 +1314,7 @@ void function AddCallback_OnStaticPropRUICreated( void functionref( StaticPropRu
 	clGlobal.onStaticPropRUICreatedCallbacks.append( callbackFunc )
 }
 
-#if R5DEV
+#if DEVELOPER
 table<int, StaticPropRui> DEV_magicIdStaticPropRuiMap
 bool DEV_staticPropRuiVisibilityDebugEnabled = false
 void function DEV_ToggleStaticPropRuiVisibilityDebug()
@@ -1344,7 +1344,7 @@ void function ClientCodeCallback_OnEnumStaticPropRui( StaticPropRui propRui )
 			callbackFunc( propRui, rui )
 	}
 
-	#if R5DEV
+	#if DEVELOPER
 		DEV_magicIdStaticPropRuiMap[propRui.magicId] <- propRui
 	#endif
 }
@@ -1356,7 +1356,7 @@ void function ClientCodeCallback_OnStaticPropRuiVisibilityChange( array<int> new
 
 	ClApexScreens_OnStaticPropRuiVisibilityChange( newlyVisible, newlyHidden )
 
-	#if R5DEV
+	#if DEVELOPER
 		if ( DEV_staticPropRuiVisibilityDebugEnabled )
 		{
 			if ( newlyVisible.len() > 0 )
@@ -1380,7 +1380,7 @@ void function ClientCodeCallback_OnStaticPropRuiVisibilityChange( array<int> new
 	#endif
 }
 
-#if R5DEV
+#if DEVELOPER
 void function DumpFullscreenRuis()
 {
 	printt( "DumpFullscreenRuis" )

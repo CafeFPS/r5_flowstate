@@ -1269,7 +1269,7 @@ void function Vortex_ProjectileCommonSetup( entity projectile, VortexImpact impa
 void function Vortex_SetImpactEffectTable_OnProjectile( entity projectile, VortexImpact impact )
 {
 	//Getting more info for bug 207595, don't check into Staging.
-	#if R5DEV
+	#if DEVELOPER
 	//printt( "impactData.impact_effect_table ", impactData.impact_effect_table )
 	//if ( impactData.impact_effect_table == "" )
 	//	PrintTable( impactData )

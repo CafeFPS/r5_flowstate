@@ -30,7 +30,7 @@ bool function ClientCommand_ResfreshServers(entity player, array<string> args)
     if( !IsValid( player ) )
         return false
 
-    if( gp()[0] != player)
+    if( GetPlayerArray()[0] != player)
         return false
 
     foreach( p in GetPlayerArray() ) {
@@ -45,7 +45,7 @@ bool function ClientCommand_JoinServer(entity player, array<string> args)
     if( !IsValid( player ) )
         return false
 
-    if( gp()[0] != player)
+    if( GetPlayerArray()[0] != player)
         return false
 
     if(args.len() < 1)
@@ -67,7 +67,7 @@ bool function ClientCommand_StartMatch(entity player, array<string> args)
     if( !IsValid( player ) )
         return false
 
-    if( gp()[0] != player)
+    if( GetPlayerArray()[0] != player)
         return false
 
     foreach( p in GetPlayerArray() ) {
@@ -86,7 +86,7 @@ bool function ClientCommand_KickPlayer(entity player, array<string> args)
     if( !IsValid( player ) )
         return false
 
-    if( gp()[0] != player)
+    if( GetPlayerArray()[0] != player)
         return false
 
     if(args.len() < 1)
@@ -111,7 +111,7 @@ bool function ClientCommand_BanPlayer(entity player, array<string> args)
     if( !IsValid( player ) )
         return false
 
-    if( gp()[0] != player)
+    if( GetPlayerArray()[0] != player)
         return false
 
     if(args.len() < 1)
@@ -148,7 +148,7 @@ bool function ClientCommand_ChangedServerSetting(entity player, array<string> ar
     if( !IsValid( player ) )
         return false
 
-    if( gp()[0] != player)
+    if( GetPlayerArray()[0] != player)
         return false
 
     if(args.len() < 2)

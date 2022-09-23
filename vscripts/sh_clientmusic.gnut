@@ -8,9 +8,9 @@ global function ClientMusic_StopCustomTrackOnClient
 
 #if CLIENT
 global function ClientMusic_RequestStingerForNewZone
-#if R5DEV
+#if DEVELOPER
 global function ClientMusic_PrintStatus
-#endif // #if R5DEV
+#endif // #if DEVELOPER
 #endif // CLIENT
 
 #if SERVER
@@ -369,19 +369,19 @@ void function ClientMusicFrameThread()
 
 	while ( true )
 	{
-#if R5DEV
+#if DEVELOPER
 		float preFrameTime = Time()
-#endif // DEV
+#endif // DEVELOPER
 
 		s_inFrame = true
 		s_lastFrameTime = Time()
 		ClientMusicFRAME()
 		s_inFrame = false
 
-#if R5DEV
+#if DEVELOPER
 		float postFrameTime = Time()
 		Assert( preFrameTime == postFrameTime, format( "ClientMusicFRAME() stalled for %.2f seconds. Should have no waits.", (postFrameTime - preFrameTime) ) )
-#endif // DEV
+#endif // DEVELOPER
 
 		s_inLoopWaitFrame = true
 		WaitFrame()
@@ -389,13 +389,13 @@ void function ClientMusicFrameThread()
 	}
 }
 
-#if R5DEV
+#if DEVELOPER
 void function ClientMusic_PrintStatus()
 {
 	printf( "running: %s, mid-frame: %s, in-waitframe: %s, startTime: %.2f, lastFrameTime: %.2f, timeNow: %.2f", (s_isRunning ? "yes" : "no"), (s_inFrame ? "yes" : "no"), (s_inLoopWaitFrame ? "yes" : "no"), s_startTime, s_lastFrameTime, Time() )
 	printf( "status: %s", GetClientMusicStatusLine() )
 }
-#endif // #if R5DEV
+#endif // #if DEVELOPER
 
 string function GetDebugNameForMusicLevel( int musicLevel )
 {
@@ -417,13 +417,13 @@ string function GetDebugNameForMusicTrack( int musicTrack )
 	return ""
 }
 
-#if R5DEV
+#if DEVELOPER
 string function GetClientMusicStatusLine()
 {
 	//	 = musicTrack
 	return format( "'%s',   latest - %s::'%s'", GetDebugNameForMusicLevel( s_musicLevel ), GetDebugNameForMusicTrack( s_lastPlayedMuscTrackDEBUG ), s_lastPlayedAliasDEBUG )
 }
-#endif // #if R5DEV
+#endif // #if DEVELOPER
 #endif // CLIENT
 
 const string FUNCNAME_CLIENTMUSICDISABLE = "ClientMusic_DisableForClient"

@@ -33,10 +33,10 @@ global function MapZones_ForceRetouchForPlayer
 
 #endif // SERVER
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 global function DEV_PrintMapZoneInfo
 global function DEV_MapZone_ToggleOverlay
-#endif // SERVER && R5DEV
+#endif // SERVER && DEVELOPER
 
 global struct ZonePopulationInfo
 {
@@ -199,9 +199,9 @@ void function OnClientDisconnected( entity player )
 
 void function EntitiesDidLoad()
 {
-#if R5DEV
+#if DEVELOPER
 	thread DebugFrameThread()
-#endif // DEV
+#endif // DEVELOPER
 
 	if ( !file.mapZonesInitialized )
 		return
@@ -666,7 +666,7 @@ void function SCB_OnPlayerEntersMapZone( int zoneId, int zoneTier )
 
 
 
-#if SERVER && R5DEV
+#if SERVER && DEVELOPER
 string function GetZoneLineForPlayer( entity player )
 {
 	int zoneId = player.p.currentZoneId
@@ -760,4 +760,4 @@ void function DebugFrameThread()
 	}
 }
 
-#endif // #if SERVER && R5DEV
+#endif // #if SERVER && DEVELOPER

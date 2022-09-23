@@ -19,9 +19,9 @@ global function PlaySoundForCommsAction
 global function HandleBroadcastCommsAction
 #endif
 
-#if R5DEV
+#if DEVELOPER
 global function DEV_ReloadCommsTable
-#endif // DEV
+#endif // DEVELOPER
 
 global enum eCommsFlags
 {
@@ -735,7 +735,7 @@ string function GetPlayerDialogSound( entity player, int index, CommsOptions opt
 		ext = ""
 
 	string result = GetBattleChatterAlias1P3P( player, (subAlias + ext), options.isFirstPerson )
-	#if R5DEV
+	#if DEVELOPER
 		if ( ShouldTryToReplaceMissingVoiceWithTempVoice() )
 		{
 			if ( !DoesAliasExist( result ) )
