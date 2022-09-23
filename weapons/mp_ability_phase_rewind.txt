@@ -9,7 +9,7 @@ WeaponData
 	"longdesc"										"PHASE REWIND"
 
 	"menu_icon"										"rui/pilot_loadout/suit/light"
-    "hud_icon"										"rui/hud/tactical_icons/tactical_wraith"
+    "hud_icon"										"rui/pilot_loadout/mods/rewind"
 
 	"weapon_type_flags"								"WPT_TACTICAL"
 	"weaponClass" 									"human"

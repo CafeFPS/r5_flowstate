@@ -10,7 +10,7 @@ WeaponData
 	"longdesc" 										"GRAVITY LIFT"
 
 	"menu_icon"										"rui/pilot_loadout/suit/hardcover"
-	"hud_icon"										"rui/hud/tactical_icons/tactical_gibraltar"
+	"hud_icon"										"rui/pilot_loadout/mods/lift"
 
 	"weaponClass" 									"human"
 	"fire_mode"   									"offhand"
