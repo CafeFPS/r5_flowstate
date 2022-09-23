@@ -713,6 +713,7 @@ global struct ServerPlayerStruct
 	bool isRestartingLevel = false
 	int dummieKilled = 0
 	bool touchingTopTrigger = false
+	bool ForceEject = false
 	
 	//Map editor
 	PropInfo& selectedProp

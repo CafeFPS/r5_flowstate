@@ -126,7 +126,9 @@ void function InitWeaponScripts()
 	//		PrecacheProjectileEntity( "grenade_frag" )
 	//		PrecacheProjectileEntity( "crossbow_bolt" )
 	//	#endif
-
+	
+	//MpWeaponGrenadeGravity_Init()
+	MpSpaceElevatorAbility_Init()
 	MpAbilityShifter_Init()
 	MpWeaponDefender_Init()
 	MpWeaponDmr_Init()
