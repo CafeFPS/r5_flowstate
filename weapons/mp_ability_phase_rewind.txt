@@ -61,11 +61,11 @@ WeaponData
 	"ammo_drains_to_empty_on_fire"					"0"
 	"ammo_no_remove_from_clip"						"0"
 
-    "ammo_clip_size"   								"250"
-	"ammo_default_total"							"250"
-	"ammo_min_to_fire"								"250"
-	"ammo_per_shot"									"250"
-	"ammo_stockpile_max"							"250"
+    "ammo_clip_size"   								"150"
+	"ammo_default_total"							"150"
+	"ammo_min_to_fire"								"150"
+	"ammo_per_shot"									"150"
+	"ammo_stockpile_max"							"150"
 
 	"charge_time"									"0.011"
 
