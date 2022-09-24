@@ -56,7 +56,7 @@ var function OnWeaponTossReleaseAnimEvent_WeaponDefensiveBombardment( entity wea
 {
 	entity owner = weapon.GetWeaponOwner()
 
-	if ( !IsValid( owner ) )
+	if ( !IsValid( owner ) || !owner.IsPlayer() )
 		return
 
 	#if SERVER
@@ -64,6 +64,10 @@ var function OnWeaponTossReleaseAnimEvent_WeaponDefensiveBombardment( entity wea
 	if ( !IsValid( bombardmentWeapon ) )
 		owner.GiveOffhandWeapon( DEFENSIVE_BOMBARDMENT_MISSILE_WEAPON, OFFHAND_RIGHT, [] )
 
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( owner ), Loadout_CharacterClass() )
+	string charRef = ItemFlavor_GetHumanReadableRef( character )
+
+	if( charRef == "character_gibraltar")
 		PlayBattleChatterLineToSpeakerAndTeam( owner, "bc_super" )
 	#endif
 

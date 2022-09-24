@@ -60,12 +60,19 @@ var function OnWeaponTossReleaseAnimEvent_WeaponCreepingBombardment( entity weap
 	weapon.StopWeaponEffect( FX_CREEPING_BOMBARDMENT_GLOW_FP, FX_CREEPING_BOMBARDMENT_GLOW_3P )
 
 	entity weaponOwner = weapon.GetWeaponOwner()
-	Assert( weaponOwner.IsPlayer() )
-
+	
+	if( !IsValid( weaponOwner ) || !weaponOwner.IsPlayer() )
+		return
+	
 	#if SERVER
 		entity bombardmentWeapon = weaponOwner.GetOffhandWeapon( OFFHAND_RIGHT )
 		if ( !IsValid( bombardmentWeapon ) )
 			weaponOwner.GiveOffhandWeapon( CREEPING_BOMBARDMENT_MISSILE_WEAPON, OFFHAND_RIGHT, [] )
+
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( weaponOwner ), Loadout_CharacterClass() )
+	string charRef = ItemFlavor_GetHumanReadableRef( character )
+
+	if( charRef == "character_bangalore")
 		PlayBattleChatterLineToSpeakerAndTeam( weaponOwner, "bc_super" )
 	#endif
 

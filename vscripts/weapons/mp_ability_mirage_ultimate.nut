@@ -143,9 +143,17 @@ bool function OnWeaponChargeBegin_ability_mirage_ultimate( entity weapon )
 {
 	weapon.EmitWeaponSound_1p3p( "Mirage_Vanish_Activate_1P", "Mirage_Vanish_Activate_3P" )
 	entity ownerPlayer = weapon.GetWeaponOwner()
+
+	if( !IsValid( ownerPlayer ) || !ownerPlayer.IsPlayer() )
+		return false
+
 	PlayerUsedOffhand( ownerPlayer, weapon, false )
 	#if SERVER
-	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( ownerPlayer ), Loadout_CharacterClass() )
+	string charRef = ItemFlavor_GetHumanReadableRef( character )
+
+	if( charRef == "character_mirage")	
+		PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )
 	float fireDuration = weapon.GetWeaponSettingFloat( eWeaponVar.fire_duration ) + weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
 	float flickerDuration = 0.25//weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
 	thread MirageUltCloakThink( ownerPlayer, fireDuration, flickerDuration )
