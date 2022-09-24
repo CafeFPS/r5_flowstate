@@ -72,7 +72,7 @@ function Dummy_Untyped( param )
 
 void function InitDevMenu( var newMenuArg )
 {
-	#if DEVELOPER
+	//#if DEVELOPER
 		var menu = GetMenu( "DevMenu" )
 
 		AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnOpenDevMenu )
@@ -99,7 +99,7 @@ void function InitDevMenu( var newMenuArg )
 		AddUICallback_LevelLoadingFinished( DEV_InitCodeDevMenu )
 		AddUICallback_LevelShutdown( ClearCodeDevMenu )
 		//OnOpenDevMenu()
-	#endif
+	//#endif
 }
 
 
