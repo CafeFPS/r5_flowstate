@@ -150,12 +150,18 @@ void function MpWeaponPhaseTunnel_Init()
 void function OnWeaponActivate_weapon_phase_tunnel( entity weapon )
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
-	Assert( ownerPlayer.IsPlayer() )
-
+	
+	if( !IsValid( ownerPlayer ) || !ownerPlayer.IsPlayer() )
+		return
+	
 	float raise_time = weapon.GetWeaponSettingFloat( eWeaponVar.raise_time )
 
 	#if SERVER
-	PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( ownerPlayer ), Loadout_CharacterClass() )
+	string charRef = ItemFlavor_GetHumanReadableRef( character )
+
+	if( charRef == "character_wraith")
+		PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )
 	EmitSoundOnEntityExceptToPlayer( ownerPlayer, ownerPlayer, SOUND_ACTIVATE_3P )
 	#endif
 

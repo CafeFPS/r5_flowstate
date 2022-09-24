@@ -84,8 +84,14 @@ void function DroneFireEMP( entity weapon )
 		weapon.SetWeaponPrimaryClipCount( weapon.GetWeaponPrimaryClipCountMax() )
 		return
 	}
+	if( !IsValid( owner ) || !owner.IsPlayer() )
+		return
+	
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( owner ), Loadout_CharacterClass() )
+	string charRef = ItemFlavor_GetHumanReadableRef( character )
 
-	PlayBattleChatterLineToSpeakerAndTeam( owner, "bc_super" )
+	if( charRef == "character_crypto")
+		PlayBattleChatterLineToSpeakerAndTeam( owner, "bc_super" )
 
 	camera.Anim_Play( "drone_EMP" )
 

@@ -100,7 +100,10 @@ var function OnWeaponPrimaryAttack_weapon_zipline( entity weapon, WeaponPrimaryA
 
 	weapon.EmitWeaponNpcSound( LOUD_WEAPON_AI_SOUND_RADIUS_MP, 0.2 )
 	entity weaponOwner = weapon.GetWeaponOwner()
-
+	
+	if( !IsValid( weaponOwner ) || !weaponOwner.IsPlayer() )
+				return
+			
 	bool shouldCreateProjectile = false
 	if ( IsServer() || weapon.ShouldPredictProjectiles() )
 		shouldCreateProjectile = true
@@ -130,7 +133,12 @@ var function OnWeaponPrimaryAttack_weapon_zipline( entity weapon, WeaponPrimaryA
 			thread OnZiplineGrenadeDestroyed( weapon, projectile )
 
 			PlayerUsedOffhand( weaponOwner, weapon, true, projectile )
-			PlayBattleChatterLineToSpeakerAndTeam( weaponOwner, "bc_super" )
+
+			ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( weaponOwner ), Loadout_CharacterClass() )
+			string charRef = ItemFlavor_GetHumanReadableRef( character )
+
+			if( charRef == "character_pathfinder")
+				PlayBattleChatterLineToSpeakerAndTeam( weaponOwner, "bc_super" )
 		#else
 			PlayerUsedOffhand( weaponOwner, weapon )
 		#endif // SERVER

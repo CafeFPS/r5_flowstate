@@ -43,7 +43,9 @@ struct
 var function OnWeaponPrimaryAttack_care_package_medic( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
 	entity ownerPlayer = weapon.GetWeaponOwner()
-	Assert( ownerPlayer.IsPlayer() )
+
+	if( !IsValid( ownerPlayer ) || !ownerPlayer.IsPlayer() )
+		return 0
 
 	if ( ownerPlayer.IsPhaseShifted() )
 		return 0
@@ -66,7 +68,11 @@ var function OnWeaponPrimaryAttack_care_package_medic( entity weapon, WeaponPrim
 			fx, "droppod_loot_drop_lifeline",
 			ownerPlayer, weapon.GetWeaponClassName()
 		)
-		PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )
+		ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( ownerPlayer ), Loadout_CharacterClass() )
+		string charRef = ItemFlavor_GetHumanReadableRef( character )
+
+		if( charRef == "character_lifeline")
+			PlayBattleChatterLineToSpeakerAndTeam( ownerPlayer, "bc_super" )
 
 		PlayerUsedOffhand( ownerPlayer, weapon, true, null, {pos = origin} )
 	#else
