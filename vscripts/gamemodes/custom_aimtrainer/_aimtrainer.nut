@@ -1006,7 +1006,7 @@ void function ForceToBeInLiftForChallenge( entity player )
 	while(IsValid(player) && !player.p.isRestartingLevel)
 	{
 		player.SetVelocity(Vector(0,0,0))
-		wait 5
+		wait 5.5
 		foreach(entity dummy in ChallengesEntities.dummies)
 			if(IsValid(dummy)) dummy.Destroy()
 		ChallengesEntities.dummies.clear()
