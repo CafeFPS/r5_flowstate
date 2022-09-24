@@ -502,7 +502,7 @@ entity function CreateDropPod( vector ornull origin = null, vector ornull angles
         SetTargetName(prop_dynamic, CARE_PACKAGE_LIFELINE_TARGETNAME)
 	}
 	else {
-		prop_dynamic.SetValueForModelKey( DROPPOD_MODEL )
+		prop_dynamic.SetValueForModelKey( CARE_PACKAGE_AIRDROP_MODEL )
         SetTargetName(prop_dynamic, CARE_PACKAGE_TARGETNAME)
 	}
 

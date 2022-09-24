@@ -1246,11 +1246,7 @@ Point function FindRandomAirdropDropPoint( float baseAngle, vector center, float
 		}
 
 		vector groundPos = trace.endPos
-        //Can't use this because no navmesh
-		//airdropPoint = GetClosestAirdropPoint( groundPos )
-        
-        airdropPoint.origin = groundPos
-        airdropPoint.angles = trace.surfaceNormal
+		airdropPoint = GetClosestAirdropPoint( groundPos )
         
 		float distToCenter = Distance2D( airdropPoint.origin, center )
 		if ( distToCenter > radius && !IsTestMap() )
