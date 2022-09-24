@@ -1809,95 +1809,91 @@ if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
 	thread AutoChangeLevelThread(endTime)
 
 if (FlowState_Timer()){
-SetGlobalNetInt( "currentDeathFieldStage", 1 )
-SetGlobalNetTime( "nextCircleStartTime", endTime - 900 )
+NotifyMatchEndTime( endTime, 0 )
 while( Time() <= endTime )
 	{
 		if(Time() == endTime-900)
 		{
-				foreach(player in GetPlayerArray())
+				/* foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
-						//Message(player,"15 MINUTES REMAINING!","", 5)
-						//Remote_CallFunction_NonReplay( player, "ServerCallback_TDM_AnnounceMatchEndTime", 5.0, Time() + 900 )
+						Message(player,"15 MINUTES REMAINING!","", 5)
 					}
-				}
+				} */
+				NotifyMatchEndTime( endTime, 1 )
 			}
 			if(Time() == endTime-600)
 			{
-				foreach(player in GetPlayerArray())
+				/* foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
-						//Message(player,"10 MINUTES REMAINING!","", 5)
-						//Remote_CallFunction_NonReplay( player, "ServerCallback_TDM_AnnounceMatchEndTime", 5.0, Time() + 600 )
+						Message(player,"10 MINUTES REMAINING!","", 5)
 					}
-				}
+				} */
+				NotifyMatchEndTime( endTime, 2 )
 			}
 			if(Time() == endTime-300)
 			{
-				foreach(player in GetPlayerArray())
+				/* foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
-						//Message(player,"5 MINUTES REMAINING!","", 5)
-						//Remote_CallFunction_NonReplay( player, "ServerCallback_TDM_AnnounceMatchEndTime", 5.0, Time() + 300 )
+						Message(player,"5 MINUTES REMAINING!","", 5)
 					}
-				}
+				} */
+				NotifyMatchEndTime( endTime, 3 )
 			}
 			if(Time() == endTime-120)
 			{
-				foreach(player in GetPlayerArray())
+				/* foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
-						//Message(player,"2 MINUTES REMAINING!","", 5)
-						//Remote_CallFunction_NonReplay( player, "ServerCallback_TDM_AnnounceMatchEndTime", 5.0, Time() + 120 )
+						Message(player,"2 MINUTES REMAINING!","", 5)
 					}
-				}
+				} */
+				NotifyMatchEndTime( endTime, 4 )
 			}
 			if(Time() == endTime-60)
 			{
-				foreach(player in GetPlayerArray())
+				/* foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
-						//Message(player,"1 MINUTE REMAINING!","", 5, "")
-						//Remote_CallFunction_NonReplay( player, "ServerCallback_TDM_AnnounceMatchEndTime", 5.0, Time() + 60 )
-						SetGlobalNetTime( "nextCircleStartTime", endTime - 30 )
-						//SetGlobalNetInt( "currentDeathFieldStage", 1 )
+						Message(player,"1 MINUTE REMAINING!","", 5, "")
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
 					}
-				}
+				} */
+				NotifyMatchEndTime( endTime, 5 )
+				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
 			}
 			if(Time() == endTime-30)
 			{
-				foreach(player in GetPlayerArray())
+				/* foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
-						//Message(player,"30 SECONDS REMAINING!","", 5, "")
-						//Remote_CallFunction_NonReplay( player, "ServerCallback_TDM_AnnounceMatchEndTime", 5.0, Time() + 30 )
-						SetGlobalNetTime( "nextCircleStartTime", endTime - 10 )
-						//SetGlobalNetInt( "currentDeathFieldStage", 2 )
+						Message(player,"30 SECONDS REMAINING!","", 5, "")
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
 					}
-				}
+				} */
+				NotifyMatchEndTime( endTime, 6 )
+				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
 			}
 			if(Time() == endTime-10)
 			{
-				foreach(player in GetPlayerArray())
+				/* foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
-						//Message(player,"10 SECONDS REMAINING!", "\n The battle is over.", 8, "")
-						//Remote_CallFunction_NonReplay( player, "ServerCallback_TDM_AnnounceMatchEndTime", 5.0, Time() + 10 )
-						SetGlobalNetTime( "nextCircleStartTime", endTime )
-						//SetGlobalNetInt( "currentDeathFieldStage", 8 )
+						Message(player,"10 SECONDS REMAINING!", "\n The battle is over.", 8, "")
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
 					}
-				}
+				} */
+				NotifyMatchEndTime( endTime, 7 )
+				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
 			}
 			if(file.tdmState == eTDMState.NEXT_ROUND_NOW){
 				printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
@@ -1971,6 +1967,14 @@ foreach(player in GetPlayerArray())
 		}
 	}
 file.ringBoundary.Destroy()
+}
+
+void function NotifyMatchEndTime( float endTime, int round )
+{
+	SetGlobalNetInt( "currentDeathFieldStage", round )
+	SetGlobalNetTime( "nextCircleStartTime", Time() ) // This is necessary because without it, the end time of the match will not be notified.
+	WaitFrame()
+	SetGlobalNetTime( "nextCircleStartTime", endTime )
 }
 
 void function AutoChangeLevelThread(float endTime)
