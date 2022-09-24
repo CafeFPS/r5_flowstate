@@ -218,7 +218,7 @@ void function StartTopTriggerTimer(entity trigger, entity ent)
 	OnThreadEnd(
 		function() : ( trigger, ent )
 		{
-			if(IsValid(trigger) && trigger.IsTouching(ent) && IsValid(ent))
+			if(IsValid(trigger) && trigger.IsTouching(ent) && IsValid(ent) && ent.IsPlayer())
 			{
 				ent.p.ForceEject = true
 				vector direction = AnglesToForward( ent.GetAngles() )
@@ -266,7 +266,7 @@ void function BottomEnterCallback( entity trigger, entity ent )
 
 void function BottomLeaveCallback( entity trigger, entity ent )
 {
-	if ( !ent.IsPlayer() || ent.p.ForceEject )
+	if ( !IsValid(ent) || !ent.IsPlayer() || ent.p.ForceEject )
 		return
 
 	entity weapon = ent.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
@@ -334,7 +334,7 @@ void function LiftWatcher( entity bottom, entity top, vector pos)
 		{
 			foreach(ent in bottom.GetTouchingEntities())
 				{
-					if(!IsValid(ent)) continue
+					if( !IsValid(ent) || !ent.IsPlayer() ) continue
 					
 					ent.p.ForceEject = true
 					vector direction = AnglesToForward( ent.GetAngles() )
@@ -420,7 +420,7 @@ float function GetPlayerElevatorProgress( entity elevator, entity player )
 
 void function FallTempAirControl( entity player )
 {
-	if ( player.IsOnGround() )
+	if ( !IsValid(player) || !player.IsPlayer() || player.IsOnGround() )
 		return
 	
 	StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
