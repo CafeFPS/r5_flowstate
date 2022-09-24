@@ -462,8 +462,6 @@ void function DamageTypes_Init()
 
 		[ eDamageSourceId.mp_titanability_slow_trap ]				= "#DEATH_SLOW_TRAP",
 
-		[ eDamageSourceId.damagedef_suicide ]						= "#DEATH_SUICIDE",
-
 		[ eDamageSourceId.rodeo ] 									= "#DEATH_TITAN_RODEO",
 		[ eDamageSourceId.rodeo_forced_titan_eject ] 				= "#DEATH_TITAN_RODEO",
 		[ eDamageSourceId.rodeo_execution ] 						= "#DEATH_RODEO_EXECUTION",
@@ -512,7 +510,6 @@ void function DamageTypes_Init()
 		[ eDamageSourceId.titan_execution ] 						= "#DEATH_TITAN_EXECUTION",
 		[ eDamageSourceId.human_execution ] 						= "#DEATH_HUMAN_EXECUTION",
 		[ eDamageSourceId.outOfBounds ] 							= "#DEATH_OUT_OF_BOUNDS",
-		[ eDamageSourceId.deathField ]								= "#DEATH_DEATH_FIELD",
 		[ eDamageSourceId.indoor_inferno ]	 						= "#DEATH_INDOOR_INFERNO",
 		[ eDamageSourceId.submerged ]								= "#DEATH_SUBMERGED",
 		[ eDamageSourceId.switchback_trap ]							= "#DEATH_ELECTROCUTION", // Damages teammates and opposing team
