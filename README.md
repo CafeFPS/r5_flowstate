@@ -14,10 +14,12 @@ Gamemodes:
 Join r5 reloaded discord: https://discord.com/invite/r5reloaded
 
 # How to install
-Follow the steps in order.
-1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded) Min SDK version required is: v2.1.9 Release Candidate: https://github.com/Mauler125/r5sdk/releases. Download depot.zip and replace all the content into your Apex S3 main folder.
-2. Get the required files to run these scripts from this repo releases: https://github.com/ColombianGuy/r5_aimtrainer/releases. Drag and drop all the content.
-3. Get the content from this repo and place it in /platform/scripts/. Replace all the content.
+Follow the steps in order, or you will have issues!
+
+1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded) Min SDK version required is: v2.1.9 Release Candidate: https://github.com/Mauler125/r5sdk/releases. 
+Download depot.zip and replace all the content into your Apex S3 main folder.
+2. Get the flowstate required files .zip: https://github.com/ColombianGuy/r5_flowstate/releases/tag/Release2. Drag and drop all the content into r5r main folder, replace when asked.
+3. Get the content from this repo and place it in /platform/scripts/. Replace all the content. https://github.com/ColombianGuy/r5_flowstate/archive/refs/heads/r5_flowstate.zip
 
 # How to run
 You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Trainer session.
