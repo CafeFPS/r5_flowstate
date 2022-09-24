@@ -1740,7 +1740,8 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 		if(GetBestPlayerName() != "-still nobody-")
 			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
 		else subtext = ""
-			Message(player, file.selectedLocation.name, subtext, 25, "diag_ap_aiNotify_circleTimerStartNext_02")
+			Message(player, file.selectedLocation.name, subtext, 25, "")
+			SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartNext_02" )
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -1755,7 +1756,8 @@ else{
 		if(GetBestPlayerName() != "-still nobody-")
 			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
 		else subtext = ""
-			Message(player, file.selectedLocation.name, subtext, 25, "diag_ap_aiNotify_circleTimerStartNext_02")
+			Message(player, file.selectedLocation.name, subtext, 25, "")
+			SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartNext_02" )
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -1809,7 +1811,8 @@ if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
 	thread AutoChangeLevelThread(endTime)
 
 if (FlowState_Timer()){
-NotifyMatchEndTime( endTime, 0 )
+SetGlobalNetInt( "currentDeathFieldStage", 0 )
+SetGlobalNetTime( "nextCircleStartTime", endTime )
 while( Time() <= endTime )
 	{
 		if(Time() == endTime-900)
@@ -1821,7 +1824,6 @@ while( Time() <= endTime )
 						Message(player,"15 MINUTES REMAINING!","", 5)
 					}
 				} */
-				NotifyMatchEndTime( endTime, 1 )
 			}
 			if(Time() == endTime-600)
 			{
@@ -1832,7 +1834,6 @@ while( Time() <= endTime )
 						Message(player,"10 MINUTES REMAINING!","", 5)
 					}
 				} */
-				NotifyMatchEndTime( endTime, 2 )
 			}
 			if(Time() == endTime-300)
 			{
@@ -1843,7 +1844,6 @@ while( Time() <= endTime )
 						Message(player,"5 MINUTES REMAINING!","", 5)
 					}
 				} */
-				NotifyMatchEndTime( endTime, 3 )
 			}
 			if(Time() == endTime-120)
 			{
@@ -1854,7 +1854,6 @@ while( Time() <= endTime )
 						Message(player,"2 MINUTES REMAINING!","", 5)
 					}
 				} */
-				NotifyMatchEndTime( endTime, 4 )
 			}
 			if(Time() == endTime-60)
 			{
@@ -1866,7 +1865,6 @@ while( Time() <= endTime )
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
 					}
 				} */
-				NotifyMatchEndTime( endTime, 5 )
 				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
 			}
 			if(Time() == endTime-30)
@@ -1879,7 +1877,6 @@ while( Time() <= endTime )
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
 					}
 				} */
-				NotifyMatchEndTime( endTime, 6 )
 				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
 			}
 			if(Time() == endTime-10)
@@ -1892,7 +1889,6 @@ while( Time() <= endTime )
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
 					}
 				} */
-				NotifyMatchEndTime( endTime, 7 )
 				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
 			}
 			if(file.tdmState == eTDMState.NEXT_ROUND_NOW){
@@ -1967,14 +1963,6 @@ foreach(player in GetPlayerArray())
 		}
 	}
 file.ringBoundary.Destroy()
-}
-
-void function NotifyMatchEndTime( float endTime, int round )
-{
-	SetGlobalNetInt( "currentDeathFieldStage", round )
-	SetGlobalNetTime( "nextCircleStartTime", Time() ) // This is necessary because without it, the end time of the match will not be notified.
-	WaitFrame()
-	SetGlobalNetTime( "nextCircleStartTime", endTime )
 }
 
 void function AutoChangeLevelThread(float endTime)
