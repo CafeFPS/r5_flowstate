@@ -92,7 +92,9 @@ void function CreepingBombardmentWeapon_Detonation( vector origin, vector angles
 	)
 
 	wait CREEPING_BOMBARDMENT_WEAPON_DETONATION_DELAY
-
+	
+	if( !IsValid(bombModel) || !IsValid(owner) ) return
+	
 	Explosion_DamageDefSimple( damagedef_creeping_bombardment_detcord_explosion, bombModel.GetOrigin(), owner, owner, bombModel.GetOrigin() )
 	entity shake = CreateShake( origin, 5, 150, 1, 1028 )
 	shake.RemoveFromAllRealms()
