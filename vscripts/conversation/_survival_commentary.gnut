@@ -6,6 +6,7 @@ global function AddSurvivalCommentaryEvent
 global function SurvivalCommentary_InitThreatChatterForPlayer
 global function SurvivalCommentary_OnThreatActivationBombardment
 global function SurvivalCommentary_OnThreatActivationGrenade
+global function SurvivalCommentary_PlaySoundForAllPlayers
 
 global function SetKillLeader
 global function GetKillLeader
@@ -400,22 +401,15 @@ void function SurvivalCommentary_PlaySoundForAllPlayers( string sound )
 
 	foreach( entity player in GetPlayerArray() )
 	{
-		if(IsValid(player))
-			thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
+		thread EmitSoundAtPositionOnlyToPlayer( player.GetTeam(), player.GetOrigin() + <1000, 500, 1000>, player, sound )
+		thread EmitSoundAtPositionOnlyToPlayer( player.GetTeam(), player.GetOrigin() + <-5000, 500, -5000>, player, sound )
 	}
 }
 
 void function SurvivalCommentary_PlaySoundForAllPlayersAfterDelay( string sound, float delay )
 {
 	wait delay
-	#if DEVELOPER
-	printt( FUNC_NAME(), "playing sound:", sound, "to all players" )
-	#endif
-
-	foreach( entity player in GetPlayerArray() )
-	{
-		thread EmitSoundOnEntityOnlyToPlayer( player, player, sound )
-	}
+	SurvivalCommentary_PlaySoundForAllPlayers( sound )
 }
 
 void function SurvivalCommentary_InitThreatChatterForPlayer ( entity player )
