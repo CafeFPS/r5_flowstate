@@ -40,9 +40,8 @@ global function RequestSetItemFlavorLoadoutSlot
 global function RequestSetItemFlavorLoadoutSlot_WithDuplicatePrevention
 global function RequestSetItemFlavorFavoritesSlot
 global function RequestClearItemFlavorFavoritesSlot
-#if DEVELOPER
+
 global function DEV_RequestSetItemFlavorLoadoutSlot
-#endif
 #endif
 global function IsItemFlavorValidForLoadoutSlot
 global function GetValidItemFlavorsForLoadoutSlot
@@ -57,9 +56,7 @@ global function IsValidLoadoutSlotContentsIndex
 global function GetAllLoadoutSlots
 global function IsLoadoutSlotActive
 
-#if DEVELOPER
 global function DEV_GetValidItemFlavorsForLoadoutSlotForDev
-#endif
 
 //////////////////////
 //////////////////////
@@ -148,9 +145,7 @@ global struct LoadoutEntry
 	table<int, ItemFlavor>                              _____INTERNAL_networkIndexItemFlavorMap = {}
 
 	array<string>                                        _____INTERNAL_favoritePdefKeys = []
-	#if DEVELOPER
-		array<ItemFlavor>      _____INTERNAL_DEV_validItemFlavorsForDev = []
-	#endif
+	array<ItemFlavor>      _____INTERNAL_DEV_validItemFlavorsForDev = []
 
 	// stuff for integer item flavor loadout slots only
 	int                                        defaultInteger = INT_MIN
@@ -849,7 +844,7 @@ void function RequestClearItemFlavorFavoritesSlot( EHI playerEHI, LoadoutEntry e
 #endif
 
 
-#if (CLIENT || UI) && DEVELOPER
+#if CLIENT || UI
 void function DEV_RequestSetItemFlavorLoadoutSlot( EHI playerEHI, LoadoutEntry entry, ItemFlavor itemFlavor )
 {
 	Assert( playerEHI == LocalClientEHI(), "Tried to use DEV_RequestSetLoadoutSlot on a different player" )
@@ -883,7 +878,6 @@ array<ItemFlavor> function GetValidItemFlavorsForLoadoutSlot( EHI playerEHI, Loa
 }
 
 
-#if DEVELOPER
 array<ItemFlavor> function DEV_GetValidItemFlavorsForLoadoutSlotForDev( EHI playerEHI, LoadoutEntry entry )
 {
 	Assert( entry.type == eLoadoutEntryType.ITEM_FLAVOR )
@@ -891,7 +885,6 @@ array<ItemFlavor> function DEV_GetValidItemFlavorsForLoadoutSlotForDev( EHI play
 	Assert( fileLevel.isInitialized )
 	return entry._____INTERNAL_DEV_validItemFlavorsForDev
 }
-#endif
 
 
 string function DEV_DescribeLoadoutSlot( LoadoutEntry entry, int slotContentsIndex, bool doId = true )

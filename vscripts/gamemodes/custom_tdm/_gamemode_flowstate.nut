@@ -622,7 +622,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 
-	if(IsValid( player ) && !IsAlive(player))
+	if( IsValid( player ) && player.IsPlayer() && !IsAlive(player) )
     {
         if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
         {

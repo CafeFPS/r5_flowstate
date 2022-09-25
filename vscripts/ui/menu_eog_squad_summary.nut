@@ -126,10 +126,7 @@ void function InitEOGMenu( var newMenuArg ) //
 	AddMenuFooterOption( menu, LEFT, KEY_SPACE, false, "", "", TryReturnToLobby )
 	AddMenuFooterOption( menu, LEFT, KEY_TAB, false, "", "", Spectate )
 	AddMenuFooterOption( menu, LEFT, BUTTON_A, false, "", "", TrySpectate )
-
-	#if DEVELOPER
-		AddMenuFooterOption( menu, LEFT, BUTTON_Y, true, "Dev Menu", "Dev Menu", OpenDevMenu )
-	#endif
+	AddMenuFooterOption( menu, LEFT, BUTTON_Y, true, "Dev Menu", "Dev Menu", OpenDevMenu )
 
 	#if PC_PROG
 		AddMenuFooterOption( menu, RIGHT, KEY_ENTER, false, "", "", UI_OnLoadoutButton_Enter )

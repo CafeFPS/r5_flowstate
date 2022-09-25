@@ -80,10 +80,8 @@ void function InitInGameMPMenu( var newMenuArg )
 	var gameHeader = AddComboButtonHeader( comboStruct, headerIndex, "#MENU_HEADER_GAME" )
 	var leaveButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "#LEAVE_MATCH" )
 	Hud_AddEventHandler( leaveButton, UIE_CLICK, OnLeaveButton_Activate )
-	#if DEVELOPER
-		var devButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "Dev" )
-		Hud_AddEventHandler( devButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "DevMenu" ) ) )
-	#endif
+	var devButton = AddComboButton( comboStruct, headerIndex, buttonIndex++, "Dev" )
+	Hud_AddEventHandler( devButton, UIE_CLICK, AdvanceMenuEventHandler( GetMenu( "DevMenu" ) ) )
 
 	headerIndex++
 	buttonIndex = 0

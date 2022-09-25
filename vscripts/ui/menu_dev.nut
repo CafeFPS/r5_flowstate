@@ -1,7 +1,6 @@
 untyped
 
 global function InitDevMenu
-#if DEVELOPER
 global function DEV_InitLoadoutDevSubMenu
 global function SetupDevCommand // for dev
 global function SetupDevFunc // for dev
@@ -12,7 +11,6 @@ global function ServerCallback_OpenDevMenu
 global function RunCodeDevCommandByAlias
 global function DEV_ExecBoundDevMenuCommand
 global function DEV_InitCodeDevMenu
-#endif
 
 global function AddLevelDevCommand
 
@@ -72,7 +70,6 @@ function Dummy_Untyped( param )
 
 void function InitDevMenu( var newMenuArg )
 {
-	#if DEVELOPER
 		var menu = GetMenu( "DevMenu" )
 
 		AddMenuEventHandler( menu, eUIEvent.MENU_OPEN, OnOpenDevMenu )
@@ -99,13 +96,11 @@ void function InitDevMenu( var newMenuArg )
 		AddUICallback_LevelLoadingFinished( DEV_InitCodeDevMenu )
 		AddUICallback_LevelShutdown( ClearCodeDevMenu )
 		//OnOpenDevMenu()
-	#endif
 }
 
 
 void function AddLevelDevCommand( string label, string command )
 {
-	#if DEVELOPER
 		string codeDevMenuAlias = DEV_MENU_NAME + "/" + label
 		DevMenu_Alias_DEV( codeDevMenuAlias, command )
 
@@ -113,10 +108,8 @@ void function AddLevelDevCommand( string label, string command )
 		cmd.label = label
 		cmd.command = command
 		file.levelSpecificCommands.append( cmd )
-	#endif
 }
 
-#if DEVELOPER
 void function OnOpenDevMenu()
 {
 	file.pageHistory.clear()
@@ -1057,4 +1050,3 @@ void function DEV_ExecBoundDevMenuCommand()
 
 	RunDevCommand( file.boundCmd, true )
 }
-#endif

@@ -148,9 +148,7 @@ global function OpenXboxPartyApp
 global function OpenXboxHelp
 #endif //DURANGO_PROG
 
-#if DEVELOPER
 global function OpenDevMenu
-#endif // DEVELOPER
 
 global function OpenModelMenu
 
@@ -2536,12 +2534,10 @@ void function OpenXboxHelp( var button )
 }
 #endif // DURANGO_PROG
 
-#if DEVELOPER
 void function OpenDevMenu( var button )
 {
 	AdvanceMenu( GetMenu( "DevMenu" ) )
 }
-#endif // DEVELOPER
 
 void function OpenModelMenu (string equipped) {
 	

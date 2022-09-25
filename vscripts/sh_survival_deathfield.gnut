@@ -1271,6 +1271,10 @@ void function Pathfinder_RandomizeSurveyLocations()
 void function SetSurveyBaconMinimapVisibility( entity player )
 {
 	wait 0.01
+	
+	if ( !IsValid( player ) )
+		return
+		
 	int team = player.GetTeam()
 	bool hasPathfinder = false
 

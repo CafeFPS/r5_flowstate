@@ -830,7 +830,7 @@ Scripts:
 	ui/CTFMenus/menu_ctf_vote.nut
 ]
 
-When: "SERVER && DEV || UI && DEV"
+When: "SERVER || UI "
 Scripts:
 [
 	ai/sh_dev_npc_settings.gnut
