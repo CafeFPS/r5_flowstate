@@ -47,7 +47,7 @@ global function FullMap_UpdateAimPos
 
 global function PlayerHudSetWeaponInspect
 global function UpdateDpadHud
-
+global function DEV_SendCheatsStateToUI
 global function PROTO_ServerCallback_Sur_HoldForUltimate
 
 global function PROTO_OpenInventoryOrSpecifiedMenu
@@ -4795,4 +4795,10 @@ var function GetCompassRui()
 void function AddCallback_ShouldRunCharacterSelection( bool functionref() func )
 {
 	file.shouldRunCharacterSelectionCallback = func
+}
+
+void function DEV_SendCheatsStateToUI()
+{
+	bool cheatsState = GetConVarBool( "sv_cheats" )	
+	RunUIScript("UpdateCheatsState", cheatsState)
 }
