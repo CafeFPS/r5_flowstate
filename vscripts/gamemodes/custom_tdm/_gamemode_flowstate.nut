@@ -828,7 +828,7 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	}
 	player.ClearFirstDeployForAllWeapons()
 	HolsterAndDisableWeapons(player)
-	wait duration
+	wait duration-0.5
 	if(IsValid(player))
 		DeployAndEnableWeapons(player)
 }
