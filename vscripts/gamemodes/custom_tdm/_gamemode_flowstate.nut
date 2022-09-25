@@ -2702,7 +2702,10 @@ bool function ClientCommand_ShowLatency(entity player, array<string> args)
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 {
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
+	{
+		Message(player, "ERROR", "Admin has disabled TDM Weapons dev menu.")
 		return false
+	}
 
 	if(args.len() < 2) return false
 

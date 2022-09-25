@@ -969,5 +969,12 @@ void function DEV_DumpItems()
 		) )
 	}
 }
+
+void function DEV_SendCheatsStateToUI()
+{
+	bool cheatsState = GetConVarBool( "sv_cheats" )	
+	RunUIScript("UpdateCheatsState", cheatsState)
+}
+
 #endif
 

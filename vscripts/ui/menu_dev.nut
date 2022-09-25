@@ -11,7 +11,7 @@ global function ServerCallback_OpenDevMenu
 global function RunCodeDevCommandByAlias
 global function DEV_ExecBoundDevMenuCommand
 global function DEV_InitCodeDevMenu
-
+global function UpdateCheatsState
 global function AddLevelDevCommand
 
 const string DEV_MENU_NAME = "[LEVEL]"
@@ -60,11 +60,22 @@ struct
 	table<string, DevCommand> codeDevMenuCommands
 
 	array<DevCommand> levelSpecificCommands = []
+	bool cheatsState
 } file
 
 function Dummy_Untyped( param )
 {
 
+}
+
+void function UpdateCheatsState(bool cheatsState)
+{
+	file.cheatsState = cheatsState
+}
+
+bool function GetCheatsState()
+{
+	return file.cheatsState
 }
 
 
@@ -259,117 +270,129 @@ void function ChangeToThisMenu_WithOpParm( void functionref( var ) menuFuncWithO
 
 void function SetupDefaultDevCommandsMP()
 {
+	//Player is fully connected at this point, a check was made before
+	RunClientScript("DEV_SendCheatsStateToUI")
+	
 	if(GetCurrentPlaylistName() == "map_editor")
 		SetupDevMenu( "Editor", SetDevMenu_Editor )
 	
 	if(GetCurrentPlaylistName() == "custom_tdm")
 		SetupDevMenu( "TDM Weapon", SetDevMenu_TDMWeapons )
 
-	SetupDevMenu( "Abilities", SetDevMenu_Abilities )
-	SetupDevMenu( "Equip Weapon", SetDevMenu_Weapons )
-	//SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
+	if(GetCheatsState()){
+		
+		SetupDevMenu( "Abilities", SetDevMenu_Abilities )
+		SetupDevMenu( "Equip Weapon", SetDevMenu_Weapons )
+		//SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
+		
+		if ( IsSurvivalMenuEnabled() )
+		{
+			SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
+			//SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
+			SetupDevMenu( "Survival", SetDevMenu_Survival )
+			SetupDevMenu( "Custom Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )
+			SetupDevMenu( "Survival Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
+			SetupDevMenu( "Survival Attachments", SetDevMenu_SurvivalLoot, "attachment" )
+			SetupDevMenu( "Survival Helmets", SetDevMenu_SurvivalLoot, "helmet" )
+			SetupDevMenu( "Survival Armor", SetDevMenu_SurvivalLoot, "armor" )
+			SetupDevMenu( "Survival Backpack", SetDevMenu_SurvivalLoot, "backpack" )
+			SetupDevMenu( "Survival Incap Shield", SetDevMenu_SurvivalLoot, "incapshield" )
+			//SetupDevMenu( "Survival Incap Shield Debugging", SetDevMenu_SurvivalIncapShieldBots )
 
-	if ( IsSurvivalMenuEnabled() )
-	{
-		SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
-		//SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
-		SetupDevMenu( "Survival", SetDevMenu_Survival )
-		SetupDevMenu( "Custom Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )
-		SetupDevMenu( "Survival Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
-		SetupDevMenu( "Survival Attachments", SetDevMenu_SurvivalLoot, "attachment" )
-		SetupDevMenu( "Survival Helmets", SetDevMenu_SurvivalLoot, "helmet" )
-		SetupDevMenu( "Survival Armor", SetDevMenu_SurvivalLoot, "armor" )
-		SetupDevMenu( "Survival Backpack", SetDevMenu_SurvivalLoot, "backpack" )
-		SetupDevMenu( "Survival Incap Shield", SetDevMenu_SurvivalLoot, "incapshield" )
-		//SetupDevMenu( "Survival Incap Shield Debugging", SetDevMenu_SurvivalIncapShieldBots )
+			string itemsString = "ordnance ammo health custom_pickup data_knife"
 
-		string itemsString = "ordnance ammo health custom_pickup data_knife"
+			SetupDevMenu( "Survival Items", SetDevMenu_SurvivalLoot, itemsString )
 
-		SetupDevMenu( "Survival Items", SetDevMenu_SurvivalLoot, itemsString )
+			//SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
+		}
 
-		//SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
+
+		SetupDevMenu( "Respawn Player(s)", SetDevMenu_RespawnPlayers )
+		SetupDevMenu( "Set Respawn Behaviour Override", SetDevMenu_RespawnOverride )
+
+		//SetupDevMenu( "Spawn NPC [IMC]", SetDevMenu_AISpawn, TEAM_IMC )
+		//SetupDevMenu( "Spawn NPC [Militia]", SetDevMenu_AISpawn, TEAM_MILITIA )
+		//SetupDevMenu( "Spawn NPC [Team 4]", SetDevMenu_AISpawn, TEAM_NPC )
+
+
+		SetupDevCommand( "Toggle NoClip", "noclip" )
+
+		SetupDevCommand( "Recharge Abilities", "recharge" )
+		SetupDevCommand( "Infinite Ammo", "infinite_ammo" )
+
+		//SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
+		SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
+		SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
+		//SetupDevCommand( "Toggle Weapon Preview", "ToggleWeaponSkinPreview" )
+		//SetupDevMenu( "Threat Tracker", SetDevMenu_ThreatTracker )
+		//SetupDevMenu( "High-Vis NPC Test", SetDevMenu_HighVisNPCTest )
+
+		//SetupDevCommand( "Disable NPCs", "script disable_npcs()" )
+		// SetupDevCommand( "Disable New NPCs", "script disable_new_npcs()" )
+
+		//SetupDevCommand( "Toggle Friendly Highlights", "script DEV_ToggleFriendlyHighlight()" )
+		//SetupDevCommand( "Export precache script", "script_ui Dev_CommandLineAddParm( \"-autoprecache\", \"\" ); script_ui Dev_CommandLineRemoveParm( \"" + STARTPOINT_DEV_STRING + "\" ); reload" )
+
+		//SetupDevCommand( "Doom my titan", "script_client GetLocalViewPlayer().ClientCommand( \"DoomTitan\" )" )
+		//SetupDevCommand( "DoF debug (ads)", "script_client ToggleDofDebug()" )
+
+		//SetupDevCommand( "ToggleTitanCallInEffects", "script FlagToggle( \"EnableIncomingTitanDropEffects\" )" )
+
+		//SetupDevCommand( "Spawn IMC grunt", "SpawnViewGrunt " + TEAM_IMC )
+		//SetupDevCommand( "Spawn Militia grunt", "SpawnViewGrunt " + TEAM_MILITIA )
+
+		//SetupDevCommand( "Enable titan-always-executes-titan", "script FlagSet( \"ForceSyncedMelee\" )" )
+
+		//SetupDevCommand( "Kill All Titans", "script killtitans()" )
+		//SetupDevCommand( "Kill All Minions", "script killminions()" )
+
+		// SetupDevCommand( "Export leveled_weapons.def / r2_weapons.fgd", "script thread LeveledWeaponDump()" )
+
+		SetupDevCommand( "Summon Players to player 0", "script summonplayers()" )
+		//SetupDevCommand( "Display Titanfall spots", "script thread ShowAllTitanFallSpots()" )
+		//SetupDevCommand( "Toggle check inside Titanfall Blocker", "script thread DevCheckInTitanfallBlocker()" )
+		//SetupDevCommand( "Test Dropship Intro Spawns with Bots", "script thread DebugTestDropshipStartSpawnsForAll()" )
+		//SetupDevCommand( "Preview Dropship Spawn at this location", "script SetCustomPlayerDropshipSpawn()" )
+		//SetupDevCommand( "Test Dropship Spawn at this location", "script thread DebugTestCustomDropshipSpawn()" )
+		//SetupDevCommand( "Max Activity (Pilots)", "script SetMaxActivityMode(1)" )
+		//SetupDevCommand( "Max Activity (Titans)", "script SetMaxActivityMode(2)" )
+		//SetupDevCommand( "Max Activity (Conger Mode)", "script SetMaxActivityMode(4)" )
+		//SetupDevCommand( "Max Activity (Disabled)", "script SetMaxActivityMode(0)" )
+
+		SetupDevCommand( "Toggle Skybox View", "script thread ToggleSkyboxView()" )
+		SetupDevCommand( "Toggle HUD", "ToggleHUD" )
+
+		SetupDevCommand( "Equip Custom Heirloom", "script thread SetupHeirloom()" )
+		SetupDevCommand( "Equip Custom Heirloom (All Players)", "script thread SetupHeirloom( true )" )
+		SetupDevCommand( "Unequip Custom Heirloom", "script thread UnEquipHeirloom()" )
+		SetupDevCommand( "Unequip Custom Heirloom (All Players)", "script thread UnEquipHeirloom( true )" )
+		
+		//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
+		//SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
+		//SetupDevCommand( "Toggle Pain Death sound debug", "script TogglePainDeathDebug()" )
+		//SetupDevCommand( "Jump Randomly Forever", "script_client thread JumpRandomlyForever()" )
+
+		//SetupDevCommand( "Toggle Zeroing Mode", "script ToggleZeroingMode()" )
+		SetupDevCommand( "Enable God Mode", "script EnableDemigod( gp()[0] )" )
+		SetupDevCommand( "Disable God Mode", "script DisableDemigod( gp()[0] )" )
+		//SetupDevCommand( "Toggle Screen Alignment Tool", "script_client DEV_ToggleScreenAlignmentTool()" )
+
+		SetupDevCommand( "Toggle Third Person Mode", "ToggleThirdPerson" )
+
+		SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
+
+		// This adds CAPTURE MODE every time you load a level.
+		// Capture mode doesn't work, so I am commenting this out.
+		// Coded in sh_capturemode.nut
+		// foreach ( DevCommand cmd in file.levelSpecificCommands )
+		// 	SetupDevCommand( cmd.label, cmd.command )
 	}
-
-
-	SetupDevMenu( "Respawn Player(s)", SetDevMenu_RespawnPlayers )
-	SetupDevMenu( "Set Respawn Behaviour Override", SetDevMenu_RespawnOverride )
-
-	//SetupDevMenu( "Spawn NPC [IMC]", SetDevMenu_AISpawn, TEAM_IMC )
-	//SetupDevMenu( "Spawn NPC [Militia]", SetDevMenu_AISpawn, TEAM_MILITIA )
-	//SetupDevMenu( "Spawn NPC [Team 4]", SetDevMenu_AISpawn, TEAM_NPC )
-
-
-	SetupDevCommand( "Toggle NoClip", "noclip" )
-
-	SetupDevCommand( "Recharge Abilities", "recharge" )
-	SetupDevCommand( "Infinite Ammo", "infinite_ammo" )
-
-	//SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
-	SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
-	SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
-	//SetupDevCommand( "Toggle Weapon Preview", "ToggleWeaponSkinPreview" )
-	//SetupDevMenu( "Threat Tracker", SetDevMenu_ThreatTracker )
-	//SetupDevMenu( "High-Vis NPC Test", SetDevMenu_HighVisNPCTest )
-
-	//SetupDevCommand( "Disable NPCs", "script disable_npcs()" )
-	// SetupDevCommand( "Disable New NPCs", "script disable_new_npcs()" )
-
-	//SetupDevCommand( "Toggle Friendly Highlights", "script DEV_ToggleFriendlyHighlight()" )
-	//SetupDevCommand( "Export precache script", "script_ui Dev_CommandLineAddParm( \"-autoprecache\", \"\" ); script_ui Dev_CommandLineRemoveParm( \"" + STARTPOINT_DEV_STRING + "\" ); reload" )
-
-	//SetupDevCommand( "Doom my titan", "script_client GetLocalViewPlayer().ClientCommand( \"DoomTitan\" )" )
-	//SetupDevCommand( "DoF debug (ads)", "script_client ToggleDofDebug()" )
-
-	//SetupDevCommand( "ToggleTitanCallInEffects", "script FlagToggle( \"EnableIncomingTitanDropEffects\" )" )
-
-	//SetupDevCommand( "Spawn IMC grunt", "SpawnViewGrunt " + TEAM_IMC )
-	//SetupDevCommand( "Spawn Militia grunt", "SpawnViewGrunt " + TEAM_MILITIA )
-
-	//SetupDevCommand( "Enable titan-always-executes-titan", "script FlagSet( \"ForceSyncedMelee\" )" )
-
-	//SetupDevCommand( "Kill All Titans", "script killtitans()" )
-	//SetupDevCommand( "Kill All Minions", "script killminions()" )
-
-	// SetupDevCommand( "Export leveled_weapons.def / r2_weapons.fgd", "script thread LeveledWeaponDump()" )
-
-	SetupDevCommand( "Summon Players to player 0", "script summonplayers()" )
-	//SetupDevCommand( "Display Titanfall spots", "script thread ShowAllTitanFallSpots()" )
-	//SetupDevCommand( "Toggle check inside Titanfall Blocker", "script thread DevCheckInTitanfallBlocker()" )
-	//SetupDevCommand( "Test Dropship Intro Spawns with Bots", "script thread DebugTestDropshipStartSpawnsForAll()" )
-	//SetupDevCommand( "Preview Dropship Spawn at this location", "script SetCustomPlayerDropshipSpawn()" )
-	//SetupDevCommand( "Test Dropship Spawn at this location", "script thread DebugTestCustomDropshipSpawn()" )
-	//SetupDevCommand( "Max Activity (Pilots)", "script SetMaxActivityMode(1)" )
-	//SetupDevCommand( "Max Activity (Titans)", "script SetMaxActivityMode(2)" )
-	//SetupDevCommand( "Max Activity (Conger Mode)", "script SetMaxActivityMode(4)" )
-	//SetupDevCommand( "Max Activity (Disabled)", "script SetMaxActivityMode(0)" )
-
-	SetupDevCommand( "Toggle Skybox View", "script thread ToggleSkyboxView()" )
-	SetupDevCommand( "Toggle HUD", "ToggleHUD" )
-
-	SetupDevCommand( "Equip Custom Heirloom", "script thread SetupHeirloom()" )
-	SetupDevCommand( "Equip Custom Heirloom (All Players)", "script thread SetupHeirloom( true )" )
-	SetupDevCommand( "Unequip Custom Heirloom", "script thread UnEquipHeirloom()" )
-	SetupDevCommand( "Unequip Custom Heirloom (All Players)", "script thread UnEquipHeirloom( true )" )
-	
-	//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
-	//SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
-	//SetupDevCommand( "Toggle Pain Death sound debug", "script TogglePainDeathDebug()" )
-	//SetupDevCommand( "Jump Randomly Forever", "script_client thread JumpRandomlyForever()" )
-
-	//SetupDevCommand( "Toggle Zeroing Mode", "script ToggleZeroingMode()" )
-	SetupDevCommand( "Enable God Mode", "script EnableDemigod( gp()[0] )" )
-	SetupDevCommand( "Disable God Mode", "script DisableDemigod( gp()[0] )" )
-	//SetupDevCommand( "Toggle Screen Alignment Tool", "script_client DEV_ToggleScreenAlignmentTool()" )
-
-	SetupDevCommand( "Toggle Third Person Mode", "ToggleThirdPerson" )
-
-	SetupDevMenu( "Prototypes", SetDevMenu_Prototypes )
-
-	// This adds CAPTURE MODE every time you load a level.
-	// Capture mode doesn't work, so I am commenting this out.
-	// Coded in sh_capturemode.nut
-	// foreach ( DevCommand cmd in file.levelSpecificCommands )
-	// 	SetupDevCommand( cmd.label, cmd.command )
+	else
+	{
+		SetupDevCommand( "sv_cheats is false, can't show more dev settings.", "empty" )
+		SetupDevCommand( "sv_cheats is false, can't show more dev settings.", "empty" )
+		SetupDevCommand( "sv_cheats is false, can't show more dev settings.", "empty" )
+	}
 }
 
 
