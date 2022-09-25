@@ -70,6 +70,8 @@ void function ScoreEvent_PlayerKilled( entity victim, entity attacker, var damag
 		AddPlayerScore( attacker, "Sur_DownedPilot", victim )
 	else if( !downed && GetGameState() >= eGameState.Playing )
 		AddPlayerScore( attacker, "EliminatePilot", victim )
+	else if( !downed && GetGameState() <= eGameState.Playing )
+		AddPlayerScore( attacker, "KillPilot", victim )
 }
 
 void function ScoreEvent_TitanDoomed( entity titan, entity attacker, var damageInfo )
