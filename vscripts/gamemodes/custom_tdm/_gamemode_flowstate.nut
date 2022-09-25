@@ -618,6 +618,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if( player.IsObserver())
     {
 		player.StopObserverMode()
+		player.SetSpecReplayDelay( 0 )
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
     }
 
@@ -1610,7 +1611,7 @@ void function SimpleChampionUI(){
 
 	foreach(player in GetPlayerArray())
 	{
-			if(IsValid(player))
+			if(IsValid(player) && !player.IsObserver())
 			{
 				_HandleRespawn(player)
 					if(FlowState_Gungame())
@@ -1702,7 +1703,7 @@ void function SimpleChampionUI(){
     foreach(player in GetPlayerArray())
     {
         try {
-            if(IsValid(player))
+            if(IsValid(player) && !player.IsObserver())
             {
 		        RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		        player.SetThirdPersonShoulderModeOff()
