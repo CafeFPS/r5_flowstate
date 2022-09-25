@@ -9,7 +9,7 @@ global function Bleedout_AddCallback_OnPlayerGotFirstAid // dump
 global function Bleedout_GetBleedoutAttacker
 global function Bleedout_GetBleedoutDamageInfo
 
-global function Bleedout_ShouldBeDeadDirectly
+global function Bleedout_IsThereAlivingMates
 
 global table<string, string> EliminatedPlayers = {}
 
@@ -704,7 +704,7 @@ void function CheckForTeamBleedout( int team )
 	}
 }
 
-bool function Bleedout_ShouldBeDeadDirectly( entity player )
+bool function Bleedout_IsThereAlivingMates( entity player )
 {
 	if( Flag( "BleedoutDebug" ) )
 		return false

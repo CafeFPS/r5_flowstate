@@ -387,7 +387,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 	StoreDamageHistoryAndUpdate( victim, Time() + 30, damage, damagePosition, damageType, sourceId, attacker )
 	
-	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && !Bleedout_ShouldBeDeadDirectly( victim ) )
+	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && !Bleedout_IsThereAlivingMates( victim ) )
 	{	
 		if(!IsValid(attacker) || !IsValid(victim)) return
 	
