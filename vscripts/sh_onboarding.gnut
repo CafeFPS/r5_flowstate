@@ -563,6 +563,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if( DamageInfo_IsRagdollAllowed( damageInfo ) )
 		victim.BecomeRagdoll( victim.GetVelocity(), false )
 
+	if( IsValid( attacker ) && attacker != victim )
+		victim.SetObserverTarget( attacker )
+	
     victim.StartObserverMode( OBS_MODE_DEATHCAM )
 }
 
