@@ -28,7 +28,7 @@ void function OnMainMenuPanel_Show( var panel )
 void function LaunchButton_OnActivate( var button )
 {
 	// create local lobby server
-	CreateServer("Lobby", "", "mp_lobby", "menufall", eServerVisibility.HIDDEN)
+	CreateServer("Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
 }
 
 void function SetupRUI()

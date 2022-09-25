@@ -175,9 +175,7 @@ void function ClearCodeDevMenu()
 void function UpdateDevMenuButtons()
 {
 	file.devCommands.clear()
-	if ( developer() == 0 )
-		return
-
+	
 	if ( file.initializingCodeDevMenu )
 		return
 
@@ -261,11 +259,14 @@ void function ChangeToThisMenu_WithOpParm( void functionref( var ) menuFuncWithO
 
 void function SetupDefaultDevCommandsMP()
 {
-	if(IsConnected() && GetCurrentPlaylistName() == "map_editor")
+	if(GetCurrentPlaylistName() == "map_editor")
 		SetupDevMenu( "Editor", SetDevMenu_Editor )
+	
+	if(GetCurrentPlaylistName() == "custom_tdm")
+		SetupDevMenu( "TDM Weapon", SetDevMenu_TDMWeapons )
+
 	SetupDevMenu( "Abilities", SetDevMenu_Abilities )
 	SetupDevMenu( "Equip Weapon", SetDevMenu_Weapons )
-	SetupDevMenu( "TDM Weapon", SetDevMenu_TDMWeapons )
 	//SetupDevMenu( "MDLSpawner", SetDevMenu_ModelSpawner )
 
 	if ( IsSurvivalMenuEnabled() )
