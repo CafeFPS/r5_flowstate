@@ -9,6 +9,8 @@ global function Bleedout_AddCallback_OnPlayerGotFirstAid // dump
 global function Bleedout_GetBleedoutAttacker
 global function Bleedout_GetBleedoutDamageInfo
 
+global function Bleedout_ShouldBeDeadDirectly
+
 global table<string, string> EliminatedPlayers = {}
 
 //CONFIGS
@@ -56,6 +58,8 @@ void function Bleedout_Init()
 	PrecacheParticleSystem( $"P_LL_med_drone_eye" )
 	PrecacheParticleSystem( $"P_LL_med_drone_jet_ctr_loop" )
 	PrecacheParticleSystem($"P_drone_shield_hit_enemy")
+
+	FlagInit( "BleedoutDebug", false )
 	
 }
 
@@ -149,6 +153,8 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	
 	if ( Bleedout_GetDeathOnTeamBleedout( player ) )
 		CheckForTeamBleedout( player.GetTeam() )
+
+	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_STARTBLEEDOUT, player, player.GetOrigin(), player.GetTeam(), player )
 }
 
 void function Bleedout_DeathProtection( entity player )
@@ -680,6 +686,9 @@ void function PlayerDiesFromBleedout( entity player, entity attacker )
 //If all the players are dead/bleeding out, it kills the surviving team players.
 void function CheckForTeamBleedout( int team )
 {
+	if( Flag( "BleedoutDebug" ) )
+		return
+	
 	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
 	foreach ( entity teamPlayer in teamPlayers )
 	{
@@ -693,6 +702,23 @@ void function CheckForTeamBleedout( int team )
 		if ( IsAlive( teamPlayer ) )
 			PlayerDiesFromBleedout( teamPlayer, file.lastAttacker[ teamPlayer ] )
 	}
+}
+
+bool function Bleedout_ShouldBeDeadDirectly( entity player )
+{
+	if( Flag( "BleedoutDebug" ) )
+		return false
+
+	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
+	teamPlayers.fastremovebyvalue( player )
+	int downedPlayer = 0
+	foreach ( entity teamPlayer in teamPlayers )
+	{
+		if ( file.isBleeding[ teamPlayer ] || !Bleedout_GetSelfResEnabled( teamPlayer ) )
+			downedPlayer += 1
+	}
+
+	return downedPlayer == teamPlayers.len()
 }
 
 bool function Bleedout_ShouldAIMissBleedingPlayer( entity player )

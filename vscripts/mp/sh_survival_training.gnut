@@ -1,6 +1,7 @@
 
 #if SERVER
 global function DropshipBringDummyBack
+global function PlayerStartsTraining
 
 const asset CHARACTER_BLOODHOUND 	= $"settings/player/mp/pilot_survival_tracker.rpak"
 const asset CHARACTER_PATHFINDER 	= $"settings/player/mp/pilot_survival_grapple.rpak"
@@ -176,6 +177,11 @@ void function Training_EntitiesDidLoad()
 		DissolveLootBin( bin )
 		bin.kv.VisibilityFlags = ENTITY_VISIBLE_TO_NOBODY
 	}
+
+	array<entity> lootbins = GetEntArrayByScriptName("staging_loot_bin")
+	
+	foreach(entity lootbin in lootbins)
+		lootbin.Destroy()
 	#endif
 }
 
@@ -370,6 +376,12 @@ void function PlayerStartsTraining( entity player )
 	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
 	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
 
+	// Loadout meleeskin
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	ItemFlavor meleeSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MeleeSkin( character ) )
+	player.GiveWeapon( MeleeSkin_GetMainWeaponClassname( meleeSkin ), WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( MeleeSkin_GetOffhandWeaponClassname( meleeSkin ), OFFHAND_MELEE, [] )
+	
 	#if DEVELOPER
 	if ( GetBugReproNum() == 2020 )
 	{

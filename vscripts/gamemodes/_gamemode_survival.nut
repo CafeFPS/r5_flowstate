@@ -109,16 +109,9 @@ void function Sequence_Playing()
 {
 	SetServerVar( "minimapState", IsFiringRangeGameMode() ? eMinimapState.Hidden : eMinimapState.Default )
 
-	if ( IsFiringRangeGameMode() )
+	if ( IsFiringRangeGameMode() || IsSurvivalTraining() )
 	{
 		SetGameState( eGameState.WaitingForPlayers )
-
-		foreach ( player in GetPlayerArray() )
-		{
-			SetRandomStagingPositionForPlayer( player )
-			DecideRespawnPlayer( player )
-		}
-
 		return
 	}
 
@@ -277,6 +270,7 @@ void function Sequence_WinnerDetermined()
 
 	foreach ( player in GetPlayerArray() )
 	{
+		MakeInvincible( player )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == GetWinningTeam(), GetWinningTeam() )
 	}
@@ -393,7 +387,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 	StoreDamageHistoryAndUpdate( victim, Time() + 30, damage, damagePosition, damageType, sourceId, attacker )
 	
-	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) )
+	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && !Bleedout_ShouldBeDeadDirectly( victim ) )
 	{	
 		if(!IsValid(attacker) || !IsValid(victim)) return
 	
@@ -679,6 +673,19 @@ void function OnClientConnected( entity player )
 	player.p.squadRank = 0
 
 	AddEntityCallback_OnDamaged( player, OnPlayerDamaged )
+
+	if ( IsFiringRangeGameMode() )
+	{
+		SetRandomStagingPositionForPlayer( player )
+		DecideRespawnPlayer( player )
+		return
+	} else if ( IsSurvivalTraining() )
+	{
+		DecideRespawnPlayer( player )
+		thread PlayerStartsTraining( player )
+		return
+	}
+
 	switch ( GetGameState() )
 	{
 		// case eGameState.WaitingForPlayers:
@@ -747,6 +754,9 @@ void function OnClientConnected( entity player )
 				}
 			}
 
+			break
+		case eGameState.Epilogue:
+			Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 			break
 	}
 }

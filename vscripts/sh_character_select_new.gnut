@@ -2800,9 +2800,11 @@ bool function CharacterSelect_AssignCharacter( entity player, ItemFlavor charact
 bool function CharacterSelect_TryAssignCharacterCandidatesToPlayer( entity player, array<SettingsAssetGUID> candidates )
 {
 	foreach ( candidate in candidates )
-		if ( !IsValidItemFlavorGUID( candidate ) 
-			|| !IsItemFlavorUnlockedForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), GetItemFlavorByGUID( candidate ) ) 
-			)
+		foreach ( squadMates in GetPlayerArrayOfTeam( player.GetTeam() ) )
+			if ( !IsValidItemFlavorGUID( candidate )
+				|| !IsItemFlavorUnlockedForLoadoutSlot( ToEHI( player ), Loadout_CharacterClass(), GetItemFlavorByGUID( candidate ) )
+				|| ItemFlavor_GetGUID( LoadoutSlot_GetItemFlavor( ToEHI( squadMates ), Loadout_CharacterClass() ) ) == candidate
+				)
 			candidates.fastremovebyvalue( candidate )
 
 	bool retValue = true
