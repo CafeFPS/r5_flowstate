@@ -112,6 +112,7 @@ bool function ClientCommand_Save(entity player, array<string> args )
 	
 	foreach(prop in file.allProps)
 	{
+		if(!IsValid(prop)) continue
 		vector org = prop.GetOrigin()
 		vector ang = prop.GetAngles()
 	    string Org = org.x.tostring() + "," + org.y.tostring() + "," + org.z.tostring()
