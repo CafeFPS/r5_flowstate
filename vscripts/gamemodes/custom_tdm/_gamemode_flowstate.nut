@@ -470,14 +470,12 @@ void function DoubleAndTripleKillAudio(entity attacker)
 
 	if( attacker.p.downedEnemyAtOneTime == 2 )
 	{
-		foreach(player in GetPlayerArray())
-			thread EmitSoundOnEntityOnlyToPlayer(player, player, "diag_ap_aiNotify_killLeaderDoubleKill")
+		SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderDoubleKill" )
 	}
 
 	if( attacker.p.downedEnemyAtOneTime == 3)
 	{
-		foreach(player in GetPlayerArray())
-			thread EmitSoundOnEntityOnlyToPlayer(player, player, "diag_ap_aiNotify_killLeaderTripleKill")
+		SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderTripleKill" )
 	}
 }
 
