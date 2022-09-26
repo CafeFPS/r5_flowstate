@@ -2528,7 +2528,7 @@ bool function ClientCommand_FlowstateKick(entity player, array < string > args) 
     foreach(sPlayer in GetPlayerArray()) {
         if (sPlayer.GetPlayerName() == args[0]) {
             printl("[Flowstate] -> Kicking " + sPlayer.GetPlayerName() + " from flowstate.")
-            ServerCommand("sv_kick " + sPlayer.GetPlayerName())
+            ClientCommand( player, "disconnect" )
             return true
         }
     }
