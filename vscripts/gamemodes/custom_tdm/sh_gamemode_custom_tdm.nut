@@ -805,6 +805,21 @@ void function Sh_CustomTDM_Init()
 	///////////////////////////////////
 	//END PROPHUNT LOCATIONS///////////////		
 	
+	
+		case "mp_rr_desertlands_64k_x_64k_tt":
+        Shared_RegisterLocation(
+            NewLocationSettings(
+                "Mirage Voyage",
+                [
+                    NewLocPair(<-25930, -3790, -2442>, <0, -37, 0>),
+					NewLocPair(<-22928, -5785, -2396>, <0, 147, 0>),
+                    NewLocPair(<-27364, -4969, -2681>, <0, -32, 0>),
+					NewLocPair(<-23150, -6776, -2879>, <0, 122, 0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+        //break
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
 		if(!GetCurrentPlaylistVarBool("flowstateCapitolCityReplacesTTVLocation", false ))

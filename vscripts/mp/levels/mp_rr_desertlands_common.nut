@@ -106,7 +106,7 @@ void function EntitiesDidLoad()
 
 	FillLootTable()
 	
-	if(GameRules_GetGameMode() != "custom_tdm" )
+	if(GameRules_GetGameMode() != "custom_tdm"  && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
 	{
 		InitLootDrones()
 		InitLootRollers()
@@ -505,6 +505,7 @@ void function MirageVoyageModels()
 	entity FixHole2 = CreatePropDynamic( $"mdl/pipes/airduct_l_turn_long_side.rmdl", <-25410,-4275,-2220>, <0,-70,0>, SOLID_VPHYSICS )
 	entity Table1 = CreatePropDynamic( $"mdl/domestic/glass_coffee_table.rmdl", <-26122,-4686,-2520>, <0,56,0>, SOLID_VPHYSICS )
 	entity Table2 = CreatePropDynamic( $"mdl/domestic/glass_coffee_table.rmdl", <-26300,-4570,-2520>, <0,56,0>, SOLID_VPHYSICS )
+
 }
 
 void function MirageVoyageButton()

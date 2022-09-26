@@ -216,6 +216,8 @@ LocPair function _GetVotingLocation()
 			return NewLocPair(<-19459, 2127, 6404>, <0, 180, 0>)
         case "mp_rr_arena_composite":
             return NewLocPair(<0, 4780, 220>, <0, -90, 0>)
+		case "mp_rr_desertlands_64k_x_64k_tt":
+            return NewLocPair(<-25197, -4278, -2138>, <0, -34, 0>)
         default:
 			Assert(false, "No voting location for the map!")
     }
