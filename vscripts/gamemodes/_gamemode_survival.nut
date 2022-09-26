@@ -368,7 +368,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	if ( !IsValid( victim ) || !victim.IsPlayer() || Bleedout_IsBleedingOut( victim ) )
 		return
 	
-	entity attacker = DamageInfo_GetAttacker( damageInfo )
+	entity attacker = InflictorOwner( DamageInfo_GetAttacker( damageInfo ) )
 	
 	int sourceId = DamageInfo_GetDamageSourceIdentifier( damageInfo )
 	if ( sourceId == eDamageSourceId.bleedout || sourceId == eDamageSourceId.human_execution )
