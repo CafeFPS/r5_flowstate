@@ -218,7 +218,7 @@ void function StartTopTriggerTimer(entity trigger, entity ent)
 	OnThreadEnd(
 		function() : ( trigger, ent )
 		{
-			if(IsValid(trigger) && trigger.IsTouching(ent) && IsValid(ent) && ent.IsPlayer())
+			if(IsValid(trigger) && IsValid(ent) && trigger.IsTouching(ent) && ent.IsPlayer())
 			{
 				ent.p.ForceEject = true
 				vector direction = AnglesToForward( ent.GetAngles() )
