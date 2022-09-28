@@ -16,7 +16,7 @@ const DEPLOYABLE_SHIELD_DURATION = 15.0
 
 const DEPLOYABLE_SHIELD_FX = $"P_pilot_cover_shield"
 const DEPLOYABLE_SHIELD_FX_AMPED = $"P_pilot_amped_shield"
-const DEPLOYABLE_SHIELD_HEALTH = 850
+const DEPLOYABLE_SHIELD_HEALTH = 225
 
 const DEPLOYABLE_SHIELD_RADIUS = 84
 const DEPLOYABLE_SHIELD_HEIGHT = 89
@@ -188,8 +188,8 @@ void function DeployAmpedWall( entity grenade, vector origin, vector angles )
 	ampedWall.Hide()
 	ampedWall.SetTakeDamageType( DAMAGE_YES)
 	ampedWall.SetDamageNotifications( true )
-	ampedWall.SetMaxHealth( 350 )
-	ampedWall.SetHealth( 350 )
+	ampedWall.SetMaxHealth( 225 )
+	ampedWall.SetHealth( 225 )
 	ampedWall.EndSignal( "OnDestroy" )
 	
 
