@@ -216,15 +216,18 @@ void function InitWaterLeviathans()
 
 void function EntitiesDidLoad()
 {
-	InitLootDrones() //flyers
-	InitLootRollers() //flyers
-	InitLootDronePaths() //flyers
+	if(GetMapName() != "mp_rr_canyonlands_staging" && GameRules_GetGameMode() != "custom_tdm" && GameRules_GetGameMode() != "custom_aimtrainer")
+	{
+		InitLootDrones() //flyers
+		InitLootRollers() //flyers
+		InitLootDronePaths() //flyers
+	}
 	thread __EntitiesDidLoad()
 }
 
 void function __EntitiesDidLoad()
 {
-	if(GetMapName() != "mp_rr_canyonlands_staging"){
+	if(GetMapName() != "mp_rr_canyonlands_staging" && GameRules_GetGameMode() != SURVIVAL){
 	SpawnEditorProps()
 	}
 
