@@ -326,7 +326,7 @@ void function Highlight_Init()
 	HighlightContext_SetFill( highlight, HIGHLIGHT_FILL_NONE )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 30000.0 )
 
 	highlight = RegisterHighlight( "survival_item_common" )
 	HighlightContext_SetOutline( highlight, HIGHLIGHT_OUTLINE_LOOT_DEFAULT )
@@ -338,7 +338,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 30000.0 )
 	highlight.colorID = COLORID_LOOT_TIER1
 
 	highlight = RegisterHighlight( "survival_item_rare" )
@@ -351,7 +351,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 30000.0 )
 	highlight.colorID = COLORID_LOOT_TIER2
 
 	highlight = RegisterHighlight( "survival_item_epic" )
@@ -364,7 +364,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 30000.0 )
 	highlight.colorID = COLORID_LOOT_TIER3
 
 	highlight = RegisterHighlight( "survival_item_legendary" )
@@ -377,7 +377,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 3000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 30000.0 )
 	highlight.colorID = COLORID_LOOT_TIER4
 
 	highlight = RegisterHighlight( "survival_item_heirloom" )
@@ -390,7 +390,7 @@ void function Highlight_Init()
 	HighlightContext_SetFillFocused( highlight, HIGHLIGHT_FILL_LOOT_FOCUSED )
 	HighlightContext_SetDrawFunc( highlight, lootHighlightDrawType )
 	HighlightContext_SetADSFade( highlight, false )
-	HighlightContext_SetFarFadeDistance( highlight, 20000.0 )
+	HighlightContext_SetFarFadeDistance( highlight, 30000.0 )
 	highlight.colorID = COLORID_LOOT_TIER5
 	
 		highlight = RegisterHighlight( "survival_item_common_cargobot" )
