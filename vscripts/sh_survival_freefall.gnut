@@ -1002,7 +1002,9 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 				player.Anim_PlayOnly( "mp_pilot_freefall_fall2anticipate" )
 
 			player.Anim_DisableUpdatePosition()
-			player.Player_BeginFreefallAnticipate()
+			
+			if(player.Player_IsFreefalling())
+				player.Player_BeginFreefallAnticipate()
 
 			StopSoundOnEntity( player, "Survival_DropSequence_Travel_1P" )
 			StopSoundOnEntity( player, "Survival_DropSequence_Travel_3P" )
@@ -1046,7 +1048,9 @@ void function SkyDiveMovement( entity player, SkydivePlayerData skydiveData, vec
 		{
 			player.Anim_PlayOnly( "mp_pilot_freefall_landing2fall" )
 			player.Anim_DisableUpdatePosition()
-			player.Player_EndFreefallAnticipate()
+			
+			if(player.Player_IsFreefallAnticipating())
+				player.Player_EndFreefallAnticipate()
 
 			StopSoundOnEntity( player, "Survival_DropSequence_Land_Start_1P" )
 			StopSoundOnEntity( player, "Survival_DropSequence_Land_Start_3P" )
