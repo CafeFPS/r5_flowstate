@@ -37,20 +37,19 @@ void function AirdropItems( vector origin, vector angles, array<string> contents
     
     entity threatProxy = CreateDropPodThreatIndicator(origin, angles)
     thread DropPodBeamWaitForUse(dropPod, origin, angles)
-    thread WaitForDropFX(dropPod, animationName, origin, angles) 
-    
+	
+    thread WaitForDropFX(dropPod, animationName, origin, angles)
+	
 	waitthread LaunchAnimDropPod( dropPod, animationName, OriginToGround( origin ), angles )
-
-    if(IsValid(threatProxy))
+	    if(IsValid(threatProxy))
         threatProxy.Destroy()
 
 	InitDropPod( dropPod )
     
     if(IsValid(fxToStop))
         fxToStop.Destroy()
-
+	
 	AddMultipleLootItemsToDropPod(dropPod, contents)
-
 
 }
 
@@ -77,10 +76,11 @@ void function AirDropFireteam( vector origin, vector angles, string animationNam
 
 void function WaitForDropFX(entity dropPod, string animationName, vector origin, vector angles)
 { 
-    //float scaledTime = dropPod.GetSequenceDuration(animationName) * 0.95
-   // wait scaledTime
+    float scaledTime = dropPod.GetSequenceDuration(animationName) * 0.95
+	wait scaledTime
     DropPodOnImpactFXAndShake(dropPod, origin, angles)
 }
+
 
 void function SpawnLootInDropPod( entity dropPod, string ref, int lootI, int lootCount )
 {
