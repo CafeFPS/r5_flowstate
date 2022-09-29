@@ -99,7 +99,7 @@ void function GeneratePathAndSpawnFlyers()
 		{
 			float r = float(i) / float(50) * 2 * PI
 			vector org = startPoint + 6000 * <sin( r ), cos( r ), 0.0>
-			
+				
 			entity amogus = CreateEntity( "script_mover_train_node" )
 			amogus.kv.solid = 0
 			amogus.kv.fadedist = -1
@@ -108,7 +108,7 @@ void function GeneratePathAndSpawnFlyers()
 			amogus.SetOrigin( org + Vector(0,0,3000))
 			amogus.SetAngles( Vector(0,0,0) )
 			DispatchSpawn( amogus )
-
+			
 			Amogus.append( amogus )
 		}
 		
@@ -130,9 +130,12 @@ array<LootDroneData> function SpawnLootDrones( int numToSpawn )
 {
 	array<LootDroneData> drones
 
-	for ( int i = 0; i < numToSpawn; ++i ){
-	drones.append( LootDrones_SpawnLootDroneAtRandomPath() )
-	drones[i].id++}
+	for ( int i = 0; i < numToSpawn; ++i )
+	{
+		drones.append( LootDrones_SpawnLootDroneAtRandomPath() )
+		drones[i].id++
+		WaitFrame()	
+	}
 	
 	file.spawnedDronesorFlyers = drones
 	return drones
@@ -142,9 +145,12 @@ array<LootDroneData> function SpawnFlyers( int numToSpawn )
 {
 	array<LootDroneData> drones
 
-	for ( int i = 0; i < numToSpawn; ++i ){
-	drones.append( Flyers_SpawnFlyerAtRandomPath() )
-	drones[i].id++}
+	for ( int i = 0; i < numToSpawn; ++i )
+	{		
+		drones.append( Flyers_SpawnFlyerAtRandomPath() )
+		drones[i].id++		
+		WaitFrame()		
+	}
 	
 	file.spawnedDronesorFlyers = drones
 	return drones
@@ -172,8 +178,15 @@ LootDroneData function Flyers_SpawnFlyerAtRandomPath()
 	LootDroneData data
 	array<entity> path = FlyersOrLootDrones_GetRandomPath()
 	
-	//find a starting point in the path and sort the array
-	int startpoint = RandomInt(path.len())
+	//find a starting point in the path and sort the array of locations
+	int ornull startpoint = Flyers_GetBestStartNodeFromPath( path )
+	if ( startpoint == null )
+	{
+		startpoint = RandomInt(path.len())
+	}
+
+	expect int( startpoint )
+	
 	array<entity> newArray = path.slice(startpoint, path.len())
 	newArray.extend(path.slice(0, startpoint))
 	path = newArray
@@ -362,6 +375,42 @@ entity ornull function LootDrones_GetAvailableStartNodeFromPath( array<entity> p
 			return pathNode
 	}
 	return null
+}
+
+int ornull function Flyers_GetBestStartNodeFromPath( array<entity> path )
+{
+	table<entity, float> SpawnsAndNearestFlyer = {}
+
+	foreach ( entity pathNode in path )
+    {
+		array<float> Distances
+		foreach ( entity model, LootDroneData data in file.droneData )
+			Distances.append(Distance(model.GetOrigin(), pathNode.GetOrigin()))
+			
+		if(Distances.len() == 0) return RandomInt(path.len())
+			
+		Distances.sort()
+		SpawnsAndNearestFlyer[pathNode] <- Distances[0]
+	}
+	
+	entity finalLoc
+	float compareDis = -1
+	foreach(loc, dis in SpawnsAndNearestFlyer)
+	{
+		if(dis > compareDis)
+		{
+			finalLoc = loc
+			compareDis = dis
+		}
+	}
+	
+	for(int i = 0; i < path.len(); i++)
+	{
+		if(path[i] == finalLoc)
+			return i
+	}
+	
+    unreachable
 }
 
 void function CreateFlowStateDeathBoxForPlayer2( entity victim, vector origin, vector angles, string lootTier)
