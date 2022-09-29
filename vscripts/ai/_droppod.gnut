@@ -192,9 +192,9 @@ void function InitDropPod( entity dropPod )
 	SetCallback_CanUseEntityCallback( dropPod, DropPod_CanUse )
 
 	// if ( SURVIVAL_DEBUG_LOOT_BINS )
-	{
-	 	DebugDrawLine( dropPod.GetOrigin(), dropPod.GetOrigin() + <90, 90, 2000>, 255, 255, 255, true, 100.0 )
-	}
+	//{
+	// 	DebugDrawLine( dropPod.GetOrigin(), dropPod.GetOrigin() + <90, 90, 2000>, 255, 255, 255, true, 100.0 )
+	//}
 }
 
 #if CLIENT
