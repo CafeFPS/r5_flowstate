@@ -1083,7 +1083,7 @@ void function UpdateScreenDetails( ApexScreenState screen, int transitionStyle, 
 	if ( IsValid( player ) )
 		RuiTrackInt( screen.rui, "playerKillCount", player, RUI_TRACK_SCRIPT_NETWORK_VAR_INT, GetNetworkedVariableIndex( "kills" ) )
 
-	RuiSetFloat( screen.rui, "xpBonusAmount", XpEventTypeData_GetAmount( XP_TYPE.KILL_CHAMPION_MEMBER ) )
+	RuiSetFloat( screen.rui, "xpBonusAmount", 42069 )
 
 	ChangeNestedGladiatorCardPresentation( screen.nestedGladiatorCard0Handle, gcardPresentation )
 	ChangeNestedGladiatorCardOwner( screen.nestedGladiatorCard0Handle, playerEHI, modeChangeTime, lifestateOverride )
