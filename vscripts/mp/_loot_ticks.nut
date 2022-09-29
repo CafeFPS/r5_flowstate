@@ -19,7 +19,7 @@ void function LootTicks_Init()
     PrecacheParticleSystem(FX_LOOT_TICK_IDLE)
 
     #if SERVER
-    if(GetCurrentPlaylistVarBool("loot_ticks_enabled", true))
+    if(GetCurrentPlaylistVarBool("loot_ticks_enabled", true) && GameRules_GetGameMode() == SURVIVAL )
         AddCallback_EntitiesDidLoad( SpawnMultipleLootTicksForMap )
     #endif
 }
