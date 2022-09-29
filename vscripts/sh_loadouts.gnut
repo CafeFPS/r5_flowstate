@@ -124,7 +124,7 @@ global struct LoadoutEntry
 	string ornull                                  networkVarName = ""
 	LoadoutEntry_IsSlotLocked                      isSlotLocked = null // optional, default = unlocked
 	table<LoadoutEntry, table<ItemFlavor, bool> >  isActiveConditions = {}
-	#if SERVER && DEVELOPER
+	#if SERVER
 		LoadoutEntry_IsCurrentlyRelevantFuncType isCurrentlyRelevant = null // optional, default = is relevant (currently only used for dev-menu!) // todo(dw): find a way to be rid of isCurrentlyRelevant and shouldNetwork
 	#endif
 	string DEV_category = "Other"
@@ -229,9 +229,9 @@ void function ShLoadouts_LevelInit_Begin()
 		AddCallback_UpgradePlayerPersistentData( UpgradePlayerPersistentData )
 		AddClientCommandCallback( "loadouts_set", ClientCommand_loadouts_set )
 		AddClientCommandCallback( "loadouts_reset_persistent", ClientCommand_loadouts_reset_persistent )
+		AddClientCommandCallback( "loadouts_devset", ClientCommand_loadouts_devset )
 		#if DEVELOPER
 			AddCallback_GeneratePDef( GenerateLoadoutsPDef )
-			AddClientCommandCallback( "loadouts_devset", ClientCommand_loadouts_devset )
 			AddClientCommandCallback( "loadouts_dump", ClientCommand_loadouts_dump )
 		#endif
 	#endif
@@ -1896,10 +1896,8 @@ bool function IsLoadoutSlotLocked( EHI playerEHI, LoadoutEntry entry )
 	if ( entry.isSlotLocked == null )
 		return false
 
-	#if DEVELOPER
-		if ( GetCurrentPlaylistVarBool( "dev_loadout_changeable_at_any_time", false ) )
-			return false
-	#endif
+	if ( GetCurrentPlaylistVarBool( "dev_loadout_changeable_at_any_time", false ) )
+		return false
 
 	return entry.isSlotLocked( playerEHI )
 }
@@ -1959,9 +1957,12 @@ bool function ClientCommand_loadouts_set( entity player, array<string> args )
 }
 #endif
 
-#if SERVER && DEVELOPER
+#if SERVER
 bool function ClientCommand_loadouts_devset( entity commandPlayer, array<string> args )
 {
+	if ( GetConVarInt( "sv_cheats" ) != 1 )
+		return false
+	
 	// loadouts_devset
 	// 1: [loadout slot entry id string]
 	// 2: [slot contents item flavor ref string]
