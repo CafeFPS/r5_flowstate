@@ -186,6 +186,8 @@ void function Sh_RespawnBeacon_Init()
 			AddCallback_OnGetBestObserverTarget( GetBestObserverTarget )
 		}
 	#endif
+	
+	ShRespawnBeacon_RegisterAinAnalysisFuncs()
 }
 
 void function RespawnBeacons_RegisterNetworking()
@@ -389,11 +391,7 @@ void function RespawnPlayersInDropship( array<entity> players, entity beacon )
 	}
 	else if ( beacon.GetLinkEntArray().len() == 0 )
 	{
-		// no navmesh so can't use
-		// p = GetClosestRespawnDropoff( beacon.GetOrigin() )
-
-		p.origin = beacon.GetOrigin() + <0, 0, 500>
-		p.angles = beacon.GetAngles()
+		p = GetClosestRespawnDropoff( beacon.GetOrigin() )
 	}
 	else
 	{
@@ -406,39 +404,51 @@ void function RespawnPlayersInDropship( array<entity> players, entity beacon )
 
 void function RespawnPlayersInDropshipAtPoint( array<entity> players, vector origin, vector angles )
 {
-	entity dropship = CreateEntity( "npc_dropship" )
-	SetSpawnOption_AISettings( dropship, "npc_dropship_respawn" )
-	SetTargetName( dropship, RESPAWN_DROPSHIP_TARGETNAME )
-	DispatchSpawn( dropship )
-	dropship.SetInvulnerable()
-	dropship.DisableHibernation()
-	EmitSoundOnEntity( dropship, "goblin_imc_evac_hover" )
-	thread JetwashFX( dropship )
+    entity dropship = CreateEntity( "npc_dropship" )
+    SetSpawnOption_AISettings( dropship, "npc_dropship_respawn" )
+    SetTargetName( dropship, RESPAWN_DROPSHIP_TARGETNAME )
+    DispatchSpawn( dropship )
+    dropship.SetInvulnerable()
+    dropship.DisableHibernation()
+    thread JetwashFX( dropship )
 
-	dropship.DisableGrappleAttachment()
+    dropship.DisableGrappleAttachment()
 
-	dropship.SetOrigin( origin )
-	dropship.SetAngles( angles )
-	Attachment attachResult = dropship.Anim_GetAttachmentAtTime( "dropship_classic_mp_flyin", "ORIGIN", 0.0 )
+    dropship.SetOrigin( origin )
+    dropship.SetAngles( angles )
+    Attachment attachResult = dropship.Anim_GetAttachmentAtTime( "dropship_classic_mp_flyin", "ORIGIN", 0.0 )
 
-	int i=0
-	foreach ( player in players )
-	{
-		if ( IsValid( player ) )
-		{
-			thread RespawnBeacon_PutPlayerInDropship( player, dropship, i, attachResult.position )
-		}
-		i++
-	}
+    int i = 0
+    foreach ( player in players )
+    {
+        if ( IsValid( player ) )
+        {
+            thread RespawnBeacon_PutPlayerInDropship( player, dropship, i, attachResult.position )
+        }
+        i++
+    }
 
-	EndSignal( dropship, "OnDestroy" )
+    EmitSoundOnEntity( dropship, "goblin_imc_evac_hover" )
+    EndSignal( dropship, "OnDestroy" )
 
-	thread PlayAnim( dropship, "dropship_classic_mp_flyin_idle", origin, angles )
-	dropship.MakeInvisible()
-	waitthread __WarpInEffectShared( attachResult.position, attachResult.angle, "dropship_warpin", 0.0 )
-	dropship.MakeVisible()
-	waitthread PlayAnim( dropship, "dropship_classic_mp_flyin", origin, angles )
-	dropship.Destroy()
+    // Fix anim bug with this of it getting weirdly teleported.
+    thread PlayAnim( dropship, "dropship_classic_mp_flyin_idle", origin, angles )
+
+    // Warp in now.
+    dropship.MakeInvisible()
+    waitthread __WarpInEffectShared( attachResult.position, attachResult.angle, "dropship_warpin", 0.0 )
+    dropship.MakeVisible()
+
+    thread PlayAnim( dropship, "dropship_classic_mp_flyin", origin, angles )
+
+    // Wait for correct time to warp out
+    wait dropship.GetSequenceDuration( "dropship_classic_mp_flyin" ) - 5
+
+    // Hide dropShip now and warpout.
+    dropship.Hide()
+    __WarpOutEffectShared( dropship )
+
+    dropship.Destroy()
 }
 
 void function RespawnPlayersInDropshipAtPointTDM( array<entity> players, vector origin, vector angles )

@@ -1340,13 +1340,13 @@ Point function GetClosestRespawnDropoff( vector baseOrigin )
 
 	int node = NavMeshNode_GetBestNodeForPos( baseOrigin, dataIndex, ANALYSIS_STEPS )
 
-	if( node < 0 )
-	{
-		if ( !IsTestMap() )
-			Warning( "AIN file does not contain any valid respawn dropoff point, please rebuild the AIN file." )
-		closestNodePoint.origin = baseOrigin
-		return closestNodePoint
-	}
+	// if( node < 0 )
+	// {
+		// if ( !IsTestMap() )
+			// Warning( "AIN file does not contain any valid respawn dropoff point, please rebuild the AIN file." )
+		// closestNodePoint.origin = baseOrigin
+		// return closestNodePoint
+	// }
 
 	array<int> validSlots = NavmeshNode_GetValidDataSlots( node, dataIndex, ANALYSIS_STEPS )
 	Assert( validSlots.len(), "NavMeshNode_GetBestNodeForPos(...) returned an node index that didn't have any valid slots" )
@@ -1359,7 +1359,7 @@ Point function GetClosestRespawnDropoff( vector baseOrigin )
 	// if it hit something, just move it up hopefully it will be clear
 	if ( !AnaylsisFuncLegalFlightPath( flightPath, closestNodePoint.origin, yaw ) )
 	{
-		closestNodePoint.origin += <0,0,5000>
+		closestNodePoint.origin += <0,0,1000>
 	}
 
 	return closestNodePoint
