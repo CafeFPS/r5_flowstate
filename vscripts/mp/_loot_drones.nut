@@ -94,7 +94,7 @@ void function GeneratePathAndSpawnFlyers()
 	
 	foreach(startPoint in startPoints)
 	{
-		array<entity> Amogus1
+		array<entity> Amogus
 		for(int i = 0; i < 50; i++)
 		{
 			float r = float(i) / float(50) * 2 * PI
@@ -109,16 +109,15 @@ void function GeneratePathAndSpawnFlyers()
 			amogus.SetAngles( Vector(0,0,0) )
 			DispatchSpawn( amogus )
 
-			Amogus1.reverse()
-			Amogus1.append( amogus )
+			Amogus.append( amogus )
 		}
 		
-		file.dronePaths.append( Amogus1 )
+		file.dronePaths.append( Amogus )
 	}
 	
 	FlagSet( "DronePathsInitialized" )
 	
-	SpawnFlyers(20)
+	SpawnFlyers(15)
 	printt( "FlyersPaths: generated paths ", file.dronePaths.len() )
 }
 
@@ -172,6 +171,13 @@ LootDroneData function Flyers_SpawnFlyerAtRandomPath()
 {
 	LootDroneData data
 	array<entity> path = FlyersOrLootDrones_GetRandomPath()
+	
+	//find a starting point in the path and sort the array
+	int startpoint = RandomInt(path.len())
+	array<entity> newArray = path.slice(startpoint, path.len())
+	newArray.extend(path.slice(0, startpoint))
+	path = newArray
+
 	entity startNode = path[0]
 
 	// Set path from this start node.
@@ -507,18 +513,19 @@ void function FlyerMove( LootDroneData data )
 			}
 		}
 	)
+	array< entity > path = data.path
 	
 	while(true)
 	{
 		
-		foreach(node in data.path)
+		foreach(node in path)
 		{
 			data.mover.NonPhysicsMoveTo( node.GetOrigin(), 3.5, 0, 0 )
 			data.mover.NonPhysicsRotateTo( VectorToAngles(  node.GetOrigin() -  data.mover.GetOrigin() ), 1.2, 0, 0 )
 
 			wait 3.5
 		}
-
+		path.reverse()
 	}
 }
 
