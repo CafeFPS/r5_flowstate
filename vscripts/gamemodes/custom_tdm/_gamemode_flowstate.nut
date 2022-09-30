@@ -797,12 +797,12 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	if(!IsValid( player ) || !IsAlive(player) ) return
 
 	
-	if(GetCurrentPlaylistVarBool("flowstateReloadUltimateOnRespawn", false ))
+	if(GetCurrentPlaylistVarBool("flowstateReloadTacticalOnRespawn", false ))
 	{
 		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 		tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
 	}
-	if(GetCurrentPlaylistVarBool("flowstateReloadTacticalOnRespawn", false ))
+	if(GetCurrentPlaylistVarBool("flowstateReloadUltimateOnRespawn", false ))
 	{	
 		entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 		ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
