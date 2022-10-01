@@ -390,7 +390,7 @@ void function _OnPlayerConnected(entity player)
 				{
 					_HandleRespawn(player)
 					ClearInvincible(player)
-					player.FreezeControlsOnServer()
+					player.UnfreezeControlsOnServer()
 				}
 			break
 			case eGameState.Playing:
@@ -798,18 +798,18 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 {
 	if(!IsValid( player ) || !IsAlive(player) ) return
 
-	
+
 	if(GetCurrentPlaylistVarBool("flowstateReloadTacticalOnRespawn", false ))
 	{
 		entity tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
 		tactical.SetWeaponPrimaryClipCount( tactical.GetWeaponPrimaryClipCountMax() )
 	}
 	if(GetCurrentPlaylistVarBool("flowstateReloadUltimateOnRespawn", false ))
-	{	
+	{
 		entity ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
 		ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
 	}
-	
+
 	if(IsValid( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
 	{
 		entity weapon = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
@@ -1488,7 +1488,7 @@ void function GiveGungameWeapon(entity player) {
 	int WeaponIndex = player.GetPlayerNetInt( "kills" )
 	int realweaponIndex = WeaponIndex
 	int MaxWeapons = 41
-	if (WeaponIndex > MaxWeapons) 
+	if (WeaponIndex > MaxWeapons)
 	{
         file.tdmState = eTDMState.NEXT_ROUND_NOW
 		foreach (sPlayer in GetPlayerArray())
@@ -1803,6 +1803,7 @@ if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
 if (FlowState_Timer()){
 SetGlobalNetInt( "currentDeathFieldStage", 0 )
 SetGlobalNetTime( "nextCircleStartTime", endTime )
+SetGlobalNetTime( "circleCloseTime", endTime + 8 )
 while( Time() <= endTime )
 	{
 		if(Time() == endTime-900)
