@@ -206,41 +206,40 @@ void function AddSurvivalCommentaryEvent( int event )
 
 int function GetRoundCommentaryBucket( string round )
 {
+	int roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND1
+
 	switch( round )
 	{
-		case "1":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND1
-			break
 		case "2":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND2
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND2
 			break
 		case "3":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND3
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND3
 			break
 		case "4":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND4
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND4
 			break
 		case "5":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND5
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND5
 			break
 		case "6":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND6
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND6
 			break
 		case "7":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND7
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND7
 			break
 		case "8":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND8
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND8
 			break
 		case "9":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND9
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND9
 			break
-		case "FINAL":
-			return eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
+		case "Final":
+			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
 			break
 	}
 
-	unreachable
+	return roundeNum
 }
 
 void function SurvivalCommentary_HostAnnounce( int commentaryBucket, float delay = 0, string responseName = "" )
