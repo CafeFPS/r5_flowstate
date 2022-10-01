@@ -154,13 +154,7 @@ void function Sequence_WaitingForPlayers()
 	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
 	{
 		entity champion = GetPlayerArray().getrandom()
-		SetGlobalNetInt( "championEEH", champion.GetEncodedEHandle() )
-		array<entity> championSquadMates = GetPlayerArrayOfTeam( champion.GetTeam() )
-		championSquadMates.fastremovebyvalue( champion )
-		if( championSquadMates.len() >= 1 )
-			SetGlobalNetInt( "championSquad1EEH", championSquadMates[0].GetEncodedEHandle() )
-		if( championSquadMates.len() >= 2 )
-			SetGlobalNetInt( "championSquad2EEH", championSquadMates[1].GetEncodedEHandle() )
+		SetChampion( champion )
 	}
 
 	if ( !introCountdownEnabled )

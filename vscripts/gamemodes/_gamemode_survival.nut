@@ -275,6 +275,8 @@ void function Sequence_WinnerDetermined()
 		Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == GetWinningTeam(), GetWinningTeam() )
 	}
 
+	SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER, 3.0 )
+
 	wait 15.0
 
 	thread Sequence_Epilogue()

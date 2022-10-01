@@ -6,7 +6,8 @@ global function AddSurvivalCommentaryEvent
 global function SurvivalCommentary_InitThreatChatterForPlayer
 global function SurvivalCommentary_OnThreatActivationBombardment
 global function SurvivalCommentary_OnThreatActivationGrenade
-global function SurvivalCommentary_PlaySoundForAllPlayers
+global function SurvivalCommentary_HostAnnounce
+global function SurvivalCommentary_HostAnnounceByName
 
 global function SetKillLeader
 global function GetKillLeader
@@ -23,7 +24,7 @@ void function SurvivalCommentary_Init()
 {
 	ShSurvivalCommentary_Init()
 
-	if ( !IsFiringRangeGameMode() && GameRules_GetGameMode() == SURVIVAL)
+	if ( !IsFiringRangeGameMode() && GameRules_GetGameMode() == SURVIVAL )
 		AddCallback_OnPlayerKilled( OnPlayerKilled )
 
 	FlagInit( "SurvivalCommentary_FirstBloodReached", false )
@@ -65,53 +66,21 @@ void function SetKillLeader( entity killLeader, int numKills, bool isCustom_TDM 
 	
 	if(!IsValid(killLeader)) return
 	
-	int killLeaderTeam = killLeader.GetTeam()
-	
-	if(!isCustom_TDM)
-		wait 1.0
-	
-	if(!IsValid(killLeader)) return
-	
 	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", killLeader, numKills )
-		
-	thread AddSurvivalCommentaryEvent( eSurvivalEventType.YOU_ARE_NEW_KILL_LEADER, killLeader )
-	
-	int maxTeams = GetCurrentPlaylistVarInt( "max_teams", MAX_TEAMS )
-	for ( int i = TEAM_MULTITEAM_FIRST; i < TEAM_MULTITEAM_FIRST + maxTeams; ++i )
-	{
-		if ( i == killLeaderTeam )
-			continue
 
-		entity speakingPlayer = TryFindSpeakingPlayerOnTeam( i )
-		if ( speakingPlayer != null )
-			PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, "bc_killLeaderNew" )
-	}
-
-	thread PlayDialogueForPlayer( "bc_iBecomeKillLeader", killLeader, killLeader )
-
-	array<entity> teamMembers = GetPlayerArrayOfTeam( killLeaderTeam )
-	teamMembers.fastremovebyvalue( killLeader )
-
-	foreach ( teamMember in teamMembers )
-		thread PlayDialogueForPlayer( "bc_squadmateBecomesKillLeader", teamMember, teamMember )
+	thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, 0, "bc_killLeaderNew" )
 }
 
 void function SetChampion( entity champion )
 {
-	file.currentChampion = champion
-	printt( "Setting champion to " + champion )
 	SetGlobalNetInt( "championEEH", champion.GetEncodedEHandle() )
-	array<entity> championteammates = GetPlayerArrayOfTeam( SurvivalCommentary_GetChampionTeam() )
-	championteammates.fastremovebyvalue( champion )
-
-	for( int i = 1; i <= championteammates.len(); i++ )
-	{
-		if( i >= 3 )
-			break
-
-		SetGlobalNetInt( "championSquad" + i + "EEH", championteammates[ i - 1 ].GetEncodedEHandle() )
-	}
+	array<entity> championSquadMates = GetPlayerArrayOfTeam( champion.GetTeam() )
+	championSquadMates.fastremovebyvalue( champion )
+	if( championSquadMates.len() >= 1 )
+		SetGlobalNetInt( "championSquad1EEH", championSquadMates[0].GetEncodedEHandle() )
+	if( championSquadMates.len() >= 2 )
+		SetGlobalNetInt( "championSquad2EEH", championSquadMates[1].GetEncodedEHandle() )
 }
 
 entity function GetChampion()
@@ -133,7 +102,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	{
 		if ( victim == file.currentKillLeader )
 		{
-			thread AddSurvivalCommentaryEvent( eSurvivalEventType.KILL_LEADER_ELIMINATED, attacker )
+			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, 1.0 )
 
 			foreach ( player in GetPlayerArray() )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
@@ -152,10 +121,10 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
 		if( victim == champion )
 		{
-		thread AddSurvivalCommentaryEvent( eSurvivalEventType.CHAMPION_ELIMINATED, attacker, victim )
+			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.CHAMPION_ELIMINATED, 1.0, "bc_championEliminated" )
 
-		foreach ( player in GetPlayerArray() )
-			Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.CHAMPION )
+			foreach ( player in GetPlayerArray() )
+				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.CHAMPION )
 		}
 	}
 	
@@ -164,7 +133,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
 		{
 			FlagSet( "SurvivalCommentary_FirstBloodReached" )
-			thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
+			thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD )
 		}
 	}
 }
@@ -203,13 +172,9 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 // 	29  PILOT_REVIVED,
 // 	30  SQUAD_ELIMINATED,
 // 	31  NO_KILLS_FOR_TIME,
-//	32  CHAMPION_ELIMINATED,
-//  33  KILL_LEADER_ELIMINATED,
-//  34  YOU_ARE_NEW_KILL_LEADER,
-//  35  WINNER_DECIDED
-// 	36  _count
+// 	32  _count
 
-void function AddSurvivalCommentaryEvent ( int event, entity player = null, entity victim = null )
+void function AddSurvivalCommentaryEvent( int event )
 {
 	#if DEVELOPER
 	string enumString = GetEnumString( "eSurvivalEventType", event )
@@ -217,199 +182,77 @@ void function AddSurvivalCommentaryEvent ( int event, entity player = null, enti
 	printt( FUNC_NAME(), "eSurvivalEventType:", enumString, event )
 	#endif
 
-
-	if ( GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" )
-	{	
-		switch( event )
-		{
-			case eSurvivalEventType.CIRCLE_MOVING:
-			//GetAnyDialogueAliasFromName( PickCommentaryLineFromBucket( eSurvivalCommentaryBucket.CIRCLE_MOVING ) )
-				thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_nocNotify_circleMoving_01_01_3p", 2))
-				break
-			case eSurvivalEventType.ROUND_TIMER_STARTED:
-				thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_circleTimerStartRound" + SURVIVAL_GetCurrentRoundString() + "_01_01_3p" )
-				break
-			case eSurvivalEventType.FIRST_BLOOD:
-				wait 1.5
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_diedFirst_01_01_3p" )
-				if( player == victim )
-					return
-
-				wait 5.8
-				if(!IsValid(player)) break
-					PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weTookFirstBlood" )
-				break
-            case eSurvivalEventType.CARE_PACKAGE_DROPPING:
-                thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_droppingCarePack_01_01_3p")
-                break;
-			case eSurvivalEventType.CHAMPION_ELIMINATED:
-				wait 1.5
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_championEliminated_01_01_3p" )
-				if( player == victim )
-					return
-
-				wait 4.0
-				if(!IsValid(player)) break
-				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weKilledChampion" )
-				break;
-			case eSurvivalEventType.KILL_LEADER_ELIMINATED:
-				wait 1.5
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_killLeaderEliminated_01_01_3p" )
-				if( player == victim )
-					return
-
-				wait 5.8
-				if(!IsValid(player)) break
-				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weKilledKillLeader" )
-				break;
-			case eSurvivalEventType.YOU_ARE_NEW_KILL_LEADER:
-				wait 1.5
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_nocNotify_killLeaderNew_01_01_3p" )
-
-				wait 5.5
-				if(!IsValid(player)) break
-				int killLeaderTeam = player.GetTeam()
-				array<entity> teamMembers = GetPlayerArrayOfTeam( killLeaderTeam )
-				teamMembers.fastremovebyvalue( player )
-
-				foreach ( teamMember in teamMembers )
-					thread PlayDialogueForPlayer( "bc_squadmateBecomesKillLeader", teamMember, teamMember )
-
-				int maxTeams = GetCurrentPlaylistVarInt( "max_teams", MAX_TEAMS )
-				for ( int i = TEAM_MULTITEAM_FIRST; i < TEAM_MULTITEAM_FIRST + maxTeams; ++i )
-				{
-					if ( i == killLeaderTeam )
-						continue
-
-					entity speakingPlayer = TryFindSpeakingPlayerOnTeam( i )
-					if ( speakingPlayer != null )
-						PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, "bc_killLeaderNew" )
-				}
-
-				if( player == victim )
-					return
-
-				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iBecomeKillLeader" )
-				break;
-
-			case eSurvivalEventType.WINNER_DECIDED:
-				wait 3.0
-				SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_nocNotify_winnerDecided_01_01_3p", 2) )
-				break
-		}
-	}
-
-	else
+	switch( event )
 	{
-		switch( event )
-		{
-			case eSurvivalEventType.CIRCLE_MOVING:
-				thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_aiNotify_circleMoving", 2))
-				break
-			case eSurvivalEventType.ROUND_TIMER_STARTED:
-				thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartRound" + SURVIVAL_GetCurrentRoundString() )
-				break
-			case eSurvivalEventType.CIRCLE_MOVES_10SEC:
-				thread SurvivalCommentary_PlaySoundForAllPlayers( SurvivalCommentary_GetAlternativeSound( "diag_ap_aiNotify_circleMoves10sec", 2))
-				break
-            case eSurvivalEventType.CARE_PACKAGE_DROPPING:
-                thread SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_droppingCarePack_01" )
-                break;
-			case eSurvivalEventType.FIRST_BLOOD:
-				wait 1.5
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_diedFirst_01" )
-				if( player == victim )
-					return
-
-				wait 4.0
-				if(!IsValid(player)) break
-				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weTookFirstBlood" )
-				break;
-			case eSurvivalEventType.CHAMPION_ELIMINATED:
-				wait 1.5
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_championEliminated_02" )
-				if( player == victim )
-					return
-
-				wait 4.8
-				if(!IsValid(player)) break
-				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weKilledChampion" )
-				break;
-			case eSurvivalEventType.KILL_LEADER_ELIMINATED:
-				wait 1.5
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderEliminated_02" )
-				if( player == victim )
-					return
-
-				wait 4.8
-				if(!IsValid(player)) break
-				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_weKilledKillLeader" )
-				break;
-			case eSurvivalEventType.YOU_ARE_NEW_KILL_LEADER:
-				wait 1.5
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderNew_02" )
-
-				wait 4.5
-				if(!IsValid(player)) break
-				int killLeaderTeam = player.GetTeam()
-				array<entity> teamMembers = GetPlayerArrayOfTeam( killLeaderTeam )
-				teamMembers.fastremovebyvalue( player )
-
-				int maxTeams = GetCurrentPlaylistVarInt( "max_teams", MAX_TEAMS )
-				for ( int i = TEAM_MULTITEAM_FIRST; i < TEAM_MULTITEAM_FIRST + maxTeams; ++i )
-				{
-					if ( i == killLeaderTeam )
-						continue
-
-					entity speakingPlayer = TryFindSpeakingPlayerOnTeam( i )
-					if ( speakingPlayer != null )
-						PlayBattleChatterLineToSpeakerAndTeam( speakingPlayer, "bc_killLeaderNew" )
-				}
-
-				if( player == victim )
-					return
-
-				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_iBecomeKillLeader" )
-
-				foreach ( teamMember in teamMembers )
-					thread PlayDialogueForPlayer( "bc_squadmateBecomesKillLeader", teamMember, teamMember )
-
-				break;
-
-			case eSurvivalEventType.WINNER_DECIDED:
-				wait 3.0
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_winnerFound" )
-		}
+		case eSurvivalEventType.CIRCLE_MOVING:
+			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.CIRCLE_MOVING, 0, "bc_circleMoving_allOutside" ) // We need to change the lines to match the distance of the ring
+			break
+		case eSurvivalEventType.ROUND_TIMER_STARTED:
+			thread SurvivalCommentary_HostAnnounce( GetRoundCommentaryBucket( SURVIVAL_GetCurrentRoundString() ), 0, "bc_insideNextCircle" ) // We need to change the lines to match the distance of the ring
+			break
+		case eSurvivalEventType.CIRCLE_MOVES_10SEC:
+			thread SurvivalCommentary_HostAnnounceByName( "", 0, "bc_circleMovesNag10Sec_close" )
+			break
+		case eSurvivalEventType.CARE_PACKAGE_DROPPING:
+			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.CARE_PACKAGE_DROPPING, 0, "bc_droppingCarePack" )
+			break;
+		case eSurvivalEventType.FIRST_BLOOD:
+			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.FIRST_BLOOD, 1.0, "bc_firstBlood" )
+			break;
 	}
-
-
+	// The announcer should only be the Revenant when the playlist is Shadow Falls
+	// Host type is changed to NOC during shadow fall
 }
 
-
-string function SurvivalCommentary_GetAlternativeSound( string sound, int max, int min = 0 )
+int function GetRoundCommentaryBucket( string round )
 {
-	int selection = RandomIntRange( min, max + 1 )
-
-	return sound + ( ( selection != 0 ) ? "_0" + selection : "" )
-}
-
-void function SurvivalCommentary_PlaySoundForAllPlayers( string sound )
-{
-	#if DEVELOPER
-	printt( FUNC_NAME(), "playing sound:", sound, "to all players" )
-	#endif
-
-	foreach( entity player in GetPlayerArray() )
+	switch( round )
 	{
-		thread EmitSoundAtPositionOnlyToPlayer( player.GetTeam(), player.GetOrigin() + <1000, 500, 1000>, player, sound )
-		thread EmitSoundAtPositionOnlyToPlayer( player.GetTeam(), player.GetOrigin() + <-5000, 500, -5000>, player, sound )
+		case "1":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND1
+			break
+		case "2":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND2
+			break
+		case "3":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND3
+			break
+		case "4":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND4
+			break
+		case "5":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND5
+			break
+		case "6":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND6
+			break
+		case "7":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND7
+			break
+		case "8":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND8
+			break
+		case "9":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND9
+			break
+		case "FINAL":
+			return eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
+			break
 	}
+
+	unreachable
 }
 
-void function SurvivalCommentary_PlaySoundForAllPlayersAfterDelay( string sound, float delay )
+void function SurvivalCommentary_HostAnnounce( int commentaryBucket, float delay = 0, string responseName = "" )
 {
-	wait delay
-	SurvivalCommentary_PlaySoundForAllPlayers( sound )
+	foreach( player in GetPlayerArray() )
+		PlayDialogueForPlayer( PickCommentaryLineFromBucket( commentaryBucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
+}
+
+void function SurvivalCommentary_HostAnnounceByName( string name, float delay = 0, string responseName = "" )
+{
+	foreach( player in GetPlayerArray() )
+		PlayDialogueForPlayer( name, player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
 }
 
 void function SurvivalCommentary_InitThreatChatterForPlayer ( entity player )

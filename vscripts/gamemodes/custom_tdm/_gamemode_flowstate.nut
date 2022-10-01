@@ -469,10 +469,11 @@ void function __HighPingCheck(entity player)
 
 void function DoubleAndTripleKillAudio(entity attacker)
 {
+	// sorry i will reimplement this later
 	if (!IsValid(attacker) || !attacker.p.isDownedEnemyRecently || attacker != GetKillLeader())
 		return
 
-	if( attacker.p.downedEnemyAtOneTime == 2 )
+	/* if( attacker.p.downedEnemyAtOneTime == 2 )
 	{
 		SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderDoubleKill_01" )
 	}
@@ -480,7 +481,7 @@ void function DoubleAndTripleKillAudio(entity attacker)
 	if( attacker.p.downedEnemyAtOneTime == 3)
 	{
 		SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderTripleKill_01" )
-	}
+	} */
 }
 
 void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
@@ -498,7 +499,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 				if ( victim == GetKillLeader() )
 				{
-					thread AddSurvivalCommentaryEvent( eSurvivalEventType.KILL_LEADER_ELIMINATED, attacker )
+					thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, 1.0 )
 
 					foreach ( player in GetPlayerArray() )
 						Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
@@ -595,7 +596,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	file.deathPlayersCounter++
 	if(file.deathPlayersCounter == 1 )
-		thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
+		thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD )
 
 	UpdatePlayerCounts()
 }
@@ -1731,7 +1732,8 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
 		else subtext = ""
 			Message(player, file.selectedLocation.name, subtext, 25, "")
-			SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartNext_02" )
+			//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartNext_02" )
+			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.BEGIN_ROUND1, 0 )
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -1747,7 +1749,8 @@ else{
 			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
 		else subtext = ""
 			Message(player, file.selectedLocation.name, subtext, 25, "")
-			SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartNext_02" )
+			//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartNext_02" )
+			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.BEGIN_ROUND1, 0 )
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -1856,7 +1859,7 @@ while( Time() <= endTime )
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
 					}
 				} */
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
+				//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
 			}
 			if(Time() == endTime-30)
 			{
@@ -1868,7 +1871,7 @@ while( Time() <= endTime )
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
 					}
 				} */
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
+				//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
 			}
 			if(Time() == endTime-10)
 			{
@@ -1880,7 +1883,7 @@ while( Time() <= endTime )
 						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
 					}
 				} */
-				SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
+				//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
 			}
 			if(file.tdmState == eTDMState.NEXT_ROUND_NOW){
 				printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
