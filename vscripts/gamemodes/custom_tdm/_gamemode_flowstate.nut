@@ -390,7 +390,7 @@ void function _OnPlayerConnected(entity player)
 				{
 					_HandleRespawn(player)
 					ClearInvincible(player)
-					player.UnfreezeControlsOnServer()
+					player.FreezeControlsOnServer()
 				}
 			break
 			case eGameState.Playing:
@@ -474,12 +474,12 @@ void function DoubleAndTripleKillAudio(entity attacker)
 
 	if( attacker.p.downedEnemyAtOneTime == 2 )
 	{
-		SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderDoubleKill" )
+		SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderDoubleKill_01" )
 	}
 
 	if( attacker.p.downedEnemyAtOneTime == 3)
 	{
-		SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderTripleKill" )
+		SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_killLeaderTripleKill_01" )
 	}
 }
 
@@ -504,7 +504,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 						Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
 				}
 
-	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ))
+	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer())
 				{
 					victim.FreezeControlsOnServer()
 	    			victim.SetObserverTarget( attacker )
