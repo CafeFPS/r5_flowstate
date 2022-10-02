@@ -660,9 +660,6 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	if ( canPlayerBeRespawned || droppableItems > 0 )
 		CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
-		
-	if( RandomInt( 100 ) >= 50 && attacker != victim )	
-		thread PlayBattleChatterLineDelayedToSpeakerAndTeam( attacker, "bc_iKilledAnEnemy", 2.0 )
 }
 
 void function OnClientConnected( entity player )
