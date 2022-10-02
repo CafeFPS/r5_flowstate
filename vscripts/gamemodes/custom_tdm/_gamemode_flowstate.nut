@@ -1793,8 +1793,7 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
 		else subtext = ""
 			Message(player, file.selectedLocation.name, subtext, 25, "")
-			//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartNext_02" )
-			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.BEGIN_ROUND1, 0 )
+			EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleTimerStartNext" )
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
@@ -1810,8 +1809,7 @@ else{
 			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
 		else subtext = ""
 			Message(player, file.selectedLocation.name, subtext, 25, "")
-			//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleTimerStartNext_02" )
-			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.BEGIN_ROUND1, 0 )
+			EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleTimerStartNext" )
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
