@@ -710,11 +710,10 @@ bool function Bleedout_IsThereAlivingMates( entity player )
 		return false
 
 	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
-	teamPlayers.fastremovebyvalue( player )
 	int downedPlayer = 0
 	foreach ( entity teamPlayer in teamPlayers )
 	{
-		if ( file.isBleeding[ teamPlayer ] || !Bleedout_GetSelfResEnabled( teamPlayer ) )
+		if ( file.isBleeding[ teamPlayer ] && !Bleedout_GetSelfResEnabled( teamPlayer ) )
 			downedPlayer += 1
 	}
 

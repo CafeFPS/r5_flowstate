@@ -596,8 +596,6 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 	
-	victim.FreezeControlsOnServer()
-	
 	if( attacker.IsPlayer() )
 	{
 		int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1

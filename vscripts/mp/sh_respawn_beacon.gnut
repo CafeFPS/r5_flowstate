@@ -1163,7 +1163,6 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 	
 	DecideRespawnPlayer( player )
 	ResetPlayerInventory( player )
-	player.FreezeControlsOnServer()
 	player.SetOrigin( ship.GetOrigin() )
 
 	thread FadePlayerView( player, 0.1, e )
@@ -1180,6 +1179,7 @@ void function RespawnBeacon_PutPlayerInDropship( entity player, entity ship, int
 
 	FallTempAirControl( player )
 	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_returnFromRespawn" )
+	DecideRespawnPlayer( player )
 }
 
 void function RespawnBeacon_PutPlayerInDropship2( entity player, entity ship, int pos, vector teleportOrigin )
