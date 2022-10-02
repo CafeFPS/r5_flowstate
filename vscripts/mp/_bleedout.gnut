@@ -704,20 +704,18 @@ void function CheckForTeamBleedout( int team )
 	}
 }
 
-bool function Bleedout_IsThereAlivingMates( entity player )
+bool function Bleedout_AreThereAlivingMates( entity player )
 {
 	if( Flag( "BleedoutDebug" ) )
-		return false
+		return true
 
-	array<entity> teamPlayers = GetPlayerArrayOfTeam( player.GetTeam() )
-	int downedPlayer = 0
-	foreach ( entity teamPlayer in teamPlayers )
+	foreach ( entity teamPlayer in GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ) )
 	{
-		if ( file.isBleeding[ teamPlayer ] && !Bleedout_GetSelfResEnabled( teamPlayer ) )
-			downedPlayer += 1
+		if ( !file.isBleeding[ teamPlayer ] || file.isBleeding[ teamPlayer ] && Bleedout_GetSelfResEnabled( teamPlayer ) )
+			return true
 	}
 
-	return downedPlayer == teamPlayers.len()
+	return false
 }
 
 bool function Bleedout_ShouldAIMissBleedingPlayer( entity player )
