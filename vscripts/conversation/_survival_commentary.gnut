@@ -194,7 +194,7 @@ void function AddSurvivalCommentaryEvent( int event )
 			thread SurvivalCommentary_CircleMovingAnnounce( eSurvivalCommentaryBucket.FINAL_CIRCLE_MOVING, 0 )
 			break
 		case eSurvivalEventType.ROUND_TIMER_STARTED:
-			thread SurvivalCommentary_CircleStartAnnounce( GetRoundCommentaryBucket( SURVIVAL_GetCurrentRoundString() ), 0 )
+			thread SurvivalCommentary_CircleStartAnnounce( GetRoundCommentaryBucket( SURVIVAL_GetCurrentDeathFieldStage() ), 0 )
 			break
 		case eSurvivalEventType.CIRCLE_MOVES_10SEC:
 			thread SurvivalCommentary_HostAnnounceByName( "", 0, "bc_circleMovesNag10Sec_close" )
@@ -210,37 +210,37 @@ void function AddSurvivalCommentaryEvent( int event )
 	// Host type is changed to NOC during shadow fall
 }
 
-int function GetRoundCommentaryBucket( string round )
+int function GetRoundCommentaryBucket( int round )
 {
 	int roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND1
 
 	switch( round )
 	{
-		case "2":
+		case 1:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND2
 			break
-		case "3":
+		case 2:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND3
 			break
-		case "4":
+		case 3:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND4
 			break
-		case "5":
+		case 4:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND5
 			break
-		case "6":
+		case 5:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND6
 			break
-		case "7":
+		case 6:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND7
 			break
-		case "8":
+		case 7:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND8
 			break
-		case "9":
+		case 8:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND9
 			break
-		case "Final":
+		case 9:
 			roundeNum = eSurvivalCommentaryBucket.BEGIN_ROUND_FINAL
 			break
 	}
@@ -274,7 +274,7 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 			insideNextCircleMates++
 		}
 		
-		if( SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates != GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).len() )
+		if( insideNextCircleMates != 0 && insideNextCircleMates != GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).len() )
 			responseName = "bc_newCircle_wholeSquadNotInCircle"
 		else if ( SURVIVAL_IsFinalDeathFieldStage() )
 			responseName = "bc_circleTimerStartFinal"
