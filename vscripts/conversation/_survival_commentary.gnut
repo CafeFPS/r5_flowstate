@@ -7,7 +7,7 @@ global function SurvivalCommentary_InitThreatChatterForPlayer
 global function SurvivalCommentary_OnThreatActivationBombardment
 global function SurvivalCommentary_OnThreatActivationGrenade
 global function SurvivalCommentary_HostAnnounce
-global function SurvivalCommentary_HostAnnounceByName
+global function SurvivalCommentary_KilledPlayerAnnounce
 
 global function SetKillLeader
 global function GetKillLeader
@@ -68,8 +68,6 @@ void function SetKillLeader( entity killLeader, int numKills, bool isCustom_TDM 
 	
 	foreach ( player in GetPlayerArray() )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", killLeader, numKills )
-
-	thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, 0, "bc_killLeaderNew" )
 }
 
 void function SetChampion( entity champion )
@@ -102,7 +100,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	{
 		if ( victim == file.currentKillLeader )
 		{
-			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, 1.0 )
+			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, attacker, 1.0, "", "bc_weKilledKillLeader" )
 
 			foreach ( player in GetPlayerArray() )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
@@ -113,7 +111,10 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 				&& attacker != file.currentKillLeader 
 				&& attackerKills >= GetMinKillsForKillLeader()
 			)
+		{
 			thread SetKillLeader( attacker, attackerKills )
+			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 1.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
+		}
 	}
 	
 	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
@@ -121,7 +122,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
 		if( victim == champion )
 		{
-			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.CHAMPION_ELIMINATED, 1.0, "bc_championEliminated" )
+			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.CHAMPION_ELIMINATED, attacker, 1.0, "bc_championEliminated", "bc_weKilledChampion" )
 
 			foreach ( player in GetPlayerArray() )
 				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.CHAMPION )
@@ -133,7 +134,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
 		{
 			FlagSet( "SurvivalCommentary_FirstBloodReached" )
-			thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD )
+			thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
 		}
 	}
 }
@@ -174,7 +175,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 // 	31  NO_KILLS_FOR_TIME,
 // 	32  _count
 
-void function AddSurvivalCommentaryEvent( int event )
+void function AddSurvivalCommentaryEvent( int event, entity attacker = null, entity victim = null )
 {
 	#if DEVELOPER
 	string enumString = GetEnumString( "eSurvivalEventType", event )
@@ -196,14 +197,11 @@ void function AddSurvivalCommentaryEvent( int event )
 		case eSurvivalEventType.ROUND_TIMER_STARTED:
 			thread SurvivalCommentary_CircleStartAnnounce( GetRoundCommentaryBucket( SURVIVAL_GetCurrentDeathFieldStage() ), 0 )
 			break
-		case eSurvivalEventType.CIRCLE_MOVES_10SEC:
-			thread SurvivalCommentary_HostAnnounceByName( "", 0, "bc_circleMovesNag10Sec_close" )
-			break
 		case eSurvivalEventType.CARE_PACKAGE_DROPPING:
 			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.CARE_PACKAGE_DROPPING, 0, "bc_droppingCarePack" )
 			break;
 		case eSurvivalEventType.FIRST_BLOOD:
-			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.FIRST_BLOOD, 1.0, "bc_firstBlood" )
+			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.FIRST_BLOOD, attacker, 1.0, "bc_firstBlood", "bc_weTookFirstBlood" )
 			break;
 	}
 	// The announcer should only be the Revenant when the playlist is Shadow Falls
@@ -252,12 +250,6 @@ void function SurvivalCommentary_HostAnnounce( int commentaryBucket, float delay
 {
 	foreach( player in GetPlayerArray_Alive() )
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( commentaryBucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
-}
-
-void function SurvivalCommentary_HostAnnounceByName( string name, float delay = 0, string responseName = "" )
-{
-	foreach( player in GetPlayerArray_Alive() )
-		thread PlayDialogueForPlayer( name, player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
 }
 
 void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
@@ -309,6 +301,24 @@ void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
 
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
 		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
+	}
+}
+
+void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer, float delay, string responseName = "", string killerMatesResponseName = "", string killerResponseName = "", bool shouldDistinctionResponse = false )
+{
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		if( killer == player && shouldDistinctionResponse )
+			thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, killerResponseName, player )
+		else if( killer.GetTeam() == player.GetTeam() )
+		{
+			array<entity> squadMates = GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() )
+			if( shouldDistinctionResponse )
+				squadMates.fastremovebyvalue( killer )
+
+			thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, killerMatesResponseName, squadMates.getrandom() )
+		} else
+			thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
 	}
 }
 
