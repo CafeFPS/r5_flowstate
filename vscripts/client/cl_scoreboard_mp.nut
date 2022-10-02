@@ -310,10 +310,8 @@ void function ScoreboardFadeOut()
 
 void function ShowScoreboardMP()
 {
-	// only allow the r2 scoreboard ui to show if the playlist var is enabled
-	if( !GetCurrentPlaylistVarBool( "scoreboard_enabled", false ) )
-		return
-
+	if(GameRules_GetGameMode() == SURVIVAL || GameRules_GetGameMode() == "custom_aimtrainer" ) return
+		
 	printf("[SB] %s - %s\n", FUNC_NAME(), GameRules_GetGameMode())
 	
 	foreach( void functionref() callbackFunc in file.scoreboardCallbacks_OnShowing)
