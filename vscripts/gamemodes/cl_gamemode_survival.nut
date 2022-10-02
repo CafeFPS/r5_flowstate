@@ -642,23 +642,13 @@ void function Cl_Survival_AddClient( entity player )
 	RuiSetBool( file.pilotRui, "isVisible", GetHudDefaultVisibility() )
 	RuiSetBool( file.pilotRui, "useShields", true )
 
-	#if(false)
-
-
-
-
-
-#endif
-
 	file.compassRui = CreatePermanentCockpitRui( $"ui/compass_flat.rpak", HUD_Z_BASE )
 	RuiTrackFloat3( file.compassRui, "playerAngles", player, RUI_TRACK_CAMANGLES_FOLLOW )
 	RuiTrackInt( file.compassRui, "gameState", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL_INT, GetNetworkedVariableIndex( "gameState" ) )
 
-	#if(PC_PROG)
-		if ( GetCurrentPlaylistVarBool( "pc_force_pushtotalk", false ) )
-			player.ClientCommand( "+pushtotalk" )
-	#endif //
-
+	if ( GetCurrentPlaylistVarBool( "pc_force_pushtotalk", false ) )
+		player.ClientCommand( "+pushtotalk" )
+	
 	SetConVarFloat( "dof_variable_blur", 0.0 )
 
 	WaitingForPlayersOverlay_Setup( player )
@@ -719,13 +709,19 @@ void function SURVIVAL_PopulatePlayerInfoRui( entity player, var rui )
 
 	OverwriteWithCustomPlayerInfoTreatment( player, rui )
 	
-	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	if(GameRules_GetGameMode() == "custom_aimtrainer" )
 	{
 		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <53, 222, 47> / 255.0 ), 1.0 )
 		RuiSetBool( rui, "useCustomCharacterColor", true )
 	}
+	
 	if(RGB_HUD)
 		thread RGBRui(rui)
+	
+	if( GameRules_GetGameMode() != "custom_tdm" ) return
+	
+	if ( IsControllerModeActive() )
+		player.ClientCommand( "controllerstate true")
 }
 
 void function RGBRui(var rui)
@@ -733,10 +729,7 @@ void function RGBRui(var rui)
 	entity player = GetLocalClientPlayer()
 	while(RGB_HUD)
 	{
-		int randomr = RandomInt(255)
-		int randomg = RandomInt(255) 
-		int randomb = RandomInt(255)	
-		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <randomr, randomg, randomb> / 255.0 ), 1.0 )	
+		RuiSetColorAlpha( rui, "customCharacterColor", SrgbToLinear( <RandomInt(255), RandomInt(255) , RandomInt(255)> / 255.0 ), 1.0 )	
 		wait 0.1
 	}
 }
@@ -766,7 +759,6 @@ void function OverwriteWithCustomPlayerInfoTreatment( entity player, var rui )
 	}
 }
 
-
 void function SetCustomPlayerInfoCharacterIcon( entity player, asset customIcon )
 {
 	if ( !(player in file.customCharacterIcon) )
@@ -776,7 +768,6 @@ void function SetCustomPlayerInfoCharacterIcon( entity player, asset customIcon 
 		RuiSetImage( file.pilotRui, "playerIcon", file.customCharacterIcon[player] )
 }
 
-
 void function SetCustomPlayerInfoTreatment( entity player, asset treatmentImage )
 {
 	if ( !(player in file.customPlayerInfoTreatment) )
@@ -785,7 +776,6 @@ void function SetCustomPlayerInfoTreatment( entity player, asset treatmentImage 
 	if ( file.pilotRui != null )
 		RuiSetImage( file.pilotRui, "customTreatment", file.customPlayerInfoTreatment[player] )
 }
-
 
 void function SetCustomPlayerInfoColor( entity player, vector characterColor )
 {
@@ -799,7 +789,6 @@ void function SetCustomPlayerInfoColor( entity player, vector characterColor )
 	}
 
 }
-
 
 vector function GetPlayerInfoColor( entity player )
 {
@@ -819,7 +808,6 @@ void function ClearCustomPlayerInfoColor( entity player )
 	}
 }
 
-
 void function OverrideHUDHealthFractions( entity player, float targetHealthFrac = -1, float targetShieldFrac = -1 )
 {
 	if ( targetHealthFrac < 0 )
@@ -833,37 +821,20 @@ void function OverrideHUDHealthFractions( entity player, float targetHealthFrac 
 		RuiSetFloat( file.pilotRui, "playerTargetShieldFrac", targetShieldFrac )
 }
 
-
 void function OverrideMinimapPackages( entity player )
 {
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.OBJECTIVE_AREA, MINIMAP_OBJECTIVE_AREA_RUI, MinimapPackage_ObjectiveAreaInit )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.FD_HARVESTER, MINIMAP_OBJECT_RUI, MinimapPackage_PlaneInit )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.AT_BANK, MINIMAP_OBJECT_RUI, MinimapPackage_MarkerInit )
 	RegisterMinimapPackage( "npc_titan", eMinimapObject_npc_titan.AT_BOUNTY_BOSS, MINIMAP_OBJECT_RUI, FD_NPCTitanInit )
-	#if(true)
-		#if(true)
-			RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.VAULT_KEY, MINIMAP_OBJECT_RUI, MinimapPackage_VaultKey )
-		#endif
-		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.VAULT_PANEL, MINIMAP_OBJECT_RUI, MinimapPackage_VaultPanel, FULLMAP_OBJECT_RUI, MinimapPackage_VaultPanel )
-		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.VAULT_PANEL_OPEN, MINIMAP_OBJECT_RUI, MinimapPackage_VaultPanelOpen, FULLMAP_OBJECT_RUI, MinimapPackage_VaultPanelOpen )
-	#endif
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.VAULT_KEY, MINIMAP_OBJECT_RUI, MinimapPackage_VaultKey )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.VAULT_PANEL, MINIMAP_OBJECT_RUI, MinimapPackage_VaultPanel, FULLMAP_OBJECT_RUI, MinimapPackage_VaultPanel )
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.VAULT_PANEL_OPEN, MINIMAP_OBJECT_RUI, MinimapPackage_VaultPanelOpen, FULLMAP_OBJECT_RUI, MinimapPackage_VaultPanelOpen )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.SURVEY_BEACON, MINIMAP_OBJECT_RUI, MinimapPackage_SurveyBeacon )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.HOVERTANK, MINIMAP_OBJECT_RUI, MinimapPackage_HoverTank )
 	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.HOVERTANK_DESTINATION, MINIMAP_OBJECT_RUI, MinimapPackage_HoverTankDestination )
-	#if(false)
-
-#endif
-	#if(true)
-		RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TRAIN, MINIMAP_OBJECT_RUI, MinimapPackage_Train )
-		//
-		//
-	#endif
-	#if(false)
-
-#endif
-
+	RegisterMinimapPackage( "prop_script", eMinimapObject_prop_script.TRAIN, MINIMAP_OBJECT_RUI, MinimapPackage_Train )
 }
-
 
 void function FD_NPCTitanInit( entity ent, var rui )
 {
@@ -871,13 +842,9 @@ void function FD_NPCTitanInit( entity ent, var rui )
 	RuiSetImage( rui, "clampedDefaultIcon", $"" )
 }
 
-
-#if(true)
 void function MinimapPackage_VaultPanel( entity ent, var rui )
 {
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/survival/data_knife_vault" )
-	//
-	//
 	RuiSetFloat3( rui, "iconColor", (GetKeyColor( COLORID_LOOT_TIER5 )/255.0) )
 	RuiSetImage( rui, "clampedDefaultIcon", $"" )
 	RuiSetBool( rui, "useTeamColor", false )
@@ -892,26 +859,16 @@ void function MinimapPackage_VaultPanelOpen( entity ent, var rui )
 	RuiSetImage( rui, "clampedDefaultIcon", $"" )
 	RuiSetBool( rui, "useTeamColor", false )
 }
-#endif
 
-
-#if(true)
 void function MinimapPackage_VaultKey( entity ent, var rui )
 {
-	//
-	//
-	//
 }
-#endif
-
-
 void function MinimapPackage_SurveyBeacon( entity ent, var rui )
 {
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/survival/survey_beacon_only_pathfinder" )
 	RuiSetImage( rui, "clampedDefaultIcon", $"" )
 	RuiSetBool( rui, "useTeamColor", false )
 }
-
 
 void function MinimapPackage_HoverTank( entity ent, var rui )
 {
@@ -920,7 +877,6 @@ void function MinimapPackage_HoverTank( entity ent, var rui )
 	RuiSetBool( rui, "useTeamColor", false )
 }
 
-
 void function MinimapPackage_HoverTankDestination( entity ent, var rui )
 {
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/survival/sur_hovertank_minimap_destination" )
@@ -928,50 +884,12 @@ void function MinimapPackage_HoverTankDestination( entity ent, var rui )
 	RuiSetBool( rui, "useTeamColor", false )
 }
 
-#if(false)
-
-
-
-
-
-
-#endif
-
-#if(true)
 void function MinimapPackage_Train( entity ent, var rui )
 {
 	RuiSetImage( rui, "defaultIcon", $"rui/hud/gametype_icons/sur_train_minimap" )
 	RuiSetImage( rui, "clampedDefaultIcon", $"" )
 	RuiSetBool( rui, "useTeamColor", false )
 }
-
-
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-#endif
-
-#if(false)
-
-
-
-
-
-//
-
-#endif
-
 
 void function MinimapPackage_MarkerInit( entity ent, var rui )
 {

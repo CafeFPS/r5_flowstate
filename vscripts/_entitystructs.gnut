@@ -677,6 +677,10 @@ global struct ServerPlayerStruct
 	int downedEnemyAtOneTime = 0
 	bool isDownedEnemyRecently = false
 	float last3dashtime = 0
+	entity lastFrameObservedTarget
+	bool AmIController = false	
+	bool comingFromSpectator = false
+	float lastTimeSpectateUsed = 0
 	
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
@@ -721,6 +725,7 @@ global struct ServerPlayerStruct
 
 	EditorMode& selectedEditorMode
 	EditorMode ornull lastEditorMode
+
 }
 
 global struct ChallengeScore

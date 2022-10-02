@@ -767,10 +767,9 @@ void function ClGameState_Changed()
 
 void function GameState_SpectatorTargetChanged( entity player, entity previousTarget, entity currentTarget )
 {
-	if ( IsValid( currentTarget ) )
-		UpdateGamestateRuiTracking( currentTarget )
-	else
-		UpdateGamestateRuiTracking( player )
+	UpdateGamestateRuiTracking( currentTarget )
+	UpdateGamestateRuiTracking( previousTarget )
+	UpdateGamestateRuiTracking( player )
 }
 
 void function SetGameModeSuddenDeathAnnouncementSubtext( string text )

@@ -20,7 +20,7 @@ bool function ClientCommand_KillSelf(entity player, array<string> args)
         return false
     }
 
-    player.SetHealth(0)
+    player.Die()
     return true
 }
 // PLAYLIST GET
