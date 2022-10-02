@@ -185,10 +185,16 @@ void function AddSurvivalCommentaryEvent( int event )
 	switch( event )
 	{
 		case eSurvivalEventType.CIRCLE_MOVING:
-			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.CIRCLE_MOVING, 0, "bc_circleMoving_allOutside" ) // We need to change the lines to match the distance of the ring
+			thread SurvivalCommentary_CircleMovingAnnounce( eSurvivalCommentaryBucket.CIRCLE_MOVING, 0 )
+			break
+		case eSurvivalEventType.CIRCLE_CLOSING_TO_NOTHING:
+			thread SurvivalCommentary_CircleMovingAnnounce( eSurvivalCommentaryBucket.CIRCLE_CLOSING_TO_NOTHING, 0 )
+			break
+		case eSurvivalEventType.FINAL_CIRCLE_MOVING:
+			thread SurvivalCommentary_CircleMovingAnnounce( eSurvivalCommentaryBucket.FINAL_CIRCLE_MOVING, 0 )
 			break
 		case eSurvivalEventType.ROUND_TIMER_STARTED:
-			thread SurvivalCommentary_HostAnnounce( GetRoundCommentaryBucket( SURVIVAL_GetCurrentRoundString() ), 0, "bc_insideNextCircle" ) // We need to change the lines to match the distance of the ring
+			thread SurvivalCommentary_CircleStartAnnounce( GetRoundCommentaryBucket( SURVIVAL_GetCurrentRoundString() ), 0 )
 			break
 		case eSurvivalEventType.CIRCLE_MOVES_10SEC:
 			thread SurvivalCommentary_HostAnnounceByName( "", 0, "bc_circleMovesNag10Sec_close" )
@@ -252,6 +258,58 @@ void function SurvivalCommentary_HostAnnounceByName( string name, float delay = 
 {
 	foreach( player in GetPlayerArray() )
 		PlayDialogueForPlayer( name, player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
+}
+
+void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
+{
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		string responseName
+		int insideNextCircleMates = 0
+		foreach( squadMates in GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ) )
+		{
+			if( !SURVIVAL_PosInSafeZone( squadMates.GetOrigin() ) )
+				continue
+			
+			insideNextCircleMates++
+		}
+		
+		if( SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates != GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).len() )
+			responseName = "bc_newCircle_wholeSquadNotInCircle"
+		else if ( SURVIVAL_IsFinalDeathFieldStage() )
+			responseName = "bc_circleTimerStartFinal"
+		else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= 45000 )
+			responseName = "bc_nextCircleFar"
+		else if( insideNextCircleMates == GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).len() )
+			responseName = "bc_insideNextCircle"
+
+		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+		PlayDialogueForPlayer( PickCommentaryLineFromBucket( round ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
+	}
+}
+
+void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
+{
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		string responseName
+		int insideNextCircleMates = 0
+		foreach( squadMates in GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ) )
+		{
+			if( !SURVIVAL_PosInSafeZone( squadMates.GetOrigin() ) )
+				continue
+			
+			insideNextCircleMates++
+		}
+		
+		if( SURVIVAL_IsFinalDeathFieldStage() )
+			responseName = "bc_circleClosingFinal"
+		else if( !SURVIVAL_PosInSafeZone( player.GetOrigin() ) && insideNextCircleMates == 0 )
+			responseName = "bc_circleMoving_allOutside"
+
+		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
+		PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
+	}
 }
 
 void function SurvivalCommentary_InitThreatChatterForPlayer ( entity player )
