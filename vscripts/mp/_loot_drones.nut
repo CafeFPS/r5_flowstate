@@ -117,7 +117,7 @@ void function GeneratePathAndSpawnFlyers()
 	
 	FlagSet( "DronePathsInitialized" )
 	
-	SpawnFlyers(15)
+	SpawnFlyers(10)
 	printt( "FlyersPaths: generated paths ", file.dronePaths.len() )
 }
 
@@ -179,14 +179,8 @@ LootDroneData function Flyers_SpawnFlyerAtRandomPath()
 	array<entity> path = FlyersOrLootDrones_GetRandomPath()
 	
 	//find a starting point in the path and sort the array of locations
-	int ornull startpoint = Flyers_GetBestStartNodeFromPath( path )
-	if ( startpoint == null )
-	{
-		startpoint = RandomInt(path.len())
-	}
+	int startpoint = Flyers_GetBestStartNodeFromPath( path )
 
-	expect int( startpoint )
-	
 	array<entity> newArray = path.slice(startpoint, path.len())
 	newArray.extend(path.slice(0, startpoint))
 	path = newArray
@@ -208,7 +202,7 @@ LootDroneData function Flyers_SpawnFlyerAtRandomPath()
 		model.SetMaxHealth( 100 )
 		model.SetHealth( 100 )
 		model.kv.modelscale = RandomFloatRange( 0.9, 1.1 )
-		model.SetSkin(RandomInt(2))
+		model.SetSkin(RandomInt(3))
 	} else if ( GetMapName() == "mp_rr_canyonlands_mu1_night")
 	{
 		model.SetSkin(3)
@@ -377,7 +371,7 @@ entity ornull function LootDrones_GetAvailableStartNodeFromPath( array<entity> p
 	return null
 }
 
-int ornull function Flyers_GetBestStartNodeFromPath( array<entity> path )
+int function Flyers_GetBestStartNodeFromPath( array<entity> path )
 {
 	table<entity, float> SpawnsAndNearestFlyer = {}
 
