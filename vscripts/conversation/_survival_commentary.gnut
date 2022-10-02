@@ -251,13 +251,13 @@ int function GetRoundCommentaryBucket( string round )
 void function SurvivalCommentary_HostAnnounce( int commentaryBucket, float delay = 0, string responseName = "" )
 {
 	foreach( player in GetPlayerArray() )
-		PlayDialogueForPlayer( PickCommentaryLineFromBucket( commentaryBucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( commentaryBucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
 }
 
 void function SurvivalCommentary_HostAnnounceByName( string name, float delay = 0, string responseName = "" )
 {
 	foreach( player in GetPlayerArray() )
-		PlayDialogueForPlayer( name, player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
+		thread PlayDialogueForPlayer( name, player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
 }
 
 void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
@@ -284,7 +284,7 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 			responseName = "bc_insideNextCircle"
 
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
-		PlayDialogueForPlayer( PickCommentaryLineFromBucket( round ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( round ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
 	}
 }
 
@@ -308,7 +308,7 @@ void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
 			responseName = "bc_circleMoving_allOutside"
 
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
-		PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, player )
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
 	}
 }
 
