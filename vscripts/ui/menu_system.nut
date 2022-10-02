@@ -236,7 +236,7 @@ void function UpdateSystemPanel( var panel )
 	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		Hud_SetText( dataCenterElem, "Flowstate Aim Trainer by @CafeFPS")
 	else
-		Hud_SetText( dataCenterElem, Localize( "#SYSTEM_DATACENTER", GetDatacenterName(), GetDatacenterPing() ) )
+		Hud_SetText( dataCenterElem, "R5Reloaded Server: " + MyPing() + " ms.")
 }
 
 void function SetButtonData( var panel, int buttonIndex, ButtonData buttonData )
