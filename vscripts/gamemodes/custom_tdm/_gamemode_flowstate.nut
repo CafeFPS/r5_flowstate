@@ -1872,79 +1872,76 @@ while( Time() <= endTime )
 	{
 		if(Time() == endTime-900)
 		{
-				/* foreach(player in GetPlayerArray())
+				foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
 						Message(player,"15 MINUTES REMAINING!","", 5)
 					}
-				} */
+				}
 			}
 			if(Time() == endTime-600)
 			{
-				/* foreach(player in GetPlayerArray())
+				foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
 						Message(player,"10 MINUTES REMAINING!","", 5)
 					}
-				} */
+				}
 			}
 			if(Time() == endTime-300)
 			{
-				/* foreach(player in GetPlayerArray())
+				foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
 						Message(player,"5 MINUTES REMAINING!","", 5)
 					}
-				} */
+				}
 			}
 			if(Time() == endTime-120)
 			{
-				/* foreach(player in GetPlayerArray())
+				foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
 						Message(player,"2 MINUTES REMAINING!","", 5)
 					}
-				} */
+				}
 			}
 			if(Time() == endTime-60)
 			{
-				/* foreach(player in GetPlayerArray())
+				foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
 						Message(player,"1 MINUTE REMAINING!","", 5, "")
-						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
+						EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleMoves60sec" )
 					}
-				} */
-				//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves60sec_01" )
+				}
 			}
 			if(Time() == endTime-30)
 			{
-				/* foreach(player in GetPlayerArray())
+				foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
 						Message(player,"30 SECONDS REMAINING!","", 5, "")
-						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
+						EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleMoves30sec" )
 					}
-				} */
-				//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves30sec_01" )
+				}
 			}
 			if(Time() == endTime-10)
 			{
-				/* foreach(player in GetPlayerArray())
+				foreach(player in GetPlayerArray())
 				{
 					if(IsValid(player))
 					{
 						Message(player,"10 SECONDS REMAINING!", "\n The battle is over.", 8, "")
-						SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
+						EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleMoves10sec" )
 					}
-				} */
-				//SurvivalCommentary_PlaySoundForAllPlayers( "diag_ap_aiNotify_circleMoves10sec_01" )
+				}
 			}
 			if(file.tdmState == eTDMState.NEXT_ROUND_NOW){
 				//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
