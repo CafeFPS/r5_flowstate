@@ -3015,13 +3015,16 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 //Auto-load TDM Saved Weapons at Respawn
 void function LoadCustomWeapon(entity player)
 {
-if (player.GetPlayerName() in weaponlist)
-{	print(weaponlist[player.GetPlayerName()])
-	ClientCommand( player, weaponlist[player.GetPlayerName()] )
-	wait 0.1
-	WpnAutoReloadOnKill(player)
-	thread WpnPulloutOnRespawn(player, 3)
-}
+	if (player.GetPlayerName() in weaponlist)
+	{	print(weaponlist[player.GetPlayerName()])
+		ClientCommand( player, weaponlist[player.GetPlayerName()] )
+		wait 0.1
+		
+		if(!IsValid(player)) return
+		
+		WpnAutoReloadOnKill(player)
+		thread WpnPulloutOnRespawn(player, 3)
+	}
 }
 
 
