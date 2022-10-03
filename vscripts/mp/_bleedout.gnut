@@ -152,7 +152,7 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 		thread EnablePlayerSelfRes( player )
 	
 	if ( Bleedout_GetDeathOnTeamBleedout( player ) )
-		CheckForTeamBleedout( player.GetTeam() )
+		thread CheckForTeamBleedout( player )
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_STARTBLEEDOUT, player, player.GetOrigin(), player.GetTeam(), player )
 }
@@ -684,34 +684,31 @@ void function PlayerDiesFromBleedout( entity player, entity attacker )
 
 //This function checks to see if all players on a team are dead or bleeding out.
 //If all the players are dead/bleeding out, it kills the surviving team players.
-void function CheckForTeamBleedout( int team )
+void function CheckForTeamBleedout( entity player )
 {
 	if( Flag( "BleedoutDebug" ) )
 		return
-	
-	array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
-	foreach ( entity teamPlayer in teamPlayers )
+
+	while( Bleedout_AreThereAlivingMates( player.GetTeam() ) )
 	{
-		if ( IsAlive( teamPlayer ) && !file.isBleeding[ teamPlayer ] || Bleedout_GetSelfResEnabled( teamPlayer ) )
-			return
+		WaitFrame()
 	}
 
-	//All players on team are bleeding out
-	foreach ( entity teamPlayer in teamPlayers )
-	{
-		if ( IsAlive( teamPlayer ) )
-			PlayerDiesFromBleedout( teamPlayer, file.lastAttacker[ teamPlayer ] )
-	}
+	PlayerDiesFromBleedout( player, file.lastAttacker[ player ] )
 }
 
-bool function Bleedout_AreThereAlivingMates( entity player )
+bool function Bleedout_AreThereAlivingMates( int team, entity player = null )
 {
 	if( Flag( "BleedoutDebug" ) )
 		return true
 
-	foreach ( entity teamPlayer in GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ) )
+	array<entity> teamPlayers = GetPlayerArrayOfTeam_AliveConnected( team )
+	if( player != null )
+		teamPlayers.fastremovebyvalue( player )
+	
+	foreach ( entity teamPlayer in teamPlayers )
 	{
-		if ( !file.isBleeding[ teamPlayer ] || file.isBleeding[ teamPlayer ] && Bleedout_GetSelfResEnabled( teamPlayer ) )
+		if ( !file.isBleeding[ teamPlayer ] || Bleedout_GetSelfResEnabled( teamPlayer ) )
 			return true
 	}
 
