@@ -11,6 +11,7 @@
 // AyeZee#6969 -- tdm/ffa dropships and droppods
 // Zer0Bytes#4428 -- rewrite
 // everyone else -- advice
+// Makimaki -- TDM Saved Weapon List
 
 global function _CustomTDM_Init
 global function _RegisterLocation
@@ -35,6 +36,9 @@ global function	ClientCommand_ShowLatency
 const string WHITE_SHIELD = "armor_pickup_lv1"
 const string BLUE_SHIELD = "armor_pickup_lv2"
 const string PURPLE_SHIELD = "armor_pickup_lv3"
+
+//TDM Saved Weapon List
+global table<string,string> weaponlist
 
 global bool isBrightWaterByZer0 = false
 global const float KILLLEADER_STREAK_ANNOUNCE_TIME = 5
@@ -154,6 +158,8 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("commands", ClientCommand_Help)
+	AddClientCommandCallback("saveguns", ClientCommand_SaveCurrentWeapons)
+	AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
 
 	AddClientCommandCallback("controllerstate", ClientCommand_ControllerReport)
 	AddClientCommandCallback("controllersummary", ClientCommand_ControllerSummary)
@@ -794,6 +800,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	if(!player.p.comingFromSpectator)
 		thread Flowstate_GrantSpawnImmunity(player, 2.5)
+		thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
 	
 	player.p.comingFromSpectator = false
 }
@@ -2970,4 +2977,61 @@ void function AnimationTiming( entity legend, float cycle )
 		legend.Anim_Play( animationStrings[RandomInt(animationStrings.len())] )
 		WaittillAnimDone(legend)
 	}
+}
+
+
+///Save TDM Current Weapons
+bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args)
+{	entity weapon1
+	entity weapon2
+	string optics1
+	string optics2
+	array<string> mods1 
+	array<string> mods2 
+	string weaponname1
+	string weaponname2
+	try
+	{
+		weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		mods1 = GetWeaponMods( weapon1 )
+		mods2 = GetWeaponMods( weapon2 )
+		foreach (mod in mods1)
+			optics1 = mod + " " + optics1
+		foreach (mod in mods2)
+			optics2 = mod + " " + optics2
+		weaponname1 = "tgive p "+weapon1.GetWeaponClassName()+" " + optics1 + "; "
+		weaponname2 = "tgive s "+weapon2.GetWeaponClassName()+" " + optics2
+	}
+	catch(error)
+	{}	
+	weaponlist[player.GetPlayerName()] <- weaponname1+weaponname2
+	// print(weaponname1)
+	// print(weaponname2)
+	return true
+}
+
+
+//Auto-load TDM Saved Weapons at Respawn
+void function LoadCustomWeapon(entity player)
+{
+if (player.GetPlayerName() in weaponlist)
+{	print(weaponlist[player.GetPlayerName()])
+	ClientCommand( player, weaponlist[player.GetPlayerName()] )
+	wait 0.1
+	WpnAutoReloadOnKill(player)
+	thread WpnPulloutOnRespawn(player, 3)
+}
+}
+
+
+//Reset TDM Saved Weapons
+bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
+{	
+	if (!IsValid(player)) return false
+	if (player.GetPlayerName() in weaponlist)
+	{
+		delete weaponlist[player.GetPlayerName()]
+	}
+	return true
 }
