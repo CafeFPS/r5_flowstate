@@ -2,6 +2,7 @@ global function Sh_Airdrops_Init
 
 #if SERVER
 global function AirdropSpawnThink
+global function AirdropForRound
 #endif
 
 const bool DEBUG_DROP_POINTS = false
@@ -169,5 +170,27 @@ void function SignalOpenAirdrop( entity ent, entity player, ExtendedUseSettings 
 }
 
 #if SERVER
+void function AirdropForRound( vector position, vector angles, int round, entity idkWhatIsThis )
+{
+    if( calculatedAirdropData.len() < round || calculatedAirdropData.len() == 0 )
+    {
+        printt( "Airdrop of round " + ( round + 1 ) + " does not exist" )
+        return
+    }
 
+    AirdropData data = calculatedAirdropData[ round ]
+
+    //Got data for this stage so let's start to spawn the airdrops
+    int numAirdropsInData = data.dropCount
+    
+    //Play the announcement
+    AddSurvivalCommentaryEvent(eSurvivalEventType.CARE_PACKAGE_DROPPING)
+    
+    for(int i = 0; i < numAirdropsInData; i++)
+    {
+        entity fx = StartParticleEffectInWorld_ReturnEntity(GetParticleSystemIndex( DROPPOD_SPAWN_FX ), position, angles)
+
+        thread AirdropItems( position, angles, data.contents[i], fx, "droppod_loot_drop", null, 0, "" )
+    }
+}
 #endif
