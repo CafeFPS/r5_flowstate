@@ -361,7 +361,7 @@ void function _OnPlayerConnected(entity player)
 	else if (FlowState_Gungame())
 	    Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands. ", 10)
 	else
-	    Message(player, "FLOWSTATE: FFA/TDM", "Type 'commands' in console to see the available console commands. ", 10)
+	    Message(player, "FLOWSTATE: DM", "Type 'commands' in console to see the available console commands. ", 10)
 
 	if(IsValid(player))
 	{
@@ -703,7 +703,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 
 	if( IsValid( player ) && IsAlive(player))
 	{
-		printt("solo desde player connected")
 		if(!isDroppodSpawn)
 		    TpPlayerToSpawnPoint(player)
 
@@ -2010,7 +2009,7 @@ foreach(player in GetPlayerArray())
 		if(!IsValid(player)) continue
 		
 		AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-		Message(player,"- ROUND SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n Flowstate " + file.scriptversion + " by CaféDeColombiaFPS.", 7, "UI_Menu_RoundSummary_Results")
+		Message(player,"- ROUND SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n          Custom_tdm made by sal#3261.\n     Flowstate DM " + file.scriptversion + " made by @CafeFPS.", 7, "UI_Menu_RoundSummary_Results")
 	}
 
 wait 7
@@ -2713,7 +2712,7 @@ bool function ClientCommand_Help(entity player, array<string> args)
 		{
 			Message(player, "Apex SURF", "", 5)
 		} else{
-			Message(player, "WELCOME TO FLOWSTATE: FFA/TDM", helpMessage(), 10)
+			Message(player, "WELCOME TO FLOWSTATE: DM", helpMessage(), 10)
 		}
 	}
 	return true
