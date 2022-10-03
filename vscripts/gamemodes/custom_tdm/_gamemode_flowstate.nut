@@ -158,9 +158,13 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("commands", ClientCommand_Help)
-	AddClientCommandCallback("saveguns", ClientCommand_SaveCurrentWeapons)
-	AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
-
+	
+	if(!FlowState_AdminTgive())
+	{
+		AddClientCommandCallback("saveguns", ClientCommand_SaveCurrentWeapons)
+		AddClientCommandCallback("resetguns", ClientCommand_ResetSavedWeapons)
+	}
+	
 	AddClientCommandCallback("controllerstate", ClientCommand_ControllerReport)
 	AddClientCommandCallback("controllersummary", ClientCommand_ControllerSummary)
 
