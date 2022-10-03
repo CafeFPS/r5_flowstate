@@ -14,6 +14,8 @@ global function GetKillLeader
 global function SetChampion
 global function GetChampion
 
+global const float CIRCLE_FAR_DISTANCE = 35000
+
 struct {
 	int currentKillLeaderKillAmount = 0
 	entity currentKillLeader = null
@@ -270,7 +272,7 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 			responseName = "bc_newCircle_wholeSquadNotInCircle"
 		else if ( SURVIVAL_IsFinalDeathFieldStage() )
 			responseName = "bc_circleTimerStartFinal"
-		else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= 45000 )
+		else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= CIRCLE_FAR_DISTANCE )
 			responseName = "bc_nextCircleFar"
 		else if( insideNextCircleMates == GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).len() )
 			responseName = "bc_insideNextCircle"
