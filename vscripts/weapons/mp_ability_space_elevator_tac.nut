@@ -360,7 +360,7 @@ void function LiftWatcher( entity bottom, entity top, vector pos)
 	
 	
 	while( Time() <= endTime && IsValid(bottom) )
-		wait 1
+		WaitFrame()
 }
 
 void function PlayerOnLiftMovement(entity bottom, entity player)
@@ -426,8 +426,8 @@ void function FallTempAirControl( entity player )
 	StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_AirborneMvmt_3p" )
 	player.kv.gravity = 1.0
-	player.kv.airSpeed = 200
-	player.kv.airAcceleration = 800
+	player.kv.airSpeed = 80 //horizon value
+	player.kv.airAcceleration = 800 //horizon value
 	RemovePlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
 	AddPlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
 	player.kv.landslowdownduration = 0//doesn't work
