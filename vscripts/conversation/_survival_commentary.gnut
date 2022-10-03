@@ -308,17 +308,29 @@ void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer
 {
 	foreach( player in GetPlayerArray_Alive() )
 	{
+		string selectedResponseName
+		entity responsePlayer
+
 		if( killer == player && shouldDistinctionResponse )
-			thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, killerResponseName, player )
+		{
+			selectedResponseName = killerResponseName
+			responsePlayer = player
+		}
 		else if( killer.GetTeam() == player.GetTeam() )
 		{
 			array<entity> squadMates = GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() )
 			if( shouldDistinctionResponse )
 				squadMates.fastremovebyvalue( killer )
 
-			thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, killerMatesResponseName, squadMates.getrandom() )
+			selectedResponseName = killerMatesResponseName
+			responsePlayer = squadMates.getrandom()
 		} else
-			thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom() )
+		{
+			selectedResponseName = responseName
+			responsePlayer = GetPlayerArrayOfTeam_AliveConnected( player.GetTeam() ).getrandom()
+		}
+
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, selectedResponseName, responsePlayer )
 	}
 }
 
