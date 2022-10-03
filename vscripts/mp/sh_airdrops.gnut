@@ -170,7 +170,7 @@ void function SignalOpenAirdrop( entity ent, entity player, ExtendedUseSettings 
 }
 
 #if SERVER
-void function AirdropForRound( vector position, vector angles, int round, entity idkWhatIsThis )
+void function AirdropForRound( vector position, vector angles, int round, entity ent )
 {
     if( calculatedAirdropData.len() < round || calculatedAirdropData.len() == 0 )
     {
