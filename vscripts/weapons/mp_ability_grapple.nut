@@ -389,7 +389,6 @@ void function Grapple_OnPlayerStartBleedout( entity player, entity attacker, var
 
 void function GrappleNPCCallback( entity player, entity hitent, vector hitpos, vector hitNormal )
 {
-	const GRAPPLE_DAMAGE = 100
 	const enablePlanting = true
 
 	hitent.EndSignal( "OnDestroy" )
@@ -399,7 +398,10 @@ void function GrappleNPCCallback( entity player, entity hitent, vector hitpos, v
 
 	if ( hitent.IsNPC() && IsAlive( hitent ) && IsHumanSized( hitent ) )
 	{
-		PlayGrappleAttachedAnimation( player, "ptpov_cloudcity_grapple_switch_quick" )
+		//Fix crash if player is using buggy dummie model
+		if(player.GetModelName() != $"mdl/humans/class/medium/pilot_medium_generic.rmdl")
+			PlayGrappleAttachedAnimation( player, "ptpov_cloudcity_grapple_switch_quick" )
+
 		string ReleaseACT
 		if ( hitent.Anim_HasActivity( "ACT_FLINCH_GRAPPLE" ) )
 		{
@@ -438,7 +440,6 @@ void function GrappleNPCCallback( entity player, entity hitent, vector hitpos, v
 			player.Grapple( < 0, 0, 0 > )
 		vector forceVec = Normalize( player.EyePosition() - hitent.GetCenter() ) // towards the player since we are pulling on the rope
 		entity grappleWeapon = player.GetGrappleWeapon()
-		hitent.TakeDamage( GRAPPLE_DAMAGE, player, null, { force = forceVec, weapon = grappleWeapon } )
 	}
 }
 
