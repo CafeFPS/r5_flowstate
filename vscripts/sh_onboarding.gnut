@@ -558,10 +558,6 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 
 	Remote_CallFunction_NonReplay( victim, "ServerCallback_YouDied", attacker, GetHealthFrac( victim ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
-
-	victim.SetObserverTarget( null )
-	
-    victim.StartObserverMode( OBS_MODE_DEATHCAM )
 }
 
 void function OnClientConnected( entity player )

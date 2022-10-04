@@ -1569,6 +1569,11 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
     // If player is holding the flag on death try to drop flag at current loaction
     CheckPlayerForFlag(victim)
 
+    if( victim.GetObserverTarget() != null )
+		victim.SetObserverTarget( null )
+
+	victim.StartObserverMode( OBS_MODE_DEATHCAM )
+
     switch(GetGameState())
     {
     case eGameState.Playing:
