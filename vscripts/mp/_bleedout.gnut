@@ -677,13 +677,9 @@ bool function Bleedout_AreThereAlivingMates( int team, entity player = null )
 	if( Flag( "BleedoutDebug" ) )
 		return true
 
-	array<entity> teamPlayers = GetPlayerArrayOfTeam_AliveConnected( team )
-	if( player != null )
-		teamPlayers.fastremovebyvalue( player )
-	
-	foreach ( entity teamPlayer in teamPlayers )
+	foreach ( entity teamPlayer in GetPlayerArrayOfTeam( team ) )
 	{
-		if ( !file.isBleeding[ teamPlayer ] || Bleedout_GetSelfResEnabled( teamPlayer ) )
+		if ( !file.isBleeding[ teamPlayer ] && teamPlayer != player || Bleedout_GetSelfResEnabled( teamPlayer ) )
 			return true
 	}
 
