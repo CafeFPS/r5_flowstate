@@ -438,7 +438,7 @@ bool function UICodeCallback_LevelLoadingStarted( string levelname )
 // Return true to show load screen, false to not show load screen.
 bool function UICodeCallback_UpdateLoadingLevelName( string levelname )
 {
-	printt( "UICodeCallback_UpdateLoadingLevelName: " + levelname )
+	//printt( "UICodeCallback_UpdateLoadingLevelName: " + levelname )
 
 	#if CONSOLE_PROG
 		if ( !Console_IsSignedIn() )
