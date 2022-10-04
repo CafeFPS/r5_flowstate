@@ -528,7 +528,7 @@ void function RegisterCustomWeapons()
 
 bool function IsCustomAttachment(LootData data)
 {
-	printt(data.ref)
+	//printt(data.ref)
 	foreach (CustomHopupData d in file.customHopups)
 	{
 		if (d.className == data.ref) return true
@@ -841,7 +841,7 @@ array<LootData> function SURVIVAL_Loot_GetByTier( int tier )
 		if ( SURVIVAL_Loot_IsRefDisabled( lootData.ref ) )
 			continue
 
-		printt( lootData.ref )
+		//printt( lootData.ref )
 
 		lootOfTier.append( lootData )
 	}

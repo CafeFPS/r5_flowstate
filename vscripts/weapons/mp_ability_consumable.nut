@@ -299,7 +299,7 @@ void function OnClientConnected( entity player )
 	file.playerHealResourceIds[player] <- []
 
 	#if SERVER
-	printt("OnClientConnected SERVER")
+	//printt("OnClientConnected SERVER")
 	file.playerToNextMod[player] <- "phoenix_kit"
 	#endif
 }

@@ -1475,7 +1475,7 @@ bool function ShouldPlayerHaveLossProtection( entity player )
 // Any client hud initialization should be done here
 function FinishClientScriptInitialization( entity player )
 {
-	printt( "Player client script initialization complete: " + player );
+	//printt( "Player client script initialization complete: " + player );
 
 	player.p.clientScriptInitialized = true
 

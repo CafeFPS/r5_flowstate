@@ -1200,7 +1200,7 @@ void function InstanceLocationPing( entity wp )
 	entity wpParent = wp.GetParent()
 	if ( viewPlayer == wpParent && pingType == ePingType.BLEEDOUT )
 	{
-		printf( "Ping: Skipping drawing bleedout ping %s for parent entity %s", string( wp ), string( wpParent ) )
+		//printf( "Ping: Skipping drawing bleedout ping %s for parent entity %s", string( wp ), string( wpParent ) )
 		return
 	}
 

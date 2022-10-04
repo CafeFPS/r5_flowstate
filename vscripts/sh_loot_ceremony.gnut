@@ -1077,9 +1077,9 @@ void function LootCeremonyOnFullUpdate()
 	if ( !IsLootCeremonyActive() && !IsSpecialItemPresentationModeActive() )
 		return
 
-	printt( "#################" )
-	printf( "%s() ", FUNC_NAME() )
-	printt( "#################" )
+	//printt( "#################" )
+	//printf( "%s() ", FUNC_NAME() )
+	//printt( "#################" )
 
 	entity localClientPlayer = GetLocalClientPlayer()
 	if ( IsValid( localClientPlayer ) && IsValid( fileLevel.cameraEnt ) )

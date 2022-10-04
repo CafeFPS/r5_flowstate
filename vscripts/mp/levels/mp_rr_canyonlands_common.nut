@@ -90,7 +90,7 @@ void function Canyonlands_MapInit_Common()
 	if(GameRules_GetGameMode() == "custom_tdm" )
 		return
 
-	printt( "Canyonlands_MapInit_Common" )
+	//printt( "Canyonlands_MapInit_Common" )
 
 	PrecacheModel( LEVIATHAN_MODEL )
 	//PrecacheModel( FLYER_SWARM_MODEL )

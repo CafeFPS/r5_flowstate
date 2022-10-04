@@ -715,7 +715,7 @@ bool function IsAttachmentCompatibleWithCustomWeapon(LootData weapon, Attachment
 	// but that isn't necessarily bad.
 	array<string> mods = GetWeaponMods_Global( weapon.baseWeapon )
 	if (!mods.contains(att.ref)) return false
-	printt(att.ref, "|", att.attachPoint, "|", weapon.ref)
+	//printt(att.ref, "|", att.attachPoint, "|", weapon.ref)
 	if (!weapon.supportedAttachments.contains( att.attachPoint )) {
 		// Allows adding  attachment slots to normal weapons if attachments are compatible.
 		// Means that certain weapons will have barrels added to them if a custom barrel is compatible.
