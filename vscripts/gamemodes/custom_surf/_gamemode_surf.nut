@@ -355,6 +355,7 @@ entity function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = 
 	e.kv.rendermode = 3
 	e.kv.rendercolor = "255 255 255 255"
 	if(mantle) e.AllowMantle()
+	e.SetScriptName("editor_placed_prop")
     surf.playerSpawnedProps.append(e)
 	return e
 }
