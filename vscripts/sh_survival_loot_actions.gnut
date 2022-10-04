@@ -102,7 +102,7 @@ void function SURVIVAL_LootActions_InitShared()
 
 	Assert( file.lootActionData.len() == eLootAction._count )
 
-	printf("###### LOOT ITEMS REGISTERED ######")
+	//printf("###### LOOT ITEMS REGISTERED ######")
 
 }
 

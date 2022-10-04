@@ -1158,6 +1158,30 @@ while(IsValid(dummy))
 	}
 }
 
+void function DEV_SpawnSpiderAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity spider = CreateSpider( 99, origin, angles )
+
+	DispatchSpawn( spider )
+}
+
+void function DEV_SpawnInfectedSoldierAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity Infected = CreateInfected( 99, origin, angles )
+
+	DispatchSpawn( Infected )
+}
+
 void function DEV_SpawnExplosiveTickAtCrosshair()
 {
 	entity player = GetPlayerArray()[ 0 ]

@@ -476,7 +476,7 @@ void function CodeCallback_PingCommandUsePrompt( entity player, int pingType, ve
 	float dist = Distance( player.GetOrigin(), pingOrigin )
 	if ( dist > 1000.0 )
 	{
-		printf( "%s() - given point %s is too far away (%.1f) from calling player %s at %s.", FUNC_NAME(), string( pingOrigin ), dist, string( player), string( player.GetOrigin() ) )
+		//printf( "%s() - given point %s is too far away (%.1f) from calling player %s at %s.", FUNC_NAME(), string( pingOrigin ), dist, string( player), string( player.GetOrigin() ) )
 		return
 	}
 
@@ -543,7 +543,7 @@ PingTraceResults function DoPingTrace( entity player )
 	result.tr = tr
 
 	#if DEVELOPER
-		printf( "PING (%s) -  Dist:%.1f, %s, pos:%s, norm:%s, contents:0x%x", (IsServer() ? "SERVER" : "CLIENT"), result.hitDist, (IsValid( result.hitEnt ) ? ("[" + result.hitEnt + "]   '" + result.hitEnt.GetScriptName() + "'") : ""), string( tr.endPos ), string( tr.surfaceNormal ), tr.contents )
+		//printf( "PING (%s) -  Dist:%.1f, %s, pos:%s, norm:%s, contents:0x%x", (IsServer() ? "SERVER" : "CLIENT"), result.hitDist, (IsValid( result.hitEnt ) ? ("[" + result.hitEnt + "]   '" + result.hitEnt.GetScriptName() + "'") : ""), string( tr.endPos ), string( tr.surfaceNormal ), tr.contents )
 	#endif
 
 	return result
@@ -2149,7 +2149,7 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player,
 			entity drone = GetLootDroneForHitEnt( processedHitEnt )
 			if ( IsValid( drone ) )
 			{
-				printf( "LootDronePingDebug: Pinged a Loot Drone" )
+				//printf( "LootDronePingDebug: Pinged a Loot Drone" )
 				result.hitEnt = drone
 				result.pingType = ePingType.LOOT_DRONE
 
@@ -2167,13 +2167,13 @@ PingCommandParams function GetPingParamsForHitEnt( entity hitEnt, entity player,
 
 				if ( IsValid( drone ) )
 				{
-					printf( "LootDronePingDebug: Pinged a parented Loot Roller. Returning Loot Drone" )
+					//printf( "LootDronePingDebug: Pinged a parented Loot Roller. Returning Loot Drone" )
 					result.hitEnt = drone
 					result.pingType = ePingType.LOOT_DRONE
 				}
 				else
 				{
-					printf( "LootDronePingDebug: Pinged an unparented Loot Roller." )
+					//printf( "LootDronePingDebug: Pinged an unparented Loot Roller." )
 					result.hitEnt = roller
 					result.pingType = ePingType.LOOT_ROLLER
 				}
@@ -3028,7 +3028,7 @@ void function ClientCommand_PingMapWaypoint( entity player, array<string> args )
 
 	if ( !IsAlive( player ) )
 	{
-		printf( "%s() - Ignoring ping from dead player: '%s'.", FUNC_NAME(), string( player ) )
+		//printf( "%s() - Ignoring ping from dead player: '%s'.", FUNC_NAME(), string( player ) )
 		return
 	}
 
@@ -3048,7 +3048,7 @@ void function ClientCommand_PingMapWaypoint( entity player, array<string> args )
 		TraceResults result = TraceLine( <newX, newY, 10000.0>, <newX, newY, -10000.0>, [], TRACE_MASK_BLOCKLOS, TRACE_COLLISION_GROUP_NONE )
 		if ( result.hitSky || (result.fraction > 0.99) )
 		{
-			printf( "%s() - Trace-down ping at (%d, %d) --> (%.2f, %.2f) failed for player '%s'.", FUNC_NAME(), posX, posY, newX, newY, string( player ) )
+			//printf( "%s() - Trace-down ping at (%d, %d) --> (%.2f, %.2f) failed for player '%s'.", FUNC_NAME(), posX, posY, newX, newY, string( player ) )
 			return
 		}
 		origin = result.endPos
@@ -3093,7 +3093,7 @@ void function ClientCommand_PingNewLoot( entity player, array<string> args )
 
 	if ( !IsAlive( player ) )
 	{
-		printf( "%s() - Ignoring ping from dead player: '%s'.", FUNC_NAME(), string( player ) )
+		//printf( "%s() - Ignoring ping from dead player: '%s'.", FUNC_NAME(), string( player ) )
 		return
 	}
 
@@ -3131,7 +3131,7 @@ void function ClientCommand_PingReply( entity player, array<string> args )
 
 	if ( !IsAlive( player ) )
 	{
-		printf( "%s() - Ignoring ping reply from dead player: '%s'.", FUNC_NAME(), string( player ) )
+		//printf( "%s() - Ignoring ping reply from dead player: '%s'.", FUNC_NAME(), string( player ) )
 		return
 	}
 
@@ -3151,7 +3151,7 @@ void function ClientCommand_PingReply( entity player, array<string> args )
 	int pingReply               = int( args[1] )
 	ReplyCommsActionInfo caInfo = Ping_GetCommsActionForWaypointReply( player, wp, pingReply )
 
-	printf( "Ping Reply from '%s' - reply type #%d on '%s'", string( player), pingReply, string( wp ) )
+	//printf( "Ping Reply from '%s' - reply type #%d on '%s'", string( player), pingReply, string( wp ) )
 	bool didAnything         = false
 	entity commSubjectEnt    = player
 	vector commSubjectOrigin = player.GetOrigin()
@@ -3233,7 +3233,7 @@ void function ClientCommand_CancelPingByTicketID( entity player, array<string> a
 
 	if ( !IsAlive( player ) )
 	{
-		printf( "%s() - Ignoring ping cancel from dead player: '%s'.", FUNC_NAME(), string( player ) )
+		//printf( "%s() - Ignoring ping cancel from dead player: '%s'.", FUNC_NAME(), string( player ) )
 		return
 	}
 

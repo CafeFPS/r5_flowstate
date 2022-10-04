@@ -1,0 +1,98 @@
+#base "npc_dummie_combat.txt"
+npc_soldier_infected
+{
+    AIClass                         soldier_infected
+
+	title							#NPC_SOLDIER_INFECTED
+	TraverseAnimType				spectre
+	DefaultWeapon					""
+
+	ui_targetinfo					"ui/targetinfo_npc_simple"
+
+	DefaultModelName				"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl"
+	DefaultModelName_IMC			"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl"
+	DefaultModelName_MIL			"mdl/Humans/grunts/imc_grunt_lmg_corpse.rmdl"
+
+    creature                        1
+    GibModel0                       "mdl/gibs/human_gibs.rmdl"
+    headshotFX						""
+
+    aiEnemy_usePriorityDist			1300
+    aiEnemy_immediateThreatDist		200
+
+    BehaviorSelector				"behavior_infected"
+
+    chaseStopDist					48    // MeleeRange should be greater than chaseStopDist
+    chaseStopDistHeavyArmor			150
+
+    traverseCostFactor				2.0	 // same as spectre
+    minGoalRadius					256
+
+    longJumpHeight					2000
+
+    allowUseCover                   0
+	disableMeleeExecution			0
+
+    faceEnemyStrictToleranceAngle	25
+    faceEnemyWhileMovingDist		60
+
+    FOV_Idle_Far_Horz				60
+    FOV_Idle_Far_Vert				50
+    FOV_Idle_Near_Horz				130
+    FOV_Idle_Near_Vert				70
+
+    FOV_Alert_Far_Horz				60
+    FOV_Alert_Far_Vert				50
+    FOV_Alert_Near_Horz				130
+    FOV_Alert_Near_Vert				70
+
+    FOV_Combat_Far_Horz				60
+    FOV_Combat_Far_Vert				50
+    FOV_Combat_Near_Horz			130
+    FOV_Combat_Near_Vert			70
+
+    FOV_Far_Dist					1000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+    FOV_Near_Dist					350		// distance at which we transition between near and far FOV values
+    FOV_Vert_Offset					0
+
+    MaxArrivalDist					170
+
+    MeleeDamageMin					30
+    MeleeDamageMax					30
+	MeleeChargeDamageMin			30
+	MeleeChargeDamageMax			30
+    Health							100
+
+	PainOnHeavyDamageThreshold		1000
+	PainOnRepeatDamageThreshold		2400
+	breakOutOfPainDamageThreshold	500
+	PainOnSurpriseHit				0
+	PainWhileRunning				0
+
+    stagger_health_frac 			0.5
+
+    MeleeDamageRadius				40
+    MeleeRange						60
+    MeleeChargeDamageRadius         40
+    MeleeChargeRange                135
+
+    MeleeDamageForce				5000
+
+    meleeInterval                   0   // "0" Can do back to back melee attacks
+
+    braceWhenDangerousAreaDisplacementFails 0
+
+    chaseTryRunningDodgeWhenAimedAtMinDist  0   // will dodge from far distances to the set value, value should be > MeleeChargeRange so that charge attacks prioritize over dodging    //dbocek: turning off for now pending some animation changes
+    maxDodgePerPeriod               2 // Don't dodge more than this many times in dodgePeriod
+    minConsecutiveDodgeTime         1.5
+    dodgeForwardThreshold           800
+    dodgeBackwardThreshold          800
+    StrafeDodgeDamage               100
+    circleStrafeDist                400
+
+    MinForceWalkDist				0
+    MinStartMoveDist				100
+    MoveYawSpeed					12
+    allowTurn45Anims				0
+    moveDeflectionLookAheadTime		1.5
+}

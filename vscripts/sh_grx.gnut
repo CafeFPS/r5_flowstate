@@ -1458,18 +1458,18 @@ bool function GRX_IsGRXEnabled()
 #if DEVELOPER && UI
 void function DEV_GRX_PrintStoreOfferLocations()
 {
-	foreach ( ItemFlavor itemLocation, ItemFlavorPurchasabilityInfo ifpi in fileLevel.itemFlavorPurchasabilityInfoMap )
-	{
-		if ( ifpi.locationToDedicatedStoreOffersMap.len() == 0 )
-			continue
+	// foreach ( ItemFlavor itemLocation, ItemFlavorPurchasabilityInfo ifpi in fileLevel.itemFlavorPurchasabilityInfoMap )
+	// {
+		// if ( ifpi.locationToDedicatedStoreOffersMap.len() == 0 )
+			// continue
 
-		printf( "%s", ItemFlavor_GetHumanReadableRef( itemLocation ) )
-		foreach ( string storeLocation, array< GRXScriptOffer > locationOffers in ifpi.locationToDedicatedStoreOffersMap )
-		{
-			foreach ( GRXScriptOffer locationOffer in locationOffers )
-				printf( "\t[%s] %s", storeLocation, Localize( locationOffer.titleText ) )
-		}
-	}
+		// printf( "%s", ItemFlavor_GetHumanReadableRef( itemLocation ) )
+		// foreach ( string storeLocation, array< GRXScriptOffer > locationOffers in ifpi.locationToDedicatedStoreOffersMap )
+		// {
+			// foreach ( GRXScriptOffer locationOffer in locationOffers )
+				// printf( "\t[%s] %s", storeLocation, Localize( locationOffer.titleText ) )
+		// }
+	// }
 }
 
 void function DEV_GRX_TestOpenPack( string ref = "pack_cosmetic_rare" )

@@ -135,7 +135,7 @@ const string SIGNAL_WAYPOINT_TIMEOUT_BEGIN = "WaypointTimeoutThreadBegin"
 void function PlayerWaypoints_Init()
 {
 	RegisterSignal( SIGNAL_WAYPOINT_TIMEOUT_BEGIN )
-	printt("PlayerWaypoints_Init")
+	//printt("PlayerWaypoints_Init")
 	#if CLIENT
 		AddCreateCallback( PLAYER_WAYPOINT_CLASSNAME, PlayerWaypoint_CreateCallback )
 		AddDestroyCallback( PLAYER_WAYPOINT_CLASSNAME, PlayerWaypoint_DestroyCallback )

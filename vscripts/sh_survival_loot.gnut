@@ -535,7 +535,7 @@ void function SURVIVAL_Loot_InitShared()
 				format( "Reference to '%s' in 'survival_weapon_mods.csv' is gated by unknown feature flag: %s", aRef, featureFlagRef ) )
 			if ( !GetFeatureFlagByString( featureFlagRef ) )
 			{
-				printf( "Skipping reference to '%s' in 'survival_weapon_mods.csv' because feature flag %s is off.", aRef, featureFlagRef )
+				//printf( "Skipping reference to '%s' in 'survival_weapon_mods.csv' because feature flag %s is off.", aRef, featureFlagRef )
 				continue
 			}
 		}
@@ -589,7 +589,7 @@ void function SURVIVAL_Loot_InitShared()
 		string rowFeatureFlagRef = GetDataTableString( attachmentMatrix, i, GetDataTableColumnByName( attachmentMatrix, "featureFlag" ) )
 		if ( rowFeatureFlagRef != "" && !GetFeatureFlagByString( rowFeatureFlagRef ) )
 		{
-			printf( "Skipping attachment ref %s because feature flag %s is off.", attachmentName, rowFeatureFlagRef )
+			//printf( "Skipping attachment ref %s because feature flag %s is off.", attachmentName, rowFeatureFlagRef )
 			continue
 		}
 
@@ -609,7 +609,7 @@ void function SURVIVAL_Loot_InitShared()
 			/*string colFeatureFlagRef = GetDataTableString( attachmentMatrix, featureFlagRowIdx, col )
 			if ( colFeatureFlagRef != "" && !GetFeatureFlagByString( colFeatureFlagRef ) )
 			{
-				printf( "Skipping weapon attachment data for %s because feature flag %s is off.", data.baseWeapon, colFeatureFlagRef )
+				//printf( "Skipping weapon attachment data for %s because feature flag %s is off.", data.baseWeapon, colFeatureFlagRef )
 				continue
 			}*/
 
@@ -730,7 +730,7 @@ bool function IsAttachmentCompatibleWithCustomWeapon(LootData weapon, Attachment
 		else return false
 	}
 	// debug.
-	printt("Attachment", att.ref, "has been found to be compatible with", weapon.ref)
+	//printt("Attachment", att.ref, "has been found to be compatible with", weapon.ref)
 	return true
 }
 

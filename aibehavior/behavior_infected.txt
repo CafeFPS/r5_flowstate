@@ -1,0 +1,36 @@
+Selector Common
+
+	SelectSchedule_Flinch
+	SelectSchedule_ReactSurprised
+	SelectSchedule_LayeredBehavior
+	SelectSchedule_ReactJumpedOver
+	SelectSchedule_SyncedMeleeAttack
+
+Selector_End
+
+
+Selector Idle
+
+	SelectSchedule_Idle
+
+Selector_End
+
+
+Selector Alert
+
+	SelectSchedule_PatrolRun
+
+Selector_End
+
+
+Selector Combat
+
+	SelectSchedule_MissileDodge
+	SelectSchedule_StrafeDodge
+	SelectSchedule_MeleeAttack
+	SelectSchedule_SpecialAttack
+	SelectSchedule_ChaseEnemy
+	SelectSchedule_CombatFace
+	SelectSchedule_EngagementDistMax
+
+Selector_End

@@ -141,7 +141,7 @@ void function SetVaultPanelState( entity panel, int panelState )
 	if ( panelState == panelData.panelState )
 		return
 
-	printf( "LootVaultPanelDebug: Changing panel state from %i to %i.", panelData.panelState, panelState )
+	//printf( "LootVaultPanelDebug: Changing panel state from %i to %i.", panelData.panelState, panelState )
 
 	panelData.panelState = panelState
 
@@ -151,12 +151,12 @@ void function SetVaultPanelState( entity panel, int panelState )
 			return
 		case ePanelState.UNLOCKING:
 		{
-			printf( "LootVaultPanelDebug: Changing panel state to UNLOCKING" )
+			//printf( "LootVaultPanelDebug: Changing panel state to UNLOCKING" )
 			LootVaultPanelState_Unlocking( panelData, panelState )
 		}
 		case ePanelState.UNLOCKED:
 		{
-			printf( "LootVaultPanelDebug: Changing panel state to UNLOCKED" )
+			//printf( "LootVaultPanelDebug: Changing panel state to UNLOCKED" )
 			LootVaultPanelState_Unlocked( panelData, panelState )
 		}
 		default:
@@ -252,13 +252,13 @@ void function VaultPanelUseSuccess( entity panel, entity player, ExtendedUseSett
 {
 	if ( !VaultPanel_HasPlayerDataKnife(player) )
 	{
-		printf( "LootVaultPanelDebug: Player likely dropped the vault key while opening" )
+		//printf( "LootVaultPanelDebug: Player likely dropped the vault key while opening" )
 		return
 	}
 	
 	LootVaultPanelData panelData = GetVaultPanelDataFromEntity( panel )
 
-	printf( "LootVaultPanelDebug: Panel Use Success" )
+	//printf( "LootVaultPanelDebug: Panel Use Success" )
 
 	#if SERVER
 
@@ -287,7 +287,7 @@ void function VaultPanelUnlocking( LootVaultPanelData panelData, int panelState 
 	if ( panelState != ePanelState.UNLOCKING )
 		return
 
-	printf( "LootVaultPanelDebug: Panel State: Unlocking" )
+	//printf( "LootVaultPanelDebug: Panel State: Unlocking" )
 
 	SetVaultPanelUnusable( panelData.panel )
 
@@ -305,7 +305,7 @@ void function VaultPanelUnlocked( LootVaultPanelData panelData, int panelState )
 		return
 	}
 
-	printf( "LootVaultPanelDebug: Panel State: Unlocked" )
+	//printf( "LootVaultPanelDebug: Panel State: Unlocked" )
 
 	#if SERVER
 

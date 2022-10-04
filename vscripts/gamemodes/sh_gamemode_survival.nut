@@ -144,7 +144,7 @@ struct
 void function GamemodeSurvivalShared_Init()
 {
 	
-	printt("GamemodeSurvivalShared_Init")
+	//printt("GamemodeSurvivalShared_Init")
 	RegisterSignal("GameStateChanged")
 	
 	#if SERVER || CLIENT

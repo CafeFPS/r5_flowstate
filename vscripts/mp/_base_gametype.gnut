@@ -1799,7 +1799,7 @@ void function EntityOutOfBounds( entity trigger, entity ent, entity caller, var 
 
 		dataStruct.timeLeftBeforeDyingFromOutOfBounds = deadTime
 
-		if ( GetMapName() == "mp_rr_aqueduct" || GetMapName() == "mp_rr_aqueduct_night" )
+		if ( GetMapName() == "mp_rr_aqueduct" || GetMapName() == "mp_rr_aqueduct_night" || GetMapName() == "mp_rr_arena_skygarden" )
 		{
 			ent.SetOutOfBoundsDeadTime( Time() + 5 )
 		}
@@ -2044,7 +2044,7 @@ void function ClearPlayerEliminated( entity player )
 
 bool function IsPlayerEliminated( entity player )
 {
-	printt("CHECKING IF PLAYER IS ELIMINATED " + player.GetPlayerName() + " - " + player.GetPlatformUID())
+	// printt("CHECKING IF PLAYER IS ELIMINATED " + player.GetPlayerName() + " - " + player.GetPlatformUID())
 	foreach(playername, id in EliminatedPlayers)
 		if(player.GetPlayerName() == playername || id == player.GetPlatformUID())
 			return true

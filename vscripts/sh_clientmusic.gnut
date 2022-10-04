@@ -161,7 +161,7 @@ void function StartPlayingMusic( string musicAlias )
 	SetPlayThroughKillReplay( s_lastPlayedHandle )
 	s_lastPlayedAliasDEBUG = musicAlias
 
-	printf( "%s() - '%s'", FUNC_NAME(), musicAlias )
+	//printf( "%s() - '%s'", FUNC_NAME(), musicAlias )
 }
 void function StopPlayingMusic()
 {

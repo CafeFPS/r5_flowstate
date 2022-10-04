@@ -39,6 +39,8 @@ global table<string, asset> MapAssets = {
 	[ "mp_rr_desertlands_64k_x_64k_nx" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k_nx",
 	[ "mp_rr_desertlands_64k_x_64k_tt" ] = $"rui/menu/maps/mp_rr_desertlands_64k_x_64k_tt",
 	[ "mp_rr_arena_composite" ] = $"rui/menu/maps/mp_rr_arena_composite",
+	[ "mp_rr_arena_skygarden" ] = $"rui/menu/maps/mp_rr_arena_skygarden",
+	[ "mp_rr_party_crasher" ] = $"rui/menu/maps/mp_rr_party_crasher",
 	[ "mp_lobby" ] = $"rui/menu/maps/mp_lobby"
 }
 
@@ -55,6 +57,8 @@ global table<string, string> MapNames = {
 	[ "mp_rr_desertlands_64k_x_64k_nx" ] = "Worlds Edge After Dark",
 	[ "mp_rr_desertlands_64k_x_64k_tt" ] = "Worlds Edge Mirage Voyage",
 	[ "mp_rr_arena_composite" ] = "Drop Off",
+	[ "mp_rr_arena_skygarden" ] = "Encore",
+	[ "mp_rr_party_crasher" ] = "Party Crasher",
 	[ "mp_lobby" ] = "Lobby"
 }
 

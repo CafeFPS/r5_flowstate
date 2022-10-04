@@ -1,0 +1,116 @@
+WeaponData
+{
+	// General
+	"printname"   									"#NPC_SPIDER_RANGED_ATTACK"
+	"shortprintname"								"#NPC_SPIDER_RANGED_ATTACK"
+	"description" 									"#NPC_SPIDER_RANGED_ATTACK"
+	"longdesc"										""
+
+	"weaponClass" 									"other"
+    "weapon_type_flags"								"WPT_PRIMARY"
+
+    "projectile_launch_speed"						"2250"
+    "projectile_gravity_scale"						"0.05"
+	"projectile_drag_coefficient" 					"0.0"
+	"projectile_lifetime" 							"4.0"
+
+	"damage_flags"									"DF_BULLET | DF_NO_SELF_DAMAGE | DF_DISMEMBERMENT"
+	"damage_type" 									"none"
+
+	"trophy_system_ignores"                         "always"
+
+	"OnWeaponNpcPrimaryAttack"					    "OnWeaponNpcPrimaryAttack_weapon_basic_bolt"
+
+	// Models
+	"playermodel" 									"mdl/weapons/empty_handed/w_empty_handed_human.rmdl" // mdl/dev/empty_model.rmdl // Having an empty model for some reason makes projectiles invisible
+	"projectilemodel" 								"mdl/dev/empty_model.rmdl"
+	"holster_type"									""
+
+    //Effects
+    "projectile_trail_effect_0" 					"P_spider_web_proj"
+    "fx_muzzle_flash_view"							"P_muz_lstar_FP_burn"
+    "fx_muzzle_flash_world"							"P_muz_lstar_burn"
+    "fx_muzzle_flash_attach"						"muzzle_flash"
+	"impact_effect_table" 							"spider_web"
+	"projectile_adjust_to_gun_barrel"				"0"
+	
+	// Ammo
+	"ammo_default_total"							"100"
+	"ammo_stockpile_max"							"100"
+	"ammo_no_remove_from_stockpile"					"1"
+	"ammo_min_to_fire"								"0"
+	"ammo_clip_size"   								"100"
+	"ammo_per_shot"                                 "1"
+
+	//Sounds_muzzle_flash
+	"vortex_impact_sound_1p"						"SpdrJungle_Projectile_Damage_1p"
+	"vortex_impact_sound_3p"						"SpdrJungle_Projectile_Damage_3p"
+
+	"looping_sounds"								"0"
+
+	"fire_sound_1_npc"								"SpdrJungle_AttackRanged"
+	
+	"projectile_flight_sound"						"SpdrJungle_Projectile_WhizBy"
+
+    "bolt_hitsize"									"1.25"
+
+	"bolt_gravity_enabled"							"1"
+	"bolt_zero_distance" 							"480"
+
+	"chance_for_bonus_last_shot_in_clip"			"0"
+	"critical_hit"									"0"
+
+	"allow_headshots" 								"1"
+	"headshot_distance" 							"600"
+
+	// Bodygroups:
+	"bodygroup1_name"	"sight_on"
+	"bodygroup1_set"	"1"
+
+	// NPC
+    "npc_damage_near_value"   						"8"
+    "npc_damage_far_value"							"6"
+    "npc_damage_near_value_titanarmor"				"6"
+    "npc_damage_far_value_titanarmor" 				"4"
+    "npc_damage_near_distance"						"208"
+    "npc_damage_far_distance" 						"600"
+
+    "npc_min_engage_range"							"208"
+    "npc_max_engage_range"							"832"
+    "npc_min_engage_range_heavy_armor"				"208"
+    "npc_max_engage_range_heavy_armor"				"832"
+    "npc_min_range"   								"208"
+    "npc_max_range"   								"832"
+
+    //shot geometry
+    //"npc_burst_radius_min_precision"                "15.0"
+    //"npc_burst_radius_max_precision"                "5.0"
+
+    "npc_spread_cone_min_precision"                 "0" // In Deg
+    "npc_spread_cone_max_precision"                 "0" // In Deg
+
+    //"npc_burst_radius_distribution_bias_min_precision"  "-0.5"
+    //"npc_burst_radius_distribution_bias_max_precision"  ".5"
+
+    "npc_lead_projectiles"                          "1"
+    "npc_lead_projectiles_fraction_min_precision"   "0.25"
+    "npc_lead_projectiles_fraction_max_precision"   "0.75"
+
+    //shot cadence
+    "npc_min_burst"                                 "1"
+    "npc_max_burst"                                 "3"
+
+	"fire_rate"   									"0.667"
+	//"burst_fire_count"								"3"
+	"burst_fire_delay"								"1.5"
+
+    "npc_min_burst_min_precision"   				"1"
+    "npc_min_burst_max_precision"                   "1"
+    "npc_max_burst_min_precision"                   "3"
+    "npc_max_burst_max_precision"                   "3"
+
+    "npc_min_rest_time_between_bursts_min_precision" "1.5"
+    "npc_max_rest_time_between_bursts_min_precision" "1.5"
+    "npc_min_rest_time_between_bursts_max_precision" "1.9"
+    "npc_max_rest_time_between_bursts_max_precision" "1.9"
+}

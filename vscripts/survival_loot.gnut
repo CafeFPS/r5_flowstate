@@ -190,7 +190,7 @@ void function LoadLootZonesForMap()
 	file.hotZone.zoneClass = eLootZoneClass.ZONE_HOTZONE
 
 	FlagSet( "Survival_LootZonesLoaded" )
-	printt("Generated Loot Zones!", file.lootZones.len())
+	//printt("Generated Loot Zones!", file.lootZones.len())
 }
 
 void function OnWeaponReload( entity player )
@@ -382,6 +382,9 @@ bool function ClientCommand_Sur_SwapToNextOrdnance( entity player, array<string>
 
 bool function ClientCommand_PickupSurvivalItem( entity player, array<string> args )
 {
+	if ( !GetCurrentPlaylistVarBool( "survival_pickup_item", true ) )
+		return true
+
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
@@ -450,6 +453,9 @@ bool function ClientCommand_PickupSurvivalItem( entity player, array<string> arg
 
 bool function ClientCommand_SwapSurvivalItem( entity player, array<string> args )
 {
+	if ( !GetCurrentPlaylistVarBool( "survival_swap_item", true ) )
+		return true
+
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
@@ -600,7 +606,7 @@ void function OnGroundLootSpawned( entity ent )
 		{
 			itemRef = SURVIVAL_GetWeightedItemFromGroup( zoneRef )
 		}
-		printt("Added item to Loot Vault: ", itemRef)
+		//printt("Added item to Loot Vault: ", itemRef)
 		alreadySpawnedLoot.push(itemRef)
 	}
 	else
@@ -728,6 +734,9 @@ string function GetRandomLootItem( int mapZone = -1 )
 
 bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args )
 {
+	if ( !GetCurrentPlaylistVarBool( "survival_drop_equipment", true ) )
+		return true
+
 	if ( !IsValid( player ) )
 		return true
 
@@ -787,6 +796,9 @@ bool function ClientCommand_Sur_DropEquipment( entity player, array<string> args
 
 bool function ClientCommand_Sur_DropBackpackItem( entity player, array<string> args )
 {
+	if ( !GetCurrentPlaylistVarBool( "survival_drop_item", true ) )
+		return true
+	
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
@@ -817,6 +829,9 @@ bool function ClientCommand_Sur_DropBackpackItem( entity player, array<string> a
 
 bool function ClientCommand_Sur_EquipAttachment( entity player, array<string> args )
 {
+	if ( !GetCurrentPlaylistVarBool( "survival_equip_attachment", true ) )
+		return true
+
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
@@ -872,6 +887,9 @@ bool function ClientCommand_Sur_EquipAttachment( entity player, array<string> ar
 
 bool function ClientCommand_Sur_UnequipAttachment( entity player, array<string> args )
 {
+	if ( !GetCurrentPlaylistVarBool( "survival_unequip_attachment", true ) )
+		return true
+
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 
@@ -911,6 +929,9 @@ bool function ClientCommand_Sur_UnequipAttachment( entity player, array<string> 
 
 bool function ClientCommand_Sur_TransferAttachment( entity player, array<string> args )
 {
+	if ( !GetCurrentPlaylistVarBool( "survival_transfer_attachment", true ) )
+		return true
+
 	if ( !IsValid( player ) || !IsAlive( player ) )
 		return true
 

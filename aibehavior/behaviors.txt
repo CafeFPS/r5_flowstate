@@ -4,3 +4,5 @@ behavior_frag_drone
 behavior_training_dummy
 behavior_treasure_tick
 behavior_dummy_empty
+behavior_spider
+behavior_infected

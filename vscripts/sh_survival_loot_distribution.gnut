@@ -30,7 +30,7 @@ void function SURVIVAL_LootDistribution_InitShared()
 				format( "Reference to '%s %s' in 'survival_loot_groups_new.csv' is gated by unknown feature flag: %s", groupRef, entryRef, featureFlagRef ) )
 			if ( !GetFeatureFlagByString( featureFlagRef ) )
 			{
-				printf( "Skipping reference to '%s %s' in 'survival_loot_groups_new.csv' because feature flag %s is off.", groupRef, entryRef, featureFlagRef )
+				//printf( "Skipping reference to '%s %s' in 'survival_loot_groups_new.csv' because feature flag %s is off.", groupRef, entryRef, featureFlagRef )
 				continue
 			}
 		}

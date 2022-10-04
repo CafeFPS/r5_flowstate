@@ -22,6 +22,8 @@ global function CreateNPCTitan
 global function CreateOgre
 global function CreateProwler
 global function CreateDummy
+global function CreateSpider
+global function CreateInfected
 global function CreateRocketDrone
 global function CreateRocketDroneGrunt
 global function CreateShieldDrone
@@ -286,6 +288,20 @@ entity function CreateDummy( int team, vector origin, vector angles )
 {
     entity npc = CreateNPC( "npc_dummie", team, origin, angles )
     SetSpawnOption_AISettings( npc, "npc_dummie_combat" )
+	return npc
+}
+
+entity function CreateSpider( int team, vector origin, vector angles )
+{
+    entity npc = CreateNPC( "npc_spider", team, origin, angles )
+    SetSpawnOption_AISettings( npc, "npc_spider" )
+	return npc
+}
+
+entity function CreateInfected( int team, vector origin, vector angles )
+{
+    entity npc = CreateNPC( "npc_soldier", team, origin, angles )
+    SetSpawnOption_AISettings( npc, "npc_soldier_infected" )
 	return npc
 }
 

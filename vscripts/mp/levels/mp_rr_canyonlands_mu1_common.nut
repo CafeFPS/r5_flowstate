@@ -139,22 +139,15 @@ struct{
 // Use for MU1/direct MU1 spinoffs (like night map)
 void function Canyonlands_MU1_CommonMapInit()
 {
-	//SetFlyersToSpawn( 8 )
+	Canyonlands_MapInit_Common()
+	MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_canyonlands_mu1.rpak" )
 
-		Canyonlands_MapInit_Common()
-
-		MapZones_RegisterDataTable( $"datatable/map_zones/zones_mp_rr_canyonlands_mu1.rpak" )
-
-		AddCallback_EntitiesDidLoad( MU1_EntitiesDidLoad )
-
-		AddCallback_GameStateEnter( eGameState.Playing, Leviathan_OptimizeUpperBoneFollowersWhenAllPlayersHaveLanded )
-		AddSpawnCallback_ScriptName( "leviathan_staging", CreateClientSideLeviathanMarkers)
-		Survival_SetCallback_Leviathan_ConsiderLookAtEnt( Leviathan_ConsiderLookAtEnt_Callback )
+	AddCallback_EntitiesDidLoad( MU1_EntitiesDidLoad )
+	AddCallback_GameStateEnter( eGameState.Playing, Leviathan_OptimizeUpperBoneFollowersWhenAllPlayersHaveLanded )
+	AddSpawnCallback_ScriptName( "leviathan_staging", CreateClientSideLeviathanMarkers)
+	Survival_SetCallback_Leviathan_ConsiderLookAtEnt( Leviathan_ConsiderLookAtEnt_Callback )
 
 	InitOctaneTownTakeover()
-
-	//if ( RelayRockFixEnabled() )
-		//RegisterGeoFixAsset( RELAY_ROCK_FIX_MODEL )
 }
 
 void function MU1_EntitiesDidLoad()
@@ -163,6 +156,9 @@ void function MU1_EntitiesDidLoad()
 
 	if ( RelayRockFixEnabled() )
 		SpawnRelayRockFix()
+
+	thread InitWraithAudioLog()
+	thread PlaceOctaneTownTakeoverLoot()
 }
 
 
@@ -222,26 +218,26 @@ void function PlaceOctaneTownTakeoverLoot()
 	entity target  = itemSpawn[ 0 ]
 	string itemRef = SURVIVAL_GetWeightedItemFromGroup( "POI_OctaneTT" )
 
-	//entity spawnedItem = SpawnGenericLoot( itemRef, target.GetOrigin(), < -1, -1, -1 > )
-	//spawnedItem.RemoveUsableValue( USABLE_USE_VERTICAL_LINE )
-	//spawnedItem.RemoveUsableValue( USABLE_HORIZONTAL_FOV )
-	//spawnedItem.AddUsableValue( USABLE_USE_DISTANCE_OVERRIDE )
-	//spawnedItem.SetUsableDistanceOverride( 300.0 )
+	entity spawnedItem = SpawnGenericLoot( itemRef, target.GetOrigin(), < -1, 90, -1 >, 1 )
+	spawnedItem.RemoveUsableValue( USABLE_USE_VERTICAL_LINE )
+	spawnedItem.RemoveUsableValue( USABLE_HORIZONTAL_FOV )
+	spawnedItem.AddUsableValue( USABLE_USE_DISTANCE_OVERRIDE )
+	spawnedItem.SetUsableDistanceOverride( 300.0 )
 
-	//vector boundingSize = spawnedItem.GetBoundingMaxs() - spawnedItem.GetBoundingMins()
-	//float originOffset  = boundingSize.z * 0.8
-	//if ( boundingSize.x > boundingSize.z )
-	//{
-	//	vector angles = spawnedItem.GetAngles()
-	//	spawnedItem.SetAngles( < angles.x + 90, angles.y, angles.z > )
-	//	originOffset = boundingSize.x * 0.5
-	//}
+	vector boundingSize = spawnedItem.GetBoundingMaxs() - spawnedItem.GetBoundingMins()
+	float originOffset  = boundingSize.z * 0.8
+	if ( boundingSize.x > boundingSize.z )
+	{
+		vector angles = spawnedItem.GetAngles()
+		spawnedItem.SetAngles( < angles.x + 90, angles.y, angles.z > )
+		originOffset = boundingSize.x * 0.5
+	}
 
-	//vector targetToCenter = spawnedItem.GetCenter() - target.GetOrigin()
-	//spawnedItem.SetOrigin( target.GetOrigin() - < 0, 0, boundingSize.z * 0.5 > )
+	vector targetToCenter = spawnedItem.GetCenter() - target.GetOrigin()
+	spawnedItem.SetOrigin( target.GetOrigin() - < 0, 0, boundingSize.z * 0.5 > )
 
-	//int bgFxId = GetParticleSystemIndex( FX_OCTANE_TT_GUN_BG )
-	//StartParticleEffectOnEntityWithPos( spawnedItem, bgFxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, < -45, 0, 0 >, < 0, 0, 0 > )
+	int bgFxId = GetParticleSystemIndex( FX_OCTANE_TT_GUN_BG )
+	StartParticleEffectOnEntityWithPos( spawnedItem, bgFxId, FX_PATTACH_ABSORIGIN_FOLLOW, -1, < -45, 0, 0 >, < 0, 0, 0 > )
 }
 
 

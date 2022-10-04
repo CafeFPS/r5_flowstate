@@ -783,7 +783,7 @@ void function UpdateAllScreensContentThread()
 //
 void function OnUpdateApexScreensEventTime( float newTime )
 {
-	printf( "%s() - New time: %.2f", FUNC_NAME(), newTime )
+	//printf( "%s() - New time: %.2f", FUNC_NAME(), newTime )
 
 	if ( newTime < 0 )
 	{

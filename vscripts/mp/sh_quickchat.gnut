@@ -101,7 +101,7 @@ void function LoadCommsActionsFromDatatable()
 		string featureFlagRef = GetDataTableString( dt, row, col_featureFlag )
 		if ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) )
 		{
-			printf( "Skipping comms action %s because feature flag %s is off.", commsActionName, featureFlagRef )
+			//printf( "Skipping comms action %s because feature flag %s is off.", commsActionName, featureFlagRef )
 			continue
 		}
 

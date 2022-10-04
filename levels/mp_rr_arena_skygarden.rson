@@ -1,0 +1,16 @@
+When: "SERVER"
+Scripts:
+[
+]
+
+When: "CLIENT"
+Scripts:
+[
+	mp/levels/cl_mp_rr_arena_skygarden.nut
+]
+
+When: "CLIENT || SERVER"
+Scripts:
+[
+	mp/levels/sh_mp_rr_arena_skygarden.nut
+]

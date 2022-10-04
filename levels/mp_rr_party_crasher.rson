@@ -1,0 +1,13 @@
+When: "SERVER"
+Scripts:
+[
+	mp/levels/_mp_rr_party_crasher.nut
+]
+When: "CLIENT"
+Scripts:
+[
+]
+When: "SERVER || CLIENT"
+Scripts:
+[
+]

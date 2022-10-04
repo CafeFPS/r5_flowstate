@@ -1,0 +1,114 @@
+npc_spider
+{
+	HullType						"HULL_HUMAN"
+	orientToGround					1
+	BodyType						spider
+	ArmorType						normal
+	smartAmmoLockAttachmentName0	CHESTFOCUS
+	title							#NPC_SPIDER
+
+	ui_targetinfo					"ui/targetinfo_npc_simple"
+
+	BaseClass						npc_spider
+	AIClass							spider
+	TraverseAnimType				frag_drone
+	BehaviorSelector				"behavior_spider"
+
+	footstep_type					"spider"
+
+	mechanical						0
+	creature						1
+	meleeable						1
+
+	health							30
+
+	DefaultModelName				"mdl/creatures/spider/spider.rmdl"
+	DefaultModelName_IMC			"mdl/creatures/spider/spider.rmdl"
+	DefaultModelName_MIL			"mdl/creatures/spider/spider.rmdl"
+	GibModel0						"mdl/gibs/human_gibs.rmdl"
+
+	WeaponCapacity					"Locked"
+
+	faceEnemyToleranceAngle			45
+	faceEnemyStrictToleranceAngle	20
+
+	meleeInterval					0			// "0" allows back to back melee attacks
+	meleeRange						60
+	meleeDamageMin					8
+	meleeDamageMax					8
+	meleeDamageRadius				32
+
+	meleeChargeInterval				0			// "0" allows back to back melee attacks
+	meleeChargeRange				170
+	meleeChargeRequiresStrictFacing	1
+	meleeChargeDamageMin			8
+	meleeChargeDamageMax			8
+	meleeChargeDamageMinHeavyArmor	8
+	meleeChargeDamageMaxHeavyArmor	8
+	meleeChargeDamageRadius			32
+
+	MeleeDamageForce				2000
+	MeleeChargeDamageForce 			2000
+
+	meleeEnemyArmorType				any
+	meleeChargeEnemyArmorType		any
+
+	meleeImpactEffectTable			"melee_prowler"
+
+	chaseStopDist					100			// meleeRange/meleeChargeRange should be greater than chaseStopDist
+	chaseStopDistHeavyArmor			200
+
+	enemyAimAtMeWidth				80
+	chaseTryRunningDodgeWhenAimedAtMinDist	250 // Should be > MeleeChargeRange so that chargeMelee is prioritized over dodging
+	dodgePeriod 					2			// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod				1			// Don't dodge more than this many times in dodgePeriod
+	//dodgeForwardThreshold			800
+	//circleStrafeDist				400
+
+	LookDistDefault_Idle			2000
+	LookDistDefault_Alert			2000
+	LookDistDefault_Combat			2000
+
+	FOV_Idle_Near_Horz				360
+	FOV_Idle_Near_Vert				180
+	FOV_Idle_Far_Horz				360
+	FOV_Idle_Far_Vert				180
+
+	FOV_Alert_Near_Horz				360
+	FOV_Alert_Near_Vert				180
+	FOV_Alert_Far_Horz				360
+	FOV_Alert_Far_Vert				180
+
+	FOV_Combat_Near_Horz			360
+	FOV_Combat_Near_Vert			180
+	FOV_Combat_Far_Horz				360
+	FOV_Combat_Far_Vert				180
+
+	moveYawSpeed					30
+
+	minSpeedScale					0.8
+	maxSpeedScale					1.5
+
+	aimassist_bounds_override		25
+	aimassist_adspull_centerAttachmentName		"aimassist_center"
+	aimassist_adspull_centerRadius				13.0
+	aimassist_adspull_headshotAttachmentName	""
+	aimassist_adspull_headshotRadius			0.0
+
+	leechMaxDist					0
+
+	MinStartMoveDist				100
+	MaxArrivalDist					150
+	MinForceWalkDist				0
+	moveDeflectionLookAheadTime		0.5
+
+	allowPatrol						1
+	allowInvestigate				1
+
+	canOpenDoors			        0
+
+	shootableByFriendlyPlayer		1
+	showFriendlyIcon				1
+
+	aiEnemy_usePriorityDist			1300
+}

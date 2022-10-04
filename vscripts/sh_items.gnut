@@ -1118,7 +1118,7 @@ array<ItemFlavor> function RegisterReferencedItemFlavorsFromArray( ItemFlavor pa
 					format( "Reference to '%s' in '%s' is gated by unknown feature flag: %s", string(entryAsset), string(ItemFlavor_GetAsset( parentFlavor )), featureFlagRef ) )
 				if ( !GetFeatureFlagByString( featureFlagRef ) )
 				{
-					printf( "Skipping reference to '%s' in '%s' because feature flag %s is off.", string(entryAsset), string(ItemFlavor_GetAsset( parentFlavor )), featureFlagRef )
+					//printf( "Skipping reference to '%s' in '%s' because feature flag %s is off.", string(entryAsset), string(ItemFlavor_GetAsset( parentFlavor )), featureFlagRef )
 					continue
 				}
 			}

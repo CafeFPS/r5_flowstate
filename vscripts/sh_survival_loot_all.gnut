@@ -251,8 +251,8 @@ void function SURVIVAL_Loot_All_InitShared()
 		string featureFlagRef = GetLootTableString( data.ref, dt, i, "featureFlag" )
 		if ( featureFlagRef != "" && !GetFeatureFlagByString( featureFlagRef ) )
 		{
-			printf( "Skipping loot ref %s because feature flag %s is off.", data.ref, featureFlagRef )
-			printf( "Loot ref %s: feature flag %s is off", data.ref, featureFlagRef )
+			//printf( "Skipping loot ref %s because feature flag %s is off.", data.ref, featureFlagRef )
+			//printf( "Loot ref %s: feature flag %s is off", data.ref, featureFlagRef )
 			continue
 		}
 
@@ -272,7 +272,7 @@ void function SURVIVAL_Loot_All_InitShared()
 		}
 
 		data.fakeAmmoIcon = GetLootTableAsset( data.ref, dt, i, "fakeAmmoIcon" )
-		if (data.fakeAmmoIcon != "") printt("Fake ammo icon for", data.ref, "-", data.fakeAmmoIcon)
+		//if (data.fakeAmmoIcon != "") printt("Fake ammo icon for", data.ref, "-", data.fakeAmmoIcon)
 
 		data.baseMods = split( GetLootTableString( data.ref, dt, i, "baseMods" ), " " )
 
@@ -311,7 +311,7 @@ void function SURVIVAL_Loot_All_InitShared()
 		)
 		data.supportedAttachments = supportedAttachments
 
-		printt(data.ref, "| model:", string(GetLootTableAsset( data.ref, dt, i, "pickupModel" )))
+		//printt(data.ref, "| model:", string(GetLootTableAsset( data.ref, dt, i, "pickupModel" )))
 		data.lootTags = split( GetLootTableString( data.ref, dt, i, "lootTags" ), " " )
 
 		data.lootType = SURVIVAL_Loot_GetLootTypeFromString( lootType )
