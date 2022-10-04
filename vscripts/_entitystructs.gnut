@@ -681,6 +681,7 @@ global struct ServerPlayerStruct
 	bool AmIController = false	
 	bool comingFromSpectator = false
 	float lastTimeSpectateUsed = 0
+	bool isSpectating = false
 	
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
