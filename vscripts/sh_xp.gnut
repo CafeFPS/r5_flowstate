@@ -44,7 +44,7 @@ global struct XPEventData
 {
 	string _playlistVarName = ""
 
-	float xpAmount = -1
+	float xpAmount = 500
 	float xpFrac = 0.0
 
 	bool isMultiplyer = false
