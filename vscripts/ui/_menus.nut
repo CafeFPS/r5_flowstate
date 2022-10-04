@@ -451,7 +451,7 @@ bool function UICodeCallback_UpdateLoadingLevelName( string levelname )
 
 void function UICodeCallback_LevelLoadingFinished( bool error )
 {
-	printt( "UICodeCallback_LevelLoadingFinished: " + uiGlobal.loadingLevel + " (" + error + ")" )
+	//printt( "UICodeCallback_LevelLoadingFinished: " + uiGlobal.loadingLevel + " (" + error + ")" )
 
 	UIMusicUpdate()
 
@@ -472,7 +472,7 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 
 void function UICodeCallback_LevelInit( string levelname )
 {
-	printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
+	//printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
 }
 
 
@@ -484,7 +484,7 @@ void function UICodeCallback_FullyConnected( string levelname )
 
 	uiGlobal.loadedLevel = levelname
 
-	printt( "UICodeCallback_FullyConnected: " + uiGlobal.loadedLevel + ", IsFullyConnected(): ", IsFullyConnected() )
+	//printt( "UICodeCallback_FullyConnected: " + uiGlobal.loadedLevel + ", IsFullyConnected(): ", IsFullyConnected() )
 
 	//if ( !uiGlobal.loadoutsInitialized )
 	//{

@@ -294,7 +294,7 @@ void function RunPakRequests()
 #if CLIENT
 void function ClientCodeCallback_PakAsyncLoadFinished( int pakId, int status )
 {
-	printf( "Rpak loaded: %d %d (%s)\n", pakId, status, GetEnumString("ePakStatus", status) )
+	//printf( "Rpak loaded: %d %d (%s)\n", pakId, status, GetEnumString("ePakStatus", status) )
 	//printt( "Assert( status == PAK_STATUS_LOADED ):", status == PAK_STATUS_LOADED )
 	//
 	//
@@ -357,7 +357,7 @@ void function WORKAROUND_ProcessPakQueues()
 
 			file.unloadQueue.remove( 0 )
 
-			printf( "ClientPakFile_Unload: %s\n", prs.rpakPath + ".rpak" )
+			//printf( "ClientPakFile_Unload: %s\n", prs.rpakPath + ".rpak" )
 			int unloadResult = ClientPakFile_Unload( prs.pakId )
 			Assert( unloadResult == PAK_STATUS_FREED )
 

@@ -294,7 +294,7 @@ void function AddCallback_OnViewPlayerChanged( void functionref( entity ) callba
 
 void function RunLocalViewPlayerChangedCallbacks( entity player )
 {
-	printt( "RunLocalViewPlayerChangedCallbacks", player )
+	//printt( "RunLocalViewPlayerChangedCallbacks", player )
 	foreach ( callbackFunc in clGlobal.onLocalViewPlayerChangedFuncs )
 	{
 		callbackFunc( player )
