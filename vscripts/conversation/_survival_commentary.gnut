@@ -204,8 +204,8 @@ void function AddSurvivalCommentaryEvent( int event, entity attacker = null, ent
 			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.FIRST_BLOOD, attacker, 1.0, "bc_firstBlood", "bc_weTookFirstBlood" )
 			break;
 	}
-	// The announcer should only be the Revenant when the playlist is Shadow Falls
-	// Host type is changed to NOC during shadow fall
+	// The announcer's voice can be changed with SurvivalCommentary_SetHost()
+	// For example, to change to a revenant announcement, execute "SurvivalCommentary_SetHost( eSurvivalHostType.NOC )"
 }
 
 int function GetRoundCommentaryBucket( int round )
