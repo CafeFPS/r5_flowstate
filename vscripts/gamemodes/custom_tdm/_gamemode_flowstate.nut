@@ -831,11 +831,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if(FlowState_Gungame() && IsValid( player ))
 		GiveGungameWeapon(player)
 
-	if(!player.p.comingFromSpectator)
-		thread Flowstate_GrantSpawnImmunity(player, 2.5)
-		thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
-	
-	player.p.comingFromSpectator = false
+	thread Flowstate_GrantSpawnImmunity(player, 2.5)
+	thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
 }
 
 void function TpPlayerToSpawnPoint(entity player)
@@ -2682,7 +2679,6 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 	        player.SetSpecReplayDelay( 0 )
 			player.SetObserverTarget( null )
             player.StopObserverMode()
-			player.p.comingFromSpectator = true
 			player.p.lastTimeSpectateUsed = Time()
 			_HandleRespawn( player )
         }

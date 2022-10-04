@@ -678,8 +678,7 @@ global struct ServerPlayerStruct
 	int downedEnemy = 0
 	float last3dashtime = 0
 	entity lastFrameObservedTarget
-	bool AmIController = false	
-	bool comingFromSpectator = false
+	bool AmIController = false
 	float lastTimeSpectateUsed = 0
 	bool isSpectating = false
 	
