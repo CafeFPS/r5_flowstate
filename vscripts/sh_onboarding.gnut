@@ -519,7 +519,7 @@ void function PlayerStartSpectating( entity player, entity attacker, bool squadC
 
 	wait GetDeathCamLength( player ) // To show deathcamera
 	
-	if( IsValid( ShouldSetObserverTarget( specTarget ) ) )
+	if( IsValid( ShouldSetObserverTarget( specTarget ) ) && !IsAlive( player ) )
 	{
 		player.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArrayOfTeam_Alive( specTarget.GetTeam() ).len() )
 		player.SetSpecReplayDelay( Spectator_GetReplayDelay() )

@@ -663,6 +663,9 @@ void function CheckForTeamBleedout( entity player )
 
 	while( Bleedout_AreThereAlivingMates( player.GetTeam() ) )
 	{
+		if( !file.isBleeding[ player ] )
+			return
+		
 		WaitFrame()
 	}
 
