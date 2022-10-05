@@ -718,6 +718,8 @@ global struct ServerPlayerStruct
 	int dummieKilled = 0
 	bool touchingTopTrigger = false
 	bool ForceEject = false
+	string weapon = "mp_weapon_wingman"
+	array<string> mods = ["optic_cq_hcog_classic"]
 	
 	//Map editor
 	PropInfo& selectedProp
