@@ -880,6 +880,10 @@ void function GiveExtraWeaponMod( entity player, string mod )
 		return
 
 	array mods = player.GetExtraWeaponMods()
+	
+	if(mods.len() > 8) //Code limit is 8
+		return
+	
 	mods.append( mod )
 
 	player.SetExtraWeaponMods( mods )

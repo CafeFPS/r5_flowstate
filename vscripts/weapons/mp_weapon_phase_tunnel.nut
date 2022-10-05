@@ -227,11 +227,6 @@ bool function OnWeaponChargeBegin_weapon_phase_tunnel( entity weapon )
 
 			#if SERVER
 				LockWeaponsAndMelee( player )
-				entity f = StartParticleEffectOnEntity_ReturnEntity( player, GetParticleSystemIndex( PHASE_TUNNEL_3P_FX ), FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( "R_FOREARM" ) )
-				f.SetOwner( player )
-				SetTeam( f, player.GetTeam() )
-				f.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY | ENTITY_VISIBLE_TO_FRIENDLY
-				weapon.w.fxHandles.append( f )
 
 				float fade = 0.125
 				thread PhaseTunnel_StartAbility( player, shiftTime + fade, weapon )
@@ -270,7 +265,8 @@ void function OnWeaponChargeEnd_weapon_phase_tunnel( entity weapon )
 
 		foreach ( fx in weapon.w.fxHandles )
 		{
-			EffectStop( fx )
+			if(IsValid(fx))
+				EffectStop( fx )
 		}
 		weapon.w.fxHandles.clear()
 	}
@@ -354,6 +350,10 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 
 	array mods = player.GetExtraWeaponMods()
 	mods.append( "ult_active" )
+		
+	if(mods.len() > 8) //Code limit is 8
+		return
+		
 	player.SetExtraWeaponMods( mods )
 	//player.ForceAutoSprintOn()
 
@@ -362,6 +362,12 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 	ids.append( StatusEffect_AddEndless( player, eStatusEffect.phase_tunnel_visual, 1.0 ) )
 
 	entity fx = PlayPhaseShiftDisappearFX( player, PHASE_TUNNEL_ABILITY_ACTIVE_FX )
+	
+	entity f = StartParticleEffectOnEntity_ReturnEntity( player, GetParticleSystemIndex( PHASE_TUNNEL_3P_FX ), FX_PATTACH_POINT_FOLLOW, player.LookupAttachment( "R_FOREARM" ) )
+	f.SetOwner( player )
+	SetTeam( f, player.GetTeam() )
+	f.kv.VisibilityFlags = ENTITY_VISIBLE_TO_ENEMY | ENTITY_VISIBLE_TO_FRIENDLY
+	weapon.w.fxHandles.append( f )
 
 	//AddButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, PhaseTunnel_CancelPlacement )
 	//AddButtonPressedPlayerInputCallback( player, IN_ZOOM, PhaseTunnel_CancelPlacement )
@@ -371,7 +377,7 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 
 
 	OnThreadEnd(
-		function() : ( player, ids, fx )
+		function() : ( player, ids, fx, weapon )
 		{
 			if ( IsValid( player ) )
 			{
@@ -396,6 +402,15 @@ void function PhaseTunnel_StartAbility( entity player, float duration, entity we
 					//StopFX( fx )
 					fx.Destroy()
 				}
+				
+				if(!IsValid(weapon)) return
+				
+				foreach ( fx in weapon.w.fxHandles )
+				{
+					if(IsValid(fx))
+						EffectStop( fx )
+				}
+				weapon.w.fxHandles.clear()
 			}
 		} )
 
@@ -1448,7 +1463,8 @@ void function PhaseTunnel_StartTrackingPositions_Internal( entity player, PhaseT
 					fx.RemoveFromAllRealms()
 					fx.AddToOtherEntitysRealms( player )
 					EmitSoundOnEntity( fx, SOUND_PREPORTAL_LOOP )
-
+					shutdownArray.append( fx )
+					
 					OnThreadEnd(
 					function() : ( fx )
 						{
@@ -1457,9 +1473,7 @@ void function PhaseTunnel_StartTrackingPositions_Internal( entity player, PhaseT
 								StopSoundOnEntity( fx, SOUND_PREPORTAL_LOOP )
 							}
 						}
-					)
-
-					shutdownArray.append( fx )
+					)					
 
 					entity traceBlocker = CreateTraceBlockerVolume( fxOrigin, 24.0, false, CONTENTS_NOGRAPPLE, player.GetTeam(), PHASETUNNEL_PRE_BLOCKER_SCRIPTNAME )
 					//traceBlocker.RemoveFromAllRealms()
