@@ -17,6 +17,11 @@ global function ClientCommand_DOWN_Client
 global function SetEquippedSection
 #endif
 
+array<asset> availableDoors = [
+$"mdl/door/door_256x256x8_elevatorstyle02_animated.rmdl",
+$"mdl/door/canyonlands_door_single_02.rmdl",
+$"mdl/door/canyonlands_door_single_02_damaged.rmdl"
+]
 
 struct {
     float offsetZ = 0
@@ -286,16 +291,47 @@ void function ServerCallback_NextProp( entity player )
 
 void function StartNewPropPlacement(entity player)
 {
-    // incoming
     #if SERVER
-    SetProp(player, CreatePropDynamic( GetAssetFromPlayer(player), <0, 0, file.offsets[player]>, <0, 0, 0>, SOLID_VPHYSICS ))
-    GetProp(player).NotSolid()
-    GetProp(player).Hide()
+	entity propToPlace = CreatePropDynamic( GetAssetFromPlayer(player), <0, 0, file.offsets[player]> + player.GetForwardVector()*200, <0, 0, 0>, SOLID_VPHYSICS )
+	if(availableDoors.find(GetAssetFromPlayer(player)) != -1 && GetAssetFromPlayer(player) != $"mdl/door/canyonlands_door_single_02_damaged.rmdl")
+	{
+		entity singleDoor = CreateEntity("prop_door")
+		singleDoor.SetValueForModelKey(GetAssetFromPlayer(player))
+		//singleDoor.SetCycle( 1.0 )
+		singleDoor.SetOrigin(<0, 0, file.offsets[player]> + player.GetForwardVector()*200)
+		singleDoor.SetAngles(<0, 0, 0>)		
+		DispatchSpawn(singleDoor)
+		propToPlace = singleDoor
+		
+	} 
+	else if (GetAssetFromPlayer(player) == $"mdl/door/canyonlands_door_single_02_damaged.rmdl")
+	{
+		entity ddl = CreateEntity("prop_door")
+		ddl.SetValueForModelKey($"mdl/door/canyonlands_door_single_02.rmdl")
+		ddl.SetAngles(<0, 0, 0>)
+		ddl.SetOrigin(<0, 0, file.offsets[player]> + ddl.GetRightVector() * 60)
+		DispatchSpawn(ddl)
+		entity ddr = CreateEntity("prop_door")
+		ddr.SetValueForModelKey($"mdl/door/canyonlands_door_single_02.rmdl")
+		ddr.SetAngles(<0, 0, 0> + <0,180,0>)
+		ddr.SetOrigin(<0, 0, file.offsets[player]> + ddr.GetRightVector() * 60)
+		ddr.LinkToEnt( ddl )
+		DispatchSpawn(ddr)
+		propToPlace = ddl
+	}
+	
+	else
+		CreatePropDynamic( GetAssetFromPlayer(player), <0, 0, file.offsets[player]>, <0, 0, 0>, SOLID_VPHYSICS )
+
+	SetProp(player, propToPlace)
     
+	GetProp(player).NotSolid()
+    GetProp(player).Hide()
+   
     #elseif CLIENT
 	SetProp(player, CreateClientSidePropDynamic( <0, 0, file.offsetZ>, <0, 0, 0>, GetAssetFromPlayer(player) ))
     DeployableModelWarningHighlight( GetProp(player) )
-    
+   
 	GetProp(player).kv.renderamt = 255
 	GetProp(player).kv.rendermode = 3
 	GetProp(player).kv.rendercolor = "255 255 255 150"
@@ -312,7 +348,7 @@ void function PlaceProp(entity player)
     GetProp(player).Show()
     GetProp(player).Solid()
     GetProp(player).AllowMantle()
-    GetProp(player).SetScriptName("editor_placed_prop")
+	GetProp(player).SetScriptName("editor_placed_prop")
     
     // prints prop info to the console to save it
     vector myOrigin = GetProp(player).GetOrigin()
@@ -392,7 +428,7 @@ void function PlaceProxyThink(entity player)
         origin = origin + offset
         
 
-        vector angles = VectorToAngles( -1 * player.GetViewVector() )
+        vector angles = VectorToAngles( player.GetOrigin() - GetProp(player).GetOrigin())
         angles.x = GetProp(player).GetAngles().x
         angles.y = floor(smartClamp(angles.y - 45, -360, 360) / 90) * 90
         #if CLIENT
@@ -406,7 +442,7 @@ void function PlaceProxyThink(entity player)
         GetProp(player).SetOrigin( origin )
         GetProp(player).SetAngles( angles )
 
-        wait 0.1
+        WaitFrame()
     }
 }
 
@@ -437,14 +473,14 @@ PropInfo function NewPropInfo(string section, int index)
 #if SERVER
 bool function ClientCommand_UP_Server(entity player, array<string> args)
 {
-    file.offsets[player] += 64
+    file.offsets[player] += 10
     printl("moving up " + file.offsets[player])
     return true
 }
 
 bool function ClientCommand_DOWN_Server(entity player, array<string> args)
 {
-    file.offsets[player] -= 64
+    file.offsets[player] -= 10
     printl("moving down " + file.offsets[player])
     return true
 }
@@ -587,14 +623,14 @@ void function SwapToNextYaw(entity player)
 bool function ClientCommand_UP_Client(entity player)
 {
     GetLocalClientPlayer().ClientCommand("moveUp")
-    file.offsetZ += 64
+    file.offsetZ += 10
     return true
 }
 
 bool function ClientCommand_DOWN_Client(entity player)
 {
     GetLocalClientPlayer().ClientCommand("moveDown")
-    file.offsetZ -= 64
+    file.offsetZ -= 10
     return true
 }
 #endif
