@@ -3033,7 +3033,10 @@ void function Survival_RunCharacterSelection_Thread()
 		WaitFrame()
 
 	if ( GetCurrentPlaylistVarInt( "survival_enable_squad_intro", 1 ) == 1 )
-		thread DoSquadCardsPresentation()
+		if( GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true ) )
+			thread DoAnimatedSquadCardsPresentation()
+		else
+			thread DoSquadCardsPresentation()
 	else
 		CloseCharacterSelectNewMenu()
 
@@ -3041,7 +3044,10 @@ void function Survival_RunCharacterSelection_Thread()
 		WaitFrame()
 
 	if ( GetCurrentPlaylistVarInt( "survival_enable_gladiator_intros", 1 ) == 1 )
-		thread DoChampionSquadCardsPresentation()
+		if( GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true ) )
+			thread DoAnimatedChampionSquadCardsPresentation()
+		else
+			thread DoChampionSquadCardsPresentation()
 }
 
 

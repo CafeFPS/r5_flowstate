@@ -39,7 +39,9 @@ global function ClientToUI_UpdateSquadMute
 global function OpenCharacterSelectNewMenu
 global function OpenCharacterSelectAimTrainer
 global function DoSquadCardsPresentation
+global function DoAnimatedSquadCardsPresentation
 global function DoChampionSquadCardsPresentation
+global function DoAnimatedChampionSquadCardsPresentation
 global function _OpenCharacterSelectNewMenu
 global function _OpenCharacterSelectNewMenu_AimTrainer
 global function CloseCharacterSelectNewMenu
@@ -181,11 +183,22 @@ struct FileLevelStruct
 }
 FileLevelStruct& fileLevel
 
+struct SquadIntroCameraPackage
+{
+	vector camera_offset_start
+	vector camera_offset_end
+	vector camera_focus_offset
+	float camera_fov
+}
+
 struct {
 	array< void functionref() > Callbacks_OnCharacterMenuOpened
 	array< void functionref() > Callbacks_OnCharacterMenuClosed
 	array< void functionref(ItemFlavor) > Callbacks_OnCharacterFocused
 	array< void functionref(ItemFlavor) > Callbacks_OnCharacterLocked
+
+	array<entity> cleanupEnts
+	array<var> overHeadRuis
 } file
 
 //  ██╗███╗   ██╗██╗████████╗
@@ -433,8 +446,7 @@ void function PanAwayCharacterSelect()
 	float outroSceneChangeDuration = CharSelect_GetOutroSceneChangeDuration()
 	fileLevel.characterNodeMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", fileLevel.camera.GetOrigin(), fileLevel.camera.GetAngles() )
 	fileLevel.characterNode.SetParent( fileLevel.characterNodeMover, "", true )
-	if (!GetCurrentPlaylistVarBool( "r5reloaded_AnimatedCharacterSelect", true )){
-	fileLevel.characterNodeMover.NonPhysicsRotateTo( fileLevel.characterNodeMover.GetAngles() + <0, 135, 0>, outroSceneChangeDuration, 1.0, 1.0 )}
+	fileLevel.characterNodeMover.NonPhysicsRotateTo( fileLevel.characterNodeMover.GetAngles() + <0, 135, 0>, outroSceneChangeDuration, 1.0, 1.0 )
 
 	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_LegendPanLeft" )
 
@@ -534,6 +546,295 @@ void function DoSquadCardsPresentation()
 
 	fileLevel.gCardRuiHandles.append( borderRui )
 }
+
+// Animated Team Introduction
+//
+void function DoAnimatedSquadCardsPresentation()
+{
+	foreach( func in file.Callbacks_OnCharacterMenuClosed )
+		func()
+
+	printt( "CHARACTER SELECT: DoAnimatedSquadCardsPresentation" )
+
+	if ( !IsValid( fileLevel.camera ) )
+		return
+
+	waitthread function() : ()
+	{
+		RunUIScript( "UI_CloseCharacterSelect" )
+
+		fileLevel.nestedGladiatorCardHandles.clear()
+		fileLevel.gCardRuiHandles.clear()
+
+		RuiSetFloat( fileLevel.backgroundRui, "gcardsStartTime", Time() )
+		fileLevel.detailsPanelVisible = false
+		UpdateButtonStates()
+
+		float outroSceneChangeDuration = CharSelect_GetOutroSceneChangeDuration()
+
+		EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_LegendPanLeft" )
+
+		wait (outroSceneChangeDuration / 3.0)
+
+		NotifyCharacterSelectBeginEnd( false )
+	}()
+
+	thread IntroSquadSequence( GetLocalClientPlayer().GetTeam() )
+
+	// Border around screen
+	var borderRui = CreateFullscreenPostFXRui( $"ui/round_end_squads_border.rpak", 3 )
+	RuiSetInt( borderRui, "placementNum", -1 )
+	RuiSetInt( borderRui, "placementOutOf", -1 )
+	RuiSetInt( borderRui, "squadKills", -1 )
+	if ( IsSoloMode() )
+		RuiSetString( borderRui, "headerText", "#SOLO_HEADER_YOU_SELECTION" )
+	else
+		RuiSetString( borderRui, "headerText", "#SQUAD_HEADER_YOUR_SQUAD" )
+
+	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_GladiatorCard_Appear" )
+
+	fileLevel.gCardRuiHandles.append( borderRui )
+}
+
+void function IntroSquadSequence( int team, bool animOnlyChampion = false )
+{
+	DestorySquadIntroRuisAndEnts()
+
+	int gameState = GetGameState()
+
+	vector squadIntroSequencePosition = < 0, 0, 10000 >
+	vector squadIntroSequenceAngles = < 0, 0, 0 >
+	
+	entity clientPlayer = GetLocalClientPlayer()
+
+	asset defaultModel                = GetGlobalSettingsAsset( DEFAULT_PILOT_SETTINGS, "bodyModel" )
+	LoadoutEntry loadoutSlotCharacter = Loadout_CharacterClass()
+	vector characterAngles            = < squadIntroSequenceAngles.x / 2.0, squadIntroSequenceAngles.y, squadIntroSequenceAngles.z >
+
+	VictoryPlatformModelData victoryPlatformModelData = GetVictorySequencePlatformModel()
+	entity platformModel
+	int maxPlayersToShow = -1
+	if ( victoryPlatformModelData.isSet )
+	{
+		platformModel = CreateClientSidePropDynamic( squadIntroSequencePosition + victoryPlatformModelData.originOffset, victoryPlatformModelData.modelAngles, victoryPlatformModelData.modelAsset )
+
+		file.cleanupEnts.append( platformModel )
+		int playersOnPodium = 0
+
+		array<entity> teamPlayers = GetPlayerArrayOfTeam( team )
+		if( animOnlyChampion ) // To make the center
+		{
+			array<entity> teamMates = GetPlayerArrayOfTeam( team )
+			entity champion = GetEntityFromEncodedEHandle( GetGlobalNetInt( "championEEH" ) )
+			teamMates.fastremovebyvalue( champion )
+
+			teamPlayers = [ champion ]
+			foreach( player in teamMates )
+				teamPlayers.append( player )
+		}
+
+		foreach( int i, entity player in teamPlayers )
+		{
+			if ( maxPlayersToShow > 0 && i > maxPlayersToShow )
+				break
+
+			string playerName = ""
+			if ( EHIHasValidScriptStruct( player.GetEncodedEHandle() ) )
+				playerName = EHI_GetName( player.GetEncodedEHandle() )
+
+			if ( !LoadoutSlot_IsReady( player.GetEncodedEHandle(), loadoutSlotCharacter ) )
+				continue
+
+			ItemFlavor character = LoadoutSlot_GetItemFlavor( player.GetEncodedEHandle(), loadoutSlotCharacter )
+
+			if ( !LoadoutSlot_IsReady( player.GetEncodedEHandle(), Loadout_CharacterSkin( character ) ) )
+				continue
+
+			ItemFlavor characterSkin = LoadoutSlot_GetItemFlavor( player.GetEncodedEHandle(), Loadout_CharacterSkin( character ) )
+
+			vector pos = GetSquadIntroSquadFormationPosition( squadIntroSequencePosition, squadIntroSequenceAngles, i )
+
+			entity characterNode = CreateScriptRef( pos, characterAngles )
+			characterNode.SetParent( platformModel, "", true )
+			entity characterModel = CreateClientSidePropDynamic( pos, characterAngles, defaultModel )
+			SetForceDrawWhileParented( characterModel, true )
+			characterModel.MakeSafeForUIScriptHack()
+			CharacterSkin_Apply( characterModel, characterSkin )
+			file.cleanupEnts.append( characterModel )
+
+			characterModel.SetParent( characterNode, "", false )
+			string victoryAnim = "ACT_MP_MENU_LOBBY_SELECT_IDLE"
+			if( player == GetEntityFromEncodedEHandle( GetGlobalNetInt( "championEEH" ) ) && animOnlyChampion )
+				victoryAnim = "ACT_MP_MENU_READYUP_INTRO"
+
+			characterModel.Anim_Play( victoryAnim )
+			characterModel.Anim_EnableUseAnimatedRefAttachmentInsteadOfRootMotion()
+
+			bool createOverheadRui = true
+
+			int offset = 78
+
+			entity overheadEnt = CreateClientSidePropDynamic( pos + (AnglesToUp( squadIntroSequenceAngles ) * offset), <0, 0, 0>, $"mdl/dev/empty_model.rmdl" )
+			overheadEnt.Hide()
+			var overheadRui = RuiCreate( $"ui/winning_squad_member_overhead_name.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
+			RuiSetString( overheadRui, "playerName", playerName )
+			RuiTrackFloat3( overheadRui, "position", overheadEnt, RUI_TRACK_ABSORIGIN_FOLLOW )
+			file.overHeadRuis.append( overheadRui )
+
+			playersOnPodium++
+		}
+
+		SquadIntroCameraPackage squadIntroCameraPackage = GetSquadIntroCameraPackage()
+
+		vector camera_offset_start = squadIntroCameraPackage.camera_offset_start
+		vector camera_offset_end   = squadIntroCameraPackage.camera_offset_end
+		vector camera_focus_offset = squadIntroCameraPackage.camera_focus_offset
+		float camera_fov           = squadIntroCameraPackage.camera_fov
+
+		vector camera_start_pos = OffsetPointRelativeToVector( squadIntroSequencePosition, camera_offset_start, AnglesToForward( squadIntroSequenceAngles ) )
+		vector camera_end_pos   = OffsetPointRelativeToVector( squadIntroSequencePosition, camera_offset_end, AnglesToForward( squadIntroSequenceAngles ) )
+		vector camera_focus_pos = OffsetPointRelativeToVector( squadIntroSequencePosition, camera_focus_offset, AnglesToForward( squadIntroSequenceAngles ) )
+
+		vector camera_start_angles = VectorToAngles( camera_focus_pos - camera_start_pos )
+		vector camera_end_angles   = VectorToAngles( camera_focus_pos - camera_end_pos )
+
+		entity cameraMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", camera_start_pos, camera_start_angles )
+		fileLevel.camera.SetParent( cameraMover, "", false )
+
+		float camera_move_duration = 3.0
+		cameraMover.NonPhysicsMoveTo( camera_end_pos, camera_move_duration, 0.0, camera_move_duration / 2.0 )
+		cameraMover.NonPhysicsRotateTo( camera_end_angles, camera_move_duration, 0.0, camera_move_duration / 2.0 )
+		file.cleanupEnts.append( cameraMover )
+	}
+
+	while( GetGameState() == gameState )
+		WaitFrame()
+
+	wait 1.0
+
+	DestorySquadIntroRuisAndEnts()
+}
+
+void function DestorySquadIntroRuisAndEnts()
+{
+	foreach( rui in file.overHeadRuis )
+	{
+		RuiDestroyIfAlive( rui )
+	}
+		
+	foreach( entity ent in file.cleanupEnts )
+	{
+		if( IsValid( ent ) )
+			ent.Destroy()
+	}
+}
+
+SquadIntroCameraPackage function GetSquadIntroCameraPackage()
+{
+	SquadIntroCameraPackage squadIntroCameraPackage
+
+	squadIntroCameraPackage.camera_offset_start = <0, 320, 68>
+	squadIntroCameraPackage.camera_offset_end = <0, 200, 48>
+	squadIntroCameraPackage.camera_focus_offset = <0, 0, 36>
+	squadIntroCameraPackage.camera_fov = 35.5
+
+	return squadIntroCameraPackage
+}
+
+vector function GetSquadIntroSquadFormationPosition( vector mainPosition, vector angles, int index )
+{
+	if ( index == 0 )
+		return mainPosition - <0, 0, 8>
+
+	float offset_side = 48.0
+	float offset_back = -28.0
+
+	int countBack = (index + 1) / 2
+	vector offset = < offset_side, offset_back, 0 > * countBack
+
+	if ( index % 2 == 0 )
+		offset.x *= -1
+
+	vector point = OffsetPointRelativeToVector( mainPosition, offset, AnglesToForward( angles ) )
+	return point - <0, 0, 8>
+}
+
+void function DoAnimatedChampionSquadCardsPresentation()
+{
+	printt( "CHARACTER SELECT: DoAnimatedChampionSquadCardsPresentation" )
+
+	string voLine               = GetAnyDialogueAliasFromName( PickCommentaryLineFromBucket( eSurvivalCommentaryBucket.INTRO_CHAMPION_CARD ) )
+	float fadeToBlackDuration   = 0.5
+	float fadeFromBlackDuration = 0.5
+	float blackDuration         = max( GetSoundDuration( voLine ) * 0.5, 2.0 )
+
+	// Announcer VO
+	EmitSoundOnEntity( GetLocalClientPlayer(), voLine )
+
+	{
+		int championEHI       = GetGlobalNetInt( "championEEH" )
+		int championSquad1EHI = GetGlobalNetInt( "championSquad1EEH" )
+		int championSquad2EHI = GetGlobalNetInt( "championSquad2EEH" )
+
+		int me = GetLocalViewPlayer().GetEncodedEHandle()
+		if ( me == championEHI || me == championSquad1EHI || me == championSquad2EHI )
+			Chroma_SetBaseLayer( CHROMALOOP_SMOKE, CHROMATRANS_BLEND, {[0.0] = <1, .75, 0>, [1.0] = <.75, .3, 0>}, 2.0 ) //
+		else
+			Chroma_SetBaseLayer( CHROMALOOP_SMOKE, CHROMATRANS_BLEND, {[0.0] = <0, 0, 0>, [1.0] = <.5, .5, .5>}, 2.0 ) //
+	}
+
+	// Fade to black and change the scene to black smoke
+	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_GladiatorCard_Disappear" )
+	ScreenFade( GetLocalClientPlayer(), 0, 0, 0, 255, fadeToBlackDuration, blackDuration, FFADE_OUT | FFADE_PURGE )
+	wait fadeToBlackDuration
+	SetCharacterSelectSceneForChampionSquad()
+	wait blackDuration
+	ScreenFade( GetLocalClientPlayer(), 0, 0, 0, 255, fadeFromBlackDuration, 0.0, FFADE_IN | FFADE_PURGE )
+
+	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_GladiatorCard_Appear" )
+
+	// Show cards
+	var rui = CreateFullscreenRui( $"ui/gladiator_card_intro_screen.rpak", RUI_SORT_SCREENFADE - 1 )
+	string topHeader
+	if ( IsSoloMode() )
+		topHeader = "#GLADIATOR_CARD_INTRO_CHAMPION_SOLO"
+	else
+		topHeader = "#GLADIATOR_CARD_INTRO_CHAMPION_SQUAD"
+
+
+	RuiSetString( rui, "topHeader", topHeader )
+	RuiSetGameTime( rui, "transitionInAt", Time() )
+	RuiSetGameTime( rui, "transitionOutAt", GetGlobalNetTime( "pickLoadoutGamestateEndTime" ) )
+	RuiSetFloat( rui, "xpBonusAmount", XpEventTypeData_GetAmount( XP_TYPE.KILL_CHAMPION_MEMBER ) )
+	RuiSetBool( rui, "isDuoMode", GetExpectedSquadSize( GetLocalClientPlayer() ) == 2 )
+
+	RuiSetBool( rui, "showBottomText", !IsRankedGame() )
+
+	int championEEH = GetGlobalNetInt( "championEEH" )
+	
+	thread IntroSquadSequence( GetEntityFromEncodedEHandle( championEEH ).GetTeam(), true )
+
+	OnThreadEnd(
+		void function() : ( rui )
+		{
+			RuiDestroyIfAlive( rui )
+			EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_GladiatorCard_Disappear" )
+
+			Chroma_EndCharacterSelect()
+		}
+	)
+
+	PlayCharacterReadyUpLine( LoadoutSlot_GetItemFlavor( ToEHI( GetEntityFromEncodedEHandle( championEEH ) ), Loadout_CharacterClass() ) )
+
+	wait 1.5
+
+	EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_BannerChampion" )
+
+	while( Time() < GetGlobalNetTime( "pickLoadoutGamestateEndTime" ) )
+		WaitFrame()
+}
+//
+// End
 
 void function DoChampionSquadCardsPresentation()
 {
