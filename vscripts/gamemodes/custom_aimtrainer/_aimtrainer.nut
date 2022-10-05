@@ -2771,8 +2771,7 @@ void function SetupPlayer( entity player )
 	player.SetShieldHealthMax(50)
 	player.SetShieldHealth(50)
 
-	if( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) != null )
-		TakeAllWeapons( player )
+	TakeAllWeapons( player )
 	
 	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
     player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
