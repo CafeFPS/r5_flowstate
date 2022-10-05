@@ -30,7 +30,7 @@ void function RewindPlayer( entity player )
 	player.EndSignal( "OnDestroy" )
 	player.EndSignal( "OnDeath" )
 	
-	
+	player.Zipline_Stop()
 	player.SetPredictionEnabled( false )
 	HolsterAndDisableWeapons( player )
 	
@@ -114,24 +114,37 @@ void function RecordPositions( entity player )
 	)
 
 	int maxSaves = PHASE_REWIND_MAX_SNAPSHOTS
-
+	entity tactical
+	entity ultimate 
+	
 	while ( IsValid(player) )
 	{
 		if(!IsAlive(player))
+		{
+			player.p.burnCardPhaseRewindStruct.phaseRetreatSavedPositions.clear()
+			WaitFrame()
+			continue
+		}
+		
+		tactical = player.GetOffhandWeapon( OFFHAND_TACTICAL )
+		ultimate = player.GetOffhandWeapon( OFFHAND_ULTIMATE )
+		
+		if(IsValid(tactical) && tactical.GetWeaponClassName() != "mp_ability_phase_rewind" && IsValid(ultimate) && ultimate.GetWeaponClassName() != "mp_ability_phase_rewind" )
 		{
 			WaitFrame()
 			continue
 		}
 		
-		if(!IsValid(player.GetOffhandWeapon( OFFHAND_TACTICAL ))) 
+		if(!IsValid(tactical) && !IsValid(ultimate))
 		{
 			WaitFrame()
-			continue
+			continue			
 		}
-		else if(IsValid(player.GetOffhandWeapon( OFFHAND_TACTICAL )) &&	player.GetOffhandWeapon( OFFHAND_TACTICAL ).GetWeaponClassName() != "mp_ability_phase_rewind") 
+
+		if(GetGameState() != eGameState.Playing)
 		{
 			WaitFrame()
-			continue
+			continue				
 		}
 		
 		vector playervelocity = player.GetVelocity()

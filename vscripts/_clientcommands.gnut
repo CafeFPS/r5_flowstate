@@ -104,10 +104,11 @@ bool function ClientCommand_recharge( entity player, array<string> args )
 	if ( GetConVarInt( "sv_cheats" ) != 1 )
 		return false
     
-	player.GetOffhandWeapon( OFFHAND_INVENTORY )
-		.SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
-	player.GetOffhandWeapon( OFFHAND_LEFT )
-		.SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_INVENTORY )))
+		player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_LEFT )))
+		player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
+	
 	return true
 }
 
