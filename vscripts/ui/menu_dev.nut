@@ -398,9 +398,7 @@ void function SetupDefaultDevCommandsMP()
 	}
 	else
 	{
-		SetupDevCommand( "sv_cheats is false, can't show more dev settings.", "empty" )
-		SetupDevCommand( "sv_cheats is false, can't show more dev settings.", "empty" )
-		SetupDevCommand( "sv_cheats is false, can't show more dev settings.", "empty" )
+		SetupDevCommand( "sv_cheats is false, type 'sv_cheats 1' in console to enable dev menu.", "empty" )
 	}
 }
 
