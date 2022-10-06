@@ -596,7 +596,7 @@ void function DoAnimatedSquadCardsPresentation()
 	fileLevel.gCardRuiHandles.append( borderRui )
 }
 
-void function IntroSquadSequence( int team, bool animOnlyChampion = false )
+void function IntroSquadSequence( int team, bool animOnlyChampion = false, float camera_move_duration = 3.0 )
 {
 	DestorySquadIntroRuisAndEnts()
 
@@ -701,18 +701,10 @@ void function IntroSquadSequence( int team, bool animOnlyChampion = false )
 		entity cameraMover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", camera_start_pos, camera_start_angles )
 		fileLevel.camera.SetParent( cameraMover, "", false )
 
-		float camera_move_duration = 3.0
 		cameraMover.NonPhysicsMoveTo( camera_end_pos, camera_move_duration, 0.0, camera_move_duration / 2.0 )
 		cameraMover.NonPhysicsRotateTo( camera_end_angles, camera_move_duration, 0.0, camera_move_duration / 2.0 )
 		file.cleanupEnts.append( cameraMover )
 	}
-
-	while( GetGameState() == gameState )
-		WaitFrame()
-
-	wait 1.0
-
-	DestorySquadIntroRuisAndEnts()
 }
 
 void function DestorySquadIntroRuisAndEnts()
@@ -788,6 +780,7 @@ void function DoAnimatedChampionSquadCardsPresentation()
 	ScreenFade( GetLocalClientPlayer(), 0, 0, 0, 255, fadeToBlackDuration, blackDuration, FFADE_OUT | FFADE_PURGE )
 	wait fadeToBlackDuration
 	SetCharacterSelectSceneForChampionSquad()
+	DestorySquadIntroRuisAndEnts()
 	wait blackDuration
 	ScreenFade( GetLocalClientPlayer(), 0, 0, 0, 255, fadeFromBlackDuration, 0.0, FFADE_IN | FFADE_PURGE )
 
@@ -818,6 +811,7 @@ void function DoAnimatedChampionSquadCardsPresentation()
 		void function() : ( rui )
 		{
 			RuiDestroyIfAlive( rui )
+			DestorySquadIntroRuisAndEnts()
 			EmitSoundOnEntity( GetLocalClientPlayer(), "UI_Survival_Intro_GladiatorCard_Disappear" )
 
 			Chroma_EndCharacterSelect()
