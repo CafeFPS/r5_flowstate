@@ -865,13 +865,8 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	player.SetInvulnerable()
 
 	float endTime = Time() + duration
-	while(Time() <= endTime && IsValid(player)){
-		player.MakeInvisible()
-		wait 0.3
-		if(IsValid(player))
-			player.MakeVisible()
-		wait 0.3
-	}
+	while(Time() <= endTime && IsValid(player))
+		wait 0.1
 }
 
 void function WpnPulloutOnRespawn(entity player, float duration)
@@ -2022,7 +2017,7 @@ foreach(player in GetPlayerArray())
 		if(!IsValid(player)) continue
 		
 		AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-		Message(player,"- ROUND SCOREBOARD -", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n          Custom_tdm made by sal#3261.\n     Flowstate DM " + file.scriptversion + " made by @CafeFPS.", 7, "UI_Menu_RoundSummary_Results")
+		Message(player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n          Custom_tdm made by sal#3261.\n     Flowstate DM " + file.scriptversion + " made by @CafeFPS.", 7, "UI_Menu_RoundSummary_Results")
 	}
 
 wait 7
