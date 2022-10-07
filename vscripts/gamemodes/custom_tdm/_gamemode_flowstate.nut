@@ -28,6 +28,7 @@ global function ResetDeathPlayersCounterForFirstBloodAnnouncer
 global function CreateShipRoomFallTriggers
 global function AutoChangeLevelThread
 global function GiveFlowstateOvershield
+global function IsAdmin
 
 global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
@@ -815,7 +816,7 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 void function ReCheckGodMode(entity player)
 {
 	wait 0.1
-	if(!IsValid(player) || !IsAlive(player)) return
+	if(!IsValid(player) || IsValid(player) && !IsAlive(player)) return
 	
 	player.MakeVisible()
 	player.ClearInvulnerable()
