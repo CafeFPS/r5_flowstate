@@ -812,6 +812,17 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
 }
 
+void function ReCheckGodMode(entity player)
+{
+	wait 0.1
+	if(!IsValid(player) || !IsAlive(player)) return
+	
+	player.MakeVisible()
+	player.ClearInvulnerable()
+	player.SetTakeDamageType( DAMAGE_YES )
+	Highlight_ClearEnemyHighlight( player )
+}
+
 void function TpPlayerToSpawnPoint(entity player)
 {
 	LocPair loc = _GetAppropriateSpawnLocation(player)
@@ -829,11 +840,13 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	function() : ( player )
 		{
 			if(!IsValid(player)) return
-
+			
 			player.MakeVisible()
 			player.ClearInvulnerable()
 			player.SetTakeDamageType( DAMAGE_YES )
 			Highlight_ClearEnemyHighlight( player )
+			
+			thread ReCheckGodMode(player)
 		}
 	)
 	thread WpnPulloutOnRespawn(player, duration)
@@ -853,10 +866,10 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	float endTime = Time() + duration
 	while(Time() <= endTime && IsValid(player)){
 		player.MakeInvisible()
-		wait 0.5
+		wait 0.3
 		if(IsValid(player))
 			player.MakeVisible()
-		wait 0.5
+		wait 0.3
 	}
 }
 
