@@ -1439,7 +1439,9 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			weapon.SetWeaponPrimaryClipCount( ammoToGive )
 		else {
 			player.AmmoPool_SetCapacity( 65535 )
-			player.AmmoPool_SetCount( ammoType, player.AmmoPool_GetCount( ammoType ) + ammoToGive )
+
+			int safeAmmoCount = int(min( player.AmmoPool_GetCount( ammoType ) + ammoToGive, 65535))
+			player.AmmoPool_SetCount( ammoType, safeAmmoCount )
 		}
 	}
 
