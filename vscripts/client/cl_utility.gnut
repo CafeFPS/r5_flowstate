@@ -654,6 +654,13 @@ void function Dev_PrintClientMessage( float duration )
 	Announcement_SetHideOnDeath( announcement, false )
 	Announcement_SetDuration( announcement, duration )
 	Announcement_SetPurge( announcement, true )
+	
+	if(GameRules_GetGameMode() == "custom_tdm")
+	{
+		Announcement_SetStyle(announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING)
+		Announcement_SetTitleColor( announcement, Vector(0,0,0) )
+	}
+	
 	AnnouncementFromClass( player, announcement )
 
 	dev_messageString = ""
