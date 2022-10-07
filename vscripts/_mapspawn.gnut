@@ -394,9 +394,7 @@ void function MapTriggers_Init()
 		case "mp_rr_arena_composite":
 		{
 			CreateWallTrigger( <5, 2587, -520> , 30000 , true)
-			// CreateWallTrigger( <0, 5600, -190> , 85 , true)
-			// CreateWallTrigger( <0, 5600, -240> , 120)
-			CreateWallTrigger( <5, 5379, 860>  )
+			CreateWallTrigger( <5, 5379, 860>, 30000, false, true )
 			break
 		}
 		case "mp_rr_ashs_redemption":
@@ -406,8 +404,8 @@ void function MapTriggers_Init()
 		}
 		case "mp_rr_party_crasher":
 		{
-			CreateWallTrigger( <811, 911, 2434>, 30000 )
-    			CreateWallTrigger( <811, 911, -537>, 30000, true )
+			CreateWallTrigger( <811, 911, 2434>, 30000, false, true )
+    		CreateWallTrigger( <811, 911, -537>, 30000, true )
 			break
 		}
 		default:
@@ -452,39 +450,38 @@ entity function CreateWallTrigger( vector origin , float radius = 30000 , bool k
 
 void function WallTriggerEnter( entity trigger , entity ent )
 {
-    if (IsValid(ent)) // ensure the entity is valid
+	if(!IsValid(ent)) return
+
+	if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
 	{
-		if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+		if (trigger.GetScriptName() == "WallTrigger_Killzone") // Check if it's a killzone
 		{
-			if (trigger.GetScriptName() == "WallTrigger_Killzone") // Check if it's a killzone
-			{
-				ent.TakeDamage(ent.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
-			} 
-			else if (trigger.GetScriptName() == "WallTrigger_oob_timer") // Check if it's only out of bounds timer
-			{
-				EntityOutOfBounds( trigger, ent, null, null )
-			}
-			else 
-			{
-				EntityOutOfBounds( trigger, ent, null, null )
-				ent.DisableWeapon()
-				ent.Zipline_Stop()
-				StatusEffect_AddEndless( ent, eStatusEffect.hunt_mode_visuals, 100 )
-				StatusEffect_AddEndless( ent, eStatusEffect.minimap_jammed, 100 )
-				StatusEffect_AddEndless( ent, eStatusEffect.move_slow, 0.2 )
+			ent.TakeDamage(ent.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
+		} 
+		else if (trigger.GetScriptName() == "WallTrigger_oob_timer") // Check if it's only out of bounds timer
+		{
+			EntityOutOfBounds( trigger, ent, null, null )
+		}
+		else 
+		{
+			EntityOutOfBounds( trigger, ent, null, null )
+			ent.DisableWeapon()
+			ent.Zipline_Stop()
+			StatusEffect_AddEndless( ent, eStatusEffect.hunt_mode_visuals, 100 )
+			StatusEffect_AddEndless( ent, eStatusEffect.minimap_jammed, 100 )
+			StatusEffect_AddEndless( ent, eStatusEffect.move_slow, 0.2 )
 
-				vector newdir
-				if (trigger.GetAngles() == <0,0,0>)
-				{
-					newdir = -ent.GetAngles() / 2 + -<0,0,-100> * -1
-				}
-				else
-				{
-					newdir = -ent.GetAngles() / 2 + -trigger.GetAngles() * -1
-				}
-
-				ent.SetVelocity(newdir * 15)
+			vector newdir
+			if (trigger.GetAngles() == <0,0,0>)
+			{
+				newdir = -ent.GetAngles() / 2 + -<0,0,-100> * -1
 			}
+			else
+			{
+				newdir = -ent.GetAngles() / 2 + -trigger.GetAngles() * -1
+			}
+
+			ent.SetVelocity(newdir * 15)
 		}
 	}
 }
