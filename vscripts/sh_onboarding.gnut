@@ -78,6 +78,8 @@ global function CharSelect_GetOutroTransitionDuration
 global function Survival_GetCharacterSelectDuration
 global function Survival_CharacterSelectEnabled
 
+global bool isTitanfallDeathcam = false
+
 void function SV_CL_Onboarding_Init()
 {
 #if SERVER
@@ -558,6 +560,33 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 
 	Remote_CallFunction_NonReplay( victim, "ServerCallback_YouDied", attacker, GetHealthFrac( victim ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
+
+	victim.FreezeControlsOnServer()
+	victim.StartObserverMode( OBS_MODE_DEATHCAM )
+	if( ShouldSetObserverTarget( attacker ) && isTitanfallDeathcam )
+		victim.SetObserverTarget( attacker ) // Titanfall style deathcam
+	else
+		victim.SetObserverTarget( null )
+	
+	vector forceVec = DamageInfo_GetDamageForce( damageInfo )
+	float forceMag = Length( forceVec )
+	forceVec = Normalize( forceVec )
+	const MAX_FORCE = 30000
+	if ( forceMag > MAX_FORCE )
+		forceMag = MAX_FORCE
+
+	thread RagdollDelayed( victim, forceVec * forceMag )
+}
+
+// Becoming ragdoll causes odd things to happen to the player, such as their weapons being deleted
+void function RagdollDelayed( entity ent, vector velocity )
+{
+	ent.EndSignal( "OnDestroy" )
+
+	WaitEndFrame()
+
+	const bool SKIP_ANIMATION = true
+	ent.BecomeRagdoll( velocity, SKIP_ANIMATION )
 }
 
 void function OnClientConnected( entity player )

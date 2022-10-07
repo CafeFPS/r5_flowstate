@@ -595,11 +595,6 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
-
-	if( victim.GetObserverTarget() != null )
-		victim.SetObserverTarget( null )
-
-	victim.StartObserverMode( OBS_MODE_DEATHCAM )
 	
 	if( attacker.IsPlayer() )
 	{

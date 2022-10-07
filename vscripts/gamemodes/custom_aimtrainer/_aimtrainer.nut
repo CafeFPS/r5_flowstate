@@ -2267,11 +2267,6 @@ void function OnPlayerDeathCallback(entity player, var damageInfo)
 
 void function OnPlayerDeathCallbackThread(entity player)
 {
-	if( player.GetObserverTarget() != null )
-		player.SetObserverTarget( null )
-
-	player.StartObserverMode( OBS_MODE_DEATHCAM )
-
 	if( !player.p.isChallengeActivated )
 		return
 

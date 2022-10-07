@@ -139,9 +139,6 @@ void function _CustomTDM_Init()
         else thread _OnPlayerDied(victim, attacker, damageInfo)
     })
 
-	if( FlowState_PROPHUNT() || FlowState_SURF() )
-		AddCallback_OnPlayerKilled( _OnPlayerDiedShared )
-
 	if(FlowState_PROPHUNT()){
 		AddClientCommandCallback("next_round", ClientCommand_NextRoundPROPHUNT)
 		AddClientCommandCallback("scoreboard", ClientCommand_ScoreboardPROPHUNT)
@@ -494,13 +491,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         case eGameState.Playing:
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-
-				if( ShouldSetObserverTarget( attacker ) )
-					victim.SetObserverTarget( attacker )
-				else
-					victim.SetObserverTarget( null )
-				
-				victim.StartObserverMode( OBS_MODE_DEATHCAM ) // Titanfall-style deathcam
 				
 				wait 1.5
 				
@@ -633,11 +623,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
             thread attackerHandleFunc()
         break
         default:
-			if( victim.GetObserverTarget() != null )
-				victim.SetObserverTarget( null )
-
-			victim.StartObserverMode( OBS_MODE_DEATHCAM )
-			
 	    	_HandleRespawn(victim)
 	    break
     }
@@ -647,14 +632,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 		thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
 
 	UpdatePlayerCounts()
-}
-
-void function _OnPlayerDiedShared( entity victim, entity attacker, var damageInfo )
-{
-	if( victim.GetObserverTarget() != null )
-		victim.SetObserverTarget( null )
-
-	victim.StartObserverMode( OBS_MODE_DEATHCAM )
 }
 
 void function CheckForObservedTarget(entity player)
@@ -1657,6 +1634,7 @@ void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
+	isTitanfallDeathcam = true
 
 	if(!Flowstate_DoorsEnabled()){
 		array<entity> doors = GetAllPropDoors()
