@@ -157,14 +157,15 @@ void function SetupAbilities()
 	SetupDevCommand( "Wattson Ultimate", "give mp_weapon_trophy_defense_system"  )
 	SetupDevCommand( "Wraith Tactical", "give mp_ability_phase_walk" )
 	SetupDevCommand( "Wraith Ultimate", "give mp_weapon_phase_tunnel" )
-
-	SetupDevCommand( "3Dash Tactical", "give mp_ability_3dash" )
-	SetupDevCommand( "Pulse Blade", "give mp_weapon_grenade_sonar" )
-	SetupDevCommand( "Amped Wall", "give mp_weapon_deployable_cover" )
-	SetupDevCommand( "Electric Smoke", "give mp_weapon_grenade_electric_smoke" )
-	SetupDevCommand( "Cloak", "give mp_ability_cloak" )
-	SetupDevCommand( "Gravity Lift", "give mp_ability_space_elevator_tac" )
-	SetupDevCommand( "Phase Rewind", "give mp_ability_phase_rewind" )
+	
+	SetupDevCommand( "Tf2: Pulse Blade", "give mp_weapon_grenade_sonar" )
+	SetupDevCommand( "Tf2: Amped Wall", "give mp_weapon_deployable_cover" )
+	SetupDevCommand( "Tf2: Electric Smoke", "give mp_weapon_grenade_electric_smoke" )
+	
+	SetupDevCommand( "Dev: 3Dash", "give mp_ability_3dash" )
+	SetupDevCommand( "Dev: Cloak", "give mp_ability_cloak" )
+	SetupDevCommand( "Dev: Gravity Lift", "give mp_ability_space_elevator_tac" )
+	SetupDevCommand( "Dev: Phase Rewind", "give mp_ability_phase_rewind" )
 	//SetupDevCommand( "Gravity Star", "give mp_weapon_grenade_gravity" )
 	#endif
 }
