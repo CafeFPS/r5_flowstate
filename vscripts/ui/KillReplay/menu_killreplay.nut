@@ -16,6 +16,7 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
         Hud_SetVisible( Hud_GetChild( file.menu, "PlayerSheild" + i ), false )
     }
 
+
     Hud_SetText(Hud_GetChild( file.menu, "KillReplayPlayerName" ), "")
     RuiSetImage(Hud_GetRui(Hud_GetChild(file.menu, "PlayerImage")), "basicImage", $"")
 
@@ -45,6 +46,11 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
 
 	CloseAllMenus()
 	AdvanceMenu( file.menu )
+
+	Hud_StartMessageMode( Hud_GetChild( file.menu, "KillReplayChatBox") )
+	Hud_SetVisible( Hud_GetChild( file.menu, "KillReplayChatBox"), true )
+	Hud_SetAboveBlur( Hud_GetChild( file.menu, "KillReplayChatBox"), true )
+	Hud_SetFocused( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ) )
 }
 
 void function ReplayHud_UpdatePlayerHealthAndSheild(float health, float sheild, int tier)
@@ -55,6 +61,7 @@ void function ReplayHud_UpdatePlayerHealthAndSheild(float health, float sheild, 
 
 void function CloseKillReplayHud()
 {
+	Hud_SetVisible( Hud_GetChild( file.menu, "KillReplayChatBox"), false )
 	CloseAllMenus()
 }
 
