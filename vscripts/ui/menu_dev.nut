@@ -300,6 +300,7 @@ void function SetupDefaultDevCommandsMP()
 			//SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
 			SetupDevMenu( "Survival", SetDevMenu_Survival )
 			SetupDevMenu( "Custom Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )
+			SetupDevMenu( "Custom Weapons", SetDevMenu_SurvivalLoot, "weapon_custom" )
 			SetupDevMenu( "Survival Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
 			SetupDevMenu( "Survival Attachments", SetDevMenu_SurvivalLoot, "attachment" )
 			SetupDevMenu( "Survival Helmets", SetDevMenu_SurvivalLoot, "helmet" )
@@ -812,7 +813,6 @@ void function SetupTDMSecondaryWeapsons()
 	//SetupDevCommand( "Kraber", "tgive s mp_weapon_sniper" )
 	
 
-	//foreach ( player in GetPlayerArray() )
 	//foreach ( player in GetPlayerArray() )
 	//{
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )

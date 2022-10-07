@@ -285,10 +285,15 @@ void function OnWeaponAttack_OrdnanceControl( entity player, entity weapon, stri
 		{
 			string nextOrdnance = GetNextOrdnance( player, data.ref )
 			if ( nextOrdnance != "" )
-				thread function () : ( player, nextOrdnance )
+				thread function () : ( player, weapon, nextOrdnance )
 				{
-					wait 1
+					wait weapon.GetWeaponSettingFloat(eWeaponVar.toss_time)
 					SwitchPlayerToOrdnance( player, nextOrdnance )
+				}()
+			else thread function () : ( player, weapon, nextOrdnance )
+				{
+					wait weapon.GetWeaponSettingFloat(eWeaponVar.toss_time)
+					player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 				}()
 		}
 	}
@@ -1434,7 +1439,9 @@ void function SURVIVAL_GiveMainWeapon( entity player, entity pickup, entity acti
 			weapon.SetWeaponPrimaryClipCount( ammoToGive )
 		else {
 			player.AmmoPool_SetCapacity( 65535 )
-			player.AmmoPool_SetCount( ammoType, player.AmmoPool_GetCount( ammoType ) + ammoToGive )
+
+			int safeAmmoCount = int(min( player.AmmoPool_GetCount( ammoType ) + ammoToGive, 65535))
+			player.AmmoPool_SetCount( ammoType, safeAmmoCount )
 		}
 	}
 

@@ -1595,6 +1595,12 @@ void function SetupSurvivalLoot( var categories )
 		return	
 	}
 
+	if (stringCats.contains("weapon_custom"))
+	{
+		SetupCustomLoot( "main_weapon" )
+		return	
+	}
+	
 	// turn menu strings into real category enums
 	array<int> catTypes
 	foreach( string cat in stringCats )
