@@ -313,7 +313,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 		case "custom_aimtrainer":
 			PrecacheWeapon( $"mp_weapon_clickweapon")
 			PrecacheWeapon( $"mp_weapon_clickweaponauto")
-			PrecacheWeapon( $"mp_weapon_3030" )
 			break
 		case "map_editor":
 			PrecacheWeapon( $"mp_weapon_editor" )
@@ -323,7 +322,8 @@ void function CodeCallback_MapSpawn() // original script entry point
 			LoadModelsFromEditor()
 			if ( GetCurrentPlaylistVarBool( "movement_map_enable", false ) )
 				LoadMovementMap()
-			
+			PrecacheWeapon( $"mp_weapon_clickweapon")
+			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			//PrecacheWeapon( $"mp_weapon_grenade_gravity" )			
 			break
 	}
@@ -333,7 +333,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_ability_phase_rewind" )
 	PrecacheWeapon( $"mp_ability_space_elevator_tac" ) //needs more testing
-
+	
 	printl( "Code Script: _mapspawn" )
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
