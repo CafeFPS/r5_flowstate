@@ -385,15 +385,18 @@ WeaponData
 	Mods
 	{
 	    gold        {}
-	    whiteset    {}
-        blueset     {}
-        purpleset   {}
+		
+		survival_finite_ammo
+		{
+			"ammo_default_total"					"0"
+			"ammo_stockpile_max"					"36"
+			"ammo_no_remove_from_stockpile"			"0"
 
-                      
-                            
-         
-         
-      
+			"low_ammo_fraction" 					"0.3"
+
+			"uses_ammo_pool"						"1"
+		}
+		
         barrel_stabilizer_l4_flash_hider
         {
             "fx_muzzle_flash_view"                "P_mflash_pulse_LMG_sup_FP"
@@ -470,7 +473,7 @@ WeaponData
 			vis							player_zoomfrac
 			ammo						weapon_ammo
 			clipSize					weapon_clipSize
-			//centerOffset				weapon_ads_center_offset
+			centerOffset				weapon_ads_center_offset
 		}
 	}
 
@@ -484,6 +487,7 @@ WeaponData
 			vis							player_zoomfrac
 			ammo						weapon_ammo
 			clipSize					weapon_clipSize
+			clipCount 					weapon_ammoClipCount
 		}
 	}
 
