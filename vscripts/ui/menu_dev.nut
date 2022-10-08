@@ -299,19 +299,19 @@ void function SetupDefaultDevCommandsMP()
 			SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
 			//SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
 			SetupDevMenu( "Survival", SetDevMenu_Survival )
-			SetupDevMenu( "Custom Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )
-			SetupDevMenu( "Custom Weapons", SetDevMenu_SurvivalLoot, "weapon_custom" )
-			SetupDevMenu( "Survival Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
-			SetupDevMenu( "Survival Attachments", SetDevMenu_SurvivalLoot, "attachment" )
-			SetupDevMenu( "Survival Helmets", SetDevMenu_SurvivalLoot, "helmet" )
-			SetupDevMenu( "Survival Armor", SetDevMenu_SurvivalLoot, "armor" )
-			SetupDevMenu( "Survival Backpack", SetDevMenu_SurvivalLoot, "backpack" )
-			SetupDevMenu( "Survival Incap Shield", SetDevMenu_SurvivalLoot, "incapshield" )
+			SetupDevMenu( "Custom: Weapons", SetDevMenu_SurvivalLoot, "weapon_custom" )
+			SetupDevMenu( "Custom: Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )			
+			SetupDevMenu( "Survival: Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
+			SetupDevMenu( "Survival: Attachments", SetDevMenu_SurvivalLoot, "attachment" )
+			SetupDevMenu( "Survival: Helmets", SetDevMenu_SurvivalLoot, "helmet" )
+			SetupDevMenu( "Survival: Armors", SetDevMenu_SurvivalLoot, "armor" )
+			SetupDevMenu( "Survival: Backpacks", SetDevMenu_SurvivalLoot, "backpack" )
+			SetupDevMenu( "Survival: Incap Shields", SetDevMenu_SurvivalLoot, "incapshield" )
 			//SetupDevMenu( "Survival Incap Shield Debugging", SetDevMenu_SurvivalIncapShieldBots )
 
 			string itemsString = "ordnance ammo health custom_pickup data_knife"
 
-			SetupDevMenu( "Survival Items", SetDevMenu_SurvivalLoot, itemsString )
+			SetupDevMenu( "Survival: Consumables", SetDevMenu_SurvivalLoot, itemsString )
 
 			//SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
 		}
