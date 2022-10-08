@@ -71,7 +71,7 @@
 
 	// Behavior - Firing
 	//
-	"fire_rate"                                "2.45"
+	"fire_rate"                                "1.85"
 	"impulse_force"                            "4000"
 
 	// Behavior - Zoom/ADS
