@@ -452,32 +452,13 @@ bool ornull function DevRespawnGetPlayerEliminationOverride( entity player )
 
 void function DevRespawnPlayer( entity player, bool shouldForce, void functionref( entity, int ) devCallbackFunc = null, int devIndex = -1 )
 {
-	if ( GameRules_GetGameMode() != SURVIVAL || IsFiringRangeGameMode() )
-	{
-		if( IsAlive( player ) )
-		{
-			player.BecomeRagdoll( player.GetVelocity(), false )
-			WaitFrame()
-			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
-		}
-		else
-		{
-			player.p.respawnPodLanded = true // pretend this is a valid survival respawn
-			thread _DelayUnsetRespawnPodLanded( player )
-			//player.p.hasMatchParticipationEnded = false // they're still going!
-			//player.p.lastDeathTime = -1.0
-			ClearPlayerEliminated( player )
-			DecideRespawnPlayer( player )
-		}
-		return
-	}
-	
 	if ( shouldForce && IsAlive( player ) )
 	{
-		player.BecomeRagdoll( player.GetVelocity(), false )
-		WaitFrame()
 		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 
+		if( IsFiringRangeGameMode() || GameRules_GetGameMode() == "custom_tdm" )
+			return
+		
 		wait 1.0
 	}
 	if ( !IsAlive( player ) )
