@@ -195,15 +195,14 @@ LootDroneData function Flyers_SpawnFlyerAtRandomPath()
 	//Getting rid of SetParent so we can have proper animation while moving. hack #2! //By Colombia
 	entity model = CreateEntity( "script_mover" )
 	model.kv.targetname = LOOT_DRONE_MOVER_SCRIPTNAME
+
+	model.SetValueForModelKey( FLYER_MODEL.tolower() ) 	
+	model.SetMaxHealth( 100 )
+	model.SetHealth( 100 )
+	model.kv.modelscale = RandomFloatRange( 0.9, 1.1 )
+	model.SetSkin(RandomInt(3))
 	
-	if (GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
-	{
-		model.SetValueForModelKey( FLYER_MODEL.tolower() ) 	
-		model.SetMaxHealth( 100 )
-		model.SetHealth( 100 )
-		model.kv.modelscale = RandomFloatRange( 0.9, 1.1 )
-		model.SetSkin(RandomInt(3))
-	} else if ( GetMapName() == "mp_rr_canyonlands_mu1_night")
+	if ( GetMapName() == "mp_rr_canyonlands_mu1_night")
 	{
 		model.SetSkin(3)
 		StartParticleEffectOnEntityWithPos_ReturnEntity( model, GetParticleSystemIndex( FX_FLYER_GLOW2 ), FX_PATTACH_ABSORIGIN_FOLLOW, model.LookupAttachment( "CHESTFOCUS" ), <0,0,0>, VectorToAngles( <0,0,-1> ) )
