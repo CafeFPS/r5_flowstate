@@ -1650,7 +1650,7 @@ void function SetupCustomLoot( var categories )
 		if (data.lootType == eLootType.MAINWEAPON && !IsCustomWeapon(data)) continue
 
 		string displayString = CreateLootDisplayString( data )
-		RunUIScript( "SetupDevCommand", displayString, "script SpawnGenericLoot( \"" + data.ref + "\", gp()[0].GetOrigin(), <-1,-1,-1>, " + data.countPerDrop + " )" )
+		RunUIScript( "SetupDevCommand", displayString, "give " + data.ref )
 	}
 }
 
