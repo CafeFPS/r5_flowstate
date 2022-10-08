@@ -24,7 +24,6 @@ global function GetTDMState
 global function SetTdmStateToNextRound
 global function SetTdmStateToInProgress
 global function SetFallTriggersStatus
-global function ResetDeathPlayersCounterForFirstBloodAnnouncer
 global function CreateShipRoomFallTriggers
 global function AutoChangeLevelThread
 global function GiveFlowstateOvershield
@@ -68,7 +67,6 @@ struct {
     entity ringBoundary
 	entity previousChampion
 	entity previousChallenger
-	int deathPlayersCounter=0
 	int maxPlayers
 	int maxTeams
 
@@ -258,10 +256,6 @@ void function SetTdmStateToInProgress(){
 
 void function SetFallTriggersStatus(bool status){
 	file.FallTriggersEnabled = status
-}
-
-void function ResetDeathPlayersCounterForFirstBloodAnnouncer(){
-	file.deathPlayersCounter=0
 }
 
 LocPair function _GetAppropriateSpawnLocation(entity player)
@@ -503,14 +497,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 					ClearInvincible(victim)
 					return
 				}
-				
-				if ( victim == GetKillLeader() )
-				{
-					thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, attacker, 1.0, "", "bc_weKilledKillLeader" )
-
-					foreach ( player in GetPlayerArray() )
-						Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
-				}
 
 	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer())
 				{
@@ -573,21 +559,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	    			WpnAutoReloadOnKill(attacker)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
-
-					int attackerKills = attacker.GetPlayerNetInt( "kills" )
-
-					if(	!IsValid( GetKillLeader() ) && attackerKills == 2)
-					{
-						thread SetKillLeader( attacker, attackerKills, true )
-						thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 1.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
-						return
-					}
-
-					if ( IsValid( GetKillLeader() ) && attackerKills > GetKillLeader().GetPlayerNetInt( "kills" ) && attacker != GetKillLeader())
-					{
-						thread SetKillLeader( attacker, attackerKills, true)
-						thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 1.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
-					}
 					
 					if( IsValid( GetKillLeader() ) && attacker == GetKillLeader() && Time() - attacker.p.lastDownedEnemyTime >= KILLLEADER_STREAK_ANNOUNCE_TIME )
 						attacker.p.downedEnemy = 0
@@ -626,12 +597,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         default:
 	    	_HandleRespawn(victim)
 	    break
-    }
 
-	file.deathPlayersCounter++
-	if(file.deathPlayersCounter == 1 )
-		thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
-
+	}
 	UpdatePlayerCounts()
 }
 
@@ -1814,7 +1781,6 @@ if(GetBestPlayer()==PlayerWithMostDamage())
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
-		file.deathPlayersCounter = 0
 	}
 }
 else{
@@ -1830,9 +1796,15 @@ else{
 		file.previousChampion=GetBestPlayer()
 		file.previousChallenger=PlayerWithMostDamage()
 		GameRules_SetTeamScore(player.GetTeam(), 0)
-		file.deathPlayersCounter = 0
 	}
 }
+
+if( GetBestPlayer() != null )
+	SetChampion( GetBestPlayer() )
+
+FlagClear( "SurvivalCommentary_FirstBloodReached" )
+SurvivalCommentary_ResetAllData()
+
 } catch(e4){}
 //printt("Flowstate DEBUG - Clearing last round stats.")
 foreach(player in GetPlayerArray())
