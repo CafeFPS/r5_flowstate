@@ -534,6 +534,7 @@ void function PlayerStopSpectating( entity player )
 {
 	player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 	player.SetSpecReplayDelay( 0 )
+	player.StopObserverMode()
 }
 #endif
 
