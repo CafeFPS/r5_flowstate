@@ -48,7 +48,7 @@ void function OnMainMenu_Show()
 	Hud_SetWidth( file.titleArt, width )
 	Hud_SetWidth( file.subtitle, width )
 
-	Hud_SetText( file.versionDisplay, GetPublicGameVersion() )
+	Hud_SetText( file.versionDisplay, GetPublicGameVersion() + " - R5Reloaded" )
 	Hud_Show( file.versionDisplay )
 
 	ActivatePanel( GetPanel( "MainMenuPanel" ) )

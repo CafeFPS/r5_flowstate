@@ -29,25 +29,9 @@ void function LeaveMatch()
 
 void function LoadLobbyAfterLeave()
 {
-	//Set the main menus blackscreen visibility to true
-	SetMainMenuBlackScreenVisible(true)
-
-	//Just incase the player leaving is the host of the game, we wana make sure the hostgame is shut down
+	isLeavingMatch = true
+	
 	ShutdownHostGame()
-
-	//wait until fully disconnected
-	while(!g_isAtMainMenu) {
-		WaitFrame()
-	}
-
-	//Create lobby server
-	CreateServer("Lobby VM", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
-
-	//Refresh Server Browser
-	ServerBrowser_RefreshServerListing()
-
-	//No longer at main menu
-	g_isAtMainMenu = false
 }
 
 void function LeaveParty()
