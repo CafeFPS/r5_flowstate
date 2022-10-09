@@ -40,7 +40,8 @@
 		"allcaps"				"1"
 		auto_wide_tocontents	1
 		zpos 					71
-		fontHeight				40
+		fontHeight				60
+		tall					60
 		xpos					0
 		ypos					-50
 		"fgcolor_override"		"255 255 255 255"
@@ -59,8 +60,9 @@
 		auto_wide_tocontents	1
 		zpos 					71
 		fontHeight				40
+		tall					40
 		xpos					0
-		ypos					50
+		ypos					20
 		"fgcolor_override"		"200 200 200 255"
 
 		"pin_to_sibling"		"TopMessage"
