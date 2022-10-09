@@ -1629,7 +1629,7 @@ void function RunTDM()
     WaitForever()
 }
 
-void function SimpleChampionUI(){
+void function SimpleChampionUI()
 /////////////Retículo Endoplasmático#5955 CaféDeColombiaFPS///////////////////
 {
 	//printt("Flowstate DEBUG - Game is starting.")
@@ -1640,19 +1640,19 @@ void function SimpleChampionUI(){
     DestroyPlayerProps()
 	isBrightWaterByZer0 = false
 
-    PlayerTrail(GetBestPlayer(),0)
+    PlayerTrail( GetBestPlayer(),0 )
 
-	SetGameState(eGameState.Playing)
+	SetGameState( eGameState.Playing )
 	file.tdmState = eTDMState.IN_PROGRESS
 	file.FallTriggersEnabled = true
 
-	foreach(player in GetPlayerArray())
+	foreach( player in GetPlayerArray() )
 	{
-		if( IsValid(player) )
+		if( IsValid( player ) )
 		{
-			_HandleRespawn(player)
+			_HandleRespawn( player )
 			if(FlowState_Gungame())
-				GiveGungameWeapon(player)
+				GiveGungameWeapon( player )
 				
 			player.UnforceStand()
 			player.UnfreezeControlsOnServer()
@@ -1663,7 +1663,7 @@ void function SimpleChampionUI(){
 
 	if (!file.mapIndexChanged)
 		{
-			file.nextMapIndex = (file.nextMapIndex + 1 ) % file.locationSettings.len()
+			file.nextMapIndex = ( file.nextMapIndex + 1 ) % file.locationSettings.len()
 		}
 
 	if (FlowState_LockPOI()) {
@@ -1672,8 +1672,8 @@ void function SimpleChampionUI(){
 
 	int choice = file.nextMapIndex
 	file.mapIndexChanged = false
-	file.selectedLocation = file.locationSettings[choice]
-	file.thisroundDroppodSpawns = GetNewFFADropShipLocations(file.selectedLocation.name, GetMapName())
+	file.selectedLocation = file.locationSettings[ choice ]
+	file.thisroundDroppodSpawns = GetNewFFADropShipLocations( file.selectedLocation.name, GetMapName() )
 	//printt("Flowstate DEBUG - Next round location is: " + file.selectedLocation.name)
 
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_canyonlands_mu1" || GetMapName() == "mp_rr_canyonlands_mu1_night" || GetMapName() == "mp_rr_canyonlands_64k_x_64k")
@@ -1694,12 +1694,14 @@ void function SimpleChampionUI(){
         file.randomsecondary = RandomIntRangeInclusive( 0, 18 )
 	}
 
-	if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled()){
+	if(file.selectedLocation.name == "TTV Building" && FlowState_ExtrashieldsEnabled())
+	{
 		DestroyPlayerProps()
 		CreateFlowStateGroundMedKit( <10725, 5913,-4225>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime() )
-	} else if(file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled()){
+	} else if( file.selectedLocation.name == "Skill trainer By Colombia" && FlowState_ExtrashieldsEnabled() )
+	{
 		DestroyPlayerProps()
-		CreateFlowStateGroundMedKit( <17247,31823,-310>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime())
+		CreateFlowStateGroundMedKit( <17247,31823,-310>, ZERO_VECTOR , 3 , FlowState_ExtrashieldsSpawntime() )
 		thread SkillTrainerLoad()
 	} else if(file.selectedLocation.name == "Skill trainer By Colombia" )
 	{
@@ -1718,27 +1720,31 @@ void function SimpleChampionUI(){
 		thread BrightwaterLoad2()
 		wait 1.5
 		thread BrightwaterLoad3()
-	} else if(file.selectedLocation.name == "Cave By BlessedSeal" ){
+	} else if(file.selectedLocation.name == "Cave By BlessedSeal" )
+	{
 		//printt("Flowstate DEBUG - creating props for Cave.")
 		DestroyPlayerProps()
 		thread SpawnEditorPropsSeal()
-	} else if(file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled()){
+	} else if( file.selectedLocation.name == "Gaunlet" && FlowState_ExtrashieldsEnabled() )
+	{
 		DestroyPlayerProps()
 		//printt("Flowstate DEBUG - creating Gaunlet Extrashield.")
 		CreateFlowStateGroundMedKit( <-21289, -12030, 3060>, ZERO_VECTOR, 3 , FlowState_ExtrashieldsSpawntime() )
-	} else if (file.selectedLocation.name == "White Forest By Zer0Bytes"){
+	} else if ( file.selectedLocation.name == "White Forest By Zer0Bytes" )
+	{
 		DestroyPlayerProps()
 		//printt("Flowstate DEBUG - creating props for White Forest.")
 		thread SpawnWhiteForestProps()
-	} else if (file.selectedLocation.name == "Custom map by Biscutz"){
+	} else if ( file.selectedLocation.name == "Custom map by Biscutz" )
+	{
 		DestroyPlayerProps()
 		//printt("Flowstate DEBUG - creating props for Map by Biscutz.")
 		thread LoadMapByBiscutz1()
 		thread LoadMapByBiscutz2()
 	}
-    foreach(player in GetPlayerArray())
+    foreach( player in GetPlayerArray() )
     {
-		if(!IsValid(player)) return
+		if( !IsValid(player) ) return
         try 
 		{
 			RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
@@ -1764,111 +1770,112 @@ void function SimpleChampionUI(){
 		} catch(e3){}
 		WaitFrame()
 	}
-}
 
-try {
-if(GetBestPlayer()==PlayerWithMostDamage())
-{
-	foreach(player in GetPlayerArray())
-    {
-		string nextlocation = file.selectedLocation.name
-		string subtext
-		if(GetBestPlayerName() != "-still nobody-")
-			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
-		else subtext = ""
-			Message(player, file.selectedLocation.name, subtext, 25, "")
-			EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleTimerStartNext" )
-		file.previousChampion=GetBestPlayer()
-		file.previousChallenger=PlayerWithMostDamage()
-		GameRules_SetTeamScore(player.GetTeam(), 0)
-	}
-}
-else{
-	foreach(player in GetPlayerArray())
-    {
-		string nextlocation = file.selectedLocation.name
-		string subtext
-		if(GetBestPlayerName() != "-still nobody-")
-			subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
-		else subtext = ""
-			Message(player, file.selectedLocation.name, subtext, 25, "")
-			EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleTimerStartNext" )
-		file.previousChampion=GetBestPlayer()
-		file.previousChallenger=PlayerWithMostDamage()
-		GameRules_SetTeamScore(player.GetTeam(), 0)
-	}
-}
 
-if( GetBestPlayer() != null )
-	SetChampion( GetBestPlayer() )
-
-FlagClear( "SurvivalCommentary_FirstBloodReached" )
-SurvivalCommentary_ResetAllData()
-
-} catch(e4){}
-//printt("Flowstate DEBUG - Clearing last round stats.")
-foreach(player in GetPlayerArray())
-    {
-        if(IsValidPlayer(player))
-        {
-			player.p.playerDamageDealt = 0.0
-			if (FlowState_ResetKillsEachRound() && IsValidPlayer(player))
-			{
-				player.SetPlayerNetInt("kills", 0) //Reset for kills
-	    		player.SetPlayerNetInt("assists", 0) //Reset for deaths
-			}
-
-			if(FlowState_Gungame())
-			{
-			player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
-			// KillStreakAnnouncer(player, true)
-			}
-
-			if(FlowState_RandomGunsEverydie()){
-			player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
-			UpgradeShields(player, true)
-			}
+	try {
+	if( GetBestPlayer()==PlayerWithMostDamage() )
+	{
+		foreach( player in GetPlayerArray() )
+		{
+			string nextlocation = file.selectedLocation.name
+			string subtext
+			if(GetBestPlayerName() != "-still nobody-")
+				subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
+			else subtext = ""
+				Message(player, file.selectedLocation.name, subtext, 25, "")
+				EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleTimerStartNext" )
+			file.previousChampion=GetBestPlayer()
+			file.previousChallenger=PlayerWithMostDamage()
+			GameRules_SetTeamScore(player.GetTeam(), 0)
 		}
 	}
-ResetAllPlayerStats()
-file.ringBoundary = CreateRingBoundary(file.selectedLocation)
-//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
-
-float endTime = Time() + FlowState_RoundTime()
-//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
-
-foreach(player in GetPlayerArray())
-    {
-	thread Flowstate_GrantSpawnImmunity(player, 2.5)
+	else{
+		foreach(player in GetPlayerArray())
+		{
+			string nextlocation = file.selectedLocation.name
+			string subtext
+			if(GetBestPlayerName() != "-still nobody-")
+				subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
+			else subtext = ""
+				Message(player, file.selectedLocation.name, subtext, 25, "")
+				EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleTimerStartNext" )
+			file.previousChampion=GetBestPlayer()
+			file.previousChallenger=PlayerWithMostDamage()
+			GameRules_SetTeamScore(player.GetTeam(), 0)
+		}
 	}
 
-if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
-{
-	WaitForever()
-} else if(Flowstate_EnableAutoChangeLevel())
-	thread AutoChangeLevelThread(endTime)
+	if( GetBestPlayer() != null )
+		SetChampion( GetBestPlayer() )
 
-if (FlowState_Timer()){
-SetGlobalNetInt( "currentDeathFieldStage", 0 )
-SetGlobalNetTime( "nextCircleStartTime", endTime )
-SetGlobalNetTime( "circleCloseTime", endTime + 8 )
-while( Time() <= endTime )
-	{
-		if(Time() == endTime-900)
+	FlagClear( "SurvivalCommentary_FirstBloodReached" )
+	SurvivalCommentary_ResetAllData()
+
+	} catch(e4){}
+	//printt("Flowstate DEBUG - Clearing last round stats.")
+	foreach( player in GetPlayerArray() )
 		{
-				foreach(player in GetPlayerArray())
+			if( IsValidPlayer(player) )
+			{
+				player.p.playerDamageDealt = 0.0
+				if ( FlowState_ResetKillsEachRound() && IsValidPlayer( player ) )
 				{
-					if(IsValid(player))
+					player.SetPlayerNetInt("kills", 0) //Reset for kills
+					player.SetPlayerNetInt("assists", 0) //Reset for deaths
+				}
+
+				if( FlowState_Gungame() )
+				{
+					player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
+					// KillStreakAnnouncer(player, true)
+				}
+
+				if( FlowState_RandomGunsEverydie() )
+				{
+					player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
+					UpgradeShields(player, true)
+				}
+			}
+		}
+	ResetAllPlayerStats()
+	file.ringBoundary = CreateRingBoundary( file.selectedLocation )
+	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
+
+	float endTime = Time() + FlowState_RoundTime()
+	//printt("Flowstate DEBUG - TDM/FFA gameloop Round started.")
+
+	foreach( player in GetPlayerArray() )
+	{
+		thread Flowstate_GrantSpawnImmunity(player, 2.5)
+	}
+
+	if( GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ) )
+	{
+		WaitForever()
+	} else if( Flowstate_EnableAutoChangeLevel() )
+		thread AutoChangeLevelThread(endTime)
+
+	if (FlowState_Timer()){
+		SetGlobalNetInt( "currentDeathFieldStage", 0 )
+		SetGlobalNetTime( "nextCircleStartTime", endTime )
+		SetGlobalNetTime( "circleCloseTime", endTime + 8 )
+		while( Time() <= endTime )
+		{
+			if( Time() == endTime - 900 )
+			{
+				foreach( player in GetPlayerArray() )
+				{
+					if( IsValid(player) )
 					{
 						Message(player,"15 MINUTES REMAINING!","", 5)
 					}
 				}
 			}
-			if(Time() == endTime-600)
+			if( Time() == endTime - 600 )
 			{
-				foreach(player in GetPlayerArray())
+				foreach( player in GetPlayerArray() )
 				{
-					if(IsValid(player))
+					if( IsValid(player) )
 					{
 						Message(player,"10 MINUTES REMAINING!","", 5)
 					}
@@ -1876,38 +1883,38 @@ while( Time() <= endTime )
 			}
 			if(Time() == endTime-300)
 			{
-				foreach(player in GetPlayerArray())
+				foreach( player in GetPlayerArray() )
 				{
-					if(IsValid(player))
+					if( IsValid(player) )
 					{
 						Message(player,"5 MINUTES REMAINING!","", 5)
 					}
 				}
 			}
-			if(Time() == endTime-120)
+			if(Time() == endTime - 120)
 			{
-				foreach(player in GetPlayerArray())
+				foreach( player in GetPlayerArray() )
 				{
-					if(IsValid(player))
+					if( IsValid(player) )
 					{
 						Message(player,"2 MINUTES REMAINING!","", 5)
 					}
 				}
 			}
-			if(Time() == endTime-60)
+			if(Time() == endTime - 60)
 			{
-				foreach(player in GetPlayerArray())
+				foreach( player in GetPlayerArray() )
 				{
-					if(IsValid(player))
+					if( IsValid(player) )
 					{
 						Message(player,"1 MINUTE REMAINING!","", 5, "")
 						EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleMoves60sec" )
 					}
 				}
 			}
-			if(Time() == endTime-30)
+			if(Time() == endTime - 30)
 			{
-				foreach(player in GetPlayerArray())
+				foreach( player in GetPlayerArray() )
 				{
 					if(IsValid(player))
 					{
@@ -1916,9 +1923,9 @@ while( Time() <= endTime )
 					}
 				}
 			}
-			if(Time() == endTime-10)
+			if(Time() == endTime - 10)
 			{
-				foreach(player in GetPlayerArray())
+				foreach( player in GetPlayerArray() )
 				{
 					if(IsValid(player))
 					{
@@ -1927,50 +1934,55 @@ while( Time() <= endTime )
 					}
 				}
 			}
-			if(file.tdmState == eTDMState.NEXT_ROUND_NOW){
+			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
+			{
 				//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
-				break}
+				break
+			}
 			WaitFrame()
 		}
-}
-else if (!FlowState_Timer() ){
-	while( Time() <= endTime )
-		{
-		if(file.tdmState == eTDMState.NEXT_ROUND_NOW) {
-			//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
-			break}
-			WaitFrame()
-		}
-}
-	
-wait 1
-
-foreach(player in GetPlayerArray())
-    {
-		if(!IsValid(player)) continue
-
-		if(!IsAlive(player) && !player.p.isSpectating)
-		{
-			_HandleRespawn(player)
-			ClearInvincible(player)
-		}
-
-		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
-		{
-			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
-			PlayerRestoreHPFIESTA(player, 100)
-		} else
-			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
-
-		player.SetThirdPersonShoulderModeOn()
-		HolsterAndDisableWeapons( player )
-
-		WaitFrame()
 	}
+	else if ( !FlowState_Timer() ){
+		while( Time() <= endTime )
+		{
+			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
+			{
+				//printt("Flowstate DEBUG - tdmState is eTDMState.NEXT_ROUND_NOW Loop ended.")
+				break
+			}
 
-wait 1
-foreach(entity champion in GetPlayerArray())
-    {
+			WaitFrame()
+		}
+	}
+		
+	wait 1
+
+	foreach(player in GetPlayerArray())
+		{
+			if(!IsValid(player)) continue
+
+			if(!IsAlive(player) && !player.p.isSpectating)
+			{
+				_HandleRespawn(player)
+				ClearInvincible(player)
+			}
+
+			if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
+			{
+				PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
+				PlayerRestoreHPFIESTA(player, 100)
+			} else
+				PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+
+			player.SetThirdPersonShoulderModeOn()
+			HolsterAndDisableWeapons( player )
+
+			WaitFrame()
+		}
+
+	wait 1
+	foreach(entity champion in GetPlayerArray())
+	{
 		if(!IsValid(champion)) continue
 		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( champion ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( champion ), Loadout_CharacterClass() ) ) )
 		CharacterSkin_Apply( champion, characterSkinsA[0])
@@ -1981,18 +1993,18 @@ foreach(entity champion in GetPlayerArray())
 			PlayerTrail(champion,1)
 		}
 	}
-foreach(player in GetPlayerArray())
-    {
+	foreach(player in GetPlayerArray())
+	{
 		if(!IsValid(player)) continue
 		
 		AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
 		Message(player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n          Custom_tdm made by sal#3261.\n     Flowstate DM " + file.scriptversion + " made by @CafeFPS.", 7, "UI_Menu_RoundSummary_Results")
 	}
 
-wait 7
+	wait 7
 
-foreach(player in GetPlayerArray())
-    {
+	foreach(player in GetPlayerArray())
+	{
 		if(!IsValid(player)) continue
 		
 		ClearInvincible(player)
@@ -2000,7 +2012,7 @@ foreach(player in GetPlayerArray())
 		player.SetThirdPersonShoulderModeOff()
 	}
 
-file.ringBoundary.Destroy()
+	file.ringBoundary.Destroy()
 }
 
 void function AutoChangeLevelThread(float endTime)
