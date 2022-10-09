@@ -1463,7 +1463,7 @@ UIPos function REPLACEHud_GetParentRelativePos( var panel )
 UISize function GetScreenSize()
 {
 	#if UI
-		return REPLACEHud_GetSize( GetMenu( "R5RMainMenu" ) )
+		return REPLACEHud_GetSize( GetMenu( "MainMenu" ) )
 	#elseif CLIENT
 		array screenSize = expect array( Hud.GetScreenSize() )
 

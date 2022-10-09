@@ -606,7 +606,6 @@ float endTime = Time() + GetCurrentPlaylistVarFloat("flowstatePROPHUNTLimitTime"
 
 array<LocPair> prophuntSpawns = prophunt.selectedLocation.spawns
 
-ResetDeathPlayersCounterForFirstBloodAnnouncer()
 prophunt.cantUseChangeProp = false
 prophunt.InProgress = true
 thread EmitSoundOnSprintingProp()

@@ -456,7 +456,7 @@ void function WallTriggerEnter( entity trigger , entity ent )
 	{
 		if (trigger.GetScriptName() == "WallTrigger_Killzone") // Check if it's a killzone
 		{
-			ent.TakeDamage(ent.GetMaxHealth() + 1, null, null, { damageSourceId=damagedef_suicide, scriptType=DF_BYPASS_SHIELD })
+			ent.TakeDamage(ent.GetMaxHealth() + 1, null, null, { damageSourceId=eDamageSourceId.fall, scriptType=DF_BYPASS_SHIELD })
 		} 
 		else if (trigger.GetScriptName() == "WallTrigger_oob_timer") // Check if it's only out of bounds timer
 		{

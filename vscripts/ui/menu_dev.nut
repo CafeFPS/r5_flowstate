@@ -408,7 +408,7 @@ void function SetupDefaultDevCommandsMP()
 	}
 	else
 	{
-		SetupDevCommand( "sv_cheats is false, type 'sv_cheats 1' in console to enable dev menu.", "empty" )
+		SetupDevCommand( "sv_cheats is false, type 'sv_cheats 1' in console to enable dev menu if you're the server admin.", "empty" )
 	}
 }
 

@@ -534,6 +534,7 @@ void function PlayerStopSpectating( entity player )
 {
 	player.SetPlayerNetInt( "spectatorTargetCount", 0 )
 	player.SetSpecReplayDelay( 0 )
+	player.StopObserverMode()
 }
 #endif
 
@@ -563,7 +564,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	victim.FreezeControlsOnServer()
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )
-	if( ShouldSetObserverTarget( attacker ) && isTitanfallDeathcam )
+	if( ShouldSetObserverTarget( attacker ) && attacker.IsPlayer() && isTitanfallDeathcam )
 		victim.SetObserverTarget( attacker ) // Titanfall style deathcam
 	else
 		victim.SetObserverTarget( null )

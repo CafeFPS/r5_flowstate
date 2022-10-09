@@ -57,7 +57,7 @@ void function OpenErrorDialogThread( string errorMessage )
 	file.headerText = ( isIdleDisconnect ? Localize( "#DISCONNECTED_HEADER" ) : Localize( "#ERROR" ) ).toupper()
 	file.messageText = errorMessage
 
-	while ( GetActiveMenu() != GetMenu( "R5RMainMenu" ) )
+	while ( GetActiveMenu() != GetMenu( "MainMenu" ) )
 		WaitSignal( uiGlobal.signalDummy, "OpenErrorDialog", "ActiveMenuChanged" )
 
 	AdvanceMenu( file.menu )

@@ -194,10 +194,10 @@ void function UICodeCallback_ActivateMenus()
 		return
 
 	//Old MainMenu
-	//var mainMenu = GetMenu( "MainMenu" )
+	var mainMenu = GetMenu( "MainMenu" )
 
 	//New R5RMainMenu
-	var mainMenu = GetMenu( "R5RMainMenu" )
+	//var mainMenu = GetMenu( "R5RMainMenu" )
 
 	printt( "UICodeCallback_ActivateMenus:", GetActiveMenu() && Hud_GetHudName( GetActiveMenu() ) != "" )
 	if ( uiGlobal.menuStack.len() == 0 )

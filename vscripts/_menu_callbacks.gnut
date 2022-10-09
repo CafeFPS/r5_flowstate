@@ -10,7 +10,21 @@ void function MenuCallbacks_Init()
 bool function ClientCommandCallback_LeaveMatch( entity player, array<string> args )
 {
     // Maybe save persistent data here.
-    ClientCommand( player, "disconnect" )
-	UpdatePlayerCounts()
+	thread function() : ( player )
+	{
+		if(player.IsObserver())
+		{
+			PlayerStopSpectating(player)
+			WaitFrame()
+			if(!IsValid(player)) return
+		}
+		ClientCommand( player, "disconnect" )
+		
+		while(IsValid( player ))
+			WaitFrame()
+		
+		UpdatePlayerCounts()
+	}()
+		
     return true
 }

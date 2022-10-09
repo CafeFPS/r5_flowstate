@@ -63,26 +63,26 @@ void function UtilityUI_Init()
 
 float function ContentScaledX( int val )
 {
-	return (val * GetContentScaleFactor( GetMenu( "R5RMainMenu" ) ).x)
+	return (val * GetContentScaleFactor( GetMenu( "MainMenu" ) ).x)
 }
 
 
 float function ContentScaledY( int val )
 {
-	return (val * GetContentScaleFactor( GetMenu( "R5RMainMenu" ) ).y)
+	return (val * GetContentScaleFactor( GetMenu( "MainMenu" ) ).y)
 }
 
 
 int function ContentScaledXAsInt( int val )
 {
-	float fVal = val * GetContentScaleFactor( GetMenu( "R5RMainMenu" ) ).x
+	float fVal = val * GetContentScaleFactor( GetMenu( "MainMenu" ) ).x
 	return int( fVal + 0.5 )
 }
 
 
 int function ContentScaledYAsInt( int val )
 {
-	float fVal = val * GetContentScaleFactor( GetMenu( "R5RMainMenu" ) ).y
+	float fVal = val * GetContentScaleFactor( GetMenu( "MainMenu" ) ).y
 	return int( fVal + 0.5 )
 }
 

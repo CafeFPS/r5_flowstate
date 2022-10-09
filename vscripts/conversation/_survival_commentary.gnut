@@ -8,8 +8,8 @@ global function SurvivalCommentary_OnThreatActivationBombardment
 global function SurvivalCommentary_OnThreatActivationGrenade
 global function SurvivalCommentary_HostAnnounce
 global function SurvivalCommentary_KilledPlayerAnnounce
+global function SurvivalCommentary_ResetAllData
 
-global function SetKillLeader
 global function GetKillLeader
 global function SetChampion
 global function GetChampion
@@ -17,14 +17,13 @@ global function GetChampion
 struct {
 	int currentKillLeaderKillAmount = 0
 	entity currentKillLeader = null
-	entity currentChampion = null
 } file
 
 void function SurvivalCommentary_Init()
 {
 	ShSurvivalCommentary_Init()
 
-	if ( !IsFiringRangeGameMode() && GameRules_GetGameMode() == SURVIVAL )
+	if ( !IsFiringRangeGameMode() )
 		AddCallback_OnPlayerKilled( OnPlayerKilled )
 
 	FlagInit( "SurvivalCommentary_FirstBloodReached", false )
@@ -56,18 +55,10 @@ int function SurvivalCommentary_GetChampionEEH()
 	return GetGlobalNetInt( "championEEH" )
 }
 
-void function SetKillLeader( entity killLeader, int numKills, bool isCustom_TDM = false )
+void function SurvivalCommentary_ResetAllData()
 {
-	file.currentKillLeader = killLeader
-	file.currentKillLeaderKillAmount = numKills
-	
-	if(!isCustom_TDM)
-		wait 1.0
-	
-	if(!IsValid(killLeader)) return
-	
-	foreach ( player in GetPlayerArray() )
-		Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", killLeader, numKills )
+	file.currentKillLeader = null
+	file.currentKillLeaderKillAmount = 0
 }
 
 void function SetChampion( entity champion )
@@ -83,12 +74,18 @@ void function SetChampion( entity champion )
 
 entity function GetChampion()
 {
-	return file.currentChampion
+	return GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
 }
 
 int function GetMinKillsForKillLeader()
 {
-	return GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 3 )
+	int minKill = GetCurrentPlaylistVarInt( "survival_commentary_kill_leader_min_kills", 0 )
+	if( GameRules_GetGameMode() == "custom_tdm" )
+		minKill = 2
+	else if( minKill < 1 )
+		minKill = KILL_LEADER_MIN_KILL_REQUIREMENT // From sh_survival_commentary.gnut
+
+	return minKill
 }
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
@@ -96,47 +93,57 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() || !attacker.IsPlayer() )
 		return
 
-	if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
+	thread function() : ( victim, attacker, damageInfo )
 	{
-		if ( victim == file.currentKillLeader )
-		{
-			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, attacker, 1.0, "", "bc_weKilledKillLeader" )
+		wait STANDARD_DELAY_BETWEEN_SPEAKER_OVATIONS
 
-			foreach ( player in GetPlayerArray() )
-				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
-		}
+		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
+		{
+			if ( victim == file.currentKillLeader )
+			{
+				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, attacker, 0.0, "", "bc_weKilledKillLeader" )
 
-		int attackerKills = attacker.GetPlayerNetInt( "kills" )
-		if ( attackerKills > file.currentKillLeaderKillAmount 
-				&& attacker != file.currentKillLeader 
-				&& attackerKills >= GetMinKillsForKillLeader()
-			)
-		{
-			thread SetKillLeader( attacker, attackerKills )
-			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 1.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
-		}
-	}
-	
-	if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
-	{
-		entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
-		if( victim == champion )
-		{
-			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.CHAMPION_ELIMINATED, attacker, 1.0, "bc_championEliminated", "bc_weKilledChampion" )
+				foreach ( player in GetPlayerArray() )
+					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
+			}
 
-			foreach ( player in GetPlayerArray() )
-				Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.CHAMPION )
+			int attackerKills = attacker.GetPlayerNetInt( "kills" )
+			if ( attackerKills > file.currentKillLeaderKillAmount 
+					&& attacker != file.currentKillLeader 
+					&& attackerKills >= GetMinKillsForKillLeader()
+				)
+			{
+				file.currentKillLeader = attacker
+				file.currentKillLeaderKillAmount = attackerKills
+
+				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 0.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
+				
+				foreach ( player in GetPlayerArray() )
+					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_NewKillLeader", attacker, attackerKills )
+			}
 		}
-	}
-	
-	if ( GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true ) )
-	{
-		if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
+		
+		if ( GetCurrentPlaylistVarBool( "survival_commentary_champion_enabled", true ) )
 		{
-			FlagSet( "SurvivalCommentary_FirstBloodReached" )
-			thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
+			entity champion = GetEntityFromEncodedEHandle( SurvivalCommentary_GetChampionEEH() )
+			if( victim == champion )
+			{
+				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.CHAMPION_ELIMINATED, attacker, 0.0, "bc_championEliminated", "bc_weKilledChampion" )
+
+				foreach ( player in GetPlayerArray() )
+					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.CHAMPION )
+			}
 		}
-	}
+		
+		if ( GetCurrentPlaylistVarBool( "survival_commentary_first_blood_enabled", true ) )
+		{
+			if ( !Flag( "SurvivalCommentary_FirstBloodReached" ) )
+			{
+				FlagSet( "SurvivalCommentary_FirstBloodReached" )
+				thread AddSurvivalCommentaryEvent( eSurvivalEventType.FIRST_BLOOD, attacker )
+			}
+		}
+	}()
 }
 
 //  eSurvivalEventType
@@ -201,7 +208,7 @@ void function AddSurvivalCommentaryEvent( int event, entity attacker = null, ent
 			thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.CARE_PACKAGE_DROPPING, 0, "bc_droppingCarePack" )
 			break;
 		case eSurvivalEventType.FIRST_BLOOD:
-			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.FIRST_BLOOD, attacker, 1.0, "bc_firstBlood", "bc_weTookFirstBlood" )
+			thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.FIRST_BLOOD, attacker, 0.0, "bc_firstBlood", "bc_weTookFirstBlood" )
 			break;
 	}
 	// The announcer's voice can be changed with SurvivalCommentary_SetHost()

@@ -162,7 +162,7 @@ void function ServerBrowser_FilterServerList(string filter)
 
 	for( int i=0; i < m_vServerList.len() && i < SB_MAX_SERVER_PER_PAGE; i++ )
 	{
-		if(m_vServerList[i].svServerName.find( filter ) >= 0)
+		if(m_vServerList[i].svServerName.tolower().find( filter.tolower() ) >= 0)
 			m_vFilteredServerList.append(m_vServerList[i])
 	}
 
