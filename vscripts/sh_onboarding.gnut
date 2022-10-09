@@ -563,7 +563,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	victim.FreezeControlsOnServer()
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )
-	if( ShouldSetObserverTarget( attacker ) && isTitanfallDeathcam )
+	if( ShouldSetObserverTarget( attacker ) && IsEnvironment( attacker ) && isTitanfallDeathcam )
 		victim.SetObserverTarget( attacker ) // Titanfall style deathcam
 	else
 		victim.SetObserverTarget( null )
