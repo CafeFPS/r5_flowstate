@@ -1844,10 +1844,7 @@ foreach(player in GetPlayerArray())
 
 if(GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ))
 {
-	while(true)
-	{
-		WaitFrame()
-	}
+	WaitForever()
 } else if(Flowstate_EnableAutoChangeLevel())
 	thread AutoChangeLevelThread(endTime)
 
