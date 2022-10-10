@@ -530,8 +530,8 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				
 				if( !IsAlive( victim ) )
 					_HandleRespawn( victim )
-					ClearInvincible( victim )
-				}
+				
+				ClearInvincible( victim )
 	    	}
 
             // Attacker
