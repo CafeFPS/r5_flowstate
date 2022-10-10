@@ -337,7 +337,7 @@ void function DamageFlyout( float damageAmount, vector damagePosition, entity vi
 		}
 	}
 
-	if ( ShouldShowProjectileHitDot( damageType, weapon ) || GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) && ENABLE_HIT_DOT)
+	if ( ShouldShowProjectileHitDot( damageType, weapon ) || GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) && ENABLE_HIT_DOT )
 	{
 		var hitDotRui = RuiCreate( $"ui/projectile_hit_dot.rpak", clGlobal.topoFullScreen, RUI_DRAW_HUD, 0 )
 		RuiSetResolutionToScreenSize( hitDotRui )

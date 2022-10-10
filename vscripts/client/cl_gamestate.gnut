@@ -111,16 +111,7 @@ void function ClGameState_Init()
 
 void function CreateScoreRUI()
 {
-	var rui
-	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-	{	
-		UISize screenSize = GetScreenSize()
-		//just sending it really far on the screen lool
-		var screenAlignmentTopo = RuiTopology_CreatePlane( <( screenSize.width * 20),( screenSize.height*20), 0>, <float( screenSize.width ), 0, 0>, <0, float( screenSize.height ), 0>, false )
-		rui = RuiCreate( GetGameStateAsset(), screenAlignmentTopo, RUI_DRAW_HUD, 0 )
-	}
-	else
-		rui = CreatePermanentCockpitPostFXRui( GetGameStateAsset(), MINIMAP_Z_BASE - 1 )
+	var rui = CreatePermanentCockpitPostFXRui( GetGameStateAsset(), MINIMAP_Z_BASE - 1 )
 
 	RuiTrackFloat( rui, "jumpEndTime", null, RUI_TRACK_SCRIPT_NETWORK_VAR_GLOBAL, GetNetworkedVariableIndex( "PlaneDoorsOpenTime" ) )
 
@@ -136,8 +127,7 @@ void function CreateScoreRUI()
 	file.gamestateRui = rui
 	file.gameStateRuiCreated = true
 
-	if(!GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-		SetCommonScoreRUIVars( rui )
+	SetCommonScoreRUIVars( rui )
 
 	if ( file.gameModeScoreBarUpdateRules == null )
 		SetGameModeScoreBarUpdateRules( GameModeScoreBarUpdateRules_Default )
@@ -175,10 +165,6 @@ void function SetCommonScoreRUIVars( var rui )
 		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 		RuiSetString( rui, "squadsRemainingTextSingular", "DUMMIES REMAINING" )
 		RuiSetString( rui, "squadsRemainingTextPlural", "DUMMIES REMAINING" )
-	}
-	else if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-	{
-		RuiSetBool( rui, "shouldDisplayLivingPlayerCount", false )
 	}
 	else
 	{
