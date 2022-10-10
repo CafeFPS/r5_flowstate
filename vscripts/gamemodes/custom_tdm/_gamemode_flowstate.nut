@@ -1886,35 +1886,26 @@ void function SimpleChampionUI()
 			if(Time() == endTime - 60)
 			{
 				foreach( player in GetPlayerArray() )
-				{
 					if( IsValid(player) )
-					{
 						Message(player,"1 MINUTE REMAINING!","", 5, "")
-						EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleMoves60sec" )
-					}
-				}
+
+				PlayAnnounce( "diag_ap_aiNotify_circleMoves60sec_01" )
 			}
 			if(Time() == endTime - 30)
 			{
 				foreach( player in GetPlayerArray() )
-				{
-					if(IsValid(player))
-					{
+					if( IsValid(player) )
 						Message(player,"30 SECONDS REMAINING!","", 5, "")
-						EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleMoves30sec" )
-					}
-				}
+
+				PlayAnnounce( "diag_ap_aiNotify_circleMoves30sec_01" )
 			}
 			if(Time() == endTime - 10)
 			{
 				foreach( player in GetPlayerArray() )
-				{
-					if(IsValid(player))
-					{
-						Message(player,"10 SECONDS REMAINING!", "\n The battle is over.", 8, "")
-						EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleMoves10sec" )
-					}
-				}
+					if( IsValid(player) )
+						Message(player,"10 SECONDE REMAINING!","", 5, "")
+
+				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
 			}
 			if( file.tdmState == eTDMState.NEXT_ROUND_NOW )
 			{
@@ -1963,24 +1954,24 @@ void function SimpleChampionUI()
 		}
 
 	wait 1
-	foreach(entity champion in GetPlayerArray())
+
+	if( GetBestPlayer() != null )
+		SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER )
+
+	foreach( entity champion in GetPlayerArray() )
 	{
-		if(!IsValid(champion)) continue
+		if( !IsValid( champion ) ) continue
 		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( champion ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( champion ), Loadout_CharacterClass() ) ) )
-		CharacterSkin_Apply( champion, characterSkinsA[0])
-		if(GetBestPlayer() == champion) 
-		{
-			thread EmitSoundOnEntityOnlyToPlayer( champion, champion, "diag_ap_aiNotify_winnerFound_10" )
-			thread EmitSoundOnEntityExceptToPlayer( champion, champion, "diag_ap_aiNotify_winnerFound" )
+		CharacterSkin_Apply( champion, characterSkinsA[0] )
+		if( GetBestPlayer() == champion ) 
 			PlayerTrail(champion,1)
-		}
 	}
-	foreach(player in GetPlayerArray())
+	foreach( player in GetPlayerArray() )
 	{
-		if(!IsValid(player)) continue
+		if( !IsValid( player ) ) continue
 		
-		AddCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
-		Message(player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results")
+		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
+		Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
 	}
 
 	wait 7
@@ -1992,15 +1983,15 @@ void function SimpleChampionUI()
 
 		wait 6.0
 
-		GameRules_ChangeMap(GetMapName(), GameRules_GetGameMode())
+		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 	}
 
-	foreach(player in GetPlayerArray())
+	foreach( player in GetPlayerArray() )
 	{
-		if(!IsValid(player)) continue
+		if( !IsValid( player ) ) continue
 		
-		ClearInvincible(player)
-		RemoveCinematicFlag(player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION)
+		ClearInvincible( player )
+		RemoveCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
 		player.SetThirdPersonShoulderModeOff()
 	}
 
