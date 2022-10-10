@@ -25,7 +25,6 @@ global function SetTdmStateToNextRound
 global function SetTdmStateToInProgress
 global function SetFallTriggersStatus
 global function CreateShipRoomFallTriggers
-global function AutoChangeLevelThread
 global function GiveFlowstateOvershield
 global function IsAdmin
 
@@ -575,16 +574,15 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 						switch( attacker.p.downedEnemy )
 						{
 							case 2:
-								announce = "diag_ap_aiNotify_killLeaderDoubleKill"
+								announce = "diag_ap_aiNotify_killLeaderDoubleKill_01"
 								break
 							
 							case 3:
-								announce = "diag_ap_aiNotify_killLeaderTripleKill"
+								announce = "diag_ap_aiNotify_killLeaderTripleKill_01"
 								break
 						}
 
-						foreach( player in GetPlayerArray_AliveConnected() )
-							EmitSoundOnEntityOnlyToPlayer( player, player, announce )
+						PlayAnnounce( announce )
 					}
 
 					printt( "attacker.p.lastDownedEnemyTime: " + attacker.p.lastDownedEnemyTime + " | attacker.p.downedEnemy: " + attacker.p.downedEnemy + " | Time() - attacker.p.lastDownedEnemyTime <= KILLLEADER_STREAK_ANNOUNCE_TIME: ", Time() - attacker.p.lastDownedEnemyTime <= KILLLEADER_STREAK_ANNOUNCE_TIME )
@@ -1773,38 +1771,22 @@ void function SimpleChampionUI()
 	}
 
 
-	try {
-	if( GetBestPlayer()==PlayerWithMostDamage() )
+	try{
+	string subtext = ""
+	if( GetBestPlayer() == PlayerWithMostDamage() && GetBestPlayerName() != "-still nobody-" )
+		subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
+	else if( GetBestPlayerName() != "-still nobody-" )
+		subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
+
+	foreach( player in GetPlayerArray() )
 	{
-		foreach( player in GetPlayerArray() )
-		{
-			string nextlocation = file.selectedLocation.name
-			string subtext
-			if(GetBestPlayerName() != "-still nobody-")
-				subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. / " + GetDamageOfPlayerWithMostDamage() + " damage."
-			else subtext = ""
-				Message(player, file.selectedLocation.name, subtext, 25, "")
-				EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleTimerStartNext" )
-			file.previousChampion=GetBestPlayer()
-			file.previousChallenger=PlayerWithMostDamage()
-			GameRules_SetTeamScore(player.GetTeam(), 0)
-		}
+		Message( player, file.selectedLocation.name, subtext, 25, "" )
+		file.previousChampion = GetBestPlayer()
+		file.previousChallenger = PlayerWithMostDamage()
+		GameRules_SetTeamScore( player.GetTeam(), 0 )
 	}
-	else{
-		foreach(player in GetPlayerArray())
-		{
-			string nextlocation = file.selectedLocation.name
-			string subtext
-			if(GetBestPlayerName() != "-still nobody-")
-				subtext = "\n           CHAMPION: " + GetBestPlayerName() + " / " + GetBestPlayerScore() + " kills. \n    CHALLENGER:  " + PlayerWithMostDamageName() + " / " + GetDamageOfPlayerWithMostDamage() + " damage."
-			else subtext = ""
-				Message(player, file.selectedLocation.name, subtext, 25, "")
-				EmitSoundOnEntityOnlyToPlayer( player, player, "diag_ap_aiNotify_circleTimerStartNext" )
-			file.previousChampion=GetBestPlayer()
-			file.previousChallenger=PlayerWithMostDamage()
-			GameRules_SetTeamScore(player.GetTeam(), 0)
-		}
-	}
+
+	PlayAnnounce( "diag_ap_aiNotify_circleTimerStartNext_02" )
 
 	if( GetBestPlayer() != null )
 		SetChampion( GetBestPlayer() )
@@ -1815,29 +1797,29 @@ void function SimpleChampionUI()
 	} catch(e4){}
 	//printt("Flowstate DEBUG - Clearing last round stats.")
 	foreach( player in GetPlayerArray() )
+	{
+		if( IsValidPlayer(player) )
 		{
-			if( IsValidPlayer(player) )
+			player.p.playerDamageDealt = 0.0
+			if ( FlowState_ResetKillsEachRound() && IsValidPlayer( player ) )
 			{
-				player.p.playerDamageDealt = 0.0
-				if ( FlowState_ResetKillsEachRound() && IsValidPlayer( player ) )
-				{
-					player.SetPlayerNetInt("kills", 0) //Reset for kills
-					player.SetPlayerNetInt("assists", 0) //Reset for deaths
-				}
+				player.SetPlayerNetInt( "kills", 0 ) //Reset for kills
+				player.SetPlayerNetInt( "assists", 0 ) //Reset for deaths
+			}
 
-				if( FlowState_Gungame() )
-				{
-					player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
-					// KillStreakAnnouncer(player, true)
-				}
+			if( FlowState_Gungame() )
+			{
+				player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+				// KillStreakAnnouncer(player, true)
+			}
 
-				if( FlowState_RandomGunsEverydie() )
-				{
-					player.SetPlayerGameStat( PGS_TITAN_KILLS, 0)
-					UpgradeShields(player, true)
-				}
+			if( FlowState_RandomGunsEverydie() )
+			{
+				player.SetPlayerGameStat( PGS_TITAN_KILLS, 0 )
+				UpgradeShields(player, true)
 			}
 		}
+	}
 	ResetAllPlayerStats()
 	file.ringBoundary = CreateRingBoundary( file.selectedLocation )
 	//printt("Flowstate DEBUG - Bubble created, executing SimpleChampionUI.")
@@ -2530,6 +2512,15 @@ void function ResetPlayerStats(entity player)
     player.SetPlayerGameStat( PGS_ASSAULT_SCORE, 0)
     player.SetPlayerGameStat( PGS_DEFENSE_SCORE, 0)
     player.SetPlayerGameStat( PGS_ELIMINATED, 0)
+}
+
+void function PlayAnnounce( string sound )
+{
+	foreach( player in GetPlayerArray_Alive() )
+	{
+		EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, player.GetOrigin() + < 500, 500, 500 >, player, sound )
+		EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, player.GetOrigin() + < 1000, 500, 1000 >, player, sound )
+	}
 }
 
 //  ██████ ██      ██ ███████ ███    ██ ████████      ██████  ██████  ███    ███ ███    ███ ███    ███  █████  ███    ██ ██████  ███████
