@@ -526,11 +526,10 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW)
 	    		    wait Deathmatch_GetRespawnDelay()
 
-				if(IsValid(victim))
-				{
+				if( IsValid( victim ) && !IsAlive( victim ) )
 					_HandleRespawn( victim )
-					ClearInvincible(victim)
-				}
+				
+				ClearInvincible(victim)
 	    	}
 
             // Attacker
@@ -842,8 +841,8 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	OnThreadEnd(
 	function() : ( player )
 		{
-			if(IsValid(player))
-				DeployAndEnableWeapons(player)
+			if( IsValid( player ) && file.tdmState != eTDMState.NEXT_ROUND_NOW )
+				DeployAndEnableWeapons( player )
 		}
 	)
 	
@@ -1642,7 +1641,7 @@ void function SimpleChampionUI()
     PlayerTrail( GetBestPlayer(),0 )
 
 	SetGameState( eGameState.Playing )
-	file.tdmState = eTDMState.IN_PROGRESS
+	SetTdmStateToInProgress()
 	file.FallTriggersEnabled = true
 
 	foreach( player in GetPlayerArray() )
@@ -1925,6 +1924,8 @@ void function SimpleChampionUI()
 			WaitFrame()
 		}
 	}
+
+	SetTdmStateToNextRound()
 		
 	wait 1
 
