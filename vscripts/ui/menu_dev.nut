@@ -770,7 +770,7 @@ void function SetupTDMPrimaryWeapsons()
 	//Pistols
 	SetupDevCommand( "RE-45", "tgive p mp_weapon_autopistol optic_cq_hcog_classic barrel_stabilizer_l3 bullets_mag_l3" )
 	SetupDevCommand( "P2020", "tgive p mp_weapon_semipistol optic_cq_hcog_classic bullets_mag_l3 hopup_unshielded_dmg" )
-	SetupDevCommand( "Winman", "tgive p mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3" )
+	SetupDevCommand( "Wingman", "tgive p mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3" )
 	//Shotguns
 	SetupDevCommand( "EVA-8", "tgive p mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
 	SetupDevCommand( "Mozambique", "tgive p mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
@@ -811,7 +811,7 @@ void function SetupTDMSecondaryWeapsons()
 	//Pistols
 	SetupDevCommand( "RE-45", "tgive s mp_weapon_autopistol optic_cq_hcog_classic barrel_stabilizer_l3 bullets_mag_l3" )
 	SetupDevCommand( "P2020", "tgive s mp_weapon_semipistol optic_cq_hcog_classic bullets_mag_l3 hopup_unshielded_dmg" )
-	SetupDevCommand( "Winman", "tgive s mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3" )
+	SetupDevCommand( "Wingman", "tgive s mp_weapon_wingman optic_cq_hcog_classic highcal_mag_l3" )
 	//Shotguns
 	SetupDevCommand( "EVA-8", "tgive s mp_weapon_shotgun shotgun_bolt_l3 optic_cq_threat hopup_double_tap" )
 	SetupDevCommand( "Mozambique", "tgive s mp_weapon_shotgun_pistol shotgun_bolt_l3 optic_cq_threat hopup_unshielded_dmg" )
