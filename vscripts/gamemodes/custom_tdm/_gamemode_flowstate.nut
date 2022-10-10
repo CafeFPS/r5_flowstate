@@ -527,9 +527,10 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    		    wait Deathmatch_GetRespawnDelay()
 
 				if( IsValid( victim ) && !IsAlive( victim ) )
+				{
 					_HandleRespawn( victim )
-				
-				ClearInvincible(victim)
+					ClearInvincible( victim )
+				}
 	    	}
 
             // Attacker
