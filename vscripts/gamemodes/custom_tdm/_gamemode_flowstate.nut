@@ -1783,8 +1783,6 @@ void function SimpleChampionUI()
 		GameRules_SetTeamScore( player.GetTeam(), 0 )
 	}
 
-	PlayAnnounce( "diag_ap_aiNotify_circleTimerStartNext_02" )
-
 	if( GetBestPlayer() != null )
 		SetChampion( GetBestPlayer() )
 
@@ -1834,10 +1832,24 @@ void function SimpleChampionUI()
 		WaitForever()
 	}
 
-	if (FlowState_Timer()){
-		SetGlobalNetInt( "currentDeathFieldStage", 0 )
+	if ( FlowState_Timer() )
+	{
+		int round = 0
+		bool isFinalRound = false
+		if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
+		{
+			round = 7
+			isFinalRound = true
+		}
+		SetGlobalNetInt( "currentDeathFieldStage", round )
 		SetGlobalNetTime( "nextCircleStartTime", endTime )
 		SetGlobalNetTime( "circleCloseTime", endTime + 8 )
+
+		if( isFinalRound )
+			AddSurvivalCommentaryEvent( eSurvivalEventType.ROUND_TIMER_STARTED )
+		else
+			PlayAnnounce( "diag_ap_aiNotify_circleTimerStartNext_02" )
+		
 		while( Time() <= endTime )
 		{
 			if( Time() == endTime - 900 )
