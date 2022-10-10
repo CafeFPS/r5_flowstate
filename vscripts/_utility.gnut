@@ -1425,8 +1425,8 @@ void function MakeInvincible( entity ent )
 void function ClearInvincible( entity ent )
 {
 	Assert( IsValid( ent ), "Tried to clear invalid " + ent + " invincible" )
-
-	ent.ClearInvulnerable()
+	if(IsValid(ent))
+		ent.ClearInvulnerable()
 }
 
 bool function IsInvincible( entity ent )
