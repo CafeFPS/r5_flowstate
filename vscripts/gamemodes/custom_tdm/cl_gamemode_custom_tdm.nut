@@ -7,6 +7,8 @@ global function ServerCallback_TDM_PlayerKilled
 global function TDM_OnPlayerKilled
 global function Cl_RegisterLocation
 
+const string CIRCLE_CLOSING_IN_SOUND = "UI_InGame_RingMoveWarning" //"survival_circle_close_alarm_01"
+
 bool isFuncRegister = false
 
 struct {
@@ -23,6 +25,70 @@ void function Cl_CustomTDM_Init()
 {
 	thread ChatEvent_Handler()
 	AddOnDeathCallback( "player", TDM_OnPlayerKilled )
+    AddCallback_EntitiesDidLoad( NotifyRingTimer )
+}
+
+void function NotifyRingTimer()
+{
+    if( GetGlobalNetTime( "nextCircleStartTime" ) < Time() )
+        return
+    
+    UpdateFullmapRuiTracks()
+
+    float new = GetGlobalNetTime( "nextCircleStartTime" )
+
+    var gamestateRui = ClGameState_GetRui()
+	array<var> ruis = [gamestateRui]
+	var cameraRui = GetCameraCircleStatusRui()
+	if ( IsValid( cameraRui ) )
+		ruis.append( cameraRui )
+
+	int roundNumber = (SURVIVAL_GetCurrentDeathFieldStage() + 1)
+	string roundString = Localize( "#SURVIVAL_CIRCLE_STATUS_ROUND_CLOSING", roundNumber )
+	if ( SURVIVAL_IsFinalDeathFieldStage() )
+		roundString = Localize( "#SURVIVAL_CIRCLE_STATUS_ROUND_CLOSING_FINAL" )
+	DeathFieldStageData data = GetDeathFieldStage( SURVIVAL_GetCurrentDeathFieldStage() )
+	float currentRadius      = SURVIVAL_GetDeathFieldCurrentRadius()
+	float endRadius          = data.endRadius
+
+	foreach( rui in ruis )
+	{
+		RuiSetGameTime( rui, "circleStartTime", new )
+		RuiSetInt( rui, "roundNumber", roundNumber )
+		RuiSetString( rui, "roundClosingString", roundString )
+
+		entity localViewPlayer = GetLocalViewPlayer()
+		if ( IsValid( localViewPlayer ) )
+		{
+			RuiSetFloat( rui, "deathfieldStartRadius", currentRadius )
+			RuiSetFloat( rui, "deathfieldEndRadius", endRadius )
+			RuiTrackFloat3( rui, "playerOrigin", localViewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
+
+			#if(true)
+				RuiTrackInt( rui, "teamMemberIndex", localViewPlayer, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
+			#endif
+		}
+	}
+
+    if ( SURVIVAL_IsFinalDeathFieldStage() )
+        roundString = "#SURVIVAL_CIRCLE_ROUND_FINAL"
+    else
+        roundString = Localize( "#SURVIVAL_CIRCLE_ROUND", SURVIVAL_GetCurrentRoundString() )
+
+    float duration = 7.0
+
+    AnnouncementData announcement
+    announcement = Announcement_Create( "" )
+    Announcement_SetSubText( announcement, roundString )
+    Announcement_SetHeaderText( announcement, "#SURVIVAL_CIRCLE_WARNING" )
+    Announcement_SetDisplayEndTime( announcement, new )
+    Announcement_SetStyle( announcement, ANNOUNCEMENT_STYLE_CIRCLE_WARNING )
+    Announcement_SetSoundAlias( announcement, CIRCLE_CLOSING_IN_SOUND )
+    Announcement_SetPurge( announcement, true )
+    Announcement_SetPriority( announcement, 200 ) //
+    Announcement_SetDuration( announcement, duration )
+
+    AnnouncementFromClass( GetLocalViewPlayer(), announcement )
 }
 
 void function Cl_RegisterLocation(LocationSettings locationSettings)
