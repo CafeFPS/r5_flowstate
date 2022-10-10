@@ -69,6 +69,7 @@ struct {
 	entity previousChallenger
 	int maxPlayers
 	int maxTeams
+	int currentRound = 1
 
 	array<string> mAdmins
 	int randomprimary
@@ -1852,8 +1853,7 @@ void function SimpleChampionUI()
 	if( GetCurrentPlaylistVarBool("flowstateEndlessFFAorTDM", false ) )
 	{
 		WaitForever()
-	} else if( Flowstate_EnableAutoChangeLevel() )
-		thread AutoChangeLevelThread(endTime)
+	}
 
 	if (FlowState_Timer()){
 		SetGlobalNetInt( "currentDeathFieldStage", 0 )
@@ -2003,6 +2003,16 @@ void function SimpleChampionUI()
 
 	wait 7
 
+	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
+	{
+		foreach( player in GetPlayerArray() )
+			Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
+
+		wait 6.0
+
+		GameRules_ChangeMap(GetMapName(), GameRules_GetGameMode())
+	}
+
 	foreach(player in GetPlayerArray())
 	{
 		if(!IsValid(player)) continue
@@ -2013,20 +2023,8 @@ void function SimpleChampionUI()
 	}
 
 	file.ringBoundary.Destroy()
-}
 
-void function AutoChangeLevelThread(float endTime)
-{
-	endTime = endTime*Flowstate_AutoChangeLevelRounds() + 10
-	OnThreadEnd(
-		function() : ( )
-		{
-			GameRules_ChangeMap(GetMapName(), GameRules_GetGameMode())
-		}
-	)
-
-	while(Time() <= endTime)
-		WaitFrame()
+	file.currentRound++
 }
 
 //       ██ ██████  ██ ███    ██  ██████  ██
