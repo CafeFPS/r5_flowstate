@@ -7,6 +7,7 @@ More credits:
 - Skeptation#4002 -- beta tester and coworker https://www.youtube.com/c/Skeptation
 - Amos#1368 & contributors -- sdk https://github.com/Mauler125/r5sdk/tree/indev
 - rexx#1287 & contributors -- repak tool https://github.com/r-ex/RePak
+- JustANormalUser#6809 -- custom weapons framework
 - Zee#6969 -- weapons buy menu example, history ui pages
 - Darkes#8647 -- beta tester
 - Rego#2848 -- beta tester
@@ -15,6 +16,7 @@ More credits:
 - (--__GimmYnkia__--)#2995 -- beta tester
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
+- 暇人のEndergreen#7138 -- contributor, bugs fixes/code improvements
 */
 
 global function  _ChallengesByColombia_Init
