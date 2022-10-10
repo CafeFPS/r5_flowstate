@@ -1903,7 +1903,7 @@ void function SimpleChampionUI()
 			{
 				foreach( player in GetPlayerArray() )
 					if( IsValid(player) )
-						Message(player,"10 SECONDE REMAINING!","", 5, "")
+						Message(player,"10 SECONDS REMAINING!","", 5, "")
 
 				PlayAnnounce( "diag_ap_aiNotify_circleMoves10sec_01" )
 			}
