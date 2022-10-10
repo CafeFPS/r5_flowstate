@@ -1657,7 +1657,6 @@ void function SimpleChampionUI()
 			player.UnfreezeControlsOnServer()
 			HolsterAndDisableWeapons( player )
 		}
-		WaitFrame()
 	}
 
 	if (!file.mapIndexChanged)
@@ -1767,7 +1766,6 @@ void function SimpleChampionUI()
 			if(IsValid(ultimate) && ultimate.UsesClipsForAmmo())
 				ultimate.SetWeaponPrimaryClipCount( ultimate.GetWeaponPrimaryClipCountMax() )
 		} catch(e3){}
-		WaitFrame()
 	}
 
 
@@ -1949,8 +1947,6 @@ void function SimpleChampionUI()
 
 			player.SetThirdPersonShoulderModeOn()
 			HolsterAndDisableWeapons( player )
-
-			WaitFrame()
 		}
 
 	wait 1
@@ -2085,14 +2081,14 @@ void function AudioThread(entity circle, entity player, float radius)
 	EmitSoundOnEntity( audio, soundToPlay )
 
 	while(IsValid(circle)){
-			if(!IsValid(player)) continue
-			vector fwdToPlayer   = Normalize( <player.GetOrigin().x, player.GetOrigin().y, 0> - <circle.GetOrigin().x, circle.GetOrigin().y, 0> )
-			vector circleEdgePos = circle.GetOrigin() + (fwdToPlayer * radius)
-			circleEdgePos.z = player.EyePosition().z
-			if ( fabs( circleEdgePos.x ) < 61000 && fabs( circleEdgePos.y ) < 61000 && fabs( circleEdgePos.z ) < 61000 )
-			{
-				audio.SetOrigin( circleEdgePos )
-			}
+		if(!IsValid(player)) continue
+		vector fwdToPlayer   = Normalize( <player.GetOrigin().x, player.GetOrigin().y, 0> - <circle.GetOrigin().x, circle.GetOrigin().y, 0> )
+		vector circleEdgePos = circle.GetOrigin() + (fwdToPlayer * radius)
+		circleEdgePos.z = player.EyePosition().z
+		if ( fabs( circleEdgePos.x ) < 61000 && fabs( circleEdgePos.y ) < 61000 && fabs( circleEdgePos.z ) < 61000 )
+		{
+			audio.SetOrigin( circleEdgePos )
+		}
 		WaitFrame()
 	}
 
