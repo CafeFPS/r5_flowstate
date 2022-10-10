@@ -120,8 +120,6 @@ const int OF_NO_TEAM_COLOR = 1 << 9
 
 void function RegisterMinimapPackage( string entityClassname, int customStateIndex, asset minimapAsset, void functionref( entity, var ) initFunction, asset fullmapAsset = $"", void functionref( entity, var ) fullmapInitFunction = null )
 {
-	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )) return
-	
 	Assert( (entityClassname in minimapAssetMap), "minimap is not currently setup to handle this type of entity: " + entityClassname )
 
 	MinmapPackage minimapPackage
@@ -1284,8 +1282,6 @@ void function Minimap_SetBlankBackground( bool doBlank )
 
 void function Minimap_SetSizeScale( float scale )
 {
-	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )) return
-	
 	file.minimapSizeScale = scale
 
 	RuiSetFloat( file.minimap_base, "minimapSizeScale", scale )
@@ -1367,8 +1363,6 @@ void function Minimap_EnableDraw()
 
 void function Minimap_DisableDraw_Internal()
 {
-	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )) return
-	
 	file.minimapEnabled = false
 
 	RuiSetVisible( file.minimap_base, false )
@@ -1384,8 +1378,6 @@ void function Minimap_DisableDraw_Internal()
 
 void function Minimap_EnableDraw_Internal()
 {
-	if(GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false )) return
-	
 	file.minimapEnabled = true
 
 	RuiSetVisible( file.minimap_base, true )
