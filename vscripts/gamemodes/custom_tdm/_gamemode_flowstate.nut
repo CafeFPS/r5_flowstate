@@ -525,9 +525,10 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW)
 	    		    wait Deathmatch_GetRespawnDelay()
-
-				if( IsValid( victim ) && !IsAlive( victim ) )
-				{
+				
+				if( !IsValid( victim ) ) return
+				
+				if( !IsAlive( victim ) )
 					_HandleRespawn( victim )
 					ClearInvincible( victim )
 				}
