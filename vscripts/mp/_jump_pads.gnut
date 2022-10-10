@@ -159,6 +159,9 @@ void function JumpPad_PlayLaunchAnim( entity trigger )
 
 void function OnJumpPadAreaEnter( entity trigger, entity ent )
 {
+	if( !ent.IsPlayer() )
+		return
+
 	thread JumpPad_PlayLaunchAnim( trigger )
 	JumpPadPushEnt( trigger, ent, trigger.GetOrigin(), trigger.GetAngles() )
 
