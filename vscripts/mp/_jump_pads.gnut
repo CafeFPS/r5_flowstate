@@ -43,24 +43,31 @@ void function JumpPad_GiveDoubleJump( entity player )
 	
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
+	ItemFlavor passive = CharacterClass_GetPassiveAbility( playerCharacter )
 			
 	if ( !player.IsOnGround() )
 	{
 		int health = player.GetHealth() //old health
 		int shield = player.GetShieldHealth() //old shieldhealth
 		player.SetPlayerSettingsWithMods( characterSetFile, ["enable_doublejump"] ) //for some reason this set health to 100 (new character set file apparently)
+		if( GameRules_GetGameMode() == SURVIVAL )
+			GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
+		
 		if(!IsAlive(player)) return
 		player.SetHealth(health) //set old health
 		player.SetShieldHealth(shield) //set old shieldhealth
 	}
 
-	OnThreadEnd( function() : ( player, characterSetFile )
+	OnThreadEnd( function() : ( player, characterSetFile, passive )
 	{
 		if ( IsValid( player ) )
 		{
 			int health = player.GetHealth() //old health
 			int shield = player.GetShieldHealth() //old shieldhealth
 			player.SetPlayerSettingsWithMods( characterSetFile, [] ) //for some reason this set health to 100 (new character set file apparently)
+			if( GameRules_GetGameMode() == SURVIVAL )
+				GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
+			
 			if(!IsAlive(player)) return
 			player.SetHealth(health) //set old health
 			player.SetShieldHealth(shield) //set old shieldhealth
