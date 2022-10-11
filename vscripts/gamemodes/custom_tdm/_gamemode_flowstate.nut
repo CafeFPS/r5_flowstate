@@ -490,6 +490,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				wait 1.5
 				
 				if(!IsValid(victim) || !IsValid(attacker)) return
+
+				if( victim == file.previousChallenger )
+					PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
 				
 	    		if(victim == attacker)
 				{
@@ -561,34 +564,14 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    			WpnAutoReloadOnKill(attacker)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
 					
-					if( IsValid( GetKillLeader() ) && attacker == GetKillLeader() && Time() - attacker.p.lastDownedEnemyTime >= KILLLEADER_STREAK_ANNOUNCE_TIME )
-						attacker.p.downedEnemy = 0
+					if( attacker == GetKillLeader() )
+						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_killLeaderDoubleKill_01", "diag_ap_aiNotify_killLeaderTripleKill_01" )
 
-					if( IsValid( GetKillLeader() ) && attacker == GetKillLeader() )
-						attacker.p.downedEnemy++
-					
-					if ( IsValid( GetKillLeader() ) && attacker == GetKillLeader() && Time() - attacker.p.lastDownedEnemyTime <= KILLLEADER_STREAK_ANNOUNCE_TIME )
-					{
-						Signal(attacker, "NewKillOnPlayerStreak")
+					if( attacker == file.previousChallenger )
+						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_challengerDoubleKill_01", "diag_ap_aiNotify_challengerTripleKill_01" )
 
-						string announce
-						switch( attacker.p.downedEnemy )
-						{
-							case 2:
-								announce = "diag_ap_aiNotify_killLeaderDoubleKill_01"
-								break
-							
-							case 3:
-								announce = "diag_ap_aiNotify_killLeaderTripleKill_01"
-								break
-						}
-
-						PlayAnnounce( announce )
-					}
-
-					printt( "attacker.p.lastDownedEnemyTime: " + attacker.p.lastDownedEnemyTime + " | attacker.p.downedEnemy: " + attacker.p.downedEnemy + " | Time() - attacker.p.lastDownedEnemyTime <= KILLLEADER_STREAK_ANNOUNCE_TIME: ", Time() - attacker.p.lastDownedEnemyTime <= KILLLEADER_STREAK_ANNOUNCE_TIME )
-
-					attacker.p.lastDownedEnemyTime = Time()
+					if( attacker == GetChampion() )
+						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_championDoubleKill_01", "diag_ap_aiNotify_championTripleKill_01" )
 	    		}
             }
 	    	thread victimHandleFunc()
@@ -600,6 +583,38 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	}
 	UpdatePlayerCounts()
+}
+
+void function PlayerKillStreakAnnounce( entity attacker, string doubleKill, string tripleKill )
+{
+	if( Time() == attacker.p.lastDownedEnemyTime )
+		return
+
+	if( Time() - attacker.p.lastDownedEnemyTime >= KILLLEADER_STREAK_ANNOUNCE_TIME )
+		attacker.p.downedEnemy = 0
+
+	attacker.p.downedEnemy++
+	
+	if ( Time() - attacker.p.lastDownedEnemyTime <= KILLLEADER_STREAK_ANNOUNCE_TIME )
+	{
+		Signal( attacker, "NewKillOnPlayerStreak" )
+
+		string announce
+		switch( attacker.p.downedEnemy )
+		{
+			case 2:
+				announce = doubleKill
+				break
+			
+			case 3:
+				announce = tripleKill
+				break
+		}
+
+		PlayAnnounce( announce )
+	}
+
+	attacker.p.lastDownedEnemyTime = Time()
 }
 
 void function CheckForObservedTarget(entity player)

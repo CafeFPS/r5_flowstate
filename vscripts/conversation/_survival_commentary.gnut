@@ -93,7 +93,19 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() || !attacker.IsPlayer() )
 		return
 
-	thread function() : ( victim, attacker, damageInfo )
+	int attackerKills = attacker.GetPlayerNetInt( "kills" )
+	bool isNewKillLeader = false
+	if ( attackerKills > file.currentKillLeaderKillAmount 
+			&& attacker != file.currentKillLeader 
+			&& attackerKills >= GetMinKillsForKillLeader()
+		)
+	{
+		file.currentKillLeader = attacker
+		file.currentKillLeaderKillAmount = attackerKills
+		isNewKillLeader = true
+	}
+
+	thread function() : ( victim, attacker, damageInfo, attackerKills, isNewKillLeader )
 	{
 		wait STANDARD_DELAY_BETWEEN_SPEAKER_OVATIONS
 
@@ -107,15 +119,8 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
 			}
 
-			int attackerKills = attacker.GetPlayerNetInt( "kills" )
-			if ( attackerKills > file.currentKillLeaderKillAmount 
-					&& attacker != file.currentKillLeader 
-					&& attackerKills >= GetMinKillsForKillLeader()
-				)
+			if( attacker == GetKillLeader() && isNewKillLeader )
 			{
-				file.currentKillLeader = attacker
-				file.currentKillLeaderKillAmount = attackerKills
-
 				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 0.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
 				
 				foreach ( player in GetPlayerArray() )
