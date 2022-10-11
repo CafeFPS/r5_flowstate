@@ -491,7 +491,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				
 				if(!IsValid(victim) || !IsValid(attacker)) return
 
-				if( victim == file.previousChallenger )
+				if( victim == file.previousChallenger && victim != GetKillLeader() && victim != GetChampion() )
 					PlayAnnounce( "diag_ap_aiNotify_challengerEliminated_01" )
 				
 	    		if(victim == attacker)
@@ -563,15 +563,15 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	    			WpnAutoReloadOnKill(attacker)
 	    			GameRules_SetTeamScore(attacker.GetTeam(), GameRules_GetTeamScore(attacker.GetTeam()) + 1)
+
+					if( attacker == GetChampion() )
+						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_championDoubleKill_01", "diag_ap_aiNotify_championTripleKill_01" )
 					
 					if( attacker == GetKillLeader() )
 						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_killLeaderDoubleKill_01", "diag_ap_aiNotify_killLeaderTripleKill_01" )
 
 					if( attacker == file.previousChallenger )
 						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_challengerDoubleKill_01", "diag_ap_aiNotify_challengerTripleKill_01" )
-
-					if( attacker == GetChampion() )
-						PlayerKillStreakAnnounce( attacker, "diag_ap_aiNotify_championDoubleKill_01", "diag_ap_aiNotify_championTripleKill_01" )
 	    		}
             }
 	    	thread victimHandleFunc()

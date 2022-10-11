@@ -111,7 +111,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
 		{
-			if ( victim == file.currentKillLeader )
+			if ( victim == file.currentKillLeader && victim != GetChampion() )
 			{
 				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.KILL_LEADER_ELIMINATED, attacker, 0.0, "", "bc_weKilledKillLeader" )
 
