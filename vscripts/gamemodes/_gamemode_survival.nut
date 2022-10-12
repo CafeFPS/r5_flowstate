@@ -395,8 +395,9 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	
 		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
 		{
-			ScoreEvent event = GetScoreEvent( "Sur_DownedPilot" )
+			thread EnemyDownedDialogue( attacker )
 
+			ScoreEvent event = GetScoreEvent( "Sur_DownedPilot" )
 			Remote_CallFunction_NonReplay( attacker, "ServerCallback_ScoreEvent", event.eventId, event.pointValue, event.displayType, victim.GetEncodedEHandle(), GetTotalDamageTakenByPlayer( victim, attacker ), 0 )
 		}
 
@@ -421,6 +422,33 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 		// Delete any shield health remaining
 		victim.SetShieldHealth( 0 )
+	}
+}
+
+void function EnemyDownedDialogue( entity attacker )
+{
+	attacker.p.downedEnemy++
+
+	string dialogue = ""
+	float delay = 1.5
+	float anotherDelay = 10
+	float time = Time() - attacker.p.lastDownedEnemyTime
+	int currentDownedEnemy = attacker.p.downedEnemy
+
+	if( attacker.p.downedEnemy > 1 )
+		dialogue = "bc_iDownedMultiple"
+	else if( time > delay && time < anotherDelay )
+		dialogue = "bc_iDownedAnotherEnemy"
+	else
+		dialogue = "bc_iDownedAnEnemy"
+
+	wait delay
+
+	if( attacker.p.downedEnemy == currentDownedEnemy )
+	{
+		PlayBattleChatterLineToSpeakerAndTeam( attacker, dialogue )
+		attacker.p.downedEnemy = 0
+		attacker.p.lastDownedEnemyTime = Time()
 	}
 }
 

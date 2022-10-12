@@ -674,7 +674,7 @@ global struct ServerPlayerStruct
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
 	// Amount of player downed enemy at one time
-	float lastDownedEnemyTime = -1
+	float lastDownedEnemyTime = -9999
 	int downedEnemy = 0
 	float last3dashtime = 0
 	entity lastFrameObservedTarget
