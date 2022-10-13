@@ -1490,7 +1490,7 @@ entity function CreateMovementMapDummie(vector pos, vector ang)
 		thread MovementMapDummyMovement(dummy)
 		
 		return dummy
-		wait 0.5
+		// wait 0.5
 	// }
 }
 
