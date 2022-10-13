@@ -174,6 +174,8 @@ void function EditorModePlace_Activation(entity player)
 
     #elseif SERVER
     AddButtonPressedPlayerInputCallback( player, IN_ZOOM, ServerCallback_NextProp )
+	AddButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, ServerCallback_NextProp ) //fix for the weirdos using ads toggle
+	
     if( !(player in file.snapSizes) )
     {
         file.snapSizes[player] <- 64
@@ -215,6 +217,7 @@ void function EditorModePlace_Deactivation(entity player)
     DeregisterConCommandTriggeredCallback( "+offhand4",  ServerCallback_OpenModelMenu )
     #elseif SERVER
     RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM, ServerCallback_NextProp )
+	RemoveButtonPressedPlayerInputCallback( player, IN_ZOOM_TOGGLE, ServerCallback_NextProp )
     #endif
     if(IsValid(GetProp(player)))
     {
