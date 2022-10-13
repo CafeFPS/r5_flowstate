@@ -358,12 +358,30 @@ void function StartNewPropPlacement(entity player)
 void function PlaceProp(entity player)
 {
     #if SERVER
-    file.allProps.append(GetProp(player))
+  
+	if(GetProp(player).GetModelName() == $"mdl/humans/class/medium/combat_dummie_medium.rmdl")
+	{
+		entity dummy = CreateMovementMapDummie( GetProp(player).GetOrigin(), GetProp(player).GetAngles() )
+		file.allProps.append(dummy)
+		
+		// prints prop info to the console to save it
+		vector myOrigin = GetProp(player).GetOrigin()
+		vector myAngles = GetProp(player).GetAngles()
+
+		string positionSerialized = myOrigin.x.tostring() + "," + myOrigin.y.tostring() + "," + myOrigin.z.tostring()
+		string anglesSerialized = myAngles.x.tostring() + "," + myAngles.y.tostring() + "," + myAngles.z.tostring()
+		printl("[editor]" + string(GetAssetFromPlayer(player)) + ";" + positionSerialized + ";" + anglesSerialized)
+
+		GetProp(player).Destroy()
+		return
+	}
+	
+    file.allProps.append(GetProp(player))	  
     GetProp(player).Show()
     GetProp(player).Solid()
     GetProp(player).AllowMantle()
 	GetProp(player).SetScriptName("editor_placed_prop")
-    
+
     // prints prop info to the console to save it
     vector myOrigin = GetProp(player).GetOrigin()
     vector myAngles = GetProp(player).GetAngles()

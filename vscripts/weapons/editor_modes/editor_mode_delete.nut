@@ -171,7 +171,8 @@ void function DeleteProp(entity player)
             string anglesSerialized = myAngles.x.tostring() + "," + myAngles.y.tostring() + "," + myAngles.z.tostring()
             printl("[delete]" + result.hitEnt.GetModelName() + ";" + positionSerialized + ";" + anglesSerialized)
 			
-			GetPlacedProps().removebyvalue(result.hitEnt)
+			if(GetPlacedProps().find(result.hitEnt) != -1)
+				GetPlacedProps().removebyvalue(result.hitEnt)
         }
     }
     #endif

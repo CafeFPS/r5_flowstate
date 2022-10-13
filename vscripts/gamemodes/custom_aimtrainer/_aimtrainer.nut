@@ -21,6 +21,8 @@ More credits:
 
 global function  _ChallengesByColombia_Init
 global function StartFRChallenges
+global function CreateMovementMapDummie
+global function CreateMovementMapDummieFromMapLoad
 
 vector floorLocation
 vector floorCenterForPlayer
@@ -1453,6 +1455,156 @@ void function DummyTapyDuckStrafeMovement(entity dummy, entity player)
 		angles2 = VectorToAngles( player.GetOrigin() - dummy.GetOrigin() )
 		script_mover.SetAngles(angles2)
 		dummy.SetAngles(angles2)
+	}
+}
+
+void function CreateMovementMapDummieFromMapLoad(vector pos, vector ang)
+{
+	FlagWait( "EntitiesDidLoad" )
+	CreateMovementMapDummie(pos, ang)
+}
+
+entity function CreateMovementMapDummie(vector pos, vector ang)
+{
+
+	while(true){ //!FIXME find a way to end the while when the "prop" is deteled with map_editor delete mode
+		entity dummy = CreateNPC( "npc_dummie", 99, pos, ang )
+		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, ang )
+		SetSpawnOption_AISettings( dummy, "npc_dummie_combat_trainer" )
+		DispatchSpawn( dummy )
+		dummy.SetScriptName("editor_placed_prop")
+		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
+		dummy.SetShieldHealthMax( 25 )
+		dummy.SetShieldHealth( 25 )
+		
+		dummy.SetMaxHealth( 60 )
+		dummy.SetHealth( 60 )
+		dummy.SetTakeDamageType( DAMAGE_YES )
+		dummy.SetDamageNotifications( true )
+		dummy.SetDeathNotifications( true )
+		dummy.SetValidHealthBarTarget( true )
+		SetObjectCanBeMeleed( dummy, true )
+		dummy.SetSkin(RandomIntRangeInclusive(1,4))
+		dummy.DisableHibernation()
+		
+		thread MovementMapDummyMovement(dummy)
+		
+		return dummy
+		wait 0.5
+	}
+}
+
+void function MovementMapDummyMovement(entity dummy)
+{
+//new script_mover version of the strafing dummy challenge, so we can spawn these dummies in the air (no navmesh)
+
+	EndSignal(dummy, "OnDeath")
+	vector angles2 = dummy.GetAngles()
+	
+	array<vector> circleLocations
+	array<vector> rightSteps
+	array<vector> leftSteps
+	
+	entity script_mover = CreateEntity( "script_mover" )
+	script_mover.kv.solid = 0
+	script_mover.SetValueForModelKey( $"mdl/dev/empty_model.rmdl" )
+	script_mover.kv.SpawnAsPhysicsMover = 0	
+	script_mover.SetOrigin( dummy.GetOrigin() )
+	script_mover.SetAngles( dummy.GetAngles() )
+	DispatchSpawn( script_mover )
+	dummy.SetParent(script_mover)
+	
+	OnThreadEnd(
+		function() : ( dummy, script_mover, circleLocations )
+		{
+			dummy.ClearParent()
+			if(IsValid(script_mover)) script_mover.Destroy()
+			if(IsValid(dummy)) dummy.Destroy()	
+		}
+	)	
+	
+	vector maxRightLocation = dummy.GetOrigin() + AnglesToRight( dummy.GetAngles() )*80
+	vector maxLeftLocation = dummy.GetOrigin() + AnglesToRight( dummy.GetAngles() )*-80
+	while(true){		
+		if(!IsValid(dummy)) break
+		dummy.Anim_Stop()
+		int morerandomness = 1
+		if(CoinFlip()) morerandomness = -1
+
+		int morerandomness3 = RandomIntRangeInclusive(1,10)
+		int morerandomness4 = RandomIntRangeInclusive(1,10)
+		vector dummyoldorigin = dummy.GetOrigin()
+		// if(morerandomness3 >= 1 && morerandomness3 <= 9) //75% chance
+		// {
+			if(morerandomness4 == 10) //10% chance
+			{
+				dummy.Anim_Stop()
+				script_mover.NonPhysicsStop()						
+				dummy.Anim_PlayOnly( "ACT_STAND" )
+				wait 0.15
+			}
+			else if(morerandomness4 >= 1 && morerandomness3 < 10)//90% chance
+			{
+				float duration = 0.25 //leave it like this in case we want to change it to a range, so it modifies mover duration and movement duration
+				dummy.Anim_Stop()
+				script_mover.NonPhysicsStop()
+				
+				if(CoinFlip() && Distance(dummy.GetOrigin(), maxRightLocation) > 10 )
+				{
+					dummy.Anim_PlayOnly( "ACT_RUN_RIGHT")
+					script_mover.NonPhysicsMoveTo( dummy.GetOrigin() + AnglesToRight( dummy.GetAngles() )*25, duration, 0.0, 0.0 )
+					wait duration
+				}
+				else if( Distance(dummy.GetOrigin(), maxLeftLocation) > 10 )
+				{
+					dummy.Anim_PlayOnly( "ACT_RUN_LEFT")
+					script_mover.NonPhysicsMoveTo( dummy.GetOrigin() + AnglesToRight( dummy.GetAngles() )*-25, duration, 0.0, 0.0 )
+					wait duration
+				}				
+			}
+		// }
+		// else if (morerandomness3 == 10)
+		// {
+			// int morerandomness2 = 1
+			// if(CoinFlip()) morerandomness2 = -1
+						
+			// // printt("Ras strafing??")
+			// thread DummyJumpAnimThreaded(dummy)
+			// float startTime = Time()
+			// float endTime = startTime + 0.28
+			// vector moveTo = dummyoldorigin + Normalize(dummy.GetRightVector())*10*morerandomness + Normalize(dummy.GetForwardVector())*-10 + Normalize(dummy.GetUpVector())*20
+			// int randomnessRasStrafe = 1
+			// if(CoinFlip()) randomnessRasStrafe = -1
+			// int curvedamount = 50
+			// float moveXFrom = moveTo.x+curvedamount*randomnessRasStrafe
+			// float moveZFrom = moveTo.z+30
+			// while(true)
+			// {
+				// if(endTime-Time() <= 0) 
+				// {
+					// script_mover.NonPhysicsStop()
+					// startTime = Time()
+					// endTime = startTime + 0.28
+					// moveTo = circleLocations[locationindex]
+					// moveXFrom = moveTo.x+curvedamount*-randomnessRasStrafe	
+					// moveZFrom = moveTo.z				
+					// while(endTime-Time() > 0)
+					// {
+						// script_mover.NonPhysicsMoveTo( Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z )), endTime-Time(), 0.0, 0.0 )
+						// WaitFrame()
+					// }
+					// script_mover.NonPhysicsStop()
+					// break
+				// }
+				// script_mover.NonPhysicsMoveTo( Vector(GraphCapped( Time(), startTime, endTime, moveXFrom, moveTo.x ), moveTo.y, GraphCapped( Time(), startTime, endTime, moveZFrom, moveTo.z )), endTime-Time(), 0.0, 0.0 )
+				// WaitFrame()
+			// }				
+			// script_mover.NonPhysicsStop()
+			// // printt("Ras strafing?? END")
+		// }
+		// angles2 = VectorToAngles( player.GetOrigin() - dummy.GetOrigin() )
+		// script_mover.SetAngles(angles2)
+		// dummy.SetAngles(angles2)
 	}
 }
 
