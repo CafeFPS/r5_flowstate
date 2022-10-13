@@ -11,6 +11,7 @@ global function ClientCommand_Spawnpoint
 
 global function ClientCommand_UP_Server
 global function ClientCommand_DOWN_Server
+global function PutLoadedPropsIntoSaveArray
 #elseif CLIENT
 global function ClientCommand_UP_Client
 global function ClientCommand_DOWN_Client
@@ -103,11 +104,19 @@ EditorMode function EditorModePlace_Init()
     // AddClientCommandCallback("undo", ClientCommand_Undo)
 
     // END FILE INIT
-
+	
     return mode
 }
 
 #if SERVER
+void function PutLoadedPropsIntoSaveArray()
+{
+	array<entity> loadedProps = GetEntArrayByScriptName("editor_placed_prop")
+	file.allProps.extend(loadedProps)
+
+	Warning("[!] MAP EDITOR, LOADED PROPS: " + loadedProps.len())
+}
+
 bool function ClientCommand_Save(entity player, array<string> args )
 {
 	DevTextBufferClear()
@@ -115,6 +124,7 @@ bool function ClientCommand_Save(entity player, array<string> args )
 	DevTextBufferWrite("=== CreateEditorProp function is already installed. \n")
 	DevTextBufferWrite("=== PASTE THE FOLLOWING LINES IN /scripts/vscripts/_place_map_editor_props_here.nut === \n\n")
 	
+	int i = 0
 	foreach(prop in file.allProps)
 	{
 		if(!IsValid(prop)) continue
@@ -123,12 +133,13 @@ bool function ClientCommand_Save(entity player, array<string> args )
 	    string Org = org.x.tostring() + "," + org.y.tostring() + "," + org.z.tostring()
 		string Ang = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
 		DevTextBufferWrite("CreateEditorProp( $\""+ prop.GetModelName() + "\",<" + Org + ">,<" + Ang + ">, true, 8000) \n")
+		i++
 	}
 
 	DevP4Checkout( "MapEditor_SavedProps_" + GetUnixTimestamp() + ".txt" )
 	DevTextBufferDumpToFile( "MapEditor_SavedProps_" + GetUnixTimestamp() + ".txt" )
 	
-	Warning("[!] MAP EDITOR PROPS SAVED IN /r5reloaded/platform/ === ")
+	Warning("[!] MAP EDITOR PROPS SAVED IN /r5reloaded/platform/, EXPORTED PROPS: " + i)
 	
 	return true
 }
