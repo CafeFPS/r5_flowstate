@@ -1467,7 +1467,7 @@ void function CreateMovementMapDummieFromMapLoad(vector pos, vector ang)
 entity function CreateMovementMapDummie(vector pos, vector ang)
 {
 
-	while(true){ //!FIXME find a way to end the while when the "prop" is deteled with map_editor delete mode
+	// while(true){ //!FIXME find a way to end the while when the "prop" is deteled with map_editor delete mode
 		entity dummy = CreateNPC( "npc_dummie", 99, pos, ang )
 		StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, ang )
 		SetSpawnOption_AISettings( dummy, "npc_dummie_combat_trainer" )
@@ -1491,7 +1491,7 @@ entity function CreateMovementMapDummie(vector pos, vector ang)
 		
 		return dummy
 		wait 0.5
-	}
+	// }
 }
 
 void function MovementMapDummyMovement(entity dummy)
