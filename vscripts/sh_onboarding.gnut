@@ -562,6 +562,8 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	Remote_CallFunction_NonReplay( victim, "ServerCallback_YouDied", attacker, GetHealthFrac( victim ), DamageInfo_GetDamageSourceIdentifier( damageInfo ), DamageInfo_GetDamage( damageInfo ) )
 
+	victim.SetPredictionEnabled( false )
+
 	victim.FreezeControlsOnServer()
 	victim.StartObserverMode( OBS_MODE_DEATHCAM )
 	if( ShouldSetObserverTarget( attacker ) && attacker.IsPlayer() && isTitanfallDeathcam )
