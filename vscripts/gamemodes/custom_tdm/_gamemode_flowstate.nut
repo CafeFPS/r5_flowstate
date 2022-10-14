@@ -817,7 +817,7 @@ void function TpPlayerToSpawnPoint(entity player)
 
 void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 {
-	if(!IsValid(player) || !player.IsPlayer()) return
+	if(!IsValid(player) || !IsValid(player) && !player.IsPlayer()) return
 	
 	thread WpnPulloutOnRespawn(player, duration)
 
@@ -1864,9 +1864,9 @@ void function SimpleChampionUI()
 		SetGlobalNetTime( "nextCircleStartTime", endTime )
 		SetGlobalNetTime( "circleCloseTime", endTime + 8 )
 
-		if( isFinalRound )
-			AddSurvivalCommentaryEvent( eSurvivalEventType.ROUND_TIMER_STARTED )
-		else
+		// if( isFinalRound )
+			// AddSurvivalCommentaryEvent( eSurvivalEventType.ROUND_TIMER_STARTED )
+		// else
 			PlayAnnounce( "diag_ap_aiNotify_circleTimerStartNext_02" )
 		
 		while( Time() <= endTime )
@@ -2006,8 +2006,11 @@ void function SimpleChampionUI()
 
 	if( file.currentRound == Flowstate_AutoChangeLevelRounds() && Flowstate_EnableAutoChangeLevel() )
 	{
+		// foreach( player in GetPlayerArray() )
+			// Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
+
 		foreach( player in GetPlayerArray() )
-			Message( player, "We have reached the round to change levels.", "Total Round: " + file.currentRound, 6.0 )
+			Message( player, "Server clean up incoming", "Don't leave. Server is going to reload to avoid lag.", 6.0 )
 
 		wait 6.0
 
