@@ -817,21 +817,8 @@ void function TpPlayerToSpawnPoint(entity player)
 
 void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 {
-	if(!IsValid(player)) return
+	if(!IsValid(player) || !player.IsPlayer()) return
 	
-	OnThreadEnd(
-	function() : ( player )
-		{
-			if(!IsValid(player)) return
-			
-			player.MakeVisible()
-			player.ClearInvulnerable()
-			player.SetTakeDamageType( DAMAGE_YES )
-			Highlight_ClearEnemyHighlight( player )
-			
-			thread ReCheckGodMode(player)
-		}
-	)
 	thread WpnPulloutOnRespawn(player, duration)
 
 	EmitSoundOnEntityOnlyToPlayer( player, player, "PhaseGate_Enter_1p" )
@@ -847,8 +834,23 @@ void function Flowstate_GrantSpawnImmunity(entity player, float duration)
 	player.SetInvulnerable()
 
 	float endTime = Time() + duration
-	while(Time() <= endTime && IsValid(player))
+	
+	while(Time() <= endTime)
 		wait 0.1
+	
+	if(!IsValid(player)) return
+	
+	player.MakeVisible()
+	player.ClearInvulnerable()
+	player.SetTakeDamageType( DAMAGE_YES )
+	Highlight_ClearEnemyHighlight( player )
+	
+	StatusEffect_StopAllOfType( player, eStatusEffect.adrenaline_visuals )
+	StatusEffect_StopAllOfType( player, eStatusEffect.speed_boost )
+	StatusEffect_StopAllOfType( player, eStatusEffect.drone_healing )
+	StatusEffect_StopAllOfType( player, eStatusEffect.stim_visual_effect )
+	
+	thread ReCheckGodMode(player)
 }
 
 void function WpnPulloutOnRespawn(entity player, float duration)
@@ -887,7 +889,7 @@ void function WpnPulloutOnRespawn(entity player, float duration)
 	}
 	player.ClearFirstDeployForAllWeapons()
 	HolsterAndDisableWeapons(player)
-	wait duration-0.5
+	wait duration-0.2
 }
 
 
