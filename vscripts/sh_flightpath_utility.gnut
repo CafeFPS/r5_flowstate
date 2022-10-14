@@ -1168,8 +1168,8 @@ Point function GetClosestDrop_Internal( vector baseOrigin, int dataIndex )
 	int node = NavMeshNode_GetBestNodeForPos( baseOrigin, dataIndex, ANALYSIS_STEPS )
 	if( node < 0 )
 	{
-		if ( !IsTestMap() )
-			Warning( "AIN file does not contain any valid airdrop point, please rebuild the AIN file." )
+		//if ( !IsTestMap() )
+			//Warning( "AIN file does not contain any valid airdrop point, please rebuild the AIN file." )
 		closestNodePoint.origin = baseOrigin
 		return closestNodePoint
 	}
