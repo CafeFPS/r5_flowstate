@@ -163,7 +163,10 @@ void function UpdateDataCenterFooter( InputDef footerData )
 void function OnMainMenuPanel_Show( var panel )
 {
 	if( isLeavingMatch )
-		LaunchMP()
+	{
+		LaunchR5RLobby()
+		return
+	}
 	
 	file.startTime = Time()
 
@@ -326,15 +329,15 @@ void function StartSearchForPartyServer()
 
 	thread SearchForPartyServerTimeout()
 
-	thread LaunchR5RLobby( 1.0 )
+	thread LaunchR5RLobby( isLeavingMatch ? 0.0 : 1.0 )
 }
 
-void function LaunchR5RLobby( float delay = 0 )
+void function LaunchR5RLobby( float delay = 0.0 )
 {
-	wait delay
+	if( delay > 0 )
+		wait delay
 
 	CreateServer( "Lobby VM", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE )
-	ServerBrowser_RefreshServerListing()
 
 	isLeavingMatch = false
 }
