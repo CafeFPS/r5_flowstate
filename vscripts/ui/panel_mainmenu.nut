@@ -18,6 +18,8 @@ global function UICodeCallback_OnUserSignOut
 
 const bool SPINNER_DEBUG_INFO = PC_PROG
 
+// r5r
+global function LaunchR5RLobby
 global bool isLeavingMatch = false
 
 struct
@@ -202,7 +204,8 @@ void function PrelaunchValidation( bool autoContinue = false )
 
 	SetLaunchState( eLaunchState.WORKING )
 
-	wait 1.0
+	if( !autoContinue )
+		wait 1.0
 
 	if ( autoContinue )
 		LaunchMP()
@@ -323,10 +326,15 @@ void function StartSearchForPartyServer()
 
 	thread SearchForPartyServerTimeout()
 
-	ServerBrowser_RefreshServerListing()
+	thread LaunchR5RLobby( 1.0 )
+}
 
-	//Launch lobby
-	CreateServer("Lobby VM", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+void function LaunchR5RLobby( float delay = 0 )
+{
+	wait delay
+
+	CreateServer( "Lobby VM", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE )
+	ServerBrowser_RefreshServerListing()
 
 	isLeavingMatch = false
 }
