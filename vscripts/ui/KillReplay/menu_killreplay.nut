@@ -12,6 +12,8 @@ struct
 
 void function OpenKillReplayHud(asset image, string killedby, int tier, bool islocalclient)
 {
+	RegisterButtonPressedCallback( KEY_ENTER, FocusChat )
+	
     for(int i = 0; i < 5; i++) {
         Hud_SetVisible( Hud_GetChild( file.menu, "PlayerSheild" + i ), false )
     }
@@ -47,10 +49,9 @@ void function OpenKillReplayHud(asset image, string killedby, int tier, bool isl
 	CloseAllMenus()
 	AdvanceMenu( file.menu )
 
-	Hud_StartMessageMode( Hud_GetChild( file.menu, "KillReplayChatBox") )
 	Hud_SetVisible( Hud_GetChild( file.menu, "KillReplayChatBox"), true )
 	Hud_SetAboveBlur( Hud_GetChild( file.menu, "KillReplayChatBox"), true )
-	Hud_SetFocused( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ) )
+	Hud_SetEnabled( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ), false)
 }
 
 void function ReplayHud_UpdatePlayerHealthAndSheild(float health, float sheild, int tier)
@@ -61,6 +62,11 @@ void function ReplayHud_UpdatePlayerHealthAndSheild(float health, float sheild, 
 
 void function CloseKillReplayHud()
 {
+	
+	DeregisterButtonPressedCallback( KEY_ENTER, FocusChat )
+	Hud_StopMessageMode( Hud_GetChild( file.menu, "KillReplayChatBox") )
+	Hud_SetEnabled( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ), false)
+	Hud_SetVisible( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ), false )
 	Hud_SetVisible( Hud_GetChild( file.menu, "KillReplayChatBox"), false )
 	CloseAllMenus()
 }
@@ -74,6 +80,17 @@ void function InitKillReplayHud( var newMenuArg )
     file.basesheildwidth = Hud_GetWidth( Hud_GetChild( file.menu, "PlayerSheild1" ) )
 
 	AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, On_NavigateBack )
+}
+
+void function FocusChat( var panel )
+{
+	if(!Hud_IsFocused( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ) ))
+	{
+		Hud_StartMessageMode( Hud_GetChild( file.menu, "KillReplayChatBox") )
+		Hud_SetEnabled( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ), true)
+		Hud_SetVisible( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ), true )
+		Hud_SetFocused( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ) )
+	} 
 }
 
 void function On_NavigateBack()
