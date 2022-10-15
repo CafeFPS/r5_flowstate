@@ -23,9 +23,17 @@ struct {
 
 void function Cl_CustomTDM_Init()
 {
-	thread ChatEvent_Handler()
 	AddOnDeathCallback( "player", TDM_OnPlayerKilled )
     AddCallback_EntitiesDidLoad( NotifyRingTimer )
+	RegisterButtonPressedCallback(KEY_ENTER, ClientReportChat)
+}
+
+void function ClientReportChat(var button)
+{
+	if(CHAT_TEXT  == "") return
+	
+	string text = "say " + CHAT_TEXT
+	GetLocalClientPlayer().ClientCommand(text)
 }
 
 void function NotifyRingTimer()
@@ -99,29 +107,6 @@ void function Cl_RegisterLocation(LocationSettings locationSettings)
 void function TDM_OnPlayerKilled( entity player )
 {
 	entity viewPlayer = GetLocalViewPlayer()
-}
-
-void function ChatEvent_Handler()
-{
-	while(true)
-	{
-		if(isChatShow && !isFuncRegister)
-		{
-			RegisterButtonPressedCallback(KEY_ENTER, SendChat);
-			isFuncRegister = true
-		}
-		else if(!isChatShow && isFuncRegister)
-		{
-			DeregisterButtonPressedCallback(KEY_ENTER, SendChat)
-			isFuncRegister = false
-		}
-		wait 0.5
-	}
-	
-}
-void function SendChat(var button)
-{
-	GetLocalClientPlayer().ClientCommand(chatText)
 }
 
 void function MakeScoreRUI()

@@ -27,6 +27,7 @@ global function SetFallTriggersStatus
 global function CreateShipRoomFallTriggers
 global function GiveFlowstateOvershield
 global function IsAdmin
+global function Flowstate_ServerSaveChat
 
 global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
@@ -83,6 +84,7 @@ struct {
 
 	bool FallTriggersEnabled = false
 	bool mapSkyToggle = false
+	array<string> allChatLines
 } file
 
 struct PlayerInfo
@@ -157,6 +159,7 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("commands", ClientCommand_Help)
+	AddClientCommandCallback("say", ClientCommand_Say)
 	
 	if(!FlowState_AdminTgive())
 	{
@@ -244,6 +247,27 @@ void function _OnPropDynamicSpawned(entity prop)
 
 int function GetTDMState(){
 	return file.tdmState
+}
+
+void function Flowstate_ServerSaveChat()
+{
+	if(file.allChatLines.len() == 0) return
+	
+	DevTextBufferClear()
+	DevTextBufferWrite("=== Flowstate DM server - CHAT #" + GetUnixTimestamp() + " ===\n")
+	
+	int i = 0
+	foreach(line in file.allChatLines)
+	{
+		DevTextBufferWrite(line + "\n")
+		i++
+	}
+
+	DevP4Checkout( "FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
+	DevTextBufferDumpToFile( "FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
+	
+	file.allChatLines.clear()
+	Warning("[!] CHAT WAS SAVED in /r5reloaded/platform/, CHAT LINES: " + i)
 }
 
 void function SetTdmStateToNextRound(){
@@ -2014,6 +2038,7 @@ void function SimpleChampionUI()
 
 		wait 6.0
 
+		Flowstate_ServerSaveChat()
 		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 	}
 
@@ -2713,6 +2738,24 @@ bool function ClientCommand_Help(entity player, array<string> args)
 			Message(player, "WELCOME TO FLOWSTATE: DM", helpMessage(), 10)
 		}
 	}
+	return true
+}
+
+bool function ClientCommand_Say(entity player, array<string> args)
+{
+	if(!IsValid(player)) return false 
+	
+	string finalMsg = player.GetPlayerName() + " "
+	
+	foreach(arg in args)
+	{
+		if(arg == "say") continue
+		
+		finalMsg+=arg
+	}
+	
+	file.allChatLines.append(finalMsg)
+	
 	return true
 }
 
