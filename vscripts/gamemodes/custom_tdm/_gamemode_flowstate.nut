@@ -85,6 +85,7 @@ struct {
 	bool FallTriggersEnabled = false
 	bool mapSkyToggle = false
 	array<string> allChatLines
+	array<string> battlelog
 } file
 
 struct PlayerInfo
@@ -497,6 +498,40 @@ void function __HighPingCheck(entity player)
 	}
 }
 
+void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
+{	
+	if (!IsValid(killer) || !IsValid(victim)) return
+	if (!killer.IsPlayer() || !victim.IsPlayer()) return
+	string killer_name = killer.GetPlayerName()
+	string victim_name = victim.GetPlayerName()
+	string weapon_name = killer.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName()
+	string is_controller_dog = killer.p.AmIController.tostring()
+	if (!(killer_name.len()>0) || !(victim_name.len()>0) || !(weapon_name.len()>0) || !(is_controller_dog.len()>0)) return
+
+	string log = killer_name +"&&"+
+	victim_name+"&&"+
+	weapon_name+"&&"+
+	GetUnixTimestamp().tostring()+"&&"+
+	is_controller_dog
+
+	file.battlelog.append(log)
+}
+
+void function Flowstate_SaveBattleLogToFile()
+{
+	string to_save = ""
+	
+	foreach(log in file.battlelog)
+		to_save += log + "\n"
+
+	DevTextBufferClear()
+	DevTextBufferWrite(to_save)
+	DevP4Checkout( "Flowstate_BattleLog_" + GetUnixTimestamp() + ".txt" )
+	DevTextBufferDumpToFile( "FlowstateDM_BattleLog/Flowstate_BattleLog_" + GetUnixTimestamp() + ".txt" )
+	
+	file.battlelog.clear()
+}
+
 void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 {
 	if (FlowState_RandomGunsEverydie() && FlowState_FIESTADeathboxes())
@@ -505,6 +540,9 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	if( victim.p.isSpectating )
 		return
 
+	if(victim != attacker)
+		Flowstate_AppendBattleLogEvent(attacker, victim)
+	
 	switch(GetGameState())
     {
         case eGameState.Playing:
@@ -2054,6 +2092,8 @@ void function SimpleChampionUI()
 	file.ringBoundary.Destroy()
 
 	file.currentRound++
+	
+	Flowstate_SaveBattleLogToFile()
 }
 
 //       ██ ██████  ██ ███    ██  ██████  ██
