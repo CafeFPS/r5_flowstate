@@ -265,7 +265,7 @@ void function Flowstate_ServerSaveChat()
 	}
 
 	DevP4Checkout( "FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
-	DevTextBufferDumpToFile( "FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
+	DevTextBufferDumpToFile( "FlowstateDM_GlobalChat/FlowstateServer_CHAT_" + GetUnixTimestamp() + ".txt" )
 	
 	file.allChatLines.clear()
 	Warning("[!] CHAT WAS SAVED in /r5reloaded/platform/, CHAT LINES: " + i)
