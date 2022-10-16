@@ -857,9 +857,9 @@ void function UpdatePlayerRuiTracking( entity player )
 	RuiTrackInt( file.minimap_you, "objectFlags", viewPlayer, RUI_TRACK_MINIMAP_FLAGS )
 	RuiTrackInt( file.minimap_you, "customState", viewPlayer, RUI_TRACK_MINIMAP_CUSTOM_STATE )
 	RuiTrackFloat3( file.minimap_you, "playerAngles", viewPlayer, RUI_TRACK_CAMANGLES_FOLLOW )
-	#if MP_PVEMODE
+	//#if MP_PVEMODE // In r5r, MP_PVEMODE part is not compiled and must be commented out
 		RuiTrackInt( file.minimap_you, "teamMemberIndex", viewPlayer, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
-	#endif //MP_PVEMODE
+	//#endif //MP_PVEMODE
 
 	foreach ( var rui in file.minimapOtherRuis )
 	{
@@ -881,9 +881,9 @@ void function MinimapPackage_PlayerInit( entity ent, var rui )
 		RuiTrackFloat( rui, "sonarDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.sonar_detected )
 		RuiTrackFloat( rui, "maphackDetectedFrac", ent, RUI_TRACK_STATUS_EFFECT_SEVERITY, eStatusEffect.maphack_detected )
 	}
-	#if MP_PVEMODE
+	//#if MP_PVEMODE // In r5r, MP_PVEMODE part is not compiled and must be commented out
 		RuiTrackInt( rui, "teamMemberIndex", ent, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
-	#endif
+	//#endif
 }
 
 
@@ -1552,9 +1552,9 @@ void function UpdateFullmapRuiTracks()
 
 	RuiTrackFloat3( file.fullmap_gamestateRui, "playerOrigin", viewPlayer, RUI_TRACK_ABSORIGIN_FOLLOW )
 
-	#if MP_PVEMODE
+	//#if MP_PVEMODE // In r5r, MP_PVEMODE part is not compiled and must be commented out
 		RuiTrackInt( file.fullmap_gamestateRui, "teamMemberIndex", viewPlayer, RUI_TRACK_PLAYER_TEAM_MEMBER_INDEX )
-	#endif
+	//#endif
 }
 
 
