@@ -535,7 +535,7 @@ void function Flowstate_SaveBattleLogToFile()
 	DevP4Checkout( "Flowstate_BattleLog_" + GetUnixTimestamp() + ".txt" )
 	DevTextBufferDumpToFile( "FlowstateDM_BattleLog/Flowstate_BattleLog_" + GetUnixTimestamp() + ".txt" )
 	
-	Warning("[Flowstate] -> Match log saved! Events: " + i)
+	Warning("[Flowstate] -> Match log saved! Events: " + file.battlelog.len())
 	
 	file.battlelog.clear()
 }
