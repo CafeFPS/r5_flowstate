@@ -504,7 +504,11 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 	if (!killer.IsPlayer() || !victim.IsPlayer()) return
 	string killer_name = killer.GetPlayerName()
 	string victim_name = victim.GetPlayerName()
-	string weapon_name = killer.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName()
+	
+	string weapon_name = ""
+	if(IsValid(killer.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )))
+		weapon_name = killer.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName()
+	
 	string is_controller_dog = killer.p.AmIController.tostring()
 	if (!(killer_name.len()>0) || !(victim_name.len()>0) || !(weapon_name.len()>0) || !(is_controller_dog.len()>0)) return
 
