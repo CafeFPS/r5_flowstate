@@ -150,7 +150,8 @@ void function Lift_OnPlayerNPCTossGrenade_Common( entity weapon, entity frag )
 void function OnProjectileCollision_lift( entity projectile, vector pos, vector normal, entity hitEnt, int hitbox, bool isCritical )
 {
 	entity player = projectile.GetOwner()
-	if ( hitEnt == player )
+	
+	if ( IsValid(hitEnt) && hitEnt.IsPlayer() )
 		return
 
 	if ( projectile.GrenadeHasIgnited() )
@@ -164,39 +165,43 @@ void function OnProjectileCollision_lift( entity projectile, vector pos, vector 
 		hitbox = hitbox
 	}
 
-	bool result = PlantStickyEntityOnWorldThatBouncesOffWalls( projectile, collisionParams, 0.7 )
-
 	#if SERVER
-	entity bottom = CreateEntity( "trigger_cylinder" )
-	bottom.SetRadius( SPACEELEVATOR_TUNING_RADIUS )
-	bottom.SetAboveHeight( SPACEELEVATOR_TUNING_HEIGHT )
-	bottom.SetBelowHeight( 0 )
-	bottom.SetOrigin( pos )
-	bottom.SetEnterCallback( BottomEnterCallback )
-	bottom.SetLeaveCallback( BottomLeaveCallback )
-	bottom.RemoveFromAllRealms()
-	bottom.AddToOtherEntitysRealms( projectile )
-	DispatchSpawn( bottom )
-	bottom.SearchForNewTouchingEntity()
-
-	entity top = CreateEntity( "trigger_cylinder" )
-	top.SetRadius( SPACEELEVATOR_TUNING_RADIUS )
-	top.SetAboveHeight( 256 )
-	top.SetBelowHeight( 0 )
-	top.SetOrigin( pos + <0, 0, SPACEELEVATOR_TUNING_HEIGHT*0.935> )
-	top.RemoveFromAllRealms()
-	top.AddToOtherEntitysRealms( projectile )
-	top.SetEnterCallback( TopEnterCallback )
-	DispatchSpawn( top )
-	top.SearchForNewTouchingEntity()
+	bool result = PlantStickyEntityOnWorldThatBouncesOffWalls( projectile, collisionParams, 0.7 )
 	
 	projectile.proj.projectileBounceCount++
-	if ( !result && projectile.proj.projectileBounceCount < 10 )
+	
+	if ( !result && projectile.proj.projectileBounceCount < 3 )
 		return
 	else
 	{
-		projectile.Destroy()
-		thread LiftWatcher(bottom, top, pos)
+		entity bottom = CreateEntity( "trigger_cylinder" )
+		bottom.SetRadius( SPACEELEVATOR_TUNING_RADIUS )
+		bottom.SetAboveHeight( SPACEELEVATOR_TUNING_HEIGHT )
+		bottom.SetBelowHeight( 0 )
+		bottom.SetOrigin( pos )
+		bottom.SetEnterCallback( BottomEnterCallback )
+		bottom.SetLeaveCallback( BottomLeaveCallback )
+		bottom.RemoveFromAllRealms()
+		bottom.AddToOtherEntitysRealms( projectile )
+		DispatchSpawn( bottom )
+		bottom.SearchForNewTouchingEntity()
+
+		entity top = CreateEntity( "trigger_cylinder" )
+		top.SetRadius( SPACEELEVATOR_TUNING_RADIUS )
+		top.SetAboveHeight( 256 )
+		top.SetBelowHeight( 0 )
+		top.SetOrigin( pos + <0, 0, SPACEELEVATOR_TUNING_HEIGHT*0.935> )
+		top.RemoveFromAllRealms()
+		top.AddToOtherEntitysRealms( projectile )
+		top.SetEnterCallback( TopEnterCallback )
+		DispatchSpawn( top )
+		top.SearchForNewTouchingEntity()
+		
+		if(IsValid(projectile))
+			projectile.Destroy()
+		
+		if(IsValid(bottom) && IsValid(top))
+			thread LiftWatcher(bottom, top, pos)
 	}
 	#endif
 }
@@ -204,7 +209,7 @@ void function OnProjectileCollision_lift( entity projectile, vector pos, vector 
 #if SERVER
 void function TopEnterCallback(entity trigger, entity ent)
 {
-	if ( !ent.IsPlayer() )
+	if ( IsValid(ent) && !ent.IsPlayer() )
 		return
 	
 	thread StartTopTriggerTimer(trigger, ent)
@@ -299,8 +304,6 @@ void function BottomLeaveCallback( entity trigger, entity ent )
 
 void function LiftWatcher( entity bottom, entity top, vector pos)
 {
-	if(!IsValid(bottom)) return
-	
 	float UPVELOCITY
 	float endTime = Time() + SPACEELEVATOR_TUNING_LIFETIME
 	
@@ -334,7 +337,7 @@ void function LiftWatcher( entity bottom, entity top, vector pos)
 		{
 			foreach(ent in bottom.GetTouchingEntities())
 				{
-					if( !IsValid(ent) || !ent.IsPlayer() ) continue
+					if( !IsValid(ent) || IsValid(ent) && !ent.IsPlayer() ) continue
 					
 					ent.p.ForceEject = true
 					vector direction = AnglesToForward( ent.GetAngles() )
