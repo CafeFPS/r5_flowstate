@@ -523,15 +523,23 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 
 void function Flowstate_SaveBattleLogToFile()
 {
+	if(file.battlelog.len() == 0) return
+	
 	string to_save = ""
+	int i = 0
 	
 	foreach(log in file.battlelog)
+	{
 		to_save += log + "\n"
+		i++
+	}
 
 	DevTextBufferClear()
 	DevTextBufferWrite(to_save)
 	DevP4Checkout( "Flowstate_BattleLog_" + GetUnixTimestamp() + ".txt" )
 	DevTextBufferDumpToFile( "FlowstateDM_BattleLog/Flowstate_BattleLog_" + GetUnixTimestamp() + ".txt" )
+	
+	Warning("[Flowstate] -> BattleLog saved! Events: " + i)
 	
 	file.battlelog.clear()
 }
@@ -2048,7 +2056,9 @@ void function SimpleChampionUI()
 		}
 
 	wait 1
-
+	
+	thread Flowstate_SaveBattleLogToFile()
+	
 	if( GetBestPlayer() != null )
 		SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER )
 
@@ -2096,8 +2106,6 @@ void function SimpleChampionUI()
 	file.ringBoundary.Destroy()
 
 	file.currentRound++
-	
-	Flowstate_SaveBattleLogToFile()
 }
 
 //       ██ ██████  ██ ███    ██  ██████  ██
