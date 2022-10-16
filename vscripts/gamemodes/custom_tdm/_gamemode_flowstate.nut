@@ -552,7 +552,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	if( victim.p.isSpectating )
 		return
 
-	if(victim != attacker)
+	if(victim != attacker && GetCurrentPlaylistVarBool("flowstateBattleLogEnable", false ))
 		Flowstate_AppendBattleLogEvent(attacker, victim)
 	
 	switch(GetGameState())
@@ -2057,7 +2057,11 @@ void function SimpleChampionUI()
 
 	wait 1
 	
-	thread Flowstate_SaveBattleLogToFile()
+	if(GetCurrentPlaylistVarBool("flowstateBattleLogEnable", false ))
+		thread Flowstate_SaveBattleLogToFile()
+			
+	if(GetCurrentPlaylistVarBool("flowstateChatLogEnable", false ))
+		Flowstate_ServerSaveChat()
 	
 	if( GetBestPlayer() != null )
 		SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER )
@@ -2090,7 +2094,6 @@ void function SimpleChampionUI()
 
 		wait 6.0
 
-		Flowstate_ServerSaveChat()
 		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 	}
 
