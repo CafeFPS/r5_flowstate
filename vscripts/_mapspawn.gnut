@@ -246,7 +246,6 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheModel( $"mdl/menu/xp_badge.rmdl" )
 	PrecacheModel( $"mdl/menu/coin.rmdl" )
 	PrecacheModel( $"mdl/currency/crafting/currency_crafting_epic.rmdl" )
-
 	//Weapons
 
 	PrecacheWeapon( $"mp_weapon_melee_survival" )
@@ -322,12 +321,14 @@ void function CodeCallback_MapSpawn() // original script entry point
 			LoadModelsFromEditor()
 			if ( GetCurrentPlaylistVarBool( "movement_map_enable", false ) )
 				LoadMovementMap()
-			PutLoadedPropsIntoSaveArray()
 			PrecacheWeapon( $"mp_weapon_clickweapon")
 			PrecacheWeapon( $"mp_weapon_clickweaponauto")
 			//PrecacheWeapon( $"mp_weapon_grenade_gravity" )			
 			break
 	}
+	
+	if(GameRules_GetGameMode() == "map_editor" )
+		PutLoadedPropsIntoSaveArray() //needs to be called after the props were loaded
 	
 	PrecacheWeapon( $"mp_ability_cloak" )
 	PrecacheWeapon( $"mp_weapon_dragon_lmg" )
@@ -341,7 +342,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 
 var function CodeCallback_ClientCommand( entity player, array<string> args )
 {
-	if(args[0] == "VModEnable" || args[0] == "vban" || args[0] == "AllDialogueFinished" ) return
+	if(args[0] == "VModEnable" || args[0] == "vban" || args[0] == "AllDialogueFinished" || args[0] == "DialogueFinishedForID") return
 	
 		printl( "############ ClientCommand Code Callback" )
 		printl( "Player:" + player )
