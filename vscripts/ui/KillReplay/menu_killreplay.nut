@@ -12,7 +12,9 @@ struct
 
 void function OpenKillReplayHud(asset image, string killedby, int tier, bool islocalclient)
 {
-	RegisterButtonPressedCallback( KEY_ENTER, FocusChat )
+	try{
+		RegisterButtonPressedCallback( KEY_ENTER, FocusChat )
+	}catch(e420){}
 	
     for(int i = 0; i < 5; i++) {
         Hud_SetVisible( Hud_GetChild( file.menu, "PlayerSheild" + i ), false )
@@ -62,8 +64,9 @@ void function ReplayHud_UpdatePlayerHealthAndSheild(float health, float sheild, 
 
 void function CloseKillReplayHud()
 {
-	
-	DeregisterButtonPressedCallback( KEY_ENTER, FocusChat )
+	try{
+		DeregisterButtonPressedCallback( KEY_ENTER, FocusChat )
+	}catch(e420){}
 	Hud_StopMessageMode( Hud_GetChild( file.menu, "KillReplayChatBox") )
 	Hud_SetEnabled( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ), false)
 	Hud_SetVisible( Hud_GetChild( Hud_GetChild( file.menu, "KillReplayChatBox"), "ChatInputLine" ), false )
