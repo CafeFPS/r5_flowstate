@@ -301,9 +301,7 @@ void function SetupDefaultDevCommandsMP()
 		{
 			SetupDevMenu( "Change Character", SetDevMenu_SurvivalCharacter )
 			//SetupDevMenu( "Override Spawn Character", SetDevMenu_OverrideSpawnSurvivalCharacter )
-			#if DEVELOPER
 			SetupDevMenu( "Survival", SetDevMenu_Survival )
-			#endif
 			SetupDevMenu( "Custom: Weapons", SetDevMenu_SurvivalLoot, "weapon_custom" )
 			SetupDevMenu( "Custom: Attachments", SetDevMenu_SurvivalLoot, "attachment_custom" )			
 			SetupDevMenu( "Survival: Weapons", SetDevMenu_SurvivalLoot, "main_weapon" )
