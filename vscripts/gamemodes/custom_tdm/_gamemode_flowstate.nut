@@ -1228,7 +1228,7 @@ void function GiveRandomTac(entity player)
 void function GiveRandomUlt(entity player )
 {
     array<string> Weapons = [
-		"mp_weapon_grenade_gas",
+		//"mp_weapon_grenade_gas",
 		"mp_weapon_jump_pad",
 		"mp_weapon_phase_tunnel",
 		"mp_ability_3dash",
@@ -3123,7 +3123,7 @@ void function LoadCustomWeapon(entity player)
 		if(!IsValid(player)) return
 		
 		WpnAutoReloadOnKill(player)
-		thread WpnPulloutOnRespawn(player, 3)
+		thread WpnPulloutOnRespawn(player, 2.5)
 	}
 }
 
