@@ -545,9 +545,9 @@ void function Flowstate_SaveBattleLogToFile_Linux() //Use parser
 	if(file.battlelog.len() == 0) return
 
 	foreach(log in file.battlelog)
-		Warning(" [BattleLog] " + log)
+		printt(" [BattleLog] " + log)
 		
-	Warning("[Flowstate] -> Match log saved! Events: " + file.battlelog.len())
+	printt("[Flowstate] -> Match log saved! Events: " + file.battlelog.len())
 	
 	file.battlelog.clear()
 }
