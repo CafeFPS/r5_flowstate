@@ -42,7 +42,6 @@ global table<string,string> weaponlist
 
 global bool isBrightWaterByZer0 = false
 global const float KILLLEADER_STREAK_ANNOUNCE_TIME = 5
-bool plsTripleAudio = false;
 table playersInfo
 
 enum eTDMState
