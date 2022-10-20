@@ -47,8 +47,6 @@ global table<string, asset> MapAssets = {
 //Map to readable name
 global table<string, string> MapNames = {
 	[ "mp_rr_canyonlands_staging" ] = "Firing Range",
-	[ "mp_rr_aqueduct" ] = "Overflow",
-	[ "mp_rr_aqueduct_night" ] = "Overflow After Dark",
 	[ "mp_rr_ashs_redemption" ] = "Ash's Redemption",
 	[ "mp_rr_canyonlands_64k_x_64k" ] = "Kings Canyon S1",
 	[ "mp_rr_canyonlands_mu1" ] = "Kings Canyon S2",
@@ -56,9 +54,11 @@ global table<string, string> MapNames = {
 	[ "mp_rr_desertlands_64k_x_64k" ] = "Worlds Edge",
 	[ "mp_rr_desertlands_64k_x_64k_nx" ] = "Worlds Edge After Dark",
 	[ "mp_rr_desertlands_64k_x_64k_tt" ] = "Worlds Edge Mirage Voyage",
-	[ "mp_rr_arena_composite" ] = "Drop Off",
-	[ "mp_rr_arena_skygarden" ] = "Encore",
-	[ "mp_rr_party_crasher" ] = "Party Crasher",
+	[ "mp_rr_aqueduct" ] = "Arena: Overflow",
+	[ "mp_rr_aqueduct_night" ] = "Arena: Overflow AD",
+	[ "mp_rr_arena_composite" ] = "Arena: Drop Off",
+	[ "mp_rr_arena_skygarden" ] = "Arena: Encore",
+	[ "mp_rr_party_crasher" ] = "Arena: Party Crasher",
 	[ "mp_lobby" ] = "Lobby"
 }
 
