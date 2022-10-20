@@ -2248,6 +2248,10 @@ int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
 			case "npc_boss_guts":
 			case "npc_training_dummy":
 			case "npc_dummie_combat":
+			case "npc_spider":
+			case "npc_soldier_infected":
+			case "npc_prowler":
+			case "npc_marvin":
 				// no specific callouts for these
 				break;
 
@@ -2277,9 +2281,6 @@ int function GetEnemyPingCommsAction( int pingType, entity pingedEnt )
 				return eCommsAction.PING_ENEMY_NPC_TITAN
 
 				// Creatures:
-
-			case "npc_prowler":
-				return eCommsAction.PING_ENEMY_NPC_PROWLER
 
 			case "npc_spider":
 				return eCommsAction.PING_ENEMY_NPC_SPIDER
