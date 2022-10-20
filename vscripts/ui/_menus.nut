@@ -472,7 +472,13 @@ void function UICodeCallback_LevelLoadingFinished( bool error )
 
 void function UICodeCallback_LevelInit( string levelname )
 {
-	//printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
+	printt( "UICodeCallback_LevelInit: " + levelname + ", IsConnected(): ", IsConnected() )
+	
+	if ( GetCurrentPlaylistVarBool( "random_loadscreen", false ) )
+	{	
+		if ( RandomFloat( 1.0 ) >= 0.90 ) // 10% chance to load a custom loadscreen
+			SetCustomLoadScreen( $"loadscreens/custom/loadscreen_r5r_community_01" )
+	}
 }
 
 
