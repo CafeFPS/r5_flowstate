@@ -176,8 +176,8 @@
 	// Sound - Firing
 	//
 	"fire_sound_1_npc"                         "Weapon_DMR_Fire_NPC"
-	"fire_sound_1_player_1p"                   "weapon_sentinel_fire_1p"
-	"fire_sound_1_player_3p"                   "weapon_sentinel_fire_3p"
+	"fire_sound_1_player_1p"                   "Weapon_DMR_Fire_1P"
+	"fire_sound_1_player_3p"                   "Weapon_DMR_Fire_3P"
 
 	// Sound - Low Ammo
 	"low_ammo_sound_name_1"                    "DMR_LowAmmo_Shot1"
@@ -185,8 +185,8 @@
 	"low_ammo_sound_name_3"                    "DMR_LowAmmo_Shot3"
 
 	// Sound - Misc
-	"sound_zoom_in"                            "weapon_sentinel_ads_in"
-	"sound_zoom_out"                           "weapon_sentinel_ads_out"
+	"sound_zoom_in"                            "Weapon_DMR_ADS_In"
+	"sound_zoom_out"                           "Weapon_DMR_ADS_Out"
 
 	// FX - Impacts
     "impact_effect_table"                      "titan_bullet"
@@ -195,11 +195,11 @@
     "projectile_trail_effect_0"             "P_tracer_proj_sniper"
 
     // FX
-	"fx_muzzle_flash_view"				"wpn_muzzleflash_snp_sup_hmn_FP"
-	"fx_muzzle_flash_world"				"wpn_muzzleflash_snp_sup_hmn"
+	"fx_muzzle_flash_view"				""
+	"fx_muzzle_flash_world"				""
 
 	//FX - Shell Eject
-	"fx_shell_eject_view"                   	"wpn_shelleject_rifle_assault_FP"
+	"fx_shell_eject_view"                   	""
 
 
 	// NPC
@@ -307,15 +307,13 @@
             "projectile_trail_effect_0"                	"P_tracer_proj_sniper_piercer"
 
             // FX - Muzzle Flash
-			"fx_muzzle_flash_view"						"wpn_muzzleflash_snp_sup_hmn_FP"
-			"fx_muzzle_flash_world"						"wpn_muzzleflash_snp_sup_hmn"
+			"fx_muzzle_flash_view"						""
+			"fx_muzzle_flash_world"						""
 
             // Sounds
-            "fire_sound_1_npc"                             "Weapon_DoubleTake_Fire_NPC"
-            "fire_sound_1_player_1p"                       "weapon_sentinel_fire_alt_1p"
-            "fire_sound_2_player_1p"                       ""
-            "fire_sound_1_player_3p"                       "weapon_sentinel_fire_alt_3p"
-            "fire_sound_2_player_3p"                       ""
+			"fire_sound_1_player_1p"                    "weapon_dmr_fire_skull_1p"
+			"fire_sound_1_player_3p"                    "weapon_dmr_fire_skull_3p"
+			"fire_sound_1_npc"                          "weapon_dmr_fire_skull_3p"
 
             // Sound - Low Ammo
             "low_ammo_sound_name_1"                        "DoubleTake_LowAmmo_Shot1"
@@ -503,4 +501,3 @@
 		}
 	}
 }
-
