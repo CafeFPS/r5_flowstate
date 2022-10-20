@@ -22,7 +22,7 @@ npc_dropship
 
 	DefaultModelName		"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
 	DefaultModelName_IMC	"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
-	DefaultModelName_MIL	"mdl/vehicle/crow_dropship/crow_dropship.rmdl"
+	DefaultModelName_MIL	"mdl/vehicle/goblin_dropship/goblin_dropship.rmdl"
 
 	DefaultWeapon			""
 

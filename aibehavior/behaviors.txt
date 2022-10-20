@@ -6,3 +6,5 @@ behavior_treasure_tick
 behavior_dummy_empty
 behavior_spider
 behavior_infected
+behavior_marvin
+behavior_prowler

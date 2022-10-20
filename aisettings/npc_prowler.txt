@@ -1,0 +1,147 @@
+npc_prowler
+{
+	HullType				"HULL_PROWLER"
+	useSequenceBounds		1
+	orientToGround			1
+	AIClass					prowler
+	TraverseAnimType		prowler
+	BodyType				prowler
+	ArmorType				normal
+	collideWithPlayer		1
+
+	title					#NPC_PROWLER
+	ui_targetinfo			"ui/targetinfo_npc_simple"
+
+	BaseClass				"npc_prowler"
+
+	footstep_type			"prowler"
+	quadruped				1
+	creature				1
+	DefaultModelName		"mdl/Creatures/prowler/prowler_apex.rmdl"
+	DefaultWeapon			""
+	BehaviorSelector		"behavior_prowler"
+
+	GibModel0				"mdl/gibs/human_gibs.rmdl"
+
+	melee_charge_set		prowler
+
+	Health					120
+
+	painOnHeavyDamageThreshold		60
+	painOnRepeatDamageThreshold		300
+	painHeavy_minInterval			4
+	painHeavy_onAnyMeleeReceived	1
+	painOnSurpriseHit				0
+	painWhileRunning				1
+
+	FOV_Vert_Offset			0
+	FOV_Near_Dist			150		// distance at which we transition between near and far FOV values
+	FOV_Far_Dist			1000	// use far values after this distance, interpolate horizontal in between, use far for vertical
+
+	FOV_Idle_Near_Horz		160
+	FOV_Idle_Near_Vert		160
+	FOV_Idle_Far_Horz		120
+	FOV_Idle_Far_Vert		120
+
+	FOV_Alert_Near_Horz		160
+	FOV_Alert_Near_Vert		160
+	FOV_Alert_Far_Horz		150
+	FOV_Alert_Far_Vert		120
+
+	FOV_Combat_Near_Horz	160
+	FOV_Combat_Near_Vert	160
+	FOV_Combat_Far_Horz		150
+	FOV_Combat_Far_Vert		120
+
+	faceEnemyToleranceAngle			45
+	faceEnemyStrictToleranceAngle	45
+	MoveYawSpeed					20
+	AimAngularSpeed					20
+	allowTurn45Anims				0
+
+	aimassist_adspull_centerAttachmentName		"aimassist_center"
+	aimassist_adspull_centerRadius				18.0
+	aimassist_adspull_headshotAttachmentName	"HEADSHOT"
+	aimassist_adspull_headshotRadius			13.0
+
+	MeleeDamageMin					30
+	MeleeDamageMax					30
+	MeleeDamageMinHeavyArmor		60
+	MeleeDamageMaxHeavyArmor		80
+	MeleeDamageRadius				75
+	MeleeDamageRadiusUpwardBias		20
+	MeleeRange						80
+	MeleeInterval					0	// Allow constant melee attacks
+	MeleeChargeDamageMin			30
+	MeleeChargeDamageMax			30
+	MeleeChargeDamageMinHeavyArmor	80
+	MeleeChargeDamageMaxHeavyArmor	100
+	MeleeChargeDamageRadius			60
+	MeleeChargeInterval				3
+	MeleeChargeAnticipateRange		1	// Anticipate melee range based on animation and enemy movement (instead of constant MeleeChargeRange 240)
+
+	MeleeEnemyArmorType				any
+	MeleeChargeOnlyPlayers			1
+	MeleeChargeEnemyArmorType		any
+	MeleeDamageForce				20000
+	MeleeRangeMaxVerticalOffset		100
+
+	longJumpMaxDist					200
+	meleeImpactEffectTable	"melee_prowler"
+	syncedMeleeEngageDist	40
+	meleeable				1
+
+	canBeAlertedByEnemiesOutsideOfMaxDist	0
+	returnToIdleTime						15
+	maxEnemyDist							3000
+	maxEnemyDistHeavyArmor					3000
+
+	aiEnemy_usePriorityDist					2000
+	aiEnemy_immediateThreatDist				200
+	aiEnemy_currentBonusDist				500
+	aiEnemy_ignoreDownedPlayerTime			10.0
+
+	pathMaxDetourBase		1000
+	pathMaxDetourMultiplier	2.0
+	minGoalRadius			256
+
+	MinStartMoveDist		150
+	MaxArrivalDist			230
+	MinForceWalkDist		0
+	circleStrafeDist		420
+	enemyAimAtMeWidth		100
+
+	navNearbyReachableMins	"-100 -100 -250"	// Extend the search mins far below the enemy because Prowlers can use SCHED_MELEE_ATTACK_JUMP_UP
+	navNearbyReachableMaxs	"100 100 90"		// 100 is a good 2D range for their normal melee attack
+
+	chaseStopDist							90	// One of the melee ranges, either MeleeRange or MeleeChargeRange, should be greater than chaseStopDist
+	chaseStopDistHeavyArmor					200
+	chaseTryRunningDodgeWhenAimedAtMinDist	600	//Should be > MeleeChargeRange so that chargeMelee prioritize over dodging
+
+	dodgePeriod 			4	// Don't dodge more than maxDodgePerPeriod within this time
+	maxDodgePerPeriod		2	// Don't dodge more than this many times in dodgePeriod
+
+	traverseCostFactor		1
+
+	showFriendlyIcon		1
+
+	allowCrouchAnims		0
+	allowFlee				1
+	allowSignals			1
+	allowPatrol				1
+	allowInvestigate		0
+
+	canOpenDoors			0
+	becomeDebrisOnDeath		1
+
+	tauntInterval			20
+
+	patrolRangeMin			600
+	patrolRangeMax			800
+
+	moveDeflectionLookAheadTime	1
+	reactChanceDefault			100
+	reactBulletChanceDefault	90
+
+	seeThroughSemiTranslucentThickness	200
+}

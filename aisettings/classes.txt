@@ -11,4 +11,6 @@ classes
 	import npc_training_dummy_trainer.txt
 	import npc_spider.txt
 	import npc_soldier_infected.txt
+	import npc_marvin.txt
+	import npc_prowler.txt
 }

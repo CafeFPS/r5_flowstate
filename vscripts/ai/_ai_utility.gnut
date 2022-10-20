@@ -6,8 +6,35 @@ struct{
 	array<var> recordingAnims
 }file
 
+void function SpawnDoubleDoorAtCrosshair()
+{
+//By Colombia
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	origin.z-=32
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - origin
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+
+	entity ddl = CreateEntity("prop_door")
+	ddl.SetValueForModelKey($"mdl/door/canyonlands_door_single_02.rmdl")
+	ddl.SetAngles(angles1)
+	ddl.SetOrigin(origin + ddl.GetRightVector() * 60)
+	DispatchSpawn(ddl)
+
+	entity ddr = CreateEntity("prop_door")
+	ddr.SetValueForModelKey($"mdl/door/canyonlands_door_single_02.rmdl")
+	ddr.SetAngles(Vector(angles1.x, (angles1.y + 180)  % 360, angles1.z))
+	ddr.SetOrigin(origin + ddr.GetRightVector() * 60)
+	ddr.LinkToEnt( ddl )
+	DispatchSpawn(ddr)
+}
+ 
 void function RecordingAnimationTest()
 {
+//By Colombia
 	entity player = GetPlayerArray()[0]
 	vector initialpos = player.GetOrigin()
 	vector initialang = player.GetAngles()
@@ -1158,6 +1185,31 @@ while(IsValid(dummy))
 	}
 }
 
+void function DEV_SpawnProwlerAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+
+	entity prowler = CreateProwler( 99, origin, angles )
+
+	DispatchSpawn( prowler )
+	
+    prowler.SetSkin(RandomInt(5))
+}
+
+void function DEV_SpawnMarvinAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+	int team = player.GetTeam()
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	vector angles = Vector( 0, 0, 0 )
+	entity marvin = CreateMarvin( 99, origin, angles )
+
+	DispatchSpawn( marvin )
+}
 void function DEV_SpawnSpiderAtCrosshair()
 {
 	entity player = GetPlayerArray()[ 0 ]
