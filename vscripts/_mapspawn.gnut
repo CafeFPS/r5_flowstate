@@ -337,7 +337,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_ability_phase_rewind" )
 	PrecacheWeapon( $"mp_ability_space_elevator_tac" ) //needs more testing
-	//PrecacheWeapon( $"mp_weapon_sentinel" )
+	PrecacheWeapon( $"mp_weapon_sentinel" )
 
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
