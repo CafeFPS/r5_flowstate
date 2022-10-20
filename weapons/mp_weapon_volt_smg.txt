@@ -8,10 +8,10 @@
 WeaponData
 {
 	// General
-	"printname"   									"#WPN_VOLT_SMG"
-	"shortprintname"   								"#WPN_VOLT_SMG_SHORT"
-	"description" 									"#WPN_VOLT_SMG_DESC"
-	"longdesc"										"#WPN_VOLT_SMG_LONGDESC"
+	"printname"   									"Volt SMG"
+	"shortprintname"   								"Volt"
+	"description" 									"Energy actuated SMG."
+	"longdesc"										"Energy actuated SMG."
 
 	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"special"
@@ -32,10 +32,6 @@ WeaponData
 
 	"critical_hit"									"1"
 	"critical_hit_damage_scale"						"2"
-
-	// Callbacks
-    //"OnWeaponActivate"                              "OnWeaponActivate_weapon_volt_smg"
-   // "OnWeaponDeactivate"                            "OnWeaponDeactivate_weapon_volt_smg"
 
 	// Menu
 	"menu_category"                                 "smg"
