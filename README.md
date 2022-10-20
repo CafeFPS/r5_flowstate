@@ -21,6 +21,8 @@ Download depot.zip and replace all the content into your Apex S3 main folder.
 2. Get the flowstate required files .zip: https://github.com/ColombianGuy/r5_flowstate/releases/tag/Release2. Drag and drop all the content into r5r main folder, replace when asked.
 3. Get the content from this repo and place it in /platform/scripts/. Replace all the content. https://github.com/ColombianGuy/r5_flowstate/archive/refs/heads/r5_flowstate.zip
 
+# Flowstate Aim Trainer
+
 # How to run
 You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Trainer session.
 1. Choose playlist. "custom_aimtrainer" (F10 menu) or "Flowstate Aim Trainer" (Lobby menu).
