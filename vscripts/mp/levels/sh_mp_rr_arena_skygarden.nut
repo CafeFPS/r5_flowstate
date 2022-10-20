@@ -5,7 +5,6 @@ void function CodeCallback_MapInit()
 {	
 	#if SERVER
 	thread MapModels()
-	AddCallback_OnClientConnected( OnPlayerConnected )
 	#endif
 }
 
@@ -18,11 +17,6 @@ void function ShInit_Skygarden()
 }
 
 #if SERVER
-void function OnPlayerConnected( entity player )
-{
-	Dev_PrintMessage( player, "Welcome to Encore", "Ported by @KralRindo, please report us any bugs you encounter ", 5, "dropship_warpin" )
-}
-
 void function MapModels()
 {
 	vector startingorg = <0,0,0>

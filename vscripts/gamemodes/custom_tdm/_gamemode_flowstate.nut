@@ -232,6 +232,8 @@ LocPair function _GetVotingLocation()
             return NewLocPair(<0, 4780, 220>, <0, -90, 0>)
 		case "mp_rr_desertlands_64k_x_64k_tt":
             return NewLocPair(<-25197, -4278, -2138>, <0, -34, 0>)
+		case "mp_rr_arena_skygarden":
+			return NewLocPair(<4284.88037, -102.993355, 2671.03125>, <0, -179.447098, 0>)
 		case "mp_rr_party_crasher":
 			return NewLocPair(<1729.17407, -3585.65137, 581.736206>, <0, 103.168709, 0>)
         default:
