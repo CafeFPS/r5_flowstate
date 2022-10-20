@@ -1,6 +1,5 @@
 #base "mp_weapon_melee_survival.txt"
 
-// hello
 WeaponData
 {
 	// General
@@ -12,13 +11,19 @@ WeaponData
 	"weapon_type_flags"								"WPT_MELEE"
 	
 	// UI/HUD
-	"menu_icon"										"rui/menu/dpad_comms/emoji/fist"
-	"hud_icon"										"rui/menu/dpad_comms/emoji/fist"
+	"menu_icon"										"rui/weapon_icons/r5/weapon_bolo"
+	"hud_icon"										"rui/weapon_icons/r5/weapon_bolo"
 
 	// Models
 	"viewmodel"   									"mdl/weapons/bolo_sword/ptpov_bolo_sword_ash.rmdl"
-	"playermodel" 									"mdl/weapons/combat_knife/w_combat_knife.rmdl"
+	"playermodel" 									"mdl/weapons/bolo_sword/w_bolo_sword.rmdl"
 	
 	//"OnWeaponActivate"							"OnWeaponActivate_melee_bolo_sword_primary"
 	//"OnWeaponDeactivate"						"OnWeaponDeactivate_melee_bolo_sword_primary"
+	
+	"dof_nearDepthStart"							"0.5"
+	"dof_nearDepthEnd"							    "6.4"
+
+	// Behavior
+	"deployfirst_time"								"2.3"
 }

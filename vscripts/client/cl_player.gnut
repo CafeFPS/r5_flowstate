@@ -72,6 +72,12 @@ struct BloodDecalParams
 	asset secondaryFxType
 }
 
+enum eKillConfirmedSounds
+{
+    Classic,
+    Shadowfall
+}
+
 void function ClPlayer_Init()
 {
 	ClPilotJumpjet_Init()
@@ -1042,6 +1048,35 @@ string function BloodSprayDecals_Toggle()
 }
 #endif
 
+string function GetKillConfirmedSound( entity attacker, entity victim )
+{
+    string killSound
+
+    switch ( GetCurrentPlaylistVarInt( "kill_confirmed_sound", eKillConfirmedSounds.Classic ) )
+    {
+        case eKillConfirmedSounds.Classic:
+            killSound = "Pilot_Killed_Indicator"
+            break
+        case eKillConfirmedSounds.Shadowfall:
+            killSound = "UI_InGame_ShadowSquad_RevengeKill"
+            break
+        default:
+            killSound = "Pilot_Killed_Indicator"
+            break
+    }
+
+    if ( GetCurrentPlaylistVarBool( "revenge_enabled", false ) )
+    {
+        if ( GetHasEntityVar( attacker, "revengePlayer" ) )
+        {
+            if ( attacker.nv.revengePlayer == victim )
+                killSound = "UI_InGame_ShadowSquad_RevengeKill"
+        }
+    }
+
+    return killSound
+}
+
 void function ServerCallback_OnEntityKilled( entity attacker, entity victim, int scriptDamageType, int damageSourceId )
 {
 	bool isHeadShot = (scriptDamageType & DF_HEADSHOT) > 0
@@ -1082,15 +1117,17 @@ void function ServerCallback_OnEntityKilled( entity attacker, entity victim, int
 	if ( victim.IsPlayer() && victim != attacker && damageSourceId != eDamageSourceId.human_execution )
 	{
 		if ( attacker == localClientPlayer )
-		{
-			thread PlayKillConfirmedSound( "Pilot_Killed_Indicator" )
+		{        
+			thread PlayKillConfirmedSound( GetKillConfirmedSound( attacker, victim ) )
 		}
+		/*
 		else if ( IsValid( attacker ) && attacker.IsTitan() )
 		{
 			entity bossPlayer = attacker.GetBossPlayer()
 			if ( bossPlayer && bossPlayer == localClientPlayer )
 				thread PlayKillConfirmedSound( "Pilot_Killed_Indicator" )
 		}
+		*/
 	}
 	else if ( (IsGrunt( victim ) || IsSpectre( victim )) && attacker == localClientPlayer )
 	{

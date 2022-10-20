@@ -347,27 +347,6 @@ entity function CreateCustomLight( vector origin, vector angles, string lightcol
 	return env_sprite
 }
 
-entity ornull function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, float idk = -1)
-{
-	if(a == $"mdl/humans/class/medium/combat_dummie_medium.rmdl")
-	{
-		thread CreateMovementMapDummieFromMapLoad(pos,ang)
-		return null
-	}
-	
-	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
-	e.kv.fadedist = fade
-    e.kv.renderamt = 255
-	e.kv.rendermode = 3
-	e.kv.rendercolor = "255 255 255 255"
-	if(mantle) e.AllowMantle()
-	e.SetScriptName("editor_placed_prop")
-    surf.playerSpawnedProps.append(e)
-	
-	
-	return e
-}
-
 void function SurfRampsHighlight( entity e )
 {
 	float rampr = RandomFloatRange( 0.0, 1.0 )

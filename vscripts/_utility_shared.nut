@@ -127,6 +127,7 @@ void function InitWeaponScripts()
 	//		PrecacheProjectileEntity( "crossbow_bolt" )
 	//	#endif
 	
+	MpWeaponDoubletake_Init()
 	//MpWeaponGrenadeGravity_Init()
 	MpSpaceElevatorAbility_Init()
 	MpAbilityShifter_Init()
@@ -149,9 +150,9 @@ void function InitWeaponScripts()
 	MeleeLifelineBaton_Init()
 	MpWeaponLifelineBatonPrimary_Init()
 	MpWeaponDeployableCover_Init()
-
+	MeleeShadowsquadHands_Init()
+	
 	#if DEVELOPER
-		MeleeShadowsquadHands_Init()
 		MpWeaponShadowsquadHandsPrimary_Init()
 		MDLSpawner_Init()
 	#endif

@@ -16,6 +16,7 @@ global const int ANNOUNCEMENT_STYLE_RESULTS = 6
 global const int ANNOUNCEMENT_STYLE_OBJECTIVE = 7
 global const int ANNOUNCEMENT_STYLE_CIRCLE_WARNING = 8
 global const int ANNOUNCEMENT_STYLE_ELITE = 9
+global const int ANNOUNCEMENT_STYLE_WAVE = 10
 
 const int ANNOUNCEMENT_STYLE_DEFAULT = ANNOUNCEMENT_STYLE_BIG
 
@@ -507,6 +508,23 @@ void function AnnouncementMessage_DisplayOnHud( AnnouncementData announcement )
 			RuiSetInt( rui, "streak", int( optionalTextArgs[0] ) )
 			RuiSetFloat( rui, "duration", announcement.duration )
 			RuiSetGameTime( rui, "startFadeTime", Time() + announcement.duration - 0.5 )
+
+			EmitSoundOnEntity( player, announcement.soundAlias )
+			break
+			
+		case ANNOUNCEMENT_STYLE_WAVE:
+			customAnnouncement = true
+			rui = RuiCreate( $"ui/wave_announcement.rpak", clGlobal.topoFullScreen, RUI_DRAW_POSTEFFECTS, 0 )
+
+			RuiSetGameTime( rui, "startTime", Time() )
+			RuiSetGameTime( rui, "endTime", Time() + announcement.duration )
+
+			RuiSetString( rui, "waveTitle", Localize( announcement.messageText ) )
+			RuiSetString( rui, "subTitle", Localize( announcement.subText ) )
+
+			// ui asset missing for pips
+			RuiSetInt( rui, "numPips", int( optionalTextArgs[0] ) )
+			RuiSetInt( rui, "numFilledPips", int( optionalTextArgs[1] ) )
 
 			EmitSoundOnEntity( player, announcement.soundAlias )
 			break

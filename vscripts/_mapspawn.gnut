@@ -8,6 +8,8 @@ untyped
 global function CodeCallback_MapSpawn
 global function CodeCallback_ClientCommand
 global function MapTriggers_Init
+global function CreateMapEditorProp
+global function CreateEditorProp
 global table _ClientCommandCallbacks = {}
 global entity _cc = null
 global entity _sc = null
@@ -335,6 +337,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	PrecacheWeapon( $"mp_weapon_3030" )
 	PrecacheWeapon( $"mp_ability_phase_rewind" )
 	PrecacheWeapon( $"mp_ability_space_elevator_tac" ) //needs more testing
+	//PrecacheWeapon( $"mp_weapon_sentinel" )
 
 	SV_CL_Shared_Init()
 	ClientCommands_Init()
@@ -501,6 +504,55 @@ void function WallTriggerLeave( entity trigger , entity ent )
 			StatusEffect_StopAllOfType( ent, eStatusEffect.move_slow)
 		}
 	}
+}
+
+
+entity ornull function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, float idk = -1)
+{
+	if(a == $"mdl/humans/class/medium/combat_dummie_medium.rmdl")
+	{
+		thread CreateMovementMapDummieFromMapLoad(pos,ang)
+		return null
+	}
+	
+	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+	e.kv.fadedist = fade
+    e.kv.renderamt = 255
+	e.kv.rendermode = 3
+	e.kv.rendercolor = "255 255 255 255"
+	if(mantle) e.AllowMantle()
+	e.SetScriptName("editor_placed_prop")
+
+	if(GetCurrentPlaylistVarBool( "flowstateSURF", true ))
+		_OnPropDynamicSpawnedSURF(e)
+	
+	
+	return e
+}
+
+entity function CreateMapEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1)
+{
+	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+	e.kv.fadedist = fade
+	e.kv.rendermode = 0
+	e.kv.renderamt = 1
+	e.kv.solid = 6
+	e.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+	if(mantle) e.AllowMantle()
+    
+	if (realm > -1) {
+		e.RemoveFromAllRealms()
+		e.AddToRealm(realm)
+	}
+	string positionSerialized = pos.x.tostring() + "," + pos.y.tostring() + "," + pos.z.tostring()
+	string anglesSerialized = ang.x.tostring() + "," + ang.y.tostring() + "," + ang.z.tostring()
+    
+	e.SetScriptName("editor_placed_prop")
+	e.e.gameModeId = realm
+
+    e.SetModelScale( scale )
+    
+	return e
 }
 
 void function _CheckPoints_Init()

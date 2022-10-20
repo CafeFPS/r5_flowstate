@@ -1,0 +1,84 @@
+WeaponData
+{
+	Mods
+	{
+		// 1x
+		optic_cq_hcog_classic
+		{
+			// sight_hcog_og
+			"zoom_fov"				"60"
+
+			"bodygroup1_set"		"0"
+			"bodygroup6_set"		"1"
+
+			"ui1_enable"			"0"
+			"ui6_enable"			"1"
+
+			//active_optic_appearance "hcog_classic"
+
+			"mod_activity_modifier"	"optic"
+
+			"viewmodel_ads_rui_bottomleft_attachment"	"RUI_BL_CROSSHAIR_HCOG_OG"
+			"viewmodel_ads_centerpoint_attachment"      "ADS_CENTER_SIGHT_HCOG_OG"
+			"viewmodel_offset_ads_by_centerpoint" 		"1"
+
+			"viewmodel_offset_ads" 				    "0 13 0"
+
+			"dof_zoom_nearDepthStart"				"1.0"
+			"dof_zoom_nearDepthEnd"					"8.5"
+
+			zoomed_convar_sensitivity_index         0
+		}
+	}
+
+	OpticAppearances
+	{
+		hcog_classic
+		{
+			bodygroups
+			{
+				sight_hcog_og   1
+			}
+			uidatas         "hcog_classic_sights"
+		}
+	}
+
+	// --- BODYGROUPS AND UIDATA ---
+
+	UiDatas
+	{
+		hcog_classic_sights
+		{
+			"ui"                    "ui/hcog_classic_sights"
+			"mesh"                  "models/weapons/attachments/hcog_classic_sights"
+			draw_cloaked            1
+			Args
+			{
+				vis                 player_zoomfrac
+				ammo                weapon_ammo
+				clipSize            weapon_clipSize
+				centerOffset        weapon_ads_center_offset
+			}
+		}
+	}
+
+
+	// optic_cq_hcog_classic
+	"bodygroup6_name"	"sight_hcog_og"
+	"bodygroup6_set"	"0"
+
+	"ui6_enable"		"0"
+	"ui6_draw_cloaked"	"1"
+	UiData6
+	{
+		"ui"	"ui/hcog_classic_sights"
+		"mesh" 	"models/weapons/attachments/hcog_classic_sights"
+		Args
+		{
+			vis							player_zoomfrac
+			ammo						weapon_ammo
+			clipSize					weapon_clipSize
+			centerOffset		weapon_ads_center_offset
+		}
+	}
+}
