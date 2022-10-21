@@ -20,6 +20,9 @@ bool function ClientCommand_KillSelf(entity player, array<string> args)
         return false
     }
 
+    ClearRecentDamageHistory( player )
+	ClearLastAttacker( player )
+
     player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
     return true
 }
