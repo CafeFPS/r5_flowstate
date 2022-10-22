@@ -32,14 +32,14 @@
 	"weapon_type_flags"							"WPT_PRIMARY"
 
 	// Script - Callbacks
-	//"OnWeaponActivate"                         "OnWeaponActivate_weapon_sentinel"
-	//"OnWeaponDeactivate"                       "OnWeaponDeactivate_weapon_sentinel"
-	//"OnWeaponPrimaryAttack"                    "OnWeaponActivate_test"
+	//"OnWeaponActivate"                       "OnWeaponActivate_weapon_sentinel"
+	//"OnWeaponDeactivate"                     "OnWeaponDeactivate_weapon_sentinel"
+	"OnWeaponPrimaryAttack"                    "OnWeaponPrimaryAttack_weapon_sentinel"
 	"OnClientAnimEvent"						   "OnClientAnimEvent_weapon_basic_bolt"
-	//"OnWeaponCustomActivityStart"              "OnWeaponCustomActivityStart_weapon_sentinel"
-	//"OnWeaponCustomActivityEnd"                "OnWeaponCustomActivityEnd_weapon_sentinel"
-	//"OnWeaponStartZoomIn"                      "OnWeaponCustomActivityStart_weapon_sentinel"
-	//"OnWeaponStartZoomOut"                     "OnWeaponStartZoomOut_weapon_sentinel"
+	//"OnWeaponCustomActivityStart"            "OnWeaponCustomActivityStart_weapon_sentinel"
+	//"OnWeaponCustomActivityEnd"              "OnWeaponCustomActivityEnd_weapon_sentinel"
+	//"OnWeaponStartZoomIn"                    "OnWeaponCustomActivityStart_weapon_sentinel"
+	//"OnWeaponStartZoomOut"                   "OnWeaponStartZoomOut_weapon_sentinel"
 
     // Energize mechanics
     "energized_duration"                       "90.0"
@@ -117,7 +117,7 @@
 	"reload_enabled"                               "1"
 	"allow_empty_click"                            "1"
 	"empty_reload_only"                            "0"
-	"uses_ammo_pool"                               "1"
+	"uses_ammo_pool"                               "0"
 
 	"disable_zoomed_rechamber"					   "0"
 
@@ -195,11 +195,11 @@
     "projectile_trail_effect_0"             "P_tracer_proj_sniper"
 
     // FX
-	"fx_muzzle_flash_view"				""
-	"fx_muzzle_flash_world"				""
+	"fx_muzzle_flash_view"				"wpn_muzzleflash_snp_sup_hmn_FP"
+	"fx_muzzle_flash_world"				"wpn_muzzleflash_snp_sup_hmn"
 
 	//FX - Shell Eject
-	"fx_shell_eject_view"                   	""
+	"fx_shell_eject_view"                   	"wpn_shelleject_rifle_assault_FP"
 
 
 	// NPC
@@ -287,6 +287,7 @@
 
 		"survival_finite_ammo"
 		{
+			"uses_ammo_pool"                             "1"
 		}
 
 		energized
@@ -307,8 +308,8 @@
             "projectile_trail_effect_0"                	"P_tracer_proj_sniper_piercer"
 
             // FX - Muzzle Flash
-			"fx_muzzle_flash_view"						""
-			"fx_muzzle_flash_world"						""
+			"fx_muzzle_flash_view"						"wpn_muzzleflash_snp_sup_hmn_FP"
+			"fx_muzzle_flash_world"						"wpn_muzzleflash_snp_sup_hmn"
 
             // Sounds
 			"fire_sound_1_player_1p"                    "weapon_dmr_fire_skull_1p"

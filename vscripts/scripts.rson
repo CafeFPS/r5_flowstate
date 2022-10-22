@@ -288,6 +288,7 @@ Scripts:
 	
 	weapons/mp_weapon_shotgun.nut
 	weapons/mp_weapon_sniper.nut
+	weapons/mp_weapon_sentinel.nut
 	weapons/mp_weapon_thermite_grenade.nut
 	weapons/mp_weapon_zipline.nut
 	weapons/mp_weapon_alternator_smg.nut
