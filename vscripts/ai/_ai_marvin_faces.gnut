@@ -8,6 +8,11 @@ global function MarvinFaceExists
 global function SetMarvinBodyType
 global function MarvinSetFace
 
+global const MARVIN_TYPE_SHOOTER      = 0
+global const MARVIN_TYPE_WORKER       = 1
+global const MARVIN_TYPE_MARVINONE    = 2
+global const MARVIN_TYPE_FIREFIGHTER  = 3
+
 function MarvinFaces_Init()
 {
 
@@ -20,54 +25,54 @@ function MarvinFaces_Init()
 
 function SetupMarvinFaces()
 {
-	// // setup marvin face mappings
-	// level.marvinFaces <- {}
-	// level.marvinFaces[ MARVIN_TYPE_WORKER ] <-
-	// {
-	// 	none = 0
-	// 	happy = 1
-	// 	sad = 2
-	// 	angry = 3
-	// 	think1 = 4
-	// 	think2 = 5
-	// 	question = 6
-	// }
+	// setup marvin face mappings
+	level.marvinFaces <- {}
+	level.marvinFaces[ MARVIN_TYPE_WORKER ] <-
+	{
+		none = 0
+		happy = 1
+		sad = 2
+		angry = 3
+		think1 = 4
+		think2 = 5
+		question = 6
+	}
 
-	// // Use the yellow worker marvin skins since shooters are from SP and shooter value = 0 which is LevelEd's default.
-	// // Real shooter skins are 7-13.  If we want real skins, we can add them here and adjust the marvin spawn points per level.
-	// level.marvinFaces[ MARVIN_TYPE_SHOOTER ] <-
-	// {
-	// 	none = 0
-	// 	happy = 1
-	// 	sad = 2
-	// 	angry = 3
-	// 	think1 = 4
-	// 	think2 = 5
-	// 	question = 6
-	// }
+	// Use the yellow worker marvin skins since shooters are from SP and shooter value = 0 which is LevelEd's default.
+	// Real shooter skins are 7-13.  If we want real skins, we can add them here and adjust the marvin spawn points per level.
+	level.marvinFaces[ MARVIN_TYPE_SHOOTER ] <-
+	{
+		none = 0
+		happy = 1
+		sad = 2
+		angry = 3
+		think1 = 4
+		think2 = 5
+		question = 6
+	}
 
-	// level.marvinFaces[ MARVIN_TYPE_FIREFIGHTER ] <-
-	// {
-	// 	none = 14
-	// 	happy = 15
-	// 	sad = 16
-	// 	angry = 17
-	// 	think1 = 18
-	// 	think2 = 19
-	// 	question = 20
-	// }
+	level.marvinFaces[ MARVIN_TYPE_FIREFIGHTER ] <-
+	{
+		none = 14
+		happy = 15
+		sad = 16
+		angry = 17
+		think1 = 18
+		think2 = 19
+		question = 20
+	}
 
-	// // No idea what this type of marvin is...legacy stuff. Just make them yellow.
-	// level.marvinFaces[ MARVIN_TYPE_MARVINONE ] <-
-	// {
-	// 	none = 0
-	// 	happy = 1
-	// 	sad = 2
-	// 	angry = 3
-	// 	think1 = 4
-	// 	think2 = 5
-	// 	question = 6
-	// }
+	// No idea what this type of marvin is...legacy stuff. Just make them yellow.
+	level.marvinFaces[ MARVIN_TYPE_MARVINONE ] <-
+	{
+		none = 0
+		happy = 1
+		sad = 2
+		angry = 3
+		think1 = 4
+		think2 = 5
+		question = 6
+	}
 
 // Nothing uses this except debug statements that are commented out
 /*
@@ -211,12 +216,12 @@ function SetMarvinBodyType( npc_marvin )
 
 function GetMarvinBodyType( npc_marvin )
 {
-	// local bodyType = MARVIN_TYPE_WORKER
+	local bodyType = MARVIN_TYPE_WORKER
 
-	// if( "bodytype" in npc_marvin.s )
-	// 	bodyType = npc_marvin.s.bodytype
+	if( "bodytype" in npc_marvin.s )
+		bodyType = npc_marvin.s.bodytype
 
-	// return bodyType
+	return bodyType
 }
 
 void function MarvinSpawnCallback( entity npc_marvin )
