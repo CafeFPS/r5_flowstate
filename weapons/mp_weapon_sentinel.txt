@@ -195,11 +195,11 @@
     "projectile_trail_effect_0"             "P_tracer_proj_sniper"
 
     // FX
-	"fx_muzzle_flash_view"				"wpn_muzzleflash_snp_sup_hmn_FP"
-	"fx_muzzle_flash_world"				"wpn_muzzleflash_snp_sup_hmn"
+	"fx_muzzle_flash_view"				""
+	"fx_muzzle_flash_world"				""
 
 	//FX - Shell Eject
-	"fx_shell_eject_view"                   	"wpn_shelleject_rifle_assault_FP"
+	"fx_shell_eject_view"                   	""
 
 
 	// NPC
@@ -308,8 +308,8 @@
             "projectile_trail_effect_0"                	"P_tracer_proj_sniper_piercer"
 
             // FX - Muzzle Flash
-			"fx_muzzle_flash_view"						"wpn_muzzleflash_snp_sup_hmn_FP"
-			"fx_muzzle_flash_world"						"wpn_muzzleflash_snp_sup_hmn"
+			"fx_muzzle_flash_view"						""
+			"fx_muzzle_flash_world"						""
 
             // Sounds
 			"fire_sound_1_player_1p"                    "weapon_dmr_fire_skull_1p"
