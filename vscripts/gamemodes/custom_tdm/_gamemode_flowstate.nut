@@ -570,7 +570,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
 				
-				wait 1.5
+				wait DEATHCAM_TIME_SHORT
 				
 				if(!IsValid(victim) || !IsValid(attacker)) return
 
@@ -588,7 +588,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 				{
 					victim.FreezeControlsOnServer()
 	    			victim.SetObserverTarget( attacker )
-	    			victim.SetSpecReplayDelay( 4 )
+	    			victim.SetSpecReplayDelay( 3 + DEATHCAM_TIME_SHORT )
 	    			victim.StartObserverMode( OBS_MODE_IN_EYE )
 	    			Remote_CallFunction_NonReplay(victim, "ServerCallback_KillReplayHud_Activate")
 					thread CheckForObservedTarget(victim)
@@ -1710,7 +1710,6 @@ void function RunTDM()
 {
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
-	isTitanfallDeathcam = true
 
 	if(!Flowstate_DoorsEnabled()){
 		array<entity> doors = GetAllPropDoors()
