@@ -15,7 +15,6 @@ global function SetChampion
 global function GetChampion
 
 struct {
-	int currentKillLeaderKillAmount = 0
 	entity currentKillLeader = null
 } file
 
@@ -58,7 +57,7 @@ int function SurvivalCommentary_GetChampionEEH()
 void function SurvivalCommentary_ResetAllData()
 {
 	file.currentKillLeader = null
-	file.currentKillLeaderKillAmount = 0
+	FlagClear( "SurvivalCommentary_FirstBloodReached" )
 }
 
 void function SetChampion( entity champion )
@@ -93,19 +92,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() || !attacker.IsPlayer() )
 		return
 
-	int attackerKills = attacker.GetPlayerNetInt( "kills" )
-	bool isNewKillLeader = false
-	if ( attackerKills > file.currentKillLeaderKillAmount 
-			&& attacker != file.currentKillLeader 
-			&& attackerKills >= GetMinKillsForKillLeader()
-		)
-	{
-		file.currentKillLeader = attacker
-		file.currentKillLeaderKillAmount = attackerKills
-		isNewKillLeader = true
-	}
-
-	thread function() : ( victim, attacker, damageInfo, attackerKills, isNewKillLeader )
+	thread function() : ( victim, attacker, damageInfo )
 	{
 		wait STANDARD_DELAY_BETWEEN_SPEAKER_OVATIONS
 
@@ -119,8 +106,12 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 					Remote_CallFunction_NonReplay( player, "ServerCallback_Survival_HighlightedPlayerKilled", victim, attacker, eSurvivalCommentaryPlayerType.KILLLEADER )
 			}
 
-			if( attacker == GetKillLeader() && isNewKillLeader )
+			int attackerKills = attacker.GetPlayerNetInt( "kills" )
+			if( attacker != GetKillLeader() && attackerKills >= GetMinKillsForKillLeader() && GetKillLeader() == null
+			||  attacker != GetKillLeader() && attackerKills >= GetMinKillsForKillLeader() && attackerKills > GetKillLeader().GetPlayerNetInt( "kills" ) )
 			{
+				file.currentKillLeader = attacker
+
 				thread SurvivalCommentary_KilledPlayerAnnounce( eSurvivalCommentaryBucket.NEW_KILL_LEADER, attacker, 0.0, "bc_killLeaderNew", "bc_squadmateBecomesKillLeader", "bc_iBecomeKillLeader", true )
 				
 				foreach ( player in GetPlayerArray() )

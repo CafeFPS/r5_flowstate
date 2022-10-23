@@ -1888,7 +1888,6 @@ void function SimpleChampionUI()
 	if( GetBestPlayer() != null )
 		SetChampion( GetBestPlayer() )
 
-	FlagClear( "SurvivalCommentary_FirstBloodReached" )
 	SurvivalCommentary_ResetAllData()
 
 	} catch(e4){}
