@@ -610,7 +610,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    		//if(FlowState_Gungame())
 	    		    //KillStreakAnnouncer(victim, true)
 
-	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW)
+	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && ShouldSetObserverTarget( attacker ) )
 	    		    wait Deathmatch_GetRespawnDelay()
 				
 				if( !IsValid( victim ) ) return
