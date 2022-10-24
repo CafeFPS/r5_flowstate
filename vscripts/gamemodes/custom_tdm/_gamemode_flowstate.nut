@@ -569,8 +569,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         case eGameState.Playing:
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-				
-				victim.FreezeControlsOnServer()
 
 				wait DEATHCAM_TIME_SHORT
 				
@@ -614,8 +612,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    		    wait Deathmatch_GetRespawnDelay()
 				
 				if( !IsValid( victim ) ) return
-
-				victim.UnfreezeControlsOnServer()
 				
 				if( !IsAlive( victim ) )
 					_HandleRespawn( victim )
