@@ -1,4 +1,4 @@
-npc_dummie_caustic
+npc_dummie_loba
 {
 	AIClass							dummie
 	TraverseAnimType				spectre
