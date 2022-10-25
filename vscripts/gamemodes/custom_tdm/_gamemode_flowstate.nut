@@ -569,7 +569,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
         case eGameState.Playing:
             // Víctim
             void functionref() victimHandleFunc = void function() : (victim, attacker, damageInfo) {
-				
+
 				wait DEATHCAM_TIME_SHORT
 				
 				if(!IsValid(victim) || !IsValid(attacker)) return
@@ -586,7 +586,6 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 
 	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW && IsValid(victim) && IsValid(attacker) && Spectator_GetReplayIsEnabled() && ShouldSetObserverTarget( attacker ) && attacker.IsPlayer())
 				{
-					victim.FreezeControlsOnServer()
 	    			victim.SetObserverTarget( attacker )
 	    			victim.SetSpecReplayDelay( 3 + DEATHCAM_TIME_SHORT )
 	    			victim.StartObserverMode( OBS_MODE_IN_EYE )
@@ -609,7 +608,7 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	    		//if(FlowState_Gungame())
 	    		    //KillStreakAnnouncer(victim, true)
 
-	    		if(file.tdmState != eTDMState.NEXT_ROUND_NOW)
+	    		if( file.tdmState != eTDMState.NEXT_ROUND_NOW && ShouldSetObserverTarget( attacker ) )
 	    		    wait Deathmatch_GetRespawnDelay()
 				
 				if( !IsValid( victim ) ) return
