@@ -2513,7 +2513,7 @@ void function ClippingAIWorkaround(entity dummy)
 void function PreChallengeStart(entity player, int challenge)
 {
 	if( IsAlive( player ) )
-		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 	SetupPlayer( player )
 	player.FreezeControlsOnServer()
 
