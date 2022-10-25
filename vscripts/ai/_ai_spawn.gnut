@@ -22,6 +22,7 @@ global function CreateNPCTitan
 global function CreateOgre
 global function CreateProwler
 global function CreateDummy
+global function CreateLegend_ai
 global function CreateSpider
 global function CreateInfected
 global function CreateRocketDrone
@@ -288,6 +289,16 @@ entity function CreateDummy( int team, vector origin, vector angles )
 {
     entity npc = CreateNPC( "npc_dummie", team, origin, angles )
     SetSpawnOption_AISettings( npc, "npc_dummie_combat" )
+	return npc
+}
+
+entity function CreateLegend_ai( int team, vector origin, vector angles )
+{
+	array<string> aiSettings = ["npc_dummie_caustic", "npc_dummie_mirage"]
+	aiSettings.randomize()
+
+	entity npc = CreateNPC( "npc_dummie", team, origin, angles )
+	SetSpawnOption_AISettings( npc, aiSettings.getrandom() )
 	return npc
 }
 
