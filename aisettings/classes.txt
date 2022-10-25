@@ -6,7 +6,6 @@ classes
 	import npc_frag_drone_treasure_tick.txt
 	import npc_training_dummy.txt
 	import npc_dummie_combat.txt
-	import npc_dummie_wraith.txt
 	import npc_dummie_mirage.txt
 	import npc_dummie_caustic.txt
 	import npc_frag_drone_throwable.txt
