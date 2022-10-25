@@ -156,8 +156,6 @@ void function StartFRChallenges(entity player)
 	player.SetAngles(AimTrainer_startAngs)
 
 	player.p.isChallengeActivated = false
-	if( IsAlive( player ) )
-		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 }
 
 void function ResetChallengeStats(entity player)
@@ -2145,9 +2143,6 @@ void function ChallengesStartAgain(entity player)
 				ResetChallengeStats(player)
 				
 				Remote_CallFunction_NonReplay(player, "ServerCallback_ResetLiveStatsUI")
-
-				if( IsAlive( player ) )
-					player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 				
 				if(!player.p.isRestartingLevel)
 				{
@@ -2517,6 +2512,8 @@ void function ClippingAIWorkaround(entity dummy)
 //CLIENT COMMANDS
 void function PreChallengeStart(entity player, int challenge)
 {
+	if( IsAlive( player ) )
+		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 	SetupPlayer( player )
 	player.FreezeControlsOnServer()
 
@@ -2942,8 +2939,6 @@ bool function CC_Weapon_Selector_Open( entity player, array<string> args )
 }
 bool function CC_Weapon_Selector_Close( entity player, array<string> args )
 {
-	if( IsAlive( player ) )
-		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 	return false
 }
 
