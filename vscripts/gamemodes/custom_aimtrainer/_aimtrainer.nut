@@ -2873,17 +2873,26 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	if(!GetCurrentPlaylistVarBool( "aimtrainer_enableSkins", false )) return false
 
-	if(weaponent.GetWeaponClassName() == "mp_weapon_car")
-		weaponent.SetSkin( weaponent.GetSkinIndexByName( "charm_preview_black" ) )
-	else if(weaponent.GetWeaponClassName() == "mp_weapon_wingman")
+	int weaponSkin = -1
+	int weaponModelIndex = -1
+	switch( weaponent.GetWeaponClassName() )
 	{
-		weaponent.SetLegendaryModelIndex(2)
-		weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
+		case "mp_weapon_car":
+			weaponSkin = weaponent.GetSkinIndexByName( "charm_preview_black" )
+			break
+		case "mp_weapon_wingman":
+		case "mp_weapon_r97":
+			weaponModelIndex = 2
+			weaponSkin = RandomInt( weaponent.GetSkinCount() )
+			break
 	}
-	else if(weaponent.GetWeaponClassName() == "mp_weapon_r97")
+
+	if( weaponSkin > -1 )
 	{
-		weaponent.SetLegendaryModelIndex(2)
-		weaponent.SetSkin(RandomInt(weaponent.GetSkinCount()))
+		weaponent.SetSkin( weaponSkin )
+		weaponent.SetLegendaryModelIndex( weaponModelIndex )
+		player.p.weaponSkin = weaponSkin
+		player.p.weaponModelIndex = weaponModelIndex
 	}
 	// else
 	// {
@@ -2923,8 +2932,14 @@ void function SetupPlayer( entity player )
 	
 	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
     player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	player.GiveWeapon( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
+	entity weapon = player.GiveWeapon( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+
+	if( player.p.weaponSkin > -1 )
+		weapon.SetSkin( player.p.weaponSkin )
+
+	if( player.p.weaponModelIndex > -1 )
+		weapon.SetLegendaryModelIndex( player.p.weaponModelIndex )
 
 	DeployAndEnableWeapons( player )
 }
