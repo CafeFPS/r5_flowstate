@@ -2887,12 +2887,16 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 			break
 	}
 
+	if( weaponModelIndex > -1 )
+	{
+		weaponent.SetLegendaryModelIndex( weaponModelIndex )
+		player.p.weaponModelIndex = weaponModelIndex
+	}
+
 	if( weaponSkin > -1 )
 	{
 		weaponent.SetSkin( weaponSkin )
-		weaponent.SetLegendaryModelIndex( weaponModelIndex )
 		player.p.weaponSkin = weaponSkin
-		player.p.weaponModelIndex = weaponModelIndex
 	}
 	// else
 	// {
@@ -2935,11 +2939,11 @@ void function SetupPlayer( entity player )
 	entity weapon = player.GiveWeapon( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 
-	if( player.p.weaponSkin > -1 )
-		weapon.SetSkin( player.p.weaponSkin )
-
 	if( player.p.weaponModelIndex > -1 )
 		weapon.SetLegendaryModelIndex( player.p.weaponModelIndex )
+	
+	if( player.p.weaponSkin > -1 )
+		weapon.SetSkin( player.p.weaponSkin )
 
 	DeployAndEnableWeapons( player )
 }
