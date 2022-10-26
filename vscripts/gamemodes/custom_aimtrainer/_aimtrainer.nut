@@ -2891,12 +2891,16 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	{
 		weaponent.SetLegendaryModelIndex( weaponModelIndex )
 		player.p.weaponModelIndex = weaponModelIndex
+	} else {
+		player.p.weaponModelIndex = -1
 	}
 
 	if( weaponSkin > -1 )
 	{
 		weaponent.SetSkin( weaponSkin )
 		player.p.weaponSkin = weaponSkin
+	} else {
+		player.p.weaponSkin = -1
 	}
 	// else
 	// {
