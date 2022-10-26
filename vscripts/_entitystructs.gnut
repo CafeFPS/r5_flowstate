@@ -720,6 +720,8 @@ global struct ServerPlayerStruct
 	bool ForceEject = false
 	string weapon = "mp_weapon_wingman"
 	array<string> mods = ["optic_cq_hcog_classic"]
+	int weaponSkin = -1
+	int weaponModelIndex = -1
 	
 	//Map editor
 	PropInfo& selectedProp
