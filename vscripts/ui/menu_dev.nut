@@ -101,9 +101,6 @@ void function InitDevMenu( var newMenuArg )
 		AddMenuEventHandler( menu, eUIEvent.MENU_NAVIGATE_BACK, BackOnePage_Activate )
 		AddMenuFooterOption( menu, LEFT, BUTTON_Y, true, "%[Y_BUTTON|]% Repeat Last Dev Command:", "Repeat Last Dev Command:", RepeatLastCommand_Activate )
 		AddMenuFooterOption( menu, LEFT, BUTTON_BACK, true, "%[BACK|]% Bind Selection to Gamepad", "", BindCommandToGamepad_Activate )
-		#if !DEVELOPER
-		AddMenuFooterOption( menu, LEFT, BUTTON_SHOULDER_RIGHT, true, "Some commands are hidden because -dev is not specified.", "Some commands are hidden because -dev is not specified." )
-		#endif
 		file.footerHelpTxtLabel = GetElementsByClassname( menu, "FooterHelpTxt" )[0]
 
 		RegisterSignal( "DEV_InitCodeDevMenu" )
@@ -319,10 +316,8 @@ void function SetupDefaultDevCommandsMP()
 			//SetupDevCommand( "Survival Loot Zone Preprocess", "script_ui Dev_CommandLineAddParm( \"-survival_preprocess\", \"\" ); reload" )
 		}
 
-		#if DEVELOPER
 		SetupDevMenu( "Respawn Player(s)", SetDevMenu_RespawnPlayers )
 		SetupDevMenu( "Set Respawn Behaviour Override", SetDevMenu_RespawnOverride )
-		#endif
 
 		//SetupDevMenu( "Spawn NPC [IMC]", SetDevMenu_AISpawn, TEAM_IMC )
 		//SetupDevMenu( "Spawn NPC [Militia]", SetDevMenu_AISpawn, TEAM_MILITIA )
@@ -336,7 +331,7 @@ void function SetupDefaultDevCommandsMP()
 
 		//SetupDevCommand( "Toggle Model Viewer", "script thread ToggleModelViewer()" )
 		SetupDevCommand( "Start Skydive", "script thread SkydiveTest()" )
-		SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(GetPlayerArray()[0], false)" )
+		SetupDevCommand( "Spawn Deathbox", "script thread SURVIVAL_CreateDeathBox(gp()[0], false)" )
 		//SetupDevCommand( "Toggle Weapon Preview", "ToggleWeaponSkinPreview" )
 		//SetupDevMenu( "Threat Tracker", SetDevMenu_ThreatTracker )
 		//SetupDevMenu( "High-Vis NPC Test", SetDevMenu_HighVisNPCTest )
@@ -373,16 +368,12 @@ void function SetupDefaultDevCommandsMP()
 		//SetupDevCommand( "Max Activity (Conger Mode)", "script SetMaxActivityMode(4)" )
 		//SetupDevCommand( "Max Activity (Disabled)", "script SetMaxActivityMode(0)" )
 
-		#if DEVELOPER
 		SetupDevCommand( "Toggle Skybox View", "script thread ToggleSkyboxView()" )
-		#endif
 		SetupDevCommand( "Toggle HUD", "ToggleHUD" )
 
-		#if DEVELOPER
 		SetupDevCommand( "Melee: Equip Bolo Sword", "script thread SetupHeirloom()" )
 		SetupDevCommand( "Melee: Equip Shadow Hands", "script thread SetupShadowHands()" )
 		SetupDevCommand( "Melee: Unequip", "script thread UnEquipMelee()" )		
-		#endif
 		
 		//SetupDevCommand( "Toggle Offhand Low Recharge", "ToggleOffhandLowRecharge" )
 		//SetupDevCommand( "Map Metrics Toggle", "script_client GetLocalClientPlayer().ClientCommand( \"toggle map_metrics 0 1 2 3\" )" )
@@ -390,8 +381,8 @@ void function SetupDefaultDevCommandsMP()
 		//SetupDevCommand( "Jump Randomly Forever", "script_client thread JumpRandomlyForever()" )
 
 		//SetupDevCommand( "Toggle Zeroing Mode", "script ToggleZeroingMode()" )
-		SetupDevCommand( "Enable God Mode", "script MakeInvincible( GetPlayerArray()[0] )" )
-		SetupDevCommand( "Disable God Mode", "script ClearInvincible( GetPlayerArray()[0] )" )
+		SetupDevCommand( "Enable God Mode", "script MakeInvincible( gp()[0] )" )
+		SetupDevCommand( "Disable God Mode", "script ClearInvincible( gp()[0] )" )
 		//SetupDevCommand( "Toggle Screen Alignment Tool", "script_client DEV_ToggleScreenAlignmentTool()" )
 
 		SetupDevCommand( "Toggle Third Person Mode", "ToggleThirdPerson" )
@@ -740,7 +731,7 @@ void function SetupRespawnPlayersDevMenu()
 	SetupDevCommand( "Respawn dead bots", "respawn deadbots" )
 	SetupDevCommand( "Respawn my teammates", "respawn allies" )
 	SetupDevCommand( "Respawn my enemies", "respawn enemies" )
-	//foreach ( player in GetPlayerArray() )
+	//foreach ( player in gp() )
 	//{
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
 	//}
@@ -780,7 +771,7 @@ void function SetupTDMPrimaryWeapsons()
 	//SetupDevCommand( "Kraber", "tgive p mp_weapon_sniper" )
 	
 
-	//foreach ( player in GetPlayerArray() )
+	//foreach ( player in gp() )
 	//{
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
 	//}
@@ -821,7 +812,7 @@ void function SetupTDMSecondaryWeapsons()
 	//SetupDevCommand( "Kraber", "tgive s mp_weapon_sniper" )
 	
 
-	//foreach ( player in GetPlayerArray() )
+	//foreach ( player in gp() )
 	//{
 	//	SetupDevCommand( "Respawn player: " + player.GetPlayerName(), "respawn " + player.GetEntIndex() )
 	//}
@@ -883,8 +874,8 @@ void function SetDevMenu_Prototypes( var _ )
 
 void function SetupPrototypesDevMenu()
 {
-	SetupDevCommand( "Toggle Akimbo With Current Weapon", "script DEV_ToggleAkimboWeapon(GetPlayerArray()[0])" )
-	SetupDevCommand( "Toggle Akimbo With Holstered Weapon", "script DEV_ToggleAkimboWeaponAlt(GetPlayerArray()[0])" )
+	SetupDevCommand( "Toggle Akimbo With Current Weapon", "script DEV_ToggleAkimboWeapon(gp()[0])" )
+	SetupDevCommand( "Toggle Akimbo With Holstered Weapon", "script DEV_ToggleAkimboWeaponAlt(gp()[0])" )
 	// SetupDevCommand( "Change to Shadow Squad", "script Dev_ShadowFormEnable( GP() )" )
 }
 
@@ -1115,7 +1106,7 @@ void function BindCommandToGamepad_Activate( var button )
 
 		string prompt = "Bound to gamepad BACK: " + fullName
 		printt( prompt )
-		//string cmdText = "script Dev_PrintMessage( GetPlayerArray()[0], \"" + prompt + "\" )"
+		//string cmdText = "script Dev_PrintMessage( gp()[0], \"" + prompt + "\" )"
 		//ClientCommand( cmdText )
 		EmitUISound( "wpn_pickup_titanweapon_1p" )
 	}

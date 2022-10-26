@@ -503,9 +503,9 @@ void function UICodeCallback_FullyConnected( string levelname )
 
 	InitXPData()
 
-	#if DEVELOPER
+	//#if DEVELOPER // For convenience
 		ShDevUtility_Init()
-	#endif
+	//#endif
 
 	ShDevWeapons_Init()
 	ShEHI_LevelInit_Begin()

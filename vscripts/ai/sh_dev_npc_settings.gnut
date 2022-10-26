@@ -108,25 +108,19 @@ void function SetupWeapons()
 void function SetupSurvival()
 {
 	#if UI
-		#if DEVELOPER
 		SetupDevCommand( "Toggle Training Completed", "script GP().SetPersistentVar( \"trainingCompleted\", (GP().GetPersistentVarAsInt( \"trainingCompleted\" ) == 0 ? 1 : 0) )" )
-		#endif
 		SetupDevCommand( "Enable Survival Dev Mode", "playlist survival_dev" )
 		SetupDevCommand( "Disable Match Ending", "mp_enablematchending 0" )
-		SetupDevCommand( "Drop Care Package R1", "script thread AirdropForRound( GetPlayerArray()[0].GetOrigin(), GetPlayerArray()[0].GetAngles(), 0, null )" )
-		SetupDevCommand( "Drop Care Package R2", "script thread AirdropForRound( GetPlayerArray()[0].GetOrigin(), GetPlayerArray()[0].GetAngles(), 1, null )" )
-		SetupDevCommand( "Drop Care Package R3", "script thread AirdropForRound( GetPlayerArray()[0].GetOrigin(), GetPlayerArray()[0].GetAngles(), 2, null )" )
-		#if DEVELOPER
+		SetupDevCommand( "Drop Care Package R1", "script thread AirdropForRound( gp()[0].GetOrigin(), gp()[0].GetAngles(), 0, null )" )
+		SetupDevCommand( "Drop Care Package R2", "script thread AirdropForRound( gp()[0].GetOrigin(), gp()[0].GetAngles(), 1, null )" )
+		SetupDevCommand( "Drop Care Package R3", "script thread AirdropForRound( gp()[0].GetOrigin(), gp()[0].GetAngles(), 2, null )" )
 		SetupDevCommand( "Force Circle Movement", "script FlagWait( \"DeathCircleActive\" );script svGlobal.levelEnt.Signal( \"DeathField_ShrinkNow\" );script FlagClear( \"DeathFieldPaused\" )" )
 		SetupDevCommand( "Pause Circle Movement", "script FlagSet( \"DeathFieldPaused\" )" )
 		SetupDevCommand( "Unpause Circle Movement", "script FlagClear( \"DeathFieldPaused\" )" )
-		#endif
 		SetupDevCommand( "Gladiator Intro Sequence", "script thread DEV_StartGladiatorIntroSequence()" )
 		SetupDevCommand( "Bleedout Debug Mode", "script FlagSet( \"BleedoutDebug\" )" )
 		SetupDevCommand( "Disable Loot Drops on Death", "script FlagSet( \"DisableLootDrops\" )" )
-		#if DEVELOPER
-		SetupDevCommand( "Drop My Death Box", "script thread SURVIVAL_Death_DropLoot_Internal( GetPlayerArray(), null, 100 )" )
-		#endif
+		SetupDevCommand( "Drop My Death Box", "script thread SURVIVAL_Death_DropLoot_Internal( gp(), null, 100 )" )
 	#endif
 }
 

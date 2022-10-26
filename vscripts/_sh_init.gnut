@@ -90,8 +90,9 @@ void function SV_CL_Init()
 	if(GameRules_GetGameMode() == "map_editor")
 		ShAssets_Init()
 
-	#if DEVELOPER
+	//#if DEVELOPER
 		ShDevUtility_Init()
+	#if DEVELOPER // For convenience
 		CaptureMode_Shared_Init()
 	#endif
 

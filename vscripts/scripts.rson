@@ -898,7 +898,13 @@ Scripts:
 When: "DEV && (SERVER || CLIENT || UI)"
 Scripts:
 [
-	sh_dev_utility.nut
+	//sh_dev_utility.nut
+]
+
+When: "(SERVER || CLIENT || UI)"
+Scripts:
+[
+	sh_dev_utility.nut // For convenience
 ]
 
 When: "DEV && CLIENT"
