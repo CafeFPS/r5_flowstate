@@ -173,8 +173,7 @@ void function OnJumpPadAreaEnter( entity trigger, entity ent )
 
 	if( charRef == "character_octane" && Time() - ent.p.lastJumpPadChatterTime >= 30 )
 	{
-		EmitSoundOnEntityOnlyToPlayer( ent, ent, "diag_mp_octane_bc_jumpPadLaunch_1p" )
-		EmitSoundOnEntityExceptToPlayer( ent, ent, "diag_mp_octane_bc_jumpPadLaunch_3p" )
+		PlayBattleChatterLineToSpeakerAndTeam( ent, "bc_octane_jumppad_launch" )
 		ent.p.lastJumpPadChatterTime = Time()
 	}
 }
