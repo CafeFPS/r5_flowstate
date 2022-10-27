@@ -2404,7 +2404,10 @@ void function Arcstar_OnStick( entity ent, var damageInfo )
 void function Arcstar_OnStick2( entity ent, var damageInfo )
 {
 	entity player = DamageInfo_GetAttacker( damageInfo )
-	if(!IsValid(player)) return
+	
+	if( !IsValid( player ) || ent == player )
+		return
+	
 	printt("Stick! +1 point.")
 	EmitSoundOnEntity(player, "UI_PostGame_TitanPointIncrease")
 	ChallengesEntities.dummies.removebyvalue(ent)
