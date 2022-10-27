@@ -2404,7 +2404,7 @@ void function Arcstar_OnStick( entity ent, var damageInfo )
 void function Arcstar_OnStick2( entity ent, var damageInfo )
 {
 	entity player = DamageInfo_GetAttacker( damageInfo )
-	
+
 	if( !IsValid( player ) || ent == player )
 		return
 	
@@ -2420,20 +2420,14 @@ void function OnPlayerDeathCallback(entity player, var damageInfo)
 	thread OnPlayerDeathCallbackThread(player)
 }
 
-void function OnPlayerDeathCallbackThread(entity player)
+void function OnPlayerDeathCallbackThread( entity player )
 {
 	if( !player.p.isChallengeActivated )
 		return
 
 	wait 1
-
-	Signal(player, "ChallengeTimeOver")
-	vector lastPos = player.GetOrigin()
-	vector lastAng = player.GetAngles()
-	player.SetOrigin(lastPos)
-	player.SetAngles(lastAng)
 	
-    SetupPlayer( player )
+	Signal(player, "ChallengeTimeOver")
 }
 
 int function ReturnShieldAmountForDesiredLevel()
