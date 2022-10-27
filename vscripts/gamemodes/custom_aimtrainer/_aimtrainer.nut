@@ -44,6 +44,9 @@ table<int, int> ChallengesBestScores
 
 void function _ChallengesByColombia_Init()
 {
+	//Increase client command limit to 30
+	SetConVarInt("sv_quota_stringCmdsPerSecond", 30)
+	
 	//Todo: create only one cc for this
 	//first challenges select menu column
 	AddClientCommandCallback("CC_StartChallenge1", CC_StartChallenge1)

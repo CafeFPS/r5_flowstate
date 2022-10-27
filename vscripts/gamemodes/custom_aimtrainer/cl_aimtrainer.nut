@@ -103,6 +103,9 @@ global struct CameraLocationPair
 
 void function Cl_ChallengesByColombia_Init()
 {
+	//Increase client command limit to 30
+	SetConVarInt("cl_quota_stringCmdsPerSecond", 30)
+	
 	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )
 	SetConVarBool( "cl_showfps", false )
