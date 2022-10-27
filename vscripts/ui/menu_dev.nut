@@ -276,17 +276,13 @@ void function SetupDefaultDevCommandsMP()
 	if(GetCurrentPlaylistName() == "map_editor")
 		SetupDevMenu( "Editor", SetDevMenu_Editor )
 	
-	if(GetCurrentPlaylistName() == "custom_tdm")
+	if( GetCurrentPlaylistName() == "custom_tdm" )
+	{
 		SetupDevMenu( "TDM: Change Primary weapon", SetDevMenu_TDMPrimaryWeapons )
-	
-	if(GetCurrentPlaylistName() == "custom_tdm")
 		SetupDevMenu( "TDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )
-	
-	if(GetCurrentPlaylistName() == "custom_tdm")
 		SetupDevCommand( "TDM: Save Current Weapons", "saveguns" )
-
-	if(GetCurrentPlaylistName() == "custom_tdm")
 		SetupDevCommand( "TDM: Reset Saved Weapons", "resetguns" )
+	}
 
 	if(GetCheatsState()){
 		

@@ -156,6 +156,9 @@ void function StartFRChallenges(entity player)
 	player.SetAngles(AimTrainer_startAngs)
 
 	player.p.isChallengeActivated = false
+
+	player.p.weapons = [ "mp_weapon_wingman" ]
+	player.p.mods = [ "optic_cq_hcog_classic" ]
 }
 
 void function ResetChallengeStats(entity player)
@@ -2910,7 +2913,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	// }
 	// printt("Skin codename: " + weaponent.GetSkinNameByIndex(weaponent.GetSkin()))
 
-	player.p.weapon = weapon
+	player.p.weapons = [ weapon ]
 	player.p.mods = finalargs
 	
 	return false
@@ -2940,7 +2943,7 @@ void function SetupPlayer( entity player )
 	
 	player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
     player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	entity weapon = player.GiveWeapon( player.p.weapon, WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
+	entity weapon = player.GiveWeapon( player.p.weapons[0], WEAPON_INVENTORY_SLOT_PRIMARY_0, player.p.mods )
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 
 	if( player.p.weaponModelIndex > -1 )

@@ -729,7 +729,7 @@ void function CheckForObservedTarget(entity player)
 	}
 }
 
-void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
+void function _HandleRespawn( entity player, bool isDroppodSpawn = false )
 {
     if(!IsValid(player)) return
 
@@ -741,23 +741,23 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		player.SetSpecReplayDelay( 0 )
 		player.SetObserverTarget( null )
 		player.StopObserverMode()
-        Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+        Remote_CallFunction_NonReplay( player, "ServerCallback_KillReplayHud_Deactivate" )
     }
 
-	if( IsValid( player ) && player.IsPlayer() && !IsAlive(player) )
+	if( IsValid( player ) && player.IsPlayer() && !IsAlive( player ) )
     {
-        if(Equipment_GetRespawnKitEnabled() && !FlowState_Gungame())
+        if( Equipment_GetRespawnKitEnabled() && !FlowState_Gungame() )
         {
-			DecideRespawnPlayer(player, true)
-            player.TakeOffhandWeapon(OFFHAND_TACTICAL)
-            player.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+			DecideRespawnPlayer( player, true )
+            player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+            player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
             array<StoredWeapon> weapons = [
                 Equipment_GetRespawnKit_PrimaryWeapon(),
                 Equipment_GetRespawnKit_SecondaryWeapon(),
                 Equipment_GetRespawnKit_Tactical(),
                 Equipment_GetRespawnKit_Ultimate()
             ]
-            foreach (storedWeapon in weapons)
+            foreach ( storedWeapon in weapons )
             {
                 if ( !storedWeapon.name.len() ) continue
                 if( storedWeapon.weaponType == eStoredWeaponType.main)
@@ -772,29 +772,29 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		}
         else
         {
-            if(!player.p.storedWeapons.len())
-				DecideRespawnPlayer(player, true)
+            if( !player.p.storedWeapons.len() )
+				DecideRespawnPlayer( player, true )
             else
             {
-				DecideRespawnPlayer(player, false)
-                GiveWeaponsFromStoredArray(player, player.p.storedWeapons)
+				DecideRespawnPlayer( player, false )
+                GiveWeaponsFromStoredArray( player, player.p.storedWeapons )
             }
         }
     }
 
 	if( IsValid( player ) && IsAlive(player))
 	{
-		if(!isDroppodSpawn)
-		    TpPlayerToSpawnPoint(player)
+		if( !isDroppodSpawn )
+		    TpPlayerToSpawnPoint( player )
 
 		player.UnfreezeControlsOnServer()
 
-		if(FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak())
+		if( FlowState_RandomGunsEverydie() && FlowState_FIESTAShieldsStreak() )
 		{
-			PlayerRestoreShieldsFIESTA(player, player.GetShieldHealthMax())
-			PlayerRestoreHPFIESTA(player, 100)
+			PlayerRestoreShieldsFIESTA( player, player.GetShieldHealthMax() )
+			PlayerRestoreHPFIESTA( player, 100 )
 		} else
-			PlayerRestoreHP(player, 100, Equipment_GetDefaultShieldHP())
+			PlayerRestoreHP( player, 100, Equipment_GetDefaultShieldHP() )
 		
 		try{
 		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
@@ -806,24 +806,30 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		//AttachEdict rare crash
 		}
 		
-		if(GetCurrentPlaylistVarBool("flowstateGiveAllOpticsToPlayer", false )){
+		if( GetCurrentPlaylistVarBool( "flowstateGiveAllOpticsToPlayer", false ) )
+		{
 			SetPlayerInventory( player, [] )
-			Inventory_SetPlayerEquipment(player, "backpack_pickup_lv3", "backpack")
-			array<string> optics = ["optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat"]
+			Inventory_SetPlayerEquipment( player, "backpack_pickup_lv3", "backpack" )
+			array<string> optics = [ "optic_cq_hcog_classic", "optic_cq_hcog_bruiser", "optic_cq_holosight", "optic_cq_threat", "optic_cq_holosight_variable", "optic_ranged_hcog", "optic_ranged_aog_variable", "optic_sniper_variable", "optic_sniper_threat" ]
 			foreach(optic in optics)
 				SURVIVAL_AddToPlayerInventory(player, optic)
 		}
 	}
 
-	if (FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ))
+	if ( FlowState_RandomGuns() && !FlowState_Gungame() && IsValid( player ) )
     {
-		try{
+		try
+		{
 		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
             player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
 		    player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
 
-		GiveRandomPrimaryWeapon(player)
-		GiveRandomSecondaryWeapon(player)
+			if( player.p.storedWeapons.len() )
+				GiveWeaponsFromStoredArray( player, player.p.storedWeapons ) // GiveWeaponsFromStoredArray from _titan_transfer.nut
+			else {
+				GiveRandomPrimaryWeapon(player)
+				GiveRandomSecondaryWeapon(player)
+			}
 
             player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
             player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
@@ -874,7 +880,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 		GiveGungameWeapon(player)
 
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
-	thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
 }
 
 void function ReCheckGodMode(entity player)
@@ -3079,60 +3084,16 @@ void function AnimationTiming( entity legend, float cycle )
 
 
 ///Save TDM Current Weapons
-bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args)
-{	entity weapon1
-	entity weapon2
-	string optics1
-	string optics2
-	array<string> mods1 
-	array<string> mods2 
-	string weaponname1
-	string weaponname2
-	try
-	{
-		weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		mods1 = GetWeaponMods( weapon1 )
-		mods2 = GetWeaponMods( weapon2 )
-		foreach (mod in mods1)
-			optics1 = mod + " " + optics1
-		foreach (mod in mods2)
-			optics2 = mod + " " + optics2
-		weaponname1 = "tgive p "+weapon1.GetWeaponClassName()+" " + optics1 + "; "
-		weaponname2 = "tgive s "+weapon2.GetWeaponClassName()+" " + optics2
-	}
-	catch(error)
-	{}	
-	weaponlist[player.GetPlayerName()] <- weaponname1+weaponname2
-	// print(weaponname1)
-	// print(weaponname2)
+bool function ClientCommand_SaveCurrentWeapons( entity player, array<string> args )
+{
+	player.p.storedWeapons = StoreWeapons( player ) // StoreWeapons from _titan_transfer.nut
 	return true
 }
-
-
-//Auto-load TDM Saved Weapons at Respawn
-void function LoadCustomWeapon(entity player)
-{
-	if (player.GetPlayerName() in weaponlist)
-	{	print(weaponlist[player.GetPlayerName()])
-		ClientCommand( player, weaponlist[player.GetPlayerName()] )
-		wait 0.1
-		
-		if(!IsValid(player)) return
-		
-		WpnAutoReloadOnKill(player)
-		thread WpnPulloutOnRespawn(player, 2.5)
-	}
-}
-
 
 //Reset TDM Saved Weapons
 bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
 {	
 	if (!IsValid(player)) return false
-	if (player.GetPlayerName() in weaponlist)
-	{
-		delete weaponlist[player.GetPlayerName()]
-	}
+	player.p.storedWeapons = []
 	return true
 }
