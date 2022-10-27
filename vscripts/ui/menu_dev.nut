@@ -283,7 +283,7 @@ void function SetupDefaultDevCommandsMP()
 		SetupDevMenu( "TDM: Change Secondary weapon", SetDevMenu_TDMSecondaryWeapons )
 	
 	if(GetCurrentPlaylistName() == "custom_tdm")
-		SetupDevCommand( "TDM: Saved Current Weapons", "saveguns" )
+		SetupDevCommand( "TDM: Save Current Weapons", "saveguns" )
 
 	if(GetCurrentPlaylistName() == "custom_tdm")
 		SetupDevCommand( "TDM: Reset Saved Weapons", "resetguns" )
