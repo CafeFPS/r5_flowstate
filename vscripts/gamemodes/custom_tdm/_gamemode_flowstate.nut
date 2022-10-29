@@ -2686,13 +2686,13 @@ bool function CC_TDM_Weapon_Selector_Open( entity player, array<string> args )
 
 bool function ClientCommand_MyFFAData(entity player, array < string > args) 
 {
-	if( Time() - player.p.lastTimeDataRequestUsed < 5 )
-	{
-		printt("Cooldown request: " + player.GetPlayerName())
-		return false
-	}
+	// if( Time() - player.p.lastTimeDataRequestUsed < 5 )
+	// {
+		// printt("Cooldown request: " + player.GetPlayerName())
+		// return false
+	// }
 	
-	thread ShowPlayerKD(player, args[0])
+	// thread ShowPlayerKD(player, args[0])
 	
 	return true
 }
