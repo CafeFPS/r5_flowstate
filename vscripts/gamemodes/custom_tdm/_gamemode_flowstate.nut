@@ -158,10 +158,9 @@ void function _CustomTDM_Init()
 
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	
-	AddClientCommandCallback("myffadata", ClientCommand_MyFFAData)
-	
-	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon)
-	AddClientCommandCallback("CC_TDM_Weapon_Selector_Open", CC_TDM_Weapon_Selector_Open)
+	//AddClientCommandCallback("myffadata", ClientCommand_MyFFAData)	
+	//AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon)
+	//AddClientCommandCallback("CC_TDM_Weapon_Selector_Open", CC_TDM_Weapon_Selector_Open)
 	
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("commands", ClientCommand_Help)
