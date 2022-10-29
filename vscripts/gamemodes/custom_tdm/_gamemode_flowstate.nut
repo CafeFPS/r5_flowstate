@@ -157,6 +157,12 @@ void function _CustomTDM_Init()
 	}
 
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
+	
+	AddClientCommandCallback("myffadata", ClientCommand_MyFFAData)
+	
+	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon)
+	AddClientCommandCallback("CC_TDM_Weapon_Selector_Open", CC_TDM_Weapon_Selector_Open)
+	
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("commands", ClientCommand_Help)
 	AddClientCommandCallback("say", ClientCommand_Say)
@@ -477,7 +483,7 @@ void function _OnPlayerConnected(entity player)
 void function __HighPingCheck(entity player)
 {
 	wait 12
-    if(!IsValid(player)) return
+    if(!IsValid(player) || IsValid(player) && IsAdmin(player) ) return
 
 	if ( FlowState_KickHighPingPlayer() && (int(player.GetLatency()* 1000) - 40) > FlowState_MaxPingAllowed() )
 	{
@@ -2670,6 +2676,74 @@ bool function IsAdminStr( string playername )
 bool function IsAdmin( entity player )
 {
     return file.mAdmins.find(player.GetPlayerName()) != -1
+}
+
+bool function CC_TDM_Weapon_Selector_Open( entity player, array<string> args )
+{
+	//green highlight?
+	
+	return true
+}
+
+bool function ClientCommand_MyFFAData(entity player, array < string > args) 
+{
+	if( Time() - player.p.lastTimeDataRequestUsed < 5 )
+	{
+		printt("Cooldown request: " + player.GetPlayerName())
+		return false
+	}
+	
+	thread ShowPlayerKD(player, args[0])
+	
+	return true
+}
+
+void function ShowPlayerKD(entity player, string name)
+{
+	if(!IsValid(player)) 
+		return
+	
+	player.p.lastTimeDataRequestUsed = Time()
+	
+	array<int> killsAndDeaths
+	int timeOut = int(Time()) + 3
+	string RequestIdString = GetUnixTimestamp().tostring()
+
+	FS_DataPost( format("%s;%s",RequestIdString, name) )
+
+	while ( killsAndDeaths.len() == 0 && timeOut > Time() && IsValid(player) )
+	{
+		//Requesting...
+		killsAndDeaths = FS_DataGet(RequestIdString) //Sdk function
+		WaitFrame()
+	}
+	
+	if(killsAndDeaths.len() == 0) 
+	{
+		printt("ERROR")
+		return
+	}
+
+	float kd = getkd(killsAndDeaths[0],killsAndDeaths[1])
+	float cRatio = getcontrollerratio(killsAndDeaths[2],killsAndDeaths[0])
+	
+	printt("kills: " + killsAndDeaths[0] + " | deaths: " + killsAndDeaths[1] + " | kd: " + kd + " | controller kills: " + killsAndDeaths[2] + " | controller ratio: " + cRatio)
+	
+	string tempStr = format("Your kd is %s",kd.tostring())
+	Message(player,tempStr,"",5)	
+}
+
+float function getcontrollerratio(int count, int kills)
+//By michae\l/#1125 & Retículo Endoplasmático#5955
+{
+	float cCount
+	int floorcCount
+	if(count == 0) return 0
+	cCount = count.tofloat()/kills.tofloat() 
+	cCount = cCount*100
+	floorcCount = int(floor(cCount+0.5))
+	cCount = (float(floorcCount))/100
+	return cCount
 }
 
 bool function ClientCommand_FlowstateKick(entity player, array < string > args) {
