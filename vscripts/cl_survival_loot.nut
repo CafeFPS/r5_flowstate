@@ -1591,13 +1591,13 @@ void function SetupSurvivalLoot( var categories )
 
 	if (stringCats.contains("attachment_custom"))
 	{
-		SetupCustomLoot( "attachment" )
+		SetupCustomLoot( "attachment", true )
 		return	
 	}
 
 	if (stringCats.contains("weapon_custom"))
 	{
-		SetupCustomLoot( "main_weapon" )
+		SetupCustomLoot( "main_weapon", false )
 		return	
 	}
 	
@@ -1627,7 +1627,7 @@ void function SetupSurvivalLoot( var categories )
 	}
 }
 
-void function SetupCustomLoot( var categories )
+void function SetupCustomLoot( var categories, bool isAttachment = false)
 {
 	string cats              = expect string( categories )
 	array<string> stringCats = split( cats, " " )
@@ -1650,7 +1650,11 @@ void function SetupCustomLoot( var categories )
 		if (data.lootType == eLootType.MAINWEAPON && !IsCustomWeapon(data)) continue
 
 		string displayString = CreateLootDisplayString( data )
-		RunUIScript( "SetupDevCommand", displayString, "give " + data.ref )
+		
+		if(!isAttachment)
+			RunUIScript( "SetupDevCommand", displayString, "give " + data.ref )
+		else
+			RunUIScript( "SetupDevCommand", displayString, "script SpawnGenericLoot( \"" + data.ref + "\", gp()[0].GetOrigin(), <-1,-1,-1>, " + data.countPerDrop + " )" )
 	}
 }
 
