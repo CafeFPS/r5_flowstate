@@ -2700,37 +2700,37 @@ bool function ClientCommand_MyFFAData(entity player, array < string > args)
 
 void function ShowPlayerKD(entity player, string name)
 {
-	if(!IsValid(player)) 
-		return
+	// if(!IsValid(player)) 
+		// return
 	
-	player.p.lastTimeDataRequestUsed = Time()
+	// player.p.lastTimeDataRequestUsed = Time()
 	
-	array<int> killsAndDeaths
-	int timeOut = int(Time()) + 3
-	string RequestIdString = GetUnixTimestamp().tostring()
+	// array<int> killsAndDeaths
+	// int timeOut = int(Time()) + 3
+	// string RequestIdString = GetUnixTimestamp().tostring()
 
-	FS_DataPost( format("%s;%s",RequestIdString, name) )
+	// FS_DataPost( format("%s;%s",RequestIdString, name) )
 
-	while ( killsAndDeaths.len() == 0 && timeOut > Time() && IsValid(player) )
-	{
-		//Requesting...
-		killsAndDeaths = FS_DataGet(RequestIdString) //Sdk function
-		WaitFrame()
-	}
+	// while ( killsAndDeaths.len() == 0 && timeOut > Time() && IsValid(player) )
+	// {
+		// //Requesting...
+		// killsAndDeaths = FS_DataGet(RequestIdString) //Sdk function
+		// WaitFrame()
+	// }
 	
-	if(killsAndDeaths.len() == 0) 
-	{
-		printt("ERROR")
-		return
-	}
+	// if(killsAndDeaths.len() == 0) 
+	// {
+		// printt("ERROR")
+		// return
+	// }
 
-	float kd = getkd(killsAndDeaths[0],killsAndDeaths[1])
-	float cRatio = getcontrollerratio(killsAndDeaths[2],killsAndDeaths[0])
+	// float kd = getkd(killsAndDeaths[0],killsAndDeaths[1])
+	// float cRatio = getcontrollerratio(killsAndDeaths[2],killsAndDeaths[0])
 	
-	printt("kills: " + killsAndDeaths[0] + " | deaths: " + killsAndDeaths[1] + " | kd: " + kd + " | controller kills: " + killsAndDeaths[2] + " | controller ratio: " + cRatio)
+	// printt("kills: " + killsAndDeaths[0] + " | deaths: " + killsAndDeaths[1] + " | kd: " + kd + " | controller kills: " + killsAndDeaths[2] + " | controller ratio: " + cRatio)
 	
-	string tempStr = format("Your kd is %s",kd.tostring())
-	Message(player,tempStr,"",5)	
+	// string tempStr = format("Your kd is %s",kd.tostring())
+	// Message(player,tempStr,"",5)	
 }
 
 float function getcontrollerratio(int count, int kills)
