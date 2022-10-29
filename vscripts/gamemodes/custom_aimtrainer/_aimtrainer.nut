@@ -2428,6 +2428,7 @@ void function OnPlayerDeathCallbackThread( entity player )
 	wait 1
 	
 	Signal(player, "ChallengeTimeOver")
+	SetupPlayer( player )
 }
 
 int function ReturnShieldAmountForDesiredLevel()
