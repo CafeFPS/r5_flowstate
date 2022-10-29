@@ -79,6 +79,13 @@ void function InitFRChallengesMainMenu( var newMenuArg )
 
 	if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		RunClientScript("RefreshChallengeActivated")
+
+	AddUICallback_OnLevelInit( OnLevelInit )
+}
+
+void function OnLevelInit()
+{
+	PlayerCurrentWeapon = ""
 }
 
 bool function ShouldShowBackButton()

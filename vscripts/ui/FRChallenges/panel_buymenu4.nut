@@ -26,8 +26,6 @@ void function InitArenasBuyPanel4( var panel )
 
 	AddEventHandlerToButton( menu, "HitscanAutoButton", UIE_CLICK, BuyClickWeaponAuto )
 	file.weaponButtons.append(Hud_GetChild( menu, "HitscanAutoButton" ))
-
-	CleanAllButtons()
 }
 
 array<var> function returnWeaponButtons4()
