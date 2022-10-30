@@ -151,10 +151,7 @@ GameSummarySquadData function GameSummary_GetPlayerData( entity player )
 
 	data.kills = player.GetPlayerNetInt( "kills" )
 	data.deaths = player.p.numberOfDeaths
-	data.survivalTime = 
-		( player.p.respawnChanceExpiryTime > 0.0 && GetGlobalNetTime( "pickLoadoutGamestateStartTime" ) > -1 )
-		? int( player.p.respawnChanceExpiryTime - GetGlobalNetTime( "pickLoadoutGamestateStartTime" ) )
-		: 0
+	data.survivalTime = int( Time() - player.p.lastRespawnTime )
 	data.damageDealt = int( player.p.playerDamageDealt )
 	data.revivesGiven = player.p.revivesGiven
 	data.respawnsGiven = player.p.respawnsGiven

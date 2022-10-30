@@ -409,6 +409,8 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 			enabledMods.append( modName )
 		
 	DoRespawnPlayer( player, null )
+
+	player.p.lastRespawnTime = Time()
 	
 	ItemFlavor playerCharacter = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
 	asset characterSetFile = CharacterClass_GetSetFile( playerCharacter )
