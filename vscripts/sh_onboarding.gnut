@@ -377,18 +377,18 @@ void function GiveLoadoutRelatedWeapons( entity player )
 	if(GameRules_GetGameMode() == SURVIVAL)
 		GivePassive( player, CharacterAbility_GetPassiveIndex( passive ) )
 	
+	ItemFlavor meleeSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MeleeSkin( character ) )
+	string meleePrimary = MeleeSkin_GetMainWeaponClassname( meleeSkin )
+	string meleeOffhand = MeleeSkin_GetOffhandWeaponClassname( meleeSkin )
+	
 	if(GetCurrentPlaylistVarBool( "enable_bolo_heirloom", true ))
 	{
-		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-	}
-	else
-	{
-		player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		player.GiveOffhandWeapon( "melee_data_knife", OFFHAND_MELEE, [] )
+		meleePrimary = "mp_weapon_bolo_sword_primary"
+		meleeOffhand = "melee_bolo_sword"
 	}
 	
-	
+	player.GiveWeapon( meleePrimary, WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( meleeOffhand, OFFHAND_MELEE, [] )
 }
 
 void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true )
