@@ -1234,8 +1234,11 @@ void function UI_OnCharacterSelectMenu_NavBack()
 	{
 		CloseAllMenus()
 		RunClientScript("CloseCharacterSelectNewMenu_AimTrainer" )
-		RunClientScript("ServerCallback_OpenFRChallengesSettings")
-		RunClientScript("ServerCallback_CoolCameraOnMenu")
+		if( ISAIMTRAINER )
+		{
+			RunClientScript("ServerCallback_OpenFRChallengesSettings")
+			RunClientScript("ServerCallback_CoolCameraOnMenu")
+		}
 		return
 	} 
 	else 
