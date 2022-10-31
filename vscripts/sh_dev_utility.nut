@@ -71,8 +71,14 @@ void function UnEquipMelee( bool allplayers = false)
 
 	player.TakeOffhandWeapon(OFFHAND_MELEE)
 	player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	player.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	player.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+
+	ItemFlavor character = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() )
+	ItemFlavor meleeSkin = LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_MeleeSkin( character ) )
+	string meleePrimary = MeleeSkin_GetMainWeaponClassname( meleeSkin )
+	string meleeOffhand = MeleeSkin_GetOffhandWeaponClassname( meleeSkin )
+	
+	player.GiveWeapon( meleePrimary, WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	player.GiveOffhandWeapon( meleeOffhand, OFFHAND_MELEE, [] )
 }
 #endif
 
@@ -928,5 +934,34 @@ void function DEV_DumpItems()
 		) )
 	}
 }
-#endif
 
+void function SetWraithLoadout()
+{
+	entity player = GetLocalClientPlayer()
+
+	array<string> commands = [
+		"loadouts_devset music_pack_selection musicpack_wraith",
+		"loadouts_devset skydive_trail skydive_trail_rankedperiod_01_apex",
+		"loadouts_devset execution character_execution_wraith_ninja",
+		"loadouts_devset intro_quip character_intro_quip_wraith_heirloom_01",
+		"loadouts_devset kill_quip character_kill_quip_wraith_common_07",
+		"loadouts_devset meleeskin melee_skin_kunai",
+		"loadouts_devset quips_0 character_intro_quip_wraith_season01_common_01",
+		"loadouts_devset quips_1 character_intro_quip_wraith_common_13",
+		"loadouts_devset quips_2 character_intro_quip_wraith_common_14",
+		"loadouts_devset quips_3 character_kill_quip_wraith_common_18",
+		"loadouts_devset skin character_skin_wraith_legendary_03",
+		"loadouts_devset gcard_badge_0 gcard_badge_account_dev_badge",
+		"loadouts_devset gcard_badge_1 gcard_badge_wraith_character_wrath",
+		"loadouts_devset gcard_badge_2 gcard_badge_wraith_character_wake",
+		"loadouts_devset gcard_frame gcard_frame_wraith_s03bp_epic_01",
+		"loadouts_devset gcard_stance gcard_stance_wraith_epic_03",
+		"loadouts_devset gcard_tracker_0 gcard_tracker_wraith_season01_wins",
+		"loadouts_devset gcard_tracker_1 gcard_tracker_wraith_season02_wins",
+		"loadouts_devset gcard_tracker_2 gcard_tracker_wraith_season03_wins"
+	]
+
+	foreach( command in commands )
+		player.ClientCommand( command )
+}
+#endif
