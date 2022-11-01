@@ -60,8 +60,20 @@ function Wallrun_PlayerTookDamage( entity player, damageInfo, entity attacker )
 	//Super dumb headshots gamemode
 	if(GetCurrentPlaylistVarBool( "flowstate_headshots_only_gamemode", false ) && IsValidHeadShot(damageInfo, player) && player.IsPlayer() && IsValid(player) && attacker != player)
 	{
-		if( IsValid( attacker ) )
-			thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
+		if( IsValid( attacker ) && IsValid( player ) )
+		{
+			string sound3pvs1p = "humanshield_break_3p_vs_1p"
+
+			if( attacker != player )
+				EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
+
+			if( attacker != player )
+				EmitSoundOnEntityExceptToPlayer( player, attacker, sound3pvs1p )
+			else
+				EmitSoundOnEntityOnlyToPlayer( player, player, sound3pvs1p ) // If the player breaks the shield himself, only the broken sound is played
+
+			EmitSoundOnEntity( player, "humanshield_break_3p_vs_3p" )
+		}
 
 		DamageInfo_SetDamage( damageInfo, 420.0)
 		return 0.0
