@@ -14,6 +14,8 @@ global function GetKillLeader
 global function SetChampion
 global function GetChampion
 
+global const DELAY_COMMENTARY = 2
+
 struct {
 	entity currentKillLeader = null
 } file
@@ -94,7 +96,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	thread function() : ( victim, attacker, damageInfo )
 	{
-		wait STANDARD_DELAY_BETWEEN_SPEAKER_OVATIONS
+		wait DELAY_COMMENTARY
 
 		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
 		{
