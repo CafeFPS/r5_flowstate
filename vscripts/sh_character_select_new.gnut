@@ -1048,6 +1048,7 @@ void function _OpenCharacterSelectNewMenu( var menu )
 		{
 			EmitSoundOnEntity( GetLocalClientPlayer(), "ui_menu_focus_legendselectscreen" )
 			UpdateForFocusOnButtonIndex( buttonIndex )
+			GetLocalClientPlayer().ClientCommand( "Sur_UpdateCharacterLock 0" )
 		}
 	}
 }
@@ -1238,6 +1239,7 @@ void function UI_OnCharacterSelectMenu_NavBack()
 		{
 			RunClientScript("ServerCallback_OpenFRChallengesSettings")
 			RunClientScript("ServerCallback_CoolCameraOnMenu")
+			GetLocalClientPlayer().ClientCommand( "Sur_UpdateCharacterLock 1" )
 		}
 		return
 	} 
