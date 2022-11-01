@@ -89,6 +89,7 @@ void function FiringRangeGameMode_Init()
 		AddCallback_OnPlayerKilled( OnPlayerKilled )
 		AddCallback_OnWeaponAttack( OnWeaponAttack )
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
+		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnTeammateLoadoutSelectionChanged, false )
 
 		firingrange_infinite_ammo = GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) ? 1 : 2
 	#endif
@@ -111,7 +112,6 @@ void function FiringRangeGameMode_Init()
 		//
 
 		IntroDisplayThread()
-		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnTeammateLoadoutSelectionChanged, false )
 	#endif //
 }
 
@@ -126,10 +126,6 @@ void function SCB_BroadcastFriendlyFireChange( entity playerThatChanged )
 	AnnouncementMessage( localPlayer, mainText, subText, titleColor )
 }
 
-void function OnTeammateLoadoutSelectionChanged( EHI playerEHI, ItemFlavor unused )
-{
-	GetLocalClientPlayer().ClientCommand( "Sur_UpdateCharacterLock 0" )
-}
 #endif //
 
 void function OnEntitiesDidLoad()
@@ -236,6 +232,10 @@ void function OnPlayerRespawned(entity player)
 	player.SetShieldHealth( player.GetShieldHealthMax() )
 }
 
+void function OnTeammateLoadoutSelectionChanged( EHI playerEHI, ItemFlavor unused )
+{
+	ClientCommand( FromEHI( playerEHI ), "Sur_UpdateCharacterLock 0" )
+}
 
 // ==================================================
 //					ITEM SPAWNING
