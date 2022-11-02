@@ -347,7 +347,10 @@ void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer
 			else if( killer.GetTeam() == player.GetTeam() )
 			{
 				selectedResponseName = killerMatesResponseName
-				responsePlayer = TryFindSpeakingPlayerOnTeamDisallowSelf( player.GetTeam(), killer )
+				if( shouldDistinctionResponse )
+					responsePlayer = TryFindSpeakingPlayerOnTeamDisallowSelf( player.GetTeam(), killer )
+				else
+					responsePlayer = TryFindSpeakingPlayerOnTeam( player.GetTeam() )
 			} else
 			{
 				selectedResponseName = responseName
