@@ -261,7 +261,7 @@ void function SurvivalCommentary_HostAnnounce( int commentaryBucket, float delay
 		if( !IsValid( player ) )
 			continue
 
-		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( commentaryBucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_Alive( player.GetTeam() ).getrandom() )
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( commentaryBucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
 }
 
@@ -293,7 +293,7 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
 		printt( "Distance between player and circle: " + Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) )
-		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( round ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_Alive( player.GetTeam() ).getrandom() )
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( round ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
 }
 
@@ -320,7 +320,7 @@ void function SurvivalCommentary_CircleMovingAnnounce( int bucket, float delay )
 			responseName = "bc_circleMoving_allOutside"
 
 		printt( "insideNextCircleMates: " + insideNextCircleMates + " responseName: " + responseName )
-		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, GetPlayerArrayOfTeam_Alive( player.GetTeam() ).getrandom() )
+		thread PlayDialogueForPlayer( PickCommentaryLineFromBucket( bucket ), player, null, delay, eDialogueFlags.SURVIVAL_HOST_ALL_SPEAKERS, responseName, TryFindSpeakingPlayerOnTeam( player.GetTeam() ) )
 	}
 }
 
@@ -346,16 +346,12 @@ void function SurvivalCommentary_KilledPlayerAnnounce( int bucket, entity killer
 			}
 			else if( killer.GetTeam() == player.GetTeam() )
 			{
-				array<entity> squadMates = GetPlayerArrayOfTeam_Alive( player.GetTeam() )
-				if( shouldDistinctionResponse )
-					squadMates.fastremovebyvalue( killer )
-
 				selectedResponseName = killerMatesResponseName
-				responsePlayer = squadMates.getrandom()
+				responsePlayer = TryFindSpeakingPlayerOnTeamDisallowSelf( player.GetTeam(), killer )
 			} else
 			{
 				selectedResponseName = responseName
-				responsePlayer = GetPlayerArrayOfTeam_Alive( player.GetTeam() ).getrandom()
+				responsePlayer = TryFindSpeakingPlayerOnTeam( player.GetTeam() )
 			}
 		}
 
