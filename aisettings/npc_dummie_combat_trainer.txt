@@ -19,7 +19,7 @@ npc_dummie_combat_trainer
 	footstep_type					"human"
 	mechanical						0
 
-	BehaviorSelector				"behavior_dummie_combat"
+	BehaviorSelector				"behavior_dummy_empty"
 	//LocationScoringCriteria			"CommonShootWithLos"
 
 	chaseStopDist					2000

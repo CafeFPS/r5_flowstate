@@ -3,7 +3,7 @@ npc_dummie_loba
 	AIClass							dummie
 	TraverseAnimType				spectre
 
-	title							DUMMIE
+	title							LOBA
 	useSequenceBounds				1
 
 	aiEnemy_usePriorityDist			1300

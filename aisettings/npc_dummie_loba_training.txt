@@ -1,0 +1,25 @@
+npc_dummie_loba_training
+{
+	AIClass							dummie
+	TraverseAnimType				spectre
+
+	title							LOBA
+	useSequenceBounds				1
+	
+	ArmorType						normal
+
+	BaseClass						"npc_dummie"
+	BodyType						human
+
+	footstep_type					"human"
+
+	BehaviorSelector				"behavior_dummy_empty"
+	LocationScoringCriteria			"CommonShootWithLos"
+
+	DefaultModelName				"mdl/Humans/class/medium/combat_dummie_loba.rmdl"
+
+	showFriendlyIcon				1
+	showTitle						1
+
+	ui_targetinfo					"ui/targetinfo_npc_simple"
+}

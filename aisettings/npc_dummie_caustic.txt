@@ -3,7 +3,7 @@ npc_dummie_caustic
 	AIClass							dummie
 	TraverseAnimType				spectre
 
-	title							DUMMIE
+	title							CAUSTIC
 	useSequenceBounds				1
 
 	aiEnemy_usePriorityDist			1300

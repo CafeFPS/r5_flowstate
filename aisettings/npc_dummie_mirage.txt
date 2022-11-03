@@ -3,7 +3,7 @@ npc_dummie_mirage
 	AIClass							dummie
 	TraverseAnimType				spectre
 
-	title							DUMMIE
+	title							MIRAGE
 	useSequenceBounds				1
 
 	aiEnemy_usePriorityDist			1300
