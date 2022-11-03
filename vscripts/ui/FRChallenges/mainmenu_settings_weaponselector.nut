@@ -77,8 +77,12 @@ void function GoBackButtonFunct(var button)
 {
 	CloseAllAttachmentsBoxes()
 	CloseAllMenus()
-	RunClientScript("CloseFRChallengesSettingsWpnSelector")
-	RunClientScript("ServerCallback_OpenFRChallengesSettings")	
+	
+	if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	{
+		RunClientScript("CloseFRChallengesSettingsWpnSelector")
+		RunClientScript("ServerCallback_OpenFRChallengesSettings")
+	}
 }
 
 void function OnR5RSB_Show()
@@ -101,8 +105,12 @@ void function OnR5RSB_NavigateBack()
 {
 	CloseAllAttachmentsBoxes()
 	CloseAllMenus()
-	RunClientScript("CloseFRChallengesSettingsWpnSelector")
-	RunClientScript("ServerCallback_OpenFRChallengesSettings")	
+	
+	if(IsConnected() && GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+	{
+		RunClientScript("CloseFRChallengesSettingsWpnSelector")
+		RunClientScript("ServerCallback_OpenFRChallengesSettings")	
+	}
 }
 
 string function GetWeaponNameForUI(string weapon)
