@@ -21,7 +21,7 @@ entity function ThrowDeployable( entity weapon, WeaponPrimaryAttackParams attack
 	vector angles = VectorToAngles( attackParams.dir )
 	vector velocity = GetDeployableThrowVelocity( player, angles, throwPower )
 	if ( angularVelocity == null )
-		angularVelocity = <600, RandomFloatRange( -300, 300 ), 0>
+		angularVelocity = <600, 300, 0>
 	expect vector( angularVelocity )
 
 	float fuseTime = 0.0	// infinite
