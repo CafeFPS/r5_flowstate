@@ -1276,6 +1276,51 @@ void function DEV_SpawnAllNPCsWithTeam( int team )
 	}
 }
 
+void function DEV_SpawnLegendAtCrosshair()
+{
+	entity player = GetPlayerArray()[ 0 ]
+
+	vector origin = GetPlayerCrosshairOrigin( player )
+	
+	vector org2 = player.GetOrigin()
+	vector vec1 = org2 - origin
+	vector angles1 = VectorToAngles( vec1 )
+	angles1.x = 0
+
+	entity dummy
+	
+	if(GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
+		dummy = CreateLegend_ai( 99, origin, angles1 )
+	else
+	{
+		if(CoinFlip())
+			dummy = CreateLegend_ai( 99, origin, angles1, true)
+		else
+			dummy = CreateLegend_ai( player.GetTeam(), origin, angles1, true)
+		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
+		dummy.EnableNPCFlag( NPC_DISABLE_SENSING )
+		dummy.EnableNPCFlag( NPC_IGNORE_ALL )		
+	}
+	
+	DispatchSpawn( dummy )	
+	dummy.SetOrigin(origin)
+	dummy.SetShieldHealthMax( 25 )
+	dummy.SetShieldHealth( 25 )
+	dummy.SetMaxHealth( 100 )
+	dummy.SetHealth( 100 )
+	dummy.SetTakeDamageType( DAMAGE_YES )
+	dummy.SetDamageNotifications( true )
+	dummy.SetDeathNotifications( true )
+	dummy.SetValidHealthBarTarget( true )
+	SetObjectCanBeMeleed( dummy, true )
+	dummy.DisableHibernation()
+	dummy.SetAngles(angles1)
+
+    array<string> weapons = ["npc_weapon_lstar", "npc_weapon_energy_shotgun", "npc_weapon_hemlok"]
+    string randomWeapon = weapons[RandomInt(weapons.len())]
+    dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
+}
+
 void function DEV_SpawnWeaponAtCrosshair( string weaponName )
 {
 	printt( "script thread DEV_SpawnWeaponAtCrosshair( \"" + weaponName + "\")" )
