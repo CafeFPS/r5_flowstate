@@ -1293,10 +1293,7 @@ void function DEV_SpawnLegendAtCrosshair()
 		dummy = CreateLegend_ai( 99, origin, angles1 )
 	else
 	{
-		if(CoinFlip())
-			dummy = CreateLegend_ai( 99, origin, angles1, true)
-		else
-			dummy = CreateLegend_ai( player.GetTeam(), origin, angles1, true)
+		dummy = CreateLegend_ai( 99, origin, angles1, true)
 		dummy.SetBehaviorSelector( "behavior_dummy_empty" )
 		dummy.EnableNPCFlag( NPC_DISABLE_SENSING )
 		dummy.EnableNPCFlag( NPC_IGNORE_ALL )		
