@@ -436,7 +436,10 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
 				
 				if(GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )  && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
+				{
+					AddPlayerScore( attacker, "Sur_DownedPilot", victim )
 					attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
+				}
 				UpdatePlayerCounts()
 			}
 	}
