@@ -39,6 +39,9 @@ void function AddPlayerScore( entity targetPlayer, string scoreEventName, entity
 	float scale = targetPlayer.IsTitan() ? event.coreMeterScalar : 1.0	
 	float earnValue = event.earnMeterEarnValue * scale
 	float ownValue = event.earnMeterOwnValue * scale
+
+	if( scoreEventName == "Sur_DownedPilot" )
+		ownValue = GetTotalDamageTakenByPlayer( associatedEnt, targetPlayer )
 	
 	//PlayerEarnMeter_AddEarnedAndOwned( targetPlayer, earnValue * scale, ownValue * scale )
 	

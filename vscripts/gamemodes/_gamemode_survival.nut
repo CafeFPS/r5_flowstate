@@ -395,8 +395,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		{
 			thread EnemyDownedDialogue( attacker )
 
-			ScoreEvent event = GetScoreEvent( "Sur_DownedPilot" )
-			Remote_CallFunction_NonReplay( attacker, "ServerCallback_ScoreEvent", event.eventId, event.pointValue, event.displayType, victim.GetEncodedEHandle(), GetTotalDamageTakenByPlayer( victim, attacker ), 0 )
+			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
 		}
 
 		foreach ( cbPlayer in GetPlayerArray() )
