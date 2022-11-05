@@ -421,7 +421,12 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				if(GetCurrentPlaylistVarBool( "register_damage_to_ai", false ))
 					attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
 		}
-		
+
+		if( GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) )
+		{
+			StoreDamageHistoryAndUpdate( ent, MAX_DAMAGE_HISTORY_TIME, DamageInfo_GetDamage( damageInfo ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ), damageSourceId, attacker, GetWeaponModsFromDamageInfo( damageInfo ) )
+		}
+
 		float damageAmount = DamageInfo_GetDamage( damageInfo )
 		bool isKillShot = (damageAmount >= ent.GetHealth() + ent.GetShieldHealth() )
 	
