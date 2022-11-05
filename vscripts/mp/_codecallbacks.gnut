@@ -437,7 +437,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 				
 				if(GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )  && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 				{
-					AddPlayerScore( attacker, "Sur_DownedPilot", victim )
+					AddPlayerScore( attacker, "Sur_DownedPilot", ent )
 					attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 				}
 				UpdatePlayerCounts()
