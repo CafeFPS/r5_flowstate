@@ -91,13 +91,16 @@ int function GetMinKillsForKillLeader()
 
 void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 {
-	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() || !attacker.IsPlayer() )
+	if ( !IsValid( victim ) || !IsValid( attacker ) || IsValid( victim ) && !victim.IsPlayer() || IsValid( attacker ) && !attacker.IsPlayer() )
 		return
 
 	thread function() : ( victim, attacker, damageInfo )
 	{
 		wait DELAY_COMMENTARY
-
+		
+		if ( !IsValid( victim ) || !IsValid( attacker ) 
+			return
+		
 		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
 		{
 			if ( victim == file.currentKillLeader && victim != GetChampion() )
