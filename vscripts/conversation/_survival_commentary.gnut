@@ -98,7 +98,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	{
 		wait DELAY_COMMENTARY
 		
-		if ( !IsValid( victim ) || !IsValid( attacker ) 
+		if ( !IsValid( victim ) || !IsValid( attacker ) )
 			return
 		
 		if ( GetCurrentPlaylistVarBool( "survival_commentary_kill_leader_enabled", true ) )
