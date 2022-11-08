@@ -2794,13 +2794,13 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	string weapon = args[0]
 	
-	if(GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
+	if(GameRules_GetGameMode() != "custom_aimtrainer" && GetWhiteListedWeapons().len() && GetWhiteListedWeapons().find(weapon) != -1)
 	{
 		Message(player, "WEAPON WHITELISTED")
 		return false
 	}
 
-	if( GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
+	if(GameRules_GetGameMode() != "custom_aimtrainer" && GetWhiteListedAbilities().len() && GetWhiteListedAbilities().find(weapon) != -1 )
 	{
 		Message(player, "ABILITY WHITELISTED")
 		return false
