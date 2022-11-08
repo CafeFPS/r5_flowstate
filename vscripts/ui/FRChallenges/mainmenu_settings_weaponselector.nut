@@ -22,6 +22,10 @@ void function OpenFRChallengesSettingsWpnSelector()
 	TabData tabData = GetTabDataForPanel( file.menu )
 	ActivateTab( tabData, 1 )
 	ActivateTab( tabData, 0 )
+	
+	Hud_SetSelected( Hud_GetChild( file.menu, "SelectPrimaryWeapon"), true )
+	Hud_SetSelected( Hud_GetChild( file.menu, "SelectSecondaryWeapon"), false )
+	RunClientScript("SetWeaponSlot", 1)	
 }
 
 void function CloseFRChallengesSettingsWpnSelector()
@@ -61,6 +65,11 @@ void function InitFRChallengesSettingsWpnSelector( var newMenuArg )
 
 	ActivateTab( tabData, 1 )
 	ActivateTab( tabData, 0 )
+	
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SelectPrimaryWeapon"), UIE_CLICK, SelectPrimaryWeaponFunct )
+	AddButtonEventHandler( Hud_GetChild( file.menu, "SelectSecondaryWeapon"), UIE_CLICK, SelectSecondaryWeaponFunctFunct )
+	
+	Hud_SetSelected( Hud_GetChild( file.menu, "SelectPrimaryWeapon"), true )
 }
 
 void function DisableBuyWeaponsMenuTabs()
@@ -73,6 +82,20 @@ void function EnableBuyWeaponsMenuTabs()
 	SetTabNavigationEnabled( file.menu, true )
 }
 
+void function SelectPrimaryWeaponFunct(var button)
+{
+	Hud_SetSelected( Hud_GetChild( file.menu, "SelectPrimaryWeapon"), true )
+	Hud_SetSelected( Hud_GetChild( file.menu, "SelectSecondaryWeapon"), false )
+	RunClientScript("SetWeaponSlot", 1)
+}
+
+void function SelectSecondaryWeaponFunctFunct(var button)
+{
+	Hud_SetSelected( Hud_GetChild( file.menu, "SelectPrimaryWeapon"), false )
+	Hud_SetSelected( Hud_GetChild( file.menu, "SelectSecondaryWeapon"), true )
+	RunClientScript("SetWeaponSlot", 2)
+}
+
 void function GoBackButtonFunct(var button)
 {
 	CloseAllAttachmentsBoxes()
@@ -83,6 +106,7 @@ void function GoBackButtonFunct(var button)
 		RunClientScript("CloseFRChallengesSettingsWpnSelector")
 		RunClientScript("ServerCallback_OpenFRChallengesSettings")
 	}
+	RunClientScript("WeaponSelectorClose")
 }
 
 void function OnR5RSB_Show()
@@ -111,6 +135,7 @@ void function OnR5RSB_NavigateBack()
 		RunClientScript("CloseFRChallengesSettingsWpnSelector")
 		RunClientScript("ServerCallback_OpenFRChallengesSettings")	
 	}
+	RunClientScript("WeaponSelectorClose")
 }
 
 string function GetWeaponNameForUI(string weapon)
