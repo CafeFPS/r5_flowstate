@@ -25,15 +25,19 @@ WeaponData
 
 	"cooldown_type"									"chargeFrac"
     "cooldown_time"	                                "0.4" // actually, "blowoff animation time"
-    "charge_time"                                   "1.7"  // while holding trigger, time until weapon overheats
+    "charge_time"                                   "2.4"  // while holding trigger, time until weapon overheats
     "charge_cooldown_time"                          "2.45"  // controls length of overheat anim (along with delay)
-    "charge_cooldown_delay"                         "0.05"
+    "charge_cooldown_delay"                         "0.08"
 	"charge_overheats_when_full"                    "1"
 	"charge_weapon_fires_while_charging"            "1"
 	"charge_remain_full_when_fired"                 "1"
 	"entity_color_from_charge"						"1"
 
-	"projectile_launch_speed"						"18000"
+                     
+    "projectile_launch_speed"                       "24000"
+     
+                                       
+      
 	"projectile_drag_coefficient" 					"0.0"
 	"projectile_gravity_scale"						"0.5"
 	"projectile_lifetime" 							"4.0"
@@ -44,12 +48,7 @@ WeaponData
 	"OnWeaponPrimaryAttack"							"OnWeaponPrimaryAttack_weapon_lstar"
 	"OnWeaponNpcPrimaryAttack"						"OnWeaponNpcPrimaryAttack_weapon_lstar"
 	"OnWeaponCooldown"								"OnWeaponCooldown_weapon_lstar"
-	//"OnProjectileCollision"                         "OnProjectileCollision_lstar"
-		"projectile_ricochet_max_count"					"0"
-		"bolt_bounce_frac" "1"
-		"projectile_bounce_damage_reduction_scale"		"0.5"
-		"projectile_speed_reduction_factor"	 			"0"
-		"projectile_damages_owner"						"0"
+
 	// Menu
 	"menu_category"                                 "lmg"
 	"menu_anim_class"                               "medium"
@@ -380,8 +379,8 @@ WeaponData
 
 	// Ammo
 	"ammo_suck_behavior"							"primary_weapons"
-	"ammo_clip_size"   								"40"
-	"ammo_clip_reload_max"							"40"
+	"ammo_clip_size"   								"999"
+	"ammo_clip_reload_max"							"999"
 	"ammo_min_to_fire"								"1"
 	"ammo_per_shot"		    						"1"
 	"ammo_no_remove_from_stockpile"					"1"
@@ -390,7 +389,7 @@ WeaponData
 
     "ammo_stockpile_max"							"80"
     "ammo_default_total"							"120"
-    "low_ammo_fraction" 							"0.3"
+    "low_ammo_fraction" 							"0.005"
     "uses_ammo_pool"								"0"
 
     "reload_alt_anim"								"0"
@@ -468,12 +467,6 @@ WeaponData
 	//"reloadempty_time_late4"						"1.43"
 	//"reloadempty_time_late5"						"0.56"
 
-	"deployfirst_time"								"1.45"
-	"deploy_time" 								    "0.7"
-    "holster_time"								    "0.65"
-	"raise_time"  								    "0.55"
-	"lower_time"  								    "0.5"
-
 	"vortex_drain" 			 						"0.0"
 	"vortex_refire_behavior"  						"absorb"
 	"allow_empty_fire"								"0"
@@ -482,13 +475,9 @@ WeaponData
 	"empty_reload_only"   							"0"
 	"trigger_snipercam"   							"0"
 	"allow_headshots" 								"1"
-	"headshot_distance" 							"2500"
+	"headshot_distance" 							"2250"
 	"primary_fire_does_not_block_sprint"			"0"
-	"ads_move_speed_scale"							"0.5"
-	"aimassist_disable_hipfire"						"0"
-	"aimassist_disable_ads"							"0"
-	"aimassist_disable_hipfire_titansonly"			"0"
-	"aimassist_disable_ads_titansonly"				"0"
+	"ads_move_speed_scale"							"0.4"
 
 	"sprint_fractional_anims"						"0"
 

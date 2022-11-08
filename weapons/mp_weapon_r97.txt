@@ -259,11 +259,11 @@ WeaponData
 		}
 		bullets_mag_l2
 		{
-			"ammo_clip_size"   							"24"
+			"ammo_clip_size"   							"25"
 		}
 		bullets_mag_l3
 		{
-			"ammo_clip_size"   							"27"
+			"ammo_clip_size"   							"28"
 		}
 
 		legendary1

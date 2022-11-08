@@ -42,7 +42,7 @@
 	"OnWeaponChargeEnd" 						    "OnWeaponChargeEnd_weapon_doubletake"
 	"OnProjectileCollision"                         "OnProjectileCollision_weapon_doubletake"
 
-	"charge_time" 					"1.1"
+	"charge_time" 					"0.85"
 	"charge_cooldown_time"			"0.1"
 	"charge_cooldown_delay"   		"0.1"
 
@@ -69,7 +69,7 @@
 
 	// Behavior - Firing
 	//
-	"fire_rate"                                    "1.2"
+	"fire_rate"                                    "1.35"
 	"is_semi_auto"								   "1"
 	"impulse_force"                                "1000"
 
@@ -363,7 +363,7 @@
                                            
                                               
      
-			"charge_time" 					"1.1"
+			"charge_time" 					"0.85"
 			"charge_cooldown_time"			"0.1"
             "charge_cooldown_delay"   		"0.1"
       

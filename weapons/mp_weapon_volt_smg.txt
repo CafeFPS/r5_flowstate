@@ -11,7 +11,7 @@ WeaponData
 	"printname"   									"Volt SMG"
 	"shortprintname"   								"Volt"
 	"description" 									"Energy actuated SMG."
-	"longdesc"										"Energy actuated SMG."
+	"longdesc"									"Energy actuated SMG."
 
 	"weapon_type_flags"								"WPT_PRIMARY"
 	"ammo_pool_type"								"special"
@@ -64,7 +64,7 @@ WeaponData
     //"bolt_hitsize_growfinal_size"					"0.1"
 
     "bolt_gravity_enabled"							"1"
-    "projectile_gravity_scale"						"0.8"
+    "projectile_gravity_scale"						"1"
     "projectile_drag_coefficient"                   "0.0"
     "bolt_zero_distance"                            "1378.0"    //35m
 
@@ -75,7 +75,7 @@ WeaponData
     "pass_through_depth"							"0"
     "pass_through_damage_preserved_scale"			"1"
 
-    "projectile_launch_speed"						"23500"
+    "projectile_launch_speed"						"22000"
 
     "tracer_effect"   								"P_wpn_tracer_pulse"
     "impact_effect_table" 							"pulse_bullet"
@@ -131,10 +131,8 @@ WeaponData
 	"damage_type" 									"bullet"
 
 	// Ammo
-	"ammo_clip_size"                                "19"
-
-	"red_crosshair_range" 							"0"
-
+    "ammo_clip_size"                                "19"
+    "red_crosshair_range" 							"0"
     "ammo_min_to_fire"								"1"
 
     "ammo_default_total"							"969"
@@ -142,16 +140,22 @@ WeaponData
     "ammo_no_remove_from_stockpile"					"1"
     "uses_ammo_pool"								"0"
 
-    "damage_near_distance"							"800"
-    "damage_far_distance" 							"1500"
-    "damage_very_far_distance"						"3500"
-
     "damage_near_value"   					        "15"
     "damage_far_value"						        "15"
     "damage_very_far_value"					        "15"
     "damage_near_value_titanarmor"			        "15"
     "damage_far_value_titanarmor" 			        "15"
     "damage_very_far_value_titanarmor" 		        "15"
+
+       
+
+	"red_crosshair_range" 							"0"
+
+    "ammo_min_to_fire"								"1"
+
+    "damage_near_distance"							"800"
+    "damage_far_distance" 							"1500"
+    "damage_very_far_distance"						"3500"
 
     // View Drift
 
@@ -395,8 +399,8 @@ WeaponData
 		
         barrel_stabilizer_l4_flash_hider
         {
-            "fx_muzzle_flash_view"                "P_mflash_pulse_LMG_sup_FP"
-            "fx_muzzle_flash_world"                "P_mflash_pulse_LMG_sup"
+            "fx_muzzle_flash_view"                ""
+            "fx_muzzle_flash_world"                ""
         }
 
         optic_cq_hcog_classic

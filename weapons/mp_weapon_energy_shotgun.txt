@@ -48,8 +48,6 @@ WeaponData
 	"charge_cooldown_time"							"0.75"
 	"charge_cooldown_delay"   						"0.35"
 
-	"headshot_distance" 							"11828"  // 300m
-
 	"rui_crosshair_index"							"1"
 
 	"ui20_enable"									"1"
@@ -211,12 +209,12 @@ WeaponData
 
 	"ammo_suck_behavior"							"primary_weapons"
 
-    "bolt_hitsize_grow1_time"						"0.025"
-    "bolt_hitsize_grow1_size"						"0.8"
-    "bolt_hitsize_grow2_time"						"0.18"
-    "bolt_hitsize_grow2_size"						"1.4"
-    "bolt_hitsize_growfinal_lerptime"				"0.18"
-    "bolt_hitsize_growfinal_size"					"1.4"
+  // "bolt_hitsize_grow1_time"						"0.025"
+  // "bolt_hitsize_grow1_size"						"0.8"
+  // "bolt_hitsize_grow2_time"						"0.18"
+  // "bolt_hitsize_grow2_size"						"1.4"
+  // "bolt_hitsize_growfinal_lerptime"				"0.18"
+  // "bolt_hitsize_growfinal_size"					"1.4"
 
 	// View Kick
 	"viewkick_spring" 								"energy_shotgun"
