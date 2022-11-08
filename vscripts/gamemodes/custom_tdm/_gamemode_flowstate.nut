@@ -28,6 +28,8 @@ global function CreateShipRoomFallTriggers
 global function GiveFlowstateOvershield
 global function IsAdmin
 global function Flowstate_ServerSaveChat
+global function GetWhiteListedWeapons
+global function GetWhiteListedAbilities
 
 global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
@@ -159,9 +161,10 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("latency", ClientCommand_ShowLatency)
 	
 	//AddClientCommandCallback("myffadata", ClientCommand_MyFFAData)	
-	//AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon)
-	//AddClientCommandCallback("CC_TDM_Weapon_Selector_Open", CC_TDM_Weapon_Selector_Open)
-	
+	AddClientCommandCallback("CC_MenuGiveAimTrainerWeapon", CC_MenuGiveAimTrainerWeapon)
+	AddClientCommandCallback("CC_AimTrainer_SelectWeaponSlot", CC_AimTrainer_SelectWeaponSlot)
+	AddClientCommandCallback("CC_AimTrainer_WeaponSelectorClose", CC_AimTrainer_CloseWeaponSelector)
+
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("commands", ClientCommand_Help)
 	AddClientCommandCallback("say", ClientCommand_Say)
@@ -2904,6 +2907,17 @@ bool function ClientCommand_ShowLatency(entity player, array<string> args)
 
     return true
 }
+
+array<string> function GetWhiteListedWeapons()
+{
+	return file.whitelistedWeapons
+}
+
+array<string> function GetWhiteListedAbilities()
+{
+	return file.whitelistedAbilities
+}
+
 
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 {
