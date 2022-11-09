@@ -133,7 +133,7 @@ void function GameModes_Init_SV_CL()
 	//                        //
 	////////////////////////////
 
-	gameMode = CUSTOM_CTF
+	gameMode = MAP_EDITOR
 	#if SERVER || CLIENT
 		GameMode_AddSharedInit(gameMode, Sh_MapEditor_Init)
 		GameMode_AddSharedInit( gameMode, GamemodeSurvivalShared_Init )
