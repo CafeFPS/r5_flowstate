@@ -365,64 +365,66 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			ent.SetCloakFlicker( 0.5, 0.65 )
 	}
 
-	if ( entIsNPC && attackerIsPlayer)
-	{
+	//if ( entIsNPC && attackerIsPlayer)
+	//{
 		//AI bleedthrough fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
 		if(ent.GetShieldHealth() > 0)
 		{
-
-				DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
-		
-					float shieldHealth = float( ent.GetShieldHealth() )
-					if (shieldHealth){
-						
-						DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+			DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+	
+				float shieldHealth = float( ent.GetShieldHealth() )
+				if (shieldHealth){
 					
-						if(DamageInfo_GetDamage( damageInfo ) > ent.GetShieldHealth())
-						{
-							float passDamage = DamageInfo_GetDamage( damageInfo ) - ent.GetShieldHealth()
-							ent.SetHealth( maxint(0, int(ent.GetHealth() - passDamage)) )
-						}
-					}
-					float newShieldHealth = shieldHealth - DamageInfo_GetDamage( damageInfo )
-
-					if(IsValid(ent))
-						ent.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
-
-					if ( shieldHealth && newShieldHealth <= 0 )
+					DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+				
+					if(DamageInfo_GetDamage( damageInfo ) > ent.GetShieldHealth())
 					{
-						DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )
-						
-						if( IsValid( attacker ) && IsValid( ent ) )
-						{
-							string sound3pvs1p = "humanshield_break_3p_vs_1p"
-
-							if( attacker != ent )
-								EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
-
-							if( attacker != ent )
-								EmitSoundOnEntityExceptToPlayer( ent, attacker, sound3pvs1p )
-							else
-								EmitSoundOnEntityOnlyToPlayer( ent, ent, sound3pvs1p ) // If the player breaks the shield himself, only the broken sound is played
-
-							EmitSoundOnEntity( ent, "humanshield_break_3p_vs_3p" )
-						}
+						float passDamage = DamageInfo_GetDamage( damageInfo ) - ent.GetShieldHealth()
+						ent.SetHealth( maxint(0, int(ent.GetHealth() - passDamage)) )
 					}
+				}
+				float newShieldHealth = shieldHealth - DamageInfo_GetDamage( damageInfo )
 
+				if(IsValid(ent))
+					ent.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
+
+				if ( shieldHealth && newShieldHealth <= 0 )
+				{
+					DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )
+					
+					if( IsValid( attacker ) && IsValid( ent ) )
+					{
+						string sound3pvs1p = "humanshield_break_3p_vs_1p"
+
+						if( attacker != ent && attacker.IsPlayer() )
+							EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
+
+						if( attacker != ent && attacker.IsPlayer() )
+							EmitSoundOnEntityExceptToPlayer( ent, attacker, sound3pvs1p )
+						else
+							EmitSoundOnEntityOnlyToPlayer( ent, ent, sound3pvs1p ) // If the player breaks the shield himself, only the broken sound is played
+
+						EmitSoundOnEntity( ent, "humanshield_break_3p_vs_3p" )
+					}
+				}
+
+			if( attacker.IsPlayer() )
 				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
-				
-				if(GetCurrentPlaylistVarBool( "register_damage_to_ai", false ))
-					attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
-				
-				DamageInfo_SetDamage( damageInfo, 0) //hack, the damage value was only required for proper client display. Colombia
+			
+			if( GetCurrentPlaylistVarBool( "register_damage_to_ai", false ) && attacker.IsPlayer() )
+				attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
+			
+			DamageInfo_SetDamage( damageInfo, 0) //hack, the damage value was only required for proper client display. Colombia
 		} else
 		{
+			if( attacker.IsPlayer() )
 				PlayerDamageFeedback( ent, damageInfo, int(DamageInfo_GetDamage( damageInfo )) )
-				if(GetCurrentPlaylistVarBool( "register_damage_to_ai", false ))
-					attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
+
+			if( GetCurrentPlaylistVarBool( "register_damage_to_ai", false ) && attacker.IsPlayer() )
+				attacker.p.playerDamageDealt = attacker.p.playerDamageDealt + DamageInfo_GetDamage( damageInfo )
 		}
 
-		if( GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) )
+		if( GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ) && !ent.IsPlayer() )
 		{
 			StoreDamageHistoryAndUpdate( ent, MAX_DAMAGE_HISTORY_TIME, DamageInfo_GetDamage( damageInfo ), attacker.GetOrigin(), DamageInfo_GetCustomDamageType( damageInfo ), damageSourceId, attacker, GetWeaponModsFromDamageInfo( damageInfo ) )
 		}
@@ -430,20 +432,20 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		float damageAmount = DamageInfo_GetDamage( damageInfo )
 		bool isKillShot = (damageAmount >= ent.GetHealth() + ent.GetShieldHealth() )
 	
-		if ( isKillShot )
+		if ( isKillShot && attacker.IsPlayer() )
+		{
+			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
+			EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
+			
+			if(GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )  && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 			{
-				DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
-				thread EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
-				
-				if(GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false )  && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
-				{
-					AddPlayerScore( attacker, "Sur_DownedPilot", ent )
-					attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
-				}
-				
-				UpdatePlayerCounts()
+				AddPlayerScore( attacker, "Sur_DownedPilot", ent )
+				attacker.SetPlayerNetInt( "kills", attacker.GetPlayerNetInt( "kills" ) + 1 )
 			}
-	}
+			
+			UpdatePlayerCounts()
+		}
+	//}
 
 	#if VERBOSE_DAMAGE_PRINTOUTS
 		printt( "    After player damage mod:", DamageInfo_GetDamage( damageInfo ) )
