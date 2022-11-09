@@ -25,7 +25,9 @@ const float SPACEELEVATOR_TUNING_INPUT_THRESHOLD = 0.2
 const float SPACEELEVATOR_TUNING_PLAYER_VIEWPOINT_OFFSET = 33
 const float SPACEELEVATOR_TUNING_HOVER_HEIGHT_PCT = 0.9
 const float SPACEELEVATOR_TUNING_KEEP_ALIVE_MAX_TIME = 5
-
+//maki script
+array<entity> doubleCheck 
+//maki script
 void function MpSpaceElevatorAbility_Init()
 {
 	PrecacheParticleSystem( $"P_s2s_flap_wind" )
@@ -250,7 +252,10 @@ void function BottomEnterCallback( entity trigger, entity ent )
 {
 	if ( !ent.IsPlayer() )
 		return
-	
+	//maki script
+	if(!( doubleCheck.contains(ent)))
+		doubleCheck.append(ent)
+	//maki script
 	entity weapon = ent.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 	if(IsValid(weapon))
 	{
@@ -354,7 +359,21 @@ void function LiftWatcher( entity bottom, entity top, vector pos)
 			foreach(ent in visuals)			
 			{
 				if(IsValid(ent))
+					{
+					//maki script
+					foreach (player in doubleCheck)
+					{
+						if(!IsValid(player)) continue
+						player.kv.gravity = 1.0
+						player.kv.airSpeed = 80 //horizon value
+						player.kv.airAcceleration = 800 //horizon value
+						RemovePlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
+						AddPlayerMovementEventCallback( player, ePlayerMovementEvents.TOUCH_GROUND, OnPlayerTouchGround )
+						player.p.ForceEject = false
+					}
+					//maki script
 					ent.Destroy()
+					}
 			}
 			if(IsValid(bottom)) bottom.Destroy()
 			if(IsValid(top)) top.Destroy()
@@ -425,7 +444,7 @@ void function FallTempAirControl( entity player )
 {
 	if ( !IsValid(player) || !player.IsPlayer() || player.IsOnGround() )
 		return
-	
+	thread fixStun(player)
 	StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
 	EmitSoundOnEntityExceptToPlayer( player, player, "JumpPad_AirborneMvmt_3p" )
 	player.kv.gravity = 1.0
@@ -437,7 +456,39 @@ void function FallTempAirControl( entity player )
 	player.kv.landslowdownpower = 0//doesn't work
 	player.p.ForceEject = false
 }
+void function fixStun(entity player)
+{
+	vector testOrg = <player.GetOrigin().x,player.GetOrigin().y,player.GetOrigin().z>
+	int solidMask = TRACE_MASK_PLAYERSOLID
+	vector mins
+	vector maxs
+	int collisionGroup = TRACE_COLLISION_GROUP_PLAYER
+	array<entity> ignoreEnts = [ player ]
 
+	TraceResults result
+
+	mins = player.GetPlayerMins()
+	maxs = player.GetPlayerMaxs()
+	while(IsValid(player))
+	{	
+		
+		testOrg = player.GetOrigin()
+		result = TraceHull( testOrg, testOrg + < 0, 0, -150 >, mins, maxs, ignoreEnts, solidMask, collisionGroup )
+		if (result.hitEnt)
+		{
+			// printt(result.hitEnt)
+			vector tempV = player.GetVelocity()
+			if(tempV.z < -650)
+				tempV.z = -650
+
+			player.SetVelocity(tempV)
+			break
+		}
+		// WaitFrame()
+		wait 0.00000001
+	}
+	
+}
 void function OnPlayerTouchGround( entity player )
 {
 	StopSoundOnEntity( player, "JumpPad_AirborneMvmt_3p" )
