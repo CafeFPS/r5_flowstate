@@ -387,9 +387,10 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	vector damagePosition = DamageInfo_GetDamagePosition( damageInfo )
 	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
 
-	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) )
+	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) )
 	{	
-		if(!IsValid(attacker) || !IsValid(victim)) return
+		if( !IsValid(attacker) || !IsValid(victim) || !Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) )
+			return
 	
 		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
 		{

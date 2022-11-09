@@ -9,6 +9,7 @@ global function Bleedout_AddCallback_OnPlayerGotFirstAid // dump
 global function Bleedout_GetBleedoutAttacker
 global function Bleedout_GetBleedoutDamageInfo
 
+global function Bleedout_CheckForTeamBleedout
 global function Bleedout_AreThereAlivingMates
 
 global table<string, string> EliminatedPlayers = {}
@@ -32,6 +33,7 @@ global function Bleedout_IsReceivingFirstAid
 struct
 {
 	table<entity,bool> isBleeding
+	table<entity,bool> hasSelfRes
 	table<entity, entity> IsGettingFirstAidFrom
 	table<entity, entity> IsGivingFirstAidTo
 	table<entity,entity> lastAttacker
@@ -50,6 +52,7 @@ void function Bleedout_Init()
 
 	AddCallback_OnClientConnected( Bleedout_OnClientConnected )
 	AddCallback_OnClientDisconnected( Bleedout_OnClientDisconnected )
+	AddCallback_OnPlayerKilled( Bleedout_OnPlayerKilled )
 
 	PrecacheParticleSystem( FX_BLOODTRAIL )
 	PrecacheParticleSystem( $"P_drone_medic_shield_beam" )
@@ -86,6 +89,7 @@ bool function Bleedout_IsReceivingFirstAid( entity player )
 void function Bleedout_OnClientConnected( entity player )
 {
 	file.isBleeding[ player ] <- false
+	file.hasSelfRes[ player ] <- false
 	file.IsGettingFirstAidFrom[ player ] <- null
 	file.IsGivingFirstAidTo[ player ] <- null
 	file.lastAttacker[ player ] <- svGlobal.worldspawn
@@ -94,9 +98,15 @@ void function Bleedout_OnClientConnected( entity player )
 void function Bleedout_OnClientDisconnected( entity player )
 {
 	delete file.isBleeding[ player ]
+	delete file.hasSelfRes[ player ]
 	delete file.IsGettingFirstAidFrom[ player ]
 	delete file.IsGivingFirstAidTo[ player ]
 	delete file.lastAttacker[ player ]
+}
+
+void function Bleedout_OnPlayerKilled( entity victim, entity attacker, var damageInfo )
+{
+	thread Bleedout_CheckForTeamBleedout( victim )
 }
 
 void function Bleedout_AddCallback_OnPlayerStartBleedout( void functionref(entity, entity, var) callback ) //Bleedout_SetCallback_OnPlayerStartBleedout( void functionref(entity) callback )
@@ -121,7 +131,8 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	player.Signal( "BleedOut_OnStartDying" )
 
 	file.lastAttacker[ player ] = attacker
-
+	if( Bleedout_GetSelfResEnabled( player ) )
+		file.hasSelfRes[ player ] = true
 	
 	thread Bleedout_DeathProtection( player )
 	SetPlayerEliminated( player )
@@ -147,7 +158,7 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 		thread EnablePlayerSelfRes( player )
 	
 	if ( Bleedout_GetDeathOnTeamBleedout( player ) )
-		thread CheckForTeamBleedout( player )
+		thread Bleedout_CheckForTeamBleedout( player )
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_STARTBLEEDOUT, player, player.GetOrigin(), player.GetTeam(), player )
 }
@@ -656,32 +667,27 @@ void function PlayerDiesFromBleedout( entity player, entity attacker )
 
 //This function checks to see if all players on a team are dead or bleeding out.
 //If all the players are dead/bleeding out, it kills the surviving team players.
-void function CheckForTeamBleedout( entity player )
+void function Bleedout_CheckForTeamBleedout( entity player, entity excludePlayer = null )
 {
 	if( Flag( "BleedoutDebug" ) )
 		return
 
-	while( Bleedout_AreThereAlivingMates( player.GetTeam() ) )
-	{
-		if( !file.isBleeding[ player ] )
-			return
-		
-		WaitFrame()
-	}
+	int team = player.GetTeam()
 
-	PlayerDiesFromBleedout( player, file.lastAttacker[ player ] )
+	if( !Bleedout_AreThereAlivingMates( team, player ) )
+		foreach( targetPlayer in GetPlayerArrayOfTeam_Alive( team ) )
+			if( targetPlayer != excludePlayer )
+				PlayerDiesFromBleedout( targetPlayer, file.lastAttacker[ targetPlayer ] )
 }
 
-bool function Bleedout_AreThereAlivingMates( int team, entity player = null )
+bool function Bleedout_AreThereAlivingMates( int team, entity excludePlayer = null )
 {
 	if( Flag( "BleedoutDebug" ) )
 		return true
 
-	foreach ( entity teamPlayer in GetPlayerArrayOfTeam( team ) )
-	{
-		if ( !file.isBleeding[ teamPlayer ] && teamPlayer != player || Bleedout_GetSelfResEnabled( teamPlayer ) )
+	foreach ( entity teamPlayer in GetPlayerArrayOfTeam_Alive( team ) )
+		if ( !Bleedout_IsBleedingOut( teamPlayer ) && teamPlayer != excludePlayer || file.hasSelfRes[ teamPlayer ] )
 			return true
-	}
 
 	return false
 }
