@@ -201,7 +201,7 @@ void function UpdateSystemPanel( var panel )
 		}
 		if ( IsFiringRangeGameMode() && !GetCurrentPlaylistVarBool( "firingrange_aimtrainerbycolombia", false ))
 		{
-			//SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] ) // !FIXME
+			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] ) // !FIXME
 			//SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
 
 			//if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
