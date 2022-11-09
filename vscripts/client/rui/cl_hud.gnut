@@ -563,6 +563,9 @@ string function GetFormattedEventText( ScoreEvent scoreEvent, int pointValue, EH
 		targetEntityText = GetPlayerName( associatedEHI )
 	}
 
+	if( !targetEntity.IsPlayer() && GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) )
+		targetEntityText = targetEntity.GetTitleForUI()
+
 	return Localize( eventText, targetEntityText, valueA, valueB )
 }
 
