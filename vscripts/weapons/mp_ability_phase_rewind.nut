@@ -5,7 +5,7 @@ global function OnWeaponPrimaryAttack_ability_phase_rewind
 global function RecordPositions
 #endif
 ///CONFIGS///
-const int PHASE_REWIND_MAX_SNAPSHOTS = 30
+const int PHASE_REWIND_MAX_SNAPSHOTS = 60
 const asset FX = $"P_ar_holopilot_trail"
 /////////////
 
