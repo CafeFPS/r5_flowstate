@@ -87,6 +87,7 @@ struct {
 	bool mapSkyToggle = false
 	array<string> allChatLines
 	array<string> battlelog
+	string authkey = ""
 } file
 
 struct PlayerInfo
@@ -168,6 +169,7 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("flowstatekick", ClientCommand_FlowstateKick)
 	AddClientCommandCallback("commands", ClientCommand_Help)
 	AddClientCommandCallback("say", ClientCommand_Say)
+	AddClientCommandCallback("adminlogin", ClientCommand_adminlogin)
 	
 	if(!FlowState_AdminTgive())
 	{
@@ -2660,6 +2662,15 @@ void function __InitAdmins()
 	}
 }
 
+bool function ClientCommand_adminlogin(entity player, array < string > args) 
+{
+	if(file.authkey == "" || args.len() != 1 || file.mAdmins.find(player.GetPlayerName()) == -1 || args[0] != file.authkey) return false
+
+	player.p.isAdmin = true
+	Message(player, "Log in successful")
+	return true
+}
+
 string function GetOwnerName()
 {
 	if(file.mAdmins.len() != 0)
@@ -2670,14 +2681,11 @@ string function GetOwnerName()
 	unreachable
 }
 
-bool function IsAdminStr( string playername )
-{
-    return file.mAdmins.find(playername) != -1
-}
-
 bool function IsAdmin( entity player )
 {
-    return file.mAdmins.find(player.GetPlayerName()) != -1
+	if(file.authkey == "") return false
+	
+	return player.p.isAdmin
 }
 
 bool function CC_TDM_Weapon_Selector_Open( entity player, array<string> args )
