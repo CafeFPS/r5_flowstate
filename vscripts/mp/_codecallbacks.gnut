@@ -432,7 +432,7 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 		float damageAmount = DamageInfo_GetDamage( damageInfo )
 		bool isKillShot = (damageAmount >= ent.GetHealth() + ent.GetShieldHealth() )
 	
-		if ( isKillShot && attacker.IsPlayer() )
+		if ( isKillShot && attacker.IsPlayer() && !ent.IsPlayer() )
 		{
 			DamageInfo_AddCustomDamageType( damageInfo, DF_KILLSHOT )
 			EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_downedshot_1p_vs_3p" )
