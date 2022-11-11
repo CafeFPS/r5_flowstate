@@ -133,6 +133,8 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	file.lastAttacker[ player ] = attacker
 	if( Bleedout_GetSelfResEnabled( player ) )
 		file.hasSelfRes[ player ] = true
+	else
+		file.hasSelfRes[ player ] = false
 	
 	thread Bleedout_DeathProtection( player )
 	SetPlayerEliminated( player )
