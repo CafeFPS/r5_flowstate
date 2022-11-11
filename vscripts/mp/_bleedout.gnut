@@ -686,7 +686,7 @@ bool function Bleedout_AreThereAlivingMates( int team, entity excludePlayer = nu
 		return true
 
 	foreach ( entity teamPlayer in GetPlayerArrayOfTeam_Alive( team ) )
-		if ( !Bleedout_IsBleedingOut( teamPlayer ) && teamPlayer != excludePlayer || file.hasSelfRes[ teamPlayer ] )
+		if ( !Bleedout_IsBleedingOut( teamPlayer ) && teamPlayer != excludePlayer || file.hasSelfRes[ teamPlayer ] || Bleedout_GetSelfResEnabled( teamPlayer ) )
 			return true
 
 	return false
