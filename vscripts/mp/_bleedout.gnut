@@ -131,10 +131,6 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	player.Signal( "BleedOut_OnStartDying" )
 
 	file.lastAttacker[ player ] = attacker
-	if( Bleedout_GetSelfResEnabled( player ) )
-		file.hasSelfRes[ player ] = true
-	else
-		file.hasSelfRes[ player ] = false
 	
 	thread Bleedout_DeathProtection( player )
 	SetPlayerEliminated( player )
@@ -688,8 +684,15 @@ bool function Bleedout_AreThereAlivingMates( int team, entity excludePlayer = nu
 		return true
 
 	foreach ( entity teamPlayer in GetPlayerArrayOfTeam_Alive( team ) )
-		if ( !Bleedout_IsBleedingOut( teamPlayer ) && teamPlayer != excludePlayer || file.hasSelfRes[ teamPlayer ] || Bleedout_GetSelfResEnabled( teamPlayer ) )
+	{
+		if( Bleedout_GetSelfResEnabled( teamPlayer ) )
+			file.hasSelfRes[ teamPlayer ] = true
+		else
+			file.hasSelfRes[ teamPlayer ] = false
+
+		if ( !Bleedout_IsBleedingOut( teamPlayer ) && teamPlayer != excludePlayer || file.hasSelfRes[ teamPlayer ] )
 			return true
+	}
 
 	return false
 }
