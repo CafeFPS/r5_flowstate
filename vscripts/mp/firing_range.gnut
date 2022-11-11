@@ -159,6 +159,10 @@ void function OnEntitiesDidLoad()
 	SpawnItems()
 	SpawnAmmo()
 
+	SpawnDummy(<31541,-7964,-29165>, <0,179,0>)
+	SpawnDummy(<31541,-6705,-29165>, <0,179,0>)
+	SpawnDummy(<31541,-5885,-29165>, <0,179,0>)
+
 	// Doors
 	SpawnDoors_Init()
 
@@ -179,6 +183,40 @@ void function OnEntitiesDidLoad()
 
 
 #if SERVER
+void function SpawnDummy(vector origin, vector angles)
+
+{
+    entity dummy = CreateEntity( "npc_dummie" )
+    SetSpawnOption_AISettings( dummy, "npc_training_dummy" )
+    dummy.SetOrigin( origin )
+    dummy.SetAngles( angles )
+	DispatchSpawn( dummy )
+	dummy.SetShieldHealthMax( 125 )
+	dummy.SetShieldHealth( 125 )
+	dummy.SetMaxHealth( 100 )
+	dummy.SetHealth( 100 )
+	dummy.SetTakeDamageType( DAMAGE_YES )
+	dummy.SetDamageNotifications( true )
+	dummy.SetDeathNotifications( true )
+	dummy.SetValidHealthBarTarget( true )
+	SetObjectCanBeMeleed( dummy, true )
+	dummy.SetSkin(RandomInt(6))
+	dummy.DisableHibernation()
+    SetTeam(dummy, 99)
+
+	thread OnDummyKilled(dummy)
+}
+
+void function OnDummyKilled(entity dummy)
+{
+	//printt("Flowstate DEBUG - Dummy killed, spawning it.")
+	vector pos = dummy.GetOrigin()
+	vector angles = dummy.GetAngles()
+	dummy.WaitSignal( "OnDeath" )
+	wait 1
+	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), pos, angles )
+	thread SpawnDummy( pos, angles)
+}
 
 // ==================================================
 //					PLAYER EQUIP
