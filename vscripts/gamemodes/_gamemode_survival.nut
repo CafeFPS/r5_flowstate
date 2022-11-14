@@ -391,13 +391,11 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	{	
 		if( !IsValid(attacker) || !IsValid(victim) )
 			return
-	
-		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
-		{
-			thread EnemyDownedDialogue( attacker )
 
+		thread EnemyDownedDialogue( attacker )
+		
+		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
 			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
-		}
 
 		foreach ( cbPlayer in GetPlayerArray() )
 			Remote_CallFunction_Replay( cbPlayer, "ServerCallback_OnEnemyDowned", attacker, victim, damageType, sourceId )	
