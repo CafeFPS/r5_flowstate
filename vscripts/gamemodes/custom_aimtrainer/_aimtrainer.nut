@@ -2950,6 +2950,9 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	
 	if(GameRules_GetGameMode() == "custom_aimtrainer")
 		thread PlayAnimsOnGiveWeapon(weaponent, player)
+
+	player.p.weapon = weapon
+	player.p.mods = finalargs
 	
 	if(!GetCurrentPlaylistVarBool( "aimtrainer_enableSkins", false) && GameRules_GetGameMode() == "custom_aimtrainer") return true
 	
@@ -2992,9 +2995,6 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	// }
 	// printt("Skin codename: " + weaponent.GetSkinNameByIndex(weaponent.GetSkin()))
 
-	player.p.weapon = weapon
-	player.p.mods = finalargs
-	
 	return true
 }
 
