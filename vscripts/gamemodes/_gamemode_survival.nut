@@ -423,6 +423,9 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 void function EnemyDownedDialogue( entity attacker )
 {
+	if( !attacker.IsPlayer() )
+		return
+	
 	attacker.p.downedEnemy++
 
 	string dialogue = ""
