@@ -2213,11 +2213,17 @@ void function CryptoDrone_WeaponStatusCheck( entity player, var rui, int slot )
 	switch ( slot )
 	{
 		case OFFHAND_LEFT:
-			RuiSetBool( rui, "isVisible", false )
+			if (player.GetOffhandWeapon(OFFHAND_LEFT).GetWeaponClassName() == "mp_ability_crypto_drone")
+			{
+				if (file.cryptoAnimatedTacticalRui == null)
+					CreateCryptoAnimatedTacticalRui()
+				RuiSetBool( rui, "isVisible", false )
+			}
+			else DestroyCryptoAnimatedTacticalRui()
 			break
 
 		case OFFHAND_INVENTORY:
-			if ( StatusEffect_GetSeverity( player, eStatusEffect.crypto_has_camera ) == 0.0 )
+			if ( StatusEffect_GetSeverity( player, eStatusEffect.crypto_has_camera ) == 0.0 && player.GetOffhandWeapon(OFFHAND_INVENTORY).GetWeaponClassName() == "mp_ability_crypto_drone_emp")
 				RuiSetString( rui, "hintText", Localize( "#CRYPTO_DRONE_REQUIRED" ) )
 			break
 	}

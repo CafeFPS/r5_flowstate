@@ -87,6 +87,9 @@ void function Flowstate_CheckPlayerIsAFK(entity player)
 				wait 1
 			}
 		}
+
+		if (player.GetOrigin().z < 4000 && IsAlive( player ) && GetMapName() == "mp_rr_canyonlands_staging")
+			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 		wait 1
 	}	
 }

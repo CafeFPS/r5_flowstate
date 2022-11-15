@@ -260,6 +260,7 @@ void function OnPlayerRespawned(entity player)
 		GetSlotForWeapon(player, weapon) == WEAPON_INVENTORY_SLOT_PRIMARY_1)
 			return
 	}
+	player.SetOrigin( <-4096.63,-34560,4351.22> + <0,0,64> )
 
 	entity primary = player.GiveWeapon("mp_weapon_vinson", WEAPON_INVENTORY_SLOT_PRIMARY_0, ["highcal_mag_l3", "optic_cq_hcog_classic", "stock_tactical_l3"])
 	entity secondary = player.GiveWeapon("mp_weapon_semipistol", WEAPON_INVENTORY_SLOT_PRIMARY_1, ["bullets_mag_l3","optic_cq_threat"])
@@ -1053,6 +1054,20 @@ entity function CreateFRProp(asset a, vector pos, vector ang, bool mantle = fals
 	e.kv.fadedist = fade
 	if(mantle) e.AllowMantle()
 	return e
+}
+entity function CreateFRButton(vector pos, vector ang, string prompt)
+{
+	entity button = CreateEntity("prop_dynamic")
+	button.kv.solid = 6
+	button.SetValueForModelKey(FIRINGRANGE_BUTTON_ASSET)
+	button.SetOrigin(pos)
+	button.SetAngles(ang)
+	DispatchSpawn(button)
+
+	button.SetUsable()
+	button.SetUsableByGroup("pilot")
+	button.SetUsePrompts(prompt, prompt)
+	return button
 }
 
 void function SpawnDoors_Init()

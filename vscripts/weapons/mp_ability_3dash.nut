@@ -4,9 +4,17 @@ global function OnWeaponActivate_ability_3dash
 global function OnWeaponPrimaryAttack_ability_3dash
 global function OnWeaponChargeBegin_ability_3dash
 global function OnWeaponChargeEnd_ability_3dash
+#if SERVER
+global function CycleRealms
+#endif
 
 const float PHASE_WALK_PRE_TELL_TIME = 1.5
 const asset PHASE_WALK_APPEAR_PRE_FX = $"P_phase_dash_pre_end_mdl"
+const array<int> realmCycle = [0, 1]
+struct
+{
+	table<entity, int> playerRealmIndexes
+} file
 
 void function MpAbility3Dash_Init()
 {
@@ -38,13 +46,36 @@ bool function OnWeaponChargeBegin_ability_3dash( entity weapon )
 	float chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
 	#if SERVER
 		player.p.last3dashtime = Time()
-		thread DashPlayer(player, chargeTime)
+		if (weapon.HasMod("phase_travel"))
+			CycleRealms(player)
+		else thread DashPlayer(player, chargeTime)
 		PlayerUsedOffhand( player, weapon )
 	#endif
 	return true
 }
 
 #if SERVER
+
+void function CycleRealms(entity player)
+{
+	if (!(player in file.playerRealmIndexes)) {
+		player.RemoveFromAllRealms()
+		player.AddToRealm(realmCycle[0])
+		player.AddToRealm(realmCycle[0] + 2)
+		player.AddToRealm(31 + player.GetPlayerIndex())
+		file.playerRealmIndexes[player] <- 0
+	}
+	else
+	{
+		int nextRealmIndex = file.playerRealmIndexes[player] + 1
+		if (nextRealmIndex >= realmCycle.len()) nextRealmIndex = 0
+		player.RemoveFromAllRealms()
+		player.AddToRealm(realmCycle[nextRealmIndex])
+		player.AddToRealm(realmCycle[nextRealmIndex] + 2)
+		player.AddToRealm(31 + player.GetPlayerIndex())
+		file.playerRealmIndexes[player] = nextRealmIndex
+	}
+}
 
 void function DashPlayer(entity player, float chargeTime)
 {

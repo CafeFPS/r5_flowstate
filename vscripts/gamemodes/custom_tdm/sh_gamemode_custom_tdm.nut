@@ -61,6 +61,7 @@ void function Sh_CustomTDM_Init()
         )
         break
    case "mp_rr_canyonlands_staging":
+        #if CLIENT
         Shared_RegisterLocation(
             NewLocationSettings(
                "Deathbox by Ayezee",
@@ -86,6 +87,27 @@ void function Sh_CustomTDM_Init()
                 <0, 0, 3000>
             )
         )
+        #elseif SERVER
+        Shared_RegisterLocation(
+            NewLocationSettings(
+                "4D4Room",
+                [
+                    NewLocPair(<-5888.29,-35847.7,4351.1> + <0,0,64>, <0,180,0>),
+                    NewLocPair( <-6144.54,-36095.5,4351.3> + <0,0,64>, <0,-90,0>),
+                    NewLocPair( <-5888.27,-36095.6,4351.13> + <0,0,64>, <0,180,0>),
+                    NewLocPair( <-6144.07,-35839.2,4351.45> + <0,0,64>, <0,180,0>),
+                    NewLocPair( <-3712.55,-37888.1,4287.17> + <0,0,64>, <0,-90,0>),
+                    NewLocPair( <-4031.53,-35136.4,4351.2> + <0,0,64>, <0,90,0>),
+                    NewLocPair( <-4031.75,-33983.2,4351.41> + <0,0,64>, <0,180,0>),
+                    NewLocPair( <-5184.44,-33983.6,4351.22> + <0,0,64>, <0,-90,0>),
+                    NewLocPair( <-6655.8,-36608.6,4095.24> + <0,0,64>, <0,0,0>),
+                    
+                    NewLocPair(<-6655.99,-35583.1,4095.6>, <0,180,0>)
+                ],
+                <0, 0, 3000>
+            )
+        )
+        #endif
         break
     case "mp_rr_ashs_redemption":
         Shared_RegisterLocation(
@@ -1819,6 +1841,20 @@ bool function Equipment_GetRespawnKitEnabled()                       { return Ge
 
 StoredWeapon function Equipment_GetRespawnKit_PrimaryWeapon()
 {
+    int count = 1
+    for (count = 1; GetCurrentPlaylistVarString("respawn_kit_primary_weapon_" + (count + 1), "") != ""; count++)
+    {
+
+    }
+    int select = RandomInt(count)
+    if (select != 0)
+    {
+        return Equipment_GetRespawnKit_Weapon(
+            GetCurrentPlaylistVarString("respawn_kit_primary_weapon_" + (select + 1), "~~none~~"),
+            eStoredWeaponType.main,
+            WEAPON_INVENTORY_SLOT_PRIMARY_0
+        )
+    }
     return Equipment_GetRespawnKit_Weapon(
         GetCurrentPlaylistVarString("respawn_kit_primary_weapon", "~~none~~"),
         eStoredWeaponType.main,
@@ -1827,6 +1863,20 @@ StoredWeapon function Equipment_GetRespawnKit_PrimaryWeapon()
 }
 StoredWeapon function Equipment_GetRespawnKit_SecondaryWeapon()
 {
+    int count = 1
+    for (count = 1; GetCurrentPlaylistVarString("respawn_kit_secondary_weapon_" + (count + 1), "") != ""; count++)
+    {
+
+    }
+    int select = RandomInt(count)
+    if (select != 0)
+    {
+        return Equipment_GetRespawnKit_Weapon(
+            GetCurrentPlaylistVarString("respawn_kit_secondary_weapon_" + (select + 1), "~~none~~"),
+            eStoredWeaponType.main,
+            WEAPON_INVENTORY_SLOT_PRIMARY_1
+        )
+    }
     return Equipment_GetRespawnKit_Weapon(
         GetCurrentPlaylistVarString("respawn_kit_secondary_weapon", "~~none~~"),
         eStoredWeaponType.main,
@@ -1835,6 +1885,20 @@ StoredWeapon function Equipment_GetRespawnKit_SecondaryWeapon()
 }
 StoredWeapon function Equipment_GetRespawnKit_Tactical()
 {
+    int count = 1
+    for (count = 1; GetCurrentPlaylistVarString("respawn_kit_tactical_" + (count + 1), "") != ""; count++)
+    {
+
+    }
+    int select = RandomInt(count)
+    if (select != 0)
+    {
+        return Equipment_GetRespawnKit_Weapon(
+            GetCurrentPlaylistVarString("respawn_kit_tactical_" + (select + 1), "~~none~~"),
+            eStoredWeaponType.offhand,
+            OFFHAND_TACTICAL
+        )
+    }
     return Equipment_GetRespawnKit_Weapon(
         GetCurrentPlaylistVarString("respawn_kit_tactical", "~~none~~"),
         eStoredWeaponType.offhand,
@@ -1843,6 +1907,20 @@ StoredWeapon function Equipment_GetRespawnKit_Tactical()
 }
 StoredWeapon function Equipment_GetRespawnKit_Ultimate()
 {
+    int count = 1
+    for (count = 1; GetCurrentPlaylistVarString("respawn_kit_ultimate_" + (count + 1), "") != ""; count++)
+    {
+
+    }
+    int select = RandomInt(count)
+    if (select != 0)
+    {
+        return Equipment_GetRespawnKit_Weapon(
+            GetCurrentPlaylistVarString("respawn_kit_ultimate_" + (select + 1), "~~none~~"),
+            eStoredWeaponType.offhand,
+            OFFHAND_ULTIMATE
+        )
+    }
     return Equipment_GetRespawnKit_Weapon(
         GetCurrentPlaylistVarString("respawn_kit_ultimate", "~~none~~"),
         eStoredWeaponType.offhand,
@@ -1862,9 +1940,86 @@ StoredWeapon function Equipment_GetRespawnKit_Weapon(string input, int type, int
     weapon.name = args[0]
     weapon.weaponType = type
     weapon.inventoryIndex = index
-    weapon.mods = args.slice(1, args.len())
+
+    if (GetCurrentPlaylistVarBool( "respawn_kit_random_attachments", true ) && type == eStoredWeaponType.main)
+    {
+        array<string> umods = GetWeaponMods_Global( weapon.name )
+        table< string, array<string> > filteredMods = {}
+
+        foreach (string mod in umods)
+        {
+            if (mod == "")
+                continue
+            try
+            {
+                AttachmentData data = GetAttachmentData( mod )
+
+                if (data.attachPoint != "")
+                {
+                    if (data.attachPoint in filteredMods)
+                        filteredMods[data.attachPoint].append(mod)
+                    else
+                    {
+                        filteredMods[data.attachPoint] <- [""]
+                        filteredMods[data.attachPoint].append(mod)
+                    }
+                }
+            }
+            catch (ex) {}
+        }
+
+        foreach ( string key, array<string> mods in filteredMods )
+        {
+            float maxWeight = 0.0
+            foreach (string mod in mods)
+            {
+                maxWeight += GetModWeight(mod)
+            }
+
+            float result = RandomFloat(maxWeight)
+
+            foreach (string mod in mods)
+            {
+                if (GetModWeight(mod) >= result)
+                {
+                    if (mod != "")
+                        weapon.mods.append(mod)
+                    break
+                }
+                result -= GetModWeight(mod)
+            }
+        }
+    }
+    else weapon.mods = args.slice(1, args.len())
 
     return weapon
 }
 
+
+float function GetModWeight( string mod )
+{
+    /*if (mod.find("mag") != null)
+    {
+        if (EndsWith(mod, "1"))
+            return 0.25
+        if (EndsWith(mod, "2"))
+            return 0.5
+        if (EndsWith(mod, "3"))
+            return 1.0
+    }*/
+    switch (mod)
+    {
+    }
+    return 1.0
+}
+
+bool function StartsWith( string str, string s )
+{
+    return str.slice(0, s.len()) == s
+}
+
+bool function EndsWith( string str, string s )
+{
+    return str.slice(str.len() - s.len(), s.len()) == s
+}
 #endif

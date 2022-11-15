@@ -100,6 +100,10 @@ int function FireMastiff( WeaponPrimaryAttackParams attackParams, bool playerFir
 		}
 	}
 
+	#if SERVER
+	return weapon.GetAmmoPerShot()
+	#elseif CLIENT
 	return 1
+	#endif
 }
 

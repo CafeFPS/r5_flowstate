@@ -1038,6 +1038,9 @@ entity function FireBallisticRoundWithDrop( entity weapon, vector pos, vector di
 		#if SERVER
 			bolt.proj.ownerStringDebug = string( weapon.GetOwner() )
 			bolt.proj.ownerLocationDebug = weapon.GetOrigin()
+			bolt.RemoveFromAllRealms()
+			bolt.AddToRealm(2)
+			bolt.AddToRealm(3)
 		#endif
 	}
 
@@ -1092,6 +1095,7 @@ int function FireGenericBoltWithDrop( entity weapon, WeaponPrimaryAttackParams a
 	fireBoltParams.clientPredicted = isPlayerFired
 	fireBoltParams.additionalRandomSeed = 0
 	entity bolt = weapon.FireWeaponBoltAndReturnEntity( fireBoltParams )
+	print(bolt.GetNetworkedClassName())
 	if ( bolt != null )
 	{
 		bolt.kv.gravity = PROJ_GRAVITY

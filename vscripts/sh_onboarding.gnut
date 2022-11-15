@@ -448,6 +448,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 			if(IsValid(player.GetOffhandWeapon( OFFHAND_ULTIMATE )))
 				player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
 			
+			player.GiveOffhandWeapon( "mp_ability_phase_walk", OFFHAND_ULTIMATE, [ "phase_travel" ] )
 			wait 1
 			Message(player, "PROP DYNAMIC MAP EDITOR", "Made by Sal, Fireproof, Pebbers & JustANormalUser. Misc fixes by CaféFPS.", 8)
 		})()

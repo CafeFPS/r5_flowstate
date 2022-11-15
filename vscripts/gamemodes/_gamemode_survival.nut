@@ -428,7 +428,8 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
 		if (attacker.IsPlayer() && IsValid( attacker ))
         {
-            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+			print("Survival_OnPlayerDamaged")
+            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
         }
 		// Cancel the damage
 		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
@@ -831,7 +832,7 @@ void function OnClientConnected( entity player )
 			if ( !player.GetPlayerNetBool( "hasLockedInCharacter" ) )
 			{
 				array<ItemFlavor> characters = GetAllCharacters()
-				CharacterSelect_AssignCharacter( ToEHI( player ), characters.getrandom() )
+				CharacterSelect_AssignCharacter( ToEHI( player ), GetItemFlavorByHumanReadableRef( "character_wraith" ) )
 			}
 			
 			if ( IsFiringRangeGameMode() )

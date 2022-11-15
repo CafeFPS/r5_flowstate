@@ -12,6 +12,12 @@ const asset PHASE_WALK_APPEAR_PRE_FX = $"P_phase_dash_pre_end_mdl"
 void function MpAbilityPhaseWalk_Init()
 {
 	PrecacheParticleSystem( PHASE_WALK_APPEAR_PRE_FX )
+	#if SERVER
+	AddCallback_OnClientConnected( WaitForPlayerSpawn )
+	AddCallback_OnPlayerRespawned( void function( entity player )  : () { 
+		thread OnPlayerRespawned(player)
+	} )
+	#endif
 }
 
 
@@ -71,10 +77,17 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 	#if SERVER
 		LockWeaponsAndMelee( player )
 
-			weapon.w.statusEffects.append( StatusEffect_AddTimed( player, eStatusEffect.speed_boost, amount, chargeTime, chargeTime*easeOut ) )
+		weapon.w.statusEffects.append( StatusEffect_AddTimed( player, eStatusEffect.speed_boost, amount, chargeTime, chargeTime*easeOut ) )
+
+		if ( weapon.HasMod( "phase_travel" ) )
+		{
+			CycleRealms(player)
+			if ( player.GetActiveWeapon( eActiveInventorySlot.mainHand ) != player.GetOffhandWeapon( OFFHAND_INVENTORY ) )
+				PlayBattleChatterLineToSpeakerAndTeam( player, "bc_skydive" )
+		}
+		else PlayerUsedOffhand( player, weapon )
 
 		thread PhaseWalkUnphaseTell( player, chargeTime )
-		PlayerUsedOffhand( player, weapon )
 	StatsHook_Tactical_TimeSpentInPhase( player, chargeTime )
 	#endif
 	PhaseShift( player, 0, chargeTime, eShiftStyle.Balance )
@@ -82,6 +95,33 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 }
 
 #if SERVER
+
+void function WaitForPlayerSpawn( entity player )
+{
+	thread WaitForPlayerSpawn_Thread(player)
+}
+
+void function WaitForPlayerSpawn_Thread(entity player)
+{
+	while(IsValid(player) && !IsAlive(player))
+		wait 0.5
+
+	print("\n\n\n\n\nAPPPPPP")
+	CycleRealms(player)
+
+	OnPlayerRespawned(player)
+}
+
+void function OnPlayerRespawned( entity player )
+{
+	WaitFrame()
+	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
+	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
+
+	player.GiveOffhandWeapon( "mp_ability_phase_walk", OFFHAND_TACTICAL, [ "phase_travel" ] )
+	player.GiveOffhandWeapon( [ "mp_weapon_sniper", "mp_weapon_mastiff" ].getrandom(), OFFHAND_ULTIMATE )
+}
+
 void function PhaseWalkUnphaseTell( entity player, float chargeTime )
 {
 	player.EndSignal( "OnDeath" )

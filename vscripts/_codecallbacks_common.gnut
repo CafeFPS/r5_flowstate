@@ -282,6 +282,9 @@ void function CodeCallback_OnEntityKilled( entity ent, var damageInfo )
 	if ( !ent.IsNPC() && !ent.IsPlayer() )
 		HandleDeathPackage( ent, damageInfo )
 
+	ent.AddToRealm(3)
+	ent.AddToRealm(2)
+
 	string className = ent.GetClassName()
 	if ( className in shGlobal.deathCallbacks )
 	{

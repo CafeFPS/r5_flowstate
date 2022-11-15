@@ -1126,7 +1126,7 @@ void function DEV_SpawnDummyAtCrosshair()
 	int shieldskin = 1
 	
 	if(GetCurrentPlaylistVarBool( "dummies_have_random_shields", true ))
-		switch(RandomIntRangeInclusive(1,4)){
+		switch(RandomIntRangeInclusive(3,3)){
 			case 1:
 				randomShield = 50
 				shieldskin = 5
@@ -1160,6 +1160,10 @@ void function DEV_SpawnDummyAtCrosshair()
 	dummy.SetSkin(shieldskin)
 	dummy.DisableHibernation()
 	dummy.SetAngles(angles1)
+
+	dummy.RemoveFromAllRealms()
+	dummy.AddToRealm(0)
+	dummy.AddToRealm(2)
 	
 	if(!GetCurrentPlaylistVarBool( "dummies_agressivedummies", false ))
 		thread PlayAnimOnTrainingDummy(dummy)

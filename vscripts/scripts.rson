@@ -565,6 +565,7 @@ Scripts:
 	client/cl_codecallbacks.gnut
 	client/cl_codecallbacks_mp.gnut
 	client/rui/cl_hud.gnut
+	crosshair.nut
 	client/cl_obituary.gnut
 	client/cl_announcement.gnut
 	client/cl_gamestate.gnut
