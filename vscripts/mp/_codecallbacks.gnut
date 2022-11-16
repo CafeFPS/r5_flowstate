@@ -395,17 +395,17 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 
 				if( IsValid( attacker ) && IsValid( ent ) )
 				{
-					string sound3pvs1p = "humanshield_break_3p_vs_1p"
+					// string sound3pvs1p = "humanshield_break_3p_vs_1p"
 
 					if( attacker != ent && attacker.IsPlayer() )
 						EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
 
-					if( attacker != ent && attacker.IsPlayer() )
-						EmitSoundOnEntityExceptToPlayer( ent, attacker, sound3pvs1p )
-					else
-						EmitSoundOnEntityOnlyToPlayer( ent, ent, sound3pvs1p ) // If the player breaks the shield himself, only the broken sound is played
+					// if( attacker != ent && attacker.IsPlayer() )
+						// EmitSoundOnEntityExceptToPlayer( ent, attacker, sound3pvs1p )
+					// else
+						// EmitSoundOnEntityOnlyToPlayer( ent, ent, sound3pvs1p ) // If the player breaks the shield himself, only the broken sound is played
 
-					EmitSoundOnEntity( ent, "humanshield_break_3p_vs_3p" )
+					// EmitSoundOnEntity( ent, "humanshield_break_3p_vs_3p" )
 				}
 			}
 
