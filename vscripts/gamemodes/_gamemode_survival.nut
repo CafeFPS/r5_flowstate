@@ -651,7 +651,7 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 		{
 			wait GetDeathCamLength( victim )
 
-			SetRandomStagingPositionForPlayer( victim )
+			//SetRandomStagingPositionForPlayer( victim )
 			DecideRespawnPlayer( victim )
 		}()
 
