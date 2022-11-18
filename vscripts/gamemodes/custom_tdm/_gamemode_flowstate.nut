@@ -2810,7 +2810,10 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
         return false
 
 	if( Time() - player.p.lastTimeSpectateUsed < 3 )
+	{
+		Message( player, "An error has occured", "It is in cool down. Please try again later." )
 		return false
+	}
 	
     array<entity> enemiesArray = GetPlayerArray_Alive()
 	enemiesArray.fastremovebyvalue( player )
@@ -2821,6 +2824,7 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
         if( !IsValid(specTarget) )
         {
             printf("error: try again")
+			Message( player, "An error has occured", "You could not watch the player you were trying to watch. Please try again later." )
             return false
         }
 
@@ -2845,12 +2849,15 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 				player.StartObserverMode( OBS_MODE_IN_EYE )				
 				thread CheckForObservedTarget(player)
 				player.p.lastTimeSpectateUsed = Time()
-			} catch(e420){}
+			} catch(e420){
+				Message( player, "An error has occured", "Unknown error occurred. Please try again later." )
+			}
         }
     }
     else
     {
         printt("There is no one to spectate!")
+		Message( player, "An error has occured", "There are no players available to watch. Please try again later." )
     }
     return true
 }
