@@ -64,6 +64,8 @@ bool function OnWeaponChargeBegin_ability_3dash( entity weapon )
 
 void function CycleRealms(entity player, int index = -1)
 {
+	if (!IsValid(player)) // why do I need to do this idk
+		return
 	printl(player)
 	if (!(player in file.playerRealmIndexes))
 		file.playerRealmIndexes[player] <- file.playerRealmIndexes.len()
