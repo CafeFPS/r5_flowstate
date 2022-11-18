@@ -598,7 +598,9 @@ void function ServerPhaseShiftPlayerThread( entity ent, float warmupTime, float 
 		}
 		else
 		{
-			EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_START_SOUND_3P )
+			//EmitSoundOnEntityExceptToPlayer( ent, ent, SHIFTER_START_SOUND_3P )
+			foreach (entity p in GetPlayerArray())
+				EmitSoundAtPositionOnlyToPlayer( TEAM_ANY, ent.GetOrigin(), p, SHIFTER_START_SOUND_3P )
 			EmitSoundOnEntityExceptToPlayerNotPredicted( ent, ent, SHIFTER_LOOP_SOUND_3P )
 		}
 
@@ -759,21 +761,30 @@ entity function PlayPhaseShiftDisappearFX( entity ent, asset fxAsset = SHIFTER_D
 	{
 		dashFX = StartParticleEffectInWorld_ReturnEntity( fxid, ent.GetOrigin(), VectorToAngles( ent.GetVelocity() ) )
 		dashFX.SetOwner( ent )
-		dashFX.RemoveFromAllRealms()
-		dashFX.AddToOtherEntitysRealms( ent )
+		//dashFX.RemoveFromAllRealms()
+		//dashFX.AddToOtherEntitysRealms( ent )
+		dashFX.SetOrigin(ent.GetOrigin())
 		dashFX.kv.VisibilityFlags = (ENTITY_VISIBLE_TO_FRIENDLY | ENTITY_VISIBLE_TO_ENEMY) //owner cant see
 		entity mover = CreateScriptMover( ent.GetAttachmentOrigin( attachId ), VectorToAngles( ent.GetVelocity() ) )
-		mover.RemoveFromAllRealms()
-		mover.AddToOtherEntitysRealms( ent )
+		//mover.RemoveFromAllRealms()
+		//mover.AddToOtherEntitysRealms( ent )
 		mover.SetParent( ent )
-		dashFX.SetParent( mover )
+		//dashFX.SetParent( mover )
+		for (int i = 0; i < 32; i++)
+		{
+			mover.AddToRealm(i)
+		}
 		SetPhaseShiftMover( ent, mover )
 	}
 	else
 	{
 		dashFX = StartParticleEffectOnEntity_ReturnEntity( ent, fxid, FX_PATTACH_POINT_FOLLOW, attachId )
-		dashFX.RemoveFromAllRealms()
-		dashFX.AddToOtherEntitysRealms( ent )
+		//dashFX.RemoveFromAllRealms()
+		//dashFX.AddToOtherEntitysRealms( ent )
+		for (int i = 0; i < 32; i++)
+		{
+			dashFX.AddToRealm(i)
+		}
 	}
 	return dashFX
 }

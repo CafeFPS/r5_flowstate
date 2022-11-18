@@ -112,6 +112,7 @@ void function CodeCallback_OnClientConnectionCompleted( entity player )
 
 void function CodeCallback_OnPlayerRespawned( entity player )
 {
+	print("AMEN")
 	foreach( cb in svGlobal.onPlayerRespawnedCallbacks )
 		cb( player )
 }

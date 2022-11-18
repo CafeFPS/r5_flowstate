@@ -1028,9 +1028,8 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	if(FlowState_Gungame() && IsValid( player ))
 		GiveGungameWeapon(player)
 
-	
-
 	player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_2)
+	CycleRealms(player, 0)
 	thread Flowstate_GrantSpawnImmunity(player, 2.5)
 	thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
 	//maki script
@@ -2573,7 +2572,7 @@ void function PlayerRestoreHP(entity player, float health, float shields)
 	if(!IsAlive( player)) return
 
 	player.SetHealth( health )
-	Inventory_SetPlayerEquipment(player, "helmet_pickup_lv3", "helmet")
+	//Inventory_SetPlayerEquipment(player, "helmet_pickup_lv3", "helmet")
 	if(shields == 0) return
 	else if(shields <= 50)
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv1", "armor")

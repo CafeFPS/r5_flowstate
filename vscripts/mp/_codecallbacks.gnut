@@ -71,25 +71,29 @@ void function OnClientConnected( entity player )
 void function Flowstate_CheckPlayerIsAFK(entity player)
 {
 	int finishTime
-	while(IsValid(player) && !IsAdmin(player))
+
+	int afkTime = 0
+	int MAX_AFK_TIME = 18000	
+	while(IsValid(player))
 	{
-		if(player.GetVelocity().Length() == 0)
+		if(IsAlive(player))
 		{
-			finishTime = int(Time()) + 180
-			while(IsValid(player) && IsAlive(player) && !player.p.isSpectating && player.GetVelocity().Length() == 0 && Time() < finishTime && GetGameState() == eGameState.Playing)
+			if (player.GetVelocity().Length() == 0 && !player.p.isSpectating && 
+				GetGameState() == eGameState.Playing)
 			{
-				if(finishTime-int(Time()) == 10)
+				afkTime++
+				if(MAX_AFK_TIME - afkTime <= 10)
 					Message(player, "AFK ALERT", "You're afk, server will kick you if you don't move in the next 10 seconds.")
 				
-				if(finishTime-int(Time()) == 1)
-					ClientCommand( player, "disconnect" )
-			
-				wait 1
+				if(afkTime >= MAX_AFK_TIME)
+					ClientCommand( player, "disconnect AFK" )
 			}
+			else afkTime = 0
+
+			if (player.GetOrigin().z < 4000 && GetMapName() == "mp_rr_canyonlands_staging")
+				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 		}
 
-		if (player.GetOrigin().z < 4000 && IsAlive( player ) && GetMapName() == "mp_rr_canyonlands_staging")
-			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
 		wait 1
 	}	
 }

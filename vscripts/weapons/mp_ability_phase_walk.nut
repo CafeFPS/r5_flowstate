@@ -14,9 +14,7 @@ void function MpAbilityPhaseWalk_Init()
 	PrecacheParticleSystem( PHASE_WALK_APPEAR_PRE_FX )
 	#if SERVER
 	AddCallback_OnClientConnected( WaitForPlayerSpawn )
-	AddCallback_OnPlayerRespawned( void function( entity player )  : () { 
-		thread OnPlayerRespawned(player)
-	} )
+	AddCallback_OnPlayerRespawned( OnPlayerRespawned )
 	#endif
 }
 
@@ -73,7 +71,8 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 	float chargeTime = weapon.GetWeaponSettingFloat( eWeaponVar.charge_time )
 	float amount = GetCurrentPlaylistVarFloat( "wraith_phase_walk_speed_boost_amount", 0.3 )
 	float easeOut = GetCurrentPlaylistVarFloat( "wraith_phase_walk_speed_boost_easeOutFrac", 0.3 )
-			
+		
+	PhaseShift( player, 0, chargeTime, eShiftStyle.Balance )	
 	#if SERVER
 		LockWeaponsAndMelee( player )
 
@@ -90,7 +89,6 @@ bool function OnWeaponChargeBegin_ability_phase_walk( entity weapon )
 		thread PhaseWalkUnphaseTell( player, chargeTime )
 	StatsHook_Tactical_TimeSpentInPhase( player, chargeTime )
 	#endif
-	PhaseShift( player, 0, chargeTime, eShiftStyle.Balance )
 	return true
 }
 
@@ -106,20 +104,13 @@ void function WaitForPlayerSpawn_Thread(entity player)
 	while(IsValid(player) && !IsAlive(player))
 		wait 0.5
 
-	print("\n\n\n\n\nAPPPPPP")
-	CycleRealms(player)
-
 	OnPlayerRespawned(player)
 }
 
 void function OnPlayerRespawned( entity player )
 {
-	WaitFrame()
-	player.TakeOffhandWeapon( OFFHAND_ULTIMATE )
-	player.TakeOffhandWeapon( OFFHAND_TACTICAL )
-
-	player.GiveOffhandWeapon( "mp_ability_phase_walk", OFFHAND_TACTICAL, [ "phase_travel" ] )
-	player.GiveOffhandWeapon( [ "mp_weapon_sniper", "mp_weapon_mastiff" ].getrandom(), OFFHAND_ULTIMATE )
+	print("\n\n\nPALYER")
+	CycleRealms(player, 0)
 }
 
 void function PhaseWalkUnphaseTell( entity player, float chargeTime )

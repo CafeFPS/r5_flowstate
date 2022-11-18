@@ -47,7 +47,13 @@ bool function OnWeaponChargeBegin_ability_3dash( entity weapon )
 	#if SERVER
 		player.p.last3dashtime = Time()
 		if (weapon.HasMod("phase_travel"))
+		{
 			CycleRealms(player)
+			foreach (entity p in GetPlayerArray_Alive())
+			{
+				CycleRealms(p, file.playerRealmIndexes[player])
+			}
+		}
 		else thread DashPlayer(player, chargeTime)
 		PlayerUsedOffhand( player, weapon )
 	#endif
@@ -56,23 +62,28 @@ bool function OnWeaponChargeBegin_ability_3dash( entity weapon )
 
 #if SERVER
 
-void function CycleRealms(entity player)
+void function CycleRealms(entity player, int index = -1)
 {
-	if (!(player in file.playerRealmIndexes)) {
+	printl(player)
+	if (!(player in file.playerRealmIndexes))
+		file.playerRealmIndexes[player] <- file.playerRealmIndexes.len()
+	
+	if (index != -1)
+	{
 		player.RemoveFromAllRealms()
-		player.AddToRealm(realmCycle[0])
-		player.AddToRealm(realmCycle[0] + 2)
-		player.AddToRealm(31 + player.GetPlayerIndex())
-		file.playerRealmIndexes[player] <- 0
+		player.AddToRealm(realmCycle[index])
+		player.AddToRealm(realmCycle[index] + 2)
+		file.playerRealmIndexes[player] <- index
 	}
 	else
 	{
 		int nextRealmIndex = file.playerRealmIndexes[player] + 1
+		int curRealmIndex = file.playerRealmIndexes[player]
 		if (nextRealmIndex >= realmCycle.len()) nextRealmIndex = 0
+
 		player.RemoveFromAllRealms()
 		player.AddToRealm(realmCycle[nextRealmIndex])
 		player.AddToRealm(realmCycle[nextRealmIndex] + 2)
-		player.AddToRealm(31 + player.GetPlayerIndex())
 		file.playerRealmIndexes[player] = nextRealmIndex
 	}
 }

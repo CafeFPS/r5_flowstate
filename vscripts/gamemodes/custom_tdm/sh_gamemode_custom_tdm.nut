@@ -40,6 +40,9 @@ void function Sh_CustomTDM_Init()
 {
 
 
+    #if SERVER
+    MpAbilityPhaseWalk_Init()
+    #endif 
     // Map locations
 
     switch(GetMapName())
@@ -2009,6 +2012,8 @@ float function GetModWeight( string mod )
     }*/
     switch (mod)
     {
+        case "hopup_highcal_rounds":
+            return 0.0
     }
     return 1.0
 }

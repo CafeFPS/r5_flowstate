@@ -61,6 +61,8 @@ function SetServerVar( varName, value )
 	Assert( varName in _serverVars )
 	Assert( typeof value != "string" )
 	expect string( varName )
+	print(varName)
+	print(value)
 
 	if ( _serverVars[varName] == value )
 		return
