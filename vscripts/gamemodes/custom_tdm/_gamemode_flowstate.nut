@@ -2824,7 +2824,7 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
         if( !IsValid(specTarget) )
         {
             printf("error: try again")
-			Message( player, "An error has occured", "You could not watch the player you were trying to watch. Please try again later." )
+			Message( player, "An error has occured", "You could not specate the player you were trying to spectate. Please try again later." )
             return false
         }
 
@@ -2857,7 +2857,7 @@ bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
     else
     {
         printt("There is no one to spectate!")
-		Message( player, "An error has occured", "There are no players available to watch. Please try again later." )
+		Message( player, "An error has occured", "There are no players available to spectate. Please try again later." )
     }
     return true
 }
