@@ -32,6 +32,8 @@ struct
 	table<var, ButtonData > thirdPersonButtonData
 	table<var, ButtonData > ExitChallengeButtonData
 	table<var, ButtonData > endmatchButtonData
+	table<var, ButtonData > spectateButtonData
+	table<var, ButtonData > respawnButtonData
 	InputDef& qaFooter
 } file
 
@@ -116,6 +118,8 @@ void function InitSystemPanel( var panel )
 	file.thirdPersonButtonData[ panel ] <- clone data
 	file.endmatchButtonData[ panel ] <- clone data
 	file.ExitChallengeButtonData[ panel ] <- clone data
+	file.spectateButtonData[ panel ] <- clone data
+	file.respawnButtonData[ panel ] <- clone data
 	
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -149,6 +153,12 @@ void function InitSystemPanel( var panel )
 
 	file.endmatchButtonData[ panel ].label = "END GAME LOBBY"
 	file.endmatchButtonData[ panel ].activateFunc = HostEndMatch
+
+	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
+	file.spectateButtonData[ panel ].activateFunc = RunSpectateCommand
+
+	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
+	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
 
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
@@ -206,6 +216,11 @@ void function UpdateSystemPanel( var panel )
 
 			//if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 			//	SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
+		}
+		if( GetCurrentPlaylistName() == "custom_tdm" )
+		{
+			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
+			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
 		}
 	}
 	else
@@ -298,6 +313,16 @@ void function OpenSettingsMenu()
 void function HostEndMatch()
 {
 	LaunchR5RLobby()
+}
+
+void function RunSpectateCommand()
+{
+	ClientCommand( "spectate" )
+}
+
+void function RunKillSelf()
+{
+	ClientCommand( "kill_self" )
 }
 
 #if CONSOLE_PROG
