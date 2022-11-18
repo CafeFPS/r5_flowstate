@@ -2806,7 +2806,7 @@ bool function ClientCommand_ControllerSummary(entity player, array < string > ar
 
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 {
-    if ( GetGameState() == eGameState.MapVoting || GetGameState() == eGameState.WaitingForPlayers || file.tdmState == eTDMState.NEXT_ROUND_NOW || IsValid(player) && !IsAlive(player) )
+    if ( GetGameState() == eGameState.MapVoting || GetGameState() == eGameState.WaitingForPlayers || file.tdmState == eTDMState.NEXT_ROUND_NOW || !player.p.isSpectating && !IsAlive( player ) )
         return false
 
 	if( Time() - player.p.lastTimeSpectateUsed < 3 )
