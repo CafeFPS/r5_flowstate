@@ -48,19 +48,19 @@ bool function OnWeaponChargeBegin_ability_3dash( entity weapon )
 
 void function DashPlayer(entity player, float chargeTime)
 {
-	player.Zipline_Stop()
 	if ( GetMapName() == "mp_rr_ashs_redemption" ) return
+	player.Zipline_Stop()
 	vector yes
 	if(player.GetInputAxisForward() || player.GetInputAxisRight()) yes = Normalize(player.GetInputAxisForward() * player.GetViewForward() + player.GetInputAxisRight() * player.GetViewRight())
 	else yes = Normalize(player.GetVelocity())
 
-	TraceResults result = TraceLine(player.GetOrigin(), player.GetOrigin() + 360 * yes, [player], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_PLAYER)
+	TraceResults result = TraceLine(player.GetOrigin(), player.GetOrigin() + 320 * yes, [player], TRACE_MASK_SHOT, TRACE_COLLISION_GROUP_PLAYER)
 	vector originalPos = player.GetOrigin()
 
 	player.SetOrigin(result.endPos)
 	if(PutEntityInSafeSpot( player, null, null, player.GetOrigin(), player.GetOrigin() ))
 	{
-		player.SetVelocity(player.GetVelocity() + 500 * yes)
+		player.SetVelocity(player.GetVelocity() + 400 * yes)
 	}
 	else
 	{
