@@ -932,6 +932,7 @@ Scripts:
 [
 	//gamemodes
 	gamemodes/custom_tdm/_gamemode_flowstate.nut
+	gamemodes/custom_tdm/_gamemode_1v1.nut
 	gamemodes/custom_ctf/_gamemode_custom_ctf.nut
 	gamemodes/custom_prophunt/_gamemode_prophunt.nut
 	gamemodes/custom_surf/_gamemode_surf.nut

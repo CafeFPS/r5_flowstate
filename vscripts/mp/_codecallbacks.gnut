@@ -70,10 +70,8 @@ void function OnClientConnected( entity player )
 
 void function Flowstate_CheckPlayerIsAFK(entity player)
 {
-	if(IsAdmin(player)) return
-	
 	int finishTime
-	while(IsValid(player))
+	while(IsValid(player) && !IsAdmin(player))
 	{
 		if(player.GetVelocity().Length() == 0)
 		{

@@ -13,6 +13,7 @@ void function Base_Cmds_Init()
 
 bool function ClientCommand_KillSelf(entity player, array<string> args) 
 {
+	if( GetCurrentPlaylistVarBool("flowstate_1v1mode", false) ) return false
     if( !IsValid( player ) ) return false
     if( !IsAlive( player ) )  return false
     if( Time() - player.p.lastDeathTime < CMD_GetKillSelfCooldown() ) 
