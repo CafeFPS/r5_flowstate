@@ -567,18 +567,43 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 	string killer_name = killer.GetPlayerName()
 	string victim_name = victim.GetPlayerName()
 	
-	string weapon_name = ""
-	if(IsValid(killer.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand )))
-		weapon_name = killer.GetLatestPrimaryWeapon( eActiveInventorySlot.mainHand ).GetWeaponClassName()
+	string attackerweapon1 = "null"
+	string attackerweapon2 = "null"
+	string victimweapon1 = "null"
+	string victimweapon2 = "null"
+	
+	float aim_assist_value = GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0.0)
+	
+	string flowstate_gamemode = "fs_dm"
+	if( is1v1EnabledAndAllowed() )
+		flowstate_gamemode = "fs_1v1"
+	
+	if(IsValid(killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+		attackerweapon1 = killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponClassName()
+
+	if(IsValid(killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+		attackerweapon2 = killer.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponClassName()
+	
+	if(IsValid(victim.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )))
+		victimweapon1 = victim.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ).GetWeaponClassName()
+	
+	if(IsValid(victim.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )))
+		victimweapon2 = victim.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ).GetWeaponClassName()
+		
 	
 	string is_controller_dog = killer.p.AmIController.tostring()
 	if (!(killer_name.len()>0) || !(victim_name.len()>0) || !(weapon_name.len()>0) || !(is_controller_dog.len()>0)) return
 
 	string log = killer_name +"&&"+
 	victim_name+"&&"+
-	weapon_name+"&&"+
+	attackerweapon1+"&&"+
 	GetUnixTimestamp().tostring()+"&&"+
-	is_controller_dog
+	is_controller_dog+"&&"+
+	aim_assist_value+"&&"+
+	flowstate_gamemode+"&&"+
+	attackerweapon2+"&&"+
+	victimweapon1+"&&"+
+	victimweapon2+"&&"+
 
 	file.battlelog.append(log)
 }
