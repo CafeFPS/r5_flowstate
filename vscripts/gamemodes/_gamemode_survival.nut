@@ -386,6 +386,9 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	
 	vector damagePosition = DamageInfo_GetDamagePosition( damageInfo )
 	int damageType = DamageInfo_GetCustomDamageType( damageInfo )
+	entity weapon = DamageInfo_GetWeapon( damageInfo )
+
+	TakingFireDialogue( attacker, victim, weapon )
 
 	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) )
 	{	
@@ -409,7 +412,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		// Notify the player of the damage (even though it's *technically* canceled and we're hijacking the damage in order to not make an alive 100hp player instantly dead with a well placed kraber shot)
 		if (attacker.IsPlayer() && IsValid( attacker ))
         {
-            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), DamageInfo_GetWeapon( damageInfo ), DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
+            attacker.NotifyDidDamage( victim, DamageInfo_GetHitBox( damageInfo ), damagePosition, damageType, damage, DamageInfo_GetDamageFlags( damageInfo ), DamageInfo_GetHitGroup( damageInfo ), weapon, DamageInfo_GetDistFromAttackOrigin( damageInfo ) )
         }
 		// Cancel the damage
 		// Setting damage to 0 cancels all knockback, setting it to 1 doesn't
@@ -449,6 +452,48 @@ void function EnemyDownedDialogue( entity attacker )
 		attacker.p.downedEnemy = 0
 		attacker.p.lastDownedEnemyTime = Time()
 	}
+}
+
+void function TakingFireDialogue( entity attacker, entity victim, entity weapon )
+{
+	if( !attacker.IsPlayer() || !victim.IsPlayer() || attacker == victim )
+		return
+
+	float returnTime = 30
+	float invalidTime = -9999
+	int attackerTeam = attacker.GetTeam()
+
+	if( victim.p.attackedTeam.len() < attackerTeam )
+		victim.p.attackedTeam.resize( attackerTeam + 1, invalidTime )
+
+	bool inTime = false
+	if( Time() - victim.p.attackedTeam[ attackerTeam ] < returnTime )
+		inTime = true
+
+	victim.p.attackedTeam[ attackerTeam ] = Time()
+
+	if( Distance( attacker.GetOrigin(), victim.GetOrigin() ) >= 2000 )
+		PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_damageEnemy" )
+	else if( !inTime )
+		PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_engagingEnemy" )
+
+	if( inTime )
+		return
+
+	int attackerTotalTeam = 0
+	foreach( time in victim.p.attackedTeam )
+		if( Time() - time > returnTime )
+			time = invalidTime
+		else
+			attackerTotalTeam++
+	
+	if( attackerTotalTeam > 1 )
+		PlayBattleChatterLineToSpeakerAndTeam( victim, "bc_anotherSquadAttackingUs" )
+	else
+		if( weapon == null )
+			PlayBattleChatterLineToSpeakerAndTeam( victim, "bc_takingDamage" )
+		else
+			PlayBattleChatterLineToSpeakerAndTeam( victim, "bc_takingFire" )
 }
 
 void function HandleDeathRecapData(entity victim, var damageInfo)

@@ -670,7 +670,9 @@ global struct ServerPlayerStruct
 	float playerDamageDealt
 	int respawnsGiven
 	int revivesGiven
-		
+
+	array<float> attackedTeam
+	
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
 	// Amount of player downed enemy at one time
