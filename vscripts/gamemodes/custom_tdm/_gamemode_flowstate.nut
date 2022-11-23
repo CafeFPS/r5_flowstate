@@ -592,7 +592,7 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 		
 	
 	string is_controller_dog = killer.p.AmIController.tostring()
-	if (!(killer_name.len()>0) || !(victim_name.len()>0) || !(weapon_name.len()>0) || !(is_controller_dog.len()>0)) return
+	if (!(killer_name.len()>0) || !(victim_name.len()>0) || !(is_controller_dog.len()>0)) return
 
 	string log = killer_name +"&&"+
 	victim_name+"&&"+
@@ -603,7 +603,7 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 	flowstate_gamemode+"&&"+
 	attackerweapon2+"&&"+
 	victimweapon1+"&&"+
-	victimweapon2+"&&"+
+	victimweapon2
 
 	file.battlelog.append(log)
 }
