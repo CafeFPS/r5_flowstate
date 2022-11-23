@@ -33,6 +33,7 @@ global function GetWhiteListedAbilities
 global function GiveRandomPrimaryWeaponMetagame
 global function GiveRandomSecondaryWeaponMetagame
 global function LoadCustomWeapon
+global function getkd
 
 global function	ClientCommand_RebalanceTeams
 global function	ClientCommand_FlowstateKick
@@ -191,6 +192,7 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("controllersummary", ClientCommand_ControllerSummary)
 	
 	if( is1v1EnabledAndAllowed() )
+		AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest)
 		_soloModeInit(GetMapName())
 		
 	for(int i = 0; GetCurrentPlaylistVarString("blacklisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
@@ -503,7 +505,25 @@ void function _OnPlayerConnected(entity player)
 	
 	if( is1v1EnabledAndAllowed() )
 	{
-		addPlayerToSoloMode(player)
+		void functionref() soloModefixDelayStart1 = void function() : (player) {
+			Message(player,"Flowstate 1V1", "Made by makimakima#5561, v1.1")
+			HolsterAndDisableWeapons(player)
+			wait 9
+			EnableOffhandWeapons( player )
+			DeployAndEnableWeapons(player)
+			soloModePlayerToWaitingList(player)
+
+			try
+			{
+				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+			}
+			catch (error)
+			{
+				
+			}
+		}	
+
+		thread soloModefixDelayStart1()
 	}
 }
 
@@ -607,28 +627,27 @@ void function _OnPlayerDied(entity victim, entity attacker, var damageInfo)
 	
 	if( is1v1EnabledAndAllowed() )
 	{
-		if(isPlayerInSoloMode(victim))
-		{
-			// _HandleRespawn( victim )
-			soloGroupStruct group = returnSoloGroupOfPlayer(victim) 
-			//也许这个group为空?
-			if(!group.IsKeep)
-				group.IsFinished =true //tell solo thread this round is finish
-			ClearInvincible(victim)
-			int invscore = victim.GetPlayerGameStat( PGS_DEATHS )
-			invscore++
-			victim.SetPlayerGameStat( PGS_DEATHS, invscore)
-
-			int invscore2 = victim.GetPlayerNetInt( "assists" )
-			invscore2++
-			victim.SetPlayerNetInt( "assists", invscore2 )
-			return
-		}//all respawn
-
+		//maki script 
+		//solo mode		
 		if(isPlayerInWatingList(victim))
-		{
-			return
-		}//player who is wating for his opponent
+			return//player who is wating for his opponent
+
+		if(IsValid(attacker) && IsValid(victim))
+			victim.p.lastKiller = attacker
+		soloGroupStruct group = returnSoloGroupOfPlayer(victim) 
+		
+		if(!group.IsKeep)
+			group.IsFinished = true //tell solo thread this round has finished
+		ClearInvincible(victim)
+		int invscore = victim.GetPlayerGameStat( PGS_DEATHS )
+		invscore++
+		victim.SetPlayerGameStat( PGS_DEATHS, invscore)
+
+		int invscore2 = victim.GetPlayerNetInt( "assists" )
+		invscore2++
+		victim.SetPlayerNetInt( "assists", invscore2 )
+		return
+
 	}
 
 	switch(GetGameState())
@@ -955,8 +974,6 @@ void function _HandleRespawn(entity player, bool isDroppodSpawn = false)
 	thread LoadCustomWeapon(player)		///TDM Auto-Reloaded Saved Weapons at Respawn
 	//maki script
 	thread LoadCustomSkill(player)	
-	
-	
 	//maki script
 }
 
@@ -2093,6 +2110,14 @@ void function SimpleChampionUI()
 			// AddSurvivalCommentaryEvent( eSurvivalEventType.ROUND_TIMER_STARTED )
 		// else
 			PlayAnnounce( "diag_ap_aiNotify_circleTimerStartNext_02" )
+		
+		if(file.currentRound>1 && is1v1EnabledAndAllowed() )//only work after round 1 and 1v1 gamemode
+		{
+			foreach (eachPlayer in GetPlayerArray() )
+			{
+				thread soloModefixDelayStart(eachPlayer)
+			}
+		}
 		
 		while( Time() <= endTime )
 		{
@@ -3356,10 +3381,37 @@ void function LoadCustomWeapon(entity player)
 	if(!IsValid(player)) return
 	if (player.GetPlayerName() in weaponlist)
 	{	
-		ClientCommand( player, weaponlist[player.GetPlayerName()] )
+		// print(weaponlist[player.GetPlayerName()])
+		//maki script
+		TakeAllWeapons(player)
+		
+
+		// ClientCommand( player, weaponlist[player.GetPlayerName()] )
+		// GiveRandomPrimaryWeaponMetagame(player)
+		// GiveRandomSecondaryWeaponMetagame(player)
+		array<string> weapons =  split(weaponlist[player.GetPlayerName()] , ";")
+		foreach (index,eachWeapon in weapons)
+		{
+			int slot 
+			if(index == 0)
+			{
+				slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
+			}
+			else
+			{
+				slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
+			}
+			__GiveWeapon( player, weapons, slot, index )
+		}
+		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		
+		//maki script
 		wait 0.3
 		
 		if(!IsValid(player)) return
+		
 		WpnAutoReload(player)
 		WpnPulloutOnRespawn(player, 0)
 	}
