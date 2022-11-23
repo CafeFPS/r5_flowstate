@@ -672,6 +672,9 @@ global struct ServerPlayerStruct
 	int revivesGiven
 
 	array<float> attackedTeam
+
+	float lastKilledEnemyTime = -9999
+	int killedEnemy = 0
 	
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false

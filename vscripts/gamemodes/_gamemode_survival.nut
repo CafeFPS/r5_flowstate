@@ -730,6 +730,46 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 
 	if ( canPlayerBeRespawned || droppableItems > 0 )
 		CreateSurvivalDeathBoxForPlayer( victim, attacker, damageInfo )
+
+	thread EnemyKilledDialogue( attacker, victim.GetTeam(), victim )
+}
+
+void function EnemyKilledDialogue( entity attacker, int victimTeam, entity victim )
+{
+	if( !attacker.IsPlayer() || attacker == victim )
+		return
+	
+	attacker.p.killedEnemy++
+
+	string dialogue = ""
+	string responseName = ""
+	entity responsePlayer = null
+	float delay = 1.5
+	float time = Time() - attacker.p.lastKilledEnemyTime
+	int currentKilledEnemy = attacker.p.killedEnemy
+
+	if( GetPlayerArrayOfTeam_Alive( victimTeam ).len() == 0 )
+	{
+		dialogue = "bc_squadTeamWipe"
+		responseName = "bc_congratsKill"
+		responsePlayer = TryFindSpeakingPlayerOnTeamDisallowSelf( attacker.GetTeam(), attacker )
+	}
+	else if( attacker.p.killedEnemy > 1 )
+		dialogue = "bc_megaKill"
+	else
+		dialogue = "bc_iKilledAnEnemy"
+
+	wait delay
+
+	if( attacker.p.killedEnemy == currentKilledEnemy )
+	{
+		PlayBattleChatterLineToSpeakerAndTeam( attacker, dialogue )
+		if( responsePlayer != null )
+			PlayBattleChatterLineToSpeakerAndTeam( responsePlayer, responseName )
+		
+		attacker.p.killedEnemy = 0
+		attacker.p.lastKilledEnemyTime = Time()
+	}
 }
 
 void function OnClientConnected( entity player )
