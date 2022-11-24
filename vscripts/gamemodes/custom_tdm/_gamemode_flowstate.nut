@@ -574,6 +574,8 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 	
 	float aim_assist_value = GetCurrentPlaylistVarFloat("aimassist_magnet_pc", 0.0)
 	
+	//string attacker_origin_id = killer.GetPlatformUID()
+	
 	string flowstate_gamemode = "fs_dm"
 	if( is1v1EnabledAndAllowed() )
 		flowstate_gamemode = "fs_1v1"
@@ -597,13 +599,15 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 	string log = killer_name +"&&"+
 	victim_name+"&&"+
 	attackerweapon1+"&&"+
+	attackerweapon2+"&&"+
+	victimweapon1+"&&"+
+	victimweapon2+"&&"+
 	GetUnixTimestamp().tostring()+"&&"+
 	is_controller_dog+"&&"+
 	aim_assist_value.tostring()+"&&"+
-	flowstate_gamemode+"&&"+
-	attackerweapon2+"&&"+
-	victimweapon1+"&&"+
-	victimweapon2
+	flowstate_gamemode
+	//+"&&"+
+	//attacker_origin_id
 
 	file.battlelog.append(log)
 }
