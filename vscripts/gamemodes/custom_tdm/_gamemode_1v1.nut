@@ -890,7 +890,7 @@ void function soloModefixDelayStart(entity player)
 	HolsterAndDisableWeapons(player)
 
 	wait 8
-	if(!IsValid(player) return
+	if(!IsValid(player)) return
 	
 	if(!soloPlayersResting.contains(player))
 	{
