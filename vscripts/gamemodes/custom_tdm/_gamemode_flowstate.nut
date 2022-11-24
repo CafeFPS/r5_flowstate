@@ -599,7 +599,7 @@ void function Flowstate_AppendBattleLogEvent(entity killer, entity victim)
 	attackerweapon1+"&&"+
 	GetUnixTimestamp().tostring()+"&&"+
 	is_controller_dog+"&&"+
-	aim_assist_value+"&&"+
+	aim_assist_value.tostring()+"&&"+
 	flowstate_gamemode+"&&"+
 	attackerweapon2+"&&"+
 	victimweapon1+"&&"+
