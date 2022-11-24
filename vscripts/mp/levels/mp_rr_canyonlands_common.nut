@@ -1097,6 +1097,7 @@ void function NessyDamageCallback( entity ent, var damageInfo )
 	{
 		Signal( ent, "NessyDamaged" )
 		PlayerDamageFeedback( ent, damageInfo, 0 )
+		EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "flesh_bulletimpact_killshot_1p_vs_3p" )
 	}
 }
 #endif
