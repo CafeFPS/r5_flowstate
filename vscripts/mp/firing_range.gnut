@@ -188,7 +188,7 @@ bool function ClientCommand_ToggleFriendlyFire( entity player, array<string> arg
 	toggledFriendlyFire = !toggledFriendlyFire
 	SetTeamIsRabid( player.GetTeam(), toggledFriendlyFire )
 	foreach( targetPlayer in GetPlayerArray() )
-		Remote_CallFunction_NonReplay( targetPlayer, "SCB_BroadcastFriendlyFireChange", targetPlayer )
+		Remote_CallFunction_NonReplay( targetPlayer, "SCB_BroadcastFriendlyFireChange", player )
 
 	return true
 }
