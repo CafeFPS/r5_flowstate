@@ -673,14 +673,12 @@ global struct ServerPlayerStruct
 
 	array<float> attackedTeam
 
-	float lastKilledEnemyTime = -9999
-	int killedEnemy = 0
+	int killedEnemy
+	float lastDownedEnemyTime
+	int downedEnemy
 	
 	//Flowstate 3.0
 	bool isPlayerSpawningInDroppod = false
-	// Amount of player downed enemy at one time
-	float lastDownedEnemyTime = -9999
-	int downedEnemy = 0
 	float last3dashtime = 0
 	entity lastFrameObservedTarget
 	bool AmIController = false

@@ -432,14 +432,14 @@ void function EnemyDownedDialogue( entity attacker )
 	attacker.p.downedEnemy++
 
 	string dialogue = ""
-	float delay = 1.5
-	float anotherDelay = 10
+	float delay = 2
+	float anotherDelay = 10 + delay
 	float time = Time() - attacker.p.lastDownedEnemyTime
 	int currentDownedEnemy = attacker.p.downedEnemy
 
 	if( attacker.p.downedEnemy > 1 )
 		dialogue = "bc_iDownedMultiple"
-	else if( time > delay && time < anotherDelay )
+	else if( time < anotherDelay )
 		dialogue = "bc_iDownedAnotherEnemy"
 	else
 		dialogue = "bc_iDownedAnEnemy"
@@ -460,19 +460,22 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 		return
 
 	float returnTime = 30
-	float invalidTime = -9999
+	float farTime = 5
 	int attackerTeam = attacker.GetTeam()
 
-	if( victim.p.attackedTeam.len() < attackerTeam )
-		victim.p.attackedTeam.resize( attackerTeam + 1, invalidTime )
+	bool inTime
+	foreach( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
+	{
+		if( player.p.attackedTeam.len() < attackerTeam )
+			player.p.attackedTeam.resize( attackerTeam + 1, -returnTime )
 
-	bool inTime = false
-	if( Time() - victim.p.attackedTeam[ attackerTeam ] < returnTime )
-		inTime = true
+		if( Time() - player.p.attackedTeam[ attackerTeam ] < returnTime )
+			inTime = true
+		
+		player.p.attackedTeam[ attackerTeam ] = Time()
+	}
 
-	victim.p.attackedTeam[ attackerTeam ] = Time()
-
-	if( Distance( attacker.GetOrigin(), victim.GetOrigin() ) >= 2000 )
+	if( Distance( attacker.GetOrigin(), victim.GetOrigin() ) >= 2000 && Time() - victim.p.attackedTeam[ attackerTeam ] > farTime )
 		PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_damageEnemy" )
 	else if( !inTime )
 		PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_engagingEnemy" )
@@ -482,9 +485,7 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 
 	int attackerTotalTeam = 0
 	foreach( time in victim.p.attackedTeam )
-		if( Time() - time > returnTime )
-			time = invalidTime
-		else
+		if( Time() - time < returnTime )
 			attackerTotalTeam++
 	
 	if( attackerTotalTeam > 1 )
@@ -744,8 +745,7 @@ void function EnemyKilledDialogue( entity attacker, int victimTeam, entity victi
 	string dialogue = ""
 	string responseName = ""
 	entity responsePlayer = null
-	float delay = 1.5
-	float time = Time() - attacker.p.lastKilledEnemyTime
+	float delay = 2
 	int currentKilledEnemy = attacker.p.killedEnemy
 
 	if( GetPlayerArrayOfTeam_Alive( victimTeam ).len() == 0 )
@@ -768,7 +768,6 @@ void function EnemyKilledDialogue( entity attacker, int victimTeam, entity victi
 			PlayBattleChatterLineToSpeakerAndTeam( responsePlayer, responseName )
 		
 		attacker.p.killedEnemy = 0
-		attacker.p.lastKilledEnemyTime = Time()
 	}
 }
 
