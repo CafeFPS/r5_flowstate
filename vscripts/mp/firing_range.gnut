@@ -69,6 +69,8 @@ struct {
 	vector doorSingle_ang = <0,90,0>
 	vector doorDouble_pos = <30550,-10025,-25972>
 	vector doorDouble_ang = <0,90,0>
+
+	bool toggledFriendlyFire = false
 } file
 
 void function FiringRangeGameMode_Init()
@@ -90,6 +92,7 @@ void function FiringRangeGameMode_Init()
 		AddCallback_OnWeaponAttack( OnWeaponAttack )
 		AddSpawnCallback( "prop_survival", OnPropSurvivalSpawned )
 		AddCallback_ItemFlavorLoadoutSlotDidChange_AnyPlayer( Loadout_CharacterClass(), OnTeammateLoadoutSelectionChanged, false )
+		AddClientCommandCallback( "firingrange_toggle_friendlyfire", ClientCommand_ToggleFriendlyFire )
 
 		firingrange_infinite_ammo = GetCurrentPlaylistVarBool( "survival_infinite_ammo", false ) ? 1 : 2
 	#endif
@@ -179,10 +182,20 @@ void function OnEntitiesDidLoad()
 	#endif
 }
 
-
-
-
 #if SERVER
+bool function ClientCommand_ToggleFriendlyFire( entity player, array<string> args )
+{
+	file.toggledFriendlyFire = !file.toggledFriendlyFire
+	SetTeamIsRabid( player.GetTeam(), file.toggledFriendlyFire )
+	foreach( targetPlayer in GetPlayerArray() )
+	{
+		targetPlayer.SetTakeDamageType( DAMAGE_YES )
+		Remote_CallFunction_NonReplay( targetPlayer, "SCB_BroadcastFriendlyFireChange", targetPlayer )
+	}
+
+	return true
+}
+
 void function SpawnDummy(vector origin, vector angles)
 
 {

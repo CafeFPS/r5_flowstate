@@ -214,8 +214,8 @@ void function UpdateSystemPanel( var panel )
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] ) // !FIXME
 			//SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
 
-			//if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
-			//	SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
+			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
+				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
 		}
 		if( GetCurrentPlaylistName() == "custom_tdm" && IsConnected() && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
 		{

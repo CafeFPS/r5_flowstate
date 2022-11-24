@@ -213,7 +213,7 @@ bool function IsProtectedFromFriendlyFire_MP( entity attacker, entity ent, var d
 	if ( DamageIgnoresFriendlyFire( damageInfo ) )
 		return false
 
-	if ( attacker.GetTeam() == ent.GetTeam() )
+	if ( attacker.GetTeam() == ent.GetTeam() && !IsTeamRabid( attacker.GetTeam() ) )
 		return true
 
 	//if ( ent.GetOwner() != attacker && ent.GetBossPlayer() != attacker )
