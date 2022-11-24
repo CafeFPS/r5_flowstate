@@ -509,6 +509,8 @@ void function _OnPlayerConnected(entity player)
 			Message(player,"Flowstate 1V1", "Made by makimakima#5561, v1.1")
 			HolsterAndDisableWeapons(player)
 			wait 9
+			if(!IsValid(player) return
+			
 			EnableOffhandWeapons( player )
 			DeployAndEnableWeapons(player)
 			soloModePlayerToWaitingList(player)
