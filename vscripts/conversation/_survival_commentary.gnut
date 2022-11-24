@@ -289,7 +289,7 @@ void function SurvivalCommentary_CircleStartAnnounce( int round, float delay )
 			responseName = "bc_newCircle_wholeSquadNotInCircle"
 		else if ( SURVIVAL_IsFinalDeathFieldStage() )
 			responseName = "bc_circleTimerStartFinal"
-		else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 17500 )
+		else if( Distance( SURVIVAL_GetSafeZoneCenter(), player.GetOrigin() ) >= FAR_FROM_CIRCLE_DISTANCE * 30000 )
 			responseName = "bc_nextCircleFar"
 		else if( insideNextCircleMates == GetPlayerArrayOfTeam_Alive( player.GetTeam() ).len() )
 			responseName = "bc_insideNextCircle"
