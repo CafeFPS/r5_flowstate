@@ -395,7 +395,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 		if( !IsValid(attacker) || !IsValid(victim) )
 			return
 
-		thread EnemyDownedDialogue( attacker )
+		thread EnemyDownedDialogue( attacker, victim )
 		
 		if( GetGameState() >= eGameState.Playing && attacker.IsPlayer() && attacker != victim )
 			AddPlayerScore( attacker, "Sur_DownedPilot", victim )
@@ -424,9 +424,9 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 	}
 }
 
-void function EnemyDownedDialogue( entity attacker )
+void function EnemyDownedDialogue( entity attacker, entity victim )
 {
-	if( !attacker.IsPlayer() )
+	if( !attacker.IsPlayer() || attacker == victim )
 		return
 	
 	attacker.p.downedEnemy++
