@@ -435,7 +435,7 @@ void function EnemyDownedDialogue( entity attacker )
 	float delay = 2
 	float anotherDelay = 10
 	if( Time() <= anotherDelay )
-		attacker.p.lastDownedEnemyTime =- anotherDelay // rare
+		attacker.p.lastDownedEnemyTime -= anotherDelay // rare
 	
 	float time = Time() - attacker.p.lastDownedEnemyTime
 	int currentDownedEnemy = attacker.p.downedEnemy
