@@ -433,13 +433,16 @@ void function EnemyDownedDialogue( entity attacker )
 
 	string dialogue = ""
 	float delay = 2
-	float anotherDelay = 10 + delay
+	float anotherDelay = 10
+	if( Time() <= anotherDelay )
+		attacker.p.lastDownedEnemyTime =- anotherDelay // rare
+	
 	float time = Time() - attacker.p.lastDownedEnemyTime
 	int currentDownedEnemy = attacker.p.downedEnemy
 
 	if( attacker.p.downedEnemy > 1 )
 		dialogue = "bc_iDownedMultiple"
-	else if( time < anotherDelay )
+	else if( time <= anotherDelay )
 		dialogue = "bc_iDownedAnotherEnemy"
 	else
 		dialogue = "bc_iDownedAnEnemy"
@@ -469,11 +472,11 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 		if( player.p.attackedTeam.len() < attackerTeam )
 			player.p.attackedTeam.resize( attackerTeam + 1, -returnTime )
 
-		if( Time() - player.p.attackedTeam[ attackerTeam ] < returnTime )
+		if( Time() - player.p.attackedTeam[ attackerTeam ] <= returnTime )
 			inTime = true
 	}
 
-	if( Distance( attacker.GetOrigin(), victim.GetOrigin() ) >= 4000 && Time() - victim.p.attackedTeam[ attackerTeam ] > farTime )
+	if( Distance( attacker.GetOrigin(), victim.GetOrigin() ) >= 4000 && Time() - victim.p.attackedTeam[ attackerTeam ] >= farTime )
 		PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_damageEnemy" )
 	else if( !inTime )
 		PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_engagingEnemy" )
