@@ -566,10 +566,11 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings.menu
 			ConVar "hud_setting_accessibleChat"				
 			list
 			{
-				"Slow"      0
-				"Normal"      1
-				"Fast"  2
-				"Demon"      3		
+				"Static"	0
+				"Slow"      1
+				"Normal"    2
+				"Fast"  	3
+				"Demon"     4		
 			}
 
 			pin_to_sibling          SpeedTargetsText

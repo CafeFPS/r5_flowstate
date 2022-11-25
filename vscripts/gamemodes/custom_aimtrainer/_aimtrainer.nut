@@ -47,8 +47,8 @@ table<int, int> ChallengesBestScores
 
 void function _ChallengesByColombia_Init()
 {
-	//Increase client command limit to 30
-	SetConVarInt("sv_quota_stringCmdsPerSecond", 30)
+	//Increase client command limit to 60
+	SetConVarInt("sv_quota_stringCmdsPerSecond", 60)
 	
 	//Todo: create only one cc for this
 	//first challenges select menu column
@@ -273,6 +273,11 @@ void function StrafeMovement(entity ai, entity player)
 	while(IsValid(ai))
 	{
 		ai.SetAngles(VectorToAngles( player.GetOrigin() - ai.GetOrigin()))
+		if(AimTrainer_STRAFING_SPEED == 0)
+		{
+			WaitFrame()
+			continue
+		}
 			
 		int random = RandomIntRangeInclusive(1,10)
 		if (random == 9 || random == 10){
@@ -389,6 +394,11 @@ void function TargetSwitcthingWatcher(entity ai, entity player)
 	while(IsValid(ai))
     {
 		ai.SetAngles(VectorToAngles( player.GetOrigin() - ai.GetOrigin()))
+		if(AimTrainer_STRAFING_SPEED == 0)
+		{
+			WaitFrame()
+			continue
+		}
 		
         int random = RandomIntRangeInclusive(1,6)
         if(random == 1 || random == 2 || random == 3){
@@ -2047,7 +2057,7 @@ void function DummyRunningTargetsMovement(entity ai, entity player)
 			ChallengesEntities.dummies.removebyvalue(ai)
 		}
 	)
-
+	
 	ai.Anim_ScriptedPlayActivityByName( "ACT_SPRINT_FORWARD", true, 0.1 )
 	ai.Anim_SetPlaybackRate(AimTrainer_STRAFING_SPEED)
 	wait 0.5

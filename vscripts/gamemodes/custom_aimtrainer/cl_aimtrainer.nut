@@ -107,8 +107,8 @@ global struct CameraLocationPair
 
 void function Cl_ChallengesByColombia_Init()
 {
-	//Increase client command limit to 30
-	SetConVarInt("cl_quota_stringCmdsPerSecond", 30)
+	//Increase client command limit to 60
+	SetConVarInt("cl_quota_stringCmdsPerSecond", 60)
 	
 	//I don't want these things in user screen even if they launch in debug
 	SetConVarBool( "cl_showpos", false )
@@ -863,15 +863,18 @@ void function ChangeAimTrainer_STRAFING_SPEEDClient(string desiredSpeed)
 	
 	switch(int(desiredSpeed)){
 	case 0:
-		speed = 0.85
+		speed = 0
 		break
 	case 1:
-		speed = 1
+		speed = 0.85
 		break
 	case 2:
-		speed = 1.35
+		speed = 1
 		break
 	case 3:
+		speed = 1.35
+		break
+	case 4:
 		speed = 1.8
 		break
 	}
