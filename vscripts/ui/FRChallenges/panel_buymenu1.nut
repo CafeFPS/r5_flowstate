@@ -545,6 +545,8 @@ void function OpenAttachmentsBox( var button )
 	
 	if(smg || pistol || shotgun || pistol2)
 		SMGOptics(button)
+
+	SetWeaponSwitcherVisible( false )
 }
 
 void function CloseButtonAttachmentsBox(var button)
@@ -555,6 +557,7 @@ void function CloseButtonAttachmentsBox(var button)
 		Hud_SetVisible(element, false)
 		
 	EnableAllButtons()
+	SetWeaponSwitcherVisible( true )
 }
 
 void function SetSMGOpticsAttachmentSelected(var button)

@@ -474,6 +474,8 @@ void function OpenAttachmentsBox( var button )
 	}
 
 	SMGOptics(button)
+
+	SetWeaponSwitcherVisible( false )
 }
 
 void function CloseButtonAttachmentsBox(var button)
@@ -484,6 +486,7 @@ void function CloseButtonAttachmentsBox(var button)
 		Hud_SetVisible(element, false)
 		
 	EnableAllButtons()
+	SetWeaponSwitcherVisible( true )
 }
 
 void function SetSMGOpticsAttachmentSelected(var button)

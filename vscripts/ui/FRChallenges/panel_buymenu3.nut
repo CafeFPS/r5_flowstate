@@ -492,6 +492,8 @@ void function OpenAttachmentsBox( var button )
 		// Hud_SetPos( file.magstext, file.screenPos.x+(buttonsOnTopCenter*7)-TextButtonsOnTopOffset-(5* (screenSize.width / 1920.0)), file.screenPos.y )
 	// }
 	SMGOptics(button)
+
+	SetWeaponSwitcherVisible( false )
 }
 
 void function CloseButtonAttachmentsBox(var button)
@@ -502,6 +504,7 @@ void function CloseButtonAttachmentsBox(var button)
 		Hud_SetVisible(element, false)
 		
 	EnableAllButtons()
+	SetWeaponSwitcherVisible( true )
 }
 
 void function SetSMGOpticsAttachmentSelected(var button)
