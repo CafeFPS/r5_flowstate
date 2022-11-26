@@ -75,8 +75,8 @@ void function InitFRChallengesSettingsWpnSelector( var newMenuArg )
 
 void function SetWeaponSwitcherVisible( bool visible )
 {
-	Hud_SetVisible( Hud_GetChild( GetMenu( "FRChallengesSettingsWpnSelector" ), "SelectPrimaryWeapon"), visible )
-	Hud_SetVisible( Hud_GetChild( GetMenu( "FRChallengesSettingsWpnSelector" ), "SelectSecondaryWeapon"), visible )
+	Hud_SetVisible( Hud_GetChild( file.menu, "SelectPrimaryWeapon"), visible )
+	Hud_SetVisible( Hud_GetChild( file.menu, "SelectSecondaryWeapon"), visible )
 }
 
 void function DisableBuyWeaponsMenuTabs()
