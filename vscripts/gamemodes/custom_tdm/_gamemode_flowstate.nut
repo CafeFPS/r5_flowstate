@@ -1195,20 +1195,26 @@ void function __GiveWeapon( entity player, array<string> WeaponData, int slot, i
 {
 	array<string> Data = split(WeaponData[select], " ")
 	string weaponclass = Data[0]
-
+	
+	if(weaponclass == "tgive") return
+	
 	array<string> Mods
 	foreach(string mod in Data)
 	{
 		if(strip(mod) != "" && strip(mod) != weaponclass)
 		    Mods.append( strip(mod) )
 	}
-
-	if(IsValid(player))
-	    player.GiveWeapon( weaponclass , slot, Mods )
-	else if(IsValid(player) && isGungame)
-	{
-		player.ReplaceActiveWeapon(slot, weaponclass, Mods)
-		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+	
+	try{
+		if(IsValid(player))
+			player.GiveWeapon( weaponclass , slot, Mods )
+		else if(IsValid(player) && isGungame)
+		{
+			player.ReplaceActiveWeapon(slot, weaponclass, Mods)
+			player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+		}
+	}catch(e420){
+		printt("Invalid weapon name for tgive command.")
 	}
 }
 
