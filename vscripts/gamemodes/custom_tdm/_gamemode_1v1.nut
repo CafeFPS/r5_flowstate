@@ -6,6 +6,8 @@ global struct soloLocStruct
 {
 	LocPair &Loc1 //player1 respawn location
 	LocPair &Loc2 //player2 respawn location
+	vector Center //center of Loc1 and Loc2
+
 	entity Panel //keep current opponent panel
 }
 global struct soloGroupStruct
@@ -14,7 +16,7 @@ global struct soloGroupStruct
 	entity player2
 	int slotIndex
 	bool IsFinished = false //player1 or player2 is died, set this to true and soloModeThread() will handle this
-	bool IsKeep = false //not implement, player may want to play with current opponent,so we will keep this group
+	bool IsKeep = false //player may want to play with current opponent,so we will keep this group
 }
 global struct soloPlayerStruct
 {
@@ -62,6 +64,7 @@ void function soloModeWaitingPrompt(entity player, vector waitingRoom)
 	}
 
 }
+
 void function soloModeThread()
 {
 	OnThreadEnd(
@@ -71,10 +74,23 @@ void function soloModeThread()
 				GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 			}
 		)
-		
+
 	LocPair WaitingRoom
-	WaitingRoom.origin = <-7.62,200,184.57>
-	WaitingRoom.angles = <0,90,0>
+	if(GetMapName() == "mp_rr_arena_composite")
+	{
+		WaitingRoom.origin = <-7.62,200,184.57>
+		WaitingRoom.angles = <0,90,0>
+	}
+	else if (GetMapName() == "mp_rr_aqueduct")
+	{
+		WaitingRoom.origin = <719.94,-5805.13,494.03>
+		WaitingRoom.angles = <0,90,0>
+	}
+	else
+	{
+		return
+	}
+	
 	IsInSoloMode = true
 
 	wait 8
@@ -87,7 +103,7 @@ void function soloModeThread()
 		{
 			if(!IsValid(playerInWatingSctruct.player)) 
 			{
-				//Warning("PLAYER QUIT")
+				// Warning("PLAYER QUIT")
 				soloPlayersWaiting.removebyvalue(playerInWatingSctruct)
 				continue
 			}
@@ -115,15 +131,7 @@ void function soloModeThread()
 		//遍历游玩队列
 		foreach (eachGroup in soloPlayersInProgress)
 		{
-			if(IsValid(eachGroup.player1)) //avoid player regen health
-			{
-				eachGroup.player1.p.lastDamageTime = Time()
-			}
-
-			if(IsValid(eachGroup.player2)) //avoid player regen health
-			{
-				eachGroup.player2.p.lastDamageTime = Time()
-			}
+			
 			
 			if(eachGroup.IsFinished)//this round has been finished
 			{
@@ -132,6 +140,7 @@ void function soloModeThread()
 				soloModePlayerToWaitingList(eachGroup.player2)
 				continue
 			}
+
 			if(eachGroup.IsKeep) //player in this group dont want to change opponent
 			{
 				if(IsValid(eachGroup.player1) && IsValid(eachGroup.player2) && (!IsAlive(eachGroup.player1) || !IsAlive(eachGroup.player2) ))
@@ -158,19 +167,92 @@ void function soloModeThread()
 					soloModePlayerToWaitingList(eachGroup.player2) //back to wating list
 					Message(eachGroup.player2,"Your opponent has quit the game!")
 				}
+				continue
+			}
 
+			//检测乱跑的脑残
+			int eachSlotIndex = eachGroup.slotIndex
+			vector Center =  soloLocations[eachSlotIndex].Center
+			
+			if(IsValid(eachGroup.player1)) 
+			{
+				eachGroup.player1.p.lastDamageTime = Time() //avoid player regen health
+
+				if(Distance2D(eachGroup.player1.GetOrigin(),Center) > 1200) //检测乱跑的脑残
+				{
+					// maki_tp_player(eachGroup.player1,player1SpawnLoc)
+
+	
+					Remote_CallFunction_Replay( eachGroup.player1, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+					eachGroup.player1.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+				
+				}
+			}
+
+			if(IsValid(eachGroup.player2)) 
+			{
+				eachGroup.player2.p.lastDamageTime = Time() //avoid player regen health
+				if(Distance(eachGroup.player2.GetOrigin(),Center) > 1200) //检测乱跑的脑残
+				{
+					Remote_CallFunction_Replay( eachGroup.player2, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
+					eachGroup.player2.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
+				
+					// maki_tp_player(eachGroup.player2,player2SpawnLoc)
+				}
 			}
 
 		}
+
+
+
+
 		//遍历休息队列
 		foreach (restingPlayer in soloPlayersResting )
 		{
 			if(!IsValid(restingPlayer)) continue
+			HolsterAndDisableWeapons(restingPlayer)
 			if(!IsAlive(restingPlayer))
+			{
 				respawnInSoloMode(restingPlayer)
-			// if(Distance(restingPlayer.GetOrigin(),WaitingRoom.origin)>2500)
-				// maki_tp_player(restingPlayer,WaitingRoom)
+			}
+			
+
 		}
+
+		// bool isneedtoadd = true
+		// entity needToAddPlayer 
+		// foreach (eachplayer in GetPlayerArray() )
+		// {
+		// 	foreach (eachwait in soloPlayersWaiting )
+		// 	{
+		// 		if(eachplayer == eachwait.player)
+		// 		{
+		// 			needToAddPlayer = eachplayer
+		// 			isneedtoadd = false
+		// 		}
+		// 	}
+		// 	foreach (eachinprocess in soloPlayersInProgress )
+		// 	{
+		// 		if(eachplayer == eachinprocess.player1 || eachplayer == eachinprocess.player2)
+		// 		{
+		// 			needToAddPlayer = eachplayer
+		// 			isneedtoadd = false
+		// 		}
+		// 	}
+
+		// 	if (IsValid(eachplayer) && isneedtoadd)
+		// 	{
+		// 		Warning("Warning!!!!!! A PLAYER("+ eachplayer.GetPlayerName() + ") IS NOT IN SOLO LIST!!!!!!!!!!!!!!")
+		// 		soloModePlayerToWaitingList(eachplayer)
+		// 	}
+		// 	isneedtoadd = true
+		// }
+
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//开始匹配
 		if(soloPlayersWaiting.len()<2) //等待队列人数不足,无法开始匹配
 		{
@@ -235,14 +317,14 @@ void function soloModeThread()
 				if(!IsValid(bestOpponent)) continue//没找到最合适玩家,为下一位玩家匹配
 				if(bestOpponent != lastOpponent) //最合适玩家是上局对手,用第二合适玩家代替
 				{
-					//Warning("Best opponent, kd gap: " + lowestKd)
+					// Warning("Best opponent, kd gap: " + lowestKd)
 					newGroup.player1 = playerSelf
 					newGroup.player2 = bestOpponent
 					break
 				}
 				else if (IsValid(scondBestOpponent))
 				{
-					//Warning("Secondary opponent, kd gap: " + lowestKd)
+					// Warning("Secondary opponent, kd gap: " + lowestKd)
 					newGroup.player1 = playerSelf
 					newGroup.player2 = scondBestOpponent
 					break
@@ -279,9 +361,13 @@ void function soloModeThread()
 
 
 	}//while(true)
+
+	
+
 }//thread
 int function getAvailableSlotIndex()
 {
+
 	array<int> soloLocationInProgressIndexs //所有正在游玩的地区编号
 	foreach (eachGroup in soloPlayersInProgress)
 	{
@@ -292,11 +378,11 @@ int function getAvailableSlotIndex()
 	{
 		if (!soloLocationInProgressIndexs.contains(i)) //当前i的编号没有被占用
 		{
-			//printt("soloLocationInProgressIndexs: " + i.tostring())
+			// printt("soloLocationInProgressIndexs: " + i.tostring())
 			return i
 		}
 	}
-	//printt("soloLocationInProgressIndexs: " + "-1")
+	// printt("soloLocationInProgressIndexs: " + "-1")
 	return -1
 }
 soloGroupStruct function returnSoloGroupOfPlayer(entity player)
@@ -309,9 +395,12 @@ soloGroupStruct function returnSoloGroupOfPlayer(entity player)
 	soloGroupStruct group
 	return group
 }
+
 void function respawnInSoloMode(entity player) //复活死亡玩家和同一个sologroup的玩家
 {
 	if (!IsValid(player)) return
+	printt("respawnInSoloMode!")
+	// Warning("respawn player: " + player.GetPlayerName())
    	LocPair respawnLoc1 
    	LocPair respawnLoc2 
 
@@ -331,10 +420,11 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 		{
 			DecideRespawnPlayer(player, true)
 			TakeAllWeapons(player)
+			GiveRandomPrimaryWeaponMetagame(player)
+			GiveRandomSecondaryWeaponMetagame(player)	
 			player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-		    GiveRandomPrimaryWeaponMetagame(player)
-			GiveRandomSecondaryWeaponMetagame(player)	
+		    
 		}
 		catch (erroree)
 		{
@@ -342,8 +432,20 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 		}
 		HolsterAndDisableWeapons(player)
 		LocPair WaitingRoom
-		WaitingRoom.origin = <-7.62,200,184.57>
-		WaitingRoom.angles = <0,90,0>
+		if(GetMapName() == "mp_rr_arena_composite")
+		{
+			WaitingRoom.origin = <-7.62,200,184.57>
+			WaitingRoom.angles = <0,90,0>
+		}
+		else if (GetMapName() == "mp_rr_aqueduct")
+		{
+			WaitingRoom.origin = <719.94,-5805.13,494.03>
+			WaitingRoom.angles = <0,90,0>
+		}
+		else
+		{
+			return
+		}
 		maki_tp_player(player, WaitingRoom)
 		return
 	}//玩家在休息模式
@@ -358,36 +460,33 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 	}
 	catch (error)
 	{
-		//Warning("fail to respawn")
+		// Warning("fail to respawn")
 	}
 
 
-   		respawnLoc1 = soloLocations[group.slotIndex].Loc1
-		respawnLoc2 = soloLocations[group.slotIndex].Loc2
+	respawnLoc1 = soloLocations[group.slotIndex].Loc1
+	respawnLoc2 = soloLocations[group.slotIndex].Loc2
 
-		// PlayerRestoreHP_1v1(group.player1, 100, Equipment_GetDefaultShieldHP())
-		// PlayerRestoreHP_1v1(group.player2, 100, Equipment_GetDefaultShieldHP())
+	if(IsValid(group.player1) )
+		PlayerRestoreHP_1v1(group.player1, 100, group.player1.GetShieldHealthMax().tofloat())
+	if(IsValid(group.player2) )
+		PlayerRestoreHP_1v1(group.player2, 100, group.player2.GetShieldHealthMax().tofloat())
 
-		if(IsValid(group.player1) )
-			PlayerRestoreHP_1v1(group.player1, 100, group.player1.GetShieldHealthMax().tofloat())
-		if(IsValid(group.player2) )
-			PlayerRestoreHP_1v1(group.player2, 100, group.player2.GetShieldHealthMax().tofloat())
+	maki_tp_player(group.player1,respawnLoc1)
+	maki_tp_player(group.player2,respawnLoc2)
 
-		maki_tp_player(group.player1,respawnLoc1)
-		maki_tp_player(group.player2,respawnLoc2)
-
-		//限制武器
-		//
-		if(IsValid(group.player1))
-		{
-			group.player1.TakeOffhandWeapon(OFFHAND_TACTICAL)
-			group.player1.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-		}//player dont need any skills in solo mode
-		if(IsValid(group.player2))
-		{
-			group.player2.TakeOffhandWeapon(OFFHAND_TACTICAL)
-			group.player2.TakeOffhandWeapon(OFFHAND_ULTIMATE)
-		}//player dont need any skills in solo mode
+	//限制武器
+	//
+	if(IsValid(group.player1))
+	{
+		group.player1.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		group.player1.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	}//player dont need any skills in solo mode
+	if(IsValid(group.player2))
+	{
+		group.player2.TakeOffhandWeapon(OFFHAND_TACTICAL)
+		group.player2.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+	}//player dont need any skills in solo mode
 
 		
 		
@@ -397,11 +496,10 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 		try
 		{
 			TakeAllWeapons(group.player1)
-			group.player1.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		    group.player1.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 		    GiveRandomPrimaryWeaponMetagame(group.player1)
 			GiveRandomSecondaryWeaponMetagame(group.player1)	
-			group.player1.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+			group.player1.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		    group.player1.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 		}
 		catch (ee)
 		{}
@@ -419,11 +517,12 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 		try
 		{
 			TakeAllWeapons(group.player2)
-			group.player2.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-		    group.player2.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+			
 		    GiveRandomPrimaryWeaponMetagame(group.player2)
 			GiveRandomSecondaryWeaponMetagame(group.player2)
-			group.player2.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+			group.player2.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		    group.player2.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+			// group.player2.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 		}
 		catch (eeee)
 		{}
@@ -434,8 +533,8 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 	}
 
 
-		thread LoadCustomWeapon(group.player1)
-		thread LoadCustomWeapon(group.player2)
+	thread LoadCustomWeapon(group.player1)
+	thread LoadCustomWeapon(group.player2)
 
 	thread ReCheckGodMode(group.player1)
 	thread ReCheckGodMode(group.player2)
@@ -452,6 +551,7 @@ void function _soloModeInit(string mapName)
 	array<LocPair> panelLocations
 	if (mapName == "mp_rr_arena_composite")
 	{
+
 		allSoloLocations= [
 		NewLocPair( <344.814117, 1279.00415, 188.561081>, <0, 178.998779, 0>), //1
 		NewLocPair( <-301.836731, 1278.16309, 188.60759>, <0, -2.78833318, 0>),
@@ -477,10 +577,8 @@ void function _soloModeInit(string mapName)
 		NewLocPair( <2933.51343, 1449.6571, 140.03125>, <0, -100.364799, 0>), //8
 		NewLocPair( <2455.15234, 1004.09894, 128.03125>, <0, 7.74315786, 0>),
 
-	// NewLocPair( <-2064.36401, 994.309998, 180.571426>, <0, -1.96184182, 0>), //9
-	// NewLocPair( <-1554.99084, 1230.74365, 192.03125>, <0, -133.656342, 0>),
-	NewLocPair( <-1441.08, 1675.66, 280.08>, <0, -110, 0>),//9
-	NewLocPair( <-1787.21, 1008.08, 254.03>, <0, 50, 0>),//9
+		NewLocPair( <-1441.08, 1675.66, 280.08>, <0, -110, 0>),//9
+		NewLocPair( <-1787.21, 1008.08, 254.03>, <0, 50, 0>),//9
 
 		NewLocPair( <1649.15588, 1135.37439, 192.03125>, <0, 137.991577, 0>), //10
 		NewLocPair( <1122.84058, 1418.50452, 190.821075>, <0, -27.6340904, 0>),
@@ -488,50 +586,106 @@ void function _soloModeInit(string mapName)
 		NewLocPair( <-2862.42407, 1511.31921, 140.03125>, <0, -100.470222, 0>), //11
 		NewLocPair( <-2633.31348, 833.701477, 128.03125>, <0, 130.051575, 0>),
 
-	NewLocPair( <-836.684998, 2751.19849, 192.03125>, <0, -150.722626, 0>),//12
-	NewLocPair( <-1405.85583, 2548.43164, 192.03125>, <0, 12.0755987, 0>),
-	// NewLocPair( <-1463.13, 2888.77, -50.29>, <0, 114, 0>),//12
-	// NewLocPair( <-1640.11, 3390.12, -49.97>, <0, -90, 0>),
+		NewLocPair( <-836.684998, 2751.19849, 192.03125>, <0, -150.722626, 0>),//12
+		NewLocPair( <-1405.85583, 2548.43164, 192.03125>, <0, 12.0755987, 0>),
+		]
 
-	// NewLocPair( <1533.10, 2961.55, -49.97>, <0, 60, 0>),//13
-	// NewLocPair( <1606.03, 3532.19, -49.97>, <0, -90, 0>),
-	
-	]
-	}
-	else
-	{
-		return
-	}
+		//panel
+		panelLocations = [
+			NewLocPair( <-4.90188408, 1580.82349, 188.526581>, <0, 0, 0>),//1
+			NewLocPair( <-2513.19702, 3376.53174, 192.048309>, <0, 50, 0>),//2
+			NewLocPair( <-517.093201, 2170.28882, -143.956406>, <0, 0, 0>),//3
+			NewLocPair( <2622.61, 3294.64, 190.05>, <0, -40, 0>),//4
+			NewLocPair( <-894.18, 4539.96, 130.03>, <0, 30, 0>),//5
+			NewLocPair( <-582.68, 5138.91, -30.02>, <0, 180, 0>),//6
+			NewLocPair( <609.73, 3556.99, -30.03>, <0, -80, 0>),//7
+			NewLocPair( <2998.07, 840.03, 140>, <0, -115, 0>),//8
+			NewLocPair( <-1627.84, 1568.45, 190>, <0, 0, 0>),//9
+			NewLocPair( <1268.07, 1527.68, 190>, <0, 0, 0>),//10
+			NewLocPair( <-2969.78, 810.96, 140>, <0, 120, 0>),//11
+			NewLocPair( <-1073.46, 2685.75, 190>, <0, -43, 0>),//12
+		]
+		}
+		else if (mapName == "mp_rr_aqueduct")
+		{
+			allSoloLocations= [
+			NewLocPair( <-6775.57568, -204.993729, 106.120445>, <0, -32.8351936, 0>),
+			NewLocPair( <-6230.72607, -527.870239, 107.595337>, <0, 144.085541, 0>),
+
+			NewLocPair( <3263.02002, -3556.06055, 273.576324>, <0, 8.61375999, 0>),
+			NewLocPair( <3784.31885, -3452.91772, 272.03125>, <0, -171.17247, 0>),
+
+
+			NewLocPair( <8502.62109, -615.898987, 315.014832>, <0, -60.9690781, 0>),//NEW
+			NewLocPair( <9021.84863, -1498.87195, 310.646271>, <0, 117.371147, 0>),
+
+			NewLocPair( <167.032883, -6722.06787, 336.03125>, <0, -1.60793841, 0>),//
+			NewLocPair( <1296.91602, -6719.25293, 336.03125>, <0, 178.672043, 0>),
+
+			NewLocPair( <3654.57104, -4299.94629, 251.554062>, <0, -131.212936, 0>),
+			NewLocPair( <3087.35205, -4413.77637, 256.14917>, <0, -22.8175545, 0>),
+
+
+			NewLocPair( <2809.94946, -4459.84961, 361.746124>, <0, -88.6163712, 0>),//NEW
+			NewLocPair( <2738.16772, -5504.04443, 388.564209>, <0, 82.8682785, 0>),
+
+			NewLocPair( <-444.894531, -2472.0481, -313.453186>, <0, -6.28803873, 0>),
+			NewLocPair( <34.082859, -2517.09546, -311.32724>, <0, 170.668167, 0>),
+
+			NewLocPair( <2050.9939, -3850.13452, 432.03125>, <0, -174.60405, 0>),
+			NewLocPair( <1504.50134, -3880.59595, 432.03125>, <0, 0.203577876, 0>),
+
+			NewLocPair( <234.719513, -4128.62842, 273.224884>, <0, -94.9567108, 0>),
+			NewLocPair( <214.551025, -4557.26904, 272.03125>, <0, 87.0343704, 0>),
+
+
+			NewLocPair( <-5046.05176, -2948.47144, 314.250671>, <0, 63.9120026, 0>),//NEW
+			NewLocPair( <-4553.3623, -2102.83643, 313.807098>, <0, -119.961533, 0>),
+
+			NewLocPair( <-2457.16333, -5476.83203, 400.03125>, <0, -12.8816891, 0>),
+			NewLocPair( <-1929.41846, -5594.64307, 400.03125>, <0, 165.039886, 0>),
+
+			NewLocPair( <-81.694252, -3906.92749, 432.03125>, <0, 171.290192, 0>),
+			NewLocPair( <-640.369202, -3834.13794, 432.03125>, <0, -13.2758875, 0>),
+
+			NewLocPair( <-3015.57031, -3553.14819, 272.03125>, <0, -140.035995, 0>),
+			NewLocPair( <-3493.69263, -4762.4126, 272.032166>, <0, 84.9091492, 0>),
+			]
+			panelLocations = [
+				NewLocPair( <-6357.56, -110.40, -95.07>, <0, -40, 0>),
+				NewLocPair( <3551.47, -3581.74, 270.03>, <0, 0, 0>),
+				NewLocPair( <9136.70, -797.05, 310.17>, <0, -60, 0>),//new
+				NewLocPair( <718.50, -7027.66, 330.03>, <0, 170, 0>),
+				NewLocPair( <3453.87, -4724.95, 170.89>, <0, -170, 0>),
+				NewLocPair( <3035.04, -4838.01, 400.16>, <0, -80, 0>),//new
+				NewLocPair( <-179.10, -2264.64, -390.97>, <0, 0, 0>),
+				NewLocPair( <1810.83, -3773.77, 430.03>, <0, -179, 0>),
+				NewLocPair( <451.17, -4365.68, 270.03>, <0, -90, 0>),
+				NewLocPair( <-4515.57, -2811.07, 310.31>, <0, -120, 0>),//new
+				NewLocPair( <-2278.44, -5838.17, 400.03>, <0, 160, 0>),
+				NewLocPair( <-301.65, -4238.32, 430.03>, <0, 160, 0>),
+				NewLocPair( <-3079.95, -4274.58, 290.03>, <0, -120, 0>),
+			]
+		}
+		else
+		{
+			return
+		}
 	
 	for (int i = 0; i < allSoloLocations.len(); i=i+2)
 	{
 		soloLocStruct p
 		p.Loc1 = allSoloLocations[i]
 		p.Loc2 = allSoloLocations[i+1]
+		p.Center = (allSoloLocations[i].origin + allSoloLocations[i+1].origin)/2
 		soloLocations.append(p)
 	}
 
-	//panel
-	panelLocations = [
-		NewLocPair( <-4.90188408, 1580.82349, 188.526581>, <0, 0, 0>),//1
-		NewLocPair( <-2513.19702, 3376.53174, 192.048309>, <0, 50, 0>),//2
-		NewLocPair( <-517.093201, 2170.28882, -143.956406>, <0, 0, 0>),//3
-		NewLocPair( <2622.61, 3294.64, 190.05>, <0, -40, 0>),//4
-		NewLocPair( <-894.18, 4539.96, 130.03>, <0, 30, 0>),//5
-		NewLocPair( <-582.68, 5138.91, -30.02>, <0, 180, 0>),//6
-		NewLocPair( <609.73, 3556.99, -30.03>, <0, -80, 0>),//7
-		NewLocPair( <2998.07, 840.03, 140>, <0, -115, 0>),//8
-		NewLocPair( <-1627.84, 1568.45, 190>, <0, 0, 0>),//9
-		NewLocPair( <1268.07, 1527.68, 190>, <0, 0, 0>),//10
-		NewLocPair( <-2969.78, 810.96, 140>, <0, 120, 0>),//11
-		NewLocPair( <-1073.46, 2685.75, 190>, <0, -43, 0>),//12
+	
 
-		// NewLocPair( <-1543.08, 3213.69, -110.97>, <0, -100, 0>),//12
-		// NewLocPair( <-1555.59, 3234.19, -110.97>, <0, 68, 0>),//13
-	]
 	foreach (index,eahclocation in panelLocations)
 	{
-		entity panel = CreateFRButton(eahclocation.origin, eahclocation.angles, "%&use% Never change oponent.")
+		entity panel = CreateFRButton(eahclocation.origin, eahclocation.angles, "%&use% Never change your opponent")
 		panel.SetSkin(1)//red
 		AddCallback_OnUseEntity( panel, void function(entity panel, entity user, int input)
 		{
@@ -568,15 +722,16 @@ void function _soloModeInit(string mapName)
 
 		soloLocations[index].Panel = panel
 	}
-	
+
+
+
+
 	thread soloModeThread()
 
 }
 
 bool function isPlayerInSoloMode(entity player)
 {
-	if(!IsValid(player)) return false
-	
 	foreach (eachGroup in soloPlayersInProgress)
 	{
 	   	if(IsValid(eachGroup.player1) && player == eachGroup.player1 || IsValid(eachGroup.player2) && player == eachGroup.player2) //找到当前玩家的group
@@ -584,53 +739,30 @@ bool function isPlayerInSoloMode(entity player)
 	}
 	return false
 }
-
 bool function isPlayerInWatingList(entity player)
 {
-	if(!IsValid(player)) return false
 	foreach (eachPlayerStruct in soloPlayersWaiting)
 	{
-		if(!IsValid(eachPlayerStruct.player)) return false
-		
 	   	if (eachPlayerStruct.player == player) //找到当前玩家的group
 	   		return true
 	}
 	return false
 }
-
 void function soloModePlayerQuit(entity player)
 {
-	if(!IsValid(player)) return
-	
 	foreach (eachGroup in soloPlayersInProgress)
 	{
-		if(IsValid(eachGroup.player1) && player == eachGroup.player1 || IsValid(eachGroup.player2) && player == eachGroup.player2)
+		if(player == eachGroup.player1 || player == eachGroup.player2)
 		{
-			Message(eachGroup.player1,"Your opponent has disconnected!")
-			Message(eachGroup.player2,"Your opponent has disconnected!")
+			try
+			{
+				Message(eachGroup.player1,"Your opponent has disconnected!")
+				Message(eachGroup.player2,"Your opponent has disconnected!")
+			}
+			catch (error)
+			{}
 		}
 	}
-}
-
-void function deleteGroup(soloGroupStruct group)
-{
-	if(!IsValid(group)) return
-	
-	try
-	{
-		soloPlayersInProgress.removebyvalue(group) //delete this group
-	}
-	catch (error)
-	{}
-}
-
-void function maki_tp_player(entity player,LocPair data)
-{
-	if(!IsValid(player)) return
-	
-	player.SetOrigin(data.origin)
-	player.SetAngles(data.angles)
-	
 }
 
 void function deleteWaitingPlayer(entity player)
@@ -652,13 +784,8 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 {
 	if(soloPlayersResting.contains(player))
 	{
-		Message(player,"Matching")
+		Message(player,"Matching!")
 		soloModePlayerToWaitingList(player)
-		
-		player.MakeVisible()
-		ClearInvincible(player)
-		//EnableOffhandWeapons( player )
-		DeployAndEnableWeapons(player)
 	}
 	else
 	{
@@ -673,16 +800,12 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 			
 		}
 		
-		respawnInSoloMode(player)	
-		
-		player.MakeInvisible()
-		MakeInvincible(player)
-		HolsterAndDisableWeapons(player)
+		respawnInSoloMode(player)
+
 	}
 	
 	return true
 }
-
 entity function getRandomOpponentOfPlayer(entity player)
 {
 	entity p
@@ -695,7 +818,6 @@ entity function getRandomOpponentOfPlayer(entity player)
 	
 	return p
 }
-
 entity function returnOpponentOfPlayer(entity player, soloGroupStruct group)
 {
 	entity p
@@ -801,7 +923,7 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 			IsAlreadyExist = true
 			soloPlayersInProgress.removebyvalue(eachGroup) //销毁这个group
 
-			//Warning("[ERROR]Try to add a exist player of InProgress list to InProgress list") //不应该出现这种情况
+			// Warning("[ERROR]Try to add a exist player of InProgress list to InProgress list") //不应该出现这种情况
 			return result
 		}
 	}
@@ -814,7 +936,7 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	}
 	else
 	{
-		//Warning("[ERROR]Try to add a exist player of InProgress list to InProgress list") //不应该出现这种情况
+		// Warning("[ERROR]Try to add a exist player of InProgress list to InProgress list") //不应该出现这种情况
 		return result//unreached
 	}
 
@@ -843,7 +965,7 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	}
 	else
 	{
-		//Warning("No avaliable slot")
+		Warning("No avaliable slot")
 		result = false
 	}
 
@@ -886,16 +1008,20 @@ void function soloModePlayerToRestingList(entity player)
 }
 void function soloModefixDelayStart(entity player)
 {
-	Message(player,"Flowstate 1V1", "Made by makimakima#5561, v1.1")
+	// Message(player,"正在加载死斗模式/Loading solo mode")
 	HolsterAndDisableWeapons(player)
 
+		
+
 	wait 8
-	if(!IsValid(player)) return
-	
 	if(!soloPlayersResting.contains(player))
 	{
-		EnableOffhandWeapons( player )
-		DeployAndEnableWeapons(player)
+		if(IsValid(player))
+		{
+			EnableOffhandWeapons( player )
+			DeployAndEnableWeapons(player)
+		}
+		
 		soloModePlayerToWaitingList(player)
 	}
 
@@ -907,6 +1033,18 @@ void function soloModefixDelayStart(entity player)
 	{}
 }
 
+
+
+
+
+
+
+void function maki_tp_player(entity player,LocPair data)
+{
+	if(!IsValid(player)) return
+	player.SetAngles(data.angles)
+	player.SetOrigin(data.origin)
+}
 void function PlayerRestoreHP_1v1(entity player, float health, float shields)
 {
 	if(!IsValid(player)) return
