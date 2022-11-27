@@ -3411,16 +3411,16 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 			optics1 = mod + " " + optics1
 		foreach (mod in mods2)
 			optics2 = mod + " " + optics2
-		// weaponname1 = "tgive p "+weapon1.GetWeaponClassName()+" " + optics1 + "; "
-		// weaponname2 = "tgive s "+weapon2.GetWeaponClassName()+" " + optics2
+
+		if(!IsValid(weapon1) || !IsValid(weapon2)) return false
 		weaponname1 = weapon1.GetWeaponClassName()+" " + optics1 + "; "
 		weaponname2 = weapon2.GetWeaponClassName()+" " + optics2
 	}
 	catch(error)
-	{}	
+	{}
+
+	if(weaponname1 == "" || weaponname2 == "") return false //dont save if player is dead
 	weaponlist[player.GetPlayerName()] <- weaponname1+weaponname2
-	// print(weaponname1)
-	// print(weaponname2)
 	return true
 }
 
