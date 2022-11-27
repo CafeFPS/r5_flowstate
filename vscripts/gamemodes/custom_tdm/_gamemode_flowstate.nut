@@ -511,6 +511,8 @@ void function _OnPlayerConnected(entity player)
 			wait 9
 			if(!IsValid(player)) return
 			
+			// EnableOffhandWeapons( player )
+			// DeployAndEnableWeapons(player)
 			soloModePlayerToWaitingList(player)
 
 			try
