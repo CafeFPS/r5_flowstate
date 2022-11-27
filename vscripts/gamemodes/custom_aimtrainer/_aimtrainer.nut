@@ -2945,6 +2945,8 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	{
 		weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
 		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		
+		if(!IsValid(weapon1) || !IsValid(weapon2)) return false
 		mods1 = GetWeaponMods( weapon1 )
 		mods2 = GetWeaponMods( weapon2 )
 		foreach (mod in mods1)
@@ -2955,7 +2957,9 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 		weaponname2 = "tgive s "+weapon2.GetWeaponClassName()+" " + optics2
 	}
 	catch(error)
-	{}	
+	{}
+	if(weaponname1 == "" || weaponname2 == "") return false //dont save if player is dead
+	
 	weaponlist[player.GetPlayerName()] <- weaponname1+weaponname2
 	
 	if(GameRules_GetGameMode() == "custom_aimtrainer")
@@ -2964,7 +2968,7 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 	player.p.weapon = weapon
 	player.p.mods = finalargs
 	
-	if(!GetCurrentPlaylistVarBool( "aimtrainer_enableSkins", false) && GameRules_GetGameMode() == "custom_aimtrainer") return true
+	if(!GetCurrentPlaylistVarBool( "aimtrainer_enableSkins", true) && GameRules_GetGameMode() == "custom_aimtrainer") return true
 	
 	// if(weaponent.GetWeaponClassName() != "mp_weapon_car") return true
 		
