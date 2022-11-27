@@ -1016,12 +1016,6 @@ void function soloModefixDelayStart(entity player)
 	wait 8
 	if(!soloPlayersResting.contains(player))
 	{
-		if(IsValid(player))
-		{
-			EnableOffhandWeapons( player )
-			DeployAndEnableWeapons(player)
-		}
-		
 		soloModePlayerToWaitingList(player)
 	}
 
