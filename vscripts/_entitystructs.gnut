@@ -403,6 +403,12 @@ global struct ServerEntityStruct
 	
 	//Flyers easteregg
 	entity ParentedPlayerToFlyer
+	
+	//Lootbins mod
+	int lootbinusages
+
+	//Arthur's revenge
+	array<entity> birdsFromThisCluster
 }
 
 global struct MeritData
@@ -685,6 +691,7 @@ global struct ServerPlayerStruct
 	float lastTimeSpectateUsed = 0
 	bool isSpectating = false
 	bool isAdmin = false
+	int ziplineUsages = 0
 	
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
@@ -722,18 +729,31 @@ global struct ServerPlayerStruct
 	int dummieKilled = 0
 	bool touchingTopTrigger = false
 	bool ForceEject = false
+	
 	string weapon = "mp_weapon_wingman"
 	array<string> mods = ["optic_cq_hcog_classic"]
+	string weapon2 = ""
+	array<string> mods2 = []
 	int weaponSkin = -1
+	int weaponSkin2 = -1
 	int weaponModelIndex = -1
+	int weaponModelIndex2 = -1
+	
 	
 	//Map editor
 	PropInfo& selectedProp
 	entity currentPropEntity
-
 	EditorMode& selectedEditorMode
 	EditorMode ornull lastEditorMode
-
+	
+	//Rocketpod Weapon
+	vector guidedLaserPoint
+	
+	//Holospray
+	int holosprayChoice = 0
+	
+	//Data request
+	float lastTimeDataRequestUsed = 0
 }
 
 global struct ChallengeScore
@@ -837,6 +857,8 @@ global struct ServerAIStruct
 	// r5 stuff
 	array<BurnDamageStack> burnDamageStacks
 	bool isBurning
+	string lastSchedule
+	string lastAnim
 }
 
 
@@ -872,6 +894,7 @@ global struct ServerWeaponStruct
 	bool ziplineGrenadeCollided
 	entity ziplineStartModel
 	var ziplineStartPos
+	bool translocate_isADSForced
 }
 
 
@@ -931,6 +954,8 @@ global struct ServerProjectileStruct
 	vector ownerLocationDebug
 	vector savedSurfaceNormal
 	float lastTeleportTime
+	
+	array<entity> healWeaponEffects
 }
 
 // hooked up to entity.soul in code
