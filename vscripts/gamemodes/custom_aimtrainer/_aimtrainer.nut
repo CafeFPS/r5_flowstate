@@ -3062,8 +3062,14 @@ void function SetupPlayer( entity player )
 	
 	if( player.p.weaponSkin > -1 )
 		weapon.SetSkin( player.p.weaponSkin )
-	printt(player.p.weapon2, player.p.weaponSkin2, player.p.weaponModelIndex2)
-	if(player.p.weapon2 == "") return
+	
+	if(player.p.weapon2 == "") 
+	{
+		player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		DeployAndEnableWeapons( player )
+		player.ClearFirstDeployForAllWeapons()
+		return
+	}
 	
 	entity weapon2 = player.GiveWeapon( player.p.weapon2, WEAPON_INVENTORY_SLOT_PRIMARY_1, player.p.mods2 )
 
@@ -3074,7 +3080,6 @@ void function SetupPlayer( entity player )
 		weapon2.SetSkin( player.p.weaponSkin2 )
 
 	player.SetActiveWeaponBySlot( eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-
 	DeployAndEnableWeapons( player )
 	player.ClearFirstDeployForAllWeapons()
 }
