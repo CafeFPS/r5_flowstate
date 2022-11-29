@@ -67,13 +67,7 @@ void function soloModeWaitingPrompt(entity player, vector waitingRoom)
 
 void function soloModeThread()
 {
-	OnThreadEnd(
-			function() : (  )
-			{
-				GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
-			}
-		)
-
+	printt("solo mode thread start!")
 	LocPair WaitingRoom
 	if(GetMapName() == "mp_rr_arena_composite")
 	{
@@ -102,16 +96,19 @@ void function soloModeThread()
 		{
 			if(!IsValid(playerInWatingSctruct.player)) 
 			{
+				Warning("PLAYER QUIT")
 				soloPlayersWaiting.removebyvalue(playerInWatingSctruct)
 				continue
 			}
 			
-			if(Distance(playerInWatingSctruct.player.GetOrigin(),WaitingRoom.origin)>800) //waiting player should be in waiting room,not battle area
+			if(Distance(playerInWatingSctruct.player.GetOrigin(),WaitingRoom.origin)>500) //waiting player should be in waiting room,not battle area
 			{
 				thread soloModeWaitingPrompt(playerInWatingSctruct.player,WaitingRoom.origin)
 				maki_tp_player(playerInWatingSctruct.player,WaitingRoom) //waiting player should be in waiting room,not battle area
 				HolsterAndDisableWeapons(playerInWatingSctruct.player)
 			}
+
+			//TakeAllWeapons(playerInWatingSctruct.player)//waiting player shouldnt have guns
 
 			//标记超时玩家
 			if(playerInWatingSctruct.waitingTime < Time() && !playerInWatingSctruct.IsTimeOut && IsValid(playerInWatingSctruct.player))
@@ -127,6 +124,8 @@ void function soloModeThread()
 		//遍历游玩队列
 		foreach (eachGroup in soloPlayersInProgress)
 		{
+			
+			
 			if(eachGroup.IsFinished)//this round has been finished
 			{
 				printt("this round has been finished")
@@ -153,13 +152,13 @@ void function soloModeThread()
 				if(IsValid(eachGroup.player1))
 				{
 					soloModePlayerToWaitingList(eachGroup.player1) //back to wating list
-					Message(eachGroup.player1,"Your opponent has quit the game!")
+					Message(eachGroup.player1,"Your opponent has disconnected!")
 				}
 
 				if(IsValid(eachGroup.player2))
 				{
 					soloModePlayerToWaitingList(eachGroup.player2) //back to wating list
-					Message(eachGroup.player2,"Your opponent has quit the game!")
+					Message(eachGroup.player2,"Your opponent has disconnected!")
 				}
 				continue
 			}
@@ -200,7 +199,7 @@ void function soloModeThread()
 		{
 			if(!IsValid(restingPlayer)) continue
 			HolsterAndDisableWeapons(restingPlayer)
-			if(!IsAlive(restingPlayer))
+			if(!IsAlive(restingPlayer)  )
 			{
 				respawnInSoloMode(restingPlayer)
 			}
@@ -278,14 +277,14 @@ void function soloModeThread()
 				if(!IsValid(bestOpponent)) continue//没找到最合适玩家,为下一位玩家匹配
 				if(bestOpponent != lastOpponent) //最合适玩家是上局对手,用第二合适玩家代替
 				{
-					// Warning("Best opponent, kd gap: " + lowestKd)
+					Warning("Best opponent, kd gap: " + lowestKd)
 					newGroup.player1 = playerSelf
 					newGroup.player2 = bestOpponent
 					break
 				}
 				else if (IsValid(scondBestOpponent))
 				{
-					// Warning("Secondary opponent, kd gap: " + lowestKd)
+					Warning("Secondary opponent, kd gap: " + lowestKd)
 					newGroup.player1 = playerSelf
 					newGroup.player2 = scondBestOpponent
 					break
@@ -319,9 +318,17 @@ void function soloModeThread()
 
 		thread respawnInSoloMode(newGroup.player2)
 
+
+
 	}//while(true)
 
-	
+	OnThreadEnd(
+		function() : (  )
+		{
+			Warning(Time() + "Solo thread is down!!!!!!!!!!!!!!!")
+			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+		}
+	)
 
 }//thread
 int function getAvailableSlotIndex()
@@ -337,11 +344,11 @@ int function getAvailableSlotIndex()
 	{
 		if (!soloLocationInProgressIndexs.contains(i)) //当前i的编号没有被占用
 		{
-			// printt("soloLocationInProgressIndexs: " + i.tostring())
+			printt("soloLocationInProgressIndexs: " + i.tostring())
 			return i
 		}
 	}
-	// printt("soloLocationInProgressIndexs: " + "-1")
+	printt("soloLocationInProgressIndexs: " + "-1")
 	return -1
 }
 soloGroupStruct function returnSoloGroupOfPlayer(entity player)
@@ -359,20 +366,27 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 {
 	if (!IsValid(player)) return
 	printt("respawnInSoloMode!")
-
+	// Warning("respawn player: " + player.GetPlayerName())
    	LocPair respawnLoc1 
    	LocPair respawnLoc2 
 
    	if( player.p.isSpectating )
     {
+		player.SetPlayerNetInt( "spectatorTargetCount", 0 )
+		player.p.isSpectating = false
 		player.SetSpecReplayDelay( 0 )
 		player.SetObserverTarget( null )
 		player.StopObserverMode()
         Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+        player.MakeVisible()
+		player.ClearInvulnerable()
+		player.SetTakeDamageType( DAMAGE_YES )
     }//disable replay mode
+
 
    	if( soloPlayersResting.contains(player) )
 	{
+		// Warning("resting respawn")
 		try
 		{
 			DecideRespawnPlayer(player, true)
@@ -384,7 +398,9 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 		    
 		}
 		catch (erroree)
-		{}
+		{
+			// printt("fail to respawn")
+		}
 		HolsterAndDisableWeapons(player)
 		LocPair WaitingRoom
 		if(GetMapName() == "mp_rr_arena_composite")
@@ -402,6 +418,11 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 			return
 		}
 		maki_tp_player(player, WaitingRoom)
+
+		player.MakeVisible()
+		player.ClearInvulnerable()
+		player.SetTakeDamageType( DAMAGE_YES )
+
 		return
 	}//玩家在休息模式
 
@@ -414,19 +435,33 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 		DecideRespawnPlayer(group.player2, true)
 	}
 	catch (error)
-	{}
+	{
+		Warning("fail to respawn")
+	}
 
 
 	respawnLoc1 = soloLocations[group.slotIndex].Loc1
 	respawnLoc2 = soloLocations[group.slotIndex].Loc2
 
-	if(IsValid(group.player1) )
-		PlayerRestoreHP_1v1(group.player1, 100, group.player1.GetShieldHealthMax().tofloat())
-	if(IsValid(group.player2) )
-		PlayerRestoreHP_1v1(group.player2, 100, group.player2.GetShieldHealthMax().tofloat())
-
 	maki_tp_player(group.player1,respawnLoc1)
 	maki_tp_player(group.player2,respawnLoc2)
+
+	wait 0.2 //防止上一条命被攻击的伤害传递到下一条命的玩家上
+
+	if(IsValid(group.player1) )
+	{
+		Inventory_SetPlayerEquipment(group.player1, PURPLE_SHIELD, "armor")
+		PlayerRestoreHP(group.player1, 100, group.player1.GetShieldHealthMax().tofloat())
+		
+	}
+	if(IsValid(group.player2) )
+	{
+		Inventory_SetPlayerEquipment(group.player2, PURPLE_SHIELD, "armor")
+		PlayerRestoreHP(group.player2, 100, group.player2.GetShieldHealthMax().tofloat())
+		
+	}
+
+	
 
 	//限制武器
 	//
@@ -453,6 +488,7 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 			GiveRandomSecondaryWeaponMetagame(group.player1)	
 			group.player1.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		    group.player1.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+			// group.player1.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 		}
 		catch (ee)
 		{}
@@ -475,6 +511,7 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 			GiveRandomSecondaryWeaponMetagame(group.player2)
 			group.player2.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		    group.player2.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+			// group.player2.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 		}
 		catch (eeee)
 		{}
@@ -490,6 +527,8 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 
 	thread ReCheckGodMode(group.player1)
 	thread ReCheckGodMode(group.player2)
+	// group.player1.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
+	// group.player2.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	
 		
 }
@@ -499,8 +538,11 @@ void function _soloModeInit(string mapName)
 {
 	array<LocPair> allSoloLocations 
 	array<LocPair> panelLocations
+	LocPair restingRoomPanelLocation
 	if (mapName == "mp_rr_arena_composite")
 	{
+		restingRoomPanelLocation = NewLocPair( <7.74,595.19,125>, <0,0,0>)//休息区观战面板
+
 		allSoloLocations= [
 		NewLocPair( <344.814117, 1279.00415, 188.561081>, <0, 178.998779, 0>), //1
 		NewLocPair( <-301.836731, 1278.16309, 188.60759>, <0, -2.78833318, 0>),
@@ -556,14 +598,16 @@ void function _soloModeInit(string mapName)
 		]
 		}
 		else if (mapName == "mp_rr_aqueduct")
-		{
+		{	
+			restingRoomPanelLocation = NewLocPair( <718.29,-5496.74,430>, <0,0,0>) //休息区观战面板
+
 			allSoloLocations= [
+
 			NewLocPair( <-6775.57568, -204.993729, 106.120445>, <0, -32.8351936, 0>),
 			NewLocPair( <-6230.72607, -527.870239, 107.595337>, <0, 144.085541, 0>),
 
 			NewLocPair( <3263.02002, -3556.06055, 273.576324>, <0, 8.61375999, 0>),
 			NewLocPair( <3784.31885, -3452.91772, 272.03125>, <0, -171.17247, 0>),
-
 
 			NewLocPair( <8502.62109, -615.898987, 315.014832>, <0, -60.9690781, 0>),//NEW
 			NewLocPair( <9021.84863, -1498.87195, 310.646271>, <0, 117.371147, 0>),
@@ -573,7 +617,6 @@ void function _soloModeInit(string mapName)
 
 			NewLocPair( <3654.57104, -4299.94629, 251.554062>, <0, -131.212936, 0>),
 			NewLocPair( <3087.35205, -4413.77637, 256.14917>, <0, -22.8175545, 0>),
-
 
 			NewLocPair( <2809.94946, -4459.84961, 361.746124>, <0, -88.6163712, 0>),//NEW
 			NewLocPair( <2738.16772, -5504.04443, 388.564209>, <0, 82.8682785, 0>),
@@ -586,7 +629,6 @@ void function _soloModeInit(string mapName)
 
 			NewLocPair( <234.719513, -4128.62842, 273.224884>, <0, -94.9567108, 0>),
 			NewLocPair( <214.551025, -4557.26904, 272.03125>, <0, 87.0343704, 0>),
-
 
 			NewLocPair( <-5046.05176, -2948.47144, 314.250671>, <0, 63.9120026, 0>),//NEW
 			NewLocPair( <-4553.3623, -2102.83643, 313.807098>, <0, -119.961533, 0>),
@@ -621,6 +663,45 @@ void function _soloModeInit(string mapName)
 			return
 		}
 	
+	//resting room init
+
+
+	entity restingRoomPanel = CreateFRButton(restingRoomPanelLocation.origin, restingRoomPanelLocation.angles, "%&use% Start spectating")
+	AddCallback_OnUseEntity( restingRoomPanel, void function(entity panel, entity user, int input)
+	{
+		if(!IsValid(user)) return
+		if(!isPlayerInRestingList(user))
+		{
+			Message(user,"Your must be in resting mode to spectate others!","Input 'rest' in console to enter resting mode ")
+			return //不在休息队列中不能使用观战功能
+		}
+
+
+	    try
+	    {
+	    	array<entity> enemiesArray = GetPlayerArray_Alive()
+			enemiesArray.fastremovebyvalue( user )
+		    entity specTarget = enemiesArray.getrandom()
+
+	    	user.p.isSpectating = true
+			user.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray().len() )
+			user.SetObserverTarget( specTarget )
+			user.SetSpecReplayDelay( 0.5 )
+			user.StartObserverMode( OBS_MODE_IN_EYE )				
+			thread CheckForObservedTarget(user)
+			user.p.lastTimeSpectateUsed = Time()
+
+			Message(user,"Press 'SPACE' to stop spectating")
+			user.MakeInvisible()
+
+	    }
+	    catch (error333)
+	    {}
+	    AddButtonPressedPlayerInputCallback( user, IN_JUMP,endSpectate  )
+	})
+
+
+
 	for (int i = 0; i < allSoloLocations.len(); i=i+2)
 	{
 		soloLocStruct p
@@ -630,16 +711,17 @@ void function _soloModeInit(string mapName)
 		soloLocations.append(p)
 	}
 
-	
-
 	foreach (index,eahclocation in panelLocations)
 	{
 		entity panel = CreateFRButton(eahclocation.origin, eahclocation.angles, "%&use% Never change your opponent")
 		panel.SetSkin(1)//red
+		soloLocations[index].Panel = panel
 		AddCallback_OnUseEntity( panel, void function(entity panel, entity user, int input)
 		{
 			soloGroupStruct group = returnSoloGroupOfPlayer(user)
 			if (!IsValid(group.player1) || !IsValid(group.player2)) return
+			if (soloLocations[group.slotIndex].Panel != panel) return //有傻逼捣乱
+
 			if( group.IsKeep == false)
 			{
 				group.IsKeep = true
@@ -669,7 +751,7 @@ void function _soloModeInit(string mapName)
 			
 		})
 
-		soloLocations[index].Panel = panel
+		
 	}
 
 
@@ -679,11 +761,29 @@ void function _soloModeInit(string mapName)
 
 }
 
+void function endSpectate(entity player)
+{
+	player.SetSpecReplayDelay( 0 )
+	player.SetObserverTarget( null )
+	player.StopObserverMode()
+    Remote_CallFunction_NonReplay(player, "ServerCallback_KillReplayHud_Deactivate")
+    player.MakeVisible()
+    player.ClearInvulnerable()
+	player.SetTakeDamageType( DAMAGE_YES )
+	try
+	{
+		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+	}
+	catch (error)
+	{}
+    RemoveButtonPressedPlayerInputCallback(player, IN_JUMP,endSpectate)
+}
+
 bool function isPlayerInSoloMode(entity player)
 {
 	foreach (eachGroup in soloPlayersInProgress)
 	{
-	   	if(IsValid(eachGroup.player1) && player == eachGroup.player1 || IsValid(eachGroup.player2) && player == eachGroup.player2) //找到当前玩家的group
+	   	if (eachGroup.player1 == player || eachGroup.player2 == player) //找到当前玩家的group
 	   		return true
 	}
 	return false
@@ -697,6 +797,15 @@ bool function isPlayerInWatingList(entity player)
 	}
 	return false
 }
+bool function isPlayerInRestingList(entity player)
+{
+	foreach (eachPlayer in soloPlayersResting)
+	{
+	   	if (eachPlayer == player) //找到当前玩家的group
+	   		return true
+	}
+	return false
+}
 void function soloModePlayerQuit(entity player)
 {
 	foreach (eachGroup in soloPlayersInProgress)
@@ -705,8 +814,8 @@ void function soloModePlayerQuit(entity player)
 		{
 			try
 			{
-				Message(eachGroup.player1,"Your opponent has disconnected!")
-				Message(eachGroup.player2,"Your opponent has disconnected!")
+				Message(eachGroup.player1,"Your opponent has quit the game!")
+				Message(eachGroup.player2,"Your opponent has quit the game!")
 			}
 			catch (error)
 			{}
@@ -721,8 +830,10 @@ void function deleteWaitingPlayer(entity player)
 	{
 		if(eachPlayerStruct.player == player)
 		{
+
 			soloPlayersWaiting.removebyvalue(eachPlayerStruct) //delete this PlayerStruct
 			printt("deleted the PlayerStruct")
+
 		}
 	}
 }
@@ -733,6 +844,12 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 	{
 		Message(player,"Matching!")
 		soloModePlayerToWaitingList(player)
+		try
+		{
+			player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
+		}
+		catch (error)
+		{}
 	}
 	else
 	{
@@ -893,6 +1010,8 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	soloPlayersResting.removebyvalue(player)//将两个玩家移出resting list
 	soloPlayersResting.removebyvalue(opponent)//将两个玩家移出resting list
 
+	
+
 
 	int slotIndex = getAvailableSlotIndex()
 	if (slotIndex > -1) //available slot exist
@@ -907,6 +1026,7 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	}
 	else
 	{
+		// Warning("No avaliable slot")
 		result = false
 	}
 
@@ -949,10 +1069,20 @@ void function soloModePlayerToRestingList(entity player)
 }
 void function soloModefixDelayStart(entity player)
 {
+	Message(player,"Loading solo mode")
 	HolsterAndDisableWeapons(player)
+
+		
+
 	wait 8
 	if(!soloPlayersResting.contains(player))
 	{
+		if(IsValid(player))
+		{
+			EnableOffhandWeapons( player )
+			DeployAndEnableWeapons(player)
+		}
+		
 		soloModePlayerToWaitingList(player)
 	}
 
