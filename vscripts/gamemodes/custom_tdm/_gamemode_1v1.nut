@@ -96,7 +96,7 @@ void function soloModeThread()
 		{
 			if(!IsValid(playerInWatingSctruct.player)) 
 			{
-				Warning("PLAYER QUIT")
+				// Warning("PLAYER QUIT")
 				soloPlayersWaiting.removebyvalue(playerInWatingSctruct)
 				continue
 			}
@@ -277,14 +277,14 @@ void function soloModeThread()
 				if(!IsValid(bestOpponent)) continue//没找到最合适玩家,为下一位玩家匹配
 				if(bestOpponent != lastOpponent) //最合适玩家是上局对手,用第二合适玩家代替
 				{
-					Warning("Best opponent, kd gap: " + lowestKd)
+					// Warning("Best opponent, kd gap: " + lowestKd)
 					newGroup.player1 = playerSelf
 					newGroup.player2 = bestOpponent
 					break
 				}
 				else if (IsValid(scondBestOpponent))
 				{
-					Warning("Secondary opponent, kd gap: " + lowestKd)
+					// Warning("Secondary opponent, kd gap: " + lowestKd)
 					newGroup.player1 = playerSelf
 					newGroup.player2 = scondBestOpponent
 					break
@@ -325,7 +325,7 @@ void function soloModeThread()
 	OnThreadEnd(
 		function() : (  )
 		{
-			Warning(Time() + "Solo thread is down!!!!!!!!!!!!!!!")
+			// Warning(Time() + "Solo thread is down!!!!!!!!!!!!!!!")
 			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 		}
 	)
@@ -436,7 +436,7 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 	}
 	catch (error)
 	{
-		Warning("fail to respawn")
+		// Warning("fail to respawn")
 	}
 
 
