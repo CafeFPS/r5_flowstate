@@ -450,14 +450,14 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 
 	if(IsValid(group.player1) )
 	{
-		Inventory_SetPlayerEquipment(group.player1, PURPLE_SHIELD, "armor")
-		PlayerRestoreHP(group.player1, 100, group.player1.GetShieldHealthMax().tofloat())
+		Inventory_SetPlayerEquipment(group.player1, "armor_pickup_lv3", "armor")
+		PlayerRestoreHP_1v1(group.player1, 100, group.player1.GetShieldHealthMax().tofloat())
 		
 	}
 	if(IsValid(group.player2) )
 	{
-		Inventory_SetPlayerEquipment(group.player2, PURPLE_SHIELD, "armor")
-		PlayerRestoreHP(group.player2, 100, group.player2.GetShieldHealthMax().tofloat())
+		Inventory_SetPlayerEquipment(group.player2, "armor_pickup_lv3", "armor")
+		PlayerRestoreHP_1v1(group.player2, 100, group.player2.GetShieldHealthMax().tofloat())
 		
 	}
 
