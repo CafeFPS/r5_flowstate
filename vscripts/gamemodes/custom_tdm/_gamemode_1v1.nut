@@ -9,11 +9,15 @@ global struct soloLocStruct
 	vector Center //center of Loc1 and Loc2
 
 	entity Panel //keep current opponent panel
+	
 }
 global struct soloGroupStruct
 {
 	entity player1
 	entity player2
+
+	array<entity> rings//ring boundaries
+
 	int slotIndex
 	bool IsFinished = false //player1 or player2 is died, set this to true and soloModeThread() will handle this
 	bool IsKeep = false //player may want to play with current opponent,so we will keep this group
@@ -131,6 +135,10 @@ void function soloModeThread()
 				printt("this round has been finished")
 				soloModePlayerToWaitingList(eachGroup.player1)
 				soloModePlayerToWaitingList(eachGroup.player2)
+				foreach (eachRing in eachGroup.rings)
+				{
+					eachRing.Destroy()
+				}
 				continue
 			}
 
@@ -182,7 +190,7 @@ void function soloModeThread()
 			if(IsValid(eachGroup.player2)) 
 			{
 				eachGroup.player2.p.lastDamageTime = Time() //avoid player regen health
-				if(Distance(eachGroup.player2.GetOrigin(),Center) > 1200) //检测乱跑的脑残
+				if(Distance2D(eachGroup.player2.GetOrigin(),Center) > 1200) //检测乱跑的脑残
 				{
 					Remote_CallFunction_Replay( eachGroup.player2, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 					eachGroup.player2.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
@@ -318,6 +326,12 @@ void function soloModeThread()
 
 		thread respawnInSoloMode(newGroup.player2)
 
+		//Ring boundaries
+		
+		entity ring1 = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center,newGroup.player1)
+		entity ring2 = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center,newGroup.player2)
+		newGroup.rings.append(ring1)
+		newGroup.rings.append(ring2)
 
 
 	}//while(true)
@@ -708,11 +722,15 @@ void function _soloModeInit(string mapName)
 		p.Loc1 = allSoloLocations[i]
 		p.Loc2 = allSoloLocations[i+1]
 		p.Center = (allSoloLocations[i].origin + allSoloLocations[i+1].origin)/2
+
+		
+
 		soloLocations.append(p)
 	}
 
 	foreach (index,eahclocation in panelLocations)
 	{
+		//Panels for save opponents
 		entity panel = CreateFRButton(eahclocation.origin, eahclocation.angles, "%&use% Never change your opponent")
 		panel.SetSkin(1)//red
 		soloLocations[index].Panel = panel
@@ -750,6 +768,9 @@ void function _soloModeInit(string mapName)
 			}
 			
 		})
+
+
+
 
 		
 	}
@@ -1094,6 +1115,37 @@ void function soloModefixDelayStart(entity player)
 	{}
 }
 
+entity function CreateSmallRingBoundary(vector Center,entity Owner)
+{
+    vector smallRingCenter = Center
+	float smallRingRadius = 1200
+	entity smallcircle = CreateEntity( "prop_script" )
+	smallcircle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
+	smallcircle.kv.fadedist = 2000
+	smallcircle.kv.modelscale = smallRingRadius
+	smallcircle.kv.renderamt = 1
+	smallcircle.kv.rendercolor = FlowState_RingColor()
+	smallcircle.kv.solid = 0
+	smallcircle.kv.VisibilityFlags = ENTITY_VISIBLE_TO_OWNER
+	smallcircle.SetOwner(Owner)
+	smallcircle.SetOrigin( smallRingCenter )
+	smallcircle.SetAngles( <0, 0, 0> )
+	smallcircle.NotSolid()
+	smallcircle.DisableHibernation()
+	smallcircle.Minimap_SetObjectScale( min(smallRingRadius / SURVIVAL_MINIMAP_RING_SCALE, 1) )
+	smallcircle.Minimap_SetAlignUpright( true )
+	smallcircle.Minimap_SetZOrder( 2 )
+	smallcircle.Minimap_SetClampToEdge( true )
+	smallcircle.Minimap_SetCustomState( eMinimapObject_prop_script.OBJECTIVE_AREA )
+
+	DispatchSpawn(smallcircle)
+
+	foreach ( player in GetPlayerArray() )
+	{
+		smallcircle.Minimap_AlwaysShow( 0, player )
+	}
+	return smallcircle
+}
 
 
 
