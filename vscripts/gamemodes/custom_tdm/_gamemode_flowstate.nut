@@ -194,8 +194,10 @@ void function _CustomTDM_Init()
 	AddClientCommandCallback("controllersummary", ClientCommand_ControllerSummary)
 	
 	if( is1v1EnabledAndAllowed() )
+	{
 		AddClientCommandCallback("rest", ClientCommand_Maki_SoloModeRest)
 		_soloModeInit(GetMapName())
+	}
 		
 	for(int i = 0; GetCurrentPlaylistVarString("blacklisted_weapon_" + i.tostring(), "~~none~~") != "~~none~~"; i++)
 	{
