@@ -9,7 +9,7 @@ global struct soloLocStruct
 	vector Center //center of Loc1 and Loc2
 
 	entity Panel //keep current opponent panel
-	
+
 }
 global struct soloGroupStruct
 {
@@ -87,7 +87,7 @@ void function soloModeThread()
 	{
 		return
 	}
-	
+
 	IsInSoloMode = true
 
 	wait 8
@@ -98,13 +98,13 @@ void function soloModeThread()
 		//遍历等待队列
 		foreach (playerInWatingSctruct in soloPlayersWaiting )
 		{
-			if(!IsValid(playerInWatingSctruct.player)) 
+			if(!IsValid(playerInWatingSctruct.player))
 			{
 				// Warning("PLAYER QUIT")
 				soloPlayersWaiting.removebyvalue(playerInWatingSctruct)
 				continue
 			}
-			
+
 			if(Distance(playerInWatingSctruct.player.GetOrigin(),WaitingRoom.origin)>500) //waiting player should be in waiting room,not battle area
 			{
 				thread soloModeWaitingPrompt(playerInWatingSctruct.player,WaitingRoom.origin)
@@ -128,8 +128,8 @@ void function soloModeThread()
 		//遍历游玩队列
 		foreach (eachGroup in soloPlayersInProgress)
 		{
-			
-			
+
+
 			if(eachGroup.IsFinished)//this round has been finished
 			{
 				printt("this round has been finished")
@@ -153,7 +153,7 @@ void function soloModeThread()
 					thread respawnInSoloMode(eachGroup.player2)
 				}//player in keeped group is died, respawn them
 			}
-			
+
 			if(!IsValid(eachGroup.player1) || !IsValid(eachGroup.player2)) //Is player in this group quit the game
 			{
 				printt("solo player quit!!!!!")
@@ -174,8 +174,8 @@ void function soloModeThread()
 			//检测乱跑的脑残
 			int eachSlotIndex = eachGroup.slotIndex
 			vector Center =  soloLocations[eachSlotIndex].Center
-			
-			if(IsValid(eachGroup.player1)) 
+
+			if(IsValid(eachGroup.player1))
 			{
 				eachGroup.player1.p.lastDamageTime = Time() //avoid player regen health
 
@@ -183,11 +183,11 @@ void function soloModeThread()
 				{
 					Remote_CallFunction_Replay( eachGroup.player1, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 					eachGroup.player1.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
-				
+
 				}
 			}
 
-			if(IsValid(eachGroup.player2)) 
+			if(IsValid(eachGroup.player2))
 			{
 				eachGroup.player2.p.lastDamageTime = Time() //avoid player regen health
 				if(Distance2D(eachGroup.player2.GetOrigin(),Center) > 1200) //检测乱跑的脑残
@@ -206,12 +206,13 @@ void function soloModeThread()
 		foreach (restingPlayer in soloPlayersResting )
 		{
 			if(!IsValid(restingPlayer)) continue
-			HolsterAndDisableWeapons(restingPlayer)
+			//HolsterAndDisableWeapons(restingPlayer)
+			TakeAmmoFromPlayer(restingPlayer)   //子弹设为0
 			if(!IsAlive(restingPlayer)  )
 			{
 				respawnInSoloMode(restingPlayer)
 			}
-			
+
 
 		}
 
@@ -228,8 +229,8 @@ void function soloModeThread()
 		}
 
 		// printt("------------------more than 2 player in solo waiting array,matching------------------")
-		soloGroupStruct newGroup 
-		entity opponent 
+		soloGroupStruct newGroup
+		entity opponent
 		//优先处理超时玩家
 		//player1:超时的玩家,player2:随机从等待队列里找一个玩家
 
@@ -265,7 +266,7 @@ void function soloModeThread()
 						continue
 					properOpponentTable[eachOpponent] <- fabs(selfKd - opponentKd)
 				}
-				
+
 				float lowestKd = 999
 				entity bestOpponent
 				entity scondBestOpponent//防止bestOpponent是上一局的对手
@@ -327,7 +328,7 @@ void function soloModeThread()
 		thread respawnInSoloMode(newGroup.player2)
 
 		//Ring boundaries
-		
+
 		entity ring1 = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center,newGroup.player1)
 		entity ring2 = CreateSmallRingBoundary(soloLocations[newGroup.slotIndex].Center,newGroup.player2)
 		newGroup.rings.append(ring1)
@@ -351,7 +352,7 @@ int function getAvailableSlotIndex()
 	array<int> soloLocationInProgressIndexs //所有正在游玩的地区编号
 	foreach (eachGroup in soloPlayersInProgress)
 	{
-		soloLocationInProgressIndexs.append(eachGroup.slotIndex) 
+		soloLocationInProgressIndexs.append(eachGroup.slotIndex)
 	}
 
 	for (int i = 0; i < soloLocations.len(); ++i)
@@ -381,8 +382,8 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 	if (!IsValid(player)) return
 	printt("respawnInSoloMode!")
 	// Warning("respawn player: " + player.GetPlayerName())
-   	LocPair respawnLoc1 
-   	LocPair respawnLoc2 
+   	LocPair respawnLoc1
+   	LocPair respawnLoc2
 
    	if( player.p.isSpectating )
     {
@@ -404,18 +405,21 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 		try
 		{
 			DecideRespawnPlayer(player, true)
-			TakeAllWeapons(player)
-			GiveRandomPrimaryWeaponMetagame(player)
-			GiveRandomSecondaryWeaponMetagame(player)	
+			EnableOffhandWeapons( player )
+			DeployAndEnableWeapons( player )
+			TakeAllWeapons( player )
+			GiveRandomPrimaryWeaponMetagame( player )
+			GiveRandomSecondaryWeaponMetagame( player )
+            TakeAmmoFromPlayer( player )   //子弹设为0
 			player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
-		    
+
 		}
 		catch (erroree)
 		{
 			// printt("fail to respawn")
 		}
-		HolsterAndDisableWeapons(player)
+		//HolsterAndDisableWeapons(player)
 		LocPair WaitingRoom
 		if(GetMapName() == "mp_rr_arena_composite")
 		{
@@ -466,16 +470,16 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 	{
 		Inventory_SetPlayerEquipment(group.player1, "armor_pickup_lv3", "armor")
 		PlayerRestoreHP_1v1(group.player1, 100, group.player1.GetShieldHealthMax().tofloat())
-		
+
 	}
 	if(IsValid(group.player2) )
 	{
 		Inventory_SetPlayerEquipment(group.player2, "armor_pickup_lv3", "armor")
 		PlayerRestoreHP_1v1(group.player2, 100, group.player2.GetShieldHealthMax().tofloat())
-		
+
 	}
 
-	
+
 
 	//限制武器
 	//
@@ -483,15 +487,21 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 	{
 		group.player1.TakeOffhandWeapon(OFFHAND_TACTICAL)
 		group.player1.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+
+		EnableOffhandWeapons( group.player1 )
+		DeployAndEnableWeapons( group.player1 )
 	}//player dont need any skills in solo mode
 	if(IsValid(group.player2))
 	{
 		group.player2.TakeOffhandWeapon(OFFHAND_TACTICAL)
 		group.player2.TakeOffhandWeapon(OFFHAND_ULTIMATE)
+
+		EnableOffhandWeapons( group.player2 )
+		DeployAndEnableWeapons( group.player2 )
 	}//player dont need any skills in solo mode
 
-		
-		
+	
+	
 
 	if (IsValid(group.player1) && !(group.player1.GetPlayerName() in weaponlist))
 	{
@@ -499,7 +509,7 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 		{
 			TakeAllWeapons(group.player1)
 		    GiveRandomPrimaryWeaponMetagame(group.player1)
-			GiveRandomSecondaryWeaponMetagame(group.player1)	
+			GiveRandomSecondaryWeaponMetagame(group.player1)
 			group.player1.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
 		    group.player1.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
 			// group.player1.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
@@ -512,15 +522,15 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 			WpnAutoReload(group.player1)
 	}
 
-		
-		
+
+
 
 	if (IsValid(group.player2) && !(group.player2.GetPlayerName() in weaponlist))
 	{
 		try
 		{
 			TakeAllWeapons(group.player2)
-			
+
 		    GiveRandomPrimaryWeaponMetagame(group.player2)
 			GiveRandomSecondaryWeaponMetagame(group.player2)
 			group.player2.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
@@ -543,14 +553,14 @@ void function respawnInSoloMode(entity player) //复活死亡玩家和同一个s
 	thread ReCheckGodMode(group.player2)
 	// group.player1.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
 	// group.player2.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-	
-		
+
+
 }
 
 
 void function _soloModeInit(string mapName)
 {
-	array<LocPair> allSoloLocations 
+	array<LocPair> allSoloLocations
 	array<LocPair> panelLocations
 	LocPair restingRoomPanelLocation
 	if (mapName == "mp_rr_arena_composite")
@@ -578,7 +588,7 @@ void function _soloModeInit(string mapName)
 
 		NewLocPair( <621.688782, 3920.86963, -31.9940014>, <0, -84.1400604, 0>), //7
 		NewLocPair( <709.123413, 3262.09692, -31.96875>, <0, 94.3908463, 0>),
-		
+
 		NewLocPair( <2933.51343, 1449.6571, 140.03125>, <0, -100.364799, 0>), //8
 		NewLocPair( <2455.15234, 1004.09894, 128.03125>, <0, 7.74315786, 0>),
 
@@ -612,7 +622,7 @@ void function _soloModeInit(string mapName)
 		]
 		}
 		else if (mapName == "mp_rr_aqueduct")
-		{	
+		{
 			restingRoomPanelLocation = NewLocPair( <718.29,-5496.74,430>, <0,0,0>) //休息区观战面板
 
 			allSoloLocations= [
@@ -676,7 +686,7 @@ void function _soloModeInit(string mapName)
 		{
 			return
 		}
-	
+
 	//resting room init
 
 
@@ -701,7 +711,7 @@ void function _soloModeInit(string mapName)
 			user.SetPlayerNetInt( "spectatorTargetCount", GetPlayerArray().len() )
 			user.SetObserverTarget( specTarget )
 			user.SetSpecReplayDelay( 0.5 )
-			user.StartObserverMode( OBS_MODE_IN_EYE )				
+			user.StartObserverMode( OBS_MODE_IN_EYE )
 			thread CheckForObservedTarget(user)
 			user.p.lastTimeSpectateUsed = Time()
 
@@ -723,7 +733,7 @@ void function _soloModeInit(string mapName)
 		p.Loc2 = allSoloLocations[i+1]
 		p.Center = (allSoloLocations[i].origin + allSoloLocations[i+1].origin)/2
 
-		
+
 
 		soloLocations.append(p)
 	}
@@ -766,13 +776,13 @@ void function _soloModeInit(string mapName)
 				catch (error)
 				{}
 			}
-			
+
 		})
 
 
 
 
-		
+
 	}
 
 
@@ -882,13 +892,13 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 		}
 		catch (error)
 		{
-			
+
 		}
-		
+
 		respawnInSoloMode(player)
 
 	}
-	
+
 	return true
 }
 entity function getRandomOpponentOfPlayer(entity player)
@@ -900,7 +910,7 @@ entity function getRandomOpponentOfPlayer(entity player)
 		if(IsValid(eachPlayerStruct.player) && player != eachPlayerStruct.player)
 			return eachPlayerStruct.player
 	}
-	
+
 	return p
 }
 entity function returnOpponentOfPlayer(entity player, soloGroupStruct group)
@@ -939,7 +949,7 @@ void function soloModePlayerToWaitingList(entity player)
 		}
 	}
 
-	soloPlayerStruct playerStruct 
+	soloPlayerStruct playerStruct
 	playerStruct.player = player
 	playerStruct.waitingTime = Time() + 2
 	if(IsValid(player))
@@ -977,7 +987,7 @@ void function soloModePlayerToWaitingList(entity player)
 			soloModePlayerToWaitingList(opponent) //将对手放回waiting list
 		}
 	}
-	
+
 	//检查resting list 是否有该玩家
 	soloPlayersResting.removebyvalue(player)
 
@@ -985,7 +995,7 @@ void function soloModePlayerToWaitingList(entity player)
 
 bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能重复添加玩家,否则会导致现有的group被销毁
 {
-	
+
 	entity player = newGroup.player1
 	entity opponent = newGroup.player2
 	bool result = false
@@ -1031,7 +1041,7 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	soloPlayersResting.removebyvalue(player)//将两个玩家移出resting list
 	soloPlayersResting.removebyvalue(opponent)//将两个玩家移出resting list
 
-	
+
 
 
 	int slotIndex = getAvailableSlotIndex()
@@ -1061,7 +1071,7 @@ void function soloModePlayerToRestingList(entity player)
 
 	deleteWaitingPlayer(player)
 
-	
+
 	soloGroupStruct group = returnSoloGroupOfPlayer(player)
 	if(IsValid(group))
 	{
@@ -1069,7 +1079,7 @@ void function soloModePlayerToRestingList(entity player)
 
 		if(IsValid(soloLocations[group.slotIndex].Panel)) //Panel in current Location
 			soloLocations[group.slotIndex].Panel.SetSkin(1) //set panel to red(default color)
-		
+
 		soloPlayersInProgress.removebyvalue(group) //销毁这个group
 
 		if(IsValid(opponent)) //找不到对手
@@ -1093,7 +1103,7 @@ void function soloModefixDelayStart(entity player)
 	Message(player,"Loading solo mode")
 	HolsterAndDisableWeapons(player)
 
-		
+
 
 	wait 8
 	if(!soloPlayersResting.contains(player))
@@ -1103,7 +1113,7 @@ void function soloModefixDelayStart(entity player)
 			EnableOffhandWeapons( player )
 			DeployAndEnableWeapons(player)
 		}
-		
+
 		soloModePlayerToWaitingList(player)
 	}
 
@@ -1174,4 +1184,4 @@ void function PlayerRestoreHP_1v1(entity player, float health, float shields)
 		Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
 	player.SetShieldHealth( shields )
 }
-	
+
