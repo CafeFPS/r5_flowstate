@@ -517,8 +517,8 @@ void function _OnPlayerConnected(entity player)
 			
 			// EnableOffhandWeapons( player )
 			// DeployAndEnableWeapons(player)
-			soloModePlayerToWaitingList(player)
-
+			if(!isPlayerInRestingList(player))
+				soloModePlayerToWaitingList(player)
 			try
 			{
 				player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_suicide } )
@@ -1253,8 +1253,8 @@ void function GiveRandomPrimaryWeaponMetagame(entity player)
 		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2",
 		"mp_weapon_energy_shotgun optic_cq_threat shotgun_bolt_l2",
 		"mp_weapon_mastiff",
-		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l3",
-		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l3",
+		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2",
+		"mp_weapon_shotgun optic_cq_threat shotgun_bolt_l2",
 	]
 
 	foreach(weapon in Weapons)
@@ -2335,6 +2335,13 @@ void function SimpleChampionUI()
 	file.ringBoundary.Destroy()
 
 	file.currentRound++
+	// if(is1v1EnabledAndAllowed())
+	// {
+	// 	foreach (eachGroup in soloPlayersInProgress )
+	// 	{
+	// 		destroyRingsForGroup(eachGroup)
+	// 	}
+	// }
 }
 
 //       ██ ██████  ██ ███    ██  ██████  ██
@@ -3427,25 +3434,84 @@ bool function ClientCommand_SaveCurrentWeapons(entity player, array<string> args
 	return true
 }
 
+//Limit mod for weapons in LoadCustomWeapon
+string function modChecker( string weaponMods )
+{
+	array<string> weaponMod = split(weaponMods , " ")
+	array<string> rifles = ["mp_weapon_energy_ar","mp_weapon_esaw","mp_weapon_rspn101","mp_weapon_vinson","mp_weapon_lmg","mp_weapon_g2","mp_weapon_hemlok"]
+	array<string> smgs = ["mp_weapon_r97","mp_weapon_volt_smg","mp_weapon_pdw","mp_weapon_car"]
+	if (weaponMod[0] == "mp_weapon_energy_ar"||weaponMod[0] == "mp_weapon_esaw")//this weapon is energy gun
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if ("energy_mag_l3" == weaponMod[i] )//force player using energy_mag_l2
+				weaponMod[i] = "energy_mag_l2"
+		}
+	}
+
+	if ( rifles.contains(weaponMod[0]))//this weapon is rifle
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i])//去除枪管
+				weaponMod.remove(i)
+			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
+				weaponMod[i] = "stock_tactical_l1"
+			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
+				weaponMod[i] = "bullets_mag_l2"
+			if ("highcal_mag_l3" == weaponMod[i] || "highcal_mag_l2" == weaponMod[i]  )//force player using highcal_mag_l1
+				weaponMod[i] = "highcal_mag_l1"
+			if ("energy_mag_l3" == weaponMod[i] || "energy_mag_l2" == weaponMod[i]  )//force player using energy_mag_l1
+				weaponMod[i] = "energy_mag_l1"
+		}
+	}
+
+	if ( smgs.contains(weaponMod[0]))//this weapon is smg
+	{
+		for (int i = 1; i < weaponMod.len(); i++)
+		{
+			if ("barrel_stabilizer_l4_flash_hider" == weaponMod[i] || "barrel_stabilizer_l3" == weaponMod[i] || "barrel_stabilizer_l2" == weaponMod[i] ||"barrel_stabilizer_l1" == weaponMod[i] )//去除枪管
+				weaponMod.remove(i)
+			if ("stock_tactical_l3" == weaponMod[i] || "stock_tactical_l2" == weaponMod[i]  )//force player using stock_tactical_l1
+				weaponMod[i] = "stock_tactical_l1"
+			if ("bullets_mag_l3" == weaponMod[i]   )//force player using bullets_mag_l2
+				weaponMod[i] = "bullets_mag_l2"
+			if ("highcal_mag_l3" == weaponMod[i]   )//force player using highcal_mag_l2
+				weaponMod[i] = "highcal_mag_l2"
+			if ("energy_mag_l3" == weaponMod[i]   )//force player using energy_mag_l2
+				weaponMod[i] = "energy_mag_l2"
+		}
+	}
+
+	weaponMod.reverse()
+	string returnweapon
+	foreach (i in weaponMod) {
+		returnweapon = i+" "+returnweapon
+	}
+
+	return returnweapon
+}
 
 //Auto-load TDM Saved Weapons at Respawn
 void function LoadCustomWeapon(entity player)
 {
 	if(!IsValid(player)) return
 	if (player.GetPlayerName() in weaponlist)
-	{	
-		// print(weaponlist[player.GetPlayerName()])
-		//maki script
-		TakeAllWeapons(player)
-		
-
-		// ClientCommand( player, weaponlist[player.GetPlayerName()] )
-		// GiveRandomPrimaryWeaponMetagame(player)
-		// GiveRandomSecondaryWeaponMetagame(player)
+	{
+		// TakeAllWeapons(player)
 		array<string> weapons =  split(weaponlist[player.GetPlayerName()] , ";")
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
+		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+		//check if weapon's mods is allowed by server
+		foreach(index,eachWeapons in weapons)
+		{
+            eachWeapons =modChecker(eachWeapons)
+			weapons[index]=eachWeapons
+		}
+
 		foreach (index,eachWeapon in weapons)
 		{
-			int slot 
+			int slot
 			if(index == 0)
 			{
 				slot = WEAPON_INVENTORY_SLOT_PRIMARY_0
@@ -3454,17 +3520,16 @@ void function LoadCustomWeapon(entity player)
 			{
 				slot = WEAPON_INVENTORY_SLOT_PRIMARY_1
 			}
+
 			__GiveWeapon( player, weapons, slot, index )
 		}
-		player.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
-	    player.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+
 		player.SetActiveWeaponBySlot(eActiveInventorySlot.mainHand, WEAPON_INVENTORY_SLOT_PRIMARY_0)
-		
-		//maki script
+
 		wait 0.3
-		
+
 		if(!IsValid(player)) return
-		
+
 		WpnAutoReload(player)
 		WpnPulloutOnRespawn(player, 0)
 	}
