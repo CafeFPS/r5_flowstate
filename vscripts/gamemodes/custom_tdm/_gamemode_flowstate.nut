@@ -2335,13 +2335,6 @@ void function SimpleChampionUI()
 	file.ringBoundary.Destroy()
 
 	file.currentRound++
-	// if(is1v1EnabledAndAllowed())
-	// {
-	// 	foreach (eachGroup in soloPlayersInProgress )
-	// 	{
-	// 		destroyRingsForGroup(eachGroup)
-	// 	}
-	// }
 }
 
 //       ██ ██████  ██ ███    ██  ██████  ██
