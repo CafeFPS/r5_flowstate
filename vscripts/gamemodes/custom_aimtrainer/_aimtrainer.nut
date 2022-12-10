@@ -2933,33 +2933,40 @@ bool function CC_MenuGiveAimTrainerWeapon( entity player, array<string> args )
 
 	if(!IsValid(weaponent)) return true
 	
-	entity weapon1
-	entity weapon2
-	string optics1
-	string optics2
-	array<string> mods1 
-	array<string> mods2 
-	string weaponname1
-	string weaponname2
-	try
+	if( IsAlive( player ) ) // This is for TDM
 	{
-		weapon1 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 )
-		weapon2 = player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 )
-		if(!IsValid(weapon1) || !IsValid(weapon2)) return false
-		mods1 = GetWeaponMods( weapon1 )
-		mods2 = GetWeaponMods( weapon2 )
-		foreach (mod in mods1)
-			optics1 = mod + " " + optics1
-		foreach (mod in mods2)
-			optics2 = mod + " " + optics2
-		weaponname1 = "tgive p "+weapon1.GetWeaponClassName()+" " + optics1 + "; "
-		weaponname2 = "tgive s "+weapon2.GetWeaponClassName()+" " + optics2
-	}
-	catch(error)
-	{}	
-	if(weaponname1 == "" || weaponname2 == "") return false //dont save if player is dead
+		string weapon1
+		string weapon2
+		string optics1
+		string optics2
+		array<string> mods1 
+		array<string> mods2 
+		string weaponname1
+		string weaponname2
 
-	weaponlist[player.GetPlayerName()] <- weaponname1+weaponname2
+		weapon1 = SURVIVAL_GetWeaponBySlot( player, WEAPON_INVENTORY_SLOT_PRIMARY_0 ) // This function returns weapon class name if there's weapon, otherwise returns empty string
+		weapon2 = SURVIVAL_GetWeaponBySlot( player, WEAPON_INVENTORY_SLOT_PRIMARY_1 )
+
+		if( weapon1 != "" ) // Primary slot
+		{
+			mods1 = GetWeaponMods( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_0 ) )
+			foreach (mod in mods1)
+				optics1 = mod + " " + optics1
+			
+			weaponname1 = "tgive p " + weapon1 + " " + optics1 + "; "
+		}
+
+		if( weapon2 != "" ) // Secondary Slot
+		{
+			mods2 = GetWeaponMods( player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_1 ) )
+			foreach (mod in mods2)
+				optics2 = mod + " " + optics2
+		
+			weaponname2 = "tgive s " + weapon2 + " " + optics2
+		}
+
+		weaponlist[ player.GetPlayerName() ] <- weaponname1 + weaponname2
+	}
 	
 	if(GameRules_GetGameMode() == "custom_aimtrainer")
 		thread PlayAnimsOnGiveWeapon(weaponent, player)
