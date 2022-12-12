@@ -26,6 +26,8 @@ global function UpdateMatchSummaryPersistentVars
 
 int MAXBLOCKTIME = 2
 
+const float SERVER_SHUTDOWN_TIME_AFTER_FINISH = 30
+
 struct
 {
     void functionref( entity, float, float ) leviathanConsiderLookAtEntCallback = null
@@ -315,7 +317,12 @@ void function Sequence_Epilogue()
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 	}
 
-	WaitForever()
+	if( SERVER_SHUTDOWN_TIME_AFTER_FINISH > 0 )
+		wait SERVER_SHUTDOWN_TIME_AFTER_FINISH
+	else
+		WaitForever()
+
+	ShutdownHostGame()
 }
 
 void function UpdateMatchSummaryPersistentVars( int team )
