@@ -1785,7 +1785,8 @@ void function OnLoadoutButton_Focused_AimTrainer( var button )
 void function DoBrowseModeCharacterSelectEffects()
 {
 	//
-	ScreenFlash( 0.0, 0.0, 0.0, 0.25, 2.0 )
+	//ScreenFlash( 0.0, 0.0, 0.0, 0.25, 2.0 )
+	ScreenFade( GetLocalViewPlayer(), 0, 0, 0, 255, 2.0, 0.25, FFADE_IN | FFADE_PURGE ) // idk why but ScreenFlash doesn't work here, so using ScreenFade
 
 	//
 	thread function() : ()
