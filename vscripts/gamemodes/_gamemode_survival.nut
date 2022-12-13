@@ -25,8 +25,7 @@ global function CreateSurvivalDeathBoxForPlayer
 global function UpdateMatchSummaryPersistentVars
 
 int MAXBLOCKTIME = 2
-
-const float SERVER_SHUTDOWN_TIME_AFTER_FINISH = 30
+float SERVER_SHUTDOWN_TIME_AFTER_FINISH = 30 // 1 or more to wait the specified number of seconds before executing, 0 to execute immediately, -1 or less to not execute
 
 struct
 {
@@ -317,9 +316,9 @@ void function Sequence_Epilogue()
 		Remote_CallFunction_NonReplay( player, "ServerCallback_ShowWinningSquadSequence" )
 	}
 
-	if( SERVER_SHUTDOWN_TIME_AFTER_FINISH > 0 )
+	if( SERVER_SHUTDOWN_TIME_AFTER_FINISH >= 1 )
 		wait SERVER_SHUTDOWN_TIME_AFTER_FINISH
-	else
+	else if( SERVER_SHUTDOWN_TIME_AFTER_FINISH <= -1 )
 		WaitForever()
 
 	ShutdownHostGame()
