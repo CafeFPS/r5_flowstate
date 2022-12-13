@@ -321,7 +321,10 @@ void function Sequence_Epilogue()
 	else if( SERVER_SHUTDOWN_TIME_AFTER_FINISH <= -1 )
 		WaitForever()
 
-	ShutdownHostGame()
+	if( GetCurrentPlaylistVarBool( "survival_server_restart_after_end", false ) )
+		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+	else
+		ShutdownHostGame()
 }
 
 void function UpdateMatchSummaryPersistentVars( int team )
