@@ -438,10 +438,23 @@ void function SURVIVAL_Loot_All_InitShared()
 		// Frankly, I didn't want to do it in hard code, but I did this because it was the only way.
 		// The reason we are doing this is because without the loot data for the weapon, the game will assume that there is no weapon in the slot where that weapon is located.
 		// This is necessary because it can cause crashes.
-		// Loot data for custom weapons does not exist, so loot data for the closest weapon is applied.
-		file.lootData[ "mp_weapon_car" ] <- file.lootData[ "mp_weapon_r97" ]
-		file.lootData[ "mp_weapon_dragon_lmg" ] <- file.lootData[ "mp_weapon_lmg" ]
-		file.lootData[ "mp_weapon_3030" ] <- file.lootData[ "mp_weapon_doubletake" ]
+		array< string > customWeapons = [ "mp_weapon_car", "mp_weapon_dragon_lmg", "mp_weapon_3030" ]
+		table< string, string > baseWeapons = { mp_weapon_car = "mp_weapon_r97", mp_weapon_dragon_lmg = "mp_weapon_lmg", mp_weapon_3030 = "mp_weapon_doubletake" }
+		
+		foreach( weapon in customWeapons )
+		{
+			file.lootData[ weapon ] <- file.lootData[ baseWeapons[ weapon ] ]
+			file.lootData[ weapon ].baseWeapon = weapon
+			RegisterWeaponForUse( file.lootData[ weapon ].baseWeapon )
+			file.lootData[ weapon ].pickupString = GetWeaponInfoFileKeyField_GlobalString( file.lootData[ weapon ].baseWeapon, "printName" )
+			file.lootData[ weapon ].desc = GetWeaponInfoFileKeyField_GlobalString( file.lootData[ weapon ].baseWeapon, "description" )
+			file.lootData[ weapon ].hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( file.lootData[ weapon ].baseWeapon, "hud_icon" )
+			file.lootData[ weapon ].model = GetWeaponInfoFileKeyFieldAsset_Global( file.lootData[ weapon ].baseWeapon, "playermodel" )
+			if ( GetWeaponInfoFileKeyField_Global( file.lootData[ weapon ].baseWeapon, "ammo_pool_type" ) != null )
+				file.lootData[ weapon ].ammoType = GetWeaponInfoFileKeyField_GlobalString( file.lootData[ weapon ].baseWeapon, "ammo_pool_type" )
+			else
+				file.lootData[ weapon ].ammoType = ""
+		}
 	}
 	#endif
 
