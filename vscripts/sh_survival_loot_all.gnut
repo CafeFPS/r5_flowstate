@@ -445,7 +445,6 @@ void function SURVIVAL_Loot_All_InitShared()
 		{
 			file.lootData[ weapon ] <- file.lootData[ baseWeapons[ weapon ] ]
 			file.lootData[ weapon ].baseWeapon = weapon
-			RegisterWeaponForUse( file.lootData[ weapon ].baseWeapon )
 			file.lootData[ weapon ].pickupString = GetWeaponInfoFileKeyField_GlobalString( file.lootData[ weapon ].baseWeapon, "printName" )
 			file.lootData[ weapon ].desc = GetWeaponInfoFileKeyField_GlobalString( file.lootData[ weapon ].baseWeapon, "description" )
 			file.lootData[ weapon ].hudIcon = GetWeaponInfoFileKeyFieldAsset_Global( file.lootData[ weapon ].baseWeapon, "hud_icon" )
