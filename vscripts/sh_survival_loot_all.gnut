@@ -432,6 +432,19 @@ void function SURVIVAL_Loot_All_InitShared()
 		#endif
 	}
 
+	#if SERVER || CLIENT
+	{
+		// This is where loot data is applied to custom weapons.
+		// Frankly, I didn't want to do it in hard code, but I did this because it was the only way.
+		// The reason we are doing this is because without the loot data for the weapon, the game will assume that there is no weapon in the slot where that weapon is located.
+		// This is necessary because it can cause crashes.
+		// Loot data for custom weapons does not exist, so loot data for the closest weapon is applied.
+		file.lootData[ "mp_weapon_car" ] <- file.lootData[ "mp_weapon_r97" ]
+		file.lootData[ "mp_weapon_dragon_lmg" ] <- file.lootData[ "mp_weapon_lmg" ]
+		file.lootData[ "mp_weapon_3030" ] <- file.lootData[ "mp_weapon_doubletake" ]
+	}
+	#endif
+
 	foreach(string icon in icons)
 	{
 
