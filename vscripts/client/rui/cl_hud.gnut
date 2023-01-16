@@ -552,19 +552,21 @@ string function GetFormattedEventText( ScoreEvent scoreEvent, int pointValue, EH
 	entity targetEntity = FromEHI( associatedEHI )
 	if ( IsValid( targetEntity ) && !targetEntity.IsPlayer() )
 	{
-		entity bossPlayer = targetEntity.GetBossPlayer()
-		if ( IsValid( bossPlayer ) )
-			targetEntityText = GetPlayerName( ToEHI( bossPlayer ) )
-		else
-			targetEntityText = targetEntity.GetBossPlayerName()
+		if( targetEntity != null && GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) )
+		{
+			targetEntityText = targetEntity.GetTitleForUI()
+		} else {
+			entity bossPlayer = targetEntity.GetBossPlayer()
+			if ( IsValid( bossPlayer ) )
+				targetEntityText = GetPlayerName( ToEHI( bossPlayer ) )
+			else
+				targetEntityText = targetEntity.GetBossPlayerName()
+		}
 	}
 	else if ( EHIHasValidScriptStruct( associatedEHI ) )
 	{
 		targetEntityText = GetPlayerName( associatedEHI )
 	}
-
-	if( !targetEntity.IsPlayer() && GetCurrentPlaylistVarBool( "register_dummie_kill_as_actual_kill", false ) )
-		targetEntityText = targetEntity.GetTitleForUI()
 
 	return Localize( eventText, targetEntityText, valueA, valueB )
 }
