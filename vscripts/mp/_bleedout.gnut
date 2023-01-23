@@ -159,6 +159,8 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 		thread Bleedout_CheckForTeamBleedout( player )
 
 	TrackingVision_CreatePOI( eTrackingVisionNetworkedPOITypes.PLAYER_STARTBLEEDOUT, player, player.GetOrigin(), player.GetTeam(), player )
+
+	thread Bleedout_FirstPersonAnim( player )
 }
 
 void function Bleedout_DeathProtection( entity player )
@@ -167,6 +169,20 @@ void function Bleedout_DeathProtection( entity player )
 	wait 1.05
 	if(IsValid(player))
 		ClearInvincible(player)
+}
+
+void function Bleedout_FirstPersonAnim( entity player ) // Is there a callback that will be called when a player touched ground?
+{
+	vector lastPlayerVel = < 0, 0, -99999 > // Play animation forcely at first
+	while( file.isBleeding[ player ] )
+	{
+		if( player.IsOnGround() && lastPlayerVel.z <= -1000 )
+			PlayFirstPersonAnimation( player, "ptpov_downed_transition" )
+
+		lastPlayerVel = player.GetVelocity()
+
+		WaitFrame()
+	}
 }
 
 void function PlayerDying( entity player )
