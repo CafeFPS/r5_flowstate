@@ -136,6 +136,9 @@ void function Bleedout_StartPlayerBleedout( entity player, entity attacker )
 	SetPlayerEliminated( player )
 	player.SetPlayerNetInt( "bleedoutType", EquipmentSlot_GetEquipmentTier( player, "incapshield" ) )
 	player.SetHealth( 100 )
+
+	if( PlayerHasPassive( player, ePassives.PAS_SELF_REVIVE ) )
+		player.SetPlayerNetBool( "usedSelfRevive", false )
 	
 	if( IsValid( attacker ) && attacker.IsPlayer() )
 		EmitSoundOnEntityExceptToPlayer( player, attacker, "flesh_bulletimpact_downedshot_3p_vs_3p" )
