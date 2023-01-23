@@ -174,10 +174,21 @@ void function Bleedout_DeathProtection( entity player )
 void function Bleedout_FirstPersonAnim( entity player ) // Is there a callback that will be called when a player touched ground?
 {
 	vector lastPlayerVel = < 0, 0, -99999 > // Play animation forcely at first
+
+	HolsterAndDisableWeapons( player )
+
 	while( file.isBleeding[ player ] )
 	{
 		if( player.IsOnGround() && lastPlayerVel.z <= -1000 )
+		{
+			thread function() : ( player )
+			{
+				HolsterAndDisableWeapons( player )
+				wait 1.0 // TODO: Find a function that can get animation duration
+				DeployAndEnableWeapons( player )
+			}()
 			PlayFirstPersonAnimation( player, "ptpov_downed_transition" )
+		}
 
 		lastPlayerVel = player.GetVelocity()
 
