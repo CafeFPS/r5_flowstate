@@ -205,17 +205,10 @@ float function PilotShieldModifyDamage( entity player, var damageInfo)
 
 		if( IsValid( attacker ) && IsValid( player ) )
 		{
-			// string sound3pvs1p = "humanshield_break_3p_vs_1p"
-
 			if( attacker != player && attacker.IsPlayer() )
 				EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
 
-			// if( attacker != player && attacker.IsPlayer() )
-				// EmitSoundOnEntityExceptToPlayer( player, attacker, sound3pvs1p )
-			// else
-				// EmitSoundOnEntityOnlyToPlayer( player, player, sound3pvs1p ) // If the player breaks the shield himself, only the broken sound is played
-
-			// EmitSoundOnEntity( player, "humanshield_break_3p_vs_3p" )
+			EmitSoundOnEntityOnlyToPlayer( player, player, "humanshield_break_3p_vs_1p" )
 		}
     }
 
