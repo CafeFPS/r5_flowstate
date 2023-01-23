@@ -479,16 +479,19 @@ void function TakingFireDialogue( entity attacker, entity victim, entity weapon 
 	foreach( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
 	{
 		if( player.p.attackedTeam.len() < attackerTeam )
-			player.p.attackedTeam.resize( attackerTeam + 1, -returnTime )
+			player.p.attackedTeam.resize( attackerTeam + 2, -returnTime )
 
 		if( Time() - player.p.attackedTeam[ attackerTeam ] <= returnTime )
 			inTime = true
 	}
 
-	if( Distance( attacker.GetOrigin(), victim.GetOrigin() ) >= 4000 && Time() - victim.p.attackedTeam[ attackerTeam ] >= farTime )
-		PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_damageEnemy" )
-	else if( !inTime )
-		PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_engagingEnemy" )
+	if( weapon != null )
+	{
+		if( Distance( attacker.GetOrigin(), victim.GetOrigin() ) >= 4000 && Time() - victim.p.attackedTeam[ attackerTeam ] >= farTime )
+			PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_damageEnemy" )
+		else if( !inTime )
+			PlayBattleChatterLineToSpeakerAndTeam( attacker, "bc_engagingEnemy" )
+	}
 
 	foreach( player in GetPlayerArrayOfTeam( victim.GetTeam() ) )
 		player.p.attackedTeam[ attackerTeam ] = Time()
