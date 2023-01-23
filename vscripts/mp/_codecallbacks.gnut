@@ -396,7 +396,8 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 					if( attacker != ent && attacker.IsPlayer() )
 						EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
 
-					EmitSoundOnEntityOnlyToPlayer( ent, ent, "humanshield_break_3p_vs_1p" )
+					if( entIsPlayer )
+						EmitSoundOnEntityOnlyToPlayer( ent, ent, "humanshield_break_3p_vs_1p" )
 				}
 			}
 

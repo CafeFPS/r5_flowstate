@@ -208,7 +208,8 @@ float function PilotShieldModifyDamage( entity player, var damageInfo)
 			if( attacker != player && attacker.IsPlayer() )
 				EmitSoundOnEntityOnlyToPlayer( attacker, attacker, "humanshield_break_1p_vs_3p" )
 
-			EmitSoundOnEntityOnlyToPlayer( player, player, "humanshield_break_3p_vs_1p" )
+			if( player.IsPlayer() )
+				EmitSoundOnEntityOnlyToPlayer( player, player, "humanshield_break_3p_vs_1p" )
 		}
     }
 
