@@ -692,12 +692,12 @@ void function OnPlayerKilled( entity victim, entity attacker, var damageInfo )
 	if ( !IsValid( victim ) || !IsValid( attacker ) || !victim.IsPlayer() )
 		return
 	
-	if( attacker.IsPlayer() )
+	if( attacker.IsPlayer() && !IsFiringRangeGameMode() )
 	{
 		int attackerEHandle = attacker ? attacker.GetEncodedEHandle() : -1
 		int victimEHandle = victim ? victim.GetEncodedEHandle() : -1	
 			
-		if(victimEHandle != -1  && victim.p.DeathRecap_PreviousShotEnemyPlayer != null && victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
+		if(victimEHandle != -1 && victim.p.DeathRecap_PreviousShotEnemyPlayer != null && !IsDisconnected( victim.p.DeathRecap_PreviousShotEnemyPlayer ) && victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle() && victim.p.DeathRecap_DataToSend.totalDamage > 0)
 		{
 			Remote_CallFunction_NonReplay( victim, "ServerCallback_SendDeathRecapData", victimEHandle, victim.p.DeathRecap_PreviousShotEnemyPlayer.GetEncodedEHandle(), victim.p.DeathRecap_DataToSend.damageSourceID, victim.p.DeathRecap_DataToSend.damageType, victim.p.DeathRecap_DataToSend.totalDamage, victim.p.DeathRecap_DataToSend.hitCount, victim.p.DeathRecap_DataToSend.headShotBits, victim.p.DeathRecap_DataToSend.healthFrac, victim.p.DeathRecap_DataToSend.shieldFrac, victim.p.DeathRecap_DataToSend.blockTime )
 			ResetDeathRecapBlock(victim)
