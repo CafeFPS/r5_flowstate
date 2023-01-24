@@ -274,6 +274,13 @@ void function Sequence_WinnerDetermined()
 		MakeInvincible( player )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_PlayMatchEndMusic" )
 		Remote_CallFunction_NonReplay( player, "ServerCallback_MatchEndAnnouncement", player.GetTeam() == GetWinningTeam(), GetWinningTeam() )
+
+		if( Bleedout_IsBleedingOut( player ) )
+		{
+			player.Signal( "BleedOut_OnRevive" )
+			player.Signal( "OnContinousUseStopped" )
+		}
+			
 	}
 
 	thread SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER, 3.0 )
