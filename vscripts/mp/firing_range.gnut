@@ -282,7 +282,10 @@ void function OnPlayerRespawned(entity player)
 
 void function OnTeammateLoadoutSelectionChanged( EHI playerEHI, ItemFlavor unused )
 {
-	ClientCommand( FromEHI( playerEHI ), "Sur_UpdateCharacterLock 0" )
+	entity player = FromEHI( playerEHI )
+	ClientCommand( player, "Sur_UpdateCharacterLock 0" )
+	if( IsAlive( player ) && Bleedout_IsBleedingOut( player ) )
+		player.Die( null, null, { damageSourceId = eDamageSourceId.damagedef_despawn } )
 }
 
 // ==================================================
