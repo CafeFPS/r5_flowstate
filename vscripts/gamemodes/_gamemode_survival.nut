@@ -406,7 +406,7 @@ void function OnPlayerDamaged( entity victim, var damageInfo )
 
 	TakingFireDialogue( attacker, victim, weapon )
 
-	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) )
+	if ( currentHealth - damage <= 0 && PlayerRevivingEnabled() && !IsInstantDeath( damageInfo ) && Bleedout_AreThereAlivingMates( victim.GetTeam(), victim ) && !IsDemigod( victim ) )
 	{	
 		if( !IsValid(attacker) || !IsValid(victim) )
 			return
