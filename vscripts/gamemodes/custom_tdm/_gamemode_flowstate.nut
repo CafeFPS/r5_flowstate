@@ -1947,8 +1947,6 @@ void function SimpleChampionUI()
     DestroyPlayerProps()
 	isBrightWaterByZer0 = false
 
-    PlayerTrail( GetBestPlayer(),0 )
-
 	SetGameState( eGameState.Playing )
 	SetTdmStateToInProgress()
 	file.FallTriggersEnabled = true
@@ -2292,14 +2290,6 @@ void function SimpleChampionUI()
 	if( GetBestPlayer() != null )
 		SurvivalCommentary_HostAnnounce( eSurvivalCommentaryBucket.WINNER )
 
-	foreach( entity champion in GetPlayerArray() )
-	{
-		if( !IsValid( champion ) ) continue
-		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( champion ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( champion ), Loadout_CharacterClass() ) ) )
-		CharacterSkin_Apply( champion, characterSkinsA[0] )
-		if( GetBestPlayer() == champion ) 
-			PlayerTrail(champion,1)
-	}
 	foreach( player in GetPlayerArray() )
 	{
 		if( !IsValid( player ) ) continue
@@ -2498,26 +2488,6 @@ void function PlayerRestoreHP(entity player, float health, float shields)
 // ██      ██    ██ ███████ ██ ████ ██ █████      ██    ██ ██      ███████     █████   ██    ██ ██ ██  ██ ██         ██    ██ ██    ██ ██ ██  ██ ███████
 // ██      ██    ██      ██ ██  ██  ██ ██         ██    ██ ██           ██     ██      ██    ██ ██  ██ ██ ██         ██    ██ ██    ██ ██  ██ ██      ██
  // ██████  ██████  ███████ ██      ██ ███████    ██    ██  ██████ ███████     ██       ██████  ██   ████  ██████    ██    ██  ██████  ██   ████ ███████
-
-void function PlayerTrail(entity player, int onoff)
-{
-	if(!IsValid(player)) return
-	if (onoff == 1 )
-    {
-        int smokeAttachID = player.LookupAttachment( "CHESTFOCUS" )
-	    vector smokeColor = <255,255,255>
-		entity smokeTrailFX = StartParticleEffectOnEntityWithPos_ReturnEntity( player, GetParticleSystemIndex( $"P_grenade_thermite_trail"), FX_PATTACH_ABSORIGIN_FOLLOW, smokeAttachID, <0,0,0>, VectorToAngles( <0,0,-1> ) )
-		EffectSetControlPointVector( smokeTrailFX, 1, smokeColor )
-        player.p.DEV_lastDroppedSurvivalWeaponProp = smokeTrailFX
-		array<ItemFlavor> characterSkinsA = GetValidItemFlavorsForLoadoutSlot( ToEHI( player ), Loadout_CharacterSkin( LoadoutSlot_GetItemFlavor( ToEHI( player ), Loadout_CharacterClass() ) ) )
-		CharacterSkin_Apply( player, characterSkinsA[characterSkinsA.len()-RandomIntRangeInclusive(1,4)])
-    }
-	else
-    {
-		if(IsValid(player.p.DEV_lastDroppedSurvivalWeaponProp))
-			player.p.DEV_lastDroppedSurvivalWeaponProp.Destroy()
-    }
-}
 
 void function CharSelect( entity player)
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
