@@ -1,0 +1,207 @@
+untyped
+
+global function ZeeMapEditor_Init
+
+global function MapEditor_CreateProp
+global function MapEditor_SpawnDoor
+global function MapEditor_CreateTrigger
+global function MapEditor_CreateBubbleShieldWithSettings
+global function MapEditor_CreateRespawnableWeaponRack
+global function MapEditor_CreateLinkedZipline
+global function MapEditor_CreateLootBin
+
+global enum eMapEditorDoorType
+{
+	Single,
+	Double,
+	Vertical,
+	Horizontal
+}
+
+void function ZeeMapEditor_Init()
+{
+
+}
+
+entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1)
+{
+	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+	e.kv.fadedist = fade
+	e.kv.rendermode = 0
+	e.kv.renderamt = 1
+	e.kv.solid = 6
+	e.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+
+	if(mantle) e.AllowMantle()
+    
+	if (realm > -1) {
+		e.RemoveFromAllRealms()
+		e.AddToRealm(realm)
+	}
+    
+	e.SetScriptName("editor_placed_prop")
+	e.e.gameModeId = realm
+    e.SetModelScale( scale )
+    
+	return e
+}
+
+void function MapEditor_SpawnDoor(vector org, vector ang, int type, bool gold = false)
+{
+	switch(type)
+	{
+		case eMapEditorDoorType.Single:
+			entity d = CreateDoorEntity("prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang, gold)
+            DispatchSpawn(d)
+			break;
+		case eMapEditorDoorType.Double:
+			entity ddl = CreateDoorEntity("prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang, gold)
+            ddl.SetOrigin(org + ddl.GetRightVector() * 60)
+            DispatchSpawn(ddl)
+
+            entity ddr = CreateDoorEntity("prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang + <0,180,0>, gold)
+            ddr.SetOrigin(org + ddr.GetRightVector() * 60)
+            ddr.LinkToEnt( ddl )
+            DispatchSpawn(ddr)
+			break;
+		case eMapEditorDoorType.Vertical:
+			entity d = CreateDoorEntity("prop_dynamic", $"mdl/door/door_canyonlands_large_01_animated.rmdl", "survival_door_sliding", org, ang)
+			DispatchSpawn(d)
+			break;
+		case eMapEditorDoorType.Horizontal:
+			entity d = CreateDoorEntity("prop_dynamic", $"mdl/door/door_256x256x8_elevatorstyle02_animated.rmdl", "survival_door_sliding", org, ang)
+			DispatchSpawn(d)
+			break;
+	}
+}
+
+entity function CreateDoorEntity(string type, asset model, string scriptName, vector origin, vector angles, bool gold = false)
+{
+	entity d = CreateEntity(type)
+	d.SetOrigin(origin)
+	d.SetAngles(angles)
+	d.SetValueForModelKey(model)
+
+	if(scriptName != "") {
+		d.SetScriptName(scriptName)
+		d.kv.solid = 6
+	}
+
+	if(gold) d.SetSkin( 1 )
+
+	return d
+}
+
+entity function MapEditor_CreateTrigger( vector origin, vector angles, float radius, float totalheight, bool debugdraw = false)
+{
+	// Set up the trigger
+    entity trigger = CreateEntity( "trigger_cylinder" )
+	trigger.SetRadius( radius )
+	trigger.SetAboveHeight( totalheight )
+	trigger.SetBelowHeight( totalheight )
+	trigger.SetOrigin( origin )
+	trigger.SetAngles( angles )
+
+	if (debugdraw) // draw trigger bounds if needed
+	{
+		DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, totalheight, 0, 165, 255, true, 9999.9 )
+		DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, -totalheight, 255, 90, 0, true, 9999.9 )
+	}
+
+    return trigger
+}
+
+entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector angles, float scale, string color, asset collisionModel )
+{
+	entity bubbleShield = CreateEntity( "prop_dynamic" )
+	bubbleShield.SetValueForModelKey( collisionModel ) // TODO: fix this for apex
+	bubbleShield.kv.solid = SOLID_VPHYSICS
+	bubbleShield.kv.rendercolor = color
+	bubbleShield.kv.contents = (int(bubbleShield.kv.contents) | CONTENTS_NOGRAPPLE)
+	bubbleShield.SetOrigin( origin )
+	bubbleShield.SetAngles( angles )
+	bubbleShield.SetModelScale( scale )
+	// Blocks bullets, projectiles but not players and not AI
+	bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+	DispatchSpawn( bubbleShield )
+
+	EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
+
+	return bubbleShield
+}
+
+void function MapEditor_CreateRespawnableWeaponRack(vector pos, vector ang, string weaponName, float spawnTime)
+{
+	entity rack = CreateWeaponRack(pos, ang, weaponName)
+	thread OnPickupFromRackThread(GetWeaponFromRack(rack), weaponName, spawnTime)
+}
+
+// When the weapon is grabbed from the rack -> respawn it
+void function OnPickupFromRackThread(entity item, string ref, float spawnTime)
+{
+	entity rack = item.GetParent()
+	item.WaitSignal("OnItemPickup")
+
+	wait spawnTime
+
+	entity newWeapon = SpawnWeaponOnRack(rack, ref)
+	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), newWeapon.GetOrigin(), newWeapon.GetAngles() )
+	thread OnPickupFromRackThread(newWeapon, ref, spawnTime)
+}
+
+entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin = 0 )
+{
+	entity lootbin = CreateEntity( "prop_dynamic" )
+	lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+	lootbin.SetValueForModelKey( LOOT_BIN_MODEL )
+	lootbin.SetOrigin( origin )
+	lootbin.SetAngles( angles )
+	lootbin.kv.solid = SOLID_VPHYSICS
+
+	DispatchSpawn( lootbin )
+	lootbin.SetSkin(skin)
+
+	return lootbin
+}
+
+entity function SetNodeRopeProperties( entity rope )
+{
+	rope.kv.MoveSpeed = 64
+	rope.kv.Slack = 25
+	rope.kv.Subdiv = "2"
+	rope.kv.Width = "2"
+	rope.kv.Type = "0"
+	rope.kv.TextureScale = "1"
+	rope.kv.PositionInterpolator = 2
+	rope.kv.RopeMaterial = "cable/zipline.vmt"
+	rope.kv.Zipline = "1"
+	rope.kv.ZiplineAutoDetachDistance = "150"
+	rope.kv.ZiplineSagEnable = "0"
+	rope.kv.ZiplineSagHeight = "50"
+	rope.kv.fadedist = 50000
+
+	return rope
+}
+
+void function MapEditor_CreateLinkedZipline( array<vector> nodes )
+{
+	array<entity> ropes = [ SetNodeRopeProperties( CreateEntity( "move_rope" ) ) ]
+	ropes[0].SetOrigin( nodes[0] )
+
+	// create child ropes
+	for(int i = 1; i < nodes.len(); i++) {
+		vector nodepos = nodes[i]
+		ropes.append( SetNodeRopeProperties( CreateEntity( "keyframe_rope" )  ) )
+        
+		ropes[i].SetOrigin( nodepos )
+	}
+
+    // link all nodes
+	for(int i = 0; i < ropes.len(); i++) {
+		if(i + 1 < ropes.len())
+			ropes[i].LinkToEnt( ropes[i + 1]  )
+	}
+
+	foreach(entity rope in ropes)
+        DispatchSpawn( rope )
+}
