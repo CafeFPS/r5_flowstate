@@ -943,8 +943,11 @@ Scripts:
 	custom_maps/_custom_maps_1.nut
 	custom_maps/_custom_maps_2.nut
 	custom_maps/_custom_maps_3.nut
+	custom_maps/_custom_maps_4.nut
 	//map editor props
 	_place_map_editor_props_here.nut
+
+	_mapeditor.gnut
 ]
 
 When: "CLIENT"

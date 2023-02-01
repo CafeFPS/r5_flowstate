@@ -128,6 +128,7 @@ void function _CustomTDM_Init()
 	
 	SurvivalFreefall_Init() //Enables freefall/skydive
 	PrecacheCustomMapsProps()
+    PrecacheZeesMapProps()
 
     __InitAdmins()
 
@@ -2045,7 +2046,23 @@ void function SimpleChampionUI()
 		//printt("Flowstate DEBUG - creating props for Map by Biscutz.")
 		thread LoadMapByBiscutz1()
 		thread LoadMapByBiscutz2()
-	}
+	} else if ( file.selectedLocation.name == "Shipment By AyeZee" )
+	{
+		DestroyPlayerProps()
+        wait 1
+		thread Shipment()
+	} else if ( file.selectedLocation.name == "Killhouse By AyeZee" )
+	{
+		DestroyPlayerProps()
+        wait 1
+		thread Killhouse()
+	} else if (file.selectedLocation.name == "Nuketown By AyeZee")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread nuketown()
+    }
+
     foreach( player in GetPlayerArray() )
     {
 		if( !IsValid(player) ) return
@@ -2355,6 +2372,9 @@ entity function CreateRingBoundary(LocationSettings location)
     }
 
     ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
+
+    if(file.selectedLocation.name == "Shipment By AyeZee" || file.selectedLocation.name == "Killhouse By AyeZee" || file.selectedLocation.name == "Nuketown By AyeZee")
+        ringRadius = 99999
 
     if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
     	ringRadius = 99999
