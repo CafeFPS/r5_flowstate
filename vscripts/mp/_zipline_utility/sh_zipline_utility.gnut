@@ -1,0 +1,21 @@
+#if SERVER || CLIENT
+    untyped
+
+    global function ShZiplineUtility_Init
+
+
+// If "true" prints scripts debug on the console -- Developer mode required
+    global const bool ZIPLINE_DEBUG_SCRIPTS = false
+
+// If "true" create a platform with ziplines for debuging -- Developer mode required
+    global const bool DEBUG_ZIPLINE_PLATFORM = false
+
+// If "true" panels have no timer
+    global const bool PANEL_DEBUG_NO_TIMER = false
+
+
+void function ShZiplineUtility_Init()
+{
+    ShZiplinePanel_Init()
+}
+#endif // SERVER || CLIENT
