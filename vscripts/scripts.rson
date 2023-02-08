@@ -966,6 +966,24 @@ Scripts:
 [
 	freelance/_freelance.gnut
 ]
+
+
+// Zipline Utility
+When: "SERVER"
+Scripts:
+[
+    mp/_zipline_utility/_zipline_utility.gnut
+    mp/_zipline_utility/_zipline_func.gnut
+    mp/_zipline_utility/_zipline_debug.gnut
+]
+
+When: "SERVER || CLIENT"
+Scripts:
+[
+	mp/_zipline_utility/sh_zipline_utility.gnut
+    mp/_zipline_utility/sh_zipline_panel.gnut
+]
+
 // SalEditor
 When: "SERVER || CLIENT"
 Scripts:

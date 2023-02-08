@@ -1,0 +1,168 @@
+untyped
+
+
+global function CreateRandomZiplineOnClientConnected
+
+
+void function CreateRandomZiplineOnClientConnected( entity player )
+{
+    #if DEVELOPER
+        if ( player == gp()[0] )
+        {
+            thread ThreadCreateRandomZipline( player )
+        }
+    #endif // DEVELOPER
+}
+
+// Create random zipline to test the proper functioning
+void function ThreadCreateRandomZipline( entity player )
+{
+    wait 1
+
+    vector origin
+    vector angles
+
+    // Changes the position according to the map
+    switch ( GetMapName() )
+    {
+        case "mp_rr_canyonlands_staging":
+            origin = < 33000, -6000, -27500 >
+            angles = < 0, 0, 0 >
+            break
+        case "mp_rr_canyonlands_64k_x_64k":
+        case "mp_rr_canyonlands_mu1":
+        case "mp_rr_canyonlands_mu1_night":
+            origin = < -2500, -12500, 5000 >
+            angles = < 0, 0, 0 >
+            break
+        case "mp_rr_desertlands_64k_x_64k":
+        case "mp_rr_desertlands_64k_x_64k_nx":
+        case "mp_rr_desertlands_64k_x_64k_tt":
+            origin = < 1700, 5000, -1500 >
+            angles = < 0, 0, 0 >
+            break
+        default:
+            origin = < 0, 0, 0 >
+            angles = < 0, 0, 0 >
+        break
+
+    }
+
+    ZiplinePlatformInit( origin )
+    ZiplinesInit( origin )
+
+    player.SetOrigin( origin + < 0, 0, 96 > )
+    player.SetAngles( angles )
+    player.SetVelocity( < 0, 0, 0 > )
+
+}
+
+
+void function ZiplinesInit( vector startingorg )
+{
+    
+}
+
+
+void function ZiplinePlatformInit( vector startingorg )
+{
+    // Main platform
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1805.9900, 768.0542, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1805.9900, -768.0107, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1805.9900, -1024.0210, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1805.9900, 1024.0650, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1549.9910, -1024.0210, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1549.9910, 1024.0650, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1549.9910, -768.0107, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_screen_tower_01.rmdl", < -1677.9900, -896.0164, 16.0000 > + startingorg, < 0.0000, 90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_screen_tower_01.rmdl", < -1677.9900, 896.0601, 16.0000 > + startingorg, < 0.0000, 90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -1549.9900, 768.0542, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_screen_tower_01.rmdl", < -383.9873, -896.0382, 16.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_screen_tower_01.rmdl", < -383.9871, 896.0382, 16.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9870, -768.0325, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9870, -1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9867, 1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9869, -256.0108, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9867, 768.0324, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9869, 0.0001, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9869, -512.0216, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9869, 512.0217, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -511.9868, 256.0109, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9878, -1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9875, 1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9877, -768.0325, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9877, -256.0108, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9875, 768.0323, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9876, 0.0000, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9876, 512.0217, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9876, 256.0109, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -255.9877, -512.0216, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 1664.0120, -512.0336, 16.0000 > + startingorg, < 0.0000, 90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 1662.4660, 512.0331, 16.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, 256.0106, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0107, -1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, -768.0328, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, -256.0111, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, -0.0002, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0117, 1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 1662.4660, -1024.0440, 16.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0115, -1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0116, -256.0108, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0100, -256.0109, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0109, 256.0108, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0101, -0.0001, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, -1024.0440, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0110, 768.0323, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_screen_tower_01.rmdl", < 384.0106, 896.0381, 16.0000 > + startingorg, < 0.0000, 90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, 512.0214, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0115, -768.0325, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, 768.0321, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0116, 0.0000, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0117, 768.0323, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, -512.0219, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0110, 1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0115, -512.0217, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 1662.4660, 768.0322, 16.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0099, -1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0101, -512.0217, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0108, -256.0109, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0108, 0.0000, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_screen_tower_01.rmdl", < 384.0104, -896.0383, 16.0000 > + startingorg, < 0.0000, 90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0108, -512.0217, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0116, 256.0108, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 1664.0120, -768.0328, 16.0000 > + startingorg, < 0.0000, 90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0109, 512.0216, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0102, 1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 1536.0070, 1024.0430, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 256.0107, -768.0326, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 0.0117, 512.0217, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0101, 256.0108, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0102, 768.0323, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl", < 1664.0130, 1024.0430, 16.0000 > + startingorg, < 0.0000, 90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0101, 512.0216, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 512.0099, -768.0326, 0.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+
+    // Top platform
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 384.0104, -640.0391, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -383.9873, -640.0389, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl", < -383.9873, -384.0378, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -383.9871, 640.0393, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl", < -127.9697, -896.0382, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 384.0104, -128.0387, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -383.9873, -896.0382, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 384.0104, -896.0383, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl", < -383.9872, 384.0384, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -383.9872, -128.0386, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -383.9871, 896.0386, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_gantry_01.rmdl", < -689.1893, 6.0784, 1883.0000 > + startingorg, < 0.0000, 90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl", < 127.9929, 896.0386, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < -383.9872, 127.9606, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl", < 384.0104, -384.0379, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 384.0106, 896.0385, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_gantry_01.rmdl", < -487.5892, 0.0001, 1883.0000 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl", < -127.9695, 896.0386, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl", < 384.0105, 384.0383, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 384.0105, 127.9605, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl", < 384.0105, 640.0392, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl", < 127.9927, -896.0382, 978.7474 > + startingorg, < 0.0000, -90.0000, 0.0000 >, true, 50000, -1, 1 )
+}
