@@ -91,6 +91,7 @@ WeaponData
 	"fire_duration"									"10.0"
 	"deploy_time" 									"0.15"
 	"lower_time"  									"0.15"
+	"raise_time"  									"0.15"
 	"allow_empty_fire"								"0"
 	"no_ammo_used_on_primary_attack"				"1"
 	"reload_enabled"  								"0"
@@ -116,7 +117,7 @@ WeaponData
 	"grenade_bounce_randomness"						"0.05"
 	"grenade_bounce_extra_vertical_randomness"		"0.0"
 	"grenade_roll_vel_frac_per_second"				"0.1"
-	"grenade_radius_vertical"						"5.0"
+	//"grenade_radius_vertical"						"10.0"
 	"grenade_radius_horizontal"						"30.0"
 
 	// Spread
@@ -126,7 +127,7 @@ WeaponData
 	"viewkick_spring" 								"pistol"
 	"ammo_drains_to_empty_on_fire"					"0"
 
-	// Bob - Hip
+	"zoom_effects"									"0"	// Bob - Hip
 	"bob_cycle_time"                           "0.4"
 	"bob_max_speed"                            "150"
 	"bob_vert_dist"                            "0.09"

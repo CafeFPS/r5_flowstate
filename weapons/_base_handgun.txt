@@ -293,13 +293,13 @@ WeaponData
            "viewkick_air_scale_ads"						"1.0"
 
            // Hipfire Spread
-           "spread_air_hip"  								"2.2"
+           "spread_air_hip"  								"*0.3"
 
            "spread_kick_on_fire_air_hip" 					"0.0"
 
            "spread_max_kick_air_hip" 						"3.5"
 
-           "spread_air_ads"  								"0"
+           "spread_air_ads"  								"*0.5"
 
            "spread_kick_on_fire_air_ads" 					"0"
 

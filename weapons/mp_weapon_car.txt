@@ -101,7 +101,7 @@ WeaponData
 	// Damage - When Used by Players
 	"damage_type" 									"bullet"
 	"red_crosshair_range" 							"0"
-    "ammo_clip_size"                                "20"
+    "ammo_clip_size"                                "19"
 	"ammo_min_to_fire"								"1"
     "ammo_default_total"							"300"
     "ammo_stockpile_max"							"300"
@@ -309,15 +309,15 @@ WeaponData
 
 		bullets_mag_l1
 		{
-			"ammo_clip_size"   							"22"
+			"ammo_clip_size"   							"21"
 		}
 		bullets_mag_l2
 		{
-			"ammo_clip_size"   							"24"
+			"ammo_clip_size"   							"23"
 		}
 		bullets_mag_l3
 		{
-			"ammo_clip_size"   							"27"
+			"ammo_clip_size"   							"26"
 		}
 		barrel_stabilizer_l1 //flowstate things
 		{

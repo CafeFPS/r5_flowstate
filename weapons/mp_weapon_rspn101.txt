@@ -83,13 +83,14 @@ WeaponData
     "ammo_min_to_fire"								"1"
 "low_ammo_fraction" 							"0.3"
 	// Damage - When Used by Players
-    "damage_near_value"   							"14"
-    "damage_far_value"								"14"
-    "damage_very_far_value"							"14"
-    "damage_near_value_titanarmor"					"14"
-    "damage_far_value_titanarmor" 					"14"
-    "damage_very_far_value_titanarmor" 				"14"
-	"damage_rodeo" 									"100"
+                      
+    "damage_near_value"   							"13"
+    "damage_far_value"								"13"
+    "damage_very_far_value"							"13"
+    "damage_near_value_titanarmor"					"13"
+    "damage_far_value_titanarmor" 					"13"
+    "damage_very_far_value_titanarmor" 				"13"
+     	"damage_rodeo" 									"100"
 
 	"damage_leg_scale"                              "0.75"
 

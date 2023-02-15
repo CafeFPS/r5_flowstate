@@ -137,14 +137,22 @@ WeaponData
 
 
     // Hipfire Spread
-    "spread_stand_hip"								"2.5"
-    "spread_stand_hip_run"							"5.5"
-    "spread_stand_hip_sprint"                       "7.0"
-    "spread_crouch_hip"   							"2.0"
-    "spread_air_hip"  								"7.0"
+                      
+    "spread_stand_hip"								"4.5"  //"3.0" //"2.5"
+    "spread_stand_hip_run"							"9.9"  //"6.6" //"5.5"
+    "spread_stand_hip_sprint"                       "12.6" //"8.4" //"7.0"
+    "spread_crouch_hip"   							"5.4"  //"2.4" //"2.0"
+    "spread_air_hip"  								"12.6" //"8.4" //"7.0"
+     
+                                           
+                                              
+                                                                 
+                                              
+                                           
+      
 
     "spread_moving_increase_rate" 					"3"
-    "spread_moving_decay_rate" 						"10.5"
+    "spread_moving_decay_rate" 						"44"
 
     "spread_kick_on_fire_stand_hip"   				"0.2"
     "spread_kick_on_fire_crouch_hip"  				"0.2"
@@ -155,7 +163,7 @@ WeaponData
     "spread_max_kick_air_hip" 						"3.0"
 
     "spread_decay_delay"  							"0.25"
-    "spread_decay_rate"   							"10"
+    "spread_decay_rate"   							"100"
 
     "spread_stand_ads"								"0"
     "spread_crouch_ads"   							"0"
@@ -274,13 +282,13 @@ WeaponData
             "viewkick_air_scale_ads"						"1.0"
 
             // Hipfire Spread
-            "spread_air_hip"  								"*0.6"
+            "spread_air_hip"  								"*0.4"
 
             "spread_kick_on_fire_air_hip" 					"*0.4"
 
             "spread_max_kick_air_hip" 						"*0.5"
 
-            "spread_air_ads"  								"0"
+            "spread_air_ads"  								"*0.5"
 
             "spread_kick_on_fire_air_ads" 					"0"
 

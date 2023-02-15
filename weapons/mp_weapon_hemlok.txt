@@ -87,7 +87,7 @@ WeaponData
 	// Behavior
 	"deployfirst_time"								"1.25"
 
-	"ammo_clip_size"   								"18"
+	"ammo_clip_size"   								"30"
 
 	"ammo_min_to_fire"								"1"
 	"ammo_clip_random_loss_on_npc_drop_chunksize"	"3"
@@ -97,12 +97,13 @@ WeaponData
     "ammo_no_remove_from_stockpile"					"1"
 
     // Damage - When Used by Players
-    "damage_near_value"   							"20"
-    "damage_far_value"								"20"
-    "damage_very_far_value"							"20"
-    "damage_near_value_titanarmor"					"20"
-    "damage_far_value_titanarmor" 					"20"
-    "damage_very_far_value_titanarmor" 				"20"
+    "damage_near_value"   							"23"
+    "damage_far_value"								"23"
+    "damage_very_far_value"							"23"
+    "damage_near_value_titanarmor"					"23"
+    "damage_far_value_titanarmor" 					"23"
+    "damage_very_far_value_titanarmor" 				"23"
+    "damage_headshot_scale"							"1.8"
 
     "damage_rodeo" 									"170"
 
