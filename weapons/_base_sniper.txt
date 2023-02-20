@@ -284,13 +284,13 @@ WeaponData
         {
            "viewkick_air_scale_ads"						"1.0"
 
-           "spread_air_hip"  								"*0.5"
+          "spread_air_hip"  								"*0.8"
 
            "spread_kick_on_fire_air_hip" 					"1"
 
            "spread_max_kick_air_hip" 						"*0.8"
 
-           "spread_air_ads"  								"0"
+           "spread_air_ads"  								"0.0"
 
            "spread_kick_on_fire_air_ads" 					"0"
 

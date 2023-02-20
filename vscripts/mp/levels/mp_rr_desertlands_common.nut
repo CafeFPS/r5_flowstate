@@ -108,10 +108,10 @@ void function EntitiesDidLoad()
 	
 	if(GameRules_GetGameMode() != "custom_tdm"  && GetMapName() != "mp_rr_desertlands_64k_x_64k_tt") 
 	{
-		InitLootDrones()
-		InitLootRollers()
-		InitLootDronePaths()
-		SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 20 ))
+		//InitLootDrones()
+		//InitLootRollers()
+		//InitLootDronePaths()
+		//SpawnLootDrones(GetCurrentPlaylistVarInt( "flowstateFlyersAndDronesToSpawn", 20 ))
 	}
 	else{
 		SpawnFlowstateLobbyProps()
