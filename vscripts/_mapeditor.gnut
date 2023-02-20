@@ -65,11 +65,11 @@ void function MapEditor_SpawnDoor(vector org, vector ang, int type, bool gold = 
             DispatchSpawn(ddr)
 			break;
 		case eMapEditorDoorType.Vertical:
-			entity d = CreateDoorEntity("prop_dynamic", $"mdl/door/door_canyonlands_large_01_animated.rmdl", "survival_door_sliding", org, ang)
+			entity d = CreateDoorEntity("prop_dynamic", $"mdl/door/door_canyonlands_large_01_animated.rmdl", "survival_door_plain", org, ang)
 			DispatchSpawn(d)
 			break;
 		case eMapEditorDoorType.Horizontal:
-			entity d = CreateDoorEntity("prop_dynamic", $"mdl/door/door_256x256x8_elevatorstyle02_animated.rmdl", "survival_door_sliding", org, ang)
+			entity d = CreateDoorEntity("prop_dynamic", $"mdl/door/door_256x256x8_elevatorstyle02_animated.rmdl", "survival_door_plain", org, ang)
 			DispatchSpawn(d)
 			break;
 	}
