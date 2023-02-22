@@ -16,8 +16,8 @@ Follow the steps in order, or you will have issues!
 
 1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded). Latest stable 2.2.3 RC. Get it from https://github.com/Mauler125/r5sdk/releases. 
 Download depot.zip and replace all the content into your Apex S3 main folder.
-2. Get the latest release from this repository.
-3. To get new updates get the content from this repo and place it in /platform/scripts/. Replace all the content. https://github.com/ColombianGuy/r5_flowstate/archive/refs/heads/r5_flowstate.zip
+2. Get the latest release from this repository to get the required files.
+3. Get scripts (https://github.com/ColombianGuy/r5_flowstate/archive/refs/heads/r5_flowstate.zip) and place them in /platform/scripts/. Replace all the content. 
 
 # Flowstate Aim Trainer
 
