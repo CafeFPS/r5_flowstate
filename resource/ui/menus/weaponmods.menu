@@ -1,0 +1,1563 @@
+"scripts/resource/ui/menus/CTF/ctfvotemenu.menu"
+{
+	"menu"
+	{
+		"ControlName"						"Frame"
+		"xpos"								"0"
+		"ypos"								"0"
+		"zpos"								"3"
+		"wide"								"f0"
+		"tall"								"f0"
+		"autoResize"						"0"
+		"pinCorner"							"0"
+		"visible"							"1"
+		"enabled"							"1"
+		"tabPosition"						"0"
+		"PaintBackgroundType"				"0"
+		"infocus_bgcolor_override"			"0 0 0 0"
+		"outoffocus_bgcolor_override"		"0 0 0 0"
+		"modal"								"1"
+
+		"DarkenBackground"
+		{
+			"ControlName"			"Label"
+			"xpos"					"0"
+			"ypos"					"0"
+			"wide"					"%100"
+			"tall"					"%100"
+			"labelText"				""
+			"bgcolor_override"		"0 0 0 20"
+			"visible"				"1"
+			"paintbackground"		"1"
+		}
+
+        "ModsBG"
+		{
+			"ControlName"			"Label"
+			"xpos"					"0"
+			"ypos"					"0"
+			"wide"					"100"
+			"tall"					"100"
+			"labelText"				""
+			"bgcolor_override"		"0 0 0 200"
+			"visible"				"1"
+			"paintbackground"		"1"
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+        OpticCata
+		{
+			sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "CataButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    15
+            zpos                    10
+            scriptID                "0"
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+        BarrelCata
+		{
+			sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "CataButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    15
+            zpos                    10
+            scriptID                "1"
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+        MagsCata
+		{
+			sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "CataButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    15
+            zpos                    10
+            scriptID                "2"
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+        StocksCata
+        {
+			sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "CataButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    15
+            zpos                    10
+            scriptID                "3"
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+        BoltsCata
+        {
+			sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "CataButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    15
+            zpos                    10
+            scriptID                "4"
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+        HopUpCata
+        {
+			sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "CataButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    15
+            zpos                    10
+            scriptID                "5"
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_LEFT
+		}
+
+        Optic0
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"0"
+
+            pin_to_sibling			OpticCata
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Optic1
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"1"
+
+            pin_to_sibling			Optic0
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic2
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"2"
+
+            pin_to_sibling			Optic1
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic3
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"3"
+
+            pin_to_sibling			Optic2
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic4
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"4"
+
+            pin_to_sibling			Optic0
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Optic5
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"5"
+
+            pin_to_sibling			Optic4
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic6
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"6"
+
+            pin_to_sibling			Optic5
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic7
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"7"
+
+            pin_to_sibling			Optic6
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic8
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"8"
+
+            pin_to_sibling			Optic4
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Optic9
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"9"
+
+            pin_to_sibling			Optic8
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic10
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"10"
+
+            pin_to_sibling			Optic9
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic11
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"11"
+
+            pin_to_sibling			Optic10
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Optic12
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "OpticsButton"
+			wide                    100
+			tall                    100
+			ypos                    0
+            xpos                    10
+            zpos                    10
+            scriptID				"12"
+
+            pin_to_sibling			Optic11
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	BOTTOM_RIGHT
+        }
+
+        Barrel0
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"0"
+
+            pin_to_sibling			BarrelCata
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel1
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"1"
+
+            pin_to_sibling			Barrel0
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel2
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"2"
+
+            pin_to_sibling			Barrel1
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel3
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"3"
+
+            pin_to_sibling			Barrel2
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel4
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"4"
+
+            pin_to_sibling			Barrel3
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel5
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"5"
+
+            pin_to_sibling			Barrel4
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel6
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"6"
+
+            pin_to_sibling			Barrel5
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel7
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"7"
+
+            pin_to_sibling			Barrel6
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel8
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"8"
+
+            pin_to_sibling			Barrel7
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel9
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"9"
+
+            pin_to_sibling			Barrel8
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel10
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"10"
+
+            pin_to_sibling			Barrel9
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel11
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"11"
+
+            pin_to_sibling			Barrel10
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Barrel12
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BarrelButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"12"
+
+            pin_to_sibling			Barrel11
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine0
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"0"
+
+            pin_to_sibling			MagsCata
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine1
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"1"
+
+            pin_to_sibling			Magazine0
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine2
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"2"
+
+            pin_to_sibling			Magazine1
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine3
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"3"
+
+            pin_to_sibling			Magazine2
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine4
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"4"
+
+            pin_to_sibling			Magazine3
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine5
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"5"
+
+            pin_to_sibling			Magazine4
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine6
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"6"
+
+            pin_to_sibling			Magazine5
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine7
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"7"
+
+            pin_to_sibling			Magazine6
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine8
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"8"
+
+            pin_to_sibling			Magazine7
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine9
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"9"
+
+            pin_to_sibling			Magazine8
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine10
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"10"
+
+            pin_to_sibling			Magazine9
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine11
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"11"
+
+            pin_to_sibling			Magazine10
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Magazine12
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "MagazineButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"12"
+
+            pin_to_sibling			Magazine11
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock0
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"0"
+
+            pin_to_sibling			StocksCata
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock1
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"1"
+
+            pin_to_sibling			Stock0
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock2
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"2"
+
+            pin_to_sibling			Stock1
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock3
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"3"
+
+            pin_to_sibling			Stock2
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock4
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"4"
+
+            pin_to_sibling			Stock3
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock5
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"5"
+
+            pin_to_sibling			Stock4
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock6
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"6"
+
+            pin_to_sibling			Stock5
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock7
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"7"
+
+            pin_to_sibling			Stock6
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock8
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"8"
+
+            pin_to_sibling			Stock7
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock9
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"9"
+
+            pin_to_sibling			Stock8
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock10
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"10"
+
+            pin_to_sibling			Stock9
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock11
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"11"
+
+            pin_to_sibling			Stock10
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Stock12
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "StockButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"12"
+
+            pin_to_sibling			Stock11
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt0
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"0"
+
+            pin_to_sibling			BoltsCata
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt1
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"1"
+
+            pin_to_sibling			Bolt0
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt2
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"2"
+
+            pin_to_sibling			Bolt1
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt3
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"3"
+
+            pin_to_sibling			Bolt2
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt4
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"4"
+
+            pin_to_sibling			Bolt3
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt5
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"5"
+
+            pin_to_sibling			Bolt5
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt6
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"6"
+
+            pin_to_sibling			Bolt5
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt7
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"7"
+
+            pin_to_sibling			Bolt6
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt8
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"8"
+
+            pin_to_sibling			Bolt7
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt9
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"9"
+
+            pin_to_sibling			Bolt8
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt10
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"10"
+
+            pin_to_sibling			Bolt9
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt11
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"11"
+
+            pin_to_sibling			Bolt10
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        Bolt12
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "BoltButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"12"
+
+            pin_to_sibling			Bolt11
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp0
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"0"
+
+            pin_to_sibling			HopUpCata
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp1
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"1"
+
+            pin_to_sibling			HopUp0
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp2
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"2"
+
+            pin_to_sibling			DarkenBackground
+            pin_corner_to_sibling	TOP_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp3
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"3"
+
+            pin_to_sibling			HopUp2
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp4
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"4"
+
+            pin_to_sibling			HopUp3
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp5
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"5"
+
+            pin_to_sibling			HopUp4
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp6
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"6"
+
+            pin_to_sibling			HopUp5
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp7
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"7"
+
+            pin_to_sibling			HopUp6
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp8
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"8"
+
+            pin_to_sibling			HopUp7
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp9
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"9"
+
+            pin_to_sibling			HopUp8
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp10
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"10"
+
+            pin_to_sibling			HopUp9
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp11
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"11"
+
+            pin_to_sibling			HopUp10
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+
+        HopUp12
+        {
+            sound_accept            "UI_Menu_Accept"
+			ControlName             RuiButton
+			InheritProperties       SurvivalInventoryGridButton
+			classname               "HopUpButton"
+			wide                    100
+			tall                    100
+			ypos                    10
+            xpos                    0
+            zpos                    10
+            scriptID				"12"
+
+            pin_to_sibling			HopUp11
+            pin_corner_to_sibling	BOTTOM_LEFT
+            pin_to_sibling_corner	TOP_LEFT
+        }
+	}
+}

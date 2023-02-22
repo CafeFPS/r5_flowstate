@@ -155,18 +155,12 @@ struct
 
 		float[2] mouseRotateDelta
 		float    mouseWheelNewValue = 0.0
-		float    scale              = 0.0
 		float    mouseWheelLastValue = 0.0
 		bool     mouseWheelPauseInput = false
 
 		MenuModelData playCharacter
 		MenuModelData customizeCharacter
 		MenuModelData customizeWeapon
-		MenuModelData customizeModel
-
-		int currentModelIndex = 0
-		int maxIndex = 0
-		string currentModelRoot
 
 		int baseFXHandle = -1
 
@@ -207,26 +201,8 @@ struct
 	array<void functionref()> mouseWheelDownCallbacks
 	array<void functionref()> mouseWheelUpCallbacks
 
-    table<string, vector> scriptEntitiesOrigins = {
-        default_camera_target = <9216, 0, 56>
-        customize_weapon_camera_target = <7168, 0, 56>
-        customize_character_camera_target = <5120.02002, 0, 56.2999992>
-	    play_camera_target = <0,0,0>
-	    close_character_camera_target = <0,0,0>
-	    battlepass_camera_target = <0,0,0> 
-	    battlepass_3_camera_target = <0,0,0>
-	    collection_event_camera_target = <0,0,0>
-    }
-    table<string, vector> scriptEntitiesAngles = {
-        default_camera_target = <1.5, 90, -9>
-        customize_weapon_camera_target = <0, 90, 0>
-        customize_character_camera_target = <0, 90, 0>
-        play_camera_target = <0,0,0>
-	    close_character_camera_target = <0,0,0>
-	    battlepass_camera_target = <0,0,0> 
-	    battlepass_3_camera_target = <0,0,0>
-	    collection_event_camera_target = <0,0,0>
-    }
+	// a table of capturePanels and menus, each of which contains an array of callbacks
+    table< var, array< void functionref( int deltaX, int deltaY ) > > mouseMovementCaptureCallbacks = {}
 } file
 
 #if CLIENT
@@ -243,8 +219,6 @@ global function ModelData_SetRotationDelta
 global function SetPresentationType
 global function RefreshPresentationType
 
-global function ClearModelMenu
-
 global function UpdateMenuCharacterModel
 
 global function ClearAllCharacterPreview
@@ -260,7 +234,6 @@ global function UpdateMenuWithPartyMembers
 global function UIToClient_PreviewCharacterSkin
 global function UIToClient_PreviewCharacterSkinFromCharacterSkinPanel
 global function UIToClient_PreviewWeaponSkin
-global function UIToClient_PreviewModel
 global function UIToClient_ResetWeaponRotation
 global function UIToClient_PartyMemberGetFocus
 global function UIToClient_PartyMemberLoseFocus
@@ -295,6 +268,7 @@ global function RunMenuClientFunction
 global function UI_SetPresentationType
 
 global function UICodeCallback_MouseMovementCapture
+global function AddMouseMovementCaptureHandler
 global function OnMouseWheelDown
 global function OnMouseWheelUp
 
@@ -338,21 +312,12 @@ void function ClMenuModels_Init()
 
 	AddCallback_OnClientScriptInit( OnClientScriptInit )
 	AddCallback_FullUpdate( OnFullUpdate )
-
-	if(GameRules_GetGameMode() == "map_editor")
-	{
-		file.scriptEntitiesOrigins["customize_weapon_camera_target"] = GetMapPosition()
-		file.scriptEntitiesAngles["customize_weapon_camera_target"] = GetMapAngles()
-		GetAssets()
-	}
 }
 
 void function OnClientScriptInit( entity player )
 {
 	thread InitMenuEntities()
 	thread ModelRotationThread()
-	if(GameRules_GetGameMode() == "map_editor")
-		thread ModelListRotationThread()
 }
 
 void function OnFullUpdate()
@@ -362,9 +327,6 @@ void function OnFullUpdate()
 
 bool function MenuMapEntitiesExist()
 {
-   	 if(GameRules_GetGameMode() == "map_editor")
-	 	return true
-
 	array<string> entNames =
 	[
 		"default_camera_target",
@@ -393,38 +355,25 @@ bool function MenuMapEntitiesExist()
 	return true
 }
 
-void function ClearModelMenu() {
-	GetLocalClientPlayer().ClearMenuCameraEntity()
-	GetLocalClientPlayer().SetScriptMenuOff()
-	CreateMenuModel(file.customizeModel, $"mdl/dev/empty_model.rmdl")
-	file.activeModelData = null
-	file.currentModelIndex = 0
-	file.currentModelRoot = ""
-	printl("Clearing Menu Entity")
-}
-
 void function ApplyEventPositioning()
 {
-    if(GameRules_GetGameMode() != "map_editor")
-    {
-        array<entity> ents
-        ents.append( GetEntByScriptName( "play_camera_target" ) )
-        ents.append( GetEntByScriptName( "play_character_ref" ) )
-        ents.append( GetEntByScriptName( "play_teammate1_ref" ) )
-        ents.append( GetEntByScriptName( "play_teammate2_ref" ) )
+	array<entity> ents
+	ents.append( GetEntByScriptName( "play_camera_target" ) )
+	ents.append( GetEntByScriptName( "play_character_ref" ) )
+	ents.append( GetEntByScriptName( "play_teammate1_ref" ) )
+	ents.append( GetEntByScriptName( "play_teammate2_ref" ) )
 
-        foreach ( ent in ents )
-            ent.SetOrigin( ent.GetOrigin() + <0, 5120, 0> )
-    }
+	foreach ( ent in ents )
+		ent.SetOrigin( ent.GetOrigin() + <0, 5120, 0> )
 }
 
 void function InitTeammatePosition( string scriptName, string idle )
 {
-        entity ent = GetEntByScriptName( scriptName )
+	entity ent = GetEntByScriptName( scriptName )
 
-        file.teammateRefEnts.append( ent )
-        file.teammateRefEntsUsedMap[ent] <- false
-        file.teammateRefEntIdleAnimMap[ent] <- idle
+	file.teammateRefEnts.append( ent )
+	file.teammateRefEntsUsedMap[ent] <- false
+	file.teammateRefEntIdleAnimMap[ent] <- idle
 }
 
 void function EnableModelTurn()
@@ -618,8 +567,8 @@ void function InitPresentationData()
 		pd.fov = 15.5
 		pd.dofNearStart = DEFAULT_DOF_NEAR_START
 		pd.dofNearEnd = DEFAULT_DOF_NEAR_END
-		pd.dofFarStart = DEFAULT_DOF_FAR_START
-		pd.dofFarEnd = DEFAULT_DOF_FAR_END
+		pd.dofFarStart = 500.0
+		pd.dofFarEnd = 2000.0
 		pd.csmTexelScale1 = 0.22
 		pd.csmTexelScale2 = 0.55
 		pd.csmStartDistance = 70.0
@@ -856,25 +805,25 @@ void function InitPresentationData()
 		pd.cameraTargetName = eCameraTargetNames.collection_event_camera_target
 	}
 
-    {
-        PresentationDef pd = file.presentationData[ePresentationType.MODEL]
-        pd.modelData = file.customizeModel
-        pd.useCharacterOffsets = false
-        pd.maxYawDegrees = 360
-        pd.maxPitchDegrees = 360
-        pd.fov = 90
-        pd.dofNearStart = DEFAULT_DOF_NEAR_START
-		pd.dofNearEnd = DEFAULT_DOF_NEAR_END
-		pd.dofFarStart = DEFAULT_DOF_FAR_START
-		pd.dofFarEnd = DEFAULT_DOF_FAR_END
-        pd.csmTexelScale1 = 0.22
+	{
+		PresentationDef pd = file.presentationData[ePresentationType.MODS]
+		pd.modelData = null
+		pd.useCharacterOffsets = false
+		pd.maxYawDegrees = 0
+		pd.maxPitchDegrees = 0
+		pd.fov = 60
+		pd.dofNearStart = 0.0
+		pd.dofNearEnd = -0.0
+		pd.dofFarStart = 5000.0
+		pd.dofFarEnd = 5000.0
+		pd.csmTexelScale1 = 0.22
 		pd.csmTexelScale2 = 0.55
 		pd.csmStartDistance = 70.0
 		pd.lights = []
-        pd.startFunc = StartPresentation_MODEL
-		pd.endFunc = EndPresentation_MODEL
-        pd.cameraTargetName = eCameraTargetNames.customize_weapon_camera_target
-    }
+		pd.startFunc = StartPresentation_MODS
+		pd.endFunc = EndPresentation_MODS
+		pd.cameraTargetName = eCameraTargetNames.customize_weapon_camera_target
+	}
 }
 
 void function StartPresentation_PLAY()
@@ -937,21 +886,6 @@ void function StartPresentation_CHARACTER_QUIPS()
 	ModelData_SetAnim( file.customizeCharacter, "ACT_MP_MENU_LOBBY_SELECT_IDLE" )
 	UpdateMenuCharacterModel( GetLocalClientPlayer(), -1 )
 	ApplyLightingConfig( "character_quip" )
-}
-
-void function StartPresentation_MODEL() {
-    entity model = ModelData_GetModel( file.customizeModel )
-    
-    model.Show()
-	AddCallbacks()
-	//thread EnableLobbyMenuCameraZoom()
-}
-
-void function EndPresentation_MODEL() {
-    entity model = ModelData_GetModel( file.customizeModel )
-    entity weaponMover = ModelData_GetMover( file.customizeModel )
-
-    model.Hide()
 }
 
 void function StartPresentation_WEAPON_SKIN()
@@ -1035,6 +969,25 @@ void function EndPresentation_WEAPON_CHARMS()
 	ModelData_SetBaseRotationDelta( file.customizeWeapon, WEAPON_BASE_ROTATION_DELTA )
 }
 
+void function StartPresentation_MODS()
+{
+	int cameraTargetIndex    = eCameraTargetNames.customize_weapon_camera_target
+	entity cameraTarget      = file.cameraTargets[ cameraTargetIndex ]
+
+	vector cameraStartOrigin = <8020,-7607, -8080>
+	vector cameraStartAngles = <8, 74, 0>
+
+	cameraTarget.SetOrigin( cameraStartOrigin )
+	cameraTarget.SetAngles( cameraStartAngles )
+
+	ModsPanelShown(cameraTarget)
+}
+
+void function EndPresentation_MODS()
+{
+	
+}
+
 void function StartPresentation_BATTLE_PASS()
 {
 	BattlePassLightsOn()
@@ -1049,7 +1002,6 @@ void function EnableLobbyMenuCameraZoom()
 {
 	const float ZOOM_DISTANCE_CHARACTER_SKIN = 72.0
 	const float ZOOM_DISTANCE_WEAPON_SKIN = 24.0
-	const float ZOOM_DISTANCE_MODEL = 2000.0
 
 	EndSignal( level, "EndCameraZoom" )
 
@@ -1085,14 +1037,6 @@ void function EnableLobbyMenuCameraZoom()
 		maxZoomDistance = ZOOM_DISTANCE_WEAPON_SKIN
 		cameraTargetIndex = eCameraTargetNames.customize_weapon_camera_target
 	}
-    else if (file.desiredPresentationType == ePresentationType.MODEL )
-    {
-        // No zoom offset
-        focalPoint = ModelData_GetMover( file.customizeModel ).GetOrigin()
-
-        maxZoomDistance = ZOOM_DISTANCE_MODEL
-        cameraTargetIndex = eCameraTargetNames.customize_weapon_camera_target
-    }
 
 	//
 
@@ -1130,99 +1074,58 @@ void function InitMenuEntities()
 			return
 	#endif
 
-    if(GameRules_GetGameMode() != "map_editor")
-	{
-        Assert( MenuMapEntitiesExist() )
+	Assert( MenuMapEntitiesExist() )
 
-        if ( IsLobbyFallLTM() )
-        {
-            ApplyEventPositioning()
-            SpawnShadowEyeEffects()
-        }
-    }
+	if ( IsLobbyFallLTM() )
+	{
+		ApplyEventPositioning()
+		SpawnShadowEyeEffects()
+	}
 
 	InitPresentationData()
-    
-    if( GameRules_GetGameMode() != "map_editor" ) 
-	{
-        InitTeammatePosition( "play_teammate1_ref", "ACT_MP_MENU_LOBBY_LEFT_IDLE" )
-        InitTeammatePosition( "play_teammate2_ref", "ACT_MP_MENU_LOBBY_RIGHT_IDLE" )
-    }
+
+	InitTeammatePosition( "play_teammate1_ref", "ACT_MP_MENU_LOBBY_LEFT_IDLE" )
+	InitTeammatePosition( "play_teammate2_ref", "ACT_MP_MENU_LOBBY_RIGHT_IDLE" )
 
 	file.cameraZoomData.mover = CreateClientsideScriptMover( $"mdl/dev/empty_model.rmdl", <0, 0, 0>, <0, 0, 0> )
 
 	file.cameraTargets.clear()
 	file.cameraStartOriginsAngles.clear()
-    if(GameRules_GetGameMode() != "map_editor")
+	foreach ( string scriptName, int eNumIdx in eCameraTargetNames )
 	{
-	    foreach ( string scriptName, int eNumIdx in eCameraTargetNames )
-	    {
-		    entity targetEnt = GetEntByScriptName( scriptName )
-		    file.cameraTargets[ eNumIdx ] <- targetEnt
-		    file.cameraStartOriginsAngles[ eNumIdx ] <- { origin = targetEnt.GetOrigin(), angles = targetEnt.GetAngles() }
-	    }
-    } else {
-        foreach ( string scriptName, int eNumIdx in eCameraTargetNames )
-	    {
-		    entity targetEnt = CreateClientSidePropDynamic(file.scriptEntitiesOrigins[scriptName], file.scriptEntitiesAngles[scriptName], $"mdl/dev/empty_model.rmdl")
-            targetEnt.SetScriptName(scriptName)
-
-		    file.cameraTargets[ eNumIdx ] <- targetEnt
-		    file.cameraStartOriginsAngles[ eNumIdx ] <- { origin = targetEnt.GetOrigin(), angles = targetEnt.GetAngles() }
-	    }
-    }
-
-	if(GameRules_GetGameMode() == "map_editor")
-	{
-		clGlobal.menuCamera = CreateClientSidePointCamera( GetMapPosition(), GetMapAngles(), DEFAULT_FOV )
+		entity targetEnt = GetEntByScriptName( scriptName )
+		file.cameraTargets[ eNumIdx ] <- targetEnt
+		file.cameraStartOriginsAngles[ eNumIdx ] <- { origin = targetEnt.GetOrigin(), angles = targetEnt.GetAngles() }
 	}
-	else 
-		clGlobal.menuCamera = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, DEFAULT_FOV )
+
+	clGlobal.menuCamera = CreateClientSidePointCamera( <0, 0, 0>, <0, 0, 0>, DEFAULT_FOV )
 
 	// Wait for character class to be known
 	EHI localPlayerEHI = WaitForLocalClientEHI()
 	if ( IsDemoSpectator( GetLocalClientPlayer() ) )
 		return //
 
-	
-	if(GameRules_GetGameMode() != "map_editor")
+	if ( IsLobby() )
 	{
-    	entity localPlayer = GetLocalClientPlayer()
-    	localPlayer.SetMenuCameraEntityWithAudio( clGlobal.menuCamera ) //
+		entity localPlayer = GetLocalClientPlayer()
+		localPlayer.SetMenuCameraEntityWithAudio( clGlobal.menuCamera ) //
 	}
 
 	entity refEnt
 	entity model
 	float[2] baseRotationDelta
 
-	if(GameRules_GetGameMode() != "map_editor")
-	{
-		refEnt = GetEntByScriptName( "play_character_ref" )
-		ModelData_SetBaseOrigin( file.playCharacter, refEnt.GetOrigin() )
-		ModelData_SetBaseAngles( file.playCharacter, refEnt.GetAngles() )
-	}
-	else
-	{
-		ModelData_SetBaseOrigin( file.playCharacter, <0, 523, 0>)
-		ModelData_SetBaseAngles( file.playCharacter, <0, -90, 0>)
-	}
-	
+	refEnt = GetEntByScriptName( "play_character_ref" )
+	ModelData_SetBaseOrigin( file.playCharacter, refEnt.GetOrigin() )
+	ModelData_SetBaseAngles( file.playCharacter, refEnt.GetAngles() )
 	model = CreateMenuModel( file.playCharacter, $"mdl/dev/empty_model.rmdl" )
 	ItemFlavor character     = LoadoutSlot_WaitForItemFlavor( localPlayerEHI, Loadout_CharacterClass() )
 	ItemFlavor characterSkin = LoadoutSlot_WaitForItemFlavor( localPlayerEHI, Loadout_CharacterSkin( character ) )
 	CharacterSkin_Apply( model, characterSkin )
 	model.SetAlive( true )
-	
-	if(GameRules_GetGameMode() != "map_editor")
-	{
-		refEnt = GetEntByScriptName( "customize_character_ref" )
-		ModelData_SetBaseOrigin( file.customizeCharacter, refEnt.GetOrigin() )
-	}
-	else
-	{
-		ModelData_SetBaseOrigin( file.customizeCharacter, <3089, 78, 0> )
-	}
-	
+
+	refEnt = GetEntByScriptName( "customize_character_ref" )
+	ModelData_SetBaseOrigin( file.customizeCharacter, refEnt.GetOrigin() )
 	ModelData_SetBaseAngles( file.customizeCharacter, <0, -120, 0> )
 	baseRotationDelta[0] = 0
 	baseRotationDelta[1] = 0
@@ -1232,8 +1135,9 @@ void function InitMenuEntities()
 	CharacterSkin_Apply( model, characterSkin )
 	model.SetAlive( true )
 
-	ModelData_SetBaseOrigin( file.customizeWeapon, <7176, 45, 53> )
-	ModelData_SetBaseAngles( file.customizeWeapon, <0, 0, 90> )
+	refEnt = GetEntByScriptName( "customize_weapon_ref" )
+	ModelData_SetBaseOrigin( file.customizeWeapon, refEnt.GetOrigin() )
+	ModelData_SetBaseAngles( file.customizeWeapon, WEAPON_BASE_ANGLES )
 	ModelData_SetBaseRotationDelta( file.customizeWeapon, WEAPON_BASE_ROTATION_DELTA )
 	model = CreateMenuModel( file.customizeWeapon, $"mdl/dev/empty_model.rmdl" )
 	ModelData_CreateMover( file.customizeWeapon )
@@ -1241,25 +1145,10 @@ void function InitMenuEntities()
 	ItemFlavor weaponSkin = LoadoutSlot_GetItemFlavor( localPlayerEHI, Loadout_WeaponSkin( weapon ) )
 	WeaponCosmetics_Apply( model, weaponSkin, null )
 
-	vector x = <7176, 345, 53>
-	switch(GetMapName()) {
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
-			x = <18169, -22000, 7844>
-			break
-  	}
-    ModelData_SetBaseOrigin( file.customizeModel, x )
-	ModelData_SetBaseAngles( file.customizeModel, WEAPON_BASE_ANGLES )
-	ModelData_SetBaseRotationDelta( file.customizeModel, WEAPON_BASE_ROTATION_DELTA )
-	model = CreateMenuModel( file.customizeModel, $"mdl/dev/empty_model.rmdl" )
-	ModelData_CreateMover( file.customizeModel )
-
 	//thread DrawOrg( ModelData_GetMover( file.playCharacter ) )
 	//thread DrawOrg( ModelData_GetMover( file.customizeWeapon ) )
-	
-	if(GameRules_GetGameMode() != "map_editor")
-		InitBattlePassLights()
+
+	InitBattlePassLights()
 	InitLightingConfigs()
 
 	file.initializedMenuModels = true
@@ -1285,8 +1174,6 @@ entity function CreateMenuModel( MenuModelData modelData, asset modelAsset )
 	entity model = CreateClientSidePropDynamic( origin, angles, modelAsset )
 	model.SetVisibleForLocalPlayer( 0 )
 	model.MakeSafeForUIScriptHack()
-	if(GameRules_GetGameMode() == "map_editor")
-		model.SetModelScale(1 + file.scale)
 	ModelData_SetModel( modelData, model )
 
 	return model
@@ -2339,10 +2226,6 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 		return
 	}
 
-	if (GameRules_GetGameMode() == "map_editor") {
-		clGlobal.menuCamera = CreateClientSidePointCamera( GetMapPosition(), GetMapAngles(), DEFAULT_FOV )
-	}
-
 	player.SetScriptMenuOn()
 
 	float fov = file.presentationData[ presentationType ].fov
@@ -2350,11 +2233,6 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 
 	int cameraTargetName = file.presentationData[ presentationType ].cameraTargetName
 	entity cameraTarget  = file.cameraTargets[ cameraTargetName ]
-	if(GameRules_GetGameMode() == "map_editor")
-	{
-		cameraTarget.SetOrigin(GetMapPosition())
-		cameraTarget.SetAngles(GetMapAngles())
-	}
 	clGlobal.menuCamera.SetTarget( cameraTarget, fov, interpolate, EASING_CUBIC_INOUT, TRANSITION_DURATION )
 
 	//EASING_LINEAR
@@ -2372,25 +2250,25 @@ void function SetMenuCamera( entity player, int presentationType, bool interpola
 	//EASING_BACK_INOUT
 
 	// TEMP: Disabled DOF until background is more final. It was causing visual artifacts with gladiator cards.
-	//float dofNearStart 	= file.presentationData[ presentationType ].dofNearStart
-	//float dofNearEnd 	= file.presentationData[ presentationType ].dofNearEnd
-	//float dofFarStart 	= file.presentationData[ presentationType ].dofFarStart
-	//float dofFarEnd 	= file.presentationData[ presentationType ].dofFarEnd
+	float dofNearStart 	= file.presentationData[ presentationType ].dofNearStart
+	float dofNearEnd 	= file.presentationData[ presentationType ].dofNearEnd
+	float dofFarStart 	= file.presentationData[ presentationType ].dofFarStart
+	float dofFarEnd 	= file.presentationData[ presentationType ].dofFarEnd
 
 	if ( interpolate )
 	{
 		printt( "Interpolating menu camera to:", GetEnumString( "ePresentationType", presentationType ) )
-		//DoF_LerpNearDepth( dofNearStart, dofNearEnd, TRANSITION_DURATION )
-		//DoF_LerpFarDepth( dofFarStart, dofFarEnd, TRANSITION_DURATION )
+		DoF_LerpNearDepth( dofNearStart, dofNearEnd, TRANSITION_DURATION )
+		DoF_LerpFarDepth( dofFarStart, dofFarEnd, TRANSITION_DURATION )
 	}
 	else
 	{
 		printt( "Snapping menu camera to:", GetEnumString( "ePresentationType", presentationType ) )
-		//DoF_SetNearDepth( dofNearStart, dofNearEnd )
-		//DoF_SetFarDepth( dofFarStart, dofFarEnd )
+		DoF_SetNearDepth( dofNearStart, dofNearEnd )
+		DoF_SetFarDepth( dofFarStart, dofFarEnd )
 	}
 
-	//DoFSetDilateInfocus( true ) // We want to reduce DoF aliasing around bright edges in the menus.
+	DoFSetDilateInfocus( true ) // We want to reduce DoF aliasing around bright edges in the menus.
 
 	#if CONSOLE_PROG
 		const float texelNorm = 2.0
@@ -2428,32 +2306,6 @@ void function ModelRotationThread()
 	}
 }
 
-void function ModelListRotationThread() {
-	while(true) {
-		wait 1
-		if (file.activeModelData == null)
-			continue
-		
-		MenuModelData modelData = expect MenuModelData( file.activeModelData )
-		if ( ModelData_GetMover( modelData ) == null )
-			continue
-
-		if (file.currentPresentationType != ePresentationType.MODEL)
-			continue
-
-		if (file.currentModelRoot == "")
-			continue
-
-		if (file.currentModelIndex >= file.maxIndex) {
-			file.currentModelIndex = 0
-		} else {
-			file.currentModelIndex++
-		}
-
-		UIToClient_PreviewModel(file.currentModelRoot, true)
-	}
-}
-
 void function ModelData_ResetRotation( MenuModelData modelData )
 {
 	entity mover = ModelData_GetMover( modelData )
@@ -2476,18 +2328,13 @@ float[2] function GetMouseRotationDelta()
 }
 
 const float MOUSE_WHEEL_VALUE_INCREMENT = 25.0
-const float SCALE_OFFSET = 0.01
-
-void function AddCallbacks() {
-	AddCallback_OnMouseWheelDown( UpdateMenuMouseWheelDown )
-	AddCallback_OnMouseWheelUp( UpdateMenuMouseWheelUp )
-}
 
 void function CameraZoomThread( CameraZoomData zoomData )
 {
 	EndSignal( level, "EndCameraZoom" )
 
-	AddCallbacks()
+	AddCallback_OnMouseWheelDown( UpdateMenuMouseWheelDown )
+	AddCallback_OnMouseWheelUp( UpdateMenuMouseWheelUp )
 
 	OnThreadEnd(
 		function () : ( zoomData )
@@ -2529,11 +2376,6 @@ void function UpdateMenuMouseWheelUp()
 		return
 
 	file.mouseWheelNewValue += MOUSE_WHEEL_VALUE_INCREMENT
-	if(GameRules_GetGameMode() == "map_editor")
-	{
-		file.scale += SCALE_OFFSET
-		ModelData_GetModel(file.customizeModel).SetModelScale(file.scale)
-	}
 }
 
 void function UpdateMenuMouseWheelDown()
@@ -2542,14 +2384,6 @@ void function UpdateMenuMouseWheelDown()
 		return
 
 	file.mouseWheelNewValue -= MOUSE_WHEEL_VALUE_INCREMENT
-	if(GameRules_GetGameMode() == "map_editor")
-	{
-		file.scale -= SCALE_OFFSET
-		ModelData_GetModel(file.customizeModel).SetModelScale(file.scale)
-		if (file.scale < 0) {
-			file.scale = 0
-		}
-	}
 }
 
 void function ClearMenuMouseWheelValues()
@@ -2700,8 +2534,40 @@ void function UI_SetPresentationType( int newPresentationType )
 		RunClientScript( "UpdateMenuWithPartyMembers" )
 }
 
+// this function registers a callback (or "handler") function for a MouseMovementCapture menu panel
+// use this for scrollbars, sliders, etc.
+void function AddMouseMovementCaptureHandler( var capturePanelOrMenu, void functionref( int deltaX, int deltaY ) func )
+{
+    // if the capturePanel or menu already has an array in the table, we append to the array
+    // if not, we should create the array, [func] just turns func into an array
+    if ( capturePanelOrMenu in file.mouseMovementCaptureCallbacks )
+        file.mouseMovementCaptureCallbacks[capturePanelOrMenu].append( func )
+    else
+        file.mouseMovementCaptureCallbacks[capturePanelOrMenu] <- [func]
+}
+
+void function RunMouseMovementCallbacks( var capturePanelOrMenu, int deltaX, int deltaY )
+{
+    // check that the capturePanelOrMenu is in the table before trying anything stupid
+    if ( capturePanelOrMenu in file.mouseMovementCaptureCallbacks )
+    {
+        // iterate through the different callback functions
+        foreach ( void functionref( int deltaX, int deltaY ) callback in file.mouseMovementCaptureCallbacks[capturePanelOrMenu] )
+        {
+            // run the callback function
+            callback( deltaX, deltaY )
+        }
+    }
+}
+
 void function UICodeCallback_MouseMovementCapture( var capturePanel, int deltaX, int deltaY )
 {
+	// run callbacks for the capturePanel
+    RunMouseMovementCallbacks( capturePanel, deltaX, deltaY )
+
+	// get the current menu and run callbacks, this preserves backwards compatibility
+    RunMouseMovementCallbacks( GetActiveMenu(), deltaX, deltaY )
+
 	float screenScaleXModifier = 1920.0 / GetScreenSize().width // 1920 is base screen width
 	float mouseXRotateDelta    = deltaX * screenScaleXModifier * MOUSE_ROTATE_MULTIPLIER
 	//printt( "deltaX:", deltaX, "screenScaleXModifier:", screenScaleXModifier, "mouseXRotateDelta:", mouseXRotateDelta )
@@ -3055,6 +2921,17 @@ void function SpawnShadowEyeEffects()
 {
 	foreach ( ent in GetEntArrayByScriptName( "lobby_background_character" ) )
 	{
+		//
+
+		//
+		//
+
+		//
+		//
+		//
+		//
+		//
+
 		array<string> attachNames = [ "EYE_L", "EYE_R" ]
 
 		foreach ( attachName in attachNames )
@@ -3108,78 +2985,8 @@ void function ShMenuModels_ClientToUI_OnMouseWheel( bool isDown )
 	foreach ( void functionref() cb in (isDown ? file.mouseWheelDownCallbacks : file.mouseWheelUpCallbacks))
 		cb()
 }
-
-void function UIToClient_PreviewModel( string root, bool isLoop ) {
-	printl(file.initializedMenuModels)
-	printl("PREVIEW MODEL: " + root)
-	if (file.currentModelRoot == "" || !isLoop) {
-		file.currentModelRoot = root
-		file.currentModelIndex = 0
-		printl("Set root to: " + file.currentModelRoot)
-	}
-
-	// if (!file.initializedMenuModels )
-		// return
-	
-	table<string, array<asset> > assets = GetAssets()
-	array<asset> possibilities = assets[root]
-	//0,1,2
-	// (3)
-	if (file.currentModelIndex >= possibilities.len() - 1) {
-		file.currentModelIndex = 0
-	}
-	file.maxIndex = possibilities.len() - 1
-	asset modelAsset = possibilities[file.currentModelIndex]
-	RunUIScript("CustomizeModelMenu_UpdateTitleRUI", string(modelAsset))
-
-	CreateMenuModel(file.customizeModel, modelAsset)
-	entity model = ModelData_GetModel(file.customizeModel)
-	//model.SetOrigin(GetMapPosition() + AnglesToForward(GetMapAngles())*50)
-	vector color = MENU_MODELS_DEFAULT_HIGHLIGHT_COLOR
-
-	//file.cameraZoomModelInitialized = true
-
-	thread TransitionTest( model, color / 255.0, true, true )
-}
 #endif
 
-#if CLIENT
-vector function GetMapPosition() {
-	switch(GetMapName()) {
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
-			return <18169, -21781, 7844>
-		case "mp_rr_party_crasher":
-			return <-259, 179, 2806>
-		case "mp_rr_habitat":
-			return <-2865, 1000, 2500>
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
-			return <7168,0,56>
-		default:
-			return <7168,0,56>
-  	}
-  unreachable
-}
-vector function GetMapAngles() {
-	switch(GetMapName()) {
-		case "mp_rr_canyonlands_mu1":
-		case "mp_rr_canyonlands_mu1_night":
-		case "mp_rr_canyonlands_64k_x_64k":
-			return <0, -90, 0>
-		case "mp_rr_desertlands_64k_x_64k":
-		case "mp_rr_desertlands_64k_x_64k_nx":
-			return <0,90,0>
-		case "mp_rr_party_crasher":
-		case "mp_rr_habitat":
-			return <0,0,0>
-		default:
-			return <0,90,0>
-  }
-  unreachable
-}
-#endif
 
 #if CLIENT || UI
 void function AddCallback_OnMouseWheelDown( void functionref() cb )

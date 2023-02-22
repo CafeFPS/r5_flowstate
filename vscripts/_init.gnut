@@ -23,6 +23,12 @@ void function CodeCallback_PostEntityInit()
 
 	FlagSet( "EntitiesDidLoad" )
 
+#if DEVELOPER
+	array<entity> startPoints = GetEntArrayByClass_Expensive( "info_player_start" )
+	foreach ( start in startPoints )
+		DebugDrawHemiSphere( start.GetOrigin(), start.GetAngles(), 25.0, 20, 210, 255, false, 100.0 )
+#endif // DEVELOPER
+
 	array<entity> exfilPanels = GetEntArrayByClass_Expensive( "prop_exfil_panel" )
 	foreach ( panel in exfilPanels )
 		panel.Destroy()

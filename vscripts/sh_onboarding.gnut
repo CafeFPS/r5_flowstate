@@ -346,7 +346,9 @@ void function TakeLoadoutRelatedWeapons( entity player )
 	// Loadout meleeskin
 	if(IsValid(player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_2 )))
 		player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_2 )
-	
+
+    if(IsValid(player.GetNormalWeapon( WEAPON_INVENTORY_SLOT_PRIMARY_3 )))
+        player.TakeNormalWeaponByIndexNow( WEAPON_INVENTORY_SLOT_PRIMARY_3 )
 	if(IsValid(player.GetOffhandWeapon( OFFHAND_MELEE )))
 		player.TakeOffhandWeapon( OFFHAND_MELEE )
 
