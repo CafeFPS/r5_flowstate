@@ -222,10 +222,11 @@ WeaponData
 
         hopup_unshielded_dmg
         {
-			"damage_unshielded_scale"      					"2.7"
+            "damage_unshielded_scale"      					"1.5"
 
-			"projectile_trail_effect_0"     				"P_tracer_proj_smg_hammer_point"
-			"impact_effect_table" 							"hammer_point_bullet"
+            "projectile_trail_effect_0_1p"     				"P_tracer_proj_smg_hammer_point"
+            "projectile_trail_effect_0_3p"     				"P_tracer_proj_smg_hammer_point"
+            "impact_effect_table" 							"hammer_point_bullet"
 
 			"fire_sound_1"									"weapon_re45auto_shell"
 			"fire_sound_2_player_1p"						"weapon_p2011_fire_unshieldeddmg_1p"
