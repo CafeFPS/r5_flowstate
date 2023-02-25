@@ -114,7 +114,7 @@
 			"tall"						"%100"
 			"visible"					"0"
 			"tabPosition"				"1"
-			"controlSettingsFile"		"scripts/resource/ui/menus/CustomLobby/panels/mainmenu.res"
+			"controlSettingsFile"		"scripts/resource/ui/menus/R5R/panels/mainmenu.res"
 		}
 		// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		"FooterButtons"

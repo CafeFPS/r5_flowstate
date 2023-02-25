@@ -69,6 +69,9 @@ void function SetAtMainMenu()
 	
 	//Hide the fullscreen black panel
 	SetMainMenuBlackScreenVisible(false)
+
+	//Refresh Server Browser
+	ServerBrowser_RefreshServerListing(false)
 }
 
 void function SetMainMenuBlackScreenVisible(bool show)

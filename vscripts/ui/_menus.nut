@@ -103,7 +103,6 @@ global function SetTopLevelCustomizeContext
 global function SetGamepadCursorEnabled
 global function IsGamepadCursorEnabled
 global function IsCommsMenuOpen
-global function GetCurrentLobbyMenu
 
 global function ButtonClass_AddMenu
 
@@ -151,6 +150,7 @@ global function OpenXboxHelp
 
 global function OpenDevMenu
 
+global function OpenModelMenu
 
 struct
 {
@@ -187,16 +187,6 @@ void function UICodeCallback_CloseAllMenus()
 	// This is usually followed by a call to UICodeCallback_ActivateMenus().
 }
 
-string function GetCurrentLobbyMenu()
-{
-	string menuName = "R5RLobbyMenu"
-
-	if(IsLobby())
-		menuName = GetPlaylistVarBool("menufall", "r5reloaded_lobby", true) ? "R5RLobbyMenu" : "LobbyMenu"
-
-	return menuName
-}
-
 // Bringing up the console will cause this, and it probably shouldn't
 void function UICodeCallback_ActivateMenus()
 {
@@ -204,10 +194,10 @@ void function UICodeCallback_ActivateMenus()
 		return
 
 	//Old MainMenu
-	//var mainMenu = GetMenu( "MainMenu" )
+	var mainMenu = GetMenu( "MainMenu" )
 
 	//New R5RMainMenu
-	var mainMenu = GetMenu( "R5RMainMenu" )
+	//var mainMenu = GetMenu( "R5RMainMenu" )
 
 	printt( "UICodeCallback_ActivateMenus:", GetActiveMenu() && Hud_GetHudName( GetActiveMenu() ) != "" )
 	if ( uiGlobal.menuStack.len() == 0 )
@@ -231,12 +221,11 @@ void function UICodeCallback_ToggleInGameMenu()
 
 	var activeMenu = GetActiveMenu()
 	bool isLobby   = IsLobby()
-	string playlistName = GetCurrentPlaylistName()
 
 	if ( isLobby )
 	{
 		if ( activeMenu == null )
-			AdvanceMenu( GetMenu( GetCurrentLobbyMenu() ) )
+			AdvanceMenu( GetMenu( "R5RLobbyMenu" ) )
 		else if ( activeMenu == GetMenu( "SystemMenu" ) )
 			CloseActiveMenu()
 		return
@@ -526,6 +515,7 @@ void function UICodeCallback_FullyConnected( string levelname )
 	ShGRX_LevelInit()
 	Entitlements_LevelInit()
 	CustomizeCommon_Init()
+	CustomizeModel_Init()
 	ShLoadouts_LevelInit_Begin()
 	ShCharacters_LevelInit()
 	ShPassives_Init()
@@ -1065,12 +1055,10 @@ void function UpdateMenusOnConnectThread( string levelname )
 	Assert( GetActiveMenu() != null || uiGlobal.menuStack.len() == 0 )
 
 	bool isLobby = IsLobbyMapName( levelname )
-	string playlistName = GetCurrentPlaylistName()
 
 	if ( isLobby )
 	{
-		AdvanceMenu( GetMenu( GetCurrentLobbyMenu() ) )
-
+		AdvanceMenu( GetMenu( "R5RLobbyMenu" ) )
 		UIMusicUpdate()
 
 		if ( IsFullyConnected() )
@@ -1174,6 +1162,9 @@ bool function TryDialogFlowPersistenceQuery( string persistenceVar )
 
 void function DialogFlow()
 {
+	if ( !IsPlayPanelCurrentlyTopLevel() )
+		return
+
 	bool persistenceAvailable   = IsPersistenceAvailable()
 	string earliestRankedPeriod = Ranked_EarliestRankedPeriodWithRewardsNotAcknowledged()
 
@@ -1532,18 +1523,22 @@ void function InitMenus()
 	AddMenu( "EliteIntroMenu", $"resource/ui/menus/elite_intro.menu", InitEliteIntroMenu )
 
 	//R5Reloaded UI
-	var r5rmainMenu = AddMenu( "R5RMainMenu", $"scripts/resource/ui/menus/CustomLobby/main.res", InitR5RMainMenu, "#MAIN" )
+	var r5rmainMenu = AddMenu( "R5RMainMenu", $"scripts/resource/ui/menus/R5R/main.res", InitR5RMainMenu, "#MAIN" )
 	AddPanel( r5rmainMenu, "R5RMainMenuPanel", InitR5RMainMenuPanel )
 
-	var r5rlobbymenu = AddMenu( "R5RLobbyMenu", $"scripts/resource/ui/menus/CustomLobby/lobbymenu.res", InitR5RLobbyMenu )
+	var r5rlobbymenu = AddMenu( "R5RLobbyMenu", $"scripts/resource/ui/menus/R5R/lobbymenu.res", InitR5RLobbyMenu )
 	AddPanel( r5rlobbymenu, "R5RHomePanel", InitR5RHomePanel )
 	AddPanel( r5rlobbymenu, "R5RServerBrowserPanel", InitR5RServerBrowserPanel )
-	AddPanel( r5rlobbymenu, "ModsPanel", InitModsPanel )
+	AddPanel( r5rlobbymenu, "R5RNamePanel", InitR5RNamePanel )
+	AddPanel( r5rlobbymenu, "R5RDescPanel", InitR5RDescPanel )
+	AddPanel( r5rlobbymenu, "R5RKickPanel", InitR5RKickPanel )
+	AddPanel( r5rlobbymenu, "R5RStartingPanel", InitR5RStartingPanel )
 	AddPanel( r5rlobbymenu, "R5RConnectingPanel", InitR5RConnectingPanel )
 
-	AddMenu( "R5RNews", $"scripts/resource/ui/menus/CustomLobby/news.res", InitR5RNews )
-	AddMenu( "R5RGamemodeSelectV2Dialog", $"scripts/resource/ui/menus/CustomLobby/gamemode_select.res", InitR5RGamemodeSelectDialog )
-	AddMenu( "R5RCreateMatch", $"scripts/resource/ui/menus/CustomLobby/create_match.res", InitR5RCreateMatch )
+	var privatematchmenu = AddPanel( r5rlobbymenu, "R5RPrivateMatchPanel", InitR5RPrivateMatchMenu )
+	AddPanel( privatematchmenu, "R5RPlaylistPanel", InitR5RPlaylistPanel )
+	AddPanel( privatematchmenu, "R5RMapPanel", InitR5RMapPanel )
+	AddPanel( privatematchmenu, "R5RVisPanel", InitR5RVisPanel )
 	////////
 
 	//CTF UI
@@ -1573,10 +1568,6 @@ void function InitMenus()
 	
 	//Custom KillReplayHud
 	var killreplayhud = AddMenu( "KillReplayHud", $"scripts/resource/ui/menus/KillReplay/replayhud.menu", InitKillReplayHud )
-	///////
-
-	//Custom Weapon Mods Menu
-	var weaponmodsmenu = AddMenu( "WeaponMods", $"scripts/resource/ui/menus/weaponmods.menu", InitWeaponModsMenu )
 	///////
 
 	var lobbyMenu = AddMenu( "LobbyMenu", $"resource/ui/menus/lobby.menu", InitLobbyMenu )
@@ -1626,6 +1617,13 @@ void function InitMenus()
 	AddPanel( quipsPanel, "QuipsPanel", InitQuipsPanel )
 
 	AddPanel( customizeCharacterMenu, "CharacterExecutionsPanel", InitCharacterExecutionsPanel )
+
+	var customizeModelMenu = AddMenu( "CustomizeModelMenu", $"resource/ui/menus/customize_weapon.menu", InitCustomizeModelMenu )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel0", InitModelsPanel )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel1", InitModelsPanel )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel2", InitModelsPanel )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel3", InitModelsPanel )
+	AddPanel( customizeModelMenu, "WeaponSkinsPanel4", InitModelsPanel )
 
 	var customizeWeaponMenu = AddMenu( "CustomizeWeaponMenu", $"resource/ui/menus/customize_weapon.menu", InitCustomizeWeaponMenu )
 	AddPanel( customizeWeaponMenu, "WeaponSkinsPanel0", InitWeaponSkinsPanel )
@@ -2547,6 +2545,12 @@ void function OpenDevMenu( var button )
 	AdvanceMenu( GetMenu( "DevMenu" ) )
 }
 
+void function OpenModelMenu (string equipped) {
+	
+	SetTopLevelCustomizeContext(GetAllWeaponCategories()[0])
+	CustomizeModelMenus_Equip(equipped)
+	AdvanceMenu( GetMenu( "CustomizeModelMenu" ) )
+}
 
 void function SetDialog( var menu, bool val )
 {

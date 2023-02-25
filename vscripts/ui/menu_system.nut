@@ -311,7 +311,7 @@ void function OpenSettingsMenu()
 
 void function HostEndMatch()
 {
-	CreateServer( GetPlayerName() + " Lobby", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE)
+	LaunchR5RLobby()
 }
 
 void function RunSpectateCommand()

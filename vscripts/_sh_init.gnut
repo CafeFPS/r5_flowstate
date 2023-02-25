@@ -87,6 +87,8 @@ void function SV_CL_Init()
 	ClientSidePickups_Init()
 	GrappleWeaponInit()
 	ShInfoCords_Init()
+	if(GameRules_GetGameMode() == "map_editor")
+		ShAssets_Init()
 
 	//#if DEVELOPER
 		ShDevUtility_Init()

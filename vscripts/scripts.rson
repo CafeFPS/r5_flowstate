@@ -49,6 +49,7 @@ Scripts:
 	_threads.nut
 	_settings.nut
 	sh_utility_all.gnut
+	sh_assets.nut
 	sh_playlists.gnut
 	sh_networkvars.gnut
 	sh_items.gnut
@@ -162,7 +163,6 @@ Scripts:
 	_networkvars.gnut
 	_vscript.gnut
 	_init.gnut
-	_mapeditor.gnut
 	class/CPlayer.nut
 	sh_anim_windows.gnut
 	sh_anim_events.gnut
@@ -302,6 +302,8 @@ Scripts:
 	weapons/mp_weapon_energy_shotgun.nut
 	weapons/mp_weapon_grenade_sonar.nut
 	weapons/mp_weapon_clickweapon.nut
+	weapons/mp_weapon_editor.nut
+
 ]
 
 When: "SERVER || CLIENT"
@@ -686,6 +688,7 @@ Scripts:
 	ui/userinfo.nut
 	ui/newness.gnut
 	ui/customize_common.gnut
+	ui/customize_model.nut
 	ui/mini_promo.nut
 	ui/menu_action_blocks.nut
 	ui/menu_dev.nut
@@ -771,8 +774,10 @@ Scripts:
 	ui/panel_quip_kill.nut
 
 	ui/menu_customize_weapon.nut
+	ui/menu_customize_model.nut
 	ui/menu_misc_customize.nut
 	ui/panel_weapon_skins.nut
+	ui/panel_models.nut
 
 	ui/menu_main.nut
 	ui/panel_mainmenu.nut
@@ -796,6 +801,8 @@ Scripts:
 	ui/menu_reward_ceremony.nut
 	ui/menu_loadscreen_preview.nut
 	
+	//CTF
+	ui/CTFMenus/menu_ctf_respawn.nut
 	//FR Challenges
 	ui/FRChallenges/menu_frchallenges.nut
 	ui/FRChallenges/mainmenu_challenges.nut
@@ -810,22 +817,18 @@ Scripts:
 
 	//KillReplay
 	ui/KillReplay/menu_killreplay.nut
-
+	
 	//R5RUI
-	ui/CustomLobby/menu_main.nut
-	ui/CustomLobby/menu_lobby.nut
-	ui/CustomLobby/panel_home.nut
-	ui/CustomLobby/menu_news.nut
-	ui/CustomLobby/menu_gamemodeselect.nut
-	ui/CustomLobby/menu_creatematch.nut
-	ui/CustomLobby/panel_serverbrowser.nut
-	ui/CustomLobby/panel_mainmenu.nut
-	ui/CustomLobby/panel_mods.nut
-
-	//CTF
-	ui/CTFMenus/menu_ctf_respawn.nut
+	ui/R5RMenus/menu_main.nut
+	ui/R5RMenus/menu_lobby.nut
+	ui/R5RMenus/menu_private_match.nut
+	ui/R5RMenus/panel_home.nut
+	ui/R5RMenus/panel_serverbrowser.nut
+	ui/R5RMenus/panel_mainmenu.nut
+	ui/R5RMenus/panel_playlist.nut
+	ui/R5RMenus/panel_map.nut
+	ui/R5RMenus/panel_visibility.nut
 	ui/CTFMenus/menu_ctf_vote.nut
-	ui/menu_weaponmods.nut
 ]
 
 When: "SERVER || UI "
@@ -922,8 +925,6 @@ Scripts:
 	gamemodes/custom_ctf/custom_ctf_settings.nut
 	gamemodes/custom_aimtrainer/sh_aimtrainer.nut
 	lobby/lobbyvm/sh_lobbyvm.nut
-
-	sh_weaponmods.nut
 ]
 
 When: "SERVER"
@@ -943,7 +944,10 @@ Scripts:
 	custom_maps/_custom_maps_2.nut
 	custom_maps/_custom_maps_3.nut
 	custom_maps/_custom_maps_4.nut
+	//map editor props
+	_place_map_editor_props_here.nut
 
+	_mapeditor.gnut
 ]
 
 When: "CLIENT"
@@ -980,3 +984,11 @@ Scripts:
     mp/_zipline_utility/sh_zipline_panel.gnut
 ]
 
+// SalEditor
+When: "SERVER || CLIENT"
+Scripts:
+[
+	weapons/editor_modes/editor_mode_place.nut
+	weapons/editor_modes/editor_mode_delete.nut
+	weapons/editor_modes/editor_mode_toys.nut
+] 

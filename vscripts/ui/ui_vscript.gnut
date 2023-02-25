@@ -329,6 +329,7 @@ void function UICodeCallback_UIInit()
 	VPKNotifyFile( "cfg/startup_retail.cfg" )
 
 	UtilityUI_Init()
+	ShAssets_Init()
 	Settings_Init() // UI script doesn't need everything in this, reorganize
 	GameModes_Init()
 	UIVars_Init()

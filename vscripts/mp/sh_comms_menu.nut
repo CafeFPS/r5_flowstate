@@ -620,6 +620,14 @@ array<CommsMenuOptionData> function BuildMenuOptions( int chatPage )
 				results.append( MakeOption_PingReply( pingReply ) )
 			}
 		}
+
+		case eChatPage.EDITOR_MODES:
+		{
+			foreach(idx, mode in GetEditorModes())
+			{
+				results.append( MakeOption_EditorMode( idx ) )
+			}
+		}
 			break
 	}
 
@@ -680,6 +688,13 @@ string[2] function GetPromptsForMenuOption( int index )
 				promptTexts[0] = data.pickupString
 				promptTexts[1] = data.desc
 			}
+			break
+		}
+		case eOptionType.EDITOR_MODE_ACTIVATE:
+		{
+			EditorMode mode = GetEditorModes()[op.healType]
+			promptTexts[0] = mode.displayName
+			promptTexts[1] = mode.description
 			break
 		}
 	}
@@ -1079,6 +1094,22 @@ void function ShowCommsMenu( int chatPage )
 						tier = 0
 					RuiSetInt( rui, ("optionTier" + idx), tier )
 					RuiSetBool( rui, ("optionEnabled" + idx), itemCount > 0 )
+				}
+			}
+		}
+		else if (chatPage == eChatPage.EDITOR_MODES)
+		{
+			if ( idx < s_currentMenuOptions.len() )
+			{
+				int index = options[idx].healType
+
+				if ( index != -1 )
+				{
+					EditorMode mode = GetEditorModes()[index]
+					
+					RuiSetString( rui, ("optionText" + idx), mode.displayName )
+					RuiSetInt( rui, ("optionTier" + idx), index % 5 + 1 )
+					RuiSetBool( rui, ("optionEnabled" + idx), true )
 				}
 			}
 		}

@@ -68,13 +68,7 @@ void function OnMiscMenu_NavigateBack()
 	CloseActiveMenu()
 
 	if ( IsLobby() )
-	{
-		if (GetActiveMenu() != GetMenu( GetCurrentLobbyMenu() ) )
-			AdvanceMenu( GetMenu( GetCurrentLobbyMenu() ) )
-
 		UI_SetPresentationType( CurrentPresentationType )
-	}
-		
 
 	if(ISAIMTRAINER){
 		CloseAllMenus()

@@ -1,4 +1,4 @@
-"scripts/resource/ui/menus/CustomLobby/panels/kickplayer.res"
+"scripts/resource/ui/menus/R5R/panels/kickplayer.res"
 {
 	"DarkenBackground"
 	{

@@ -18,6 +18,10 @@ global function UICodeCallback_OnUserSignOut
 
 const bool SPINNER_DEBUG_INFO = PC_PROG
 
+// r5r
+global function LaunchR5RLobby
+global bool isLeavingMatch = false
+
 struct
 {
 	var                menu
@@ -158,6 +162,12 @@ void function UpdateDataCenterFooter( InputDef footerData )
 
 void function OnMainMenuPanel_Show( var panel )
 {
+	if( isLeavingMatch )
+	{
+		LaunchR5RLobby()
+		return
+	}
+	
 	file.startTime = Time()
 
 	AccessibilityHintReset()
@@ -197,304 +207,8 @@ void function PrelaunchValidation( bool autoContinue = false )
 
 	SetLaunchState( eLaunchState.WORKING )
 
-	SetLaunchState( eLaunchState.CANT_CONTINUE, "Press F10 to access the Server Browser" )
-
-	return
-#if SPINNER_DEBUG_INFO
-	SetSpinnerDebugInfo( "PrelaunchValidation" )
-#endif
-	#if PC_PROG
-		bool isOriginEnabled = true//Origin_IsEnabled()
-		PrintLaunchDebugVal( "isOriginEnabled", isOriginEnabled )
-		if ( !isOriginEnabled )
-		{
-			#if DEVELOPER
-				if ( autoContinue )
-					LaunchMP()
-				else
-					SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, "", Localize( "#MAINMENU_CONTINUE" ) )
-
-				return
-			#endif // DEVELOPER
-
-			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#ORIGIN_IS_OFFLINE" ), Localize( "#MAINMENU_RETRY" ) )
-			return
-		}
-
-		bool isOriginConnected = true//isOriginEnabled ? Origin_IsOnline() : true
-		PrintLaunchDebugVal( "isOriginConnected", isOriginConnected )
-		if ( !isOriginConnected )
-		{
-			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#ORIGIN_IS_OFFLINE" ), Localize( "#MAINMENU_RETRY" ) )
-			return
-		}
-
-		bool isOriginLatest = true//Origin_IsUpToDate()
-		PrintLaunchDebugVal( "isOriginLatest", isOriginLatest )
-		if ( !isOriginLatest )
-		{
-			SetLaunchState( eLaunchState.CANT_CONTINUE, Localize( "#TITLE_UPDATE_AVAILABLE" ) )
-			return
-		}
-	#endif // PC_PROG
-
-	#if CONSOLE_PROG
-		bool isOnline = Console_IsOnline()
-		PrintLaunchDebugVal( "isOnline", isOnline )
-		if ( !isOnline )
-		{
-			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#INTERNET_NOT_FOUND" ), Localize( "#MAINMENU_RETRY" ) )
-			return
-		}
-	#endif // CONSOLE_PROG
-
-	bool hasLatestPatch = HasLatestPatch()
-	PrintLaunchDebugVal( "hasLatestPatch", hasLatestPatch )
-	if ( !hasLatestPatch )
-	{
-		SetLaunchState( eLaunchState.CANT_CONTINUE, Localize( "#TITLE_UPDATE_AVAILABLE" ) )
-		return
-	}
-
-	#if PC_PROG
-		bool isOriginAccountAvailable = true // ???
-		PrintLaunchDebugVal( "isOriginAccountAvailable", isOriginAccountAvailable )
-		if ( !isOriginAccountAvailable )
-		{
-			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#ORIGIN_ACCOUNT_IN_USE" ), Localize( "#MAINMENU_RETRY" ) )
-			return
-		}
-
-		bool isOriginLoggedIn = true // ???
-		PrintLaunchDebugVal( "isOriginLoggedIn", isOriginLoggedIn )
-		if ( !isOriginLoggedIn )
-		{
-			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#ORIGIN_NOT_LOGGED_IN" ), Localize( "#MAINMENU_RETRY" ) )
-			return
-		}
-
-		bool isOriginAgeApproved = MeetsAgeRequirements()
-		PrintLaunchDebugVal( "isOriginAgeApproved", isOriginAgeApproved )
-		if ( !isOriginAgeApproved )
-		{
-			SetLaunchState( eLaunchState.CANT_CONTINUE, Localize( "#MULTIPLAYER_AGE_RESTRICTED" ) )
-			return
-		}
-
-#if SPINNER_DEBUG_INFO
-		SetSpinnerDebugInfo( "isOriginReady" )
-#endif
-		while ( true )
-		{
-			bool isOriginReady = true//Origin_IsReady()
-			PrintLaunchDebugVal( "isOriginReady", isOriginReady )
-			if ( isOriginReady )
-				break
-			WaitFrame()
-		}
-	#endif // PC_PROG
-
-	#if PS4_PROG
-		WaitFrame() // ???: doesn't work without a wait
-
-		if ( PS4_isNetworkingDown() )
-		{
-			printt( "PS4 - networking is down" )
-			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#PSN_CANNOT_CONNECT" ), Localize( "#MAINMENU_RETRY" ) )
-			return
-		}
-
-		if ( !PS4_isUserNetworkingEnabled() )
-		{
-			PS4_ScheduleUserNetworkingEnabledTest()
-#if SPINNER_DEBUG_INFO
-			SetSpinnerDebugInfo( "PS4_isUserNetworkingResolved" )
-#endif
-			WaitFrame()
-			if ( !PS4_isUserNetworkingResolved() )
-			{
-				printt( "PS4 - networking isn't resolved yet" )
-				while ( !PS4_isUserNetworkingResolved() )
-					WaitFrame()
-			}
-		}
-
-		int netStatus = PS4_getUserNetworkingResolution()
-
-		bool isPSNConnected
-		if ( netStatus == PS4_NETWORK_STATUS_NOT_LOGGED_IN )
-			isPSNConnected = false
-		else
-			isPSNConnected = Ps4_PSN_Is_Loggedin()
-		PrintLaunchDebugVal( "isPSNConnected", isPSNConnected )
-		if ( !isPSNConnected )
-		{
-			if ( autoContinue )
-				thread PS4_PSNSignIn()
-			else
-				SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, "", Localize( "#MAINMENU_CONTINUE" ) )
-			return
-		}
-
-		bool isAgeApproved
-		if ( netStatus == PS4_NETWORK_STATUS_AGE_RESTRICTION )
-			isAgeApproved = false
-		else
-			isAgeApproved = !PS4_is_NetworkStatusAgeRestriction()
-		PrintLaunchDebugVal( "isAgeApproved", isAgeApproved )
-		if ( !isAgeApproved )
-		{
-			SetLaunchState( eLaunchState.CANT_CONTINUE, Localize( "#MULTIPLAYER_AGE_RESTRICTED" ) )
-			return
-		}
-
-		bool isPSNError = netStatus == PS4_NETWORK_STATUS_IN_ERROR
-		PrintLaunchDebugVal( "isPSNError", isPSNError )
-		if ( isPSNError )
-		{
-			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#PSN_HAD_ERROR" ), Localize( "#MAINMENU_RETRY" ) )
-			return
-		}
-
-		// Moved till later because some of the above PS4 checks cause PS4_isUserNetworkingEnabled() to return false so anything past checking PS4_isUserNetworkingEnabled() couldn't be reached
-		if ( !PS4_isUserNetworkingEnabled() )
-		{
-			SetLaunchState( eLaunchState.CANT_CONTINUE, Localize( "#PSN_NOT_ALLOWED" ) )
-			return
-		}
-	#endif // PS4_PROG
-
-	#if DURANGO_PROG
-		bool isSignedIn = Console_IsSignedIn() // This call is weird. Seems like this is our game's concept of signed in, instead of xbox's. Also not used on PS4 because code always returns true
-		bool isProfileSelectRequired = file.forceProfileSelect
-		PrintLaunchDebugVal( "isSignedIn", isSignedIn )
-		PrintLaunchDebugVal( "isProfileSelectRequired", isProfileSelectRequired )
-		PrintLaunchDebugVal( "autoContinue", autoContinue )
-		if ( !isSignedIn || isProfileSelectRequired )
-		{
-			file.forceProfileSelect = false
-
-			if ( autoContinue )
-			{
-				Durango_ShowAccountPicker()
-			}
-			else
-			{
-				SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, "", Localize( "#MAINMENU_SIGN_IN" ) )
-			}
-			return
-		}
-
-		bool isGuest = Durango_IsGuest()
-		PrintLaunchDebugVal( "isGuest", isGuest )
-		if ( isGuest )
-		{
-			if ( autoContinue )
-			{
-				Durango_ShowAccountPicker()
-			}
-			else
-			{
-				SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#GUESTS_NOT_SUPPORTED" ), Localize( "#MAINMENU_SIGN_IN" ) )
-			}
-			return
-		}
-	#endif // DURANGO_PROG
-
-	bool hasPermission = HasPermission()
-	PrintLaunchDebugVal( "hasPermission", hasPermission )
-	if ( !hasPermission )
-	{
-		#if DURANGO_PROG
-			if ( autoContinue )
-			{
-				thread XB1_PermissionsDialog()
-				SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#MULTIPLAYER_NOT_AVAILABLE" ), Localize( "#MAINMENU_CONTINUE" ) ) // TEMP
-			}
-			else
-			{
-				SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, "", Localize( "#MAINMENU_SIGN_IN" ) )
-			}
-		#else
-			SetLaunchState( eLaunchState.CANT_CONTINUE, Localize( "#MULTIPLAYER_NOT_AVAILABLE" ) )
-		#endif
-		return
-	}
-
-	//#if PS4_PROG
-	//	bool hasPlus = Ps4_CheckPlus_Allowed()
-	//	PrintLaunchDebugVal( "hasPlus", hasPlus )
-	//
-	//	if ( !hasPlus )
-	//	{
-	//		Ps4_CheckPlus_Schedule()
-	//	#if SPINNER_DEBUG_INFO
-	//		SetSpinnerDebugInfo( "Ps4_CheckPlus_Running" )
-	//	#endif
-	//		while ( Ps4_CheckPlus_Running() )
-	//			WaitFrame()
-	//		hasPlus = Ps4_CheckPlus_Allowed()
-	//		PrintLaunchDebugVal( "hasPlus", hasPlus )
-	//
-	//		if ( !hasPlus )
-	//		{
-	//			if ( Ps4_CheckPlus_GetLastRequestResults() != 0 )
-	//			{
-	//				SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#PSN_HAD_ERROR" ), Localize( "#MAINMENU_RETRY" ) )
-	//				return
-	//			}
-	//
-	//			if ( autoContinue )
-	//				thread PS4_PlusSignUp()
-	//			else
-	//				SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, "", Localize( "#MAINMENU_CONTINUE" ) )
-	//			return
-	//		}
-	//	}
-	//#endif // PS4_PROG
-
-#if SPINNER_DEBUG_INFO
-	SetSpinnerDebugInfo( "isAuthenticatedByStryder" )
-#endif
-	float startTime = Time()
-	while ( true )
-	{
-		bool isAuthenticatedByStryder = IsStryderAuthenticated()
-		//PrintLaunchDebugVal( "isAuthenticatedByStryder", isAuthenticatedByStryder )
-
-		if ( isAuthenticatedByStryder )
-			break
-		if ( Time() - startTime > 10.0 )
-		{
-			SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#ORIGIN_IS_OFFLINE" ), Localize( "#MAINMENU_RETRY" ) )
-			return
-		}
-
-		WaitFrame()
-	}
-
-	bool isMPAllowedByStryder = IsStryderAllowingMP()
-	PrintLaunchDebugVal( "isMPAllowedByStryder", isMPAllowedByStryder )
-	if ( !isMPAllowedByStryder )
-	{
-		SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, Localize( "#MULTIPLAYER_NOT_AVAILABLE" ), Localize( "#MAINMENU_RETRY" ) )
-		return
-	}
-
-	#if CONSOLE_PROG
-		bool isNucleusRequired = Nucleussdk_is_required()
-		bool isNucleusLoggedIn = Nucleussdk_is_loggedin()
-		PrintLaunchDebugVal( "isNucleusRequired", isNucleusRequired )
-		PrintLaunchDebugVal( "isNucleusLoggedIn", isNucleusLoggedIn )
-		if ( isNucleusRequired && !isNucleusLoggedIn )
-		{
-			if ( autoContinue )
-				thread NucleusLogin()
-			else
-				SetLaunchState( eLaunchState.WAIT_TO_CONTINUE, "", Localize( "#MAINMENU_CONTINUE" ) )
-			return
-		}
-	#endif // CONSOLE_PROG
+	if( !autoContinue )
+		wait 1.0
 
 	if ( autoContinue )
 		LaunchMP()
@@ -614,6 +328,18 @@ void function StartSearchForPartyServer()
 	UpdateFooterOptions()
 
 	thread SearchForPartyServerTimeout()
+
+	thread LaunchR5RLobby( isLeavingMatch ? 0.0 : 1.0 )
+}
+
+void function LaunchR5RLobby( float delay = 0.0 )
+{
+	if( delay > 0 )
+		wait delay
+
+	CreateServer( "Lobby VM", "", "mp_lobby", "menufall", eServerVisibility.OFFLINE )
+
+	isLeavingMatch = false
 }
 
 

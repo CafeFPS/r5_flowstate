@@ -1,4 +1,4 @@
-"scripts/resource/ui/menus/CustomLobby/panels/connecting.res"
+"scripts/resource/ui/menus/R5R/panels/connecting.res"
 {
 	"DarkenBackground"
 	{

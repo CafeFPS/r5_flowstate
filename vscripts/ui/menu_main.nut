@@ -34,7 +34,7 @@ void function InitMainMenu( var newMenuArg )
 
 	file.subtitle = Hud_GetChild( file.menu, "Subtitle" )
 	var subtitleRui = Hud_GetRui( file.subtitle )
-	RuiSetString( subtitleRui, "subtitleText", "Flowstate".toupper() )
+	RuiSetString( subtitleRui, "subtitleText", "Reloaded".toupper() )
 
 	file.versionDisplay = Hud_GetChild( menu, "VersionDisplay" )
 	file.signedInDisplay = Hud_GetChild( menu, "SignInDisplay" )
@@ -48,7 +48,7 @@ void function OnMainMenu_Show()
 	Hud_SetWidth( file.titleArt, width )
 	Hud_SetWidth( file.subtitle, width )
 
-	Hud_SetText( file.versionDisplay, "Apex Flowstate Mod - R5Reloaded" )
+	Hud_SetText( file.versionDisplay, GetPublicGameVersion() + " - R5Reloaded" )
 	Hud_Show( file.versionDisplay )
 
 	ActivatePanel( GetPanel( "MainMenuPanel" ) )
