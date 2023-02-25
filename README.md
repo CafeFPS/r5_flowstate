@@ -89,7 +89,7 @@ More credits:
 - Rego#2848 -- beta tester
 - michae\l/#1125 -- beta tester
 - James9950#5567 -- beta tester
-- (--_GimmYnkia_--)#2995 -- beta tester
+- GimmYnkia -- beta tester
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
 
