@@ -168,6 +168,10 @@ void function RemoteFunctions_Init_Begin()
 			Remote_RegisterClientFunction("ServerCallback_StopLaserSightsOnSMGWeapon", "entity")
 			Remote_RegisterClientFunction("ServerCallback_CreateDistanceMarkerForGrenadesChallengeDummies", "entity", "entity")
 			//End Challenges by Colombia			
+		case MAP_EDITOR:
+			Remote_RegisterClientFunction("ServerCallback_NextProp", "entity")
+			Remote_RegisterClientFunction("ServerCallback_OpenModelMenu", "entity")
+			Remote_RegisterClientFunction("ServerCallback_SetCurrentEditorMode", "int", 0, 255)
 		case CUSTOM_CTF:
 			// CTF: Server to Client
 			Remote_RegisterClientFunction( "ServerCallback_CTF_AddPointIcon", "entity", "entity", "int", 0, 255)
@@ -528,7 +532,13 @@ void function RemoteFunctions_Init_Begin()
 
 	if ( IsLobby())
 	{
-		//Register networked variables for the lobby
+		Remote_RegisterClientFunction( "ServerCallback_LobbyVM_UpdateUI" )
+		Remote_RegisterClientFunction( "ServerCallback_LobbyVM_StartingMatch" )
+		Remote_RegisterClientFunction( "ServerCallback_LobbyVM_SelectionUpdated", "int", 0, 255 )
+		Remote_RegisterClientFunction( "ServerCallback_ServerBrowser_JoinServer", "int", 0, 999 )
+		Remote_RegisterClientFunction( "ServerCallback_ServerBrowser_RefreshServers" )
+
+		Remote_RegisterUntypedFunction_deprecated( "ServerCallback_LobbyVM_BuildClientString" )
 	}
 
 	if ( !IsLobby() )

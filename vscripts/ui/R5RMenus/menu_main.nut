@@ -29,7 +29,7 @@ void function InitR5RMainMenu( var newMenuArg )
 	//Setup subtitle
 	file.subtitle = Hud_GetChild( file.menu, "Subtitle" )
 	var subtitleRui = Hud_GetRui( file.subtitle )
-	RuiSetString( subtitleRui, "subtitleText", Localize( "Flowstate" ).toupper() )
+	RuiSetString( subtitleRui, "subtitleText", Localize( "Reloaded" ).toupper() )
 }
 
 void function ActivatePanel( var panel )
