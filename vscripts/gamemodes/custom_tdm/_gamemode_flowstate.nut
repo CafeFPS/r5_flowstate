@@ -128,7 +128,9 @@ void function _CustomTDM_Init()
 	
 	SurvivalFreefall_Init() //Enables freefall/skydive
 	PrecacheCustomMapsProps()
-    PrecacheZeesMapProps()
+	PrecacheZeesMapProps()
+	PrecacheMovementMapProps()
+	PrecacheDEAFPSMapProps()
 
     __InitAdmins()
 
@@ -2061,7 +2063,37 @@ void function SimpleChampionUI()
         DestroyPlayerProps()
         wait 1
 		thread nuketown()
-    }
+	} else if (file.selectedLocation.name == "Killyard")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread Killyard()
+	} else if (file.selectedLocation.name == "Dustment by DEAFPS")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread Dustment()
+	} else if (file.selectedLocation.name == "Shoothouse by DEAFPS")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread Shoothouse()
+	} else if (file.selectedLocation.name == "Rust By DEAFPS")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread Rust()
+	} else if (file.selectedLocation.name == "Noshahr Canals by DEAFPS")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread NCanals()
+	} else if (file.selectedLocation.name == "Treeree Movement Map")
+    {
+        DestroyPlayerProps()
+        wait 1
+		thread TreereeMvmt()
+	}
 
     foreach( player in GetPlayerArray() )
     {
@@ -2373,8 +2405,32 @@ entity function CreateRingBoundary(LocationSettings location)
 
     ringRadius += GetCurrentPlaylistVarFloat("ring_radius_padding", 800)
 
-    if(file.selectedLocation.name == "Shipment By AyeZee" || file.selectedLocation.name == "Killhouse By AyeZee" || file.selectedLocation.name == "Nuketown By AyeZee")
-        ringRadius = 99999
+    if ( file.selectedLocation.name == "Shipment By AyeZee" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Killhouse By AyeZee" )
+        ringRadius += 20000
+
+    if ( file.selectedLocation.name == "Nuketown By AyeZee" )
+        ringRadius += 20000
+
+    if ( file.selectedLocation.name == "Killyard" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Dustment by DEAFPS" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Shoothouse by DEAFPS" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Rust By DEAFPS" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Noshahr Canals by DEAFPS" )
+        ringRadius += 20000
+	
+    if ( file.selectedLocation.name == "Treeree Movement Map" )
+        ringRadius += 50000
 
     if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
     	ringRadius = 99999
