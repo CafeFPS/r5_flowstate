@@ -544,6 +544,7 @@ bool function is1v1EnabledAndAllowed()
 	{
 		case "mp_rr_arena_composite":
 		case "mp_rr_aqueduct":
+		case "mp_rr_canyonlands_64k_x_64k":
 		return true
 		default:
 		return false
