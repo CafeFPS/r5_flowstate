@@ -2,6 +2,8 @@
 //made by makimakima#5561
 globalize_all_functions
 
+global bool IS_CHINESE_SERVER = false
+
 global struct soloLocStruct
 {
 	LocPair &Loc1 //player1 respawn location
@@ -64,7 +66,12 @@ void function soloModeWaitingPrompt(entity player)
 	foreach (eachplayerStruct in soloPlayersWaiting)
 	{
 		if(eachplayerStruct.player == player) //this player is in waiting list
-			Message(player,"您已处于等待列队You're in waiting room.","请在控制台输入'rest'开始休息\nType rest in console to start resting (literally).",1)
+		{
+			if(IS_CHINESE_SERVER)
+				Message(player,"您已处于等待列队","请在控制台输入'rest'开始休息",1)
+			else
+				Message(player,"You're in waiting room.","Type rest in console to start resting.",1)
+		}
 	}
 
 }
@@ -103,7 +110,7 @@ int function getAvailableSlotIndex()
 		if(!soloLocationInProgressIndexs.contains(i))
 			availableSoloLocationIndex.append(i)
 	}
-	printt("available slot :" + availableSoloLocationIndex.len())
+	//printt("available slot :" + availableSoloLocationIndex.len())
 	if(availableSoloLocationIndex.len()==0)
 		return -1 //no available slot
 	return availableSoloLocationIndex[RandomInt(availableSoloLocationIndex.len())]
@@ -176,7 +183,7 @@ void function deleteWaitingPlayer(entity player)
 		if(eachPlayerStruct.player == player)
 		{
 			soloPlayersWaiting.removebyvalue(eachPlayerStruct) //delete this PlayerStruct
-			printt("deleted the PlayerStruct")
+			//printt("deleted the PlayerStruct")
 		}
 	}
 }
@@ -185,7 +192,11 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 {
 	if(soloPlayersResting.contains(player))
 	{
-		Message(player,"匹配中\n Matching!")
+		if(IS_CHINESE_SERVER)
+			Message(player,"匹配中")
+		else
+			Message(player,"Matching!")
+		
 		soloModePlayerToWaitingList(player)
 		try
 		{
@@ -196,7 +207,11 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 	}
 	else
 	{
-		Message(player,"您已处于休息室\nYou are resting now", "在控制台中输入'rest'重新开始匹配\nType rest in console to pew pew again.")
+		if(IS_CHINESE_SERVER)
+			Message(player,"您已处于休息室", "在控制台中输入'rest'重新开始匹配")
+		else
+			Message(player,"You are resting now", "Type rest in console to pew pew again.")
+		
 		soloModePlayerToRestingList(player)
 		try
 		{
@@ -357,10 +372,10 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	int slotIndex = getAvailableSlotIndex()
 	if (slotIndex > -1) //available slot exist
 	{
-		printt("solo slot exist")
+		//printt("solo slot exist")
 		newGroup.slotIndex = slotIndex
 
-		printt("add player1&player2 to InProgress list!")
+		//printt("add player1&player2 to InProgress list!")
 		soloPlayersInProgress.append(newGroup) //加入游玩队列
 
 		result = true
@@ -411,7 +426,11 @@ void function soloModePlayerToRestingList(entity player)
 
 void function soloModefixDelayStart(entity player)
 {
-	Message(player,"加载中\nLoading solo mode")
+	if(IS_CHINESE_SERVER)
+		Message(player,"加载中 FS 1v1")
+	else
+		Message(player,"Loading Flowstate 1v1")
+	
 	HolsterAndDisableWeapons(player)
 
 	wait 8
@@ -594,7 +613,7 @@ bool function isGroupVaild(soloGroupStruct group)
 void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复活死亡玩家和同一个sologroup的玩家
 {
 	if (!IsValid(player)) return
-	printt("respawnInSoloMode!")
+	//printt("respawnInSoloMode!")
 	// Warning("respawn player: " + player.GetPlayerName())
 
    	if( player.p.isSpectating )
@@ -934,15 +953,26 @@ void function _soloModeInit(string mapName)
 		}
 
 	//resting room init
-
-
-	entity restingRoomPanel = CreateFRButton(waitingRoomPanelLocation.origin, waitingRoomPanelLocation.angles, "%&use% 开始观战\n%&use% Start spectating ")
+	
+	string buttonText
+	
+	if(IS_CHINESE_SERVER)
+		buttonText = "%&use% 开始观战"
+	else
+		buttonText = "%&use% Start spectating"
+	
+	entity restingRoomPanel = CreateFRButton( waitingRoomPanelLocation.origin, waitingRoomPanelLocation.angles, buttonText )
+	
 	AddCallback_OnUseEntity( restingRoomPanel, void function(entity panel, entity user, int input)
 	{
 		if(!IsValid(user)) return
 		if(!isPlayerInRestingList(user))
 		{
-			Message(user,"您必须在休息模式中才能使用观战功能\n Your must be in resting mode to spectate others!您","请在控制台中输入'rest'进入休息模式\n Input 'rest' in console to enter resting mode ")
+			if(IS_CHINESE_SERVER)
+				Message(user,"您必须在休息模式中才能使用观战功能您","请在控制台中输入'rest'进入休息模式")
+			else
+				Message(user,"Your must be in resting mode to spectate others!","Input 'rest' in console to enter resting mode ")
+			
 			return //不在休息队列中不能使用观战功能
 		}
 
@@ -961,7 +991,11 @@ void function _soloModeInit(string mapName)
 			thread CheckForObservedTarget(user)
 			user.p.lastTimeSpectateUsed = Time()
 
-			Message(user,"按一下空格后结束观战\nPress 'SPACE' to stop spectating")
+			if(IS_CHINESE_SERVER)
+				Message(user,"按一下空格后结束观战")
+			else
+				Message(user,"Press 'SPACE' to stop spectating")
+			
 			user.MakeInvisible()
 
 	    }
@@ -983,11 +1017,31 @@ void function _soloModeInit(string mapName)
 
 		soloLocations.append(p)
 	}
-
+	
+	string buttonText2
+	string Text3
+	string Text4
+	string Text5
+	
+	if(IS_CHINESE_SERVER)
+	{
+		Text3 = "您已取消绑定"
+		Text4 = "您已绑定您的对手"
+		Text5 = "您的对手已断开连接"
+		buttonText2 = "%&use% 不再更换对手"
+	}
+	else
+	{
+		Text3 = "Your opponent will change now"
+		Text4 = "Your opponent won't change"
+		Text5 = "Your opponent has disconnected!"
+		buttonText2 = "%&use% Never change your opponent"
+	}
+	
 	foreach (index,eahclocation in panelLocations)
 	{
 		//Panels for save opponents
-		entity panel = CreateFRButton(eahclocation.origin, eahclocation.angles, "%&use%不再更换对手\n%&use% Never change your opponent")
+		entity panel = CreateFRButton(eahclocation.origin, eahclocation.angles, buttonText2)
 		panel.SetSkin(1)//red
 		soloLocations[index].Panel = panel
 		AddCallback_OnUseEntity( panel, void function(entity panel, entity user, int input)
@@ -1063,7 +1117,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			//标记超时玩家
 			if(playerInWatingSctruct.waitingTime < Time() && !playerInWatingSctruct.IsTimeOut && IsValid(playerInWatingSctruct.player))
 			{
-				printt("mark time out player: " + playerInWatingSctruct.player.GetPlayerName() + " waitingTime: " + playerInWatingSctruct.waitingTime)
+				//printt("mark time out player: " + playerInWatingSctruct.player.GetPlayerName() + " waitingTime: " + playerInWatingSctruct.waitingTime)
 				playerInWatingSctruct.IsTimeOut = true
 			}
 		}//foreach
@@ -1073,7 +1127,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		{
 			if(eachGroup.IsFinished)//this round has been finished
 			{
-				printt("this round has been finished")
+				//printt("this round has been finished")
 				soloModePlayerToWaitingList(eachGroup.player1)
 				soloModePlayerToWaitingList(eachGroup.player2)
 				destroyRingsForGroup(eachGroup)
@@ -1084,17 +1138,17 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			{
 				if(IsValid(eachGroup.player1) && IsValid(eachGroup.player2) && (!IsAlive(eachGroup.player1) || !IsAlive(eachGroup.player2) ))
 				{
-					printt("respawn and tp player1")
+					//printt("respawn and tp player1")
 					thread respawnInSoloMode(eachGroup.player1, 0)
 
-					printt("respawn and tp player2")
+					//printt("respawn and tp player2")
 					thread respawnInSoloMode(eachGroup.player2, 1)
 				}//player in keeped group is died, respawn them
 			}
 
 			if(!IsValid(eachGroup.player1) || !IsValid(eachGroup.player2)) //Is player in this group quit the game
 			{
-				printt("solo player quit!!!!!")
+				//printt("solo player quit!!!!!")
 				if(IsValid(eachGroup.player1))
 				{
 					soloModePlayerToWaitingList(eachGroup.player1) //back to wating list
@@ -1268,9 +1322,3 @@ void function soloModeThread(LocPair waitingRoomLocation)
 	)
 
 }//thread
-
-
-
-
-
-
