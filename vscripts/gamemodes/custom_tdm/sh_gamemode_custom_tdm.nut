@@ -1071,6 +1071,20 @@ void function Sh_CustomTDM_Init()
         //break
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
+		    
+		if(FlowState_EnableTreeree()){
+		vector treereestartingorg = <0,0,43000>
+		Shared_RegisterLocation(
+		NewLocationSettings(
+			"Treeree Movement Map",
+			[
+						NewLocPair(< 6924, 1084.9360, -1402 >, < 0, -179.9997, 0 >),
+			],
+			<0, 0, 3000>
+				)
+			)
+		}    
+		    
 		if(!GetCurrentPlaylistVarBool("flowstateCapitolCityReplacesTTVLocation", false ))
 		{
 		Shared_RegisterLocation(
