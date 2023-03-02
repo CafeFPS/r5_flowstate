@@ -259,13 +259,30 @@ PrecacheModel( $"mdl/props/death_box/death_box_01.rmdl" )
 PrecacheModel( $"mdl/rocks/rock_white_chalk_sand_modular_large_01.rmdl" )
 PrecacheModel( $"mdl/levels_terrain/mp_runoff/water_tower.rmdl" )
 PrecacheModel( $"mdl/levels_terrain/mp_rr_canyonlands/canyonlands_terrain_section_01_radar_dish_02.rmdl" )    
-
     }
 }
 
 
 void function Rust()
 {
+    //this will somehow reset the maps default sun and sky scales
+    SetConVarFloat( "sv_cheats", 1 )
+    SetConVarFloat( "sv_cheats", 0 )
+
+    //Light settings
+    SetConVarFloat( "mat_sun_scale", 5 )
+    
+    //smol fps boost stuff
+    SetConVarFloat( "mat_screen_blur_enabled", 0 )
+    SetConVarFloat( "fps_max", 188 ) //because r5r has a that one bug that makes you stutter if you run more fps than 190
+    SetConVarFloat( "r_lod_switch_scale", 0.6 )
+    SetConVarFloat( "fog_enableskybox", 0 )
+    SetConVarFloat( "cl_particle_fallback_base", 4 )
+    SetConVarFloat( "cl_particle_fallback_multiplier", 4 )
+    SetConVarFloat( "particle_cpu_level", 0 )
+    SetConVarFloat( "fog_enable", 0 )
+
+
     //Starting Origin, Change this to a origin in a map 
     vector startingorg = <0,0,0>
     
@@ -1078,7 +1095,23 @@ void function Rust()
 
 void function NCanals()
 {
-
+    //this will somehow reset the maps default sun and sky scales
+    SetConVarFloat( "sv_cheats", 1 )
+    SetConVarFloat( "sv_cheats", 0 )
+    
+    //Light settings
+    SetConVarFloat( "mat_sun_scale", 3 )
+    SetConVarString( "mat_sun_color", "1 1 1" )
+    
+    //smol fps boost stuff
+    SetConVarFloat( "mat_screen_blur_enabled", 0 )
+    SetConVarFloat( "fps_max", 188 ) //because r5r has a that one bug that makes you stutter if you run more fps than 190
+    SetConVarFloat( "r_lod_switch_scale", 0.6 )
+    SetConVarFloat( "fog_enableskybox", 0 )
+    SetConVarFloat( "cl_particle_fallback_base", 4 )
+    SetConVarFloat( "cl_particle_fallback_multiplier", 4 )
+    SetConVarFloat( "particle_cpu_level", 0 )
+    
     //Starting Origin, Change this to a origin in a map 
     vector startingorg = <0,0,0>
 
@@ -3986,6 +4019,23 @@ void function NCanals()
 
 void function Dustment()
 {
+    //this will somehow reset the maps default sun and sky scales
+    SetConVarFloat( "sv_cheats", 1 )
+    SetConVarFloat( "sv_cheats", 0 )
+    
+    //Light settings
+    SetConVarFloat( "mat_sun_scale", 3 )
+    
+    //smol fps boost stuff
+    SetConVarFloat( "mat_screen_blur_enabled", 0 )
+    SetConVarFloat( "fps_max", 188 ) //because r5r has a that one bug that makes you stutter if you run more fps than 190
+    SetConVarFloat( "r_lod_switch_scale", 0.6 )
+    SetConVarFloat( "fog_enableskybox", 0 )
+    SetConVarFloat( "cl_particle_fallback_base", 4 )
+    SetConVarFloat( "cl_particle_fallback_multiplier", 4 )
+    SetConVarFloat( "particle_cpu_level", 0 )
+    SetConVarFloat( "fog_enable", 0 )
+
     //Starting Origin, Change this to a origin in a map 
     vector startingorg = <-19200,14000,2700> - < 4709.2950, -4616.6060, 0 >
     vector fixrotate = < 0, 0, 90 >
@@ -5246,6 +5296,23 @@ void function Dustment()
 
 void function Shoothouse()
 {
+    //this will somehow reset the maps default sun and sky scales
+    SetConVarFloat( "sv_cheats", 1 )
+    SetConVarFloat( "sv_cheats", 0 )
+
+    //Light settings
+    SetConVarFloat( "mat_sun_scale", 5 )
+    
+    //smol fps boost stuff
+    SetConVarFloat( "mat_screen_blur_enabled", 0 )
+    SetConVarFloat( "fps_max", 188 ) //because r5r has a that one bug that makes you stutter if you run more fps than 190
+    SetConVarFloat( "r_lod_switch_scale", 0.6 )
+    SetConVarFloat( "fog_enableskybox", 0 )
+    SetConVarFloat( "cl_particle_fallback_base", 4 )
+    SetConVarFloat( "cl_particle_fallback_multiplier", 4 )
+    SetConVarFloat( "particle_cpu_level", 0 )
+    SetConVarFloat( "fog_enable", 0 )
+
     //Starting Origin, Change this to a origin in a map 
     vector startingorg = <-19200,14000,2700> - < 4709.2950, -4616.6060, -1400 >
     vector fixrotate = < 0, 0, 90 >
@@ -6978,6 +7045,32 @@ void function Shoothouse()
 
 void function Killyard()
 {
+    //this will somehow reset the maps default sun and sky scales
+    SetConVarFloat( "sv_cheats", 1 )
+    SetConVarFloat( "sv_cheats", 0 )
+
+    //Light settings yoinked from we at night
+        SetConVarFloat( "mat_autoexposure_max", 0.6 )
+        SetConVarFloat( "mat_autoexposure_max_multiplier", 0.5 )
+        SetConVarFloat( "mat_sky_scale", 1.2 )
+        SetConVarString( "mat_sky_color", "1 1 1.9 1" )
+        SetConVarFloat( "mat_sun_scale", 6 )
+        SetConVarString( "mat_sun_color", "0.2 0.3 0.7 1" )
+    
+    //Restores Skybox after NCanals
+    SetConVarFloat( "r_drawsky", 1 )
+    SetConVarFloat( "gl_clear_color_buffer", 0 )
+    
+    //smol fps related stuff
+    SetConVarFloat( "mat_screen_blur_enabled", 0 )
+    SetConVarFloat( "fps_max", 188 ) //because r5r has a that one bug that makes you stutter if you run more fps than 190
+    SetConVarFloat( "r_lod_switch_scale", 0.6 )
+    SetConVarFloat( "fog_enableskybox", 0 )
+    SetConVarFloat( "cl_particle_fallback_base", 4 )
+    SetConVarFloat( "cl_particle_fallback_multiplier", 4 )
+    SetConVarFloat( "particle_cpu_level", 0 )
+    SetConVarFloat( "fog_enable", 0 )
+
     //Starting Origin, Change this to a origin in a map 
     vector startingorg = <-2961,-13240,43000>
 
