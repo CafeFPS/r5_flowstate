@@ -1622,7 +1622,7 @@ void function Sh_CustomTDM_Init()
                     <0, 0, 2000>
                 )
             )
-		Shared_RegisterLocation(
+		RegisterLocationPROPHUNT(
                 NewLocationSettings(
                     "Overlook",
                     [
