@@ -3326,7 +3326,26 @@ void function nuketown()
     //Starting Origin, Change this to a origin in a map
     vector startingorg
     if(GetMapName() == "mp_rr_arena_skygarden"){
+        // make the location above the map, skygarden is much higher than we
 	startingorg = <28524,23022,43000>
+	
+	//this will somehow reset the maps default sun and sky scales
+        SetConVarFloat( "sv_cheats", 1 )
+        SetConVarFloat( "sv_cheats", 0 )
+        
+        //Light settings
+        SetConVarFloat( "mat_sun_scale", 3 )
+	SetConVarFloat( "mat_sky_scale", 1 )
+        SetConVarString( "mat_sun_color", "1 1 1" )
+        
+        //smol fps boost stuff
+        SetConVarFloat( "mat_screen_blur_enabled", 0 )
+        SetConVarFloat( "fps_max", 188 ) //because r5r has a that one bug that makes you stutter if you run more fps than 190
+        SetConVarFloat( "r_lod_switch_scale", 0.6 )
+        SetConVarFloat( "fog_enableskybox", 0 )
+        SetConVarFloat( "cl_particle_fallback_base", 4 )
+        SetConVarFloat( "cl_particle_fallback_multiplier", 4 )
+        SetConVarFloat( "particle_cpu_level", 0 )
 	} else {
 	startingorg = <28524,23022,-3375>
 	}
