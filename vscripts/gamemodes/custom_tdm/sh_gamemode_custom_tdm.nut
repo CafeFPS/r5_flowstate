@@ -1815,7 +1815,7 @@ bool function Flowstate_DoorsEnabled()                         { return GetCurre
 int function FlowState_MaxPingAllowed() { return GetCurrentPlaylistVarInt("flowstateMaxPingAllowed", 200) }
 bool function FlowState_KickHighPingPlayer()                         { return GetCurrentPlaylistVarBool("flowstateKickHighPingPlayer", true ) }
 
-bool function FlowState_EnableEncore()                         			{ return GetCurrentPlaylistVarBool("flowstate_Enable_Encore", false ) }
+bool function FlowState_EnableEncore()                         			{ return GetCurrentPlaylistVarBool("flowstate_Enable_Encore", true ) } //enable encore by default unless stated false in playlist
 
 bool function FlowState_EnableKillyardByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Killyard_By_DEAFPS", false ) }
 bool function FlowState_EnableDustmentByDEAFPS()                        	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Dustment_By_DEAFPS", false ) }
