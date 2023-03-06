@@ -20,6 +20,7 @@ void function LeaveMatch()
 #endif // #if DURANGO_PROG
 
 	CancelMatchmaking()
+	ClientCommand( "disconnect" ) // also disconnect on client
 	ClientCommand( "LeaveMatch" )
 
 	//load new lobbyvm
