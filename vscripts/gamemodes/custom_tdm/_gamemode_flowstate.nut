@@ -2089,11 +2089,11 @@ void function SimpleChampionUI()
         DestroyPlayerProps()
         wait 1
 		thread NCanals()
-	} else if (file.selectedLocation.name == "Treeree Movement Map")
+	} else if (file.selectedLocation.name == "Movement Gym v0.2")
     {
         DestroyPlayerProps()
         wait 1
-		thread TreereeMvmt()
+		thread MovementGym()
 	}
 
     foreach( player in GetPlayerArray() )
@@ -2430,8 +2430,8 @@ entity function CreateRingBoundary(LocationSettings location)
     if ( file.selectedLocation.name == "Noshahr Canals by DEAFPS" )
         ringRadius += 20000
 	
-    if ( file.selectedLocation.name == "Treeree Movement Map" )
-        ringRadius += 50000
+    if ( file.selectedLocation.name == "Movement Gym v0.2" )
+        ringRadius = 99999
 
     if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
     	ringRadius = 99999
