@@ -1164,7 +1164,7 @@ void function Sh_CustomTDM_Init()
 		)
 		}
 		
-		if(FlowState_EnableTreeree()){
+		if(FlowState_EnableMovementGym()){
 				Shared_RegisterLocation(
 				NewLocationSettings(
 					"Treeree Movement Map",
