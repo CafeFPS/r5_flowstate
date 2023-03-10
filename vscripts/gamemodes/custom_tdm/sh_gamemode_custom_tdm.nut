@@ -1072,18 +1072,17 @@ void function Sh_CustomTDM_Init()
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
 		    
-		if(FlowState_EnableTreeree()){
-		vector treereestartingorg = <0,0,43000>
+		if(FlowState_EnableMovementGym()){
 		Shared_RegisterLocation(
 		NewLocationSettings(
-			"Treeree Movement Map",
+			"Movement Gym v0.2",
 			[
-						NewLocPair(< 6924, 1084.9360, -1402 >, < 0, -179.9997, 0 >),
+						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
 			],
 			<0, 0, 3000>
 				)
 			)
-		}    
+		}
 		    
 		if(!GetCurrentPlaylistVarBool("flowstateCapitolCityReplacesTTVLocation", false ))
 		{
@@ -1823,7 +1822,7 @@ bool function FlowState_EnableShoothouseByDEAFPS()                       	{ retu
 bool function FlowState_EnableRustByDEAFPS()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_Rust_By_DEAFPS", false ) }
 bool function FlowState_EnableNCanalsByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_NCanals_By_DEAFPS", false ) }
 bool function FlowState_EnableEncoreNuketownByAyeZee()                          { return GetCurrentPlaylistVarBool("flowstate_Enable_Encore_Nuketown_By_AyeZee", false ) }
-bool function FlowState_EnableTreeree()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_Treeree", false ) }
+bool function FlowState_EnableMovementGym()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym", false ) }
 
 #if SERVER   
 
