@@ -1164,19 +1164,6 @@ void function Sh_CustomTDM_Init()
 		)
 		}
 		
-		if(FlowState_EnableMovementGym()){
-				Shared_RegisterLocation(
-				NewLocationSettings(
-					"Treeree Movement Map",
-					[
-								NewLocPair(< 6924, 1084.9360, -1402 >, < 0, -179.9997, 0 >),
-					],
-					<0, 0, 3000>
-				)
-			)
-		}
-
-		
 		Shared_RegisterLocation(
                 NewLocationSettings(
                     "Lava Fissure",
