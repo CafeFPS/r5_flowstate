@@ -1075,7 +1075,7 @@ void function Sh_CustomTDM_Init()
 		if(FlowState_EnableMovementGym()){
 		Shared_RegisterLocation(
 		NewLocationSettings(
-			"Movement Gym v0.2",
+			"Movement Gym v0.3",
 			[
 						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
 			],
