@@ -1736,6 +1736,8 @@ Message(user, "Jump Pad Tap Strafes")
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
             TakeAllWeapons( ent )
+	    ent.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+	    ent.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
         }
     }
     })
