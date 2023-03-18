@@ -1,25 +1,23 @@
-# Original and updated repository for Flowstate mod
+# Welcome to Flowstate
 
-Flowstate is a package of scripts for R5 Reloaded (Modded Apex Legends) that includes a large number of bugs fixes and new features. It also includes exclusive content made by the community like abilities, gamemodes or maps! 
+Flowstate is a package of scripts for R5 Reloaded (Modded Apex Legends) that includes additional content made by @CafeFPS. (Gamemodes, weapons, abilities, bug fixes, and more!)
 
 Gamemodes: 
 1. Flowstate Aim Trainer
-2. Flowstate FFA/TDM-Gungame-Fiesta
-3. Hide&Seek Prophunt (Beta)
+2. Flowstate FFA/TDM
 4. Battle royale (Beta)
 5. Csgo-like Apex Surf
 6. Capture The Flag
-7. Prop dynamic map editor
 
 Join r5 reloaded discord: https://discord.com/invite/r5reloaded
 
 # How to install
 Follow the steps in order, or you will have issues!
 
-1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded) Min SDK version required is: v2.1.9 Release Candidate: https://github.com/Mauler125/r5sdk/releases. 
+1. Get the last SDK version for your Apex S3 to run these scripts correctly (How to get Apex S3? Read instructions in https://discord.com/invite/r5reloaded). Latest stable 2.2.3 RC. Get it from https://github.com/Mauler125/r5sdk/releases. 
 Download depot.zip and replace all the content into your Apex S3 main folder.
-2. Get the flowstate required files .zip: https://github.com/ColombianGuy/r5_flowstate/releases/tag/Release2. Drag and drop all the content into r5r main folder, replace when asked.
-3. Get the content from this repo and place it in /platform/scripts/. Replace all the content. https://github.com/ColombianGuy/r5_flowstate/archive/refs/heads/r5_flowstate.zip
+2. Get the latest release from this repository to get the required files.
+3. Get scripts (https://github.com/ColombianGuy/r5_flowstate/archive/refs/heads/r5_flowstate.zip) and place them in /platform/scripts/. Replace all the content. 
 
 # Flowstate Aim Trainer
 
@@ -30,14 +28,8 @@ You can use Lobby Create Server menu or F10 menu to start a Flowstate Aim Traine
 3. Start the server!
 4. Change character, weapon, attachments (use right click to change attachments) and a lot more! Start to challenge yourself!
 
-# Bugs
-Please read trello before complaining
-- Trello Board: https://trello.com/b/yrrj27YK/flowstate-aim-trainer
-
-Let me know if you find new issues, my discord is in the last section.
-
 # Aim Trainer Features
-- Season 14 weapon data.
+- Season 16 weapon data.
 - Laser sights.
 - Results UI, displays the results data at the end of the challenge.
 - History UI, saves challenges data, useful to see your performance over time.
@@ -97,7 +89,7 @@ More credits:
 - Rego#2848 -- beta tester
 - michae\l/#1125 -- beta tester
 - James9950#5567 -- beta tester
-- (--__GimmYnkia__--)#2995 -- beta tester
+- GimmYnkia -- beta tester
 - oliver#1375 -- beta tester
 - Rin 暗#5862 -- beta tester
 

@@ -301,7 +301,14 @@ WeaponData
 
         hopup_unshielded_dmg
         {
-      
+            "damage_unshielded_scale"   					"1.35"
+
+            "projectile_trail_effect_0"     				"P_tracer_proj_smg_hammer_point"
+            "impact_effect_table" 							"hammer_point_bullet"
+
+            "fire_sound_1_player_1p"						"Weapon_ShotgunPistol_Fire_unshieldeddmg_1P"
+			"fire_sound_1_player_3p"						"Weapon_ShotgunPistol_Fire_unshieldeddmg_3P"
+			"fire_sound_1_npc"								"Weapon_ShotgunPistol_Fire_NPC"
         }
 	}
 

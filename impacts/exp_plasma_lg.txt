@@ -1,0 +1,229 @@
+ImpactTable
+{
+	Info
+	{
+		"whizby_sound_from_player"	"bullets_plasmanearmiss"
+		"whizby_sound_from_AI"		"bullets_plasmanearmiss_aigenerated"
+		"whizby_maxDistancePilot"	"300"
+		"whizby_maxDistanceTitan"	"400"
+	}
+
+	FX
+	{
+		"C" "P_plasma_exp_LG" //Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_plasma_exp_LG" //Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		"E" "P_plasma_exp_LG" // metal_titan
+
+		"F" "P_plasma_exp_LG" //flesh
+		"G" "P_plasma_exp_LG" //metalgrate, chainlink, chain
+		"H" "P_plasma_exp_LG" //alienflesh
+
+		"J" "P_plasma_exp_LG" //grass
+		"K" "P_plasma_exp_LG" //Mud
+		"L" "P_plasma_exp_LG" //plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		"M" "P_plasma_exp_LG" //Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_plasma_exp_LG" //Slime
+		"O" "P_plasma_exp_LG" //Foliage
+		"P" "P_plasma_exp_LG" //Computer
+
+		"R" "P_plasma_exp_LG" //metalpanel, grenade, canister
+		"S" "P_plasma_exp_LG" //water, slime
+		"T" "P_plasma_exp_LG" //tile
+		"U" "P_plasma_exp_LG" //glass_breakable
+
+		"V" "P_plasma_exp_LG" //Metal Vent
+		"W" "P_plasma_exp_LG" //Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"X" "P_plasma_exp_LG" //xo_shield
+
+		"Y" "P_plasma_exp_LG" //glass, brokenglass, glassbottle, pottery
+		"Z" "P_plasma_exp_LG"  //sand
+
+		"0" "P_plasma_exp_LG"
+		"1" "P_plasma_exp_LG"
+		"2" "P_plasma_exp_LG"
+		"3" "P_plasma_exp_LG"
+		"4" "P_plasma_exp_LG"
+		"5" "P_plasma_exp_LG"
+		"6" "P_plasma_exp_LG"
+		"7" "P_plasma_exp_LG"
+		"8" "P_plasma_exp_LG"
+		"9" "P_plasma_exp_LG" //puddle
+
+		"airburst" "P_plasma_exp_LG"
+		"shieldhit" "P_plasma_exp_LG"
+		"critical_hit" "P_plasma_exp_LG"
+	}
+
+
+	FX
+	{
+		"C" "P_impact_exp_med_concrete_grnd"	//Concrete, rock, porcelain, boulder, gravel, asphalt, brick, concrete_block, plaster
+		"D" "P_impact_exp_med_dirt_grnd"			//Dirt, slipperyslime, snow, carpet, cardboard, floatingstandable, ceiling_tile, papercup
+		//"E" "impact_metal_titan"		// metal_titan
+
+		//"F" "impact_flesh"					//flesh
+		//"G" "impact_metal_large"		//metalgrate, chainlink, chain
+		//"H" "impact_alienflesh"			//alienflesh
+
+		"J" "P_impact_exp_med_dirt_grnd"			//grass
+		"K" "impact_mud_large" 	//Mud
+		//"L" "impact_plastic_large"	//plastic_barrel, plastic_box, item, rubber, rubbertire, jeeptire, slidingrubbertire, brakingrubbertire, slidingrubbertire_front, slidingrubbertire_rear
+		//"M" "impact_metal_large"		//Default, metal, metal_box, solidmetal, armorflesh, metal_bouncy, slippery_metal, shellcasing_small, shellcasing_large, metal_barrel, floating_metal_barrel, weapon
+		"N" "P_impact_exp_med_slime" //Slime
+		"O" "P_impact_exp_med_dirt_grnd"			//Foliage
+		//"P" "impact_metal_large"		//Computer
+
+		"R" "P_impact_exp_med_concrete_grnd"	//metalpanel, grenade, canister
+		"S" "P_impact_exp_med_water"						//water, slime
+		"T" "P_impact_exp_med_concrete_grnd"	//tile
+		//"U" "impact_glass"					//glass_breakble
+
+		//"V" "impact_metal_large"		//Metal Vent
+		//"W" "impact_wood_large"			//Wood, Wood_lowdensity, Wood_Box, Wood_Crate, Wood_Plank, Wood_Solid, Wood_Furniture, Wood_Panel watermelon
+
+		"Y" "impact_glass"					//glass, brokenglass, glassbottle, pottery
+	    "Z" "P_impact_exp_med_sand_grnd"						//Sand
+
+		"0" "P_impact_exp_med_dirt_grnd"
+		"1" "P_impact_exp_med_concrete_grnd"
+		"2" "P_impact_exp_med_dirt_grnd"
+		"3" "P_impact_exp_med_concrete_grnd"
+		"4" "P_impact_exp_med_concrete_grnd"
+		"5" "P_impact_exp_med_concrete_grnd"
+		"6" "P_impact_exp_med_concrete_grnd"
+		"7" "P_impact_exp_med_concrete_grnd"
+		"8" "P_impact_exp_med_concrete_grnd"
+		"9" "impact_puddle"					//puddle
+
+		//"splash" "P_impact_water_LG" //brush water
+		//"slime_splash" "P_impact_water_LG"
+		"shieldhit" "P_xo_armor_impact"
+		//"critical_hit" "impact_metal_titan"
+	}
+
+	FX_victim
+	{
+		"F" "impact_flesh_victim"
+		"shieldhit" "impact_metal_large"
+
+	}
+
+
+	Sound
+	{
+		"C" "explo_plasmalarge_impact_3p_vs_3p"
+		"D" "explo_plasmalarge_impact_3p_vs_3p"
+		"E" "explo_plasmalarge_impact_3p_vs_3p"
+
+		"F" "explo_plasmalarge_impact_3p_vs_3p"
+		"G" "explo_plasmalarge_impact_3p_vs_3p"
+		"H" "explo_plasmalarge_impact_3p_vs_3p"
+
+		"J" "explo_plasmalarge_impact_3p_vs_3p"
+		"K" "explo_plasmalarge_impact_3p_vs_3p"  // mud?
+		"L" "explo_plasmalarge_impact_3p_vs_3p"
+		"M" "explo_plasmalarge_impact_3p_vs_3p"
+		"N" "explo_plasmalarge_impact_3p_vs_3p"	// sand?
+		"O" "explo_plasmalarge_impact_3p_vs_3p"
+		"P" "explo_plasmalarge_impact_3p_vs_3p"
+
+		"R" "explo_plasmalarge_impact_3p_vs_3p"
+		"S" "explo_plasmalarge_impact_3p_vs_3p"
+		"T" "explo_plasmalarge_impact_3p_vs_3p"
+		"U" "explo_plasmalarge_impact_3p_vs_3p"
+
+		"V" "explo_plasmalarge_impact_3p_vs_3p"
+		"W" "explo_plasmalarge_impact_3p_vs_3p"
+		"X" "explo_plasmalarge_impact_3p_vs_3p"
+		"Y" "explo_plasmalarge_impact_3p_vs_3p"
+		"Z" "explo_plasmalarge_impact_3p_vs_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "titanshield_explo_plasmasmall_impact_3p_vs_3p"
+
+		"headshot_flesh" "explo_plasmalarge_impact_3p_vs_3p"
+		"headshot_mechanical" "explo_plasmalarge_impact_3p_vs_3p"
+	}
+
+	Sound_attacker
+	{
+		"C" "explo_plasmalarge_impact_1p_vs_3p"
+		"D" "explo_plasmalarge_impact_1p_vs_3p"
+		"E" "explo_plasmalarge_impact_1p_vs_3p"
+
+		"F" "explo_plasmalarge_impact_1p_vs_3p"
+		"G" "explo_plasmalarge_impact_1p_vs_3p"
+		"H" "explo_plasmalarge_impact_1p_vs_3p"
+
+		"J" "explo_plasmalarge_impact_1p_vs_3p"
+		"K" "explo_plasmalarge_impact_1p_vs_3p"  // mud?
+		"L" "explo_plasmalarge_impact_1p_vs_3p"
+		"M" "explo_plasmalarge_impact_1p_vs_3p"
+		"N" "explo_plasmalarge_impact_1p_vs_3p"	// sand?
+		"O" "explo_plasmalarge_impact_1p_vs_3p"
+		"P" "explo_plasmalarge_impact_1p_vs_3p"
+
+		"R" "explo_plasmalarge_impact_1p_vs_3p"
+		"S" "explo_plasmalarge_impact_1p_vs_3p"
+		"T" "explo_plasmalarge_impact_1p_vs_3p"
+		"U" "explo_plasmalarge_impact_1p_vs_3p"
+
+		"V" "explo_plasmalarge_impact_1p_vs_3p"
+		"W" "explo_plasmalarge_impact_1p_vs_3p"
+		"X" "explo_plasmalarge_impact_1p_vs_3p"
+		"Y" "explo_plasmalarge_impact_1p_vs_3p"
+		"Z" "explo_plasmalarge_impact_1p_vs_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "titanshield_explo_plasmasmall_impact_3p_vs_3p"
+
+		"headshot_flesh" "explo_plasmalarge_impact_1p_vs_3p"
+		"headshot_mechanical" "explo_plasmalarge_impact_3p_vs_1p"
+	}
+
+	Sound_victim
+	{
+		"C" "explo_plasmalarge_impact_3p_vs_3p"
+		"D" "explo_plasmalarge_impact_3p_vs_3p"
+		"E" "explo_plasmasmall_impact_titan_3p_vs_1p"
+
+		"F" "explo_plasmalarge_impact_3p_vs_1p"
+		"G" "explo_plasmalarge_impact_3p_vs_3p"
+		"H" "explo_plasmalarge_impact_3p_vs_3p"
+
+		"J" "explo_plasmalarge_impact_3p_vs_3p"
+		"K" "explo_plasmalarge_impact_3p_vs_3p"  // mud?
+		"L" "explo_plasmalarge_impact_3p_vs_3p"
+		"M" "explo_plasmalarge_impact_3p_vs_3p"
+		"N" "explo_plasmalarge_impact_3p_vs_3p"	// sand?
+		"O" "explo_plasmalarge_impact_3p_vs_3p"
+		"P" "android_meteorgun_impact_default_3p_vs_1p"
+
+		"R" "explo_plasmalarge_impact_3p_vs_3p"
+		"S" "explo_plasmalarge_impact_3p_vs_3p"
+		"T" "explo_plasmalarge_impact_3p_vs_3p"
+		"U" "explo_plasmalarge_impact_3p_vs_3p"
+
+		"V" "explo_plasmalarge_impact_3p_vs_3p"
+		"W" "explo_plasmalarge_impact_3p_vs_3p"
+
+		"Y" "explo_plasmalarge_impact_3p_vs_3p"
+		"Z" "explo_plasmalarge_impact_3p_vs_3p"
+
+		//"splash" "Water.BulletImpact"
+		//"slime_splash" "Water.BulletImpact"
+
+		//"airburst" ""
+		"shieldhit" "titanshield_explo_plasmasmall_impact_3p_vs_1p"
+
+		"headshot_flesh" "explo_plasmalarge_impact_3p_vs_1p"
+		"headshot_mechanical" "explo_plasmalarge_impact_3p_vs_1p"
+	}
+}

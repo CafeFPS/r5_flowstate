@@ -308,7 +308,7 @@ scripts/resource/ui/menus/FRChallenges/mainmenu_settings_weaponselector.menu
 		{
 			ControlName				Label
 			auto_wide_tocontents    1
-			labelText				"RIGHT CLICK TO CHANGE ATTACHMENTS"
+			labelText				"%zoom% CHANGE ATTACHMENTS"
 			visible                 1
 			zpos 1
 			tall					40

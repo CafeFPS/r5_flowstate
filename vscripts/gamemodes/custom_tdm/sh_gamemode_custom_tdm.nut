@@ -155,6 +155,7 @@ void function Sh_CustomTDM_Init()
 		break
 		
 	case "mp_rr_arena_skygarden":
+	if(FlowState_EnableEncore()){
 	Shared_RegisterLocation(
 		NewLocationSettings(
 				"Encore",
@@ -178,7 +179,197 @@ void function Sh_CustomTDM_Init()
 				<0, 0, 1000>
 			)
 		)
-		break	
+	}
+	
+	///////////////////////////////////////
+	//////////////DEAFPS Maps//////////////
+	///////////////////////////////////////
+
+	if(FlowState_EnableRustByDEAFPS()){
+            vector ruststartingorg = <0,0,0>
+            Shared_RegisterLocation(
+			NewLocationSettings(
+				"Rust By DEAFPS",
+				[
+					NewLocPair(< 312.3676, -17810.7000, 2924 > + ruststartingorg, < 0, 132.3256, 0 >),
+					NewLocPair(< 817.0059, -17817.7700, 2888 > + ruststartingorg, < 0, -2.6741, 0 >),
+					NewLocPair(< 211.9941, -18011.2300, 2923 > + ruststartingorg, < 0, 177.3262, 0 >),
+					NewLocPair(< 353.9973, -18534.2300, 2900 > + ruststartingorg, < 0, 177.3262, 0 >),
+					NewLocPair(< 632.0059, -18551.7700, 2878 > + ruststartingorg, < 0, -2.6741, 0 >),
+					NewLocPair(< 806.7667, -19414.9900, 2889 > + ruststartingorg, < 0, 87.3257, 0 >),
+					NewLocPair(< 180.0672, -19385.8800, 2914 > + ruststartingorg, < 0, 102.3257, 0 >),
+					NewLocPair(< -521.8843, -19393.0700, 2958 > + ruststartingorg, < 0, 12.3258, 0 >),
+					NewLocPair(< -547.8843, -18296.0700, 2931 > + ruststartingorg, < 0, 12.3258, 0 >),
+					NewLocPair(< -499.7668, -17120.0100, 2924 > + ruststartingorg, < 0, -92.6740, 0 >),
+					NewLocPair(< 103.2332, -17120.0100, 2914 > + ruststartingorg, < 0, -92.6740, 0 >),
+					NewLocPair(< 669.2332, -17164.0100, 2919 > + ruststartingorg, < 0, -92.6740, 0 >),
+					NewLocPair(< 1118.2330, -17189.0100, 2901 > + ruststartingorg, < 0, -92.6740, 0 >),
+					NewLocPair(< 1719.9930, -17217.2600, 2853 > + ruststartingorg, < 0, 176.9944, 0 >),
+					NewLocPair(< 1689.9930, -17868.2600, 2816 > + ruststartingorg, < 0, 176.9944, 0 >),
+					NewLocPair(< 1658.2490, -18422.3600, 2841 > + ruststartingorg, < 0, -148.4781, 0 >),
+					NewLocPair(< 1659.9820, -18918.3800, 2823 > + ruststartingorg, < 0, 175.4201, 0 >),
+					NewLocPair(< 1560.3300, -19434.5000, 2832 > + ruststartingorg, < 0, 149.9997, 0 >),
+				],
+				<0, 0, 3000>
+			)
+		)
+        }
+	
+	if(FlowState_EnableShoothouseByDEAFPS()){
+	vector shoothousestartingorg = <-19200,14000,2700> - < 4709.2950, -4616.6060, -1400 >
+	Shared_RegisterLocation(
+			NewLocationSettings(
+				"Shoothouse by DEAFPS",
+			[
+				NewLocPair(< 6506.3960, -3044.9840, 149 > + shoothousestartingorg, < 0, 94.5356, 0 >)
+				NewLocPair(< 6428.3960, -3610.9840, 149 > + shoothousestartingorg, < 0, 94.5356, 0 >)
+				NewLocPair(< 6840.6740, -3927.4940, 149 > + shoothousestartingorg, < 0, -30.0804, 0 >)
+				NewLocPair(< 6846.3960, -4554.9840, 149 > + shoothousestartingorg, < 0, 94.5356, 0 >)
+				NewLocPair(< 7635.5880, -3918.6480, 149 > + shoothousestartingorg, < 0, -28.0562, 0 >)
+				NewLocPair(< 8147.9290, -4257.8400, 149 > + shoothousestartingorg, < 0, 170.3281, 0 >)
+				NewLocPair(< 8433.9280, -3560.8390, 149 > + shoothousestartingorg, < 0, 170.3281, 0 >)
+				NewLocPair(< 8419.8910, -3160.9640, 149 > + shoothousestartingorg, < 0, -168.0417, 0 >)
+				NewLocPair(< 7866.7090, -2320.1700, 149 > + shoothousestartingorg, < 0, -75.0357, 0 >)
+				NewLocPair(< 8296.8910, -2400.9660, 149 > + shoothousestartingorg, < 0, -168.0417, 0 >)
+				NewLocPair(< 6897.2020, -3054.6000, 149 > + shoothousestartingorg, < 0, -16.2518, 0 >)
+				NewLocPair(< 7442.1790, -2338.0680, 149 > + shoothousestartingorg, < 0, -80.5481, 0 >)
+				NewLocPair(< 6868.1790, -2334.0680, 149 > + shoothousestartingorg, < 0, -80.5481, 0 >)
+				NewLocPair(< 6203.1790, -2342.0680, 149 > + shoothousestartingorg, < 0, -80.5481, 0 >)
+				NewLocPair(< 5454.1790, -2387.0680, 149 > + shoothousestartingorg, < 0, -80.5481, 0 >)
+				NewLocPair(< 5252.0010, -3192.1150, 149 > + shoothousestartingorg, < 0, 1.3270, 0 >)
+				NewLocPair(< 5260.0310, -3489.4500, 149 > + shoothousestartingorg, < 0, -6.3157, 0 >)
+				NewLocPair(< 5610.0310, -3828.4500, 149 > + shoothousestartingorg, < 0, -6.3157, 0 >)
+				NewLocPair(< 5850.4520, -4296.0760, 149 > + shoothousestartingorg, < 0, 24.5247, 0 >)
+			],
+				<0, 0, 3000>
+			)
+		)
+	}
+	
+	if(FlowState_EnableNCanalsByDEAFPS()){
+		vector ncanalsstartingorg = <0, 0, 0 >
+		Shared_RegisterLocation(
+				NewLocationSettings(
+					"Noshahr Canals by DEAFPS",
+					[
+						NewLocPair(< 12312.5600, 25185.9200, 6160.8440 > + ncanalsstartingorg, < 0, 95.4418, 0 >)
+						NewLocPair(< 11320.5600, 25635.9200, 6160.8440 > + ncanalsstartingorg, < 0, 95.4418, 0 >)
+						NewLocPair(< 10571.5600, 25095.9200, 6160.8440 > + ncanalsstartingorg, < 0, -84.5582, 0 >)
+						NewLocPair(< 11764.6000, 23894.6400, 6160.8440 > + ncanalsstartingorg, < 0, 155.4418, 0 >)
+						NewLocPair(< 11110.5600, 24478.9200, 6160.8440 > + ncanalsstartingorg, < 0, -84.5582, 0 >)
+						NewLocPair(< 10671.5600, 23793.9200, 6160.8440 > + ncanalsstartingorg, < 0, -174.5582, 0 >)
+						NewLocPair(< 9996.5630, 24275.9200, 6160.8440 > + ncanalsstartingorg, < 0, -84.5582, 0 >)
+						NewLocPair(< 8859.5630, 23079.9200, 6160.8440 > + ncanalsstartingorg, < 0, 50.4418, 0 >)
+						NewLocPair(< 9535.5630, 23275.9200, 6160.8440 > + ncanalsstartingorg, < 0, 50.4418, 0 >)
+						NewLocPair(< 10200.5600, 23106.9200, 6160.8440 > + ncanalsstartingorg, < 0, 50.4418, 0 >)
+						NewLocPair(< 10385.3700, 21808.5900, 6085.4440 > + ncanalsstartingorg, < 0, 50.4418, 0 >)
+						NewLocPair(< 11289.5600, 23004.9200, 6085.4440 > + ncanalsstartingorg, < 0, -129.5583, 0 >)
+						NewLocPair(< 12278.5600, 24302.9200, 6085.4440 > + ncanalsstartingorg, < 0, -129.5583, 0 >)
+						NewLocPair(< 12849.5600, 25428.9200, 6160.8440 > + ncanalsstartingorg, < 0, -129.5583, 0 >)
+						NewLocPair(< 11969.8200, 26110, 6160.8440 > + ncanalsstartingorg, < 0, -129.5583, 0 >)
+						NewLocPair(< 11011.5600, 26778.9200, 6160.8440 > + ncanalsstartingorg, < 0, -39.5583, 0 >)
+						NewLocPair(< 10593.5600, 25927.9200, 6160.8440 > + ncanalsstartingorg, < 0, 170.4417, 0 >)
+						NewLocPair(< 9943.2340, 24646.4200, 6160.8440 > + ncanalsstartingorg, < 0, 170.4417, 0 >)
+						NewLocPair(< 8946.5630, 24294.9200, 6160.8440 > + ncanalsstartingorg, < 0, 13.2422, 0 >)
+						NewLocPair(< 8983.5630, 25049.8500, 6160.8440 > + ncanalsstartingorg, < 0, -60, 0 >)
+						NewLocPair(< 8095.5630, 23940.9200, 6160.8440 > + ncanalsstartingorg, < 0, 0, 0 >)
+					],
+					<0, 0, 3000>
+				)
+			)
+		}
+	
+	
+	if(FlowState_EnableDustmentByDEAFPS()){
+		vector dustmentstartingorg = <-19200,14000,2700> - < 4709.2950, -4616.6060, 0 >
+		Shared_RegisterLocation(
+				NewLocationSettings(
+					"Dustment by DEAFPS",
+					[
+						NewLocPair(< 6541, -4748, 131 > + dustmentstartingorg, < 0, 140.8409, 0 >)
+						NewLocPair(< 5124, -3752, 83.6000 > + dustmentstartingorg, < 0, 0, 0 >)
+						NewLocPair(< 5846.4580, -4562.9770, 99.9000 > + dustmentstartingorg, < 0, 84.7281, 0 >)
+						NewLocPair(< 5859.0870, -4095.1910, 99.9000 > + dustmentstartingorg, < 0, -90.9838, 0 >)
+						NewLocPair(< 5563.0020, -4311.8350, 99.9000 > + dustmentstartingorg, < 0, -2.1733, 0 >)
+						NewLocPair(< 6127.7570, -4319.4450, 99.9000 > + dustmentstartingorg, < 0, -179.7940, 0 >)
+						NewLocPair(< 6569.8020, -3862.2190, 99.9000 > + dustmentstartingorg, < 0, -116.5770, 0 >)
+						NewLocPair(< 4750.1250, -4088.1680, 129 > + dustmentstartingorg, < 0, 40.1670, 0 >)
+						NewLocPair(< 4763, -4508, 99.9000 > + dustmentstartingorg, < 0, -38.7503, 0 >)
+						NewLocPair(< 5621, -5041, 119 > + dustmentstartingorg, < 0, 178.2353, 0 >)
+						NewLocPair(< 5666.8980, -3541.5550, 99.9000 > + dustmentstartingorg, < 0, 178.2353, 0 >)
+						NewLocPair(< 6902.2780, -4062.3870, 99.9000 > + dustmentstartingorg, < 0, 152.5185, 0 >)
+						NewLocPair(< 6898.7000, -4523.7000, 99.9000 > + dustmentstartingorg, < 0, -167.7632, 0 >)
+						NewLocPair(< 6886.6280, -5163.9330, 131 > + dustmentstartingorg, < 0, 140.8409, 0 >)
+						NewLocPair(< 4765.2000, -3380.5000, 146 > + dustmentstartingorg, < 0, -47.3245, 0 >)
+						NewLocPair(< 4750.8930, -5191.4390, 166.2000 > + dustmentstartingorg, < 0, 51.7723, 0 >)
+						NewLocPair(< 6848.7000, -3415.7000, 152 > + dustmentstartingorg, < 0, -135.0003, 0 >)
+						NewLocPair(< 5069.0800, -4692.0670, 83.6000 > + dustmentstartingorg, < 0, 0, 0 >)
+					],
+					<0, 0, 3000>
+				)
+			)
+		}
+
+	if(FlowState_EnableKillyardByDEAFPS()){
+            vector killhouselongstartingorg = <-2961,-13240,43000>
+            Shared_RegisterLocation(
+			NewLocationSettings(
+				"Killyard",
+				[
+					NewLocPair( < -1069, -822, 9.4000 > + killhouselongstartingorg, < 0, 7.0074, 0 >),
+					NewLocPair( < -1128, -343, 9.4000 > + killhouselongstartingorg, < 0, 7.0074, 0 >),
+					NewLocPair( < -218, -1414, 9.4000 > + killhouselongstartingorg, < 0, 73.6881, 0 >),
+					NewLocPair( < -507.5095, -1407.2130, 9.4000 > + killhouselongstartingorg, < 0, 73.6881, 0 >),
+					NewLocPair( < -1160.2740, -1138.5530, 9.4000 > + killhouselongstartingorg, < 0, -29.9629, 0 >),
+					NewLocPair( < 442, -909, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
+					NewLocPair( < 457, -271, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
+					NewLocPair( < 450, -569, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
+					NewLocPair( < -316.3000, 920.9000, 9.4000 > + killhouselongstartingorg, < 0, -147.1917, 0 >),
+					NewLocPair( < -1446.8000, 616.2000, 9.4000 > + killhouselongstartingorg, < 0, 2.9566, 0 >),
+					NewLocPair( < -1443.5000, 1.9000, 9.4000 > + killhouselongstartingorg, < 0, 7.0074, 0 >),
+					NewLocPair( < -1171.6520, 7.8723, 9.4000 > + killhouselongstartingorg, < 0, 7.0074, 0 >),
+					NewLocPair( < 208.7000, 707.6936, 9.4000 > + killhouselongstartingorg, < 0, -147.0432, 0 >),
+					NewLocPair( < -1164.7130, 702.9291, 9.4000 > + killhouselongstartingorg, < 0, 2.9566, 0 >),
+					NewLocPair( < -1162.3790, 980.8486, 9.4000 > + killhouselongstartingorg, < 0, -45.0161, 0 >),
+					NewLocPair( < 200.7263, 979.5248, 9.4000 > + killhouselongstartingorg, < 0, -147.1917, 0 >),
+					NewLocPair( < 217.9963, -563, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
+					NewLocPair( < 217.9963, -1035.2670, 9.4000 > + killhouselongstartingorg, < 0, 178.6360, 0 >),
+					NewLocPair( < -1170.2510, -996.2968, 9.4000 > + killhouselongstartingorg, < 0, -0.5495, 0 >),
+					NewLocPair( < -1167.9380, -1466.3340, 9.4000 > + killhouselongstartingorg, < 0, 44.6976, 0 >),
+					NewLocPair( < 156.6777, -1466.7410, 9.4000 > + killhouselongstartingorg, < 0, 131.0375, 0 >),
+				],
+				<0, 0, 3000>
+			)
+		)
+        }	
+
+	///////////////////////////////////////
+	//////////////AyeZee Maps//////////////
+	///////////////////////////////////////
+
+        if(FlowState_EnableEncoreNuketownByAyeZee()){
+            vector nuketownstartingorg = <28524,23022,43000>
+            Shared_RegisterLocation(
+			NewLocationSettings(
+				"Nuketown By AyeZee",
+				[
+					NewLocPair(< 381.3000, -859.9000, -502.4000 > + nuketownstartingorg, < 0, 131.6921, 0 >),
+					NewLocPair(< -213.7000, -852.2000, -502.4000 > + nuketownstartingorg, < 0, 50.3080, 0 >),
+					NewLocPair(< 608.7227, 945.4185, -497.5000 > + nuketownstartingorg, < 0, -85.3474, 0 >),
+					NewLocPair(< -379.8000, 952.1000, -497.5000 > + nuketownstartingorg, < 0, -109.8191, 0 >),
+					NewLocPair(< -688.5317, -611.3459, -497.5000 > + nuketownstartingorg, < 0, 121.5057, 0 >),
+					NewLocPair(< -2298, -23, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
+					NewLocPair(< -1919, 777, -497.5000 > + nuketownstartingorg, < 0, 17.9921, 0 >),
+					NewLocPair(< 1807.1000, 1124.8000, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
+					NewLocPair(< 1285, 970, -497.5000 > + nuketownstartingorg, < 0, -106.9288, 0 >),
+					NewLocPair(< 2326.3580, -65.8636, -497.5000 > + nuketownstartingorg, < 0, 163.9604, 0 >)
+				],
+				<0, 0, 3000>
+			)
+		)
+        }		
+	
+	break
 		
 	case "mp_rr_canyonlands_mu1_night":		
 	case "mp_rr_canyonlands_mu1":
@@ -880,6 +1071,19 @@ void function Sh_CustomTDM_Init()
         //break
         case "mp_rr_desertlands_64k_x_64k":
         case "mp_rr_desertlands_64k_x_64k_nx":
+		    
+		if(FlowState_EnableMovementGym()){
+		Shared_RegisterLocation(
+		NewLocationSettings(
+			"Movement Gym v0.3",
+			[
+						NewLocPair(< 10726.9000, 10287, -4283 >, < 0, -90.0001, 0 >),
+			],
+			<0, 0, 3000>
+				)
+			)
+		}
+		    
 		if(!GetCurrentPlaylistVarBool("flowstateCapitolCityReplacesTTVLocation", false ))
 		{
 		Shared_RegisterLocation(
@@ -959,7 +1163,7 @@ void function Sh_CustomTDM_Init()
 			)
 		)
 		}
-			
+		
 		Shared_RegisterLocation(
                 NewLocationSettings(
                     "Lava Fissure",
@@ -1404,7 +1608,7 @@ void function Sh_CustomTDM_Init()
                     <0, 0, 2000>
                 )
             )
-		Shared_RegisterLocation(
+		RegisterLocationPROPHUNT(
                 NewLocationSettings(
                     "Overlook",
                     [
@@ -1596,6 +1800,16 @@ bool function FlowState_EnableNuketownByAyeZee()                         { retur
 bool function Flowstate_DoorsEnabled()                         { return GetCurrentPlaylistVarBool("flowstateDoorsEnabled", true ) }
 int function FlowState_MaxPingAllowed() { return GetCurrentPlaylistVarInt("flowstateMaxPingAllowed", 200) }
 bool function FlowState_KickHighPingPlayer()                         { return GetCurrentPlaylistVarBool("flowstateKickHighPingPlayer", true ) }
+
+bool function FlowState_EnableEncore()                         			{ return GetCurrentPlaylistVarBool("flowstate_Enable_Encore", true ) } //enable encore by default unless stated false in playlist
+
+bool function FlowState_EnableKillyardByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Killyard_By_DEAFPS", false ) }
+bool function FlowState_EnableDustmentByDEAFPS()                        	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Dustment_By_DEAFPS", false ) }
+bool function FlowState_EnableShoothouseByDEAFPS()                       	{ return GetCurrentPlaylistVarBool("flowstate_Enable_Shoothouse_By_DEAFPS", false ) }
+bool function FlowState_EnableRustByDEAFPS()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_Rust_By_DEAFPS", false ) }
+bool function FlowState_EnableNCanalsByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_NCanals_By_DEAFPS", false ) }
+bool function FlowState_EnableEncoreNuketownByAyeZee()                          { return GetCurrentPlaylistVarBool("flowstate_Enable_Encore_Nuketown_By_AyeZee", false ) }
+bool function FlowState_EnableMovementGym()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym", false ) }
 
 #if SERVER   
 

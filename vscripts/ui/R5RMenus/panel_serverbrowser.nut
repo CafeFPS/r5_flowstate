@@ -135,7 +135,7 @@ void function ServerBrowser_ConnectBtnClicked(var button)
 
 	//Connect to server
 	printf("Connecting to server: (Server ID: " + m_vSelectedServer.svServerID + " | Server Name: " + m_vSelectedServer.svServerName + " | Map: " + m_vSelectedServer.svMapName + " | Playlist: " + m_vSelectedServer.svPlaylist + ")")
-	//SetEncKeyAndConnect(m_vSelectedServer.svServerID)
+	ConnectToListedServer(m_vSelectedServer.svServerID)
 	RunClientScript("UICallback_ServerBrowserJoinServer", m_vSelectedServer.svServerID)
 }
 
@@ -476,5 +476,5 @@ void function ServerBrowser_StartConnection(int id)
 
 	Hud_SetVisible(Hud_GetChild( file.menu, "R5RConnectingPanel"), false)
 
-	SetEncKeyAndConnect(id)
+	ConnectToListedServer(id)
 }

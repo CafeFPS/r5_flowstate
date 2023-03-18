@@ -3323,10 +3323,13 @@ void function Killhouse()
 
 void function nuketown()
 {
-    //Starting Origin, Change this to a origin in a map 
-    vector startingorg = <28524,23022,-3375>
-
-    MapEditor_CreateProp( $"mdl/levels_terrain/mp_rr_canyonlands/canyonlands_terrain_section_01_radar_dish_02.rmdl", < 5924.4310, -4288.4290, 0 > + startingorg, < 0, 0, 0 >, true, 50000, -1, 1 )
+    //Starting Origin, Change this to a origin in a map
+    vector startingorg
+    if(GetMapName() == "mp_rr_arena_skygarden"){
+	startingorg = <28524,23022,43000>
+	} else {
+	startingorg = <28524,23022,-3375>
+	}
 	
 	array<entity> centerbuildingbarriers
     centerbuildingbarriers.append(MapEditor_CreateProp( $"mdl/desertlands/highrise_square_top_01.rmdl", < 738.8000, 1247.7000, -604.4000 > + startingorg, < 90, 150.0004, 0 >, true, 50000, -1, 1 ))

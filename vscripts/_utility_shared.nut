@@ -5379,7 +5379,7 @@ bool function IsFallLTM()
 
 bool function IsLobbyFallLTM()
 {
-	return GetCurrentPlaylistVarInt( "menu_fall_ltm", 0 ) == 1
+	return false //GetCurrentPlaylistVarInt( "menu_fall_ltm", 0 ) == 1
 }
 
 

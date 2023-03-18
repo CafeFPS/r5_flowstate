@@ -2,6 +2,8 @@
 //made by makimakima#5561
 globalize_all_functions
 
+global bool IS_CHINESE_SERVER = false
+
 global struct soloLocStruct
 {
 	LocPair &Loc1 //player1 respawn location
@@ -64,7 +66,12 @@ void function soloModeWaitingPrompt(entity player)
 	foreach (eachplayerStruct in soloPlayersWaiting)
 	{
 		if(eachplayerStruct.player == player) //this player is in waiting list
-			Message(player,"You're in waiting room.","Type rest in console to start resting (literally).",1)
+		{
+			if(IS_CHINESE_SERVER)
+				Message(player,"您已处于等待列队","请在控制台输入'rest'开始休息",1)
+			else
+				Message(player,"You're in waiting room.","Type rest in console to start resting.",1)
+		}
 	}
 
 }
@@ -82,7 +89,11 @@ LocPair function getWaitingRoomLocation(string mapName)
 		WaitingRoom.origin = <719.94,-5805.13,494.03>
 		WaitingRoom.angles = <0,90,0>
 	}
-	
+	else if (mapName == "mp_rr_canyonlands_64k_x_64k")
+	{
+		WaitingRoom.origin = <-762.59,20485.05,4626.03>
+		WaitingRoom.angles = <0,45,0>
+	}
 	return WaitingRoom
 }
 
@@ -99,7 +110,7 @@ int function getAvailableSlotIndex()
 		if(!soloLocationInProgressIndexs.contains(i))
 			availableSoloLocationIndex.append(i)
 	}
-	printt("available slot :" + availableSoloLocationIndex.len())
+	//printt("available slot :" + availableSoloLocationIndex.len())
 	if(availableSoloLocationIndex.len()==0)
 		return -1 //no available slot
 	return availableSoloLocationIndex[RandomInt(availableSoloLocationIndex.len())]
@@ -172,7 +183,7 @@ void function deleteWaitingPlayer(entity player)
 		if(eachPlayerStruct.player == player)
 		{
 			soloPlayersWaiting.removebyvalue(eachPlayerStruct) //delete this PlayerStruct
-			printt("deleted the PlayerStruct")
+			//printt("deleted the PlayerStruct")
 		}
 	}
 }
@@ -181,7 +192,11 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 {
 	if(soloPlayersResting.contains(player))
 	{
-		Message(player,"Matching!")
+		if(IS_CHINESE_SERVER)
+			Message(player,"匹配中")
+		else
+			Message(player,"Matching!")
+		
 		soloModePlayerToWaitingList(player)
 		try
 		{
@@ -192,7 +207,11 @@ bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 	}
 	else
 	{
-		Message(player,"You are resting now", "Type rest in console to pew pew again.")
+		if(IS_CHINESE_SERVER)
+			Message(player,"您已处于休息室", "在控制台中输入'rest'重新开始匹配")
+		else
+			Message(player,"You are resting now", "Type rest in console to pew pew again.")
+		
 		soloModePlayerToRestingList(player)
 		try
 		{
@@ -353,10 +372,10 @@ bool function soloModePlayerToInProgressList(soloGroupStruct newGroup) //不能�
 	int slotIndex = getAvailableSlotIndex()
 	if (slotIndex > -1) //available slot exist
 	{
-		printt("solo slot exist")
+		//printt("solo slot exist")
 		newGroup.slotIndex = slotIndex
 
-		printt("add player1&player2 to InProgress list!")
+		//printt("add player1&player2 to InProgress list!")
 		soloPlayersInProgress.append(newGroup) //加入游玩队列
 
 		result = true
@@ -407,7 +426,11 @@ void function soloModePlayerToRestingList(entity player)
 
 void function soloModefixDelayStart(entity player)
 {
-	Message(player,"Loading solo mode")
+	if(IS_CHINESE_SERVER)
+		Message(player,"加载中 FS 1v1")
+	else
+		Message(player,"Loading Flowstate 1v1")
+	
 	HolsterAndDisableWeapons(player)
 
 	wait 8
@@ -455,7 +478,7 @@ void function destroyRingsForGroup(soloGroupStruct group)
 entity function CreateSmallRingBoundary(vector Center)
 {
     vector smallRingCenter = Center
-	float smallRingRadius = 1200
+	float smallRingRadius = 2000
 	entity smallcircle = CreateEntity( "prop_script" )
 	smallcircle.SetValueForModelKey( $"mdl/fx/ar_survival_radius_1x100.rmdl" )
 	smallcircle.kv.fadedist = 2000
@@ -504,7 +527,7 @@ entity function createForbiddenZone(vector zoneOrigin, float radius,float AboveH
 
 void function forbiddenZoneInit(string mapName)
 {
-	array<vector> triggerList 
+	array<vector> triggerList
 	if(mapName == "mp_rr_aqueduct")
 		triggerList = [
 						<8693.24,-1103.93,571.29>,
@@ -590,7 +613,7 @@ bool function isGroupVaild(soloGroupStruct group)
 void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复活死亡玩家和同一个sologroup的玩家
 {
 	if (!IsValid(player)) return
-	printt("respawnInSoloMode!")
+	//printt("respawnInSoloMode!")
 	// Warning("respawn player: " + player.GetPlayerName())
 
    	if( player.p.isSpectating )
@@ -658,10 +681,10 @@ void function respawnInSoloMode(entity player, int respawnSlotIndex = -1) //复�
 
 	maki_tp_player(player,soloLocations[group.slotIndex].respawnLocations[respawnSlotIndex])
 
-	wait 0.2 //防止上一条命被攻击的伤害传递到下一条命的玩家上
+	wait 0.2 //防攻击的伤害传递止上一条命被到下一条命的玩家上
 
 	if(!IsValid(player)) return
-	
+
 	Inventory_SetPlayerEquipment(player, "armor_pickup_lv3", "armor")
 	PlayerRestoreHP_1v1(player, 100, player.GetShieldHealthMax().tofloat())
 
@@ -819,21 +842,137 @@ void function _soloModeInit(string mapName)
 				NewLocPair( <-3079.95, -4274.58, 290.03>, <0, -120, 0>),//13
 			]
 		}
+		else if (mapName == "mp_rr_canyonlands_64k_x_64k")
+		{
+			// waitingRoomLocation = NewLocPair( <-795.58,20362.78,4570.03>, <0,90,0>)   //休息区出生点
+			waitingRoomPanelLocation = NewLocPair( <-607.59,20647.05,4570.03>, <0,-45,0>) //休息区观战面板
+
+			allSoloLocations= [
+
+			NewLocPair( <-4896.12, 9610.98, 3528.03>, <0, -90, 0>),//1
+			NewLocPair( <-4882.72607, 8705.870239, 3528.595337>, <0, 90.085541, 0>),
+
+			NewLocPair( <8464,8373,5304>, <0, 90, 0>),//2
+			NewLocPair( <8349,9969,5304>, <0, -90, 0>),
+
+			NewLocPair( <8760.62109, 27974.898987, 4824.014832>, <0, -177, 0>),//3
+			NewLocPair( <6854.84863, 27977.87195, 4824.646271>, <0, 0, 0>),
+
+			NewLocPair( <21030, 7791.06787, 4150.03125>, <0, -173.60793841, 0>),//4
+			NewLocPair( <20122.91602, 7161.25293, 4170.03125>, <0, 24.672043, 0>),
+
+			NewLocPair( <-28277.57104, -4377.94629, 2536.554062>, <0, 18.212936, 0>),//5
+			NewLocPair( <-27472.52,-3851.34,2536.21>, <0, -146, 0>),
+
+			NewLocPair( <23742.94946, -8292.84961, 4342.746124>, <0, -88.6163712, 0>),//6
+			NewLocPair( <24182.16772, -9669.04443, 4535.564209>, <0,94.8682785, 0>),
+
+			NewLocPair( <4168.894531, -9882.0481, 3384.453186>, <0, -155.28803873, 0>),//7
+			NewLocPair( <2824.082859, -10359.09546, 3323.32724>, <0, 23.668167, 0>),
+
+			NewLocPair( <3590.9939, -10722.13452, 2816.03125>, <0, 178.60405, 0>),//8
+			NewLocPair( <2692.50134, -10735.59595, 2816.03125>, <0, 0, 0>),
+
+			NewLocPair( <-23428.719513, -472.62842, 3752.224884>, <0, 93.9567108, 0>),//9
+			NewLocPair( <-23432.551025, 499.26904, 3752.03125>, <0, -89.0343704, 0>),
+
+			NewLocPair( <10801.05176, 1195.47144, 4738.250671>, <0, -15.9120026, 0>),//10
+			NewLocPair( <13043.3623, 1027.83643, 4790.807098>, <0, -178.961533, 0>),
+
+			NewLocPair( <13030.16333, 16995.83203, 4763.03125>, <0, 90.8816891, 0>),//11
+			NewLocPair( <12933.41846, 18315.64307, 4760.03125>, <0, -92.039886, 0>),
+
+			NewLocPair( <13282.694252, 10734.92749, 4760.03125>, <0, -141.290192, 0>),//12
+			NewLocPair( <11905.369202, 9689.13794, 4752.03125>, <0, 37.2758875, 0>),
+
+			NewLocPair( <4519.57031, -7908.14819, 3147.03125>, <0, 161.035995, 0>),//13
+			NewLocPair( <2328.69263, -7650.4126, 3352.032166>, <0, 7.9091492, 0>),
+
+			NewLocPair( <4016.10693, -3406.61035, 2652.67822>, <0,-22,0> ),//14
+			NewLocPair( <4875,-3494,2738>, <0,144,0> ),
+
+			NewLocPair( <26629,-17691,5424>, <0,-179,0> ),//15
+			NewLocPair( <24074,-17726,5424>, <0,-1,0> ),
+
+			NewLocPair( <-7434,5519,2470>, <0,-178,0> ),//16
+			NewLocPair( <-8115,5539,2470>, <0,-88,0> ),
+
+			NewLocPair( <2007,23375,4190>, <0,45,0> ),//17
+			NewLocPair( <3112,24544,4190>, <0,-135,0> ),
+
+			NewLocPair( <28023,-5219,4248>, <0,179,0> ),//18
+			NewLocPair( <26505,-5219,4248>, <0,0,0> ),
+
+			NewLocPair( <-24643,11027,3090>,<0,0,0> ),//19zzt
+			NewLocPair( <-23808,11104,3028>,<0,170,0> ),
+
+			NewLocPair( <-16131,-18339,3583>,<0,-36,0> ),//20zzt
+			NewLocPair( <-15046,-19175,3527>,<0,150,0> ),
+
+			NewLocPair( <-9830,-25727,2579>,<0,-115,0> ),//21zzt
+			NewLocPair( <-10110,-27197,2576>,<0,72,0> ),
+
+			NewLocPair( <20278,11876,5078>,<0,-176,0> ),//22 zzt
+			NewLocPair( <19507,11682,4936>,<0,0,0> ),
+
+			NewLocPair( <10617,11637,5306>,<0,39,0> ),//23zzt
+			NewLocPair( <10836,13212,5396>,<0,-82,0> ),
+
+			]
+			panelLocations = [
+				NewLocPair( <-5206.56, 9206.40, 3472.07>, <0, 90, 0>),//1
+				NewLocPair( <8604,9305,5384>, <0, -90, 0>),//2
+				NewLocPair( <7944.70, 28174.05, 4676.17>, <0, 0, 0>),//3
+				NewLocPair( <20406.50, 7791.66, 4120.03>, <0, -1, 0>),//4
+				// // NewLocPair( <3453.87, -4724.95, 170.89>, <0, -170, 0>),//remove
+				NewLocPair( <-27970.44, -3613.85, 2480.77>, <0, 21, 0>),//5
+				NewLocPair( <23731.04, -9124.01, 4415.16>, <0, 87, 0>),//6
+				NewLocPair( <3411.10, -9996.64, 3263.97>, <0, 7, 0>),//7
+				NewLocPair( <3165.83, -10423.77, 2760.03>, <0, 0, 0>),//8
+				NewLocPair( <-23762.17, 78.68, 3799.03>, <0, 90, 0>),//9
+				NewLocPair( <12661, 614.07, 4566.31>, <0, -172, 0>),//10
+				NewLocPair( <12924.44, 17652.17, 4717.03>, <0, -90, 0>),//11
+				NewLocPair( <12291.65, 10387.32, 4693.03>, <0, 35, 0>),//12
+				NewLocPair( <3086.95, -7750.58, 3260.03>, <0, -153, 0>),//13
+				NewLocPair( <4281,-3634,2635>, <0,157,0> ),//14
+				NewLocPair( <25331,-17565,4664>, <0,0,0> ),//15
+				NewLocPair( <-7841,5328,2401>, <0,175,0> ),//16
+				NewLocPair( <2457,23766,4128>, <0,-135,0> ),//17
+				NewLocPair( <27360,-4862,4380>, <0,1,0> ),//18
+				NewLocPair( <-24242,10927,3028>,<0,-178,0> ),//19
+				NewLocPair( <-15584,-18774,3563>,<0,-36,0> ),//20
+				NewLocPair( <-10287,-26430,2514>,<0,16,0> ),//21
+				NewLocPair( <19599,11681,5018>,<0,94,0> ),//22
+				NewLocPair( <10916,12579,5312>,<0,85,0> ),//23
+
+			]
+		}
 		else
 		{
 			return
 		}
 
 	//resting room init
-
-
-	entity restingRoomPanel = CreateFRButton(waitingRoomPanelLocation.origin, waitingRoomPanelLocation.angles, "%&use% Start spectating")
+	
+	string buttonText
+	
+	if(IS_CHINESE_SERVER)
+		buttonText = "%&use% 开始观战"
+	else
+		buttonText = "%&use% Start spectating"
+	
+	entity restingRoomPanel = CreateFRButton( waitingRoomPanelLocation.origin, waitingRoomPanelLocation.angles, buttonText )
+	
 	AddCallback_OnUseEntity( restingRoomPanel, void function(entity panel, entity user, int input)
 	{
 		if(!IsValid(user)) return
 		if(!isPlayerInRestingList(user))
 		{
-			Message(user,"Your must be in resting mode to spectate others!","Input 'rest' in console to enter resting mode ")
+			if(IS_CHINESE_SERVER)
+				Message(user,"您必须在休息模式中才能使用观战功能您","请在控制台中输入'rest'进入休息模式")
+			else
+				Message(user,"Your must be in resting mode to spectate others!","Input 'rest' in console to enter resting mode ")
+			
 			return //不在休息队列中不能使用观战功能
 		}
 
@@ -852,7 +991,11 @@ void function _soloModeInit(string mapName)
 			thread CheckForObservedTarget(user)
 			user.p.lastTimeSpectateUsed = Time()
 
-			Message(user,"Press 'SPACE' to stop spectating")
+			if(IS_CHINESE_SERVER)
+				Message(user,"按一下空格后结束观战")
+			else
+				Message(user,"Press 'SPACE' to stop spectating")
+			
 			user.MakeInvisible()
 
 	    }
@@ -874,11 +1017,31 @@ void function _soloModeInit(string mapName)
 
 		soloLocations.append(p)
 	}
-
+	
+	string buttonText2
+	string Text3
+	string Text4
+	string Text5
+	
+	if(IS_CHINESE_SERVER)
+	{
+		Text3 = "您已取消绑定"
+		Text4 = "您已绑定您的对手"
+		Text5 = "您的对手已断开连接"
+		buttonText2 = "%&use% 不再更换对手"
+	}
+	else
+	{
+		Text3 = "Your opponent will change now"
+		Text4 = "Your opponent won't change"
+		Text5 = "Your opponent has disconnected!"
+		buttonText2 = "%&use% Never change your opponent"
+	}
+	
 	foreach (index,eahclocation in panelLocations)
 	{
 		//Panels for save opponents
-		entity panel = CreateFRButton(eahclocation.origin, eahclocation.angles, "%&use% Never change your opponent")
+		entity panel = CreateFRButton(eahclocation.origin, eahclocation.angles, buttonText2)
 		panel.SetSkin(1)//red
 		soloLocations[index].Panel = panel
 		AddCallback_OnUseEntity( panel, void function(entity panel, entity user, int input)
@@ -895,13 +1058,13 @@ void function _soloModeInit(string mapName)
 
 				try
 				{
-					Message(group.player1,"Your opponent won't change")
-					Message(group.player2,"Your opponent won't change")
+					Message(group.player1,"您已绑定您的对手\nYour opponent won't change")
+					Message(group.player2,"您已绑定您的对手\nYour opponent won't change")
 				}
 				catch (error)
 				{}
 
-				
+
 			}
 			else
 			{
@@ -910,8 +1073,8 @@ void function _soloModeInit(string mapName)
 
 				try
 				{
-					Message(group.player1,"Your opponent will change now")
-					Message(group.player2,"Your opponent will change now")
+					Message(group.player1,"您已取消绑定\nYour opponent will change now")
+					Message(group.player2,"您已取消绑定\nYour opponent will change now")
 				}
 				catch (error)
 				{}
@@ -954,7 +1117,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			//标记超时玩家
 			if(playerInWatingSctruct.waitingTime < Time() && !playerInWatingSctruct.IsTimeOut && IsValid(playerInWatingSctruct.player))
 			{
-				printt("mark time out player: " + playerInWatingSctruct.player.GetPlayerName() + " waitingTime: " + playerInWatingSctruct.waitingTime)
+				//printt("mark time out player: " + playerInWatingSctruct.player.GetPlayerName() + " waitingTime: " + playerInWatingSctruct.waitingTime)
 				playerInWatingSctruct.IsTimeOut = true
 			}
 		}//foreach
@@ -964,7 +1127,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 		{
 			if(eachGroup.IsFinished)//this round has been finished
 			{
-				printt("this round has been finished")
+				//printt("this round has been finished")
 				soloModePlayerToWaitingList(eachGroup.player1)
 				soloModePlayerToWaitingList(eachGroup.player2)
 				destroyRingsForGroup(eachGroup)
@@ -975,27 +1138,27 @@ void function soloModeThread(LocPair waitingRoomLocation)
 			{
 				if(IsValid(eachGroup.player1) && IsValid(eachGroup.player2) && (!IsAlive(eachGroup.player1) || !IsAlive(eachGroup.player2) ))
 				{
-					printt("respawn and tp player1")
+					//printt("respawn and tp player1")
 					thread respawnInSoloMode(eachGroup.player1, 0)
 
-					printt("respawn and tp player2")
+					//printt("respawn and tp player2")
 					thread respawnInSoloMode(eachGroup.player2, 1)
 				}//player in keeped group is died, respawn them
 			}
 
 			if(!IsValid(eachGroup.player1) || !IsValid(eachGroup.player2)) //Is player in this group quit the game
 			{
-				printt("solo player quit!!!!!")
+				//printt("solo player quit!!!!!")
 				if(IsValid(eachGroup.player1))
 				{
 					soloModePlayerToWaitingList(eachGroup.player1) //back to wating list
-					Message(eachGroup.player1,"Your opponent has disconnected!")
+					Message(eachGroup.player1,"您的对手已断开连接\nYour opponent has disconnected!")
 				}
 
 				if(IsValid(eachGroup.player2))
 				{
 					soloModePlayerToWaitingList(eachGroup.player2) //back to wating list
-					Message(eachGroup.player2,"Your opponent has disconnected!")
+					Message(eachGroup.player2,"您的对手已断开连接\nYour opponent has disconnected!")
 				}
 				continue
 			}
@@ -1009,7 +1172,7 @@ void function soloModeThread(LocPair waitingRoomLocation)
 				if(!IsValid(eachPlayer)) continue
 				eachPlayer.p.lastDamageTime = Time() //avoid player regen health
 
-				if(Distance2D(eachPlayer.GetOrigin(),Center) > 1200) //检测乱跑的脑残
+				if(Distance2D(eachPlayer.GetOrigin(),Center) > 2000) //检测乱跑的脑残
 				{
 					Remote_CallFunction_Replay( eachPlayer, "ServerCallback_PlayerTookDamage", 0, 0, 0, 0, DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, eDamageSourceId.deathField, null )
 					eachPlayer.TakeDamage( 1, null, null, { scriptType = DF_BYPASS_SHIELD | DF_DOOMED_HEALTH_LOSS, damageSourceId = eDamageSourceId.deathField } )
@@ -1159,9 +1322,3 @@ void function soloModeThread(LocPair waitingRoomLocation)
 	)
 
 }//thread
-
-
-
-
-
-
