@@ -9,6 +9,7 @@ global function MapEditor_CreateBubbleShieldWithSettings
 global function MapEditor_CreateRespawnableWeaponRack
 global function MapEditor_CreateLinkedZipline
 global function MapEditor_CreateLootBin
+global function MapEditor_CreateTextInfoPanel
 
 global enum eMapEditorDoorType
 {
@@ -204,4 +205,39 @@ void function MapEditor_CreateLinkedZipline( array<vector> nodes )
 
 	foreach(entity rope in ropes)
         DispatchSpawn( rope )
+}
+
+array< array > TextInfoPanelArray
+
+void function MapEditor_CreateTextInfoPanel( string title, string text, vector origin, vector angles, bool showPin, float textScale )
+{
+    TextInfoPanelArray.append( [ title, text, origin, angles, showPin, textScale ] )
+
+    AddCallback_OnClientConnected( MapEditor_CreateTextInfoPanel_Internal )
+}
+
+void function MapEditor_CreateTextInfoPanel_Internal( entity player )
+{
+    for ( int arrayLen = 0 ; arrayLen < TextInfoPanelArray.len() ; arrayLen++ )
+    {
+        string sendPanelText
+        string title =  expect string( TextInfoPanelArray[arrayLen][0] )
+        string text =   expect string( TextInfoPanelArray[arrayLen][1] )
+        vector origin = expect vector( TextInfoPanelArray[arrayLen][2] )
+        vector angles = expect vector( TextInfoPanelArray[arrayLen][3] )
+        bool showPin =  expect bool( TextInfoPanelArray[arrayLen][4] )
+        float textScale = expect float( TextInfoPanelArray[arrayLen][5] )
+    
+        for ( int textType = 0 ; textType < 2 ; textType++ )
+        {
+            sendPanelText = textType == 0 ? title : text
+
+            for ( int i = 0; i < sendPanelText.len(); i++ )
+            {
+                Remote_CallFunction_NonReplay( player, "Dev_BuildTextInfoPanel", textType, sendPanelText[i] )
+            }
+        }
+
+        Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanel", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale )
+    }
 }
