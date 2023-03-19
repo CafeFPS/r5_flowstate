@@ -2367,7 +2367,9 @@ void function SimpleChampionUI()
 			MovementGymSaveTimesToFile()
 			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 			
-		} else {
+		} else if(FlowState_EnableMovementGymLogs()){
+			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+		else {
 			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
 		}
 	}
