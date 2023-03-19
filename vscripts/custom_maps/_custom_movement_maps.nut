@@ -86,8 +86,8 @@ file
 void
 function MovementGymSaveTimesToFile() {
   DevTextBufferClear()
-  DevTextBufferWrite("=== Movement Gym Times === \n\n")
-  DevTextBufferWrite("=== OID == Player Name == Run Time === \n")
+  DevTextBufferWrite("=== Movement Gym Times === \n")
+  DevTextBufferWrite("=== OID == Player Name == Run Time == Unix Timestanp === \n")
 
   int i = 0
   foreach(line in file.allTimes) {
@@ -98,7 +98,7 @@ function MovementGymSaveTimesToFile() {
   DevP4Checkout("MovementGym_Results_" + GetUnixTimestamp() + ".txt")
   DevTextBufferDumpToFile("MovementGymLogs/MovementGym_Results_" + GetUnixTimestamp() + ".txt")
 
-  Warning("[!] MOVEMENTGYM RESULTS SAVED IN /r5reloaded/platform/ === ")
+  Warning("[!] MOVEMENTGYM RESULTS SAVED IN /r5reloaded/platform/MovementGymLogs === ")
 }
 
 bool
