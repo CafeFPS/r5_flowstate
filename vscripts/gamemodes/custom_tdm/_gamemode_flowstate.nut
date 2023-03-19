@@ -428,7 +428,10 @@ void function _OnPlayerConnected(entity player)
 	    Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands. ", 10)
 	else if (FlowState_Gungame())
 	    Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands. ", 10)
-	else
+	else if (FlowState_EnableMovementGym()){
+	    Message(player, "Movement Gym", "Type 'commands' in console to see the available console commands. ", 10)
+	    player.SetPlayerNetBool( "pingEnabled", false )
+	} else
 	    Message(player, "FLOWSTATE: DM", "Type 'commands' in console to see the available console commands. ", 10)
 
 	if(IsValid(player))
@@ -2089,7 +2092,7 @@ void function SimpleChampionUI()
         DestroyPlayerProps()
         wait 1
 		thread NCanals()
-	} else if (file.selectedLocation.name == "Movement Gym v0.3")
+	} else if (file.selectedLocation.name == "Movement Gym v0.5")
     {
         DestroyPlayerProps()
         wait 1
@@ -2360,7 +2363,13 @@ void function SimpleChampionUI()
 
 		wait 6.0
 
-		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym()){
+			MovementGymSaveTimesToFile()
+			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+			
+		} else {
+			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+		}
 	}
 
 	foreach( player in GetPlayerArray() )
@@ -2430,7 +2439,7 @@ entity function CreateRingBoundary(LocationSettings location)
     if ( file.selectedLocation.name == "Noshahr Canals by DEAFPS" )
         ringRadius += 20000
 	
-    if ( file.selectedLocation.name == "Movement Gym v0.3" )
+    if ( file.selectedLocation.name == "Movement Gym v0.5" )
         ringRadius = 99999
 
     if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
