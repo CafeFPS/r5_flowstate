@@ -1810,6 +1810,7 @@ bool function FlowState_EnableRustByDEAFPS()                         		{ return 
 bool function FlowState_EnableNCanalsByDEAFPS()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_NCanals_By_DEAFPS", false ) }
 bool function FlowState_EnableEncoreNuketownByAyeZee()                          { return GetCurrentPlaylistVarBool("flowstate_Enable_Encore_Nuketown_By_AyeZee", false ) }
 bool function FlowState_EnableMovementGym()                         		{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym", false ) }
+bool function FlowState_EnableMovementGymLogs()                         	{ return GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym_Logs", false ) }
 
 #if SERVER   
 
