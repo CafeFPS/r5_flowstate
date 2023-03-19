@@ -326,7 +326,7 @@ function MovementGym() {
       if (user.GetPersistentVarAsInt("gen") != reset) {
         user.SetPersistentVar("xp", Time() - user.GetPersistentVarAsInt("gen"))
         int seconds = user.GetPersistentVarAsInt("xp")
-        if (seconds > 60) {
+        if (seconds > 59) {
 
           //Whacky conversion
           int minutes = seconds / 60
