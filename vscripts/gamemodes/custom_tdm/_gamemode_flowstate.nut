@@ -428,7 +428,10 @@ void function _OnPlayerConnected(entity player)
 	    Message(player, "FLOWSTATE: FIESTA", "Type 'commands' in console to see the available console commands. ", 10)
 	else if (FlowState_Gungame())
 	    Message(player, "FLOWSTATE: GUNGAME", "Type 'commands' in console to see the available console commands. ", 10)
-	else
+	else if (FlowState_EnableMovementGym()){
+	    Message(player, "Movement Gym", "Type 'commands' in console to see the available console commands. ", 10)
+	    player.SetPlayerNetBool( "pingEnabled", false )
+	} else
 	    Message(player, "FLOWSTATE: DM", "Type 'commands' in console to see the available console commands. ", 10)
 
 	if(IsValid(player))
@@ -2089,7 +2092,7 @@ void function SimpleChampionUI()
         DestroyPlayerProps()
         wait 1
 		thread NCanals()
-	} else if (file.selectedLocation.name == "Movement Gym v0.3")
+	} else if (file.selectedLocation.name == "Movement Gym v0.5")
     {
         DestroyPlayerProps()
         wait 1
@@ -2345,7 +2348,11 @@ void function SimpleChampionUI()
 		if( !IsValid( player ) ) continue
 		
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-		Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n \n"+ "Your data:\n" + player.GetPlayerName() + ":   " + player.GetPlayerGameStat( PGS_KILLS ) + " | " + player.GetPlayerGameStat( PGS_DEATHS ) + " | " + getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) + " | " + player.p.playerDamageDealt  + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		if(file.selectedLocation.name == "Movement Gym v0.5"){
+			Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n               With help from AyeZee#6969 & Julefox#0050 \n\n               Parkour Course by Treeree and JayTheYggdrasil modified by DEAFPS \n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		} else {
+			Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n \n"+ "Your data:\n" + player.GetPlayerName() + ":   " + player.GetPlayerGameStat( PGS_KILLS ) + " | " + player.GetPlayerGameStat( PGS_DEATHS ) + " | " + getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) + " | " + player.p.playerDamageDealt  + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		}
 	}
 
 	wait 7
@@ -2360,7 +2367,11 @@ void function SimpleChampionUI()
 
 		wait 6.0
 
+		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
+			MovementGymSaveTimesToFile()
+		
 		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+	
 	}
 
 	foreach( player in GetPlayerArray() )
@@ -2430,7 +2441,7 @@ entity function CreateRingBoundary(LocationSettings location)
     if ( file.selectedLocation.name == "Noshahr Canals by DEAFPS" )
         ringRadius += 20000
 	
-    if ( file.selectedLocation.name == "Movement Gym v0.3" )
+    if ( file.selectedLocation.name == "Movement Gym v0.5" )
         ringRadius = 99999
 
     if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
