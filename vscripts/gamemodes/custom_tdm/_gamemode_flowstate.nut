@@ -2348,7 +2348,11 @@ void function SimpleChampionUI()
 		if( !IsValid( player ) ) continue
 		
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-		Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n \n"+ "Your data:\n" + player.GetPlayerName() + ":   " + player.GetPlayerGameStat( PGS_KILLS ) + " | " + player.GetPlayerGameStat( PGS_DEATHS ) + " | " + getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) + " | " + player.p.playerDamageDealt  + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		if(FlowState_EnableMovementGym()){
+			Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n               With help from AyeZee#6969 & Julefox#0050 \n\n               Parkour Course by Treeree and JayTheYggdrasil modified by DEAFPS \n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		} else {
+			Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n \n"+ "Your data:\n" + player.GetPlayerName() + ":   " + player.GetPlayerGameStat( PGS_KILLS ) + " | " + player.GetPlayerGameStat( PGS_DEATHS ) + " | " + getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) + " | " + player.p.playerDamageDealt  + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
+		}
 	}
 
 	wait 7
@@ -2363,15 +2367,11 @@ void function SimpleChampionUI()
 
 		wait 6.0
 
-		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym()){
+		if(FlowState_EnableMovementGymLogs() && FlowState_EnableMovementGym())
 			MovementGymSaveTimesToFile()
-			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
-			
-		} else if(FlowState_EnableMovementGymLogs()){
-			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
-		else {
-			GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
-		}
+		
+		GameRules_ChangeMap( GetMapName(), GameRules_GetGameMode() )
+	
 	}
 
 	foreach( player in GetPlayerArray() )
