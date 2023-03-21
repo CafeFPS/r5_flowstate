@@ -106,8 +106,12 @@ bool function ClientCommand_recharge( entity player, array<string> args )
     
 	if(IsValid(player.GetOffhandWeapon( OFFHAND_INVENTORY )))
 		player.GetOffhandWeapon( OFFHAND_INVENTORY ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_INVENTORY ).GetWeaponPrimaryClipCountMax() )
-	if(IsValid(player.GetOffhandWeapon( OFFHAND_LEFT )))
+	if(IsValid(player.GetOffhandWeapon( OFFHAND_LEFT ))){
 		player.GetOffhandWeapon( OFFHAND_LEFT ).SetWeaponPrimaryClipCount( player.GetOffhandWeapon( OFFHAND_LEFT ).GetWeaponPrimaryClipCountMax() )
+		
+		//Fix for grapple not recharging after grappling server created props
+		player.SetSuitGrapplePower(100)
+	}
 	
 	return true
 }
