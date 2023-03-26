@@ -10,6 +10,7 @@ global function MapEditor_CreateRespawnableWeaponRack
 global function MapEditor_CreateLinkedZipline
 global function MapEditor_CreateLootBin
 global function MapEditor_CreateTextInfoPanel
+global function MapEditor_CreateFuncWindowHint
 
 global enum eMapEditorDoorType
 {
@@ -240,4 +241,16 @@ void function MapEditor_CreateTextInfoPanel_Internal( entity player )
 
         Remote_CallFunction_NonReplay( player, "Dev_CreateTextInfoPanel", origin.x, origin.y, origin.z, angles.x, angles.y, angles.z, showPin, textScale )
     }
+}
+
+entity function MapEditor_CreateFuncWindowHint( vector origin, float halfheight, float halfwidth, vector right )
+{
+    entity hint = CreateEntity( "func_window_hint" )
+    hint.kv.origin = origin.x + " " + origin.y  + " " + origin.z
+    hint.kv.halfheight = halfheight
+    hint.kv.halfwidth  = halfwidth
+    hint.kv.right      = right.x + " " + right.y  + " " + right.z
+    DispatchSpawn( hint )
+
+    return hint
 }
