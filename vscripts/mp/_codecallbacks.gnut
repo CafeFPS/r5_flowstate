@@ -363,6 +363,39 @@ void function CodeCallback_DamagePlayerOrNPC( entity ent, var damageInfo )
 			ent.SetCloakFlicker( 0.5, 0.65 )
 	}
 
+	if( entIsNPC && attackerIsNPC )
+	{
+		if( !IsValid( ent ) )
+			return
+		
+		if( ent.GetShieldHealth() > 0 )
+		{
+			DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+
+			float shieldHealth = float( ent.GetShieldHealth() )
+			if( shieldHealth )
+			{
+				DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_DAMAGE )
+			
+				if(DamageInfo_GetDamage( damageInfo ) > ent.GetShieldHealth())
+				{
+					float passDamage = DamageInfo_GetDamage( damageInfo ) - ent.GetShieldHealth()
+					ent.SetHealth( maxint(0, int(ent.GetHealth() - passDamage)) )
+				}
+			}
+
+			float newShieldHealth = shieldHealth - DamageInfo_GetDamage( damageInfo )
+
+			if(IsValid(ent))
+				ent.SetShieldHealth( maxint( 0, int( newShieldHealth ) ) )
+
+			if ( shieldHealth && newShieldHealth <= 0 )
+				DamageInfo_AddCustomDamageType( damageInfo, DF_SHIELD_BREAK )
+
+			DamageInfo_SetDamage( damageInfo, 0 )
+		}
+	}
+
 	if ( entIsNPC && attackerIsPlayer || entIsPlayer && attackerIsNPC )
 	{
 		//AI bleedthrough fix By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)
