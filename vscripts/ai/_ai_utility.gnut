@@ -1169,6 +1169,13 @@ void function DEV_SpawnDummyAtCrosshair()
     dummy.GiveWeapon(randomWeapon, WEAPON_INVENTORY_SLOT_ANY)
 }
 
+void function DEV_SpawnFriendlyDummyAtCrosshair()
+{
+	DEV_SpawnDummyAtCrosshair()
+	array<entity> npcs = GetNPCArray()
+	NPCFollowsPlayer( npcs[ npcs.len() - 1 ], gp()[0] )
+}
+
 void function PlayAnimOnTrainingDummy(entity dummy)
 {
 WaitFrame()
