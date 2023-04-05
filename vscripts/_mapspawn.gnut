@@ -7,7 +7,6 @@ untyped
 
 global function CodeCallback_MapSpawn
 global function CodeCallback_ClientCommand
-global function MapTriggers_Init
 global function CreateMapEditorProp
 global function CreateEditorProp
 global table _ClientCommandCallbacks = {}
@@ -190,7 +189,7 @@ void function CodeCallback_MapSpawn() // original script entry point
 	//seterrorhandler(void function() {})
 	//ScriptCompilerTest()
 	LoadDiamond()
-	MapTriggers_Init()
+	MapEditor_Init()
 	LootTicks_Init()
 
 	RegisterSignal( "CleanupFXAndSoundsForDecoy" )
@@ -375,137 +374,6 @@ var function CodeCallback_ClientCommand( entity player, array<string> args )
 		return false
 	}
 }
-
-void function MapTriggers_Init()
-{
-	switch (GetMapName())
-	{
-		case "mp_rr_aqueduct_night":
-		case "mp_rr_aqueduct":
-		{
-			CreateWallTrigger( <425, -1590, -1689> , 30000 , true)
-			CreateWallTrigger( <732, -4456, 840>  , 6000 , false, true )
-			CreateWallTrigger( <774, -6394, 2067>  )
-			break
-		}
-		case "mp_rr_arena_skygarden":
-		{
-			CreateWallTrigger( <0, -250, 3490>, 10000 )
-			CreateWallTrigger( <0, -250, 3650>, 20000, true )
-			CreateWallTrigger( <0, -250, 1550>, 40000, true )
-			break
-		}
-		case "mp_rr_arena_composite":
-		{
-			CreateWallTrigger( <5, 2587, -520> , 30000 , true)
-			CreateWallTrigger( <5, 5379, 860>, 30000, false, true )
-			break
-		}
-		case "mp_rr_ashs_redemption":
-		{
-			CreateWallTrigger( <-20857, 5702, -25746> )
-			break
-		}
-		case "mp_rr_party_crasher":
-		{
-			CreateWallTrigger( <811, 911, 2434>, 30000, false, true )
-    		CreateWallTrigger( <811, 911, -537>, 30000, true )
-			break
-		}
-		default:
-			break
-	}
-}
-
-entity function CreateWallTrigger( vector origin , float radius = 30000 , bool killzone = false , bool oob_timer = false, bool debugdraw = false)
-{
-	// Set up the trigger
-    entity trigger = CreateEntity( "trigger_cylinder" )
-	trigger.SetRadius( radius )
-	trigger.SetAboveHeight( 2000 )
-	trigger.SetBelowHeight( 50 )
-	trigger.SetOrigin( origin )
-	trigger.SetEnterCallback(  WallTriggerEnter )
-	trigger.SetLeaveCallback(  WallTriggerLeave )
-
-    if (killzone) // hacky way of adding killzone option
-	{
-		trigger.SetScriptName("WallTrigger_Killzone")
-		trigger.SetAboveHeight( 350 )
-	}
-	
-    if (oob_timer)
-	{
-		trigger.SetScriptName("WallTrigger_oob_timer")
-		trigger.SetAboveHeight( 2350 )
-	}
-
-	if (debugdraw) // draw trigger bounds if needed
-	{
-		DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, trigger.GetAboveHeight(), 0, 165, 255, true, 9999.9 )
-		DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, -trigger.GetBelowHeight(), 255, 90, 0, true, 9999.9 )
-	}
-
-	// deploy the trigger
-    DispatchSpawn( trigger )
-
-    return trigger
-}
-
-void function WallTriggerEnter( entity trigger , entity ent )
-{
-	if(!IsValid(ent)) return
-
-	if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
-	{
-		if (trigger.GetScriptName() == "WallTrigger_Killzone") // Check if it's a killzone
-		{
-			ent.TakeDamage(ent.GetMaxHealth() + 1, null, null, { damageSourceId=eDamageSourceId.fall, scriptType=DF_BYPASS_SHIELD })
-		} 
-		else if (trigger.GetScriptName() == "WallTrigger_oob_timer") // Check if it's only out of bounds timer
-		{
-			EntityOutOfBounds( trigger, ent, null, null )
-		}
-		else 
-		{
-			EntityOutOfBounds( trigger, ent, null, null )
-			ent.DisableWeapon()
-			ent.Zipline_Stop()
-			StatusEffect_AddEndless( ent, eStatusEffect.hunt_mode_visuals, 100 )
-			StatusEffect_AddEndless( ent, eStatusEffect.minimap_jammed, 100 )
-			StatusEffect_AddEndless( ent, eStatusEffect.move_slow, 0.2 )
-
-			vector newdir
-			if (trigger.GetAngles() == <0,0,0>)
-			{
-				newdir = -ent.GetAngles() / 2 + -<0,0,-100> * -1
-			}
-			else
-			{
-				newdir = -ent.GetAngles() / 2 + -trigger.GetAngles() * -1
-			}
-
-			ent.SetVelocity(newdir * 15)
-		}
-	}
-}
-
-void function WallTriggerLeave( entity trigger , entity ent )
-{
-    if (IsValid(ent)) // ensure the entity is valid
-	{
-		if (ent.IsPlayer())
-		{
-			EntityBackInBounds( trigger, ent, null, null )
-			ent.EnableWeapon()
-
-			StatusEffect_StopAllOfType( ent, eStatusEffect.hunt_mode_visuals)
-			StatusEffect_StopAllOfType( ent, eStatusEffect.minimap_jammed)
-			StatusEffect_StopAllOfType( ent, eStatusEffect.move_slow)
-		}
-	}
-}
-
 
 entity ornull function CreateEditorProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 2000, float idk = -1)
 {
