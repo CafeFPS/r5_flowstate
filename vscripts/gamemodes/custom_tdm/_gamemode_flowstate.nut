@@ -3040,7 +3040,7 @@ bool function ClientCommand_FlowstateKick(entity player, array < string > args) 
 
 bool function ClientCommand_ControllerReport(entity player, array < string > args) 
 {
-    if (!IsValid(player)) return false
+    if (!IsValid(player) || args.len() == 0) return false
 
 	switch(args[0])
 	{
@@ -3056,7 +3056,7 @@ bool function ClientCommand_ControllerReport(entity player, array < string > arg
 
 bool function ClientCommand_ControllerSummary(entity player, array < string > args) 
 {
-    if (!IsValid(player)) return false
+    if (!IsValid(player) || args.len() == 0) return false
 	
 	int controllers = 0
 	string msg = ""
@@ -3170,7 +3170,7 @@ bool function ClientCommand_Help(entity player, array<string> args)
 
 bool function ClientCommand_Say(entity player, array<string> args)
 {
-	if(!IsValid(player)) return false 
+    if (!IsValid(player) || args.len() == 0) return false 
 	
 	string finalMsg = player.GetPlayerName() + " "
 	
@@ -3408,7 +3408,7 @@ array<entity> function shuffleArray(array<entity> arr)
 
 bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 {
-    if(IsAdmin(player)) {
+    if(IsAdmin(player) && args.len() > 0) {
         int currentTeam = 2
         int numTeams = int(args[0])
 		array<entity> allplayers = GetPlayerArray()
