@@ -431,6 +431,7 @@ void function _OnPlayerConnected(entity player)
 	else if (FlowState_EnableMovementGym()){
 	    Message(player, "Movement Gym", "Type 'commands' in console to see the available console commands. ", 10)
 	    player.SetPlayerNetBool( "pingEnabled", false )
+	    player.AddToRealm(1)
 	} else
 	    Message(player, "FLOWSTATE: DM", "Type 'commands' in console to see the available console commands. ", 10)
 
