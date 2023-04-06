@@ -235,25 +235,25 @@
 
         if ( state.error )
         {
-            IsValid( panel ) panel.UnsetUsable()
-            IsValid( panel ) panel.SetSkin( ePanelState.DISABLE )
+            if ( IsValid( panel ) ) panel.UnsetUsable()
+            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.DISABLE )
         }
         else if ( forceUsable )
         {
             wait travelTime
 
-            IsValid( panel ) panel.SetUsable()
-            IsValid( panel ) panel.SetSkin( ePanelState.ENABLE )
+            if ( IsValid( panel ) ) panel.SetUsable()
+            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.ENABLE )
         }
         else
         {
-            IsValid( panel ) panel.UnsetUsable()
-            IsValid( panel ) panel.SetSkin( ePanelState.DISABLE )
+            if ( IsValid( panel ) ) panel.UnsetUsable()
+            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.DISABLE )
 
                 wait waitPanelState + travelTime
 
-            IsValid( panel ) panel.SetUsable()
-            IsValid( panel ) panel.SetSkin( ePanelState.ENABLE )
+            if ( IsValid( panel ) ) panel.SetUsable()
+            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.ENABLE )
         }
     }
 
