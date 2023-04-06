@@ -16,6 +16,17 @@ global function MapEditor_CreateTextInfoPanel
 global function MapEditor_CreateFuncWindowHint
 global function MapEditor_RemoveAllEnts
 
+global function ReMapSetOrigin
+global function ReMapSetAngles
+global function ReMapSetZiplineVars01
+global function ReMapSetZiplineVars02
+global function ReMapSetZiplinePanelOrigin
+global function ReMapSetZiplinePanelAngles
+global function ReMapSetZiplinePanelModel
+global function ReMapSetZiplinePanelSettings
+
+global function ReMapCreateVerticalZipline
+
 global enum eMapEditorDoorType
 {
 	Single,
@@ -483,7 +494,7 @@ void function MapEditor_CreateTextInfoPanel_Internal( entity player )
     }
 }
 
-entity function MapEditor_CreateFuncWindowHint( vector origin, float halfheight, float halfwidth, vector right )
+entity function MapEditor_CreateFuncWindowHint( vector origin, float halfheight, float halfwidth, vector right, bool addToArray = false )
 {
     entity hint = CreateEntity( "func_window_hint" )
     hint.kv.origin = origin.x + " " + origin.y  + " " + origin.z
@@ -491,6 +502,11 @@ entity function MapEditor_CreateFuncWindowHint( vector origin, float halfheight,
     hint.kv.halfwidth  = halfwidth
     hint.kv.right      = right.x + " " + right.y  + " " + right.z
     DispatchSpawn( hint )
+
+    if( addToArray )
+	{
+		MapEditorEnts.append( hint )
+	}
 
     return hint
 }
@@ -502,4 +518,95 @@ void function MapEditor_RemoveAllEnts()
 			ent.Destroy()
 
 	MapEditorEnts.clear();
+}
+
+
+
+// Remote Functions from Unity
+vector origin01 = < 0, 0, 0 >
+vector origin02 = < 0, 0, 0 >
+vector angles01 = < 0, 0, 0 >
+vector angles02 = < 0, 0, 0 >
+bool isVertical = true
+float fadeDistance = -1.0
+float scale = 1.0
+float width = 2.0
+float speedScale = 1.0
+float lengthScale = 1.0
+int preserveVelocity = 0
+int dropToBottom = 1
+float startAutoDetachDistance = 150
+float endAutoDetachDistance = 50
+bool restPoint = false
+int pushOffInDirectionX = 1
+bool isMoving = false
+int detachEndOnSpawn = 0
+int detachEndOnUse = 0
+array< vector > optionalPanelsOrigin = []
+array< vector > optionalPanelsAngles = []
+array< asset > optionalPanelsSkin = []
+float panelTimerMin = 32.0
+float panelTimerMax = 60
+int panelMaxUse = 0
+
+void function ReMapSetOrigin( vector vec01, vector vec02 )
+{
+    origin01 = vec01
+    origin02 = vec02
+}
+
+void function ReMapSetAngles( vector vec01, vector vec02 )
+{
+    angles01 = vec01
+    angles02 = vec02
+}
+
+void function ReMapSetZiplineVars01( bool isVertical_, float fadeDistance_, float scale_, float width_, float speedScale_, float lengthScale_, int preserveVelocity_, int dropToBottom_ )
+{
+    isVertical = isVertical_
+    fadeDistance = fadeDistance_
+    scale = scale_
+    width = width_
+    speedScale = speedScale_
+    lengthScale = lengthScale_
+    preserveVelocity = preserveVelocity_
+    dropToBottom = dropToBottom_
+}
+
+void function ReMapSetZiplineVars02( float startAutoDetachDistance_, float endAutoDetachDistance_, bool restPoint_, int pushOffInDirectionX_, bool isMoving_, int detachEndOnSpawn_, int detachEndOnUse_ )
+{
+    startAutoDetachDistance = startAutoDetachDistance_
+    endAutoDetachDistance = endAutoDetachDistance_
+    restPoint = restPoint_
+    pushOffInDirectionX = pushOffInDirectionX_
+    isMoving = isMoving_
+    detachEndOnSpawn = detachEndOnSpawn_
+    detachEndOnUse = detachEndOnUse_
+}
+
+void function ReMapSetZiplinePanelOrigin( array< vector > optionalPanelsOrigin_ )
+{
+    optionalPanelsOrigin = optionalPanelsOrigin_
+}
+
+void function ReMapSetZiplinePanelAngles( array< vector > optionalPanelsAngles_ )
+{
+    optionalPanelsAngles = optionalPanelsAngles_
+}
+
+void function ReMapSetZiplinePanelModel( array< asset > optionalPanelsSkin_ )
+{
+    optionalPanelsSkin = optionalPanelsSkin_
+}
+
+void function ReMapSetZiplinePanelSettings( float panelTimerMin, float panelTimerMax, int panelMaxUse )
+{
+    panelTimerMin = panelTimerMin
+    panelTimerMax = panelTimerMax
+    panelMaxUse = panelMaxUse
+}
+
+void function ReMapCreateVerticalZipline()
+{
+    MapEditor_CreateZiplineFromUnity( origin01, angles01, origin02, angles02, isVertical, fadeDistance, scale, width, speedScale, lengthScale, preserveVelocity, dropToBottom, startAutoDetachDistance, endAutoDetachDistance, restPoint, pushOffInDirectionX, isMoving, detachEndOnSpawn, detachEndOnUse, optionalPanelsOrigin, optionalPanelsAngles, optionalPanelsSkin, panelTimerMin, panelTimerMax, panelMaxUse, true )
 }
