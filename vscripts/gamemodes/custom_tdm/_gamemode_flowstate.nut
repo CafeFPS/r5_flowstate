@@ -431,6 +431,7 @@ void function _OnPlayerConnected(entity player)
 	else if (FlowState_EnableMovementGym()){
 	    Message(player, "Movement Gym", "Type 'commands' in console to see the available console commands. ", 10)
 	    player.SetPlayerNetBool( "pingEnabled", false )
+	    player.AddToRealm(1)
 	} else
 	    Message(player, "FLOWSTATE: DM", "Type 'commands' in console to see the available console commands. ", 10)
 
@@ -2092,7 +2093,7 @@ void function SimpleChampionUI()
         DestroyPlayerProps()
         wait 1
 		thread NCanals()
-	} else if (file.selectedLocation.name == "Movement Gym v0.5")
+	} else if (file.selectedLocation.name == "Movement Gym v0.7")
     {
         DestroyPlayerProps()
         wait 1
@@ -2348,7 +2349,7 @@ void function SimpleChampionUI()
 		if( !IsValid( player ) ) continue
 		
 		AddCinematicFlag( player, CE_FLAG_HIDE_MAIN_HUD | CE_FLAG_EXECUTION )
-		if(file.selectedLocation.name == "Movement Gym v0.5"){
+		if(file.selectedLocation.name == "Movement Gym v0.7"){
 			Message( player,"Movement Gym", "\n\n               Made by twitter.com/DEAFPS_ \n\n               With help from AyeZee#6969 & Julefox#0050 \n\n               Parkour Course by Treeree and JayTheYggdrasil modified by DEAFPS \n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
 		} else {
 			Message( player,"Round Scoreboard", "\n         Name:    K  |   D   |   KD   |   Damage dealt \n \n" + ScoreboardFinal() + "\n \n"+ "Your data:\n" + player.GetPlayerName() + ":   " + player.GetPlayerGameStat( PGS_KILLS ) + " | " + player.GetPlayerGameStat( PGS_DEATHS ) + " | " + getkd(player.GetPlayerGameStat( PGS_KILLS ),player.GetPlayerGameStat( PGS_DEATHS )) + " | " + player.p.playerDamageDealt  + "\n\n               Custom_tdm by sal#3261.\n\n                    Flowstate DM " + file.scriptversion + " \n by @CafeFPS & 暇人のEndergreen#7138", 7, "UI_Menu_RoundSummary_Results" )
@@ -2441,7 +2442,7 @@ entity function CreateRingBoundary(LocationSettings location)
     if ( file.selectedLocation.name == "Noshahr Canals by DEAFPS" )
         ringRadius += 20000
 	
-    if ( file.selectedLocation.name == "Movement Gym v0.5" )
+    if ( file.selectedLocation.name == "Movement Gym v0.7" )
         ringRadius = 99999
 
     if(is1v1EnabledAndAllowed())//we dont need rings in 1v1 mode
