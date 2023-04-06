@@ -152,8 +152,8 @@ void function MovementGym(){
 	//call map functions
 	if(GetMapName() == "mp_rr_desertlands_64k_x_64k" || GetMapName() == "mp_rr_desertlands_64k_x_64k_nx")
 	{
-		PrecacheMovementMapProps()
-		wait 2
+		//PrecacheMovementMapProps()
+		//wait 2
 		thread MovementGym_Hub()
 		wait 1
 		thread MovementGym_Map1()
