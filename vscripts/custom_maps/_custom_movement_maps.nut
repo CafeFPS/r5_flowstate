@@ -1634,7 +1634,7 @@ function MovementGym_Map2()
     // Props
     ClipArray.append( MapEditor_CreateProp( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20315.99, 23133.46 >, < 0, 0, 0 >, true, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22992.17, -26731.81, 22705.27 >, < 0, 0, -44.9999 >, true, 50000, -1, 1 )
-    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/barriers/shooting_range_target_02.rmdl", < 29469.7, -20272.5, 23084.2 >, < 0, 179.9997, 0 >, false, 50000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/barriers/shooting_range_target_02.rmdl", < 29469.7, -20272.5, 23084.2 >, < 0, 179.9997, 0 >, false, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/desertlands/construction_fold_sign_01.rmdl", < 25123.22, -20726.25, 23003.15 >, < 0, 30.4986, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_column_01.rmdl", < 29125.7, -20024.7, 24097.4 >, < 0, 0, 89.9998 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 25360.22, -22557.35, 22771.05 >, < -0.0001, -89.9999, 59.9999 >, true, 50000, -1, 1 )
@@ -2295,7 +2295,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 59){
+		if (seconds > 60){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -2938,7 +2938,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 59){
+		if (seconds > 60){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -2962,7 +2962,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 59){
+		if (seconds > 60){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -2986,7 +2986,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 59){
+		if (seconds > 60){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -3010,7 +3010,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 59){
+		if (seconds > 60){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -3034,7 +3034,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 59){
+		if (seconds > 60){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -3099,7 +3099,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 59){
+		if (seconds > 60){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -3229,7 +3229,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 59){
+		if (seconds > 60){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
