@@ -27,14 +27,15 @@ void function PartyCrasherOnEntitiesDidLoad()
     // Props ( Zipline )
     MapEditor_CreateProp( $"mdl/industrial/security_fence_post.rmdl", < 165.7, -1146.7, 1179 >, < 0, 116.1, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/industrial/zipline_arm.rmdl", < 165.4215, -1147.95, 1339 >, < 0, 26.1, 0 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/industrial/zipline_arm.rmdl", < 2228.743, 1109.592, 1069 >, < 0, -147.9, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/industrial/zipline_arm.rmdl", < 2228.743, 1109.592, 1059 >, < 0, -147.9, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/industrial/security_fence_post.rmdl", < -998.8, 1006, 1019.5 >, < 0, 110.3, 0 >, true, 50000, -1, 1 )
     MapEditor_CreateProp( $"mdl/industrial/zipline_arm.rmdl", < -999.2034, 1004.785, 1179.5 >, < 0, 20.3, 0 >, true, 50000, -1, 1 )
-    MapEditor_CreateProp( $"mdl/industrial/zipline_arm.rmdl", < 1638.167, 2096.169, 1069 >, < 0, 31.82, 0 >, true, 50000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/industrial/zipline_arm.rmdl", < 1638.167, 2096.169, 1059 >, < 0, 31.82, 0 >, true, 50000, -1, 1 )
 
     // NonVerticalZipLines
-    MapEditor_CreateZiplineFromUnity( < 137.6328, -1100.318, 1327 >, < 0, 116.1, 0 >, < 2261.358, 1065.126, 1057 >, < 0, 116.1, 0 >, false, -1, 1, 2, 1, 1, 0, 1, 160, 160, false, 0, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
-    MapEditor_CreateZiplineFromUnity( < -1022.036, 1054.981, 1167.5 >, < 0, 110.3, 0 >, < 1605.769, 2140.794, 1057 >, < 0, 110.3, 0 >, false, -1, 1, 2, 1, 1, 0, 1, 160, 160, false, 0, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
+    MapEditor_CreateZiplineFromUnity( < 137.6328, -1100.318, 1327 >, < 0, 116.1, 0 >, < 2261.358, 1065.125, 1047 >, < 0, 116.1, 0 >, false, -1, 1, 2, 1, 0.985, 0, 1, 160, 160, false, 0, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
+    MapEditor_CreateZiplineFromUnity( < -1022.036, 1054.981, 1167.5 >, < 0, 110.3, 0 >, < 1605.769, 2140.794, 1047 >, < 0, 110.3, 0 >, false, -1, 1, 2, 1, 0.985, 0, 1, 160, 160, false, 0, false, 0, 0, [  ], [  ], [  ], 32, 60, 0 )
+
 
 	//three waterfalls
 	CreateMapEditorProp( $"mdl/levels_terrain/mp_rr_canyonlands/waterfall_canyonlands_04.rmdl", <-3000, -1300, 1100>, <0, -150, 0>)
