@@ -40,7 +40,7 @@ return ziplineUtility.zipline[ziplineName] }
 
 ZiplineUtility function MapEditor_CreateZiplineFromUnity( vector originStart, vector anglesStart, vector originEnd, vector anglesEnd, bool isVertical, float fadeDistance, float scale, float width, float speedScale,
 float lengthScale, int preserveVelocity, int dropToBottom, float startAutoDetachDistance, float endAutoDetachDistance, bool restPoint, int pushOffInDirectionX, bool isMoving, int detachEndOnSpawn, int detachEndOnUse,
-array< vector > optionalPanelsOrigin = [], array< vector > optionalPanelsAngles = [], array< asset > optionalPanelsSkin = [], float panelTimerMin = 32.0, float panelTimerMax = 60, int panelMaxUse = 0 )
+array< vector > optionalPanelsOrigin = [], array< vector > optionalPanelsAngles = [], array< asset > optionalPanelsSkin = [], float panelTimerMin = 32.0, float panelTimerMax = 60, int panelMaxUse = 0, bool addToArray = false )
 {
     ZiplineUtility zipline
 
@@ -70,6 +70,8 @@ array< vector > optionalPanelsOrigin = [], array< vector > optionalPanelsAngles 
             zipline.vars.restPoint = restPoint
 
         if ( isMoving ) zipline.vars.isMoving = isMoving
+
+        zipline.vars.addToArray = addToArray
 
         Zipline_PanelUsableLimit( zipline, panelMaxUse )
 
@@ -108,6 +110,8 @@ void function Zipline_CreatePanel( ZiplineUtility zipline, vector pos, vector an
 
     entity panel = CreateUsablePanel( skin, pos, ang )
     panel.SetSkin( ePanelState.ENABLE )
+
+    if ( zipline.vars.addToArray ) MapEditorEnts.append( panel )
 
     if ( state.firstInit ) thread UpdatePanelForFirstTimeInited( zipline )
     panels.newPanel.append( panel )
@@ -231,6 +235,12 @@ array< entity > function Zipline_InitZipline( ZiplineUtility zipline )
 
     state.ziplineIsValid     = true
     state.ziplineIsDestroyed = false
+
+    if ( zipline.vars.addToArray )
+    {
+        MapEditorEnts.append( startEntityZiplinePoint )
+        MapEditorEnts.append( endEntityZiplinePoint )
+    }
 
 return returnedEntity }
 

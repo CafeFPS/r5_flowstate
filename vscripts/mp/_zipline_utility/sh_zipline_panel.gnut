@@ -233,30 +233,27 @@
                     printt( vars.ziplineName + " panels can be reused in " + ( waitPanelState + travelTime ) + " seconds" )
         #endif // ZIPLINE_DEBUG_SCRIPTS
 
-        if ( IsValid( panel ) )
+        if ( state.error )
         {
-            if ( state.error )
-            {
-                panel.UnsetUsable()
-                panel.SetSkin( ePanelState.DISABLE )
-            }
-            else if ( forceUsable )
-            {
-                wait travelTime
+            if ( IsValid( panel ) ) panel.UnsetUsable()
+            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.DISABLE )
+        }
+        else if ( forceUsable )
+        {
+            wait travelTime
 
-                panel.SetUsable()
-                panel.SetSkin( ePanelState.ENABLE )
-            }
-            else
-            {
-                panel.UnsetUsable()
-                panel.SetSkin( ePanelState.DISABLE )
+            if ( IsValid( panel ) ) panel.SetUsable()
+            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.ENABLE )
+        }
+        else
+        {
+            if ( IsValid( panel ) ) panel.UnsetUsable()
+            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.DISABLE )
 
-                    wait waitPanelState + travelTime
+                wait waitPanelState + travelTime
 
-                panel.SetUsable()
-                panel.SetSkin( ePanelState.ENABLE )
-            }
+            if ( IsValid( panel ) ) panel.SetUsable()
+            if ( IsValid( panel ) ) panel.SetSkin( ePanelState.ENABLE )
         }
     }
 

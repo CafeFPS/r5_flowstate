@@ -950,6 +950,9 @@ Scripts:
 	_place_map_editor_props_here.nut
 
 	_mapeditor.gnut
+
+    // ReMap Live
+    mp/levels/mp_rr_remap.nut
 ]
 
 When: "CLIENT"

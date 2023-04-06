@@ -61,6 +61,7 @@ global struct KVFilesSettings
 
 global struct ZiplineVars
 {
+    bool addToArray                           = false
     bool isMoving                             = false
     bool restPoint                            = false
     string ziplineName
