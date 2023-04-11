@@ -118,8 +118,8 @@ void function Cl_ChallengesByColombia_Init()
 	SetConVarBool( "host_speeds", false )
 	SetConVarBool( "con_drawnotify", false )
 	SetConVarBool( "enable_debug_overlays", false )
-	SetConVarInt( "sq_showvmoutput", 1 )
-	SetConVarInt( "sq_showvmwarning", 2 )
+	//SetConVarInt( "sq_showvmoutput", 1 )
+	//SetConVarInt( "sq_showvmwarning", 2 )
 	
 	//main menu cameras thread end signal
 	RegisterSignal("ChallengeStartRemoveCameras")

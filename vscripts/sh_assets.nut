@@ -31,8 +31,8 @@ global function Sh_MapEditor_Init
 #if CLIENT
 void function Cl_MapEditor_Init()
 {
-	SetConVarInt( "sq_showvmoutput", 3 )
-	SetConVarInt( "sq_showvmwarning", 2 )
+	//SetConVarInt( "sq_showvmoutput", 3 )
+	//SetConVarInt( "sq_showvmwarning", 2 )
 }
 #endif
 
