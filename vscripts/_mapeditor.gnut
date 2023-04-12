@@ -29,92 +29,92 @@ global function ReMapCreateVerticalZipline
 
 global enum eMapEditorDoorType
 {
-	Single,
-	Double,
-	Vertical,
-	Horizontal
+    Single,
+    Double,
+    Vertical,
+    Horizontal
 }
 
 global array<entity> MapEditorEnts;
 
 void function MapEditor_Init()
 {
-	MapTriggers_Init()
+    MapTriggers_Init()
 }
 
 void function MapTriggers_Init()
 {
-	switch (GetMapName())
-	{
-		case "mp_rr_aqueduct_night":
-		case "mp_rr_aqueduct":
-		{
-			CreateWallTrigger( <425, -1590, -1689>, 1, 30000 )
-			CreateWallTrigger( <732, -4456, 840>, 2 , 6000)
-			CreateWallTrigger( <774, -6394, 2067>, 1 )
-			break
-		}
-		case "mp_rr_arena_skygarden":
-		{
-			CreateWallTrigger( <0, -250, 3490>, 0, 10000 )
-			CreateWallTrigger( <0, -250, 3650>, 1, 20000 )
-			CreateWallTrigger( <0, -250, 1550>, 1, 40000 )
-			break
-		}
-		case "mp_rr_arena_composite":
-		{
-			CreateWallTrigger( <5, 2587, -520>, 1, 30000)
-			CreateWallTrigger( <5, 5379, 860> , 0 )
-			CreateWallTrigger( <5, 5379, 1160> , 1 )
-			break
-		}
-		case "mp_rr_ashs_redemption":
-		{
-			CreateWallTrigger( <-20857, 5702, -25746> , 0 )
-			CreateWallTrigger( <-20857, 5702, -25246> , 1, 30000 )
-			CreateWallTrigger( <-20857, 5702, -28500> , 1, 30000 )
-			break
-		}
-		case "mp_rr_party_crasher":
-		{
-			CreateWallTrigger( <811, 911, 2434>, 0 , 30000 )
-    		CreateWallTrigger( <811, 911, -537>, 1 , 30000 )
-			break
-		}
-		default:
-			break
-	}
+    switch (GetMapName())
+    {
+        case "mp_rr_aqueduct_night":
+        case "mp_rr_aqueduct":
+        {
+            CreateWallTrigger( <425, -1590, -1689>, 1, 30000 )
+            CreateWallTrigger( <732, -4456, 840>, 2 , 6000)
+            CreateWallTrigger( <774, -6394, 2067>, 1 )
+            break
+        }
+        case "mp_rr_arena_skygarden":
+        {
+            CreateWallTrigger( <0, -250, 3490>, 0, 10000 )
+            CreateWallTrigger( <0, -250, 3650>, 1, 20000 )
+            CreateWallTrigger( <0, -250, 1550>, 1, 40000 )
+            break
+        }
+        case "mp_rr_arena_composite":
+        {
+            CreateWallTrigger( <5, 2587, -520>, 1, 30000)
+            CreateWallTrigger( <5, 5379, 860> , 0 )
+            CreateWallTrigger( <5, 5379, 1160> , 1 )
+            break
+        }
+        case "mp_rr_ashs_redemption":
+        {
+            CreateWallTrigger( <-20857, 5702, -25746> , 0 )
+            CreateWallTrigger( <-20857, 5702, -25246> , 1, 30000 )
+            CreateWallTrigger( <-20857, 5702, -28500> , 1, 30000 )
+            break
+        }
+        case "mp_rr_party_crasher":
+        {
+            CreateWallTrigger( <811, 911, 2434>, 0 , 30000 )
+            CreateWallTrigger( <811, 911, -537>, 1 , 30000 )
+            break
+        }
+        default:
+            break
+    }
 }
 
 entity function CreateWallTrigger( vector origin , int type = 0, float radius = 30000 , float Height = 2000, bool debugdraw = false)
 {
-	// Set up the trigger
+    // Set up the trigger
     entity trigger = CreateEntity( "trigger_cylinder" )
-	trigger.SetRadius( radius )
-	trigger.SetAboveHeight( Height )
-	trigger.SetBelowHeight( 50 )
-	trigger.SetOrigin( origin )
-	trigger.SetEnterCallback(  WallTriggerEnter )
+    trigger.SetRadius( radius )
+    trigger.SetAboveHeight( Height )
+    trigger.SetBelowHeight( 50 )
+    trigger.SetOrigin( origin )
+    trigger.SetEnterCallback(  WallTriggerEnter )
 
-	switch(type)
-	{
-		case 1: // kill zone
-		trigger.SetScriptName("WallTrigger_Killzone")
-		trigger.SetAboveHeight( 350 )
-		break
-		case 2: // out of bounds
-		trigger.SetScriptName("WallTrigger_oob_timer")
-		trigger.SetAboveHeight( 2350 )
-		break
-	}
+    switch(type)
+    {
+        case 1: // kill zone
+        trigger.SetScriptName("WallTrigger_Killzone")
+        trigger.SetAboveHeight( 350 )
+        break
+        case 2: // out of bounds
+        trigger.SetScriptName("WallTrigger_oob_timer")
+        trigger.SetAboveHeight( 2350 )
+        break
+    }
 
-	if (debugdraw) // draw trigger bounds if needed
-	{
-		DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, trigger.GetAboveHeight(), 0, 165, 255, true, 9999.9 )
-		DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, -trigger.GetBelowHeight(), 255, 90, 0, true, 9999.9 )
-	}
+    if (debugdraw) // draw trigger bounds if needed
+    {
+        DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, trigger.GetAboveHeight(), 0, 165, 255, true, 9999.9 )
+        DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, -trigger.GetBelowHeight(), 255, 90, 0, true, 9999.9 )
+    }
 
-	// deploy the trigger
+    // deploy the trigger
     DispatchSpawn( trigger )
 
     return trigger
@@ -176,287 +176,313 @@ void function WallTriggerEnter( entity trigger , entity ent )
     }
 }
 
-entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1, bool AddToArray = false)
+entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantle = false, float fade = 5000, int realm = -1, float scale = 1, bool addToArray = false)
 {
-	entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
-	e.kv.fadedist = fade
-	e.kv.rendermode = 0
-	e.kv.renderamt = 1
-	e.kv.solid = 6
-	e.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
+    entity e = CreatePropDynamic(a,pos,ang,SOLID_VPHYSICS,fade)
+    e.kv.fadedist = fade
+    e.kv.rendermode = 0
+    e.kv.renderamt = 1
+    e.kv.solid = 6
+    e.kv.CollisionGroup = TRACE_COLLISION_GROUP_PLAYER
 
-	if(mantle) e.AllowMantle()
+    if(mantle) e.AllowMantle()
     
-	if (realm > -1) {
-		e.RemoveFromAllRealms()
-		e.AddToRealm(realm)
-	}
+    if (realm > -1) {
+        e.RemoveFromAllRealms()
+        e.AddToRealm(realm)
+    }
     
-	e.SetScriptName("editor_placed_prop")
-	e.e.gameModeId = realm
+    e.SetScriptName("editor_placed_prop")
+    e.e.gameModeId = realm
     e.SetModelScale( scale )
 
-	if(AddToArray)
-		MapEditorEnts.append(e)
-	
-	return e
+    if(addToArray)
+        MapEditorEnts.append(e)
+    
+    return e
 }
 
-void function MapEditor_SpawnDoor(vector org, vector ang, int type, bool gold = false, bool AddToArray = false)
+void function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold = false, bool spawnOpen = false, bool addToArray = false )
 {
-	switch(type)
-	{
-		case eMapEditorDoorType.Single:
-			entity d = CreateDoorEntity("prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang, gold)
-            DispatchSpawn(d)
+    switch( type )
+    {
+        case eMapEditorDoorType.Single:
+            entity door = CreateDoorEntity( "prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang, gold )
+            DispatchSpawn( door )
 
-			if(AddToArray)
-				MapEditorEnts.append(d)
-			break;
-		case eMapEditorDoorType.Double:
-			entity ddl = CreateDoorEntity("prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang, gold)
-            ddl.SetOrigin(org + ddl.GetRightVector() * 60)
-            DispatchSpawn(ddl)
+            if ( spawnOpen ) OpenCodeDoorAtSpawn( door )
 
-            entity ddr = CreateDoorEntity("prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang + <0,180,0>, gold)
-            ddr.SetOrigin(org + ddr.GetRightVector() * 60)
-            ddr.LinkToEnt( ddl )
-            DispatchSpawn(ddr)
+            if ( addToArray ) MapEditorEnts.append( door )
+            break;
 
-			if(AddToArray) {
-				MapEditorEnts.append(ddl)
-				MapEditorEnts.append(ddr)
-			}
-			break;
-		case eMapEditorDoorType.Vertical:
-			entity d = CreateDoorEntity("prop_dynamic", $"mdl/door/door_canyonlands_large_01_animated.rmdl", "survival_door_plain", org, ang)
-			DispatchSpawn(d)
+        case eMapEditorDoorType.Double:
+            entity door = CreateDoorEntity( "prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang, gold )
+            door.SetOrigin( org + door.GetRightVector() * 60 )
+            DispatchSpawn( door )
 
-			if(AddToArray)
-				MapEditorEnts.append(d)
-			break;
-		case eMapEditorDoorType.Horizontal:
-			entity d = CreateDoorEntity("prop_dynamic", $"mdl/door/door_256x256x8_elevatorstyle02_animated.rmdl", "survival_door_plain", org, ang)
-			DispatchSpawn(d)
+            entity oppositeDoor = CreateDoorEntity( "prop_door", $"mdl/door/canyonlands_door_single_02.rmdl", "", org, ang + < 0, 180, 0 >, gold )
+            oppositeDoor.SetOrigin( org + oppositeDoor.GetRightVector() * 60 )
+            oppositeDoor.LinkToEnt( door )
+            DispatchSpawn( oppositeDoor )
 
-			if(AddToArray)
-				MapEditorEnts.append(d)
-			break;
-	}
+            if ( spawnOpen ) OpenCodeDoorAtSpawn( door )
+
+            if ( addToArray )
+            {
+                MapEditorEnts.append( door )
+                MapEditorEnts.append( oppositeDoor )
+            }
+
+            break;
+
+        case eMapEditorDoorType.Vertical:
+            entity door = CreateDoorEntity( "prop_dynamic", $"mdl/door/door_canyonlands_large_01_animated.rmdl", "survival_door_plain", org, ang, false )
+            DispatchSpawn( door )
+
+            if ( spawnOpen ) OpenPlainDoorAtSpawn( door )
+
+            if ( addToArray ) MapEditorEnts.append( door )
+            break;
+
+        case eMapEditorDoorType.Horizontal:
+            entity door = CreateDoorEntity( "prop_dynamic", $"mdl/door/door_256x256x8_elevatorstyle02_animated.rmdl", "survival_door_plain", org, ang, false )
+            DispatchSpawn( door )
+
+            if ( spawnOpen ) OpenPlainDoorAtSpawn( door )
+            
+            if ( addToArray ) MapEditorEnts.append( door )
+        break;
+    }
 }
 
-entity function CreateDoorEntity(string type, asset model, string scriptName, vector origin, vector angles, bool gold = false, bool AddToArray = false)
+entity function CreateDoorEntity( string type, asset model, string scriptName, vector origin, vector angles, bool gold = false )
 {
-	entity d = CreateEntity(type)
-	d.SetOrigin(origin)
-	d.SetAngles(angles)
-	d.SetValueForModelKey(model)
+    entity door = CreateEntity( type )
+    door.SetOrigin( origin )
+    door.SetAngles( angles )
+    door.SetValueForModelKey( model )
 
-	if(scriptName != "") {
-		d.SetScriptName(scriptName)
-		d.kv.solid = 6
-	}
+    if( scriptName != "" )
+    {
+        door.SetScriptName( scriptName )
+        door.kv.solid = 6
+    }
 
-	if(gold) d.SetSkin( 1 )
+    if( gold ) door.SetSkin( 1 )
 
-	if(AddToArray)
-		MapEditorEnts.append(d)
-
-	return d
+    return door
 }
 
-entity function MapEditor_CreateTrigger( vector origin, vector angles, float radius, float totalheight, bool debugdraw = false, bool AddToArray = false)
+void function OpenCodeDoorAtSpawn( entity door )
 {
-	// Set up the trigger
+    entity fakeUser = CreateEntity( "prop_dynamic" )
+    fakeUser.SetOrigin( door.GetOrigin() - door.GetForwardVector() * 100 )
+
+    door.OpenDoor( fakeUser )
+
+    fakeUser.Destroy()
+}
+
+void function OpenPlainDoorAtSpawn( entity door )
+{
+    PlayAnimNoWait( door, "open" )
+    door.e.isOpen = true
+    GradeFlagsSet( door, eGradeFlags.IS_OPEN )
+    door.SetUsePrompts( "#SURVIVAL_CLOSE_DOOR", "#SURVIVAL_CLOSE_DOOR" )
+}
+
+entity function MapEditor_CreateTrigger( vector origin, vector angles, float radius, float totalheight, bool debugdraw = false, bool addToArray = false)
+{
+    // Set up the trigger
     entity trigger = CreateEntity( "trigger_cylinder" )
-	trigger.SetRadius( radius )
-	trigger.SetAboveHeight( totalheight )
-	trigger.SetBelowHeight( totalheight )
-	trigger.SetOrigin( origin )
-	trigger.SetAngles( angles )
+    trigger.SetRadius( radius )
+    trigger.SetAboveHeight( totalheight )
+    trigger.SetBelowHeight( totalheight )
+    trigger.SetOrigin( origin )
+    trigger.SetAngles( angles )
 
-	if (debugdraw) // draw trigger bounds if needed
-	{
-		DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, totalheight, 0, 165, 255, true, 9999.9 )
-		DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, -totalheight, 255, 90, 0, true, 9999.9 )
-	}
+    if (debugdraw) // draw trigger bounds if needed
+    {
+        DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, totalheight, 0, 165, 255, true, 9999.9 )
+        DebugDrawCylinder( trigger.GetOrigin() , < -90, 0, 0 >, radius, -totalheight, 255, 90, 0, true, 9999.9 )
+    }
 
-	if(AddToArray)
-		MapEditorEnts.append(trigger)
+    if(addToArray)
+        MapEditorEnts.append(trigger)
 
     return trigger
 }
 
-entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector angles, float scale, string color, asset collisionModel, bool AddToArray = false )
+entity function MapEditor_CreateBubbleShieldWithSettings( vector origin, vector angles, float scale, string color, asset collisionModel, bool addToArray = false )
 {
-	entity bubbleShield = CreateEntity( "prop_dynamic" )
-	bubbleShield.SetValueForModelKey( collisionModel ) // TODO: fix this for apex
-	bubbleShield.kv.solid = SOLID_VPHYSICS
-	bubbleShield.kv.rendercolor = color
-	bubbleShield.kv.contents = (int(bubbleShield.kv.contents) | CONTENTS_NOGRAPPLE)
-	bubbleShield.SetOrigin( origin )
-	bubbleShield.SetAngles( angles )
-	bubbleShield.SetModelScale( scale )
-	// Blocks bullets, projectiles but not players and not AI
-	bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
-	DispatchSpawn( bubbleShield )
+    entity bubbleShield = CreateEntity( "prop_dynamic" )
+    bubbleShield.SetValueForModelKey( collisionModel ) // TODO: fix this for apex
+    bubbleShield.kv.solid = SOLID_VPHYSICS
+    bubbleShield.kv.rendercolor = color
+    bubbleShield.kv.contents = (int(bubbleShield.kv.contents) | CONTENTS_NOGRAPPLE)
+    bubbleShield.SetOrigin( origin )
+    bubbleShield.SetAngles( angles )
+    bubbleShield.SetModelScale( scale )
+    // Blocks bullets, projectiles but not players and not AI
+    bubbleShield.kv.CollisionGroup = TRACE_COLLISION_GROUP_BLOCK_WEAPONS
+    DispatchSpawn( bubbleShield )
 
-	EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
+    EmitSoundOnEntity( bubbleShield, "Gibraltar_BubbleShield_Sustain" )
 
-	if(AddToArray)
-		MapEditorEnts.append(bubbleShield)
+    if(addToArray)
+        MapEditorEnts.append(bubbleShield)
 
-	return bubbleShield
+    return bubbleShield
 }
 
-void function MapEditor_CreateRespawnableWeaponRack(vector pos, vector ang, string weaponName, float spawnTime, bool AddToArray = false)
+void function MapEditor_CreateRespawnableWeaponRack(vector pos, vector ang, string weaponName, float spawnTime, bool addToArray = false)
 {
-	entity rack = CreateWeaponRack(pos, ang, weaponName)
-	thread OnPickupFromRackThread(GetWeaponFromRack(rack), weaponName, spawnTime)
+    entity rack = CreateWeaponRack(pos, ang, weaponName)
+    thread OnPickupFromRackThread(GetWeaponFromRack(rack), weaponName, spawnTime)
 
-	if(AddToArray)
-		MapEditorEnts.append(rack)
+    if(addToArray)
+        MapEditorEnts.append(rack)
 }
 
 // When the weapon is grabbed from the rack -> respawn it
-void function OnPickupFromRackThread(entity item, string ref, float spawnTime, bool AddToArray = false)
+void function OnPickupFromRackThread(entity item, string ref, float spawnTime, bool addToArray = false)
 {
-	entity rack = item.GetParent()
-	item.WaitSignal("OnItemPickup")
+    entity rack = item.GetParent()
+    item.WaitSignal("OnItemPickup")
 
-	wait spawnTime
+    wait spawnTime
 
-	entity newWeapon = SpawnWeaponOnRack(rack, ref)
-	StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), newWeapon.GetOrigin(), newWeapon.GetAngles() )
-	thread OnPickupFromRackThread(newWeapon, ref, spawnTime)
+    entity newWeapon = SpawnWeaponOnRack(rack, ref)
+    StartParticleEffectInWorld( GetParticleSystemIndex( FIRINGRANGE_ITEM_RESPAWN_PARTICLE ), newWeapon.GetOrigin(), newWeapon.GetAngles() )
+    thread OnPickupFromRackThread(newWeapon, ref, spawnTime)
 }
 
-entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin = 0, bool AddToArray = false )
+entity function MapEditor_CreateLootBin( vector origin, vector angles, int skin = 0, bool addToArray = false )
 {
-	entity lootbin = CreateEntity( "prop_dynamic" )
-	lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
-	lootbin.SetValueForModelKey( LOOT_BIN_MODEL )
-	lootbin.SetOrigin( origin )
-	lootbin.SetAngles( angles )
-	lootbin.kv.solid = SOLID_VPHYSICS
+    entity lootbin = CreateEntity( "prop_dynamic" )
+    lootbin.SetScriptName( LOOT_BIN_SCRIPTNAME )
+    lootbin.SetValueForModelKey( LOOT_BIN_MODEL )
+    lootbin.SetOrigin( origin )
+    lootbin.SetAngles( angles )
+    lootbin.kv.solid = SOLID_VPHYSICS
 
-	DispatchSpawn( lootbin )
-	lootbin.SetSkin(skin)
+    DispatchSpawn( lootbin )
+    lootbin.SetSkin(skin)
 
-	if(AddToArray)
-		MapEditorEnts.append(lootbin)
+    if(addToArray)
+        MapEditorEnts.append(lootbin)
 
-	return lootbin
+    return lootbin
 }
 
 entity function SetNodeRopeProperties( entity rope )
 {
-	rope.kv.MoveSpeed = 64
-	rope.kv.Slack = 25
-	rope.kv.Subdiv = "2"
-	rope.kv.Width = "2"
-	rope.kv.Type = "0"
-	rope.kv.TextureScale = "1"
-	rope.kv.PositionInterpolator = 2
-	rope.kv.RopeMaterial = "cable/zipline.vmt"
-	rope.kv.Zipline = "1"
-	rope.kv.ZiplineAutoDetachDistance = "150"
-	rope.kv.ZiplineSagEnable = "0"
-	rope.kv.ZiplineSagHeight = "50"
-	rope.kv.fadedist = 50000
+    rope.kv.MoveSpeed = 64
+    rope.kv.Slack = 25
+    rope.kv.Subdiv = "2"
+    rope.kv.Width = "2"
+    rope.kv.Type = "0"
+    rope.kv.TextureScale = "1"
+    rope.kv.PositionInterpolator = 2
+    rope.kv.RopeMaterial = "cable/zipline.vmt"
+    rope.kv.Zipline = "1"
+    rope.kv.ZiplineAutoDetachDistance = "150"
+    rope.kv.ZiplineSagEnable = "0"
+    rope.kv.ZiplineSagHeight = "50"
+    rope.kv.fadedist = 50000
 
-	return rope
+    return rope
 }
 
-void function MapEditor_CreateJumpPad( entity jumpPad, bool AddToArray = false )
+void function MapEditor_CreateJumpPad( entity jumpPad, bool addToArray = false )
 {
-	JumpPad_CreatedCallback(jumpPad)
+    JumpPad_CreatedCallback(jumpPad)
 
-	if(AddToArray)
-		MapEditorEnts.append(jumpPad)
+    if(addToArray)
+        MapEditorEnts.append(jumpPad)
 }
 
-void function MapEditor_CreateButton( entity ent, void functionref( entity, entity, int ) callbackFunc, bool AddToArray = false )
+void function MapEditor_CreateButton( entity ent, void functionref( entity, entity, int ) callbackFunc, bool addToArray = false )
 {
-	AddCallback_OnUseEntity(ent, callbackFunc)
+    AddCallback_OnUseEntity(ent, callbackFunc)
 
-	if(AddToArray)
-		MapEditorEnts.append(ent)
+    if(addToArray)
+        MapEditorEnts.append(ent)
 }
 
-void function MapEditor_CreateLinkedZipline( array<vector> nodes, bool AddToArray = false )
+void function MapEditor_CreateLinkedZipline( array<vector> nodes, bool addToArray = false )
 {
-	array<entity> ropes = [ SetNodeRopeProperties( CreateEntity( "move_rope" ) ) ]
-	ropes[0].SetOrigin( nodes[0] )
+    array<entity> ropes = [ SetNodeRopeProperties( CreateEntity( "move_rope" ) ) ]
+    ropes[0].SetOrigin( nodes[0] )
 
-	// create child ropes
-	for(int i = 1; i < nodes.len(); i++) {
-		vector nodepos = nodes[i]
-		ropes.append( SetNodeRopeProperties( CreateEntity( "keyframe_rope" )  ) )
+    // create child ropes
+    for(int i = 1; i < nodes.len(); i++) {
+        vector nodepos = nodes[i]
+        ropes.append( SetNodeRopeProperties( CreateEntity( "keyframe_rope" )  ) )
         
-		ropes[i].SetOrigin( nodepos )
-	}
+        ropes[i].SetOrigin( nodepos )
+    }
 
     // link all nodes
-	for(int i = 0; i < ropes.len(); i++) {
-		if(i + 1 < ropes.len())
-			ropes[i].LinkToEnt( ropes[i + 1]  )
-	}
+    for(int i = 0; i < ropes.len(); i++) {
+        if(i + 1 < ropes.len())
+            ropes[i].LinkToEnt( ropes[i + 1]  )
+    }
 
-	foreach(entity rope in ropes) {
+    foreach(entity rope in ropes) {
         DispatchSpawn( rope )
 
-		if(AddToArray)
-			MapEditorEnts.append(rope)
-	}
+        if(addToArray)
+            MapEditorEnts.append(rope)
+    }
 }
 
-void function MapEditor_CreateZipline( vector startPos, vector endPos, bool AddToArray = false )
+void function MapEditor_CreateZipline( vector startPos, vector endPos, bool addToArray = false )
 {
-	string startpointName = UniqueString( "rope_startpoint" )
-	string endpointName = UniqueString( "rope_endpoint" )
+    string startpointName = UniqueString( "rope_startpoint" )
+    string endpointName = UniqueString( "rope_endpoint" )
 
-	entity rope_start = CreateEntity( "move_rope" )
-	SetTargetName( rope_start, startpointName )
-	rope_start.kv.NextKey = endpointName
-	rope_start.kv.MoveSpeed = 64
-	rope_start.kv.Slack = 25
-	rope_start.kv.Subdiv = "2"
-	rope_start.kv.Width = "2"
-	rope_start.kv.Type = "0"
-	rope_start.kv.TextureScale = "1"
-	rope_start.kv.RopeMaterial = "cable/zipline.vmt"
-	rope_start.kv.PositionInterpolator = 2
-	rope_start.kv.Zipline = "1"
-	rope_start.kv.ZiplineAutoDetachDistance = "150"
-	rope_start.kv.ZiplineSagEnable = "0"
-	rope_start.kv.ZiplineSagHeight = "50"
-	rope_start.SetOrigin( startPos )
+    entity rope_start = CreateEntity( "move_rope" )
+    SetTargetName( rope_start, startpointName )
+    rope_start.kv.NextKey = endpointName
+    rope_start.kv.MoveSpeed = 64
+    rope_start.kv.Slack = 25
+    rope_start.kv.Subdiv = "2"
+    rope_start.kv.Width = "2"
+    rope_start.kv.Type = "0"
+    rope_start.kv.TextureScale = "1"
+    rope_start.kv.RopeMaterial = "cable/zipline.vmt"
+    rope_start.kv.PositionInterpolator = 2
+    rope_start.kv.Zipline = "1"
+    rope_start.kv.ZiplineAutoDetachDistance = "150"
+    rope_start.kv.ZiplineSagEnable = "0"
+    rope_start.kv.ZiplineSagHeight = "50"
+    rope_start.SetOrigin( startPos )
 
-	entity rope_end = CreateEntity( "keyframe_rope" )
-	SetTargetName( rope_end, endpointName )
-	rope_end.kv.MoveSpeed = 64
-	rope_end.kv.Slack = 25
-	rope_end.kv.Subdiv = "2"
-	rope_end.kv.Width = "2"
-	rope_end.kv.Type = "0"
-	rope_end.kv.TextureScale = "1"
-	rope_end.kv.RopeMaterial = "cable/zipline.vmt"
-	rope_end.kv.PositionInterpolator = 2
-	rope_end.kv.Zipline = "1"
-	rope_end.kv.ZiplineAutoDetachDistance = "150"
-	rope_end.kv.ZiplineSagEnable = "0"
-	rope_end.kv.ZiplineSagHeight = "50"
-	rope_end.SetOrigin( endPos )
+    entity rope_end = CreateEntity( "keyframe_rope" )
+    SetTargetName( rope_end, endpointName )
+    rope_end.kv.MoveSpeed = 64
+    rope_end.kv.Slack = 25
+    rope_end.kv.Subdiv = "2"
+    rope_end.kv.Width = "2"
+    rope_end.kv.Type = "0"
+    rope_end.kv.TextureScale = "1"
+    rope_end.kv.RopeMaterial = "cable/zipline.vmt"
+    rope_end.kv.PositionInterpolator = 2
+    rope_end.kv.Zipline = "1"
+    rope_end.kv.ZiplineAutoDetachDistance = "150"
+    rope_end.kv.ZiplineSagEnable = "0"
+    rope_end.kv.ZiplineSagHeight = "50"
+    rope_end.SetOrigin( endPos )
 
-	DispatchSpawn( rope_start )
-	DispatchSpawn( rope_end )
+    DispatchSpawn( rope_start )
+    DispatchSpawn( rope_end )
 
-	if(AddToArray)
-	{
-		MapEditorEnts.append(rope_start)
-		MapEditorEnts.append(rope_end)
-	}
+    if(addToArray)
+    {
+        MapEditorEnts.append(rope_start)
+        MapEditorEnts.append(rope_end)
+    }
 }
 
 array< array > TextInfoPanelArray
@@ -504,20 +530,20 @@ entity function MapEditor_CreateFuncWindowHint( vector origin, float halfheight,
     DispatchSpawn( hint )
 
     if( addToArray )
-	{
-		MapEditorEnts.append( hint )
-	}
+    {
+        MapEditorEnts.append( hint )
+    }
 
     return hint
 }
 
 void function MapEditor_RemoveAllEnts()
 {
-	foreach(entity ent in MapEditorEnts)
-		if ( IsValid( ent ) )
-			ent.Destroy()
+    foreach(entity ent in MapEditorEnts)
+        if ( IsValid( ent ) )
+            ent.Destroy()
 
-	MapEditorEnts.clear();
+    MapEditorEnts.clear();
 }
 
 
