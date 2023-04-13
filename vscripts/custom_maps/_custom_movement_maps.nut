@@ -8,81 +8,84 @@ function PrecacheMovementMapProps()
 {
 	if (GetMapName() == "mp_rr_desertlands_64k_x_64k_nx" || GetMapName() == "mp_rr_desertlands_64k_x_64k")
 	{
-		PrecacheModel($"mdl/ola/sewer_railing_01_64.rmdl")
-		PrecacheModel($"mdl/ola/sewer_railing_01_128.rmdl")
-		PrecacheModel($"mdl/ola/sewer_railing_01_corner_in.rmdl")
-		PrecacheModel($"mdl/foliage/icelandic_moss_grass_02.rmdl")
-		PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl")
-		PrecacheModel($"mdl/lamps/light_parking_post.rmdl")
-		PrecacheModel($"mdl/foliage/icelandic_moss_grass_01.rmdl")
-		PrecacheModel($"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl")
-		PrecacheModel($"mdl/desertlands/highrise_square_top_01.rmdl")
-		PrecacheModel($"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl")
-		PrecacheModel($"mdl/desertlands/city_pipe_grate_medium_128.rmdl")
-		PrecacheModel($"mdl/barriers/concrete/concrete_barrier_fence.rmdl")
-		PrecacheModel($"mdl/industrial/underbelly_support_beam_256_01.rmdl")
-		PrecacheModel($"mdl/pipes/pipe_modular_painted_grey_256.rmdl")
-		PrecacheModel($"mdl/signs/street_sign_arrow.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_apartments_rug_01.rmdl")
-		PrecacheModel($"mdl/domestic/ac_unit_dirty_32x64_01_a.rmdl")
-		PrecacheModel($"mdl/domestic/bar_sink.rmdl")
-		PrecacheModel($"mdl/industrial/underbelly_support_beam_bracket_corner_01.rmdl")
-		PrecacheModel($"mdl/domestic/tv_LED_med_panel.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_apartments_planter_02.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_building_ice_02.rmdl")
-		PrecacheModel($"mdl/levels_terrain/mp_rr_canyonlands/clands_roof_bars_01_fglass_blue.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_apartments_rug_02.rmdl")
-		PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl")
-		PrecacheModel($"mdl/foliage/plant_desert_yucca_01.rmdl")
-		PrecacheModel($"mdl/domestic/floor_rug_red.rmdl")
-		PrecacheModel($"mdl/desertlands/desrtlands_icicles_06.rmdl")
-		PrecacheModel($"mdl/desertlands/industrial_cargo_container_small_02.rmdl")
-		PrecacheModel($"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl")
-		PrecacheModel($"mdl/desertlands/industrial_cargo_container_large_01.rmdl")
-		PrecacheModel($"mdl/desertlands/industrial_cargo_container_small_03.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl")
-		PrecacheModel($"mdl/desertlands/industrial_cargo_container_320_01.rmdl")
-		PrecacheModel($"mdl/colony/ventilation_unit_01_black.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl")
-		PrecacheModel($"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl")
-		PrecacheModel($"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl")
-		PrecacheModel($"mdl/desertlands/lightpole_desertlands_city_01.rmdl")
-		PrecacheModel($"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl")
-		PrecacheModel($"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl")
-		PrecacheModel($"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl")
-		PrecacheModel($"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl")
-		PrecacheModel($"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl")
-		PrecacheModel($"mdl/signs/desertlands_city_newdawn_sign_01.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_train_station_sign_04.rmdl")
-		PrecacheModel($"mdl/colony/antenna_03_colony.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl")
-		PrecacheModel($"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_train_track_sign_01.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_lobby_sign_01.rmdl")
-		PrecacheModel($"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_elevator_01_top.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_column_01.rmdl")
-		PrecacheModel($"mdl/barriers/shooting_range_target_02.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_fold_sign_01.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_wood_board_01.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_column_stack_01.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_platform_03.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_platform_02.rmdl")
-		PrecacheModel($"mdl/desertlands/construction_bldg_platform_04_corner.rmdl")
-		PrecacheModel($"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl")
-		PrecacheModel($"mdl/signs/Sign_no_tresspasing.rmdl")
-		PrecacheModel($"mdl/props/kunai/kunai.rmdl")
-		PrecacheModel($"mdl/robots/drone_frag/drone_frag_loot.rmdl")
-		PrecacheModel($"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl")
-		PrecacheModel($"mdl/signs/numbers/sign_number_lit_3.rmdl")
-		PrecacheModel($"mdl/signs/numbers/sign_number_lit_2.rmdl")
-		PrecacheModel($"mdl/signs/numbers/sign_number_lit_1.rmdl")
-		PrecacheModel($"mdl/industrial/screwdriver_octane.rmdl")
-		PrecacheModel($"mdl/props/octane_jump_pad/octane_jump_pad.rmdl")
-		PrecacheModel($"mdl/props/lifeline_needle/lifeline_needle.rmdl")
+    PrecacheModel( $"mdl/ola/sewer_railing_01_64.rmdl" )
+    PrecacheModel( $"mdl/ola/sewer_railing_01_128.rmdl" )
+    PrecacheModel( $"mdl/ola/sewer_railing_01_corner_in.rmdl" )
+    PrecacheModel( $"mdl/foliage/icelandic_moss_grass_02.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_06.rmdl" )
+    PrecacheModel( $"mdl/lamps/light_parking_post.rmdl" )
+    PrecacheModel( $"mdl/foliage/icelandic_moss_grass_01.rmdl" )
+    PrecacheModel( $"mdl/rocks/rock_sharp_lava_moss_desertlands_06.rmdl" )
+    PrecacheModel( $"mdl/desertlands/highrise_square_top_01.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_wall_256x256_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl" )
+    PrecacheModel( $"mdl/barriers/concrete/concrete_barrier_fence.rmdl" )
+    PrecacheModel( $"mdl/industrial/underbelly_support_beam_256_01.rmdl" )
+    PrecacheModel( $"mdl/pipes/pipe_modular_painted_grey_256.rmdl" )
+    PrecacheModel( $"mdl/signs/street_sign_arrow.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_01.rmdl" )
+    PrecacheModel( $"mdl/domestic/ac_unit_dirty_32x64_01_a.rmdl" )
+    PrecacheModel( $"mdl/domestic/bar_sink.rmdl" )
+    PrecacheModel( $"mdl/industrial/underbelly_support_beam_bracket_corner_01.rmdl" )
+    PrecacheModel( $"mdl/domestic/tv_LED_med_panel.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_apartments_planter_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_building_ice_02.rmdl" )
+    PrecacheModel( $"mdl/levels_terrain/mp_rr_canyonlands/clands_roof_bars_01_fglass_blue.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_apartments_rug_02.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x128_06.rmdl" )
+    PrecacheModel( $"mdl/foliage/plant_desert_yucca_01.rmdl" )
+    PrecacheModel( $"mdl/domestic/floor_rug_red.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desrtlands_icicles_06.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_window_frame_ceiling_curved_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_small_03.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_barrier_concrete_128_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_cargo_container_320_01.rmdl" )
+    PrecacheModel( $"mdl/colony/ventilation_unit_01_black.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_city_train_station_railing_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/wall_city_corner_concrete_64_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_support_beam_16x144_filler.rmdl" )
+    PrecacheModel( $"mdl/desertlands/lightpole_desertlands_city_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/industrial_support_beam_16x144_vertical.rmdl" )
+    PrecacheModel( $"mdl/firstgen/firstgen_pipe_128_goldfoil_01.rmdl" )
+    PrecacheModel( $"mdl/firstgen/firstgen_pipe_256_darkcloth_01.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_cage_ceiling_256x256_05.rmdl" )
+    PrecacheModel( $"mdl/desertlands/curb_parking_concrete_destroyed_01.rmdl" )
+    PrecacheModel( $"mdl/signs/desertlands_city_newdawn_sign_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_train_station_sign_04.rmdl" )
+    PrecacheModel( $"mdl/colony/antenna_03_colony.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_train_station_turnstile_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/wall_city_barred_concrete_192_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_train_track_sign_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_lobby_sign_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/desertlands_train_track_magnetic_beam_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_bott.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_mid.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_elevator_01_top.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_column_01.rmdl" )
+    PrecacheModel( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl" )
+    PrecacheModel( $"mdl/barriers/shooting_range_target_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_fold_sign_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_stacker_cone_dirty_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_column_stack_01.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_03.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_02.rmdl" )
+    PrecacheModel( $"mdl/desertlands/construction_bldg_platform_04_corner.rmdl" )
+    PrecacheModel( $"mdl/humans/class/heavy/pilot_heavy_pathfinder.rmdl" )
+    PrecacheModel( $"mdl/signs/Sign_no_tresspasing.rmdl" )
+    PrecacheModel( $"mdl/props/kunai/kunai.rmdl" )
+    PrecacheModel( $"mdl/robots/drone_frag/drone_frag_loot.rmdl" )
+    PrecacheModel( $"mdl/robots/drone_frag/drone_frag_loot_bf.rmdl" )
+    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_3.rmdl" )
+    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_2.rmdl" )
+    PrecacheModel( $"mdl/signs/numbers/sign_number_lit_1.rmdl" )
+    PrecacheModel( $"mdl/industrial/screwdriver_octane.rmdl" )
+    PrecacheModel( $"mdl/props/octane_jump_pad/octane_jump_pad.rmdl" )
+    PrecacheModel( $"mdl/props/lifeline_needle/lifeline_needle.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl" )
+    PrecacheModel( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl" )
 
 	}
 }
@@ -134,27 +137,21 @@ function ClientCommand_Hub(entity user, array<string> args)
 	return true
 }
 
-//invis command
+//invis toggle command
 bool
 function ClientCommand_invis(entity user, array<string> args)
 {
-	user.RemoveFromAllRealms()
-	user.AddToRealm(RandomIntRange(2, 63))
-	user.MakeInvisible()
-	Message(user, "You are now Invisible")
-
-	return true
-}
-
-//un-invis command
-bool
-function ClientCommand_uninvis(entity user, array<string> args)
-{
-	user.RemoveFromAllRealms()
-	user.AddToRealm(1)
-	user.MakeVisible()
-	Message(user, "You are now Visible")
-
+	if (user.IsInRealm(1)){
+		user.RemoveFromAllRealms()
+		user.AddToRealm(RandomIntRange(2, 63))
+		user.MakeInvisible()
+		Message(user, "You are now Invisible")
+	} else {
+		user.RemoveFromAllRealms()
+		user.AddToRealm(1)
+		user.MakeVisible()
+		Message(user, "You are now Visible")
+	}
 	return true
 }
 
@@ -188,7 +185,9 @@ function MovementGym()
 		wait 1
 		thread MovementGym_Grapple2()
 		wait 1
-		MovementGym_Hub_Buttons()
+		thread MovementGym_Hub_Melee()
+		wait 1
+		thread MovementGym_Hub_Buttons()
 
 	}
 }
@@ -201,8 +200,6 @@ function MovementGym_Hub()
 	AddClientCommandCallback("hub", ClientCommand_Hub)
 	// invis command
 	AddClientCommandCallback("invis", ClientCommand_invis)
-	// un-invis command
-	AddClientCommandCallback("uninvis", ClientCommand_uninvis)
 
 	//TextInfoPanels 
 	//MapEditor_CreateTextInfoPanel("Octane Stim      Superglides", "Practice your Stim Superglides", < 10515.9000, 9921.3990, -4206.5000 >,<0, 179.9997, 0>, true, 1)
@@ -229,236 +226,143 @@ function MovementGym_Hub()
 	//MapEditor_CreateTextInfoPanel("Perform a Backwards Superglide", "Practice", < -23657.9000, 7835.8000, 22014.6000 >,<0, 89.9998, 0>, true, 1)
 	//MapEditor_CreateTextInfoPanel("Perform a double Tapstrafe", "", < -17283.4000, 2589.6000, 21992>,<0, 89.9998, 0>, true, 1)
 
-	// Props Array
-	array<entity> NoClimbArray;
+    // Props Array
+    array < entity > NoClimbArray; array < entity > NoCollisionArray; 
 
-	// Props
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10588, 9986.001, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -3922.002 >,<0, 90.0005, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -3922.002 >,<0, -179.9997, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -3922.002 >,<0, 0, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -3922.002 >,<0, -179.9997, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -3922.002 >,<0, 0, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -3922.002 >,<0, -89.9998, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4050.001 >,<0, -89.9998, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4050.001 >,<0, 90.0005, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4050.001 >,<0, 0, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4050.001 >,<0, -179.9997, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4050.001 >,<0, -179.9997, 0>, true, 5000, -1, 1))
-	NoClimbArray.append(MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4050.001 >,<0, 0, 0>, true, 5000, -1, 1))
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4178 >,<0, 90.0005, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4178 >,<0, -89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4178 >,<0, -179.9997, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4178 >,<0, 0, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4178 >,<0, -179.9997, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4178 >,<0, 0, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4306 >,<0, 0, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4306 >,<0, 0, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4306 >,<0, -89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4306 >,<0, -179.9997, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4306 >,<0, -179.9997, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4306 >,<0, 90.0005, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10588, 10122, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10588, 10258, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10852, 9986.001, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10852, 10122, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10852, 10258, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10588, 9578.001, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10588, 9714, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10588, 9850, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10852, 9850, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10852, 9714, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10852, 9578.001, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10852, 9442, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
-	MapEditor_CreateProp($"mdl/desertlands/industrial_cargo_container_small_02.rmdl",<10588, 9442, -3788 >,<90, 89.9998, 0>, true, 5000, -1, 1)
+    // Props
+    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_06.rmdl", < 10755.26, 9901.212, -3915.242 >, < 0, 0, 0 >, true, 50000, -1, 0.75 ) )
+    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10840.27, 9829.147, -3915.742 >, < 0, 0, 0 >, true, 50000, -1, 0.38 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -3922.002 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -3922.002 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -3922.002 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -3922.002 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -3922.002 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -3922.002 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4050.001 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4050.001 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4050.001 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4050.001 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4050.001 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4050.001 >, < 0, 0, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4178 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4178 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4178 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4178 >, < 0, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4178 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4178 >, < 0, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 10144, -4306 >, < 0, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10948.96, 9704, -4306 >, < 0, 0, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9487.999, -4306 >, < 0, -89.9998, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 9704.003, -4306 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10515.04, 10144, -4306 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10360, -4306 >, < 0, 90.0005, 0 >, true, 5000, -1, 1 )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10234, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999999 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 10108, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999998 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9982, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999996 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9856, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999995 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9730, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999994 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9603.999, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999993 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10731.04, 9479.971, -3788.742 >, < 90, 90, 0 >, true, 5000, -1, 0.9999993 )
+    NoCollisionArray.append( MapEditor_CreateProp( $"mdl/thunderdome/thunderdome_hanging_pilot_helmets_04.rmdl", < 10628.36, 10021.37, -3915.142 >, < 0, 0, 0 >, true, 50000, -1, 0.53 ) )
 
-	foreach(entity ent in NoClimbArray) ent.kv.solid = 3
+    foreach ( entity ent in NoClimbArray ) ent.kv.solid = 3
+    foreach ( entity ent in NoCollisionArray ) ent.kv.solid = 0
 
-	// Buttons
-	AddCallback_OnUseEntity(CreateFRButton(< 9872, 5659.619, -3696.651 >,<0, -90.0002, 0>, "%use% Back to Hub"), void
-		function(entity panel, entity user, int input)
-		{
-			EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-			TeleportFRPlayer(user,<10646, 9925, -4283 >,<0, -89.9998, 0>)
-			Message(user, "Hub") })
+    // Buttons
+    AddCallback_OnUseEntity( CreateFRButton(< 9872, 5659.619, -3696.651 >, < 0, -90.0002, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
+    {
+EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
+Message(user, "Hub")
+    })
 
-	AddCallback_OnUseEntity(CreateFRButton(< 1582.609, 4863.507, -3208.651 >,<0, 179.9997, 0>, "%use% Back to Hub"), void
-		function(entity panel, entity user, int input)
-		{
-			EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-			TeleportFRPlayer(user,<10646, 9925, -4283 >,<0, -89.9998, 0>)
-			Message(user, "Hub") })
+    AddCallback_OnUseEntity( CreateFRButton(< 1582.609, 4863.507, -3208.651 >, < 0, 179.9997, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
+    {
+EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
+Message(user, "Hub")
+    })
 
-	AddCallback_OnUseEntity(CreateFRButton(< -11124.57, 24979.92, -3354.998 >,<0, 0.5659, 0>, "%use% Back to Hub"), void
-		function(entity panel, entity user, int input)
-		{
-			EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
-			TeleportFRPlayer(user,<10646, 9925, -4283 >,<0, -89.9998, 0>)
-			Message(user, "Hub") })
+    AddCallback_OnUseEntity( CreateFRButton(< -11124.57, 24979.92, -3354.998 >, < 0, 0.5659, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
+    {
+EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
+Message(user, "Hub")
+    })
 
-	// Triggers
-	entity trigger_0 = MapEditor_CreateTrigger(< 10730.36, 9677.57, -4168 >,<0, 0, 0>, 565.51, 149.5838, false)
-	trigger_0.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					array<ItemFlavor> characters = GetAllCharacters()
-					CharacterSelect_AssignCharacter(ToEHI(ent), characters[4])
-					TakeAllWeapons(ent)
-					ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-					ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-					ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_0)
-	entity trigger_1 = MapEditor_CreateTrigger(< 10730.36, 10173.57, -4168 >,<0, 0, 0>, 373.9595, 149.5838, false)
-	trigger_1.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					array<ItemFlavor> characters = GetAllCharacters()
-					CharacterSelect_AssignCharacter(ToEHI(ent), characters[4])
-					TakeAllWeapons(ent)
-					ent.GiveWeapon("mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [])
-					ent.GiveOffhandWeapon("melee_bolo_sword", OFFHAND_MELEE, [])
-					ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_1)
-	entity trigger_2 = MapEditor_CreateTrigger(< 10878.46, 10228.37, -4275.342 >,<0, 0, 0>, 163.8, 29.2, false)
-	trigger_2.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_2)
-	entity trigger_3 = MapEditor_CreateTrigger(< 10678.16, 10228.37, -4275.342 >,<0, 0, 0>, 163.8, 29.2, false)
-	trigger_3.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_3)
-	entity trigger_4 = MapEditor_CreateTrigger(< 10878.46, 10024.57, -4275.342 >,<0, 0, 0>, 163.8, 29.2, false)
-	trigger_4.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_4)
-	entity trigger_5 = MapEditor_CreateTrigger(< 10678.16, 10024.57, -4275.342 >,<0, 0, 0>, 163.8, 29.2, false)
-	trigger_5.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_5)
-	entity trigger_6 = MapEditor_CreateTrigger(< 10678.16, 9822.871, -4275.342 >,<0, 0, 0>, 163.8, 29.2, false)
-	trigger_6.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_6)
-	entity trigger_7 = MapEditor_CreateTrigger(< 10878.46, 9822.871, -4275.342 >,<0, 0, 0>, 163.8, 29.2, false)
-	trigger_7.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_7)
-	entity trigger_8 = MapEditor_CreateTrigger(< 10678.16, 9618.171, -4275.342 >,<0, 0, 0>, 163.8, 29.2, false)
-	trigger_8.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_8)
-	entity trigger_9 = MapEditor_CreateTrigger(< 10878.46, 9618.17, -4275.342 >,<0, 0, 0>, 163.8, 29.2, false)
-	trigger_9.SetEnterCallback(void
-		function(entity trigger, entity ent)
-		{
-			if (IsValid(ent))	// ensure the entity is valid
-			{
-				if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP)	// Noclip players are not affected by the trigger
-				{
-					ent.SetPlayerNetBool("pingEnabled", false)
-					//Reset Timer
-					int reset = 0
-					ent.SetPersistentVar("gen", reset)
-				}
-			} })
-	DispatchSpawn(trigger_9)
+
+    // Triggers
+    entity trigger_0 = MapEditor_CreateTrigger( < 10730.36, 9677.57, -4168 >, < 0, 0, 0 >, 565.51, 149.5838, false )
+    trigger_0.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+        if (IsValid(ent)) // ensure the entity is valid
+    {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+	array<ItemFlavor> characters = GetAllCharacters()
+	CharacterSelect_AssignCharacter( ToEHI( ent ), characters[4] )
+	if (ent.GetPersistentVarAsInt( "previousXP" ) == 1){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )
+	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 2){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 3){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	} else {
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	}
+	ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+	ent.SetPlayerNetBool( "pingEnabled", false )
+	//Reset Timer
+	int reset = 0
+	ent.SetPersistentVar("gen", reset)
+        }
+    }
+    })
+    DispatchSpawn( trigger_0 )
+    entity trigger_1 = MapEditor_CreateTrigger( < 10730.36, 10173.57, -4168 >, < 0, 0, 0 >, 373.9595, 149.5838, false )
+    trigger_1.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+        if (IsValid(ent)) // ensure the entity is valid
+    {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+	array<ItemFlavor> characters = GetAllCharacters()
+	CharacterSelect_AssignCharacter( ToEHI( ent ), characters[4] )
+	if (ent.GetPersistentVarAsInt( "previousXP" ) == 1){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )
+	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 2){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 3){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	} else {
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	}
+	ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+	ent.SetPlayerNetBool( "pingEnabled", false )
+	//Reset Timer
+	int reset = 0
+	ent.SetPersistentVar("gen", reset)
+        }
+    }
+    })
+    DispatchSpawn( trigger_1 )
+
 
 }
 
@@ -491,6 +395,26 @@ EmitSoundOnEntityOnlyToPlayer(user, user, FIRINGRANGE_BUTTON_SOUND)
 TeleportFRPlayer(user, < 19500.3000, -25867.7000, 21940 > , < 0, 90, 0 > )
 array<ItemFlavor> characters = GetAllCharacters()
 CharacterSelect_AssignCharacter( ToEHI( user ), characters[7] )
+
+//apply melee
+    if (user.GetPersistentVarAsInt( "previousXP" ) == 1){
+		TakeAllWeapons( user )
+		user.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		user.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )
+	} else if (user.GetPersistentVarAsInt( "previousXP" ) == 2){
+		TakeAllWeapons( user )
+		user.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		user.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	} else if (user.GetPersistentVarAsInt( "previousXP" ) == 3){
+		TakeAllWeapons( user )
+		user.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		user.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	} else {
+		TakeAllWeapons( user )
+		user.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		user.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+		}
+
 user.SetPlayerNetBool( "pingEnabled", false )
 Message(user, "Map 2 by DEAFPS")
 //Reset Timer
@@ -593,10 +517,161 @@ EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
 TeleportFRPlayer(user,< -13561.7000, 26485.9000, -83.2000 >,< 0, 0, 0 >)
 array<ItemFlavor> characters = GetAllCharacters()
 CharacterSelect_AssignCharacter( ToEHI( user ), characters[7] )
+
+//apply melee
+    if (user.GetPersistentVarAsInt( "previousXP" ) == 1){
+		TakeAllWeapons( user )
+		user.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		user.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )
+	} else if (user.GetPersistentVarAsInt( "previousXP" ) == 2){
+		TakeAllWeapons( user )
+		user.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		user.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	} else if (user.GetPersistentVarAsInt( "previousXP" ) == 3){
+		TakeAllWeapons( user )
+		user.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		user.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	} else {
+		TakeAllWeapons( user )
+		user.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		user.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+		}
+
 user.SetPlayerNetBool( "pingEnabled", false )
 Message(user, "Pathfinder Grapples", "\n  You now recieved Grapple Tactical" )
     })
 
+    AddCallback_OnUseEntity( CreateFRButton(< 10487.06, 9703.41, -4265.34 >, < 0.0003, -89.9997, -90.0002 >, "%use% Change Melee"), void function(entity panel, entity user, int input)
+    {
+EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+TeleportFRPlayer(user,< 10619.83, 9920.367, -3776 >, < 0, 0, 0 >)
+Message(user, "Dressing Room")
+    })
+
+
+
+}
+
+//Init Melee Change Room
+void
+function MovementGym_Hub_Melee()
+{
+    // Props Array
+    array < entity > NoClimbArray; 
+
+    // Props
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 9705.264, -3415.002 >, < 0, -90.0005, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 9705.264, -3671 >, < 0, -90.0005, 0 >, true, 5000, -1, 1 )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 9705.264, -3543.001 >, < 0, -90.0005, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 9705.264, -3799 >, < 0, -90.0005, 0 >, true, 5000, -1, 1 )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 10141.27, -3415.002 >, < 0, 89.9998, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 10141.27, -3671 >, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 10141.27, -3543.001 >, < 0, 89.9998, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10738.23, 10141.27, -3799 >, < 0, 89.9998, 0 >, true, 5000, -1, 1 )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10538.03, 9923.694, -3415.002 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10538.03, 9923.694, -3671 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10538.03, 9923.694, -3543.001 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10538.03, 9923.694, -3799 >, < 0, -179.9997, 0 >, true, 5000, -1, 1 )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10851.83, 9923.696, -3415.002 >, < 0, 0.0007, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10851.83, 9923.696, -3671 >, < 0, 0.0007, 0 >, true, 5000, -1, 1 )
+    NoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10851.83, 9923.696, -3543.001 >, < 0, 0.0007, 0 >, true, 5000, -1, 1 ) )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_large_01.rmdl", < 10851.83, 9923.696, -3799 >, < 0, 0.0007, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10663.94, 9789.906, -3281 >, < 90, 179.9996, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10799.94, 9789.906, -3281 >, < 90, 179.9996, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10935.94, 9789.904, -3281 >, < 90, 179.9996, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10663.94, 10053.21, -3281 >, < 90, 179.9996, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10799.94, 10053.21, -3281 >, < 90, 179.9996, 0 >, true, 5000, -1, 1 )
+    MapEditor_CreateProp( $"mdl/desertlands/industrial_cargo_container_small_02.rmdl", < 10935.94, 10053.21, -3281 >, < 90, 179.9996, 0 >, true, 5000, -1, 1 )
+
+    foreach ( entity ent in NoClimbArray ) ent.kv.solid = 3
+
+    // Buttons
+    AddCallback_OnUseEntity( CreateFRButton(< 10886.39, 9949.203, -3758.34 >, < 0.0003, 90, -90.0002 >, "%use% Get Shadow Hands"), void function(entity panel, entity user, int input)
+    {
+EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+user.SetPlayerNetBool( "pingEnabled", false )
+Message(user, "You have now Shadow Hands" )
+int hasShadowhands = 1
+user.SetPersistentVar("previousXP", hasShadowhands)
+
+//give meele after pressing
+TakeAllWeapons( user )
+user.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+user.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )
+    })
+
+    AddCallback_OnUseEntity( CreateFRButton(< 10886.4, 10097.2, -3758.34 >, < 0.0003, 90, -90.0002 >, "%use% Get Empty Hands"), void function(entity panel, entity user, int input)
+    {
+EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+user.SetPlayerNetBool( "pingEnabled", false )
+Message(user, "You have now Empty Hands" )
+int hasEmptyhands = 2
+user.SetPersistentVar("previousXP", hasEmptyhands)
+
+//give meele after pressing
+TakeAllWeapons( user )
+user.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+user.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+    })
+
+    AddCallback_OnUseEntity( CreateFRButton(< 10886.39, 10022.7, -3758.34 >, < 0.0003, 90, -90.0002 >, "%use% Get Bolo Sword"), void function(entity panel, entity user, int input)
+    {
+EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+user.SetPlayerNetBool( "pingEnabled", false )
+Message(user, "You have now Sparky Hands Sparky Hands" )
+int hasWattsonhands = 3
+user.SetPersistentVar("previousXP", hasWattsonhands)
+
+//give meele after pressing
+TakeAllWeapons( user )
+user.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+user.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+    })
+
+    AddCallback_OnUseEntity( CreateFRButton(< 10506.83, 9923.104, -3758.34 >, < 0.0003, -89.9997, -90.0002 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
+    {
+EmitSoundOnEntityOnlyToPlayer( user, user, FIRINGRANGE_BUTTON_SOUND )
+TeleportFRPlayer(user,< 10646, 9925, -4283 >,< 0, -89.9998, 0 >)
+Message(user, "Hub")
+    })
+
+
+    // Triggers
+    entity trigger_0 = MapEditor_CreateTrigger( < 10697.36, 9897.267, -3661 >, < 0, 0, 0 >, 565.51, 149.5838, false )
+    trigger_0.SetEnterCallback( void function(entity trigger , entity ent)
+    {
+        if (IsValid(ent)) // ensure the entity is valid
+    {
+        if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
+        {
+	array<ItemFlavor> characters = GetAllCharacters()
+	CharacterSelect_AssignCharacter( ToEHI( ent ), characters[4] )
+	if (ent.GetPersistentVarAsInt( "previousXP" ) == 1){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_shadow_squad_hands_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_shadowsquad_hands", OFFHAND_MELEE, [] )
+	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 2){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	} else if (ent.GetPersistentVarAsInt( "previousXP" ) == 3){
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_bolo_sword_primary", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_bolo_sword", OFFHAND_MELEE, [] )
+	} else {
+		TakeAllWeapons( ent )
+		ent.GiveWeapon( "mp_weapon_melee_survival", WEAPON_INVENTORY_SLOT_PRIMARY_2, [] )
+		ent.GiveOffhandWeapon( "melee_pilot_emptyhanded", OFFHAND_MELEE, [] )
+	}
+	ent.GiveOffhandWeapon("mp_ability_phase_walk", OFFHAND_TACTICAL)
+	ent.SetPlayerNetBool( "pingEnabled", false )
+	//Reset Timer
+	int reset = 0
+	ent.SetPersistentVar("gen", reset)
+        }
+    }
+    })
+    DispatchSpawn( trigger_0 )
 
 
 }
@@ -1163,7 +1238,7 @@ function MovementGym_Map1()
 				int seconds = user.GetPersistentVarAsInt("xp")
 				if (seconds > 59)
 				{
-				 		//Whacky conversion
+				 	//Whacky conversion
 					int minutes = seconds / 60
 					int realseconds = seconds - (minutes *60)
 
@@ -1632,7 +1707,7 @@ function MovementGym_Map2()
     array < entity > ClipArray; array < entity > NoClimbArray; array < entity > NoGrappleNoClimbArray; array < entity > NoCollisionArray; 
 
     // Props
-    ClipArray.append( MapEditor_CreateProp( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20315.99, 23133.46 >, < 0, 0, 0 >, true, 50000, -1, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20315.99, 23133.46 >, < 0, 0, 0 >, false, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 22992.17, -26731.81, 22705.27 >, < 0, 0, -44.9999 >, true, 50000, -1, 1 )
     NoClimbArray.append( MapEditor_CreateProp( $"mdl/barriers/shooting_range_target_02.rmdl", < 29469.7, -20272.5, 23084.2 >, < 0, 179.9997, 0 >, false, 50000, -1, 1 ) )
     MapEditor_CreateProp( $"mdl/desertlands/construction_fold_sign_01.rmdl", < 25123.22, -20726.25, 23003.15 >, < 0, 30.4986, 0 >, true, 50000, -1, 1 )
@@ -2190,7 +2265,8 @@ function MovementGym_Map2()
     MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24996.86, -21913.11, 22854.39 >, < 90, -179.9998, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24988.87, -21913.11, 22727.77 >, < 90, -0.0002, 0 >, true, 5000, -1, 1 )
     MapEditor_CreateProp( $"mdl/desertlands/city_pipe_grate_medium_128.rmdl", < 24996.86, -21913.11, 22727.77 >, < 90, -179.9998, 0 >, true, 5000, -1, 1 )
-    ClipArray.append( MapEditor_CreateProp( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20291.01, 23133.46 >, < 0, 0, 0 >, true, 50000, -1, 1 ) )
+    ClipArray.append( MapEditor_CreateProp( $"mdl/mendoko/mendoko_rubber_floor_01.rmdl", < 29458.07, -20291.01, 23133.46 >, < 0, 0, 0 >, false, 50000, -1, 1 ) )
+    NoGrappleNoClimbArray.append( MapEditor_CreateProp( $"mdl/desertlands/construction_bldg_wood_board_01.rmdl", < 29442.27, -20467.31, 22972.77 >, < 51.1379, -131.4282, 4.6225 >, true, 50000, -1, 1 ) )
 
     foreach ( entity ent in ClipArray )
     {
@@ -2224,8 +2300,8 @@ function MovementGym_Map2()
 
     AddCallback_OnUseEntity( CreateFRButton(< 19589.47, -25748.59, 21876.2 >, < 0, -89.9992, 0 >, "%use% Start Timer"), void function(entity panel, entity user, int input)
     {
-user.SetPersistentVar( "gen", Time() )
-Message(user, "Timer Started!" )
+	user.SetPersistentVar( "gen", Time() )
+	Message(user, "Timer Started!" )
     })
 
     AddCallback_OnUseEntity( CreateFRButton(< 29284.57, -19512.01, 24886.57 >, < 0, 0, 0 >, "%use% Back to Hub"), void function(entity panel, entity user, int input)
@@ -2259,10 +2335,13 @@ user.SetPersistentVar("gen", reset)
           
 	  //Display player Time
 	  Message(user, "Your Final Time: " + minutes + ":" + realseconds)
+	  Warning( user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map2" )
 	  
 	  //Add to results file
 	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map2"
 	  file.allTimes.append(finalTime)
+	  user.ClientCommand( "ClientCommand_Quickchat 168")
+	  
 	  
 	  //Reset Timer
           user.SetPersistentVar("gen", reset)
@@ -2271,10 +2350,13 @@ user.SetPersistentVar("gen", reset)
 	  
 	  //Display player Time
           Message(user, "Your Final Time: " + seconds + " seconds")
+	  Warning( user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map2" )
 	  
 	  //Add to results file
 	  string finalTime = user.GetPlatformUID()+ "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map2"
 	  file.allTimes.append(finalTime)
+	  PlayBattleChatterLineToSpeakerAndTeam( user, "bc_skydive" )
+	  
 	  
 	  //Reset Timer
           user.SetPersistentVar("gen", reset)
@@ -2295,7 +2377,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 60){
+		if (seconds > 59){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -2938,7 +3020,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 60){
+		if (seconds > 59){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -2962,7 +3044,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 60){
+		if (seconds > 59){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -2986,7 +3068,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 60){
+		if (seconds > 59){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -3010,7 +3092,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 60){
+		if (seconds > 59){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -3034,7 +3116,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 60){
+		if (seconds > 59){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -3099,7 +3181,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 60){
+		if (seconds > 59){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
@@ -3229,7 +3311,7 @@ user.SetPersistentVar("gen", reset)
 	if(ent.GetPersistentVarAsInt("gen") != reset){
 		ent.SetPersistentVar( "xp", Time() - ent.GetPersistentVarAsInt( "gen" ) )
 		int seconds = ent.GetPersistentVarAsInt( "xp" )
-		if (seconds > 60){
+		if (seconds > 59){
 			int minutes = seconds / 60
 			int realseconds = seconds - (minutes * 60)		
 			Message(ent, "Current Time: " + minutes + " minutes " + realseconds + " seconds " )
