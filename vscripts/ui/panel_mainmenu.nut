@@ -164,7 +164,7 @@ void function OnMainMenuPanel_Show( var panel )
 {
 	if( isLeavingMatch )
 	{
-		LaunchR5RLobby()
+		thread LaunchR5RLobby(0.2)
 		return
 	}
 	
