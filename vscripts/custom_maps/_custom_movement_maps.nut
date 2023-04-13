@@ -2264,7 +2264,6 @@ function MovementGym_Map2() {
           //Add to results file
           string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + minutes + ":" + realseconds + "|" + GetUnixTimestamp() + "|Map2"
           file.allTimes.append(finalTime)
-          user.ClientCommand("ClientCommand_Quickchat 168")
 
           //Reset Timer
           user.SetPersistentVar("gen", reset)
@@ -2278,7 +2277,6 @@ function MovementGym_Map2() {
           //Add to results file
           string finalTime = user.GetPlatformUID() + "|" + user.GetPlayerName() + "|" + "0:" + seconds + "|" + GetUnixTimestamp() + "|Map2"
           file.allTimes.append(finalTime)
-          PlayBattleChatterLineToSpeakerAndTeam(user, "bc_skydive")
 
           //Reset Timer
           user.SetPersistentVar("gen", reset)
