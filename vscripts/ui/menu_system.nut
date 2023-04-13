@@ -344,18 +344,10 @@ void function RunHub()
 	ClientCommand( "hub" )
 }
 
-int toggleinvis = 0
 
 void function RunInvis()
 {
-	if ( toggleinvis == 0){
-		ClientCommand( "invis" )
-		toggleinvis++
-	}
-	if ( toggleinvis == 1){
-		ClientCommand( "uninvis" )
-		toggleinvis--
-	}
+	ClientCommand( "invis" )
 }
 
 
