@@ -34,6 +34,9 @@ struct
 	table<var, ButtonData > endmatchButtonData
 	table<var, ButtonData > spectateButtonData
 	table<var, ButtonData > respawnButtonData
+	table<var, ButtonData > hubButtonData
+	table<var, ButtonData > invisButtonData
+	table<var, ButtonData > uninvisButtonData
 	InputDef& qaFooter
 } file
 
@@ -120,6 +123,9 @@ void function InitSystemPanel( var panel )
 	file.ExitChallengeButtonData[ panel ] <- clone data
 	file.spectateButtonData[ panel ] <- clone data
 	file.respawnButtonData[ panel ] <- clone data
+	file.hubButtonData[ panel ] <- clone data
+	file.invisButtonData[ panel ] <- clone data
+	file.uninvisButtonData[ panel ] <- clone data
 	
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -153,12 +159,21 @@ void function InitSystemPanel( var panel )
 
 	file.endmatchButtonData[ panel ].label = "END GAME LOBBY"
 	file.endmatchButtonData[ panel ].activateFunc = HostEndMatch
-
+	
+	file.hubButtonData[ panel ].label = "HUB"
+	file.hubButtonData[ panel ].activateFunc = RunHub
+	
+	file.invisButtonData[ panel ].label = "Toggle Hide Players"
+	file.invisButtonData[ panel ].activateFunc = RunInvis
+	
 	file.spectateButtonData[ panel ].label = "#DEATH_SCREEN_SPECTATE"
 	file.spectateButtonData[ panel ].activateFunc = RunSpectateCommand
-
+	
 	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
 	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
+
+	//file.uninvisButtonData[ panel ].label = "Show Players"
+	//file.uninvisButtonData[ panel ].activateFunc = RunUnInvis
 
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
@@ -213,14 +228,20 @@ void function UpdateSystemPanel( var panel )
 		{
 			SetButtonData( panel, buttonIndex++, file.changeCharacterButtonData[ panel ] ) // !FIXME
 			//SetButtonData( panel, buttonIndex++, file.thirdPersonButtonData[ panel ] )
-
+		
 			if ( (GetTeamSize( GetTeam() ) > 1) && FiringRangeHasFriendlyFire() )
 				SetButtonData( panel, buttonIndex++, file.friendlyFireButtonData[ panel ] )
 		}
 		if( GetCurrentPlaylistName() == "custom_tdm" && IsConnected() && !GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
 		{
-			SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
-			SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
+			if( GetCurrentPlaylistVarBool("flowstate_Enable_MovementGym", true) )
+			{
+				SetButtonData( panel, buttonIndex++, file.invisButtonData[ panel ] )
+				SetButtonData( panel, buttonIndex++, file.hubButtonData[ panel ] )
+			} else {
+				SetButtonData( panel, buttonIndex++, file.spectateButtonData[ panel ] )
+				SetButtonData( panel, buttonIndex++, file.respawnButtonData[ panel ] )
+			}
 		}
 	}
 	else
@@ -323,6 +344,25 @@ void function RunKillSelf()
 {
 	ClientCommand( "kill_self" )
 }
+void function RunHub()
+{
+	ClientCommand( "hub" )
+}
+
+int toggleinvis = 0
+
+void function RunInvis()
+{
+	if ( toggleinvis == 0){
+		ClientCommand( "invis" )
+		toggleinvis++
+	}
+	if ( toggleinvis == 1){
+		ClientCommand( "uninvis" )
+		toggleinvis--
+	}
+}
+
 
 #if CONSOLE_PROG
 void function ReturnToMain_OnActivate( var button )
