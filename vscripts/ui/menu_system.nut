@@ -36,7 +36,6 @@ struct
 	table<var, ButtonData > respawnButtonData
 	table<var, ButtonData > hubButtonData
 	table<var, ButtonData > invisButtonData
-	table<var, ButtonData > uninvisButtonData
 	InputDef& qaFooter
 } file
 
@@ -125,7 +124,6 @@ void function InitSystemPanel( var panel )
 	file.respawnButtonData[ panel ] <- clone data
 	file.hubButtonData[ panel ] <- clone data
 	file.invisButtonData[ panel ] <- clone data
-	file.uninvisButtonData[ panel ] <- clone data
 	
 	file.ExitChallengeButtonData[ panel ].label = "FINISH CHALLENGE"
 	file.ExitChallengeButtonData[ panel ].activateFunc = SignalExitChallenge
@@ -171,9 +169,6 @@ void function InitSystemPanel( var panel )
 	
 	file.respawnButtonData[ panel ].label = "#PROMPT_PING_RESPAWN_STATION_SHORT"
 	file.respawnButtonData[ panel ].activateFunc = RunKillSelf
-
-	//file.uninvisButtonData[ panel ].label = "Show Players"
-	//file.uninvisButtonData[ panel ].activateFunc = RunUnInvis
 
 	AddPanelEventHandler( panel, eUIEvent.PANEL_SHOW, SystemPanelShow )
 }
