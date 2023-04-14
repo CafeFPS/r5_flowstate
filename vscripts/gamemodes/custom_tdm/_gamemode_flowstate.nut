@@ -549,11 +549,23 @@ bool function is1v1EnabledAndAllowed()
 		case "mp_rr_arena_composite":
 		case "mp_rr_aqueduct":
 		case "mp_rr_canyonlands_64k_x_64k":
+		thread isChineseServer()
 		return true
 		default:
 		return false
 	}
 	return false
+}
+
+void function isChineseServer()
+{
+	if (GetCurrentPlaylistVarBool("flowstate_1v1mode_is_chinese_server", false) )
+	{
+		#if DEVELOPER
+		printt("is chinese server")
+		#endif
+		IS_CHINESE_SERVER = true
+	}
 }
 
 void function __HighPingCheck(entity player)
