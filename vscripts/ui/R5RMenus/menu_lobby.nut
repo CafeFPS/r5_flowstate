@@ -169,6 +169,11 @@ void function OnR5RLobby_Open()
 	server_host_name = ""
 
 	RunClientScript("UICallback_SetHostName", GetPlayerName() + "'s Lobby")
+
+	while ISAIMTRAINER
+	{
+		ISAIMTRAINER = false
+	}
 }
 
 void function SetupLobby()
