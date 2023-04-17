@@ -237,6 +237,7 @@ void function ResetMapVotes()
 
 void function RUNCTF()
 {
+    AntiAfkInit()
     WaitForGameState(eGameState.Playing)
 
     for( ; ; )

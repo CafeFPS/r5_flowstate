@@ -1936,6 +1936,7 @@ void function GiveGungameWeapon(entity player) {
 void function RunTDM()
 //By Retículo Endoplasmático#5955 (CaféDeColombiaFPS)//
 {
+	AntiAfkInit()
     WaitForGameState(eGameState.Playing)
     AddSpawnCallback("prop_dynamic", _OnPropDynamicSpawned)
 
