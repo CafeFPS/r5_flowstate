@@ -118,14 +118,14 @@ void function KillAllBadguys()
 
 bool function ClientCommand_GoToMapPoint( entity player, array<string> args )
 {
-	if ( !IsValid( player ) )
-		return true
+	if ( GetConVarInt("sv_cheats") != 1 || !IsValid( player ) || args.len() != 3 )
+		return false
 
 	float x = float( args[0] )
 	float y = float( args[1] )
 	float z = float( args[2] )
 
-	vector origin = <x, y, z>
+	vector origin = ClampToWorldspace(<x, y, z>)
 
 	if ( z == 0 )
 	{

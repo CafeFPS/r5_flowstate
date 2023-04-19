@@ -5,7 +5,6 @@ global function MDLSpawner_Init
 
 #if SERVER
 global function OnWeaponNpcPrimaryAttack_weapon_mdlspawner
-global function ClientCommand_SetMDLSpawnerModel
 #endif // SERVER
 
 const MASTIFF_BLAST_PATTERN_LEN = 1
@@ -25,25 +24,7 @@ struct {
 
 void function MDLSpawner_Init()
 {
-	#if SERVER
-	printt("adding mdlspawner ccc")
-	AddClientCommandCallback( "setmdl", ClientCommand_SetMDLSpawnerModel )
-	#endif // SERVER
 }
-
-#if SERVER
-bool function ClientCommand_SetMDLSpawnerModel( entity player, array<string> args )
-{
-	if(args.len() == 0)
-		return true
-
-	// string model = args[0]
-
-	file.model = compilestring( "return $\"" + args[0] + "\"" )()
-
-	return true
-}
-#endif
 
 var function OnWeaponPrimaryAttack_weapon_mdlspawner( entity weapon, WeaponPrimaryAttackParams attackParams )
 {
