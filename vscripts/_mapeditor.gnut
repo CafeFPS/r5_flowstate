@@ -202,8 +202,10 @@ entity function MapEditor_CreateProp(asset a, vector pos, vector ang, bool mantl
     return e
 }
 
-void function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold = false, bool spawnOpen = false, bool addToArray = false )
+array < entity > function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold = false, bool spawnOpen = false, bool addToArray = false )
 {
+    array < entity > doorArray = []
+
     switch( type )
     {
         case eMapEditorDoorType.Single:
@@ -212,7 +214,7 @@ void function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold =
 
             if ( spawnOpen ) OpenCodeDoorAtSpawn( door )
 
-            if ( addToArray ) MapEditorEnts.append( door )
+            doorArray.append( door )
             break;
 
         case eMapEditorDoorType.Double:
@@ -227,12 +229,7 @@ void function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold =
 
             if ( spawnOpen ) OpenCodeDoorAtSpawn( door )
 
-            if ( addToArray )
-            {
-                MapEditorEnts.append( door )
-                MapEditorEnts.append( oppositeDoor )
-            }
-
+            doorArray.extend( [ door, oppositeDoor ] )
             break;
 
         case eMapEditorDoorType.Vertical:
@@ -241,7 +238,7 @@ void function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold =
 
             if ( spawnOpen ) OpenPlainDoorAtSpawn( door )
 
-            if ( addToArray ) MapEditorEnts.append( door )
+            doorArray.append( door )
             break;
 
         case eMapEditorDoorType.Horizontal:
@@ -249,10 +246,14 @@ void function MapEditor_SpawnDoor( vector org, vector ang, int type, bool gold =
             DispatchSpawn( door )
 
             if ( spawnOpen ) OpenPlainDoorAtSpawn( door )
-            
-            if ( addToArray ) MapEditorEnts.append( door )
+
+            doorArray.append( door )
         break;
     }
+
+    if ( addToArray ) MapEditorEnts.extend( doorArray )
+
+    return doorArray
 }
 
 entity function CreateDoorEntity( string type, asset model, string scriptName, vector origin, vector angles, bool gold = false )
