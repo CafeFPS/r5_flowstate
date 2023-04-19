@@ -693,6 +693,15 @@ global struct ServerPlayerStruct
 	bool isAdmin = false
 	int ziplineUsages = 0
 	
+	//MovementGym
+	bool isTimerActive = false
+	int startTime = 0
+	int currentTime = 0
+	int finalTime = 0
+	
+	bool allowCheckpoint = false
+	int currentCheckpoint = 0
+	
 	//DeathRecap
 	DeathRecapDamageData DeathRecap_DataToSend
 	entity DeathRecap_PreviousShotWeapon = null
