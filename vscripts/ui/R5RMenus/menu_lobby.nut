@@ -70,6 +70,7 @@ global table<string, string> playlisttoname = {
 	[ "FallLTM" ] = "ShadowFall",
 	[ "duos" ] = "Duos (Beta)",
 	[ "custom_tdm" ] = "Flowstate TDM/FFA",
+	[ "movement_gym"] = "Movement Gym",
 	[ "custom_ctf" ] = "Capture The Flag",
 	[ "survival_dev" ] = "Survival Dev",
 	[ "custom_tdm_fiesta" ] = "Flowstate Fiesta",
