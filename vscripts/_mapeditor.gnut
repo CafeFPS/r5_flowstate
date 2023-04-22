@@ -25,7 +25,7 @@ global function ReMapSetZiplinePanelAngles
 global function ReMapSetZiplinePanelModel
 global function ReMapSetZiplinePanelSettings
 
-global function ReMapCreateVerticalZipline
+global function ReMapCreateZipline
 
 global enum eMapEditorDoorType
 {
@@ -573,7 +573,7 @@ array< vector > optionalPanelsOrigin = []
 array< vector > optionalPanelsAngles = []
 array< asset > optionalPanelsSkin = []
 float panelTimerMin = 32.0
-float panelTimerMax = 60
+float panelTimerMax = 60.0
 int panelMaxUse = 0
 
 void function ReMapSetOrigin( vector vec01, vector vec02 )
@@ -626,14 +626,14 @@ void function ReMapSetZiplinePanelModel( array< asset > optionalPanelsSkin_ )
     optionalPanelsSkin = optionalPanelsSkin_
 }
 
-void function ReMapSetZiplinePanelSettings( float panelTimerMin, float panelTimerMax, int panelMaxUse )
+void function ReMapSetZiplinePanelSettings( float panelTimerMin_, float panelTimerMax_, int panelMaxUse_ )
 {
-    panelTimerMin = panelTimerMin
-    panelTimerMax = panelTimerMax
-    panelMaxUse = panelMaxUse
+    panelTimerMin = panelTimerMin_
+    panelTimerMax = panelTimerMax_
+    panelMaxUse = panelMaxUse_
 }
 
-void function ReMapCreateVerticalZipline()
+void function ReMapCreateZipline()
 {
     MapEditor_CreateZiplineFromUnity( origin01, angles01, origin02, angles02, isVertical, fadeDistance, scale, width, speedScale, lengthScale, preserveVelocity, dropToBottom, startAutoDetachDistance, endAutoDetachDistance, restPoint, pushOffInDirectionX, isMoving, detachEndOnSpawn, detachEndOnUse, optionalPanelsOrigin, optionalPanelsAngles, optionalPanelsSkin, panelTimerMin, panelTimerMax, panelMaxUse, true )
 }
