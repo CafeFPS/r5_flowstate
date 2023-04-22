@@ -15,13 +15,14 @@ global function MapEditor_CreateZipline
 global function MapEditor_CreateTextInfoPanel
 global function MapEditor_CreateFuncWindowHint
 global function MapEditor_RemoveAllEnts
+global function ReMapTeleportToMap
 
 global function ReMapSetOrigin
 global function ReMapSetAngles
 global function ReMapSetZiplineVars01
 global function ReMapSetZiplineVars02
-global function ReMapSetZiplinePanelOrigin
-global function ReMapSetZiplinePanelAngles
+global function ReMapSetRemapArrayVec01
+global function ReMapSetRemapArrayVec02
 global function ReMapSetZiplinePanelModel
 global function ReMapSetZiplinePanelSettings
 
@@ -569,8 +570,8 @@ int pushOffInDirectionX = 1
 bool isMoving = false
 int detachEndOnSpawn = 0
 int detachEndOnUse = 0
-array< vector > optionalPanelsOrigin = []
-array< vector > optionalPanelsAngles = []
+array< vector > remapArrayVec01 = []
+array< vector > remapArrayVec02 = []
 array< asset > optionalPanelsSkin = []
 float panelTimerMin = 32.0
 float panelTimerMax = 60.0
@@ -611,14 +612,14 @@ void function ReMapSetZiplineVars02( float startAutoDetachDistance_, float endAu
     detachEndOnUse = detachEndOnUse_
 }
 
-void function ReMapSetZiplinePanelOrigin( array< vector > optionalPanelsOrigin_ )
+void function ReMapSetRemapArrayVec01( array< vector > remapArrayVec01_ )
 {
-    optionalPanelsOrigin = optionalPanelsOrigin_
+    remapArrayVec01 = remapArrayVec01_
 }
 
-void function ReMapSetZiplinePanelAngles( array< vector > optionalPanelsAngles_ )
+void function ReMapSetRemapArrayVec02( array< vector > remapArrayVec02_ )
 {
-    optionalPanelsAngles = optionalPanelsAngles_
+    remapArrayVec02 = remapArrayVec02_
 }
 
 void function ReMapSetZiplinePanelModel( array< asset > optionalPanelsSkin_ )
@@ -635,5 +636,27 @@ void function ReMapSetZiplinePanelSettings( float panelTimerMin_, float panelTim
 
 void function ReMapCreateZipline()
 {
-    MapEditor_CreateZiplineFromUnity( origin01, angles01, origin02, angles02, isVertical, fadeDistance, scale, width, speedScale, lengthScale, preserveVelocity, dropToBottom, startAutoDetachDistance, endAutoDetachDistance, restPoint, pushOffInDirectionX, isMoving, detachEndOnSpawn, detachEndOnUse, optionalPanelsOrigin, optionalPanelsAngles, optionalPanelsSkin, panelTimerMin, panelTimerMax, panelMaxUse, true )
+    MapEditor_CreateZiplineFromUnity( origin01, angles01, origin02, angles02, isVertical, fadeDistance, scale, width, speedScale, lengthScale, preserveVelocity, dropToBottom, startAutoDetachDistance, endAutoDetachDistance, restPoint, pushOffInDirectionX, isMoving, detachEndOnSpawn, detachEndOnUse, remapArrayVec01, remapArrayVec02, optionalPanelsSkin, panelTimerMin, panelTimerMax, panelMaxUse, true )
+}
+
+void function ReMapTeleportToMap()
+{
+    int origin = remapArrayVec01.len()
+    int angles = remapArrayVec02.len()
+
+    if ( origin != angles ) return
+
+    int i
+
+    foreach ( player in GetPlayerArray() )
+    {
+        i = RandomIntRange( 0, origin )
+
+        if ( IsValid( player ) )
+        {
+            player.SetOrigin( remapArrayVec01[ i ] )
+            player.SetAngles( remapArrayVec02[ i ] )
+            player.SetVelocity( < 0, 0, 0 > )
+        }
+    }
 }
