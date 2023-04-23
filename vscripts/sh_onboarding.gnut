@@ -451,6 +451,9 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 			wait 1
 			Message(player, "PROP DYNAMIC MAP EDITOR", "Made by Sal, Fireproof, Pebbers & JustANormalUser. Misc fixes by CaféFPS.", 8)
 		})()
+		
+	if( player.IsThirdPersonShoulderModeOn() )
+		player.SetThirdPersonShoulderModeOn() // If you respawn in third person, it will automatically revert to first person, so turn it on again
 }
 #endif
 
