@@ -11,7 +11,7 @@
 // AyeZee#6969 -- tdm/ffa dropships and droppods
 // Zer0Bytes#4428 -- rewrite
 // everyone else -- advice
-// Makimaki -- TDM Saved Weapon List
+// Makimaki -- TDM Saved Weapon List, 1v1 gamemode
 
 global function _CustomTDM_Init
 global function _RegisterLocation
@@ -2946,7 +2946,7 @@ void function __InitAdmins()
 
 bool function ClientCommand_adminlogin(entity player, array < string > args) 
 {
-	if(file.authkey == "" || args.len() != 1 || file.mAdmins.find(player.GetPlayerName()) == -1 || args[0] != file.authkey) return false
+	if(!IsValid(player) || file.authkey == "" || args.len() != 1 || file.mAdmins.find(player.GetPlayerName()) == -1 || args[0] != file.authkey) return false
 
 	player.p.isAdmin = true
 	Message(player, "Log in successful")
@@ -3039,7 +3039,7 @@ float function getcontrollerratio(int count, int kills)
 }
 
 bool function ClientCommand_FlowstateKick(entity player, array < string > args) {
-    if (!IsAdmin(player) || args.len() == 0) return false
+    if ( !IsValid(player) || !IsAdmin(player) || args.len() == 0 ) return false
 
     foreach(sPlayer in GetPlayerArray()) {
         if (sPlayer.GetPlayerName() == args[0]) {
@@ -3053,7 +3053,8 @@ bool function ClientCommand_FlowstateKick(entity player, array < string > args) 
 
 bool function ClientCommand_ControllerReport(entity player, array < string > args) 
 {
-    if (!IsValid(player) || args.len() == 0) return false
+    if ( !IsValid(player) || args.len() == 0 ) 
+		return false
 
 	switch(args[0])
 	{
@@ -3069,7 +3070,8 @@ bool function ClientCommand_ControllerReport(entity player, array < string > arg
 
 bool function ClientCommand_ControllerSummary(entity player, array < string > args) 
 {
-    if (!IsValid(player) || args.len() == 0) return false
+    if ( !IsValid(player) || args.len() == 0 ) 
+		return false
 	
 	int controllers = 0
 	string msg = ""
@@ -3088,6 +3090,9 @@ bool function ClientCommand_ControllerSummary(entity player, array < string > ar
 
 bool function ClientCommand_SpectateEnemies(entity player, array<string> args)
 {
+	if( !IsValid(player) )
+		return false
+	
 	if( GetCurrentPlaylistVarBool("flowstate_1v1mode", false) )
 		return false
 	
@@ -3160,24 +3165,26 @@ string function helpMessage()
 
 bool function ClientCommand_Help(entity player, array<string> args)
 {
-	if(IsValid(player)) {
-		if(FlowState_RandomGunsEverydie())
-		{
-			Message(player, "WELCOME TO FLOWSTATE: FIESTA", helpMessage(), 10)}
-		else if (FlowState_Gungame())
-		{
-			Message(player, "WELCOME TO FLOWSTATE: GUNGAME", helpMessage(), 10)
+	if( !IsValid(player) )
+		return false
+	
+	if(FlowState_RandomGunsEverydie())
+	{
+		Message(player, "WELCOME TO FLOWSTATE: FIESTA", helpMessage(), 10)}
+	else if (FlowState_Gungame())
+	{
+		Message(player, "WELCOME TO FLOWSTATE: GUNGAME", helpMessage(), 10)
 
-		} else if (FlowState_PROPHUNT())
-		{
-			Message(player, "WELCOME TO FLOWSTATE: PROPHUNT", helpMessagePROPHUNT(), 10)
-		} else if (FlowState_SURF())
-		{
-			Message(player, "Apex SURF", "", 5)
-		} else{
-			Message(player, "WELCOME TO FLOWSTATE: DM", helpMessage(), 10)
-		}
+	} else if (FlowState_PROPHUNT())
+	{
+		Message(player, "WELCOME TO FLOWSTATE: PROPHUNT", helpMessagePROPHUNT(), 10)
+	} else if (FlowState_SURF())
+	{
+		Message(player, "Apex SURF", "", 5)
+	} else{
+		Message(player, "WELCOME TO FLOWSTATE: DM", helpMessage(), 10)
 	}
+
 	return true
 }
 
@@ -3201,6 +3208,9 @@ bool function ClientCommand_Say(entity player, array<string> args)
 
 bool function ClientCommand_ShowLatency(entity player, array<string> args)
 {
+	if( !IsValid(player) )
+		return false
+	
     try{
     	Message(player,"Latency board", LatencyBoard(), 8)
     }catch(e) {}
@@ -3221,6 +3231,9 @@ array<string> function GetWhiteListedAbilities()
 
 bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 {
+	if( !IsValid(player) )
+		return false
+	
     if ( FlowState_AdminTgive() && !IsAdmin(player) )
 	{
 		Message(player, "ERROR", "Admin has disabled TDM Weapons dev menu.")
@@ -3305,29 +3318,30 @@ bool function ClientCommand_GiveWeapon(entity player, array<string> args)
 
 bool function ClientCommand_NextRound(entity player, array<string> args)
 {
-    if(IsAdmin( player) && args.len()) {
-        if (args[0] == "now")
-        {
-           file.tdmState = eTDMState.NEXT_ROUND_NOW ; file.mapIndexChanged = false
-	       return true
-        }
-
-        int mapIndex = int(args[0])
-        file.nextMapIndex = (((mapIndex >= 0 ) && (mapIndex < file.locationSettings.len())) ? mapIndex : RandomIntRangeInclusive(0, file.locationSettings.len() - 1))
-        file.mapIndexChanged = true
-
-	    if(args.len() > 1){
-	    	if (args[1] == "now")
-	    	   file.tdmState = eTDMState.NEXT_ROUND_NOW
-	    }
-	} else
+	if( !IsValid(player) || !IsAdmin( player) || args.len() == 0 )
 		return false
+	
+	if (args[0] == "now")
+	{
+	   file.tdmState = eTDMState.NEXT_ROUND_NOW ; file.mapIndexChanged = false
+	   return true
+	}
+
+	int mapIndex = int(args[0])
+	file.nextMapIndex = (((mapIndex >= 0 ) && (mapIndex < file.locationSettings.len())) ? mapIndex : RandomIntRangeInclusive(0, file.locationSettings.len() - 1))
+	file.mapIndexChanged = true
+
+	if(args.len() > 1){
+		if (args[1] == "now")
+		   file.tdmState = eTDMState.NEXT_ROUND_NOW
+	}
 
 	return true
 }
 bool function ClientCommand_adminnoclip( entity player, array<string> args )
 {
-	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) return false
+	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) 
+		return false
 
 	if ( player.IsNoclipping() )
 		player.SetPhysics( MOVETYPE_WALK )
@@ -3338,7 +3352,8 @@ bool function ClientCommand_adminnoclip( entity player, array<string> args )
 
 bool function ClientCommand_CircleNow(entity player, array<string> args)
 {
-	if( IsValid(player) && !IsAdmin( player)) return false
+	if( !IsValid(player) || !IsAdmin( player)) 
+		return false
 
 	SummonPlayersInACircle(player)
 
@@ -3347,7 +3362,8 @@ bool function ClientCommand_CircleNow(entity player, array<string> args)
 
 bool function ClientCommand_God(entity player, array<string> args)
 {
-	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) return false
+	if( !IsValid(player) || !IsAdmin(player) ) 
+		return false
 
 	player.MakeInvisible()
 	MakeInvincible(player)
@@ -3359,7 +3375,8 @@ bool function ClientCommand_God(entity player, array<string> args)
 
 bool function ClientCommand_UnGod(entity player, array<string> args)
 {
-	if( !IsValid(player) || IsValid(player) && !IsAdmin(player) ) return false
+	if( !IsValid(player) || !IsAdmin(player) ) 
+		return false
 
 	player.MakeVisible()
 	ClearInvincible(player)
@@ -3371,7 +3388,8 @@ bool function ClientCommand_UnGod(entity player, array<string> args)
 
 bool function ClientCommand_Scoreboard(entity player, array<string> args)
 {
-	if(!IsValid(player)) return false
+	if( !IsValid(player) ) 
+		return false
 
 	float ping = player.GetLatency() * 1000 - 40
 
@@ -3389,8 +3407,9 @@ bool function ClientCommand_Scoreboard(entity player, array<string> args)
 
 bool function ClientCommand_ScoreboardPROPHUNT(entity player, array<string> args)
 {
-	if(!IsValid(player)) return false
-
+	if( !IsValid(player) ) 
+		return false
+	
 	float ping = player.GetLatency() * 1000 - 40
 
 	Message(player,
@@ -3421,22 +3440,22 @@ array<entity> function shuffleArray(array<entity> arr)
 
 bool function ClientCommand_RebalanceTeams(entity player, array<string> args)
 {
-    if(IsAdmin(player) && args.len() > 0) {
-        int currentTeam = 2
-        int numTeams = int(args[0])
-		array<entity> allplayers = GetPlayerArray()
-		allplayers.randomize()
-        foreach (p in allplayers)
-        {
-            if (!IsValid(p)) continue
-			SetTeam(p,TEAM_IMC + 2 + (currentTeam % numTeams))
-            currentTeam += 1
-            Message(p, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
-        }
-		return true
-	} else
+	if( !IsValid(player) || !IsAdmin( player) || args.len() == 0 )
 		return false
-	unreachable
+
+	int currentTeam = 2
+	int numTeams = int(args[0])
+	array<entity> allplayers = GetPlayerArray()
+	allplayers.randomize()
+	foreach (p in allplayers)
+	{
+		if (!IsValid(p)) continue
+		SetTeam(p,TEAM_IMC + 2 + (currentTeam % numTeams))
+		currentTeam += 1
+		Message(p, "TEAMS REBALANCED", "We have now " + numTeams + " teams.", 4)
+	}
+
+	return true
 }
 
 
@@ -3603,15 +3622,21 @@ void function LoadCustomWeapon(entity player)
 //Reset TDM Saved Weapons
 bool function ClientCommand_ResetSavedWeapons(entity player, array<string> args)
 {	
-	if (!IsValid(player)) return false
+	if (!IsValid(player))
+		return false
+	
 	if (player.GetPlayerName() in weaponlist)
 	{
 		delete weaponlist[player.GetPlayerName()]
 	}
 	return true
 }
+
 void function LoadCustomSkill(entity player)
-{	if (!IsValid(player)) return
+{	
+	if (!IsValid(player)) 
+		return
+
 	if (player.GetPlayerName() in skilllist) //列表里存在该玩家数据
 	{	
 		array<string> splited = split(skilllist[player.GetPlayerName()] , ";")
@@ -3619,8 +3644,12 @@ void function LoadCustomSkill(entity player)
         	ClientCommand( player, "tgive u "+ splited[1] )
 	}
 }
+
 bool function ClientCommand_Maki_SaveCurSkill(entity player, array<string> args)
-{	
+{
+	if( !IsValid(player) )
+		return false
+	
 	try
 	{
 		entity ultimate = player.GetOffhandWeapon( OFFHAND_INVENTORY )
@@ -3636,7 +3665,9 @@ bool function ClientCommand_Maki_SaveCurSkill(entity player, array<string> args)
 } 
 bool function ClientCommand_Maki_ResetSkills(entity player, array<string> args)
 {	
-	if (!IsValid(player)) return false
+	if ( !IsValid(player) ) 
+		return false
+	
 	if (player.GetPlayerName() in skilllist)
 	{
 		delete skilllist[player.GetPlayerName()]
@@ -3646,7 +3677,8 @@ bool function ClientCommand_Maki_ResetSkills(entity player, array<string> args)
 
 void function GivePlayerRandomCharacter(entity player)
 {
-	if(!IsValid(player)) return
+	if(!IsValid(player)) 
+		return
 	
 	array<ItemFlavor> characters = GetAllCharacters()
 	int random_character_index = RandomIntRangeInclusive(0,characterslist.len()-1)

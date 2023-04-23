@@ -190,6 +190,9 @@ void function deleteWaitingPlayer(entity player)
 
 bool function ClientCommand_Maki_SoloModeRest(entity player, array<string> args)
 {
+	if( !IsValid(player) || !IsAlive(player) )
+		return false
+	
 	if(soloPlayersResting.contains(player))
 	{
 		if(IS_CHINESE_SERVER)
