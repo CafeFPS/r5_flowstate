@@ -454,6 +454,22 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 		
 	if( player.IsThirdPersonShoulderModeOn() )
 		player.SetThirdPersonShoulderModeOn() // If you respawn in third person, it will automatically revert to first person, so turn it on again
+
+	SetSkydiveEmotesForAllCharacters( player )
+}
+
+void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to unlock the loadout for this to work
+{
+	array< array< string > > emoteArrays = [ [ "skydive_emote_bangalore_backflip" ], [ "skydive_emote_bloodhound_backflip" ], [ "skydive_emote_caustic_backflip" ], [ "skydive_emote_gibraltar_backflip" , 
+								"skydive_emote_gibraltar_surf" ], [ "skydive_emote_lifeline_backflip", "skydive_emote_lifeline_windmill" ], [ "skydive_emote_mirage_backflip", 
+								"skydive_emote_mirage_rodeo" ], [ "skydive_emote_octane_backflip" ], [ "skydive_emote_pathfinder_backflip", "skydive_emote_pathfinder_birdattack" ], 
+								[ "skydive_emote_wattson_backflip", "skydive_emote_wattson_explorer" ], [ "skydive_emote_wraith_backflip" ] ]
+
+	foreach( emoteArray in emoteArrays )
+	{
+		for( int i = 0; i < emoteArray.len(); i++ )
+			ClientCommand( player, "loadouts_devset skydive_emote_" + i + " " + emoteArray[ i ] )
+	}
 }
 #endif
 

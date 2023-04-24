@@ -345,7 +345,7 @@ void function PlayerSkydiveFromCurrentPosition( entity player )
 	player.p.skydiveDecoysFired = 0 //Resetting Mirage's decoy counter so he can use his hidden passive with skydive towers.
 	player.Zipline_Stop()
 	SetPlayerIntroDropSettings( player )
-	PlayBattleChatterLineToSpeakerAndTeam( player, "bc_skydive" )
+	//PlayBattleChatterLineToSpeakerAndTeam( player, "bc_skydive" ) // is this needed?
 	waitthread PlayerSkyDive( player, player.GetViewVector(), [player], player, false, true )
 }
 
