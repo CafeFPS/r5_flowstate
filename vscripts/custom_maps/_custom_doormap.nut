@@ -57,6 +57,15 @@ function door_map_init() {
     thread lootbins_buttons()
     thread doors()
     SpawnInfoText()
+    wait 5
+    TeleportPlayers()
+}
+
+void function TeleportPlayers()
+{
+    foreach (player in GetPlayerArray()) {
+        player.SetOrigin(file.first_cp)
+    }
 }
 
 void
