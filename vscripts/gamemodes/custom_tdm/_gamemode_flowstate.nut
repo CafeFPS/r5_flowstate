@@ -126,10 +126,14 @@ void function _CustomTDM_Init()
 	else
 		SetConVarBool("sv_forceChatToTeamOnly", true)
 	
-	SurvivalFreefall_Init() //Enables freefall/skydive
+	if( GetCurrentPlaylistName() != "movement_gym")
+		SurvivalFreefall_Init() //Enables freefall/skydive
+	
 	PrecacheCustomMapsProps()
 	PrecacheZeesMapProps()
 	PrecacheDEAFPSMapProps()
+	if( GetCurrentPlaylistName() = "movement_gym")
+		PrecacheMovementGymProps()
 
     __InitAdmins()
 
