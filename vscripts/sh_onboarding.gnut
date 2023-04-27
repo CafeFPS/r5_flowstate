@@ -457,7 +457,7 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 
 	#if DEVELOPER
 	SetSkydiveEmotesForAllCharacters( player )
-	#end
+	#endif
 }
 
 void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to unlock the loadout for this to work
