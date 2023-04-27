@@ -455,7 +455,9 @@ void function DecideRespawnPlayer( entity player, bool giveLoadoutWeapons = true
 	if( player.IsThirdPersonShoulderModeOn() )
 		player.SetThirdPersonShoulderModeOn() // If you respawn in third person, it will automatically revert to first person, so turn it on again
 
+	#if DEVELOPER
 	SetSkydiveEmotesForAllCharacters( player )
+	#end
 }
 
 void function SetSkydiveEmotesForAllCharacters( entity player ) // You need to unlock the loadout for this to work
