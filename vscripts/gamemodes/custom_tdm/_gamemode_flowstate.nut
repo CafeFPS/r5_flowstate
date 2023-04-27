@@ -129,7 +129,6 @@ void function _CustomTDM_Init()
 	SurvivalFreefall_Init() //Enables freefall/skydive
 	PrecacheCustomMapsProps()
 	PrecacheZeesMapProps()
-	PrecacheMovementMapProps()
 	PrecacheDEAFPSMapProps()
 
     __InitAdmins()
