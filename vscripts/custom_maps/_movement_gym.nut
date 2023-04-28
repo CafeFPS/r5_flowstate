@@ -6287,7 +6287,7 @@ function MovementGym_Surf_Kitsune_lvl1() {
 
   //Outline Glow
   foreach(entity ent in NoCollisionArray) {
-    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetFunctions(0, 0, false, 136, 3.0, 2, false)
     ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
   }
 
@@ -6533,7 +6533,7 @@ function MovementGym_Surf_Kitsune_lvl2() {
 
   //Outline Glow
   foreach(entity ent in NoCollisionArray) {
-    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetFunctions(0, 0, false, 136, 3.0, 2, false)
     ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
   }
 
@@ -6694,7 +6694,7 @@ function MovementGym_Surf_Kitsune_lvl3() {
 
   //Outline Glow
   foreach(entity ent in NoCollisionArray) {
-    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetFunctions(0, 0, false, 136, 3.0, 2, false)
     ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
   }
 
@@ -6886,7 +6886,7 @@ function MovementGym_Surf_Kitsune_lvl4() {
 
   //Outline Glow
   foreach(entity ent in NoCollisionArray) {
-    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetFunctions(0, 0, false, 136, 3.0, 2, false)
     ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
   }
 
@@ -7077,7 +7077,7 @@ function MovementGym_Surf_Kitsune_lvl5() {
 
   //Outline Glow
   foreach(entity ent in NoCollisionArray) {
-    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetFunctions(0, 0, false, 136, 3.0, 2, false)
     ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
   }
 
@@ -7384,7 +7384,7 @@ function MovementGym_Surf_Kitsune_lvl6() {
 
   //Outline Glow
   foreach(entity ent in NoCollisionArray) {
-    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetFunctions(0, 0, false, 136, 3.0, 2, false)
     ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
   }
 
@@ -7396,7 +7396,7 @@ function MovementGym_Surf_Kitsune_lvl6() {
         if (ent.IsPlayer() && ent.GetPhysics() != MOVETYPE_NOCLIP) // Noclip players are not affected by the trigger
         {
           ent.SetOrigin( < -22640.3, -8429.232, 27015.53 > ) // change tp location
-          ent.SetAngles( < 0, 0, 0 > )
+          ent.SetAngles( < 0, 180, 0 > )
 
           //
           // Checkpoint and timer
@@ -7437,12 +7437,12 @@ void
 
 function MovementGym_Surf_Kitsune_lvl7() {
   // Level Color
-  float rampr = 1.0
-  float rampg = 1.0
-  float rampb = 1.0
-  float darkrampr = 0.25
-  float darkrampg = 0.25
-  float darkrampb = 0.25
+  float rampr = RandomFloatRange(0.1, 1.0)
+  float rampg = RandomFloatRange(0.1, 1.0)
+  float rampb = RandomFloatRange(0.1, 1.0)
+  float darkrampr = RandomFloatRange(0.1, 0.25)
+  float darkrampg = RandomFloatRange(0.1, 0.25)
+  float darkrampb = RandomFloatRange(0.1, 0.25)
 
   // Props Array
   array < entity > ClipArray;
@@ -7937,7 +7937,7 @@ function MovementGym_Surf_Kitsune_lvl7() {
 
   //Outline Glow
   foreach(entity ent in NoCollisionArray) {
-    ent.Highlight_SetFunctions(0, 0, false, 136, 1.0, 2, false)
+    ent.Highlight_SetFunctions(0, 0, false, 136, 3.0, 2, false)
     ent.Highlight_SetParam(0, 0, < rampr, rampg, rampb > )
   }
 
